@@ -1,31 +1,18 @@
-#include <intrin.h>
-// from server: 93% by colin
-// from server: 92% by colin
+// from server: 100% by king_originala
+// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-struct Result {
-    float x, y, width, height;
+// roc-lib: rbxgs-dll roc_king_originala_gui_rect_a2492bc6f5a7c7b1.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "util/Rect.h"
+#include <intrin.h>
+struct NativeGuiRect {
+ char prefix[0x1c8]; short x0,y0,x1,y1;
+ RBX::Rect getRect()const;
 };
-
-struct S {
-    char padding[0x1c8];
-    short x, y, width, height;
-
-    Result* f(Result* result) const;
-};
-
-Result* S::f(Result* result) const {
-    float a = (float)x;
-    float b = (float)y;
-    float c = (float)width;
-    float d = (float)height;
-    _ReadWriteBarrier();
-
-    result->x = a;
-    result->y = b;
-    result->width = c;
-    result->height = d;
-    return result;
+RBX::Rect NativeGuiRect::getRect()const {
+ const G3D::Vector2 low((float)x0,(float)y0);
+ const G3D::Vector2 high((float)x1,(float)y1);
+ return RBX::Rect(low,high);
 }
-
-

@@ -1,110 +1,154 @@
-// from server: 18% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_insertservicenamedmessagee12f41fda0da5bfe.cpp
 
-struct Instance {
-    void* vptr;
-    int field4;
-    int field8;
-    void* fieldC;
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias(<v8tree/Verb.h>, <roc_espeon_insertnativeheader1a746c4cc8c6ae06.cpp>)
+#pragma include_alias("v8tree/Verb.h", "roc_espeon_insertnativeheader1a746c4cc8c6ae06.cpp")
+#pragma include_alias(<util/Name.h>, <roc_espeon_insertnativeheader115b7bccd0a9061e.cpp>)
+#pragma include_alias("util/Name.h", "roc_espeon_insertnativeheader115b7bccd0a9061e.cpp")
+#pragma include_alias(<util/Debug.h>, <roc_espeon_insertnativeheader5fe96130a83d2e88.cpp>)
+#pragma include_alias("util/Debug.h", "roc_espeon_insertnativeheader5fe96130a83d2e88.cpp")
+#pragma include_alias(<afxwin.h>, <roc_espeon_mfcnativeheader280d8d01456bb571.cpp>)
+#pragma include_alias("afxwin.h", "roc_espeon_mfcnativeheader280d8d01456bb571.cpp")
+#pragma include_alias(<afx.h>, <roc_espeon_mfcnativeheaderf430fdc1f4655d18.cpp>)
+#pragma include_alias("afx.h", "roc_espeon_mfcnativeheaderf430fdc1f4655d18.cpp")
+#pragma include_alias(<afxver_.h>, <roc_espeon_mfcnativeheader88c03f249389dac1.cpp>)
+#pragma include_alias("afxver_.h", "roc_espeon_mfcnativeheader88c03f249389dac1.cpp")
+#pragma include_alias(<afxv_w32.h>, <roc_espeon_mfcnativeheader46f3ea44f9168d89.cpp>)
+#pragma include_alias("afxv_w32.h", "roc_espeon_mfcnativeheader46f3ea44f9168d89.cpp")
+#pragma include_alias(<afxv_dll.h>, <roc_espeon_mfcnativeheader2f795edbf7702b59.cpp>)
+#pragma include_alias("afxv_dll.h", "roc_espeon_mfcnativeheader2f795edbf7702b59.cpp")
+#pragma include_alias(<mfcassem.h>, <roc_espeon_mfcnativeheaderf10ba24e78aa8f94.cpp>)
+#pragma include_alias("mfcassem.h", "roc_espeon_mfcnativeheaderf10ba24e78aa8f94.cpp")
+#pragma include_alias(<afxstr.h>, <roc_espeon_mfcnativeheaderd098d85d4c8b2c2d.cpp>)
+#pragma include_alias("afxstr.h", "roc_espeon_mfcnativeheaderd098d85d4c8b2c2d.cpp")
+#pragma include_alias(<atlcore.h>, <roc_espeon_mfcnativeheader9fb5b03d046fee95.cpp>)
+#pragma include_alias("atlcore.h", "roc_espeon_mfcnativeheader9fb5b03d046fee95.cpp")
+#pragma include_alias(<atldef.h>, <roc_espeon_mfcnativeheadera08092bcf50e88d6.cpp>)
+#pragma include_alias("atldef.h", "roc_espeon_mfcnativeheadera08092bcf50e88d6.cpp")
+#pragma include_alias(<atlrc.h>, <roc_espeon_mfcnativeheadera42dcb38b6b51843.cpp>)
+#pragma include_alias("atlrc.h", "roc_espeon_mfcnativeheadera42dcb38b6b51843.cpp")
+#pragma include_alias(<atlchecked.h>, <roc_espeon_mfcnativeheaderdbfafe36d028a07b.cpp>)
+#pragma include_alias("atlchecked.h", "roc_espeon_mfcnativeheaderdbfafe36d028a07b.cpp")
+#pragma include_alias(<atlexcept.h>, <roc_espeon_mfcnativeheader947daedc1cd6318a.cpp>)
+#pragma include_alias("atlexcept.h", "roc_espeon_mfcnativeheader947daedc1cd6318a.cpp")
+#pragma include_alias(<atltrace.h>, <roc_espeon_mfcnativeheaderbda27626c7bbc1b4.cpp>)
+#pragma include_alias("atltrace.h", "roc_espeon_mfcnativeheaderbda27626c7bbc1b4.cpp")
+#pragma include_alias(<atlconv.h>, <roc_espeon_mfcnativeheaderbc0af37bb4222087.cpp>)
+#pragma include_alias("atlconv.h", "roc_espeon_mfcnativeheaderbc0af37bb4222087.cpp")
+#pragma include_alias(<atlalloc.h>, <roc_espeon_mfcnativeheaderf3175658669c56f0.cpp>)
+#pragma include_alias("atlalloc.h", "roc_espeon_mfcnativeheaderf3175658669c56f0.cpp")
+#pragma include_alias(<atlsimpcoll.h>, <roc_espeon_mfcnativeheader6640c5c238e46169.cpp>)
+#pragma include_alias("atlsimpcoll.h", "roc_espeon_mfcnativeheader6640c5c238e46169.cpp")
+#pragma include_alias(<cstringt.h>, <roc_espeon_mfcnativeheader5de12a84109ce944.cpp>)
+#pragma include_alias("cstringt.h", "roc_espeon_mfcnativeheader5de12a84109ce944.cpp")
+#pragma include_alias(<atlsimpstr.h>, <roc_espeon_mfcnativeheaderc2c617e2f7213494.cpp>)
+#pragma include_alias("atlsimpstr.h", "roc_espeon_mfcnativeheaderc2c617e2f7213494.cpp")
+#pragma include_alias(<atlmem.h>, <roc_espeon_mfcnativeheadere714cdcba4a1907e.cpp>)
+#pragma include_alias("atlmem.h", "roc_espeon_mfcnativeheadere714cdcba4a1907e.cpp")
+#pragma include_alias(<atlcommem.h>, <roc_espeon_mfcnativeheader78614a5d9b4ba718.cpp>)
+#pragma include_alias("atlcommem.h", "roc_espeon_mfcnativeheader78614a5d9b4ba718.cpp")
+#pragma include_alias(<atlcomcli.h>, <roc_espeon_mfcnativeheader49eb5239674d4c30.cpp>)
+#pragma include_alias("atlcomcli.h", "roc_espeon_mfcnativeheader49eb5239674d4c30.cpp")
+#pragma include_alias(<cstringt.inl>, <roc_espeon_mfcnativeheader8d9851f9814f5387.cpp>)
+#pragma include_alias("cstringt.inl", "roc_espeon_mfcnativeheader8d9851f9814f5387.cpp")
+#pragma include_alias(<atltime.h>, <roc_espeon_mfcnativeheader5c30e069f5c89414.cpp>)
+#pragma include_alias("atltime.h", "roc_espeon_mfcnativeheader5c30e069f5c89414.cpp")
+#pragma include_alias(<atltime.inl>, <roc_espeon_mfcnativeheaderf65a0552d9e46d8a.cpp>)
+#pragma include_alias("atltime.inl", "roc_espeon_mfcnativeheaderf65a0552d9e46d8a.cpp")
+#pragma include_alias(<afxcoll.h>, <roc_espeon_mfcnativeheadere609fa036c4edafa.cpp>)
+#pragma include_alias("afxcoll.h", "roc_espeon_mfcnativeheadere609fa036c4edafa.cpp")
+#pragma include_alias(<afxstat_.h>, <roc_espeon_mfcnativeheader2868ab515b93fc8c.cpp>)
+#pragma include_alias("afxstat_.h", "roc_espeon_mfcnativeheader2868ab515b93fc8c.cpp")
+#pragma include_alias(<atltypes.h>, <roc_espeon_mfcnativeheader3416078e90aad117.cpp>)
+#pragma include_alias("atltypes.h", "roc_espeon_mfcnativeheader3416078e90aad117.cpp")
+#pragma include_alias(<atltypes.inl>, <roc_espeon_mfcnativeheader656810e957b5a6aa.cpp>)
+#pragma include_alias("atltypes.inl", "roc_espeon_mfcnativeheader656810e957b5a6aa.cpp")
+#pragma include_alias(<afxtls_.h>, <roc_espeon_mfcnativeheader5b29982cec2c5a31.cpp>)
+#pragma include_alias("afxtls_.h", "roc_espeon_mfcnativeheader5b29982cec2c5a31.cpp")
+#pragma include_alias(<afxcoll.inl>, <roc_espeon_mfcnativeheadere4694c4e7dceee5b.cpp>)
+#pragma include_alias("afxcoll.inl", "roc_espeon_mfcnativeheadere4694c4e7dceee5b.cpp")
+#pragma include_alias(<afx.inl>, <roc_espeon_mfcnativeheader62a88db7d8698e91.cpp>)
+#pragma include_alias("afx.inl", "roc_espeon_mfcnativeheader62a88db7d8698e91.cpp")
+#pragma include_alias(<afxres.h>, <roc_espeon_mfcnativeheadereab43ff852a77c61.cpp>)
+#pragma include_alias("afxres.h", "roc_espeon_mfcnativeheadereab43ff852a77c61.cpp")
+#pragma include_alias(<afxcomctl32.h>, <roc_espeon_mfcnativeheadere96c3697e9ff2169.cpp>)
+#pragma include_alias("afxcomctl32.h", "roc_espeon_mfcnativeheadere96c3697e9ff2169.cpp")
+#pragma include_alias(<afxmsg_.h>, <roc_espeon_mfcnativeheader9062d77c1f27f861.cpp>)
+#pragma include_alias("afxmsg_.h", "roc_espeon_mfcnativeheader9062d77c1f27f861.cpp")
+#pragma include_alias(<afxdd_.h>, <roc_espeon_mfcnativeheader93eaeb27d5d71f5f.cpp>)
+#pragma include_alias("afxdd_.h", "roc_espeon_mfcnativeheader93eaeb27d5d71f5f.cpp")
+#pragma include_alias(<afxdll_.h>, <roc_espeon_mfcnativeheader9a76b412854b2e98.cpp>)
+#pragma include_alias("afxdll_.h", "roc_espeon_mfcnativeheader9a76b412854b2e98.cpp")
+#pragma include_alias(<afxcomctl32.inl>, <roc_espeon_mfcnativeheader0881c31addcca98d.cpp>)
+#pragma include_alias("afxcomctl32.inl", "roc_espeon_mfcnativeheader0881c31addcca98d.cpp")
+#pragma include_alias(<afxwin1.inl>, <roc_espeon_mfcnativeheader49a53b5325f634fe.cpp>)
+#pragma include_alias("afxwin1.inl", "roc_espeon_mfcnativeheader49a53b5325f634fe.cpp")
+#pragma include_alias(<afxwin2.inl>, <roc_espeon_mfcnativeheaderca2d9dc95a113b42.cpp>)
+#pragma include_alias("afxwin2.inl", "roc_espeon_mfcnativeheaderca2d9dc95a113b42.cpp")
+#pragma include_alias(<afxwin3.inl>, <roc_espeon_mfcnativeheader60402c5e89630019.cpp>)
+#pragma include_alias("afxwin3.inl", "roc_espeon_mfcnativeheader60402c5e89630019.cpp")
+#pragma include_alias(<afxwin4.inl>, <roc_espeon_mfcnativeheader6353026942e4251d.cpp>)
+#pragma include_alias("afxwin4.inl", "roc_espeon_mfcnativeheader6353026942e4251d.cpp")
+#pragma include_alias(<afxdlgs.h>, <roc_espeon_mfcdialogheader4c9ed5579ab59d02.cpp>)
+#pragma include_alias("afxdlgs.h", "roc_espeon_mfcdialogheader4c9ed5579ab59d02.cpp")
+#pragma include_alias(<afxdlgs.inl>, <roc_espeon_mfcdialogheader7566c5ad3dd249a3.cpp>)
+#pragma include_alias("afxdlgs.inl", "roc_espeon_mfcdialogheader7566c5ad3dd249a3.cpp")
+#define _AFXDLL
+#pragma include_alias(<atlsimpstr.h>, <roc_espeon_editorcstringheaderfb14fe2507201232.cpp>)
+#pragma include_alias(<xstring>, <roc_dom_native_stdstring_cstr_boundary_header3da8e64d105bf835.cpp>)
+#pragma include_alias("v8tree/Instance.h", "roc_espeon_nativeinstanceguidportablea1682bda32c99cd2.cpp")
+#include <afxwin.h>
+#include <afxdlgs.h>
+
+#include <boost/shared_ptr.hpp>
+#include <vector>
+#include <stdexcept>
+namespace RBX {
+class Instance;
+class IDataState;
+typedef boost::shared_ptr<Instance> Shared;
+class CInsertObjectDialog : public CDialog {
+public:
+ Shared selected;
+ std::vector<Shared> objects;
+ CString title;
+ Shared result;
+ // External ctor/dtor manage unknown tail; stack object spans 0xfc bytes.
+ unsigned char tail[0x5c];
+ CInsertObjectDialog(Shared,CWnd*);
+ virtual ~CInsertObjectDialog();
 };
-
-struct ServiceProvider {
-    Instance* findService(const char* name);
+typedef char verifyDialogSize[sizeof(CInsertObjectDialog)==0xfc?1:-1];
+// Binary's secondary interface at Instance+0x10 has this operation at slot4.
+struct DescriptorView {virtual ~DescriptorView();virtual void* descriptor()=0;};
+Instance* requestService(void*,void*);
+class InsertServiceRecovery {
+public:
+ template<class T>T& field(unsigned offset){return *reinterpret_cast<T*>(reinterpret_cast<char*>(this)+offset);}
+ void doIt(IDataState*);
 };
-
-struct InsertService {
-    char pad[0xC];
-    ServiceProvider* provider;
-    void construct();
-};
-
-extern "C" void __cdecl sub_41FE00(void*);
-extern "C" void* __cdecl sub_6A0926();
-extern "C" void* __cdecl sub_6A0E7E(void*, void*, void*, void*, void*);
-extern "C" int __cdecl sub_6A084E(void*);
-extern "C" void* __cdecl sub_6A0E78(void*, void*, void*, void*);
-extern "C" void __cdecl sub_409D50(void*, void*);
-extern "C" void __cdecl sub_6A158C(void*, void*);
-extern "C" void __cdecl sub_41FF40(void*);
-extern "C" void __cdecl sub_600660(void*);
-extern "C" long __cdecl sub_5726F0(void*, void*);
-
-extern "C" void* __stdcall imp_8032CC();
-extern "C" void __stdcall imp_803EB8(void*, void*);
-extern "C" void __stdcall imp_803F14(void*);
-extern "C" void* __stdcall imp_803EE0(void*);
-extern "C" void __stdcall imp_803F04(void*);
-extern "C" void __stdcall imp_8032C4(void*, int, void*);
-extern "C" void __stdcall imp_802458(void*, void*);
-
-extern char byte_80F250;
-extern char byte_80F260;
-extern char byte_8D1BC8;
-
-void InsertService::construct()
-{
-    char buf1[0x58];
-    char buf2[0x90];
-    char buf3[0x58];
-    void* local10 = 0;
-    void* local14 = 0;
-
-    sub_41FE00(buf3);
-
-    void* p = sub_6A0926();
-    void* q = *(void**)((char*)p + 4);
-    sub_6A0E7E(q, &local10, &byte_80F250, &byte_80F260, 0);
-    void* s = imp_8032CC();
-    imp_803EB8(buf2, s);
-    imp_803F14(&local10);
-
-    int res = sub_6A084E(buf1);
-    if (res == 1)
-    {
-        void* p2 = sub_6A0926();
-        void* q2 = *(void**)((char*)p2 + 4);
-        void* s2 = imp_803EE0(buf2);
-        sub_6A0E78(q2, &byte_80F250, &byte_80F260, s2);
-
-        void* a = *(void**)(buf2 + 4);
-        void* b = *(void**)(buf2 + 0);
-        local10 = b;
-        local14 = a;
-        if (a != 0)
-        {
-            _InterlockedExchangeAdd((volatile long*)((char*)a + 4), 1);
-        }
-
-        if (b == 0)
-        {
-            imp_803F04(&local10);
-            void* s3 = imp_803EE0(buf2);
-            imp_8032C4(&local10, 0x85, s3);
-            void* s4 = imp_803EE0(&local10);
-            imp_802458(buf3, s4);
-            sub_409D50(buf1, buf3);
-            sub_6A158C(&byte_8D1BC8, buf1);
-        }
-
-        void* vt = *(void**)((char*)b + 0x10);
-        void* fn = *(void**)((char*)vt + 4);
-        void* result = ((void* (__thiscall*)(void*))fn)((char*)b + 0x10);
-
-        long svc = sub_5726F0(provider, result);
-        if (svc == 0)
-        {
-            imp_803F04(&local10);
-            void* s5 = imp_803EE0(buf2);
-            imp_8032C4(&local10, 0x89, s5);
-            void* s6 = imp_803EE0(&local10);
-            imp_802458(buf3, s6);
-            sub_409D50(buf1, buf3);
-            sub_6A158C(&byte_8D1BC8, buf1);
-        }
-
-        sub_600660(&local10);
-    }
-
-    sub_41FF40(buf1);
+void InsertServiceRecovery::doIt(IDataState*) {
+ Shared empty;
+ CInsertObjectDialog dialog(empty,NULL);
+ dialog.title=AfxGetApp()->GetProfileString("InsertService","ClassName",NULL).GetBuffer();
+ if(dialog.DoModal()==IDOK) {
+  AfxGetApp()->WriteProfileString("InsertService","ClassName",dialog.title);
+  Shared instance=dialog.result;
+  if(!instance) {
+   CString error;error.Format(133,dialog.title);
+   std::string message(error);
+   throw std::runtime_error(message);
+  }
+  void* descriptor=reinterpret_cast<DescriptorView*>(reinterpret_cast<char*>(instance.get())+0x10)->descriptor();
+  if(!requestService(field<void*>(0xc),descriptor)) {
+   CString error;error.Format(137,dialog.title);
+   std::string message(error);
+   throw std::runtime_error(message);
+  }
+ }
+}
 }

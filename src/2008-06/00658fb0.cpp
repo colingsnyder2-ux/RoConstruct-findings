@@ -1,134 +1,79 @@
-// from server: 26% by colin
+// from server: 97% by king_originala
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+#include <math.h>
+namespace G3D {
+struct Matrix3;
 struct Vector3 {
-    float x, y, z;
-    Vector3();
-    Vector3(float, float, float);
-    Vector3 operator*(float) const;
-    Vector3 operator+(const Vector3&) const;
-    Vector3& operator+=(const Vector3&);
-    Vector3& operator*=(float);
-    float magnitude() const;
-    Vector3 unit() const;
+ float x,y,z;
+ Vector3():x(0),y(0),z(0){}
+ Vector3(float a,float b,float c):x(a),y(b),z(c){}
+ Vector3(const Vector3&a):x(a.x),y(a.y),z(a.z){}
+ Vector3& operator=(const Vector3&a){x=a.x;y=a.y;z=a.z;return *this;}
+ Vector3 operator*(float f)const{return Vector3(x*f,y*f,z*f);}
+ Vector3 operator+(const Vector3&v)const{return Vector3(x+v.x,y+v.y,z+v.z);}
+ Vector3&operator+=(const Vector3&v){x+=v.x;y+=v.y;z+=v.z;return *this;}
+ Vector3&operator*=(float f){x*=f;y*=f;z*=f;return *this;}
+ static const Vector3& zero(){static Vector3 v(0,0,0);return v;}
+};
+struct Matrix3 {
+ float data[3][3];
+ Matrix3(){}
+ Matrix3(const Matrix3&);
+};
+struct CoordinateFrame {Matrix3 rotation;Vector3 translation;};
+inline Vector3 operator*(const Vector3&v,const Matrix3&m){
+ return Vector3(v.x*m.data[0][0]+v.z*m.data[2][0]+v.y*m.data[1][0],
+ v.x*m.data[0][1]+v.z*m.data[2][1]+v.y*m.data[1][1],
+ v.x*m.data[0][2]+v.z*m.data[2][2]+v.y*m.data[1][2]);
+}
+}
+namespace RBX {
+struct Velocity {G3D::Vector3 linear,rotational;};
+struct PV {
+ G3D::CoordinateFrame position;Velocity velocity;
+ PV pvAtLocalOffset(const G3D::Vector3&)const;
+};
+struct Quaternion {
+ float x,y,z,w;
+ Quaternion(const G3D::Matrix3&);
+ Quaternion(const G3D::Vector3&v,float f):x(v.x),y(v.y),z(v.z),w(f){}
+ Quaternion(float a,float b,float c,float d):x(a),y(b),z(c),w(d){}
+ Quaternion operator*(const Quaternion&)const;
+ Quaternion operator*(float f)const{return Quaternion(x*f,y*f,z*f,w*f);}
+ Quaternion&operator+=(const Quaternion&q){x+=q.x;y+=q.y;z+=q.z;w+=q.w;return *this;}
+ void toRotationMatrix(G3D::Matrix3&)const;
+ Quaternion& operator=(const Quaternion&);
+ float magnitude()const{return sqrtf(x*x+y*y+z*z+w*w);}
+ Quaternion& operator*=(float f){x=f*x;y=f*y;z=f*z;w=f*w;return *this;}
 };
 
-struct CoordinateFrame {
-    Vector3 translation;
-    float pad[4];
-    Vector3 lookVector;
-    Vector3 rightVector;
-    Vector3 upVector;
-    CoordinateFrame();
-    CoordinateFrame(const Vector3&, const Vector3&, const Vector3&, const Vector3&);
-    Vector3 pointToWorldSpace(const Vector3&) const;
-    Vector3 vectorToWorldSpace(const Vector3&) const;
-    void lookAt(const Vector3&, const Vector3&);
+struct Body;
+struct SimBody {
+ Body*body;float dt;bool dirty;char padding[3];
+ PV pv;Quaternion qOrientation;
+ G3D::Vector3 angMomentum,momentRecip;
+ float massRecip,constantForceY;
+ G3D::Vector3 force,torque,impulse,angularImpulse;
+ void update();void updateIfDirty(){if(dirty)update();}
+ const PV&getPV()const{return pv;}
+ void step();
 };
-
-struct ArrowButton {
-    char pad0[4];
-    float dt;
-    char pad1[4];
-    bool active;
-    char pad2[3];
-    Vector3 pos30;
-    Vector3 pos3c;
-    Vector3 pos48;
-    Vector3 pos54;
-    Vector3 pos64;
-    Vector3 pos70;
-    float f7c;
-    float f80;
-    Vector3 v84;
-    Vector3 v90;
-    Vector3 v9c;
-    Vector3 va8;
-    void update();
-};
-
-extern float g_84c220;
-extern float g_84c224;
-extern float g_819bac;
-extern float g_97d94c;
-extern float g_97d950;
-extern float g_97d954;
-extern unsigned int g_97d958;
-
-Vector3 ArrowButton_update_helper1(const Vector3&, const Vector3&);
-Vector3 ArrowButton_update_helper2(const Vector3&, const Vector3&);
-void ArrowButton_update_helper3(CoordinateFrame*, const Vector3&);
-
-void ArrowButton::update()
-{
-    if (!(g_97d958 & 1)) {
-        g_97d958 |= 1;
-        float v = g_84c224;
-        g_97d94c = v;
-        g_97d950 = v;
-        g_97d954 = v;
-    }
-
-    if (active) {
-        ((void (__thiscall*)(ArrowButton*))0x658d20)(this);
-    }
-
-    float scale = g_84c220;
-    pos64.x *= scale;
-    pos64.y *= scale;
-    pos64.z *= scale;
-
-    Vector3 a = pos70 * dt;
-    Vector3 b = v90 * dt;
-    Vector3 c = v9c * dt;
-    Vector3 d = va8;
-    pos64 += a + b + c + d;
-
-    Vector3 r1 = ArrowButton_update_helper1(pos64, pos70);
-    pos48.x = r1.x + g_97d94c;
-    pos48.y = r1.y + g_97d950;
-    pos48.z = r1.z + g_97d954;
-
-    Vector3 r2 = ArrowButton_update_helper2(pos48, pos54);
-    float s = g_819bac;
-    Vector3 r2s = r2 * s;
-    Vector3 r2d = r2s * dt;
-    pos54 += r2d;
-
-    float len = pos54.magnitude();
-    if (len != 0.0f) {
-        pos54 *= 1.0f / len;
-    }
-
-    ((void (__thiscall*)(Vector3*, Vector3*))0x5dd6d0)(&pos54, &pos70);
-
-    Vector3 e = v84 * dt;
-    Vector3 f = v90;
-    Vector3 g = v9c;
-    Vector3 h = va8;
-    Vector3 i = pos70 * f7c;
-    pos3c += e + i + g + h;
-
-    Vector3 j = pos3c * dt;
-    pos30 += j;
-
-    f80 = 0.0f;
-    v84.x = 0.0f;
-    v84.y = 0.0f;
-    v84.z = 0.0f;
-    v90.x = 0.0f;
-    v90.y = 0.0f;
-    v90.z = 0.0f;
-    v9c.x = 0.0f;
-    v9c.y = 0.0f;
-    v9c.z = 0.0f;
-    va8.x = 0.0f;
-    va8.y = 0.0f;
-    va8.z = 0.0f;
-
-    pos64.x += g_97d94c;
-    pos64.y += g_97d950;
-    pos64.z += g_97d954;
-
-    pos3c.x += g_97d94c;
-    pos3c.y += g_97d950;
-    pos3c.z += g_97d954;
+G3D::Vector3 __cdecl computeRotVel(const G3D::Matrix3&,const G3D::Vector3&,const G3D::Vector3&);
+void SimBody::step(){
+ static G3D::Vector3 denormFix(9.9999997e-21f,9.9999997e-21f,9.9999997e-21f);
+ updateIfDirty();
+ angMomentum*=0.99980003f;
+ angMomentum+=torque*dt+angularImpulse;
+ pv.velocity.rotational=computeRotVel(getPV().position.rotation,momentRecip,angMomentum)+denormFix;
+ qOrientation+=(Quaternion(getPV().velocity.rotational,0)*qOrientation)*0.5f*dt;
+ qOrientation*=1.0f/qOrientation.magnitude();
+ qOrientation.toRotationMatrix(pv.position.rotation);
+ pv.velocity.linear=pv.velocity.linear+(force*dt+impulse)*massRecip;
+ pv.position.translation+=getPV().velocity.linear*dt;
+ force=G3D::Vector3(0,constantForceY,0);
+ torque=G3D::Vector3(0,0,0);impulse=G3D::Vector3(0,0,0);angularImpulse=G3D::Vector3(0,0,0);
+ angMomentum+=denormFix;
+ pv.velocity.linear+=denormFix;
+}
 }

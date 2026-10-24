@@ -1,10 +1,13 @@
-// from server: 92% by atomic.potato
-extern "C" void sub_748f50(void *, void *, void *, int, int, int);
-extern "C" void __cdecl sub_7f4929(void *);
-
-void f()
+// from server: 95% by sophus
+struct S
 {
-    sub_748f50((void *)0x00b96f1c, (void *)0x009e3e6c,
-               (void *)0x009d1b80, 0xf4, 2, 0);
-    sub_7f4929((void *)0x00988fd0);
+    void f006c65d0(int, int, int, int, int);
+};
+
+extern "C" void __cdecl f007f4929(int);
+
+void f00974b40()
+{
+    ((S*)0xb924e8)->f006c65d0(0x9d73d0, 0x9d73dc, 0x98, 0xf, 0);
+    f007f4929(0x985bc0);
 }

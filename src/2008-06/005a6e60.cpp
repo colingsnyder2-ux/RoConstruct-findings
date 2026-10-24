@@ -1,70 +1,117 @@
-// from server: 91% by king_originala
-// roc 2008-06 005a6e60  unit: RBX::Workspace  size: 129 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 005a6e60
-//
-// 005a6e60  6aff                 push -1
-// 005a6e62  68a42f7d00           push 0x7d2fa4
-// 005a6e67  64a100000000         mov eax, dword ptr fs:[0]
-// 005a6e6d  50                   push eax
-// 005a6e6e  64892500000000       mov dword ptr fs:[0], esp
-// 005a6e75  51                   push ecx
-// 005a6e76  56                   push esi
-// 005a6e77  57                   push edi
-// 005a6e78  8bf9                 mov edi, ecx
-// 005a6e7a  897c2408             mov dword ptr [esp + 8], edi
-// 005a6e7e  c707b8418300         mov dword ptr [edi], 0x8341b8
-// 005a6e84  8d7740               lea esi, [edi + 0x40]
-// 005a6e87  6a01                 push 1
-// 005a6e89  c744241802000000     mov dword ptr [esp + 0x18], 2
-// 005a6e91  e87afeffff           call 0x5a6d10
-// 005a6e96  68bc418300           push 0x8341bc
-// 005a6e9b  56                   push esi
-// 005a6e9c  e8af35eaff           call 0x44a450
-// 005a6ea1  83c40c               add esp, 0xc
-// 005a6ea4  8bce                 mov ecx, esi
-// 005a6ea6  c644241401           mov byte ptr [esp + 0x14], 1
-// 005a6eab  ff15d4238000         call dword ptr [0x8023d4]
-// 005a6eb1  8d4f24               lea ecx, [edi + 0x24]
-// 005a6eb4  c644241400           mov byte ptr [esp + 0x14], 0
-// 005a6eb9  ff1568248000         call dword ptr [0x802468]
-// 005a6ebf  8d4f04               lea ecx, [edi + 4]
-// 005a6ec2  c7442414ffffffff     mov dword ptr [esp + 0x14], 0xffffffff
-// 005a6eca  ff1568248000         call dword ptr [0x802468]
-// 005a6ed0  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 005a6ed4  5f                   pop edi
-// 005a6ed5  5e                   pop esi
-// 005a6ed6  64890d00000000       mov dword ptr fs:[0], ecx
-// 005a6edd  83c410               add esp, 0x10
-// 005a6ee0  c3                   ret 
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_nativelogfullcontexte6b217892b438198.cpp
 
-struct String;
-struct FileStream;
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("util/Log.h", "roc_espeon_nativelognameheader768e37479c2a6f57.cpp")
+#define _CRT_SECURE_NO_DEPRECATE
+#include "util/Log.h"
+#include <windows.h>
 
-extern void (__thiscall *destroyString)(String*);
-extern void (__thiscall *destroyFileStream)(FileStream*);
+static void timeStamp(std::ofstream& stream, bool includeDate)
+{
+	char buffer[256];
 
-struct String {
-    char data[28];
-    ~String() { destroyString(this); }
-};
+	SYSTEMTIME systemTime;
+	GetLocalTime(&systemTime);
 
-struct FileStream {
-    ~FileStream() { destroyFileStream(this); }
-};
+	if (includeDate)
+	{
+		sprintf(buffer, "%02u.%02u.%u ", systemTime.wDay, systemTime.wMonth, systemTime.wYear);
+		stream << buffer;
+	}
 
-struct S {
-    virtual ~S();
-    String first;
-    char padding[4];
-    String second;
-    FileStream stream;
-};
+	sprintf(buffer, "%02u:%02u.%03u ", systemTime.wHour, systemTime.wMinute, systemTime.wMilliseconds);
+	stream << buffer;
 
-void __cdecl sub_5a6d10(int);
-void __cdecl sub_44a450(FileStream*, const char*);
+	stream.flush();
+}
 
-S::~S() {
-    FileStream* p = &stream;
-    sub_5a6d10(1);
-    sub_44a450(p, "End Log");
+namespace RBX
+{
+	Log::Severity Log::aggregateWorstSeverity = Information;
+	ILogProvider* Log::provider = NULL;
+
+	void Log::setLogProvider(ILogProvider* provider)
+	{
+		Log::provider = provider;
+	}
+
+	std::string Log::formatMem(unsigned bytes)
+	{
+		char buffer[64];
+		if (bytes < 1000)
+			sprintf(buffer, "%dB", bytes);
+		else if (bytes < 1000*1000)
+			sprintf(buffer, "%dKB", bytes / 1000);
+		else if (bytes < 1000*1000*1000)
+			sprintf(buffer, "%dMB", bytes / (1000*1000));
+		else
+			sprintf(buffer, "%dGB", bytes / (1000*1000*1000));
+
+		return buffer;
+	}
+
+	std::string Log::formatTime(double time)
+	{
+		char buffer[64];
+		if (time == 0.0)
+			sprintf(buffer, "0s");
+
+		if (time < 0.0)
+			sprintf(buffer, "%.3gs", time);
+		else if (time >= 0.1)
+			sprintf(buffer, "%.3gs", time);
+		else
+			sprintf(buffer, "%.3gms", time * 1000.0);
+
+		return buffer;
+	}
+
+	void Log::timeStamp(bool includeDate)
+	{
+		::timeStamp(stream, includeDate);
+	}
+
+	static const char* information = "          ";
+	static const char* warning     = " Warning: ";
+	static const char* error       = " Error:   ";
+
+	void Log::writeEntry(Severity severity, const char* message)
+	{
+		//current()->timeStamp(false);
+		::timeStamp(currentStream(), false);
+
+		switch (severity)
+		{
+		case Error:
+			currentStream() << error;
+		case Warning:
+			currentStream() << warning;
+		case Information:
+			currentStream() << information;
+		}
+
+		currentStream() << message;
+		stream << '\n';
+		currentStream().flush();
+	}
+
+	Log::Log(const char* logFile, const char* name)
+		: name(name), worstSeverity(Information),
+		  logFile(logFile),
+		  stream(logFile, 2, 64)
+	{
+		timeStamp(true);
+		stream << "Log \"" << name << "\"\n";
+		stream.flush();
+	}
+
+	Log::~Log()
+	{
+		timeStamp(true);
+		stream << "End Log\n";
+	}
 }

@@ -1,33 +1,64 @@
-// from server: 78% by Espeon
-// roc-lang: cpp
+// from server: 100% by king_originala
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_childpairconst_bb5611cc9d9a8bf0.cpp
-
-// Candidate translation unit (score above; library headers required).
-#include <boost/shared_ptr.hpp>
 #include <vector>
-struct Node;
-typedef boost::shared_ptr<Node> NodePtr;
-typedef std::vector<NodePtr> Vector;
-typedef boost::shared_ptr<Vector> VectorPtr;
-NodePtr __cdecl initialize(Node*);
-struct Pair { NodePtr first,second; Pair(Node* a,Node*b):first(initialize(a)),second(initialize(b)) {} };
-struct Action { void invoke(Pair,int); };
-struct Context { char padding[0x64]; Action action; };
-struct Children : VectorPtr { VectorPtr copy() const; };
-struct Node { char padding[0x104]; Node* parent; Children children; void visit(Context*,int); };
-void Node::visit(Context* context,int value) {
- if(children) {
-  VectorPtr snapshot=children.copy();
-  const Vector* vector=snapshot.get();
-  Vector::const_iterator finish=vector->end();
-  Vector::const_iterator current=vector->begin();
-  for(;current!=finish;++current) {
-   Node* child=(*current).get();
-   Node* parentNode=child->parent;
-   context->action.invoke(Pair(child,parentNode),value);
-   child->visit(context,value);
+#include <intrin.h>
+#include <utility>
+namespace boost {
+namespace detail {
+struct sp_counted_base {
+    virtual ~sp_counted_base() {}
+    virtual void dispose()=0;
+    virtual void destroy(){delete this;}
+    long use_count_,weak_count_;
+    void weak_release(){if(_InterlockedDecrement(&weak_count_)==0)destroy();}
+    void release(){if(_InterlockedDecrement(&use_count_)==0){dispose();weak_release();}}
+};
+struct shared_count {
+    sp_counted_base* pi_;
+    shared_count():pi_(0){}
+    shared_count& operator=(const shared_count& r){sp_counted_base* tmp=r.pi_;if(tmp!=pi_){if(tmp)_InterlockedIncrement(&tmp->use_count_);if(pi_)pi_->release();pi_=tmp;}return *this;}
+    void swap(shared_count& r){sp_counted_base* tmp=r.pi_;r.pi_=pi_;pi_=tmp;}
+    shared_count(const shared_count& r):pi_(r.pi_){if(pi_)_InterlockedIncrement(&pi_->use_count_);}
+    ~shared_count(){if(pi_)pi_->release();}
+};
+}
+template<class T> class shared_ptr {
+public:
+    T* px; detail::shared_count pn;
+    shared_ptr():px(0),pn(){}
+    shared_ptr& operator=(const shared_ptr& r){px=r.px;pn=r.pn;return *this;}
+    void swap(shared_ptr& r){std::swap(px,r.px);pn.swap(r.pn);}
+    void reset(){shared_ptr().swap(*this);}
+    typedef T* shared_ptr::*unspecified_bool_type;
+    operator unspecified_bool_type()const{return px==0?0:&shared_ptr::px;}
+    shared_ptr(const shared_ptr& r):px(r.px),pn(r.pn){}
+    template<class Y> shared_ptr(const shared_ptr<Y>& r):px(r.px),pn(r.pn){}
+    T* get()const{return px;}
+    T* operator->()const{return px;}
+};
+template<class T,class U> bool operator==(const shared_ptr<T>& a,const shared_ptr<U>& b){return a.get()==b.get();}
+}
+
+namespace RBX {
+class Instance;class Adorn;
+typedef std::vector<boost::shared_ptr<Instance> > Instances;
+struct Children {boost::shared_ptr<Instances> object;operator boost::shared_ptr<Instances>::unspecified_bool_type()const{return object;}__declspec(noinline) boost::shared_ptr<const Instances> read()const{return object;}};
+boost::shared_ptr<Instance> __cdecl sharedFrom(Instance*);
+struct ChildPair {const boost::shared_ptr<Instance> child,parent;ChildPair(Instance*c,Instance*p):child(sharedFrom(c)),parent(sharedFrom(p)) {}};
+struct DescendantEvent {void fire(ChildPair,Instance*);};
+class Instance {char prefix[0x64];DescendantEvent removing;char gap[0x104-0x65];Instance* parent;Children children;public:void signalRemoving(Instance*,Instance*);};
+void Instance::signalRemoving(Instance* volatile beginParent,Instance* newParent){
+ if(children){
+  boost::shared_ptr<const Instances> c=children.read();
+  Instances::const_iterator end=c->end();
+  Instances::const_iterator iter=c->begin();
+  for(;iter!=end;iter++){
+   Instance* child=(*iter).get();
+   Instance* receiver=beginParent;
+   receiver->removing.fire(ChildPair(child,child->parent),newParent);
+   child->signalRemoving(beginParent,newParent);
   }
  }
+}
 }

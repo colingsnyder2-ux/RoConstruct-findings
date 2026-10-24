@@ -1,206 +1,104 @@
-// from server: 31% by colin
-struct MegaTextureProxy {
-    char pad0[0xc];
-    int field_c;
-    char pad10[0x24];
-    void* field_30;
-    char pad34[0x4];
-    unsigned char field_34;
-    char pad35[0xb];
-    void* field_40;
-
-    void build(void* out);
+// from server: 100% by king_originala
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <vector>
+#include <algorithm>
+extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long*);
+extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
+struct __declspec(dllimport) ImportedString {char storage[28];ImportedString(const char*);~ImportedString()throw();};
+namespace G3D {
+struct WeakPtr {virtual ~WeakPtr(){} virtual void objectCollected()=0;};
+struct WeakNode {WeakPtr*weakPtr;WeakNode*next;};
+struct AtomicInt32 {volatile long value;void increment(){InterlockedIncrement(&value);}unsigned decrement(){return InterlockedDecrement(&value)!=0;}};
+struct RefObject {
+ AtomicInt32 references;WeakNode*weak;
+ virtual ~RefObject(){}
+ void zeroWeakPointers(){WeakNode*node=weak;while(node){node->weakPtr->objectCollected();WeakNode*tmp=node;node=node->next;delete tmp;}}
 };
-
-extern "C" {
-    int __stdcall InterlockedDecrement(int*);
-    int __stdcall InterlockedIncrement(int*);
-    void* __stdcall sub_5b5c80();
-    void __stdcall sub_510670(void*, void*, int);
-    void __stdcall sub_50eea0(void*, int, int, int);
-    void __stdcall sub_5b6270(void*, void*);
-    void __stdcall sub_5106a0(void*, void*);
-    void __stdcall sub_7add10(void*, void*);
-    void __stdcall sub_472a80(void*);
-    void __stdcall sub_7b8400(void*, void*, void*, void*, int, void*);
-    void __stdcall sub_50e230(void*);
-    void __stdcall sub_45ad90(void*);
-    void __stdcall sub_6a067a(void*);
-    void __stdcall sub_802458(void*, const char*);
-    void __stdcall sub_802468(void*);
-    void __stdcall sub_802890();
-    void* __stdcall sub_8021ac(void*);
-    void* __stdcall sub_8021b0(void*);
+template<class T>struct ReferenceCountedPointer {
+ T*pointer;
+ ReferenceCountedPointer():pointer(0){}
+ ReferenceCountedPointer(const ReferenceCountedPointer&r):pointer(0){setPointer(r.pointer);}
+ ~ReferenceCountedPointer(){zeroPointer();}
+ void zeroPointer(){if(pointer){if(pointer->references.decrement()==0){pointer->zeroWeakPointers();delete pointer;}pointer=0;}}
+ void setPointer(T*p){if(p!=pointer){zeroPointer();if(p){pointer=p;pointer->references.increment();}}}
+ const ReferenceCountedPointer&operator=(const ReferenceCountedPointer&r){setPointer(r.pointer);return *this;}
+ ReferenceCountedPointer&operator=(T*p){setPointer(p);return *this;}
+};
+struct Color3 {float r,g,b;};
+struct Color3uint8 {
+ unsigned char r,g,b;
+ Color3uint8():r(0),g(0),b(0){}
+ Color3uint8(unsigned char a,unsigned char c,unsigned char d):r(a),g(c),b(d){}
+ Color3uint8(const Color3&);
+};
+struct GImage {
+ unsigned char*bytes;int width,height,channels;
+ virtual ~GImage();
+ enum Format {JPEG,BMP,TGA,PCX,ICO,PNG,PPM_ASCII,PPM,AUTODETECT,UNKNOWN};
+ GImage(const ImportedString&,Format);
+ GImage(int,int,int);
+ Color3uint8*pixel3(){return (Color3uint8*)bytes;}
+ Color3uint8&pixel3(int x,int y){return pixel3()[x+y*width];}
+};
+struct TextureFormat {static const TextureFormat*RGB8;};
+struct Texture:RefObject {
+ virtual ~Texture();
+ enum Dimension {DIM_2D=2};
+ struct Settings {int interpolateMode,wrapMode,depthReadMode;float maxAnisotropy;bool autoMipMap;int maxMipMap,minMipMap;Settings();};
+ static ReferenceCountedPointer<Texture>fromGImage(const ImportedString&,const GImage&,const TextureFormat*,Dimension,const Settings&);
+};
+struct RenderDevice;
 }
-
-void MegaTextureProxy::build(void* out)
-{
-    if (field_34 != 0) {
-        void* p = field_30;
-        *(void**)out = 0;
-        if (p != 0) {
-            *(void**)out = p;
-            sub_8021b0((char*)p + 4);
-        }
-        return;
-    }
-
-    void* v = sub_5b5c80();
-    int count = (*(int*)((char*)v + 0x10) - *(int*)((char*)v + 0xc)) >> 2;
-    int* pcount = &count;
-    if (count >= 0x20) {
-        pcount = (int*)0x80b350;
-    }
-    int n = *pcount;
-
-    int local_c = 0;
-    sub_510670(&local_c, (char*)this + 0xc, 8);
-
-    int a = *(int*)&local_c;
-    int b = *(int*)((char*)&local_c + 4);
-    sub_50eea0((char*)&local_c + 0x1c, b, a << 5, 3);
-
-    unsigned char flag = 1;
-    (void)flag;
-
-    int i = 0;
-    if (n > 0) {
-        do {
-            void* vv = sub_5b5c80();
-            int cnt = (*(int*)((char*)vv + 0x10) - *(int*)((char*)vv + 0xc)) >> 2;
-            if (i >= cnt) {
-                sub_802890();
-            }
-            void* elem = (void*)(*(int*)((char*)vv + 0xc) + i * 4);
-            char buf[0x100];
-            sub_5b6270(elem, buf);
-            sub_5106a0(&local_c, buf);
-
-            char table[0x300];
-            {
-                char* p = table + 2;
-                int k = 0xff;
-                do {
-                    p[-2] = 0;
-                    p[-1] = 0;
-                    p[0] = 0;
-                    p += 3;
-                    k--;
-                } while (k >= 0);
-            }
-
-            int j = 0;
-            char* dst = table;
-            do {
-                char tmp[3];
-                tmp[0] = 0;
-                tmp[1] = 0;
-                *(short*)dst = *(short*)tmp;
-                dst[2] = 0;
-                sub_7add10(&local_c, dst);
-                j++;
-                dst += 3;
-            } while (j < 0x100);
-
-            int rows = *(int*)&local_c;
-            int cols = *(int*)((char*)&local_c + 4);
-            int r = 0;
-            if (rows > 0) {
-                do {
-                    int c = 0;
-                    if (cols > 0) {
-                        do {
-                            int base = *(int*)((char*)&local_c + 0x20);
-                            int stride = *(int*)((char*)&local_c + 0x1c);
-                            int idx = c * rows + r;
-                            char* src = (char*)(base + idx * 3);
-                            int dstbase = *(int*)((char*)&local_c + 0x18);
-                            int dstidx = i * rows + c * rows + r;
-                            char* d = (char*)(dstbase + dstidx * 3);
-                            unsigned char ci = *(unsigned char*)src;
-                            char* entry = table + ci * 3;
-                            *(short*)d = *(short*)entry;
-                            d[2] = entry[2];
-                            c++;
-                        } while (c < cols);
-                    }
-                    r++;
-                } while (r < rows);
-            }
-            i++;
-        } while (i < n);
-    }
-
-    sub_472a80((char*)&local_c + 0x38);
-    sub_802458((char*)&local_c + 0x20, "MegaTexture");
-
-    void* g = *(void**)0x96fab0;
-    sub_7b8400(&local_c, &local_c, &local_c, &local_c, 2, &local_c);
-
-    void* newp = *(void**)&local_c;
-    void* oldp = field_30;
-    if (newp != oldp) {
-        if (oldp != 0) {
-            if (sub_8021ac((char*)oldp + 4) == 0) {
-                sub_45ad90(field_30);
-                if (field_30 != 0) {
-                    void** vt = *(void***)field_30;
-                    void (*fn)(void*, int) = (void (*)(void*, int))vt[0];
-                    fn(field_30, 1);
-                }
-            }
-            field_30 = 0;
-        }
-        if (newp != 0) {
-            field_30 = newp;
-            sub_8021b0((char*)newp + 4);
-        }
-    }
-
-    void* tmp2 = *(void**)&local_c;
-    if (tmp2 != 0) {
-        if (sub_8021ac((char*)tmp2 + 4) == 0) {
-            void* q = *(void**)((char*)&local_c + 8);
-            while (q != 0) {
-                void** vt = *(void***)q;
-                void (*fn)(void*) = (void (*)(void*))vt[1];
-                fn(q);
-                void* nxt = *(void**)((char*)q + 4);
-                sub_6a067a(q);
-                q = nxt;
-            }
-            void* r = *(void**)&local_c;
-            if (r != 0) {
-                void** vt = *(void***)r;
-                void (*fn)(void*, int) = (void (*)(void*, int))vt[0];
-                fn(r, 1);
-            }
-        }
-        *(void**)&local_c = 0;
-    }
-
-    sub_802468((char*)&local_c + 0x14);
-
-    if (field_40 != 0) {
-        if (sub_8021ac((char*)field_40 + 4) == 0) {
-            sub_45ad90(field_40);
-            if (field_40 != 0) {
-                void** vt = *(void***)field_40;
-                void (*fn)(void*, int) = (void (*)(void*, int))vt[0];
-                fn(field_40, 1);
-            }
-        }
-        field_40 = 0;
-    }
-
-    field_34 = 1;
-    sub_50e230((char*)&local_c + 0x14);
-    sub_50e230(&local_c);
-
-    void* p = field_30;
-    *(void**)out = 0;
-    if (p != 0) {
-        *(void**)out = p;
-        sub_8021b0((char*)p + 4);
-    }
+namespace RBX {
+struct BrickColor {
+ int number;
+ static const unsigned paletteSize;
+ static const std::vector<BrickColor>&colorPalette();
+ G3D::Color3 color3()const;
+};
+const unsigned BrickColor::paletteSize=32;
+namespace Render {
+struct TextureProxy:G3D::RefObject {
+ ImportedString filename;char measuredBaseTail[8];
+ G3D::ReferenceCountedPointer<G3D::Texture>texture;
+ bool loaded;char unaccessed[0x40-0x35];
+ G3D::ReferenceCountedPointer<TextureProxy>root;
+ virtual ~TextureProxy();
+ static void shadePixel(const G3D::Color3uint8&,G3D::Color3uint8&);
+};
+struct MegaTextureProxy:TextureProxy {G3D::ReferenceCountedPointer<G3D::Texture>resolve(G3D::RenderDevice*);};
+G3D::ReferenceCountedPointer<G3D::Texture>MegaTextureProxy::resolve(G3D::RenderDevice*){
+ if(!loaded){
+  unsigned count=std::min(BrickColor::paletteSize,static_cast<unsigned>(BrickColor::colorPalette().size()));
+  G3D::GImage bumpImage(filename,G3D::GImage::AUTODETECT);
+  int imageWidth=bumpImage.width*32;
+  G3D::GImage megaImage(imageWidth,bumpImage.height,3);
+  for(unsigned i=0;i<count;++i){
+   G3D::Color3uint8 base(BrickColor::colorPalette()[i].color3());
+   G3D::Color3uint8 colorTable[256];
+   for(unsigned j=0;j<256;++j){
+    colorTable[j]=G3D::Color3uint8((unsigned char)j,(unsigned char)j,(unsigned char)j);
+    shadePixel(base,colorTable[j]);
+   }
+   for(int x=0;x<bumpImage.width;++x)
+    for(int y=0;y<bumpImage.height;++y)
+     {
+      const G3D::Color3uint8&source=bumpImage.pixel3(x,y);
+      G3D::Color3uint8&destination=megaImage.pixel3(x+i*bumpImage.width,y);
+      destination=colorTable[source.r];
+     }
+  }
+  {
+  G3D::Texture::Settings settings;
+  settings.wrapMode=0;
+  ImportedString name("MegaTexture");
+  texture=G3D::Texture::fromGImage(name,megaImage,G3D::TextureFormat::RGB8,G3D::Texture::DIM_2D,settings);
+  }
+  root=0;
+  loaded=true;
+ }
+ return texture;
+}
+}
 }

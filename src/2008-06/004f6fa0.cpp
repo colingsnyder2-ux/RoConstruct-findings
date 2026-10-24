@@ -1,134 +1,107 @@
-// from server: 20% by colin
-extern "C" {
-    __declspec(dllimport) int __stdcall InterlockedDecrement(int volatile*);
-    __declspec(dllimport) int __stdcall InterlockedIncrement(int volatile*);
-    __declspec(dllimport) double __cdecl ceil(double);
+// from server: 98% by king_originala
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// Complete owned-builder face preparation; RTTI proves ViewNew WedgeBuilder/BevelMesh::Builder/LevelBuilder.
+// Native G3D ReferenceCount and the 36-byte by-value builder explain parameter cleanup.
+// RTTI tables8270c8/827088/8270a8 prove the native three-level hierarchy.
+// Native AtomicInt32 imports and weak-list invalidation account for every cleanup call.
+// Remaining local storage/FP differences are retained as partial, not exact.
+
+// roc-lib: g3d-6.09 G3Dcpp/Vector3.cpp
+namespace G3D {inline int iRound(float);}
+
+extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
+extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long*);
+namespace MeshOwned {
+extern "C" __declspec(dllimport) double __cdecl ceil(double);
+extern "C" __declspec(dllimport) double __cdecl fabs(double);
+struct AtomicInt32 {volatile long value;void increment(){InterlockedIncrement(&value);}unsigned decrement(){return InterlockedDecrement(&value)!=0;}};
+struct ReferenceCountedObject;
+struct _WeakPtr {virtual ~_WeakPtr(){}protected:friend struct ReferenceCountedObject;virtual void objectCollected()=0;};
+struct _WeakPtrLinkedList {_WeakPtr*weakPtr;_WeakPtrLinkedList*next;};
+struct ReferenceCountedObject {
+ AtomicInt32 ReferenceCountedObject_refCount;_WeakPtrLinkedList*ReferenceCountedObject_weakPointer;
+ virtual ~ReferenceCountedObject(){}
+ void ReferenceCountedObject_zeroWeakPointers(){_WeakPtrLinkedList*node=ReferenceCountedObject_weakPointer;while(node){node->weakPtr->objectCollected();_WeakPtrLinkedList*tmp=node;node=node->next;delete tmp;}}
+};
+template<class T>class ReferenceCountedPointer {
+ T*m_pointer;
+ void zeroPointer(){if(m_pointer){if(m_pointer->ReferenceCountedObject_refCount.decrement()==0){m_pointer->ReferenceCountedObject_zeroWeakPointers();delete m_pointer;}m_pointer=0;}}
+ void setPointer(T*x){if(x!=m_pointer){zeroPointer();if(x){m_pointer=x;m_pointer->ReferenceCountedObject_refCount.increment();}}}
+public:
+ ReferenceCountedPointer():m_pointer(0){}ReferenceCountedPointer(const ReferenceCountedPointer&p):m_pointer(0){setPointer(p.m_pointer);}~ReferenceCountedPointer(){zeroPointer();}
+};
+
+struct Vector2 {float x,y;Vector2():x(0),y(0){}Vector2(float a,float b):x(a),y(b){}Vector2(const Vector2&v):x(v.x),y(v.y){}Vector2 operator-()const{return Vector2(-x,-y);}Vector2 operator*(float f)const{return Vector2(x*f,y*f);}Vector2&operator=(const Vector2&v){x=v.x;y=v.y;return *this;}float&operator[](int i){return (&x)[i];}const float&operator[](int i)const{return (&x)[i];}};
+struct Vector3 {float x,y,z;Vector3():x(0),y(0),z(0){}Vector3(float a,float b,float c):x(a),y(b),z(c){}Vector3(const Vector3&v):x(v.x),y(v.y),z(v.z){}Vector2 xy()const;float&operator[](int i){return ((float*)this)[i];}const float&operator[](int i)const{return ((const float*)this)[i];}Vector3 abs()const{return Vector3(MeshOwned::fabs(x),MeshOwned::fabs(y),MeshOwned::fabs(z));}};
+struct Vector2int16 {short x,y;Vector2int16():x(0),y(0){}short&operator[](int i){return ((short*)this)[i];}const short&operator[](int i)const{return ((const short*)this)[i];}Vector2int16(short a,short b):x(a),y(b){}};
+struct Rect2D {Vector2 min,max;static Rect2D xyxy(const Vector2&,const Vector2&);};
+template<class T>const T&maximum(const T&a,const T&b){return a<b?b:a;}
 }
-
-struct Vector2 {
-    float x, y;
+namespace RBX {namespace ViewNew {
+using MeshOwned::Vector2;using MeshOwned::Vector3;using MeshOwned::Rect2D;using MeshOwned::Vector2int16;
+class WedgeBuilder;
+Vector3 __cdecl mapFace(const Vector3&);
+const Vector2&__cdecl zeroVector2();
+unsigned __cdecl allocVertex(const Vector3&,const Vector3&,const Vector2&,bool);
+void __cdecl freeVertex(unsigned);
+struct Level:MeshOwned::ReferenceCountedObject {virtual ~Level();};
+class LevelBuilder {
+public:
+ enum Purpose{Surface,Decal,Shadow};
+ virtual void build(Purpose);virtual void buildTop(Purpose)=0;virtual void buildBottom(Purpose)=0;virtual void buildLeft(Purpose)=0;virtual void buildRight(Purpose)=0;virtual void buildFront(Purpose)=0;virtual void buildBack(Purpose)=0;
+ const Vector3 halfSize;unsigned surfaceTypes;const MeshOwned::ReferenceCountedPointer<Level>level;Vector2 textureScale;
+ void appendQuadFromVertexIndices(unsigned,unsigned,unsigned,unsigned);
+ void emit(WedgeBuilder,Rect2D,float,Vector2,Vector2,int,Vector2int16);
+ void prepare(WedgeBuilder,Vector2int16,int);
+};
+struct BevelMesh {class Builder:public LevelBuilder {
+public:
+ const float bevel;virtual void build(Purpose);
+ void operator()(Vector3&vertex,Vector3&,Vector2&,const Vector3&,const Vector2int16&){
+  if(vertex.x>0)vertex.x-=bevel;else vertex.x+=bevel;
+  if(vertex.y>0)vertex.y-=bevel;else vertex.y+=bevel;
+ }
+};};
+class WedgeBuilder:public BevelMesh::Builder {
+public:virtual void buildTop(Purpose);virtual void buildBottom(Purpose);virtual void buildLeft(Purpose);virtual void buildRight(Purpose);virtual void buildFront(Purpose);virtual void buildBack(Purpose);
 };
 
-struct Vector3 {
-    float x, y, z;
-};
-
-struct WedgeBuilder {
-    char pad0[4];
-    int field4;
-    char pad8[8];
-    int field10;
-    char pad14[8];
-    float field18;
-    float field1c;
-    void buildBottom(int purpose);
-};
-
-extern "C" void __cdecl sub_6784d0(void*, void*);
-extern "C" void __cdecl sub_5185d0(void*, void*);
-extern "C" float __cdecl sub_4f1ff0(int);
-extern "C" void __cdecl sub_4f35d0(void*, void*, void*);
-extern "C" void __cdecl sub_4f66d0(void*);
-extern "C" void __cdecl sub_6a067a(void*);
-
-extern float g_819bac;
-extern float g_826e6c;
-extern float g_83a3e4;
-
-void WedgeBuilder::buildBottom(int purpose)
-{
-    int mode = (field10 >> 6) & 7;
-    float v50, v54, v58;
-    sub_6784d0(&field4, &v50);
-    float a = v50 < 0 ? -v50 : v50;
-    float b = v54 < 0 ? -v54 : v54;
-    float c = v58 < 0 ? -v58 : v58;
-    v50 = a;
-    v54 = b;
-    v58 = c;
-
-    int flag;
-    if (purpose == 0) {
-        if (a == b) flag = 1; else flag = 0;
-    } else {
-        flag = 0;
-    }
-    int edi = flag ? 0 : 1;
-
-    int ebx;
-    if (purpose == 0 && mode != 0) {
-        float f = (edi == 0) ? v50 : v54;
-        ebx = (int)ceil(f * g_819bac);
-    } else {
-        ebx = 1;
-    }
-
-    short arr[2];
-    arr[0] = 0;
-    arr[1] = 0;
-
-    short val = *(short*)((char*)&v58 - edi * 2);
-    int q = (int)val / ebx;
-    short qs = (short)q;
-    short one = 1;
-    short chosen = (one < qs) ? qs : one;
-    arr[edi] = chosen;
-
-    float fv58 = v58;
-    Vector2 v2a, v2b;
-    sub_5185d0(&v50, &v2a);
-    sub_5185d0(&v50, &v2b);
-
-    float f24 = 0, f28 = 0, f2c = 0, f30 = 0;
-    int p = purpose;
-    if (p == 0) {
-        if (mode == 0) {
-            f2c = g_83a3e4;
-            f30 = g_819bac;
-            f28 = g_819bac;
-            f24 = g_83a3e4;
-        } else {
-            f30 = sub_4f1ff0(mode);
-            f2c = v58 * 2.0f;
-            f24 = g_819bac;
-            if (edi == 1) f24 = -f24;
-        }
-    } else if (p == 1) {
-        f2c = 0;
-        f30 = field1c;
-        f24 = field18;
-        f28 = -field1c;
-    } else if (p == 2) {
-        f24 = 0;
-        f28 = 0;
-        f2c = 0;
-        f30 = 0;
-    }
-
-    int i = 0;
-    float f3c = 0;
-    while (i < ebx) {
-        float f34;
-        if (i == ebx - 1) {
-            f34 = (edi == 0) ? v50 : v54;
-            if (purpose == 0 && ebx != 0) {
-                f24 = (f34 - f3c) * f24 * g_83a3e4;
-            }
-        } else {
-            f34 = f3c + g_826e6c;
-        }
-
-        float fa = f24;
-        float fb = f30;
-        float fc = f2c;
-        float fd = f28;
-
-        Vector3 v3;
-        sub_4f35d0(&v3, &v2a, &v2b);
-
-        sub_4f66d0(&v3);
-
-        f3c = f34;
-        i++;
-    }
+float __cdecl surfaceOffset(int);
+static __forceinline bool useFirstAxis(int purpose,const Vector3&size){if(purpose==0&&size.x<size.y)return true;return false;}
+static __forceinline Vector3 absoluteSize(const Vector3&v){Vector3 mapped=mapFace(v);float z=(float)MeshOwned::fabs(mapped.z);float y=(float)MeshOwned::fabs(mapped.y);float x=(float)MeshOwned::fabs(mapped.x);return Vector3(x,y,z);}
+void LevelBuilder::prepare(WedgeBuilder function,Vector2int16 grid,int purpose){
+ int surface=(surfaceTypes>>6)&7;
+ Vector3 size=absoluteSize(halfSize);
+ int axis=!useFirstAxis(purpose,size);
+ int steps=(purpose==0 && surface)?G3D::iRound((float)MeshOwned::ceil((double)(size[axis]*0.5f))):1;
+ Vector2int16 divisions;
+ short n=grid[1-axis];
+ divisions[axis]=MeshOwned::maximum<short>(1,(short)(n/steps));
+ divisions[1-axis]=n;
+ float depth=size.z;
+ Vector2 begin=-size.xy();
+ Vector2 end=size.xy();
+ Vector2 origin,extent;
+ switch(purpose){
+  case 0:
+   if(!surface){origin=Vector2(0.25f,0.5f);extent[1-axis]=0;extent[axis]=0;}
+   else {origin[1-axis]=0;origin[axis]=surfaceOffset(surface);extent[1-axis]=size[1-axis]*2.0f;extent[axis]=0.5f;if(axis==1)extent.x=-extent.x;}
+   break;
+  case 1:origin.x=0;origin.y=textureScale.y;extent.x=textureScale.x;extent.y=-textureScale.y;break;
+  case 2:origin=Vector2(0,0);extent=Vector2(0,0);break;
+ }
+ for(int i=0;i<steps;++i){
+  if(i==steps-1){end[axis]=size[axis];if(purpose==0 && surface)extent[axis]=(end[axis]-begin[axis])*extent[axis]*0.25f;}
+  else end[axis]=begin[axis]+4.0f;
+  emit(function,Rect2D::xyxy(begin,end),depth,origin,extent,axis,divisions);
+  begin[axis]=end[axis];
+ }
 }
+}}
+typedef char deformation_extent[sizeof(RBX::ViewNew::WedgeBuilder)==36?1:-1];
+typedef char rectangle_extent[sizeof(MeshOwned::Rect2D)==16?1:-1];
+typedef char builder_extent[sizeof(RBX::ViewNew::LevelBuilder)==32?1:-1];
+
+typedef char reference_extent[sizeof(MeshOwned::ReferenceCountedPointer<RBX::ViewNew::Level>)==4?1:-1];
+typedef char object_extent[sizeof(MeshOwned::ReferenceCountedObject)==12?1:-1];

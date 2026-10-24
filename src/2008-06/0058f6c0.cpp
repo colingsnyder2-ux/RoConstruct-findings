@@ -1,8 +1,8 @@
-// from server: 63% by colin
+// from server: 64% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_xml_native_named_legacy_hashd2091f8f25ff78d5.cpp
+// roc-lib: rbxgs-dll roc_espeon_xmlnativenecompared4290133c775ba22.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias("v8xml/XmlElement.h", "roc_xml_native_value_calls_header8ea484bdc6069352.cpp")
@@ -305,7 +305,7 @@ std::auto_ptr<XmlElement> TextXmlParser::parse()
 				const XmlAttribute* xsiNilAttribute = newElement->findAttribute(name_xsinil);
 				if (!xsiNilAttribute || !xsiNilAttribute->getValue(isXsiNil) || !isXsiNil)
 				{
-					if (readText(false) == "")
+					if (!(readText(false) != ""))
 					{
 						const RBX::Name* mimeType;
 						const XmlAttribute* mimeTypeAttribute = newElement->findAttribute(tag_mimeType);

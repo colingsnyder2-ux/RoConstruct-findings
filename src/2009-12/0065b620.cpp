@@ -1,21 +1,16 @@
-// from server: 83% by atomic.potato
+// from server: 100% by sophus
+extern "C" void __declspec(noreturn) finish();
+
 struct S
 {
-    int a;
-    int b;
-    int c;
-    int d;
-    int e;
-    int value;
-    int g;
-
     void f();
 };
 
 void S::f()
 {
-    a = 0x9cda0c;
-    b = 0x9cda04;
-    e = 0x9cd9f8;
-    value = 0x9cd9f0;
+    *(int*)this = 0x9cd984;
+    *((int*)this + 1) = 0x9cd97c;
+    *((int*)this + 6) = 0x9cd970;
+    *((int*)this + 7) = 0x9cd968;
+    finish();
 }

@@ -1,3 +1,4 @@
+// from server: 89% by king_originala
 // from server: 85% by colin
 // from server: 83% by king_originala
 // roc 2008-06 00439600  unit: CSelectionPropGrid  size: 91 bytes
@@ -55,10 +56,10 @@ struct S {
     void f(Node *);
 };
 
-void S::f(Node *node)
+void S::f(Node *volatile node)
 {
+    listener.resolve(const_cast<Node**>(&node));
     Node *n = node;
-    listener.resolve(&node);
 
     Node **last = n->end;
     if (n->begin > last)
@@ -73,3 +74,5 @@ void S::f(Node *node)
         ++first;
     }
 }
+
+

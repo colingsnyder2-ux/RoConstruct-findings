@@ -1,68 +1,42 @@
-// from server: 99% by EspClaude
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espclaude_ce6c1982577bcc6d.cpp
+// roc-lib: rbxgs-dll roc_espeon_physicsnativelookuporder1c54654781b870d3.cpp
 
 // Candidate translation unit (score above; library headers required).
 
-
-
 #include <boost/shared_ptr.hpp>
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/member.hpp>
+#include <G3D/CoordinateFrame.h>
 struct Thing;
 typedef boost::shared_ptr<Thing> Shared;
 Shared __cdecl convert(const Shared&);
-
 struct Node {
-    Shared value;
-    unsigned char storage[72];
-
-    Node(Shared);
+ Shared value;
+ double timeKey;
+ G3D::CoordinateFrame frame;
+ float priority;
+ int orderKey;
+ float distance;
+ Node(Shared);
+ Node(const Node&);
 };
-
-struct Iterator {
-    void* node;
-    bool operator==(const Iterator& o) const { return node == o.node; }
-};
-
-struct Header {
-    unsigned long unused;
-    void* end;
-    unsigned long remaining;
-};
-
-struct Search {
-    unsigned char storage[5];
-    unsigned char flag1;
-    unsigned char flag2;
-
-    void find(Iterator*, const Shared*, unsigned char*, unsigned char*);
-    inline void doInsert(Iterator*, const Node&);
-};
-
-struct Tree : Header, Search {
-    void insert(Iterator*, const Node&);
-    Iterator endIt() { Iterator i; i.node = end; return i; }
-};
-
-inline void Search::doInsert(Iterator* it, const Node& n) { static_cast<Tree*>(this)->insert(it, n); }
-
-struct S {
-    unsigned long unused;
-    Tree tree;
-
-    void f(Shared);
-};
-
-void S::f(Shared argument)
-{
-    Shared value = convert(argument);
-    Tree* t = &tree;
-    Search* search = t;
-    Iterator position;
-
-    search->find(&position, &value, &search->flag1, &search->flag2);
-
-    if (position == static_cast<Tree*>(search)->endIt())
-        search->doInsert(&position, Node(value));
+typedef char NodeSizeCheck[sizeof(Node)==80?1:-1];
+struct SharedHash { size_t operator()(const Shared& value) const { return boost::hash<Thing*>()(value.get()); } };
+namespace bmi=boost::multi_index;
+typedef boost::multi_index_container<Node,bmi::indexed_by<
+ bmi::hashed_unique<bmi::member<Node,Shared,&Node::value>,SharedHash >,
+ bmi::ordered_non_unique<bmi::member<Node,double,&Node::timeKey>,std::greater<double> >,
+ bmi::ordered_non_unique<bmi::member<Node,int,&Node::orderKey> >
+> > Tree;
+struct S { unsigned long unused; Tree tree; void f(Shared); };
+void S::f(Shared argument) {
+ Shared value=convert(argument);
+ Tree::nth_index<0>::type& search=tree.get<0>();
+ Tree::nth_index<0>::type::iterator position=search.find(value);
+ if(position==search.end()) search.insert(Node(value));
 }

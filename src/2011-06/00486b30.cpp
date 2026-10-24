@@ -1,15 +1,21 @@
-// from server: 59% by atomic.potato
-extern "C" void Render(void*, double);
+// from server: 100% by sophus
+struct S
+{
+    double value;
+    unsigned char state;
+};
+
+extern "C" void __stdcall f(S *, const S *, double);
 
 struct UserInputJob
 {
-    UserInputJob* f(double);
+    S *Render(S *, S *);
 };
 
-double g_value;
+double g_value = 0.0;
 
-UserInputJob* UserInputJob::f(double value)
+S *UserInputJob::Render(S *a, S *b)
 {
-    Render(this, g_value);
-    return this;
+    f(a, b, g_value);
+    return a;
 }

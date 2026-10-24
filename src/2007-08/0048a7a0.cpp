@@ -1,6 +1,6 @@
-// from server: 53% by colin
+// from server: 55% by sophus
 struct S {
-    char* f(char* first, char* last, int value);
+    char* __cdecl f(char* first, char* last, int value);
 };
 
 extern "C" void __stdcall _invalid_parameter_noinfo();

@@ -1,13 +1,13 @@
-// from server: 78% by atomic.potato
-extern "C" void sub_006f7e80(int, int, int, int, int);
-extern "C" void __cdecl sub_007f4929(const char *);
-
-struct S {
-    void f();
+// from server: 92% by sophus
+struct S
+{
+    void f006c65d0(int, int, int, int, int);
 };
 
-void S::f()
+extern "C" void __cdecl f007f4929(int);
+
+void f00974b40()
 {
-    sub_006f7e80(0x9dcce4, 0x9d1b80, 0x29c, 2, 0);
-    sub_007f4929("Button2DownConnectionCount");
+    ((S*)0xb924e8)->f006c65d0(0x9d73d0, 0x9d73dc, 0x98, 0xf, 0);
+    f007f4929(0x985bc0);
 }

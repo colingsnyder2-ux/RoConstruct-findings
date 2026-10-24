@@ -1,32 +1,24 @@
-// from server: 99% by king_originala
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.34.1-dll roc_espeon_replicatornativevectore25554b5975257eb.cpp
+
+// Candidate translation unit (score above; library headers required).
+#define NDEBUG 1
+#include <boost/shared_ptr.hpp>
+#include <boost/bind.hpp>
+#include <vector>
 struct Target;
 struct __multiple_inheritance S;
 
-struct Pair {
-    unsigned first;
-    unsigned second;
-    Pair();
-    Pair(const Pair&);
-    ~Pair();
-};
-
-inline Pair::~Pair()
-{
-}
+typedef boost::shared_ptr<Target> Pair;
 
 extern Pair __cdecl makePair(Target*);
 
-struct Placeholder {};
+typedef boost::_bi::bind_t<void, boost::_mfi::mf1<void,S,Target*>, boost::_bi::list2<boost::_bi::value<S*>,boost::arg<1> > > Callback;
 
-struct Callback {
-    void (S::*function)();
-    S* object;
-    Placeholder placeholder;
-};
-
-struct Listener {
-    void update(Target**);
-};
+typedef std::vector<Target*> Listener;
 
 struct Target {
     void connect(Callback);
@@ -41,19 +33,18 @@ struct S : Base1, Base2 {
 
     void update(Target*, unsigned);
     void apply(Pair, unsigned);
-    void onEvent();
+    void onEvent(Target*);
 };
 
 void S::update(Target* target, unsigned value)
 {
     Target* original = target;
     if (original) {
-        listener.update(&target);
+        listener.push_back(target);
         apply(makePair(original), value);
 
-        Callback callback;
-        callback.function = &S::onEvent;
-        callback.object = this;
+        Callback callback = boost::bind(&S::onEvent, this, _1);
         original->connect(callback);
     }
 }
+

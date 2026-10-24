@@ -1,230 +1,134 @@
-// from server: 21% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-
-struct Arg1
-{
-    void* vptr;
-    volatile long refcount;
+// from server: 98% by Espeon
+// from server: 96% by king_originala
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <intrin.h>
+#include <memory>
+#include <string.h>
+namespace boost {namespace detail {
+struct sp_counted_base {
+ virtual ~sp_counted_base(){}virtual void dispose()=0;virtual void destroy(){delete this;}
+ long use_count_,weak_count_;
+ void add_ref_copy(){_InterlockedIncrement(&use_count_);}
+ void weak_release(){if(_InterlockedDecrement(&weak_count_)==0)destroy();}
+ void release(){if(_InterlockedDecrement(&use_count_)==0){dispose();weak_release();}}
 };
-
-struct Obj8
-{
-    void* vptr;
-    void* field4;
+struct shared_count {sp_counted_base*pi_;shared_count():pi_(0){}shared_count(const shared_count&r):pi_(r.pi_){if(pi_)pi_->add_ref_copy();}~shared_count(){if(pi_)pi_->release();}};
+}
+template<class T>struct shared_ptr {T*px;detail::shared_count pn;shared_ptr():px(0),pn(){}shared_ptr(const shared_ptr&r):px(r.px),pn(r.pn){}T*get()const{return px;}T*operator->()const{return px;}};
+namespace signals {
+struct connection {unsigned long opaque[4];connection(const connection&);~connection();};
+struct scoped_connection:connection {bool released;~scoped_connection();scoped_connection&operator=(const connection&);};
+}
+}
+namespace G3D {
+template<class T>struct ReferenceCountedPointer {T*pointer;};
+struct Texture;
+template<class Key,class Value>struct Table {
+ int count;void*bucket;int numBuckets;
+ virtual ~Table(){freeMemory();}
+ void freeMemory();
 };
-
-struct ObjC
-{
-    void* vptr;
-    int field4;
+struct TextureManager {
+ struct TextureArgs;
+ Table<TextureArgs,ReferenceCountedPointer<Texture> >cache;
+ unsigned size,sizeHint;
+ TextureManager(unsigned);
 };
-
-struct Obj10
-{
-    void* vptr;
-    int field4;
+}
+namespace RBX {
+struct Instance;struct DataModel;struct RenderStats;
+namespace RenderBase {
+struct RenderSceneBase {
+ virtual ~RenderSceneBase();char opaque[0x268-4];
+ void setThrottle(float t,float m,bool shadows,float distance){typedef void(RenderSceneBase::*Method)(float,float,bool,float);Method method;void*entry=(*(void***)this)[2];memcpy(&method,&entry,sizeof(method));(this->*method)(t,m,shadows,distance);}
 };
-
-struct Obj1C
-{
-    void* vptr;
-    int field4;
+struct Chunk;
+struct SceneManager {
+ RenderSceneBase*renderScene;
+ virtual void invalidateModel(const G3D::ReferenceCountedPointer<Chunk>&,bool)=0;
+ virtual void addModel(const G3D::ReferenceCountedPointer<Chunk>&)=0;
+ virtual void removeModel(const G3D::ReferenceCountedPointer<Chunk>&)=0;
+ virtual void clear()=0;
+ virtual void setSleeping(const G3D::ReferenceCountedPointer<Chunk>&,bool)=0;
+ virtual void prerender(double)=0;
+ virtual ~SceneManager(){}
+ SceneManager(RenderSceneBase*s):renderScene(s){}
 };
-
-struct Obj30
-{
-    void* vptr;
-    int field4;
+struct SimpleSceneManager:SceneManager {
+ SimpleSceneManager(RenderSceneBase*s):SceneManager(s){}
+ virtual void invalidateModel(const G3D::ReferenceCountedPointer<Chunk>&,bool);
+ virtual void addModel(const G3D::ReferenceCountedPointer<Chunk>&);
+ virtual void removeModel(const G3D::ReferenceCountedPointer<Chunk>&);
+ virtual void clear();virtual void setSleeping(const G3D::ReferenceCountedPointer<Chunk>&,bool);virtual void prerender(double);
 };
+}
+namespace RenderNew {struct RenderScene:RenderBase::RenderSceneBase {char opaque[0x590-0x268];RenderScene();virtual ~RenderScene();};}
+namespace Reflection {struct SignalSource;}
+struct BindInstance;struct Lighting;
+struct Instance {char opaque[0x14];void visitDescendents(BindInstance);};
+struct DataModel {char opaque[0x204];Instance*workspace;Lighting*findLighting();};
+struct Lighting:Instance {};
 
-struct Inner204
-{
-    unsigned char pad[0x14];
+namespace ViewNew {struct ViewRbxGfx;}
+struct BindBool;struct BindInstance;
+namespace SlotDetail {
+class X;
+union FunctionBuffer {void*obj_ptr;const void*const_obj_ptr;void(*func_ptr)();struct BoundMember {void(X::*memfunc_ptr)(int);void*obj_ptr;}bound_memfunc_ptr;char data;};
+struct Function {void*vtable;FunctionBuffer functor;};
+struct SlotBase {boost::shared_ptr<void>data;};
+}
+struct SlotBool:SlotDetail::SlotBase {SlotDetail::Function slot_function;template<class F>SlotBool(const F&);~SlotBool();};
+struct SlotInstance:SlotDetail::SlotBase {SlotDetail::Function slot_function;template<class F>SlotInstance(const F&);~SlotInstance();};
+typedef char SlotExtent[(sizeof(SlotBool)==40&&sizeof(SlotInstance)==40)?1:-1];
+struct BoolSignalDescriptor {boost::signals::connection connect(Reflection::SignalSource*,const SlotBool&,int);};
+struct InstanceSignalDescriptor {boost::signals::connection connect(Reflection::SignalSource*,const SlotInstance&,int);};
+extern BoolSignalDescriptor lightingChanged;
+extern InstanceSignalDescriptor descendantAdded;
+inline Reflection::SignalSource*signalSource(Instance*p){return p?reinterpret_cast<Reflection::SignalSource*>(reinterpret_cast<char*>(p)+0x14):0;}
+
+struct MaterialFactory {char opaque[16];MaterialFactory(G3D::TextureManager*);~MaterialFactory();};
+struct ViewBase {
+ virtual ~ViewBase();
+ std::auto_ptr<RenderBase::SceneManager>sceneManager;
+ std::auto_ptr<RenderBase::RenderSceneBase>renderLibScene;
+ std::auto_ptr<G3D::TextureManager>textureManager;
+ std::auto_ptr<MaterialFactory>materialFactory;
+ boost::shared_ptr<DataModel>dataModel;
+ boost::signals::scoped_connection lightingConnection,workspaceConnection;
+ bool baseFlag;char padding[3];
+ ViewBase(boost::shared_ptr<DataModel>);
+ virtual void render(void*)=0;
+ virtual float getShadingQuality()const=0;virtual float getMeshDetail()const=0;
+ virtual void updateSettings(float,float,bool,float)=0;virtual void suppressSkybox()=0;
+ virtual Instance*getWorkspace()=0;virtual RenderStats&getRenderStats()=0;
+ virtual void onWorkspaceDescendentAdded(boost::shared_ptr<Instance>)=0;
+ virtual void updateLighting()=0;virtual void invalidateLighting(bool)=0;
 };
-
-struct Outer204
-{
-    unsigned char pad[0x204];
-    Inner204* inner;
+namespace ViewNew {
+struct ViewRbxGfx:ViewBase {
+ bool lightingValid;
+ ViewRbxGfx(boost::shared_ptr<DataModel>);
+ virtual ~ViewRbxGfx();virtual void render(void*);
+ virtual float getShadingQuality()const;virtual float getMeshDetail()const;
+ virtual void updateSettings(float,float,bool,float);virtual void suppressSkybox();
+ virtual Instance*getWorkspace();virtual RenderStats&getRenderStats();
+ virtual void onWorkspaceDescendentAdded(boost::shared_ptr<Instance>);virtual void updateLighting();virtual void invalidateLighting(bool);
 };
-
-struct Target
-{
-    void* vptr;
-    Obj10* field4;
-    Obj8* field8;
-    ObjC* fieldC;
-    Obj1C* field10;
-    unsigned char pad14[8];
-    Obj1C* field1C;
-    unsigned char pad20[0x10];
-    Obj30* field30;
-    unsigned char pad34[0x14];
-    unsigned char field48;
-    void construct(Arg1* a, Arg1* b);
-};
-
-extern "C" void __cdecl freeMem(void*);
-extern "C" void* __cdecl allocMem(unsigned int);
-
-void __cdecl sub_4D8A20();
-void* __cdecl sub_7AAE40();
-void* __cdecl sub_47E400(unsigned int);
-void __cdecl sub_45C680();
-void __cdecl sub_4D7460();
-void* __cdecl sub_4F0920(void*);
-void __cdecl sub_4D9610(void*, void*);
-void __cdecl sub_4D96B0(void*, void*);
-void* __cdecl sub_4D8390(void*, void*, void*, void*);
-void* __cdecl sub_4A3340(void*, void*, void*, void*);
-void __cdecl sub_4D7C00(void*, void*, void*);
-void __cdecl sub_595540(void*, void*);
-void __cdecl sub_595370(void*);
-void __cdecl sub_49F710(void*);
-void* __cdecl sub_4B3870(void*);
-
-void Target::construct(Arg1* a, Arg1* b)
-{
-    if (b)
-    {
-        _InterlockedExchangeAdd(&b->refcount, 1);
-    }
-    sub_4D8A20();
-    this->vptr = (void*)0x826C70;
-    this->field48 = 0;
-
-    void* mem = allocMem(0x590);
-    Obj8* o8;
-    if (mem)
-    {
-        o8 = (Obj8*)sub_7AAE40();
-    }
-    else
-    {
-        o8 = 0;
-    }
-    if (this->field8 != o8)
-    {
-        if (this->field8)
-        {
-            void** vt = (void**)this->field8->vptr;
-            ((void (__thiscall*)(void*, int))vt[0])(this->field8, 1);
-        }
-    }
-    this->field8 = o8;
-
-    mem = allocMem(0x18);
-    ObjC* oc;
-    if (mem)
-    {
-        oc = (ObjC*)sub_47E400(0xA00000);
-    }
-    else
-    {
-        oc = 0;
-    }
-    if (this->fieldC != oc)
-    {
-        if (this->fieldC)
-        {
-            this->fieldC->vptr = (void*)0x819CD8;
-            sub_45C680();
-            freeMem(this->fieldC);
-        }
-    }
-    this->fieldC = oc;
-
-    mem = allocMem(8);
-    Obj10* o10;
-    if (mem)
-    {
-        o10 = (Obj10*)mem;
-        o10->field4 = (int)this->field8;
-        o10->vptr = (void*)0x826B64;
-    }
-    else
-    {
-        o10 = 0;
-    }
-    if (this->field4 != o10)
-    {
-        if (this->field4)
-        {
-            void** vt = (void**)this->field4->vptr;
-            ((void (__thiscall*)(void*, int))vt[6])(this->field4, 1);
-        }
-    }
-    this->field4 = o10;
-
-    mem = allocMem(0x10);
-    Obj1C* o1c;
-    if (mem)
-    {
-        o1c = (Obj1C*)sub_4F0920(this->fieldC);
-    }
-    else
-    {
-        o1c = 0;
-    }
-    if (this->field10 != o1c)
-    {
-        if (this->field10)
-        {
-            sub_4D7460();
-            freeMem(this->field10);
-        }
-    }
-    this->field10 = o1c;
-
-    void** vt8 = (void**)this->field8->vptr;
-    ((void (__thiscall*)(void*, int, float, float))vt8[2])(this->field8, 0, 0.0f, 0.0f);
-
-    void* r = 0;
-    if (a)
-    {
-        r = sub_4B3870(a);
-    }
-
-    unsigned char buf1[0x18];
-    unsigned char buf2[0x18];
-    *(void**)(buf1 + 0) = (void*)0x4DB600;
-    *(void**)(buf1 + 4) = this;
-    sub_4D9610(buf2, buf1);
-
-    void* p = r ? (void*)((char*)r + 0x14) : 0;
-    void* res = sub_4D8390((void*)0x97A88C, buf2, p, (void*)10);
-    sub_595540(&this->field1C, res);
-    sub_595370(buf2);
-    sub_49F710(buf1);
-
-    Outer204* outer = (Outer204*)a;
-    void* inner = outer->inner;
-    sub_4D7C00((void*)0x4DB5F0, this, inner);
-
-    unsigned char buf3[0x18];
-    unsigned char buf4[0x18];
-    *(void**)(buf3 + 0) = (void*)0x4DB5F0;
-    *(void**)(buf3 + 4) = this;
-    sub_4D96B0(buf4, buf3);
-
-    void* p2 = inner ? (void*)((char*)inner + 0x14) : 0;
-    void* res2 = sub_4A3340((void*)0x973E40, buf4, p2, (void*)10);
-    sub_595540(&this->field30, res2);
-    sub_595370(buf4);
-    sub_49F710(buf3);
-
-    if (b)
-    {
-        if (_InterlockedExchangeAdd(&b->refcount, -1) == 1)
-        {
-            void** vt = (void**)b->vptr;
-            ((void (__thiscall*)(void*))vt[1])(b);
-            if (_InterlockedExchangeAdd(&b->refcount, -1) == 1)
-            {
-                void** vt2 = (void**)b->vptr;
-                ((void (__thiscall*)(void*))vt2[2])(b);
-            }
-        }
-    }
+}
+struct BindBool {typedef void(ViewNew::ViewRbxGfx::*Method)(bool);Method method;ViewNew::ViewRbxGfx*owner;BindBool(Method m,ViewNew::ViewRbxGfx*p):method(m),owner(p){}};
+struct BindInstance {typedef void(ViewNew::ViewRbxGfx::*Method)(boost::shared_ptr<Instance>);Method method;ViewNew::ViewRbxGfx*owner;BindInstance(Method m,ViewNew::ViewRbxGfx*p):method(m),owner(p){}};
+namespace ViewNew {
+ViewRbxGfx::ViewRbxGfx(boost::shared_ptr<DataModel>dm):ViewBase(dm),lightingValid(false){
+ renderLibScene.reset(new RenderNew::RenderScene);
+ textureManager.reset(new G3D::TextureManager(0xa00000));
+ sceneManager.reset(new RenderBase::SimpleSceneManager(renderLibScene.get()));
+ materialFactory.reset(new MaterialFactory(textureManager.get()));
+ renderLibScene->setThrottle(0.f,0.f,false,0.f);
+ Lighting*lighting=dm.get()?dm->findLighting():0;
+ lightingConnection=lightingChanged.connect(signalSource(lighting),BindBool(&ViewRbxGfx::invalidateLighting,this),10);
+ {Instance* workspace=dm->workspace;_ReadWriteBarrier();workspace->visitDescendents(BindInstance(&ViewRbxGfx::onWorkspaceDescendentAdded,this));}
+ workspaceConnection=descendantAdded.connect(signalSource(dm->workspace),BindInstance(&ViewRbxGfx::onWorkspaceDescendentAdded,this),10);
+}
+}
 }

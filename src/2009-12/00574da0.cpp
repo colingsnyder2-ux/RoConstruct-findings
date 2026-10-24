@@ -1,16 +1,24 @@
-// from server: 87% by atomic.potato
-struct S
+// from server: 100% by sophus
+// roc 2009-12 00574da0  unit: RBX::RbxParticleEmitter
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+
+struct Color3
 {
-    char padding[0x1e4];
-    float x;
-    float y;
-    float z;
-    void f(float* out);
+    float x, y, z;
 };
 
-void S::f(float* out)
+struct S
 {
-    out[0] = x;
-    out[1] = y;
-    out[2] = z;
+    Color3 get();
+};
+
+Color3 S::get()
+{
+    Color3 c;
+    c.x = *(float *)((char *)this + 0x1e4);
+    c.y = *(float *)((char *)this + 0x1e8);
+    c.z = *(float *)((char *)this + 0x1ec);
+    return c;
 }

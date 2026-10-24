@@ -1,3 +1,6 @@
+// from server: 17% by colin
+// roc-cl: 21022
+// roc-flags: /Od /Ob0 /GS /EHsc /MD
 // from server: 8% by colin
 struct Type {
     virtual ~Type();

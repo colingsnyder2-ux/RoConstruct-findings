@@ -1,11 +1,11 @@
-// from server: 73% by colin
+// from server: 90% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_scorehud_native_size_branches3509911e1e76aaaa.cpp
+// roc-lib: rbxgs-dll roc_espeon_scorehudportablecounts790ae2c09beff122.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include <gui/ScoreHud.h>
+#include "roc_espeon_scorehudportableheader11bfdf7c6129a99c.cpp"
 #include <typeinfo>
 #include <v8datamodel/Teams.h>
 #include <v8datamodel/Team.h>
@@ -14,6 +14,65 @@
 #include <G3D/Color3.h>
 #include <G3D/Color4.h>
 namespace RBX {
+	class BoardData
+	{
+	public:
+		std::vector<std::vector<std::string>> data;
+		std::vector<std::string> fields;
+
+	public:
+		BoardData()
+		{
+		}
+
+		void SetSize(int dataSize, int fieldSize)
+		{
+			data.resize(dataSize);
+			for (int i = 0; i < dataSize; ++i)
+				data[i].resize(fieldSize);
+
+			fields.resize(fieldSize);
+		}
+
+		void AddField(std::string fieldName, int position)
+		{
+			fields[position] = fieldName;
+		}
+	};
+
+	class LeaderboardData
+	{
+	public:
+		std::vector<std::string> statNamesList;
+		std::map<Team*, std::vector<std::string>> playersByTeamList;
+		std::map<std::string, std::map<std::string, int>> statMap;
+		std::map<Team*, std::map<std::string, int>> teamTotals;
+	private:
+		Instance* context;
+
+	public:
+		LeaderboardData(Instance* context)
+			: context(context)
+		{
+		}
+
+		void CompileData();
+
+
+	private:
+		void AddTuple(std::string playerName, Team* team, std::string statName, int statValue)
+		{
+			if (std::find(statNamesList.begin(), statNamesList.end(), statName) == statNamesList.end())
+				statNamesList.push_back(statName);
+
+			if (std::find(playersByTeamList[team].begin(), playersByTeamList[team].end(), playerName) == playersByTeamList[team].end())
+				playersByTeamList[team].push_back(playerName);
+
+			statMap[playerName][statName] = statValue;
+		}
+	};
+
+
 // Existing native service specialization; retain the native call boundary.
 template<> Teams* ServiceProvider::find<Teams>(const Instance*);
 template<> Teams* ServiceProvider::create<Teams>(const Instance*);
@@ -57,18 +116,25 @@ void ScoreHud::renderTeamDeathmatchLeaderboard(Adorn* adorn,BoardType mode) {
     G3D::Rect2D viewport=adorn->getViewport();
     float scale=viewport.width()/1024.0f;
     float row=14.0f*scale;
-    if(mode==TEAM_DEATHMATCH)
-        ((GuiItemApi*)this)->setGuiSize(G3D::Vector2(scale*320.0f,
-            (((PlayersApi*)(*(Network::Players**)((char*)this+0x150)))->numPlayers()+3*(((InstanceApi*)teams)->numChildren()+1))*row));
-    else
-        ((GuiItemApi*)this)->setGuiSize(G3D::Vector2(scale*240.0f,
-            (((PlayersApi*)(*(Network::Players**)((char*)this+0x150)))->numPlayers()+3*((InstanceApi*)teams)->numChildren()+2)*row));
+    if(mode==TEAM_DEATHMATCH) {
+        size_t teamCount=((InstanceApi*)teams)->numChildren();
+        int playerCount=((PlayersApi*)(*(Network::Players**)((char*)this+0x150)))->numPlayers();
+        float leaderboardSizeX=scale*320.0f;
+        float leaderboardSizeY=playerCount+(teamCount+1)*3;
+        ((GuiItemApi*)this)->setGuiSize(G3D::Vector2(leaderboardSizeX,leaderboardSizeY*row));
+    } else {
+        size_t teamCount=((InstanceApi*)teams)->numChildren();
+        int playerCount=((PlayersApi*)(*(Network::Players**)((char*)this+0x150)))->numPlayers();
+        float leaderboardSizeX=scale*240.0f;
+        float leaderboardSizeY=playerCount+teamCount*3+2;
+        ((GuiItemApi*)this)->setGuiSize(G3D::Vector2(leaderboardSizeX,leaderboardSizeY*row));
+    }
     Rect rect=getMyRect();
     adorn->rect2d(rect.toRect2D(),GuiItem::translucentBackdrop());
     if(mode==TEAM_DEATHMATCH) {
         for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
-            G3D::Vector2 position(rect.low.x,rect.low.y);
             float width=rect.high.x-rect.low.x;
+            G3D::Vector2 position=rect.low;
             std::string label("Team");
             if(col) {
                 position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
@@ -82,8 +148,8 @@ void ScoreHud::renderTeamDeathmatchLeaderboard(Adorn* adorn,BoardType mode) {
         Team* team=dynamic_cast<Team*>(((InstanceApi*)teams)->getChild(teamIndex));
         if(!team) continue;
         for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
-            G3D::Vector2 position(rect.low.x,rect.low.y);
             float width=rect.high.x-rect.low.x;
+            G3D::Vector2 position=rect.low;
             std::string label=((InstanceApi*)team)->getName();
             if(col) {
                 position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
@@ -96,14 +162,14 @@ void ScoreHud::renderTeamDeathmatchLeaderboard(Adorn* adorn,BoardType mode) {
         rect.low.y+=row;
         for(unsigned player=0;player<data.playersByTeamList[team].size();++player) {
             for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
-                G3D::Vector2 position(rect.low.x,rect.low.y);
                 float width=rect.high.x-rect.low.x;
+                G3D::Vector2 position=rect.low;
                 std::string label=data.playersByTeamList[team][player];
                 if(col) {
                     position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
                     int stat=data.statMap[data.playersByTeamList[team][player]][data.statNamesList[col-1]];
                     label=StringConverter<int>::convertToString(stat);
-                }
+                } else { position.x += 5.0f; }
                 adorn->drawFont2D(label,position,row,G3D::Color4(team->getTeamColor().color3(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
                 if(!col) position.x-=5.0f; // Observed native post-draw store.
             }

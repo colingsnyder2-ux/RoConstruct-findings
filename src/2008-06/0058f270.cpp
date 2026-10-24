@@ -1,7 +1,8 @@
-// roc-lang: cpp
+// from server: 69% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs roc_xml_embedded_native_3db81fc0eeabb0bf.cpp
+// roc-lang: cpp
+// roc-lib: rbxgs-dll roc_xml_embedded_native_3db81fc0eeabb0bf.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias("v8xml/XmlElement.h", "../roc_xml_native_double_header_414358b35d9237a4.cpp")

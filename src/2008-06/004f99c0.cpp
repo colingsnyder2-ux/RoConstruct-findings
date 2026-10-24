@@ -1,129 +1,58 @@
-// from server: 41% by colin
-//
+// from server: 97% by king_originala
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
 
-struct Vector2 { float x, y; };
-struct Vector3 { float x, y, z; };
-
-extern "C" double __stdcall ceil(double);
-
-extern float g_819bac;
-extern float g_826e6c;
-extern float g_83a3e4;
-
-float sub_4f1ff0(int);
-void sub_5185d0(Vector2* out, Vector2* in);
-void sub_4f35d0(Vector3* a, Vector2* b, Vector2* c, Vector3* d, Vector3* e, int f, int g);
-void sub_4f54d0(void* self, int a, int b);
-
-struct PBBBuilder {
-    int field0;
-    Vector2 field4;
-    int fieldC;
-    unsigned int field10;
-    void build(Vector3* a, Vector3* b, int c, int d, int e, int f);
-};
-
-void PBBBuilder::build(Vector3* a, Vector3* b, int c, int d, int e, int f)
-{
-    float arr[4];
-    float arr2[4];
-    float arr3[4];
-    float arr4[4];
-    int idx;
-    int i;
-    int count;
-
-    unsigned int bits = this->field10 >> 9;
-    int sel = bits & 7;
-
-    Vector2 tmp;
-    sub_5185d0(&tmp, &this->field4);
-
-    float f0 = a->x; if (f0 < 0) f0 = -f0;
-    float f1 = a->y; if (f1 < 0) f1 = -f1;
-    float f2 = a->z; if (f2 < 0) f2 = -f2;
-
-    arr[0] = f0;
-    arr[1] = f1;
-    arr[2] = f2;
-
-    bool flag;
-    if (f != 0) {
-        flag = (f0 == f1);
-    } else {
-        flag = false;
-    }
-    idx = flag ? 0 : 1;
-
-    if (f == 0 && sel != 0) {
-        double dv = (double)arr[idx] * (double)g_819bac;
-        float cf = (float)ceil(dv);
-        count = (int)cf;
-    } else {
-        count = 1;
-    }
-
-    short sval = *(short*)((char*)&tmp + (idx * 2));
-    int q = (int)sval / count;
-    unsigned short qq = (unsigned short)q;
-    unsigned short one = 1;
-    unsigned short chosen = (one < qq) ? qq : one;
-
-    *(unsigned short*)((char*)&idx + 0) = chosen;
-    *(unsigned short*)((char*)&tmp + idx * 2) = (unsigned short)sval;
-
-    Vector2 p0, p1;
-    sub_5185d0(&p0, (Vector2*)a);
-    p0.x = -p0.x;
-    p0.y = -p0.y;
-    sub_5185d0(&p1, (Vector2*)b);
-    p1.x = -p1.x;
-    p1.y = -p1.y;
-
-    if (f == 0) {
-        if (sel == 0) {
-            arr2[0] = g_83a3e4;
-            arr2[1] = g_819bac;
-            arr2[2] = g_819bac;
-            arr2[3] = g_819bac;
-        } else {
-            arr2[idx] = 0.0f;
-            arr2[idx] = sub_4f1ff0(sel);
-            arr3[idx] = arr[idx] * 2.0f;
-            arr4[idx] = g_819bac;
-            if (idx == 1) {
-                arr4[1] = -arr4[1];
-            }
-        }
-    } else if (f == 1) {
-        arr2[0] = 0.0f;
-        arr2[1] = b->y;
-        arr2[2] = b->x;
-        arr2[3] = -b->y;
-    } else if (f == 2) {
-        arr2[0] = 0.0f;
-        arr2[1] = 0.0f;
-        arr2[2] = 0.0f;
-        arr2[3] = 0.0f;
-    }
-
-    for (i = 0; i < count; i++) {
-        if (i == count - 1) {
-            arr3[idx] = arr[idx];
-            if (f == 0 && c != 0) {
-                arr4[idx] = (arr[idx] - arr3[idx]) * arr4[idx] * g_83a3e4;
-            }
-        } else {
-            arr3[idx] = arr[idx] + g_826e6c;
-        }
-
-        Vector3 vv;
-        vv.x = arr4[0];
-        vv.y = arr4[1];
-        vv.z = arr4[2];
-
-        sub_4f35d0(&vv, &p0, &p1, (Vector3*)&arr3, (Vector3*)&arr2, sel, (int)this);
-        sub_4f54d0(this, d, e);
-        arr2[idx] = arr3[idx];
-    }
+extern "C" __declspec(dllimport) double __cdecl fabs(double);
+// roc-lib: g3d-6.09 G3Dcpp/Vector3.cpp
+namespace G3D {inline int iRound(float);}
+namespace MeshTypes {
+extern "C" __declspec(dllimport) double __cdecl ceil(double);
+struct Vector2 {float x,y;Vector2():x(0),y(0){}Vector2(float a,float b):x(a),y(b){}Vector2(const Vector2&r):x(r.x),y(r.y){}Vector2&operator=(const Vector2&r){x=r.x;y=r.y;return *this;}Vector2 operator-()const{return Vector2(-x,-y);}float& operator[](int i){return (&x)[i];}const float& operator[](int i)const{return (&x)[i];}};
+struct Vector3 {float x,y,z;Vector3(float a,float b,float c):x(a),y(b),z(c){}Vector3(const Vector3&r):x(r.x),y(r.y),z(r.z){}Vector3 abs()const{return Vector3(fabs(x),fabs(y),fabs(z));}Vector2 xy()const;float&operator[](int i){return (&x)[i];}const float&operator[](int i)const{return (&x)[i];}};
+struct Vector2int16 {short x,y;Vector2int16():x(0),y(0){}short&operator[](int i){return (&x)[i];}const short&operator[](int i)const{return (&x)[i];}};
+struct Rect2D {Vector2 min,max;static Rect2D xyxy(const Vector2&,const Vector2&);};
+template<class T>const T& maximum(const T&a,const T&b){return a<b?b:a;}
 }
+namespace RBX {namespace View {
+using MeshTypes::Vector2;using MeshTypes::Vector3;using MeshTypes::Vector2int16;using MeshTypes::Rect2D;
+struct Function {char opaque[8];};
+Vector3 __cdecl mapFace(const Vector3&);
+float __cdecl surfaceOffset(int);
+static __forceinline bool useFirstAxis(int purpose,const Vector3& size){if(purpose==0 && size.x<size.y)return true;return false;}
+static __forceinline Vector3 absoluteSize(const Vector3& v){Vector3 mapped=mapFace(v);float z=(float)fabs(mapped.z);float y=(float)fabs(mapped.y);float x=(float)fabs(mapped.x);return Vector3(x,y,z);}
+struct Builder {
+ enum Purpose{Surface,Decal,Shadow};
+ virtual void build(Purpose);virtual void buildTop(Purpose)=0;virtual void buildBottom(Purpose)=0;virtual void buildLeft(Purpose)=0;virtual void buildRight(Purpose)=0;virtual void buildFront(Purpose)=0;virtual void buildBack(Purpose)=0;
+ const Vector3 halfSize;unsigned surfaceTypes;void* level;Vector2 textureScale;
+ void build(Function,Vector2int16,int);
+ void emit(Function,Rect2D,float,Vector2,Vector2,int,Vector2int16);
+};
+void Builder::build(Function function,Vector2int16 grid,int purpose){
+ int surface=(surfaceTypes>>15)&7;
+ Vector3 size=absoluteSize(halfSize);
+ int axis=!useFirstAxis(purpose,size);
+ int steps=(purpose==0 && surface)?G3D::iRound((float)MeshTypes::ceil((double)(size[axis]*0.5f))):1;
+ Vector2int16 divisions;
+ short n=grid[1-axis];
+ divisions[axis]=MeshTypes::maximum<short>(1,(short)(n/steps));
+ divisions[1-axis]=n;
+ float depth=size.z;
+ Vector2 begin=-size.xy();
+ Vector2 end=size.xy();
+ Vector2 origin,extent;
+ switch(purpose){
+  case 0:
+   if(!surface){origin=Vector2(0.25f,0.5f);extent[1-axis]=0;extent[axis]=0;}
+   else {origin[1-axis]=0;origin[axis]=surfaceOffset(surface);extent[1-axis]=size[1-axis]*2.0f;extent[axis]=0.5f;if(axis==1)extent.x=-extent.x;}
+   break;
+  case 1:origin.x=0;origin.y=textureScale.y;extent.x=textureScale.x;extent.y=-textureScale.y;break;
+  case 2:origin=Vector2(0,0);extent=Vector2(0,0);break;
+ }
+ for(int i=0;i<steps;++i){
+  if(i==steps-1){end[axis]=size[axis];if(purpose==0 && surface)extent[axis]=(end[axis]-begin[axis])*extent[axis]*0.25f;}
+  else end[axis]=begin[axis]+4.0f;
+  emit(function,Rect2D::xyxy(begin,end),depth,origin,extent,axis,divisions);
+  begin[axis]=end[axis];
+ }
+}
+}}

@@ -1,78 +1,124 @@
+// from server: 75% by Espeon
+// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lang: cpp
-// roc-lib: g3d-6.09-dll roc_scene_light_array_1159df62033510c6.cpp
+// roc-lib: rbxgs-dll roc_espeon_lightcenterclamp7f3dfd130d0a4619.cpp
 
 // Candidate translation unit (score above; library headers required).
-// Native 007a9d30: scene light synchronization. Names are behavioral analogues.
-#undef OGRE_NONCLIENT_BUILD
-#include "../../ogre-1.4.5/ogrenew/OgreMain/include/Ogre.h"
+#define _CPPUNWIND 1
+#define NDEBUG 1
+#include "roc_espeon_ogreinstalledaliases009c47fc2fe0bc1c.cpp"
+#include <OgreSceneManager.h>
+#include <OgreLight.h>
+#include <OgreLogManager.h>
 #include <GLG3D/LightingParameters.h>
-#include <algorithm>
-#include <string>
-using G3D::Color3;
-class SceneLightSync {public:void sync(void*,bool);};
-#define FIELD(T,N) (*reinterpret_cast<T*>(reinterpret_cast<char*>(this)+(N)))
-#define LIGHTS (*reinterpret_cast<G3D::Array<G3D::GLight>*>(reinterpret_cast<char*>(FIELD(void*,0x30c))+0x4c))
-extern std::string lightIndex(const int&);
-void SceneLightSync::sync(void* context,bool) {
+#include <util/Utilities.h>
+#include <stddef.h>
+
+// All opaque ranges below are determined by the addressed member accesses
+// in 007a9d30, recorded in 007a9d30-annotated.asm.
+Ogre::ColourValue convertColour(const G3D::Color4&);
+struct BoundsOwner {
+ char prefix[0x27c];
+ Ogre::AxisAlignedBox bounds;
+};
+struct RenderContext { void* first; Ogre::SceneManager* manager; };
+struct NativeLightingScene {
+ char prefix[0x26c];
+ BoundsOwner* owner;
+ char toShadows[0x2f4-0x270];
+ bool shadows;
+ char toLighting[0x30c-0x2f5];
+ G3D::LightingRef lighting;
+ char toTint[0x338-0x310];
+ G3D::Vector3 mainTint;
+ G3D::Vector3 fillTint;
+ float brightness;
+ G3D::Vector3 ambient;
+ G3D::Vector3 mainDiffuse;
+ G3D::Vector3 mainSpecular;
+ G3D::Vector3 fillDiffuse;
+ G3D::Vector3 fillSpecular;
+ G3D::Vector3 fillScale;
+ void apply(RenderContext*, bool);
+};
+typedef char checkSceneLighting[offsetof(NativeLightingScene,lighting)==0x30c?1:-1];
+typedef char checkSceneTint[offsetof(NativeLightingScene,mainTint)==0x338?1:-1];
+typedef char checkLightSize[sizeof(G3D::GLight)==80?1:-1];
+
+void NativeLightingScene::apply(RenderContext* context, bool unused) {
  float radius=1000.0f;
  Ogre::Vector3 center(0,0,0);
- Ogre::SceneManager* scene=*reinterpret_cast<Ogre::SceneManager**>(reinterpret_cast<char*>(context)+4);
- const Color3& ambient=FIELD(Color3,0x354);
- scene->setAmbientLight(Ogre::ColourValue(ambient.r,ambient.g,ambient.b));
- const Color3& top=FIELD(Color3,0x338);
- const Color3& bottom=FIELD(Color3,0x344);
- float avgBottom=(bottom.b+bottom.g+bottom.r)*0.3333f;
- Color3 bottomDelta=bottom-Color3(avgBottom,avgBottom,avgBottom);
- float avgTop=(top.b+top.g+top.r)*0.3333f;
- Color3 topDelta=top-Color3(avgTop,avgTop,avgTop);
- float brightness=FIELD(float,0x350);
- if(brightness>5)brightness=5;else if(brightness<0.05f)brightness=0.05f;
- int i=0;
- for(;i<LIGHTS.size();++i) {
-  const G3D::GLight& original=LIGHTS[i];
-  Ogre::String name=Ogre::String("rbxlight")+lightIndex(i);
+ Ogre::SceneManager* manager=context->manager;
+ manager->setAmbientLight(Ogre::ColourValue(ambient.x,ambient.y,ambient.z));
+ float fillAverage=(fillTint.z+fillTint.y+fillTint.x)/3.0f;
+ G3D::Color3 bottom(fillTint.x-fillAverage,fillTint.y-fillAverage,fillTint.z-fillAverage);
+ float mainAverage=(mainTint.z+mainTint.y+mainTint.x)/3.0f;
+ G3D::Color3 top(mainTint.x-mainAverage,mainTint.y-mainAverage,mainTint.z-mainAverage);
+ float intensity=brightness;
+ if(intensity>5.0f)intensity=5.0f;
+ else if(intensity<0.05f)intensity=0.05f;
+ int i;
+ for(i=0;i<lighting->shadowedLightArray.size();++i) {
+  const G3D::GLight& source=lighting->shadowedLightArray[i];
+  std::string name=std::string("rbxlight")+RBX::StringConverter<int>::convertToString(i);
   Ogre::Light* light;
-  if(!scene->hasLight(name)) {
-   light=scene->createLight(name);
-   if(light) Ogre::LogManager::getSingleton().logMessage(Ogre::String("RbxGfx: created light")+name);
-   else Ogre::LogManager::getSingleton().logMessage(Ogre::String("RbxGfx : FAILED to create light")+name);
-  }else light=scene->getLight(name);
-  light->setCastShadows(FIELD(bool,0x2f4));
-  if(FIELD(void*,0x26c)) {
-   const Ogre::AxisAlignedBox& box=*reinterpret_cast<Ogre::AxisAlignedBox*>(reinterpret_cast<char*>(FIELD(void*,0x26c))+0x27c);
-   if(!box.isNull()) {
-    Ogre::Vector3 size=box.getSize();
-    radius=(std::max)((std::max)(size.x,size.y),size.z)*0.8585f*1.3f;
-    Ogre::Vector3 point=box.getCenter();center.x=point.x;center.z=point.z;center.y=box.getMinimum().y;
-   }
+  if(!manager->hasLight(name)) {
+   light=manager->createLight(name);
+   if(light) Ogre::LogManager::getSingleton().logMessage(std::string("RbxGfx: created light")+name);
+   else Ogre::LogManager::getSingleton().logMessage(std::string("RbxGfx : FAILED to create light")+name);
+  } else light=manager->getLight(name);
+  light->setCastShadows(shadows);
+  if(owner && !owner->bounds.isNull()) {
+   Ogre::Vector3 size=owner->bounds.getSize();
+   radius=std::max(std::max(size.x,size.y),size.z)*0.8585f*1.3f;
+   const Ogre::Vector3& boundsCenter=owner->bounds.getCenter();
+   center.x=boundsCenter.x;
+   center.z=boundsCenter.z;
+   center.y=owner->bounds.getMinimum().y;
   }
   light->setType(Ogre::Light::LT_POINT);
-  Color3 colour=original.color*brightness*FIELD(Color3,0x360);
-  colour=colour+topDelta*colour.length();
-  light->setDiffuseColour(colour.r,colour.g,colour.b);
-  light->setPosition(original.position.x*radius+center.x,original.position.y*radius+center.y,original.position.z*radius+center.z);
-  Color3 specular=original.color*FIELD(Color3,0x36c);
+  G3D::Color3 diffuse;
+  { G3D::Color3 mainFactor(mainDiffuse); diffuse=source.color*intensity*mainFactor; }
+  diffuse+=top*diffuse.length();
+  light->setDiffuseColour(diffuse.r,diffuse.g,diffuse.b);
+  light->setPosition(source.position.x*radius+center.x,source.position.y*radius+center.y,source.position.z*radius+center.z);
+  G3D::Color3 specular=source.color;
+  if(mainSpecular==G3D::Color3()) {
+   float peak=std::max(std::max(specular.r,specular.g),specular.b);
+   if(peak>0.5f) specular*=0.5f/peak;
+  } else { G3D::Color3 specularFactor(mainSpecular); specular=specular*specularFactor; }
   light->setSpecularColour(specular.r,specular.g,specular.b);
  }
- for(Ogre::String name=Ogre::String("rbxlight")+lightIndex(i);scene->hasLight(name);name=Ogre::String("rbxlight")+lightIndex(++i))scene->destroyLight(scene->getLight(name));
- if(LIGHTS.size()==1) {
-  const G3D::GLight& original=LIGHTS[0];
-  int zero=0;Ogre::String first=Ogre::String("rbxlight")+lightIndex(zero);
-  Ogre::Light* primary=scene->getLight(first);
-  Ogre::Vector3 position;
-  if(primary->getType()==Ogre::Light::LT_DIRECTIONAL)position=-primary->getDirection()*2000.0f;else position=primary->getPosition();
-  Ogre::String name("rbxfl");Ogre::Light* fill;
-  if(scene->hasLight(name))fill=scene->getLight(name);
-  else {fill=scene->createLight(name);fill->setCastShadows(false);fill->setType(Ogre::Light::LT_POINT);}
-  fill->setPosition(center*2.0f-position);
-  Color3 colour=original.color*brightness*0.4f*FIELD(Color3,0x378)*FIELD(Color3,0x390);
-  colour=colour+bottomDelta*colour.length();
-  fill->setDiffuseColour(Ogre::ColourValue(colour.r,colour.g,colour.b));
-  Color3 specular=FIELD(Color3,0x384)*colour;
-  fill->setSpecularColour(specular.r,specular.g,specular.b);
+ for(;;++i) {
+  std::string name=std::string("rbxlight")+RBX::StringConverter<int>::convertToString(i);
+  if(!manager->hasLight(name))break;
+  manager->destroyLight(manager->getLight(name));
  }
- Color3 average=(FIELD(G3D::Lighting*,0x30c)->ambientTop+FIELD(G3D::Lighting*,0x30c)->ambientBottom)/2.0f;
- if(LIGHTS.size()>0){G3D::Vector3 unused=LIGHTS[0].position.xyz();}
+ if(lighting->shadowedLightArray.size()==1) {
+  const G3D::GLight& source=lighting->shadowedLightArray[0];
+  int zero=0;
+  std::string name=std::string("rbxlight")+RBX::StringConverter<int>::convertToString(zero);
+  Ogre::Light* primary=manager->getLight(name);
+  Ogre::Vector3 position;
+  if(primary->getType()==Ogre::Light::LT_DIRECTIONAL)position=-primary->getDirection()*2000.0f;
+  else position=primary->getPosition();
+  std::string fillName="rbxfl";
+  Ogre::Light* light;
+  if(manager->hasLight(fillName))light=manager->getLight(fillName);
+  else {light=manager->createLight(fillName);light->setCastShadows(false);light->setType(Ogre::Light::LT_POINT);}
+  light->setPosition(center*2.0f-position);
+  G3D::Color3 diffuse;
+  { G3D::Color3 baseColour=source.color*intensity;
+  G3D::Color3 scaleFactor(fillScale);
+  G3D::Color3 diffuseFactor(fillDiffuse);
+  diffuse=baseColour*0.4f*diffuseFactor*scaleFactor; }
+  diffuse+=bottom*diffuse.length();
+  light->setDiffuseColour(convertColour(G3D::Color4(diffuse.r,diffuse.g,diffuse.b,1.0f)));
+  G3D::Color3 specularFactor(fillSpecular);
+  G3D::Color3 specular=specularFactor*diffuse;
+  light->setSpecularColour(specular.r,specular.g,specular.b);
+ }
+ G3D::Color3 average=(lighting->ambientTop+lighting->ambientBottom)/2.0f;
+ if(lighting->shadowedLightArray.size()>0)G3D::Vector3 direction=lighting->shadowedLightArray[0].position.xyz();
 }

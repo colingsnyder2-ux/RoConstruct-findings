@@ -98,6 +98,7 @@ remain available. `unrecorded` means evidence is missing; it is not a model diag
 | Automatic agent | Dashboard **Workers → Agent worker**, or `roc agent claude --automatic` | Claude Code or Codex CLI signed in | ranked batches, receipts, memory |
 | Preview the ranking | `roc agent claude --plan` | analyze | areas, eligible targets, parking |
 | Shared single function | `roc agent claude --jobs 5` | CLI, server | one function at a time; best verified result wins |
+| List clients / pick next function | `roc work` / `roc work CLIENT` | server, user | server progress per client; selects+claims the next unmatched function and prints concise context |
 | Submit gains | `roc submit 2008-06 [addr ...]` | server, user | server-verified receipt |
 | Keep generated units portable | `roc research capture-units` | sources in `src/` | `local/units/generated-units.json` |
 
@@ -183,6 +184,34 @@ New experiments add a recipe to `research/recipes.json` (op `grid` or `fanout`),
 not a new script. Agent-written translation units go through `libs.add_unit` so they
 are stored in `local/units/generated-units.json`, published to RoConstruct-findings `units/`, and downloaded by `roc pull`, so they rebuild identically on every PC.
 
+## Manual matching loop (agent-driven)
+
+For an agent that edits C++ by hand (Claude Code / Codex / an IDE assistant) while the
+bookkeeping stays automated. Selection, claiming, checking and submission are one
+command each; the agent spends its reasoning on the C++ itself.
+
+1. **Pick a client first.** Run `roc work` and show the server's matched/total and
+   percentage for every client. Wait for the human to choose one. Never fabricate
+   percentages when the server is unreachable — say so instead.
+2. **Pull, then start.** `roc pull CLIENT` is allowed and expected. Then run
+   `roc work CLIENT` to select and claim the next function automatically.
+3. **Selection priorities** (server-driven, from `roc work`):
+   95–99%, then 90–94%, then 70–89%, then lower; within each band, functions with an
+   already-matched twin (`twin` in `/v1/functions`) first, then higher score, then
+   fewer attempts. Claimed functions and already-matched (100%) functions are skipped.
+4. **Manual edit, one change at a time.** Follow the A–Q near-miss fix table in the
+   agent's `matching-workflow.md`. Prefer small, evidence-based edits over rewrites.
+5. **Automated check/submit.** Score a scratch edit with
+   `roc check CLIENT ADDR --file try.cpp`; when it is better, copy it over
+   `src/CLIENT/ADDR.cpp` and run `roc submit CLIENT ADDR`. Only a server-verified
+   `100%` counts as exact.
+6. **Log and move on.** Append one line to `work/hard-functions.md`
+   (`ADDR | SCORE | what you tried and what happened`), then `roc work CLIENT` again
+   for the next function. Cap per-function mutation attempts around 8–15.
+
+Do **not** run `roc xcopy`, `roc mass`, or any long-running bulk matching/copy/rebuild
+command in the manual loop; if a lengthy operation is truly needed, background it with
+logging rather than blocking the agent.
 Automatic template generation includes `tree_erase_map_int.cpp`: an explicit
 call emits inherited `_Tree::erase`, which explicit `std::map` instantiation
 alone missed. Its 2008 profile adds `/Od /Ob0 /GS /EHsc /MD`; the normal library
@@ -227,6 +256,7 @@ campaign's `candidates/` folder, preserving the best file across resume. This do
 not submit partials or replace stored sources. Review the selected symbol, then
 submit a retained improvement through the normal verifier. Exact-count summaries
 still count only exact matches.
+
 
 ## Experiment memory
 

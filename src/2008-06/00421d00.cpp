@@ -1,65 +1,160 @@
-// from server: 94% by Espeon
-// roc-lang: cpp
+// from server: 100% by king_originala
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_selectionconstcollection_5d83f1eb07bf1347.cpp
-
-// Candidate translation unit (score above; library headers required).
 #include <vector>
-namespace RBX { class Instance { public: virtual ~Instance();char pad[0x100];Instance* next; }; class ServiceProvider; }
-typedef std::vector<const RBX::Instance*> Vector;
-namespace RBX {class ServiceProvider:public Instance {public:ServiceProvider* finish();void apply(Vector::iterator,Vector::iterator);};}
-RBX::ServiceProvider* __cdecl func_00421cb0(RBX::Instance*);
-struct Value {
-    char padding[0x54];
-    RBX::Instance* instance;
+namespace RBX {class Instance {};struct Selection {
+ void clearSelection();void addToSelection(Instance*);
+ template<class Iterator>void setSelection(Iterator first,Iterator last){clearSelection();for(;first!=last;first++)addToSelection(*first);}
+};}
+RBX::Selection* selectionFrom(RBX::Instance*);
+struct __POSITION;typedef __POSITION* POSITION;
+struct CXTPReportRecord {char prefix[0x54];RBX::Instance* instance;};
+struct CXTPReportRow {
+virtual void slot0();
+virtual void slot1();
+virtual void slot2();
+virtual void slot3();
+virtual void slot4();
+virtual void slot5();
+virtual void slot6();
+virtual void slot7();
+virtual void slot8();
+virtual void slot9();
+virtual void slot10();
+virtual void slot11();
+virtual void slot12();
+virtual void slot13();
+virtual void slot14();
+virtual void slot15();
+virtual void slot16();
+virtual void slot17();
+virtual void slot18();
+virtual void slot19();
+virtual void slot20();
+virtual void slot21();
+virtual void slot22();
+virtual void slot23();
+ virtual CXTPReportRecord* GetRecord()const;
 };
-
-struct Item;
-struct ItemTable {
-    void* padding[24];
-    Value* (__thiscall* get)(Item*);
+struct CXTPReportSelectedRows {POSITION GetFirstSelectedRowPosition();CXTPReportRow* GetNextSelectedRow(POSITION&);};
+struct CXTPReportControl {char pad[0x128];CXTPReportSelectedRows* rows;CXTPReportSelectedRows* GetSelectedRows()const{return rows;}};
+struct CSettingsExplorer {
+virtual void slot0();
+virtual void slot1();
+virtual void slot2();
+virtual void slot3();
+virtual void slot4();
+virtual void slot5();
+virtual void slot6();
+virtual void slot7();
+virtual void slot8();
+virtual void slot9();
+virtual void slot10();
+virtual void slot11();
+virtual void slot12();
+virtual void slot13();
+virtual void slot14();
+virtual void slot15();
+virtual void slot16();
+virtual void slot17();
+virtual void slot18();
+virtual void slot19();
+virtual void slot20();
+virtual void slot21();
+virtual void slot22();
+virtual void slot23();
+virtual void slot24();
+virtual void slot25();
+virtual void slot26();
+virtual void slot27();
+virtual void slot28();
+virtual void slot29();
+virtual void slot30();
+virtual void slot31();
+virtual void slot32();
+virtual void slot33();
+virtual void slot34();
+virtual void slot35();
+virtual void slot36();
+virtual void slot37();
+virtual void slot38();
+virtual void slot39();
+virtual void slot40();
+virtual void slot41();
+virtual void slot42();
+virtual void slot43();
+virtual void slot44();
+virtual void slot45();
+virtual void slot46();
+virtual void slot47();
+virtual void slot48();
+virtual void slot49();
+virtual void slot50();
+virtual void slot51();
+virtual void slot52();
+virtual void slot53();
+virtual void slot54();
+virtual void slot55();
+virtual void slot56();
+virtual void slot57();
+virtual void slot58();
+virtual void slot59();
+virtual void slot60();
+virtual void slot61();
+virtual void slot62();
+virtual void slot63();
+virtual void slot64();
+virtual void slot65();
+virtual void slot66();
+virtual void slot67();
+virtual void slot68();
+virtual void slot69();
+virtual void slot70();
+virtual void slot71();
+virtual void slot72();
+virtual void slot73();
+virtual void slot74();
+virtual void slot75();
+virtual void slot76();
+virtual void slot77();
+virtual void slot78();
+virtual void slot79();
+virtual void slot80();
+virtual void slot81();
+virtual void slot82();
+virtual void slot83();
+virtual void slot84();
+virtual void slot85();
+virtual void slot86();
+virtual void slot87();
+virtual void slot88();
+virtual void slot89();
+virtual void slot90();
+virtual void slot91();
+virtual void slot92();
+virtual void slot93();
+virtual void slot94();
+virtual void slot95();
+virtual void slot96();
+virtual void slot97();
+virtual void slot98();
+virtual void slot99();
+virtual void slot100();
+ virtual CXTPReportControl* GetReportControl();
+ char prefix[0x3c0-4];RBX::Instance* context;
+ void OnSelectionChanged(void*,long*);
 };
-
-struct Item {
-    ItemTable* table;
-};
-
-struct List {
-    void* head();
-    Item* next(void**);
-};
-
-struct Window {
-    char padding[0x128];
-    List* list;
-};
-
-struct S;
-struct STable {
-    void* padding[101];
-    Window* (__thiscall* get)(S*);
-};
-
-struct S {
-    STable* table;
-    char padding[0x3bc];
-    RBX::Instance* instance;
-    void f(unsigned int, unsigned int);
-};
-
-void S::f(unsigned int, unsigned int)
-{
-    RBX::ServiceProvider* service = func_00421cb0(instance);
-    Vector values;
-    List* list = table->get(this)->list;
-    void* position = list->head();
-
-    while (position) {
-        Item* item = list->next(&position);
-        RBX::Instance* value = item->table->get(item)->instance;
-        values.push_back(value);
-    }
-
-    service->apply(values.begin(),values.end());
+void CSettingsExplorer::OnSelectionChanged(void*,long*){
+ RBX::Selection* selection=selectionFrom(context);
+ std::vector<RBX::Instance*> instances;
+ CXTPReportSelectedRows* rows=GetReportControl()->GetSelectedRows();
+ POSITION position=rows->GetFirstSelectedRowPosition();
+ while(position){
+  CXTPReportRow* row=rows->GetNextSelectedRow(position);
+  CXTPReportRecord* record=row->GetRecord();
+  RBX::Instance* instance=record->instance;
+  instances.push_back(instance);
+ }
+ const std::vector<RBX::Instance*>& collected=instances;
+ selection->setSelection(collected.begin(),collected.end());
 }

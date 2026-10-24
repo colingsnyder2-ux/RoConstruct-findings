@@ -1,109 +1,41 @@
-// from server: 100% by Espeon
+// from server: 100% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: openrbx-client-dll roc_espeon_serializefallbackvalue_5e6df75397af6d7a.cpp
+#include <math.h>
+struct Vec3 {float x,y,z;};
+struct Matrix3 {float v[9];};
+struct Frame {Matrix3 rotation;Vec3 translation;};
+// Quaternion layout and magnitude expression follow native util/Quaternion.h.
+struct Quaternion {float x,y,z,w;Quaternion(const Matrix3&);void normalize(){float squared=x*x+y*y+z*z+w*w;float scale=1.0f/sqrtf(squared);x=x*scale;y=y*scale;z=z*scale;w=w*scale;}};
+struct BitStream {void WriteNormQuat(float w,float x,float y,float z);};
+BitStream& __cdecl writeByte(BitStream&,unsigned char);
+void __cdecl writeTranslation(BitStream&,const Vec3&,bool);
+unsigned char __cdecl rotationToByte(float);
+struct Motor {char prefix[0x8c];float angle;};
+struct Assembly {int numMotors()const;Motor* getMotor(int)const;};
+struct Primitive {Assembly*getAssembly()const;};
+struct Part {char prefix[0x228];Primitive primitive;const Frame& getFrame()const;};
+struct Entry {Part* part;char prefix[0x44];float precision;};
+struct Replicator {bool test(Part*);bool serializeId(BitStream&,Part*);};
 
-// Candidate translation unit (score above; library headers required).
-// from server: 96% by colin
-struct Stream;
-struct Part;
-struct Body;
-struct Source;
-struct State;
-struct World;
-
-struct StateVTable {
-    void *reserved[17];
-    World *(__thiscall *getWorld)(State *);
-};
-
-struct Filter {
-    bool contains(Part *);
-};
-
-struct World {
-    unsigned char padding[0x170];
-    Filter *filter;
-};
-
-struct State {
-    StateVTable *vtable;
-    bool excluded(Part *);
-    bool encode(Stream *, const void *);
-};
-
-struct Stream {
-    void write(float, float, float, float);
-};
-
-struct Body {
-    unsigned char padding[0x24];
-    float position[3];
-};
-
-struct Part {
-    Body *getBody();
-};
-
-struct Link {
-    unsigned char padding[0x1c];
-    void *object;
-};
-
-struct Item {
-    unsigned char padding[0x8c];
-    float value;
-};
-
-struct Source {
-    unsigned char padding[0x24];
-    Link *link;
-    int count();
-    Item *get(int);
-};
-
-struct Values {
-    float x, y, z, w;
-    Values(Body *);
-    void prepare();
-};
-
-extern "C" Part *__cdecl resolve(void *);
-extern "C" void __cdecl writePosition(Stream *, const void *, bool);
-extern "C" void __cdecl writeByte(Stream *, unsigned char);
-extern "C" unsigned char __cdecl quantize(float);
-
-struct S {
-    void *reserved;
-    State *state;
-    void f(Stream *, Source *);
-};
-
-void S::f(Stream *stream, Source *source)
-{
-    if (source) {
-        Link *lk = source->link;
-        Part *part = resolve(lk->object);
-        if (part && !state->excluded(part) && state->encode(stream, part)) {
-            Body *body = part->getBody();
-            World *world = state->vtable->getWorld(state);
-            writePosition(stream, body->position,
-                          world && world->filter && world->filter->contains(part));
-
-            Values values(body);
-            values.prepare();
-            stream->write(values.w, values.x, values.y, values.z);
-
-            int count = source->count();
-            writeByte(stream, (unsigned char)count);
-            for (int i = 0; i < count; ++i) {
-                float value = 0.0f;
-                Item *item = source->get(i);
-                if (item) value = item->value;
-                unsigned char encoded = quantize(value);
-                writeByte(stream, encoded);
-            }
-        }
-    }
+struct Sender {char prefix[0x3c];Replicator*replicator;bool write(BitStream&,const Entry&);};
+bool Sender::write(BitStream&stream,const Entry&entry){
+ Part*part=entry.part;
+ if(replicator->test(part))return false;
+ if(!replicator->serializeId(stream,part))return false;
+ const Frame&frame=part->getFrame();
+ writeTranslation(stream,frame.translation,entry.precision<20.0f);
+ Quaternion q(frame.rotation);q.normalize();stream.WriteNormQuat(q.w,q.x,q.y,q.z);
+ Assembly*assembly=part->primitive.getAssembly();
+ int count=assembly?assembly->numMotors():0;
+ writeByte(stream,(unsigned char)count);
+ for(int i=0;i<count;++i){
+  float angle=0.0f;
+  Motor*motor=assembly->getMotor(i);
+  if(motor)angle=motor->angle;
+  unsigned char value=rotationToByte(angle);
+  writeByte(stream,value);
+ }
+ return true;
 }

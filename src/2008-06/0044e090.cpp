@@ -1,136 +1,31 @@
-// from server: 48% by colin
-struct CRobloxControlColorSelector {
-    int field_0x0;
-    int field_0x4;
-    int field_0x8;
-    int field_0xc;
-    int field_0x10;
-    int field_0x14;
-    int field_0x9c;
-    int field_0xc0;
-    int field_0xc4;
-    int field_0x15c;
-    int field_0x174;
-    int field_0x180;
-    int method_0x78();
-    void* method_0x84();
-    void* getSomething();
-    void drawItem(int);
-    void _invalid_parameter_noinfo();
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: xtp-11.2.2-lib-imports roc_espeon_colorselectornative98f882a955130b44.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <XTToolkitPro.h>
+#include <vector>
+// Native XTP CColorInfo fields; vector stride12 is proven by the target.
+struct ColorEntry {COLORREF clrButton;UINT toolTipID;CString strTip;};
+extern std::vector<ColorEntry> colorEntries;
+class ColorSelectorRecovery: public CXTPControl {
+public:
+ template<class T>T& field(unsigned offset){return *reinterpret_cast<T*>(reinterpret_cast<char*>(this)+offset);}
+ void Draw(CDC* pDC);
+ __forceinline CRect colorRect(int index){int x=index%8,y=index/8;return CRect(CPoint(2+m_rcControl.left+x*32,2+m_rcControl.top+y*32),CSize(32,32));}
 };
-
-extern int g_96dd30;
-extern int g_96dd34;
-
-
-extern "C" void __stdcall InflateRect(int*, int, int);
-extern "C" void* __stdcall mfc_2263();
-extern "C" void* __stdcall mfc_2470();
-
-void* __fastcall sub_6ab240(CRobloxControlColorSelector* self);
-void __fastcall sub_6ab7c0(void* p);
-void __fastcall sub_6a135e(void* self, int* a, int b);
-void __fastcall sub_6a1358(void* self, int* a, void* b, void* c);
-void* __fastcall sub_6dfd40();
-void* __fastcall sub_6df520(void* self, int n);
-
-void CRobloxControlColorSelector::drawItem(int n)
-{
-    int count = (g_96dd34 - g_96dd30) / 12;
-    if (count <= 0)
-        return;
-
-    int idx = 0;
-    int offset = 0;
-    while (idx < count)
-    {
-        int col = idx % 8;
-        int row = idx / 8;
-        int x1 = field_0xc0 + col * 32 + 2;
-        int y1 = field_0xc4 + row * 32 + 2;
-        int x2 = x1 + 32;
-        int y2 = y1 + 32;
-
-        if (idx != field_0x174)
-        {
-            int cnt2 = (g_96dd34 - g_96dd30) / 12;
-            if (idx >= cnt2)
-                _invalid_parameter_noinfo();
-            int* arr = (int*)g_96dd30;
-            if (arr[offset / 4] != field_0x180)
-                goto next;
-        }
-
-        {
-            int b1 = method_0x78();
-            int flag1 = 0;
-            if (b1)
-                flag1 = 1;
-            if (idx != field_0x174)
-                flag1 = 0;
-
-            void* obj = sub_6ab240(this);
-
-            int cnt3 = (g_96dd34 - g_96dd30) / 12;
-            if (idx >= cnt3)
-                _invalid_parameter_noinfo();
-            int* arr2 = (int*)(g_96dd30 + offset);
-
-            if (field_0x9c == -1)
-            {
-                if (field_0x15c != 0)
-                    sub_6ab7c0((void*)field_0x15c);
-            }
-
-            int val = arr2[0];
-            int sel = (val == field_0x180) ? 1 : 0;
-            int isCur = (idx == field_0x174) ? 1 : 0;
-
-            int rect[4];
-            rect[0] = x1;
-            rect[1] = y1;
-            rect[2] = x2;
-            rect[3] = y2;
-
-            void* vobj = obj;
-            void* vtbl = *(void**)vobj;
-            void (__fastcall *fn)(void*, int, int, int, int, int, int, int, int, int, int, int, int, int, int) =
-                (void (__fastcall *)(void*, int, int, int, int, int, int, int, int, int, int, int, int, int, int))*(void**)((char*)vtbl + 0x84);
-            fn(vobj, n, rect[0], rect[1], rect[2], rect[3], isCur, sel, 0, 1, 5, 0, 0, 0, 0);
-        }
-
-    next:
-        {
-            int r[4];
-            r[0] = x1;
-            r[1] = y1;
-            r[2] = x2;
-            r[3] = y2;
-            InflateRect(r, -3, -3);
-
-            if (field_0x9c == -1)
-            {
-                if (field_0x15c != 0)
-                    sub_6ab7c0((void*)field_0x15c);
-            }
-
-            if (field_0x9c != 0)
-            {
-                int cnt4 = (g_96dd34 - g_96dd30) / 12;
-                if (idx >= cnt4)
-                    _invalid_parameter_noinfo();
-                int* arr3 = (int*)(g_96dd30 + offset);
-                sub_6a135e(this, r, arr3[0]);
-            }
-
-            void* p1 = sub_6dfd40();
-            void* p2 = sub_6df520(p1, 16);
-            void* p3 = sub_6dfd40();
-            void* p4 = sub_6df520(p3, 16);
-            sub_6a1358(this, r, p2, p4);
-        }
-
-        offset += 12;
-        idx++;
-    }
+void ColorSelectorRecovery::Draw(CDC* pDC){
+ int nCount=colorEntries.size();
+ for(int i=0;i<nCount;i++){
+  CRect rcButton=colorRect(i);
+  if(i==field<int>(0x174)||colorEntries[i].clrButton==field<COLORREF>(0x180)){
+   BOOL bPressed=GetPressed()&&i==field<int>(0x174);
+   GetPaintManager()->DrawRectangle(pDC,rcButton,i==field<int>(0x174),bPressed,GetEnabled(),colorEntries[i].clrButton==field<COLORREF>(0x180),FALSE,xtpBarTypeNormal,xtpBarPopup);
+  }
+  rcButton.DeflateRect(3,3);
+  if(GetEnabled())pDC->FillSolidRect(rcButton,colorEntries[i].clrButton);
+  pDC->Draw3dRect(rcButton,GetXtremeColor(COLOR_3DSHADOW),GetXtremeColor(COLOR_3DSHADOW));
+ }
 }

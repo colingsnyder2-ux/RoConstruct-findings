@@ -1,131 +1,168 @@
-// from server: 97% by colin
-// from server: 93% by king_originala
-// roc 2008-06 00427890  unit: ThreadLogManager  size: 180 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00427890
-//
-// 00427890  6aff                 push -1
-// 00427892  68d3ef7b00           push 0x7befd3
-// 00427897  64a100000000         mov eax, dword ptr fs:[0]
-// 0042789d  50                   push eax
-// 0042789e  64892500000000       mov dword ptr fs:[0], esp
-// 004278a5  83ec08               sub esp, 8
-// 004278a8  56                   push esi
-// 004278a9  33c0                 xor eax, eax
-// 004278ab  89442408             mov dword ptr [esp + 8], eax
-// 004278af  8b74241c             mov esi, dword ptr [esp + 0x1c]
-// 004278b3  57                   push edi
-// 004278b4  8bf9                 mov edi, ecx
-// 004278b6  8b0dfcd09600         mov ecx, dword ptr [0x96d0fc]
-// 004278bc  83c104               add ecx, 4
-// 004278bf  89442418             mov dword ptr [esp + 0x18], eax
-// 004278c3  8b01                 mov eax, dword ptr [ecx]
-// 004278c5  8b5004               mov edx, dword ptr [eax + 4]
-// 004278c8  56                   push esi
-// 004278c9  ffd2                 call edx
-// 004278cb  8d4c2408             lea ecx, [esp + 8]
-// 004278cf  c744240c01000000     mov dword ptr [esp + 0xc], 1
-// 004278d7  ff15043f8000         call dword ptr [0x803f04]
-// 004278dd  8b4708               mov eax, dword ptr [edi + 8]
-// 004278e0  50                   push eax
-// 004278e1  8d4f0c               lea ecx, [edi + 0xc]
-// 004278e4  c744241c01000000     mov dword ptr [esp + 0x1c], 1
-// 004278ec  ff1564248000         call dword ptr [0x802464]
-// 004278f2  50                   push eax
-// 004278f3  8d4c2410             lea ecx, [esp + 0x10]
-// 004278f7  6814038100           push 0x810314
-// 004278fc  51                   push ecx
-// 004278fd  ff15dc3e8000         call dword ptr [0x803edc]
-// 00427903  83c410               add esp, 0x10
-// 00427906  8d4c2408             lea ecx, [esp + 8]
-// 0042790a  ff15e03e8000         call dword ptr [0x803ee0]
-// 00427910  50                   push eax
-// 00427911  8bce                 mov ecx, esi
-// 00427913  ff15f4238000         call dword ptr [0x8023f4]
-// 00427919  83e804               sub eax, 4
-// 0042791c  50                   push eax
-// 0042791d  8bce                 mov ecx, esi
-// 0042791f  ff15f8238000         call dword ptr [0x8023f8]
-// 00427925  8d4c2408             lea ecx, [esp + 8]
-// 00427929  ff15143f8000         call dword ptr [0x803f14]
-// 0042792f  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 00427933  5f                   pop edi
-// 00427934  8bc6                 mov eax, esi
-// 00427936  5e                   pop esi
-// 00427937  64890d00000000       mov dword ptr fs:[0], ecx
-// 0042793e  83c414               add esp, 0x14
-// 00427941  c20400               ret 4
+// from server: 100% by king_originala
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lang: cpp
+// Genuine VC2008 RTM and MFC90 consumed DLL interfaces.
 
-struct String {
-    char storage[28];
-};
+typedef unsigned int size_t;typedef int ptrdiff_t;
+namespace std {
+template<class _Elem>struct char_traits;
+template<class _Ty>struct _Allocator_base {typedef _Ty value_type;};
+template<class _Ty>
+class allocator
+		: public _Allocator_base<_Ty>
+	{	
+public:
+	typedef _Allocator_base<_Ty> _Mybase;
+	typedef typename _Mybase::value_type value_type;
+	typedef value_type  *pointer;
+	typedef value_type & reference;
+	typedef const value_type  *const_pointer;
+	typedef const value_type & const_reference;
+	typedef size_t size_type;
+	typedef ptrdiff_t difference_type;
+	template<class _Other>
+		struct rebind
+		{	
+		typedef allocator<_Other> other;
+		};
+allocator() throw();allocator(const allocator<_Ty>&) throw();};
+class __declspec(dllimport) _Container_base_secure {};
+class __declspec(dllimport) _String_base
+		: public _Container_base_secure
+	{	
+public:
+	 static void __cdecl _Xlen();	
+	 static void __cdecl _Xran();	
+	 static void __cdecl _Xinvarg();
+	};
+template<class _Ty,class _Alloc>
+class _String_val
+		: public _String_base
+	{	
+protected:
+	typedef typename _Alloc::template
+		rebind<_Ty>::other _Alty;
+	 _String_val(_Alty _Al = _Alty())
+		: _Alval(_Al)
+		{	
+		}
+public:
+	 _String_val(const _String_val &_Right)
+		: _Alval(_Right._Alval)
+		{	
+		}
+protected:
+	_Alty _Alval;	
+	};
+template<class _Elem,class _Traits,class _Ax>
+class basic_string
+		: public _String_val<_Elem, _Ax>
+	{	
+public:
+	typedef basic_string<_Elem, _Traits, _Ax> _Myt;
+	typedef _String_val<_Elem, _Ax> _Mybase;
+	typedef typename _Mybase::_Alty _Alloc;
+	typedef typename _Alloc::size_type size_type;
+	typedef typename _Alloc::difference_type _Dift;
+	typedef _Dift difference_type;
+	typedef typename _Alloc::pointer _Tptr;
+	typedef typename _Alloc::const_pointer _Ctptr;
+	typedef _Tptr pointer;
+	typedef _Ctptr const_pointer;
+	typedef typename _Alloc::reference _Reft;
+	typedef _Reft reference;
+	typedef typename _Alloc::const_reference const_reference;
+	typedef typename _Alloc::value_type value_type;
 
-struct Buffer;
-typedef void (__thiscall* BufferOperation)(Buffer*);
-
-extern BufferOperation constructBuffer;
-extern BufferOperation destroyBuffer;
-
-struct Buffer {
-    void* data;
-    int active;
-
-    Buffer();
-    __declspec(dllimport) ~Buffer() throw();
-};
-
-__forceinline Buffer::Buffer() {
-    data = 0;
+basic_string();basic_string(const _Myt& _Right);~basic_string();
+const _Elem * c_str() const;
+size_type size() const;
+_Myt& insert(size_type _Off,const _Elem *_Ptr);
+enum
+		{	
+		_BUF_SIZE = 16 / sizeof (_Elem) < 1 ? 1
+			: 16 / sizeof(_Elem)};private:
+union _Bxty
+		{	
+		_Elem _Buf[_BUF_SIZE];
+		_Elem *_Ptr;
+		} _Bx;
+ size_type _Mysize;	
+	size_type _Myres;	
+	};
+typedef basic_string<char,char_traits<char>,allocator<char> >string;
+template class __declspec(dllimport) allocator<char>;
+template class __declspec(dllimport) _String_val<char,allocator<char> >;
+template class __declspec(dllimport) basic_string<char,char_traits<char>,allocator<char> >;
 }
 
-struct Provider {
-    virtual void unused();
-    virtual void prepare(String*);
+// Consumed MFC90 RTM template interfaces, copied from atlsimpstr.h,
+// cstringt.h and afxstr.h. Unconsumed APIs and DLL definitions omitted.
+typedef char* LPSTR;typedef const char* LPCSTR;
+typedef wchar_t* LPWSTR;typedef const wchar_t* LPCWSTR;
+namespace ATL {
+template<typename BaseType=char>class ChTraitsBase {
+public:typedef char XCHAR;typedef LPSTR PXSTR;typedef LPCSTR PCXSTR;
+typedef wchar_t YCHAR;typedef LPWSTR PYSTR;typedef LPCWSTR PCYSTR;
 };
-
-struct ProviderOwner {
-    int reserved;
-    Provider provider;
+template<typename BaseType,bool t_bMFCDLL=false>class CSimpleStringT {
+public:
+typedef typename ChTraitsBase<BaseType>::XCHAR XCHAR;
+typedef typename ChTraitsBase<BaseType>::PXSTR PXSTR;
+typedef typename ChTraitsBase<BaseType>::PCXSTR PCXSTR;
+typedef typename ChTraitsBase<BaseType>::YCHAR YCHAR;
+typedef typename ChTraitsBase<BaseType>::PYSTR PYSTR;
+typedef typename ChTraitsBase<BaseType>::PCYSTR PCYSTR;
+~CSimpleStringT() throw();
+operator PCXSTR() const throw();
+private:PXSTR m_pszData;
 };
-
-extern ProviderOwner* providerOwner;
-
-typedef const char* (__thiscall* BufferText)(const Buffer*);
-typedef const char* (__thiscall* StringText)(const String*);
-typedef unsigned int (__thiscall* StringSize)(const String*);
-typedef String& (__thiscall* StringInsert)(String*, unsigned int, const char*);
-typedef void (__cdecl* BufferFormat)(Buffer*, const char*, ...);
-
-extern BufferText bufferText;
-extern StringText stringText;
-extern StringSize stringSize;
-extern StringInsert stringInsert;
-extern BufferFormat formatBuffer;
-
-struct Temporary : Buffer {
-    Temporary(String* text);
-    ~Temporary() throw();
-};
-
-__forceinline Temporary::Temporary(String* text) {
-    providerOwner->provider.prepare(text);
-    active = 1;
-    constructBuffer(this);
+template<typename _CharType>class ChTraitsCRT;
 }
-
-__forceinline Temporary::~Temporary() throw() {
+template<typename _CharType,class StringIterator=ATL::ChTraitsCRT<_CharType> >class StrTraitMFC_DLL;
+namespace ATL {
+namespace _CSTRING_IMPL_ {
+template<typename _CharType,class StringTraits>struct _MFCDLLTraitsCheck {const static bool c_bIsMFCDLLTraits=false;};
+template<typename _CharType>struct _MFCDLLTraitsCheck<_CharType,StrTraitMFC_DLL<_CharType,ATL::ChTraitsCRT<_CharType> > > {const static bool c_bIsMFCDLLTraits=true;};
 }
-
-struct ThreadLogManager {
-    int reserved[2];
-    int number;
-    String name;
-
-    String& process(String& text);
+template<typename BaseType,class StringTraits>class CStringT:
+public CSimpleStringT<BaseType,_CSTRING_IMPL_::_MFCDLLTraitsCheck<BaseType,StringTraits>::c_bIsMFCDLLTraits> {
+public:
+typedef CSimpleStringT<BaseType,_CSTRING_IMPL_::_MFCDLLTraitsCheck<BaseType,StringTraits>::c_bIsMFCDLLTraits>CThisSimpleString;
+typedef StringTraits StrTraits;
+typedef typename CThisSimpleString::XCHAR XCHAR;
+typedef typename CThisSimpleString::PXSTR PXSTR;
+typedef typename CThisSimpleString::PCXSTR PCXSTR;
+typedef typename CThisSimpleString::YCHAR YCHAR;
+typedef typename CThisSimpleString::PYSTR PYSTR;
+typedef typename CThisSimpleString::PCYSTR PCYSTR;
+CStringT() throw();~CStringT() throw();
+void __cdecl Format(PCXSTR pszFormat,...);
 };
-
-String& ThreadLogManager::process(String& text) {
-    Temporary buffer(&text);
-    formatBuffer(&buffer, "_%s_%d", stringText(&name), number);
-    stringInsert(&text, stringSize(&text) - 4, bufferText(&buffer));
-    return text;
 }
+template class __declspec(dllimport) ATL::CSimpleStringT<char,true>;
+template class __declspec(dllimport) ATL::CStringT<char,StrTraitMFC_DLL<char> >;
+typedef ATL::CStringT<char,StrTraitMFC_DLL<char> > CStringA;
+namespace RBX {class Log;class ILogProvider {public:virtual Log*provideLog()=0;};}
+class LogManager {
+public:
+ virtual~LogManager();
+ virtual std::string fileName()=0;
+protected:
+ RBX::Log*log;
+ int number;
+ std::string name;
+};
+class MainLogManager:public RBX::ILogProvider,public LogManager {public:virtual RBX::Log*provideLog();virtual std::string fileName();};
+extern MainLogManager*mainLogManager;
+class ThreadLogManager:public LogManager {public:virtual std::string fileName();};
+std::string ThreadLogManager::fileName(){
+ std::string result=mainLogManager->fileName();
+ CStringA suffix;
+ suffix.Format("_%s_%d",name.c_str(),number);
+ result.insert(result.size()-4,static_cast<const char*>(suffix));
+ return result;
+}
+typedef char NativeMfcStringSize[sizeof(CStringA)==4?1:-1];
+typedef char NativeStdStringSize[sizeof(std::string)==28?1:-1];

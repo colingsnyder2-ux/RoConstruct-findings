@@ -1,165 +1,67 @@
-// from server: 60% by king_originala
-extern "C" void __cdecl _invalid_parameter_noinfo();
+// from server: 92% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_duplicateselectiondirty8edfc189c624e29e.cpp
 
-void* __cdecl operator new(unsigned int);
-void __cdecl operator delete(void*);
-
-struct Resource {
-    void destroy();
-};
-
-Resource* __cdecl acquireResource();
-void __cdecl prepareResource(Resource*);
-void __cdecl duplicateItem();
-void __cdecl recordAction(const char*, void*);
-
-struct ResourceGuard {
-    Resource* value;
-    ~ResourceGuard();
-};
-
-ResourceGuard::~ResourceGuard()
-{
-    if (value) {
-        value->destroy();
-        operator delete(value);
-    }
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("reflection/function.h", "roc_espeon_machineheader2f6c7dcf10adead1.cpp")
+#pragma include_alias("reflection/signal.h", "roc_espeon_machineheader16e657153fe9fb6e.cpp")
+#pragma include_alias("reflection/type.h", "roc_espeon_machineheader4aaa2bdeb1c2b6c3.cpp")
+#pragma include_alias("reflection/reflection.h", "roc_espeon_machineheadera6fefc64bf3a6f9e.cpp")
+#pragma include_alias("reflection/Reflection.h", "roc_espeon_machineheadera6fefc64bf3a6f9e.cpp")
+#pragma include_alias("reflection/enumconverter.h", "roc_espeon_machineheader297ae1c3351d4ab6.cpp")
+#pragma include_alias("reflection/object.h", "roc_espeon_machineheadercadaaebe20af2047.cpp")
+#pragma include_alias("reflection/member.h", "roc_espeon_machineheader459d66d9acfae4ab.cpp")
+#pragma include_alias("reflection/descriptor.h", "roc_espeon_machineheader0acd23dba6f04ff5.cpp")
+#pragma include_alias("reflection/property.h", "roc_espeon_machineheadercfb6c68c9dd60df6.cpp")
+#pragma include_alias(<v8tree/Verb.h>, <roc_espeon_insertnativeheader1a746c4cc8c6ae06.cpp>)
+#pragma include_alias("v8tree/Verb.h", "roc_espeon_insertnativeheader1a746c4cc8c6ae06.cpp")
+#pragma include_alias(<util/Name.h>, <roc_espeon_insertnativeheader115b7bccd0a9061e.cpp>)
+#pragma include_alias("util/Name.h", "roc_espeon_insertnativeheader115b7bccd0a9061e.cpp")
+#pragma include_alias(<util/Debug.h>, <roc_espeon_insertnativeheader5fe96130a83d2e88.cpp>)
+#pragma include_alias("util/Debug.h", "roc_espeon_insertnativeheader5fe96130a83d2e88.cpp")
+#pragma include_alias("v8tree/Instance.h", "roc_espeon_nativeinstanceguidportablea1682bda32c99cd2.cpp")
+#include "v8tree/Verb.h"
+#include "v8xml/SerializerV2.h"
+#include <boost/bind.hpp>
+#include <memory>
+#include <stdexcept>
+namespace RBX {
+typedef std::vector<boost::shared_ptr<Instance> > DuplicateInstances;
+bool permissionA(Instance*,int);bool permissionB(Instance*,int);
+static __declspec(noinline) void checkPermissions(Instance* instance) {
+ if(permissionA(instance,1)&&!permissionB(instance,1)) {
+  std::string message("Insufficinet permissions");throw std::runtime_error(message);
+ }
 }
-
-struct Iterator {
-    void* owner;
-    void* position;
+template<class T>T& at(void* p,unsigned n){return *reinterpret_cast<T*>(reinterpret_cast<char*>(p)+n);}
+class DuplicateSelectionView {public:
+ DuplicateInstances::const_iterator begin()const{return (*reinterpret_cast<DuplicateInstances* const*>(reinterpret_cast<const char*>(this)+0x154))->begin();}
+ DuplicateInstances::const_iterator end()const{return (*reinterpret_cast<DuplicateInstances* const*>(reinterpret_cast<const char*>(this)+0x154))->end();}
+ void replace(DuplicateInstances::iterator,DuplicateInstances::iterator);
 };
-
-void __cdecl copySelection(
-    Iterator*, void*, void*, void*, void*,
-    void (__cdecl*)(), Resource*);
-
-struct SelectionStorage {
-    void* owner;
-    unsigned int unused[2];
-    void* begin;
-    void* end;
-};
-
-struct Selection {
-    char unused[0x154];
-    SelectionStorage* storage;
-    void replace(void*, void*, void*, void*);
-};
-
-struct SelectionHandle {
-    Selection* get(int);
-};
-
-struct Result {
-    Result** owner;
-    unsigned int unused[2];
-    void* begin;
-    void* end;
-    void* capacity;
-    Result();
-    ~Result();
-};
-
-Result::Result()
-{
-    owner = static_cast<Result**>(operator new(4));
-    if (owner)
-        *owner = this;
-    begin = 0;
-    end = 0;
-    capacity = 0;
+class DuplicateSelectionClient {public:DuplicateSelectionView* get(bool);};
+class DuplicateRecorder {public:void mark(int);};
+class DuplicateOwner {public:DuplicateSelectionView* ensureSelection();DuplicateRecorder* recorder();};
+class DuplicateInsertion {public:void insert(XmlElement*,DuplicateInstances*,int,int);};
+void writeInstance(XmlElement*,boost::shared_ptr<Instance>);
+void markInsertAction(const char*,DuplicateOwner*);
+// Borrowed IDataState primary interface observed at582d1e: setDirty slot0.
+class DuplicateDirtyView {public:virtual void setDirty(bool)=0;};
+class DuplicateRecovery:public Verb {public:virtual void doIt(IDataState*);};
+void DuplicateRecovery::doIt(IDataState* state) {
+ checkPermissions(reinterpret_cast<Instance*>(at<DuplicateOwner*>(this,0x20)));
+ std::auto_ptr<XmlElement> root(SerializerV2::newRootElement());
+ if(at<DuplicateOwner*>(this,0x20))at<DuplicateOwner*>(this,0x20)->ensureSelection();
+ DuplicateSelectionClient& selection=at<DuplicateSelectionClient>(this,0x14);
+ std::for_each(selection.get(true)->begin(),selection.get(true)->end(),boost::bind(writeInstance,root.get(),_1));
+ SerializerV2::isolateHandles(root.get());
+ DuplicateInstances result;
+ at<DuplicateInsertion*>(this,0xc)->insert(root.get(),&result,2,0);
+ selection.get(true)->replace(result.begin(),result.end());
+ (at<DuplicateOwner*>(this,0x20)?at<DuplicateOwner*>(this,0x20)->recorder():0)->mark(8);
+ markInsertAction(getName().c_str(),at<DuplicateOwner*>(this,0x20));
+ reinterpret_cast<DuplicateDirtyView*>(state)->setDirty(true);
 }
-
-struct Action {
-    virtual void dispose(int) = 0;
-};
-
-struct Recorder {
-    void apply(Resource*, Result*, int, int);
-    void mark(int);
-};
-
-struct Context {
-    void prepare();
-    Recorder* recorder();
-};
-
-struct Name {
-    unsigned int unused[2];
-    union {
-        char text[16];
-        char* pointer;
-    };
-    unsigned int length;
-    unsigned int capacity;
-};
-
-struct S {
-    unsigned int unused0;
-    Name* name;
-    unsigned int unused8;
-    Recorder* sink;
-    unsigned int unused10;
-    SelectionHandle selection;
-    unsigned int unused18;
-    unsigned int unused1c;
-    Context* context;
-
-    void initialize();
-    void execute(Action*);
-};
-
-void S::execute(Action* action)
-{
-    initialize();
-    ResourceGuard resource;
-    resource.value = acquireResource();
-
-    if (context)
-        context->prepare();
-
-    SelectionStorage* lastStorage = selection.get(1)->storage;
-    void* last = lastStorage->end;
-    if (lastStorage->begin > last)
-        _invalid_parameter_noinfo();
-    void* lastOwner = lastStorage->owner;
-
-    SelectionStorage* firstStorage = selection.get(1)->storage;
-    void* first = firstStorage->begin;
-    if (first > firstStorage->end)
-        _invalid_parameter_noinfo();
-    void* firstOwner = firstStorage->owner;
-
-    Iterator copied;
-    copySelection(&copied, firstOwner, first, lastOwner, last,
-                  duplicateItem, resource.value);
-    prepareResource(resource.value);
-
-    Result result;
-    sink->apply(resource.value, &result, 2, 0);
-
-    void* finish = result.end;
-    void* start = result.begin;
-    if (start > finish) {
-        _invalid_parameter_noinfo();
-        finish = result.end;
-        start = result.begin;
-    }
-
-    void* finishOwner = result.owner;
-    void* position = start;
-    if (start > finish)
-        _invalid_parameter_noinfo();
-    void* startOwner = result.owner;
-
-    selection.get(1)->replace(startOwner, position, finishOwner, finish);
-
-    Recorder* recorder = context ? context->recorder() : 0;
-    recorder->mark(8);
-
-    const char* text = name->capacity >= 16 ? name->pointer : name->text;
-    recordAction(text, context);
-    action->dispose(1);
 }

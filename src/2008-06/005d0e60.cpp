@@ -1,4 +1,8 @@
-// from server: 94% by king_originala
+// from server: 96% by colin
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Oy /GS- /EHsc /MD
+
 extern "C" void (__cdecl *_invalid_parameter_noinfo)();
 
 struct Property {
@@ -32,8 +36,12 @@ bool Descriptor::set(void* instance, unsigned int index)
         if (ordinal >= static_cast<unsigned int>(map->end - map->begin))
             _invalid_parameter_noinfo();
 
-        *(volatile unsigned int*)&index = map->begin[ordinal];
-        property->set(instance, index);
+        // Force eax for array element
+        volatile unsigned int* elemPtr = &map->begin[ordinal];
+        unsigned int temp = *elemPtr;
+        (void)temp;
+        
+        property->set(instance, *elemPtr);
         return true;
     }
     return false;

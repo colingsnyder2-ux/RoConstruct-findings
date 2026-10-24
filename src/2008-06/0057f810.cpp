@@ -1,3 +1,5 @@
+// from server: 76% by king_originala
+#include <intrin.h>
 // from server: 69% by colin
 // from server: 65% by king_originala
 // roc 2008-06 0057f810  unit: RBX::VModelInstance::?$FilteredSelection  size: 322 bytes
@@ -113,8 +115,6 @@
 // 0057f94e  83c420               add esp, 0x20
 // 0057f951  c3                   ret 
 
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
 
 extern "C" void __cdecl _invalid_parameter_noinfo();
 extern "C" void* __cdecl __RTDynamicCast(void*, long, void*, void*, int);
@@ -122,8 +122,6 @@ extern "C" void* __cdecl __RTDynamicCast(void*, long, void*, void*, int);
 extern char propertyType;
 extern char booleanPropertyType;
 
-extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-#pragma intrinsic(_InterlockedDecrement)
 struct Control {
     virtual void reserved() = 0;
     virtual void dispose() = 0;
@@ -197,18 +195,16 @@ struct Iterator {
     Proxy* proxy;
     Property** position;
 
+    Iterator(Selection*o,const Position&p):owner(o),proxy(p.proxy),position(p.position){}
     Property* get(Position* temporary);
 };
 
 bool filteredSelection(void* key, Shared model)
 {
     Selection* selection = &model.object->selection;
-    Position found = selection->storage->values.find(key);
-
-    Iterator iterator;
-    iterator.owner = selection;
-    iterator.proxy = found.proxy;
-    iterator.position = found.position;
+    Iterator iterator(selection,selection->storage->values.find(key));
+    Proxy* proxy=iterator.proxy;
+    Property** position=iterator.position;
 
     Storage* storage = model.object->selection.storage;
     Property** end = storage->values.last;
@@ -217,19 +213,19 @@ bool filteredSelection(void* key, Shared model)
         _invalid_parameter_noinfo();
 
     Proxy* expected = storage->values.proxy;
-    if (!found.proxy || found.proxy != expected)
+    if (!proxy || proxy != expected)
         _invalid_parameter_noinfo();
 
-    if (found.position != end) {
+    if (position != end) {
         Vector* vector;
-        if (!found.proxy)
+        if (!proxy)
             _invalid_parameter_noinfo();
-        vector = found.proxy->owner;
+        vector = proxy->owner;
 
-        if (found.position >= vector->last)
+        if (position >= vector->last)
             _invalid_parameter_noinfo();
 
-        Property* property = *found.position;
+        Property* property = *position;
         if (__RTDynamicCast(property, 0, &propertyType,
                             &booleanPropertyType, 0)) {
             Position temporary;

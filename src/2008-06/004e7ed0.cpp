@@ -1,164 +1,62 @@
-// from server: 98% by colin
-//
-
-//
+// from server: 100% by king_originala
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <vector>
 #include <intrin.h>
-
-//
-
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-extern "C" long __cdecl _InterlockedIncrement(volatile long*);
-#pragma intrinsic(_InterlockedIncrement)
-extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-#pragma intrinsic(_InterlockedDecrement)
-
-extern "C" void (__cdecl *invalid_parameter)();
-typedef void (__cdecl *Failure)();
-
-struct Control
-{
-    virtual ~Control();
-    virtual void dispose() = 0;
-    virtual void destroy() = 0;
-    volatile long strong;
-    volatile long weak;
+#include <utility>
+namespace boost {
+namespace detail {
+struct sp_counted_base {
+    virtual ~sp_counted_base() {}
+    virtual void dispose()=0;
+    virtual void destroy(){delete this;}
+    long use_count_,weak_count_;
+    void weak_release(){if(_InterlockedDecrement(&weak_count_)==0)destroy();}
+    void release(){if(_InterlockedDecrement(&use_count_)==0){dispose();weak_release();}}
 };
-
-template<class T> struct Shared
-{
-    T* object;
-    Control* control;
-    Shared(const Shared&);
-    ~Shared();
-    Shared get() const;
+struct shared_count {
+    sp_counted_base* pi_;
+    shared_count():pi_(0){}
+    shared_count& operator=(const shared_count& r){sp_counted_base* tmp=r.pi_;if(tmp!=pi_){if(tmp)_InterlockedIncrement(&tmp->use_count_);if(pi_)pi_->release();pi_=tmp;}return *this;}
+    void swap(shared_count& r){sp_counted_base* tmp=r.pi_;r.pi_=pi_;pi_=tmp;}
+    shared_count(const shared_count& r):pi_(r.pi_){if(pi_)_InterlockedIncrement(&pi_->use_count_);}
+    ~shared_count(){if(pi_)pi_->release();}
 };
-
-template<class T>
-inline Shared<T>::Shared(const Shared<T>& other)
-    : object(other.object), control(other.control)
-{
-    if (control)
-        _InterlockedIncrement(&control->strong);
+}
+template<class T> class shared_ptr {
+public:
+    T* px; detail::shared_count pn;
+    shared_ptr():px(0),pn(){}
+    shared_ptr& operator=(const shared_ptr& r){px=r.px;pn=r.pn;return *this;}
+    void swap(shared_ptr& r){std::swap(px,r.px);pn.swap(r.pn);}
+    void reset(){shared_ptr().swap(*this);}
+    typedef T* shared_ptr::*unspecified_bool_type;
+    operator unspecified_bool_type()const{return px==0?0:&shared_ptr::px;}
+    shared_ptr(const shared_ptr& r):px(r.px),pn(r.pn){}
+    template<class Y> shared_ptr(const shared_ptr<Y>& r):px(r.px),pn(r.pn){}
+    T* get()const{return px;}
+    T* operator->()const{return px;}
+};
+template<class T,class U> bool operator==(const shared_ptr<T>& a,const shared_ptr<U>& b){return a.get()==b.get();}
 }
 
-template<class T>
-inline Shared<T>::~Shared()
-{
-    Control* p = control;
-    if (p && _InterlockedDecrement(&p->strong) == 0)
-    {
-        p->dispose();
-        if (_InterlockedDecrement(&p->weak) == 0)
-            p->destroy();
-    }
+namespace RBX {
+class Instance;class Adorn;
+typedef std::vector<boost::shared_ptr<Instance> > Instances;
+struct Children {boost::shared_ptr<Instances> object;operator boost::shared_ptr<Instances>::unspecified_bool_type()const{return object;}__declspec(noinline) boost::shared_ptr<const Instances> read()const{return object;}};
+class __single_inheritance Receiver;
+struct MemberFunction {typedef void(Receiver::*Function)(boost::shared_ptr<Instance>);Function function;void operator()(Receiver*,boost::shared_ptr<Instance>)const;};
+struct Placeholder {};
+struct Visitor {MemberFunction function;Receiver* owner;void operator()(const boost::shared_ptr<Instance>& instance)const{function(owner,instance);}};
+class Instance {char prefix[0x108];Children children;public:void visitChildren(Visitor)const;};
+void Instance::visitChildren(Visitor func)const{
+ if(children){
+  boost::shared_ptr<const Instances> c=children.read();
+  Instances::const_iterator end=c->end();
+  Instances::const_iterator iter=c->begin();
+  for(;iter!=end;iter++){
+   func(*iter);
+  }
+ }
 }
-
-struct Item;
-struct Vector;
-
-struct Proxy
-{
-    Vector* owner;
-};
-
-struct Iterator
-{
-    Proxy* proxy;
-    Shared<Item>* position;
-    void check(const Iterator&, Failure) const;
-    Shared<Item>& value(Failure) const;
-    void advance(Failure);
-};
-
-struct Vector
-{
-    Proxy* proxy;
-    unsigned long reserved[2];
-    Shared<Item>* first;
-    Shared<Item>* last;
-    Iterator begin(Failure);
-    Iterator end(Failure);
-};
-
-inline Iterator Vector::end(Failure fail)
-{
-    Shared<Item>* p = last;
-    if (first > p)
-        fail();
-    Iterator result;
-    result.proxy = proxy;
-    result.position = p;
-    return result;
-}
-
-inline Iterator Vector::begin(Failure fail)
-{
-    Shared<Item>* p = first;
-    if (p > last)
-        fail();
-    Iterator result;
-    result.proxy = proxy;
-    result.position = p;
-    return result;
-}
-
-inline void Iterator::check(const Iterator& other, Failure fail) const
-{
-    if (!proxy || proxy != other.proxy)
-        fail();
-}
-
-inline Shared<Item>& Iterator::value(Failure fail) const
-{
-    if (!(proxy != 0))
-        fail();
-    Vector* owner = proxy ? proxy->owner : 0;
-    if (position >= owner->last)
-        fail();
-    return *position;
-}
-
-inline void Iterator::advance(Failure fail)
-{
-    if (!(proxy != 0))
-        fail();
-    Vector* owner = proxy ? proxy->owner : 0;
-    if (position >= owner->last)
-        fail();
-    ++position;
-}
-
-struct Callback
-{
-    unsigned long state[1];
-    void invoke(int, Shared<Item>);
-};
-
-struct S
-{
-    unsigned char padding[0x108];
-    Shared<Vector> entries;
-    void f(Callback, int);
-};
-
-void S::f(Callback callback, int argument)
-{
-    if (entries.object)
-    {
-        Shared<Vector> snapshot = entries.get();
-        Vector* vector = snapshot.object;
-        Failure fail = invalid_parameter;
-        _ReadWriteBarrier();
-        Iterator finish = vector->end(fail);
-        Iterator current = vector->begin(fail);
-        for (;;)
-        {
-            current.check(finish, fail);
-            if (current.position == finish.position)
-                break;
-            callback.invoke(argument, current.value(fail));
-            current.advance(fail);
-        }
-    }
 }

@@ -1,8 +1,10 @@
-// from server: 77% by EspClaude
-// roc-lang: cpp
+// from server: 100% by king_originala
+// from server: 78% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lang: cpp
 #include <map>
+#include <intrin.h>
 
 struct Vector3 { float x, y, z; };
 
@@ -24,15 +26,16 @@ struct Key {
 };
 
 struct KeyLess {
-    bool operator()(const Key& a, const Key& b) const
-    {
-        int c = compareVec(b.pos, a.pos);
-        if (c < 0) return true;
-        if (c > 0) return false;
-        if (a.index < b.index) return true;
-        if (a.index > b.index) return false;
-        return a.value < b.value;
-    }
+ bool operator()(const Key&a,const Key&b)const {
+    int c=compareVec(b.pos,a.pos);
+    bool less;
+    if(c<0)less=true;
+    else if(c>0)less=false;
+    else if(a.index<b.index)less=true;
+    else if(a.index>b.index)less=false;
+    else less=a.value<b.value;
+    return less;
+ }
 };
 
 struct Level {

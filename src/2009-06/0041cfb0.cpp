@@ -1,4 +1,4 @@
-// from server: 45% by colin
+// from server: 50% by sophus
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD

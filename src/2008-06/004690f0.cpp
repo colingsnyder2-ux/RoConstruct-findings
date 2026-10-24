@@ -1,7 +1,10 @@
+// from server: 99% by king_originala
+#include <intrin.h>
 // from server: 89% by king_originala
 typedef unsigned long DWORD;
 
-extern int (__stdcall *copyAccelerators)(void*);
+struct Accelerator;
+extern "C" __declspec(dllimport) int __stdcall copyAccelerators(void*, Accelerator*, int);
 extern long (__stdcall *createInput)(void*, DWORD, const void*, void**, void*);
 extern const unsigned char inputIdentifier[];
 extern "C" long __stdcall normalizeResult(long);
@@ -75,7 +78,7 @@ struct Window;
 
 struct WindowTable {
     void* reserved[98];
-    void* (__thiscall *accelerators)(Window*, void*, unsigned int);
+    void* (__thiscall *accelerators)(Window*);
 };
 
 struct Window {
@@ -155,15 +158,17 @@ S::S(Window* w, Object* o)
     Reference* r = &relatedReference;
     current = window->parent();
     if (current) {
-        int (__stdcall *copy)(void*) = copyAccelerators;
         do {
-            unsigned int count = copy(
-                current->table->accelerators(current, 0, 0));
+            WindowTable* table = current->table;
+            void* (__thiscall *getAccelerator)(Window*) = table->accelerators;
+            unsigned int count = copyAccelerators(
+                getAccelerator(current), 0, 0);
             acceleratorCount = count;
             if (count) {
-                acceleratorData = new Accelerator[count];
-                copy(current->table->accelerators(
-                    current, acceleratorData, acceleratorCount));
+                Accelerator* allocated = new Accelerator[count];
+                acceleratorData = allocated;
+                copyAccelerators(current->table->accelerators(current),
+                     allocated, acceleratorCount);
                 break;
             }
             current = current->parent();
@@ -182,6 +187,7 @@ S::S(Window* w, Object* o)
 
     if (r->object)
         r->object->first.connect(static_cast<Interface2*>(this));
+    _ReadWriteBarrier();
     if (r->object)
         r->object->second.connect(static_cast<Interface1*>(this));
 }

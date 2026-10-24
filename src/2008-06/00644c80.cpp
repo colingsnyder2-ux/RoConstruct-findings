@@ -1,194 +1,93 @@
-// from server: 38% by colin
+// from server: 94% by king_originala
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+#include <math.h>
+#include <stddef.h>
+#include <string>
+namespace G3D {
+struct Vector2;struct Rect2D;struct AABox;struct Sphere;
+template<class T>struct ReferenceCountedPointer {T*pointer;};
 struct Vector3 {
-    float x, y, z;
+ float x,y,z;Vector3():x(0),y(0),z(0){}Vector3(float a,float b,float c):x(a),y(b),z(c){}Vector3(const Vector3&v):x(v.x),y(v.y),z(v.z){}
+ Vector3&operator=(const Vector3&v){x=v.x;y=v.y;z=v.z;return *this;}
+ Vector3 operator+(const Vector3&v)const{return Vector3(x+v.x,y+v.y,z+v.z);}Vector3 operator-(const Vector3&v)const{return Vector3(x-v.x,y-v.y,z-v.z);}Vector3 operator*(float f)const{return Vector3(x*f,y*f,z*f);}
+ float squaredMagnitude()const{return x*x+y*y+z*z;}float magnitude()const{return(float)sqrt(squaredMagnitude());}
+ static const Vector3&zero(){static Vector3 v(0,0,0);return v;}
 };
-
-struct Ray {
-    void* vtable;
-    float originX, originY, originZ;
-    float dirX, dirY, dirZ;
-    Ray();
-};
-
-struct GCamera {
-    float m[9];
-    GCamera();
-    GCamera(const GCamera&);
-};
-
-struct Humanoid;
-
-struct Climbing {
-    char pad0[8];
-    Humanoid* humanoid;
-    bool onStepImpl(float dt);
-};
-
-void* sub_5d9160(void* self);
-bool sub_644a30(Climbing* self, float dt);
-void sub_599360(void* self);
-void sub_5187f0(void* self, Vector3* out);
-int sub_6449e0(void* self);
-Vector3* sub_5149b0();
-void sub_510a30(Ray* self);
-void sub_62dc10(Vector3* out, void* arg);
-GCamera* sub_513e20();
-void sub_513220(GCamera* self, GCamera* src);
-Vector3* sub_5148e0();
-Vector3* sub_5148b0();
-void sub_518830(Vector3* a, Vector3* b, Vector3* c);
-Vector3* sub_514940();
-void* sub_57d210(void* self, Vector3* a, float f1, float f2, int i);
-void sub_6773f0(void* a, void* b);
-
-extern "C" float sqrtf(float);
-
-extern float g_81c434;
-extern float g_84ac8c;
-extern float g_8378b8;
-extern float g_8288b8;
-extern float g_84ac88;
-extern float g_81ccbc;
-extern float g_8249f8;
-extern void* g_8282c4;
-
-bool Climbing::onStepImpl(float dt)
-{
-    void* obj = sub_5d9160(this->humanoid);
-    if (!obj)
-        return false;
-    if (!sub_644a30(this, dt))
-        return false;
-
-    sub_599360(obj);
-
-    Vector3 v28;
-    sub_5187f0((char*)obj + 0x94, &v28);
-
-    int r = sub_6449e0(this->humanoid);
-
-    float f18 = 0.0f;
-    float f44 = 0.0f;
-    int i58 = r;
-    bool b13 = true;
-    bool bl = false;
-
-    Vector3* pv = sub_5149b0();
-    float f1c = pv->x;
-    float f20 = pv->y;
-    float f24 = pv->z;
-
-    int i18 = 1;
-
-    float f60 = v28.x * g_81c434;
-    float f5c = v28.y * g_81c434;
-    float f54 = v28.z * g_81c434;
-
-    for (; i18 < 0x12; i18++) {
-        float f38 = (float)i18 * g_84ac8c;
-        float fa4 = f38 - g_8378b8;
-
-        Ray ray;
-        sub_510a30(&ray);
-
-        float f40 = *(float*)((char*)obj + 0x94 + 0x24);
-        float f50 = *(float*)((char*)obj + 0x94 + 0x28) + fa4;
-        float f58 = *(float*)((char*)obj + 0x94 + 0x2c);
-
-        Vector3 dir;
-        dir.x = f60;
-        dir.y = f5c;
-        dir.z = f54;
-
-        Vector3 origin;
-        origin.x = f40;
-        origin.y = f50;
-        origin.z = f58;
-
-        Vector3 hit;
-        sub_62dc10(&hit, *(void**)((char*)this->humanoid + 0x104));
-
-        float dx = hit.x - origin.x;
-        float dy = hit.y - origin.y;
-        float dz = hit.z - origin.z;
-        float dist = dx*dx + dy*dy + dz*dz;
-        dist = sqrtf(dist);
-
-        if (dist < g_8288b8) {
-            if (b13) {
-                b13 = false;
-                f18 = f38;
-                bl = true;
-                Vector3* p = sub_5148e0();
-                f1c = p->x;
-                f20 = p->y;
-                f24 = p->z;
-            }
-        } else {
-            if (bl) {
-                bl = false;
-                f44 = f38 - f18;
-                Vector3* p = sub_5148b0();
-                f1c = p->x;
-                f20 = p->y;
-                f24 = p->z;
-            }
-        }
-
-        if (this->humanoid) {
-            GCamera* cam = sub_513e20();
-            GCamera local;
-            sub_513220(&local, cam);
-
-            Vector3 a;
-            a.x = *(float*)((char*)obj + 0x94 + 0x24);
-            a.y = *(float*)((char*)obj + 0x94 + 0x28);
-            a.z = *(float*)((char*)obj + 0x94 + 0x2c);
-
-            Vector3 b;
-            b.x = hit.x - a.x;
-            b.y = hit.y - a.y;
-            b.z = hit.z - a.z;
-
-            Vector3 c;
-            c.x = f1c - a.x;
-            c.y = f20 - a.y;
-            c.z = f24 - a.z;
-
-            Vector3 d;
-            sub_518830(&d, &b, &c);
-
-            Vector3 e;
-            e.x = d.x;
-            e.y = d.y;
-            e.z = d.z;
-
-            Vector3 f;
-            f.x = f1c;
-            f.y = f20;
-            f.z = 1.0f;
-
-            void** vt = *(void***)this->humanoid;
-            void* fn = vt[21];
-            ((void (__thiscall*)(void*, Vector3*, Vector3*, Vector3*))fn)(this->humanoid, &e, &f, &d);
-        }
-    }
-
-    if (g_84ac88 > f18) {
-        if (f44 >= 0.0f && f44 <= 0.0f) {
-            return false;
-        }
-        if (this->humanoid) {
-            Vector3 pos;
-            pos.x = *(float*)((char*)obj + 0x94 + 0x24);
-            pos.y = *(float*)((char*)obj + 0x94 + 0x28) + g_81ccbc;
-            pos.z = *(float*)((char*)obj + 0x94 + 0x2c);
-
-            void* p = sub_514940();
-            void* q = sub_57d210(&pos, (Vector3*)p, 1.0f, g_8249f8, 1);
-            sub_6773f0(q, this->humanoid);
-        }
-        return true;
-    }
-    return false;
+struct Matrix3 {float elt[3][3];Matrix3(){}Matrix3(const Matrix3&m){*this=m;}Matrix3&operator=(const Matrix3&);Vector3 getColumn(int)const;static const Matrix3&identity();};
+struct CoordinateFrame {Matrix3 rotation;Vector3 translation;CoordinateFrame():rotation(Matrix3::identity()),translation(Vector3::zero()){}CoordinateFrame(const Vector3&v):rotation(Matrix3::identity()),translation(v){}static const float zLookDirection;__declspec(noinline) Vector3 lookVector()const{return rotation.getColumn(2)*zLookDirection;}};
+struct Color3 {float r,g,b;Color3(const Color3&c):r(c.r),g(c.g),b(c.b){}Color3&operator=(const Color3&c){r=c.r;g=c.g;b=c.b;return *this;}static const Color3&orange();static const Color3&green();static const Color3&red();static const Color3&purple();};
+struct Color4 {float r,g,b,a;Color4(const Color3&c,float alpha=1):r(c.r),g(c.g),b(c.b),a(alpha){}};
+struct Ray {Vector3 origin,direction;Ray():origin(Vector3::zero()),direction(Vector3::zero()){}virtual ~Ray(){}};
+// Factory name below is a codegen label for the observed cdecl hidden-result ABI.
+struct LineSegment {Vector3 point,direction;virtual ~LineSegment(){}static LineSegment fromOriginAndDirection(const Vector3&,const Vector3&);};
 }
+namespace RBX {
+struct TextureProxyBase;
+struct Adorn {
+ enum Spacing {PROPORTIONAL_SPACING,FIXED_SPACING};enum XAlign{XALIGN_RIGHT,XALIGN_LEFT,XALIGN_CENTER};enum YAlign{YALIGN_TOP,YALIGN_BASELINE,YALIGN_CENTER,YALIGN_BOTTOM};
+ virtual ~Adorn();
+ virtual G3D::ReferenceCountedPointer<TextureProxyBase>createTextureProxy(const std::string&)=0;
+ virtual void prepareRenderPass()=0;virtual void finishRenderPass()=0;virtual G3D::Rect2D getViewport()const=0;virtual int getWidth()const=0;virtual int getHeight()const=0;
+ virtual void setTexture(int,G3D::ReferenceCountedPointer<TextureProxyBase>)=0;virtual G3D::Rect2D getTextureSize(G3D::ReferenceCountedPointer<TextureProxyBase>)const=0;
+ virtual void line2d(const G3D::Vector2&,const G3D::Vector2&,const G3D::Color4&)const=0;virtual void outlineRect2d(const G3D::Rect2D&,float,const G3D::Color4&)const=0;virtual void rect2d(const G3D::Rect2D&,const G3D::Color4&)const=0;
+ virtual G3D::Vector2 get2DStringBounds(const std::string&,double,Spacing)const=0;virtual G3D::Vector2 drawFont2D(const std::string&,const G3D::Vector2&,double,const G3D::Color4&,const G3D::Color4&,XAlign,YAlign,Spacing)const=0;
+ virtual void setObjectToWorldMatrix(const G3D::CoordinateFrame&)=0;virtual void setColor(const G3D::Color4&)=0;
+ virtual void box(const G3D::AABox&,const G3D::Color4&,const G3D::Color4&)=0;virtual void sphere(const G3D::Sphere&,const G3D::Color4&,const G3D::Color4&)=0;virtual void explosion(const G3D::Sphere&,const G3D::Color4&,const G3D::Color4&)=0;
+ virtual void cylinderAlongX(float,float,const G3D::Color4&,const G3D::Color4&)=0;virtual void ray(const G3D::Ray&,const G3D::Color4&,float)=0;virtual void lineSegment(const G3D::LineSegment&,const G3D::Color4&,float)=0;
+ virtual void axes(const G3D::Color4&,const G3D::Color4&,const G3D::Color4&,float)=0;virtual void quad(const G3D::Vector3&,const G3D::Vector3&,const G3D::Vector3&,const G3D::Vector3&,const G3D::Color4&)=0;
+};
+struct Instance {virtual ~Instance();char opaque[0x104-4];Instance*parent;};
+struct Body {char opaque[0x94];G3D::CoordinateFrame frame;void updatePV()const;const G3D::CoordinateFrame&getCoordinateFrame()const{updatePV();return frame;}};
+struct Humanoid:Instance {Body*getTorsoBody();};
+struct RayQuery {G3D::Vector3 raycast(Instance*,G3D::Ray);};
+RayQuery* __cdecl findRayQuery(Instance*);
+struct DrawAdorn {static void cylinder(Adorn*,const G3D::CoordinateFrame&,int,float,float,const G3D::Color3&);};
+struct Name;struct Primitive;
+struct INamed {virtual const Name&getName()const=0;};
+struct HitTestFilter {enum Result{STOP_TEST,IGNORE_PRIM,INCLUDE_PRIM};virtual Result filterResult(const Primitive*)const=0;};
+namespace HUMAN {
+struct HumanoidState:INamed,HitTestFilter {Humanoid*humanoid;bool checkNearObstruction(Adorn*);bool detectClimb(Adorn*);};
+bool HumanoidState::detectClimb(Adorn*adorn){
+ Body*torso=humanoid->getTorsoBody();if(!torso)return false;
+ if(!checkNearObstruction(adorn))return false;
+ const G3D::CoordinateFrame&frame=torso->getCoordinateFrame();
+ G3D::Vector3 look=frame.lookVector();
+ RayQuery*query=findRayQuery(humanoid);
+ float firstHeight=0,span=0;bool first=true,inContact=false;
+ G3D::Color3 color=G3D::Color3::orange();
+ G3D::Vector3 direction=look*2.0f;
+ for(int i=1;i<18;++i){
+  float height=(float)i*0.1428571492433548f;
+  G3D::Vector3 verticalOffset(0,height-2.7f,0);
+  G3D::Ray ray;
+  G3D::Vector3 origin=frame.translation+verticalOffset;
+  ray.origin=origin;ray.direction=direction;
+  G3D::Vector3 hit=query->raycast(humanoid->parent,ray);
+  if((hit-origin).magnitude()<0.7f){if(first){first=false;firstHeight=height;inContact=true;color=G3D::Color3::green();}}
+  else{if(inContact){inContact=false;span=height-firstHeight;color=G3D::Color3::red();}}
+  if(adorn){
+   adorn->setObjectToWorldMatrix(G3D::CoordinateFrame(frame.translation));
+   G3D::LineSegment segment=G3D::LineSegment::fromOriginAndDirection(origin-frame.translation,hit-origin);
+   adorn->lineSegment(segment,G3D::Color4(color),1);
+  }
+ }
+ if(firstHeight<2.45f&&span>0&&span<2.45f){
+  if(adorn)DrawAdorn::cylinder(adorn,G3D::CoordinateFrame(frame.translation+G3D::Vector3(0,5,0)),1,.2f,1,G3D::Color3::purple());
+  return true;
+ }
+ return false;
+}
+}
+}
+typedef char ray_size[sizeof(G3D::Ray)==28?1:-1];
+typedef char segment_size[sizeof(G3D::LineSegment)==28?1:-1];
+typedef char frame_size[sizeof(G3D::CoordinateFrame)==48?1:-1];
+typedef char color_size[sizeof(G3D::Color4)==16?1:-1];
+typedef char torso_frame_offset[offsetof(RBX::Body,frame)==0x94?1:-1];
+typedef char parent_offset[offsetof(RBX::Instance,parent)==0x104?1:-1];
+
+typedef char humanoid_offset[offsetof(RBX::HUMAN::HumanoidState,humanoid)==8?1:-1];
+typedef char ray_origin_offset[offsetof(G3D::Ray,origin)==4?1:-1];
+typedef char ray_direction_offset[offsetof(G3D::Ray,direction)==0x10?1:-1];
+typedef char segment_point_offset[offsetof(G3D::LineSegment,point)==4?1:-1];

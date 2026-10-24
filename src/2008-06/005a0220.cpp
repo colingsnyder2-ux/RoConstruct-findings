@@ -1,9 +1,10 @@
-// from server: 71% by colin
-// from server: 64% by colin
+// from server: 100% by king_originala
+#include <intrin.h>
+// roc 2008-06 005a0220  unit: RBX::Workspace  size: 32 bytes
+
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Workspace.cpp
 struct Target { void run(); };
 struct Inner {
     virtual void slot0();
@@ -12,9 +13,11 @@ struct Inner {
 struct S {
     char padding[0x288];
     Inner inner;
-    void f(int);
+    void f(volatile int);
 };
-void S::f(int a)
+void S::f(volatile int a)
 {
-    inner.slot1(a)->run();
+    int argument = a;
+    _ReadWriteBarrier();
+    inner.slot1(argument)->run();
 }

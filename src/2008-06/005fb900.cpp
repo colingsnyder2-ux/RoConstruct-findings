@@ -1,125 +1,93 @@
-// from server: 42% by colin
-struct Vec3 { float x, y, z; };
-struct Vec4 { float x, y, z, w; };
-
-struct Obj {
-    char pad0[0x104];
-    void* ptr104;
-    char pad1[0x40];
-    void* ptr148;
-    char pad2[8];
-    void func(void* arg);
+// from server: 96% by Espeon
+// from server: 86% by king_originala
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+#include <string>
+#include <string.h>
+namespace G3D {
+struct Vector2 {
+ float x,y;
+ Vector2():x(0),y(0){}Vector2(float a,float b):x(a),y(b){}Vector2(const Vector2&r):x(r.x),y(r.y){}
+ Vector2 operator+(const Vector2&r)const{return Vector2(x+r.x,y+r.y);}Vector2 operator-(const Vector2&r)const{return Vector2(x-r.x,y-r.y);}Vector2 operator*(float f)const{return Vector2(x*f,y*f);}
 };
-
-extern "C" {
-    void* __cdecl sub_573770(int);
-    void __cdecl sub_573310(void*, void*);
-    void __cdecl sub_4f35d0(void*, void*, void*);
-    void* __cdecl sub_573290();
-    void* __cdecl sub_514a20();
-    void* __cdecl sub_514a60();
-    int __cdecl sub_558ac0(void*, void*);
-    void __cdecl sub_5bdef0(void*, void*);
-    void* __cdecl sub_7baf10(int, int, int);
-    void* __cdecl sub_5cf160(void*, void*);
-    int __cdecl sub_642750(void*, void*, void*);
-    void __cdecl sub_642de0(void*, void*, int);
-    void __cdecl sub_642520(void*, void*);
-    void* __cdecl sub_5148e0();
-    void __cdecl sub_802468(void*);
+struct Vector3;struct CoordinateFrame;struct AABox;struct Sphere;struct Ray;struct LineSegment;
+struct Color3 {float r,g,b;static const Color3&gray();static const Color3&white();static const Color3&green();};
+struct Color4 {float r,g,b,a;Color4(const Color3&c,float alpha=1):r(c.r),g(c.g),b(c.b),a(alpha){}static const Color4&zero();};
+struct Rect2D {Vector2 min,max;static Rect2D xyxy(const Vector2&,const Vector2&);};
+template<class T>struct ReferenceCountedPointer {T*pointer;};
 }
-
-extern float g_8249f8;
-extern float g_81c434;
-extern float g_819bac;
-extern float g_81e380;
-
-void Obj::func(void* arg)
-{
-    void* p = sub_573770(0xc);
-    Vec4 v;
-    sub_573310(this, &v);
-    float a = v.y - v.x;
-    float b = v.x;
-    float c = v.z;
-    float d = v.w;
-    float e = a * g_8249f8;
-    float f = g_81c434;
-    float g = b + f;
-    float h = c - f;
-    float i = d - f;
-    float j = e + f;
-    Vec4 out;
-    sub_4f35d0(&out, &g, &h);
-    char* q = *(char**)arg;
-    q = q + 0x2c;
-    void* r = sub_573290();
-    void* fn = *(void**)q;
-    ((void(__thiscall*)(void*, void*, void*))fn)(arg, &out, r);
-    Vec3* cam = (Vec3*)sub_514a20();
-    Vec4 camv;
-    camv.x = cam->x;
-    camv.y = cam->y;
-    camv.z = cam->z;
-    camv.w = 1.0f;
-    Vec4 tmp;
-    sub_4f35d0(&tmp, &camv, &camv);
-    void* fn2 = *(void**)(*(char**)arg + 0x2c);
-    ((void(__thiscall*)(void*, void*, void*))fn2)(arg, &tmp, &camv);
-    Vec3* cam2 = (Vec3*)sub_514a60();
-    Vec4 cam2v;
-    cam2v.x = cam2->x;
-    cam2v.y = cam2->y;
-    cam2v.z = cam2->z;
-    cam2v.w = 1.0f;
-    int n = sub_558ac0(ptr148, this);
-    n++;
-    void* str;
-    sub_5bdef0(&str, &n);
-    void* ebp = str;
-    float fx = camv.x + camv.y;
-    float fy = camv.z + camv.w;
-    float fz = g_819bac;
-    float fw = fx * fz;
-    float fv = fy * fz;
-    void* fn3 = *(void**)(*(char**)arg + 0x34);
-    void* r3 = sub_7baf10(2, 2, 0);
-    ((void(__thiscall*)(void*, void*, void*, void*, void*, double, void*))fn3)(arg, &out, ebp, &tmp, &camv, (double)n, r3);
-    sub_802468(&str);
-    if (ptr148) {
-        void* vt = *(void**)ptr148;
-        char ok = ((char(__thiscall*)(void*))*(void**)((char*)vt + 0x80))(ptr148);
-        if (ok) {
-            Vec3* c3 = (Vec3*)sub_5148e0();
-            Vec4 cv;
-            cv.x = c3->x;
-            cv.y = c3->y;
-            cv.z = c3->z;
-            cv.w = 1.0f;
-            Vec4 t2;
-            sub_4f35d0(&t2, &cv, &cv);
-            float ff = g_81e380;
-            void* fn4 = *(void**)(*(char**)arg + 0x28);
-            ((void(__thiscall*)(void*, void*, void*, float))fn4)(arg, &t2, &cv, ff);
-        }
-        void* s = sub_5cf160(ptr148, &str);
-        char bl = sub_642750((char*)this + 0x150, arg, s);
-        sub_802468(&str);
-        if (bl) {
-            float f1 = (float)n;
-            float f2 = v.x + f1;
-            float f3 = v.y + f1;
-            float f4 = v.z - f1;
-            float f5 = v.w - f1;
-            void* fn5 = *(void**)(*(char**)ptr148 + 0x7c);
-            char r5 = ((char(__thiscall*)(void*))fn5)(ptr148);
-            sub_642de0((char*)this + 0x150, arg, r5);
-        } else {
-            void* p2 = (char*)ptr148 + 0x110;
-            void* fn6 = *(void**)(*(char**)this + 4);
-            ((void(__thiscall*)(void*, void*))fn6)(this, p2);
-        }
-    } else {
-        sub_642520(this, arg);
-    }
+namespace boost {template<class T>struct shared_ptr {T*px;void*pi;T*get()const{return px;}T*operator->()const{return px;}};}
+namespace RBX {
+struct TextureProxyBase;
+struct Adorn {
+ enum Spacing {PROPORTIONAL_SPACING,FIXED_SPACING};enum XAlign{XALIGN_RIGHT,XALIGN_LEFT,XALIGN_CENTER};enum YAlign{YALIGN_TOP,YALIGN_BASELINE,YALIGN_CENTER,YALIGN_BOTTOM};
+ virtual ~Adorn();
+ virtual G3D::ReferenceCountedPointer<TextureProxyBase>createTextureProxy(const std::string&)=0;
+ virtual void prepareRenderPass()=0;virtual void finishRenderPass()=0;virtual G3D::Rect2D getViewport()const=0;virtual int getWidth()const=0;virtual int getHeight()const=0;
+ virtual void setTexture(int,G3D::ReferenceCountedPointer<TextureProxyBase>)=0;virtual G3D::Rect2D getTextureSize(G3D::ReferenceCountedPointer<TextureProxyBase>)const=0;
+ virtual void line2d(const G3D::Vector2&,const G3D::Vector2&,const G3D::Color4&)const=0;
+ virtual void outlineRect2d(const G3D::Rect2D&,float,const G3D::Color4&)const=0;
+ virtual void rect2d(const G3D::Rect2D&,const G3D::Color4&)const=0;
+ virtual G3D::Vector2 get2DStringBounds(const std::string&,double,Spacing)const=0;
+ virtual G3D::Vector2 drawFont2D(const std::string&,const G3D::Vector2&,double,const G3D::Color4&,const G3D::Color4&,XAlign,YAlign,Spacing)const=0;
+};
+struct Rect {
+ G3D::Vector2 low,high;
+ Rect(const G3D::Vector2&l,const G3D::Vector2&h):low(l),high(h){}
+ Rect(float x0,float y0,float x1,float y1):low(x0,y0),high(x1,y1){}
+ G3D::Rect2D toRect2D()const{return G3D::Rect2D::xyxy(low,high);}
+ G3D::Vector2 size()const{return high-low;}G3D::Vector2 center()const{return (low+high)*.5f;}
+ static Rect fromLowSize(const G3D::Vector2&l,const G3D::Vector2&s){return Rect(l,l+s);}
+};
+struct Name;
+struct ContentId {std::string id;const Name*mimeTypePtr;};struct TextureId:ContentId{};
+struct Instance {
+ virtual ~Instance();virtual void setName(const std::string&);
+ char opaque[0x104-4];Instance*parent;char opaque108[8];std::string name;
+ int findChildIndex(const Instance*)const;
+};
+struct GuiItem:Instance {
+ Rect getMyRect()const;static const G3D::Color4&translucentBackdrop();
+};
+struct GuiRoot {static int normalizedFontSize(int);};
+struct Widget:GuiItem {
+ enum WidgetState{NOTHING,HOVER,DOWN_OVER,DOWN_AWAY};
+ char opaque12c[0x144-0x12c];WidgetState widgetState;
+ void render2d(Adorn*);
+};
+struct BackpackItem:Widget {
+ TextureId getTextureId()const;
+ typedef bool(BackpackItem::*DrawMethod)()const;
+ DrawMethod drawEnabledMethod()const{DrawMethod m;void*entry=(*(void***)this)[31];memcpy(&m,&entry,sizeof(m));return m;}
+ DrawMethod drawSelectedMethod()const{DrawMethod m;void*entry=(*(void***)this)[32];memcpy(&m,&entry,sizeof(m));return m;}
+};
+struct GuiDrawImage {
+ TextureId currentTexture;G3D::ReferenceCountedPointer<TextureProxyBase>normal,disable,hover,down;G3D::Vector2 size;
+ bool setImage(Adorn*,const TextureId&);void render2d(Adorn*,bool,Rect&,Widget::WidgetState);
+};
+template<class T>struct StringConverter;template<>struct StringConverter<int>{static std::string convertToString(const int&);};
+struct LocalBackpackItem:Widget {
+ boost::shared_ptr<BackpackItem>myItem;GuiDrawImage guiImageDraw;
+ void render2d(Adorn*);
+};
+typedef char LayoutCheck[(sizeof(std::string)==28&&sizeof(Instance)==0x12c&&sizeof(Widget)==0x148&&sizeof(GuiDrawImage)==56)?1:-1];
+void LocalBackpackItem::render2d(Adorn*adorn){
+ int fontSize=GuiRoot::normalizedFontSize(12);
+ Rect rect=getMyRect();
+ float side=rect.size().x*.2f;
+ Rect numberRect=Rect::fromLowSize(G3D::Vector2(rect.low.x+2,rect.high.y-2-side),G3D::Vector2(side,side));
+ adorn->rect2d(rect.toRect2D(),translucentBackdrop());
+ adorn->rect2d(numberRect.toRect2D(),G3D::Color3::gray());
+ {G3D::Color4 fontColor(G3D::Color3::white());
+ int number=parent->findChildIndex(this)+1;
+ adorn->drawFont2D(StringConverter<int>::convertToString(number),numberRect.center(),fontSize,fontColor,G3D::Color4::zero(),Adorn::XALIGN_CENTER,Adorn::YALIGN_CENTER,Adorn::PROPORTIONAL_SPACING);
+ }
+ if(myItem.get()){
+  if((myItem.get()->*myItem->drawSelectedMethod())())adorn->outlineRect2d(rect.toRect2D(),3,G3D::Color3::green());
+  if(guiImageDraw.setImage(adorn,myItem->getTextureId())){
+   Rect imageRect(rect.low.x+fontSize,rect.low.y+fontSize,rect.high.x-fontSize,rect.high.y-fontSize);
+   guiImageDraw.render2d(adorn,(myItem.get()->*myItem->drawEnabledMethod())(),imageRect,widgetState);
+  }else{setName(myItem->name);Widget::render2d(adorn);}
+ }else Widget::render2d(adorn);
+}
 }

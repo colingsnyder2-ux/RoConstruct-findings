@@ -1,162 +1,72 @@
-// from server: 49% by colin
-struct CPropGrid {
-    void* vtable;
-    int field4;
-    int field8;
-    int fieldC;
-    int field10;
-    int field14;
-    int field18;
-    char field1C;
-    char field1D;
-    int field20;
-    int field24;
-    CPropGrid();
-    ~CPropGrid();
-    int f();
-    int g(int, int, int, int);
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: xtp-11.2.2-lib-imports roc_espeon_nativepngrowsourcea42c1dc54d2add70.cpp
 
-struct CSelectionPropGrid {
-    int f(int, int);
-    int value0;
-    int value4;
-    int value8;
-    int valueC;
-    int value10;
-    int value14;
-    int value18;
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias(<atlimage.h>, <roc_espeon_nativeatlimagewidthdecl2e5804ac680a6dd9.cpp>)
+#include <afxwin.h>
+#include <atlimage.h>
+#include "Common/XTPImageManager.h"
+#include <algorithm>
+#include <cstring>
+#undef FreeResource
+extern "C" __declspec(dllimport) BOOL WINAPI FreeResource(HGLOBAL);
+// Interface subset of native G3D/GImage.h and Color4uint8.h. Layout and ctor verified by005105b0.
+namespace G3D {
+struct Color4uint8 { unsigned char r,g,b,a; };
+class GImage {
+ unsigned char* _byte;
+public:
+ enum Format {JPEG,BMP,TGA,PCX,ICO,PNG,PPM_ASCII,PPM,AUTODETECT,UNKNOWN};
+ int width,height,channels;
+ GImage(const unsigned char*,int,Format=AUTODETECT);
+ virtual ~GImage();
+ Color4uint8* pixel4(){return reinterpret_cast<Color4uint8*>(_byte);}
 };
-
-struct S_func_00442c80 {
-    char pad0[12];
-    int m_x;
-    int f();
-};
-
-struct S_func_00442cd0 {
-    char pad0[4];
-    int m_x;
-    int f();
-};
-
-struct S_func_00442f70 {
-    int f(int, int, int, int);
-};
-
-struct S_func_005105b0 {
-    int f(int, int, int);
-};
-
-struct S_func_0050e230 {
-    void f();
-};
-
-struct S_func_006a0f2c {
-    int f(void*, void*);
-};
-
-struct S_func_006a17e0 {
-    int f(void*, void*, int);
-};
-
-struct S_func_006bd6a0 {
-    int f(void*);
-};
-
-struct S_func_006bfcc0 {
-    int f(void*);
-};
-
-extern "C" {
-    void* __stdcall FindResourceA(void*, const char*, const char*);
-    int __stdcall FreeResource(void*);
-    void* __stdcall LoadResource(void*, void*);
-    void* __stdcall LockResource(void*);
-    int __stdcall SizeofResource(void*, void*);
-    void* __stdcall memcpy(void*, const void*, unsigned int);
 }
-
-extern void* (__stdcall *g_pfn_802190)(void*, void*, void*);
-extern void* (__stdcall *g_pfn_8021a8)(void*, void*);
-extern void* (__stdcall *g_pfn_802210)(void*);
-extern void* (__stdcall *g_pfn_8021c8)(void*, void*, int);
-extern int (__stdcall *g_pfn_80220c)(void*);
-
-struct CPatchedControlComboBox {
-    bool f();
-};
-
-bool CPatchedControlComboBox::f()
+static __declspec(noinline) bool loadIcon(CXTPImageManager* manager,UINT id,const char* name,XTPImageState state) {
+ HINSTANCE module=AfxFindResourceHandle(name,"PNG"); if(!module)return false;
+ HRSRC resource=FindResource(module,name,"PNG"); if(!resource)return false;
+ HGLOBAL data=LoadResource(module,resource);if(!data)return false;
+ const unsigned char* bytes=static_cast<const unsigned char*>(LockResource(data));if(!bytes)return false;
+ G3D::GImage decoded(bytes,SizeofResource(module,resource),G3D::GImage::PNG);
+ for(int x=0;x<decoded.width;++x)for(int y=0;y<decoded.height;++y)std::swap(decoded.pixel4()[y*decoded.width+x].r,decoded.pixel4()[y*decoded.width+x].b);
+ ATL::CImage bitmap;
+ if(!bitmap.Create(decoded.width,decoded.height,decoded.channels*8,decoded.channels==4))return false;
+ bitmap.GetWidth();
+ G3D::Color4uint8* pixels=decoded.pixel4();
+ for(int y=0;y<decoded.height;++y){ void* destination=bitmap.GetPixelAddress(0,y); const G3D::Color4uint8* row=pixels+y*decoded.width; memcpy(destination,row,decoded.width*sizeof(G3D::Color4uint8)); }
+ bool ok=manager->SetIcon((HBITMAP)bitmap,id,CSize(0),state)!=FALSE;
+ FreeResource(data);return ok;
+}
+static __declspec(noinline) void SetIcon(CXTPImageManager* manager,UINT id,const char* name,int size){
+ CString text;text.Format("\"%s_%d\"",name,size);
+ if(loadIcon(manager,id,text.MakeUpper(),xtpImageNormal)){
+ text.Format("\"%s_%d_D\"",name,size);loadIcon(manager,id,text.MakeUpper(),xtpImageDisabled);
+ text.Format("\"%s_%d_H\"",name,size);loadIcon(manager,id,text.MakeUpper(),xtpImageHot);
+ }
+}
+void __cdecl InitializeIcons(CXTPImageManager* manager)
 {
-    void* hInstance = (void*)0x810c40;
-    void* hRes = (void*)((S_func_006a0f2c*)0)->f((void*)this, hInstance);
-    if (!hRes)
-        return false;
-    void* hRes2 = g_pfn_802190((void*)this, hInstance, hRes);
-    if (!hRes2)
-        return false;
-    void* hRes3 = g_pfn_8021a8(hRes, hRes2);
-    if (!hRes3)
-        return false;
-    void* hRes4 = g_pfn_802210(hRes3);
-    if (!hRes4)
-        return false;
-    void* pData = g_pfn_8021c8(hRes, hRes2, 5);
-    S_func_005105b0* grid = (S_func_005105b0*)0;
-    grid->f((int)hRes4, (int)pData, 0);
-    int rows = *(int*)((char*)grid + 0x1c);
-    int cols = *(int*)((char*)grid + 0x20);
-    int i;
-    for (i = 0; i < rows; i++) {
-        int j;
-        for (j = 0; j < cols; j++) {
-            int* base = *(int**)((char*)grid + 0x18);
-            int idx = j * rows + i;
-            char* p = (char*)(base + idx);
-            char* q = p + 2;
-            if (p != q) {
-                char t = *q;
-                *q = *p;
-                *p = t;
-            }
-        }
-    }
-    CPropGrid pg;
-    pg.f();
-    int a = *(int*)((char*)grid + 0x20);
-    int b = *(int*)((char*)grid + 0x1c);
-    int c = (a == 4) ? 1 : 0;
-    int d = a * 8;
-    int e = *(int*)((char*)grid + 0x18);
-    S_func_00442f70* sp = (S_func_00442f70*)0;
-    int r = sp->f(e, d, c, b);
-    if (r == 0) {
-        pg.~CPropGrid();
-        ((S_func_0050e230*)0)->f();
-        return false;
-    }
-    ((S_func_00442c80*)0)->f();
-    int* src = *(int**)((char*)grid + 0x18);
-    int n = *(int*)((char*)grid + 0x20);
-    int k;
-    for (k = 0; k < n; k++) {
-        CSelectionPropGrid* sel = (CSelectionPropGrid*)0;
-        int v = sel->f(0, k);
-        int stride = *(int*)((char*)grid + 0x1c);
-        int off = k * stride;
-        int len = stride * 4;
-        memcpy((void*)v, (void*)(src + off), len);
-    }
-    S_func_00442cd0* cd = (S_func_00442cd0*)0;
-    int x = cd->f();
-    S_func_006bd6a0* bd = (S_func_006bd6a0*)0;
-    bd->f((void*)x);
-    S_func_006bfcc0* bc = (S_func_006bfcc0*)0;
-    int res = bc->f((void*)x);
-    bool ok = (res != 0);
-    g_pfn_80220c(hRes3);
-    pg.~CPropGrid();
-    ((S_func_0050e230*)0)->f();
-    return ok;
+    manager->RemoveIcon(0x80BB);
+    SetIcon(manager, 0x80BB, "stop", 16);
+    SetIcon(manager, 0x80BB, "stop", 32);
+
+    manager->RemoveIcon(0x80BD);
+    SetIcon(manager, 0x80BD, "refresh_doc", 16);
+    SetIcon(manager, 0x80BD, "refresh_doc", 32);
+
+    manager->RemoveIcon(0x80BC);
+    SetIcon(manager, 0x80BC, "home_brown", 16);
+    SetIcon(manager, 0x80BC, "home_brown", 32);
+
+    manager->RemoveIcon(0x80BA);
+    SetIcon(manager, 0x80BA, "arrowleft_green", 16);
+    SetIcon(manager, 0x80BA, "arrowleft_green", 32);
+
+    manager->RemoveIcon(0x80B9);
+    SetIcon(manager, 0x80B9, "arrowright_green", 16);
+    SetIcon(manager, 0x80B9, "arrowright_green", 32);
 }

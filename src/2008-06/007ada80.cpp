@@ -1,56 +1,14 @@
-// from server: 60% by colin
+// from server: 61% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_texture_ogre_31ec83fd82e33fb1.cpp
+// roc-lib: rbxgs-dll roc_espeon_mesapaddedhalving470a40d0a96127aa.cpp
 
 // Candidate translation unit (score above; library headers required).
+#define NDEBUG 1
 #include <assert.h>
-typedef int GLint;
-typedef unsigned int GLuint;
-typedef unsigned char GLubyte;
-static void halve1Dimage_ubyte(GLint,GLuint,GLuint,const GLubyte*,GLubyte*,GLint,GLint,GLint);
-static void halveImage_ubyte(GLint components, GLuint width, GLuint height,
-			const GLubyte *datain, GLubyte *dataout,
-			GLint element_size, GLint ysize, GLint group_size)
-{
-    int i, j, k;
-    int newwidth, newheight;
-    // Native 007adaad/7adac0 preserves padded source rows.
-    int padBytes = ysize - width * group_size;
-    GLubyte *s;
-    const char *t;
-
-    /* handle case where there is only 1 column/row */
-    if (width == 1 || height == 1) {
-       assert( !(width == 1 && height == 1) ); /* can't be 1x1 */
-       halve1Dimage_ubyte(components,width,height,datain,dataout,
-			  element_size,ysize,group_size);
-       return;
-    }
-
-    newwidth = width / 2;
-    newheight = height / 2;
-    s = dataout;
-    t = (const char *)datain;
-
-    /* Piece o' cake! */
-    for (i = 0; i < newheight; i++) {
-	for (j = 0; j < newwidth; j++) {
-	    for (k = 0; k < components; k++) {
-		s[0] = (*(const GLubyte*)t +
-			*(const GLubyte*)(t+group_size) +
-			*(const GLubyte*)(t+ysize) +
-			*(const GLubyte*)(t+ysize+group_size) + 2) / 4;
-		s++; t += element_size;
-	    }
-	    t += group_size;
-	}
-	t += ysize + padBytes;
-    }
-}
-
-/* */
+#include <windows.h>
+#include <GL/gl.h>
 static void halve1Dimage_ubyte(GLint components, GLuint width, GLuint height,
 			       const GLubyte *dataIn, GLubyte *dataOut,
 			       GLint element_size, GLint ysize,
@@ -110,178 +68,45 @@ static void halve1Dimage_ubyte(GLint components, GLuint width, GLuint height,
 	  [components * element_size * halfWidth * halfHeight]);
 } /* halve1Dimage_ubyte() */
 
+static __declspec(noinline) void halveImage_ubyte(GLint components, GLuint width, GLuint height,
+			const GLubyte *datain, GLubyte *dataout,
+			GLint element_size, GLint ysize, GLint group_size)
+{
+    int i, j, k;
+    int newwidth, newheight;
+    GLubyte *s;
+    const char *t;
 
-#undef OGRE_NONCLIENT_BUILD
-#include <RbxGraphics/TextureProxyBase.h>
-#include <G3D/Color3uint8.h>
-#include <G3D/Color3.h>
-#include <G3D/GImage.h>
-#include <GLG3D/Texture.h>
-#include "../../../libs/ogre-1.4.5/ogrenew/OgreMain/include/OgreImage.h"
-#include "../../../libs/ogre-1.4.5/ogrenew/OgreMain/include/OgreTextureManager.h"
-#include "../../../libs/ogre-1.4.5/ogrenew/OgreMain/include/OgreResourceGroupManager.h"
-#include "../../../libs/ogre-1.4.5/ogrenew/OgreMain/include/OgreBitwise.h"
-#include "../../../libs/ogre-1.4.5/ogrenew/OgreMain/include/OgreLogManager.h"
-#include "../../../libs/ogre-1.4.5/ogrenew/OgreMain/include/OgreStringConverter.h"
-#include <algorithm>
-#include <vector>
-#include <stdio.h>
-#include <string.h>
-#include <exception>
-
-namespace RBX { namespace RenderNew {
-class VisualEngine;
-extern bool shadeGroupCreated;
-extern Ogre::String shadeResourceGroup;
-bool loadTexture(const std::string&, Ogre::Image&);
-int __fastcall nextPowerOfTwo(int);
-void collectUnusedTextures();
-
-// Actual native TextureProxyBase ancestry and intrusive reference prefix.
-// Native-only members are accessed by observed typed views, not invented layout.
-class TextureProxy : public TextureProxyBase {
-public:
-    G3D::TextureRef resolve(VisualEngine*);
-    static void shadePixel(const G3D::Color3uint8&, G3D::Color3uint8&);
-};
-
-G3D::TextureRef TextureProxy::resolve(VisualEngine* engine) {
-    bool& loaded = *reinterpret_cast<bool*>(reinterpret_cast<char*>(this)+0x34);
-    G3D::TextureRef& texture = *reinterpret_cast<G3D::TextureRef*>(reinterpret_cast<char*>(this)+0x30);
-    G3D::ReferenceCountedPointer<TextureProxy>& root =
-        *reinterpret_cast<G3D::ReferenceCountedPointer<TextureProxy>*>(reinterpret_cast<char*>(this)+0x40);
-    G3D::ReferenceCountedPointer<TextureProxy>& shadeTexture =
-        *reinterpret_cast<G3D::ReferenceCountedPointer<TextureProxy>*>(reinterpret_cast<char*>(this)+0x44);
-    const G3D::Color3& shadeColor = *reinterpret_cast<G3D::Color3*>(reinterpret_cast<char*>(this)+0x48);
-    Ogre::TexturePtr& ogreTexture = *reinterpret_cast<Ogre::TexturePtr*>(reinterpret_cast<char*>(this)+0x54);
-    if (!loaded) {
-        if (shadeTexture.notNull()) {
-            if (!shadeGroupCreated) {
-                Ogre::ResourceGroupManager::getSingleton().createResourceGroup(shadeResourceGroup);
-                Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup(shadeResourceGroup);
-                shadeGroupCreated = true;
-            }
-            if (!ogreTexture.isNull())
-                Ogre::LogManager::getSingleton().logMessage("RBX Texture " + ogreTexture->getName() + " overwritten");
-            char name[1024];
-            sprintf(name, "%g%g%gshadeTex", shadeColor.r, shadeColor.g, shadeColor.b);
-            ogreTexture = Ogre::TextureManager::getSingleton().getByName(name);
-            if (ogreTexture.isNull()) {
-                static std::string sourceFilename = shadeTexture->filename;
-                static G3D::GImage sourceImage(sourceFilename, G3D::GImage::AUTODETECT);
-                Ogre::Image image;
-                image.load(shadeTexture->filename, "General");
-                G3D::Color3uint8 lookup[256];
-                for (int i = 0; i < 256; ++i) {
-                    lookup[i] = G3D::Color3uint8(i, i, i);
-                    shadePixel(G3D::Color3uint8(shadeColor), lookup[i]);
-                }
-                int count = image.getHeight() * image.getWidth();
-                for (int i = 0; i < count; ++i) {
-                    unsigned char* pixel = image.getData() + i*3;
-                    *reinterpret_cast<G3D::Color3uint8*>(pixel) = lookup[pixel[0]];
-                }
-                Ogre::Image finalImage;
-                std::vector<unsigned char> mipData;
-                if (!*reinterpret_cast<bool*>(reinterpret_cast<char*>(engine)+0x805)) {
-                    int width = image.getWidth();
-                    int height = image.getHeight();
-                    int mipmaps = Ogre::Bitwise::getBitShift(Ogre::Bitwise::firstPO2From(std::max(width, height)));
-                    mipData.resize(Ogre::Image::calculateSize(mipmaps, 1, width, height, 1, Ogre::PF_R8G8B8));
-                    unsigned char* output = &mipData[0];
-                    unsigned char* previous = 0;
-                    int previousWidth = -1, previousHeight = -1;
-                    for (int level = 0; level <= mipmaps; ++level) {
-                        if (level == 0)
-                            memcpy(output, image.getData(), width*height*3);
-                        else
-                            halveImage_ubyte(3, previousWidth, previousHeight, previous, output,
-                                             1, previousWidth*3, 3);
-                        previous = output;
-                        output += width*height*3;
-                        previousWidth = width;
-                        previousHeight = height;
-                        if (width > 1) width /= 2;
-                        if (height > 1) height /= 2;
-                    }
-                    finalImage.loadDynamicImage(&mipData[0], image.getWidth(), image.getHeight(), 1,
-                                                 Ogre::PF_R8G8B8, false, 1, mipmaps);
-                } else {
-                    finalImage.loadDynamicImage(image.getData(), image.getWidth(), image.getHeight(), 1,
-                                                 Ogre::PF_R8G8B8, false, 1, 0);
-                }
-                ogreTexture = Ogre::TextureManager::getSingleton().create(name, shadeResourceGroup, false, 0, 0);
-                ogreTexture->loadImage(finalImage);
-                root = 0;
-                loaded = true;
-                Ogre::LogManager::getSingleton().logMessage(std::string("create shadetex=") + ogreTexture->getName() + "\n");
-                collectUnusedTextures();
-            }
-        } else if (root.notNull()) {
-            // Native virtual slot6 has the authentic resolve signature and hidden
-            // TextureRef result. The old base header omits the newer virtuals.
-            typedef G3D::TextureRef (__thiscall *ResolveMethod)(TextureProxy*, VisualEngine*);
-            G3D::TextureRef resolved = reinterpret_cast<ResolveMethod>(
-                (*reinterpret_cast<void***>(root.getPointer()))[6])(root.getPointer(), engine);
-            if (resolved.notNull() && !resolved->opaque())
-                texture = resolved->alphaOnlyVersion();
-        } else if (filename == "") {
-            Ogre::LogManager::getSingleton().logMessage("filename is empty in resolve()\n");
-        } else {
-            Ogre::Image image;
-            ogreTexture = Ogre::TextureManager::getSingleton().getByName(filename);
-            if (ogreTexture.isNull()) {
-                if (!loadTexture(filename, image)) {
-                    ogreTexture.setNull();
-                } else if (image.getFormat() && image.getWidth() > 0 && image.getHeight() > 0) {
-                    if (*reinterpret_cast<int*>(reinterpret_cast<char*>(engine)+0x800) == 1) {
-                        int width = nextPowerOfTwo(image.getWidth());
-                        int height = nextPowerOfTwo(image.getHeight());
-                        if (width != image.getWidth() || height != image.getHeight()) {
-                            Ogre::LogManager::getSingleton().logMessage("Texture resized (AA): ("
-                                + Ogre::StringConverter::toString(image.getWidth()) + ","
-                                + Ogre::StringConverter::toString(image.getHeight()) + ") -> ("
-                                + Ogre::StringConverter::toString(width) + ","
-                                + Ogre::StringConverter::toString(height) + ")");
-                            image.resize(width, height, Ogre::Image::FILTER_BILINEAR);
-                        }
-                    }
-                    // Native deliberately calls getWidth twice at 007af654/679.
-                    float widthLimit = 512.0f / image.getWidth();
-                    float heightLimit = 512.0f / image.getWidth();
-                    float scale = std::min(widthLimit, heightLimit);
-                    scale = std::min(scale, *reinterpret_cast<float*>(reinterpret_cast<char*>(this)+0x2c));
-                    if (image.getWidth() > 128 && image.getHeight() > 128 && scale < 1.0f) {
-                        int width = image.getWidth() * scale;
-                        int height = image.getHeight() * scale;
-                        Ogre::LogManager::getSingleton().logMessage("Texture resized (limit): ("
-                            + Ogre::StringConverter::toString(image.getWidth()) + ","
-                            + Ogre::StringConverter::toString(image.getHeight()) + ") -> ("
-                            + Ogre::StringConverter::toString(width) + ","
-                            + Ogre::StringConverter::toString(height) + ")");
-                        image.resize(width, height, Ogre::Image::FILTER_BILINEAR);
-                    }
-                    try {
-                        ogreTexture = Ogre::TextureManager::getSingleton().create(filename, "General", false, 0, 0);
-                        ogreTexture->loadImage(image);
-                        Ogre::LogManager::getSingleton().logMessage(std::string("create tex=") + ogreTexture->getName());
-                    } catch (const std::exception& error) {
-                        ogreTexture.setNull();
-                        // Preserve the observed name access after setNull; no
-                        // invented fallback replaces the target's failure path.
-                        Ogre::LogManager::getSingleton().logMessage(std::string("RBX failed to load ")
-                            + ogreTexture->getName() + " what(): " + error.what());
-                    }
-                    collectUnusedTextures();
-                }
-            }
-        }
-        if (ogreTexture.isNull())
-            Ogre::LogManager::getSingleton().logMessage("RBX texture not loaded in resolve()\n");
-        root = 0;
-        shadeTexture = 0;
-        loaded = true;
+    /* handle case where there is only 1 column/row */
+    if (width == 1 || height == 1) {
+       assert( !(width == 1 && height == 1) ); /* can't be 1x1 */
+       halve1Dimage_ubyte(components,width,height,datain,dataout,
+			  element_size,ysize,group_size);
+       return;
     }
-    return texture;
+
+    int padBytes=ysize - (width * group_size);
+    newwidth = width / 2;
+    newheight = height / 2;
+    s = dataout;
+    t = (const char *)datain;
+
+    /* Piece o' cake! */
+    for (i = 0; i < newheight; i++) {
+	for (j = 0; j < newwidth; j++) {
+	    for (k = 0; k < components; k++) {
+		s[0] = (*(const GLubyte*)t +
+			*(const GLubyte*)(t+group_size) +
+			*(const GLubyte*)(t+ysize) +
+			*(const GLubyte*)(t+ysize+group_size) + 2) / 4;
+		s++; t += element_size;
+	    }
+	    t += group_size;
+	}
+	t += ysize + padBytes;
+    }
 }
-} }
+
+/* */
+
+void resizeUbyte(int components,unsigned width,unsigned height,const unsigned char* src,unsigned char* dst,int element,int row,int group){ halveImage_ubyte(components,width,height,src,dst,element,row,group); }

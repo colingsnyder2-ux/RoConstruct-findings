@@ -1,143 +1,104 @@
-// from server: 42% by colin
-struct VMaterialBase {
-    char pad[0x20];
-    void* field20;
-    char pad2[0x18];
-    void* field3c;
-    void* field40;
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-view-dll roc_espeon_materialnativefiltered898f72142e782492.cpp
 
-extern "C" {
-    int __stdcall InterlockedDecrement(int*);
-}
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("RenderLib/Material.h", "roc_espeon_materialnativevirtualordere77950369d2e79d9.cpp")
+#pragma include_alias("MaterialFactory.h", "roc_espeon_materialnativecacheheader1b7150d0eb74ebde.cpp")
+#include "MaterialFactory.h"
+#include "util/ContentProvider.h"
 
-void __cdecl sub_557330(void*, void*);
-void __cdecl sub_563090(void*);
-void __cdecl sub_5630e0(void*);
-void __cdecl sub_598fa0(void*, void*);
-void* __cdecl sub_551730();
-float* __cdecl sub_514a60(float, float, float, float);
-void __cdecl sub_4f0d40(void*, void*, void*);
-void* __cdecl sub_4e6c00(void*, void*);
-void* __cdecl sub_4f1710(void*, void*, void*);
-void __cdecl sub_4f0c40(void*, void*);
-void __cdecl sub_45ad90(void*);
+namespace RBX { namespace Render { Material* createMaterial(); } }
+static const float specular = 0.9f;
+static const float shiny = 50.0f;
 
-extern float g_941d5c;
-extern float g_941d60;
-extern void* g_972880;
-extern void* g_972884;
-
-struct S {
-    void* f(float a, float b, float c, float d);
-};
-
-void* S::f(float a, float b, float c, float d)
+namespace RBX
 {
-    void* result = 0;
-    void* local = 0;
-    void* tmp = 0;
+	namespace View
+	{
+		MaterialFactory::MaterialFactory(G3D::TextureManager* textureManager)
+		{
+			surfacesTexture = new Render::TextureProxy(*textureManager, ContentProvider::singleton().getAssetFile("textures\\surfaces.png"), true);
+			fileMeshTexture = new Render::TextureProxy(*textureManager, ContentProvider::singleton().getAssetFile("textures\\JohnTex.png"), false);
+			megaTexture = new MegaTextureProxy(*textureManager, ContentProvider::singleton().getAssetFile("textures\\SurfacesStrip.png"));
+		}
 
-    sub_557330((void*)0x972884, (void*)0x4f1a00);
+		G3D::ReferenceCountedPointer<Render::Material> MaterialFactory::getMaterial(Attributes attributes)
+		{
+ boost::call_once(&initializeCache,once);
+ Cache& state=*cache;
+ boost::recursive_mutex::scoped_lock lock(state.mutex);
 
-    VMaterialBase* vb = (VMaterialBase*)g_972880;
-    void* lock = (char*)vb + 0x40;
-    sub_563090(lock);
+			G3D::ReferenceCountedPointer<Render::Material> material;
 
-    float fa = a;
-    float fb = b;
+			std::map<Attributes, G3D::WeakReferenceCountedPointer<Render::Material>>::iterator iter = state.database.find(attributes);
+			if (iter != state.database.end())
+			{
+				material = iter->second.createStrongPtr();
+			}
 
-    void* out = 0;
-    int code = 0xc2;
+			if (material.isNull())
+			{
+				G3D::Color3 color3 = attributes.color.color3();
+				G3D::ReferenceCountedPointer<Render::TextureProxy> surfacesTexture = getSurfacesTexture(color3);
 
-    void* base = (char*)vb + 0x20;
-    sub_4f0d40(base, &tmp, &code);
+				material = Render::createMaterial();
+				if (attributes.transparency == 1.0f)
+				{
+					material->appendEmptyLevel();
+				}
+				else
+				{
+					material->appendLevel(surfacesTexture, G3D::Color3::WHITE, specular, shiny, attributes.reflectance, attributes.transparency);
+				}
 
-    void* cur = tmp;
-    void* target = *(void**)((char*)base + 0x18);
-    void* head = *(void**)base;
+				state.database[attributes] = material;
+			}
 
-    if (cur != 0 && cur == head) {
-    } else {
-        InterlockedDecrement((int*)0x802890);
-    }
+			return material;
+		}
 
-    if (tmp != target) {
-        if (cur == 0) {
-            InterlockedDecrement((int*)0x802890);
-            void* n = tmp;
-            if (n == *(void**)((char*)cur + 0x18)) {
-                InterlockedDecrement((int*)0x802890);
-            }
-            void* src = (char*)tmp + 0x18;
-            void* r = sub_4e6c00(src, &local);
-            void* v = *(void**)r;
-            sub_598fa0(&out, v);
-            if (local != 0) {
-                int* p = (int*)((char*)local + 4);
-                int r2 = InterlockedDecrement(p);
-                if (r2 == 0) {
-                    sub_45ad90(local);
-                    if (local != 0) {
-                        void** vt = *(void***)local;
-                        void (*fn)(void*, int) = (void (*)(void*, int))vt[0];
-                        fn(local, 1);
-                    }
-                }
-            }
-        } else {
-            cur = *(void**)cur;
-            void* n = tmp;
-            if (n == *(void**)((char*)cur + 0x18)) {
-                InterlockedDecrement((int*)0x802890);
-            }
-            void* src = (char*)tmp + 0x18;
-            void* r = sub_4e6c00(src, &local);
-            void* v = *(void**)r;
-            sub_598fa0(&out, v);
-            if (local != 0) {
-                int* p = (int*)((char*)local + 4);
-                int r2 = InterlockedDecrement(p);
-                if (r2 == 0) {
-                    sub_45ad90(local);
-                    if (local != 0) {
-                        void** vt = *(void***)local;
-                        void (*fn)(void*, int) = (void (*)(void*, int))vt[0];
-                        fn(local, 1);
-                    }
-                }
-            }
-        }
-    }
+		G3D::ReferenceCountedPointer<Render::Material> MaterialFactory::getMegaMaterial(Attributes attributes)
+		{
+ boost::call_once(&initializeCache,once);
+ Cache& state=*cache;
+ boost::recursive_mutex::scoped_lock lock(state.mutex);
 
-    if (out == 0) {
-        void* g = sub_551730();
-        sub_598fa0(&out, g);
+			Attributes filteredAttributes = {BrickColor::defaultColor(), attributes.transparency, attributes.reflectance};
 
-        if (fa == 1.0f) {
-            void** vt = *(void***)out;
-            void (*fn)(void*) = (void (*)(void*))vt[1];
-            fn(out);
-        } else {
-            void* obj = out;
-            float* v = sub_514a60(g_941d5c, g_941d60, fb, fa);
-            float vec[3];
-            vec[0] = v[0];
-            vec[1] = v[1];
-            vec[2] = v[2];
-            void* zero = 0;
-            void* p = *(void**)obj;
-            sub_598fa0(&zero, p);
-            void** vt = *(void***)obj;
-            void (*fn)(void*) = (void (*)(void*))vt[3];
-            fn(obj);
-        }
-    }
+			G3D::ReferenceCountedPointer<Render::Material> material;
 
-    void* r = sub_4f1710(base, &out, &result);
-    sub_4f0c40(r, &result);
+			std::map<Attributes, G3D::WeakReferenceCountedPointer<Render::Material>>::iterator iter = state.megaDatabase.find(filteredAttributes);
+			if (iter != state.megaDatabase.end())
+			{
+				material = iter->second.createStrongPtr();
+			}
 
-    sub_5630e0(lock);
+			if (material.isNull())
+			{
+				material = Render::createMaterial();
+				if (filteredAttributes.transparency == 1.0f)
+				{
+					material->appendEmptyLevel();
+				}
+				else
+				{
+					material->appendLevel(megaTexture, G3D::Color3::white(), specular, shiny, filteredAttributes.reflectance, filteredAttributes.transparency);
+				}
 
-    return result;
+				state.megaDatabase[filteredAttributes] = material;
+			}
+
+			return material;
+		}
+
+		G3D::ReferenceCountedPointer<Render::TextureProxy> MaterialFactory::getSurfacesTexture(G3D::Color3 tint)
+		{
+			return surfacesTexture->shade(tint, NULL);
+		}
+	}
 }
+
+namespace G3D { const Color3 Color3::WHITE(1,1,1); }

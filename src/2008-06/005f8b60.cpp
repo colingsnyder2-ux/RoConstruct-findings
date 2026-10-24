@@ -1,9 +1,12 @@
+// from server: 94% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-atl90-dll roc_winhttp_native_mbcs_preludebceeeaef319e095e.cpp
+// roc-lib: rbxgs-dll roc_espeon_winhttptargeterrorsb4b8445cba898959.cpp
 
 // Candidate translation unit (score above; library headers required).
+#define NDEBUG 1
+#include "roc_espeon_atl90installedaliases16e7a3b08ad00c2a.cpp"
 // Native CString comparison569d30 imports _mbscmp.
 #define _MBCS 1
 // /EHsc prelude is required before the library preprocessor.
@@ -91,20 +94,20 @@ struct NativeInternetHandle {
 };
 class NativeHttp:public Http {public:void requestWinHttp(bool,std::istream&,bool,const char*,std::string&);void failure(bool,const char*);};
 void NativeHttp::requestWinHttp(bool isPost,std::istream& data,bool compressData,const char* additionalHeaders,std::string& response) {
- if(url.empty())throw std::runtime_error("empty url");
+ if(url.size()==0)throw std::runtime_error("empty url");
  if(!Http::trustCheck(url.c_str()))throw std::runtime_error(G3D::format("trust check failed for %s",url.c_str()));
  ATL::CUrl crack;crack.CrackUrl(url.c_str());
  if(crack.GetHostNameLength()==0)throw std::runtime_error(G3D::format("'%s' is missing a hostName",url.c_str()));
- HINTERNET session=WinHttpOpen(L"Roblox/WinHttp",WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,NULL,NULL,0);
- try {
+ NativeInternetHandle session=WinHttpOpen(L"Roblox/WinHttp",WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,NULL,NULL,0);
+ {
  failure(session!=NULL,"WinHttpOpen");
  bool secure=crack.GetScheme()==ATL_URL_SCHEME_HTTPS;
- HINTERNET connection=WinHttpConnect(session,ATL::CComBSTR(ATL::CStringA(crack.GetHostName())),crack.GetPortNumber(),0);
- try {
+ NativeInternetHandle connection=WinHttpConnect(session,ATL::CComBSTR(ATL::CStringA(crack.GetHostName())),crack.GetPortNumber(),0);
+ {
  failure(connection!=NULL,"WinHttpConnect");
  std::string path=crack.GetUrlPath();path+=crack.GetExtraInfo();
- HINTERNET request=WinHttpOpenRequest(connection,isPost?L"POST":L"GET",ATL::CComBSTR(path.c_str()),NULL,NULL,NULL,secure?WINHTTP_FLAG_SECURE:0);
- try {
+ NativeInternetHandle request=WinHttpOpenRequest(connection,isPost?L"POST":L"GET",ATL::CComBSTR(path.c_str()),NULL,NULL,NULL,secure?WINHTTP_FLAG_SECURE:0);
+
  failure(request!=NULL,"WinHttpOpenRequest");
  if(additionalHeaders)failure(WinHttpAddRequestHeaders(request,ATL::CComBSTR(additionalHeaders),-1,WINHTTP_ADDREQ_FLAG_ADD)==TRUE,"WinHttpAddRequestHeaders");
  failure(WinHttpAddRequestHeaders(request,L"Accept-Encoding: gzip\r\n",-1,WINHTTP_ADDREQ_FLAG_ADD)==TRUE,"WinHttpAddRequestHeaders failed");
@@ -112,44 +115,43 @@ void NativeHttp::requestWinHttp(bool isPost,std::istream& data,bool compressData
  if(!isPost) failure(WinHttpSendRequest(request,NULL,0,NULL,0,0,0)==TRUE,"WinHttpSendRequest failed");
  else {
   std::string uploadData;
-  {
+  try {
    boost::iostreams::filtering_stream<boost::iostreams::output> out;
    if(compressData) {
     failure(WinHttpAddRequestHeaders(request,L"Content-Encoding: gzip\r\n",-1,WINHTTP_ADDREQ_FLAG_ADD)==TRUE,"HttpAddRequestHeaders failed");
     out.push(boost::iostreams::basic_gzip_compressor<>(gzipParams));
    }
    out.push(String_sink(uploadData));boost::iostreams::copy(data,out);
-  }
+  } catch(boost::iostreams::gzip_error& e) { throw std::runtime_error(G3D::format("Upload GZip error %d, ZLib error %d, \"%s\"",e.error(),e.zlib_error_code(),url.c_str())); }
   std::string::size_type length=uploadData.size();
   if(length>10000) {
    std::string sizeHeader=G3D::format("Roblox-Content-Size: %d\r\n",length);
-   failure(WinHttpAddRequestHeaders(request,ATL::CComBSTR(sizeHeader.c_str()),-1,WINHTTP_ADDREQ_FLAG_ADD)==TRUE,"HttpAddRequestHeaders failed");
+   failure(WinHttpAddRequestHeaders(request,ATL::CComBSTR(sizeHeader.c_str()),-1,WINHTTP_ADDREQ_FLAG_ADD)==TRUE,"WinHttpAddRequestHeaders failed");
    boost::scoped_ptr<MD5Hasher> hasher(MD5Hasher::create());hasher->addData(uploadData);
    std::string hashHeader=G3D::format("Roblox-Content-Hash: %s\r\n",hasher->c_str());
-   failure(WinHttpAddRequestHeaders(request,ATL::CComBSTR(hashHeader.c_str()),-1,WINHTTP_ADDREQ_FLAG_ADD)==TRUE,"HttpAddRequestHeaders failed");
+   failure(WinHttpAddRequestHeaders(request,ATL::CComBSTR(hashHeader.c_str()),-1,WINHTTP_ADDREQ_FLAG_ADD)==TRUE,"WinHttpAddRequestHeaders failed");
   }
   failure(WinHttpSendRequest(request,NULL,0,(void*)uploadData.c_str(),length,length,0)==TRUE,"WinHttpSendRequest failed");
  }
  failure(WinHttpReceiveResponse(request,NULL)==TRUE,"WinHttpReceiveResponse");
- {
+ try {
   boost::iostreams::filtering_stream<boost::iostreams::input> in;
   WCHAR buffer[256];DWORD length=256;
   if(WinHttpQueryHeaders(request,WINHTTP_QUERY_CONTENT_ENCODING,NULL,buffer,&length,NULL))if(ATL::CStringA(buffer)=="gzip")in.push(boost::iostreams::basic_gzip_decompressor<>());
   in.push(HttpRequest_source(request));boost::iostreams::copy(in,String_sink(response));
- }
- int status=-1;DWORD length=sizeof(status);
+ } catch(boost::iostreams::gzip_error& e) { throw std::runtime_error(G3D::format("GZip error %d, ZLib error %d, \"%s\"",e.error(),e.zlib_error_code(),url.c_str())); }
+ catch(boost::iostreams::zlib_error& e) { throw std::runtime_error(G3D::format("ZLib error %d, \"%s\"",e.error(),url.c_str())); }
+ int status=-1;
+ { DWORD length=sizeof(status);
  failure(WinHttpQueryHeaders(request,WINHTTP_QUERY_STATUS_CODE|WINHTTP_QUERY_FLAG_NUMBER,NULL,&status,&length,NULL)==TRUE,"WinHttpQueryHeaders");
+ }
  if(status!=200) {
   WCHAR buffer[512];DWORD length=512;
-  if(WinHttpQueryHeaders(request,WINHTTP_QUERY_STATUS_TEXT,NULL,buffer,&length,NULL))throw std::runtime_error(std::string(ATL::CStringA(buffer)));
+  if(WinHttpQueryHeaders(request,WINHTTP_QUERY_STATUS_TEXT,NULL,buffer,&length,NULL))throw std::runtime_error(ATL::CStringA(buffer).GetString());
   else throw std::runtime_error(G3D::format("statusCode = %d",status));
  }
- }catch(...){WinHttpCloseHandle(request);throw;}
- WinHttpCloseHandle(request);
- }catch(...){WinHttpCloseHandle(connection);throw;}
- WinHttpCloseHandle(connection);
- }catch(...){WinHttpCloseHandle(session);throw;}
- WinHttpCloseHandle(session);
+ }
+ }
 
 }
 }

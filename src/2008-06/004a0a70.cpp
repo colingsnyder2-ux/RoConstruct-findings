@@ -1,3 +1,4 @@
+// from server: 100% by king_originala
 // from server: 76% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
@@ -97,7 +98,8 @@ void Client::connect(std::string server, int serverPort, int clientPort, int thr
     if (!rakPeer->Startup(1, threadSleepTime, &d, 1))
         throw std::runtime_error("Failed to start network client");
 
-    if (!rakPeer->Connect(server.c_str(), serverPort, API::version.c_str(), (int)API::version.size(), 0))
+    RakPeerInterface* peer=rakPeer;
+    if (!peer->Connect(server.c_str(), serverPort, API::version.c_str(), (int)API::version.size(), 0))
         throw std::runtime_error("Failed to connect to server");
 
     getLogger()->log(1, "Connecting to %s:%d", server.c_str(), serverPort);

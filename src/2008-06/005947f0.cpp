@@ -1,114 +1,21 @@
-// from server: 83% by king_originala
-extern void* (__thiscall *stringConstruct)(void*, const char*);
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_nativefunctionrefconvertc8dd1859e965d579.cpp
 
-namespace std {
-    class type_info {};
-
-    template<class T> struct char_traits;
-    template<class T> class allocator;
-
-    template<class T, class Traits, class Alloc>
-    class basic_string {
-        char storage[28];
-    public:
-        __forceinline basic_string(const T*);
-        __thiscall ~basic_string();
-    };
-
-    template<class T, class Traits, class Alloc>
-    __forceinline basic_string<T, Traits, Alloc>::basic_string(const T* text)
-    {
-        stringConstruct(this, text);
-    }
-
-    typedef basic_string<char, char_traits<char>, allocator<char> > string;
+// Candidate translation unit (score above; library headers required).
+#define NDEBUG 1
+#define _CPPUNWIND 1
+#undef _DEBUG
+#include <stdexcept>
+#include "reflection/type.h"
+#include "script/ThreadRef.h"
+namespace RBX { namespace Reflection {
+template<> Lua::FunctionRef& Value::convert<Lua::FunctionRef>() {
+ if(isType<void>()) {value=Lua::FunctionRef();_type=&Type::singleton<Lua::FunctionRef>();}
+ Lua::FunctionRef* result=boost::any_cast<Lua::FunctionRef>(&value);
+ if(!result)throw std::runtime_error("Unable to cast value to RBX::Lua::FunctionRef");
+ return *result;
 }
-
-extern bool (__thiscall *typeEqual)(
-    const std::type_info*, const std::type_info&);
-
-struct FunctionRef {
-    char storage[36];
-    __thiscall FunctionRef();
-    __thiscall ~FunctionRef();
-};
-
-struct Holder {
-    virtual ~Holder();
-    virtual const std::type_info& type() const;
-};
-
-struct Any {
-    Holder* content;
-    __thiscall Any(const FunctionRef&);
-    __forceinline ~Any();
-    __forceinline void swap(Any&);
-    __forceinline void assign(const FunctionRef&);
-};
-
-__forceinline Any::~Any()
-{
-    if (content)
-        delete content;
-}
-
-__forceinline void Any::swap(Any& other)
-{
-    if (this != &other) {
-        Holder* old = content;
-        content = other.content;
-        other.content = old;
-    }
-}
-
-__forceinline void Any::assign(const FunctionRef& ref)
-{
-    Any(ref).swap(*this);
-}
-
-struct CastError {
-    char storage[40];
-    __thiscall CastError(const std::string&);
-    __thiscall CastError(const CastError&);
-    __thiscall ~CastError();
-};
-
-extern const std::type_info placeholderType;
-extern const std::type_info functionRefType;
-extern const std::type_info* __cdecl getFunctionRefType();
-
-struct Value {
-    const std::type_info** descriptor;
-    Any value;
-    FunctionRef& __thiscall castFunctionRef();
-};
-
-FunctionRef& Value::castFunctionRef()
-{
-    bool (__thiscall *equal)(const std::type_info*, const std::type_info&) =
-        typeEqual;
-
-    if (equal(&placeholderType, *descriptor[2])) {
-        value.assign(FunctionRef());
-        descriptor = reinterpret_cast<const std::type_info**>(
-            const_cast<std::type_info*>(getFunctionRefType()));
-    }
-
-    Any* source = &value;
-    FunctionRef* result = 0;
-    if (source) {
-        const std::type_info& actual = source->content
-            ? source->content->type()
-            : placeholderType;
-        if (equal(&actual, functionRefType))
-            result = reinterpret_cast<FunctionRef*>(
-                reinterpret_cast<char*>(source->content) + 4);
-    }
-
-    if (!result) {
-        std::string message("Unable to cast value to RBX::Lua::FunctionRef");
-        throw CastError(message);
-    }
-
-    return *result;
-}
+}}

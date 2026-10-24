@@ -1,3 +1,5 @@
+// from server: 93% by king_originala
+#include <intrin.h>
 // from server: 90% by colin
 // from server: 86% by king_originala
 // roc 2008-06 004097c0  unit: RBX::VSelection::?$FactoryProduct::Creator  size: 352 bytes
@@ -165,7 +167,9 @@ String Creator::create(const char *address, const char *suggestion)
             memset(&version.major, 0, 0x90);
             version.size = 0x94;
             GetVersionExA(&version);
-            supportedVersion = version.major >= 6;
+            bool supported = version.major >= 6;
+            _ReadWriteBarrier();
+            supportedVersion = supported;
         }
 
         if (!supportedVersion)

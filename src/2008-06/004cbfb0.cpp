@@ -1,4 +1,6 @@
-// from server: 49% by atomic.potato
+// from server: 54% by colin
+// roc-cl: 21022
+// roc-flags: /GS- /EHsc /MD /O2 /Ob0 /Oy-
 struct VInstance {
     char pad0[8];
     int field8;

@@ -1,10 +1,10 @@
-// from server: 25% by colin
+// from server: 45% by sophus
 struct lua_exception {
     char pad[0x49];
     unsigned char count;
     char pad2[3];
     char* end;
-    int resize(int n);
+    int __cdecl resize(int n);
 };
 
 int lua_exception::resize(int n) {

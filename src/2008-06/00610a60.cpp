@@ -1,3 +1,4 @@
+// from server: 100% by Bob535653
 // from server: 99% by EspClaude
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 // from server: 60% by king_originala
@@ -166,13 +167,25 @@ struct PartArray {
 Extents computeExtents(const PartArray& parts);
 Vector3 multiply(const Vector3& a, const Vector3& b);
 
+extern unsigned int snapGuard;
+extern float snapX;
+extern float snapY;
+extern float snapZ;
+extern const float snapMiddle;
+
 void rotateParts(const PartArray& parts, const Matrix3& rotation)
 {
     if (parts.size() == 0)
         return;
 
     Vector3 center = computeExtents(parts).center();
-    static Vector3 snap(1.0f, 0.1f, 1.0f);
+    if (!(snapGuard & 1)) {
+        snapGuard |= 1;
+        snapX = 1.0f;
+        snapY = snapMiddle;
+        snapZ = 1.0f;
+    }
+    const Vector3& snap = *reinterpret_cast<const Vector3*>(&snapX);
     Vector3 pivot = multiply(center, snap);
     CoordinateFrame origin(Matrix3::identity(), pivot);
     CoordinateFrame change(rotation, Vector3::zero());

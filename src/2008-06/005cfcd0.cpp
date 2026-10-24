@@ -1,9 +1,8 @@
-// from server: 97% by EspClaude
-// from server: 94% by Espeon
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espclaude_26f742d4bcd7556a.cpp
+// roc-lib: openrbx-client-dll roc_try_sp_c1_d41adcc463e21ee1.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <string>
@@ -43,12 +42,13 @@ struct S {
 
 void S::draw(Context* adorn)
 {
+    Context* const c = adorn;
     base(adorn);
     if (check()) {
         G3D::Rect2D viewPort = adorn->getViewport();
         int fontSize = normalizedFontSize(12);
         G3D::Vector2 pos2d = viewPort.x0y1() + G3D::Vector2(4.0f, -4.0f);
-        adorn->drawFont2D("StarterPack - these items will be given to each new player",
+        c->drawFont2D("StarterPack - these items will be given to each new player",
             pos2d, fontSize, G3D::Color3::white(), G3D::Color4::clear(), Context::XALIGN_LEFT, Context::YALIGN_BOTTOM, Context::PROPORTIONAL_SPACING);
     }
 }

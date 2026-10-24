@@ -1,278 +1,75 @@
-// from server: 80% by colin
-// roc-lang: cpp
+// from server: 100% by king_originala
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_lua_get_native_family_830061c7baf22fbe.cpp
-
-// Candidate translation unit (score above; library headers required).
-
-#include "reflection/reflection.h"
-#include "script/ThreadRef.h"
-#include "script/LuaAtomicClasses.h"
-#include "script/LuaInstanceBridge.h"
-#include "lua.h"
-
-namespace RBX { namespace Reflection {
-struct Tuple {
-    ValueCollection values;
-    Tuple() {}
-    Tuple(size_t count):values(count) {}
-    Tuple(const Tuple& other):values(other.values) {}
-    Value& at(size_t i) { return values[i]; }
-    const Value& at(size_t i) const { return values[i]; }
-};
-} }
-namespace RBX
-{
-    namespace Lua
-    {
-        class LuaArguments : public Reflection::FunctionDescriptor::Arguments 
-        {
-        private:
-            const int offset;
-            lua_State* L;
-  
-        public:
-            LuaArguments(lua_State* L, int offset)
-                : offset(offset),
-                  L(L)
-            {
-            }
-            virtual size_t size() const
-            {
-                // TODO: check match
-                return lua_gettop(L)-1;
-            }
-            virtual void get(int index, Reflection::Value& value) const
-            {
-                // TODO: check match
-                int pos = index + offset;
-                RBXASSERT(pos > 0);
-                get(L, pos, value);
-            }
-            int push(const Reflection::Value& value) const
-            {
-                return push(value, L);
-            }
-            int pushReturnValue() const
-            {
-                return push(returnValue);
-            }
-
-        public:
-            // TODO: 97.00%
-            static bool get(lua_State* L, int luaIndex, Reflection::Value& value, bool treatNilAsMissing = false);
-
-            static int push(const Reflection::Value& value, lua_State* const L);
-        public:
-            template <typename T>
-            static int pushTable(T _First, T _Last, lua_State* const L)
-            {
-                lua_createtable(L, _Last-_First, 0);
-
-                int i = 0;
-                for (; _First != _Last; _First++)
-                {
-                    push(*_First, L);
-                    lua_rawseti(L, -2, ++i);
-                }
-
-                return 1;
-            }
-        };
-    }
+// Native LuaArguments/type/ThreadRef/Boost any declarations plus the complete target switch.
+#include <string>
+#include <vector>
+#include <typeinfo>
+#include <stddef.h>
+struct lua_State;
+extern "C" {
+ int __cdecl lua_gettop(lua_State*);int __cdecl lua_type(lua_State*,int);double __cdecl lua_tonumber(lua_State*,int);int __cdecl lua_toboolean(lua_State*,int);
+ const char*__cdecl lua_tolstring(lua_State*,int,unsigned*);unsigned __cdecl lua_objlen(lua_State*,int);
+ void __cdecl lua_rawgeti(lua_State*,int,int);void __cdecl lua_settop(lua_State*,int);
 }
-
-int RBX::Lua::LuaArguments::push(const Reflection::Value& value, lua_State* const L)
-{
-                if (value.isType<void>())
-                    return 0;
-
-                if (value.isType<int>())
-                {
-                    lua_pushinteger(L, value.cast<int>());
-                    return 1;
-                }
-
-                if (value.isType<bool>())
-                {
-                    lua_pushboolean(L, value.cast<bool>());
-                    return 1;
-                }
-
-                if (value.isType<float>())
-                {
-                    lua_pushnumber(L, value.cast<float>());
-                    return 1;
-                }
-
-                if (value.isType<double>())
-                {
-                    lua_pushnumber(L, value.cast<double>());
-                    return 1;
-                }
-
-                if (value.isType<FunctionRef>())
-                {
-                    lua_pushfunction(L, value.cast<const FunctionRef&>());
-                    return 1;
-                }
-
-                if (value.isType<std::string>())
-                {
-                    lua_pushstring(L, value.cast<const std::string&>().c_str());
-                    return 1;
-                }
-
-                if (value.isType<G3D::Vector3>())
-                {
-                    Vector3Bridge::pushVector3(L, value.cast<const G3D::Vector3&>());
-                    return 1;
-                }
-
-                if (value.isType<G3D::CoordinateFrame>())
-                {
-                    CoordinateFrameBridge::pushCoordinateFrame(L, value.cast<const G3D::CoordinateFrame&>());
-                    return 1;
-                }
-
-                if (value.isType<G3D::Color3>())
-                {
-                    Color3Bridge::pushColor3(L, value.cast<const G3D::Color3&>());
-                    return 1;
-                }
-
-                if (value.isType<BrickColor>())
-                {
-                    BrickColorBridge::pushNewObject(L, value.cast<const BrickColor&>());
-                    return 1;
-                }
-
-                if (value.isType<ContentId>())
-                {
-                    lua_pushstring(L, value.cast<const ContentId&>().c_str());
-                    return 1;
-                }
-
-                if (value.isType<boost::shared_ptr<Instance>>())
-                {
-                    ObjectBridge::push(L, value.cast<const boost::shared_ptr<Instance>&>());
-                    return 1;
-                }
-
-                if (value.isType<boost::shared_ptr<Reflection::DescribedBase>>())
-                {
-                    ObjectBridge::push(L, value.cast<const boost::shared_ptr<Reflection::DescribedBase>&>());
-                    return 1;
-                }
-
-                if (value.isType<Reflection::ValueCollection>())
-                {
-                    const Reflection::ValueCollection& collection = value.cast<const Reflection::ValueCollection&>();
-                    return pushTable(collection.begin(), collection.end(), L);
-                }
-
-                if (value.isType<Reflection::Tuple>())
-                {
-                    const Reflection::Tuple& tuple = value.cast<const Reflection::Tuple&>();
-                    int count = 0;
-                    Reflection::ValueCollection::const_iterator iter = tuple.values.begin();
-                    Reflection::ValueCollection::const_iterator end = tuple.values.end();
-                    while (iter != end) {
-                        count += push(*iter, L);
-                        ++iter;
-                    }
-                    return count;
-                }
-
-                if (value.isType<boost::shared_ptr<const Instances>>())
-                {
-                    boost::shared_ptr<const Instances> values = value.cast<boost::shared_ptr<const Instances>>();
-
-                    if (values)
-                    {
-                        return pushTable(values->begin(), values->end(), L);
-                    }
-                    else
-                    {
-                        lua_newtable(L);
-                        return 1;
-                    }
-                }
-
-                return 0;
-            }
-
-bool RBX::Lua::LuaArguments::get(lua_State* L, int luaIndex, Reflection::Value& value, bool treatNilAsMissing)
-{
-                // (018310)  S_BPREL32: [FFFFFF80], Type:             0x11DC, n ; const int
-                // (018320)  S_BPREL32: [FFFFFF84], Type:             0x928D, values ; *std::vector<RBX::Reflection::Value> / *ValueCollection
-
-                if (luaIndex > lua_gettop(L))
-                    return false;
-                    switch (lua_type(L, luaIndex))
-                    {
-                    case LUA_TNUMBER:
-                    {
-                        double rhs = lua_tonumber(L, luaIndex);
-                        value = rhs;
-                        break;
-                    }
-
-                    case LUA_TBOOLEAN:
-                    {
-                        bool rhs = lua_toboolean(L, luaIndex) != 0;
-                        value = rhs;
-                        break;
-                    }
-
-                    case LUA_TSTRING:
-                    {
-                        const char* str = lua_tostring(L, luaIndex);
-                        value = std::string(str);
-                        break;
-                    }
-
-                    case LUA_TTABLE:
-                    {
-                        const int n = static_cast<const int>(lua_objlen(L, luaIndex));
-                        value = Reflection::ValueCollection(n);
-                        Reflection::ValueCollection& values = value.cast<Reflection::ValueCollection&>();
-
-                        for (int i = 1; i <= n; ++i) {
-                            Reflection::Value& ival = values[i-1];
-                            lua_rawgeti(L, luaIndex, i);
-                            LuaArguments::get(L, -1, ival, false);
-                            lua_pop(L, 1);
-                        }
-
-                        break;
-                    }
-
-                    case LUA_TNIL:
-                        if (treatNilAsMissing)
-                            return false;
-                        value = Reflection::Value();
-                        break;
-
-                    case LUA_TFUNCTION:
-                        value = lua_tofunction(L, luaIndex);
-                        break;
-
-                    case LUA_TUSERDATA:
-                        if (CoordinateFrameBridge::getValue(L, luaIndex, value)
-                            || Vector3Bridge::getValue(L, luaIndex, value)
-                            || Color3Bridge::getValue(L, luaIndex, value)
-                            || BrickColorBridge::getValue(L, luaIndex, value)
-                            || ObjectBridge::getPtr(L, luaIndex, value))
-                            break;
-
-                        value = Reflection::Value();
-                        break;
-
-                    default:
-                        value = Reflection::Value();
-                        break;
-                    }
-                return true;
-            }
+namespace boost {
+struct any {
+ struct placeholder {virtual ~placeholder(){}virtual const std::type_info&type()const=0;virtual placeholder*clone()const=0;};
+ placeholder*content;~any(){delete content;}
+};
+}
+namespace RBX {
+namespace Lua {
+struct ThreadRef {virtual void removeRef();char unused[28];};
+struct FunctionRef:ThreadRef {int functionId;~FunctionRef();};
+FunctionRef __cdecl lua_tofunction(lua_State*,int);
+}
+namespace Reflection {
+struct Type;
+struct Value {
+ const Type*_type;boost::any value;
+ Value();Value(const Value&);Value&operator=(const Value&);
+ template<class T>Value&operator=(const T&);
+};
+typedef std::vector<Value>ValueCollection;
+ValueCollection&__cdecl collectionFromAny(boost::any&);
+}
+namespace Lua {
+struct CoordinateFrameBridge {static bool getValue(lua_State*,int,Reflection::Value&);};
+struct Vector3Bridge {static bool getValue(lua_State*,int,Reflection::Value&);};
+struct Color3Bridge {static bool getValue(lua_State*,int,Reflection::Value&);};
+struct BrickColorBridge {static bool getValue(lua_State*,int,Reflection::Value&);};
+struct ObjectBridge {static bool getPtr(lua_State*,int,Reflection::Value&);};
+struct LuaArguments {static bool get(lua_State*,int,Reflection::Value&,bool);};
+bool LuaArguments::get(lua_State*L,int luaIndex,Reflection::Value&value,bool nilIsMissing){
+ if(luaIndex>lua_gettop(L))return false;
+ switch(lua_type(L,luaIndex)){
+ case 3:{double rhs=lua_tonumber(L,luaIndex);value=rhs;break;}
+ case 1:{bool rhs=lua_toboolean(L,luaIndex)!=0;value=rhs;break;}
+ case 4:{value=std::string(lua_tolstring(L,luaIndex,0));break;}
+ case 5:{
+  const int n=(int)lua_objlen(L,luaIndex);
+  value=Reflection::ValueCollection(n);
+  int i=1;
+  Reflection::ValueCollection&values=Reflection::collectionFromAny(value.value);
+  if(n>=1){
+   do{
+    Reflection::Value&ival=values[i-1];
+    lua_rawgeti(L,luaIndex,i);get(L,-1,ival,false);lua_settop(L,-2);++i;
+   }while(i<=n);
+  }
+  return true;
+ }
+ case 0:if(nilIsMissing)return false;value=Reflection::Value();break;
+ case 6:value=lua_tofunction(L,luaIndex);break;
+ default:value=Reflection::Value();break;
+ case 7:
+  if(CoordinateFrameBridge::getValue(L,luaIndex,value)||Vector3Bridge::getValue(L,luaIndex,value)||Color3Bridge::getValue(L,luaIndex,value)||BrickColorBridge::getValue(L,luaIndex,value)||ObjectBridge::getPtr(L,luaIndex,value))break;
+  value=Reflection::Value();break;
+ }
+ return true;
+}
+}}
+typedef char value_size[sizeof(RBX::Reflection::Value)==8?1:-1];
+typedef char function_size[sizeof(RBX::Lua::FunctionRef)==36?1:-1];
+typedef char collection_size[sizeof(RBX::Reflection::ValueCollection)==24?1:-1];

@@ -1,154 +1,96 @@
-// from server: 37% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-
-struct V3 { float x, y, z; };
-
-struct Seat {
-    char pad[0x418];
-    void* weld;
-    void createSeatWeld(void* h);
+// from server: 100% by Espeon
+// from server: 84% by king_originala
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <intrin.h>
+namespace boost {namespace detail {
+struct sp_counted_base {
+ virtual ~sp_counted_base(){}virtual void dispose()=0;virtual void destroy(){delete this;}
+ long use_count_,weak_count_;
+ void weak_release(){if(_InterlockedDecrement(&weak_count_)==0)destroy();}
+ void release(){if(_InterlockedDecrement(&use_count_)==0){dispose();weak_release();}}
 };
-
-extern float g_81c3b8;
-extern float g_81e380;
-extern float g_82f838;
-extern char g_97d580;
-extern char g_97d568;
-extern char g_849cf4;
-
-extern "C" void* __stdcall sub_802458(const char*);
-extern "C" void* __stdcall sub_802468(void*);
-
-void* sub_598cb0(void* self);
-void sub_513220(void* self, void* arg);
-void sub_4782d0(void* self);
-void sub_518b90(void* self, void* arg);
-void* sub_476700(void* self, void* arg);
-void* sub_478330(void* self, void* arg);
-void* sub_5d90a0(void* self);
-void* sub_5e7570(void* self);
-void sub_5e8200(void* self, void* arg);
-void* sub_5e82c0(void* self);
-void* sub_60e8f0(void* self, void* arg);
-void sub_614170(void* self);
-void sub_5e7760(void* self, void* arg);
-void* sub_4b2620(void* arg);
-void sub_4025b0(void* self, void* arg);
-void sub_5e4450(void* self, void* arg);
-void* sub_5d8b10(void* self);
-void sub_5e4470(void* self, void* arg);
-void sub_5e4490(void* self, void* arg);
-void sub_5e44c0(void* self, void* arg);
-void sub_55a8f0(void* self, void* arg);
-
-void Seat::createSeatWeld(void* h)
-{
-    void* a = sub_598cb0(this);
-    char buf1[0x80];
-    sub_513220(buf1, a);
-
-    V3 v1;
-    v1.x = *(float*)((char*)a + 0x24);
-    v1.y = *(float*)((char*)a + 0x28);
-    v1.z = *(float*)((char*)a + 0x2c);
-
-    char m1[0x30];
-    sub_4782d0(m1);
-
-    float zero = 0.0f;
-    V3 t1;
-    t1.x = zero;
-    t1.y = zero;
-    t1.z = g_81c3b8;
-    char r1[0x30];
-    sub_518b90(r1, &t1);
-
-    char m2[0x30];
-    sub_4782d0(m2);
-
-    V3 t2;
-    t2.x = zero;
-    t2.y = g_81e380;
-    t2.z = zero;
-    char r2[0x30];
-    sub_518b90(r2, &t2);
-
-    V3 t3;
-    t3.x = zero;
-    t3.y = g_82f838;
-    t3.z = zero;
-
-    void* b = sub_598cb0(this);
-    sub_476700(b, &t3);
-
-    char tmp[0x30];
-    sub_478330(tmp, &v1);
-    sub_476700(b, tmp);
-
-    void* c = sub_5d90a0(h);
-    void* d = sub_5e7570(c);
-    void* e = *(void**)((char*)d + 0x24);
-    void* f = *(void**)((char*)e + 0x1c);
-
-    if (f == c) {
-        char tmp2[0x30];
-        sub_5e8200(c, tmp2);
-        if (!(g_97d580 & 1)) {
-            g_97d580 |= 1;
-            sub_614170(&g_97d568);
-        }
-        sub_5e7760(c, &g_97d568);
-    } else {
-        void* g = sub_5e82c0(f);
-        char tmp3[0x30];
-        sub_60e8f0(g, tmp3);
-        char tmp4[0x30];
-        sub_476700(tmp4, tmp3);
-        sub_5e8200(f, tmp4);
-        if (!(g_97d580 & 1)) {
-            g_97d580 |= 1;
-            sub_614170(&g_97d568);
-        }
-        sub_5e7760(f, &g_97d568);
-    }
-
-    void* hh = sub_598cb0(this);
-    sub_476700(hh, &v1);
-
-    void* ii = sub_5e82c0(c);
-    sub_476700(ii, &t2);
-
-    void* jj = sub_4b2620(&tmp);
-    void* kk = *(void**)jj;
-    this->weld = kk;
-    sub_4025b0(&this->pad[0], (char*)jj + 4);
-
-    if (jj) {
-        long old = _InterlockedExchangeAdd((volatile long*)((char*)jj + 4), -1);
-        if (old == 1) {
-            void** vt = *(void***)jj;
-            ((void(__thiscall*)(void*))vt[1])(jj);
-            long old2 = _InterlockedExchangeAdd((volatile long*)((char*)jj + 8), -1);
-            if (old2 == 1) {
-                void** vt2 = *(void***)jj;
-                ((void(__thiscall*)(void*))vt2[2])(jj);
-            }
-        }
-    }
-
-    sub_802458(&g_849cf4);
-
-    void* w = this->weld;
-    void** vt = *(void***)w;
-    ((void(__thiscall*)(void*, void*))vt[1])(w, &tmp);
-
-    sub_802468(&tmp);
-
-    sub_5e4450(this->weld, this);
-    void* n = sub_5d8b10(h);
-    sub_5e4470(this->weld, n);
-    sub_5e4490(this->weld, &v1);
-    sub_5e44c0(this->weld, &t2);
-    sub_55a8f0(this->weld, this);
+struct shared_count {
+ sp_counted_base*pi_;
+ shared_count():pi_(0){}
+ shared_count(const shared_count&r):pi_(r.pi_){if(pi_)_InterlockedIncrement(&pi_->use_count_);}
+ shared_count&operator=(const shared_count&);
+ ~shared_count(){if(pi_)pi_->release();}
+};
+}
+template<class T>struct shared_ptr {
+ T*px;detail::shared_count pn;
+ shared_ptr():px(0),pn(){}
+ shared_ptr(const shared_ptr&r):px(r.px),pn(r.pn){}
+ shared_ptr&operator=(const shared_ptr&r){px=r.px;pn=r.pn;return *this;}
+ T*operator->()const{return px;}
+};
+}
+struct __declspec(dllimport) ImportedString {char data[28];ImportedString(const char*);~ImportedString()throw();};
+namespace G3D {
+struct Vector3 {
+ float x,y,z;
+ Vector3(float a,float b,float c):x(a),y(b),z(c){}
+ Vector3(const Vector3&r):x(r.x),y(r.y),z(r.z){}
+ Vector3&operator=(const Vector3&r){x=r.x;y=r.y;z=r.z;return *this;}
+};
+struct Matrix3 {float data[9];Matrix3(const Matrix3&r){*this=r;}Matrix3&operator=(const Matrix3&);};
+struct CoordinateFrame {
+ Matrix3 rotation;Vector3 translation;
+ CoordinateFrame();
+ CoordinateFrame(const CoordinateFrame&r):rotation(r.rotation),translation(r.translation){}
+ ~CoordinateFrame(){}
+ void lookAt(const Vector3&,Vector3);
+ CoordinateFrame operator*(const CoordinateFrame&)const;
+ CoordinateFrame inverse()const;
+ CoordinateFrame toObjectSpace(const CoordinateFrame&)const;
+};
+}
+namespace RBX {
+struct Velocity {G3D::Vector3 linear,rotational;Velocity()throw();static __forceinline const Velocity&zero(){static Velocity value;return value;}};
+struct Primitive;
+struct Clump {char opaque[0x1c];Primitive*rootPrimitive;Primitive*getRootPrimitive(){return rootPrimitive;}};
+struct Assembly {char opaque[0x24];Clump*rootClump;Primitive*getMainPrimitive()const{return rootClump->getRootPrimitive();}};
+struct Primitive {
+ Assembly*getAssembly()const;
+ const G3D::CoordinateFrame&getCoordinateFrame()const;
+ void setCoordinateFrame(const G3D::CoordinateFrame&);
+ void setVelocity(const Velocity&);
+};
+struct Instance {virtual ~Instance();virtual void setName(const ImportedString&);void setParent(Instance*);};
+struct PartInstance:Instance {const G3D::CoordinateFrame&getCoordinateFrame()const;};
+struct AutoJoint:Instance {void setPart0(PartInstance*);void setPart1(PartInstance*);void setC0(const G3D::CoordinateFrame&);void setC1(const G3D::CoordinateFrame&);};
+boost::shared_ptr<AutoJoint>__cdecl createSeatJoint();
+struct Humanoid {Primitive*getTorsoPrimitive()const;PartInstance*getTorso()const;};
+struct Seat:PartInstance {
+ char unchanged[0x418-sizeof(PartInstance)];boost::shared_ptr<AutoJoint>weld;
+ void seatCharacter(Humanoid*);
+};
+void Seat::seatCharacter(Humanoid*h){
+ G3D::CoordinateFrame original=getCoordinateFrame();
+ G3D::CoordinateFrame C0;
+ C0.lookAt(G3D::Vector3(0,-1,0),G3D::Vector3(0,0,-1));
+ C0.translation=G3D::Vector3(0,3,0);
+ G3D::CoordinateFrame C1;
+ C1.lookAt(G3D::Vector3(0,-1,0),G3D::Vector3(0,0,-1));
+ C1.translation=G3D::Vector3(0,.6f,0);
+ G3D::CoordinateFrame seatSpace=getCoordinateFrame()*C0;
+ G3D::CoordinateFrame desired=seatSpace*C1.inverse();
+ Primitive*torso=h->getTorsoPrimitive();
+ Primitive*root=torso->getAssembly()->getMainPrimitive();
+ if(root==torso){torso->setCoordinateFrame(desired);torso->setVelocity(Velocity::zero());}
+ else{
+  G3D::CoordinateFrame relative=torso->getCoordinateFrame().toObjectSpace(root->getCoordinateFrame());
+  G3D::CoordinateFrame rootFrame=desired*relative;
+  root->setCoordinateFrame(rootFrame);
+  root->setVelocity(Velocity::zero());
+ }
+ G3D::CoordinateFrame seatJoint=getCoordinateFrame()*C0;
+ G3D::CoordinateFrame torsoJoint=torso->getCoordinateFrame()*C1;
+ weld=createSeatJoint();
+ {ImportedString name("SeatWeld");weld->setName(name);}
+ weld->setPart0(this);
+ weld->setPart1(h->getTorso());
+ weld->setC0(C0);weld->setC1(C1);weld->setParent(this);
+}
 }

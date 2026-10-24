@@ -1,4 +1,5 @@
-// from server: 95% by EspClaude
+// from server: 100% by colin
+﻿// from server: 95% by EspClaude
 // roc 2008-06 0044a1f0  unit: CRbxPlayDocTemplate  size: 199 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0044a1f0
 //
@@ -152,7 +153,8 @@ struct Outer {
 
 int Outer::check(std::string name)
 {
-    Template* t = field_58->tmpl;
+    Container* c = field_58;
+    Template* t = c->tmpl;
     void* pos = t->GetFirstDocPosition();
     while (pos) {
         Doc* doc = t->GetNextDoc(pos);
@@ -161,3 +163,4 @@ int Outer::check(std::string name)
     }
     return 1;
 }
+

@@ -1,11 +1,13 @@
-// from server: 87% by EspClaude
-// from server: 84% by Espeon
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espclaude_c7175c917dd06ab9.cpp
+// roc-lib: rbxgs-dll roc_espeon_clumppipelinedcleanup892f336e907113db.cpp
 
 // Candidate translation unit (score above; library headers required).
+#include "G3D/Array.h"
+#include "util/ComputeProp.h"
+#include <stddef.h>
 #include <vector>
 // from server: 82% by king_originala
 // roc 2008-06 005e6cf0  unit: RBX::Clump  size: 233 bytes
@@ -112,10 +114,10 @@ struct Pending {
 
 typedef std::vector<void*> Links;
 
-struct Base {
+struct __declspec(novtable) Base {
     int references;
     Base() { references = 0; }
-    virtual ~Base();
+    virtual ~Base() {}
 };
 
 struct EmptyBase {
@@ -156,7 +158,7 @@ struct BindingB {
 
 #pragma pack(pop)
 struct Clump : Base, EmptyBase {
-    Triplet fields;
+    G3D::Array<void*> fields;
     bool dirty;
     char pad15[3];
     int field18;
@@ -167,35 +169,33 @@ struct Clump : Base, EmptyBase {
     Zero field40;
     int field44;
     int field48;
-    char pad4c[8];
-    bool enabled;
-    char pad55[3];
-    BindingA bindingA;
-    char pad68;
-    bool active;
-    char pad6a[2];
-    BindingB bindingB;
+    char pad4c[4];
+    RBX::ComputeProp<float,Clump> maxRadius;
+    RBX::ComputeProp<bool,Clump> canSleep;
 
     Clump(Ball*);
     virtual ~Clump();
-    void callbackA();
-    void callbackB();
+    float callbackA()const;
+    bool callbackB()const;
 };
 
 Clump::Clump(Ball* p)
     : dirty(true), field18(0), ball(p), pending(0),
       field44(-1), field48(-1),
-      enabled(true), bindingA(this, &Clump::callbackA),
-      active(true), bindingB(this, &Clump::callbackB)
+      maxRadius(this, &Clump::callbackA),
+      canSleep(this, &Clump::callbackB)
 {
     Ball* b = ball;
     self = this;
     b->setField(reinterpret_cast<int>(this));
     b->action->reset(0);
     dirty = true;
-    enabled = true;
-    active = true;
+    maxRadius.setDirty();
+    canSleep.setDirty();
     if (pending)
         pending->refresh();
 }
 
+
+typedef char checkRadius[(offsetof(Clump,maxRadius)==0x50)?1:-1];
+typedef char checkSleep[(offsetof(Clump,canSleep)==0x68)?1:-1];

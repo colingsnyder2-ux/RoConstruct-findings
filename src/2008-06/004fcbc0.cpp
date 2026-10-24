@@ -1,183 +1,58 @@
-// from server: 48% by colin
-//
+// from server: 97% by king_originala
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
 
-struct TorsoBuilder {
-    void build(int a, int b, int c);
+extern "C" __declspec(dllimport) double __cdecl fabs(double);
+// roc-lib: g3d-6.09 G3Dcpp/Vector3.cpp
+namespace G3D {inline int iRound(float);}
+namespace MeshTypes {
+extern "C" __declspec(dllimport) double __cdecl ceil(double);
+struct Vector2 {float x,y;Vector2():x(0),y(0){}Vector2(float a,float b):x(a),y(b){}Vector2(const Vector2&r):x(r.x),y(r.y){}Vector2&operator=(const Vector2&r){x=r.x;y=r.y;return *this;}Vector2 operator-()const{return Vector2(-x,-y);}float& operator[](int i){return (&x)[i];}const float& operator[](int i)const{return (&x)[i];}};
+struct Vector3 {float x,y,z;Vector3(float a,float b,float c):x(a),y(b),z(c){}Vector3(const Vector3&r):x(r.x),y(r.y),z(r.z){}Vector3 abs()const{return Vector3(fabs(x),fabs(y),fabs(z));}Vector2 xy()const;float&operator[](int i){return (&x)[i];}const float&operator[](int i)const{return (&x)[i];}};
+struct Vector2int16 {short x,y;Vector2int16():x(0),y(0){}short&operator[](int i){return (&x)[i];}const short&operator[](int i)const{return (&x)[i];}};
+struct Rect2D {Vector2 min,max;static Rect2D xyxy(const Vector2&,const Vector2&);};
+template<class T>const T& maximum(const T&a,const T&b){return a<b?b:a;}
+}
+namespace RBX {namespace View {
+using MeshTypes::Vector2;using MeshTypes::Vector3;using MeshTypes::Vector2int16;using MeshTypes::Rect2D;
+typedef void(__cdecl* Function)(Vector3&,Vector3&,Vector2&,const Vector3&,const Vector2int16&);
+Vector3 __cdecl mapFace(const Vector3&);
+float __cdecl surfaceOffset(int);
+static __forceinline bool useFirstAxis(int purpose,const Vector3& size){if(purpose==0 && size.x<size.y)return true;return false;}
+static __forceinline Vector3 absoluteSize(const Vector3& v){Vector3 mapped=mapFace(v);float z=(float)fabs(mapped.z);float y=(float)fabs(mapped.y);float x=(float)fabs(mapped.x);return Vector3(x,y,z);}
+struct Builder {
+ enum Purpose{Surface,Decal,Shadow};
+ virtual void build(Purpose);virtual void buildTop(Purpose)=0;virtual void buildBottom(Purpose)=0;virtual void buildLeft(Purpose)=0;virtual void buildRight(Purpose)=0;virtual void buildFront(Purpose)=0;virtual void buildBack(Purpose)=0;
+ const Vector3 halfSize;unsigned surfaceTypes;void* level;Vector2 textureScale;
+ void build(Function,Vector2int16,int);
+ void emit(Function,Rect2D,float,Vector2,Vector2,int,Vector2int16);
 };
-
-extern "C" {
-    void __stdcall sub_6784D0(int* out, int* in);
-    void __stdcall sub_5185D0(float* out, float* in);
-    float __stdcall sub_4F1FF0(int n);
-    void __stdcall sub_4F35D0(float* a, float* b, float* c, float* d, float* e, float* f);
-    void __stdcall sub_4FB1F0(int* p);
-    double __cdecl ceil(double x);
+void Builder::build(Function function,Vector2int16 grid,int purpose){
+ int surface=(surfaceTypes>>15)&7;
+ Vector3 size=absoluteSize(halfSize);
+ int axis=!useFirstAxis(purpose,size);
+ int steps=(purpose==0 && surface)?G3D::iRound((float)MeshTypes::ceil((double)(size[axis]*0.5f))):1;
+ Vector2int16 divisions;
+ short n=grid[1-axis];
+ divisions[axis]=MeshTypes::maximum<short>(1,(short)(n/steps));
+ divisions[1-axis]=n;
+ float depth=size.z;
+ Vector2 begin=-size.xy();
+ Vector2 end=size.xy();
+ Vector2 origin,extent;
+ switch(purpose){
+  case 0:
+   if(!surface){origin=Vector2(0.25f,0.5f);extent[1-axis]=0;extent[axis]=0;}
+   else {origin[1-axis]=0;origin[axis]=surfaceOffset(surface);extent[1-axis]=size[1-axis]*2.0f;extent[axis]=0.5f;if(axis==1)extent.x=-extent.x;}
+   break;
+  case 1:origin.x=0;origin.y=textureScale.y;extent.x=textureScale.x;extent.y=-textureScale.y;break;
+  case 2:origin=Vector2(0,0);extent=Vector2(0,0);break;
+ }
+ for(int i=0;i<steps;++i){
+  if(i==steps-1){end[axis]=size[axis];if(purpose==0 && surface)extent[axis]=(end[axis]-begin[axis])*extent[axis]*0.25f;}
+  else end[axis]=begin[axis]+4.0f;
+  emit(function,Rect2D::xyxy(begin,end),depth,origin,extent,axis,divisions);
+  begin[axis]=end[axis];
+ }
 }
-
-extern float g_819BAC;
-extern float g_826E6C;
-extern float g_83A3E4;
-
-void TorsoBuilder::build(int a, int b, int c)
-{
-    int local10;
-    int local14;
-    int local18;
-    int local1C;
-    int local20;
-    int local24;
-    int local28;
-    int local2C;
-    int local30;
-    int local34;
-    int local38;
-    int local3C;
-    int local40;
-    int local44;
-    int local48;
-    int local4C;
-    int local50;
-    int local54;
-    int local58;
-    int local5C;
-
-    int ebp = (*(int*)((char*)this + 0x10) >> 6) & 7;
-
-    sub_6784D0(&local3C, (int*)((char*)this + 4));
-
-    float f44 = *(float*)&local44;
-    if (f44 < 0.0f) f44 = -f44;
-    float f48 = *(float*)&local48;
-    if (f48 < 0.0f) f48 = -f48;
-    float f4C = *(float*)&local38;
-    if (f4C < 0.0f) f4C = -f4C;
-
-    int ecx = local5C;
-    int esi;
-    if (ecx == 0) {
-        if (f44 == f48) {
-            esi = 0;
-        } else {
-            esi = 1;
-        }
-    } else {
-        esi = 1;
-    }
-
-    int ebx;
-    if (ecx == 0 && ebp != 0) {
-        float v = (&f44)[esi] * g_819BAC;
-        double d = ceil((double)v);
-        ebx = (int)d;
-    } else {
-        ebx = 1;
-    }
-
-    short w10 = 0;
-    short w12 = 0;
-    int ecx2 = esi + esi;
-    short di = *(short*)((char*)&local58 - ecx2);
-    int eax2 = (int)di;
-    int div = eax2 / ebx;
-    short ax = (short)div;
-    int local18v = (int)(unsigned short)ax;
-    int local20v = 1;
-    short cmpv = (short)local20v;
-    short* psel;
-    if (cmpv < (short)local18v) {
-        psel = (short*)&local18v;
-    } else {
-        psel = (short*)&local20v;
-    }
-    short sel = *psel;
-    *(short*)((char*)&local10 + ecx2) = sel;
-    *(short*)((char*)&local10 - ecx2) = di;
-
-    float f20 = f4C;
-    sub_5185D0((float*)&local38, (float*)&local48);
-    float t0 = -((float*)&local38)[0];
-    float t1 = -((float*)&local38)[1];
-    float local3C2 = t0;
-    float local40v = t1;
-    sub_5185D0((float*)&local30, (float*)&local48);
-
-    float zero = 0.0f;
-    int eax3 = local5C;
-    eax3 -= 0;
-    float local28v = zero;
-    float local2Cv = zero;
-    float local18f = zero;
-    float local1Cf = zero;
-
-    if (eax3 == 0) {
-        if (ebp == 0) {
-            local28v = g_83A3E4;
-            int eax4 = esi * 4;
-            local2Cv = g_819BAC;
-            float* edx = (float*)((char*)&local1C - eax4);
-            *edx = g_819BAC;
-            *(float*)((char*)&local18 + eax4) = g_819BAC;
-        } else {
-            int edi2 = esi * 4;
-            float* eax5 = (float*)((char*)&local2C - edi2);
-            *eax5 = zero;
-            float r = sub_4F1FF0(ebp);
-            *(float*)((char*)&local2C + edi2) = r;
-            float* ecx3 = (float*)((char*)&local4C - edi2);
-            float v2 = *ecx3;
-            float* edx2 = (float*)((char*)&local20 - edi2);
-            *edx2 = v2 + v2;
-            *(float*)((char*)&local18 + edi2) = g_819BAC;
-            if (esi == 1) {
-                local18f = -local18f;
-            }
-        }
-    } else {
-        eax3 -= 1;
-        if (eax3 == 0) {
-            local28v = zero;
-            local2Cv = *(float*)((char*)&local14 + 0x1C);
-            local18f = *(float*)((char*)&local14 + 0x18);
-            local1Cf = -*(float*)((char*)&local14 + 0x1C);
-        } else {
-            eax3 -= 1;
-            if (eax3 == 0) {
-                local28v = zero;
-                local2Cv = zero;
-                local18f = zero;
-                local1Cf = zero;
-            }
-        }
-    }
-
-    int edi3 = 0;
-    if (ebx > 0) {
-        int ebp2 = local54;
-        while (edi3 < ebx) {
-            int eax6 = ebx - 1;
-            if (edi3 == eax6) {
-                float f = (&f44)[esi];
-                (&local30)[esi] = f;
-                if (local5C == 0 && local24 != 0) {
-                    float v3 = f - (&local38)[esi];
-                    v3 = v3 * (&local18f)[esi];
-                    v3 = v3 * g_83A3E4;
-                    (&local18f)[esi] = v3;
-                }
-            } else {
-                float v4 = (&local38)[esi] + g_826E6C;
-                (&local30)[esi] = v4;
-            }
-
-            int eax7 = local10;
-            float f18 = local18f;
-            float f2C = local2Cv;
-            float f30 = (&local30)[esi];
-            float f44b = (&f44)[esi];
-            sub_4F35D0((float*)&local58, (float*)&local48, (float*)&local30, (float*)&local18f, (float*)&local2Cv, (float*)&local44);
-            sub_4FB1F0(&ebp2);
-            (&local38)[esi] = (&local30)[esi];
-            edi3++;
-        }
-    }
-}
+}}

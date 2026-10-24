@@ -1,8 +1,8 @@
-// from server: 62% by colin
+// from server: 71% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_ogretexture_named_shade_colora5f6681022447286.cpp
+// roc-lib: rbxgs-dll roc_espeon_ogretexturemaxselect8d6cceb10bf21d5d.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <assert.h>
@@ -185,8 +185,8 @@ G3D::TextureRef TextureProxy::resolve(VisualEngine* engine) {
                 if (!*reinterpret_cast<bool*>(reinterpret_cast<char*>(engine)+0x805)) {
                     int width = image.getWidth();
                     int height = image.getHeight();
-                    int mipmaps = Ogre::Bitwise::getBitShift(Ogre::Bitwise::firstPO2From(std::max(width, height)));
-                    mipData.resize(Ogre::Image::calculateSize(mipmaps, 1, width, height, 1, Ogre::PF_R8G8B8));
+                    int mipmaps = Ogre::Bitwise::getBitShift(Ogre::Bitwise::firstPO2From((width > height ? width : height)));
+                    mipData.resize(Ogre::Image::calculateSize(mipmaps, 1, width, height, 1, Ogre::PF_B8G8R8));
                     unsigned char* output = &mipData[0];
                     unsigned char* previous = 0;
                     int previousWidth = -1, previousHeight = -1;
@@ -204,10 +204,10 @@ G3D::TextureRef TextureProxy::resolve(VisualEngine* engine) {
                         if (height > 1) height /= 2;
                     }
                     finalImage.loadDynamicImage(&mipData[0], image.getWidth(), image.getHeight(), 1,
-                                                 Ogre::PF_R8G8B8, false, 1, mipmaps);
+                                                 Ogre::PF_B8G8R8, false, 1, mipmaps);
                 } else {
                     finalImage.loadDynamicImage(image.getData(), image.getWidth(), image.getHeight(), 1,
-                                                 Ogre::PF_R8G8B8, false, 1, 0);
+                                                 Ogre::PF_B8G8R8, false, 1, 0);
                 }
                 ogreTexture = Ogre::TextureManager::getSingleton().create(name, shadeResourceGroup, false, 0, 0);
                 ogreTexture->loadImage(finalImage);
@@ -216,15 +216,8 @@ G3D::TextureRef TextureProxy::resolve(VisualEngine* engine) {
                 Ogre::LogManager::getSingleton().logMessage(std::string("create shadetex=") + ogreTexture->getName() + "\n");
                 collectUnusedTextures();
             }
-        } else if (root.notNull()) {
-            // Native virtual slot6 has the authentic resolve signature and hidden
-            // TextureRef result. The old base header omits the newer virtuals.
-            typedef G3D::TextureRef (__thiscall *ResolveMethod)(TextureProxy*, VisualEngine*);
-            G3D::TextureRef resolved = reinterpret_cast<ResolveMethod>(
-                (*reinterpret_cast<void***>(root.getPointer()))[6])(root.getPointer(), engine);
-            if (resolved.notNull() && !resolved->opaque())
-                texture = resolved->alphaOnlyVersion();
-        } else if (filename == "") {
+        } else if (root.isNull()) {
+          if (filename == "") {
             Ogre::LogManager::getSingleton().logMessage("filename is empty in resolve()\n");
         } else {
             Ogre::Image image;
@@ -274,6 +267,17 @@ G3D::TextureRef TextureProxy::resolve(VisualEngine* engine) {
                     collectUnusedTextures();
                 }
             }
+        }
+        } else {
+            // Observed virtual slot 0x18; class-return calling convention.
+            struct ResolveView {
+                virtual void slot0()=0; virtual void slot1()=0; virtual void slot2()=0;
+                virtual void slot3()=0; virtual void slot4()=0; virtual void slot5()=0;
+                virtual G3D::TextureRef resolve(VisualEngine*)=0;
+            };
+            G3D::TextureRef resolved=reinterpret_cast<ResolveView*>(root.getPointer())->resolve(engine);
+            if (resolved.notNull() && !resolved->opaque())
+                texture=resolved->alphaOnlyVersion();
         }
         if (ogreTexture.isNull())
             Ogre::LogManager::getSingleton().logMessage("RBX texture not loaded in resolve()\n");

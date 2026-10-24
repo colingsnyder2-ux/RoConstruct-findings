@@ -1,12 +1,47 @@
-// from server: 98% by EspClaude
-// roc-lang: cpp
+// from server: 100% by king_originala
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client roc_espclaude_158f4459ac2ecb73.cpp
+#include <intrin.h>
+namespace boost {
+namespace detail {
+struct sp_counted_base {
+    virtual ~sp_counted_base() {}
+    virtual void dispose()=0;
+    virtual void destroy(){delete this;}
+    long use_count_,weak_count_;
+    void weak_release(){if(_InterlockedDecrement(&weak_count_)==0)destroy();}
+    void release(){if(_InterlockedDecrement(&use_count_)==0){dispose();weak_release();}}
+};
+struct shared_count {
+    sp_counted_base* pi_;
+    shared_count():pi_(0){}
+    shared_count& operator=(const shared_count& r){sp_counted_base* tmp=r.pi_;if(tmp!=pi_){if(tmp)_InterlockedIncrement(&tmp->use_count_);if(pi_)pi_->release();pi_=tmp;}return *this;}
+    void swap(shared_count& r){sp_counted_base* tmp=r.pi_;r.pi_=pi_;pi_=tmp;}
+    shared_count(const shared_count& r):pi_(r.pi_){if(pi_)_InterlockedIncrement(&pi_->use_count_);}
+    ~shared_count(){if(pi_)pi_->release();}
+};
+}
+template<class T> class shared_ptr {
+public:
+    T* px; detail::shared_count pn;
+    shared_ptr():px(0),pn(){}
+    shared_ptr& operator=(const shared_ptr& r){px=r.px;pn=r.pn;return *this;}
+    void swap(shared_ptr& r){T* tmp=r.px;r.px=px;px=tmp;pn.swap(r.pn);}
+    void reset();
+    typedef T* shared_ptr::*unspecified_bool_type;
+    operator unspecified_bool_type()const{return px==0?0:&shared_ptr::px;}
+    shared_ptr(const shared_ptr& r):px(r.px),pn(r.pn){}
+    template<class Y> shared_ptr(const shared_ptr<Y>& r):px(r.px),pn(r.pn){}
+    T* get()const{return px;}
+    T* operator->()const{return px;}
+};
+template<class T,class U> bool operator==(const shared_ptr<T>& a,const shared_ptr<U>& b){return a.get()==b.get();}
+}
 
-// Candidate translation unit (score above; library headers required).
-#include <boost/shared_ptr.hpp>
-#include <windows.h>
+typedef void* HWND;
+typedef unsigned int UINT_PTR;
+extern "C" __declspec(dllimport) UINT_PTR __stdcall SetTimer(HWND,UINT_PTR,unsigned int,void(__stdcall*)(HWND,unsigned int,UINT_PTR,unsigned long));
+extern "C" __declspec(dllimport) int __stdcall KillTimer(HWND,UINT_PTR);
 
 namespace RBX {
 class Instance;
@@ -304,15 +339,20 @@ void CRobloxReportView::setDataModel(boost::shared_ptr<RBX::DataModel> dataModel
         RBX::DataModel::scoped_write_request request(dataModel);
         stats = RBX::shared_from(this->dataModel.get() ? this->dataModel->getStats() : NULL);
         timer = ::SetTimer(m_hWnd, 1, 333, NULL);
-        if (stats)
-            stats->childRemovedNotifier.addListener(&childRemovedListener);
-        if (stats)
-            stats->childAddedNotifier.addListener(&childAddedListener);
+        RBX::Instance* removedSource=stats.get();
+        StatsListener<RBX::ChildRemoved>* removed=&childRemovedListener;
+        if (removedSource)
+            removedSource->childRemovedNotifier.addListener(removed);
+        RBX::Instance* addedSource=stats.get();
+        StatsListener<RBX::ChildAdded>* added=&childAddedListener;
+        if (addedSource)
+            addedSource->childAddedNotifier.addListener(added);
         if (this->dataModel.get())
             this->dataModel->startStats();
     }
     else if (m_hWnd)
     {
-        ::KillTimer(m_hWnd, timer);
+        UINT_PTR activeTimer=timer;
+        ::KillTimer(m_hWnd, activeTimer);
     }
 }

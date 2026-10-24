@@ -1,9 +1,13 @@
-// from server: 80% by atomic.potato
-extern "C" void f0071c120(void *, void *, void *, unsigned int, unsigned int, void *);
-extern "C" void __cdecl f007f4929(void *);
-
-void f00978ad0()
+// from server: 95% by sophus
+struct S
 {
-    f0071c120((void *)0x9df904, (void *)0x9d1fdc, (void *)0x134, 0xf, 0, (void *)0xb95940);
-    f007f4929((void *)0x987ea0);
+    void f006c65d0(int, int, int, int, int);
+};
+
+extern "C" void __cdecl f007f4929(int);
+
+void f00974b40()
+{
+    ((S*)0xb924e8)->f006c65d0(0x9d73d0, 0x9d73dc, 0x98, 0xf, 0);
+    f007f4929(0x985bc0);
 }

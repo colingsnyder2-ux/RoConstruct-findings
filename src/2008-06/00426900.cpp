@@ -1,3 +1,4 @@
+// from server: 67% by king_originala
 // from server: 65% by EspClaude
 // from server: 61% by colin
 // roc 2008-06 00426900  unit: CSelectionTreeCtrl  size: 371 bytes
@@ -283,7 +284,7 @@ template<class T> struct shared_ptr {
     shared_count pn;
     shared_ptr() : px(0), pn() {}
     shared_ptr& operator=(const shared_ptr& r) { shared_ptr(r).swap(*this); return *this; }
-    void swap(shared_ptr& o) { T* t = o.px; o.px = px; px = t; pn.swap(o.pn); }
+    void swap(shared_ptr& o) { std::swap(px, o.px); pn.swap(o.pn); }
 };
 
 struct mutex {

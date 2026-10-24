@@ -1,168 +1,123 @@
-// from server: 38% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-#pragma intrinsic(_InterlockedDecrement)
-
-extern "C" void __stdcall _invalid_parameter_noinfo();
-
-struct type_info {
-    bool operator==(const type_info&) const;
+// from server: 63% by king_originala
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <vector>
+#include <typeinfo>
+#include <intrin.h>
+#include <utility>
+namespace boost {
+namespace detail {
+struct sp_counted_base {
+    virtual ~sp_counted_base() {}
+    virtual void dispose()=0;
+    virtual void destroy(){delete this;}
+    long use_count_,weak_count_;
+    void weak_release(){if(_InterlockedDecrement(&weak_count_)==0)destroy();}
+    void release(){if(_InterlockedDecrement(&use_count_)==0){dispose();weak_release();}}
 };
-
-struct RefCounted {
-    void* vptr;
-    long refcount;
-    long weakrefcount;
+struct shared_count {
+    sp_counted_base* pi_;
+    shared_count():pi_(0){}
+    shared_count& operator=(const shared_count& r){sp_counted_base* tmp=r.pi_;if(tmp!=pi_){if(tmp)_InterlockedIncrement(&tmp->use_count_);if(pi_)pi_->release();pi_=tmp;}return *this;}
+    void swap(shared_count& r){sp_counted_base* tmp=r.pi_;r.pi_=pi_;pi_=tmp;}
+    shared_count(const shared_count& r):pi_(r.pi_){if(pi_)_InterlockedIncrement(&pi_->use_count_);}
+    ~shared_count(){if(pi_)pi_->release();}
 };
-
-struct Node {
-    char pad0[0x10];
-    unsigned int flags;
-    char pad1[0x4];
-    void* value;
+}
+template<class T> class shared_ptr {
+public:
+    T* px; detail::shared_count pn;
+    shared_ptr():px(0),pn(){}
+    shared_ptr& operator=(const shared_ptr& r){px=r.px;pn=r.pn;return *this;}
+    void swap(shared_ptr& r){std::swap(px,r.px);pn.swap(r.pn);}
+    void reset(){shared_ptr().swap(*this);}
+    typedef T* shared_ptr::*unspecified_bool_type;
+    operator unspecified_bool_type()const{return px==0?0:&shared_ptr::px;}
+    shared_ptr(const shared_ptr& r):px(r.px),pn(r.pn){}
+    template<class Y> shared_ptr(const shared_ptr<Y>& r):px(r.px),pn(r.pn){}
+    T* get()const{return px;}
+    T* operator->()const{return px;}
 };
+template<class T,class U> bool operator==(const shared_ptr<T>& a,const shared_ptr<U>& b){return a.get()==b.get();}
+}
 
-struct Map {
-    char pad0[0x8];
-    Node* head;
-    Node* tail;
+struct __declspec(dllimport) ImportedString {
+ void*proxy;union{char buffer[16];char*heap;};unsigned length,capacity;
+ ~ImportedString()throw();
+ const char*c_str()const{return capacity>=16?heap:buffer;}
 };
-
-struct VReplicator {
-    int method_a(void*);
-    int method_b(void*);
-    void run(void* arg1, void* arg2);
+struct Name {unsigned id;ImportedString text;const char*c_str()const{return text.c_str();}};
+struct Type {void*vtable;const Name&name;const type_info&info;};
+struct DescribedBase;
+struct PropertyDescriptor {
+ void**vtable;const Name&name;const Name&category;void*owner;
+ unsigned isPublic:1;unsigned streamWrite:1;unsigned reserved:30;
+ const Type&type;
+ bool canStreamWrite()const{return streamWrite;}
+ bool equalValues(const DescribedBase*a,const DescribedBase*b)const{
+  typedef bool(__thiscall*Equal)(const PropertyDescriptor*,const DescribedBase*,const DescribedBase*);
+  return reinterpret_cast<Equal>(vtable[3])(this,a,b);
+ }
 };
-
-extern void* g_929644;
-extern void* g_973d34;
-extern void* g_825178;
-extern void* g_825190;
-extern void* g_8251b0;
-
-extern "C" void* __cdecl sub_49e890();
-extern "C" void* __cdecl sub_4a5b10(void*, char);
-extern "C" void* __cdecl sub_4b4bb0();
-extern "C" void* __cdecl sub_4b6890(void*, void*, void*);
-extern "C" void* __cdecl sub_5693a0(void*, int, void*, void*, void*, void*);
-extern "C" void* __cdecl sub_569620(void*);
-extern "C" void* __cdecl sub_600660(void*);
-
-void VReplicator::run(void* arg1, void* arg2)
-{
-    void* self = arg1;
-    void* p = *(void**)((char*)self + 0x10);
-    void* vt = *(void**)((char*)p + 4);
-    void* r = ((void* (__thiscall*)(void*))vt)((char*)self + 0x10);
-    int v = this->method_a(r);
-
-    Map* map = (Map*)((char*)self + 0x14);
-    Node* n1 = map->head;
-    unsigned int idx1 = *(unsigned int*)((char*)n1 + 0x14);
-    void* val1 = *(void**)((char*)n1 + 8);
-    Node* n2 = map->head;
-    unsigned int idx2 = *(unsigned int*)((char*)n2 + 0x18);
-    void* val2 = *(void**)((char*)n2 + 8);
-
-    void* cur = (void*)idx1;
-    void* end = (void*)idx2;
-    void* base = val1;
-    void* base2 = val2;
-
-    while (cur != end) {
-        Node* node;
-        if (base == 0) {
-            _invalid_parameter_noinfo();
-            node = (Node*)cur;
-        } else {
-            node = (Node*)base;
-        }
-        void* elem = node->value;
-        void* elem2 = base2;
-        unsigned int fl = *(unsigned int*)((char*)elem + 0x10);
-        if (((fl >> 1) & 1) && elem != g_973d34) {
-            void* t = *(void**)((char*)elem + 0x14);
-            void* t2 = *(void**)((char*)t + 8);
-            if (((type_info*)t2)->operator==(*(type_info*)g_929644)) {
-                sub_4b6890(&elem, 0, arg2);
-                void* g = sub_49e890();
-                if (*(char*)((char*)g + 0x131) && *(char*)((char*)sub_49e890() + 0x132)) {
-                    char buf[16];
-                    sub_569620(buf);
-                    void* a = *(void**)((char*)elem + 4);
-                    a = (char*)a + 4;
-                    void* av = (*(unsigned int*)((char*)a + 0x18) >= 0x10) ? *(void**)((char*)a + 4) : (char*)a + 4;
-                    void* b = *(void**)((char*)elem + 0x14);
-                    b = *(void**)((char*)b + 4);
-                    b = (char*)b + 4;
-                    void* bv = (*(unsigned int*)((char*)b + 0x18) >= 0x10) ? *(void**)((char*)b + 4) : (char*)b + 4;
-                    void* gv = *(void**)g;
-                    sub_5693a0(gv, 1, g_8251b0, bv, av, (void*)0);
-                    RefCounted* rc = (RefCounted*)elem;
-                    if (rc) {
-                        if (_InterlockedExchangeAdd(&rc->refcount, -1) == 1) {
-                            ((void (__thiscall*)(void*))*(void**)((char*)rc->vptr + 4))(rc);
-                            if (_InterlockedExchangeAdd(&rc->weakrefcount, -1) == 1) {
-                                ((void (__thiscall*)(void*))*(void**)((char*)rc->vptr + 8))(rc);
-                            }
-                        }
-                    }
-                }
-            } else if (v) {
-                void* vt2 = *(void**)elem;
-                if (((char (__thiscall*)(void*, void*, int))*(void**)((char*)vt2 + 0xc))(elem, (char*)v + 0x14, 0x10)) {
-                    sub_4a5b10(arg2, 1);
-                    void* g = sub_49e890();
-                    if (*(char*)((char*)g + 0x131) && *(char*)((char*)sub_49e890() + 0x132)) {
-                        char buf[16];
-                        sub_569620(buf);
-                        void* a = *(void**)((char*)elem + 4);
-                        a = (char*)a + 4;
-                        void* av = (*(unsigned int*)((char*)a + 0x18) >= 0x10) ? *(void**)((char*)a + 4) : (char*)a + 4;
-                        void* b = *(void**)((char*)elem + 0x14);
-                        b = *(void**)((char*)b + 4);
-                        b = (char*)b + 4;
-                        void* bv = (*(unsigned int*)((char*)b + 0x18) >= 0x10) ? *(void**)((char*)b + 4) : (char*)b + 4;
-                        void* gv = *(void**)g;
-                        sub_5693a0(gv, 1, g_825190, bv, av, (void*)0);
-                        sub_600660(buf);
-                    }
-                }
-            } else {
-                void* old = *(void**)v;
-                sub_4a5b10(arg2, 0);
-                sub_4b6890(&elem, 0, arg2);
-                void* g = sub_49e890();
-                if (*(char*)((char*)g + 0x131) && *(char*)((char*)sub_49e890() + 0x132)) {
-                    char buf[16];
-                    sub_569620(buf);
-                    void* a = *(void**)((char*)elem + 4);
-                    a = (char*)a + 4;
-                    void* av = (*(unsigned int*)((char*)a + 0x18) >= 0x10) ? *(void**)((char*)a + 4) : (char*)a + 4;
-                    void* b = *(void**)((char*)elem + 0x14);
-                    b = *(void**)((char*)b + 4);
-                    b = (char*)b + 4;
-                    void* bv = (*(unsigned int*)((char*)b + 0x18) >= 0x10) ? *(void**)((char*)b + 4) : (char*)b + 4;
-                    void* gv = *(void**)g;
-                    sub_5693a0(gv, 1, g_825178, bv, av, (void*)((char*)old - (char*)v));
-                    RefCounted* rc = (RefCounted*)elem;
-                    if (rc) {
-                        if (_InterlockedExchangeAdd(&rc->refcount, -1) == 1) {
-                            ((void (__thiscall*)(void*))*(void**)((char*)rc->vptr + 4))(rc);
-                            if (_InterlockedExchangeAdd(&rc->weakrefcount, -1) == 1) {
-                                ((void (__thiscall*)(void*))*(void**)((char*)rc->vptr + 8))(rc);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if (base == 0) {
-            _invalid_parameter_noinfo();
-            cur = (char*)cur + 4;
-        } else {
-            cur = *(void**)base;
-        }
-    }
+extern const PropertyDescriptor parentDescriptor;
+struct Property {
+ const PropertyDescriptor*descriptor;const DescribedBase*instance;
+ Property(const PropertyDescriptor&d,const DescribedBase*p):descriptor(&d),instance(p){}
+ const PropertyDescriptor&getDescriptor()const{return *descriptor;}
+};
+typedef std::vector<PropertyDescriptor*>PropertyCollection;
+struct PropertyIterator {
+ const DescribedBase*instance;PropertyCollection::const_iterator iter;
+ PropertyIterator(const PropertyCollection::const_iterator&i,const DescribedBase*p):instance(p),iter(i){}
+ Property operator*()const{return Property(**iter,instance);}
+ bool operator!=(const PropertyIterator&r)const{return iter!=r.iter;}
+ PropertyIterator&operator++(){++iter;return *this;}
+};
+struct ClassDescriptor {
+ virtual ~ClassDescriptor();const Name&name;PropertyCollection descriptors;
+ PropertyIterator members_begin(const DescribedBase*p)const{return PropertyIterator(descriptors.begin(),p);}
+ PropertyIterator members_end(const DescribedBase*p)const{return PropertyIterator(descriptors.end(),p);}
+};
+struct DescribedBase {
+ virtual ~DescribedBase();void*opaque;const ClassDescriptor*descriptor;
+ PropertyIterator properties_begin()const{return descriptor->members_begin(this);}
+ PropertyIterator properties_end()const{return descriptor->members_end(this);}
+};
+struct PrimaryInstance {virtual ~PrimaryInstance();char opaque[12];};
+struct FactoryProduct {virtual ~FactoryProduct();virtual const Name&getClassName()const=0;};
+struct Instance:PrimaryInstance,FactoryProduct,DescribedBase {};
+struct Settings {char prefix[0x131];bool printInstances,printProperties;};
+Settings&settings();
+struct StandardOut {void __cdecl print(int,const char*,...);};
+boost::shared_ptr<StandardOut> __cdecl standardOut();
+struct BitStream {unsigned bitsUsed,bitsAllocated,readOffset;};
+void __cdecl writeBool(BitStream&,bool);
+struct Replicator {
+ const Instance*getDefault(const Name&);
+ void serializeValue(const Property&,bool,BitStream&);
+ void writeProperties(const Instance*,BitStream&);
+};
+void Replicator::writeProperties(const Instance*instance,BitStream&stream){
+ const Instance*defaults=getDefault(instance->getClassName());
+ PropertyIterator iter=instance->properties_begin();
+ PropertyIterator end=instance->properties_end();
+ for(;iter!=end;++iter){
+  Property property=*iter;
+  const PropertyDescriptor&descriptor=property.getDescriptor();
+  if(descriptor.canStreamWrite()&&&descriptor!=&parentDescriptor){
+   if(typeid(bool)==descriptor.type.info){
+    serializeValue(property,false,stream);
+    if(settings().printInstances&&settings().printProperties){standardOut()->print(1,"   write %s %s, 1 bit",descriptor.type.name.c_str(),descriptor.name.c_str());}
+   }else if(defaults&&descriptor.equalValues(property.instance,defaults)){
+    writeBool(stream,true);
+    if(settings().printInstances&&settings().printProperties){standardOut()->print(1,"   write %s %s, 1 bit (default)",descriptor.type.name.c_str(),descriptor.name.c_str());}
+   }else{
+    unsigned bits=stream.bitsUsed;
+    writeBool(stream,false);
+    serializeValue(property,false,stream);
+    if(settings().printInstances&&settings().printProperties){standardOut()->print(1,"   write %s %s, %d bits",descriptor.type.name.c_str(),descriptor.name.c_str(),stream.bitsUsed-bits);}
+   }
+  }
+ }
 }

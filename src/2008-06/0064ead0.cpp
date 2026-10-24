@@ -1,12 +1,8 @@
-// from server: 80% by EspClaude
-// from server: 75% by Espeon
-// roc-lang: cpp
+// from server: 100% by king_originala
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espclaude_f5773df1ed38c4af.cpp
-
-// Candidate translation unit (score above; library headers required).
 #include <string>
+#include <intrin.h>
 typedef std::string String;
 struct Hit {
     float data[4];
@@ -78,10 +74,11 @@ Result* ChatWidget::f(Result* result, Event* event) {
 
     if (owner->enabled()) {
         int type = event->type;
-        switch (type) {
-        case 1: case 2: case 3: case 5: case 6: case 7:
-            break;
-        case 4:
+        if(type>=1){
+            _ReadWriteBarrier();
+            if(type<=7){
+                _ReadWriteBarrier();
+                if(type==4){
             if (owner->hit(event->position).contains()) {
                 RBX::ServiceProvider* service = func_00491d50(owner);
                 if (service) {
@@ -93,7 +90,8 @@ Result* ChatWidget::f(Result* result, Event* event) {
                     return result;
                 }
             }
-            break;
+        }
+        }
         }
     }
 

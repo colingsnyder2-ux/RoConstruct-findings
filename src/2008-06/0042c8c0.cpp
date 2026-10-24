@@ -1,4 +1,6 @@
-// from server: 86% by EspClaude
+// from server: 88% by king_originala
+// from server: 87% by colin
+// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 #include <intrin.h>
 #include <string>
@@ -154,8 +156,9 @@ void CLuaHtmlView::bindElement(boost::shared_ptr<RBX::Instance> instance, int pr
     if (!input)
         throw std::runtime_error(G3D::format("%s is not an input element", elementName));
     Binder* binder = 0;
+    BinderList::iterator it = binders.begin();
     BaseList::iterator end = binders.end();
-    for (BinderList::iterator it = binders.begin(); it != end; ++it)
+    for (; it != end; ++it)
         if (isSameElement((*(BaseList::iterator&)it)->element, input)) {
             binder = (*it).get();
             break;

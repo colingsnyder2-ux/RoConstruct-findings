@@ -1,4 +1,6 @@
-// from server: 35% by colin
+// from server: 37% by colin
+// roc-cl: 21022
+// roc-flags: /Od /Ob0 /GS /EHsc /MD
 struct CPatchedControlComboBox {
     void sub_42F490();
 };

@@ -1,4 +1,6 @@
-// from server: 74% by colin
+// from server: 76% by colin
+// roc-cl: 21022
+// roc-flags: /GS- /EHsc /MD /O2 /Ob0 /Oy-
 // from server: 72% by king_originala
 // roc 2008-06 004b6530  unit: RBX::Network::Replicator::ReplicatorStatsItem  size: 352 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004b6530

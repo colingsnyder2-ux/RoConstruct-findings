@@ -1,4 +1,6 @@
-// from server: 27% by colin
+// from server: 34% by colin
+// roc-cl: 21022
+// roc-flags: /GS- /EHsc /MD /O2 /Ob0 /Oy-
 struct OgreImage {
     void construct();
     OgreImage& loadDynamicImage(unsigned char*, unsigned int, unsigned int, unsigned int, int, bool, unsigned int, unsigned int);

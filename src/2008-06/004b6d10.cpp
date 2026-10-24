@@ -1,166 +1,77 @@
-// from server: 88% by Espeon
-// roc-lang: cpp
+// from server: 98% by Espeon
+#include <set>
+// from server: 97% by king_originala
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_propertyloginline_327bd914dd6979ba.cpp
-
-// Candidate translation unit (score above; library headers required).
 #include <string>
-#include <boost/shared_ptr.hpp>
-// from server: 85% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-
-extern "C" void (__cdecl* invalidParameter)();
-
-typedef std::string String;
-
-struct Name {
-    unsigned int unused[2];
-    union {
-        char buffer[16];
-        char* pointer;
-    };
-    unsigned int length;
-    unsigned int capacity;
-    const char* c_str() const;
+#include <intrin.h>
+#include <utility>
+namespace boost {
+namespace detail {
+struct sp_counted_base {
+    virtual ~sp_counted_base() {}
+    virtual void dispose()=0;
+    virtual void destroy(){delete this;}
+    long use_count_,weak_count_;
+    void weak_release(){if(_InterlockedDecrement(&weak_count_)==0)destroy();}
+    void release(){if(_InterlockedDecrement(&use_count_)==0){dispose();weak_release();}}
 };
-
-__forceinline const char* Name::c_str() const
-{
-    return capacity >= 16 ? pointer : buffer;
+struct shared_count {
+    sp_counted_base* pi_;
+    shared_count():pi_(0){}
+    shared_count& operator=(const shared_count& r){sp_counted_base* tmp=r.pi_;if(tmp!=pi_){if(tmp)_InterlockedIncrement(&tmp->use_count_);if(pi_)pi_->release();pi_=tmp;}return *this;}
+    void swap(shared_count& r){sp_counted_base* tmp=r.pi_;r.pi_=pi_;pi_=tmp;}
+    shared_count(const shared_count& r):pi_(r.pi_){if(pi_)_InterlockedIncrement(&pi_->use_count_);}
+    ~shared_count(){if(pi_)pi_->release();}
+};
+}
+template<class T> class shared_ptr {
+public:
+    T* px; detail::shared_count pn;
+    shared_ptr():px(0),pn(){}
+    shared_ptr& operator=(const shared_ptr& r){px=r.px;pn=r.pn;return *this;}
+    void swap(shared_ptr& r){std::swap(px,r.px);pn.swap(r.pn);}
+    void reset(){shared_ptr().swap(*this);}
+    typedef T* shared_ptr::*unspecified_bool_type;
+    operator unspecified_bool_type()const{return px==0?0:&shared_ptr::px;}
+    shared_ptr(const shared_ptr& r):px(r.px),pn(r.pn){}
+    template<class Y> shared_ptr(const shared_ptr<Y>& r):px(r.px),pn(r.pn){}
+    T* get()const{return px;}
+    T* operator->()const{return px;}
+};
+template<class T,class U> bool operator==(const shared_ptr<T>& a,const shared_ptr<U>& b){return a.get()==b.get();}
 }
 
-struct Named {
-    virtual void unused();
-    virtual Name* name();
+extern "C" __declspec(dllimport) void __cdecl _invalid_parameter_noinfo();
+namespace RBX {
+struct Name {int index;const std::string text;const std::string& toString()const{return text;}const char* c_str()const{return text.c_str();}};
+struct Guid {void* scope;int index;std::string readableString(int)const;};
+struct Primary {virtual void slot0();char flags[4];Guid guid;};
+struct NameInterface {virtual void slot0();virtual const Name& getClassName()const;};
+struct ReflectionObject {virtual void slot0();};
+struct Instance:Primary,NameInterface,ReflectionObject {void ensureGuid()const;const Guid& getGuid()const{ensureGuid();return guid;}};
+struct Descriptor {void* slot;const Name& name;};
+struct Container:std::set<const Instance*> { __declspec(noinline) const_iterator find(const Instance*const&)const; };
+typedef char container_extent[sizeof(Container)==32?1:-1];
+struct BitStream;
+struct Dictionary {char opaque[68];void send(BitStream&,const Descriptor&);};
+struct Address {const char* ToString(bool)const;};
+struct Property {const Descriptor* desc;const ReflectionObject* instance;Property(const Descriptor&d,const ReflectionObject*i):desc(&d),instance(i){}};
+struct Settings {char prefix[0x132];bool printProperties;static Settings& singleton();};
+struct StandardOut {void print(int,const char*,...);static boost::shared_ptr<StandardOut> singleton();};
+struct Replicator {char prefix[0x2bf4];Dictionary propNames;Container objects;char gap[0xfc];Address remotePlayerId;void serializeId(BitStream&,const Instance*);void serializeValue(const Property&,bool,BitStream&);
+ struct ChangePropertyItem {void* vptr;Replicator& replicator;const Descriptor& desc;boost::shared_ptr<const Instance> instance;void write(BitStream&);};
 };
-
-struct StringSource {
-    unsigned int unused[2];
-    String convert(int);
-};
-
-struct Instance {
-    unsigned int unused[2];
-    StringSource source;
-    Named named;
-    void prepare();
-};
-
-struct Descriptor {
-    unsigned int unused;
-    String text;
-};
-
-struct Property {
-    unsigned int unused;
-    Descriptor* descriptor;
-};
-
-struct Iterator {
-    void* owner;
-    void* node;
-};
-
-struct Map {
-    void* owner;
-    char unused[20];
-    void* end;
-    Iterator* find(Iterator*, Instance* const&);
-};
-
-struct Stream;
-
-struct Serializer {
-    unsigned int unused;
-    void write(Stream*, Property*);
-};
-
-struct Connection {
-    unsigned int unused;
-    const char* describe(int);
-};
-
-struct Pair {
-    Property* property;
-    void* value;
-};
-
-struct Replicator {
-    char unused0[0x2bf4];
-    Serializer serializer;
-    char unused1[0x40];
-    Map map;
-    char unused2[0x100];
-    Connection connection;
-    void writeInstance(Stream*, Instance*);
-    void writeProperty(Pair*, int, Stream*);
-};
-
-struct Settings {
-    char unused[0x132];
-    unsigned char logging;
-};
-
-Settings* __cdecl settings();
-void __cdecl writeTag(Stream*, int);
-
-struct Logger {
-    void __cdecl print(int, ...);
-};
-
-typedef boost::shared_ptr<Logger> Shared;
-
-Shared __cdecl acquireLogger();
-
-struct ChangePropertyItem {
-    unsigned int unused;
-    Replicator* replicator;
-    Property* property;
-    Instance* instance;
-    void write(Stream*);
-    void log(Named*,const String&);
-};
-
-__forceinline void ChangePropertyItem::log(Named* named,const String& text) {
-        acquireLogger()->print(
-            1,
-            "Replication: %s:%s.%s >> %s",
-            named->name()->c_str(),
-            text.c_str(),
-            property->descriptor->text.c_str(),
-            replicator->connection.describe(1));
+void __cdecl writeItemType(BitStream&,int);
+void Replicator::ChangePropertyItem::write(BitStream& bitStream){
+ if(replicator.objects.find(instance.get())!=replicator.objects.end()){
+  writeItemType(bitStream,3);
+  replicator.serializeId(bitStream,instance.get());
+  replicator.propNames.send(bitStream,desc);
+  if(Settings::singleton().printProperties){
+   StandardOut::singleton()->print(1,"Replication: %s:%s.%s >> %s",instance->getClassName().c_str(),instance->getGuid().readableString(4).c_str(),desc.name.c_str(),replicator.remotePlayerId.ToString(true));
+  }
+  replicator.serializeValue(Property(desc,instance.get()),true,bitStream);
+ }
 }
-
-void ChangePropertyItem::write(Stream* stream)
-{
-    {
-        Instance* key = instance;
-        void* end = replicator->map.end;
-        void* owner = replicator->map.owner;
-        Iterator storage;
-        Iterator* found = replicator->map.find(&storage, key);
-        if (!found->owner || found->owner != owner)
-            invalidParameter();
-        if (found->node == end)
-            return;
-    }
-
-    writeTag(stream, 3);
-    replicator->writeInstance(stream, instance);
-    replicator->serializer.write(stream, property);
-
-    if (settings()->logging) {
-        Instance* object = instance;
-        Named* named = &object->named;
-        object->prepare();
-        log(named,object->source.convert(4));
-    }
-
-    void* value = instance ? reinterpret_cast<char*>(instance) + 0x14 : 0;
-    Pair pair;
-    pair.property = property;
-    pair.value = value;
-    replicator->writeProperty(&pair, 1, stream);
 }

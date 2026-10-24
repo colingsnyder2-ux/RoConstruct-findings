@@ -1,3 +1,4 @@
+// from server: 100% by king_originala
 // from server: 96% by king_originala
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
@@ -68,8 +69,9 @@ struct CBrowserView {
     int f(Request*);
 };
 
-int CBrowserView::f(Request* request)
+int CBrowserView::f(Request* volatile input)
 {
+    Request* request=input;
     if (request->enabled &&
         validate(lookup(request->id)) &&
         request->code == 0x80c9) {

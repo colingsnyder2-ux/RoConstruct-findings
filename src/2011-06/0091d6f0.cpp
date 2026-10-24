@@ -1,24 +1,17 @@
-// from server: 48% by atomic.potato
-struct P_func_0091d6f0
+// from server: 97% by sophus
+struct S_func_0091d720
 {
-    void f(int);
+    char pad0[64];
+    void* m_p;
+    void f(int value);
 };
 
-struct Q_func_0091d6f0
+void S_func_0091d720::f(int value)
 {
-    char pad[28];
-    P_func_0091d6f0* m_p;
-};
-
-struct S_func_0091d6f0
-{
-    char pad[64];
-    Q_func_0091d6f0* m_p;
-    void f(int);
-};
-
-void S_func_0091d6f0::f(int value)
-{
-    m_p->m_p->f(1);
-    m_p->m_p->f(value);
+    void* p = *(void**)((char*)m_p + 0x1c);
+    void** vtable = *(void***)p;
+    typedef void (__thiscall *Fn)(void*, int);
+    ((Fn)vtable[0xc4])(p, 1);
+    vtable = *(void***)p;
+    ((Fn)vtable[0xc1])(p, value);
 }

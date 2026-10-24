@@ -1,111 +1,72 @@
-// from server: 99% by king_originala
-struct Document;
-struct Frame;
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: mfc-9.0-shared-rtm roc_espeon_nativeplaytemplate90b9d8a6f4d63163.cpp
 
-typedef void (__thiscall *AssignText)(void*, const char*);
-extern AssignText assignText;
-
-extern "C" int __stdcall reportError(unsigned int, unsigned int, unsigned int);
-
-struct Application {
-    void beginWait();
-};
-
-struct Thread {
-    Application* unused;
-    Application* application;
-};
-
-Thread* __cdecl getThread();
-
-struct WaitCursor {
-    ~WaitCursor();
-};
-
-struct Document {
-    void** table;
-    char padding[0x48];
-    int autoDelete;
-    int embedded;
-};
-
-struct Frame {
-    void** table;
-};
-
-struct Template {
-    void** table;
-    char padding[0x88];
-    int untitledCount;
-    int unused;
-    void* title;
-
-    Document* open(const char* path, int visible);
-};
-
-Document* Template::open(const char* path, int visible)
+// Candidate translation unit (score above; library headers required).
+#include <afxwin.h>
+class NativePlayTemplate:public CMultiDocTemplate { unsigned char observedGap[4]; CString errorText; public: CDocument* OpenDocumentFile(LPCTSTR,BOOL); };
+CDocument* NativePlayTemplate::OpenDocumentFile(LPCTSTR lpszPathName,
+	BOOL bMakeVisible)
 {
-    void* text = &title;
-    assignText(text, (const char*)0x80b716);
+	errorText="";
+	CDocument* pDocument = CreateNewDocument();
+	if (pDocument == NULL)
+	{
+		errorText="CDocTemplate::CreateNewDocument returned NULL";
+		AfxMessageBox(AFX_IDP_FAILED_TO_CREATE_DOC);
+		return NULL;
+	}
+	ASSERT_VALID(pDocument);
 
-    Document* document =
-        ((Document* (__thiscall *)(Template*))table[0x74 / 4])(this);
+	BOOL bAutoDelete = pDocument->m_bAutoDelete;
+	pDocument->m_bAutoDelete = FALSE;   // don't destroy if something goes wrong
+	CFrameWnd* pFrame = CreateNewFrame(pDocument, NULL);
+	pDocument->m_bAutoDelete = bAutoDelete;
+	if (pFrame == NULL)
+	{
+        errorText="CreateNewFrame returned NULL";
+		AfxMessageBox(AFX_IDP_FAILED_TO_CREATE_DOC);
+		delete pDocument;       // explicit delete on error
+		return NULL;
+	}
+	ASSERT_VALID(pFrame);
 
-    if (!document) {
-        assignText(text, "CDocTemplate::CreateNewDocument returned NULL");
-        reportError(0xf104, 0, (unsigned int)-1);
-        return 0;
-    }
+	if (lpszPathName == NULL)
+	{
+		// create a new document - with default document name
+		SetDefaultTitle(pDocument);
 
-    int saved = document->autoDelete;
-    document->autoDelete = 0;
+		// avoid creating temporary compound file when starting up invisible
+		if (!bMakeVisible)
+			pDocument->m_bEmbedded = TRUE;
 
-    Frame* frame =
-        ((Frame* (__thiscall *)(Template*, Document*, Frame*))
-            table[0x78 / 4])(this, document, 0);
+		if (!pDocument->OnNewDocument())
+		{
+			// user has be alerted to what failed in OnNewDocument
+			errorText="CDocument::OnNewDocument returned FALSE";
+			pFrame->DestroyWindow();
+			return NULL;
+		}
 
-    document->autoDelete = saved;
+		// it worked, now bump untitled count
+		m_nUntitledCount++;
+	}
+	else
+	{
+		// open an existing document
+		CWaitCursor wait;
+		if (!pDocument->OnOpenDocument(lpszPathName))
+		{
+			// user has be alerted to what failed in OnOpenDocument
+			errorText="CDocument::OnNewDocument returned FALSE (v2)";
+			pFrame->DestroyWindow();
+			return NULL;
+		}
+		pDocument->SetPathName(lpszPathName);
+	}
 
-    if (!frame) {
-        assignText(text, "CreateNewFrame returned NULL");
-        reportError(0xf104, 0, (unsigned int)-1);
-        ((void (__thiscall *)(Document*, unsigned int))
-            document->table[1])(document, 1);
-        return 0;
-    }
-
-    if (!path) {
-        ((void (__thiscall *)(Template*, Document*))
-            table[0x8c / 4])(this, document);
-
-        if (!visible)
-            document->embedded = 1;
-
-        if (!((int (__thiscall *)(Document*))
-                document->table[0x78 / 4])(document)) {
-            assignText(text, "CDocument::OnNewDocument returned FALSE");
-            ((void (__thiscall *)(Frame*))frame->table[0x68 / 4])(frame);
-            return 0;
-        }
-
-        ++untitledCount;
-    } else {
-        getThread()->application->beginWait();
-        WaitCursor wait;
-
-        if (!((int (__thiscall *)(Document*, const char*))
-                document->table[0x7c / 4])(document, path)) {
-            assignText(text, "CDocument::OnNewDocument returned FALSE (v2)");
-            ((void (__thiscall *)(Frame*))frame->table[0x68 / 4])(frame);
-            return 0;
-        }
-
-        ((void (__thiscall *)(Document*, const char*, int))
-            document->table[0x5c / 4])(document, path, 1);
-    }
-
-    ((void (__thiscall *)(Template*, Frame*, Document*, int))
-        table[0x7c / 4])(this, frame, document, visible);
-
-    return document;
+	InitialUpdateFrame(pFrame, pDocument, bMakeVisible);
+	return pDocument;
 }

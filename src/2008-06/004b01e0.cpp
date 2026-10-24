@@ -1,193 +1,108 @@
-// from server: 22% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-
-struct Object {
-    virtual void unused0();
-    virtual void dispose();
-    virtual void destroy();
+// from server: 100% by king_originala
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <set>
+#include <list>
+#include <intrin.h>
+#include <utility>
+namespace boost {
+namespace detail {
+struct sp_counted_base {
+    sp_counted_base():use_count_(1),weak_count_(1){}
+    virtual ~sp_counted_base() {}
+    virtual void dispose()=0;
+    virtual void destroy(){delete this;}
+    long use_count_,weak_count_;
+    void weak_release(){if(_InterlockedDecrement(&weak_count_)==0)destroy();}
+    void release(){if(_InterlockedDecrement(&use_count_)==0){dispose();weak_release();}}
 };
-
-struct Control {
-    const void* table;
-    volatile long strong;
-    volatile long weak;
-    Object* object;
+template<class Y>struct sp_counted_impl_p:sp_counted_base {Y*pointer;explicit sp_counted_impl_p(Y*p):pointer(p){}void dispose(){delete pointer;}};
+struct shared_count {
+    sp_counted_base* pi_;
+    shared_count():pi_(0){}
+    template<class Y> __declspec(noinline) explicit shared_count(Y*p):pi_(0){try{pi_=new sp_counted_impl_p<Y>(p);}catch(...){delete p;throw;}}
+    shared_count& operator=(const shared_count& r){sp_counted_base* tmp=r.pi_;if(tmp!=pi_){if(tmp)_InterlockedIncrement(&tmp->use_count_);if(pi_)pi_->release();pi_=tmp;}return *this;}
+    void swap(shared_count& r){sp_counted_base* tmp=r.pi_;r.pi_=pi_;pi_=tmp;}
+    shared_count(const shared_count& r):pi_(r.pi_){if(pi_)_InterlockedIncrement(&pi_->use_count_);}
+    ~shared_count(){if(pi_)pi_->release();}
 };
-
-struct List {
-    char pad[0x14];
-    void* end;
+}
+namespace detail {inline void sp_enable_shared_from_this(const shared_count&,...) {}}
+template<class T> class shared_ptr {
+public:
+    T* px; detail::shared_count pn;
+    shared_ptr():px(0),pn(){}
+    template<class Y> explicit shared_ptr(Y*p):px(p),pn(p){detail::sp_enable_shared_from_this(pn,p,p);}
+    shared_ptr& operator=(const shared_ptr& r){px=r.px;pn=r.pn;return *this;}
+    void swap(shared_ptr& r){std::swap(px,r.px);pn.swap(r.pn);}
+    void reset(){shared_ptr().swap(*this);}
+    typedef T* shared_ptr::*unspecified_bool_type;
+    operator unspecified_bool_type()const{return px==0?0:&shared_ptr::px;}
+    shared_ptr(const shared_ptr& r):px(r.px),pn(r.pn){}
+    template<class Y> shared_ptr(const shared_ptr<Y>& r):px(r.px),pn(r.pn){}
+    T* get()const{return px;}
+    T* operator->()const{return px;}
 };
+template<class T,class U> bool operator==(const shared_ptr<T>& a,const shared_ptr<U>& b){return a.get()==b.get();}
+}
 
-struct MapNode {
-    MapNode* next;
-    MapNode* prev;
+struct CodeProfiler;
+// Constructor stores profiler at 0, previous TLS value at 4, flag at 8 and time at 0x10.
+struct ProfileMark {CodeProfiler*section;void*previous;bool frameTick;double startTime;ProfileMark(CodeProfiler&,bool);~ProfileMark();};
+class __multiple_inheritance Replicator;
+class Instance;
+struct MemberFunction {
+ typedef void(Replicator::*Function)(boost::shared_ptr<Instance>);
+ Function function;
+ void operator()(Replicator*,boost::shared_ptr<Instance>)const;
 };
-
-struct Map {
-    char pad[0x14];
-    MapNode* end;
+struct Placeholder {};
+struct Visitor {MemberFunction function;Replicator*owner;Placeholder placeholder;void operator()(const boost::shared_ptr<Instance>&p)const{function(owner,p);}};
+class Instance {public:char prefix[0x104];Instance*parent;void visitChildren(Visitor)const;};
+class Item {public:virtual ~Item(){}Replicator&replicator;Item(Replicator&r):replicator(r){}virtual void write()=0;};
+class NewInstanceItem:public Item {boost::shared_ptr<Instance>instance;public:NewInstanceItem(Replicator&,const boost::shared_ptr<Instance>&);};
+// RTTI places PluginInterface at 0x2b74; the primary IdSerializer prefix occupies that extent.
+struct PrimaryInterface {virtual ~PrimaryInterface();char opaque[0x2b74-4];};
+struct SecondaryInterface {virtual ~SecondaryInterface();};
+struct PropertyDescriptor;
+extern const PropertyDescriptor parentDescriptor;
+class ChangePropertyItem:public Item {
+ const PropertyDescriptor&descriptor;boost::shared_ptr<const Instance>instance;
+public:
+ ChangePropertyItem(Replicator&r,const boost::shared_ptr<const Instance>&p,const PropertyDescriptor&d):Item(r),descriptor(d),instance(p){}
+ virtual void write();
 };
-
-struct Replicator {
-    char pad0[0x2c38];
-    List list1;
-    char pad1[0x18];
-    void* field2c50;
-    char pad2[0x20];
-    Map map2c74;
-    char pad3[0x18];
-    void* field2c90;
-
-    void NewInstanceItem(void* a, void* b);
+class DeleteInstanceItem:public Item {
+ boost::shared_ptr<const Instance>instance;
+public:
+ DeleteInstanceItem(Replicator&,const boost::shared_ptr<const Instance>&);
+ virtual void write();
 };
-
-extern "C" void* __cdecl operator_new(unsigned int);
-extern "C" void __cdecl func_0047d410(void*, void*, void*);
-extern "C" void __cdecl func_004ac160(void*, void*);
-extern "C" void __cdecl func_004ac1f0(void*, void*);
-extern "C" void __cdecl func_004acb50(void*, int);
-extern "C" void* __cdecl func_004ad860(void*, void*, void*);
-extern "C" void* __cdecl func_004adfd0(void*, void*, void*);
-extern "C" void __cdecl func_004afd00(void*, void*, void*);
-extern "C" void* __cdecl func_004afe90(void*, void*, void*);
-extern "C" void* __cdecl func_005e9f60(void*, void*);
-extern "C" void __cdecl func_00600660(void*);
-extern "C" void __cdecl func_006a0920(void);
-extern "C" void __cdecl func_00802890(void);
-
-void Replicator::NewInstanceItem(void* a, void* b)
-{
-    void* ebx = this->field2c50;
-    void* ebp = this->list1.end;
-
-    void* local14;
-    void* local18;
-    void* local1c;
-    void* local20;
-
-    local14 = *(void**)((char*)a + 0x104);
-    func_004adfd0(&this->list1, &local14, &local18);
-    void* esi = local18;
-
-    if (esi) {
-        void* v = *(void**)esi;
-        if (v != 0 && v != ebp) {
-            func_00802890();
-        }
-    }
-
-    if (*(void**)((char*)esi + 4) == ebx) {
-        void* ecx = local14;
-        void* edx = b;
-        local1c = ecx;
-        local20 = edx;
-        if (edx) {
-            _InterlockedExchangeAdd((volatile long*)((char*)edx + 4), 1);
-        }
-        func_004afd00(this, &local1c, 0);
-        local18 = ecx;
-        func_005e9f60(&this->field2c90, &local18);
-        if (*(int*)&local18 != 0) {
-            goto cleanup;
-        }
-        void* p = operator_new(0x10);
-        local14 = p;
-        if (p) {
-            local1c = ecx;
-            local20 = edx;
-            if (edx) {
-                _InterlockedExchangeAdd((volatile long*)((char*)edx + 4), 1);
-            }
-            func_004afe90(p, this, &local1c);
-            esi = p;
-        } else {
-            esi = 0;
-        }
-        local18 = esi;
-        func_004ac1f0(&local18, esi);
-        func_0047d410(&local18, esi, esi);
-        void* node = func_004ad860(&this->map2c74, this->map2c74.end, &local14);
-        func_004acb50(&this->map2c74, 1);
-        void* old = local18;
-        this->map2c74.end->next = (MapNode*)node;
-        *(void**)node = this->map2c74.end;
-        if (old) {
-            if (_InterlockedExchangeAdd((volatile long*)((char*)old + 4), -1) == 1) {
-                void* vt = *(void**)old;
-                (*(void(__thiscall**)(void*))(*(char**)vt + 4))(old);
-                if (_InterlockedExchangeAdd((volatile long*)((char*)old + 8), -1) == 1) {
-                    void* vt2 = *(void**)old;
-                    (*(void(__thiscall**)(void*))(*(char**)vt2 + 8))(old);
-                }
-            }
-        }
-        goto cleanup;
-    }
-
-    {
-        void* p = operator_new(0x14);
-        if (p) {
-            void* ecx = local14;
-            void* edx = b;
-            local1c = ecx;
-            local20 = edx;
-            if (edx) {
-                _InterlockedExchangeAdd((volatile long*)((char*)edx + 4), 1);
-            }
-            *(void**)((char*)p + 4) = this;
-            *(void**)p = (void*)0x824828;
-            *(void**)((char*)p + 8) = (void*)0x973d34;
-            *(void**)((char*)p + 0xc) = ecx;
-            *(void**)((char*)p + 0x10) = edx;
-            if (edx) {
-                _InterlockedExchangeAdd((volatile long*)((char*)edx + 4), 1);
-            }
-            esi = p;
-        } else {
-            esi = 0;
-        }
-        local18 = esi;
-        func_004ac160(&local18, esi);
-        func_0047d410(&local18, esi, esi);
-        void* node = func_004ad860(&this->map2c74, this->map2c74.end, &local14);
-        func_004acb50(&this->map2c74, 1);
-        void* old = local18;
-        this->map2c74.end->next = (MapNode*)node;
-        *(void**)node = this->map2c74.end;
-        if (old) {
-            if (_InterlockedExchangeAdd((volatile long*)((char*)old + 4), -1) == 1) {
-                void* vt = *(void**)old;
-                (*(void(__thiscall**)(void*))(*(char**)vt + 4))(old);
-                if (_InterlockedExchangeAdd((volatile long*)((char*)old + 8), -1) == 1) {
-                    void* vt2 = *(void**)old;
-                    (*(void(__thiscall**)(void*))(*(char**)vt2 + 8))(old);
-                }
-            }
-        }
-        if (b) {
-            if (_InterlockedExchangeAdd((volatile long*)((char*)b + 4), -1) == 1) {
-                void* vt = *(void**)b;
-                (*(void(__thiscall**)(void*))(*(char**)vt + 4))(b);
-                if (_InterlockedExchangeAdd((volatile long*)((char*)b + 8), -1) == 1) {
-                    void* vt2 = *(void**)b;
-                    (*(void(__thiscall**)(void*))(*(char**)vt2 + 8))(b);
-                }
-            }
-        }
-    }
-
-cleanup:
-    if (local18) {
-        void* old = local18;
-        if (_InterlockedExchangeAdd((volatile long*)((char*)old + 4), -1) == 1) {
-            void* vt = *(void**)old;
-            (*(void(__thiscall**)(void*))(*(char**)vt + 4))(old);
-            if (_InterlockedExchangeAdd((volatile long*)((char*)old + 8), -1) == 1) {
-                void* vt2 = *(void**)old;
-                (*(void(__thiscall**)(void*))(*(char**)vt2 + 8))(old);
-            }
-        }
-    }
+class Replicator:public PrimaryInterface,public SecondaryInterface {
+public:
+ virtual ~Replicator();
+ virtual void slot1();virtual void slot2();virtual void slot3();virtual void slot4();virtual void slot5();
+ virtual void slot6();virtual void slot7();virtual void slot8();virtual void slot9();virtual void slot10();
+ virtual void slot11();virtual void slot12();virtual void slot13();virtual void slot14();virtual void slot15();
+ virtual void slot16();virtual void slot17();virtual bool wantReplicate(const Instance*)const;
+ char prefix[0x2c38-0x2b78];std::set<const Instance*>pendingNew;
+ char reserved[0x2c74-0x2c58];std::list<boost::shared_ptr<Item> >pendingItems;
+ std::set<const Instance*>pendingNewItems;char reservedB0[0x2d1c-0x2cb0];CodeProfiler*profileA;CodeProfiler*profileB;
+ void disconnectPropertyChanged(boost::shared_ptr<Instance>);
+ bool removePending(const Instance*p){bool removed=pendingNewItems.erase(p)!=0;_ReadWriteBarrier();return removed;}
+ void onParentChanged(boost::shared_ptr<Instance>);
+ void addReplicationData(boost::shared_ptr<Instance>,bool);
+ void onDescendentAdded(boost::shared_ptr<Instance>);
+};
+void Replicator::onParentChanged(boost::shared_ptr<Instance>instance){
+ const Instance*key=instance->parent;
+ if(pendingNew.find(key)!=pendingNew.end()){
+  pendingItems.push_back(boost::shared_ptr<Item>(new ChangePropertyItem(*this,instance,parentDescriptor)));
+ }else{
+  disconnectPropertyChanged(instance);
+  if(!removePending(instance.get())){
+   pendingItems.push_back(boost::shared_ptr<Item>(new DeleteInstanceItem(*this,instance)));
+  }
+ }
 }

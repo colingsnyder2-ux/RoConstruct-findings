@@ -1,114 +1,59 @@
-// from server: 36% by colin
-struct Vec3 { float x, y, z; };
-
-struct GCamera {
-    char pad[0x24];
-    Vec3 pos;
-    Vec3 dir;
-    Vec3 up;
+// from server: 79% by Espeon
+// from server: 62% by king_originala
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+struct Vector3 {
+ float x,y,z;
+ Vector3():x(0),y(0),z(0){}
+ Vector3(float a,float b,float c):x(a),y(b),z(c){}
+ Vector3(const Vector3&v):x(v.x),y(v.y),z(v.z){}
+ Vector3&operator=(const Vector3&v){x=v.x;y=v.y;z=v.z;return *this;}
+ Vector3 operator+(const Vector3&v)const{return Vector3(x+v.x,y+v.y,z+v.z);}
+ Vector3 operator-(const Vector3&v)const{return Vector3(x-v.x,y-v.y,z-v.z);}
+ Vector3 operator*(float s)const{return Vector3(x*s,y*s,z*s);}
+ float&operator[](int i){return (&x)[i];}
 };
-
-struct EnumPropDescriptor {
-    char pad0[0x1dc];
-    int field1dc;
-    int field1e0;
-    char pad1e4[0x44];
-    char field228[0x9c];
-    float* field2c4;
-
-    bool doGetSetImpl(int arg1, int arg2);
+struct Matrix3 {
+ float cells[9];
+ Matrix3(const Matrix3&v){*this=v;}
+ Matrix3&operator=(const Matrix3&);
+ Vector3 operator*(const Vector3&)const;
 };
-
-extern "C" {
-    void __cdecl sub_513220(void* dst, const void* src);
-    void __cdecl sub_476580(void* dst, const void* a, const void* b);
-    bool __cdecl sub_5DE2A0(void* a, void* b, float c, float d, void* e);
-    void* __cdecl sub_5E82C0(void* self);
-    void __cdecl sub_599EB0(void* self, void* a, void* b);
-    void __cdecl sub_59D8A0(void* self, void* a);
-    void __cdecl sub_59DB90(void* self, void* a);
-    void __cdecl sub_59B4F0(void* self);
-    extern float g_81c3b8;
-    extern float g_8288c0;
-    extern float g_826e60;
-    extern float g_819bac;
-    extern float g_82b3b0;
+struct Frame {
+ Matrix3 rotation;Vector3 translation;
+ Frame(const Matrix3&r,const Vector3&t):rotation(r),translation(t){}
+ Vector3 vectorToWorldSpace(const Vector3&v)const{return rotation*v;}
+};
+struct Geometry {void*vtable;Vector3 size;const Vector3&getSize()const{return size;}};
+struct Primitive {char opaque[0x9c];Geometry*geometry;const Frame&getCoordinateFrame()const;const Vector3&getSize()const{return geometry->getSize();}};
+struct PartInstance {
+ char prefix[0x1dc];int partType,formFactor;char gap[0x228-0x1e4];Primitive primitive;
+ const Vector3&getPartSizeXml()const{return primitive.getSize();}
+ const Frame&getCoordinateFrame()const{return primitive.getCoordinateFrame();}
+ Vector3 xmlToUiSize(const Vector3&v)const{Vector3 r=v;switch(formFactor){case 1:r.y*=5.0f/6.0f;break;case 2:r.y*=2.5f;break;}return r;}
+ Vector3 uiToXmlSize(const Vector3&)const;
+ void setCoordinateFrame(const Frame&);void setPartSizeXml(const Vector3&);void join();
+ bool resize(int normal,int amount);
+};
+bool __cdecl fuzzyEq(const Frame&,const Frame&,float,float);
+bool PartInstance::resize(int normal,int amount){
+ if(amount==0)return false;
+ Vector3 oldSize=getPartSizeXml();
+ const Frame&current=getCoordinateFrame();
+ Frame oldFrame=current;
+ Vector3 delta;
+ float sign=normal<3?1.0f:-1.0f;
+ if(partType==1)delta[normal%3]=static_cast<float>(amount);
+ else delta=Vector3(static_cast<float>(amount),static_cast<float>(amount),static_cast<float>(amount));
+ Vector3 newUiSize=xmlToUiSize(oldSize)+delta;
+ Frame desired(oldFrame.rotation,oldFrame.translation+oldFrame.vectorToWorldSpace(uiToXmlSize(newUiSize)-oldSize)*0.5f*sign);
+ setCoordinateFrame(desired);
+ setPartSizeXml(uiToXmlSize(newUiSize));
+ join();
+ if(fuzzyEq(getCoordinateFrame(),desired,0.00001f,0.00001f))return true;
+ setCoordinateFrame(oldFrame);
+ setPartSizeXml(oldSize);
+ return false;
 }
 
-bool EnumPropDescriptor::doGetSetImpl(int arg1, int arg2)
-{
-    if (arg1 == 0)
-        return false;
-
-    float* p = field2c4;
-    float v0 = p[1];
-    float v1 = p[2];
-    float v2 = p[3];
-
-    GCamera cam;
-    void* r0 = sub_5E82C0(field228);
-    sub_513220(&cam, r0);
-
-    Vec3 base;
-    base.x = 0.0f;
-    base.y = 0.0f;
-    base.z = 0.0f;
-
-    float farg = (float)arg2;
-
-    if (field1dc == 1) {
-        int idx = arg2 % 3;
-        (&base.x)[idx] = farg;
-    }
-
-    float m;
-    if (field1e0 == 1)
-        m = g_826e60;
-    else if (field1e0 == 2)
-        m = g_8288c0;
-    else
-        m = 1.0f;
-
-    Vec3 p1;
-    p1.x = base.x + v0;
-    p1.y = base.y + v1;
-    p1.z = base.z + v2;
-
-    Vec3 p2;
-    p2.x = base.x - v0;
-    p2.y = base.y - v1;
-    p2.z = base.z - v2;
-
-    Vec3 p3;
-    p3.x = p1.x * m;
-    p3.y = p1.y * m;
-    p3.z = p1.z * m;
-
-    Vec3 p4;
-    p4.x = p2.x * m;
-    p4.y = p2.y * m;
-    p4.z = p2.z * m;
-
-    Vec3 p5;
-    p5.x = p3.x + v0;
-    p5.y = p3.y + v1;
-    p5.z = p3.z + v2;
-
-    Vec3 p6;
-    p6.x = p4.x + v0;
-    p6.y = p4.y + v1;
-    p6.z = p4.z + v2;
-
-    sub_59D8A0(this, &p5);
-    sub_599EB0(this, &p6, &p5);
-    sub_59DB90(this, &p6);
-    sub_59B4F0(this);
-
-    void* r = sub_5E82C0(field228);
-    if (sub_5DE2A0(r, &p6, g_82b3b0, g_82b3b0, &p5))
-        return true;
-
-    sub_59D8A0(this, &p6);
-    sub_59DB90(this, &p6);
-    return false;
-}

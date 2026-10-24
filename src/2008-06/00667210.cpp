@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // from server: 94% by EspClaude
 // roc 2008-06 00667210  unit: RBX::HUMAN::StrafingNoPhysics  size: 133 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00667210
@@ -107,9 +108,14 @@ struct Base
     ~Base();
 };
 
+struct Unusable
+{
+    Unusable() {}
+};
+
 struct Signal
 {
-    void invoke(Object**, int);
+    Unusable invoke(int value);
 };
 
 struct Node
@@ -138,7 +144,6 @@ S::S(Object* object) : Base(object)
 
     Node* node = registry_97a348.lookup(object ? &object->part : 0);
     if (node) {
-        Object* saved = object;
-        node->signal.invoke(&saved, 0);
+        node->signal.invoke(0);
     }
 }

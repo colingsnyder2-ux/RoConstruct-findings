@@ -1,9 +1,8 @@
-// from server: 96% by EspClaude
-// from server: 62% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs roc_espclaude_68970ae391b4e0f5.cpp
+// roc-lib: rbxgs roc_espeon_scriptserviceoutlinedctor72a8bf579f922a38.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <vector>
@@ -11,6 +10,9 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 namespace RBX {
+template<class T> class OutOfLineFunction:public boost::function0<T>{
+public: template<class F> __declspec(noinline) OutOfLineFunction(F f,int tag=0):boost::function0<T>(f,tag){}
+};
 template<class Class>
 boost::shared_ptr<Class> shared_from(Class* r);
 template<class Class, class Event> class Listener {
@@ -50,7 +52,7 @@ class StatsService : public Instance { };
 class Item : public Instance {
 public:
 	template<typename T> Item* createBoundChildItem(const char* name, const T& v);
-	template<typename T> Item* createChildItem(const char* name, boost::function0<T> func);
+	template<typename T> Item* createChildItem(const char* name, OutOfLineFunction<T> func);
 };
 }
 template<class Base> class Creatable {

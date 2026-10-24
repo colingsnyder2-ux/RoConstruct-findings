@@ -1,8 +1,8 @@
-// from server: 67% by colin
+// from server: 99% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_gltexture_all_native_views614dae1f22333f9c.cpp
+// roc-lib: rbxgs-dll roc_espeon_textureminimumorderf42976389be428a7.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <RenderLib/TextureProxy.h>
@@ -56,26 +56,20 @@ G3D::TextureRef TextureProxy::resolve(G3D::RenderDevice* rd) {
                 G3D::GImage image(sourceImage);
                 G3D::Color3uint8 lookup[256];
                 for (int i = 0; i < 256; ++i) {
-                    lookup[i] = G3D::Color3uint8(i, i, i);
-                    shadePixel(G3D::Color3uint8(color), lookup[i]);
+                    lookup[i].r = lookup[i].g = lookup[i].b = i;
+                    G3D::Color3uint8 shadeColor(color);
+                    shadePixel(shadeColor, lookup[i]);
                 }
                 int count = image.width * image.height;
                 for (int i = 0; i < count; ++i) {
-                    unsigned char* pixel = image.byte() + i*3;
-                    *reinterpret_cast<G3D::Color3uint8*>(pixel) = lookup[pixel[0]];
+                    image.pixel3()[i] = lookup[image.pixel3()[i].r];
                 }
                 textureView = G3D::Texture::fromGImage(G3D::format(
                     "Generated bump texture, color = (%3.1f, %3.1f, %3.1f)", color.r, color.g, color.b),
                     image, G3D::TextureFormat::RGB8);
                 manager->cacheTexture(textureView, name);
             }
-        } else if (rootView.notNull()) {
-            typedef G3D::TextureRef (__thiscall *ResolveMethod)(TextureProxy*, G3D::RenderDevice*);
-            G3D::TextureRef resolved = reinterpret_cast<ResolveMethod>(
-                (*reinterpret_cast<void***>(rootView.getPointer()))[6])(rootView.getPointer(), rd);
-            if (resolved.notNull() && !resolved->opaque())
-                textureView = resolved->alphaOnlyVersion();
-        } else {
+        } else if (rootView.isNull()) {
             try {
                 if (filename == "") {
                     textureView = G3D::Texture::createEmpty(8, 8, "Texture");
@@ -84,19 +78,20 @@ G3D::TextureRef TextureProxy::resolve(G3D::RenderDevice* rd) {
                     std::string scaled = filename + "scaled.png";
                     int minimum = 100000;
                     if (!freshScaled(scaled, filename)) {
-                        if (G3D::GImage::resolveFormat(filename) == G3D::GImage::UNKNOWN)
+                        G3D::GImage::Format format=G3D::GImage::resolveFormat(filename);
+                        if (format == G3D::GImage::UNKNOWN)
                             throw std::exception("unknown texture format");
-                        G3D::GImage image(filename, G3D::GImage::AUTODETECT);
+                        G3D::GImage image(filename, format);
                         if (image.width > 128 && image.height > 128) {
                             int height = image.height * scale;
                             int width = image.width * scale;
-                            minimum = std::min(height, width);
+                            minimum = std::min(width, height);
                             resizeTexture(image, scaled);
                         } else {
                             scaled = filename;
                         }
                     }
-                    processTexture(scaled, scaled, std::min(minimum, 512));
+                    processTexture(scaled, scaled, std::min(512, minimum));
                     textureView = manager->loadTexture(scaled, G3D::TextureFormat::AUTO,
                         tiledView ? G3D::Texture::TILE : G3D::Texture::TRANSPARENT_BORDER);
                 } else {
@@ -113,6 +108,16 @@ G3D::TextureRef TextureProxy::resolve(G3D::RenderDevice* rd) {
                                                 filename.c_str());
                 textureView = 0;
             }
+        } else {
+            // Target call uses virtual slot 0x18 with a native class-return ABI.
+            struct ResolveView {
+                virtual void slot0() = 0; virtual void slot1() = 0; virtual void slot2() = 0;
+                virtual void slot3() = 0; virtual void slot4() = 0; virtual void slot5() = 0;
+                virtual G3D::TextureRef resolve(G3D::RenderDevice*) = 0;
+            };
+            G3D::TextureRef resolved = reinterpret_cast<ResolveView*>(rootView.getPointer())->resolve(rd);
+            if (resolved.notNull() && !resolved->opaque())
+                textureView = resolved->alphaOnlyVersion();
         }
         rootView = 0;
         shadeView = 0;

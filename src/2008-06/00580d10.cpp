@@ -1,150 +1,101 @@
-// from server: 19% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-
-struct RefCounted {
-    virtual void reserved();
-    virtual void dispose();
-    virtual void destroy();
-    volatile long strong;
-    volatile long weak;
-};
-
-struct Selection {
-    char padding[0x13c];
-    unsigned int* begin;
-    unsigned int* end;
-    unsigned int* capacity;
-};
-
-struct DataModel {
-    char padding[0x134];
-    void* selection;
-};
-
-struct Verb {
-    char padding[0x20];
-    void* dataState;
-};
-
-struct S {
-    char padding[0x4];
-    void* doc;
-    char padding2[0x8];
-    void* state;
-    char padding3[0x8];
-    DataModel* dataModel;
-    bool doIt(void*);
-};
-
-extern "C" void __cdecl invalid_parameter_noinfo();
-extern "C" void __cdecl mfc798();
-extern "C" void __cdecl mfc800();
-
-extern void __cdecl sub_57d250();
-extern void* __cdecl sub_5806c0();
-extern void* __cdecl sub_6a0920(unsigned int);
-extern void __cdecl sub_42af90(void*, void*);
-extern void __cdecl sub_420110(void*, void*);
-extern void __cdecl sub_420d20(void*, void*, void*, void*, void*);
-extern void* __cdecl sub_4531e0();
-extern void __cdecl sub_5bd820(void*, int);
-extern void __cdecl sub_58c5c0(void*, void*);
-extern void __cdecl sub_6a067a(void*);
-extern void __cdecl sub_5a2fe0(void*);
-extern void __cdecl sub_57fb10(void*, void*);
-
-bool S::doIt(void*)
+// from server: 100% by king_originala
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <string>
+#include <exception>
+namespace RBX {
+class Instance;
+bool checkA(Instance* instance, int role);
+bool checkB(Instance* instance, int role);
+class runtime_error : public std::exception
 {
-    sub_57d250();
-
-    void* local10;
-    if (dataModel != 0) {
-        local10 = sub_5806c0();
-    } else {
-        local10 = 0;
+    std::string message;
+public:
+    runtime_error(const std::string& m);
+};
+static __declspec(noinline) void checkPermissions(Instance* instance)
+{
+    if (checkA(instance, 1) && !checkB(instance, 1))
+    {
+        std::string msg("Insufficinet permissions");
+        throw runtime_error(msg);
     }
+}
+}
 
-    void* p = sub_6a0920(4);
-    void* local38;
-    if (p != 0) {
-        local38 = &local38;
-        *(void**)p = local38;
-    } else {
-        local38 = 0;
-    }
+#include <intrin.h>
+#include <utility>
+namespace boost {
+namespace detail {
+struct sp_counted_base {
+    virtual ~sp_counted_base() {}
+    virtual void dispose()=0;
+    virtual void destroy(){delete this;}
+    long use_count_,weak_count_;
+    void weak_release(){if(_InterlockedDecrement(&weak_count_)==0)destroy();}
+    void release(){if(_InterlockedDecrement(&use_count_)==0){dispose();weak_release();}}
+};
+struct shared_count {
+    sp_counted_base* pi_;
+    shared_count():pi_(0){}
+    shared_count& operator=(const shared_count& r){sp_counted_base* tmp=r.pi_;if(tmp!=pi_){if(tmp)_InterlockedIncrement(&tmp->use_count_);if(pi_)pi_->release();pi_=tmp;}return *this;}
+    void swap(shared_count& r){sp_counted_base* tmp=r.pi_;r.pi_=pi_;pi_=tmp;}
+    shared_count(const shared_count& r):pi_(r.pi_){if(pi_)_InterlockedIncrement(&pi_->use_count_);}
+    ~shared_count(){if(pi_)pi_->release();}
+};
+}
+template<class T> class shared_ptr {
+public:
+    T* px; detail::shared_count pn;
+    shared_ptr():px(0),pn(){}
+    shared_ptr& operator=(const shared_ptr& r){px=r.px;pn=r.pn;return *this;}
+    void swap(shared_ptr& r){std::swap(px,r.px);pn.swap(r.pn);}
+    void reset(){shared_ptr().swap(*this);}
+    typedef T* shared_ptr::*unspecified_bool_type;
+    operator unspecified_bool_type()const{return px==0?0:&shared_ptr::px;}
+    shared_ptr(const shared_ptr& r):px(r.px),pn(r.pn){}
+    template<class Y> shared_ptr(const shared_ptr<Y>& r):px(r.px),pn(r.pn){}
+    T* get()const{return px;}
+    T* operator->()const{return px;}
+};
+template<class T,class U> bool operator==(const shared_ptr<T>& a,const shared_ptr<U>& b){return a.get()==b.get();}
+}
 
-    void* local44 = 0;
-    void* local48 = 0;
-    void* local4c = 0;
 
-    Selection* sel = (Selection*)dataModel;
-    unsigned int* it = sel->begin;
-    unsigned int* end = sel->end;
-
-    if (it != end) {
-        do {
-            void* obj = *(void**)it;
-            void* tmp;
-            sub_42af90((char*)obj + 0xe4, &tmp);
-            sub_420110(&local38, tmp);
-
-            RefCounted* rc = (RefCounted*)tmp;
-            if (rc != 0) {
-                if (_InterlockedExchangeAdd(&rc->strong, -1) == 1) {
-                    rc->dispose();
-                    if (_InterlockedExchangeAdd(&rc->weak, -1) == 1) {
-                        rc->destroy();
-                    }
-                }
-            }
-            it++;
-        } while (it != end);
-    }
-
-    void* p2 = sub_6a0920(4);
-    void* local24;
-    if (p2 != 0) {
-        local24 = &local24;
-        *(void**)p2 = local24;
-    } else {
-        local24 = 0;
-    }
-
-    void* local30 = 0;
-    void* local34 = 0;
-    void* local38b = 0;
-
-    void* local1c = &local24;
-    void* local20 = &local24;
-
-    unsigned int* it2 = (unsigned int*)local48;
-    unsigned int* end2 = (unsigned int*)local4c;
-    while (it2 != end2) {
-        sub_57fb10(&local1c, it2);
-        it2 += 2;
-    }
-
-    if (*(char*)&local24 != 0) {
-        sub_420d20(dataModel->selection, local20, local30, local34, local38b);
-    }
-
-    void* v = sub_4531e0();
-    sub_5bd820(v, 8);
-
-    sub_58c5c0((char*)state + 8, *(void**)((char*)state + 0xc));
-
-    void* q = *(void**)local10;
-    (*(void(__thiscall**)(void*, int))q)(local10, 1);
-
-    if (local24 != 0) {
-        sub_6a067a(local24);
-    }
-    if (local20 != 0) {
-        sub_6a067a(local20);
-    }
-
-    sub_5a2fe0(&local38);
-
-    return true;
+#include <vector>
+#include <algorithm>
+namespace boost {template<class T>class weak_ptr {T* px;void* count;public:shared_ptr<T> lock()const;};}
+namespace RBX {
+struct Primary {virtual ~Primary();char prefix[0xe0];};
+struct SharedBase {boost::weak_ptr<Instance> weak;boost::shared_ptr<Instance> shared_from_this();};
+class Instance:public Primary,public SharedBase {};
+typedef std::vector<Instance*> RawInstances;
+typedef std::vector<boost::shared_ptr<Instance> > Instances;
+struct Selection {void setSelection(RawInstances::iterator,RawInstances::iterator);};
+struct FilteredSelection {char prefix[0x134];boost::shared_ptr<Selection> selection;RawInstances items;RawInstances::const_iterator begin()const{return items.begin();}RawInstances::const_iterator end()const{return items.end();}};
+struct Workspace {};
+struct History {void record(int);};
+struct Context {FilteredSelection* models();History* history();};
+struct Name {int id;std::string text;const char* c_str()const{_ReadWriteBarrier();return text.c_str();}};
+struct IDataState {virtual void setDirty(bool)=0;};
+void __cdecl trackVerb(const char*,Workspace*);
+struct Ungroup {RawInstances* children;bool* changed;Ungroup(RawInstances&c,bool&b):children(&c),changed(&b){}void operator()(const boost::shared_ptr<Instance>&)const;};
+struct UngroupSelectionVerb {void* table;const Name* name;void* unused;Workspace* workspace;char pad[0x10];Context* context;void doIt(IDataState*);};
+void UngroupSelectionVerb::doIt(IDataState* state){
+ checkPermissions(reinterpret_cast<Instance*>(context));
+ FilteredSelection* models=context?context->models():0;
+ Instances stable;
+ for(RawInstances::const_iterator iter=models->begin();iter!=models->end();++iter){Instance* current=*iter;stable.push_back(current->shared_from_this());}
+ RawInstances children;
+ bool changed=false;
+ std::for_each(stable.begin(),stable.end(),Ungroup(children,changed));
+ if(changed){
+  models->selection->setSelection(children.begin(),children.end());
+  History* history=context?context->history():0;
+  history->record(8);
+ }
+ Workspace* currentWorkspace=workspace;
+ trackVerb(name->c_str(),currentWorkspace);
+ state->setDirty(true);
+}
 }

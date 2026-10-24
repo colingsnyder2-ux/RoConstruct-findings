@@ -1,30 +1,18 @@
-// from server: 95% by king_originala
-struct String {
-    char data[28];
-    String();
-    ~String();
-    String& operator=(const char*);
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espeon_folderprivatecontext64f515c78711e091.cpp
 
-extern void (__thiscall *constructString)(String*);
-extern String& (__thiscall *assignString)(String*, const char*);
-
+// Candidate translation unit (score above; library headers required).
+#include <string>
+typedef std::string String;
 extern "C" {
     extern long (__stdcall *SHGetSpecialFolderLocation)(void*, int, void**);
     extern int (__stdcall *SHGetPathFromIDListA)(const void*, char*);
 }
 
-inline String::String()
-{
-    constructString(this);
-}
-
-inline String& String::operator=(const char* text)
-{
-    return assignString(this, text);
-}
-
-String getFolderPath(int folder)
+static __declspec(noinline) String getFolderPath(int folder)
 {
     String result;
     void* item;
@@ -37,3 +25,6 @@ String getFolderPath(int folder)
 
     return result;
 }
+
+extern void consumeFolderPath(const String&);
+void inspectFolder(int folder){consumeFolderPath(getFolderPath(folder));}

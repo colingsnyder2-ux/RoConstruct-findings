@@ -1,21 +1,25 @@
+// from server: 100% by king_originala
 // from server: 82% by colin
 typedef void* HANDLE;
 
-extern "C" HANDLE __stdcall LoadBitmapA(HANDLE, const char*);
+extern "C" __declspec(dllimport) HANDLE __stdcall LoadBitmapA(HANDLE, const char*);
 extern "C" HANDLE __stdcall FindResourceModule(const char*, const char*);
 
-struct Bitmap
+struct GdiObject
 {
     HANDLE handle;
 
-    Bitmap() : handle(0) {}
-    virtual ~Bitmap() { release(); }
+    GdiObject() : handle(0) {}
+    virtual ~GdiObject() { release(); }
 
     int attach(HANDLE);
     void release();
 };
 
-extern "C" int __cdecl PrepareBitmap(Bitmap*, int, int);
+struct Bitmap : GdiObject {};
+
+struct Point { int x, y; Point(int a, int b) : x(a), y(b) {} };
+extern "C" int __cdecl PrepareBitmap(Bitmap*, Point);
 
 struct ImageManager
 {
@@ -39,9 +43,9 @@ struct S
     int f(unsigned short);
 };
 
-int S::f(unsigned short resource)
+static __declspec(noinline) int createBitmap(S* self, unsigned short resource)
 {
-    if (!create(16, 16, 0x19, 0, 1))
+    if (!self->create(16, 16, 0x19, 0, 1))
         return 0;
 
     Bitmap bitmap;
@@ -50,7 +54,10 @@ int S::f(unsigned short resource)
                            (const char*)2),
         (const char*)(unsigned int)resource));
 
-    int value = PrepareBitmap(&bitmap, 0, 0);
-    (*GetModuleState()->manager)->install(handle, bitmap.handle, value);
+    int value = PrepareBitmap(&bitmap, Point(0, 0));
+    HANDLE imageList = self->handle;
+    (*GetModuleState()->manager)->install(imageList, bitmap.handle, value);
     return 1;
 }
+
+int invoke(S* self, unsigned short resource) { return createBitmap(self, resource); }

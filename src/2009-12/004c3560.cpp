@@ -1,5 +1,5 @@
-// from server: 82% by atomic.potato
-extern "C" void __cdecl target(int);
+// from server: 100% by sophus
+extern "C" void dispatch(int, int, int);
 
 struct S
 {
@@ -9,11 +9,12 @@ void __cdecl f(int a, int b, int c)
 {
     if (c != 4)
     {
-        target(c);
-        return;
+        dispatch(a, b, c);
     }
-
-    *(int*)b = 0xB10AB0;
-    *((unsigned char*)b + 4) = 0;
-    *((unsigned char*)b + 5) = 0;
+    else
+    {
+        *(int*)b = 0xb10c90;
+        *(unsigned char*)(b + 4) = 0;
+        *(unsigned char*)(b + 5) = 0;
+    }
 }

@@ -1,117 +1,73 @@
-// from server: 24% by colin
-struct Vector3 {
-    float x, y, z;
-};
-
-struct WedgeBuilder {
-    char pad0[4];
-    int field4;
-    void build(int, int, int, int, int, int, int, int, int, int, int, int, int);
-};
-
-extern "C" {
-    void __cdecl sub_5EC1C0(Vector3* out, const Vector3* in);
-    void* __cdecl sub_6A0956(unsigned int size);
-    float* __cdecl sub_509BA0();
-    void __cdecl sub_548000(void* out, const Vector3* a, const Vector3* b, int c);
-    void __cdecl sub_500EB0(void* self, void* a, void* b, void* c, void* d);
-    void __cdecl sub_548640(void* p);
-    void __cdecl sub_6A094A(void* p);
+// from server: 100% by king_originala
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// Complete 821-byte grid emitter, ret52; native QuadVolume.h supplies LevelBuilder ABI.
+// Caller004f9120/native WedgeMesh contracts establish the two-float deformation transport.
+// Deformation/sideOffset and mapFace are descriptive labels for measured behavior.
+// mapFace maps (-x,z,y); native absolute-size evaluation ends its return temporary lifetime.
+// Scalar point/UV coordinates and scaled UV constructor reproduce target lifetimes.
+#include <stddef.h>
+#include <math.h>
+namespace G3D {
+struct Vector2 {float x,y;Vector2():x(0),y(0){}Vector2(float a,float b):x(a),y(b){}Vector2(const Vector2&v):x(v.x),y(v.y){}Vector2&operator=(const Vector2&v){x=v.x;y=v.y;return *this;}float&operator[](int i){return (&x)[i];}const float&operator[](int i)const{return (&x)[i];}};
+struct Vector3 {float x,y,z;Vector3():x(0),y(0),z(0){}Vector3(float a,float b,float c):x(a),y(b),z(c){}Vector3(const Vector3&v):x(v.x),y(v.y),z(v.z){}Vector3 abs()const{return Vector3((float)fabs(x),(float)fabs(y),(float)fabs(z));}};
+struct Vector2int16 {short x,y;Vector2int16(short a,short b):x(a),y(b){}};
+struct Rect2D {Vector2 min,max;};
 }
-
-extern float g_float_819BAC;
-
-void WedgeBuilder::build(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9, int a10, int a11, int a12, int a13)
-{
-    Vector3 v1;
-    sub_5EC1C0(&v1, (const Vector3*)&field4);
-
-    short w1 = *(short*)((char*)&a1 + 0);
-    short w2 = *(short*)((char*)&a1 + 2);
-    short w3 = *(short*)((char*)&a1 + 4);
-    short w4 = *(short*)((char*)&a1 + 6);
-
-    int n1 = w1 + 1;
-    int n2 = w2 + 1;
-    int total = n1 * n2;
-
-    float f1 = (*(float*)((char*)&a1 + 8) - *(float*)((char*)&a1 + 0)) / (float)w1;
-    float f2 = (*(float*)((char*)&a1 + 12) - *(float*)((char*)&a1 + 4)) / (float)w2;
-    float f3 = *(float*)((char*)&a1 + 16) / (float)w1;
-    float f4 = *(float*)((char*)&a1 + 20) / (float)w2;
-
-    void** arr = (void**)sub_6A0956(total * 4);
-
-    float base1 = *(float*)((char*)&a1 + 0);
-    float base2 = *(float*)((char*)&a1 + 4);
-    float base3 = *(float*)((char*)&a1 + 8);
-    float base4 = *(float*)((char*)&a1 + 12);
-
-    int i = 0;
-    float acc1 = 0.0f;
-    float acc2 = 0.0f;
-    while (i <= w3) {
-        int j = 0;
-        float cur1 = base1;
-        float cur2 = base2;
-        while (j <= w4) {
-            Vector3 p;
-            p.x = cur1;
-            p.y = cur2;
-            p.z = base3;
-
-            float t1 = cur1;
-            float t2 = cur2;
-
-            float* sh = sub_509BA0();
-            if (sh[0] == *(float*)((char*)&a1 + 24) && sh[1] == *(float*)((char*)&a1 + 28)) {
-                t1 = *(float*)((char*)&a1 + 32);
-                t2 = *(float*)((char*)&a1 + 36);
-            }
-
-            Vector3 q;
-            q.x = t1 * g_float_819BAC;
-            q.y = t2 * g_float_819BAC;
-            q.z = 0.0f;
-
-            Vector3 r;
-            sub_5EC1C0(&r, &q);
-
-            Vector3 s;
-            sub_5EC1C0(&s, &p);
-
-            void* out;
-            sub_548000(&out, &s, &r, 1);
-
-            acc1 += p.x;
-            acc2 += p.z;
-
-            int idx = (w4 + 1) * i + j;
-            arr[idx] = out;
-
-            j++;
-            cur1 += f1;
-            cur2 += f2;
-        }
-        i++;
-        base1 += f3;
-        base2 += f4;
-    }
-
-    int k = 0;
-    while (k < w3) {
-        int m = 0;
-        while (m < w4) {
-            int idx = (w4 + 1) * k + m;
-            sub_500EB0(this, arr[idx], arr[idx + 1], arr[idx + w4 + 1], arr[idx + w4 + 2]);
-            m++;
-        }
-        k++;
-    }
-
-    unsigned int cnt = (unsigned int)total;
-    for (unsigned int n = 0; n < cnt; n++) {
-        sub_548640(arr[n]);
-    }
-    sub_6A094A(arr);
+namespace RBX {namespace View {
+using G3D::Vector2;using G3D::Vector3;using G3D::Rect2D;using G3D::Vector2int16;
+// Descriptive deformation fields name the two measured float operands.
+struct Deformation {const float inset,sideOffset;
+ void operator()(Vector3&vertex,Vector3&,Vector2&texture,const Vector3&,const Vector2int16&){
+  if(vertex.x>0){vertex.x-=sideOffset+inset;texture.x-=sideOffset;}
+  else{vertex.x+=sideOffset+inset;texture.x+=sideOffset;}
+  if(vertex.y>0)vertex.y-=inset;else vertex.y+=inset;
+ }
+};
+Vector3 __cdecl mapFace(const Vector3&);
+const Vector2&__cdecl zeroVector2();
+unsigned __cdecl allocVertex(const Vector3&,const Vector3&,const Vector2&,bool);
+void __cdecl freeVertex(unsigned);
+struct Level;
+class LevelBuilder {
+public:
+ enum Purpose{Surface,Decal,Shadow};
+ virtual void build(Purpose);virtual void buildTop(Purpose)=0;virtual void buildBottom(Purpose)=0;virtual void buildLeft(Purpose)=0;virtual void buildRight(Purpose)=0;virtual void buildFront(Purpose)=0;virtual void buildBack(Purpose)=0;
+ const Vector3 halfSize;unsigned surfaceTypes;Level*level;Vector2 textureScale;
+ void appendQuadFromVertexIndices(unsigned,unsigned,unsigned,unsigned);
+ void emit(Deformation,Rect2D,float,Vector2,Vector2,int,Vector2int16);
+};
+void LevelBuilder::emit(Deformation function,Rect2D rect,float depth,Vector2 origin,Vector2 extent,int axis,Vector2int16 grid){
+ Vector3 size=mapFace(halfSize).abs();
+ Vector2 step((rect.max.x-rect.min.x)/grid.x,(rect.max.y-rect.min.y)/grid.y);
+ Vector2 textureStep(extent.x/grid.x,extent.y/grid.y);
+ unsigned count=(grid.x+1)*(grid.y+1);
+ unsigned*indices=new unsigned[count];
+ float pointX=rect.min.x;
+ float uvX=origin.x;
+ for(int j=0;j<=grid.x;++j){
+  float pointY=rect.min.y;float uvY=origin.y;
+  for(int i=0;i<=grid.y;++i){
+   Vector3 vertex(pointX,pointY,depth);
+   Vector2 texture;texture[1-axis]=uvX;texture[axis]=uvY;
+   Vector3 normal(0,0,1);
+   function(vertex,normal,texture,size,Vector2int16(j,i));
+   const Vector2&zero=zeroVector2();
+   float texU,texV;
+   if(extent.x==zero.x&&extent.y==zero.y){texU=origin.x;texV=origin.y;}else{texU=texture.x;texV=texture.y;}
+   Vector2 tex(texU*.5f,texV*.5f);
+   Vector3 mappedNormal=mapFace(normal);Vector3 mappedVertex=mapFace(vertex);
+   indices[(grid.y+1)*j+i]=allocVertex(mappedVertex,mappedNormal,tex,true);
+   pointY+=step.y;uvY+=textureStep.y;
+  }
+  pointX+=step.x;uvX+=textureStep.x;
+ }
+ for(int j=0;j<grid.x;++j)for(int i=0;i<grid.y;++i){int k=(grid.y+1)*j+i;appendQuadFromVertexIndices(indices[k+1],indices[k],indices[k+grid.y+1],indices[k+grid.y+2]);}
+ for(unsigned k=0;k<count;++k)freeVertex(indices[k]);
+ delete[]indices;
 }
+}}
+typedef char deformation_extent[sizeof(RBX::View::Deformation)==8?1:-1];
+typedef char rectangle_extent[sizeof(G3D::Rect2D)==16?1:-1];
+typedef char builder_extent[sizeof(RBX::View::LevelBuilder)==32?1:-1];
+typedef char size_offset[offsetof(RBX::View::LevelBuilder,halfSize)==4?1:-1];

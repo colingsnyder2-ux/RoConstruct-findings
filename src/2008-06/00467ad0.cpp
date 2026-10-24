@@ -1,3 +1,4 @@
+// from server: 97% by coldek
 // from server: 95% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
@@ -94,11 +95,9 @@ Vector2 DxUserInput::getPosition()
     Vector2 size;
     size.x = static_cast<float>(rect.right - rect.left);
     size.y = static_cast<float>(rect.bottom - rect.top);
-    size.x *= 0.5f;
-    size.y *= 0.5f;
     Vector2 result;
-    result.x = size.x + offsetX;
-    result.y = size.y + offsetY;
+    result.x = size.x * 0.5f + offsetX;
+    result.y = size.y * 0.5f + offsetY;
 
     LeaveCriticalSection(criticalSection);
     return result;

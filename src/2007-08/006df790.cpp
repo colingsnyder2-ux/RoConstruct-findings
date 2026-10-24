@@ -1,18 +1,17 @@
-// from server: 50% by colin
+// from server: 51% by 41k
 struct CXTPDockingPaneMiniWnd {
     char pad[0xe4];
     int m_field;
     int FindPane(int);
 };
 
-extern "C" int __fastcall sub_6e0540(int);
+extern "C" int __fastcall sub_6e0540(int, int, int, int, int);
 extern "C" int __fastcall sub_66f110(int);
 extern "C" int __fastcall sub_66f140(int);
-extern "C" int __fastcall sub_66e000(int, int, int, int, int);
 
 int CXTPDockingPaneMiniWnd::FindPane(int arg)
 {
-    int result = sub_6e0540(m_field);
+    int result = sub_6e0540(m_field, 0, 0, 0, 0);
     int local1;
     sub_66f110(0xa);
     int local2;
@@ -25,7 +24,7 @@ int CXTPDockingPaneMiniWnd::FindPane(int arg)
             val -= 0x20;
         else
             val = 0;
-        if (sub_66e000(result, arg, val, 0, 0) != 0) {
+        if (sub_6e0540(result, arg, val, 0, 0) != 0) {
             sub_66f140((int)&local1);
             return 1;
         }

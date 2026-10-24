@@ -1,7 +1,7 @@
-// from server: 68% by Espeon
-// roc-lang: cpp
+// from server: 71% by colin
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
+// roc-flags: /GS- /EHsc /MD /O2 /Ob1 /Oy-
+// roc-lang: cpp
 // roc-lib: mfc-9.0-shared roc_espeon_windownativesettingsdc9c75efec3e2fc058.cpp
 
 // Candidate translation unit (score above; library headers required).

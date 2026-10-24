@@ -1,7 +1,7 @@
-// from server: 47% by colin
-// from server: 45% by colin
+// from server: 53% by colin
 // roc-cl: 21022
-// roc-flags: /O1 /GS- /EHsc /MD
+// roc-flags: /GS- /EHsc /MD /O2 /Ob1 /Oy-
+// from server: 45% by colin
 #include <intrin.h>
 extern bool enabled;
 extern void __cdecl alignedFree(void*);

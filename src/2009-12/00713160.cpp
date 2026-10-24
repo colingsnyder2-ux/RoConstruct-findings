@@ -1,13 +1,19 @@
-// from server: 97% by atomic.potato
-struct S
+// from server: 100% by sophus
+struct Color3
 {
-    int get(float *p);
+    float x, y, z;
 };
 
-int S::get(float *p)
+struct S
 {
-    p[0] = *(float *)((char *)this + 0x1bc);
-    p[1] = *(float *)((char *)this + 0x1c0);
-    p[2] = *(float *)((char *)this + 0x1c4);
-    return 0;
+    Color3 get();
+};
+
+Color3 S::get()
+{
+    Color3 c;
+    c.x = *(float *)((char *)this + 0x1bc);
+    c.y = *(float *)((char *)this + 0x1c0);
+    c.z = *(float *)((char *)this + 0x1c4);
+    return c;
 }

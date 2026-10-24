@@ -1,160 +1,107 @@
-// from server: 19% by colin
-struct Vector2 { float x, y; };
-struct Vector3 { float x, y, z; };
+// from server: 98% by king_originala
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// Complete owned-builder face preparation; RTTI proves ViewNew TorsoBuilder/BevelMesh::Builder/LevelBuilder.
+// Native G3D ReferenceCount and the 40-byte by-value builder explain parameter cleanup.
+// Target TorsoBuilder vtable827100/RTTI941f60 and caller copy prove native40-byte hierarchy.
+// Native AtomicInt32 imports and weak-list invalidation account for every cleanup call.
+// Remaining local storage/FP differences are retained as partial, not exact.
 
-extern "C" {
-    float __stdcall ceil(double);
-    long __stdcall InterlockedIncrement(long*);
-    long __stdcall InterlockedDecrement(long*);
-}
+// roc-lib: g3d-6.09 G3Dcpp/Vector3.cpp
+namespace G3D {inline int iRound(float);}
 
-struct TorsoBuilder {
-    char pad[0x10];
-    unsigned int flags;
-    char pad2[0x80 - 0x14];
-    void* list;
-    void build(float a, float b, float c, float d, float e, float f,
-               float g, float h, float i, float j, float k, float l);
+extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
+extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long*);
+namespace MeshOwned {
+extern "C" __declspec(dllimport) double __cdecl ceil(double);
+extern "C" __declspec(dllimport) double __cdecl fabs(double);
+struct AtomicInt32 {volatile long value;void increment(){InterlockedIncrement(&value);}unsigned decrement(){return InterlockedDecrement(&value)!=0;}};
+struct ReferenceCountedObject;
+struct _WeakPtr {virtual ~_WeakPtr(){}protected:friend struct ReferenceCountedObject;virtual void objectCollected()=0;};
+struct _WeakPtrLinkedList {_WeakPtr*weakPtr;_WeakPtrLinkedList*next;};
+struct ReferenceCountedObject {
+ AtomicInt32 ReferenceCountedObject_refCount;_WeakPtrLinkedList*ReferenceCountedObject_weakPointer;
+ virtual ~ReferenceCountedObject(){}
+ void ReferenceCountedObject_zeroWeakPointers(){_WeakPtrLinkedList*node=ReferenceCountedObject_weakPointer;while(node){node->weakPtr->objectCollected();_WeakPtrLinkedList*tmp=node;node=node->next;delete tmp;}}
+};
+template<class T>class ReferenceCountedPointer {
+ T*m_pointer;
+ void zeroPointer(){if(m_pointer){if(m_pointer->ReferenceCountedObject_refCount.decrement()==0){m_pointer->ReferenceCountedObject_zeroWeakPointers();delete m_pointer;}m_pointer=0;}}
+ void setPointer(T*x){if(x!=m_pointer){zeroPointer();if(x){m_pointer=x;m_pointer->ReferenceCountedObject_refCount.increment();}}}
+public:
+ ReferenceCountedPointer():m_pointer(0){}ReferenceCountedPointer(const ReferenceCountedPointer&p):m_pointer(0){setPointer(p.m_pointer);}~ReferenceCountedPointer(){zeroPointer();}
 };
 
-float __stdcall sub_4f1ff0(int);
-void __stdcall sub_4f35d0(void*, void*, void*, void*);
-void __stdcall sub_4f9ca0(void*, void*, void*);
-void __stdcall sub_5185d0(Vector2* out, Vector3* in);
-void __stdcall sub_5ec200(void*, void*);
-void __stdcall sub_6a067a(void*);
-
-extern float g_819bac;
-extern float g_83a3e4;
-extern float g_826e6c;
-
-void TorsoBuilder::build(float a, float b, float c, float d, float e, float f,
-                         float g, float h, float i, float j, float k, float l)
-{
-    unsigned int mode = (this->flags >> 12) & 7;
-
-    float v[3];
-    sub_5ec200(&this->pad[4], v);
-
-    float fa = v[0] < 0 ? -v[0] : v[0];
-    float fb = v[1] < 0 ? -v[1] : v[1];
-    float fc = v[2] < 0 ? -v[2] : v[2];
-
-    int idx;
-    if (a == 0.0f) {
-        idx = (fa == fb) ? 0 : 1;
-    } else {
-        idx = 1;
-    }
-
-    int count;
-    if (a == 0.0f && mode != 0) {
-        float scaled = (idx == 0 ? fa : fb) * g_819bac;
-        count = (int)ceil((double)scaled);
-    } else {
-        count = 1;
-    }
-
-    short arr[2];
-    arr[0] = 0;
-    short orig = *(short*)((char*)&a + (idx == 0 ? 0 : 2));
-    int q = (int)orig / count;
-    short qs = (short)q;
-    short one = 1;
-    short chosen = (one < qs) ? qs : one;
-    arr[idx] = chosen;
-    arr[1 - idx] = orig;
-
-    float f1 = fc;
-    float f2 = fb;
-    float f3 = fa;
-
-    Vector2 v2a, v2b;
-    sub_5185d0(&v2a, (Vector3*)&v[0]);
-    sub_5185d0(&v2b, (Vector3*)&v[0]);
-
-    float p0 = -v2a.x;
-    float p1 = -v2a.y;
-    float p2 = -v2b.x;
-    float p3 = -v2b.y;
-
-    float r0 = 0, r1 = 0, r2 = 0, r3 = 0;
-
-    switch (mode) {
-    case 0:
-        if (mode == 0) {
-            r0 = g_83a3e4;
-            r1 = g_819bac;
-            r2 = g_819bac;
-            r3 = g_819bac;
-        }
-        break;
-    case 1:
-        r0 = 0;
-        r1 = this->pad[0x1c];
-        r2 = this->pad[0x18];
-        r3 = -this->pad[0x1c];
-        break;
-    case 2:
-        r0 = 0;
-        r1 = 0;
-        r2 = 0;
-        r3 = 0;
-        break;
-    default:
-        break;
-    }
-
-    for (int n = 0; n < count; n++) {
-        float t;
-        if (n == count - 1) {
-            t = (idx == 0 ? fa : fb);
-            if (mode == 0 && a != 0.0f) {
-                float diff = t - (idx == 0 ? r2 : r3);
-                float mul = (idx == 0 ? r0 : r1);
-                t = diff * mul * g_83a3e4;
-            }
-        } else {
-            t = (idx == 0 ? r2 : r3) + g_826e6c;
-        }
-
-        float u = (idx == 0 ? r0 : r1);
-        float w = (idx == 0 ? r2 : r3);
-
-        float args[6];
-        args[0] = u;
-        args[1] = w;
-        args[2] = p0;
-        args[3] = p1;
-        args[4] = p2;
-        args[5] = p3;
-
-        sub_4f35d0(&args[0], &args[2], &args[4], &args[0]);
-        sub_4f9ca0(&args[0], &args[0], &args[0]);
-
-        if (idx == 0) {
-            r2 = t;
-        } else {
-            r3 = t;
-        }
-    }
-
-    void* list = this->list;
-    if (list) {
-        if (InterlockedDecrement((long*)((char*)list + 4)) == 0) {
-            void* node = *(void**)((char*)list + 8);
-            while (node) {
-                void* next = *(void**)((char*)node + 4);
-                void* data = *(void**)node;
-                void** vt = *(void***)data;
-                ((void(__thiscall*)(void*))vt[1])(data);
-                sub_6a067a(node);
-                node = next;
-            }
-            if (list) {
-                void** vt = *(void***)list;
-                ((void(__thiscall*)(void*, int))vt[0])(list, 1);
-            }
-        }
-    }
+struct Vector2 {float x,y;Vector2():x(0),y(0){}Vector2(float a,float b):x(a),y(b){}Vector2(const Vector2&v):x(v.x),y(v.y){}Vector2 operator-()const{return Vector2(-x,-y);}Vector2 operator*(float f)const{return Vector2(x*f,y*f);}Vector2&operator=(const Vector2&v){x=v.x;y=v.y;return *this;}float&operator[](int i){return (&x)[i];}const float&operator[](int i)const{return (&x)[i];}};
+struct Vector3 {float x,y,z;Vector3():x(0),y(0),z(0){}Vector3(float a,float b,float c):x(a),y(b),z(c){}Vector3(const Vector3&v):x(v.x),y(v.y),z(v.z){}Vector2 xy()const;float&operator[](int i){return ((float*)this)[i];}const float&operator[](int i)const{return ((const float*)this)[i];}Vector3 abs()const{return Vector3(MeshOwned::fabs(x),MeshOwned::fabs(y),MeshOwned::fabs(z));}};
+struct Vector2int16 {short x,y;Vector2int16():x(0),y(0){}short&operator[](int i){return ((short*)this)[i];}const short&operator[](int i)const{return ((const short*)this)[i];}Vector2int16(short a,short b):x(a),y(b){}};
+struct Rect2D {Vector2 min,max;static Rect2D xyxy(const Vector2&,const Vector2&);};
+template<class T>const T&maximum(const T&a,const T&b){return a<b?b:a;}
 }
+namespace RBX {namespace ViewNew {
+using MeshOwned::Vector2;using MeshOwned::Vector3;using MeshOwned::Rect2D;using MeshOwned::Vector2int16;
+class TorsoBuilder;
+Vector3 __cdecl mapFace(const Vector3&);
+const Vector2&__cdecl zeroVector2();
+unsigned __cdecl allocVertex(const Vector3&,const Vector3&,const Vector2&,bool);
+void __cdecl freeVertex(unsigned);
+struct Level:MeshOwned::ReferenceCountedObject {virtual ~Level();};
+class LevelBuilder {
+public:
+ enum Purpose{Surface,Decal,Shadow};
+ virtual void build(Purpose);virtual void buildTop(Purpose)=0;virtual void buildBottom(Purpose)=0;virtual void buildLeft(Purpose)=0;virtual void buildRight(Purpose)=0;virtual void buildFront(Purpose)=0;virtual void buildBack(Purpose)=0;
+ const Vector3 halfSize;unsigned surfaceTypes;const MeshOwned::ReferenceCountedPointer<Level>level;Vector2 textureScale;
+ void appendQuadFromVertexIndices(unsigned,unsigned,unsigned,unsigned);
+ void emit(TorsoBuilder,Rect2D,float,Vector2,Vector2,int,Vector2int16);
+ void prepare(TorsoBuilder,Vector2int16,int);
+};
+struct BevelMesh {class Builder:public LevelBuilder {
+public:
+ const float bevel;virtual void build(Purpose);
+ void operator()(Vector3&vertex,Vector3&,Vector2&,const Vector3&,const Vector2int16&){
+  if(vertex.x>0)vertex.x-=bevel;else vertex.x+=bevel;
+  if(vertex.y>0)vertex.y-=bevel;else vertex.y+=bevel;
+ }
+};};
+class TorsoBuilder:public BevelMesh::Builder {
+public:const float shoulderInset;virtual void buildTop(Purpose);virtual void buildBottom(Purpose);virtual void buildLeft(Purpose);virtual void buildRight(Purpose);virtual void buildFront(Purpose);virtual void buildBack(Purpose);
+};
+
+float __cdecl surfaceOffset(int);
+static __forceinline bool useFirstAxis(int purpose,const Vector3&size){if(purpose==0&&size.x<size.y)return true;return false;}
+static __forceinline Vector3 absoluteSize(const Vector3&v){Vector3 mapped=mapFace(v);float z=(float)MeshOwned::fabs(mapped.z);float y=(float)MeshOwned::fabs(mapped.y);float x=(float)MeshOwned::fabs(mapped.x);return Vector3(x,y,z);}
+void LevelBuilder::prepare(TorsoBuilder function,Vector2int16 grid,int purpose){
+ int surface=(surfaceTypes>>12)&7;
+ Vector3 size=absoluteSize(halfSize);
+ int axis=!useFirstAxis(purpose,size);
+ int steps=(purpose==0 && surface)?G3D::iRound((float)MeshOwned::ceil((double)(size[axis]*0.5f))):1;
+ Vector2int16 divisions;
+ short n=grid[1-axis];
+ divisions[axis]=MeshOwned::maximum<short>(1,(short)(n/steps));
+ divisions[1-axis]=n;
+ float depth=size.z;
+ Vector2 begin=-size.xy();
+ Vector2 end=size.xy();
+ Vector2 origin,extent;
+ switch(purpose){
+  case 0:
+   if(!surface){origin=Vector2(0.25f,0.5f);extent[1-axis]=0;extent[axis]=0;}
+   else {origin[1-axis]=0;origin[axis]=surfaceOffset(surface);extent[1-axis]=size[1-axis]*2.0f;extent[axis]=0.5f;if(axis==1)extent.x=-extent.x;}
+   break;
+  case 1:origin.x=0;origin.y=textureScale.y;extent.x=textureScale.x;extent.y=-textureScale.y;break;
+  case 2:origin=Vector2(0,0);extent=Vector2(0,0);break;
+ }
+ for(int i=0;i<steps;++i){
+  if(i==steps-1){end[axis]=size[axis];if(purpose==0 && surface)extent[axis]=(end[axis]-begin[axis])*extent[axis]*0.25f;}
+  else end[axis]=begin[axis]+4.0f;
+  emit(function,Rect2D::xyxy(begin,end),depth,origin,extent,axis,divisions);
+  begin[axis]=end[axis];
+ }
+}
+}}
+typedef char deformation_extent[sizeof(RBX::ViewNew::TorsoBuilder)==40?1:-1];
+typedef char rectangle_extent[sizeof(MeshOwned::Rect2D)==16?1:-1];
+typedef char builder_extent[sizeof(RBX::ViewNew::LevelBuilder)==32?1:-1];
+
+typedef char reference_extent[sizeof(MeshOwned::ReferenceCountedPointer<RBX::ViewNew::Level>)==4?1:-1];
+typedef char object_extent[sizeof(MeshOwned::ReferenceCountedObject)==12?1:-1];

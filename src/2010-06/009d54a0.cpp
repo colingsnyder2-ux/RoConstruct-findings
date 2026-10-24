@@ -1,4 +1,4 @@
-// from server: 99% by colin
+// from server: 100% by sophus
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
 #pragma pointers_to_members(full_generality, multiple_inheritance)
@@ -8,6 +8,6 @@ extern "C" void helper(void(P::*)(),const char*,int,void*);
 struct D{D(void(P::*)(),const char*,int);~D();};
 __declspec(noinline) D::D(void(P::*f)(),const char*n,int s){helper(f,n,s,this);} D::~D(){}
 extern "C" void tail(void*); extern int e;
-static D d(&P::method,"GetPlayers",0);
+static D d(&P::method,"Fire",0);
 void func_009c6eb0(){tail(&e);}
 

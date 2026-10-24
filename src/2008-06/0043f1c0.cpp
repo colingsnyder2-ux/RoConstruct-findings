@@ -1,4 +1,7 @@
 // from server: 34% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// from server: 34% by colin
 struct ContentItem {
     char pad0[0x110];
     void* begin;

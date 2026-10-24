@@ -1,135 +1,111 @@
-// from server: 90% by king_originala
-typedef unsigned int size_t;
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_safechatprivatepath0e11a464aa6b8fd4.cpp
 
-void* __cdecl operator new(size_t);
-void __cdecl operator delete(void*);
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8xml/XmlSerializer.h", "roc_ldraw_native_parser_prefix66bda9c32708866c.cpp")
+#include "v8datamodel/SafeChat.h"
+#include "util/ContentProvider.h"
+#include "v8xml/XmlSerializer.h"
+#include "util/Debug.h"
+#include <fstream>
+#include <boost/thread/once.hpp>
+#include <boost/algorithm/string.hpp>
 
-struct String {
-    unsigned int allocator;
-    union {
-        char buffer[16];
-        char* pointer;
-    } data;
-    unsigned int length;
-    unsigned int capacity;
+static const RBX::Name& utterance = RBX::Name::declare("utterance", -1);
+static boost::scoped_ptr<RBX::SafeChat> sing;
+static boost::once_flag once_SafeChat_singleton = BOOST_ONCE_INIT;
 
-    ~String();
-    const char* c_str() const;
-    String& operator=(const char*);
-};
-
-extern void (__thiscall *destroyString)(String*);
-extern String& (__thiscall *assignString)(String*, const char*);
-
-inline String::~String()
+static void SafeChat_singleton()
 {
-    destroyString(this);
+	sing.reset(new RBX::SafeChat());
 }
 
-inline const char* String::c_str() const
+std::string contentPath(const char*);
+static __declspec(noinline) std::string getChatTreeFile()
 {
-    const char* result = data.pointer;
-    if (capacity < 16)
-        result = data.buffer;
-    return result;
+	return contentPath("Fonts\\safechat.xml");
 }
 
-inline String& String::operator=(const char* value)
+static void del(RBX::ChatOption* c)
 {
-    return assignString(this, value);
+	delete c;
 }
 
-struct Input {
-    char storage[140];
-
-    Input(const char*, int, int);
-    ~Input();
-};
-
-extern void (__thiscall *constructInput)(Input*, const char*, int, int, int);
-extern void (__thiscall *destroyInput)(Input*);
-
-inline Input::Input(const char* path, int mode, int protection)
+namespace RBX
 {
-    constructInput(this, path, mode, protection, 1);
-}
+	ChatOption::ChatOption(std::string text)
+		: text(text)
+	{
+	}
 
-inline Input::~Input()
-{
-    destroyInput(this);
-}
+	ChatOption::ChatOption()
+	{
+	}
 
-struct Document {
-    ~Document();
-};
+	ChatOption::~ChatOption()
+	{
+		std::for_each(children.begin(), children.end(), &del);
+	}
 
-struct Owner {
-    Document* pointer;
+	SafeChat::SafeChat()
+	{
+		loadChatTree();
+	}
 
-    explicit Owner(Document*);
-    ~Owner();
-    Document* release();
-};
+	std::string SafeChat::getMessage(std::vector<std::string> code)
+	{
+		RBXASSERT(chatRoot);
+		RBXASSERT(code[0] == "sc");
 
-inline Owner::Owner(Document* value) : pointer(value)
-{
-}
+		ChatOption* currentOption = chatRoot.get();
 
-inline Owner::~Owner()
-{
-    Document* value = pointer;
-    if (value) {
-        value->~Document();
-        operator delete(value);
-    }
-}
+		for (size_t i = 1; i < code.size(); ++i)
+		{
+			int iCode = boost::lexical_cast<int>(code[i]);
+			if (static_cast<size_t>(iCode) >= currentOption->children.size())
+				return "";
 
-inline Document* Owner::release()
-{
-    Document* value = pointer;
-    pointer = 0;
-    return value;
-}
+			currentOption = currentOption->children[iCode];
+		}
 
-struct Parser {
-    char storage[72];
+		return currentOption->text;
+	}
 
-    explicit Parser(void*);
-    ~Parser();
-    Owner parse();
-};
+	void SafeChat::loadChatTree()
+	{
+		std::string chatTreeFile = getChatTreeFile();
+		std::ifstream chatTreeStream(chatTreeFile.c_str(), std::ios::in | std::ios::binary);
 
-struct Node {
-    char prefix[24];
-    String name;
+		TextXmlParser machine(chatTreeStream.rdbuf());
+		std::auto_ptr<XmlElement> chatTree = machine.parse();
 
-    Node();
-    ~Node();
-};
+		chatRoot.reset(new ChatOption());
+		chatRoot->text = "ROOT";
+		loadChildren(chatRoot.get(), chatTree.get());
+	}
 
-struct S {
-    Node* root;
+	void SafeChat::loadChildren(ChatOption* parentOption, const XmlElement* parentElement)
+	{
+		for (const XmlElement* element = parentElement->findFirstChildByTag(utterance); element != NULL; element = parentElement->findNextChildWithSameTag(element))
+		{
+			std::string text;
+			bool succeeded = element->getValue(text);
+			RBXASSERT(succeeded);
 
-    String path();
-    void attach(Node*, Document*);
-    void f();
-};
+			boost::trim(text);
 
-void S::f()
-{
-    String filename = path();
-    Input input(filename.c_str(), 33, 64);
-    Parser parser(input.storage + 8);
-    Owner document(parser.parse().release());
+			ChatOption* option = new ChatOption(text);
+			parentOption->children.push_back(option);
+			loadChildren(option, element);
+		}
+	}
 
-    Node* replacement = new Node;
-    Node* old = root;
-    root = replacement;
-    if (old) {
-        old->~Node();
-        operator delete(old);
-    }
-
-    root->name = "ROOT";
-    attach(root, document.pointer);
+	SafeChat& SafeChat::singleton()
+	{
+		boost::call_once(SafeChat_singleton, once_SafeChat_singleton);
+		return *sing;
+	}
 }

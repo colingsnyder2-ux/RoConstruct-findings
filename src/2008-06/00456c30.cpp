@@ -1,30 +1,68 @@
-// from server: 90% by Espeon
-// roc-lang: cpp
+// from server: 100% by king_originala
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espeon_statsstringcleanup6150262ee5f22672.cpp
-
-// Candidate translation unit (score above; library headers required).
 #include <stdio.h>
 #include <exception>
 
 class CStr;
 typedef void (__thiscall *StringDestroy)(CStr*);
 extern StringDestroy destroyString;
+extern const char* (__thiscall* stringText)(const CStr*);
 class CStr {
 public:
     __declspec(dllimport) CStr(const char* s);
     __declspec(dllimport) CStr(const CStr& s);
     ~CStr() throw() { destroyString(this); }
-    __declspec(dllimport) operator const char*() const;
+    __declspec(dllimport) operator const char*()const;
     char* m_pszData;
 };
-CStr operator+(const char* a, const CStr& b);
-CStr operator+(const CStr& a, const char* b);
+struct ImportedCStr {
+    char* m_pszData;
+    __declspec(dllimport) ~ImportedCStr()throw();
+    operator const char*()const{return stringText(reinterpret_cast<const CStr*>(this));}
+};
+ImportedCStr operator+(const char* a,const CStr& b);
+CStr operator+(const ImportedCStr& a,const char* b);
 CStr getTimeString(bool full);
 double now();
 
-#include <boost/shared_ptr.hpp>
+#include <intrin.h>
+namespace boost {
+namespace detail {
+struct sp_counted_base {
+    virtual ~sp_counted_base() {}
+    virtual void dispose()=0;
+    virtual void destroy(){delete this;}
+    long use_count_,weak_count_;
+    void weak_release(){if(_InterlockedDecrement(&weak_count_)==0)destroy();}
+    void release(){if(_InterlockedDecrement(&use_count_)==0){dispose();weak_release();}}
+};
+struct shared_count {
+    sp_counted_base* pi_;
+    shared_count():pi_(0){}
+    shared_count& operator=(const shared_count& r){sp_counted_base* tmp=r.pi_;if(tmp!=pi_){if(tmp)_InterlockedIncrement(&tmp->use_count_);if(pi_)pi_->release();pi_=tmp;}return *this;}
+    void swap(shared_count& r){sp_counted_base* tmp=r.pi_;r.pi_=pi_;pi_=tmp;}
+    shared_count(const shared_count& r):pi_(r.pi_){if(pi_)_InterlockedIncrement(&pi_->use_count_);}
+    ~shared_count(){if(pi_)pi_->release();}
+};
+}
+template<class T> class shared_ptr {
+public:
+    T* px; detail::shared_count pn;
+    shared_ptr():px(0),pn(){}
+    shared_ptr& operator=(const shared_ptr& r){px=r.px;pn=r.pn;return *this;}
+    void swap(shared_ptr& r){T* tmp=r.px;r.px=px;px=tmp;pn.swap(r.pn);}
+    void reset(){shared_ptr().swap(*this);}
+    typedef T* shared_ptr::*unspecified_bool_type;
+    operator unspecified_bool_type()const{return px==0?0:&shared_ptr::px;}
+    shared_ptr(const shared_ptr& r):px(r.px),pn(r.pn){}
+    template<class Y> shared_ptr(const shared_ptr<Y>& r):px(r.px),pn(r.pn){}
+    T* get()const{return px;}
+    T* operator->()const{return px;}
+};
+template<class T,class U> bool operator==(const shared_ptr<T>& a,const shared_ptr<U>& b){return a.get()==b.get();}
+}
+
 struct StatsRoot;
 struct StatsScope {
     StatsScope(boost::shared_ptr<StatsRoot> root);
@@ -250,7 +288,7 @@ void CRobloxReportView::refresh()
         if (g_lastBenchmark < 0.0) {
             g_lastBenchmark = now();
         }
-        else if (now() - g_lastBenchmark > g_benchmarkInterval * 60.0) {
+        else if (now() - g_lastBenchmark > g_benchmarkInterval * 1.01) {
             if (g_benchmarkFile == NULL) {
                 CStr name = "c:\\roblox_bench_" + getTimeString(false) + ".txt";
                 g_benchmarkFile = fopen(name, "wt");

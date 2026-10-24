@@ -1,13 +1,13 @@
-// from server: 80% by atomic.potato
-extern "C" void Function6F7E80(void *, void *, void *, int, int, int);
-extern "C" void __cdecl Function7F4929(void *);
-
-struct S {
-    void f();
+// from server: 92% by sophus
+struct S
+{
+    void f006c65d0(int, int, int, int, int);
 };
 
-void S::f()
+extern "C" void __cdecl f007f4929(int);
+
+void f00974b40()
 {
-    Function6F7E80((void *)0x9dcd00, (void *)0x9d1b80, (void *)0x2c4, 2, 0, 0xb94a64);
-    Function7F4929((void *)0x987100);
+    ((S*)0xb924e8)->f006c65d0(0x9d73d0, 0x9d73dc, 0x98, 0xf, 0);
+    f007f4929(0x985bc0);
 }

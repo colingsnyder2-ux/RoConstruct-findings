@@ -1,374 +1,277 @@
-// from server: 46% by colin
-// Minimal declarations for the target constructor reconstruction.
-
-extern "C" void* __cdecl operator_new(unsigned int);
-extern "C" void  __cdecl operator_delete(void*);
-
-// Allocation helper (0x6a0920).
-extern "C" void* __cdecl alloc_helper(unsigned int size);
-
-// Interlocked decrement (0x49e890).
-extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-
-// Global singleton accessor.
-struct GlobalSettings {
-    char pad0[0x134];
-    int  field134;
-    int  field138;
+// from server: 100% by king_originala
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// Native openrbx GuidItem/Instance virtual hierarchy and target RTTI establish these ABI views.
+// Native Events, CopyOnWrite, Boost and STL operations preserve notification/ownership lifetimes.
+// Unused native APIs are omitted; all accessed member offsets are compile-asserted.
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <stdexcept>
+#include <intrin.h>
+#include <utility>
+#include <stddef.h>
+#include <ostream>
+namespace boost {
+namespace detail {
+struct sp_counted_base {
+    sp_counted_base():use_count_(1),weak_count_(1){}
+    virtual ~sp_counted_base() {}
+    virtual void dispose()=0;
+    virtual void destroy(){delete this;}
+    long use_count_,weak_count_;
+    void weak_release(){if(_InterlockedDecrement(&weak_count_)==0)destroy();}
+    void release(){if(_InterlockedDecrement(&use_count_)==0){dispose();weak_release();}}
 };
-extern GlobalSettings* __cdecl getGlobalSettings();
-
-// Reference-counted base with virtual destructor at slot 0.
-struct RefCounted {
-    virtual void destroy(int flags);
+template<class Y>struct sp_counted_impl_p:sp_counted_base {Y*pointer;explicit sp_counted_impl_p(Y*p):pointer(p){}void dispose(){delete pointer;}};
+struct shared_count {
+    sp_counted_base* pi_;
+    shared_count():pi_(0){}
+    
+    shared_count& operator=(const shared_count& r){sp_counted_base* tmp=r.pi_;if(tmp!=pi_){if(tmp)_InterlockedIncrement(&tmp->use_count_);if(pi_)pi_->release();pi_=tmp;}return *this;}
+    void swap(shared_count& r){sp_counted_base* tmp=r.pi_;r.pi_=pi_;pi_=tmp;}
+    shared_count(const shared_count& r):pi_(r.pi_){if(pi_)_InterlockedIncrement(&pi_->use_count_);}
+    ~shared_count(){if(pi_)pi_->release();}
 };
-
-// std::string-like object.
-struct StdString {
-    void* rep;
-    StdString(const char* s);
-    ~StdString();
-};
-
-// Sub-object constructors.
-extern "C" void __cdecl ctor_4b9ad0(void* self);
-extern "C" void __cdecl ctor_49ed30(void* self);
-extern "C" double __cdecl get_double_508410();
-extern "C" void __cdecl ctor_589190(void* self, void* a, void* b);
-extern "C" void __cdecl ctor_4b1570(void* self);
-extern "C" void __cdecl ctor_4b1620(void* self);
-extern "C" void __cdecl ctor_4b0b90(void* self, void* a, void* b);
-extern "C" void __cdecl ctor_4aefe0(void* self);
-extern "C" void __cdecl ctor_64b2a0(void* self, void* a, void* b);
-extern "C" void __cdecl ctor_4b5e80(void* self, void* owner);
-extern "C" void __cdecl ctor_4c99c0(void* self, void* owner);
-extern "C" void __cdecl ctor_4ccb10(void* self, void* owner);
-extern "C" void __cdecl ctor_5c43a0(void* self, const void* desc);
-extern "C" void __cdecl ctor_5c43d0(void* self, const void* desc);
-extern "C" void __cdecl ctor_55af90(void* self, void* arg);
-extern "C" void __cdecl ctor_4a98b0(void* self, int flag);
-
-// External vtable/descriptor addresses.
-extern void* const vtbl_8254fc;
-extern void* const vtbl_8254f0;
-extern void* const vtbl_8254e8;
-extern void* const vtbl_8254e0;
-extern void* const vtbl_8254d0;
-extern void* const vtbl_8254c0;
-extern void* const vtbl_8254b0;
-extern void* const vtbl_8254a0;
-extern void* const vtbl_825490;
-extern void* const vtbl_825480;
-extern void* const vtbl_825450;
-extern void* const desc_82444c;
-extern void* const desc_825698;
-extern void* const desc_825690;
-extern void* const desc_825684;
-extern void* const desc_825678;
-extern void* const desc_82566c;
-extern void* const desc_825664;
-extern void* const desc_82565c;
-extern void* const desc_82564c;
-extern void* const desc_825640;
-extern void* const desc_825628;
-extern void* const desc_825614;
-extern void* const vtbl_8247d0;
-
-// Imported std::string ctor/dtor (MSVCP90).
-extern "C" void __cdecl std_string_ctor(StdString* self, const char* s);
-extern "C" void __cdecl std_string_dtor(StdString* self);
-
-// Imported MFC helper.
-extern "C" void* __cdecl mfc_helper_798(void* arg);
-
-struct IdSerializer {
-    void* vtbl0;
-    char  pad04[0x0c];
-    void* vtbl10;
-    void* vtbl14;
-    char  pad18[0x08];
-    void* vtbl20;
-    void* vtbl24;
-    char  pad28[0x1c];
-    void* vtbl44;
-    char  pad48[0x1c];
-    void* vtbl64;
-    char  pad68[0x1c];
-    void* vtbl84;
-    char  pad88[0x1c];
-    void* vtblA4;
-    char  padA8[0x1c];
-    void* vtblC4;
-    char  padC8[0x2b74 - 0xc8];
-
-    void* subVtbl;
-    double dbl2b78;
-    RefCounted* ref2b80;
-    RefCounted* ref2b84;
-    void* ptr2b88;
-    void* ptr2b8c;
-
-    char  obj2b90[0x2bb0 - 0x2b90];
-    char  obj2bb0[0x2bf4 - 0x2bb0];
-    char  obj2bf4[0x2c38 - 0x2bf4];
-    char  obj2c38[0x2c58 - 0x2c38];
-
-    void* selfPtr2c58;
-    char  pad2c5c[0x0c];
-    void* ptr2c68;
-    void* ptr2c6c;
-    void* ptr2c70;
-
-    char  obj2c74[0x2c90 - 0x2c74];
-    char  obj2c90[0x2cb0 - 0x2c90];
-    char  obj2cb0[0x2cd0 - 0x2cb0];
-
-    unsigned char byte2cd0;
-    char  pad2cd1[0x03];
-    void* ptr2cd4;
-    void* ptr2cd8;
-
-    void* selfPtr2cdc;
-    char  pad2ce0[0x10];
-    void* ptr2cf0;
-    void* ptr2cf4;
-    void* ptr2cf8;
-
-    char  obj2cfc[0x2d1c - 0x2cfc];
-
-    void* sub2d1c;
-    void* sub2d20;
-    void* sub2d24;
-    void* sub2d28;
-    void* sub2d2c;
-    void* sub2d30;
-    void* sub2d34;
-    void* sub2d38;
-    void* sub2d3c;
-    void* sub2d40;
-    void* sub2d44;
-    void* sub2d48;
-
-    unsigned char byte2d4c;
-    unsigned char byte2d4d;
-    char  pad2d4e[0x02];
-    void* ptr2d50;
-    void* ptr2d54;
-    void* ptr2d58;
-    void* ptr2d5c;
-    void* ptr2d60;
-
-    IdSerializer(void* a, void* b, void* c);
-};
-
-IdSerializer::IdSerializer(void* a, void* b, void* c)
-{
-    ctor_4b9ad0(this);
-
-    ctor_49ed30(&subVtbl);
-
-    vtbl0  = (void*)&vtbl_8254fc;
-    vtbl10 = (void*)&vtbl_8254f0;
-    vtbl14 = (void*)&vtbl_8254e8;
-    vtbl20 = (void*)&vtbl_8254e0;
-    vtbl24 = (void*)&vtbl_8254d0;
-    vtbl44 = (void*)&vtbl_8254c0;
-    vtbl64 = (void*)&vtbl_8254b0;
-    vtbl84 = (void*)&vtbl_8254a0;
-    vtblA4 = (void*)&vtbl_825490;
-    vtblC4 = (void*)&vtbl_825480;
-    subVtbl = (void*)&vtbl_825450;
-
-    dbl2b78 = get_double_508410();
-
-    ref2b80 = 0;
-    ref2b84 = 0;
-    ptr2b88 = 0;
-    ptr2b8c = 0;
-
-    ctor_589190(obj2b90, a, b);
-    ctor_4b1570(obj2bb0);
-    ctor_4b1620(obj2bf4);
-    ctor_4b0b90(obj2c38, a, b);
-
-    selfPtr2c58 = alloc_helper(4);
-    if (selfPtr2c58)
-        *(void**)selfPtr2c58 = &selfPtr2c58;
-    else
-        selfPtr2c58 = 0;
-    ptr2c68 = 0;
-    ptr2c6c = 0;
-    ptr2c70 = 0;
-
-    ctor_4aefe0(obj2c74);
-
-    ctor_64b2a0(obj2c90, a, b);
-    ctor_64b2a0(obj2cb0, a, b);
-
-    byte2cd0 = 0;
-    ptr2cd4 = 0;
-    ptr2cd8 = 0;
-
-    selfPtr2cdc = alloc_helper(4);
-    if (selfPtr2cdc)
-        *(void**)selfPtr2cdc = &selfPtr2cdc;
-    else
-        selfPtr2cdc = 0;
-    ptr2cf0 = 0;
-    ptr2cf4 = 0;
-    ptr2cf8 = 0;
-
-    ctor_589190(obj2cfc, a, b);
-
-    sub2d1c = alloc_helper(0xc048);
-    if (sub2d1c)
-        ctor_5c43a0(sub2d1c, &desc_82444c);
-    else
-        sub2d1c = 0;
-
-    sub2d20 = alloc_helper(0xc048);
-    if (sub2d20)
-        ctor_5c43a0(sub2d20, &desc_825698);
-    else
-        sub2d20 = 0;
-
-    sub2d24 = alloc_helper(0xc048);
-    if (sub2d24)
-        ctor_5c43a0(sub2d24, &desc_825690);
-    else
-        sub2d24 = 0;
-
-    sub2d28 = alloc_helper(0xc048);
-    if (sub2d28)
-        ctor_5c43a0(sub2d28, &desc_825684);
-    else
-        sub2d28 = 0;
-
-    sub2d2c = alloc_helper(0xc048);
-    if (sub2d2c)
-        ctor_5c43a0(sub2d2c, &desc_825678);
-    else
-        sub2d2c = 0;
-
-    sub2d30 = alloc_helper(0xc048);
-    if (sub2d30)
-        ctor_5c43a0(sub2d30, &desc_82566c);
-    else
-        sub2d30 = 0;
-
-    sub2d34 = alloc_helper(0xc048);
-    if (sub2d34)
-        ctor_5c43a0(sub2d34, &desc_825664);
-    else
-        sub2d34 = 0;
-
-    sub2d38 = alloc_helper(0xc048);
-    if (sub2d38)
-        ctor_5c43a0(sub2d38, &desc_82565c);
-    else
-        sub2d38 = 0;
-
-    sub2d3c = alloc_helper(0xc048);
-    if (sub2d3c)
-        ctor_5c43d0(sub2d3c, &desc_82564c);
-    else
-        sub2d3c = 0;
-
-    sub2d40 = alloc_helper(0xc048);
-    if (sub2d40)
-        ctor_5c43d0(sub2d40, &desc_825640);
-    else
-        sub2d40 = 0;
-
-    sub2d44 = alloc_helper(0xc048);
-    if (sub2d44)
-        ctor_5c43d0(sub2d44, &desc_825628);
-    else
-        sub2d44 = 0;
-
-    sub2d48 = alloc_helper(0xc048);
-    if (sub2d48)
-        ctor_5c43d0(sub2d48, &desc_825614);
-    else
-        sub2d48 = 0;
-
-    byte2d4c = 0;
-    byte2d4d = 0;
-    ptr2d50 = c;
-    ptr2d54 = a;
-    ptr2d58 = b;
-    ptr2d5c = 0;
-    ptr2d60 = 0;
-
-    GlobalSettings* gs = getGlobalSettings();
-    int sel = gs->field134;
-    if (sel == 0) {
-        void* p = alloc_helper(0x74);
-        if (p)
-            ctor_4ccb10(p, this);
-        else
-            p = 0;
-        RefCounted* old = ref2b80;
-        ref2b80 = (RefCounted*)p;
-        if (old)
-            old->destroy(1);
-    } else if (sel == 1) {
-        void* p = alloc_helper(0x18);
-        if (p)
-            ctor_4c99c0(p, this);
-        else
-            p = 0;
-        RefCounted* old = ref2b80;
-        ref2b80 = (RefCounted*)p;
-        if (old)
-            old->destroy(1);
-    }
-
-    gs = getGlobalSettings();
-    int sel2 = gs->field138;
-    if (sel2 == 0) {
-        void* p = alloc_helper(8);
-        if (p) {
-            *(void**)p = (void*)&vtbl_8247d0;
-            *(void**)((char*)p + 4) = this;
-        } else {
-            p = 0;
-        }
-        RefCounted* old = ref2b84;
-        ref2b84 = (RefCounted*)p;
-        if (old)
-            old->destroy(1);
-    } else if (sel2 == 1) {
-        void* p = alloc_helper(0x3c);
-        if (p)
-            ctor_4b5e80(p, this);
-        else
-            p = 0;
-        RefCounted* old = ref2b84;
-        ref2b84 = (RefCounted*)p;
-        if (old)
-            old->destroy(1);
-    }
-
-    if (c) {
-        void** vt = *(void***)c;
-        void (*fn)(void*, void*) = (void (*)(void*, void*))vt[0xE8 / 4];
-        fn(c, &subVtbl);
-    }
-
-    {
-        void* holder = 0;
-        ctor_4a98b0(&holder, 1);
-        StdString str((const char*)mfc_helper_798(holder));
-        ctor_55af90(this, &str);
-        std_string_dtor(&str);
-    }
-
-    *(void**)((char*)sub2d20 + 0xc040) = sub2d1c;
-    *(void**)((char*)sub2d24 + 0xc040) = sub2d1c;
-    *(void**)((char*)sub2d28 + 0xc040) = sub2d1c;
-    *(void**)((char*)sub2d2c + 0xc040) = sub2d1c;
-    *(void**)((char*)sub2d30 + 0xc040) = sub2d1c;
-    *(void**)((char*)sub2d34 + 0xc040) = sub2d30;
-    *(void**)((char*)sub2d38 + 0xc040) = sub2d30;
 }
+namespace detail {inline void sp_enable_shared_from_this(const shared_count&,...) {}}
+template<class T> class shared_ptr {
+public:
+    T* px; detail::shared_count pn;
+    shared_ptr():px(0),pn(){}
+    
+    shared_ptr& operator=(const shared_ptr& r){px=r.px;pn=r.pn;return *this;}
+    void swap(shared_ptr& r){std::swap(px,r.px);pn.swap(r.pn);}
+    void reset(){shared_ptr().swap(*this);}
+    typedef T* shared_ptr::*unspecified_bool_type;
+    operator unspecified_bool_type()const{return px==0?0:&shared_ptr::px;}
+    __declspec(noinline) shared_ptr(const shared_ptr& r):px(r.px),pn(r.pn){}
+    template<class Y> __declspec(noinline) shared_ptr(const shared_ptr<Y>& r):px(r.px),pn(r.pn){}
+    T* get()const{return px;}
+    T* operator->()const{return px;}
+};
+template<class T,class U> bool operator==(const shared_ptr<T>& a,const shared_ptr<U>& b){return a.get()==b.get();}
+}
+
+
+
+
+namespace boost {
+struct noncopyable{};
+template<class T>struct weak_ptr {T*px;void*count;};
+template<class T>struct enable_shared_from_this {weak_ptr<T>weak_this;shared_ptr<T>shared_from_this();};
+}
+namespace G3D {std::string __cdecl format(const char*,...);}
+namespace RBX {
+struct Name;struct Instance;struct XmlElement;struct IReferenceBinder;struct ServiceProvider;
+struct Guid:boost::noncopyable {const Name*scope;int index;};
+template<class T>struct GuidItem {virtual ~GuidItem();bool registeredGuid;Guid guid;};
+struct Object {virtual ~Object();};template<class T>struct Creatable:Object{};
+template<class T>struct AbstractFactoryProduct:Creatable<T> {virtual const Name&getClassName()const=0;};
+namespace Reflection {
+struct PropertyDescriptor;struct SignalSource {virtual ~SignalSource();void*signals;};
+struct DescribedBase:SignalSource {void*descriptor;};
+struct ChildSignal {void fire(SignalSource*,boost::shared_ptr<Instance>)const;};
+}
+struct Debugable {virtual void dump(std::ostream&);};
+struct RaiseRange;
+template<class T,class Event>struct Listener;
+template<class T,class Event>struct Notifier {
+ virtual ~Notifier();std::vector<Listener<T,Event>*>listeners;RaiseRange*range;
+ virtual void onAddListener(Listener<T,Event>*)const;virtual void onRemoveListener(Listener<T,Event>*)const;
+ __declspec(nothrow) void raise(Event)const;
+};
+template<class T>boost::shared_ptr<T> __cdecl shared_from(T*);
+struct ChildAdded {const boost::shared_ptr<Instance>child;ChildAdded(Instance*p):child(shared_from(p)){}};
+struct ChildRemoved {const boost::shared_ptr<Instance>child;ChildRemoved(Instance*p):child(shared_from(p)){}};
+struct DescendentAdded;struct DescendentRemoving;struct PropertyChanged;
+struct AncestorChanged {Instance*const child;Instance*const oldParent;Instance*const newParent;AncestorChanged(Instance*c,Instance*o,Instance*n):child(c),oldParent(o),newParent(n){}};
+template<class T>struct Association {struct Item;std::vector<Item*>items;};
+template<class T>struct CopyOnWrite:boost::noncopyable {
+ boost::shared_ptr<T>object;
+ operator typename boost::shared_ptr<T>::unspecified_bool_type()const{return object;}
+ const T*operator->()const{return object.get();}boost::shared_ptr<T>&write();void reset();
+};
+struct Instance:GuidItem<Instance>,AbstractFactoryProduct<Instance>,Reflection::DescribedBase,Debugable,
+ Notifier<Instance,ChildAdded>,Notifier<Instance,ChildRemoved>,Notifier<Instance,DescendentAdded>,Notifier<Instance,DescendentRemoving>,Notifier<Instance,AncestorChanged>,Notifier<Instance,PropertyChanged>,boost::enable_shared_from_this<Instance>,boost::noncopyable {
+ virtual ~Instance();virtual void setName(const std::string&);
+ virtual bool askAddChild(const Instance*)const;virtual bool askSetParent(const Instance*)const;
+ virtual void onAncestorChanged(const AncestorChanged&);virtual void onDescendentAdded(Instance*);virtual void onDescendentRemoving(const boost::shared_ptr<Instance>&);
+ virtual void onChildAdded(Instance*);virtual void onChildRemoving(Instance*);virtual void onChildRemoved(Instance*);virtual void onLastChildRemoved();
+ virtual void readProperty(const XmlElement*,IReferenceBinder&);virtual void onServiceProvider(const ServiceProvider*,const ServiceProvider*);virtual boost::shared_ptr<Instance>createChild(const Name&);virtual XmlElement*write();virtual void onChildChanged(Instance*,const PropertyChanged&);
+ Association<Instance>assoc;Instance*parent;CopyOnWrite<std::vector<boost::shared_ptr<Instance> > >children;std::string name;bool archivable;
+ static Reflection::ChildSignal event_childAdded,event_childRemoved;static const Reflection::PropertyDescriptor propParent;
+ std::string getFullName()const;bool isAncestorOf(const Instance*)const;bool contains(const Instance*child)const;
+ unsigned numChildren()const{return children?children->size():0;}
+ static void signalDescendentRemoving(const boost::shared_ptr<Instance>&,Instance*,Instance*);static void signalDescendentAdded(Instance*,Instance*,Instance*);
+ void raisePropertyChanged(const Reflection::PropertyDescriptor&);void setParent(Instance*);
+};
+}
+
+#include <map>
+#include <set>
+#include <list>
+#include <queue>
+namespace RakNet {class BitStream;}
+struct SocketDescriptor;struct Packet;struct RPCParameters;struct NetworkID;class NetworkIDManager;struct InternalPacket;
+typedef unsigned int RakNetTime;
+struct SystemAddress {unsigned int binaryAddress;unsigned short port;char* ToString(bool)const;};
+enum PacketPriority {SYSTEM_PRIORITY,HIGH_PRIORITY,MEDIUM_PRIORITY,LOW_PRIORITY,NUMBER_OF_PRIORITIES};
+enum PacketReliability {UNRELIABLE,UNRELIABLE_SEQUENCED,RELIABLE,RELIABLE_ORDERED,RELIABLE_SEQUENCED};
+enum PluginReceiveResult {RR_STOP_PROCESSING_AND_DEALLOCATE,RR_CONTINUE_PROCESSING,RR_STOP_PROCESSING};
+class RakPeerInterface;
+struct PluginInterface {
+ PluginInterface();virtual ~PluginInterface();
+ virtual void OnAttach(RakPeerInterface*);virtual void OnDetach(RakPeerInterface*);virtual void OnStartup(RakPeerInterface*);
+ virtual void Update(RakPeerInterface*);virtual PluginReceiveResult OnReceive(RakPeerInterface*,Packet*);
+ virtual void OnShutdown(RakPeerInterface*);virtual void OnCloseConnection(RakPeerInterface*,SystemAddress);
+ virtual void OnDirectSocketSend(const char*,unsigned int,SystemAddress);virtual void OnDirectSocketReceive(const char*,unsigned int,SystemAddress);
+ virtual void OnInternalPacket(InternalPacket*,unsigned int,SystemAddress,RakNetTime,bool);
+};
+class RakPeerInterface {public:
+virtual ~RakPeerInterface();
+virtual bool Startup( unsigned short maxConnections, int _threadSleepTimer, SocketDescriptor *socketDescriptors, unsigned socketDescriptorCount )=0;
+virtual void InitializeSecurity(const char *pubKeyE, const char *pubKeyN, const char *privKeyP, const char *privKeyQ )=0;
+virtual void DisableSecurity( void )=0;
+virtual void SetMaximumIncomingConnections( unsigned short numberAllowed )=0;
+virtual unsigned short GetMaximumIncomingConnections( void ) const=0;
+virtual unsigned short NumberOfConnections(void) const=0;
+virtual void SetIncomingPassword( const char* passwordData, int passwordDataLength )=0;
+virtual void GetIncomingPassword( char* passwordData, int *passwordDataLength  )=0;
+virtual bool Connect( const char* host, unsigned short remotePort, const char *passwordData, int passwordDataLength, unsigned connectionSocketIndex )=0;
+virtual void Shutdown( unsigned int blockDuration, unsigned char orderingChannel )=0;
+virtual bool IsActive( void ) const=0;
+virtual bool GetConnectionList( SystemAddress *remoteSystems, unsigned short *numberOfSystems ) const=0;
+virtual bool Send( const char *data, const int length, PacketPriority priority, PacketReliability reliability, char orderingChannel, SystemAddress systemAddress, bool broadcast )=0;
+virtual bool Send( const RakNet::BitStream * bitStream, PacketPriority priority, PacketReliability reliability, char orderingChannel, SystemAddress systemAddress, bool broadcast )=0;
+virtual Packet* Receive( void )=0;
+virtual void DeallocatePacket( Packet *packet )=0;
+virtual unsigned short GetMaximumNumberOfPeers( void ) const=0;
+virtual void RegisterAsRemoteProcedureCall( const char* uniqueID, void ( *functionPointer ) ( RPCParameters *rpcParms ) )=0;
+virtual void RegisterClassMemberRPC( const char* uniqueID, void *functionPointer )=0;
+virtual void UnregisterAsRemoteProcedureCall( const char* uniqueID )=0;
+virtual void SetNetworkIDManager( NetworkIDManager *manager )=0;
+virtual NetworkIDManager *GetNetworkIDManager(void) const=0;
+virtual bool RPC( const char* uniqueID, const char *data, unsigned int bitLength, PacketPriority priority, PacketReliability reliability, char orderingChannel, SystemAddress systemAddress, bool broadcast, RakNetTime *includedTimestamp, NetworkID networkID, RakNet::BitStream *replyFromTarget )=0;
+virtual bool RPC( const char* uniqueID, const RakNet::BitStream *bitStream, PacketPriority priority, PacketReliability reliability, char orderingChannel, SystemAddress systemAddress, bool broadcast, RakNetTime *includedTimestamp, NetworkID networkID, RakNet::BitStream *replyFromTarget )=0;
+virtual void CloseConnection( const SystemAddress target, bool sendDisconnectionNotification, unsigned char orderingChannel )=0;
+virtual bool IsConnected(const SystemAddress systemAddress)=0;
+virtual int GetIndexFromSystemAddress( const SystemAddress systemAddress )=0;
+virtual SystemAddress GetSystemAddressFromIndex( int index )=0;
+virtual void AddToBanList( const char *IP, RakNetTime milliseconds )=0;
+virtual void RemoveFromBanList( const char *IP )=0;
+virtual void ClearBanList( void )=0;
+virtual bool IsBanned( const char *IP )=0;
+virtual void Ping( const SystemAddress target )=0;
+virtual void Ping( const char* host, unsigned short remotePort, bool onlyReplyOnAcceptingConnections, unsigned connectionSocketIndex )=0;
+virtual int GetAveragePing( const SystemAddress systemAddress )=0;
+virtual int GetLastPing( const SystemAddress systemAddress ) const=0;
+virtual int GetLowestPing( const SystemAddress systemAddress ) const=0;
+virtual void SetOccasionalPing( bool doPing )=0;
+virtual void SetOfflinePingResponse( const char *data, const unsigned int length )=0;
+virtual SystemAddress GetInternalID( const SystemAddress systemAddress ) const=0;
+virtual SystemAddress GetExternalID( const SystemAddress target ) const=0;
+virtual void SetTimeoutTime( RakNetTime timeMS, const SystemAddress target )=0;
+virtual bool SetMTUSize( int size )=0;
+virtual int GetMTUSize( const SystemAddress target ) const=0;
+virtual unsigned GetNumberOfAddresses( void )=0;
+virtual const char* GetLocalIP( unsigned int index )=0;
+virtual void AllowConnectionResponseIPMigration( bool allow )=0;
+virtual void AdvertiseSystem( const char *host, unsigned short remotePort, const char *data, int dataLength, unsigned connectionSocketIndex )=0;
+virtual void SetSplitMessageProgressInterval(int interval)=0;
+virtual void SetUnreliableTimeout(RakNetTime timeoutMS)=0;
+virtual void SendTTL1( const char* host, unsigned short remotePort, unsigned connectionSocketIndex )=0;
+virtual void SetCompileFrequencyTable( bool doCompile )=0;
+virtual bool GetOutgoingFrequencyTable( unsigned int outputFrequencyTable[ 256 ] )=0;
+virtual bool GenerateCompressionLayer( unsigned int inputFrequencyTable[ 256 ], bool inputLayer )=0;
+virtual bool DeleteCompressionLayer( bool inputLayer )=0;
+virtual float GetCompressionRatio( void ) const=0;
+virtual float GetDecompressionRatio( void ) const=0;
+virtual void AttachPlugin( PluginInterface *plugin )=0;
+};
+namespace boost {
+template<class T>struct scoped_ptr {
+ T*px;explicit scoped_ptr(T*p=0):px(p){}~scoped_ptr(){delete px;}
+ T*get()const{return px;}T*operator->()const{return px;}
+ void swap(scoped_ptr&r){T*t=r.px;r.px=px;px=t;}
+ void reset(T*p=0){scoped_ptr(p).swap(*this);}
+};
+namespace signals {struct connection {char unused[16];~connection();};}
+}
+namespace G3D {struct System {static double getLocalTime();};}
+namespace RBX {
+namespace Reflection {struct Property;}
+namespace Profiling {
+struct Profiler {const double bucketTimeSpan;char unused[0xc040-8];};
+struct CodeProfiler:Profiler {CodeProfiler*parent;CodeProfiler(const char*);~CodeProfiler();};
+struct ThreadProfiler:Profiler {bool initialized;ThreadProfiler(const char*);~ThreadProfiler();};
+}
+namespace Network {
+struct Replicator;struct Player;struct Players;struct Marker;
+struct IdSerializer:Instance {char unused[0x2b74-sizeof(Instance)];IdSerializer();virtual ~IdSerializer();};
+template<class T,class Base>struct DescribedNonCreatable:Base {DescribedNonCreatable();virtual ~DescribedNonCreatable();virtual const Name&getClassName()const;};
+struct SharedStringDictionary {char unused[68];SharedStringDictionary();~SharedStringDictionary();};
+struct PhysicsSender {virtual ~PhysicsSender();char unused[20];PhysicsSender(Replicator*);};
+struct RoundRobinPhysicsSender:PhysicsSender {char unused[0x74-sizeof(PhysicsSender)];RoundRobinPhysicsSender(Replicator*);virtual ~RoundRobinPhysicsSender();};
+struct PhysicsReceiver {virtual ~PhysicsReceiver();Replicator*owner;};
+struct DirectPhysicsReceiver:PhysicsReceiver {explicit DirectPhysicsReceiver(Replicator*p){owner=p;}virtual ~DirectPhysicsReceiver();};
+struct InterpolatingPhysicsReceiver:PhysicsReceiver {char unused[0x3c-sizeof(PhysicsReceiver)];InterpolatingPhysicsReceiver(Replicator*);virtual ~InterpolatingPhysicsReceiver();};
+struct NetworkSettings {char unused[0x134];int sendMode;int receiveMode;static NetworkSettings&singleton();};
+struct Replicator:DescribedNonCreatable<Replicator,IdSerializer>,PluginInterface {
+ struct Item;struct ReplicatorStatsItem;
+ double lastSendTime;
+ boost::scoped_ptr<PhysicsSender>physicsSender;
+ boost::scoped_ptr<PhysicsReceiver>physicsReceiver;
+ boost::shared_ptr<ReplicatorStatsItem>statsItem;
+ std::map<const Reflection::PropertyDescriptor*,boost::shared_ptr<SharedStringDictionary> >strings;
+ SharedStringDictionary classNames,propNames;
+ std::set<Instance*>replicationContainers;
+ std::vector<boost::signals::connection>replicationContainerConnections;
+ Players*players;
+ std::list<boost::shared_ptr<Item> >pendingItems;
+ std::set<const Instance*>pendingNewInstances,pendingDeleteInstances;
+ bool sendPhysicsEnabled;
+ const Reflection::Property*deserializeProperty;
+ Instance*removingInstance;
+ std::queue<boost::shared_ptr<Marker> >incomingMarkers;
+ std::map<const Name*,boost::shared_ptr<Instance> >defaultObjects;
+ boost::scoped_ptr<Profiling::CodeProfiler>profileReplication,profileDataListening,profileDataIn,profileDataOut,profilePhysicsIn,profilePhysicsOut,profileStep,profileWrite;
+ boost::scoped_ptr<Profiling::ThreadProfiler>profileBitsReceived,profileBitsSent,profileUnsplit,profileSplit;
+ bool receivedGlobals,disconnected;
+ RakPeerInterface*peer;const SystemAddress remotePlayerId;
+ unsigned int reservedWords[2];
+ Replicator(SystemAddress remoteAddress,RakPeerInterface*peer);
+ virtual Player*findTargetPlayer();virtual ~Replicator();virtual void Update(RakPeerInterface*);virtual PluginReceiveResult OnReceive(RakPeerInterface*,Packet*);
+ virtual const Name&getClassName()const;virtual XmlElement*write();virtual void onServiceProvider(const ServiceProvider*,const ServiceProvider*);
+ virtual bool wantReplicate(const Instance*)const;virtual void onSentMarker(long);virtual bool remoteDeleteOnDisconnect(const Instance*)const;
+};
+Replicator::Replicator(SystemAddress remoteAddress,RakPeerInterface*p)
+:lastSendTime(G3D::System::getLocalTime()),physicsSender(),physicsReceiver(),statsItem(),players(0),sendPhysicsEnabled(false),deserializeProperty(0),removingInstance(0),
+ profileReplication(new Profiling::CodeProfiler("Replication")),profileDataListening(new Profiling::CodeProfiler("Data Listening")),
+ profileDataIn(new Profiling::CodeProfiler("Data In")),profileDataOut(new Profiling::CodeProfiler("Data Out")),
+ profilePhysicsIn(new Profiling::CodeProfiler("Physics In")),profilePhysicsOut(new Profiling::CodeProfiler("Physics Out")),
+ profileStep(new Profiling::CodeProfiler("Step")),profileWrite(new Profiling::CodeProfiler("Write")),
+ profileBitsReceived(new Profiling::ThreadProfiler("Bits Received")),profileBitsSent(new Profiling::ThreadProfiler("Bits Sent")),
+ profileUnsplit(new Profiling::ThreadProfiler("Unsplit Messages Sent")),profileSplit(new Profiling::ThreadProfiler("Split Messages Sent")),
+ receivedGlobals(false),disconnected(false),peer(p),remotePlayerId(remoteAddress)
+{
+ reservedWords[0]=0;reservedWords[1]=0;
+ switch(NetworkSettings::singleton().sendMode){case 0:physicsSender.reset(new RoundRobinPhysicsSender(this));break;case 1:physicsSender.reset(new PhysicsSender(this));break;}
+ switch(NetworkSettings::singleton().receiveMode){case 0:physicsReceiver.reset(new DirectPhysicsReceiver(this));break;case 1:physicsReceiver.reset(new InterpolatingPhysicsReceiver(this));break;}
+ if(p)p->AttachPlugin(this);
+ {std::string name(remoteAddress.ToString(true));Instance::setName(name);}
+ profileDataListening->parent=profileReplication.get();profileDataIn->parent=profileReplication.get();profileDataOut->parent=profileReplication.get();
+ profilePhysicsIn->parent=profileReplication.get();profilePhysicsOut->parent=profileReplication.get();profileStep->parent=profilePhysicsOut.get();profileWrite->parent=profilePhysicsOut.get();
+}
+typedef char assert_instance[sizeof(Instance)==0x130?1:-1];
+typedef char assert_base[sizeof(IdSerializer)==0x2b74?1:-1];
+typedef char assert_time[offsetof(Replicator,lastSendTime)==0x2b78?1:-1];
+typedef char assert_strings[offsetof(Replicator,strings)==0x2b90?1:-1];
+typedef char assert_connections[offsetof(Replicator,replicationContainerConnections)==0x2c58?1:-1];
+typedef char assert_marker[offsetof(Replicator,incomingMarkers)==0x2cdc?1:-1];
+typedef char assert_profile[offsetof(Replicator,profileReplication)==0x2d1c?1:-1];
+typedef char assert_flags[offsetof(Replicator,receivedGlobals)==0x2d4c?1:-1];
+typedef char assert_address[offsetof(Replicator,remotePlayerId)==0x2d54?1:-1];
+typedef char assert_profiler[sizeof(Profiling::CodeProfiler)==0xc048?1:-1];
+typedef char assert_thread_profiler[sizeof(Profiling::ThreadProfiler)==0xc048?1:-1];
+}}

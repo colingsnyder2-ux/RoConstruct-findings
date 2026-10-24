@@ -1,213 +1,58 @@
-// from server: 45% by colin
+// from server: 97% by king_originala
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-//
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
 
-struct WedgeBuilder {
-    char pad0[4];
-    int field4;
-    char pad8[8];
-    int field10;
-    int method(int a, int b, int c, int d);
+extern "C" __declspec(dllimport) double __cdecl fabs(double);
+// roc-lib: g3d-6.09 G3Dcpp/Vector3.cpp
+namespace G3D {inline int iRound(float);}
+namespace MeshTypes {
+extern "C" __declspec(dllimport) double __cdecl ceil(double);
+struct Vector2 {float x,y;Vector2():x(0),y(0){}Vector2(float a,float b):x(a),y(b){}Vector2(const Vector2&r):x(r.x),y(r.y){}Vector2&operator=(const Vector2&r){x=r.x;y=r.y;return *this;}Vector2 operator-()const{return Vector2(-x,-y);}float& operator[](int i){return (&x)[i];}const float& operator[](int i)const{return (&x)[i];}};
+struct Vector3 {float x,y,z;Vector3(float a,float b,float c):x(a),y(b),z(c){}Vector3(const Vector3&r):x(r.x),y(r.y),z(r.z){}Vector3 abs()const{return Vector3(fabs(x),fabs(y),fabs(z));}Vector2 xy()const;float&operator[](int i){return (&x)[i];}const float&operator[](int i)const{return (&x)[i];}};
+struct Vector2int16 {short x,y;Vector2int16():x(0),y(0){}short&operator[](int i){return (&x)[i];}const short&operator[](int i)const{return (&x)[i];}};
+struct Rect2D {Vector2 min,max;static Rect2D xyxy(const Vector2&,const Vector2&);};
+template<class T>const T& maximum(const T&a,const T&b){return a<b?b:a;}
+}
+namespace RBX {namespace View {
+using MeshTypes::Vector2;using MeshTypes::Vector3;using MeshTypes::Vector2int16;using MeshTypes::Rect2D;
+struct Function {char opaque[8];};
+Vector3 __cdecl mapFace(const Vector3&);
+float __cdecl surfaceOffset(int);
+static __forceinline bool useFirstAxis(int purpose,const Vector3& size){if(purpose==0 && size.x<size.y)return true;return false;}
+static __forceinline Vector3 absoluteSize(const Vector3& v){Vector3 mapped=mapFace(v);float z=(float)fabs(mapped.z);float y=(float)fabs(mapped.y);float x=(float)fabs(mapped.x);return Vector3(x,y,z);}
+struct Builder {
+ enum Purpose{Surface,Decal,Shadow};
+ virtual void build(Purpose);virtual void buildTop(Purpose)=0;virtual void buildBottom(Purpose)=0;virtual void buildLeft(Purpose)=0;virtual void buildRight(Purpose)=0;virtual void buildFront(Purpose)=0;virtual void buildBack(Purpose)=0;
+ const Vector3 halfSize;unsigned surfaceTypes;void* level;Vector2 textureScale;
+ void build(Function,Vector2int16,int);
+ void emit(Function,Rect2D,float,Vector2,Vector2,int,Vector2int16);
 };
-
-extern "C" {
-    int __cdecl sub_5EC1A0(int* a, int* b);
-    void __cdecl sub_5185D0(float* a, float* b);
-    float __cdecl sub_4F1FF0(int a);
-    void __cdecl sub_4F35D0(float* a, float* b, float* c, int d, int e, float* f, float* g);
-    void __cdecl sub_4F7D90(int a, int b, int c);
-    double __cdecl ceil(double x);
+void Builder::build(Function function,Vector2int16 grid,int purpose){
+ int surface=(surfaceTypes>>0)&7;
+ Vector3 size=absoluteSize(halfSize);
+ int axis=!useFirstAxis(purpose,size);
+ int steps=(purpose==0 && surface)?G3D::iRound((float)MeshTypes::ceil((double)(size[axis]*0.5f))):1;
+ Vector2int16 divisions;
+ short n=grid[1-axis];
+ divisions[axis]=MeshTypes::maximum<short>(1,(short)(n/steps));
+ divisions[1-axis]=n;
+ float depth=size.z;
+ Vector2 begin=-size.xy();
+ Vector2 end=size.xy();
+ Vector2 origin,extent;
+ switch(purpose){
+  case 0:
+   if(!surface){origin=Vector2(0.25f,0.5f);extent[1-axis]=0;extent[axis]=0;}
+   else {origin[1-axis]=0;origin[axis]=surfaceOffset(surface);extent[1-axis]=size[1-axis]*2.0f;extent[axis]=0.5f;if(axis==1)extent.x=-extent.x;}
+   break;
+  case 1:origin.x=0;origin.y=textureScale.y;extent.x=textureScale.x;extent.y=-textureScale.y;break;
+  case 2:origin=Vector2(0,0);extent=Vector2(0,0);break;
+ }
+ for(int i=0;i<steps;++i){
+  if(i==steps-1){end[axis]=size[axis];if(purpose==0 && surface)extent[axis]=(end[axis]-begin[axis])*extent[axis]*0.25f;}
+  else end[axis]=begin[axis]+4.0f;
+  emit(function,Rect2D::xyxy(begin,end),depth,origin,extent,axis,divisions);
+  begin[axis]=end[axis];
+ }
 }
-
-extern float g_819bac;
-extern float g_826e6c;
-extern float g_83a3e4;
-
-int WedgeBuilder::method(int a, int b, int c, int d)
-{
-    char buf[0x40];
-    float* f44 = (float*)(buf + 0x04);
-    float* f48 = (float*)(buf + 0x08);
-    float* f4c = (float*)(buf + 0x0c);
-    float* f18 = (float*)(buf + 0x18);
-    float* f1c = (float*)(buf + 0x1c);
-    float* f20 = (float*)(buf + 0x20);
-    float* f24 = (float*)(buf + 0x24);
-    float* f28 = (float*)(buf + 0x28);
-    float* f2c = (float*)(buf + 0x2c);
-    float* f30 = (float*)(buf + 0x30);
-    float* f34 = (float*)(buf + 0x34);
-    float* f38 = (float*)(buf + 0x38);
-    float* f3c = (float*)(buf + 0x3c);
-    float* f40 = (float*)(buf + 0x40);
-    short* s10 = (short*)(buf + 0x10);
-    short* s12 = (short*)(buf + 0x12);
-    int* p10 = (int*)(buf + 0x10);
-    int* p14 = (int*)(buf + 0x14);
-    int* p18 = (int*)(buf + 0x18);
-    int* p20 = (int*)(buf + 0x20);
-    int* p24 = (int*)(buf + 0x24);
-
-    int ebp = this->field10 & 7;
-    *p10 = (int)this;
-
-    sub_5EC1A0(&this->field4, (int*)(buf + 0x3c));
-
-    float v44 = *f44;
-    float v48 = *f48;
-    float v38 = *f38;
-
-    float af44 = v44 < 0 ? -v44 : v44;
-    float af48 = v48 < 0 ? -v48 : v48;
-    float af38 = v38 < 0 ? -v38 : v38;
-
-    *f44 = af44;
-    *f48 = af48;
-    *f4c = af38;
-
-    int ecx = *(int*)(buf + 0x58);
-    bool al;
-    if (ecx == 0) {
-        al = (af44 == af48);
-    } else {
-        al = false;
-    }
-    int esi = al ? 0 : 1;
-
-    int ebx;
-    if (ecx == 0 && ebp != 0) {
-        float v = *(float*)((char*)f44 + esi * 4);
-        v = v * g_819bac;
-        double dv = (double)v;
-        float r = (float)ceil(dv);
-        *f20 = r;
-        ebx = *p10;
-    } else {
-        ebx = 1;
-    }
-
-    int ecx2 = esi + esi;
-    short* edx = (short*)(buf + 0x4e - ecx2);
-    unsigned short di = *(unsigned short*)edx;
-    *s10 = 0;
-    int eax = (int)(short)di;
-    int idiv_result = eax / ebx;
-    int edx2 = 1;
-    *p20 = 1;
-    unsigned short ax = (unsigned short)idiv_result;
-    *p18 = (int)ax;
-    short* ptr;
-    if ((short)edx2 < (short)ax) {
-        ptr = (short*)p18;
-    } else {
-        ptr = (short*)p20;
-    }
-    short ax2 = *ptr;
-    float f4cv = *f4c;
-    *(short*)((char*)s10 + ecx2) = ax2;
-    *f20 = f4cv;
-    short* edx3 = (short*)(buf + 0x02 - ecx2);
-    *edx3 = (short)di;
-
-    sub_5185D0(f48, f38);
-    float* eax2 = f48;
-    float v1 = -eax2[0];
-    float v2 = -eax2[1];
-    *f3c = v1;
-    *f40 = v2;
-
-    sub_5185D0(f48, f30);
-
-    float zero = 0.0f;
-    int eax3 = *(int*)(buf + 0x50);
-    *f28 = zero;
-    *f2c = zero;
-    *f18 = zero;
-    *f1c = zero;
-
-    if (eax3 == 0) {
-        if (ebp == 0) {
-            float g1 = g_83a3e4;
-            int eax4 = esi * 4;
-            *f28 = g1;
-            float g2 = g_819bac;
-            *f2c = g2;
-            float* edx4 = (float*)((char*)f1c - eax4);
-            *edx4 = g2;
-            *(float*)((char*)f18 + eax4) = g2;
-        } else {
-            int edi = esi * 4;
-            float* eax5 = (float*)((char*)f2c - edi);
-            *eax5 = zero;
-            float r = sub_4F1FF0(ebp);
-            *(float*)((char*)f2c + edi) = r;
-            float* ecx3 = (float*)((char*)f4c - edi);
-            float v3 = *ecx3;
-            v3 = v3 + v3;
-            float* edx5 = (float*)((char*)f20 - edi);
-            *edx5 = v3;
-            *(float*)((char*)f18 + edi) = g_819bac;
-            if (esi == 1) {
-                float v4 = *f18;
-                v4 = -v4;
-                *f18 = v4;
-            }
-        }
-    } else if (eax3 == 1) {
-        int eax6 = *p14;
-        *f28 = zero;
-        float v5 = *(float*)(eax6 + 0x1c);
-        *f2c = v5;
-        float v6 = *(float*)(eax6 + 0x18);
-        *f18 = v6;
-        float v7 = *(float*)(eax6 + 0x1c);
-        v7 = -v7;
-        *f1c = v7;
-    } else if (eax3 == 2) {
-        *f28 = zero;
-        *f2c = zero;
-        *f18 = zero;
-        *f1c = zero;
-    }
-
-    int edi2 = 0;
-    if (ebx > 0) {
-        int ebp2 = *p10;
-        do {
-            int eax7 = ebx - 1;
-            if (edi2 != eax7) {
-                float v8 = *(float*)((char*)f38 + esi * 4);
-                v8 = v8 + g_826e6c;
-                *(float*)((char*)f30 + esi * 4) = v8;
-            } else {
-                float v9 = *(float*)((char*)f44 + esi * 4);
-                *(float*)((char*)f30 + esi * 4) = v9;
-                if (*(int*)(buf + 0x50) == 0 && *p24 != 0) {
-                    float v10 = v9 - *(float*)((char*)f38 + esi * 4);
-                    v10 = v10 * *(float*)((char*)f18 + esi * 4);
-                    v10 = v10 * g_83a3e4;
-                    *(float*)((char*)f18 + esi * 4) = v10;
-                }
-            }
-
-            float f18v = *f18;
-            float f2cv = *f2c;
-            float f30v = *f30;
-            float f38v = *f38;
-            float f4c2 = *f4c;
-
-            sub_4F35D0(&f18v, &f2cv, &f30v, ebp2, esi, &f38v, &f4c2);
-
-            int a1 = *(int*)(buf + 0x58);
-            int a2 = *(int*)(buf + 0x54);
-            sub_4F7D90((int)this, a2, a1);
-
-            float v11 = *(float*)((char*)f30 + esi * 4);
-            edi2++;
-            *(float*)((char*)f38 + esi * 4) = v11;
-        } while (edi2 < ebx);
-    }
-
-    return 0;
-}
+}}

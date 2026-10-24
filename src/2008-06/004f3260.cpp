@@ -1,131 +1,83 @@
-// from server: 31% by colin
-//
-
-struct VMaterialBase {
-    int f(int, int, int, int, int, int, int, int, int, int, int, int, int, int);
-};
-
-extern "C" void __cdecl sub_5EC1E0(float*, float*);
-extern "C" void* __cdecl sub_6A0956(unsigned int);
-extern "C" float* __cdecl sub_509BA0();
-extern "C" void __cdecl sub_548000(float*, float*, float*, int);
-extern "C" void __cdecl sub_500EB0(int, int, int, int);
-extern "C" void __cdecl sub_548640(void*);
-extern "C" void __cdecl sub_6A094A(void*);
-
-extern float g_826e38;
-extern float g_819bac;
-
-int VMaterialBase::f(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9, int a10, int a11, int a12, int a13, int a14)
-{
-    float v[16];
-    sub_5EC1E0(v, (float*)((char*)this + 4));
-
-    float f0 = v[1];
-    float f1 = v[2];
-    float f2 = v[3];
-    if (f0 < 0) f0 = -f0;
-    if (f1 < 0) f1 = -f1;
-    if (f2 < 0) f2 = -f2;
-
-    short s1 = *(short*)((char*)&a13 + 0);
-    short s2 = *(short*)((char*)&a13 + 2);
-    int n1 = s1 + 1;
-    int n2 = s2 + 1;
-    int total = n1 * n2;
-
-    float d0 = (*(float*)((char*)&a9 + 4) - *(float*)((char*)&a9 + 0)) / (float)n1;
-    float d1 = (*(float*)((char*)&a9 + 12) - *(float*)((char*)&a9 + 8)) / (float)n2;
-    float d2 = *(float*)((char*)&a11 + 0) / f0;
-    float d3 = *(float*)((char*)&a11 + 4) / f1;
-    float d4 = *(float*)((char*)&a11 + 8) / f2;
-
-    void** arr = (void**)sub_6A0956(total * 4);
-
-    float base0 = *(float*)((char*)&a9 + 8);
-    float base1 = *(float*)((char*)&a9 + 4);
-
-    int i = 0;
-    float acc0 = 0.0f;
-    float acc1 = 0.0f;
-    while (i <= s2) {
-        int j = 0;
-        float cur0 = *(float*)((char*)&a9 + 0);
-        float cur1 = *(float*)((char*)&a9 + 8);
-        while (j <= s1) {
-            float p[4];
-            p[0] = cur0;
-            p[1] = cur1;
-            p[2] = 1.0f;
-            float t = p[2] - p[0];
-            if (t < 0) t = -t;
-            if (t > g_826e38) {
-                p[3] = p[2] - g_826e38;
-            } else {
-                p[3] = p[2] + g_826e38;
-            }
-            p[3] = *(float*)((char*)&a9 + 4) - p[3];
-
-            int k;
-            for (k = 0; k < 2; k++) {
-                if (*((unsigned char*)&a9 + 4 + k) != 0) {
-                    p[k] = p[k] / v[k + 1] * v[k + 4];
-                } else {
-                    p[k] = v[k + 4];
-                }
-            }
-
-            float* sh = sub_509BA0();
-            float q0, q1;
-            if (sh[0] == *(float*)((char*)&a9 + 8) && sh[1] == *(float*)((char*)&a9 + 12)) {
-                q0 = *(float*)((char*)&a9 + 12);
-                q1 = *(float*)((char*)&a9 + 16);
-            } else {
-                q0 = cur0;
-                q1 = cur1;
-            }
-            q0 *= g_819bac;
-            q1 *= g_819bac;
-
-            float r0[4], r1[4];
-            r0[0] = p[0]; r0[1] = p[1]; r0[2] = p[2]; r0[3] = p[3];
-            r1[0] = q0; r1[1] = q1; r1[2] = 1.0f; r1[3] = 0.0f;
-            sub_5EC1E0(r0, r0);
-            sub_5EC1E0(r1, r1);
-
-            float out[4];
-            sub_548000(out, r0, r1, 1);
-
-            acc0 += out[0];
-            acc1 += out[1];
-
-            int idx = (s2 + 1) * i + j;
-            arr[idx] = (void*)0;
-            j++;
-            cur0 += d0;
-            cur1 += d1;
-        }
-        i++;
-        acc0 += d2;
-        acc1 += d3;
-    }
-
-    int m = 0;
-    while (m < s2) {
-        int n = 0;
-        while (n < s1) {
-            int idx = (s1 + 1) * m + n;
-            sub_500EB0((int)arr[idx], (int)arr[idx + 1], (int)arr[idx + s1 + 1], (int)arr[idx + s1 + 2]);
-            n++;
-        }
-        m++;
-    }
-
-    unsigned int c = 0;
-    while (c < (unsigned int)total) {
-        sub_548640(arr[c]);
-        c++;
-    }
-    sub_6A094A(arr);
-    return 0;
+// from server: 98% by king_originala
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// Complete 868-byte grid emitter; native LevelBuilder and PBB Face/Side contracts.
+// Descriptive deformation/global labels identify observed ABI and arithmetic.
+// Native PBBMesh.cpp establishes Face12 (Vector2 perturbation,bool[2]) and Side inheritance.
+// Measured zero-valued inset global and sign comparison at zero replace the earlier unproved scratch.
+// Loop barrier preserves the target per-iteration memory ordering; absoluteSize scopes mapped storage.
+// Remaining difference is only the stack placement of normal and vertex objects (98%, not exact).
+#include <stddef.h>
+#include <intrin.h>
+#include <math.h>
+namespace G3D {
+struct Vector2 {float x,y;Vector2():x(0),y(0){}Vector2(float a,float b):x(a),y(b){}Vector2(const Vector2&v):x(v.x),y(v.y){}Vector2&operator=(const Vector2&v){x=v.x;y=v.y;return *this;}float&operator[](int i){return ((float*)this)[i];}const float&operator[](int i)const{return ((const float*)this)[i];}};
+struct Vector3 {float x,y,z;Vector3():x(0),y(0),z(0){}Vector3(float a,float b,float c):x(a),y(b),z(c){}Vector3(const Vector3&v):x(v.x),y(v.y),z(v.z){}float&operator[](int i){return ((float*)this)[i];}const float&operator[](int i)const{return ((const float*)this)[i];}Vector3 abs()const{return Vector3((float)fabs(x),(float)fabs(y),(float)fabs(z));}};
+struct Vector2int16 {short x,y;Vector2int16(short a,short b):x(a),y(b){}};
+struct Rect2D {Vector2 min,max;};
 }
+namespace RBX {namespace View {
+using G3D::Vector2;using G3D::Vector3;using G3D::Rect2D;using G3D::Vector2int16;
+extern const float inset;
+struct Face {Vector2 perturbation;bool bulge[2];void operator()(Vector3&,Vector3&,Vector2&,const Vector3&,const Vector2int16&);};
+struct Side:Face {void operator()(Vector3&,Vector3&,Vector2&,const Vector3&,const Vector2int16&);};
+typedef Side Deformation;
+void Face::operator()(Vector3&vertex,Vector3&normal,Vector2&,const Vector3&size,const Vector2int16&){
+ for(int k=0;k<2;++k){normal[k]=bulge[k]?vertex[k]/size[k]*perturbation[k]:perturbation[k];_ReadWriteBarrier();}
+}
+void Side::operator()(Vector3&vertex,Vector3&normal,Vector2&texture,const Vector3&size,const Vector2int16&index){
+ if(vertex.x>0)vertex.x-=inset;else vertex.x+=inset;
+ vertex.z-=inset;
+ Face::operator()(vertex,normal,texture,size,index);
+}
+Vector3 __cdecl mapFace(const Vector3&);
+static __forceinline Vector3 absoluteSize(const Vector3&v){Vector3 mapped=mapFace(v);return mapped.abs();}
+const Vector2&__cdecl zeroVector2();
+unsigned __cdecl allocVertex(const Vector3&,const Vector3&,const Vector2&,bool);
+void __cdecl freeVertex(unsigned);
+struct Level;
+class LevelBuilder {
+public:
+ enum Purpose{Surface,Decal,Shadow};
+ virtual void build(Purpose);virtual void buildTop(Purpose)=0;virtual void buildBottom(Purpose)=0;virtual void buildLeft(Purpose)=0;virtual void buildRight(Purpose)=0;virtual void buildFront(Purpose)=0;virtual void buildBack(Purpose)=0;
+ const Vector3 halfSize;unsigned surfaceTypes;Level*level;Vector2 textureScale;
+ void appendQuadFromVertexIndices(unsigned,unsigned,unsigned,unsigned);
+ void emit(Deformation,Rect2D,float,Vector2,Vector2,int,Vector2int16);
+};
+void LevelBuilder::emit(Deformation function,Rect2D rect,float depth,Vector2 origin,Vector2 extent,int axis,Vector2int16 grid){
+ Vector3 size=absoluteSize(halfSize);
+ Vector2 step((rect.max.x-rect.min.x)/grid.x,(rect.max.y-rect.min.y)/grid.y);
+ Vector2 textureStep(extent.x/grid.x,extent.y/grid.y);
+ unsigned count=(grid.x+1)*(grid.y+1);
+ unsigned*indices=new unsigned[count];
+ float pointX=rect.min.x;
+ float uvX=origin.x;
+ for(int j=0;j<=grid.x;++j){
+  float pointY=rect.min.y;float uvY=origin.y;
+  for(int i=0;i<=grid.y;++i){
+   Vector3 vertex(pointX,pointY,depth);
+   Vector2 texture;texture[1-axis]=uvX;texture[axis]=uvY;
+   Vector3 normal(0,0,1);
+   function(vertex,normal,texture,size,Vector2int16(j,i));
+   const Vector2&zero=zeroVector2();
+   float texU,texV;
+   if(extent.x==zero.x&&extent.y==zero.y){texU=origin.x;texV=origin.y;}else{texU=texture.x;texV=texture.y;}
+   Vector2 tex(texU*.5f,texV*.5f);
+   Vector3 mappedNormal=mapFace(normal);Vector3 mappedVertex=mapFace(vertex);
+   indices[(grid.y+1)*j+i]=allocVertex(mappedVertex,mappedNormal,tex,true);
+   pointY+=step.y;uvY+=textureStep.y;
+  }
+  pointX+=step.x;uvX+=textureStep.x;
+ }
+ for(int j=0;j<grid.x;++j)for(int i=0;i<grid.y;++i){int k=(grid.y+1)*j+i;appendQuadFromVertexIndices(indices[k+1],indices[k],indices[k+grid.y+1],indices[k+grid.y+2]);}
+ for(unsigned k=0;k<count;++k)freeVertex(indices[k]);
+ delete[]indices;
+}
+}}
+typedef char deformation_extent[sizeof(RBX::View::Deformation)==12?1:-1];
+typedef char rectangle_extent[sizeof(G3D::Rect2D)==16?1:-1];
+typedef char builder_extent[sizeof(RBX::View::LevelBuilder)==32?1:-1];
+typedef char size_offset[offsetof(RBX::View::LevelBuilder,halfSize)==4?1:-1];
+
+typedef char perturbation_offset[offsetof(RBX::View::Face,perturbation)==0?1:-1];
+typedef char bulge_offset[offsetof(RBX::View::Face,bulge)==8?1:-1];

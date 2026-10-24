@@ -1,10 +1,34 @@
-// from server: 59% by EspClaude
+// from server: 92% by Espeon
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs tool/ToolsArrow.cpp
+// roc-lib: rbxgs-dll roc_espeon_arrowportablefactorye4682de5f6b7887d.cpp
 
 // Candidate translation unit (score above; library headers required).
+#pragma include_alias("util/Object.h", "roc_espeon_arrowfactoryheader347662b16dc22b66.cpp")
+#pragma include_alias(<boost/shared_ptr.hpp>, <roc_espeon_arrowsharedinlineheader0ad389253c5b3b54.cpp>)
+#pragma include_alias("boost/shared_ptr.hpp", "roc_espeon_arrowsharedinlineheader0ad389253c5b3b54.cpp")
+#undef _RELEASEASSERT
+#pragma include_alias("tool/ToolsArrow.h", "roc_espeon_arrowheader66b4d011f2b53c41.cpp")
+#pragma include_alias("tool/DragTool.h", "roc_espeon_arrowheader9c817239d1fa3743.cpp")
+#pragma include_alias("util/IRenderable.h", "roc_espeon_renderableaccessheaderd4d76fdf723bc309.cpp")
+#pragma include_alias("reflection/function.h", "roc_espeon_machineheader2f6c7dcf10adead1.cpp")
+#pragma include_alias("reflection/signal.h", "roc_espeon_machineheader16e657153fe9fb6e.cpp")
+#pragma include_alias("reflection/type.h", "roc_espeon_machineheader4aaa2bdeb1c2b6c3.cpp")
+#pragma include_alias("reflection/reflection.h", "roc_espeon_machineheadera6fefc64bf3a6f9e.cpp")
+#pragma include_alias("reflection/Reflection.h", "roc_espeon_machineheadera6fefc64bf3a6f9e.cpp")
+#pragma include_alias("reflection/enumconverter.h", "roc_espeon_machineheader297ae1c3351d4ab6.cpp")
+#pragma include_alias("reflection/object.h", "roc_espeon_machineheadercadaaebe20af2047.cpp")
+#pragma include_alias("reflection/member.h", "roc_espeon_machineheader459d66d9acfae4ab.cpp")
+#pragma include_alias("reflection/descriptor.h", "roc_espeon_machineheader0acd23dba6f04ff5.cpp")
+#pragma include_alias("reflection/property.h", "roc_espeon_machineheadercfb6c68c9dd60df6.cpp")
+#pragma include_alias(<v8tree/Verb.h>, <roc_espeon_insertnativeheader1a746c4cc8c6ae06.cpp>)
+#pragma include_alias("v8tree/Verb.h", "roc_espeon_insertnativeheader1a746c4cc8c6ae06.cpp")
+#pragma include_alias(<util/Name.h>, <roc_espeon_insertnativeheader115b7bccd0a9061e.cpp>)
+#pragma include_alias("util/Name.h", "roc_espeon_insertnativeheader115b7bccd0a9061e.cpp")
+#pragma include_alias(<util/Debug.h>, <roc_espeon_insertnativeheader5fe96130a83d2e88.cpp>)
+#pragma include_alias("util/Debug.h", "roc_espeon_insertnativeheader5fe96130a83d2e88.cpp")
+#pragma include_alias("v8tree/Instance.h", "roc_espeon_nativeinstanceguidportablea1682bda32c99cd2.cpp")
 #include "tool/ToolsArrow.h"
 #include "tool/DragTool.h"
 #include "v8datamodel/Camera.h"
@@ -15,21 +39,7 @@
 
 namespace RBX
 {
-	const std::string ArrowToolBase::getCursorName() const
-	{
-		return overInstance ? "DragCursor" : "ArrowCursor";
-	}
-
-	void ArrowToolBase::onMouseIdle(const UIEvent& uiEvent)
-	{
-		overInstance = getUnlockedPart(uiEvent) != NULL;
-	}
-
-	void ArrowToolBase::onMouseHover(const UIEvent& uiEvent)
-	{
-		onMouseIdle(uiEvent);
-	}
-
+ boost::shared_ptr<Decal> shared_from(Decal*);
 	MouseCommand* ArrowToolBase::onMouseDown(const UIEvent& uiEvent)
 	{
 		RBXASSERT(uiEvent.eventType == UIEvent::MOUSE_LEFT_BUTTON_DOWN);
@@ -47,16 +57,14 @@ namespace RBX
 			if (!input->keyDown(SDLK_RSHIFT) && !input->keyDown(SDLK_LSHIFT) &&
 				!input->keyDown(SDLK_RCTRL) && !input->keyDown(SDLK_LCTRL))
 			{
-				if (!selection->isSelected(top))
-				{
-					selection->setSelection(top);
-				}
+                boost::shared_ptr<Decal> decal;
+                if(selection->isSelected(top))
+                    decal=shared_from(findSelectedDecal(part,uiEvent));
+                else
+                    selection->setSelection(top);
+                ServiceClient<FilteredSelection<Instance> > instanceSelection(workspace);
+                return DragTool::onMouseDown(part,hitWorld,instanceSelection->items(),uiEvent,workspace,decal);
 
-				if (uiEvent.eventType == UIEvent::MOUSE_LEFT_BUTTON_DOWN)
-				{
-					ServiceClient<FilteredSelection<Instance>> instanceSelection(workspace);
-					return DragTool::onMouseDown(part, hitWorld, instanceSelection->items(), uiEvent, workspace);
-				}
 			}
 			else
 			{
@@ -75,69 +83,5 @@ namespace RBX
 		}
 	}
 
-	BoxSelectCommand::BoxSelectCommand(Workspace* workspace)
-		: Base(workspace),
-		  selection((Instance*)workspace)
-	{
-	}
 
-	MouseCommand* BoxSelectCommand::onMouseDown(const UIEvent& uiEvent)
-	{
-		previousItemsInBox.clear();
-		capture();
-
-		UserInputBase* input = uiEvent.userInput;
-		reverseSelecting = input->keyDown(SDLK_RSHIFT) || input->keyDown(SDLK_LSHIFT);
-
-		if (!reverseSelecting)
-			selection->clearSelection();
-
-		mouseDownView = uiEvent.mousePosition;
-		mouseCurrentView = uiEvent.mousePosition;
-		return this;
-	}
-
-	void BoxSelectCommand::onMouseMove(const UIEvent& uiEvent)
-	{
-		mouseCurrentView = uiEvent.mousePosition;
-
-		std::set<Instance*> instances;
-		getMouseInstances(instances, uiEvent, G3D::Rect2D::xyxy(mouseDownView.x, mouseDownView.y, mouseCurrentView.x, mouseCurrentView.y));
-
-		if (reverseSelecting)
-			selectReverse(instances);
-		else
-			selectAnd(instances);
-	}
-
-	void BoxSelectCommand::render2d(Adorn* adorn)
-	{
-		G3D::Rect2D temp = G3D::Rect2D::xyxy(mouseDownView.x, mouseDownView.y, mouseCurrentView.x, mouseCurrentView.y);
-		adorn->outlineRect2d(temp, 0.5f, G3D::Color3::gray());
-	}
-
-	void BoxSelectCommand::getMouseInstances(std::set<Instance*>& instances, const UIEvent& uiEvent, G3D::Rect2D& selectBox)
-	{
-		Camera* camera = workspace->getCamera();
-		G3D::Rect2D viewport = G3D::Rect2D::xyxy(0.0f, 0.0f, uiEvent.windowSize.x, uiEvent.windowSize.y);
-
-		for (size_t i = 0; i < workspace->numChildren(); i++)
-		{
-			ILocation* location = workspace->queryTypedChild<ILocation>((int)i);
-			ISelectable3d* selectable3d = workspace->queryTypedChild<ISelectable3d>((int)i);
-
-			if (location && selectable3d)
-			{
-				Instance* instance = workspace->getChild(i);
-				if (!PartInstance::getLocked(instance))
-				{
-					G3D::Vector3 gridPos = location->getLocation().translation;
-					G3D::Vector3 projection = camera->getGCamera().project(gridPos, viewport);
-
-					if (selectBox.contains(projection.xy()))
-						instances.insert(instance);
-				}
-			}
-		}
-	}
 }

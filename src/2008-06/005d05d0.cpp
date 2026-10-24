@@ -1,163 +1,95 @@
-// from server: 28% by colin
-struct Vector3 { float x, y, z; };
-struct Vector4 { float x, y, z, w; };
-
+// from server: 86% by king_originala
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+#include <string>
+#include <string.h>
+namespace G3D {
+struct Vector2 {
+ float x,y;
+ static const Vector2&zero();
+ Vector2():x(0),y(0){}Vector2(float a,float b):x(a),y(b){}Vector2(const Vector2&r):x(r.x),y(r.y){}
+ Vector2 operator+(const Vector2&r)const{return Vector2(x+r.x,y+r.y);}Vector2 operator-(const Vector2&r)const{return Vector2(x-r.x,y-r.y);}Vector2 operator*(float f)const{return Vector2(x*f,y*f);}
+};
+struct Vector3;struct CoordinateFrame;struct AABox;struct Sphere;struct Ray;struct LineSegment;
+struct Color3 {float r,g,b;static const Color3&gray();static const Color3&white();static const Color3&green();};
+struct Color4 {float r,g,b,a;Color4(const Color3&c,float alpha=1):r(c.r),g(c.g),b(c.b),a(alpha){}static const Color4&zero();};
+struct Rect2D {Vector2 min,max;static Rect2D xyxy(const Vector2&,const Vector2&);};
+template<class T>struct ReferenceCountedPointer {T*pointer;};
+}
+namespace boost {template<class T>struct shared_ptr {T*px;void*pi;T*get()const{return px;}T*operator->()const{return px;}};}
+namespace RBX {
+struct TextureProxyBase;
+struct Adorn {
+ enum Spacing {PROPORTIONAL_SPACING,FIXED_SPACING};enum XAlign{XALIGN_RIGHT,XALIGN_LEFT,XALIGN_CENTER};enum YAlign{YALIGN_TOP,YALIGN_BASELINE,YALIGN_CENTER,YALIGN_BOTTOM};
+ virtual ~Adorn();
+ virtual G3D::ReferenceCountedPointer<TextureProxyBase>createTextureProxy(const std::string&)=0;
+ virtual void prepareRenderPass()=0;virtual void finishRenderPass()=0;virtual G3D::Rect2D getViewport()const=0;virtual int getWidth()const=0;virtual int getHeight()const=0;
+ virtual void setTexture(int,G3D::ReferenceCountedPointer<TextureProxyBase>)=0;virtual G3D::Rect2D getTextureSize(G3D::ReferenceCountedPointer<TextureProxyBase>)const=0;
+ virtual void line2d(const G3D::Vector2&,const G3D::Vector2&,const G3D::Color4&)const=0;
+ virtual void outlineRect2d(const G3D::Rect2D&,float,const G3D::Color4&)const=0;
+ virtual void rect2d(const G3D::Rect2D&,const G3D::Color4&)const=0;
+ virtual G3D::Vector2 get2DStringBounds(const std::string&,double,Spacing)const=0;
+ virtual G3D::Vector2 drawFont2D(const std::string&,const G3D::Vector2&,double,const G3D::Color4&,const G3D::Color4&,XAlign,YAlign,Spacing)const=0;
+};
+struct Rect {
+ G3D::Vector2 low,high;
+ Rect(const G3D::Vector2&s):low(G3D::Vector2::zero()),high(s){}
+ Rect(const G3D::Vector2&l,const G3D::Vector2&h):low(l),high(h){}
+ Rect(float x0,float y0,float x1,float y1):low(x0,y0),high(x1,y1){}
+ G3D::Rect2D toRect2D()const{return G3D::Rect2D::xyxy(low,high);}
+ G3D::Vector2 size()const{return high-low;}G3D::Vector2 center()const{return (low+high)*.5f;}
+ Rect inset(int n){return Rect(low.x+n,low.y+n,high.x-n,high.y-n);}
+ static Rect fromLowSize(const G3D::Vector2&l,const G3D::Vector2&s){return Rect(l,l+s);}
+};
+struct Name;
+struct ContentId {std::string id;const Name*mimeTypePtr;};struct TextureId:ContentId{};
 struct Instance {
-    virtual ~Instance();
-    char pad[0x100];
-    Instance* next;
+ virtual ~Instance();virtual void setName(const std::string&);
+ char opaque[0x104-4];Instance*parent;char opaque108[8];std::string name;
+ int findChildIndex(const Instance*)const;
 };
-
-struct ServiceProvider : Instance {
-    ServiceProvider* finish();
+struct GuiItem:Instance {
+ Rect getMyRect()const;static const G3D::Color4&translucentBackdrop();
 };
-
-ServiceProvider* func_00491e50(Instance* p);
-
-struct G3D_Shader {
-    static Vector3* getAmbient();
+struct GuiRoot {static int normalizedFontSize(int);static G3D::Vector2 canvasSize;static G3D::Vector2 getCanvasSize(){return canvasSize;}};
+struct Widget:GuiItem {
+ enum WidgetState{NOTHING,HOVER,DOWN_OVER,DOWN_AWAY};
+ char opaque12c[0x144-0x12c];WidgetState widgetState;
+ void render2d(Adorn*);
 };
-
-struct G3D_GCamera {
-    static Vector4* getCameraPos();
-    static Vector4* getCameraRight();
-    static Vector4* getCameraUp();
+struct GuiDrawImage {
+ TextureId currentTexture;G3D::ReferenceCountedPointer<TextureProxyBase>normal,disable,hover,down;G3D::Vector2 size;
+ bool setImage(Adorn*,const TextureId&);void render2d(Adorn*,bool,Rect&,Widget::WidgetState);
 };
-
-struct Widget {
-    char pad[0x2c];
-    virtual void method2c(const Vector4* a, const Vector4* b);
-    char pad2[0x34 - 0x30];
-    virtual void method34(const Vector4* a, const Vector4* b, const Vector4* c, int d, int e, int f, const Vector4* g, int h, int i, double j);
+template<class T>struct StringConverter;template<>struct StringConverter<int>{static std::string convertToString(const int&);};
+struct Workspace {char opaque[0x43c];int overlayLayout;static Workspace*findWorkspace(const Instance*);};
+struct BackpackItem:Widget {
+ GuiDrawImage guiImageDraw;TextureId textureId;
+ bool isEnabled()const{typedef bool(__thiscall*Fn)(const BackpackItem*);return((Fn)(*(void***)this)[30])(this);}
+ bool drawSelected()const{typedef bool(__thiscall*Fn)(const BackpackItem*);return((Fn)(*(void***)this)[32])(this);}
+ void render2d(Adorn*);
 };
-
-struct HopperBin {
-    char pad[0x104];
-    void* field104;
-    char pad2[0x144 - 0x108];
-    int field144;
-    char field148[0x180 - 0x148];
-    char field180[4];
-
-    virtual bool method78();
-    virtual bool method80();
-
-    void method(void* arg);
-};
-
-extern float g_974d78;
-extern float g_974d7c;
-extern float g_8249f8;
-extern float g_81c434;
-extern float g_819bac;
-extern float g_81e380;
-
-void func_004f35d0(Vector4* out, const Vector4* a, const Vector4* b);
-void func_00573290();
-void func_00573310(Vector4* out);
-void func_00573770(int n);
-void func_005bdef0(Vector4* out, const Vector4* a, int b);
-void func_00558ac0(int a);
-bool func_00642750(void* a, void* b);
-void func_00642520(void* a);
-void func_00642de0(void* a, void* b, bool c, void* d, const Vector4* e, int f);
-void* func_007baf10(int a, int b, int c);
-void func_00802468(void* a);
-
-void HopperBin::method(void* arg) {
-    bool flag = false;
-    ServiceProvider* sp = func_00491e50((Instance*)this);
-    Vector4 v;
-    if (sp && *(int*)((char*)sp + 0x43c) != 0) {
-        flag = true;
-        Vector3* amb = G3D_Shader::getAmbient();
-        v.x = amb->x;
-        v.y = amb->y;
-        v.z = g_974d78;
-        v.w = g_974d7c;
-    } else {
-        func_00573310(&v);
-    }
-    Vector4 v2;
-    v2.x = v.x;
-    v2.y = v.y;
-    v2.z = v.z;
-    v2.w = v.w;
-    func_00573770(12);
-    Vector4 v3;
-    v3.x = v2.x;
-    v3.y = v2.y;
-    v3.z = v2.z;
-    v3.w = v2.w;
-    v3.z = v3.z - v3.x;
-    v3.z = v3.z * g_8249f8;
-    v3.x = v3.x + g_81c434;
-    v3.y = v3.y + g_81c434;
-    v3.z = v3.z + g_81c434;
-    v3.w = v3.w + g_81c434;
-    if (!flag) {
-        Vector4 a;
-        func_004f35d0(&a, &v3, &v3);
-        func_00573290();
-        Widget* w = (Widget*)arg;
-        w->method2c(&a, &v3);
-    }
-    if (method78()) {
-        Vector4* cp = G3D_GCamera::getCameraPos();
-        Vector4 cam;
-        cam.x = cp->x;
-        cam.y = cp->y;
-        cam.z = cp->z;
-        cam.w = 1.0f;
-        Vector4 a;
-        func_004f35d0(&a, &v3, &v3);
-        Widget* w = (Widget*)arg;
-        w->method2c(&cam, &a);
-        Vector4* cr = G3D_GCamera::getCameraRight();
-        Vector4 right;
-        right.x = cr->x;
-        right.y = cr->y;
-        right.z = cr->z;
-        right.w = 1.0f;
-        int idx;
-        if (field104) {
-            func_00558ac0((int)this);
-            idx = 0;
-        } else {
-            idx = -1;
-        }
-        idx++;
-        Vector4 out;
-        func_005bdef0(&out, &right, idx);
-        float f1 = v3.w + v3.y;
-        float f2 = v3.x + v3.z;
-        f1 = f1 * g_819bac;
-        f2 = f2 * g_819bac;
-        void* p = func_007baf10(2, 2, 0);
-        double d = (double)idx;
-        Widget* w2 = (Widget*)arg;
-        w2->method34(&out, &v3, &right, 0, 2, 2, &v3, (int)p, 0, d);
-        func_00802468(&out);
-    }
-    if (method80()) {
-        Vector4* cp = G3D_GCamera::getCameraPos();
-        Vector4 cam;
-        cam.x = cp->x;
-        cam.y = cp->y;
-        cam.z = cp->z;
-        cam.w = 1.0f;
-        Vector4 a;
-        func_004f35d0(&a, &v3, &v3);
-        Widget* w = (Widget*)arg;
-        w->method2c(&cam, &a);
-    }
-    if (func_00642750(field148, arg)) {
-        bool b = method78();
-        if (!b) {
-            b = flag;
-        }
-        func_00642de0(field148, arg, b, (void*)field144, &v3, 0);
-    } else {
-        func_00642520(arg);
-    }
+typedef char LayoutCheck[(sizeof(std::string)==28&&sizeof(Widget)==0x148&&sizeof(GuiDrawImage)==56&&sizeof(BackpackItem)==0x1a0)?1:-1];
+void BackpackItem::render2d(Adorn*adorn){
+ bool overlay=false;
+ Workspace*workspace=Workspace::findWorkspace(this);
+ if(workspace&&workspace->overlayLayout)overlay=true;
+ Rect rect=overlay?Rect(GuiRoot::getCanvasSize()):getMyRect();
+ int fontSize=GuiRoot::normalizedFontSize(12);
+ {
+ float side=rect.size().x*.2f;
+ Rect numberRect=Rect::fromLowSize(G3D::Vector2(rect.low.x+2,rect.high.y-2-side),G3D::Vector2(side,side));
+ if(!overlay)adorn->rect2d(rect.toRect2D(),translucentBackdrop());
+ if(isEnabled()){
+  adorn->rect2d(numberRect.toRect2D(),G3D::Color3::gray());
+  G3D::Color4 fontColor(G3D::Color3::white());
+  int number=(parent?parent->findChildIndex(this):-1)+1;
+  adorn->drawFont2D(StringConverter<int>::convertToString(number),numberRect.center(),fontSize,fontColor,G3D::Color4::zero(),Adorn::XALIGN_CENTER,Adorn::YALIGN_CENTER,Adorn::PROPORTIONAL_SPACING);
+ }
+ }
+ if(drawSelected())adorn->outlineRect2d(rect.toRect2D(),3,G3D::Color3::green());
+ if(guiImageDraw.setImage(adorn,textureId)){
+  guiImageDraw.render2d(adorn,isEnabled()||overlay,rect.inset(fontSize),widgetState);
+ }else Widget::render2d(adorn);
+}
 }

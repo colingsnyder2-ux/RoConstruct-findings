@@ -1,3 +1,5 @@
+// from server: 95% by king_originala
+#include <intrin.h>
 // from server: 92% by colin
 // from server: 89% by king_originala
 extern const unsigned char primaryTable[];
@@ -16,13 +18,9 @@ extern Module *module;
 
 struct Stream {
     unsigned char storage[156];
-    Stream(int mode);
+    __declspec(dllimport) Stream(int mode, int initialize);
     ~Stream();
 };
-
-__forceinline Stream::Stream(int mode) {
-    streamConstruct(this, mode, 1);
-}
 
 __forceinline Stream::~Stream() {
     streamDestroy(this);
@@ -40,7 +38,7 @@ struct Base {
 };
 
 __forceinline Base::Base(void *value)
-    : table((references = 0, primaryTable)), owner(0), stream(3)
+    : table((references = 0, _ReadWriteBarrier(), primaryTable)), owner(0), stream(3, 1)
 {
     firstInterface = firstInterfaceTable;
     secondInterface = secondInterfaceTable;

@@ -1,142 +1,101 @@
-// from server: 43% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-
-struct Vec3 { float x, y, z; };
-
-struct Controller {
-    char pad0[0xc];
-    void* field_c;
-    char pad10[0xc];
-    int field_1c;
-    void update(float dt);
+// from server: 74% by Espeon
+// from server: 69% by king_originala
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+#include <intrin.h>
+namespace boost {namespace detail {
+struct sp_counted_base {
+ virtual ~sp_counted_base(){}virtual void dispose()=0;virtual void destroy(){delete this;}
+ long use_count_,weak_count_;
+ void weak_release(){if(_InterlockedDecrement(&weak_count_)==0)destroy();}
+ void release(){if(_InterlockedDecrement(&use_count_)==0){dispose();weak_release();}}
 };
-
-struct BoundButton {
-    char pad0[0x10];
-    bool b0, b1, b2, b3, b4, b5, b6, b7, b8;
+struct shared_count {sp_counted_base*pi_;shared_count(const shared_count&r):pi_(r.pi_){if(pi_)_InterlockedIncrement(&pi_->use_count_);}~shared_count(){if(pi_)pi_->release();}};
+}
+template<class T>struct shared_ptr {T*px;detail::shared_count pn;T*get()const{return px;}};
+template<class T>struct weak_ptr {T*px;void*control;shared_ptr<T>lock()const;};
+}
+namespace G3D {
+struct Vector3 {
+ float x,y,z;
+ Vector3(float a,float b,float c):x(a),y(b),z(c){}
+ Vector3(const Vector3&r):x(r.x),y(r.y),z(r.z){}
+ Vector3 operator*(float s)const{return Vector3(x*s,y*s,z*s);}
+ Vector3 operator+(const Vector3&r)const{return Vector3(x+r.x,y+r.y,z+r.z);}
+ float squaredLength()const{return x*x+y*y+z*z;}
+ float unitize(float);
+ static const Vector3&zero();
 };
-
-extern "C" {
-    void* __cdecl func_0049aca0(void*);
-    void* __cdecl func_00491e50(void*);
-    void* __cdecl func_0045af00(void*, void*);
-    void* __cdecl func_005d9a20(void*);
-    void* __cdecl func_005caba0(void*);
-    void* __cdecl func_005cab00(void*, void*);
-    void* __cdecl func_005ce960(void*, void*);
-    void* __cdecl func_005a0160(void*);
-    void* __cdecl func_005ca400(void*);
-    void* __cdecl func_005ca3c0(void*);
-    void* __cdecl func_005ca3e0(void*);
-    void* __cdecl func_005ca390(void*);
-    void* __cdecl func_005187f0(void*);
-    void* __cdecl func_00518470(void*, float);
-    void* __cdecl func_005dbf80(void*, void*);
-    void* __cdecl func_005ccb00(void*);
-    void* __cdecl func_005dc230(void*, int);
-    void* __cdecl func_005dc270(void*, int);
-    void* __cdecl func_005dc2b0(void*, int);
-    void* __cdecl func_005cc810(void*, float);
+struct CoordinateFrame {char opaque[48];CoordinateFrame(const CoordinateFrame&);~CoordinateFrame(){}Vector3 lookVector()const;};
+struct ReferenceCountedObject {virtual ~ReferenceCountedObject();long count;void*weakPointers;};
+}
+namespace RBX {
+struct Instance {virtual ~Instance();};
+struct PVInstance:Instance {};
+struct ModelInstance:PVInstance {};
+struct Humanoid {
+ static Humanoid*fromInstance(Instance*);
+ void setWalkDirection(const G3D::Vector3&);
+ void setMovementFlag(bool);
+ void setSit(bool);void setJump(bool);
+};
+namespace Network {struct Players {static ModelInstance*findLocalCharacter(const Instance*);};}
+struct Camera {
+ G3D::CoordinateFrame getCameraCoordinateFrame()const;
+ void panRadians(float);
+ bool getMovementFlag()const;
+};
+struct ICameraOwner {virtual ~ICameraOwner();virtual Camera*getCamera()const=0;};
+struct WorkspacePrimary {virtual ~WorkspacePrimary();char reserved[0x288-4];};
+struct Workspace:WorkspacePrimary,ICameraOwner {static Workspace*findWorkspace(const Instance*);};
+struct NavKeys {
+ bool forward_arrow,backward_arrow,left_arrow,right_arrow,forward_asdw,backward_asdw,left_asdw,right_asdw,space;
+ NavKeys():forward_arrow(false),backward_arrow(false),left_arrow(false),right_arrow(false),forward_asdw(false),backward_asdw(false),left_asdw(false),right_asdw(false),space(false){}
+ bool hasASDW()const;
+ float forwardBackwardASDW()const;float leftRightASDW()const;float leftRightArrow()const;
+};
+struct UserInputBase {void getNavKeys(NavKeys&)const;bool ctrlKeyDown()const;};
+struct Controller:G3D::ReferenceCountedObject {};
+struct RunService;struct ControllerService;
+struct Heartbeat {const float time,step;};
+template<class C,class E>struct Listener {virtual void onEvent(const C*,E)=0;virtual ~Listener(){}};
+struct SteppingController:Controller,Listener<RunService,Heartbeat> {boost::shared_ptr<RunService>runService;boost::weak_ptr<const PVInstance>controlledInstance;};
+struct PlayerController:SteppingController {
+ boost::weak_ptr<ControllerService>controllerService;int stepsRotating;
+ const UserInputBase*getHardwareDevice()const;
+ virtual void onEvent(const RunService*,Heartbeat);
+};
+void PlayerController::onEvent(const RunService*,Heartbeat event){
+ const UserInputBase*hardware=getHardwareDevice();
+ const PVInstance*controlled=controlledInstance.lock().get();
+ ModelInstance*character=Network::Players::findLocalCharacter(controlled);
+ Humanoid*humanoid=controlled==character?Humanoid::fromInstance(character):0;
+ Workspace*workspace=Workspace::findWorkspace(character);
+ if(hardware && humanoid && workspace){
+  Camera*camera=workspace->getCamera();
+  NavKeys keys;hardware->getNavKeys(keys);
+  if(keys.forward_arrow || keys.backward_arrow || keys.left_arrow || keys.right_arrow){
+   if(keys.left_arrow || keys.right_arrow){camera->panRadians(keys.leftRightArrow()*event.step*1.8f);++stepsRotating;}
+   else stepsRotating=0;
+   float amount=keys.forward_arrow?1.f:(keys.backward_arrow?-1.f:0.f);
+   G3D::Vector3 forward=camera->getCameraCoordinateFrame().lookVector();
+   forward.y=0.f;forward.unitize(.000001f);
+   G3D::Vector3 walk=G3D::Vector3(forward.x,0.f,forward.z)*amount;
+   humanoid->setWalkDirection(walk);
+  }else if(keys.hasASDW()){
+   float forwardAmount=keys.forwardBackwardASDW();
+   float leftAmount=keys.leftRightASDW();
+   G3D::Vector3 forward=camera->getCameraCoordinateFrame().lookVector();
+   forward.y=0.f;forward.unitize(.000001f);
+   G3D::Vector3 walk(forward.x*forwardAmount+forward.z*leftAmount,0.f*forwardAmount+0.f*leftAmount,forward.z*forwardAmount+(-forward.x)*leftAmount);
+   if(walk.squaredLength()>1.f)walk.unitize(.000001f);
+   humanoid->setWalkDirection(walk);
+   if(camera->getMovementFlag())humanoid->setMovementFlag(true);
+   else humanoid->setMovementFlag(false);
+  }else humanoid->setWalkDirection(G3D::Vector3::zero());
+  if(keys.space){humanoid->setSit(false);humanoid->setJump(true);}
+  hardware->ctrlKeyDown();
+ }
+}
 }
 
-extern float g_826e70;
-extern float g_827494;
-extern float g_8378c0;
-extern float g_81c3b8;
-extern float g_8135c4;
-
-void Controller::update(float dt) {
-    void* a = func_005caba0((char*)this - 0xc);
-    void* tmp = 0;
-    void* b = func_005cab00((char*)this + 0xc, &tmp);
-    void* ebp = *(void**)b;
-    if (tmp) {
-        long* refs = (long*)((char*)tmp + 4);
-        if (_InterlockedExchangeAdd(refs, -1) == 1) {
-            void** vt = *(void***)tmp;
-            ((void(__thiscall*)(void*))vt[1])(tmp);
-            long* refs2 = (long*)((char*)tmp + 8);
-            if (_InterlockedExchangeAdd(refs2, -1) == 1) {
-                void** vt2 = *(void***)tmp;
-                ((void(__thiscall*)(void*))vt2[2])(tmp);
-            }
-        }
-    }
-    void* edi = func_0049aca0(ebp);
-    if (ebp == edi) {
-        ebp = func_005d9a20(edi);
-    } else {
-        ebp = 0;
-    }
-    void* eax = func_00491e50(edi);
-    if (a == 0 || ebp == 0 || eax == 0) return;
-
-    void* ecx = (char*)eax + 0x288;
-    void** vt = *(void***)ecx;
-    void* edi2 = ((void*(__thiscall*)(void*))vt[1])(ecx);
-
-    BoundButton bb;
-    bb.b0 = bb.b1 = bb.b2 = bb.b3 = bb.b4 = bb.b5 = bb.b6 = bb.b7 = bb.b8 = 0;
-    func_005ce960(a, &bb);
-
-    if (bb.b0 || bb.b1) {
-        if (bb.b2 || bb.b3) {
-            float f = *(float*)func_005ca3e0(&bb);
-            f *= dt;
-            f *= g_8378c0;
-            func_005cc810(edi2, f);
-            this->field_1c++;
-        } else {
-            this->field_1c = 0;
-        }
-        float scale;
-        if (bb.b0) scale = 1.0f;
-        else if (bb.b1) scale = g_81c3b8;
-        else scale = 0.0f;
-        Vec3 v;
-        func_0045af00(edi2, &v);
-        func_005187f0(&v);
-        func_00518470(&v, g_826e70);
-        Vec3 out;
-        out.x = v.x * scale;
-        out.y = v.y * scale;
-        out.z = v.z * scale;
-        func_005dbf80(ebp, &out);
-    } else {
-        if (!bb.b2 && !bb.b3) {
-            this->field_1c = 0;
-        } else {
-            float f = *(float*)func_005ca3e0(&bb);
-            f *= dt;
-            f *= g_8378c0;
-            func_005cc810(edi2, f);
-            this->field_1c++;
-        }
-        float scale;
-        if (bb.b0) scale = 1.0f;
-        else if (bb.b1) scale = g_81c3b8;
-        else scale = 0.0f;
-        Vec3 v;
-        func_0045af00(edi2, &v);
-        func_005187f0(&v);
-        func_00518470(&v, g_826e70);
-        Vec3 out;
-        out.x = v.x * scale;
-        out.y = v.y * scale;
-        out.z = v.z * scale;
-        func_005dbf80(ebp, &out);
-    }
-
-    if (func_005ccb00(edi2)) {
-        func_005dc230(ebp, 1);
-    } else {
-        func_005dc230(ebp, 0);
-    }
-
-    if (bb.b8) {
-        func_005dc2b0(ebp, 0);
-        func_005dc270(ebp, 1);
-    }
-    func_005ca390(a);
-}

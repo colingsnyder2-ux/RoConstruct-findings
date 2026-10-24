@@ -1,7 +1,7 @@
-// from server: 30% by colin
+// from server: 32% by 41k
 struct S_005973a0 {
     char pad0[0x118];
-    S_005973a0* ctor(int);
+    S_005973a0* __cdecl ctor(int);
 };
 
 extern "C" void* __cdecl malloc(unsigned int);

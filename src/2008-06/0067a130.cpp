@@ -1,102 +1,118 @@
-// roc-lang: cpp
+// from server: 100% by king_originala
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
-// roc-lib: ogre-1.4.5-dll roc_visual_engine_d4ce797c6a771e8f.cpp
-
-// Candidate translation unit (score above; library headers required).
-#undef OGRE_NONCLIENT_BUILD
-#include <OgreRoot.h>
-#include <OgreSceneManager.h>
-#include <OgreRenderTarget.h>
-#include <OgreMaterialManager.h>
-#include <OgreTextureManager.h>
-#include <OgreMeshManager.h>
-#include <OgreSubMesh.h>
-#include <OgreResourceGroupManager.h>
-#include <OgreStringConverter.h>
-#include <OgreLogManager.h>
+// Complete VisualEngine destructor; native Ogre interfaces and target-observed fields.
+#include <string>
+#include <vector>
 #include <map>
-
-// Actual boost/thread/once.hpp signature; the native executable calls it directly.
-namespace boost {
-typedef long once_flag;
-void call_once(void (*func)(), once_flag& flag);
-}
-
+#include <utility>
+#include <stddef.h>
+namespace boost {typedef long once_flag;void call_once(void(__cdecl*)(),once_flag&);}
 namespace Ogre {
-void releaseUnusedResources(ResourceManager&, const String&, const StringVector&);
-void dumpResources(ResourceManager& manager, const String& type) {
-    ResourceManager::ResourceMapIterator it = manager.getResourceIterator();
-    int index = 0;
-    while (it.hasMoreElements()) {
-        ResourcePtr resource = it.getNext();
-        LogManager::getSingleton().logMessage(type + StringConverter::toString(index)
-            + "(rc=" + StringConverter::toString(resource.useCount()) + ") "
-            + resource->getName() + " grp=" + resource->getGroup());
-        ++index;
-    }
-}
-
-extern Root* visualRoot;
-extern void* meshNameCache;
-extern void* sphereMapCache;
-extern boost::once_flag meshNameOnce;
-void initializeMeshNames();
-
-// RTTI proves Ogre::VisualEngine with one destructor slot. This is an opaque
-// declaration, not a claim that the original object had no data members.
-class VisualEngine {
-public:
-    virtual ~VisualEngine();
+struct Resource {virtual ~Resource();};
+template<class T>struct SharedPtr {
+ T*pRep;unsigned*pUseCount;
+ virtual ~SharedPtr(){release();}
+ void release(){bool destroyThis=false;if(pUseCount){if(--(*pUseCount)==0)destroyThis=true;}if(destroyThis)destroy();}
+ virtual void destroy(){delete pRep;delete pUseCount;}
+ virtual void swap(SharedPtr&r){std::swap(pRep,r.pRep);std::swap(pUseCount,r.pUseCount);}
+ T*operator->()const{return pRep;}bool isNull()const{return pRep==0;}
 };
-
-VisualEngine::~VisualEngine() {
-    if (!visualRoot)
-        return;
-    // Native 0067a162/176/184 loads these three owned pointers.
-    if (*reinterpret_cast<SceneManager**>(reinterpret_cast<char*>(this) + 4))
-        visualRoot->destroySceneManager(*reinterpret_cast<SceneManager**>(reinterpret_cast<char*>(this) + 4));
-    if (*reinterpret_cast<RenderTarget**>(reinterpret_cast<char*>(this) + 0xc))
-        visualRoot->detachRenderTarget(*reinterpret_cast<RenderTarget**>(reinterpret_cast<char*>(this) + 0xc));
-    if (void* object = *reinterpret_cast<void**>(reinterpret_cast<char*>(this) + 0x14)) {
-        // Observed scalar deleting destructor: slot0, thiscall, flag1.
-        typedef void (__thiscall *DeleteMethod)(void*, unsigned);
-        reinterpret_cast<DeleteMethod>((*reinterpret_cast<void***>(object))[0])(object, 1);
-    }
-
-    StringVector textureKeep;
-    StringVector materialKeep;
-    StringVector meshKeep;
-    releaseUnusedResources(MaterialManager::getSingleton(), "Material", materialKeep);
-    releaseUnusedResources(TextureManager::getSingleton(), "Texture", textureKeep);
-    releaseUnusedResources(MeshManager::getSingleton(), "Mesh", materialKeep);
-    dumpResources(MaterialManager::getSingleton(), "matl");
-    dumpResources(TextureManager::getSingleton(), "tex");
-    dumpResources(MeshManager::getSingleton(), "mesh");
-
-    boost::call_once(&initializeMeshNames, meshNameOnce);
-    // 0067c401 inserts a newly constructed SubMesh base pointer as key, then
-    // assigns its generated name. Iteration reads the String value at node+10.
-    std::map<SubMesh*, String>& names = *static_cast<std::map<SubMesh*, String>*>(meshNameCache);
-    LogManager::getSingleton().logMessage("RBX sms c=" + StringConverter::toString(names.size()));
-    if (!names.empty()) {
-        String remaining;
-        for (std::map<SubMesh*, String>::iterator it = names.begin(); it != names.end(); ++it)
-            remaining += " " + it->second;
-        LogManager::getSingleton().logMessage("RBX sms remaining: " + remaining);
-    }
-
-    MeshPtr mesh(MeshManager::getSingleton().getByName("rbxvb"));
-    if (!mesh.isNull()) {
-        int total = mesh->getNumSubMeshes();
-        int count = 0;
-        for (int i = 0; i < total; ++i)
-            if (mesh->getSubMesh(i)->indexData)
-                ++count;
-        LogManager::getSingleton().logMessage("RBX sm c=" + StringConverter::toString(count));
-    }
-    if (sphereMapCache)
-        LogManager::getSingleton().logMessage("RBX sm2sph c=" + StringConverter::toString(
-            *reinterpret_cast<unsigned*>(static_cast<char*>(sphereMapCache) + 0x1c)));
+typedef SharedPtr<Resource>ResourcePtr;
+struct DataStream;typedef SharedPtr<DataStream>DataStreamPtr;
+struct ScriptLoader {
+ virtual ~ScriptLoader();
+ virtual const std::vector<std::string>&getScriptPatterns()const=0;
+ virtual void parseScript(DataStreamPtr&,const std::string&)=0;
+ virtual float getLoadingOrder()const=0;
+};
+struct ManualResourceLoader;
+typedef std::map<std::string,std::string>NameValuePairList;
+typedef unsigned long ResourceHandle;
+struct ResourceManager:ScriptLoader {
+ virtual ~ResourceManager();
+ virtual ResourcePtr create(const std::string&,const std::string&,bool,ManualResourceLoader*,const NameValuePairList*);
+ virtual std::pair<ResourcePtr,bool>createOrRetrieve(const std::string&,const std::string&,bool,ManualResourceLoader*,const NameValuePairList*);
+ virtual void setMemoryBudget(size_t);virtual size_t getMemoryBudget()const;virtual size_t getMemoryUsage()const;
+ virtual void unload(const std::string&);virtual void unload(ResourceHandle);
+ virtual void unloadAll(bool);virtual void reloadAll(bool);
+ virtual void unloadUnreferencedResources(bool);virtual void reloadUnreferencedResources(bool);
+ virtual void remove(ResourcePtr&);virtual void remove(const std::string&);virtual void remove(ResourceHandle);
+ virtual void removeAll();virtual ResourcePtr getByName(const std::string&);
+};
+struct MaterialManager:ResourceManager {__declspec(dllimport) static MaterialManager&getSingleton();};
+struct TextureManager:ResourceManager {__declspec(dllimport) static TextureManager&getSingleton();};
+struct IndexData;
+struct SubMesh {bool useSharedVertices;int operationType;void*vertexData;IndexData*indexData;};
+struct Mesh:Resource {
+ __declspec(dllimport) unsigned short getNumSubMeshes()const;
+ __declspec(dllimport) SubMesh*getSubMesh(unsigned short)const;
+};
+struct __declspec(dllimport) MeshPtr:SharedPtr<Mesh> {
+ MeshPtr(const SharedPtr<Resource>&);virtual ~MeshPtr();
+};
+struct MeshManager:ResourceManager {__declspec(dllimport) static MeshManager&getSingleton();};
+struct SceneManager;struct RenderTarget;
+struct Root {
+ __declspec(dllimport) void destroySceneManager(SceneManager*);
+ __declspec(dllimport) void detachRenderTarget(RenderTarget*);
+};
+enum LogMessageLevel {LML_TRIVIAL=1,LML_NORMAL=2,LML_CRITICAL=3};
+struct LogManager {
+ __declspec(dllimport) static LogManager&getSingleton();
+ __declspec(dllimport) void logMessage(const std::string&,LogMessageLevel=LML_NORMAL,bool=false);
+};
+struct StringConverter {
+ __declspec(dllimport) static std::string toString(unsigned,unsigned short=0,char=' ',std::ios::fmtflags=std::ios::fmtflags(0));
+ __declspec(dllimport) static std::string toString(int,unsigned short=0,char=' ',std::ios::fmtflags=std::ios::fmtflags(0));
+};
+struct RenderOwner {virtual ~RenderOwner();};
+struct VisualEngine {
+ virtual ~VisualEngine();
+ SceneManager*sceneManager;void*unobserved08;RenderTarget*renderTarget;void*unobserved10;RenderOwner*renderOwner;
+};
+void __cdecl reportResourceUsage(ResourceManager&,const std::string&,std::vector<std::string>&);
+void __cdecl reportResourceCounts(ResourceManager&,const std::string&);
+struct RbxSubMesh;
+struct MeshContext {std::map<RbxSubMesh*,std::string>names;};
+struct SubMeshSphereRegistry {char unobserved[0x1c];unsigned count;unsigned size()const{return count;}};
+extern Root*root;extern MeshContext*meshContext;extern boost::once_flag meshOnce;
+extern SubMeshSphereRegistry*subMeshSpheres;void __cdecl initializeMeshContext();
+VisualEngine::~VisualEngine(){
+ if(root){
+  if(sceneManager)root->destroySceneManager(sceneManager);
+  if(renderTarget)root->detachRenderTarget(renderTarget);
+  if(renderOwner)delete renderOwner;
+  std::vector<std::string>textures,materials,meshes;
+  reportResourceUsage(MaterialManager::getSingleton(),"Material",materials);
+  reportResourceUsage(TextureManager::getSingleton(),"Texture",textures);
+  // The target passes the same vector to its Material and Mesh reports.
+  reportResourceUsage(MeshManager::getSingleton(),"Mesh",materials);
+  reportResourceCounts(MaterialManager::getSingleton(),"matl");
+  reportResourceCounts(TextureManager::getSingleton(),"tex");
+  reportResourceCounts(MeshManager::getSingleton(),"mesh");
+  boost::call_once(initializeMeshContext,meshOnce);
+  MeshContext*context=meshContext;
+  LogManager::getSingleton().logMessage("RBX sms c="+StringConverter::toString(context->names.size()),LML_NORMAL,false);
+  if(context->names.size()){
+   std::string remaining;
+   for(std::map<RbxSubMesh*,std::string>::const_iterator it=context->names.begin();it!=context->names.end();++it)remaining+=" "+it->second;
+   LogManager::getSingleton().logMessage("RBX sms remaining: "+remaining,LML_NORMAL,false);
+  }
+  MeshPtr mesh=MeshManager::getSingleton().getByName("rbxvb");
+  if(!mesh.isNull()){
+   int subMeshCount=mesh->getNumSubMeshes();int indexedCount=0;
+   for(int i=0;i<subMeshCount;++i)if(mesh->getSubMesh(static_cast<unsigned short>(i))->indexData)++indexedCount;
+   LogManager::getSingleton().logMessage("RBX sm c="+StringConverter::toString(indexedCount),LML_NORMAL,false);
+  }
+  if(subMeshSpheres)LogManager::getSingleton().logMessage("RBX sm2sph c="+StringConverter::toString(subMeshSpheres->size()),LML_NORMAL,false);
+ }
 }
 }
+typedef char visual_scene_offset[offsetof(Ogre::VisualEngine,sceneManager)==4?1:-1];
+typedef char visual_target_offset[offsetof(Ogre::VisualEngine,renderTarget)==12?1:-1];
+typedef char visual_owner_offset[offsetof(Ogre::VisualEngine,renderOwner)==20?1:-1];
+typedef char submesh_index_offset[offsetof(Ogre::SubMesh,indexData)==12?1:-1];
+typedef char resource_ptr_size[sizeof(Ogre::ResourcePtr)==12?1:-1];
+typedef char mesh_ptr_size[sizeof(Ogre::MeshPtr)==12?1:-1];
+typedef char registry_size[sizeof(Ogre::MeshContext)==32?1:-1];

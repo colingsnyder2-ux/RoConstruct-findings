@@ -1,139 +1,77 @@
-// from server: 25% by coldek
-typedef unsigned char byte;
-typedef unsigned long DWORD;
-
-extern "C" double __cdecl sqrt(double);
-extern "C" void __cdecl fn501ca0(void *, void *);
-extern "C" void __cdecl fn5183c0(void *, float);
-extern "C" void __cdecl fn5cbe70(void *, void *);
-extern "C" void __cdecl fn5dec60(void *, void *, void *);
-extern "C" void __cdecl fn5185f0(void *, void *);
-extern "C" void __cdecl fn513220(void *, void *);
-extern "C" void __cdecl fn513240(void *, void *, int);
-extern "C" void __cdecl fn666250(void *, float);
-extern "C" double __cdecl fn666270(void *);
-extern "C" void __cdecl fn666290(void *, void *, void *);
-extern "C" void __cdecl fn6662d0(void *, void *);
-extern "C" byte __cdecl fn641530(void *, void *, void *, void *);
-extern "C" void *__cdecl fn641280(void *, void *, void *, void *, float);
-
-struct Humanoid {
-    DWORD *vtable;
-    DWORD *vtable2;
-    byte pad08[0x35];
-    byte flag3d;
-    byte pad3e[2];
-    float value40;
-    byte pad44[4];
-    float result48[3];
-
-    void update(void *, void *, void *);
+// from server: 84% by king_originala
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+#include <math.h>
+#include <string.h>
+#include <stddef.h>
+#include <vector>
+namespace G3D {
+struct Vector2 {float x,y;Vector2():x(0),y(0){}Vector2(float a,float b):x(a),y(b){}Vector2(const Vector2&v):x(v.x),y(v.y){}Vector2 operator-(const Vector2&v)const{return Vector2(x-v.x,y-v.y);}float length()const{return sqrtf(x*x+y*y);}Vector2 direction()const;};
+struct Vector3 {float x,y,z;Vector3():x(0),y(0),z(0){}Vector3(float a,float b,float c):x(a),y(b),z(c){}Vector3(const Vector3&v):x(v.x),y(v.y),z(v.z){}
+ Vector3&operator=(const Vector3&v){x=v.x;y=v.y;z=v.z;return *this;}Vector3 operator-(const Vector3&v)const{return Vector3(x-v.x,y-v.y,z-v.z);}Vector3 operator+(const Vector3&v)const{return Vector3(x+v.x,y+v.y,z+v.z);}Vector3 operator*(float f)const{return Vector3(x*f,y*f,z*f);}
+ Vector3&operator+=(const Vector3&v){x+=v.x;y+=v.y;z+=v.z;return *this;}Vector3&operator/=(float);float squaredMagnitude()const{return x*x+y*y+z*z;}float magnitude()const{return(float)sqrt(squaredMagnitude());}Vector2 xz()const;
 };
-
-void Humanoid::update(void *arg1, void *arg2, void *arg3)
-{
-    float *out = (float *)arg2;
-    float *position = (float *)((char *)out + 0x24);
-    float *origin = (float *)((char *)arg1 + 0x24);
-    float delta[3];
-    float distance;
-    float oldPosition[3];
-    float local[9];
-    float saved[9];
-    float a[3];
-    float b[3];
-    float c[3];
-    float d[3];
-    float e[3];
-    float f[3];
-    float g[3];
-    float h[3];
-    float scratch[9];
-    float extra[12];
-    byte success;
-    int i;
-    DWORD *v;
-    DWORD *m;
-    void *camera;
-    void *result;
-    float angle;
-
-    delta[0] = position[0] - origin[0];
-    delta[1] = position[1] - origin[1];
-    delta[2] = position[2] - origin[2];
-    distance = (float)sqrt((double)(delta[0] * delta[0] +
-                                    delta[1] * delta[1] +
-                                    delta[2] * delta[2]));
-
-    oldPosition[0] = position[0];
-    oldPosition[1] = position[1];
-    oldPosition[2] = position[2];
-
-    v = (DWORD *)*(DWORD **)((char *)this + 4);
-    m = (DWORD *)*(DWORD **)((char *)v + 4);
-    camera = (void *)((char *)m + 4);
-
-    if (distance >= 0.0001f) {
-        fn666290(camera, out, extra);
-        position[0] = ((float *)extra)[9];
-        position[1] = ((float *)extra)[10];
-        position[2] = ((float *)extra)[11];
-        delta[0] += position[0] - oldPosition[0];
-        delta[1] += position[1] - oldPosition[1];
-        delta[2] += position[2] - oldPosition[2];
-    } else {
-        fn666290(camera, out, extra);
-        position[0] = ((float *)extra)[9];
-        position[1] = ((float *)extra)[10];
-        position[2] = ((float *)extra)[11];
-    }
-
-    result = ((void *(__thiscall *)(void *, void *))(*(DWORD *)this + 0x24))(this, a);
-    fn5183c0(b, 1.0f);
-    fn6662d0((char *)this + 8, b);
-    fn666290((char *)this + 8, c, d);
-    fn666290((char *)this + 8, e, f);
-    fn666270(this);
-    fn666250(this, 0.0f);
-    fn5dec60(this, g, h);
-    fn5185f0(g, a);
-    fn5185f0((char *)this + 8, b);
-    fn5185f0((char *)this + 0x18, c);
-    fn5cbe70(d, e);
-    fn501ca0(d, extra);
-
-    result48[0] = d[0];
-    result48[1] = d[1];
-    result48[2] = d[2];
-    flag3d = 1;
-
-    if (flag3d)
-        fn641280(this, local, arg1, arg2, value40);
-
-    fn513240(extra, local, 2);
-    fn513220(extra, arg1);
-    success = fn641530(this, saved, local, arg3);
-
-    if (success) {
-        if (!flag3d)
-            value40 = (float)sqrt((double)(delta[0] * delta[0] +
-                                            delta[1] * delta[1] +
-                                            delta[2] * delta[2]));
-        result = fn641280(this, local, arg1, arg2, distance);
-        for (i = 0; i != 9; ++i)
-            out[i] = ((float *)result)[i];
-        position[0] = ((float *)result)[9];
-        position[1] = ((float *)result)[10];
-        position[2] = ((float *)result)[11];
-    } else if (flag3d) {
-        for (i = 0; i != 9; ++i)
-            out[i] = saved[i];
-        position[0] = oldPosition[0];
-        position[1] = oldPosition[1];
-        position[2] = oldPosition[2];
-    }
-
-    angle = distance;
-    flag3d = success;
-    ((void (__thiscall *)(Humanoid *, float))vtable[8])(this, angle);
+struct Matrix3 {float elt[3][3];Matrix3(){}Matrix3(const Matrix3&);Matrix3&operator=(const Matrix3&m){memcpy(elt,m.elt,9*sizeof(float));return *this;}Vector3 getColumn(int)const;};
+struct CoordinateFrame {Matrix3 rotation;Vector3 translation;CoordinateFrame(const CoordinateFrame&f):rotation(f.rotation),translation(f.translation){}~CoordinateFrame(){}Vector3 pointToObjectSpace(const Vector3&)const;};
 }
+namespace RBX {
+struct Primitive;struct ContactManager;
+struct ILocation {virtual const G3D::CoordinateFrame getLocation()const=0;};
+struct ICameraSubject:virtual ILocation {
+ virtual ~ICameraSubject();virtual void onCameraNear(float);virtual void getCameraIgnorePrimitives(std::vector<const Primitive*>&);virtual float getLerp()const;virtual bool zoom(float,G3D::CoordinateFrame&,G3D::CoordinateFrame&);virtual void stepGoalAndFocus(G3D::CoordinateFrame&,G3D::CoordinateFrame&,bool);
+};
+struct Vector3ERA {float weight,x,y,z;G3D::Vector3 pushAndGetAverage(G3D::Vector3);G3D::Vector3 getAverage();};
+struct floatERA {float weight,avg;float pushAndGetAverage(float);float getAverage();};
+struct Math {static G3D::CoordinateFrame getFocusSpace(const G3D::CoordinateFrame&);};
+struct ICharacterSubject:ICameraSubject {
+ Vector3ERA focusERA,focusOffsetERA;G3D::Vector3 lastOffset;floatERA rotationERA;bool cursorLocked,wasOccluded;float unoccludedDistance;bool hasGoalInFocus;G3D::Vector3 goalInFocus;
+ G3D::CoordinateFrame goalFromDistance(const G3D::CoordinateFrame&,const G3D::CoordinateFrame&,float);bool testOcclusion(const G3D::CoordinateFrame&,const G3D::CoordinateFrame&,float&);
+ virtual bool zoom(float,G3D::CoordinateFrame&,G3D::CoordinateFrame&);virtual void stepGoalAndFocus(G3D::CoordinateFrame&,G3D::CoordinateFrame&,bool);
+ virtual ContactManager*getContactManager()=0;virtual void getIgnorePrims(std::vector<const Primitive*>&);virtual void tellCameraNear(float);virtual G3D::Vector3 getIntendedMovementVector()=0;virtual float getIntendedRotationAboutYAxis()=0;virtual void cameraSetWalkOrientation(float,bool)=0;
+};
+void ICharacterSubject::stepGoalAndFocus(G3D::CoordinateFrame&cameraGoal,G3D::CoordinateFrame&cameraFocus,bool){
+ G3D::Vector3&focusPosition=cameraFocus.translation;
+ G3D::Vector3&goalPosition=cameraGoal.translation;
+ G3D::Vector3 focusToGoal=focusPosition-goalPosition;
+ if((goalPosition-focusPosition).magnitude()<2.75f){
+  G3D::Vector3 oldFocus=focusPosition;
+  cameraFocus=getLocation();
+  goalPosition+=focusPosition-oldFocus;
+ }else{
+  cameraFocus=getLocation();
+  G3D::Vector3 intended=getIntendedMovementVector()*16.0f;intended/=30.0f;
+  G3D::Vector3 filterInput=focusPosition-focusERA.getAverage()-intended;
+  filterInput.y=0;
+  G3D::Vector3 offset;
+  offset=focusOffsetERA.pushAndGetAverage(filterInput);
+  (void)focusERA.pushAndGetAverage(focusPosition);
+  (void)getIntendedRotationAboutYAxis();
+  {G3D::CoordinateFrame subjectFrame=getLocation();
+  G3D::Vector3 back=subjectFrame.rotation.getColumn(2);
+  (void)rotationERA.getAverage();
+  (void)rotationERA.pushAndGetAverage((float)-atan2(-back.x,back.z));}
+  G3D::CoordinateFrame focusSpace=Math::getFocusSpace(cameraGoal);
+  goalPosition+=offset;
+  float radius=focusToGoal.xz().length();
+  G3D::Vector2 direction=(focusPosition.xz()-goalPosition.xz()).direction();
+  goalPosition=G3D::Vector3(focusPosition.x-direction.x*radius,focusPosition.y-focusToGoal.y,focusPosition.z-direction.y*radius);
+  goalInFocus=focusSpace.pointToObjectSpace(goalPosition);hasGoalInFocus=true;
+ }
+ G3D::CoordinateFrame testGoal=wasOccluded?goalFromDistance(cameraFocus,cameraGoal,unoccludedDistance):cameraGoal;
+ float distance;
+ bool occluded=testOcclusion(cameraFocus,testGoal,distance);
+ if(occluded){if(!wasOccluded)unoccludedDistance=focusToGoal.magnitude();cameraGoal=goalFromDistance(cameraFocus,cameraGoal,distance);}
+ else if(wasOccluded)cameraGoal=testGoal;
+ wasOccluded=occluded;tellCameraNear(distance);
+}
+}
+typedef char vector_size[sizeof(G3D::Vector3)==12?1:-1];
+typedef char vector2_size[sizeof(G3D::Vector2)==8?1:-1];
+typedef char frame_size[sizeof(G3D::CoordinateFrame)==48?1:-1];
+typedef char focus_era_offset[offsetof(RBX::ICharacterSubject,focusERA)==8?1:-1];
+typedef char offset_era_offset[offsetof(RBX::ICharacterSubject,focusOffsetERA)==0x18?1:-1];
+typedef char rotation_era_offset[offsetof(RBX::ICharacterSubject,rotationERA)==0x34?1:-1];
+typedef char occluded_offset[offsetof(RBX::ICharacterSubject,wasOccluded)==0x3d?1:-1];
+typedef char distance_offset[offsetof(RBX::ICharacterSubject,unoccludedDistance)==0x40?1:-1];
+typedef char goal_flag_offset[offsetof(RBX::ICharacterSubject,hasGoalInFocus)==0x44?1:-1];
+typedef char goal_offset[offsetof(RBX::ICharacterSubject,goalInFocus)==0x48?1:-1];

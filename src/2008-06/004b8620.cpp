@@ -1,26 +1,54 @@
+// from server: 100% by king_originala
 // from server: 78% by Espeon
-// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espeon_newinstancewriterstdstring32ac812dfa988aaf.cpp
-
-// Candidate translation unit (score above; library headers required).
 #include <string>
-#include <boost/shared_ptr.hpp>
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+#include <intrin.h>
+#include <utility>
+namespace boost {
+namespace detail {
+struct sp_counted_base {
+    virtual ~sp_counted_base() {}
+    virtual void dispose()=0;
+    virtual void destroy(){delete this;}
+    long use_count_,weak_count_;
+    void weak_release(){if(_InterlockedDecrement(&weak_count_)==0)destroy();}
+    void release(){if(_InterlockedDecrement(&use_count_)==0){dispose();weak_release();}}
+};
+struct shared_count {
+    sp_counted_base* pi_;
+    shared_count():pi_(0){}
+    shared_count& operator=(const shared_count& r){sp_counted_base* tmp=r.pi_;if(tmp!=pi_){if(tmp)_InterlockedIncrement(&tmp->use_count_);if(pi_)pi_->release();pi_=tmp;}return *this;}
+    void swap(shared_count& r){sp_counted_base* tmp=r.pi_;r.pi_=pi_;pi_=tmp;}
+    shared_count(const shared_count& r):pi_(r.pi_){if(pi_)_InterlockedIncrement(&pi_->use_count_);}
+    ~shared_count(){if(pi_)pi_->release();}
+};
+}
+template<class T> class shared_ptr {
+public:
+    T* px; detail::shared_count pn;
+    shared_ptr():px(0),pn(){}
+    shared_ptr& operator=(const shared_ptr& r){px=r.px;pn=r.pn;return *this;}
+    void swap(shared_ptr& r){std::swap(px,r.px);pn.swap(r.pn);}
+    void reset(){shared_ptr().swap(*this);}
+    typedef T* shared_ptr::*unspecified_bool_type;
+    operator unspecified_bool_type()const{return px==0?0:&shared_ptr::px;}
+    shared_ptr(const shared_ptr& r):px(r.px),pn(r.pn){}
+    template<class Y> shared_ptr(const shared_ptr<Y>& r):px(r.px),pn(r.pn){}
+    T* get()const{return px;}
+    T* operator->()const{return px;}
+};
+template<class T,class U> bool operator==(const shared_ptr<T>& a,const shared_ptr<U>& b){return a.get()==b.get();}
+}
+
+
 
 typedef std::string Text;
 
 struct NamedText {
-    unsigned prefix[2];
-    union {
-        char buffer[16];
-        char* pointer;
-    };
-    unsigned length;
-    unsigned capacity;
-    const char* c_str() const { return capacity < 16 ? buffer : pointer; }
+    unsigned prefix;
+    std::string text;
+    const char* c_str() const { return text.c_str(); }
 };
 
 struct NameInterface {
@@ -110,13 +138,16 @@ struct Item {
 
 void Item::write(void* stream)
 {
+    {
     Object* key = object;
     if (!reinterpret_cast<Lookup*>(
             reinterpret_cast<char*>(owner) + 0x2c90)->find(&key))
         return;
+    }
 
     writeKind(stream, 2);
-    owner->writeObject(stream, object);
+    Object* writtenObject = object;
+    owner->writeObject(stream, writtenObject);
 
     if (settings()->logging) {
         Object* instance = object;
@@ -132,7 +163,8 @@ void Item::write(void* stream)
         reinterpret_cast<char*>(owner) + 0x2bb0)->write(
             stream, object->identifier);
 
-    bool enabled = owner->flag(object);
+    Object* testedObject = object;
+    bool enabled = owner->flag(testedObject);
     writeFlag(stream, enabled);
     owner->finishObject(object, stream);
 

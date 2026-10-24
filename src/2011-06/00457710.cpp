@@ -1,19 +1,18 @@
-// from server: 75% by atomic.potato
-extern "C" void __cdecl UpdateRenderSettings(int);
-
+// from server: 94% by sophus
 struct CRenderSettingsItem
 {
-    int padding[51];
+    char padding[160];
     int value;
-    void SetValue(int);
+    void value_set(int);
 };
 
-void CRenderSettingsItem::SetValue(int value)
-{
-    if (value == this->value)
-        return;
+extern "C" void __stdcall SetRenderSettingsValue(int);
 
-    this->value = value;
-    value = 0x00CB3320;
-    UpdateRenderSettings(value);
+void CRenderSettingsItem::value_set(int v)
+{
+    if (v != value)
+    {
+        value = v;
+        SetRenderSettingsValue(0x00CB3288);
+    }
 }

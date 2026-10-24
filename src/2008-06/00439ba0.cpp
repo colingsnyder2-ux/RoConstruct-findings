@@ -1,3 +1,4 @@
+// from server: 92% by king_originala
 // from server: 84% by Espeon
 // roc-cl: 50727
 // from server: 82% by colin
@@ -95,14 +96,24 @@
 
 struct String {
     char* data;
-    __declspec(dllimport) const char* c_str() const;
-    __declspec(dllimport) int compare(const char*) const;
+    const char* c_str() const;
+    int compare(const char*) const;
     __declspec(dllimport) ~String() throw();
 };
 
 extern const char* (__thiscall* string_data)(const String*);
 extern int (__thiscall* string_compare)(const String*, const char*);
 extern void (__thiscall* string_destroy)(String*);
+
+inline const char* String::c_str() const
+{
+    return string_data(this);
+}
+
+inline int String::compare(const char* value) const
+{
+    return string_compare(this, value);
+}
 
 struct Descriptor {
     char pad[8];
@@ -130,11 +141,11 @@ struct Group {
 
 struct Listener {
     char pad[0x18];
-    void notify(void**);
+    void notify(void* const&);
 };
 
 struct Map {
-    void** find(void**);
+    void*& find(void* const&);
 };
 
 struct Selection {
@@ -150,16 +161,13 @@ void Selection::f(Item* item)
     Group* selected = group(item->descriptor->key);
     int index = 0;
     for (; index < selected->items->count; ++index) {
-        if (item->copy().compare(selected->items->at(index)->copy().c_str()) < 0)
+        Item* other = selected->items->at(index);
+        if (item->copy().compare(other->copy().c_str()) < 0)
             break;
     }
 
     selected->insert(index, item);
 
-    void* key = item->descriptor;
-    void** value = map.find(&key);
-    void* handle = item->handle;
-    *value = handle;
-    key = handle;
-    listener.notify(&key);
+    map.find(item->descriptor) = item->handle;
+    listener.notify(item->handle);
 }

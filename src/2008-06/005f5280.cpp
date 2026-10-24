@@ -1,34 +1,11 @@
+// from server: 96% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-struct Buffer {
-    char padding[0x14];
-    int begin;
-    int unused;
-    int current;
-    int end;
-    int state;
-    void close(int, int);
-    void reset() { current = begin; end = begin; }
-};
+// roc-lib: boost-1.34.1-dll roc_espeon_boost134packagef99afc2b76029f15.cpp
 
-struct Holder {
-    Buffer* buffer;
-    Buffer* operator->() const { return buffer; }
-};
-
-struct S {
-    Holder* holder;
-    void f();
-};
-
-void S::f()
-{
-    Holder& h = *holder;
-    h->state = 0;
-    try {
-        h->current = h->end = h->begin;
-        h->close(1, 1);
-    } catch (...) {
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#define NDEBUG 1
+#include <boost/iostreams/filter/zlib.hpp>
+#include <boost/iostreams/detail/closer.hpp>
+template struct boost::iostreams::detail::closer<boost::iostreams::symmetric_filter<boost::iostreams::detail::zlib_compressor_impl<>, std::allocator<char> > >;

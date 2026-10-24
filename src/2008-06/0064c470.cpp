@@ -1,214 +1,69 @@
-// from server: 44% by colin
-// roc-repair: fixed-width shims for MSVC2005/2008
-typedef int intptr_t;
-
-
-
-
-struct Value {
-    char data[12];
-    void set(int, int);
-};
-
-struct Clump {
-    char padding[8];
-    Value value;
-    bool dirty;
-    void update(Value*);
-    Value* getValue();
-};
-
+// from server: 68% by king_originala
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <set>
+#include <deque>
 struct Assembly;
-struct Joint;
-struct Contact;
-
-struct Edge {
-    virtual int getState();
-    virtual int getEdgeState();
-    virtual int v2();
-    virtual int v3();
+struct Stage {virtual ~Stage();virtual int getStageType()=0;Stage*upstream;Stage*downstream;};
+struct Pipelined {
+ virtual ~Pipelined();virtual void putInKernel();virtual void removeFromKernel();
+ Stage*currentStage;
+ bool inPipeline()const{return currentStage!=0;}
+ bool inOrDownstreamOfStage(Stage*stage)const{return currentStage->getStageType()>=stage->getStageType();}
+ bool downstreamOfStage(Stage*stage)const{return currentStage->getStageType()>stage->getStageType();}
 };
-
-struct Assembly {
-    char pad0[4];
-    Edge* edge;
-    char pad1[0x18 - 8];
-    int* statePtr;
-    char pad2[0x24 - 0x1c];
-    void* kernel;
-    char pad3[0x44 - 0x28];
-    int someField44;
-    int someField48;
+struct Edge:public Pipelined {int edgeState;virtual int getEdgeType()const=0;};
+// Native Velocity constructor only copies two Vector3::zero values; it cannot throw.
+struct Velocity {float linear[3],rotational[3];Velocity() throw();};
+struct Body {void setVelocity(const Velocity&);};
+struct Primitive {char prefix[0xa0];Body*body;};
+struct Clump {char prefix[0x1c];Primitive*rootPrimitive;};
+struct SleepInfo {int state,sleepCount;};
+struct EdgeArray {Edge**data;int count,capacity;};
+struct Assembly:public Pipelined {
+ char prefix[0x18-8];SleepInfo*sleepInfo;char reserved[0x24-0x1c];Clump*rootClump;
+ char reserved28[0x44-0x28];int visitStamp,depth;
+ EdgeArray&getExternalEdges();Assembly*otherAssembly(Edge*)const;
 };
-
-struct Joint {
-    char pad0[4];
-    Edge* edge;
-    char pad1[0x18 - 8];
-    int* statePtr;
+struct SimJobStage:public Stage {void onAssemblyRemoving(Assembly*);};
+struct SleepStage:public Stage {
+ char prefix[0x140-12];std::set<Assembly*>sleepingChecking;
+ char reserved[0x1d8-0x160];int visitStamp;bool throttling;
+ int getState(Assembly*a){return a->inPipeline()&&a->inOrDownstreamOfStage(this)?a->sleepInfo->state:0;}
+ bool edgeIsAwake(Edge*e){return e->inOrDownstreamOfStage(this);}
+ bool isAffecting(Edge*e){int state=e->edgeState;return e->getEdgeType()!=1||state==3||state==4;}
+ void changeAssemblyState(Assembly*,int);void wakeEdge(Edge*);
+ std::set<Assembly*>*stateToSet(int);
+ void wakeNeighbors(Assembly*,std::deque<Assembly*>&,int);
 };
-
-struct Contact {
-    char pad0[4];
-    Edge* edge;
-    char pad1[0x18 - 8];
-    int* statePtr;
-    char pad2[0x24 - 0x1c];
-    void* kernel;
-    char pad3[0x44 - 0x28];
-    int someField44;
-    int someField48;
-};
-
-struct IWorldStage {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void onEdgeAdded(Edge*);
-    virtual void onEdgeRemoving(Edge*);
-};
-
-struct IStage {
-    virtual ~IStage();
-    char pad0[4];
-    IWorldStage* downstream;
-};
-
-struct SleepStage : public IStage {
-    char pad1[0x140 - 12];
-    char setAt140[0x1d8 - 0x140];
-    int field1d8;
-    bool field1dc;
-    char pad2[0x1e0 - 0x1dd];
-
-    int getStepId();
-    void changeAssemblyState(Assembly*, int);
-    void changeJointState(Joint*, int);
-    void changeContactState(Contact*, int);
-    int computeContactState(Contact*);
-    int computeStateFromNeighbors(Assembly*);
-    void forceNeighborAwake(Assembly*);
-};
-
-extern "C" void __stdcall sub_589330(void*);
-extern "C" void* __stdcall sub_5e61b0(void*, void*);
-extern "C" void* __stdcall sub_5e6c70(void*);
-extern "C" void* __stdcall sub_5e8c40(void*, void*, void*);
-extern "C" void* __stdcall sub_5e9f60(void*, void*);
-extern "C" void* __stdcall sub_614040(void*, void*);
-extern "C" void* __stdcall sub_614170(void*);
-extern "C" void* __stdcall sub_64a550(void*, int);
-extern "C" void* __stdcall sub_64a5b0(void*, void*);
-extern "C" void* __stdcall sub_64ae90(void*, void*, int);
-extern "C" void* __stdcall sub_64c1d0(void*, void*);
-extern "C" void* __stdcall sub_64d2a0(void*, void*);
-
-extern char g_97d568;
-extern int g_97d580;
-
-void SleepStage::changeAssemblyState(Assembly* a, int state)
-{
-    if (a->edge != 0) {
-        int s1 = a->edge->getEdgeState();
-        int s2 = this->getStepId();
-        if (s1 < s2) {
-            goto skip;
-        }
-        int* p = a->statePtr;
-        int cur = *p;
-        goto have;
+void SleepStage::wakeNeighbors(Assembly*assembly,std::deque<Assembly*>&pending,int maxDepth){
+ int state=getState(assembly);
+ int depth=assembly->depth;
+ if(state!=0){
+  if(state!=3)changeAssemblyState(assembly,3);
+  const EdgeArray&edges=assembly->getExternalEdges();
+  for(int i=0;i<edges.count;++i){
+   Edge*edge=edges.data[i];
+   if(edgeIsAwake(edge)){
+    wakeEdge(edge);
+    if(isAffecting(edge)){
+     Assembly*other=assembly->otherAssembly(edge);
+     if(depth<maxDepth){
+      if(throttling||getState(other)!=3){
+       if(other->visitStamp!=visitStamp){other->visitStamp=visitStamp;other->depth=depth+1;pending.push_back(other);}
+      }
+     }else if(other->inPipeline()&&other->inOrDownstreamOfStage(this)&&other->sleepInfo->state==5){
+      stateToSet(getState(other))->erase(other);
+      sleepingChecking.insert(other);
+      static Velocity zero;
+      other->rootClump->rootPrimitive->body->setVelocity(zero);
+      if(other->downstreamOfStage(this))static_cast<SimJobStage*>(downstream)->onAssemblyRemoving(other);
+      other->sleepInfo->sleepCount=0;
+      other->sleepInfo->state=4;
+     }
     }
-skip:
-    {
-        int cur = 0;
-have:
-        int saved = a->someField48;
-        if (cur != 0) {
-            return;
-        }
-        if (cur != 3) {
-            sub_64ae90(this, a, 3);
-        }
-        Value* v = (Value*)sub_5e6c70(a);
-        int i = 0;
-        if (*(int*)((char*)v + 4) <= 0) {
-            return;
-        }
-        do {
-            Assembly* as = *(Assembly**)(*(char**)v + i * 4);
-            int s3 = this->getStepId();
-            int s4 = as->edge->getEdgeState();
-            if (s4 < s3) {
-                goto next;
-            }
-            sub_64c1d0(this, as);
-            int st = as->edge->getState();
-            int es = (int)(intptr_t)as->edge;
-            if (st == 1) {
-                if (es != 3 && es != 4) {
-                    goto next;
-                }
-            }
-            {
-                void* r = sub_5e61b0(this, as);
-                Assembly* asm2 = (Assembly*)r;
-                if (saved < a->someField48) {
-                    if (!this->field1dc) {
-                        int cs = (int)(intptr_t)sub_64a5b0(this, asm2);
-                        if (cs == 3) {
-                            goto next;
-                        }
-                    }
-                    int f = this->field1d8;
-                    if (asm2->someField44 == f) {
-                        goto next;
-                    }
-                    asm2->someField44 = f;
-                    asm2->someField48 = saved + 1;
-                    sub_589330((char*)this + 0x140);
-                    goto next;
-                }
-                if (asm2->edge == 0) {
-                    goto next;
-                }
-                int s5 = this->getStepId();
-                int s6 = asm2->edge->getEdgeState();
-                if (s6 < s5) {
-                    goto next;
-                }
-                if (*asm2->statePtr != 5) {
-                    goto next;
-                }
-                int st2 = 0;
-                if (asm2->edge != 0) {
-                    int s7 = asm2->edge->getEdgeState();
-                    int s8 = this->getStepId();
-                    if (s7 >= s8) {
-                        st2 = *asm2->statePtr;
-                    }
-                }
-                void* r2 = sub_64a550(this, st2);
-                sub_5e9f60(r2, &asm2);
-                sub_5e8c40((char*)this + 0x140, &asm2, &asm2);
-                if ((g_97d580 & 1) == 0) {
-                    g_97d580 |= 1;
-                    sub_614170(&g_97d568);
-                }
-                void* k = asm2->kernel;
-                void* p2 = *(void**)((char*)k + 0x1c);
-                void* p3 = *(void**)((char*)p2 + 0xa0);
-                sub_614040(p3, &g_97d568);
-                int s9 = asm2->edge->getEdgeState();
-                int s10 = this->getStepId();
-                if (s9 > s10) {
-                    sub_64d2a0(this->downstream, asm2);
-                }
-                asm2->statePtr[1] = 0;
-                *asm2->statePtr = 4;
-            }
-next:
-            i++;
-        } while (i < *(int*)((char*)v + 4));
-    }
+   }
+  }
+ }
 }

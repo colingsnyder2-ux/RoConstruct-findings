@@ -1,50 +1,41 @@
-// from server: 97% by king_originala
-void *__cdecl operator new(unsigned int);
-void __cdecl operator delete(void *);
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-view roc_espeon_nativemeshfactory2364c1e6ea7ebc65.cpp
 
-struct Mesh {
-    unsigned char storage[136];
-    Mesh(int, int, int, int, int, int, float);
+// Candidate translation unit (score above; library headers required).
+#include "QuadVolume.h"
+#include "v8datamodel/BrickColor.h"
+#include <G3D/AABox.h>
+namespace RBX { namespace RenderBase {
+class Mesh: public G3D::ReferenceCountedObject {
+public:
+ char storage[0x50-sizeof(G3D::ReferenceCountedObject)];
+ G3D::AABox boxA,boxB;
+ int first,second;
+ Mesh(); virtual ~Mesh();
+}; }
+namespace ViewNew {
+class BrickMesh: public RenderBase::Mesh {
+public:
+ BrickMesh(const G3D::Vector3&, View::RenderSurfaceTypes, BrickColor,int,int,int,float);
+ void configure(const G3D::Vector3&,View::RenderSurfaceTypes,BrickColor,int,int,int,float);
 };
-
-struct Level {
-    void configure(int, int, int, int, int, int, float);
-};
-
-struct Result {
-    Mesh *pointer;
-    Result() : pointer(0) {}
-    ~Result();
-    void reset(Mesh *);
-};
-
-extern unsigned char enabled;
-extern unsigned char building;
+typedef char mesh_size_check[sizeof(BrickMesh)==136?1:-1];
+extern bool enabled,building;
 extern float meshValue;
 extern const float initialValue;
-extern unsigned char meshType;
-extern unsigned char levelType;
-
-extern "C" void *__cdecl __RTDynamicCast(
-    void *, long, void *, void *, int);
-
-Result __cdecl func_004e54e0(
-    int a, int b, int c, int d, int e, int f, float scale)
-{
-    Result result;
-    building = 0;
-    if (enabled) {
-        meshValue = initialValue;
-        result.reset(new Mesh(a, b, c, d, e, f, scale));
-        meshValue = 0.0f;
-        building = 1;
-        static_cast<Level *>(
-            __RTDynamicCast(result.pointer, 0, &meshType, &levelType, 0)
-        )->configure(a, b, c, d, e, f, scale);
-        building = 0;
-    } else {
-        meshValue = 0.0f;
-        result.reset(new Mesh(a, b, c, d, e, f, scale));
-    }
-    return result;
+G3D::ReferenceCountedPointer<RenderBase::Mesh> create(const G3D::Vector3& a, View::RenderSurfaceTypes b, BrickColor c,int d,int e,int f,float scale){
+ G3D::ReferenceCountedPointer<RenderBase::Mesh> result;
+ building=false;
+ if(enabled){
+  meshValue=initialValue;
+  result=new BrickMesh(a,b,c,d,e,f,scale);
+  meshValue=0; building=true;
+  dynamic_cast<BrickMesh*>(result.pointer())->configure(a,b,c,d,e,f,scale);
+  building=false;
+ }else{meshValue=0;result=new BrickMesh(a,b,c,d,e,f,scale);}
+ return result;
 }
+}}

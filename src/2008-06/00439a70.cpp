@@ -1,4 +1,7 @@
-// from server: 81% by colin
+// from server: 92% by king_originala
+// from server: 83% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
 //
 
 //
@@ -30,7 +33,7 @@ struct Descriptor {
 };
 
 struct Item {
-    char pad[0x10c];
+    char pad[0x114];
     char handle[0x20];
     Descriptor* descriptor;
     String copy();
@@ -50,11 +53,11 @@ struct Group {
 
 struct Listener {
     char pad[0x18];
-    void notify(void**);
+    void notify(void* const&);
 };
 
 struct Map {
-    void** find(void**);
+    void*& find(void* const&);
 };
 
 struct Selection {
@@ -70,16 +73,13 @@ void Selection::f(Item* item)
     Group* selected = group(item->descriptor->key);
     int index = 0;
     for (; index < selected->items->count; ++index) {
-        if (item->copy().compare(selected->items->at(index)->copy().c_str()) < 0)
+        Item* other = selected->items->at(index);
+        if (item->copy().compare(other->copy().c_str()) < 0)
             break;
     }
 
     selected->insert(index, item);
 
-    void* key = item->descriptor;
-    void** value = map.find(&key);
-    void* handle = item->handle;
-    *value = handle;
-    key = handle;
-    listener.notify(&key);
+    map.find(item->descriptor) = item->handle;
+    listener.notify(item->handle);
 }

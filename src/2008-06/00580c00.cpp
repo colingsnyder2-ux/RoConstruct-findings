@@ -1,10 +1,6 @@
-// from server: 91% by Espeon
-// roc-lang: cpp
+// from server: 100% by king_originala
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espeon_groupvaluetemporary21f3823bbe4bba0c.cpp
-
-// Candidate translation unit (score above; library headers required).
 #include <string>
 #include <exception>
 namespace RBX {
@@ -25,134 +21,81 @@ static __declspec(noinline) void checkPermissions(Instance* instance)
         throw runtime_error(msg);
     }
 }
-void verify(Instance* instance)
-{
-    checkPermissions(instance);
-}
 }
 
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-extern "C" long __cdecl _InterlockedIncrement(volatile long*);
-#pragma intrinsic(_InterlockedIncrement)
-extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-#pragma intrinsic(_InterlockedDecrement)
-
-extern "C" void (__cdecl* invalid_parameter_noinfo_import)();
-
-struct RefCount {
-    virtual void unused() = 0;
-    virtual void releaseObject() = 0;
-    virtual void releaseCounter() = 0;
-    volatile long strong;
-    volatile long weak;
+#include <intrin.h>
+#include <utility>
+namespace boost {
+namespace detail {
+struct sp_counted_base {
+    virtual ~sp_counted_base() {}
+    virtual void dispose()=0;
+    virtual void destroy(){delete this;}
+    long use_count_,weak_count_;
+    void weak_release(){if(_InterlockedDecrement(&weak_count_)==0)destroy();}
+    void release(){if(_InterlockedDecrement(&use_count_)==0){dispose();weak_release();}}
 };
-
-struct Shared {
-    void* object;
-    RefCount* counter;
-    ~Shared(){
-    if (counter) {
-        RefCount* count = counter;
-        volatile long* strong = &count->strong;
-        if (_InterlockedDecrement(strong) == 0) {
-            count->releaseObject();
-            volatile long* weak = &count->weak;
-            if (_InterlockedDecrement(weak) == 0)
-                count->releaseCounter();
-        }
-    }
-
-    }
+struct shared_count {
+    sp_counted_base* pi_;
+    shared_count():pi_(0){}
+    shared_count& operator=(const shared_count& r){sp_counted_base* tmp=r.pi_;if(tmp!=pi_){if(tmp)_InterlockedIncrement(&tmp->use_count_);if(pi_)pi_->release();pi_=tmp;}return *this;}
+    void swap(shared_count& r){sp_counted_base* tmp=r.pi_;r.pi_=pi_;pi_=tmp;}
+    shared_count(const shared_count& r):pi_(r.pi_){if(pi_)_InterlockedIncrement(&pi_->use_count_);}
+    ~shared_count(){if(pi_)pi_->release();}
 };
-
-struct Sequence {
-    void* owner;
-    unsigned reserved[2];
-    unsigned first;
-    unsigned last;
+}
+template<class T> class shared_ptr {
+public:
+    T* px; detail::shared_count pn;
+    shared_ptr():px(0),pn(){}
+    shared_ptr& operator=(const shared_ptr& r){px=r.px;pn=r.pn;return *this;}
+    void swap(shared_ptr& r){std::swap(px,r.px);pn.swap(r.pn);}
+    void reset(){shared_ptr().swap(*this);}
+    typedef T* shared_ptr::*unspecified_bool_type;
+    operator unspecified_bool_type()const{return px==0?0:&shared_ptr::px;}
+    shared_ptr(const shared_ptr& r):px(r.px),pn(r.pn){}
+    template<class Y> shared_ptr(const shared_ptr<Y>& r):px(r.px),pn(r.pn){}
+    T* get()const{return px;}
+    T* operator->()const{return px;}
 };
+template<class T,class U> bool operator==(const shared_ptr<T>& a,const shared_ptr<U>& b){return a.get()==b.get();}
+}
 
-struct Document {
-    unsigned char reserved[0x154];
-    Sequence* sequence;
-    void select(void*);
+#include <vector>
+namespace RBX {
+class Instance {};
+typedef std::vector<boost::shared_ptr<Instance> > Instances;
+struct Selection {
+ char pad[0x154];
+ const Instances* selected;
+ Instances::const_iterator begin()const{return selected->begin();}
+ Instances::const_iterator end()const{return selected->end();}
+ void setSelection(Instance*);
 };
-
-struct Tool {
-    void setMode(int);
+struct Workspace {boost::shared_ptr<Instance> group(Instances::const_iterator,Instances::const_iterator);};
+struct History {void record(int);};
+struct Context {Selection* selection();History* history();};
+struct Name {int id;std::string text;const char* c_str()const{return text.c_str();}};
+struct IDataState {virtual void setDirty(bool)=0;};
+void __cdecl trackVerb(const char*,Workspace*);
+struct GroupSelectionVerb {
+ void* table;
+ const Name* name;
+ void* unused;
+ Workspace* workspace;
+ char pad[0x10];
+ Context* context;
+ void doIt(IDataState*);
 };
-
-struct Context {
-    Document* getDocument();
-    Tool* getTool();
-};
-
-struct Manager {
-    Shared makeShared(void*, unsigned, void*, unsigned);
-};
-
-struct StringData {
-    unsigned reserved;
-    union {
-        char buffer[16];
-        char* pointer;
-    };
-    unsigned length;
-    unsigned capacity;
-};
-
-struct Name {
-    unsigned reserved;
-    StringData text;
-};
-
-struct Argument {
-    virtual void finish(int) = 0;
-};
-
-extern void __cdecl handle(const char*, Manager*);
-
-struct S {
-    unsigned reserved0;
-    Name* name;
-    unsigned reserved8;
-    Manager* manager;
-    unsigned reserved10[4];
-    Context* context;
-
-    void prepare();
-    void f(Argument*);
-};
-
-void S::f(Argument* argument)
-{
-    RBX::checkPermissions(reinterpret_cast<RBX::Instance*>(context));
-
-    Context* source = context;
-    Document* document = source ? source->getDocument() : 0;
-
-    Sequence* sequence = document->sequence;
-    unsigned last = sequence->last;
-    if (sequence->first > last)
-        invalid_parameter_noinfo_import();
-    void* lastOwner = sequence->owner;
-
-    sequence = document->sequence;
-    unsigned first = sequence->first;
-    if (first > sequence->last)
-        invalid_parameter_noinfo_import();
-    void* firstOwner = sequence->owner;
-
-    void* object = manager->makeShared(firstOwner, first, lastOwner, last).object;
-
-    document->select(object);
-
-    Tool* tool = context ? context->getTool() : 0;
-    tool->setMode(8);
-
-    StringData* text = &name->text;
-    handle(text->capacity >= 16 ? text->pointer : text->buffer, manager);
-
-    return argument->finish(1);
+void GroupSelectionVerb::doIt(IDataState* state){
+ checkPermissions(reinterpret_cast<Instance*>(context));
+ Selection* selection=context?context->selection():0;
+ Instance* group=workspace->group(selection->begin(),selection->end()).get();
+ selection->setSelection(group);
+ History* history=context?context->history():0;
+ history->record(8);
+ Workspace* currentWorkspace=workspace;
+ trackVerb(name->c_str(),currentWorkspace);
+ state->setDirty(true);
+}
 }

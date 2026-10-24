@@ -1,10 +1,13 @@
-// from server: 92% by atomic.potato
-extern "C" void func_005294f0(void*, const void*, const void*, int, int, int);
-extern "C" void __cdecl func_007f4929(const void*);
-
-void func_0096d0e0()
+// from server: 97% by sophus
+struct S
 {
-    func_005294f0((void*)0xB7FED8, (const void*)0x9BC5C4,
-                  (const void*)0x9BC5B8, 0x9A, 0x0F, 0);
-    func_007f4929((const void*)0x980190);
+    void f006c65d0(int, int, int, int, int);
+};
+
+extern "C" void __cdecl f007f4929(int);
+
+void f00974b40()
+{
+    ((S*)0xb924e8)->f006c65d0(0x9d73d0, 0x9d73dc, 0x98, 0xf, 0);
+    f007f4929(0x985bc0);
 }

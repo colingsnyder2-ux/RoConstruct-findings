@@ -1,15 +1,13 @@
-// from server: 78% by atomic.potato
-extern "C" void sub_71c2a0(void *, const char *, const char *, unsigned int, unsigned int);
-extern "C" void __cdecl sub_7f4929(const void *);
-
+// from server: 95% by sophus
 struct S
 {
-    void f();
+    void f006c65d0(int, int, int, int, int);
 };
 
-void S::f()
+extern "C" void __cdecl f007f4929(int);
+
+void f00974b40()
 {
-    sub_71c2a0((void *)0x00b958c0, (const char *)0x009df91c,
-               (const char *)0x009d1fdc, 0x154, 0x0f);
-    sub_7f4929((const void *)0x00987f00);
+    ((S*)0xb924e8)->f006c65d0(0x9d73d0, 0x9d73dc, 0x98, 0xf, 0);
+    f007f4929(0x985bc0);
 }

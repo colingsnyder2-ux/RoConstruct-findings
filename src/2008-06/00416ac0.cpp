@@ -1,10 +1,11 @@
-// from server: 63% by EspClaude
+// from server: 91% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: atl-9.0-dll-rtm roc_espclaude_d66fe5ea0a64950d.cpp
+// roc-flags: /O2 /Ob2 /GS- /EHsc /MD
+// roc-lib: atl-9.0-dll-rtm roc_espeon_contentinterface6da1be04c6837004.cpp
 
 // Candidate translation unit (score above; library headers required).
+#pragma include_alias(<atlcom.h>, <roc_espeon_atlobjectinlineheader81dc549e9ad7a653.cpp>)
 #ifndef _CPPUNWIND
 #define _CPPUNWIND 1
 #endif
@@ -21,7 +22,7 @@ extern const GUID IID_IContent;
 extern const GUID CLSID_Content;
 extern const GUID LIBID_RobloxLib;
 
-struct __declspec(uuid("00000000-0000-0000-0000-000000000001")) IContent : public IDispatch
+struct ATL_NO_VTABLE IContent : public IDispatch
 {
     virtual HRESULT STDMETHODCALLTYPE Load(BSTR url) = 0;
 };
@@ -38,7 +39,7 @@ public:
 DECLARE_PROTECT_FINAL_CONSTRUCT()
 
 BEGIN_COM_MAP(CContent)
-    COM_INTERFACE_ENTRY(IContent)
+    COM_INTERFACE_ENTRY_IID(IID_IContent, IContent)
     COM_INTERFACE_ENTRY(IDispatch)
     COM_INTERFACE_ENTRY(ISupportErrorInfo)
 END_COM_MAP()

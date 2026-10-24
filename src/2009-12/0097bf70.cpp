@@ -1,18 +1,13 @@
-// from server: 80% by atomic.potato
+// from server: 95% by sophus
 struct S
 {
-    void function_0097BF70();
+    void f006c65d0(int, int, int, int, int);
 };
 
-struct T
-{
-    void sub_76EAA0(int, int, int, const void *, const void *);
-};
+extern "C" void __cdecl f007f4929(int);
 
-extern "C" void __cdecl sub_7F4929(const void *);
-
-void S::function_0097BF70()
+void f00974b40()
 {
-    ((T *)0xb983d0)->sub_76EAA0(0, 2, 0xf8, (const void *)0x9d1b80, (const void *)0x9e3e88);
-    sub_7F4929((const void *)0x989dd0);
+    ((S*)0xb924e8)->f006c65d0(0x9d73d0, 0x9d73dc, 0x98, 0xf, 0);
+    f007f4929(0x985bc0);
 }

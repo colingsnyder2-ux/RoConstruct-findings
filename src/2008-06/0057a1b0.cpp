@@ -1,264 +1,151 @@
-// from server: 24% by colin
-struct VDataModel;
-
-extern "C" void* __cdecl sub_49AC80(void*);
-extern "C" void  __cdecl sub_573430(void*, void*);
-extern "C" void* __cdecl sub_412710(void*);
-extern "C" unsigned int __cdecl sub_48AE20(void*);
-extern "C" void* __cdecl sub_6A17C6(void*, void*, void*, void*, void*);
-extern "C" void  __cdecl sub_4F35D0(void*, void*, void*);
-extern "C" void* __cdecl sub_573290();
-extern "C" void* __cdecl sub_514A20();
-extern "C" void* __cdecl sub_514A60();
-extern "C" void* __cdecl sub_7BAF10(int, int, int);
-extern "C" void  __cdecl sub_55BD80(void*, const char*);
-extern "C" void  __cdecl sub_5A38F0(void*, void*);
-extern "C" void  __cdecl sub_5CECC0(void*, void*);
-extern "C" void* __cdecl sub_45DE20(void*);
-
-struct StdString {
-    char data[0x1c];
-};
-
-extern "C" void __cdecl std_string_ctor(StdString*);
-extern "C" void __cdecl std_string_ctor_pchar(StdString*, const char*);
-extern "C" void __cdecl std_string_ctor_copy(StdString*, const StdString*);
-extern "C" void __cdecl std_string_dtor(StdString*);
-extern "C" StdString* __cdecl std_string_assign(StdString*, const StdString*);
-extern "C" bool __cdecl std_string_eq_pchar(const StdString*, const char*);
-extern "C" StdString* __cdecl std_string_concat(StdString*, const StdString*, const StdString*);
-extern "C" StdString* __cdecl std_string_concat_pchar(StdString*, const StdString*, const char*);
-extern "C" StdString* __cdecl std_string_concat_pchar2(StdString*, const char*, const StdString*);
-
-extern void* (__cdecl *g_fn_802460)(void*);
-extern void* (__cdecl *g_fn_80236C)(void*, const char*);
-extern void* (__cdecl *g_fn_802458)(void*, const char*);
-extern void* (__cdecl *g_fn_802368)(void*, const char*, void*);
-extern void* (__cdecl *g_fn_8023E4)(void*, const char*, void*);
-extern void* (__cdecl *g_fn_8024A8)(void*, void*, void*);
-extern void* (__cdecl *g_fn_80240C)(void*, void*);
-extern void* (__cdecl *g_fn_802468)(void*);
-extern void* (__cdecl *g_fn_80245C)(void*, void*);
-extern void  (__cdecl *g_fn_802890)();
-
-extern float g_f_819BAC;
-extern float g_f_827488;
-extern float g_f_82711C;
-extern float g_f_81C434;
-
-struct VDataModel {
-    char pad0[0x1f4];
-    void* field_1f4;
-    char pad1[0x1fc - 0x1f8];
-    void* field_1fc;
-    char pad2[0x204 - 0x200];
-    void* field_204;
-    char pad3[0x214 - 0x208];
-    void* field_214;
-    char pad4[0x21c - 0x218];
-    void* field_21c;
-    char pad5[0x230 - 0x220];
-    unsigned char field_230;
-    char pad6[0x234 - 0x231];
-    StdString field_234;
-    char pad7[0x254 - 0x250];
-    void* field_254;
-    char pad8[0x259 - 0x258];
-    unsigned char field_259;
-
-    void method(void* a, void* b);
-};
-
-void VDataModel::method(void* a, void* b)
-{
-    if (!field_259)
-        return;
-    if (!a)
-        return;
-    if (!b)
-        return;
-
-    field_254 = b;
-
-    {
-        char* p = (char*)field_204 + 0x1a0;
-        void** vtbl = *(void***)p;
-        void (*fn)(void*, void*) = (void (*)(void*, void*))vtbl[2];
-        fn(p, a);
-    }
-
-    void* r = sub_49AC80(this);
-    void* arg;
-    if (r)
-        arg = field_1fc;
-    else
-        arg = field_214;
-    sub_573430(a, arg);
-
-    {
-        void** vtbl = *(void***)field_21c;
-        void (*fn)(void*, void*) = (void (*)(void*, void*))vtbl[0x60 / 4];
-        fn(field_21c, a);
-    }
-
-    void* r2 = sub_412710(this);
-    void* list = *(void**)((char*)r2 + 0x1a0);
-    if (list) {
-        unsigned int n = sub_48AE20(list);
-        for (unsigned int i = 0; i < n; ++i) {
-            void* inner = *(void**)((char*)list + 0x108);
-            unsigned int cnt = (*(unsigned int*)((char*)inner + 0x10) - *(unsigned int*)((char*)inner + 0xc)) >> 3;
-            if (i >= cnt)
-                g_fn_802890();
-            void* elem = *(void**)(*(unsigned int*)((char*)inner + 0xc) + i * 8);
-            void* obj = sub_6A17C6(elem, (void*)0x92907C, (void*)0x939F70, 0, 0);
-            if (obj) {
-                void** vtbl = *(void***)obj;
-                void (*fn)(void*, void*) = (void (*)(void*, void*))vtbl[2];
-                fn(obj, a);
-            }
-            n = sub_48AE20(list);
-        }
-    }
-
-    StdString progress;
-    g_fn_802460(&progress);
-
-    StdString msg;
-    std_string_ctor(&msg);
-
-    if (g_fn_80236C(&field_234, "[[[progress]]]")) {
-        StdString s1, s2;
-        g_fn_802458(&s1, "Bricks: ");
-        g_fn_802458(&s2, "   Connectors: ");
-
-        StdString m1, m2;
-        {
-            void** vtbl = *(void***)field_1f4;
-            void (*fn)(void*, void*, void*) = (void (*)(void*, void*, void*))vtbl[0];
-            fn(&field_1f4, &m1, (void*)"numPrimitives");
-        }
-        {
-            void** vtbl = *(void***)field_1f4;
-            void (*fn)(void*, void*, void*) = (void (*)(void*, void*, void*))vtbl[0];
-            fn(&field_1f4, &m2, (void*)"numJoints");
-        }
-
-        StdString t1, t2, t3;
-        g_fn_802368(&t1, "Loading...   Instances: ", &m1);
-        g_fn_8023E4(&t2, "   Bricks: ", &t1);
-        g_fn_8024A8(&t3, &t2, &s1);
-        g_fn_80240C(&msg, &t3);
-
-        std_string_dtor(&t3);
-        std_string_dtor(&t2);
-        std_string_dtor(&t1);
-        std_string_dtor(&m2);
-        std_string_dtor(&m1);
-        std_string_dtor(&s2);
-        std_string_dtor(&s1);
-    } else {
-        g_fn_80240C(&msg, &field_234);
-    }
-
-    if (*(unsigned int*)((char*)&msg + 0x10) > 0) {
-        float v[4];
-        {
-            void** vtbl = *(void***)a;
-            void (*fn)(void*, float*) = (void (*)(void*, float*))vtbl[4];
-            fn(a, v);
-        }
-        float f0 = v[0];
-        float f1 = v[1];
-        float f2 = v[2];
-        float f3 = v[3];
-
-        float d0 = f1 - f0;
-        float d1 = f2 + f1;
-        float d2 = f3 + f2;
-
-        float r0 = d0 * g_f_819BAC;
-        float r1 = d1 * g_f_819BAC;
-        float r2 = d2 * g_f_819BAC;
-
-        float q0 = (float)(int)(r0 * g_f_827488);
-        float q1 = (float)(int)(r1 * g_f_827488);
-        float q2 = (float)(int)(r2 * g_f_827488);
-
-        float s0 = q0 * g_f_82711C;
-        float s1 = q1 * g_f_82711C;
-        float s2 = q2 * g_f_82711C;
-
-        float out[4];
-        out[0] = s0;
-        out[1] = s1;
-        out[2] = s2;
-        out[3] = 1.0f;
-
-        sub_4F35D0(out, &out[0], &out[1]);
-
-        void* cam = sub_573290();
-        void* pos;
-        {
-            void** vtbl = *(void***)a;
-            void (*fn)(void*, void*, void*) = (void (*)(void*, void*, void*))vtbl[0x2c / 4];
-            fn(a, &pos, cam);
-        }
-
-        float* p = (float*)sub_514A20();
-        float pv[4];
-        pv[0] = p[0];
-        pv[1] = p[1];
-        pv[2] = p[2];
-        pv[3] = 1.0f;
-
-        sub_4F35D0(pv, &pv[0], &pv[1]);
-
-        {
-            void** vtbl = *(void***)a;
-            void (*fn)(void*, void*, void*, float) = (void (*)(void*, void*, void*, float))vtbl[0x28 / 4];
-            fn(a, &pv[0], &pv[1], g_f_81C434);
-        }
-
-        float* p2 = (float*)sub_514A60();
-        float pv2[4];
-        pv2[0] = p2[0];
-        pv2[1] = p2[1];
-        pv2[2] = p2[2];
-        pv2[3] = 1.0f;
-
-        void* obj = sub_7BAF10(2, 2, 0);
-        {
-            void** vtbl = *(void***)a;
-            void (*fn)(void*, void*, void*, void*, void*, void*, void*, void*) =
-                (void (*)(void*, void*, void*, void*, void*, void*, void*, void*))vtbl[0x34 / 4];
-            fn(a, &pv2[0], &pv2[1], &pv2[2], &pv2[3], obj, &pv[0], &pv[1]);
-        }
-    }
-
-    void* r3 = sub_45DE20(this);
-    void* obj2 = *(void**)((char*)r3 + 0x130);
-    if (obj2) {
-        if (field_230) {
-            StdString tmp;
-            sub_55BD80(&tmp, "Textures\\ArrowCursor.png");
-            StdString tmp2;
-            g_fn_80245C(&tmp2, &tmp);
-            *(void**)((char*)&tmp2 + 0x1c) = *(void**)((char*)&tmp + 0x1c);
-            {
-                void** vtbl = *(void***)obj2;
-                void (*fn)(void*, void*, void*) = (void (*)(void*, void*, void*))vtbl[0x1c / 4];
-                fn(obj2, a, &tmp2);
-            }
-            std_string_dtor(&tmp2);
-            std_string_dtor(&tmp);
-        } else {
-            sub_5A38F0(field_204, a);
-        }
-        sub_5CECC0(obj2, a);
-    }
-
-    field_254 = 0;
-    std_string_dtor(&msg);
-    std_string_dtor(&progress);
+// from server: 85% by king_originala
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// Complete1291-byte renderPass2d(Adorn*,IMetric*),ret8. Native rendering interfaces
+// and measured minimal ABI views; unused regions contain native bases/members.
+// Instance primary virtuals,IRenderable,Adorn,GuiItem,UserInputBase from pinned headers.
+// Service getter labels describe measured transport,not recovered original symbols.
+// RTTI helper creates native Players;getLocalPlayer1a0 and ControllerService input130.
+// Progress backdrop uses half-size(width*.3,width*.3*.3),font(int(width)*.02),per x87.
+// Remaining string/FP temporary homes and save scheduling are partial,not exact.
+#include <string>
+#include <vector>
+#include <stddef.h>
+#include <intrin.h>
+namespace boost {namespace detail {
+struct sp_counted_base {virtual ~sp_counted_base(){}virtual void dispose()=0;virtual void destroy(){delete this;}long use_count_,weak_count_;void weak_release(){if(_InterlockedDecrement(&weak_count_)==0)destroy();}void release(){if(_InterlockedDecrement(&use_count_)==0){dispose();weak_release();}}};
+struct shared_count {sp_counted_base*pi_;shared_count():pi_(0){}shared_count(const shared_count&r):pi_(r.pi_){if(pi_)_InterlockedIncrement(&pi_->use_count_);}~shared_count(){if(pi_)pi_->release();}};
 }
+template<class T>struct shared_ptr {T*px;detail::shared_count pn;shared_ptr():px(0),pn(){}shared_ptr(const shared_ptr&r):px(r.px),pn(r.pn){}T*get()const{return px;}T&operator*()const{return *px;}T*operator->()const{return px;}};
+}
+namespace G3D {
+struct Vector2 {float x,y;Vector2():x(0),y(0){}Vector2(float a,float b):x(a),y(b){}Vector2(const Vector2&v):x(v.x),y(v.y){}Vector2 operator+(const Vector2&r)const{return Vector2(x+r.x,y+r.y);}Vector2 operator-(const Vector2&r)const{return Vector2(x-r.x,y-r.y);}Vector2 operator*(float f)const{return Vector2(x*f,y*f);}};
+struct Vector3 {float x,y,z;};
+struct Rect2D {Vector2 min,max;float width()const{return max.x-min.x;}Vector2 center()const{return (max+min)*.5f;}static Rect2D xyxy(const Vector2&,const Vector2&);};
+struct Color3 {float r,g,b;static const Color3&white();static const Color3&black();};
+struct Color4 {float r,g,b,a;Color4(const Color3&c,float alpha=1):r(c.r),g(c.g),b(c.b),a(alpha){}static const Color4&zero();};
+struct CoordinateFrame;struct AABox;struct Sphere;struct Ray;struct LineSegment;
+template<class T>struct ReferenceCountedPointer {T*pointer;};
+}
+namespace RBX {
+struct TextureProxyBase;struct Adorn;struct Name;struct XmlElement;struct IReferenceBinder;struct ServiceProvider;struct AncestorChanged;struct PropertyChanged;struct GuiEvent;
+template<class T>struct CopyOnWrite {boost::shared_ptr<T>object;const T*operator->()const{return object.get();}};
+struct Instance {
+ virtual ~Instance();virtual void setName(const std::string&);
+ virtual bool askAddChild(const Instance*)const;virtual bool askSetParent(const Instance*)const;
+ virtual void onAncestorChanged(const AncestorChanged&);virtual void onDescendentAdded(Instance*);virtual void onDescendentRemoving(const boost::shared_ptr<Instance>&);
+ virtual void onChildAdded(Instance*);virtual void onChildRemoving(Instance*);virtual void onChildRemoved(Instance*);virtual void onLastChildRemoved();
+ virtual void readProperty(const XmlElement*,IReferenceBinder&);virtual void onServiceProvider(const ServiceProvider*,const ServiceProvider*);virtual boost::shared_ptr<Instance>createChild(const Name&);virtual XmlElement*write();virtual void onChildChanged(Instance*,const PropertyChanged&);
+ char opaque[0x108-4];CopyOnWrite<std::vector<boost::shared_ptr<Instance> > >children;std::string name;bool archivable;
+ unsigned numChildren()const;
+};
+struct Adorn {
+ enum Spacing{PROPORTIONAL_SPACING,FIXED_SPACING};enum XAlign{XALIGN_RIGHT,XALIGN_LEFT,XALIGN_CENTER};enum YAlign{YALIGN_TOP,YALIGN_BASELINE,YALIGN_CENTER,YALIGN_BOTTOM};
+ virtual ~Adorn();
+ virtual G3D::ReferenceCountedPointer<TextureProxyBase>createTextureProxy(const std::string&)=0;
+ virtual void prepareRenderPass()=0;virtual void finishRenderPass()=0;virtual G3D::Rect2D getViewport()const=0;virtual int getWidth()const=0;virtual int getHeight()const=0;
+ virtual void setTexture(int,G3D::ReferenceCountedPointer<TextureProxyBase>)=0;virtual G3D::Rect2D getTextureSize(G3D::ReferenceCountedPointer<TextureProxyBase>)const=0;
+ virtual void line2d(const G3D::Vector2&,const G3D::Vector2&,const G3D::Color4&)const=0;
+ virtual void outlineRect2d(const G3D::Rect2D&,float,const G3D::Color4&)const=0;virtual void rect2d(const G3D::Rect2D&,const G3D::Color4&)const=0;
+ virtual G3D::Vector2 get2DStringBounds(const std::string&,double,Spacing)const=0;
+ virtual G3D::Vector2 drawFont2D(const std::string&,const G3D::Vector2&,double,const G3D::Color4&,const G3D::Color4&,XAlign,YAlign,Spacing)const=0;
+ virtual void setObjectToWorldMatrix(const G3D::CoordinateFrame&)=0;virtual void setColor(const G3D::Color4&)=0;
+ virtual void box(const G3D::AABox&,const G3D::Color4&,const G3D::Color4&)=0;virtual void sphere(const G3D::Sphere&,const G3D::Color4&,const G3D::Color4&)=0;virtual void explosion(const G3D::Sphere&,const G3D::Color4&,const G3D::Color4&)=0;
+ virtual void cylinderAlongX(float,float,const G3D::Color4&,const G3D::Color4&)=0;virtual void ray(const G3D::Ray&,const G3D::Color4&,float)=0;virtual void lineSegment(const G3D::LineSegment&,const G3D::Color4&,float)=0;virtual void axes(const G3D::Color4&,const G3D::Color4&,const G3D::Color4&,float)=0;virtual void quad(const G3D::Vector3&,const G3D::Vector3&,const G3D::Vector3&,const G3D::Vector3&,const G3D::Color4&)=0;
+};
+struct Rect {G3D::Vector2 low,high;Rect(const G3D::Vector2&a,const G3D::Vector2&b):low(a),high(b){}G3D::Rect2D toRect2D()const{return G3D::Rect2D::xyxy(low,high);}};
+enum SelectState{SELECT_NONE};
+struct IRenderable {int index2d,index3d;void*bucket;virtual bool shouldRender2d()const=0;virtual bool shouldRender3dAdorn()const=0;virtual void render2d(Adorn*)=0;virtual void render3dAdorn(Adorn*)=0;virtual void render3dSelect(Adorn*,SelectState)=0;};
+struct GuiTarget;struct GuiResponse {int response;GuiTarget*target;};
+struct GuiTarget {virtual GuiResponse process(const GuiEvent&)=0;};
+struct GuiItem:Instance,GuiTarget {
+ virtual void onLoseFocus();virtual bool canLoseFocus();virtual G3D::Vector2 getPosition()const;virtual G3D::Vector2 getChildPosition(const GuiItem*)const;virtual int getFontSize()const;virtual bool isVisible()const;virtual std::string getTitle();virtual G3D::Vector2 getSize()const;virtual void render2d(Adorn*);
+};
+struct GuiRoot:GuiItem {virtual void render2d(Adorn*);static void render2dItem(Adorn*,GuiItem*);};
+struct Evaluator {virtual std::string evaluate(const std::string&)const=0;};
+struct IMetric {virtual ~IMetric();virtual std::string getMetric(const std::string&)const=0;};
+struct RunService;struct RunTransition {int oldState,newState;};
+template<class C,class E>struct Listener {virtual void onEvent(const C*,E)=0;virtual ~Listener();};
+struct ContentId {std::string id;const Name*mimeTypePtr;static ContentId fromAssets(const char*);};
+struct TextureId:ContentId {TextureId(const ContentId&c):ContentId(c){}};
+struct UserInputBase {
+ enum WrapMode{WRAP_AUTO,WRAP_CENTER};
+ virtual G3D::Vector2 getCursorPosition()=0;virtual G3D::ReferenceCountedPointer<TextureProxyBase>getGameCursor(Adorn*);
+ virtual void setWrapMode(WrapMode)=0;virtual WrapMode getWrapMode()const=0;virtual void centerCursor()=0;virtual bool keyDown(int)const=0;virtual void setKeyState(int,bool)=0;virtual void setCursorId(Adorn*,const TextureId&);
+ void renderGameCursor(Adorn*);
+};
+struct ControllerService {char opaque[0x130];UserInputBase*hardwareDevice;};
+struct WorkspacePrefix:Instance {char opaqueWorkspace[0x1a0-sizeof(Instance)];};
+struct Workspace:WorkspacePrefix,IRenderable {void setCursor(Adorn*);};
+namespace Network {
+struct Player:Instance {};
+struct Players {char opaque[0x1a0];boost::shared_ptr<Player>localPlayer;static Player*findLocalPlayer(const Instance*);};
+}
+struct DataModelPrefix:Instance {char opaqueDataModel[0x1f4-sizeof(Instance)];};
+struct DataModel:DataModelPrefix,Evaluator,Listener<RunService,RunTransition> {
+ boost::shared_ptr<Instance>localBackpack;boost::shared_ptr<Workspace>workspace;boost::shared_ptr<RunService>runService;boost::shared_ptr<Instance>starterPack;boost::shared_ptr<GuiRoot>guiRoot,guiHooks;
+ GuiTarget*guiTarget;bool forceArrowCursor;std::string uiMessage;int drawId;IMetric*tempMetric;bool dirty;bool renderEnabled;
+ Network::Players*getPlayers();ControllerService*getControllerService();
+ void renderPass2d(Adorn*,IMetric*);
+ static const G3D::Color4&messageBackground();
+};
+void DataModel::renderPass2d(Adorn*adorn,IMetric*metric){
+ if(!renderEnabled)return;
+ if(!adorn)return;
+ if(!metric)return;
+ tempMetric=metric;
+ workspace->render2d(adorn);
+ GuiRoot::render2dItem(adorn,Network::Players::findLocalPlayer(this)?static_cast<GuiItem*>(localBackpack.get()):static_cast<GuiItem*>(starterPack.get()));
+ guiRoot->render2d(adorn);
+ Network::Players*players=getPlayers();
+ Network::Player*player=players->localPlayer.get();
+ if(player){
+  for(unsigned i=0;i<player->numChildren();++i){
+   Instance*child=player->children->operator[](i).get();
+   IRenderable*renderable=dynamic_cast<IRenderable*>(child);
+   if(renderable)renderable->render2d(adorn);
+  }
+ }
+ std::string message;
+ if(uiMessage=="[[[progress]]]"){
+  std::string joints("numJoints");
+  std::string primitives("numPrimitives");
+  message="Bricks: "+evaluate(primitives)+"   Connectors: "+evaluate(joints);
+ }else message=uiMessage;
+ if(message.size()>0){
+  G3D::Rect2D viewport=adorn->getViewport();
+  int width=(int)viewport.width();
+  G3D::Vector2 center=viewport.center();
+  int fontSize=(int)(width*.02f);
+  float halfWidth=viewport.width()*.3f;
+  G3D::Vector2 halfSize(halfWidth,halfWidth*.3f);
+  Rect rectangle(center-halfSize,center+halfSize);
+  adorn->rect2d(rectangle.toRect2D(),messageBackground());
+  adorn->outlineRect2d(rectangle.toRect2D(),2.0f,G3D::Color4(G3D::Color3::white()));
+  adorn->drawFont2D(message,center,(double)fontSize,G3D::Color4(G3D::Color3::black()),G3D::Color4::zero(),Adorn::XALIGN_CENTER,Adorn::YALIGN_CENTER,Adorn::PROPORTIONAL_SPACING);
+ }
+ UserInputBase*input=getControllerService()->hardwareDevice;
+ if(input){
+  if(forceArrowCursor)input->setCursorId(adorn,ContentId::fromAssets("Textures\\ArrowCursor.png"));
+  else workspace->setCursor(adorn);
+  input->renderGameCursor(adorn);
+ }
+ tempMetric=0;
+}
+}
+typedef char instance_size[sizeof(RBX::Instance)==0x130?1:-1];
+typedef char children_offset[offsetof(RBX::Instance,children)==0x108?1:-1];
+typedef char model_workspace_offset[offsetof(RBX::DataModel,workspace)==0x204?1:-1];
+typedef char model_message_offset[offsetof(RBX::DataModel,uiMessage)==0x234?1:-1];
+typedef char model_metric_offset[offsetof(RBX::DataModel,tempMetric)==0x254?1:-1];
+typedef char model_enabled_offset[offsetof(RBX::DataModel,renderEnabled)==0x259?1:-1];
+typedef char texture_size[sizeof(RBX::TextureId)==32?1:-1];
+
+typedef char input_offset[offsetof(RBX::ControllerService,hardwareDevice)==0x130?1:-1];
+typedef char local_player_offset[offsetof(RBX::Network::Players,localPlayer)==0x1a0?1:-1];
+typedef char root_offset[offsetof(RBX::DataModel,guiRoot)==0x21c?1:-1];
+typedef char cursor_offset[offsetof(RBX::DataModel,forceArrowCursor)==0x230?1:-1];
+typedef char renderable_offset[offsetof(RBX::Workspace,index2d)==0x1a4?1:-1];
+typedef char vector_extent[sizeof(G3D::Vector2)==8?1:-1];
+typedef char rectangle_extent[sizeof(G3D::Rect2D)==16?1:-1];
+typedef char color_extent[sizeof(G3D::Color4)==16?1:-1];

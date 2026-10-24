@@ -1,154 +1,149 @@
-// from server: 21% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_insertdecalportable4b9c62f7fa450f59.cpp
 
-struct Ref {
-    virtual void reserved();
-    virtual void dispose();
-    virtual void destroy();
-    volatile long strong;
-    volatile long weak;
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias(<v8tree/Verb.h>, <roc_espeon_insertnativeheader1a746c4cc8c6ae06.cpp>)
+#pragma include_alias("v8tree/Verb.h", "roc_espeon_insertnativeheader1a746c4cc8c6ae06.cpp")
+#pragma include_alias(<util/Name.h>, <roc_espeon_insertnativeheader115b7bccd0a9061e.cpp>)
+#pragma include_alias("util/Name.h", "roc_espeon_insertnativeheader115b7bccd0a9061e.cpp")
+#pragma include_alias(<util/Debug.h>, <roc_espeon_insertnativeheader5fe96130a83d2e88.cpp>)
+#pragma include_alias("util/Debug.h", "roc_espeon_insertnativeheader5fe96130a83d2e88.cpp")
+#pragma include_alias(<afxwin.h>, <roc_espeon_mfcnativeheader280d8d01456bb571.cpp>)
+#pragma include_alias("afxwin.h", "roc_espeon_mfcnativeheader280d8d01456bb571.cpp")
+#pragma include_alias(<afx.h>, <roc_espeon_mfcnativeheaderf430fdc1f4655d18.cpp>)
+#pragma include_alias("afx.h", "roc_espeon_mfcnativeheaderf430fdc1f4655d18.cpp")
+#pragma include_alias(<afxver_.h>, <roc_espeon_mfcnativeheader88c03f249389dac1.cpp>)
+#pragma include_alias("afxver_.h", "roc_espeon_mfcnativeheader88c03f249389dac1.cpp")
+#pragma include_alias(<afxv_w32.h>, <roc_espeon_mfcnativeheader46f3ea44f9168d89.cpp>)
+#pragma include_alias("afxv_w32.h", "roc_espeon_mfcnativeheader46f3ea44f9168d89.cpp")
+#pragma include_alias(<afxv_dll.h>, <roc_espeon_mfcnativeheader2f795edbf7702b59.cpp>)
+#pragma include_alias("afxv_dll.h", "roc_espeon_mfcnativeheader2f795edbf7702b59.cpp")
+#pragma include_alias(<mfcassem.h>, <roc_espeon_mfcnativeheaderf10ba24e78aa8f94.cpp>)
+#pragma include_alias("mfcassem.h", "roc_espeon_mfcnativeheaderf10ba24e78aa8f94.cpp")
+#pragma include_alias(<afxstr.h>, <roc_espeon_mfcnativeheaderd098d85d4c8b2c2d.cpp>)
+#pragma include_alias("afxstr.h", "roc_espeon_mfcnativeheaderd098d85d4c8b2c2d.cpp")
+#pragma include_alias(<atlcore.h>, <roc_espeon_mfcnativeheader9fb5b03d046fee95.cpp>)
+#pragma include_alias("atlcore.h", "roc_espeon_mfcnativeheader9fb5b03d046fee95.cpp")
+#pragma include_alias(<atldef.h>, <roc_espeon_mfcnativeheadera08092bcf50e88d6.cpp>)
+#pragma include_alias("atldef.h", "roc_espeon_mfcnativeheadera08092bcf50e88d6.cpp")
+#pragma include_alias(<atlrc.h>, <roc_espeon_mfcnativeheadera42dcb38b6b51843.cpp>)
+#pragma include_alias("atlrc.h", "roc_espeon_mfcnativeheadera42dcb38b6b51843.cpp")
+#pragma include_alias(<atlchecked.h>, <roc_espeon_mfcnativeheaderdbfafe36d028a07b.cpp>)
+#pragma include_alias("atlchecked.h", "roc_espeon_mfcnativeheaderdbfafe36d028a07b.cpp")
+#pragma include_alias(<atlexcept.h>, <roc_espeon_mfcnativeheader947daedc1cd6318a.cpp>)
+#pragma include_alias("atlexcept.h", "roc_espeon_mfcnativeheader947daedc1cd6318a.cpp")
+#pragma include_alias(<atltrace.h>, <roc_espeon_mfcnativeheaderbda27626c7bbc1b4.cpp>)
+#pragma include_alias("atltrace.h", "roc_espeon_mfcnativeheaderbda27626c7bbc1b4.cpp")
+#pragma include_alias(<atlconv.h>, <roc_espeon_mfcnativeheaderbc0af37bb4222087.cpp>)
+#pragma include_alias("atlconv.h", "roc_espeon_mfcnativeheaderbc0af37bb4222087.cpp")
+#pragma include_alias(<atlalloc.h>, <roc_espeon_mfcnativeheaderf3175658669c56f0.cpp>)
+#pragma include_alias("atlalloc.h", "roc_espeon_mfcnativeheaderf3175658669c56f0.cpp")
+#pragma include_alias(<atlsimpcoll.h>, <roc_espeon_mfcnativeheader6640c5c238e46169.cpp>)
+#pragma include_alias("atlsimpcoll.h", "roc_espeon_mfcnativeheader6640c5c238e46169.cpp")
+#pragma include_alias(<cstringt.h>, <roc_espeon_mfcnativeheader5de12a84109ce944.cpp>)
+#pragma include_alias("cstringt.h", "roc_espeon_mfcnativeheader5de12a84109ce944.cpp")
+#pragma include_alias(<atlsimpstr.h>, <roc_espeon_mfcnativeheaderc2c617e2f7213494.cpp>)
+#pragma include_alias("atlsimpstr.h", "roc_espeon_mfcnativeheaderc2c617e2f7213494.cpp")
+#pragma include_alias(<atlmem.h>, <roc_espeon_mfcnativeheadere714cdcba4a1907e.cpp>)
+#pragma include_alias("atlmem.h", "roc_espeon_mfcnativeheadere714cdcba4a1907e.cpp")
+#pragma include_alias(<atlcommem.h>, <roc_espeon_mfcnativeheader78614a5d9b4ba718.cpp>)
+#pragma include_alias("atlcommem.h", "roc_espeon_mfcnativeheader78614a5d9b4ba718.cpp")
+#pragma include_alias(<atlcomcli.h>, <roc_espeon_mfcnativeheader49eb5239674d4c30.cpp>)
+#pragma include_alias("atlcomcli.h", "roc_espeon_mfcnativeheader49eb5239674d4c30.cpp")
+#pragma include_alias(<cstringt.inl>, <roc_espeon_mfcnativeheader8d9851f9814f5387.cpp>)
+#pragma include_alias("cstringt.inl", "roc_espeon_mfcnativeheader8d9851f9814f5387.cpp")
+#pragma include_alias(<atltime.h>, <roc_espeon_mfcnativeheader5c30e069f5c89414.cpp>)
+#pragma include_alias("atltime.h", "roc_espeon_mfcnativeheader5c30e069f5c89414.cpp")
+#pragma include_alias(<atltime.inl>, <roc_espeon_mfcnativeheaderf65a0552d9e46d8a.cpp>)
+#pragma include_alias("atltime.inl", "roc_espeon_mfcnativeheaderf65a0552d9e46d8a.cpp")
+#pragma include_alias(<afxcoll.h>, <roc_espeon_mfcnativeheadere609fa036c4edafa.cpp>)
+#pragma include_alias("afxcoll.h", "roc_espeon_mfcnativeheadere609fa036c4edafa.cpp")
+#pragma include_alias(<afxstat_.h>, <roc_espeon_mfcnativeheader2868ab515b93fc8c.cpp>)
+#pragma include_alias("afxstat_.h", "roc_espeon_mfcnativeheader2868ab515b93fc8c.cpp")
+#pragma include_alias(<atltypes.h>, <roc_espeon_mfcnativeheader3416078e90aad117.cpp>)
+#pragma include_alias("atltypes.h", "roc_espeon_mfcnativeheader3416078e90aad117.cpp")
+#pragma include_alias(<atltypes.inl>, <roc_espeon_mfcnativeheader656810e957b5a6aa.cpp>)
+#pragma include_alias("atltypes.inl", "roc_espeon_mfcnativeheader656810e957b5a6aa.cpp")
+#pragma include_alias(<afxtls_.h>, <roc_espeon_mfcnativeheader5b29982cec2c5a31.cpp>)
+#pragma include_alias("afxtls_.h", "roc_espeon_mfcnativeheader5b29982cec2c5a31.cpp")
+#pragma include_alias(<afxcoll.inl>, <roc_espeon_mfcnativeheadere4694c4e7dceee5b.cpp>)
+#pragma include_alias("afxcoll.inl", "roc_espeon_mfcnativeheadere4694c4e7dceee5b.cpp")
+#pragma include_alias(<afx.inl>, <roc_espeon_mfcnativeheader62a88db7d8698e91.cpp>)
+#pragma include_alias("afx.inl", "roc_espeon_mfcnativeheader62a88db7d8698e91.cpp")
+#pragma include_alias(<afxres.h>, <roc_espeon_mfcnativeheadereab43ff852a77c61.cpp>)
+#pragma include_alias("afxres.h", "roc_espeon_mfcnativeheadereab43ff852a77c61.cpp")
+#pragma include_alias(<afxcomctl32.h>, <roc_espeon_mfcnativeheadere96c3697e9ff2169.cpp>)
+#pragma include_alias("afxcomctl32.h", "roc_espeon_mfcnativeheadere96c3697e9ff2169.cpp")
+#pragma include_alias(<afxmsg_.h>, <roc_espeon_mfcnativeheader9062d77c1f27f861.cpp>)
+#pragma include_alias("afxmsg_.h", "roc_espeon_mfcnativeheader9062d77c1f27f861.cpp")
+#pragma include_alias(<afxdd_.h>, <roc_espeon_mfcnativeheader93eaeb27d5d71f5f.cpp>)
+#pragma include_alias("afxdd_.h", "roc_espeon_mfcnativeheader93eaeb27d5d71f5f.cpp")
+#pragma include_alias(<afxdll_.h>, <roc_espeon_mfcnativeheader9a76b412854b2e98.cpp>)
+#pragma include_alias("afxdll_.h", "roc_espeon_mfcnativeheader9a76b412854b2e98.cpp")
+#pragma include_alias(<afxcomctl32.inl>, <roc_espeon_mfcnativeheader0881c31addcca98d.cpp>)
+#pragma include_alias("afxcomctl32.inl", "roc_espeon_mfcnativeheader0881c31addcca98d.cpp")
+#pragma include_alias(<afxwin1.inl>, <roc_espeon_mfcnativeheader49a53b5325f634fe.cpp>)
+#pragma include_alias("afxwin1.inl", "roc_espeon_mfcnativeheader49a53b5325f634fe.cpp")
+#pragma include_alias(<afxwin2.inl>, <roc_espeon_mfcnativeheaderca2d9dc95a113b42.cpp>)
+#pragma include_alias("afxwin2.inl", "roc_espeon_mfcnativeheaderca2d9dc95a113b42.cpp")
+#pragma include_alias(<afxwin3.inl>, <roc_espeon_mfcnativeheader60402c5e89630019.cpp>)
+#pragma include_alias("afxwin3.inl", "roc_espeon_mfcnativeheader60402c5e89630019.cpp")
+#pragma include_alias(<afxwin4.inl>, <roc_espeon_mfcnativeheader6353026942e4251d.cpp>)
+#pragma include_alias("afxwin4.inl", "roc_espeon_mfcnativeheader6353026942e4251d.cpp")
+#pragma include_alias(<afxdlgs.h>, <roc_espeon_mfcdialogheader4c9ed5579ab59d02.cpp>)
+#pragma include_alias("afxdlgs.h", "roc_espeon_mfcdialogheader4c9ed5579ab59d02.cpp")
+#pragma include_alias(<afxdlgs.inl>, <roc_espeon_mfcdialogheader7566c5ad3dd249a3.cpp>)
+#pragma include_alias("afxdlgs.inl", "roc_espeon_mfcdialogheader7566c5ad3dd249a3.cpp")
+#define _AFXDLL
+#pragma include_alias(<atlsimpstr.h>, <roc_espeon_editorcstringheaderfb14fe2507201232.cpp>)
+#pragma include_alias(<xstring>, <roc_dom_native_stdstring_cstr_boundary_header3da8e64d105bf835.cpp>)
+#pragma include_alias("v8tree/Instance.h", "roc_espeon_nativeinstanceguidportablea1682bda32c99cd2.cpp")
+#include <afxwin.h>
+#include <afxdlgs.h>
+#include "v8tree/Verb.h"
+#include "v8datamodel/Decal.h"
+#include "v8datamodel/Selection.h"
+#include <fstream>
+namespace RBX {
+const Name& getMimeType(const char* filename);
+ContentId registerImageContent(std::istream&,const Name&);
+static __declspec(noinline) ContentId registerImageFile(const char* filename) {
+ std::ifstream stream(filename,std::ios::in|std::ios::binary);
+ return registerImageContent(stream,getMimeType(filename));
+}
+class DataModel;
+// Primary Instance vtable observed at call0041f175: deleting destructor0, setName4.
+class InsertInstanceView {public:virtual ~InsertInstanceView();virtual void setName(const std::string&)=0;};
+void markInsertAction(const char*,DataModel*);
+class InsertSelectionOwner {public:Selection* ensureSelection();Selection* selection();};
+class InsertDecalRecovery : public Verb {
+public:
+ template<class T>T& field(unsigned offset){return *reinterpret_cast<T*>(reinterpret_cast<char*>(this)+offset);}
+ virtual bool isEnabled()const;
+ virtual void doIt(IDataState*);
+ virtual boost::shared_ptr<Decal> createInstance();
+ Instance* parentForInsertion();
+ __forceinline const CString& prepareImage(const CString& path){
+  if(field<InsertSelectionOwner*>(0x20))field<InsertSelectionOwner*>(0x20)->ensureSelection();
+  return path;
+ }
 };
-
-struct Str {
-    void ctor(const char*);
-    void ctor(const Str&);
-    void dtor();
-    const char* c_str() const;
-    void assign(const Str&);
-};
-
-struct Vec2 {
-    float x;
-    float y;
-};
-
-struct InsertDecal {
-    void* vptr;
-    void* field4;
-    void* field8;
-    void* fieldC;
-    void* field10;
-    void* field14;
-    void* field18;
-    void* field1C;
-    Ref* field20;
-    void doInsert(const Str&);
-};
-
-extern "C" void __stdcall sub_803f04(void*);
-extern "C" void __stdcall sub_8032c0(void*, unsigned int);
-extern "C" void* __stdcall sub_803ee0(void*);
-extern "C" void __stdcall sub_803f14(void*);
-extern "C" void __stdcall sub_80245c(void*, void*);
-extern "C" void __stdcall sub_802458(void*, void*);
-extern "C" void __stdcall sub_802468(void*);
-extern "C" void __stdcall sub_802464(void*, void*);
-
-void sub_6a0e72(void*, int, int, int, void*, int, int, int);
-int sub_6a0e6c(void*);
-void sub_6a0e66(void*, void*);
-void sub_6a0e60(void*, void*);
-void sub_6a0e5a(void*);
-
-void sub_41eea0(Ref*);
-void sub_41dd90(void*, void*);
-void sub_41ef90(InsertDecal*, void*);
-void sub_598610(void*, void*);
-void sub_55a8f0(void*, void*);
-void sub_567770(void*, void*);
-void sub_58c5c0(void*, void*);
-
-void InsertDecal::doInsert(const Str& name)
-{
-    char buf[0x230];
-    Str local1;
-    Str local2;
-    Str local3;
-    void* tmp;
-
-    sub_803f04(buf);
-    sub_8032c0(buf, 0x84);
-
-    sub_6a0e72(buf, 1, 0, 0, 0, 0, 0, 1);
-    int r = sub_6a0e6c(buf);
-    if (r != 1)
-        goto cleanup;
-
-    {
-        void* p = 0;
-        sub_6a0e66(buf, &p);
-        Str* s = (Str*)p;
-
-        if (field20)
-            sub_41eea0(field20);
-
-        void* q = sub_803ee0(s);
-        void* out = 0;
-        sub_41dd90(&out, q);
-        sub_803f14(&p);
-
-        void* v = 0;
-        void* vt = *(void**)this;
-        void (*fn)(InsertDecal*, void*) = *(void (**)(InsertDecal*, void*))((char*)vt + 0x14);
-        fn(this, &v);
-
-        char tmpbuf[0x20];
-        sub_80245c(tmpbuf, &v);
-        *(void**)(tmpbuf + 0x1c) = *(void**)(buf + 0x58);
-        sub_598610(*(void**)(buf + 0x2c), 0);
-
-        void* s2 = *(void**)(buf + 0x0c);
-        void* p2 = 0;
-        sub_6a0e60(buf + 0x58, &p2);
-        void* q2 = sub_803ee0(p2);
-        void* r2 = 0;
-        sub_802458(&r2, q2);
-        void* vt2 = *(void**)s2;
-        void (*fn2)(void*, void*) = *(void (**)(void*, void*))((char*)vt2 + 4);
-        fn2(s2, r2);
-        sub_802468(&r2);
-        sub_803f14(&p2);
-
-        void* s3 = *(void**)(buf + 0x0c);
-        void* arg = 0;
-        sub_41ef90(this, &arg);
-        sub_55a8f0(s3, arg);
-
-        Ref* ref = field20;
-        void* res;
-        if (ref) {
-            _InterlockedExchangeAdd(&ref->strong, -1);
-            res = ref;
-        } else {
-            res = 0;
-        }
-        sub_567770(res, s3);
-
-        void* a = *(void**)((char*)this + 0xc);
-        void* b = *(void**)((char*)this + 4);
-        void* c = 0;
-        sub_802464((char*)b + 4, &c);
-        sub_58c5c0(&c, a);
-
-        void* ref2 = *(void**)(buf + 0x18);
-        if (ref2) {
-            Ref* rr = (Ref*)ref2;
-            if (_InterlockedExchangeAdd(&rr->strong, -1) == 1) {
-                void* vt3 = *(void**)rr;
-                void (*d)(Ref*) = *(void (**)(Ref*))((char*)vt3 + 4);
-                d(rr);
-                if (_InterlockedExchangeAdd(&rr->weak, -1) == 1) {
-                    void* vt4 = *(void**)rr;
-                    void (*d2)(Ref*) = *(void (**)(Ref*))((char*)vt4 + 8);
-                    d2(rr);
-                }
-            }
-        }
-        sub_802468(&out);
-    }
-
-cleanup:
-    sub_6a0e5a(buf);
-    sub_803f14(buf);
+void InsertDecalRecovery::doIt(IDataState*){
+ CString filter;filter.LoadString(132);
+ CFileDialog dialog(TRUE,NULL,NULL,0,filter,NULL,0,TRUE);
+ if(dialog.DoModal()==IDOK){
+  ContentId content=registerImageFile(prepareImage(dialog.GetPathName()));
+  boost::shared_ptr<Decal> instance=createInstance();
+  instance->setTexture(content);
+  reinterpret_cast<InsertInstanceView*>(instance.get())->setName(std::string(dialog.GetFileTitle()));
+  instance->setParent(parentForInsertion());
+  (field<InsertSelectionOwner*>(0x20)?field<InsertSelectionOwner*>(0x20)->selection():0)->setSelection(instance.get());
+  DataModel* model=field<DataModel*>(0xc);
+  const Name& actionName=getName();
+  markInsertAction(actionName.c_str(),model);
+ }
+}
 }

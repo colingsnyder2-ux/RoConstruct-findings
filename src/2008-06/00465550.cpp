@@ -1,117 +1,131 @@
-// from server: 20% by colin
-struct S_004613d0 {
-    char pad0[88];
-    int m_x;
-    int* f();
+// from server: 84% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_editornativesize288043f3853eb087.cpp
+
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias(<afxwin.h>, <roc_espeon_mfcnativeheader280d8d01456bb571.cpp>)
+#pragma include_alias("afxwin.h", "roc_espeon_mfcnativeheader280d8d01456bb571.cpp")
+#pragma include_alias(<afx.h>, <roc_espeon_mfcnativeheaderf430fdc1f4655d18.cpp>)
+#pragma include_alias("afx.h", "roc_espeon_mfcnativeheaderf430fdc1f4655d18.cpp")
+#pragma include_alias(<afxver_.h>, <roc_espeon_mfcnativeheader88c03f249389dac1.cpp>)
+#pragma include_alias("afxver_.h", "roc_espeon_mfcnativeheader88c03f249389dac1.cpp")
+#pragma include_alias(<afxv_w32.h>, <roc_espeon_mfcnativeheader46f3ea44f9168d89.cpp>)
+#pragma include_alias("afxv_w32.h", "roc_espeon_mfcnativeheader46f3ea44f9168d89.cpp")
+#pragma include_alias(<afxv_dll.h>, <roc_espeon_mfcnativeheader2f795edbf7702b59.cpp>)
+#pragma include_alias("afxv_dll.h", "roc_espeon_mfcnativeheader2f795edbf7702b59.cpp")
+#pragma include_alias(<mfcassem.h>, <roc_espeon_mfcnativeheaderf10ba24e78aa8f94.cpp>)
+#pragma include_alias("mfcassem.h", "roc_espeon_mfcnativeheaderf10ba24e78aa8f94.cpp")
+#pragma include_alias(<afxstr.h>, <roc_espeon_mfcnativeheaderd098d85d4c8b2c2d.cpp>)
+#pragma include_alias("afxstr.h", "roc_espeon_mfcnativeheaderd098d85d4c8b2c2d.cpp")
+#pragma include_alias(<atlcore.h>, <roc_espeon_mfcnativeheader9fb5b03d046fee95.cpp>)
+#pragma include_alias("atlcore.h", "roc_espeon_mfcnativeheader9fb5b03d046fee95.cpp")
+#pragma include_alias(<atldef.h>, <roc_espeon_mfcnativeheadera08092bcf50e88d6.cpp>)
+#pragma include_alias("atldef.h", "roc_espeon_mfcnativeheadera08092bcf50e88d6.cpp")
+#pragma include_alias(<atlrc.h>, <roc_espeon_mfcnativeheadera42dcb38b6b51843.cpp>)
+#pragma include_alias("atlrc.h", "roc_espeon_mfcnativeheadera42dcb38b6b51843.cpp")
+#pragma include_alias(<atlchecked.h>, <roc_espeon_mfcnativeheaderdbfafe36d028a07b.cpp>)
+#pragma include_alias("atlchecked.h", "roc_espeon_mfcnativeheaderdbfafe36d028a07b.cpp")
+#pragma include_alias(<atlexcept.h>, <roc_espeon_mfcnativeheader947daedc1cd6318a.cpp>)
+#pragma include_alias("atlexcept.h", "roc_espeon_mfcnativeheader947daedc1cd6318a.cpp")
+#pragma include_alias(<atltrace.h>, <roc_espeon_mfcnativeheaderbda27626c7bbc1b4.cpp>)
+#pragma include_alias("atltrace.h", "roc_espeon_mfcnativeheaderbda27626c7bbc1b4.cpp")
+#pragma include_alias(<atlconv.h>, <roc_espeon_mfcnativeheaderbc0af37bb4222087.cpp>)
+#pragma include_alias("atlconv.h", "roc_espeon_mfcnativeheaderbc0af37bb4222087.cpp")
+#pragma include_alias(<atlalloc.h>, <roc_espeon_mfcnativeheaderf3175658669c56f0.cpp>)
+#pragma include_alias("atlalloc.h", "roc_espeon_mfcnativeheaderf3175658669c56f0.cpp")
+#pragma include_alias(<atlsimpcoll.h>, <roc_espeon_mfcnativeheader6640c5c238e46169.cpp>)
+#pragma include_alias("atlsimpcoll.h", "roc_espeon_mfcnativeheader6640c5c238e46169.cpp")
+#pragma include_alias(<cstringt.h>, <roc_espeon_mfcnativeheader5de12a84109ce944.cpp>)
+#pragma include_alias("cstringt.h", "roc_espeon_mfcnativeheader5de12a84109ce944.cpp")
+#pragma include_alias(<atlsimpstr.h>, <roc_espeon_mfcnativeheaderc2c617e2f7213494.cpp>)
+#pragma include_alias("atlsimpstr.h", "roc_espeon_mfcnativeheaderc2c617e2f7213494.cpp")
+#pragma include_alias(<atlmem.h>, <roc_espeon_mfcnativeheadere714cdcba4a1907e.cpp>)
+#pragma include_alias("atlmem.h", "roc_espeon_mfcnativeheadere714cdcba4a1907e.cpp")
+#pragma include_alias(<atlcommem.h>, <roc_espeon_mfcnativeheader78614a5d9b4ba718.cpp>)
+#pragma include_alias("atlcommem.h", "roc_espeon_mfcnativeheader78614a5d9b4ba718.cpp")
+#pragma include_alias(<atlcomcli.h>, <roc_espeon_mfcnativeheader49eb5239674d4c30.cpp>)
+#pragma include_alias("atlcomcli.h", "roc_espeon_mfcnativeheader49eb5239674d4c30.cpp")
+#pragma include_alias(<cstringt.inl>, <roc_espeon_mfcnativeheader8d9851f9814f5387.cpp>)
+#pragma include_alias("cstringt.inl", "roc_espeon_mfcnativeheader8d9851f9814f5387.cpp")
+#pragma include_alias(<atltime.h>, <roc_espeon_mfcnativeheader5c30e069f5c89414.cpp>)
+#pragma include_alias("atltime.h", "roc_espeon_mfcnativeheader5c30e069f5c89414.cpp")
+#pragma include_alias(<atltime.inl>, <roc_espeon_mfcnativeheaderf65a0552d9e46d8a.cpp>)
+#pragma include_alias("atltime.inl", "roc_espeon_mfcnativeheaderf65a0552d9e46d8a.cpp")
+#pragma include_alias(<afxcoll.h>, <roc_espeon_mfcnativeheadere609fa036c4edafa.cpp>)
+#pragma include_alias("afxcoll.h", "roc_espeon_mfcnativeheadere609fa036c4edafa.cpp")
+#pragma include_alias(<afxstat_.h>, <roc_espeon_mfcnativeheader2868ab515b93fc8c.cpp>)
+#pragma include_alias("afxstat_.h", "roc_espeon_mfcnativeheader2868ab515b93fc8c.cpp")
+#pragma include_alias(<atltypes.h>, <roc_espeon_mfcnativeheader3416078e90aad117.cpp>)
+#pragma include_alias("atltypes.h", "roc_espeon_mfcnativeheader3416078e90aad117.cpp")
+#pragma include_alias(<atltypes.inl>, <roc_espeon_mfcnativeheader656810e957b5a6aa.cpp>)
+#pragma include_alias("atltypes.inl", "roc_espeon_mfcnativeheader656810e957b5a6aa.cpp")
+#pragma include_alias(<afxtls_.h>, <roc_espeon_mfcnativeheader5b29982cec2c5a31.cpp>)
+#pragma include_alias("afxtls_.h", "roc_espeon_mfcnativeheader5b29982cec2c5a31.cpp")
+#pragma include_alias(<afxcoll.inl>, <roc_espeon_mfcnativeheadere4694c4e7dceee5b.cpp>)
+#pragma include_alias("afxcoll.inl", "roc_espeon_mfcnativeheadere4694c4e7dceee5b.cpp")
+#pragma include_alias(<afx.inl>, <roc_espeon_mfcnativeheader62a88db7d8698e91.cpp>)
+#pragma include_alias("afx.inl", "roc_espeon_mfcnativeheader62a88db7d8698e91.cpp")
+#pragma include_alias(<afxres.h>, <roc_espeon_mfcnativeheadereab43ff852a77c61.cpp>)
+#pragma include_alias("afxres.h", "roc_espeon_mfcnativeheadereab43ff852a77c61.cpp")
+#pragma include_alias(<afxcomctl32.h>, <roc_espeon_mfcnativeheadere96c3697e9ff2169.cpp>)
+#pragma include_alias("afxcomctl32.h", "roc_espeon_mfcnativeheadere96c3697e9ff2169.cpp")
+#pragma include_alias(<afxmsg_.h>, <roc_espeon_mfcnativeheader9062d77c1f27f861.cpp>)
+#pragma include_alias("afxmsg_.h", "roc_espeon_mfcnativeheader9062d77c1f27f861.cpp")
+#pragma include_alias(<afxdd_.h>, <roc_espeon_mfcnativeheader93eaeb27d5d71f5f.cpp>)
+#pragma include_alias("afxdd_.h", "roc_espeon_mfcnativeheader93eaeb27d5d71f5f.cpp")
+#pragma include_alias(<afxdll_.h>, <roc_espeon_mfcnativeheader9a76b412854b2e98.cpp>)
+#pragma include_alias("afxdll_.h", "roc_espeon_mfcnativeheader9a76b412854b2e98.cpp")
+#pragma include_alias(<afxcomctl32.inl>, <roc_espeon_mfcnativeheader0881c31addcca98d.cpp>)
+#pragma include_alias("afxcomctl32.inl", "roc_espeon_mfcnativeheader0881c31addcca98d.cpp")
+#pragma include_alias(<afxwin1.inl>, <roc_espeon_mfcnativeheader49a53b5325f634fe.cpp>)
+#pragma include_alias("afxwin1.inl", "roc_espeon_mfcnativeheader49a53b5325f634fe.cpp")
+#pragma include_alias(<afxwin2.inl>, <roc_espeon_mfcnativeheaderca2d9dc95a113b42.cpp>)
+#pragma include_alias("afxwin2.inl", "roc_espeon_mfcnativeheaderca2d9dc95a113b42.cpp")
+#pragma include_alias(<afxwin3.inl>, <roc_espeon_mfcnativeheader60402c5e89630019.cpp>)
+#pragma include_alias("afxwin3.inl", "roc_espeon_mfcnativeheader60402c5e89630019.cpp")
+#pragma include_alias(<afxwin4.inl>, <roc_espeon_mfcnativeheader6353026942e4251d.cpp>)
+#pragma include_alias("afxwin4.inl", "roc_espeon_mfcnativeheader6353026942e4251d.cpp")
+#define _AFXDLL
+#pragma include_alias(<atlsimpstr.h>, <roc_espeon_editorcstringheaderfb14fe2507201232.cpp>)
+#pragma include_alias(<xstring>, <roc_espeon_editorsizeheaderbd97e23d09470dab.cpp>)
+#pragma include_alias("v8tree/Instance.h", "roc_espeon_nativeinstanceguidportablea1682bda32c99cd2.cpp")
+#include <afxwin.h>
+#include "script/Script.h"
+#include <boost/thread/recursive_mutex.hpp>
+#include <sstream>
+#include <memory>
+#include <exception>
+class EditorScintilla {public:void SetText(const char*,int);void SetReadOnly(int,int);void SetSavePoint(int);};
+RBX::ContentProvider* getEditorContentProvider(RBX::Instance*);
+void copyEditorStream(std::istream&,std::ostream&,int);
+class ScriptEditorRecovery {
+public:
+ template<class T>T& field(unsigned offset){return *reinterpret_cast<T*>(reinterpret_cast<char*>(this)+offset);}
+ EditorScintilla& editor();
+ void reload();
 };
-
-struct S_00465210 {
-    int* f(int*);
-};
-
-struct S_00465550 {
-    char pad0[0x20];
-    int m_20;
-    char pad1[0x138 - 0x24];
-    int m_138;
-    char pad2[0x144 - 0x13c];
-    int m_144;
-    char m_154;
-    char m_155;
-    char m_156;
-    void func_00465550();
-};
-
-extern "C" int __cdecl func_00451300(int, int, int, int, int);
-extern "C" void __cdecl func_00563090(int);
-extern "C" void __cdecl func_005630e0(int);
-extern "C" void* __cdecl func_00561f20(int*);
-extern "C" void __cdecl func_00802430(int, int);
-extern "C" void __cdecl func_00802434(int, int);
-extern "C" void __cdecl func_00802438(int);
-extern "C" void __cdecl func_0080245c(int, int);
-extern "C" int __cdecl func_00802464(int);
-extern "C" void __cdecl func_00802468(int);
-extern "C" int __cdecl func_008023f4(int);
-extern "C" void __cdecl func_00460e50(int, int, int);
-extern "C" void __cdecl func_00460c90(int, int, int);
-extern "C" int* __cdecl func_00465210(int);
-
-int* S_004613d0::f()
-{
-    return &m_x;
-}
-
-void S_00465550::func_00465550()
-{
-    if (m_20 == 0)
-        return;
-
-    m_154 = 1;
-
-    if (m_144 == 0)
-        return;
-
-    int* p138 = &m_138;
-    func_00563090((int)p138);
-
-    int* p144 = (int*)m_144;
-    int* p138b = (int*)((char*)p144 + 0x138);
-    int r = func_008023f4((int)p138b);
-    m_156 = (r == 0);
-
-    if (m_156) {
-        int v = func_00802464(*(int*)((char*)p144 + 0x130));
-        S_004613d0* s = (S_004613d0*)this;
-        int* q = s->f();
-        func_00460e50((int)q, v, 1);
-    } else {
-        int buf[8];
-        func_0080245c((int)p138b, (int)buf);
-        *(int*)((char*)buf + 0x1c) = *(int*)((char*)p138b + 0x1c);
-
-        int* p = (int*)func_00465210(m_144);
-        int* out;
-        func_00561f20((int*)&out);
-        int* edi = (int*)*out;
-        *out = 0;
-
-        if (out) {
-            int* vt = (int*)*out;
-            int* m = (int*)*(int*)((char*)vt + 4);
-            int* fn = (int*)*(int*)((char*)m + (int)out);
-            int f = *fn;
-            ((void (__stdcall*)(int))f)(1);
-        }
-
-        func_00802430(2, 1);
-        func_00451300((int)edi, (int)buf, 0x1000, 0, 0);
-        func_00802434((int)buf, (int)buf);
-        int v = func_00802464((int)buf);
-        S_004613d0* s = (S_004613d0*)this;
-        int* q = s->f();
-        func_00460e50((int)q, v, 1);
-        func_00802468((int)buf);
-        func_00802438((int)buf);
-
-        if (edi) {
-            int* vt = (int*)*edi;
-            int* m = (int*)*(int*)((char*)vt + 4);
-            int* fn = (int*)*(int*)((char*)m + (int)edi);
-            int f = *fn;
-            ((void (__stdcall*)(int))f)(1);
-        }
-    }
-
-    int flag;
-    if (m_155 == 0 && m_156 != 0)
-        flag = 0;
-    else
-        flag = 1;
-
-    S_004613d0* s = (S_004613d0*)this;
-    int* q = s->f();
-    func_00460c90((int)q, flag, 1);
-
-    func_005630e0((int)p138);
+void ScriptEditorRecovery::reload(){
+ if(!field<void*>(0x20))return;
+ field<bool>(0x154)=true;
+ if(field<boost::shared_ptr<RBX::Script> >(0x144)){
+  try{
+   boost::recursive_mutex::scoped_lock guard(*field<boost::recursive_mutex*>(0x138));
+   field<bool>(0x156)=field<boost::shared_ptr<RBX::Script> >(0x144)->getScriptId().toString().size()==0;
+   if(field<bool>(0x156))editor().SetText(field<boost::shared_ptr<RBX::Script> >(0x144)->getEmbeddedCode().c_str(),1);
+   else{
+    std::auto_ptr<std::istream> input=getEditorContentProvider(field<boost::shared_ptr<RBX::Script> >(0x144).get())->getContent(field<boost::shared_ptr<RBX::Script> >(0x144)->getScriptId());
+    std::ostringstream output;
+    copyEditorStream(*input,output,4096);
+    editor().SetText(output.str().c_str(),1);
+   }
+   editor().SetReadOnly(field<bool>(0x155)||!field<bool>(0x156),1);
+  }catch(const std::exception& e){
+   CString message;message.Format("An error occurred while getting the script\n\n%s",e.what());
+   editor().SetText(message,1);editor().SetReadOnly(0,1);
+  }
+ }else editor().SetText("",1);
+ editor().SetSavePoint(1);
+ field<bool>(0x154)=false;
 }

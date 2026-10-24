@@ -1,225 +1,466 @@
-// from server: 91% by colin
-// from server: 87% by king_originala
-// roc 2008-06 00630610  unit: RBX::BodyThrust  size: 355 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00630610
-//
-// 00630610  83ec20               sub esp, 0x20
-// 00630613  53                   push ebx
-// 00630614  56                   push esi
-// 00630615  57                   push edi
-// 00630616  8bf9                 mov edi, ecx
-// 00630618  8d44240c             lea eax, [esp + 0xc]
-// 0063061c  50                   push eax
-// 0063061d  8d4f10               lea ecx, [edi + 0x10]
-// 00630620  e8dba4f9ff           call 0x5cab00
-// 00630625  8b5c2410             mov ebx, dword ptr [esp + 0x10]
-// 00630629  8b08                 mov ecx, dword ptr [eax]
-// 0063062b  8bb1c8020000         mov esi, dword ptr [ecx + 0x2c8]
-// 00630631  85db                 test ebx, ebx
-// 00630633  742a                 je 0x63065f
-// 00630635  8d5304               lea edx, [ebx + 4]
-// 00630638  83c8ff               or eax, 0xffffffff
-// 0063063b  f00fc102             lock xadd dword ptr [edx], eax
-// 0063063f  751e                 jne 0x63065f
-// 00630641  8b13                 mov edx, dword ptr [ebx]
-// 00630643  8b4204               mov eax, dword ptr [edx + 4]
-// 00630646  8bcb                 mov ecx, ebx
-// 00630648  ffd0                 call eax
-// 0063064a  8d4b08               lea ecx, [ebx + 8]
-// 0063064d  83caff               or edx, 0xffffffff
-// 00630650  f00fc111             lock xadd dword ptr [ecx], edx
-// 00630654  7509                 jne 0x63065f
-// 00630656  8b03                 mov eax, dword ptr [ebx]
-// 00630658  8b5008               mov edx, dword ptr [eax + 8]
-// 0063065b  8bcb                 mov ecx, ebx
-// 0063065d  ffd2                 call edx
-// 0063065f  8bce                 mov ecx, esi
-// 00630661  e8fa8cf6ff           call 0x599360
-// 00630666  d9869c000000         fld dword ptr [esi + 0x9c]
-// 0063066c  d84f20               fmul dword ptr [edi + 0x20]
-// 0063066f  8bce                 mov ecx, esi
-// 00630671  d98698000000         fld dword ptr [esi + 0x98]
-// 00630677  d84f1c               fmul dword ptr [edi + 0x1c]
-// 0063067a  dec1                 faddp st(1)
-// 0063067c  d94718               fld dword ptr [edi + 0x18]
-// 0063067f  d88e94000000         fmul dword ptr [esi + 0x94]
-// 00630685  dec1                 faddp st(1)
-// 00630687  d95c2420             fstp dword ptr [esp + 0x20]
-// 0063068b  d986a8000000         fld dword ptr [esi + 0xa8]
-// 00630691  d84f20               fmul dword ptr [edi + 0x20]
-// 00630694  d986a4000000         fld dword ptr [esi + 0xa4]
-// 0063069a  d84f1c               fmul dword ptr [edi + 0x1c]
-// 0063069d  dec1                 faddp st(1)
-// 0063069f  d986a0000000         fld dword ptr [esi + 0xa0]
-// 006306a5  d84f18               fmul dword ptr [edi + 0x18]
-// 006306a8  dec1                 faddp st(1)
-// 006306aa  d95c2424             fstp dword ptr [esp + 0x24]
-// 006306ae  d986b4000000         fld dword ptr [esi + 0xb4]
-// 006306b4  d84f20               fmul dword ptr [edi + 0x20]
-// 006306b7  d986b0000000         fld dword ptr [esi + 0xb0]
-// 006306bd  d84f1c               fmul dword ptr [edi + 0x1c]
-// 006306c0  dec1                 faddp st(1)
-// 006306c2  d986ac000000         fld dword ptr [esi + 0xac]
-// 006306c8  d84f18               fmul dword ptr [edi + 0x18]
-// 006306cb  dec1                 faddp st(1)
-// 006306cd  d95c2428             fstp dword ptr [esp + 0x28]
-// 006306d1  e88a8cf6ff           call 0x599360
-// 006306d6  d9869c000000         fld dword ptr [esi + 0x9c]
-// 006306dc  8b4610               mov eax, dword ptr [esi + 0x10]
-// 006306df  d84f2c               fmul dword ptr [edi + 0x2c]
-// 006306e2  8b482c               mov ecx, dword ptr [eax + 0x2c]
-// 006306e5  d98698000000         fld dword ptr [esi + 0x98]
-// 006306eb  d84f28               fmul dword ptr [edi + 0x28]
-// 006306ee  dec1                 faddp st(1)
-// 006306f0  d94724               fld dword ptr [edi + 0x24]
-// 006306f3  d88e94000000         fmul dword ptr [esi + 0x94]
-// 006306f9  dec1                 faddp st(1)
-// 006306fb  d886b8000000         fadd dword ptr [esi + 0xb8]
-// 00630701  d95c2414             fstp dword ptr [esp + 0x14]
-// 00630705  d986a0000000         fld dword ptr [esi + 0xa0]
-// 0063070b  d84f24               fmul dword ptr [edi + 0x24]
-// 0063070e  d986a8000000         fld dword ptr [esi + 0xa8]
-// 00630714  d84f2c               fmul dword ptr [edi + 0x2c]
-// 00630717  dec1                 faddp st(1)
-// 00630719  d986a4000000         fld dword ptr [esi + 0xa4]
-// 0063071f  d84f28               fmul dword ptr [edi + 0x28]
-// 00630722  dec1                 faddp st(1)
-// 00630724  d886bc000000         fadd dword ptr [esi + 0xbc]
-// 0063072a  d95c2418             fstp dword ptr [esp + 0x18]
-// 0063072e  d986ac000000         fld dword ptr [esi + 0xac]
-// 00630734  d84f24               fmul dword ptr [edi + 0x24]
-// 00630737  d986b4000000         fld dword ptr [esi + 0xb4]
-// 0063073d  d84f2c               fmul dword ptr [edi + 0x2c]
-// 00630740  dec1                 faddp st(1)
-// 00630742  d986b0000000         fld dword ptr [esi + 0xb0]
-// 00630748  d84f28               fmul dword ptr [edi + 0x28]
-// 0063074b  5f                   pop edi
-// 0063074c  dec1                 faddp st(1)
-// 0063074e  d886c0000000         fadd dword ptr [esi + 0xc0]
-// 00630754  5e                   pop esi
-// 00630755  5b                   pop ebx
-// 00630756  d95c2410             fstp dword ptr [esp + 0x10]
-// 0063075a  85c9                 test ecx, ecx
-// 0063075c  740f                 je 0x63076d
-// 0063075e  8d542408             lea edx, [esp + 8]
-// 00630762  52                   push edx
-// 00630763  8d442418             lea eax, [esp + 0x18]
-// 00630767  50                   push eax
-// 00630768  e84328feff           call 0x612fb0
-// 0063076d  83c420               add esp, 0x20
-// 00630770  c20800               ret 8
-#include <intrin.h>
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espeon_bodythrustnative428b0b9524a36397.cpp
 
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-#pragma intrinsic(_InterlockedDecrement)
+// Candidate translation unit (score above; library headers required).
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 
-struct Vector3
-{
-    float x, y, z;
+#include <G3D/Vector3.h>
+#include "util/Quaternion.h"
+#include "util/PV.h"
+//#include "v8kernel/Body.h"
+
+namespace RBX {
+	class Body;
+
+	class SimBody
+	{
+		private:
+		  void clearAccumulators();
+		  void update();
+		  void updateIfDirty()
+		  {
+			if (dirty)
+				update();
+		  }
+		public:
+			char observedPrefix[4];
+			Body *body;
+			bool dirty;
+			PV pv;
+			Quaternion qOrientation;
+			G3D::Vector3 angMomentum;
+			G3D::Vector3 momentRecip;
+			float massRecip;
+			float constantForceY;
+			G3D::Vector3 force;
+			G3D::Vector3 torque;
+			//funcs
+			__forceinline void SimBody::unkSimInline(float fNum);
+			//void SimBody(const RBX::SimBody&);
+			SimBody(RBX::Body* body);
+			~SimBody();
+			void step(float dt);
+			void makeDirty() {dirty = true;};
+			bool getDirty() const {return dirty;};
+			PV getOwnerPV();
+			const PV& getPV() {return pv;}
+			void accumulateForceCofm(const G3D::Vector3& _force)
+			{
+				updateIfDirty();
+				force += _force;	
+			};
+			inline static G3D::Vector3 accumulateInline(const G3D::Vector3& _force, const G3D::Vector3& pvWorld, const G3D::Vector3& worldPos)
+			{
+				G3D::Vector3 temp = worldPos - pvWorld;
+				return temp.cross(_force);
+			}
+			void accumulateForce(const G3D::Vector3& _force, const G3D::Vector3& worldPos)
+			{
+				updateIfDirty();
+				force += _force;
+				torque += accumulateInline(_force, pv.position.translation, worldPos);
+			}
+			void accumulateTorque(const G3D::Vector3& _torque)
+			{
+				updateIfDirty();
+				torque += _torque;	
+			}
+			void SimBody::resetAccumulators()
+			{
+				updateIfDirty();
+				force = G3D::Vector3(0.0f, constantForceY, 0.0f);
+				torque = G3D::Vector3(0.0f, 0.0f, 0.0f);
+			}
+			const G3D::Vector3& getForce() const {return force;}
+			const G3D::Vector3& getTorque() const {return torque;}
+			void matchDummy();
+	};
+}
+
+#include <G3D/Vector3.h>
+#include <G3D/Matrix3.h>
+#include <G3D/CoordinateFrame.h>
+#include "util/indexarray.h"
+
+#include "v8kernel/Link.h"
+#include "util/PV.h"
+#include "v8kernel/KernelIndex.h"
+#include "v8kernel/Cofm.h"
+#include "util/math.h"
+
+namespace RBX {
+	//class SimBody;
+	class Body : KernelIndex
+	{
+		private:
+			int& getIndex() {return index;};
+			char observedPrefix[12];
+			Body *root;
+			Body *parent;
+			int index;
+			IndexArray<RBX::Body, &getIndex> children;
+			Cofm *cofm;
+			SimBody *simBody;
+			bool canThrottle;
+			RBX::Link *link;
+			G3D::CoordinateFrame meInParent;
+			G3D::Matrix3 moment;
+			float mass;
+			mutable int stateIndex;
+			mutable PV pv;
+			//int& getKernelIndex();
+			const RBX::SimBody* getRootSimBody() {return getRoot()->simBody;};
+			void resetRoot(RBX::Body* newRoot);
+			bool validateParentCofmDirty();
+			const G3D::CoordinateFrame& getMeInParent() const
+			{
+				RBXASSERT(getParent());
+				return getLink() ? getLink()->getChildInParent() : meInParent;
+			}
+			void updatePV() const;
+			void onChildAdded(RBX::Body* child);
+			void onChildRemoved(RBX::Body* child);
+			const RBX::Body* calcRootConst() const;
+			__declspec(noinline) Body* Body::calcRoot()
+			{
+				return (getParent() ? getParent()->calcRoot() : this);
+			}
+			void matchDummy();
+		public:
+			int& getKernelIndex() {return kernelIndex;}
+			Body();
+			~Body();
+			void step(float, bool);
+			bool cofmIsClean();
+			void makeCofmDirty();
+			void advanceStateIndex();
+			void makeStateDirty();
+			int getStateIndex() const
+			{
+				updatePV();
+				return stateIndex;
+			}
+			int numChildren() const {return children.size();}
+			RBX::Body* getChild(int index) {return children[index];} //suppose to be const
+			inline RBX::Body* getParent() const
+			{
+				return parent;
+			}
+			RBX::Link* getLink() const {return link;}
+			const RBX::Body* getRootConst() const {return root;}
+			RBX::Body* getRoot() {return root;}
+			const G3D::Vector3& getCofmOffset() const
+			{
+				if (cofm)
+				{
+					return cofm->getCofmInBody();
+				}
+				else
+				{
+					return G3D::Vector3::zero();
+				}
+			}
+
+			G3D::CoordinateFrame getMeInDescendant(const RBX::Body* descendant) const;
+			G3D::CoordinateFrame getMeInRoot() const;
+			float getMass() const {return mass;}
+			G3D::Matrix3 getIBody() const
+			{
+				updatePV();
+				return moment;
+			}
+			G3D::Vector3 getIBodyV3() const;
+			G3D::Matrix3 getIWorld() const
+			{
+				return Math::momentToWorldSpace(getIBody(), pv.position.rotation);
+			}
+			G3D::Matrix3 getIWorldAtPoint(const G3D::Vector3& point) const;
+			float getBranchMass() const
+			{
+				return (cofm ? cofm->getMass() : mass);
+			}
+			G3D::Matrix3 getBranchIBody() const
+			{
+				return cofm ? cofm->getMoment() : moment;
+			}
+			G3D::Vector3 getBranchIBodyV3() const
+			{
+				return Math::toDiagonal(getBranchIBody());
+			}
+			G3D::Matrix3 getBranchIWorld() const
+			{
+				updatePV();
+				return Math::momentToWorldSpace(getBranchIBody(), pv.position.rotation);
+			}
+			G3D::Matrix3 getBranchIWorldAtPoint(const G3D::Vector3& point) const;
+			G3D::Vector3 getBranchCofmPos() const;
+			G3D::CoordinateFrame getBranchCofmCoordinateFrame() const;
+			const G3D::Vector3& getPos() const
+			{
+				updatePV();
+				return cofm->getCofmInBody();
+			}
+			const G3D::CoordinateFrame& getCoordinateFrame() const
+			{
+				updatePV();
+				return pv.position;
+			}
+			const RBX::Velocity& getVelocity() const
+			{
+				updatePV();
+				return pv.velocity;
+			}
+			const RBX::PV& getPV() const
+			{
+				updatePV();
+				return pv;
+			}
+			const bool getCanThrottle() const {return this->canThrottle;}
+			void accumulateForceAtCofm(const G3D::Vector3&);
+			void accumulateForceAtBranchCofm(const G3D::Vector3& force)
+			{
+				RBXASSERT(root == this);
+
+				if (root->simBody)
+					root->simBody->accumulateForceCofm(force);
+			}
+			void accumulateForce(const G3D::Vector3& force, const G3D::Vector3& worldPos)
+			{
+				SimBody* simBody = root->simBody;
+				if (simBody)
+					simBody->accumulateForce(force, worldPos);
+			}
+			void accumulateTorque(const G3D::Vector3& torque)
+			{
+				if (root->simBody)
+					root->simBody->accumulateTorque(torque);
+			}
+			void resetAccumulators()
+			{
+				if (root->simBody)
+					root->simBody->resetAccumulators();
+			}
+			const G3D::Vector3& getBranchForce() const
+			{
+				if (root->simBody)
+					return root->simBody->force;
+				else
+					return G3D::Vector3::zero();
+			}
+			const G3D::Vector3& getBranchTorque() const
+			{
+				if (root->simBody)
+					return root->simBody->torque;
+				else
+					return G3D::Vector3::zero();
+			}
+			void setParent(Body* newParent);
+			void setMeInParent(RBX::Link*);
+			void setMeInParent(const G3D::CoordinateFrame& _meInParent);
+			void setMass(float _mass);
+			__declspec(noinline) void setMoment(const G3D::Matrix3& _momentInBody) // noinline for Primitive::setGridSize
+			{
+				if (moment != _momentInBody)
+				{
+					makeCofmDirty();
+					moment = _momentInBody;
+				}
+			}
+			void setPv(const PV& _pv);
+			void setCoordinateFrame(const G3D::CoordinateFrame& worldCord);
+			void setVelocity(const RBX::Velocity& worldVelocity);
+			void setCanThrottle(bool value)
+			{
+				canThrottle = value;
+			}
+			float kineticEnergy() const;
+			float potentialEnergy() const;
+			static int getNextStateIndex();
+			static Body* getWorldBody();
+	};
+}
+#include <G3D/CoordinateFrame.h>
+namespace RBX {
+class NativeGyro { char prefix[0x148]; float kP,kD; G3D::Vector3 maxTorque; G3D::CoordinateFrame cframe; public: void computeOrientation(Body*); void computeBalance(Body*); };
+	void NativeGyro::computeOrientation(Body* body)
+	{
+		if (G3D::fuzzyEq(maxTorque.y, 0.0f))
+			return;
+
+		Body* root = body->getRoot();
+
+		G3D::Vector3 oldTorqueWorld = root->getBranchTorque();
+
+
+		G3D::Vector3 localZNegAxis = body->getCoordinateFrame().vectorToObjectSpace(cframe.lookVector());
+
+
+		float desiredTorqueY = -(root->getBranchIBodyV3().y * localZNegAxis.x * kP);
+
+		G3D::Vector3 torqueBody = body->getCoordinateFrame().vectorToObjectSpace(oldTorqueWorld);
+
+		if (fabs(desiredTorqueY - torqueBody.y) < root->getBranchIBodyV3().y * maxTorque.y)
+			torqueBody.y = desiredTorqueY;
+		else
+			torqueBody.y = torqueBody.y + desiredTorqueY;
+
+
+		G3D::Vector3 angVelBody = body->getCoordinateFrame().vectorToObjectSpace(body->getVelocity().rotational);
+		torqueBody.y = torqueBody.y - kD * root->getBranchIBodyV3().y * angVelBody.y;
+
+		G3D::Vector3 addedTorque = body->getCoordinateFrame().vectorToWorldSpace(torqueBody) - oldTorqueWorld;
+
+		root->accumulateTorque(addedTorque);
+	}
+
+
+
+	void NativeGyro::computeBalance(Body* body)
+	{
+		if (G3D::fuzzyEq(maxTorque.x, 0.0f) && G3D::fuzzyEq(maxTorque.z, 0.0f))
+			return;
+
+		Body* root = body->getRoot();
+		G3D::Vector3 oldTorqueWorld = root->getBranchTorque();
+		G3D::Vector3 localYAxis = body->getCoordinateFrame().vectorToObjectSpace(cframe.upVector());
+		float desiredTorqueX = root->getBranchIBodyV3().x * localYAxis.z * kP;
+		float desiredTorqueZ = -(root->getBranchIBodyV3().z * localYAxis.x * kP);
+
+		G3D::Vector3 torqueBody = body->getCoordinateFrame().vectorToObjectSpace(oldTorqueWorld);
+
+		if (fabs(desiredTorqueX - torqueBody.x) < root->getBranchIBodyV3().x * maxTorque.x)
+			torqueBody.x = desiredTorqueX;
+		else
+			torqueBody.x += desiredTorqueX;
+
+		if (fabs(desiredTorqueZ - torqueBody.z) < root->getBranchIBodyV3().z * maxTorque.z)
+			torqueBody.z = desiredTorqueZ;
+		else
+			torqueBody.z += desiredTorqueZ;
+
+		G3D::Vector3 angVelBody = body->getCoordinateFrame().vectorToObjectSpace(body->getVelocity().rotational);
+		torqueBody.x -= (root->getBranchIBodyV3().x * angVelBody.x) * kD;
+		torqueBody.z -= (root->getBranchIBodyV3().z * angVelBody.z) * kD;
+
+		G3D::Vector3 addedTorque = body->getCoordinateFrame().vectorToWorldSpace(torqueBody) - oldTorqueWorld;
+
+		root->accumulateTorque(addedTorque);
+	}
+
+
+}
+
+namespace RBX {
+class RocketBase { public: virtual ~RocketBase(); char observedInstance[0x12c]; };
+class RocketConnector { public: virtual void computeForce(float,bool)=0; char connectorData[8]; };
+class RocketPart { char prefix[0x2c8]; Body* body; public: Body* getBody()const{return body;} const G3D::CoordinateFrame& getCoordinateFrame()const; };
+class NativeRocket:public RocketBase,public RocketConnector {
+ void* world; boost::weak_ptr<RocketPart> part;
+ bool active; boost::shared_ptr<RocketPart> target; G3D::Vector3 targetOffset; float targetRadius; bool firedEvent;
+ float maxThrust,kThrustP,kThrustD,maxSpeed,kTurnP,kTurnD; G3D::Vector3 maxTorque; float cartoonFactor;
+ public: G3D::Vector3 turn(Body*,const G3D::Vector3&); virtual void computeForce(float,bool);
 };
+	G3D::Vector3 NativeRocket::turn(Body* body, const G3D::Vector3& targetDir)
+	{
+		G3D::Vector3 targetObjectSpace = body->getCoordinateFrame().vectorToObjectSpace(targetDir);
 
-struct RefCount
-{
-    virtual void reserved();
-    virtual void dispose();
-    virtual void destroy();
-    volatile long strong;
-    volatile long weak;
+		Body* root = body->getRoot();
+		G3D::Vector3 oldTorqueWorld = root->getBranchTorque();
+
+		float desiredTorqueX = targetObjectSpace.y * root->getBranchIBodyV3().x * kTurnP;
+		float desiredTorqueY = -(targetObjectSpace.x * root->getBranchIBodyV3().y * kTurnP);
+
+		G3D::Vector3 torqueBody = body->getCoordinateFrame().vectorToObjectSpace(oldTorqueWorld);
+		
+		if (fabs(desiredTorqueX - torqueBody.x) < root->getBranchIBodyV3().x * maxTorque.x)
+			torqueBody.x = desiredTorqueX;
+		else
+			torqueBody.x += desiredTorqueX;
+		
+		if (fabs(desiredTorqueY - torqueBody.y) < root->getBranchIBodyV3().y * maxTorque.y)
+			torqueBody.y = desiredTorqueY;
+		else
+			torqueBody.y += desiredTorqueY;
+
+		G3D::Vector3 angVelBody = body->getCoordinateFrame().vectorToObjectSpace(body->getVelocity().rotational);
+		torqueBody.x -= (root->getBranchIBodyV3().x * angVelBody.x) * kTurnD;
+		torqueBody.y -= (root->getBranchIBodyV3().y * angVelBody.y) * kTurnD;
+
+		G3D::Vector3 addedTorque = body->getCoordinateFrame().vectorToWorldSpace(torqueBody) - oldTorqueWorld;
+		root->accumulateTorque(addedTorque);
+
+		return targetObjectSpace;
+	}
+
+
+
+}
+
+namespace RBX {
+	void NativeRocket::computeForce(const float dt, bool throttling)
+	{
+		if (!active)
+			return;
+
+		Body* body = part.lock()->getBody();
+		
+
+		G3D::Vector3 targetPos = target.get() ? target->getCoordinateFrame().pointToWorldSpace(targetOffset) : targetOffset;
+		G3D::Vector3 targetDelta = targetPos - body->getCoordinateFrame().translation; // fabricated name, may change
+		G3D::Vector3 targetDir = targetDelta.direction();
+		G3D::Vector3 pAccel = targetDelta * kThrustP;
+		Body* root = body->getRoot();
+
+		G3D::Vector3 force = pAccel * root->getBranchMass();
+
+		if (root->getVelocity().linear.squaredMagnitude() > maxSpeed * maxSpeed)
+		{
+			G3D::Vector3 dir = root->getVelocity().linear.direction();
+			float dotProduct = dir.dot(force);
+			if (dotProduct > 0.0f)
+			{
+				force -= dir * dotProduct;
+				pAccel = dir * maxSpeed;
+				G3D::Vector3 low = root->getVelocity().linear - pAccel;
+				force -= (low * root->getBranchMass()) / dt;
+			}
+		}
+
+		G3D::Vector3 adjustedVelocity = (root->getBranchMass() * kThrustD) * root->getVelocity().linear; // fabricated name, may change
+		force -= adjustedVelocity;
+
+		force -= body->getBranchForce();
+
+		Math::fixDenorm(force);
+
+		const G3D::Vector3 maxForce(maxThrust,maxThrust,maxThrust);
+		const G3D::Vector3 minForce(-maxThrust,-maxThrust,-maxThrust);
+		force = force.clamp(minForce,maxForce);
+
+		root->accumulateForceAtBranchCofm(force);
+
+		G3D::Vector3 unitForce = force.squaredMagnitude() > 0.000001f ? force.fastDirection() : G3D::Vector3::zero(); // fabricated name, may change
+		G3D::Vector3 forceCartoon = unitForce * (1.0f - cartoonFactor); // fabricated name, may change
+		G3D::Vector3 newDirection = forceCartoon + (targetDir * cartoonFactor); // fabricated name, may change
+		turn(body, newDirection.direction());
+	}
+
+
+}
+
+namespace RBX {
+class NativeThrust:public RocketBase,public RocketConnector {
+ void* world; boost::weak_ptr<RocketPart> part; G3D::Vector3 force,location;
+ public: virtual void computeForce(float,bool);
 };
-
-struct ForceTarget
-{
-    void apply(const Vector3& force, const Vector3& position);
-};
-
-struct Owner
-{
-    char padding[0x2c];
-    ForceTarget* target;
-};
-
-struct Body
-{
-    char padding0[0x10];
-    Owner* owner;
-    char padding1[0x80];
-    float r00, r01, r02;
-    float r10, r11, r12;
-    float r20, r21, r22;
-    Vector3 translation;
-
-    void update();
-};
-
-struct Part
-{
-    char padding[0x2c8];
-    Body* body;
-};
-
-struct SharedPart
-{
-    Part* object;
-    RefCount* count;
-};
-
-struct Handle
-{
-    char storage[8];
-    SharedPart* get(SharedPart* result);
-};
-
-struct S
-{
-    char padding[0x10];
-    Handle handle;
-    Vector3 force;
-    Vector3 position;
-
-    void f(float, float);
-};
-
-void S::f(float, float)
-{
-    SharedPart result;
-    SharedPart* acquired = handle.get(&result);
-    RefCount* count = result.count;
-    _ReadWriteBarrier();
-    Body* body = acquired->object->body;
-
-    if (count)
-    {
-        if (_InterlockedDecrement(&count->strong) == 0)
-        {
-            count->dispose();
-            if (_InterlockedDecrement(&count->weak) == 0)
-                count->destroy();
-        }
-    }
-
-    body->update();
-
-    Vector3 worldForce;
-    worldForce.x = body->r02 * force.z + body->r01 * force.y
-                 + body->r00 * force.x;
-    worldForce.y = body->r11 * force.y + force.z * body->r12
-                 + force.x * body->r10;
-    worldForce.z = body->r22 * force.z + body->r21 * force.y
-                 + body->r20 * force.x;
-
-    body->update();
-
-    ForceTarget* target = body->owner->target;
-    Vector3 worldPosition;
-    worldPosition.x = body->r02 * position.z + body->r01 * position.y
-                    + body->r00 * position.x + body->translation.x;
-    worldPosition.y = position.x * body->r10 + position.z * body->r12
-                    + body->r11 * position.y + body->translation.y;
-    worldPosition.z = body->r20 * position.x + body->r22 * position.z
-                    + body->r21 * position.y + body->translation.z;
-
-    if (target)
-        target->apply(worldForce, worldPosition);
+void NativeThrust::computeForce(float dt,bool throttling){
+ Body* body=part.lock()->getBody();
+ G3D::Vector3 worldForce=body->getCoordinateFrame().vectorToWorldSpace(force);
+ G3D::Vector3 worldPos=body->getCoordinateFrame().pointToWorldSpace(location);
+ body->accumulateForce(worldForce,worldPos);
+}
 }

@@ -1,10 +1,9 @@
+// from server: 96% by king_originala
+#include <intrin.h>
 // from server: 81% by EspClaude
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedIncrement(volatile long*);
-#pragma intrinsic(_InterlockedIncrement)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-#pragma intrinsic(_InterlockedDecrement)
 
 struct RefCount
 {
@@ -135,8 +134,8 @@ struct Explorer : ExplorerBase, Listener1, Listener2
     void setInstance(void*);
 };
 
-inline void disconnect1(Instance* i, Listener1* l) { if (i) i->first.disconnect(l); }
-inline void disconnect2(Instance* i, Listener2* l) { if (i) i->second.disconnect(l); }
+inline void disconnect1(const Shared& i, Listener1* l) { if (i.pointer) i.pointer->first.disconnect(l); }
+inline void disconnect2(const Shared& i, Listener2* l) { if (i.pointer) i.pointer->second.disconnect(l); }
 inline void connect1(Instance* i, Listener1& l) { if (i) i->first.connect(l); }
 inline void connect2(Instance* i, Listener2& l) { if (i) i->second.connect(l); }
 
@@ -144,8 +143,8 @@ void Explorer::setInstance(void* argument)
 {
     FlagGuard guard(changing);
 
-    disconnect1(instance.pointer, this);
-    disconnect2(instance.pointer, this);
+    disconnect1(instance, this);
+    disconnect2(instance, this);
 
     table->getWindow(this)->service->reset();
 

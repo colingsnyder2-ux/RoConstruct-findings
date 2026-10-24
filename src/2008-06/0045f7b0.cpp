@@ -1,551 +1,652 @@
-// from server: 55% by colin
-// from server: 54% by colin
-// roc 2008-06 0045f7b0  unit: RBX::Stats::Item  size: 1068 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0045f7b0
-//
-// 0045f7b0  6aff                 push -1
-// 0045f7b2  64a100000000         mov eax, dword ptr fs:[0]
-// 0045f7b8  682c307c00           push 0x7c302c
-// 0045f7bd  50                   push eax
-// 0045f7be  64892500000000       mov dword ptr fs:[0], esp
-// 0045f7c5  83ec34               sub esp, 0x34
-// 0045f7c8  53                   push ebx
-// 0045f7c9  8b5c2448             mov ebx, dword ptr [esp + 0x48]
-// 0045f7cd  55                   push ebp
-// 0045f7ce  56                   push esi
-// 0045f7cf  8bf1                 mov esi, ecx
-// 0045f7d1  8b466c               mov eax, dword ptr [esi + 0x6c]
-// 0045f7d4  57                   push edi
-// 0045f7d5  3bd8                 cmp ebx, eax
-// 0045f7d7  0f84d8030000         je 0x45fbb5
-// 0045f7dd  837e7000             cmp dword ptr [esi + 0x70], 0
-// 0045f7e1  8d6e70               lea ebp, [esi + 0x70]
-// 0045f7e4  0f84eb000000         je 0x45f8d5
-// 0045f7ea  8b4500               mov eax, dword ptr [ebp]
-// 0045f7ed  83ec08               sub esp, 8
-// 0045f7f0  8bcc                 mov ecx, esp
-// 0045f7f2  8901                 mov dword ptr [ecx], eax
-// 0045f7f4  8b4504               mov eax, dword ptr [ebp + 4]
-// 0045f7f7  8964245c             mov dword ptr [esp + 0x5c], esp
-// 0045f7fb  894104               mov dword ptr [ecx + 4], eax
-// 0045f7fe  85c0                 test eax, eax
-// 0045f800  740c                 je 0x45f80e
-// 0045f802  83c004               add eax, 4
-// 0045f805  b901000000           mov ecx, 1
-// 0045f80a  f00fc108             lock xadd dword ptr [eax], ecx
-// 0045f80e  8d4c2418             lea ecx, [esp + 0x18]
-// 0045f812  e82923fbff           call 0x411b40
-// 0045f817  8b4e64               mov ecx, dword ptr [esi + 0x64]
-// 0045f81a  8d7e64               lea edi, [esi + 0x64]
-// 0045f81d  c744244c00000000     mov dword ptr [esp + 0x4c], 0
-// 0045f825  85c9                 test ecx, ecx
-// 0045f827  740e                 je 0x45f837
-// 0045f829  6a00                 push 0
-// 0045f82b  e8c0b00f00           call 0x55a8f0
-// 0045f830  8bcf                 mov ecx, edi
-// 0045f832  e84976ffff           call 0x456e80
-// 0045f837  8b4d00               mov ecx, dword ptr [ebp]
-// 0045f83a  85c9                 test ecx, ecx
-// 0045f83c  7413                 je 0x45f851
-// 0045f83e  e89de4ffff           call 0x45dce0
-// 0045f843  85c0                 test eax, eax
-// 0045f845  740a                 je 0x45f851
-// 0045f847  c7803001000000000000 mov dword ptr [eax + 0x130], 0
-// 0045f851  8bbea4000000         mov edi, dword ptr [esi + 0xa4]
-// 0045f857  393df4ef9600         cmp dword ptr [0x96eff4], edi
-// 0045f85d  7412                 je 0x45f871
-// 0045f85f  8b17                 mov edx, dword ptr [edi]
-// 0045f861  8b8298000000         mov eax, dword ptr [edx + 0x98]
-// 0045f867  8bcf                 mov ecx, edi
-// 0045f869  ffd0                 call eax
-// 0045f86b  893df4ef9600         mov dword ptr [0x96eff4], edi
-// 0045f871  8b8eb0000000         mov ecx, dword ptr [esi + 0xb0]
-// 0045f877  85c9                 test ecx, ecx
-// 0045f879  7408                 je 0x45f883
-// 0045f87b  8b11                 mov edx, dword ptr [ecx]
-// 0045f87d  8b02                 mov eax, dword ptr [edx]
-// 0045f87f  6a01                 push 1
-// 0045f881  ffd0                 call eax
-// 0045f883  8d4654               lea eax, [esi + 0x54]
-// 0045f886  c786b000000000000000 mov dword ptr [esi + 0xb0], 0
-// 0045f890  8b4e78               mov ecx, dword ptr [esi + 0x78]
-// 0045f893  8d7e78               lea edi, [esi + 0x78]
-// 0045f896  50                   push eax
-// 0045f897  e8945f0f00           call 0x555830
-// 0045f89c  8b8684000000         mov eax, dword ptr [esi + 0x84]
-// 0045f8a2  c7868400000000000000 mov dword ptr [esi + 0x84], 0
-// 0045f8ac  85c0                 test eax, eax
-// 0045f8ae  740d                 je 0x45f8bd
-// 0045f8b0  8b5028               mov edx, dword ptr [eax + 0x28]
-// 0045f8b3  8d4828               lea ecx, [eax + 0x28]
-// 0045f8b6  8b4204               mov eax, dword ptr [edx + 4]
-// 0045f8b9  6a01                 push 1
-// 0045f8bb  ffd0                 call eax
-// 0045f8bd  8bcf                 mov ecx, edi
-// 0045f8bf  e8bc75ffff           call 0x456e80
-// 0045f8c4  8d4c2410             lea ecx, [esp + 0x10]
-// 0045f8c8  c744244cffffffff     mov dword ptr [esp + 0x4c], 0xffffffff
-// 0045f8d0  e8eb7a1100           call 0x5773c0
-// 0045f8d5  395e6c               cmp dword ptr [esi + 0x6c], ebx
-// 0045f8d8  741e                 je 0x45f8f8
-// 0045f8da  85db                 test ebx, ebx
-// 0045f8dc  7408                 je 0x45f8e6
-// 0045f8de  8b0b                 mov ecx, dword ptr [ebx]
-// 0045f8e0  8b5104               mov edx, dword ptr [ecx + 4]
-// 0045f8e3  53                   push ebx
-// 0045f8e4  ffd2                 call edx
-// 0045f8e6  8b466c               mov eax, dword ptr [esi + 0x6c]
-// 0045f8e9  85c0                 test eax, eax
-// 0045f8eb  7408                 je 0x45f8f5
-// 0045f8ed  8b08                 mov ecx, dword ptr [eax]
-// 0045f8ef  8b5108               mov edx, dword ptr [ecx + 8]
-// 0045f8f2  50                   push eax
-// 0045f8f3  ffd2                 call edx
-// 0045f8f5  895e6c               mov dword ptr [esi + 0x6c], ebx
-// 0045f8f8  85db                 test ebx, ebx
-// 0045f8fa  7463                 je 0x45f95f
-// 0045f8fc  8d442410             lea eax, [esp + 0x10]
-// 0045f900  50                   push eax
-// 0045f901  8bcb                 mov ecx, ebx
-// 0045f903  e838b00000           call 0x46a940
-// 0045f908  8b08                 mov ecx, dword ptr [eax]
-// 0045f90a  83c004               add eax, 4
-// 0045f90d  894d00               mov dword ptr [ebp], ecx
-// 0045f910  50                   push eax
-// 0045f911  8d4d04               lea ecx, [ebp + 4]
-// 0045f914  c744245001000000     mov dword ptr [esp + 0x50], 1
-// 0045f91c  e88f2cfaff           call 0x4025b0
-// 0045f921  8b442414             mov eax, dword ptr [esp + 0x14]
-// 0045f925  c744244cffffffff     mov dword ptr [esp + 0x4c], 0xffffffff
-// 0045f92d  85c0                 test eax, eax
-// 0045f92f  7435                 je 0x45f966
-// 0045f931  8bf8                 mov edi, eax
-// 0045f933  83c004               add eax, 4
-// 0045f936  83caff               or edx, 0xffffffff
-// 0045f939  f00fc110             lock xadd dword ptr [eax], edx
-// 0045f93d  7527                 jne 0x45f966
-// 0045f93f  8b07                 mov eax, dword ptr [edi]
-// 0045f941  8b5004               mov edx, dword ptr [eax + 4]
-// 0045f944  8bcf                 mov ecx, edi
-// 0045f946  ffd2                 call edx
-// 0045f948  8d4708               lea eax, [edi + 8]
-// 0045f94b  83c9ff               or ecx, 0xffffffff
-// 0045f94e  f00fc108             lock xadd dword ptr [eax], ecx
-// 0045f952  7512                 jne 0x45f966
-// 0045f954  8b17                 mov edx, dword ptr [edi]
-// 0045f956  8b4208               mov eax, dword ptr [edx + 8]
-// 0045f959  8bcf                 mov ecx, edi
-// 0045f95b  ffd0                 call eax
-// 0045f95d  eb07                 jmp 0x45f966
-// 0045f95f  8bcd                 mov ecx, ebp
-// 0045f961  e81a75ffff           call 0x456e80
-// 0045f966  837d0000             cmp dword ptr [ebp], 0
-// 0045f96a  0f8445020000         je 0x45fbb5
-// 0045f970  8b5500               mov edx, dword ptr [ebp]
-// 0045f973  83ec08               sub esp, 8
-// 0045f976  8bcc                 mov ecx, esp
-// 0045f978  8911                 mov dword ptr [ecx], edx
-// 0045f97a  8b4504               mov eax, dword ptr [ebp + 4]
-// 0045f97d  8964245c             mov dword ptr [esp + 0x5c], esp
-// 0045f981  894104               mov dword ptr [ecx + 4], eax
-// 0045f984  85c0                 test eax, eax
-// 0045f986  740c                 je 0x45f994
-// 0045f988  83c004               add eax, 4
-// 0045f98b  b901000000           mov ecx, 1
-// 0045f990  f00fc108             lock xadd dword ptr [eax], ecx
-// 0045f994  8d4c2424             lea ecx, [esp + 0x24]
-// 0045f998  e8a321fbff           call 0x411b40
-// 0045f99d  80be9c00000000       cmp byte ptr [esi + 0x9c], 0
-// 0045f9a4  bb02000000           mov ebx, 2
-// 0045f9a9  895c244c             mov dword ptr [esp + 0x4c], ebx
-// 0045f9ad  754c                 jne 0x45f9fb
-// 0045f9af  6894010000           push 0x194
-// 0045f9b4  e8670f2400           call 0x6a0920
-// 0045f9b9  83c404               add esp, 4
-// 0045f9bc  89442454             mov dword ptr [esp + 0x54], eax
-// 0045f9c0  c644244c03           mov byte ptr [esp + 0x4c], 3
-// 0045f9c5  85c0                 test eax, eax
-// 0045f9c7  740e                 je 0x45f9d7
-// 0045f9c9  8b5500               mov edx, dword ptr [ebp]
-// 0045f9cc  52                   push edx
-// 0045f9cd  56                   push esi
-// 0045f9ce  8bc8                 mov ecx, eax
-// 0045f9d0  e81b970000           call 0x4690f0
-// 0045f9d5  eb02                 jmp 0x45f9d9
-// 0045f9d7  33c0                 xor eax, eax
-// 0045f9d9  8b8e84000000         mov ecx, dword ptr [esi + 0x84]
-// 0045f9df  c644244c02           mov byte ptr [esp + 0x4c], 2
-// 0045f9e4  898684000000         mov dword ptr [esi + 0x84], eax
-// 0045f9ea  85c9                 test ecx, ecx
-// 0045f9ec  740d                 je 0x45f9fb
-// 0045f9ee  8b5128               mov edx, dword ptr [ecx + 0x28]
-// 0045f9f1  8b4204               mov eax, dword ptr [edx + 4]
-// 0045f9f4  83c128               add ecx, 0x28
-// 0045f9f7  6a01                 push 1
-// 0045f9f9  ffd0                 call eax
-// 0045f9fb  8b4d00               mov ecx, dword ptr [ebp]
-// 0045f9fe  85c9                 test ecx, ecx
-// 0045fa00  7407                 je 0x45fa09
-// 0045fa02  e8e936ffff           call 0x4530f0
-// 0045fa07  eb02                 jmp 0x45fa0b
-// 0045fa09  33c0                 xor eax, eax
-// 0045fa0b  50                   push eax
-// 0045fa0c  8d4c2414             lea ecx, [esp + 0x14]
-// 0045fa10  51                   push ecx
-// 0045fa11  e82a901b00           call 0x618a40
-// 0045fa16  83c408               add esp, 8
-// 0045fa19  8b10                 mov edx, dword ptr [eax]
-// 0045fa1b  83c004               add eax, 4
-// 0045fa1e  50                   push eax
-// 0045fa1f  8d4e7c               lea ecx, [esi + 0x7c]
-// 0045fa22  c644245004           mov byte ptr [esp + 0x50], 4
-// 0045fa27  895678               mov dword ptr [esi + 0x78], edx
-// 0045fa2a  e8812bfaff           call 0x4025b0
-// 0045fa2f  8b442414             mov eax, dword ptr [esp + 0x14]
-// 0045fa33  c644244c02           mov byte ptr [esp + 0x4c], 2
-// 0045fa38  85c0                 test eax, eax
-// 0045fa3a  742c                 je 0x45fa68
-// 0045fa3c  8bf8                 mov edi, eax
-// 0045fa3e  83c004               add eax, 4
-// 0045fa41  83c9ff               or ecx, 0xffffffff
-// 0045fa44  f00fc108             lock xadd dword ptr [eax], ecx
-// 0045fa48  751e                 jne 0x45fa68
-// 0045fa4a  8b17                 mov edx, dword ptr [edi]
-// 0045fa4c  8b4204               mov eax, dword ptr [edx + 4]
-// 0045fa4f  8bcf                 mov ecx, edi
-// 0045fa51  ffd0                 call eax
-// 0045fa53  8d4f08               lea ecx, [edi + 8]
-// 0045fa56  83caff               or edx, 0xffffffff
-// 0045fa59  f00fc111             lock xadd dword ptr [ecx], edx
-// 0045fa5d  7509                 jne 0x45fa68
-// 0045fa5f  8b07                 mov eax, dword ptr [edi]
-// 0045fa61  8b5008               mov edx, dword ptr [eax + 8]
-// 0045fa64  8bcf                 mov ecx, edi
-// 0045fa66  ffd2                 call edx
-// 0045fa68  6a00                 push 0
-// 0045fa6a  e8e132fbff           call 0x412d50
-// 0045fa6f  8bc8                 mov ecx, eax
-// 0045fa71  e85a98feff           call 0x4492d0
-// 0045fa76  8bce                 mov ecx, esi
-// 0045fa78  395e5c               cmp dword ptr [esi + 0x5c], ebx
-// 0045fa7b  7507                 jne 0x45fa84
-// 0045fa7d  e8ceddffff           call 0x45d850
-// 0045fa82  eb05                 jmp 0x45fa89
-// 0045fa84  e817b9ffff           call 0x45b3a0
-// 0045fa89  8b86b4000000         mov eax, dword ptr [esi + 0xb4]
-// 0045fa8f  8b8e84000000         mov ecx, dword ptr [esi + 0x84]
-// 0045fa95  50                   push eax
-// 0045fa96  e865ef1600           call 0x5cea00
-// 0045fa9b  d9ee                 fldz 
-// 0045fa9d  8b4654               mov eax, dword ptr [esi + 0x54]
-// 0045faa0  8b5004               mov edx, dword ptr [eax + 4]
-// 0045faa3  8d7e54               lea edi, [esi + 0x54]
-// 0045faa6  83ec08               sub esp, 8
-// 0045faa9  8bcf                 mov ecx, edi
-// 0045faab  dd1c24               fstp qword ptr [esp]
-// 0045faae  ffd2                 call edx
-// 0045fab0  8bce                 mov ecx, esi
-// 0045fab2  e8d9cdffff           call 0x45c890
-// 0045fab7  8b4d00               mov ecx, dword ptr [ebp]
-// 0045faba  85c9                 test ecx, ecx
-// 0045fabc  7407                 je 0x45fac5
-// 0045fabe  e85de3ffff           call 0x45de20
-// 0045fac3  eb02                 jmp 0x45fac7
-// 0045fac5  33c0                 xor eax, eax
-// 0045fac7  8b8e84000000         mov ecx, dword ptr [esi + 0x84]
-// 0045facd  898830010000         mov dword ptr [eax + 0x130], ecx
-// 0045fad3  8b4d00               mov ecx, dword ptr [ebp]
-// 0045fad6  85c9                 test ecx, ecx
-// 0045fad8  7409                 je 0x45fae3
-// 0045fada  e8318bffff           call 0x458610
-// 0045fadf  8bd8                 mov ebx, eax
-// 0045fae1  eb02                 jmp 0x45fae5
-// 0045fae3  33db                 xor ebx, ebx
-// 0045fae5  8b8eb0000000         mov ecx, dword ptr [esi + 0xb0]
-// 0045faeb  8b01                 mov eax, dword ptr [ecx]
-// 0045faed  8b501c               mov edx, dword ptr [eax + 0x1c]
-// 0045faf0  ffd2                 call edx
-// 0045faf2  50                   push eax
-// 0045faf3  8d442414             lea eax, [esp + 0x14]
-// 0045faf7  50                   push eax
-// 0045faf8  e833fcffff           call 0x45f730
-// 0045fafd  83c408               add esp, 8
-// 0045fb00  8b08                 mov ecx, dword ptr [eax]
-// 0045fb02  83c004               add eax, 4
-// 0045fb05  894e64               mov dword ptr [esi + 0x64], ecx
-// 0045fb08  50                   push eax
-// 0045fb09  8d4e68               lea ecx, [esi + 0x68]
-// 0045fb0c  c644245005           mov byte ptr [esp + 0x50], 5
-// 0045fb11  e89a2afaff           call 0x4025b0
-// 0045fb16  8b442414             mov eax, dword ptr [esp + 0x14]
-// 0045fb1a  c644244c02           mov byte ptr [esp + 0x4c], 2
-// 0045fb1f  85c0                 test eax, eax
-// 0045fb21  742e                 je 0x45fb51
-// 0045fb23  8be8                 mov ebp, eax
-// 0045fb25  83c004               add eax, 4
-// 0045fb28  83caff               or edx, 0xffffffff
-// 0045fb2b  f00fc110             lock xadd dword ptr [eax], edx
-// 0045fb2f  7520                 jne 0x45fb51
-// 0045fb31  8b4500               mov eax, dword ptr [ebp]
-// 0045fb34  8b5004               mov edx, dword ptr [eax + 4]
-// 0045fb37  8bcd                 mov ecx, ebp
-// 0045fb39  ffd2                 call edx
-// 0045fb3b  8d4508               lea eax, [ebp + 8]
-// 0045fb3e  83c9ff               or ecx, 0xffffffff
-// 0045fb41  f00fc108             lock xadd dword ptr [eax], ecx
-// 0045fb45  750a                 jne 0x45fb51
-// 0045fb47  8b5500               mov edx, dword ptr [ebp]
-// 0045fb4a  8b4208               mov eax, dword ptr [edx + 8]
-// 0045fb4d  8bcd                 mov ecx, ebp
-// 0045fb4f  ffd0                 call eax
-// 0045fb51  6850878100           push 0x818750
-// 0045fb56  8d4c242c             lea ecx, [esp + 0x2c]
-// 0045fb5a  ff1558248000         call dword ptr [0x802458]
-// 0045fb60  8b4e64               mov ecx, dword ptr [esi + 0x64]
-// 0045fb63  8b11                 mov edx, dword ptr [ecx]
-// 0045fb65  8b5204               mov edx, dword ptr [edx + 4]
-// 0045fb68  8d442428             lea eax, [esp + 0x28]
-// 0045fb6c  50                   push eax
-// 0045fb6d  c644245006           mov byte ptr [esp + 0x50], 6
-// 0045fb72  ffd2                 call edx
-// 0045fb74  8d4c2428             lea ecx, [esp + 0x28]
-// 0045fb78  c644244c02           mov byte ptr [esp + 0x4c], 2
-// 0045fb7d  ff1568248000         call dword ptr [0x802468]
-// 0045fb83  8b4e64               mov ecx, dword ptr [esi + 0x64]
-// 0045fb86  53                   push ebx
-// 0045fb87  e864ad0f00           call 0x55a8f0
-// 0045fb8c  8b8698000000         mov eax, dword ptr [esi + 0x98]
-// 0045fb92  8b4e64               mov ecx, dword ptr [esi + 0x64]
-// 0045fb95  50                   push eax
-// 0045fb96  e8a5a61600           call 0x5ca240
-// 0045fb9b  8b4e78               mov ecx, dword ptr [esi + 0x78]
-// 0045fb9e  57                   push edi
-// 0045fb9f  e81c5c0f00           call 0x5557c0
-// 0045fba4  8d4c241c             lea ecx, [esp + 0x1c]
-// 0045fba8  c744244cffffffff     mov dword ptr [esp + 0x4c], 0xffffffff
-// 0045fbb0  e80b781100           call 0x5773c0
-// 0045fbb5  8b7620               mov esi, dword ptr [esi + 0x20]
-// 0045fbb8  85f6                 test esi, esi
-// 0045fbba  740b                 je 0x45fbc7
-// 0045fbbc  6a01                 push 1
-// 0045fbbe  6a00                 push 0
-// 0045fbc0  56                   push esi
-// 0045fbc1  ff15182e8000         call dword ptr [0x802e18]
-// 0045fbc7  8b4c2444             mov ecx, dword ptr [esp + 0x44]
-// 0045fbcb  5f                   pop edi
-// 0045fbcc  5e                   pop esi
-// 0045fbcd  5d                   pop ebp
-// 0045fbce  64890d00000000       mov dword ptr fs:[0], ecx
-// 0045fbd5  5b                   pop ebx
-// 0045fbd6  83c440               add esp, 0x40
-// 0045fbd9  c20400               ret 4
+// from server: 77% by king_originala
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// Complete native0045f7b0 document transition, with verified genuine interfaces.
+#include <string>
+#include <memory>
+#include <cstddef>
+#include <typeinfo>
+#include <intrin.h>
 
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-extern "C" long __cdecl _InterlockedIncrement(volatile long*);
-#pragma intrinsic(_InterlockedIncrement)
-extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-#pragma intrinsic(_InterlockedDecrement)
-
-struct Control
-{
-    virtual void reserved();
-    virtual void dispose();
-    virtual void destroy();
-    volatile long strong;
-    volatile long weak;
+// Genuine Windows SDK used declarations; default compiler includes only CRT headers.
+struct HWND__;typedef HWND__* HWND;struct tagRECT;struct _GUID;
+typedef long HRESULT;typedef unsigned long ULONG;typedef int BOOL;
+extern "C" __declspec(dllimport) BOOL __stdcall InvalidateRect(HWND,const tagRECT*,BOOL);
+struct IUnknown {virtual HRESULT __stdcall QueryInterface(const _GUID&,void**)=0;virtual ULONG __stdcall AddRef()=0;virtual ULONG __stdcall Release()=0;};
+namespace boost {
+namespace noncopyable_ {class noncopyable {protected:noncopyable(){}~noncopyable(){}private:noncopyable(const noncopyable&);const noncopyable&operator=(const noncopyable&);};}typedef noncopyable_::noncopyable noncopyable;
+namespace detail {
+// Actual Boost1.34.1 Windows counted base; only unused methods are omitted.
+class sp_counted_base {
+ sp_counted_base(const sp_counted_base&);sp_counted_base&operator=(const sp_counted_base&);
+ long use_count_,weak_count_;
+public:
+ sp_counted_base():use_count_(1),weak_count_(1){}
+ virtual ~sp_counted_base(){}
+ virtual void dispose()=0;
+ virtual void destroy(){delete this;}
+ virtual void*get_deleter(const std::type_info&)=0;
+ void add_ref_copy(){_InterlockedIncrement(&use_count_);}
+ void release(){if(_InterlockedDecrement(&use_count_)==0){dispose();weak_release();}}
+ void weak_release(){if(_InterlockedDecrement(&weak_count_)==0)destroy();}
 };
-
-struct Shared
-{
-    Control* control;
-    void* ptr;
+class shared_count {sp_counted_base*pi_;
+public:shared_count():pi_(0){}
+ shared_count(const shared_count&r):pi_(r.pi_){if(pi_)pi_->add_ref_copy();}
+ shared_count&operator=(const shared_count&); //004025b0 native out-of-line boundary
+ ~shared_count(){if(pi_)pi_->release();}
 };
-
-struct String
-{
-    char storage[28];
-    String(const char*);
-    ~String();
-};
-
-extern "C" void* __stdcall sub_6A0920(unsigned int);
-extern "C" void* __stdcall sub_802E18(void*, int, int);
-extern "C" void* __stdcall sub_802458(void*, const char*);
-extern "C" void* __stdcall sub_802468(void*);
-
-struct RBX_Stats_Item
-{
-    void setItem(void* item);
-};
-
-void RBX_Stats_Item::setItem(void* item)
-{
-    char* self = (char*)this;
-    void* old = *(void**)(self + 0x6c);
-    if (item == old)
-        return;
-
-    if (*(void**)(self + 0x70) != 0)
-    {
-        Shared* sh = (Shared*)(self + 0x70);
-        Shared tmp;
-        tmp.control = sh->control;
-        tmp.ptr = sh->ptr;
-        if (tmp.control)
-            _InterlockedIncrement(&tmp.control->strong);
-
-        void* a = *(void**)(self + 0x64);
-        if (a)
-        {
-            ((void (__thiscall*)(void*, int))0x55a8f0)(a, 0);
-            ((void (__thiscall*)(void*))0x456e80)(self + 0x64);
-        }
-
-        void* c = *(void**)(self + 0x70);
-        if (c)
-        {
-            void* r = ((void* (__thiscall*)(void*))0x45dce0)(c);
-            if (r)
-                *(void**)((char*)r + 0x130) = 0;
-        }
-
-        void* g = *(void**)(self + 0xa4);
-        if (*(void**)0x96eff4 != g)
-        {
-            void** vt = *(void***)g;
-            ((void (__thiscall*)(void*))vt[38])(g);
-            *(void**)0x96eff4 = g;
-        }
-
-        void* b = *(void**)(self + 0xb0);
-        if (b)
-        {
-            void** vt = *(void***)b;
-            ((void (__thiscall*)(void*, int))vt[0])(b, 1);
-        }
-        *(void**)(self + 0xb0) = 0;
-
-        ((void (__thiscall*)(void*, void*))0x555830)(self + 0x78, self + 0x54);
-
-        void* d = *(void**)(self + 0x84);
-        *(void**)(self + 0x84) = 0;
-        if (d)
-        {
-            void** vt = *(void***)((char*)d + 0x28);
-            ((void (__thiscall*)(void*, int))vt[1])((char*)d + 0x28, 1);
-        }
-
-        ((void (__thiscall*)(void*))0x456e80)(self + 0x78);
-    }
-
-    if (*(void**)(self + 0x6c) != item)
-    {
-        if (item)
-        {
-            void** vt = *(void***)item;
-            ((void (__thiscall*)(void*, void*))vt[1])(item, item);
-        }
-        void* o = *(void**)(self + 0x6c);
-        if (o)
-        {
-            void** vt = *(void***)o;
-            ((void (__thiscall*)(void*, void*))vt[2])(o, o);
-        }
-        *(void**)(self + 0x6c) = item;
-    }
-
-    if (item)
-    {
-        void* r = ((void* (__thiscall*)(void*, void*))0x46a940)(item, self + 0x10);
-        *(void**)(self + 0x70) = *(void**)r;
-        ((void (__thiscall*)(void*, void*))0x4025b0)(self + 0x74, (char*)r + 4);
-    }
-    else
-    {
-        ((void (__thiscall*)(void*))0x456e80)(self + 0x70);
-    }
-
-    if (*(void**)(self + 0x70) == 0)
-        goto done;
-
-    {
-        Shared* sh = (Shared*)(self + 0x70);
-        Shared tmp;
-        tmp.control = sh->control;
-        tmp.ptr = sh->ptr;
-        if (tmp.control)
-            _InterlockedIncrement(&tmp.control->strong);
-
-        if (*(unsigned char*)(self + 0x9c) == 0)
-        {
-            void* mem = sub_6A0920(0x194);
-            void* obj = 0;
-            if (mem)
-                obj = ((void* (__thiscall*)(void*, void*, void*))0x4690f0)(mem, self, *(void**)(self + 0x70));
-            void* old84 = *(void**)(self + 0x84);
-            *(void**)(self + 0x84) = obj;
-            if (old84)
-            {
-                void** vt = *(void***)((char*)old84 + 0x28);
-                ((void (__thiscall*)(void*, int))vt[1])((char*)old84 + 0x28, 1);
-            }
-        }
-
-        void* p = *(void**)(self + 0x70);
-        void* arg = 0;
-        if (p)
-            arg = ((void* (__thiscall*)(void*))0x4530f0)(p);
-        void* r = ((void* (__cdecl*)(void*, void*))0x618a40)(self + 0x10, arg);
-        *(void**)(self + 0x78) = *(void**)r;
-        ((void (__thiscall*)(void*, void*))0x4025b0)(self + 0x7c, (char*)r + 4);
-
-        void* q = ((void* (__cdecl*)(int))0x412d50)(0);
-        ((void (__thiscall*)(void*))0x4492d0)(q);
-
-        if (*(int*)(self + 0x5c) == 2)
-            ((void (__thiscall*)(void*))0x45d850)(self);
-        else
-            ((void (__thiscall*)(void*))0x45b3a0)(self);
-
-        ((void (__thiscall*)(void*, void*))0x5cea00)(*(void**)(self + 0x84), *(void**)(self + 0xb4));
-
-        void** vt = *(void***)(self + 0x54);
-        ((void (__thiscall*)(void*, double))vt[1])(self + 0x54, 0.0);
-
-        ((void (__thiscall*)(void*))0x45c890)(self);
-
-        void* e = 0;
-        if (*(void**)(self + 0x70))
-            e = ((void* (__thiscall*)(void*))0x45de20)(*(void**)(self + 0x70));
-        *(void**)((char*)e + 0x130) = *(void**)(self + 0x84);
-
-        void* ebx = 0;
-        if (*(void**)(self + 0x70))
-            ebx = ((void* (__thiscall*)(void*))0x458610)(*(void**)(self + 0x70));
-
-        void* b0 = *(void**)(self + 0xb0);
-        void** bvt = *(void***)b0;
-        void* r2 = ((void* (__thiscall*)(void*))bvt[7])(b0);
-        void* r3 = ((void* (__cdecl*)(void*, void*))0x45f730)(self + 0x10, r2);
-        *(void**)(self + 0x64) = *(void**)r3;
-        ((void (__thiscall*)(void*, void*))0x4025b0)(self + 0x68, (char*)r3 + 4);
-
-        String s("Render");
-        void* c64 = *(void**)(self + 0x64);
-        void** cvt = *(void***)c64;
-        ((void (__thiscall*)(void*, void*))cvt[1])(c64, &s);
-        sub_802468(&s);
-
-        ((void (__thiscall*)(void*, void*))0x55a8f0)(*(void**)(self + 0x64), ebx);
-        ((void (__thiscall*)(void*, void*))0x5ca240)(*(void**)(self + 0x64), *(void**)(self + 0x98));
-        ((void (__thiscall*)(void*, void*))0x5557c0)(*(void**)(self + 0x78), self + 0x54);
-    }
-
-done:
-    {
-        void* p = *(void**)(self + 0x20);
-        if (p)
-            sub_802E18(p, 0, 1);
-    }
 }
+template<class T>class shared_ptr {T*px;detail::shared_count pn;
+template<class Y>friend class shared_ptr;
+public:shared_ptr():px(0),pn(){}
+ template<class Y>shared_ptr(const shared_ptr<Y>&r):px(r.px),pn(r.pn){}
+ void reset(); //00456e80 native out-of-line boundary
+ template<class Y>shared_ptr&operator=(const shared_ptr<Y>&r){px=r.px;pn=r.pn;return *this;}
+ T*get()const{return px;}T&operator*()const{return *px;}T*operator->()const{return px;}
+ typedef T*shared_ptr::*unspecified_bool_type;
+ operator unspecified_bool_type()const{return px==0?0:&shared_ptr::px;}
+};
+}
+
+namespace boost {template<class T>inline void checked_delete(T*x){typedef char type_must_be_complete[sizeof(T)?1:-1];(void)sizeof(type_must_be_complete);delete x;}
+class recursive_mutex;namespace detail {template<class M>class scoped_lock;}
+template<class T>class scoped_ptr {T*ptr;scoped_ptr(const scoped_ptr&);scoped_ptr&operator=(const scoped_ptr&);
+public:explicit scoped_ptr(T*p=0):ptr(p){}~scoped_ptr(){boost::checked_delete(ptr);}
+void reset(T*p=0){scoped_ptr(p).swap(*this);}void swap(scoped_ptr&b){T*tmp=b.ptr;b.ptr=ptr;ptr=tmp;}T*get()const{return ptr;}T*operator->()const{return ptr;}
+};}
+namespace ATL {
+inline IUnknown*__stdcall AtlComPtrAssign(IUnknown**pp,IUnknown*lp){if(pp==0)return 0;if(lp)lp->AddRef();if(*pp)(*pp)->Release();*pp=lp;return lp;}
+template<class T>class CComPtrBase {protected:CComPtrBase()throw():p(0){}public:T*p;~CComPtrBase()throw(){if(p)p->Release();}operator T*()const throw(){return p;}};
+template<class T>class CComPtr:public CComPtrBase<T> {public:T*operator=(T*lp)throw(){if(*this!=lp)return static_cast<T*>(AtlComPtrAssign((IUnknown**)&p,lp));return *this;}};
+}
+
+typedef enum {
+	/* The keyboard syms have been cleverly chosen to map to ASCII */
+	SDLK_UNKNOWN		= 0,
+	SDLK_FIRST		= 0,
+	SDLK_BACKSPACE		= 8,
+	SDLK_TAB		= 9,
+	SDLK_CLEAR		= 12,
+	SDLK_RETURN		= 13,
+	SDLK_PAUSE		= 19,
+	SDLK_ESCAPE		= 27,
+	SDLK_SPACE		= 32,
+	SDLK_EXCLAIM		= 33,
+	SDLK_QUOTEDBL		= 34,
+	SDLK_HASH		= 35,
+	SDLK_DOLLAR		= 36,
+	SDLK_AMPERSAND		= 38,
+	SDLK_QUOTE		= 39,
+	SDLK_LEFTPAREN		= 40,
+	SDLK_RIGHTPAREN		= 41,
+	SDLK_ASTERISK		= 42,
+	SDLK_PLUS		= 43,
+	SDLK_COMMA		= 44,
+	SDLK_MINUS		= 45,
+	SDLK_PERIOD		= 46,
+	SDLK_SLASH		= 47,
+	SDLK_0			= 48,
+	SDLK_1			= 49,
+	SDLK_2			= 50,
+	SDLK_3			= 51,
+	SDLK_4			= 52,
+	SDLK_5			= 53,
+	SDLK_6			= 54,
+	SDLK_7			= 55,
+	SDLK_8			= 56,
+	SDLK_9			= 57,
+	SDLK_COLON		= 58,
+	SDLK_SEMICOLON		= 59,
+	SDLK_LESS		= 60,
+	SDLK_EQUALS		= 61,
+	SDLK_GREATER		= 62,
+	SDLK_QUESTION		= 63,
+	SDLK_AT			= 64,
+	/* 
+	   Skip uppercase letters
+	 */
+	SDLK_LEFTBRACKET	= 91,
+	SDLK_BACKSLASH		= 92,
+	SDLK_RIGHTBRACKET	= 93,
+	SDLK_CARET		= 94,
+	SDLK_UNDERSCORE		= 95,
+	SDLK_BACKQUOTE		= 96,
+	SDLK_a			= 97,
+	SDLK_b			= 98,
+	SDLK_c			= 99,
+	SDLK_d			= 100,
+	SDLK_e			= 101,
+	SDLK_f			= 102,
+	SDLK_g			= 103,
+	SDLK_h			= 104,
+	SDLK_i			= 105,
+	SDLK_j			= 106,
+	SDLK_k			= 107,
+	SDLK_l			= 108,
+	SDLK_m			= 109,
+	SDLK_n			= 110,
+	SDLK_o			= 111,
+	SDLK_p			= 112,
+	SDLK_q			= 113,
+	SDLK_r			= 114,
+	SDLK_s			= 115,
+	SDLK_t			= 116,
+	SDLK_u			= 117,
+	SDLK_v			= 118,
+	SDLK_w			= 119,
+	SDLK_x			= 120,
+	SDLK_y			= 121,
+	SDLK_z			= 122,
+	SDLK_DELETE		= 127,
+	/* End of ASCII mapped keysyms */
+
+	/* International keyboard syms */
+	SDLK_WORLD_0		= 160,		/* 0xA0 */
+	SDLK_WORLD_1		= 161,
+	SDLK_WORLD_2		= 162,
+	SDLK_WORLD_3		= 163,
+	SDLK_WORLD_4		= 164,
+	SDLK_WORLD_5		= 165,
+	SDLK_WORLD_6		= 166,
+	SDLK_WORLD_7		= 167,
+	SDLK_WORLD_8		= 168,
+	SDLK_WORLD_9		= 169,
+	SDLK_WORLD_10		= 170,
+	SDLK_WORLD_11		= 171,
+	SDLK_WORLD_12		= 172,
+	SDLK_WORLD_13		= 173,
+	SDLK_WORLD_14		= 174,
+	SDLK_WORLD_15		= 175,
+	SDLK_WORLD_16		= 176,
+	SDLK_WORLD_17		= 177,
+	SDLK_WORLD_18		= 178,
+	SDLK_WORLD_19		= 179,
+	SDLK_WORLD_20		= 180,
+	SDLK_WORLD_21		= 181,
+	SDLK_WORLD_22		= 182,
+	SDLK_WORLD_23		= 183,
+	SDLK_WORLD_24		= 184,
+	SDLK_WORLD_25		= 185,
+	SDLK_WORLD_26		= 186,
+	SDLK_WORLD_27		= 187,
+	SDLK_WORLD_28		= 188,
+	SDLK_WORLD_29		= 189,
+	SDLK_WORLD_30		= 190,
+	SDLK_WORLD_31		= 191,
+	SDLK_WORLD_32		= 192,
+	SDLK_WORLD_33		= 193,
+	SDLK_WORLD_34		= 194,
+	SDLK_WORLD_35		= 195,
+	SDLK_WORLD_36		= 196,
+	SDLK_WORLD_37		= 197,
+	SDLK_WORLD_38		= 198,
+	SDLK_WORLD_39		= 199,
+	SDLK_WORLD_40		= 200,
+	SDLK_WORLD_41		= 201,
+	SDLK_WORLD_42		= 202,
+	SDLK_WORLD_43		= 203,
+	SDLK_WORLD_44		= 204,
+	SDLK_WORLD_45		= 205,
+	SDLK_WORLD_46		= 206,
+	SDLK_WORLD_47		= 207,
+	SDLK_WORLD_48		= 208,
+	SDLK_WORLD_49		= 209,
+	SDLK_WORLD_50		= 210,
+	SDLK_WORLD_51		= 211,
+	SDLK_WORLD_52		= 212,
+	SDLK_WORLD_53		= 213,
+	SDLK_WORLD_54		= 214,
+	SDLK_WORLD_55		= 215,
+	SDLK_WORLD_56		= 216,
+	SDLK_WORLD_57		= 217,
+	SDLK_WORLD_58		= 218,
+	SDLK_WORLD_59		= 219,
+	SDLK_WORLD_60		= 220,
+	SDLK_WORLD_61		= 221,
+	SDLK_WORLD_62		= 222,
+	SDLK_WORLD_63		= 223,
+	SDLK_WORLD_64		= 224,
+	SDLK_WORLD_65		= 225,
+	SDLK_WORLD_66		= 226,
+	SDLK_WORLD_67		= 227,
+	SDLK_WORLD_68		= 228,
+	SDLK_WORLD_69		= 229,
+	SDLK_WORLD_70		= 230,
+	SDLK_WORLD_71		= 231,
+	SDLK_WORLD_72		= 232,
+	SDLK_WORLD_73		= 233,
+	SDLK_WORLD_74		= 234,
+	SDLK_WORLD_75		= 235,
+	SDLK_WORLD_76		= 236,
+	SDLK_WORLD_77		= 237,
+	SDLK_WORLD_78		= 238,
+	SDLK_WORLD_79		= 239,
+	SDLK_WORLD_80		= 240,
+	SDLK_WORLD_81		= 241,
+	SDLK_WORLD_82		= 242,
+	SDLK_WORLD_83		= 243,
+	SDLK_WORLD_84		= 244,
+	SDLK_WORLD_85		= 245,
+	SDLK_WORLD_86		= 246,
+	SDLK_WORLD_87		= 247,
+	SDLK_WORLD_88		= 248,
+	SDLK_WORLD_89		= 249,
+	SDLK_WORLD_90		= 250,
+	SDLK_WORLD_91		= 251,
+	SDLK_WORLD_92		= 252,
+	SDLK_WORLD_93		= 253,
+	SDLK_WORLD_94		= 254,
+	SDLK_WORLD_95		= 255,		/* 0xFF */
+
+	/* Numeric keypad */
+	SDLK_KP0		= 256,
+	SDLK_KP1		= 257,
+	SDLK_KP2		= 258,
+	SDLK_KP3		= 259,
+	SDLK_KP4		= 260,
+	SDLK_KP5		= 261,
+	SDLK_KP6		= 262,
+	SDLK_KP7		= 263,
+	SDLK_KP8		= 264,
+	SDLK_KP9		= 265,
+	SDLK_KP_PERIOD		= 266,
+	SDLK_KP_DIVIDE		= 267,
+	SDLK_KP_MULTIPLY	= 268,
+	SDLK_KP_MINUS		= 269,
+	SDLK_KP_PLUS		= 270,
+	SDLK_KP_ENTER		= 271,
+	SDLK_KP_EQUALS		= 272,
+
+	/* Arrows + Home/End pad */
+	SDLK_UP			= 273,
+	SDLK_DOWN		= 274,
+	SDLK_RIGHT		= 275,
+	SDLK_LEFT		= 276,
+	SDLK_INSERT		= 277,
+	SDLK_HOME		= 278,
+	SDLK_END		= 279,
+	SDLK_PAGEUP		= 280,
+	SDLK_PAGEDOWN		= 281,
+
+	/* Function keys */
+	SDLK_F1			= 282,
+	SDLK_F2			= 283,
+	SDLK_F3			= 284,
+	SDLK_F4			= 285,
+	SDLK_F5			= 286,
+	SDLK_F6			= 287,
+	SDLK_F7			= 288,
+	SDLK_F8			= 289,
+	SDLK_F9			= 290,
+	SDLK_F10		= 291,
+	SDLK_F11		= 292,
+	SDLK_F12		= 293,
+	SDLK_F13		= 294,
+	SDLK_F14		= 295,
+	SDLK_F15		= 296,
+
+	/* Key state modifier keys */
+	SDLK_NUMLOCK		= 300,
+	SDLK_CAPSLOCK		= 301,
+	SDLK_SCROLLOCK		= 302,
+	SDLK_RSHIFT		= 303,
+	SDLK_LSHIFT		= 304,
+	SDLK_RCTRL		= 305,
+	SDLK_LCTRL		= 306,
+	SDLK_RALT		= 307,
+	SDLK_LALT		= 308,
+	SDLK_RMETA		= 309,
+	SDLK_LMETA		= 310,
+	SDLK_LSUPER		= 311,		/* Left "Windows" key */
+	SDLK_RSUPER		= 312,		/* Right "Windows" key */
+	SDLK_MODE		= 313,		/* "Alt Gr" key */
+	SDLK_COMPOSE		= 314,		/* Multi-key compose key */
+
+	/* Miscellaneous function keys */
+	SDLK_HELP		= 315,
+	SDLK_PRINT		= 316,
+	SDLK_SYSREQ		= 317,
+	SDLK_BREAK		= 318,
+	SDLK_MENU		= 319,
+	SDLK_POWER		= 320,		/* Power Macintosh power key */
+	SDLK_EURO		= 321,		/* Some european keyboards */
+	SDLK_UNDO		= 322,		/* Atari keyboard has Undo */
+
+	/* Add any other keys here */
+
+	SDLK_LAST
+} SDLKey;
+
+class CWnd;union SDL_Event;
+namespace G3D {class Vector2;class Vector3;class Rect2D;class Color4;class CoordinateFrame;class AABox;class Sphere;class Ray;class LineSegment;
+// Genuine counted-handle storage; no handle methods/objects are used by this TU.
+template<class T>class ReferenceCountedPointer {T*pointer;};}
+class RenderStats;
+namespace RBX {class TextureProxyBase;class TextureId;class Adorn;class RunService;template<class C,class E>class Notifier;class Name {public:static const Name&getNullName();};
+class ContentId
+	{
+	private:
+		std::string id;
+		const Name* mimeTypePtr;
+
+	public:
+		ContentId()
+			: id(), 
+			  mimeTypePtr(&Name::getNullName())
+		{
+		}
+		ContentId(const std::string& id)
+			: id(id),
+			  mimeTypePtr(&Name::getNullName())
+		{
+		}
+		ContentId(const char* id)
+			: id(id),
+			  mimeTypePtr(&Name::getNullName())
+		{
+		}
+		ContentId(const std::string& id, const Name& mimeType)
+			: id(id),
+			  mimeTypePtr(&mimeType)
+		{
+		}
+
+	public:
+		const Name& mimeType() const
+		{
+			return *mimeTypePtr;
+		}
+		const char* c_str() const
+		{
+			return id.c_str();
+		}
+		const std::string& toString() const
+		{
+			return id;
+		}
+		bool isNull() const
+		{
+			return id.empty();
+		}
+		bool isFile() const
+		{
+			return id.substr(0, 7) == "file://";
+		}
+		bool isAsset() const
+		{
+			return id.substr(0, 11) == "rbxasset://";
+		}
+		bool isHttp() const
+		{
+			return id.substr(0, 4) == "http";
+		}
+
+	public:
+		static ContentId fromUrl(const std::string&);
+		static ContentId fromFile(const std::string&);
+		static ContentId fromAssets(const std::string& filePath);
+		static ContentId fromMD5Hash(const std::string&);
+	};
+enum RunState
+	{
+		RS_NORMAL,
+		RS_RUNNING,
+		RS_PAUSED
+	};
+
+	class RunTransition
+	{
+	public:
+		RunState oldState;
+		RunState newState;
+
+		RunTransition(RunState oldState, RunState newState)
+			: oldState(oldState),
+			  newState(newState)
+		{
+		}
+
+		bool startEvent();
+		bool resetEvent();
+	};
+
+	class Heartbeat
+	{
+	public:
+		const float time;
+		const float step;
+
+		Heartbeat(float time, float step)
+			: time(time),
+			step(step)
+		{
+		}
+	};
+
+	class Stepped
+	{
+	public:
+		const float time;
+		const float step;
+
+		Stepped(float time, float step)
+			: time(time),
+			step(step)
+		{
+		}
+	};
+
+	class IRunView
+	{
+	public:
+		virtual void InvalidateRunView() = 0;
+		virtual void AdjustThrottle(double) = 0;
+	};
+
+
+template<typename Class, typename Event>
+	class __declspec(novtable) Listener
+	{
+		friend class Notifier<Class, Event>;
+
+	protected:
+		virtual void onEvent(const Class*, Event) = 0;
+		Listener& operator=(const Listener&);
+
+		virtual ~Listener()
+		{
+		}
+	};}
+namespace RBX
+{
+	class Adorn;
+	class UserInputBase
+	{
+	public:
+		enum WrapMode
+		{
+			WRAP_AUTO,
+			WRAP_CENTER
+		};
+
+	private:
+		ContentId currentCursorId;
+		G3D::ReferenceCountedPointer<TextureProxyBase> currentCursor;
+	  
+	protected:
+		virtual G3D::Vector2 getCursorPosition() = 0;
+		virtual G3D::ReferenceCountedPointer<TextureProxyBase> getGameCursor(Adorn*);
+	public:
+		UserInputBase();
+	public:
+		void init(Adorn*);
+	public:
+		~UserInputBase();
+	public:
+		virtual void setWrapMode(WrapMode) = 0;
+		virtual WrapMode getWrapMode() const = 0;
+		virtual void centerCursor() = 0;
+		virtual bool keyDown(SDLKey) const = 0;
+		bool altKeyDown() const;
+		bool shiftKeyDown() const;
+		bool ctrlKeyDown() const;
+		virtual void setKeyState(SDLKey key, bool down) = 0;
+		virtual void setCursorId(Adorn*, const TextureId&);
+		void renderGameCursor(Adorn*);
+	};
+}
+namespace G3D {typedef unsigned char uint8;typedef unsigned short uint16;template<class T>class Array;class Rect2D;class Vector2;class GImage;class GApplet;typedef SDL_Event GEvent;
+// Genuine first39 virtual methods; existing-pointer interface, no window objects/size claim.
+class GWindow {public:class Settings;virtual void getSettings(GWindow::Settings& settings) const = 0;virtual int width() const = 0;virtual int height() const = 0;virtual Rect2D dimensions() const = 0;virtual void setDimensions(const Rect2D& dims) = 0;virtual void setPosition(int x, int y) = 0;virtual bool hasFocus() const = 0;virtual std::string getAPIVersion() const = 0;virtual std::string getAPIName() const = 0;virtual void setGammaRamp(const Array<uint16>& gammaRamp) = 0;virtual void setCaption(const std::string& caption) = 0;virtual int numJoysticks() const = 0;virtual std::string joystickName(unsigned int sticknum) = 0;virtual std::string caption() = 0;virtual void setIcon(const GImage& image);virtual void setIcon(const std::string& imageFilename);virtual void swapGLBuffers() = 0;virtual void notifyResize(int w, int h) = 0;virtual void setRelativeMousePosition(double x, double y) = 0;virtual void setRelativeMousePosition(const Vector2& p) = 0;virtual bool pollEvent(GEvent& e);virtual void getRelativeMouseState(Vector2& position, uint8& mouseButtons) const = 0;virtual void getRelativeMouseState(int& x, int& y, uint8& mouseButtons) const = 0;virtual void getRelativeMouseState(double& x, double& y, uint8& mouseButtons) const = 0;virtual void getJoystickState(unsigned int stickNum, Array<float>& axis, Array<bool>& button) = 0;virtual void  setInputCapture(bool c) = 0;virtual void incInputCaptureCount();virtual void decInputCaptureCount();virtual bool  inputCapture() const = 0;virtual void  setMouseVisible(bool b) = 0;virtual bool  mouseVisible() const = 0;virtual void incMouseHideCount();virtual void decMouseHideCount();virtual bool requiresMainLoop() const;virtual void pushLoopBody(void (*body)(void*), void* arg);virtual void pushLoopBody(GApplet* applet);virtual void popLoopBody();virtual void runMainLoop();virtual void reallyMakeCurrent() const;
+virtual ~GWindow();
+private:static const GWindow*m_current;
+public:void makeCurrent()const {if(m_current!=this){reallyMakeCurrent();m_current=this;}}
+};}
+
+namespace RBX
+{
+	class Instance;
+	class ViewBase
+	{
+	public:
+		ViewBase()
+		{
+		}
+		virtual ~ViewBase()
+		{
+		}
+	public:
+		virtual void render(void* rd) = 0;
+		virtual float getShadingQuality() const = 0;
+		virtual float getMeshDetail() const = 0;
+		virtual void updateSettings(float shadingQuality, float meshDetail, bool shadows, float cameraDistance) = 0;
+		virtual void suppressSkybox() = 0;
+		virtual Instance* getWorkspace() = 0;
+		virtual RenderStats& getRenderStats() = 0;
+	private:
+		virtual void onWorkspaceDescendentAdded(boost::shared_ptr<Instance> descendent) = 0;
+		virtual void updateLighting() = 0;
+		virtual void invalidateLighting(bool updateSkybox) = 0;
+	  
+	public:
+		static bool& getShadowsEnabled()
+		{
+			static bool _shadowsEnabled = false;
+			return _shadowsEnabled;
+		}
+	};
+}
+
+namespace RBX {
+namespace Profiling {class Profiler;}
+// Genuine native primary virtual prefix only; no Instance objects or RTTI.
+// Used slot4 matches the later GuidItem-based Instance SDK and native setName.
+// Primary destruction/complete Instance layout are not reconstructed or used.
+class Instance {protected:virtual ~Instance();public:virtual void setName(const std::string&);void setParent(Instance*);};
+namespace Stats {class Item:public Instance {public:Item*createBoundChildItem(const Profiling::Profiler&);};class StatsService:public Instance {};}
+class ControllerService {public:char observed00[0x130];UserInputBase*hardwareDevice;};
+class RunService {public:void addRunView(IRunView*);void removeRunView(IRunView*);};
+class DataModel {public:
+ class Lock {boost::shared_ptr<boost::recursive_mutex>mutex;boost::detail::scoped_lock<boost::recursive_mutex>*lock;
+ public:Lock(boost::shared_ptr<const DataModel>);~Lock();};
+ ControllerService*findControllerService(); //0045dce0
+ ControllerService*createControllerService(); //0045de20
+ RunService*createRunService(); //004530f0
+ Stats::StatsService*createStatsService(); //00458610
+};
+template<class T>boost::shared_ptr<T>shared_from(T*); //00618a40
+class NativeWindowSettings {public:void apply(bool);}; //004492d0 ret4
+NativeWindowSettings*documentWindowSettings(); //00412d50 cdecl0
+class NativeDocument:public IUnknown {public:boost::shared_ptr<DataModel>getDataModel();}; //0046a940 hidden return ret4
+}
+class CRobloxWnd;
+// Actual native bases/offsets from DxUserInput RTTI. 404-byte allocation and
+// original external constructor initialize the opaque native tail and vptrs.
+class DxUserInput:public RBX::UserInputBase,public RBX::Listener<RBX::RunService,RBX::RunTransition>,public RBX::Listener<RBX::RunService,RBX::Heartbeat> {
+ char nativeTail30[0x194-0x30];
+public:
+ DxUserInput(CWnd*,RBX::DataModel*);~DxUserInput();
+ G3D::Vector2 getCursorPosition();void setWrapMode(WrapMode);WrapMode getWrapMode()const;void centerCursor();bool keyDown(SDLKey)const;void setKeyState(SDLKey,bool);
+ void onEvent(const RBX::RunService*,RBX::RunTransition);void onEvent(const RBX::RunService*,RBX::Heartbeat);
+};
+// Existing-pointer CRobloxWnd view. No owner objects, vtables, RTTI or complete
+// native owner-size/inheritance claim. IRunView subobject54 is observed in caller
+// and confirmed by the genuine add/removeRunView/AdjustThrottle interfaces.
+class CRobloxWnd {
+public:
+ class RenderStatsItem:public RBX::Stats::Item {};
+ char observed00[0x20];HWND hwnd;char observed24[0x38];
+ int graphicsMode;char observed60[4];boost::shared_ptr<RBX::Stats::Item>stats;
+ ATL::CComPtr<RBX::NativeDocument>document;boost::shared_ptr<RBX::DataModel>model;boost::shared_ptr<RBX::RunService>run;
+ char observed80[4];boost::scoped_ptr<DxUserInput>input;char observed88[0x10];RBX::Profiling::Profiler*profiler;
+ bool headless;char observed9d[7];G3D::GWindow*window;char observeda8[8];RBX::ViewBase*render;RBX::Adorn*adorn;
+ RBX::IRunView*runView(){return reinterpret_cast<RBX::IRunView*>(reinterpret_cast<char*>(this)+0x54);}
+ void setupOgre(); //0045d850
+ void setupLegacy(); //0045b3a0
+ void setupStatsGui(); //0045c890
+ void setDocument(RBX::NativeDocument*);
+};
+boost::shared_ptr<CRobloxWnd::RenderStatsItem>createWindowRenderStats(RenderStats&); //0045f730 cdecl hidden8B result
+void CRobloxWnd::setDocument(RBX::NativeDocument*doc){
+ if(doc!=document){
+  boost::shared_ptr<RBX::DataModel>&currentModel=model;
+  if(currentModel){
+   RBX::DataModel::Lock lock(currentModel);
+   if(stats){stats->setParent(0);stats.reset();}
+   RBX::ControllerService*controller=currentModel?currentModel->findControllerService():0;
+   if(controller)controller->hardwareDevice=0;
+   window->makeCurrent();
+   delete render;render=0;
+   boost::shared_ptr<RBX::RunService>&currentRun=run;
+   currentRun->removeRunView(runView());
+   input.reset();
+   currentRun.reset();
+  }
+  document=doc;
+  if(doc)currentModel=doc->getDataModel();else currentModel.reset();
+  if(currentModel){
+   RBX::DataModel::Lock lock(currentModel);
+   if(!headless)input.reset(new DxUserInput(reinterpret_cast<CWnd*>(this),currentModel.get()));
+   run=RBX::shared_from(currentModel?currentModel->createRunService():0);
+   RBX::documentWindowSettings()->apply(false);
+   if(graphicsMode==2)setupOgre();else setupLegacy();
+   input->init(adorn);
+   RBX::IRunView*view=runView();view->AdjustThrottle(0.0);
+   setupStatsGui();
+   RBX::ControllerService*controller=currentModel?currentModel->createControllerService():0;
+   controller->hardwareDevice=input.get();
+   RBX::Stats::StatsService*service=currentModel?currentModel->createStatsService():0;
+   stats=createWindowRenderStats(render->getRenderStats());
+   {std::string name("Render");stats->setName(name);}
+   stats->setParent(service);
+   stats->createBoundChildItem(*profiler);
+   run->addRunView(view);
+  }
+ }
+ if(hwnd)::InvalidateRect(hwnd,0,1);
+}
+
+typedef char doc_string_size[sizeof(std::string)==28?1:-1];
+typedef char doc_shared_size[sizeof(boost::shared_ptr<RBX::DataModel>)==8?1:-1];
+typedef char doc_com_size[sizeof(ATL::CComPtr<RBX::NativeDocument>)==4?1:-1];
+typedef char doc_input_owner_size[sizeof(boost::scoped_ptr<DxUserInput>)==4?1:-1];
+typedef char doc_content_size[sizeof(RBX::ContentId)==32?1:-1];
+typedef char doc_input_base_size[sizeof(RBX::UserInputBase)==40?1:-1];
+typedef char doc_dx_size[sizeof(DxUserInput)==404?1:-1];
+typedef char doc_lock_size[sizeof(RBX::DataModel::Lock)==12?1:-1];
+typedef char doc_run_interface_size[sizeof(RBX::IRunView)==4?1:-1];
+typedef char doc_handle_offset[offsetof(CRobloxWnd,hwnd)==0x20?1:-1];
+typedef char doc_mode_offset[offsetof(CRobloxWnd,graphicsMode)==0x5c?1:-1];
+typedef char doc_stats_offset[offsetof(CRobloxWnd,stats)==0x64?1:-1];
+typedef char doc_com_offset[offsetof(CRobloxWnd,document)==0x6c?1:-1];
+typedef char doc_model_offset[offsetof(CRobloxWnd,model)==0x70?1:-1];
+typedef char doc_run_offset[offsetof(CRobloxWnd,run)==0x78?1:-1];
+typedef char doc_input_offset[offsetof(CRobloxWnd,input)==0x84?1:-1];
+typedef char doc_profiler_offset[offsetof(CRobloxWnd,profiler)==0x98?1:-1];
+typedef char doc_headless_offset[offsetof(CRobloxWnd,headless)==0x9c?1:-1];
+typedef char doc_window_offset[offsetof(CRobloxWnd,window)==0xa4?1:-1];
+typedef char doc_render_offset[offsetof(CRobloxWnd,render)==0xb0?1:-1];
+typedef char doc_adorn_offset[offsetof(CRobloxWnd,adorn)==0xb4?1:-1];
+typedef char doc_controller_offset[offsetof(RBX::ControllerService,hardwareDevice)==0x130?1:-1];

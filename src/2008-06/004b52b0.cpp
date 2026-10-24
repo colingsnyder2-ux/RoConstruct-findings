@@ -1,203 +1,123 @@
-// from server: 22% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-
-struct Func0 {
-    void* vptr;
-    void* obj;
+// from server: 100% by king_originala
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// Minimal measured ABI views; TrackedInstance and signal labels are descriptive.
+// Native Boost.Signals comparison bases account for connection.con at +4.
+// Native callbacks/container APIs plus the full target establish record and signal signatures.
+#include <map>
+#include <intrin.h>
+#include <utility>
+#include <stddef.h>
+namespace boost {
+namespace detail {
+struct sp_counted_base {
+    sp_counted_base():use_count_(1),weak_count_(1){}
+    virtual ~sp_counted_base() {}
+    virtual void dispose()=0;
+    virtual void destroy(){delete this;}
+    long use_count_,weak_count_;
+    void weak_release(){if(_InterlockedDecrement(&weak_count_)==0)destroy();}
+    void release(){if(_InterlockedDecrement(&use_count_)==0){dispose();weak_release();}}
 };
-
-struct TypedStatsItem {
-    void* vptr;
-    Func0 func;
-    void* value;
-    unsigned char flag;
+template<class Y>struct sp_counted_impl_p:sp_counted_base {Y*pointer;explicit sp_counted_impl_p(Y*p):pointer(p){}void dispose(){delete pointer;}};
+struct shared_count {
+    sp_counted_base* pi_;
+    shared_count():pi_(0){}
+    
+    shared_count& operator=(const shared_count& r){sp_counted_base* tmp=r.pi_;if(tmp!=pi_){if(tmp)_InterlockedIncrement(&tmp->use_count_);if(pi_)pi_->release();pi_=tmp;}return *this;}
+    void swap(shared_count& r){sp_counted_base* tmp=r.pi_;r.pi_=pi_;pi_=tmp;}
+    shared_count(const shared_count& r):pi_(r.pi_){if(pi_)_InterlockedIncrement(&pi_->use_count_);}
+    ~shared_count(){if(pi_)pi_->release();}
 };
-
-extern "C" void __cdecl func_4abd20(void*, void*);
-extern "C" void __cdecl func_4aec10(void*, void*, void*);
-extern "C" void __cdecl func_4ab8c0(void*);
-extern "C" void __cdecl func_4025b0(void*, void*);
-extern "C" void __cdecl func_4b4410(void*, void*);
-extern "C" void __cdecl func_4a3340(void*, void*, void*, void*);
-extern "C" void __cdecl func_5953f0(void*, void*);
-extern "C" void __cdecl func_595370(void*);
-extern "C" void __cdecl func_49f710(void*);
-extern "C" void __cdecl func_4af830(void*, void*, void*, void*);
-extern "C" void __cdecl func_4b4d80(void*, void*);
-extern "C" void __cdecl func_42b680(void*, void*, void*, void*);
-extern "C" void __cdecl func_4aea80(void*);
-extern "C" void __cdecl func_595230(void*);
-
-extern unsigned char g_byte_971648;
-
-struct TypedStatsItemClass {
-    TypedStatsItem* method(void* arg1, void* arg2, void* arg3);
-};
-
-TypedStatsItem* TypedStatsItemClass::method(void* arg1, void* arg2, void* arg3)
-{
-    void* self = this;
-    unsigned char localbuf[0x8c];
-    (void)localbuf;
-
-    void* v1 = 0;
-    unsigned char b1 = 0;
-
-    void* tmp1[8];
-    tmp1[0] = arg1;
-    func_4abd20(tmp1, &v1);
-
-    void* tmp2[4];
-    func_4aec10((char*)self + 0x2c38, tmp2, tmp1);
-
-    func_4ab8c0(tmp1);
-    func_4ab8c0(&v1);
-
-    void* eax = tmp2[0];
-    void* ebp = *(void**)0x802890;
-
-    if (b1 == 0) {
-        if (eax == 0) {
-            ((void(*)())ebp)();
-            void* esi = tmp2[1];
-            if (esi != *(void**)((char*)0 + 0x18)) {
-                ((void(*)())ebp)();
-            }
-            void* ecx = arg1;
-            esi = (char*)esi + 0x10;
-            *(void**)esi = ecx;
-            func_4025b0((char*)esi + 4, arg2);
-            void* fn = (void*)0x4aff70;
-            void* zero = 0;
-            void* local[2];
-            local[0] = fn;
-            local[1] = zero;
-            *(unsigned char*)((char*)esi + 0x28) = 0;
-            void* local2[2];
-            local2[0] = self;
-            func_4b4410(local2, local);
-            void* p = arg1;
-            if (p != 0) {
-                p = (char*)p + 0x14;
-            } else {
-                p = 0;
-            }
-            void* out[4];
-            func_4a3340((void*)0x973e90, out, p, local2);
-            func_5953f0((char*)esi + 8, out);
-            func_595370(out);
-            func_49f710(local2);
-            if (*(unsigned char*)((char*)arg2 + 4) != 0) {
-                void* a = arg1;
-                void* b = *(void**)((char*)arg2 + 8);
-                void* local3[2];
-                local3[0] = a;
-                local3[1] = b;
-                if (a != 0) {
-                    _InterlockedExchangeAdd((volatile long*)((char*)a + 4), 1);
-                }
-                void* out2[4];
-                func_4af830(out2, (void*)0x4b0540, 0, self);
-                func_4b4d80(local2, out2);
-                void* p2 = arg1;
-                if (p2 != 0) {
-                    p2 = (char*)p2 + 0x14;
-                } else {
-                    p2 = 0;
-                }
-                void* out3[4];
-                func_42b680((void*)0x973f48, out3, p2, local2);
-                func_5953f0((char*)esi + 0x18, out3);
-                func_595370(out3);
-                func_49f710(local2);
-                void* rc = *(void**)((char*)arg2 + 0x10);
-                if (rc != 0) {
-                    if (_InterlockedExchangeAdd((volatile long*)((char*)rc + 4), -1) == 1) {
-                        void* vt = *(void**)rc;
-                        ((void(*)(void*))*(void**)((char*)vt + 4))(rc);
-                        if (_InterlockedExchangeAdd((volatile long*)((char*)rc + 8), -1) == 1) {
-                            void* vt2 = *(void**)rc;
-                            ((void(*)(void*))*(void**)((char*)vt2 + 8))(rc);
-                        }
-                    }
-                }
-            }
-            void* rc2 = *(void**)((char*)arg2 + 0x10);
-            if (rc2 != 0) {
-                if (_InterlockedExchangeAdd((volatile long*)((char*)rc2 + 4), -1) == 1) {
-                    void* vt = *(void**)rc2;
-                    ((void(*)(void*))*(void**)((char*)vt + 4))(rc2);
-                    if (_InterlockedExchangeAdd((volatile long*)((char*)rc2 + 8), -1) == 1) {
-                        void* vt2 = *(void**)rc2;
-                        ((void(*)(void*))*(void**)((char*)vt2 + 8))(rc2);
-                    }
-                }
-            }
-            return (TypedStatsItem*)esi;
-        } else {
-            eax = *(void**)eax;
-            goto loop1;
-        }
-    } else {
-        if (eax == 0) {
-            ((void(*)())ebp)();
-            void* esi = tmp2[1];
-            if (esi != *(void**)((char*)0 + 0x18)) {
-                ((void(*)())ebp)();
-            }
-            void* ebp2 = (char*)esi + 0x10;
-            if (*(unsigned char*)((char*)arg2 + 4) == 0) {
-                func_595230((char*)ebp2 + 0x18);
-            } else {
-                void* p = *(void**)((char*)ebp2 + 0x1c);
-                void* esi2 = (char*)ebp2 + 0x18;
-                if (p != 0 && *(void**)((char*)p + 8) != 0) {
-                    goto done;
-                }
-                void* a = arg1;
-                void* b = *(void**)((char*)arg2 + 8);
-                void* local3[2];
-                local3[0] = a;
-                local3[1] = b;
-                if (a != 0) {
-                    _InterlockedExchangeAdd((volatile long*)((char*)a + 4), 1);
-                }
-                void* out2[4];
-                func_4af830(out2, (void*)0x4b0540, 0, self);
-                void* local2[2];
-                func_4b4d80(local2, out2);
-                void* p2 = arg1;
-                if (p2 != 0) {
-                    p2 = (char*)p2 + 0x14;
-                } else {
-                    p2 = 0;
-                }
-                void* out3[4];
-                func_42b680((void*)0x973f48, out3, p2, local2);
-                func_5953f0(esi2, out3);
-                func_595370(out3);
-                func_49f710(local2);
-                func_4aea80(local3);
-            }
-        done:
-            void* rc = *(void**)((char*)arg2 + 0x10);
-            if (rc != 0) {
-                if (_InterlockedExchangeAdd((volatile long*)((char*)rc + 4), -1) == 1) {
-                    void* vt = *(void**)rc;
-                    ((void(*)(void*))*(void**)((char*)vt + 4))(rc);
-                    if (_InterlockedExchangeAdd((volatile long*)((char*)rc + 8), -1) == 1) {
-                        void* vt2 = *(void**)rc;
-                        ((void(*)(void*))*(void**)((char*)vt2 + 8))(rc);
-                    }
-                }
-            }
-            return (TypedStatsItem*)ebp2;
-        } else {
-            eax = *(void**)eax;
-            goto loop1;
-        }
-    }
-loop1:
-    goto loop1;
 }
+namespace detail {inline void sp_enable_shared_from_this(const shared_count&,...) {}}
+template<class T> class shared_ptr {
+public:
+    T* px; detail::shared_count pn;
+    shared_ptr():px(0),pn(){}
+    
+    shared_ptr& operator=(const shared_ptr& r){px=r.px;pn=r.pn;return *this;}
+    void swap(shared_ptr& r){std::swap(px,r.px);pn.swap(r.pn);}
+    void reset(){shared_ptr().swap(*this);}
+    typedef T* shared_ptr::*unspecified_bool_type;
+    operator unspecified_bool_type()const{return px==0?0:&shared_ptr::px;}
+    shared_ptr(const shared_ptr& r):px(r.px),pn(r.pn){}
+    template<class Y> shared_ptr(const shared_ptr<Y>& r):px(r.px),pn(r.pn){}
+    T* get()const{return px;}
+    T* operator->()const{return px;}
+};
+template<class T,class U> bool operator==(const shared_ptr<T>& a,const shared_ptr<U>& b){return a.get()==b.get();}
+}
+
+
+namespace boost {
+namespace detail {template<class T>struct empty_base{};}
+template<class T,class B=detail::empty_base<T> >struct less_than_comparable1:B{};
+template<class T,class B=detail::empty_base<T> >struct equality_comparable1:B{};
+namespace signals {
+struct basic_connection {void*signal;void*signal_data;void(*signal_disconnect)(void*,void*);};
+struct connection:private less_than_comparable1<connection>,private equality_comparable1<connection> {
+ shared_ptr<basic_connection>con;bool controlling_connection;
+ connection():con(),controlling_connection(false){}connection(const connection&);~connection();connection&operator=(const connection&);void disconnect()const;
+ bool connected()const{return con.get()&&con->signal_disconnect;}
+};
+}
+}
+namespace RBX {
+namespace Reflection {struct PropertyDescriptor;struct SignalSource {virtual ~SignalSource();void*signals;};}
+struct InstancePrefix {virtual ~InstancePrefix();char opaque[0x14-4];};
+struct Instance:InstancePrefix,Reflection::SignalSource {};
+namespace Network {
+struct TrackedInstance {
+ boost::shared_ptr<Instance>instance;boost::signals::connection added,changed;bool flag;
+ TrackedInstance():instance(),added(),changed(){}TrackedInstance(const TrackedInstance&);~TrackedInstance();
+};
+struct IdSerializerView {virtual ~IdSerializerView();char opaque[0x2b74-4];};
+struct PluginInterfaceView {virtual ~PluginInterfaceView();};
+struct Replicator:IdSerializerView,PluginInterfaceView {
+ char opaque[0x2c38-0x2b78];typedef std::map<Instance*,TrackedInstance>RecordMap;RecordMap records;
+ TrackedInstance&addReplicationData(boost::shared_ptr<Instance>,bool);
+ void onDescendentAdded(boost::shared_ptr<Instance>);void onPropertyChanged(boost::shared_ptr<Instance>,const Reflection::PropertyDescriptor*);
+};
+struct Placeholder {};extern Placeholder firstArgument;
+struct BoundAdded {
+ typedef void(Replicator::*Method)(boost::shared_ptr<Instance>);Method method;Replicator*owner;Placeholder argument;
+ BoundAdded(Method m,Replicator*p,Placeholder a):method(m),owner(p),argument(a){}
+};
+struct BoundChanged {
+ typedef void(Replicator::*Method)(boost::shared_ptr<Instance>,const Reflection::PropertyDescriptor*);Method method;Replicator*owner;boost::shared_ptr<Instance>instance;Placeholder argument;
+};
+BoundChanged __cdecl bindChanged(BoundChanged::Method,Replicator*,boost::shared_ptr<Instance>,Placeholder);
+namespace SlotDetail {
+class X;union FunctionBuffer {void*obj_ptr;const void*const_obj_ptr;void(*func_ptr)();struct BoundMember {void(X::*memfunc_ptr)(int);void*obj_ptr;}bound_memfunc_ptr;char data;};
+struct Function {void*vtable;FunctionBuffer functor;};struct SlotBase {boost::shared_ptr<void>data;};
+}
+struct AddedSlot:SlotDetail::SlotBase {SlotDetail::Function slot_function;AddedSlot(const BoundAdded&);~AddedSlot();};
+struct ChangedSlot:SlotDetail::SlotBase {SlotDetail::Function slot_function;ChangedSlot(const BoundChanged&);~ChangedSlot();};
+struct AddedSignal {boost::signals::connection connect(Reflection::SignalSource*,const AddedSlot&,int);};
+struct ChangedSignal {boost::signals::connection connect(Reflection::SignalSource*,const ChangedSlot&,int);};
+extern AddedSignal addedSignal;extern ChangedSignal changedSignal;
+TrackedInstance&Replicator::addReplicationData(boost::shared_ptr<Instance>instance,bool listenChanges){
+ std::pair<RecordMap::iterator,bool>result=records.insert(RecordMap::value_type(instance.get(),TrackedInstance()));
+ if(result.second){
+  TrackedInstance&data=result.first->second;data.instance=instance;data.flag=false;
+  data.added=addedSignal.connect(instance.get(),BoundAdded(&Replicator::onDescendentAdded,this,firstArgument),0);
+  if(listenChanges)data.changed=changedSignal.connect(instance.get(),bindChanged(&Replicator::onPropertyChanged,this,instance,firstArgument),0);
+  return data;
+ }else{
+  TrackedInstance&data=result.first->second;
+  if(!listenChanges)data.changed.disconnect();
+  else if(!data.changed.connected())data.changed=changedSignal.connect(instance.get(),bindChanged(&Replicator::onPropertyChanged,this,instance,firstArgument),0);
+  return data;
+ }
+}
+}
+}
+typedef char connection_size[sizeof(boost::signals::connection)==16?1:-1];
+typedef char connection_con[offsetof(boost::signals::connection,con)==4?1:-1];
+typedef char record_size[sizeof(RBX::Network::TrackedInstance)==44?1:-1];
+typedef char record_changed[offsetof(RBX::Network::TrackedInstance,changed)==0x18?1:-1];
+typedef char record_flag[offsetof(RBX::Network::TrackedInstance,flag)==0x28?1:-1];
+typedef char records_offset[offsetof(RBX::Network::Replicator,records)==0x2c38?1:-1];
+typedef char added_slot_size[sizeof(RBX::Network::AddedSlot)==40?1:-1];
+typedef char changed_bind_size[sizeof(RBX::Network::BoundChanged)==24?1:-1];

@@ -1,193 +1,48 @@
-// from server: 33% by colin
-struct DataSource {
-    const void* get();
+// from server: 77% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espeon_freefallclampcompare9fd8013c6ea992ca.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <G3D/Vector3.h>
+#include <G3D/Matrix3.h>
+namespace RBX {
+using G3D::Vector3;using G3D::Matrix3;
+struct Velocity {Vector3 linear,rotational;Velocity();static const Velocity& zero(){static Velocity v;return v;}};
+struct Cofm {const Matrix3& getMoment()const;float getMass()const;};
+struct SimBody {char prefix[0x3c];Velocity velocity;char reserved[0x90-0x54];Vector3 torque;};
+struct Body {
+ char prefix[0x10];Body* root;char reserved14[0x28-0x14];Cofm* cofm;SimBody* simBody;char reserved30[0x68-0x30];Matrix3 moment;float mass;char reserved90[0xc4-0x90];Velocity velocity;
+ Matrix3 getBranchIBody()const{return cofm?cofm->getMoment():moment;}
+ float getBranchMass()const{return cofm?cofm->getMass():mass;}
+ void updatePV()const;
+ const Velocity& getVelocity()const{updatePV();return velocity;}
+ const Velocity& getBranchVelocity()const{return root->simBody?root->simBody->velocity:Velocity::zero();}
+ const Vector3& getBranchTorque()const{return root->simBody?root->simBody->torque:Vector3::zero();}
+ void accumulateTorque(const Vector3&);
+ void accumulateForceAtBranchCofm(const Vector3&);
 };
-
-struct S {
-    char pad0[0x10];
-    S* source;
-    S* parent;
-    char pad1[0x1C];
-    DataSource* dataSource;
-    char localData[0x58];
-    unsigned int version;
-};
-
-struct GCamera {
-    char data[0x24];
-};
-
-struct Vector3 {
-    float x, y, z;
-};
-
-extern float g_847b94;
-extern float g_84ce84;
-extern float g_962aa8;
-extern float g_96f044;
-extern float g_96f048;
-extern float g_96f04c;
-extern unsigned int g_96f050;
-extern char g_97d568;
-extern unsigned int g_97d580;
-
-struct Freefall {
-    char pad0[0xA8];
-    float field_a8;
-    char pad1[8];
-    float field_b4;
-    float field_b8;
-    float field_bc;
-
-    void method_66e6a0();
-    void method_62e140(const Vector3*);
-    void method_6060b0(const Vector3*);
-    void method_599360();
-    void method_66e6a0_impl(float dt);
-};
-
-struct HumanoidObj {
-    char pad0[0x10];
-    void* vtable;
-    char pad1[0x18];
-    S* source;
-    char pad2[0x3C];
-    float field_8c;
-    char pad3[0x44];
-    float field_d4;
-};
-
-struct BodyObj {
-    char pad0[0x2C];
-    void* field_2c;
-};
-
-extern void* __cdecl func_793d50(void*);
-extern void* __cdecl func_5d9180(void*);
-extern void* __cdecl func_660170(void*);
-extern void* __cdecl func_65ff10(void*);
-extern void* __cdecl func_614170(void*);
-extern void* __cdecl func_666350(const Vector3*);
-extern void* __cdecl func_6663a0(void*);
-extern void __cdecl func_5ddbb0(void*, void*);
-extern void __cdecl func_4a6100(void*, void*, void*);
-
-void Freefall::method_66e6a0() {}
-void Freefall::method_62e140(const Vector3*) {}
-void Freefall::method_6060b0(const Vector3*) {}
-void Freefall::method_599360() {}
-
-void Freefall::method_66e6a0_impl(float dt)
-{
-    method_66e6a0();
-    void* h = func_793d50(this);
-    void* s = func_5d9180(h);
-    HumanoidObj* hum = (HumanoidObj*)s;
-    if (!hum) return;
-
-    void* src;
-    if (hum->source) {
-        src = func_660170(hum->source);
-    } else {
-        src = (char*)hum + 0x68;
-    }
-
-    GCamera cam;
-    {
-        unsigned int* d = (unsigned int*)&cam;
-        unsigned int* sp = (unsigned int*)src;
-        for (int i = 0; i < 9; ++i) d[i] = sp[i];
-    }
-
-    Vector3 v1;
-    Vector3 v2;
-    func_5ddbb0(&v1, &v2);
-    method_599360();
-
-    float f1 = field_a8 - hum->field_d4;
-    BodyObj* body = (BodyObj*)hum->vtable;
-    void* bodyPtr = body->field_2c;
-    float f2 = v1.x * g_84ce84;
-    float zero = 0.0f;
-    float* eax;
-    if (bodyPtr) {
-        eax = (float*)((char*)bodyPtr + 0x90);
-    } else {
-        if (!(g_96f050 & 1)) {
-            g_96f050 |= 1;
-            g_96f044 = zero;
-            g_96f048 = zero;
-            g_96f04c = zero;
-        }
-        eax = &g_96f044;
-    }
-    float f3 = f1 * f2 - eax[1];
-    float saved = f3;
-
-    void* src2;
-    if (hum->source) {
-        src2 = func_660170(hum->source);
-    } else {
-        src2 = (char*)hum + 0x68;
-    }
-
-    GCamera cam2;
-    {
-        unsigned int* d = (unsigned int*)&cam2;
-        unsigned int* sp = (unsigned int*)src2;
-        for (int i = 0; i < 9; ++i) d[i] = sp[i];
-    }
-
-    Vector3 v3;
-    Vector3 v4;
-    func_5ddbb0(&v3, &v4);
-
-    float f4 = v3.x * g_962aa8;
-    float neg = -f4;
-    float cmp = saved;
-    Vector3 out;
-    out.x = 0.0f;
-    out.y = 0.0f;
-    out.z = 0.0f;
-    if (cmp <= neg || cmp >= f4) {
-        method_6060b0(&out);
-    } else {
-        method_6060b0(&out);
-    }
-
-    void* bodyPtr2 = ((BodyObj*)hum->vtable)->field_2c;
-    float* eax2;
-    if (bodyPtr2) {
-        eax2 = (float*)((char*)bodyPtr2 + 0x3C);
-    } else {
-        if (!(g_97d580 & 1)) {
-            g_97d580 |= 1;
-            func_614170(&g_97d568);
-        }
-        eax2 = (float*)&g_97d568;
-    }
-
-    Vector3 diff;
-    diff.x = (field_b4 - eax2[0]) * g_847b94;
-    diff.y = (field_b8 - eax2[1]) * g_847b94;
-    diff.z = (field_bc - eax2[2]) * g_847b94;
-
-    void* r1 = func_666350(&diff);
-    Vector3 tmp;
-    void* r2 = func_6663a0(&tmp);
-    Vector3 result;
-    func_4a6100(&result, r2, r1);
-
-    float humField;
-    if (hum->source) {
-        humField = *(float*)func_65ff10(hum->source);
-    } else {
-        humField = hum->field_8c;
-    }
-
-    Vector3 final;
-    final.x = result.x * humField;
-    final.y = result.y * humField;
-    final.z = 0.0f;
-    method_62e140(&final);
+struct Humanoid {Body* getTorsoBody()const;};
+Vector3 __cdecl toDiagonal(const Matrix3&);
+Vector3 __cdecl lowerAcceleration();Vector3 __cdecl upperAcceleration();
+extern float maxYawAcceleration;
+float clampValue(float v,float lo,float hi){return v<=lo?lo:(v>=hi?hi:v);}
+struct Freefall {char prefix[0xa8];float desiredYaw;char reserved[8];Vector3 desiredVelocity;void baseComputeForce(float);Humanoid* getHumanoid()const;void onComputeForce(float);};
+void Freefall::onComputeForce(float dt){
+ baseComputeForce(dt);
+ Body* body=getHumanoid()->getTorsoBody();
+ if(body){
+  Vector3 inertia=toDiagonal(body->getBranchIBody());
+  float requested=(desiredYaw-body->getVelocity().rotational.y)*inertia.y*7500.0f;
+  float torque=requested-body->getBranchTorque().y;
+  float limit=toDiagonal(body->getBranchIBody()).y*maxYawAcceleration;
+  body->accumulateTorque(Vector3(0,clampValue(torque,-limit,limit),0));
+  Vector3 accel=(desiredVelocity-body->getBranchVelocity().linear)*1250.0f;
+  Vector3 bounded=accel.clamp(lowerAcceleration(),upperAcceleration());
+  Vector3 force=bounded*body->getBranchMass();
+  force.y=0;
+  body->accumulateForceAtBranchCofm(force);
+ }
+}
 }
