@@ -1,154 +1,194 @@
-// from server: 40% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O1 /Ob2 /Oy /GS- /EHsc /MD
-// roc-lib: rbxgs util/boost.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.34.1-dll libs/program_options/src/variables_map.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/boost.hpp"
-#include "util/standardout.h"
-#include "util/Debug.h"
-#include <boost/bind.hpp>
-#include <windows.h>
-#include <boost/thread/tss.hpp>
-#include <boost/thread/once.hpp>
+// Copyright Vladimir Prus 2002-2004.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt
+// or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-namespace RBX
-{
-	namespace boost_detail
-	{
-		boost::thread_specific_ptr<std::string>* foo;
-		
-		boost::once_flag once_init_foo = BOOST_ONCE_INIT;
-		void init_foo()
-		{
-			static boost::thread_specific_ptr<std::string> value;
-			foo = &value;
-		}
 
-		void set_foo(std::string* value)
-		{
-			boost::call_once(&boost_detail::init_foo, boost_detail::once_init_foo);
-			boost_detail::foo->reset(value);
-		}
-	}
+#define BOOST_PROGRAM_OPTIONS_SOURCE
+#include <boost/program_options/config.hpp>
+#include <boost/program_options/parsers.hpp>
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/value_semantic.hpp>
+#include <boost/program_options/variables_map.hpp>
 
-	// Thread name stuff based on https://docs.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/xcb2z8hs(v=vs.90)
-	static bool nameThreads = true;
+#include <cassert>
 
-	typedef struct tagTHREADNAME_INFO
-	{
-		DWORD dwType;
-		LPCSTR szName;
-		DWORD dwThreadID;
-		DWORD dwFlags;
-	} THREADNAME_INFO;
+namespace boost { namespace program_options {
 
-	void SetThreadName(DWORD dwThreadID, LPCSTR szThreadName)
-	{
-		THREADNAME_INFO info;
-		info.dwType = 0x1000;
-		info.szName = szThreadName;
-		info.dwThreadID = dwThreadID;
-		info.dwFlags = 0;
+    using namespace std;
 
-		__try
-		{
-			if (nameThreads)
-				RaiseException(0x406D1388, 0, sizeof(info)/sizeof(ULONG_PTR), (ULONG_PTR*)&info);
-		}
-		__except (EXCEPTION_CONTINUE_EXECUTION)
-		{
-		}
-	}
+    // First, performs semantic actions for 'oa'. 
+    // Then, stores in 'm' all options that are defined in 'desc'. 
+    BOOST_PROGRAM_OPTIONS_DECL 
+    void store(const parsed_options& options, variables_map& xm,
+               bool utf8)
+    {       
+        // TODO: what if we have different definition
+        // for the same option name during different calls
+        // 'store'.
+        assert(options.description);
+        const options_description& desc = *options.description;
 
-	void set_thread_name(const char* name)
-	{
-		boost_detail::set_foo(new std::string(name));
-		SetThreadName(GetCurrentThreadId(), name);
-	}
+        // We need to access map's operator[], not the overriden version
+        // variables_map. Ehmm.. messy.
+        std::map<std::string, variable_value>& m = xm;
 
-	class ThreadPrioritySetter
-	{
-	private:
-		const int old;
-		bool success;
-	  
-	public:
-		ThreadPrioritySetter(int priority)
-			: old(GetThreadPriority(GetCurrentThread())),
-			  success(SetThreadPriority(GetCurrentThread(), priority) == TRUE)
-		{
-		}
-		~ThreadPrioritySetter()
-		{
-			if (success)
-				SetThreadPriority(GetCurrentThread(), old);
-		}
-	};
+        std::set<std::string> new_final;
 
-	void run_in_background(const boost::function0<void>& threadfunc, std::string name)
-	{
-		try
-		{
-			set_thread_name(name.c_str());
+        // Declared once, to please Intel in VC++ mode;
+        unsigned i;
 
-			{
-				ThreadPrioritySetter set(THREAD_PRIORITY_BELOW_NORMAL);
-				threadfunc();
-			}
-		}
-		catch (std::exception& ex)
-		{
-			StandardOut::singleton()->print(MESSAGE_ERROR, "Crashed via C++ exception in run_in_background:", ex.what());
-			RBXASSERT(false);
-		}
-	}
+        // First, convert/store all given options
+        for (i = 0; i < options.options.size(); ++i) {
 
-	boost::function0<void> background_function(const boost::function0<void>& threadfunc, const char* name)
-	{
-		return boost::bind(&run_in_background, threadfunc, std::string(name));
-	}
+            const string& name = options.options[i].string_key;
+            // Skip positional options without name
+            if (name.empty())
+                continue;
 
-	worker_thread::worker_thread(const boost::function0<enum work_result>& work_function, const char* name)
-		: _data(new data()),
-		  thread(background_function(boost::bind(&threadProc, _data, work_function), name))
-	{
-	}
+            // Ignore unregistered option. The 'unregistered'
+            // field can be true only if user has explicitly asked
+            // to allow unregistered options. We can't store them
+            // to variables map (lacking any information about paring), 
+            // so just ignore them.
+            if (options.options[i].unregistered)
+                continue;
 
-	worker_thread::~worker_thread()
-	{
-		boost::mutex::scoped_lock scoped_lock(_data->sync);
-		_data->endRequest = true;
-		_data->wakeCondition.notify_all();
-	}
+            // If option has final value, skip this assignment
+            if (xm.m_final.count(name))
+                continue;
 
-	void worker_thread::join()
-	{
-		{
-			boost::mutex::scoped_lock scoped_lock(_data->sync);
-			_data->endRequest = true;
-			_data->wakeCondition.notify_all();
-		}
+            // Ignore options which are not described
+            //TODO: consider this.
+            //if (desc.count(name) == 0)
+            //    continue;
 
-		thread.join();
-	}
+            const option_description& d = desc.find(name, false);
 
-	void worker_thread::wake()
-	{
-		boost::mutex::scoped_lock scoped_lock(_data->sync);
-		_data->wakeCondition.notify_all();
-	}
+            variable_value& v = m[name];            
+            if (v.defaulted()) {
+                // Explicit assignment here erases defaulted value
+                v = variable_value();
+            }
+            
+            try {
+                d.semantic()->parse(v.value(), options.options[i].value, utf8);
+            }
+            catch(validation_error& e)
+            {
+                e.set_option_name(name);
+                throw;
+            }
+            v.m_value_semantic = d.semantic();
+            
+            // The option is not composing, and the value is explicitly
+            // provided. Ignore values of this option for subsequent
+            // calls to 'store'. We store this to a temporary set,
+            // so that several assignment inside *this* 'store' call
+            // are allowed.
+            if (!d.semantic()->is_composing())
+                new_final.insert(name);
+        }
+        xm.m_final.insert(new_final.begin(), new_final.end());
 
-	void worker_thread::threadProc(boost::shared_ptr<data> data, const boost::function0<enum work_result>& work_function)
-	{
-		while (!data->endRequest)
-		{
-			if (work_function() != more)
-			{
-				boost::mutex::scoped_lock scoped_lock(data->sync);
-				data->wakeCondition.wait(scoped_lock);	
-			}
-		}
-	}
-}
+        
+        
+        // Second, apply default values.
+        const vector<shared_ptr<option_description> >& all = desc.options();
+        for(i = 0; i < all.size(); ++i)
+        {
+            const option_description& d = *all[i];
+            string key = d.key("");
+            // FIXME: this logic relies on knowledge of option_description
+            // internals.
+            // The 'key' is empty if options description contains '*'. 
+            // In that 
+            // case, default value makes no sense at all.
+            if (key.empty())
+            {
+                continue;
+            }
+            if (m.count(key) == 0) {
+            
+                boost::any def;
+                if (d.semantic()->apply_default(def)) {
+                    m[key] = variable_value(def, true);
+                    m[key].m_value_semantic = d.semantic();
+                }
+            }        
+        }
+    }
+
+    BOOST_PROGRAM_OPTIONS_DECL 
+    void store(const wparsed_options& options, variables_map& m)
+    {
+        store(options.utf8_encoded_options, m, true);
+    }
+
+    BOOST_PROGRAM_OPTIONS_DECL 
+    void notify(variables_map& vm)
+    {        
+        // Lastly, run notify actions.
+        for (map<string, variable_value>::iterator k = vm.begin(); 
+             k != vm.end(); 
+             ++k) 
+        {
+            k->second.m_value_semantic->notify(k->second.value());
+        }               
+    }
+
+    abstract_variables_map::abstract_variables_map()
+    : m_next(0)
+    {}
+
+    abstract_variables_map::
+    abstract_variables_map(const abstract_variables_map* next)
+    : m_next(next)
+    {}
+
+    const variable_value& 
+    abstract_variables_map::operator[](const std::string& name) const
+    {
+        const variable_value& v = get(name);
+        if (v.empty() && m_next)
+            return (*m_next)[name];
+        else if (v.defaulted() && m_next) {
+            const variable_value& v2 = (*m_next)[name];
+            if (!v2.empty() && !v2.defaulted())
+                return v2;
+            else return v;
+        } else {
+            return v;
+        }
+    }
+
+    void 
+    abstract_variables_map::next(abstract_variables_map* next)
+    {
+        m_next = next;
+    }
+
+    variables_map::variables_map()
+    {}
+
+    variables_map::variables_map(const abstract_variables_map* next)
+    : abstract_variables_map(next)
+    {}
+
+    const variable_value&
+    variables_map::get(const std::string& name) const
+    {
+        static variable_value empty;
+        const_iterator i = this->find(name);
+        if (i == this->end())
+            return empty;
+        else
+            return i->second;
+    }
+}}

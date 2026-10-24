@@ -1,601 +1,568 @@
-// from server: 42% by colin
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8xml/XmlSerializer.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.34.1-dll libs/program_options/src/options_description.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8xml/XmlSerializer.h"
-#include "util/Debug.h"
-#include "util/base64.hpp"
-#include "reflection/type.h"
-#include <G3D/format.h>
+// Copyright Vladimir Prus 2002-2004.
+// Copyright Bertolt Mildner 2004.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt
+// or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+
+#define BOOST_PROGRAM_OPTIONS_SOURCE
+#include <boost/program_options/config.hpp>
+#include <boost/program_options/options_description.hpp>
+// FIXME: this is only to get multiple_occureces class
+// should move that to a separate headers.
+#include <boost/program_options/parsers.hpp>
+
+
+#include <boost/lexical_cast.hpp>
+#include <boost/tokenizer.hpp>
+#include <boost/detail/workaround.hpp>
+#include <boost/throw_exception.hpp>
+
+#include <cassert>
+#include <climits>
+#include <cstring>
+#include <cstdarg>
 #include <sstream>
-
-class Whitespaces
-{
-public:
-	char data[256];
-  
-public:
-	Whitespaces()
-	{
-		data[9] = true;
-		data[10] = true;
-		data[12] = true;
-		data[13] = true;
-		data[32] = true;
-	}
-};
-
-static Whitespaces whitespaces;
-
-XmlParser::XmlParser(std::streambuf* buffer)
-	: buffer(buffer)
-{
-	
-}
-
-void TextXmlParser::skipWhitespace()
-{
-	while (whitespaces.data[(char)buffer->sgetc()])
-		buffer->sbumpc();
-}
-
-std::string TextXmlParser::readTag()
-{
-	skipWhitespace();
-
-	if ((char)buffer->sbumpc() != '<')
-		throw std::runtime_error("tag expected");
-
-	std::string tag;
-	tag += '<';
-
-	char lastChar;
-	do
-	{
-		lastChar = buffer->sbumpc();
-		tag += lastChar;
-	}
-	while (lastChar != '>');
-
-	return tag;
-}
-
-std::string TextXmlParser::readFirstTag()
-{
-	skipWhitespace();
-
-	std::string s;
-	char c = buffer->sbumpc();
-	if (c != '<')
-	{
-		s += c;
-		c = buffer->sbumpc();
-		s += c;
-		c = buffer->sbumpc();
-		s += c;
-		c = buffer->sbumpc();
-		s += c;
-		if (c != '<')
-		{
-			for (int i = 0; i != 50; i++)
-			{
-				if (buffer->sgetc() == -1)
-					continue;
-				s += buffer->sbumpc();
-			}
-
-			std::string message = "tag expected after Byte-Order-Mark:";
-			message += s;
-			throw std::runtime_error(message);
-		}
-	}
-
-	std::string tag;
-	tag += c;
-
-	char lastChar;
-	do
-	{
-		lastChar = buffer->sbumpc();
-		tag += lastChar;
-	}
-	while (lastChar != '>');
-
-	return tag;
-}
-
-std::string decodeString(std::string source)
-{
-	std::string result;
-
-	size_t i = 0;
-	while (i < source.size())
-	{
-		char c = source[i++];
-		if (c == '&')
-		{
-			std::string entity;
-			while (i < source.size())
-			{
-				c = source[i++];
-				if (c == ';')
-					break;
-				entity += c;
-			}
-
-			if (entity == "lt")
-				result += '<';
-			else if (entity == "gt")
-				result += '>';
-			else if (entity == "amp")
-				result += '&';
-			else if (entity == "quot")
-				result += '"';
-			else if (entity == "apos")
-				result += '\'';
-			else if (entity[0] == '#')
-				result += atoi(entity.substr(1).c_str());
-			else
-				RBXASSERT(0);
-		}
-		else
-		{
-			result += c;
-		}
-	}
-
-	return result;
-}
-
-std::string TextXmlParser::readText(bool decode)
-{
-	skipWhitespace();
-
-	std::string text;
-	while ((char)buffer->sgetc() != '<')
-		text += buffer->sgetc();
-
-	if (decode)
-		text = decodeString(text);
-
-	return text;
-}
-
-std::string TextXmlParser::removeTag(const std::string& contents, int& index)
-{
-	size_t i = 0;
-	while (whitespaces.data[contents[i]] && i < contents.size())
-		i++;
-
-	size_t j = i;
-	while (!whitespaces.data[contents[j]] && j < contents.size())
-		j++;
-
-	std::string contentsNoTag = contents.substr(i, j - i);
-	index = (int)j + 1;
-
-	return contentsNoTag;
-}
-
-std::string TextXmlParser::findNextToken(const std::string& contents, int& index)
-{
-	size_t i;
-	for (i = index; i < contents.size(); i++)
-	{
-		if (!whitespaces.data[contents[i]])
-			break;
-	}
-
-	bool inQuotes = false;
-	size_t j = i;
-
-	for (; j < contents.size(); j++)
-	{
-		if (contents[j] == '"')
-		{
-			inQuotes = !inQuotes;
-		}
-		else if (!inQuotes && whitespaces.data[contents[j]])
-		{
-			break;
-		}
-	}
-
-	if (j != i)
-	{
-		std::string answer = contents.substr(i, j - i);
-		index = (int)j + 1;
-		return answer;
-	}
-
-	index = (int)contents.size();
-	return "";
-}
-
-XmlElement* TextXmlParser::parseAttributes(const std::string& currentTag)
-{
-	std::string tagGuts = currentTag.substr(1, currentTag.size() - 2);
-
-	int index = 0;
-	std::string tagName = removeTag(tagGuts, index);
-
-	XmlElement* element = new XmlElement(RBX::Name::lookup(tagName));
-
-	std::string attribute = findNextToken(tagGuts, index);
-	while (attribute.size() > 0)
-	{
-		size_t equalsSignIndex = attribute.find("=", 0, 1);
-		std::string attributeName = attribute.substr(0, equalsSignIndex);
-
-		size_t startQuoteMarkIndex = attribute.find('\"');
-		size_t endQuoteMarkIndex = attribute.rfind('\"');
-		std::string text = decodeString(attribute.substr(startQuoteMarkIndex + 1, endQuoteMarkIndex - startQuoteMarkIndex - 1));
-
-		element->addAttribute(RBX::Name::lookup(attributeName), text);
-
-		attribute = findNextToken(tagGuts, index);
-	}
-
-	return element;
-}
-
-bool isCloseTag(const std::string& test)
-{
-	if (test.size() >= 2)
-		return test.substr(0, 2) == "</";
-
-	return false;
-}
-
-bool endsWithClose(const std::string& test)
-{
-	if (test.size() >= 2)
-		return test.substr(test.size() - 2, 2) == "/>";
-
-	return false;
-}
-
-std::auto_ptr<XmlElement> TextXmlParser::parse()
-{
-	if (buffer->sgetc() == -1)
-		throw std::runtime_error("TextXmlParser::parse empty file");
-
-	bool firstTag = true;
-	while (true)
-	{
-		std::string currentTag;
-		if (firstTag)
-		{
-			firstTag = false;
-			currentTag = readFirstTag();
-			if (currentTag.substr(0, 2) == "<?")
-				continue;
-		}
-		else
-		{
-			currentTag = readTag();
-		}
-
-		XmlElement* currentElement = elements.empty() ? NULL : elements.top();
-		if (isCloseTag(currentTag))
-		{
-			if (!currentElement)
-				throw std::runtime_error(G3D::format("TextXmlParser::parse - Got close tag %s without open tag.", currentTag.c_str()));
-
-			elements.pop();
-			if (elements.empty())
-				return std::auto_ptr<XmlElement>(currentElement);
-		}
-		else
-		{
-			XmlElement* newElement = parseAttributes(currentTag);
-			elements.push(newElement);
-
-			if (newElement->getTag() == RBX::Reflection::Type::singleton<RBX::ContentId>().tag)
-			{
-				bool isXsiNil;
-				const XmlAttribute* xsiNilAttribute = newElement->findAttribute(name_xsinil);
-				if (xsiNilAttribute && xsiNilAttribute->getValue(isXsiNil) && !isXsiNil)
-				{
-					if (readText(false) == "")
-					{
-						const RBX::Name* mimeType;
-						const XmlAttribute* mimeTypeAttribute = newElement->findAttribute(tag_mimeType);
-						if (mimeTypeAttribute)
-							mimeTypeAttribute->getValue(mimeType);
-						else
-							mimeType = &RBX::Name::getNullName();
-
-						std::string contentChild = readTag();
-						std::string tagName = contentChild.substr(1, contentChild.size() - 2);
-
-						if (tagName.substr(0, 6) == "binary")
-						{
-							std::stringbuf encoded(readText(false), std::ios_base::in);
-							std::stringstream decoded;
-
-							int ioStatus = 0;
-							base64<char> decoder;
-							decoder.get(
-								std::istreambuf_iterator<char>(&encoded),
-								std::istreambuf_iterator<char>(),
-								std::ostreambuf_iterator<char>(decoded),
-								ioStatus);
-
-							decoded.flush();
-
-							RBX::ContentId contentId = RBX::ContentProvider::singleton().registerContent(decoded, *mimeType);
-							newElement->setValue(contentId);
-						}
-						else if (tag_hash == tagName)
-						{
-							std::string name = readText(false);
-							newElement->setValue(RBX::ContentId(name.c_str(), *mimeType));
-						}
-						else if (tagName.substr(0, 3) == "url")
-						{
-							std::string url = readText(true);
-							newElement->setValue(RBX::ContentId(url.c_str(), *mimeType));
-						}
-						else if (tag_null == tagName)
-						{
-							newElement->setValue(RBX::ContentId());
-						}
-						else
-						{
-							throw std::runtime_error(G3D::format("TextXmlParser::parse - Unknown tag '%s'.", tagName.substr(0, 32).c_str()));
-						}
-
-						std::string closingTag = readTag();
-						if (!isCloseTag(closingTag))
-							throw std::runtime_error(G3D::format("TextXmlParser::parse - '%s' should be a closing tag", tagName.substr(0, 32).c_str()));
-					}
-				}
-			}
-			else
-			{
-				newElement->setValue(readText(true));
-			}
-
-			currentElement->pushBackChild(newElement);
-
-			if (endsWithClose(currentTag))
-				elements.pop();
-		}
-	}
-}
-
-XmlWriter::XmlWriter(std::ostream& stream)
-	: stream(stream)
-{
-}
-
-int XmlWriter::getHandleIndex(RBX::InstanceHandle h)
-{
-	std::map<RBX::InstanceHandle, int>::iterator iter = handles.find(h);
-	if (iter == handles.end())
-	{
-		int index = (int)handles.size();
-		handles[h] = index;
-		return index;
-	}
-	else
-	{
-		return iter->second;
-	}
-}
-
-void TextXmlWriter::writeOpenTag(const XmlElement* element, int depth, const XmlAttribute* extraAttribute)
-{
-	for (int i = 0; i < depth; i++)
-		stream << '\t';
-
-	stream << '<' << element->getTag().name;
-
-	for (const XmlAttribute* attribute = element->getFirstAttribute(); attribute != NULL; attribute = attribute->nextSibling())
-	{
-		stream << ' ' << attribute->getTag().name << "=\"";
-		encodedWrite(stream, attribute->toString(this));
-		stream << '\"';
-	}
-
-	if (extraAttribute)
-	{
-		stream << ' ' << extraAttribute->getTag().name << "=\"";
-		encodedWrite(stream, extraAttribute->toString(this));
-		stream << '\"';
-	}
-
-	stream << '>';
-}
-
-void TextXmlWriter::writeCloseTag(const XmlElement* element, int depth)
-{
-	for (int i = 0; i < depth; i++)
-		stream << '\t';
-
-	stream << "</" << element->getTag().name << '>';
-}
-
-void TextXmlWriter::serializeNode(const XmlElement* xmlNode, int depth)
-{
-	if (xmlNode->isValueType<RBX::ContentId>())
-	{
-		writeOpenTag(xmlNode, depth, NULL);
-
-		RBX::ContentId contentId;
-		xmlNode->getValue(contentId);
-		if (contentId.isNull())
-		{
-			stream << "<null></null>";
-		}
-		else
-		{
-			stream << "<hash>";
-			stream << xmlNode->toString(this);
-			stream << "</hash>";
-		}
-	}
-	else
-	{
-		writeOpenTag(xmlNode, depth, NULL);
-		encodedWrite(stream, xmlNode->toString(this));
-	}
-}
-
-void TextXmlWriter::serialize(const XmlElement* xmlNode)
-{
-	serialize(xmlNode, 0);
-}
-
-void TextXmlWriter::serialize(const XmlElement* xmlNode, int depth)
-{
-	if (xmlNode)
-	{
-		serializeNode(xmlNode, depth);
-		if (xmlNode->firstChild())
-		{
-			for (const XmlElement* child = xmlNode->firstChild(); child != NULL; child = child->nextSibling())
-			{
-				stream << '\n';
-				serialize(child, depth + 1);
-			}
-			stream << '\n';
-			writeCloseTag(xmlNode, depth);
-		}
-		else
-		{
-			writeCloseTag(xmlNode, 0);
-		}
-	}
-}
-
-void TextXmlWriter::encodedWrite(std::ostream& stream, const std::string& text)
-{
-	encodedWrite(stream, text.c_str());
-}
-
-void TextXmlWriter::encodedWrite(std::ostream& stream, const char* text)
-{
-	size_t len = strlen(text);
-	for (size_t i = 0; i != len; ++i)
-	{
-		unsigned char c = *text++;
-		if (c == '<')
-		{
-			stream << "&lt;";
-		}
-		else if (c == '>')
-		{
-			stream << "&gt;";
-		}
-		else if (c == '&')
-		{
-			stream << "&amp;";
-		}
-		else if (c == '"')
-		{
-			stream << "&quot;";
-		}
-		else if (c == '\'')
-		{
-			stream << "&apos";
-		}
-		else if (c >= ' ' && c <= '~') // every other printable character
-		{
-			stream << c;
-		}
-		else
-		{
-			char buffer[8];
-			sprintf(buffer, "&#%d;", c);
-			stream << buffer;
-		}
-	}
-}
-
-void TextXmlWriterWithEmbeddedContent::serializeNode(const XmlElement* xmlNode, int depth)
-{
-	if (xmlNode->isValueType<RBX::ContentId>())
-	{
-		RBX::ContentId contentId;
-		xmlNode->getValue(contentId);
-
-		if (contentId.mimeType() == RBX::Name::getNullName())
-		{
-			writeOpenTag(xmlNode, depth, NULL);
-		}
-		else
-		{
-			XmlAttribute mimeTypeAttribute(tag_mimeType, contentId.mimeType().c_str());
-			writeOpenTag(xmlNode, depth, &mimeTypeAttribute);
-		}
-
-		if (!xmlNode->findAttribute(name_xsinil))
-		{
-			if (contentId.isNull())
-			{
-				stream << "<null></null>";
-			}
-			else
-			{
-				if (contentId.isAsset() || contentId.isHttp())
-				{
-					stream << "<url>";
-					TextXmlWriter::encodedWrite(stream, contentId.toString());
-					stream << "</url>";
-				}
-				else if (embeddedContent.find(contentId) == embeddedContent.end())
-				{
-					embeddedContent.insert(contentId);
-
-					std::auto_ptr<std::istream> contentStream;
-
-					try
-					{
-						contentStream = RBX::ContentProvider::singleton().getContent(contentId);
-
-						if (contentId.mimeType() == RBX::Name::getNullName())
-						{
-							stream << "<binary>";
-						}
-						else
-						{
-							stream << "<binary xmime:contentType=\"" << contentId.mimeType().c_str() << "\">";
-						}
-
-						std::istreambuf_iterator<char> _From(contentStream->rdbuf());
-						std::istreambuf_iterator<char> _To;
-						std::ostreambuf_iterator<char> _Out(stream.rdbuf());
-						int _State;
-
-						base64<char> encoder;
-						encoder.put(_From, _To, _Out, _State, base64<>::crlf());
-
-						stream << "</binary>";
-					}
-					catch (std::exception&)
-					{
-						goto hash;
-					}
-				}
-				else
-				{
-hash:
-					embeddedContent.insert(contentId);
-
-					stream << "<hash>";
-					stream << xmlNode->toString(this);
-					stream << "</hash>";
-				}
-			}
-		}
-	}
-	else
-	{
-		TextXmlWriter::serializeNode(xmlNode, depth);
-	}
-}
+#include <iterator>
+using namespace std;
+
+namespace boost { namespace program_options {
+
+    option_description::option_description()
+    {
+    }
+    
+    option_description::
+    option_description(const char* name,
+                       const value_semantic* s)
+    : m_value_semantic(s)
+    {
+        this->set_name(name);
+    }
+                                           
+
+    option_description::
+    option_description(const char* name,
+                       const value_semantic* s,
+                       const char* description)
+    : m_description(description), m_value_semantic(s)
+    {
+        this->set_name(name);
+    }
+
+    option_description::~option_description()
+    {
+    }
+
+    option_description::match_result
+    option_description::match(const std::string& option, bool approx) const
+    {
+        match_result result = no_match;
+        if (!m_long_name.empty()) {
+
+            if (*m_long_name.rbegin() == '*')
+            {
+                // The name ends with '*'. Any specified name with the given
+                // prefix is OK.
+                if (option.find(m_long_name.substr(0, m_long_name.length()-1))
+                    == 0)
+                    result = approximate_match;
+            }
+
+            if (approx)
+            {
+                if (m_long_name.find(option) == 0)
+                    if (m_long_name == option)
+                        result = full_match;
+                    else
+                        result = approximate_match;
+            }
+            else
+            {
+                if (m_long_name == option)
+                    result = full_match;
+            }
+        }
+         
+        if (m_short_name == option)
+            result = full_match;
+
+        return result;        
+    }
+
+    const std::string& 
+    option_description::key(const std::string& option) const
+    {        
+        if (!m_long_name.empty()) 
+            if (m_long_name.find('*') != string::npos)
+                // The '*' character means we're long_name
+                // matches only part of the input. So, returning
+                // long name will remove some of the information,
+                // and we have to return the option as specified
+                // in the source.
+                return option;
+            else
+                return m_long_name;
+        else
+            return m_short_name;
+    }
+
+    const std::string&
+    option_description::long_name() const
+    {
+        return m_long_name;
+    }
+
+    option_description&
+    option_description::set_name(const char* _name)
+    {
+        std::string name(_name);
+        string::size_type n = name.find(',');
+        if (n != string::npos) {
+            assert(n == name.size()-2);
+            m_long_name = name.substr(0, n);
+            m_short_name = '-' + name.substr(n+1,1);
+        } else {
+            m_long_name = name;
+        }
+        return *this;
+    }
+
+    const std::string&
+    option_description::description() const
+    {
+        return m_description;
+    }
+
+    shared_ptr<const value_semantic>
+    option_description::semantic() const
+    {
+        return m_value_semantic;
+    }
+    
+    std::string 
+    option_description::format_name() const
+    {
+        if (!m_short_name.empty())
+            return string(m_short_name).append(" [ --").
+            append(m_long_name).append(" ]");
+        else
+            return string("--").append(m_long_name);
+    }
+
+    std::string 
+    option_description::format_parameter() const
+    {
+        if (m_value_semantic->max_tokens() != 0)
+            return m_value_semantic->name();
+        else
+            return "";
+    }
+
+    options_description_easy_init::
+    options_description_easy_init(options_description* owner)
+    : owner(owner)
+    {}
+
+    options_description_easy_init&
+    options_description_easy_init::
+    operator()(const char* name,
+               const char* description)
+    {
+        // Create untypes semantic which accepts zero tokens: i.e. 
+        // no value can be specified on command line.
+        // FIXME: does not look exception-safe
+        shared_ptr<option_description> d(
+            new option_description(name, new untyped_value(true), description));
+
+        owner->add(d);
+        return *this;
+    }
+
+    options_description_easy_init&
+    options_description_easy_init::
+    operator()(const char* name,
+               const value_semantic* s)
+    {
+        shared_ptr<option_description> d(new option_description(name, s));
+        owner->add(d);
+        return *this;
+    }
+
+    options_description_easy_init&
+    options_description_easy_init::
+    operator()(const char* name,
+               const value_semantic* s,
+               const char* description)
+    {
+        shared_ptr<option_description> d(new option_description(name, s, description));
+
+        owner->add(d);
+        return *this;
+    }
+
+    options_description::options_description(unsigned line_length)
+    : m_line_length(line_length)
+    {}
+
+    options_description::options_description(const string& caption,
+                                             unsigned line_length)
+    : m_caption(caption), m_line_length(line_length)
+    {}
+
+    void
+    options_description::add(shared_ptr<option_description> desc)
+    {
+        m_options.push_back(desc);
+        belong_to_group.push_back(false);
+    }
+
+    options_description&
+    options_description::add(const options_description& desc)
+    {
+        shared_ptr<options_description> d(new options_description(desc));
+        groups.push_back(d);
+
+        for (size_t i = 0; i < desc.m_options.size(); ++i) {
+            add(desc.m_options[i]);
+            belong_to_group.back() = true;
+        }
+
+        return *this;
+    }
+
+    options_description_easy_init
+    options_description::add_options()
+    {       
+        return options_description_easy_init(this);
+    }
+
+    const option_description&
+    options_description::find(const std::string& name, bool approx) const
+    {
+        const option_description* d = find_nothrow(name, approx);
+        if (!d)
+            boost::throw_exception(unknown_option(name));
+        return *d;
+    }
+
+    const std::vector< shared_ptr<option_description> >& 
+    options_description::options() const
+    {
+        return m_options;
+    }
+
+    const option_description* 
+    options_description::find_nothrow(const std::string& name, 
+                                      bool approx) const
+    {
+        int found = -1;
+        // We use linear search because matching specified option
+        // name with the declared option name need to take care about
+        // case sensitivity and trailing '*' and so we can't use simple map.
+        for(unsigned i = 0; i < m_options.size(); ++i)
+        {
+            option_description::match_result r = 
+                m_options[i]->match(name, approx);
+
+            if (r == option_description::no_match)
+                continue;
+
+            // If we have a full patch, and an approximate match,
+            // ignore approximate match instead of reporting error.
+            // Say, if we have options "all" and "all-chroots", then
+            // "--all" on the command line should select the first one,
+            // without ambiguity.
+            //
+            // For now, we don't check the situation when there are 
+            // two full matches. 
+                            
+            if (r == option_description::full_match)
+            {
+                return m_options[i].get();                
+            }
+
+            if (found != -1)
+            {
+                vector<string> alts;
+                // FIXME: the use of 'key' here might not
+                // be the best approach.
+                alts.push_back(m_options[found]->key(name));
+                alts.push_back(m_options[i]->key(name));
+                boost::throw_exception(ambiguous_option(name, alts));
+            }
+            else
+            {
+                found = i;
+            }
+        }
+        if (found != -1) {
+            return m_options[found].get();
+        } else {
+            return 0;
+        }
+    }
+
+    BOOST_PROGRAM_OPTIONS_DECL
+    std::ostream& operator<<(std::ostream& os, const options_description& desc)
+    {
+        desc.print(os);
+        return os;
+    }
+
+    namespace {
+
+        /* Given a string 'par', that contains no newline characters
+           outputs it to 'os' with wordwrapping, that is, as several
+           line.
+
+           Each output line starts with 'indent' space characters, 
+           following by characters from 'par'. The total length of
+           line is no longer than 'line_length'.
+                                      
+        */
+        void format_paragraph(std::ostream& os,
+                              std::string par,
+                              unsigned indent,
+                              unsigned line_length)
+        {                    
+            // Through reminder of this function, 'line_length' will
+            // be the length available for characters, not including
+            // indent.
+            assert(indent < line_length);
+            line_length -= indent;
+
+            // index of tab (if present) is used as additional indent relative
+            // to first_column_width if paragrapth is spanned over multiple
+            // lines if tab is not on first line it is ignored
+            string::size_type par_indent = par.find('\t');
+
+            if (par_indent == string::npos)
+            {
+                par_indent = 0;
+            }
+            else
+            {
+                // only one tab per paragraph allowed
+                if (count(par.begin(), par.end(), '\t') > 1)
+                {
+                    boost::throw_exception(program_options::error(
+                        "Only one tab per paragraph is allowed"));
+                }
+          
+                // erase tab from string
+                par.erase(par_indent, 1);
+
+                // this assert may fail due to user error or 
+                // environment conditions!
+                assert(par_indent < line_length);
+
+                // ignore tab if not on first line
+                if (par_indent >= line_length)
+                {
+                    par_indent = 0;
+                }            
+            }
+          
+            if (par.size() < line_length)
+            {
+                os << par;
+            }
+            else
+            {
+                string::const_iterator       line_begin = par.begin();
+                const string::const_iterator par_end = par.end();
+
+                bool first_line = true; // of current paragraph!        
+            
+                while (line_begin < par_end)  // paragraph lines
+                {
+                    if (!first_line)
+                    {
+                        // If line starts with space, but second character
+                        // is not space, remove the leading space.
+                        // We don't remove double spaces because those
+                        // might be intentianal.
+                        if ((*line_begin == ' ') &&
+                            ((line_begin + 1 < par_end) &&
+                             (*(line_begin + 1) != ' ')))
+                        {
+                            line_begin += 1;  // line_begin != line_end
+                        }
+                    }
+
+                    // Take care to never increment the iterator past
+                    // the end, since MSVC 8.0 (brokenly), assumes that
+                    // doing that, even if no access happens, is a bug.
+                    unsigned remaining = distance(line_begin, par_end);
+                    string::const_iterator line_end = line_begin + 
+                        ((remaining < line_length) ? remaining : line_length);
+            
+                    // prevent chopped words
+                    // Is line_end between two non-space characters?
+                    if ((*(line_end - 1) != ' ') &&
+                        ((line_end < par_end) && (*line_end != ' ')))
+                    {
+                        // find last ' ' in the second half of the current paragraph line
+                        string::const_iterator last_space =
+                            find(reverse_iterator<string::const_iterator>(line_end),
+                                 reverse_iterator<string::const_iterator>(line_begin),
+                                 ' ')
+                            .base();
+                
+                        if (last_space != line_begin)
+                        {                 
+                            // is last_space within the second half of the 
+                            // current line
+                            if ((unsigned)std::distance(last_space, line_end) < 
+                                (line_length - indent) / 2)
+                            {
+                                line_end = last_space;
+                            }
+                        }                                                
+                    } // prevent chopped words
+             
+                    // write line to stream
+                    copy(line_begin, line_end, ostream_iterator<char>(os));
+              
+                    if (first_line)
+                    {
+                        indent += par_indent;
+                        first_line = false;
+                    }
+
+                    // more lines to follow?
+                    if (line_end != par_end)
+                    {
+                        os << '\n';
+                
+                        for(unsigned pad = indent; pad > 0; --pad)
+                        {
+                            os.put(' ');
+                        }                                                        
+                    }
+              
+                    // next line starts after of this line
+                    line_begin = line_end;              
+                } // paragraph lines
+            }          
+        }                              
+        
+        void format_description(std::ostream& os,
+                                const std::string& desc, 
+                                unsigned first_column_width,
+                                unsigned line_length)
+        {
+            // we need to use one char less per line to work correctly if actual
+            // console has longer lines
+            assert(line_length > 1);
+            if (line_length > 1)
+            {
+                --line_length;
+            }
+
+            // line_length must be larger than first_column_width
+            // this assert may fail due to user error or environment conditions!
+            assert(line_length > first_column_width);
+
+            // Note: can't use 'tokenizer' as name of typedef -- borland
+            // will consider uses of 'tokenizer' below as uses of
+            // boost::tokenizer, not typedef.
+            typedef boost::tokenizer<boost::char_separator<char> > tok;
+          
+            tok paragraphs(
+                desc,
+                char_separator<char>("\n", "", boost::keep_empty_tokens));
+          
+            tok::const_iterator       par_iter = paragraphs.begin();                
+            const tok::const_iterator par_end = paragraphs.end();
+
+            while (par_iter != par_end)  // paragraphs
+            {
+                format_paragraph(os, *par_iter, first_column_width, 
+                                 line_length);
+            
+                ++par_iter;
+            
+                // prepair next line if any
+                if (par_iter != par_end)
+                {
+                    os << '\n';
+              
+                    for(unsigned pad = first_column_width; pad > 0; --pad)
+                    {
+                        os.put(' ');
+                    }                    
+                }            
+            }  // paragraphs
+        }
+    
+        void format_one(std::ostream& os, const option_description& opt, 
+                        unsigned first_column_width, unsigned line_length)
+        {
+            stringstream ss;
+            ss << "  " << opt.format_name() << ' ' << opt.format_parameter();
+            
+            // Don't use ss.rdbuf() since g++ 2.96 is buggy on it.
+            os << ss.str();
+
+            if (!opt.description().empty())
+            {
+                for(unsigned pad = first_column_width - ss.str().size(); 
+                    pad > 0; 
+                    --pad)
+                {
+                    os.put(' ');
+                }
+            
+                format_description(os, opt.description(),
+                                   first_column_width, line_length);
+            }
+        }
+    }
+
+    void 
+    options_description::print(std::ostream& os) const
+    {
+        if (!m_caption.empty())
+            os << m_caption << ":\n";
+
+        /* Find the maximum width of the option column */
+        unsigned width(23);
+        unsigned i; // vc6 has broken for loop scoping
+        for (i = 0; i < m_options.size(); ++i)
+        {
+            const option_description& opt = *m_options[i];
+            stringstream ss;
+            ss << "  " << opt.format_name() << ' ' << opt.format_parameter();
+            width = (max)(width, static_cast<unsigned>(ss.str().size()));            
+        }
+        
+        /* add an additional space to improve readability */
+        ++width;
+            
+        /* The options formatting style is stolen from Subversion. */
+        for (i = 0; i < m_options.size(); ++i)
+        {
+            if (belong_to_group[i])
+                continue;
+
+            const option_description& opt = *m_options[i];
+
+            format_one(os, opt, width, m_line_length);
+
+            os << "\n";
+        }
+
+        for (unsigned j = 0; j < groups.size(); ++j) {            
+            os << "\n" << *groups[j];
+        }
+    }
+
+}}

@@ -1,433 +1,269 @@
-// from server: 67% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8tree/EnumProperty.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.34.1-dll libs/program_options/src/value_semantic.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "reflection/type.h"
-#include <g3d/color3.h>
-#include <g3d/vector3.h>
-#include <boost/shared_ptr.hpp>
-#include "v8tree/Instance.h"
-#include "v8datamodel/BrickColor.h"
+// Copyright Vladimir Prus 2004.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt
+// or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-namespace RBX
-{
-	namespace Reflection
-	{
-		// TODO: check if type singletons are matching
-		template<>
-		const Type& Type::singleton<boost::shared_ptr<RBX::Reflection::DescribedBase>>()
-		{
-			static Type type("Object", typeid(boost::shared_ptr<RBX::Reflection::DescribedBase>));
-			return type;
-		}
+#define BOOST_PROGRAM_OPTIONS_SOURCE
+#include <boost/program_options/config.hpp>
+#include <boost/program_options/value_semantic.hpp>
+#include <boost/program_options/detail/convert.hpp>
 
-		template<>
-		const Type& Type::singleton<boost::shared_ptr<Instance>>()
-		{
-			static Type type("Instance", typeid(boost::shared_ptr<Instance>));
-			return type;
-		}
+#include <cctype>
 
-		template<>
-		const Type& Type::singleton<boost::shared_ptr<Instances>>()
-		{
-			static Type type("Objects", typeid(boost::shared_ptr<Instances>));
-			return type;
-		}
+namespace boost { namespace program_options {
 
-		template<>
-		const Type& Type::singleton<int>()
-		{
-			static Type type("int", typeid(int));
-			return type;
-		}
+    using namespace std;
 
-		template<>
-		const Type& Type::singleton<bool>()
-		{
-			static Type type("bool", typeid(bool));
-			return type;
-		}
+    void 
+    value_semantic_codecvt_helper<char>::
+    parse(boost::any& value_store, 
+          const std::vector<std::string>& new_tokens,
+          bool utf8) const
+    {
+        if (utf8) {
+#ifndef BOOST_NO_STD_WSTRING
+            // Need to convert to local encoding.
+            std::vector<string> local_tokens;
+            for (unsigned i = 0; i < new_tokens.size(); ++i) {
+                std::wstring w = from_utf8(new_tokens[i]);
+                local_tokens.push_back(to_local_8_bit(w));
+            }
+            xparse(value_store, local_tokens);
+#else
+            boost::throw_exception(
+                std::runtime_error("UTF-8 conversion not supported."));
+#endif
+        } else {
+            // Already in local encoding, pass unmodified
+            xparse(value_store, new_tokens);
+        }        
+    }
 
-		template<>
-		const Type& Type::singleton<float>()
-		{
-			static Type type("float", typeid(float));
-			return type;
-		}
+#ifndef BOOST_NO_STD_WSTRING
+    void 
+    value_semantic_codecvt_helper<wchar_t>::
+    parse(boost::any& value_store, 
+          const std::vector<std::string>& new_tokens,
+          bool utf8) const
+    {
+        std::vector<wstring> tokens;
+        if (utf8) {
+            // Convert from utf8
+            for (unsigned i = 0; i < new_tokens.size(); ++i) {
+                tokens.push_back(from_utf8(new_tokens[i]));
+            }
+               
+        } else {
+            // Convert from local encoding
+            for (unsigned i = 0; i < new_tokens.size(); ++i) {
+                tokens.push_back(from_local_8_bit(new_tokens[i]));
+            }
+        }      
 
-		template<>
-		const Type& Type::singleton<double>()
-		{
-			static Type type("double", typeid(double));
-			return type;
-		}
+        xparse(value_store, tokens);  
+    }
+#endif
 
-		template<>
-		const Type& Type::singleton<ContentId>()
-		{
-			static Type type("ContentId", typeid(ContentId));
-			return type;
-		}
+    BOOST_PROGRAM_OPTIONS_DECL std::string arg("arg");
 
-		template<>
-		const Type& Type::singleton<std::string>()
-		{
-			static Type type("string", typeid(std::string));
-			return type;
-		}
+    std::string
+    untyped_value::name() const
+    {
+        return arg;
+    }
+    
+    unsigned 
+    untyped_value::min_tokens() const
+    {
+        if (m_zero_tokens)
+            return 0;
+        else
+            return 1;
+    }
 
-		template<>
-		const Type& Type::singleton<G3D::Vector3>()
-		{
-			static Type type("Vector3", typeid(G3D::Vector3));
-			return type;
-		}
+    unsigned 
+    untyped_value::max_tokens() const
+    {
+        if (m_zero_tokens)
+            return 0;
+        else
+            return 1;
+    }
 
-		template<>
-		const Type& Type::singleton<G3D::Color3>()
-		{
-			static Type type("Color3", typeid(G3D::Color3));
-			return type;
-		}
 
-		template<>
-		const Type& Type::singleton<std::vector<Value>>()
-		{
-			static Type type("Table", typeid(std::vector<Value>));
-			return type;
-		}
+    void 
+    untyped_value::xparse(boost::any& value_store,
+                          const std::vector<std::string>& new_tokens) const
+    {
+        if (!value_store.empty()) 
+            boost::throw_exception(
+                multiple_occurrences("multiple_occurrences"));
+        if (new_tokens.size() > 1)
+            boost::throw_exception(multiple_values("multiple_values"));
+        value_store = new_tokens.empty() ? std::string("") : new_tokens.front();
+    }
 
-		template<>
-		const Type& Type::singleton<BrickColor>()
-		{
-			static Type type("BrickColor", typeid(BrickColor));
-			return type;
-		}
+    BOOST_PROGRAM_OPTIONS_DECL typed_value<bool>*
+    bool_switch()
+    {
+        return bool_switch(0);
+    }
 
-		template<>
-		std::string TypedPropertyDescriptor<std::string>::getStringValue(const DescribedBase* instance) const
-		{
-			return getValue(instance);
-		}
+    BOOST_PROGRAM_OPTIONS_DECL typed_value<bool>*
+    bool_switch(bool* v)
+    {
+        typed_value<bool>* r = new typed_value<bool>(v);
+        r->default_value(0);
+        r->zero_tokens();
 
-		template<>
-		std::string TypedPropertyDescriptor<bool>::getStringValue(const DescribedBase* instance) const
-		{
-			return StringConverter<bool>::convertToString(getValue(instance));
-		}
+        return r;
+    }
 
-		template<>
-		std::string TypedPropertyDescriptor<float>::getStringValue(const DescribedBase* instance) const
-		{
-			return StringConverter<float>::convertToString(getValue(instance));
-		}
+    /* Validates bool value.
+        Any of "1", "true", "yes", "on" will be converted to "1".<br>
+        Any of "0", "false", "no", "off" will be converted to "0".<br>
+        Case is ignored. Regardless of name passed, parameter will always
+        be optional.
+    */
+    BOOST_PROGRAM_OPTIONS_DECL void validate(any& v, const vector<string>& xs,
+                       bool*, int)
+    {
+        check_first_occurrence(v);
+        string s(get_single_string(xs, true));
 
-		template<>
-		std::string TypedPropertyDescriptor<int>::getStringValue(const DescribedBase* instance) const
-		{
-			return StringConverter<int>::convertToString(getValue(instance));
-		}
+        for (size_t i = 0; i < s.size(); ++i)
+            s[i] = char(tolower(s[i]));
 
-		template<>
-		std::string TypedPropertyDescriptor<G3D::Vector3>::getStringValue(const DescribedBase* instance) const
-		{
-			return StringConverter<G3D::Vector3>::convertToString(getValue(instance));
-		}
+        if (s.empty() || s == "on" || s == "yes" || s == "1" || s == "true")
+            v = any(true);
+        else if (s == "off" || s == "no" || s == "0" || s == "false")
+            v = any(false);
+        else
+            boost::throw_exception(validation_error(
+                                "'" + s + "' doesn't look like a bool value."));
+    }
 
-		template<>
-		std::string TypedPropertyDescriptor<G3D::Color3>::getStringValue(const DescribedBase* instance) const
-		{
-			return StringConverter<G3D::Color3>::convertToString(getValue(instance));
-		}
+    // This is blatant copy-paste. However, templating this will cause a problem,
+    // since wstring can't be constructed/compared with char*. We'd need to
+    // create auxiliary 'widen' routine to convert from char* into 
+    // needed string type, and that's more work.
+#if !defined(BOOST_NO_STD_WSTRING)
+    BOOST_PROGRAM_OPTIONS_DECL 
+    void validate(any& v, const vector<wstring>& xs, bool*, int)
+    {
+        check_first_occurrence(v);
+        wstring s(get_single_string(xs, true));
 
-		template<>
-		std::string TypedPropertyDescriptor<ContentId>::getStringValue(const DescribedBase* instance) const
-		{
-			return StringConverter<ContentId>::convertToString(getValue(instance));
-		}
+        for (size_t i = 0; i < s.size(); ++i)
+            s[i] = wchar_t(tolower(s[i]));
 
-		template<>
-		bool TypedPropertyDescriptor<std::string>::setStringValue(DescribedBase* instance, const std::string& text) const
-		{
-			setValue(instance, text);
-			return true;
-		}
+        if (s.empty() || s == L"on" || s == L"yes" || s == L"1" || s == L"true")
+            v = any(true);
+        else if (s == L"off" || s == L"no" || s == L"0" || s == L"false")
+            v = any(false);
+        else
+            boost::throw_exception(validation_error("invalid bool value"));
+    }
+#endif
+    BOOST_PROGRAM_OPTIONS_DECL 
+    void validate(any& v, const vector<string>& xs, std::string*, int)
+    {
+        check_first_occurrence(v);
+        string s(get_single_string(xs));
+        if (!s.empty() && (
+                (*s.begin() == '\'' && *s.rbegin() == '\'' ||
+                 *s.begin() == '"' && *s.rbegin() == '"')))
+        {
+            v = any(s.substr(1, s.size()-2));
+        }
+        else
+            v = any(s);
+    }
 
-		template<>
-		bool TypedPropertyDescriptor<bool>::setStringValue(DescribedBase* instance, const std::string& text) const
-		{
-			bool value;
-			if (StringConverter<bool>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
+#if !defined(BOOST_NO_STD_WSTRING)
+    BOOST_PROGRAM_OPTIONS_DECL 
+    void validate(any& v, const vector<wstring>& xs, std::string*, int)
+    {
+        check_first_occurrence(v);
+        wstring s(get_single_string(xs));
+        if (*s.begin() == L'\'' && *s.rbegin() == L'\'' ||
+            *s.begin() == L'"' && *s.rbegin() == L'"')
+            v = any(s.substr(1, s.size()-2));
+        else
+            v = any(s);
+    }
+#endif
 
-			return false;
-		}
+    namespace validators {
 
-		template<>
-		bool TypedPropertyDescriptor<float>::setStringValue(DescribedBase* instance, const std::string& text) const
-		{
-			float value;
-			if (StringConverter<float>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
+        BOOST_PROGRAM_OPTIONS_DECL 
+        void check_first_occurrence(const boost::any& value)
+        {
+            if (!value.empty())
+                boost::throw_exception(
+                    multiple_occurrences("multiple_occurrences"));
+        }
+    }
 
-			return false;
-		}
 
-		template<>
-		bool TypedPropertyDescriptor<int>::setStringValue(DescribedBase* instance, const std::string& text) const
-		{
-			int value;
-			if (StringConverter<int>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
+    invalid_option_value::
+    invalid_option_value(const std::string& bad_value)
+    : validation_error(string("invalid option value '")
+                       .append(bad_value).append("'"))
+    {}
 
-			return false;
-		}
+#ifndef BOOST_NO_STD_WSTRING
 
-		template<>
-		bool TypedPropertyDescriptor<G3D::Vector3>::setStringValue(DescribedBase* instance, const std::string& text) const
-		{
-			G3D::Vector3 value;
-			if (StringConverter<G3D::Vector3>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
+    namespace
+    {
+        std::string convert_value(const std::wstring& s)
+        {
+            try {
+                return to_local_8_bit(s);
+            }
+            catch(const std::exception&) {
+                return "<unrepresentable unicode string>";
+            }
+        }
+    }
 
-			return false;
-		}
+    invalid_option_value::
+    invalid_option_value(const std::wstring& bad_value)
+    : validation_error(string("invalid option value '")
+                       .append(convert_value(bad_value))
+                       .append("'"))
+    {}
+#endif                       
 
-		template<>
-		bool TypedPropertyDescriptor<G3D::Color3>::setStringValue(DescribedBase* instance, const std::string& text) const
-		{
-			G3D::Color3 value;
-			if (StringConverter<G3D::Color3>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
 
-			return false;
-		}
 
-		template<>
-		bool TypedPropertyDescriptor<ContentId>::setStringValue(DescribedBase* instance, const std::string& text) const
-		{
-			ContentId value;
-			if (StringConverter<ContentId>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
+    void validation_error::set_option_name(const std::string& option_name)
+    {
+        m_option_name = option_name;
+    }
 
-			return false;
-		}
+    const char* validation_error::what() const throw()
+    {
+        if (!m_option_name.empty())
+        {
+            m_message = "in option '" + m_option_name + "': " 
+                + logic_error::what();
+            return m_message.c_str();
 
-		template<>
-		void TypedPropertyDescriptor<float>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				float value;
-				if (element->getValue(value))
-				{
-					setValue(instance, value);
-				}
-			}
-		}
+        }
+        else
+        {
+            return logic_error::what();
+        }
+    }
 
-		template<>
-		void TypedPropertyDescriptor<float>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			float value = getValue(instance);
-			element->setValue(value);
-		}
 
-		template<>
-		void TypedPropertyDescriptor<bool>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				bool value;
-				if (element->getValue(value))
-				{
-					setValue(instance, value);
-				}
-			}
-		}
 
-		template<>
-		void TypedPropertyDescriptor<bool>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			bool value = getValue(instance);
-			element->setValue(value);
-		}
 
-		template<>
-		void TypedPropertyDescriptor<BrickColor>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				int value;
-				if (element->getValue(value))
-				{
-					setValue(instance, BrickColor(value));
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<BrickColor>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			element->setValue(getValue(instance).asInt());
-		}
-
-		template<>
-		void TypedPropertyDescriptor<int>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				int value;
-				if (element->getValue(value))
-				{
-					setValue(instance, value);
-				}
-			}
-		}
-		
-		template<>
-		void TypedPropertyDescriptor<int>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			int value = getValue(instance);
-			element->setValue(value);
-		}
-
-		template<>
-		void TypedPropertyDescriptor<ContentId>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				ContentId value;
-				if (element->getValue(value))
-				{
-					setValue(instance, value);
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<ContentId>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			element->setValue(ContentId(getValue(instance)));
-		}
-
-		template<>
-		void TypedPropertyDescriptor<std::string>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				std::string value;
-				if (element->getValue(value))
-				{
-					setValue(instance, value);
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<std::string>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			element->setValue(getValue(instance));
-		}
-
-		template<>
-		void TypedPropertyDescriptor<G3D::Vector3>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				if (const XmlElement* X = element->findFirstChildByTag(tag_X))
-				{
-					const XmlElement* Y = element->findFirstChildByTag(tag_Y);
-					const XmlElement* Z = element->findFirstChildByTag(tag_Z);
-
-					G3D::Vector3 value;
-
-					X->getValue(value.x);
-					Y->getValue(value.y);
-					Z->getValue(value.z);
-
-					setValue(instance, value);
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<G3D::Vector3>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			const Name* xName = &tag_X;
-			XmlElement* xElement = new XmlElement(*xName);
-			element->pushBackChild(xElement);
-
-			const Name* yName = &tag_Y;
-			XmlElement* yElement = new XmlElement(*yName);
-			element->pushBackChild(yElement);
-
-			const Name* zName = &tag_Z;
-			XmlElement* zElement = new XmlElement(*zName);
-			element->pushBackChild(zElement);
-
-			G3D::Vector3 value = getValue(instance);
-
-			xElement->setValue(value.x);
-			yElement->setValue(value.y);
-			zElement->setValue(value.z);
-		}
-
-		template<>
-		void TypedPropertyDescriptor<G3D::Color3>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				unsigned int colorValue;
-				if (element->getValue(colorValue))
-				{
-					G3D::Color3 color = G3D::Color3(G3D::Color3uint8::fromARGB(colorValue));
-					setValue(instance, color);	
-				}
-				else
-				{
-					const XmlElement* R = element->findFirstChildByTag(tag_R);
-					const XmlElement* G = element->findFirstChildByTag(tag_G);
-					const XmlElement* B = element->findFirstChildByTag(tag_B);
-
-					G3D::Color3 value;
-
-					R->getValue(value.r);
-					G->getValue(value.g);
-					B->getValue(value.b);
-
-					setValue(instance, value);
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<G3D::Color3>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			G3D::Color3uint8 value = G3D::Color3uint8(getValue(instance));
-			element->setValue(value.asUInt32());
-		}
-	}
-}
+}}

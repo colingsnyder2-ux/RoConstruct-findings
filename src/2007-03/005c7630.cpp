@@ -1,108 +1,196 @@
-// from server: 60% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.34.1-dll libs/iostreams/src/zlib.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/Name.h"
-#include "util/Debug.h"
-#include <boost/thread/once.hpp>
+// (C) Copyright Jonathan Turkanis 2003.
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt.)
 
-// intentionally outside of the RBX namespace
-boost::once_flag flag = BOOST_ONCE_INIT;
+// See http://www.boost.org/libs/iostreams for documentation.
 
-boost::mutex& moo2()
+// To configure Boost to work with zlib, see the 
+// installation instructions here:
+// http://boost.org/libs/iostreams/doc/index.html?path=7
+
+// Define BOOST_IOSTREAMS_SOURCE so that <boost/iostreams/detail/config.hpp> 
+// knows that we are building the library (possibly exporting code), rather 
+// than using it (possibly importing code).
+#define BOOST_IOSTREAMS_SOURCE 
+
+#include <boost/iostreams/detail/config/dyn_link.hpp>
+#include <boost/iostreams/filter/zlib.hpp> 
+#include "zlib.h"   // Jean-loup Gailly's and Mark Adler's "zlib.h" header.
+                    // To configure Boost to work with zlib, see the 
+                    // installation instructions here:
+                    // http://boost.org/libs/iostreams/doc/index.html?path=7
+
+namespace boost { namespace iostreams {
+
+namespace zlib {
+
+                    // Compression levels
+
+const int no_compression       = Z_NO_COMPRESSION;
+const int best_speed           = Z_BEST_SPEED;
+const int best_compression     = Z_BEST_COMPRESSION;
+const int default_compression  = Z_DEFAULT_COMPRESSION;
+
+                    // Compression methods
+
+const int deflated             = Z_DEFLATED;
+
+                    // Compression strategies
+
+const int default_strategy     = Z_DEFAULT_STRATEGY;
+const int filtered             = Z_FILTERED;
+const int huffman_only         = Z_HUFFMAN_ONLY;
+
+                    // Status codes
+
+const int okay                 = Z_OK;
+const int stream_end           = Z_STREAM_END;
+const int stream_error         = Z_STREAM_ERROR;
+const int version_error        = Z_VERSION_ERROR;
+const int data_error           = Z_DATA_ERROR;
+const int mem_error            = Z_MEM_ERROR;
+const int buf_error            = Z_BUF_ERROR;
+
+                    // Flush codes
+
+const int finish               = Z_FINISH;
+const int no_flush             = Z_NO_FLUSH;
+const int sync_flush           = Z_SYNC_FLUSH;
+
+                    // Code for current OS
+
+//const int os_code              = OS_CODE;
+
+} // End namespace zlib. 
+
+//------------------Implementation of zlib_error------------------------------//
+                    
+zlib_error::zlib_error(int error) 
+    : BOOST_IOSTREAMS_FAILURE("zlib error"), error_(error) 
+    { }
+
+void zlib_error::check(int error)
 {
-	static boost::mutex mutex2;
-	return mutex2;
+    switch (error) {
+    case Z_OK: 
+    case Z_STREAM_END: 
+    //case Z_BUF_ERROR: 
+        return;
+    case Z_MEM_ERROR: 
+        throw std::bad_alloc();
+    default:
+        throw zlib_error(error);
+        ;
+    }
 }
 
-void initMoo()
+//------------------Implementation of zlib_base-------------------------------//
+
+namespace detail {
+
+zlib_base::zlib_base()
+    : stream_(new z_stream), calculate_crc_(false), crc_(0)
+    { }
+
+zlib_base::~zlib_base() { delete static_cast<z_stream*>(stream_); }
+
+void zlib_base::before( const char*& src_begin, const char* src_end,
+                        char*& dest_begin, char* dest_end )
 {
-	moo2();
+    z_stream* s = static_cast<z_stream*>(stream_);
+    s->next_in = reinterpret_cast<zlib::byte*>(const_cast<char*>(src_begin));
+    s->avail_in = static_cast<zlib::uint>(src_end - src_begin);
+    s->next_out = reinterpret_cast<zlib::byte*>(dest_begin);
+    s->avail_out= static_cast<zlib::uint>(dest_end - dest_begin);
 }
 
-namespace RBX
+void zlib_base::after(const char*& src_begin, char*& dest_begin, bool compress)
 {
-	// seems to be inlined
-	boost::mutex& Name::mutex()
-	{
-		boost::call_once(initMoo, flag);
-		return moo2();
-	}
-
-	std::map<int, Name*>& Name::dictionary()
-	{
-		static std::map<int, Name*> d;
-		return d;
-	}
-
-	Name::NamMap& Name::namMap()
-	{
-		static NamMap n;
-		return n;
-	}
-
-	const Name& Name::getNullName()
-	{
-		boost::mutex::scoped_lock scoped_lock(mutex());
-		static const Name& nullName = declare("", 0);
-		return nullName;
-	}
-
-	const Name& Name::declare(const char* sName, int dictionaryIndex)
-	{
-		if (!sName)
-		{
-			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
-			return getNullName();
-		}
-
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			if (dictionaryIndex != -1)
-			{
-				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
-				dictionary()[dictionaryIndex] = iter->second;
-			}
-			return *iter->second;
-		}
-		else
-		{
-			Name* name = new Name(sName, dictionaryIndex);
-			namMap()[sName] = name;
-			dictionary()[dictionaryIndex] = name;
-			return *name;
-		}
-	}
-
-	const Name& Name::lookup(const std::string& sName)
-	{
-		RBXASSERT(sName.size() < 50);
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			return *iter->second;
-		}
-		else
-		{
-			return getNullName();
-		}
-	}
-
-	const Name& Name::lookup(const char* sName)
-	{
-		if (!sName)
-		{
-			return getNullName();
-		}
-
-		return lookup(std::string(sName));
-	}
+    z_stream* s = static_cast<z_stream*>(stream_);
+    char* next_in = reinterpret_cast<char*>(s->next_in);
+    char* next_out = reinterpret_cast<char*>(s->next_out);
+    if (calculate_crc_) {
+        const zlib::byte* buf = compress ?
+            reinterpret_cast<const zlib::byte*>(src_begin) :
+            reinterpret_cast<const zlib::byte*>(
+                const_cast<const char*>(dest_begin)
+            );
+        zlib::uint length = compress ?
+            static_cast<zlib::uint>(next_in - src_begin) :
+            static_cast<zlib::uint>(next_out - dest_begin);
+        if (length > 0)
+            crc_ = crc32(crc_, buf, length);
+    }
+    total_in_ = s->total_in;
+    total_out_ = s->total_out;
+    src_begin = const_cast<const char*>(next_in);
+    dest_begin = next_out;
 }
+
+int zlib_base::deflate(int flush)
+{ 
+    return ::deflate(static_cast<z_stream*>(stream_), flush);
+}
+
+int zlib_base::inflate(int flush)
+{ 
+    return ::inflate(static_cast<z_stream*>(stream_), flush);
+}
+
+void zlib_base::reset(bool compress, bool realloc)
+{
+    z_stream* s = static_cast<z_stream*>(stream_);
+    // Undiagnosed bug:
+    // deflateReset(), etc., return Z_DATA_ERROR
+    //zlib_error::check(
+        realloc ?
+            (compress ? deflateReset(s) : inflateReset(s)) :
+            (compress ? deflateEnd(s) : inflateEnd(s))
+                ;
+    //);
+}
+
+void zlib_base::do_init
+    ( const zlib_params& p, bool compress, 
+      #if !BOOST_WORKAROUND(BOOST_MSVC, < 1300)
+          zlib::alloc_func alloc, zlib::free_func free, 
+      #endif
+      void* derived )
+{
+    calculate_crc_ = p.calculate_crc;
+    z_stream* s = static_cast<z_stream*>(stream_);
+
+    // Current interface for customizing memory management 
+    // is non-conforming and has been disabled:
+    //#if !BOOST_WORKAROUND(BOOST_MSVC, < 1300)
+    //    s->zalloc = alloc;
+    //    s->zfree = free;
+    //#else
+        s->zalloc = 0;
+        s->zfree = 0;
+    //#endif
+    s->opaque = derived;
+    int window_bits = p.noheader? -p.window_bits : p.window_bits;
+    zlib_error::check(
+        compress ?
+            deflateInit2( s, 
+                          p.level,
+                          p.method,
+                          window_bits,
+                          p.mem_level,
+                          p.strategy ) :
+            inflateInit2(s, window_bits)
+    );
+}
+
+} // End namespace detail.
+
+//----------------------------------------------------------------------------//
+
+} } // End namespaces iostreams, boost.

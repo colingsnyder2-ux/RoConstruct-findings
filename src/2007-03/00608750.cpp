@@ -1,619 +1,649 @@
-// from server: 68% by colin
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob1 /GS- /MT
-// roc-lib: wildmagic-2-core Geometry/WmlConvexClipper.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.34.1-dll libs/regex/src/cregex.cpp
 
 // Candidate translation unit (score above; library headers required).
-// Magic Software, Inc.
-// http://www.magic-software.com
-// http://www.wild-magic.com
-// Copyright (c) 2003.  All Rights Reserved
-//
-// The Wild Magic Library (WML) source code is supplied under the terms of
-// the license agreement http://www.magic-software.com/License/WildMagic.pdf
-// and may not be copied or disclosed except in accordance with the terms of
-// that agreement.
+/*
+ *
+ * Copyright (c) 1998-2002
+ * John Maddock
+ *
+ * Use, modification and distribution are subject to the 
+ * Boost Software License, Version 1.0. (See accompanying file 
+ * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ *
+ */
 
-#include "WmlConvexClipper.h"
-#include "WmlConvexPolyhedron3.h"
-using namespace Wml;
+ /*
+  *   LOCATION:    see http://www.boost.org for most recent version.
+  *   FILE:        cregex.cpp
+  *   VERSION:     see <boost/version.hpp>
+  *   DESCRIPTION: Implements high level class boost::RexEx
+  */
 
-#include <algorithm>
-#include <fstream>
+
+#define BOOST_REGEX_SOURCE
+
+#include <boost/cregex.hpp>
+#include <boost/regex.hpp>
+#if !defined(BOOST_NO_STD_STRING)
 #include <map>
-using namespace std;
+#include <list>
+#include <boost/regex/v4/fileiter.hpp>
+typedef boost::match_flag_type match_flag_type;
+#include <cstdio>
 
-//----------------------------------------------------------------------------
-template <class Real>
-ConvexClipper<Real>::ConvexClipper (const ConvexPolyhedron3<Real>& rkPoly,
-    Real fEpsilon)
-{
-    m_fEpsilon = fEpsilon;
+namespace boost{
 
-    const vector<Vector3<Real> >& rakPoint = rkPoly.GetPoints();
-    int iVQuantity = rkPoly.GetVQuantity();
-    m_akVertex.resize(iVQuantity);
-    for (int iV = 0; iV < iVQuantity; iV++)
-        m_akVertex[iV].m_kPoint = rakPoint[iV];
-
-    int iEQuantity = rkPoly.GetEQuantity();
-    m_akEdge.resize(iEQuantity);
-    for (int iE = 0; iE < iEQuantity; iE++)
-    {
-        const MTEdge& rkE = rkPoly.GetEdge(iE);
-        for (int i = 0; i < 2; i++)
-        {
-            m_akEdge[iE].m_aiVertex[i] = rkPoly.GetVLabel(rkE.GetVertex(i));
-            m_akEdge[iE].m_aiFace[i] = rkE.GetTriangle(i);
-        }
-    }
-
-    int iTQuantity = rkPoly.GetTQuantity();
-    m_akFace.resize(iTQuantity);
-    for (int iT = 0; iT < iTQuantity; iT++)
-    {
-        m_akFace[iT].m_kPlane = rkPoly.GetPlane(iT);
-
-        const MTTriangle& rkT = rkPoly.GetTriangle(iT);
-        for (int i = 0; i < 3; i++)
-            m_akFace[iT].m_akEdge.insert(rkT.GetEdge(i));
-    }
-}
-//----------------------------------------------------------------------------
-template <class Real>
-int ConvexClipper<Real>::Clip (const Plane3<Real>& rkPlane)
-{
-    // compute signed distances from vertices to plane
-    int iPositive = 0, iNegative = 0;
-    for (int iV = 0; iV < (int)m_akVertex.size(); iV++)
-    {
-        Vertex& rkV = m_akVertex[iV];
-        if ( rkV.m_bVisible )
-        {
-            rkV.m_fDistance = rkPlane.DistanceTo(rkV.m_kPoint);
-            if ( rkV.m_fDistance >= m_fEpsilon )
-            {
-                iPositive++;
-            }
-            else if ( rkV.m_fDistance <= -m_fEpsilon )
-            {
-                iNegative++;
-                rkV.m_bVisible = false;
-            }
-            else
-            {
-                // The point is on the plane (within floating point
-                // tolerance).
-                rkV.m_fDistance = (Real)0.0;
-            }
-        }
-    }
-
-    if ( iPositive == 0 )
-    {
-        // mesh is in negative half-space, fully clipped
-        return Plane3<Real>::NEGATIVE_SIDE;
-    }
-
-    if ( iNegative == 0 )
-    {
-        // mesh is in positive half-space, fully visible
-        return Plane3<Real>::POSITIVE_SIDE;
-    }
-
-    // clip the visible edges
-    for (int iE = 0; iE < (int)m_akEdge.size(); iE++)
-    {
-        Edge& rkE = m_akEdge[iE];
-        if ( rkE.m_bVisible )
-        {
-            int iV0 = rkE.m_aiVertex[0], iV1 = rkE.m_aiVertex[1];
-            int iF0 = rkE.m_aiFace[0], iF1 = rkE.m_aiFace[1];
-            Face& rkF0 = m_akFace[iF0];
-            Face& rkF1 = m_akFace[iF1];
-            Real fD0 = m_akVertex[iV0].m_fDistance;
-            Real fD1 = m_akVertex[iV1].m_fDistance;
-
-            if ( fD0 <= (Real)0.0 && fD1 <= (Real)0.0 )
-            {
-                // The edge is culled.  If the edge is exactly on the clip
-                // plane, it is possible that a visible triangle shares it.
-                // The edge will be re-added during the face loop.
-                rkF0.m_akEdge.erase(iE);
-                if ( rkF0.m_akEdge.empty() )
-                    rkF0.m_bVisible = false;
-
-                rkF1.m_akEdge.erase(iE);
-                if ( rkF1.m_akEdge.empty() )
-                    rkF1.m_bVisible = false;
-
-                rkE.m_bVisible = false;
-                continue;
-            }
-
-            if ( fD0 >= (Real)0.0 && fD1 >= (Real)0.0 )
-            {
-                // face retains the edge
-                continue;
-            }
-
-            // The edge is split by the plane.  Compute the point of
-            // intersection.  If the old edge is <V0,V1> and I is the
-            // intersection point, the new edge is <V0,I> when d0 > 0 or
-            // <I,V1> when d1 > 0.
-            int iNV = (int)m_akVertex.size();
-            m_akVertex.push_back(Vertex());
-            Vertex& rkNV = m_akVertex[iNV];
-
-            Vector3<Real>& rkP0 = m_akVertex[iV0].m_kPoint;
-            Vector3<Real>& rkP1 = m_akVertex[iV1].m_kPoint;
-            rkNV.m_kPoint = rkP0+(fD0/(fD0-fD1))*(rkP1-rkP0);
-
-            if ( fD0 > (Real)0.0 )
-                rkE.m_aiVertex[1] = iNV;
-            else
-                rkE.m_aiVertex[0] = iNV;
-        }
-    }
-
-    // The mesh straddles the plane.  A new convex polygonal face will be
-    // generated.  Add it now and insert edges when they are visited.
-    int iNF = (int)m_akFace.size();
-    m_akFace.push_back(Face());
-    Face& rkNF = m_akFace[iNF];
-    rkNF.m_kPlane = rkPlane;
-
-    // process the faces
-    for (int iF = 0; iF < iNF; iF++)
-    {
-        Face& rkF = m_akFace[iF];
-        if ( rkF.m_bVisible )
-        {
-            // Determine if the face is on the negative side, the positive
-            // side, or split by the clipping plane.  The m_iOccurs members
-            // are set to zero to help find the end points of the polyline
-            // that results from clipping a face.
-            assert( rkF.m_akEdge.size() >= 2 );
-            set<int>::iterator pkIter = rkF.m_akEdge.begin();
-            while ( pkIter != rkF.m_akEdge.end() )
-            {
-                int iE = *pkIter++;
-                Edge& rkE = m_akEdge[iE];
-                assert( rkE.m_bVisible );
-                m_akVertex[rkE.m_aiVertex[0]].m_iOccurs = 0;
-                m_akVertex[rkE.m_aiVertex[1]].m_iOccurs = 0;
-            }
-
-            int iVStart, iVFinal;
-            if ( GetOpenPolyline(rkF,iVStart,iVFinal) )
-            {
-                // polyline is open, close it up
-                int iNE = (int)m_akEdge.size();
-                m_akEdge.push_back(Edge());
-                Edge& rkNE = m_akEdge[iNE];
-
-                rkNE.m_aiVertex[0] = iVStart;
-                rkNE.m_aiVertex[1] = iVFinal;
-                rkNE.m_aiFace[0] = iF;
-                rkNE.m_aiFace[1] = iNF;
-
-                // add new edge to polygons
-                rkF.m_akEdge.insert(iNE);
-                rkNF.m_akEdge.insert(iNE);
-            }
-        }
-    }
-
-    // Process face rkNF to make sure it is a simple polygon (theoretically
-    // convex, but numerically may be slightly not convex).  Floating point
-    // round-off errors can cause the new face from the last loop to be
-    // needle-like with a collapse of two edges into a single edge.  This
-    // block guarantees the invariant "face always a simple polygon".
-    PostProcess(iNF,rkNF);
-    int iESize = (int)rkNF.m_akEdge.size();
-    if ( iESize < 3 )
-    {
-        // face is completely degenerate, remove it from mesh
-        m_akFace.pop_back();
-    }
-
-    return Plane3<Real>::NO_SIDE;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexClipper<Real>::PostProcess (int iNF, Face& rkNF)
-{
-    int i = 0, iEQuantity = (int)rkNF.m_akEdge.size();
-    vector<EdgePlus> kEdges(iEQuantity);
-    set<int>::iterator pkIter = rkNF.m_akEdge.begin();
-    while ( pkIter != rkNF.m_akEdge.end() )
-    {
-        int iE = *pkIter++;
-        kEdges[i++] = EdgePlus(iE,m_akEdge[iE]);
-    }
-    assert( i == iEQuantity );
-
-    sort(kEdges.begin(),kEdges.end());
-
-    // process duplicate edges
-    for (int i0 = 0, i1 = 1; i1 < iEQuantity; i0 = i1++)
-    {
-        if ( kEdges[i0] == kEdges[i1] )
-        {
-            // found two equivalent edges (same vertex end points)
-#ifdef _DEBUG
-            int i2 = i1+1;
-            if ( i2 < iEQuantity )
-            {
-                // Make sure an edge occurs at most twice.  If not, then
-                // algorithm needs to be modified to handle it.
-                assert( kEdges[i1] != kEdges[i2] );
-            }
+#ifdef __BORLANDC__
+#if __BORLANDC__ < 0x530
+//
+// we need to instantiate the vector classes we use
+// since declaring a reference to type doesn't seem to
+// do the job...
+std::vector<std::size_t> inst1;
+std::vector<std::string> inst2;
 #endif
-            // Edge E0 has vertices V0, V1 and faces F0, NF.  Edge E1 has
-            // vertices V0, V1 and faces F1, NF.
-            int iE0 = kEdges[i0].m_iE;
-            int iE1 = kEdges[i1].m_iE;
-            Edge& rkE0 = m_akEdge[iE0];
-            Edge& rkE1 = m_akEdge[iE1];
+#endif
 
-            // remove E0 and E1 from NF
-            rkNF.m_akEdge.erase(iE0);
-            rkNF.m_akEdge.erase(iE1);
+namespace{
 
-            // remove NF from E0
-            if ( rkE0.m_aiFace[0] == iNF )
-            {
-                rkE0.m_aiFace[0] = rkE0.m_aiFace[1];
-            }
-            else
-            {
-                assert( rkE0.m_aiFace[1] == iNF );
-            }
-            rkE0.m_aiFace[1] = -1;
-
-            // remove NF from E1
-            if ( rkE1.m_aiFace[0] == iNF )
-            {
-                rkE1.m_aiFace[0] = rkE1.m_aiFace[1];
-            }
-            else
-            {
-                assert( rkE1.m_aiFace[1] == iNF );
-            }
-            rkE1.m_aiFace[1] = -1;
-
-            // E2 is being booted from the system.  Update the face F1 that
-            // shares it.  Update E1 to share F1.
-            int iF1 = rkE1.m_aiFace[0];
-            Face& rkF1 = m_akFace[iF1];
-            rkF1.m_akEdge.erase(iE1);
-            rkF1.m_akEdge.insert(iE0);
-            rkE0.m_aiFace[1] = iF1;
-            rkE1.m_bVisible = false;
-        }
-    }
-}
-//----------------------------------------------------------------------------
-template <class Real>
-bool ConvexClipper<Real>::GetOpenPolyline (Face& rkF, int& riVStart,
-    int& riVFinal)
+template <class iterator>
+std::string to_string(iterator i, iterator j)
 {
-    // count the number of occurrences of each vertex in the polyline
-    bool bOkay = true;
-    set<int>::iterator pkIter = rkF.m_akEdge.begin();
-    while ( pkIter != rkF.m_akEdge.end() )
-    {
-        int iE = *pkIter++;
-        Edge& rkE = m_akEdge[iE];
+   std::string s;
+   while(i != j)
+   {
+      s.append(1, *i);
+      ++i;
+   }
+   return s;
+}
 
-        int iV0 = rkE.m_aiVertex[0];
-        m_akVertex[iV0].m_iOccurs++;
-        if ( m_akVertex[iV0].m_iOccurs > 2 )
-            bOkay = false;
+inline std::string to_string(const char* i, const char* j)
+{
+   return std::string(i, j);
+}
 
-        int iV1 = rkE.m_aiVertex[1];
-        m_akVertex[iV1].m_iOccurs++;
-        if ( m_akVertex[iV1].m_iOccurs > 2 )
-            bOkay = false;
-    }
+}
+namespace re_detail{
 
-    if ( !bOkay )
-    {
-#ifdef _DEBUG
-        // If you reach this block, there is a good chance that floating
-        // point round-off error had caused this face to be needle-like and
-        // what was theoretically a narrow V-shaped portion (a vertex shared
-        // by two edges forming a small angle) has collapsed into a single
-        // line segment.
-        //
-        // NOTE.  Once I added PostProcess, I have not gotten to this block.
-        ofstream kOStr("error.txt");
-        pkIter = rkF.m_akEdge.begin();
-        while ( pkIter != rkF.m_akEdge.end() )
-        {
-            int iE = *pkIter++;
-            Edge& rkE = m_akEdge[iE];
-            kOStr << "e<" << iE << "> = <" << rkE.m_aiVertex[0] << ","
-                  << rkE.m_aiVertex[1] << "|" << rkE.m_aiFace[0] << ","
-                  << rkE.m_aiFace[1] << "> ";
-            if ( rkE.m_bVisible )
-                kOStr << "T" << endl;
-            else
-                kOStr << "F" << endl;
-        }
-        kOStr.close();
+class RegExData
+{
+public:
+   enum type
+   {
+      type_pc,
+      type_pf,
+      type_copy
+   };
+   regex e;
+   cmatch m;
+#ifndef BOOST_REGEX_NO_FILEITER
+   match_results<mapfile::iterator> fm;
+#endif
+   type t;
+   const char* pbase;
+#ifndef BOOST_REGEX_NO_FILEITER
+   mapfile::iterator fbase;
+#endif
+   std::map<int, std::string, std::less<int> > strings;
+   std::map<int, std::ptrdiff_t, std::less<int> > positions;
+   void update();
+   void clean();
+   RegExData() : e(), m(),
+#ifndef BOOST_REGEX_NO_FILEITER
+   fm(),
+#endif
+   t(type_copy), pbase(0),
+#ifndef BOOST_REGEX_NO_FILEITER
+   fbase(),
+#endif
+   strings(), positions() {}
+};
 
-        assert( false );
+void RegExData::update()
+{
+   strings.erase(strings.begin(), strings.end());
+   positions.erase(positions.begin(), positions.end());
+   if(t == type_pc)
+   {
+      for(unsigned int i = 0; i < m.size(); ++i)
+      {
+         if(m[i].matched) strings[i] = std::string(m[i].first, m[i].second);
+         positions[i] = m[i].matched ? m[i].first - pbase : -1;
+      }
+   }
+#ifndef BOOST_REGEX_NO_FILEITER
+   else
+   {
+      for(unsigned int i = 0; i < fm.size(); ++i)
+      {
+         if(fm[i].matched) strings[i] = to_string(fm[i].first, fm[i].second);
+         positions[i] = fm[i].matched ? fm[i].first - fbase : -1;
+      }
+   }
+#endif
+   t = type_copy;
+}
+
+void RegExData::clean()
+{
+#ifndef BOOST_REGEX_NO_FILEITER
+   fbase = mapfile::iterator();
+   fm = match_results<mapfile::iterator>();
+#endif
+}
+
+} // namespace
+
+RegEx::RegEx()
+{
+   pdata = new re_detail::RegExData();
+}
+
+RegEx::RegEx(const RegEx& o)
+{
+   pdata = new re_detail::RegExData(*(o.pdata));
+}
+
+RegEx::~RegEx()
+{
+   delete pdata;
+}
+
+RegEx::RegEx(const char* c, bool icase)
+{
+   pdata = new re_detail::RegExData();
+   SetExpression(c, icase);
+}
+
+RegEx::RegEx(const std::string& s, bool icase)
+{
+   pdata = new re_detail::RegExData();
+   SetExpression(s.c_str(), icase);
+}
+
+RegEx& RegEx::operator=(const RegEx& o)
+{
+   *pdata = *(o.pdata);
+   return *this;
+}
+
+RegEx& RegEx::operator=(const char* p)
+{
+   SetExpression(p, false);
+   return *this;
+}
+
+unsigned int RegEx::SetExpression(const char* p, bool icase)
+{
+   boost::uint_fast32_t f = icase ? regex::normal | regex::icase : regex::normal;
+   return pdata->e.set_expression(p, f);
+}
+
+unsigned int RegEx::error_code()const
+{
+   return pdata->e.error_code();
+}
+
+
+std::string RegEx::Expression()const
+{
+   return pdata->e.expression();
+}
+
+//
+// now matching operators:
+//
+bool RegEx::Match(const char* p, match_flag_type flags)
+{
+   pdata->t = re_detail::RegExData::type_pc;
+   pdata->pbase = p;
+   const char* end = p;
+   while(*end)++end;
+
+   if(regex_match(p, end, pdata->m, pdata->e, flags))
+   {
+      pdata->update();
+      return true;
+   }
+   return false;
+}
+
+bool RegEx::Search(const char* p, match_flag_type flags)
+{
+   pdata->t = re_detail::RegExData::type_pc;
+   pdata->pbase = p;
+   const char* end = p;
+   while(*end)++end;
+
+   if(regex_search(p, end, pdata->m, pdata->e, flags))
+   {
+      pdata->update();
+      return true;
+   }
+   return false;
+}
+namespace re_detail{
+struct pred1
+{
+   GrepCallback cb;
+   RegEx* pe;
+   pred1(GrepCallback c, RegEx* i) : cb(c), pe(i) {}
+   bool operator()(const cmatch& m)
+   {
+      pe->pdata->m = m;
+      return cb(*pe);
+   }
+};
+}
+unsigned int RegEx::Grep(GrepCallback cb, const char* p, match_flag_type flags)
+{
+   pdata->t = re_detail::RegExData::type_pc;
+   pdata->pbase = p;
+   const char* end = p;
+   while(*end)++end;
+
+   unsigned int result = regex_grep(re_detail::pred1(cb, this), p, end, pdata->e, flags);
+   if(result)
+      pdata->update();
+   return result;
+}
+namespace re_detail{
+struct pred2
+{
+   std::vector<std::string>& v;
+   RegEx* pe;
+   pred2(std::vector<std::string>& o, RegEx* e) : v(o), pe(e) {}
+   bool operator()(const cmatch& m)
+   {
+      pe->pdata->m = m;
+      v.push_back(std::string(m[0].first, m[0].second));
+      return true;
+   }
+private:
+   pred2& operator=(const pred2&);
+};
+}
+
+unsigned int RegEx::Grep(std::vector<std::string>& v, const char* p, match_flag_type flags)
+{
+   pdata->t = re_detail::RegExData::type_pc;
+   pdata->pbase = p;
+   const char* end = p;
+   while(*end)++end;
+
+   unsigned int result = regex_grep(re_detail::pred2(v, this), p, end, pdata->e, flags);
+   if(result)
+      pdata->update();
+   return result;
+}
+namespace re_detail{
+struct pred3
+{
+   std::vector<std::size_t>& v;
+   const char* base;
+   RegEx* pe;
+   pred3(std::vector<std::size_t>& o, const char* pb, RegEx* p) : v(o), base(pb), pe(p) {}
+   bool operator()(const cmatch& m)
+   {
+      pe->pdata->m = m;
+      v.push_back(static_cast<std::size_t>(m[0].first - base));
+      return true;
+   }
+private:
+   pred3& operator=(const pred3&);
+};
+}
+unsigned int RegEx::Grep(std::vector<std::size_t>& v, const char* p, match_flag_type flags)
+{
+   pdata->t = re_detail::RegExData::type_pc;
+   pdata->pbase = p;
+   const char* end = p;
+   while(*end)++end;
+
+   unsigned int result = regex_grep(re_detail::pred3(v, p, this), p, end, pdata->e, flags);
+   if(result)
+      pdata->update();
+   return result;
+}
+#ifndef BOOST_REGEX_NO_FILEITER
+namespace re_detail{
+struct pred4
+{
+   GrepFileCallback cb;
+   RegEx* pe;
+   const char* file;
+   bool ok;
+   pred4(GrepFileCallback c, RegEx* i, const char* f) : cb(c), pe(i), file(f), ok(true) {}
+   bool operator()(const match_results<mapfile::iterator>& m)
+   {
+      pe->pdata->t = RegExData::type_pf;
+      pe->pdata->fm = m;
+      pe->pdata->update();
+      ok = cb(file, *pe);
+      return ok;
+   }
+};
+}
+namespace{
+void BuildFileList(std::list<std::string>* pl, const char* files, bool recurse)
+{
+   file_iterator start(files);
+   file_iterator end;
+   if(recurse)
+   {
+      // go through sub directories:
+      char buf[MAX_PATH];
+      re_detail::overflow_error_if_not_zero(re_detail::strcpy_s(buf, MAX_PATH, start.root()));
+      if(*buf == 0)
+      {
+         re_detail::overflow_error_if_not_zero(re_detail::strcpy_s(buf, MAX_PATH, "."));
+         re_detail::overflow_error_if_not_zero(re_detail::strcat_s(buf, MAX_PATH, directory_iterator::separator()));
+         re_detail::overflow_error_if_not_zero(re_detail::strcat_s(buf, MAX_PATH, "*"));
+      }
+      else
+      {
+         re_detail::overflow_error_if_not_zero(re_detail::strcat_s(buf, MAX_PATH, directory_iterator::separator()));
+         re_detail::overflow_error_if_not_zero(re_detail::strcat_s(buf, MAX_PATH, "*"));
+      }
+      directory_iterator dstart(buf);
+      directory_iterator dend;
+
+      // now get the file mask bit of "files":
+      const char* ptr = files;
+      while(*ptr) ++ptr;
+      while((ptr != files) && (*ptr != *directory_iterator::separator()) && (*ptr != '/'))--ptr;
+      if(ptr != files) ++ptr;
+
+      while(dstart != dend)
+      {
+#if BOOST_WORKAROUND(BOOST_MSVC, >= 1400)
+         (::sprintf_s)(buf, sizeof(buf), "%s%s%s", dstart.path(), directory_iterator::separator(), ptr);
 #else
-        return false;
+         (std::sprintf)(buf, "%s%s%s", dstart.path(), directory_iterator::separator(), ptr);
 #endif
-    }
-
-    // determine if the polyline is open
-    pkIter = rkF.m_akEdge.begin();
-    riVStart = -1;
-    riVFinal = -1;
-    while ( pkIter != rkF.m_akEdge.end() )
-    {
-        int iE = *pkIter++;
-        Edge& rkE = m_akEdge[iE];
-
-        int iV0 = rkE.m_aiVertex[0];
-        if ( m_akVertex[iV0].m_iOccurs == 1 )
-        {
-            if ( riVStart == -1 )
-            {
-                riVStart = iV0;
-            }
-            else if ( riVFinal == -1 )
-            {
-                riVFinal = iV0;
-            }
-            else
-            {
-                // If you reach this assert, there is a good chance that the
-                // polyhedron is not convex.  To check this, use the function
-                // ValidateHalfSpaceProperty() on your polyhedron right after
-                // you construct it.
-                assert( false );
-            }
-        }
-
-        int iV1 = rkE.m_aiVertex[1];
-        if ( m_akVertex[iV1].m_iOccurs == 1 )
-        {
-            if ( riVStart == -1 )
-            {
-                riVStart = iV1;
-            }
-            else if ( riVFinal == -1 )
-            {
-                riVFinal = iV1;
-            }
-            else
-            {
-                // If you reach this assert, there is a good chance that the
-                // polyhedron is not convex.  To check this, use the function
-                // ValidateHalfSpaceProperty() on your polyhedron right after
-                // you construct it.
-                assert( false );
-            }
-        }
-    }
-
-    assert( (riVStart == -1 && riVFinal == -1)
-        ||  (riVStart != -1 && riVFinal != -1) );
-
-    return riVStart != -1;
+         BuildFileList(pl, buf, recurse);
+         ++dstart;
+      }
+   }
+   while(start != end)
+   {
+      pl->push_back(*start);
+      ++start;
+   }
 }
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexClipper<Real>::OrderVertices (Face& rkF, vector<int>& aiVOrdered)
+}
+
+unsigned int RegEx::GrepFiles(GrepFileCallback cb, const char* files, bool recurse, match_flag_type flags)
 {
-    // copy edge indices into contiguous memory
-    int i = 0, iQuantity = (int)rkF.m_akEdge.size();
-    vector<int> aiEOrdered(iQuantity);
-    set<int>::iterator pkIter = rkF.m_akEdge.begin();
-    while ( pkIter != rkF.m_akEdge.end() )
-        aiEOrdered[i++] = *pkIter++;
+   unsigned int result = 0;
+   std::list<std::string> file_list;
+   BuildFileList(&file_list, files, recurse);
+   std::list<std::string>::iterator start, end;
+   start = file_list.begin();
+   end = file_list.end();
 
-    // bubble sort (yes, it is...)
-    for (int i0 = 0, i1 = 1, iChoice = 1; i1 < iQuantity-1; i0 = i1, i1++)
-    {
-        Edge& rkECurr = m_akEdge[aiEOrdered[i0]];
-        int j, iCurr = rkECurr.m_aiVertex[iChoice];
-        for (j = i1; j < iQuantity; j++)
-        {
-            Edge& rkETemp = m_akEdge[aiEOrdered[j]];
-            int iSave;
-            if ( rkETemp.m_aiVertex[0] == iCurr )
-            {
-                iSave = aiEOrdered[i1];
-                aiEOrdered[i1] = aiEOrdered[j];
-                aiEOrdered[j] = iSave;
-                iChoice = 1;
-                break;
-            }
-            if ( rkETemp.m_aiVertex[1] == iCurr )
-            {
-                iSave = aiEOrdered[i1];
-                aiEOrdered[i1] = aiEOrdered[j];
-                aiEOrdered[j] = iSave;
-                iChoice = 0;
-                break;
-            }
-        }
-        assert( j < iQuantity );
-    }
+   while(start != end)
+   {
+      mapfile map((*start).c_str());
+      pdata->t = re_detail::RegExData::type_pf;
+      pdata->fbase = map.begin();
+      re_detail::pred4 pred(cb, this, (*start).c_str());
+      int r = regex_grep(pred, map.begin(), map.end(), pdata->e, flags);
+      result += r;
+      ++start;
+      pdata->clean();
+      if(pred.ok == false)
+         return result;
+   }
 
-    aiVOrdered[0] = m_akEdge[aiEOrdered[0]].m_aiVertex[0];
-    aiVOrdered[1] = m_akEdge[aiEOrdered[0]].m_aiVertex[1];
-    for (i = 1; i < iQuantity; i++)
-    {
-        Edge& rkE = m_akEdge[aiEOrdered[i]];
-        if ( rkE.m_aiVertex[0] == aiVOrdered[i] )
-            aiVOrdered[i+1] = rkE.m_aiVertex[1];
-        else
-            aiVOrdered[i+1] = rkE.m_aiVertex[0];
-    }
+   return result;
 }
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexClipper<Real>::GetTriangles (vector<int>& raiConnect,
-    vector<Plane3<Real> >& rakPlane)
+
+
+unsigned int RegEx::FindFiles(FindFilesCallback cb, const char* files, bool recurse, match_flag_type flags)
 {
-    for (int iF = 0; iF < (int)m_akFace.size(); iF++)
-    {
-        Face& rkF = m_akFace[iF];
-        if ( rkF.m_bVisible )
-        {
-            int iQuantity = (int)rkF.m_akEdge.size();
-            assert( iQuantity >= 3 );
-            vector<int> aiOrdered(iQuantity+1);
-            OrderVertices(rkF,aiOrdered);
+   unsigned int result = 0;
+   std::list<std::string> file_list;
+   BuildFileList(&file_list, files, recurse);
+   std::list<std::string>::iterator start, end;
+   start = file_list.begin();
+   end = file_list.end();
 
-            int iV0 = aiOrdered[0], iV2 = aiOrdered[iQuantity-1];
-            int iV1 = aiOrdered[(iQuantity-1) >> 1];
-            Vector3<Real> kD1 = m_akVertex[iV1].m_kPoint -
-                m_akVertex[iV0].m_kPoint;
-            Vector3<Real> kD2 = m_akVertex[iV2].m_kPoint -
-                m_akVertex[iV0].m_kPoint;
-            Real fTSP = rkF.m_kPlane.GetNormal().Dot(kD1.Cross(kD2));
-            if ( fTSP > (Real)0.0 )
-            {
-                // clockwise, need to swap
-                for (int i = 1; i+1 < iQuantity; i++)
-                {
-                    raiConnect.push_back(iV0);
-                    raiConnect.push_back(aiOrdered[i+1]);
-                    raiConnect.push_back(aiOrdered[i]);
-                    rakPlane.push_back(rkF.m_kPlane);
-                }
-            }
-            else
-            {
-                // counterclockwise
-                for (int i = 1; i+1 < iQuantity; i++)
-                {
-                    raiConnect.push_back(iV0);
-                    raiConnect.push_back(aiOrdered[i]);
-                    raiConnect.push_back(aiOrdered[i+1]);
-                    rakPlane.push_back(rkF.m_kPlane);
-                }
-            }
-        }
-    }
+   while(start != end)
+   {
+      mapfile map((*start).c_str());
+      pdata->t = re_detail::RegExData::type_pf;
+      pdata->fbase = map.begin();
+
+      if(regex_search(map.begin(), map.end(), pdata->fm, pdata->e, flags))
+      {
+         ++result;
+         if(false == cb((*start).c_str()))
+            return result;
+      }
+      //pdata->update();
+      ++start;
+      //pdata->clean();
+   }
+
+   return result;
 }
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexClipper<Real>::Convert (ConvexPolyhedron3<Real>& rkPoly)
+#endif
+
+#ifdef BOOST_REGEX_V3
+#define regex_replace regex_merge
+#endif
+
+std::string RegEx::Merge(const std::string& in, const std::string& fmt,
+                    bool copy, match_flag_type flags)
 {
-    // get visible vertices
-    int iVQuantity = (int)m_akVertex.size();
-    vector<Vector3<Real> > akPoint;
-    int* aiVMap = new int[iVQuantity];
-    memset(aiVMap,0xFF,iVQuantity*sizeof(int));
-    for (int iV = 0; iV < iVQuantity; iV++)
-    {
-        const Vertex& rkV = m_akVertex[iV];
-        if ( rkV.m_bVisible )
-        {
-            aiVMap[iV] = (int)akPoint.size();
-            akPoint.push_back(rkV.m_kPoint);
-        }
-    }
-
-    vector<int> aiConnect;
-    vector<Plane3<Real> > akPlane;
-    GetTriangles(aiConnect,akPlane);
-
-    // re-order
-    int iNewVQuantity = (int)akPoint.size();
-    for (int iC = 0; iC < (int)aiConnect.size(); iC++)
-    {
-        int iOldC = aiConnect[iC];
-        assert( 0 <= iOldC && iOldC < iVQuantity );
-        int iNewC = aiVMap[iOldC];
-        assert( 0 <= iNewC && iNewC < iNewVQuantity );
-        aiConnect[iC] = iNewC;
-    }
-
-    delete[] aiVMap;
-
-    rkPoly.Create(akPoint,aiConnect,akPlane);
+   std::string result;
+   re_detail::string_out_iterator<std::string> i(result);
+   if(!copy) flags |= format_no_copy;
+   regex_replace(i, in.begin(), in.end(), pdata->e, fmt.c_str(), flags);
+   return result;
 }
-//----------------------------------------------------------------------------
-template <class Real>
-bool ConvexClipper<Real>::Print (const char* acFilename) const
+
+std::string RegEx::Merge(const char* in, const char* fmt,
+                    bool copy, match_flag_type flags)
 {
-    ofstream kOStr(acFilename);
-    if ( !kOStr )
-        return false;
-
-    int iVQuantity = (int)m_akVertex.size();
-    int iEQuantity = (int)m_akEdge.size();
-    int iFQuantity = (int)m_akFace.size();
-    int iVDigits = (int)(ceil(log10((double)iVQuantity)));
-    int iEDigits = (int)(ceil(log10((double)iEQuantity)));
-    int iFDigits = (int)(ceil(log10((double)iFQuantity)));
-    char acMsg[1024];
-
-    kOStr << iVQuantity << " vertices" << endl;
-    for (int iV = 0; iV < iVQuantity; iV++)
-    {
-        const Vertex& rkV = m_akVertex[iV];
-        sprintf(acMsg,"v<%*d> %c: (%f,%f,%f)",
-            iVDigits,iV,(rkV.m_bVisible ? 'T' : 'F'),
-            rkV.m_kPoint.X(),
-            rkV.m_kPoint.Y(),
-            rkV.m_kPoint.Z());
-        kOStr << acMsg << endl;
-    }
-    kOStr << endl;
-
-    kOStr << iEQuantity << " edges" << endl;
-    for (int iE = 0; iE < iEQuantity; iE++)
-    {
-        const Edge& rkE = m_akEdge[iE];
-        sprintf(acMsg,"e<%*d> %c: v[%*d,%*d], t[%*d,%*d]",
-            iEDigits,iE,(rkE.m_bVisible ? 'T' : 'F'),
-            iVDigits,rkE.m_aiVertex[0],
-            iVDigits,rkE.m_aiVertex[1],
-            iFDigits,rkE.m_aiFace[0],
-            iFDigits,rkE.m_aiFace[1]);
-        kOStr << acMsg << endl;
-    }
-    kOStr << endl;
-
-    kOStr << iFQuantity << " faces" << endl;
-    for (int iF = 0; iF < iFQuantity; iF++)
-    {
-        const Face& rkF = m_akFace[iF];
-        sprintf(acMsg,"t<%*d> %d: e = ",
-            iFDigits,iF,(rkF.m_bVisible ? 'T' : 'F'));
-        kOStr << acMsg;
-
-        set<int>::const_iterator pkIter = rkF.m_akEdge.begin();
-        while ( pkIter != rkF.m_akEdge.end() )
-        {
-            kOStr << *pkIter << ' ';
-            pkIter++;
-        }
-        kOStr << endl;
-    }
-
-    return true;
+   std::string result;
+   if(!copy) flags |= format_no_copy;
+   re_detail::string_out_iterator<std::string> i(result);
+   regex_replace(i, in, in + std::strlen(in), pdata->e, fmt, flags);
+   return result;
 }
-//----------------------------------------------------------------------------
 
-//----------------------------------------------------------------------------
-// explicit instantiation
-//----------------------------------------------------------------------------
-namespace Wml
+std::size_t RegEx::Split(std::vector<std::string>& v, 
+                      std::string& s,
+                      match_flag_type flags,
+                      unsigned max_count)
 {
-template class WML_ITEM ConvexClipper<float>;
-template class WML_ITEM ConvexClipper<double>;
+   return regex_split(std::back_inserter(v), s, pdata->e, flags, max_count);
 }
-//----------------------------------------------------------------------------
+
+
+
+//
+// now operators for returning what matched in more detail:
+//
+std::size_t RegEx::Position(int i)const
+{
+   switch(pdata->t)
+   {
+   case re_detail::RegExData::type_pc:
+      return pdata->m[i].matched ? pdata->m[i].first - pdata->pbase : RegEx::npos;
+#ifndef BOOST_REGEX_NO_FILEITER
+   case re_detail::RegExData::type_pf:
+      return pdata->fm[i].matched ? pdata->fm[i].first - pdata->fbase : RegEx::npos;
+#endif
+   case re_detail::RegExData::type_copy:
+      {
+      std::map<int, std::ptrdiff_t, std::less<int> >::iterator pos = pdata->positions.find(i);
+      if(pos == pdata->positions.end())
+         return RegEx::npos;
+      return (*pos).second;
+      }
+   }
+   return RegEx::npos;
+}
+
+std::size_t RegEx::Marks()const
+{
+   return pdata->e.mark_count();
+}
+
+
+std::size_t RegEx::Length(int i)const
+{
+   switch(pdata->t)
+   {
+   case re_detail::RegExData::type_pc:
+      return pdata->m[i].matched ? pdata->m[i].second - pdata->m[i].first : RegEx::npos;
+#ifndef BOOST_REGEX_NO_FILEITER
+   case re_detail::RegExData::type_pf:
+      return pdata->fm[i].matched ? pdata->fm[i].second - pdata->fm[i].first : RegEx::npos;
+#endif
+   case re_detail::RegExData::type_copy:
+      {
+      std::map<int, std::string, std::less<int> >::iterator pos = pdata->strings.find(i);
+      if(pos == pdata->strings.end())
+         return RegEx::npos;
+      return (*pos).second.size();
+      }
+   }
+   return RegEx::npos;
+}
+
+bool RegEx::Matched(int i)const
+{
+   switch(pdata->t)
+   {
+   case re_detail::RegExData::type_pc:
+      return pdata->m[i].matched;
+#ifndef BOOST_REGEX_NO_FILEITER
+   case re_detail::RegExData::type_pf:
+      return pdata->fm[i].matched;
+#endif      
+   case re_detail::RegExData::type_copy:
+      {
+      std::map<int, std::string, std::less<int> >::iterator pos = pdata->strings.find(i);
+      if(pos == pdata->strings.end())
+         return false;
+      return true;
+      }
+   }
+   return false;
+}
+
+
+std::string RegEx::What(int i)const
+{
+   std::string result;
+   switch(pdata->t)
+   {
+   case re_detail::RegExData::type_pc:
+      if(pdata->m[i].matched) 
+         result.assign(pdata->m[i].first, pdata->m[i].second);
+      break;
+   case re_detail::RegExData::type_pf:
+      if(pdata->m[i].matched) 
+         result.assign(to_string(pdata->m[i].first, pdata->m[i].second));
+      break;
+   case re_detail::RegExData::type_copy:
+      {
+      std::map<int, std::string, std::less<int> >::iterator pos = pdata->strings.find(i);
+      if(pos != pdata->strings.end())
+         result = (*pos).second;
+      break;
+      }
+   }
+   return result;
+}
+
+#ifdef BOOST_HAS_LONG_LONG
+const std::size_t RegEx::npos = static_cast<std::size_t>(~0ULL);
+#else
+const std::size_t RegEx::npos = static_cast<std::size_t>(~0UL);
+#endif
+
+} // namespace boost
+
+#if defined(__BORLANDC__) && (__BORLANDC__ >= 0x550) && (__BORLANDC__ <= 0x551) && !defined(_RWSTD_COMPILE_INSTANTIATE)
+//
+// this is an ugly hack to work around an ugly problem:
+// by default this file will produce unresolved externals during
+// linking unless _RWSTD_COMPILE_INSTANTIATE is defined (Borland bug).
+// However if _RWSTD_COMPILE_INSTANTIATE is defined then we get separate
+// copies of basic_string's static data in the RTL and this DLL, this messes
+// with basic_string's memory management and results in run-time crashes,
+// Oh sweet joy of Catch 22....
+//
+namespace std{
+template<> template<>
+basic_string<char>& BOOST_REGEX_DECL
+basic_string<char>::replace<const char*>(char* f1, char* f2, const char* i1, const char* i2)
+{
+   unsigned insert_pos = f1 - begin();
+   unsigned remove_len = f2 - f1;
+   unsigned insert_len = i2 - i1;
+   unsigned org_size = size();
+   if(insert_len > remove_len)
+   {
+      append(insert_len-remove_len, ' ');
+      std::copy_backward(begin() + insert_pos + remove_len, begin() + org_size, end());
+      std::copy(i1, i2, begin() + insert_pos);
+   }
+   else
+   {
+      std::copy(begin() + insert_pos + remove_len, begin() + org_size, begin() + insert_pos + insert_len);
+      std::copy(i1, i2, begin() + insert_pos);
+      erase(size() + insert_len - remove_len);
+   }
+   return *this;
+}
+template<> template<>
+basic_string<wchar_t>& BOOST_REGEX_DECL
+basic_string<wchar_t>::replace<const wchar_t*>(wchar_t* f1, wchar_t* f2, const wchar_t* i1, const wchar_t* i2)
+{
+   unsigned insert_pos = f1 - begin();
+   unsigned remove_len = f2 - f1;
+   unsigned insert_len = i2 - i1;
+   unsigned org_size = size();
+   if(insert_len > remove_len)
+   {
+      append(insert_len-remove_len, ' ');
+      std::copy_backward(begin() + insert_pos + remove_len, begin() + org_size, end());
+      std::copy(i1, i2, begin() + insert_pos);
+   }
+   else
+   {
+      std::copy(begin() + insert_pos + remove_len, begin() + org_size, begin() + insert_pos + insert_len);
+      std::copy(i1, i2, begin() + insert_pos);
+      erase(size() + insert_len - remove_len);
+   }
+   return *this;
+}
+} // namespace std
+#endif
+
+#endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

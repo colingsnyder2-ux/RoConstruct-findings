@@ -1,527 +1,529 @@
-// from server: 55% by colin
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Camera.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.34.1-dll libs/program_options/src/cmdline.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Camera.h"
-#include "v8datamodel/Workspace.h"
-#include "v8datamodel/ICharacterSubject.h"
-#include "util/Math.h"
-
-namespace RBX
-{
-	const char* sCamera = "Camera";
-
-	static Reflection::EnumPropDescriptor<Camera, Camera::CameraType> desc_cameraType("CameraType", "Camera", &Camera::getCameraType, &Camera::setCameraType, Reflection::PropertyDescriptor::STANDARD); 
-	static Reflection::PropDescriptor<Camera, G3D::CoordinateFrame> desc_CoordFrame("CoordinateFrame", "Data", &Camera::getCameraCoordinateFrame, &Camera::setCameraCoordinateFrameNoLerp, Reflection::PropertyDescriptor::STREAMING);
-	static Reflection::PropDescriptor<Camera, G3D::CoordinateFrame> desc_Focus("Focus", "Data", &Camera::getCameraFocus, &Camera::setCameraFocus, Reflection::PropertyDescriptor::STREAMING);
-	static Reflection::RefPropDescriptor<Camera, Instance> cameraSubjectProp("CameraSubject", "Camera", &Camera::getCameraSubjectInstance, &Camera::setCameraSubject, Reflection::PropertyDescriptor::STANDARD);
-	
-	Reflection::EnumDesc<Camera::CameraType>::EnumDesc()
-		: EnumDescriptor("CameraType", typeid(Camera::CameraType))
-	{
-		addPair(Camera::FIXED_CAMERA, "Fixed");
-		addPair(Camera::WATCH_CAMERA, "Watch");
-		addPair(Camera::ATTACH_CAMERA, "Attach");
-		addPair(Camera::TRACK_CAMERA, "Track");
-		addPair(Camera::FOLLOW_CAMERA, "Follow");
-		addPair(Camera::CUSTOM_CAMERA, "Custom");
-	}
-
-	Camera::Camera()
-		: Base(),
-		  cameraFocus(G3D::Vector3(0, 0, -5)),
-		  cameraType(FIXED_CAMERA),
-		  animationType(AUTO),
-		  cameraExternallyAdjusted(false)
-	{
-		setName("Camera");
-		gCamera.setNearPlaneZ(1.25);
-		gCamera.setFarPlaneZ(5000);
-		gCamera.setFieldOfView(G3D::toRadians(60));
-
-		G3D::CoordinateFrame cameraCoord(G3D::Vector3(0, 5, 5));
-		cameraCoord.lookAt(G3D::Vector3::zero());
-
-		setGCameraCoordinateFrame(cameraCoord);
-	}
-
-	Camera::~Camera()
-	{
-	}
-
-	void Camera::tellCameraMoved()
-	{
-		if (ICameraOwner* owner = getCameraOwner())
-		{
-			owner->cameraMoved();
-		}
-	}
-
-	void Camera::setGCameraCoordinateFrame(const G3D::CoordinateFrame& coord)
-	{
-		if (Math::legalCameraCoord(coord))
-		{
-			gCamera.setCoordinateFrame(coord);
-		}
-		else
-		{
-			RBXASSERT(false);
-		}
-	}
-
-	bool Camera::askSetParent(const Instance* instance) const
-	{
-		return dynamic_cast<const Workspace*>(instance) != NULL;
-	}
-
-	ICameraOwner* Camera::getCameraOwner()
-	{
-		for (Instance* instance = getParent(); instance != NULL; instance = instance->getParent())
-		{
-			ICameraOwner* cameraOwner = dynamic_cast<ICameraOwner*>(instance);
-			if (cameraOwner)
-				return cameraOwner;
-		}
-
-		return NULL;
-	}
-
-	void Camera::lookAt(const G3D::Vector3& point)
-	{
-		cameraFocus.translation = point;
-		cameraGoal.lookAt(point);
-	}
-
-	void Camera::getHeadingElevationDistance(float& heading, float& elevation, float& distance)
-	{
-		Math::getHeadingElevation(cameraGoal, heading, elevation);
-		distance = goalToFocusDistance();
-	}
-
-	bool Camera::setDistanceFromTarget(float newDistance)
-	{
-		G3D::Vector3 lookVector = cameraFocus.translation - cameraGoal.translation;
-		float currentDistance = lookVector.magnitude();
-
-		const float min = distanceMin();
-		const float max = distanceMax();
-
-		if (newDistance < min && currentDistance == min)
-			return false;
-		
-		if (newDistance > max && currentDistance == max)
-			return false;
-
-		newDistance = G3D::min(max, G3D::max(min, newDistance));
-		
-		lookVector *= newDistance;
-		cameraGoal.translation = cameraFocus.translation - (lookVector / currentDistance);
-
-		tellCameraMoved();
-
-		return true;
-	}
-
-	void Camera::alwaysMode()
-	{
-		animationType = ALWAYS;
-	}
-
-	bool Camera::nonCharacterZoom(float in)
-	{
-		G3D::Vector3 lookVector = cameraFocus.translation - cameraGoal.translation;
-
-		float currentDistance = lookVector.magnitude();
-		float newZoomDistance = getNewZoomDistance(currentDistance, in);
-
-		if (newZoomDistance == currentDistance)
-			return false;
-
-		cameraGoal.translation -= lookVector * (newZoomDistance / currentDistance - 1.0f);
-
-		tellCameraMoved();
-
-		return true;
-	}
-
-	bool Camera::characterZoom(float in)
-	{
-		G3D::Vector3 focusToGoal = cameraGoal.translation - cameraFocus.translation;
-
-		float currentDistance = focusToGoal.magnitude();
-
-		float maxDistance = distanceMaxCharacter();
-		float newDistance = getNewZoomDistance(currentDistance, in);
-		newDistance = G3D::min(newDistance, maxDistance);
-
-		if (newDistance == currentDistance)
-			return false;
-
-		focusToGoal.y = 0.0;
-		focusToGoal.unitize();
-		focusToGoal.y = newDistance * 0.03f;
-
-		cameraGoal.translation = focusToGoal.direction() * newDistance + cameraFocus.translation;
-
-		return true;
-	}
-
-	void Camera::setHeadingElevationDistance(float heading, float elevation, float distance)
-	{
-		Math::setHeadingElevation(cameraGoal, heading, elevation);
-		cameraFocus.rotation = cameraGoal.rotation;
-
-		cameraGoal.translation = cameraFocus.translation - cameraGoal.lookVector() * distance;
-		cameraExternallyAdjusted = true;
-	}
-
-	void Camera::panRadians(float angle)
-	{
-		RBXASSERT(angle > -100);
-		RBXASSERT(angle < 100);
-
-		if (angle != 0)
-		{
-			float heading, elevation, distance;
-
-			getHeadingElevationDistance(heading, elevation, distance);
-			heading = Math::radWrap(heading + angle);
-			setHeadingElevationDistance(heading, elevation, distance);
-
-			tellCameraMoved();
-		}
-	}
-
-	bool Camera::tiltRadians(float angle)
-	{
-		if (angle != 0)
-		{
-			float heading, elevation, distance;
-			getHeadingElevationDistance(heading, elevation, distance);
-
-			static float rad = G3D::toRadians(81);
-			float newElevation = G3D::clamp(elevation + angle, -rad, rad);
-
-			if (elevation != newElevation)
-			{
-				setHeadingElevationDistance(heading, newElevation, distance);
-				tellCameraMoved();
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	void Camera::updateFocus()
-	{
-		Instance* instance = getCameraSubjectInstance();
-		if (instance)
-		{
-			ICameraSubject* subject = dynamic_cast<ICameraSubject*>(instance);
-			RBXASSERT(subject);
-			cameraFocus = subject->getLocation();
-		}
-	}
-
-	//96.11% matching.
-	void Camera::updateGoal()
-	{
-		switch (cameraType)
-		{
-			case WATCH_CAMERA:
-			{
-				updateFocus();
-				break;
-			}
-			case ATTACH_CAMERA: 
-			{
-				G3D::Vector3 delta = cameraGoal.translation - cameraFocus.translation;
-				float distance = delta.xz().length();
-
-				updateFocus();
-
-				G3D::Vector2 direction = -cameraFocus.lookVector().xz().direction();
-				cameraGoal.translation = cameraFocus.translation + G3D::Vector3(direction.x * distance, delta.y, direction.y * distance);
-
-				break;
-			}
-			case TRACK_CAMERA:
-			{
-				G3D::Vector3 oldFocusPt = cameraFocus.translation;
-				updateFocus();
-
-				cameraGoal.translation += cameraFocus.translation - oldFocusPt;
-				break;
-			}
-			case FOLLOW_CAMERA:
-			{
-				G3D::Vector3 delta = cameraFocus.translation - cameraGoal.translation;
-				float distance = delta.xz().length();
-
-				updateFocus();
-			
-				G3D::Vector2 direction = (cameraFocus.translation.xz() - cameraGoal.translation.xz()).direction();
-				cameraGoal.translation = cameraFocus.translation - G3D::Vector3(direction.x * distance, delta.y, direction.y * distance);
-
-				break;
-			}
-			case CUSTOM_CAMERA:
-			{
-				if (ICameraSubject* cameraSubject = getCameraSubject())
-					cameraSubject->stepGoalAndFocus(cameraGoal, cameraFocus, cameraExternallyAdjusted);
-
-				cameraExternallyAdjusted = false;
-				break;
-			}
-		}
-
-		cameraGoal.lookAt(cameraFocus.translation);
-	}
-
-	bool Camera::zoom(float in)
-	{
-		if (cameraType == CUSTOM_CAMERA)
-		{
-			ICameraSubject* cameraSubject = getCameraSubject();
-			if (cameraSubject)
-				return cameraSubject->zoom(in, cameraGoal, cameraFocus);
-		}
-		else if (getCameraSubjectInstance() && 
-				 (cameraType == FOLLOW_CAMERA || 
-				  cameraType == ATTACH_CAMERA || 
-				  cameraType == TRACK_CAMERA))
-		{
-			return characterZoom(in);
-		}
-		else
-		{
-			return nonCharacterZoom(in);
-		}
-
-		return false;
-	}
-
-	void Camera::onHeartbeat()
-	{
-		updateGoal();
-		G3D::CoordinateFrame adjustedGoal = cameraGoal;
-		ICameraSubject* cameraSubject = getCameraSubject();
-		ICharacterSubject* characterSubject = dynamic_cast<ICharacterSubject*>(cameraSubject);
-
-		if (characterSubject)
-			characterSubject->onHeartBeat(cameraGoal, cameraFocus);
-
-		G3D::CoordinateFrame cameraCoord = gCamera.getCoordinateFrame();
-		G3D::CoordinateFrame LerpFrame = cameraCoord.lerp(adjustedGoal, 0.9f);
-
-		setGCameraCoordinateFrame(LerpFrame);
-
-		if (animationType == ALWAYS || !Math::fuzzyEq(LerpFrame, cameraCoord, 0.01f, 0.01f))
-		{
-			tellCameraMoved();
-		}
-	}
-
-	Instance* Camera::getCameraSubjectInstance() const
-	{
-		return cameraSubject.get();
-	}
-
-	ICameraSubject* Camera::getCameraSubject() const
-	{
-		Instance* instance = getCameraSubjectInstance();
-		if (instance)
-		{
-			ICameraSubject* subject = dynamic_cast<ICameraSubject*>(instance);
-			RBXASSERT(subject);
-			return subject;
-		}
-		return NULL;
-	}
-
-	void Camera::autoMode()
-	{
-		if (animationType != AUTO)
-		{
-			animationType = AUTO;
-
-			tellCameraMoved();
-		}
-	}
-
-	void Camera::setCameraType(CameraType type)
-	{
-		if (cameraType != type)
-		{
-			cameraType = type;
-			raisePropertyChanged(desc_cameraType);
-
-			tellCameraMoved();
-		}
-	}
-
-	void Camera::setCameraSubject(Instance* newSubject)
-	{
-		if (newSubject != getCameraSubjectInstance())
-		{
-			if (dynamic_cast<ICameraSubject*>(newSubject))
-			{
-				cameraSubject = shared_from((ModelInstance*) newSubject);
-				raisePropertyChanged(cameraSubjectProp);
-
-				tellCameraMoved();
-			}
-		}
-	}
-
-	void Camera::setCameraFocus(const G3D::CoordinateFrame& value)
-	{
-		if (value != cameraFocus)
-		{
-			cameraFocus = value;
-			raisePropertyChanged(desc_Focus);
-
-			tellCameraMoved();
-		}
-	}
-
-	void Camera::goalToCamera()
-	{
-		if (gCamera.getCoordinateFrame() != cameraGoal)
-		{
-			cameraExternallyAdjusted = true;
-			setGCameraCoordinateFrame(cameraGoal);
-			raisePropertyChanged(desc_CoordFrame);
-
-			tellCameraMoved();
-		}
-	}
-
-	void Camera::tryZoomExtents(float low, float current, float high, const Extents& extents, const G3D::Rect2D& viewPort)
-	{
-		RBXASSERT(current >= low);
-		RBXASSERT(current <= high);
-
-		if (high - low < 0.1)
-			return;
-
-		setDistanceFromTarget(current);
-		updateGoal();
-		goalToCamera();
-
-		if (extents.containedByFrustum(gCamera.frustum(viewPort)))
-		{
-			tryZoomExtents(low, (low + current) * 0.5, current, extents, viewPort);
-		}
-		else
-		{
-			tryZoomExtents(current, (current + high) * 0.5, high, extents, viewPort);
-		}
-	}
-
-	void Camera::zoomExtents(Extents extents, const G3D::Rect2D& viewPort, Camera::ZoomType zoomType)
-	{
-		G3D::CoordinateFrame currentCoord = gCamera.getCoordinateFrame();
-		extents.expand(0.1f);
-
-		if (zoomType != ZOOM_CHAR_PART_DRAG || cameraType == CUSTOM_CAMERA)
-		{
-			if (cameraType == FIXED_CAMERA)
-			{
-				G3D::Vector3 scaler = extents.center() - cameraFocus.translation;
-
-				cameraFocus.translation += scaler;
-				cameraGoal.translation += scaler;
-			}
-
-			float low;
-
-			if (zoomType == ZOOM_OUT_ONLY || zoomType == ZOOM_CHAR_PART_DRAG)
-				low = goalToFocusDistance();
-			else
-				low = distanceMin();
-
-			float current = goalToFocusDistance();
-
-			RBXASSERT(G3D::isFinite(current));
-
-			if (zoomType == ZOOM_CHAR_PART_DRAG)
-				extents.scale(1.1f);
-
-			if (G3D::isFinite(low) && G3D::isFinite(current) && G3D::isFinite(distanceMax()))
-				tryZoomExtents(low, current, distanceMax(), extents, viewPort);
-
-			cameraGoal = gCamera.getCoordinateFrame();
-			setGCameraCoordinateFrame(currentCoord);
-			tellCameraMoved();
-		}
-	}
-
-	bool Camera::zoomExtents(const G3D::Rect2D& viewPort)
-	{
-		if (ICameraOwner* owner = getCameraOwner())
-		{
-			zoomExtents(owner->computeCameraOwnerExtents(), viewPort, ZOOM_IN_OR_OUT);
-			return true;
-		}
-		return false;
-	}
-
-	void Camera::setCameraCoordinateFrameNoLerp(const G3D::CoordinateFrame& value)
-	{
-		cameraGoal = value;
-		goalToCamera();
-	}
-
-	void Camera::setImageServerViewNoLerp(const G3D::CoordinateFrame& modelCoord, const G3D::Rect2D& viewPort)
-	{
-		G3D::Vector3 look = modelCoord.lookVector();
-
-		bool noTilt = (fabs(look.y) > 0.95);
-		if (noTilt)
-		{
-			look = -G3D::Vector3::unitZ();
-		}
-		else
-		{
-			look.y = 0;
-			look = look.direction();
-		}
-
-		G3D::CoordinateFrame lookCoord;
-
-		lookCoord.lookAt(look);
-		lookCoord.rotation *= G3D::Matrix3::fromEulerAnglesZXY(G3D::toRadians(45), G3D::toRadians(35), 0.0f);
-
-		look = lookCoord.lookVector();
-		lookCoord.translation = (look * 10.0f) + modelCoord.translation;
-
-		lookCoord.lookAt(modelCoord.translation);
-
-		setCameraType(FIXED_CAMERA);
-		setCameraFocus(modelCoord.translation);
-		setCameraCoordinateFrameNoLerp(lookCoord);
-		zoomExtents(viewPort);
-		goalToCamera();
-	}
-
-	float Camera::getNewZoomDistance(float currentDistance, float in)
-	{
-		float const ZOOM_FACTOR = 0.25f;
-
-		if (in > 0.0f)
-		{
-			currentDistance = G3D::max<float>(currentDistance / (1.0 + in * ZOOM_FACTOR), distanceMin());
-		} 	
-		else if (in < 0.0f)
-		{
-			return G3D::min<float>(currentDistance * (1.0 - in * ZOOM_FACTOR), distanceMax());
-		}
-
-		return currentDistance;
-	}
-}
+// Copyright Vladimir Prus 2002-2004.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt
+// or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#define BOOST_PROGRAM_OPTIONS_SOURCE
+#include <boost/program_options/config.hpp>
+
+#include <boost/config.hpp>
+
+#include <boost/program_options/detail/cmdline.hpp>
+#include <boost/program_options/errors.hpp>
+#include <boost/program_options/value_semantic.hpp>
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/positional_options.hpp>
+#include <boost/throw_exception.hpp>
+
+#include <boost/bind.hpp>
+
+#include <string>
+#include <utility>
+#include <vector>
+#include <cassert>
+#include <cstring>
+#include <cctype>
+
+#include <cstdio>
+
+#include <iostream>
+
+namespace boost { namespace program_options {
+
+    using namespace std;
+    using namespace boost::program_options::command_line_style;
+    
+    invalid_command_line_syntax::
+    invalid_command_line_syntax(const std::string& tokens, kind_t kind)
+    : invalid_syntax(tokens, error_message(kind)), m_kind(kind)
+    {}
+
+    std::string 
+    invalid_command_line_syntax::error_message(kind_t kind)
+    {
+        // Initially, store the message in 'const char*' variable,
+        // to avoid conversion to std::string in all cases.
+        const char* msg;
+        switch(kind)
+        {
+        case long_not_allowed:
+            msg = "long options are not allowed";
+            break;
+        case long_adjacent_not_allowed:
+            msg = "parameters adjacent to long options not allowed";
+            break;
+        case short_adjacent_not_allowed:
+            msg = "parameters adjust to short options are not allowed";
+            break;
+        case empty_adjacent_parameter:
+            msg = "adjacent parameter is empty";
+            break;
+        case missing_parameter:
+            msg = "required parameter is missing";
+            break;
+        case extra_parameter:
+            msg = "extra parameter";
+            break;
+        default:
+            msg = "unknown error";
+        }
+        return msg;
+    }
+
+    invalid_command_line_syntax::kind_t 
+    invalid_command_line_syntax::kind() const
+    {
+        return m_kind;
+    }
+
+
+}}
+
+
+namespace boost { namespace program_options { namespace detail {
+
+    // vc6 needs this, but borland chokes when this is added.
+#if BOOST_WORKAROUND(_MSC_VER, < 1300)
+    using namespace std;
+    using namespace program_options;
+#endif
+
+
+    cmdline::cmdline(const std::vector<std::string>& args)
+    {
+        init(args);
+    }
+
+    cmdline::cmdline(int argc, const char*const * argv)
+    {
+#if defined(BOOST_NO_TEMPLATED_ITERATOR_CONSTRUCTORS)
+        vector<string> args;
+        copy(argv+1, argv+argc, inserter(args, args.end()));
+        init(args);
+#else
+        init(vector<string>(argv+1, argv+argc));
+#endif
+    }
+
+    void
+    cmdline::init(const std::vector<std::string>& args)
+    {
+        this->args = args;        
+        m_style = command_line_style::default_style;
+        m_desc = 0;
+        m_positional = 0;
+        m_allow_unregistered = false;
+    }
+
+    void 
+    cmdline::style(int style)
+    {
+        if (style == 0) 
+            style = default_style;        
+
+        check_style(style);
+        this->m_style = style_t(style);
+    }
+    
+    void 
+    cmdline::allow_unregistered()
+    {
+        this->m_allow_unregistered = true;
+    }
+
+    void 
+    cmdline::check_style(int style) const
+    {
+        bool allow_some_long = 
+            (style & allow_long) || (style & allow_long_disguise);
+
+        const char* error = 0;
+        if (allow_some_long && 
+            !(style & long_allow_adjacent) && !(style & long_allow_next))
+            error = "style disallows parameters for long options";
+
+        if (!error && (style & allow_short) &&
+            !(style & short_allow_adjacent) && !(style & short_allow_next))
+            error = "style disallows parameters for short options";
+
+        if (!error && (style & allow_short) &&
+            !(style & allow_dash_for_short) && !(style & allow_slash_for_short))
+            error = "style disallows all characters for short options";
+
+        if (error)
+            throw invalid_command_line_style(error);
+
+        // Need to check that if guessing and long disguise are enabled
+        // -f will mean the same as -foo
+    }
+
+    void 
+    cmdline::set_options_description(const options_description& desc)
+    {
+        m_desc = &desc;
+    }
+
+    void 
+    cmdline::set_positional_options(
+        const positional_options_description& positional)
+    {
+        m_positional = &positional;
+    }
+
+
+    vector<option>
+    cmdline::run()
+    {
+        // The parsing is done by having a set of 'style parsers'
+        // and trying then in order. Each parser is passed a vector
+        // of unparsed tokens and can consume some of them (by
+        // removing elements on front) and return a vector of options.
+        //
+        // We try each style parser in turn, untill some input
+        // is consumed. The returned vector of option may contain the
+        // result of just syntactic parsing of token, say --foo will
+        // be parsed as option with name 'foo', and the style parser
+        // is not required to care if that option is defined, and how
+        // many tokens the value may take.
+        // So, after vector is returned, we validate them.
+        assert(m_desc);
+
+        vector<style_parser> style_parsers;      
+
+        if (m_style_parser)
+            style_parsers.push_back(m_style_parser);
+
+        if (m_additional_parser)
+            style_parsers.push_back(
+                bind(&cmdline::handle_additional_parser, this, _1));
+
+        if (m_style & allow_long)
+            style_parsers.push_back(
+                bind(&cmdline::parse_long_option, this, _1));
+
+        if ((m_style & allow_long_disguise))
+            style_parsers.push_back(
+                bind(&cmdline::parse_disguised_long_option, this, _1));
+
+        if ((m_style & allow_short) && (m_style & allow_dash_for_short))
+            style_parsers.push_back(
+                bind(&cmdline::parse_short_option, this, _1));
+
+        if ((m_style & allow_short) && (m_style & allow_slash_for_short))
+            style_parsers.push_back(bind(&cmdline::parse_dos_option, this, _1));
+
+        style_parsers.push_back(bind(&cmdline::parse_terminator, this, _1));
+
+        vector<option> result;
+        while(!args.empty())
+        {
+            bool ok = false;
+            for(unsigned i = 0; i < style_parsers.size(); ++i)
+            {
+                unsigned current_size = args.size();
+                vector<option> next = style_parsers[i](args);
+
+                // Check that option names
+                // are valid, and that all values are in place.
+                if (!next.empty())
+                {
+                    vector<string> e;
+                    for(unsigned k = 0; k < next.size()-1; ++k) {
+                        finish_option(next[k], e);
+                    }
+                    // For the last option, pass the unparsed tokens
+                    // so that they can be added to next.back()'s values
+                    // if appropriate.
+                    finish_option(next.back(), args);
+                    for (unsigned j = 0; j < next.size(); ++j)
+                        result.push_back(next[j]);                    
+                }
+                                
+                if (args.size() != current_size) {
+                    ok = true;
+                    break;                
+                } 
+            }
+            
+            if (!ok) {
+                option opt;
+                opt.value.push_back(args[0]);
+                opt.original_tokens.push_back(args[0]);
+                result.push_back(opt);
+                args.erase(args.begin());
+            }
+        }
+
+        // Assign position keys to positional options.
+        int position_key = 0;
+        for(unsigned i = 0; i < result.size(); ++i) {
+            if (result[i].string_key.empty())
+                result[i].position_key = position_key++;
+        }
+
+        if (m_positional)
+        {
+            unsigned position = 0;
+            for (unsigned i = 0; i < result.size(); ++i) {
+                option& opt = result[i];
+                if (opt.position_key != -1) {
+                    if (position >= m_positional->max_total_count())
+                    {
+                        throw too_many_positional_options_error(
+                            "too many positional options");
+                    }
+                    opt.string_key = m_positional->name_for_position(position);
+                    ++position;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    void
+    cmdline::finish_option(option& opt,
+                           vector<string>& other_tokens)
+    {                                    
+        if (opt.string_key.empty())
+            return;
+
+        // First check that the option is valid, and get its description.
+        // TODO: case-sensitivity.
+        const option_description* xd = 
+            m_desc->find_nothrow(opt.string_key, (m_style & allow_guessing));
+
+        if (!xd)
+        {
+            if (m_allow_unregistered) {
+                opt.unregistered = true;
+                return;
+            } else {
+                boost::throw_exception(unknown_option(opt.string_key));
+            }                
+        }
+        const option_description& d = *xd;
+
+        // Canonize the name
+        opt.string_key = d.key(opt.string_key);
+
+        // We check that the min/max number of tokens for the option
+        // agrees with the number of tokens we have. The 'adjacent_value'
+        // (the value in --foo=1) counts as a separate token, and if present
+        // must be consumed. The following tokens on the command line may be
+        // left unconsumed.
+
+        // We don't check if those tokens look like option, or not!
+
+        unsigned min_tokens = d.semantic()->min_tokens();
+        unsigned max_tokens = d.semantic()->max_tokens();
+        
+        unsigned present_tokens = opt.value.size() + other_tokens.size();
+        
+        if (present_tokens >= min_tokens)
+        {
+            if (!opt.value.empty() && max_tokens == 0) {
+                throw invalid_command_line_syntax(opt.string_key,
+                    invalid_command_line_syntax::extra_parameter);                                                                
+            }
+            
+            max_tokens -= opt.value.size();
+
+            // Everything's OK, move the values to the result.            
+            for(;!other_tokens.empty() && max_tokens--; ) {
+                opt.value.push_back(other_tokens[0]);
+                opt.original_tokens.push_back(other_tokens[0]);
+                other_tokens.erase(other_tokens.begin());
+            }
+        }
+        else
+        {
+            throw invalid_command_line_syntax(opt.string_key,
+                invalid_command_line_syntax::missing_parameter); 
+
+        }
+    }
+
+    std::vector<option> 
+    cmdline::parse_long_option(std::vector<string>& args)
+    {
+        vector<option> result;
+        const std::string& tok = args[0];
+        if (tok.size() >= 3 && tok[0] == '-' && tok[1] == '-')
+        {   
+            string name, adjacent;
+
+            string::size_type p = tok.find('=');
+            if (p != tok.npos)
+            {
+                name = tok.substr(2, p-2);
+                adjacent = tok.substr(p+1);
+                if (adjacent.empty())
+                    throw invalid_command_line_syntax(name,
+                      invalid_command_line_syntax::empty_adjacent_parameter);
+            }
+            else
+            {
+                name = tok.substr(2);
+            }
+            option opt;
+            opt.string_key = name;
+            if (!adjacent.empty())
+                opt.value.push_back(adjacent);
+            opt.original_tokens.push_back(tok);
+            result.push_back(opt);
+            args.erase(args.begin());
+        }
+        return result;
+    }
+
+
+    std::vector<option> 
+    cmdline::parse_short_option(std::vector<string>& args)
+    {
+        const std::string& tok = args[0];
+        if (tok.size() >= 2 && tok[0] == '-' && tok[1] != '-')
+        {   
+            vector<option> result;
+
+            string name = tok.substr(0,2);
+            string adjacent = tok.substr(2);
+
+            // Short options can be 'grouped', so that
+            // "-d -a" becomes "-da". Loop, processing one
+            // option at a time. We exit the loop when either
+            // we've processed all the token, or when the remainder
+            // of token is considered to be value, not further grouped
+            // option.
+            for(;;) {
+                const option_description* d 
+                    = m_desc->find_nothrow(name, false);
+
+                // FIXME: check for 'allow_sticky'.
+                if (d && (m_style & allow_sticky) &&
+                    d->semantic()->max_tokens() == 0 && !adjacent.empty()) {
+                    // 'adjacent' is in fact further option.
+                    option opt;
+                    opt.string_key = name;
+                    result.push_back(opt);
+
+                    if (adjacent.empty())
+                    {
+                        args.erase(args.begin());
+                        break;
+                    }
+
+                    name = string("-") + adjacent[0];
+                    adjacent.erase(adjacent.begin());
+                } else {
+                    
+                    option opt;
+                    opt.string_key = name;
+                    opt.original_tokens.push_back(tok);
+                    if (!adjacent.empty())
+                        opt.value.push_back(adjacent);
+                    result.push_back(opt);
+                    args.erase(args.begin());                    
+                    break;
+                }
+            }
+            return result;
+        }
+        return std::vector<option>();
+    }
+
+    std::vector<option> 
+    cmdline::parse_dos_option(std::vector<string>& args)
+    {
+        vector<option> result;
+        const std::string& tok = args[0];
+        if (tok.size() >= 2 && tok[0] == '/')
+        {   
+            string name = "-" + tok.substr(1,1);
+            string adjacent = tok.substr(2);
+
+            option opt;
+            opt.string_key = name;
+            if (!adjacent.empty())
+                opt.value.push_back(adjacent);
+            opt.original_tokens.push_back(tok);
+            result.push_back(opt);
+            args.erase(args.begin());
+        }
+        return result;
+    }
+
+    std::vector<option> 
+    cmdline::parse_disguised_long_option(std::vector<string>& args)
+    {
+        const std::string& tok = args[0];
+        if (tok.size() >= 2 && 
+            ((tok[0] == '-' && tok[1] != '-') ||
+             ((m_style & allow_slash_for_short) && tok[0] == '/')))            
+        {
+            if (m_desc->find_nothrow(tok.substr(1, tok.find('=')-1), 
+                                     m_style & allow_guessing)) {
+                args[0].insert(0, "-");
+                if (args[0][1] == '/')
+                    args[0][1] = '-';
+                return parse_long_option(args);
+            }
+        }
+        return vector<option>();
+    }
+
+    std::vector<option> 
+    cmdline::parse_terminator(std::vector<std::string>& args)
+    {
+        vector<option> result;
+        const std::string& tok = args[0];
+        if (tok == "--")
+        {
+            for(unsigned i = 1; i < args.size(); ++i)
+            {
+                option opt;
+                opt.value.push_back(args[i]);
+                result.push_back(opt);
+            }
+            args.clear();
+        }
+        return result;
+    }
+
+    std::vector<option> 
+    cmdline::handle_additional_parser(std::vector<std::string>& args)
+    {
+        vector<option> result;
+        pair<string, string> r = m_additional_parser(args[0]);
+        if (!r.first.empty()) {
+            option next;
+            next.string_key = r.first;
+            if (!r.second.empty())
+                next.value.push_back(r.second);
+            result.push_back(next);
+            args.erase(args.begin());
+        }
+        return result;
+    }
+
+    void 
+    cmdline::set_additional_parser(additional_parser p)
+    {
+        m_additional_parser = p;
+    }
+
+    void 
+    cmdline::extra_style_parser(style_parser s)
+    {
+        m_style_parser = s;
+    }
+
+
+
+}}}

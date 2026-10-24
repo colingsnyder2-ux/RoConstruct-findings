@@ -1,54 +1,38 @@
-// from server: 24% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.34.1-dll libs/regex/src/instances.cpp
 
-extern "C" void __cdecl _invalid_parameter_noinfo();
-extern "C" void __cdecl operator_delete(void*);
+// Candidate translation unit (score above; library headers required).
+/*
+ *
+ * Copyright (c) 1998-2002
+ * John Maddock
+ *
+ * Use, modification and distribution are subject to the 
+ * Boost Software License, Version 1.0. (See accompanying file 
+ * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ *
+ */
 
-struct Node {
-    Node* next;
-    Node* prev;
-    int refcount;
-    void* data;
-};
+ /*
+  *   LOCATION:    see http://www.boost.org for most recent version.
+  *   FILE:        instances.cpp
+  *   VERSION:     see <boost/version.hpp>
+  *   DESCRIPTION: regex narrow character template instances.
+  */
 
-struct List {
-    Node* head;
-    int count;
-};
+#define BOOST_REGEX_SOURCE
 
-struct Peer {
-    char pad0[4];
-    List* list;
-    int count;
-    void erase(List* owner, Node* n, Node** out);
-};
+#include <boost/regex/config.hpp>
 
-void Peer::erase(List* owner, Node* n, Node** out) {
-    if (owner == 0) {
-        _invalid_parameter_noinfo();
-    }
-    if (n == owner->head) {
-        _invalid_parameter_noinfo();
-    }
-    if (n == this->list->head) {
-        *out = n;
-        return;
-    }
-    Node* next = n->next;
-    Node* prev = n->prev;
-    prev->next = next;
-    next->prev = prev;
-    Node* d = (Node*)n->data;
-    if (d != 0) {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)d + 4), -1) == 1) {
-            (*(void(__thiscall**)(void*))(*(int*)d + 4))(d);
-            if (_InterlockedExchangeAdd((volatile long*)((char*)d + 8), -1) == 1) {
-                (*(void(__thiscall**)(void*))(*(int*)d + 8))(d);
-            }
-        }
-    }
-    operator_delete(n);
-    this->count--;
-    *out = n;
-}
+#if !defined(BOOST_REGEX_NO_EXTERNAL_TEMPLATES)
+#define BOOST_REGEX_NARROW_INSTANTIATE
+
+#ifdef __BORLANDC__
+#pragma hrdstop
+#endif
+
+#include <boost/regex.hpp>
+
+#endif

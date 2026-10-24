@@ -9,5 +9,5 @@ int S::f()
 {
     if (pad[6])
         return 1;
-    return -(pad[7]);
+    return pad[7] != 0 ? -1 : 0;
 }

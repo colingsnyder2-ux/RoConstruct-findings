@@ -1,236 +1,194 @@
-// from server: 50% by colin
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: ogre-1.7.0 OgreConfigFile.cpp
+// roc-lib: boost-1.34.1-dll libs/program_options/src/variables_map.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-    (Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org/
-
-Copyright (c) 2000-2009 Torus Knot Software Ltd
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
------------------------------------------------------------------------------
-*/
-#include "OgreStableHeaders.h"
-#include "OgreConfigFile.h"
-#include "OgreResourceGroupManager.h"
-
-#include "OgreException.h"
-
-#include <iostream>
-
-namespace Ogre {
-
-    //-----------------------------------------------------------------------
-    ConfigFile::ConfigFile()
-    {
-    }
-    //-----------------------------------------------------------------------
-    ConfigFile::~ConfigFile()
-    {
-        SettingsBySection::iterator seci, secend;
-        secend = mSettings.end();
-        for (seci = mSettings.begin(); seci != secend; ++seci)
-        {
-            OGRE_DELETE_T(seci->second, SettingsMultiMap, MEMCATEGORY_GENERAL);
-        }
-    }
-    //-----------------------------------------------------------------------
-    void ConfigFile::clear(void)
-    {
-        for (SettingsBySection::iterator seci = mSettings.begin(); 
-            seci != mSettings.end(); ++seci)
-        {
-             OGRE_DELETE_T(seci->second, SettingsMultiMap, MEMCATEGORY_GENERAL);
-        }
-        mSettings.clear();
-    }
-    //-----------------------------------------------------------------------
-    void ConfigFile::load(const String& filename, const String& separators, bool trimWhitespace)
-    {
-        loadDirect(filename, separators, trimWhitespace);
-    }
-    //-----------------------------------------------------------------------
-    void ConfigFile::load(const String& filename, const String& resourceGroup, 
-        const String& separators, bool trimWhitespace)
-    {
-		loadFromResourceSystem(filename, resourceGroup, separators, trimWhitespace);
-    }
-	//-----------------------------------------------------------------------
-	void ConfigFile::loadDirect(const String& filename, const String& separators, 
-		bool trimWhitespace)
-	{
-		/* Open the configuration file */
-		std::ifstream fp;
-        // Always open in binary mode
-		fp.open(filename.c_str(), std::ios::in | std::ios::binary);
-		if(!fp)
-			OGRE_EXCEPT(
-			Exception::ERR_FILE_NOT_FOUND, "'" + filename + "' file not found!", "ConfigFile::load" );
-
-		// Wrap as a stream
-		DataStreamPtr stream(OGRE_NEW FileStreamDataStream(filename, &fp, false));
-
-#if OGRE_PLATFORM == OGRE_PLATFORM_SYMBIAN
-		// seems readLine doesn't work correctly in SYMBIAN with files
-		DataStreamPtr memoryStream(OGRE_NEW MemoryDataStream(stream));
-		stream = memoryStream;
-#endif
-
-		load(stream, separators, trimWhitespace);
-
-	}
-	//-----------------------------------------------------------------------
-	void ConfigFile::loadFromResourceSystem(const String& filename, 
-		const String& resourceGroup, const String& separators, bool trimWhitespace)
-	{
-		DataStreamPtr stream = 
-			ResourceGroupManager::getSingleton().openResource(filename, resourceGroup);
-		load(stream, separators, trimWhitespace);
-	}
-    //-----------------------------------------------------------------------
-    void ConfigFile::load(const DataStreamPtr& stream, const String& separators, 
-        bool trimWhitespace)
-    {
-        /* Clear current settings map */
-        clear();
-
-        String currentSection = StringUtil::BLANK;
-        SettingsMultiMap* currentSettings = OGRE_NEW_T(SettingsMultiMap, MEMCATEGORY_GENERAL)();
-        mSettings[currentSection] = currentSettings;
+// Copyright Vladimir Prus 2002-2004.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt
+// or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 
-        /* Process the file line for line */
-        String line, optName, optVal;
-        while (!stream->eof())
-        {
-            line = stream->getLine();
-            /* Ignore comments & blanks */
-            if (line.length() > 0 && line.at(0) != '#' && line.at(0) != '@')
-            {
-                if (line.at(0) == '[' && line.at(line.length()-1) == ']')
-                {
-                    // Section
-                    currentSection = line.substr(1, line.length() - 2);
-					SettingsBySection::const_iterator seci = mSettings.find(currentSection);
-					if (seci == mSettings.end())
-					{
-						currentSettings = OGRE_NEW_T(SettingsMultiMap, MEMCATEGORY_GENERAL)();
-						mSettings[currentSection] = currentSettings;
-					}
-					else
-					{
-						currentSettings = seci->second;
-					} 
-                }
-                else
-                {
-                    /* Find the first seperator character and split the string there */
-					Ogre::String::size_type separator_pos = line.find_first_of(separators, 0);
-                    if (separator_pos != Ogre::String::npos)
-                    {
-                        optName = line.substr(0, separator_pos);
-                        /* Find the first non-seperator character following the name */
-                        Ogre::String::size_type nonseparator_pos = line.find_first_not_of(separators, separator_pos);
-                        /* ... and extract the value */
-                        /* Make sure we don't crash on an empty setting (it might be a valid value) */
-                        optVal = (nonseparator_pos == Ogre::String::npos) ? "" : line.substr(nonseparator_pos);
-                        if (trimWhitespace)
-                        {
-                            StringUtil::trim(optVal);
-                            StringUtil::trim(optName);
-                        }
-                        currentSettings->insert(SettingsMultiMap::value_type(optName, optVal));
-                    }
-                }
+#define BOOST_PROGRAM_OPTIONS_SOURCE
+#include <boost/program_options/config.hpp>
+#include <boost/program_options/parsers.hpp>
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/value_semantic.hpp>
+#include <boost/program_options/variables_map.hpp>
+
+#include <cassert>
+
+namespace boost { namespace program_options {
+
+    using namespace std;
+
+    // First, performs semantic actions for 'oa'. 
+    // Then, stores in 'm' all options that are defined in 'desc'. 
+    BOOST_PROGRAM_OPTIONS_DECL 
+    void store(const parsed_options& options, variables_map& xm,
+               bool utf8)
+    {       
+        // TODO: what if we have different definition
+        // for the same option name during different calls
+        // 'store'.
+        assert(options.description);
+        const options_description& desc = *options.description;
+
+        // We need to access map's operator[], not the overriden version
+        // variables_map. Ehmm.. messy.
+        std::map<std::string, variable_value>& m = xm;
+
+        std::set<std::string> new_final;
+
+        // Declared once, to please Intel in VC++ mode;
+        unsigned i;
+
+        // First, convert/store all given options
+        for (i = 0; i < options.options.size(); ++i) {
+
+            const string& name = options.options[i].string_key;
+            // Skip positional options without name
+            if (name.empty())
+                continue;
+
+            // Ignore unregistered option. The 'unregistered'
+            // field can be true only if user has explicitly asked
+            // to allow unregistered options. We can't store them
+            // to variables map (lacking any information about paring), 
+            // so just ignore them.
+            if (options.options[i].unregistered)
+                continue;
+
+            // If option has final value, skip this assignment
+            if (xm.m_final.count(name))
+                continue;
+
+            // Ignore options which are not described
+            //TODO: consider this.
+            //if (desc.count(name) == 0)
+            //    continue;
+
+            const option_description& d = desc.find(name, false);
+
+            variable_value& v = m[name];            
+            if (v.defaulted()) {
+                // Explicit assignment here erases defaulted value
+                v = variable_value();
             }
+            
+            try {
+                d.semantic()->parse(v.value(), options.options[i].value, utf8);
+            }
+            catch(validation_error& e)
+            {
+                e.set_option_name(name);
+                throw;
+            }
+            v.m_value_semantic = d.semantic();
+            
+            // The option is not composing, and the value is explicitly
+            // provided. Ignore values of this option for subsequent
+            // calls to 'store'. We store this to a temporary set,
+            // so that several assignment inside *this* 'store' call
+            // are allowed.
+            if (!d.semantic()->is_composing())
+                new_final.insert(name);
         }
-    }
-    //-----------------------------------------------------------------------
-    String ConfigFile::getSetting(const String& key, const String& section, const String& defaultValue) const
-    {
+        xm.m_final.insert(new_final.begin(), new_final.end());
+
         
-        SettingsBySection::const_iterator seci = mSettings.find(section);
-        if (seci == mSettings.end())
+        
+        // Second, apply default values.
+        const vector<shared_ptr<option_description> >& all = desc.options();
+        for(i = 0; i < all.size(); ++i)
         {
-            return defaultValue;
+            const option_description& d = *all[i];
+            string key = d.key("");
+            // FIXME: this logic relies on knowledge of option_description
+            // internals.
+            // The 'key' is empty if options description contains '*'. 
+            // In that 
+            // case, default value makes no sense at all.
+            if (key.empty())
+            {
+                continue;
+            }
+            if (m.count(key) == 0) {
+            
+                boost::any def;
+                if (d.semantic()->apply_default(def)) {
+                    m[key] = variable_value(def, true);
+                    m[key].m_value_semantic = d.semantic();
+                }
+            }        
         }
+    }
+
+    BOOST_PROGRAM_OPTIONS_DECL 
+    void store(const wparsed_options& options, variables_map& m)
+    {
+        store(options.utf8_encoded_options, m, true);
+    }
+
+    BOOST_PROGRAM_OPTIONS_DECL 
+    void notify(variables_map& vm)
+    {        
+        // Lastly, run notify actions.
+        for (map<string, variable_value>::iterator k = vm.begin(); 
+             k != vm.end(); 
+             ++k) 
+        {
+            k->second.m_value_semantic->notify(k->second.value());
+        }               
+    }
+
+    abstract_variables_map::abstract_variables_map()
+    : m_next(0)
+    {}
+
+    abstract_variables_map::
+    abstract_variables_map(const abstract_variables_map* next)
+    : m_next(next)
+    {}
+
+    const variable_value& 
+    abstract_variables_map::operator[](const std::string& name) const
+    {
+        const variable_value& v = get(name);
+        if (v.empty() && m_next)
+            return (*m_next)[name];
+        else if (v.defaulted() && m_next) {
+            const variable_value& v2 = (*m_next)[name];
+            if (!v2.empty() && !v2.defaulted())
+                return v2;
+            else return v;
+        } else {
+            return v;
+        }
+    }
+
+    void 
+    abstract_variables_map::next(abstract_variables_map* next)
+    {
+        m_next = next;
+    }
+
+    variables_map::variables_map()
+    {}
+
+    variables_map::variables_map(const abstract_variables_map* next)
+    : abstract_variables_map(next)
+    {}
+
+    const variable_value&
+    variables_map::get(const std::string& name) const
+    {
+        static variable_value empty;
+        const_iterator i = this->find(name);
+        if (i == this->end())
+            return empty;
         else
-        {
-            SettingsMultiMap::const_iterator i = seci->second->find(key);
-            if (i == seci->second->end())
-            {
-                return defaultValue;
-            }
-            else
-            {
-                return i->second;
-            }
-        }
+            return i->second;
     }
-    //-----------------------------------------------------------------------
-    StringVector ConfigFile::getMultiSetting(const String& key, const String& section) const
-    {
-        StringVector ret;
-
-
-        SettingsBySection::const_iterator seci = mSettings.find(section);
-        if (seci != mSettings.end())
-        {
-            SettingsMultiMap::const_iterator i;
-
-            i = seci->second->find(key);
-            // Iterate over matches
-            while (i != seci->second->end() && i->first == key)
-            {
-                ret.push_back(i->second);
-                ++i;
-            }
-        }
-        return ret;
-
-
-    }
-    //-----------------------------------------------------------------------
-    ConfigFile::SettingsIterator ConfigFile::getSettingsIterator(const String& section)
-    {
-        SettingsBySection::const_iterator seci = mSettings.find(section);
-        if (seci == mSettings.end())
-        {
-            OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, 
-                "Cannot find section " + section, 
-                "ConfigFile::getSettingsIterator");
-        }
-        else
-        {
-            return SettingsIterator(seci->second->begin(), seci->second->end());
-        }
-    }
-    //-----------------------------------------------------------------------
-    ConfigFile::SectionIterator ConfigFile::getSectionIterator(void)
-    {
-        return SectionIterator(mSettings.begin(), mSettings.end());
-    }
-
-}
+}}

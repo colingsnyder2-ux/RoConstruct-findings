@@ -1,16 +1,15 @@
 // from server: 97% by atomic.potato
-typedef int (__cdecl *FunctionType)(int);
-typedef int (__thiscall *ImportType)(void *, int);
+typedef char BOOL;
 
 extern "C" int __cdecl Function_007f5286(int);
-extern "C" ImportType Global_0098b768;
+extern "C" int (__thiscall *Global_0098b768)(void*, int);
 
 struct S
 {
-    int f();
+    char f();
 };
 
-int S::f()
+char S::f()
 {
     int value = *(int *)(*(int *)((char *)this + 12) + 0xa90);
     value = *(int *)(value + 0x1b4);

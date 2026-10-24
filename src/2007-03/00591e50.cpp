@@ -1,89 +1,167 @@
-// from server: 56% by colin
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.6.4 OgreAlignedAllocator.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.34.1-dll libs/program_options/src/convert.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-    (Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org/
+// Copyright Vladimir Prus 2004.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt
+// or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-Copyright (c) 2000-2006 Torus Knot Software Ltd
-Also see acknowledgements in Readme.html
+#include <fstream>
+#include <locale.h>
+#include <locale>
+#include <iostream>
+#include <string>
+#include <locale>
+#include <stdexcept>
 
-This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the Free Software
-Foundation; either version 2 of the License, or (at your option) any later
-version.
+#include <boost/config.hpp>
 
-This program is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+#define BOOST_PROGRAM_OPTIONS_SOURCE
+#include <boost/program_options/config.hpp>
+#include <boost/program_options/detail/convert.hpp>
+#include <boost/program_options/detail/utf8_codecvt_facet.hpp>
+#include <boost/throw_exception.hpp>
 
-You should have received a copy of the GNU Lesser General Public License along with
-this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-http://www.gnu.org/copyleft/lesser.txt.
+#include <boost/bind.hpp>
 
-You may alternatively use this source under the terms of a specific version of
-the OGRE Unrestricted License provided you have obtained such a license from
-Torus Knot Software Ltd.
------------------------------------------------------------------------------
-*/
-#include "OgreStableHeaders.h"
+using namespace std;
 
-#include "OgrePrerequisites.h"
-#include "OgreAlignedAllocator.h"
+namespace boost { namespace detail {
 
-#include "OgrePlatformInformation.h"
-#include "OgreBitwise.h"
+    /* Internal function to actually perform conversion.
+       The logic in from_8_bit and to_8_bit function is exactly
+       the same, except that one calls 'in' method of codecvt and another
+       calls the 'out' method, and that syntax difference makes straightforward
+       template implementation impossible.
 
-/**
-*
-* |___2___|3|_________5__________|__6__|
-* ^         ^
-* 1         4
-*
-* 1 -> Pointer to start of the block allocated by new.
-* 2 -> Gap used to get 4 aligned on given alignment
-* 3 -> Byte offset between 1 and 4
-* 4 -> Pointer to the start of data block.
-* 5 -> Data block.
-* 6 -> Wasted memory at rear of data block.
-*/
-
-namespace Ogre {
-
-    //---------------------------------------------------------------------
-    void* AlignedMemory::allocate(size_t size, size_t alignment)
+       This functions takes a 'fun' argument, which should have the same 
+       parameters and return type and the in/out methods. The actual converting
+       function will pass functional objects created with boost::bind.
+       Experiments show that the performance loss is less than 10%.
+    */
+    template<class ToChar, class FromChar, class Fun>
+    std::basic_string<ToChar>
+    convert(const std::basic_string<FromChar>& s, Fun fun)
+        
     {
-        assert(0 < alignment && alignment <= 128 && Bitwise::isPO2(alignment));
+        std::basic_string<ToChar> result;
+        
+        std::mbstate_t state = {0};
 
-        unsigned char* p = new unsigned char[size + alignment];
-        size_t offset = alignment - (size_t(p) & (alignment-1));
-
-        unsigned char* result = p + offset;
-        result[-1] = (unsigned char)offset;
-
-        return result;
-    }
-    //---------------------------------------------------------------------
-    void* AlignedMemory::allocate(size_t size)
-    {
-        return allocate(size, OGRE_SIMD_ALIGNMENT);
-    }
-    //---------------------------------------------------------------------
-    void AlignedMemory::deallocate(void* p)
-    {
-        if (p)
-        {
-            unsigned char* mem = (unsigned char*)p;
-            mem = mem - mem[-1];
-            delete [] mem;
+        const FromChar* from = s.data();
+        const FromChar* from_end = s.data() + s.size();
+        // The interface of cvt is not really iterator-like, and it's
+        // not possible the tell the required output size without the conversion.
+        // All we can is convert data by pieces.
+        while(from != from_end) {
+            
+            // std::basic_string does not provide non-const pointers to the data,
+            // so converting directly into string is not possible.
+            ToChar buffer[32];
+            
+            ToChar* to_next = buffer;
+            // Need variable because boost::bind doesn't work with rvalues.
+            ToChar* to_end = buffer + 32;
+            std::codecvt_base::result r = 
+                fun(state, from, from_end, from, buffer, to_end, to_next);
+            
+            if (r == std::codecvt_base::error)
+                boost::throw_exception(
+                    std::logic_error("character conversion failed"));
+            // 'partial' is not an error, it just means not all source
+            // characters were converted. However, we need to check that at
+            // least one new target character was produced. If not, it means
+            // the source data is incomplete, and since we don't have extra
+            // data to add to source, it's error.
+            if (to_next == buffer)
+                boost::throw_exception(
+                    std::logic_error("character conversion failed"));
+            
+            // Add converted characters
+            result.append(buffer, to_next);
         }
+        
+        return result;        
+    }           
+}}
+
+namespace boost {
+
+#ifndef BOOST_NO_STD_WSTRING
+    BOOST_PROGRAM_OPTIONS_DECL std::wstring 
+    from_8_bit(const std::string& s, 
+               const std::codecvt<wchar_t, char, std::mbstate_t>& cvt)
+    {
+        return detail::convert<wchar_t>(
+            s,                 
+            boost::bind(&std::codecvt<wchar_t, char, mbstate_t>::in,
+                        &cvt,
+                        _1, _2, _3, _4, _5, _6, _7));
     }
+
+    BOOST_PROGRAM_OPTIONS_DECL std::string 
+    to_8_bit(const std::wstring& s, 
+             const std::codecvt<wchar_t, char, std::mbstate_t>& cvt)
+    {
+        return detail::convert<char>(
+            s,                 
+            boost::bind(&codecvt<wchar_t, char, mbstate_t>::out,
+                        &cvt,
+                        _1, _2, _3, _4, _5, _6, _7));
+    }
+
+
+    namespace {
+        boost::program_options::detail::utf8_codecvt_facet
+            utf8_facet;
+    }
+    
+    BOOST_PROGRAM_OPTIONS_DECL std::wstring
+    from_utf8(const std::string& s)
+    {
+        return from_8_bit(s, utf8_facet);
+    }
+    
+    BOOST_PROGRAM_OPTIONS_DECL std::string
+    to_utf8(const std::wstring& s)
+    {
+        return to_8_bit(s, utf8_facet);
+    }
+
+    BOOST_PROGRAM_OPTIONS_DECL std::wstring
+    from_local_8_bit(const std::string& s)
+    {
+        typedef codecvt<wchar_t, char, mbstate_t> facet_type;
+        return from_8_bit(s, 
+                          BOOST_USE_FACET(facet_type, locale()));
+    }
+
+    BOOST_PROGRAM_OPTIONS_DECL std::string
+    to_local_8_bit(const std::wstring& s)
+    {
+        typedef codecvt<wchar_t, char, mbstate_t> facet_type;
+        return to_8_bit(s, 
+                        BOOST_USE_FACET(facet_type, locale()));                        
+    }
+#endif
+
+    namespace program_options
+    {
+        BOOST_PROGRAM_OPTIONS_DECL std::string to_internal(const std::string& s)
+        {
+            return s;
+        }
+
+#ifndef BOOST_NO_STD_WSTRING
+        BOOST_PROGRAM_OPTIONS_DECL std::string to_internal(const std::wstring& s)
+        {
+            return to_utf8(s);
+        }
+#endif
+    }
+
 
 }

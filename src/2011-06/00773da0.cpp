@@ -1,401 +1,649 @@
-// from server: 51% by colin
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/DataModel.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.34.1-dll libs/regex/src/cregex.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Lighting.h"
-#include "v8datamodel/DataModel.h"
-#include "v8datamodel/TimeState.h"
-#include "v8datamodel/Workspace.h"
-#include "v8datamodel/Hopper.h"
-#include "v8datamodel/Teams.h"
-#include "v8datamodel/JointsService.h"
-#include "v8datamodel/LocalBackpack.h"
-#include "script/ScriptContext.h"
-#include "gui/GUI.h"
-#include "util/Log.h"
-#include "util/IMetric.h"
-#include "util/standardout.h"
-#include "util/Http.h"
-#include "util/Sound.h"
+/*
+ *
+ * Copyright (c) 1998-2002
+ * John Maddock
+ *
+ * Use, modification and distribution are subject to the 
+ * Boost Software License, Version 1.0. (See accompanying file 
+ * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ *
+ */
 
-namespace RBX
+ /*
+  *   LOCATION:    see http://www.boost.org for most recent version.
+  *   FILE:        cregex.cpp
+  *   VERSION:     see <boost/version.hpp>
+  *   DESCRIPTION: Implements high level class boost::RexEx
+  */
+
+
+#define BOOST_REGEX_SOURCE
+
+#include <boost/cregex.hpp>
+#include <boost/regex.hpp>
+#if !defined(BOOST_NO_STD_STRING)
+#include <map>
+#include <list>
+#include <boost/regex/v4/fileiter.hpp>
+typedef boost::match_flag_type match_flag_type;
+#include <cstdio>
+
+namespace boost{
+
+#ifdef __BORLANDC__
+#if __BORLANDC__ < 0x530
+//
+// we need to instantiate the vector classes we use
+// since declaring a reference to type doesn't seem to
+// do the job...
+std::vector<std::size_t> inst1;
+std::vector<std::string> inst2;
+#endif
+#endif
+
+namespace{
+
+template <class iterator>
+std::string to_string(iterator i, iterator j)
 {
-	static Reflection::BoundFuncDesc<DataModel, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(ContentId), 1> getContentFunctionOld(&DataModel::get, "get", "url", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<DataModel, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(ContentId), 1> getContentFunction(&DataModel::get, "GetObjects", "url", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(ContentId), 1> loadFunction(&DataModel::loadContent, "Load", "url", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(ContentId), 1> saveFunction(&DataModel::save, "Save", "url", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, std::string(std::string, bool), 2> httpGetFunction(&DataModel::httpGet, "HttpGet", "url", "synchronous", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<DataModel, std::string(std::string, std::string, bool), 3> httpPostFunction(&DataModel::httpPost, "HttpPost", "url", "data", "synchronous", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(void), 0> sanitizeFunction(&DataModel::clearContents, "ClearContent", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(void), 0> closeFunction(&DataModel::close, "Close", Reflection::FunctionDescriptor::NeedTrustedCaller);
-
-	static Reflection::BoundFuncDesc<DataModel, void(std::string), 1> func_SetUIMessage(&DataModel::setUiMessage, "SetMessage", "message", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(void), 0> func_ClearUIMessage(&DataModel::clearUiMessage, "ClearMessage", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(void), 0> func_SetUIMessageBrickCount(&DataModel::setUiMessageBrickCount, "SetMessageBrickCount", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	
-	static Reflection::SignalDesc<DataModel, void(void)> event_Closing("Close");
-
-#pragma warning (push)
-#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
-
-	DataModel::DataModel()
-		: VerbContainer(NULL),
-		  workspace(Creatable::create<Workspace>(this)),
-		  guiRoot(Creatable::create<GuiRoot>()),
-		  guiHooks(Creatable::create<GuiRoot>()),
-		  timeState(new TimeState),
-		  mutex(new boost::recursive_mutex),
-		  guiTarget(NULL),
-		  forceArrowCursor(true),
-		  dirty(false),
-		  drawId(0)
-	{
-		setName("Level");
-	}
-
-#pragma warning (pop)
-
-	DataModel::~DataModel()
-	{
-		Notifier<RunService, RunTransition>::disconnect(runService, this);
-		StandardOut::singleton()->print(MESSAGE_INFO, "~DataModel");
-	}
-
-	bool DataModel::askAddChild(const Instance* instance) const
-	{
-		return dynamic_cast<const Service*>(instance) != NULL;
-	}
-
-	boost::shared_ptr<DataModel> DataModel::createDataModel()
-	{
-		ContentProvider::singleton().clearContentCache();
-		
-		boost::shared_ptr<DataModel> dataModel = Creatable::create<DataModel>();
-
-		{
-			Lock lock(dataModel);
-			dataModel->initializeContents();
-		}
-
-		return dataModel;
-	}
-	
-	void DataModel::onChildAdded(Instance* child)
-	{
-		ServiceProvider::onChildAdded(child);
-
-		if (child->getClassName() == "NetworkClient")
-		{
-			Verb* lockPlayMode = getVerb("LockPlayMode");
-			if (lockPlayMode)
-				lockPlayMode->doIt(NULL);
-
-			workspace->setNullMouseCommand();
-		}
-	}
-
-	void DataModel::onEvent(const RunService* source, RunTransition event)
-	{
-		switch (event.newState)
-		{
-		case RS_NORMAL:
-			if (event.oldState == RS_RUNNING)
-				workspace->reset();
-
-			timeState->clear();
-			break;
-		case RS_RUNNING:
-			workspace->start();
-			break;
-		case RS_PAUSED:
-			workspace->stop();
-			break;
-		}
-	}
-
-	std::string DataModel::doHttpGet(std::string url)
-	{
-		std::string result;
-		Http(url.c_str()).get(result);
-
-		return result;
-	}
-
-	std::string DataModel::doHttpPost(std::string url, std::string data)
-	{
-		std::string result;
-		Http(url).post(std::istringstream(data), true, result);
-
-		return result;
-	}
-
-	void DataModel::close()
-	{
-		Verb* exitVerb = getVerb("Exit");
-		if (!exitVerb)
-			throw std::runtime_error("Couldn\'t find Exit Verb");
-
-		exitVerb->doIt(NULL);
-	}
-
-	std::string DataModel::httpGet(std::string url, bool synchronous)
-	{
-		if (synchronous)
-		{
-			return doHttpGet(url);
-		}
-		else
-		{
-			if (url.size() > 0)
-			{
-				boost::function0<void> f = boost::bind(&DataModel::doHttpGet, url);
-				boost::function0<void> g = boost::bind(&StandardOut::print_exception, f, MESSAGE_ERROR, false);
-
-				boost::thread(background_function(g, "rbx_httpGet"));
-			}
-
-			return "";
-		}
-	}
-
-	std::string DataModel::httpPost(std::string url, std::string data, bool synchronous)
-	{
-		if (synchronous)
-		{
-			return doHttpPost(url, data);
-		}
-		else
-		{
-			boost::function0<void> f = boost::bind(&DataModel::doHttpPost, url, data);
-			boost::function0<void> g = boost::bind(&StandardOut::print_exception, f, MESSAGE_ERROR, false);
-
-			boost::thread(background_function(g, "rbx_httpPost"));
-
-			return "";
-		}
-	}
-
-	void DataModel::clearContents()
-	{
-		workspace->setMouseCommand(NULL);
-		workspace->removeAllChildren();
-		workspace->setCamera(NULL);
-		
-		starterPackService->removeAllChildren();
-
-		Teams* teams = ServiceProvider::find<Teams>(this);
-		if (teams)
-			teams->removeAllChildren();
-
-		Lighting* lighting = ServiceProvider::find<Lighting>(this);
-		if (lighting)
-			lighting->removeAllChildren();
-
-		ScriptContext* script = ServiceProvider::find<ScriptContext>(this);
-		if (script)
-		{
-			script->closeState();
-			ScriptContext::propScriptsDisabled.setValue(script, false);
-		}
-	}
-
-	void DataModel::loadContent(ContentId contentId)
-	{
-		std::auto_ptr<std::istream> stream = ContentProvider::singleton().getContent(contentId);
-		StandardOut::singleton()->print(MESSAGE_INFO, "DataModel Loading %s", contentId.c_str());
-
-		SerializerV2 serializer;
-		serializer.load(*stream, this);
-
-		workspace->joinAllHack();
-	}
-
-	void DataModel::save(ContentId contentId)
-	{
-		std::stringstream stream;
-
-		{
-			boost::scoped_ptr<XmlElement> root(SerializerV2::newRootElement());
-			writeChildren(root.get());
-
-			TextXmlWriterWithEmbeddedContent machine(stream);
-			machine.serialize(root.get());
-
-			stream.flush();
-		}
-		
-		std::string response;
-		Http(contentId.toString()).post(stream, true, response);
-	}
-
-	boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> DataModel::get(ContentId contentId)
-	{
-		std::auto_ptr<std::istream> stream = ContentProvider::singleton().getContent(contentId);
-
-		TextXmlParser machine(stream->rdbuf());
-		std::auto_ptr<XmlElement> root = machine.parse();
-
-		boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> result(new std::vector<boost::shared_ptr<Instance>>);
-
-		SerializerV2 serializer;
-		serializer.loadInstances(root.get(), *result);
-
-		return result;
-	}
-
-	static std::string report(const G3D::Stopwatch& timer)
-	{
-		if (timer.smoothElapsedTime() > 0.0f)
-		{
-			std::string t = Log::formatTime(timer.smoothElapsedTime());
-			char buffer[256];
-			sprintf(buffer, "%s (%.3gfps)", t.c_str(), 1.0f / timer.smoothElapsedTime());
-
-			return std::string(buffer);
-		}
-		else
-		{
-			return Log::formatTime(timer.smoothElapsedTime());
-		}
-	}
-
-	std::string DataModel::evaluate(const std::string& valueName) const
-	{
-		World* world = workspace->getWorld();
-
-		if (valueName == "timer")
-		{
-			float time = timeState->totalVirtualTime;
-			return StringConverter<float>::convertToString(time);
-		}
-		else if (valueName == "FPS")
-		{
-			return G3D::format("%.3g", timeState->fpsStopwatch.smoothFPS());
-		}
-		else if (valueName == "simDC")
-		{
-			return report(timeState->simulationStopwatch);
-		}
-		else if (valueName == "drawId")
-		{
-			return StringConverter<int>::convertToString(drawId);
-		}
-		else if (valueName == "graphicsMode")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "culling")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "cullingPercent")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "antiAliasing")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "bevels")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "videoMemory")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "GfxTime")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "numPrimitives")
-		{
-			return StringConverter<int>::convertToString(world->getPrimitives().size());
-		}
-		else if (valueName == "numJoints")
-		{
-			return StringConverter<int>::convertToString(world->getNumJoints());
-		}
-		else if (valueName == "numContacts")
-		{
-			return StringConverter<int>::convertToString(world->getNumContacts());
-		}
-		else if (valueName == "numContactsInCollisionStage")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_CONTACTSTAGE_CONTACTS));
-		}
-		else if (valueName == "numSteppingContacts")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_STEPPING_CONTACTS));
-		}
-		else if (valueName == "numTouchingContacts")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_TOUCHING_CONTACTS));
-		}
-		else if (valueName == "maxTreeDepth")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::MAX_TREE_DEPTH));
-		}
-		else if (valueName == "contactPairHitRatio")
-		{
-			return StringConverter<float>::convertToString(BlockBlockContact::contactPairHitRatio());
-		}
-		else if (valueName == "numLinkCalls")
-		{
-			return StringConverter<int>::convertToString(world->getNumLinkCalls());
-		}
-		else if (valueName == "numHashNodes")
-		{
-			return StringConverter<int>::convertToString(world->getNumHashNodes());
-		}
-		else if (valueName == "maxBucketSize")
-		{
-			return StringConverter<int>::convertToString(world->getMaxBucketSize());
-		}
-		else if (valueName == "numBodies")
-		{
-			return StringConverter<int>::convertToString(world->getNumBodies());
-		}
-		else if (valueName == "numConstraints")
-		{
-			return StringConverter<int>::convertToString(world->getNumConstraints());
-		}
-		else if (valueName == "numPoints")
-		{
-			return StringConverter<int>::convertToString(world->getNumPoints());
-		}
-		else if (valueName == "energyBody")
-		{
-			return StringConverter<float>::convertToString(world->getKernel().bodyKineticEnergy());
-		}
-		else if (valueName == "energyConnector")
-		{
-			return StringConverter<float>::convertToString(world->getKernel().connectorSpringEnergy());
-		}
-		else if (valueName == "energyTotal")
-		{
-			return StringConverter<float>::convertToString(world->getKernel().totalKineticEnergy());
-		}
-		else
-		{
-			return "?";
-		}
-	}
-
-	void DataModel::Lock::doLock(const DataModel* dataModel)
-	{
-		if (dataModel)
-		{
-			mutex = dataModel->mutex;
-			lock = new boost::recursive_mutex::scoped_lock(*mutex);
-		}
-	}
-
-	DataModel::Lock::~Lock()
-	{
-		delete lock;
-	}
+   std::string s;
+   while(i != j)
+   {
+      s.append(1, *i);
+      ++i;
+   }
+   return s;
 }
+
+inline std::string to_string(const char* i, const char* j)
+{
+   return std::string(i, j);
+}
+
+}
+namespace re_detail{
+
+class RegExData
+{
+public:
+   enum type
+   {
+      type_pc,
+      type_pf,
+      type_copy
+   };
+   regex e;
+   cmatch m;
+#ifndef BOOST_REGEX_NO_FILEITER
+   match_results<mapfile::iterator> fm;
+#endif
+   type t;
+   const char* pbase;
+#ifndef BOOST_REGEX_NO_FILEITER
+   mapfile::iterator fbase;
+#endif
+   std::map<int, std::string, std::less<int> > strings;
+   std::map<int, std::ptrdiff_t, std::less<int> > positions;
+   void update();
+   void clean();
+   RegExData() : e(), m(),
+#ifndef BOOST_REGEX_NO_FILEITER
+   fm(),
+#endif
+   t(type_copy), pbase(0),
+#ifndef BOOST_REGEX_NO_FILEITER
+   fbase(),
+#endif
+   strings(), positions() {}
+};
+
+void RegExData::update()
+{
+   strings.erase(strings.begin(), strings.end());
+   positions.erase(positions.begin(), positions.end());
+   if(t == type_pc)
+   {
+      for(unsigned int i = 0; i < m.size(); ++i)
+      {
+         if(m[i].matched) strings[i] = std::string(m[i].first, m[i].second);
+         positions[i] = m[i].matched ? m[i].first - pbase : -1;
+      }
+   }
+#ifndef BOOST_REGEX_NO_FILEITER
+   else
+   {
+      for(unsigned int i = 0; i < fm.size(); ++i)
+      {
+         if(fm[i].matched) strings[i] = to_string(fm[i].first, fm[i].second);
+         positions[i] = fm[i].matched ? fm[i].first - fbase : -1;
+      }
+   }
+#endif
+   t = type_copy;
+}
+
+void RegExData::clean()
+{
+#ifndef BOOST_REGEX_NO_FILEITER
+   fbase = mapfile::iterator();
+   fm = match_results<mapfile::iterator>();
+#endif
+}
+
+} // namespace
+
+RegEx::RegEx()
+{
+   pdata = new re_detail::RegExData();
+}
+
+RegEx::RegEx(const RegEx& o)
+{
+   pdata = new re_detail::RegExData(*(o.pdata));
+}
+
+RegEx::~RegEx()
+{
+   delete pdata;
+}
+
+RegEx::RegEx(const char* c, bool icase)
+{
+   pdata = new re_detail::RegExData();
+   SetExpression(c, icase);
+}
+
+RegEx::RegEx(const std::string& s, bool icase)
+{
+   pdata = new re_detail::RegExData();
+   SetExpression(s.c_str(), icase);
+}
+
+RegEx& RegEx::operator=(const RegEx& o)
+{
+   *pdata = *(o.pdata);
+   return *this;
+}
+
+RegEx& RegEx::operator=(const char* p)
+{
+   SetExpression(p, false);
+   return *this;
+}
+
+unsigned int RegEx::SetExpression(const char* p, bool icase)
+{
+   boost::uint_fast32_t f = icase ? regex::normal | regex::icase : regex::normal;
+   return pdata->e.set_expression(p, f);
+}
+
+unsigned int RegEx::error_code()const
+{
+   return pdata->e.error_code();
+}
+
+
+std::string RegEx::Expression()const
+{
+   return pdata->e.expression();
+}
+
+//
+// now matching operators:
+//
+bool RegEx::Match(const char* p, match_flag_type flags)
+{
+   pdata->t = re_detail::RegExData::type_pc;
+   pdata->pbase = p;
+   const char* end = p;
+   while(*end)++end;
+
+   if(regex_match(p, end, pdata->m, pdata->e, flags))
+   {
+      pdata->update();
+      return true;
+   }
+   return false;
+}
+
+bool RegEx::Search(const char* p, match_flag_type flags)
+{
+   pdata->t = re_detail::RegExData::type_pc;
+   pdata->pbase = p;
+   const char* end = p;
+   while(*end)++end;
+
+   if(regex_search(p, end, pdata->m, pdata->e, flags))
+   {
+      pdata->update();
+      return true;
+   }
+   return false;
+}
+namespace re_detail{
+struct pred1
+{
+   GrepCallback cb;
+   RegEx* pe;
+   pred1(GrepCallback c, RegEx* i) : cb(c), pe(i) {}
+   bool operator()(const cmatch& m)
+   {
+      pe->pdata->m = m;
+      return cb(*pe);
+   }
+};
+}
+unsigned int RegEx::Grep(GrepCallback cb, const char* p, match_flag_type flags)
+{
+   pdata->t = re_detail::RegExData::type_pc;
+   pdata->pbase = p;
+   const char* end = p;
+   while(*end)++end;
+
+   unsigned int result = regex_grep(re_detail::pred1(cb, this), p, end, pdata->e, flags);
+   if(result)
+      pdata->update();
+   return result;
+}
+namespace re_detail{
+struct pred2
+{
+   std::vector<std::string>& v;
+   RegEx* pe;
+   pred2(std::vector<std::string>& o, RegEx* e) : v(o), pe(e) {}
+   bool operator()(const cmatch& m)
+   {
+      pe->pdata->m = m;
+      v.push_back(std::string(m[0].first, m[0].second));
+      return true;
+   }
+private:
+   pred2& operator=(const pred2&);
+};
+}
+
+unsigned int RegEx::Grep(std::vector<std::string>& v, const char* p, match_flag_type flags)
+{
+   pdata->t = re_detail::RegExData::type_pc;
+   pdata->pbase = p;
+   const char* end = p;
+   while(*end)++end;
+
+   unsigned int result = regex_grep(re_detail::pred2(v, this), p, end, pdata->e, flags);
+   if(result)
+      pdata->update();
+   return result;
+}
+namespace re_detail{
+struct pred3
+{
+   std::vector<std::size_t>& v;
+   const char* base;
+   RegEx* pe;
+   pred3(std::vector<std::size_t>& o, const char* pb, RegEx* p) : v(o), base(pb), pe(p) {}
+   bool operator()(const cmatch& m)
+   {
+      pe->pdata->m = m;
+      v.push_back(static_cast<std::size_t>(m[0].first - base));
+      return true;
+   }
+private:
+   pred3& operator=(const pred3&);
+};
+}
+unsigned int RegEx::Grep(std::vector<std::size_t>& v, const char* p, match_flag_type flags)
+{
+   pdata->t = re_detail::RegExData::type_pc;
+   pdata->pbase = p;
+   const char* end = p;
+   while(*end)++end;
+
+   unsigned int result = regex_grep(re_detail::pred3(v, p, this), p, end, pdata->e, flags);
+   if(result)
+      pdata->update();
+   return result;
+}
+#ifndef BOOST_REGEX_NO_FILEITER
+namespace re_detail{
+struct pred4
+{
+   GrepFileCallback cb;
+   RegEx* pe;
+   const char* file;
+   bool ok;
+   pred4(GrepFileCallback c, RegEx* i, const char* f) : cb(c), pe(i), file(f), ok(true) {}
+   bool operator()(const match_results<mapfile::iterator>& m)
+   {
+      pe->pdata->t = RegExData::type_pf;
+      pe->pdata->fm = m;
+      pe->pdata->update();
+      ok = cb(file, *pe);
+      return ok;
+   }
+};
+}
+namespace{
+void BuildFileList(std::list<std::string>* pl, const char* files, bool recurse)
+{
+   file_iterator start(files);
+   file_iterator end;
+   if(recurse)
+   {
+      // go through sub directories:
+      char buf[MAX_PATH];
+      re_detail::overflow_error_if_not_zero(re_detail::strcpy_s(buf, MAX_PATH, start.root()));
+      if(*buf == 0)
+      {
+         re_detail::overflow_error_if_not_zero(re_detail::strcpy_s(buf, MAX_PATH, "."));
+         re_detail::overflow_error_if_not_zero(re_detail::strcat_s(buf, MAX_PATH, directory_iterator::separator()));
+         re_detail::overflow_error_if_not_zero(re_detail::strcat_s(buf, MAX_PATH, "*"));
+      }
+      else
+      {
+         re_detail::overflow_error_if_not_zero(re_detail::strcat_s(buf, MAX_PATH, directory_iterator::separator()));
+         re_detail::overflow_error_if_not_zero(re_detail::strcat_s(buf, MAX_PATH, "*"));
+      }
+      directory_iterator dstart(buf);
+      directory_iterator dend;
+
+      // now get the file mask bit of "files":
+      const char* ptr = files;
+      while(*ptr) ++ptr;
+      while((ptr != files) && (*ptr != *directory_iterator::separator()) && (*ptr != '/'))--ptr;
+      if(ptr != files) ++ptr;
+
+      while(dstart != dend)
+      {
+#if BOOST_WORKAROUND(BOOST_MSVC, >= 1400)
+         (::sprintf_s)(buf, sizeof(buf), "%s%s%s", dstart.path(), directory_iterator::separator(), ptr);
+#else
+         (std::sprintf)(buf, "%s%s%s", dstart.path(), directory_iterator::separator(), ptr);
+#endif
+         BuildFileList(pl, buf, recurse);
+         ++dstart;
+      }
+   }
+   while(start != end)
+   {
+      pl->push_back(*start);
+      ++start;
+   }
+}
+}
+
+unsigned int RegEx::GrepFiles(GrepFileCallback cb, const char* files, bool recurse, match_flag_type flags)
+{
+   unsigned int result = 0;
+   std::list<std::string> file_list;
+   BuildFileList(&file_list, files, recurse);
+   std::list<std::string>::iterator start, end;
+   start = file_list.begin();
+   end = file_list.end();
+
+   while(start != end)
+   {
+      mapfile map((*start).c_str());
+      pdata->t = re_detail::RegExData::type_pf;
+      pdata->fbase = map.begin();
+      re_detail::pred4 pred(cb, this, (*start).c_str());
+      int r = regex_grep(pred, map.begin(), map.end(), pdata->e, flags);
+      result += r;
+      ++start;
+      pdata->clean();
+      if(pred.ok == false)
+         return result;
+   }
+
+   return result;
+}
+
+
+unsigned int RegEx::FindFiles(FindFilesCallback cb, const char* files, bool recurse, match_flag_type flags)
+{
+   unsigned int result = 0;
+   std::list<std::string> file_list;
+   BuildFileList(&file_list, files, recurse);
+   std::list<std::string>::iterator start, end;
+   start = file_list.begin();
+   end = file_list.end();
+
+   while(start != end)
+   {
+      mapfile map((*start).c_str());
+      pdata->t = re_detail::RegExData::type_pf;
+      pdata->fbase = map.begin();
+
+      if(regex_search(map.begin(), map.end(), pdata->fm, pdata->e, flags))
+      {
+         ++result;
+         if(false == cb((*start).c_str()))
+            return result;
+      }
+      //pdata->update();
+      ++start;
+      //pdata->clean();
+   }
+
+   return result;
+}
+#endif
+
+#ifdef BOOST_REGEX_V3
+#define regex_replace regex_merge
+#endif
+
+std::string RegEx::Merge(const std::string& in, const std::string& fmt,
+                    bool copy, match_flag_type flags)
+{
+   std::string result;
+   re_detail::string_out_iterator<std::string> i(result);
+   if(!copy) flags |= format_no_copy;
+   regex_replace(i, in.begin(), in.end(), pdata->e, fmt.c_str(), flags);
+   return result;
+}
+
+std::string RegEx::Merge(const char* in, const char* fmt,
+                    bool copy, match_flag_type flags)
+{
+   std::string result;
+   if(!copy) flags |= format_no_copy;
+   re_detail::string_out_iterator<std::string> i(result);
+   regex_replace(i, in, in + std::strlen(in), pdata->e, fmt, flags);
+   return result;
+}
+
+std::size_t RegEx::Split(std::vector<std::string>& v, 
+                      std::string& s,
+                      match_flag_type flags,
+                      unsigned max_count)
+{
+   return regex_split(std::back_inserter(v), s, pdata->e, flags, max_count);
+}
+
+
+
+//
+// now operators for returning what matched in more detail:
+//
+std::size_t RegEx::Position(int i)const
+{
+   switch(pdata->t)
+   {
+   case re_detail::RegExData::type_pc:
+      return pdata->m[i].matched ? pdata->m[i].first - pdata->pbase : RegEx::npos;
+#ifndef BOOST_REGEX_NO_FILEITER
+   case re_detail::RegExData::type_pf:
+      return pdata->fm[i].matched ? pdata->fm[i].first - pdata->fbase : RegEx::npos;
+#endif
+   case re_detail::RegExData::type_copy:
+      {
+      std::map<int, std::ptrdiff_t, std::less<int> >::iterator pos = pdata->positions.find(i);
+      if(pos == pdata->positions.end())
+         return RegEx::npos;
+      return (*pos).second;
+      }
+   }
+   return RegEx::npos;
+}
+
+std::size_t RegEx::Marks()const
+{
+   return pdata->e.mark_count();
+}
+
+
+std::size_t RegEx::Length(int i)const
+{
+   switch(pdata->t)
+   {
+   case re_detail::RegExData::type_pc:
+      return pdata->m[i].matched ? pdata->m[i].second - pdata->m[i].first : RegEx::npos;
+#ifndef BOOST_REGEX_NO_FILEITER
+   case re_detail::RegExData::type_pf:
+      return pdata->fm[i].matched ? pdata->fm[i].second - pdata->fm[i].first : RegEx::npos;
+#endif
+   case re_detail::RegExData::type_copy:
+      {
+      std::map<int, std::string, std::less<int> >::iterator pos = pdata->strings.find(i);
+      if(pos == pdata->strings.end())
+         return RegEx::npos;
+      return (*pos).second.size();
+      }
+   }
+   return RegEx::npos;
+}
+
+bool RegEx::Matched(int i)const
+{
+   switch(pdata->t)
+   {
+   case re_detail::RegExData::type_pc:
+      return pdata->m[i].matched;
+#ifndef BOOST_REGEX_NO_FILEITER
+   case re_detail::RegExData::type_pf:
+      return pdata->fm[i].matched;
+#endif      
+   case re_detail::RegExData::type_copy:
+      {
+      std::map<int, std::string, std::less<int> >::iterator pos = pdata->strings.find(i);
+      if(pos == pdata->strings.end())
+         return false;
+      return true;
+      }
+   }
+   return false;
+}
+
+
+std::string RegEx::What(int i)const
+{
+   std::string result;
+   switch(pdata->t)
+   {
+   case re_detail::RegExData::type_pc:
+      if(pdata->m[i].matched) 
+         result.assign(pdata->m[i].first, pdata->m[i].second);
+      break;
+   case re_detail::RegExData::type_pf:
+      if(pdata->m[i].matched) 
+         result.assign(to_string(pdata->m[i].first, pdata->m[i].second));
+      break;
+   case re_detail::RegExData::type_copy:
+      {
+      std::map<int, std::string, std::less<int> >::iterator pos = pdata->strings.find(i);
+      if(pos != pdata->strings.end())
+         result = (*pos).second;
+      break;
+      }
+   }
+   return result;
+}
+
+#ifdef BOOST_HAS_LONG_LONG
+const std::size_t RegEx::npos = static_cast<std::size_t>(~0ULL);
+#else
+const std::size_t RegEx::npos = static_cast<std::size_t>(~0UL);
+#endif
+
+} // namespace boost
+
+#if defined(__BORLANDC__) && (__BORLANDC__ >= 0x550) && (__BORLANDC__ <= 0x551) && !defined(_RWSTD_COMPILE_INSTANTIATE)
+//
+// this is an ugly hack to work around an ugly problem:
+// by default this file will produce unresolved externals during
+// linking unless _RWSTD_COMPILE_INSTANTIATE is defined (Borland bug).
+// However if _RWSTD_COMPILE_INSTANTIATE is defined then we get separate
+// copies of basic_string's static data in the RTL and this DLL, this messes
+// with basic_string's memory management and results in run-time crashes,
+// Oh sweet joy of Catch 22....
+//
+namespace std{
+template<> template<>
+basic_string<char>& BOOST_REGEX_DECL
+basic_string<char>::replace<const char*>(char* f1, char* f2, const char* i1, const char* i2)
+{
+   unsigned insert_pos = f1 - begin();
+   unsigned remove_len = f2 - f1;
+   unsigned insert_len = i2 - i1;
+   unsigned org_size = size();
+   if(insert_len > remove_len)
+   {
+      append(insert_len-remove_len, ' ');
+      std::copy_backward(begin() + insert_pos + remove_len, begin() + org_size, end());
+      std::copy(i1, i2, begin() + insert_pos);
+   }
+   else
+   {
+      std::copy(begin() + insert_pos + remove_len, begin() + org_size, begin() + insert_pos + insert_len);
+      std::copy(i1, i2, begin() + insert_pos);
+      erase(size() + insert_len - remove_len);
+   }
+   return *this;
+}
+template<> template<>
+basic_string<wchar_t>& BOOST_REGEX_DECL
+basic_string<wchar_t>::replace<const wchar_t*>(wchar_t* f1, wchar_t* f2, const wchar_t* i1, const wchar_t* i2)
+{
+   unsigned insert_pos = f1 - begin();
+   unsigned remove_len = f2 - f1;
+   unsigned insert_len = i2 - i1;
+   unsigned org_size = size();
+   if(insert_len > remove_len)
+   {
+      append(insert_len-remove_len, ' ');
+      std::copy_backward(begin() + insert_pos + remove_len, begin() + org_size, end());
+      std::copy(i1, i2, begin() + insert_pos);
+   }
+   else
+   {
+      std::copy(begin() + insert_pos + remove_len, begin() + org_size, begin() + insert_pos + insert_len);
+      std::copy(i1, i2, begin() + insert_pos);
+      erase(size() + insert_len - remove_len);
+   }
+   return *this;
+}
+} // namespace std
+#endif
+
+#endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

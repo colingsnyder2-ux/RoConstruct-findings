@@ -1,39 +1,65 @@
-// from server: 44% by colin
-extern "C" void __stdcall _invalid_parameter_noinfo();
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.34.1-dll libs/signals/src/trackable.cpp
 
-struct Node {
-    Node* next;
-    Node* prev;
-    int value;
-};
+// Candidate translation unit (score above; library headers required).
+// Boost.Signals library
 
-struct List {
-    Node* head;
-    int size;
-    void erase(Node* where, Node* first, Node* last);
-};
+// Copyright Douglas Gregor 2001-2004. Use, modification and
+// distribution is subject to the Boost Software License, Version
+// 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
-void List::erase(Node* where, Node* first, Node* last) {
-    if (where == 0) {
-        _invalid_parameter_noinfo();
+// For more information, see http://www.boost.org
+
+#define BOOST_SIGNALS_SOURCE
+
+#include <boost/signals/trackable.hpp>
+#include <algorithm>
+
+namespace boost {
+  namespace BOOST_SIGNALS_NAMESPACE {
+    void trackable::signal_disconnected(void* obj, void* data)
+    {
+      trackable* self = reinterpret_cast<trackable*>(obj);
+      connection_iterator* signal =
+        reinterpret_cast<connection_iterator*>(data);
+
+      // If we're dying, don't bother erasing the connection from the list;
+      // it'll be gone anyway
+      if (!self->dying) {
+        self->connected_signals.erase(*signal);
+      }
+
+      // This iterator pointer won't ever be used again
+      delete signal;
     }
-    if (first == where->next) {
-        _invalid_parameter_noinfo();
+
+    void
+    trackable::signal_connected(connection c,
+                                BOOST_SIGNALS_NAMESPACE::detail::bound_object& binding) const
+    {
+      // Insert the connection
+      connection_iterator pos =
+        connected_signals.insert(connected_signals.end(), c);
+
+      // Make this copy of the object disconnect when destroyed
+      pos->set_controlling();
+
+      binding.obj = const_cast<void*>(reinterpret_cast<const void*>(this));
+      binding.data = reinterpret_cast<void*>(new connection_iterator(pos));
+      binding.disconnect = &signal_disconnected;
     }
-    Node* next = first->next;
-    if (first != last) {
-        Node* p = first->prev;
-        p->next = next;
-        Node* n = first->next;
-        first->prev->next = n;
-        Node* tmp = first + 1;
-        // call destructor-like function at 0x7271f0
-        extern void __fastcall sub_7271F0(void*);
-        sub_7271F0(tmp);
-        extern void __cdecl sub_62FC62(void*);
-        sub_62FC62(first);
-        size -= 1;
+
+    trackable::~trackable()
+    {
+      dying = true;
     }
-    last->next = next;
-    last->prev = where;
+  } // end namespace BOOST_SIGNALS_NAMESPACE
 }
+
+#ifndef BOOST_MSVC
+// Explicit instantiations to keep in the library
+template class std::list<boost::BOOST_SIGNALS_NAMESPACE::connection>;
+#endif

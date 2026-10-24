@@ -1,149 +1,167 @@
-// from server: 67% by colin
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/MouseCommand.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.34.1-dll libs/program_options/src/convert.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/MouseCommand.h"
-#include "v8datamodel/PartInstance.h"
-#include "v8datamodel/Workspace.h"
-#include "v8datamodel/Filters.h"
-#include "v8world/ContactManager.h"
-#include "v8world/Primitive.h"
-#include "humanoid/Humanoid.h"
+// Copyright Vladimir Prus 2004.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt
+// or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-namespace RBX
-{
-	MouseCommand::MouseCommand(Workspace* workspace)
-		: workspace(workspace),
-		  capturedMouse(false)
-	{
-	}
+#include <fstream>
+#include <locale.h>
+#include <locale>
+#include <iostream>
+#include <string>
+#include <locale>
+#include <stdexcept>
 
-	MouseCommand::~MouseCommand()
-	{
-		RBXASSERT(undoState.get() == NULL);
-	}
+#include <boost/config.hpp>
 
-	bool MouseCommand::characterCanReach(const G3D::Vector3& hitPoint) const
-	{
-		PartInstance* head = Humanoid::getLocalHeadFromContext(workspace);
+#define BOOST_PROGRAM_OPTIONS_SOURCE
+#include <boost/program_options/config.hpp>
+#include <boost/program_options/detail/convert.hpp>
+#include <boost/program_options/detail/utf8_codecvt_facet.hpp>
+#include <boost/throw_exception.hpp>
 
-		if (head)
-			return (head->getCoordinateFrame().translation - hitPoint).magnitude() < 60.0;
-		else
-			return false;
-	}
+#include <boost/bind.hpp>
 
-	TextureId MouseCommand::getCursorId() const
-	{
-		return TextureId::fromAssets("Textures\\" + getCursorName() + ".png");
-	}
+using namespace std;
 
-	PartInstance* MouseCommand::getMousePart(const G3D::Ray& unitRay, const ContactManager& contactManager, const std::vector<const Primitive*>& ignore, const HitTestFilter* filter, G3D::Vector3& hitPoint, float maxSearchGrid)
-	{
-		RBXASSERT(G3D::fuzzyEq(unitRay.direction.squaredMagnitude(), 1.0f));
+namespace boost { namespace detail {
 
-		G3D::Ray searchRay = G3D::Ray::fromOriginAndDirection(unitRay.origin, unitRay.direction * 2048.0f); // MouseCommand::getSearchRay inline
-		Primitive* primitive = contactManager.getHit(searchRay, &ignore, filter, hitPoint);
+    /* Internal function to actually perform conversion.
+       The logic in from_8_bit and to_8_bit function is exactly
+       the same, except that one calls 'in' method of codecvt and another
+       calls the 'out' method, and that syntax difference makes straightforward
+       template implementation impossible.
 
-		return primitive ? PartInstance::fromPrimitive(primitive) : NULL;
-	}
+       This functions takes a 'fun' argument, which should have the same 
+       parameters and return type and the in/out methods. The actual converting
+       function will pass functional objects created with boost::bind.
+       Experiments show that the performance loss is less than 10%.
+    */
+    template<class ToChar, class FromChar, class Fun>
+    std::basic_string<ToChar>
+    convert(const std::basic_string<FromChar>& s, Fun fun)
+        
+    {
+        std::basic_string<ToChar> result;
+        
+        std::mbstate_t state = {0};
 
-	PartInstance* MouseCommand::getMousePart(const G3D::Ray& unitRay, const ContactManager& contactManager, const Primitive* ignore, const HitTestFilter* filter, G3D::Vector3& hitPoint, float maxSearchGrid)
-	{
-		std::vector<const Primitive*> ignorePrims;
-		ignorePrims.push_back(ignore);
+        const FromChar* from = s.data();
+        const FromChar* from_end = s.data() + s.size();
+        // The interface of cvt is not really iterator-like, and it's
+        // not possible the tell the required output size without the conversion.
+        // All we can is convert data by pieces.
+        while(from != from_end) {
+            
+            // std::basic_string does not provide non-const pointers to the data,
+            // so converting directly into string is not possible.
+            ToChar buffer[32];
+            
+            ToChar* to_next = buffer;
+            // Need variable because boost::bind doesn't work with rvalues.
+            ToChar* to_end = buffer + 32;
+            std::codecvt_base::result r = 
+                fun(state, from, from_end, from, buffer, to_end, to_next);
+            
+            if (r == std::codecvt_base::error)
+                boost::throw_exception(
+                    std::logic_error("character conversion failed"));
+            // 'partial' is not an error, it just means not all source
+            // characters were converted. However, we need to check that at
+            // least one new target character was produced. If not, it means
+            // the source data is incomplete, and since we don't have extra
+            // data to add to source, it's error.
+            if (to_next == buffer)
+                boost::throw_exception(
+                    std::logic_error("character conversion failed"));
+            
+            // Add converted characters
+            result.append(buffer, to_next);
+        }
+        
+        return result;        
+    }           
+}}
 
-		return getMousePart(unitRay, contactManager, ignorePrims, filter, hitPoint, maxSearchGrid);
-	}
+namespace boost {
 
-	G3D::Ray MouseCommand::getSearchRay(const G3D::Ray& unitRay)
-	{
-		RBXASSERT(unitRay.direction.isUnit());
-		return G3D::Ray::fromOriginAndDirection(unitRay.origin, unitRay.direction * 2048.0f);
-	}
+#ifndef BOOST_NO_STD_WSTRING
+    BOOST_PROGRAM_OPTIONS_DECL std::wstring 
+    from_8_bit(const std::string& s, 
+               const std::codecvt<wchar_t, char, std::mbstate_t>& cvt)
+    {
+        return detail::convert<wchar_t>(
+            s,                 
+            boost::bind(&std::codecvt<wchar_t, char, mbstate_t>::in,
+                        &cvt,
+                        _1, _2, _3, _4, _5, _6, _7));
+    }
 
-	G3D::Ray MouseCommand::getSearchRay(const UIEvent& uiEvent, ICameraOwner* _workspace)
-	{
-		G3D::Ray unitRay = getUnitMouseRay(uiEvent, _workspace);
-		return getSearchRay(unitRay);
-	}
+    BOOST_PROGRAM_OPTIONS_DECL std::string 
+    to_8_bit(const std::wstring& s, 
+             const std::codecvt<wchar_t, char, std::mbstate_t>& cvt)
+    {
+        return detail::convert<char>(
+            s,                 
+            boost::bind(&codecvt<wchar_t, char, mbstate_t>::out,
+                        &cvt,
+                        _1, _2, _3, _4, _5, _6, _7));
+    }
 
-	G3D::Ray MouseCommand::getSearchRay(const UIEvent& uiEvent) const
-	{
-		return getSearchRay(uiEvent, workspace);
-	}
 
-	G3D::Ray MouseCommand::getUnitMouseRay(const UIEvent& uiEvent, ICameraOwner* _workspace)
-	{
-		return _workspace->getGCamera().worldRay(
-			uiEvent.mousePosition.x, 
-			uiEvent.mousePosition.y, 
-			G3D::Rect2D::xyxy(0.0f, 0.0f, uiEvent.windowSize.x, uiEvent.windowSize.y)
-		);
-	}
+    namespace {
+        boost::program_options::detail::utf8_codecvt_facet
+            utf8_facet;
+    }
+    
+    BOOST_PROGRAM_OPTIONS_DECL std::wstring
+    from_utf8(const std::string& s)
+    {
+        return from_8_bit(s, utf8_facet);
+    }
+    
+    BOOST_PROGRAM_OPTIONS_DECL std::string
+    to_utf8(const std::wstring& s)
+    {
+        return to_8_bit(s, utf8_facet);
+    }
 
-	G3D::Ray MouseCommand::getUnitMouseRay(const UIEvent& uiEvent) const
-	{
-		return getUnitMouseRay(uiEvent, workspace);
-	}
+    BOOST_PROGRAM_OPTIONS_DECL std::wstring
+    from_local_8_bit(const std::string& s)
+    {
+        typedef codecvt<wchar_t, char, mbstate_t> facet_type;
+        return from_8_bit(s, 
+                          BOOST_USE_FACET(facet_type, locale()));
+    }
 
-	PartInstance* MouseCommand::getPart(const UIEvent& uiEvent, const HitTestFilter* filter, G3D::Vector3& hitWorld)
-	{
-		G3D::Ray unitRay = getUnitMouseRay(uiEvent);
-		ContactManager& contactManager = workspace->getWorld()->getContactManager();
+    BOOST_PROGRAM_OPTIONS_DECL std::string
+    to_local_8_bit(const std::wstring& s)
+    {
+        typedef codecvt<wchar_t, char, mbstate_t> facet_type;
+        return to_8_bit(s, 
+                        BOOST_USE_FACET(facet_type, locale()));                        
+    }
+#endif
 
-		std::vector<const Primitive*> ignorePrims;
-		static_cast<ICameraOwner*>(workspace)->getCameraIgnorePrimitives(ignorePrims);
+    namespace program_options
+    {
+        BOOST_PROGRAM_OPTIONS_DECL std::string to_internal(const std::string& s)
+        {
+            return s;
+        }
 
-		if (Camera* camera = workspace->getCamera())
-		{
-			if (ICharacterSubject* subject = dynamic_cast<ICharacterSubject*>(camera->getCameraSubject()))
-			{
-				subject->getCameraIgnorePrimitives(ignorePrims);
-			}
-		}
+#ifndef BOOST_NO_STD_WSTRING
+        BOOST_PROGRAM_OPTIONS_DECL std::string to_internal(const std::wstring& s)
+        {
+            return to_utf8(s);
+        }
+#endif
+    }
 
-		PartInstance* part = getMousePart(unitRay, contactManager, ignorePrims, filter, hitWorld, 2048.0f);
 
-		if (!part)
-			hitWorld = unitRay.origin + unitRay.direction * 10000.0f;
-
-		return part;
-	}
-
-	PartInstance* MouseCommand::getUnlockedPart(const UIEvent& uiEvent, G3D::Vector3& hitWorld)
-	{
-		Unlocked filter;
-		return getPart(uiEvent, &filter, hitWorld);
-	}
-
-	PartInstance* MouseCommand::getPartByLocalCharacter(const UIEvent& uiEvent, G3D::Vector3& hitWorld)
-	{
-		PartByLocalCharacter filter(workspace);
-		return getPart(uiEvent, &filter, hitWorld);
-	}
-
-	void MouseCommand::capture()
-	{
-		RBXASSERT(!workspace->getCurrentMouseCommand()->captured());
-		capturedMouse = true;
-	}
-
-	Instance* MouseCommand::getTopSelectable3d(PartInstance* part)
-	{
-		Instance* current = part;
-		Instance* top = part;
-
-		while (!dynamic_cast<Workspace*>(current->getParent()))
-		{
-			current = current->getParent();
-			if (dynamic_cast<ISelectable3d*>(current))
-				top = current;
-		}
-		
-		return top;
-	}
 }

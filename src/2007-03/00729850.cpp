@@ -1,123 +1,65 @@
-// from server: 92% by colin
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/FlagStand.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.34.1-dll libs/signals/src/trackable.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/FlagStand.h"
-#include "v8datamodel/Flag.h"
+// Boost.Signals library
 
-namespace RBX
-{
-	static Reflection::PropDescriptor<FlagStand, BrickColor> prop_Color("TeamColor", "Data", &FlagStand::getTeamColor, &FlagStand::setTeamColor, Reflection::PropertyDescriptor::STANDARD);
-	static Reflection::SignalDesc<FlagStand, void(boost::shared_ptr<Instance>)> event_FlagCaptured("FlagCaptured", "Player");
+// Copyright Douglas Gregor 2001-2004. Use, modification and
+// distribution is subject to the Boost Software License, Version
+// 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
-	FlagStand::FlagStand()
-	{
-		setName("FlagStand");
-	}
+// For more information, see http://www.boost.org
 
-	BrickColor FlagStand::getTeamColor() const
-	{
-		return teamColor;
-	}
+#define BOOST_SIGNALS_SOURCE
 
-	void FlagStand::setTeamColor(BrickColor color)
-	{
-		teamColor = color;
-		raisePropertyChanged(PartInstance::prop_Color);
-	}
+#include <boost/signals/trackable.hpp>
+#include <algorithm>
 
-	void FlagStand::AffixFlag(Flag* flag)
-	{
-		if (!GetFlag())
-		{
-			flag->setParent(getParent());
+namespace boost {
+  namespace BOOST_SIGNALS_NAMESPACE {
+    void trackable::signal_disconnected(void* obj, void* data)
+    {
+      trackable* self = reinterpret_cast<trackable*>(obj);
+      connection_iterator* signal =
+        reinterpret_cast<connection_iterator*>(data);
 
-			PartInstance* handle = flag->getHandle();
+      // If we're dying, don't bother erasing the connection from the list;
+      // it'll be gone anyway
+      if (!self->dying) {
+        self->connected_signals.erase(*signal);
+      }
 
-			handle->setCoordinateFrame(G3D::CoordinateFrame());
+      // This iterator pointer won't ever be used again
+      delete signal;
+    }
 
-			G3D::Vector3 location = getLocation().translation;
-			location.y += 0.5f;
+    void
+    trackable::signal_connected(connection c,
+                                BOOST_SIGNALS_NAMESPACE::detail::bound_object& binding) const
+    {
+      // Insert the connection
+      connection_iterator pos =
+        connected_signals.insert(connected_signals.end(), c);
 
-			handle->moveToPoint(location);
-			handle->join();
-		}
-	}
+      // Make this copy of the object disconnect when destroyed
+      pos->set_controlling();
 
-	Flag* FlagStand::GetFlag()
-	{
-		Primitive* primitive = getPrimitive();
+      binding.obj = const_cast<void*>(reinterpret_cast<const void*>(this));
+      binding.data = reinterpret_cast<void*>(new connection_iterator(pos));
+      binding.disconnect = &signal_disconnected;
+    }
 
-		for (RigidJoint* current = primitive->getFirstRigid(); current != NULL; current = primitive->getNextRigid(current))
-		{
-			for (int i = 0; i < 2; i++)
-			{
-				Flag* flag = dynamic_cast<Flag*>(PartInstance::fromPrimitive(current->getPrimitive(i))->getParent());
-				if (flag)
-					return flag;
-			}
-		}
-
-		return NULL;
-	}
-
-	void FlagStand::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
-	{
-		Instance::onServiceProvider(oldProvider, newProvider);
-
-		if (!oldProvider)
-		{
-			FlagStandService* flagStandService = ServiceProvider::create<FlagStandService>(newProvider);
-			RBXASSERT(flagStandService);
-
-			flagStandService->RegisterFlagStand(this);
-
-			standTouched = PartInstance::event_Touched.connect(this, boost::bind(&FlagStand::onEvent_standTouched, this, _1));
-		}
-
-		if (!newProvider)
-		{
-			FlagStandService* flagStandService = ServiceProvider::create<FlagStandService>(oldProvider);
-			RBXASSERT(flagStandService);
-
-			flagStandService->UnregisterFlagStand(this);
-
-			standTouched.disconnect();
-		}
-	}
-
-	FlagStandService::FlagStandService()
-	{
-		setName("FlagStandService");
-		propArchivable.setValue(this, false);
-	}
-
-	FlagStandService::~FlagStandService() {}
-
-	FlagStand* FlagStandService::FindStandWithFlag(Flag* f)
-	{
-		if (flagStands.empty())
-			return NULL;
-
-		for (std::list<FlagStand*>::const_iterator iter = flagStands.begin(); iter != flagStands.end(); iter++)
-		{
-			if ((*iter)->GetFlag() == f)
-				return *iter;
-		}
-
-		return NULL;
-	}
-
-	void FlagStandService::RegisterFlagStand(FlagStand* s)
-	{
-		flagStands.push_back(s);
-	}
-
-	void FlagStandService::UnregisterFlagStand(FlagStand* s)
-	{
-		flagStands.remove(s);
-	}
+    trackable::~trackable()
+    {
+      dying = true;
+    }
+  } // end namespace BOOST_SIGNALS_NAMESPACE
 }
+
+#ifndef BOOST_MSVC
+// Explicit instantiations to keep in the library
+template class std::list<boost::BOOST_SIGNALS_NAMESPACE::connection>;
+#endif

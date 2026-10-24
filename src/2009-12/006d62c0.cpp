@@ -1,16 +1,15 @@
 // from server: 97% by atomic.potato
-typedef int (__cdecl *FunctionType)(int);
-typedef int (__stdcall *MethodType)(void *, int);
+typedef char BOOL;
 
 extern "C" int __cdecl sub_7f5286(int);
-extern "C" int (__thiscall *sub_98b768)(void *, int);
+extern "C" int (__thiscall *sub_98b768)(void*, int);
 
 struct S
 {
-    int f();
+    char f();
 };
 
-int S::f()
+char S::f()
 {
     int value = *(int *)((char *)this + 12);
     void *object = *(void **)((char *)value + 0xa90);

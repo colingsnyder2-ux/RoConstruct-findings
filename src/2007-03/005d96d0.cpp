@@ -1,681 +1,568 @@
-// from server: 84% by colin
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.6.4 OgreAnimation.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.34.1-dll libs/program_options/src/options_description.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-    (Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org/
+// Copyright Vladimir Prus 2002-2004.
+// Copyright Bertolt Mildner 2004.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt
+// or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-Copyright (c) 2000-2006 Torus Knot Software Ltd
-Also see acknowledgements in Readme.html
 
-This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the Free Software
-Foundation; either version 2 of the License, or (at your option) any later
-version.
+#define BOOST_PROGRAM_OPTIONS_SOURCE
+#include <boost/program_options/config.hpp>
+#include <boost/program_options/options_description.hpp>
+// FIXME: this is only to get multiple_occureces class
+// should move that to a separate headers.
+#include <boost/program_options/parsers.hpp>
 
-This program is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
 
-You should have received a copy of the GNU Lesser General Public License along with
-this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-http://www.gnu.org/copyleft/lesser.txt.
+#include <boost/lexical_cast.hpp>
+#include <boost/tokenizer.hpp>
+#include <boost/detail/workaround.hpp>
+#include <boost/throw_exception.hpp>
 
-You may alternatively use this source under the terms of a specific version of
-the OGRE Unrestricted License provided you have obtained such a license from
-Torus Knot Software Ltd.
------------------------------------------------------------------------------
-*/
-#include "OgreStableHeaders.h"
-#include "OgreAnimation.h"
-#include "OgreKeyFrame.h"
-#include "OgreException.h"
-#include "OgreSkeleton.h"
-#include "OgreBone.h"
-#include "OgreEntity.h"
-#include "OgreSubEntity.h"
-#include "OgreMesh.h"
-#include "OgreSubMesh.h"
-#include "OgreStringConverter.h"
+#include <cassert>
+#include <climits>
+#include <cstring>
+#include <cstdarg>
+#include <sstream>
+#include <iterator>
+using namespace std;
 
-namespace Ogre {
+namespace boost { namespace program_options {
 
-    Animation::InterpolationMode Animation::msDefaultInterpolationMode = Animation::IM_LINEAR;
-    Animation::RotationInterpolationMode 
-        Animation::msDefaultRotationInterpolationMode = Animation::RIM_LINEAR;
-    //---------------------------------------------------------------------
-    Animation::Animation(const String& name, Real length)
-        : mName(name)
-        , mLength(length)
-        , mInterpolationMode(msDefaultInterpolationMode)
-        , mRotationInterpolationMode(msDefaultRotationInterpolationMode)
-        , mKeyFrameTimesDirty(false)
+    option_description::option_description()
     {
     }
-    //---------------------------------------------------------------------
-    Animation::~Animation()
+    
+    option_description::
+    option_description(const char* name,
+                       const value_semantic* s)
+    : m_value_semantic(s)
     {
-        destroyAllTracks();
+        this->set_name(name);
     }
-    //---------------------------------------------------------------------
-    Real Animation::getLength(void) const
+                                           
+
+    option_description::
+    option_description(const char* name,
+                       const value_semantic* s,
+                       const char* description)
+    : m_description(description), m_value_semantic(s)
     {
-        return mLength;
+        this->set_name(name);
     }
-	//---------------------------------------------------------------------
-	void Animation::setLength(Real len)
-	{
-		mLength = len;
-	}
-    //---------------------------------------------------------------------
-    NodeAnimationTrack* Animation::createNodeTrack(unsigned short handle)
+
+    option_description::~option_description()
     {
-        if (hasNodeTrack(handle))
-        {
-            OGRE_EXCEPT(Exception::ERR_DUPLICATE_ITEM, 
-                "Node track with the specified handle " +
-                StringConverter::toString(handle) + " already exists",
-                "Animation::createNodeTrack");
-        }
-
-        NodeAnimationTrack* ret = OGRE_NEW NodeAnimationTrack(this, handle);
-
-        mNodeTrackList[handle] = ret;
-        return ret;
     }
-    //---------------------------------------------------------------------
-    NodeAnimationTrack* Animation::createNodeTrack(unsigned short handle, Node* node)
+
+    option_description::match_result
+    option_description::match(const std::string& option, bool approx) const
     {
-        NodeAnimationTrack* ret = createNodeTrack(handle);
+        match_result result = no_match;
+        if (!m_long_name.empty()) {
 
-        ret->setAssociatedNode(node);
-
-        return ret;
-    }
-    //---------------------------------------------------------------------
-    unsigned short Animation::getNumNodeTracks(void) const
-    {
-        return (unsigned short)mNodeTrackList.size();
-    }
-	//---------------------------------------------------------------------
-	bool Animation::hasNodeTrack(unsigned short handle) const
-	{
-		return (mNodeTrackList.find(handle) != mNodeTrackList.end());
-	}
-    //---------------------------------------------------------------------
-    NodeAnimationTrack* Animation::getNodeTrack(unsigned short handle) const
-    {
-        NodeTrackList::const_iterator i = mNodeTrackList.find(handle);
-
-        if (i == mNodeTrackList.end())
-        {
-            OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, 
-                "Cannot find node track with the specified handle " +
-                StringConverter::toString(handle),
-                "Animation::getNodeTrack");
-        }
-
-        return i->second;
-
-    }
-    //---------------------------------------------------------------------
-    void Animation::destroyNodeTrack(unsigned short handle)
-    {
-        NodeTrackList::iterator i = mNodeTrackList.find(handle);
-
-		if (i != mNodeTrackList.end())
-		{
-			OGRE_DELETE i->second;
-			mNodeTrackList.erase(i);
-            _keyFrameListChanged();
-		}
-    }
-    //---------------------------------------------------------------------
-    void Animation::destroyAllNodeTracks(void)
-    {
-        NodeTrackList::iterator i;
-        for (i = mNodeTrackList.begin(); i != mNodeTrackList.end(); ++i)
-        {
-            OGRE_DELETE i->second;
-        }
-        mNodeTrackList.clear();
-        _keyFrameListChanged();
-    }
-	//---------------------------------------------------------------------
-	NumericAnimationTrack* Animation::createNumericTrack(unsigned short handle)
-	{
-        if (hasNumericTrack(handle))
-        {
-            OGRE_EXCEPT(Exception::ERR_DUPLICATE_ITEM, 
-                "Numeric track with the specified handle " +
-                StringConverter::toString(handle) + " already exists",
-                "Animation::createNumericTrack");
-        }
-
-		NumericAnimationTrack* ret = OGRE_NEW NumericAnimationTrack(this, handle);
-
-		mNumericTrackList[handle] = ret;
-		return ret;
-	}
-	//---------------------------------------------------------------------
-	NumericAnimationTrack* Animation::createNumericTrack(unsigned short handle, 
-		const AnimableValuePtr& anim)
-	{
-		NumericAnimationTrack* ret = createNumericTrack(handle);
-
-		ret->setAssociatedAnimable(anim);
-
-		return ret;
-	}
-	//---------------------------------------------------------------------
-	unsigned short Animation::getNumNumericTracks(void) const
-	{
-		return (unsigned short)mNumericTrackList.size();
-	}
-	//---------------------------------------------------------------------
-	bool Animation::hasNumericTrack(unsigned short handle) const
-	{
-		return (mNumericTrackList.find(handle) != mNumericTrackList.end());
-	}
-	//---------------------------------------------------------------------
-	NumericAnimationTrack* Animation::getNumericTrack(unsigned short handle) const
-	{
-		NumericTrackList::const_iterator i = mNumericTrackList.find(handle);
-
-		if (i == mNumericTrackList.end())
-		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, 
-				"Cannot find numeric track with the specified handle " +
-                StringConverter::toString(handle),
-				"Animation::getNumericTrack");
-		}
-
-		return i->second;
-
-	}
-	//---------------------------------------------------------------------
-	void Animation::destroyNumericTrack(unsigned short handle)
-	{
-		NumericTrackList::iterator i = mNumericTrackList.find(handle);
-
-		if (i != mNumericTrackList.end())
-		{
-			OGRE_DELETE i->second;
-			mNumericTrackList.erase(i);
-            _keyFrameListChanged();
-		}
-	}
-	//---------------------------------------------------------------------
-	void Animation::destroyAllNumericTracks(void)
-	{
-		NumericTrackList::iterator i;
-		for (i = mNumericTrackList.begin(); i != mNumericTrackList.end(); ++i)
-		{
-			OGRE_DELETE i->second;
-		}
-		mNumericTrackList.clear();
-        _keyFrameListChanged();
-	}
-	//---------------------------------------------------------------------
-	VertexAnimationTrack* Animation::createVertexTrack(unsigned short handle, 
-		VertexAnimationType animType)
-	{
-        if (hasVertexTrack(handle))
-        {
-            OGRE_EXCEPT(Exception::ERR_DUPLICATE_ITEM, 
-                "Vertex track with the specified handle " +
-                StringConverter::toString(handle) + " already exists",
-                "Animation::createVertexTrack");
-        }
-
-		VertexAnimationTrack* ret = OGRE_NEW VertexAnimationTrack(this, handle, animType);
-
-		mVertexTrackList[handle] = ret;
-		return ret;
-
-	}
-	//---------------------------------------------------------------------
-	VertexAnimationTrack* Animation::createVertexTrack(unsigned short handle, 
-		VertexData* data, VertexAnimationType animType)
-	{
-		VertexAnimationTrack* ret = createVertexTrack(handle, animType);
-
-		ret->setAssociatedVertexData(data);
-
-		return ret;
-	}
-	//---------------------------------------------------------------------
-	unsigned short Animation::getNumVertexTracks(void) const
-	{
-		return (unsigned short)mVertexTrackList.size();
-	}
-	//---------------------------------------------------------------------
-	bool Animation::hasVertexTrack(unsigned short handle) const
-	{
-		return (mVertexTrackList.find(handle) != mVertexTrackList.end());
-	}
-	//---------------------------------------------------------------------
-	VertexAnimationTrack* Animation::getVertexTrack(unsigned short handle) const
-	{
-		VertexTrackList::const_iterator i = mVertexTrackList.find(handle);
-
-		if (i == mVertexTrackList.end())
-		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, 
-				"Cannot find vertex track with the specified handle " +
-                StringConverter::toString(handle),
-				"Animation::getVertexTrack");
-		}
-
-		return i->second;
-
-	}
-	//---------------------------------------------------------------------
-	void Animation::destroyVertexTrack(unsigned short handle)
-	{
-		VertexTrackList::iterator i = mVertexTrackList.find(handle);
-
-		if (i != mVertexTrackList.end())
-		{
-			OGRE_DELETE  i->second;
-			mVertexTrackList.erase(i);
-            _keyFrameListChanged();
-		}
-	}
-	//---------------------------------------------------------------------
-	void Animation::destroyAllVertexTracks(void)
-	{
-		VertexTrackList::iterator i;
-		for (i = mVertexTrackList.begin(); i != mVertexTrackList.end(); ++i)
-		{
-			OGRE_DELETE  i->second;
-		}
-		mVertexTrackList.clear();
-        _keyFrameListChanged();
-	}
-	//---------------------------------------------------------------------
-	void Animation::destroyAllTracks(void)
-	{
-		destroyAllNodeTracks();
-		destroyAllNumericTracks();
-		destroyAllVertexTracks();
-	}
-    //---------------------------------------------------------------------
-    const String& Animation::getName(void) const
-    {
-        return mName;
-    }
-    //---------------------------------------------------------------------
-	void Animation::apply(Real timePos, Real weight, Real scale)
-    {
-        // Calculate time index for fast keyframe search
-        TimeIndex timeIndex = _getTimeIndex(timePos);
-
-        NodeTrackList::iterator i;
-        for (i = mNodeTrackList.begin(); i != mNodeTrackList.end(); ++i)
-        {
-            i->second->apply(timeIndex, weight, scale);
-        }
-		NumericTrackList::iterator j;
-		for (j = mNumericTrackList.begin(); j != mNumericTrackList.end(); ++j)
-		{
-			j->second->apply(timeIndex, weight, scale);
-		}
-		VertexTrackList::iterator k;
-		for (k = mVertexTrackList.begin(); k != mVertexTrackList.end(); ++k)
-		{
-			k->second->apply(timeIndex, weight, scale);
-		}
-
-    }
-    //---------------------------------------------------------------------
-    void Animation::apply(Skeleton* skel, Real timePos, Real weight, 
-		Real scale)
-    {
-        // Calculate time index for fast keyframe search
-        TimeIndex timeIndex = _getTimeIndex(timePos);
-
-        NodeTrackList::iterator i;
-        for (i = mNodeTrackList.begin(); i != mNodeTrackList.end(); ++i)
-        {
-            // get bone to apply to 
-            Bone* b = skel->getBone(i->first);
-            i->second->applyToNode(b, timeIndex, weight, scale);
-        }
-
-
-    }
-    //---------------------------------------------------------------------
-    void Animation::apply(Skeleton* skel, Real timePos, float weight,
-      const AnimationState::BoneBlendMask* blendMask, Real scale)
-    {
-      // Calculate time index for fast keyframe search
-      TimeIndex timeIndex = _getTimeIndex(timePos);
-
-      NodeTrackList::iterator i;
-      for (i = mNodeTrackList.begin(); i != mNodeTrackList.end(); ++i)
-      {
-        // get bone to apply to 
-        Bone* b = skel->getBone(i->first);
-		i->second->applyToNode(b, timeIndex, (*blendMask)[b->getHandle()] * weight, scale);
-      }
-    }
-	//---------------------------------------------------------------------
-	void Animation::apply(Entity* entity, Real timePos, Real weight, 
-		bool software, bool hardware)
-	{
-        // Calculate time index for fast keyframe search
-        TimeIndex timeIndex = _getTimeIndex(timePos);
-
-		VertexTrackList::iterator i;
-		for (i = mVertexTrackList.begin(); i != mVertexTrackList.end(); ++i)
-		{
-			unsigned short handle = i->first;
-			VertexAnimationTrack* track = i->second;
-
-			VertexData* swVertexData;
-			VertexData* hwVertexData;
-			VertexData* origVertexData;
-			bool firstAnim = false;
-			if (handle == 0)
-			{
-				// shared vertex data
-				firstAnim = !entity->_getBuffersMarkedForAnimation();
-				swVertexData = entity->_getSoftwareVertexAnimVertexData();
-				hwVertexData = entity->_getHardwareVertexAnimVertexData();
-				origVertexData = entity->getMesh()->sharedVertexData;
-				entity->_markBuffersUsedForAnimation();
-			}
-			else
-			{
-				// sub entity vertex data (-1)
-				SubEntity* s = entity->getSubEntity(handle - 1);
-				// Skip this track if subentity is not visible
-				if (!s->isVisible())
-					continue;
-				firstAnim = !s->_getBuffersMarkedForAnimation();
-				swVertexData = s->_getSoftwareVertexAnimVertexData();
-				hwVertexData = s->_getHardwareVertexAnimVertexData();
-				origVertexData = s->getSubMesh()->vertexData;
-				s->_markBuffersUsedForAnimation();
-			}
-			// Apply to both hardware and software, if requested
-			if (software)
-			{
-				if (firstAnim && track->getAnimationType() == VAT_POSE)
-				{
-					// First time through for a piece of pose animated vertex data
-					// We need to copy the original position values to the temp accumulator
-					const VertexElement* origelem = 
-						origVertexData->vertexDeclaration->findElementBySemantic(VES_POSITION);
-					const VertexElement* destelem = 
-						swVertexData->vertexDeclaration->findElementBySemantic(VES_POSITION);
-					HardwareVertexBufferSharedPtr origBuffer = 
-						origVertexData->vertexBufferBinding->getBuffer(origelem->getSource());
-					HardwareVertexBufferSharedPtr destBuffer = 
-						swVertexData->vertexBufferBinding->getBuffer(destelem->getSource());
-					destBuffer->copyData(*origBuffer.get(), 0, 0, destBuffer->getSizeInBytes(), true);
-				}
-				track->setTargetMode(VertexAnimationTrack::TM_SOFTWARE);
-				track->applyToVertexData(swVertexData, timeIndex, weight, 
-					&(entity->getMesh()->getPoseList()));
-			}
-			if (hardware)
-			{
-				track->setTargetMode(VertexAnimationTrack::TM_HARDWARE);
-				track->applyToVertexData(hwVertexData, timeIndex, weight, 
-					&(entity->getMesh()->getPoseList()));
-			}
-		}
-
-	}
-    //---------------------------------------------------------------------
-    void Animation::setInterpolationMode(InterpolationMode im)
-    {
-        mInterpolationMode = im;
-    }
-    //---------------------------------------------------------------------
-    Animation::InterpolationMode Animation::getInterpolationMode(void) const
-    {
-        return mInterpolationMode;
-    }
-    //---------------------------------------------------------------------
-    void Animation::setDefaultInterpolationMode(InterpolationMode im)
-    {
-        msDefaultInterpolationMode = im;
-    }
-    //---------------------------------------------------------------------
-    Animation::InterpolationMode Animation::getDefaultInterpolationMode(void)
-    {
-        return msDefaultInterpolationMode;
-    }
-    //---------------------------------------------------------------------
-    const Animation::NodeTrackList& Animation::_getNodeTrackList(void) const
-    {
-        return mNodeTrackList;
-
-    }
-	//---------------------------------------------------------------------
-	const Animation::NumericTrackList& Animation::_getNumericTrackList(void) const
-	{
-		return mNumericTrackList;
-	}
-    //---------------------------------------------------------------------
-    const Animation::VertexTrackList& Animation::_getVertexTrackList(void) const
-    {
-        return mVertexTrackList;
-    }
-    //---------------------------------------------------------------------
-    void Animation::setRotationInterpolationMode(RotationInterpolationMode im)
-    {
-        mRotationInterpolationMode = im;
-    }
-    //---------------------------------------------------------------------
-    Animation::RotationInterpolationMode Animation::getRotationInterpolationMode(void) const
-    {
-        return mRotationInterpolationMode;
-    }
-    //---------------------------------------------------------------------
-    void Animation::setDefaultRotationInterpolationMode(RotationInterpolationMode im)
-    {
-        msDefaultRotationInterpolationMode = im;
-    }
-    //---------------------------------------------------------------------
-    Animation::RotationInterpolationMode Animation::getDefaultRotationInterpolationMode(void)
-    {
-        return msDefaultRotationInterpolationMode;
-    }
-    //---------------------------------------------------------------------
-	void Animation::optimise(bool discardIdentityNodeTracks)
-	{
-		optimiseNodeTracks(discardIdentityNodeTracks);
-		optimiseVertexTracks();
-		
-	}
-	//-----------------------------------------------------------------------
-    void Animation::_collectIdentityNodeTracks(TrackHandleList& tracks) const
-    {
-		NodeTrackList::const_iterator i, iend;
-        iend = mNodeTrackList.end();
-		for (i = mNodeTrackList.begin(); i != iend; ++i)
-		{
-			const NodeAnimationTrack* track = i->second;
-			if (track->hasNonZeroKeyFrames())
-			{
-                tracks.erase(i->first);
+            if (*m_long_name.rbegin() == '*')
+            {
+                // The name ends with '*'. Any specified name with the given
+                // prefix is OK.
+                if (option.find(m_long_name.substr(0, m_long_name.length()-1))
+                    == 0)
+                    result = approximate_match;
             }
-		}
+
+            if (approx)
+            {
+                if (m_long_name.find(option) == 0)
+                    if (m_long_name == option)
+                        result = full_match;
+                    else
+                        result = approximate_match;
+            }
+            else
+            {
+                if (m_long_name == option)
+                    result = full_match;
+            }
+        }
+         
+        if (m_short_name == option)
+            result = full_match;
+
+        return result;        
     }
-	//-----------------------------------------------------------------------
-    void Animation::_destroyNodeTracks(const TrackHandleList& tracks)
+
+    const std::string& 
+    option_description::key(const std::string& option) const
+    {        
+        if (!m_long_name.empty()) 
+            if (m_long_name.find('*') != string::npos)
+                // The '*' character means we're long_name
+                // matches only part of the input. So, returning
+                // long name will remove some of the information,
+                // and we have to return the option as specified
+                // in the source.
+                return option;
+            else
+                return m_long_name;
+        else
+            return m_short_name;
+    }
+
+    const std::string&
+    option_description::long_name() const
     {
-        TrackHandleList::const_iterator t, tend;
-        tend = tracks.end();
-		for (t = tracks.begin(); t != tend; ++t)
-		{
-			destroyNodeTrack(*t);
-		}
+        return m_long_name;
     }
-	//-----------------------------------------------------------------------
-	void Animation::optimiseNodeTracks(bool discardIdentityTracks)
-	{
-		// Iterate over the node tracks and identify those with no useful keyframes
-		std::list<unsigned short> tracksToDestroy;
-		NodeTrackList::iterator i;
-		for (i = mNodeTrackList.begin(); i != mNodeTrackList.end(); ++i)
-		{
-			NodeAnimationTrack* track = i->second;
-			if (discardIdentityTracks && !track->hasNonZeroKeyFrames())
-			{
-				// mark the entire track for destruction
-				tracksToDestroy.push_back(i->first);
-			}
-			else
-			{
-				track->optimise();
-			}
 
-		}
-
-		// Now destroy the tracks we marked for death
-		for(std::list<unsigned short>::iterator h = tracksToDestroy.begin();
-			h != tracksToDestroy.end(); ++h)
-		{
-			destroyNodeTrack(*h);
-		}
-	}
-	//-----------------------------------------------------------------------
-	void Animation::optimiseVertexTracks(void)
-	{
-		// Iterate over the node tracks and identify those with no useful keyframes
-		std::list<unsigned short> tracksToDestroy;
-		VertexTrackList::iterator i;
-		for (i = mVertexTrackList.begin(); i != mVertexTrackList.end(); ++i)
-		{
-			VertexAnimationTrack* track = i->second;
-			if (!track->hasNonZeroKeyFrames())
-			{
-				// mark the entire track for destruction
-				tracksToDestroy.push_back(i->first);
-			}
-			else
-			{
-				track->optimise();
-			}
-
-		}
-
-		// Now destroy the tracks we marked for death
-		for(std::list<unsigned short>::iterator h = tracksToDestroy.begin();
-			h != tracksToDestroy.end(); ++h)
-		{
-			destroyVertexTrack(*h);
-		}
-
-	}
-	//-----------------------------------------------------------------------
-	Animation* Animation::clone(const String& newName) const
-	{
-		Animation* newAnim = OGRE_NEW Animation(newName, mLength);
-        newAnim->mInterpolationMode = mInterpolationMode;
-        newAnim->mRotationInterpolationMode = mRotationInterpolationMode;
-		
-		// Clone all tracks
-		for (NodeTrackList::const_iterator i = mNodeTrackList.begin();
-			i != mNodeTrackList.end(); ++i)
-		{
-			i->second->_clone(newAnim);
-		}
-		for (NumericTrackList::const_iterator i = mNumericTrackList.begin();
-			i != mNumericTrackList.end(); ++i)
-		{
-			i->second->_clone(newAnim);
-		}
-		for (VertexTrackList::const_iterator i = mVertexTrackList.begin();
-			i != mVertexTrackList.end(); ++i)
-		{
-			i->second->_clone(newAnim);
-		}
-
-        newAnim->_keyFrameListChanged();
-		return newAnim;
-
-	}
-    //-----------------------------------------------------------------------
-    TimeIndex Animation::_getTimeIndex(Real timePos) const
+    option_description&
+    option_description::set_name(const char* _name)
     {
-        // Uncomment following statement for work as previous
-        //return timePos;
-
-        // Build keyframe time list on demand
-        if (mKeyFrameTimesDirty)
-        {
-            buildKeyFrameTimeList();
+        std::string name(_name);
+        string::size_type n = name.find(',');
+        if (n != string::npos) {
+            assert(n == name.size()-2);
+            m_long_name = name.substr(0, n);
+            m_short_name = '-' + name.substr(n+1,1);
+        } else {
+            m_long_name = name;
         }
-
-        // Wrap time
-        Real totalAnimationLength = mLength;
-
-        while (timePos > totalAnimationLength && totalAnimationLength > 0.0f)
-        {
-            timePos -= totalAnimationLength;
-        }
-
-        // Search for global index
-        KeyFrameTimeList::iterator it =
-            std::lower_bound(mKeyFrameTimes.begin(), mKeyFrameTimes.end(), timePos);
-
-        return TimeIndex(timePos, std::distance(mKeyFrameTimes.begin(), it));
+        return *this;
     }
-    //-----------------------------------------------------------------------
-    void Animation::buildKeyFrameTimeList(void) const
+
+    const std::string&
+    option_description::description() const
     {
-        NodeTrackList::const_iterator i;
-		NumericTrackList::const_iterator j;
-		VertexTrackList::const_iterator k;
-
-        // Clear old keyframe times
-        mKeyFrameTimes.clear();
-
-        // Collect all keyframe times from each track
-        for (i = mNodeTrackList.begin(); i != mNodeTrackList.end(); ++i)
-        {
-            i->second->_collectKeyFrameTimes(mKeyFrameTimes);
-        }
-		for (j = mNumericTrackList.begin(); j != mNumericTrackList.end(); ++j)
-		{
-            j->second->_collectKeyFrameTimes(mKeyFrameTimes);
-		}
-		for (k = mVertexTrackList.begin(); k != mVertexTrackList.end(); ++k)
-		{
-            k->second->_collectKeyFrameTimes(mKeyFrameTimes);
-		}
-
-        // Build global index to local index map for each track
-        for (i = mNodeTrackList.begin(); i != mNodeTrackList.end(); ++i)
-        {
-            i->second->_buildKeyFrameIndexMap(mKeyFrameTimes);
-        }
-		for (j = mNumericTrackList.begin(); j != mNumericTrackList.end(); ++j)
-		{
-            j->second->_buildKeyFrameIndexMap(mKeyFrameTimes);
-		}
-		for (k = mVertexTrackList.begin(); k != mVertexTrackList.end(); ++k)
-		{
-            k->second->_buildKeyFrameIndexMap(mKeyFrameTimes);
-		}
-
-        // Reset dirty flag
-        mKeyFrameTimesDirty = false;
+        return m_description;
     }
 
-}
+    shared_ptr<const value_semantic>
+    option_description::semantic() const
+    {
+        return m_value_semantic;
+    }
+    
+    std::string 
+    option_description::format_name() const
+    {
+        if (!m_short_name.empty())
+            return string(m_short_name).append(" [ --").
+            append(m_long_name).append(" ]");
+        else
+            return string("--").append(m_long_name);
+    }
 
+    std::string 
+    option_description::format_parameter() const
+    {
+        if (m_value_semantic->max_tokens() != 0)
+            return m_value_semantic->name();
+        else
+            return "";
+    }
 
+    options_description_easy_init::
+    options_description_easy_init(options_description* owner)
+    : owner(owner)
+    {}
+
+    options_description_easy_init&
+    options_description_easy_init::
+    operator()(const char* name,
+               const char* description)
+    {
+        // Create untypes semantic which accepts zero tokens: i.e. 
+        // no value can be specified on command line.
+        // FIXME: does not look exception-safe
+        shared_ptr<option_description> d(
+            new option_description(name, new untyped_value(true), description));
+
+        owner->add(d);
+        return *this;
+    }
+
+    options_description_easy_init&
+    options_description_easy_init::
+    operator()(const char* name,
+               const value_semantic* s)
+    {
+        shared_ptr<option_description> d(new option_description(name, s));
+        owner->add(d);
+        return *this;
+    }
+
+    options_description_easy_init&
+    options_description_easy_init::
+    operator()(const char* name,
+               const value_semantic* s,
+               const char* description)
+    {
+        shared_ptr<option_description> d(new option_description(name, s, description));
+
+        owner->add(d);
+        return *this;
+    }
+
+    options_description::options_description(unsigned line_length)
+    : m_line_length(line_length)
+    {}
+
+    options_description::options_description(const string& caption,
+                                             unsigned line_length)
+    : m_caption(caption), m_line_length(line_length)
+    {}
+
+    void
+    options_description::add(shared_ptr<option_description> desc)
+    {
+        m_options.push_back(desc);
+        belong_to_group.push_back(false);
+    }
+
+    options_description&
+    options_description::add(const options_description& desc)
+    {
+        shared_ptr<options_description> d(new options_description(desc));
+        groups.push_back(d);
+
+        for (size_t i = 0; i < desc.m_options.size(); ++i) {
+            add(desc.m_options[i]);
+            belong_to_group.back() = true;
+        }
+
+        return *this;
+    }
+
+    options_description_easy_init
+    options_description::add_options()
+    {       
+        return options_description_easy_init(this);
+    }
+
+    const option_description&
+    options_description::find(const std::string& name, bool approx) const
+    {
+        const option_description* d = find_nothrow(name, approx);
+        if (!d)
+            boost::throw_exception(unknown_option(name));
+        return *d;
+    }
+
+    const std::vector< shared_ptr<option_description> >& 
+    options_description::options() const
+    {
+        return m_options;
+    }
+
+    const option_description* 
+    options_description::find_nothrow(const std::string& name, 
+                                      bool approx) const
+    {
+        int found = -1;
+        // We use linear search because matching specified option
+        // name with the declared option name need to take care about
+        // case sensitivity and trailing '*' and so we can't use simple map.
+        for(unsigned i = 0; i < m_options.size(); ++i)
+        {
+            option_description::match_result r = 
+                m_options[i]->match(name, approx);
+
+            if (r == option_description::no_match)
+                continue;
+
+            // If we have a full patch, and an approximate match,
+            // ignore approximate match instead of reporting error.
+            // Say, if we have options "all" and "all-chroots", then
+            // "--all" on the command line should select the first one,
+            // without ambiguity.
+            //
+            // For now, we don't check the situation when there are 
+            // two full matches. 
+                            
+            if (r == option_description::full_match)
+            {
+                return m_options[i].get();                
+            }
+
+            if (found != -1)
+            {
+                vector<string> alts;
+                // FIXME: the use of 'key' here might not
+                // be the best approach.
+                alts.push_back(m_options[found]->key(name));
+                alts.push_back(m_options[i]->key(name));
+                boost::throw_exception(ambiguous_option(name, alts));
+            }
+            else
+            {
+                found = i;
+            }
+        }
+        if (found != -1) {
+            return m_options[found].get();
+        } else {
+            return 0;
+        }
+    }
+
+    BOOST_PROGRAM_OPTIONS_DECL
+    std::ostream& operator<<(std::ostream& os, const options_description& desc)
+    {
+        desc.print(os);
+        return os;
+    }
+
+    namespace {
+
+        /* Given a string 'par', that contains no newline characters
+           outputs it to 'os' with wordwrapping, that is, as several
+           line.
+
+           Each output line starts with 'indent' space characters, 
+           following by characters from 'par'. The total length of
+           line is no longer than 'line_length'.
+                                      
+        */
+        void format_paragraph(std::ostream& os,
+                              std::string par,
+                              unsigned indent,
+                              unsigned line_length)
+        {                    
+            // Through reminder of this function, 'line_length' will
+            // be the length available for characters, not including
+            // indent.
+            assert(indent < line_length);
+            line_length -= indent;
+
+            // index of tab (if present) is used as additional indent relative
+            // to first_column_width if paragrapth is spanned over multiple
+            // lines if tab is not on first line it is ignored
+            string::size_type par_indent = par.find('\t');
+
+            if (par_indent == string::npos)
+            {
+                par_indent = 0;
+            }
+            else
+            {
+                // only one tab per paragraph allowed
+                if (count(par.begin(), par.end(), '\t') > 1)
+                {
+                    boost::throw_exception(program_options::error(
+                        "Only one tab per paragraph is allowed"));
+                }
+          
+                // erase tab from string
+                par.erase(par_indent, 1);
+
+                // this assert may fail due to user error or 
+                // environment conditions!
+                assert(par_indent < line_length);
+
+                // ignore tab if not on first line
+                if (par_indent >= line_length)
+                {
+                    par_indent = 0;
+                }            
+            }
+          
+            if (par.size() < line_length)
+            {
+                os << par;
+            }
+            else
+            {
+                string::const_iterator       line_begin = par.begin();
+                const string::const_iterator par_end = par.end();
+
+                bool first_line = true; // of current paragraph!        
+            
+                while (line_begin < par_end)  // paragraph lines
+                {
+                    if (!first_line)
+                    {
+                        // If line starts with space, but second character
+                        // is not space, remove the leading space.
+                        // We don't remove double spaces because those
+                        // might be intentianal.
+                        if ((*line_begin == ' ') &&
+                            ((line_begin + 1 < par_end) &&
+                             (*(line_begin + 1) != ' ')))
+                        {
+                            line_begin += 1;  // line_begin != line_end
+                        }
+                    }
+
+                    // Take care to never increment the iterator past
+                    // the end, since MSVC 8.0 (brokenly), assumes that
+                    // doing that, even if no access happens, is a bug.
+                    unsigned remaining = distance(line_begin, par_end);
+                    string::const_iterator line_end = line_begin + 
+                        ((remaining < line_length) ? remaining : line_length);
+            
+                    // prevent chopped words
+                    // Is line_end between two non-space characters?
+                    if ((*(line_end - 1) != ' ') &&
+                        ((line_end < par_end) && (*line_end != ' ')))
+                    {
+                        // find last ' ' in the second half of the current paragraph line
+                        string::const_iterator last_space =
+                            find(reverse_iterator<string::const_iterator>(line_end),
+                                 reverse_iterator<string::const_iterator>(line_begin),
+                                 ' ')
+                            .base();
+                
+                        if (last_space != line_begin)
+                        {                 
+                            // is last_space within the second half of the 
+                            // current line
+                            if ((unsigned)std::distance(last_space, line_end) < 
+                                (line_length - indent) / 2)
+                            {
+                                line_end = last_space;
+                            }
+                        }                                                
+                    } // prevent chopped words
+             
+                    // write line to stream
+                    copy(line_begin, line_end, ostream_iterator<char>(os));
+              
+                    if (first_line)
+                    {
+                        indent += par_indent;
+                        first_line = false;
+                    }
+
+                    // more lines to follow?
+                    if (line_end != par_end)
+                    {
+                        os << '\n';
+                
+                        for(unsigned pad = indent; pad > 0; --pad)
+                        {
+                            os.put(' ');
+                        }                                                        
+                    }
+              
+                    // next line starts after of this line
+                    line_begin = line_end;              
+                } // paragraph lines
+            }          
+        }                              
+        
+        void format_description(std::ostream& os,
+                                const std::string& desc, 
+                                unsigned first_column_width,
+                                unsigned line_length)
+        {
+            // we need to use one char less per line to work correctly if actual
+            // console has longer lines
+            assert(line_length > 1);
+            if (line_length > 1)
+            {
+                --line_length;
+            }
+
+            // line_length must be larger than first_column_width
+            // this assert may fail due to user error or environment conditions!
+            assert(line_length > first_column_width);
+
+            // Note: can't use 'tokenizer' as name of typedef -- borland
+            // will consider uses of 'tokenizer' below as uses of
+            // boost::tokenizer, not typedef.
+            typedef boost::tokenizer<boost::char_separator<char> > tok;
+          
+            tok paragraphs(
+                desc,
+                char_separator<char>("\n", "", boost::keep_empty_tokens));
+          
+            tok::const_iterator       par_iter = paragraphs.begin();                
+            const tok::const_iterator par_end = paragraphs.end();
+
+            while (par_iter != par_end)  // paragraphs
+            {
+                format_paragraph(os, *par_iter, first_column_width, 
+                                 line_length);
+            
+                ++par_iter;
+            
+                // prepair next line if any
+                if (par_iter != par_end)
+                {
+                    os << '\n';
+              
+                    for(unsigned pad = first_column_width; pad > 0; --pad)
+                    {
+                        os.put(' ');
+                    }                    
+                }            
+            }  // paragraphs
+        }
+    
+        void format_one(std::ostream& os, const option_description& opt, 
+                        unsigned first_column_width, unsigned line_length)
+        {
+            stringstream ss;
+            ss << "  " << opt.format_name() << ' ' << opt.format_parameter();
+            
+            // Don't use ss.rdbuf() since g++ 2.96 is buggy on it.
+            os << ss.str();
+
+            if (!opt.description().empty())
+            {
+                for(unsigned pad = first_column_width - ss.str().size(); 
+                    pad > 0; 
+                    --pad)
+                {
+                    os.put(' ');
+                }
+            
+                format_description(os, opt.description(),
+                                   first_column_width, line_length);
+            }
+        }
+    }
+
+    void 
+    options_description::print(std::ostream& os) const
+    {
+        if (!m_caption.empty())
+            os << m_caption << ":\n";
+
+        /* Find the maximum width of the option column */
+        unsigned width(23);
+        unsigned i; // vc6 has broken for loop scoping
+        for (i = 0; i < m_options.size(); ++i)
+        {
+            const option_description& opt = *m_options[i];
+            stringstream ss;
+            ss << "  " << opt.format_name() << ' ' << opt.format_parameter();
+            width = (max)(width, static_cast<unsigned>(ss.str().size()));            
+        }
+        
+        /* add an additional space to improve readability */
+        ++width;
+            
+        /* The options formatting style is stolen from Subversion. */
+        for (i = 0; i < m_options.size(); ++i)
+        {
+            if (belong_to_group[i])
+                continue;
+
+            const option_description& opt = *m_options[i];
+
+            format_one(os, opt, width, m_line_length);
+
+            os << "\n";
+        }
+
+        for (unsigned j = 0; j < groups.size(); ++j) {            
+            os << "\n" << *groups[j];
+        }
+    }
+
+}}

@@ -1,218 +1,167 @@
-// from server: 63% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 GLG3Dcpp/Framebuffer.cpp
+// roc-lib: boost-1.34.1-dll libs/program_options/src/convert.cpp
 
 // Candidate translation unit (score above; library headers required).
-/**
-@file Framebuffer.cpp
+// Copyright Vladimir Prus 2004.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt
+// or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-@maintainer Daniel Hilferty, djhilferty@users.sourceforge.net
+#include <fstream>
+#include <locale.h>
+#include <locale>
+#include <iostream>
+#include <string>
+#include <locale>
+#include <stdexcept>
 
-Notes:
-<UL>
-<LI>http://oss.sgi.com/projects/ogl-sample/registry/EXT/framebuffer_object.txt
-</UL>
+#include <boost/config.hpp>
 
-@created 2006-01-07
-@edited  2006-01-20
-*/
+#define BOOST_PROGRAM_OPTIONS_SOURCE
+#include <boost/program_options/config.hpp>
+#include <boost/program_options/detail/convert.hpp>
+#include <boost/program_options/detail/utf8_codecvt_facet.hpp>
+#include <boost/throw_exception.hpp>
 
-#include "GLG3D/Framebuffer.h"
-#include "GLG3D/glcalls.h"
-#include "GLG3D/GLCaps.h"
+#include <boost/bind.hpp>
 
-namespace G3D {
+using namespace std;
 
-Framebuffer::Framebuffer(
-    const std::string&  _name, 
-    GLuint              _framebufferID) : 
-    m_name(_name),
-    framebufferID(_framebufferID),
-    m_height(0),
-    m_width(0),
-    numAttachments(0) {
-}
+namespace boost { namespace detail {
 
+    /* Internal function to actually perform conversion.
+       The logic in from_8_bit and to_8_bit function is exactly
+       the same, except that one calls 'in' method of codecvt and another
+       calls the 'out' method, and that syntax difference makes straightforward
+       template implementation impossible.
 
-Framebuffer::~Framebuffer () {
-    if (framebufferID != 0) {
-        glDeleteFramebuffersEXT(1, &framebufferID);
-        framebufferID = 0;
+       This functions takes a 'fun' argument, which should have the same 
+       parameters and return type and the in/out methods. The actual converting
+       function will pass functional objects created with boost::bind.
+       Experiments show that the performance loss is less than 10%.
+    */
+    template<class ToChar, class FromChar, class Fun>
+    std::basic_string<ToChar>
+    convert(const std::basic_string<FromChar>& s, Fun fun)
+        
+    {
+        std::basic_string<ToChar> result;
+        
+        std::mbstate_t state = {0};
+
+        const FromChar* from = s.data();
+        const FromChar* from_end = s.data() + s.size();
+        // The interface of cvt is not really iterator-like, and it's
+        // not possible the tell the required output size without the conversion.
+        // All we can is convert data by pieces.
+        while(from != from_end) {
+            
+            // std::basic_string does not provide non-const pointers to the data,
+            // so converting directly into string is not possible.
+            ToChar buffer[32];
+            
+            ToChar* to_next = buffer;
+            // Need variable because boost::bind doesn't work with rvalues.
+            ToChar* to_end = buffer + 32;
+            std::codecvt_base::result r = 
+                fun(state, from, from_end, from, buffer, to_end, to_next);
+            
+            if (r == std::codecvt_base::error)
+                boost::throw_exception(
+                    std::logic_error("character conversion failed"));
+            // 'partial' is not an error, it just means not all source
+            // characters were converted. However, we need to check that at
+            // least one new target character was produced. If not, it means
+            // the source data is incomplete, and since we don't have extra
+            // data to add to source, it's error.
+            if (to_next == buffer)
+                boost::throw_exception(
+                    std::logic_error("character conversion failed"));
+            
+            // Add converted characters
+            result.append(buffer, to_next);
+        }
+        
+        return result;        
+    }           
+}}
+
+namespace boost {
+
+#ifndef BOOST_NO_STD_WSTRING
+    BOOST_PROGRAM_OPTIONS_DECL std::wstring 
+    from_8_bit(const std::string& s, 
+               const std::codecvt<wchar_t, char, std::mbstate_t>& cvt)
+    {
+        return detail::convert<wchar_t>(
+            s,                 
+            boost::bind(&std::codecvt<wchar_t, char, mbstate_t>::in,
+                        &cvt,
+                        _1, _2, _3, _4, _5, _6, _7));
     }
-}
+
+    BOOST_PROGRAM_OPTIONS_DECL std::string 
+    to_8_bit(const std::wstring& s, 
+             const std::codecvt<wchar_t, char, std::mbstate_t>& cvt)
+    {
+        return detail::convert<char>(
+            s,                 
+            boost::bind(&codecvt<wchar_t, char, mbstate_t>::out,
+                        &cvt,
+                        _1, _2, _3, _4, _5, _6, _7));
+    }
 
 
-FramebufferRef Framebuffer::fromGLFramebuffer(const std::string& _name, GLuint _framebufferID) {
-    alwaysAssertM(_framebufferID == 0 || GLCaps::supports_GL_EXT_framebuffer_object(), 
-        "Framebuffer Object not supported!");
-
-	// TODO: If there are existing attachments, find their size
-    return new Framebuffer(_name, _framebufferID);
-}
-
-
-FramebufferRef Framebuffer::create(const std::string& _name) {
-    GLuint _framebufferID;
+    namespace {
+        boost::program_options::detail::utf8_codecvt_facet
+            utf8_facet;
+    }
     
-    // Generate Framebuffer
-    glGenFramebuffersEXT(1, &_framebufferID);
-    debugAssertGLOk();
-
-    return new Framebuffer(_name, _framebufferID);
-}
-
-
-void Framebuffer::set(AttachmentPoint ap, const void* n) {
-    debugAssert(n == NULL);
-
-    // Get current framebuffer
-    GLint origFB = glGetInteger(GL_FRAMEBUFFER_BINDING_EXT);
-    debugAssertGLOk();
-
-    // If we aren't already bound, bind us now
-    if (origFB != openGLID()) {
-        // Bind this framebuffer
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, openGLID());
-        debugAssertGLOk();
+    BOOST_PROGRAM_OPTIONS_DECL std::wstring
+    from_utf8(const std::string& s)
+    {
+        return from_8_bit(s, utf8_facet);
+    }
+    
+    BOOST_PROGRAM_OPTIONS_DECL std::string
+    to_utf8(const std::wstring& s)
+    {
+        return to_8_bit(s, utf8_facet);
     }
 
-    if (attachmentTable.containsKey(ap)) { 
-        // Detach
-        if (attachmentTable[ap].type == Attachment::TEXTURE) {
+    BOOST_PROGRAM_OPTIONS_DECL std::wstring
+    from_local_8_bit(const std::string& s)
+    {
+        typedef codecvt<wchar_t, char, mbstate_t> facet_type;
+        return from_8_bit(s, 
+                          BOOST_USE_FACET(facet_type, locale()));
+    }
 
-            glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, ap, GL_TEXTURE_2D, 0, 0);
-			debugAssertGLOk();
+    BOOST_PROGRAM_OPTIONS_DECL std::string
+    to_local_8_bit(const std::wstring& s)
+    {
+        typedef codecvt<wchar_t, char, mbstate_t> facet_type;
+        return to_8_bit(s, 
+                        BOOST_USE_FACET(facet_type, locale()));                        
+    }
+#endif
 
-			if (attachmentTable[ap].hadAutoMipMap) {
-				attachmentTable[ap].texture->setAutoMipMap(true);
-			}
-        } else {
-            glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, ap, GL_RENDERBUFFER_EXT, 0);
-			debugAssertGLOk();
+    namespace program_options
+    {
+        BOOST_PROGRAM_OPTIONS_DECL std::string to_internal(const std::string& s)
+        {
+            return s;
         }
 
-        --numAttachments;
-
-    } else {
-        // Wipe our record for that slot
-        attachmentTable.remove(ap);
+#ifndef BOOST_NO_STD_WSTRING
+        BOOST_PROGRAM_OPTIONS_DECL std::string to_internal(const std::wstring& s)
+        {
+            return to_utf8(s);
+        }
+#endif
     }
 
-    // If we were already bound, don't bother restoring
-    if (origFB != openGLID()) {
-        // Bind original framebuffer
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, origFB);
-        debugAssertGLOk();
-    }
+
 }
-
-
-void Framebuffer::set(AttachmentPoint ap, const TextureRef& texture) {
-    if (texture.isNull()) {
-        // We're in the wrong overload
-        set(ap, (void*)NULL);
-        return;
-    }
-
-    // Get current framebuffer
-    GLint origFB = glGetInteger(GL_FRAMEBUFFER_BINDING_EXT);
-
-    // If we aren't already bound, bind us now
-    if (origFB != openGLID()) {
-        // Bind this framebuffer
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, openGLID());
-        debugAssertGLOk();
-    }
-
-    // Check for completeness
-    if (numAttachments == 0) {
-        // This is the first attachment.
-        // Set texture height/width
-        m_width  = texture->texelWidth();
-        m_height = texture->texelHeight();
-    } else {
-        // Verify same dimensions
-        debugAssertM((texture->texelWidth() != width()) || 
-                      (texture->texelHeight() != height()), 
-           "All attachments bound to a Framebuffer must have identical dimensions!");
-    }
-    
-    if (! attachmentTable.containsKey(ap)) {
-        attachmentTable.set(ap, Attachment(texture));
-    }
-
-    // Bind texture to framebuffer
-    glFramebufferTexture2DEXT(
-        GL_FRAMEBUFFER_EXT, 
-        ap, 
-        texture->getOpenGLTextureTarget(), 
-        texture->openGLID(), 0);
-    debugAssertGLOk();
-
-    // If we were already bound, don't bother restoring
-    if (origFB != openGLID()) {
-        // Bind original framebuffer
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, origFB);
-    }
-
-    debugAssertGLOk();
-}
-
-
-
-void Framebuffer::set(                      
-    AttachmentPoint ap,
-    const RenderbufferRef& renderbuffer) {
-
-    if (renderbuffer.isNull()) {
-        // We're in the wrong overload
-        set(ap, (void*)NULL);
-        return;
-    }
-
-    // Get current framebuffer
-    GLint origFB = glGetInteger(GL_FRAMEBUFFER_BINDING_EXT);
-
-    // If we aren't already bound, bind us now
-    if (origFB != openGLID()) {
-        // Bind this framebuffer
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, openGLID());
-        debugAssertGLOk();
-    }
-
-    // Check for completeness
-    if (numAttachments == 0) {
-        // This is the first attachment.
-        // Set texture height/width
-        m_width  = renderbuffer->width();
-        m_height = renderbuffer->height();
-    } else {
-        // Verify same dimensions
-        debugAssertM((renderbuffer->width()  != width()) || 
-                     (renderbuffer->height() != height()), 
-           "All attachments bound to a Framebuffer must have identical dimensions!");
-    }
-    
-    glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, ap, GL_RENDERBUFFER_EXT, renderbuffer->openGLID());
-
-    if (!attachmentTable.containsKey(ap)) {
-        attachmentTable.set(ap, Attachment(renderbuffer));
-    }
-
-    // If we were already bound, don't bother restoring
-    if (origFB != openGLID()) {
-        // Bind original framebuffer
-        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, origFB);
-    }
-
-    debugAssertGLOk();
-}
-
-} // G3D
-
-unsigned int hashCode(const G3D::Framebuffer::AttachmentPoint& a) {
-    return (int)a;
-}
-

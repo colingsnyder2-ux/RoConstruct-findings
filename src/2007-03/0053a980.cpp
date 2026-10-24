@@ -1,445 +1,568 @@
-// from server: 84% by colin
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs script/LuaInstanceBridge.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.34.1-dll libs/program_options/src/options_description.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "script/LuaInstanceBridge.h"
-#include "script/LuaSignalBridge.h"
-#include "script/LuaArguments.h"
-#include "script/LuaAtomicClasses.h"
-#include "script/ThreadRef.h"
-#include "util/Sound.h"
-#include "util/TextureId.h"
-#include "util/standardout.h"
-#include "v8tree/Instance.h"
-#include "G3D/format.h"
-#include "G3D/Vector3.h"
+// Copyright Vladimir Prus 2002-2004.
+// Copyright Bertolt Mildner 2004.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt
+// or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-// matches generally aren't very good here
 
-using namespace RBX;
-using namespace RBX::Lua;
-using namespace RBX::Reflection;
-using namespace RBX::Soundscape;
+#define BOOST_PROGRAM_OPTIONS_SOURCE
+#include <boost/program_options/config.hpp>
+#include <boost/program_options/options_description.hpp>
+// FIXME: this is only to get multiple_occureces class
+// should move that to a separate headers.
+#include <boost/program_options/parsers.hpp>
 
-void RBX::Lua::newweaktable(lua_State* L, const char* mode)
-{
-    lua_newtable(L);
-    lua_pushvalue(L, -1);
-    lua_setmetatable(L, -2);
-    lua_pushliteral(L, "__mode");
-    lua_pushstring(L, mode);
-    lua_settable(L, -3);
-}
 
-const luaL_Reg ObjectBridge::classLibrary[] = 
-{
-    {"new", ObjectBridge::newInstance},
-    {NULL, NULL}
-};
+#include <boost/lexical_cast.hpp>
+#include <boost/tokenizer.hpp>
+#include <boost/detail/workaround.hpp>
+#include <boost/throw_exception.hpp>
 
-int ObjectBridge::newInstance(lua_State* thread)
-{
-    const Name& name = Name::lookup(lua_tostring(thread, 1));
-    boost::shared_ptr<Instance> instance = AbstractFactoryProduct<Instance>::create(name);
+#include <cassert>
+#include <climits>
+#include <cstring>
+#include <cstdarg>
+#include <sstream>
+#include <iterator>
+using namespace std;
 
-    if (lua_gettop(thread) >= 2)
+namespace boost { namespace program_options {
+
+    option_description::option_description()
     {
-        boost::shared_ptr<Instance> parent = ObjectBridge::getInstance(thread, 2);
+    }
+    
+    option_description::
+    option_description(const char* name,
+                       const value_semantic* s)
+    : m_value_semantic(s)
+    {
+        this->set_name(name);
+    }
+                                           
 
-        if (parent)
-            instance->setParent(parent.get());
+    option_description::
+    option_description(const char* name,
+                       const value_semantic* s,
+                       const char* description)
+    : m_description(description), m_value_semantic(s)
+    {
+        this->set_name(name);
     }
 
-    ObjectBridge::push(thread, instance);
-
-    return 1;
-}
-
-// TODO: 98.80% (functional match)
-static void pushLuaValue(ConstProperty p, lua_State* L)
-{
-    // (0024BC)  S_BPREL32: [FFFFFF40], Type:             0x3639, objects
-    // (0024D0)  S_BPREL32: [FFFFFF50], Type:             0x36A2, end
-    // (0024E0)  S_BPREL32: [FFFFFF48], Type:             0x36A2, iter
-
-    PropertyDescriptor& descriptor = const_cast<PropertyDescriptor&>(p.getDescriptor());
-
-    if (descriptor.type == Type::singleton<int>())
+    option_description::~option_description()
     {
-        lua_pushinteger(L, p.getValue<int>());
-        return;
     }
 
-    if (descriptor.type == Type::singleton<bool>())
+    option_description::match_result
+    option_description::match(const std::string& option, bool approx) const
     {
-        lua_pushboolean(L, p.getValue<bool>());
-        return;
-    }
+        match_result result = no_match;
+        if (!m_long_name.empty()) {
 
-    if (descriptor.type == Type::singleton<float>())
-    {
-        lua_pushnumber(L, p.getValue<float>());
-        return;
-    }
-
-    if (descriptor.type == Type::singleton<std::string>())
-    {
-        lua_pushstring(L, p.getStringValue().c_str());
-        return;
-    }
-
-    if (descriptor.type == Type::singleton<boost::shared_ptr<Instance>>())
-    {
-        ObjectBridge::push(L, p.getValue<boost::shared_ptr<Instance>>());
-        return;
-    }
-
-    if (descriptor.type == Type::singleton<boost::shared_ptr<DescribedBase>>())
-    {
-        ObjectBridge::push(L, p.getValue<boost::shared_ptr<DescribedBase>>());
-        return;
-    }
-
-    if (descriptor.type == Type::singleton<G3D::Vector3>())
-    {
-        Vector3Bridge::pushVector3(L, p.getValue<G3D::Vector3>());
-        return;
-    }
-
-    if (descriptor.type == Type::singleton<G3D::CoordinateFrame>())
-    {
-        CoordinateFrameBridge::pushCoordinateFrame(L, p.getValue<G3D::CoordinateFrame>());
-        return;
-    }
-
-    if (descriptor.type == Type::singleton<G3D::Color3>())
-    {
-        Color3Bridge::pushColor3(L, p.getValue<G3D::Color3>());
-        return;
-    }
-
-    if (descriptor.type == Type::singleton<BrickColor>())
-    {
-        BrickColorBridge::pushNewObject(L, p.getValue<BrickColor>());
-        return;
-    }
-
-    if (descriptor.type == Type::singleton<ContentId>())
-    {
-        lua_pushstring(L, p.getStringValue().c_str());
-        return;
-    }
-
-    if (descriptor.type == Type::singleton<FunctionRef>())
-    {
-        lua_pushfunction(L, p.getValue<FunctionRef>());
-        return;
-    }
-
-    if (descriptor.type == Type::singleton<boost::shared_ptr<Instances>>())
-    {
-        boost::shared_ptr<Instances> objects = p.getValue<boost::shared_ptr<Instances>>();
-        if (objects)
-        {
-            Instances::const_iterator iter = objects->begin();
-            Instances::const_iterator end = objects->end();
-
-            // objects->size() doesn't match
-            lua_createtable(L, end-iter, 0);
-
-            for (int i = 1; iter != end; i++)
+            if (*m_long_name.rbegin() == '*')
             {
-                ObjectBridge::push(L, *iter);
-                lua_rawseti(L, -2, i);
-                ++iter;
-            }
-        }
-        else
-        {
-            lua_newtable(L);
-        }
-        return;
-    }
-
-    EnumPropertyDescriptor* enumDesc = dynamic_cast<EnumPropertyDescriptor*>(&descriptor);
-    if (enumDesc)
-    {
-        lua_pushinteger(L, enumDesc->getEnumValue(p.getInstance()));
-        return;
-    }
-
-    RefPropertyDescriptor* refDesc = dynamic_cast<RefPropertyDescriptor*>(&descriptor);
-    if (refDesc)
-    {
-        DescribedBase* ref = refDesc->getRefValue(p.getInstance());
-
-        // this just seems strange /shrug
-        if (ref)
-            ObjectBridge::push(L, static_cast<Instance*>(ref)->shared_from_this());
-        else
-            ObjectBridge::push(L, boost::shared_ptr<Instance>());
-
-        return;
-    }
-
-    throw std::runtime_error(G3D::format(
-        "Unable to get property %s, type %s",
-        descriptor.name.c_str(),
-        descriptor.type.name.c_str()));
-}
-
-template<>
-int ObjectBridge::on_index(const boost::shared_ptr<DescribedBase>& object, const char* name, lua_State* L)
-{
-    if (!object)
-        throw std::runtime_error("The object has been deleted");
-
-    const Name& name2 = Name::lookup(name);
-
-    // what's with the scopes? they can't be inlines
-
-    {
-        PropertyIterator iter = object->findProperty(name2);
-        if (iter != object->properties_end())
-        {
-            pushLuaValue(*iter, L);
-            return 1;
-        }
-    }
-
-    {
-        FunctionIterator iter = object->findFunction(name2);
-        if (iter != object->functions_end())
-        {
-            const FunctionDescriptor* fd = (*iter).getDescriptor();
-
-            lua_pushlightuserdata(L, (void*)fd);
-            lua_rawget(L, LUA_ENVIRONINDEX);
-
-            if (lua_type(L, -1) == LUA_TNIL)
-            {
-                lua_pop(L, 1);
-                lua_pushlightuserdata(L, (void*)fd);
-                lua_pushcclosure(L, ObjectBridge::callMemberFunction, 1);
-                lua_pushlightuserdata(L, (void*)fd);
-                lua_pushvalue(L, -2);
-                lua_settable(L, LUA_ENVIRONINDEX);
+                // The name ends with '*'. Any specified name with the given
+                // prefix is OK.
+                if (option.find(m_long_name.substr(0, m_long_name.length()-1))
+                    == 0)
+                    result = approximate_match;
             }
 
-            RBXASSERT(lua_type(L, -1) == LUA_TFUNCTION);
-
-            return 1;
-        }
-    }
-
-    {
-        SignalIterator iter = object->findSignal(name2);
-        if (iter != object->signals_end())
-        {
-            Signal s = *iter;
-            SignalBridge::push(L, s.getSignalInstance());
-            return 1;
-        }
-    }
-
-    Instance* instance = dynamic_cast<Instance*>(object.get());
-    if (instance)
-    {
-        Instance* child = instance->findFirstChildByName(name);
-        if (child)
-        {
-            ObjectBridge::push(L, shared_from(child));
-            return 1;
-        }
-    }
-
-    if (name2.empty())
-    {
-        std::string pascalName = name;
-        pascalName[0] = toupper(name[0]);
-
-        if (pascalName[0] != name[0] && !Name::lookup(pascalName).empty())
-            return on_index(object, pascalName.c_str(), L);
-    }
-
-    throw std::runtime_error(G3D::format("%s is not a valid member of %s", name, instance->getClassName().c_str()));
-}
-
-// TODO: 94.38% (functional match)
-static void assignLuaValue(Property p, lua_State* L, int index)
-{
-    // (002DA8)  S_BPREL32: [FFFFFF60], Type:             0x238B, value
-
-    PropertyDescriptor& descriptor = const_cast<PropertyDescriptor&>(p.getDescriptor());
-
-    if (descriptor.type == Type::singleton<int>())
-    {
-        p.setValue<int>(lua_tointeger(L, index));
-        return;
-    }
-
-    if (descriptor.type == Type::singleton<bool>())
-    {
-        p.setValue<bool>(lua_toboolean(L, index) != 0);
-        return;
-    }
-
-    if (descriptor.type == Type::singleton<float>())
-    {
-        p.setValue<float>(lua_tonumber(L, index));
-        return;
-    }
-
-    if (descriptor.type == Type::singleton<std::string>())
-    {
-        p.setValue<std::string>(lua_tostring(L, index));
-        return;
-    }
-
-    if (descriptor.type == Type::singleton<FunctionRef>())
-    {
-        p.setValue(FunctionRef(L, index));
-        return;
-    }
-
-    if (descriptor.type == Type::singleton<boost::shared_ptr<Instance>>())
-    {
-        p.setValue(ObjectBridge::getInstance(L, index));
-        return;
-    }
-
-    if (descriptor.type == Type::singleton<boost::shared_ptr<DescribedBase>>())
-    {
-        p.setValue(ObjectBridge::getPtr(L, index));
-        return;
-    }
-
-    if (descriptor.type == Type::singleton<G3D::Vector3>())
-    {
-        p.setValue(Vector3Bridge::getObject(L, index));
-        return;
-    }
-
-    if (descriptor.type == Type::singleton<G3D::CoordinateFrame>())
-    {
-        p.setValue(CoordinateFrameBridge::getObject(L, index));
-        return;
-    }
-
-    if (descriptor.type == Type::singleton<G3D::Color3>())
-    {
-        p.setValue(Color3Bridge::getObject(L, index));
-        return;
-    }
-
-    if (descriptor.type == Type::singleton<BrickColor>())
-    {
-        p.setValue(BrickColorBridge::getObject(L, index));
-        return;
-    }
-
-    // the contentid dtors for these two checks should be merged
-    // seems like an inline, but i can't get it to work
-    if (dynamic_cast<TypedPropertyDescriptor<SoundId>*>(&descriptor))
-    {
-        p.setValue<SoundId>(ContentId(lua_tostring(L, index)));
-        return;
-    }
-
-    if (dynamic_cast<TypedPropertyDescriptor<TextureId>*>(&descriptor))
-    {
-        p.setValue<TextureId>(ContentId(lua_tostring(L, index)));
-        return;
-    }
-
-    EnumPropertyDescriptor* enumDesc = dynamic_cast<EnumPropertyDescriptor*>(&descriptor);
-    if (enumDesc)
-    {
-        int value = lua_tointeger(L, index);
-        enumDesc->setEnumValue(p.getInstance(), value);
-        return;
-    }
-
-    RefPropertyDescriptor* refDesc = dynamic_cast<RefPropertyDescriptor*>(&descriptor);
-    if (refDesc)
-    {
-        boost::shared_ptr<Instance> value = ObjectBridge::getInstance(L, index);
-        refDesc->setRefValue(p.getInstance(), value.get());
-        return;
-    }
-
-    throw std::runtime_error(G3D::format("Unable to set property %s, type %s", descriptor.name.c_str(), descriptor.type.name.c_str()));
-}
-
-// TODO: 91.56%
-// a lot of stack space gets wasted for some reason
-template <>
-void ObjectBridge::on_newindex(boost::shared_ptr<DescribedBase>& object, const char* name, lua_State* L)
-{
-    // (0033F8)  S_BPREL32: [FFFFFF68], Type:             0x3058, iter
-    // (00340C)  S_BPREL32: [FFFFFF58], Type:             0x238B, parent (boost::shared_ptr<RBX::Instance>)
-
-    if (!object)
-        throw std::runtime_error("The object has been deleted");
-
-    DescribedBase* objectPtr = object.get();
-    PropertyIterator iter = object->findProperty(Name::lookup(name));
-    if (iter != object->properties_end())
-    {
-        if ((*iter).getDescriptor() == Instance::propParent)
-        {
-            Instance* instance = dynamic_cast<Instance*>(objectPtr);
-
-            if (!instance)
-                throw std::runtime_error(G3D::format("%s is not a valid member of %s", name, object->classDescriptor().name.c_str()));
-
-            boost::shared_ptr<Instance> parent = ObjectBridge::getInstance(L, 3);
-
-            if (instance->getParent() != parent.get())
+            if (approx)
             {
-                if (!instance->canSetParent(parent.get()))
-                    StandardOut::singleton()->print(MESSAGE_WARNING, "%s should not be a child of %s", instance->getName().c_str(), parent->getName().c_str());
-
-                instance->setParent2(parent);
+                if (m_long_name.find(option) == 0)
+                    if (m_long_name == option)
+                        result = full_match;
+                    else
+                        result = approximate_match;
+            }
+            else
+            {
+                if (m_long_name == option)
+                    result = full_match;
             }
         }
-        else
-        {
-            assignLuaValue(*iter, L, 3);    
-        }
+         
+        if (m_short_name == option)
+            result = full_match;
 
-        return;
+        return result;        
     }
 
-    throw std::runtime_error(G3D::format("%s is not a valid member of %s", name, object->classDescriptor().name.c_str()));
-}
+    const std::string& 
+    option_description::key(const std::string& option) const
+    {        
+        if (!m_long_name.empty()) 
+            if (m_long_name.find('*') != string::npos)
+                // The '*' character means we're long_name
+                // matches only part of the input. So, returning
+                // long name will remove some of the information,
+                // and we have to return the option as specified
+                // in the source.
+                return option;
+            else
+                return m_long_name;
+        else
+            return m_short_name;
+    }
 
-int ObjectBridge::callMemberFunction(lua_State* L)
-{
-    int idx = lua_upvalueindex(1);
-    RBXASSERT(lua_type(L, idx) == LUA_TLIGHTUSERDATA);
-    Reflection::FunctionDescriptor* fd = static_cast<Reflection::FunctionDescriptor*>(lua_touserdata(L, idx));
+    const std::string&
+    option_description::long_name() const
+    {
+        return m_long_name;
+    }
 
-    if (fd->security == FunctionDescriptor::NeedTrustedCaller)
-        Security::Context::current().requirePermission(Security::Administrator, fd->name.c_str());
+    option_description&
+    option_description::set_name(const char* _name)
+    {
+        std::string name(_name);
+        string::size_type n = name.find(',');
+        if (n != string::npos) {
+            assert(n == name.size()-2);
+            m_long_name = name.substr(0, n);
+            m_short_name = '-' + name.substr(n+1,1);
+        } else {
+            m_long_name = name;
+        }
+        return *this;
+    }
 
-    boost::shared_ptr<Reflection::DescribedBase> instance;
+    const std::string&
+    option_description::description() const
+    {
+        return m_description;
+    }
 
-    if (!getPtr(L, 1, instance) || !instance)
-        throw std::runtime_error(G3D::format(
-            "Did you forget a semicolon?  The first argument of member function %s must be an Object",
-            fd->name.c_str()));
+    shared_ptr<const value_semantic>
+    option_description::semantic() const
+    {
+        return m_value_semantic;
+    }
+    
+    std::string 
+    option_description::format_name() const
+    {
+        if (!m_short_name.empty())
+            return string(m_short_name).append(" [ --").
+            append(m_long_name).append(" ]");
+        else
+            return string("--").append(m_long_name);
+    }
 
-    if (!fd->isMemberOf(instance.get()))
-        throw std::runtime_error(G3D::format(
-        "The function %s is not a member of \"%s\"",
-        fd->name.c_str(),
-        instance->classDescriptor().name.c_str()));
+    std::string 
+    option_description::format_parameter() const
+    {
+        if (m_value_semantic->max_tokens() != 0)
+            return m_value_semantic->name();
+        else
+            return "";
+    }
 
-    LuaArguments args(L, 1);
-    fd->execute(instance.get(), args);
-    return args.pushReturnValue();
-}
+    options_description_easy_init::
+    options_description_easy_init(options_description* owner)
+    : owner(owner)
+    {}
+
+    options_description_easy_init&
+    options_description_easy_init::
+    operator()(const char* name,
+               const char* description)
+    {
+        // Create untypes semantic which accepts zero tokens: i.e. 
+        // no value can be specified on command line.
+        // FIXME: does not look exception-safe
+        shared_ptr<option_description> d(
+            new option_description(name, new untyped_value(true), description));
+
+        owner->add(d);
+        return *this;
+    }
+
+    options_description_easy_init&
+    options_description_easy_init::
+    operator()(const char* name,
+               const value_semantic* s)
+    {
+        shared_ptr<option_description> d(new option_description(name, s));
+        owner->add(d);
+        return *this;
+    }
+
+    options_description_easy_init&
+    options_description_easy_init::
+    operator()(const char* name,
+               const value_semantic* s,
+               const char* description)
+    {
+        shared_ptr<option_description> d(new option_description(name, s, description));
+
+        owner->add(d);
+        return *this;
+    }
+
+    options_description::options_description(unsigned line_length)
+    : m_line_length(line_length)
+    {}
+
+    options_description::options_description(const string& caption,
+                                             unsigned line_length)
+    : m_caption(caption), m_line_length(line_length)
+    {}
+
+    void
+    options_description::add(shared_ptr<option_description> desc)
+    {
+        m_options.push_back(desc);
+        belong_to_group.push_back(false);
+    }
+
+    options_description&
+    options_description::add(const options_description& desc)
+    {
+        shared_ptr<options_description> d(new options_description(desc));
+        groups.push_back(d);
+
+        for (size_t i = 0; i < desc.m_options.size(); ++i) {
+            add(desc.m_options[i]);
+            belong_to_group.back() = true;
+        }
+
+        return *this;
+    }
+
+    options_description_easy_init
+    options_description::add_options()
+    {       
+        return options_description_easy_init(this);
+    }
+
+    const option_description&
+    options_description::find(const std::string& name, bool approx) const
+    {
+        const option_description* d = find_nothrow(name, approx);
+        if (!d)
+            boost::throw_exception(unknown_option(name));
+        return *d;
+    }
+
+    const std::vector< shared_ptr<option_description> >& 
+    options_description::options() const
+    {
+        return m_options;
+    }
+
+    const option_description* 
+    options_description::find_nothrow(const std::string& name, 
+                                      bool approx) const
+    {
+        int found = -1;
+        // We use linear search because matching specified option
+        // name with the declared option name need to take care about
+        // case sensitivity and trailing '*' and so we can't use simple map.
+        for(unsigned i = 0; i < m_options.size(); ++i)
+        {
+            option_description::match_result r = 
+                m_options[i]->match(name, approx);
+
+            if (r == option_description::no_match)
+                continue;
+
+            // If we have a full patch, and an approximate match,
+            // ignore approximate match instead of reporting error.
+            // Say, if we have options "all" and "all-chroots", then
+            // "--all" on the command line should select the first one,
+            // without ambiguity.
+            //
+            // For now, we don't check the situation when there are 
+            // two full matches. 
+                            
+            if (r == option_description::full_match)
+            {
+                return m_options[i].get();                
+            }
+
+            if (found != -1)
+            {
+                vector<string> alts;
+                // FIXME: the use of 'key' here might not
+                // be the best approach.
+                alts.push_back(m_options[found]->key(name));
+                alts.push_back(m_options[i]->key(name));
+                boost::throw_exception(ambiguous_option(name, alts));
+            }
+            else
+            {
+                found = i;
+            }
+        }
+        if (found != -1) {
+            return m_options[found].get();
+        } else {
+            return 0;
+        }
+    }
+
+    BOOST_PROGRAM_OPTIONS_DECL
+    std::ostream& operator<<(std::ostream& os, const options_description& desc)
+    {
+        desc.print(os);
+        return os;
+    }
+
+    namespace {
+
+        /* Given a string 'par', that contains no newline characters
+           outputs it to 'os' with wordwrapping, that is, as several
+           line.
+
+           Each output line starts with 'indent' space characters, 
+           following by characters from 'par'. The total length of
+           line is no longer than 'line_length'.
+                                      
+        */
+        void format_paragraph(std::ostream& os,
+                              std::string par,
+                              unsigned indent,
+                              unsigned line_length)
+        {                    
+            // Through reminder of this function, 'line_length' will
+            // be the length available for characters, not including
+            // indent.
+            assert(indent < line_length);
+            line_length -= indent;
+
+            // index of tab (if present) is used as additional indent relative
+            // to first_column_width if paragrapth is spanned over multiple
+            // lines if tab is not on first line it is ignored
+            string::size_type par_indent = par.find('\t');
+
+            if (par_indent == string::npos)
+            {
+                par_indent = 0;
+            }
+            else
+            {
+                // only one tab per paragraph allowed
+                if (count(par.begin(), par.end(), '\t') > 1)
+                {
+                    boost::throw_exception(program_options::error(
+                        "Only one tab per paragraph is allowed"));
+                }
+          
+                // erase tab from string
+                par.erase(par_indent, 1);
+
+                // this assert may fail due to user error or 
+                // environment conditions!
+                assert(par_indent < line_length);
+
+                // ignore tab if not on first line
+                if (par_indent >= line_length)
+                {
+                    par_indent = 0;
+                }            
+            }
+          
+            if (par.size() < line_length)
+            {
+                os << par;
+            }
+            else
+            {
+                string::const_iterator       line_begin = par.begin();
+                const string::const_iterator par_end = par.end();
+
+                bool first_line = true; // of current paragraph!        
+            
+                while (line_begin < par_end)  // paragraph lines
+                {
+                    if (!first_line)
+                    {
+                        // If line starts with space, but second character
+                        // is not space, remove the leading space.
+                        // We don't remove double spaces because those
+                        // might be intentianal.
+                        if ((*line_begin == ' ') &&
+                            ((line_begin + 1 < par_end) &&
+                             (*(line_begin + 1) != ' ')))
+                        {
+                            line_begin += 1;  // line_begin != line_end
+                        }
+                    }
+
+                    // Take care to never increment the iterator past
+                    // the end, since MSVC 8.0 (brokenly), assumes that
+                    // doing that, even if no access happens, is a bug.
+                    unsigned remaining = distance(line_begin, par_end);
+                    string::const_iterator line_end = line_begin + 
+                        ((remaining < line_length) ? remaining : line_length);
+            
+                    // prevent chopped words
+                    // Is line_end between two non-space characters?
+                    if ((*(line_end - 1) != ' ') &&
+                        ((line_end < par_end) && (*line_end != ' ')))
+                    {
+                        // find last ' ' in the second half of the current paragraph line
+                        string::const_iterator last_space =
+                            find(reverse_iterator<string::const_iterator>(line_end),
+                                 reverse_iterator<string::const_iterator>(line_begin),
+                                 ' ')
+                            .base();
+                
+                        if (last_space != line_begin)
+                        {                 
+                            // is last_space within the second half of the 
+                            // current line
+                            if ((unsigned)std::distance(last_space, line_end) < 
+                                (line_length - indent) / 2)
+                            {
+                                line_end = last_space;
+                            }
+                        }                                                
+                    } // prevent chopped words
+             
+                    // write line to stream
+                    copy(line_begin, line_end, ostream_iterator<char>(os));
+              
+                    if (first_line)
+                    {
+                        indent += par_indent;
+                        first_line = false;
+                    }
+
+                    // more lines to follow?
+                    if (line_end != par_end)
+                    {
+                        os << '\n';
+                
+                        for(unsigned pad = indent; pad > 0; --pad)
+                        {
+                            os.put(' ');
+                        }                                                        
+                    }
+              
+                    // next line starts after of this line
+                    line_begin = line_end;              
+                } // paragraph lines
+            }          
+        }                              
+        
+        void format_description(std::ostream& os,
+                                const std::string& desc, 
+                                unsigned first_column_width,
+                                unsigned line_length)
+        {
+            // we need to use one char less per line to work correctly if actual
+            // console has longer lines
+            assert(line_length > 1);
+            if (line_length > 1)
+            {
+                --line_length;
+            }
+
+            // line_length must be larger than first_column_width
+            // this assert may fail due to user error or environment conditions!
+            assert(line_length > first_column_width);
+
+            // Note: can't use 'tokenizer' as name of typedef -- borland
+            // will consider uses of 'tokenizer' below as uses of
+            // boost::tokenizer, not typedef.
+            typedef boost::tokenizer<boost::char_separator<char> > tok;
+          
+            tok paragraphs(
+                desc,
+                char_separator<char>("\n", "", boost::keep_empty_tokens));
+          
+            tok::const_iterator       par_iter = paragraphs.begin();                
+            const tok::const_iterator par_end = paragraphs.end();
+
+            while (par_iter != par_end)  // paragraphs
+            {
+                format_paragraph(os, *par_iter, first_column_width, 
+                                 line_length);
+            
+                ++par_iter;
+            
+                // prepair next line if any
+                if (par_iter != par_end)
+                {
+                    os << '\n';
+              
+                    for(unsigned pad = first_column_width; pad > 0; --pad)
+                    {
+                        os.put(' ');
+                    }                    
+                }            
+            }  // paragraphs
+        }
+    
+        void format_one(std::ostream& os, const option_description& opt, 
+                        unsigned first_column_width, unsigned line_length)
+        {
+            stringstream ss;
+            ss << "  " << opt.format_name() << ' ' << opt.format_parameter();
+            
+            // Don't use ss.rdbuf() since g++ 2.96 is buggy on it.
+            os << ss.str();
+
+            if (!opt.description().empty())
+            {
+                for(unsigned pad = first_column_width - ss.str().size(); 
+                    pad > 0; 
+                    --pad)
+                {
+                    os.put(' ');
+                }
+            
+                format_description(os, opt.description(),
+                                   first_column_width, line_length);
+            }
+        }
+    }
+
+    void 
+    options_description::print(std::ostream& os) const
+    {
+        if (!m_caption.empty())
+            os << m_caption << ":\n";
+
+        /* Find the maximum width of the option column */
+        unsigned width(23);
+        unsigned i; // vc6 has broken for loop scoping
+        for (i = 0; i < m_options.size(); ++i)
+        {
+            const option_description& opt = *m_options[i];
+            stringstream ss;
+            ss << "  " << opt.format_name() << ' ' << opt.format_parameter();
+            width = (max)(width, static_cast<unsigned>(ss.str().size()));            
+        }
+        
+        /* add an additional space to improve readability */
+        ++width;
+            
+        /* The options formatting style is stolen from Subversion. */
+        for (i = 0; i < m_options.size(); ++i)
+        {
+            if (belong_to_group[i])
+                continue;
+
+            const option_description& opt = *m_options[i];
+
+            format_one(os, opt, width, m_line_length);
+
+            os << "\n";
+        }
+
+        for (unsigned j = 0; j < groups.size(); ++j) {            
+            os << "\n" << *groups[j];
+        }
+    }
+
+}}
