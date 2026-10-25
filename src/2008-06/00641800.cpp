@@ -1,4 +1,4 @@
-// from server: 84% by king_originala
+// from server: 85% by king_originala_sol_native
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 #include <math.h>
@@ -46,10 +46,10 @@ void ICharacterSubject::stepGoalAndFocus(G3D::CoordinateFrame&cameraGoal,G3D::Co
   offset=focusOffsetERA.pushAndGetAverage(filterInput);
   (void)focusERA.pushAndGetAverage(focusPosition);
   (void)getIntendedRotationAboutYAxis();
-  {G3D::CoordinateFrame subjectFrame=getLocation();
+  G3D::CoordinateFrame subjectFrame=getLocation();
   G3D::Vector3 back=subjectFrame.rotation.getColumn(2);
   (void)rotationERA.getAverage();
-  (void)rotationERA.pushAndGetAverage((float)-atan2(-back.x,back.z));}
+  (void)rotationERA.pushAndGetAverage((float)-atan2(-back.x,back.z));
   G3D::CoordinateFrame focusSpace=Math::getFocusSpace(cameraGoal);
   goalPosition+=offset;
   float radius=focusToGoal.xz().length();
