@@ -1,13 +1,21 @@
-// from server: 98% by king_originala
+// from server: 100% by coldek
+// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_owned_native_math_a3c3f2acdcf92a0a.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <G3D/Vector2.h>
+#include <G3D/Vector3.h>
+#include <G3D/Rect2D.h>
+#include <G3D/Vector2int16.h>
+// from server: 98% by king_originala
 // Complete owned-builder face preparation; RTTI proves ViewNew WedgeBuilder/BevelMesh::Builder/LevelBuilder.
 // Native G3D ReferenceCount and the 36-byte by-value builder explain parameter cleanup.
 // RTTI tables8270c8/827088/8270a8 prove the native three-level hierarchy.
 // Native AtomicInt32 imports and weak-list invalidation account for every cleanup call.
 // Remaining local storage/FP differences are retained as partial, not exact.
 
-// roc-lib: g3d-6.09 G3Dcpp/Vector3.cpp
 namespace G3D {inline int iRound(float);}
 
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
@@ -32,10 +40,10 @@ public:
  ReferenceCountedPointer():m_pointer(0){}ReferenceCountedPointer(const ReferenceCountedPointer&p):m_pointer(0){setPointer(p.m_pointer);}~ReferenceCountedPointer(){zeroPointer();}
 };
 
-struct Vector2 {float x,y;Vector2():x(0),y(0){}Vector2(float a,float b):x(a),y(b){}Vector2(const Vector2&v):x(v.x),y(v.y){}Vector2 operator-()const{return Vector2(-x,-y);}Vector2 operator*(float f)const{return Vector2(x*f,y*f);}Vector2&operator=(const Vector2&v){x=v.x;y=v.y;return *this;}float&operator[](int i){return (&x)[i];}const float&operator[](int i)const{return (&x)[i];}};
-struct Vector3 {float x,y,z;Vector3():x(0),y(0),z(0){}Vector3(float a,float b,float c):x(a),y(b),z(c){}Vector3(const Vector3&v):x(v.x),y(v.y),z(v.z){}Vector2 xy()const;float&operator[](int i){return ((float*)this)[i];}const float&operator[](int i)const{return ((const float*)this)[i];}Vector3 abs()const{return Vector3(MeshOwned::fabs(x),MeshOwned::fabs(y),MeshOwned::fabs(z));}};
-struct Vector2int16 {short x,y;Vector2int16():x(0),y(0){}short&operator[](int i){return ((short*)this)[i];}const short&operator[](int i)const{return ((const short*)this)[i];}Vector2int16(short a,short b):x(a),y(b){}};
-struct Rect2D {Vector2 min,max;static Rect2D xyxy(const Vector2&,const Vector2&);};
+typedef G3D::Vector2 Vector2;
+typedef G3D::Vector3 Vector3;
+typedef G3D::Vector2int16 Vector2int16;
+typedef G3D::Rect2D Rect2D;
 template<class T>const T&maximum(const T&a,const T&b){return a<b?b:a;}
 }
 namespace RBX {namespace ViewNew {

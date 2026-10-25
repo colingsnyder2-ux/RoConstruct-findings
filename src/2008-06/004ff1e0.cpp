@@ -1,16 +1,22 @@
-// from server: 97% by king_originala
+// from server: 100% by king_originala_sol_native
+// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_sol_native_builder_004ff1e0_4aa9273edbde056b.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <G3D/Vector2.h>
+#include <G3D/Vector3.h>
+#include <G3D/Rect2D.h>
 
 extern "C" __declspec(dllimport) double __cdecl fabs(double);
-// roc-lib: g3d-6.09 G3Dcpp/Vector3.cpp
 namespace G3D {inline int iRound(float);}
 namespace MeshTypes {
 extern "C" __declspec(dllimport) double __cdecl ceil(double);
-struct Vector2 {float x,y;Vector2():x(0),y(0){}Vector2(float a,float b):x(a),y(b){}Vector2(const Vector2&r):x(r.x),y(r.y){}Vector2&operator=(const Vector2&r){x=r.x;y=r.y;return *this;}Vector2 operator-()const{return Vector2(-x,-y);}float& operator[](int i){return (&x)[i];}const float& operator[](int i)const{return (&x)[i];}};
-struct Vector3 {float x,y,z;Vector3(float a,float b,float c):x(a),y(b),z(c){}Vector3(const Vector3&r):x(r.x),y(r.y),z(r.z){}Vector3 abs()const{return Vector3(fabs(x),fabs(y),fabs(z));}Vector2 xy()const;float&operator[](int i){return (&x)[i];}const float&operator[](int i)const{return (&x)[i];}};
+typedef G3D::Vector2 Vector2;
+typedef G3D::Vector3 Vector3;
 struct Vector2int16 {short x,y;Vector2int16():x(0),y(0){}short&operator[](int i){return (&x)[i];}const short&operator[](int i)const{return (&x)[i];}};
-struct Rect2D {Vector2 min,max;static Rect2D xyxy(const Vector2&,const Vector2&);};
+typedef G3D::Rect2D Rect2D;
 template<class T>const T& maximum(const T&a,const T&b){return a<b?b:a;}
 }
 namespace RBX {namespace View {
@@ -56,3 +62,6 @@ void Builder::build(Function function,Vector2int16 grid,int purpose){
  }
 }
 }}
+typedef char native_rect_size[sizeof(G3D::Rect2D)==16?1:-1];
+typedef char native_vec2_size[sizeof(G3D::Vector2)==8?1:-1];
+typedef char native_vec3_size[sizeof(G3D::Vector3)==12?1:-1];

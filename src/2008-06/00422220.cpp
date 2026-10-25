@@ -1,138 +1,130 @@
-// from server: 83% by colin
-// roc 2008-06 00422220  unit: CSettingsExplorer  size: 232 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00422220
-//
-// 00422220  55                   push ebp
-// 00422221  8bec                 mov ebp, esp
-// 00422223  6aff                 push -1
-// 00422225  6830428d00           push 0x8d4230
-// 0042222a  6812156a00           push 0x6a1512
-// 0042222f  64a100000000         mov eax, dword ptr fs:[0]
-// 00422235  50                   push eax
-// 00422236  64892500000000       mov dword ptr fs:[0], esp
-// 0042223d  83ec18               sub esp, 0x18
-// 00422240  53                   push ebx
-// 00422241  56                   push esi
-// 00422242  57                   push edi
-// 00422243  8bf1                 mov esi, ecx
-// 00422245  33db                 xor ebx, ebx
-// 00422247  895de0               mov dword ptr [ebp - 0x20], ebx
-// 0042224a  8d45e0               lea eax, [ebp - 0x20]
-// 0042224d  50                   push eax
-// 0042224e  e8d3e62700           call 0x6a0926
-// 00422253  8b889c000000         mov ecx, dword ptr [eax + 0x9c]
-// 00422259  51                   push ecx
-// 0042225a  e8d7eb2700           call 0x6a0e36
-// 0042225f  8bf8                 mov edi, eax
-// 00422261  897ddc               mov dword ptr [ebp - 0x24], edi
-// 00422264  895de4               mov dword ptr [ebp - 0x1c], ebx
-// 00422267  3bfb                 cmp edi, ebx
-// 00422269  7515                 jne 0x422280
-// 0042226b  33c0                 xor eax, eax
-// 0042226d  8b4df0               mov ecx, dword ptr [ebp - 0x10]
-// 00422270  64890d00000000       mov dword ptr fs:[0], ecx
-// 00422277  5f                   pop edi
-// 00422278  5e                   pop esi
-// 00422279  5b                   pop ebx
-// 0042227a  8be5                 mov esp, ebp
-// 0042227c  5d                   pop ebp
-// 0042227d  c20400               ret 4
-// 00422280  895dfc               mov dword ptr [ebp - 4], ebx
-// 00422283  8d55d8               lea edx, [ebp - 0x28]
-// 00422286  52                   push edx
-// 00422287  8bce                 mov ecx, esi
-// 00422289  e862ffffff           call 0x4221f0
-// 0042228e  8b7670               mov esi, dword ptr [esi + 0x70]
-// 00422291  33c0                 xor eax, eax
-// 00422293  3bf3                 cmp esi, ebx
-// 00422295  0f95c0               setne al
-// 00422298  3bc3                 cmp eax, ebx
-// 0042229a  7505                 jne 0x4222a1
-// 0042229c  e8a3e62700           call 0x6a0944
-// 004222a1  8b4508               mov eax, dword ptr [ebp + 8]
-// 004222a4  50                   push eax
-// 004222a5  ffd6                 call esi
-// 004222a7  8bd8                 mov ebx, eax
-// 004222a9  895de4               mov dword ptr [ebp - 0x1c], ebx
-// 004222ac  c745fcffffffff       mov dword ptr [ebp - 4], 0xffffffff
-// 004222b3  e81b000000           call 0x4222d3
-// 004222b8  8bc3                 mov eax, ebx
-// 004222ba  8b4df0               mov ecx, dword ptr [ebp - 0x10]
-// 004222bd  64890d00000000       mov dword ptr fs:[0], ecx
-// 004222c4  5f                   pop edi
-// 004222c5  5e                   pop esi
-// 004222c6  5b                   pop ebx
-// 004222c7  8be5                 mov esp, ebp
-// 004222c9  5d                   pop ebp
-// 004222ca  c20400               ret 4
-// 004222cd  8b7ddc               mov edi, dword ptr [ebp - 0x24]
-// 004222d0  8b5de4               mov ebx, dword ptr [ebp - 0x1c]
-// 004222d3  83ff02               cmp edi, 2
-// 004222d6  742f                 je 0x422307
-// 004222d8  33c9                 xor ecx, ecx
-// 004222da  85db                 test ebx, ebx
-// 004222dc  0f94c1               sete cl
-// 004222df  8bf1                 mov esi, ecx
-// 004222e1  85f6                 test esi, esi
-// 004222e3  740a                 je 0x4222ef
-// 004222e5  ff15d8228000         call dword ptr [0x8022d8]
-// 004222eb  8bf8                 mov edi, eax
-// 004222ed  eb02                 jmp 0x4222f1
-// 004222ef  33ff                 xor edi, edi
-// 004222f1  8b55e0               mov edx, dword ptr [ebp - 0x20]
-// 004222f4  52                   push edx
-// 004222f5  6a00                 push 0
-// 004222f7  e860e62700           call 0x6a095c
-// 004222fc  85f6                 test esi, esi
-// 004222fe  7407                 je 0x422307
-// 00422300  57                   push edi
-// 00422301  ff15d0218000         call dword ptr [0x8021d0]
-// 00422307  c3                   ret 
+// from server: 100% by nuck16
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: mfc-9.0-shared roc_unit_2443da6d71cf756c.cpp
 
-// from server: 90% by king_originala
-struct ModuleState {
-    char padding[0x9c];
-    void* activationContext;
-};
-
-extern "C" ModuleState* __stdcall getModuleState();
-extern "C" int __stdcall activateContext(void*, unsigned long*);
-extern "C" void __stdcall deactivateContext(unsigned long);
-extern "C" void __stdcall reportMissingProcedure();
-
-struct CSettingsExplorer {
-    char padding[0x70];
-    void* procedure;
-
-    void** getProcedure(void** result);
-    int dragLeave(void* window);
-};
-
-int CSettingsExplorer::dragLeave(void* window)
+// Candidate translation unit (score above; library headers required).
+#define _AFXDLL
+#include <afxwin.h>
+#include <afxcomctl32.h>
+template<class T> void rocSink(T);
+void rocRefs()
 {
-    unsigned long cookie = 0;
-    int activated = activateContext(getModuleState()->activationContext, &cookie);
-    int result = 0;
-
-    if (!activated)
-        return 0;
-
-    __try {
-        void* resolved;
-        getProcedure(&resolved);
-
-        typedef int (__stdcall *Procedure)(void*);
-        Procedure function = reinterpret_cast<Procedure>(procedure);
-        int available = function != 0;
-        if (!available)
-            reportMissingProcedure();
-
-        result = function(window);
-    }
-    __finally {
-        if (activated)
-            deactivateContext(cookie);
-    }
-
-    return result;
+    rocSink(&CComCtlWrapper::_InitCommonControls);
+    rocSink(&CComCtlWrapper::_InitCommonControlsEx);
+    rocSink(&CComCtlWrapper::_ImageList_Create);
+    rocSink(&CComCtlWrapper::_ImageList_Destroy);
+    rocSink(&CComCtlWrapper::_ImageList_GetImageCount);
+    rocSink(&CComCtlWrapper::_ImageList_SetImageCount);
+    rocSink(&CComCtlWrapper::_ImageList_Add);
+    rocSink(&CComCtlWrapper::_ImageList_ReplaceIcon);
+    rocSink(&CComCtlWrapper::_ImageList_SetBkColor);
+    rocSink(&CComCtlWrapper::_ImageList_GetBkColor);
+    rocSink(&CComCtlWrapper::_ImageList_SetOverlayImage);
+    rocSink(&CComCtlWrapper::_ImageList_Draw);
+    rocSink(&CComCtlWrapper::_ImageList_Replace);
+    rocSink(&CComCtlWrapper::_ImageList_AddMasked);
+    rocSink(&CComCtlWrapper::_ImageList_DrawEx);
+    rocSink(&CComCtlWrapper::_ImageList_DrawIndirect);
+    rocSink(&CComCtlWrapper::_ImageList_Remove);
+    rocSink(&CComCtlWrapper::_ImageList_GetIcon);
+    rocSink(&CComCtlWrapper::_ImageList_LoadImageA);
+    rocSink(&CComCtlWrapper::_ImageList_LoadImageW);
+    rocSink(&CComCtlWrapper::_ImageList_Copy);
+    rocSink(&CComCtlWrapper::_ImageList_BeginDrag);
+    rocSink(&CComCtlWrapper::_ImageList_EndDrag);
+    rocSink(&CComCtlWrapper::_ImageList_DragEnter);
+    rocSink(&CComCtlWrapper::_ImageList_DragLeave);
+    rocSink(&CComCtlWrapper::_ImageList_DragMove);
+    rocSink(&CComCtlWrapper::_ImageList_SetDragCursorImage);
+    rocSink(&CComCtlWrapper::_ImageList_DragShowNolock);
+    rocSink(&CComCtlWrapper::_ImageList_GetDragImage);
+    rocSink(&CComCtlWrapper::_ImageList_Read);
+    rocSink(&CComCtlWrapper::_ImageList_Write);
+    rocSink(&CComCtlWrapper::_ImageList_ReadEx);
+    rocSink(&CComCtlWrapper::_ImageList_WriteEx);
+    rocSink(&CComCtlWrapper::_ImageList_GetIconSize);
+    rocSink(&CComCtlWrapper::_ImageList_SetIconSize);
+    rocSink(&CComCtlWrapper::_ImageList_GetImageInfo);
+    rocSink(&CComCtlWrapper::_ImageList_Merge);
+    rocSink(&CComCtlWrapper::_ImageList_Duplicate);
+    rocSink(&CComCtlWrapper::_CreateToolbarEx);
+    rocSink(&CComCtlWrapper::_CreateMappedBitmap);
+    rocSink(&CComCtlWrapper::_DrawStatusTextA);
+    rocSink(&CComCtlWrapper::_DrawStatusTextW);
+    rocSink(&CComCtlWrapper::_CreateStatusWindowA);
+    rocSink(&CComCtlWrapper::_CreateStatusWindowW);
+    rocSink(&CComCtlWrapper::_MenuHelp);
+    rocSink(&CComCtlWrapper::_ShowHideMenuCtl);
+    rocSink(&CComCtlWrapper::_GetEffectiveClientRect);
+    rocSink(&CComCtlWrapper::_MakeDragList);
+    rocSink(&CComCtlWrapper::_DrawInsert);
+    rocSink(&CComCtlWrapper::_LBItemFromPt);
+    rocSink(&CComCtlWrapper::_CreateUpDownControl);
+    rocSink(&CComCtlWrapper::_InitMUILanguage);
+    rocSink(&CComCtlWrapper::_GetMUILanguage);
+    rocSink(&CComCtlWrapper::_DSA_Create);
+    rocSink(&CComCtlWrapper::_DSA_Destroy);
+    rocSink(&CComCtlWrapper::_DSA_DestroyCallback);
+    rocSink(&CComCtlWrapper::_DSA_GetItemPtr);
+    rocSink(&CComCtlWrapper::_DSA_InsertItem);
+    rocSink(&CComCtlWrapper::_DPA_Create);
+    rocSink(&CComCtlWrapper::_DPA_Destroy);
+    rocSink(&CComCtlWrapper::_DPA_DeletePtr);
+    rocSink(&CComCtlWrapper::_DPA_DeleteAllPtrs);
+    rocSink(&CComCtlWrapper::_DPA_EnumCallback);
+    rocSink(&CComCtlWrapper::_DPA_DestroyCallback);
+    rocSink(&CComCtlWrapper::_DPA_SetPtr);
+    rocSink(&CComCtlWrapper::_DPA_InsertPtr);
+    rocSink(&CComCtlWrapper::_DPA_GetPtr);
+    rocSink(&CComCtlWrapper::_DPA_Sort);
+    rocSink(&CComCtlWrapper::_DPA_Search);
+    rocSink(&CComCtlWrapper::_Str_SetPtrW);
+    rocSink(&CComCtlWrapper::__TrackMouseEvent);
+    rocSink(&CComCtlWrapper::_FlatSB_EnableScrollBar);
+    rocSink(&CComCtlWrapper::_FlatSB_ShowScrollBar);
+    rocSink(&CComCtlWrapper::_FlatSB_GetScrollRange);
+    rocSink(&CComCtlWrapper::_FlatSB_GetScrollInfo);
+    rocSink(&CComCtlWrapper::_FlatSB_GetScrollPos);
+    rocSink(&CComCtlWrapper::_FlatSB_GetScrollProp);
+    rocSink(&CComCtlWrapper::_FlatSB_GetScrollPropPtr);
+    rocSink(&CComCtlWrapper::_FlatSB_SetScrollPos);
+    rocSink(&CComCtlWrapper::_FlatSB_SetScrollInfo);
+    rocSink(&CComCtlWrapper::_FlatSB_SetScrollRange);
+    rocSink(&CComCtlWrapper::_FlatSB_SetScrollProp);
+    rocSink(&CComCtlWrapper::_InitializeFlatSB);
+    rocSink(&CComCtlWrapper::_UninitializeFlatSB);
+    rocSink(&CComCtlWrapper::_SetWindowSubclass);
+    rocSink(&CComCtlWrapper::_GetWindowSubclass);
+    rocSink(&CComCtlWrapper::_RemoveWindowSubclass);
+    rocSink(&CComCtlWrapper::_DefSubclassProc);
+    rocSink(&CComCtlWrapper::_DrawShadowText);
+    rocSink(&CComCtlWrapper::_CreatePropertySheetPageA);
+    rocSink(&CComCtlWrapper::_CreatePropertySheetPageW);
+    rocSink(&CComCtlWrapper::_DestroyPropertySheetPage);
+    rocSink(&CComCtlWrapper::_PropertySheetA);
+    rocSink(&CComCtlWrapper::_PropertySheetW);
+    rocSink(&CCommDlgWrapper::_GetOpenFileNameA);
+    rocSink(&CCommDlgWrapper::_GetOpenFileNameW);
+    rocSink(&CCommDlgWrapper::_GetSaveFileNameA);
+    rocSink(&CCommDlgWrapper::_GetSaveFileNameW);
+    rocSink(&CCommDlgWrapper::_GetFileTitleA);
+    rocSink(&CCommDlgWrapper::_GetFileTitleW);
+    rocSink(&CCommDlgWrapper::_ChooseColorA);
+    rocSink(&CCommDlgWrapper::_ChooseColorW);
+    rocSink(&CCommDlgWrapper::_FindTextA);
+    rocSink(&CCommDlgWrapper::_FindTextW);
+    rocSink(&CCommDlgWrapper::_ReplaceTextA);
+    rocSink(&CCommDlgWrapper::_ReplaceTextW);
+    rocSink(&CCommDlgWrapper::_ChooseFontA);
+    rocSink(&CCommDlgWrapper::_ChooseFontW);
+    rocSink(&CCommDlgWrapper::_PrintDlgA);
+    rocSink(&CCommDlgWrapper::_PrintDlgW);
+    rocSink(&CCommDlgWrapper::_CommDlgExtendedError);
+    rocSink(&CCommDlgWrapper::_PageSetupDlgA);
+    rocSink(&CCommDlgWrapper::_PageSetupDlgW);
+    rocSink(&CCommDlgWrapper::_PrintDlgExA);
+    rocSink(&CCommDlgWrapper::_PrintDlgExW);
+    rocSink(&CShellWrapper::_InitNetworkAddressControl);
 }
