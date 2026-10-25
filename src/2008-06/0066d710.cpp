@@ -1,7 +1,8 @@
+// from server: 78% by king_originala_sol_native
 // from server: 69% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 #include <intrin.h>
 #include <utility>
 namespace boost {
@@ -56,7 +57,11 @@ struct Matrix3 {
  Vector3 operator*(const Vector3&v)const{Vector3 result;for(int r=0;r<3;++r)result[r]=cells[r][0]*v[0]+cells[r][1]*v[1]+cells[r][2]*v[2];return result;}
 };
 inline Vector3 operator*(const Vector3&v,const Matrix3&m){Vector3 result;for(int r=0;r<3;++r)result[r]=v[0]*m.cells[0][r]+v[1]*m.cells[1][r]+v[2]*m.cells[2][r];return result;}
-struct Frame {Matrix3 rotation;Vector3 translation;Frame(const Frame&v):rotation(v.rotation),translation(v.translation){}};
+struct Frame {Matrix3 rotation;Vector3 translation;Frame(const Frame&v):rotation(v.rotation),translation(v.translation){}
+ Frame(const Matrix3& r,const Vector3& t):rotation(r),translation(t){}
+ Vector3 pointToWorldSpace(const Vector3&v)const{return Vector3(rotation.cells[0][0]*v[0]+rotation.cells[0][1]*v[1]+rotation.cells[0][2]*v[2]+translation[0],rotation.cells[1][0]*v[0]+rotation.cells[1][1]*v[1]+rotation.cells[1][2]*v[2]+translation[1],rotation.cells[2][0]*v[0]+rotation.cells[2][1]*v[1]+rotation.cells[2][2]*v[2]+translation[2]);}
+ Vector3 pointToObjectSpace(const Vector3&v)const{float p[3];p[0]=v[0]-translation[0];p[1]=v[1]-translation[1];p[2]=v[2]-translation[2];return Vector3(rotation.cells[0][0]*p[0]+rotation.cells[1][0]*p[1]+rotation.cells[2][0]*p[2],rotation.cells[0][1]*p[0]+rotation.cells[1][1]*p[1]+rotation.cells[2][1]*p[2],rotation.cells[0][2]*p[0]+rotation.cells[1][2]*p[1]+rotation.cells[2][2]*p[2]);}
+};
 struct Face {Vector3 corner[4];const Vector3&operator[](int)const;};
 struct Primitive {Face getFaceInWorld(int);const Frame&getCoordinateFrame()const;};
 Vector3 __cdecl iRoundVector3(const Vector3&);
@@ -72,15 +77,9 @@ bool DragSnap::update(){
  Face current=currentPrimitive->getFaceInWorld(currentFace);
  Vector3 oldPoint=previous[0];
  Vector3 newPoint=current[0];
- Matrix3 rotation=previousPrimitive->getCoordinateFrame().rotation;
- Vector3 snapped=iRoundVector3(Vector3(
-  (newPoint.z-oldPoint.z)*rotation.cells[2][0]+(newPoint.y-oldPoint.y)*rotation.cells[1][0]+(newPoint.x-oldPoint.x)*rotation.cells[0][0],
-  (newPoint.z-oldPoint.z)*rotation.cells[2][1]+(newPoint.y-oldPoint.y)*rotation.cells[1][1]+(newPoint.x-oldPoint.x)*rotation.cells[0][1],
-  (newPoint.z-oldPoint.z)*rotation.cells[2][2]+(newPoint.y-oldPoint.y)*rotation.cells[1][2]+(newPoint.x-oldPoint.x)*rotation.cells[0][2]));
- Vector3 delta(
-  rotation.cells[0][2]*snapped.z+rotation.cells[0][1]*snapped.y+rotation.cells[0][0]*snapped.x+oldPoint.x-newPoint.x,
-  rotation.cells[1][2]*snapped.z+rotation.cells[1][1]*snapped.y+oldPoint.y + rotation.cells[1][0]*snapped.x-newPoint.y,
-  rotation.cells[2][1]*snapped.y + rotation.cells[2][2]*snapped.z+rotation.cells[2][0]*snapped.x+oldPoint.z-newPoint.z);
+ Frame gridFrame(previousPrimitive->getCoordinateFrame().rotation,oldPoint);
+ Vector3 snapped=iRoundVector3(gridFrame.pointToObjectSpace(newPoint));
+ Vector3 delta=gridFrame.pointToWorldSpace(snapped)-newPoint;
 
  Frame goal=currentPrimitive->getCoordinateFrame();
  goal.translation+=delta;

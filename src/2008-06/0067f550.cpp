@@ -1,8 +1,8 @@
-// from server: 94% by Espeon
+// from server: 99% by king_originala_sol_native
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob1 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espeon_skysuncolorfourdce83650fc651d79.cpp
+// roc-lib: rbxgs-dll roc_sol_skysun_named_058f87bf373831a6.cpp
 
 // Candidate translation unit (score above; library headers required).
 #undef OGRE_NONCLIENT_BUILD
@@ -19,7 +19,7 @@ public:
 void SkySunRecovery::drawSun(void*,const G3D::LightingParameters& lighting) {
  G3D::Vector3 sun=lighting.physicallyCorrect?lighting.trueSunPosition:lighting.sunPosition;
  G3D::Color3 color=lighting.emissiveScale*0.8f;
- if(sun.y<0) color*=G3D::max(0.0f,(sun.y+0.1f)*10.0f);
+ if(sun.y<0) {float factor=G3D::max(0.0f,(sun.y+0.1f)*10.0f);color*=factor;}
  sun*=2700.0f;
  field<Ogre::SceneNode*>(0x40)->setPosition(sun.x,sun.y,sun.z);
  field<Ogre::BillboardSet*>(0x34)->getBillboard(0)->setColour(Ogre::ColourValue(color.r,color.g,color.b));

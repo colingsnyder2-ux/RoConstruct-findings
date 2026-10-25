@@ -1,3 +1,4 @@
+// from server: 100% by king_originala_sol_native
 // from server: 52% by king_originala
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
@@ -21,7 +22,7 @@ using G3D::Vector2;using G3D::Vector3;using G3D::Rect2D;using G3D::Vector2int16;
 extern const float inset;
 struct Face {Vector2 perturbation;bool bulge[2];void operator()(Vector3&,Vector3&,Vector2&,const Vector3&,const Vector2int16&);};
 typedef Face Deformation;
-void Face::operator()(Vector3&vertex,Vector3&normal,Vector2&,const Vector3&size,const Vector2int16&){
+__forceinline void Face::operator()(Vector3&vertex,Vector3&normal,Vector2&,const Vector3&size,const Vector2int16&){
  if(vertex.x>0)vertex.x-=inset;else vertex.x+=inset;
  if(vertex.y>0)vertex.y-=inset;else vertex.y+=inset;
  for(int k=0;k<2;++k){normal[k]=bulge[k]?vertex[k]/size[k]*perturbation[k]:perturbation[k];_ReadWriteBarrier();}

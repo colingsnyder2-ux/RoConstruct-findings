@@ -1,7 +1,10 @@
-// from server: 63% by king_originala
+// from server: 65% by king_originala_sol_native
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
+// roc-flags: /O2 /Ob2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_sol_writeprops_ptrforce_c6bf9f8764549469.cpp
+
+// Candidate translation unit (score above; library headers required).
 #include <vector>
 #include <typeinfo>
 #include <intrin.h>
@@ -29,6 +32,7 @@ template<class T> class shared_ptr {
 public:
     T* px; detail::shared_count pn;
     shared_ptr():px(0),pn(){}
+    __forceinline ~shared_ptr(){}
     shared_ptr& operator=(const shared_ptr& r){px=r.px;pn=r.pn;return *this;}
     void swap(shared_ptr& r){std::swap(px,r.px);pn.swap(r.pn);}
     void reset(){shared_ptr().swap(*this);}

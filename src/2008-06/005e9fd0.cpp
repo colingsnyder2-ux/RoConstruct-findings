@@ -1,12 +1,17 @@
-// from server: 77% by king_originala
-// roc-cl: 50727
+// from server: 97% by king_originala_sol_native
+// roc-lang: cpp
+// roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_sol_worldstep_native_roundfloatrtm_933bb026a8df4bb2.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <G3D/g3dmath.h>
 #include <math.h>
 #include <stddef.h>
 namespace G3D {
 struct System {static double getTick();};
 template<class T>struct Array {T*data;int num,capacity;void resize(int,bool);void fastClear(){resize(0,false);}};
-template<class T>inline const T&max(const T&a,const T&b){return a<b?b:a;}
+
 }
 namespace RBX {
 struct Primitive;struct World;struct Kernel;struct Edge;
@@ -42,7 +47,7 @@ float World::step(float desiredInterval,unsigned updateArgument,bool skipBroadph
  inStepCode=true;
  Profiling::Mark mark(*profilingWorldStep,true);
  double startTick=G3D::System::getTick();
- int steps=G3D::max(1,(int)(float)floor(desiredInterval*Constants::worldStepsPerSec()));
+ int steps=G3D::max(1,G3D::iRound(floorf(desiredInterval*Constants::worldStepsPerSec())));
  int uiStep=worldStepId/Constants::worldStepsPerUiStep();
  {Profiling::Mark prepare(*profilingClump,false);getClumpStage()->process();}
  {Profiling::Mark ui(*profilingUi,false);
