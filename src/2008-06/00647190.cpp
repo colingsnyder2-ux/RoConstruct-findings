@@ -1,8 +1,8 @@
-// from server: 93% by king_originala
+// from server: 100% by king_originala_sol_native
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_king_originala_glue_connector_970e2b5236474fdb.cpp
+// roc-lib: rbxgs-dll roc_sol_gluetransform_ed1d80f4471ae699.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "util/PV.h"
@@ -432,6 +432,7 @@ struct NativeBodyPVView {
  void updatePV() const;
  const PV& getPV() const { updatePV(); return pv; }
 };
+__forceinline G3D::Vector3 gluePointWorld(const G3D::CoordinateFrame& f,const G3D::Vector3& v){return G3D::Vector3(f.rotation[0][0]*v[0] + f.rotation[0][1]*v[1] + f.rotation[0][2]*v[2] + f.translation[0],f.rotation[1][0]*v[0] + f.rotation[1][1]*v[1] + f.rotation[1][2]*v[2] + f.translation[1],f.rotation[2][0]*v[0] + f.rotation[2][1]*v[1] + f.rotation[2][2]*v[2] + f.translation[2]);}
 void GlueJoint::putInKernel(Kernel* _kernel)
 {
     MultiJoint::putInKernel(_kernel);
@@ -443,7 +444,7 @@ void GlueJoint::putInKernel(Kernel* _kernel)
 
     for (int i = 0; i < 4; ++i)
     {
-        G3D::Vector3 p0World = reinterpret_cast<const NativeBodyPVView*>(b0)->getPV().position.pointToWorldSpace(overlapInP0[i]);
+        G3D::Vector3 p0World = gluePointWorld(reinterpret_cast<const NativeBodyPVView*>(b0)->getPV().position,overlapInP0[i]);
         G3D::Vector3 p1World = reinterpret_cast<const NativeBodyPVView*>(b1)->getPV().position.pointToWorldSpace(overlapInP1[i]);
 
         Point* p0 = getKernel()->newPoint(b0, p0World);

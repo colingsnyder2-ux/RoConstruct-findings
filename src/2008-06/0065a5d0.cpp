@@ -1,3 +1,4 @@
+// from server: 71% by king_originala_sol_native
 // from server: 69% by colin
 // roc 2008-06 0065a5d0  unit: RBX::BallBallContact  size: 278 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0065a5d0
@@ -112,6 +113,7 @@ struct Point {
 struct Box {
     Point min;
     Point max;
+    bool contains(const Point& p)const{return p.x>=min.x&&p.y>=min.y&&p.z>=min.z&&p.x<=max.x&&p.y<=max.y&&p.z<=max.z;}
 };
 
 struct S {
@@ -134,21 +136,8 @@ void S::update(void *a, void *b, const Box *range,
                 _ReadWriteBarrier();
                 point.z = z;
 
-                bool inNew =
-                    x >= newBox->min.x &&
-                    y >= newBox->min.y &&
-                    z >= newBox->min.z &&
-                    x <= newBox->max.x &&
-                    y <= newBox->max.y &&
-                    z <= newBox->max.z;
-
-                bool inOld =
-                    x >= oldBox->min.x &&
-                    y >= oldBox->min.y &&
-                    z >= oldBox->min.z &&
-                    x <= oldBox->max.x &&
-                    y <= oldBox->max.y &&
-                    z <= oldBox->max.z;
+                bool inNew=newBox->contains(point);
+                bool inOld=oldBox->contains(point);
 
                 if (inNew) {
                     if (!inOld)

@@ -1,4 +1,4 @@
-// from server: 95% by colin
+// from server: 100% by colin
 // roc 2008-06 00422030  unit: CSettingsExplorer  size: 156 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00422030
 //
@@ -59,16 +59,20 @@
 // 004220c6  e891e82700           call 0x6a095c
 // 004220cb  c3                   ret 
 
-// from server: 0% by king_originala
+// 00422030 endDrag v1: __try/__finally with inline-called funclet.
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+
 struct ModuleState {
     char padding[0x9c];
     void* context;
 };
 
-extern "C" ModuleState* __stdcall getState(int*);
-extern "C" unsigned long __stdcall activateContext(void*);
-extern "C" void __stdcall deactivateContext(unsigned long);
-extern "C" void __cdecl reportMissingProcedure();
+extern "C" ModuleState* __stdcall getState(int* state);
+extern "C" unsigned long __stdcall activateContext(void* context);
+extern "C" void __stdcall deactivateContext(int flag, int state);
+extern "C" void __stdcall reportMissingProcedure();
 
 struct CSettingsExplorer {
     char padding[0x68];
@@ -92,7 +96,8 @@ void CSettingsExplorer::endDrag() {
             function();
         }
         __finally {
-            deactivateContext(cookie);
+            if (cookie != 2)
+                deactivateContext(0, state);
         }
     }
 }
