@@ -1,7 +1,9 @@
+// from server: 100% by EspClaude
+// from server: 95% by Espeon
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: openrbx-client roc_espclaude_8ac19faa8bb50df6.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: openrbx-client-dll roc_espclaude_8ac19faa8bb50df6.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <G3D/Color4.h>

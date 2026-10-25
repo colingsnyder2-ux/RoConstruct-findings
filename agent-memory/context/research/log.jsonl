@@ -1291,3 +1291,11 @@
 {"date": "2026-10-25", "title": "roc repair 2008-06 006825b0", "text": "91 -> 91, tried 0 variants []."}
 {"date": "2026-10-25", "title": "roc repair 2008-06 00428310", "text": "99 -> 99, tried 5 variants [toggle_char_signedness=0, toggle_int_signedness=99, negate_comparison=0, swap_add_operands=0, toggle_struct_class=99]."}
 {"date": "2026-10-25", "title": "roc repair 2008-06 006131e0", "text": "98 -> 98, tried 0 variants []."}
+{"date": "2026-10-25", "title": "roc repair 2008-06 004502b0", "text": "97 -> 97, tried 0 variants []."}
+{"date": "2026-10-25", "title": "roc repair 2008-06 00574cb0", "text": "97 -> 97, tried 0 variants []."}
+{"date": "2026-10-25", "title": "roc repair 2008-06 0041db00", "text": "99 -> 99, tried 0 variants []."}
+{"date": "2026-10-25", "title": "roc repair 2008-06 00425de0", "text": "99 -> 99, tried 0 variants []."}
+{"date": "2026-10-25", "title": "roc repair 2008-06 004502b0", "text": "97 -> 97, tried 0 variants []."}
+{"date": "2026-10-25", "title": "roc repair 2008-06 00574cb0", "text": "97 -> 97, tried 0 variants []."}
+{"date": "2026-10-25", "title": "roc repair 2008-06 004684a0", "text": "96 -> 96, tried 8 variants [stack_layout=94, stack_layout=94, stack_layout=94, stack_layout=94, toggle_char_signedness=96, toggle_int_signedness=96, negate_comparison=74, toggle_struct_class=96]."}
+{"date": "2026-10-25", "title": "roc repair 2008-06 004e6400", "text": "98 -> 98, tried 5 variants [stack_layout=98, toggle_char_signedness=98, toggle_int_signedness=98, negate_comparison=98, toggle_struct_class=98]."}
