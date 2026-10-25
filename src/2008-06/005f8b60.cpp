@@ -1,13 +1,13 @@
-// from server: 98% by colin
-// from server: 94% by Espeon
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espeon_winhttptargeterrorsb4b8445cba898959.cpp
+// roc-lib: rbxgs-dll roc_espclaude_ff34cd40c82265d7.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define NDEBUG 1
 #include "roc_espeon_atl90installedaliases16e7a3b08ad00c2a.cpp"
+#define NDEBUG 1
 // Native CString comparison569d30 imports _mbscmp.
 #define _MBCS 1
 // /EHsc prelude is required before the library preprocessor.
@@ -123,7 +123,7 @@ void NativeHttp::requestWinHttp(bool isPost,std::istream& data,bool compressData
     out.push(boost::iostreams::basic_gzip_compressor<>(gzipParams));
    }
    out.push(String_sink(uploadData));boost::iostreams::copy(data,out);
-  } catch(boost::iostreams::gzip_error& e) { throw std::runtime_error(G3D::format("Upload GZip error %d, ZLib error %d, \"%s\"",e.error(),e.zlib_error_code(),url.c_str())); }
+  } catch(boost::iostreams::gzip_error& e) { int err=e.error(); int zerr=e.zlib_error_code(); throw std::runtime_error(G3D::format("Upload GZip error %d, ZLib error %d, \"%s\"",err,zerr,url.c_str())); }
   std::string::size_type length=uploadData.size();
   if(length>10000) {
    std::string sizeHeader=G3D::format("Roblox-Content-Size: %d\r\n",length);
@@ -140,8 +140,8 @@ void NativeHttp::requestWinHttp(bool isPost,std::istream& data,bool compressData
   WCHAR buffer[256];DWORD length=256;
   if(WinHttpQueryHeaders(request,WINHTTP_QUERY_CONTENT_ENCODING,NULL,buffer,&length,NULL))if(ATL::CStringA(buffer)=="gzip")in.push(boost::iostreams::basic_gzip_decompressor<>());
   in.push(HttpRequest_source(request));boost::iostreams::copy(in,String_sink(response));
- } catch(boost::iostreams::gzip_error& e) { throw std::runtime_error(G3D::format("GZip error %d, ZLib error %d, \"%s\"",e.error(),e.zlib_error_code(),url.c_str())); }
- catch(boost::iostreams::zlib_error& e) { throw std::runtime_error(G3D::format("ZLib error %d, \"%s\"",e.error(),url.c_str())); }
+ } catch(boost::iostreams::gzip_error& e) { int err=e.error(); int zerr=e.zlib_error_code(); throw std::runtime_error(G3D::format("GZip error %d, ZLib error %d, \"%s\"",err,zerr,url.c_str())); }
+ catch(boost::iostreams::zlib_error& e) { int err=e.error(); throw std::runtime_error(G3D::format("ZLib error %d, \"%s\"",err,url.c_str())); }
  int status=-1;
  { DWORD length=sizeof(status);
  failure(WinHttpQueryHeaders(request,WINHTTP_QUERY_STATUS_CODE|WINHTTP_QUERY_FLAG_NUMBER,NULL,&status,&length,NULL)==TRUE,"WinHttpQueryHeaders");

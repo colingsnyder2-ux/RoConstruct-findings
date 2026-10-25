@@ -1,3 +1,4 @@
+// from server: 100% by EspClaude
 // from server: 93% by EspClaude
 // roc 2008-06 00467d50  unit: DxUserInput
 #include <string>
@@ -90,8 +91,9 @@ public:
 
 bool DxUserInput::isToolboxEnabled()
 {
-    if (AfxGetApp()->m_pMainWnd->isFlag()) {
-        if (getDataModel()) {
+    CWnd* w = AfxGetApp()->m_pMainWnd;
+    if (w->isFlag()) {
+        if (!!getDataModel()) {
             RBX::DataModel::scoped_write_request request(getDataModel());
             RBX::Verb* verb = getDataModel()->verbs.getVerb("ToggleToolbox");
             if (verb)
