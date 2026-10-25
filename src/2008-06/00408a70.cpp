@@ -1,9 +1,8 @@
-// from server: 95% by colin
-// from server: 0% by EspClaude
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: atl-9.0-dll-rtm roc_espclaude_1aee858c13f1ad84.cpp
+// roc-lib: atl-9.0-dll-rtm roc_espclaude_188c2f09ea8697a7.cpp
 
 // Candidate translation unit (score above; library headers required).
 #ifndef _CPPUNWIND
@@ -58,34 +57,22 @@ public:
     T* operator->() const { return px; }
 };
 
-struct BStr;
-extern BStr* (__thiscall* BStr_ctor)(BStr*, const wchar_t*);
-extern const char* (__thiscall* BStr_conv)(const BStr*);
-extern void (__thiscall* BStr_dtor)(BStr*);
-struct BStr {
-    char* m_pszData;
-    BStr() {}
-    BStr(const wchar_t* psz, BStr*& out) { out = BStr_ctor(this, psz); }
-    operator const char*() const { return BStr_conv(this); }
-    __declspec(dllimport) ~BStr() throw();
+template <class T> class CStr {
+public:
+    __declspec(noinline) CStr(const wchar_t* psz) { m_pszData = (T*)psz; }
+    __declspec(noinline) ~CStr() throw() { m_pszData = 0; }
+    __declspec(noinline) operator const T*() const throw() { return m_pszData; }
+    T* m_pszData;
 };
-struct BStr2 {
-    char* m_pszData;
-    BStr2(const wchar_t* psz, BStr*& out) { out = BStr_ctor((BStr*)this, psz); }
-    __declspec(dllimport) ~BStr2() throw();
-};
-struct UrlStr {
-    char* m_pszData;
-    __declspec(dllimport) operator const char*() const throw();
-    __declspec(dllimport) ~UrlStr() throw();
-};
+extern template class __declspec(dllimport) CStr<char>;
+typedef CStr<char> CStrA;
 
 class Logger {
 public:
     void log(int level, const char* fmt, ...);
 };
 shared_ptr<Logger> __cdecl getLogger();
-UrlStr __cdecl getBaseUrl();
+CStrA __cdecl getBaseUrl();
 
 class Authenticator {
 public:
@@ -106,15 +93,13 @@ public:
 HRESULT __stdcall CApp::RobloxAuthenticate(BSTR user, BSTR password) throw()
 {
     AFX_MANAGE_STATE(AfxGetAppModuleState());
-    BStr* pp;
-    BStr* pu;
-    (BStr(password, pp), BStr2(user, pu), getLogger())->log(1, "CApp::RobloxAuthenticate %s %s", BStr_conv(pu), BStr_conv(pp));
+    getLogger()->log(1, "CApp::RobloxAuthenticate %s %s", (const char*)CStrA(user), (const char*)CStrA(password));
     try
     {
         ATL::CUrl url;
         url.CrackUrl(getBaseUrl());
         Authenticator auth(url.GetHostName());
-        (BStr(password, pp), BStr2(user, pu), auth).authenticate(BStr_conv(pu), BStr_conv(pp));
+        auth.authenticate(CStrA(user), CStrA(password));
     }
     catch (std::exception& e)
     {
@@ -122,3 +107,4 @@ HRESULT __stdcall CApp::RobloxAuthenticate(BSTR user, BSTR password) throw()
     }
     return S_OK;
 }
+
