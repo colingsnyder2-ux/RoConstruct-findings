@@ -86,14 +86,13 @@ struct MovingNoPhysicsBase : Base0, Sub5 {
 };
 
 void MovingNoPhysicsBase::func() {
-    Holder* holder = field_c4.p;
-    Inner* q = &holder->inner;
-    if (q)
-        q->method(0);
+    Holder& h = *field_c4.p;
+    if (&h.inner)
+        h.inner.method(0);
     field_d0.method();
     Sub5* a = static_cast<Sub5*>(this);
     Sub4* s = getWorld()->sub;
     s->method(a)->method();
-    field_cc->method(holder);
+    field_cc->method(field_c4.p);
     field_c4.reset();
 }
