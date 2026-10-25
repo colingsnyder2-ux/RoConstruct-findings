@@ -1,17 +1,15 @@
-// from server: 84% by EspClaude
-// from server: 83% by Espeon
+// from server: 85% by king_originala_sol_resume_medium
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espclaude_ba5b43d683515aa8.cpp
+// roc-lib: openrbx-client-dll roc_resume_medium_ff50cb6c003cb003.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <boost/shared_ptr.hpp>
+#include "util/PV.h"
 struct Object;
 typedef boost::shared_ptr<Object> Shared;
-struct Transform {
-    float data[18];
-};
+typedef RBX::PV Transform;
 
 struct TransformProperty {
     void assign(const Transform&);
@@ -25,7 +23,7 @@ struct Object {
 };
 
 struct Actor {
-    const Transform& getTransform();
+    const G3D::CoordinateFrame& getTransform();
 };
 
 namespace RBX {
@@ -58,7 +56,7 @@ struct Tool {
     virtual void slot14();
     virtual void slot15();
     virtual Shared createObject();
-    virtual Transform makeTransform(int, const Transform&);
+    virtual Transform makeTransform(int, const G3D::CoordinateFrame&);
     virtual int getNotification();
 
     char padding[0x14];
@@ -81,8 +79,9 @@ void Tool::execute(int argument)
 
         Shared selected = convert(stored.get()->getObject());
         selected->setParent(parent);
-        selected->transform.assign(
-            makeTransform(argument, actor->getTransform()));
+        const G3D::CoordinateFrame& frame = actor->getTransform();
+        const RBX::PV& result = makeTransform(argument, frame);
+        selected->transform.assign(result);
         func_005807b0(parent)->notify(getNotification());
     }
 }

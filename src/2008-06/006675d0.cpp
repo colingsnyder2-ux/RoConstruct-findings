@@ -1,14 +1,16 @@
-// from server: 78% by king_originala
-// roc-cl: 50727
+// from server: 93% by king_originala_sol_native
+// roc-lang: cpp
+// roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_king_originala_physics_6a0bb37857c608b8.cpp
+// roc-lib: rbxgs-dll roc_sol_native_freefall_scopertm_18ceacd96e50cafb.cpp
 
 // Candidate translation unit (score above; library headers required).
+#include "util/Velocity.h"
 #include <G3D/Vector3.h>
 #include <G3D/Matrix3.h>
 namespace RBX {
 using G3D::Vector3;using G3D::Matrix3;
-struct Velocity {Vector3 linear,rotational;Velocity();static const Velocity& zero(){static Velocity v;return v;}};
+
 struct Cofm {const Matrix3& getMoment()const;float getMass()const;};
 struct SimBody {char prefix[0x3c];Velocity velocity;char reserved[0x90-0x54];Vector3 torque;};
 struct Body {
@@ -32,11 +34,11 @@ void Freefall::onComputeForce(float dt){
  baseComputeForce(dt);
  Body* body=getHumanoid()->getTorsoBody();
  if(body){
-  Vector3 inertia=toDiagonal(body->getBranchIBody());
-  float requested=(desiredYaw-body->getVelocity().rotational.y)*inertia.y*7500.0f;
+  float requested;{Vector3 inertia=toDiagonal(body->getBranchIBody());
+  requested=(desiredYaw-body->getVelocity().rotational.y)*inertia.y*7500.0f;}
   float torque=requested-body->getBranchTorque().y;
-  Vector3 limitInertia=toDiagonal(body->getBranchIBody());
-  float limit=limitInertia.y*maxYawAcceleration;
+  float limit;{Vector3 limitInertia=toDiagonal(body->getBranchIBody());
+  limit=limitInertia.y*maxYawAcceleration;}
   body->accumulateTorque(Vector3(0,clampValue(torque,-limit,limit),0));
   Vector3 accel=(desiredVelocity-body->getBranchVelocity().linear)*1250.0f;
   Vector3 bounded=accel.clamp(lowerAcceleration(),upperAcceleration());

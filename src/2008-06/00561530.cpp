@@ -1,8 +1,8 @@
-// from server: 91% by Espeon
+// from server: 98% by king_originala_sol_medium
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_loaderscope_b4365ba3cf9f1691.cpp
+// roc-lib: openrbx-client-dll roc_sol_medium_loader_05d384820b36fd43.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <boost/scoped_ptr.hpp>
@@ -80,7 +80,7 @@ void __cdecl reconstructed(int mode, Stream* stream, Callback callback)
             reinterpret_cast<unsigned char*>(stream) +
             stream->table[1] + 40);
         Reader reader(input);
-        Owner object(reader.read());
+        Owner object(TemporaryOwner(reader.read()));
         Loader loader(object.get(), value.get());
     }
 

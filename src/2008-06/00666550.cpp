@@ -1,22 +1,14 @@
-// from server: 83% by king_originala
+// from server: 85% by king_originala_sol_resume_high
+// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_resume_high_running_04fee17f478498e8.cpp
+
+// Candidate translation unit (score above; library headers required).
+#define _CPPUNWIND 1
 #include <stddef.h>
 #include <algorithm>
-namespace G3D {
-inline float clamp(float,float,float);
-struct Vector3 {
- float x,y,z;Vector3():x(0),y(0),z(0){}Vector3(float a,float b,float c):x(a),y(b),z(c){}Vector3(const Vector3&v):x(v.x),y(v.y),z(v.z){}
- Vector3&operator=(const Vector3&v){x=v.x;y=v.y;z=v.z;return *this;}
- Vector3 operator-()const{return Vector3(-x,-y,-z);}Vector3 operator-(const Vector3&v)const{return Vector3(x-v.x,y-v.y,z-v.z);}Vector3 operator*(float f)const{return Vector3(x*f,y*f,z*f);}Vector3 operator/(float)const;
- Vector3 clamp(const Vector3&low,const Vector3&high)const{return Vector3(G3D::clamp(x,low.x,high.x),G3D::clamp(y,low.y,high.y),G3D::clamp(z,low.z,high.z));}
- static const Vector3&zero(){static Vector3 v(0,0,0);return v;}
-};
-struct Matrix3 {float elt[3][3];};
-struct CoordinateFrame {Matrix3 rotation;Vector3 translation;};
-inline float clamp(float v,float low,float high){if(v<=low)return low;else if(v>=high)return high;else return v;}
-inline const float&min(const float&a,const float&b){return a<b?a:b;}
-}
+#include <G3D/CoordinateFrame.h>
 namespace RBX {
 struct Velocity {G3D::Vector3 linear,rotational;__declspec(noinline) Velocity():linear(G3D::Vector3::zero()),rotational(G3D::Vector3::zero()){}static const Velocity&zero(){static Velocity v;return v;}};
 struct PV {G3D::CoordinateFrame position;Velocity velocity;};
@@ -71,11 +63,10 @@ void RunningBase::onComputeForce(float dt){
  float desiredZ=desiredVelocity.z+floorVelocity.z;
  const Velocity&branchVelocity=root->root->simBody?root->root->simBody->pv.velocity:Velocity::zero();
  G3D::Vector3 currentAcceleration=root->getBranchForce()/root->getBranchMass();
- G3D::Vector3 deltaAcceleration;
- deltaAcceleration.x=(desiredX-branchVelocity.linear.x)*1250.0f-currentAcceleration.x;
- deltaAcceleration.y=(desiredVelocity.y>0.0f?(desiredVelocity.y-branchVelocity.linear.y)*1250.0f:currentAcceleration.y)-currentAcceleration.y;
- deltaAcceleration.z=(desiredZ-branchVelocity.linear.z)*1250.0f-currentAcceleration.z;
- G3D::Vector3 limitedAcceleration=deltaAcceleration.clamp(minMoveAcceleration(),maxMoveAcceleration());
+ float accelX=(desiredX-branchVelocity.linear.x)*1250.0f;
+ float accelY=desiredVelocity.y>0.0f?(desiredVelocity.y-branchVelocity.linear.y)*1250.0f:currentAcceleration.y;
+ float accelZ=(desiredZ-branchVelocity.linear.z)*1250.0f;
+ G3D::Vector3 limitedAcceleration=(G3D::Vector3(accelX,accelY,accelZ)-currentAcceleration).clamp(minMoveAcceleration(),maxMoveAcceleration());
  G3D::Vector3 force=limitedAcceleration*moveMass;
  if(floor){float friction=floor->getFriction();if(friction<0.3f){float scale=friction*friction;force.x*=scale;force.z*=scale;}}
  root->accumulateForceAtBranchCofm(force);

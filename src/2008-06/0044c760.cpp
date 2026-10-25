@@ -1,11 +1,11 @@
-// from server: 83% by EspClaude
-// from server: 80% by king_originala
+// from server: 97% by king_originala_sol_resume_native
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /Ob1
-// roc-lib: xtp-11.2.2-lib-imports roc_espclaude_45b7ef6acda6135a.cpp
+// roc-lib: xtp-11.2.2-lib-imports roc_sol_resume_native_queryboth_5015cdfa138a5d5e.cpp
 
 // Candidate translation unit (score above; library headers required).
+#include <intrin.h>
 #include <atlbase.h>
 #include <shlwapi.h>
 #include <typeinfo>
@@ -34,13 +34,13 @@ namespace boost
 
             void weak_release()
             {
-                if (::InterlockedDecrement(&weak_count_) == 0)
+                if (_InterlockedDecrement(&weak_count_) == 0)
                     destroy();
             }
 
             void release()
             {
-                if (::InterlockedDecrement(&use_count_) == 0)
+                if (_InterlockedDecrement(&use_count_) == 0)
                 {
                     dispose();
                     weak_release();
@@ -134,7 +134,7 @@ void CRobloxModuleProbe::loadAppSettings()
                 KEY_READ) == ERROR_SUCCESS)
         {
             DWORD registryValue = FALSE;
-            key.QueryValue(registryValue, "SilentCrashReport");
+            key.QueryDWORDValue("SilentCrashReport", registryValue);
             silentCrashReport = registryValue;
             gBaseUrl.ReleaseBuffer();
         }
@@ -162,10 +162,10 @@ void CRobloxModuleProbe::loadAppSettings()
     if (!contentFolder.IsEmpty())
     {
         CString assetFolder;
-        PathCombineA(
-            assetFolder.GetBuffer(MAX_PATH),
-            moduleFolder,
-            contentFolder);
+        LPCSTR folder = moduleFolder;
+        LPCSTR content = contentFolder;
+        LPSTR buffer = assetFolder.GetBuffer(MAX_PATH);
+        PathCombineA(buffer, folder, content);
         assetFolder.ReleaseBuffer();
         RBX::ContentProvider::setAssetFolder(assetFolder);
     }
