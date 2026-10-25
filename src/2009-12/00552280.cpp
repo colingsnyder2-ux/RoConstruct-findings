@@ -13,5 +13,5 @@ struct Exposer
 
 void Exposer::f()
 {
-    vtable->f(this, "S|R,Typ,Pckt#,Frm #,PktID,BitLn,Time     ,Local IP:Port   ,RemoteIP:Port,SPID,SPIN,SPCO,OI,Suffix");
+    vtable->f(this, "S|R,Typ,Pckt#,Frm #,PktID,BitLn,Time    ,Local IP:Port   ,RemoteIP:Port,SPID,SPIN,SPCO,OI,Suffix");
 }

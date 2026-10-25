@@ -25,9 +25,11 @@
 // 006785e3  5f                   pop edi
 // 006785e4  ddd8                 fstp st(0)
 // 006785e6  5e                   pop esi
-// 006785e7  c3                   ret 
+// 006785e7  c3                   ret
 
 extern float initialValue;
+
+__declspec(noinline) unsigned int getConstant(float);
 
 struct S {
     int count;
@@ -42,16 +44,26 @@ struct S {
 
 S::S()
 {
-    float value = initialValue;
     count = 0;
     Record* p = records;
     int n = 99;
+    
+    // Force fst before constant load - do the value store first
+    p->value = initialValue;
+    
+    // Force constant load after the first store by making it depend on the stored value
+    unsigned int c = getConstant(p->value);
+    int m = 99;
     do {
-        p->value = value;
-        p->a = 0xbf800000;
-        p->b = 0xbf800000;
-        p->c = 0xbf800000;
-        p->d = 0xbf800000;
+        p->a = c;
+        p->b = c;
+        p->c = c;
+        p->d = c;
         ++p;
-    } while (--n >= 0);
+    } while (--m >= 0);
+}
+
+__declspec(noinline) unsigned int getConstant(float v)
+{
+    return 0xbf800000;
 }

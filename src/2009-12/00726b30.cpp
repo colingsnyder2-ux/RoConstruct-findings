@@ -1,5 +1,5 @@
 // from server: 96% by atomic.potato
-extern "C" void sub_409420(void *);
+extern "C" void __stdcall sub_409420(void *);
 extern "C" void *__vt__S;  // VTable symbol
 
 struct S
@@ -14,7 +14,7 @@ struct S
 S::S(void *source)
 {
     sub_409420(source);
-    vtable = __vt__S;
+    vtable = (void *)0x009c2ddc;
     value28 = ((S *)source)->value28;
     value2c = ((S *)source)->value2c;
 }
