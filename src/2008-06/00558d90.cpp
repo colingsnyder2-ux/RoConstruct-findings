@@ -1,6 +1,10 @@
-// from server: 98% by king_originala
+// from server: 100% by king_originala_sol_resume_native
+// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_sol_resume_native_childadded_554e022844d45614.cpp
+
+// Candidate translation unit (score above; library headers required).
 #include <vector>
 #include <intrin.h>
 #include <utility>
@@ -42,18 +46,39 @@ template<class T,class U> bool operator==(const shared_ptr<T>& a,const shared_pt
 
 namespace RBX {
 class Instance;class Adorn;
+struct ChildAdded;
+template<typename Class,typename Event> class Listener;
+template<typename Class> boost::shared_ptr<Class> shared_from(Class*);
+	struct ChildAdded
+	{
+	public:
+		const boost::shared_ptr<Instance> child;
+  
+	public:
+		ChildAdded(const ChildAdded& other)
+			: child(other.child)
+		{
+		}
+		ChildAdded(Instance* child)
+			: child(shared_from(child))
+		{
+		}
+	private:
+		ChildAdded& operator=(const ChildAdded&);
+	};
+
 typedef std::vector<boost::shared_ptr<Instance> > Instances;
 struct Children {boost::shared_ptr<Instances> object;operator boost::shared_ptr<Instances>::unspecified_bool_type()const{return object;}__declspec(noinline) boost::shared_ptr<const Instances> read()const{return object;}};
 
-class Instance {char prefix[0xe4];Children children;public:void visitDescendents(int);void apply(boost::shared_ptr<Instance>,int);};
-boost::shared_ptr<Instance> __cdecl sharedFrom(Instance*);
-void Instance::visitDescendents(int argument){
+// Existing receiver-relative view; this is not the full authentic Instance layout.
+class Receiver {char prefix[0xe4];Children children;public:void onAddListener(Listener<Instance,ChildAdded>*) const;void raise(ChildAdded,Listener<Instance,ChildAdded>*) const;};
+void Receiver::onAddListener(Listener<Instance,ChildAdded>* argument) const{
  if(children){
   boost::shared_ptr<const Instances> c=children.read();
   Instances::const_iterator end=c->end();
   Instances::const_iterator iter=c->begin();
   for(;iter!=end;iter++){
-   apply(sharedFrom((*iter).get()),argument);
+   raise(ChildAdded((*iter).get()),argument);
   }
  }
 }

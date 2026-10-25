@@ -1,13 +1,14 @@
-// from server: 85% by king_originala
+// from server: 99% by king_originala_sol_resume_high
+// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// Complete1291-byte renderPass2d(Adorn*,IMetric*),ret8. Native rendering interfaces
-// and measured minimal ABI views; unused regions contain native bases/members.
-// Instance primary virtuals,IRenderable,Adorn,GuiItem,UserInputBase from pinned headers.
-// Service getter labels describe measured transport,not recovered original symbols.
-// RTTI helper creates native Players;getLocalPlayer1a0 and ControllerService input130.
-// Progress backdrop uses half-size(width*.3,width*.3*.3),font(int(width)*.02),per x87.
-// Remaining string/FP temporary homes and save scheduling are partial,not exact.
+// roc-lib: rbxgs-dll roc_resume_high_datamodel_2418d95548bb0ebb.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "util/Rect.h"
+#include <G3D/Color4.h>
+#include <G3D/Rect2D.h>
+#define _CPPUNWIND 1
 #include <string>
 #include <vector>
 #include <stddef.h>
@@ -19,11 +20,7 @@ struct shared_count {sp_counted_base*pi_;shared_count():pi_(0){}shared_count(con
 template<class T>struct shared_ptr {T*px;detail::shared_count pn;shared_ptr():px(0),pn(){}shared_ptr(const shared_ptr&r):px(r.px),pn(r.pn){}T*get()const{return px;}T&operator*()const{return *px;}T*operator->()const{return px;}};
 }
 namespace G3D {
-struct Vector2 {float x,y;Vector2():x(0),y(0){}Vector2(float a,float b):x(a),y(b){}Vector2(const Vector2&v):x(v.x),y(v.y){}Vector2 operator+(const Vector2&r)const{return Vector2(x+r.x,y+r.y);}Vector2 operator-(const Vector2&r)const{return Vector2(x-r.x,y-r.y);}Vector2 operator*(float f)const{return Vector2(x*f,y*f);}};
 struct Vector3 {float x,y,z;};
-struct Rect2D {Vector2 min,max;float width()const{return max.x-min.x;}Vector2 center()const{return (max+min)*.5f;}static Rect2D xyxy(const Vector2&,const Vector2&);};
-struct Color3 {float r,g,b;static const Color3&white();static const Color3&black();};
-struct Color4 {float r,g,b,a;Color4(const Color3&c,float alpha=1):r(c.r),g(c.g),b(c.b),a(alpha){}static const Color4&zero();};
 struct CoordinateFrame;struct AABox;struct Sphere;struct Ray;struct LineSegment;
 template<class T>struct ReferenceCountedPointer {T*pointer;};
 }
@@ -53,7 +50,6 @@ struct Adorn {
  virtual void box(const G3D::AABox&,const G3D::Color4&,const G3D::Color4&)=0;virtual void sphere(const G3D::Sphere&,const G3D::Color4&,const G3D::Color4&)=0;virtual void explosion(const G3D::Sphere&,const G3D::Color4&,const G3D::Color4&)=0;
  virtual void cylinderAlongX(float,float,const G3D::Color4&,const G3D::Color4&)=0;virtual void ray(const G3D::Ray&,const G3D::Color4&,float)=0;virtual void lineSegment(const G3D::LineSegment&,const G3D::Color4&,float)=0;virtual void axes(const G3D::Color4&,const G3D::Color4&,const G3D::Color4&,float)=0;virtual void quad(const G3D::Vector3&,const G3D::Vector3&,const G3D::Vector3&,const G3D::Vector3&,const G3D::Color4&)=0;
 };
-struct Rect {G3D::Vector2 low,high;Rect(const G3D::Vector2&a,const G3D::Vector2&b):low(a),high(b){}G3D::Rect2D toRect2D()const{return G3D::Rect2D::xyxy(low,high);}};
 enum SelectState{SELECT_NONE};
 struct IRenderable {int index2d,index3d;void*bucket;virtual bool shouldRender2d()const=0;virtual bool shouldRender3dAdorn()const=0;virtual void render2d(Adorn*)=0;virtual void render3dAdorn(Adorn*)=0;virtual void render3dSelect(Adorn*,SelectState)=0;};
 struct GuiTarget;struct GuiResponse {int response;GuiTarget*target;};
