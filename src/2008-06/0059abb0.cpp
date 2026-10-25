@@ -1,37 +1,28 @@
-namespace RBX {
-class Adorn;
-class Part;
+// from server: 100% by king_originala
+// roc 2008-06 0059abb0  unit: RBX::PartInstance  size: 33 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 0059abb0
+//
+// 0059abb0  8b442408             mov eax, dword ptr [esp + 8]
+// 0059abb4  8b542404             mov edx, dword ptr [esp + 4]
+// 0059abb8  50                   push eax
+// 0059abb9  52                   push edx
+// 0059abba  81c134feffff         add ecx, 0xfffffe34
+// 0059abc0  e8cbfeffff           call 0x59aa90
+// 0059abc5  50                   push eax
+// 0059abc6  e865c40d00           call 0x677030
+// 0059abcb  83c40c               add esp, 0xc
+// 0059abce  c20800               ret 8
 
-enum SelectState { SELECT_NORMAL, SELECT_HOVER, SELECT_SELECTED };
-
-class DrawAdorn
-{
-public:
-    static void partSelect(const Part& part, Adorn* adorn, SelectState selectState);
+struct PartInstance {
+    int get();
 };
 
-class Instance
-{
-    char data[0x1c8];
-public:
-    virtual ~Instance();
+extern "C" int __cdecl process(int value, int a, int b);
+
+struct S {
+    int f(int a, int b);
 };
 
-class IRenderable
-{
-public:
-    virtual void render3dSelect(Adorn* adorn, SelectState selectState) = 0;
-};
-
-class PartInstance : public Instance, public IRenderable
-{
-public:
-    const Part& getPart();
-    virtual void render3dSelect(Adorn* adorn, SelectState selectState);
-};
-
-void PartInstance::render3dSelect(Adorn* adorn, SelectState selectState)
-{
-    DrawAdorn::partSelect(getPart(), adorn, selectState);
-}
+int S::f(int a, int b) {
+    return process(((PartInstance*)((char*)this - 0x1cc))->get(), a, b);
 }

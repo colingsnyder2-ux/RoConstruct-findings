@@ -1,28 +1,31 @@
-namespace std {
-    template<class T> struct char_traits;
-    template<class T> class allocator;
-    template<class T, class Traits, class Alloc>
-    class __declspec(dllimport) basic_string {
-        char storage[28];
-    public:
-        basic_string(const T*);
-        basic_string(const basic_string&);
-        ~basic_string();
-    };
-    typedef basic_string<char, char_traits<char>, allocator<char> > string;
-}
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
+extern const char signalName[];
+
+
+
+
+
 struct Base {
-    unsigned char storage[8];
-    Base(void *, std::string);
-    virtual void dispatch();
+    virtual void slot();
+    char storage[8];
+
+    Base(void*, std::string);
 };
+
 struct SignalDesc : Base {
-    void *instance;
-    SignalDesc(void *);
-    virtual void dispatch();
+    void* owner;
+
+    virtual void slot();
+    SignalDesc(void*);
 };
-SignalDesc::SignalDesc(void *object)
-    : Base(object ? static_cast<char *>(object) + 0x1c8 : 0, "ClearBackpack"),
-      instance(object)
+
+SignalDesc::SignalDesc(void* object)
+    : Base(object ? static_cast<char*>(object) + 0x1c8 : 0,
+           std::string(signalName)),
+      owner(object)
 {
 }

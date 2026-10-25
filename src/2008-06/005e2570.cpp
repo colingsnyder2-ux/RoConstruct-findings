@@ -1,7 +1,8 @@
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs roc_unit_00fd3441d97d4838.cpp
+// roc-lib: rbxgs roc_unit_bc5bb9806ca18ab6.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "v8datamodel/Lighting.h"
@@ -69,12 +70,12 @@ namespace RBX
 
 	void Lighting::setClearColor(G3D::Color4 value)
 	{
-		if (value != (*reinterpret_cast<G3D::Color4*>(reinterpret_cast<char*>(this) + 0x254)))
+		if (value != clearColor)
 		{
-			(*reinterpret_cast<G3D::Color4*>(reinterpret_cast<char*>(this) + 0x254)) = value;
+			clearColor = value;
 
 			raisePropertyChanged(desc_ClearColor);
-			event_LightingChanged.fire(this ? reinterpret_cast<Reflection::SignalSource*>(reinterpret_cast<char*>(this) + 0x14) : 0, false);
+			fireLightingChanged(false);
 			RunService* runService = ServiceProvider::find<RunService>(this);
 			if (runService)
 				runService->invalidateRunViews();
@@ -83,12 +84,12 @@ namespace RBX
 
 	void Lighting::setLightColor(G3D::Color3 value)
 	{
-		if (value != (*reinterpret_cast<G3D::Color3*>(reinterpret_cast<char*>(this) + 0x28c)))
+		if (value != skyParameters.lightColor)
 		{
-			(*reinterpret_cast<G3D::Color3*>(reinterpret_cast<char*>(this) + 0x28c)) = value;
+			skyParameters.lightColor = value;
 
 			raisePropertyChanged(desc_LightColor);
-			event_LightingChanged.fire(this ? reinterpret_cast<Reflection::SignalSource*>(reinterpret_cast<char*>(this) + 0x14) : 0, false);
+			fireLightingChanged(false);
 			RunService* runService = ServiceProvider::find<RunService>(this);
 			if (runService)
 				runService->invalidateRunViews();
@@ -97,12 +98,12 @@ namespace RBX
 
 	void Lighting::setAmbientBottom(G3D::Color3 value)
 	{
-		if (value != (*reinterpret_cast<G3D::Color3*>(reinterpret_cast<char*>(this) + 0x27c)))
+		if (value != ambientBottom)
 		{
-			(*reinterpret_cast<G3D::Color3*>(reinterpret_cast<char*>(this) + 0x27c)) = value;
+			ambientBottom = value;
 
 			raisePropertyChanged(desc_AmbientBottom);
-			event_LightingChanged.fire(this ? reinterpret_cast<Reflection::SignalSource*>(reinterpret_cast<char*>(this) + 0x14) : 0, false);
+			fireLightingChanged(false);
 			RunService* runService = ServiceProvider::find<RunService>(this);
 			if (runService)
 				runService->invalidateRunViews();
@@ -111,12 +112,12 @@ namespace RBX
 
 	void Lighting::setAmbientTop(G3D::Color3 value)
 	{
-		if (value != (*reinterpret_cast<G3D::Color3*>(reinterpret_cast<char*>(this) + 0x270)))
+		if (value != ambientTop)
 		{
-			(*reinterpret_cast<G3D::Color3*>(reinterpret_cast<char*>(this) + 0x270)) = value;
+			ambientTop = value;
 
 			raisePropertyChanged(desc_AmbientTop);
-			event_LightingChanged.fire(this ? reinterpret_cast<Reflection::SignalSource*>(reinterpret_cast<char*>(this) + 0x14) : 0, false);
+			fireLightingChanged(false);
 			RunService* runService = ServiceProvider::find<RunService>(this);
 			if (runService)
 				runService->invalidateRunViews();

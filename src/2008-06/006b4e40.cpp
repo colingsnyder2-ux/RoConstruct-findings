@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 006b4e40  unit: CXTPCommandBar  size: 16 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006b4e40
 //
@@ -8,9 +9,7 @@
 // 006b4e4c  c3                   ret 
 // 006b4e4d  33c0                 xor eax, eax
 // 006b4e4f  c3                   ret 
-// copied from an identical function in another client (function ?sub_006439b0@ns_ROCX000001@@YAHXZ)
 
-namespace ns_ROCX000001 {
 extern "C" void* sub_00643980();
 
 int sub_006439b0()
@@ -19,5 +18,4 @@ int sub_006439b0()
     if (p)
         return *(int*)(p + 0x5c);
     return 0;
-}
 }

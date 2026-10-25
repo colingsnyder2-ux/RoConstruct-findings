@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 007a1210  unit: CXTWindowMap  size: 46 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 007a1210
 //
@@ -22,9 +23,7 @@
 // 007a1239  5f                   pop edi
 // 007a123a  5e                   pop esi
 // 007a123b  c20400               ret 4
-// copied from an identical function in another client (function ?Remove@CXTWindowMap@ns_ROCX000004@@QAEXH@Z)
 
-namespace ns_ROCX000004 {
 struct CXTWindowMap {
     void* Find(int);
     void Remove(int);
@@ -36,5 +35,4 @@ void CXTWindowMap::Remove(int key) {
         void** vtbl = *(void***)p;
         ((void (__thiscall*)(void*, int))vtbl[7])(p, 0);
     }
-}
 }

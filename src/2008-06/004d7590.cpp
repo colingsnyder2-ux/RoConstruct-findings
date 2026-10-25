@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // roc 2008-06 004d7590  unit: Ogre::VDataStream::?$SharedPtr  size: 16 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004d7590
 //

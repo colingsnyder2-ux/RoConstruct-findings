@@ -1,4 +1,4 @@
-// from server: 93% by king_originala
+// from server: 95% by king_originala
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
 // Native Ogre DLL exports/vtable establish StringInterface/Resource load slot34 and MeshPtr12.
@@ -33,7 +33,7 @@ struct Vector3 {
  Vector3(){}Vector3(float a,float b,float c):x(a),y(b),z(c){}
  Vector3(const Vector3&v):x(v.x),y(v.y),z(v.z){}
  Vector3 operator-(const Vector3&v)const{Vector3 result;result.z=z-v.z;result.y=y-v.y;result.x=x-v.x;return result;}
- float length()const{return Math::Sqrt(x*x+y*y+z*z);}
+ float length()const{float xx=x*x;return Math::Sqrt((xx+y*y)+z*z);}
 };
 struct AxisAlignedBox {
  Vector3 minimum,maximum;unsigned extent;void*corners;

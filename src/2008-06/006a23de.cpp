@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // roc 2008-06 006a23de  unit: ActiveDocView  size: 262 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006a23de
 //

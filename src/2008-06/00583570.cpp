@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // roc 2008-06 00583570  unit: RBX::ModelInstance  size: 51 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00583570
 //

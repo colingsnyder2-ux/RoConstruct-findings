@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // roc 2008-06 00416900  unit: VCContent::?$CComObject  size: 28 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00416900
 //
@@ -10,15 +11,10 @@
 // 00416913  52                   push edx
 // 00416914  e867b9feff           call 0x402280
 // 00416919  c20c00               ret 0xc
-// copied from an identical function in another client (function ?sub_404880@ns_ROCX000023@@YGHHHH@Z)
 
-namespace ns_ROCX000023 {
-extern "C" int __stdcall sub_4022a0(int, void*, int, int);
+extern "C" int __stdcall sub_402280(int, int, int, int);
 
-extern int G_784f68;
-
-int __stdcall sub_404880(int a1, int a2, int a3)
+int __stdcall sub_416900(int a, int b, int c)
 {
-    return sub_4022a0(a1, &G_784f68, a2, a3);
-}
+    return sub_402280(a, 0x80ead0, b, c);
 }

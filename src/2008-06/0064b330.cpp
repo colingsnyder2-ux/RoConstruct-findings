@@ -1,9 +1,8 @@
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
 #include <new>
-
-namespace RBX {
 
 struct VDelete { virtual ~VDelete() {} };
 struct Own { VDelete* p; ~Own() { delete p; } };
@@ -23,7 +22,5 @@ struct SleepStage {
     Own r0,r1,r2;
 };
 SleepStage::~SleepStage() {}
-
-}
 
 

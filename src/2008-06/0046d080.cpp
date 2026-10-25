@@ -1,3 +1,4 @@
+// from server: 100% by atomic.potato
 // roc 2008-06 0046d080  unit: RBX::LDraw2Lua::LDraw2RobloxColorMap  size: 28 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0046d080
 //
@@ -10,21 +11,18 @@
 // 0046d091  c20400               ret 4
 // 0046d094  b801000000           mov eax, 1
 // 0046d099  c20400               ret 4
-// copied from an identical function in another client (function ?lookup@LDraw2RobloxColorMap@ns_ROCX000015@@QAEHH@Z)
 
-namespace ns_ROCX000015 {
-extern "C" int* __stdcall sub_4697c0(int index);
-
-struct LDraw2RobloxColorMap
+struct S
 {
-    int lookup(int index);
+    int f(int);
 };
 
-int LDraw2RobloxColorMap::lookup(int index)
+extern "C" int __stdcall g(int);
+
+int S::f(int a)
 {
-    int* p = sub_4697c0(index);
+    S *p = (S *)g(a);
     if (p)
-        return p[2];
+        return *(int *)((char *)p + 8);
     return 1;
-}
 }

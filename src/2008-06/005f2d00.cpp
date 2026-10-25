@@ -1,3 +1,4 @@
+// from server: 100% by atomic.potato
 // roc 2008-06 005f2d00  unit: UString_sink::?$stream_buffer  size: 26 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005f2d00
 //
@@ -10,19 +11,15 @@
 // 005f2d12  0bc2                 or eax, edx
 // 005f2d14  894158               mov dword ptr [ecx + 0x58], eax
 // 005f2d17  c20400               ret 4
-// copied from an identical function in another client (function ?setFlag@UString_sink@ns_ROCX000000@@QAEX_N@Z)
 
-namespace ns_ROCX000000 {
-struct UString_sink
+struct S
 {
-    char pad[0x58];
-    unsigned int flags;
-    void setFlag(bool value);
+    unsigned char padding[0x58];
+    unsigned int value;
+    void f(unsigned char enabled);
 };
 
-void UString_sink::setFlag(bool value)
+void S::f(unsigned char enabled)
 {
-    unsigned int v = value ? 0x10u : 0u;
-    flags = (flags & 0xffffffefu) | v;
-}
+    value = (value & 0xffffffefU) | (enabled ? 0x10U : 0U);
 }

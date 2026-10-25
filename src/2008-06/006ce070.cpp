@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 006ce070  unit: CXTPReportGroupRow_Batch  size: 32 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006ce070
 //
@@ -13,9 +14,7 @@
 // 006ce08b  5e                   pop esi
 // 006ce08c  59                   pop ecx
 // 006ce08d  c20400               ret 4
-// copied from an identical function in another client (function ?Method@CXTPReportGroupRow_Batch@ns_ROCX000002@@QAEHH@Z)
 
-namespace ns_ROCX000002 {
 struct CXTPReportGroupRow_Batch
 {
     int Method(int);
@@ -26,5 +25,4 @@ int CXTPReportGroupRow_Batch::Method(int arg)
     volatile int pad = 0;
     (*(void (__thiscall **)(CXTPReportGroupRow_Batch *, int))(*(int *)this + 0xfc))(this, arg);
     return arg;
-}
 }

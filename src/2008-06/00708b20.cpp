@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 00708b20  unit: CXTSplitterWnd  size: 49 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00708b20
 //
@@ -14,9 +15,8 @@
 // 00708b46  6a26                 push 0x26
 // 00708b48  ff15902c8000         call dword ptr [0x802c90]
 // 00708b4e  c20400               ret 4
-// copied from an identical function in another client (function ?SetSomething@CXTSplitterWnd@ns_ROCX000029@@QAEXH@Z)
 
-namespace ns_ROCX000029 {
+namespace ns_ROCX000021 {
 extern "C" int (__stdcall *SystemParametersInfoA)(unsigned int, unsigned int, void*, unsigned int);
 
 struct CXTSplitterWnd {

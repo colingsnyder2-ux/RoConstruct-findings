@@ -1,19 +1,17 @@
-// roc 2008-06 006b9b50  unit: CXTPPropertyGridItemConstraint  size: 20 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 006b9b50
-//
-// 006b9b50  56                   push esi
-// 006b9b51  8b742408             mov esi, dword ptr [esp + 8]
-// 006b9b55  56                   push esi
-// 006b9b56  83c130               add ecx, 0x30
-// 006b9b59  e8d2feffff           call 0x6b9a30
-// 006b9b5e  8bc6                 mov eax, esi
-// 006b9b60  5e                   pop esi
-// 006b9b61  c20400               ret 4
-// copied from an identical function in another client (function ?set@CXTPImageManagerIcon@ns_ROCX000005@ns_ROCX000016@@QAEHH@Z)
-
-namespace ns_ROCX000005 {
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-8.0 atlmfc/src/mfc/ctlprop.cpp
+// roc-lib: rbxgs roc_unit_dc4f94de3a5733d7.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <utility>
+typedef std::pair<unsigned long, unsigned long> TwoWordResult;
+struct SubobjectView { TwoWordResult get() const; };
+struct OwnerView { TwoWordResult get() const; };
+TwoWordResult OwnerView::get() const
+{
+    // Target adds0x30 to ECX; callee6b9a30 fills the two-word hidden result and ret4.
+    // Original owner, subobject and result class names are unknown.
+    return reinterpret_cast<const SubobjectView*>(reinterpret_cast<const char*>(this) + 0x30)->get();
 }

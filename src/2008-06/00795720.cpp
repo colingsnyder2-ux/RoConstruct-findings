@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 00795720  unit: CXTPRibbonGroup  size: 21 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00795720
 //
@@ -9,7 +10,6 @@
 // 0079572e  e817b2f0ff           call 0x6a094a
 // 00795733  59                   pop ecx
 // 00795734  c3                   ret 
-// auto-matched from its assembly shape
 
 extern "C" void __cdecl G1_func_00795720(void*);
 struct S_func_00795720 {

@@ -1,7 +1,8 @@
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs roc_camera_expanded_native_family_2b7088a7dcd2e755.cpp
+// roc-lib: rbxgs-dll roc_camera_native_owner_family_b5977bd610cfbe4d.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias("v8datamodel/Camera.h", "../roc_camera_native_header_db0bf117fdeefdc1.cpp")
@@ -198,71 +199,5 @@ void Camera::tellCameraMoved() {
 			setGCameraCoordinateFrame(currentCoord);
 			tellCameraMoved();
 		}
-	}
-}
-
-namespace RBX {
-
-	void Camera::setCameraCoordinateFrameNoLerp(const G3D::CoordinateFrame& value)
-	{
-		(*(G3D::CoordinateFrame*)((char*)this+0x174)) = value;
-		goalToCamera();
-	}
-
-	void Camera::setImageServerViewNoLerp(const G3D::CoordinateFrame& modelCoord, const G3D::Rect2D& viewPort)
-	{
-		G3D::Vector3 look = modelCoord.lookVector();
-
-		bool noTilt = (fabs(look.y) > 0.95);
-		if (noTilt)
-		{
-			look = -G3D::Vector3::unitZ();
-		}
-		else
-		{
-			look.y = 0;
-			look = look.direction();
-		}
-
-		G3D::CoordinateFrame lookCoord;
-
-		lookCoord.lookAt(look);
-		lookCoord.rotation *= G3D::Matrix3::fromEulerAnglesZXY(G3D::toRadians(45), G3D::toRadians(35), 0.0f);
-
-		look = lookCoord.lookVector();
-		lookCoord.translation = (look * 10.0f) + modelCoord.translation;
-
-		lookCoord.lookAt(modelCoord.translation);
-
-		setCameraType(FIXED_CAMERA);
-		setCameraFocus(modelCoord.translation);
-		setCameraCoordinateFrameNoLerp(lookCoord);
-		zoomExtents(viewPort);
-		goalToCamera();
-	}
-
-	float Camera::getNewZoomDistance(float currentDistance, float in)
-	{
-		float const ZOOM_FACTOR = 0.25f;
-
-		if (in > 0.0f)
-		{
-			currentDistance = G3D::max<float>(currentDistance / (1.0 + in * ZOOM_FACTOR), distanceMin());
-		} 	
-		else if (in < 0.0f)
-		{
-			return G3D::min<float>(currentDistance * (1.0 - in * ZOOM_FACTOR), distanceMax());
-		}
-
-		return currentDistance;
-	}
-	bool Camera::zoomExtents(const G3D::Rect2D& viewPort)
-	{
-		if (ICameraOwner* owner = getCameraOwner())
-		{
-			zoomExtents(owner->computeCameraOwnerExtents(), viewPort, ZOOM_IN_OR_OUT);
-			return true;
-		}
-		return false;
 	}
 }

@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 00773360  unit: CXTPPropertyGridInplaceButton  size: 21 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00773360
 //
@@ -9,7 +10,6 @@
 // 0077336e  e8d7d5f2ff           call 0x6a094a
 // 00773373  59                   pop ecx
 // 00773374  c3                   ret 
-// auto-matched from its assembly shape
 
 extern "C" void __cdecl G1_func_00773360(void*);
 struct S_func_00773360 {

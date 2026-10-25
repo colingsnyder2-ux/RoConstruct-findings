@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 0071e380  unit: CXTPShortcutManager::CKeyHelper  size: 23 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0071e380
 //
@@ -9,7 +10,6 @@
 // 0071e390  89480c               mov dword ptr [eax + 0xc], ecx
 // 0071e393  894808               mov dword ptr [eax + 8], ecx
 // 0071e396  c3                   ret 
-// auto-matched from its assembly shape
 
 extern char G;
 

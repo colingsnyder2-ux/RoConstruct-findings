@@ -1,3 +1,4 @@
+// from server: 100% by atomic.potato
 // roc 2008-06 005735a0  unit: RBX::UnifiedWidget  size: 20 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005735a0
 //
@@ -7,18 +8,15 @@
 // 005735a8  d90564f88200         fld dword ptr [0x82f864]
 // 005735ae  d95804               fstp dword ptr [eax + 4]
 // 005735b1  c20400               ret 4
-// copied from an identical function in another client (function ?f@S@ns_ROCX00000e@@QAEXPAM@Z)
 
-namespace ns_ROCX00000e {
-struct S {
-    void f(float* out);
+extern float g_82f864;
+
+struct UnifiedWidget {
+    void f(float *value);
 };
 
-extern float g_val;
-
-void S::f(float* out)
+void UnifiedWidget::f(float *value)
 {
-    out[0] = 0.0f;
-    out[1] = g_val;
-}
+    value[0] = 0.0f;
+    value[1] = g_82f864;
 }

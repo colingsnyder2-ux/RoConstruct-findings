@@ -1,3 +1,4 @@
+// from server: 100% by atomic.potato
 // roc 2008-06 006cf860  unit: UCXTPReportRowAllocatorData::?$CXTPHeapAllocatorT  size: 51 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006cf860
 //
@@ -16,27 +17,21 @@
 // 006cf88a  e851c0ffff           call 0x6cb8e0
 // 006cf88f  83c40c               add esp, 0xc
 // 006cf892  c3                   ret 
-// copied from an identical function in another client (function ?AddTimespec@ns_ROCX000008@@YAXPBXII@Z)
 
-namespace ns_ROCX000008 {
-struct CXTPReportControlLocale
-{
+struct CArray {
+    char pad[8];
+    int size;
+    void InsertAt(int index, const void* value);
 };
 
-struct Sub656db0
-{
-    void Call(unsigned int a, const void* p);
-};
+extern CArray g_array;
+extern int g_count;
 
-extern unsigned int G_8c87d8;
-extern unsigned int G_8c87d0;
-
-void __cdecl AddTimespec(const void* p, unsigned int a, unsigned int b)
+void InsertRow(int a, int b, int c)
 {
-    unsigned int local[3];
-    local[0] = (unsigned int)p;
-    local[1] = a;
-    local[2] = b;
-    ((Sub656db0*)&G_8c87d0)->Call(G_8c87d8, local);
-}
+    int tmp[3];
+    tmp[0] = a;
+    tmp[1] = b;
+    tmp[2] = c;
+    g_array.InsertAt(g_count, tmp);
 }

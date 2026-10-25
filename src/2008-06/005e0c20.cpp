@@ -1,7 +1,8 @@
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll v8datamodel/Lighting.cpp
+// roc-lib: rbxgs roc_unit_90b7c5827cc97187.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "v8datamodel/Lighting.h"
@@ -171,9 +172,9 @@ namespace RBX
 
 		if (newSky)
 		{
-			sky = shared_from(newSky);
+			(*reinterpret_cast<boost::shared_ptr<Sky>*>(reinterpret_cast<char*>(this) + 0x2d4)) = shared_from(newSky);
 
-			fireLightingChanged(true);
+			event_LightingChanged.fire(this ? reinterpret_cast<Reflection::SignalSource*>(reinterpret_cast<char*>(this) + 0x14) : 0, true);
 			RunService* runService = ServiceProvider::find<RunService>(this);
 			if (runService)
 				runService->invalidateRunViews();
@@ -182,11 +183,11 @@ namespace RBX
 
 	void Lighting::onChildRemoving(Instance* child)
 	{
-		if (sky.get() == child)
+		if ((*reinterpret_cast<boost::shared_ptr<Sky>*>(reinterpret_cast<char*>(this) + 0x2d4)).get() == child)
 		{
-			sky.reset();
+			(*reinterpret_cast<boost::shared_ptr<Sky>*>(reinterpret_cast<char*>(this) + 0x2d4)).reset();
 
-			fireLightingChanged(true);
+			event_LightingChanged.fire(this ? reinterpret_cast<Reflection::SignalSource*>(reinterpret_cast<char*>(this) + 0x14) : 0, true);
 			RunService* runService = ServiceProvider::find<RunService>(this);
 			if (runService)
 				runService->invalidateRunViews();
@@ -196,9 +197,9 @@ namespace RBX
 	void Lighting::onChildChanged(Instance* instance, const PropertyChanged& event)
 	{
 		Instance::onChildChanged(instance, event);
-		if (sky.get() == instance)
+		if ((*reinterpret_cast<boost::shared_ptr<Sky>*>(reinterpret_cast<char*>(this) + 0x2d4)).get() == instance)
 		{
-			fireLightingChanged(true);
+			event_LightingChanged.fire(this ? reinterpret_cast<Reflection::SignalSource*>(reinterpret_cast<char*>(this) + 0x14) : 0, true);
 
 			RunService* runService = ServiceProvider::find<RunService>(this);
 			if (runService)

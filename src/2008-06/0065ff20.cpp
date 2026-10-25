@@ -1,7 +1,8 @@
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs roc_cofm_native_children_family_55828f600e8e5824.cpp
+// roc-lib: rbxgs-dll roc_cofm_native_children_family_55828f600e8e5824.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias("v8kernel/Body.h", "../roc_cofm_native_body_children_header_f55a898bad54a33e.cpp")

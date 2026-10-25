@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 0074ec10  unit: CXTPReportHyperlinks  size: 21 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0074ec10
 //
@@ -9,7 +10,6 @@
 // 0074ec1e  e8271df5ff           call 0x6a094a
 // 0074ec23  59                   pop ecx
 // 0074ec24  c3                   ret 
-// auto-matched from its assembly shape
 
 extern "C" void __cdecl G1_func_0074ec10(void*);
 struct S_func_0074ec10 {

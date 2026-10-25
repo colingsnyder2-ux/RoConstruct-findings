@@ -1,26 +1,15 @@
-// roc 2008-06 005f3250  unit: boost::iostreams::DUoutput::V?$basic_null_device::?$stream_buffer  size: 26 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 005f3250
-//
-// 005f3250  0fb6442404           movzx eax, byte ptr [esp + 4]
-// 005f3255  8b5154               mov edx, dword ptr [ecx + 0x54]
-// 005f3258  f7d8                 neg eax
-// 005f325a  1bc0                 sbb eax, eax
-// 005f325c  83e010               and eax, 0x10
-// 005f325f  83e2ef               and edx, 0xffffffef
-// 005f3262  0bc2                 or eax, edx
-// 005f3264  894154               mov dword ptr [ecx + 0x54], eax
-// 005f3267  c20400               ret 4
-// copied from an identical function in another client (function ?setFlag@S@ns_ROCX000001@@QAEX_N@Z)
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-boost-1_34_1 client-rtti-bf08f30a8aa6090dc7b7.cpp
 
-namespace ns_ROCX000001 {
-struct S {
-    char pad[0x54];
-    int m54;
-    void setFlag(bool b);
-};
+// Candidate translation unit (score above; library headers required).
+#include <boost/shared_ptr.hpp>
+#include <string>
+#include <vector>
+#include <memory>
+#include <boost/iostreams/filtering_stream.hpp>
+#include <boost/iostreams/filter/zlib.hpp>
 
-void S::setFlag(bool b)
-{
-    m54 = (m54 & ~0x10) | (b ? 0x10 : 0);
-}
-}
+template class boost::detail::sp_counted_impl_p<boost::iostreams::detail::chain_base<boost::iostreams::chain<boost::iostreams::input,char,std::char_traits<char>,std::allocator<char> >,char,std::char_traits<char>,std::allocator<char>,boost::iostreams::input>::chain_impl>;

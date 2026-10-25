@@ -1,3 +1,4 @@
+// from server: 100% by atomic.potato
 // roc 2008-06 005f4cc0  unit: boost::iostreams::DUinput::V?$basic_null_device::?$stream_buffer  size: 39 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005f4cc0
 //
@@ -14,24 +15,24 @@
 // 005f4ce2  83c404               add esp, 4
 // 005f4ce5  5e                   pop esi
 // 005f4ce6  c3                   ret 
-// copied from an identical function in another client (function ?func_54d4c0@stream_buffer@ns_ROCX000006@@QAEXXZ)
 
-namespace ns_ROCX000006 {
-struct stream_buffer {
-    char pad[0x18];
-    void* field_18;
-    void func_54d4c0();
+typedef unsigned long DWORD;
+
+struct S
+{
+    void f();
 };
 
-extern void* g_77e4dc;
-extern void* g_77e4e0;
-extern void (__cdecl *g_77e4e4)(void*);
+extern "C" void __cdecl sub_5f4500();
+extern "C" void (__cdecl *g_80257c)(void *);
+extern DWORD g_802580;
+extern DWORD g_802584;
 
-void stream_buffer::func_54d4c0()
+void S::f()
 {
-    this->func_54d4c0();
-    this->field_18 = g_77e4dc;
-    this->field_18 = g_77e4e0;
-    g_77e4e4(&this->field_18);
-}
+    sub_5f4500();
+    DWORD *p = (DWORD *)((char *)this + 0x18);
+    *p = g_802584;
+    *p = g_802580;
+    g_80257c(p);
 }

@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 00459150  unit: HelpCommand  size: 28 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00459150
 //
@@ -9,9 +10,7 @@
 // 00459162  51                   push ecx
 // 00459163  ff150c2e8000         call dword ptr [0x802e0c]
 // 00459169  c20400               ret 4
-// copied from an identical function in another client (function ?method@HelpCommand@ns_ROCX00006d@@QAEXH@Z)
 
-namespace ns_ROCX00006d {
 extern "C" int (__stdcall *PostMessageA)(void* hWnd, unsigned int Msg, unsigned int wParam, int lParam);
 
 struct HelpCommand {
@@ -24,5 +23,4 @@ void HelpCommand::method(int arg) {
     void* p = field_c;
     void* h = *(void**)((char*)p + 0x20);
     PostMessageA(h, 0x111, 0x80fd, 0);
-}
 }

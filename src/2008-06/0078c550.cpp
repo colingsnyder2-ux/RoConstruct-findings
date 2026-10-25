@@ -1,8 +1,8 @@
+// from server: 100% by auto
 // roc 2008-06 0078c550  unit: CXTPRichRender::XTextHost  size: 3 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0078c550
 //
 // 0078c550  c21c00               ret 0x1c
-// auto-matched from its assembly shape
 
 struct S_func_0078c550 {
 

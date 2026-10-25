@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 006e88f0  unit: CPatchedControlComboBox  size: 28 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006e88f0
 //
@@ -12,22 +13,21 @@
 // 006e8908  c3                   ret 
 // 006e8909  33c0                 xor eax, eax
 // 006e890b  c3                   ret 
-// copied from an identical function in another client (function ?method@CPropertyGridItemBrickColor@ns_ROCX000016@@QAEHXZ)
 
-namespace ns_ROCX000016 {
-struct CPropertyGridItemBrickColor {
-    char gap[0x10];
-    int m_state;
-    bool check(int, int);
-    int method();
+struct CRegObject {
+    char pad[0x10];
+    int m_field10;
+    int Check();
 };
 
-int CPropertyGridItemBrickColor::method() {
-    if (m_state == 2) {
-        if (check(5, 0)) {
+extern "C" bool __stdcall Helper_760a00(int, int);
+
+int CRegObject::Check()
+{
+    if (m_field10 == 2)
+    {
+        if (Helper_760a00(5, 0))
             return 1;
-        }
     }
     return 0;
-}
 }

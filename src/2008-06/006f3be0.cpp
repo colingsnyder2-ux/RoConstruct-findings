@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 006f3be0  unit: CXTPControls  size: 19 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006f3be0
 //
@@ -8,9 +9,8 @@
 // 006f3be9  6a00                 push 0
 // 006f3beb  e830e0ffff           call 0x6f1c20
 // 006f3bf0  c20400               ret 4
-// copied from an identical function in another client (function ?sub_0067c5e0@ns_ROCX000031@@YGHH@Z)
 
-namespace ns_ROCX000031 {
+namespace ns_ROCX00002d {
 extern "C" int __stdcall sub_0067a6c0(int, int, int, int);
 
 int __stdcall sub_0067c5e0(int arg)

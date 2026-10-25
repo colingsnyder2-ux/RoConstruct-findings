@@ -1,3 +1,4 @@
+// from server: 100% by atomic.potato
 // roc 2008-06 007095c0  unit: CXTSplitterWnd  size: 25 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 007095c0
 //
@@ -7,19 +8,19 @@
 // 007095ce  c20800               ret 8
 // 007095d1  e89276f9ff           call 0x6a0c68
 // 007095d6  c20800               ret 8
-// copied from an identical function in another client (function ?method@CXTSplitterWnd@ns_ROCX00002c@@QAEHHH@Z)
 
-namespace ns_ROCX00002c {
-struct CXTSplitterWnd {
-    int method(int, int);
+struct CXTSplitterWnd
+{
+    unsigned char pad[264];
+    unsigned char flags;
+    int f(int, int);
 };
 
-extern "C" int __cdecl fn_ROCX00002c();
+extern int func_006a0c68();
 
-int CXTSplitterWnd::method(int a, int b)
+int CXTSplitterWnd::f(int, int)
 {
-    if (*(unsigned char*)((char*)this + 0x108) & 8)
-        return 0x12;
-    return fn_ROCX00002c();
-}
+    if (flags & 8)
+        return 18;
+    return func_006a0c68();
 }

@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 004a50c0  unit: RBX::VHint::?$FactoryProduct::Creator  size: 87 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004a50c0
 //
@@ -28,9 +29,7 @@
 // 004a510f  c6461001             mov byte ptr [esi + 0x10], 1
 // 004a5113  5e                   pop esi
 // 004a5114  c20400               ret 4
-// copied from an identical function in another client (function ?construct@BoundFuncDesc@ns_ROCX000002@@QAEPAXI@Z)
 
-namespace ns_ROCX000002 {
 extern "C" void* (__cdecl *malloc)(unsigned int size);
 
 struct BoundFuncDesc {
@@ -55,5 +54,4 @@ void* BoundFuncDesc::construct(unsigned int size) {
     }
     field10 = 1;
     return this;
-}
 }

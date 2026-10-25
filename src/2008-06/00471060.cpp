@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 00471060  unit: RBX::LDraw2Lua::LuaWriter  size: 16 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00471060
 //
@@ -6,17 +7,15 @@
 // 00471065  b9b0369300           mov ecx, 0x9336b0
 // 0047106a  e891f5ffff           call 0x470600
 // 0047106f  c3                   ret 
-// copied from an identical function in another client (function ?fn_ROCX000021@ns_ROCX000021@@YAXH@Z)
 
-namespace ns_ROCX000021 {
-struct LuaWriter {
-    void writeString(int arg);
+struct TextureArgs;
+
+struct Table {
+    void insert(TextureArgs* args);
 };
 
-extern LuaWriter g_luaWriter;
+extern Table g_table;
 
-void fn_ROCX000021(int arg)
-{
-    g_luaWriter.writeString(arg);
-}
+void insert(TextureArgs* args) {
+    g_table.insert(args);
 }

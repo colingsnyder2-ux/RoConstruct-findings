@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // roc 2008-06 0046a4b0  unit: DxUserInput  size: 51 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0046a4b0
 //
@@ -22,31 +23,28 @@
 // 0046a4dd  66894e02             mov word ptr [esi + 2], cx
 // 0046a4e1  5e                   pop esi
 // 0046a4e2  c3                   ret 
-// copied from an identical function in another client (function ?reset@DxUserInput@ns_ROCX000003@@QAEXXZ)
 
-namespace ns_ROCX000003 {
-struct DxUserInput {
-    unsigned short field0;
-    unsigned short field2;
-    void* field4;
-    int field8;
-    int fieldC;
-    int field10;
-    void reset();
+struct S_func_0046a4b0 {
+    unsigned short m_a;
+    unsigned short m_b;
+    int m_p;
+    int m_x8;
+    int m_xc;
+    int m_x10;
+    void f();
 };
 
-extern "C" void __cdecl free_ptr(void* p);
+extern "C" void __cdecl sub_006a094a(int);
 
-void DxUserInput::reset() {
-    void* p = this->field4;
-    this->field10 = 0;
-    if (p != 0) {
-        free_ptr(p);
-        this->field4 = 0;
+void S_func_0046a4b0::f()
+{
+    m_x10 = 0;
+    if (m_p != 0) {
+        sub_006a094a(m_p);
+        m_p = 0;
     }
-    this->field0 = 0;
-    this->field8 = 0;
-    this->fieldC = 0;
-    this->field2 = 0x4e4;
-}
+    m_x8 = 0;
+    m_xc = 0;
+    m_a = 0;
+    m_b = 0x4e4;
 }

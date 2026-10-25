@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 004bade0  unit: Exposer  size: 37 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004bade0
 //
@@ -13,9 +14,7 @@
 // 004badfa  c6860901000000       mov byte ptr [esi + 0x109], 0
 // 004bae01  5e                   pop esi
 // 004bae02  c20400               ret 4
-// copied from an identical function in another client (function ?set@Exposer@ns_ROCX000001@@QAEXPBD@Z)
 
-namespace ns_ROCX000001 {
 extern "C" char* (__cdecl *strncpy)(char* dest, const char* src, unsigned int count);
 
 struct Exposer {
@@ -28,5 +27,4 @@ struct Exposer {
 void Exposer::set(const char* src) {
     strncpy(this->buf, src, 0xff);
     this->flag = 0;
-}
 }

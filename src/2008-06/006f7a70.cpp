@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 006f7a70  unit: CXTPPrintingDialog  size: 31 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006f7a70
 //
@@ -13,9 +14,7 @@
 // 006f7a89  8bc6                 mov eax, esi
 // 006f7a8b  5e                   pop esi
 // 006f7a8c  c20400               ret 4
-// copied from an identical function in another client (function ?SetPos@CXTPPrintingDialog@ns_ROCX000062@@QAEPAXPAX@Z)
 
-namespace ns_ROCX000062 {
 struct CXTPPrintingDialog {
     void* SetPos(void* p);
 };
@@ -29,5 +28,4 @@ void* CXTPPrintingDialog::SetPos(void* p) {
     GetCursorPos(this);
     ScreenToClient(*(void**)((char*)p + 0x20), this);
     return this;
-}
 }

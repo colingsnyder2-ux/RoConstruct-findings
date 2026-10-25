@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 00417e20  unit: VCLuaFunction::?$CComObject  size: 78 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00417e20
 //
@@ -26,24 +27,25 @@
 // 00417e66  0f94c1               sete cl
 // 00417e69  8bc1                 mov eax, ecx
 // 00417e6b  c20800               ret 8
-// copied from an identical function in another client (function ?f@S_func_0040b570@ns_ROCX000002@@QAEHHPBH@Z)
 
-namespace ns_ROCX000002 {
-struct S_func_0040b570 {
-    int f(int b, const int* a);
+struct VCWorkspace_CComObject
+{
+    int __stdcall compare(const int* other);
 };
 
-extern int g_790240;
-extern int g_790244;
-extern int g_790248;
-extern int g_79024c;
-
-int S_func_0040b570::f(int b, const int* a)
+int VCWorkspace_CComObject::compare(const int* other)
 {
-    int eq = (a[0] == g_790240) &&
-             (a[1] == g_790244) &&
-             (a[2] == g_790248) &&
-             (a[3] == g_79024c);
-    return !eq;
-}
+    int result;
+    if (other[0] == *(int*)0x790220 &&
+        other[1] == *(int*)0x790224 &&
+        other[2] == *(int*)0x790228 &&
+        other[3] == *(int*)0x79022c)
+    {
+        result = 1;
+    }
+    else
+    {
+        result = 0;
+    }
+    return result == 0;
 }

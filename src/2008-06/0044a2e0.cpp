@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 0044a2e0  unit: CRbxPlayDocTemplate  size: 21 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0044a2e0
 //
@@ -9,36 +10,18 @@
 // 0044a2f0  6a00                 push 0
 // 0044a2f2  ffd0                 call eax
 // 0044a2f4  c3                   ret 
-// copied from an identical function in another client (function ?f@CRbxDocTemplate@ns_ROCX000022@@QAEXXZ)
 
-namespace ns_ROCX000022 {
-struct Inner;
-
-struct InnerVtbl {
-    char pad[0x88];
-    void (__stdcall *fn)(int, int);
-};
-
-struct Inner {
-    InnerVtbl* vtbl;
-};
-
-struct InnerHolder {
-    char pad[0x2c];
-    Inner* inner;
-};
-
-struct CRbxDocTemplate {
+struct CBrowserDocManager {
     char pad[0x58];
-    InnerHolder* holder;
-    void f();
+    void* field_58;
+    void method();
 };
 
-void CRbxDocTemplate::f()
+void CBrowserDocManager::method()
 {
-    InnerHolder* h = this->holder;
-    Inner* in = h->inner;
-    InnerVtbl* vt = in->vtbl;
-    vt->fn(0, 1);
-}
+    void* p = field_58;
+    void* q = *(void**)((char*)p + 0x2c);
+    void** vtbl = *(void***)q;
+    void (__stdcall *fn)(int, int) = (void (__stdcall *)(int, int))vtbl[0x88 / 4];
+    fn(0, 1);
 }

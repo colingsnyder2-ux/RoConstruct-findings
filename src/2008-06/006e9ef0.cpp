@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // roc 2008-06 006e9ef0  unit: CXTPControlColorSelector  size: 37 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006e9ef0
 //
@@ -16,19 +17,16 @@
 // 006e9f0c  e86ff4ffff           call 0x6e9380
 // 006e9f11  5e                   pop esi
 // 006e9f12  c20800               ret 8
-// copied from an identical function in another client (function ?func@CXTPControlColorSelector@ns_ROCX00000e@@QAEXHH@Z)
 
-namespace ns_ROCX00000e {
 struct CXTPControlColorSelector {
-    int sub_672E50(int, int);
-    void sub_672460(int);
-    void func(int, int);
+    int GetItem(int, int);
+    void SetSelectedItem(int);
+    void SetSelectedItem(int, int);
 };
 
-void CXTPControlColorSelector::func(int a, int b) {
-    int r = sub_672E50(a, b);
+void CXTPControlColorSelector::SetSelectedItem(int a, int b) {
+    int r = GetItem(a, b);
     if (r != -1) {
-        sub_672460(r);
+        SetSelectedItem(r);
     }
-}
 }

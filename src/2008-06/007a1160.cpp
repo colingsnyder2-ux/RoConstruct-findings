@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 007a1160  unit: CXTWindowMap  size: 20 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 007a1160
 //
@@ -8,7 +9,6 @@
 // 007a116d  894808               mov dword ptr [eax + 8], ecx
 // 007a1170  894804               mov dword ptr [eax + 4], ecx
 // 007a1173  c3                   ret 
-// auto-matched from its assembly shape
 
 extern char G;
 

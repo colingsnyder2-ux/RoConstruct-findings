@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 006acad0  unit: CPatchedControlComboBox  size: 23 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006acad0
 //
@@ -9,7 +10,6 @@
 // 006acae0  89480c               mov dword ptr [eax + 0xc], ecx
 // 006acae3  894808               mov dword ptr [eax + 8], ecx
 // 006acae6  c3                   ret 
-// auto-matched from its assembly shape
 
 extern char G;
 

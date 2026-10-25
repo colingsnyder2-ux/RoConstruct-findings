@@ -1,7 +1,8 @@
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs roc_camera_expanded_native_family_2b7088a7dcd2e755.cpp
+// roc-lib: rbxgs-dll roc_camera_expanded_native_family_2b7088a7dcd2e755.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias("v8datamodel/Camera.h", "../roc_camera_native_header_db0bf117fdeefdc1.cpp")

@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 004226c0  unit: CSelectionTreeCtrl  size: 28 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004226c0
 //
@@ -10,9 +11,7 @@
 // 004226cf  8b4c2408             mov ecx, dword ptr [esp + 8]
 // 004226d3  c70100000000         mov dword ptr [ecx], 0
 // 004226d9  c20800               ret 8
-// copied from an identical function in another client (function ?func@ns_ROCX000021@@YGXPAUOuter@1@PAH@Z)
 
-namespace ns_ROCX000021 {
 struct InnerVtbl {
     char pad[0x14];
     void (__stdcall *fn)(void*);
@@ -31,5 +30,4 @@ void __stdcall func(Outer* p, int* out)
 {
     p->m_inner->vtbl->fn(p);
     *out = 0;
-}
 }

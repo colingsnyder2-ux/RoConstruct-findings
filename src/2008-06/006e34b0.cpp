@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 006e34b0  unit: CXTPCustomizeSheet::CCustomizeEdit  size: 21 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006e34b0
 //
@@ -9,7 +10,6 @@
 // 006e34be  e887d4fbff           call 0x6a094a
 // 006e34c3  59                   pop ecx
 // 006e34c4  c3                   ret 
-// auto-matched from its assembly shape
 
 extern "C" void __cdecl G1_func_006e34b0(void*);
 struct S_func_006e34b0 {

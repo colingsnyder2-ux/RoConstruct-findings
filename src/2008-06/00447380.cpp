@@ -1,7 +1,8 @@
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs roc_unit_17a2063a9f68116b.cpp
+// roc-lib: rbxgs-dll roc_unit_17a2063a9f68116b.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias("reflection/enumconverter.h", "../roc_enum_native_owner_header_b9f24b80cd6bff22.cpp")

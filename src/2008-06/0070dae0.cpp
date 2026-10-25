@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 0070dae0  unit: CXTThemeManagerStyle  size: 29 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0070dae0
 //
@@ -14,9 +15,8 @@
 // 0070daf4  e887ffffff           call 0x70da80
 // 0070daf9  5e                   pop esi
 // 0070dafa  c20400               ret 4
-// copied from an identical function in another client (function ?method_691db0@CXTThemeManagerStyle@ns_ROCX000034@@QAEHH@Z)
 
-namespace ns_ROCX000034 {
+namespace ns_ROCX00002c {
 struct CXTThemeManagerStyle {
     int method_691d60(int);
     int method_691db0(int);

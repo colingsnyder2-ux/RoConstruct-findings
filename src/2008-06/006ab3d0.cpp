@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 006ab3d0  unit: CRobloxControlColorSelector  size: 30 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006ab3d0
 //
@@ -11,9 +12,7 @@
 // 006ab3e4  ffd0                 call eax
 // 006ab3e6  b801000000           mov eax, 1
 // 006ab3eb  c20800               ret 8
-// copied from an identical function in another client (function ?method@CRobloxControlColorSelector@ns_ROCX000027@@QAEHHH@Z)
 
-namespace ns_ROCX000027 {
 struct CRobloxControlColorSelector {
     virtual void vfunc_000();
     virtual void vfunc_004();
@@ -81,5 +80,4 @@ int CRobloxControlColorSelector::method(int a, int b)
 {
     vfunc_0e8(0, a, b);
     return 1;
-}
 }

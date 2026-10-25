@@ -1,8 +1,7 @@
-// from server: 64% by colin
-// roc-lang: cpp
+// from server: 69% by king_originala
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_adorn_indexbox_sphere_material_b9264866d860a24e.cpp
+// roc-lib: rbxgs-dll roc_render_adorn_early_section_a4c2cd64fbe544e6.cpp
 
 // Candidate translation unit (score above; library headers required).
 #undef OGRE_NONCLIENT_BUILD
@@ -15,52 +14,12 @@
 #include "../../../libs/ogre-1.4.5/ogrenew/OgreMain/include/OgreSphere.h"
 #include "../../../libs/ogre-1.4.5/ogrenew/OgreMain/include/OgreResourceGroupManager.h"
 #include <stdexcept>
+#include "../../../libs/ogre-1.4.5/ogrenew/OgreMain/include/OgreSceneNode.h"
+#include <map>
 #include <G3D/Ray.h>
 #include "../../../libs/ogre-1.4.5/ogrenew/OgreMain/include/OgreStringConverter.h"
 #include <algorithm>
 #include <cmath>
-// Authentic OpenRBX util/IndexBox.h; preserved verbatim.
-#ifndef UTIL_INDEXBOX_H
-#define UTIL_INDEXBOX_H
-
-#include <G3D/Vector3.h>
-
-namespace RBX {
-
-using G3D::Vector3;
-
-// VTABLE: WEBSERVICE 0x1022cf1c
-class IndexBox
-{
-public:
-	IndexBox(const Vector3& min, const Vector3& max);
-
-	virtual ~IndexBox() // vtable+0x00
-	{
-	}
-
-	// SYNTHETIC: WEBSERVICE 0x100314f0
-	// RBX::IndexBox::`scalar deleting destructor'
-
-	Vector3 getFaceNormal(int f) const
-	{
-		return Vector3(INDEXBOX_FACE_TO_NORMAL[f][0], INDEXBOX_FACE_TO_NORMAL[f][1], INDEXBOX_FACE_TO_NORMAL[f][2]);
-	}
-
-	void getFaceCorners(int f, Vector3& v0, Vector3& v1, Vector3& v2, Vector3& v3) const;
-
-	static const int INDEXBOX_FACE_TO_VERTEX[6][4];
-	static const float INDEXBOX_FACE_TO_NORMAL[6][3];
-
-private:
-	Vector3 corner[8]; // 0x04
-};
-
-} // namespace RBX
-
-#endif // UTIL_INDEXBOX_H
-
-// End authentic IndexBox declaration.
 #include <stdio.h>
 #include "../../../libs/ogre-1.4.5/ogrenew/OgreMain/include/OgreMaterialManager.h"
 #include "../../../libs/ogre-1.4.5/ogrenew/OgreMain/include/OgreTechnique.h"
@@ -77,6 +36,20 @@ public:
     Vector3 offset;
     AdornQuadric();
     ManualObject* sphere(SceneManager*,const String&,ManualObject*,float,int,int);
+};
+}
+namespace Ogre {
+class RbxSceneNode:public SceneNode {
+ typedef std::map<unsigned long, Matrix4*> TransformMap;
+ mutable TransformMap transforms;
+public:
+ RbxSceneNode(SceneManager*,const String&);
+ virtual ~RbxSceneNode();
+ virtual void setTransform(unsigned long,const Matrix4&);
+ virtual const Matrix4&getTransform(unsigned long)const;
+ virtual bool hasTransform(unsigned long)const;
+ virtual void setSphere(unsigned long,const Sphere&);
+ virtual const Sphere&getSphere(unsigned long)const;
 };
 }
 namespace RBX {
@@ -100,67 +73,10 @@ public:
 // one source reference, copy all three/four real float components.
 Ogre::Vector3 nativeVector(const G3D::Vector3&);
 Ogre::ColourValue nativeColour(const G3D::Color4&);
-static const float faceNormals[18]={1,0,0,0,1,0,0,0,1,-1,0,0,0,-1,0,0,0,-1};
-void AdornRbxGfx::box(const G3D::AABox& bounds,const G3D::Color4& color,const G3D::Color4&) {
-    IndexBox cube(G3D::Vector3(-1,-1,-1),G3D::Vector3(1,1,1));
-    char key[64];
-    _snprintf(key,64,"c%d%d%d",(int)(color.r*255.0f),(int)(color.g*255.0f),(int)(color.b*255.0f));
-    Ogre::MeshPtr mesh=findMesh(key);
-    if(mesh.isNull()) {
-        void* engine=*(void**)((char*)this+4);
-        Ogre::SceneManager* scene=*(Ogre::SceneManager**)((char*)engine+4);
-        Ogre::ManualObject* object=scene->createManualObject("box"+uniqueName());
-        object->begin("",Ogre::RenderOperation::OT_TRIANGLE_LIST);
-        object->colour(nativeColour(color));
-        int index=0;
-        int face=0;
-        for(const float* normal=faceNormals;normal<faceNormals+18;normal+=3,++face) {
-            G3D::Vector3 a(0,0,0),b(0,0,0),c(0,0,0),d(0,0,0);
-            cube.getFaceCorners(face,a,b,c,d);
-            object->normal(nativeVector(G3D::Vector3(normal[0],normal[1],normal[2])));
-            object->position(nativeVector(a)); object->index(index++);
-            object->position(nativeVector(b)); object->index(index++);
-            object->position(nativeVector(c)); object->index(index++);
-            object->position(nativeVector(a)); object->index(index++);
-            object->position(nativeVector(c)); object->index(index++);
-            object->position(nativeVector(d)); object->index(index++);
-        }
-        object->end();
-        const Ogre::MaterialPtr& material=*(Ogre::MaterialPtr*)((char*)this+0x38);
-        object->setMaterialName(0,material->getName());
-        mesh=object->convertToMesh(scene->getName()+"bmsh"+Ogre::StringConverter::toString(*(unsigned int*)((char*)this+0x94)),Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-        cacheMesh(key,mesh);
-        float radius=mesh->getBoundingSphereRadius();
-        Ogre::Vector3 center=mesh->getBounds().getCenter();
-        Ogre::Vector4 parameter(radius,center.x,center.y,center.z);
-        void* node=*(void**)((char*)this+0x34);
-        typedef void (__thiscall *SetParameter)(void*,size_t,const Ogre::Vector4&);
-        ((SetParameter)(*(void***)node)[113])(node,(size_t)mesh->getSubMesh(0),parameter);
-    }
-    Ogre::Matrix4 world;
-    localMatrix(world,Ogre::Vector3(0,0,0),Ogre::Vector3(1,1,1),Ogre::Quaternion(1,0,0,0));
-    Ogre::Matrix4 local;
-    G3D::Vector3 center((bounds.low().x+bounds.high().x)*0.5f,(bounds.low().y+bounds.high().y)*0.5f,(bounds.low().z+bounds.high().z)*0.5f);
-    local.makeTransform(nativeVector(center),Ogre::Vector3((bounds.high().x-bounds.low().x)*0.5f,(bounds.high().y-bounds.low().y)*0.5f,(bounds.high().z-bounds.low().z)*0.5f),Ogre::Quaternion(1,0,0,0));
-    drawMesh(mesh,world.concatenate(local),*(Ogre::MaterialPtr*)((char*)this+0x38));
-}
-
-void AdornRbxGfx::updateColor(const G3D::Color4& color,int variant) {
-    char name[64];
-    _snprintf(name,64,"adrnClr%.3f%.3f%.3f%.3f%d",color.r,color.g,color.b,color.a,variant);
-    (*(Ogre::MaterialPtr*)((char*)this+0x24))=Ogre::MaterialManager::getSingleton().getByName(name);
-    if(!(*(Ogre::MaterialPtr*)((char*)this+0x24)).isNull()) return;
-    (*(Ogre::MaterialPtr*)((char*)this+0x24))=Ogre::MaterialManager::getSingleton().create(name,"General",false,0,0);
-    Ogre::Pass* pass=(*(Ogre::MaterialPtr*)((char*)this+0x24))->getTechnique(0)->getPass(0);
-    pass->setAmbient(color.r,color.g,color.b);
-    pass->setDiffuse(color.r,color.g,color.b,color.a);
-    pass->setSpecular(color.r,color.g,color.b,color.a);
-    pass->setShininess(10.0f);
-    (*(Ogre::MaterialPtr*)((char*)this+0x24))->setLightingEnabled(true);
-}
 class AdornMeshCache { public: Ogre::MeshPtr& operator[](const std::string&); };
 void AdornRbxGfx::sphere(const G3D::Sphere& value,const G3D::Color4& color,const G3D::Color4&) {
     Ogre::AdornQuadric quadric;
+    int section=0;
     updateColor(G3D::Color4(color.r*0.8f,color.g*0.8f,color.b*0.8f,color.a*0.8f),0);
     std::string key("sph0001");
     Ogre::MeshPtr mesh=findMesh(key);
@@ -168,17 +84,15 @@ void AdornRbxGfx::sphere(const G3D::Sphere& value,const G3D::Color4& color,const
         void* engine=*(void**)((char*)this+4);
         Ogre::SceneManager* scene=*(Ogre::SceneManager**)((char*)engine+4);
         Ogre::ManualObject* object=quadric.sphere(scene,"sph"+uniqueName(),0,1,17,17);
-        for(int i=0;i<(int)object->getNumSections();++i)
-            object->setMaterialName(i,(*(Ogre::MaterialPtr*)((char*)this+0x24))->getName());
+        for(;section<(int)object->getNumSections();++section)
+            object->setMaterialName(section,(*(Ogre::MaterialPtr*)((char*)this+0x24))->getName());
         mesh=object->convertToMesh(scene->getName()+"smsh"+Ogre::StringConverter::toString(*(unsigned int*)((char*)this+0x94)),Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
         (*(AdornMeshCache*)((char*)this+0x78))[key]=mesh;
         float radius=mesh->getBoundingSphereRadius();
-        Ogre::Vector3 center=mesh->getBounds().getCenter();
-        Ogre::Vector4 parameter(radius,center.x,center.y,center.z);
+        Ogre::Sphere parameter(mesh->getBounds().getCenter(),radius);
         for(int i=0;i<mesh->getNumSubMeshes();++i) {
-            void* node=*(void**)((char*)this+0x34);
-            typedef void (__thiscall *SetParameter)(void*,size_t,const Ogre::Vector4&);
-            ((SetParameter)(*(void***)node)[113])(node,(size_t)mesh->getSubMesh((unsigned short)i),parameter);
+            Ogre::RbxSceneNode* node=*(Ogre::RbxSceneNode**)((char*)this+0x34);
+            node->setSphere((unsigned long)mesh->getSubMesh((unsigned short)i),parameter);
         }
     }
     Ogre::Matrix4 world;

@@ -1,4 +1,4 @@
-// from server: 66% by EspClaude
+// from server: 74% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
@@ -32,8 +32,8 @@ G3D::Vector3 closestPoint(const RbxRay& a, const RbxRay& b)
     G3D::Vector3 p2 = b.origin;
     G3D::Vector3 d1 = a.direction;
     G3D::Vector3 d2 = b.direction;
-    G3D::Vector3 r = p2 - p1;
     float d = d1.dot(d2);
+    G3D::Vector3 r = p2 - p1;
     float denom = 1.0f - d * d;
     if (denom > 1e-5)
     {

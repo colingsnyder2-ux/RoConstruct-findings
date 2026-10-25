@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 004bba90  unit: ProfiledRakPeer  size: 72 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004bba90
 //
@@ -26,9 +27,7 @@
 // 004bbad2  b001                 mov al, 1
 // 004bbad4  5e                   pop esi
 // 004bbad5  c20400               ret 4
-// copied from an identical function in another client (function ?setLimit@RakPeer@ns_ROCX000001@@QAE_NH@Z)
 
-namespace ns_ROCX000001 {
 struct RakPeer {
     virtual bool vfunc0();
     virtual bool vfunc1();
@@ -59,5 +58,4 @@ bool RakPeer::setLimit(int limit)
     }
     field_708 = limit;
     return true;
-}
 }

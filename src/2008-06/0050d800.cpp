@@ -1,10 +1,10 @@
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /arch:SSE2 /fp:fast
-// roc-lib: g3d-6.09-rbx2008 G3Dcpp/roc_line_0dec62d7bd4d609a.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: g3d-6.09-rbx2008 G3Dcpp/GImage.cpp
 
 // Candidate translation unit (score above; library headers required).
-#line 1 ".\\G3Dcpp\\GImage.cpp"
 /**
   @file GImage.cpp
   @author Morgan McGuire, morgan@graphics3d.com
@@ -952,9 +952,7 @@ void GImage::convertToRGB() {
         break;
 
     default:
-#line 3072
         alwaysAssertM(false, "Bad number of channels in input image");
-#line 949
     }
 }
 

@@ -1,9 +1,9 @@
+// from server: 100% by auto
 // roc 2008-06 006e51f0  unit: CXTPDockingPaneManager  size: 8 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006e51f0
 //
 // 006e51f0  b801000000           mov eax, 1
 // 006e51f5  c20c00               ret 0xc
-// auto-matched from its assembly shape
 
 struct S_func_006e51f0 {
 

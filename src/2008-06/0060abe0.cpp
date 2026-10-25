@@ -1,10 +1,10 @@
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs roc_unit_04a4f43d7b9f24d1.cpp
+// roc-lib: rbxgs roc_unit_79c05da32dcaafc2.cpp
 
 // Candidate translation unit (score above; library headers required).
-#pragma include_alias("v8world/Primitive.h", "roc_unit_3cb14e7bbff2e8e6.cpp")
 #undef _RELEASEASSERT
 #pragma include_alias("util/IRenderable.h", "roc_unit_b8671ae8d3010f90.cpp")
 #pragma include_alias("v8tree/Instance.h", "roc_unit_b34763c2f3d3f398.cpp")
@@ -135,8 +135,8 @@ namespace RBX
 		switch (inOut)
 		{
 		case INSET:
-			uv.x = std::max(0.0f, std::abs(uv.x) - 1.0f) * RBX::Math::sign(uv.x);
-			uv.y = std::max(0.0f, std::abs(uv.y) - 1.0f) * RBX::Math::sign(uv.y);
+			uv.x = RBX::Math::sign(uv.x) * std::max(0.0f, std::abs(uv.x) - 1.0f);
+			uv.y = RBX::Math::sign(uv.y) * std::max(0.0f, std::abs(uv.y) - 1.0f);
 			break;
 
 		case CENTER_IO:

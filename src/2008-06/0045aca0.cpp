@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 0045aca0  unit: G3D::Hashable  size: 23 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0045aca0
 //
@@ -9,7 +10,6 @@
 // 0045acb0  894808               mov dword ptr [eax + 8], ecx
 // 0045acb3  894804               mov dword ptr [eax + 4], ecx
 // 0045acb6  c3                   ret 
-// auto-matched from its assembly shape
 
 extern char G;
 

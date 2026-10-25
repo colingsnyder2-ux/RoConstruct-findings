@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 006da030  unit: VCXTPReportRows::?$CXTPHeapObjectT  size: 27 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006da030
 //
@@ -11,9 +12,7 @@
 // 006da03f  ff15fc258000         call dword ptr [0x8025fc]
 // 006da045  83c410               add esp, 0x10
 // 006da048  c20400               ret 4
-// copied from an identical function in another client (function ?Sort@VCXTPReportRows@ns_ROCX00002f@@QAEXP6AHPBX0@Z@Z)
 
-namespace ns_ROCX00002f {
 extern "C" void (__cdecl *qsort)(void*, unsigned int, unsigned int, int (__cdecl*)(const void*, const void*));
 
 struct VCXTPReportRows {
@@ -25,5 +24,4 @@ struct VCXTPReportRows {
 
 void VCXTPReportRows::Sort(int (__cdecl* cmp)(const void*, const void*)) {
     qsort(field24, (unsigned int)field28, 4, cmp);
-}
 }

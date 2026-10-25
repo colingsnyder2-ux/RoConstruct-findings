@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 0072e7f0  unit: CXTPControlGalleryPaintManager  size: 21 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0072e7f0
 //
@@ -9,7 +10,6 @@
 // 0072e7fe  e84721f7ff           call 0x6a094a
 // 0072e803  59                   pop ecx
 // 0072e804  c3                   ret 
-// auto-matched from its assembly shape
 
 extern "C" void __cdecl G1_func_0072e7f0(void*);
 struct S_func_0072e7f0 {

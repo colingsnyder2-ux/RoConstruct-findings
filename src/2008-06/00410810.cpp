@@ -1,3 +1,4 @@
+// from server: 100% by atomic.potato
 // roc 2008-06 00410810  unit: UIEnumConnections::V?$CComEnum::?$CComObject  size: 24 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00410810
 //
@@ -9,15 +10,19 @@
 // 0041081f  51                   push ecx
 // 00410820  e8cb4fffff           call 0x4057f0
 // 00410825  c20400               ret 4
-// copied from an identical function in another client (function ?fn_ROCX000000@ns_ROCX000000@@YGHH@Z)
 
-namespace ns_ROCX000000 {
-extern "C" int __stdcall G1_func_00406f90(int, int, int, int);
+typedef int BOOL;
 
-int g_var_008bae44;
+extern "C" BOOL __stdcall sub_4057F0(int, int, int, int);
 
-int __stdcall fn_ROCX000000(int a)
+extern int g_0096C268;
+
+struct S
 {
-    return G1_func_00406f90(g_var_008bae44, 0x77, a, 0);
-}
+    BOOL f(int);
+};
+
+BOOL S::f(int value)
+{
+    return sub_4057F0(g_0096C268, 0x77, value, 0);
 }

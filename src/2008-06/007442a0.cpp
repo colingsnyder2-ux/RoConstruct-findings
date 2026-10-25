@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 007442a0  unit: CXTPCommandBarAnimation::PAUCAnimateInfo::?$CArray  size: 31 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 007442a0
 //
@@ -15,9 +16,7 @@
 // 007442b6  8d4e24               lea ecx, [esi + 0x24]
 // 007442b9  5e                   pop esi
 // 007442ba  e911ffffff           jmp 0x7441d0
-// copied from an identical function in another client (function ?Clear@CXTPCommandBarAnimation@ns_ROCX000007@@QAEXXZ)
 
-namespace ns_ROCX000007 {
 struct CXTPCommandBarAnimation {
     void* m_pAnimateInfo;
     void* m_pad0;
@@ -37,5 +36,4 @@ void CXTPCommandBarAnimation::Clear()
     pfn(m_pAnimateInfo);
     pfn(m_pAnimateInfo2);
     sub_6c8fb0((char*)this + 0x24);
-}
 }

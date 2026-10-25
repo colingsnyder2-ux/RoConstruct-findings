@@ -1,7 +1,8 @@
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs roc_unit_00fd3441d97d4838.cpp
+// roc-lib: rbxgs roc_unit_a3550546fecd006b.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "v8datamodel/Lighting.h"
@@ -69,12 +70,12 @@ namespace RBX
 
 	void Lighting::setClearColor(G3D::Color4 value)
 	{
-		if (value != (*reinterpret_cast<G3D::Color4*>(reinterpret_cast<char*>(this) + 0x254)))
+		if (value != clearColor)
 		{
-			(*reinterpret_cast<G3D::Color4*>(reinterpret_cast<char*>(this) + 0x254)) = value;
+			clearColor = value;
 
 			raisePropertyChanged(desc_ClearColor);
-			event_LightingChanged.fire(this ? reinterpret_cast<Reflection::SignalSource*>(reinterpret_cast<char*>(this) + 0x14) : 0, false);
+			fireLightingChanged(false);
 			RunService* runService = ServiceProvider::find<RunService>(this);
 			if (runService)
 				runService->invalidateRunViews();

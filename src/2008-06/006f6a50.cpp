@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 006f6a50  unit: CXTPControlSelector  size: 43 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006f6a50
 //
@@ -20,9 +21,7 @@
 // 006f6a74  894608               mov dword ptr [esi + 8], eax
 // 006f6a77  5e                   pop esi
 // 006f6a78  c20400               ret 4
-// copied from an identical function in another client (function ?Set@CXTPControlSelector@ns_ROCX00004d@@QAEXPAX@Z)
 
-namespace ns_ROCX00004d {
 struct CXTPControlSelector {
     int m_nUnknown0;
     void* m_pUnknown4;
@@ -38,5 +37,4 @@ void CXTPControlSelector::Set(void* p)
             m_pUnknown8 = result;
         }
     }
-}
 }

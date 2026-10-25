@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 005f1c70  unit: RBX::FaceInstance  size: 30 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005f1c70
 //
@@ -17,9 +18,7 @@
 // 005f1c8b  5f                   pop edi
 // 005f1c8c  5e                   pop esi
 // 005f1c8d  c3                   ret 
-// copied from an identical function in another client (function ?f@S_func_00726890@ns_ROCX000000@@QAEXXZ)
 
-namespace ns_ROCX000000 {
 extern "C" int (__stdcall *CloseHandle)(void*);
 
 struct S_func_00726890 {
@@ -35,5 +34,4 @@ void S_func_00726890::f()
     p(field0);
     p(field4);
     p(field8);
-}
 }

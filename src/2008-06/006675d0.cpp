@@ -1,8 +1,7 @@
-// from server: 77% by Espeon
-// roc-lang: cpp
+// from server: 78% by king_originala
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espeon_freefallclampcompare9fd8013c6ea992ca.cpp
+// roc-lib: rbxgs-dll roc_king_originala_physics_6a0bb37857c608b8.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <G3D/Vector3.h>
@@ -36,7 +35,8 @@ void Freefall::onComputeForce(float dt){
   Vector3 inertia=toDiagonal(body->getBranchIBody());
   float requested=(desiredYaw-body->getVelocity().rotational.y)*inertia.y*7500.0f;
   float torque=requested-body->getBranchTorque().y;
-  float limit=toDiagonal(body->getBranchIBody()).y*maxYawAcceleration;
+  Vector3 limitInertia=toDiagonal(body->getBranchIBody());
+  float limit=limitInertia.y*maxYawAcceleration;
   body->accumulateTorque(Vector3(0,clampValue(torque,-limit,limit),0));
   Vector3 accel=(desiredVelocity-body->getBranchVelocity().linear)*1250.0f;
   Vector3 bounded=accel.clamp(lowerAcceleration(),upperAcceleration());

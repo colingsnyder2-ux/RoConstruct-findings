@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 006a30a0  unit: CRobloxControlColorSelector  size: 21 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006a30a0
 //
@@ -9,7 +10,6 @@
 // 006a30ae  e897d8ffff           call 0x6a094a
 // 006a30b3  59                   pop ecx
 // 006a30b4  c3                   ret 
-// auto-matched from its assembly shape
 
 extern "C" void __cdecl G1_func_006a30a0(void*);
 struct S_func_006a30a0 {

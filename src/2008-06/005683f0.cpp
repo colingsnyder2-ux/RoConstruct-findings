@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 005683f0  unit: RBX::Selection  size: 26 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005683f0
 //
@@ -9,9 +10,7 @@
 // 00568406  8bc6                 mov eax, esi
 // 00568408  5e                   pop esi
 // 00568409  c3                   ret 
-// copied from an identical function in another client (function ?init@S@ns_ROCX000001@@QAEPAU12@XZ)
 
-namespace ns_ROCX000001 {
 struct S {
     void* vfptr;
     int pad[2];
@@ -28,5 +27,4 @@ S* S::init()
     field_c = 0;
     vfptr = &sub_78527c;
     return this;
-}
 }

@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 007188d0  unit: RBX::Kernel  size: 80 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 007188d0
 //
@@ -32,9 +33,7 @@
 // 00718917  b805400080           mov eax, 0x80004005
 // 0071891c  5e                   pop esi
 // 0071891d  c21400               ret 0x14
-// copied from an identical function in another client (function ?step@Kernel@ns_ROCX000005@@QAEHHHHHH@Z)
 
-namespace ns_ROCX000005 {
 struct KernelData {
     void* m_field0;
     char pad0[8];
@@ -63,5 +62,4 @@ int Kernel::step(int a, int b, int c, int d, int e)
         return ((Fn)fn)(a, b, c, d, e);
     }
     return (int)0x80004005;
-}
 }

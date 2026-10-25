@@ -1,7 +1,8 @@
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs roc_unit_09f8f9973c494ab8.cpp
+// roc-lib: rbxgs-dll roc_unit_09f8f9973c494ab8.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias("v8tree/Instance.h", "roc_unit_b34763c2f3d3f398.cpp")

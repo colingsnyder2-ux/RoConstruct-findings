@@ -1,4 +1,4 @@
-// from server: 98% by king_originala
+// from server: 100% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
@@ -9,8 +9,8 @@ struct Vector3 {
  float x,y,z;
  Vector3(){}
  Vector3(float a,float b,float c):x(a),y(b),z(c){}
- Vector3 operator-(const Vector3&v)const{return Vector3(x-v.x,y-v.y,z-v.z);}
- float length()const{return Math::Sqrt(x*x+y*y+z*z);}
+ Vector3 operator-(const Vector3&v)const{Vector3 result;result.z=z-v.z;result.y=y-v.y;result.x=x-v.x;return result;}
+ float length()const{float xx=x*x;return Math::Sqrt((xx+y*y)+z*z);}
 };
 struct __declspec(dllimport) VertexData {~VertexData()throw();};
 struct AxisAlignedBox {

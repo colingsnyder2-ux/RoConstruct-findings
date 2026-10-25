@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 006ed3a0  unit: CXTPCustomizeCommandsPage  size: 21 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006ed3a0
 //
@@ -9,7 +10,6 @@
 // 006ed3ae  e89735fbff           call 0x6a094a
 // 006ed3b3  59                   pop ecx
 // 006ed3b4  c3                   ret 
-// auto-matched from its assembly shape
 
 extern "C" void __cdecl G1_func_006ed3a0(void*);
 struct S_func_006ed3a0 {

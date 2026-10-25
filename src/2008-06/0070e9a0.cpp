@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 0070e9a0  unit: CXTPStatusBar  size: 21 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0070e9a0
 //
@@ -9,7 +10,6 @@
 // 0070e9ae  e8971ff9ff           call 0x6a094a
 // 0070e9b3  59                   pop ecx
 // 0070e9b4  c3                   ret 
-// auto-matched from its assembly shape
 
 extern "C" void __cdecl G1_func_0070e9a0(void*);
 struct S_func_0070e9a0 {

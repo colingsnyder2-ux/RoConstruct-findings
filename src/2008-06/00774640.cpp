@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 00774640  unit: VCEdit::?$CXTMaskEditT  size: 23 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00774640
 //
@@ -9,7 +10,6 @@
 // 00774650  89480c               mov dword ptr [eax + 0xc], ecx
 // 00774653  894808               mov dword ptr [eax + 8], ecx
 // 00774656  c3                   ret 
-// auto-matched from its assembly shape
 
 extern char G;
 

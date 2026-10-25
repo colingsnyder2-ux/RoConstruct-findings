@@ -1,3 +1,4 @@
+// from server: 100% by atomic.potato
 // roc 2008-06 006f7880  unit: CXTPPrintPageHeaderFooter  size: 21 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006f7880
 //
@@ -9,13 +10,10 @@
 // 006f788d  0f95c1               setne cl
 // 006f7890  03c1                 add eax, ecx
 // 006f7892  c20800               ret 8
-// copied from an identical function in another client (function ?sub_0067FDB0@ns_ROCX00005d@@YGHHH@Z)
 
-namespace ns_ROCX00005d {
-int __stdcall sub_0067FDB0(int divisor, int value)
+extern "C" int __stdcall func_006f7880(int divisor, int dividend)
 {
-    int quotient = value / divisor;
-    int remainder = value % divisor;
-    return quotient + (remainder != 0 ? 1 : 0);
-}
+    int quotient = dividend / divisor;
+    int remainder = dividend % divisor;
+    return quotient + (remainder != 0);
 }

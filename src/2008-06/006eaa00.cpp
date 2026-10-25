@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 006eaa00  unit: CXTPCustomizeSheet  size: 73 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006eaa00
 //
@@ -31,9 +32,7 @@
 // 006eaa44  5f                   pop edi
 // 006eaa45  5e                   pop esi
 // 006eaa46  c20400               ret 4
-// copied from an identical function in another client (function ?func@CXTPCustomizeSheet@ns_ROCX000004@@QAEXPAX@Z)
 
-namespace ns_ROCX000004 {
 struct CXTPCustomizeSheet {
     char pad[0xb8];
     void* field_b8;
@@ -53,5 +52,4 @@ void CXTPCustomizeSheet::func(void* arg)
         int flag = (*(int*)((char*)q + 0x80) != 0);
         vt3[0](p, flag);
     }
-}
 }

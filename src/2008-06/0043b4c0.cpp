@@ -1,3 +1,4 @@
+// from server: 100% by atomic.potato
 // roc 2008-06 0043b4c0  unit: HVCXTPPropertyGridItem::?$XItem  size: 20 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0043b4c0
 //
@@ -8,16 +9,13 @@
 // 0043b4cc  3b0a                 cmp ecx, dword ptr [edx]
 // 0043b4ce  0f94c0               sete al
 // 0043b4d1  c20800               ret 8
-// copied from an identical function in another client (function ?compareItems@ns_ROCX000005@@YG_NPAUHVCXTPPropertyGridItem@1@0@Z)
 
-namespace ns_ROCX000005 {
-struct HVCXTPPropertyGridItem
+struct XItem
 {
-    int XItem;
+    static int __stdcall Equal(const void* a, const void* b);
 };
 
-bool __stdcall compareItems(HVCXTPPropertyGridItem* a, HVCXTPPropertyGridItem* b)
+int __stdcall XItem::Equal(const void* a, const void* b)
 {
-    return a->XItem == b->XItem;
-}
+    return *(const int*)a == *(const int*)b;
 }

@@ -1,40 +1,72 @@
-// roc-lang: cpp
+// from server: 100% by colin
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs roc_unit_0de8ae1234efd814.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+#pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-// Candidate translation unit (score above; library headers required).
-#pragma include_alias("v8tree/Instance.h", "roc_unit_b34763c2f3d3f398.cpp")
-#pragma include_alias("util/IRenderable.h", "roc_unit_b8671ae8d3010f90.cpp")
-#pragma include_alias("v8datamodel/MouseCommand.h", "roc_unit_9958a7131e20354c.cpp")
-#pragma include_alias("v8datamodel/PartInstance.h", "roc_unit_ea83e629b1338927.cpp")
-#undef _RELEASEASSERT
-#include "v8datamodel/PartInstance.h"
-#include "roc_unit_a21bf1eef16ceba3.cpp"
-#include "v8datamodel/Selection.h"
 namespace RBX {
-class HandleHitTest { public: static bool hitTestHandleLocal(const Extents&,const G3D::CoordinateFrame&,const G3D::Ray&,G3D::Vector3&,NormalId&); };
-void ResizeTool::findTargetPV(const UIEvent& inputObject)
-{
-	ServiceClient< Selection > selection(reinterpret_cast<Instance*>(this->workspace));
-
-	Instances::const_iterator it;
-
-	for (it = selection->begin(); it != selection->end(); ++it) {
-		if (PartInstance* part = dynamic_cast<PartInstance*>(it->get())) {
-
-			G3D::Ray gridRay(getUnitMouseRay(inputObject));
-			if (HandleHitTest::hitTestHandleLocal(	part->getExtentsLocal(),
-													part->getLocation(),
-													gridRay, 
-													hitPointGrid, 
-													localNormalId))
-			{
-				targetPV = shared_from(part);
-				return;
-			}
-		}
-	}
-	targetPV.reset();
+struct Instance;
+struct ServiceProvider;
 }
+
+RBX::ServiceProvider* __cdecl func_00492e00(RBX::Instance*);
+
+struct Control {
+    virtual ~Control();
+    virtual void dispose();
+    virtual void destroy();
+
+    volatile long strongCount;
+    volatile long weakCount;
+};
+
+struct Reference {
+    Control* control;
+
+    Reference& operator=(const Reference&);
+    ~Reference();
+};
+
+inline Reference::~Reference()
+{
+    Control* p = control;
+    if (p) {
+        if (_InterlockedDecrement(&p->strongCount) == 0) {
+            p->dispose();
+            if (_InterlockedDecrement(&p->weakCount) == 0)
+                p->destroy();
+        }
+    }
+}
+
+struct Product {
+    void* object;
+    Reference reference;
+
+    Product& operator=(const Product&);
+};
+
+inline Product& Product::operator=(const Product& other)
+{
+    object = other.object;
+    reference = other.reference;
+    return *this;
+}
+
+Product __cdecl func_00618a40(RBX::ServiceProvider*);
+
+struct S {
+    RBX::Instance* instance;
+    Product cached;
+
+    void* get(int);
+};
+
+void* S::get(int)
+{
+    if (!cached.object)
+        cached = func_00618a40(func_00492e00(instance));
+    return cached.object;
 }

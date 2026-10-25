@@ -1,11 +1,10 @@
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs roc_lua_index_native_family_e38820bbe8166503.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_lua_property_native_family_df72ab273215c092.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include <boost/shared_ptr.hpp>
-namespace RBX { class Instance; template<typename Class> boost::shared_ptr<Class> shared_from(Class*); template<> boost::shared_ptr<Instance> shared_from<Instance>(Instance*); }
 // Native setter reloads its descriptor across type branches. Getter retains
 // its genuine source alias: removing it reduced the measured similarity.
 #include "script/LuaInstanceBridge.h"
@@ -243,7 +242,7 @@ int ObjectBridge::on_index(const boost::shared_ptr<DescribedBase>& object, const
                 lua_settable(L, LUA_ENVIRONINDEX);
             }
 
-            // Native index lookup omits this release assertion.
+            RBXASSERT(lua_type(L, -1) == LUA_TFUNCTION);
 
             return 1;
         }
@@ -279,7 +278,7 @@ int ObjectBridge::on_index(const boost::shared_ptr<DescribedBase>& object, const
             return on_index(object, pascalName.c_str(), L);
     }
 
-    throw std::runtime_error(G3D::format("%s is not a valid member of %s", name, ((AbstractFactoryProduct<Instance>*)((char*)instance+0x10))->getClassName().c_str()));
+    throw std::runtime_error(G3D::format("%s is not a valid member of %s", name, instance->getClassName().c_str()));
 }
 
 // TODO: 94.38% (functional match)

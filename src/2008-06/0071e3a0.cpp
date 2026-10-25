@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 0071e3a0  unit: CXTPShortcutManager::CKeyHelper  size: 21 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0071e3a0
 //
@@ -9,7 +10,6 @@
 // 0071e3ae  e89725f8ff           call 0x6a094a
 // 0071e3b3  59                   pop ecx
 // 0071e3b4  c3                   ret 
-// auto-matched from its assembly shape
 
 extern "C" void __cdecl G1_func_0071e3a0(void*);
 struct S_func_0071e3a0 {

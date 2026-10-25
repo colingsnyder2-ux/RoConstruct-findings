@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 006e8c20  unit: CPatchedControlComboBox  size: 47 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006e8c20
 //
@@ -21,25 +22,21 @@
 // 006e8c49  8bc6                 mov eax, esi
 // 006e8c4b  5e                   pop esi
 // 006e8c4c  c20800               ret 8
-// copied from an identical function in another client (function ?fn_ROCX00001a@ns_ROCX00001a@@YGPAXPAXPAUCPropertyGridItemBrickColor@1@@Z)
 
-namespace ns_ROCX00001a {
-struct CPropertyGridItemBrickColor
-{
+struct CPropertyGridItemBrickColor {
     char pad[0x20];
-    void* field_20;
+    int m_value;
 };
 
-void __stdcall fn_ROCX00001a(void* dst, void* src);
+extern "C" int __stdcall sub_671c80(int, int);
 
-void* __stdcall fn_ROCX00001a(void* dst, CPropertyGridItemBrickColor* src)
+int __stdcall sub_671d50(int a, int b)
 {
-    void* value;
-    if (src == 0)
-        value = 0;
+    int v;
+    if (b == 0)
+        v = 0;
     else
-        value = src->field_20;
-    fn_ROCX00001a(dst, value);
-    return dst;
-}
+        v = ((CPropertyGridItemBrickColor*)b)->m_value;
+    sub_671c80(a, v);
+    return a;
 }

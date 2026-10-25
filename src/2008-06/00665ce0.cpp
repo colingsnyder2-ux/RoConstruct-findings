@@ -1,9 +1,11 @@
-// roc-lang: cpp
+// from server: 100% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs roc_unit_338671d888ed95d1.cpp
+// roc-lang: cpp
+// roc-lib: rbxgs-dll roc_unit_c7735b8cebac2b93.cpp
 
 // Candidate translation unit (score above; library headers required).
+#pragma include_alias("util/IRenderable.h", "roc_unit_b8671ae8d3010f90.cpp")
 #include <memory>
 #include "tool/PartDragTool.h"
 #include "tool/RunDragger.h"

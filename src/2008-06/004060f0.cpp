@@ -1,3 +1,4 @@
+// from server: 100% by atomic.potato
 // roc 2008-06 004060f0  unit: RBX::VRunService::?$FactoryProduct::Creator  size: 30 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004060f0
 //
@@ -13,26 +14,22 @@
 // 00406106  6a00                 push 0
 // 00406108  e84fa82900           call 0x6a095c
 // 0040610d  c3                   ret 
-// copied from an identical function in another client (function ?destroy@Creator@ns_ROCX000031@@QAEXXZ)
 
-namespace ns_ROCX000031 {
-struct Creator {
-    void* field0;
-    void* field4;
-    void* field8;
-    int fieldC;
-    void destroy();
+extern "C" void __stdcall Function006A095C(int, int);
+
+struct S
+{
+    int a;
+    int b;
+    int c;
+    int d;
+    void f();
 };
 
-extern "C" void __stdcall sub_62FF38(void*, void*);
-
-void Creator::destroy()
+void S::f()
 {
-    if (field4) {
-        *(void**)((char*)field4 + 4) = field0;
-    }
-    if (fieldC) {
-        sub_62FF38(0, field8);
-    }
-}
+    if (b != 0)
+        *(int *)(b + 4) = a;
+    if (d != 0)
+        Function006A095C(0, c);
 }

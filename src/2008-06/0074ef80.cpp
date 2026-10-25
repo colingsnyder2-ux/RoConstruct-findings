@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 0074ef80  unit: PAVCXTPReportHyperlink::?$CXTPArrayT  size: 23 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0074ef80
 //
@@ -9,7 +10,6 @@
 // 0074ef90  89480c               mov dword ptr [eax + 0xc], ecx
 // 0074ef93  894808               mov dword ptr [eax + 8], ecx
 // 0074ef96  c3                   ret 
-// auto-matched from its assembly shape
 
 extern char G;
 

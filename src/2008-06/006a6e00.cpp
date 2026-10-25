@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 006a6e00  unit: CXTPCustomizeSheet::CCustomizeEdit  size: 53 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006a6e00
 //
@@ -15,9 +16,7 @@
 // 006a6e2c  83e0fb               and eax, 0xfffffffb
 // 006a6e2f  89442404             mov dword ptr [esp + 4], eax
 // 006a6e33  ffe2                 jmp edx
-// copied from an identical function in another client (function ?SetStyle@CXTPCustomizeSheet_CCustomizeEdit@ns_ROCX00000f@@QAEXI@Z)
 
-namespace ns_ROCX00000f {
 struct CXTPCustomizeSheet_CCustomizeEdit {
     void SetStyle(unsigned int flags);
 };
@@ -34,5 +33,4 @@ void CXTPCustomizeSheet_CCustomizeEdit::SetStyle(unsigned int flags) {
         v &= ~4u;
         fn(this, v);
     }
-}
 }

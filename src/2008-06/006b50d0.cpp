@@ -1,3 +1,4 @@
+// from server: 100% by atomic.potato
 // roc 2008-06 006b50d0  unit: CXTPCommandBar  size: 27 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006b50d0
 //
@@ -10,25 +11,21 @@
 // 006b50e7  c3                   ret 
 // 006b50e8  33c0                 xor eax, eax
 // 006b50ea  c3                   ret 
-// copied from an identical function in another client (function ?CanFocus@CXTPReportControl@ns_ROCX000001@@QAEHXZ)
 
-namespace ns_ROCX000001 {
-struct CXTPReportControl
-{
+struct CXTPCommandBar {
     char pad[0x20];
-    void* field_20;
-    int CanFocus();
+    void* m_pData;
+    int IsVisible();
 };
 
-extern "C" int __stdcall sub_00738322();
+extern "C" int __stdcall sub_7bbf98();
 
-int CXTPReportControl::CanFocus()
+int CXTPCommandBar::IsVisible()
 {
-    if (field_20 != 0)
+    if (m_pData != 0)
     {
-        if ((sub_00738322() & 0x402000) != 0)
+        if ((sub_7bbf98() & 0x402000) != 0)
             return 1;
     }
     return 0;
-}
 }

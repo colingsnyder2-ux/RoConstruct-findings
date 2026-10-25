@@ -1,7 +1,8 @@
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs roc_contact_counter_open_a53cbed5341d1a27.cpp
+// roc-lib: rbxgs-dll roc_contact_counter_rbx_23abb95b58555b53.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias("v8kernel/Connector.h", "../roc_contact_counter_header_f558e10abf3c82a4.cpp")
@@ -11,49 +12,72 @@
 
 namespace RBX
 {
-void ContactConnector::computeForce(const float dt, bool throttling)
-{
-	PairParams params;
+	void ContactConnector::computeForce(const float dt, bool throttling)
+	{
+		RBXASSERT(!throttling || !this->canThrottle());
 
-	params.position = params.normal = G3D::Vector3(0.0f, 0.0f, 0.0f);
-	geoPair.computeLengthNormalPosition(params);
+		PairParams params;
+		this->geoPair.computeLengthNormalPosition(params);
 
-	if (params.length < 0.0f) {
-		++inContactHit;
-		float normalVel;
-		G3D::Vector3 perpVel(0.0f, 0.0f, 0.0f);
+		if (params.length < 0.f)
+		{
+			++inContactHit;
+			float normalVel;
+			G3D::Vector3 perpVel;
+			this->geoPair.computeNormalPerpVel(normalVel, perpVel, params);
+			this->frictionOffset += dt * perpVel;
 
-		geoPair.computeNormalPerpVel(normalVel, perpVel, params);
+			float v8 = this->k * 0.2f;
+			float mag = this->frictionOffset.magnitude() * v8;
+			float v10 = this->kFriction * this->forceMagLast;
 
-		frictionOffset += dt * perpVel;
+			if (v10 < mag && mag > 0.00000001)
+				this->frictionOffset *= (v10 / mag); 
 
-		float kApplied = k * 0.2f;
-		float magnitude = frictionOffset.magnitude(), frictionForce = magnitude * kApplied;
-		float maxFriction = kFriction * forceMagLast;
+			this->frictionOffset -= params.normal * this->frictionOffset.dot(params.normal);
 
-		if (frictionForce > maxFriction && frictionForce > 1e-08) {
-			frictionOffset *= maxFriction / frictionForce;
+			float newThreshold;
+			if (this->threshold != 0)
+			{
+				newThreshold = (this->threshold + 0.01f) * 0.999f - 0.01f;
+			}
+			else
+			{
+				if (this->firstApproach == 0)
+					newThreshold = 0;
+				else
+					newThreshold = params.length;
+			}
+			this->threshold = newThreshold;
+
+			float newFirstApproach;
+			if (this->firstApproach != 0)
+			{
+				newFirstApproach = (this->firstApproach + 0.01f) * 0.999f - 0.01f;
+			}
+			else
+			{
+				newFirstApproach = params.length;
+			}
+			this->firstApproach = newFirstApproach;
+
+			float kApplied = normalVel < 0 ? this->k : this->kNeg;
+			float v27 = (this->firstApproach - params.length) * kApplied;
+			this->forceMagLast = v27;
+			this->forceMagLast = params.length <= this->threshold ? this->forceMagLast : 0.f;
+
+			G3D::Vector3 v31 = this->frictionOffset * v8;
+			G3D::Vector3 force = (this->forceMagLast * params.normal) - v31;
+			this->geoPair.forceToBodies(force, params.position); 
 		}
-
-		frictionOffset -= params.normal * frictionOffset.dot(params.normal);
-
-		threshold =
-			threshold != 0.0f ? (threshold + 0.01f) * 0.999f - 0.01f : (firstApproach == 0.0f ? 0.0f : params.length);
-
-		firstApproach = firstApproach != 0.0f ? (firstApproach + 0.01f) * 0.999f - 0.01f : params.length;
-
-		forceMagLast = (firstApproach - params.length) * (normalVel < 0.0f ? k : kNeg);
-		forceMagLast = params.length <= threshold ? forceMagLast : 0.0f;
-
-		G3D::Vector3 force = forceMagLast * params.normal - frictionOffset * kApplied;
-
-		geoPair.forceToBodies(force, params.position);
+		else
+		{
+			++outOfContactHit;
+			this->firstApproach = 0;
+			this->threshold = 0;
+			this->forceMagLast = 0;
+		}
 	}
-	else {
-		++outOfContactHit;
-		forceMagLast = threshold = firstApproach = 0.0f;
-	}
-}
 
 	bool ContactConnector::canThrottle() const
 	{

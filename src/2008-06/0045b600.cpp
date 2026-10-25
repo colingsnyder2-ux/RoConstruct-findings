@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 0045b600  unit: CRobloxWnd  size: 19 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0045b600
 //
@@ -10,9 +11,7 @@
 // 0045b60e  6a01                 push 1
 // 0045b610  ffd2                 call edx
 // 0045b612  c3                   ret 
-// copied from an identical function in another client (function ?func@CRobloxWnd@ns_ROCX00000b@@QAEXXZ)
 
-namespace ns_ROCX00000b {
 struct Inner {
     virtual void v0();
     virtual void v1(int);
@@ -32,5 +31,4 @@ void CRobloxWnd::func()
 {
     if (field0 != 0)
         field0->inner.v1(1);
-}
 }

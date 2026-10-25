@@ -1,7 +1,8 @@
-// roc-lang: cpp
+// from server: 100% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs roc_unit_1a769b8435068ad9.cpp
+// roc-lang: cpp
+// roc-lib: rbxgs-dll roc_unit_1a769b8435068ad9.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "v8datamodel/Camera.h"

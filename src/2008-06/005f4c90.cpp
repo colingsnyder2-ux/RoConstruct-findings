@@ -1,3 +1,4 @@
+// from server: 100% by atomic.potato
 // roc 2008-06 005f4c90  unit: boost::iostreams::DUinput::V?$basic_null_device::?$stream_buffer  size: 39 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005f4c90
 //
@@ -14,26 +15,24 @@
 // 005f4cb2  83c404               add esp, 4
 // 005f4cb5  5e                   pop esi
 // 005f4cb6  c3                   ret 
-// copied from an identical function in another client (function ?init@S@ns_ROCX000005@@QAEXXZ)
 
-namespace ns_ROCX000005 {
-struct S {
-    char pad[0x14];
-    void* field14;
-    void init();
+extern "C" void __cdecl func_005f4470();
+
+extern void* g_0080257c;
+extern void* g_00802580;
+extern void* g_00802584;
+
+struct S
+{
+    char padding[20];
+    void* member_14;
+    void f();
 };
 
-extern void* g_77e4dc;
-extern void* g_77e4e0;
-extern void (__cdecl *g_77e4e4)(void*);
-
-extern "C" void __cdecl sub_54d430();
-
-void S::init()
+void S::f()
 {
-    sub_54d430();
-    field14 = g_77e4dc;
-    field14 = g_77e4e0;
-    g_77e4e4(&field14);
-}
+    func_005f4470();
+    member_14 = g_00802584;
+    member_14 = g_00802580;
+    ((void (__cdecl *)(void*))g_0080257c)(&member_14);
 }

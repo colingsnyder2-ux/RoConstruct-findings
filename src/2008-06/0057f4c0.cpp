@@ -1,31 +1,14 @@
-namespace std {
-    template<class T> struct char_traits;
-    template<class T> class allocator;
-    template<class T, class Traits, class Alloc>
-    class __declspec(dllimport) basic_string {
-        char storage[28];
-    public:
-        basic_string(const T*);
-        basic_string(const basic_string&);
-        ~basic_string();
-    };
-    typedef basic_string<char, char_traits<char>, allocator<char> > string;
-}
-
-
-
-
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
 struct Base {
-    Base(std::string text, int value);
+    Base(std::string, int);
     virtual ~Base();
 };
-
-struct FilteredSelection : Base {
-    FilteredSelection(std::string text, int value);
-    virtual ~FilteredSelection();
+struct S : Base {
+    S(std::string, int);
+    virtual ~S();
 };
-
-FilteredSelection::FilteredSelection(std::string text, int value)
-    : Base(text, value)
-{
-}
+S::S(std::string text, int value) : Base(text, value) {}

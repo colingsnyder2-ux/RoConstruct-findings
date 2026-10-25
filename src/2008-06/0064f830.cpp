@@ -1,11 +1,11 @@
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs roc_scorehud_compile_board_59229c00dc6d423a.cpp
+// roc-lib: rbxgs-dll roc_scorehud_family_1346da7936040480.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <gui/ScoreHud.h>
-#include <typeinfo>
 #include <v8datamodel/Teams.h>
 #include <v8datamodel/Team.h>
 #include <util/Utilities.h>
@@ -14,44 +14,16 @@
 #include <G3D/Color4.h>
 namespace RBX {
 // Existing native service specialization; retain the native call boundary.
-template<> Teams* ServiceProvider::find<Teams>(const Instance*);
 template<> Teams* ServiceProvider::create<Teams>(const Instance*);
-template<> Network::Players* ServiceProvider::find<Network::Players>(const Instance*);
-// Genuine public accessor bodies on opaque native receivers. Public SDK controls
-// prove their old inline offsets differ (name100/childrenf8/size134 vs native
-// name110/children108/size13c). These methods model their own native fields;
-// no private declarations/access modifiers, padding or virtual slots are changed.
-class InstanceApi {
-public:
-    Instance* findFirstChildByName(const std::string&) const;
-    size_t numChildren() const {
-        const boost::shared_ptr<Instances>& children=*(const boost::shared_ptr<Instances>*)((const char*)this+0x108);
-        return children ? children->size() : 0;
-    }
-    Instance* getChild(size_t i) {
-        return (**(const boost::shared_ptr<Instances>*)((const char*)this+0x108))[i].get();
-    }
-    const std::string& getName() const {
-        return *(const std::string*)((const char*)this+0x110);
-    }
-};
-class GuiItemApi {
-public:
-    void setGuiSize(const G3D::Vector2& value) {
-        *(G3D::Vector2*)((char*)this+0x13c)=value;
-    }
-};
-class PlayersApi {
-public:
-    boost::shared_ptr<const Instances> getPlayers();
-    int numPlayers() const {
-        return (int)(*(const CopyOnWrite<std::vector<boost::shared_ptr<Instance>>>*)((const char*)this+0x198))->size();
-    }
-};
+// Opaque public API receivers keep older headers' private Instance/Gui/Players
+// layouts out of these calls. Signatures are the genuine public declarations.
+class InstanceApi { public: size_t numChildren() const; Instance* getChild(size_t); const std::string& getName() const; };
+class GuiItemApi { public: void setGuiSize(const G3D::Vector2&); };
+class PlayersApi { public: int numPlayers() const; };
 void ScoreHud::renderTeamDeathmatchLeaderboard(Adorn* adorn,BoardType mode) {
     LeaderboardData data(this);
     data.CompileData();
-    Teams* teams=ServiceProvider::find<Teams>(this);
+    Teams* teams=ServiceProvider::create<Teams>(this);
     if(!teams) return;
     float scale=adorn->getViewport().width()/1024.0f;
     float row=14.0f*scale;
@@ -140,78 +112,6 @@ void ScoreHud::renderFFALeaderboard(Adorn* adorn) {
             G3D::Vector2 position(rect.low.x,rect.low.y+index*row);
             if(col) position.x+=extent*0.5f+extent*0.5f/data.fields.size()*(col-1);
             adorn->drawFont2D(data.data[index][col],position,row,G3D::Color4(color,1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
-        }
-    }
-}
-
-// Native RTTI object 00960f78 is Value<int,&sIntValue> with the older char*
-// non-type template argument. Use the actual CRT interface and external native
-// type_info object instead of substituting the newer SDK's differently named type.
-extern const type_info nativeIntValueType;
-extern "C" void* __cdecl __RTDynamicCast(void*,long,void*,void*,int);
-// Actual descriptor's GetSet pointer at0097d39c. Native getValue slot8 takes
-// const DescribedBase*, returns int (__thiscall). No synthetic virtual class.
-extern void* nativeIntValueGetter;
-static int readNativeIntValue(Instance* instance) {
-    typedef int (__thiscall *GetValue)(void*,const Reflection::DescribedBase*);
-    return ((GetValue)(*(void***)nativeIntValueGetter)[2])(
-        nativeIntValueGetter,instance?(const Reflection::DescribedBase*)((char*)instance+0x14):0);
-}
-class TeamsApi {
-public:
-    boost::shared_ptr<const Instances> getTeams();
-};
-void ScoreHud::BuildBoardData(BoardData& board) {
-    Network::Players* nativePlayers=*(Network::Players**)((char*)this+0x150);
-    if(!nativePlayers) return;
-    boost::shared_ptr<const Instances> roster=((PlayersApi*)nativePlayers)->getPlayers();
-    for(unsigned i=0;i<roster->size();++i) {
-        Instance* player=(*roster)[i].get();
-        Instance* stats=((InstanceApi*)player)->findFirstChildByName("leaderstats");
-        if(stats) {
-            board.SetSize(roster->size(),((InstanceApi*)stats)->numChildren()+1);
-            board.AddField("Player",0);
-            for(unsigned j=0;j<((InstanceApi*)stats)->numChildren();++j)
-                board.AddField(((InstanceApi*)((InstanceApi*)stats)->getChild(j))->getName(),j+1);
-            board.data[i][0]=((InstanceApi*)player)->getName();
-            for(unsigned j=0;j<((InstanceApi*)stats)->numChildren();++j) {
-                __RTDynamicCast(((InstanceApi*)stats)->getChild(j),0,(void*)&typeid(Instance),(void*)&nativeIntValueType,0);
-                int value=readNativeIntValue(((InstanceApi*)stats)->getChild(j));
-                board.data[i][j+1]=StringConverter<int>::convertToString(value);
-            }
-        } else {
-            board.SetSize(roster->size(),1);
-            board.AddField("Player List",0);
-            board.data[i][0]=((InstanceApi*)player)->getName();
-        }
-    }
-    for(unsigned i=0;i<roster->size();++i)
-        if(board.data[i][0].size()>16) board.data[i][0].resize(16);
-}
-void LeaderboardData::CompileData() {
-    Network::Players* players=ServiceProvider::find<Network::Players>(context);
-    Teams* teams=ServiceProvider::create<Teams>(context);
-    boost::shared_ptr<const Instances> teamList=((TeamsApi*)teams)->getTeams();
-    boost::shared_ptr<const Instances> roster=((PlayersApi*)players)->getPlayers();
-    for(unsigned i=0;i<roster->size();++i) {
-        Instance* player=(*roster)[i].get();
-        playersByTeamList[teams->getTeamFromPlayer((Network::Player*)player)].push_back(((InstanceApi*)player)->getName());
-        Instance* stats=((InstanceApi*)player)->findFirstChildByName("leaderstats");
-        if(stats) {
-            for(unsigned j=0;j<((InstanceApi*)stats)->numChildren();++j) {
-                Instance* value=(Instance*)__RTDynamicCast(((InstanceApi*)stats)->getChild(j),0,(void*)&typeid(Instance),(void*)&nativeIntValueType,0);
-                if(value) AddTuple(((InstanceApi*)player)->getName(),teams->getTeamFromPlayer((Network::Player*)player),((InstanceApi*)value)->getName(),readNativeIntValue(value));
-            }
-        }
-    }
-    if(!teams) return;
-    for(unsigned i=0;i<((InstanceApi*)teams)->numChildren();++i) {
-        Team* team=dynamic_cast<Team*>(((InstanceApi*)teams)->getChild(i));
-        if(!team) continue;
-        for(unsigned j=0;j<statNamesList.size();++j) {
-            teamTotals[team][statNamesList[j]]=0;
-            for(unsigned k=0;k<playersByTeamList[team].size();++k)
-                teamTotals[team][statNamesList[j]]+=statMap[playersByTeamList[team][k]][statNamesList[j]];
         }
     }
 }

@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 00703360  unit: CXTPTabClientWnd  size: 21 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00703360
 //
@@ -9,7 +10,6 @@
 // 0070336e  e8d7d5f9ff           call 0x6a094a
 // 00703373  59                   pop ecx
 // 00703374  c3                   ret 
-// auto-matched from its assembly shape
 
 extern "C" void __cdecl G1_func_00703360(void*);
 struct S_func_00703360 {

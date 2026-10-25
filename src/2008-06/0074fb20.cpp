@@ -1,57 +1,485 @@
-// roc 2008-06 0074fb20  unit: CXTPReportHyperlinks  size: 59 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0074fb20
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\ReportControl\XTPReportColumns.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPReportColumns.cpp : implementation of the CXTPReportColumns class.
 //
-// 0074fb20  53                   push ebx
-// 0074fb21  55                   push ebp
-// 0074fb22  56                   push esi
-// 0074fb23  57                   push edi
-// 0074fb24  8bf9                 mov edi, ecx
-// 0074fb26  e8359ff6ff           call 0x6b9a60
-// 0074fb2b  8bd8                 mov ebx, eax
-// 0074fb2d  33f6                 xor esi, esi
-// 0074fb2f  85db                 test ebx, ebx
-// 0074fb31  7e15                 jle 0x74fb48
-// 0074fb33  8b6c2414             mov ebp, dword ptr [esp + 0x14]
-// 0074fb37  56                   push esi
-// 0074fb38  8bcf                 mov ecx, edi
-// 0074fb3a  e8b1ffffff           call 0x74faf0
-// 0074fb3f  3bc5                 cmp eax, ebp
-// 0074fb41  740f                 je 0x74fb52
-// 0074fb43  46                   inc esi
-// 0074fb44  3bf3                 cmp esi, ebx
-// 0074fb46  7cef                 jl 0x74fb37
-// 0074fb48  5f                   pop edi
-// 0074fb49  5e                   pop esi
-// 0074fb4a  5d                   pop ebp
-// 0074fb4b  83c8ff               or eax, 0xffffffff
-// 0074fb4e  5b                   pop ebx
-// 0074fb4f  c20400               ret 4
-// 0074fb52  5f                   pop edi
-// 0074fb53  8bc6                 mov eax, esi
-// 0074fb55  5e                   pop esi
-// 0074fb56  5d                   pop ebp
-// 0074fb57  5b                   pop ebx
-// 0074fb58  c20400               ret 4
-// copied from an identical function in another client (function ?Find@CXTPReportRow_Batch@ns_ROCX000029@@QAEHH@Z)
+// This file is a part of the XTREME REPORTCONTROL MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
 
-namespace ns_ROCX000029 {
-struct CXTPReportRow_Batch {
-    int GetCount();
-    int FindRow(int row);
-    int Find(int row);
-};
+#include "stdafx.h"
+#include "Common/XTPPropExchange.h"
 
-int CXTPReportRow_Batch::Find(int row)
+#include "XTPReportControl.h"
+#include "XTPReportHeader.h"
+#include "XTPReportColumn.h"
+#include "XTPReportColumns.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPReportColumns
+
+CXTPReportColumns::CXTPReportColumns(CXTPReportControl* pControl)
+	: m_pControl(pControl)
 {
-    int count = GetCount();
-    int i = 0;
-    if (count > 0) {
-        do {
-            if (FindRow(i) == row)
-                return i;
-            ++i;
-        } while (i < count);
-    }
-    return -1;
+	m_pGroupsOrder = new CXTPReportColumnOrder(this);
+	m_pSortOrder = new CXTPReportColumnOrder(this);
+
+	m_pTreeColumn = NULL;
+
 }
+
+CXTPReportColumns::~CXTPReportColumns()
+{
+	Clear();
+
+	if (m_pGroupsOrder)
+		m_pGroupsOrder->InternalRelease();
+	if (m_pSortOrder)
+		m_pSortOrder->InternalRelease();
+
 }
+
+void CXTPReportColumns::Clear()
+{
+	// array cleanup
+	for (int nColumn = GetCount() - 1; nColumn >= 0; nColumn--)
+	{
+		CXTPReportColumn* pColumn = m_arrColumns.GetAt(nColumn);
+		pColumn->InternalRelease();
+	}
+	m_arrColumns.RemoveAll();
+
+	m_pSortOrder->Clear();
+	m_pGroupsOrder->Clear();
+}
+
+int CXTPReportColumnOrder::GetCount() const
+{
+	return (int)m_arrColumns.GetSize();
+}
+
+
+void CXTPReportColumns::Add(CXTPReportColumn* pColumn)
+{
+	pColumn->m_pColumns = this;
+	m_arrColumns.Add(pColumn);
+
+	GetReportHeader()->OnColumnsChanged();
+}
+
+CXTPReportHeader* CXTPReportColumns::GetReportHeader() const
+{
+	return m_pControl->GetReportHeader();
+}
+
+
+void CXTPReportColumns::Remove(CXTPReportColumn* pColumn)
+{
+	m_pGroupsOrder->Remove(pColumn);
+	m_pSortOrder->Remove(pColumn);
+
+	int nIndex = IndexOf(pColumn);
+	if (nIndex != -1)
+	{
+		m_arrColumns.RemoveAt(nIndex);
+		pColumn->InternalRelease();
+
+		GetReportHeader()->OnColumnsChanged();
+	}
+}
+
+int CXTPReportColumns::IndexOf(const CXTPReportColumn* pColumn) const
+{
+	// array cleanup
+	for (int nColumn = GetCount() - 1; nColumn >= 0; nColumn--)
+	{
+		if (m_arrColumns.GetAt(nColumn) == pColumn)
+			return nColumn;
+	}
+	return -1;
+}
+
+void CXTPReportColumns::ResetSortOrder()
+{
+	m_pSortOrder->Clear();
+}
+
+void CXTPReportColumns::SetSortColumn(CXTPReportColumn* pColumn, BOOL bIncreasing)
+{
+	ResetSortOrder();
+	m_pSortOrder->Add(pColumn, bIncreasing);
+}
+
+int CXTPReportColumns::ChangeColumnOrder(int nNewOrder, int nItemIndex)
+{
+	if (nNewOrder < 0 || nItemIndex < 0)
+		return -1;
+
+	CXTPReportColumn* pColumn = GetAt(nItemIndex);
+
+	if (pColumn)
+	{
+		if (nNewOrder == nItemIndex)
+			return nNewOrder;
+
+		if (nNewOrder > nItemIndex)
+			nNewOrder--;
+
+		m_arrColumns.RemoveAt(nItemIndex);
+		m_arrColumns.InsertAt(nNewOrder, pColumn);
+	}
+
+	return nNewOrder;
+}
+
+int CXTPReportColumns::GetVisibleColumnsCount() const
+{
+	int nVisibleCount = 0;
+	int nCount = GetCount();
+	for (int nColumn = 0; nColumn < nCount; nColumn++)
+	{
+		CXTPReportColumn* pColumn = GetAt(nColumn);
+		if (pColumn && pColumn->IsVisible())
+			nVisibleCount++;
+	}
+	return nVisibleCount;
+}
+
+void CXTPReportColumns::GetVisibleColumns(CXTPReportColumns& arrColumns) const
+{
+	int nCount = GetCount();
+	for (int nColumn = 0; nColumn < nCount; nColumn++)
+	{
+		CXTPReportColumn* pColumn = GetAt(nColumn);
+		if (pColumn && pColumn->IsVisible())
+		{
+			arrColumns.m_arrColumns.Add(pColumn);
+			pColumn->InternalAddRef();
+		}
+	}
+}
+
+CXTPReportColumn* CXTPReportColumns::Find(int nItemIndex) const
+{
+	for (int nColumn = 0; nColumn < GetCount(); nColumn++)
+	{
+		CXTPReportColumn* pColumn = GetAt(nColumn);
+		if (pColumn->GetItemIndex() == nItemIndex)
+			return pColumn;
+	}
+	return NULL;
+}
+
+CXTPReportColumn* CXTPReportColumns::Find(const CString& strInternalName) const
+{
+	for (int nColumn = 0; nColumn < GetCount(); nColumn++)
+	{
+		CXTPReportColumn* pColumn = GetAt(nColumn);
+		if (pColumn->GetInternalName() == strInternalName)
+			return pColumn;
+	}
+	return NULL;
+}
+
+void CXTPReportColumns::InsertSortColumn(CXTPReportColumn* pColumn)
+{
+	if (m_pSortOrder->IndexOf(pColumn) == -1)
+		m_pSortOrder->Add(pColumn);
+}
+
+CXTPReportColumn* CXTPReportColumns::GetVisibleAt(int nIndex) const
+{
+	for (int nColumn = 0; nColumn < GetCount(); nColumn++)
+	{
+		CXTPReportColumn* pColumn = GetAt(nColumn);
+		if (!pColumn->IsVisible())
+			continue;
+
+		if (nIndex == 0)
+			return pColumn;
+
+		nIndex--;
+	}
+	return NULL;
+}
+
+CXTPReportColumn* CXTPReportColumns::GetFirstVisibleColumn() const
+{
+	for (int nColumn = 0; nColumn < GetCount(); nColumn++)
+	{
+		CXTPReportColumn* pColumn = GetAt(nColumn);
+		if (pColumn->IsVisible())
+			return pColumn;
+	}
+	return NULL;
+}
+
+CXTPReportColumn* CXTPReportColumns::GetLastVisibleColumn() const
+{
+	for (int nColumn = GetCount() - 1; nColumn >= 0; nColumn--)
+	{
+		CXTPReportColumn* pColumn = GetAt(nColumn);
+		if (pColumn->IsVisible())
+			return pColumn;
+	}
+	return NULL;
+}
+
+
+void CXTPReportColumns::DoPropExchange(CXTPPropExchange* pPX)
+{
+	int nItemIndex;
+	CString strInternalName;
+	if (pPX->IsStoring())
+	{
+		int nCount = GetCount();
+
+		CXTPPropExchangeEnumeratorPtr pEnumerator(pPX->GetEnumerator(_T("Column")));
+		POSITION pos = pEnumerator->GetPosition(nCount, FALSE);
+
+		for (int nColumn = 0; nColumn < nCount; nColumn++)
+		{
+			CXTPReportColumn* pColumn = GetAt(nColumn);
+			CXTPPropExchangeSection secColumn(pEnumerator->GetNext(pos));
+
+			nItemIndex = pColumn->GetItemIndex();
+			strInternalName = pColumn->GetInternalName();
+
+			PX_Int(&secColumn, _T("ItemIndex"), nItemIndex);
+			PX_String(&secColumn, _T("InternalName"), strInternalName);
+
+			pColumn->DoPropExchange(&secColumn);
+		}
+	}
+	else
+	{
+		CXTPPropExchangeEnumeratorPtr pEnumerator(pPX->GetEnumerator(_T("Column")));
+		POSITION pos = pEnumerator->GetPosition(0, FALSE);
+
+		CXTPReportColumn tmpColumn(0, _T(""), 0);
+		int i = 0;
+		while (pos)
+		{
+			CXTPPropExchangeSection secColumn(pEnumerator->GetNext(pos));
+
+			CXTPReportColumn* pColumn = NULL;
+			PX_Int(&secColumn, _T("ItemIndex"), nItemIndex, -1);
+
+			if (pPX->GetSchema() > _XTP_SCHEMA_110)
+			{
+				PX_String(&secColumn, _T("InternalName"), strInternalName);
+
+				if (!strInternalName.IsEmpty())
+				{
+					pColumn = Find(strInternalName);
+
+					// column data is exists but column is not in the collection.
+					if (!pColumn)
+					{
+						// just read data to skeep (to be safe for array serialization)
+						tmpColumn.DoPropExchange(&secColumn);
+						continue;
+					}
+				}
+			}
+
+			if (!pColumn)
+				pColumn = Find(nItemIndex);
+
+			if (!pColumn)
+				AfxThrowArchiveException(CArchiveException::badIndex);
+
+			pColumn->DoPropExchange(&secColumn);
+			ChangeColumnOrder(i, IndexOf(pColumn));
+			i++;
+		}
+	}
+
+	CXTPPropExchangeSection secGroupsOrder(pPX->GetSection(_T("GroupsOrder")));
+	m_pGroupsOrder->DoPropExchange(&secGroupsOrder);
+
+	CXTPPropExchangeSection secSortOrder(pPX->GetSection(_T("SortOrder")));
+	m_pSortOrder->DoPropExchange(&secSortOrder);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPReportColumnOrder
+
+CXTPReportColumnOrder::CXTPReportColumnOrder(CXTPReportColumns* pColumns) :
+	m_pColumns(pColumns)
+{
+}
+
+
+CXTPReportColumn* CXTPReportColumnOrder::GetAt(int nIndex)
+{
+	if (nIndex >= 0 && nIndex < GetCount())
+		return m_arrColumns.GetAt(nIndex);
+	else
+		return NULL;
+}
+
+int CXTPReportColumnOrder::InsertAt(int nIndex, CXTPReportColumn* pColumn)
+{
+	if (nIndex < 0)
+		return -1;
+
+	if (nIndex >= GetCount())
+		nIndex = GetCount();
+
+	int nPrevIndex = IndexOf(pColumn);
+
+	if (nPrevIndex != -1)
+	{
+		if (nPrevIndex == nIndex)
+			return nIndex;
+
+		if (nIndex > nPrevIndex)
+			nIndex--;
+
+		if (nIndex == nPrevIndex)
+			return nIndex;
+
+		// change order
+		m_arrColumns.RemoveAt(nPrevIndex);
+
+	}
+	m_arrColumns.InsertAt(nIndex, pColumn);
+	return nIndex;
+}
+
+int CXTPReportColumnOrder::Add(CXTPReportColumn* pColumn, BOOL bSortIncreasing)
+{
+	pColumn->m_bSortIncreasing = bSortIncreasing;
+	return (int)m_arrColumns.Add(pColumn);
+}
+
+int CXTPReportColumnOrder::Add(CXTPReportColumn* pColumn)
+{
+	return (int)m_arrColumns.Add(pColumn);
+}
+
+void CXTPReportColumnOrder::Clear()
+{
+	m_arrColumns.RemoveAll();
+}
+
+int CXTPReportColumnOrder::IndexOf(const CXTPReportColumn* pColumn)
+{
+	int nCount = GetCount();
+	for (int i = 0; i < nCount; i++)
+	{
+		if (GetAt(i) == pColumn)
+			return i;
+	}
+	return -1;
+}
+
+void CXTPReportColumnOrder::RemoveAt(int nIndex)
+{
+	if (nIndex >= 0 && nIndex < GetCount())
+	{
+		m_arrColumns.RemoveAt(nIndex);
+	}
+}
+
+void CXTPReportColumnOrder::Remove(CXTPReportColumn* pColumn)
+{
+	int nCount = GetCount();
+	for (int i = 0; i < nCount; i++)
+	{
+		if (GetAt(i) == pColumn)
+		{
+			m_arrColumns.RemoveAt(i);
+			break;
+		}
+	}
+}
+
+void CXTPReportColumnOrder::DoPropExchange(CXTPPropExchange* pPX)
+{
+	if (pPX->IsStoring())
+	{
+		int nCount = GetCount();
+		PX_Int(pPX, _T("Count"), nCount, 0);
+
+		for (int i = 0; i < nCount; i++)
+		{
+			CXTPReportColumn* pColumn = GetAt(i);
+			if (pColumn)
+			{
+				int nItemIndex = pColumn->GetItemIndex();
+				CString strInternalName = pColumn->GetInternalName();
+				CString strParamName;
+
+				strParamName.Format(_T("Column%i"), i);
+				PX_Int(pPX, strParamName, nItemIndex, 0);
+
+				strParamName.Format(_T("InternalName%i"), i);
+				PX_String(pPX, strParamName, strInternalName);
+			}
+		}
+	}
+	else
+	{
+		Clear();
+
+		int nCount = 0;
+		PX_Int(pPX, _T("Count"), nCount, 0);
+
+		for (int i = 0; i < nCount; i++)
+		{
+			int nItemIndex = 0;
+			CString strParamName;
+			strParamName.Format(_T("Column%i"), i);
+			PX_Int(pPX, strParamName, nItemIndex, 0);
+
+			CXTPReportColumn* pColumn = NULL;
+			if (pPX->GetSchema() > _XTP_SCHEMA_110)
+			{
+				strParamName.Format(_T("InternalName%i"), i);
+				CString strInternalName;
+				PX_String(pPX, strParamName, strInternalName);
+
+				if (!strInternalName.IsEmpty())
+					pColumn = m_pColumns->Find(strInternalName);
+			}
+			if (!pColumn)
+				pColumn = m_pColumns->Find(nItemIndex);
+
+			if (pColumn)
+				Add(pColumn);
+		}
+	}
+}
+
+
+
+
+
+

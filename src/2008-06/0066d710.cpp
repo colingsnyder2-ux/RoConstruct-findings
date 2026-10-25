@@ -1,4 +1,4 @@
-// from server: 66% by king_originala
+// from server: 69% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
@@ -79,8 +79,8 @@ bool DragSnap::update(){
   (newPoint.z-oldPoint.z)*rotation.cells[2][2]+(newPoint.y-oldPoint.y)*rotation.cells[1][2]+(newPoint.x-oldPoint.x)*rotation.cells[0][2]));
  Vector3 delta(
   rotation.cells[0][2]*snapped.z+rotation.cells[0][1]*snapped.y+rotation.cells[0][0]*snapped.x+oldPoint.x-newPoint.x,
-  rotation.cells[1][2]*snapped.z+rotation.cells[1][1]*snapped.y+rotation.cells[1][0]*snapped.x+oldPoint.y-newPoint.y,
-  rotation.cells[2][2]*snapped.z+rotation.cells[2][1]*snapped.y+rotation.cells[2][0]*snapped.x+oldPoint.z-newPoint.z);
+  rotation.cells[1][2]*snapped.z+rotation.cells[1][1]*snapped.y+oldPoint.y + rotation.cells[1][0]*snapped.x-newPoint.y,
+  rotation.cells[2][1]*snapped.y + rotation.cells[2][2]*snapped.z+rotation.cells[2][0]*snapped.x+oldPoint.z-newPoint.z);
 
  Frame goal=currentPrimitive->getCoordinateFrame();
  goal.translation+=delta;

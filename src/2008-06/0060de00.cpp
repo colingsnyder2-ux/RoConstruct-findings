@@ -1,7 +1,8 @@
+// from server: 100% by colin
 // roc-lang: cpp
-// roc-cl: 30729
+// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_unit_918703e0b52a5bc3.cpp
+// roc-lib: rbxgs roc_unit_964217dee49689fe.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "tool/MegaDragger.h"
@@ -19,7 +20,7 @@ namespace RBX
 		  dragParts(),
 		  joined(true),
 		  rootInstance(rootInstance),
-          contactManager(reinterpret_cast<ContactManager&>(*reinterpret_cast<ContactManager**>(reinterpret_cast<char*>(*reinterpret_cast<void* const*>(reinterpret_cast<char*>(rootInstance) + 0x2e4)) + 0x84)))
+          contactManager(rootInstance->getWorld()->getContactManager())
 	{
 		DragUtilities::pvsToParts(pvInstances, dragParts);
 	}

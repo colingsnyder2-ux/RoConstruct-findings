@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 006c7d30  unit: CInstanceRecord::CNameItem  size: 23 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006c7d30
 //
@@ -9,7 +10,6 @@
 // 006c7d40  89480c               mov dword ptr [eax + 0xc], ecx
 // 006c7d43  894808               mov dword ptr [eax + 8], ecx
 // 006c7d46  c3                   ret 
-// auto-matched from its assembly shape
 
 extern char G;
 

@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 006f7aa0  unit: CXTPPrintingDialog  size: 47 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006f7aa0
 //
@@ -21,9 +22,8 @@
 // 006f7ac9  8bc6                 mov eax, esi
 // 006f7acb  5e                   pop esi
 // 006f7acc  c20400               ret 4
-// copied from an identical function in another client (function ?sub_67FF70@CXTPPrintingDialog@ns_ROCX000063@@QAEPAXPAX@Z)
 
-namespace ns_ROCX000063 {
+namespace ns_ROCX00005f {
 extern "C" int (__stdcall *IsWindow)(void*);
 extern "C" int (__stdcall *GetWindowRect)(void*, void*);
 extern "C" int (__stdcall *SetRectEmpty)(void*);

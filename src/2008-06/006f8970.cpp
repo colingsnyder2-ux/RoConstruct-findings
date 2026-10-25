@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 006f8970  unit: CXTPDrawHelpers  size: 33 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006f8970
 //
@@ -14,16 +15,15 @@
 // 006f898d  c3                   ret 
 // 006f898e  33c0                 xor eax, eax
 // 006f8990  c3                   ret 
-// copied from an identical function in another client (function ?fn_ROCX000069@ns_ROCX000069@@YAHPAH@Z)
 
-namespace ns_ROCX000069 {
-extern int __cdecl fn_ROCX000069(int);
+namespace ns_ROCX000065 {
+extern int __cdecl fn_ROCX000065(int);
 
-int fn_ROCX000069(int* p)
+int fn_ROCX000065(int* p)
 {
     if (p)
     {
-        if (fn_ROCX000069(p[1]))
+        if (fn_ROCX000065(p[1]))
             return 1;
     }
     return 0;

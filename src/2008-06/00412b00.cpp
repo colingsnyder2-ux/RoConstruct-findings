@@ -1,3 +1,4 @@
+// from server: 100% by atomic.potato
 // roc 2008-06 00412b00  unit: CChildFrame  size: 54 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00412b00
 //
@@ -19,29 +20,18 @@
 // 00412b2d  b801000000           mov eax, 1
 // 00412b32  5e                   pop esi
 // 00412b33  c20400               ret 4
-// copied from an identical function in another client (function ?init@ns_ROCX000009@@YGHPAUCChildFrame@1@@Z)
 
-namespace ns_ROCX000009 {
-struct CChildFrame {
-    char pad[0x10];
-    int field_10;
-    int field_14;
-    int field_18;
-    int field_1c;
-    unsigned int field_20;
-};
+extern "C" int __stdcall sub_6a0e06(void* p);
 
-extern "C" int __stdcall sub_6303ac(void*);
-
-int __stdcall init(CChildFrame* self)
+int __stdcall func_00412b00(void* p)
 {
-    self->field_18 = 0;
-    self->field_1c = 0;
-    self->field_10 = 0x7fff;
-    self->field_14 = 0x7fff;
-    if (sub_6303ac(self) == 0)
+    int* q = (int*)p;
+    q[6] = 0;
+    q[7] = 0;
+    q[4] = 0x7fff;
+    q[5] = 0x7fff;
+    if (sub_6a0e06(p) == 0)
         return 0;
-    self->field_20 |= 0x2000000;
+    q[8] |= 0x2000000;
     return 1;
-}
 }

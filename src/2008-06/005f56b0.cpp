@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 005f56b0  unit: std::D::V?$allocator::V?$basic_gzip_compressor::?$stream_buffer  size: 60 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005f56b0
 //
@@ -24,9 +25,7 @@
 // 005f56e9  5e                   pop esi
 // 005f56ea  59                   pop ecx
 // 005f56eb  c3                   ret 
-// copied from an identical function in another client (function ?f@S@ns_ROCX000008@@QAEXXZ)
 
-namespace ns_ROCX000008 {
 struct S {
     void* vtable;
     char pad[0x20];
@@ -45,5 +44,4 @@ void S::f() {
     helper(*(void**)((char*)vtable + 12), &p);
     field44 |= 2;
     *(int*)((char*)this + 0x40) = 0;
-}
 }

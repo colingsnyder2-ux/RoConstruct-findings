@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // roc-flags: /O2 /GS /MD
 typedef void (__thiscall *CopyFunction)(void *, const void *);
 typedef void (__thiscall *Destructor)(void *);

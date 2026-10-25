@@ -1,7 +1,8 @@
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs roc_datamodel_http_priority_family_499d1a4013f08de7.cpp
+// roc-lib: rbxgs-dll roc_datamodel_http_priority_family_499d1a4013f08de7.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias("util/boost.hpp", "../roc_native_background_priority_header_1eae1b6d71ad6ec5.cpp")

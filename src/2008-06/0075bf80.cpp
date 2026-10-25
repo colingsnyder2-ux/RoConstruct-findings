@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 0075bf80  unit: CXTPDockingPaneMiniWnd  size: 21 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0075bf80
 //
@@ -9,7 +10,6 @@
 // 0075bf8e  e8b749f4ff           call 0x6a094a
 // 0075bf93  59                   pop ecx
 // 0075bf94  c3                   ret 
-// auto-matched from its assembly shape
 
 extern "C" void __cdecl G1_func_0075bf80(void*);
 struct S_func_0075bf80 {

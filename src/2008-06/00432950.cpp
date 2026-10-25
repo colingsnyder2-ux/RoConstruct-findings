@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 00432950  unit: RBX::VHat::?$FactoryProduct::Creator  size: 25 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00432950
 //
@@ -9,9 +10,7 @@
 // 0043295f  51                   push ecx
 // 00432960  ff150c2e8000         call dword ptr [0x802e0c]
 // 00432966  c20400               ret 4
-// copied from an identical function in another client (function ?method@S@ns_ROCX000001@@QAEXH@Z)
 
-namespace ns_ROCX000001 {
 extern "C" int (__stdcall* PostMessageA)(void* hWnd, unsigned int Msg, unsigned int wParam, int lParam);
 
 struct S {
@@ -23,5 +22,4 @@ struct S {
 void S::method(int arg)
 {
     PostMessageA(this->field4, 0x465, 0, arg);
-}
 }

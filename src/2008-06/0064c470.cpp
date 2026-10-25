@@ -1,4 +1,4 @@
-// from server: 68% by king_originala
+// from server: 69% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
@@ -59,8 +59,8 @@ void SleepStage::wakeNeighbors(Assembly*assembly,std::deque<Assembly*>&pending,i
       static Velocity zero;
       other->rootClump->rootPrimitive->body->setVelocity(zero);
       if(other->downstreamOfStage(this))static_cast<SimJobStage*>(downstream)->onAssemblyRemoving(other);
-      other->sleepInfo->sleepCount=0;
       other->sleepInfo->state=4;
+      other->sleepInfo->sleepCount=0;
      }
     }
    }

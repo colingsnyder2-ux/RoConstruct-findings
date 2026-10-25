@@ -1,3 +1,6 @@
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 #include <list>
 
 extern char criticalSection;

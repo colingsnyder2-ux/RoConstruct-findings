@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 006c7d50  unit: CInstanceRecord::CNameItem  size: 21 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006c7d50
 //
@@ -9,7 +10,6 @@
 // 006c7d5e  e8e78bfdff           call 0x6a094a
 // 006c7d63  59                   pop ecx
 // 006c7d64  c3                   ret 
-// auto-matched from its assembly shape
 
 extern "C" void __cdecl G1_func_006c7d50(void*);
 struct S_func_006c7d50 {

@@ -1,6 +1,7 @@
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 // roc-lib: openrbx-client-dll roc_espclaude_16516c3533c1d74c.cpp
 
 // Candidate translation unit (score above; library headers required).

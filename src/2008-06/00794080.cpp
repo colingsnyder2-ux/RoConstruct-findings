@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 00794080  unit: CXTPRibbonTab  size: 23 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00794080
 //
@@ -9,7 +10,6 @@
 // 00794090  89480c               mov dword ptr [eax + 0xc], ecx
 // 00794093  894808               mov dword ptr [eax + 8], ecx
 // 00794096  c3                   ret 
-// auto-matched from its assembly shape
 
 extern char G;
 

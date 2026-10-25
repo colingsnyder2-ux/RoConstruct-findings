@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 006bc240  unit: CXTPImageManagerResource::CBitmapDC  size: 21 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006bc240
 //
@@ -9,7 +10,6 @@
 // 006bc24e  e8f746feff           call 0x6a094a
 // 006bc253  59                   pop ecx
 // 006bc254  c3                   ret 
-// auto-matched from its assembly shape
 
 extern "C" void __cdecl G1_func_006bc240(void*);
 struct S_func_006bc240 {

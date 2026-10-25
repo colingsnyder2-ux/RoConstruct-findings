@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 006f6bf0  unit: CXTPControlSelector  size: 46 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006f6bf0
 //
@@ -22,9 +23,8 @@
 // 006f6c18  75eb                 jne 0x6f6c05
 // 006f6c1a  c60200               mov byte ptr [edx], 0
 // 006f6c1d  c3                   ret 
-// copied from an identical function in another client (function ?strip_ampersands@ns_ROCX000054@@YAPADPAD@Z)
 
-namespace ns_ROCX000054 {
+namespace ns_ROCX000050 {
 char* __cdecl strip_ampersands(char* p)
 {
     if (p != 0 && p != (char*)-1)

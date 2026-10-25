@@ -1,9 +1,9 @@
+// from server: 100% by auto
 // roc 2008-06 0071d880  unit: CXTPMouseManager  size: 6 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0071d880
 //
 // 0071d880  b8b8f48500           mov eax, 0x85f4b8
 // 0071d885  c3                   ret 
-// auto-matched from its assembly shape
 
 extern char G;
 

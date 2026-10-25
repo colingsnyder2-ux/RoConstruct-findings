@@ -1,3 +1,4 @@
+// from server: 100% by atomic.potato
 // roc 2008-06 00458fb0  unit: InsertModelFromRobloxVerb  size: 28 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00458fb0
 //
@@ -9,19 +10,22 @@
 // 00458fc2  51                   push ecx
 // 00458fc3  ff150c2e8000         call dword ptr [0x802e0c]
 // 00458fc9  c20400               ret 4
-// copied from an identical function in another client (function ?Run@InsertModelFromRobloxVerb@ns_ROCX000066@@QAEXH@Z)
 
-namespace ns_ROCX000066 {
-struct InsertModelFromRobloxVerb {
+extern "C" int __declspec(dllimport) __stdcall PostMessageA(void*, unsigned int, unsigned int, long);
+
+struct InsertModelFromRobloxVerb
+{
     char pad[0xc];
-    void** field_c;
-    void Run(int arg);
+    struct Info
+    {
+        char pad2[0x20];
+        void* handle;
+    };
+    Info* info;
+    void f(unsigned int);
 };
 
-extern "C" int (__stdcall *PostMessageA)(void*, unsigned int, unsigned int, long);
-
-void InsertModelFromRobloxVerb::Run(int)
+void InsertModelFromRobloxVerb::f(unsigned int value)
 {
-    PostMessageA(field_c[8], 0x111, 0x80fe, 0);
-}
+    PostMessageA(this->info->handle, 0x111, 0x80fe, 0);
 }

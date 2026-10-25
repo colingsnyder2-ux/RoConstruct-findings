@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 00472990  unit: std::D::DU?$char_traits::V?$basic_string::?$Set  size: 17 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00472990
 //
@@ -7,7 +8,6 @@
 // 0047299a  894804               mov dword ptr [eax + 4], ecx
 // 0047299d  894808               mov dword ptr [eax + 8], ecx
 // 004729a0  c3                   ret 
-// auto-matched from its assembly shape
 
 extern char G;
 

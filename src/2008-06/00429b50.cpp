@@ -1,3 +1,6 @@
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 // roc 2008-06 00429b50  unit: ThreadLogManager  size: 108 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00429b50
 //

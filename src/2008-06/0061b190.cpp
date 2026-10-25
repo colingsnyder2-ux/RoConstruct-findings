@@ -1,12 +1,13 @@
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_lua_property_native_throwable_strings0d43d607b45a2d9b.cpp
+// roc-lib: rbxgs-dll roc_espeon_luasetternamegetterfix_d9949843067008df.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias("reflection/enumconverter.h", "roc_enum_item_genuine_owner_header4eec83b4b5d2a3a5.cpp")
 #pragma include_alias("reflection/enumConverter.h", "roc_enum_item_genuine_owner_header4eec83b4b5d2a3a5.cpp")
-#pragma include_alias("reflection/property.h", "roc_enum_property_genuine_item_api_header4cdef36b64104a4f.cpp")
+#pragma include_alias("reflection/property.h", "roc_espeon_luapropertyvslotdecl_7e349de9270939c5.cpp")
 #pragma include_alias("v8tree/Instance.h", "roc_instance_genuine_guiditem_headerf016862b4461fbce.cpp")
 #include "roc_genuine_lua_singleton_enum_headerf079742c7efc6c9f.cpp"
 namespace RBX { namespace Lua { template<> const char* Bridge<EnumDescriptorItemPtr, false>::className = "EnumItem"; } }
@@ -28,6 +29,7 @@ namespace RBX { namespace Lua { extern const char* throwable_lua_tostring(lua_St
 
 // matches generally aren't very good here
 
+inline const RBX::Name& RBX::Reflection::ConstProperty::getName() const {return descriptor->name;}
 using namespace RBX;
 using namespace RBX::Lua;
 using namespace RBX::Reflection;
@@ -414,7 +416,9 @@ static __declspec(noinline) void assignLuaValue(Property p, lua_State* L, int in
         return;
     }
 
-    throw std::runtime_error(G3D::format("Unable to set property %s, type %s", p.getDescriptor().name.c_str(), p.getDescriptor().type.name.c_str()));
+    const char* typeName=p.getDescriptor().type.name.c_str();
+    const char* propertyName=p.getName().c_str();
+    throw std::runtime_error(G3D::format("Unable to set property %s, type %s", propertyName, typeName));
 }
 
 // TODO: 91.56%

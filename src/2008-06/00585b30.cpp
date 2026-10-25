@@ -1,7 +1,8 @@
-// roc-lang: cpp
+// from server: 100% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs roc_unit_045e4fd4949c7433.cpp
+// roc-lang: cpp
+// roc-lib: rbxgs roc_unit_75cf58c5197f1326.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias("v8tree/Instance.h", "roc_unit_947367095c32740c.cpp")
@@ -207,10 +208,10 @@ namespace RBX
 	{
 		float answer = 6.0f;
 
-		if ((*reinterpret_cast<PartInstance* const*>(reinterpret_cast<const char*>(this) + 0x1e0)))
+		if (primaryPart)
 		{
-			RBXASSERT((*reinterpret_cast<PartInstance* const*>(reinterpret_cast<const char*>(this) + 0x1e0))->isDescendentOf(this));
-			float primaryPartY = (*reinterpret_cast<PartInstance* const*>(reinterpret_cast<const char*>(this) + 0x1e0))->getExtentsWorld().max().y;
+			RBXASSERT(primaryPart->isDescendentOf(this));
+			float primaryPartY = primaryPart->getExtentsWorld().max().y;
 			answer = (getExtentsWorld().max().y - primaryPartY) + 6.0f;
 		}
 

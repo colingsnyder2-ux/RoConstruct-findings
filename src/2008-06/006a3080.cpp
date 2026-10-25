@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 006a3080  unit: CRobloxControlColorSelector  size: 23 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006a3080
 //
@@ -9,7 +10,6 @@
 // 006a3090  89480c               mov dword ptr [eax + 0xc], ecx
 // 006a3093  894808               mov dword ptr [eax + 8], ecx
 // 006a3096  c3                   ret 
-// auto-matched from its assembly shape
 
 extern char G;
 

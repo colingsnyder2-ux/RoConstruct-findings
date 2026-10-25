@@ -1,7 +1,8 @@
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs roc_descriptor_receiver_native_family_bd34d89f6d6c7dad.cpp
+// roc-lib: rbxgs-dll roc_descriptor_receiver_native_name_order_7d5f8e8ab29991a4.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias("reflection/object.h", "../roc_descriptor_receiver_class_header_268a149c290eb686.cpp")
@@ -31,7 +32,8 @@ template<> void DescriptorReceiver<PropertyDescriptor>::learnName(std::string s,
  while(iter != ClassDescriptor::all_end()) {
   const ClassDescriptor* c = *iter;
   if(c->name == n) {
-   PropertyContainer::CollectionType::const_iterator desc = c->PropertyContainer::findDescriptor(Name::lookup(words[1]));
+   const Name& propertyName = Name::lookup(words[1]);
+   PropertyContainer::CollectionType::const_iterator desc = c->PropertyContainer::findDescriptor(propertyName);
    if(desc != c->PropertyContainer::descriptors_end()) { idToDesc[i] = *desc; return; }
    else break;
   }

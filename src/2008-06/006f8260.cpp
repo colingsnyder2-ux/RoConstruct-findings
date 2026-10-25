@@ -1,3 +1,4 @@
+// from server: 100% by atomic.potato
 // roc 2008-06 006f8260  unit: CXTPBitmapDC  size: 32 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006f8260
 //
@@ -12,23 +13,21 @@
 // 006f827a  8bc6                 mov eax, esi
 // 006f827c  5e                   pop esi
 // 006f827d  c20400               ret 4
-// copied from an identical function in another client (function ?Init@CXTPBitmapDC@ns_ROCX000068@@QAEPAU12@H@Z)
 
-namespace ns_ROCX000068 {
-struct CXTPBitmapDC {
-    int m_nType;
+struct CXTPBitmapDC
+{
+    int* m_pDC;
     int m_hBitmap;
-    int m_rect[4];
-    CXTPBitmapDC* Init(int hBitmap);
+    int m_rect;
+    CXTPBitmapDC& f(int hBitmap);
 };
 
-extern "C" int (__stdcall *SetRectEmpty)(int* rect);
+extern "C" int (__stdcall *SetRectEmpty)(int*);
 
-CXTPBitmapDC* CXTPBitmapDC::Init(int hBitmap)
+CXTPBitmapDC& CXTPBitmapDC::f(int hBitmap)
 {
     m_hBitmap = hBitmap;
-    SetRectEmpty(m_rect);
-    m_nType = 0;
-    return this;
-}
+    SetRectEmpty(&m_rect);
+    m_pDC = 0;
+    return *this;
 }

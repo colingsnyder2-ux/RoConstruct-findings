@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 005f5140  unit: boost::iostreams::DUoutput::V?$basic_null_device::?$stream_buffer  size: 20 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005f5140
 //
@@ -9,21 +10,18 @@
 // 005f514e  c6465800             mov byte ptr [esi + 0x58], 0
 // 005f5152  5e                   pop esi
 // 005f5153  c3                   ret 
-// copied from an identical function in another client (function ?f@S@ns_ROCX000011@@QAEXXZ)
 
-namespace ns_ROCX000011 {
 struct S {
     char pad[0x58];
     char flag;
-    void sub_54b960();
     void f();
 };
 
-void S::f()
-{
+extern "C" void __cdecl helper();
+
+void S::f() {
     if (flag != 0) {
-        sub_54b960();
+        helper();
         flag = 0;
     }
-}
 }

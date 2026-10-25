@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 0071d050  unit: CXTPKeyboardManager  size: 23 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0071d050
 //
@@ -9,7 +10,6 @@
 // 0071d060  89480c               mov dword ptr [eax + 0xc], ecx
 // 0071d063  894808               mov dword ptr [eax + 8], ecx
 // 0071d066  c3                   ret 
-// auto-matched from its assembly shape
 
 extern char G;
 

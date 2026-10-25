@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 006da2c0  unit: VCXTPReportRows::?$CXTPHeapObjectT  size: 21 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006da2c0
 //
@@ -9,7 +10,6 @@
 // 006da2ce  e87766fcff           call 0x6a094a
 // 006da2d3  59                   pop ecx
 // 006da2d4  c3                   ret 
-// auto-matched from its assembly shape
 
 extern "C" void __cdecl G1_func_006da2c0(void*);
 struct S_func_006da2c0 {

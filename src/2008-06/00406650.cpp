@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 00406650  unit: VCApp::?$CComObject  size: 85 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00406650
 //
@@ -17,9 +18,7 @@
 // 00406698  888124020000         mov byte ptr [ecx + 0x224], al
 // 0040669e  8881250a0000         mov byte ptr [ecx + 0xa25], al
 // 004066a4  c3                   ret 
-// copied from an identical function in another client (function ?Init@VCContent_CComAggObject@ns_ROCX00000e@@QAEXXZ)
 
-namespace ns_ROCX00000e {
 struct VCContent_CComAggObject
 {
     void Init();
@@ -41,5 +40,4 @@ void VCContent_CComAggObject::Init()
     *(char*)((char*)this + 0x1a3) = 0;
     *(char*)((char*)this + 0x224) = 0;
     *(char*)((char*)this + 0xa25) = 0;
-}
 }

@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 0071c530  unit: CXTPHookManagerHookAble  size: 21 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0071c530
 //
@@ -9,7 +10,6 @@
 // 0071c53e  e80744f8ff           call 0x6a094a
 // 0071c543  59                   pop ecx
 // 0071c544  c3                   ret 
-// auto-matched from its assembly shape
 
 extern "C" void __cdecl G1_func_0071c530(void*);
 struct S_func_0071c530 {

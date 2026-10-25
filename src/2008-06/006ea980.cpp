@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 006ea980  unit: CXTPCustomizeSheet  size: 40 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006ea980
 //
@@ -16,9 +17,7 @@
 // 006ea9a2  ffd0                 call eax
 // 006ea9a4  5b                   pop ebx
 // 006ea9a5  c20400               ret 4
-// copied from an identical function in another client (function ?SetActivePage@CXTPCustomizeSheet@ns_ROCX000002@@QAEXPAX@Z)
 
-namespace ns_ROCX000002 {
 struct CXTPCustomizeSheet {
     char pad[0xb8];
     void* field_b8;
@@ -33,5 +32,4 @@ void CXTPCustomizeSheet::SetActivePage(void* page) {
         typedef void (__thiscall *Fn)(void*, int);
         ((Fn)vtbl[0])(page, flag);
     }
-}
 }

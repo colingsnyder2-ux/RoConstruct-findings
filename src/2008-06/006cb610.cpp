@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 006cb610  unit: CXTPReportControl  size: 21 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006cb610
 //
@@ -9,7 +10,6 @@
 // 006cb61e  e82753fdff           call 0x6a094a
 // 006cb623  59                   pop ecx
 // 006cb624  c3                   ret 
-// auto-matched from its assembly shape
 
 extern "C" void __cdecl G1_func_006cb610(void*);
 struct S_func_006cb610 {

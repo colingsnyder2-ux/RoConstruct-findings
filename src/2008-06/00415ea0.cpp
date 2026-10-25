@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 00415ea0  unit: CopyVerb  size: 41 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00415ea0
 //
@@ -18,9 +19,7 @@
 // 00415ec1  c70600000000         mov dword ptr [esi], 0
 // 00415ec7  5e                   pop esi
 // 00415ec8  c3                   ret 
-// copied from an identical function in another client (function ?f@S@ns_ROCX000008@@QAEXXZ)
 
-namespace ns_ROCX000008 {
 extern "C" {
     long (__stdcall *SafeArrayDestroy)(void*);
     long (__stdcall *SafeArrayUnlock)(void*);
@@ -39,5 +38,4 @@ void S::f() {
             }
         }
     }
-}
 }

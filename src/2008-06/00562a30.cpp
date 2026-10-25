@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // roc 2008-06 00562a30
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)

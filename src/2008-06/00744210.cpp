@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 00744210  unit: CXTPControlEditCtrl  size: 21 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00744210
 //
@@ -9,7 +10,6 @@
 // 0074421e  e827c7f5ff           call 0x6a094a
 // 00744223  59                   pop ecx
 // 00744224  c3                   ret 
-// auto-matched from its assembly shape
 
 extern "C" void __cdecl G1_func_00744210(void*);
 struct S_func_00744210 {

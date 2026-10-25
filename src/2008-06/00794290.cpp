@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 00794290  unit: PAVCXTPRibbonTabContextHeader::?$CArray  size: 41 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00794290
 //
@@ -18,9 +19,7 @@
 // 007942b5  33c0                 xor eax, eax
 // 007942b7  5e                   pop esi
 // 007942b8  c3                   ret 
-// copied from an identical function in another client (function ?IsSomething@CXTPRibbonTabContextHeader@ns_ROCX000034@@QAEHXZ)
 
-namespace ns_ROCX000034 {
 struct CXTPRibbonTabContextHeader
 {
     int GetFlag(int index);
@@ -35,5 +34,4 @@ int CXTPRibbonTabContextHeader::IsSomething()
             return 1;
     }
     return 0;
-}
 }

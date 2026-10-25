@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 007f90d0  unit: seg_007f0000  size: 12 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 007f90d0
 //
@@ -5,7 +6,6 @@
 // 007f90d5  e8d586eaff           call 0x6a17af
 // 007f90da  59                   pop ecx
 // 007f90db  c3                   ret 
-// auto-matched from its assembly shape
 
 extern char G;
 

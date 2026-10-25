@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 00716640  unit: CXTPPropertyGridView  size: 21 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00716640
 //
@@ -9,7 +10,6 @@
 // 0071664e  e8f7a2f8ff           call 0x6a094a
 // 00716653  59                   pop ecx
 // 00716654  c3                   ret 
-// auto-matched from its assembly shape
 
 extern "C" void __cdecl G1_func_00716640(void*);
 struct S_func_00716640 {

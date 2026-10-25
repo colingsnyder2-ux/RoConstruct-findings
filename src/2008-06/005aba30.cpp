@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 005aba30  unit: RBX::Lua::ThreadRef::VNode::V?$shared_ptr::?$TItem  size: 22 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005aba30
 //
@@ -10,14 +11,11 @@
 // 005aba40  ffd0                 call eax
 // 005aba42  83c408               add esp, 8
 // 005aba45  c3                   ret 
-// copied from an identical function in another client (function ?f@ns_ROCX000007@@YAXHHH@Z)
 
-namespace ns_ROCX000007 {
 struct S {
 };
 
 void __cdecl f(int a, int b, int c) {
     void (*fn)(int, int) = *(void (**)(int, int))a;
     fn(b, c);
-}
 }

@@ -1,4 +1,4 @@
-// from server: 96% by king_originala
+// from server: 97% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
 // Full native Rocket::computeForce; target-observed Instance/Connector/Listener and Body layouts.
@@ -154,10 +154,10 @@ void Rocket::computeForce(const float dt, bool throttling)
 			float dotProduct = dir.dot(force);
 			if (dotProduct > 0.0f)
 			{
-				force -= dir * dotProduct;
+				force = force - (dir * dotProduct);
 				pAccel = dir * maxSpeed;
 				G3D::Vector3 low = root->getVelocity().linear - pAccel;
-				G3D::Vector3 scaledLow=low*root->getBranchMass();
+				G3D::Vector3 scaledLow=root->getBranchMass() * low;
  force-=scaledLow/dt;
 			}
 		}

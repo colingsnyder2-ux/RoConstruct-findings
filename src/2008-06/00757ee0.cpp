@@ -1,3 +1,4 @@
+// from server: 100% by auto
 // roc 2008-06 00757ee0  unit: CXTPDockingPaneAutoHidePanel  size: 21 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00757ee0
 //
@@ -9,7 +10,6 @@
 // 00757eee  e8578af4ff           call 0x6a094a
 // 00757ef3  59                   pop ecx
 // 00757ef4  c3                   ret 
-// auto-matched from its assembly shape
 
 extern "C" void __cdecl G1_func_00757ee0(void*);
 struct S_func_00757ee0 {

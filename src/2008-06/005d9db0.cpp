@@ -1,7 +1,8 @@
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs roc_unit_06906e269c7d4d71.cpp
+// roc-lib: rbxgs-dll roc_unit_06906e269c7d4d71.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias("v8datamodel/ICharacterSubject.h","roc_unit_2a20899c3d3be979.cpp")

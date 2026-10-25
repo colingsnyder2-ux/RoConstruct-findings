@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 00432a70  unit: Marshaller  size: 22 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00432a70
 //
@@ -8,9 +9,7 @@
 // 00432a79  c744240401000000     mov dword ptr [esp + 4], 1
 // 00432a81  ffe2                 jmp edx
 // 00432a83  c20400               ret 4
-// copied from an identical function in another client (function ?execute@Marshaller@ns_ROCX000002@@QAEXH@Z)
 
-namespace ns_ROCX000002 {
 struct Marshaller
 {
     void execute(int job);
@@ -24,5 +23,4 @@ void Marshaller::execute(int job)
         p = *(void (Marshaller::**)(int))(*(int*)this + 4);
         (this->*p)(1);
     }
-}
 }

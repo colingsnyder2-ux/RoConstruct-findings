@@ -1,3 +1,4 @@
+// from server: 100% by tester
 // roc 2008-06 00594d00  unit: RBX::Lua::ThreadRef::VNode::?$sp_counted_impl_p  size: 26 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00594d00
 //
@@ -11,25 +12,20 @@
 // 00594d12  51                   push ecx
 // 00594d13  ff1580228000         call dword ptr [0x802280]
 // 00594d19  c3                   ret 
-// copied from an identical function in another client (function ?f@S@ns_ROCX000003@ns_ROCX000000@@QAEXXZ)
 
-namespace ns_ROCX000003 {
-namespace ns_ROCX000000 {
-extern "C" unsigned long (__stdcall *WaitForSingleObject)(void* handle, unsigned long ms);
-extern "C" int (__stdcall *CloseHandle)(void* handle);
+extern "C" void (__stdcall *ReleaseMutex)(void*);
+extern "C" void (__stdcall *LeaveCriticalSection)(void*);
 
-struct ThreadData {
-    void* handle;
-    int pad;
-    unsigned char flag;
-    void destroy();
+struct S {
+    void* field0;
+    char field4;
+    void f();
 };
 
-void ThreadData::destroy()
-{
-    WaitForSingleObject(handle, 0xFFFFFFFF);
-    CloseHandle(handle);
-    flag = 0;
-}
-}
+void S::f() {
+    if (field4 != 0) {
+        ReleaseMutex(field0);
+    } else {
+        LeaveCriticalSection(field0);
+    }
 }
