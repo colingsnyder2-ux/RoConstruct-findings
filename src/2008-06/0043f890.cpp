@@ -1,5 +1,5 @@
 // from server: 34% by colin
-// roc 2008-06 0043f890  unit: RBX::Soundscape::VSoundId::?$ContentItem  size: 849 bytes
+// roc 2008-06 0043f890  unit: RBX::Soundscape::VSoundId::?$ContentItem  size: 875 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0043f890
 //
 // 0043f890  55                   push ebp
@@ -266,6 +266,16 @@
 // 0043fbdb  8be5                 mov esp, ebp
 // 0043fbdd  5d                   pop ebp
 // 0043fbde  c20400               ret 4
+// 0043fbe1  8b4de4               mov ecx, dword ptr [ebp - 0x1c]
+// 0043fbe4  8b11                 mov edx, dword ptr [ecx]
+// 0043fbe6  8b4204               mov eax, dword ptr [edx + 4]
+// 0043fbe9  6a00                 push 0
+// 0043fbeb  6a00                 push 0
+// 0043fbed  ffd0                 call eax
+// 0043fbef  50                   push eax
+// 0043fbf0  e85b102600           call 0x6a0c50
+// 0043fbf5  b8cefb4300           mov eax, 0x43fbce
+// 0043fbfa  c3                   ret 
 
 // from server: 33% by colin
 // roc-cl: 50727
