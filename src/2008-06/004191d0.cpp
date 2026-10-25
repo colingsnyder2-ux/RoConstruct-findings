@@ -1,5 +1,5 @@
 // from server: 100% by colin
-// roc 2008-06 004191d0  unit: VCLuaFunction::?$CComObject  size: 155 bytes
+// roc 2008-06 004191d0  unit: VCLuaFunction::?$CComObject  size: 193 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004191d0
 //
 // 004191d0  55                   push ebp
@@ -62,6 +62,20 @@
 // 00419265  8bce                 mov ecx, esi
 // 00419267  ffd0                 call eax
 // 00419269  eb11                 jmp 0x41927c
+// 0041926b  8b4de8               mov ecx, dword ptr [ebp - 0x18]
+// 0041926e  e8dd762800           call 0x6a0950
+// 00419273  b879924100           mov eax, 0x419279
+// 00419278  c3                   ret 
+// 00419279  8b7d10               mov edi, dword ptr [ebp + 0x10]
+// 0041927c  8b4df4               mov ecx, dword ptr [ebp - 0xc]
+// 0041927f  8bc7                 mov eax, edi
+// 00419281  5f                   pop edi
+// 00419282  5e                   pop esi
+// 00419283  64890d00000000       mov dword ptr fs:[0], ecx
+// 0041928a  5b                   pop ebx
+// 0041928b  8be5                 mov esp, ebp
+// 0041928d  5d                   pop ebp
+// 0041928e  c20c00               ret 0xc
 
 struct __RocException { long status; __RocException(const __RocException&); ~__RocException(); };
 // from server: 97% by king_originala

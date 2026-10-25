@@ -1,171 +1,220 @@
-// from server: 57% by colin
-// from server: 89% by colin
+// from server: 90% by EspClaude
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net Client.cpp
+// roc-lib: rbxgs-dll roc_espclaude_1f8a3c087fc568fb.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include <RakNetTypes.h>
-#include <RakPeer.h>
-#include <MessageIdentifiers.h>
-#include "API.h"
-#include "Client.h"
-#include "util/standardout.h"
-
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Client, void(std::string, int, int, int), 4> f_connect(&RBX::Network::Client::connect, "Connect", "server", "serverPort", "clientPort", "threadSleepTime", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Client, void(int), 1> f_disconnect(&RBX::Network::Client::disconnect, "Disconnect", "blockDuration", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-
-class Exposer : protected PacketLogger
-{
+#define _DLL
+#include <stddef.h>
+#include <exception>
+#include <windows.h>
+#include <string>
+#include <vector>
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
+namespace RBX {
+class Name;
+class Instance;
+struct DebugMember { DebugMember(); ~DebugMember(); int a, b; };
+class __declspec(novtable) Debugable {
 public:
-	static const char* IDTOString(int id)
-	{
-		Exposer exposer;
-		return exposer.PacketLogger::IDTOString((unsigned char)id);
-	}
+	virtual void dump();
+	bool validating;
+	DebugMember member;
+	Debugable() : validating(false) {}
+};
+class Object {
+public:
+	virtual ~Object() {}
+};
+template<class Base> class Creatable : public Object {
+public:
+	template<class T, class A0, class A1> static boost::shared_ptr<T> create(A0 a0, A1 a1);
+};
+template<class T> class AbstractFactoryProduct : public Creatable<T> {
+protected:
+	AbstractFactoryProduct() {}
+public:
+	virtual const Name& getClassName() const = 0;
+};
+class SignalSource { public: virtual ~SignalSource(); int a, b; };
+class DescribedBase1 { public: virtual ~DescribedBase1(); };
+class Described : public SignalSource, public DescribedBase1 {
+public:
+	Described();
+	virtual ~Described();
+};
+template<int N> class Notifier {
+public:
+	Notifier();
+	virtual ~Notifier();
+	char pad[0x1c];
+};
+template<class T> class Association {
+	std::vector<boost::shared_ptr<T> > v;
+};
+extern long instanceCount;
+class Instance : public boost::enable_shared_from_this<Instance>,
+                 public Debugable,
+                 public AbstractFactoryProduct<Instance>,
+                 public Described,
+                 public Notifier<0>,
+                 public Notifier<1>,
+                 public Notifier<2>,
+                 public Notifier<3>,
+                 public Notifier<4>,
+                 public Notifier<5>
+{
+private:
+	Association<Instance> assoc;
+	Instance* parent;
+	boost::shared_ptr<std::vector<boost::shared_ptr<Instance> > > children;
+	std::string name;
+	bool archivable;
+protected:
+	Instance();
+public:
+	virtual ~Instance();
+public:
+	virtual const Name& getClassName() const;
+	void setParent(Instance* newParent);
 };
 
-namespace RBX
-{
-	namespace Network
+enum MessageType { MESSAGE_OUTPUT, MESSAGE_INFO, MESSAGE_WARNING, MESSAGE_ERROR };
+class StandardOut {
+public:
+	static boost::shared_ptr<StandardOut> singleton();
+	void print(MessageType type, const char* format, ...);
+};
+namespace Reflection {
+template<class Signature> class TSignalDesc;
+template<class A1> class TSignalDesc<void(A1)> {
+public:
+	void fire(SignalSource* source, A1 arg1);
+};
+template<class A1, class A2> class TSignalDesc<void(A1, A2)> {
+public:
+	void fire(SignalSource* source, A1 arg1, A2 arg2);
+};
+template<class A1, class A2, class A3> class TSignalDesc<void(A1, A2, A3)> {
+public:
+	void fire(SignalSource* source, A1 arg1, A2 arg2, A3 arg3);
+};
+}
+}
+struct SystemAddress {
+	unsigned int binaryAddress;
+	unsigned short port;
+	const char* ToString(bool writePort = true) const;
+	SystemAddress& operator=(const SystemAddress& input)
 	{
-		Client::Client()
-		{
-			setName("NetworkClient");
-			updateLogger();
-		}
-
-		Client::~Client()
-		{
-			rakPeer->CloseConnection(serverId, true, 0);
-		}
-
-		void Client::disconnect(int blockDuration)
-		{
-			removeAllChildren();
-			rakPeer->CloseConnection(serverId, true, 0);
-			rakPeer->Shutdown(blockDuration, 0);
-		}
-
-		void Client::onEvent(const ServiceProvider* source, Closing event)
-		{
-			disconnect(3000);
-		}
-
-		void Client::connect(std::string server, int serverPort, int clientPort, int threadSleepTime)
-		{
-			SocketDescriptor d(clientPort, "");
-			if (!rakPeer->Startup(1, threadSleepTime, &d, 1))
-				throw std::runtime_error("Failed to start network client");
-
-			if (!rakPeer->Connect(server.c_str(), serverPort, API::version.c_str(), (int)API::version.size()))
-				throw std::runtime_error("Failed to connect to server");
-
-			StandardOut::singleton()->print(MESSAGE_INFO, "Connecting to %s:%d", server.c_str(), serverPort);
-
-			updateNetworkSimulator();
-		}
-
-		void Client::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
-		{
-			Notifier<ServiceProvider, Closing>::disconnect(oldProvider, this);
-
-			if (oldProvider)
-			{
-				RunService* runService = oldProvider->find<RunService>();
-				if (runService)
-					runService->runDisabled = false;
-
-				disconnect(3000);
-
-				Players* p = oldProvider->find<Players>();
-				p->setConnection(NULL);
-			}
-
-			Instance::onServiceProvider(oldProvider, newProvider);
-
-			if (newProvider)
-			{
-				Players* p = newProvider->create<Players>();
-				p->setConnection(rakPeer.get());
-
-				RunService* runService = newProvider->find<RunService>();
-				if (runService)
-					runService->runDisabled = true;
-			}
-
-			Notifier<ServiceProvider, Closing>::connect(newProvider, this);
-		}
-
-		bool Client::clientIsPresent(const Instance* context, bool testInDatamodel)
-		{
-			const ServiceProvider* sp = ServiceProvider::findServiceProvider(context);
-			RBXASSERT(!testInDatamodel || sp);
-
-			return ServiceProvider::find<Client>(sp) != NULL;
-		}
-
-		PluginReceiveResult Client::OnReceive(RakPeerInterface* peer, Packet* packet)
-		{
-			PluginReceiveResult result = PluginInterface::OnReceive(peer, packet);
-			if (result != RR_CONTINUE_PROCESSING)
-				return result;
-
-			switch(packet->data[0])
-			{
-			case ID_CONNECTION_REQUEST_ACCEPTED:
-				try
-				{
-					StandardOut::singleton()->print(MESSAGE_INFO, "Connection accepted from %s\n", packet->systemAddress.ToString());
-					serverId = packet->systemAddress;
-					
-					boost::shared_ptr<Replicator> proxy = Creatable::create<Replicator>(packet->systemAddress, this->rakPeer.get());
-					proxy->setParent(this);
-					
-					event_ConnectionAccepted.fire(this, packet->systemAddress.ToString(), proxy);
-				}
-				catch (std::exception& e)
-				{
-					StandardOut::singleton()->print(MESSAGE_ERROR, "Client::OnReceive packet %d: %s", packet->data[0], e.what());
-				}
-				break;
-
-			case ID_CONNECTION_ATTEMPT_FAILED:
-			case ID_NO_FREE_INCOMING_CONNECTIONS:
-			case ID_CONNECTION_BANNED:
-				try
-				{
-					StandardOut::singleton()->print(MESSAGE_ERROR, "Failed to connect to %s. %s\n", packet->systemAddress.ToString(), Exposer::IDTOString(packet->data[0]));
-					event_ConnectionFailed.fire(this, packet->systemAddress.ToString(), packet->data[0]);
-				}
-				catch (std::exception& e)
-				{
-					StandardOut::singleton()->print(MESSAGE_ERROR, "Client::OnReceive packet %d: %s", packet->data[0], e.what());
-				}
-				break;
-			
-			case ID_INVALID_PASSWORD:
-				try
-				{
-					StandardOut::singleton()->print(MESSAGE_ERROR, "Invalid version from %s", packet->systemAddress.ToString());
-					event_ConnectionFailed.fire(this, packet->systemAddress.ToString(), packet->data[0]);
-					event_ConnectionRejected.fire(this, packet->systemAddress.ToString());
-				}
-				catch (std::exception& e)
-				{
-					StandardOut::singleton()->print(MESSAGE_ERROR, "Client::OnReceive packet %d: %s", packet->data[0], e.what());
-				}
-				break;
-
-			case ID_DISCONNECTION_NOTIFICATION:
-			case ID_CONNECTION_LOST:
-				RBXASSERT(packet->systemAddress == serverId);
-				serverId = UNASSIGNED_SYSTEM_ADDRESS;
-				break;
-			}
-
-			return RR_CONTINUE_PROCESSING;
-		}
+		binaryAddress = input.binaryAddress;
+		port = input.port;
+		return *this;
 	}
+};
+extern const SystemAddress UNASSIGNED_SYSTEM_ADDRESS;
+struct Packet {
+	int playerIndex;
+	SystemAddress systemAddress;
+	unsigned int length;
+	unsigned int bitSize;
+	unsigned char* data;
+};
+class RakPeerInterface;
+enum PluginReceiveResult { RR_STOP_PROCESSING_AND_DEALLOCATE, RR_CONTINUE_PROCESSING, RR_STOP_PROCESSING };
+enum {
+	ID_CONNECTION_REQUEST_ACCEPTED = 13,
+	ID_CONNECTION_ATTEMPT_FAILED = 14,
+	ID_NO_FREE_INCOMING_CONNECTIONS = 17,
+	ID_DISCONNECTION_NOTIFICATION = 18,
+	ID_CONNECTION_LOST = 19,
+	ID_CONNECTION_BANNED = 21,
+	ID_INVALID_PASSWORD = 22
+};
+class PluginInterface {
+public:
+	virtual ~PluginInterface();
+	virtual PluginReceiveResult OnReceive(RakPeerInterface* peer, Packet* packet);
+};
+namespace RBX {
+namespace Network {
+class Exposer {
+public:
+	static const char* IDTOString(unsigned char id);
+};
+class Replicator : public Instance { };
+extern Reflection::TSignalDesc<void(std::string, boost::shared_ptr<Instance>)> event_ConnectionAccepted;
+extern Reflection::TSignalDesc<void(std::string, int, std::string)> event_ConnectionFailed;
+extern Reflection::TSignalDesc<void(std::string)> event_ConnectionRejected;
+class Client : public Instance, public PluginInterface {
+	char pad134[0xc];
+	boost::shared_ptr<RakPeerInterface> rakPeer;
+	SystemAddress serverId;
+public:
+	virtual PluginReceiveResult OnReceive(RakPeerInterface* peer, Packet* packet);
+};
+PluginReceiveResult Client::OnReceive(RakPeerInterface* peer, Packet* packet)
+{
+	PluginReceiveResult result = PluginInterface::OnReceive(peer, packet);
+	if (result != RR_CONTINUE_PROCESSING)
+		return result;
+
+	switch (packet->data[0])
+	{
+	case ID_CONNECTION_REQUEST_ACCEPTED:
+		try
+		{
+			StandardOut::singleton()->print(MESSAGE_INFO, "Connection accepted from %s\n", packet->systemAddress.ToString());
+			serverId = packet->systemAddress;
+
+			boost::shared_ptr<Replicator> proxy = Creatable<Instance>::create<Replicator>(packet->systemAddress, this->rakPeer.get());
+			proxy->setParent(this);
+
+			event_ConnectionAccepted.fire(this, packet->systemAddress.ToString(), proxy);
+		}
+		catch (std::exception& e)
+		{
+			StandardOut::singleton()->print(MESSAGE_ERROR, "Client::OnReceive packet %d: %s", packet->data[0], e.what());
+		}
+		break;
+
+	case ID_CONNECTION_ATTEMPT_FAILED:
+	case ID_NO_FREE_INCOMING_CONNECTIONS:
+	case ID_CONNECTION_BANNED:
+		try
+		{
+			StandardOut::singleton()->print(MESSAGE_ERROR, "Failed to connect to %s. %s\n", packet->systemAddress.ToString(), Exposer::IDTOString(packet->data[0]));
+			event_ConnectionFailed.fire(this, packet->systemAddress.ToString(), packet->data[0], Exposer::IDTOString(packet->data[0]));
+		}
+		catch (std::exception& e)
+		{
+			StandardOut::singleton()->print(MESSAGE_ERROR, "Client::OnReceive packet %d: %s", packet->data[0], e.what());
+		}
+		break;
+
+	case ID_INVALID_PASSWORD:
+		try
+		{
+			const SystemAddress& address = packet->systemAddress;
+			StandardOut::singleton()->print(MESSAGE_ERROR, "Invalid version from %s", address.ToString());
+			event_ConnectionFailed.fire(this, address.ToString(), packet->data[0], Exposer::IDTOString(packet->data[0]));
+			event_ConnectionRejected.fire(this, address.ToString());
+		}
+		catch (std::exception& e)
+		{
+			StandardOut::singleton()->print(MESSAGE_ERROR, "Client::OnReceive packet %d: %s", packet->data[0], e.what());
+		}
+		break;
+
+	case ID_DISCONNECTION_NOTIFICATION:
+	case ID_CONNECTION_LOST:
+		serverId = UNASSIGNED_SYSTEM_ADDRESS;
+		break;
+	}
+
+	return RR_CONTINUE_PROCESSING;
+}
+}
 }

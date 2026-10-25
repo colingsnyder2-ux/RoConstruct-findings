@@ -1,5 +1,5 @@
 // from server: 100% by colin
-// roc 2008-06 004103e0  unit: VCBrowserViewExternal::?$CComObject  size: 155 bytes
+// roc 2008-06 004103e0  unit: VCBrowserViewExternal::?$CComObject  size: 193 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004103e0
 //
 // 004103e0  55                   push ebp
@@ -62,6 +62,20 @@
 // 00410475  8bce                 mov ecx, esi
 // 00410477  ffd0                 call eax
 // 00410479  eb11                 jmp 0x41048c
+// 0041047b  8b4de8               mov ecx, dword ptr [ebp - 0x18]
+// 0041047e  e8cd042900           call 0x6a0950
+// 00410483  b889044100           mov eax, 0x410489
+// 00410488  c3                   ret 
+// 00410489  8b7d10               mov edi, dword ptr [ebp + 0x10]
+// 0041048c  8b4df4               mov ecx, dword ptr [ebp - 0xc]
+// 0041048f  8bc7                 mov eax, edi
+// 00410491  5f                   pop edi
+// 00410492  5e                   pop esi
+// 00410493  64890d00000000       mov dword ptr fs:[0], ecx
+// 0041049a  5b                   pop ebx
+// 0041049b  8be5                 mov esp, ebp
+// 0041049d  5d                   pop ebp
+// 0041049e  c20c00               ret 0xc
 
 struct __RocException { long status; __RocException(const __RocException&); ~__RocException(); };
 // from server: 97% by king_originala

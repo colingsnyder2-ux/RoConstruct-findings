@@ -1,5 +1,5 @@
 // from server: 100% by colin
-// roc 2008-06 00406da0  unit: boost::thread_exception  size: 176 bytes
+// roc 2008-06 00406da0  unit: boost::thread_exception  size: 220 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00406da0
 //
 // 00406da0  55                   push ebp
@@ -57,6 +57,23 @@
 // 00406e4a  ffd2                 call edx
 // 00406e4c  33f6                 xor esi, esi
 // 00406e4e  eb14                 jmp 0x406e64
+// 00406e50  8b4de4               mov ecx, dword ptr [ebp - 0x1c]
+// 00406e53  e8f89a2900           call 0x6a0950
+// 00406e58  b85e6e4000           mov eax, 0x406e5e
+// 00406e5d  c3                   ret 
+// 00406e5e  8b7dec               mov edi, dword ptr [ebp - 0x14]
+// 00406e61  8b75e8               mov esi, dword ptr [ebp - 0x18]
+// 00406e64  8b4508               mov eax, dword ptr [ebp + 8]
+// 00406e67  8b4df4               mov ecx, dword ptr [ebp - 0xc]
+// 00406e6a  8930                 mov dword ptr [eax], esi
+// 00406e6c  8bc7                 mov eax, edi
+// 00406e6e  5f                   pop edi
+// 00406e6f  5e                   pop esi
+// 00406e70  64890d00000000       mov dword ptr fs:[0], ecx
+// 00406e77  5b                   pop ebx
+// 00406e78  8be5                 mov esp, ebp
+// 00406e7a  5d                   pop ebp
+// 00406e7b  c3                   ret 
 
 struct __RocExc { long status; __RocExc(const __RocExc&); ~__RocExc(); };
 // from server: 97% by king_originala

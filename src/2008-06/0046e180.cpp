@@ -1,5 +1,5 @@
 // from server: 100% by colin
-// roc 2008-06 0046e180  unit: RBX::LDraw2Lua::LDraw2RobloxMapRoot  size: 89 bytes
+// roc 2008-06 0046e180  unit: RBX::LDraw2Lua::LDraw2RobloxMapRoot  size: 139 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0046e180
 //
 // 0046e180  55                   push ebp
@@ -36,6 +36,27 @@
 // 0046e1d1  885dfc               mov byte ptr [ebp - 4], bl
 // 0046e1d4  897508               mov dword ptr [ebp + 8], esi
 // 0046e1d7  ebd7                 jmp 0x46e1b0
+// 0046e1d9  8b75ec               mov esi, dword ptr [ebp - 0x14]
+// 0046e1dc  8b7d08               mov edi, dword ptr [ebp + 8]
+// 0046e1df  3bf7                 cmp esi, edi
+// 0046e1e1  740e                 je 0x46e1f1
+// 0046e1e3  8bce                 mov ecx, esi
+// 0046e1e5  e846e9ffff           call 0x46cb30
+// 0046e1ea  83c640               add esi, 0x40
+// 0046e1ed  3bf7                 cmp esi, edi
+// 0046e1ef  75f2                 jne 0x46e1e3
+// 0046e1f1  33db                 xor ebx, ebx
+// 0046e1f3  53                   push ebx
+// 0046e1f4  53                   push ebx
+// 0046e1f5  e892332300           call 0x6a158c
+// 0046e1fa  8b4df4               mov ecx, dword ptr [ebp - 0xc]
+// 0046e1fd  5f                   pop edi
+// 0046e1fe  5e                   pop esi
+// 0046e1ff  64890d00000000       mov dword ptr fs:[0], ecx
+// 0046e206  5b                   pop ebx
+// 0046e207  8be5                 mov esp, ebp
+// 0046e209  5d                   pop ebp
+// 0046e20a  c3                   ret 
 
 typedef unsigned int size_t;
 

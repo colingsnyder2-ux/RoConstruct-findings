@@ -1,5 +1,5 @@
 // from server: 100% by colin
-// roc 2008-06 0044a450  unit: CRbxPlayDocTemplate  size: 398 bytes
+// roc 2008-06 0044a450  unit: CRbxPlayDocTemplate  size: 487 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0044a450
 //
 // 0044a450  55                   push ebp
@@ -132,6 +132,36 @@
 // 0044a5d9  eb92                 jmp 0x44a56d
 // 0044a5db  4f                   dec edi
 // 0044a5dc  ebb2                 jmp 0x44a590
+// 0044a5de  8b4508               mov eax, dword ptr [ebp + 8]
+// 0044a5e1  8b10                 mov edx, dword ptr [eax]
+// 0044a5e3  8b4a04               mov ecx, dword ptr [edx + 4]
+// 0044a5e6  6a01                 push 1
+// 0044a5e8  6a04                 push 4
+// 0044a5ea  03c8                 add ecx, eax
+// 0044a5ec  ff15a8238000         call dword ptr [0x8023a8]
+// 0044a5f2  c745fc00000000       mov dword ptr [ebp - 4], 0
+// 0044a5f9  b8ffa54400           mov eax, 0x44a5ff
+// 0044a5fe  c3                   ret 
+// 0044a5ff  8b7508               mov esi, dword ptr [ebp + 8]
+// 0044a602  8b0e                 mov ecx, dword ptr [esi]
+// 0044a604  8b45ec               mov eax, dword ptr [ebp - 0x14]
+// 0044a607  8b4904               mov ecx, dword ptr [ecx + 4]
+// 0044a60a  6a00                 push 0
+// 0044a60c  50                   push eax
+// 0044a60d  03ce                 add ecx, esi
+// 0044a60f  ff15a8238000         call dword ptr [0x8023a8]
+// 0044a615  8d4dd8               lea ecx, [ebp - 0x28]
+// 0044a618  c745fcffffffff       mov dword ptr [ebp - 4], 0xffffffff
+// 0044a61f  e8acfdffff           call 0x44a3d0
+// 0044a624  8b4df4               mov ecx, dword ptr [ebp - 0xc]
+// 0044a627  5f                   pop edi
+// 0044a628  8bc6                 mov eax, esi
+// 0044a62a  5e                   pop esi
+// 0044a62b  64890d00000000       mov dword ptr fs:[0], ecx
+// 0044a632  5b                   pop ebx
+// 0044a633  8be5                 mov esp, ebp
+// 0044a635  5d                   pop ebp
+// 0044a636  c3                   ret 
 
 // from server: 98% by king_originala
 // roc 2008-06 0044a450  unit: CRbxPlayDocTemplate  size: 398 bytes

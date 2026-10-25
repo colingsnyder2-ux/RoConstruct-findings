@@ -1,23 +1,105 @@
-// from server: 0% by Espeon
+// from server: 81% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: ogre-1.4.5-dll roc_espeon_textureloaderlifetimes8c70b6b6b9cb06d0.cpp
+// roc-lib: ogre-1.4.5-dll roc_espclaude_1742bd992bcc61d5.cpp
 
 // Candidate translation unit (score above; library headers required).
 #undef OGRE_NONCLIENT_BUILD
 #include "OgreImage.h"
 #include "OgreString.h"
+#include "OgreDataStream.h"
+#include <fstream>
 #include <string.h>
+#include <intrin.h>
+namespace boost {
+namespace detail {
+class sp_counted_base {
+public:
+    virtual ~sp_counted_base() {}
+    virtual void dispose() = 0;
+    virtual void destroy() { delete this; }
+    long use_count_;
+    long weak_count_;
+    void release() {
+        if (_InterlockedDecrement(&use_count_) == 0) {
+            dispose();
+            weak_release();
+        }
+    }
+    void weak_release() {
+        if (_InterlockedDecrement(&weak_count_) == 0)
+            destroy();
+    }
+};
+class shared_count {
+public:
+    sp_counted_base* pi_;
+    ~shared_count() { if (pi_ != 0) pi_->release(); }
+};
+}
+template<class T>
+class shared_ptr {
+public:
+    T* px;
+    detail::shared_count pn;
+    T* operator->() const { return px; }
+};
+}
+namespace RBX {
+class StandardOut {
+public:
+    static boost::shared_ptr<StandardOut> singleton();
+    void printf(int type, const char* format, ...);
+};
+}
 extern int classify(const Ogre::String&);
-extern Ogre::String resourcePath();
-bool loadTexture(const Ogre::String& filename,Ogre::Image&image){
- const char*extensions[]={"png","jpg","gif","bmp","tif","tiff","pbm","pgm","tga","dds","xpm","jig","ico"};
- int i=0;do{
- const char*extension=extensions[i];unsigned length=strlen(extension);
- bool recognized=filename.substr(filename.length()-length-1).find(Ogre::String(".")+extension)!=Ogre::String::npos;
- if(recognized){bool success=true;try{Ogre::String group("General");image.load(filename,group);}catch(...){success=false;}return success;}
- }while(++i<13);
- if(classify(filename)==9){Ogre::String path=resourcePath();const char*text=filename.c_str();bool success=true;try{Ogre::String resolved=path+text;Ogre::String group("General");image.load(resolved,group);}catch(...){success=false;}return success;}
- return false;
+bool loadTexture(const Ogre::String& filename, Ogre::Image& image)
+{
+    const char* extensions[] = {"png","jpg","gif","bmp","tif","tiff","pbm","pgm","tga","dds","xpm","jig","ico"};
+    bool success;
+    int i = 0;
+    do {
+        const char* extension = extensions[i];
+        unsigned length = strlen(extension);
+        success = filename.substr(filename.length() - length - 1).find(Ogre::String(".") + extension) != Ogre::String::npos;
+        if (success)
+            break;
+    } while (++i < 13);
+    if (success) {
+        success = true;
+        try {
+            image.load(filename, "General");
+        } catch (...) {
+            success = false;
+        }
+        return success;
+    }
+    int type = classify(filename);
+    if (type == 9) {
+        RBX::StandardOut::singleton()->printf(3, "Failed to load texture '%s': unknown format", filename.c_str());
+        success = false;
+        return success;
+    }
+    const char* ext;
+    switch (type) {
+    case 0: ext = "jpg"; break;
+    case 1: ext = "bmp"; break;
+    case 5: ext = "png"; break;
+    case 2: ext = "tga"; break;
+    case 4: ext = "ico"; break;
+    case 3: ext = "pcx"; break;
+    case 6: case 7: ext = "ppm"; break;
+    }
+    try {
+        std::ifstream stream;
+        stream.open(filename.c_str(), std::ios::in | std::ios::binary);
+        Ogre::DataStreamPtr data(new Ogre::FileStreamDataStream(&stream, false));
+        image.load(data, ext);
+        success = true;
+    } catch (...) {
+        RBX::StandardOut::singleton()->printf(3, "Failed to load texture '%s'", filename.c_str());
+        success = false;
+    }
+    return success;
 }

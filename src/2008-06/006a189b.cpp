@@ -1,5 +1,5 @@
 // from server: 48% by colin
-// roc 2008-06 006a189b  unit: ActiveDocView  size: 453 bytes
+// roc 2008-06 006a189b  unit: ActiveDocView  size: 473 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006a189b
 //
 // 006a189b  688e216a00           push 0x6a218e
@@ -146,6 +146,16 @@
 // 006a1a5a  8975e0               mov dword ptr [ebp - 0x20], esi
 // 006a1a5d  46                   inc esi
 // 006a1a5e  eb86                 jmp 0x6a19e6
+// 006a1a60  8b45ec               mov eax, dword ptr [ebp - 0x14]
+// 006a1a63  8b08                 mov ecx, dword ptr [eax]
+// 006a1a65  8b09                 mov ecx, dword ptr [ecx]
+// 006a1a67  894ddc               mov dword ptr [ebp - 0x24], ecx
+// 006a1a6a  50                   push eax
+// 006a1a6b  51                   push ecx
+// 006a1a6c  e843070000           call 0x6a21b4
+// 006a1a71  59                   pop ecx
+// 006a1a72  59                   pop ecx
+// 006a1a73  c3                   ret 
 
 // from server: 47% by colin
 // roc 2008-06 006a189b  unit: ActiveDocView  size: 453 bytes

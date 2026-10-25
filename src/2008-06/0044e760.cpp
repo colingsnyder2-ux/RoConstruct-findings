@@ -1,14 +1,12 @@
-// from server: 78% by colin
-// from server: 90% by colin
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// from server: 100% by nuck16
 // roc-lang: cpp
-// roc-lib: rbxgs roc_unit_793d094842d6b0aa.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: mfc-9.0-shared-rtm roc_espeon_colorentrynativevector160b2e39d0f8f701.cpp
 
 // Candidate translation unit (score above; library headers required).
+#include <afxwin.h>
 #include <vector>
-#include <utility>
-#include <boost/shared_ptr.hpp>
-namespace RBX { class Instance; }
-typedef std::pair<unsigned int, boost::shared_ptr<RBX::Instance> > NativeEntry;
-template class std::vector<NativeEntry>;
+struct ColorEntry { unsigned int first; unsigned int second; CString name; };
+typedef char verifyColorEntry[(sizeof(ColorEntry)==12)?1:-1];
+template class std::vector<ColorEntry>;

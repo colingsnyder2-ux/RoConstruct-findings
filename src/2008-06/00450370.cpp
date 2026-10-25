@@ -1,5 +1,5 @@
 // from server: 100% by colin
-// roc 2008-06 00450370  unit: CRobloxDoc  size: 163 bytes
+// roc 2008-06 00450370  unit: CRobloxDoc  size: 209 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00450370
 //
 // 00450370  55                   push ebp
@@ -63,6 +63,23 @@
 // 0045040d  ffd2                 call edx
 // 0045040f  33f6                 xor esi, esi
 // 00450411  eb14                 jmp 0x450427
+// 00450413  8b4de4               mov ecx, dword ptr [ebp - 0x1c]
+// 00450416  e835052500           call 0x6a0950
+// 0045041b  b821044500           mov eax, 0x450421
+// 00450420  c3                   ret 
+// 00450421  8b7dec               mov edi, dword ptr [ebp - 0x14]
+// 00450424  8b75e8               mov esi, dword ptr [ebp - 0x18]
+// 00450427  8b4508               mov eax, dword ptr [ebp + 8]
+// 0045042a  8b4df4               mov ecx, dword ptr [ebp - 0xc]
+// 0045042d  8930                 mov dword ptr [eax], esi
+// 0045042f  8bc7                 mov eax, edi
+// 00450431  5f                   pop edi
+// 00450432  5e                   pop esi
+// 00450433  64890d00000000       mov dword ptr fs:[0], ecx
+// 0045043a  5b                   pop ebx
+// 0045043b  8be5                 mov esp, ebp
+// 0045043d  5d                   pop ebp
+// 0045043e  c20400               ret 4
 
 struct __RocException { long status; __RocException(const __RocException&); ~__RocException(); };
 // from server: 97% by king_originala

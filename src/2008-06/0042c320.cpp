@@ -1,5 +1,5 @@
 // from server: 100% by king_originala
-// roc 2008-06 0042c320  unit: CLuaHtmlView::Binder  size: 113 bytes
+// roc 2008-06 0042c320  unit: CLuaHtmlView::Binder  size: 158 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0042c320
 //
 // 0042c320  55                   push ebp
@@ -45,6 +45,21 @@
 // 0042c387  8907                 mov dword ptr [edi], eax
 // 0042c389  c70658068100         mov dword ptr [esi], 0x810658
 // 0042c38f  eb18                 jmp 0x42c3a9
+// 0042c391  8b45ec               mov eax, dword ptr [ebp - 0x14]
+// 0042c394  6a00                 push 0
+// 0042c396  6a00                 push 0
+// 0042c398  c70000000000         mov dword ptr [eax], 0
+// 0042c39e  e8e9512700           call 0x6a158c
+// 0042c3a3  c70600000000         mov dword ptr [esi], 0
+// 0042c3a9  8b4df4               mov ecx, dword ptr [ebp - 0xc]
+// 0042c3ac  5f                   pop edi
+// 0042c3ad  8bc6                 mov eax, esi
+// 0042c3af  5e                   pop esi
+// 0042c3b0  64890d00000000       mov dword ptr fs:[0], ecx
+// 0042c3b7  5b                   pop ebx
+// 0042c3b8  8be5                 mov esp, ebp
+// 0042c3ba  5d                   pop ebp
+// 0042c3bb  c20400               ret 4
 
 typedef void (__cdecl *Manager)(void *, void *, int);
 extern Manager globalManager;

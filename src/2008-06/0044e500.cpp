@@ -1,5 +1,5 @@
 // from server: 100% by colin
-// roc 2008-06 0044e500  unit: CRobloxControlColorSelector  size: 104 bytes
+// roc 2008-06 0044e500  unit: CRobloxControlColorSelector  size: 203 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0044e500
 //
 // 0044e500  55                   push ebp
@@ -40,6 +40,47 @@
 // 0044e560  897510               mov dword ptr [ebp + 0x10], esi
 // 0044e563  83c70c               add edi, 0xc
 // 0044e566  ebc8                 jmp 0x44e530
+// 0044e568  8b75ec               mov esi, dword ptr [ebp - 0x14]
+// 0044e56b  8b7d10               mov edi, dword ptr [ebp + 0x10]
+// 0044e56e  3bf7                 cmp esi, edi
+// 0044e570  7410                 je 0x44e582
+// 0044e572  8d4e08               lea ecx, [esi + 8]
+// 0044e575  ff15143f8000         call dword ptr [0x803f14]
+// 0044e57b  83c60c               add esi, 0xc
+// 0044e57e  3bf7                 cmp esi, edi
+// 0044e580  75f0                 jne 0x44e572
+// 0044e582  33db                 xor ebx, ebx
+// 0044e584  53                   push ebx
+// 0044e585  53                   push ebx
+// 0044e586  e801302500           call 0x6a158c
+// 0044e58b  8b4df4               mov ecx, dword ptr [ebp - 0xc]
+// 0044e58e  5f                   pop edi
+// 0044e58f  8bc6                 mov eax, esi
+// 0044e591  5e                   pop esi
+// 0044e592  64890d00000000       mov dword ptr fs:[0], ecx
+// 0044e599  5b                   pop ebx
+// 0044e59a  8be5                 mov esp, ebp
+// 0044e59c  5d                   pop ebp
+// 0044e59d  c3                   ret 
+// 0044e59e  cc                   int3 
+// 0044e59f  cc                   int3 
+// 0044e5a0  51                   push ecx
+// 0044e5a1  8b4c2410             mov ecx, dword ptr [esp + 0x10]
+// 0044e5a5  8b542410             mov edx, dword ptr [esp + 0x10]
+// 0044e5a9  c6042400             mov byte ptr [esp], 0
+// 0044e5ad  8b0424               mov eax, dword ptr [esp]
+// 0044e5b0  50                   push eax
+// 0044e5b1  8b442414             mov eax, dword ptr [esp + 0x14]
+// 0044e5b5  51                   push ecx
+// 0044e5b6  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 0044e5ba  52                   push edx
+// 0044e5bb  8b542414             mov edx, dword ptr [esp + 0x14]
+// 0044e5bf  50                   push eax
+// 0044e5c0  51                   push ecx
+// 0044e5c1  52                   push edx
+// 0044e5c2  e8d9feffff           call 0x44e4a0
+// 0044e5c7  83c41c               add esp, 0x1c
+// 0044e5ca  c3                   ret 
 
 typedef unsigned int size_t;
 

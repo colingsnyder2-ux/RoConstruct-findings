@@ -1,5 +1,5 @@
 // from server: 100% by colin
-// roc 2008-06 00402750  unit: VCWorkspace::?$CComObject  size: 175 bytes
+// roc 2008-06 00402750  unit: VCWorkspace::?$CComObject  size: 213 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00402750
 //
 // 00402750  55                   push ebp
@@ -70,6 +70,20 @@
 // 004027f9  6a01                 push 1
 // 004027fb  ffd0                 call eax
 // 004027fd  eb11                 jmp 0x402810
+// 004027ff  8b4dec               mov ecx, dword ptr [ebp - 0x14]
+// 00402802  e849e12900           call 0x6a0950
+// 00402807  b80d284000           mov eax, 0x40280d
+// 0040280c  c3                   ret 
+// 0040280d  8b7d10               mov edi, dword ptr [ebp + 0x10]
+// 00402810  8b4df4               mov ecx, dword ptr [ebp - 0xc]
+// 00402813  8bc7                 mov eax, edi
+// 00402815  5f                   pop edi
+// 00402816  5e                   pop esi
+// 00402817  64890d00000000       mov dword ptr fs:[0], ecx
+// 0040281e  5b                   pop ebx
+// 0040281f  8be5                 mov esp, ebp
+// 00402821  5d                   pop ebp
+// 00402822  c20c00               ret 0xc
 
 // from server: 93% by king_originala
 // roc-lang: cpp

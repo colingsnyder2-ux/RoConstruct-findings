@@ -1,5 +1,5 @@
 // from server: 100% by colin
-// roc 2008-06 0044a640  unit: CRbxPlayDocTemplate  size: 382 bytes
+// roc 2008-06 0044a640  unit: CRbxPlayDocTemplate  size: 486 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0044a640
 //
 // 0044a640  55                   push ebp
@@ -127,6 +127,41 @@
 // 0044a7b3  ebab                 jmp 0x44a760
 // 0044a7b5  c745fc00000000       mov dword ptr [ebp - 4], 0
 // 0044a7bc  eb27                 jmp 0x44a7e5
+// 0044a7be  8b4508               mov eax, dword ptr [ebp + 8]
+// 0044a7c1  8b08                 mov ecx, dword ptr [eax]
+// 0044a7c3  8b4904               mov ecx, dword ptr [ecx + 4]
+// 0044a7c6  6a01                 push 1
+// 0044a7c8  6a04                 push 4
+// 0044a7ca  03c8                 add ecx, eax
+// 0044a7cc  ff15a8238000         call dword ptr [0x8023a8]
+// 0044a7d2  c745fc00000000       mov dword ptr [ebp - 4], 0
+// 0044a7d9  b8dfa74400           mov eax, 0x44a7df
+// 0044a7de  c3                   ret 
+// 0044a7df  8b7508               mov esi, dword ptr [ebp + 8]
+// 0044a7e2  8b5dec               mov ebx, dword ptr [ebp - 0x14]
+// 0044a7e5  8b16                 mov edx, dword ptr [esi]
+// 0044a7e7  8b4a04               mov ecx, dword ptr [edx + 4]
+// 0044a7ea  6a00                 push 0
+// 0044a7ec  03ce                 add ecx, esi
+// 0044a7ee  ff15a4238000         call dword ptr [0x8023a4]
+// 0044a7f4  8b06                 mov eax, dword ptr [esi]
+// 0044a7f6  8b4804               mov ecx, dword ptr [eax + 4]
+// 0044a7f9  6a00                 push 0
+// 0044a7fb  53                   push ebx
+// 0044a7fc  03ce                 add ecx, esi
+// 0044a7fe  ff15a8238000         call dword ptr [0x8023a8]
+// 0044a804  8d4dd8               lea ecx, [ebp - 0x28]
+// 0044a807  c745fcffffffff       mov dword ptr [ebp - 4], 0xffffffff
+// 0044a80e  e8bdfbffff           call 0x44a3d0
+// 0044a813  8b4df4               mov ecx, dword ptr [ebp - 0xc]
+// 0044a816  5f                   pop edi
+// 0044a817  8bc6                 mov eax, esi
+// 0044a819  5e                   pop esi
+// 0044a81a  64890d00000000       mov dword ptr fs:[0], ecx
+// 0044a821  5b                   pop ebx
+// 0044a822  8be5                 mov esp, ebp
+// 0044a824  5d                   pop ebp
+// 0044a825  c3                   ret 
 
 struct Buffer;
 struct Stream;

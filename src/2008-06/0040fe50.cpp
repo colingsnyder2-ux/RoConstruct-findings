@@ -1,5 +1,5 @@
 // from server: 100% by colin
-// roc 2008-06 0040fe50  unit: UIEnumConnections::V?$CComEnum::?$CComObject  size: 147 bytes
+// roc 2008-06 0040fe50  unit: UIEnumConnections::V?$CComEnum::?$CComObject  size: 193 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0040fe50
 //
 // 0040fe50  55                   push ebp
@@ -55,6 +55,23 @@
 // 0040fedd  eb18                 jmp 0x40fef7
 // 0040fedf  33f6                 xor esi, esi
 // 0040fee1  ebf4                 jmp 0x40fed7
+// 0040fee3  8b4de4               mov ecx, dword ptr [ebp - 0x1c]
+// 0040fee6  e8650a2900           call 0x6a0950
+// 0040feeb  b8f1fe4000           mov eax, 0x40fef1
+// 0040fef0  c3                   ret 
+// 0040fef1  8b5dec               mov ebx, dword ptr [ebp - 0x14]
+// 0040fef4  8b75e8               mov esi, dword ptr [ebp - 0x18]
+// 0040fef7  8b4508               mov eax, dword ptr [ebp + 8]
+// 0040fefa  8b4df4               mov ecx, dword ptr [ebp - 0xc]
+// 0040fefd  8930                 mov dword ptr [eax], esi
+// 0040feff  5f                   pop edi
+// 0040ff00  5e                   pop esi
+// 0040ff01  8bc3                 mov eax, ebx
+// 0040ff03  64890d00000000       mov dword ptr fs:[0], ecx
+// 0040ff0a  5b                   pop ebx
+// 0040ff0b  8be5                 mov esp, ebp
+// 0040ff0d  5d                   pop ebp
+// 0040ff0e  c20400               ret 4
 
 extern void* __cdecl operator new(unsigned int);
 extern void* objectTable[];

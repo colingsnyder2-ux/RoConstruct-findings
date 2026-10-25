@@ -1,5 +1,5 @@
 // from server: 100% by colin
-// roc 2008-06 00416d20  unit: VCContent::?$CComAggObject  size: 158 bytes
+// roc 2008-06 00416d20  unit: VCContent::?$CComAggObject  size: 196 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00416d20
 //
 // 00416d20  55                   push ebp
@@ -62,6 +62,20 @@
 // 00416db8  8bce                 mov ecx, esi
 // 00416dba  ffd0                 call eax
 // 00416dbc  eb11                 jmp 0x416dcf
+// 00416dbe  8b4de8               mov ecx, dword ptr [ebp - 0x18]
+// 00416dc1  e88a9b2800           call 0x6a0950
+// 00416dc6  b8cc6d4100           mov eax, 0x416dcc
+// 00416dcb  c3                   ret 
+// 00416dcc  8b7d10               mov edi, dword ptr [ebp + 0x10]
+// 00416dcf  8b4df4               mov ecx, dword ptr [ebp - 0xc]
+// 00416dd2  8bc7                 mov eax, edi
+// 00416dd4  5f                   pop edi
+// 00416dd5  5e                   pop esi
+// 00416dd6  64890d00000000       mov dword ptr fs:[0], ecx
+// 00416ddd  5b                   pop ebx
+// 00416dde  8be5                 mov esp, ebp
+// 00416de0  5d                   pop ebp
+// 00416de1  c20c00               ret 0xc
 
 struct __RocException { long status; __RocException(const __RocException&); ~__RocException(); };
 // from server: 97% by colin

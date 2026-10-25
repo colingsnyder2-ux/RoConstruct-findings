@@ -1,8 +1,9 @@
+// from server: 100% by EspClaude
 // from server: 93% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_king_originala_floor_velocity_247007683475f372.cpp
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espclaude_bc7768735680516f.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "util/Velocity.h"
@@ -63,10 +64,10 @@ struct S {
     Object* object;
     char reserved2[4];
     G3D::Vector3 local;
-    Six f(int);
+    RBX::Velocity f(int);
 };
 
-Six S::f(int)
+RBX::Velocity S::f(int)
 {
     Attachment* attachment = object ? &object->attachment : 0;
     if (attachment) {
@@ -74,17 +75,10 @@ Six S::f(int)
         DataSource* source = attachment->source;
         source->updatePV();
         RBX::Velocity transformed = source->transform.velocityAtPoint(local);
-        double factor = scale->value;
-        double x=transformed.linear.x*factor;
-        double y=transformed.linear.y*factor;
-        double z=transformed.linear.z*factor;
-        double a=transformed.rotational.x*factor;
-        double b=transformed.rotational.y*factor;
-        double c=transformed.rotational.z*factor;
-        _ReadWriteBarrier();
-        return Six(x,y,z,a,b,c);
+        float factor = scale->value;
+        G3D::Vector3 linear = transformed.linear * factor;
+        G3D::Vector3 rotational = transformed.rotational * factor;
+        return RBX::Velocity(linear, rotational);
     }
-
-    static ZeroSix zero;
-    return Six(zero.x, zero.y, zero.z, zero.a, zero.b, zero.c);
+    return RBX::Velocity::zero();
 }

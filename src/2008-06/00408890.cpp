@@ -1,5 +1,5 @@
 // from server: 100% by colin
-// roc 2008-06 00408890  unit: VCApp::?$CComAggObject  size: 155 bytes
+// roc 2008-06 00408890  unit: VCApp::?$CComAggObject  size: 193 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00408890
 //
 // 00408890  55                   push ebp
@@ -62,6 +62,20 @@
 // 00408925  8bce                 mov ecx, esi
 // 00408927  ffd0                 call eax
 // 00408929  eb11                 jmp 0x40893c
+// 0040892b  8b4de8               mov ecx, dword ptr [ebp - 0x18]
+// 0040892e  e81d802900           call 0x6a0950
+// 00408933  b839894000           mov eax, 0x408939
+// 00408938  c3                   ret 
+// 00408939  8b7d10               mov edi, dword ptr [ebp + 0x10]
+// 0040893c  8b4df4               mov ecx, dword ptr [ebp - 0xc]
+// 0040893f  8bc7                 mov eax, edi
+// 00408941  5f                   pop edi
+// 00408942  5e                   pop esi
+// 00408943  64890d00000000       mov dword ptr fs:[0], ecx
+// 0040894a  5b                   pop ebx
+// 0040894b  8be5                 mov esp, ebp
+// 0040894d  5d                   pop ebp
+// 0040894e  c20c00               ret 0xc
 
 struct Exception {
     long status;

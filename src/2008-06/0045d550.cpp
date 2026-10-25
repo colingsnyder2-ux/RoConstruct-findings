@@ -1,5 +1,5 @@
 // from server: 100% by EspClaude
-// roc 2008-06 0045d550  unit: G3D::TextureManager::VTextureArgs::?$Table  size: 157 bytes
+// roc 2008-06 0045d550  unit: G3D::TextureManager::VTextureArgs::?$Table  size: 255 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0045d550
 //
 // 0045d550  55                   push ebp
@@ -56,6 +56,38 @@
 // 0045d5e7  8be5                 mov esp, ebp
 // 0045d5e9  5d                   pop ebp
 // 0045d5ea  c20400               ret 4
+// 0045d5ed  8d4dec               lea ecx, [ebp - 0x14]
+// 0045d5f0  ff15043f8000         call dword ptr [0x803f04]
+// 0045d5f6  8b4de8               mov ecx, dword ptr [ebp - 0x18]
+// 0045d5f9  8b01                 mov eax, dword ptr [ecx]
+// 0045d5fb  8b5004               mov edx, dword ptr [eax + 4]
+// 0045d5fe  c645fc02             mov byte ptr [ebp - 4], 2
+// 0045d602  ffd2                 call edx
+// 0045d604  50                   push eax
+// 0045d605  8d45ec               lea eax, [ebp - 0x14]
+// 0045d608  68ec9c8100           push 0x819cec
+// 0045d60d  50                   push eax
+// 0045d60e  ff15dc3e8000         call dword ptr [0x803edc]
+// 0045d614  83c40c               add esp, 0xc
+// 0045d617  6a00                 push 0
+// 0045d619  6a00                 push 0
+// 0045d61b  8d4dec               lea ecx, [ebp - 0x14]
+// 0045d61e  ff15e03e8000         call dword ptr [0x803ee0]
+// 0045d624  50                   push eax
+// 0045d625  e826362400           call 0x6a0c50
+// 0045d62a  8d4dec               lea ecx, [ebp - 0x14]
+// 0045d62d  ff15143f8000         call dword ptr [0x803f14]
+// 0045d633  b839d64500           mov eax, 0x45d639
+// 0045d638  c3                   ret 
+// 0045d639  8b4df4               mov ecx, dword ptr [ebp - 0xc]
+// 0045d63c  5f                   pop edi
+// 0045d63d  5e                   pop esi
+// 0045d63e  83c8ff               or eax, 0xffffffff
+// 0045d641  64890d00000000       mov dword ptr fs:[0], ecx
+// 0045d648  5b                   pop ebx
+// 0045d649  8be5                 mov esp, ebp
+// 0045d64b  5d                   pop ebp
+// 0045d64c  c20400               ret 4
 
 // from server: 88% by king_originala
 // roc 2008-06 0045d550  unit: G3D::TextureManager::VTextureArgs::?$Table  size: 157 bytes

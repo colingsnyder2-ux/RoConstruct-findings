@@ -1,8 +1,8 @@
-// from server: 87% by Espeon
+// from server: 91% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy- /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espeon_commanddispatchnativecbdfd8d1139cfd1f.cpp
+// roc-lib: rbxgs-dll roc_espclaude_9e50ddc64bcd58dd.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define _CPPUNWIND 1
@@ -114,12 +114,15 @@
 #include <boost/thread/recursive_mutex.hpp>
 #include <map>
 #include <exception>
+#include <intrin.h>
+struct DMArg { void* px; long* pn; DMArg(const DMArg&); };
+__forceinline DMArg::DMArg(const DMArg& o) : px(o.px), pn(o.pn) { long* q = o.pn; if (q) { volatile long* c = q + 1; _InterlockedExchangeAdd(c, 1); } }
 namespace RBX { class DataModel;
 // Native DataModel::Lock member types; constructor/destructor called out of line.
 class CommandDataLock {
  boost::shared_ptr<boost::recursive_mutex> mutex;
  boost::recursive_mutex::scoped_lock* lock;
-public: CommandDataLock(boost::shared_ptr<const DataModel>); ~CommandDataLock();
+public: CommandDataLock(DMArg); ~CommandDataLock();
 };
 }
 class CommandView : public CView {
@@ -134,7 +137,7 @@ BOOL CommandView::OnCmdMsg(UINT id,int code,void* extra,AFX_CMDHANDLERINFO* info
   Commands::iterator it=commands.find(id);
   if(it!=commands.end() && it->second) {
    boost::shared_ptr<RBX::DataModel> model=getDataModel();
-   RBX::CommandDataLock lock(model);
+   RBX::CommandDataLock lock(reinterpret_cast<DMArg&>(model));
    const RBX::Name* name=it->second;
    RBX::VerbContainer* verbs=this ? reinterpret_cast<RBX::VerbContainer*>(reinterpret_cast<char*>(this)+0x78) : 0;
    RBX::Verb* verb=verbs ? verbs->getVerb(*name) : 0;
@@ -144,8 +147,8 @@ BOOL CommandView::OnCmdMsg(UINT id,int code,void* extra,AFX_CMDHANDLERINFO* info
      catch(std::exception& e) {AfxMessageBox(e.what(),0,0);}
     } else {
      CCmdUI* ui=static_cast<CCmdUI*>(extra);
-     ui->Enable(verb->isEnabled());
-     ui->SetCheck(verb->isChecked());
+     ui->Enable(verb->isEnabled() ? TRUE : FALSE);
+     ui->SetCheck(verb->isChecked() ? 1 : 0);
     }
    }
    return TRUE;
@@ -153,3 +156,4 @@ BOOL CommandView::OnCmdMsg(UINT id,int code,void* extra,AFX_CMDHANDLERINFO* info
  }
  return CView::OnCmdMsg(id,code,extra,info);
 }
+

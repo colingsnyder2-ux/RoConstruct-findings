@@ -1,5 +1,5 @@
 // from server: 100% by king_originala
-// roc 2008-06 005aeb80  unit: RBX::ScriptContext  size: 233 bytes
+// roc 2008-06 005aeb80  unit: RBX::ScriptContext  size: 323 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005aeb80
 //
 // 005aeb80  55                   push ebp
@@ -87,6 +87,36 @@
 // 005aec63  8be5                 mov esp, ebp
 // 005aec65  5d                   pop ebp
 // 005aec66  c24400               ret 0x44
+// 005aec69  8b4508               mov eax, dword ptr [ebp + 8]
+// 005aec6c  83caff               or edx, 0xffffffff
+// 005aec6f  2b55ec               sub edx, dword ptr [ebp - 0x14]
+// 005aec72  52                   push edx
+// 005aec73  50                   push eax
+// 005aec74  e8a72f0600           call 0x611c20
+// 005aec79  83c408               add esp, 8
+// 005aec7c  6a00                 push 0
+// 005aec7e  6a00                 push 0
+// 005aec80  e807290f00           call 0x6a158c
+// 005aec85  6aff                 push -1
+// 005aec87  56                   push esi
+// 005aec88  e803db0600           call 0x61c790
+// 005aec8d  83c408               add esp, 8
+// 005aec90  50                   push eax
+// 005aec91  8d4dd0               lea ecx, [ebp - 0x30]
+// 005aec94  ff1558248000         call dword ptr [0x802458]
+// 005aec9a  6a00                 push 0
+// 005aec9c  56                   push esi
+// 005aec9d  c645fc04             mov byte ptr [ebp - 4], 4
+// 005aeca1  e87a2f0600           call 0x611c20
+// 005aeca6  83c408               add esp, 8
+// 005aeca9  8d4dd0               lea ecx, [ebp - 0x30]
+// 005aecac  51                   push ecx
+// 005aecad  8d4da8               lea ecx, [ebp - 0x58]
+// 005aecb0  e89bb0e5ff           call 0x409d50
+// 005aecb5  68c81b8d00           push 0x8d1bc8
+// 005aecba  8d55a8               lea edx, [ebp - 0x58]
+// 005aecbd  52                   push edx
+// 005aecbe  e8c9280f00           call 0x6a158c
 
 struct State;
 
