@@ -28,7 +28,7 @@ public:
     T* px; detail::shared_count pn;
     shared_ptr():px(0),pn(){}
     shared_ptr& operator=(const shared_ptr& r){px=r.px;pn=r.pn;return *this;}
-    void swap(shared_ptr& r){T* tmp=px;px=r.px;r.px=tmp;pn.swap(r.pn);}
+    void swap(shared_ptr& r){std::swap(px,r.px);pn.swap(r.pn);}
     void reset(){shared_ptr().swap(*this);}
     typedef T* shared_ptr::*unspecified_bool_type;
     operator unspecified_bool_type()const{return px==0?0:&shared_ptr::px;}

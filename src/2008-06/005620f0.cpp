@@ -1,3 +1,4 @@
+// from server: 44% by colin
 // from server: 43% by colin
 // roc 2008-06 005620f0  unit: std::D::DU?$char_traits::?$basic_ifstream  size: 950 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005620f0
@@ -468,8 +469,8 @@ int S::f()
         try {
             Guard outputGuard(&outputMutex);
             Entry* entry = output.find(key);
-            entry->pointer = shared.pointer;
             entry->count = shared.count;
+            entry->pointer = shared.pointer;
         } catch (...) {
             result = 0;
         }
