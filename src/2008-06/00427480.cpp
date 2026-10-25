@@ -1,4 +1,4 @@
-// from server: 54% by colin
+// from server: 87% by colin
 // roc 2008-06 00427480  unit: CSelectionTreeCtrl  size: 410 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00427480
 //
@@ -128,7 +128,11 @@
 // 00427618  5d                   pop ebp
 // 00427619  c3                   ret 
 
-// from server: 0% by king_originala
+// 00427480 rewrite v4: king's Parser{first,second} inlined ctor/dtor + minimum() + tail.
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+
 extern void (__thiscall *string_construct)(void*);
 extern void (__thiscall *string_copy)(void*, const void*);
 extern void (__thiscall *string_destroy)(void*);
@@ -172,17 +176,42 @@ struct Parser
 
     Parser(const String&);
     ~Parser();
-    void parse(String&);
+    void parse(String&);           // 0x569ae0 direct __thiscall
 };
 
-__forceinline Parser::Parser(const String& input)
-    : first(input), second()
+__forceinline Parser::Parser(const String& src)
+    : first(src), second()
 {
 }
 
 __forceinline Parser::~Parser()
 {
 }
+
+template <typename T>
+const T& minimum(const T& a, const T& b)
+{
+    return b < a ? b : a;
+}
+
+struct Except
+{
+    virtual void slot0();
+    virtual int code();
+};
+
+struct Tmp
+{
+    char storage[0xc];
+    ~Tmp();                            // 0x600660 direct __thiscall
+};
+
+extern const char fmt_lit[];           // 0x8102cc
+extern String __cdecl make_format(const char* fmt, const char* a, int b);   // 0x509b10 sret
+extern void* __cdecl tmp_lookup(Tmp* self);                                  // 0x569620
+extern void __cdecl log_event(int v, int kind, const char* text);            // 0x5693a0
+extern void __cdecl query_counter(__int64* out, int flag);                   // 0x5a6b40
+extern void __cdecl submit_counter(__int64* acc);                            // 0x5a6870
 
 int __cdecl function_00427480(String input)
 {
@@ -194,10 +223,19 @@ int __cdecl function_00427480(String input)
             Parser parser(input);
             parser.parse(output);
         }
-        return result = convert_integer(output.c_str());
+        result = convert_integer(output.c_str());
     }
-    catch (String error)
+    catch (Except* e)
     {
-        return result;
+        String msg = make_format(fmt_lit, input.c_str(), e->code());
+        Tmp tmp;
+        int v = *(int*)tmp_lookup(&tmp);
+        log_event(v, 2, msg.c_str());
     }
+    result = result <= 0 ? 1 : minimum(result, 30);
+    __int64 acc;
+    query_counter(&acc, 1);
+    acc += (__int64)(result * 60);
+    submit_counter(&acc);
+    return 1;
 }

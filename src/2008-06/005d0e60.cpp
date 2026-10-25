@@ -1,7 +1,11 @@
-// from server: 96% by colin
+// from server: 97% by colin
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Oy /GS- /EHsc /MD
+// 97% reconstruction: the const-int& materialization (unsigned -> int conversion temp) lives in the
+// dead index param slot at [esp+0x14]; the begin pointer is a 1-instruction scratch; two named temps
+// (Property* obj, int element) reproduce the value-eax / method-edx roles and the early temp spill.
+// Only remaining hunk: target loads begin into ecx (ours edx).
 
 extern "C" void (__cdecl *_invalid_parameter_noinfo)();
 
@@ -36,12 +40,9 @@ bool Descriptor::set(void* instance, unsigned int index)
         if (ordinal >= static_cast<unsigned int>(map->end - map->begin))
             _invalid_parameter_noinfo();
 
-        // Force eax for array element
-        volatile unsigned int* elemPtr = &map->begin[ordinal];
-        unsigned int temp = *elemPtr;
-        (void)temp;
-        
-        property->set(instance, *elemPtr);
+        Property* obj = property;
+        int element = map->begin[ordinal];
+        obj->set(instance, element);
         return true;
     }
     return false;

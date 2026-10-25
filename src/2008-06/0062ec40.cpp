@@ -1,3 +1,4 @@
+// from server: 99% by king_originala_sol_native
 // from server: 98% by king_originala
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
@@ -74,9 +75,9 @@ void BodyGyro::computeBalance(Body* body)
 		G3D::Vector3 oldTorqueWorld = root->getBranchTorque();
 		G3D::Vector3 localYAxis = body->getCoordinateFrame().vectorToObjectSpace(cframe.upVector());
 		float desiredTorqueX = localYAxis.z * root->getBranchIBodyV3().x;
- _ReadWriteBarrier();desiredTorqueX*=kP;
+ desiredTorqueX*=kP;
 		float desiredTorqueZ = localYAxis.x * root->getBranchIBodyV3().z;
- _ReadWriteBarrier();desiredTorqueZ=-(desiredTorqueZ*kP);
+ desiredTorqueZ=-(desiredTorqueZ*kP);
 
 		G3D::Vector3 torqueBody = body->getCoordinateFrame().vectorToObjectSpace(oldTorqueWorld);
 
