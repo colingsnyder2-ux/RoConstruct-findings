@@ -1,8 +1,8 @@
-// from server: 70% by Espeon
+// from server: 72% by king_originala_sol_native
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espeon_doccommandcoldthrowf778be46060ef027.cpp
+// roc-lib: rbxgs-dll roc_sol_doccommands_named_cd5ce3de843a9cb4.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias(<afxwin.h>, <roc_espeon_mfcnativeheader280d8d01456bb571.cpp>)
@@ -280,7 +280,7 @@ void CRobloxDocNativeView::initializeCommands() {
     reinterpret_cast<IUnknown*>(field<WorkspaceNativeView*>(0x94))->AddRef();
     boost::shared_ptr<DataModel> dm=field<WorkspaceNativeView*>(0x94)->getDataModel();
     DataModel::Lock lock(dm);
-    reinterpret_cast<NativeInstanceView*>(dm.get())->setName(std::string(field<CStringA>(0x20)));
+    { std::string documentName(field<CStringA>(0x20)); reinterpret_cast<NativeInstanceView*>(dm.get())->setName(documentName); }
     field<boost::scoped_ptr<StandardVerbs> >(0x90).reset(new StandardVerbs(dm.get()));
     field<std::vector<Verb*> >(0x78).push_back(new ReportAbuseVerb(this,dm.get()));
     field<std::vector<Verb*> >(0x78).push_back(new ExitCommand(this,dm.get()));

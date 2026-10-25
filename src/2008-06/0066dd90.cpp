@@ -1,8 +1,8 @@
-// from server: 80% by Espeon
+// from server: 89% by king_originala_sol_native
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espeon_dragplacementnativeray01318b1db17f7c05.cpp
+// roc-lib: rbxgs-dll roc_sol_dragplacement_reversenormal_76049b45a635afe2.cpp
 
 // Candidate translation unit (score above; library headers required).
 // from server: 73% by king_originala
@@ -43,7 +43,7 @@ struct Math {
  static G3D::Matrix3 alignAxesClosest(const G3D::Matrix3&,const G3D::Matrix3&);static bool orthonormalizeIfNecessary(G3D::Matrix3&);
  static NormalId getClosestObjectNormalId(const G3D::Vector3&,const G3D::Matrix3&);static bool intersectRayPlane(const G3D::Ray&,const G3D::Plane&,G3D::Vector3&);
  static G3D::Vector3 getColumn(const G3D::Matrix3&m,int c){return G3D::Vector3(m[0][c],m[1][c],m[2][c]);}
- static G3D::Vector3 getWorldNormal(NormalId id,const G3D::CoordinateFrame&f){return (1-(id/3)*2)*getColumn(f.rotation,id%3);}
+ static G3D::Vector3 getWorldNormal(NormalId id,const G3D::CoordinateFrame&f){return getColumn(f.rotation,id%3)*(1-(id/3)*2);}
 };
 class RunDragger {
  struct SnapInfo {Primitive*snap;NormalId surface;G3D::Vector3 hitWorld,lastDragSnap;};

@@ -1,10 +1,11 @@
-// from server: 82% by Espeon
+// from server: 87% by king_originala_sol_native
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast /QIfist
-// roc-lib: rbxgs-dll roc_espeon_resizefloatrounding82e072734edb689a.cpp
+// roc-lib: rbxgs-dll roc_sol_resize_nativeiround_0cd291886e1e8370.cpp
 
 // Candidate translation unit (score above; library headers required).
+#include <G3D/g3dmath.h>
 #pragma include_alias("v8tree/Instance.h", "roc_espeon_nativeinstanceguidportablea1682bda32c99cd2.cpp")
 #include "v8datamodel/PartInstance.h"
 #include "util/Math.h"
@@ -28,7 +29,7 @@ void ResizeToolRecovery::drag(const void* event){
  G3D::Ray mouse=getUnitMouseRay(event);
  G3D::Vector3 hit=Math::closestPointOnRay(axis,mouse);
  float delta=(hit-start).dot(axis.direction)-accumulated;
- if(delta>1.0f){volatile float rounded=(float)std::floor(delta);int steps=(int)rounded;accumulated+=steps;capturedDrag(steps);}
- if(delta<-1.0f){volatile float rounded=(float)std::floor(-delta);int steps=-(int)rounded;accumulated+=steps;capturedDrag(steps);}
+ if(delta>1.0f){int steps=G3D::iRound((float)std::floor(delta));accumulated+=steps;capturedDrag(steps);}
+ if(delta<-1.0f){int steps=-G3D::iRound((float)std::floor(-delta));accumulated+=steps;capturedDrag(steps);}
 }
 }
