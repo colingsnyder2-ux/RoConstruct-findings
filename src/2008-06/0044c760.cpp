@@ -1,8 +1,9 @@
+// from server: 83% by EspClaude
 // from server: 80% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /Ob1
-// roc-lib: xtp-11.2.2-lib-imports roc_crmodule_app_settings_server_975fd311ba592096.cpp
+// roc-lib: xtp-11.2.2-lib-imports roc_espclaude_45b7ef6acda6135a.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <atlbase.h>
@@ -116,7 +117,7 @@ void CRobloxModuleProbe::loadAppSettings()
         AfxGetApp()->m_hInstance,
         moduleFilename);
 
-    CString moduleFolder(moduleFilename);
+    CString moduleFolder((LPCSTR)moduleFilename);
     PathRemoveFileSpecA(moduleFolder.GetBuffer(moduleFolder.GetLength()));
     moduleFolder.ReleaseBuffer();
     settings.LoadFromFile(moduleFolder + "\\AppSettings.xml");
@@ -176,3 +177,4 @@ void CRobloxModuleProbe::loadAppSettings()
     getGlobalSettings()->loadState();
     reportGlobalSettings();
 }
+

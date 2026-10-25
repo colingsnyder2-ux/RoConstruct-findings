@@ -1,8 +1,9 @@
+// from server: 92% by EspClaude
 // from server: 89% by king_originala_sol_native
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_sol_dragplacement_reversenormal_76049b45a635afe2.cpp
+// roc-lib: rbxgs-dll roc_espclaude_03e660dac30a1ea4.cpp
 
 // Candidate translation unit (score above; library headers required).
 // from server: 73% by king_originala
@@ -43,7 +44,7 @@ struct Math {
  static G3D::Matrix3 alignAxesClosest(const G3D::Matrix3&,const G3D::Matrix3&);static bool orthonormalizeIfNecessary(G3D::Matrix3&);
  static NormalId getClosestObjectNormalId(const G3D::Vector3&,const G3D::Matrix3&);static bool intersectRayPlane(const G3D::Ray&,const G3D::Plane&,G3D::Vector3&);
  static G3D::Vector3 getColumn(const G3D::Matrix3&m,int c){return G3D::Vector3(m[0][c],m[1][c],m[2][c]);}
- static G3D::Vector3 getWorldNormal(NormalId id,const G3D::CoordinateFrame&f){return getColumn(f.rotation,id%3)*(1-(id/3)*2);}
+ static G3D::Vector3 getWorldNormal(NormalId id,const G3D::CoordinateFrame&f){G3D::Vector3 c=getColumn(f.rotation,id%3);return c*(float)(1-(id/3)*2);}
 };
 class RunDragger {
  struct SnapInfo {Primitive*snap;NormalId surface;G3D::Vector3 hitWorld,lastDragSnap;};
@@ -53,7 +54,7 @@ public:bool moveDragPart();
 };
 bool RunDragger::moveDragPart(){
  const G3D::CoordinateFrame&snapFrame=snapInfo.snap->getCoordinateFrame();
- G3D::Vector3 normal;normal=Math::getWorldNormal(snapInfo.surface,snapFrame);
+ G3D::Vector3 normal=Math::getWorldNormal(snapInfo.surface,snapFrame);
  G3D::Matrix3 dragRotation=drag->getCoordinateFrame().rotation;
  G3D::Matrix3 aligned=Math::alignAxesClosest(dragRotation,snapFrame.rotation);
  G3D::Matrix3 relative=dragRotation.transpose()*aligned;
@@ -82,3 +83,4 @@ typedef char primitive_geometry_offset[offsetof(RBX::Primitive,geometry)==0x9c?1
 typedef char geometry_size_offset[offsetof(RBX::Geometry,gridSize)==4?1:-1];
 typedef char shared_size[sizeof(boost::shared_ptr<RBX::PartInstance>)==8?1:-1];
 typedef char weak_size[sizeof(boost::weak_ptr<RBX::PartInstance>)==8?1:-1];
+

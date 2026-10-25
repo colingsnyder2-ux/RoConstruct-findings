@@ -1,4 +1,4 @@
-// from server: 93% by Espeon
+// from server: 96% by EspClaude
 // roc 2008-06 00425c90  unit: CRobloxTreeCtrl  size: 240 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00425c90
 //
@@ -65,6 +65,13 @@
 // 00425d7c  83c414               add esp, 0x14
 // 00425d7f  c3                   ret 
 
+#include <map>
+#include <set>
+// from server: 93% by Espeon
+// roc 2008-06 00425c90  unit: CRobloxTreeCtrl  size: 240 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 00425c90
+//
+
 // from server: 89% by king_originala
 typedef unsigned long DWORD;
 
@@ -122,6 +129,7 @@ inline Menu::Menu() : tablePointer(menuTable), handle(0)
 {
 }
 
+struct Pair { void* a; void* b; Pair():a(0),b(0){} ~Pair(); };
 struct Allocator {Allocator(){}};
 struct EmptyPack : Empty, Allocator {};
 struct RawPointer {void* value;RawPointer():value(0){}};
@@ -167,11 +175,10 @@ struct CRobloxTreeCtrl : Base, RegisteredMember {
     unsigned char flag0;
     unsigned char flag1;
     unsigned char flag2;
-    ContainerA first;
-    ContainerB second;
-    PointerMember pointer0;
+    std::map<void*,void*> first;
+    std::set<void*> second;
+    Pair pointer0;
     PointerMember pointer1;
-    RawPointer pointer2;
 
     virtual void primaryFunction();
     virtual void secondaryFunction();

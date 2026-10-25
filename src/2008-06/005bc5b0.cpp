@@ -1,4 +1,4 @@
-// from server: 78% by colin
+// from server: 100% by sophus
 // roc 2008-06 005bc5b0  unit: RBX::Soundscape::SoundService  size: 94 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005bc5b0
 //
@@ -32,38 +32,47 @@
 // 005bc60c  5e                   pop esi
 // 005bc60d  c3                   ret 
 
-struct Listener {
-    char padding[12];
-    int active;
-    char remainder[32];
-
-    void attach(Listener*);
-    void detach(Listener*);
-};
-
-struct SoundService {
-    char padding[0x130];
-    Listener listener;
-    char reserved[5];
-    unsigned char flags;
-    char reserved2[6];
-    int enabled;
-
-    void update();
-};
-
-SoundService* __cdecl findService(SoundService*);
-
-void SoundService::update()
+struct PadBase
 {
-    Listener* self = &listener;
-    if (enabled && (flags & 1) && listener.active) {
-        SoundService* service = findService(this);
-        if (service)
-            service->listener.attach(self);
-    } else {
-        SoundService* service = findService(this);
-        if (service)
-            service->listener.detach(self);
+    char pad[0x130];
+};
+
+struct SoundChannel
+{
+    void* vtable;
+    int field_04;
+    int field_08;
+    void* field_0c;
+    void method1(SoundChannel* other);
+    void method2(SoundChannel* other);
+};
+
+struct SoundService : PadBase, SoundChannel
+{
+    char pad2[0x25];
+    unsigned char field_165;
+    char pad3[6];
+    void* field_16c;
+
+    void f();
+};
+
+SoundService* getProvider(SoundService* service);
+
+void SoundService::f()
+{
+    if (this->field_16c != 0 && (this->field_165 & 1) != 0 && this->field_0c != 0)
+    {
+        SoundChannel* self = this;
+        SoundService* provider = getProvider(this);
+        if (provider)
+            provider->method1(self);
+    }
+    else
+    {
+        SoundChannel* self = this;
+        SoundService* provider = getProvider(this);
+        if (provider)
+            provider->method2(self);
     }
 }
