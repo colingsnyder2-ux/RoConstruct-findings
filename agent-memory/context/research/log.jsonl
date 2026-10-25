@@ -916,3 +916,4 @@
 {"date": "2026-10-25", "title": "roc repair 2008-06 005df0c0", "text": "95 -> 95, tried 0 variants []."}
 {"date": "2026-10-25", "title": "roc repair 2008-06 00558b80", "text": "86 -> 86, tried 0 variants []."}
 {"date": "2026-10-25", "title": "roc repair 2008-06 004cc7e0", "text": "63 -> 63, tried 0 variants []."}
+{"date": "2026-10-25", "title": "hotpatch O1 recipe for SP1-era thunk wrappers", "text": "2008-06 _FreeThunk@4 (007a600b) 100% EXACT with roc-cl 30729 + roc-flags /hotpatch /O1 /GS- /EHsc /MD. Signature: target starts with 'mov edi, edi' (5-byte hotpatch prologue padding) and uses 'pop ecx' (1-byte arg cleanup) instead of 'add esp,4'. Plain 21022/50727/30729 all fail with mov eax,[ebp+8];push eax + add esp,4. All previously-found hotpatch functions in the client (mov edi,edi in target comments) are already matched; /hotpatch does NOT unlock the VS2003-style push-sym EH frame family (00428310/005f38e0 tested, unchanged)."}

@@ -1,4 +1,11 @@
+// from server: 100% by king_originala
 // from server: 98% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_king_originala_view_g3d_sdk_7c34f00dda825ea8.cpp
+
+// Candidate translation unit (score above; library headers required).
 // from server: 97% by king_originala
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
@@ -23,15 +30,15 @@ struct scoped_connection:connection {bool released;~scoped_connection();scoped_c
 }
 }
 namespace G3D {
-template<class T>struct ReferenceCountedPointer {T*pointer;ReferenceCountedPointer():pointer(0){}~ReferenceCountedPointer();};
-struct Texture;struct Sky;
-template<class Key,class Value>struct Table {
+template<class T>class ReferenceCountedPointer {public:T*pointer;ReferenceCountedPointer():pointer(0){}~ReferenceCountedPointer();};
+class Texture;class Sky;class LightingParameters;class Color3;
+template<class Key,class Value>class Table {public:
  int count;void*bucket;int numBuckets;
  virtual ~Table(){freeMemory();}
  void freeMemory();
 };
-struct TextureManager {
- struct TextureArgs;
+class TextureManager {public:
+ class TextureArgs;
  Table<TextureArgs,ReferenceCountedPointer<Texture> >cache;
  unsigned size,sizeHint;
  TextureManager(unsigned);
@@ -42,10 +49,11 @@ struct Instance;struct DataModel;struct RenderStats;
 namespace RenderBase {
 struct RenderSceneBase {
  virtual ~RenderSceneBase();char opaque[0x268-4];
- void setThrottle(float t,float m,bool shadows,float distance){typedef void(RenderSceneBase::*Method)(float,float,bool,float);Method method;void*entry=(*(void***)this)[2];memcpy(&method,&entry,sizeof(method));(this->*method)(t,m,shadows,distance);}
+ virtual void presetLighting(G3D::ReferenceCountedPointer<G3D::Sky>,G3D::LightingParameters,G3D::Color3,G3D::Color3);
+ virtual void setThrottle(float,float,bool,float);
 };
 struct Chunk;
-struct SceneManager {
+class SceneManager {public:
  RenderSceneBase*renderScene;
  virtual void invalidateModel(const G3D::ReferenceCountedPointer<Chunk>&,bool)=0;
  virtual void addModel(const G3D::ReferenceCountedPointer<Chunk>&)=0;
@@ -56,7 +64,7 @@ struct SceneManager {
  virtual ~SceneManager(){}
  SceneManager(RenderSceneBase*s):renderScene(s){}
 };
-struct SimpleSceneManager:SceneManager {
+class SimpleSceneManager:public SceneManager {public:
  SimpleSceneManager(RenderSceneBase*s):SceneManager(s){}
  virtual void invalidateModel(const G3D::ReferenceCountedPointer<Chunk>&,bool);
  virtual void addModel(const G3D::ReferenceCountedPointer<Chunk>&);
@@ -82,7 +90,7 @@ struct Instance {char opaque[0x14];void visitDescendents(BindInstance);};
 struct DataModel {char opaque[0x204];Instance*workspace;Lighting*findLighting();};
 struct Lighting:Instance {};
 
-namespace ViewNew {struct ViewG3D;}
+namespace ViewNew {class ViewG3D;}
 struct BindBool;struct BindInstance;
 namespace SlotDetail {
 class X;
@@ -100,7 +108,7 @@ extern InstanceSignalDescriptor descendantAdded;
 inline Reflection::SignalSource*signalSource(Instance*p){return p?reinterpret_cast<Reflection::SignalSource*>(reinterpret_cast<char*>(p)+0x14):0;}
 
 struct MaterialFactory {char opaque[16];MaterialFactory(G3D::TextureManager*);~MaterialFactory();};
-struct ViewBase {
+class ViewBase {public:
  virtual ~ViewBase();
  std::auto_ptr<RenderBase::SceneManager>sceneManager;
  std::auto_ptr<RenderBase::RenderSceneBase>renderLibScene;
@@ -118,7 +126,7 @@ struct ViewBase {
  virtual void updateLighting()=0;virtual void invalidateLighting(bool)=0;
 };
 namespace ViewNew {
-struct ViewG3D:ViewBase {
+class ViewG3D:public ViewBase {public:
  G3D::ReferenceCountedPointer<G3D::Sky>sky;std::map<Instance*,Render::Model*>models;
  ViewG3D(boost::shared_ptr<DataModel>);
  virtual ~ViewG3D();virtual void render(void*);

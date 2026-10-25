@@ -1,3 +1,7 @@
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 30729
+// roc-flags: /hotpatch /O1 /GS- /EHsc /MD
 // from server: 73% by king_originala
 extern "C" void __cdecl FreeThunkData(void*);
 extern "C" int __cdecl InitializeThunkHeap();
