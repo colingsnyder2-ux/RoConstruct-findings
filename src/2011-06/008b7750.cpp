@@ -1,14 +1,14 @@
-// from server: 98% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/ReportControl/XTPReportDragDrop.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/ReportControl/XTPReportDragDrop.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPReportDragDrop.cpp : implementation of the CXTPReportHeaderDropWnd class.
+// CXTPReportDragDrop.cpp : implementation of the CXTPReportHeaderDropWnd class.
 //
 // This file is a part of the XTREME REPORTCONTROL MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -27,15 +27,11 @@
 
 #include "stdafx.h"
 #include "Common/XTPDrawHelpers.h"
-#include "Common/XTPCustomHeap.h"
-#include "Common/XTPSystemHelpers.h"
-#include "Common/XTPSmartPtrInternalT.h"
-#include "Common/XTPColorManager.h"
-
 
 #include "XTPReportDefines.h"
 #include "XTPReportHeader.h"
 #include "XTPReportPaintManager.h"
+#include "XTPReportColumn.h"
 #include "XTPReportDragDrop.h"
 #include "XTPReportControl.h"
 #include "XTPReportColumn.h"
@@ -164,33 +160,18 @@ void CXTPReportHeaderDragWnd::OnTimer(UINT_PTR nIDEvent)
 	int nDiffRight = bLayoutRTL ? rcControlScreen.left - rcDragScreen.left :
 		rcDragScreen.right - rcControlScreen.right;
 
-	//-----------------------------------------------------------------------
-	CXTPReportColumn *pPrev = NULL, *pCurr = NULL, *pNext = NULL;
-	int nScrollPos = 0, nScrollMax = 0;
-	int nFreezOffset = 0;
-	BOOL bFullColumnScrolling = pControl->IsFullColumnScrolling();
-	if (bFullColumnScrolling)
-		nFreezOffset = m_pHeader->GetFullColScrollInfo(pPrev, pCurr, pNext, nScrollPos, nScrollMax);
-	//-----------------------------------------------------------------------
-
 	if (nDiffRight > 0)
 	{
 		int nStep = max(min(7, nDiffRight/10), CXTPReportHeader::s_nMinAutoScrollStep);
-		UINT uTimer = bFullColumnScrolling ? max(30, 800 - nDiffRight * 10) : max(10, 100 - nDiffRight);
+		UINT uTimer = max(10, 100 - nDiffRight);
 		SCROLLINFO scrollInfo;
 
 		BOOL bRes = pControl->GetScrollInfo(SB_HORZ, &scrollInfo);
 		if (bRes)
 		{
-			if (!bFullColumnScrolling && scrollInfo.nPos < scrollInfo.nMax ||
-				bFullColumnScrolling && nScrollPos < nScrollMax)
+			if (scrollInfo.nPos < scrollInfo.nMax)
 			{
-				if (bFullColumnScrolling)
-					pControl->SendMessage(WM_HSCROLL, SB_LINERIGHT);
-				else
-					pControl->SetScrollOffsetH(scrollInfo.nPos + nStep);
-
-				KillTimer(1);
+				pControl->SetLeftOffset(scrollInfo.nPos + nStep);
 				SetTimer(1, uTimer, NULL);
 				bScrolled = TRUE;
 			}
@@ -223,7 +204,7 @@ void CXTPReportHeaderDragWnd::OnTimer(UINT_PTR nIDEvent)
 		if (nDiffLeft > 0)
 		{
 			int nStep = max(min(7, nDiffLeft/10), CXTPReportHeader::s_nMinAutoScrollStep);
-			UINT uTimer = bFullColumnScrolling ? max(30, 800 - nDiffLeft * 10) : max(10, 100 - nDiffLeft);
+			UINT uTimer = max(10, 100 - nDiffLeft);
 			SCROLLINFO scrollInfo;
 
 			BOOL bRes = pControl->GetScrollInfo(SB_HORZ, &scrollInfo);
@@ -231,11 +212,7 @@ void CXTPReportHeaderDragWnd::OnTimer(UINT_PTR nIDEvent)
 			{
 				if (scrollInfo.nPos > scrollInfo.nMin)
 				{
-					if (bFullColumnScrolling)
-						pControl->SendMessage(WM_HSCROLL, SB_LINELEFT);
-					else
-						pControl->SetScrollOffsetH(scrollInfo.nPos - nStep);
-
+					pControl->SetLeftOffset(scrollInfo.nPos - nStep);
 					SetTimer(1, uTimer, NULL);
 					bScrolled = TRUE;
 				}
@@ -280,12 +257,12 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CXTPReportHeaderDropWnd message handlers
 
-BOOL CXTPReportHeaderDropWnd::Create(CWnd* /*pParentWnd*/, int nHeight)
+BOOL CXTPReportHeaderDropWnd::Create(int nHeight)
 {
 	m_nHeight = nHeight + 20;
 
 	DWORD dwStyle = WS_POPUP | WS_DISABLED;
-	DWORD dwExStyle = WS_EX_TOOLWINDOW | WS_EX_TOPMOST ;
+	DWORD dwExStyle = WS_EX_TOOLWINDOW ;
 
 	BOOL bResult = CreateEx(dwExStyle, AfxRegisterWndClass(0, AfxGetApp()->LoadStandardCursor(IDC_ARROW)), NULL, dwStyle,
 		0, 0, 12, m_nHeight,
@@ -340,5 +317,7 @@ BOOL CXTPReportHeaderDropWnd::OnEraseBkgnd(CDC* pDC)
 
 void CXTPReportHeaderDropWnd::SetWindowPos(int x, int y)
 {
-	CWnd::SetWindowPos(0, x - 6, y - (m_nHeight / 2), 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+	CWnd::SetWindowPos(&wndTop,
+		x - 6, y - (m_nHeight / 2), 0, 0,
+		SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE);
 }

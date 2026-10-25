@@ -1,14 +1,14 @@
-// from server: 40% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Calendar/XTPCalendarControl.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPTabClientWnd.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPCalendarControl.cpp : implementation file
+// XTPTabClientWnd.cpp : implementation of the CXTPTabClientWnd class.
 //
-// This file is a part of the XTREME CALENDAR MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -29,55 +29,24 @@
 #include "Resource.h"
 
 #include "Common/XTPResourceManager.h"
-
 #include "Common/XTPImageManager.h"
-#include "Common/XTPSystemHelpers.h"
-#include "Common/XTPToolTipContext.h"
 #include "Common/XTPDrawHelpers.h"
-#include "Common/XTPNotifyConnection.h"
-#include "Common/XTPSmartPtrInternalT.h"
-#include "Common/XTPMarkupRender.h"
-#include "Common/XTPColorManager.h"
+#include "Common/XTPToolTipContext.h"
 
-#include "XTPCalendarMsgNotifier.h"
-#include "XTPCalendarUtils.h"
-#include "XTPCalendarDefines.h"
-#include "XTPCalendarNotifications.h"
-#include "XTPCalendarPtrCollectionT.h"
+#include "Common/Resource.h"
+#include "TabManager/XTPTabManager.h"
 
-#include "XTPCalendarEvent.h"
-#include "XTPCalendarRecurrencePattern.h"
+#include "XTPCommandBarsDefines.h"
+#include "XTPTabClientWnd.h"
+#include "XTPMouseManager.h"
+#include "XTPPaintManager.h"
+#include "XTPPopupBar.h"
+#include "XTPToolBar.h"
+#include "XTPCommandBars.h"
+#include "XTPFrameWnd.h"
+#include "XTPControls.h"
+#include "XTPControlExt.h"
 
-#include "XTPCalendarView.h"
-#include "XTPCalendarViewDay.h"
-#include "XTPCalendarViewEvent.h"
-#include "XTPCalendarViewPart.h"
-
-#include "XTPCalendarDayViewEvent.h"
-#include "XTPCalendarDayViewDay.h"
-#include "XTPCalendarDayView.h"
-
-#include "XTPCalendarWeekView.h"
-#include "XTPCalendarMonthView.h"
-#include "XTPCalendarTimeLineView.h"
-
-#include "XTPCalendarControl.h"
-#include "XTPCalendarResource.h"
-
-#include "XTPCalendarData.h"
-
-#include "XTPCalendarRemindersManager.h"
-#include "XTPCalendarOccurSeriesChooseDlg.h"
-
-#include "XTPCalendarPaintManager.h"
-#include "XTPCalendarTheme.h"
-#include "XTPCalendarThemeOffice2007.h"
-
-#include "XTPCalendarCaptionBarControl.h"
-#include "XTPCalendarControlView.h"
-
-#include "XTPCalendarTip.h"
-#include "XTPCalendarOptions.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -85,3333 +54,2768 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-/////////////////////////////////////////////////////////////////////////////
-// CXTPCalendarControl
+#ifndef OIC_WINLOGO
+#define OIC_WINLOGO         32517
+#endif
 
-#define XTP_CALENDAR_POPULATE_REQUEST_TIMEOUT   200
-#define XTP_CALENDAR_REDRAW_REQUEST_TIMEOUT     200
+#define xtpTabNavigateButtonActiveFiles 4
 
-#define XTP_CALENDAR_REFRESHMETRICS_REQUEST_TIMERID   1
-#define XTP_CALENDAR_REFRESHMETRICS_REQUEST_TIMEOUT   250
+#define ACTION_CANCEL       0
+#define ACTION_POPUP        1
+#define ACTION_ATTACH       2
+#define ACTION_INSERTHORIZ  3
+#define ACTION_INSERTVERT   4
 
-#define XTP_CALENDAR_FIRST_DYN_TIMERID          10
-
-
-const COleDateTimeSpan cspRemindersUpdatePeriod(0, 2,0,0);
-
-
-/////////////////////////////////////////////////////////////////////////////
-BOOL IsEventExists(CXTPCalendarData* pData, CXTPCalendarEvent* pEvent)
+class CXTPTabClientWnd::CNavigateButtonActiveFiles : public CXTPTabManagerNavigateButton
 {
-	if (pEvent->GetRecurrenceState() == xtpCalendarRecurrenceNotRecurring)
+public:
+	CNavigateButtonActiveFiles(CXTPTabManager* pManager, CXTPTabClientWnd* pTabClientWnd)
+		: CXTPTabManagerNavigateButton(pManager, xtpTabNavigateButtonActiveFiles, xtpTabNavigateButtonNone)
 	{
-		DWORD dwEventID = pEvent->GetEventID();
-		CXTPCalendarEventPtr ptrEv = pData->GetEvent(dwEventID);
-		return ptrEv != NULL;
+		m_bHiddenTabs = FALSE;
+		m_pTabClientWnd = pTabClientWnd;
+		XTPResourceManager()->LoadString(&m_strToolTip, XTP_IDS_TABNAVIGATEBUTTON_ACTIVEFILES);
+	}
+
+	void DrawEntry(CDC* pDC, CRect rc)
+	{
+		CPoint pt(rc.CenterPoint().x, rc.CenterPoint().y + 1);
+		CPoint pts[] =
+		{
+			CPoint(pt.x - 4, pt.y - 1), CPoint(pt.x - 1, pt.y + 2) , CPoint(pt.x, pt.y + 2), CPoint(pt.x + 3, pt.y - 1)
+		};
+		pDC->Polygon(pts, 4);
+
+		if (m_bHiddenTabs)
+		{
+			pDC->Rectangle(pt.x - 4, pt.y - 5, pt.x + 4, pt.y - 3);
+		}
+	}
+
+	void Reposition(CRect& rcNavigateButtons)
+	{
+		CRect rc = m_pManager->GetAppearanceSet()->GetHeaderMargin();
+
+		m_bHiddenTabs = m_pManager->GetItemsLength() > m_pManager->GetRectLength(rcNavigateButtons) - rc.left - rc.right - GetSize().cx;
+
+		CXTPTabManagerNavigateButton::Reposition(rcNavigateButtons);
+	}
+	void PerformClick(HWND hWnd, CPoint /*pt*/)
+	{
+		CXTPCommandBars* pCommandBars = m_pTabClientWnd->GetCommandBars();
+		if (!pCommandBars || pCommandBars->IsCustomizeMode())
+			return;
+
+		m_bPressed = TRUE;
+		m_pManager->RedrawControl(NULL, FALSE);
+
+		CPoint pt(m_rcButton.left, m_rcButton.bottom);
+		m_pTabClientWnd->WorkspaceToScreen(&pt);
+		CRect rcExclude(pt.x, pt.y - m_rcButton.Height(), pt.x + m_rcButton.Width(), pt.y);
+
+		CXTPPopupBar* pPopupBar = CXTPPopupBar::CreatePopupBar(pCommandBars);
+
+		CXTPImageManager* pImageManager = new CXTPImageManager();
+		pPopupBar->SetImageManager(pImageManager);
+
+		int nIconId = 0;
+		HICON hIconLast = 0;
+
+		for (int nIndex = 0; nIndex < m_pManager->GetItemCount(); nIndex++)
+		{
+			CXTPTabManagerItem* pItem = m_pManager->GetItem(nIndex);
+
+			CString pCaption = pItem->GetCaption();
+			CXTPControl* pControl = pPopupBar->GetControls()->Add(xtpControlButton, nIndex + 1, _T(""), nIndex, TRUE);
+
+			HICON hIcon = m_pTabClientWnd->GetItemIcon(pItem);
+			if (hIconLast != hIcon)
+			{
+				nIconId++;
+				pImageManager->SetIcon(CXTPImageManagerIconHandle(hIcon, FALSE), nIconId);
+				hIconLast = hIcon;
+			}
+
+			pControl->SetIconId(nIconId);
+			pControl->SetCaption(CXTPControlWindowList::ConstructCaption(pCaption, 0));
+			pControl->SetDescription(_T(""));
+		}
+
+		int nItem = pCommandBars->TrackPopupMenu(pPopupBar, TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_NONOTIFY, pt.x, pt.y, m_pTabClientWnd, &rcExclude);
+		pPopupBar->InternalRelease();
+
+		m_bPressed = FALSE;
+		m_pManager->PerformMouseMove(hWnd, CPoint(-1, -1));
+		m_pManager->RedrawControl(NULL, FALSE);
+
+		if (nItem > 0)
+		{
+			CXTPTabManagerItem* pItem = m_pManager->GetItem(nItem - 1);
+
+			if (pItem && !pItem->IsSelected())
+			{
+				m_pTabClientWnd->MDIActivate(CWnd::FromHandle(pItem->GetHandle()));
+			}
+		}
+	}
+
+protected:
+	BOOL m_bHiddenTabs;
+	CXTPTabClientWnd* m_pTabClientWnd;
+
+};
+
+class CXTPTabClientWnd::CTabClientDropTarget : public COleDropTarget
+{
+	virtual DROPEFFECT OnDragOver(CWnd* /*pWnd*/, COleDataObject* /*pDataObject*/, DWORD /*dwKeyState*/, CPoint point)
+	{
+		ASSERT(m_pTabClientWnd);
+
+		if (!m_pTabClientWnd || !m_pTabClientWnd->GetPaintManager()->m_bSelectOnDragOver)
+			return DROPEFFECT_NONE;
+
+		CXTPTabManagerItem* pItem = m_pTabClientWnd->HitTest(point);
+
+		if (pItem && !pItem->IsSelected())
+		{
+			m_pTabClientWnd->MDIActivate(CWnd::FromHandle(pItem->GetHandle()));
+		}
+
+		return DROPEFFECT_NONE;
+	}
+public:
+	CXTPTabClientWnd* m_pTabClientWnd;
+};
+
+//////////////////////////////////////////////////////////////////////////
+// CWorkspace
+
+CXTPTabClientWnd::CWorkspace::CWorkspace()
+{
+	m_pTabClientWnd = NULL;
+	m_dHeight = 100;
+}
+
+CXTPTabClientWnd::CWorkspace::~CWorkspace()
+{
+
+}
+
+void CXTPTabClientWnd::CWorkspace::SetSelectedItem(CXTPTabManagerItem* pItem)
+{
+	if (m_pSelected != pItem)
+	{
+	}
+
+	CXTPTabManager::SetSelectedItem(pItem);
+
+}
+
+
+BOOL CXTPTabClientWnd::CWorkspace::IsMouseLocked() const
+{
+	return CXTPTabManager::IsMouseLocked() || XTPMouseManager()->IsTrackedLock();
+}
+
+void CXTPTabClientWnd::CWorkspace::RedrawControl(LPCRECT lpRect, BOOL /*bAnimate*/)
+{
+	if (!m_pTabClientWnd->m_bLockReposition)
+		m_pTabClientWnd->InvalidateRect(lpRect, FALSE);
+}
+
+void CXTPTabClientWnd::CWorkspace::Reposition()
+{
+	if (!m_pTabClientWnd)
+		return;
+
+	if (m_pTabClientWnd->m_bLockReposition)
+	{
+		m_pTabClientWnd->m_bForceToRecalc = TRUE;
 	}
 	else
 	{
-		DWORD dwPatternID = pEvent->GetRecurrencePatternID();
-		CXTPCalendarRecurrencePatternPtr ptrPat = pData->GetRecurrencePattern(dwPatternID);
-		return ptrPat != NULL;
+		m_pTabClientWnd->Reposition();
 	}
 }
 
-/////////////////////////////////////////////////////////////////////////////
-CXTPCalendarControl::CXTPCalendarControl()
+BOOL CXTPTabClientWnd::CWorkspace::IsAllowReorder() const
 {
-	RegisterWindowClass();
-
-	m_pConnection = new CXTPNotifyConnection();
-	m_pSink = new CXTPNotifySink();
-
-	m_bChanged = TRUE;
-	m_nLockUpdateCount = m_nLockAdjustCount = 0;
-	m_bAdjustScrollBar = FALSE;
-	m_bFullDateMode = FALSE;
-	m_pActiveView = NULL;
-
-	m_lcidActiveLocale = CXTPCalendarUtils::GetActiveLCID();
-
-	m_pPaintManager = new CXTPCalendarPaintManager();
-	if (m_pPaintManager)
-		m_pPaintManager->SetControl(this);
-
-	m_pTheme = NULL;
-
-	m_mouseMode = xtpCalendarMouseNothing;
-	m_nRowsPerWheel = 1;
-
-	m_uNextTimerID = XTP_CALENDAR_FIRST_DYN_TIMERID;
-	//---------------------------------------------------------------------------
-	m_strUndoUIText = _T("&Undo\tAlt+BackSpace, Ctrl+Z");
-	m_strRedoUIText = _T("&Redo\tAlt+BackSpace, Ctrl+Z");
-	//---------------------------------------------------------------------------
-
-
-	m_nCaptionHeight = 71;
-
-	m_bDeleteOnFinalRelease = FALSE;
-	m_bDisableRedraw = FALSE;
-
-	m_bEnableToolTips = TRUE;
-	m_bEnableSendNotifications = TRUE;
-
-	m_uPopulateRequest_TimerID = 0;
-	m_uRedrawRequest_TimerID = 0;
-
-	m_bUpdateWhenEventChangedNotify = TRUE;
-
-	m_pRemindersManager = NULL;
-	m_cnidOnReminders = 0;
-	m_spRemindersUpdatePeriod = cspRemindersUpdatePeriod;
-
-	m_pOptions = new CXTPCalendarOptions();
-	m_pResourcesNf = new CXTPCalendarResourcesNf();
-
-	//By default add one resource with memory DataProvider
-	SetDataProvider(xtpCalendarDataProviderMemory);
-	ASSERT(GetDataProvider()->IsOpen());
-
-	m_pMarkupContext = NULL;
-	//-----------------------------------------------------------------------
-	if (XTPCalendarMsgNotifier())
-	{
-		XTPCalendarMsgNotifier()->Advise(this, WM_TIMECHANGE);
-		XTPCalendarMsgNotifier()->Advise(this, XTP_WM_TIME_ZONE_CHANGED);
-	}
-	m_bTimelineMode = FALSE;
-	m_bHideCaptionBar = FALSE;
-
-	m_bPreventAutoAllDayMode = FALSE;
-	m_bMultiColorScheduleMode = FALSE;
-	m_bMultiColumnWeekMode = FALSE; //default - Outlook2007 mode
-	m_bTooltipUnderMouse = FALSE;
-	m_bShowLinks = FALSE;
-	m_bHideLinkContainer = FALSE;
-	m_bMultipleSchedulesMode = FALSE;
-	m_bMultipleSchedulesNoSelfLinks = TRUE;
-
-	m_bPromptToDeleteRecurrentEvent = TRUE;
-	m_bDeleteOcurrenceEventIfNoPrompt = FALSE;
-
-	m_bReadOnlyMode = FALSE;
-	m_OwnerUser.Empty();
-	m_sCustomFormat4Tooltip.Empty();
-	m_bForcePagination = TRUE;
-	m_bShowTooltipForNotFocused = FALSE;
-	m_bShowTooltipForAllDayEvents = FALSE;
-
-	m_bSwitchToDayViewIfPickedSingleDay = FALSE;
-	m_nFirstWeekOfYearDays = 1;
-	m_dtTodayOverride.SetStatus(COleDateTime::invalid);
-
-
-	m_pMonthView = new CXTPCalendarMonthView(this);
-	m_pWeekView = new CXTPCalendarWeekView(this);
-	m_pDayView = new CXTPCalendarDayView(this);
-	m_pTimeLineView = new CXTPCalendarTimeLineView(this);
-
-
-	m_pWndTip = new CXTPCalendarTip();
-
-	//  CXTPCalendarThemeOffice2007* pTheme2007 = new CXTPCalendarThemeOffice2007();
-	//  SetTheme(pTheme2007);
-
-	//*** TEST of customization ***
-
-	// EXAMPLE: customize root settings
-
-	//  pTheme2007->GetEventPartX()->m_fcsetSelected.clrBorder = RGB(0, 230, 0);
-	//  pTheme2007->GetEventPartX()->m_fcsetSelected.fcsetSubject.clrColor = RGB(255, 0, 0);
-	//  pTheme2007->GetEventPartX()->m_fcsetSelected.fcsetLocation.clrColor = RGB(0, 255, 0);
-
-	//  // customize particular settings
-	//  pTheme2007->GetDayViewPartX()->GetDayPartX()->GetGroupPartX()->GetSingleDayEventPartX()->m_fcsetSelected.clrBorder = RGB(255, 100, 230);
-	/*
-
-	LOGFONT lf;
-	pTheme2007->GetDayViewPartX()->GetHeaderPartX()->m_TextLeft.fcsetTodaySelected.fntFont->GetLogFont(&lf);
-	lf.lfHeight *= 2;
-	//pTheme2007->GetDayViewPartX()->GetHeaderPartX()->m_TextLeft.fcsetTodaySelected.fntFont.SetCustomValue(&lf);
-
-	lf.lfHeight = lf.lfHeight * 3 / 2;
-	lf.lfItalic = 1;
-	//pTheme2007->GetDayViewPartX()->GetDayPartX()->GetGroupPartX()->GetSingleDayEventPartX()->m_fcsetNormal.fcsetSubject.fntFont.SetCustomValue(&lf);
-
-	//pTheme2007->GetDayViewPartX()->GetTimeScalePart()->m_fcsetAMPM.clrColor = RGB(200, 33, 12);
-
-	pTheme2007->RefreshMetrics();
-	*/
-	// end EXAMPLE.
-
+	return m_pTabClientWnd->m_bAllowReorder;
 }
 
-CXTPCalendarControl::~CXTPCalendarControl()
+void CXTPTabClientWnd::CWorkspace::SetAllowReorder(BOOL bAllowReorder)
 {
-	//---------------------------------------------------------------------------
-	if (XTPCalendarMsgNotifier())
-	{
-		XTPCalendarMsgNotifier()->Unadvise(this);
-	}
-
-	m_cnidOnReminders = 0;
-
-	CMDTARGET_RELEASE(m_pResourcesNf);
-
-	CMDTARGET_RELEASE(m_pActiveView);
-
-	if (m_pDayView)
-	{
-		m_pDayView->m_pControl = NULL;
-		CMDTARGET_RELEASE(m_pDayView);
-	}
-
-	if (m_pWeekView)
-	{
-		m_pWeekView->m_pControl = NULL;
-		CMDTARGET_RELEASE(m_pWeekView);
-	}
-
-	if (m_pMonthView)
-	{
-		m_pMonthView->m_pControl = NULL;
-		CMDTARGET_RELEASE(m_pMonthView);
-	}
-
-
-	CMDTARGET_RELEASE(m_pTimeLineView);
-
-	CMDTARGET_RELEASE(m_pPaintManager);
-	CMDTARGET_RELEASE(m_pTheme);
-
-	CMDTARGET_RELEASE(m_pConnection);
-	CMDTARGET_RELEASE(m_pRemindersManager);
-
-	CMDTARGET_RELEASE(m_pOptions);
-
-	XTPMarkupReleaseContext(m_pMarkupContext);
-
-	if (m_pWndTip)
-	{
-		if (::IsWindow(m_pWndTip->GetSafeHwnd()))
-		{
-			m_pWndTip->DestroyWindow();
-		}
-		SAFE_DELETE(m_pWndTip);
-	}
-
-	if (::IsWindow(GetSafeHwnd()))
-	{
-		DestroyWindow();
-	}
-
-	m_pSink->Delete();
+	m_pTabClientWnd->m_bAllowReorder = bAllowReorder;
 }
 
-CScrollBar* CXTPCalendarControl::GetScrollBarCtrl(int nBar) const
+BOOL CXTPTabClientWnd::CWorkspace::IsDrawStaticFrame() const
 {
-	if (DYNAMIC_DOWNCAST(CView, GetParent()))
-		return GetParent()->GetScrollBarCtrl(nBar);
-
-	return 0;
+	return GetPaintManager()->m_bStaticFrame && !m_pTabClientWnd->m_bEnableGroups;
 }
 
 
-void CXTPCalendarControl::OnDestroy()
+
+BOOL CXTPTabClientWnd::CWorkspace::DrawIcon(CDC* pDC, CPoint pt, CXTPTabManagerItem* pItem, BOOL bDraw, CSize& szIcon) const
 {
-	OnBeforeDestroy();
-
-	CWnd::OnDestroy();
-}
-
-void CXTPCalendarControl::OnBeforeDestroy()
-{
-	if (m_pActiveView)
-	{
-		m_pActiveView->OnBeforeDestroy();
-	}
-
-	if (m_pDayView)
-	{
-		m_pDayView->OnBeforeDestroy();
-	}
-	if (m_pWeekView)
-	{
-		m_pWeekView->OnBeforeDestroy();
-	}
-	if (m_pMonthView)
-	{
-		m_pMonthView->OnBeforeDestroy();
-	}
-	if (m_pTimeLineView)
-	{
-		m_pTimeLineView->OnBeforeDestroy();
-	}
-}
-
-BOOL CXTPCalendarControl::RegisterWindowClass(HINSTANCE hInstance /*= NULL*/)
-{
-	return XTPDrawHelpers()->RegisterWndClass(hInstance,
-			XTPCALENDARCTRL_CLASSNAME, CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW);
-}
-
-BOOL CXTPCalendarControl::Create(DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID)
-{
-	if (!CWnd::Create(XTPCALENDARCTRL_CLASSNAME, NULL, dwStyle, rect, pParentWnd, nID))
+	if (GetPaintManager()->m_bShowIcons == FALSE)
 		return FALSE;
+
+	if (!bDraw)
+	{
+		return TRUE;
+	}
+
+	HICON hIcon = GetItemIcon(pItem);
+	if (hIcon)
+	{
+		DrawIconEx(pDC->GetSafeHdc(), pt.x, pt.y, hIcon, szIcon.cx, szIcon.cy, 0, NULL, DI_NORMAL);
+	}
 
 	return TRUE;
 }
 
-void CXTPCalendarControl::PreSubclassWindow()
+CXTPTabPaintManager* CXTPTabClientWnd::CWorkspace::GetPaintManager() const
 {
-	_InitCalendarView();
+	return m_pTabClientWnd ? m_pTabClientWnd->m_pPaintManager : NULL;
 }
 
-void CXTPCalendarControl::_InitCalendarView()
+CString CXTPTabClientWnd::CWorkspace::GetItemTooltip(const CXTPTabManagerItem* pItem) const
 {
-	//-----------------------------------------------------------------------
-	SetActiveView(GetDayView());
+	return m_pTabClientWnd->GetItemTooltip(pItem);
+}
 
-	CXTPCalendarDayView* pDayView = DYNAMIC_DOWNCAST(CXTPCalendarDayView, GetDayView());
-	if (!pDayView)
+// finds the tab item for specified window. Returns NULL if not found
+CXTPTabManagerItem* CXTPTabClientWnd::CWorkspace::FindItem(const HWND hWnd) const
+{
+	// loop through all tab items
+	for (int nIndex = 0; nIndex < GetItemCount(); nIndex++)
 	{
+		// check for window handle
+		if (GetItem(nIndex)->GetHandle() == hWnd)
+		{
+			return GetItem(nIndex);
+		}
+	}
+
+	return NULL;
+}
+
+
+// add new item into the tab control for specified MDIChild. If bRedraw is
+// set to TRUE then framework will be redrawn in order to show new item.
+CXTPTabManagerItem* CXTPTabClientWnd::CWorkspace::AddItem(const CWnd* pChildWnd)
+{
+	ASSERT(pChildWnd != NULL);
+	if (!pChildWnd)
+		return NULL;
+	ASSERT(::IsWindow(pChildWnd->GetSafeHwnd()));
+
+	// make sure we add MDIChild window
+	if ((pChildWnd->GetExStyle() & WS_EX_MDICHILD) == 0)
+		return NULL;
+
+	int nIndex = GetItemCount();
+	switch (m_pTabClientWnd->GetNewTabPositon())
+	{
+	case xtpWorkspaceNewTabLeftMost:
+		nIndex = 0;
+		break;
+
+	case xtpWorkspaceNewTabNextToActive:
+		nIndex = GetCurSel() + 1;
+		break;
+	}
+
+	// save information about new entry
+	CXTPTabManagerItem* pItem = CXTPTabManager::AddItem(nIndex);
+	pItem->SetCaption(m_pTabClientWnd->GetItemText(pChildWnd));
+
+	return pItem;
+}
+
+BOOL CXTPTabClientWnd::CWorkspace::OnBeforeItemClick(CXTPTabManagerItem* pItem)
+{
+	return m_pTabClientWnd->OnBeforeItemClick(pItem);
+}
+
+void CXTPTabClientWnd::CWorkspace::OnItemClick(CXTPTabManagerItem* pItem)
+{
+	ASSERT(pItem);
+	if (!pItem)
+		return;
+
+	CWnd* pWnd = CWnd::FromHandle(pItem->GetHandle());
+	if (pWnd)
+	{
+		m_pTabClientWnd->MDIActivate(pWnd);
+
+		CWnd* pFocus = GetFocus();
+
+		BOOL bHasFocus = pFocus->GetSafeHwnd() &&
+			(pFocus == pWnd || pWnd->IsChild(pFocus) || (pFocus->GetOwner()->GetSafeHwnd() && pWnd->IsChild(pFocus->GetOwner())));
+
+		if (!bHasFocus)
+			pWnd->SetFocus();
+	}
+}
+
+CWnd* CXTPTabClientWnd::CWorkspace::GetWindow() const
+{
+	return m_pTabClientWnd;
+}
+
+void CXTPTabClientWnd::CWorkspace::OnNavigateButtonClick(CXTPTabManagerNavigateButton* pButton)
+{
+	if (pButton->GetID() != xtpTabNavigateButtonClose)
+		return;
+
+	CXTPTabManagerItem* pItem = pButton->GetItem() ? pButton->GetItem() : m_pSelected;
+
+	if (!pItem)
+		return;
+
+	m_pTabClientWnd->PostMessage(WM_IDLEUPDATECMDUI);
+
+	HWND hWnd = pItem->GetHandle();
+	::SendMessage(hWnd, WM_CLOSE, 0, 0);
+}
+
+void CXTPTabClientWnd::CWorkspace::OnRecalcLayout()
+{
+
+}
+
+HICON CXTPTabClientWnd::CWorkspace::GetItemIcon(const CXTPTabManagerItem* pItem) const
+{
+	return m_pTabClientWnd->GetItemIcon(pItem);
+}
+
+COLORREF CXTPTabClientWnd::CWorkspace::GetItemColor(const CXTPTabManagerItem* pItem) const
+{
+	COLORREF clr = m_pTabClientWnd->GetItemColor(pItem);
+
+	if (clr != COLORREF_NULL)
+	{
+		if (clr >= xtpTabColorBlue && clr <= xtpTabColorMagenta)
+			return CXTPTabPaintManager::GetOneNoteColor((XTPTabOneNoteColor)clr);
+
+		return clr;
+	}
+
+	return CXTPTabManager::GetItemColor(pItem);
+}
+
+void CXTPTabClientWnd::CWorkspace::ReOrder(HWND hWnd, CPoint pt, CXTPTabManagerItem* pItem)
+{
+	if (m_pTabClientWnd->GetWorkspaceCount() == 1 && pItem->GetTabManager()->GetItemCount() == 1)
+	{
+		OnItemClick(pItem);
 		return;
 	}
 
-	COleDateTime dtStartDate = CXTPCalendarUtils::GetCurrentTime();
-	pDayView->ResetSelection();
-	pDayView->ShowDay(dtStartDate);
-
-	pDayView->ScrollToWorkDayBegin();
-}
-
-void CXTPCalendarControl::LockUpdate()
-{
-	m_nLockUpdateCount++;
-}
-
-void CXTPCalendarControl::UnlockUpdate()
-{
-	m_nLockUpdateCount--;
-
-	if (m_nLockUpdateCount == 0 && m_bChanged)
+	if (m_pSelected != pItem)
 	{
-		RedrawControl();
+		m_pSelected = pItem;
 	}
-}
 
-void CXTPCalendarControl::BeginUpdate()
-{
-	m_nLockUpdateCount++;
-}
 
-void CXTPCalendarControl::EndUpdate()
-{
-	m_bChanged = TRUE;
-	m_nLockUpdateCount--;
+	m_pTabClientWnd->m_bLockReposition = TRUE;
+	m_pTabClientWnd->SetActiveWorkspace(this);
+	m_pTabClientWnd->m_bLockReposition = FALSE;
 
-	if (m_nLockUpdateCount == 0)
+	if (GetPaintManager()->m_bHotTracking)
+		m_pHighlighted = pItem;
+
+	::SetCapture(hWnd);
+
+	Reposition();
+
+	CArray<CRect, CRect&> arrRects;
+
+	for (int j = 0; j < GetItemCount(); j++)
 	{
-		RedrawControl();
+		CRect rc = GetItem(j)->GetRect();
+		arrRects.Add(rc);
 	}
-}
 
-void CXTPCalendarControl::BeginAdjust(BOOL bWithScrollBar)
-{
-	if (m_nLockAdjustCount == 0)
+	BOOL bRefreshCursor = FALSE;
+	BOOL bAccept = FALSE;
+
+	for (;;)
 	{
-		m_bAdjustScrollBar = FALSE;
-	}
-	m_nLockAdjustCount++;
-	m_bAdjustScrollBar |= bWithScrollBar;
-}
+		MSG msg;
+		VERIFY(::GetMessage(&msg, NULL, 0, 0));
 
-void CXTPCalendarControl::EndAdjust(BOOL bWithScrollBar)
-{
-	m_bChanged = TRUE;
-	m_nLockAdjustCount--;
-	m_bAdjustScrollBar |= bWithScrollBar;
-
-	if (m_nLockAdjustCount == 0)
-	{
-		AdjustLayout();
-		if (m_bAdjustScrollBar)
+		if (::GetCapture() != hWnd)
 		{
-			AdjustScrollBar();
+			DispatchMessage (&msg);
+			goto ExitLoop;
 		}
+		switch (msg.message)
+		{
+			case WM_MOUSEMOVE:
+				{
+					pt = CPoint((short signed)LOWORD(msg.lParam), (short signed)HIWORD(msg.lParam));
 
-		m_bAdjustScrollBar = FALSE;
+					if (m_rcHeaderRect.IsRectEmpty() || m_rcHeaderRect.PtInRect(pt))
+					{
+						if (bRefreshCursor)
+						{
+							m_pTabClientWnd->CancelLoop();
+							::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
+							bRefreshCursor = FALSE;
+
+						}
+						for (int i = 0; i < arrRects.GetSize(); i++)
+						{
+							if (i != pItem->GetIndex() && arrRects[i].PtInRect(pt))
+							{
+
+								CXTPTabManagerItem* p = pItem;
+								m_arrItems[pItem->GetIndex()] = m_arrItems[i];
+								m_arrItems[i] = p;
+
+								OnItemsChanged();
+								break;
+							}
+						}
+
+					}
+					else if (m_pTabClientWnd->m_bEnableGroups)
+					{
+						if (!bRefreshCursor)
+						{
+							m_pTabClientWnd->InitLoop();
+							bRefreshCursor = TRUE;
+						}
+						m_pTabClientWnd->ReorderWorkspace(pt, pItem);
+					}
+				}
+
+				break;
+
+			case WM_KEYDOWN:
+				if (msg.wParam != VK_ESCAPE)
+					break;
+			case WM_CANCELMODE:
+			case WM_RBUTTONDOWN:
+				goto ExitLoop;
+
+			case WM_LBUTTONUP:
+				bAccept = TRUE;
+				goto ExitLoop;
+
+
+			default:
+				DispatchMessage (&msg);
+				break;
+		}
 	}
+
+ExitLoop:
+
+	ReleaseCapture();
+	PerformMouseMove(hWnd, pt);
+	OnItemClick(pItem);
+
+	if (bRefreshCursor)
+	{
+		m_pTabClientWnd->CancelLoop();
+		::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
+
+		if (bAccept && m_pTabClientWnd->m_nFocusedAction != ACTION_CANCEL)
+		{
+			if (m_pTabClientWnd->m_nFocusedAction == ACTION_POPUP)
+				m_pTabClientWnd->ContextMenu(pt);
+			else  m_pTabClientWnd->DoWorkspaceCommand(pItem, m_pTabClientWnd->m_pFocusWorkspace, m_pTabClientWnd->m_nFocusedAction);
+		}
+	}
+
+	pItem->GetTabManager()->EnsureVisible(pItem);
 }
 
-BEGIN_MESSAGE_MAP(CXTPCalendarControl, CWnd)
-//{{AFX_MSG_MAP(CXTPCalendarControl)
-	ON_WM_PAINT()
-	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
-	ON_WM_ERASEBKGND()
-	ON_WM_SIZE()
-	ON_WM_LBUTTONDOWN()
-	ON_WM_RBUTTONDOWN()
-	ON_WM_RBUTTONUP()
-	ON_WM_LBUTTONUP()
-	ON_WM_LBUTTONDBLCLK()
-	ON_WM_CONTEXTMENU()
-	ON_WM_MOUSEMOVE()
-	ON_WM_MOUSEWHEEL()
-	ON_WM_CHAR()
-	ON_WM_KEYDOWN()
-	ON_WM_SYSKEYDOWN()
-	ON_WM_CAPTURECHANGED()
-	ON_WM_VSCROLL()
-	ON_WM_HSCROLL()
-	ON_WM_SETCURSOR()
-	ON_WM_TIMER()
-	ON_WM_DESTROY()
-	ON_WM_GETDLGCODE()
-	ON_WM_ENABLE()
+//////////////////////////////////////////////////////////////////////////
+// CSingleWorkspace
 
-	ON_WM_SETFOCUS()
-	ON_WM_KILLFOCUS()
+CXTPTabClientWnd::CSingleWorkspace::~CSingleWorkspace()
+{
+	DestroyWindow();
+}
 
-	ON_WM_TIMECHANGE()
-	ON_REGISTERED_MESSAGE(XTP_WM_TIME_ZONE_CHANGED, OnTimeZoneChanged)
-	ON_WM_SYSCOLORCHANGE()
+CWnd* CXTPTabClientWnd::CSingleWorkspace::GetWindow() const
+{
+	return (CWnd*)this;
+}
 
-	ON_REGISTERED_MESSAGE(xtp_wm_SwitchView, OnSwitchView)
-	ON_REGISTERED_MESSAGE(xtp_wm_UserAction, OnUserAction)
+INT_PTR CXTPTabClientWnd::CSingleWorkspace::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
+{
+	return PerformToolHitTest(m_hWnd, point, pTI);
+}
 
-	ON_COMMAND(ID_EDIT_UNDO, OnUndo)
-	ON_COMMAND(ID_EDIT_CUT, OnCut)
-	ON_COMMAND(ID_EDIT_COPY, OnCopy)
-	ON_COMMAND(ID_EDIT_PASTE, OnPaste)
+BOOL CXTPTabClientWnd::CSingleWorkspace::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+{
+	if (m_pTabClientWnd)
+	{
+		m_pTabClientWnd->m_pToolTipContext->FilterToolTipMessage(this, message, wParam, lParam);
+	}
 
-	ON_UPDATE_COMMAND_UI(ID_EDIT_UNDO, OnUpdateUndo)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_CUT, OnUpdateCut)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateCopy)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_PASTE, OnUpdatePaste)
+	return CWnd::OnWndMsg(message, wParam, lParam, pResult);
+}
 
-	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
-//}}AFX_MSG_MAP
+BOOL CXTPTabClientWnd::CSingleWorkspace::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->message == WM_LBUTTONDOWN ||
+		pMsg->message == WM_RBUTTONDOWN ||
+		pMsg->message == WM_MBUTTONDOWN ||
+		pMsg->message == WM_LBUTTONDBLCLK ||
+		pMsg->message == WM_RBUTTONDBLCLK)
+	{
+
+		if (GetParentFrame()->SendMessage(WM_XTP_PRETRANSLATEMOUSEMSG, (WPARAM)pMsg->message, pMsg->lParam))
+			return TRUE;
+	}
+
+
+	return CWnd::PreTranslateMessage(pMsg);
+}
+
+void CXTPTabClientWnd::CSingleWorkspace::RedrawControl(LPCRECT lpRect, BOOL /*bAnimate*/)
+{
+	if (!m_pTabClientWnd->m_bLockReposition)
+		InvalidateRect(lpRect, FALSE);
+}
+
+BEGIN_MESSAGE_MAP(CXTPTabClientWnd::CSingleWorkspace, CWnd)
+	{ WM_LBUTTONDBLCLK, 0, 0, 0, AfxSig_vwp, (AFX_PMSG)(AFX_PMSGW)(void (AFX_MSG_CALL CWnd::*)(UINT, CPoint))&CXTPTabClientWnd::CSingleWorkspace::OnLButtonDblClk },
+	{ WM_PAINT, 0, 0, 0, AfxSig_vv, (AFX_PMSG)(AFX_PMSGW)(void (AFX_MSG_CALL CWnd::*)(void))&CXTPTabClientWnd::CSingleWorkspace::OnPaint },
+	{ WM_PRINTCLIENT, 0, 0, 0, AfxSig_lwl, (AFX_PMSG)(AFX_PMSGW)(LRESULT (AFX_MSG_CALL CWnd::*)(WPARAM, LPARAM))&CXTPTabClientWnd::CSingleWorkspace::OnPrintClient },
+	{ WM_ERASEBKGND, 0, 0, 0, AfxSig_bD, (AFX_PMSG)(AFX_PMSGW)(BOOL (AFX_MSG_CALL CWnd::*)(CDC*))&CXTPTabClientWnd::CSingleWorkspace::OnEraseBkgnd },
+	{ WM_LBUTTONDOWN, 0, 0, 0, AfxSig_vwp, (AFX_PMSG)(AFX_PMSGW)(void (AFX_MSG_CALL CWnd::*)(UINT, CPoint))&CXTPTabClientWnd::CSingleWorkspace::OnLButtonDown },
+	{ WM_MOUSEMOVE, 0, 0, 0, AfxSig_vwp, (AFX_PMSG)(AFX_PMSGW)(void (AFX_MSG_CALL CWnd::*)(UINT, CPoint))&CXTPTabClientWnd::CSingleWorkspace::OnMouseMove },
+	{ WM_MOUSELEAVE, 0, 0, 0, AfxSig_vv, (AFX_PMSG)(AFX_PMSGW)(void (AFX_MSG_CALL CWnd::*)(void))&CXTPTabClientWnd::CSingleWorkspace::OnMouseLeave },
+	{ WM_RBUTTONDOWN, 0, 0, 0, AfxSig_vwp, (AFX_PMSG)(AFX_PMSGW)(void (AFX_MSG_CALL CWnd::*)(UINT, CPoint))&CXTPTabClientWnd::CSingleWorkspace::OnRButtonDown },
 END_MESSAGE_MAP()
 
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPCalendarControl message handlers
-
-void CXTPCalendarControl::OnPaint()
+void CXTPTabClientWnd::CSingleWorkspace::OnRButtonDown(UINT /*nFlags*/, CPoint point)
 {
-	CPaintDC dc(this); // device context for painting
+	UNREFERENCED_PARAMETER(point);
 
-	CRect rc;
-	GetClientRect(&rc);
-
-	if (rc.IsRectEmpty())
-		return;
-
-	// Check cached bitmap
-	if ((!m_bChanged || m_bDisableRedraw) && m_bmpCache.GetSafeHandle() != 0)
-	{
-		CXTPCompatibleDC memDC(&dc, &m_bmpCache);
-		dc.BitBlt(0, 0, rc.right, rc.bottom, &memDC, 0, 0, SRCCOPY);
-	}
-	else
-	{
-		CDC memDC;
-		memDC.CreateCompatibleDC(&dc);
-
-		if (!m_bmpCache.m_hObject)
-		{
-			m_bmpCache.CreateCompatibleBitmap(&dc, rc.Width(), rc.Height());
-		}
-
-		CBitmap* pOldBitmap = memDC.SelectObject(&m_bmpCache);
-
-		memDC.FillSolidRect(rc, 0xFF);
-
-		OnDraw(&memDC);
-
-		if (!IsWindowEnabled())
-		{
-			XTPImageManager()->DisableBitmap(memDC, rc, XTP_CALENDAR_DISABLED_COLOR_LIGHT, XTP_CALENDAR_DISABLED_COLOR_DARK);
-		}
-
-		dc.BitBlt(0, 0, rc.right, rc.bottom, &memDC, 0, 0, SRCCOPY);
-
-		memDC.SelectObject(pOldBitmap);
-
-		// update flag
-		m_bChanged = FALSE;
-	}
 }
 
-LRESULT CXTPCalendarControl::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
+void CXTPTabClientWnd::CSingleWorkspace::OnPaint()
+{
+	CPaintDC dcPaint(this);
+	CXTPClientRect rc(this);
+	CXTPBufferDC dc(dcPaint);
+
+	if (m_pTabClientWnd)
+	{
+		CRect rectClient;
+		m_pTabClientWnd->GetWindowRect(rectClient);
+		ScreenToClient(&rectClient);
+		dcPaint.ExcludeClipRect(rectClient);
+		dc.ExcludeClipRect(rectClient);
+
+	}
+	GetPaintManager()->DrawTabControl(this, &dc, rc);
+}
+
+LRESULT CXTPTabClientWnd::CSingleWorkspace::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
 {
 	CDC* pDC = CDC::FromHandle((HDC)wParam);
 	if (pDC)
 	{
-		if (m_bmpCache.GetSafeHandle() == 0)
-			OnDraw(pDC);
-		else
+		if (m_pTabClientWnd)
 		{
-			CXTPCompatibleDC memDC(pDC, &m_bmpCache);
-			CXTPClientRect rc(this);
-			pDC->BitBlt(0, 0, rc.right, rc.bottom, &memDC, 0, 0, SRCCOPY);
+			CRect rectClient;
+			m_pTabClientWnd->GetWindowRect(rectClient);
+			ScreenToClient(&rectClient);
+			pDC->ExcludeClipRect(rectClient);
+
 		}
+		CXTPClientRect rc(this);
+		GetPaintManager()->DrawTabControl(this, pDC, rc);
 	}
-
 	return TRUE;
 }
 
-BOOL CXTPCalendarControl::OnEraseBkgnd(CDC* /*pDC*/)
+BOOL CXTPTabClientWnd::CSingleWorkspace::OnEraseBkgnd(CDC* /*pDC*/)
 {
 	return TRUE;
 }
 
-void CXTPCalendarControl::OnSize(UINT nType, int cx, int cy)
+void CXTPTabClientWnd::CSingleWorkspace::OnLButtonDown(UINT /*nFlags*/, CPoint point)
 {
-	if (m_bmpCache.m_hObject)
+	m_pTabClientWnd->m_bLockUpdate = TRUE;
+	m_pTabClientWnd->m_bDelayLock = TRUE;
+
+	PerformClick(m_hWnd, point);
+
+
+}
+
+void CXTPTabClientWnd::CSingleWorkspace::OnLButtonDblClk(UINT nFlags, CPoint point)
+{
+	OnLButtonDown(nFlags, point);
+}
+
+
+void CXTPTabClientWnd::CSingleWorkspace::OnMouseMove(UINT /*nFlags*/, CPoint point)
+{
+	PerformMouseMove(m_hWnd, point);
+}
+
+void CXTPTabClientWnd::CSingleWorkspace::OnMouseLeave()
+{
+	PerformMouseMove(m_hWnd, CPoint(-1, -1));
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlTabWorkspace
+
+IMPLEMENT_XTP_CONTROL(CXTPControlTabWorkspace, CXTPControlButton)
+
+CXTPControlTabWorkspace::CXTPControlTabWorkspace()
+{
+	m_bForceRecalc = FALSE;
+	m_nWidth = 220;
+
+	SetFlags(xtpFlagSkipFocus | xtpFlagNoMovable);
+}
+
+CXTPControlTabWorkspace::~CXTPControlTabWorkspace()
+{
+
+}
+
+void CXTPControlTabWorkspace::RedrawControl(LPCRECT lpRect, BOOL bAnimate)
+{
+	m_pParent->Redraw(lpRect, bAnimate);
+}
+
+CXTPTabPaintManager* CXTPControlTabWorkspace::GetPaintManager() const
+{
+	return CWorkspace::GetPaintManager();
+}
+
+CWnd* CXTPControlTabWorkspace::GetWindow() const
+{
+	return (CWnd*)GetParent();
+}
+
+void CXTPControlTabWorkspace::OnMouseMove(CPoint point)
+{
+	CXTPControl::OnMouseMove(point);
+
+	if (!m_pTabClientWnd)
+		return;
+
+	PerformMouseMove(m_pParent->m_hWnd, point);
+}
+
+void CXTPControlTabWorkspace::OnRecalcLayout()
+{
+	m_bForceRecalc = TRUE;
+	m_pParent->OnRecalcLayout();
+	RedrawControl(GetRect(), FALSE);
+}
+
+XTPTabPosition CXTPControlTabWorkspace::GetPosition() const
+{
+	switch (m_pParent->GetPosition())
 	{
-		m_bmpCache.DeleteObject();
+		case xtpBarLeft: return xtpTabPositionLeft;
+		case xtpBarRight: return xtpTabPositionRight;
+		case xtpBarBottom: return xtpTabPositionBottom;
 	}
+	return xtpTabPositionTop;
+}
 
-	CWnd::OnSize(nType, cx, cy);
-
-	if (::IsWindow(GetSafeHwnd()) && cx > 0 && cy > 0)
+void CXTPControlTabWorkspace::OnRemoved()
+{
+	if (m_pTabClientWnd && m_pTabClientWnd->m_pTabWorkspace == this)
 	{
-		AdjustLayout();
-		AdjustScrollBar();
+		m_pTabClientWnd->m_pTabWorkspace = NULL;
+		m_pTabClientWnd->m_arrWorkspace.RemoveAll();
 	}
 }
 
-void CXTPCalendarControl::AdjustScrollBar(int nSBType)
+void CXTPControlTabWorkspace::SetRect(CRect rcControl)
 {
-	if (!::IsWindow(GetSafeHwnd()) || !m_pActiveView)
+	if (rcControl == CXTPControl::m_rcControl && !m_bForceRecalc)
 		return;
 
-	BeginUpdate();
+	m_bForceRecalc = FALSE;
+	CXTPControl::SetRect(rcControl);
 
-	if (nSBType == SB_VERT || nSBType == -1)
-	{
-		AdjustScrollBarEx(SB_VERT);
-	}
+	CXTPTabPaintManager* pPaintManager = GetPaintManager();
+	if (!pPaintManager)
+		return;
 
-	if (nSBType == SB_HORZ || nSBType == -1)
-	{
-		AdjustScrollBarEx(SB_HORZ);
-	}
-
-	AdjustLayout();
-
-	EndUpdate();
+	CClientDC dc(m_pParent);
+	pPaintManager->RepositionTabControl(this, &dc, rcControl);
 }
 
-void CXTPCalendarControl::AdjustScrollBarEx(int nSBType)
+void CXTPControlTabWorkspace::Draw(CDC* pDC)
 {
-	ASSERT(nSBType == SB_VERT || nSBType == SB_HORZ);
-
-	if (!m_pActiveView)
+	CXTPTabPaintManager* pPaintManager = GetPaintManager();
+	if (!pPaintManager)
 	{
+		CXTPControlButton::Draw(pDC);
+		return;
+	}
+	pPaintManager->DrawTabControl(this, pDC, GetRect());
+}
+
+CSize CXTPControlTabWorkspace::GetSize(CDC* pDC)
+{
+	CXTPTabPaintManager* pPaintManager = GetPaintManager();
+	if (!pPaintManager)
+		return CXTPControl::GetSize(pDC);
+
+	int nHeight = pPaintManager->GetAppearanceSet()->GetHeaderHeight(this);
+	if (pPaintManager->m_bStaticFrame) nHeight += 2;
+
+	return IsVerticalPosition(m_pParent->GetPosition()) ? CSize(nHeight, m_nWidth) : CSize(m_nWidth, nHeight);
+}
+
+INT_PTR CXTPControlTabWorkspace::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
+{
+	if (!m_pTabClientWnd)
+		return -1;
+
+	CXTPTabManagerItem* pItem = HitTest(point);
+
+	if (pItem)
+	{
+		if (GetPaintManager()->m_toolBehaviour == xtpTabToolTipNever)
+			return 0;
+
+		if (GetPaintManager()->m_toolBehaviour == xtpTabToolTipShrinkedOnly && !pItem->IsItemShrinked())
+			return 0;
+
+		CString strTip = GetItemTooltip(pItem);
+		if (strTip.IsEmpty())
+			return 0;
+
+		INT_PTR nHit = pItem->GetIndex();
+
+		CXTPToolTipContext::FillInToolInfo(pTI, GetParent()->GetSafeHwnd(), pItem->GetRect(), nHit, strTip);
+
+		return nHit;
+	}
+
+	return 0;
+}
+
+void CXTPControlTabWorkspace::OnClick(BOOL bKeyboard, CPoint point)
+{
+	if (!m_pTabClientWnd)
+	{
+		CXTPControlButton::OnClick(bKeyboard, point);
 		return;
 	}
 
-	SCROLLINFO  si;
-	si.cbSize = sizeof(SCROLLINFO);
-	si.nMin = 0;
-	si.nMax = 1;
-	si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;
-	si.nPage = 1;
-	si.nPos = 0;
+	if (!bKeyboard)
+	{
+		m_pTabClientWnd->m_bLockUpdate = TRUE;
+		m_pTabClientWnd->m_bDelayLock = TRUE;
 
-	BOOL bEnabled = FALSE;
-	if (nSBType == SB_VERT)
-	{
-		bEnabled = m_pActiveView->GetScrollBarInfoV(&si);
+		PerformClick(m_pParent->m_hWnd, point);
+
 	}
-	else if (nSBType == SB_HORZ)
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPTabClientWnd
+
+IMPLEMENT_DYNAMIC(CXTPTabClientWnd, CWnd)
+
+CXTPTabClientWnd::CXTPTabClientWnd()
+{
+	m_pParentFrame = NULL;
+	m_bAllowReorder = TRUE;
+
+	m_pPaintManager = new CXTPTabPaintManager();
+	m_pPaintManager->m_bBoldSelected = TRUE;
+
+	m_themeCommandBars = xtpThemeOffice2000;
+	m_bAutoTheme = TRUE;
+
+	m_bLockUpdate = FALSE;
+	m_bLockReposition = FALSE;
+	m_bForceToRecalc = FALSE;
+
+	m_pActiveWorkspace = NULL;
+	m_bHorizSplitting = TRUE;
+
+	m_bRefreshed = FALSE;
+
+	m_bThemedBackColor = TRUE;
+	m_bUpdateContents = FALSE;
+	m_bRightToLeft = FALSE;
+
+	m_bUseSplitterTracker = TRUE;
+	m_bIgnoreFlickersOnActivate = FALSE;
+
+	m_nSplitterSize = 5;
+
+	m_pDC = NULL;
+
+	m_hCursorHoriz = XTPResourceManager()->LoadCursor(XTP_IDC_HSPLITBAR);
+	m_hCursorVert = XTPResourceManager()->LoadCursor(XTP_IDC_VSPLITBAR);
+	m_hCursorNew = XTPResourceManager()->LoadCursor(XTP_IDC_WORKSPACE_NEW);
+	m_hCursorDelete = XTPResourceManager()->LoadCursor(XTP_IDC_WORKSPACE_DELETE);
+
+	m_bShowWorkspace = TRUE;
+	m_pTabWorkspace = NULL;
+	m_bEnableGroups = FALSE;
+	m_bUserWorkspace = FALSE;
+
+	m_nMsgUpdateSkinState = RegisterWindowMessage(_T("WM_SKINFRAMEWORK_UPDATESTATE"));
+	m_nMsgQuerySkinState = RegisterWindowMessage(_T("WM_SKINFRAMEWORK_QUERYSTATE"));
+
+	CImageList il;
+	il.Create(XTP_IDB_WORKSPACE_ICONS, 16, 1, RGB(0, 255, 0));
+	UINT nIDs[] =
 	{
-		bEnabled = m_pActiveView->GetScrollBarInfoH(&si);
+		XTP_ID_WORKSPACE_NEWHORIZONTAL, XTP_ID_WORKSPACE_NEWVERTICAL
+	};
+	XTPImageManager()->SetIcons(il, nIDs, 2, CSize(16, 16));
+
+	m_dwFlags = 0;
+
+	m_pDropTarget = new CTabClientDropTarget();
+	m_pDropTarget->m_pTabClientWnd = this;
+
+	m_pToolTipContext = new CXTPToolTipContext;
+
+	m_bDelayLock = FALSE;
+
+	m_newTabPosition = xtpWorkspaceNewTabRightMost;
+	m_afterCloseTabPosition = xtpWorkspaceActivateTopmost;
+
+}
+
+CXTPTabClientWnd::~CXTPTabClientWnd()
+{
+	CMDTARGET_RELEASE(m_pPaintManager);
+
+	if (m_pTabWorkspace != NULL)
+	{
+		m_pTabWorkspace->m_pTabClientWnd = NULL;
+		m_pTabWorkspace->DeleteAllItems();
 	}
 	else
 	{
-		ASSERT(FALSE);
-		return;
-	}
-
-	if (si.nPos > si.nMax + 1 - (int)si.nPage)
-	{
-		int nPos_raw = si.nPos;
-
-		si.nPos = si.nMax + 1 - (int)si.nPage;
-		if (nSBType == SB_VERT)
+		for (int i = 0; i < GetWorkspaceCount(); i++)
 		{
-			m_pActiveView->ScrollV(si.nPos, nPos_raw);
-		}
-		else if (nSBType == SB_HORZ)
-		{
-			m_pActiveView->ScrollH(si.nPos, nPos_raw);
-		}
-		else
-		{
-			ASSERT(FALSE);
-			return;
+			delete GetWorkspace(i);
 		}
 	}
 
-	if (bEnabled)
-	{
-		SetScrollInfo(nSBType, &si);
-	}
-	EnableScrollBarCtrl(nSBType, bEnabled);
+	SAFE_DELETE(m_pDropTarget);
 
-	::EnableScrollBar(m_hWnd, nSBType, (bEnabled && IsWindowEnabled()) ? ESB_ENABLE_BOTH : ESB_DISABLE_BOTH);
+	CMDTARGET_RELEASE(m_pToolTipContext);
+
 }
 
-void CXTPCalendarControl::AdjustLayout()
+BOOL CXTPTabClientWnd::IsLayoutRTL() const
 {
-	if (!::IsWindow(GetSafeHwnd()))
+	if (GetParentFrame()->GetExStyle() & WS_EX_LAYOUTRTL)
+		return TRUE;
+
+	return m_bRightToLeft;
+}
+
+#ifndef WS_EX_NOINHERITLAYOUT
+#define WS_EX_NOINHERITLAYOUT   0x00100000L
+#endif
+
+void CXTPTabClientWnd::SetLayoutRTL(BOOL bRightToLeft)
+{
+	if (!XTPSystemVersion()->IsLayoutRTLSupported())
 		return;
 
-	if (m_lcidActiveLocale != CXTPCalendarUtils::GetActiveLCID())
-	{
-		m_lcidActiveLocale = CXTPCalendarUtils::GetActiveLCID();
-
-		XTP_SAFE_CALL1(m_pPaintManager, RefreshMetrics());
-		XTP_SAFE_CALL1(m_pTheme, RefreshMetrics());
-	}
-
-	CClientDC dc(this);
-	CXTPClientRect rcView(this);
-
-	// horizontal scrolling support.
-	SCROLLINFO si;
-	if (m_pActiveView && m_pActiveView->GetScrollBarInfoH(&si))
-	{
-		if (m_pActiveView == m_pDayView)
-		{
-			rcView.left -= si.nPos;
-			rcView.right = rcView.left + si.nMax + 1 + m_pDayView->_GetTimeScaleWith();
-		}
-	}
-
-	AdjustLayout(&dc, rcView);
-}
-
-void CXTPCalendarControl::AdjustLayout(CDC* pDC, const CRect& rcView)
-{
-	if (m_pActiveView && !rcView.IsRectEmpty())
-	{
-//Fixed - no need to force non-Office2007 Theme for TimeLine mode
-		if (GetTheme() && !m_bTimelineMode)
-		{
-			m_pActiveView->AdjustLayout2(pDC, rcView, TRUE);
-		}
-		else
-		{
-			m_pActiveView->AdjustLayout(pDC, rcView, TRUE);
-		}
-	}
-}
-
-void CXTPCalendarControl::RedrawControl(BOOL bForce)
-{
-	m_bChanged = TRUE;
-
-	if (GetSafeHwnd() &&
-		(bForce || (m_nLockUpdateCount == 0)))
-	{
-		Invalidate(FALSE);
-		if (bForce)
-			UpdateWindow();
-	}
-}
-
-void CXTPCalendarControl::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	CXTPSmartPtrInternalT<CCmdTarget> ptrThisLock(this, TRUE);
-
-	CUpdateContext updateContext(this, xtpCalendarUpdateRedrawIfNeed);
-
-	BOOL bStartEditing = FALSE;
-	if (IsToolTipVisible())
-	{
-		CRect rcTip = m_pWndTip->GetHoverRect();
-		ScreenToClient(&rcTip);
-
-		HideToolTip();
-		bStartEditing = m_pWndTip->IsAdvancedMode() && rcTip.PtInRect(point) && !IsReadonlyMode();
-	}
-
-	SetCapture();
-	SetFocus();
-
-	if (m_pActiveView)
-	{
-		m_pActiveView->OnLButtonDown(nFlags, point);
-		if (bStartEditing)
-		{
-			m_pActiveView->StartEditNewEventInplace(_T(""));
-		}
-	}
-
-	CWnd::OnLButtonDown(nFlags, point);
-
-	// forward message to subscriber
-	DWORD dwPoint = MAKELONG(point.x, point.y);
-	SendNotification(XTP_NC_CALENDARLBUTTONDOWN, dwPoint, 0);
-}
-
-void CXTPCalendarControl::OnRButtonDown(UINT nFlags, CPoint point)
-{
-	CXTPSmartPtrInternalT<CCmdTarget> ptrThisLock(this, TRUE);
-
-	CUpdateContext updateContext(this, xtpCalendarUpdateRedrawIfNeed);
-
-	CWnd::OnRButtonDown(nFlags, point);
-
-	// forward message to subscriber
-	DWORD dwPoint = MAKELONG(point.x, point.y);
-	SendNotification(XTP_NC_CALENDARRBUTTONDOWN, dwPoint, 0);
-}
-
-void CXTPCalendarControl::OnRButtonUp(UINT nFlags, CPoint point)
-{
-	CXTPSmartPtrInternalT<CCmdTarget> ptrThisLock(this, TRUE);
-
-	CUpdateContext updateContext(this, xtpCalendarUpdateRedrawIfNeed);
-
-	// forward message to subscriber
-	DWORD dwPoint = MAKELONG(point.x, point.y);
-	SendNotification(XTP_NC_CALENDARRBUTTONUP, dwPoint, 0);
-
-	//if (!IsReadonlyMode())
-		CWnd::OnRButtonUp(nFlags, point); // OnContextMenu will be called.
-}
-
-void CXTPCalendarControl::OnLButtonUp(UINT nFlags, CPoint point)
-{
-	CXTPSmartPtrInternalT<CCmdTarget> ptrThisLock(this, TRUE);
-
-	CUpdateContext updateContext(this, xtpCalendarUpdateRedrawIfNeed);
-
-	if (GetCapture() == this)
-		ReleaseCapture();
-
-	if (m_pActiveView)
-	{
-		m_pActiveView->OnLButtonUp(nFlags, point);
-	}
-
-	CWnd::OnLButtonUp(nFlags, point);
-
-	// forward message to subscriber
-	DWORD dwPoint = MAKELONG(point.x, point.y);
-	SendNotification(XTP_NC_CALENDARLBUTTONUP, dwPoint, 0);
-}
-
-void CXTPCalendarControl::OnLButtonDblClk(UINT nFlags, CPoint point)
-{
-	CXTPSmartPtrInternalT<CCmdTarget> ptrThisLock(this, TRUE);
-
-	CUpdateContext updateContext(this, xtpCalendarUpdateRedrawIfNeed);
-
-	if (m_pActiveView)
-	{
-		if (!IsReadonlyMode())
-			m_pActiveView->OnLButtonDblClk(nFlags, point);
-	}
-
-	CWnd::OnLButtonDblClk(nFlags, point);
-
-	// forward message to subscriber
-	DWORD dwPoint = MAKELONG(point.x, point.y);
-	if (!IsReadonlyMode())
-		SendNotification(XTP_NC_CALENDARLBUTTONDBLCLICK, dwPoint, 0);
-}
-
-void CXTPCalendarControl::OnMouseMove(UINT nFlags, CPoint point)
-{
-	CXTPSmartPtrInternalT<CCmdTarget> ptrThisLock(this, TRUE);
-
-	CUpdateContext updateContext(this, xtpCalendarUpdateRedrawIfNeed);
-
-	m_mouseMode = xtpCalendarMouseNothing;
-
-	if (m_pActiveView)
-	{
-		m_pActiveView->OnMouseMove(nFlags, point);
-	}
-
-	CWnd::OnMouseMove(nFlags, point);
-
-	// forward message to subscriber
-	DWORD dwPoint = MAKELONG(point.x, point.y);
-	SendNotification(XTP_NC_CALENDARMOUSEMOVE, dwPoint, 0);
-
-	CXTPCalendarUtils::TrackMouseEvent(TME_LEAVE, m_hWnd);
-}
-
-void CXTPCalendarControl::OnMouseLeave()
-{
-	HideToolTip();
-
-	RedrawControl();
-}
-
-void CXTPCalendarControl::OnCaptureChanged(CWnd* pWnd)
-{
-	CWnd::OnCaptureChanged(pWnd);
-}
-
-void CXTPCalendarControl::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
-{
-	CUpdateContext updateContext(this, xtpCalendarUpdateRedrawIfNeed);
-	CViewChangedContext viewChanged(this, xtpCalendarViewChangedLock);
-
-	if (pScrollBar != NULL)
-	{
-		CWnd::OnVScroll(nSBCode, nPos, pScrollBar);
-		return;
-	}
-
-	if (!m_pActiveView)
-	{
-		return;
-	}
-
-	SCROLLINFO si;
-	m_pActiveView->GetScrollBarInfoV(&si);
-
-	int nCurPos = si.nPos;
-	int nCurPos_raw = si.nPos;
-	int nLimit = GetScrollLimit(SB_VERT);
-
-	// decide what to do for each different scroll event
-	switch (nSBCode)
-	{
-	case SB_TOP:
-		nCurPos = nCurPos_raw = 0;
-		break;
-	case SB_BOTTOM:
-		nCurPos = nCurPos_raw = nLimit;
-		break;
-	case SB_LINEUP:
-		nCurPos = max(nCurPos - 1, 0);
-		nCurPos_raw--;
-		break;
-	case SB_LINEDOWN:
-		nCurPos = min(nCurPos + 1, nLimit);
-		nCurPos_raw++;
-		break;
-	case SB_PAGEUP:
-		nCurPos = max(nCurPos - (int)si.nPage, 0);
-		nCurPos_raw -= (int)si.nPage;
-		break;
-	case SB_PAGEDOWN:
-		nCurPos = min(nCurPos + (int)si.nPage, nLimit);
-		nCurPos_raw += (int)si.nPage;
-		break;
-	case SB_THUMBTRACK:
-	case SB_THUMBPOSITION:
-		nCurPos = nCurPos_raw = nPos;
-		break;
-	case SB_ENDSCROLL:
-		m_pActiveView->OnScrollEnd(SB_HORZ); //??? WHY ???
-		return;
-	}
-
-	m_pActiveView->ScrollV(nCurPos, nCurPos_raw);
-
-	SetScrollPos(SB_VERT, nCurPos, FALSE);
-	AdjustScrollBar();
-}
-
-void CXTPCalendarControl::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
-{
-	CUpdateContext updateContext(this, xtpCalendarUpdateRedrawIfNeed);
-	CViewChangedContext viewChanged(this, xtpCalendarViewChangedLock);
-
-	if (pScrollBar != NULL)
-	{
-		CWnd::OnHScroll(nSBCode, nPos, pScrollBar);
-		return;
-	}
-
-	if (!m_pActiveView)
-	{
-		return;
-	}
-	int nViewType = m_pActiveView->GetViewType();
-	BOOL bDT(FALSE);
-	int iStP(5);
-	if (nViewType == xtpCalendarDayView || nViewType == xtpCalendarWorkWeekView)
-	{
-		bDT = TRUE;
-		iStP = ((CXTPCalendarDayView*) m_pActiveView)->RecalcMinColumnWidth();
-	}
-
-	SCROLLINFO si;
-	int nScrollStep = 1;
-	if (m_pActiveView->GetScrollBarInfoH(&si, &nScrollStep))
-	{
-		int nCurPos = si.nPos;
-		int nCurPos_raw = si.nPos;
-		int nLimit = GetScrollLimit(SB_HORZ);
-
-		// decide what to do for each different scroll event
-		switch (nSBCode)
-		{
-		case SB_LEFT:
-			nCurPos = nCurPos_raw = 0;
-			break;
-		case SB_RIGHT:
-			nCurPos = nCurPos_raw = nLimit;
-			break;
-		case SB_LINELEFT:
-			if (m_bTimelineMode)
-			{
-				nCurPos = max(nCurPos - nScrollStep, 0);
-				nCurPos_raw--;
-			}
-			else
-			{
-				nCurPos = max(nCurPos - iStP, 0);
-			}
-			break;
-		case SB_LINERIGHT:
-			if (m_bTimelineMode)
-			{
-				nCurPos = min(nCurPos + nScrollStep, nLimit);
-				nCurPos_raw++;
-			}
-			else
-			{
-				nCurPos = min(nCurPos + iStP, nLimit);
-			}
-			break;
-		case SB_PAGELEFT:
-			if (m_bTimelineMode)
-			{
-				nCurPos = max(nCurPos - (int)si.nPage, 0);
-				nCurPos_raw -= (int)si.nPage;
-			}
-			else
-			{
-				nCurPos = min(nCurPos - (int)si.nPage, nLimit);
-			}
-			break;
-		case SB_PAGERIGHT:
-			if (m_bTimelineMode)
-			{
-				nCurPos = min(nCurPos + (int)si.nPage, nLimit);
-				nCurPos_raw += (int)si.nPage;
-			}
-			else
-			{
-				nCurPos = min(nCurPos + (int)si.nPage, nLimit);
-			}
-			break;
-		case SB_THUMBTRACK:
-			//  break; //if we want screen update only on stop tracking
-		case SB_THUMBPOSITION:
-			nCurPos = nCurPos_raw = nPos;
-			break;
-		case SB_ENDSCROLL:
-			m_pActiveView->OnScrollEnd(SB_HORZ);
-			return;
-		}
-
-		m_pActiveView->ScrollH(nCurPos, nCurPos_raw);
-
-		SetScrollPos(SB_HORZ, nCurPos, FALSE);
-
-		AdjustScrollBar();
-	}
-}
-
-void CXTPCalendarControl::OnDraw(CDC* pDC)
-{
-	ASSERT(m_pActiveView && pDC);
-	if (m_pActiveView && pDC)
-		m_pActiveView->OnDraw(pDC);
-}
-
-void CXTPCalendarControl::Populate()
-{
-	if (IsToolTipVisible())
-	{
-		HideToolTip();
-	}
-
-	if (!m_pActiveView)
+	if (m_bUserWorkspace)
 		return;
 
-	if (::IsWindow(GetSafeHwnd()))
-	{
-		CUpdateContext updateContext(this, xtpCalendarUpdateRedrawIfNeed);
-		CViewChangedContext viewChanged(this, xtpCalendarViewChangedLock);
+	m_bRightToLeft = bRightToLeft;
 
-		CUpdateContext updateContext2(this, xtpCalendarUpdateAll);
-
-		m_pActiveView->Populate();
-	}
-	else
+	if (!m_bEnableGroups && GetWorkspaceCount() == 1)
 	{
-		m_pActiveView->Populate();
+		((CSingleWorkspace*)GetWorkspace(0))->ModifyStyleEx(m_bRightToLeft ? 0 : WS_EX_LAYOUTRTL,
+			m_bRightToLeft ? WS_EX_LAYOUTRTL : 0);
 	}
+
+	if (m_bEnableGroups)
+	{
+		ModifyStyleEx(m_bRightToLeft ? 0 : WS_EX_LAYOUTRTL,
+			m_bRightToLeft ? WS_EX_LAYOUTRTL | WS_EX_NOINHERITLAYOUT : 0);
+	}
+
+	RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_ALLCHILDREN);
+	m_pParentFrame->DelayRecalcLayout();
 }
 
-BOOL CXTPCalendarControl::UpdateMouseCursor()
+
+CXTPTabManagerItem* CXTPTabClientWnd::FindItem(const HWND hWnd) const
 {
-	if (!AfxGetApp())
+	// loop through all tab items
+	for (int nIndex = 0; nIndex < GetWorkspaceCount(); nIndex++)
 	{
-		return FALSE;
+		CXTPTabManagerItem* pItem = GetWorkspace(nIndex)->FindItem(hWnd);
+
+		if (pItem)
+			return pItem;
 	}
 
-	if (m_bReadOnlyMode)
-		return FALSE;
+	return NULL;
+}
 
-	switch (m_mouseMode)
-	{
-	case xtpCalendarMouseEventPreResizeV:
-	case xtpCalendarMouseEventResizingV:
-		SetCursor(AfxGetApp()->LoadStandardCursor(IDC_SIZENS));
-		break;
-	case xtpCalendarMouseEventPreResizeH:
-	case xtpCalendarMouseEventResizingH:
-		SetCursor(AfxGetApp()->LoadStandardCursor(IDC_SIZEWE));
-		break;
-	case xtpCalendarMouseEventPreDrag:
-		SetCursor(AfxGetApp()->LoadStandardCursor(IDC_SIZEALL));
-		break;
-	case xtpCalendarMouseEventDragCopy:
-		SetCursor(XTPResourceManager()->LoadCursor(XTP_IDC_CALENDAR_DRAGCOPY));
-		break;
-	case xtpCalendarMouseEventDragMove:
-		SetCursor(XTPResourceManager()->LoadCursor(XTP_IDC_CALENDAR_DRAGMOVE));
-		break;
-	case xtpCalendarMouseEventDraggingOut:
-		SetCursor(AfxGetApp()->LoadStandardCursor(IDC_NO));
-		break;
-	case xtpCalendarMouseNothing:
-	default:
-		return FALSE;
-	}
+BOOL CXTPTabClientWnd::OnBeforeItemClick(CXTPTabManagerItem* pItem)
+{
+	UNREFERENCED_PARAMETER(pItem);
+
+
 	return TRUE;
 }
 
-BOOL CXTPCalendarControl::IsToday(const COleDateTime& dtDate) const
+CWnd* CXTPTabClientWnd::MDIGetActive()
 {
-	COleDateTime dtToday = GetTodayDate();
-	dtToday = CXTPCalendarUtils::ResetTime(dtToday);
+	return (GetParentFrame()->MDIGetActive());
 
-	COleDateTime dtCheckDate = CXTPCalendarUtils::ResetTime(dtDate);
-	return (dtToday == dtCheckDate);
 }
 
-COleDateTime CXTPCalendarControl::GetTodayDate() const
+void CXTPTabClientWnd::MDIActivate(CWnd* pWnd)
 {
-	COleDateTime dtToday;
-	return (GetTodayDateOverride().GetStatus() == COleDateTime::valid ? GetTodayDateOverride() : CXTPCalendarUtils::GetCurrentTime());
+	if (!pWnd)
+		return;
+
+	GetParentFrame()->MDIActivate(pWnd);
 }
 
-void CXTPCalendarControl::SetTodayDateOverride(const COleDateTime& dtTodayOverride)
+CString CXTPTabClientWnd::GetItemTooltip(const CXTPTabManagerItem* pItem) const
 {
-	m_dtTodayOverride = dtTodayOverride;
-}
+	CString strTooltip = pItem->m_strToolTip;
+	if (!strTooltip.IsEmpty())
+		return strTooltip;
 
-COleDateTime CXTPCalendarControl::GetTodayDateOverride() const
-{
-	return m_dtTodayOverride;
-}
-
-void CXTPCalendarControl::ResetTodayDateOverride()
-{
-	m_dtTodayOverride.SetStatus(COleDateTime::invalid);
-}
-
-BOOL CXTPCalendarControl::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
-{
-	if (nHitTest == HTCLIENT)
+	CMDIChildWnd* pChild = DYNAMIC_DOWNCAST(CMDIChildWnd, CWnd::FromHandle(pItem->GetHandle()));
+	if (pChild)
 	{
-		if (UpdateMouseCursor())
-			return TRUE;
+		strTooltip = (LPCTSTR)pChild->SendMessage(WM_XTP_GETWINDOWTOOLTIP, (WPARAM)pItem);
+		if (!strTooltip.IsEmpty())
+			return strTooltip;
+
+
+		if (pChild->GetActiveDocument())
+			strTooltip = pChild->GetActiveDocument()->GetPathName();
+
+		if (!strTooltip.IsEmpty())
+			return strTooltip;
+	}
+	return pItem->GetCaption();
+}
+
+CString CXTPTabClientWnd::GetItemText(const CWnd* pChildWnd) const
+{
+	ASSERT(pChildWnd != NULL);
+	if (!pChildWnd)
+		return _T("");
+
+	ASSERT(pChildWnd->IsKindOf(RUNTIME_CLASS(CMDIChildWnd)));
+
+	CString sWindowText = (LPCTSTR)((CWnd*)pChildWnd)->
+		SendMessage(WM_XTP_GETWINDOWTEXT);
+
+	if (sWindowText.IsEmpty())
+	{
+		CDocument* pDoc = ((CMDIChildWnd*)pChildWnd)->GetActiveDocument();
+		if (pDoc != NULL)
+			sWindowText = pDoc->GetTitle();
+
+		if (sWindowText.IsEmpty())
+			pChildWnd->GetWindowText(sWindowText);
+	}
+
+	return sWindowText;
+}
+
+COLORREF CXTPTabClientWnd::GetItemColor(const CXTPTabManagerItem* pItem) const
+{
+	COLORREF clr = (COLORREF)::SendMessage(pItem->GetHandle(), WM_XTP_GETTABCOLOR, 0, 0);
+
+	if (clr != 0)
+	{
+		return clr;
+	}
+
+	return COLORREF_NULL;
+}
+
+
+HICON CXTPTabClientWnd::GetItemIcon(const CXTPTabManagerItem* pItem) const
+{
+	HWND hWnd = pItem->GetHandle();
+	HICON hIcon;
+
+	hIcon = (HICON)::SendMessage(hWnd, WM_XTP_GETTABICON, 0, 0);
+
+	if (!hIcon) hIcon = (HICON)::SendMessage(hWnd, WM_GETICON, ICON_SMALL, 0);
+	if (!hIcon) hIcon = (HICON)::SendMessage(hWnd, WM_GETICON, ICON_BIG, 0);
+	if (!hIcon) hIcon = (HICON)(ULONG_PTR)::GetClassLongPtr(hWnd, GCLP_HICONSM);
+	if (!hIcon) hIcon = (HICON)(ULONG_PTR)::GetClassLongPtr(hWnd, GCLP_HICON);
+
+	return hIcon ? hIcon : AfxGetApp()->LoadOEMIcon(OIC_WINLOGO);
+}
+
+
+BEGIN_MESSAGE_MAP(CXTPTabClientWnd, CWnd)
+	//{{AFX_MSG_MAP(CXTPTabClientWnd)
+	ON_MESSAGE(WM_MDIACTIVATE, OnMDIActivate)
+	ON_MESSAGE(WM_MDINEXT, OnMDINext)
+	ON_MESSAGE(WM_MDICREATE, OnMDICreate)
+	ON_MESSAGE(WM_MDIDESTROY, OnMDIDestroy)
+	ON_WM_SIZE()
+	ON_MESSAGE_VOID(WM_IDLEUPDATECMDUI, OnIdleUpdateCmdUI)
+	ON_WM_PAINT()
+	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
+	ON_WM_ERASEBKGND()
+	ON_WM_NCPAINT()
+	ON_WM_NCCALCSIZE()
+	ON_WM_NCACTIVATE()
+	ON_WM_LBUTTONDBLCLK()
+	ON_WM_PAINT()
+	ON_WM_ERASEBKGND()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_MOUSEMOVE()
+	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
+	ON_WM_SYSCOLORCHANGE()
+	ON_WM_SETCURSOR()
+	ON_WM_RBUTTONDOWN()
+
+	ON_COMMAND_RANGE(XTP_ID_WORKSPACE_MOVEPREVIOUS, XTP_ID_WORKSPACE_NEWVERTICAL, OnWorkspaceCommand)
+	ON_UPDATE_COMMAND_UI_RANGE(XTP_ID_WORKSPACE_MOVEPREVIOUS, XTP_ID_WORKSPACE_NEWVERTICAL, OnUpdateWorkspaceCommand)
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+CXTPTabClientWnd::CWorkspace* CXTPTabClientWnd::CreateWorkspace()
+{
+	if (m_pTabWorkspace != NULL)
+		return m_pTabWorkspace;
+
+	if (m_bUserWorkspace)
+		return NULL;
+
+	if (m_bEnableGroups)
+		return new CWorkspace();
+
+	return new CSingleWorkspace();
+}
+
+CXTPTabClientWnd::CWorkspace*  CXTPTabClientWnd::AddWorkspace(int nIndex)
+{
+	if (m_pDropTarget) m_pDropTarget->Revoke();
+
+	CWorkspace* pWorkspace = CreateWorkspace();
+	if (!pWorkspace)
+		return NULL;
+
+	if (m_bEnableGroups)
+	{
+		if (m_pDropTarget) m_pDropTarget->Register(this);
+	}
+	else if (!m_bUserWorkspace)
+	{
+		VERIFY(((CSingleWorkspace*)pWorkspace)->Create(AfxRegisterWndClass(CS_DBLCLKS, AfxGetApp()->LoadStandardCursor(IDC_ARROW)), _T(""), WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_CHILD | WS_VISIBLE, CXTPEmptyRect(), m_pParentFrame, 0));
+		if (m_pDropTarget) m_pDropTarget->Register((CSingleWorkspace*)pWorkspace);
+
+		if (IsLayoutRTL())
+		{
+			((CSingleWorkspace*)pWorkspace)->ModifyStyleEx(0, WS_EX_LAYOUTRTL);
+		}
+	}
+
+	if (nIndex == -1) nIndex = GetWorkspaceCount();
+	m_arrWorkspace.InsertAt(nIndex, pWorkspace);
+
+	pWorkspace->m_pTabClientWnd = this;
+	pWorkspace->SetActive(FALSE);
+	pWorkspace->SetItemMetrics(CSize(70, 18), 0, CSize(220, 0));
+	pWorkspace->GetNavigateButtons()->InsertAt(2, new CNavigateButtonActiveFiles(pWorkspace, this));
+
+	UpdateFlags(pWorkspace);
+
+	m_bForceToRecalc = TRUE;
+
+	return pWorkspace;
+
+}
+
+
+BOOL CXTPTabClientWnd::Attach(CXTPMDIFrameWnd* pParentFrame,
+	BOOL bEnableGroups /*= FALSE*/)
+{
+	ASSERT(GetWorkspaceCount() == 0);
+	ASSERT(pParentFrame != NULL);
+	if (!pParentFrame)
+		return FALSE;
+	ASSERT(::IsWindow(pParentFrame->GetSafeHwnd()));
+
+	m_bEnableGroups = bEnableGroups;
+
+
+	// check if already attached
+	if (IsAttached())
+	{
+		TRACE(_T("CXTPTabClientWnd::Attach: window has already been attached. Call Detach() function before !\n"));
+		return FALSE;
+	}
+
+	// make sure the specified window is/derived from CMDIFrameWnd class
+	if (!pParentFrame->IsKindOf(RUNTIME_CLASS(CMDIFrameWnd)))
+	{
+		TRACE(_T("CXTPTabClientWnd::Attach: specified frame window is not of CMDIFrameWnd class (or derived)!\n"));
+		return FALSE;
+	}
+
+	// try to sublass MDIClient window
+	if (!SubclassWindow(pParentFrame->m_hWndMDIClient))
+	{
+		TRACE(_T("CXTPTabClientWnd::Attach: failed to subclass MDI Client window\n"));
+		return FALSE;
+	}
+
+	SendMessage(m_nMsgUpdateSkinState);
+
+	// save the pointer to parent MDIFrame
+	m_pParentFrame = pParentFrame;
+
+	CheckCommandBarsTheme();
+	GetPaintManager()->RefreshMetrics();
+
+
+	SetWindowPos(NULL, 0, 0, 0, 0, SWP_NOZORDER);
+
+	// update the size and position of the tab control and MDIClient window
+	Reposition();
+
+	if (bEnableGroups)
+	{
+		::SetClassLong(m_hWnd, GCL_STYLE, ::GetClassLong(m_hWnd, GCL_STYLE) | CS_DBLCLKS);
+	}
+
+	// populate tab control with MDIChild windows if any exist at the moment
+	UpdateContents();
+
+	return TRUE;
+}
+
+void CXTPTabClientWnd::EnableToolTips(XTPTabToolTipBehaviour behaviour /*= xtpTabToolTipAlways*/)
+{
+	m_pPaintManager->EnableToolTips(behaviour);
+}
+
+void CXTPTabClientWnd::ShowWorkspace(BOOL bShow)
+{
+	if (m_bShowWorkspace == bShow)
+		return;
+
+	if (!m_bEnableGroups && !m_bUserWorkspace)
+	{
+		if (GetWorkspaceCount() == 1 && ((CSingleWorkspace*)GetWorkspace(0))->m_hWnd)
+		{
+			((CSingleWorkspace*)GetWorkspace(0))->ShowWindow(bShow ? SW_SHOW : SW_HIDE);
+		}
+
+		m_bShowWorkspace = bShow;
+		UpdateContents();
+		Reposition();
+	}
+}
+
+BOOL CXTPTabClientWnd::Detach()
+{
+	// check if any attached
+	if (!IsAttached())
+	{
+		TRACE(_T("CXTPTabClientWnd::Attach: there is nothing to detach! Window hasn't been attached!\n"));
+		return FALSE;
+	}
+
+	if (m_pDropTarget) m_pDropTarget->Revoke();
+
+	if (m_pTabWorkspace)
+	{
+		m_pTabWorkspace->m_pTabClientWnd = NULL;
+		m_pTabWorkspace->DeleteAllItems();
+	}
+	else
+	{
+		for (int i = 0; i < GetWorkspaceCount(); i++)
+		{
+			delete GetWorkspace(i);
+		}
+	}
+
+	m_arrWorkspace.RemoveAll();
+
+	m_pActiveWorkspace = NULL;
+
+	HWND hWnd = m_hWnd;
+	// unsubclass MDIClient window
+	UnsubclassWindow();
+
+	// update the size and position of the MDIClient window
+	if (::IsWindow(m_pParentFrame->GetSafeHwnd()))
+		m_pParentFrame->RecalcLayout();
+
+	m_pParentFrame = NULL;
+	::SendMessage(hWnd, m_nMsgUpdateSkinState, 0, 0);
+
+	return TRUE;
+}
+
+
+
+INT_PTR CXTPTabClientWnd::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
+{
+	if (XTPMouseManager()->IsTrackedLock())
+		return -1;
+
+	if (!m_bShowWorkspace)
+		return -1;
+
+	for (int i = 0; i < GetWorkspaceCount(); i++)
+	{
+		if (GetWorkspace(i)->GetControlRect().PtInRect(point))
+		{
+			return GetWorkspace(i)->PerformToolHitTest(m_hWnd, point, pTI);
+		}
+	}
+	return -1;
+}
+
+
+void CXTPTabClientWnd::CheckCommandBarsTheme()
+{
+	if (!m_bAutoTheme)
+		return;
+
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (!pCommandBars)
+		return;
+
+	XTPPaintTheme themeCommandBars = pCommandBars->GetPaintManager()->BaseTheme();
+
+	if (m_themeCommandBars != themeCommandBars)
+	{
+
+		m_pPaintManager->m_bStaticFrame = FALSE;
+		m_pPaintManager->m_clientFrame = xtpTabFrameBorder;
+		m_pPaintManager->m_bOneNoteColors = FALSE;
+		m_pPaintManager->m_bHotTracking = FALSE;
+		m_pPaintManager->m_rcButtonMargin.SetRect(0, 0, 0, 0);
+
+		switch (themeCommandBars)
+		{
+		case xtpThemeOfficeXP:
+			m_pPaintManager->SetAppearance(xtpTabAppearanceVisualStudio);
+			m_pPaintManager->m_bStaticFrame = TRUE;
+			m_pPaintManager->m_clientFrame = xtpTabFrameSingleLine;
+			break;
+
+		case xtpThemeOffice2007:
+			m_pPaintManager->m_bDisableLunaColors = FALSE;
+			m_pPaintManager->m_bOneNoteColors = TRUE;
+			m_pPaintManager->m_bHotTracking = TRUE;
+			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage2003);
+			m_pPaintManager->SetColor(xtpTabColorOffice2007);
+			break;
+
+		case xtpThemeRibbon:
+			m_pPaintManager->m_bDisableLunaColors = FALSE;
+			m_pPaintManager->m_bOneNoteColors = FALSE;
+			m_pPaintManager->m_bHotTracking = TRUE;
+			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage2007);
+			m_pPaintManager->m_rcButtonMargin.SetRect(3, 2, 3, 1);
+			break;
+
+		case xtpThemeOffice2003:
+			m_pPaintManager->m_bDisableLunaColors = FALSE;
+			m_pPaintManager->m_bOneNoteColors = TRUE;
+			m_pPaintManager->m_bHotTracking = TRUE;
+			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage2003);
+			break;
+
+		case xtpThemeNativeWinXP:
+			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage);
+			m_pPaintManager->SetColor(xtpTabColorWinXP);
+			m_pPaintManager->m_bHotTracking = TRUE;
+			break;
+
+		case xtpThemeWhidbey:
+			m_pPaintManager->m_bStaticFrame = TRUE;
+			m_pPaintManager->m_clientFrame = xtpTabFrameSingleLine;
+			m_pPaintManager->m_bDisableLunaColors = TRUE;
+			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage2003);
+			m_pPaintManager->SetColor(xtpTabColorWhidbey);
+			break;
+
+		default:
+			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage);
+			break;
+		}
+
+		m_themeCommandBars = themeCommandBars;
+
+		Refresh();
+
+	}
+}
+
+int CXTPTabClientWnd::GetWorkspaceCount() const
+{
+	return (int)m_arrWorkspace.GetSize();
+}
+
+CXTPTabClientWnd::CWorkspace* CXTPTabClientWnd::GetWorkspace(int nIndex) const
+{
+	return m_arrWorkspace[nIndex];
+}
+
+
+void CXTPTabClientWnd::OnIdleUpdateCmdUI()
+{
+	if (m_bDelayLock)
+	{
+		m_bDelayLock = FALSE;
+		m_bLockUpdate = FALSE;
+	}
+
+	UpdateContents();
+}
+
+CXTPTabManagerItem* CXTPTabClientWnd::AddItem(CWnd* pChildWnd)
+{
+#ifdef _DEBUG
+	if (m_bEnableGroups)
+	{
+		ASSERT((pChildWnd->GetStyle() & WS_MAXIMIZE) == 0);
+	}
+#endif
+
+	if (GetWorkspaceCount() == 0)
+		AddWorkspace();
+
+	if (GetWorkspaceCount() == 0)
+		return NULL;
+
+	CWorkspace* pActiveWorkspace = m_pActiveWorkspace ? m_pActiveWorkspace : m_arrWorkspace[GetWorkspaceCount() - 1];
+
+	return pActiveWorkspace->AddItem(pChildWnd);
+}
+
+
+void CXTPTabClientWnd::SetActiveWorkspace(CWorkspace* pWorkspace)
+{
+	if (m_pActiveWorkspace != pWorkspace)
+	{
+		if (m_pActiveWorkspace)
+			m_pActiveWorkspace->SetActive(FALSE);
+
+		m_pActiveWorkspace = pWorkspace;
+		m_pActiveWorkspace->SetActive(TRUE);
+	}
+}
+
+void CXTPTabClientWnd::WorkspaceToScreen(LPPOINT lpPoint) const
+{
+	if (m_bEnableGroups)
+	{
+		ClientToScreen(lpPoint);
+	}
+	else if (GetWorkspaceCount() != 0)
+	{
+		CWorkspace* pWorkspace = GetWorkspace(0);
+		pWorkspace->GetWindow()->ClientToScreen(lpPoint);
+	}
+
+}
+void CXTPTabClientWnd::ScreenToWorkspace(LPPOINT lpPoint) const
+{
+	if (m_bEnableGroups)
+	{
+		ScreenToClient(lpPoint);
+	}
+	else if (GetWorkspaceCount() != 0)
+	{
+		CWorkspace* pWorkspace = GetWorkspace(0);
+		pWorkspace->GetWindow()->ScreenToClient(lpPoint);
+	}
+}
+
+
+void CXTPTabClientWnd::Refresh(BOOL bRecalcLayout)
+{
+	if (!IsAttached())
+		return;
+
+	if (m_bRefreshed)
+		return;
+
+	m_bRefreshed = TRUE;
+
+	UpdateContents();
+
+	if (GetWorkspaceCount() != 0)
+	{
+		CPoint pt;
+		GetCursorPos(&pt);
+		ScreenToWorkspace(&pt);
+
+		if (m_bEnableGroups)
+		{
+			OnMouseMove(0, pt);
+		}
+		else if (!m_bUserWorkspace)
+		{
+			((CSingleWorkspace*)GetWorkspace(0))->OnMouseMove(0, pt);
+		}
+	}
+
+	Invalidate(FALSE);
+
+	if (bRecalcLayout)
+	{
+		if (m_bEnableGroups)
+			SetWindowPos(NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
+
+		CXTPCommandBars* pCommandBars = GetCommandBars();
+		if (pCommandBars)
+			pCommandBars->RecalcFrameLayout();
+	}
+
+	m_bRefreshed = FALSE;
+}
+
+
+void CXTPTabClientWnd::UpdateContents()
+{
+	if (m_hWnd == 0)
+		return;
+
+	if (!m_bShowWorkspace)
+		return;
+
+	if (m_bLockUpdate)
+		return;
+
+	// check MDI windows
+	CFrameWnd* pFrameWnd = GetParentFrame();
+	if (pFrameWnd == NULL)
+		return;
+
+	if (m_bUpdateContents)
+		return;
+
+	m_bUpdateContents = TRUE;
+
+	CheckCommandBarsTheme();
+
+	m_bLockReposition = TRUE;
+
+	// get pointer to currently active MDIChild
+	CWnd* pActiveChildWnd = MDIGetActive();
+
+	CXTPTabManagerItem* pActiveItem = NULL, *pNewItem = NULL;
+
+	int i;
+	for (i = 0; i < GetWorkspaceCount(); i++)
+	{
+		for (int nIndex = 0; nIndex < GetWorkspace(i)->GetItemCount(); nIndex++)
+			GetWorkspace(i)->GetItem(nIndex)->m_bFound = FALSE;
+	}
+
+
+	// start enumerating from currently active MDIChild
+	CWnd* pChildWnd = GetWindow(GW_CHILD);
+
+	// enumerate all child windows
+	while (pChildWnd)
+	{
+		// see if can find
+		CXTPTabManagerItem* pFoundItem = FindItem(pChildWnd->GetSafeHwnd());
+
+		if (pFoundItem != NULL)
+		{
+			if ((pChildWnd->GetStyle() & WS_VISIBLE) == WS_VISIBLE)
+			{
+				// update text if necessary
+				pFoundItem->SetCaption(GetItemText(pChildWnd));
+
+			}
+			else
+			{
+				pFoundItem->Remove();
+				pFoundItem = NULL;
+			}
+		}
+		else
+		{
+			if ((pChildWnd->GetStyle() & WS_VISIBLE) == WS_VISIBLE)
+			{
+				// add item
+				pNewItem = pFoundItem = AddItem(pChildWnd);
+				if (pNewItem)
+				{
+
+					pFoundItem->m_hWnd = pChildWnd->GetSafeHwnd();
+
+					pFrameWnd->SendMessage(WM_XTP_NEWTABITEM, (WPARAM)pNewItem);
+					pNewItem->GetTabManager()->SetSelectedItem(pNewItem);
+				}
+
+			}
+		}
+		if (pFoundItem)
+		{
+			pFoundItem->m_bFound = TRUE;
+
+			if (pChildWnd == pActiveChildWnd)
+				pActiveItem = pFoundItem;
+		}
+
+		// get next MDIChild
+		pChildWnd = pChildWnd->GetWindow(GW_HWNDNEXT);
+	}
+
+	for (i = GetWorkspaceCount() - 1; i >= 0; i--)
+	{
+		CWorkspace* pWorkspace = GetWorkspace(i);
+		for (int nIndex = pWorkspace->GetItemCount() - 1; nIndex >= 0; nIndex--)
+		{
+			CXTPTabManagerItem* pItem = pWorkspace->GetItem(nIndex);
+			if (!pItem->m_bFound)
+			{
+				pItem->Remove();
+			}
+		}
+
+		if (pWorkspace->GetItemCount() == 0)
+		{
+			if (pWorkspace == m_pActiveWorkspace)
+				m_pActiveWorkspace = NULL;
+
+			CWorkspace* pWorkcpaceGrow = i == 0 ? (GetWorkspaceCount() > 1 ? GetWorkspace(i + 1): NULL) : GetWorkspace(i - 1);
+			if (pWorkcpaceGrow)
+			{
+				pWorkcpaceGrow->m_dHeight += pWorkspace->m_dHeight + m_nSplitterSize;
+			}
+
+			if (pWorkspace != m_pTabWorkspace) delete pWorkspace;
+			m_arrWorkspace.RemoveAt(i);
+
+			m_bForceToRecalc = TRUE;
+
+			if (m_bEnableGroups)
+			{
+				Invalidate(FALSE);
+			}
+		}
+	}
+
+	// set the active item
+	if (pActiveItem != NULL)
+	{
+		if (pActiveItem->GetTabManager()->GetSelectedItem() != pActiveItem)
+		{
+			pActiveItem->GetTabManager()->SetSelectedItem(pActiveItem);
+		}
+
+		SetActiveWorkspace((CWorkspace*)pActiveItem->GetTabManager());
+
+	}
+
+	m_bLockReposition = FALSE;
+
+	if (m_bForceToRecalc)
+	{
+		// update the size and position of the tab control and MDIClient window
+		if (::IsWindow(GetParentFrame()->GetSafeHwnd()))
+		{
+			Reposition();
+		}
+
+		if (pNewItem)
+			pNewItem->GetTabManager()->EnsureVisible(pNewItem);
+
+
+		m_bForceToRecalc = FALSE;
+	}
+
+	m_bUpdateContents = FALSE;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPTabClientWnd message handlers
+
+
+// handler for WM_MDIACTIVATE message. Will select corresponding
+// tab control item
+LRESULT CXTPTabClientWnd::OnMDIActivate(WPARAM /*wParam*/, LPARAM /*lParam*/)
+{
+	LRESULT lResult = 0;
+
+	if (m_bEnableGroups || m_bIgnoreFlickersOnActivate || !m_bShowWorkspace)
+	{
+		lResult = Default();
+	}
+	else
+	{
+		SetRedraw(FALSE);
+
+		lResult = Default();
+
+		SetRedraw(TRUE);
+		RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_ALLCHILDREN);
+	}
+
+	UpdateContents();
+	return lResult;
+}
+
+
+// handler for WM_MDICREATE message. Will add new item into the
+// tab control
+LRESULT CXTPTabClientWnd::OnMDICreate(WPARAM /*wParam*/, LPARAM /*lParam*/)
+{
+	LRESULT lResult = Default();
+
+	if (lResult && m_bEnableGroups)
+	{
+		CWnd* pWnd = CWnd::FromHandle((HWND)lResult);
+		if (pWnd)
+		{
+			pWnd->ModifyStyle(WS_BORDER | WS_DLGFRAME | WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX, 0);
+			pWnd->ModifyStyleEx(WS_EX_CLIENTEDGE, 0);
+			pWnd->MoveWindow(0, 0, 0, 0);
+		}
+	}
+
+	UpdateContents();
+	return lResult;
+}
+
+void CXTPTabClientWnd::ActivateNextItem(CXTPTabManagerItem* pItem)
+{
+	if (!pItem)
+		return;
+
+	CXTPTabManagerItem* pItemActivate = pItem->GetTabManager()->GetItem(pItem->GetIndex() + 1);
+
+	if (!pItemActivate)
+	{
+		pItemActivate = pItem->GetTabManager()->GetItem(pItem->GetIndex() - 1);
+	}
+
+	if (!pItemActivate)
+		return;
+
+	HWND hWndActivate = pItemActivate->GetHandle();
+	if (!hWndActivate)
+		return;
+
+	::BringWindowToTop(hWndActivate);
+}
+
+// handler for WM_MDIDESTROY message. Will remove the correspondent item
+// from the tab control
+LRESULT CXTPTabClientWnd::OnMDIDestroy(WPARAM wParam, LPARAM /*lParam*/)
+{
+	if (m_afterCloseTabPosition == xtpWorkspaceActivateNextToClosed)
+		ActivateNextItem(FindItem((HWND)wParam));
+
+	LRESULT lResult = Default();
+	UpdateContents();
+	return lResult;
+}
+
+LRESULT CXTPTabClientWnd::OnMDINext(WPARAM /*wParam*/, LPARAM /*lParam*/)
+{
+	LRESULT lResult = Default();
+	UpdateContents();
+	return lResult;
+}
+
+BOOL CXTPTabClientWnd::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
+{
+	if (nHitTest == HTCLIENT && m_bEnableGroups)
+	{
+		CPoint point;
+
+		GetCursorPos(&point);
+		ScreenToClient(&point);
+
+		for (int nIndex = 0; nIndex < GetWorkspaceCount(); nIndex++)
+		{
+			CWorkspace* pWorkspace = GetWorkspace(nIndex);
+			if (pWorkspace->m_rcSplitter.PtInRect(point))
+			{
+				SetCursor(!m_bHorizSplitting ? m_hCursorHoriz : m_hCursorVert);
+				return TRUE;
+			}
+		}
 	}
 
 	return CWnd::OnSetCursor(pWnd, nHitTest, message);
 }
 
-BOOL CXTPCalendarControl::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
+void CXTPTabClientWnd::CalcWindowRect(LPRECT lpClientRect, UINT nAdjustType)
 {
-	UINT uiMsg;
-	int nScrollsCount = 0;
-	// calculate what should be sent
-	if (m_nRowsPerWheel == -1)
+	if (GetWorkspaceCount() == 0 || !m_bShowWorkspace || m_bUserWorkspace)
 	{
-		// A m_nRowsPerWheel value less than 0 indicates that the mouse wheel scrolls whole pages, not just lines.
-		int nPagesScrolled = zDelta / 120;
-		uiMsg = nPagesScrolled > 0 ? SB_PAGEUP : SB_PAGEDOWN;
-		nScrollsCount = nPagesScrolled > 0 ? nPagesScrolled : -nPagesScrolled;
+		CWnd::CalcWindowRect(lpClientRect, nAdjustType);
+		return;
+	}
+
+	if (!m_bEnableGroups)
+	{
+		CSingleWorkspace* pWorkspace = (CSingleWorkspace*)GetWorkspace(0);
+
+		// now do the laying out
+		HDWP dwh = BeginDeferWindowPos(2);
+
+		// move tab window
+		if (::IsWindow(pWorkspace->m_hWnd) && (pWorkspace->GetStyle() & WS_VISIBLE) == WS_VISIBLE)
+		{
+			{
+
+				// move tab control
+				dwh = ::DeferWindowPos(dwh, pWorkspace->m_hWnd, NULL, lpClientRect->left,
+					lpClientRect->top,
+					lpClientRect->right-lpClientRect->left,
+					lpClientRect->bottom-lpClientRect->top, SWP_NOZORDER);
+
+
+				CClientDC dc(pWorkspace);
+
+				CRect rectTab(lpClientRect);
+				rectTab.OffsetRect(-rectTab.TopLeft());
+
+				GetPaintManager()->RepositionTabControl(pWorkspace, &dc, rectTab);
+
+				CRect rectTabAdjust(lpClientRect);
+				GetPaintManager()->AdjustClientRect(pWorkspace, rectTabAdjust);
+				*lpClientRect = rectTabAdjust;
+
+
+				pWorkspace->Invalidate(FALSE);
+			}
+
+			if (lpClientRect->bottom < lpClientRect->top ||
+				lpClientRect->right < lpClientRect->left)
+				::memset(lpClientRect, 0, sizeof(RECT));
+
+			::ShowWindow(pWorkspace->m_hWnd, SW_SHOWNA);
+		}
+
+		// move MDIClient window
+		dwh = ::DeferWindowPos(dwh, m_hWnd, NULL, lpClientRect->left, lpClientRect->top,
+			lpClientRect->right - lpClientRect->left,
+			lpClientRect->bottom - lpClientRect->top,
+			SWP_NOZORDER);
+
+		EndDeferWindowPos(dwh);
 	}
 	else
 	{
-		int nRowsScrolled = m_nRowsPerWheel * zDelta / 120;
-		uiMsg = nRowsScrolled > 0 ? SB_LINEUP : SB_LINEDOWN;
-		nScrollsCount = nRowsScrolled > 0 ? nRowsScrolled : -nRowsScrolled;
-	}
-	// send scroll messages
-	for (int i = 0; i < nScrollsCount; i++)
-		PostMessage(WM_VSCROLL, uiMsg, 0);
 
-	// prevent parent from scrolling while calendar scroll pos is not min or max.
-	//
-	if (m_pActiveView)
-	{
-		SCROLLINFO  si;
-		::ZeroMemory(&si, sizeof(si));
-		si.cbSize = sizeof(SCROLLINFO);
+		CClientDC dc(this);
 
-		BOOL bScrollEnabled = m_pActiveView->GetScrollBarInfoV(&si);
+		CRect rcBorders(2, 2, -2, -2);
+		m_pPaintManager->GetAppearanceSet()->DrawWorkspacePart(NULL, rcBorders, xtpTabWorkspacePartWidth);
 
-		if (m_bTimelineMode)
-			bScrollEnabled = m_pActiveView->GetScrollBarInfoH(&si);
+		CRect rcClient(0, 0, lpClientRect->right-lpClientRect->left + rcBorders.Width(), lpClientRect->bottom-lpClientRect->top + rcBorders.Height());
 
-		if (bScrollEnabled)
+		int nIndex;
+		double dTotalHeight = 0;
+		int nWorkspaceCount = GetWorkspaceCount();
+
+		for (nIndex = 0; nIndex < nWorkspaceCount; nIndex++)
 		{
-			int nViewType = m_pActiveView->GetViewType();
+			dTotalHeight += GetWorkspace(nIndex)->m_dHeight;
+		}
+		int nTotalHeight = (m_bHorizSplitting ? rcClient.Height() : rcClient.Width()) - m_nSplitterSize * (nWorkspaceCount - 1);
+		double dHeight = 0;
+		if ((int)dTotalHeight == 0) dTotalHeight = 1.0;
 
-			if (nViewType == xtpCalendarDayView ||
-				nViewType == xtpCalendarWorkWeekView)
+		CRect rcWorkspace(rcClient);
+
+		for (nIndex = 0; nIndex < nWorkspaceCount; nIndex++)
+		{
+			CWorkspace* pWorkspace = GetWorkspace(nIndex);
+
+			CRect rc(rcClient);
+			if (nIndex != nWorkspaceCount - 1)
 			{
-				INT nPosMin, nPosMax;
-				GetScrollRange(SB_VERT, &nPosMin, &nPosMax);
-				nPosMax = GetScrollLimit(SB_VERT);
+				dHeight = dHeight += pWorkspace->m_dHeight;
 
-				int nPos = GetScrollPos(SB_VERT);
+				int nHeight = int(dHeight * nTotalHeight / dTotalHeight) + m_nSplitterSize * nIndex;
 
-				if (zDelta > 0 && nPos > nPosMin || zDelta < 0 && nPos < nPosMax)
-					return TRUE;
-			}
-			else if (m_bTimelineMode)
-			{
-				//if (nFlags & MK_LBUTTON)
-				if (nFlags & MK_MBUTTON)
-					PostMessage(WM_VSCROLL, uiMsg, 0);
+				if (m_bHorizSplitting)
+				{
+					pWorkspace->m_rcSplitter.SetRect(rc.left, rcWorkspace.top + nHeight, rc.right, rcWorkspace.top + nHeight + m_nSplitterSize);
+
+					rc.bottom = rcWorkspace.top + nHeight;
+					rcClient.top = rc.bottom + m_nSplitterSize;
+				}
 				else
-					PostMessage(WM_HSCROLL, uiMsg, 0);
+				{
+					pWorkspace->m_rcSplitter.SetRect(rcWorkspace.left + nHeight, rc.top, rcWorkspace.left + nHeight + m_nSplitterSize, rc.bottom);
 
-				return TRUE;
+					rc.right = rcWorkspace.left + nHeight;
+					rcClient.left = rc.right + m_nSplitterSize;
+				}
 			}
 			else
 			{
-				return TRUE;
+				pWorkspace->m_rcSplitter.SetRectEmpty();
+
+			}
+
+
+			GetPaintManager()->RepositionTabControl(pWorkspace, &dc, rc);
+			rc = pWorkspace->GetClientRect();
+
+			for (int i = 0; i < pWorkspace->GetItemCount(); i++)
+			{
+				HWND hWndChild = pWorkspace->GetItem(i)->m_hWnd;
+				::MoveWindow(hWndChild, rc.left, rc.top, rc.Width(), rc.Height(), TRUE);
 			}
 		}
+
+		Invalidate(FALSE);
+		//UpdateWindow();
 	}
 
-	return CWnd::OnMouseWheel(nFlags, zDelta, pt);
+	CWnd::CalcWindowRect(lpClientRect, nAdjustType);
 }
 
-//////////////////////////////////////////////////////////////////////////
-// View related
-//
-void CXTPCalendarControl::SetLongDayHeaderFormat(LPCTSTR pcszCustomFormat)
+// update the size of the tab control and the MDIClient window
+void CXTPTabClientWnd::OnSize(UINT nType, int cx, int cy)
 {
-	GetMonthView()->SetLongDayHeaderFormat(pcszCustomFormat);
+	CWnd::OnSize(nType, cx, cy);
 }
 
-void CXTPCalendarControl::SetSmallDayHeaderFormat(LPCTSTR pcszCustomFormat)
+BOOL CXTPTabClientWnd::OnEraseBkgnd(CDC*)
 {
-	GetMonthView()->SetSmallDayHeaderFormat(pcszCustomFormat);
+	if (!m_bThemedBackColor && !m_bEnableGroups)
+	{
+		return (BOOL)Default();
+	}
+	return TRUE;
 }
 
-int CXTPCalendarControl::GetTimeLineScale() const
+LRESULT CXTPTabClientWnd::OnPrintClient(WPARAM wParam, LPARAM)
 {
-	if (m_pTimeLineView)
-		return m_pTimeLineView->GetTimeScaleID();
-	return -1;
+	if (!m_bThemedBackColor && !m_bEnableGroups)
+	{
+		return (LRESULT)Default();
+	}
+
+	CDC* pDC = CDC::FromHandle((HDC)wParam);
+	if (pDC)
+	{
+		CXTPClientRect rc(this);
+		OnDraw(pDC, rc);
+	}
+	return TRUE;
 }
 
-void CXTPCalendarControl::SetActiveView(CXTPCalendarView* pView)
+void CXTPTabClientWnd::OnFillBackground(CDC* pDC, CRect rc)
 {
-	CViewChangedContext viewChanged(this);
-
-	CMDTARGET_ADDREF(pView);
-
-	CXTPCalendarView* pInactiveView = m_pActiveView;
-	if (pInactiveView)
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (pCommandBars)
 	{
-		pInactiveView->OnActivateView(FALSE, pView, pInactiveView);
-	}
-
-	m_pActiveView = pView;
-
-	if (m_pActiveView)
-	{
-		m_pActiveView->OnActivateView(TRUE, m_pActiveView, pInactiveView);
-	}
-
-	if (m_pActiveView)
-	{
-		m_bTimelineMode = m_pActiveView->GetViewType() == xtpCalendarTimeLineView;
-	}
-
-	CMDTARGET_RELEASE(pInactiveView);
-
-}
-
-void CXTPCalendarControl::SwitchActiveView(XTPCalendarViewType eViewType)
-{
-	if (eViewType == xtpCalendarFullWeekView)
-		eViewType = xtpCalendarWeekView;
-
-	m_eViewType = eViewType;
-
-	CUpdateContext updateContext(this, xtpCalendarUpdateRedrawIfNeed);
-	CViewChangedContext viewChanged(this, xtpCalendarViewChangedLock);
-
-	CUpdateContext updateContext2(this, xtpCalendarUpdateRedraw | xtpCalendarUpdateLayout);
-
-	CXTPCalendarView* pPrevView = GetActiveView();
-	CXTPCalendarViewEventsPtr ptrSelEvents;
-
-	COleDateTime dtSelStartDate, dtSelDay, dtSelDay2, dtSelEvent, dtSelStartDateTL;
-	COleDateTimeSpan spSelDayDuration(0.);
-	BOOL bSelDay = FALSE;
-	BOOL bSelAllDay = FALSE;
-	BOOL bTL = FALSE;
-	dtSelStartDateTL = COleDateTime::GetCurrentTime();
-
-	if (pPrevView)
-	{
-		bSelDay = pPrevView->GetSelection(&dtSelDay, &dtSelDay2, &bSelAllDay);
-		if (bSelDay)
-		{
-			spSelDayDuration = CXTPCalendarUtils::ResetTime(dtSelDay2) - CXTPCalendarUtils::ResetTime(dtSelDay);
-			if (bSelAllDay && spSelDayDuration.GetTotalDays() >= 1)
-				spSelDayDuration -= COleDateTimeSpan(1, 0, 0, 0);
-//TRACE(dtSelDay.Format(_T("prev view selection start %d %m %Y\n")));
-//TRACE(dtSelDay2.Format(_T("prev view selection end %d %m %Y\n")));
-		}
-		ptrSelEvents = pPrevView->GetSelectedEvents();
-
-		dtSelEvent.SetDate(9999, 1, 1);
-		int nCount = ptrSelEvents ? ptrSelEvents->GetCount() : 0;
-		for (int i = 0; i < nCount; i++)
-		{
-			COleDateTime dtEvent = XTP_SAFE_GET3(ptrSelEvents, GetAt(i), GetEvent(), GetStartTime(), (DATE)0);
-			dtSelEvent = min(dtSelEvent, dtEvent);
-		}
-
-		dtSelStartDate = nCount ? dtSelEvent : (bSelDay ? dtSelDay : COleDateTime::GetCurrentTime());
-//<<----------------------------------------------------------------------------------------->>
-		if (pPrevView->IsKindOf(RUNTIME_CLASS(CXTPCalendarTimeLineView)))
-		{
-			bTL = TRUE;
-			dtSelStartDateTL = ((CXTPCalendarTimeLineView*) pPrevView)->GetStartViewDate();
-//TRACE(dtSelStartDateTL.Format(_T("prev TimeLineView StartViewDate %d %m %Y\n")));
-		}
-//<<----------------------------------------------------------------------------------------->>
-	}
-	if (bTL)
-		dtSelStartDate = dtSelStartDateTL;
-	COleDateTime dtWDStartTime = XTP_SAFE_GET1(GetCalendarOptions(), dtWorkDayStartTime, (DATE)0);
-
-	if (eViewType == xtpCalendarDayView)
-	{
-		SetActiveView(GetDayView());
-
-		CXTPCalendarDayView* pDayView = DYNAMIC_DOWNCAST(CXTPCalendarDayView, GetDayView());
-		if (!pDayView)
-			return;
-
-		pDayView->ResetSelection();
-		pDayView->ShowDay(dtSelStartDate);
-		pDayView->GetLayout().m_nTopAllDayRow = 0;
-
-		COleDateTime dtSelBegin = CXTPCalendarUtils::UpdateTime(dtSelStartDate, dtWDStartTime);
-		COleDateTime dtSelEnd = dtSelBegin + pDayView->GetCellDuration();
-//TRACE(dtSelBegin.Format(_T("xtpCalendarDayView %d %m %Y\n")));
-		pDayView->SetSelection(dtSelBegin, dtSelEnd, FALSE);
-	}
-	else if (eViewType == xtpCalendarWorkWeekView)
-	{
-		SetActiveView(GetDayView());
-
-		CXTPCalendarDayView* pDayView = DYNAMIC_DOWNCAST(CXTPCalendarDayView, GetDayView());
-		if (!pDayView)
-			return;
-
-		pDayView->ShowWorkingDays(dtSelStartDate);
-		pDayView->ResetSelection();
-		pDayView->GetLayout().m_nTopAllDayRow = 0;
-
-		COleDateTime dtSelBegin = CXTPCalendarUtils::UpdateTime(pDayView->GetViewDayDate(0), dtWDStartTime);
-		if (bTL)
-			dtSelBegin = dtSelStartDateTL;
-		COleDateTime dtSelEnd = dtSelBegin + pDayView->GetCellDuration();
-//TRACE(dtSelBegin.Format(_T("xtpCalendarWorkWeekView %d %m %Y\n")));
-		pDayView->SetSelection(dtSelBegin, dtSelEnd, FALSE);
-	}
-	else if (eViewType == xtpCalendarWeekView)
-	{
-		if (m_bMultiColumnWeekMode)
-		{
-			SetActiveView(GetDayView());
-
-			CXTPCalendarDayView* pDayView = DYNAMIC_DOWNCAST(CXTPCalendarDayView, GetDayView());
-			if (!pDayView)
-				return;
-
-			COleDateTime dtWeekDay(dtSelStartDate);
-			int nFirstWeekDay = GetFirstDayOfWeek();
-			// adjust beginning of the week iteration period to the FirstDayOfWeek
-			while (dtWeekDay.GetDayOfWeek() != nFirstWeekDay)
-				dtWeekDay -= COleDateTimeSpan(1);
-
-			pDayView->ShowDays(dtWeekDay, dtWeekDay + COleDateTimeSpan(6));
-			pDayView->ResetSelection();
-			pDayView->GetLayout().m_nTopAllDayRow = 0;
-
-			COleDateTime dtSelBegin = CXTPCalendarUtils::UpdateTime(pDayView->GetViewDayDate(0), dtWDStartTime);
-			if (bTL)
-				dtSelBegin = dtSelStartDateTL;
-			COleDateTime dtSelEnd = dtSelBegin + pDayView->GetCellDuration();
-//TRACE(dtSelBegin.Format(_T("MultiColumnWeekMode %d %m %Y\n")));
-			pDayView->SetSelection(dtSelBegin, dtSelEnd, FALSE);
-		}
+		if (!m_bThemedBackColor)
+			DefWindowProc(WM_PAINT, (WPARAM)pDC->m_hDC, 0);
 		else
-		{
-			SetActiveView(GetWeekView());
-
-			CXTPCalendarWeekView* pWeekView = DYNAMIC_DOWNCAST(CXTPCalendarWeekView, GetWeekView());
-			if (!pWeekView)
-				return;
-
-			pWeekView->ResetSelection();
-			pWeekView->ShowDay(dtSelStartDate);
-
-			COleDateTime dtSel = CXTPCalendarUtils::ResetTime(dtSelStartDate);
-			if (bTL)
-				dtSel = dtSelStartDateTL;
-			COleDateTime dtSel2 = dtSel + spSelDayDuration;
-//TRACE(dtSel.Format(_T("xtpCalendarWeekView %d %m %Y\n")));
-			pWeekView->SetSelection(dtSel, dtSel2, TRUE);
-		}
-	}
-	else if (eViewType == xtpCalendarMonthView)
-	{
-		SetActiveView(GetMonthView());
-
-		CXTPCalendarMonthView* pMonthView = DYNAMIC_DOWNCAST(CXTPCalendarMonthView, GetMonthView());
-		if (!pMonthView || !pMonthView->GetGrid())
-			return;
-
-		COleDateTime dtFirstOfMonth(dtSelStartDate.GetYear(), dtSelStartDate.GetMonth(), 1, 0, 0, 0);
-
-		pMonthView->ResetSelection();
-		pMonthView->ShowDay(dtFirstOfMonth);
-
-		int nWCount = pMonthView->GetGrid()->GetWeeksCount();
-		if (nWCount < 5)
-			pMonthView->GetGrid()->SetWeeksCount(5);
-
-		COleDateTime dtMaxDate = pMonthView->GetViewDayDate(pMonthView->GetViewDayCount()-1);
-
-		COleDateTime dtSel = CXTPCalendarUtils::ResetTime(dtSelStartDate);
-		if (dtSel > dtMaxDate)
-			dtSel = pMonthView->GetViewDayDate(0);
-		if (bTL)
-			dtSel = dtSelStartDateTL;
-		COleDateTime dtSel2 = dtSel + spSelDayDuration;
-//TRACE(dtSel.Format(_T("xtpCalendarMonthView %d %m %Y\n")));
-		pMonthView->SetSelection(dtSel, dtSel2, TRUE);
-	}
-	else if (eViewType == xtpCalendarTimeLineView)
-	{
-		SetActiveView(GetTimeLineView());
-
-		CXTPCalendarTimeLineView* pTLView = DYNAMIC_DOWNCAST(CXTPCalendarTimeLineView, GetTimeLineView());
-		if (!pTLView)
-			return;
-
-		pTLView->ResetSelection();
-//TRACE(dtSelStartDate.Format(_T("xtpCalendarTimeLineView %d %m %Y\n")));
-		pTLView->ShowDay(dtSelStartDate);
+			pDC->FillSolidRect(rc, pCommandBars->GetPaintManager()->GetXtremeColor(COLOR_APPWORKSPACE));
 	}
 	else
 	{
-		ASSERT(FALSE);
-		return;
+		pDC->FillSolidRect(rc, GetSysColor(COLOR_APPWORKSPACE));
 	}
 
-	CXTPCalendarView* pActiveView = GetActiveView();
-	if (pActiveView)
-		pActiveView->UnselectAllEvents();
+}
 
-	Populate();
-
-	if (::IsWindow(GetSafeHwnd()) && IsWindowVisible())
-		AdjustScrollBar();
-
-	if (pActiveView && ptrSelEvents)
+void CXTPTabClientWnd::OnDraw(CDC* pDC, CRect rc)
+{
+	if (GetWorkspaceCount() == 0 || !m_bEnableGroups)
 	{
-		for (int i = 0; i < ptrSelEvents->GetCount(); i++)
+		OnFillBackground(pDC, rc);
+	}
+	else
+	{
+		CRect rcClipBox;
+		pDC->GetClipBox(&rcClipBox);
+
+		for (int i = GetWorkspaceCount() - 1; i >= 0; i--)
 		{
-			if (ptrSelEvents->GetAt(i))
-				pActiveView->SelectEvent(ptrSelEvents->GetAt(i)->GetEvent());
+			CWorkspace* pWorkspace = GetWorkspace(i);
+
+			if (CRect().IntersectRect(rcClipBox, pWorkspace->m_rcControl))
+			{
+				GetPaintManager()->DrawTabControl(GetWorkspace(i), pDC, pWorkspace->m_rcControl);
+			}
+
+			if (!pWorkspace->m_rcSplitter.IsRectEmpty())
+			{
+				m_pPaintManager->GetAppearanceSet()->DrawWorkspacePart(pDC, pWorkspace->m_rcSplitter, m_bHorizSplitting ? xtpTabWorkspacePartHSplitter : xtpTabWorkspacePartVSplitter);
+			}
 		}
 	}
 }
 
-UINT CXTPCalendarControl::SetTimer(UINT uTimeOut_ms)
+void CXTPTabClientWnd::OnPaint()
 {
-	UINT uTimerID = m_uNextTimerID;
-
-	if (!::IsWindow(GetSafeHwnd()))
-		return 0;
-
-	UINT nRes = (UINT)CWnd::SetTimer(uTimerID, uTimeOut_ms, NULL);
-
-	if (!nRes)
+	if (!m_bThemedBackColor && !m_bEnableGroups)
 	{
-		ASSERT(FALSE);
-		return 0;
+		Default();
+		return;
 	}
-	m_uNextTimerID++;
+	CPaintDC dcPaint(this);
+	CXTPClientRect rc(this);
+	CXTPBufferDC dc(dcPaint);
 
-	if (m_uNextTimerID < XTP_CALENDAR_FIRST_DYN_TIMERID)
-	{
-		m_uNextTimerID = XTP_CALENDAR_FIRST_DYN_TIMERID;
-	}
-
-	return uTimerID;
+	OnDraw(&dc, rc);
 }
 
-void CXTPCalendarControl::OnTimer(UINT_PTR uTimerID)
+void CXTPTabClientWnd::OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS FAR* lpncsp)
 {
-	ASSERT(m_pActiveView);
-
-	if (uTimerID == m_uPopulateRequest_TimerID)
+	if (m_bEnableGroups)
 	{
-		KillTimer(m_uPopulateRequest_TimerID);
-		m_uPopulateRequest_TimerID = 0;
-
-		Populate();
-
-		return;
+		m_pPaintManager->GetAppearanceSet()->DrawWorkspacePart(NULL, &lpncsp->rgrc[0], xtpTabWorkspacePartWidth);
 	}
-	else if (uTimerID == m_uRedrawRequest_TimerID)
+
+	CWnd::OnNcCalcSize(bCalcValidRects, lpncsp);
+}
+
+
+BOOL CXTPTabClientWnd::OnNcActivate(BOOL bActive)
+{
+	if (m_bEnableGroups)
+		return TRUE;
+
+	return CWnd::OnNcActivate(bActive);
+}
+
+void CXTPTabClientWnd::OnNcPaint()
+{
+	if (!m_bEnableGroups)
 	{
-		KillTimer(m_uRedrawRequest_TimerID);
-		m_uRedrawRequest_TimerID = 0;
-
-		CUpdateContext updateContext(this, xtpCalendarUpdateRedraw);
-
-		return;
-	}
-	else if (uTimerID == XTP_CALENDAR_REFRESHMETRICS_REQUEST_TIMERID)
-	{
-		KillTimer(XTP_CALENDAR_REFRESHMETRICS_REQUEST_TIMERID);
-
-		CUpdateContext updateContext(this, xtpCalendarUpdateAll);
-
-		if (GetTheme())
-			GetTheme()->RefreshMetrics();
-		else if (m_pPaintManager)
-			m_pPaintManager->RefreshMetrics();
+		Default();
 		return;
 	}
 
-	if (m_pActiveView)
-		m_pActiveView->OnTimer(uTimerID);
+	CWindowDC dcPaint(this);
+	CXTPWindowRect rc(this);
+	rc.OffsetRect(rc.TopLeft());
+
+	m_pPaintManager->GetAppearanceSet()->DrawWorkspacePart(&dcPaint, rc, xtpTabWorkspacePartBorder);
 }
 
-void CXTPCalendarControl::OnOptionsChanged(int nOptionRelation)
+void CXTPTabClientWnd::OnRButtonDown(UINT nFlags, CPoint point)
 {
-	SendNotification(XTP_NC_CALENDAROPTIONSWASCHANGED, nOptionRelation, 0);
+	CWnd::OnRButtonDown(nFlags, point);
 
-	KillTimer(XTP_CALENDAR_REFRESHMETRICS_REQUEST_TIMERID);
-
-	CWnd::SetTimer(XTP_CALENDAR_REFRESHMETRICS_REQUEST_TIMERID, XTP_CALENDAR_REFRESHMETRICS_REQUEST_TIMEOUT, NULL);
 }
 
-///////////////////////////////////////////////////////////////////////////
-// Data part
-//
-
-
-CXTPCalendarData* CXTPCalendarControl::CreateDataProvider(LPCTSTR lpszConnectionString)
+void CXTPTabClientWnd::RepositionWorkspaces(CRect rc, CRect rcAvail, CWorkspace* pWorkspaceFirst, CWorkspace* pWorkspaceSecond)
 {
-	return CXTPCalendarData::CreateDataProvider(lpszConnectionString);
-}
+	double dTotal = pWorkspaceFirst->m_dHeight + pWorkspaceSecond->m_dHeight + m_nSplitterSize;
 
-CXTPCalendarData* CXTPCalendarControl::CreateDataProvider(XTPCalendarDataProvider eDataProvider)
-{
-	return CXTPCalendarData::CreateDataProvider(eDataProvider);
-}
-
-CString CXTPCalendarControl::DataSourceFromConStr(LPCTSTR lpszConnectionString)
-{
-	return CXTPCalendarData::DataSourceFromConStr(lpszConnectionString);
-}
-
-XTPCalendarDataProvider CXTPCalendarControl::DataProviderTypeFromConStr(
-	LPCTSTR lpszConnectionString, XTPCalendarDataProvider eDPDefault)
-{
-	return CXTPCalendarData::DataProviderTypeFromConStr(lpszConnectionString, eDPDefault);
-}
-
-void CXTPCalendarControl::_SetDataProvider(CXTPCalendarData* pDataProvider, BOOL bCloseDataProviderWhenDestroy)
-{
-	if (m_pRemindersManager)
+	if (!m_bHorizSplitting)
 	{
-		VERIFY( m_pRemindersManager->StopMonitoring() );
+		double dDelta = double(rc.left - rcAvail.left) / rcAvail.Width();
+		pWorkspaceFirst->m_dHeight = GetExStyle() & WS_EX_LAYOUTRTL ? dTotal - dDelta * dTotal - m_nSplitterSize : dDelta * dTotal;
+	}
+	else
+	{
+		double dDelta = double(rc.top - rcAvail.top) / rcAvail.Height();
+		pWorkspaceFirst->m_dHeight = dDelta * dTotal;
 	}
 
-	CMDTARGET_ADDREF(pDataProvider);
+	pWorkspaceSecond->m_dHeight = dTotal - pWorkspaceFirst->m_dHeight - m_nSplitterSize;
+}
 
-	if (m_pOptions)
+void CXTPTabClientWnd::NormalizeWorkspaceSize()
+{
+	for (int i = 0; i < GetWorkspaceCount(); i++)
 	{
-		m_pOptions->SetDataProvider(pDataProvider);
+		CWorkspace* pWorkspace = GetWorkspace (i);
+		pWorkspace->m_dHeight = !m_bHorizSplitting ? pWorkspace->GetControlRect().Width() : pWorkspace->GetControlRect().Height();
 	}
+}
 
-	// set current DP
-	if (m_pResourcesNf)
+void CXTPTabClientWnd::TrackSplitter(int nWorkspace, CPoint point)
+{
+	ASSERT(nWorkspace >= 0 && nWorkspace < GetWorkspaceCount() - 1);
+
+	if (nWorkspace < 0 || nWorkspace >= GetWorkspaceCount() - 1)
+		return;
+
+	NormalizeWorkspaceSize();
+
+	CXTPSplitterTracker tracker;
+
+	CWorkspace* pWorkspaceFirst = m_arrWorkspace[nWorkspace];
+	CWorkspace* pWorkspaceSecond = m_arrWorkspace[nWorkspace + 1];
+
+	CRect rcFirst = pWorkspaceFirst->GetControlRect();
+	CRect rcSecond = pWorkspaceSecond->GetControlRect();
+
+	CRect rcAvail;
+	rcAvail.UnionRect(rcFirst, rcSecond);
+
+	CRect rc = pWorkspaceFirst->m_rcSplitter;
+
+	ClientToScreen(&rc);
+	ClientToScreen(&rcAvail);
+	ClientToScreen(&point);
+
+	if (m_bUseSplitterTracker)
 	{
-		m_pResourcesNf->RemoveAll();
-
-		CXTPCalendarResource* pRC = new CXTPCalendarResource(this);
-		if (pRC)
+		if (tracker.Track(this, rcAvail, rc, point, !m_bHorizSplitting))
 		{
-			m_pResourcesNf->Add(pRC);
-			pRC->SetDataProvider(pDataProvider, bCloseDataProviderWhenDestroy);
+			RepositionWorkspaces(rc, rcAvail, pWorkspaceFirst, pWorkspaceSecond);
+			GetParentFrame()->RecalcLayout();
 		}
 	}
-	CMDTARGET_RELEASE(pDataProvider);
-}
-
-void CXTPCalendarControl::SetDataProvider(CXTPCalendarData* pDataProvider, BOOL bCloseDataProviderWhenDestroy)
-{
-	_SetDataProvider(pDataProvider, bCloseDataProviderWhenDestroy);
-
-	AdviseToDataProvider();
-}
-
-void CXTPCalendarControl::SetDataProvider(LPCTSTR lpszConnectionString)
-{
-	ASSERT(lpszConnectionString);
-	if (!lpszConnectionString)
+	else
 	{
+		CPoint ptOffset = !m_bHorizSplitting ? CPoint(rc.left - point.x, 0) :
+			CPoint(0, rc.top - point.y);
+
+		SetCapture();
+
+		while (CWnd::GetCapture() == this)
+		{
+			MSG msg;
+
+			while (::PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_NOREMOVE))
+			{
+				if (!GetMessage(&msg, NULL, WM_PAINT, WM_PAINT))
+					return;
+				DispatchMessage(&msg);
+			}
+
+			if (!GetMessage(&msg, NULL, 0, 0))
+				break;
+
+			if (msg.message == WM_MOUSEMOVE)
+			{
+
+				point = CPoint(msg.lParam);
+				ClientToScreen(&point);
+				point += ptOffset;
+
+				point.x = max(min(point.x, rcAvail.right), rcAvail.left);
+				point.y = max(min(point.y, rcAvail.bottom), rcAvail.top);
+
+				if (!m_bHorizSplitting)
+				{
+					if (rc.left == point.x)
+						continue;
+					rc.OffsetRect(point.x - rc.left, 0);
+				}
+				else
+				{
+					if (rc.top == point.y)
+						continue;
+					rc.OffsetRect(0, point.y - rc.top);
+				}
+
+				RepositionWorkspaces(rc, rcAvail, pWorkspaceFirst, pWorkspaceSecond);
+
+				GetParentFrame()->RecalcLayout();
+			}
+			else if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE) break;
+			else if (msg.message == WM_LBUTTONUP) break;
+			else ::DispatchMessage(&msg);
+		}
+
+		if (CWnd::GetCapture() == this) ReleaseCapture();
+
+	}
+
+}
+
+void CXTPTabClientWnd::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	if (!m_bEnableGroups)
+	{
+		CWnd::OnLButtonDown(nFlags, point);
 		return;
 	}
 
-	CXTPCalendarData* pDataProvider = CreateDataProvider(lpszConnectionString);
-	if (pDataProvider)
-	{
-		_SetDataProvider(pDataProvider, TRUE);
-		CMDTARGET_RELEASE(pDataProvider);
-	}
-	AdviseToDataProvider();
-}
+	m_bLockUpdate = TRUE;
 
-void CXTPCalendarControl::SetDataProvider(
-	XTPCalendarDataProvider eDataProvider, LPCTSTR lpszConnectionString)
-{
-	CXTPCalendarData* pDataProvider = CreateDataProvider(eDataProvider);
-	if (pDataProvider)
+	m_bDelayLock = TRUE;
+
+	for (int i = 0; i < GetWorkspaceCount(); i++)
 	{
-		if (lpszConnectionString)
+		CWorkspace* pWorkspace = GetWorkspace(i);
+		if (pWorkspace->m_rcSplitter.PtInRect(point) && i < GetWorkspaceCount() - 1)
 		{
-			pDataProvider->SetConnectionString(lpszConnectionString);
-		}
-		if (eDataProvider == xtpCalendarDataProviderMemory && !lpszConnectionString)
-		{
-			VERIFY(pDataProvider->Open());
+			TrackSplitter(i, point);
+			break;
 		}
 
-		_SetDataProvider(pDataProvider, TRUE);
-		CMDTARGET_RELEASE(pDataProvider);
+		if (pWorkspace->GetControlRect().PtInRect(point))
+		{
+			if (!pWorkspace->IsActive())
+			{
+				CXTPTabManagerItem* pSelectedItem = pWorkspace->GetSelectedItem();
+				if (pSelectedItem) pWorkspace->OnItemClick(pSelectedItem);
+			}
+
+			pWorkspace->PerformClick(m_hWnd, point);
+			break;
+		}
 	}
-	AdviseToDataProvider();
+
 }
 
-CXTPCalendarData* CXTPCalendarControl::GetDataProvider() const
-{
-	ASSERT(this);
 
-	if (this && m_pResourcesNf && m_pResourcesNf->GetCount() && m_pResourcesNf->GetAt(0))
+void CXTPTabClientWnd::InitLoop()
+{
+	// handle pending WM_PAINT messages
+	MSG msg;
+	while (::PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_NOREMOVE))
 	{
-		return m_pResourcesNf->GetAt(0)->GetDataProvider();
+		if (!GetMessage(&msg, NULL, WM_PAINT, WM_PAINT))
+			return;
+		DispatchMessage(&msg);
+	}
+
+	// initialize state
+	m_rectLast.SetRectEmpty();
+	m_sizeLast.cx = m_sizeLast.cy = 0;
+	m_rcGroup.SetRectEmpty();
+	m_pFocusWorkspace = NULL;
+
+	// lock window update while dragging
+	ASSERT(m_pDC == NULL);
+	CWnd* pWnd = CWnd::GetDesktopWindow();
+	if (pWnd->LockWindowUpdate())
+		m_pDC = pWnd->GetDCEx(NULL, DCX_WINDOW | DCX_CACHE | DCX_LOCKWINDOWUPDATE);
+	else
+		m_pDC = pWnd->GetDCEx(NULL, DCX_WINDOW | DCX_CACHE);
+	ASSERT(m_pDC != NULL);
+}
+
+void CXTPTabClientWnd::CancelLoop()
+{
+	DrawFocusRect(TRUE);    // gets rid of focus rect
+
+	CWnd* pWnd = CWnd::GetDesktopWindow();
+	pWnd->UnlockWindowUpdate();
+	if (m_pDC != NULL)
+	{
+		pWnd->ReleaseDC(m_pDC);
+		m_pDC = NULL;
+	}
+}
+
+void CXTPTabClientWnd::DrawFocusRect(BOOL bRemoveRect)
+{
+	ASSERT(m_pDC != NULL);
+	if (!m_pDC)
+		return;
+
+	// determine new rect and size
+	CBrush* pDitherBrush = CDC::GetHalftoneBrush();
+	CRect rect = m_rcGroup;
+	ClientToScreen(rect);
+
+	CSize size(GetSystemMetrics(SM_CXFRAME), GetSystemMetrics(SM_CYFRAME));
+
+	if (bRemoveRect)
+		size.cx = size.cy = 0;
+
+	// draw it and remember last size
+	m_pDC->DrawDragRect(&rect, size, &m_rectLast, m_sizeLast,
+		pDitherBrush, pDitherBrush);
+
+	m_rectLast = rect;
+	m_sizeLast = size;
+}
+
+
+void CXTPTabClientWnd::ReorderWorkspace(CPoint pt, CXTPTabManagerItem* pItem)
+{
+	CXTPClientRect rc(this);
+
+	CRect rcGroup(0, 0, 0, 0);
+	m_pFocusWorkspace = NULL;
+	m_nFocusedAction = ACTION_CANCEL;
+
+	if (rc.PtInRect(pt))
+	{
+		m_nFocusedAction = ACTION_POPUP;
+		::SetCursor(m_hCursorNew);
+
+		for (int i = 0; i < GetWorkspaceCount(); i++)
+		{
+			CWorkspace* pWorkspace = GetWorkspace(i);
+
+			BOOL bSelfAvail = pItem->GetTabManager() != pWorkspace || pWorkspace->GetItemCount() > 1;
+
+			if (pWorkspace->GetHeaderRect().PtInRect(pt))
+			{
+				rcGroup = pWorkspace->GetClientRect();
+
+				m_pFocusWorkspace = pWorkspace;
+				m_nFocusedAction = ACTION_ATTACH;
+				break;
+			}
+
+			if ((GetWorkspaceCount() == 1 || m_bHorizSplitting) && bSelfAvail)
+			{
+				int nOffset = pWorkspace->GetControlRect().bottom - pt.y;
+				if (nOffset > 0 && nOffset < 30)
+				{
+					rcGroup = pWorkspace->GetControlRect();
+					rcGroup.top = rcGroup.CenterPoint().y;
+
+					m_pFocusWorkspace = pWorkspace;
+					m_nFocusedAction = ACTION_INSERTHORIZ;
+					break;
+				}
+
+			}
+
+			if ((GetWorkspaceCount() == 1 || !m_bHorizSplitting) && bSelfAvail)
+			{
+				int nOffset = pWorkspace->GetControlRect().right - pt.x;
+				if (nOffset > 0 && nOffset < 30)
+				{
+					rcGroup = pWorkspace->GetControlRect();
+					rcGroup.left = rcGroup.CenterPoint().x;
+
+					m_pFocusWorkspace = pWorkspace;
+					m_nFocusedAction = ACTION_INSERTVERT;
+					break;
+				}
+			}
+		}
+	}
+	else
+	{
+		::SetCursor(m_hCursorDelete);
+	}
+
+	if (m_rcGroup != rcGroup)
+	{
+		m_rcGroup = rcGroup;
+		DrawFocusRect();
+	}
+}
+
+int CXTPTabClientWnd::FindIndex(CXTPTabManager* pWorkspace) const
+{
+	for (int i = 0; i < GetWorkspaceCount(); i++)
+	{
+		if (GetWorkspace(i) == pWorkspace)
+			return i;
+	}
+	return -1;
+}
+
+CXTPTabManagerItem* CXTPTabClientWnd::HitTest(CPoint pt) const
+{
+	if (!m_bShowWorkspace)
+		return NULL;
+
+	for (int i = 0; i < GetWorkspaceCount(); i++)
+	{
+		CXTPTabManagerItem* pItem = GetWorkspace(i)->HitTest(pt);
+		if (pItem)
+			return pItem;
 	}
 	return NULL;
 }
 
-CXTPCalendarResources* CXTPCalendarControl::GetResources() const
+CXTPCommandBars* CXTPTabClientWnd::GetCommandBars() const
 {
-	ASSERT(this);
-	return this ? m_pResourcesNf : NULL;
+	if (!m_pParentFrame)
+		return NULL;
+	return ((CXTPMDIFrameWnd*)m_pParentFrame)->GetCommandBars();
 }
 
-void CXTPCalendarControl::SetResources(CXTPCalendarResources* pResources, CXTPCalendarData* pOptionsDataProvider)
+void CXTPTabClientWnd::ContextMenu(CPoint pt)
 {
-	if (!m_pResourcesNf || !pResources || pResources->GetCount() == 0)
-	{
-		ASSERT(FALSE);
+	CXTPPopupBar* pPopupBar = CXTPPopupBar::CreatePopupBar(GetCommandBars());
+
+	ClientToScreen(&pt);
+
+	pPopupBar->GetControls()->Add(new CXTPControlWorkspaceActions, 0);
+
+	CXTPControl* pControl = pPopupBar->GetControls()->Add(xtpControlButton, XTP_ID_WORKSPACE_CANCEL);
+	pControl->SetBeginGroup(TRUE);
+	pControl->SetFlags(xtpFlagManualUpdate);
+
+	CXTPCommandBars::TrackPopupMenu(pPopupBar, 0, pt.x, pt.y, GetParentFrame());
+
+	pPopupBar->InternalRelease();
+
+}
+
+void CXTPTabClientWnd::OnWorkspaceCommand(UINT nID)
+{
+	CXTPTabManagerItem* pItem = NULL;
+
+	if (!IsWorkspaceCommandEnabled(nID, &pItem))
 		return;
-	}
 
-	if (!pOptionsDataProvider)
-	{
-		pOptionsDataProvider = XTP_SAFE_GET2(pResources, GetAt(0), GetDataProvider(), NULL);
-	}
-	if (m_pOptions)
-	{
-		m_pOptions->SetDataProvider(pOptionsDataProvider);
-	}
-
-	// copy data to allow using self as input parameter
-	CXTPCalendarResources arRes;
-	arRes.Append(pResources);
-
-	m_pResourcesNf->RemoveAll();
-	m_pResourcesNf->Append(&arRes);
-
-	// reset view's configurations
-	XTP_SAFE_CALL1(m_pDayView,   SetResources(NULL));
-	XTP_SAFE_CALL1(m_pMonthView, SetResources(NULL));
-	XTP_SAFE_CALL1(m_pWeekView,  SetResources(NULL));
-
-	AdviseToDataProvider();
-}
-
-void CXTPCalendarControl::AdviseToDataProvider()
-{
-	m_pSink->UnadviseAll();
-	m_cnidOnReminders = 0;
-
-	if (m_pResourcesNf)
-	{
-		CXTPNotifyConnection* pDPConn = m_pResourcesNf->GetConnection();
-		ASSERT(pDPConn);
-		if (pDPConn)
-		{
-			m_pSink->Advise(pDPConn, XTP_NC_CALENDAROPTIONSWASCHANGED, CreateNotfySinkClassDelegate(this, &CXTPCalendarControl::OnEvent_FromDataProvider));
-
-			m_pSink->Advise(pDPConn, XTP_NC_CALENDAREVENTWASADDED, CreateNotfySinkClassDelegate(this, &CXTPCalendarControl::OnEvent_FromDataProvider));
-			m_pSink->Advise(pDPConn, XTP_NC_CALENDAREVENTWASDELETED, CreateNotfySinkClassDelegate(this, &CXTPCalendarControl::OnEvent_FromDataProvider));
-			m_pSink->Advise(pDPConn, XTP_NC_CALENDAREVENTWASCHANGED, CreateNotfySinkClassDelegate(this, &CXTPCalendarControl::OnEvent_FromDataProvider));
-			m_pSink->Advise(pDPConn, XTP_NC_CALENDARPATTERNWASADDED, CreateNotfySinkClassDelegate(this, &CXTPCalendarControl::OnEvent_FromDataProvider));
-			m_pSink->Advise(pDPConn, XTP_NC_CALENDARPATTERNWASDELETED, CreateNotfySinkClassDelegate(this, &CXTPCalendarControl::OnEvent_FromDataProvider));
-			m_pSink->Advise(pDPConn, XTP_NC_CALENDARPATTERNWASCHANGED, CreateNotfySinkClassDelegate(this, &CXTPCalendarControl::OnEvent_FromDataProvider));
-
-			m_pSink->Advise(pDPConn, XTP_NC_CALENDAR_DoRetrieveDayEvents, CreateNotfySinkClassDelegate(this, &CXTPCalendarControl::OnEvent_FromDataProvider));
-			m_pSink->Advise(pDPConn, XTP_NC_CALENDAR_DoRemoveAllEvents, CreateNotfySinkClassDelegate(this, &CXTPCalendarControl::OnEvent_FromDataProvider));
-			m_pSink->Advise(pDPConn, XTP_NC_CALENDAR_DoRead_Event, CreateNotfySinkClassDelegate(this, &CXTPCalendarControl::OnEvent_FromDataProvider));
-			m_pSink->Advise(pDPConn, XTP_NC_CALENDAR_DoRead_RPattern, CreateNotfySinkClassDelegate(this, &CXTPCalendarControl::OnEvent_FromDataProvider));
-			m_pSink->Advise(pDPConn, XTP_NC_CALENDAR_DoCreate_Event, CreateNotfySinkClassDelegate(this, &CXTPCalendarControl::OnEvent_FromDataProvider));
-			m_pSink->Advise(pDPConn, XTP_NC_CALENDAR_DoUpdate_Event, CreateNotfySinkClassDelegate(this, &CXTPCalendarControl::OnEvent_FromDataProvider));
-			m_pSink->Advise(pDPConn, XTP_NC_CALENDAR_DoDelete_Event, CreateNotfySinkClassDelegate(this, &CXTPCalendarControl::OnEvent_FromDataProvider));
-			m_pSink->Advise(pDPConn, XTP_NC_CALENDAR_DoCreate_RPattern, CreateNotfySinkClassDelegate(this, &CXTPCalendarControl::OnEvent_FromDataProvider));
-			m_pSink->Advise(pDPConn, XTP_NC_CALENDAR_DoUpdate_RPattern, CreateNotfySinkClassDelegate(this, &CXTPCalendarControl::OnEvent_FromDataProvider));
-			m_pSink->Advise(pDPConn, XTP_NC_CALENDAR_DoDelete_RPattern, CreateNotfySinkClassDelegate(this, &CXTPCalendarControl::OnEvent_FromDataProvider));
-			m_pSink->Advise(pDPConn, XTP_NC_CALENDAR_DoGetAllEvents_raw, CreateNotfySinkClassDelegate(this, &CXTPCalendarControl::OnEvent_FromDataProvider));
-			m_pSink->Advise(pDPConn, XTP_NC_CALENDAR_DoGetUpcomingEvents, CreateNotfySinkClassDelegate(this, &CXTPCalendarControl::OnEvent_FromDataProvider));
-		}
-		m_pResourcesNf->ReBuildInternalData();
-	}
-
-	_AdviseToReminders_StartMonitoring();
-
-	SendNotification(XTP_NC_CALENDAR_RESOURCES_WHERE_CHANGED, 0, 0);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Reminders
-
-BOOL CXTPCalendarControl::IsRemindersEnabled() const
-{
-	return m_pRemindersManager != NULL;
-}
-
-void CXTPCalendarControl::EnableReminders(BOOL bEnable)
-{
-
-	if (bEnable && m_pRemindersManager)
-	{
-		// Already enabled. skip.
+	ASSERT(pItem);
+	if (!pItem)
 		return;
-	}
 
-	if (!bEnable && !m_pRemindersManager)
+	switch (nID)
 	{
-		// Already disabled. skip.
-		return;
-	}
+		case XTP_ID_WORKSPACE_NEWVERTICAL:
+			DoWorkspaceCommand(pItem, (CWorkspace*)pItem->GetTabManager(), ACTION_INSERTVERT);
+			break;
 
-	// 1. Enable.
-	if (bEnable)
-	{
-		ASSERT(!m_pRemindersManager);
-		CMDTARGET_RELEASE(m_pRemindersManager);
+		case XTP_ID_WORKSPACE_NEWHORIZONTAL:
+			DoWorkspaceCommand(pItem, (CWorkspace*)pItem->GetTabManager(), ACTION_INSERTHORIZ);
+			break;
 
-		m_pRemindersManager = new CXTPCalendarRemindersManager();
-
-		_AdviseToReminders_StartMonitoring();
-	}
-
-	// 2. Disable
-	if (!bEnable)
-	{
-		ASSERT(m_pRemindersManager);
-		if (m_pRemindersManager)
-		{
-			VERIFY( m_pRemindersManager->StopMonitoring() );
-
-			if (m_cnidOnReminders)
+		case XTP_ID_WORKSPACE_MOVEPREVIOUS:
 			{
-				m_pSink->Unadvise(m_cnidOnReminders);
-				m_cnidOnReminders = 0;
+				int nIndex = FindIndex(pItem->GetTabManager());
+				DoWorkspaceCommand(pItem, GetWorkspace(nIndex - 1), ACTION_ATTACH);
 			}
-		}
-
-		CMDTARGET_RELEASE(m_pRemindersManager);
+			break;
+		case XTP_ID_WORKSPACE_MOVENEXT:
+			{
+				int nIndex = FindIndex(pItem->GetTabManager());
+				DoWorkspaceCommand(pItem, GetWorkspace(nIndex + 1), ACTION_ATTACH);
+			}
+			break;
 	}
 }
 
-void CXTPCalendarControl::_AdviseToReminders_StartMonitoring()
+void CXTPTabClientWnd::OnUpdateWorkspaceCommand(CCmdUI* pCmdUI)
 {
-	if (m_pRemindersManager && m_pResourcesNf)
-	{
-		CXTPNotifyConnection* pRMConn = m_pRemindersManager->GetConnection();
-		ASSERT(pRMConn);
-		if (pRMConn)
-		{
-			m_cnidOnReminders = m_pSink->Advise(pRMConn, XTP_NC_CALENDAR_ON_REMINDERS, CreateNotfySinkClassDelegate(this, &CXTPCalendarControl::OnEvent_Reminders));
-			ASSERT(m_cnidOnReminders);
-
-			VERIFY(m_pRemindersManager->StartMonitoring(m_pResourcesNf,
-					m_spRemindersUpdatePeriod) );
-		}
-	}
+	pCmdUI->Enable(IsWorkspaceCommandEnabled(pCmdUI->m_nID));
 }
 
-void CXTPCalendarControl::EnableMarkup(BOOL bEnableMarkup)
+BOOL CXTPTabClientWnd::IsWorkspaceCommandEnabled(UINT nID, CXTPTabManagerItem** ppItem)
 {
-	if (IsMarkupEnabled() == bEnableMarkup)
-		return;
-
-
-	if (!bEnableMarkup)
-	{
-		CXTPMarkupContext* pStoredContext = m_pMarkupContext;
-
-		// to disable markup
-		m_pMarkupContext = NULL;
-
-		// to destroy all cached markup elements
-		Populate();
-
-		XTPMarkupReleaseContext(pStoredContext);
-	}
-	else
-	{
-		ASSERT(IsWindow(m_hWnd));
-		m_pMarkupContext = XTPMarkupCreateContext(m_hWnd);
-	}
-
-	RedrawControl();
-}
-
-void CXTPCalendarControl::OnEnable(BOOL bEnable)
-{
-	UNREFERENCED_PARAMETER(bEnable);
-
-	AdjustScrollBar();
-}
-
-UINT CXTPCalendarControl::OnGetDlgCode()
-{
-	return DLGC_WANTARROWS | DLGC_WANTTAB | DLGC_WANTALLKEYS;
-}
-
-void CXTPCalendarControl::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	CUpdateContext updateContext(this, xtpCalendarUpdateRedrawIfNeed);
-	CViewChangedContext viewChanged(this, xtpCalendarViewChangedLock);
-
-	if (m_pActiveView)
-		m_pActiveView->OnChar(nChar, nRepCnt, nFlags);
-}
-
-void CXTPCalendarControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	CXTPSmartPtrInternalT<CCmdTarget> ptrThisLock(this, TRUE);
-
-	CUpdateContext updateContext(this, xtpCalendarUpdateRedrawIfNeed);
-	CViewChangedContext viewChanged(this, xtpCalendarViewChangedLock);
-
-#ifdef XTP_CALENDAR_SITENOTIFY_KEY
-	if (!XTP_CALENDAR_SITENOTIFY_KEY(this, TRUE, nChar))
-		return;
-#endif
-
-	if (nChar == 0)
-		return;
-
-	SendNotification(XTP_NC_CALENDARKEYDOWN, (DWORD)nChar, 0);
-
-	if (m_pActiveView)
-		m_pActiveView->OnKeyDown(nChar, nRepCnt, nFlags);
-}
-
-void CXTPCalendarControl::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	CXTPSmartPtrInternalT<CCmdTarget> ptrThisLock(this, TRUE);
-
-#ifdef XTP_CALENDAR_SITENOTIFY_KEY
-	if (!XTP_CALENDAR_SITENOTIFY_KEY(this, TRUE, nChar))
-		return;
-#endif
-	if (nChar == 0)
-	{
-		return;
-	}
-
-	if (m_pActiveView)
-	{
-		if (m_pActiveView->OnSysKeyDown(nChar, nRepCnt, nFlags))
-			return;
-	}
-
-	CWnd::OnSysKeyDown(nChar, nRepCnt, nFlags);
-}
-
-BOOL CXTPCalendarControl::OnWndMsg_Children(UINT message, WPARAM wParam, LPARAM lParam,
-											LRESULT* /*pResult*/)
-{
-	ASSERT(m_pActiveView);
-	if (!m_pActiveView)
+	if (!m_bEnableGroups)
 		return FALSE;
 
-	if (message == WM_KEYDOWN)
+	CWnd* pWnd = MDIGetActive();
+	if (!pWnd)
+		return FALSE;
+
+	CXTPTabManagerItem* pItem = FindItem(pWnd->GetSafeHwnd());
+	if (!pItem)
+		return FALSE;
+
+	if (ppItem)
+		*ppItem = pItem;
+
+	switch (nID)
 	{
-		UINT uRepCnt = LOWORD(lParam);
-		UINT uFlags = HIWORD(lParam);
+		case XTP_ID_WORKSPACE_NEWVERTICAL:
+			return (GetWorkspaceCount() == 1 || !m_bHorizSplitting) && pItem->GetTabManager()->GetItemCount() > 1;
 
-		if (wParam == VK_RETURN || wParam == VK_ESCAPE)
-		{
-			OnKeyDown((UINT)wParam, uRepCnt, uFlags);
-			return TRUE;
-		}
+		case XTP_ID_WORKSPACE_NEWHORIZONTAL:
+			return (GetWorkspaceCount() == 1 || m_bHorizSplitting) && pItem->GetTabManager()->GetItemCount() > 1;
 
-		BOOL bEditSubject = m_pActiveView->m_eDraggingMode == xtpCalendaDragModeEditSubject;
-		if (bEditSubject && wParam == VK_TAB)
-		{
-			OnKeyDown((UINT)wParam, uRepCnt, uFlags);
-			return TRUE;
-		}
+		case XTP_ID_WORKSPACE_MOVEPREVIOUS:
+			return FindIndex(pItem->GetTabManager()) != 0;
+
+		case XTP_ID_WORKSPACE_MOVENEXT:
+			return FindIndex(pItem->GetTabManager()) != GetWorkspaceCount() - 1;
+
 	}
-	else if (message == WM_MOUSEMOVE)
-	{
-		if (m_pActiveView->m_eDraggingMode == xtpCalendaDragModeEditSubject)
-		{
-			m_mouseMode = xtpCalendarMouseNothing;
-			m_pActiveView->OnMouseMove((UINT)wParam, CPoint(lParam));
-		}
-	}
-
-	return FALSE;
+	return TRUE;
 }
 
-void CXTPCalendarControl::ShowToolTip(const CString& strText, const CRect rcToolTip, CFont* pFont, BOOL bAdvanced)
+
+void CXTPTabClientWnd::MDITile(BOOL bHorizontal)
 {
-	if (!m_bEnableToolTips || GetSafeHwnd() == NULL)
+	if (!m_bEnableGroups || m_bUserWorkspace)
 		return;
 
-	if (!m_pWndTip->GetSafeHwnd())
-		m_pWndTip->Create(this);
-
-	m_pWndTip->SetTheme(GetTheme());
-	m_pWndTip->SetFont(pFont);
-	m_pWndTip->SetTooltipText(strText);
-
-	CRect rcTip(rcToolTip);
-	if (!bAdvanced)
-	{
-		rcTip.OffsetRect(7, 0);
-
-		CSize rcNeeded = m_pWndTip->CalcToolTipRect(TRUE); //change from default FALSE (Issue 20746)
-		rcTip.right = rcTip.left + rcNeeded.cx;
-		rcTip.bottom = rcTip.top + rcNeeded.cy;
-	}
-	else if (m_bTimelineMode)
-	{
-		rcTip.OffsetRect(7, 0);
-
-		CSize rcNeeded = m_pWndTip->CalcToolTipRect(TRUE);
-		rcTip.right = rcTip.left + rcNeeded.cx;
-		rcTip.bottom = rcTip.top + rcNeeded.cy;
-	}
-	else
-	{
-		rcTip.DeflateRect(0, 0, 7, 0);
-//<<>>
-		CSize rcNeeded = m_pWndTip->CalcToolTipRect(FALSE);
-		rcTip.right = rcTip.left + rcNeeded.cx;
-		rcTip.bottom = rcTip.top + rcNeeded.cy;
-	}
-
-	ClientToScreen(&rcTip);
-
-	CRect rcDesk;
-//<<MULTI-MONITOR case fix>>
-	GetDesktopWindow()->GetWindowRect(&rcDesk);
-	ClientToScreen(&rcDesk);
-
-	CPoint pointMouse;
-	GetCursorPos(&pointMouse);
-
-	if (m_bTooltipUnderMouse)
-	{
-		int nCursorHeight = CXTPToolTipContext::GetCursorHeight();
-
-		int ht = rcTip.Height();
-		rcTip.top = pointMouse.y + nCursorHeight;
-		rcTip.bottom = rcTip.top + ht;
-
-		int w = rcTip.Width();
-		rcTip.left = pointMouse.x;
-		rcTip.right = rcTip.left + w;
-
-		int maxY = ::GetSystemMetrics(SM_CYFULLSCREEN);
-		if(rcTip.bottom > maxY)
-		{
-			int shiftUp = rcTip.bottom - maxY;
-			rcTip.top -= shiftUp;
-			rcTip.bottom -= shiftUp;
-		}
-	}
-	else
-	{
-		int ht = rcTip.Height();
-		rcTip.bottom = pointMouse.y;
-		rcTip.top = rcTip.bottom - ht;
-
-		int w = rcTip.Width();
-		rcTip.left = pointMouse.x;
-		rcTip.right = rcTip.left + w;
-	}
-
-	if (rcTip.right > rcDesk.right)
-	{
-		int w = rcTip.Width();
-		rcTip.right = rcDesk.right;
-		rcTip.left = rcTip.right - w;
-	}
-
-	m_pWndTip->SetHoverRect(rcTip);
-
-	BOOL bShow = !strText.IsEmpty();
-	m_pWndTip->Activate(bShow, bAdvanced);
-
-	CXTPCalendarUtils::TrackMouseEvent(TME_LEAVE, m_hWnd);
-}
-
-void CXTPCalendarControl::HideToolTip()
-{
-	if (!GetSafeHwnd() || !m_pWndTip->GetSafeHwnd())
+	if (GetItemCount() < 2)
 		return;
 
-	m_pWndTip->Activate(FALSE);
-}
+	m_bLockUpdate = m_bLockReposition = TRUE;
 
-BOOL CXTPCalendarControl::IsToolTipVisible() const
-{
-	return (m_pWndTip->GetSafeHwnd() != NULL) && m_pWndTip->IsWindowVisible();
-}
+	CArray<CXTPTabManagerItem*, CXTPTabManagerItem*> arrItems;
 
-void CXTPCalendarControl::SetPaintManager(CXTPCalendarPaintManager* pPaintManager)
-{
-	ASSERT(pPaintManager);
-
-	CUpdateContext updateContext(this, xtpCalendarUpdateRedraw);
-	CMDTARGET_RELEASE(m_pPaintManager);
-	m_pPaintManager = pPaintManager;
-}
-
-void CXTPCalendarControl::OnSysColorChange()
-{
-	CUpdateContext updateContext(this, xtpCalendarUpdateRedraw);
-
-	if (m_pPaintManager)
+	while (GetWorkspaceCount() > 0)
 	{
-		m_pPaintManager->RefreshMetrics();
+		CWorkspace* pWorkspace = GetWorkspace(0);
+
+		for (int j = 0; j < pWorkspace->GetItemCount(); j++)
+		{
+			CXTPTabManagerItem* pItem = pWorkspace->GetItem(j);
+			arrItems.Add(pItem);
+			pItem->InternalAddRef();
+		}
+
+		m_arrWorkspace.RemoveAt(0);
+		delete pWorkspace;
 	}
 
-	if (GetTheme())
+	for (int i = 0; i < (int)arrItems.GetSize(); i++)
 	{
-		GetTheme()->RefreshMetrics();
+		CXTPTabManagerItem* pItem = arrItems[i];
+		COLORREF clr = pItem->m_clrItem;
+
+		CWorkspace* pWorkspace = AddWorkspace(i);
+
+		pWorkspace->CXTPTabManager::AddItem(-1, pItem);
+
+		pItem->m_clrItem = clr;
+		pWorkspace->SetSelectedItem(pItem);
+
+		pWorkspace->m_dHeight = 100;
 	}
 
-	AdjustLayout();
+	m_pActiveWorkspace = NULL;
+	m_bHorizSplitting = bHorizontal;
 
+	m_bLockUpdate = m_bLockReposition = FALSE;
+	m_bForceToRecalc = TRUE;
+	UpdateContents();
+
+	NormalizeWorkspaceSize();
+}
+
+void CXTPTabClientWnd::DoWorkspaceCommand(CXTPTabManagerItem* pItem, CWorkspace* pFocusWorkspace, int nAction)
+{
+	m_bLockUpdate = m_bLockReposition = TRUE;
+	CWorkspace* pOldWorkspace = NULL;
+
+	switch (nAction)
+	{
+		case ACTION_ATTACH:
+			{
+				ASSERT(pFocusWorkspace);
+				if (!pFocusWorkspace)
+					return;
+
+				if (pFocusWorkspace != pItem->GetTabManager())
+				{
+					pOldWorkspace = (CWorkspace*)pItem->GetTabManager();
+					pItem->InternalAddRef();
+					pItem->Remove();
+
+					COLORREF clr = pItem->m_clrItem;
+					pFocusWorkspace->CXTPTabManager::AddItem(-1, pItem);
+					pItem->m_clrItem = clr;
+				}
+
+				pFocusWorkspace->SetSelectedItem(pItem);
+
+				break;
+			}
+		case ACTION_INSERTHORIZ:
+		case ACTION_INSERTVERT:
+			{
+				NormalizeWorkspaceSize();
+
+				ASSERT(pFocusWorkspace);
+				if (!pFocusWorkspace)
+					return;
+
+				pOldWorkspace = (CWorkspace*)pItem->GetTabManager();
+
+				pItem->InternalAddRef();
+				pItem->Remove();
+
+				COLORREF clr = pItem->m_clrItem;
+
+				int nIndex = FindIndex(pFocusWorkspace) + 1;
+				CWorkspace* pWorkspace = AddWorkspace(nIndex);
+
+				pWorkspace->CXTPTabManager::AddItem(-1, pItem);
+
+				pItem->m_clrItem = clr;
+				pWorkspace->SetSelectedItem(pItem);
+
+				pWorkspace->m_dHeight = (pFocusWorkspace->m_dHeight - m_nSplitterSize) / 2;
+				pFocusWorkspace->m_dHeight = pFocusWorkspace->m_dHeight - pWorkspace->m_dHeight - m_nSplitterSize;
+
+				m_bHorizSplitting = (nAction == ACTION_INSERTHORIZ);
+				break;
+			}
+
+	}
+
+	if (pOldWorkspace && pOldWorkspace->GetItemCount() > 1)
+	{
+		HWND hWndChild = ::GetWindow(m_hWnd, GW_CHILD);
+		while (hWndChild)
+		{
+			CXTPTabManagerItem* pItemOld = FindItem(hWndChild);
+			if (pItemOld && pItemOld->GetTabManager() == pOldWorkspace)
+			{
+				pOldWorkspace->SetSelectedItem(pItemOld);
+				break;
+			}
+			hWndChild = ::GetWindow(hWndChild, GW_HWNDNEXT);
+		}
+	}
+
+	m_bLockUpdate = m_bLockReposition = FALSE;
+	m_bForceToRecalc = TRUE;
+	UpdateContents();
+}
+
+void CXTPTabClientWnd::OnMouseMove(UINT nFlags, CPoint point)
+{
+	if (m_bEnableGroups)
+	{
+		for (int i = 0; i < GetWorkspaceCount(); i++)
+		{
+			GetWorkspace(i)->PerformMouseMove(m_hWnd, point);
+		}
+	}
+
+	CWnd::OnMouseMove(nFlags, point);
+}
+
+
+void CXTPTabClientWnd::OnMouseLeave()
+{
+	if (m_bEnableGroups)
+	{
+		for (int i = 0; i < GetWorkspaceCount(); i++)
+		{
+			GetWorkspace(i)->PerformMouseMove(m_hWnd, CPoint(-1, -1));
+		}
+	}
+}
+
+
+
+void CXTPTabClientWnd::OnLButtonDblClk(UINT nFlags, CPoint point)
+{
+	OnLButtonDown(nFlags, point);
+}
+
+void CXTPTabClientWnd::OnSysColorChange()
+{
 	CWnd::OnSysColorChange();
+
+	GetPaintManager()->RefreshMetrics();
+
+	Refresh();
 }
 
-LRESULT CXTPCalendarControl::OnTimeZoneChanged(WPARAM, LPARAM)
+BOOL CXTPTabClientWnd::PreTranslateMessage(MSG* pMsg)
 {
-	if (!m_pResourcesNf)
-		return 0;
-
-	const CXTPCalendarResources* pResByDP = m_pResourcesNf->GetResourcesGroupedByDP();
-	ASSERT(pResByDP);
-	if (!pResByDP)
-		return 0;
-
-	BOOL bDataChanged = FALSE;
-	int nCount = pResByDP->GetCount();
-	for (int i = 0; i < nCount; i++)
+	if (m_bEnableGroups)
 	{
-		CXTPCalendarResource* pRC = pResByDP->GetAt(i);
-		ASSERT(pRC);
-		if (pRC && pRC->GetDataProvider())
+
+		if (pMsg->message == WM_LBUTTONDOWN ||
+			pMsg->message == WM_RBUTTONDOWN ||
+			pMsg->message == WM_MBUTTONDOWN ||
+			pMsg->message == WM_LBUTTONDBLCLK ||
+			pMsg->message == WM_RBUTTONDBLCLK)
 		{
-			BOOL bChanged = pRC->GetDataProvider()->OnTimeZoneChanged();
-			bDataChanged |= bChanged;
-		}
-	}
+			if (pMsg->hwnd != m_hWnd)
+				return CWnd::PreTranslateMessage(pMsg);
 
-	if (bDataChanged)
-	{
-		CUpdateContext updateContext(this, xtpCalendarUpdateAll);
-
-		AdviseToDataProvider();
-
-		Populate();
-	}
-
-	return 0;
-}
-
-void CXTPCalendarControl::OnTimeChange()
-{
-	CUpdateContext updateContext(this, xtpCalendarUpdateAll);
-	CWnd::OnTimeChange();
-}
-
-void CXTPCalendarControl::OnEditCommand(UINT uCommandID)
-{
-	if (uCommandID == ID_EDIT_UNDO)
-	{
-		OnUndo();
-	}
-	else if (uCommandID == ID_EDIT_CUT)
-	{
-		OnCut();
-	}
-	else if (uCommandID == ID_EDIT_COPY)
-	{
-		OnCopy();
-	}
-	else if (uCommandID == ID_EDIT_PASTE)
-	{
-		OnPaste();
-	}
-}
-
-void CXTPCalendarControl::OnUndo()
-{
-	if (m_pActiveView)
-	{
-		if (m_pActiveView->CanUndo())
-		{
-			m_pActiveView->Undo();
-		}
-		else if (m_pActiveView->CanRedo())
-		{
-			m_pActiveView->Redo();
-		}
-	}
-}
-
-void CXTPCalendarControl::OnCut()
-{
-	if (m_pActiveView)
-	{
-		CWaitCursor _WC;
-		m_pActiveView->Cut();
-	}
-}
-
-void CXTPCalendarControl::OnCopy()
-{
-	if (m_pActiveView)
-	{
-		CWaitCursor _WC;
-		m_pActiveView->Copy();
-	}
-}
-
-void CXTPCalendarControl::OnPaste()
-{
-	if (m_pActiveView)
-	{
-		CWaitCursor _WC;
-
-		// Support to paste event to multiple discrete selection
-		UINT iCnt = m_pActiveView->GetDiscreteSelectionCount();
-		if (iCnt > 1)
-		{
-			for (UINT i = 0; i < iCnt; i++)
-			{
-				COleDateTime dt = m_pActiveView->GetDiscreteSelectionValue(i);
-				m_pActiveView->SetSelection(dt, dt);
-				m_pActiveView->Paste();
-			}
-		}
-		else
-			m_pActiveView->Paste();
-
-	}
-}
-
-void CXTPCalendarControl::OnUpdateCmdUI(CCmdUI* pCmdUI)
-{
-	if (pCmdUI->m_nID == ID_EDIT_UNDO)
-	{
-		OnUpdateUndo(pCmdUI);
-	}
-	else if (pCmdUI->m_nID == ID_EDIT_CUT)
-	{
-		OnUpdateCut(pCmdUI);
-	}
-	else if (pCmdUI->m_nID == ID_EDIT_COPY)
-	{
-		OnUpdateCopy(pCmdUI);
-	}
-	else if (pCmdUI->m_nID == ID_EDIT_PASTE)
-	{
-		OnUpdatePaste(pCmdUI);
-	}
-	else if (pCmdUI->m_nID == ID_EDIT_SELECT_ALL)
-	{
-		pCmdUI->Enable(TRUE);
-	}
-}
-
-void CXTPCalendarControl::RefreshCaptionBar()
-{
-	CWnd* pParWnd = GetParent();
-	if (pParWnd != NULL && pParWnd->IsKindOf(RUNTIME_CLASS(CXTPCalendarControlView)))
-	{
-		CXTPCalendarControlView* pCtlView = DYNAMIC_DOWNCAST(CXTPCalendarControlView, pParWnd);
-		if (pCtlView)
-		{
-			if (pCtlView->GetCalendarCaptionBarCtrl().IsWindowVisible())
-				pCtlView->GetCalendarCaptionBarCtrl().RedrawWindow();
-		}
-	}
-}
-
-
-void CXTPCalendarControl::OnCalendarTimeline()
-{
-	m_bTimelineMode = !m_bTimelineMode;
-	if (m_bTimelineMode)
-	{
-		XTPCalendarViewType viewtype = GetActiveView() ? GetActiveView()->GetViewType() : xtpCalendarDayView;
-
-		if (m_bHideCaptionBar)
-		{
-			CWnd* pParWnd = GetParent();
-			if (pParWnd != NULL && pParWnd->IsKindOf(RUNTIME_CLASS(CXTPCalendarControlView)))
-			{
-				CXTPCalendarControlView* pCtlView = DYNAMIC_DOWNCAST(CXTPCalendarControlView, pParWnd);
-				if (pCtlView)
-					pCtlView->ShowCaptionBar(FALSE);
-			}
-		}
-		COleDateTime dtNow(COleDateTime::GetCurrentTime());
-		m_eViewType = viewtype; //prev view type
-		if (viewtype == xtpCalendarDayView)
-		{
-			m_nTimelineScale = xtpTSPID_Day;
-			dtNow -= COleDateTimeSpan(1,3,0,0);
-		}
-		else if (viewtype == xtpCalendarWorkWeekView)
-		{
-			m_nTimelineScale = xtpTSPID_WorkWeek;
-			dtNow -= COleDateTimeSpan(5.0);
-		}
-		else if (viewtype == xtpCalendarWeekView)
-		{
-			m_nTimelineScale = xtpTSPID_Week;
-			dtNow -= COleDateTimeSpan(7.0);
-		}
-		else if (viewtype == xtpCalendarMonthView)
-		{
-			m_nTimelineScale = xtpTSPID_Month;
-			dtNow -= COleDateTimeSpan(11.0);
-		}
-
-		SwitchActiveView(xtpCalendarTimeLineView);
-
-		CXTPCalendarTimeLineView* pTLView = DYNAMIC_DOWNCAST(CXTPCalendarTimeLineView, GetActiveView());
-		if (pTLView)
-		{
-			dtNow.SetDate(dtNow.GetYear(), dtNow.GetMonth(), dtNow.GetDay());
-
-			if (m_nTimelineScale == xtpTSPID_Day)
-				dtNow = pTLView->GetStartViewDate();
-
-			pTLView->SetTimeScaleID(m_nTimelineScale);
-
-			//if (m_nTimelineScale != xtpTSPID_Day)
-			pTLView->SetStartViewDate(dtNow);
-
-//TRACE(pTLView->GetStartViewDate().Format(_T("OnCalendarTimeline %d %m %Y\n")));
-
-			//to move scroll box on swith view mode to timeline
-			pTLView->OnScrollEnd(SB_HORZ);
-
-//TRACE(pTLView->GetStartViewDate().Format(_T("OnScrollEnd %d %m %Y\n")));
-		}
-	}
-	else
-	{
-		if (m_eViewType == xtpCalendarTimeLineView)
-		{
-			XTPCalendarViewType viewtype = xtpCalendarDayView;
-
-			if (m_nTimelineScale == xtpTSPID_Day)
-				viewtype = xtpCalendarDayView;
-			else if (m_nTimelineScale == xtpTSPID_WorkWeek)
-				viewtype = xtpCalendarWorkWeekView;
-			else if (m_nTimelineScale == xtpTSPID_Week)
-				viewtype = xtpCalendarWeekView;
-			else if (m_nTimelineScale == xtpTSPID_Month)
-				viewtype = xtpCalendarMonthView;
-			m_eViewType = viewtype;
-		}
-		SwitchActiveView(m_eViewType);
-
-		CWnd* pParWnd = this->GetParent();
-		if (pParWnd != NULL && pParWnd->IsKindOf(RUNTIME_CLASS(CXTPCalendarControlView)))
-		{
-			CXTPCalendarControlView* pCtlView = DYNAMIC_DOWNCAST(CXTPCalendarControlView, pParWnd);
-			if (pCtlView)
-				pCtlView->ShowCaptionBar(TRUE);
-		}
-	}
-}
-
-void CXTPCalendarControl::OnUpdateUndo(CCmdUI* pCmdUI)
-{
-	if (pCmdUI->m_nID != ID_EDIT_UNDO || !m_pActiveView)
-	{
-		ASSERT(FALSE);
-		return;
-	}
-
-	if (m_pActiveView->CanUndo())
-	{
-		pCmdUI->Enable(TRUE);
-		pCmdUI->SetText(m_strUndoUIText);
-	}
-	else if (m_pActiveView->CanRedo())
-	{
-		pCmdUI->Enable(TRUE);
-		pCmdUI->SetText(m_strRedoUIText);
-	}
-	else
-	{
-		pCmdUI->Enable(FALSE);
-		pCmdUI->SetText(m_strUndoUIText);
-	}
-}
-
-void CXTPCalendarControl::OnUpdateCut(CCmdUI* pCmdUI)
-{
-	if (pCmdUI->m_nID != ID_EDIT_CUT || !m_pActiveView)
-	{
-		ASSERT(FALSE);
-		return;
-	}
-	pCmdUI->Enable(m_pActiveView->CanCut());
-}
-
-void CXTPCalendarControl::OnUpdateCopy(CCmdUI* pCmdUI)
-{
-	if (pCmdUI->m_nID != ID_EDIT_COPY || !m_pActiveView)
-	{
-		ASSERT(FALSE);
-		return;
-	}
-	pCmdUI->Enable(m_pActiveView->CanCopy());
-}
-void CXTPCalendarControl::OnUpdatePaste(CCmdUI* pCmdUI)
-{
-	if (pCmdUI->m_nID != ID_EDIT_PASTE || !m_pActiveView)
-	{
-		ASSERT(FALSE);
-		return;
-	}
-	pCmdUI->Enable(m_pActiveView->CanPaste());
-}
-
-void CXTPCalendarControl::OnContextMenu(CWnd* /*pWnd*/, CPoint pos)
-{
-	if (m_mouseMode != xtpCalendarMouseNothing)
-		return;
-
-	COleDateTime dBegin, dEnd;
-	BOOL bSel = GetActiveView()->GetSelection(&dBegin, &dEnd);
-	if (!bSel)
-		return;
-//-- Fix for no selection case!
-	COleDateTime dB = GetActiveView()->m_selectedBlock.dtBegin; //dB == dBegin
-	COleDateTime dE = GetActiveView()->m_selectedBlock.dtEnd;   //dE == dB == dEnd - 1 in Month mode
-	                                                            //dE == dEnd in Week or Day modes
-
-	XTP_CALENDAR_HITTESTINFO hitInfo;
-	hitInfo = GetActiveView()->m_LastHitInfo;
-
-	if (hitInfo.nDay == -1
-		&& hitInfo.nGroup == -1
-		&& hitInfo.nEvent == -1
-		&& hitInfo.uHitCode == xtpCalendarHitTestUnknown)
-		return;
-
-	GetActiveView()->HitTest(pos, &hitInfo);
-//-- Fix for no selection case!
-
-	CXTPCalendarViewDay* pViewDay = hitInfo.pViewDay;
-	CRect rcDay;
-	if (pViewDay)
-	{
-		rcDay = pViewDay->GetDayRect(); //follows mouse move only(?)
-
-		if (pos.x == -1 || pos.y == -1)
-		{
-			pos.x = rcDay.left;
-			pos.y = rcDay.bottom;
-		}
-	}
-
-	CPoint ptClient = pos;
-	ScreenToClient(&ptClient);
-
-	// forward message to subscriber
-	DWORD dwPoint = MAKELONG(ptClient.x, ptClient.y);
-	SendNotification(XTP_NC_CALENDARCONTEXTMENU, dwPoint, 0);
-}
-
-LRESULT CXTPCalendarControl::OnUserAction(WPARAM dwParam1, LPARAM dwParam2)
-{
-	int nButtonMask = xtpCalendarScrollDayButton_DayViewUp | xtpCalendarScrollDayButton_DayViewDown;
-	int eButton = (int)(dwParam1 & nButtonMask);
-
-	if ((dwParam1 & xtpCalendarUserAction_OnScrollDay) && eButton && m_pDayView)
-	{
-		CXTPCalendarDayViewDay* pDVday = m_pDayView->GetViewDay(HIWORD(dwParam2));
-		CXTPCalendarDayViewGroup* pDVGroup = pDVday ? pDVday->GetViewGroup(LOWORD(dwParam2)) : NULL;
-		ASSERT(pDVGroup);
-		if (!pDVGroup || pDVGroup->UserAction_OnScrollDay((XTPCalendarScrollDayButton)eButton))
-			return 0;
-
-		CXTPCalendarDayViewEvent* pEVFirst = NULL, *pEVLast = NULL;
-		pDVGroup->FindMinMaxGroupDayEvents(pEVFirst, pEVLast);
-
-		if (eButton == xtpCalendarScrollDayButton_DayViewUp)
-		{
-			ASSERT(pEVFirst);
-			if (pEVFirst)
-				m_pDayView->EnsureVisible(pEVFirst);
-		}
-		else if (eButton == xtpCalendarScrollDayButton_DayViewDown)
-		{
-			ASSERT(pEVLast);
-			if (pEVLast)
-				m_pDayView->EnsureVisible(pEVLast);
-		}
-		else {
-			ASSERT(FALSE);
-		}
-	}
-	else  if (dwParam1 & xtpCalendarUserAction_OnExpandDay)
-	{
-		COleDateTime dtDate = (DATE)(LONG)dwParam2;
-
-		nButtonMask = xtpCalendarExpandDayButton_WeekView | xtpCalendarExpandDayButton_MonthView;
-		eButton = (int)(dwParam1 & nButtonMask);
-
-		CXTPCalendarViewDay* pActiveDay = XTP_SAFE_GET1(GetActiveView(), _GetViewDay(dtDate), NULL);
-		ASSERT(pActiveDay);
-		if (!pActiveDay)
-			return 0;
-
-		if (pActiveDay->UserAction_OnExpandDay((XTPCalendarExpandDayButton)eButton))
-			return 0;
-
-		// default processing
-		SwitchActiveView(xtpCalendarDayView);
-
-		CXTPCalendarDayView* pDayView = DYNAMIC_DOWNCAST(CXTPCalendarDayView, GetActiveView());
-		if (pDayView)
-		{
-			pDayView->ResetSelection();
-			pDayView->ShowDay(dtDate);
-		}
-	}
-	return 0;
-}
-
-// for compatibility with previous versions
-LRESULT CXTPCalendarControl::OnSwitchView(WPARAM nDate, LPARAM)
-{
-	CXTPSmartPtrInternalT<CCmdTarget> ptrThisLock(this, TRUE);
-
-	SwitchActiveView(xtpCalendarDayView);
-	CXTPCalendarDayView* pDayView = DYNAMIC_DOWNCAST(CXTPCalendarDayView, m_pActiveView);
-	if (pDayView)
-	{
-		pDayView->ResetSelection();
-		pDayView->ShowDay(COleDateTime((DATE)nDate));
-	}
-	return 0;
-}
-
-// for compatibility with previous versions
-void CXTPCalendarControl::QueueDayViewSwitch(DATE dtDate)
-{
-	PostMessage(xtp_wm_SwitchView, (UINT)dtDate);
-}
-
-BOOL CXTPCalendarControl::DoDeleteSelectedEvents(CXTPCalendarViewEvent* pViewEvent)
-{
-	CXTPCalendarView* pView = GetActiveView();
-	if (!pView->IsKindOf(RUNTIME_CLASS(CXTPCalendarTimeLineView)))
-		pView = XTP_SAFE_GET3(pViewEvent, GetViewGroup_(), GetViewDay_(), GetView_(), NULL);
-
-	if (!pView)
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-
-	//------------------------------------------------------------------------
-	if (pView->IsEditingSubject())
-	{
-		pView->EndEditSubject(xtpCalendarEditSubjectCommit, FALSE);
-	}
-
-	//------------------------------------------------------------------------
-	CXTPCalendarViewEventsPtr ptrSelEventViews = pView->GetSelectedEvents();
-	BOOL bSelExist = ptrSelEventViews && ptrSelEventViews->GetCount();
-	BOOL bHandled = FALSE;
-
-	ASSERT(m_pActiveView == pView);
-	if (bSelExist && m_pActiveView)
-	{
-		bHandled = m_pActiveView->OnBeforeEditOperationNotify(xtpCalendarEO_DeleteSelectedEvents, ptrSelEventViews);
-	}
-	if (bHandled)
-	{
-		return TRUE;
-	}
-	//------------------------------------------------------------------------
-	if (!bSelExist)
-	{
-		return DoDeleteEvent(pViewEvent);
-	}
-
-	int nCount = ptrSelEventViews ? ptrSelEventViews->GetCount() : 0;
-	for (int i = 0; i < nCount; i++)
-	{
-		CXTPCalendarViewEvent* pEV = ptrSelEventViews->GetAt(i, FALSE);
-
-		if (!DoDeleteEvent(pEV))
-		{
-			return FALSE;
-		}
-	}
-	return TRUE;
-}
-
-BOOL CXTPCalendarControl::DoDeleteEvent(CXTPCalendarViewEvent* pViewEvent)
-{
-
-	CXTPCalendarView* pView = GetActiveView();
-	if (!pView->IsKindOf(RUNTIME_CLASS(CXTPCalendarTimeLineView)))
-		pView = XTP_SAFE_GET3(pViewEvent, GetViewGroup_(), GetViewDay_(), GetView_(), m_pActiveView);
-
-	if (!pView)
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-
-	CXTPCalendarEvent* pEvent = pViewEvent ? pViewEvent->GetEvent() : NULL;
-	CXTPCalendarData* pData = pEvent ? pEvent->GetDataProvider() : NULL;
-	if (!pEvent || !pData)
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-
-	//------------------------------------------------------------------------
-	if (pView->IsEditingSubject())
-	{
-		pView->EndEditSubject(xtpCalendarEditSubjectCommit, FALSE);
-	}
-
-	//- Check is Event Still Exist -------------------------------------------
-	if (!::IsEventExists(pData, pEvent))
-		return TRUE;
-
-	//------------------------------------------------------------------------
-	BOOL bHandled = FALSE;
-	if (m_pActiveView)
-		bHandled = m_pActiveView->OnBeforeEditOperationNotify(xtpCalendarEO_DeleteEvent, pViewEvent);
-
-	if (bHandled)
-		return TRUE;
-
-	if (pData->m_bOwnershipMode && pViewEvent->GetEvent() != NULL)
-	{
-		int iShId = pViewEvent->GetEvent()->GetScheduleID();
-
-		CXTPCalendarSchedules* pSchedules = pData->GetSchedules();
-		CString sName;
-		int iShID = -1;
-		int iShIDPublic = -1;
-		int nCount = pSchedules->GetCount();
-		for (int nSchNr = 0; nSchNr < nCount; nSchNr++)
-		{
-			CXTPCalendarSchedule* pSch = pSchedules->GetAt(nSchNr);
-			if (pSch)
-			{
-				sName = pSch->GetName();
-
-#ifdef _BUSINESS_MODEL_
-				int iShSec = pSch->GetSecType();
-#endif
-
-				if (!m_OwnerUser.IsEmpty())
-				{
-					if (m_OwnerUser == sName)
-						iShID = pSch->GetID();
-					else if (sName == _T("Public"))
-						iShIDPublic = pSch->GetID();
-
-#ifdef _BUSINESS_MODEL_
-					if (iShSec == 0)
-						iShIDPublic = pSch->GetID();
-#endif
-				}
-			}
-		}
-		if (iShId != iShID && iShId != iShIDPublic)
-			return TRUE;
-	}
-
-	//------------------------------------------------------------------------
-	CXTPAutoResetValue<BOOL> autoSet_UpdateCtrlNf(m_bUpdateWhenEventChangedNotify);
-	autoSet_UpdateCtrlNf = FALSE;
-
-	//------------------------------------------------------------------------
-	if (pEvent->GetRecurrenceState() != xtpCalendarRecurrenceNotRecurring)
-	{
-		CXTPCalendarOccurSeriesChooseDlg dlgOccSer(this, XTP_IDS_CALENDAR_OCURR_SERIES_DELETE);
-		dlgOccSer.SetEvent(pEvent);
-		dlgOccSer.m_bOccur = m_bDeleteOcurrenceEventIfNoPrompt;
-
-		if (m_bPromptToDeleteRecurrentEvent)
-		{
-			if (dlgOccSer.DoModal() != IDOK)
-			{
+			if (GetParentFrame()->SendMessage(WM_XTP_PRETRANSLATEMOUSEMSG, (WPARAM)pMsg->message, pMsg->lParam))
 				return TRUE;
-			}
-		}
-		if (!dlgOccSer.m_bOccur)
-		{
-			// delete series
-
-			CXTPCalendarRecurrencePatternPtr ptrRecPatt = pEvent->GetRecurrencePattern();
-
-			if (!ptrRecPatt)
-			{
-				ASSERT(FALSE);
-				return FALSE;
-			}
-			CXTPCalendarEventPtr ptrMasterEvent = ptrRecPatt->GetMasterEvent();
-			if (ptrMasterEvent)
-			{
-				return pData->DeleteEvent(ptrMasterEvent);
-			}
-
-			ASSERT(FALSE);
-			return FALSE;
 		}
 	}
 
-	return pData->DeleteEvent(pEvent);
+	return CWnd::PreTranslateMessage(pMsg);
 }
 
-void CXTPCalendarControl::OnSetFocus(CWnd* pOldWnd)
+CXTPTabPaintManager* CXTPTabClientWnd::GetPaintManager() const
 {
-	CXTPSmartPtrInternalT<CCmdTarget> ptrThisLock(this, TRUE);
-
-	CWnd::OnSetFocus(pOldWnd);
-
-#ifdef XTP_CALENDAR_SITENOTIFY_ONFOCUS
-	XTP_CALENDAR_SITENOTIFY_ONFOCUS(this, this, TRUE)
-#endif
+	return m_pPaintManager;
 }
 
-void CXTPCalendarControl::OnKillFocus (CWnd* pNewWnd)
+void CXTPTabClientWnd::SetPaintManager(CXTPTabPaintManager* pPaintManager)
 {
-	CXTPSmartPtrInternalT<CCmdTarget> ptrThisLock(this, TRUE);
+	m_pPaintManager->InternalRelease();
+	m_pPaintManager = pPaintManager;
+	m_pPaintManager->RefreshMetrics();
 
-	CWnd::OnKillFocus(pNewWnd);
+	m_themeCommandBars = xtpThemeCustom;
+	m_bAutoTheme = FALSE;
 
-#ifdef XTP_CALENDAR_SITENOTIFY_ONFOCUS
-	XTP_CALENDAR_SITENOTIFY_ONFOCUS(this, this, FALSE)
-#endif
+	Refresh();
 }
 
-void CXTPCalendarControl::SetTheme(CXTPCalendarTheme* pTheme)
+void CXTPTabClientWnd::SetAutoTheme(BOOL bAutoTheme /*= FALSE*/)
 {
-	if (m_pTheme)
-	{
-		m_pTheme->SetCalendarControl(NULL);
-		CMDTARGET_RELEASE(m_pTheme)
-	}
-
-	m_pTheme = pTheme;
-
-	if (m_pTheme)
-	{
-		m_pTheme->SetCalendarControl(this);
-		m_pTheme->RefreshMetrics();
-	}
-	else
-	{
-		XTP_SAFE_CALL1(GetPaintManager(), RefreshMetrics());
-	}
-
-	SendNotification(XTP_NC_CALENDAR_THEME_CHANGED, 0, 0);
+	m_bAutoTheme = bAutoTheme;
 }
 
-
-// calendar settings
-int CXTPCalendarControl::GetWorkWeekMask() const
+BOOL CXTPTabClientWnd::GetAutoTheme() const
 {
-	CXTPCalendarOptions* pOpt = GetCalendarOptions();
-	ASSERT(pOpt);
-	if (pOpt)
-	{
-		return pOpt->nWorkWeekMask;
-	}
-	return xtpCalendarDayMo_Fr;
+	return m_bAutoTheme;
 }
 
-void CXTPCalendarControl::SetWorkWeekMask(const int nMask)
+void CXTPTabClientWnd::UpdateFlags(CWorkspace* pWorkspace)
 {
-	if (!nMask) // Invalid mask
-		return;
+	pWorkspace->FindNavigateButton(xtpTabNavigateButtonClose)->SetFlags(
+		m_dwFlags & xtpWorkspaceHideClose ? xtpTabNavigateButtonNone : xtpTabNavigateButtonAutomatic);
 
-	CXTPCalendarOptions* pOpt = GetCalendarOptions();
-	ASSERT(pOpt);
-	if (pOpt)
+	pWorkspace->FindNavigateButton(xtpTabNavigateButtonActiveFiles)->SetFlags(
+		m_dwFlags & xtpWorkspaceShowActiveFiles ? xtpTabNavigateButtonAlways : xtpTabNavigateButtonNone);
+
+	pWorkspace->FindNavigateButton(xtpTabNavigateButtonLeft)->SetFlags((m_dwFlags & xtpWorkspaceHideArrowsAlways) == xtpWorkspaceHideArrowsAlways ? xtpTabNavigateButtonNone :
+		m_dwFlags & xtpWorkspaceHideArrows ? xtpTabNavigateButtonAutomatic : xtpTabNavigateButtonAlways);
+	pWorkspace->FindNavigateButton(xtpTabNavigateButtonRight)->SetFlags((m_dwFlags & xtpWorkspaceHideArrowsAlways) == xtpWorkspaceHideArrowsAlways ? xtpTabNavigateButtonNone :
+		m_dwFlags & xtpWorkspaceHideArrows ? xtpTabNavigateButtonAutomatic : xtpTabNavigateButtonAlways);
+
+
+	if (m_dwFlags & xtpWorkspaceShowCloseTab || m_dwFlags & xtpWorkspaceShowCloseSelectedTab)
 	{
-		pOpt->nWorkWeekMask = nMask;
-		OnOptionsChanged((int)-1);
+		pWorkspace->ShowCloseItemButton(m_dwFlags & xtpWorkspaceShowCloseSelectedTab ?
+			xtpTabNavigateButtonAutomatic : xtpTabNavigateButtonAlways);
 	}
 }
 
-int CXTPCalendarControl::GetFirstDayOfWeek() const
-{
-	CXTPCalendarOptions* pOpt = GetCalendarOptions();
-	ASSERT(pOpt);
-	if (pOpt)
-	{
-		int nFirstDayOfWeek = pOpt->nFirstDayOfTheWeek;
-		ASSERT(nFirstDayOfWeek >= 1 && nFirstDayOfWeek <= 7);
 
-		return max(min(7, nFirstDayOfWeek), 1);
-	}
-	return 1;
+void CXTPTabClientWnd::SetFlags(DWORD dwFlags)
+{
+	m_dwFlags = dwFlags;
+
+	for (int i = 0; i < GetWorkspaceCount(); i++)
+		UpdateFlags(GetWorkspace(i));
+
+	Reposition();
 }
 
-void CXTPCalendarControl::SetFirstDayOfWeek(const int nFirstDayOfWeek)
+void CXTPTabClientWnd::Reposition()
 {
-	CXTPCalendarOptions* pOpt = GetCalendarOptions();
-	ASSERT(pOpt);
-	if (pOpt)
+	m_bForceToRecalc = FALSE;
+
+	if (m_pTabWorkspace)
 	{
-		ASSERT(nFirstDayOfWeek >= 1 && nFirstDayOfWeek <= 7);
-		if (nFirstDayOfWeek >= 1 && nFirstDayOfWeek <= 7)
+		m_pTabWorkspace->OnRecalcLayout();
+	}
+	else if (!m_bUserWorkspace)
+	{
+		GetParentFrame()->RecalcLayout();
+	}
+}
+
+BOOL CXTPTabClientWnd::IsAllowReorder() const
+{
+	return m_bAllowReorder;
+}
+
+void CXTPTabClientWnd::SetAllowReorder(BOOL bAllowReorder)
+{
+	m_bAllowReorder = bAllowReorder;
+}
+
+CXTPTabManagerItem* CXTPTabClientWnd::GetSelectedItem () const
+{
+	if (m_pActiveWorkspace)
+		return m_pActiveWorkspace->GetSelectedItem();
+	return NULL;
+}
+
+CXTPTabManagerItem* CXTPTabClientWnd::GetItem(int nIndex) const
+{
+	for (int i = 0; i < GetWorkspaceCount(); i++)
+	{
+		CWorkspace* pWorkspace = GetWorkspace(i);
+		int nCount = pWorkspace->GetItemCount();
+
+		if (nIndex < nCount)
+			return pWorkspace->GetItem(nIndex);
+
+		nIndex -= nCount;
+	}
+	return NULL;
+}
+
+int CXTPTabClientWnd::GetItemCount() const
+{
+	int nCount = 0;
+
+	for (int i = 0; i < GetWorkspaceCount(); i++)
+		nCount += GetWorkspace(i)->GetItemCount();
+
+	return nCount;
+}
+
+LRESULT CXTPTabClientWnd::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+{
+	if (m_bEnableGroups && IsAttached())
+	{
+		m_pToolTipContext->FilterToolTipMessage(this, message, wParam, lParam);
+	}
+
+	if (message == m_nMsgQuerySkinState && m_bEnableGroups && IsAttached())
+	{
+		return TRUE;
+	}
+
+	if (!m_bEnableGroups && (message == WM_MDIICONARRANGE || message == WM_MDICASCADE
+		|| message == WM_MDITILE) && GetCommandBars())
+	{
+		XTPPaintTheme theme = GetCommandBars()->GetPaintManager()->BaseTheme();
+
+		if (theme == xtpThemeOffice2007 || theme == xtpThemeRibbon)
 		{
-			pOpt->nFirstDayOfTheWeek = nFirstDayOfWeek;
-			OnOptionsChanged((int)-1);
-		}
-	}
-}
+			CArray<HWND, HWND&> arrChildren;
 
-void CXTPCalendarControl::GetWorkDayStartTime(int& nHour, int& nMin, int& nSec) const
-{
-	CXTPCalendarOptions* pOpt = GetCalendarOptions();
-	ASSERT(pOpt);
-	if (pOpt)
-	{
-		nHour = pOpt->dtWorkDayStartTime.GetHour();
-		nMin = pOpt->dtWorkDayStartTime.GetMinute();
-		nSec = pOpt->dtWorkDayStartTime.GetSecond();
-	}
-}
-
-void CXTPCalendarControl::GetWorkDayStartTime(COleDateTime& dtTime) const
-{
-	CXTPCalendarOptions* pOpt = GetCalendarOptions();
-	ASSERT(pOpt);
-	if (pOpt)
-	{
-		dtTime = pOpt->dtWorkDayStartTime;
-	}
-}
-
-void CXTPCalendarControl::GetWorkDayEndTime(int& nHour, int& nMin, int& nSec) const
-{
-	CXTPCalendarOptions* pOpt = GetCalendarOptions();
-	ASSERT(pOpt);
-	if (pOpt)
-	{
-		nHour = pOpt->dtWorkDayEndTime.GetHour();
-		nMin = pOpt->dtWorkDayEndTime.GetMinute();
-		nSec = pOpt->dtWorkDayEndTime.GetSecond();
-	}
-}
-
-void CXTPCalendarControl::GetWorkDayEndTime(COleDateTime& dtTime) const
-{
-	CXTPCalendarOptions* pOpt = GetCalendarOptions();
-	ASSERT(pOpt);
-	if (pOpt)
-	{
-		dtTime = pOpt->dtWorkDayEndTime;
-	}
-}
-
-void CXTPCalendarControl::SetWorkDayStartTime(int nHour, int nMin, int nSec)
-{
-	CXTPCalendarOptions* pOpt = GetCalendarOptions();
-	ASSERT(pOpt);
-	if (pOpt)
-	{
-		pOpt->dtWorkDayStartTime.SetTime(nHour, nMin, nSec);
-
-		OnOptionsChanged(xtpCalendarDayView);
-	}
-}
-
-void CXTPCalendarControl::SetWorkDayStartTime(const COleDateTime& dtTime)
-{
-	CXTPCalendarOptions* pOpt = GetCalendarOptions();
-	ASSERT(pOpt);
-	if (pOpt)
-	{
-		pOpt->dtWorkDayStartTime = dtTime;
-
-		OnOptionsChanged(xtpCalendarDayView);
-	}
-}
-
-void CXTPCalendarControl::SetWorkDayEndTime(int nHour, int nMin, int nSec)
-{
-	CXTPCalendarOptions* pOpt = GetCalendarOptions();
-	ASSERT(pOpt);
-	if (pOpt)
-	{
-		pOpt->dtWorkDayEndTime.SetTime(nHour, nMin, nSec);
-
-		OnOptionsChanged(xtpCalendarDayView);
-	}
-}
-
-void CXTPCalendarControl::SetWorkDayEndTime(const COleDateTime& dtTime)
-{
-	CXTPCalendarOptions* pOpt = GetCalendarOptions();
-	ASSERT(pOpt);
-	if (pOpt)
-	{
-		pOpt->dtWorkDayEndTime = dtTime;
-
-		OnOptionsChanged(xtpCalendarDayView);
-	}
-}
-
-BOOL CXTPCalendarControl::DayView_IsAutoResetBusyFlag() const
-{
-	CXTPCalendarOptions* pOpt = GetCalendarOptions();
-	ASSERT(pOpt);
-	if (pOpt)
-	{
-		return pOpt->bDayView_AutoResetBusyFlag;
-	}
-	return TRUE;
-}
-
-void CXTPCalendarControl::DayView_SetAutoResetBusyFlag(BOOL bAutoResetBusyFlag)
-{
-	CXTPCalendarOptions* pOpt = GetCalendarOptions();
-	ASSERT(pOpt);
-	if (pOpt)
-	{
-		pOpt->bDayView_AutoResetBusyFlag = bAutoResetBusyFlag;
-
-		OnOptionsChanged(xtpCalendarDayView);
-	}
-}
-
-BOOL CXTPCalendarControl::MonthView_IsCompressWeekendDays() const
-{
-//prevent CompressWeekendDays for non Monday as First Day of Week case
-	if (GetFirstDayOfWeek() != 2)
-		return FALSE;
-
-	CXTPCalendarOptions* pOpt = GetCalendarOptions();
-	ASSERT(pOpt);
-	if (pOpt)
-	{
-		return pOpt->bMonthView_CompressWeekendDays;
-	}
-	return TRUE;
-}
-
-void CXTPCalendarControl::MonthView_SetCompressWeekendDays(BOOL bCompress)
-{
-	CXTPCalendarOptions* pOpt = GetCalendarOptions();
-	ASSERT(pOpt);
-	if (pOpt)
-	{
-		pOpt->bMonthView_CompressWeekendDays = bCompress;
-
-		OnOptionsChanged(xtpCalendarMonthView);
-	}
-}
-
-BOOL CXTPCalendarControl::MonthView_IsShowEndDate() const
-{
-	CXTPCalendarOptions* pOpt = GetCalendarOptions();
-	ASSERT(pOpt);
-	if (pOpt)
-	{
-		return pOpt->bMonthView_ShowEndDate;
-	}
-	return FALSE;
-}
-
-void CXTPCalendarControl::MonthView_SetShowEndDate(BOOL bShowEnd)
-{
-	CXTPCalendarOptions* pOpt = GetCalendarOptions();
-	ASSERT(pOpt);
-	if (pOpt)
-	{
-		pOpt->bMonthView_ShowEndDate = bShowEnd;
-
-		OnOptionsChanged(xtpCalendarMonthView);
-	}
-}
-
-BOOL CXTPCalendarControl::MonthView_IsShowTimeAsClocks() const
-{
-	CXTPCalendarOptions* pOpt = GetCalendarOptions();
-	ASSERT(pOpt);
-	if (pOpt)
-	{
-		return pOpt->bMonthView_ShowTimeAsClocks;
-	}
-	return FALSE;
-}
-
-void CXTPCalendarControl::MonthView_SetShowTimeAsClocks(BOOL bShowClocks)
-{
-	CXTPCalendarOptions* pOpt = GetCalendarOptions();
-	ASSERT(pOpt);
-	if (pOpt)
-	{
-		pOpt->bMonthView_ShowTimeAsClocks = bShowClocks;
-
-		OnOptionsChanged(xtpCalendarMonthView);
-	}
-}
-
-BOOL CXTPCalendarControl::WeekView_IsShowEndDate() const
-{
-	CXTPCalendarOptions* pOpt = GetCalendarOptions();
-	ASSERT(pOpt);
-	if (pOpt)
-	{
-		return pOpt->bWeekView_ShowEndDate;
-	}
-	return FALSE;
-}
-
-void CXTPCalendarControl::WeekView_SetShowEndDate(BOOL bShowEnd)
-{
-	CXTPCalendarOptions* pOpt = GetCalendarOptions();
-	ASSERT(pOpt);
-	if (pOpt)
-	{
-		pOpt->bWeekView_ShowEndDate = bShowEnd;
-
-		OnOptionsChanged(xtpCalendarWeekView);
-	}
-}
-
-BOOL CXTPCalendarControl::WeekView_IsShowTimeAsClocks() const
-{
-	CXTPCalendarOptions* pOpt = GetCalendarOptions();
-	ASSERT(pOpt);
-	if (pOpt)
-	{
-		return pOpt->bWeekView_ShowTimeAsClocks;
-	}
-	return FALSE;
-}
-
-void CXTPCalendarControl::WeekView_SetShowTimeAsClocks(BOOL bShowClocks)
-{
-	CXTPCalendarOptions* pOpt = GetCalendarOptions();
-	ASSERT(pOpt);
-	if (pOpt)
-	{
-		pOpt->bWeekView_ShowTimeAsClocks = bShowClocks;
-
-		OnOptionsChanged(xtpCalendarWeekView);
-	}
-}
-
-void CXTPCalendarControl::OnEvent_FromDataProvider(XTP_NOTIFY_CODE Event,
-												WPARAM wParam, LPARAM lParam)
-{
-	ASSERT(Event == XTP_NC_CALENDAROPTIONSWASCHANGED ||
-		Event == XTP_NC_CALENDAREVENTWASADDED ||
-		Event == XTP_NC_CALENDAREVENTWASDELETED ||
-		Event == XTP_NC_CALENDAREVENTWASCHANGED ||
-		Event == XTP_NC_CALENDARPATTERNWASADDED ||
-		Event == XTP_NC_CALENDARPATTERNWASDELETED ||
-		Event == XTP_NC_CALENDARPATTERNWASCHANGED ||
-
-		Event == XTP_NC_CALENDAR_DoRetrieveDayEvents ||
-		Event == XTP_NC_CALENDAR_DoRemoveAllEvents ||
-		Event == XTP_NC_CALENDAR_DoRead_Event ||
-		Event == XTP_NC_CALENDAR_DoRead_RPattern ||
-		Event == XTP_NC_CALENDAR_DoCreate_Event ||
-		Event == XTP_NC_CALENDAR_DoUpdate_Event ||
-		Event == XTP_NC_CALENDAR_DoDelete_Event ||
-		Event == XTP_NC_CALENDAR_DoCreate_RPattern ||
-		Event == XTP_NC_CALENDAR_DoUpdate_RPattern ||
-		Event == XTP_NC_CALENDAR_DoDelete_RPattern ||
-		Event == XTP_NC_CALENDAR_DoGetUpcomingEvents ||
-		Event == XTP_NC_CALENDAR_DoGetAllEvents_raw );
-
-	SendNotification(Event, wParam, lParam);
-
-	if (Event == XTP_NC_CALENDAROPTIONSWASCHANGED)
-	{
-		KillTimer(XTP_CALENDAR_REFRESHMETRICS_REQUEST_TIMERID);
-		CWnd::SetTimer(XTP_CALENDAR_REFRESHMETRICS_REQUEST_TIMERID, XTP_CALENDAR_REFRESHMETRICS_REQUEST_TIMEOUT, NULL);
-	}
-
-	//-----------------------------------------------------------------------
-	if (!m_bUpdateWhenEventChangedNotify)
-	{
-		return;
-	}
-
-	if (Event == XTP_NC_CALENDAREVENTWASADDED ||
-		Event == XTP_NC_CALENDAREVENTWASDELETED ||
-		Event == XTP_NC_CALENDAREVENTWASCHANGED)
-	{
-		CXTPCalendarEvent* pEvent = (CXTPCalendarEvent*)lParam;
-		if (m_pActiveView)
-		{
-			int nUpdateType = m_pActiveView->OnEventChanged_InDataProvider(Event, pEvent);
-			if (nUpdateType == xtpCalendar_Populate)
+			HWND hWnd = ::GetWindow(m_hWnd, GW_CHILD);
+			while (hWnd)
 			{
-				if (m_pActiveView->IsEditingSubject())
+				if ((GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_MDICHILD)
+					&& ((GetWindowLong(hWnd, GWL_STYLE) & WS_CAPTION) != WS_CAPTION))
 				{
-					m_pActiveView->EndEditSubject(xtpCalendarEditSubjectCancel);
+					CWnd::ModifyStyle(hWnd, 0, WS_CAPTION, 0);
+					arrChildren.Add(hWnd);
 				}
-				if (m_pActiveView->GetDraggingEventNew())
-				{
-					m_pActiveView->CancelDraggingEvent();
-				}
-
-				if (m_uPopulateRequest_TimerID)
-				{
-					KillTimer(m_uPopulateRequest_TimerID);
-				}
-				m_uPopulateRequest_TimerID = SetTimer(XTP_CALENDAR_POPULATE_REQUEST_TIMEOUT);
+				hWnd = ::GetWindow(hWnd, GW_HWNDNEXT);
 			}
-			else if (nUpdateType == xtpCalendar_Redraw)
+
+			LRESULT lResult = CWnd::WindowProc(message, wParam, lParam);
+
+			for (int i = 0; i < (int)arrChildren.GetSize(); i++)
 			{
-				if (m_uRedrawRequest_TimerID)
-				{
-					KillTimer(m_uRedrawRequest_TimerID);
-				}
-				m_uRedrawRequest_TimerID = SetTimer(XTP_CALENDAR_REDRAW_REQUEST_TIMEOUT);
+				CWnd::ModifyStyle(arrChildren[i], WS_CAPTION, 0, 0);
 			}
+
+			return lResult;
 		}
 	}
+
+	return CWnd::WindowProc(message, wParam, lParam);
 }
 
-void CXTPCalendarControl::OnEvent_Reminders(XTP_NOTIFY_CODE Event, WPARAM wParam , LPARAM lParam)
+void CXTPTabClientWnd::SetTabWorkspace(CWorkspace* pWorkspace)
 {
-	ASSERT( Event == XTP_NC_CALENDAR_ON_REMINDERS );
-	SendNotification(Event, wParam, lParam);
+	ASSERT(!m_bEnableGroups);
+
+	m_pTabWorkspace = pWorkspace;
+	m_bUserWorkspace = pWorkspace != NULL;
+
+	if (pWorkspace) pWorkspace->m_pTabClientWnd = this;
 }
 
-void CXTPCalendarControl::SendNotification(XTP_NOTIFY_CODE EventCode, WPARAM wParam , LPARAM lParam)
-{
-	if (this && m_pConnection && m_bEnableSendNotifications)
-	{
-		m_pConnection->SendEvent(EventCode, wParam, lParam);
-	}
-}
 
-void CXTPCalendarControl::SendNotificationAlways(XTP_NOTIFY_CODE EventCode, WPARAM wParam , LPARAM lParam)
-{
-	if (this && m_pConnection)
-	{
-		m_pConnection->SendEvent(EventCode, wParam, lParam);
-	}
-}
-
-void CXTPCalendarControl::OnFinalRelease()
-{
-	CWnd::OnFinalRelease();
-
-	if (m_bDeleteOnFinalRelease)
-	{
-		CCmdTarget::OnFinalRelease();
-	}
-}
-
-void CXTPCalendarControl::SetLayoutRTL(BOOL bRightToLeft)
-{
-	if (!XTPSystemVersion()->IsLayoutRTLSupported())
-		return;
-
-	if (!m_hWnd)
-		return;
-
-	CRect rc;
-	GetWindowRect(&rc);
-
-	ModifyStyleEx(bRightToLeft ? 0 : WS_EX_LAYOUTRTL, !bRightToLeft ? 0 : WS_EX_LAYOUTRTL);
-
-	int cx = rc.Width();
-	int cy = rc.Height();
-	int nScroll = GetSystemMetrics(SM_CXVSCROLL);
-	CScrollBar* pScrollBar = GetScrollBarCtrl(SB_VERT);
-	if (pScrollBar && pScrollBar->GetSafeHwnd())
-	{
-		if (bRightToLeft)
-		{
-			pScrollBar->MoveWindow(0, m_nCaptionHeight, nScroll, cy);
-			MoveWindow(nScroll, m_nCaptionHeight, cx, cy);
-		}
-		else
-		{
-			MoveWindow(0, m_nCaptionHeight, cx, cy);
-			pScrollBar->MoveWindow(cx, m_nCaptionHeight, nScroll, cy);
-		}
-	}
-	RedrawControl(TRUE);
-}
-
-BOOL CXTPCalendarControl::IsLayoutRTL() const
-{
-	if (!XTPSystemVersion()->IsLayoutRTLSupported())
-		return FALSE;
-
-	if (!m_hWnd)
-		return FALSE;
-
-	return GetExStyle() & WS_EX_LAYOUTRTL;
-}
-
-DWORD CXTPCalendarControl::GetAskItemTextFlags() const
-{
-	DWORD dwFlags = 0;
-	if (GetTheme())
-	{
-		dwFlags = GetTheme()->GetAskItemTextFlags();
-	}
-	else
-	{
-		dwFlags = XTP_SAFE_GET1(GetPaintManager(), GetAskItemTextFlags(), 0);
-	}
-
-	return dwFlags;
-}
-
-XTPCalendarTheme CXTPCalendarControl::GetPaintTheme() const
-{
-	if (m_pTheme)
-		return m_pTheme->GetPaintTheme();
-
-	ASSERT(m_pPaintManager);
-	if (m_pPaintManager)
-		return m_pPaintManager->GetPaintTheme();
-
-	return xtpCalendarThemeUnknown;
-}
-
-XTPCalendarThemeVersion CXTPCalendarControl::GetThemeVersion() const
-{
-	XTPCalendarTheme theme = GetPaintTheme();
-	XTPCalendarThemeVersion themeVersion = xtpCalendarVersionUnknown;
-	switch(theme)
-	{
-	case xtpCalendarThemeOffice2000:
-		themeVersion = xtpCalendarVersion2000;
-		break;
-	case xtpCalendarThemeOfficeXP:
-		themeVersion = xtpCalendarVersionXP;
-		break;
-	case xtpCalendarThemeOffice2003:
-		themeVersion = xtpCalendarVersion2003;
-		break;
-	case xtpCalendarThemeResource:
-		{
-			if(m_pTheme)
-			{
-				CXTPCalendarThemeOffice2007* ptheme2007 = DYNAMIC_DOWNCAST(CXTPCalendarThemeOffice2007, m_pTheme);
-				if(ptheme2007)
-				{
-					if(ptheme2007->m_bFlatStyle)
-						themeVersion = xtpCalendarVersion2010;
-					else
-						themeVersion = xtpCalendarVersion2007;
-				}
-			}
-		}
-		break;
-	default:
-		themeVersion = xtpCalendarVersionUnknown;
-		break;
-	}
-
-	return themeVersion;
-}
-
-void CXTPCalendarControl::SetPaintTheme(XTPCalendarTheme ePaintTheme)
-{
-	if (ePaintTheme == GetPaintTheme())
-		return;
-
-	BOOL bSendNotification = TRUE;
-
-	if (ePaintTheme == xtpCalendarThemeResource)
-	{
-		if (!m_pTheme)
-		{
-			SetTheme(new CXTPCalendarThemeOffice2007());
-			bSendNotification = FALSE;
-		}
-	}
-	else
-	{
-		ASSERT(GetPaintManager());
-
-		if (GetPaintManager())
-			GetPaintManager()->SetPaintTheme(ePaintTheme);
-
-		SetTheme(NULL);
-		bSendNotification = FALSE;
-	}
-
-	if (bSendNotification)
-		SendNotification(XTP_NC_CALENDAR_THEME_CHANGED, 0, 0);
-
-	if (m_hWnd)
-	{
-		CUpdateContext updateContext(this, xtpCalendarUpdateAll);
-	}
-}
-
-BOOL CXTPCalendarControl::SelectEventById(DWORD dEventID, BOOL bSelect)
-{
-	CXTPCalendarEventPtr pEvPtr = GetDataProvider()->GetEvent(dEventID);
-	if (pEvPtr)
-	{
-		COleDateTime dtS = pEvPtr->GetStartTime();
-		COleDateTime dtE = pEvPtr->GetEndTime();
-		//int nSchId = pEvPtr->GetScheduleID();
-		//BOOL bAllDay = pEvPtr->IsAllDayEvent();
-		//
-		//XTPCalendarViewType viewType = GetActiveView()->GetViewType();
-		GetActiveView()->SelectEvent(pEvPtr);
-
-		SwitchActiveView(xtpCalendarDayView);
-
-		CXTPCalendarDayView* pDayView = DYNAMIC_DOWNCAST(CXTPCalendarDayView, GetActiveView());
-		if (pDayView)
-		{
-			pDayView->ShowDay(dtS);
-			CXTPCalendarViewEvent* pCVE = GetActiveView()->FindViewEvent(pEvPtr, dtS);
-			if (pCVE)
-			{
-				pDayView->EnsureVisible(pCVE);
-				if (bSelect)
-					pDayView->SelectEvent(pCVE->GetEvent());
-			}
-			return TRUE;
-		}
-	//      pDayView->ResetSelection();
-	//      pDayView->ShowDay(dtS);
-	//      pDayView->SetSelection(dtS, dtE, bAllDay, nSchId);
-
-	//      if (viewType == xtpCalendarMonthView)
-	//      {
-	//          SwitchActiveView(xtpCalendarMonthView);
-	//          CXTPCalendarMonthView* pView = DYNAMIC_DOWNCAST(CXTPCalendarMonthView, GetActiveView());
-	//          pView->ShowDay(dtS);
-	//          pView->SelectDay(dtS);
-	//      }
-	//      else if (viewType == xtpCalendarWeekView ||
-	//               viewType == xtpCalendarWorkWeekView ||
-	//               viewType == xtpCalendarFullWeekView )
-	//      {
-	//          SwitchActiveView(xtpCalendarWeekView);
-	//          CXTPCalendarWeekView* pView = DYNAMIC_DOWNCAST(CXTPCalendarWeekView, GetActiveView());
-	//          pView->ShowDay(dtS);
-	//          pView->SelectDay(dtS);
-	//      }
-	//      else if (viewType == xtpCalendarTimeLineView)
-	//      {
-	//          SwitchActiveView(xtpCalendarTimeLineView);
-	//          CXTPCalendarTimeLineView* pView = DYNAMIC_DOWNCAST(CXTPCalendarTimeLineView, GetActiveView());
-	//          pView->ShowDay(dtS);
-	//          pView->SelectDay(dtS);
-	//      }
-	//      return TRUE;
-	//  }
-	}
-	return FALSE;
-}
-
-BOOL CXTPCalendarControl::SelectViewEventByIdAndGroup(int nScheduleID, DWORD dEventID, BOOL bSelect)
-{
-	CXTPCalendarEventPtr pEvPtr = GetDataProvider()->GetEvent(dEventID);
-	if (pEvPtr)
-	{
-		COleDateTime dtS = pEvPtr->GetStartTime();
-		COleDateTime dtE = pEvPtr->GetEndTime();
-		//int nSchId = pEvPtr->GetScheduleID();
-		GetActiveView()->SelectEvent(pEvPtr);
-
-		SwitchActiveView(xtpCalendarDayView);
-
-		CXTPCalendarDayView* pDayView = DYNAMIC_DOWNCAST(CXTPCalendarDayView, GetActiveView());
-		if (pDayView)
-		{
-			pDayView->ShowDay(dtS);
-			CXTPCalendarViewEvent* pCVE = GetActiveView()->FindViewEventByGroup(pEvPtr, dtS, nScheduleID);
-			if (pCVE)
-			{
-				pDayView->EnsureVisible(pCVE);
-				if (bSelect)
-				{
-					pDayView->UnselectAllEvents();
-					pDayView->SelectViewEvent(pCVE, bSelect);
-				}
-			}
-			return TRUE;
-		}
-	}
-	return FALSE;
-}
-
-CXTPCalendarControl::CViewChanged_ContextData::CViewChanged_ContextData()
-{
-	m_nLockCount = 0;
-	m_bRequest = FALSE;
-}
-
-CXTPCalendarControl::CViewChangedContext::CViewChangedContext(
-											CXTPCalendarView* pView, int eType)
-{
-	if (!pView)
-	{
-		ASSERT(FALSE);
-		return;
-	}
-	Init(pView->GetCalendarControl(), eType);
-}
-
-CXTPCalendarControl::CViewChangedContext::CViewChangedContext(CXTPCalendarControl* pControl, int eType)
-{
-	Init(pControl, eType);
-}
-
-void CXTPCalendarControl::CViewChangedContext::Init(CXTPCalendarControl* pControl, int eType)
-{
-	if (!pControl)
-	{
-		ASSERT(FALSE);
-		return;
-	}
-
-	m_pControl = pControl;
-	m_eType = eType;
-
-	m_pControl->m_cntViewChanged.m_nLockCount++;
-}
-
-CXTPCalendarControl::CViewChangedContext::~CViewChangedContext()
-{
-	if (!m_pControl)
-	{
-		ASSERT(FALSE);
-		return;
-	}
-
-	if (m_eType == xtpCalendarViewChangedSend)
-	{
-		m_pControl->m_cntViewChanged.m_bRequest = TRUE;
-	}
-
-	ASSERT(m_pControl->m_cntViewChanged.m_nLockCount > 0);
-
-	m_pControl->m_cntViewChanged.m_nLockCount--;
-
-	if (m_pControl->m_cntViewChanged.m_nLockCount == 0 &&
-		m_pControl->m_cntViewChanged.m_bRequest)
-	{
-		m_pControl->m_cntViewChanged.m_bRequest = FALSE;
-
-		m_pControl->SendNotification(XTP_NC_CALENDARVIEWWASCHANGED, 0, 0);
-	}
-}
-
-BOOL CXTPCalendarControl::IsReadonlyMode() const
-{
-	return m_bReadOnlyMode; //CAN BE MORE COMPLICATED LOGIC HERE LATER
-}
-
-int CXTPCalendarControl::GetFirstWeekOfYearDays() const
-{
-	return m_nFirstWeekOfYearDays;
-}
-
-void CXTPCalendarControl::SetFirstWeekOfYearDays(int const nFirstWeekOfYearDays)
-{
-	m_nFirstWeekOfYearDays = max(min(7, nFirstWeekOfYearDays), 1);
-}

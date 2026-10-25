@@ -1,14 +1,14 @@
-// from server: 40% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/CommandBars/XTPCustomizeTools.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-15.2.1-shared-mfc Source/CommandBars/XTPCustomizeTools.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPCustomizeTools.cpp.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2011 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -30,12 +30,18 @@
 
 #include "Common/XTPResourceManager.h"
 #include "Common/XTPDrawHelpers.h"
+#include "Common/XTPSystemHelpers.h"
+#include "Common/XTPHookManager.h"
 
+#include "Controls/Dialog/XTPPropertySheet.h"
+
+#include "XTPCommandBarsDefines.h"
 #include "XTPCustomizeTools.h"
 #include "XTPCommandBar.h"
 #include "XTPControl.h"
 #include "XTPToolBar.h"
 #include "XTPCommandBars.h"
+#include "XTPCustomizeSheet.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -65,6 +71,11 @@ CXTPCustomizeDropSource::CXTPCustomizeDropSource(CXTPCommandBars* pCommandBars)
 
 CXTPCustomizeDropSource::~CXTPCustomizeDropSource()
 {
+}
+
+void CXTPCustomizeDropSource::ContextMenu(CPoint point)
+{
+	GetSheet()->ContextMenu(point);
 }
 
 DROPEFFECT CXTPCustomizeDropSource::DoDragDrop(CXTPControl* pControl, BOOL bCopyOnly)
@@ -191,16 +202,6 @@ DROPEFFECT CXTPCustomizeDropSource::_DoDragDrop()
 	{
 		MSG msg;
 
-		// assess current state
-		// pump WM_PAINT first for better feedback
-		while (::PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_NOREMOVE))
-		{
-			if (!GetMessage(&msg, NULL, WM_PAINT, WM_PAINT))
-				break;
-			DispatchMessage(&msg);
-		}
-
-		// get a message
 		if (!::GetMessage(&msg, NULL, 0, 0))
 		{
 			AfxPostQuitMessage((int)msg.wParam);

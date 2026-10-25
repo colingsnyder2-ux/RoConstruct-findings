@@ -1,42 +1,19 @@
-// from server: 80% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/FaceInstance.cpp
+// from server: 100% by tester
+// roc 2010-06 00667cf0  unit: VCRenderSettingsItem::?$EnumPropDescriptor  size: 10 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 00667cf0
+//
+// 00667cf0  8b4920               mov ecx, dword ptr [ecx + 0x20]
+// 00667cf3  8b01                 mov eax, dword ptr [ecx]
+// 00667cf5  8b400c               mov eax, dword ptr [eax + 0xc]
+// 00667cf8  ffe0                 jmp eax
 
-// Candidate translation unit (score above; library headers required).
-#include "v8datamodel/FaceInstance.h"
-#include "v8datamodel/PartInstance.h"
-#include "util/NormalId.h"
-#include "v8tree/Instance.h"
-#include "reflection/reflection.h"
-namespace RBX 
-{
-	const char* sFaceInstance = "FaceInstance";
-	const Reflection::EnumPropDescriptor<FaceInstance,NormalId> FaceInstance::prop_Face("Face", "Data", &FaceInstance::getFace, &FaceInstance::setFace, Reflection::PropertyDescriptor::STANDARD);
+struct OgreRbxMeshPartAdapter {
+    int getSomething();
+};
 
-	FaceInstance::FaceInstance()
-		:face(NORM_Z_NEG)
-	{
-	}
-
-	void FaceInstance::setFace(NormalId value) 
-	{
-		if (face != value) 
-		{
-			face = value;
-			raisePropertyChanged(prop_Face);
-		}
-	}
-
-
-	NormalId FaceInstance::getFace() const 
-	{
-		return face;
-	}
-
-	bool FaceInstance::askSetParent(const Instance* instance) const 
-	{
-		return dynamic_cast<const PartInstance*>(instance) != NULL;
-	}
+int OgreRbxMeshPartAdapter::getSomething() {
+    void* obj = *reinterpret_cast<void**>(reinterpret_cast<char*>(this) + 0x20);
+    void* vtable = *reinterpret_cast<void**>(obj);
+    int (__thiscall *func)(void*) = *reinterpret_cast<int (__thiscall**)(void*)>(reinterpret_cast<char*>(vtable) + 0xc);
+    return func(obj);
 }

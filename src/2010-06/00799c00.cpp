@@ -1,14 +1,5 @@
-// from server: 37% by atomic.potato
-extern "C" void construct_string(void *, const char *);
-extern const char *g_ExclusiveArbiter;
-
-struct ExclusiveArbiter
-{
-    int f(const char *);
-};
-
-int ExclusiveArbiter::f(const char *value)
-{
-    construct_string(this, g_ExclusiveArbiter);
-    return 0;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <string>
+struct Tool { virtual std::string name() const; };
+std::string Tool::name() const { return "ExclusiveArbiter"; }

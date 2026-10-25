@@ -1,18 +1,11 @@
-// from server: 76% by atomic.potato
-extern "C" void __cdecl sub_80b15d(const char *);
-
-int __cdecl f_681d90()
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+extern "C" void seh_fn_00681d90(void*);
+extern int g_a_00681d90;
+extern int g_b_00681d90;
+extern int g_arg_00681d90;
+struct Reg_00681d90 { Reg_00681d90() { g_a_00681d90 = 0; g_b_00681d90 = 0; seh_fn_00681d90(&g_arg_00681d90); } };
+void func_00681d90()
 {
-    static unsigned char initialized;
-    static int global_1;
-    static int global_2;
-
-    if (initialized)
-        return 0;
-
-    initialized = 1;
-    global_1 = 0;
-    global_2 = 0;
-    sub_80b15d("8csm");
-    return 0;
+    static Reg_00681d90 reg;
 }

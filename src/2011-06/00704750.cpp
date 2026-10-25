@@ -1,18 +1,11 @@
-// from server: 76% by atomic.potato
-extern "C" void Initialize();
-
-unsigned char g_initialized;
-int g_value1;
-int g_value2;
-
-int Function00704750()
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+extern "C" void seh_fn_00704750(void*);
+extern int g_a_00704750;
+extern int g_b_00704750;
+extern int g_arg_00704750;
+struct Reg_00704750 { Reg_00704750() { g_a_00704750 = 0; g_b_00704750 = 0; seh_fn_00704750(&g_arg_00704750); } };
+void func_00704750()
 {
-    if (g_initialized)
-        return 0;
-
-    g_initialized = 1;
-    g_value1 = 0;
-    g_value2 = 0;
-    Initialize();
-    return 0;
+    static Reg_00704750 reg;
 }

@@ -1,6 +1,4 @@
-// from server: 91% by EspClaude
-// from server: 88% by colin
-#pragma float_control(precise, off)
+// from server: 100% by colin
 // roc 2008-06 005ded80  unit: RBX::Message  size: 134 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005ded80
 //
@@ -62,34 +60,31 @@
 // 005dee03  d900                 fld dword ptr [eax]
 // 005dee05  c3                   ret 
 
+// from server: 91% by EspClaude
+#pragma float_control(precise, off)
+// roc 2008-06 005ded80  unit: RBX::Message  size: 134 bytes
+
 extern "C" double __cdecl fabs(double);
 extern "C" double __cdecl sqrt(double);
 extern "C" double __cdecl atan(double);
 #pragma intrinsic(fabs, sqrt, atan)
-
 
 extern const float invalidResult;
 
 float __cdecl f(float speed, float distance, float height, float gravity)
 {
     double g = fabs(gravity);
-    double v = speed;
-    double v2 = v * v;
-    double v3 = v2 * v;
-    double v4 = v3 * v;
-    double d = distance;
-    double d2 = d * d;
-    double h2 = height * height;
-    double discriminant = v4
-        - (d2 * g + 2.0 * (height * v2)) * g;
+    double disc = speed*speed*speed*speed
+        - (distance*distance*g + 2.0*(speed*speed)*height)*g;
 
-    if (discriminant <= 0.0)
+    if (disc <= 0.0)
         return invalidResult;
 
-    double root = sqrt(discriminant);
-    double upper = atan((root + v2) / (d * g));
+    double root = sqrt(disc);
+    double v2 = speed*speed;
+    double upper = atan((root + v2) / (distance*g));
     speed = (float)upper;
-    double lower = atan((v2 - root) / (g * d));
+    double lower = atan((v2 - root) / (g*distance));
     gravity = (float)lower;
 
     const float* result = lower < upper ? &gravity : &speed;

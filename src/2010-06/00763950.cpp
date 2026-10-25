@@ -1,349 +1,445 @@
-// from server: 51% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8kernel/Body.cpp
+// roc-lib: rbxgs script/LuaInstanceBridge.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8kernel/Body.h"
-#include "v8kernel/SimBody.h"
-#include "util/Debug.h"
+#include "script/LuaInstanceBridge.h"
+#include "script/LuaSignalBridge.h"
+#include "script/LuaArguments.h"
+#include "script/LuaAtomicClasses.h"
+#include "script/ThreadRef.h"
+#include "util/Sound.h"
+#include "util/TextureId.h"
+#include "util/standardout.h"
+#include "v8tree/Instance.h"
+#include "G3D/format.h"
+#include "G3D/Vector3.h"
+
+// matches generally aren't very good here
+
 using namespace RBX;
+using namespace RBX::Lua;
+using namespace RBX::Reflection;
+using namespace RBX::Soundscape;
 
-Body::Body()
-	:index(-1),
-	canThrottle(true),
-	cofm(NULL),
-	root(NULL),
-	parent(NULL),
-	link(NULL),
-	simBody(NULL),
-	stateIndex(getNextStateIndex()),
-	moment(G3D::Matrix3::identity()),
-	mass(0.0f)
+void RBX::Lua::newweaktable(lua_State* L, const char* mode)
 {
-	root = this;
-	simBody = new SimBody(this);
+    lua_newtable(L);
+    lua_pushvalue(L, -1);
+    lua_setmetatable(L, -2);
+    lua_pushliteral(L, "__mode");
+    lua_pushstring(L, mode);
+    lua_settable(L, -3);
 }
 
-Body::~Body()
+const luaL_Reg ObjectBridge::classLibrary[] = 
 {
-	RBXASSERT(numChildren() == 0);
-	if (parent)
-		setParent(NULL);
-	RBXASSERT(!parent);
-	RBXASSERT(!link);
-	RBXASSERT(index == -1);
-	RBXASSERT(simBody);
-	delete simBody;
-	simBody = NULL;
-	RBXASSERT(!cofm);
-	RBXASSERT(root == this);
+    {"new", ObjectBridge::newInstance},
+    {NULL, NULL}
+};
+
+int ObjectBridge::newInstance(lua_State* thread)
+{
+    const Name& name = Name::lookup(lua_tostring(thread, 1));
+    boost::shared_ptr<Instance> instance = AbstractFactoryProduct<Instance>::create(name);
+
+    if (lua_gettop(thread) >= 2)
+    {
+        boost::shared_ptr<Instance> parent = ObjectBridge::getInstance(thread, 2);
+
+        if (parent)
+            instance->setParent(parent.get());
+    }
+
+    ObjectBridge::push(thread, instance);
+
+    return 1;
 }
 
-void Body::updatePV() const
+// TODO: 98.80% (functional match)
+static void pushLuaValue(ConstProperty p, lua_State* L)
 {
-	RBXASSERT((parent != NULL) || (getRootConst() == this));
+    // (0024BC)  S_BPREL32: [FFFFFF40], Type:             0x3639, objects
+    // (0024D0)  S_BPREL32: [FFFFFF50], Type:             0x36A2, end
+    // (0024E0)  S_BPREL32: [FFFFFF48], Type:             0x36A2, iter
 
-	if (parent && this->stateIndex != getRootConst()->getStateIndex())
-	{
-		Body* tempParent = getParent();
-		tempParent->updatePV();
-		PV& tempPV = tempParent->pv;
-		this->pv = tempPV.pvAtLocalCoord(getMeInParent());
-		this->stateIndex = root->getStateIndex();
-	}
+    PropertyDescriptor& descriptor = const_cast<PropertyDescriptor&>(p.getDescriptor());
+
+    if (descriptor.type == Type::singleton<int>())
+    {
+        lua_pushinteger(L, p.getValue<int>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<bool>())
+    {
+        lua_pushboolean(L, p.getValue<bool>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<float>())
+    {
+        lua_pushnumber(L, p.getValue<float>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<std::string>())
+    {
+        lua_pushstring(L, p.getStringValue().c_str());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<boost::shared_ptr<Instance>>())
+    {
+        ObjectBridge::push(L, p.getValue<boost::shared_ptr<Instance>>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<boost::shared_ptr<DescribedBase>>())
+    {
+        ObjectBridge::push(L, p.getValue<boost::shared_ptr<DescribedBase>>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<G3D::Vector3>())
+    {
+        Vector3Bridge::pushVector3(L, p.getValue<G3D::Vector3>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<G3D::CoordinateFrame>())
+    {
+        CoordinateFrameBridge::pushCoordinateFrame(L, p.getValue<G3D::CoordinateFrame>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<G3D::Color3>())
+    {
+        Color3Bridge::pushColor3(L, p.getValue<G3D::Color3>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<BrickColor>())
+    {
+        BrickColorBridge::pushNewObject(L, p.getValue<BrickColor>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<ContentId>())
+    {
+        lua_pushstring(L, p.getStringValue().c_str());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<FunctionRef>())
+    {
+        lua_pushfunction(L, p.getValue<FunctionRef>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<boost::shared_ptr<Instances>>())
+    {
+        boost::shared_ptr<Instances> objects = p.getValue<boost::shared_ptr<Instances>>();
+        if (objects)
+        {
+            Instances::const_iterator iter = objects->begin();
+            Instances::const_iterator end = objects->end();
+
+            // objects->size() doesn't match
+            lua_createtable(L, end-iter, 0);
+
+            for (int i = 1; iter != end; i++)
+            {
+                ObjectBridge::push(L, *iter);
+                lua_rawseti(L, -2, i);
+                ++iter;
+            }
+        }
+        else
+        {
+            lua_newtable(L);
+        }
+        return;
+    }
+
+    EnumPropertyDescriptor* enumDesc = dynamic_cast<EnumPropertyDescriptor*>(&descriptor);
+    if (enumDesc)
+    {
+        lua_pushinteger(L, enumDesc->getEnumValue(p.getInstance()));
+        return;
+    }
+
+    RefPropertyDescriptor* refDesc = dynamic_cast<RefPropertyDescriptor*>(&descriptor);
+    if (refDesc)
+    {
+        DescribedBase* ref = refDesc->getRefValue(p.getInstance());
+
+        // this just seems strange /shrug
+        if (ref)
+            ObjectBridge::push(L, static_cast<Instance*>(ref)->shared_from_this());
+        else
+            ObjectBridge::push(L, boost::shared_ptr<Instance>());
+
+        return;
+    }
+
+    throw std::runtime_error(G3D::format(
+        "Unable to get property %s, type %s",
+        descriptor.name.c_str(),
+        descriptor.type.name.c_str()));
 }
 
-void Body::resetRoot(RBX::Body* newRoot)
+template<>
+int ObjectBridge::on_index(const boost::shared_ptr<DescribedBase>& object, const char* name, lua_State* L)
 {
-	RBXASSERT(newRoot == calcRoot());
-	root = newRoot;
-	for (int i = 0; i < children.size(); i++)
-	{
-		children[i]->resetRoot(newRoot);
-	}
+    if (!object)
+        throw std::runtime_error("The object has been deleted");
+
+    const Name& name2 = Name::lookup(name);
+
+    // what's with the scopes? they can't be inlines
+
+    {
+        PropertyIterator iter = object->findProperty(name2);
+        if (iter != object->properties_end())
+        {
+            pushLuaValue(*iter, L);
+            return 1;
+        }
+    }
+
+    {
+        FunctionIterator iter = object->findFunction(name2);
+        if (iter != object->functions_end())
+        {
+            const FunctionDescriptor* fd = (*iter).getDescriptor();
+
+            lua_pushlightuserdata(L, (void*)fd);
+            lua_rawget(L, LUA_ENVIRONINDEX);
+
+            if (lua_type(L, -1) == LUA_TNIL)
+            {
+                lua_pop(L, 1);
+                lua_pushlightuserdata(L, (void*)fd);
+                lua_pushcclosure(L, ObjectBridge::callMemberFunction, 1);
+                lua_pushlightuserdata(L, (void*)fd);
+                lua_pushvalue(L, -2);
+                lua_settable(L, LUA_ENVIRONINDEX);
+            }
+
+            RBXASSERT(lua_type(L, -1) == LUA_TFUNCTION);
+
+            return 1;
+        }
+    }
+
+    {
+        SignalIterator iter = object->findSignal(name2);
+        if (iter != object->signals_end())
+        {
+            Signal s = *iter;
+            SignalBridge::push(L, s.getSignalInstance());
+            return 1;
+        }
+    }
+
+    Instance* instance = dynamic_cast<Instance*>(object.get());
+    if (instance)
+    {
+        Instance* child = instance->findFirstChildByName(name);
+        if (child)
+        {
+            ObjectBridge::push(L, shared_from(child));
+            return 1;
+        }
+    }
+
+    if (name2.empty())
+    {
+        std::string pascalName = name;
+        pascalName[0] = toupper(name[0]);
+
+        if (pascalName[0] != name[0] && !Name::lookup(pascalName).empty())
+            return on_index(object, pascalName.c_str(), L);
+    }
+
+    throw std::runtime_error(G3D::format("%s is not a valid member of %s", name, instance->getClassName().c_str()));
 }
 
-float Body::kineticEnergy() const
+// TODO: 94.38% (functional match)
+static void assignLuaValue(Property p, lua_State* L, int index)
 {
-	float calc = (pv.velocity.rotational.dot(getIWorld() * pv.velocity.rotational) + pv.velocity.linear.dot(pv.velocity.linear) * mass) / 2;
-	return calc;
+    // (002DA8)  S_BPREL32: [FFFFFF60], Type:             0x238B, value
 
+    PropertyDescriptor& descriptor = const_cast<PropertyDescriptor&>(p.getDescriptor());
+
+    if (descriptor.type == Type::singleton<int>())
+    {
+        p.setValue<int>(lua_tointeger(L, index));
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<bool>())
+    {
+        p.setValue<bool>(lua_toboolean(L, index) != 0);
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<float>())
+    {
+        p.setValue<float>(lua_tonumber(L, index));
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<std::string>())
+    {
+        p.setValue<std::string>(lua_tostring(L, index));
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<FunctionRef>())
+    {
+        p.setValue(FunctionRef(L, index));
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<boost::shared_ptr<Instance>>())
+    {
+        p.setValue(ObjectBridge::getInstance(L, index));
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<boost::shared_ptr<DescribedBase>>())
+    {
+        p.setValue(ObjectBridge::getPtr(L, index));
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<G3D::Vector3>())
+    {
+        p.setValue(Vector3Bridge::getObject(L, index));
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<G3D::CoordinateFrame>())
+    {
+        p.setValue(CoordinateFrameBridge::getObject(L, index));
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<G3D::Color3>())
+    {
+        p.setValue(Color3Bridge::getObject(L, index));
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<BrickColor>())
+    {
+        p.setValue(BrickColorBridge::getObject(L, index));
+        return;
+    }
+
+    // the contentid dtors for these two checks should be merged
+    // seems like an inline, but i can't get it to work
+    if (dynamic_cast<TypedPropertyDescriptor<SoundId>*>(&descriptor))
+    {
+        p.setValue<SoundId>(ContentId(lua_tostring(L, index)));
+        return;
+    }
+
+    if (dynamic_cast<TypedPropertyDescriptor<TextureId>*>(&descriptor))
+    {
+        p.setValue<TextureId>(ContentId(lua_tostring(L, index)));
+        return;
+    }
+
+    EnumPropertyDescriptor* enumDesc = dynamic_cast<EnumPropertyDescriptor*>(&descriptor);
+    if (enumDesc)
+    {
+        int value = lua_tointeger(L, index);
+        enumDesc->setEnumValue(p.getInstance(), value);
+        return;
+    }
+
+    RefPropertyDescriptor* refDesc = dynamic_cast<RefPropertyDescriptor*>(&descriptor);
+    if (refDesc)
+    {
+        boost::shared_ptr<Instance> value = ObjectBridge::getInstance(L, index);
+        refDesc->setRefValue(p.getInstance(), value.get());
+        return;
+    }
+
+    throw std::runtime_error(G3D::format("Unable to set property %s, type %s", descriptor.name.c_str(), descriptor.type.name.c_str()));
 }
 
-int Body::getNextStateIndex()
+// TODO: 91.56%
+// a lot of stack space gets wasted for some reason
+template <>
+void ObjectBridge::on_newindex(boost::shared_ptr<DescribedBase>& object, const char* name, lua_State* L)
 {
-	static int p;
-	if (++p == INT_MAX)
-		p = 1;
-	return p;
+    // (0033F8)  S_BPREL32: [FFFFFF68], Type:             0x3058, iter
+    // (00340C)  S_BPREL32: [FFFFFF58], Type:             0x238B, parent (boost::shared_ptr<RBX::Instance>)
+
+    if (!object)
+        throw std::runtime_error("The object has been deleted");
+
+    DescribedBase* objectPtr = object.get();
+    PropertyIterator iter = object->findProperty(Name::lookup(name));
+    if (iter != object->properties_end())
+    {
+        if ((*iter).getDescriptor() == Instance::propParent)
+        {
+            Instance* instance = dynamic_cast<Instance*>(objectPtr);
+
+            if (!instance)
+                throw std::runtime_error(G3D::format("%s is not a valid member of %s", name, object->classDescriptor().name.c_str()));
+
+            boost::shared_ptr<Instance> parent = ObjectBridge::getInstance(L, 3);
+
+            if (instance->getParent() != parent.get())
+            {
+                if (!instance->canSetParent(parent.get()))
+                    StandardOut::singleton()->print(MESSAGE_WARNING, "%s should not be a child of %s", instance->getName().c_str(), parent->getName().c_str());
+
+                instance->setParent2(parent);
+            }
+        }
+        else
+        {
+            assignLuaValue(*iter, L, 3);    
+        }
+
+        return;
+    }
+
+    throw std::runtime_error(G3D::format("%s is not a valid member of %s", name, object->classDescriptor().name.c_str()));
 }
 
-void Body::advanceStateIndex()
+int ObjectBridge::callMemberFunction(lua_State* L)
 {
-	stateIndex = getNextStateIndex();
-}
+    int idx = lua_upvalueindex(1);
+    RBXASSERT(lua_type(L, idx) == LUA_TLIGHTUSERDATA);
+    Reflection::FunctionDescriptor* fd = static_cast<Reflection::FunctionDescriptor*>(lua_touserdata(L, idx));
 
-bool Body::validateParentCofmDirty()
-{
-	RBXASSERT(cofm);
-	RBXASSERT(cofm->getIsDirty());
-	if (getParent())
-		getParent()->validateParentCofmDirty();
-	return true;
-}
+    if (fd->security == FunctionDescriptor::NeedTrustedCaller)
+        Security::Context::current().requirePermission(Security::Administrator, fd->name.c_str());
 
-void Body::makeCofmDirty()
-{
-	if (cofm && cofm->getIsDirty())
-	{
-		// TODO: this match is super fake, i dont know roblox managed to create this cursed assertion
-		#if defined(_DEBUG) || defined(_RELEASEASSERT)
-		if (Debugable::assertAction == Debugable::CrashOnAssert)
-		{
-			if (parent)
-				parent->validateParentCofmDirty();
-			RBXASSERT(getRootSimBody()->getDirty());
-		}
-		#endif
-	}
-	else
-	{
-		if (getParent())
-		{
-			RBXASSERT(!simBody);
-			getParent()->makeCofmDirty();
-		}
-		else
-		{
-			RBXASSERT(root == this);
-			if (simBody)
-				simBody->makeDirty();
-		}
-		if (cofm)
-		{
-			cofm->makeDirty();
-			RBXASSERT(numChildren() > 0);
-		}
-		else
-		{
-			RBXASSERT(!numChildren());
-		}
-	}
-}
+    boost::shared_ptr<Reflection::DescribedBase> instance;
 
-void Body::onChildAdded(RBX::Body* child)
-{
-	makeCofmDirty();
-	children.fastAppend(child);
-	if (!cofm)
-	{
-		RBXASSERT(numChildren() == 1);
-		cofm = new Cofm(this);
-	}
-}
+    if (!getPtr(L, 1, instance) || !instance)
+        throw std::runtime_error(G3D::format(
+            "Did you forget a semicolon?  The first argument of member function %s must be an Object",
+            fd->name.c_str()));
 
-void Body::onChildRemoved(RBX::Body* child)
-{
-	RBXASSERT(cofm);
-	children.fastRemove(child);
-	if (numChildren() == 0)
-	{
-		delete cofm;
-		cofm = NULL;
-	}
-	makeCofmDirty();
-}
+    if (!fd->isMemberOf(instance.get()))
+        throw std::runtime_error(G3D::format(
+        "The function %s is not a member of \"%s\"",
+        fd->name.c_str(),
+        instance->classDescriptor().name.c_str()));
 
-void Body::setMass(float _mass)
-{
-	if (mass != _mass)
-	{
-		makeCofmDirty();
-		mass = _mass;
-	}
-}
-
-void Body::step(float dt, bool throttling)
-{
-	RBXASSERT(!getParent());
-	RBXASSERT(simBody);
-
-	if (throttling && canThrottle)
-	{
-		simBody->resetAccumulators();
-	}
-	else
-	{
-		simBody->step(dt);
-
-		pv = cofm == NULL ? simBody->pv : simBody->getOwnerPV();
-		advanceStateIndex();
-	}
-}
-
-void Body::setVelocity(const Velocity& worldVelocity)
-{
-	if (!getParent())
-	{
-		pv.velocity = worldVelocity;
-		advanceStateIndex();
-		if (simBody)
-			simBody->makeDirty();
-	}
-}
-
-void Body::setParent(Body* newParent)
-{
-	RBXASSERT(!newParent || newParent->getParent() != this);
-	RBXASSERT(newParent != this);
-
-	if (parent != newParent)
-	{
-		if (link)
-		{
-			link->setBody(NULL);
-			link = NULL;
-		}
-
-		if (getParent())
-		{
-			RBXASSERT(root == getParent()->getRoot());
-			RBXASSERT(!simBody);
-			parent->onChildRemoved(this);
-		}
-		else
-		{
-			RBXASSERT(root = this);
-			RBXASSERT(simBody);
-			delete simBody;
-			simBody = NULL;
-		}
-
-		parent = newParent;
-
-		if (newParent)
-		{
-			newParent->onChildAdded(this);
-		}
-		else
-		{
-			simBody = new SimBody(this);
-		}
-		Body* myRoot = getParent() ? getParent()->calcRoot() : this;
-		myRoot->advanceStateIndex();
-		resetRoot(myRoot);
-	}
-}
-
-Body* Body::getWorldBody()
-{
-	static Body b = Body();
-	return &b;
-}
-
-G3D::CoordinateFrame Body::getMeInDescendant(const Body* descendant) const
-{
-	if (descendant == this)
-	{
-		return G3D::CoordinateFrame();
-	}
-	else if (descendant == parent)
-	{
-		RBXASSERT(parent);
-		return getLink() ? getLink()->getChildInParent() : meInParent;
-	}
-	else
-	{
-		RBXASSERT(parent);
-		return parent->getMeInDescendant(descendant) * meInParent;
-	}
-}
-
-void Body::setPv(const PV& _pv)
-{
-	if (parent)
-	{
-		RBXASSERT(0);
-	}
-	else
-	{
-		pv = _pv;
-		if (simBody)
-			simBody->makeDirty();
-		advanceStateIndex();
-	}
-	RBXASSERT(Math::longestVector3Component(pv.position.translation) < 1000000.0);
-	RBXASSERT(Math::isOrthonormal(pv.position.rotation));
-	RBXASSERT(!Math::isNanInfDenormVector3(pv.position.translation));
-	RBXASSERT(!Math::isNanInfDenormVector3(pv.velocity.linear));
-	RBXASSERT(!Math::isNanInfDenormVector3(pv.velocity.rotational));
-}
-
-void Body::setCoordinateFrame(const G3D::CoordinateFrame& worldCord)
-{
-	updatePV();
-	setPv(PV::PV(worldCord, pv.velocity));
-}
-
-void Body::setMeInParent(const G3D::CoordinateFrame& _meInParent)
-{
-	RBXASSERT(Math::longestVector3Component(_meInParent.translation) < 1000000.0);
-
-	if (getLink())
-	{
-		RBXASSERT(0);
-		getLink()->setBody(NULL);
-		link = NULL;
-	}
-
-	if (getParent())
-	{
-		meInParent = _meInParent;
-		makeCofmDirty();
-		root->advanceStateIndex();
-	}
-	else
-	{
-		RBXASSERT(0);
-	}
-}
-
-G3D::Vector3 Body::getBranchCofmPos() const
-{
-	return cofm ? pv.position.pointToWorldSpace(getPos()) : getCoordinateFrame().translation;
-}
-
-G3D::CoordinateFrame Body::getBranchCofmCoordinateFrame() const
-{
-	return G3D::CoordinateFrame(getPV().position.rotation, getBranchCofmPos());
-}
-
-G3D::Matrix3 Body::getIWorldAtPoint(const G3D::Vector3& point) const
-{
-	float _mass = mass;
-	updatePV(); //supposed to be inlined probably
-	G3D::Matrix3 iBody = moment;
-	G3D::Matrix3& iWorldAtCofm = Math::momentToWorldSpace(iBody, pv.position.rotation);
-	return Math::getIWorldAtPoint(getPV().position.translation, point, iWorldAtCofm, _mass);
-}
-
-G3D::Matrix3 Body::getBranchIWorldAtPoint(const G3D::Vector3& point) const
-{
-	float _mass = getBranchMass();
-	updatePV(); //more probably inlined updatePV calls
-	G3D::Matrix3 _moment = cofm ? cofm->getMoment() : moment;
-	G3D::Matrix3& iWorldAtCofm = Math::momentToWorldSpace(_moment, pv.position.rotation);
-	return Math::getIWorldAtPoint(getBranchCofmPos(), point, iWorldAtCofm, _mass);
-}
-
-void Body::matchDummy()
-{
-	accumulateForceAtBranchCofm(G3D::Vector3(1.3f,1.2f,1.7f));
-	accumulateTorque(G3D::Vector3(6.3f,4.2f,9.7f));
-	setMoment(G3D::Matrix3());
-	resetAccumulators();
-	mass = getBranchMass();
-	index = getBranchForce().z + getBranchTorque().y + getBranchIBodyV3().x;
+    LuaArguments args(L, 1);
+    fd->execute(instance.get(), args);
+    return args.pushReturnValue();
 }

@@ -1,14 +1,14 @@
-// from server: 42% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Controls/XTColorSelectorCtrl.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-15.2.1-shared-mfc Source/Controls/Deprecated/XTButton.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTColorSelectorCtrl.cpp : implementation file
+// XTButton.cpp : implementation of the CXTButton class.
 //
 // This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2011 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,21 +26,14 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "Resource.h"
-#include "Common/Resource.h"
 
-#include "Common/XTPVC50Helpers.h"
-#include "Common/XTPVC80Helpers.h"
-#include "Common/XTPResourceManager.h"
 #include "Common/XTPColorManager.h"
 #include "Common/XTPDrawHelpers.h"
-#include "Common/XTPOffice2007Image.h"
+#include "Common/XTPImageManager.h"
 
-#include "XTDefines.h"
-#include "XTGlobal.h"
-#include "XTColorDialog.h"
-#include "XTColorSelectorCtrl.h"
-#include "XTFunctions.h"
+#include "XTThemeManager.h"
+#include "XTButtonTheme.h"
+#include "XTButton.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -48,1165 +41,586 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CUIntArray CXTColorSelectorCtrl::m_arUserDefColors;
+#ifndef WM_QUERYUISTATE
+#define WM_UPDATEUISTATE    0x0128
+#define WM_QUERYUISTATE     0x0129
 
-IMPLEMENT_THEME_HOST(CXTColorSelectorCtrl)
-IMPLEMENT_THEME_REFRESH(CXTColorSelectorCtrl, CWnd)
+#define UISF_HIDEACCEL      0x2
+#define UISF_HIDEFOCUS      0x1
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
-// CXTColorSelectorCtrl
+// CXTButton
+/////////////////////////////////////////////////////////////////////////////
+IMPLEMENT_DYNAMIC(CXTButton, CButton)
 
-CXTColorSelectorCtrl::CXTColorSelectorCtrl()
-: CXTThemeManagerStyleHost(GetThemeFactoryClass())
+IMPLEMENT_THEME_HOST(CXTButton)
+IMPLEMENT_THEME_REFRESH(CXTButton, CButton)
+
+CXTButton::CXTButton(CRuntimeClass* pThemeFactoryClass/*=NULL*/)
+: CXTThemeManagerStyleHost(pThemeFactoryClass ? pThemeFactoryClass : GetThemeFactoryClass())
+, m_nBorderGap(4)
+, m_nImageGap(8)
+, m_bUserPosition(false)
+, m_bChecked(false)
+, m_dwxStyle(BS_XT_FLAT | BS_XT_SHOWFOCUS)
+, m_sizeImage(CSize(0, 0))
+, m_ptImage(CPoint(0, 0))
+, m_ptText(CPoint(0, 0))
+, m_pIcon(NULL)
+, m_bPreSubclassInit(true)
 {
-	m_pColorDlg = NULL;
-	m_point = CPoint(0, 0);
-	m_nCols = 8;
-	m_nCurSel = -1;
-	m_sizeButton = CSize(18, 18);
-	m_dwPopup = NULL;
-	m_pParentWnd = NULL;
-	m_clrColor = CLR_DEFAULT;
-	m_clrDefault = CLR_DEFAULT;
-	m_nPressed = -1;
-	m_rcBorders = CRect(0, 0, 0, 0);
-
-	m_pExtendedColors = NULL;
-	m_nExtendedColors = 0;
+	m_bOwnerDraw = FALSE;
+	m_bPushed = FALSE;
+	m_bHot = FALSE;
 }
 
 
-
-CXTColorSelectorCtrl::~CXTColorSelectorCtrl()
+CXTButton::~CXTButton()
 {
+	CleanUpGDI();
 
-	// Free memory allocated to create color cells.
-	while (!m_arCells.IsEmpty())
-	{
-		COLOR_CELL* pColorCell = m_arCells.RemoveHead();
-		SAFE_DELETE (pColorCell);
-	}
+	CMDTARGET_RELEASE(m_pIcon);
+}
+
+HICON CXTButton::GetNormalIcon()
+{
+	return m_pIcon ? (HICON)m_pIcon->GetIcon() : NULL;
+}
+
+HICON CXTButton::GetSelectedIcon()
+{
+	return m_pIcon ? (HICON)m_pIcon->GetHotIcon() : NULL;
 }
 
 
-BEGIN_MESSAGE_MAP(CXTColorSelectorCtrl, CWnd)
-	//{{AFX_MSG_MAP(CXTColorSelectorCtrl)
-	ON_WM_CREATE()
-	ON_WM_PAINT()
-	ON_WM_MOUSEMOVE()
-	ON_WM_LBUTTONDOWN()
-	ON_WM_LBUTTONUP()
-	ON_WM_KEYDOWN()
+BEGIN_MESSAGE_MAP(CXTButton, CButton)
+	//{{AFX_MSG_MAP(CXTButton)
 	ON_WM_ERASEBKGND()
-	ON_WM_NCHITTEST_EX()
+	ON_WM_MOUSEMOVE()
+	ON_WM_CREATE()
 	ON_WM_SETFOCUS()
-	ON_WM_MOUSEACTIVATE()
+	ON_WM_KILLFOCUS()
+	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
+	ON_WM_PAINT()
+	ON_WM_SYSCOLORCHANGE()
 	//}}AFX_MSG_MAP
 	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
+	ON_MESSAGE(BM_SETSTYLE, OnDefaultAndInvalidate)
+	ON_MESSAGE(BM_SETCHECK, OnDefaultAndInvalidate)
+	ON_MESSAGE(WM_CAPTURECHANGED, OnDefaultAndInvalidate)
+	ON_MESSAGE_VOID(WM_ENABLE, OnInvalidate)
+	ON_MESSAGE(WM_UPDATEUISTATE, OnUpdateUIState)
+	ON_MESSAGE(BM_SETSTATE, OnSetState)
+	ON_MESSAGE(WM_SETTEXT, OnSetText)
+	//}}AFX_MSG_MAP
+	ON_WM_GETDLGCODE()
+	ON_MESSAGE(BM_SETSTYLE, OnSetStyle)
 END_MESSAGE_MAP()
 
-
-static XTP_PICK_BUTTON standardColors[] =
+void CXTButton::DrawItem(LPDRAWITEMSTRUCT lpDIS)
 {
-	{   RGB(0x00, 0x00, 0x00), XTP_IDS_CLR_BLACK            },
-	{   RGB(0x80, 0x80, 0x80), XTP_IDS_CLR_GRAY             },
-	{   RGB(0x80, 0x00, 0x00), XTP_IDS_CLR_MAROON           },
-	{   RGB(0x80, 0x80, 0x00), XTP_IDS_CLR_OLIVE            },
-	{   RGB(0x00, 0x80, 0x00), XTP_IDS_CLR_GREEN            },
-	{   RGB(0x00, 0x80, 0x80), XTP_IDS_CLR_TEAL             },
-	{   RGB(0x00, 0x00, 0x80), XTP_IDS_CLR_NAVY             },
-	{   RGB(0x80, 0x00, 0x80), XTP_IDS_CLR_PURPLE           },
-	{   RGB(0xFF, 0xFF, 0xFF), XTP_IDS_CLR_WHITE            },
-	{   RGB(0xC0, 0xC0, 0xC0), XTP_IDS_CLR_SILVER           },
-	{   RGB(0xFF, 0x00, 0x00), XTP_IDS_CLR_RED              },
-	{   RGB(0xFF, 0xFF, 0x00), XTP_IDS_CLR_YELLOW           },
-	{   RGB(0x00, 0xFF, 0x00), XTP_IDS_CLR_LIME             },
-	{   RGB(0x00, 0xFF, 0xFF), XTP_IDS_CLR_AQUA             },
-	{   RGB(0x00, 0x00, 0xFF), XTP_IDS_CLR_BLUE             },
-	{   RGB(0xFF, 0x00, 0xFF), XTP_IDS_CLR_FUCHSIA          },
-};
-
-static XTP_PICK_BUTTON extendedColors[] =
-{
-	{   RGB(0x00, 0x00, 0x00), XTP_IDS_CLR_BLACK            },
-	{   RGB(0x99, 0x33, 0x00), XTP_IDS_CLR_BROWN            },
-	{   RGB(0x33, 0x33, 0x00), XTP_IDS_CLR_OLIVE_GREEN      },
-	{   RGB(0x00, 0x33, 0x00), XTP_IDS_CLR_DARK_GREEN       },
-	{   RGB(0x00, 0x33, 0x66), XTP_IDS_CLR_DARK_TEAL        },
-	{   RGB(0x00, 0x00, 0x80), XTP_IDS_CLR_DARK_BLUE        },
-	{   RGB(0x33, 0x33, 0x99), XTP_IDS_CLR_INDIGO           },
-	{   RGB(0x33, 0x33, 0x33), XTP_IDS_CLR_GRAY80           },
-	{   RGB(0x80, 0x00, 0x00), XTP_IDS_CLR_DARK_RED         },
-	{   RGB(0xFF, 0x66, 0x00), XTP_IDS_CLR_ORANGE           },
-	{   RGB(0x80, 0x80, 0x00), XTP_IDS_CLR_DARK_YELLOW      },
-	{   RGB(0x00, 0x80, 0x00), XTP_IDS_CLR_GREEN            },
-	{   RGB(0x00, 0x80, 0x80), XTP_IDS_CLR_TEAL             },
-	{   RGB(0x00, 0x00, 0xFF), XTP_IDS_CLR_BLUE             },
-	{   RGB(0x66, 0x66, 0x99), XTP_IDS_CLR_BLUEGRAY         },
-	{   RGB(0x80, 0x80, 0x80), XTP_IDS_CLR_GRAY50           },
-	{   RGB(0xFF, 0x00, 0x00), XTP_IDS_CLR_RED              },
-	{   RGB(0xFF, 0x99, 0x00), XTP_IDS_CLR_LIGHTORANGE      },
-	{   RGB(0x99, 0xCC, 0x00), XTP_IDS_CLR_LIME             },
-	{   RGB(0x33, 0x99, 0x66), XTP_IDS_CLR_SEA_GREEN        },
-	{   RGB(0x33, 0xCC, 0xCC), XTP_IDS_CLR_AQUA             },
-	{   RGB(0x33, 0x66, 0xFF), XTP_IDS_CLR_LIGHT_BLUE       },
-	{   RGB(0x80, 0x00, 0x80), XTP_IDS_CLR_VIOLET           },
-	{   RGB(0x99, 0x99, 0x99), XTP_IDS_CLR_GRAY40           },
-	{   RGB(0xFF, 0x00, 0xFF), XTP_IDS_CLR_PINK             },
-	{   RGB(0xFF, 0xCC, 0x00), XTP_IDS_CLR_GOLD             },
-	{   RGB(0xFF, 0xFF, 0x00), XTP_IDS_CLR_YELLOW           },
-	{   RGB(0x00, 0xFF, 0x00), XTP_IDS_CLR_BRIGHT_GREEN     },
-	{   RGB(0x00, 0xFF, 0xFF), XTP_IDS_CLR_TURQUOISE        },
-	{   RGB(0x00, 0xCC, 0xFF), XTP_IDS_CLR_SKY_BLUE         },
-	{   RGB(0x99, 0x33, 0x66), XTP_IDS_CLR_PLUM             },
-	{   RGB(0xC0, 0xC0, 0xC0), XTP_IDS_CLR_GRAY25           },
-	{   RGB(0xFF, 0x99, 0xCC), XTP_IDS_CLR_ROSE             },
-	{   RGB(0xFF, 0xCC, 0x99), XTP_IDS_CLR_TAN              },
-	{   RGB(0xFF, 0xFF, 0x99), XTP_IDS_CLR_LIGHT_YELLOW     },
-	{   RGB(0xCC, 0xFF, 0xCC), XTP_IDS_CLR_LIGHT_GREEN      },
-	{   RGB(0xCC, 0xFF, 0xFF), XTP_IDS_CLR_LIGHT_TURQUOISE  },
-	{   RGB(0x99, 0xCC, 0xFF), XTP_IDS_CLR_PALE_BLUE        },
-	{   RGB(0xCC, 0x99, 0xFF), XTP_IDS_CLR_LAVENDER         },
-	{   RGB(0xFF, 0xFF, 0xFF), XTP_IDS_CLR_WHITE            },
-};
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTColorSelectorCtrl message handlers
-
-CSize CXTColorSelectorCtrl::CalcSize()
-{
-	CSize sz;
-
-	sz.cx = (m_sizeButton.cx * m_nCols + m_rcBorders.left + m_rcBorders.right);
-	sz.cy = m_rcBorders.top + m_rcBorders.bottom;
-
-	if ((m_dwPopup & CPS_XT_NOAUTOMATIC) == 0)
-	{
-		sz.cy += 27;
-	}
-
-	if (m_pExtendedColors)
-	{
-		m_dwPopup |= CPS_XT_EXTENDED;
-		ASSERT(m_nExtendedColors > 0);
-	}
-
-	if (m_dwPopup & CPS_XT_EXTENDED)
-	{
-		int nColors = m_pExtendedColors == NULL ? _countof(extendedColors) : m_nExtendedColors;
-		sz.cy += ((nColors + m_nCols - 1) / m_nCols) * m_sizeButton.cy;
-	}
-	else
-	{
-		sz.cy += 22 + 2 * m_sizeButton.cy;
-	}
-
-
-	if ((m_dwPopup & CPS_XT_MORECOLORS) != 0)
-	{
-		sz.cy += 27;
-
-		if (m_arUserDefColors.GetSize() > 0)
-		{
-			sz.cy += 4 + m_sizeButton.cy;
-		}
-	}
-	return sz;
+	GetTheme()->DrawItem(lpDIS, this);
 }
 
-
-BOOL CXTColorSelectorCtrl::Create(CRect rect, CWnd* pParentWnd, DWORD dwPopup, COLORREF clrColor,
-	COLORREF clrDefault/*= CLR_DEFAULT*/)
+void CXTButton::OnMouseMove(UINT nFlags, CPoint point)
 {
-	m_pParentWnd = pParentWnd;
-	ASSERT(m_pParentWnd != NULL); // must be valid.
-	if (!m_pParentWnd)
-		return FALSE;
+	if (GetButtonStyle() == BS_GROUPBOX)
+		return;
 
-	AddListener(m_pParentWnd->m_hWnd);
+	CButton::OnMouseMove(nFlags, point);
 
-	m_dwPopup = dwPopup;
-	m_clrColor = clrColor;
-	m_clrDefault = clrDefault;
+	CRect rc;
+	GetClientRect(&rc);
 
-	m_rcWnd = rect;
-
-	CSize sz = CalcSize();
-
-	if (dwPopup & WS_POPUP)
+	BOOL bHot = rc.PtInRect(point);
+	if (bHot != m_bHot)
 	{
-		if (m_dwPopup & CPS_XT_RIGHTALIGN)
+		m_bHot = bHot;
+		Invalidate(FALSE);
+
+		if (m_bHot)
 		{
-			m_rcWnd.left = m_rcWnd.right - sz.cx;
+			TRACKMOUSEEVENT tme = {sizeof(TRACKMOUSEEVENT), TME_LEAVE, m_hWnd, HOVER_DEFAULT};
+			_TrackMouseEvent(&tme);
 		}
-		else
-		{
-			m_rcWnd.right = m_rcWnd.left + sz.cx;
-		}
-
-		m_rcWnd.top = rect.bottom;
-		m_rcWnd.bottom = m_rcWnd.top + sz.cy;
 	}
-	else
-	{
-		rect.right = rect.left + sz.cx;
-		rect.bottom = rect.top + sz.cy;
-	}
-
-
-	// register the wnd class.
-	CString wndClass = ::AfxRegisterWndClass(0, AfxGetApp()->LoadStandardCursor(IDC_ARROW));
-
-	// call the base class for creation.
-	if (!CWnd::CreateEx(NULL, wndClass, _T(""), WS_CHILD,
-		m_rcWnd, m_pParentWnd, 0, NULL))
-	{
-		TRACE0("Failed to create color popup window.\n");
-		return FALSE;
-	}
-
-	// Set the font and control ID.
-	SetFont(&XTAuxData().font);
-
-	if ((dwPopup & WS_VISIBLE) && ((m_dwPopup & WS_POPUP) == 0))
-	{
-		ShowWindow(SW_SHOWNA);
-	}
-
-
-	return TRUE;
 }
 
-
-int CXTColorSelectorCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
+LRESULT CXTButton::OnSetState(WPARAM wParam, LPARAM /*lParam*/)
 {
-	if (CWnd::OnCreate(lpCreateStruct) == -1)
-		return -1;
+	BOOL bVisible = GetStyle() & WS_VISIBLE;
+	if (bVisible) ModifyStyle(WS_VISIBLE, 0);
+	Default();
+	if (bVisible) ModifyStyle(0, WS_VISIBLE);
 
-	int nIndex = -1;
-	bool bChecked = false;
-
-	// Create the ToolTip control.
-	m_tooltip.Create(this);
-	m_tooltip.Activate(TRUE);
-
-	int nLeft = m_rcBorders.left;
-	int nTop = m_rcBorders.top;
-	int nRight = lpCreateStruct->cx - m_rcBorders.right;
-	int nResID;
-	COLOR_CELL* pColorCell;
-	CString strText, strColorToolTip;
-
-	if ((m_dwPopup & CPS_XT_NOAUTOMATIC) == 0)
-	{
-		nResID = m_dwPopup & CPS_XT_NOFILL ? XTP_IDS_CLR_NOFILL : XTP_IDS_CLR_AUTOMATIC;
-
-		CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&strText, nResID));
-		int nTipIndex = FIND_S(strText, _T('\n'), 0);
-		if (nTipIndex > 0)
-		{
-			strColorToolTip = strText.Mid(nTipIndex + 1);
-			strText.ReleaseBuffer(nTipIndex);
-		}
-		else
-		{
-			strColorToolTip = strText;
-		}
-
-		nIndex++;
-
-		// Create the automatic color button.
-		pColorCell = new COLOR_CELL;
-		STRCPY_S(pColorCell->szText, 256, strText);
-
-		pColorCell->nID = nResID;
-		pColorCell->rect = CRect(nLeft, nTop, nRight, nTop + 23);
-		pColorCell->nIndex = nIndex;
-		pColorCell->bChecked = false;
-		pColorCell->dwStyle = m_dwPopup;
-		pColorCell->clr = m_clrDefault;
-
-		m_arCells.AddTail(pColorCell);
-
-		m_tooltip.AddTool(this, strColorToolTip, pColorCell->rect, nResID);
-
-		if (!(m_dwPopup & CPS_XT_NOFILL))
-		{
-			if (m_clrColor == m_clrDefault)
-			{
-				bChecked = true;
-				pColorCell->bChecked = true;
-			}
-		}
-		else if (m_clrColor == m_clrDefault && m_clrDefault == COLORREF_NULL)
-		{
-			bChecked = true;
-			pColorCell->bChecked = true;
-		}
-
-		nTop += 27;
-	}
-
-	// Create the color pick buttons.
-	XTP_PICK_BUTTON* pickBtn = (m_dwPopup & CPS_XT_EXTENDED) ? (m_pExtendedColors ? m_pExtendedColors : extendedColors) : standardColors;
-	int nColors = (m_dwPopup & CPS_XT_EXTENDED) ? (m_pExtendedColors ? m_nExtendedColors : _countof(extendedColors)) : _countof(standardColors);
-
-	nTop += ((m_dwPopup & CPS_XT_EXTENDED) ? 0 : 22);
-
-	CRect rect(nLeft, nTop, nLeft + m_sizeButton.cx, nTop + m_sizeButton.cy);
-	int x;
-
-	for (x = 0; x < nColors; x++)
-	{
-		if (x > 0 && ((x % m_nCols) == 0))
-		{
-			nTop += m_sizeButton.cy;
-			rect = CRect(nLeft, nTop, nLeft + m_sizeButton.cy, nTop + m_sizeButton.cy);
-		}
-		nIndex++;
-
-		nResID = pickBtn[x].toolTipID;
-		COLORREF clrColor = pickBtn[x].clrButton;
-
-		pColorCell = new COLOR_CELL;
-		pColorCell->szText[0] = 0;
-		pColorCell->nID = nResID;
-		pColorCell->rect = rect;
-		pColorCell->nIndex = nIndex;
-		pColorCell->bChecked = false;
-		pColorCell->dwStyle = CPS_XT_PICKBOX;
-		pColorCell->clr = clrColor;
-
-		m_arCells.AddTail(pColorCell);
-
-		CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&strColorToolTip, nResID));
-
-		m_tooltip.AddTool(this, strColorToolTip, pColorCell->rect, nResID);
-
-		if ((m_clrColor == clrColor) && !bChecked)
-		{
-			bChecked = true;
-			pColorCell->bChecked = true;
-			m_nCurSel = pColorCell->nIndex;
-		}
-
-		// offset to next column.
-		rect.OffsetRect(m_sizeButton.cx, 0);
-	}
-
-	nTop += m_sizeButton.cy;
-	rect = CRect(nLeft, nTop, nLeft + m_sizeButton.cy, nTop + m_sizeButton.cy);
-
-	if (m_dwPopup & CPS_XT_MORECOLORS)
-	{
-		// TSF NEU 18.01.02 - user defined colors
-		if (m_arUserDefColors.GetSize() > 0)
-		{
-			rect.OffsetRect(0, 4);
-
-			for (x = 0; x < min(m_arUserDefColors.GetSize(), m_nCols); x++)
-			{
-				nIndex++;
-
-				COLORREF clrColor = m_arUserDefColors.GetAt(x);
-
-				pColorCell = new COLOR_CELL;
-				pColorCell->szText[0] = 0;
-				pColorCell->nID = 0;
-				pColorCell->rect = rect;
-				pColorCell->nIndex = nIndex;
-				pColorCell->bChecked = false;
-				pColorCell->dwStyle = CPS_XT_PICKBOX;
-				pColorCell->clr = clrColor;
-
-				m_arCells.AddTail(pColorCell);
-				m_tooltip.AddTool(this, CXTColorDialog::RGBtoHex(clrColor), pColorCell->rect, 1);
-
-				if (m_clrColor == clrColor)
-				{
-					bChecked = TRUE;
-					pColorCell->bChecked = true;
-					if (!bChecked)
-						m_nCurSel = pColorCell->nIndex;
-				}
-				// offset to next column.
-				rect.OffsetRect(m_sizeButton.cx, 0);
-			}
-
-			nTop += rect.Height() + 4;
-		}
-
-		nTop += 4;
-
-		CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&strText, XTP_IDS_CLR_MORE));
-
-		nIndex++;
-		pColorCell = new COLOR_CELL;
-		STRCPY_S(pColorCell->szText, 256, strText);
-
-		pColorCell->nID = XTP_IDS_CLR_MORE;
-		pColorCell->rect = CRect(nLeft, nTop, nRight, nTop + 23);
-		pColorCell->nIndex = nIndex;
-		pColorCell->bChecked = false;
-		pColorCell->dwStyle = CPS_XT_MORECOLORS;
-		pColorCell->clr = m_clrColor;
-
-		CString strMoreColorToolTip = strText;
-
-		m_arCells.AddTail(pColorCell);
-		m_tooltip.AddTool(this, strMoreColorToolTip, pColorCell->rect, 1);
-
-		if (m_clrColor != (COLORREF)-1)
-		{
-			if (bChecked == false)
-			{
-				bChecked = true;
-				pColorCell->bChecked = true;
-			}
-		}
-	}
-
-	m_nCurSel = -1;
+	m_bPushed = (wParam != 0);
+	Invalidate(FALSE);
 
 	return 0;
-
 }
 
-
-////////////////////////////////////////////////////////////////////////////////
-// CXTColorSelectorCtrl Drawing
-
-BOOL CXTColorSelectorCtrl::IsColorStatic(CDC* pDC) const
+void CXTButton::OnSetFocus(CWnd* pOldWnd)
 {
-	if ((GetStyle() & WS_CHILD) != 0)
-	{
-		CWnd* pWndParent = GetParent();
-		if (::IsWindow(pWndParent->GetSafeHwnd()))
-		{
-			HBRUSH hBrush = (HBRUSH)pWndParent->SendMessage(WM_CTLCOLORSTATIC,
-				(WPARAM)pDC->GetSafeHdc(), (LPARAM)m_hWnd);
-
-			return (hBrush != NULL);
-		}
-	}
-
-	return FALSE;
-}
-
-void CXTColorSelectorCtrl::OnPaint()
-{
-	CPaintDC dc(this); // device context for painting
-
-	CXTPClientRect rc(this);
-	CXTPBufferDC memDC(dc);
-
-	GetTheme()->FillBackground(&memDC, rc, this);
-
-	DrawColorSelector(&memDC);
-}
-
-void CXTColorSelectorCtrl::DrawColorSelector(CDC* pDC)
-{
-	pDC->SetBkMode(TRANSPARENT);
-	CFont* pOldFont = pDC->SelectObject(&XTAuxData().font);
-
-	if ((m_dwPopup & CPS_XT_EXTENDED) == 0)
-	{
-		CString strText;
-		CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&strText, XT_IDS_STD_COLORS));
-
-		int nTop = ((m_dwPopup & CPS_XT_NOAUTOMATIC) == 0) ? 27 : 0;
-		pDC->TextOut(6, nTop + 4, strText);
-	}
-
-	POSITION pos;
-	int nIndex = 0;
-	for (pos = m_arCells.GetHeadPosition(); pos; m_arCells.GetNext(pos))
-	{
-		COLOR_CELL* pColorCell = m_arCells.GetAt(pos);
-		ASSERT(pColorCell != NULL);
-
-		BOOL bHighlighted = (((nIndex == m_nCurSel) && (m_nPressed == -1)) || (nIndex == m_nPressed));
-		BOOL bPressed = ((nIndex == m_nPressed) && (nIndex == m_nCurSel));
-
-		GetTheme()->DrawColorCell(pColorCell, pDC, bHighlighted, bPressed);
-		nIndex++;
-	}
-
-	pDC->SelectObject(pOldFont);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-CXTColorSelectorCtrl::COLOR_CELL* CXTColorSelectorCtrl::GetCellFromIndex(int iIndex)
-{
-	POSITION pos = m_arCells.FindIndex(iIndex);
-	if (pos != NULL)
-		return m_arCells.GetAt(pos);
-
-	return NULL;
-}
-
-
-int CXTColorSelectorCtrl::OnMouseActivate(CWnd* /*pDesktopWnd*/, UINT /*nHitTest*/, UINT /*message*/)
-{
-	return GetStyle() & WS_POPUP ? MA_NOACTIVATE : (int)Default();
-}
-
-void CXTColorSelectorCtrl::OnMouseMove(UINT nFlags, CPoint point)
-{
-	if (!IsColorDlgVisible())
-	{
-		if (m_point != point)
-		{
-			m_point = point;
-
-			POSITION pos;
-			for (pos = m_arCells.GetHeadPosition(); pos; m_arCells.GetNext(pos))
-			{
-				COLOR_CELL* pColorCell = m_arCells.GetAt(pos);
-				ASSERT(pColorCell != NULL);
-				if (!pColorCell)
-					continue;
-
-				CRect rcItem = pColorCell->rect;
-				if (rcItem.PtInRect(point))
-				{
-					SelectColorCell(pColorCell);
-					TRACKMOUSEEVENT tme =
-					{
-						sizeof(TRACKMOUSEEVENT), TME_LEAVE, m_hWnd
-					};
-					_TrackMouseEvent(&tme);
-
-					return;
-				}
-			}
-
-			SelectColorCell(NULL);
-		}
-
-		CWnd::OnMouseMove(nFlags, point);
-	}
-}
-
-void CXTColorSelectorCtrl::OnMouseLeave()
-{
-	if (!IsColorDlgVisible())
-	{
-		m_nPressed = m_nCurSel = -1;
-		Invalidate(FALSE);
-	}
-}
-
-void CXTColorSelectorCtrl::SelectColorCell(COLOR_CELL* pColorCell)
-{
-
-	m_nCurSel = pColorCell == NULL ? -1 : (int)pColorCell->nIndex;
+	CButton::OnSetFocus(pOldWnd);
 	Invalidate(FALSE);
 }
 
-// Adds a window to send color picker notifications to.
-void CXTColorSelectorCtrl::AddListener(HWND hwndListener)
+void CXTButton::OnKillFocus(CWnd* pNewWnd)
 {
-	m_listeners.Add(hwndListener);
+	CButton::OnKillFocus(pNewWnd);
+	Invalidate(FALSE);
 }
 
-void CXTColorSelectorCtrl::RemoveListener(HWND hwndListener)
+LRESULT CXTButton::OnDefaultAndInvalidate(WPARAM, LPARAM)
 {
-	int i;
-	for (i = (int)m_listeners.GetSize() - 1; i >= 0 ; i--)
-	{
-		if (m_listeners[i] == hwndListener)
-			m_listeners.RemoveAt(i);
-	}
+	LRESULT lResult = Default();
+	Invalidate(FALSE);
+
+	return lResult;
 }
 
-
-void CXTColorSelectorCtrl::OnLButtonDown(UINT nFlags, CPoint point)
+void CXTButton::OnInvalidate()
 {
-	if (!IsColorDlgVisible())
-	{
-		CWnd::OnLButtonDown(nFlags, point);
-
-		CRect rc;
-		GetClientRect(&rc);
-
-		if (rc.PtInRect(point))
-		{
-			m_nPressed = m_nCurSel;
-			Invalidate(FALSE);
-		}
-	}
+	Invalidate(FALSE);
 }
 
-void CXTColorSelectorCtrl::OnLButtonUp(UINT nFlags, CPoint point)
+LRESULT CXTButton::OnPrintClient(WPARAM wParam, LPARAM lParam)
 {
-	if (!IsColorDlgVisible())
-	{
-		CWnd::OnLButtonUp(nFlags, point);
+	if ((lParam & PRF_CLIENT) == 0)
+		return Default();
 
-		int nCurSel = m_nPressed == m_nCurSel ? m_nCurSel : -1;
-
-		m_nCurSel = m_nPressed = -1;
-		Invalidate(FALSE);
-
-		if (nCurSel != -1)
-		{
-			EndSelection(nCurSel);
-		}
-	}
+	CDC* pDC = CDC::FromHandle((HDC)wParam);
+	if (pDC) OnDraw(pDC);
+	return 1;
 }
 
-void CXTColorSelectorCtrl::SetCurSel(int nIndex)
+void CXTButton::OnPaint()
 {
-	if (nIndex < 0) nIndex = ((m_dwPopup & CPS_XT_NOAUTOMATIC) == 0) ? 0 : (int)m_arCells.GetCount() - 1;
-	if (nIndex >= m_arCells.GetCount()) nIndex = (int)m_arCells.GetCount() - 1;
-
-	POSITION pos = m_arCells.FindIndex(nIndex);
-	if (pos == NULL)
-		return;
-
-	COLOR_CELL* pColorCell = m_arCells.GetAt(pos);
-	SelectColorCell(pColorCell);
+	CPaintDC dcPaint(this);
+	CXTPBufferDC dc(dcPaint); // device context for painting
+	OnDraw(&dc);
 }
 
-void CXTColorSelectorCtrl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+void CXTButton::OnDraw(CDC* pDC)
 {
-	if (IsColorDlgVisible())
-		return;
+	DRAWITEMSTRUCT dis;
+	ZeroMemory(&dis, sizeof(DRAWITEMSTRUCT));
 
-	int nLastIndex = (int)m_arCells.GetCount() - 1;
+	dis.CtlType = ODT_BUTTON;
+	dis.CtlID = GetDlgCtrlID();
+	dis.itemState = 0;
 
-		//          0
-		//
-		//  1  1  2  3  4  5  6  7  8
-		//  2  9 10 11 12 13 14 15 16
-		//  3 17 18 19 20 21 22 23 24
-		//  4 25 26 27 28 29 30 31 32
-		//
-		//         33
-		//
-		//          0
-		//
-		//  1  1  2  3  4  5  6  7  8
-		//  2  9 10 11 12 13 14 15 16
-		//  3 17 18 19 20 21 22 23 24
-		//  4 25 26 27 28 29 30 31 32
-		//  5 33
-		//
-		//         34
+	if (::GetFocus() == m_hWnd) dis.itemState |= ODS_FOCUS;
+	if (m_bPushed) dis.itemState |= ODS_SELECTED;
 
-		switch (nChar)
-		{
-		case VK_DOWN:
-			{
-				// Check for no current cursor yet
-				if (m_nCurSel == -1)
-				{
-					m_nCurSel = 0 ;
-				}
-				// top button to first color cell
-				else if (m_nCurSel == 0 && ((m_dwPopup & CPS_XT_NOAUTOMATIC) == 0))
-				{
-					m_nCurSel = 1 ;
-				}
-				// bottom button to top bottom
-				else if (m_nCurSel == nLastIndex)
-				{
-					m_nCurSel = 0 ;
-				}
-				// a color square to the next color square below it
-				else
-				{
-					m_nCurSel += m_nCols;
-				}
-				SetCurSel(m_nCurSel);
-				break;
-			}
+	LRESULT dwState = SendMessage(WM_QUERYUISTATE);
 
-		case VK_UP:
-			{
-				// Check for no current cursor yet
-				if (m_nCurSel == -1)
-				{
-					m_nCurSel = nLastIndex ;
-				}
-				// top button to last button
-				else if (m_nCurSel == 0)
-				{
-					m_nCurSel = nLastIndex ;
-				}
-				// bottom button to first color square in the last row
-				else if (m_nCurSel == nLastIndex)
-				{
-					m_nCurSel = (m_dwPopup & CPS_XT_MORECOLORS) ? m_nCurSel - 1 : m_nCurSel - m_nCols;
-				}
-				// a color square to another color square just above it
-				else
-				{
-					m_nCurSel -= m_nCols;
-				}
+	if (dwState & UISF_HIDEACCEL) dis.itemState |= ODS_NOACCEL;
+	if (dwState & UISF_HIDEFOCUS) dis.itemState |= ODS_NOFOCUSRECT;
 
-				SetCurSel(m_nCurSel);
-				break;
-			}
+	if (!IsWindowEnabled()) dis.itemState |= ODS_DISABLED;
 
-		case VK_RIGHT:
-			{
-				// Check for no current cursor yet
-				if (m_nCurSel == -1)
-				{
-					m_nCurSel = 0 ;
-				}
-				else
-				{
-					++m_nCurSel;
-					if (m_nCurSel > nLastIndex)
-					{
-						m_nCurSel = 0;
-					}
-				}
-				SetCurSel(m_nCurSel);
-				break;
-			}
+	dis.hwndItem = m_hWnd;
+	dis.hDC = pDC->GetSafeHdc();
+	dis.rcItem = CXTPClientRect(this);
 
-		case VK_LEFT:
-			{
-				// Check for no current cursor yet
-				if (m_nCurSel == -1)
-				{
-					m_nCurSel = nLastIndex ;
-				}
-				else
-				{
-					--m_nCurSel;
-					if (m_nCurSel < 0)
-					{
-						m_nCurSel = nLastIndex;
-					}
-				}
-				SetCurSel(m_nCurSel);
-				break;
-			}
-
-		case VK_ESCAPE:
-			{
-				EndSelection(-1);
-				return;
-			}
-		case VK_RETURN:
-		case VK_SPACE:
-			{
-				EndSelection(m_nCurSel);
-				return;
-			}
-		}
-
-		CWnd::OnKeyDown(nChar, nRepCnt, nFlags);
+	DrawItem(&dis);
 }
 
-
-BOOL CXTColorSelectorCtrl::PreTranslateMessage(MSG* pMsg)
+BYTE CXTButton::GetButtonStyle() const
 {
-	if (m_tooltip.GetSafeHwnd()) m_tooltip.RelayEvent(pMsg);
-
-	return CWnd::PreTranslateMessage(pMsg);
+	BYTE bStyle = BYTE(GetStyle() & 0xF);
+	return bStyle;
 }
 
-int CXTColorSelectorCtrl::GetCurSel(COLOR_CELL* pColorCell)
+LRESULT CXTButton::OnUpdateUIState(WPARAM wParam, LPARAM lParam)
 {
-	pColorCell = GetCellFromIndex(m_nCurSel);
-	ASSERT(pColorCell != NULL);
-	return m_nCurSel;
+	LRESULT lResult = ::DefWindowProc(m_hWnd, WM_UPDATEUISTATE, wParam, lParam);
+	Invalidate(FALSE);
+
+	return lResult;
 }
 
-void CXTColorSelectorCtrl::EndSelection(int nCurSel)
+LRESULT CXTButton::OnSetText(WPARAM wParam, LPARAM lParam)
 {
-	OnEndSelection(nCurSel, 0);
+	BOOL bVisible = GetStyle() & WS_VISIBLE;
+	if (bVisible) ModifyStyle(WS_VISIBLE, 0);
+
+	LRESULT lResult = DefWindowProc(WM_SETTEXT, wParam, lParam);
+
+	if (bVisible) ModifyStyle(0, WS_VISIBLE);
+
+	Invalidate(FALSE);
+
+	return lResult;
 }
 
-void CXTColorSelectorCtrl::OnSetFocus(CWnd* pOldWnd)
-{
-	if (IsColorDlgVisible())
-	{
-		m_pColorDlg->SetFocus();
-		pOldWnd = this;
-	}
-	CWnd::OnSetFocus(pOldWnd);
-}
-
-BOOL CXTColorSelectorCtrl::LookUpColor(const COLORREF crFind)
-{
-	// if the color was already added, return TRUE.
-	int i;
-	for (i = 0; i < m_arUserDefColors.GetSize(); ++i)
-	{
-		if (crFind == m_arUserDefColors.GetAt(i))
-			return TRUE;
-	}
-
-	// if the color is already displayed as a default selection return TRUE.
-	if (m_dwPopup & CPS_XT_EXTENDED)
-	{
-		for (i = 0; i < _countof(extendedColors); ++i)
-		{
-			if (crFind == extendedColors[i].clrButton)
-				return TRUE;
-		}
-	}
-	else
-	{
-		for (i = 0; i < _countof(standardColors); ++i)
-		{
-			if (crFind == standardColors[i].clrButton)
-				return TRUE;
-		}
-	}
-
-	return FALSE;
-}
-
-void CXTColorSelectorCtrl::OnEndSelection(int nCurSel, LPARAM callerParam)
-{
-	int nMessage = 0;
-
-	// copy off the listeners
-	CArray<HWND, HWND> listeners;
-	listeners.Append(m_listeners);
-
-	// copy other relevant data
-	COLORREF clrColor = m_clrColor;
-	DWORD dwPopup = m_dwPopup;
-
-	if (nCurSel == (int)m_arCells.GetCount() - 1 && (m_dwPopup & CPS_XT_MORECOLORS))
-	{
-		// display dialog and send proper notifications
-		m_pColorDlg = new CXTColorDialog(clrColor, clrColor,
-			(dwPopup & (CPS_XT_SHOWHEXVALUE | CPS_XT_SHOW3DSELECTION)), GetParent());
-
-		if (m_pColorDlg->DoModal() == IDOK)
-		{
-			COLORREF clrDlgColor = m_pColorDlg->GetColor();
-
-			if (clrColor == clrDlgColor)
-			{
-				nMessage = CPN_XT_SELCHANGE;
-			}
-			else
-			{
-				nMessage = CPN_XT_SELENDOK;
-				clrColor = clrDlgColor;
-			}
-
-			// TSF NEU 18.01.02 - user defined colors
-
-			if (m_arUserDefColors.GetSize() >= m_nCols)
-				m_arUserDefColors.RemoveAt(0);
-
-			if (!LookUpColor(clrColor))
-				m_arUserDefColors.Add(clrColor);
-
-			// TSF NEU 18.01.02 - user defined colors
-		}
-		else
-		{
-			nMessage = CPN_XT_SELENDCANCEL;
-		}
-
-		SAFE_DELETE(m_pColorDlg);
-	}
-
-	else if (nCurSel == 0 && ((m_dwPopup & CPS_XT_NOAUTOMATIC) == 0))
-	{
-		if (m_dwPopup & CPS_XT_NOFILL)
-		{
-			nMessage = CPN_XT_SELNOFILL;
-			clrColor = (ULONG)-1;
-		}
-		else if (m_clrColor == m_clrDefault)
-		{
-			nMessage = CPN_XT_SELCHANGE;
-		}
-		else
-		{
-			nMessage = CPN_XT_SELENDOK;
-			clrColor = m_clrDefault;
-		}
-	}
-
-	else if (nCurSel == -1)
-	{
-		nMessage = CPN_XT_SELENDCANCEL;
-	}
-
-	else
-	{
-		COLOR_CELL* pColorCell = GetCellFromIndex(nCurSel);
-		ASSERT(pColorCell != NULL);
-		if (!pColorCell)
-			return;
-
-		COLORREF clrCellColor = pColorCell->clr;
-
-		if (clrColor == clrCellColor)
-		{
-			nMessage = CPN_XT_SELCHANGE;
-		}
-		else
-		{
-			nMessage = CPN_XT_SELENDOK;
-			clrColor = clrCellColor;
-		}
-	}
-
-
-	// Pass this message to the registered listeners
-	int i;
-	for (i = 0; i < listeners.GetSize(); i++)
-	{
-		if (::IsWindow(listeners[i]))
-		{
-			::SendMessage(listeners[i], nMessage,
-				(WPARAM)clrColor, callerParam);
-		}
-	}
-}
-
-BOOL CXTColorSelectorCtrl::OnEraseBkgnd(CDC* /*pDC*/)
+BOOL CXTButton::OnEraseBkgnd(CDC* /*pDC*/)
 {
 	return TRUE;
 }
 
-void CXTColorSelectorCtrl::SelectColor(COLORREF clr)
+bool CXTButton::Init()
 {
-	POSITION pos;
-	for (pos = m_arCells.GetHeadPosition(); pos; m_arCells.GetNext(pos))
-	{
-		COLOR_CELL* pColorCell = m_arCells.GetAt(pos);
-		ASSERT(pColorCell != NULL);
-		if (!pColorCell)
-			continue;
+	GetTheme()->RefreshMetrics();
 
-		if (pColorCell->dwStyle & CPS_XT_PICKBOX)
-			pColorCell->bChecked = clr == pColorCell->clr;
+	m_bOwnerDraw = m_hWnd && ((GetStyle() & 0xF) == BS_OWNERDRAW);
+	if (m_hWnd) Invalidate(FALSE);
+
+	return true;
+}
+
+void CXTButton::PreSubclassWindow()
+{
+	CButton::PreSubclassWindow();
+
+	if (m_bPreSubclassInit)
+	{
+		// Initialize the control.
+		Init();
+	}
+}
+
+int CXTButton::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+	if (CButton::OnCreate(lpCreateStruct) == -1)
+		return -1;
+
+	// Initialize the control.
+	Init();
+
+	return 0;
+}
+
+BOOL CXTButton::PreCreateWindow(CREATESTRUCT& cs)
+{
+	if (!CButton::PreCreateWindow(cs))
+		return FALSE;
+
+	// When creating controls dynamically Init() must
+	// be called from OnCreate() and not from
+	// PreSubclassWindow().
+
+	m_bPreSubclassInit = false;
+
+	return TRUE;
+}
+
+
+UINT CXTButton::OnGetDlgCode()
+{
+	if (m_bOwnerDraw)
+	{
+		if (GetFocus() == this)
+			return DLGC_DEFPUSHBUTTON | DLGC_BUTTON;
+
+		return DLGC_BUTTON ;
+	}
+	return CButton::OnGetDlgCode();
+}
+
+LRESULT CXTButton::OnSetStyle(WPARAM wParam, LPARAM lParam)
+{
+	if (m_bOwnerDraw)
+	{
+		DWORD dwOldStyle = GetStyle();
+
+		ModifyStyle(0, (long)wParam | BS_OWNERDRAW,0);
+
+		if ((dwOldStyle != GetStyle()) && LOWORD(lParam))
+			Invalidate();
+
+		return 0;
 	}
 
-	m_clrColor = clr;
-
-	Invalidate(FALSE);
+	return OnDefaultAndInvalidate(wParam, lParam);
 }
 
-
-LRESULT CXTColorSelectorCtrl::OnNcHitTest(CPoint point)
+void CXTButton::OnMouseLeave()
 {
-	// If we have a valid tooltip pointer, bring the tooltip control
-	// to the top of the Z-order.
-
-	if (m_tooltip.GetSafeHwnd() && !IsColorDlgVisible())
-	{
-		m_tooltip.SetWindowPos(&wndTop, 0, 0, 0, 0,
-			SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE);
-	}
-
-	return (LRESULT)CWnd::OnNcHitTest(point);
-}
-
-bool CXTColorSelectorCtrl::IsColorDlgVisible()
-{
-	return (m_pColorDlg && ::IsWindow(m_pColorDlg->m_hWnd));
-}
-
-void CXTColorSelectorCtrl::SetUserColors(const CUIntArray& arUserDefColors)
-{
-	m_arUserDefColors.RemoveAll();
-	m_arUserDefColors.Copy(arUserDefColors);
-}
-
-CUIntArray& CXTColorSelectorCtrl::GetUserColors()
-{
-	return m_arUserDefColors;
+	OnMouseMove(0, CPoint(-1, -1));
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CXTColorSelectorCtrlTheme
+//
 
-
-//////////////////////////////////////////////////////////////////////
-// CXTColorSelectorCtrlTheme
-
-IMPLEMENT_THEME_FACTORY(CXTColorSelectorCtrlTheme)
-
-CXTColorSelectorCtrlTheme::CXTColorSelectorCtrlTheme()
-: m_crBorderHilight(COLORREF_NULL)
-, m_crBorderShadow(COLORREF_NULL)
-, m_crBack(COLORREF_NULL)
-, m_crPressed(COLORREF_NULL)
-, m_crHilight(COLORREF_NULL)
-, m_crChecked(COLORREF_NULL)
+CSize CXTButton::GetImageSize() const
 {
-	m_bFlatTheme = FALSE;
+	if (!GetTheme()->IsIconVisible())
+		return CSize(0, 0);
+
+	return m_sizeImage;
 }
 
-void CXTColorSelectorCtrlTheme::RefreshMetrics()
+CPoint CXTButton::GetImagePoint() const
 {
-	CXTThemeManagerStyle::RefreshMetrics();
+	if (!GetTheme()->IsIconVisible())
+		return CPoint(0, 0);
 
-	m_crBack = GetXtremeColor(COLOR_3DFACE);
-	m_crBorderHilight = GetXtremeColor(COLOR_3DHILIGHT);
-	m_crBorderShadow = GetXtremeColor(COLOR_3DSHADOW);
-	m_crText = GetXtremeColor(COLOR_BTNTEXT);
-
-	m_crPopupBorder = GetXtremeColor(XPCOLOR_MENUBAR_BORDER);
+	return m_ptImage;
 }
 
-void CXTColorSelectorCtrlTheme::FillBackground(CDC* pDC, const CRect& rect, CXTColorSelectorCtrl* /*pOwner*/)
+CPoint CXTButton::GetTextPoint() const
 {
-	pDC->FillSolidRect(&rect, m_crBack);
+	if (!GetTheme()->IsIconVisible())
+		return CPoint(0, 0);
+
+	return m_ptText;
 }
 
-void CXTColorSelectorCtrlTheme::DrawColorCell(CXTColorSelectorCtrl::COLOR_CELL* pColorCell, CDC* pDC, BOOL bHilite, BOOL bPressed)
+void CXTButton::CleanUpGDI()
 {
-	pDC->SetBkMode(TRANSPARENT);
-	CFont* pOldFont = pDC->SelectObject(&XTAuxData().font);
-
-	CRect rcItem = pColorCell->rect;
-
-	bool bChecked = pColorCell->bChecked;
-
-	if (bChecked || bHilite || bPressed)
+	if (m_pIcon)
 	{
-		if (bPressed)
-		{
-			if (m_crPressed != COLORREF_NULL)
-			{
-				pDC->FillSolidRect(&rcItem, m_crPressed);
-			}
-		}
-		else if (bHilite)
-		{
-			if (m_crHilight != COLORREF_NULL)
-			{
-				pDC->FillSolidRect(&rcItem, m_crHilight);
-			}
-		}
-		else if (bChecked)
-		{
-			if (m_crChecked != COLORREF_NULL)
-			{
-				pDC->FillSolidRect(&rcItem, m_crChecked);
-			}
-			else
-			{
-				XTFuncDrawShadedRect(pDC, rcItem);
-			}
-		}
+		m_pIcon->Refresh();
+	}
+}
 
-		pDC->Draw3dRect(rcItem, (bPressed || bChecked) ? m_crBorderShadow : m_crBorderHilight,
-			(bPressed || bChecked) ? m_crBorderHilight : m_crBorderShadow);
+BOOL CXTButton::SetIcon(CSize size, UINT nID, UINT nHotID/*= 0*/, BOOL bRedraw/*= TRUE*/)
+{
+	return CXTButton::SetIcon(
+		size, MAKEINTRESOURCE(nID), MAKEINTRESOURCE(nHotID), bRedraw);
+}
+
+BOOL CXTButton::SetIcon(CSize size, LPCTSTR lpszID, LPCTSTR lpszHotID/*= NULL*/, BOOL bRedraw/*= TRUE*/)
+{
+	CXTPImageManagerIconHandle hIcon;
+	CXTPImageManagerIconHandle hIconHot;
+
+	hIcon.CreateIconFromResource(lpszID, size);
+
+	// Return false if the icon handle is NULL.
+	if (hIcon.IsEmpty())
+	{
+		TRACE0("Failed to load Icon resource.\n");
+		return FALSE;
 	}
 
-	int nLen = (int)_tcslen(pColorCell->szText);
-	if (nLen)
+	// If we are using a pushed image as well...
+	if (lpszHotID)
 	{
-		pDC->SetTextColor(m_crText);
-		pDC->DrawText(pColorCell->szText, nLen, rcItem, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+		hIconHot.CreateIconFromResource(lpszHotID, size);
+
+		// Return false if the icon handle is NULL.
+		if (hIconHot.IsEmpty())
+		{
+			TRACE0("Failed to load Icon resource.\n");
+			return FALSE;
+		}
 	}
 
-	if (pColorCell->dwStyle != CPS_XT_MORECOLORS)
-	{
-		rcItem.DeflateRect(3, 3);
+	return CXTButton::SetIcon(size, hIcon, hIconHot, bRedraw);
+}
 
-		if ((pColorCell->dwStyle & CPS_XT_PICKBOX) == 0)
-		{
-			if ((pColorCell->dwStyle & CPS_XT_NOFILL) == 0)
-			{
-				rcItem.DeflateRect(3, 3);
-				rcItem.right = rcItem.left + 12;
-				rcItem.bottom = rcItem.top + 11;
-				rcItem.OffsetRect(1, 0);
-				pDC->Draw3dRect(rcItem, m_crBorderShadow, m_crBorderShadow);
-				rcItem.DeflateRect(1, 1);
-				pDC->FillSolidRect(rcItem, pColorCell->clr);
-			}
-		}
-		else
-		{
-			pDC->Draw3dRect(rcItem, m_crBorderShadow, m_crBorderShadow);
-			rcItem.DeflateRect(1, 1);
-			pDC->FillSolidRect(rcItem, pColorCell->clr);
-		}
+BOOL CXTButton::SetIcon(CSize size, CXTPImageManagerIcon* pIcon, BOOL bRedraw/*= TRUE*/)
+{
+	m_sizeImage = size;
+
+	// Construct the icon manager.
+	CMDTARGET_RELEASE(m_pIcon);
+
+	m_pIcon = pIcon;
+
+	// Redraw the button.
+	if (::IsWindow(m_hWnd) && bRedraw)
+		Invalidate();
+
+	return TRUE;
+}
+
+BOOL CXTButton::SetIcon(CSize size, const CXTPImageManagerIconHandle& hIcon, const CXTPImageManagerIconHandle& hIconHot, BOOL bRedraw/*= TRUE*/)
+{
+	ASSERT(!hIcon.IsEmpty());
+
+	// Save the image size and set the icon
+	// handles to NULL.
+	size = size != CSize(0) ? size : hIcon.GetExtent();
+
+	CXTPImageManagerIcon* pIcon = new CXTPImageManagerIcon(0, size.cx, size.cy);
+	pIcon->SetIcon(hIcon);
+
+	if (!hIconHot.IsEmpty())
+		pIcon->SetHotIcon(hIconHot);
+
+	return SetIcon(size, pIcon, bRedraw);
+}
+
+
+BOOL CXTButton::SetIcon(CSize size, HICON hIcon, HICON hIconHot/*= NULL*/, BOOL bRedraw/*= TRUE*/)
+{
+	return SetIcon(size, CXTPImageManagerIconHandle(hIcon), CXTPImageManagerIconHandle(hIconHot), bRedraw);
+}
+
+BOOL CXTButton::SetBitmap(CSize size, UINT nID, BOOL bRedraw/*= TRUE*/)
+{
+	// Free previous resources (if any).
+
+	CXTPImageManagerIconHandle hIconHandle;
+
+	BOOL bAlphaBitmap = FALSE;
+	HBITMAP hBitmap = CXTPImageManagerIcon::LoadBitmapFromResource(MAKEINTRESOURCE(nID), &bAlphaBitmap);
+
+	if (!hBitmap)
+		return FALSE;
+
+	if (bAlphaBitmap)
+	{
+		hIconHandle = hBitmap; // Will call DeleteObject;
 	}
 	else
 	{
-		if (pColorCell->bChecked)
-		{
-			rcItem = pColorCell->rect;
-			rcItem.DeflateRect(5, 6);
-			rcItem.left = rcItem.right - 12;
-			pDC->Draw3dRect(rcItem, m_crBorderShadow, m_crBorderShadow);
-			rcItem.DeflateRect(1, 1);
-			pDC->FillSolidRect(rcItem, pColorCell->clr);
-		}
+		CBitmap bmpIcon;
+		bmpIcon.Attach(hBitmap);
+
+		// convert the bitmap to a transparent icon.
+		HICON hIcon = CXTPTransparentBitmap(bmpIcon).ConvertToIcon();
+
+		hIconHandle = hIcon; // Will call DestoyIcon;
 	}
 
-	pDC->SelectObject(pOldFont);
+	if (hIconHandle.IsEmpty())
+		return FALSE;
+
+	return CXTButton::SetIcon(size, hIconHandle, CXTPImageManagerIconHandle(), bRedraw);
 }
 
-//////////////////////////////////////////////////////////////////////
-// CXTColorSelectorCtrlThemeOfficeXP
-
-CXTColorSelectorCtrlThemeOfficeXP::CXTColorSelectorCtrlThemeOfficeXP()
+BOOL CXTButton::SetTextAndImagePos(CPoint ptImage, CPoint ptText, BOOL bRedraw/*= TRUE*/)
 {
-	m_bFlatTheme = TRUE;
+	m_ptImage = ptImage;
+	m_ptText = ptText;
+
+	// Redraw the button.
+	if (::IsWindow(m_hWnd) && bRedraw)
+		Invalidate();
+
+	m_bUserPosition = TRUE;
+	return TRUE;
 }
 
-void CXTColorSelectorCtrlThemeOfficeXP::RefreshMetrics()
+DWORD CXTButton::SetXButtonStyle(DWORD dwxStyle, BOOL bRedraw/*= TRUE*/)
 {
-	CXTColorSelectorCtrlTheme::RefreshMetrics();
+	DWORD dwOldStyle = m_dwxStyle;
+	m_dwxStyle = dwxStyle;
 
-	m_crBorderHilight = GetXtremeColor(XPCOLOR_HIGHLIGHT_BORDER);
-	m_crBorderShadow = GetXtremeColor(XPCOLOR_HIGHLIGHT_BORDER);
-	m_crBack = GetXtremeColor(XPCOLOR_MENUBAR_FACE);
-	m_crPressed = GetXtremeColor(XPCOLOR_HIGHLIGHT_PUSHED);
-	m_crHilight = GetXtremeColor(XPCOLOR_HIGHLIGHT);
-	m_crChecked = GetXtremeColor(XPCOLOR_HIGHLIGHT_CHECKED);
+	if ((m_dwxStyle & BS_XT_XPFLAT) == BS_XT_XPFLAT)
+		SetTheme(new CXTButtonThemeOfficeXP());
+	else if ((m_dwxStyle & BS_XT_FLAT) == BS_XT_FLAT)
+		SetTheme(new CXTButtonTheme());
+
+	// Redraw the button.
+	if (::IsWindow(m_hWnd) && bRedraw)
+		Invalidate();
+
+	return dwOldStyle;
 }
 
-//////////////////////////////////////////////////////////////////////
-// CXTColorSelectorCtrlThemeOffice2003
 
-CXTColorSelectorCtrlThemeOffice2003::CXTColorSelectorCtrlThemeOffice2003()
+BOOL CXTButton::IsThemeValid() const
 {
+	return (GetTheme() != NULL);
 }
 
-void CXTColorSelectorCtrlThemeOffice2003::RefreshMetrics()
+CXTPImageManagerIcon* CXTButton::GetIcon() const
 {
-	CXTColorSelectorCtrlThemeOfficeXP::RefreshMetrics();
-
-	m_crBorderHilight = GetMSO2003Color(XPCOLOR_HIGHLIGHT_BORDER);
-	m_crBorderShadow = GetMSO2003Color(XPCOLOR_HIGHLIGHT_BORDER);
-	m_crBack = GetMSO2003Color(XPCOLOR_MENUBAR_FACE);
-	m_crPressed = GetMSO2003Color(XPCOLOR_HIGHLIGHT_PUSHED);
-	m_crHilight = GetMSO2003Color(XPCOLOR_HIGHLIGHT);
-	m_crChecked = GetMSO2003Color(XPCOLOR_HIGHLIGHT_CHECKED);
+	return m_pIcon;
 }
 
-CXTColorSelectorCtrlThemeOffice2007::CXTColorSelectorCtrlThemeOffice2007()
+CString CXTButton::GetButtonText(BOOL bRemoveAmpersand)
 {
+	CString strText;
+	GetWindowText(strText);
+
+	if (bRemoveAmpersand)
+		XTPDrawHelpers()->StripMnemonics(strText);
+
+	return strText;
 }
 
-void CXTColorSelectorCtrlThemeOffice2007::RefreshMetrics()
+void CXTButton::SetAlternateColors(COLORREF clr3DFace, COLORREF clr3DHilight, COLORREF clr3DShadow, COLORREF clrBtnText)
 {
-	CXTColorSelectorCtrlThemeOfficeXP::RefreshMetrics();
+	if (IsThemeValid())
+	{
+		GetTheme()->SetAlternateColors(
+			clr3DFace, clr3DHilight, clr3DShadow, clrBtnText);
+	}
+}
 
-	m_crBack = RGB(250, 250, 250);
-	m_crPressed = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("HighlightPressed"));
-	m_crHilight = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("HighlightSelected"));
-	m_crChecked = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("HighlightChecked"));
-	m_crText = 0;
-	m_crPopupBorder = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("WindowFrame"));
+void CXTButton::SetColorFace(COLORREF clrFace)
+{
+	if (IsThemeValid())
+	{
+		GetTheme()->SetColorFace(clrFace);
+	}
+}
 
-	m_crBorderShadow = m_crBorderHilight = m_crPopupBorder;
+COLORREF CXTButton::GetColorFace()
+{
+	if (IsThemeValid())
+	{
+		return GetTheme()->GetColorFace();
+	}
+	return GetXtremeColor(COLOR_3DFACE);
+}
+
+void CXTButton::SetColorHilite(COLORREF clrHilite)
+{
+	if (IsThemeValid())
+	{
+		GetTheme()->SetColorHilite(clrHilite);
+	}
+}
+
+void CXTButton::SetColorShadow(COLORREF clrShadow)
+{
+	if (IsThemeValid())
+	{
+		GetTheme()->SetColorShadow(clrShadow);
+	}
+}
+
+void CXTButton::SetColorText(COLORREF clrText)
+{
+	if (IsThemeValid())
+	{
+		GetTheme()->SetColorText(clrText);
+	}
+}
+
+void CXTButton::SetXPFlatColors(COLORREF clrBorder, COLORREF clrHighlight, COLORREF clrPressed)
+{
+	if (IsThemeValid())
+	{
+		CXTButtonTheme* pButtonTheme = GetTheme();
+		if (pButtonTheme->GetTheme() == xtThemeOfficeXP)
+		{
+			((CXTButtonThemeOfficeXP*)pButtonTheme)->SetColorHilite(clrBorder);
+			((CXTButtonThemeOfficeXP*)pButtonTheme)->SetColorShadow(clrBorder);
+			((CXTButtonThemeOfficeXP*)pButtonTheme)->SetBackHiliteColor(clrHighlight);
+			((CXTButtonThemeOfficeXP*)pButtonTheme)->SetBackPushedColor(clrPressed);
+		}
+	}
+}
+
+void CXTButton::ResetImage()
+{
+	if (IsThemeValid())
+	{
+		if (GetTheme()->IsIconVisible())
+		{
+			GetTheme()->ShowIcon(FALSE);
+		}
+		else
+		{
+			GetTheme()->ShowIcon(TRUE);
+		}
+		Invalidate();
+	}
+}
+
+CFont* CXTButton::SetFontEx(CFont* pFont)
+{
+	CFont* pOldFont = GetFont();
+	CButton::SetFont(pFont);
+	return pOldFont;
 }

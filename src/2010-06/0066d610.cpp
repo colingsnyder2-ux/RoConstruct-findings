@@ -1,23 +1,18 @@
-// from server: 56% by atomic.potato
-struct S
-{
-    S();
-    int value0;
-    int value4;
-    int value8;
-    int valueC;
-    int value10;
-    int value18;
-    int value1C;
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct X_0066d610 {
+    void* f_0;
+    void* f_4;
+    char pad_8[16];
+    void* f_18;
+    void* f_1c;
+    X_0066d610* base();
+    X_0066d610* run() {
+    f_0 = (void*)0xa3c764;
+    f_4 = (void*)0xa3c758;
+    f_18 = (void*)0xa3c74c;
+    f_1c = (void*)0xa3c740;
+        return base();
+    }
 };
-
-extern void G1_func_00599c50();
-
-S::S()
-{
-    value0 = 0xA3C764;
-    value4 = 0xA3C758;
-    value18 = 0xA3C74C;
-    value1C = 0xA3C740;
-    G1_func_00599c50();
-}
+X_0066d610* func_0066d610(X_0066d610* x) { return x->run(); }

@@ -1,14 +1,14 @@
-// from server: 39% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/CommandBars/XTPDockBar.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPMenuBar.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPDockBar.cpp : implementation of the CXTPDockBar class.
+// XTPMenuBar.cpp : implementation of the CXTPMenuBar class.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,14 +26,23 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include <afxpriv.h>
-#include "Common/XTPDrawHelpers.h"
+#include "Resource.h"
 
-#include "XTPDockBar.h"
-#include "XTPToolBar.h"
-#include "XTPCommandBars.h"
-#include "XTPDockContext.h"
+#include "Common/XTPResourceManager.h"
+#include "Common/XTPImageManager.h"
+#include "Common/XTPVC50Helpers.h"
+#include "Common/XTPIntel80Helpers.h"
+
+#include "XTPMenuBar.h"
+#include "XTPControls.h"
+#include "XTPControl.h"
+#include "XTPHookManager.h"
+#include "XTPControlButton.h"
+#include "XTPControlPopup.h"
 #include "XTPPaintManager.h"
+#include "XTPCommandBars.h"
+#include "XTPMouseManager.h"
+#include "XTPPopupBar.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -41,730 +50,811 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-// CXTPDockBar
+#define TID_REFRESH 12223
 
-IMPLEMENT_DYNCREATE(CXTPDockBar, CWnd)
+#ifndef OIC_WINLOGO
+#define OIC_WINLOGO         32517
+#endif
 
-CXTPDockBar::CXTPDockBar()
+
+CXTPMenuBarMDIMenuInfo::CXTPMenuBarMDIMenuInfo(CXTPCommandBars* pCommandBars, UINT nIDResource)
 {
-	m_arrBars.Add(NULL);
-	m_dwStyle = 0;
-	m_pCommandBars = NULL;
+	ASSERT(pCommandBars);
+	ASSERT(nIDResource != 0);
 
-	CXTPDrawHelpers::RegisterWndClass(0, _T("XTPDockBar"), 0);
-}
+	m_pControls = new CXTPControls;
+	m_pControls->SetCommandBars(pCommandBars);
 
-CXTPDockBar::~CXTPDockBar()
-{
-}
+	m_nIDResource = nIDResource;
+	m_bChanged = FALSE;
 
+	m_hIcon = AfxGetApp()->LoadIcon(nIDResource);
 
-BEGIN_MESSAGE_MAP(CXTPDockBar, CWnd)
-	ON_MESSAGE(WM_SIZEPARENT, OnSizeParent)
-	ON_WM_PAINT()
-	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
-	ON_WM_ERASEBKGND()
-	ON_WM_RBUTTONDOWN()
-	ON_WM_NCHITTEST_EX()
-END_MESSAGE_MAP()
+	#pragma warning(disable:4510)
+	#pragma warning(disable:4610)
 
-
-
-// CXTPDockBar message handlers
-
-LRESULT CXTPDockBar::OnNcHitTest(CPoint point)
-{
-	if (GetPosition() == xtpBarTop && m_pCommandBars->GetMenuBar() != NULL && m_pCommandBars->GetMenuBar()->IsRibbonBar() &&
-		FindBar(m_pCommandBars->GetMenuBar()) != -1)
+	POSITION pos = AfxGetApp()->GetFirstDocTemplatePosition();
+	while (pos)
 	{
-		return HTTRANSPARENT;
-	}
+		CDocTemplate* pDocTemplate = AfxGetApp()->GetNextDocTemplate(pos);
 
-	return (LRESULT)CWnd::OnNcHitTest(point);
-}
+		USES_PROTECTED_ACCESS(CXTPMenuBarMDIMenuInfo, CDocTemplate, UINT, m_nIDResource);
+		UINT nID = PROTECTED_ACCESS(CDocTemplate, pDocTemplate, m_nIDResource);
 
-BOOL CXTPDockBar::Create(CWnd* pParentWnd, DWORD dwStyle, UINT nID)
-{
-	ASSERT(pParentWnd != NULL);
-
-	// save the xtp
-	m_dwStyle = (dwStyle & CBRS_ALL);
-
-	XTPBarPosition barPosition = GetPosition();
-	CString strWindowName = barPosition == xtpBarTop ? _T("xtpBarTop") :
-		barPosition == xtpBarLeft ? _T("xtpBarLeft") :
-		barPosition == xtpBarBottom ? _T("xtpBarBottom") : _T("xtpBarRight");
-
-	return CWnd::Create(_T("XTPDockBar"), strWindowName, dwStyle, CXTPEmptyRect(), pParentWnd, nID);
-}
-
-BOOL CXTPDockBar::PreCreateWindow(CREATESTRUCT& cs)
-{
-	if (!CWnd::PreCreateWindow(cs))
-		return FALSE;
-
-	// force clipsliblings (otherwise will cause repaint problems)
-	cs.style |= WS_CLIPSIBLINGS;
-	return TRUE;
-}
-
-
-
-CSize CXTPDockBar::CalcFixedLayout(BOOL /*bStretch*/, BOOL /*bHorz*/, AFX_SIZEPARENTPARAMS* /*lpLayout*/)
-{
-	return 0;
-}
-
-
-struct CXTPDockBar::DOCK_INFO
-{
-	DOCK_INFO(CXTPToolBar* p = 0, CRect rc = 0, int n = 0)
-	{
-		pBar = p;
-		rcMRUPos = rcBar = rc;
-		nIndex = n;
-		nMinWidth = 0;
-		nTotlaMinWidth = 0;
-	}
-
-	CXTPToolBar* pBar;
-	CRect rcBar;
-	CRect rcMRUPos;
-	int nIndex;
-	int nMinWidth;
-	int nTotlaMinWidth;
-};
-
-class CXTPDockBar::CDockInfoArray : public CArray<DOCK_INFO, DOCK_INFO&>
-{
-public:
-	void Sort()
-	{
-		qsort(GetData(), GetSize(), sizeof(DOCK_INFO), CompareFunc);
-	}
-	static int _cdecl CompareFunc(const void* elem1, const void* elem2)
-	{
-		return ((DOCK_INFO*)elem1)->rcBar.left < ((DOCK_INFO*)elem2)->rcBar.left ? -1 : 1;
-	}
-	void _swap(LONG& A, LONG& B)
-	{
-		int C = B;
-		B = A;
-		A = C;
-	}
-	void InvertRects()
-	{
-		for (int nPos = 0; nPos < GetSize(); nPos++)
+		if (nIDResource == nID)
 		{
-			CRect& rect = ElementAt(nPos).rcBar;
-			_swap(rect.left, rect.top);
-			_swap(rect.right, rect.bottom);
-		}
-	}
-};
-
-int CXTPDockBar::_GetMode(BOOL bHorz, CXTPToolBar* pBar)
-{
-	DWORD dwMode = bHorz ? LM_HORZ | LM_HORZDOCK : LM_VERTDOCK;
-
-	if (pBar->GetFlags() & xtpFlagStretched) dwMode |= LM_STRETCH;
-	if ((!m_pCommandBars->IsCustomizeMode() || m_pCommandBars->IsQuickCustomizeMode()) && pBar->GetFlags() & xtpFlagHideWrap)
-		return dwMode | LM_HIDEWRAP;
-
-	return dwMode;
-}
-
-int CXTPDockBar::_AdjustRow(CToolBarArray& arrRow, CPoint pt, int nLength, BOOL bHorz, AFX_SIZEPARENTPARAMS* lpLayout, int& nRemove)
-{
-	CDockInfoArray arrInfo;
-
-	int nPos;
-
-	// Step 1. Getting maximum available size;
-	for (nPos = 0; nPos < arrRow.GetSize(); nPos++)
-	{
-		CXTPToolBar* pBar = arrRow[nPos];
-		CSize sizeBar = pBar->CalcDockingLayout(nLength, _GetMode(bHorz, pBar));
-
-		CPoint p = bHorz ? CPoint(pBar->m_pDockContext->m_rectMRUDockPos.left, pt.y) :
-			CPoint(pt.x, pBar->m_pDockContext->m_rectMRUDockPos.top);
-
-		DOCK_INFO dockInfo(pBar, CRect(p, sizeBar), nPos);
-		arrInfo.Add(dockInfo);
-	}
-
-	ASSERT(arrInfo.GetSize() == arrRow.GetSize());
-
-	if (!bHorz) arrInfo.InvertRects();
-	arrInfo.Sort();
-
-	// Step 2. if Total length is more than available, fill empty area.
-	int nIndex = -1;
-	int nLen = 0;
-	BOOL bMove = TRUE;
-
-	for (nPos = 0; nPos < arrInfo.GetSize(); nPos++)
-	{
-		CRect& rect = arrInfo[nPos].rcBar;
-
-		bMove = (rect.left < nLen && (nIndex < arrInfo[nPos].nIndex || bMove));
-		if (bMove) rect.OffsetRect(nLen - rect.left, 0);
-		nLen = rect.right;
-
-		nIndex = arrInfo[nPos].nIndex;
-	}
-
-	nLen = nLength;
-	nIndex = -1;
-	bMove = TRUE;
-
-	for (nPos = (int)arrInfo.GetSize() - 1; nPos >= 0; nPos--)
-	{
-		CRect& rect = arrInfo[nPos].rcBar;
-		bMove = (rect.right - nLen > 0 && (nIndex < arrInfo[nPos].nIndex || bMove));
-		if (bMove) rect.OffsetRect(nLen - rect.right, 0);
-
-		nLen = rect.left;
-		nIndex = arrInfo[nPos].nIndex;
-	}
-
-	nLen = 0;
-	for (nPos = 0; nPos < arrInfo.GetSize(); nPos++)
-	{
-		CRect& rect = arrInfo[nPos].rcBar;
-		if (rect.left < nLen)
-			rect.OffsetRect(nLen - rect.left, 0);
-
-		nLen = rect.left + rect.Width();
-	}
-
-	// Step 3. if Total length is more than available, make it expandable.
-	if (nLen > nLength)
-	{
-		int nSum = 0;
-		for (nPos = 0; nPos < arrInfo.GetSize(); nPos++)
-		{
-			CXTPToolBar* pBar = arrInfo[nPos].pBar;
-
-			if (!(_GetMode(bHorz, pBar) & LM_HIDEWRAP))
-				arrInfo[nPos].nMinWidth = nLength;
-			else
-			{
-				CSize sz = pBar->CalcDockingLayout(1, _GetMode(bHorz, pBar));
-				arrInfo[nPos].nMinWidth = bHorz ? sz.cx : sz.cy;
-			}
-
-			arrInfo[nPos].nTotlaMinWidth = nSum;
-			nSum += arrInfo[nPos].nMinWidth;
-		}
-
-		nLen = nLength;
-		for (nPos = (int)arrInfo.GetSize() - 1; nPos >= 0; nPos--)
-		{
-			CRect& rect = arrInfo[nPos].rcBar;
-			int nLeft = bHorz ? arrInfo[nPos].rcMRUPos.left : arrInfo[nPos].rcMRUPos.top;
-
-			if (nLeft > rect.left) nLeft = rect.left;
-			if (nLeft < nLen - rect.Width()) nLeft = nLen - rect.Width();
-
-			if (nLeft < arrInfo[nPos].nTotlaMinWidth) nLeft = arrInfo[nPos].nTotlaMinWidth;
-			if (nLen - nLeft < arrInfo[nPos].nMinWidth) nLeft = nLen - arrInfo[nPos].nMinWidth;
-
-			if ((nLen - nLeft < arrInfo[nPos].nMinWidth || nLeft < arrInfo[nPos].nTotlaMinWidth)
-				&& arrInfo.GetSize() != 1)
-			{
-				nRemove = arrInfo[arrInfo.GetSize() - 1].nIndex;
-				return -1;
-			}
-
-			rect.right = nLen;
-			nLen = rect.left = max(0, nLeft);
-		}
-	}
-
-	if (!bHorz) arrInfo.InvertRects();
-
-
-	int nWidth = 0;
-	// Calculate total width
-	for (nPos = 0; nPos < arrInfo.GetSize(); nPos++)
-	{
-		CXTPToolBar* pBar = arrInfo[nPos].pBar;
-		CRect& rect = arrInfo[nPos].rcBar;
-		CSize sizeBar = pBar->CalcDockingLayout(bHorz ? rect.Width() : rect.Height(), _GetMode(bHorz, pBar));
-		nWidth = max(nWidth, bHorz ? sizeBar.cy : sizeBar.cx);
-	}
-
-	if (lpLayout->hDWP == 0)
-		return nWidth;
-
-	// Step 4. Move it.
-	for (nPos = 0; nPos < arrInfo.GetSize(); nPos++)
-	{
-		CXTPToolBar* pBar = arrInfo[nPos].pBar;
-		CRect& rect = arrInfo[nPos].rcBar;
-		int nMode = _GetMode(bHorz, pBar) | LM_COMMIT;
-
-		if (pBar->GetFlags() & xtpFlagStretchedShared)
-		{
-			if (bHorz)
-			{
-				rect.right = nPos == arrInfo.GetSize() - 1 ? nLength : arrInfo[nPos + 1].rcBar.left;
-				rect.left = nPos == 0 ? 0 : min(arrInfo[nPos - 1].rcBar.right, rect.left);
-			}
-			else
-			{
-				rect.bottom = nPos == arrInfo.GetSize() - 1 ? nLength : arrInfo[nPos + 1].rcBar.top;
-				rect.top = nPos == 0 ? 0 : min(arrInfo[nPos - 1].rcBar.bottom, rect.top);
-			}
-
-			nMode |= LM_STRETCH;
-		}
-
-		CSize sz = pBar->CalcDockingLayout(bHorz ? rect.Width() : rect.Height(), nMode, nWidth);
-		rect = CRect(rect.TopLeft(), sz);
-
-		pBar->m_pDockContext->m_uMRUDockPosition = GetPosition();
-
-		CXTPWindowRect rectOld(pBar);
-		ScreenToClient(&rectOld);
-
-		if (!::EqualRect(rectOld, rect))
-		{
-			AfxRepositionWindow(lpLayout, pBar->m_hWnd, &rect);
-			pBar->Redraw();
-		}
-	}
-	return nWidth;
-}
-
-int CXTPDockBar::AdjustRow(CToolBarArray& arrRow, CPoint pt, int nLength, BOOL bHorz, AFX_SIZEPARENTPARAMS* lpLayout)
-{
-	int nTotalWidth = 0;
-	CToolBarArray arrNext;
-
-	for (;;)
-	{
-		int nRemove = -1;
-		ASSERT(arrRow.GetSize() > 0);
-		int nWidth = _AdjustRow(arrRow, pt, nLength, bHorz, lpLayout, nRemove);
-
-		if (nWidth == -1)
-		{
-			ASSERT(nRemove != -1);
-			arrNext.Add(arrRow[nRemove]);
-			arrRow.RemoveAt(nRemove);
-		}
-		else
-		{
-			nTotalWidth += nWidth;
-
-			if (bHorz)
-				pt.y += nWidth;
-			else
-				pt.x += nWidth;
-
-			if (arrNext.GetSize() > 0)
-			{
-				arrRow.Copy(arrNext);
-				arrNext.RemoveAll();
-				continue;
-			}
+			pDocTemplate->GetDocString(m_strTitle, CDocTemplate::docName);
+			pDocTemplate->GetDocString(m_strDescription, CDocTemplate::regFileTypeName);
 			break;
 		}
 	}
-	return nTotalWidth;
+}
+
+CXTPMenuBarMDIMenuInfo::~CXTPMenuBarMDIMenuInfo()
+{
+	m_pControls->InternalRelease();
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+CXTPMenuBarMDIMenus::CXTPMenuBarMDIMenus(CXTPMenuBar* pMenuBar)
+	: m_pMenuBar(pMenuBar)
+{
+}
+
+CXTPMenuBarMDIMenus::~CXTPMenuBarMDIMenus()
+{
+	RemoveAll();
+}
+
+void CXTPMenuBarMDIMenus::RemoveAll()
+{
+	POSITION pos = m_mapMenus.GetStartPosition();
+	while (pos)
+	{
+		UINT nIDCommand;
+		CXTPMenuBarMDIMenuInfo* pInfo;
+		m_mapMenus.GetNextAssoc(pos, nIDCommand, pInfo);
+		pInfo->InternalRelease();
+	}
+	m_mapMenus.RemoveAll();
+}
+
+void CXTPMenuBarMDIMenus::Remove(UINT nIDResource)
+{
+	CXTPMenuBarMDIMenuInfo* pInfo = Lookup(nIDResource);
+	if (pInfo)
+	{
+		m_mapMenus.RemoveKey(nIDResource);
+		pInfo->InternalRelease();
+	}
+}
+
+void CXTPMenuBarMDIMenus::SetAt(UINT nIDResource, CXTPMenuBarMDIMenuInfo* pInfo)
+{
+	ASSERT(pInfo);
+	ASSERT(!Lookup(nIDResource));
+
+	m_mapMenus.SetAt(nIDResource, pInfo);
+}
+
+CXTPMenuBarMDIMenuInfo* CXTPMenuBarMDIMenus::Lookup(UINT nIDResource) const
+{
+	CXTPMenuBarMDIMenuInfo* pInfo;
+	if (!m_mapMenus.Lookup(nIDResource, pInfo))
+		return NULL;
+
+	return pInfo;
+}
+
+int CXTPMenuBarMDIMenus::GetCount() const
+{
+	return (int)m_mapMenus.GetCount();
+}
+
+POSITION CXTPMenuBarMDIMenus::GetStartPosition() const
+{
+	return m_mapMenus.GetStartPosition();
+}
+
+void CXTPMenuBarMDIMenus::GetNextMenu(POSITION& pos, CXTPMenuBarMDIMenuInfo*& pInfo) const
+{
+	UINT nIDResource = 0;
+	m_mapMenus.GetNextAssoc(pos, nIDResource, pInfo);
 }
 
 
-CSize CXTPDockBar::CalcDynamicLayout(int nLength, DWORD nMode, AFX_SIZEPARENTPARAMS* lpLayout)
+//////////////////////////////////////////////////////////////////////////
+
+class CXTPMenuBar::CControlMDIButton : public CXTPControlButton
 {
-	BOOL bHorz = nMode & LM_HORZ;
-	BOOL bStretch = nMode & LM_STRETCH;
-
-	CSize sizeFixed (bStretch && bHorz ? 32767 : 0, bStretch && !bHorz ? 32767 : 0);
-
-	BOOL bLayoutQuery = (lpLayout->hDWP == NULL);
-
-	// prepare for layout
-	AFX_SIZEPARENTPARAMS layout;
-	layout.hDWP = bLayoutQuery ? 0 : ::BeginDeferWindowPos((int)m_arrBars.GetSize());
-
-	CPoint pt(0, 0);
-	// layout all the control bars
-	for (int nPos = 0; nPos < m_arrBars.GetSize(); nPos++)
+public:
+	CControlMDIButton()
 	{
-		CToolBarArray lst;
-		CXTPToolBar* pBar = GetDockedCommandBar(nPos);
+		m_dwFlags |= xtpFlagRightAlign | xtpFlagSkipFocus | xtpFlagManualUpdate | xtpFlagNoMovable;
+	}
+	CSize GetSize(CDC* /*pDC*/)
+	{
+		return CSize(16, 16);
+	};
+	void SetBeginGroup(BOOL /*bBeginGroup*/)
+	{
+	}
+	void Draw(CDC* pDC);
+	void OnExecute()
+	{
+		HWND hWndChild = ((CXTPMenuBar*)m_pParent)->GetActiveMdiChildWnd();
+		ASSERT(hWndChild);
 
-		while (pBar)
+		UINT nId = m_nId == XTP_ID_MENUBAR_CLOSE ? SC_CLOSE :
+			m_nId == XTP_ID_MENUBAR_RESTORE ? SC_RESTORE : SC_MINIMIZE;
+
+		::PostMessage(hWndChild, WM_SYSCOMMAND, nId, 0);
+	}
+};
+
+class CXTPMenuBar::CControlMDISysMenuPopup : public CXTPControlPopup
+{
+	class CXTPSysMenuPopupBar : public CXTPPopupBar
+	{
+		void UpdateShortcuts()
 		{
-			if (pBar->IsVisible()) lst.Add(pBar);
-			pBar = GetDockedCommandBar(++nPos);
 		}
 
-		int nWidth = 0;
+	};
 
-		if (lst.GetSize() != 0)
+public:
+	CControlMDISysMenuPopup(HWND hWndActiveChild, HMENU hDocMenu)
+	{
+		m_dwFlags |= xtpFlagManualUpdate | xtpFlagNoMovable;
+		m_controlType = xtpControlPopup;
+		m_strCaption = _T("-");
+		m_hIcon = 0;
+
+		m_pCommandBar = new CXTPSysMenuPopupBar();
+		m_pCommandBar->EnableCustomization(FALSE);
+
+		SetMDISysMenu(hWndActiveChild, hDocMenu);
+
+	}
+	void SetMDISysMenu(HWND hWndActiveChild, HMENU hDocMenu)
+	{
+		m_hDocMenu = hDocMenu;
+
+		HICON hIcon = (HICON)::SendMessage(hWndActiveChild, WM_XTP_GETTABICON, 0, 0);
+
+		if (hIcon == NULL) hIcon = (HICON)::SendMessage(hWndActiveChild, WM_GETICON, ICON_SMALL, 0);
+		if (hIcon == NULL) hIcon = (HICON)::SendMessage(hWndActiveChild, WM_GETICON, ICON_BIG, 0);
+		if (hIcon == NULL) hIcon = (HICON)(ULONG_PTR)::GetClassLongPtr(hWndActiveChild, GCLP_HICONSM);
+		if (hIcon == NULL) hIcon = AfxGetApp()->LoadOEMIcon(OIC_WINLOGO);
+
+		if (m_hIcon)
 		{
-			nWidth = AdjustRow(lst, pt, nLength, bHorz, &layout);
-			lst.RemoveAll();
+			DestroyIcon(m_hIcon);
+			m_hIcon = 0;
 		}
-		if (pBar == NULL && nWidth != 0)
+
+		if (hIcon)
+			m_hIcon = CXTPImageManagerIcon::ScaleToFit(hIcon, CXTPImageManagerIcon::GetExtent(hIcon), 16);
+
+		m_pCommandBar->GetControls()->RemoveAll();
+
+		CMenu* pMenu = CMenu::FromHandle(hDocMenu);
+
+		BOOL bSeparator = FALSE;
+		for (int i = 0; i < (int)pMenu->GetMenuItemCount(); i++)
 		{
-			// end of row because pBar == NULL
-			if (bHorz)
-			{
-				pt.y += nWidth;
-				sizeFixed.cy = max(sizeFixed.cy, pt.y);
-			}
+			UINT nItemID = pMenu->GetMenuItemID(i);
+			if (nItemID == 0)
+				bSeparator = TRUE;
 			else
 			{
-				pt.x += nWidth;
-				sizeFixed.cx = max(sizeFixed.cx, pt.x);
+				CXTPControl* pControl = NULL;
+				if (nItemID >= 0xF000 && nItemID < 0xF1F0)
+				{
+					pControl = (CXTPControl*)CXTPControlButton::CreateObject();
+					pControl->SetFlags(xtpFlagManualUpdate);
+					m_pCommandBar->GetControls()->Add(pControl, nItemID);
+
+					CString strCaption;
+					pMenu->GetMenuString(i, strCaption, MF_BYPOSITION);
+					pControl->SetCaption(strCaption);
+
+					CString strDescription;
+					if (!strDescription.LoadString(ID_COMMAND_FROM_SC(nItemID)))
+					{
+					}
+					pControl->SetDescription(strDescription);
+
+					pControl->SetItemDefault((int)::GetMenuDefaultItem(pMenu->m_hMenu, TRUE, GMDI_USEDISABLED) == i);
+
+
+					pControl->SetEnabled(!(pMenu->GetMenuState (i, MF_BYPOSITION) & MF_DISABLED));
+				}
+				else
+				{
+					pControl = m_pCommandBar->GetControls()->AddMenuItem(pMenu, i);
+
+				}
+
+				if (pControl && bSeparator)
+				{
+					pControl->SetBeginGroup(TRUE);
+					bSeparator = FALSE;
+				}
 			}
 		}
+
+
 	}
-	if (!bLayoutQuery)
+	~CControlMDISysMenuPopup()
 	{
-		// move and resize all the windows at once!
-		if (layout.hDWP == NULL || !::EndDeferWindowPos(layout.hDWP))
-			TRACE0("Warning: DeferWindowPos failed - low system resources.\n");
+		if (m_hIcon) DestroyIcon(m_hIcon);
 	}
-
-	return sizeFixed;
-}
-
-
-
-LRESULT CXTPDockBar::OnSizeParent(WPARAM, LPARAM lParam)
-{
-	AFX_SIZEPARENTPARAMS* lpLayout = (AFX_SIZEPARENTPARAMS*)lParam;
-
-	DWORD dwStyle = GetStyle();
-	if (dwStyle & WS_VISIBLE)
+	CSize GetSize(CDC* /*pDC*/)
 	{
-		// align the control bar
-		CRect rect;
-		rect.CopyRect(&lpLayout->rect);
-
-		CSize sizeAvail = rect.Size();  // maximum size available
-
-		// get maximum requested size
-		DWORD dwMode = lpLayout->bStretch ? LM_STRETCH : 0;
-		if ((m_dwStyle & CBRS_SIZE_DYNAMIC) && m_dwStyle & CBRS_FLOATING)
-			dwMode |= LM_HORZ | LM_MRUWIDTH;
-		else if (dwStyle & CBRS_ORIENT_HORZ)
-			dwMode |= LM_HORZ | LM_HORZDOCK;
-		else
-			dwMode |= LM_VERTDOCK;
-
-
-		int nLength = (dwStyle & CBRS_ORIENT_HORZ ? sizeAvail.cx : sizeAvail.cy) /*- 2 * GetSystemMetrics(SM_CXBORDER)*/;
-
-		CSize size = CalcDynamicLayout(nLength, dwMode, lpLayout);
-
-		size.cx = min(size.cx, sizeAvail.cx);
-		size.cy = min(size.cy, sizeAvail.cy);
-
-		if (dwStyle & CBRS_ORIENT_HORZ)
+		return CSize(16, 16);
+	};
+	void Draw(CDC* pDC)
+	{
+		if (m_hIcon)
 		{
-			lpLayout->sizeTotal.cy += size.cy;
-			lpLayout->sizeTotal.cx = max(lpLayout->sizeTotal.cx, size.cx);
-			if (dwStyle & CBRS_ALIGN_TOP)
-				lpLayout->rect.top += size.cy;
-			else if (dwStyle & CBRS_ALIGN_BOTTOM)
-			{
-				rect.top = rect.bottom - size.cy;
-				lpLayout->rect.bottom -= size.cy;
-			}
+			pDC->DrawState (GetRect().TopLeft(), CSize(16, 16), m_hIcon, (UINT)DSS_NORMAL, HBRUSH(0));
 		}
-		else
-		{
-			lpLayout->sizeTotal.cx += size.cx;
-			lpLayout->sizeTotal.cy = max(lpLayout->sizeTotal.cy, size.cy);
-			if (dwStyle & CBRS_ALIGN_LEFT)
-				lpLayout->rect.left += size.cx;
-			else if (dwStyle & CBRS_ALIGN_RIGHT)
-			{
-				rect.left = rect.right - size.cx;
-				lpLayout->rect.right -= size.cx;
-			}
-		}
-
-		rect.right = rect.left + size.cx;
-		rect.bottom = rect.top + size.cy;
-
-		// only resize the window if doing layout and not just rect query
-		if (lpLayout->hDWP != NULL)
-			AfxRepositionWindow(lpLayout, m_hWnd, &rect);
-		Invalidate(FALSE);
 	}
-	return 0;
-}
-
-
-
-
-void CXTPDockBar::OnPaint()
-{
-	CPaintDC dc(this);
-	m_pCommandBars->GetPaintManager()->FillDockBar(&dc, this);
-}
-
-LRESULT CXTPDockBar::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
-{
-	CDC* pDC = CDC::FromHandle((HDC)wParam);
-	if (pDC)
+	void UpdateShadow()
 	{
-		m_pCommandBars->GetPaintManager()->FillDockBar(pDC, this);
+
+	}
+	void AdjustExcludeRect(CRect& rc, BOOL /*bVertical*/)
+	{
+		rc.InflateRect(1, 1);
 	}
 
-	return TRUE;
+public:
+	HMENU m_hDocMenu;
+	HICON m_hIcon;
+};
+
+void CXTPMenuBar::CControlMDIButton::Draw(CDC* pDC)
+{
+	CFont font;
+	font.CreatePointFont(MulDiv(80, 96, pDC->GetDeviceCaps(LOGPIXELSX)), _T("Marlett"));
+	CFont* pFont = pDC->SelectObject(&font);
+	GetPaintManager()->DrawControlEntry(pDC, this);
+	pDC->SetTextColor(GetPaintManager()->GetControlTextColor(this));
+	pDC->DrawText(m_strParameter, m_rcControl, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+	pDC->SelectObject(pFont);
 }
 
 
-BOOL CXTPDockBar::OnEraseBkgnd(CDC* /*pDC*/)
+IMPLEMENT_XTP_COMMANDBAR(CXTPMenuBar, CXTPToolBar)
+
+CXTPMenuBar::CXTPMenuBar()
 {
-	return TRUE;
+	m_barType = xtpBarTypeMenuBar;
+	m_bMdiApp = FALSE;
+	m_hWndActiveChild = 0;
+	m_nIDResource = 0;
+	m_nIDResourceCurrent = 0;
+
+	m_bDirtyMenu = FALSE;
+	m_hMenuDefault = NULL;
+	m_bShowExpandButton = FALSE;
+
+	m_bCloseable = FALSE;
+
+	m_nBarID = XTP_IDR_MENUBAR;
+	m_dwFlags = xtpFlagAlignAny | xtpFlagFloating | xtpFlagStretched;
+
+	m_pMDIMenus = new CXTPMenuBarMDIMenus(this);
+
+	EnableAutomation();
 }
 
-void CXTPDockBar::AdjustStretchBars()
+CXTPMenuBar::~CXTPMenuBar()
 {
-	for (int nPos = 0; nPos < m_arrBars.GetSize(); nPos++)
+	FreeMDIMenus();
+
+	CMDTARGET_RELEASE(m_pMDIMenus);
+
+	if (m_hMenuDefault)
 	{
-		CXTPToolBar* pBar = GetDockedCommandBar(nPos);
-		if (pBar && pBar->GetFlags() & xtpFlagStretched)
-		{
-			if (nPos > 0 && GetDockedCommandBar(nPos - 1) != NULL)
-			{
-				m_arrBars.InsertAt(nPos, (CXTPToolBar*)NULL);
-				nPos++;
-			}
-			if (nPos < m_arrBars.GetSize() -1 && GetDockedCommandBar(nPos + 1) != NULL)
-			{
-				m_arrBars.InsertAt(nPos + 1, (CXTPToolBar*)NULL);
-				nPos++;
-			}
-		}
+		DestroyMenu(m_hMenuDefault);
 	}
 }
 
-void CXTPDockBar::DockCommandBar(CXTPToolBar* pBar, LPCRECT lpRect)
-{
-	ASSERT_VALID(this);
-	ASSERT_VALID(pBar);
-	ASSERT_KINDOF(CXTPToolBar, pBar);
 
-	CRect rectBar;
-	pBar->GetWindowRect(&rectBar);
-	if (pBar->m_pDockBar == this && (lpRect == NULL || rectBar == *lpRect))
+void CXTPMenuBar::SetupHook()
+{
+	m_bMdiApp = GetSite()->IsKindOf(RUNTIME_CLASS(CMDIFrameWnd));
+
+
+	CWnd* pSite = GetSite();
+	XTPHookManager()->SetHook(pSite->GetSafeHwnd(), this);
+
+	CMDIFrameWnd* pMDIFrame = DYNAMIC_DOWNCAST(CMDIFrameWnd, pSite);
+	if (pMDIFrame)
 	{
-		// already docked and no change in position
+		XTPHookManager()->SetHook(pMDIFrame->m_hWndMDIClient, this);
+	}
+}
+
+HWND CXTPMenuBar::GetActiveMdiChildWnd(BOOL* bMaximized)
+{
+	BOOL bMax = FALSE;
+	if (!m_bMdiApp) return NULL;
+	CMDIFrameWnd * pFrame = DYNAMIC_DOWNCAST(CMDIFrameWnd, GetSite());
+	ASSERT_VALID(pFrame);
+	HWND hWndMdiArea = pFrame->m_hWndMDIClient;
+
+	ASSERT(hWndMdiArea && ::IsWindow(hWndMdiArea));
+	if (!hWndMdiArea)
+		return 0;
+
+	HWND hWnd = (HWND) ::SendMessage(hWndMdiArea, WM_MDIGETACTIVE, 0, (LPARAM)&bMax);
+	if (!hWnd) bMax = FALSE;
+	ASSERT(hWnd == NULL || ::IsWindow(hWnd));
+	if (bMaximized) *bMaximized = bMax;
+	return hWnd;
+}
+
+
+BOOL CXTPMenuBar::IsOleDocumentActive(HWND hWndActiveChild) const
+{
+#if _MSC_VER >= 1200 // MFC 6.0
+	CFrameWnd* pFrame = DYNAMIC_DOWNCAST(CFrameWnd, CWnd::FromHandle(hWndActiveChild));
+
+	COleDocument* pActiveOleDoc =  DYNAMIC_DOWNCAST(COleDocument,
+		pFrame && pFrame->GetActiveView() ? pFrame->GetActiveView()->GetDocument() : NULL);
+
+	if (!pActiveOleDoc || !pFrame)
+		return FALSE;
+
+	COleDocObjectItem* pItem = DYNAMIC_DOWNCAST(COleDocObjectItem,
+		pActiveOleDoc->GetInPlaceActiveItem(pFrame->GetActiveView()));
+
+	return  pItem != NULL;
+#else
+	UNREFERENCED_PARAMETER(hWndActiveChild);
+	return FALSE;
+#endif
+}
+
+void CXTPMenuBar::SyncActiveMdiChild()
+{
+	HWND hWndActiveChild = GetActiveMdiChildWnd();
+	if (m_hWndActiveChild == hWndActiveChild)
 		return;
-	}
 
-	int nPos = -1;
-	if (lpRect != NULL)
-	{
-		// insert into appropriate row
-		CRect rect(lpRect);
-		ScreenToClient(&rect);
-		CPoint ptMid(rect.left + rect.Width()/2, rect.top + rect.Height()/2);
-		nPos = Insert(pBar, rect, ptMid);
+	if (IsOleDocumentActive(hWndActiveChild))
+		return;
 
-		pBar->m_pDockContext->m_rectMRUDockPos = rect;
-	}
-	else
-	{
-		// always add on current row, then create new one
-		m_arrBars.Add(pBar);
-		m_arrBars.Add(NULL);
-
-		pBar->m_pDockContext->m_rectMRUDockPos.SetRectEmpty();
-	}
-
-	// attach it to the docking site
-	if (pBar->GetParent() != this)
-		pBar->SetParent(this);
-	if (pBar->m_pDockBar == this)
-		pBar->m_pDockBar->RemoveCommandBar(pBar, nPos);
-	else if (pBar->m_pDockBar != NULL)
-		pBar->m_pDockBar->RemoveCommandBar(pBar, -1);
-	pBar->m_pDockBar = this;
-
-	AdjustStretchBars();
-
-	// get parent frame for recalc layout
-	m_pCommandBars->RecalcFrameLayout(TRUE);
+	if (m_hWndActiveChild != NULL)
+		XTPHookManager()->RemoveHook(m_hWndActiveChild, this);
+	m_hWndActiveChild = hWndActiveChild;
+	if (m_hWndActiveChild != NULL)
+		XTPHookManager()->SetHook(m_hWndActiveChild, this);
 }
 
-BOOL CXTPDockBar::RemoveCommandBar(CXTPToolBar* pBar, int nPosExclude)
+void CXTPMenuBar::RefreshMenu()
 {
-	ASSERT_VALID(this);
-	ASSERT(pBar != NULL);
-	if (!pBar)
-		return FALSE;
+	SyncActiveMdiChild();
 
-	int nPos = FindBar(pBar, nPosExclude);
-	ASSERT(nPos > 0);
-	if (nPos <= 0)
-		return FALSE;
+	if (IsVisible())
+	{
+		RefreshSysButtons();
+	}
+}
 
-	m_arrBars.RemoveAt(nPos);
-	if (m_arrBars[nPos-1] == NULL && m_arrBars[nPos] == NULL)
-		m_arrBars.RemoveAt(nPos);
 
-	pBar->m_pDockBar = NULL;
+void CXTPMenuBar::AddSysButton(CXTPControl* pControl, int nId, LPCTSTR strParameter, int nBefore /*= -1*/)
+{
+	m_pControls->Add(pControl, nId, strParameter, nBefore, TRUE);
+}
 
-	// get parent frame for recalc layout/frame destroy
-	m_pCommandBars->RecalcFrameLayout(TRUE);
+void CXTPMenuBar::RefreshSysButtons()
+{
+	BOOL bMax = FALSE;
+	HWND hWndActiveChild = GetActiveMdiChildWnd(&bMax);
+	DWORD dwStyle = hWndActiveChild ? GetWindowLong(hWndActiveChild, GWL_STYLE) : 0;
+	CXTPControl*  pButton;
+
+
+	pButton = m_pControls->FindControl(XTP_ID_MENUBAR_SYSMENU);
+
+	if (bMax && (m_dwFlags & xtpFlagAddMDISysPopup))
+	{
+		HMENU hDocMenuButton = pButton ? ((CControlMDISysMenuPopup*)pButton)->m_hDocMenu : 0;
+
+		HMENU hDocMenu =
+			::GetSystemMenu(hWndActiveChild, FALSE);
+		if (hDocMenu && ::IsMenu(hDocMenu))
+		{
+			if (hDocMenuButton != hDocMenu)
+			{
+				if (pButton)
+				{
+					((CControlMDISysMenuPopup*)pButton)->SetMDISysMenu(hWndActiveChild, hDocMenu);
+					DelayRedraw();
+				}
+				else
+				{
+					AddSysButton(new CControlMDISysMenuPopup(hWndActiveChild, hDocMenu), XTP_ID_MENUBAR_SYSMENU, _T(""), 0);
+				}
+			}
+		}
+		else
+		{
+			if (pButton) m_pControls->Remove(pButton);
+		}
+	}
+	else if (pButton) m_pControls->Remove(pButton);
+
+
+	pButton = m_pControls->FindControl(XTP_ID_MENUBAR_MINIMIZE);
+	if (!pButton && bMax && (dwStyle & WS_MINIMIZEBOX) && (dwStyle & WS_SYSMENU) && (!(m_dwFlags & xtpFlagHideMinimizeBox))) AddSysButton(new CControlMDIButton(), XTP_ID_MENUBAR_MINIMIZE, _T("0"));
+	else if (pButton && !bMax) m_pControls->Remove(pButton);
+
+	pButton = m_pControls->FindControl(XTP_ID_MENUBAR_RESTORE);
+	if (!pButton && bMax && (dwStyle & WS_MAXIMIZEBOX) && (dwStyle & WS_SYSMENU) && (!(m_dwFlags & xtpFlagHideMaximizeBox))) AddSysButton(new CControlMDIButton(), XTP_ID_MENUBAR_RESTORE, _T("2"));
+	else if (pButton && !bMax) m_pControls->Remove(pButton);
+
+	pButton = m_pControls->FindControl(XTP_ID_MENUBAR_CLOSE);
+	if (!pButton && bMax && (dwStyle & WS_SYSMENU) && (!(m_dwFlags & xtpFlagHideClose))) AddSysButton(new CControlMDIButton(), XTP_ID_MENUBAR_CLOSE, _T("r"));
+	else if (pButton && !bMax) m_pControls->Remove(pButton);
+}
+
+void CXTPMenuBar::FreeMDIMenus()
+{
+	m_pMDIMenus->RemoveAll();
+}
+
+BOOL CXTPMenuBar::IsMDIMenusChanged()
+{
+	m_bDirtyMenu = FALSE;
+
+	if (m_pMDIMenus->GetCount() > 0)
+	{
+		SwitchMDIMenu(GetDefaultMenuResource());
+		m_bDirtyMenu = TRUE;
+	}
+
+	BOOL bChanged = FALSE;
+
+	POSITION pos = m_pMDIMenus->GetStartPosition();
+	while (pos)
+	{
+		CXTPMenuBarMDIMenuInfo* pInfo;
+		m_pMDIMenus->GetNextMenu(pos, pInfo);
+
+		pInfo->m_bChanged = pInfo->m_pControls->IsChanged();
+		bChanged = bChanged || pInfo->m_bChanged;
+	}
+	return bChanged;
+}
+
+
+CXTPMenuBarMDIMenuInfo* CXTPMenuBar::AddMDIMenu(UINT nIDResource)
+{
+	CXTPMenuBarMDIMenuInfo* pInfo = m_pMDIMenus->Lookup(nIDResource);
+	if (pInfo)
+		return pInfo;
+
+	pInfo = new CXTPMenuBarMDIMenuInfo(GetCommandBars(), nIDResource);
+	m_pMDIMenus->SetAt(nIDResource, pInfo);
+
+	CMenu menu;
+	VERIFY(menu.LoadMenu(nIDResource));
+
+	pInfo->m_pControls->LoadMenu(&menu);
+	pInfo->m_pControls->CreateOriginalControls();
+
+	return pInfo;
+}
+
+void CXTPMenuBar::SwitchActiveMenu()
+{
+	CFrameWnd* pFrame = DYNAMIC_DOWNCAST(CFrameWnd, GetSite());
+	if (pFrame && pFrame->GetSafeHwnd()) pFrame->OnUpdateFrameMenu(0);
+	m_bDirtyMenu = FALSE;
+}
+
+void CXTPMenuBar::SwitchMDIMenu(UINT nIDResource, CMenu* pMenu)
+{
+	if ((nIDResource == 0) || (m_nIDResourceCurrent == 0) || (m_nIDResourceCurrent == nIDResource))
+		return;
+
+	if (GetCommandBars()->IsCustomizeAvail() || m_pMDIMenus->Lookup(nIDResource))
+	{
+		if (pMenu == NULL && !m_pMDIMenus->Lookup(nIDResource))
+			return;
+
+		CXTPMenuBarMDIMenuInfo* pInfo = m_pMDIMenus->Lookup(m_nIDResourceCurrent);
+		if (pInfo)
+		{
+			ASSERT(pInfo->m_pControls == m_pControls);
+		}
+		else
+		{
+			pInfo = new CXTPMenuBarMDIMenuInfo(GetCommandBars(), m_nIDResourceCurrent);
+			pInfo->m_pControls->InternalRelease();
+
+			pInfo->m_pControls = m_pControls;
+			m_pControls->InternalAddRef();
+
+			m_pMDIMenus->SetAt(m_nIDResourceCurrent, pInfo);
+		}
+
+		m_pControls->SetParent(0);
+		m_pControls->InternalRelease();
+		m_pControls = NULL;
+
+		pInfo = m_pMDIMenus->Lookup(nIDResource);
+		if (!pInfo)
+		{
+			pInfo = new CXTPMenuBarMDIMenuInfo(GetCommandBars(), nIDResource);
+			m_pControls = pInfo->m_pControls;
+			m_pControls->InternalAddRef();
+			m_pControls->SetParent(this);
+
+			ASSERT(pMenu);
+			if (pMenu)
+			{
+				LoadMenu(pMenu);
+			}
+			m_pControls->CreateOriginalControls();
+
+			ASSERT(nIDResource != m_nIDResource);
+
+			m_pMDIMenus->SetAt(nIDResource, pInfo);
+		}
+		else
+		{
+			m_pControls = pInfo->m_pControls;
+			m_pControls->SetParent(this);
+			m_pControls->InternalAddRef();
+
+			if (m_pControls->GetOriginalControls() == 0 && pMenu)
+			{
+				CXTPOriginalControls* pOriginalControls = new CXTPOriginalControls();
+				pOriginalControls->LoadMenu(pMenu);
+				m_pControls->SetOriginalControls(pOriginalControls);
+			}
+
+			if (nIDResource == m_nIDResource)
+			{
+				m_pMDIMenus->Remove(nIDResource);
+			}
+		}
+	}
+	else if (pMenu)
+	{
+		LoadMenu(pMenu);
+	}
+
+	OnRecalcLayout();
+
+	m_nIDResourceCurrent = nIDResource;
+}
+
+void CXTPMenuBar::SwitchMDIMenu(HMENU hMenu)
+{
+	UINT nIDResource = GetActiveDocTemplate();
+
+	if (hMenu == m_hMenuDefault)
+	{
+		nIDResource = m_nIDResource;
+	}
+
+	if ((nIDResource == 0) || (m_nIDResourceCurrent == 0) || (m_nIDResourceCurrent == nIDResource))
+		return;
+
+	CMenu* pMenu = CMenu::FromHandle(hMenu);
+	if (!pMenu || pMenu->GetMenuItemCount() == 0)
+		return;
+
+	SwitchMDIMenu(nIDResource, pMenu);
+}
+
+int CXTPMenuBar::OnHookMessage(HWND hWnd, UINT nMessage, WPARAM& wParam, LPARAM& lParam, LRESULT& lResult)
+{
+
+	switch (nMessage)
+	{
+		case WM_SYSCOMMAND:
+			if (IsWindowVisible() && !XTPMouseManager()->IsMouseLocked() && (GetKeyState(VK_SHIFT) >= 0) && !IsCustomizeMode())
+			if (((wParam & 0xFFF0) == SC_KEYMENU) && (lParam == 0))
+			{
+				if (PreviewAccel((UINT)VK_MENU))
+					return TRUE;
+
+				CXTPCommandBars* pCommandBars = GetCommandBars();
+				if (pCommandBars)
+				{
+					pCommandBars->SetToolBarFocus(this);
+				}
+				return TRUE;
+			}
+			break;
+
+		case WM_MDISETMENU:
+			if (IsVisible())
+			{
+				if (IsCustomizeMode())
+				{
+					GetSite()->SetMenu(0);
+					wParam = 0;
+					return TRUE;
+				}
+
+				BOOL bAccepMenus = ((m_dwFlags & xtpFlagIgnoreSetMenuMessage) == 0) && (wParam || m_hMenuDefault);
+
+				if (bAccepMenus)
+				{
+					SwitchMDIMenu(wParam ? (HMENU)wParam : m_hMenuDefault);
+				}
+
+				GetSite()->SetMenu(0);
+				RefreshMenu();
+
+				wParam = 0;
+				return TRUE;
+			}
+			else if (GetSite()->GetMenu() == 0)
+			{
+				wParam = 0;
+				return TRUE;
+
+			}
+			break;
+
+		case WM_MDICREATE:
+		case WM_MDIDESTROY:
+		case WM_MDIACTIVATE:
+			PostMessage(WM_TIMER, TID_REFRESH, 0);
+			break;
+
+		case WM_SIZE:
+		case WM_WINDOWPOSCHANGED:
+			if (hWnd == m_hWndActiveChild)
+				PostMessage(WM_TIMER, TID_REFRESH, 0);
+			break;
+
+	}
+	return CXTPToolBar::OnHookMessage(hWnd, nMessage, wParam, lParam, lResult);
+}
+
+BOOL CXTPMenuBar::LoadMenuBar(UINT nIDResource)
+{
+	ASSERT(m_pControls->GetCount() == 0);
+
+	if (nIDResource != 0)
+	{
+		CMenu menu;
+		if (!menu.LoadMenu(nIDResource))
+			return FALSE;
+
+		if (!LoadMenu(&menu))
+			return FALSE;
+
+		m_nIDResourceCurrent = m_nIDResource = nIDResource;
+	}
+
+
+	SetupHook();
+
+	UINT nIDMenuBarIcons[] =
+	{
+		SC_RESTORE, SC_MINIMIZE, SC_MAXIMIZE, SC_CLOSE
+	};
+
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (pCommandBars)
+		pCommandBars->GetImageManager()->SetIcons(XTP_IDB_MENUBAR_ICONS, nIDMenuBarIcons, 4, CSize(16, 16));
+
+	m_hMenuDefault = ::GetMenu(GetSite()->GetSafeHwnd());
+	GetSite()->SetMenu(0);
 
 	return TRUE;
 }
 
 
+BEGIN_MESSAGE_MAP(CXTPMenuBar, CXTPToolBar)
+	ON_WM_TIMER()
+END_MESSAGE_MAP()
 
-CXTPToolBar* CXTPDockBar::GetDockedCommandBar(int nPos) const
+void CXTPMenuBar::OnTimer(UINT_PTR nIDEvent)
 {
-	CXTPToolBar* pResult = (CXTPToolBar*)m_arrBars[nPos];
-	ASSERT(pResult == 0 || HIWORD(pResult) != 0); // XTPLibrary don't use placeholder
-	return pResult;
+	if (nIDEvent == TID_REFRESH)
+		RefreshMenu();
+
+	CXTPToolBar::OnTimer(nIDEvent);
 }
-int CXTPDockBar::GetDockedCount() const
+
+void CXTPMenuBar::Reset(BOOL bShowWarningMessage)
 {
-	int nCount = 0;
-	for (int i = 0; i < m_arrBars.GetSize(); i++)
+	if (GetControls()->GetOriginalControls() != NULL)
 	{
-		if (GetDockedCommandBar(i) != NULL)
-			nCount++;
+		CXTPToolBar::Reset(bShowWarningMessage);
 	}
-	return nCount;
-}
-
-int CXTPDockBar::GetDockedVisibleCount() const
-{
-	int nCount = 0;
-	for (int i = 0; i < m_arrBars.GetSize(); i++)
+	else if (((m_pMDIMenus->GetCount() > 0) || (GetControls()->GetOriginalControls() == NULL)) && m_nIDResourceCurrent)
 	{
-		CXTPToolBar* pBar = GetDockedCommandBar(i);
-		if (pBar != NULL && pBar->IsVisible())
-			nCount++;
-	}
-	return nCount;
-}
-
-int CXTPDockBar::FindBar(CXTPToolBar* pBar, int nPosExclude)
-{
-	for (int nPos = 0; nPos < m_arrBars.GetSize(); nPos++)
-	{
-		if (nPos != nPosExclude && m_arrBars[nPos] == pBar)
-			return nPos;
-	}
-	return -1;
-}
-
-int CXTPDockBar::Insert(CXTPToolBar* pBarIns, CRect /*rect*/, CPoint ptMid)
-{
-	ASSERT_VALID(this);
-	ASSERT(pBarIns != NULL);
-
-	int nPos = 0;
-	int nPosInsAfter = 0;
-	int nWidth = 0;
-	int nTotalWidth = 0;
-	//int nPosInsBefore = 0;
-	BOOL bHorz = m_dwStyle & CBRS_ORIENT_HORZ;
-	BOOL bAllowTopMost = pBarIns->IsRibbonBar() || m_pCommandBars->GetMenuBar() == NULL ||
-		!m_pCommandBars->GetMenuBar()->IsRibbonBar() || FindBar(m_pCommandBars->GetMenuBar()) == -1;
-
-	for (nPos = 0; nPos < m_arrBars.GetSize(); nPos++)
-	{
-		CXTPToolBar* pBar = GetDockedCommandBar(nPos);
-		if (pBar && !pBar->IsVisible())
-			continue;
-
-		if (pBar != NULL)
+		if (bShowWarningMessage)
 		{
-			CRect rectBar;
-			pBar->GetWindowRect(&rectBar);
-			ScreenToClient(&rectBar);
-			nWidth = max(nWidth,
-				bHorz ? rectBar.bottom : rectBar.right);
+			CString strMessage, strTitle = GetTitle(), strReset;
+
+			VERIFY(XTPResourceManager()->LoadString(&strReset, XTP_IDS_CONFIRM_RESET));
+			strMessage.Format(strReset, (LPCTSTR)strTitle);
+
+			CXTPPushRoutingFrame push(GetFrameSite());
+
+			if (AfxMessageBox(strMessage, MB_ICONWARNING | MB_OKCANCEL) != IDOK)
+				return;
 		}
-		else // end of row because pBar == NULL
+
+		CMenu menu;
+		VERIFY(menu.LoadMenu(m_nIDResourceCurrent));
+		LoadMenu(&menu);
+
+		CWnd* pWnd = GetSite();
+		if (pWnd && ::IsWindow(pWnd->m_hWnd)) pWnd->SendMessage(WM_XTP_CUSTOMIZATION_RESETTOOLBAR, 0, (LPARAM)this);
+	}
+
+	RefreshMenu();
+	OnInitialUpdate();
+	OnRecalcLayout();
+}
+
+void CXTPMenuBar::Copy(CXTPCommandBar* pCommandBar, BOOL bRecursive)
+{
+	CXTPToolBar::Copy(pCommandBar, bRecursive);
+
+	m_nIDResource = ((CXTPMenuBar*)pCommandBar)->m_nIDResource;
+
+	POSITION pos = ((CXTPMenuBar*)pCommandBar)->m_pMDIMenus->GetStartPosition();
+	while (pos)
+	{
+		CXTPMenuBarMDIMenuInfo* pInfo;
+		((CXTPMenuBar*)pCommandBar)->m_pMDIMenus->GetNextMenu(pos, pInfo);
+
+		CXTPMenuBarMDIMenuInfo* pInfoOrig = m_pMDIMenus->Lookup(pInfo->m_nIDResource);
+		if (pInfoOrig)
 		{
-			if ((bHorz ? ptMid.y : ptMid.x) < nWidth && (bAllowTopMost || nPosInsAfter > 1))
+			if (pInfoOrig->m_pControls && pInfoOrig->m_pControls->m_pOriginalControls != NULL &&
+				pInfo->m_pControls && pInfo->m_pControls->m_pOriginalControls == NULL)
 			{
-				if (nPos == 0 || ((bHorz ? ptMid.y : ptMid.x) == nTotalWidth)) // first section
-					m_arrBars.InsertAt(nPosInsAfter + 1, (CXTPToolBar*)NULL);
-				m_arrBars.InsertAt(nPosInsAfter + 1, pBarIns);
-
-				return nPosInsAfter + 1;
+				CXTPOriginalControls* pOriginalControls = pInfoOrig->m_pControls->m_pOriginalControls;
+				CMDTARGET_ADDREF(pOriginalControls);
+				pInfo->m_pControls->SetOriginalControls(pOriginalControls);
 			}
-			nTotalWidth = nWidth;
-			nWidth = 0;
-			nPosInsAfter = nPos;
+
+			pInfoOrig->m_pControls->InternalRelease();
+			pInfoOrig->m_pControls = pInfo->m_pControls;
+			pInfoOrig->m_pControls->InternalAddRef();
 		}
-	}
-
-	// create a new row
-	m_arrBars.InsertAt(nPosInsAfter + 1, (CXTPToolBar*)NULL);
-	m_arrBars.InsertAt(nPosInsAfter + 1, pBarIns);
-
-	return nPosInsAfter + 1;
-}
-
-
-XTPBarPosition CXTPDockBar::GetPosition() const
-{
-	if (m_dwStyle & CBRS_TOP) return xtpBarTop;
-	if (m_dwStyle & CBRS_BOTTOM) return xtpBarBottom;
-	if (m_dwStyle & CBRS_LEFT) return xtpBarLeft;
-	return xtpBarRight;
-}
-
-BOOL CXTPDockBar::IsVerticalPosition() const
-{
-	return !(m_dwStyle & CBRS_ORIENT_HORZ);
-}
-
-void CXTPDockBar::OnRButtonDown(UINT /*nFlags*/, CPoint point)
-{
-	ClientToScreen(&point);
-	m_pCommandBars->ContextMenu(NULL, point);
-}
-
-
-void CXTPDockBar::GetVisibleToolbars(int nPos, CToolBarArray& arrBars)
-{
-	ASSERT(nPos != -1);
-	ASSERT(m_arrBars[nPos]);
-
-	while (m_arrBars[nPos] != NULL && nPos > 0)
-	{
-		nPos--;
-	}
-	nPos++;
-
-	CDockInfoArray arrInfo;
-
-	while (m_arrBars[nPos] != NULL)
-	{
-		CXTPToolBar* pBar = m_arrBars[nPos++];
-		if (pBar->IsVisible())
+		else
 		{
-			DOCK_INFO dockInfo(pBar, CXTPWindowRect(pBar), nPos);
-			arrInfo.Add(dockInfo);
+			m_pMDIMenus->SetAt(pInfo->m_nIDResource, pInfo);
+			pInfo->InternalAddRef();
 		}
 	}
 
-	if (m_dwStyle & CBRS_LEFT || m_dwStyle & CBRS_RIGHT) arrInfo.InvertRects();
-	arrInfo.Sort();
-
-	for (int i = 0; i < arrInfo.GetSize(); i++)
-	{
-		arrBars.Add(arrInfo[i].pBar);
-	}
-
 }
+
+BOOL CXTPMenuBar::ShouldSerializeBar()
+{
+	if (!IsCustomizable())
+		return FALSE;
+
+	BOOL bChanged = IsMDIMenusChanged();
+	if (bChanged)
+		return TRUE;
+
+	if ((GetControls()->GetOriginalControls() && !GetControls()->IsChanged()))
+		return FALSE;
+
+	return TRUE;
+}
+
+

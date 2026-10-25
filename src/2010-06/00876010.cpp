@@ -1,14 +1,14 @@
-// from server: 38% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/CommandBars/XTPImageEditor.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-vc8-shared-mfc Source/CommandBars/XTPImageEditor.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPImageEditor.cpp : implementation of the CXTPImageEditorDlg class.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -51,7 +51,18 @@ static char THIS_FILE[] = __FILE__;
 
 void CXTPImageEditorPicture::CAlphaBitmap::CreateEditorBitmap(int nWidth, int nHeight)
 {
-	Attach(CXTPImageManager::Create32BPPDIBSection(0, nWidth, nHeight));
+	BITMAPINFOHEADER BMI;
+	// Fill in the header info.
+	ZeroMemory (&BMI, sizeof(BMI));
+	BMI.biSize = sizeof(BITMAPINFOHEADER);
+	BMI.biWidth = nWidth;
+	BMI.biHeight = nHeight;
+	BMI.biPlanes = 1;
+	BMI.biBitCount = 32;
+	BMI.biCompression = BI_RGB;   // No compression
+
+	UINT* pSrcBits = NULL;
+	Attach(CreateDIBSection (NULL, (BITMAPINFO *)&BMI, DIB_RGB_COLORS, (void **)&pSrcBits, 0, 0l));
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -674,7 +685,7 @@ void CXTPImageEditorPicture::Paste()
 void CXTPImageEditorPicture::Load()
 {
 	CString strFilter;
-	CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&strFilter, XTP_IDS_IMAGEEDITOR_FILTER));
+	VERIFY(XTPResourceManager()->LoadString(&strFilter, XTP_IDS_IMAGEEDITOR_FILTER));
 	CFileDialog fd(TRUE, NULL, NULL, OFN_HIDEREADONLY, strFilter);
 
 	if (fd.DoModal() == IDOK)

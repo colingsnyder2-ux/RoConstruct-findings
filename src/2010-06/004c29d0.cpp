@@ -1,15 +1,17 @@
-// from server: 61% by atomic.potato
-extern "C" void __stdcall G1_func_004c0520();
-
-void func_004c29d0(void* a0, void* a1, int a2)
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_004c29d0 {
+    T4_004c29d0();
+    virtual void f_004c29d0();
+    char m_a;
+    char m_b;
+};
+T4_004c29d0::T4_004c29d0() : m_a(0), m_b(0) {}
+extern "C" void* create_other_004c29d0(void*, void*, int);
+void* create_004c29d0(void* unused, T4_004c29d0* out, int type)
 {
-    if (a2 != 4)
-    {
-        G1_func_004c0520();
-        return;
-    }
-
-    *(int*)a1 = 0x00b8d080;
-    *((char*)a1 + 4) = 0;
-    *((char*)a1 + 5) = 0;
+    if (type != 4)
+        return create_other_004c29d0(unused, out, type);
+    out->T4_004c29d0::T4_004c29d0();
+    return out;
 }

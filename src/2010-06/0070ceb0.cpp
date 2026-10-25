@@ -1,10 +1,4 @@
-// from server: 33% by atomic.potato
-struct UnifiedImageWidget
-{
-    int Reset(int);
-};
-
-int UnifiedImageWidget::Reset(int value)
-{
-    return value;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct B{void sub(void*);}; struct S{void* func(void*);};
+void* S::func(void* p){((B*)((char*)this+172))->sub(p); return p;}

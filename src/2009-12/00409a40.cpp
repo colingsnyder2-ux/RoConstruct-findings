@@ -1,4 +1,10 @@
 // from server: 93% by atomic.potato
+extern "C" const void *vtable_0;
+extern "C" const void *vtable_4;
+extern "C" const void *vtable_10;
+extern "C" const void *vtable_14;
+extern "C" void __cdecl Next();
+
 struct S
 {
     int a;
@@ -12,13 +18,11 @@ struct S
     void f();
 };
 
-extern "C" void __cdecl Next();
-
 void S::f()
 {
-    a = 0x99fdfc;
-    b = 0x99fdf4;
-    e = 0x99fde8;
-    value_f = 0x99fde0;
+    a = (int)vtable_0;
+    b = (int)vtable_4;
+    e = (int)vtable_10;
+    value_f = (int)vtable_14;
     Next();
 }

@@ -1,8 +1,8 @@
-// from server: 54% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Common/XTPPropExchange.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-15.2.1-shared-mfc Source/Common/XTPPropExchange.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPPropExchange.cpp: implementation of the CXTPPropExchange class.

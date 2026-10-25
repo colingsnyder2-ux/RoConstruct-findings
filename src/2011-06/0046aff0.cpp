@@ -1,18 +1,17 @@
-// from server: 55% by atomic.potato
-struct ViewUpdateJob
-{
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_0046aff0 {
+    T4_0046aff0();
+    virtual void f_0046aff0();
+    char m_a;
+    char m_b;
 };
-
-void __cdecl f(int a, int b, int c)
+T4_0046aff0::T4_0046aff0() : m_a(0), m_b(0) {}
+extern "C" void* create_other_0046aff0(void*, void*, int);
+void* create_0046aff0(void* unused, T4_0046aff0* out, int type)
 {
-    if (c == 4)
-    {
-        *(int*)b = 0xC15170;
-        *((unsigned char*)b + 4) = 0;
-        *((unsigned char*)b + 5) = 0;
-    }
-    else
-    {
-        f(a, b, c);
-    }
+    if (type != 4)
+        return create_other_0046aff0(unused, out, type);
+    out->T4_0046aff0::T4_0046aff0();
+    return out;
 }

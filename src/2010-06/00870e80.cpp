@@ -1,14 +1,14 @@
-// from server: 45% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/DockingPane/XTPDockingPaneContext.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/DockingPane/XTPDockingPaneContext.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPDockingPaneContext.cpp : implementation of the CXTPDockingPaneContext class.
 //
 // This file is a part of the XTREME DOCKINGPANE MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -28,26 +28,16 @@
 #include "stdafx.h"
 #include "Resource.h"
 
-#include "Common/XTPColorManager.h"
 #include "Common/XTPDrawHelpers.h"
 #include "Common/XTPResourceManager.h"
-#include "Common/XTPSystemHelpers.h"
-#include "Common/XTPImageManager.h"
-
 #include "TabManager/XTPTabManager.h"
-#include "TabManager/XTPTabPaintManager.h"
 
-#include "XTPDockingPaneDefines.h"
-#include "XTPDockingPaneBase.h"
-#include "XTPDockingPaneBaseContainer.h"
 #include "XTPDockingPaneContext.h"
 #include "XTPDockingPane.h"
 #include "XTPDockingPaneManager.h"
 #include "XTPDockingPaneTabbedContainer.h"
 #include "XTPDockingPaneSplitterContainer.h"
 #include "XTPDockingPaneMiniWnd.h"
-#include "XTPDockingPaneSidePanel.h"
-#include "XTPDockingPanePaintManager.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -59,10 +49,10 @@ static char THIS_FILE[] = __FILE__;
 
 void AFX_CDECL CXTPDockingPaneContext::AdjustRectangle(CRect& rect, CPoint pt)
 {
-	int nXOffset = (pt.x < rect.left) ? (pt.x - rect.left - 6) :
-					(pt.x > rect.right) ? (pt.x - rect.right + 6) : 0;
-	int nYOffset = (pt.y < rect.top) ? (pt.y - rect.top - 6) :
-					(pt.y > rect.bottom) ? (pt.y - rect.bottom + 6) : 0;
+	int nXOffset = (pt.x < rect.left) ? (pt.x - rect.left) :
+					(pt.x > rect.right) ? (pt.x - rect.right) : 0;
+	int nYOffset = (pt.y < rect.top) ? (pt.y - rect.top) :
+					(pt.y > rect.bottom) ? (pt.y - rect.bottom) : 0;
 	rect.OffsetRect(nXOffset, nYOffset);
 }
 
@@ -218,65 +208,6 @@ static CXTPDockingPaneContextStickerWnd::SPRITEINFO arrSpritesStyckerVisualStudi
 
 };
 
-static CXTPDockingPaneContextStickerWnd::SPRITEINFO arrSpritesStyckerVisualStudio2008[] =
-{
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(36, 0, 142, 35, 35, 35),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(0, 35, 142 + 35, 35, 35, 35),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(36, 70, 142 + 35, 0, 35, 35),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(72, 35, 142, 0, 35, 35),
-
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(36, 0, 212, 35, 35, 35),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(0, 35, 212 + 35, 35, 35, 35),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(36, 70, 212 + 35, 0, 35, 35),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(72, 35, 212, 0, 35, 35),
-
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(37, 38, 359, 0, 32, 31),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(37, 38, 359, 31, 32, 31),
-
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(15, 15, 282, 0, 77, 75),   // Client
-
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(0, 0, 0, 35, 35, 36),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(0, 0, 35, 36, 36, 35),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(0, 0, 36, 0, 35, 36),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(0, 0, 0, 0, 36, 35),
-
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(0, 0, 0 + 71, 35, 35, 36),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(0, 0, 35 + 71, 36, 36, 35),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(0, 0, 36 + 71, 0, 35, 36),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(0, 0, 0 + 71, 0, 36, 35),
-
-};
-
-
-static CXTPDockingPaneContextStickerWnd::SPRITEINFO arrSpritesStyckerVisualStudio2010[] =
-{
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(36, 0, 80, 40, 40, 40),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(0, 36, 80 + 40, 40, 40, 40),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(36, 72, 80 + 40, 0, 40, 40),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(72, 36, 80, 0, 40, 40),
-
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(36, 0, 80, 40 + 80, 40, 40),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(0, 36, 80 + 40, 40 + 80, 40, 40),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(36, 72, 80 + 40, 0 + 80, 40, 40),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(72, 36, 80, 0 + 80, 40, 40),
-
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(40, 40, 160, 120, 32, 32),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(40, 40, 192, 120, 32, 32),
-
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(0, 0, 160, 0, 112, 112),   // Client
-
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(0, 0, 0, 40, 40, 40),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(0, 0, 40, 40, 40, 40),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(0, 0, 40, 0, 40, 40),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(0, 0, 0, 0, 40, 40),
-
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(0, 0, 0, 40 + 80, 40, 40),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(0, 0, 40, 40 + 80, 40, 40),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(0, 0, 40, 0 + 80, 40, 40),
-	CXTPDockingPaneContextStickerWnd::SPRITEINFO(0, 0, 0, 0 + 80, 40, 40),
-
-};
-
 
 void CXTPDockingPaneContextStickerWnd::DrawTransparent(CDC* pDC , const CPoint& ptDest, const CSize& sz, CBitmap* pBitmap)
 {
@@ -290,11 +221,7 @@ void CXTPDockingPaneContextStickerWnd::DrawTransparent(CDC* pDC , const CPoint& 
 void CXTPDockingPaneContextStickerWnd::DrawSprite(CDC* pDC, UINT nID, SPRITEINFO* pSpriteInfo, BOOL bClientBitmap)
 {
 	CBitmap bmp;
-
-	{
-		CXTPResourceManager::CManageState state;
-		bmp.Attach(CXTPImageManagerIcon::LoadBitmapFromResource(MAKEINTRESOURCE(nID), NULL));
-	}
+	VERIFY(XTPResourceManager()->LoadBitmap(&bmp, nID));
 
 	CSize sz(pSpriteInfo->rcSrc.Width(), pSpriteInfo->rcSrc.Height());
 
@@ -316,13 +243,11 @@ void CXTPDockingPaneContextStickerWnd::DrawSprite(CDC* pDC, UINT nID, SPRITEINFO
 
 void CXTPDockingPaneContextStickerWnd::OnDraw(CDC* pDC)
 {
+	XTPCurrentSystemTheme theme = XTPColorManager()->GetCurrentSystemTheme();
 	BOOL bClient = (m_typeSticker & xtpPaneStickerClient) == xtpPaneStickerClient;
-	XTPDockingContextStickerStyle style = m_pContext->GetStickerStyle();
 
-	if (style == xtpPaneStickerStyleVisualStudio2005Beta)
+	if (m_pContext->GetStickerStyle() == xtpPaneStickerStyleWhidbey)
 	{
-		XTPCurrentSystemTheme theme = XTPColorManager()->GetCurrentSystemTheme();
-
 		UINT nIDBitmap = theme == xtpSystemThemeOlive ? XTP_IDB_DOCKINGPANE_STICKERS_OLIVE :
 			theme == xtpSystemThemeSilver ? XTP_IDB_DOCKINGPANE_STICKERS_SILVER : XTP_IDB_DOCKINGPANE_STICKERS_BLUE;
 
@@ -340,30 +265,6 @@ void CXTPDockingPaneContextStickerWnd::OnDraw(CDC* pDC)
 			DrawSprite(pDC, nIDBitmap, &sprites[m_selectedSticker == xtpPaneStickerRight ? SPRITE_STICKER_RIGHT_SELECTED : SPRITE_STICKER_RIGHT], bClient);
 		if (m_typeSticker & xtpPaneStickerCenter)
 			DrawSprite(pDC, nIDBitmap, &sprites[m_selectedSticker == xtpPaneStickerCenter ? SPRITE_STICKER_CENTER_SELECTED : SPRITE_STICKER_CENTER]);
-	}
-	else if (style == xtpPaneStickerStyleVisualStudio2008 || style == xtpPaneStickerStyleVisualStudio2010)
-	{
-		UINT nIDBitmap = style == xtpPaneStickerStyleVisualStudio2008 ? XTP_IDB_DOCKINGPANE_STICKERS_2008 : XTP_IDB_DOCKINGPANE_STICKERS_2010;
-		SPRITEINFO* sprites = style == xtpPaneStickerStyleVisualStudio2008 ? arrSpritesStyckerVisualStudio2008 : arrSpritesStyckerVisualStudio2010;
-		int nClientSprite = bClient ? 0 : 11;
-
-		if (bClient)
-		{
-			DrawSprite(pDC, nIDBitmap, &sprites[SPRITE_STICKER_CLIENT]);
-
-			if (m_typeSticker & xtpPaneStickerCenter)
-				DrawSprite(pDC, nIDBitmap, &sprites[m_selectedSticker == xtpPaneStickerCenter ? SPRITE_STICKER_CENTER_SELECTED : SPRITE_STICKER_CENTER]);
-		}
-
-		if (m_typeSticker & xtpPaneStickerTop)
-			DrawSprite(pDC, nIDBitmap, &sprites[nClientSprite + (m_selectedSticker == xtpPaneStickerTop ? SPRITE_STICKER_TOP_SELECTED : SPRITE_STICKER_TOP)], bClient);
-		if (m_typeSticker & xtpPaneStickerLeft)
-			DrawSprite(pDC, nIDBitmap, &sprites[nClientSprite + (m_selectedSticker == xtpPaneStickerLeft ? SPRITE_STICKER_LEFT_SELECTED : SPRITE_STICKER_LEFT)], bClient);
-		if (m_typeSticker & xtpPaneStickerBottom)
-			DrawSprite(pDC, nIDBitmap, &sprites[nClientSprite + (m_selectedSticker == xtpPaneStickerBottom ? SPRITE_STICKER_BOTTOM_SELECTED : SPRITE_STICKER_BOTTOM)], bClient);
-		if (m_typeSticker & xtpPaneStickerRight)
-			DrawSprite(pDC, nIDBitmap, &sprites[nClientSprite + (m_selectedSticker == xtpPaneStickerRight ? SPRITE_STICKER_RIGHT_SELECTED : SPRITE_STICKER_RIGHT)], bClient);
-
 	}
 	else
 	{
@@ -410,19 +311,15 @@ XTPDockingPaneStickerType CXTPDockingPaneContextStickerWnd::HitTest(CPoint pt)
 	CXTPCompatibleDC dc(&dcClient, &bmp);
 	dc.FillSolidRect(rc, 0);
 
-	XTPDockingContextStickerStyle style = m_pContext->GetStickerStyle();
-
-	UINT nIDBitmap = style == xtpPaneStickerStyleVisualStudio2005 ? XTP_IDB_DOCKINGPANE_STICKERS_2005 :
-		style == xtpPaneStickerStyleVisualStudio2008 ? XTP_IDB_DOCKINGPANE_STICKERS_2008 :
-		style == xtpPaneStickerStyleVisualStudio2010 ? XTP_IDB_DOCKINGPANE_STICKERS_2010 : XTP_IDB_DOCKINGPANE_STICKERS_BLUE;
-
-	UINT nIDBitmapClient = style == xtpPaneStickerStyleVisualStudio2005Beta ? XTP_IDB_DOCKINGPANE_STICKER_CLIENT : nIDBitmap;
+	UINT nIDBitmap = m_pContext->GetStickerStyle() == xtpPaneStickerStyleVisualStudio2005 ?
+		XTP_IDB_DOCKINGPANE_STICKERS_2005 : XTP_IDB_DOCKINGPANE_STICKERS_BLUE;
+	UINT nIDBitmapClient = m_pContext->GetStickerStyle() == xtpPaneStickerStyleVisualStudio2005 ?
+		XTP_IDB_DOCKINGPANE_STICKERS_2005 : XTP_IDB_DOCKINGPANE_STICKER_CLIENT;
 
 	BOOL bClient = (m_typeSticker & xtpPaneStickerClient) == xtpPaneStickerClient;
 
-	SPRITEINFO* sprites = style == xtpPaneStickerStyleVisualStudio2005Beta ? arrSpritesStyckerWidbey :
-		style == xtpPaneStickerStyleVisualStudio2008 ? arrSpritesStyckerVisualStudio2008 :
-		style == xtpPaneStickerStyleVisualStudio2010 ? arrSpritesStyckerVisualStudio2010 : arrSpritesStyckerVisualStudio2005;
+	SPRITEINFO* sprites = m_pContext->GetStickerStyle() == xtpPaneStickerStyleWhidbey ?
+		arrSpritesStyckerWidbey : arrSpritesStyckerVisualStudio2005;
 
 	if (m_typeSticker & xtpPaneStickerTop)
 	{
@@ -473,7 +370,6 @@ CXTPDockingPaneContext::CXTPDockingPaneContext()
 	m_pPane = NULL;
 	m_pContainer = NULL;
 	m_bAttachLast = FALSE;
-	m_bSideDock = FALSE;
 	m_bAttach = FALSE;
 	m_bFloatable = TRUE;
 	m_bDockable = TRUE;
@@ -497,43 +393,11 @@ CXTPDockingPaneContext::~CXTPDockingPaneContext()
 
 }
 
-void CXTPDockingPaneContext::Drag(CXTPDockingPaneBase* pPane, CPoint point)
-{
-	CRect rcPane = pPane->GetPaneWindowRect();
 
-	CWnd* pSite = pPane->GetDockingSite();
-	if (pSite && (pPane->GetType() == xtpPaneTypeDockingPane || pPane->GetType() == xtpPaneTypeTabbedContainer)
-		&& !pSite->IsKindOf(RUNTIME_CLASS(CXTPDockingPaneMiniWnd)))
-	{
-		CXTPDockingPane* pActivePane = pPane->GetType() == xtpPaneTypeTabbedContainer ?
-			((CXTPDockingPaneTabbedContainer*)pPane)->GetSelected() : (CXTPDockingPane*)pPane;
-
-		if (pActivePane)
-		{
-			CXTPDockingPaneTabbedContainer* pHolder = (CXTPDockingPaneTabbedContainer*)m_pManager->_GetHolder(pActivePane, TRUE);
-			pSite = pHolder ? pHolder->GetDockingSite() : NULL;
-
-			if (pSite && pSite->IsKindOf(RUNTIME_CLASS(CXTPDockingPaneMiniWnd)))
-			{
-				CRect rcFloating = ((CXTPDockingPaneMiniWnd*)pSite)->GetPaneWindowRect();
-
-				rcPane.right = rcPane.left + rcFloating.Width();
-				rcPane.bottom = rcPane.top + rcFloating.Height();
-			}
-			else if (!pHolder)
-			{
-				rcPane.right = rcPane.left + pActivePane->m_szDocking.cx;
-				rcPane.bottom = rcPane.top + pActivePane->m_szDocking.cy;
-			}
-		}
-	}
-
-	Drag(pPane, point, rcPane);
-}
-
-void CXTPDockingPaneContext::Drag(CXTPDockingPaneBase* pPane, CPoint pt, CRect rect)
+void CXTPDockingPaneContext::Drag(CXTPDockingPaneBase* pPane, CPoint pt)
 {
 	m_bDragKeyboard = (pt == CPoint(-1, -1));
+	CRect rect = pPane->GetPaneWindowRect();
 
 	if (m_bDragKeyboard)
 	{
@@ -553,7 +417,6 @@ void CXTPDockingPaneContext::Drag(CXTPDockingPaneBase* pPane, CPoint pt, CRect r
 	m_bAttach = m_bAttachLast = FALSE;
 	m_bFloatable = TRUE;
 	m_bDockable = TRUE;
-	m_bSideDock = FALSE;
 
 	m_bUseAlphaContext = m_pManager->IsAlphaDockingContext() && (m_pfnSetLayeredWindowAttributes != NULL);
 	m_bUseDockingStickers = m_pManager->IsShowDockingContextStickers() && m_bUseAlphaContext;
@@ -566,7 +429,7 @@ void CXTPDockingPaneContext::Drag(CXTPDockingPaneBase* pPane, CPoint pt, CRect r
 	{
 		CXTPDockingPane* pListPane = (CXTPDockingPane*)lst.GetNext(pos);
 
-		if (m_pManager->NotifyAction(xtpPaneActionFloating, pListPane))
+		if (m_pManager->_OnAction(xtpPaneActionFloating, pListPane))
 			m_bFloatable = FALSE;
 
 		if (pListPane->GetOptions() & xtpPaneNoFloatable)
@@ -755,7 +618,7 @@ void CXTPDockingPaneContext::DrawFocusRect(BOOL bRemoveRect)
 				m_pPane->GetDockingSite()->MoveWindow(m_rectDragFrame);
 			}
 		}
-		else if (!bRemoveRect)
+		else
 		{
 			XTPDockingPaneAction actionNotify = xtpPaneActionFloated;
 
@@ -776,11 +639,11 @@ void CXTPDockingPaneContext::DrawFocusRect(BOOL bRemoveRect)
 			while (pos)
 			{
 				CXTPDockingPane* pPane = (CXTPDockingPane*)lst.GetNext(pos);
-				m_pManager->NotifyAction(actionNotify, pPane);
+				m_pManager->_OnAction(actionNotify, pPane);
 			}
 
-			XTPGetThread()->PumpMessage();
-			XTPGetThread()->OnIdle(0);
+			AfxGetThread()->PumpMessage();
+			AfxGetThread()->OnIdle(0);
 		}
 
 		m_rectLast = rect;
@@ -907,63 +770,6 @@ void CXTPDockingPaneContext::DrawFocusRect(BOOL bRemoveRect)
 	}
 }
 
-BOOL CXTPDockingPaneContext::CanSideDock(CXTPDockingPaneBase* pPane, CRect rcFrame)
-{
-	CRect rc = pPane->GetPaneWindowRect();
-	rc.DeflateRect(m_pManager->GetSideDockingMargin());
-
-	int dSize = 10;
-
-	if (rc.Height() == 0 || rc.Width() == 0 || rcFrame.Height() == 0 || rcFrame.Width() == 0)
-		return FALSE;
-
-	if (!CRect().IntersectRect(rc, rcFrame))
-		return FALSE;
-
-	m_rectContainer.SetRectEmpty();
-
-	if (abs(rcFrame.top - rc.top) < dSize)
-	{
-		m_containDirection = xtpPaneDockTop;
-		m_rectContainer = CRect(rcFrame.left, rc.top, rcFrame.right, rc.top + rcFrame.Height());
-
-		dSize = abs(rcFrame.top - rc.top);
-	}
-
-	if (abs(rc.bottom - rcFrame.bottom) < dSize)
-	{
-		m_containDirection = xtpPaneDockBottom;
-		m_rectContainer = CRect(rcFrame.left, rc.bottom - rcFrame.Height(), rcFrame.right, rc.bottom);
-
-		dSize = abs(rc.bottom - rcFrame.bottom);
-	}
-
-	if (abs(rcFrame.left - rc.left) < dSize)
-	{
-		m_containDirection = xtpPaneDockLeft;
-		m_rectContainer = CRect(rc.left, rcFrame.top, rc.left + rcFrame.Width(), rcFrame.bottom);
-
-		dSize = abs(rcFrame.left - rc.left);
-	}
-
-	if (abs(rc.right - rcFrame.right) < dSize)
-	{
-		m_containDirection = xtpPaneDockRight;
-		m_rectContainer = CRect(rc.right - rcFrame.Width(), rcFrame.top, rc.right, rcFrame.bottom);
-	}
-
-	if (!m_rectContainer.IsRectEmpty())
-	{
-		if (!IsAllowDockingTo(pPane, m_containDirection))
-			return FALSE;
-
-		m_pContainer = pPane;
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
 BOOL CXTPDockingPaneContext::CanDock(CRect rc, CPoint pt, CXTPDockingPaneBase* pPane, BOOL bInside)
 {
 	double dSize = 20.0;
@@ -1036,7 +842,7 @@ BOOL CXTPDockingPaneContext::IsAllowDockingTo(CXTPDockingPaneBase* pPane, XTPDoc
 	{
 		CXTPDockingPane* p = (CXTPDockingPane*)lst.GetNext(pos);
 
-		if (m_pManager->NotifyAction(xtpPaneActionDocking, p, pPane, direction))
+		if (m_pManager->_OnAction(xtpPaneActionDocking, p, pPane, direction))
 		{
 			return FALSE;
 		}
@@ -1054,7 +860,7 @@ BOOL CXTPDockingPaneContext::IsAllowAttachTo(CXTPDockingPaneBase* pPane)
 	{
 		CXTPDockingPane* p = (CXTPDockingPane*)lst.GetNext(pos);
 
-		if (m_pManager->NotifyAction(xtpPaneActionAttaching, p, pPane))
+		if (m_pManager->_OnAction(xtpPaneActionAttaching, p, pPane))
 		{
 			return FALSE;
 		}
@@ -1138,7 +944,7 @@ void CXTPDockingPaneContext::FindContainer(CPoint pt)
 
 		ASSERT(pPane->GetType() == xtpPaneTypeTabbedContainer);
 
-		if (pPane->GetContainer() == 0 || (pPane->GetContainer()->GetType() != xtpPaneTypeSplitterContainer && pPane->GetContainer()->GetType() != xtpPaneTypeSidePanel))
+		if (pPane->GetContainer() == 0 || pPane->GetContainer()->GetType() != xtpPaneTypeSplitterContainer)
 			continue;
 
 		if (! (::GetWindowLong(((CXTPDockingPaneTabbedContainer*)pPane)->GetSafeHwnd(), GWL_STYLE) & WS_VISIBLE))
@@ -1164,8 +970,6 @@ void CXTPDockingPaneContext::FindContainer(CPoint pt)
 				rcClient = m_rectContainer;
 			}
 		}
-		if (pPane->GetContainer()->GetType() == xtpPaneTypeSidePanel)
-			continue;
 
 		if (m_bUseDockingStickers)
 		{
@@ -1185,27 +989,8 @@ void CXTPDockingPaneContext::FindContainer(CPoint pt)
 		}
 	}
 
-
-	if (pFloatingPane && m_bUseDockingStickers && m_pStickerPane == NULL && m_rectStickerPane.IsRectEmpty())
-	{
-		CXTPDockingPaneBase* pPane = m_pManager->GetTopPane();
-		if (pPane->GetPaneWindowRect().PtInRect(pt))
-		{
-			m_rectStickerPane = pPane->GetPaneWindowRect();
-		}
-	}
-
 	if (pFloatingPane)
 		return;
-
-	if (m_pManager->IsSideDockingEnabled())
-	{
-		if (CanSideDock(m_pManager->GetClientPane(), m_rectDragFrame))
-		{
-			m_bSideDock = TRUE;
-			return;
-		}
-	}
 
 	if (m_bUseDockingStickers)
 	{
@@ -1233,9 +1018,7 @@ void CXTPDockingPaneContext::FindContainer(CPoint pt)
 	}
 	else
 	{
-		CXTPDockingPaneBase* pPane;
-
-		pPane = m_pManager->GetClientPane();
+		CXTPDockingPaneBase* pPane = m_pManager->GetClientPane();
 		m_rectContainer = pPane->GetPaneWindowRect();
 		if (CanDock(pPane->GetPaneWindowRect(), pt, pPane))
 			return;
@@ -1444,12 +1227,9 @@ void CXTPDockingPaneContext::Move(CPoint pt)
 	m_bAttach = FALSE;
 	m_rectStickerPane.SetRectEmpty();
 	m_pStickerPane = NULL;
-	m_bSideDock = FALSE;
 
 	if (GetKeyState(VK_CONTROL) >= 0 && m_bDockable)
-	{
 		FindContainer(pt);
-	}
 
 	m_ptLast = pt;
 
@@ -1548,25 +1328,29 @@ void CXTPDockingPaneContext::Track()
 	if (::GetCapture() != NULL)
 		return;
 
-	HWND hwndCapture = m_pManager->GetSite()->GetSafeHwnd();
-	ASSERT(hwndCapture);
-	if (!hwndCapture)
+	CWnd* pCapture = m_pManager->GetSite();
+	ASSERT(pCapture);
+	if (!pCapture)
 		return;
 	// set capture to the window which received this message
-	::SetCapture(hwndCapture);
-	ASSERT(hwndCapture == ::GetCapture());
+	pCapture->SetCapture();
+	ASSERT(pCapture == CWnd::GetCapture());
 
 	BOOL bAccept = FALSE;
 	// get messages until capture lost or cancelled/accepted
-	while (::GetCapture() == hwndCapture)
+	while (CWnd::GetCapture() == pCapture)
 	{
 		MSG msg;
 
 		// handle pending WM_PAINT messages
-		while (::PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE | PM_NOYIELD))
+		while (::PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_NOREMOVE))
 		{
+			if (!GetMessage(&msg, NULL, WM_PAINT, WM_PAINT))
+				return;
 			DispatchMessage(&msg);
+			continue;
 		}
+
 
 		if (!::GetMessage(&msg, NULL, 0, 0))
 		{
@@ -1644,39 +1428,30 @@ void CXTPDockingPaneContext::Track()
 			m_pManager->AttachPane(m_pPane, m_pContainer);
 			actionNotify = xtpPaneActionAttached;
 		}
-		else if (m_bSideDock && m_pContainer && m_pContainer == m_pManager->GetClientPane())
-		{
-			CRect rectSide(m_rectContainer);
-			rectSide.OffsetRect(-m_pContainer->GetPaneWindowRect().TopLeft());
-
-			if (m_pPane->GetContainer() && m_pPane->GetContainer()->GetType() == xtpPaneTypeSidePanel)
-				((CXTPDockingPaneSidePanel*)m_pPane->GetContainer())->MovePanel(m_containDirection, rectSide);
-			else
-				m_pManager->DockSidePane(m_pPane, m_containDirection, rectSide);
-
-			actionNotify = xtpPaneActionDocked;
-		}
-		else if (m_pContainer)
-		{
-			m_pManager->DockPane(m_pPane, m_pManager->GetRTLDirection(m_containDirection), m_pContainer);
-			m_pManager->EnsureVisible(m_pContainer);
-			actionNotify = xtpPaneActionDocked;
-		}
-		else if (m_bFloatable)
-		{
-			CRect rcWork = XTPMultiMonitor()->GetWorkArea(m_rectDragFrame);
-
-			if (m_rectDragFrame.top < rcWork.top)
-				m_rectDragFrame.OffsetRect(0, rcWork.top - m_rectDragFrame.top);
-
-			if (m_pPane->GetType() == xtpPaneTypeSplitterContainer)
-				m_pPane->GetDockingSite()->MoveWindow(m_rectDragFrame);
-			else
-				m_pManager->FloatPane(m_pPane, m_rectDragFrame);
-		}
 		else
 		{
-			bAccept = FALSE;
+			if (m_pContainer)
+			{
+				m_pManager->DockPane(m_pPane, m_pManager->GetRTLDirection(m_containDirection), m_pContainer);
+				m_pManager->EnsureVisible(m_pContainer);
+				actionNotify = xtpPaneActionDocked;
+			}
+			else if (m_bFloatable)
+			{
+				CRect rcWork = XTPMultiMonitor()->GetWorkArea(m_rectDragFrame);
+
+				if (m_rectDragFrame.top < rcWork.top)
+					m_rectDragFrame.OffsetRect(0, rcWork.top - m_rectDragFrame.top);
+
+				if (m_pPane->GetType() == xtpPaneTypeSplitterContainer)
+					m_pPane->GetDockingSite()->MoveWindow(m_rectDragFrame);
+				else
+					m_pManager->FloatPane(m_pPane, m_rectDragFrame);
+			}
+			else
+			{
+				bAccept = FALSE;
+			}
 		}
 
 		if (bAccept)
@@ -1685,7 +1460,7 @@ void CXTPDockingPaneContext::Track()
 			while (pos)
 			{
 				CXTPDockingPane* pPane = (CXTPDockingPane*)lst.GetNext(pos);
-				m_pManager->NotifyAction(actionNotify, pPane, m_pContainer, m_containDirection);
+				m_pManager->_OnAction(actionNotify, pPane, m_pContainer, m_containDirection);
 			}
 		}
 	}
@@ -1797,37 +1572,22 @@ CXTPDockingPaneContextStickerWnd* CXTPDockingPaneContext::CreateNewSticker(CRect
 
 CSize CXTPDockingPaneContext::GetStickerSize(XTPDockingPaneStickerType type) const
 {
-	int cx, cy, sz;
 	if (GetStickerStyle() == xtpPaneStickerStyleVisualStudio2005)
 	{
-		cx = 32;
-		cy = 29;
-		sz = 89;
-	}
-	else if (GetStickerStyle() == xtpPaneStickerStyleVisualStudio2008)
-	{
-		cx = 36;
-		cy = 35;
-		sz = 109;
-	}
-	else if (GetStickerStyle() == xtpPaneStickerStyleVisualStudio2010)
-	{
-		cx = 40;
-		cy = 40;
-		sz = 112;
+		if (type == xtpPaneStickerTop) return CSize(29, 32);
+		if (type == xtpPaneStickerLeft) return CSize(32, 29);
+		if (type == xtpPaneStickerBottom) return CSize(29, 32);
+		if (type == xtpPaneStickerRight) return CSize(32, 29);
+		return CSize(89, 89);
 	}
 	else
 	{
-		cx = 30;
-		cy = 43;
-		sz = 93;
+		if (type == xtpPaneStickerTop) return CSize(43, 30);
+		if (type == xtpPaneStickerLeft) return CSize(30, 43);
+		if (type == xtpPaneStickerBottom) return CSize(43, 30);
+		if (type == xtpPaneStickerRight) return CSize(30, 43);
+		return CSize(93, 93);
 	}
-
-	if (type == xtpPaneStickerTop) return CSize(cy, cx);
-	if (type == xtpPaneStickerLeft) return CSize(cx, cy);
-	if (type == xtpPaneStickerBottom) return CSize(cy, cx);
-	if (type == xtpPaneStickerRight) return CSize(cx, cy);
-	return CSize(sz, sz);
 }
 
 XTPDockingContextStickerStyle CXTPDockingPaneContext::GetStickerStyle() const

@@ -1,13 +1,17 @@
-// from server: 60% by atomic.potato
-struct VerbBinder
-{
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_00472ec0 {
+    T4_00472ec0();
+    virtual void f_00472ec0();
+    char m_a;
+    char m_b;
 };
-
-void __cdecl f(int, void* result, int value)
+T4_00472ec0::T4_00472ec0() : m_a(0), m_b(0) {}
+extern "C" void* create_other_00472ec0(void*, void*, int);
+void* create_00472ec0(void* unused, T4_00472ec0* out, int type)
 {
-    if (value != 4)
-        return;
-    *(int*)result = 0xc15960;
-    ((unsigned char*)result)[4] = 0;
-    ((unsigned char*)result)[5] = 0;
+    if (type != 4)
+        return create_other_00472ec0(unused, out, type);
+    out->T4_00472ec0::T4_00472ec0();
+    return out;
 }

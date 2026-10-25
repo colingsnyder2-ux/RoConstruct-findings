@@ -1,20 +1,11 @@
-// from server: 89% by atomic.potato
-typedef void (__cdecl *InitFunction)(const char *);
-
-static volatile int g_00ccfa54;
-static int g_00ccfa4c;
-static int g_00ccfa50;
-static InitFunction g_0080b15d = 0;
-
-extern "C" void __cdecl func_0080b15d(const char *);
-
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+extern "C" void seh_fn_00697870(void*);
+extern int g_a_00697870;
+extern int g_b_00697870;
+extern int g_arg_00697870;
+struct Reg_00697870 { Reg_00697870() { g_a_00697870 = 0; g_b_00697870 = 0; seh_fn_00697870(&g_arg_00697870); } };
 void func_00697870()
 {
-    if ((g_00ccfa54 & 1) == 0)
-    {
-        g_00ccfa54 |= 1;
-        g_00ccfa4c = 0;
-        g_00ccfa50 = 0;
-        func_0080b15d("8csm");
-    }
+    static Reg_00697870 reg;
 }

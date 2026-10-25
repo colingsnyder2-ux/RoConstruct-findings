@@ -1,14 +1,14 @@
-// from server: 96% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 30729
 // roc-flags: /O2 /GS- /MD /Ob1 /Oy-
-// roc-lib: xtp-11.2.2-vc8 Source/CommandBars/XTPControlGallery.cpp
+// roc-lib: xtp-15.2.1 Source/CommandBars/XTPControlGallery.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPControlGallery.cpp : implementation file.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
+// (c)1998-2011 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -27,18 +27,33 @@
 
 #include "stdafx.h"
 #include <math.h>
-#include "Resource.h"
 
 #include "Common/XTPImageManager.h"
 #include "Common/XTPPropExchange.h"
 #include "Common/XTPToolTipContext.h"
+#include "Common/XTPSystemHelpers.h"
+#include "Common/XTPHookManager.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPMarkupRender.h"
+
+#include "XTPCommandBarsDefines.h"
+#include "XTPCommandBar.h"
+#include "XTPPopupBar.h"
+#include "XTPControl.h"
+#include "XTPControlButton.h"
+#include "XTPControlPopup.h"
+#include "XTPControlEdit.h"
+#include "XTPControlComboBox.h"
+#include "XTPScrollBase.h"
 
 #include "XTPControls.h"
-#include "XTPCommandBar.h"
 #include "XTPControlGallery.h"
+#include "XTPControlComboBoxGalleryPopupBar.h"
 #include "XTPPaintManager.h"
-#include "XTPMouseManager.h"
 #include "XTPCommandBars.h"
+
+#define IDSYS_ANIMATE 23346
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -58,10 +73,49 @@ CXTPControlGalleryItem::CXTPControlGalleryItem()
 	m_nImage = -1;
 	m_dwData = 0;
 	m_bLabel = FALSE;
+	m_bEnabled = TRUE;
 
 	m_szItem = CSize(0, 0);
 
+	m_nImageWidth = ICON_SMALL;
+
+	m_pMarkupUIElement = NULL;
+
 }
+
+CXTPControlGalleryItem::~CXTPControlGalleryItem()
+{
+	XTPMarkupReleaseElement(m_pMarkupUIElement);
+}
+
+void CXTPControlGalleryItem::SetEnabled(BOOL bEnabled)
+{
+	if (m_bEnabled == bEnabled)
+		return;
+
+	m_bEnabled = bEnabled;
+
+	if (m_pItems && m_pItems->GetAction())
+		m_pItems->GetAction()->RedrawControls();
+}
+
+void CXTPControlGalleryItem::SetCaption(LPCTSTR lpszCaption)
+{
+	m_strCaption = lpszCaption;
+
+	XTPMarkupReleaseElement(m_pMarkupUIElement);
+
+	if (m_pItems && m_pItems->GetMarkupContext())
+	{
+		m_pMarkupUIElement = XTPMarkupParseText(m_pItems->GetMarkupContext(), lpszCaption);
+	}
+}
+
+BOOL CXTPControlGalleryItem::GetEnabled() const
+{
+	return m_bEnabled;
+}
+
 
 int CXTPControlGalleryItem::GetIndex() const
 {
@@ -70,6 +124,9 @@ int CXTPControlGalleryItem::GetIndex() const
 
 CSize CXTPControlGalleryItem::GetSize()
 {
+	if (m_bLabel)
+		return CSize(0, m_szItem.cy == 0 ? 19 : m_szItem.cy);
+
 	return CSize(m_szItem.cx == 0 ? m_pItems->m_szItem.cx : m_szItem.cx,
 		m_szItem.cy == 0 ? m_pItems->m_szItem.cy : m_szItem.cy);
 }
@@ -90,12 +147,59 @@ void CXTPControlGalleryItem::Draw(CDC* pDC, CXTPControlGallery* pGallery, CRect 
 
 	CXTPPaintManager* pPaintManager = pGallery->GetPaintManager();
 
+	if (m_pMarkupUIElement)
+	{
+		BOOL bListStyle = this->GetSize().cx == 0;
+
+		COLORREF clrTextColor;
+
+		if (bListStyle)
+		{
+			pPaintManager->DrawRectangle(pDC, rcItem, bSelected, bPressed, bEnabled, bChecked, FALSE, xtpBarTypePopup, xtpBarPopup);
+			clrTextColor = pPaintManager->GetRectangleTextColor(bSelected, FALSE, bEnabled, bChecked, FALSE, xtpBarTypePopup, xtpBarPopup);
+		}
+		else
+		{
+			pPaintManager->DrawRectangle(pDC, rcItem, bSelected, bPressed, bEnabled, bChecked, FALSE, xtpBarTypeNormal, xtpBarPopup);
+			clrTextColor = pPaintManager->GetRectangleTextColor(bSelected, bPressed, bEnabled, bChecked, FALSE, xtpBarTypeNormal, xtpBarPopup);
+		}
+
+		XTPMarkupSetDefaultFont(XTPMarkupElementContext(m_pMarkupUIElement),
+			(HFONT)pPaintManager->GetRegularFont()->GetSafeHandle(), clrTextColor);
+
+		CRect rcDest(rcItem);
+		rcDest.DeflateRect(3, 3);
+
+		XTPMarkupRenderElement(m_pMarkupUIElement, pDC->GetSafeHdc(), rcDest);
+
+		return;
+	}
+
 	CXTPImageManagerIcon* pImage = GetImage();
 
 	BOOL bDrawImgeAndText = (pImage != NULL && !m_strCaption.IsEmpty()) &&
-		(pGallery->GetStyle() == xtpButtonIconAndCaption || pGallery->GetStyle() == xtpButtonCaptionAndDescription);
+		(pGallery->GetStyle() == xtpButtonIconAndCaption || pGallery->GetStyle() == xtpButtonCaptionAndDescription || pGallery->GetStyle() == xtpButtonIconAndCaptionBelow);
 
-	if (bDrawImgeAndText)
+	if (bDrawImgeAndText && pGallery->GetStyle() == xtpButtonIconAndCaptionBelow)
+	{
+		pPaintManager->DrawRectangle(pDC, rcItem, bSelected, bPressed, bEnabled, bChecked, FALSE, xtpBarTypeNormal, xtpBarPopup);
+		CSize szImage(pImage->GetWidth(), pImage->GetHeight());
+		CPoint pt((rcItem.left + rcItem.right - szImage.cx) / 2, rcItem.top + 2);
+
+		pImage->Draw(pDC, pt, pImage->GetIcon(bEnabled ? xtpImageNormal : xtpImageDisabled), szImage);
+
+		COLORREF clrTextColor = pPaintManager->GetRectangleTextColor(bSelected, FALSE, bEnabled, FALSE, FALSE, xtpBarTypePopup, xtpBarPopup);
+
+		pDC->SetTextColor(clrTextColor);
+
+		CRect rcText(rcItem);
+		rcText.top += 2 + szImage.cy + 2;
+
+		CXTPFontDC font(pDC, pPaintManager->GetRegularFont());
+		pDC->DrawText(m_strCaption, rcText, DT_WORDBREAK | DT_CENTER | DT_NOPREFIX);
+
+	}
+	else if (bDrawImgeAndText)
 	{
 		pPaintManager->DrawRectangle(pDC, rcItem, bSelected, FALSE, bEnabled, FALSE, FALSE, xtpBarTypePopup, xtpBarPopup);
 
@@ -145,7 +249,7 @@ void CXTPControlGalleryItem::Draw(CDC* pDC, CXTPControlGallery* pGallery, CRect 
 	else
 	{
 		pPaintManager->DrawRectangle(pDC, rcItem, bSelected, FALSE, bEnabled, bChecked, FALSE, xtpBarTypePopup, xtpBarPopup);
-		COLORREF clrTextColor = pPaintManager->GetRectangleTextColor(bSelected, FALSE, bEnabled, FALSE, FALSE, xtpBarTypePopup, xtpBarPopup);
+		COLORREF clrTextColor = pPaintManager->GetRectangleTextColor(bSelected, FALSE, bEnabled, bChecked, FALSE, xtpBarTypePopup, xtpBarPopup);
 
 		pDC->SetTextColor(clrTextColor);
 		CXTPFontDC font(pDC, pPaintManager->GetRegularFont());
@@ -162,7 +266,7 @@ CXTPImageManagerIcon* CXTPControlGalleryItem::GetImage()
 	if (!m_pItems)
 		return NULL;
 
-	return m_pItems->GetImageManager()->GetImage(m_nImage >= 0 ? m_nImage : m_nId, 0);
+	return m_pItems->GetImageManager()->GetImage(m_nImage >= 0 ? m_nImage : m_nId, m_nImageWidth);
 }
 
 
@@ -174,10 +278,18 @@ IMPLEMENT_DYNAMIC(CXTPControlGalleryItems, CCmdTarget)
 CXTPControlGalleryItems::CXTPControlGalleryItems(CXTPControlAction* pAction)
 	: m_pAction(pAction)
 {
-	m_szItem = CSize(20, 20);
+	if (pAction)
+	{
+		ASSERT(m_pAction->m_pTarget == NULL);
+		m_pAction->m_pTarget = this;
+	}
+
+	m_szItem = CSize(0, 20);
 	m_pImageManager = new CXTPImageManager();
 	m_pImageManager->DrawReverted(2);
 	m_bClipItems = TRUE;
+
+	m_pMarkupContext = NULL;
 
 }
 
@@ -188,7 +300,22 @@ CXTPControlGalleryItems::~CXTPControlGalleryItems()
 	RemoveAll();
 	CMDTARGET_RELEASE(m_pImageManager);
 
+	XTPMarkupReleaseContext(m_pMarkupContext);
+
 }
+
+
+void CXTPControlGalleryItems::EnableMarkup(BOOL bEnableMarkup)
+{
+	XTPMarkupReleaseContext(m_pMarkupContext);
+
+	if (bEnableMarkup)
+	{
+		m_pMarkupContext = XTPMarkupCreateContext();
+	}
+}
+
+
 
 void CXTPControlGalleryItems::RemoveAll()
 {
@@ -239,9 +366,14 @@ CXTPControlGalleryItem* CXTPControlGalleryItems::InsertItem(int nIndex, CXTPCont
 		pItem->m_nId = nId;
 
 		CString strCaption;
-		if (nId > 0 && strCaption.LoadString(nId))
+		if (nId > 0 && pItem->GetCaption().IsEmpty() && strCaption.LoadString(nId))
 		{
-			pItem->m_strCaption = pItem->m_strToolTip = strCaption;
+			pItem->SetCaption(strCaption);
+
+			if (pItem->GetMarkupUIElement() == NULL)
+			{
+				pItem->SetToolTip(strCaption);
+			}
 		}
 	}
 
@@ -260,16 +392,21 @@ void CXTPControlGalleryItems::OnItemsChanged()
 		CXTPControlGallery* pGallery = DYNAMIC_DOWNCAST(CXTPControlGallery, m_pAction->GetControl(i));
 		if (pGallery)
 		{
-			pGallery->m_nSelected = -1;
-			pGallery->m_nScrollPos = 0;
-			pGallery->Reposition();
-
-			if (pGallery->m_bPreview)
-			{
-				pGallery->m_bPreview = FALSE;
-				pGallery->NotifySite(XTP_GN_PREVIEWCANCEL);
-			}
+			pGallery->OnItemsChanged();
 		}
+	}
+}
+
+void CXTPControlGallery::OnItemsChanged()
+{
+	m_nSelected = -1;
+	m_nScrollPos = 0;
+	Reposition();
+
+	if (m_bPreview)
+	{
+		m_bPreview = FALSE;
+		NotifySite(XTP_GN_PREVIEWCANCEL);
 	}
 }
 
@@ -389,6 +526,10 @@ CXTPControlGallery::CXTPControlGallery()
 	m_nScrollPosTarget = 0;
 	m_dAnimationStep = 0;
 
+	m_bScrollBarAuto = FALSE;
+
+	m_bTransparent = FALSE;
+
 
 	SetFlags(xtpFlagShowPopupBarTip);
 }
@@ -397,14 +538,19 @@ CXTPControlGalleryItems* CXTPControlGalleryItems::CreateItems(CXTPCommandBars* p
 {
 	CXTPControlAction* pAction = pCommandBars->CreateAction(nId);
 
+	CXTPControlGalleryItems* pItems = NULL;
+
 	if (pAction->m_pTarget == NULL)
 	{
-		pAction->m_pTarget = new CXTPControlGalleryItems(pAction);
+		pItems = new CXTPControlGalleryItems(pAction);
+	}
+	else
+	{
+		pItems = DYNAMIC_DOWNCAST(CXTPControlGalleryItems, pAction->m_pTarget);
+		ASSERT(pItems);
 	}
 
-	ASSERT_KINDOF(CXTPControlGalleryItems, pAction->m_pTarget);
-
-	return (CXTPControlGalleryItems*)pAction->m_pTarget;
+	return pItems;
 }
 
 CXTPControlGalleryItems* CXTPControlGallery::GetItems() const
@@ -449,12 +595,13 @@ int CXTPControlGallery::GetCustomizeMinHeight() const
 void CXTPControlGallery::SetAction(CXTPControlAction* pAction)
 {
 	CXTPControlPopup::SetAction(pAction);
-	Reposition();
+
+	if (pAction) Reposition();
 }
 
 BOOL CXTPControlGallery::IsShowAsButton() const
 {
-	return GetStyle() == xtpButtonIconAndCaptionBelow || GetStyle() == xtpButtonIcon;
+	return m_buttonRibbonStyle == xtpButtonIconAndCaptionBelow || GetStyle() == xtpButtonIcon;
 }
 
 void CXTPControlGallery::SetItems(CXTPControlGalleryItems* pItems)
@@ -465,14 +612,8 @@ void CXTPControlGallery::SetItems(CXTPControlGalleryItems* pItems)
 	}
 }
 
-void CXTPControlGallery::Reposition()
+void CXTPControlGallery::RepositionCore(BOOL bCheckScroll)
 {
-	if (GetParent() == NULL)
-		return;
-
-	if (IsShowAsButton())
-		return;
-
 	CRect rcItems = GetItemsRect();
 
 	int x = rcItems.left;
@@ -498,16 +639,15 @@ void CXTPControlGallery::Reposition()
 				continue;
 			}
 
-			if (!bFirstItem)
-			{
-				y += nRowHeight;
-			}
+			y += nRowHeight;
 
-			CRect rcItem(rcItems.left, y, rcItems.right, y + 19);
+			CSize szItem = pItem->GetSize();
+
+			CRect rcItem(rcItems.left, y, rcItems.right, y + szItem.cy);
 			m_arrRects[i].rcItem = rcItem;
 			m_arrRects[i].bBeginRow = TRUE;
 
-			y += 20;
+			y += rcItem.Height() + 1;
 			nRowHeight = 0;
 			x = rcItems.left;
 			bFirstItem = TRUE;
@@ -540,12 +680,43 @@ void CXTPControlGallery::Reposition()
 			bFirstItem = FALSE;
 			x += szItem.cx;
 		}
+
+		if (bCheckScroll && y + nRowHeight + rcItems.top > rcItems.Height())
+		{
+			break;
+		}
 	}
 
-	if (!bFirstItem)
-		y += nRowHeight;
+	y += nRowHeight;
 
 	m_nTotalHeight = y - rcItems.top;
+}
+
+void CXTPControlGallery::Reposition()
+{
+	if (GetParent() == NULL)
+		return;
+
+	if (IsShowAsButton())
+		return;
+
+	if (m_bScrollBarAuto)
+	{
+		m_bShowScrollBar = FALSE;
+		RepositionCore(TRUE);
+
+		if (m_nTotalHeight > GetItemsRect().Height())
+		{
+			m_bShowScrollBar = TRUE;
+			RepositionCore(FALSE);
+		}
+	}
+	else
+	{
+		RepositionCore(FALSE);
+	}
+
+	CRect rcItems = GetItemsRect();
 
 	if (m_nScrollPos > m_nTotalHeight - rcItems.Height())
 		m_nScrollPos = max(0, m_nTotalHeight - rcItems.Height());
@@ -616,11 +787,13 @@ void CXTPControlGallery::DrawItems(CDC* pDC)
 		if (rcItem.bottom < rcItems.top)
 			continue;
 
+		BOOL bEnabled = pos.pItem->GetEnabled() && GetEnabled();
+
 		if (!rcItem.IsRectEmpty())
 		{
-			if (!pItems->PreDrawItem(pDC, this, pos.pItem, rcItem, GetEnabled(), nSelected == i, nSelected == i && m_bPressed, m_nChecked == pos.pItem->GetID()))
+			if (!pItems->PreDrawItem(pDC, this, pos.pItem, rcItem, bEnabled, nSelected == i, nSelected == i && m_bPressed, IsItemChecked(pos.pItem)))
 			{
-				pos.pItem->Draw(pDC, this, rcItem, GetEnabled(), nSelected == i, nSelected == i && m_bPressed, m_nChecked == pos.pItem->GetID());
+				pos.pItem->Draw(pDC, this, rcItem, bEnabled, nSelected == i, nSelected == i && m_bPressed, IsItemChecked(pos.pItem));
 			}
 		}
 
@@ -629,6 +802,11 @@ void CXTPControlGallery::DrawItems(CDC* pDC)
 	}
 
 	pDC->SelectClipRgn(NULL);
+}
+
+BOOL CXTPControlGallery::IsItemChecked(CXTPControlGalleryItem* pItem) const
+{
+	return m_nChecked == pItem->GetID();
 }
 
 int CXTPControlGallery::HitTestItem(CPoint point, LPRECT lpRect) const
@@ -649,6 +827,9 @@ int CXTPControlGallery::HitTestItem(CPoint point, LPRECT lpRect) const
 
 		CRect rcItem = pos.rcItem;
 		rcItem.OffsetRect(0, -m_nScrollPos);
+
+		if (!pos.pItem->GetEnabled())
+			continue;
 
 		if (rcItem.top >= rcItems.bottom)
 			break;
@@ -679,6 +860,13 @@ void CXTPControlGallery::OnExecute()
 		m_bPreview = FALSE;
 	}
 
+	CXTPControlGalleryItem* pItem = GetItem(GetSelectedItem());
+	if (pItem)
+	{
+		if (pItem->OnClick())
+			return;
+	}
+
 	CXTPControlPopup::OnExecute();
 }
 
@@ -707,6 +895,18 @@ void CXTPControlGallery::OnMouseHover()
 		return;
 
 	CXTPControlPopup::OnMouseHover();
+}
+
+void CXTPControlGallery::OnCalcDynamicSize(DWORD dwMode)
+{
+	if (DYNAMIC_DOWNCAST(CXTPControlComboBoxGalleryPopupBar, GetParent()) == 0)
+	{
+		m_nSelected = -1;
+	}
+	m_bHideSelection = FALSE;
+	m_bPressed = FALSE;
+
+	CXTPControlPopup::OnCalcDynamicSize(dwMode);
 }
 
 void CXTPControlGallery::PerformMouseMove(CPoint point)
@@ -847,6 +1047,11 @@ CRect CXTPControlGallery::GetBorders() const
 }
 
 CXTPControlGalleryPaintManager* CXTPControlGallery::GetGalleryPaintManager() const
+{
+	return GetPaintManager()->GetGalleryPaintManager();
+}
+
+CXTPScrollBarPaintManager* CXTPControlGallery::GetScrollBarPaintManager() const
 {
 	return GetPaintManager()->GetGalleryPaintManager();
 }
@@ -996,7 +1201,8 @@ long CXTPControlGallery::GetNextInRow(long nIndex, int nDirection) const
 	CSize szItem = GetItems()->GetItemSize();
 
 	if (szItem.cx * 2 > rcItems.Width() || szItem.cx == 0)
-		return nIndex;
+		return GetNext(nIndex, nDirection);
+
 	int i;
 
 	if (nDirection < 0)
@@ -1261,7 +1467,7 @@ int CXTPControlGallery::FindItem(int nStartAfter, LPCTSTR lpszItem, BOOL bExact)
 	{
 		CXTPControlGalleryItem* pItem = GetItem(nItem);
 
-		if (bExact )
+		if (bExact)
 		{
 			if (pItem->GetCaption().CompareNoCase(lpszItem) == 0)
 				return nItem;
@@ -1491,7 +1697,14 @@ BOOL CXTPControlGallery::OnSetSelected(int bSelected)
 
 	if (IsKeyboardSelected(bSelected) && !IsItemSelected())
 	{
-		SetSelectedItem(GetNext(-1, bSelected == TRUE_KEYBOARD_PREV ? -1 : +1));
+		if (GetCommandBar() == NULL)
+		{
+			SetSelectedItem(GetNext(-1, bSelected == TRUE_KEYBOARD_PREV ? -1 : +1));
+		}
+		else
+		{
+			SetSelectedItem(-1);
+		}
 	}
 
 	return CXTPControl::OnSetSelected(bSelected);
@@ -1510,6 +1723,16 @@ BOOL CXTPControlGallery::OnHookKeyDown(UINT nChar, LPARAM /*lParam*/)
 
 	if (!IsFocused())
 		return FALSE;
+
+	if (m_nSelected == -1 && GetCommandBar() != NULL)
+	{
+		if (nChar == VK_RETURN || nChar == VK_SPACE)
+		{
+			GetParent()->SetPopuped(m_nIndex);
+			return TRUE;
+		}
+		return FALSE;
+	}
 
 	int nSelected;
 	CXTPDrawHelpers::KeyToLayout(CXTPControl::GetParent(), nChar);
@@ -1592,6 +1815,7 @@ BOOL CXTPControlGallery::OnHookKeyDown(UINT nChar, LPARAM /*lParam*/)
 		return FALSE;
 
 	case VK_RETURN:
+	case VK_SPACE:
 		OnExecute();
 		break;
 	}
@@ -1635,7 +1859,11 @@ void CXTPControlGallery::OnClick(BOOL bKeyboard /*= FALSE*/, CPoint point /*= CP
 
 	if (!bKeyboard)
 	{
+		m_pParent->SetPopuped(-1);
+		m_pParent->SetSelected(GetIndex());
+
 		OnMouseMove(point);
+
 
 		if (m_spi.ht == XTP_HTSCROLLPOPUP)
 		{
@@ -1647,7 +1875,6 @@ void CXTPControlGallery::OnClick(BOOL bKeyboard /*= FALSE*/, CPoint point /*= CP
 		}
 		else
 		{
-			m_pParent->SetPopuped(-1);
 			PerformMouseDown(point);
 		}
 	}
@@ -1913,7 +2140,7 @@ HRESULT CXTPControlGallery::GetAccessibleState(VARIANT varChild, VARIANT* pvarSt
 	if (m_nSelected == pItem->GetIndex())
 		pvarState->lVal |= STATE_SYSTEM_FOCUSED;
 
-	if (m_nChecked == pItem->GetID())
+	if (IsItemChecked(pItem))
 		pvarState->lVal |= STATE_SYSTEM_SELECTED;
 
 	return S_OK;
@@ -2079,6 +2306,9 @@ BOOL CXTPControlComboBoxGalleryPopupBar::OnHookKeyDown(UINT nChar, LPARAM lParam
 	if (!pComboBox)
 		return CXTPCommandBar::OnHookKeyDown(nChar, lParam);
 
+	if (pComboBox->GetEditCtrl() && pComboBox->GetEditCtrl()->IsImeMode())
+		return ProcessHookKeyDown(pComboBox, nChar, lParam);
+
 	if (nChar == VK_ESCAPE)
 	{
 		if (pComboBox->IsFocused())
@@ -2102,16 +2332,11 @@ BOOL CXTPControlComboBoxGalleryPopupBar::OnHookKeyDown(UINT nChar, LPARAM lParam
 }
 
 //////////////////////////////////////////////////////////////////////////
-//
+// CXTPControlGalleryPaintManager
+
 CXTPControlGalleryPaintManager::CXTPControlGalleryPaintManager(CXTPPaintManager* pPaintManager)
+	: CXTPScrollBarPaintManager(pPaintManager)
 {
-	m_pPaintManager = pPaintManager;
-
-	m_cxHScroll = GetSystemMetrics(SM_CXHSCROLL);
-	m_cyHScroll = GetSystemMetrics(SM_CYHSCROLL);
-	m_cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
-	m_cyVScroll = GetSystemMetrics(SM_CYVSCROLL);
-
 	m_cyPopupUp = m_cyPopupDown = 19;
 	m_cxPopup = 16;
 }
@@ -2133,7 +2358,10 @@ void CXTPControlGalleryPaintManager::DrawLabel(CDC* pDC, CXTPControlGalleryItem*
 
 void CXTPControlGalleryPaintManager::FillControl(CDC* pDC, CXTPControlGallery* pGallery, CRect rcControl)
 {
-	pDC->FillSolidRect(rcControl, m_pPaintManager->GetXtremeColor(XPCOLOR_MENUBAR_FACE));
+	if (!pGallery->IsTransparent())
+	{
+		pDC->FillSolidRect(rcControl, m_pPaintManager->GetXtremeColor(XPCOLOR_MENUBAR_FACE));
+	}
 
 	if (pGallery->IsShowBorders())
 	{
@@ -2149,247 +2377,15 @@ void CXTPControlGalleryPaintManager::FillControl(CDC* pDC, CXTPControlGallery* p
 
 void CXTPControlGalleryPaintManager::RefreshMetrics()
 {
-	m_cxHScroll = GetSystemMetrics(SM_CXHSCROLL);
-	m_cyHScroll = GetSystemMetrics(SM_CYHSCROLL);
-	m_cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
-	m_cyVScroll = GetSystemMetrics(SM_CYVSCROLL);
-
-	m_themeScrollBar.OpenTheme(0, L"SCROLLBAR");
+	CXTPScrollBarPaintManager::RefreshMetrics();
 
 	m_cyPopupUp = m_cyPopupDown = 19;
 	m_cxPopup = 16;
 }
 
-void DrawArrowGlyph(CDC* pDC, CRect rcArrow, BOOL bHorz, BOOL bUpArrow, BOOL bEnabled)
-{
-	int nHeight = min(rcArrow.Width(), rcArrow.Height());
-	if (nHeight < 6) return;
-
-	int x = rcArrow.left + ((rcArrow.Width() - nHeight) / 2) + 2;
-	int y = rcArrow.top + ((rcArrow.Height() - nHeight) / 2) + 2;
-	nHeight -= 4;
-
-	COLORREF clr = bEnabled ? RGB(0, 0, 0) : GetSysColor(COLOR_3DSHADOW);
-
-	HFONT hFont = CreateFont(nHeight, 0, 0, 0, FW_NORMAL, 0, 0, 0, SYMBOL_CHARSET, 0, 0, 0, 0, _T("MARLETT"));
-	HFONT hOldFont = (HFONT)SelectObject(pDC->GetSafeHdc(), hFont);
-
-	SetTextColor(pDC->GetSafeHdc(), clr);
-	pDC->SetBkMode(TRANSPARENT);
-	TextOut(pDC->GetSafeHdc(), x, y, bHorz ? (bUpArrow ? _T("3") : _T("4")) : (bUpArrow ? _T("5") : _T("6")), 1);
-
-	SelectObject(pDC->GetSafeHdc(), hOldFont);
-	DeleteObject(hFont);
-}
-
 void CXTPControlGalleryPaintManager::DrawScrollBar(CDC* pDC, CXTPScrollBase* pGallery)
 {
-	#define GETPARTSTATE(ht, pressed, hot, normal, disabled) \
-		(!bEnabled ? disabled : nPressetHt == ht ? pressed : nHotHt == ht ? hot : normal)
-
-	CXTPControlGallery::SCROLLBARTRACKINFO* pSBTrack = pGallery->GetScrollBarTrackInfo();
-	CXTPControlGallery::SCROLLBARPOSINFO* pSBInfo = pGallery->GetScrollBarPosInfo();
-
-	BOOL nPressetHt = pSBTrack ? (pSBTrack->bTrackThumb || pSBTrack->fHitOld ? pSBInfo->ht : -1) : -1;
-	BOOL nHotHt = pSBTrack ? -1 : pSBInfo->ht;
-
-
-	int cWidth = (pSBInfo->pxRight - pSBInfo->pxLeft);
-
-	if (cWidth <= 0)
-	{
-		return;
-	}
-
-	BOOL bEnabled = (pSBInfo->posMax - pSBInfo->posMin - pSBInfo->page + 1 > 0) && pGallery->IsScrollBarEnabled();
-
-	int nBtnTrackSize =   pSBInfo->pxThumbBottom - pSBInfo->pxThumbTop;
-	int nBtnTrackPos = pSBInfo->pxThumbTop - pSBInfo->pxUpArrow;
-
-	if (!bEnabled || pSBInfo->pxThumbBottom > pSBInfo->pxDownArrow)
-		nBtnTrackPos = nBtnTrackSize = 0;
-	XTPScrollBarStyle style = pGallery->GetScrollBarStyle();
-
-	if (pSBInfo->fVert)
-	{
-		CRect rcVScroll(pSBInfo->rc);
-
-		CRect rcArrowUp(rcVScroll.left, rcVScroll.top, rcVScroll.right, pSBInfo->pxUpArrow);
-		CRect rcArrowDown(rcVScroll.left, pSBInfo->pxDownArrow, rcVScroll.right, rcVScroll.bottom);
-		CRect rcTrack(rcVScroll.left, rcArrowUp.bottom, rcVScroll.right, rcArrowDown.top);
-
-		CRect rcLowerTrack(rcTrack.left, rcTrack.top, rcTrack.right, rcTrack.top + nBtnTrackPos);
-		CRect rcBtnTrack(rcTrack.left, rcLowerTrack.bottom, rcTrack.right, rcLowerTrack.bottom + nBtnTrackSize);
-		CRect rcUpperTrack(rcTrack.left, rcBtnTrack.bottom, rcTrack.right, rcTrack.bottom);
-
-
-		if (style == xtpScrollStyleSystem  && m_themeScrollBar.IsAppThemed())
-		{
-			m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_ARROWBTN, GETPARTSTATE(XTP_HTSCROLLUP, ABS_UPPRESSED, ABS_UPHOT, ABS_UPNORMAL, ABS_UPDISABLED),  rcArrowUp, NULL);
-			m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_ARROWBTN, GETPARTSTATE(XTP_HTSCROLLDOWN, ABS_DOWNPRESSED, ABS_DOWNHOT, ABS_DOWNNORMAL, ABS_DOWNDISABLED),  rcArrowDown, NULL);
-
-			if (!rcTrack.IsRectEmpty())
-			{
-				if (!rcLowerTrack.IsRectEmpty())
-					m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_LOWERTRACKVERT, GETPARTSTATE(XTP_HTSCROLLUPPAGE, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcLowerTrack, NULL);
-
-				if (!rcBtnTrack.IsRectEmpty())
-				{
-					m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_THUMBBTNVERT, GETPARTSTATE(XTP_HTSCROLLTHUMB, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcBtnTrack, NULL);
-					if (rcBtnTrack.Height() > 13)
-						m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_GRIPPERVERT, GETPARTSTATE(XTP_HTSCROLLTHUMB, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcBtnTrack, NULL);
-				}
-
-				if (!rcUpperTrack.IsRectEmpty())
-					m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_UPPERTRACKVERT, GETPARTSTATE(XTP_HTSCROLLDOWNPAGE, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcUpperTrack, NULL);
-			}
-		}
-		else
-		{
-			if (style == xtpScrollStyleFlat)
-			{
-				pDC->FillSolidRect(rcArrowUp, GetXtremeColor(COLOR_3DFACE));
-				if (bEnabled && nPressetHt == XTP_HTSCROLLUP)
-					pDC->Draw3dRect(rcArrowUp,GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DHIGHLIGHT));
-				else
-					pDC->Draw3dRect(rcArrowUp, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
-
-				DrawArrowGlyph(pDC, rcArrowUp, FALSE, TRUE, bEnabled);
-
-				pDC->FillSolidRect(rcArrowDown, GetXtremeColor(COLOR_3DFACE));
-				if (bEnabled && nPressetHt == XTP_HTSCROLLDOWN)
-					pDC->Draw3dRect(rcArrowDown,GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DHIGHLIGHT));
-				else
-					pDC->Draw3dRect(rcArrowDown, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
-				DrawArrowGlyph(pDC, rcArrowDown, FALSE, FALSE, bEnabled);
-
-			}
-			else
-			{
-				DrawFrameControl(pDC->GetSafeHdc(), &rcArrowUp, DFC_SCROLL, DFCS_SCROLLUP | (!bEnabled ? DFCS_INACTIVE : 0) | (nPressetHt == XTP_HTSCROLLUP ? DFCS_PUSHED : 0));
-				DrawFrameControl(pDC->GetSafeHdc(), &rcArrowDown, DFC_SCROLL, DFCS_SCROLLDOWN | (!bEnabled ? DFCS_INACTIVE : 0)  | (nPressetHt == XTP_HTSCROLLDOWN ? DFCS_PUSHED : 0));
-			}
-
-			CWnd* pParent = pGallery->GetParentWindow();
-			HBRUSH hbrRet = (HBRUSH)DefWindowProc(pParent->GetSafeHwnd(), WM_CTLCOLORSCROLLBAR, (WPARAM)pDC->GetSafeHdc(), (LPARAM)pParent->GetSafeHwnd());
-
-			::FillRect(pDC->GetSafeHdc(), &rcTrack, hbrRet);
-
-			if (nPressetHt == XTP_HTSCROLLUPPAGE)
-			{
-				::InvertRect(pDC->GetSafeHdc(), &rcLowerTrack);
-			}
-
-			if (!rcTrack.IsRectEmpty() && !rcBtnTrack.IsRectEmpty())
-			{
-				pDC->FillSolidRect(rcBtnTrack, GetXtremeColor(COLOR_3DFACE));
-
-				if (style == xtpScrollStyleFlat)
-				{
-					pDC->Draw3dRect(rcBtnTrack, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
-				}
-				else
-				{
-					DrawEdge(pDC->GetSafeHdc(), &rcBtnTrack, EDGE_RAISED, (UINT)(BF_ADJUST | BF_RECT));
-				}
-			}
-
-			if (nPressetHt == XTP_HTSCROLLDOWNPAGE)
-			{
-				::InvertRect(pDC->GetSafeHdc(), &rcUpperTrack);
-			}
-		}
-	}
-	else
-	{
-		CRect rcHScroll(pSBInfo->rc);
-
-		CRect rcArrowLeft(rcHScroll.left, rcHScroll.top, pSBInfo->pxUpArrow, rcHScroll.bottom);
-		CRect rcArrowRight(pSBInfo->pxDownArrow, rcHScroll.top, rcHScroll.right, rcHScroll.bottom);
-		CRect rcTrack(rcArrowLeft.right, rcHScroll.top, rcArrowRight.left, rcHScroll.bottom);
-
-		CRect rcLowerTrack(rcTrack.left, rcTrack.top, rcTrack.left + nBtnTrackPos, rcTrack.bottom);
-		CRect rcBtnTrack(rcLowerTrack.right, rcTrack.top, rcLowerTrack.right + nBtnTrackSize, rcTrack.bottom);
-		CRect rcUpperTrack(rcBtnTrack.right, rcTrack.top, rcTrack.right, rcTrack.bottom);
-
-
-		if (style == xtpScrollStyleSystem  && m_themeScrollBar.IsAppThemed())
-		{
-			m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_ARROWBTN, GETPARTSTATE(XTP_HTSCROLLUP, ABS_LEFTPRESSED, ABS_LEFTHOT, ABS_LEFTNORMAL, ABS_LEFTDISABLED),  rcArrowLeft, NULL);
-			m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_ARROWBTN, GETPARTSTATE(XTP_HTSCROLLDOWN, ABS_RIGHTPRESSED, ABS_RIGHTHOT, ABS_RIGHTNORMAL, ABS_RIGHTDISABLED),  rcArrowRight, NULL);
-
-			if (!rcTrack.IsRectEmpty())
-			{
-				if (!rcLowerTrack.IsRectEmpty())
-					m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_LOWERTRACKHORZ, GETPARTSTATE(XTP_HTSCROLLUPPAGE, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcLowerTrack, NULL);
-
-				if (!rcBtnTrack.IsRectEmpty())
-				{
-					m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_THUMBBTNHORZ, GETPARTSTATE(XTP_HTSCROLLTHUMB, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcBtnTrack, NULL);
-					if (rcBtnTrack.Width() > 13)
-						m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_GRIPPERHORZ, GETPARTSTATE(XTP_HTSCROLLTHUMB, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcBtnTrack, NULL);
-				}
-
-				if (!rcUpperTrack.IsRectEmpty())
-					m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_UPPERTRACKHORZ, GETPARTSTATE(XTP_HTSCROLLDOWNPAGE, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcUpperTrack, NULL);
-			}
-		}
-		else
-		{
-			if (style == xtpScrollStyleFlat)
-			{
-				pDC->FillSolidRect(rcArrowLeft, GetXtremeColor(COLOR_3DFACE));
-				if (bEnabled && nPressetHt == XTP_HTSCROLLUP)
-					pDC->Draw3dRect(rcArrowLeft,GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DHIGHLIGHT));
-				else
-					pDC->Draw3dRect(rcArrowLeft, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
-
-				DrawArrowGlyph(pDC, rcArrowLeft, TRUE, TRUE, bEnabled);
-
-				pDC->FillSolidRect(rcArrowRight, GetXtremeColor(COLOR_3DFACE));
-				if (bEnabled && nPressetHt == XTP_HTSCROLLDOWN)
-					pDC->Draw3dRect(rcArrowRight,GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DHIGHLIGHT));
-				else
-					pDC->Draw3dRect(rcArrowRight, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
-				DrawArrowGlyph(pDC, rcArrowRight, TRUE, FALSE, bEnabled);
-
-			}
-			else
-			{
-				DrawFrameControl(pDC->GetSafeHdc(), &rcArrowLeft, DFC_SCROLL, DFCS_SCROLLLEFT | (!bEnabled ? DFCS_INACTIVE : 0) | (nPressetHt == XTP_HTSCROLLUP ? DFCS_PUSHED : 0));
-				DrawFrameControl(pDC->GetSafeHdc(), &rcArrowRight, DFC_SCROLL, DFCS_SCROLLRIGHT | (!bEnabled ? DFCS_INACTIVE : 0)  | (nPressetHt == XTP_HTSCROLLDOWN ? DFCS_PUSHED : 0));
-			}
-
-			CWnd* pParent = pGallery->GetParentWindow();
-			HBRUSH hbrRet = (HBRUSH)DefWindowProc(pParent->GetSafeHwnd(), WM_CTLCOLORSCROLLBAR, (WPARAM)pDC->GetSafeHdc(), (LPARAM)pParent->GetSafeHwnd());
-
-			::FillRect(pDC->GetSafeHdc(), &rcTrack, hbrRet);
-
-			if (nPressetHt == XTP_HTSCROLLUPPAGE)
-			{
-				::InvertRect(pDC->GetSafeHdc(), &rcLowerTrack);
-			}
-
-			if (!rcTrack.IsRectEmpty() && !rcBtnTrack.IsRectEmpty())
-			{
-				pDC->FillSolidRect(rcBtnTrack, GetXtremeColor(COLOR_3DFACE));
-
-				if (style == xtpScrollStyleFlat)
-				{
-					pDC->Draw3dRect(rcBtnTrack, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
-				}
-				else
-				{
-					DrawEdge(pDC->GetSafeHdc(), &rcBtnTrack, EDGE_RAISED, (UINT)(BF_ADJUST | BF_RECT));
-				}
-			}
-
-			if (nPressetHt == XTP_HTSCROLLDOWNPAGE)
-			{
-				::InvertRect(pDC->GetSafeHdc(), &rcUpperTrack);
-			}
-		}
-	}
+	CXTPScrollBarPaintManager::DrawScrollBar(pDC, pGallery);
 }
 
 void CXTPControlGalleryPaintManager::DrawPopupScrollBar(CDC* pDC, CXTPControlGallery* pGallery)

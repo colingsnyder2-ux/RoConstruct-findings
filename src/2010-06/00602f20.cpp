@@ -1,17 +1,17 @@
-// from server: 61% by atomic.potato
-extern "C" void __cdecl sub_6019c0();
-
-void f(int, int, int);
-
-void f(int a, int b, int c)
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_00602f20 {
+    T4_00602f20();
+    virtual void f_00602f20();
+    char m_a;
+    char m_b;
+};
+T4_00602f20::T4_00602f20() : m_a(0), m_b(0) {}
+extern "C" void* create_other_00602f20(void*, void*, int);
+void* create_00602f20(void* unused, T4_00602f20* out, int type)
 {
-    if (c != 4)
-    {
-        sub_6019c0();
-        return;
-    }
-
-    *(int*)b = 0x00bae910;
-    *((unsigned char*)b + 4) = 0;
-    *((unsigned char*)b + 5) = 0;
+    if (type != 4)
+        return create_other_00602f20(unused, out, type);
+    out->T4_00602f20::T4_00602f20();
+    return out;
 }

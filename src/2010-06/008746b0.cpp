@@ -1,462 +1,250 @@
-// from server: 54% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/CommandBars/XTPShadowsManager.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS /EHsc /MD
+// roc-lib: g3d-6.09 GLG3Dcpp/Shape.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPShadowsManager.cpp : implementation of the CXTPShadowsManager class.
-//
-// This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
+/**
+ @file GLG3D/Shape.cpp
 
-#include "stdafx.h"
-#include "Common/XTPDrawHelpers.h"
-#include "Common/XTPColorManager.h"
+ @maintainer Morgan McGuire, matrix@graphics3d.com
 
-#include "XTPShadowsManager.h"
-#include "XTPHookManager.h"
-#include "XTPCommandBar.h"
-#include "XTPCommandBars.h"
-#include "XTPPaintManager.h"
-#include "XTPControlPopup.h"
+ @created 2005-08-30
+ @edited  2005-08-30
+ */
 
+#include "GLG3D/Shape.h"
+#include "GLG3D/RenderDevice.h"
+#include "GLG3D/Draw.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+namespace G3D {
 
-CXTPShadowsManager::CXTPShadowsManager()
-{
-	m_pfnUpdateLayeredWindow = NULL;
+std::string Shape::typeToString(Type t) {
+    const static std::string name[] = 
+    {"NONE", "MESH", "BOX", "CYLINDER", "SPHERE", "RAY", "CAPSULE", "PLANE", "AXES"};
 
-	HMODULE hLib = GetModuleHandle(_T("USER32"));
-	if (hLib)
-	{
-		m_pfnUpdateLayeredWindow = (LPFNUPDATELAYEREDWINDOW) GetProcAddress(hLib, "UpdateLayeredWindow");
-	}
-
-	m_bAlphaShadow = AlphaShadow();
+    if (t <= AXES) {
+        return name[t];
+    } else {
+        return "";
+    }
 }
 
-CXTPShadowsManager* AFX_CDECL XTPShadowsManager()
-{
-	static CXTPShadowsManager s_managerInstance;
-	return &s_managerInstance;
-}
+////////////////////////////////////////////////////////////////////////
 
-CXTPShadowsManager::~CXTPShadowsManager()
-{
-	ASSERT(m_lstShadow.IsEmpty());
-}
-
-BOOL CXTPShadowsManager::AlphaShadow()
-{
-#ifdef NOALPHASHADOW
-	return FALSE;
-#endif
-
-	if (XTPColorManager()->IsLowResolution())
-		return FALSE;
-
-	return (m_pfnUpdateLayeredWindow != NULL);
+MeshShape::MeshShape(
+    const Array<Vector3>& vertex, 
+    const Array<int>& index) : 
+    _vertexArray(vertex), 
+    _indexArray(index),
+    _hasTree(false) {
+    
+    debugAssert(index.size() % 3 == 0);
+    debugAssert(index.size() >= 0);
 }
 
 
-#ifndef SPI_GETDROPSHADOW
-#define SPI_GETDROPSHADOW     0x1024
-#endif
+void MeshShape::buildBSP() {
+    debugAssert(! _hasTree);
 
+    _area = 0;
+    for (int i = 0; i < _indexArray.size(); i += 3) {
+        const int v0 = _indexArray[i];
+        const int v1 = _indexArray[i + 1];
+        const int v2 = _indexArray[i + 2];
 
-void CXTPShadowsManager::SetShadow(CXTPCommandBar* pCommandBar, const CRect& rcExclude)
-{
-	if (pCommandBar->IsCustomizeMode())
-		return;
+        Triangle tri(_vertexArray[v0], _vertexArray[v1], _vertexArray[v2]);
+        _area += tri.area();
+        _bspTree.insert(tri);
+    }
+    _bspTree.balance();
 
-	if (!(pCommandBar->GetPaintManager()->GetShadowOptions() & xtpShadowOfficeAlpha))
-	{
-		if (!m_bAlphaShadow)
-			return;
+    Box box;
+    MeshAlg::computeBounds(_vertexArray, box, _boundingSphere);
+    _boundingSphere.getBounds(_boundingAABox);
 
-		BOOL bDropShadow = FALSE;
-		SystemParametersInfo(SPI_GETDROPSHADOW, 0, &bDropShadow, 0);
-
-		if (!bDropShadow)
-			return;
-	}
-
-	CXTPWindowRect rc(pCommandBar);
-	CreateShadow(TRUE, rc, rcExclude, pCommandBar, FALSE);
-	CreateShadow(FALSE, rc, rcExclude, pCommandBar, FALSE);
-}
-
-void CXTPShadowsManager::SetShadow(CXTPControlPopup* pControl)
-{
-	if (pControl->GetParent()->IsCustomizeMode())
-		return;
-
-	if ((pControl->GetPaintManager()->GetShadowOptions() & (xtpShadowOfficeAlpha | xtpShadowShowPopupControl)) ==
-		(xtpShadowOfficeAlpha | xtpShadowShowPopupControl))
-	{
-		CRect rc = pControl->GetRect();
-		((CWnd*)pControl->GetParent())->ClientToScreen(&rc);
-		CXTPCommandBar* pCommandBar = pControl->GetCommandBar();
-
-		CreateShadow(TRUE, rc, CXTPEmptyRect(), pCommandBar, TRUE);
-		CreateShadow(FALSE, rc, CXTPEmptyRect(), pCommandBar, TRUE);
-	}
-}
-
-void CXTPShadowsManager::RemoveShadow(CXTPCommandBar* pCommandBar)
-{
-	POSITION pos = m_lstShadow.GetHeadPosition();
-	while (pos)
-	{
-		CShadowWnd* pShadow = m_lstShadow.GetNext(pos);
-
-		if (pCommandBar == pShadow->m_pCommandBar)
-		{
-			XTPHookManager()->RemoveHook(pShadow->m_pCommandBar->GetSafeHwnd(), pShadow);
-			DestroyShadow(pShadow);
-		}
-	}
-}
-
-void CXTPShadowsManager::OffsetShadow(CXTPCommandBar* pCommandBar, CSize szOffset)
-{
-	POSITION pos = m_lstShadow.GetHeadPosition();
-	while (pos)
-	{
-		CShadowWnd* pShadow = m_lstShadow.GetNext(pos);
-
-		if (pCommandBar == pShadow->m_pCommandBar && pShadow->GetSafeHwnd() && !pShadow->m_bControlPopup)
-		{
-			if (pShadow->m_bExcluded)
-			{
-				pShadow->SetWindowRgn(NULL, FALSE);
-				pShadow->m_bExcluded = FALSE;
-			}
-			CXTPWindowRect rc(pShadow);
-			if (pShadow->m_bHoriz)
-			{
-				pShadow->SetWindowPos(0, rc.left, rc.top + szOffset.cy,
-					rc.Width() + szOffset.cx, rc.Height(), SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-			}
-			else
-			{
-				pShadow->SetWindowPos(0, rc.left + szOffset.cx, rc.top,
-					rc.Width(), rc.Height() + szOffset.cy, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-			}
-		}
-	}
-}
-
-CXTPShadowsManager::CShadowWnd* CXTPShadowsManager::CreateShadow(BOOL bHoriz, CRect rc, CRect rcExclude, CXTPCommandBar* pCommandBar, BOOL bControlPopup)
-{
-	CShadowWnd* pShadow = new CShadowWnd();
-	CXTPPaintManager* pPaintManager = pCommandBar->GetPaintManager();
-	if (!pPaintManager->m_bShowShadow)
-		return NULL;
-
-	pShadow->m_nShadowOptions = pPaintManager->GetShadowOptions();
-
-	pShadow->m_pCommandBar = pCommandBar;
-	pShadow->m_bControlPopup = bControlPopup;
-	pShadow->Create(bHoriz, rc);
-
-	m_lstShadow.AddShadow(pShadow);
-
-	if (pShadow->m_nShadowOptions & xtpShadowShowPopupControl)
-	{
-		pShadow->ExcludeRect(rcExclude);
-	}
-
-	POSITION pos = m_lstShadow.GetHeadPosition();
-	while (pos)
-	{
-		CShadowWnd* pShadowPrev = m_lstShadow.GetNext(pos);
-		if (pShadowPrev->m_pCommandBar)
-		{
-			pShadow->ExcludeRect(CXTPWindowRect(pShadowPrev->m_pCommandBar));
-		}
-	}
-
-
-	pShadow->SetWindowPos(&CWnd::wndTopMost, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
-
-	XTPHookManager()->SetHook(pCommandBar->m_hWnd, pShadow);
-
-	return pShadow;
+    _hasTree = true;
 }
 
 
-void CXTPShadowsManager::DestroyShadow(CShadowWnd* pWnd)
-{
-	if (pWnd->GetSafeHwnd()) pWnd->ShowWindow(SW_HIDE);
-	pWnd->m_pCommandBar = 0;
-	m_lstShadow.RemoveShadow(pWnd);
-	pWnd->DestroyWindow();
-	delete pWnd;
-}
-
-CXTPShadowsManager::CShadowWnd::CShadowWnd()
-{
-	m_pCommandBar = 0;
-	m_bHoriz = FALSE;
-	m_nShadowOptions = 0;
-	m_bExcluded = FALSE;
-}
-
-int CXTPShadowsManager::CShadowWnd::OnHookMessage(HWND hWnd, UINT nMessage, WPARAM& wParam, LPARAM& /*lParam*/, LRESULT& /*lResult*/)
-{
-	if (nMessage == WM_SHOWWINDOW && wParam == FALSE)
-	{
-		ShowWindow(SW_HIDE);
-	}
-	if (nMessage == WM_SHOWWINDOW && wParam == TRUE)
-	{
-		ShowWindow(SW_SHOWNA);
-	}
-	if (nMessage == WM_DESTROY)
-	{
-		XTPHookManager()->RemoveHook(hWnd, this);
-		XTPShadowsManager()->DestroyShadow(this);
-	}
-	return 0;
-}
-
-BOOL CXTPShadowsManager::CShadowWnd::Create(BOOL bHoriz, CRect rcWindow)
-{
-	CWnd* pSite = m_pCommandBar->GetSite();
-	CXTPCommandBars* pCommandBars = m_pCommandBar->GetCommandBars();
-
-	if (m_hWnd == 0)
-	{
-		int nFlags = WS_EX_TOOLWINDOW;
-		if (XTPShadowsManager()->m_bAlphaShadow) nFlags |= 0x80000;
-
-		UINT nClassStyle = !pCommandBars || pCommandBars->GetCommandBarsOptions()->bUseSystemSaveBitsStyle ? CS_SAVEBITS | CS_OWNDC : 0;
-
-		CString strClass = ::AfxRegisterWndClass(nClassStyle, AfxGetApp()->LoadStandardCursor(IDC_ARROW));
-		if (!CreateEx(nFlags, strClass, 0, WS_POPUP, CXTPEmptyRect(), pSite, 0))
-			return FALSE;
-	}
-	SetWindowRgn(NULL, FALSE);
-
-	int nWidth = XTPShadowsManager()->m_bAlphaShadow ? 4 : 2;
-
-	m_bHoriz = bHoriz;
-
-	CRect rcShadow;
-	if (bHoriz) rcShadow.SetRect(rcWindow.left + nWidth, rcWindow.bottom, rcWindow.right + nWidth, rcWindow.bottom + nWidth);
-		else rcShadow.SetRect(rcWindow.right, rcWindow.top + nWidth, rcWindow.right + nWidth, rcWindow.bottom);
-
-	MoveWindow(rcShadow, FALSE);
-	return TRUE;
-}
-
-BEGIN_MESSAGE_MAP(CXTPShadowsManager::CShadowWnd, CWnd)
-	{ WM_ERASEBKGND, 0, 0, 0, AfxSig_bD, (AFX_PMSG)(AFX_PMSGW) (static_cast< BOOL (AFX_MSG_CALL CWnd::*)(CDC*) > (CXTPShadowsManager::CShadowWnd::OnEraseBkgnd)) },
-	{ WM_PAINT, 0, 0, 0, AfxSig_vv, (AFX_PMSG)(AFX_PMSGW) (static_cast< void (AFX_MSG_CALL CWnd::*)(void) > (CXTPShadowsManager::CShadowWnd::OnPaint)) },
-	{ WM_SIZE, 0, 0, 0, AfxSig_vwii, (AFX_PMSG)(AFX_PMSGW) (static_cast< void (AFX_MSG_CALL CWnd::*)(UINT, int, int) > (CXTPShadowsManager::CShadowWnd::OnSize)) },
-	{ WM_NCHITTEST, 0, 0, 0, AfxSig_wp, (AFX_PMSG)(AFX_PMSGW) (static_cast< LRESULT (AFX_MSG_CALL CWnd::*)(CPoint) > (CXTPShadowsManager::CShadowWnd::OnNcHitTest)) },
-END_MESSAGE_MAP()
-
-LRESULT CXTPShadowsManager::CShadowWnd::OnNcHitTest(CPoint /*point*/)
-{
-	return (LRESULT)HTTRANSPARENT;
-}
-
-void CXTPShadowsManager::CShadowWnd::OnPaint()
-{
-	CPaintDC dc(this);
-	CXTPClientRect rcClient(this);
-
-	dc.FillSolidRect(rcClient, XTPShadowsManager()->m_bAlphaShadow ? 0 : GetXtremeColor(COLOR_3DSHADOW));
+float MeshShape::area() const {
+    if (! _hasTree) {
+        const_cast<MeshShape*>(this)->buildBSP();
+    }
+    return _area;
 }
 
 
-BOOL CXTPShadowsManager::CShadowWnd::OnEraseBkgnd(CDC* /*pDC*/)
-{
-	return TRUE;
+float MeshShape::volume() const {
+    return 0;
 }
 
-BOOL CXTPShadowsManager::CShadowWnd::ExcludeRect(CRect rcExclude)
-{
-	CXTPWindowRect rcWindow(this);
-	CRect rcIntersect;
-	if (rcIntersect.IntersectRect(rcWindow, rcExclude))
-	{
-		CXTPClientRect rcClient(this);
-		HRGN hrgnClip = ::CreateRectRgnIndirect(&rcClient);
+Vector3 MeshShape::center() const {
+    if (! _hasTree) {
+        const_cast<MeshShape*>(this)->buildBSP();
+    }
 
-		rcIntersect.OffsetRect(-rcWindow.TopLeft());
-		HRGN hrgnIntersect = ::CreateRectRgnIndirect(&rcIntersect);
-		CombineRgn(hrgnClip, hrgnClip, hrgnIntersect, RGN_DIFF);
-		DeleteObject(hrgnIntersect);
-
-		if (!SetWindowRgn(hrgnClip, FALSE))
-			DeleteObject(hrgnClip);
-		m_bExcluded = TRUE;
-	}
-	return TRUE;
+    return _boundingAABox.center();
 }
 
-void CXTPShadowsManager::CShadowWnd::LongShadow(CShadowList* pList)
-{
-	CXTPWindowRect rcWindow(this);
-
-	POSITION pos = pList->GetHeadPosition();
-	while (pos)
-	{
-		CShadowWnd* pWnd = pList->GetNext(pos);
-		if (m_bHoriz == !pWnd->m_bHoriz)
-		{
-			CXTPWindowRect rc(pWnd);
-			if (m_bHoriz == FALSE)
-			{
-				if (rcWindow.top == rc.bottom -1 && rcWindow.right < rc.right && rcWindow.right > rc.left)
-				{
-					rcWindow.top -= 2 * rc.Height();
-					MoveWindow(rcWindow, FALSE);
-				}
-			}
-			else
-			{
-
-				if (rcWindow.left == rc.right - 1 && rcWindow.top > rc.top && rcWindow.bottom < rc.bottom)
-				{
-					rcWindow.left -= 2 * rc.Width() + 1;
-					MoveWindow(rcWindow, FALSE);
-				}
-			}
-		}
-	}
+Sphere MeshShape::boundingSphere() const {
+    if (! _hasTree) {
+        const_cast<MeshShape*>(this)->buildBSP();
+    }
+    return _boundingSphere;
 }
 
-UINT CXTPShadowsManager::CShadowWnd::Factor(int& nRed, int& nGreen, int& nBlue, double dFactor)
-{
-	return (int(nRed * dFactor) << 16) + (int(nGreen * dFactor) << 8) + (int(nBlue * dFactor));
+AABox MeshShape::boundingAABox() const {
+    if (! _hasTree) {
+        const_cast<MeshShape*>(this)->buildBSP();
+    }
+    return _boundingAABox;
+}
+
+void MeshShape::getRandomSurfacePoint(
+    Vector3& P,
+    Vector3& N) const {
+    
+    if (! _hasTree) {
+        const_cast<MeshShape*>(this)->buildBSP();
+    }
+
+    // Choose uniformly at random based on surface area
+    float sum = random(0, _area);
+    typedef AABSPTree<Triangle>::Iterator IT;
+
+    IT it  = _bspTree.begin();
+    IT end = _bspTree.end();
+
+    while (it != end) {
+        const Triangle& tri = *it;
+        sum -= tri.area();
+        if (sum <= 0) {
+            // We want a point from this triangle.
+            N = tri.normal();
+            P = tri.randomPoint();
+            return;
+        }
+        ++it;
+    }
+    
+    // Should never get here, but we might due to roundoff.  Choose a point 
+    // on the first triangle.
+    const Triangle& tri = *_bspTree.begin();
+    N = tri.normal();
+    P = tri.randomPoint();
 }
 
 
-void CXTPShadowsManager::CShadowWnd::OnSize(UINT nType, int cx, int cy)
-{
-	CWnd::OnSize(nType, cx, cy);
-
-	if (!cx || !cy || !XTPShadowsManager()->m_bAlphaShadow ||
-		!XTPShadowsManager()->m_pfnUpdateLayeredWindow || !m_pCommandBar)
-		return;
-
-	BLENDFUNCTION bf;
-	bf.BlendOp = AC_SRC_OVER;
-	bf.BlendFlags = 0;
-	bf.SourceConstantAlpha = 255;
-	bf.AlphaFormat = 0x01;
-
-	POINT pt = {0, 0};
-	int x, y;
-	HBITMAP hbitmap;
-	BITMAPINFO bmi;
-
-	CClientDC cDC(this);
-	CDC dc;
-	dc.CreateCompatibleDC(&cDC);
+Vector3 MeshShape::randomInteriorPoint() const {
+    Vector3 P;
+    getRandomSurfacePoint(P);
+    return P;
+}
 
 
-	// zero the memory for the bitmap info
-	ZeroMemory(&bmi, sizeof(BITMAPINFO));
+void MeshShape::render(RenderDevice* rd, const CoordinateFrame& cframe, Color4 solidColor, Color4 wireColor) {
+    CoordinateFrame cframe0 = rd->getObjectToWorldMatrix();
 
-	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	bmi.bmiHeader.biWidth = cx;
-	bmi.bmiHeader.biHeight = cy;
-	bmi.bmiHeader.biPlanes = 1;
-	bmi.bmiHeader.biBitCount = 32;         // four 8-bit components
-	bmi.bmiHeader.biCompression = BI_RGB;
-	bmi.bmiHeader.biSizeImage = cx * cy * 4;
+    rd->pushState();
+        rd->setObjectToWorldMatrix(cframe0 * cframe);
+        if (solidColor.a < 1.0) {
+            rd->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+        }
+        rd->setColor(solidColor);
+        rd->beginPrimitive(RenderDevice::TRIANGLES);
+            for (int i = 0; i < _indexArray.size(); i += 3) {
+                const Vector3& v0 = _vertexArray[_indexArray[i + 0]];
+                const Vector3& v1 = _vertexArray[_indexArray[i + 1]];
+                const Vector3& v2 = _vertexArray[_indexArray[i + 2]];
+                rd->sendVertex(v0);
+                rd->sendVertex(v1);
+                rd->sendVertex(v2);
+            }
+        rd->endPrimitive();
 
-	UINT* pvBits = NULL;
+        rd->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+        rd->setLineWidth(2);
+        rd->setColor(wireColor);
+        rd->beginPrimitive(RenderDevice::LINES);
+            for (int i = 0; i < _indexArray.size(); i += 3) {
+                const Vector3& v0 = _vertexArray[_indexArray[i + 0]];
+                const Vector3& v1 = _vertexArray[_indexArray[i + 1]];
+                const Vector3& v2 = _vertexArray[_indexArray[i + 2]];
+                rd->sendVertex(v0);
+                rd->sendVertex(v1);
+                rd->sendVertex(v1);
+                rd->sendVertex(v2);
+                rd->sendVertex(v2);
+                rd->sendVertex(v0);
+            }
+        rd->endPrimitive();
+    rd->popState();
+}
 
-	// create our DIB section and select the bitmap into the dc
-	hbitmap = CreateDIBSection(cDC, &bmi, DIB_RGB_COLORS, (void**)&pvBits, NULL, 0x0);
+////////////////////////////////////////////////////////////////////////
 
-	if (pvBits == NULL || hbitmap == NULL)
-		return;
-
-	COLORREF clrFactor = m_pCommandBar->GetPaintManager()->m_clrShadowFactor;
-
-
-	int nRed = GetRValue(clrFactor), nGreen = GetGValue(clrFactor), nBlue = GetBValue(clrFactor);
-
-	int nFactor = m_nShadowOptions & xtpShadowOfficeAlpha ? 1 : 2;
-
-	if (!m_bHoriz)
-	{
-		ASSERT(cx == 4);
-
-		for (x = 0; x < 4; x++) for (y = 0; y < 4; y++)
-		{
-			pvBits[3 - x + (cy - 1 - y) * cx] = (UINT) 3 * (x + 1) * (y + 1) * 0x1000000 * nFactor
-				+ Factor(nRed, nGreen, nBlue, double((x + 1) * (y + 1))/20);
-		}
-
-		for (x = 3; x >= 0; x--)
-		{
-			UINT nColor = 0x0F000000 * nFactor * (4 - x) + Factor(nRed, nGreen, nBlue, double(4 - x)/4);
-
-			for (y = 0; y < cy - 4; y++) pvBits[x + y * cx] = nColor;
-		}
-	}
-	else
-	{
-		ASSERT(cy == 4);
-
-		for (x = 0; x < 4; x++) for (y = 0; y < 4; y++)
-		{
-			pvBits[x + y * cx] = (UINT) 3 * (x + 1) * (y + 1) * 0x1000000 * nFactor
-				+ Factor(nRed, nGreen, nBlue, double((x + 1) * (y + 1))/20);
-		}
-
-		for (y = 0; y < 4; y++)
-		{
-			UINT nColor = 0x0F000000 * nFactor * (y + 1) + Factor(nRed, nGreen, nBlue, double(y + 1)/4);
-
-			for (x = 4; x < cx - 4; x++) pvBits[x + y * cx] = nColor;
-		}
-
-		for (x = 0; x < 4; x++) for (y = 0; y < 4; y++)
-		{
-			pvBits[cx - 1 - x + y * cx] = (UINT)3 * (x + 1) * (y + 1) * 0x1000000 * nFactor
-				+ Factor(nRed, nGreen, nBlue, double((x + 1) * (y + 1))/20);
-		}
-	}
+void BoxShape::render(RenderDevice* rd, const CoordinateFrame& cframe, Color4 solidColor, Color4 wireColor) {
+    CoordinateFrame cframe0 = rd->getObjectToWorldMatrix();
+    rd->setObjectToWorldMatrix(cframe0 * cframe);
+    Draw::box(geometry, rd, solidColor, wireColor);
+    rd->setObjectToWorldMatrix(cframe0);
+}
 
 
-	HBITMAP hOld = (HBITMAP)SelectObject(dc, hbitmap);
+void SphereShape::render(RenderDevice* rd, const CoordinateFrame& cframe, Color4 solidColor, Color4 wireColor) {
+    CoordinateFrame cframe0 = rd->getObjectToWorldMatrix();
+    rd->setObjectToWorldMatrix(cframe0 * cframe);
+    Draw::sphere(geometry, rd, solidColor, wireColor);
+    rd->setObjectToWorldMatrix(cframe0);
+}
 
-	SIZE sz = {cx, cy};
 
-	XTPShadowsManager()->m_pfnUpdateLayeredWindow((HWND)GetSafeHwnd(), (HDC)0, 0, &sz, dc.GetSafeHdc(), &pt, 0, &bf, 0x02);
+void CylinderShape::render(RenderDevice* rd, const CoordinateFrame& cframe, Color4 solidColor, Color4 wireColor) {
+    CoordinateFrame cframe0 = rd->getObjectToWorldMatrix();
+    rd->setObjectToWorldMatrix(cframe0 * cframe);
+    Draw::cylinder(geometry, rd, solidColor, wireColor);
+    rd->setObjectToWorldMatrix(cframe0);
+}
 
-	SelectObject(dc, hOld);
-	DeleteObject(hbitmap);
-	dc.DeleteDC();
+
+void CapsuleShape::render(RenderDevice* rd, const CoordinateFrame& cframe, Color4 solidColor, Color4 wireColor) {
+    CoordinateFrame cframe0 = rd->getObjectToWorldMatrix();
+    rd->setObjectToWorldMatrix(cframe0 * cframe);
+    Draw::capsule(geometry, rd, solidColor, wireColor);
+    rd->setObjectToWorldMatrix(cframe0);
+}
+
+
+void RayShape::render(RenderDevice* rd, const CoordinateFrame& cframe, Color4 solidColor, Color4 wireColor) {
+    (void)wireColor;
+    CoordinateFrame cframe0 = rd->getObjectToWorldMatrix();
+    rd->setObjectToWorldMatrix(cframe0 * cframe);
+    Draw::ray(geometry, rd, solidColor);
+    rd->setObjectToWorldMatrix(cframe0);
+}
+
+
+void AxesShape::render(RenderDevice* rd, const CoordinateFrame& cframe, Color4 solidColor, Color4 wireColor) {
+    (void)wireColor;
+    (void)solidColor;
+    CoordinateFrame cframe0 = rd->getObjectToWorldMatrix();
+    rd->setObjectToWorldMatrix(cframe0 * cframe);
+    Draw::axes(geometry, rd);
+    rd->setObjectToWorldMatrix(cframe0);
+}
+
+
+void PlaneShape::render(RenderDevice* rd, const CoordinateFrame& cframe, Color4 solidColor, Color4 wireColor) {
+    CoordinateFrame cframe0 = rd->getObjectToWorldMatrix();
+
+    rd->setObjectToWorldMatrix(cframe0 * cframe);
+
+    Draw::plane(geometry, rd, solidColor, wireColor);
+    
+    rd->setObjectToWorldMatrix(cframe0);
+}
 
 }
+

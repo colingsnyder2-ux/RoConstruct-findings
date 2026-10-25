@@ -1,20 +1,17 @@
-// from server: 65% by atomic.potato
-struct RbxParticleEmitter
-{
-    void f(void* a, int b, int c);
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_009070a0 {
+    T4_009070a0();
+    virtual void f_009070a0();
+    char m_a;
+    char m_b;
 };
-
-extern "C" void f_00906640();
-
-void RbxParticleEmitter::f(void* a, int b, int c)
+T4_009070a0::T4_009070a0() : m_a(0), m_b(0) {}
+extern "C" void* create_other_009070a0(void*, void*, int);
+void* create_009070a0(void* unused, T4_009070a0* out, int type)
 {
-    if (c != 4)
-    {
-        f_00906640();
-        return;
-    }
-
-    *(unsigned long*)b = 0x00bfe550;
-    *((unsigned char*)b + 4) = 0;
-    *((unsigned char*)b + 5) = 0;
+    if (type != 4)
+        return create_other_009070a0(unused, out, type);
+    out->T4_009070a0::T4_009070a0();
+    return out;
 }

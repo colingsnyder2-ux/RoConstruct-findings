@@ -1,14 +1,14 @@
-// from server: 61% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/ReportControl/XTPReportDragDrop.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-vc8-shared-mfc Source/ReportControl/XTPReportDragDrop.cpp
 
 // Candidate translation unit (score above; library headers required).
 // CXTPReportDragDrop.cpp : implementation of the CXTPReportHeaderDropWnd class.
 //
 // This file is a part of the XTREME REPORTCONTROL MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -160,33 +160,18 @@ void CXTPReportHeaderDragWnd::OnTimer(UINT_PTR nIDEvent)
 	int nDiffRight = bLayoutRTL ? rcControlScreen.left - rcDragScreen.left :
 		rcDragScreen.right - rcControlScreen.right;
 
-	//-----------------------------------------------------------------------
-	CXTPReportColumn *pPrev = NULL, *pCurr = NULL, *pNext = NULL;
-	int nScrollPos = 0, nScrollMax = 0;
-	int nFreezOffset = 0;
-	BOOL bFullColumnScrolling = pControl->IsFullColumnScrolling();
-	if (bFullColumnScrolling)
-		nFreezOffset = m_pHeader->GetFulColScrollInfo(pPrev, pCurr, pNext, nScrollPos, nScrollMax);
-	//-----------------------------------------------------------------------
-
 	if (nDiffRight > 0)
 	{
 		int nStep = max(min(7, nDiffRight/10), CXTPReportHeader::s_nMinAutoScrollStep);
-		UINT uTimer = bFullColumnScrolling ? max(30, 800 - nDiffRight * 10) : max(10, 100 - nDiffRight);
+		UINT uTimer = max(10, 100 - nDiffRight);
 		SCROLLINFO scrollInfo;
 
 		BOOL bRes = pControl->GetScrollInfo(SB_HORZ, &scrollInfo);
 		if (bRes)
 		{
-			if (!bFullColumnScrolling && scrollInfo.nPos < scrollInfo.nMax ||
-				bFullColumnScrolling && nScrollPos < nScrollMax)
+			if (scrollInfo.nPos < scrollInfo.nMax)
 			{
-				if (bFullColumnScrolling)
-					pControl->SendMessage(WM_HSCROLL, SB_LINERIGHT);
-				else
-					pControl->SetLeftOffset(scrollInfo.nPos + nStep);
-
-				KillTimer(1);
+				pControl->SetLeftOffset(scrollInfo.nPos + nStep);
 				SetTimer(1, uTimer, NULL);
 				bScrolled = TRUE;
 			}
@@ -219,7 +204,7 @@ void CXTPReportHeaderDragWnd::OnTimer(UINT_PTR nIDEvent)
 		if (nDiffLeft > 0)
 		{
 			int nStep = max(min(7, nDiffLeft/10), CXTPReportHeader::s_nMinAutoScrollStep);
-			UINT uTimer = bFullColumnScrolling ? max(30, 800 - nDiffLeft * 10) : max(10, 100 - nDiffLeft);
+			UINT uTimer = max(10, 100 - nDiffLeft);
 			SCROLLINFO scrollInfo;
 
 			BOOL bRes = pControl->GetScrollInfo(SB_HORZ, &scrollInfo);
@@ -227,11 +212,7 @@ void CXTPReportHeaderDragWnd::OnTimer(UINT_PTR nIDEvent)
 			{
 				if (scrollInfo.nPos > scrollInfo.nMin)
 				{
-					if (bFullColumnScrolling)
-						pControl->SendMessage(WM_HSCROLL, SB_LINELEFT);
-					else
-						pControl->SetLeftOffset(scrollInfo.nPos - nStep);
-
+					pControl->SetLeftOffset(scrollInfo.nPos - nStep);
 					SetTimer(1, uTimer, NULL);
 					bScrolled = TRUE;
 				}

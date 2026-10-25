@@ -1,25 +1,11 @@
-// from server: 83% by atomic.potato
-typedef int Bool;
-typedef void *TypeInfo;
-
-extern "C" TypeInfo __cdecl sub_0080bbc2(int);
-extern "C" void __cdecl global_call(void *, TypeInfo);
-
-struct TToolVerb
-{
-    int f();
-    int unused;
-    void *field_0C;
-};
-
-int TToolVerb::f()
-{
-    void *p = *(void **)((char *)field_0C + 0x0ACC);
-    int value = *(int *)((char *)p + 0x188);
-    if (value)
-    {
-        TypeInfo t = sub_0080bbc2(value);
-        global_call((void *)0x00C518F4, t);
-    }
-    return 0;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct P3 { char pad[0x188]; void* value; };
+struct P2 { char pad[0xacc]; P3* p; };
+struct Obj { char pad[0xc]; P2* p; bool f(); };
+struct C {};
+extern "C" void* helper(void*);
+extern C c;
+typedef bool (__thiscall *Fn)(C*,void*);
+extern Fn slot;
+bool Obj::f(){ void* x=p->p->value; if(x){ x=helper(x); return slot(&c,x); } return false; }

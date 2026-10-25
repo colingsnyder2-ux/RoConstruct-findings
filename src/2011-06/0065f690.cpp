@@ -1,42 +1,17 @@
-// from server: 57% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/FaceInstance.cpp
-
-// Candidate translation unit (score above; library headers required).
-#include "v8datamodel/FaceInstance.h"
-#include "v8datamodel/PartInstance.h"
-#include "util/NormalId.h"
-#include "v8tree/Instance.h"
-#include "reflection/reflection.h"
-namespace RBX 
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_0065f690 {
+    T4_0065f690();
+    virtual void f_0065f690();
+    char m_a;
+    char m_b;
+};
+T4_0065f690::T4_0065f690() : m_a(0), m_b(0) {}
+extern "C" void* create_other_0065f690(void*, void*, int);
+void* create_0065f690(void* unused, T4_0065f690* out, int type)
 {
-	const char* sFaceInstance = "FaceInstance";
-	const Reflection::EnumPropDescriptor<FaceInstance,NormalId> FaceInstance::prop_Face("Face", "Data", &FaceInstance::getFace, &FaceInstance::setFace, Reflection::PropertyDescriptor::STANDARD);
-
-	FaceInstance::FaceInstance()
-		:face(NORM_Z_NEG)
-	{
-	}
-
-	void FaceInstance::setFace(NormalId value) 
-	{
-		if (face != value) 
-		{
-			face = value;
-			raisePropertyChanged(prop_Face);
-		}
-	}
-
-
-	NormalId FaceInstance::getFace() const 
-	{
-		return face;
-	}
-
-	bool FaceInstance::askSetParent(const Instance* instance) const 
-	{
-		return dynamic_cast<const PartInstance*>(instance) != NULL;
-	}
+    if (type != 4)
+        return create_other_0065f690(unused, out, type);
+    out->T4_0065f690::T4_0065f690();
+    return out;
 }

@@ -1,21 +1,18 @@
-// from server: 77% by atomic.potato
-struct S_00713760
-{
-    int m_0;
-    int m_4;
-    char m_pad[16];
-    int m_18;
-    int m_1c;
-    void f();
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct X_00713760 {
+    void* f_0;
+    void* f_4;
+    char pad_8[16];
+    void* f_18;
+    void* f_1c;
+    X_00713760* base();
+    X_00713760* run() {
+    f_0 = (void*)0xaaf0d4;
+    f_4 = (void*)0xaaf0cc;
+    f_18 = (void*)0xaaf0c0;
+    f_1c = (void*)0xaaf0b4;
+        return base();
+    }
 };
-
-extern "C" void __cdecl sub_5980d0(S_00713760*);
-
-void S_00713760::f()
-{
-    m_0 = 0xAAF0D4;
-    m_4 = 0xAAF0CC;
-    m_18 = 0xAAF0C0;
-    m_1c = 0xAAF0B4;
-    sub_5980d0(this);
-}
+X_00713760* func_00713760(X_00713760* x) { return x->run(); }

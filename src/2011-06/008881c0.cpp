@@ -1,8 +1,8 @@
-// from server: 99% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/CommandBars/XTPDefaultTheme.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPDefaultTheme.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPDefaultTheme.cpp : implementation of the CXTPDefaultTheme class.

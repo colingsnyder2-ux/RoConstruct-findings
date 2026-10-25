@@ -1,15 +1,17 @@
-// from server: 43% by atomic.potato
-extern "C" void __cdecl f(void *, unsigned int);
-
-void f(void *p, unsigned int n)
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_004cacf0 {
+    T4_004cacf0();
+    virtual void f_004cacf0();
+    char m_a;
+    char m_b;
+};
+T4_004cacf0::T4_004cacf0() : m_a(0), m_b(0) {}
+extern "C" void* create_other_004cacf0(void*, void*, int);
+void* create_004cacf0(void* unused, T4_004cacf0* out, int type)
 {
-    if (n != 4)
-    {
-        f(p, n);
-        return;
-    }
-
-    *(unsigned long *)p = 0x00c22790;
-    *((unsigned char *)p + 4) = 0;
-    *((unsigned char *)p + 5) = 0;
+    if (type != 4)
+        return create_other_004cacf0(unused, out, type);
+    out->T4_004cacf0::T4_004cacf0();
+    return out;
 }

@@ -1,42 +1,4 @@
-// from server: 92% by colin
-// roc-lang: cpp
-// roc-cl: 21022
+// from server: 100% by colin
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/FaceInstance.cpp
-
-// Candidate translation unit (score above; library headers required).
-#include "v8datamodel/FaceInstance.h"
-#include "v8datamodel/PartInstance.h"
-#include "util/NormalId.h"
-#include "v8tree/Instance.h"
-#include "reflection/reflection.h"
-namespace RBX 
-{
-	const char* sFaceInstance = "FaceInstance";
-	const Reflection::EnumPropDescriptor<FaceInstance,NormalId> FaceInstance::prop_Face("Face", "Data", &FaceInstance::getFace, &FaceInstance::setFace, Reflection::PropertyDescriptor::STANDARD);
-
-	FaceInstance::FaceInstance()
-		:face(NORM_Z_NEG)
-	{
-	}
-
-	void FaceInstance::setFace(NormalId value) 
-	{
-		if (face != value) 
-		{
-			face = value;
-			raisePropertyChanged(prop_Face);
-		}
-	}
-
-
-	NormalId FaceInstance::getFace() const 
-	{
-		return face;
-	}
-
-	bool FaceInstance::askSetParent(const Instance* instance) const 
-	{
-		return dynamic_cast<const PartInstance*>(instance) != NULL;
-	}
-}
+extern "C" void* __stdcall make_desc_00532df0(const char*,int); struct Descriptor_00532df0{void attach(void*);}; extern Descriptor_00532df0 global_desc_00532df0; extern void register_desc_00532df0(void(*)()); extern int name_00532df0; extern int callback_impl;
+struct Init_00532df0{Init_00532df0(){void* p=make_desc_00532df0((const char*)&name_00532df0,0);global_desc_00532df0.attach(p);register_desc_00532df0((void(*)())&callback_impl);}}; Init_00532df0* func_00532df0(){static Init_00532df0 init;return &init;}

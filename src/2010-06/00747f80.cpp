@@ -1,108 +1,33 @@
-// from server: 64% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by tester
+// roc 2010-06 00747f80  unit: RBX::SlingshotTool  size: 27 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 00747f80
+//
+// 00747f80  8b412c               mov eax, dword ptr [ecx + 0x2c]
+// 00747f83  85c0                 test eax, eax
+// 00747f85  7e04                 jle 0x747f8b
+// 00747f87  48                   dec eax
+// 00747f88  89412c               mov dword ptr [ecx + 0x2c], eax
+// 00747f8b  80791400             cmp byte ptr [ecx + 0x14], 0
+// 00747f8f  7407                 je 0x747f98
+// 00747f91  8b01                 mov eax, dword ptr [ecx]
+// 00747f93  8b4028               mov eax, dword ptr [eax + 0x28]
+// 00747f96  ffe0                 jmp eax
+// 00747f98  c20400               ret 4
 
-// Candidate translation unit (score above; library headers required).
-#include "util/Name.h"
-#include "util/Debug.h"
-#include <boost/thread/once.hpp>
+struct SlingshotTool {
+    char pad[0x14];
+    bool flag14;
+    char pad2[0x2c - 0x15];
+    int field2c;
+    void func(int);
+};
 
-// intentionally outside of the RBX namespace
-boost::once_flag flag = BOOST_ONCE_INIT;
-
-boost::mutex& moo2()
-{
-	static boost::mutex mutex2;
-	return mutex2;
-}
-
-void initMoo()
-{
-	moo2();
-}
-
-namespace RBX
-{
-	// seems to be inlined
-	boost::mutex& Name::mutex()
-	{
-		boost::call_once(initMoo, flag);
-		return moo2();
-	}
-
-	std::map<int, Name*>& Name::dictionary()
-	{
-		static std::map<int, Name*> d;
-		return d;
-	}
-
-	Name::NamMap& Name::namMap()
-	{
-		static NamMap n;
-		return n;
-	}
-
-	const Name& Name::getNullName()
-	{
-		boost::mutex::scoped_lock scoped_lock(mutex());
-		static const Name& nullName = declare("", 0);
-		return nullName;
-	}
-
-	const Name& Name::declare(const char* sName, int dictionaryIndex)
-	{
-		if (!sName)
-		{
-			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
-			return getNullName();
-		}
-
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			if (dictionaryIndex != -1)
-			{
-				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
-				dictionary()[dictionaryIndex] = iter->second;
-			}
-			return *iter->second;
-		}
-		else
-		{
-			Name* name = new Name(sName, dictionaryIndex);
-			namMap()[sName] = name;
-			dictionary()[dictionaryIndex] = name;
-			return *name;
-		}
-	}
-
-	const Name& Name::lookup(const std::string& sName)
-	{
-		RBXASSERT(sName.size() < 50);
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			return *iter->second;
-		}
-		else
-		{
-			return getNullName();
-		}
-	}
-
-	const Name& Name::lookup(const char* sName)
-	{
-		if (!sName)
-		{
-			return getNullName();
-		}
-
-		return lookup(std::string(sName));
-	}
+void SlingshotTool::func(int a) {
+    int v = field2c;
+    if (v > 0) {
+        field2c = v - 1;
+    }
+    if (flag14) {
+        (*(void (__thiscall **)(SlingshotTool*, int))((*(char**)this) + 0x28))(this, a);
+    }
 }

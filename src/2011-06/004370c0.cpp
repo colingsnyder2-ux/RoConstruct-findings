@@ -1,11 +1,4 @@
-// from server: 37% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: templates-boost-1_34_1 deque_wp.cpp
-
-// Candidate translation unit (score above; library headers required).
-#include <boost/weak_ptr.hpp>
-struct T; typedef boost::weak_ptr<T> E;
-#include <deque>
-template class std::deque<E>;
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GS- /EHsc /MD
+extern "C" void helper_004370c0(void*,int,int,int);
+void func_004370c0(void* a,void* b,int c) { if(c!=4){ int old=c; *(volatile unsigned char*)&c=0; helper_004370c0((void*)a,(int)b,old,c); return; } *(int*)b=0xc0da08; ((char*)b)[4]=0; ((char*)b)[5]=0; }

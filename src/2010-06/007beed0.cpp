@@ -1,14 +1,14 @@
-// from server: 53% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Common/XTPImageManager.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-15.2.1-shared-mfc Source/Common/XTPImageManager.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPImageManager.cpp : implementation of the CXTPImageManager class.
 //
 // This file is a part of the XTREME TOOLKIT PRO MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2011 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -60,6 +60,8 @@ CLIPFORMAT CXTPImageManager::m_nAlphaClipFormat = (CLIPFORMAT)RegisterClipboardF
 #define NOMIRRORBITMAP      (DWORD)0x80000000 /* Do not Mirror the bitmap in this call */
 #endif
 
+#define  IMAGE_PLACEHOLDER 0xDEADBEAF
+
 //---------------------------------------------------------------------------
 //    Should be a prime number:
 // 37, 53, 79 , 101, 127, 199, 503, 1021, 1511, 2003, 3001, 4001, 5003, 6007, 8009, 12007, 16001, 32003, 48017, 64007
@@ -68,6 +70,7 @@ CLIPFORMAT CXTPImageManager::m_nAlphaClipFormat = (CLIPFORMAT)RegisterClipboardF
 //////////////////////////////////////////////////////////////////////////
 // Common
 
+// Based on http://support.microsoft.com/kb/303916/en-us
 BOOL CXTPImageManager::BitmapsCompatible(LPBITMAP lpbm1, LPBITMAP lpbm2) const
 {
 	if (lpbm1->bmBitsPixel != lpbm2->bmBitsPixel)
@@ -85,10 +88,11 @@ BOOL CXTPImageManager::BitmapsCompatible(LPBITMAP lpbm1, LPBITMAP lpbm2) const
 	return TRUE;
 }
 
+// Based on http://www.rsdn.ru/article/files/Functions/mctranspblt.xml
 BOOL CXTPImageManager::McTransparentBlt(HDC hdcDest, int nXOriginDest, int nYOriginDest,
 	int nWidthDest, int nHeightDest, HDC hdcSrc,
 	int nXOriginSrc, int nYOriginSrc, int nWidthSrc,
-	int nHeightSrc, UINT crTransparent) const
+	int nHeightSrc, UINT crTransparent)
 {
 
 	BOOL bResult = FALSE;
@@ -222,6 +226,7 @@ BOOL CXTPImageManager::TransparentBlt(HDC hdcDest, const CRect& rcDest,HDC hdcSr
 		hdcSrc, rcSrc.left, rcSrc.top, rcSrc.Width(), rcSrc.Height(), crTransparent);
 }
 
+// Based on http://support.microsoft.com/kb/303916/en-us
 BOOL CXTPImageManager::BlendImages(HBITMAP hbmSrc1, BOOL bRTL1, HBITMAP hbmSrc2, BOOL bRTL2, HBITMAP hbmDst) const
 {
 	BITMAP bmSrc1, bmSrc2, bmDst;
@@ -273,6 +278,7 @@ BOOL CXTPImageManager::BlendImages(HBITMAP hbmSrc1, BOOL bRTL1, HBITMAP hbmSrc2,
 	return TRUE;
 }
 
+// Based on http://support.microsoft.com/kb/303916/en-us
 HBITMAP AFX_CDECL CXTPImageManager::Create32BPPDIBSection(HDC hDC, int iWidth, int iHeight, LPBYTE* lpBits)
 {
 	BITMAPINFO bmi;
@@ -301,6 +307,7 @@ HBITMAP AFX_CDECL CXTPImageManager::Create32BPPDIBSection(HDC hDC, int iWidth, i
 	return(hbm);
 }
 
+// Based on http://support.microsoft.com/kb/303916/en-us
 BOOL CXTPImageManager::DoAlphaBlend(HDC hdcDest,                 // Handle to destination DC.
 	int nXOriginDest,            // X-coord of upper-left corner.
 	int nYOriginDest,            // Y-coord of upper-left corner.
@@ -699,6 +706,8 @@ HBITMAP AFX_CDECL CXTPImageManagerIcon::LoadBitmapFromFile(LPCTSTR lpszFileName,
 		pPict->Render(dc, 0, 0, cx, cy, 0, hmHeight-1, hmWidth, -hmHeight, 0);
 
 		::SelectObject(dc, hOldBitmap);
+
+		pPict->Release();
 
 		return hbmpImage;
 	}
@@ -1270,6 +1279,34 @@ void CXTPImageManagerResource::Clear(XTP_IMAGERESOURCE_INFO* pRInfo)
 	}
 }
 
+BOOL AFX_CDECL CXTPImageManagerIcon::IsAlphaIconHandle(HICON hIcon)
+{
+	if (!hIcon)
+		return FALSE;
+
+	ICONINFO iconInfo;
+	if ((CXTPImageManager::IsAlphaIconsImageListSupported() || XTPSystemVersion()->IsWinXPOrGreater())
+		&& GetIconInfo(hIcon, &iconInfo))
+	{
+		LPBYTE pBitsI = NULL;
+		BOOL bAlpha = -1;
+		HBITMAP hBitmap = CXTPImageManagerIcon::PreMultiplyAlphaBitmap(iconInfo.hbmColor, &bAlpha, &pBitsI);
+
+		DeleteObject(iconInfo.hbmColor);
+		DeleteObject(iconInfo.hbmMask);
+
+		if (bAlpha == TRUE && pBitsI)
+		{
+			DeleteObject(hBitmap);
+			return TRUE;
+		}
+
+		if (hBitmap) DeleteObject(hBitmap);
+	}
+
+	return FALSE;
+}
+
 XTP_IMAGERESOURCE_INFO* CXTPImageManagerResource::Add(const CXTPImageManagerIconHandle& hHandle)
 {
 	CXTPLockGuard lock(m_cs);
@@ -1666,6 +1703,12 @@ HBITMAP CXTPImageManagerIconHandle::GetBitmap() const
 HICON CXTPImageManagerIconHandle::GetIcon() const
 {
 	return m_hIcon;
+}
+
+void CXTPImageManagerIconHandle::Detach()
+{
+	m_bClearHandles = FALSE;
+	Clear();
 }
 
 void CXTPImageManagerIconHandle::Clear()
@@ -3408,7 +3451,7 @@ BOOL CXTPImageManager::SetIcons(CImageList& imlIcons, UINT* pCommands, int nCoun
 
 	for (int i = 0; i < nCount; i++)
 	{
-		if ((pCommands == NULL) || bIncludeAll || (pCommands[i] != 0))
+		if ((pCommands == NULL) || bIncludeAll || (pCommands[i] != 0 && pCommands[i] != IMAGE_PLACEHOLDER))
 		{
 			HICON hIcon = imlIcons.ExtractIcon(j);
 			if (hIcon)
@@ -3566,26 +3609,37 @@ HBITMAP CXTPImageManager::ResampleAlphaLayer(HBITMAP bmpAlpha, COLORREF clrMask)
 		BYTE byMaskGreen = GetGValue(clrMask);
 		BYTE byMaskBlue = GetBValue(clrMask);
 
-		int nCount = pBitmapInfo->bmiHeader.biHeight * pBitmapInfo->bmiHeader.biWidth;
-
-		for (; nCount--;)
+		for (int i = 0; i < pBitmapInfo->bmiHeader.biHeight; i ++)
 		{
-			int iAlpha = pSource[3];
+			for (int j = 0; j < pBitmapInfo->bmiHeader.biWidth; j ++)
+			{
+				int iAlpha = pSource[3];
 
-			if (iAlpha < 120)
-			{
-				pTarget[0] = byMaskRed;
-				pTarget[1] = byMaskGreen;
-				pTarget[2] = byMaskBlue;
+				if (iAlpha < 120) // Transparent
+				{
+					pTarget[0] = byMaskRed;
+					pTarget[1] = byMaskGreen;
+					pTarget[2] = byMaskBlue;
+				}
+				else if (iAlpha == 255) // Opaque
+				{
+					pTarget[0] = pSource[0];
+					pTarget[1] = pSource[1];
+					pTarget[2] = pSource[2];
+				}
+				else
+				{
+					pTarget[0] = (BYTE)((pSource[0] * (255 - iAlpha) + pSource[0] * iAlpha) >> 8);
+					pTarget[1] = (BYTE)((pSource[1] * (255 - iAlpha) + pSource[1] * iAlpha) >> 8);
+					pTarget[2] = (BYTE)((pSource[2] * (255 - iAlpha) + pSource[2] * iAlpha) >> 8);
+				}
+
+				pTarget += 3;
+				pSource += 4;
 			}
-			else
-			{
-				pTarget[0] = (BYTE)((pSource[0] * (255 - iAlpha) + pSource[0] * iAlpha) >> 8);
-				pTarget[1] = (BYTE)((pSource[1] * (255 - iAlpha) + pSource[1] * iAlpha) >> 8);
-				pTarget[2] = (BYTE)((pSource[2] * (255 - iAlpha) + pSource[2] * iAlpha) >> 8);
-			}
-			pTarget += 3;
-			pSource += 4;
+
+			if (pBitmapInfo->bmiHeader.biWidth & 1)
+				pTarget++;
 		}
 	}
 
@@ -3647,7 +3701,7 @@ BOOL CXTPImageManager::SetIcons(CBitmap& bmpIcons, UINT* pCommands, int nCount, 
 
 		for (int i = 0; i < nCount; i++)
 		{
-			if ((!pCommands || bIgnoreNulls || pCommands[i]) && j < nIconCount)
+			if ((!pCommands || bIgnoreNulls || (pCommands[i] != 0 && pCommands[i] != IMAGE_PLACEHOLDER)) && j < nIconCount)
 			{
 
 				SetIcon(pDestBitmap[j], pCommands ? pCommands[i]: i, szIcon, imageState);

@@ -1,14 +1,14 @@
-// from server: 59% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Controls/XTThemeManager.cpp
+// roc-flags: /O2 /GS- /MD /Ob1 /Oy-
+// roc-lib: xtp-11.2.2 Source/Controls/XTThemeManager.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTThemeManager.cpp: implementation of the CXTThemeManager class.
 //
 // This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -42,7 +42,7 @@ CProcessLocal<CXTThemeManager> CXTThemeManager::m_sThemeManager;
 // CXTThemeManagerStyle
 
 CXTThemeManagerStyle::CXTThemeManagerStyle()
-: m_enumTheme(xtThemeOffice2000)
+: m_enumTheme(xtThemeDefault)
 , m_pFactory(NULL)
 {
 
@@ -60,7 +60,7 @@ void CXTThemeManagerStyle::RefreshMetrics()
 
 BOOL CXTThemeManagerStyle::IsOfficeTheme()
 {
-	return m_enumTheme != xtThemeOffice2000;
+	return m_enumTheme != xtThemeDefault;
 }
 
 BOOL CXTThemeManagerStyle::TakeSnapShot(CWnd* pWndOwner)
@@ -315,7 +315,7 @@ void CXTThemeManagerStyleHost::OnThemeChanged()
 CXTThemeManager::CXTThemeManager()
 {
 	m_factoryList.Construct(offsetof(CXTThemeManagerStyleFactory, m_pNextFactory));
-	m_enumTheme = xtThemeOffice2000;
+	m_enumTheme = xtThemeDefault;
 }
 
 CXTThemeManager::~CXTThemeManager()

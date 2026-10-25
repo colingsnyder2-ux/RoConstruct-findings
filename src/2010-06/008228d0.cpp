@@ -1,8 +1,8 @@
-// from server: 53% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2-vc8 Source/Common/XTPResourceManager.cpp
+// roc-cl: 30729
+// roc-flags: /O2 /GS- /MD /Ob1 /Oy-
+// roc-lib: xtp-11.2.2 Source/Common/XTPResourceManager.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPResourceManager.cpp: implementation of the CXTPResourceManager class.

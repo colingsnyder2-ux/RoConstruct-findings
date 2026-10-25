@@ -1,22 +1,17 @@
-// from server: 82% by atomic.potato
-typedef unsigned char byte;
-
-extern "C" void __cdecl Function908200(int);
-
-struct S
-{
-    void __cdecl f(int, int);
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_00909380 {
+    T4_00909380();
+    virtual void f_00909380();
+    char m_a;
+    char m_b;
 };
-
-void S::f(int a, int value)
+T4_00909380::T4_00909380() : m_a(0), m_b(0) {}
+extern "C" void* create_other_00909380(void*, void*, int);
+void* create_00909380(void* unused, T4_00909380* out, int type)
 {
-    if (value != 4)
-    {
-        Function908200(value);
-        return;
-    }
-
-    *(int*)a = 0x00BFE830;
-    *((byte*)a + 4) = 0;
-    *((byte*)a + 5) = 0;
+    if (type != 4)
+        return create_other_00909380(unused, out, type);
+    out->T4_00909380::T4_00909380();
+    return out;
 }

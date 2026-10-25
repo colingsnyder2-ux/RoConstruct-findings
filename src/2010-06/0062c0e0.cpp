@@ -1,20 +1,17 @@
-// from server: 63% by atomic.potato
-extern "C" void __cdecl sub_62b3e0(int);
-
-struct S
-{
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_0062c0e0 {
+    T4_0062c0e0();
+    virtual void f_0062c0e0();
+    char m_a;
+    char m_b;
 };
-
-void __cdecl f(int value, int* p)
+T4_0062c0e0::T4_0062c0e0() : m_a(0), m_b(0) {}
+extern "C" void* create_other_0062c0e0(void*, void*, int);
+void* create_0062c0e0(void* unused, T4_0062c0e0* out, int type)
 {
-    if (value == 4)
-    {
-        p[0] = 0x00bb2370;
-        ((char*)p)[4] = 0;
-        ((char*)p)[5] = 0;
-    }
-    else
-    {
-        sub_62b3e0(value);
-    }
+    if (type != 4)
+        return create_other_0062c0e0(unused, out, type);
+    out->T4_0062c0e0::T4_0062c0e0();
+    return out;
 }

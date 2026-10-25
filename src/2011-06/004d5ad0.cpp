@@ -1,15 +1,4 @@
-// from server: 84% by atomic.potato
-struct S
-{
-    int f();
-};
-
-extern "C" int __cdecl sub_004d3fa0(void *);
-
-int S::f()
-{
-    void *p = (void *)sub_004d3fa0(this);
-    if (p)
-        return *(int *)((char *)p + 0x90);
-    return 0;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct A{char pad[0x90]; void* value;}; extern "C" A* get(void*);
+void* func(void* x){A* p=get(x); return p ? p->value : 0;}

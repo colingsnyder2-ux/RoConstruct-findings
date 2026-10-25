@@ -1,8 +1,8 @@
-// from server: 62% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Controls/Deprecated/XTButtonTheme.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-15.2.1-shared-mfc Source/Controls/Deprecated/XTButtonTheme.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTButtonTheme.cpp: implementation of the CXTButtonTheme class.

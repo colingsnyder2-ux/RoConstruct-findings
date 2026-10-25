@@ -1,20 +1,17 @@
-// from server: 94% by atomic.potato
-extern "C" void __stdcall helper(void*, void*, int);
-
-struct S
-{
-    void f(void*, void*, int);
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_0067ca10 {
+    T4_0067ca10();
+    virtual void f_0067ca10();
+    char m_a;
+    char m_b;
 };
-
-void S::f(void* a, void* b, int c)
+T4_0067ca10::T4_0067ca10() : m_a(0), m_b(0) {}
+extern "C" void* create_other_0067ca10(void*, void*, int);
+void* create_0067ca10(void* unused, T4_0067ca10* out, int type)
 {
-    if (c != 4)
-    {
-        helper(a, b, c);
-        return;
-    }
-
-    *(unsigned long*)b = 0x00bc1280;
-    *((unsigned char*)b + 4) = 0;
-    *((unsigned char*)b + 5) = 0;
+    if (type != 4)
+        return create_other_0067ca10(unused, out, type);
+    out->T4_0067ca10::T4_0067ca10();
+    return out;
 }

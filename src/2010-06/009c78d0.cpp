@@ -1,99 +1,28 @@
-// from server: 79% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 100% by colin
+// roc 2010-06 009c78d0  unit: seg_009c0000  size: 41 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 009c78d0
+//
+// 009c78d0  6a00                 push 0
+// 009c78d2  6a0f                 push 0xf
+// 009c78d4  68f4000000           push 0xf4
+// 009c78d9  6830a2a100           push 0xa1a230
+// 009c78de  68e8a3a100           push 0xa1a3e8
+// 009c78e3  b9505fc000           mov ecx, 0xc05f50
+// 009c78e8  e853f3b0ff           call 0x4d6c40
+// 009c78ed  6860d19d00           push 0x9dd160
+// 009c78f2  e86c11deff           call 0x7a8a63
+// 009c78f7  59                   pop ecx
+// 009c78f8  c3                   ret 
 
-// Candidate translation unit (score above; library headers required).
-#include "util/RunStateOwner.h"
-#include "v8datamodel/DataModel.h"
-
-namespace RBX
+extern int g_009c78d0_0;
+extern int g_009c78d0_1;
+// roc-flags: /O2 /GS- /EHsc /MD /Ob2 /Oy /GF
+extern "C" void tail_fn_009c78d0(void*);
+struct O_009c78d0 { int m(void*, void*, int, int, int); };
+extern O_009c78d0 g_obj_009c78d0;
+extern int g_tail_009c78d0;
+void func_009c78d0()
 {
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> runFunction(&RunService::run, "Run", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> pauseFunction(&RunService::pause, "Pause", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> resetFunction(&RunService::reset, "Reset", Reflection::FunctionDescriptor::NeedTrustedCaller);
-
-	static Reflection::SignalDesc<RunService, void(float)> event_Heartbeat("Heartbeat", "interval");
-
-	RunService::RunService()
-		: framePeriod(1.0f/30.0f),
-		  runState(RS_NORMAL),
-		  invalidRunViewCount(0),
-		  stopRequested(false),
-		  runDisabled(false)
-	{
-		setName("Run Service");
-	}
-
-	RunService::~RunService()
-	{
-		RBXASSERT(views.empty());
-	}
-
-	void RunService::endRunThread(bool join)
-	{
-		stopRequested = true;
-		stateChangedCondition.notify_all();
-
-		if (join)
-			runThread->join();
-	}
-
-	void RunService::onAncestorChanged(const AncestorChanged& event)
-	{
-		if (!getParent())
-		{
-			stopRequested = true;
-			stateChangedCondition.notify_all();
-		}
-	}
-
-	void RunService::setRunState(RunState newState)
-	{
-		RunTransition transition(runState, newState);
-		runState = newState;
-
-		Notifier<RunService, RunState>::raise(newState);
-		Notifier<RunService, RunTransition>::raise(transition);
-	}
-
-	void RunService::raiseStepped(float time, float step)
-	{
-		Notifier<RunService, Stepped>::raise(Stepped(time, step));
-		event_Stepped.fire(this, time, step);
-	}
-
-	void RunService::raiseHeartbeat(float time, float step)
-	{
-		Notifier<RunService, Heartbeat>::raise(Heartbeat(time, step));
-		event_Heartbeat.fire(this, step);
-	}
-
-	void RunService::invalidateRunViews()
-	{
-		boost::mutex::scoped_lock lock(viewMutex);
-
-		if (invalidRunViewCount == 0)
-		{
-			invalidRunViewCount = (int)views.size();
-			if (invalidRunViewCount > 0)
-			{
-				for (std::map<IRunView*, bool>::iterator iter = views.begin(); iter != views.end(); iter++)
-				{
-					iter->first->InvalidateRunView();
-					iter->second = false;
-				}
-				runViewsDoneCondition.notify_all();
-			}
-		}
-	}
-
-	void RunService::start()
-	{
-		RBXASSERT(!runThread);
-
-		boost::shared_ptr<DataModel> dataModel = shared_from(dynamic_cast<DataModel*>(getParent()));
-		runThread.reset(new boost::thread(background_function(boost::bind(&RunService::runProc, shared_from(this), dataModel), "rbx_runProc")));
-	}
+    g_obj_009c78d0.m((void*)&g_009c78d0_0, (void*)&g_009c78d0_1, 244, 15, 0);
+    tail_fn_009c78d0(&g_tail_009c78d0);
 }

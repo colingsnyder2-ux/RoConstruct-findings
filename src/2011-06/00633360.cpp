@@ -1,20 +1,17 @@
-// from server: 65% by atomic.potato
-extern "C" void G1_func_00632570();
-
-struct S
-{
-    void f(void* a, int b, int c);
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_00633360 {
+    T4_00633360();
+    virtual void f_00633360();
+    char m_a;
+    char m_b;
 };
-
-void S::f(void* a, int b, int c)
+T4_00633360::T4_00633360() : m_a(0), m_b(0) {}
+extern "C" void* create_other_00633360(void*, void*, int);
+void* create_00633360(void* unused, T4_00633360* out, int type)
 {
-    if (c != 4)
-    {
-        G1_func_00632570();
-        return;
-    }
-
-    *(int*)b = 0x00c4f798;
-    *((char*)b + 4) = 0;
-    *((char*)b + 5) = 0;
+    if (type != 4)
+        return create_other_00633360(unused, out, type);
+    out->T4_00633360::T4_00633360();
+    return out;
 }

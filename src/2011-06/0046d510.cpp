@@ -1,97 +1,39 @@
-// from server: 63% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/CommandBars/XTPControlButton.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPControlButton.cpp : implementation of the CXTPControlButton class.
+// from server: 100% by tester
+// roc 2011-06 0046d510  unit: CRobloxControlColorSelector  size: 37 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 0046d510
 //
-// This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
+// 0046d510  56                   push esi
+// 0046d511  8b742408             mov esi, dword ptr [esp + 8]
+// 0046d515  57                   push edi
+// 0046d516  8b7c2410             mov edi, dword ptr [esp + 0x10]
+// 0046d51a  3bf7                 cmp esi, edi
+// 0046d51c  7412                 je 0x46d530
+// 0046d51e  8bff                 mov edi, edi
+// 0046d520  8d4e08               lea ecx, [esi + 8]
+// 0046d523  ff15082ea400         call dword ptr [0xa42e08]
+// 0046d529  83c60c               add esi, 0xc
+// 0046d52c  3bf7                 cmp esi, edi
+// 0046d52e  75f0                 jne 0x46d520
+// 0046d530  5f                   pop edi
+// 0046d531  5e                   pop esi
+// 0046d532  c20800               ret 8
 
-#include "stdafx.h"
-#include "XTPControlButton.h"
-#include "XTPCommandBar.h"
+typedef void *(__thiscall *Fn)(void *);
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+extern Fn g_fn_009ecef0;
 
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPControlButton
-
-IMPLEMENT_XTP_CONTROL(CXTPControlButton, CXTPControl)
-
-CXTPControlButton::CXTPControlButton()
+struct CRobloxControlMaterialSelector
 {
-	EnableAutomation();
+    void f(void *, void *);
+};
 
-	m_controlType = xtpControlButton;
-}
-
-CXTPControlButton::~CXTPControlButton()
+void CRobloxControlMaterialSelector::f(void *first, void *last)
 {
+    char *p = (char *)first;
+    char *end = (char *)last;
+    while (p != end)
+    {
+        g_fn_009ecef0(p + 8);
+        p += 12;
+    }
 }
-
-void CXTPControlButton::OnLButtonUp(CPoint /*point*/)
-{
-	if (GetEnabled() && (m_pParent->GetType() == xtpBarTypePopup || m_pParent->GetPosition() == xtpBarPopup))
-	{
-		OnExecute();
-	}
-}
-
-void CXTPControlButton::OnClick(BOOL bKeyboard, CPoint pt)
-{
-	if (!GetEnabled()) return;
-
-	if (IsCustomizeMode())
-	{
-		m_pParent->SetPopuped(-1);
-		m_pParent->SetSelected(-1);
-		CustomizeStartDrag(pt);
-		return;
-	}
-
-	if (!bKeyboard)
-	{
-		if (m_pParent->GetType() != xtpBarTypePopup)
-			ClickToolBarButton();
-	}
-	else
-	{
-		OnExecute();
-	}
-}
-
-void CXTPControlButton::Copy(CXTPControl* pControl, BOOL bRecursive)
-{
-	ASSERT(DYNAMIC_DOWNCAST(CXTPControlButton, pControl));
-
-	CXTPControl::Copy(pControl, bRecursive);
-}
-
-
-
-
-
-

@@ -1,26 +1,11 @@
-// from server: 69% by atomic.potato
-typedef int bool32;
-
-struct TypeInfo
-{
-    bool32 operator==(const TypeInfo& other) const;
-};
-
-extern "C" TypeInfo* __cdecl Function_0080BBC2(int value);
-extern "C" bool32 __cdecl Function_00A40A50(int, TypeInfo*);
-
-struct TToolVerb
-{
-    void* field_0c;
-    bool32 f();
-};
-
-bool32 TToolVerb::f()
-{
-    void* object = *(void**)((char*)field_0c + 0x0acc);
-    int value = *(int*)((char*)object + 0x188);
-    if (!value)
-        return 0;
-    TypeInfo* type = Function_0080BBC2(value);
-    return Function_00A40A50(0, type);
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct P3 { char pad[0x188]; void* value; };
+struct P2 { char pad[0xacc]; P3* p; };
+struct Obj { char pad[0xc]; P2* p; bool f(); };
+struct C {};
+extern "C" void* helper(void*);
+extern C c;
+typedef bool (__thiscall *Fn)(C*,void*);
+extern Fn slot;
+bool Obj::f(){ void* x=p->p->value; if(x){ x=helper(x); return slot(&c,x); } return false; }

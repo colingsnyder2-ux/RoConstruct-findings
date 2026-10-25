@@ -1,11 +1,11 @@
-// from server: 30% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/CommandBars/XTPImageEditor.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPShadowsManager.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPImageEditor.cpp : implementation of the CXTPImageEditorDlg class.
+// XTPShadowsManager.cpp : implementation of the CXTPShadowsManager class.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
 // (c)1998-2007 Codejock Software, All Rights Reserved.
@@ -26,18 +26,16 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "Resource.h"
-#include "Common/Resource.h"
-
-#include "Common/XTPVC80Helpers.h"
-#include "Common/XTPResourceManager.h"
-#include "Common/XTPImageManager.h"
 #include "Common/XTPDrawHelpers.h"
 #include "Common/XTPColorManager.h"
 
-#include "XTPImageEditor.h"
+#include "XTPShadowsManager.h"
+#include "XTPHookManager.h"
 #include "XTPCommandBar.h"
-#include "XTPMouseManager.h"
+#include "XTPCommandBars.h"
+#include "XTPPaintManager.h"
+#include "XTPControlPopup.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -45,1364 +43,420 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-
-#define UNDO_COUNT 15
-#define CLR_TO_RGBQUAD(clr) (RGB(GetBValue(clr), GetGValue(clr), GetRValue(clr)))
-
-void CXTPImageEditorPicture::CAlphaBitmap::CreateEditorBitmap(int nWidth, int nHeight)
+CXTPShadowsManager::CXTPShadowsManager()
 {
-	BITMAPINFOHEADER BMI;
-	// Fill in the header info.
-	ZeroMemory (&BMI, sizeof(BMI));
-	BMI.biSize = sizeof(BITMAPINFOHEADER);
-	BMI.biWidth = nWidth;
-	BMI.biHeight = nHeight;
-	BMI.biPlanes = 1;
-	BMI.biBitCount = 32;
-	BMI.biCompression = BI_RGB;   // No compression
+	m_pfnUpdateLayeredWindow = NULL;
 
-	UINT* pSrcBits = NULL;
-	Attach(CreateDIBSection (NULL, (BITMAPINFO *)&BMI, DIB_RGB_COLORS, (void **)&pSrcBits, 0, 0l));
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPImageEditorPicture
-
-
-CXTPImageEditorPicture::CXTPImageEditorPicture()
-{
-	m_pCurrentBitmap = NULL;
-	m_pPictureBitmap = NULL;
-
-	m_pParentWnd = NULL;
-
-	m_bTracked = FALSE;
-
-	m_clrDraw = 0;
-
-	m_hCursorLine = XTPResourceManager()->LoadCursor(XTP_IDC_COMMANDBARS_LINE);
-	m_hCursorFillColor = XTPResourceManager()->LoadCursor(XTP_IDC_COMMANDBARS_FILLCOLOR);
-	m_hCursorPencil = XTPResourceManager()->LoadCursor(XTP_IDC_COMMANDBARS_PENCIL);
-	m_hCursorPickColor = XTPResourceManager()->LoadCursor(XTP_IDC_COMMANDBARS_PICKCOLOR);
-
-}
-
-CXTPImageEditorPicture::~CXTPImageEditorPicture()
-{
-	if (m_pPictureBitmap)
+	HMODULE hLib = GetModuleHandle(_T("USER32"));
+	if (hLib)
 	{
-		delete m_pPictureBitmap;
-	}
-	if (m_pCurrentBitmap)
-	{
-		delete m_pCurrentBitmap;
+		m_pfnUpdateLayeredWindow = (LPFNUPDATELAYEREDWINDOW) GetProcAddress(hLib, "UpdateLayeredWindow");
 	}
 
-	while (!m_lstUndo.IsEmpty())
+	m_bAlphaShadow = AlphaShadow();
+}
+
+CXTPShadowsManager* AFX_CDECL XTPShadowsManager()
+{
+	static CXTPShadowsManager s_managerInstance;
+	return &s_managerInstance;
+}
+
+CXTPShadowsManager::~CXTPShadowsManager()
+{
+	ASSERT(m_lstShadow.IsEmpty());
+}
+
+BOOL CXTPShadowsManager::AlphaShadow()
+{
+#ifdef NOALPHASHADOW
+	return FALSE;
+#endif
+
+	if (XTPColorManager()->IsLowResolution())
+		return FALSE;
+
+	return (m_pfnUpdateLayeredWindow != NULL);
+}
+
+
+#ifndef SPI_GETDROPSHADOW
+#define SPI_GETDROPSHADOW     0x1024
+#endif
+
+
+void CXTPShadowsManager::SetShadow(CXTPCommandBar* pCommandBar, const CRect& rcExclude)
+{
+	if (pCommandBar->IsCustomizeMode())
+		return;
+
+	if (!(pCommandBar->GetPaintManager()->GetShadowOptions() & xtpShadowOfficeAlpha))
 	{
-		CBitmap* pBitmap = m_lstUndo.RemoveTail();
-		if (pBitmap) delete pBitmap;
+		if (!m_bAlphaShadow)
+			return;
+
+		BOOL bDropShadow = FALSE;
+		SystemParametersInfo(SPI_GETDROPSHADOW, 0, &bDropShadow, 0);
+
+		if (!bDropShadow)
+			return;
 	}
 
-	while (!m_lstRedo.IsEmpty())
+	CXTPWindowRect rc(pCommandBar);
+	CreateShadow(TRUE, rc, rcExclude, pCommandBar, FALSE);
+	CreateShadow(FALSE, rc, rcExclude, pCommandBar, FALSE);
+}
+
+void CXTPShadowsManager::SetShadow(CXTPControlPopup* pControl)
+{
+	if (pControl->GetParent()->IsCustomizeMode())
+		return;
+
+	if ((pControl->GetPaintManager()->GetShadowOptions() & (xtpShadowOfficeAlpha | xtpShadowShowPopupControl)) ==
+		(xtpShadowOfficeAlpha | xtpShadowShowPopupControl))
 	{
-		CBitmap* pBitmap = m_lstRedo.RemoveTail();
-		if (pBitmap) delete pBitmap;
+		CRect rc = pControl->GetRect();
+		((CWnd*)pControl->GetParent())->ClientToScreen(&rc);
+		CXTPCommandBar* pCommandBar = pControl->GetCommandBar();
+
+		CreateShadow(TRUE, rc, CXTPEmptyRect(), pCommandBar, TRUE);
+		CreateShadow(FALSE, rc, CXTPEmptyRect(), pCommandBar, TRUE);
+	}
+}
+
+void CXTPShadowsManager::RemoveShadow(CXTPCommandBar* pCommandBar)
+{
+	POSITION pos = m_lstShadow.GetHeadPosition();
+	while (pos)
+	{
+		CShadowWnd* pShadow = m_lstShadow.GetNext(pos);
+
+		if (pCommandBar == pShadow->m_pCommandBar)
+		{
+			XTPHookManager()->RemoveHook(pShadow->m_pCommandBar->GetSafeHwnd(), pShadow);
+			DestroyShadow(pShadow);
+		}
+	}
+}
+
+void CXTPShadowsManager::OffsetShadow(CXTPCommandBar* pCommandBar, CSize szOffset)
+{
+	POSITION pos = m_lstShadow.GetHeadPosition();
+	while (pos)
+	{
+		CShadowWnd* pShadow = m_lstShadow.GetNext(pos);
+
+		if (pCommandBar == pShadow->m_pCommandBar && pShadow->GetSafeHwnd() && !pShadow->m_bControlPopup)
+		{
+			if (pShadow->m_bExcluded)
+			{
+				pShadow->SetWindowRgn(NULL, FALSE);
+				pShadow->m_bExcluded = FALSE;
+			}
+			CXTPWindowRect rc(pShadow);
+			if (pShadow->m_bHoriz)
+			{
+				pShadow->SetWindowPos(0, rc.left, rc.top + szOffset.cy,
+					rc.Width() + szOffset.cx, rc.Height(), SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+			}
+			else
+			{
+				pShadow->SetWindowPos(0, rc.left + szOffset.cx, rc.top,
+					rc.Width(), rc.Height() + szOffset.cy, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+			}
+		}
+	}
+}
+
+CXTPShadowsManager::CShadowWnd* CXTPShadowsManager::CreateShadow(BOOL bHoriz, CRect rc, CRect rcExclude, CXTPCommandBar* pCommandBar, BOOL bControlPopup)
+{
+	CShadowWnd* pShadow = new CShadowWnd();
+	CXTPPaintManager* pPaintManager = pCommandBar->GetPaintManager();
+	if (!pPaintManager->m_bShowShadow)
+		return NULL;
+
+	pShadow->m_nShadowOptions = pPaintManager->GetShadowOptions();
+
+	pShadow->m_pCommandBar = pCommandBar;
+	pShadow->m_bControlPopup = bControlPopup;
+	pShadow->Create(bHoriz, rc);
+
+	m_lstShadow.AddShadow(pShadow);
+
+	if (pShadow->m_nShadowOptions & xtpShadowShowPopupControl)
+	{
+		pShadow->ExcludeRect(rcExclude);
 	}
 
-}
-
-void CXTPImageEditorPicture::Init(UINT nID, CXTPImageEditorDlg* pParentWnd)
-{
-	m_pParentWnd = pParentWnd;
-
-	SubclassDlgItem(nID, pParentWnd);
-	m_szPicture = pParentWnd->m_szPicture;
-
-	CRect rc;
-	GetWindowRect(rc);
-
-	m_szItem = CSize (rc.Width() / m_szPicture.cx, rc.Height() / m_szPicture.cy);
-
-	CSize sz(m_szItem.cx * m_szPicture.cx, m_szItem.cy * m_szPicture.cy);
-
-	SetWindowPos(&CWnd::wndTop, rc.left, rc.top, sz.cx + 1, sz.cy + 1, SWP_NOMOVE);
-
-
-	m_dcPicture.CreateCompatibleDC(NULL);
-}
-
-XTPImageEditorTools CXTPImageEditorPicture::GetSelectedTool()
-{
-	ASSERT(m_pParentWnd);
-	if (!m_pParentWnd)
-		return xtpToolPencil;
-
-	return m_pParentWnd->m_toolSelected;
-}
-COLORREF CXTPImageEditorPicture::GetSelectedColor()
-{
-	ASSERT(m_pParentWnd);
-	if (m_pParentWnd && m_pParentWnd->m_pSelected)
+	POSITION pos = m_lstShadow.GetHeadPosition();
+	while (pos)
 	{
-		return m_pParentWnd->m_pSelected->GetColor();
+		CShadowWnd* pShadowPrev = m_lstShadow.GetNext(pos);
+		if (pShadowPrev->m_pCommandBar)
+		{
+			pShadow->ExcludeRect(CXTPWindowRect(pShadowPrev->m_pCommandBar));
+		}
+	}
+
+
+	pShadow->SetWindowPos(&CWnd::wndTopMost, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+
+	XTPHookManager()->SetHook(pCommandBar->m_hWnd, pShadow);
+
+	return pShadow;
+}
+
+
+void CXTPShadowsManager::DestroyShadow(CShadowWnd* pWnd)
+{
+	if (pWnd->GetSafeHwnd()) pWnd->ShowWindow(SW_HIDE);
+	pWnd->m_pCommandBar = 0;
+	m_lstShadow.RemoveShadow(pWnd);
+	pWnd->DestroyWindow();
+	delete pWnd;
+}
+
+CXTPShadowsManager::CShadowWnd::CShadowWnd()
+{
+	m_pCommandBar = 0;
+	m_bHoriz = FALSE;
+	m_nShadowOptions = 0;
+	m_bExcluded = FALSE;
+}
+
+int CXTPShadowsManager::CShadowWnd::OnHookMessage(HWND hWnd, UINT nMessage, WPARAM& wParam, LPARAM& /*lParam*/, LRESULT& /*lResult*/)
+{
+	if (nMessage == WM_SHOWWINDOW && wParam == FALSE)
+	{
+		ShowWindow(SW_HIDE);
+	}
+	if (nMessage == WM_SHOWWINDOW && wParam == TRUE)
+	{
+		ShowWindow(SW_SHOWNA);
+	}
+	if (nMessage == WM_DESTROY)
+	{
+		XTPHookManager()->RemoveHook(hWnd, this);
+		XTPShadowsManager()->DestroyShadow(this);
 	}
 	return 0;
 }
 
-BEGIN_MESSAGE_MAP(CXTPImageEditorPicture, CStatic)
-	//{{AFX_MSG_MAP(CXTPImageEditorPicture)
-	ON_WM_PAINT()
-	ON_WM_LBUTTONDOWN()
-	ON_WM_MOUSEMOVE()
-	ON_WM_CAPTURECHANGED()
-	ON_WM_LBUTTONUP()
-	ON_WM_SETCURSOR()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPImageEditorPicture message handlers
-
-BOOL CXTPImageEditorPicture::OnSetCursor(CWnd* /*pWnd*/, UINT /*nHitTest*/, UINT /*message*/)
+BOOL CXTPShadowsManager::CShadowWnd::Create(BOOL bHoriz, CRect rcWindow)
 {
-	::SetCursor(
-		GetSelectedTool() == xtpToolFill ? m_hCursorFillColor :
-		GetSelectedTool() == xtpToolPencil ? m_hCursorPencil :
-		GetSelectedTool() == xtpToolGetColor ? m_hCursorPickColor : m_hCursorLine
-	);
+	CWnd* pSite = m_pCommandBar->GetSite();
+	CXTPCommandBars* pCommandBars = m_pCommandBar->GetCommandBars();
 
+	if (m_hWnd == 0)
+	{
+		int nFlags = WS_EX_TOOLWINDOW;
+		if (XTPShadowsManager()->m_bAlphaShadow) nFlags |= 0x80000;
+
+		UINT nClassStyle = !pCommandBars || pCommandBars->GetCommandBarsOptions()->bUseSystemSaveBitsStyle ? CS_SAVEBITS | CS_OWNDC : 0;
+
+		CString strClass = ::AfxRegisterWndClass(nClassStyle, AfxGetApp()->LoadStandardCursor(IDC_ARROW));
+		if (!CreateEx(nFlags, strClass, 0, WS_POPUP, CXTPEmptyRect(), pSite, 0))
+			return FALSE;
+	}
+	SetWindowRgn(NULL, FALSE);
+
+	int nWidth = XTPShadowsManager()->m_bAlphaShadow ? 4 : 2;
+
+	m_bHoriz = bHoriz;
+
+	CRect rcShadow;
+	if (bHoriz) rcShadow.SetRect(rcWindow.left + nWidth, rcWindow.bottom, rcWindow.right + nWidth, rcWindow.bottom + nWidth);
+		else rcShadow.SetRect(rcWindow.right, rcWindow.top + nWidth, rcWindow.right + nWidth, rcWindow.bottom);
+
+	MoveWindow(rcShadow, FALSE);
 	return TRUE;
 }
 
-void CXTPImageEditorPicture::OnPaint()
+BEGIN_MESSAGE_MAP(CXTPShadowsManager::CShadowWnd, CWnd)
+	{ WM_ERASEBKGND, 0, 0, 0, AfxSig_bD, (AFX_PMSG)(AFX_PMSGW) (static_cast< BOOL (AFX_MSG_CALL CWnd::*)(CDC*) > (CXTPShadowsManager::CShadowWnd::OnEraseBkgnd)) },
+	{ WM_PAINT, 0, 0, 0, AfxSig_vv, (AFX_PMSG)(AFX_PMSGW) (static_cast< void (AFX_MSG_CALL CWnd::*)(void) > (CXTPShadowsManager::CShadowWnd::OnPaint)) },
+	{ WM_SIZE, 0, 0, 0, AfxSig_vwii, (AFX_PMSG)(AFX_PMSGW) (static_cast< void (AFX_MSG_CALL CWnd::*)(UINT, int, int) > (CXTPShadowsManager::CShadowWnd::OnSize)) },
+	{ WM_NCHITTEST, 0, 0, 0, AfxSig_wp, (AFX_PMSG)(AFX_PMSGW) (static_cast< LRESULT (AFX_MSG_CALL CWnd::*)(CPoint) > (CXTPShadowsManager::CShadowWnd::OnNcHitTest)) },
+END_MESSAGE_MAP()
+
+LRESULT CXTPShadowsManager::CShadowWnd::OnNcHitTest(CPoint /*point*/)
 {
-	CPaintDC dcPaint(this); // device context for painting
-	CXTPClientRect rc(this);
-	CXTPBufferDC dc(dcPaint, rc);
-
-	dc.FillSolidRect(rc, RGB(255, 255, 255));
-
-	BOOL bAlpha = m_pPictureBitmap != 0 && m_pPictureBitmap->m_bAlpha;
-
-	PINT pBits = 0;
-	PBITMAPINFO pbmi = 0;
-	UINT nSize;
-
-	if (m_pPictureBitmap)
-	{
-		if (!CXTPImageManagerIcon::GetBitmapBits(dc, (HBITMAP)m_pPictureBitmap->GetSafeHandle(), pbmi, (LPVOID&)pBits, nSize))
-			return;
-	}
-	if (pbmi == NULL || pBits == NULL)
-	{
-		return;
-	}
-
-	for (int x = 0; x < rc.Width(); x++)
-	for (int y = 0; y < rc.Height(); y++)
-	{
-		CPoint pt = CPoint(m_szPicture.cx * x / rc.Width(), m_szPicture.cy * y / rc.Height());
-
-		COLORREF clr;
-		if (bAlpha)
-		{
-			clr = pBits[(pt.y * pbmi->bmiHeader.biWidth + pt.x)];
-
-			int nAlpha = (clr & 0xFF000000) >> 24;
-
-			int nColor = (((x +3) / 4)+ ((y +3)/ 4)) % 2 == 0 ? 255 : 235;
-
-			clr = RGB(nColor - (nColor -  GetBValue(clr)) * nAlpha / 255,
-					nColor -  (nColor - GetGValue(clr)) * nAlpha / 255,
-					nColor -  (nColor - GetRValue(clr)) * nAlpha / 255);
-
-
-		}
-		else
-		{
-
-			clr = m_pPictureBitmap == NULL ? XTPCOLOR_ERASE : pBits[(pt.y * pbmi->bmiHeader.biWidth + pt.x)];
-			clr = CLR_TO_RGBQUAD(clr);
-
-			if (clr == XTPCOLOR_ERASE)
-				clr = (((x +3) / 4)+ ((y +3)/ 4)) % 2 == 0 ? RGB(255, 255, 255) : RGB(235, 235, 235);
-
-
-		}
-		dc.SetPixel(x, rc.Height() - y - 1, clr);
-	}
-
-	free(pBits);
-	free(pbmi);
-
-	dc.Draw3dRect(rc, 0, 0);
+	return (LRESULT)HTTRANSPARENT;
 }
 
-COLORREF CXTPImageEditorPicture::GetPicturePixel(CPoint point)
+void CXTPShadowsManager::CShadowWnd::OnPaint()
 {
-	CAlphaBitmap bmp;
-	bmp.CreateEditorBitmap(m_szPicture.cx, m_szPicture.cy);
+	CPaintDC dc(this);
+	CXTPClientRect rcClient(this);
 
-	CBitmap* pOldBitmap = m_dcPicture.SelectObject(&bmp);
-	m_dcPicture.FillSolidRect(0, 0, m_szPicture.cx, m_szPicture.cy, XTPCOLOR_ERASE);
-	if (m_pPictureBitmap)
-		m_dcPicture.DrawState(0, m_szPicture, m_pPictureBitmap, DSS_NORMAL, (CBrush*)NULL);
-	COLORREF clr = m_dcPicture.GetPixel(point);
-
-
-	m_dcPicture.SelectObject(pOldBitmap);
-	return clr;
+	dc.FillSolidRect(rcClient, XTPShadowsManager()->m_bAlphaShadow ? 0 : GetXtremeColor(COLOR_3DSHADOW));
 }
 
 
-
-CPoint CXTPImageEditorPicture::ClientToPicture(CPoint pt)
+BOOL CXTPShadowsManager::CShadowWnd::OnEraseBkgnd(CDC* /*pDC*/)
 {
-	ASSERT(m_szItem.cx > 0 && m_szItem.cy > 0);
-	return CPoint(pt.x / m_szItem.cx, pt.y / m_szItem.cy);
+	return TRUE;
 }
 
-void CXTPImageEditorPicture::CopyBitmap(CAlphaBitmap* pBitmapCopyTo, CAlphaBitmap* pBitmapCopyFrom, CSize sz, CPoint ptOffset, COLORREF clrTransparentFrom, COLORREF clrTransparentTo, CDC* pDC)
+BOOL CXTPShadowsManager::CShadowWnd::ExcludeRect(CRect rcExclude)
 {
-	CDC dc;
-	dc.CreateCompatibleDC(pDC);
-
-	pBitmapCopyTo->CreateEditorBitmap(sz.cx, sz.cy);
-
-	CBitmap* pOldBitmap = dc.SelectObject(pBitmapCopyTo);
-	dc.FillSolidRect(0, 0, sz.cx, sz.cy, XTPCOLOR_ERASE);
-
-	if (pBitmapCopyFrom)
+	CXTPWindowRect rcWindow(this);
+	CRect rcIntersect;
+	if (rcIntersect.IntersectRect(rcWindow, rcExclude))
 	{
-		dc.DrawState(ptOffset, sz, pBitmapCopyFrom, DSS_NORMAL, (CBrush*)NULL);
+		CXTPClientRect rcClient(this);
+		HRGN hrgnClip = ::CreateRectRgnIndirect(&rcClient);
 
-		if (clrTransparentFrom != clrTransparentTo && !pBitmapCopyFrom->m_bAlpha)
+		rcIntersect.OffsetRect(-rcWindow.TopLeft());
+		HRGN hrgnIntersect = ::CreateRectRgnIndirect(&rcIntersect);
+		CombineRgn(hrgnClip, hrgnClip, hrgnIntersect, RGN_DIFF);
+		DeleteObject(hrgnIntersect);
+
+		if (!SetWindowRgn(hrgnClip, FALSE))
+			DeleteObject(hrgnClip);
+		m_bExcluded = TRUE;
+	}
+	return TRUE;
+}
+
+void CXTPShadowsManager::CShadowWnd::LongShadow(CShadowList* pList)
+{
+	CXTPWindowRect rcWindow(this);
+
+	POSITION pos = pList->GetHeadPosition();
+	while (pos)
+	{
+		CShadowWnd* pWnd = pList->GetNext(pos);
+		if (m_bHoriz == !pWnd->m_bHoriz)
 		{
-			for (int x = 0; x < sz.cx; x++)
+			CXTPWindowRect rc(pWnd);
+			if (m_bHoriz == FALSE)
 			{
-				for (int y = 0; y < sz.cy; y++)
+				if (rcWindow.top == rc.bottom -1 && rcWindow.right < rc.right && rcWindow.right > rc.left)
 				{
-					if (dc.GetPixel(x, y) == clrTransparentFrom)
-						dc.SetPixel(x, y, clrTransparentTo);
+					rcWindow.top -= 2 * rc.Height();
+					MoveWindow(rcWindow, FALSE);
 				}
-			}
-		}
-	}
-
-	dc.SelectObject(pOldBitmap);
-
-	pBitmapCopyTo->m_bAlpha = pBitmapCopyFrom ? pBitmapCopyFrom->m_bAlpha : FALSE;
-
-
-}
-
-void CXTPImageEditorPicture::OnPictureChanged()
-{
-	Invalidate(FALSE);
-	m_pParentWnd->OnPictureChanged();
-}
-
-void CXTPImageEditorPicture::Apply()
-{
-	while (!m_lstRedo.IsEmpty())
-	{
-		CBitmap* pBitmap = m_lstRedo.RemoveTail();
-		if (pBitmap) delete pBitmap;
-	}
-
-	if (m_lstUndo.GetCount() > UNDO_COUNT)
-	{
-		CBitmap* pBitmap = m_lstUndo.RemoveHead();
-		if (pBitmap) delete pBitmap;
-	}
-
-	m_lstUndo.AddTail(m_pCurrentBitmap);
-	m_pCurrentBitmap = NULL;
-
-	OnPictureChanged();
-}
-
-
-void CXTPImageEditorPicture::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	ASSERT(m_pCurrentBitmap == NULL);
-
-	switch (GetSelectedTool())
-	{
-	case xtpToolFill:
-		{
-			m_pCurrentBitmap = m_pPictureBitmap;
-
-			m_pPictureBitmap = new CAlphaBitmap();
-			CopyBitmap(m_pPictureBitmap, m_pCurrentBitmap, m_szPicture);
-
-			CBitmap* pOldBitmap = m_dcPicture.SelectObject(m_pPictureBitmap);
-			CXTPBrushDC brush(m_dcPicture, GetSelectedColor());
-
-			CPoint ptFill(ClientToPicture(point));
-
-			m_dcPicture.ExtFloodFill(ptFill.x, ptFill.y, GetPicturePixel(ptFill), FLOODFILLSURFACE);
-			m_dcPicture.SelectObject(pOldBitmap);
-
-			if (m_pCurrentBitmap && m_pCurrentBitmap->m_bAlpha)
-				FixAlphaLayer(m_pPictureBitmap, m_pCurrentBitmap);
-
-			Apply();
-		}
-		break;
-
-	case xtpToolGetColor:
-		{
-			COLORREF clr = GetPicturePixel(ClientToPicture(point));
-			m_pParentWnd->m_wndPicker.SetColor(clr);
-			m_pParentWnd->SetSelected(&m_pParentWnd->m_wndPicker);
-			m_pParentWnd->m_toolSelected = m_pParentWnd->m_toolPrevious;
-		}
-		break;
-	case xtpToolPencil:
-	case xtpToolRectangle:
-	case xtpToolCircle:
-	case xtpToolLine:
-		{
-
-			m_pCurrentBitmap = m_pPictureBitmap;
-
-			m_pPictureBitmap = new CAlphaBitmap();
-			CopyBitmap(m_pPictureBitmap, m_pCurrentBitmap, m_szPicture);
-
-			m_clrDraw = GetSelectedColor() != GetPicturePixel(ClientToPicture(point)) ? GetSelectedColor() : XTPCOLOR_ERASE;
-
-			m_bTracked = TRUE;
-			m_ptTracked = point;
-			SetCapture();
-
-			OnMouseMove(nFlags, point);
-		}
-		break;
-	default :
-		ASSERT(FALSE);
-
-	}
-
-	CStatic::OnLButtonDown(nFlags, point);
-}
-
-
-void CXTPImageEditorDlg::FixAlphaLayer(LPBYTE pBits, UINT nCount)
-{
-	if (pBits == 0)
-		return;
-
-	LPBYTE pBitsI = pBits;
-
-	for (UINT i = 0; i < nCount; i++)
-	{
-		if (*(LPDWORD)pBitsI == 0) *(LPDWORD)pBitsI = XTPCOLOR_ERASE;
-
-		int nAlpha = pBitsI[3];
-		if (nAlpha != 0)
-		{
-			pBitsI[0] = BYTE(pBitsI[0] * 255 / nAlpha);
-			pBitsI[1] = BYTE(pBitsI[1] * 255 / nAlpha);
-			pBitsI[2] = BYTE(pBitsI[2] * 255 / nAlpha);
-		}
-
-		pBitsI += 4;
-	}
-}
-
-void CXTPImageEditorPicture::FixAlphaLayer(CAlphaBitmap* pDest, CAlphaBitmap* pSrc)
-{
-	if (pSrc == 0 || pDest == 0)
-		return;
-
-	CDC dcSrc;
-	dcSrc.CreateCompatibleDC(NULL);
-
-	PINT pDestBits = 0, pSrcBits = 0;
-	PBITMAPINFO pDestBmi = 0, pSrcBmi = 0;
-
-	UINT nSize;
-
-	if (!CXTPImageManagerIcon::GetBitmapBits(dcSrc, (HBITMAP)pDest->GetSafeHandle(), pDestBmi, (LPVOID&)pDestBits, nSize))
-		return;
-
-	if (!CXTPImageManagerIcon::GetBitmapBits(dcSrc, (HBITMAP)pSrc->GetSafeHandle(), pSrcBmi, (LPVOID&)pSrcBits, nSize))
-	{
-		free(pDestBits);
-		free(pDestBmi);
-		return;
-	}
-
-	PINT pFixedBits = NULL;
-
-	HBITMAP hBitmapAlpha = CreateDIBSection(dcSrc, pDestBmi, DIB_RGB_COLORS, (void**)&pFixedBits, NULL, 0);
-
-	if (hBitmapAlpha && pFixedBits)
-	{
-		MEMCPY_S(pFixedBits, pDestBits, nSize);
-
-		for (UINT i = 0; i < nSize / 4; i++)
-		{
-			if (pDestBits[i] != pSrcBits[i])
-			{
-				if (pDestBits[i] != XTPCOLOR_ERASE)
-					pFixedBits[i] |= 0xFF000000;
-			}
-		}
-
-		pDest->DeleteObject();
-		pDest->Attach(hBitmapAlpha);
-	}
-
-	free(pDestBits);
-	free(pDestBmi);
-	free(pSrcBits);
-	free(pSrcBmi);
-
-}
-
-void CXTPImageEditorPicture::OnMouseMove(UINT nFlags, CPoint point)
-{
-	if (m_bTracked)
-	{
-		if (GetSelectedTool() == xtpToolPencil)
-		{
-			CAlphaBitmap* pBitmap = new CAlphaBitmap();
-			CopyBitmap(pBitmap, m_pPictureBitmap, m_szPicture);
-
-			CBitmap* pOldBitmap = m_dcPicture.SelectObject(pBitmap);
-
-			m_dcPicture.SetPixel(ClientToPicture(point), m_clrDraw);
-			m_dcPicture.SelectObject(pOldBitmap);
-
-			if (m_pPictureBitmap->m_bAlpha)
-				FixAlphaLayer(pBitmap, m_pPictureBitmap);
-
-			if (m_pPictureBitmap) delete m_pPictureBitmap;
-
-			m_pPictureBitmap = pBitmap;
-
-			Invalidate(FALSE);
-			OnPictureChanged();
-		}
-		else
-		{
-			CAlphaBitmap* pBitmap = new CAlphaBitmap();
-			CopyBitmap(pBitmap, m_pCurrentBitmap, m_szPicture);
-
-			CBitmap* pOldBitmap = m_dcPicture.SelectObject(pBitmap);
-
-			CRect rcReftangle(ClientToPicture(m_ptTracked), ClientToPicture(point));
-			rcReftangle.NormalizeRect();
-
-			if (GetSelectedTool() == xtpToolRectangle)
-			{
-				m_dcPicture.Draw3dRect(rcReftangle, GetSelectedColor(), GetSelectedColor());
-			}
-			if (GetSelectedTool() == xtpToolCircle)
-			{
-				CXTPPenDC pen(m_dcPicture, GetSelectedColor());
-				CXTPBrushDC brush(m_dcPicture, XTPCOLOR_ERASE);
-				m_dcPicture.Ellipse(rcReftangle);
-			}
-			if (GetSelectedTool() == xtpToolLine)
-			{
-				CXTPPenDC pen(m_dcPicture, GetSelectedColor());
-				m_dcPicture.MoveTo(ClientToPicture(m_ptTracked));
-				m_dcPicture.LineTo(ClientToPicture(point));
-			}
-
-			m_dcPicture.SelectObject(pOldBitmap);
-
-			if (m_pPictureBitmap->m_bAlpha)
-				FixAlphaLayer(pBitmap, m_pCurrentBitmap);
-
-			if (m_pPictureBitmap) delete m_pPictureBitmap;
-			m_pPictureBitmap = pBitmap;
-
-			Invalidate(FALSE);
-			OnPictureChanged();
-
-		}
-
-	}
-
-	CStatic::OnMouseMove(nFlags, point);
-}
-
-void CXTPImageEditorPicture::OnLButtonUp(UINT nFlags, CPoint point)
-{
-	m_bTracked = FALSE;
-	ReleaseCapture();
-
-	CStatic::OnLButtonUp(nFlags, point);
-}
-
-void CXTPImageEditorPicture::OnCaptureChanged(CWnd* pWnd)
-{
-	m_bTracked = FALSE;
-	Apply();
-
-	CStatic::OnCaptureChanged(pWnd);
-}
-
-void CXTPImageEditorPicture::Undo()
-{
-	if (!m_lstUndo.IsEmpty())
-	{
-		CAlphaBitmap* pBitmap = m_lstUndo.RemoveTail();
-
-		m_lstRedo.AddTail(m_pPictureBitmap);
-
-		m_pPictureBitmap = pBitmap;
-
-		OnPictureChanged();
-	}
-}
-
-void CXTPImageEditorPicture::Redo()
-{
-	if (!m_lstRedo.IsEmpty())
-	{
-		CAlphaBitmap* pBitmap = m_lstRedo.RemoveTail();
-
-		m_lstUndo.AddTail(m_pPictureBitmap);
-
-		m_pPictureBitmap = pBitmap;
-
-		OnPictureChanged();
-	}
-}
-
-
-void CXTPImageEditorPicture::Clear()
-{
-	m_pCurrentBitmap = m_pPictureBitmap;
-	m_pPictureBitmap = NULL;
-	Apply();
-}
-
-void CXTPImageEditorPicture::MovePicture(CPoint ptOffset)
-{
-	m_pCurrentBitmap = m_pPictureBitmap;
-
-	m_pPictureBitmap = new CAlphaBitmap();
-	CopyBitmap(m_pPictureBitmap, m_pCurrentBitmap, m_szPicture, ptOffset);
-
-	Apply();
-}
-
-
-void CXTPImageEditorPicture::Copy()
-{
-	if (!OpenClipboard ())
-	{
-		return;
-	}
-
-	if (!::EmptyClipboard ())
-	{
-		::CloseClipboard ();
-		return;
-	}
-
-	CAlphaBitmap bitmapCopy;
-	CopyBitmap(&bitmapCopy, m_pPictureBitmap, m_szPicture, 0, XTPCOLOR_ERASE, GetXtremeColor(COLOR_3DFACE));
-
-	HANDLE hclipData = ::SetClipboardData (CF_BITMAP, bitmapCopy.Detach ());
-	if (hclipData == NULL)
-	{
-		TRACE (_T ("CXTPImageEditorPicture::Copy() error. Error code = %x\n"), GetLastError ());
-	}
-
-	if (bitmapCopy.m_bAlpha)
-	{
-		SetClipboardData(XTPImageManager()->m_nAlphaClipFormat, GlobalAlloc(GMEM_MOVEABLE, 1));
-	}
-
-	::CloseClipboard ();
-}
-
-void CXTPImageEditorPicture::Paste()
-{
-	COleDataObject data;
-	if (!data.AttachClipboard ())
-	{
-		return;
-	}
-	if (!data.IsDataAvailable (CF_BITMAP))
-	{
-		return;
-	}
-
-	tagSTGMEDIUM dataMedium;
-	if (!data.GetData (CF_BITMAP, &dataMedium))
-	{
-		return;
-	}
-
-	if (!dataMedium.hBitmap)
-		return;
-
-	CAlphaBitmap bmpClip;
-
-	BOOL bAlpha = FALSE;
-	FORMATETC fetc;
-	static TCHAR sz[256] ;
-
-	data.BeginEnumFormats();
-	while (data.GetNextFormat(&fetc))
-	{
-		if (GetClipboardFormatName((UINT)fetc.cfFormat, sz, 254))
-		{
-			CString str(sz);
-			if (str.Find(_T("DIB32")) > 0)
-			{
-				bAlpha = TRUE;
-				break;
-			}
-		}
-	}
-
-	bmpClip.m_bAlpha = bAlpha ? bAlpha : data.IsDataAvailable(XTPImageManager()->m_nAlphaClipFormat);
-	bmpClip.Attach(dataMedium.hBitmap);
-
-
-	m_pCurrentBitmap = m_pPictureBitmap;
-
-	m_pPictureBitmap = new CAlphaBitmap();
-	CopyBitmap(m_pPictureBitmap, &bmpClip, m_szPicture, 0, GetXtremeColor(COLOR_3DFACE), XTPCOLOR_ERASE);
-
-	bmpClip.Detach();
-
-	Apply();
-
-}
-
-
-void CXTPImageEditorPicture::Load()
-{
-	CString strFilter;
-	VERIFY(XTPResourceManager()->LoadString(&strFilter, XTP_IDS_IMAGEEDITOR_FILTER));
-	CFileDialog fd(TRUE, NULL, NULL, OFN_HIDEREADONLY, strFilter);
-
-	if (fd.DoModal() == IDOK)
-	{
-
-		CString strExtension = fd.GetFileExt();
-		strExtension.MakeLower();
-
-		if (strExtension == _T("ico"))
-		{
-
-			HBITMAP hBitmap = CXTPImageManagerIcon::LoadAlphaIcon(fd.GetPathName(), m_szPicture.cx);
-
-			if (!hBitmap)
-			{
-				HICON hIcon = (HICON)LoadImage(0, fd.GetPathName(),
-					IMAGE_ICON, m_szPicture.cx, m_szPicture.cy, LR_CREATEDIBSECTION | LR_LOADFROMFILE);
-
-				if (!hIcon)
-					return;
-
-				m_pCurrentBitmap = m_pPictureBitmap;
-				m_pPictureBitmap = new CAlphaBitmap();
-
-				CDC dc;
-				dc.CreateCompatibleDC(NULL);
-
-				m_pPictureBitmap->CreateEditorBitmap(m_szPicture.cx, m_szPicture.cy);
-
-				CBitmap* pOldBitmap = dc.SelectObject(m_pPictureBitmap);
-				dc.FillSolidRect(0, 0, m_szPicture.cx, m_szPicture.cy, XTPCOLOR_ERASE);
-
-				dc.DrawState(0, CSize(0, 0), hIcon, DSS_NORMAL, (CBrush*)NULL);
-
-				dc.SelectObject(pOldBitmap);
-
-				DestroyIcon(hIcon);
 			}
 			else
 			{
 
-				m_pCurrentBitmap = m_pPictureBitmap;
-				m_pPictureBitmap = new CAlphaBitmap();
-
-
-				CAlphaBitmap bmpFile(TRUE);
-				bmpFile.Attach(hBitmap);
-
-				CopyBitmap(m_pPictureBitmap, &bmpFile, m_szPicture);
-			}
-
-			Apply();
-
-
-		}
-		else if (strExtension == _T("bmp") || strExtension == _T("png"))
-		{
-
-			BOOL bAlphaBitmap = FALSE;
-
-			HBITMAP hBmp = CXTPImageManagerIcon::LoadBitmapFromFile(fd.GetPathName(), &bAlphaBitmap);
-
-			if (!hBmp)
-				return;
-
-			CAlphaBitmap bmpFile(bAlphaBitmap);
-			bmpFile.Attach(hBmp);
-
-			m_pCurrentBitmap = m_pPictureBitmap;
-			m_pPictureBitmap = new CAlphaBitmap();
-
-			CopyBitmap(m_pPictureBitmap, &bmpFile, m_szPicture);
-
-			Apply();
-		}
-		else
-		{
-			LPPICTURE pPict = NULL;
-
-			if (OleLoadPicturePath((LPOLESTR)XTP_CT2CW(fd.GetPathName()), NULL, 0, 0, IID_IPicture, (LPVOID*)&pPict) == S_OK)
-			{
-
-				m_pCurrentBitmap = m_pPictureBitmap;
-				m_pPictureBitmap = new CAlphaBitmap();
-
-				CDC dc;
-				dc.CreateCompatibleDC(NULL);
-
-				m_pPictureBitmap->CreateEditorBitmap(m_szPicture.cx, m_szPicture.cy);
-
-				CBitmap* pOldBitmap = dc.SelectObject(m_pPictureBitmap);
-				dc.FillSolidRect(0, 0, m_szPicture.cx, m_szPicture.cy, XTPCOLOR_ERASE);
-
-				long hmWidth;
-				long hmHeight;
-
-				pPict->get_Width(&hmWidth);
-				pPict->get_Height(&hmHeight);
-
-				pPict->Render(dc, 0, 0,
-					m_szPicture.cx, m_szPicture.cy, 0, hmHeight-1,
-					hmWidth, -hmHeight, 0);
-
-				dc.SelectObject(pOldBitmap);
-
-				Apply();
-
-				pPict->Release();
-
-			}
-
-
-		}
-	}
-
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPImageEditorPicker
-
-IMPLEMENT_DYNAMIC(CXTPImageEditorPicker, CStatic)
-
-CXTPImageEditorPicker::CXTPImageEditorPicker()
-{
-	m_clr = 0;
-	m_bSelected = FALSE;
-}
-
-
-void CXTPImageEditorPicker::SetColor(COLORREF clr)
-{
-	m_clr = clr;
-	if (m_hWnd) Invalidate(FALSE);
-}
-COLORREF CXTPImageEditorPicker::GetColor()
-{
-	return m_clr;
-}
-
-void CXTPImageEditorPicker::SetSelected(BOOL bSelected)
-{
-	m_bSelected = bSelected;
-	if (m_hWnd) Invalidate(FALSE);
-}
-
-
-BEGIN_MESSAGE_MAP(CXTPImageEditorPicker, CStatic)
-	//{{AFX_MSG_MAP(CXTPImageEditorPicker)
-	ON_WM_PAINT()
-	ON_WM_LBUTTONDOWN()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPImageEditorPicker message handlers
-
-
-void CXTPImageEditorPicker::OnPaint()
-{
-	CPaintDC dcPaint(this); // device context for painting
-	CXTPClientRect rc(this);
-	CXTPBufferDC dc(dcPaint, rc);
-
-	if (m_clr != XTPCOLOR_ERASE)
-	{
-		dc.FillSolidRect(rc, m_clr);
-	}
-	else
-	{
-
-		CRect rcItem(rc);
-		dc.FillSolidRect(rc, RGB(0xFF, 0xFF, 0xFF));
-		dc.FillSolidRect(rcItem.left, rcItem.top, rcItem.Width() / 2, rcItem.Height() / 2, RGB(235, 235, 235));
-		dc.FillSolidRect(rcItem.left + rcItem.Width() / 2, rcItem.top + rcItem.Height() / 2,
-			rcItem.Width() - (rcItem.Width() / 2), rcItem.Height() - (rcItem.Height() / 2), RGB(235, 235, 235));
-
-	}
-	if (!m_bSelected)
-	{
-		dc.Draw3dRect(rc, GetXtremeColor(COLOR_3DDKSHADOW), GetXtremeColor(COLOR_3DDKSHADOW));
-	}
-	else
-	{
-		dc.Draw3dRect(rc, 0, 0);
-		rc.DeflateRect(1, 1);
-		dc.Draw3dRect(rc, RGB(0xFF, 0xFF, 0xFF), RGB(0xFF, 0xFF, 0xFF));
-		rc.DeflateRect(1, 1);
-		dc.Draw3dRect(rc, 0, 0);
-	}
-
-}
-
-void CXTPImageEditorPicker::OnLButtonDown(UINT /*nFlags*/, CPoint /*point*/)
-{
-	NMHDR mHDR;
-	mHDR.hwndFrom = m_hWnd;
-	mHDR.code = NM_CLICK;
-	mHDR.idFrom = GetDlgCtrlID();
-
-	GetParent()->SendMessage(WM_NOTIFY,
-		(WPARAM)mHDR.idFrom, (LPARAM)&mHDR);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPImageEditorPreview
-
-CXTPImageEditorPreview::CXTPImageEditorPreview()
-{
-	m_pParentWnd = 0;
-}
-
-void CXTPImageEditorPreview::Init(UINT nID, CXTPImageEditorDlg* pParentWnd)
-{
-	m_pParentWnd = pParentWnd;
-
-	SubclassDlgItem(nID, pParentWnd);
-	m_szPicture = pParentWnd->m_szPicture;
-
-	ModifyStyleEx(WS_EX_STATICEDGE, 0);
-
-}
-
-
-BEGIN_MESSAGE_MAP(CXTPImageEditorPreview, CStatic)
-	//{{AFX_MSG_MAP(CXTPImageEditorPreview)
-	ON_WM_PAINT()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPImageEditorPreview message handlers
-
-void CXTPImageEditorPreview::OnPaint()
-{
-	CPaintDC dcPaint(this); // device context for painting
-	CXTPClientRect rc(this);
-	CXTPBufferDC dc(dcPaint, rc);
-	dc.FillSolidRect(rc, GetXtremeColor(COLOR_3DFACE));
-
-
-	CRect rcButton (10, (rc.Height() - m_szPicture.cy) / 2, 10 + m_szPicture.cx, (rc.Height() - m_szPicture.cy) / 2 + m_szPicture.cy);
-	CRect rcFrame(rcButton);
-	rcFrame.InflateRect(3, 3);
-
-	dc.Draw3dRect(rcFrame, RGB(0xFF, 0xFF, 0xFF), GetXtremeColor(COLOR_3DSHADOW));
-	rcFrame.InflateRect(1, 1);
-	dc.Draw3dRect(rcFrame, GetXtremeColor(COLOR_3DFACE), GetXtremeColor(COLOR_3DDKSHADOW));
-
-	ASSERT(m_pParentWnd);
-	if (!m_pParentWnd)
-		return;
-	CXTPImageEditorPicture::CAlphaBitmap* pBitmap = m_pParentWnd->m_wndPicture.m_pPictureBitmap;
-
-	if (pBitmap)
-	{
-		if (pBitmap->m_bAlpha)
-		{
-			HBITMAP hBitmap = CXTPImageManagerIcon::PreMultiplyAlphaBitmap((HBITMAP)pBitmap->GetSafeHandle());
-			if (hBitmap)
-			{
-				CXTPImageManagerIcon::DrawAlphaBitmap(&dc, hBitmap, rcButton.TopLeft(), m_szPicture);
-
-				DeleteObject(hBitmap);
+				if (rcWindow.left == rc.right - 1 && rcWindow.top > rc.top && rcWindow.bottom < rc.bottom)
+				{
+					rcWindow.left -= 2 * rc.Width() + 1;
+					MoveWindow(rcWindow, FALSE);
+				}
 			}
 		}
-		else
-		{
-			CXTPImageEditorPicture::CAlphaBitmap bmpClient;
-			CXTPImageEditorPicture::CopyBitmap(&bmpClient, pBitmap, m_szPicture, 0, XTPCOLOR_ERASE, GetXtremeColor(COLOR_3DFACE), &dc);
-
-			dc.DrawState(rcButton.TopLeft(), m_szPicture, &bmpClient, DSS_NORMAL, (CBrush*)NULL);
-		}
 	}
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// CDlgToolBar dialog
-
-BEGIN_MESSAGE_MAP(CXTPImageEditorDlg::CDlgToolBar, CToolBar)
-	{ WM_IDLEUPDATECMDUI, 0, 0, 0, AfxSig_lwl, (AFX_PMSG)(AFX_PMSGW)(LRESULT (AFX_MSG_CALL CWnd::*)(WPARAM, LPARAM))&CXTPImageEditorDlg::CDlgToolBar::OnIdleUpdateCmdUI },
-END_MESSAGE_MAP()
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPImageEditorDlg dialog
-
-CXTPImageEditorDlg::CXTPImageEditorDlg(CWnd* pParent /*= NULL*/, BOOL bCommandBarsEditor)
-	: m_bCommandBarsEditor(bCommandBarsEditor)
+UINT CXTPShadowsManager::CShadowWnd::Factor(int& nRed, int& nGreen, int& nBlue, double dFactor)
 {
-	InitModalIndirect(XTPResourceManager()->LoadDialogTemplate(XTP_IDD_IMAGEEDITOR_DIALOG), pParent);
-
-	m_toolSelected = xtpToolPencil;
-
-	m_pSelected = NULL;
-	m_szPicture = CSize(16, 16);
-	m_toolPrevious = XTPImageEditorTools(-1);
+	return (int(nRed * dFactor) << 16) + (int(nGreen * dFactor) << 8) + (int(nBlue * dFactor));
 }
 
-void CXTPImageEditorDlg::GetIcon(CXTPImageManagerIconHandle* pHandle)
+
+void CXTPShadowsManager::CShadowWnd::OnSize(UINT nType, int cx, int cy)
 {
-	ASSERT(pHandle);
-	if (!pHandle)
+	CWnd::OnSize(nType, cx, cy);
+
+	if (!cx || !cy || !XTPShadowsManager()->m_bAlphaShadow ||
+		!XTPShadowsManager()->m_pfnUpdateLayeredWindow || !m_pCommandBar)
 		return;
 
-	if (m_wndPicture.m_pPictureBitmap)
-	{
-		if (m_wndPicture.m_pPictureBitmap->m_bAlpha)
-		{
-			pHandle->CopyHandle((HBITMAP)m_wndPicture.m_pPictureBitmap->GetSafeHandle());
-		}
-		else
-		{
+	BLENDFUNCTION bf;
+	bf.BlendOp = AC_SRC_OVER;
+	bf.BlendFlags = 0;
+	bf.SourceConstantAlpha = 255;
+	bf.AlphaFormat = 0x01;
 
-			CImageList imgList;
-			imgList.Create(m_szPicture.cx, m_szPicture.cy, ILC_COLOR24 | ILC_MASK, 0, 1);
-			imgList.Add(m_wndPicture.m_pPictureBitmap, XTPCOLOR_ERASE);
+	POINT pt = {0, 0};
+	int x, y;
+	HBITMAP hbitmap;
+	BITMAPINFO bmi;
 
-			if (imgList.GetImageCount() != 1)
-				return;
+	CClientDC cDC(this);
+	CDC dc;
+	dc.CreateCompatibleDC(&cDC);
 
-			*pHandle = imgList.ExtractIcon(0);
-		}
-	}
-}
 
-void CXTPImageEditorDlg::SetIconSize(CSize szIcon)
-{
-	m_szPicture = szIcon;
-}
-void CXTPImageEditorDlg::SetIcon(CXTPImageManagerIconHandle& icon)
-{
-	if (icon.IsEmpty())
+	// zero the memory for the bitmap info
+	ZeroMemory(&bmi, sizeof(BITMAPINFO));
+
+	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	bmi.bmiHeader.biWidth = cx;
+	bmi.bmiHeader.biHeight = cy;
+	bmi.bmiHeader.biPlanes = 1;
+	bmi.bmiHeader.biBitCount = 32;         // four 8-bit components
+	bmi.bmiHeader.biCompression = BI_RGB;
+	bmi.bmiHeader.biSizeImage = cx * cy * 4;
+
+	UINT* pvBits = NULL;
+
+	// create our DIB section and select the bitmap into the dc
+	hbitmap = CreateDIBSection(cDC, &bmi, DIB_RGB_COLORS, (void**)&pvBits, NULL, 0x0);
+
+	if (pvBits == NULL || hbitmap == NULL)
 		return;
 
-	ASSERT(m_wndPicture.m_pPictureBitmap == NULL);
-	m_szPicture = icon.GetExtent();
+	COLORREF clrFactor = m_pCommandBar->GetPaintManager()->m_clrShadowFactor;
 
-	CXTPImageManagerIconHandle iconHandle;
-	iconHandle.CopyHandle(icon);
 
-	if (iconHandle.IsAlpha())
+	int nRed = GetRValue(clrFactor), nGreen = GetGValue(clrFactor), nBlue = GetBValue(clrFactor);
+
+	int nFactor = m_nShadowOptions & xtpShadowOfficeAlpha ? 1 : 2;
+
+	if (!m_bHoriz)
 	{
-		iconHandle.PreMultiply();
+		ASSERT(cx == 4);
 
-		CXTPImageEditorPicture::CAlphaBitmap* pBitmap = new CXTPImageEditorPicture::CAlphaBitmap(TRUE);
+		for (x = 0; x < 4; x++) for (y = 0; y < 4; y++)
+		{
+			pvBits[3 - x + (cy - 1 - y) * cx] = (UINT) 3 * (x + 1) * (y + 1) * 0x1000000 * nFactor
+				+ Factor(nRed, nGreen, nBlue, double((x + 1) * (y + 1))/20);
+		}
 
-		LPBYTE lpBits;
-		pBitmap->Attach(CXTPImageManagerIcon::CopyAlphaBitmap(iconHandle.GetBitmap(), &lpBits));
+		for (x = 3; x >= 0; x--)
+		{
+			UINT nColor = 0x0F000000 * nFactor * (4 - x) + Factor(nRed, nGreen, nBlue, double(4 - x)/4);
 
-		FixAlphaLayer(lpBits, m_szPicture.cx * m_szPicture.cy);
-		m_wndPicture.m_pPictureBitmap = pBitmap;
-
+			for (y = 0; y < cy - 4; y++) pvBits[x + y * cx] = nColor;
+		}
 	}
 	else
 	{
-		CXTPImageEditorPicture::CAlphaBitmap* pBitmap = new CXTPImageEditorPicture::CAlphaBitmap();
+		ASSERT(cy == 4);
 
-		CDC dc;
-		dc.CreateCompatibleDC(NULL);
+		for (x = 0; x < 4; x++) for (y = 0; y < 4; y++)
+		{
+			pvBits[x + y * cx] = (UINT) 3 * (x + 1) * (y + 1) * 0x1000000 * nFactor
+				+ Factor(nRed, nGreen, nBlue, double((x + 1) * (y + 1))/20);
+		}
 
-		pBitmap->CreateEditorBitmap(m_szPicture.cx, m_szPicture.cy);
+		for (y = 0; y < 4; y++)
+		{
+			UINT nColor = 0x0F000000 * nFactor * (y + 1) + Factor(nRed, nGreen, nBlue, double(y + 1)/4);
 
-		CBitmap* pOldBitmap = dc.SelectObject(pBitmap);
-		dc.FillSolidRect(0, 0, m_szPicture.cx, m_szPicture.cy, XTPCOLOR_ERASE);
+			for (x = 4; x < cx - 4; x++) pvBits[x + y * cx] = nColor;
+		}
 
-		dc.DrawState(0, CSize(0, 0), iconHandle.GetIcon(), DSS_NORMAL, (CBrush*)NULL);
-
-		dc.SelectObject(pOldBitmap);
-
-		m_wndPicture.m_pPictureBitmap = pBitmap;
+		for (x = 0; x < 4; x++) for (y = 0; y < 4; y++)
+		{
+			pvBits[cx - 1 - x + y * cx] = (UINT)3 * (x + 1) * (y + 1) * 0x1000000 * nFactor
+				+ Factor(nRed, nGreen, nBlue, double((x + 1) * (y + 1))/20);
+		}
 	}
 
-}
 
-void CXTPImageEditorDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CXTPImageEditorDlg)
-	DDX_Control(pDX, XTP_IDC_STATIC_TOOLS, m_gboxTools);
-	DDX_Control(pDX, XTP_IDC_STATIC_MOVE, m_gboxMove);
-	//}}AFX_DATA_MAP
+	HBITMAP hOld = (HBITMAP)SelectObject(dc, hbitmap);
 
-}
+	SIZE sz = {cx, cy};
 
-BEGIN_MESSAGE_MAP(CXTPImageEditorDlg, CDialog)
-	//{{AFX_MSG_MAP(CXTPImageEditorDlg)
-	ON_MESSAGE(WM_KICKIDLE, OnKickIdle)
-	ON_WM_DESTROY()
+	XTPShadowsManager()->m_pfnUpdateLayeredWindow((HWND)GetSafeHwnd(), (HDC)0, 0, &sz, dc.GetSafeHdc(), &pt, 0, &bf, 0x02);
 
-	ON_NOTIFY(NM_CLICK, XTP_IDC_CLR_PICKER, OnPickerClick)
-	ON_NOTIFY_RANGE(NM_CLICK, XTP_IDS_CLR_BLACK, XTP_IDS_CLR_FUCHSIA, OnSelectorClick)
-	ON_NOTIFY(NM_CLICK, XTP_IDC_CLR_ERASE, OnEraseClick)
+	SelectObject(dc, hOld);
+	DeleteObject(hbitmap);
+	dc.DeleteDC();
 
-	ON_UPDATE_COMMAND_UI_RANGE(XTP_ID_BUTTON_PENCIL, XTP_ID_BUTTON_CIRCLE, OnUpdateButtonTool)
-	ON_COMMAND_RANGE(XTP_ID_BUTTON_PENCIL, XTP_ID_BUTTON_CIRCLE, OnButtonTool)
-
-	ON_UPDATE_COMMAND_UI(XTP_ID_BUTTON_UNDO, OnUpdateButtonUndo)
-	ON_COMMAND(XTP_ID_BUTTON_UNDO, OnButtonUndo)
-
-	ON_UPDATE_COMMAND_UI(XTP_ID_BUTTON_REDO, OnUpdateButtonRedo)
-	ON_COMMAND(XTP_ID_BUTTON_REDO, OnButtonRedo)
-
-	ON_COMMAND(XTP_ID_BUTTON_CLEAR, OnButtonClear)
-	ON_COMMAND(XTP_ID_BUTTON_COPY, OnButtonCopy)
-	ON_COMMAND(XTP_ID_BUTTON_PASTE, OnButtonPaste)
-	ON_COMMAND(XTP_ID_BUTTON_OPEN, OnButtonOpen)
-	ON_COMMAND_RANGE(XTP_IDC_BUTTON_LEFT, XTP_IDC_BUTTON_RIGHT, OnMoveButton)
-	ON_NOTIFY_EX_RANGE(TTN_NEEDTEXTW, 0, 0xFFFF, OnToolTipText)
-	ON_NOTIFY_EX_RANGE(TTN_NEEDTEXTA, 0, 0xFFFF, OnToolTipText)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPImageEditorDlg message handlers
-
-BOOL CXTPImageEditorDlg::OnInitDialog()
-{
-	UINT nButtonsTools[] =
-	{
-		XTP_ID_BUTTON_PENCIL,
-		XTP_ID_BUTTON_FILL,
-		XTP_ID_BUTTON_UNDO,
-		XTP_ID_BUTTON_REDO,
-		XTP_ID_BUTTON_GETCOLOR,
-		XTP_ID_BUTTON_LINE,
-		XTP_ID_BUTTON_COPY,
-		XTP_ID_BUTTON_PASTE,
-		XTP_ID_BUTTON_RECTANGLE,
-		XTP_ID_BUTTON_CIRCLE,
-		XTP_ID_BUTTON_CLEAR,
-		XTP_ID_BUTTON_OPEN
-	};
-
-
-	UINT nButtonsMove[] =
-	{
-		XTP_IDC_BUTTON_LEFT,
-		XTP_IDC_BUTTON_DOWN,
-		XTP_IDC_BUTTON_UP,
-		XTP_IDC_BUTTON_RIGHT
-	};
-
-	const struct
-	{
-		COLORREF clr;
-		UINT nID;
-		POINT ptOffset;
-	}
-	colors[] =
-	{
-		RGB(0x00, 0x00, 0x00), XTP_IDS_CLR_BLACK           , {0, 0},
-		RGB(0x80, 0x00, 0x00), XTP_IDS_CLR_DARK_RED        , {2, 0},
-		RGB(0x80, 0x80, 0x00), XTP_IDS_CLR_DARK_YELLOW     , {3, 0},
-		RGB(0x00, 0x00, 0x80), XTP_IDS_CLR_DARK_BLUE       , {6, 0},
-		RGB(0x00, 0x80, 0x00), XTP_IDS_CLR_GREEN           , {4, 0},
-		RGB(0x00, 0x80, 0x80), XTP_IDS_CLR_TEAL            , {5, 0},
-		RGB(0x00, 0x00, 0xFF), XTP_IDS_CLR_BLUE            , {6, 1},
-		RGB(0x80, 0x80, 0x80), XTP_IDS_CLR_GRAY50          , {1, 0},
-		RGB(0xFF, 0x00, 0x00), XTP_IDS_CLR_RED             , {2, 1},
-		RGB(0x80, 0x00, 0x80), XTP_IDS_CLR_VIOLET          , {7, 0},
-		RGB(0xFF, 0x00, 0xFF), XTP_IDS_CLR_PINK            , {7, 1},
-		RGB(0xFF, 0xFF, 0x00), XTP_IDS_CLR_YELLOW          , {3, 1},
-		RGB(0x00, 0xFF, 0x00), XTP_IDS_CLR_BRIGHT_GREEN    , {4, 1},
-		RGB(0x00, 0xFF, 0xFF), XTP_IDS_CLR_TURQUOISE       , {5, 1},
-		RGB(0xC0, 0xC0, 0xC0), XTP_IDS_CLR_GRAY25          , {1, 1},
-		RGB(0xFF, 0xFF, 0xFF), XTP_IDS_CLR_WHITE           , {0, 1}
-	};
-
-	CDialog::OnInitDialog();
-
-	CRect rcTools;
-	m_gboxTools.GetWindowRect(&rcTools);
-	ScreenToClient(rcTools);
-
-	m_wndToolbarTools.Create(this, WS_CHILD | WS_VISIBLE | CBRS_SIZE_FIXED | CBRS_TOOLTIPS | CBRS_ALIGN_TOP);
-	m_wndToolbarTools.ModifyStyle(0, TBSTYLE_FLAT);
-	m_wndToolbarTools.SetButtons(nButtonsTools, 12);
-
-
-	int i;
-
-	int nCount = m_wndToolbarTools.GetToolBarCtrl().GetButtonCount();
-	for (i = 0; i < nCount; i++)
-	{
-		UINT nStyle = m_wndToolbarTools.GetButtonStyle(i);
-		if (((i + 1) % 4) == 0) nStyle |= TBBS_WRAPPED;
-		m_wndToolbarTools.SetButtonStyle(i, nStyle);
-	}
-
-	CSize sz = m_wndToolbarTools.CalcDynamicLayout(0, LM_HORZ);
-	m_wndToolbarTools.SetWindowPos(&CWnd::wndTop, rcTools.left - 7, rcTools.top - 4, sz.cx, sz.cy, 0);
-
-
-	CRect rcMove;
-	m_gboxMove.GetWindowRect(&rcMove);
-	ScreenToClient(rcMove);
-
-	m_wndToolbarMove.Create(this, WS_CHILD | WS_VISIBLE | CBRS_SIZE_FIXED | CBRS_TOOLTIPS | CBRS_ALIGN_TOP);
-	m_wndToolbarMove.ModifyStyle(0, TBSTYLE_FLAT);
-	m_wndToolbarMove.SetButtons(nButtonsMove, 4);
-
-
-	if (CXTPImageManager::IsAlphaIconsImageListSupported())
-	{
-		m_ilToolbarTools.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 1);
-		HBITMAP hBitmap = CXTPImageManagerIcon::LoadAlphaBitmap(XTP_IDB_TOOLBAR_TOOLS32);
-		m_ilToolbarTools.Add(CBitmap::FromHandle(hBitmap), (CBitmap*)0);
-
-		m_ilToolbarMove.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 1);
-
-		m_ilToolbarMove.Add(CBitmap::FromHandle(hBitmap), (CBitmap*)0);
-		for (i = 0; i < 12; i++) m_ilToolbarMove.Remove(0);
-		DeleteObject(hBitmap);
-	}
-	else
-	{
-		m_ilToolbarTools.Create(XTP_IDB_TOOLBAR_TOOLS, 16, 1, RGB(192, 192, 192));
-		m_ilToolbarMove.Create(XTP_IDB_TOOLBAR_TOOLS, 16, 1, RGB(192, 192, 192));
-
-		for (i = 0; i < 12; i++) m_ilToolbarMove.Remove(0);
-	}
-
-	m_wndToolbarTools.GetToolBarCtrl().SendMessage(TB_SETIMAGELIST, 0, (LPARAM)m_ilToolbarTools.GetSafeHandle());
-	m_wndToolbarMove.GetToolBarCtrl().SendMessage(TB_SETIMAGELIST, 0, (LPARAM)m_ilToolbarMove.GetSafeHandle());
-
-
-	sz = m_wndToolbarMove.CalcDynamicLayout(0, LM_HORZ);
-	m_wndToolbarMove.SetWindowPos(&CWnd::wndTop, rcMove.left - 7, rcMove.top - 4, sz.cx, sz.cy, 0);
-
-
-
-	CRect rcColors;
-	GetDlgItem(XTP_IDC_STATIC_COLORS)->GetWindowRect(&rcColors);
-	ScreenToClient(rcColors);
-
-	for (i = 0; i < _countof(colors); i++)
-	{
-		CRect rcItem(CPoint(rcColors.left, rcColors.top - 4), CSize(11, 11));
-		rcItem.OffsetRect(colors[i].ptOffset.x * 13 , colors[i].ptOffset.y * 13);
-
-		m_wndSelector[i].Create(NULL, WS_CHILD | WS_VISIBLE | SS_NOTIFY, rcItem, this, colors[i].nID);
-		m_wndSelector[i].SetColor(colors[i].clr);
-
-	}
-	SetSelected(&m_wndSelector[0]);
-
-	m_wndSelectorErase.SubclassDlgItem(XTP_IDC_CLR_ERASE, this);
-	m_wndSelectorErase.SetColor(XTPCOLOR_ERASE);
-
-	m_wndPicker.SubclassDlgItem(XTP_IDC_CLR_PICKER, this);
-
-
-	m_wndPicture.Init(XTP_IDC_STATIC_PICTURE, this);
-	m_wndPreview.Init(XTP_IDC_STATIC_PREVIEW, this);
-
-	if (m_bCommandBarsEditor)
-	{
-		XTPMouseManager()->AddTrustedWindow(m_hWnd);
-	}
-
-	return TRUE;  // return TRUE  unless you set the focus to a control
-}
-
-void CXTPImageEditorDlg::OnDestroy()
-{
-	if (m_bCommandBarsEditor)
-	{
-		XTPMouseManager()->RemoveTrustedWindow(m_hWnd);
-	}
-
-	CDialog::OnDestroy();
-}
-
-LRESULT CXTPImageEditorDlg::OnKickIdle(WPARAM, LPARAM)
-{
-	SendMessageToDescendants(WM_IDLEUPDATECMDUI);
-	return 0;
-}
-
-void CXTPImageEditorDlg::SetSelected(CXTPImageEditorPicker* pPicker)
-{
-	if (m_pSelected != NULL)
-		m_pSelected->SetSelected(FALSE);
-
-	if (pPicker)
-		pPicker->SetSelected(TRUE);
-
-	m_pSelected = pPicker;
-}
-
-void CXTPImageEditorDlg::OnPickerClick(NMHDR* /*pNMHDR*/, LRESULT* /*pResult*/)
-{
-	CColorDialog cd(m_wndPicker.GetColor(), 0, this);
-	if (cd.DoModal())
-	{
-		m_wndPicker.SetColor(cd.GetColor());
-		SetSelected(&m_wndPicker);
-	}
-
-}
-void CXTPImageEditorDlg::OnEraseClick(NMHDR* pNMHDR, LRESULT* /*pResult*/)
-{
-	CXTPImageEditorPicker* pWnd = DYNAMIC_DOWNCAST(CXTPImageEditorPicker, CWnd::FromHandlePermanent(pNMHDR->hwndFrom));
-	ASSERT(pWnd);
-	SetSelected(pWnd);
-
-}
-
-void CXTPImageEditorDlg::OnSelectorClick(UINT /*id*/, NMHDR* pNMHDR, LRESULT* /*pResult*/)
-{
-	CXTPImageEditorPicker* pWnd = DYNAMIC_DOWNCAST(CXTPImageEditorPicker, CWnd::FromHandlePermanent(pNMHDR->hwndFrom));
-	ASSERT(pWnd);
-	SetSelected(pWnd);
-}
-
-
-void CXTPImageEditorDlg::OnUpdateButtonTool(CCmdUI* pCmdUI)
-{
-	pCmdUI->SetCheck(m_toolSelected == (int)pCmdUI->m_nID - XTP_ID_BUTTON_PENCIL);
-}
-
-void CXTPImageEditorDlg::OnButtonTool(UINT nID)
-{
-	m_toolPrevious = m_toolSelected == xtpToolGetColor ? m_toolPrevious : m_toolSelected;
-	m_toolSelected = (XTPImageEditorTools)(nID - XTP_ID_BUTTON_PENCIL);
-}
-
-
-void CXTPImageEditorDlg::OnPictureChanged()
-{
-	m_wndPreview.Invalidate(FALSE);
-}
-
-void CXTPImageEditorDlg::OnUpdateButtonUndo(CCmdUI* pCmdUI)
-{
-	pCmdUI->Enable(!m_wndPicture.m_lstUndo.IsEmpty());
-}
-
-void CXTPImageEditorDlg::OnButtonUndo()
-{
-	m_wndPicture.Undo();
-}
-
-void CXTPImageEditorDlg::OnUpdateButtonRedo(CCmdUI* pCmdUI)
-{
-	pCmdUI->Enable(!m_wndPicture.m_lstRedo.IsEmpty());
-}
-
-void CXTPImageEditorDlg::OnButtonRedo()
-{
-	m_wndPicture.Redo();
-}
-
-void CXTPImageEditorDlg::OnButtonClear()
-{
-	m_wndPicture.Clear();
-}
-void CXTPImageEditorDlg::OnButtonCopy()
-{
-	m_wndPicture.Copy();
-}
-void CXTPImageEditorDlg::OnButtonPaste()
-{
-	m_wndPicture.Paste();
-}
-void CXTPImageEditorDlg::OnButtonOpen()
-{
-	m_wndPicture.Load();
-}
-
-void CXTPImageEditorDlg::OnMoveButton(UINT nID)
-{
-	m_wndPicture.MovePicture(
-		nID == XTP_IDC_BUTTON_LEFT ? CPoint(-1, 0) :
-		nID == XTP_IDC_BUTTON_RIGHT ? CPoint(+1, 0) :
-		nID == XTP_IDC_BUTTON_UP ? CPoint(0, -1) : CPoint(0, +1));
-}
-
-
-BOOL CXTPImageEditorDlg::OnToolTipText(UINT, NMHDR* pNMHDR, LRESULT* pResult)
-{
-	ASSERT(pNMHDR->code == TTN_NEEDTEXTA || pNMHDR->code == TTN_NEEDTEXTW);
-
-	// need to handle both ANSI and UNICODE versions of the message
-	TOOLTIPTEXTA* pTTTA = (TOOLTIPTEXTA*)pNMHDR;
-	TOOLTIPTEXTW* pTTTW = (TOOLTIPTEXTW*)pNMHDR;
-	TCHAR szFullText[256];
-	CString strTipText;
-	UINT nID = (UINT)pNMHDR->idFrom;
-
-	if (nID != 0) // will be zero on a separator
-	{
-		// don't handle the message if no string resource found
-		if (AfxLoadString(nID, szFullText) == 0)
-			return FALSE;
-
-		// this is the command id, not the button index
-		AfxExtractSubString(strTipText, szFullText, 1, '\n');
-	}
-#ifndef _UNICODE
-	if (pNMHDR->code == TTN_NEEDTEXTA)
-		lstrcpyn(pTTTA->szText, strTipText, _countof(pTTTA->szText));
-	else
-		_mbstowcsz(pTTTW->szText, strTipText, _countof(pTTTW->szText));
-#else
-	if (pNMHDR->code == TTN_NEEDTEXTA)
-		_wcstombsz(pTTTA->szText, strTipText, _countof(pTTTA->szText));
-	else
-		lstrcpyn(pTTTW->szText, strTipText, _countof(pTTTW->szText));
-#endif
-	*pResult = 0;
-
-	// bring the tooltip window above other popup windows
-	::SetWindowPos(pNMHDR->hwndFrom, HWND_TOP, 0, 0, 0, 0,
-		SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER);
-
-	return TRUE;    // message was handled
 }

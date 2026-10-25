@@ -1,14 +1,14 @@
-// from server: 45% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/TabManager/XTPTabPaintManagerAppearance.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/Ribbon/XTPRibbonTheme.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPTabPaintManager.cpp: implementation of the CXTPTabPaintManager class.
+// XTPRibbonTheme.cpp: implementation of the CXTPRibbonTheme class.
 //
-// This file is a part of the XTREME TOOLKIT PRO MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME RIBBON MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,1660 +26,1859 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "Common/XTPDrawHelpers.h"
-#include "Common/XTPColorManager.h"
-#include "Common/XTPResourceImage.h"
+
 #include "Common/XTPImageManager.h"
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPOffice2007Image.h"
+#include "Common/XTPResourceManager.h"
 
-#include "XTPTabManager.h"
-#include "XTPTabPaintManager.h"
-#include "XTPTabPaintManager.inl"
+#include "TabManager/XTPTabManager.h"
+#include "TabManager/XTPTabPaintManager.h"
 
-#ifndef _countof
-#define _countof(array) (sizeof(array)/sizeof(array[0]))
-#endif
+#include "CommandBars/XTPOffice2007Theme.h"
+#include "CommandBars/XTPOffice2007FrameHook.h"
+
+#include "CommandBars/XTPControlPopup.h"
+#include "CommandBars/XTPControlComboBox.h"
+#include "CommandBars/XTPControlEdit.h"
+#include "CommandBars/XTPCommandBar.h"
+#include "CommandBars/XTPPopupBar.h"
+#include "CommandBars/XTPStatusBar.h"
+#include "CommandBars/XTPCommandBars.h"
+
+#include "XTPRibbonGroup.h"
+#include "XTPRibbonBar.h"
+#include "XTPRibbonTheme.h"
+#include "XTPRibbonTab.h"
+
 
 #ifdef _DEBUG
 #undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
+static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+CXTPRibbonTheme::CXTPRibbonTheme()
+{
+	m_bHotTrackingGroups = TRUE;
+	m_bFrameStatusBar = TRUE;
+	m_bClearTypeTextQuality = TRUE;
+
+	m_nSplitButtonDropDownWidth = 12;
+	m_nSplitButtonPopupWidth = 26;
+	m_nStatusBarMinHeight = 22;
+
+	m_pTabPaintManager = CreateTabPaintManager();
+	m_pTabPaintManager->RefreshMetrics();
+
+	m_strOfficeFont = _T("Segoe UI");
+	m_bUseOfficeFont = TRUE;
+
+	m_bOffsetPopupLabelText = FALSE;
+
+	m_nFontHeight = 0;
+
+	m_rcStatusButtonMargins.SetRect(0, 0, 2, 1);
+
+}
+
+CXTPRibbonTheme::~CXTPRibbonTheme()
+{
+	CMDTARGET_RELEASE(m_pTabPaintManager);
+}
+
+AFX_INLINE LPCTSTR FormatName(LPCTSTR lpszName)
+{
+	return lpszName;
+}
+
+AFX_INLINE CString FormatName(LPCTSTR lpszFormat, LPCTSTR lpszParameter)
+{
+	CString strResult;
+	strResult.Format(lpszFormat, lpszParameter);
+	return strResult;
+}
+
+AFX_INLINE BOOL IsCompositeRect(CXTPCommandBar* pRibbonBar, const CRect& rc)
+{
+	if (!pRibbonBar || !pRibbonBar->IsRibbonBar() || !((CXTPRibbonBar*)pRibbonBar)->IsDwmEnabled())
+		return FALSE;
+
+	return CRect().IntersectRect(((CXTPRibbonBar*)pRibbonBar)->GetCaptionRect(), rc);
+}
+
+#ifdef _XTP_INCLUDE_RIBBON
+BOOL CXTPControl::HasDwmCompositedRect() const
+{
+	return IsCompositeRect(GetParent(), GetRect());
+}
+#endif
+
+AFX_INLINE DWORD GetDrawImageFlags(CXTPControl* pControl, const CRect& rc)
+{
+	return IsCompositeRect(pControl->GetParent(), rc) ? XTP_DI_COMPOSITE : 0;
+}
+
+AFX_INLINE DWORD GetDrawImageFlags(CXTPControl* pControl)
+{
+	return IsCompositeRect(pControl->GetParent(), pControl->GetRect()) ? XTP_DI_COMPOSITE : 0;
+}
+
+
+CString GetColorName(XTPRibbonTabContextColor color)
+{
+	switch (color)
+	{
+		case xtpRibbonTabContextColorBlue: return _T("BLUE");
+		case xtpRibbonTabContextColorYellow: return _T("YELLOW");
+		case xtpRibbonTabContextColorGreen: return _T("GREEN");
+		case xtpRibbonTabContextColorRed: return _T("RED");
+		case xtpRibbonTabContextColorPurple: return _T("PURPLE");
+		case xtpRibbonTabContextColorCyan: return _T("CYAN");
+		case xtpRibbonTabContextColorOrange: return _T("ORANGE");
+	}
+
+	return _T("");
+}
+
 
 
 //////////////////////////////////////////////////////////////////////////
-// CXTPTabPaintManagerAppearanceSet
+// CXTPRibbonTheme
 
-CXTPTabPaintManagerAppearanceSet::CXTPTabPaintManagerAppearanceSet()
+class CXTPRibbonTheme::CRibbonAppearanceSet : public CXTPTabPaintManager::CAppearanceSetPropertyPageFlat
 {
-	m_pPaintManager = NULL;
-	m_rcHeaderMargin.SetRect(0, 0, 0, 0);
-	m_nRowMargin = -2;
-	m_bButtonsReverseZOrder = FALSE;
-
-}
-CXTPTabPaintManagerAppearanceSet::~CXTPTabPaintManagerAppearanceSet()
-{
-}
-
-void CXTPTabPaintManagerAppearanceSet::DrawText(CDC* pDC, CXTPTabManager* /*pManager*/, const CString& str, LPRECT lpRect, UINT nFormat)
-{
-	pDC->DrawText(str, lpRect, nFormat);
-}
-
-void CXTPTabPaintManagerAppearanceSet::RefreshMetrics()
-{
-	CWindowDC dc (NULL);
-	CXTPFontDC fnt(&dc, m_pPaintManager->GetFont());
-	CSize szRect = dc.GetTextExtent(_T(" "), 1);
-
-	m_nButtonHeight = max(18, szRect.cy + 3);
-}
-
-CRect CXTPTabPaintManagerAppearanceSet::GetHeaderClipBox(CDC* pDC, CXTPTabManager* pTabManager)
-{
-	CRect rcClipBox;
-	pDC->GetClipBox(rcClipBox);
-
-	rcClipBox.IntersectRect(rcClipBox, pTabManager->GetHeaderRect());
-
-	return rcClipBox;
-}
-
-CRect CXTPTabPaintManagerAppearanceSet::GetButtonDrawRect(const CXTPTabManagerItem* pItem)
-{
-	CRect rc = pItem->GetRect();
-	rc.InflateRect(2, 2);
-
-	return rc;
-}
-
-int CXTPTabPaintManagerAppearanceSet::GetButtonHeight(const CXTPTabManager* pTabManager)
-{
-	CSize szButtonMin(0);
-
-	int nMargin = m_pPaintManager->m_rcButtonMargin.top + m_pPaintManager->m_rcButtonMargin.bottom;
-
-	if (pTabManager) pTabManager->GetItemMetrics(NULL, &szButtonMin, NULL);
-	int nButtonHeight = max(m_nButtonHeight + nMargin, szButtonMin.cy);
-
-	if (!m_pPaintManager->m_bShowIcons)
-		return nButtonHeight;
-
-	CSize szIcon(m_pPaintManager->m_szIcon);
-	if (pTabManager) pTabManager->DrawIcon(NULL, 0, NULL, FALSE, szIcon);
-
-	return max(max(szIcon.cx, szIcon.cy) + 4 + nMargin, nButtonHeight);
-
-}
-
-
-void CXTPTabPaintManagerAppearanceSet::DrawPolyLine(CDC* pDC, COLORREF clr, LPPOINT pts, int nCount)
-{
-	CXTPPenDC pen(*pDC, clr);
-	pDC->MoveTo(pts[0].x, pts[0].y);
-	CPoint pt(pts[0]);
-
-	for (int i = 1; i < nCount; i++)
+public:
+	CRibbonAppearanceSet(CXTPRibbonTheme* pRibbonTheme)
+		: m_pRibbonTheme(pRibbonTheme)
 	{
-		pt.Offset(pts[i]);
-		pDC->LineTo(pt);
+		m_rcHeaderMargin.SetRect(0, 1, 0, 0);
+	}
+protected:
+	void DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem);
+
+	int GetButtonHeight(const CXTPTabManager* /*pTabManager*/)
+	{
+		return m_pRibbonTheme->m_nTabsHeight + 1;
+	}
+
+	CXTPRibbonTheme* m_pRibbonTheme;
+
+};
+
+class CXTPRibbonTheme::CRibbonColorSet : public CXTPTabPaintManager::CColorSetOffice2003
+{
+protected:
+	void RefreshMetrics()
+	{
+		CColorSetOffice2003::RefreshMetrics();
+	}
+};
+
+void CXTPRibbonTheme::DrawRibbonTab(CDC* pDC, CXTPRibbonTab* pItem)
+{
+	XTPTabPosition tabPosition = pItem->GetTabManager()->GetPosition();
+
+	CRect rcEntry(pItem->GetRect());
+	CXTPTabPaintManager::CAppearanceSet::InflateRectEx(rcEntry, CRect(0, 1, -1,  -1), tabPosition);
+
+	XTPRibbonTabContextColor tabColor = pItem->GetContextColor();
+
+	if (tabColor != xtpRibbonTabContextColorNone)
+	{
+		if (pItem->IsSelected() || pItem->IsHighlighted())
+		{
+			CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("CONTEXTTAB%s"), GetColorName(tabColor)));
+
+			int nState = 0;
+			if (pItem->IsSelected())
+			{
+				nState = pItem->IsFocused() || pItem->IsHighlighted() ? 4 : 3;
+			}
+			else if (pItem->IsHighlighted())
+			{
+				nState = 1;
+			}
+
+			if (nState == 4)
+			{
+				pImage = LoadImage(FormatName(_T("RIBBONTAB")));
+				if (pImage) pImage->DrawImage(pDC, rcEntry, pImage->GetSource(5, 6), CRect(5, 5, 5, 5), 0xFF00FF);
+			}
+			else
+			{
+				if (pImage) pImage->DrawImage(pDC, rcEntry, pImage->GetSource(nState, 5), CRect(5, 5, 5, 5));
+			}
+		}
+	}
+	else
+	{
+		if (pItem->IsSelected() || pItem->IsHighlighted())
+		{
+			CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("RIBBONTAB")));
+
+			int nState = 0;
+			if (pItem->IsSelected() && pItem->IsFocused())
+			{
+				nState = 5;
+			}
+			else if (pItem->IsSelected() && pItem->IsHighlighted())
+			{
+				nState = 4;
+			}
+			else if (pItem->IsSelected())
+			{
+				nState = 3;
+			}
+			else if (pItem->IsPressed())
+			{
+				nState = 2;
+			}
+			else if (pItem->IsHighlighted())
+			{
+				nState = 1;
+			}
+
+			if (pImage) pImage->DrawImage(pDC, rcEntry, pImage->GetSource(nState, 6), CRect(5, 5, 5, 5), 0xFF00FF);
+		}
+	}
+
+	if (pItem->GetButtonLength() < pItem->GetContentLength())
+	{
+		CRect rcSeparator(rcEntry.right, rcEntry.top, rcEntry.right + 1, rcEntry.bottom);
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("RIBBONTABSEPARATOR")));
+		if (pImage) pImage->DrawImage(pDC, rcSeparator, pImage->GetSource(), CRect(0, 0, 0, 0));
+	}
+
+	if (tabColor != xtpRibbonTabContextColorNone && pItem->GetContextHeader() &&
+		(pItem->GetContextHeader()->m_pFirstTab == pItem))
+	{
+		CRect rcSeparator(rcEntry.left, rcEntry.top, rcEntry.left + 1, rcEntry.bottom - 1);
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("CONTEXTTABSEPARATOR")));
+		if (pImage) pImage->DrawImage(pDC, rcSeparator, pImage->GetSource(), CRect(0, 0, 0, 0));
+	}
+	if (tabColor != xtpRibbonTabContextColorNone && pItem->GetContextHeader() &&
+		(pItem->GetContextHeader()->m_pLastTab == pItem))
+	{
+		CRect rcSeparator(rcEntry.right, rcEntry.top, rcEntry.right + 1, rcEntry.bottom - 1);
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("CONTEXTTABSEPARATOR")));
+		if (pImage) pImage->DrawImage(pDC, rcSeparator, pImage->GetSource(), CRect(0, 0, 0, 0));
 	}
 }
 
-void CXTPTabPaintManagerAppearanceSet::InflateRectEx(CRect& rc, CRect rcInflate, XTPTabPosition position)
+void CXTPRibbonTheme::CRibbonAppearanceSet::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
 {
-	switch (position)
-	{
-		case xtpTabPositionTop: rc.top -= rcInflate.top; rc.left -= rcInflate.left; rc.bottom += rcInflate.bottom; rc.right += rcInflate.right; break;
-		case xtpTabPositionLeft: rc.left -= rcInflate.top; rc.bottom += rcInflate.right; rc.right += rcInflate.bottom;  rc.top -= rcInflate.left; break;
-		case xtpTabPositionBottom: rc.bottom += rcInflate.top; rc.right += rcInflate.right; rc.top -= rcInflate.bottom; rc.left -= rcInflate.left; break;
-		case xtpTabPositionRight: rc.right += rcInflate.top; rc.top -= rcInflate.left; rc.left -= rcInflate.bottom; rc.bottom += rcInflate.right; break;
+	m_pRibbonTheme->DrawRibbonTab(pDC, (CXTPRibbonTab*)pItem);
 
+	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect() , TRUE);
+}
+
+
+void CXTPRibbonTheme::UpdateFonts()
+{
+	CNonClientMetrics ncm;
+	CLogFont lf;
+
+	int nBaseHeight = ncm.lfMenuFont.lfHeight < 0 ? -ncm.lfMenuFont.lfHeight : ncm.lfMenuFont.lfHeight;
+	if (m_nFontHeight > 11)
+		nBaseHeight = m_nFontHeight;
+
+	if (nBaseHeight <= 12) nBaseHeight = 11;
+
+	int nLogPixel = 96; //CWindowDC(NULL).GetDeviceCaps(LOGPIXELSY);
+
+	lf.lfWeight = FW_NORMAL;
+	lf.lfItalic = FALSE;
+	lf.lfCharSet = ncm.lfMenuFont.lfCharSet;
+	lf.lfQuality = ncm.lfMenuFont.lfQuality;
+
+	if (m_bClearTypeTextQuality && XTPSystemVersion()->IsClearTypeTextQualitySupported())
+	{
+		lf.lfQuality = 5;
+		ncm.lfSmCaptionFont.lfQuality = 5;
+		ncm.lfStatusFont.lfQuality = 5;
+	}
+	if (m_bUseOfficeFont && FontExists(m_strOfficeFont))
+	{
+		STRCPY_S(lf.lfFaceName, LF_FACESIZE, m_strOfficeFont);
+		STRCPY_S(ncm.lfStatusFont.lfFaceName, LF_FACESIZE, m_strOfficeFont);
+	}
+	else
+	{
+		STRCPY_S(lf.lfFaceName, LF_FACESIZE, ncm.lfMenuFont.lfFaceName);
+	}
+
+	lf.lfHeight = nBaseHeight * 120 / nLogPixel;
+
+	if (m_bUseStandardFont)
+	{
+		LOGFONT lfFont = lf;
+		SetCommandBarsFontIndirect(&lfFont, TRUE);
+	}
+
+	m_nTextHeight = max(22, nBaseHeight * 144 / nLogPixel + 6);
+
+	m_nEditHeight = max(22, nBaseHeight * 195 / nLogPixel);
+
+	m_nTabsHeight = m_nEditHeight > 22 ? m_nEditHeight + 2 : 23;
+
+	m_nGroupCaptionHeight = max(17, nBaseHeight * 144 / nLogPixel);
+
+	m_nSplitButtonDropDownWidth = max(12, m_nTextHeight / 2);
+
+	m_fontGroupCaption.SetStandardFont(&lf);
+
+	LOGFONT lfIcon = lf;
+	STRCPY_S(lfIcon.lfFaceName, LF_FACESIZE, ncm.lfMenuFont.lfFaceName);
+	VERIFY(m_fontIcon.SetStandardFont(&lfIcon));
+
+	lfIcon.lfWeight = FW_BOLD;
+	VERIFY(m_fontIconBold.SetStandardFont(&lfIcon));
+
+	m_pTabPaintManager->RefreshMetrics();
+	m_pTabPaintManager->SetFontIndirect(&lf, TRUE);
+
+	m_fontSmCaption.SetStandardFont(&ncm.lfSmCaptionFont);
+
+	m_fontToolTip.SetStandardFont(&ncm.lfStatusFont);
+}
+
+void CXTPRibbonTheme::RefreshMetrics()
+{
+	CXTPOffice2007Theme::RefreshMetrics();
+
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Colors
+
+	CXTPOffice2007Images* pImages = GetImages();
+
+	m_clrRibbonFace = GetImages()->GetImageColor(_T("Ribbon"), _T("RibbonFace"));
+
+	m_pTabPaintManager->GetColorSet()->m_clrHighlightText.SetStandardValue(pImages->GetImageColor(_T("Ribbon"), _T("TabNormalText")));
+	m_pTabPaintManager->GetColorSet()->m_clrNormalText.SetStandardValue(pImages->GetImageColor(_T("Ribbon"), _T("TabNormalText")));
+	m_pTabPaintManager->GetColorSet()->m_clrSelectedText.SetStandardValue(pImages->GetImageColor(_T("Ribbon"), _T("TabSelectedText")));
+
+	m_clrRibbonGroupCaptionText = pImages->GetImageColor(_T("Ribbon"), _T("GroupCaptionText"));
+
+	m_arrColor[XPCOLOR_TOOLBAR_TEXT].SetStandardValue(pImages->GetImageColor(_T("Ribbon"), _T("GroupClientText")));
+	m_clrRibbonText = pImages->GetImageColor(_T("Ribbon"), _T("RibbonText"));
+
+	m_clrControlEditNormal = pImages->GetImageColor(_T("Ribbon"), _T("ControlEditNormal"));
+
+	m_clrMinimizedFrameEdgeHighLight = pImages->GetImageColor(_T("Ribbon"), _T("MinimizedFrameEdgeHighLight"));
+	m_clrMinimizedFrameEdgeShadow = pImages->GetImageColor(_T("Ribbon"), _T("MinimizedFrameEdgeShadow"));
+
+	m_arrColor[XPCOLOR_MENUBAR_TEXT].SetStandardValue(pImages->GetImageColor(_T("Ribbon"), _T("MenuPopupText")));
+
+	m_clrMenuGripper.SetStandardValue(pImages->GetImageColor(_T("Ribbon"), _T("MenuPopupGripper")));
+	m_clrMenuExpandedGripper.SetStandardValue(pImages->GetImageColor(_T("Ribbon"), _T("MenuPopupExpandedGripperLight")),
+		pImages->GetImageColor(_T("Ribbon"), _T("MenuPopupExpandedGripperDark")));
+
+	m_clrShadowFactor = 0;
+
+	m_arrColor[XPCOLOR_MENUBAR_GRAYTEXT].SetStandardValue(RGB(167, 167, 167));
+	m_arrColor[XPCOLOR_HIGHLIGHT_TEXT].SetStandardValue(pImages->GetImageColor(_T("Ribbon"), _T("ControlHighlightText")));
+
+	m_arrColor[XPCOLOR_MENUBAR_BORDER].SetStandardValue(RGB(134, 134, 134));
+	m_arrColor[XPCOLOR_MENUBAR_FACE].SetStandardValue(RGB(250, 250, 250));
+
+	m_clrMenuExpand.SetStandardValue(RGB(233, 238, 238), RGB(233, 238, 238));
+
+	CreateGradientCircle();
+}
+
+
+CXTPTabPaintManager* CXTPRibbonTheme::CreateTabPaintManager()
+{
+	CXTPTabPaintManager* pTabPaintManager = new CXTPTabPaintManager();
+	pTabPaintManager->SetAppearanceSet(new CRibbonAppearanceSet(this));
+	pTabPaintManager->SetLayout(xtpTabLayoutSizeToFit);
+
+	pTabPaintManager->SetColorSet(new CRibbonColorSet);
+	pTabPaintManager->m_bFillBackground = FALSE;
+	pTabPaintManager->m_bHotTracking = TRUE;
+	pTabPaintManager->m_clientFrame = xtpTabFrameSingleLine;
+	pTabPaintManager->m_bDrawTextNoPrefix = FALSE;
+	pTabPaintManager->m_rcButtonMargin.SetRect(0, 2, 0, 2);
+	pTabPaintManager->m_rcButtonTextPadding.SetRect(4, 0, 4, 0);
+	pTabPaintManager->m_nButtonExtraLength = 21;
+	pTabPaintManager->m_bDrawTextEndEllipsis = FALSE;
+	pTabPaintManager->m_bDrawFocusRect = FALSE;
+	pTabPaintManager->EnableToolTips(xtpTabToolTipShrinkedOnly);
+	pTabPaintManager->m_bClearTypeTextQuality = m_bClearTypeTextQuality;
+	pTabPaintManager->m_bClipHeader = FALSE;
+
+	return pTabPaintManager;
+}
+
+void CXTPRibbonTheme::FillGroupPopupToolBar(CDC* pDC, CXTPRibbonGroup* pGroup, CXTPCommandBar* pCommandBar)
+{
+	pDC->SetBkMode(TRANSPARENT);
+
+	CXTPClientRect rcRibbon(pCommandBar);
+
+	pDC->FillSolidRect(rcRibbon, RGB(191, 219, 255));
+
+	rcRibbon.InflateRect(3, 3);
+	XTPRibbonTabContextColor tabColor = pGroup->GetParentTab()->GetContextColor();
+
+	if (tabColor != xtpRibbonTabContextColorNone)
+	{
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("CONTEXTTAB%sCLIENT"), GetColorName(tabColor)));
+		if (pImage) pImage->DrawImage(pDC, rcRibbon, pImage->GetSource(0, 1), CRect(8, 8, 8, 8));
+	}
+	else
+	{
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("RIBBONGROUPS")));
+		if (pImage) pImage->DrawImage(pDC, rcRibbon, pImage->GetSource(0, 1), CRect(8, 8, 8, 8));
 	}
 }
 
-void CXTPTabPaintManagerAppearanceSet::DeflateRectEx(CRect& rc, CRect rcDeflate, XTPTabPosition position)
+void CXTPRibbonTheme::DrawGroup(CDC* pDC, CXTPRibbonGroup* pGroup)
 {
-	InflateRectEx(rc, CRect(-rcDeflate.left, -rcDeflate.top, -rcDeflate.right, -rcDeflate.bottom), position);
+	CRect rcGroup(pGroup->GetRect());
+
+	CRect rcGroupClient(rcGroup.left, rcGroup.top, rcGroup.right, rcGroup.bottom - m_nGroupCaptionHeight);
+	CRect rcGroupCaption(rcGroup.left, rcGroupClient.bottom, rcGroup.right, rcGroup.bottom);
+
+
+	if (!pGroup->IsReduced())
+	{
+		CXTPOffice2007Image* pImage, *pImageCaption;
+
+		if (pGroup->GetParentTab()->GetContextColor() == xtpRibbonTabContextColorNone)
+		{
+			pImage = LoadImage(FormatName(_T("RIBBONGROUPCLIENT")));
+			pImageCaption = LoadImage(FormatName(_T("RIBBONGROUPCAPTION")));
+		}
+		else
+		{
+			pImage = LoadImage(FormatName(_T("CONTEXTTABGROUPCLIENT")));
+			pImageCaption = LoadImage(FormatName(_T("CONTEXTTABGROUPCAPTION")));
+		}
+
+		int nState = pGroup->IsHighlighted() ? 1 : 0;
+
+		if (pImage) pImage->DrawImage(pDC, rcGroupClient, pImage->GetSource(nState, 2), CRect(5, 5, 5, 5));
+		if (pImageCaption) pImageCaption->DrawImage(pDC, rcGroupCaption,  pImageCaption->GetSource(nState, 2), CRect(5, 5, 5, 5));
+
+
+		CString strCaption = pGroup->GetCaption();
+		XTPDrawHelpers()->StripMnemonics(strCaption);
+
+		CXTPFontDC font(pDC, &m_fontGroupCaption);
+
+		CRect rcGroupCaptionText(rcGroupCaption);
+		rcGroupCaptionText.OffsetRect(0, -1);
+		if (pGroup->IsOptionButtonVisible())
+			rcGroupCaptionText.right -= m_nGroupCaptionHeight + 1;
+		rcGroupCaptionText.DeflateRect(2, 2);
+
+		pDC->SetTextColor(m_clrRibbonGroupCaptionText);
+		pDC->DrawText(strCaption, rcGroupCaptionText, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX | DT_END_ELLIPSIS | DT_CENTER);
+	}
 }
 
-void CXTPTabPaintManagerAppearanceSet::DrawSingleLineBorder(CDC* pDC, CRect rc, XTPTabPosition position, COLORREF clrTopLeft, COLORREF clrBottomRight)
+void CXTPRibbonTheme::FillTabPopupToolBar(CDC* pDC, CXTPPopupToolBar* pPopupToolBar)
 {
-	switch (position)
+	CXTPClientRect rcRibbonClient(pPopupToolBar);
+	pDC->FillSolidRect(rcRibbonClient, m_clrRibbonFace);
+}
+
+void CXTPRibbonTheme::FillRibbonBar(CDC* pDC, CXTPRibbonBar* pRibbonBar)
+{
+
+	CXTPClientRect rcRibbonClient(pRibbonBar);
+	if (pRibbonBar->IsFrameThemeEnabled())
+		rcRibbonClient.top += m_nRibbonCaptionHeight;
+
+	CRect rcRibbonTabs(rcRibbonClient.left, rcRibbonClient.top, rcRibbonClient.right, rcRibbonClient.top + m_nTabsHeight);
+	CRect rcRibbonGroups(rcRibbonClient.left, rcRibbonTabs.bottom, rcRibbonClient.right, rcRibbonClient.bottom);
+
+	pDC->FillSolidRect(rcRibbonTabs, m_clrRibbonFace);
+	pDC->FillSolidRect(rcRibbonGroups, m_clrRibbonFace);
+
+	if (pRibbonBar->IsQuickAccessBelowRibbon())
 	{
-		case xtpTabPositionTop: HorizontalLine(pDC, rc.left, rc.top, rc.Width(), clrTopLeft); break;
-		case xtpTabPositionLeft: VerticalLine(pDC, rc.left, rc.top, rc.Height(), clrTopLeft); break;
-		case xtpTabPositionBottom: HorizontalLine(pDC, rc.left, rc.bottom - 1, rc.Width(), clrBottomRight); break;
-		case xtpTabPositionRight: VerticalLine(pDC, rc.right - 1, rc.top, rc.Height(), clrBottomRight); break;
+		CRect rcQuickAccess = pRibbonBar->GetQuickAccessRect();
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("RIBBONQUICKACCESSFRAME")));
+		if (pImage) pImage->DrawImage(pDC, rcQuickAccess, pImage->GetSource(0, 1), CRect(3, 3, 3, 3));
+	}
+
+	if (!pRibbonBar->IsGroupsVisible() && !pRibbonBar->IsQuickAccessBelowRibbon())
+	{
+		HorizontalLine(pDC, rcRibbonClient.left, rcRibbonClient.bottom - 2, rcRibbonClient.right, m_clrMinimizedFrameEdgeShadow);
+		HorizontalLine(pDC, rcRibbonClient.left, rcRibbonClient.bottom - 1, rcRibbonClient.right, m_clrMinimizedFrameEdgeHighLight);
+	}
+}
+
+void CXTPRibbonTheme::FillGroupRect(CDC* pDC, CXTPRibbonTab* pActiveTab, CRect rcGroups)
+{
+	XTPRibbonTabContextColor tabColor = pActiveTab ? pActiveTab->GetContextColor() : xtpRibbonTabContextColorNone;
+
+	if (tabColor != xtpRibbonTabContextColorNone)
+	{
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("CONTEXTTAB%sCLIENT"), GetColorName(tabColor)));
+		if (pImage) pImage->DrawImage(pDC, rcGroups, pImage->GetSource(0, 1), CRect(8, 8, 8, 8));
+	}
+	else
+	{
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("RIBBONGROUPS")));
+		if (pImage) pImage->DrawImage(pDC, rcGroups, pImage->GetSource(0, 1), CRect(8, 8, 8, 8));
+	}
+}
+
+CSize CXTPRibbonTheme::DrawControlGroupOption(CDC* pDC, CXTPControl* pControlGroupOption, BOOL bDraw)
+{
+	if (bDraw)
+	{
+		CRect rc = pControlGroupOption->GetRect();
+
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("RIBBONOPTIONBUTTON")));
+
+		int nState = 0;
+		if (pControlGroupOption->GetSelected()) nState = 1;
+		if (pControlGroupOption->GetPressed()) nState = 2;
+
+		if (pImage) pImage->DrawImage(pDC, rc, pImage->GetSource(nState, 4), CRect(3, 2, 2, 2), 0xFF00FF);
+	}
+
+	return CSize(15, 14);
+}
+
+CSize CXTPRibbonTheme::DrawControlGroupPopup(CDC* pDC, CXTPControlPopup* pControlGroupPopup, BOOL bDraw)
+{
+	CXTPRibbonGroup* pRibbonGroup = pControlGroupPopup->GetRibbonGroup();
+	CXTPOffice2007Image* pImage = NULL;
+
+	int nOffset = 0;
+	if (pControlGroupPopup->GetSelected()) nOffset = 1;
+	if (pControlGroupPopup->GetPopuped()) nOffset = 2;
+
+	if (!pRibbonGroup)
+	{
+		if (bDraw)
+		{
+			pImage = LoadImage(FormatName(_T("RIBBONGROUPQUICKACCESS")));
+			ASSERT(pImage);
+
+			if (pImage) pImage->DrawImage(pDC, pControlGroupPopup->GetRect(),
+				pImage->GetSource(nOffset, 3), CRect(2, 2, 2, 2), 0xFF00FF, GetDrawImageFlags(pControlGroupPopup));
+		}
+		return DrawControlToolBarParent(pDC, pControlGroupPopup, bDraw);
+	}
+
+	if (bDraw)
+	{
+		CRect rc = pControlGroupPopup->GetRect();
+
+		XTPRibbonTabContextColor tabColor = pRibbonGroup ? pRibbonGroup->GetParentTab()->GetContextColor() : xtpRibbonTabContextColorNone;
+
+		if (tabColor != xtpRibbonTabContextColorNone)
+		{
+			pImage = LoadImage(FormatName(_T("CONTEXTTAB%sGROUPBUTTON"), GetColorName(tabColor)));
+		}
+		else
+		{
+			pImage = LoadImage(FormatName(_T("RIBBONGROUPBUTTON")));
+		}
+
+		if (pImage) pImage->DrawImage(pDC, rc, pImage->GetSource(nOffset, 3), CRect(5, 5, 5, 5));
+	}
+
+	CSize szButton(max(42, m_nTextHeight * 2 - 3), m_nEditHeight * 3);
+
+	CXTPFontDC font(pDC, GetCommandBarFont(pControlGroupPopup->GetParent(), FALSE));
+
+	int nSplitDropDownHeight = GetSplitDropDownHeight();
+
+	if (bDraw)
+	{
+		CXTPImageManagerIcon* pImageIcon = pControlGroupPopup->GetImage(0);
+		BOOL bDrawImage = (pImageIcon != NULL);
+
+		CRect rcButton = pControlGroupPopup->GetRect();
+		if (bDrawImage)
+		{
+			CSize sz(pImageIcon->GetWidth(), pImageIcon->GetHeight());
+
+			CPoint pt = CPoint(rcButton.CenterPoint().x - sz.cx / 2, rcButton.top + 4);
+
+			if (sz.cx < 20)
+			{
+				CXTPOffice2007Image* pImageButton = LoadImage(FormatName(_T("RIBBONGROUPBUTTONICON")));
+				CRect rc(CPoint(rcButton.CenterPoint().x - pImageButton->GetWidth() / 2, rcButton.top + 2),
+					CSize(pImageButton->GetWidth(), pImageButton->GetHeight()));
+
+				if (pImageButton) pImageButton->DrawImage(pDC, rc, pImageButton->GetSource(0, 1), CRect(0, 0, 0, 0));
+
+				pt.y = rcButton.top + 9;
+			}
+
+			DrawImage(pDC, pt, sz, pImageIcon,
+				pControlGroupPopup->GetSelected(), pControlGroupPopup->GetPressed(),
+				pControlGroupPopup->GetEnabled(), FALSE, pControlGroupPopup->GetPopuped());
+		}
+
+		CRect rcText = rcButton;
+		rcText.bottom -= m_nGroupCaptionHeight + 2;
+		rcText.top = rcText.bottom - nSplitDropDownHeight;
+
+		pDC->SetTextColor(GetControlTextColor(pControlGroupPopup));
+		DrawControlText2(pDC, pControlGroupPopup, rcText, TRUE, FALSE, TRUE);
+	}
+	else
+	{
+		CSize szText = DrawControlText2(pDC, pControlGroupPopup, CXTPEmptyRect(), FALSE, FALSE, TRUE);
+
+		szButton.cx = max(szButton.cx, szText.cx + 5);
+	}
+	return szButton;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CommandBars Theme
+
+
+
+BOOL CXTPRibbonTheme::IsImagesAvailable()
+{
+	return TRUE;
+}
+
+void CXTPRibbonTheme::DrawControlEntry(CDC* pDC, CXTPControl* pButton)
+{
+	if (pButton->GetRibbonGroup() && pButton->GetRibbonGroup()->IsControlsGrouping())
+	{
+		BOOL bLeft = pButton->GetBeginGroup() || pButton->GetWrap();
+
+		int nIndexNext = pButton->GetControls()->GetNext(pButton->GetIndex());
+
+		BOOL bRight = nIndexNext <= pButton->GetIndex() ||
+			pButton->GetControls()->GetAt(nIndexNext)->GetBeginGroup() ||
+			pButton->GetControls()->GetAt(nIndexNext)->GetWrap();
+
+		CString strImage = FormatName(bLeft && bRight ? _T("TOOLBARBUTTONSSPECIALSINGLE") :
+			bLeft ? _T("TOOLBARBUTTONSSPECIALLEFT") :
+			bRight ? _T("TOOLBARBUTTONSSPECIALRIGHT") :
+			_T("TOOLBARBUTTONSSPECIALCENTER"));
+
+		CXTPOffice2007Image* pImage = LoadImage(strImage);
+		ASSERT(pImage);
+		if (!pImage)
+			return;
+
+		BOOL bPopuped = pButton->GetPopuped();
+		BOOL bEnabled = pButton->GetEnabled();
+		BOOL bChecked = pButton->GetChecked();
+		BOOL bSelected = pButton->GetSelected();
+		BOOL bPressed = pButton->GetPressed();
+		CRect rc = pButton->GetRect();
+
+		CRect rcSrc = CRect(0, 0, 22, 22);
+
+		int nState = 0;
+
+		if (!bEnabled)
+		{
+			if (IsKeyboardSelected(bSelected)) nState = 0 + 1;
+		}
+		else if (bPopuped) nState = 2 + 1;
+		else if (bChecked && !bSelected && !bPressed) nState = 2 + 1;
+		else if (bChecked && bSelected && !bPressed) nState = 3 + 1;
+		else if (IsKeyboardSelected(bPressed) || (bSelected && bPressed)) nState = 1 + 1;
+		else if (bSelected || bPressed) nState = 0 + 1;
+
+		rcSrc.OffsetRect(0, rcSrc.Height() * nState);
+		pImage->DrawImage(pDC, rc, rcSrc, CRect(2, 2, 2, 2), 0xFF00FF);
+		return;
+	}
+
+	CXTPOffice2007Theme::DrawControlEntry(pDC, pButton);
+}
+
+COLORREF CXTPRibbonTheme::GetControlTextColor(CXTPControl* pButton)
+{
+	if (pButton->GetParent()->GetType() == xtpBarTypeRibbon && pButton->GetRibbonGroup() == NULL)
+	{
+		CXTPRibbonBar* pRibbonBar = (CXTPRibbonBar*)pButton->GetParent();
+
+		BOOL bCheckBoxStyle = (pButton->GetType() == xtpControlCheckBox || pButton->GetType() == xtpControlRadioButton);
+		if (pButton->IsKindOf(RUNTIME_CLASS(CXTPRibbonGroupControlPopup)))
+			bCheckBoxStyle = TRUE;
+
+		BOOL bNormalText = bCheckBoxStyle ? pButton->GetEnabled() :
+			!pButton->GetSelected() && pButton->GetEnabled() &&
+			!pButton->GetPressed() && !pButton->GetChecked() && !pButton->GetPopuped();
+
+
+		if (bNormalText && pRibbonBar->IsQuickAccessControl(pButton))
+		{
+			if (pButton->HasDwmCompositedRect())
+			{
+				return pRibbonBar->GetSite()->GetStyle() & WS_MAXIMIZE ? RGB(255, 255, 255) : RGB(0, 0, 0);
+			}
+
+			return m_clrRibbonText;
+		}
+
+		if (bNormalText)
+		{
+			return m_clrRibbonText;
+		}
+	}
+
+	return CXTPOffice2007Theme::GetControlTextColor(pButton);
+}
+
+COLORREF CXTPRibbonTheme::GetRectangleTextColor(BOOL bSelected, BOOL bPressed, BOOL bEnabled, BOOL bChecked, BOOL bPopuped, XTPBarType barType, XTPBarPosition /*barPosition*/)
+{
+	if (barType == xtpBarTypeMenuBar && !bSelected && bEnabled && !bPressed && !bChecked && !bPopuped)
+	{
+		return m_clrMenuBarText;
+	}
+
+	if (barType == xtpBarTypePopup)
+	{
+		return GetXtremeColor(!bEnabled ? XPCOLOR_MENUBAR_GRAYTEXT : XPCOLOR_MENUBAR_TEXT);
+	}
+
+	return GetXtremeColor(!bEnabled ? XPCOLOR_TOOLBAR_GRAYTEXT : XPCOLOR_TOOLBAR_TEXT);
+}
+
+void CXTPRibbonTheme::DrawRectangle(CDC* pDC, CRect rc, BOOL bSelected, BOOL bPressed, BOOL bEnabled /*= TRUE*/, BOOL bChecked /*= FALSE*/, BOOL bPopuped /*= FALSE*/, XTPBarType barType, XTPBarPosition barPosition)
+{
+	if (!IsImagesAvailable())
+	{
+		CXTPOffice2003Theme::DrawRectangle(pDC, rc, bSelected, bPressed, bEnabled, bChecked, bPopuped, barType, barPosition);
+		return;
+	}
+
+	if (barType != xtpBarTypePopup)
+	{
+		BOOL bSmallSize = rc.Height() < 33;
+
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(bSmallSize ? _T("TOOLBARBUTTONS22") : _T("TOOLBARBUTTONS50")));
+		ASSERT(pImage);
+		if (!pImage)
+			return;
+
+		int nState = -1;
+
+		if (!bEnabled)
+		{
+			if (IsKeyboardSelected(bSelected)) nState = 0;
+		}
+		else if (bPopuped) nState = 2;
+		else if (bChecked && !bSelected && !bPressed) nState = 2;
+		else if (bChecked && bSelected && !bPressed) nState = 3;
+		else if (IsKeyboardSelected(bPressed) || (bSelected && bPressed)) nState = 1;
+		else if (bSelected || bPressed) nState = 0;
+
+		if (nState != -1)
+		{
+			pImage->DrawImage(pDC, rc, pImage->GetSource(nState, 4), CRect(8, 8, 8, 8), COLORREF_NULL);
+		}
+	}
+	else if (barPosition == xtpBarPopup && bChecked && barType == xtpBarTypePopup)
+	{
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("MENUCHECKEDITEM")));
+		ASSERT(pImage);
+		if (!pImage)
+			return;
+
+		CRect rcSrc(0, 0, pImage->GetWidth(), pImage->GetHeight() / 2);
+		if (!bEnabled)
+			rcSrc.OffsetRect(0, rcSrc.Height());
+
+		pImage->DrawImage(pDC, rc, rcSrc, CRect(4, 4, 4, 4));
+	}
+	else if (barPosition == xtpBarPopup && bSelected && barType == xtpBarTypePopup)
+	{
+		if (!bEnabled && !IsKeyboardSelected(bSelected))
+			return;
+
+		BOOL bSmallSize = rc.Height() < 33;
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(
+			!bEnabled ? bSmallSize ? _T("MENUSELECTEDDISABLEDITEM22") : _T("MENUSELECTEDDISABLEDITEM54") :
+				bSmallSize ? _T("MENUSELECTEDITEM22") : _T("MENUSELECTEDITEM54")));
+		ASSERT(pImage);
+		if (!pImage)
+			return;
+
+		CRect rcSrc(0, 0, pImage->GetWidth(), pImage->GetHeight());
+		pImage->DrawImage(pDC, rc, rcSrc, CRect(4, 4, 4, 4));
+
+	}
+	else
+	{
+		CXTPOffice2003Theme::DrawRectangle(pDC, rc, bSelected, bPressed, bEnabled, bChecked, bPopuped, barType, barPosition);
 	}
 }
 
 
-COLORREF CXTPTabPaintManagerAppearanceSet::FillButton(CDC* pDC, CXTPTabManagerItem* pItem, LPPOINT pts, int nCount, XTPTabPosition /*tabPosition*/, BOOL bAbsoulute)
+void CXTPRibbonTheme::DrawSplitButtonFrame(CDC* pDC, CXTPControl* pButton, CRect rcButton)
 {
-	LPPOINT lpPointRgn = new POINT[nCount];
-	CPoint pt(0);
+	if (!IsImagesAvailable())
+	{
+		CXTPOffice2003Theme::DrawSplitButtonFrame(pDC, pButton, rcButton);
+		return;
+	}
+
+	BOOL bPressed = pButton->GetPressed(), bSelected = pButton->GetSelected(), bEnabled = pButton->GetEnabled(), bChecked = pButton->GetChecked(),
+		bPopuped = pButton->GetPopuped();
+
+	BOOL bSmallSize = pButton->GetStyle() != xtpButtonIconAndCaptionBelow;
+
+	CXTPOffice2007Image* pImageSplit, *pImageSplitDropDown;
+
+	int nSpecialOffset = 0;
+
+	if (pButton->GetRibbonGroup() && pButton->GetRibbonGroup()->IsControlsGrouping())
+	{
+		bSmallSize = TRUE;
+		BOOL bLeft = pButton->GetBeginGroup() || pButton->GetWrap();
+
+		int nIndexNext = pButton->GetControls()->GetNext(pButton->GetIndex());
+
+		BOOL bRight = nIndexNext <= pButton->GetIndex() ||
+			pButton->GetControls()->GetAt(nIndexNext)->GetBeginGroup() ||
+			pButton->GetControls()->GetAt(nIndexNext)->GetWrap();
+
+		CString strImage = bLeft ? FormatName(_T("TOOLBARBUTTONSSPECIALSPLITLEFT")) :
+			FormatName(_T("TOOLBARBUTTONSSPECIALSPLITCENTER"));
+
+		pImageSplit = LoadImage(strImage);
+
+		strImage = bRight ? FormatName(_T("TOOLBARBUTTONSSPECIALSPLITDROPDOWNRIGHT")) :
+			FormatName(_T("TOOLBARBUTTONSSPECIALSPLITDROPDOWNCENTER"));
+		pImageSplitDropDown  = LoadImage(strImage);
+
+		nSpecialOffset = 1;
+	}
+	else
+	{
+		pImageSplit = LoadImage(bSmallSize ? FormatName(_T("TOOLBARBUTTONSSPLIT22")) : FormatName(_T("TOOLBARBUTTONSSPLIT50")));
+
+		pImageSplitDropDown = LoadImage(bSmallSize ? FormatName(_T("TOOLBARBUTTONSSPLITDROPDOWN22")) : FormatName(_T("TOOLBARBUTTONSSPLITDROPDOWN50")));
+	}
+
+	if (!pImageSplit || !pImageSplitDropDown)
+		return;
+
+	int nSplitDropDownHeight = GetSplitDropDownHeight();
+
+	COLORREF clrText = !bEnabled ? RGB(141, 141, 141) : RGB(21, 66, 139);
+
+	pDC->SetTextColor(clrText);
+	pDC->SetBkMode (TRANSPARENT);
+
+	CRect rcSplit = bSmallSize ? CRect(rcButton.left, rcButton.top, rcButton.right - m_nSplitButtonDropDownWidth, rcButton.bottom) :
+		CRect(rcButton.left, rcButton.top, rcButton.right, rcButton.bottom - nSplitDropDownHeight);
+
+	CRect rcSplitSrc  = pImageSplit->GetSource(0, 6 + nSpecialOffset);
+
+	CRect rcSplitDropDown = bSmallSize ? CRect(rcButton.right - m_nSplitButtonDropDownWidth, rcButton.top, rcButton.right, rcButton.bottom) :
+		CRect(rcButton.left, rcButton.bottom - nSplitDropDownHeight, rcButton.right, rcButton.bottom);
+
+	CRect rcSplitDropDownSrc = pImageSplitDropDown->GetSource(0, 5 + nSpecialOffset);
+
+	int nStateSplit = -1;
+
+	BOOL bMouseInSplit = bSelected == TRUE_SPLITCOMMAND;
+	BOOL bMouseInSplitDropDown = bSelected == TRUE_SPLITDROPDOWN;
+
+	if (bEnabled == TRUE_SPLITDROPDOWN && (bSelected || bPressed || bPopuped))
+	{
+		nStateSplit = 4;
+	}
+	else if (!bEnabled)
+	{
+		if (IsKeyboardSelected(bSelected)) nStateSplit = 5;
+	}
+	else if (bChecked)
+	{
+		if (bPopuped) nStateSplit = 5;
+		else if (!bSelected && !bPressed) nStateSplit = 2;
+		else if (bSelected && !bPressed) nStateSplit = 3;
+		else if (IsKeyboardSelected(bPressed) || (bSelected && bPressed)) nStateSplit = 1;
+		else if (bPressed) nStateSplit = 2;
+		else if (bSelected || bPressed) nStateSplit = !bMouseInSplit ? 5 : 0;
+	}
+	else
+	{
+		if (bPopuped) nStateSplit = 5;
+		else if (IsKeyboardSelected(bPressed) || (bSelected && bPressed)) nStateSplit = 1;
+		else if (bSelected || bPressed) nStateSplit = !bMouseInSplit ? 5 : 0;
+	}
+	nStateSplit += nSpecialOffset;
+
+	if (nStateSplit != -1)
+	{
+		rcSplitSrc.OffsetRect(0, rcSplitSrc.Height() * nStateSplit);
+		pImageSplit->DrawImage(pDC, rcSplit, rcSplitSrc,
+			CRect(2, 2, 2, 2), 0xFF00FF, GetDrawImageFlags(pButton, rcSplit));
+	}
+
+	int nStateSplitDropDown = -1;
+
+	if (bEnabled == TRUE_SPLITCOMMAND && (bSelected || bPressed || bPopuped))
+	{
+		nStateSplitDropDown = 3;
+	}
+	else if (!bEnabled)
+	{
+		if (IsKeyboardSelected(bSelected)) nStateSplitDropDown = 4;
+	}
+	else if (bChecked)
+	{
+		if (bPopuped) nStateSplitDropDown = 2;
+		else if (!bSelected && !bPressed) nStateSplitDropDown = 2;
+		else if (IsKeyboardSelected(bPressed) || (bSelected && bPressed)) nStateSplitDropDown = 0;
+		else if (bSelected || bPressed) nStateSplitDropDown = !bMouseInSplitDropDown ? 4 : 0;
+		else nStateSplitDropDown = 4;
+	}
+	else
+	{
+		if (bPopuped) nStateSplitDropDown = 2;
+		else if (IsKeyboardSelected(bPressed) || (bSelected && bPressed)) nStateSplitDropDown = 0;
+		else if (bSelected || bPressed) nStateSplitDropDown = !bMouseInSplitDropDown ? 4 : 0;
+	}
+
+	nStateSplitDropDown += nSpecialOffset;
+
+	if (nStateSplitDropDown != -1)
+	{
+		rcSplitDropDownSrc.OffsetRect(0, rcSplitDropDownSrc.Height() * nStateSplitDropDown);
+		pImageSplitDropDown->DrawImage(pDC, rcSplitDropDown, rcSplitDropDownSrc, CRect(2, 2, 2, 2), 0xFF00FF,
+			GetDrawImageFlags(pButton, rcSplitDropDown));
+	}
+
+	if (bSmallSize)
+	{
+		if (bEnabled == TRUE_SPLITCOMMAND) bEnabled = FALSE;
+
+		CPoint pt = CPoint(rcButton.right - m_nSplitButtonDropDownWidth / 2 - 1, rcButton.CenterPoint().y);
+		DrawDropDownGlyph(pDC, pButton, pt, bSelected, bPopuped, bEnabled, FALSE);
+	}
+}
+
+
+void CXTPRibbonTheme::DrawPopupBarGripper(CDC* pDC, int x, int y, int cx, int cy, BOOL bExpanded)
+{
+	XTPDrawHelpers()->GradientFill(pDC, CRect(CPoint(x + 1, y), CSize(cx - 1, cy)),
+		bExpanded ? m_clrMenuExpandedGripper : m_clrMenuGripper, TRUE);
+
+	pDC->FillSolidRect(x + cx - 1, y, 1, cy, RGB(197, 197, 197));
+	pDC->FillSolidRect(x + cx, y, 1, cy, RGB(245, 245, 245));
+}
+
+void CXTPRibbonTheme::FillPopupLabelEntry(CDC* pDC, CRect rc)
+{
+	pDC->FillSolidRect(rc, GetXtremeColor(XPCOLOR_LABEL));
+	pDC->FillSolidRect(rc.left, rc.bottom - 1, rc.Width(), 1, RGB(197, 197, 197));
+}
+
+void CXTPRibbonTheme::FillMorePopupToolBarEntry(CDC* pDC, CXTPCommandBar* pBar)
+{
+	CRect rc;
+	pBar->GetClientRect(&rc);
+
+	CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("MOREPOPUPBARFRAME")));
+	if (!pImage)
+		pImage = LoadImage(FormatName(_T("POPUPBARFRAME")));
+
+	ASSERT(pImage);
+	if (!pImage)
+		return;
+
+	pImage->DrawImage(pDC, rc, pImage->GetSource(), CRect(4, 4, 4, 4));
+}
+
+CSize CXTPRibbonTheme::DrawSpecialControl(CDC* pDC, XTPSpecialControl controlType, CXTPControl* pButton, CXTPCommandBar* pBar, BOOL bDraw, LPVOID lpParam)
+{
+	if (controlType == xtpButtonExpandToolbar)
+	{
+		BOOL bVert = IsVerticalPosition(pBar->GetPosition());
+
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(
+			bVert ? _T("TOOLBAREXPANDBUTTONVERTICAL") : _T("TOOLBAREXPANDBUTTONHORIZONTAL")));
+
+		if (!pImage)
+			return CXTPOffice2007Theme::DrawSpecialControl(pDC, controlType, pButton, pBar, bDraw, lpParam);
+
+		if (!bDraw)
+		{
+			CSize szBar = *(CSize*)lpParam;
+			if (!bVert)
+				pButton->SetRect(CRect(szBar.cx - 12, 0, szBar.cx, szBar.cy));
+			else
+				pButton->SetRect(CRect(0, szBar.cy - 12, szBar.cx, szBar.cy));
+		}
+		else
+		{
+			CRect rc = pButton->GetRect();
+
+			pImage->DrawImage(pDC, rc, pImage->GetSource(
+				pButton->GetPopuped() ? 2 : pButton->GetSelected() ? 1 : 0 , 3), CRect(3, 3, 3, 3));
+
+			COLORREF clrText = GetXtremeColor(pButton->GetPopuped() ? XPCOLOR_TOOLBAR_TEXT: pButton->GetSelected() ? XPCOLOR_HIGHLIGHT_TEXT : XPCOLOR_TOOLBAR_TEXT);
+			BOOL bHiddenExists = *(BOOL*)lpParam;
+
+			if (!bVert) rc.OffsetRect(-1, 0); else rc.OffsetRect(0, -1);
+			DrawExpandSymbols(pDC, IsVerticalPosition(pBar->GetPosition()), CRect(CPoint(rc.left + 1, rc.top + 1), rc.Size()) , bHiddenExists, GetXtremeColor(COLOR_BTNHIGHLIGHT));
+			DrawExpandSymbols(pDC, IsVerticalPosition(pBar->GetPosition()), rc, bHiddenExists, clrText);
+		}
+		return 0;
+	}
+
+	return CXTPOffice2007Theme::DrawSpecialControl(pDC, controlType, pButton, pBar, bDraw, lpParam);
+}
+
+void CXTPRibbonTheme::FillCommandBarEntry(CDC* pDC, CXTPCommandBar* pBar)
+{
+	CRect rc;
+	pBar->GetClientRect(&rc);
+
+	if (pBar->GetPosition() == xtpBarPopup)
+	{
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("POPUPBARFRAME")));
+		ASSERT(pImage);
+		if (!pImage)
+			return;
+
+		pImage->DrawImage(pDC, rc, pImage->GetSource(), CRect(4, 4, 4, 4));
+	}
+	else if (IsFlatToolBar(pBar))
+	{
+		CXTPOffice2003Theme::FillCommandBarEntry(pDC, pBar);
+	}
+	else if (pBar->GetPosition() == xtpBarTop || pBar->GetPosition() == xtpBarBottom)
+	{
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("TOOLBARFACEHORIZONTAL")));
+
+		if (!pImage)
+		{
+			CXTPOffice2003Theme::FillCommandBarEntry(pDC, pBar);
+			return;
+		}
+
+		pImage->DrawImage(pDC, rc, pImage->GetSource(), CRect(5, 5, 5, 5));
+	}
+	else if (pBar->GetPosition() == xtpBarLeft || pBar->GetPosition() == xtpBarRight)
+	{
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("TOOLBARFACEVERTICAL")));
+
+		if (!pImage)
+		{
+			CXTPOffice2003Theme::FillCommandBarEntry(pDC, pBar);
+			return;
+		}
+
+		pImage->DrawImage(pDC, rc, pImage->GetSource(), CRect(5, 5, 5, 5));
+	}
+	else
+	{
+		CXTPOffice2003Theme::FillCommandBarEntry(pDC, pBar);
+	}
+}
+
+CSize CXTPRibbonTheme::DrawCommandBarSeparator(CDC* pDC, CXTPCommandBar* pBar, CXTPControl* pControl, BOOL bDraw)
+{
+	if (pBar->GetType() == xtpBarTypePopup)
+	{
+		if (!bDraw)
+			return CSize(2, 2);
+
+		CRect rc;
+		pBar->GetClientRect(&rc);
+		CRect rcControl = pControl->GetRect();
+
+		if (!pControl->GetWrap())
+		{
+			int nLeft = rcControl.left - 1 + GetPopupBarGripperWidth(pBar) + m_nPopupBarTextPadding;
+			HorizontalLine(pDC, nLeft, rcControl.top - 2, rcControl.right, RGB(197, 197, 197));
+			HorizontalLine(pDC, nLeft, rcControl.top - 1, rcControl.right, RGB(245, 245, 245));
+		}
+		else
+		{
+			VerticalLine(pDC, rcControl.left - 2, pControl->GetRowRect().top - 1, pControl->GetRowRect().bottom + 1, RGB(197, 197, 197));
+		}
+
+		return CSize(2, 2);
+	}
+	else
+	{
+		return CXTPOffice2003Theme::DrawCommandBarSeparator(pDC, pBar, pControl, bDraw);
+	}
+}
+
+void CXTPRibbonTheme::DrawRibbonFrameContextHeaders(CDC* pDC, CXTPRibbonBar* pRibbonBar, CXTPRibbonTabContextHeaders* pContextHeaders)
+{
+	int nCount = pContextHeaders->GetCount();
+	if (nCount == 0)
+		return;
+
+	CXTPFontDC font(pDC, m_pTabPaintManager->GetFont());
+	pDC->SetBkMode(TRANSPARENT);
+	pDC->SetTextColor(m_pTabPaintManager->GetColorSet()->m_clrNormalText);
+
 	for (int i = 0; i < nCount; i++)
 	{
-		if (!bAbsoulute)
+		CXTPRibbonTabContextHeader* pHeader = pContextHeaders->GetHeader(i);
+
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("ContextTab%sHeader"), GetColorName(pHeader->m_color)));
+		if (!pImage)
+			return;
+
+		CRect rc(pHeader->m_rcRect);
+		pImage->DrawImage(pDC, rc, pImage->GetSource(), CRect(1, 1, 1, 1));
+
+		rc.left += 6;
+		int nFrameBorder = pRibbonBar->IsFrameThemeEnabled() ?
+			pRibbonBar->GetFrameHook()->GetFrameBorder() : 0;
+
+		rc.top += nFrameBorder - 2;
+
+		if (pRibbonBar->IsDwmEnabled())
 		{
-			pt.Offset(pts[i]);
-			lpPointRgn[i] = pt;
+			DrawDwmCaptionText(pDC, rc, pHeader->m_strCpation, pRibbonBar->GetSite(), pRibbonBar->GetFrameHook()->IsFrameActive());
 		}
 		else
 		{
-			lpPointRgn[i] = pts[i];
+			pDC->DrawText(pHeader->m_strCpation, rc, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX | DT_END_ELLIPSIS | DT_LEFT);
 		}
 	}
 
-	CRect rcClip;
-	pDC->GetClipBox(rcClip);
-	CRgn rgnClip;
-	rgnClip.CreateRectRgnIndirect(rcClip);
-
-
-	CRgn rgn;
-	rgn.CreatePolygonRgn(lpPointRgn, nCount, ALTERNATE);
-
-	pDC->SelectClipRgn(&rgn, RGN_AND);
-
-	CRect rcFill;
-	rgn.GetRgnBox(rcFill);
-
-	CBitmap bmp;
-	bmp.CreateCompatibleBitmap(pDC, rcFill.Width(), rcFill.Height());
-	CXTPCompatibleDC dcButton(pDC, &bmp);
-
-	COLORREF clrFill = GetColorSet()->FillPropertyButton(&dcButton, CRect(0, 0, rcFill.Width(), rcFill.Height()), pItem);
-
-	pDC->BitBlt(rcFill.left, rcFill.top, rcFill.Width(), rcFill.Height(), &dcButton, 0, 0, SRCCOPY);
-
-	pDC->SelectClipRgn(&rgnClip);
-	delete[] lpPointRgn;
-
-	return clrFill;
 }
 
-int CXTPTabPaintManagerAppearanceSet::GetButtonLength(CDC* pDC, CXTPTabManagerItem* pItem)
+#define XTP_DTT_GLOWSIZE        (1UL << 11)     // iGlowSize has been specified
+#define XTP_DTT_COMPOSITED      (1UL << 13)     // Draws text with antialiased alpha (needs a DIB section)
+
+void CXTPRibbonTheme::DrawDwmCaptionText(CDC* pDC, CRect rcCaptionText, CString strWindowText, CWnd* pSite, BOOL bActive)
 {
-	return m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, CXTPEmptyRect(), FALSE);
+	if (pSite->GetStyle() & WS_MAXIMIZE)
+	{
+		pDC->SetTextColor(0xFFFFFF);
+		pDC->DrawText(strWindowText, rcCaptionText,
+			DT_VCENTER | DT_LEFT| DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX);
+		return;
+	}
+
+	CXTPWinThemeWrapper wrapper(FALSE);
+	wrapper.OpenTheme(0, L"WINDOW");
+
+	if (!wrapper.IsAppThemed())
+	{
+		pDC->SetTextColor(0);
+		pDC->DrawText(strWindowText, rcCaptionText, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX | DT_END_ELLIPSIS | DT_LEFT);
+		return;
+	}
+
+	CRect rcBuffer(rcCaptionText);
+	rcBuffer.InflateRect(5, 0);
+
+	HDC hDC = 0;
+	HPAINTBUFFER pb = wrapper.BeginBufferedPaint(pDC->GetSafeHdc(), rcBuffer, XTP_BPBF_TOPDOWNDIB, 0, &hDC);
+
+	if (hDC != NULL)
+	{
+		::BitBlt(hDC, rcBuffer.left, rcBuffer.top, rcBuffer.Width(), rcBuffer.Height(), pDC->GetSafeHdc(), rcBuffer.left, rcBuffer.top, SRCCOPY);
+		::SetTextColor(hDC, 0);
+		XTP_UX_DTTOPTS op;
+		op.dwSize = sizeof(op);
+		op.dwFlags = XTP_DTT_COMPOSITED | XTP_DTT_GLOWSIZE;
+		op. iGlowSize = 8;
+		CXTPFontDC font(CDC::FromHandle(hDC), &m_fontFrameCaption);
+
+		wrapper.DrawThemeTextEx(hDC, pSite->GetStyle() & WS_MAXIMIZE ? WP_MAXCAPTION : WP_CAPTION, bActive ? FS_ACTIVE : FS_INACTIVE, XTP_CT2CW(strWindowText), -1,
+			DT_VCENTER | DT_LEFT| DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX,  rcCaptionText, &op);
+	}
+
+	wrapper.EndBufferedPaint(pb, TRUE);
 }
 
-int CXTPTabPaintManagerAppearanceSet::GetHeaderHeight(CXTPTabManager* pTabManager)
+void CXTPRibbonTheme::DrawRibbonFrameCaptionBar(CDC* pDC, CXTPRibbonBar* pRibbonBar)
 {
-	if (!m_pPaintManager->m_bShowTabs)
+	CRect rcCaption = pRibbonBar->GetCaptionRect();
+	rcCaption.top--;
+
+	CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("FRAMETOPCENTER")));
+	pImage->DrawImage(pDC, rcCaption, pImage->GetSource(0, 2), CRect(0, 5, 0, 3));
+
+	if (!pRibbonBar->IsQuickAccessBelowRibbon() && pRibbonBar->IsQuickAccessVisible() &&
+		((CXTPControls*)pRibbonBar->GetQuickAccessControls())->GetVisibleCount() > 0)
+	{
+		CRect rcQuickAccess = pRibbonBar->GetQuickAccessRect();
+		int nFrameBorder = 0;
+		CRect rcQuickAccessArea(rcQuickAccess.left - 15, nFrameBorder, rcQuickAccess.right, pRibbonBar->GetQuickAccessHeight() + nFrameBorder);
+
+		BOOL bDwm = FALSE;
+		pImage = LoadImage(FormatName(bDwm ? _T("RIBBONQUICKACCESSAREADWM") : _T("RIBBONQUICKACCESSAREA")));
+		if (pImage)
+		{
+			pImage->PreserveOrientation();
+			pImage->DrawImage(pDC, rcQuickAccessArea, pImage->GetSource(), CRect(16, 3, 16, 3));
+		}
+	}
+
+	CXTPRibbonTabContextHeaders* pContextHeaders = pRibbonBar->GetContextHeaders();
+	if (pContextHeaders->GetCount() != 0)
+	{
+		DrawRibbonFrameContextHeaders(pDC, pRibbonBar, pContextHeaders);
+	}
+}
+
+void CXTPRibbonTheme::DrawRibbonFrameCaption(CDC* pDC, CXTPRibbonBar* pRibbonBar, BOOL bActive)
+{
+	CFrameWnd* pSite = (CFrameWnd*)pRibbonBar->GetSite();
+	CRect rcCaption = pRibbonBar->GetCaptionRect();
+	CXTPOffice2007Image* pImage;
+
+	if (!pRibbonBar->IsDwmEnabled())
+	{
+
+		pImage = LoadImage(FormatName(_T("FRAMETOPLEFT")));
+
+		ASSERT(pImage);
+		if (!pImage)
+			return;
+
+		CRect rcSrc(pImage->GetSource(bActive ? 0 : 1, 2));
+
+		CRect rcTopLeft(rcCaption.left, rcCaption.top, rcCaption.left + rcSrc.Width(), rcCaption.bottom);
+		pImage->DrawImage(pDC, rcTopLeft, rcSrc, CRect(0, 5, 0, 3), 0xFF00FF);
+
+		//////////////////////////////////////////////////////////////////////////
+
+		pImage = LoadImage(FormatName(_T("FRAMETOPRIGHT")));
+
+		rcSrc = pImage->GetSource(bActive ? 0 : 1, 2);
+		CRect rcTopRight(rcCaption.right - rcSrc.Width(), rcCaption.top, rcCaption.right, rcCaption.bottom);
+		pImage->DrawImage(pDC, rcTopRight, rcSrc, CRect(0, 5, 0, 3));
+
+
+		//////////////////////////////////////////////////////////////////////////
+
+		pImage = LoadImage(FormatName(_T("FRAMETOPCENTER")));
+
+		CRect rcTopCenter(rcTopLeft.right, rcCaption.top, rcTopRight.left, rcCaption.bottom);
+		pImage->DrawImage(pDC, rcTopCenter, pImage->GetSource(bActive ? 0 : 1, 2), CRect(0, 5, 0, 3));
+	}
+	else
+	{
+		pDC->FillSolidRect(rcCaption, 0);
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+
+	if (!pRibbonBar->IsQuickAccessBelowRibbon() && pRibbonBar->IsQuickAccessVisible() &&
+		((CXTPControls*)pRibbonBar->GetQuickAccessControls())->GetVisibleCount() > 0)
+	{
+		CRect rcQuickAccess = pRibbonBar->GetQuickAccessRect();
+		int nFrameBorder = pRibbonBar->GetFrameHook()->GetFrameBorder();
+		CRect rcQuickAccessArea(rcQuickAccess.left - 15, nFrameBorder, rcQuickAccess.right, pRibbonBar->GetQuickAccessHeight() + nFrameBorder);
+
+		BOOL bDwm = IsCompositeRect(pRibbonBar, rcQuickAccess);
+		pImage = LoadImage(FormatName(bDwm ? _T("RIBBONQUICKACCESSAREADWM") : _T("RIBBONQUICKACCESSAREA")));
+		if (pImage)
+		{
+			pImage->PreserveOrientation();
+			pImage->DrawImage(pDC, rcQuickAccessArea, pImage->GetSource(), CRect(16, 3, 16, 3));
+		}
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+
+
+	if (pRibbonBar->GetSystemButton() == NULL)
+	{
+		HICON hIcon = GetFrameSmallIcon(pSite);
+		if (hIcon)
+		{
+			CSize szIcon(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON));
+
+			int nTop = (rcCaption.Height()  - szIcon.cy)/2;
+			int nLeft = rcCaption.left + 10;
+
+			DrawIconEx(pDC->GetSafeHdc(), nLeft, nTop, hIcon,
+				szIcon.cx, szIcon.cy, 0, NULL, DI_NORMAL);
+		}
+	}
+
+
+	CRect rcCaptionText = pRibbonBar->GetCaptionTextRect();
+
+	CXTPRibbonTabContextHeaders* pContextHeaders = pRibbonBar->GetContextHeaders();
+	if (pContextHeaders->GetCount() != 0)
+	{
+		DrawRibbonFrameContextHeaders(pDC, pRibbonBar, pContextHeaders);
+	}
+
+	CXTPFontDC font(pDC, &m_fontFrameCaption);
+
+	CString strWindowText;
+	pSite->GetWindowText(strWindowText);
+	rcCaptionText.left += max(0, (rcCaptionText.Width() - pDC->GetTextExtent(strWindowText).cx) / 2);
+
+	if (pSite->GetStyle() & WS_MAXIMIZE)
+	{
+		rcCaptionText.top += pRibbonBar->GetFrameHook()->GetFrameBorder() / 2;
+	}
+
+	if (!pRibbonBar->IsDwmEnabled())
+	{
+		DrawCaptionText(pDC, rcCaptionText, pSite, bActive);
+	}
+	else
+	{
+		DrawDwmCaptionText(pDC, rcCaptionText, strWindowText, pSite, bActive);
+	}
+}
+
+void CXTPRibbonTheme::DrawRibbonQuickAccessButton(CDC* pDC, CXTPControlPopup* pControl)
+{
+	CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("RIBBONQUICKACCESSBUTTON")));
+
+	ASSERT(pImage);
+	if (!pImage)
+		return;
+
+	pImage->DrawImage(pDC, pControl->GetRect(), pImage->GetSource(pControl->GetPopuped() ? 2 : pControl->GetSelected() ? 1 : 0, 4),
+		CRect(2, 2, 2, 2), 0xFF00FF, GetDrawImageFlags(pControl));
+}
+
+void CXTPRibbonTheme::DrawRibbonQuickAccessMoreButton(CDC* pDC, CXTPControlPopup* pControl)
+{
+	CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("RIBBONQUICKACCESSMORE")));
+
+	ASSERT(pImage);
+	if (!pImage)
+		return;
+
+	pImage->DrawImage(pDC, pControl->GetRect(), pImage->GetSource(pControl->GetPopuped() ? 2 : pControl->GetSelected() ? 1 : 0, 4),
+		CRect(2, 2, 2, 2), 0xFF00FF, GetDrawImageFlags(pControl));
+
+}
+
+void CXTPRibbonTheme::DrawRibbonFrameSystemButton(CDC* pDC, CXTPControlPopup* pControl, CRect rc)
+{
+	CXTPRibbonBar* pRibbonBar = (CXTPRibbonBar*)pControl->GetParent();
+
+	if (!pRibbonBar->IsCaptionVisible() || !pRibbonBar->IsTabsVisible())
+	{
+		CXTPRibbonTheme::DrawControlToolBarParent(pDC, pControl, TRUE);
+		return;
+	}
+
+	XTPImageState nState = xtpImageNormal;
+	if (pControl->GetPopuped())
+		nState = xtpImagePressed;
+	else if (pControl->GetSelected())
+		nState = xtpImageHot;
+
+	CXTPImageManagerIcon* pIcon = pControl->GetImage(32);
+
+	if (pIcon && pIcon->GetWidth() > 32)
+	{
+		CPoint ptIcon((rc.left + rc.right - pIcon->GetWidth()) / 2, (rc.top + rc.bottom - pIcon->GetHeight()) / 2);
+
+		pIcon->m_bDrawComposited = pControl->HasDwmCompositedRect();
+		pIcon->Draw(pDC, ptIcon, pIcon->GetIcon(nState));
+		pIcon->m_bDrawComposited = FALSE;
+		return;
+	}
+
+	CXTPOffice2007Image* pImage = NULL;
+
+	if (rc.Width() > 54 && rc.Height() > 54)
+		pImage = LoadImage(FormatName(_T("FRAMESYSTEMBUTTON52")));
+
+	if (pImage == NULL)
+		pImage = LoadImage(FormatName(_T("FRAMESYSTEMBUTTON")));
+
+	ASSERT(pImage);
+	if (!pImage)
+		return;
+
+	int nOffset = 0;
+	if (rc.top < 0)
+	{
+		nOffset = rc.top;
+		rc.OffsetRect(0, -nOffset);
+	}
+
+	CRect rcSrc(pImage->GetSource(nState == xtpImageNormal ? 0 : nState == xtpImageHot ? 1 : 2, 3));
+	CSize szDest(rcSrc.Size());
+	CPoint ptDest((rc.left + rc.right - szDest.cx) / 2, nOffset + (rc.top + rc.bottom - szDest.cy) / 2);
+
+	pImage->DrawImage(pDC, CRect(ptDest, szDest), rcSrc, CRect(0, 0, 0, 0));
+
+	if (pIcon)
+	{
+		CPoint ptIcon((rc.left + rc.right - pIcon->GetWidth()) / 2, nOffset + (rc.top + rc.bottom + 1 - pIcon->GetHeight()) / 2);
+		pIcon->m_bDrawComposited = pControl->HasDwmCompositedRect();
+		pIcon->Draw(pDC, ptIcon, pIcon->GetIcon(nState));
+		pIcon->m_bDrawComposited = FALSE;
+	}
+	else
+	{
+		CWnd* pSite = pControl->GetParent()->GetSite();
+		HICON hIcon = GetFrameLargeIcon(pSite);
+		if (hIcon)
+		{
+			CPoint ptIcon((rc.left + rc.right - 33) / 2, nOffset + (rc.top + rc.bottom - 31) / 2);
+
+				DrawIconEx(pDC->GetSafeHdc(), ptIcon.x, ptIcon.y, hIcon, 32, 32, NULL, NULL, DI_NORMAL);
+		}
+	}
+}
+
+void CXTPRibbonTheme::DrawRibbonScrollButton(CDC* pDC, CXTPControl* pControl, BOOL bScrollLeft)
+{
+	CXTPOffice2007Image* pImage = LoadImage(FormatName(bScrollLeft ? _T("RIBBONGROUPSSCROLLLEFT") : _T("RIBBONGROUPSSCROLLRIGHT")));
+
+	ASSERT(pImage);
+	if (!pImage)
+		return;
+
+	CRect rc(pControl->GetRect());
+
+	int nState = pControl->GetPressed() ? 2 : pControl->GetSelected() ? 1 : 0;
+
+	CXTPOffice2007Image* pImageGlyph = LoadImage(FormatName(bScrollLeft ? _T("RIBBONGROUPSSCROLLLEFTGLYPH") : _T("RIBBONGROUPSSCROLLRIGHTGLYPH")));
+
+	pImage->PreserveOrientation();
+	pImage->DrawImage(pDC, rc, pImage->GetSource(nState, 3), CRect(4, 6, 3, 6), 0xFF00FF);
+
+	CSize szGlyph = pImageGlyph->GetSource(0, 3).Size();
+	CRect rcGlyph(CPoint((rc.right + rc.left - szGlyph.cx) / 2, (rc.top + rc.bottom - szGlyph.cy) / 2), szGlyph);
+
+	pImageGlyph->DrawImage(pDC, rcGlyph, pImageGlyph->GetSource(nState, 3), CRect(0, 0, 0, 0), 0xFF00FF);
+
+}
+
+
+void CXTPRibbonTheme::FillStatusBar(CDC* pDC, CXTPStatusBar* pBar)
+{
+	CXTPClientRect rc(pBar);
+
+	int nWidth = rc.Width();
+	if (pBar->GetPaneCount() > 0)
+	{
+		CRect rcItem(rc);
+		pBar->GetItemRect(min(pBar->GetPaneCount() - 1, pBar->GetRibbonDividerIndex()), rcItem);
+		nWidth = rcItem.right;
+	}
+
+	CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("STATUSBARLIGHT")));
+
+	ASSERT(pImage);
+	if (!pImage)
+		return;
+
+	CRect rcSrc(0, 0, pImage->GetWidth(), pImage->GetHeight());
+	CRect rcLight(rc.left, rc.top, rc.left + nWidth - 3, rc.bottom);
+	pImage->DrawImage(pDC, rcLight, rcSrc, CRect(0, 0, 0, 0));
+
+
+	pImage = LoadImage(FormatName(_T("STATUSBARDEVIDER")));
+	rcSrc.SetRect(0, 0, pImage->GetWidth(), pImage->GetHeight());
+	CRect rcDevider(rcLight.right, rc.top, rcLight.right + rcSrc.Width(), rc.bottom);
+	pImage->DrawImage(pDC, rcDevider, rcSrc, CRect(0, 0, 0, 0));
+
+
+	pImage = LoadImage(FormatName(_T("STATUSBARDARK")));
+	CRect rcDark(rcDevider.right, rc.top, rc.right, rc.bottom);
+	rcSrc.SetRect(0, 0, pImage->GetWidth(), pImage->GetHeight());
+	pImage->DrawImage(pDC, rcDark, rcSrc, CRect(0, 0, 0, 0));
+}
+
+void CXTPRibbonTheme::DrawStatusBarPaneBorder(CDC* pDC, CRect rc, CXTPStatusBarPane* pPane, BOOL /*bGripperPane*/)
+{
+	if (pPane->GetIndex() >= pPane->GetStatusBar()->GetRibbonDividerIndex())
+		return;
+
+	CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("STATUSBARSEPARATOR")));
+
+	ASSERT(pImage);
+	if (!pImage)
+		return;
+
+	CRect rcSrc(pImage->GetSource());
+	rc.left = rc.right - 2;
+	rc.top -= 2;
+
+	pImage->DrawImage(pDC, rc, rcSrc, CRect(0, 2, 0, 2));
+}
+
+void CXTPRibbonTheme::DrawStatusBarGripper(CDC* pDC, CRect rcClient)
+{
+	CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("STATUSBARGRIPPER")));
+
+	ASSERT(pImage);
+	if (!pImage)
+		return;
+
+	CRect rcSrc(0, 0, pImage->GetWidth(), pImage->GetHeight());
+	CRect rcGripper(rcClient.right - rcSrc.Width() , rcClient.bottom - rcSrc.Height() - 4, rcClient.right, rcClient.bottom - 4);
+	pImage->DrawImage(pDC, rcGripper, rcSrc, CRect(0, 0, 0, 0), RGB(0xFF, 0, 0xFF));
+}
+
+CSize CXTPRibbonTheme::DrawControlCheckBoxMark(CDC* pDC, CRect rc, BOOL bDraw, BOOL bSelected, BOOL bPressed, BOOL bChecked, BOOL bEnabled)
+{
+	if (!bDraw)
+		return CSize(13, 13);
+
+	CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("TOOLBARBUTTONCHECKBOX")));
+
+	ASSERT(pImage);
+	if (!pImage)
+		return CSize(13, 13);
+
+	int nState = 0;
+	if (!bEnabled)
+		nState = 3;
+	else if (bSelected && bPressed)
+		nState = 2;
+	else if (bSelected)
+		nState = 1;
+
+	if (bChecked == 1)
+		nState += 4;
+
+	if (bChecked == 2)
+		nState += 8;
+
+	pImage->DrawImage(pDC, rc, pImage->GetSource(nState, 12), CRect(0, 0, 0, 0));
+
+
+	return CSize(13, 13);
+}
+
+CSize CXTPRibbonTheme::DrawControlRadioButtonMark(CDC* pDC, CRect rc, BOOL bDraw, BOOL bSelected, BOOL bPressed, BOOL bChecked, BOOL bEnabled)
+{
+	if (!bDraw)
+		return CSize(13, 13);
+
+	CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("TOOLBARBUTTONRADIOBUTTON")));
+
+	ASSERT(pImage);
+	if (!pImage)
+		return CSize(13, 13);
+
+	int nState = 0;
+	if (!bEnabled)
+		nState = 3;
+	else if (bSelected && bPressed)
+		nState = 2;
+	else if (bSelected)
+		nState = 1;
+
+	if (bChecked)
+		nState += 4;
+
+	pImage->DrawImage(pDC, rc, pImage->GetSource(nState, 8), CRect(0, 0, 0, 0));
+
+
+	return CSize(13, 13);
+}
+
+void CXTPRibbonTheme::DrawDropDownGlyph(CDC* pDC, CXTPControl* pControl, CPoint pt, BOOL bSelected, BOOL bPopuped, BOOL bEnabled, BOOL bVert)
+{
+	if (bVert)
+	{
+		CXTPOffice2003Theme::DrawDropDownGlyph(pDC, pControl, pt, bSelected, bPopuped, bEnabled, bVert);
+		return;
+	}
+
+	CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("TOOLBARBUTTONDROPDOWNGLYPH")));
+
+	ASSERT(pImage);
+	if (!pImage)
+		return;
+
+	CRect rc(pt.x - 2, pt.y - 2, pt.x + 3, pt.y + 2);
+	pImage->DrawImage(pDC, rc, pImage->GetSource(!bEnabled ? 3 : bSelected ? 1 : 0, 4),
+		CRect(0, 0, 0, 0), 0xFF00FF, GetDrawImageFlags(pControl, rc)) ;
+}
+
+CSize CXTPRibbonTheme::DrawControlComboBox(CDC* pDC, CXTPControlComboBox* pControlCombo, BOOL bDraw)
+{
+	if (!bDraw)
+	{
+		return CXTPPaintManager::DrawControlComboBox(pDC, pControlCombo, bDraw);
+	}
+
+	BOOL bPopupBar = pControlCombo->GetParent()->GetType() == xtpBarTypePopup;
+
+	CXTPFontDC font(pDC, GetIconFont());
+
+	CRect rc = pControlCombo->GetRect();
+	BOOL bDropped = pControlCombo->GetDroppedState() != 0;
+	BOOL bSelected = pControlCombo->GetSelected();
+	BOOL bEnabled = pControlCombo->GetEnabled();
+
+	CXTPPaintManager::DrawControlComboBox(pDC, pControlCombo, bDraw);
+
+	rc.left += pControlCombo->GetLabelWidth();
+
+	int nThumb = pControlCombo->GetThumbWidth();
+	CRect rcBtn (rc.right - nThumb, rc.top, rc.right, rc.bottom);
+	CRect rcText(rc.left + 3, rc.top + 1, rc.right - rcBtn.Width(), rc.bottom - 1);
+
+	CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("TOOLBARBUTTONSCOMBODROPDOWN")));
+
+	ASSERT(pImage);
+	if (!pImage)
 		return 0;
 
-	int nMargin = m_rcHeaderMargin.top + m_rcHeaderMargin.bottom;
-
-	int nButtonHeight = GetButtonHeight(pTabManager) * pTabManager->GetRowCount() +
-		m_nRowMargin * (pTabManager->GetRowCount() - 1);
-
-	if (pTabManager->GetLayout() == xtpTabLayoutRotated)
+	if (!bEnabled)
 	{
-		for (int i = 0; i < pTabManager->GetItemCount(); i++)
-		{
-			CXTPTabManagerItem* pItem = pTabManager->GetItem(i);
+		pDC->FillSolidRect(rc, GetXtremeColor(COLOR_3DFACE));
+		pDC->Draw3dRect(rc, GetXtremeColor(XPCOLOR_EDITCTRLBORDER), GetXtremeColor(XPCOLOR_EDITCTRLBORDER));
 
-			if (pItem->GetButtonLength() > nButtonHeight)
-				nButtonHeight = pItem->GetButtonLength();
-		}
-
+		pImage->DrawImage(pDC, rcBtn, pImage->GetSource(4, 5), CRect(2, 2, 2, 2));
 	}
-
-	return nButtonHeight + nMargin;
-}
-
-CRect CXTPTabPaintManagerAppearanceSet::GetHeaderRect(CRect rcControl, CXTPTabManager* pTabManager)
-{
-	CRect rcHeader(rcControl);
-	int nHeight = GetHeaderHeight(pTabManager);
-
-	switch (pTabManager->GetPosition())
+	else if (bDropped)
 	{
-		case xtpTabPositionTop: rcHeader.bottom = rcControl.top + nHeight; break;
-		case xtpTabPositionLeft: rcHeader.right = rcControl.left + nHeight; break;
-		case xtpTabPositionBottom: rcHeader.top = rcControl.bottom - nHeight; break;
-		case xtpTabPositionRight: rcHeader.left = rcControl.right - nHeight; break;
+		pDC->FillSolidRect(rc, GetXtremeColor(COLOR_WINDOW));
+		pDC->Draw3dRect(rc, GetXtremeColor(XPCOLOR_EDITCTRLBORDER), GetXtremeColor(XPCOLOR_EDITCTRLBORDER));
+
+		pImage->DrawImage(pDC, rcBtn, pImage->GetSource(3, 5), CRect(2, 2, 2, 2));
 	}
-	return rcHeader;
-}
-CRect CXTPTabPaintManagerAppearanceSet::GetClientRect(CRect rcControl, CXTPTabManager* pTabManager)
-{
-	if (!m_pPaintManager->m_bShowTabs)
-		return rcControl;
-
-	CRect rcClient(rcControl);
-	CRect rcHeader = GetHeaderRect(rcControl, pTabManager);
-
-	switch (pTabManager->GetPosition())
+	else if (bSelected)
 	{
-		case xtpTabPositionTop: rcClient.top = rcHeader.bottom - 1; break;
-		case xtpTabPositionLeft: rcClient.left = rcHeader.right - 1; break;
-		case xtpTabPositionBottom: rcClient.bottom = rcHeader.top + 1; break;
-		case xtpTabPositionRight: rcClient.right = rcHeader.left + 1; break;
-	}
-	return rcClient;
-}
+		pDC->FillSolidRect(rc, GetXtremeColor(COLOR_WINDOW));
+		pDC->Draw3dRect(rc, GetXtremeColor(XPCOLOR_EDITCTRLBORDER), GetXtremeColor(XPCOLOR_EDITCTRLBORDER));
 
-CRect CXTPTabPaintManagerAppearanceSet::GetClientMargin()
-{
-	return m_pPaintManager->m_rcClientMargin;
-}
+		pImage->DrawImage(pDC, rcBtn, pImage->GetSource(2, 5), CRect(2, 2, 2, 2));
 
-
-void CXTPTabPaintManagerAppearanceSet::AdjustClientRect(CXTPTabManager* pTabManager, CRect& rcClient)
-{
-	DeflateRectEx(rcClient, m_pPaintManager->m_rcControlMargin, pTabManager->GetPosition());
-	rcClient = GetClientRect(rcClient, pTabManager);
-
-	DeflateRectEx(rcClient, GetClientMargin(), pTabManager->GetPosition());
-
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameBorder)
-	{
-		DeflateRectEx(rcClient, CRect(2, 2, 2, 2), pTabManager->GetPosition());
-	}
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameSingleLine)
-	{
-		DeflateRectEx(rcClient, CRect(0, 2, 0, 0), pTabManager->GetPosition());
-	}
-}
-
-void CXTPTabPaintManagerAppearanceSet::DrawWorkspacePart(CDC* pDC, LPRECT lpRect, XTPTabWorkspacePart workspacePart)
-{
-	if (!m_pPaintManager->m_bStaticFrame)
-	{
-
-		switch (workspacePart)
-		{
-		case xtpTabWorkspacePartBorder:
-			break;
-
-		case xtpTabWorkspacePartWidth:
-			lpRect->top -= 2;
-			lpRect->left -= 2;
-			lpRect->right += 2;
-			lpRect->bottom += 2;
-			break;
-
-		case xtpTabWorkspacePartVSplitter:
-			pDC->FillSolidRect(lpRect, GetColorSet()->m_clrHeaderFace.clrLight);
-			break;
-
-		case xtpTabWorkspacePartHSplitter:
-			pDC->FillSolidRect(lpRect, GetColorSet()->m_clrHeaderFace.clrLight);
-			break;
-		}
 	}
 	else
 	{
+		if (!bPopupBar) pDC->FillSolidRect(rc, m_clrControlEditNormal);
+		pDC->Draw3dRect(rc, GetXtremeColor(XPCOLOR_EDITCTRLBORDER), GetXtremeColor(XPCOLOR_EDITCTRLBORDER));
 
-		switch (workspacePart)
-		{
-		case xtpTabWorkspacePartBorder:
-			pDC->Draw3dRect(1, 0, lpRect->right - lpRect->left - 2, lpRect->bottom - lpRect->top - 1, GetXtremeColor(COLOR_3DFACE), GetXtremeColor(COLOR_3DFACE));
-			pDC->Draw3dRect(0, 0, lpRect->right - lpRect->left, lpRect->bottom - lpRect->top, GetColorSet()->m_clrFrameBorder, GetColorSet()->m_clrFrameBorder);
-			break;
-
-		case xtpTabWorkspacePartWidth:
-			lpRect->top -= 1;
-			break;
-
-		case xtpTabWorkspacePartVSplitter:
-			pDC->FillSolidRect(lpRect, GetColorSet()->m_clrControlFace);
-			pDC->FillSolidRect(lpRect->right - 1, lpRect->top, 1, lpRect->bottom - lpRect->top, GetColorSet()->m_clrFrameBorder);
-			break;
-
-		case xtpTabWorkspacePartHSplitter:
-			pDC->FillSolidRect(lpRect, GetColorSet()->m_clrControlFace);
-			pDC->FillSolidRect(lpRect->left, lpRect->bottom - 1, lpRect->right - lpRect->left, 1, GetColorSet()->m_clrFrameBorder);
-			break;
-		}
+		pImage->DrawImage(pDC, rcBtn, pImage->GetSource(0, 5), CRect(2, 2, 2, 2));
 	}
+
+	pControlCombo->DrawEditText(pDC, rcText);
+
+	CPoint pt = rcBtn.CenterPoint();
+	DrawDropDownGlyph(pDC, pControlCombo, pt, bSelected, bDropped, bEnabled, FALSE);
+
+	if (pControlCombo->HasDwmCompositedRect())
+	{
+		FillCompositeAlpha(pDC, pControlCombo->GetRect());
+	}
+
+	return 0;
 }
 
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetVisualStudio
-
-void CXTPTabPaintManager::CAppearanceSetVisualStudio::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
+COLORREF CXTPRibbonTheme::GetControlEditBackColor(CXTPControl* pControl)
 {
-	CRect rcItem = pItem->GetRect();
+	return !pControl->GetEnabled() ? GetXtremeColor(COLOR_3DFACE) :
+		pControl->GetSelected() ? GetXtremeColor(COLOR_WINDOW) :
+		pControl->GetParent()->GetType() == xtpBarTypePopup ?
+			GetXtremeColor(XPCOLOR_MENUBAR_FACE) : m_clrControlEditNormal;
+}
 
-	if (!pItem->IsSelected())
+CSize CXTPRibbonTheme::DrawControlEdit(CDC* pDC, CXTPControlEdit* pControlEdit, BOOL bDraw)
+{
+	if (!bDraw)
 	{
-		if (!IsHorizontalTabPosition(pItem->GetTabManager()->GetPosition()))
+		return CXTPPaintManager::DrawControlEdit(pDC, pControlEdit, bDraw);
+	}
+
+	BOOL bPopupBar = pControlEdit->GetParent()->GetType() == xtpBarTypePopup;
+	BOOL bSelected = pControlEdit->GetSelected(), bEnabled = pControlEdit->GetEnabled();
+
+	if (bPopupBar) pDC->SetTextColor(GetXtremeColor(!pControlEdit->GetEnabled() ? XPCOLOR_MENUBAR_GRAYTEXT: bSelected ? XPCOLOR_HIGHLIGHT_TEXT : XPCOLOR_MENUBAR_TEXT));
+	else pDC->SetTextColor(GetXtremeColor(!pControlEdit->GetEnabled() ? XPCOLOR_TOOLBAR_GRAYTEXT : XPCOLOR_TOOLBAR_TEXT));
+
+	CXTPPaintManager::DrawControlEdit(pDC, pControlEdit, bDraw);
+
+	CRect rc = pControlEdit->GetRect();
+	rc.left += pControlEdit->GetLabelWidth();
+
+	if (!bEnabled)
+	{
+		rc.DeflateRect(1, 0, 0, 0);
+		Rectangle (pDC, rc, IsKeyboardSelected(bSelected) ? XPCOLOR_HIGHLIGHT_BORDER : XPCOLOR_EDITCTRLBORDER, COLOR_3DFACE);
+	}
+	else
+	{
+		if (bSelected)
 		{
-			HorizontalLine(pDC, rcItem.left + 2, rcItem.bottom, rcItem.Width() - 4, GetColorSet()->m_clrFrameBorder);
+			Rectangle(pDC, rc, XPCOLOR_EDITCTRLBORDER, COLOR_WINDOW);
 		}
 		else
 		{
-			VerticalLine(pDC, rcItem.right, rcItem.top + 2, rcItem.Height() - 4, GetColorSet()->m_clrFrameBorder);
+			if (!bPopupBar) pDC->FillSolidRect(rc, m_clrControlEditNormal);
+			pDC->Draw3dRect(rc, GetXtremeColor(XPCOLOR_EDITCTRLBORDER), GetXtremeColor(XPCOLOR_EDITCTRLBORDER));
 		}
+	}
+
+	if (pControlEdit->IsSpinButtonsVisible())
+	{
+		CXTPOffice2007Image* pImage = LoadImage(_T("TOOLBARBUTTONSPIN"));
+		if (!pImage)
+			return 0;
+
+		BOOL bPressed = pControlEdit->GetPressed();
+
+		int nState = !bEnabled ? 4 : bSelected && bPressed == 3 ? 3 : bSelected == 3 ? 2 : bSelected ? 1 : 0;
+		CRect rcTop(rc.right - 18, rc.top + 1, rc.right - 1, rc.CenterPoint().y);
+		pImage->DrawImage(pDC, rcTop, pImage->GetSource(nState, 10), CRect(0, 0, 0, 0), 0xFF00FF);
+
+		nState = !bEnabled ? 9 : bSelected && bPressed == 4 ? 8 : bSelected == 4 ? 7 : bSelected ? 6 : 5;
+		CRect rcBottom(rcTop.left, rcTop.bottom, rcTop.right, rc.bottom - 1);
+		pImage->DrawImage(pDC, rcBottom, pImage->GetSource(nState, 10), CRect(0, 0, 0, 0), 0xFF00FF);
+	}
+
+	if (pControlEdit->HasDwmCompositedRect())
+	{
+		FillCompositeAlpha(pDC, pControlEdit->GetRect());
+	}
+
+	return 0;
+}
+
+void CXTPRibbonTheme::DrawKeyboardTip(CDC* pDC, CXTPCommandBarKeyboardTip* pWnd, BOOL bSetRegion)
+{
+	if (bSetRegion)
+	{
+		SetRoundRectRegion(pWnd);
 	}
 	else
 	{
-		GetColorSet()->FillPropertyButton(pDC, rcItem, pItem);
+		CXTPClientRect rc(pWnd);
+		CXTPFontDC font(pDC, &m_fontToolTip);
 
-		InflateRectEx(rcItem, CRect(0, 0, 0, 1), pItem->GetTabManager()->GetPosition());
-		pDC->Draw3dRect(rcItem, GetColorSet()->m_clrBorderHighlight, GetColorSet()->m_clrSelectedText);
+		COLORREF clrLight = GetImages()->GetImageColor(_T("Window"), _T("TooltipLight"));
+		COLORREF clrDark = GetImages()->GetImageColor(_T("Window"), _T("TooltipDark"));
+		COLORREF clrBorder = GetImages()->GetImageColor(_T("Window"), _T("TooltipBorder"));
+		XTPDrawHelpers()->GradientFill(pDC, rc, clrLight, clrDark, FALSE);
+		pDC->Draw3dRect(rc, clrBorder, clrBorder);
+
+		pDC->SetBkMode(TRANSPARENT);
+		pDC->SetTextColor(GetXtremeColor(pWnd->m_bEnabled ? COLOR_BTNTEXT : COLOR_GRAYTEXT));
+		pDC->DrawText(pWnd->m_strTip, rc, DT_VCENTER | DT_CENTER | DT_SINGLELINE);
 	}
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
 }
 
-
-
-
-CRect CXTPTabPaintManager::CAppearanceSetVisualStudio::FillTabControl(CXTPTabManager* pTabManager, CDC* pDC, CRect rcControl)
+void CXTPRibbonTheme::SetRoundRectRegion(CWnd* pWnd)
 {
-	CRect rcHeader = GetHeaderRect(rcControl, pTabManager);
-	GetColorSet()->FillHeader(pDC, rcHeader, pTabManager);
+	CXTPWindowRect rc(pWnd);
+	rc.OffsetRect(-rc.TopLeft());
 
-	CRect rcClient = GetClientRect(rcControl, pTabManager);
+	int cx = rc.Width(), cy = rc.Height();
 
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameBorder)
+	RECT rgn[] =
 	{
-		GetColorSet()->FillClient(pDC, rcClient, pTabManager);
-		pDC->Draw3dRect(rcClient, GetColorSet()->m_clrBorderHighlight, GetColorSet()->m_clrSelectedText);
-	}
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameSingleLine)
+		{1, 0, cx - 1, 1}, {0, 1, cx, cy - 1}, {1, cy - 1, cx - 1, cy}
+	};
+
+	int nSizeData = sizeof(RGNDATAHEADER) + sizeof(rgn);
+
+	RGNDATA* pRgnData = (RGNDATA*)malloc(nSizeData);
+	if (!pRgnData)
+		return;
+	MEMCPY_S(&pRgnData->Buffer, (void*)&rgn, sizeof(rgn));
+
+	pRgnData->rdh.dwSize = sizeof(RGNDATAHEADER);
+	pRgnData->rdh.iType = RDH_RECTANGLES;
+	pRgnData->rdh.nCount = sizeof(rgn) / sizeof(RECT);
+	pRgnData->rdh.nRgnSize = 0;
+	pRgnData->rdh.rcBound = CRect(0, 0, cx, cy);
+
+	CRgn rgnResult;
+	VERIFY(rgnResult.CreateFromData(NULL, nSizeData, pRgnData));
+
+	free(pRgnData);
+
+	pWnd->SetWindowRgn((HRGN)rgnResult.Detach(), FALSE);
+}
+
+void CXTPRibbonTheme::SetCommandBarRegion(CXTPCommandBar* pCommandBar)
+{
+	if (pCommandBar->GetPosition() != xtpBarPopup)
+		return;
+
+	SetRoundRectRegion(pCommandBar);
+}
+
+void CXTPRibbonTheme::AdjustExcludeRect(CRect& /*rc*/, CXTPControl* /*pControl*/, BOOL /*bVertical*/)
+{
+}
+
+void CXTPRibbonTheme::DrawSplitButtonPopup(CDC* pDC, CXTPControl* pButton)
+{
+	CRect rcButton = pButton->GetRect();
+	BOOL bSelected = pButton->GetSelected(), bPopuped = pButton->GetPopuped(), bEnabled = pButton->GetEnabled();
+
+	CXTPOffice2007Image* pImage = LoadImage(_T("MENUSPLITDROPDOWN"));
+
+	int nState = !bSelected || !bEnabled ? 0 : bPopuped ? 2 : 1;
+
+	pImage->DrawImage(pDC, CRect(rcButton.right - m_nSplitButtonPopupWidth, rcButton.top, rcButton.right, rcButton.bottom),
+		pImage->GetSource(nState, 3), CRect(2, 2, 2, 2), 0xFF00FF);
+}
+
+void CXTPRibbonTheme::DrawControlPopupGlyph(CDC* pDC, CXTPControl* pButton)
+{
+	CRect rcButton = pButton->GetRect();
+
+	CXTPOffice2007Image* pImage = LoadImage(_T("MENUPOPUPGLYPH"));
+	CRect rcSrc(pImage->GetSource(pButton->GetEnabled() ? 0 : 1, 2));
+	CPoint pt = CPoint(rcButton.right - 14, (rcButton.top + rcButton.bottom - rcSrc.Height()) / 2);
+
+	pImage->DrawImage(pDC, CRect(pt, rcSrc.Size()), rcSrc, CRect(0, 0, 0, 0), 0xFF00FF);
+}
+
+void CXTPRibbonTheme::DrawPopupResizeGripper(CDC* pDC, CRect rcGripper, int nFlags)
+{
+	CXTPOffice2007Image* pImage = LoadImage(_T("POPUPBARRESIZEGRIPPERFACE"));
+	ASSERT(pImage);
+	if (!pImage)
 	{
-		DrawSingleLineBorder(pDC, rcClient, pTabManager->GetPosition(), GetColorSet()->m_clrBorderHighlight, GetColorSet()->m_clrSelectedText);
+		CXTPOffice2003Theme::DrawPopupResizeGripper(pDC, rcGripper, nFlags);
+		return;
 	}
 
-	return rcHeader;
-}
+	pImage->DrawImage(pDC, rcGripper, pImage->GetSource(), CRect(1, 1, 1, 1), 0xFF00FF);
 
-
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetPropertyPage
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPage::RefreshMetrics()
-{
-	CXTPTabPaintManagerAppearanceSet::RefreshMetrics();
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetPropertyPage::GetButtonDrawRect(const CXTPTabManagerItem* pItem)
-{
-	CRect rc = pItem->GetRect();
-	rc.InflateRect(2, 2);
-
-	return rc;
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetPropertyPage::GetHeaderClipBox(CDC* pDC, CXTPTabManager* pTabManager)
-{
-	CRect rcClipBox;
-	pDC->GetClipBox(rcClipBox);
-
-	CRect rcHeader = pTabManager->GetHeaderRect();
-
-	if (pTabManager->GetPosition() == xtpTabPositionBottom || pTabManager->GetPosition() == xtpTabPositionRight)
-		InflateRectEx(rcHeader, CRect(0, 0, 0, 1), pTabManager->GetPosition());
-
-	rcClipBox.IntersectRect(rcClipBox, rcHeader);
-
-	return rcClipBox;
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetPropertyPage::FillTabControl(CXTPTabManager* pTabManager, CDC* pDC, CRect rcControl)
-{
-	CRect rcHeader = GetHeaderRect(rcControl, pTabManager);
-	InflateRectEx(rcHeader, CRect(0, 0, 0, 1), pTabManager->GetPosition());
-
-	GetColorSet()->FillHeader(pDC, rcHeader, pTabManager);
-
-
-	CRect rcClient = GetClientRect(rcControl, pTabManager);
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameBorder)
+	if (nFlags == 2)
 	{
-		GetColorSet()->FillClient(pDC, rcClient, pTabManager);
-		Draw3dRect(pDC, rcClient, GetColorSet()->m_csPropertyPage.clrHighlight, GetColorSet()->m_csPropertyPage.clrDarkShadow);
+		pImage = LoadImage(_T("POPUPBARRESIZEGRIPPERHEIGHT"));
+		CRect rc = pImage->GetSource();
+		CRect rcDest(CPoint(rcGripper.CenterPoint().x - rc.Width() / 2,
+			rcGripper.bottom - rc.Height()), rc.Size());
 
-		HorizontalLine(pDC, rcClient.left + 1, rcClient.bottom - 2, rcClient.Width() - 2, GetColorSet()->m_csPropertyPage.clrShadow);
-		VerticalLine(pDC, rcClient.right - 2, rcClient.top + 1, rcClient.Height() - 2, GetColorSet()->m_csPropertyPage.clrShadow);
+		pImage->DrawImage(pDC, rcDest, rc, CRect(0, 0, 0, 0), 0xFF00FF);
 	}
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameSingleLine)
+	else
 	{
-		switch (pTabManager->GetPosition())
-		{
-			case xtpTabPositionTop: HorizontalLine(pDC, rcClient.left, rcClient.top, rcClient.Width(), GetColorSet()->m_csPropertyPage.clrHighlight); break;
-			case xtpTabPositionLeft: VerticalLine(pDC, rcClient.left, rcClient.top, rcClient.Height(), GetColorSet()->m_csPropertyPage.clrHighlight); break;
-			case xtpTabPositionBottom:
-				HorizontalLine(pDC, rcClient.left, rcClient.bottom - 1, rcClient.Width(), GetColorSet()->m_csPropertyPage.clrDarkShadow);
-				HorizontalLine(pDC, rcClient.left, rcClient.bottom - 2, rcClient.Width(), GetColorSet()->m_csPropertyPage.clrShadow);
-				break;
-			case xtpTabPositionRight:
-				VerticalLine(pDC, rcClient.right - 1, rcClient.top, rcClient.Height(), GetColorSet()->m_csPropertyPage.clrDarkShadow);
-				VerticalLine(pDC, rcClient.right - 2, rcClient.top, rcClient.Height(), GetColorSet()->m_csPropertyPage.clrShadow);
-				break;
-		}
+		pImage = LoadImage(_T("POPUPBARRESIZEGRIPPERWIDTH"));
+		CRect rc = pImage->GetSource();
+		CRect rcDest(CRect(CPoint(rcGripper.right - rc.Width(),
+			rcGripper.bottom - rc.Height()), rc.Size()));
 
+		pImage->DrawImage(pDC, rcDest, rc, CRect(0, 0, 0, 0), 0xFF00FF);
 	}
-
-
-	return rcHeader;
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetPropertyPage::GetClientMargin()
-{
-	CRect rc = m_pPaintManager->m_rcClientMargin;
-
-	if (m_pPaintManager->GetColorSet()->IsAppThemed() && m_pPaintManager->m_clientFrame == xtpTabFrameBorder)
-	{
-		if (m_pPaintManager->GetPosition() == xtpTabPositionTop ||
-			m_pPaintManager->GetPosition() == xtpTabPositionLeft)
-		{
-			rc.bottom += 2;
-		}
-		rc.right += 2;
-	}
-
-	return rc;
 }
 
 
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPage::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rc = pItem->GetRect();
-
-	COLORREF clrShadow = GetColorSet()->m_csPropertyPage.clrShadow, clrHighlight = GetColorSet()->m_csPropertyPage.clrHighlight, clrDarkShadow = GetColorSet()->m_csPropertyPage.clrDarkShadow;
-
-	switch (pItem->GetTabManager()->GetPosition())
-	{
-	case xtpTabPositionTop:
-		{
-			if (pItem->IsSelected())
-				rc.InflateRect(2, 2, 2, 0);
-
-			COLORREF clr = GetColorSet()->FillPropertyButton(pDC, CRect(rc.left + 1, rc.top + 1, rc.right - 1, rc.bottom - 1), pItem);
-
-			VerticalLine(pDC, rc.left, rc.top + 2, rc.Height() - 2, clrHighlight);
-			Pixel(pDC, rc.left + 1, rc.top + 1, clrHighlight);
-			HorizontalLine(pDC, rc.left + 2, rc.top, rc.Width() - 4, clrHighlight);
-
-			Pixel(pDC, rc.right - 2 , rc.top + 1, clrDarkShadow);
-
-			VerticalLine(pDC, rc.right - 1, rc.top + 2, rc.Height() - 3, clrDarkShadow);
-			VerticalLine(pDC, rc.right - 2, rc.top + 2, rc.Height() - 3, clrShadow);
-
-			if (pItem->IsSelected() && pItem->GetItemRow() == 0)
-				HorizontalLine(pDC, rc.left + 1, rc.bottom - 1, rc.Width() - 3, clr);
-		}
-		break;
-
-	case xtpTabPositionLeft:
-		{
-			if (pItem->IsSelected())
-				rc.InflateRect(2, 2, 0, 2);
-
-			COLORREF clr = GetColorSet()->FillPropertyButton(pDC, CRect(rc.left + 1, rc.top + 1, rc.right - 1, rc.bottom - 1), pItem);
-
-			HorizontalLine(pDC, rc.left + 2, rc.top, rc.Width() - 2, clrHighlight);
-			Pixel(pDC, rc.left + 1, rc.top + 1, clrHighlight);
-
-			VerticalLine(pDC, rc.left, rc.top + 2, rc.Height() - 4, clrHighlight);
-
-			HorizontalLine(pDC, rc.left + 1, rc.bottom - 2, rc.Width() - 2, clrShadow);
-			HorizontalLine(pDC, rc.left + 2, rc.bottom - 1, rc.Width() - 3, clrDarkShadow);
-
-			Pixel(pDC, rc.left + 2, rc.bottom - 2, clrDarkShadow);
-			Pixel(pDC, rc.left + 2, rc.bottom - 1, clrShadow);
-
-			if (pItem->IsSelected() && pItem->GetItemRow() == 0)
-				VerticalLine(pDC, rc.right - 1, rc.top + 1, rc.Height() - 3, clr);
-		}
-		break;
-
-	case xtpTabPositionBottom:
-		{
-			if (pItem->IsSelected())
-				rc.InflateRect(2, 2);
-
-			COLORREF clr = GetColorSet()->FillPropertyButton(pDC, CRect(rc.left + 1, rc.top + 1, rc.right - 1, rc.bottom - 1), pItem);
-
-			VerticalLine(pDC, rc.left, rc.top + 1, rc.Height() - 2, clrHighlight);
-			Pixel(pDC, rc.left + 1, rc.bottom - 1, clrHighlight);
-
-			HorizontalLine(pDC, rc.left + 2, rc.bottom -1, rc.Width() - 4, clrShadow);
-			HorizontalLine(pDC, rc.left + 2, rc.bottom, rc.Width() - 4, clrDarkShadow);
-
-			Pixel(pDC, rc.right - 2, rc.bottom - 1, clrDarkShadow);
-
-			VerticalLine(pDC, rc.right - 1, rc.top + 1, rc.Height() - 2, clrDarkShadow);
-			VerticalLine(pDC, rc.right - 2, rc.top + 1, rc.Height() - 2, clrShadow);
-
-			if (pItem->IsSelected() && pItem->GetItemRow() == 0)
-			{
-				HorizontalLine(pDC, rc.left + 1, rc.top + 1, rc.Width() - 1, clr);
-				rc.bottom += 2;
-			}
-		}
-		break;
-
-	case xtpTabPositionRight:
-		{
-			if (pItem->IsSelected())
-				rc.InflateRect(2, 2);
-
-			COLORREF clr = GetColorSet()->FillPropertyButton(pDC, CRect(rc.left + 1, rc.top + 1, rc.right - 1, rc.bottom - 1), pItem);
-
-			HorizontalLine(pDC, rc.left + 1, rc.top, rc.Width() - 2, clrHighlight);
-			Pixel(pDC, rc.right - 1, rc.top + 1, clrHighlight);
-
-			VerticalLine(pDC, rc.right - 1, rc.top + 2, rc.Height() - 4, clrShadow);
-			VerticalLine(pDC, rc.right - 0, rc.top + 2, rc.Height() - 4, clrDarkShadow);
-
-			Pixel(pDC, rc.right - 1, rc.bottom - 2, clrDarkShadow);
-
-			HorizontalLine(pDC, rc.left + 1, rc.bottom - 2, rc.Width() - 2, clrShadow);
-			HorizontalLine(pDC, rc.left + 1, rc.bottom - 1, rc.Width() - 2, clrDarkShadow);
-
-			if (pItem->IsSelected() && pItem->GetItemRow() == 0)
-			{
-				VerticalLine(pDC, rc.left + 1, rc.top + 1, rc.Height() - 1, clr);
-				rc.right += 2;
-			}
-		}
-		break;
-
-
-	}
-
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, rc, TRUE);
-}
 
 //////////////////////////////////////////////////////////////////////////
 //
-void CXTPTabPaintManager::CAppearanceSetPropertyPageSelected::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	if (pItem->IsSelected() || pItem->IsHighlighted())
-	{
-		CAppearanceSetPropertyPage::DrawSingleButton(pDC, pItem);
-	}
-	else
-	{
-		m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-	}
-}
 
 
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetStateButtons
-
-CRect CXTPTabPaintManager::CAppearanceSetStateButtons::FillTabControl(CXTPTabManager* pTabManager, CDC* /*pDC*/, CRect rcControl)
-{
-	return GetHeaderRect(rcControl, pTabManager);
-}
-
-
-void CXTPTabPaintManager::CAppearanceSetStateButtons::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rcItem = pItem->GetRect();
-
-	GetColorSet()->FillStateButton(pDC, rcItem, pItem);
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetPropertyPage2003
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPage2003::RefreshMetrics()
-{
-	CXTPTabPaintManagerAppearanceSet::RefreshMetrics();
-
-
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetPropertyPage2003::GetButtonDrawRect(const CXTPTabManagerItem* pItem)
-{
-	CRect rc = pItem->GetRect();
-
-	return pItem->GetTabManager()->IsHorizontalPosition() ?
-		CRect(rc.left - rc.Height(), rc.top, rc.right + 2, rc.bottom) :
-		CRect(rc.left, rc.top - rc.Width(), rc.right, rc.bottom + 2);
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetPropertyPage2003::FillTabControl(CXTPTabManager* pTabManager, CDC* pDC, CRect rcControl)
-{
-
-	CRect rcHeader = GetHeaderRect(rcControl, pTabManager);
-
-	GetColorSet()->FillHeader(pDC, rcHeader, pTabManager);
-
-	CRect rcClient = GetClientRect(rcControl, pTabManager);
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameBorder)
-	{
-		GetColorSet()->FillClient(pDC, rcClient, pTabManager);
-		pDC->Draw3dRect(rcClient, GetColorSet()->m_csPropertyPage2003.clrFrameBorder, GetColorSet()->m_csPropertyPage2003.clrFrameBorder);
-	}
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameSingleLine)
-	{
-		DrawSingleLineBorder(pDC, rcClient, pTabManager->GetPosition(), GetColorSet()->m_csPropertyPage2003.clrFrameBorder, GetColorSet()->m_csPropertyPage2003.clrFrameBorder);
-	}
-
-	return rcHeader;
-}
-
-
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPage2003::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rc = pItem->GetRect();
-
-	COLORREF clrBorder = GetColorSet()->m_csPropertyPage2003.clrDarkShadow, clrLeftHighlight = GetColorSet()->m_csPropertyPage2003.clrBorderLeftHighlight, clrTopHighlight = GetColorSet()->m_csPropertyPage2003.clrBorderTopHighlight;
-	if (pItem->IsSelected())
-	{
-		clrBorder = GetColorSet()->m_csPropertyPage2003.clrFrameBorder;
-		clrLeftHighlight = RGB(255, 255, 255);
-		clrTopHighlight = RGB(255, 255, 255);
-	}
-
-	if (pItem->IsHighlighted() && m_bDoubleHighlightedBorder)
-	{
-		clrLeftHighlight = clrTopHighlight = clrBorder = GetColorSet()->m_csStateButton.clrBorder.clrDark;
-	}
-
-
-	switch (pItem->GetTabManager()->GetPosition())
-	{
-	case xtpTabPositionTop:
-		{
-			rc.bottom--;
-
-			POINT ptsFill[] = {{rc.right - 1, rc.bottom}, {0, 2 - rc.Height()}, {5 - rc.Width(), 0}, {3 - rc.Height(), rc.Height() - 3}};
-			COLORREF clrDark = FillButton(pDC, pItem, ptsFill, sizeof(ptsFill) / sizeof(ptsFill[0]), pItem->GetTabManager()->GetPosition());
-
-			POINT ptsBorder[] = {{rc.right, rc.bottom - 1}, {+0, 3 - rc.Height()}, {-2, -2}, {9 - rc.Width(), 0}, {-5, 2}, {3 - rc.Height(), rc.Height() - 3}, {-2, 0}};
-			DrawPolyLine(pDC, clrBorder, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]));
-
-			POINT ptsLeftHighlight[] = {{rc.right - 1, rc.bottom - 1}, {+0, 3 - rc.Height()}, {-2, -2}};
-			DrawPolyLine(pDC, clrLeftHighlight, ptsLeftHighlight, sizeof(ptsLeftHighlight) / sizeof(ptsLeftHighlight[0]));
-
-			POINT ptsTopHighlight[] = {{rc.right - 3, rc.top + 1}, {9 - rc.Width(), 0}, {-5, +3}, {4 - rc.Height(), rc.Height() - 4}};
-			DrawPolyLine(pDC, clrTopHighlight, ptsTopHighlight, sizeof(ptsTopHighlight) / sizeof(ptsTopHighlight[0]));
-
-			if (pItem->IsSelected())
-				HorizontalLine(pDC, rc.left - rc.Height() + 4, rc.bottom, rc.Width() + rc.Height() - 3, clrDark);
-		}
-		break;
-
-	case xtpTabPositionLeft:
-		{
-			rc.right--;
-
-			POINT ptsFill[] = {{rc.right, rc.bottom - 1}, {2 - rc.Width(), 0}, {0, 5 - rc.Height()}, {rc.Width() - 2, 2 - rc.Width()}};
-			COLORREF clrDark = FillButton(pDC, pItem, ptsFill, sizeof(ptsFill) / sizeof(ptsFill[0]), pItem->GetTabManager()->GetPosition());
-
-			POINT ptsBorder[] = {{rc.right - 1, rc.bottom}, {3 - rc.Width(), 0}, {-2, -2}, {0, 9 - rc.Height()}, {2, -5}, {rc.Width() - 3, 3 - rc.Width()}, {0, -2}};
-			DrawPolyLine(pDC, clrBorder, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]));
-
-			POINT ptsLeftHighlight[] = {{rc.right - 1, rc.bottom - 1}, {3 - rc.Width(), 0}, {-2, -2}};
-			DrawPolyLine(pDC, clrLeftHighlight, ptsLeftHighlight, sizeof(ptsLeftHighlight) / sizeof(ptsLeftHighlight[0]));
-
-			POINT ptsTopHighlight[] = {{rc.left + 1, rc.bottom - 3}, {0, 9 - rc.Height()}, {+3, -5}, {rc.Width() - 4, 4 - rc.Width()}};
-			DrawPolyLine(pDC, clrTopHighlight, ptsTopHighlight, sizeof(ptsTopHighlight) / sizeof(ptsTopHighlight[0]));
-
-			if (pItem->IsSelected())
-				VerticalLine(pDC, rc.right, rc.top - rc.Width() + 4, rc.Width() + rc.Height() - 3, clrDark);
-		}
-
-		break;
-
-	case xtpTabPositionBottom:
-		{
-			POINT ptsFill[] = {{rc.right - 1, rc.top}, {0, rc.Height() - 1}, {5 - rc.Width(), 0}, {3 - rc.Height(), 2 - rc.Height()}};
-			COLORREF clrDark = FillButton(pDC, pItem, ptsFill, sizeof(ptsFill) / sizeof(ptsFill[0]), pItem->GetTabManager()->GetPosition());
-
-			POINT ptsBorder[] = {{rc.right, rc.top + 1}, {+0, rc.Height() - 3}, {-2, 2}, {9 - rc.Width(), 0}, {-5, -2}, {3 - rc.Height(), 3 - rc.Height()}, {-2, 0}};
-			DrawPolyLine(pDC, clrBorder, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]));
-
-			POINT ptsLeftHighlight[] = {{rc.right - 1, rc.top + 1}, {+0, rc.Height() - 3}, {-2, 2}};
-			DrawPolyLine(pDC, clrLeftHighlight, ptsLeftHighlight, sizeof(ptsLeftHighlight) / sizeof(ptsLeftHighlight[0]));
-
-			POINT ptsTopHighlight[] = {{rc.right - 3, rc.bottom - 1}, {9 - rc.Width(), 0}, {-5, -3}, {4 - rc.Height(), 4 - rc.Height()}};
-			DrawPolyLine(pDC, clrTopHighlight, ptsTopHighlight, sizeof(ptsTopHighlight) / sizeof(ptsTopHighlight[0]));
-
-			if (pItem->IsSelected())
-				HorizontalLine(pDC, rc.left - rc.Height() + 4, rc.top, rc.Width() + rc.Height() - 3, clrDark);
-
-		}
-		break;
-
-	case xtpTabPositionRight:
-		{
-			POINT ptsFill[] = {{rc.left + 1, rc.bottom - 1}, {rc.Width() - 2, 0}, {0, 5 - rc.Height()}, {2 - rc.Width(), 2 - rc.Width()}};
-			//POINT ptsFill[] = {{rc.left, rc.bottom - 1}, {rc.Width() - 1, 0}, {0, 5 - rc.Height()}, {2 - rc.Width(), 2 - rc.Width()}};
-			COLORREF clrDark = FillButton(pDC, pItem, ptsFill, sizeof(ptsFill) / sizeof(ptsFill[0]), pItem->GetTabManager()->GetPosition());
-
-			POINT ptsBorder[] = {{rc.left + 1, rc.bottom}, {rc.Width() -3, 0}, {2, -2}, {0, 9 - rc.Height()}, {-2, -5}, {3 - rc.Width(), 3 - rc.Width()}, {0, -2}};
-			DrawPolyLine(pDC, clrBorder, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]));
-
-			POINT ptsLeftHighlight[] = {{rc.left + 1, rc.bottom - 1}, {rc.Width() - 3, 0}, {2, -2}};
-			DrawPolyLine(pDC, clrLeftHighlight, ptsLeftHighlight, sizeof(ptsLeftHighlight) / sizeof(ptsLeftHighlight[0]));
-
-			POINT ptsTopHighlight[] = {{rc.right - 1, rc.bottom - 3}, {0, 9 - rc.Height()}, {-3, -5}, {4 - rc.Width(), 4 - rc.Width()}};
-			DrawPolyLine(pDC, clrTopHighlight, ptsTopHighlight, sizeof(ptsTopHighlight) / sizeof(ptsTopHighlight[0]));
-
-			if (pItem->IsSelected())
-				VerticalLine(pDC, rc.left, rc.top - rc.Width() + 4, rc.Width() + rc.Height() - 3, clrDark);
-
-
-		}
-		break;
-
-
-	}
-
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetPropertyPage2007
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPage2007::RefreshMetrics()
-{
-	CXTPTabPaintManagerAppearanceSet::RefreshMetrics();
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetPropertyPage2007::FillTabControl(CXTPTabManager* pTabManager, CDC* pDC, CRect rcControl)
-{
-	CXTPResourceImages* pImages = XTPResourceImages();
-
-	if (!pImages->IsValid())
-		return CXTPTabPaintManagerAppearanceSet::FillTabControl(pTabManager, pDC, rcControl);
-
-	CRect rcHeader = GetHeaderRect(rcControl, pTabManager);
-	pDC->FillSolidRect(rcHeader, GetColorSet()->m_clrHeaderFace.clrLight);
-
-	CRect rcClient = GetClientRect(rcControl, pTabManager);
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameBorder)
-	{
-		CXTPResourceImage* pImage = pImages->LoadFile(_T("TABCONTROLPAGE"));
-		if (pImage == NULL)
-		{
-			pImage = pImages->LoadFile(_T("RIBBONGROUPS"));
-		}
-		if (pImage) pImage->DrawImage(pDC, rcClient, pImage->GetSource(0, 1), CRect(8, 8, 8, 8));
-	}
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameSingleLine)
-	{
-		DrawSingleLineBorder(pDC, rcClient, pTabManager->GetPosition(),
-			GetColorSet()->m_csPropertyPage.clrShadow, GetColorSet()->m_csPropertyPage.clrShadow);
-	}
-
-	return rcHeader;
-}
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPage2007::DrawButtonBackground(CDC* pDC, CXTPTabManagerItem* pItem, CRect rc)
-{
-	CXTPResourceImages* pImages = XTPResourceImages();
-
-	CXTPResourceImage* pImage = pImages->LoadFile(_T("RIBBONTAB"));
-
-	int nState = 0;
-	if (pItem->IsSelected() && pItem->IsFocused())
-	{
-		nState = 5;
-	}
-	else if (pItem->IsSelected() && pItem->IsHighlighted())
-	{
-		nState = 4;
-	}
-	else if (pItem->IsSelected())
-	{
-		nState = 3;
-	}
-	else if (pItem->IsPressed())
-	{
-		nState = 2;
-	}
-	else if (pItem->IsHighlighted())
-	{
-		nState = 1;
-	}
-
-	if (pImage) pImage->DrawImage(pDC, rc, pImage->GetSource(nState, 6), CRect(5, 5, 5, 5), 0xFF00FF);
-}
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPage2007::DrawRotatedButton(CDC* pDC, CRect rcItem, CXTPTabManagerItem* pItem, BOOL bSwap, LPFNDRAWROTATEDBITS pfnRotatedProcBack, LPFNDRAWROTATEDBITS pfnRotatedProc)
-{
-	const int cx = rcItem.Width();
-	const int cy = rcItem.Height();
-
-	UINT* pSrcBits = NULL;
-	HBITMAP hbmSrc = CXTPImageManager::Create32BPPDIBSection(NULL, bSwap ? cy : cx, bSwap ? cx : cy, (LPBYTE*)&pSrcBits);
-	if (!pSrcBits)
-		return;
-
-	UINT* pDestBits = NULL;
-	HBITMAP hbmDest = CXTPImageManager::Create32BPPDIBSection(NULL, cx, cy, (LPBYTE*)&pDestBits);
-	if (!pDestBits)
-		return;
-
-	CRect rcDraw(0, 0, bSwap ? cy: cx, bSwap ? cx : cy);
-
-	CDC dc;
-	dc.CreateCompatibleDC(NULL);
-	HGDIOBJ hbmpOld = 0;
-
-	if (pfnRotatedProcBack != NULL)
-	{
-		hbmpOld = ::SelectObject(dc, hbmDest);
-
-		dc.BitBlt(0, 0, cx, cy, pDC, rcItem.left, rcItem.top, SRCCOPY);
-
-		(*pfnRotatedProcBack)(rcDraw.Width(), rcDraw.Height(), pDestBits, pSrcBits);
-
-		::SelectObject(dc, hbmpOld);
-
-		hbmpOld = ::SelectObject(dc, hbmSrc);
-	}
-	else
-	{
-		hbmpOld = ::SelectObject(dc, hbmSrc);
-
-		dc.FillSolidRect(rcDraw, GetColorSet()->m_clrHeaderFace.clrLight);
-	}
-
-	DrawButtonBackground(&dc, pItem, rcDraw);
-
-	(*pfnRotatedProc)(cx, cy, pSrcBits, pDestBits);
-
-	pDC->DrawState(rcItem.TopLeft(), rcItem.Size(), hbmDest, DST_BITMAP);
-
-	::SelectObject(dc, hbmpOld);
-
-	DeleteObject(hbmSrc);
-	DeleteObject(hbmDest);
-}
-
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPage2007::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CXTPResourceImages* pImages = XTPResourceImages();
-
-	if (!pImages->IsValid())
-	{
-		CXTPTabPaintManagerAppearanceSet::DrawSingleButton(pDC, pItem);
-		return;
-	}
-
-	CRect rc = pItem->GetRect();
-
-	if (pItem->IsSelected() || pItem->IsHighlighted())
-	{
-		switch (pItem->GetTabManager()->GetPosition())
-		{
-			case xtpTabPositionTop:
-				DrawButtonBackground(pDC, pItem, rc);
-				break;
-
-			case xtpTabPositionBottom:
-				DrawRotatedButton(pDC, rc, pItem, FALSE, NULL, &CColorSetWinNative::DrawRotatedBitsBottom);
-				break;
-
-			case xtpTabPositionLeft:
-				DrawRotatedButton(pDC, rc, pItem, TRUE, NULL, &CColorSetWinNative::DrawRotatedBitsLeft);
-				break;
-
-			case xtpTabPositionRight:
-				DrawRotatedButton(pDC, rc, pItem, TRUE, NULL, &CColorSetWinNative::DrawRotatedBitsRight);
-				break;
-		}
-
-	}
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, rc, TRUE);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetPropertyPage2007
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPageAccess2007::RefreshMetrics()
-{
-	CAppearanceSetPropertyPage2007::RefreshMetrics();
-
-	m_nButtonHeight = max(m_nButtonHeight, 24);
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetPropertyPageAccess2007::GetButtonDrawRect(const CXTPTabManagerItem* pItem)
-{
-	CRect rc = pItem->GetRect();
-
-	return pItem->GetTabManager()->IsHorizontalPosition() ?
-		CRect(rc.left, rc.top, rc.right + m_nButtonHeight / 2, rc.bottom) :
-		CRect(rc.left, rc.top, rc.right, rc.bottom + m_nButtonHeight / 2);
-}
-
-
-CRect CXTPTabPaintManager::CAppearanceSetPropertyPageAccess2007::FillTabControl(CXTPTabManager* pTabManager, CDC* pDC, CRect rcControl)
-{
-	CRect rcHeader = GetHeaderRect(rcControl, pTabManager);
-	pDC->FillSolidRect(rcHeader, GetColorSet()->m_clrHeaderFace.clrLight);
-
-	CRect rcClient = GetClientRect(rcControl, pTabManager);
-
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameBorder)
-	{
-		GetColorSet()->FillClient(pDC, rcClient, pTabManager);
-		pDC->Draw3dRect(rcClient, GetColorSet()->m_clrFrameBorder, GetColorSet()->m_clrFrameBorder);
-	}
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameSingleLine)
-	{
-		GetColorSet()->FillClient(pDC, rcClient, pTabManager);
-		DrawSingleLineBorder(pDC, rcClient, pTabManager->GetPosition(), GetColorSet()->m_clrFrameBorder, GetColorSet()->m_clrFrameBorder);
-	}
-
-	return rcHeader;
-}
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPageAccess2007::DrawButtonBackground(CDC* pDC, CXTPTabManagerItem* pItem, CRect rc)
-{
-	CXTPResourceImages* pImages = XTPResourceImages();
-
-	CXTPResourceImage* pImage = pImages->LoadFile(_T("ACCESSTAB"));
-
-	int nState = 0;
-	if (pItem->IsSelected() && pItem->IsHighlighted())
-	{
-		nState = 3;
-	}
-	else if (pItem->IsSelected())
-	{
-		nState = 2;
-	}
-	else if (pItem->IsHighlighted())
-	{
-		nState = 1;
-	}
-
-	CRect rcSrc(pImage->GetSource(nState, 4));
-
-	if (pImage) pImage->DrawImage(pDC, rc, rcSrc, CRect(5, 10, 22, 10), 0xFF00FF);
-}
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPageAccess2007::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CXTPResourceImages* pImages = XTPResourceImages();
-
-	if (!pImages->IsValid())
-	{
-		CXTPTabPaintManagerAppearanceSet::DrawSingleButton(pDC, pItem);
-		return;
-	}
-
-	CRect rc = pItem->GetRect();
-	if (IsHorizontalTabPosition(pItem->GetTabManager()->GetPosition())) rc.right += m_nButtonHeight / 2 - 1; else rc.bottom += m_nButtonHeight / 2 - 1;
-
-	switch (pItem->GetTabManager()->GetPosition())
-	{
-	case xtpTabPositionTop:
-		DrawButtonBackground(pDC, pItem, rc);
-		break;
-
-	case xtpTabPositionBottom:
-		DrawRotatedButton(pDC, rc, pItem, FALSE, &CColorSetWinNative::DrawRotatedBitsBottom, &CColorSetWinNative::DrawRotatedBitsBottom);
-		break;
-
-	case xtpTabPositionLeft:
-		DrawRotatedButton(pDC, rc, pItem, TRUE, &CColorSetWinNative::DrawRotatedBitsLeft, &CColorSetWinNative::DrawRotatedBitsLeft);
-		break;
-
-	case xtpTabPositionRight:
-		DrawRotatedButton(pDC, rc, pItem, TRUE, &CColorSetWinNative::DrawRotatedBitsInvertRight, &CColorSetWinNative::DrawRotatedBitsRight);
-		break;
-	}
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetVisualStudio2005
-
-CRect CXTPTabPaintManager::CAppearanceSetVisualStudio2005::GetButtonDrawRect(const CXTPTabManagerItem* pItem)
-{
-	CRect rc = pItem->GetRect();
-
-	return pItem->GetTabManager()->IsHorizontalPosition() ?
-		CRect(rc.left - rc.Height() / 2, rc.top, rc.right + rc.Height() / 2 , rc.bottom) :
-		CRect(rc.left, rc.top  - rc.Width() / 2, rc.right , rc.bottom  + rc.Width() / 2);
-}
-
-void CXTPTabPaintManager::CAppearanceSetVisualStudio2005::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rc = pItem->GetRect();
-
-	COLORREF clrBorder = GetColorSet()->m_csPropertyPage2003.clrDarkShadow, clrLeftHighlight = GetColorSet()->m_csPropertyPage2003.clrBorderLeftHighlight, clrTopHighlight = GetColorSet()->m_csPropertyPage2003.clrBorderTopHighlight;
-	if (pItem->IsSelected())
-	{
-		clrBorder = GetColorSet()->m_csPropertyPage2003.clrFrameBorder;
-		clrLeftHighlight = RGB(255, 255, 255);
-		clrTopHighlight = RGB(255, 255, 255);
-	}
-
-	switch (pItem->GetTabManager()->GetPosition())
-	{
-	case xtpTabPositionBottom:
-		{
-			int nHeight2 = rc.Height() /2;
-
-			POINT ptsBorder[] = {{rc.right + nHeight2 - 4, rc.top}, {-nHeight2 + 3 , nHeight2 * 2 - 6}, {-4, 4}, {-2, 1}, {-rc.Width() + 14, 0}, {-2, -1}, {-3, -3}, {-nHeight2 + 3 - 1 , -(nHeight2 * 2 - 6 + 2)}};
-			FillButton(pDC, pItem, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]), pItem->GetTabManager()->GetPosition());
-			DrawPolyLine(pDC, clrBorder, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]));
-
-			POINT ptsRightBorder[] = {{rc.right + nHeight2 - 4 - 1, rc.top}, {-nHeight2 + 3 , nHeight2 * 2 - 6}, {-3, 3}, {-2, 1}};
-			DrawPolyLine(pDC, clrLeftHighlight, ptsRightBorder, sizeof(ptsRightBorder) / sizeof(ptsRightBorder[0]));
-
-			POINT ptsLeftBorder[] = {{rc.right - 4 + 3 - 4 - 2 - rc.Width() + 14, rc.top + nHeight2 * 2 - 6 + 4}
-				, {-2, -1}, {-2, -2}, {-nHeight2 + 3 - 1 , -(nHeight2 * 2 - 6 + 2)}};
-			DrawPolyLine(pDC, clrTopHighlight, ptsLeftBorder, sizeof(ptsLeftBorder) / sizeof(ptsLeftBorder[0]));
-
-		}
-		break;
-
-	case xtpTabPositionTop:
-		{
-			int nHeight2 = rc.Height() /2;
-
-			POINT ptsBorder[] = {{rc.right + nHeight2 - 4, rc.bottom - 1}, {-nHeight2 + 3 , - nHeight2 * 2 + 6}, {-4, -4}, {-3, -1}, {-rc.Width() + 16, 0}, {-3, 1}, {-3, 3}, {-nHeight2 + 3 - 1 , (nHeight2 * 2 - 6 + 2)}};
-
-			FillButton(pDC, pItem, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]), pItem->GetTabManager()->GetPosition());
-			DrawPolyLine(pDC, clrBorder, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]));
-
-			POINT ptsRightBorder[] = {{rc.right + nHeight2 - 4 - 1, rc.bottom - 1}, {-nHeight2 + 3 , - nHeight2 * 2 + 6}, {-3, -3}, {-3, -1}};
-			DrawPolyLine(pDC, clrLeftHighlight, ptsRightBorder, sizeof(ptsRightBorder) / sizeof(ptsRightBorder[0]));
-
-			POINT ptsLeftBorder[] = {{rc.right - 4 + 3 - 4 -2, rc.bottom - nHeight2 * 2 + 6 - 1-4}, {-rc.Width() + 16 -1, 0}, {-3, 1}, {-2, 2}, {-nHeight2 + 3 - 1 , (nHeight2 * 2 - 6 + 2)}};
-			DrawPolyLine(pDC, clrTopHighlight, ptsLeftBorder, sizeof(ptsLeftBorder) / sizeof(ptsLeftBorder[0]));
-
-		}
-		break;
-
-	case xtpTabPositionRight:
-		{
-			int nHeight2 = rc.Width() /2;
-
-			POINT ptsBorder[] = {{rc.left, rc.bottom + nHeight2 - 4}, {nHeight2 * 2 -6 + 1 , -nHeight2 + 3}, {4, -4}, {+1, -3}, {0, -rc.Height() + 16}, {-1, -3}, {-3, -3}, {-nHeight2 * 2 + 6 - 2, (- nHeight2 +3 -1)}};
-
-			FillButton(pDC, pItem, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]), pItem->GetTabManager()->GetPosition());
-			DrawPolyLine(pDC, clrBorder, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]));
-
-			POINT ptsRightBorder[] = {{rc.left, rc.bottom + nHeight2 - 5}, {nHeight2 * 2 -6 + 1 , -nHeight2 + 3}, {3, -3}, {+1, -3}, {0, -rc.Height() + 14}};
-			DrawPolyLine(pDC, clrLeftHighlight, ptsRightBorder, sizeof(ptsRightBorder) / sizeof(ptsRightBorder[0]));
-
-			POINT ptsLeftBorder[] = {{rc.left + nHeight2 * 2 -6 + 2 + 4 -2 , rc.bottom - 4 -4 -rc.Height() + 16 -3}, {-2, -2}, {-nHeight2 * 2 + 6 - 2, (- nHeight2 +3 -1)}};
-			DrawPolyLine(pDC, clrTopHighlight, ptsLeftBorder, sizeof(ptsLeftBorder) / sizeof(ptsLeftBorder[0]));
-		}
-		break;
-
-	case xtpTabPositionLeft:
-		{
-			int nHeight2 = rc.Width() /2;
-
-			POINT ptsBorder[] = {{rc.right - 1, rc.bottom + nHeight2 - 4}, {-(nHeight2 * 2 -6), -nHeight2 + 3}, {-4, -4}, {-1, -3}, {0, -rc.Height() + 16}, {1, -3}, {3, -3}, {nHeight2 * 2 - 6 + 2, (- nHeight2 +3 -1)}};
-
-			FillButton(pDC, pItem, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]), pItem->GetTabManager()->GetPosition());
-			DrawPolyLine(pDC, clrBorder, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]));
-
-			POINT ptsRightBorder[] = {{rc.right - 1, rc.bottom + nHeight2 - 5}, {-(nHeight2 * 2 -6), -nHeight2 + 3}, {-3, -3}, {-1, -3}};
-			DrawPolyLine(pDC, clrLeftHighlight, ptsRightBorder, sizeof(ptsRightBorder) / sizeof(ptsRightBorder[0]));
-
-			POINT ptsLeftBorder[] = {{rc.right - 1-(nHeight2 * 2 -6)-4-1 + 1, rc.bottom + nHeight2 - 4 -nHeight2 + 3 -4 -3}, {0, -rc.Height() + 16}, {1, -3}, {2, -2}, {nHeight2 * 2 - 6 + 2, (- nHeight2 +3 -1)}};
-			DrawPolyLine(pDC, clrTopHighlight, ptsLeftBorder, sizeof(ptsLeftBorder) / sizeof(ptsLeftBorder[0]));
-		}
-		break;
-
-	}
-
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetFlat
-
-void CXTPTabPaintManager::CAppearanceSetFlat::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rcItem(pItem->GetRect());
-
-	InflateRectEx(rcItem, CRect(0, 0, 1, 0), pItem->GetTabManager()->GetPosition());
-
-	GetColorSet()->FillPropertyButton(pDC, rcItem, pItem);
-
-	if (pItem->IsSelected())
-		InflateRectEx(rcItem, CRect(0, 0, 0, 1), pItem->GetTabManager()->GetPosition());
-
-	pDC->Draw3dRect(rcItem, GetColorSet()->m_clrFrameBorder, GetColorSet()->m_clrFrameBorder);
-
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-}
-
-
-CRect CXTPTabPaintManager::CAppearanceSetFlat::FillTabControl(CXTPTabManager* pTabManager, CDC* pDC, CRect rcControl)
-{
-
-	CRect rcHeader = GetHeaderRect(rcControl, pTabManager);
-	GetColorSet()->FillHeader(pDC, rcHeader, pTabManager);
-
-	CRect rcClient = GetClientRect(rcControl, pTabManager);
-
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameBorder)
-	{
-		GetColorSet()->FillClient(pDC, rcClient, pTabManager);
-		pDC->Draw3dRect(rcClient, GetColorSet()->m_clrFrameBorder, GetColorSet()->m_clrFrameBorder);
-	}
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameSingleLine)
-	{
-		GetColorSet()->FillClient(pDC, rcClient, pTabManager);
-		DrawSingleLineBorder(pDC, rcClient, pTabManager->GetPosition(), GetColorSet()->m_clrFrameBorder, GetColorSet()->m_clrFrameBorder);
-	}
-
-
-	return rcHeader;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetPropertyPageFlat
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPageFlat::BlurPoint(CDC* pDC, int x, int y, COLORREF clr, int nAlpha)
-{
-	COLORREF clrOld = pDC->GetPixel(x, y);
-	pDC->SetPixel(x, y, CXTPDrawHelpers::BlendColors(clr, clrOld, (double)nAlpha / 255));
-}
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPageFlat::BlurTab(CDC* pDC, CRect rcTab, COLORREF clrBackground, COLORREF clrBorder, XTPTabPosition tabPosition)
-{
-	switch (tabPosition)
-	{
-	case xtpTabPositionTop:
-		{
-			BlurPoint(pDC, rcTab.left, rcTab.top + 1, clrBackground, 120);
-			BlurPoint(pDC, rcTab.left + 1, rcTab.top, clrBackground, 120);
-
-			BlurPoint(pDC, rcTab.right - 2, rcTab.top, clrBackground, 120);
-			BlurPoint(pDC, rcTab.right - 1, rcTab.top + 1, clrBackground, 120);
-
-			BlurPoint(pDC, rcTab.left + 1, rcTab.top + 1, clrBorder, 180);
-			BlurPoint(pDC, rcTab.right - 2, rcTab.top + 1, clrBorder, 180);
-
-			BlurPoint(pDC, rcTab.left + 2, rcTab.top + 1, clrBorder, 60);
-			BlurPoint(pDC, rcTab.left + 1, rcTab.top +2, clrBorder, 60);
-			BlurPoint(pDC, rcTab.right - 3, rcTab.top + 1, clrBorder, 60);
-			BlurPoint(pDC, rcTab.right - 2, rcTab.top + 2, clrBorder, 60);
-		}
-		break;
-
-	case xtpTabPositionLeft:
-		{
-
-			BlurPoint(pDC, rcTab.left, rcTab.top + 1, clrBackground, 120);
-			BlurPoint(pDC, rcTab.left + 1, rcTab.top, clrBackground, 120);
-
-			BlurPoint(pDC, rcTab.left, rcTab.bottom - 2, clrBackground, 120);
-			BlurPoint(pDC, rcTab.left + 1, rcTab.bottom - 1, clrBackground, 120);
-
-			BlurPoint(pDC, rcTab.left + 1, rcTab.top + 1, clrBorder, 180);
-			BlurPoint(pDC, rcTab.left + 1, rcTab.bottom - 2, clrBorder, 180);
-
-			BlurPoint(pDC, rcTab.left + 2, rcTab.top + 1, clrBorder, 60);
-			BlurPoint(pDC, rcTab.left + 1, rcTab.top +2, clrBorder, 60);
-			BlurPoint(pDC, rcTab.left + 2, rcTab.bottom - 2, clrBorder, 60);
-			BlurPoint(pDC, rcTab.left + 1, rcTab.bottom - 3, clrBorder, 60);
-
-		}
-		break;
-
-	case xtpTabPositionBottom:
-		{
-			BlurPoint(pDC, rcTab.left, rcTab.bottom - 2, clrBackground, 120);
-			BlurPoint(pDC, rcTab.left + 1, rcTab.bottom -1, clrBackground, 120);
-
-			BlurPoint(pDC, rcTab.right - 1, rcTab.bottom - 2, clrBackground, 120);
-			BlurPoint(pDC, rcTab.right - 2, rcTab.bottom - 1, clrBackground, 120);
-
-			BlurPoint(pDC, rcTab.left + 1, rcTab.bottom - 2, clrBorder, 180);
-			BlurPoint(pDC, rcTab.right - 2, rcTab.bottom - 2, clrBorder, 180);
-
-			BlurPoint(pDC, rcTab.left + 2, rcTab.bottom - 2, clrBorder, 60);
-			BlurPoint(pDC, rcTab.left + 1, rcTab.bottom - 3, clrBorder, 60);
-			BlurPoint(pDC, rcTab.right - 3, rcTab.bottom - 2, clrBorder, 60);
-			BlurPoint(pDC, rcTab.right - 2, rcTab.bottom - 3, clrBorder, 60);
-		}
-		break;
-
-	case xtpTabPositionRight:
-		{
-			BlurPoint(pDC, rcTab.right - 1, rcTab.top + 1, clrBackground, 120);
-			BlurPoint(pDC, rcTab.right - 2, rcTab.top, clrBackground, 120);
-
-			BlurPoint(pDC, rcTab.right - 1, rcTab.bottom - 2, clrBackground, 120);
-			BlurPoint(pDC, rcTab.right - 2, rcTab.bottom - 1, clrBackground, 120);
-
-			BlurPoint(pDC, rcTab.right - 2, rcTab.top + 1, clrBorder, 180);
-			BlurPoint(pDC, rcTab.right - 2, rcTab.bottom - 2, clrBorder, 180);
-
-			BlurPoint(pDC, rcTab.right - 3, rcTab.top + 1, clrBorder, 60);
-			BlurPoint(pDC, rcTab.right - 2, rcTab.top +2, clrBorder, 60);
-			BlurPoint(pDC, rcTab.right - 3, rcTab.bottom - 2, clrBorder, 60);
-			BlurPoint(pDC, rcTab.right - 2, rcTab.bottom - 3, clrBorder, 60);
-
-		}
-		break;
-	}
-}
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPageFlat::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rcItem(pItem->GetRect());
-	XTPTabPosition tabPosition = pItem->GetTabManager()->GetPosition();
-
-	InflateRectEx(rcItem, CRect(0, 0, 1, 0), tabPosition);
-
-	CRect rcTab(rcItem);
-
-	CRect rcClip;
-	pDC->GetClipBox(rcClip);
-	CRgn rgn;
-	rgn.CreateRectRgnIndirect(rcClip);
-
-	InflateRectEx(rcTab, CRect(0, 0, 0, 1), tabPosition);
-
-	XTPDrawHelpers()->ExcludeCorners(pDC, rcTab);
-
-	CRect rcEntry(rcItem);
-
-	InflateRectEx(rcEntry, CRect(-1, -1, -1, 0), tabPosition);
-
-
-	if (!m_bDrawNormalTab  && !pItem->IsSelected() && !pItem->IsHighlighted())
-	{
-		m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-		return;
-	}
-
-	CXTPTabPaintManagerColorSet* pColorSet = GetColorSet();
-	COLORREF clrFrameBorder = pItem->IsHighlighted() && !pItem->IsSelected() ? pColorSet->m_clrFrameHighlightBorder : COLORREF_NULL;
-	if (clrFrameBorder == COLORREF_NULL) clrFrameBorder = pColorSet->m_clrFrameBorder;
-
-	if (m_bVisualStudio2005Style)
-	{
-		if (pItem->IsSelected())
-		{
-			pColorSet->FillPropertyButton(pDC, rcEntry, pItem);
-			if (!pItem->IsSelected())
-				DrawSingleLineBorder(pDC, rcItem, XTPTabPosition((tabPosition + 2) % 4), clrFrameBorder, clrFrameBorder);
-			InflateRectEx(rcItem, CRect(0, 0, 0, 2), tabPosition);
-
-			CXTPPenDC pen(*pDC, clrFrameBorder);
-			CGdiObject* pOldBrush = pDC->SelectStockObject(NULL_BRUSH);
-			pDC->RoundRect(rcItem, CPoint(6, 6));
-			pDC->SelectObject(pOldBrush);
-		}
-		else
-		{
-			if (pItem->GetIndex() < pItem->GetTabManager()->GetItemCount() - 1)
-			{
-				if (IsHorizontalTabPosition(tabPosition))
-					pDC->FillSolidRect(rcItem.right - 1, rcItem.top + 3, 1, rcItem.Height() - 6, clrFrameBorder);
-				else
-					pDC->FillSolidRect(rcItem.left + 3, rcItem.bottom - 1, rcItem.Width() - 6, 1, clrFrameBorder);
-			}
-		}
-
-	}
-	else
-	{
-		pColorSet->FillPropertyButton(pDC, rcEntry, pItem);
-
-		if (m_bBlurPoints)
-		{
-			if (pItem->IsSelected())
-				InflateRectEx(rcItem, CRect(0, 0, 0, 1), tabPosition);
-
-			pDC->Draw3dRect(rcItem, clrFrameBorder, clrFrameBorder);
-		}
-		else
-		{
-			if (m_pPaintManager->m_clientFrame != xtpTabFrameNone)
-			{
-				if (!pItem->IsSelected())
-					DrawSingleLineBorder(pDC, rcItem, XTPTabPosition((tabPosition + 2) % 4), clrFrameBorder, clrFrameBorder);
-			}
-
-			InflateRectEx(rcItem, CRect(0, 0, 0, 2), tabPosition);
-
-			CXTPPenDC pen(*pDC, clrFrameBorder);
-			CGdiObject* pOldBrush = pDC->SelectStockObject(NULL_BRUSH);
-			pDC->RoundRect(rcItem, CPoint(6, 6));
-			pDC->SelectObject(pOldBrush);
-		}
-	}
-
-	pDC->SelectClipRgn(&rgn);
-
-	if (m_bBlurPoints)
-	{
-		BlurTab(pDC, rcTab, pColorSet->m_clrHeaderFace, clrFrameBorder, tabPosition);
-	}
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetVisualStudio2010
-
-void CXTPTabPaintManager::CAppearanceSetVisualStudio2010::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rcItem(pItem->GetRect());
-	XTPTabPosition tabPosition = pItem->GetTabManager()->GetPosition();
-
-	CRect rcTab(rcItem);
-
-	InflateRectEx(rcTab, CRect(0, 0, 0, 1), tabPosition);
-
-	XTPDrawHelpers()->ExcludeCorners(pDC, rcTab);
-
-	if (!m_bDrawNormalTab  && !pItem->IsSelected() && !pItem->IsHighlighted())
-	{
-		m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-		return;
-	}
-
-	CXTPTabPaintManagerColorSet* pColorSet = GetColorSet();
-	COLORREF clrFrameBorder = pItem->IsHighlighted() && !pItem->IsSelected() ? pColorSet->m_clrFrameHighlightBorder : COLORREF_NULL;
-	if (clrFrameBorder == COLORREF_NULL) clrFrameBorder = pColorSet->m_clrFrameBorder;
-
-	pColorSet->FillPropertyButton(pDC, rcItem, pItem);
-
-	if (pItem->IsSelected())
-	{
-		if (!pColorSet->m_clrFrameHighlightBorder.IsDefaultValue())
-			InflateRectEx(rcTab, CRect(1, 1, 1, 0), tabPosition);
-		else
-			pDC->Draw3dRect(rcTab, clrFrameBorder, clrFrameBorder);
-	}
-	else
-	{
-		pDC->Draw3dRect(rcTab, clrFrameBorder, clrFrameBorder);
-	}
-
-	if (m_bBlurPoints)
-	{
-		BlurTab(pDC, rcTab, pColorSet->m_clrHeaderFace, clrFrameBorder, tabPosition);
-	}
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-}
-
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceExcel
-
-void CXTPTabPaintManager::CAppearanceSetExcel::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rc(pItem->GetRect());
-
-	CXTPTabPaintManagerColorSet::COLORSET_TAB_EXCEL& cs = pItem->IsSelected() ? GetColorSet()->m_csExcelSelected : GetColorSet()->m_csExcelNormal;
-
-	switch (pItem->GetTabManager()->GetPosition())
-	{
-	case xtpTabPositionTop:
-		{
-			rc.bottom -= 1;
-			int nMargin = rc.Height() / 2;
-			rc.OffsetRect(- nMargin / 2 , 0);
-
-			POINT ptsFill[] = {{rc.left, rc.bottom}, {nMargin, - nMargin * 2}, {rc.Width() - nMargin, 0}, {nMargin, nMargin * 2}};
-			COLORREF clrDark = FillButton(pDC, pItem, ptsFill, _countof(ptsFill), pItem->GetTabManager()->GetPosition(), FALSE);
-
-			LineEx(pDC, cs.clrLeftOuterBorder, rc.left + 1, rc.bottom - 1, rc.left + nMargin + 1, rc.top);
-			LineEx(pDC, cs.clrLeftOuterBorder, rc.left + nMargin, rc.top + 1, rc.right, rc.top + 1);
-			LineEx(pDC, cs.clrRightOuterBorder, rc.right - 1, rc.top, rc.right + nMargin - 1, rc.bottom);
-
-			LineEx(pDC, cs.clrLeftInnerBorder, rc.left, rc.bottom - 1, rc.left + nMargin, rc.top);
-			LineEx(pDC, cs.clrLeftInnerBorder, rc.left + nMargin, rc.top, rc.right, rc.top);
-			LineEx(pDC, cs.clrRightInnerBorder, rc.right, rc.top, rc.right + nMargin, rc.bottom);
-
-			if (pItem->IsSelected())
-				HorizontalLine(pDC, rc.left, rc.bottom, rc.Width() + nMargin, clrDark);
-
-		}
-		break;
-	case xtpTabPositionLeft:
-		{
-			rc.right -= 1;
-			int nMargin = rc.Width() / 2;
-			rc.OffsetRect(0, - nMargin / 2);
-
-			POINT ptsFill[] = {{rc.right, rc.top}, {-nMargin * 2, nMargin}, {0, rc.Height() - nMargin}, {nMargin * 2, nMargin}};
-			COLORREF clrDark = FillButton(pDC, pItem, ptsFill, _countof(ptsFill), pItem->GetTabManager()->GetPosition(), FALSE);
-
-			LineEx(pDC, cs.clrLeftOuterBorder, rc.right - 1, rc.top + 1, rc.left, rc.top + nMargin + 1);
-			LineEx(pDC, cs.clrLeftOuterBorder, rc.left + 1, rc.top + nMargin, rc.left + 1, rc.bottom);
-			LineEx(pDC, cs.clrRightOuterBorder, rc.left , rc.bottom - 1, rc.right, rc.bottom + nMargin - 1);
-
-			LineEx(pDC, cs.clrLeftInnerBorder, rc.right - 1, rc.top, rc.left, rc.top + nMargin);
-			LineEx(pDC, cs.clrLeftInnerBorder, rc.left, rc.top + nMargin, rc.left, rc.bottom);
-			LineEx(pDC, cs.clrRightInnerBorder, rc.left, rc.bottom, rc.right, rc.bottom + nMargin);
-
-			if (pItem->IsSelected())
-				VerticalLine(pDC, rc.right, rc.top, rc.Height() + nMargin, clrDark);
-
-		}
-		break;
-
-	case xtpTabPositionBottom:
-		{
-			rc.bottom -= 1;
-			int nMargin = rc.Height() / 2;
-			rc.OffsetRect(- nMargin /2 , 0);
-
-			POINT ptsFill[] = {{rc.left, rc.top + 1}, {nMargin, nMargin * 2}, {rc.Width() - nMargin, 0}, {nMargin, - nMargin * 2}};
-			COLORREF clrDark = FillButton(pDC, pItem, ptsFill, _countof(ptsFill), pItem->GetTabManager()->GetPosition(), FALSE);
-
-			LineEx(pDC, cs.clrLeftOuterBorder, rc.left + 1, rc.top + 1, rc.left + nMargin + 1, rc.bottom);
-			LineEx(pDC, cs.clrTopOuterBorder, rc.left + nMargin, rc.bottom - 1, rc.right, rc.bottom - 1);
-			LineEx(pDC, cs.clrRightOuterBorder, rc.right - 1, rc.bottom, rc.right + nMargin - 1, rc.top);
-
-			LineEx(pDC, cs.clrLeftInnerBorder, rc.left, rc.top + 1, rc.left + nMargin, rc.bottom);
-			LineEx(pDC, cs.clrTopInnerBorder, rc.left + nMargin, rc.bottom, rc.right, rc.bottom);
-			LineEx(pDC, cs.clrRightInnerBorder, rc.right, rc.bottom, rc.right + nMargin, rc.top);
-
-			if (pItem->IsSelected())
-				HorizontalLine(pDC, rc.left, rc.top, rc.Width() + nMargin, clrDark);
-		}
-
-		break;
-
-	case xtpTabPositionRight:
-		{
-			rc.right -= 1;
-			int nMargin = rc.Width() / 2;
-			rc.OffsetRect(0, - nMargin / 2);
-
-			POINT ptsFill[] = {{rc.left + 1, rc.top}, {nMargin * 2, nMargin}, {0, rc.Height() - nMargin}, {- nMargin * 2, nMargin}};
-			COLORREF clrDark = FillButton(pDC, pItem, ptsFill, _countof(ptsFill), pItem->GetTabManager()->GetPosition(), FALSE);
-
-			LineEx(pDC, cs.clrLeftOuterBorder, rc.left + 1, rc.top + 1, rc.right, rc.top + nMargin + 1);
-			LineEx(pDC, cs.clrLeftOuterBorder, rc.right - 1, rc.top + nMargin, rc.right - 1, rc.bottom);
-			LineEx(pDC, cs.clrRightOuterBorder, rc.right , rc.bottom - 1, rc.left, rc.bottom + nMargin - 1);
-
-			LineEx(pDC, cs.clrLeftInnerBorder, rc.left + 1, rc.top, rc.right, rc.top + nMargin);
-			LineEx(pDC, cs.clrLeftInnerBorder, rc.right, rc.top + nMargin, rc.right, rc.bottom);
-			LineEx(pDC, cs.clrRightInnerBorder, rc.right, rc.bottom, rc.left, rc.bottom + nMargin);
-
-			if (pItem->IsSelected())
-				VerticalLine(pDC, rc.left, rc.top, rc.Height() + nMargin, clrDark);
-		}
-		break;
-	}
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetExcel::GetButtonDrawRect(const CXTPTabManagerItem* pItem)
-{
-	CRect rc = pItem->GetRect();
-
-	return pItem->GetTabManager()->IsHorizontalPosition() ?
-		CRect(rc.left - rc.Height() / 2, rc.top, rc.right + rc.Height() / 2 , rc.bottom) :
-		CRect(rc.left, rc.top  - rc.Width() / 2, rc.right, rc.bottom  + rc.Width() / 2);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetVisio
-
-
-void CXTPTabPaintManager::CAppearanceSetVisio::AdjustClientRect(CXTPTabManager* pTabManager, CRect& rcClient)
-{
-	DeflateRectEx(rcClient, m_pPaintManager->m_rcControlMargin, pTabManager->GetPosition());
-
-	rcClient = GetClientRect(rcClient, pTabManager);
-
-	DeflateRectEx(rcClient, GetClientMargin(), pTabManager->GetPosition());
-}
-
-void CXTPTabPaintManager::CAppearanceSetVisio::RepositionTabControl(CXTPTabManager* pTabManager, CDC* /*pDC*/, CRect rcClient)
-{
-
-	CXTPTabPaintManagerAppearanceSet::DeflateRectEx(rcClient, m_pPaintManager->m_rcControlMargin, pTabManager->GetPosition());
-
-	if (pTabManager->GetItemCount() == 0)
-		return;
-
-	int nButtonHeight = GetButtonHeight(pTabManager);
-
-	CRect rc(rcClient);
-
-	if (m_pPaintManager->m_clientFrame != xtpTabFrameNone)
-	{
-		rc.left++;
-	}
-
-	rc.top++;
-
-	CRect rcItem(rc.left, rc.top, rc.right, rc.top);
-
-	for (int i = 0; i < pTabManager->GetItemCount(); i++)
-	{
-		CXTPTabManagerItem* pItem = pTabManager->GetItem(i);
-
-		rcItem.bottom = rcItem.top + nButtonHeight;
-
-		pItem->SetRect(rcItem);
-
-		rcItem.top += nButtonHeight;
-
-		if (pItem->IsSelected())
-		{
-			int nBottom = max(rcItem.top + nButtonHeight, rc.bottom - (pTabManager->GetItemCount() - i - 1) * nButtonHeight);
-			nBottom = max(rcItem.top, min(nBottom, rc.bottom - 1));
-			rcItem.top = nBottom;
-		}
-	}
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetVisio::GetHeaderRect(CRect /*rcControl*/, CXTPTabManager* /*pTabManager*/)
-{
-	return CXTPEmptyRect();
-}
-
-
-CRect CXTPTabPaintManager::CAppearanceSetVisio::GetClientRect(CRect rcControl, CXTPTabManager* pTabManager)
-{
-	CXTPTabManagerItem* pItem = pTabManager->GetSelectedItem();
-
-	if (pItem)
-	{
-		int nButtonHeight = GetButtonHeight(pTabManager);
-
-		rcControl.top += (pItem->GetIndex() + 1) * nButtonHeight + 1;
-
-		rcControl.bottom -= (pTabManager->GetItemCount() - pItem->GetIndex() - 1) * nButtonHeight;
-
-		rcControl.bottom = max(rcControl.top + nButtonHeight, rcControl.bottom);
-
-		if (pItem->GetIndex() == pTabManager->GetItemCount() - 1 &&
-			m_pPaintManager->m_clientFrame != xtpTabFrameNone) rcControl.bottom--;
-	}
-
-	if (m_pPaintManager->m_clientFrame != xtpTabFrameNone)
-	{
-		rcControl.DeflateRect(1, 0, 1, 0);
-	}
-
-
-	return rcControl;
-}
-
-
-void CXTPTabPaintManager::CAppearanceSetVisio::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rcItem = pItem->GetRect();
-
-	GetColorSet()->FillPropertyButton(pDC, rcItem, pItem);
-
-	pDC->Draw3dRect(rcItem, GetColorSet()->m_clrBorderHighlight, GetColorSet()->m_clrFrameBorder);
-
-	for (int y = rcItem.top + 4; y < rcItem.bottom - 3; y += 2)
-	{
-		HorizontalLine(pDC, rcItem.right - 7, y, 3, GetXtremeColor(XPCOLOR_TOOLBAR_GRIPPER));
-	}
-	rcItem.right -= 7;
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, rcItem, TRUE);
-}
-
-void CXTPTabPaintManager::CAppearanceSetVisio::DrawTabControl(CXTPTabManager* pTabManager, CDC* pDC, CRect rcClient)
-{
-	pDC->FillSolidRect(rcClient, GetColorSet()->m_clrControlFace);
-
-	CXTPTabPaintManagerAppearanceSet::DeflateRectEx(rcClient, m_pPaintManager->m_rcControlMargin, pTabManager->GetPosition());
-
-	CRgn rgn;
-	rgn.CreateRectRgnIndirect(rcClient);
-	pDC->SelectClipRgn(&rgn);
-
-	if (m_pPaintManager->m_clientFrame != xtpTabFrameNone)
-	{
-		pDC->Draw3dRect(rcClient, GetColorSet()->m_clrFrameBorder, GetColorSet()->m_clrFrameBorder);
-	}
-	else if (pTabManager->GetItemCount() > 0)
-	{
-		HorizontalLine(pDC, rcClient.left, rcClient.top, rcClient.Width(), GetColorSet()->m_clrFrameBorder);
-	}
-
-	pDC->SetBkMode(TRANSPARENT);
-
-	for (int i = pTabManager->GetItemCount() - 1; i >= 0; i--)
-	{
-		CXTPTabManagerItem* pItem = pTabManager->GetItem(i);
-
-		CRect rcItem = pItem->GetRect();
-
-		if (CRect().IntersectRect(rcClient, rcItem) && !rcItem.IsRectEmpty())
-		{
-			DrawSingleButton(pDC, pItem);
-		}
-	}
-
-	pDC->SelectClipRgn(NULL);
-}

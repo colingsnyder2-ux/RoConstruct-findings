@@ -1,12 +1,4 @@
-// from server: 95% by atomic.potato
-extern "C" int __stdcall sub_7A8BEA(int, int, int, int, int);
-
-struct S
-{
-    int f(int);
-};
-
-int S::f(int value)
-{
-    return sub_7A8BEA(value, 0, 0xB78E40, 0xB83B6C, 0) != 0;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+extern "C" int helper(void*,int,void*,void*,int);
+bool __stdcall func(void* p){return helper(p,0,(void*)0xb78e40,(void*)0xb83b6c,0)!=0;}

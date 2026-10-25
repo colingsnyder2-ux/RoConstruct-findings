@@ -1,18 +1,16 @@
-// from server: 66% by atomic.potato
-typedef char* String;
-extern "C" String StringCopy(String*, const String*);
+// from server: 100% by colin
 
-struct TextDisplay
-{
-    char pad0[164];
-    String m_text;
-    String* f(String* value);
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+struct Str_00601f70 { int words[8]; };
+extern void (__thiscall* str_ctor_00601f70)(Str_00601f70*, Str_00601f70*);
+struct X_00601f70 {
+    char pad[0xa4];
+    Str_00601f70 value;
+    Str_00601f70* copy(Str_00601f70* out);
 };
-
-String* TextDisplay::f(String* value)
+Str_00601f70* X_00601f70::copy(Str_00601f70* out)
 {
-    String* destination = reinterpret_cast<String*>(reinterpret_cast<char*>(this) + 164);
-    *destination = 0;
-    StringCopy(destination, value);
-    return value;
+    volatile int zero = 0;
+    str_ctor_00601f70(out, &value);
+    return out;
 }

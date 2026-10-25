@@ -1,21 +1,17 @@
-// from server: 61% by atomic.potato
-extern "C" void G1_func_00471a30();
-
-struct CScriptDoc
-{
-    void __cdecl f(void *, unsigned int);
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_00471f50 {
+    T4_00471f50();
+    virtual void f_00471f50();
+    char m_a;
+    char m_b;
 };
-
-void CScriptDoc::f(void *a, unsigned int b)
+T4_00471f50::T4_00471f50() : m_a(0), m_b(0) {}
+extern "C" void* create_other_00471f50(void*, void*, int);
+void* create_00471f50(void* unused, T4_00471f50* out, int type)
 {
-    if (b != 4)
-    {
-        G1_func_00471a30();
-        return;
-    }
-
-    unsigned char *p = (unsigned char *)a;
-    *(unsigned int *)p = 0x00b85058;
-    p[4] = 0;
-    p[5] = 0;
+    if (type != 4)
+        return create_other_00471f50(unused, out, type);
+    out->T4_00471f50::T4_00471f50();
+    return out;
 }

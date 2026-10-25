@@ -1,14 +1,14 @@
-// from server: 66% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/PropertyGrid/XTPPropertyGridItem.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/PropertyGrid/XTPPropertyGridItem.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPPropertyGridItem.cpp : implementation of the CXTPPropertyGridItem class.
 //
 // This file is a part of the XTREME PROPERTYGRID MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -29,7 +29,6 @@
 #include "Common/XTPVC80Helpers.h"
 #include "Common/XTPDrawHelpers.h"
 #include "Common/XTPImageManager.h"
-#include "Common/XTPMarkupRender.h"
 
 #include "XTPPropertyGridInplaceEdit.h"
 #include "XTPPropertyGridInplaceButton.h"
@@ -52,12 +51,14 @@ IMPLEMENT_DYNAMIC(CXTPPropertyGridItem, CCmdTarget)
 
 CXTPPropertyGridItem::CXTPPropertyGridItem(LPCTSTR lpszCaption, LPCTSTR strValue, CString* pBindString)
 {
+
 	Init();
 	SetPrompt(lpszCaption);
 	m_strDefaultValue = m_strValue = strValue;
 
 	BindToString(pBindString);
 }
+
 
 CXTPPropertyGridItem::CXTPPropertyGridItem(UINT nID, LPCTSTR strValue, CString* pBindString)
 {
@@ -77,9 +78,6 @@ CXTPPropertyGridItem::CXTPPropertyGridItem(UINT nID, LPCTSTR strValue, CString* 
 CXTPPropertyGridItem::~CXTPPropertyGridItem()
 {
 	Clear();
-
-	XTPMarkupReleaseElement(m_pMarkupCaption);
-	XTPMarkupReleaseElement(m_pMarkupDescription);
 }
 
 void CXTPPropertyGridItem::Clear()
@@ -124,14 +122,7 @@ void CXTPPropertyGridItem::Clear()
 
 	CMDTARGET_RELEASE(m_pValueMetrics);
 	CMDTARGET_RELEASE(m_pCaptionMetrics);
-
-	if (m_pInplaceButtons)
-	{
-		m_pInplaceButtons->RemoveAll();
-
-		m_pInplaceButtons->m_pItem = NULL;
-		CMDTARGET_RELEASE(m_pInplaceButtons);
-	}
+	CMDTARGET_RELEASE(m_pInplaceButtons);
 
 	SAFE_DELETE(m_pInplaceControls);
 
@@ -145,23 +136,20 @@ void CXTPPropertyGridItem::SetPrompt(LPCTSTR lpszPrompt)
 
 	LPCTSTR lpszDescription = _tcschr(lpszPrompt, _T('\n'));
 
-	CString strCaption;
-
 	if (lpszDescription == NULL)
 	{
-		strCaption = lpszPrompt;
+		m_strCaption = lpszPrompt;
 	}
 	else
 	{
 		int nLen = (int)(lpszDescription - lpszPrompt);
-		LPTSTR lpszCaption = strCaption.GetBufferSetLength(nLen);
-		MEMCPY_S(lpszCaption, lpszPrompt, nLen * sizeof(TCHAR));
+		LPTSTR lpszCaption = m_strCaption.GetBufferSetLength(nLen);
 
+		MEMCPY_S(lpszCaption, lpszPrompt, nLen * sizeof(TCHAR));
 		m_strDescription = lpszDescription + 1;
 	}
-
-	SetCaption(strCaption);
 }
+
 
 void CXTPPropertyGridItem::Init()
 {
@@ -200,9 +188,6 @@ void CXTPPropertyGridItem::Init()
 	m_dwData = 0;
 	m_dwEditStyle = ES_AUTOHSCROLL;
 
-	m_pMarkupCaption = NULL;
-	m_pMarkupDescription = NULL;
-
 	EnableAutomation();
 
 	m_pValueMetrics = 0;
@@ -219,7 +204,7 @@ void CXTPPropertyGridItem::OnAddChildItem()
 
 void CXTPPropertyGridItem::SetFlags(UINT nFlags)
 {
-	ASSERT(!m_bCategory || ((nFlags & xtpGridItemHasEdit) == 0));
+	ASSERT(!m_bCategory);
 	m_nFlags = nFlags;
 
 	m_pInplaceButtons->Remove(XTP_ID_PROPERTYGRID_EXPANDBUTTON);
@@ -295,16 +280,12 @@ CXTPPropertyGridItem* CXTPPropertyGridItem::InsertChildItem(int nIndex, CXTPProp
 	pItem->m_pParent = this;
 	pItem->SetIndent(m_nIndent + 1);
 
-	pItem->OnCaptionChanged();
-
 	pItem->OnAddChildItem();
 
 	if (m_bVisible)
 	{
-		if (m_bExpanded)
-			m_pGrid->SetPropertySort(m_pGrid->m_properetySort, TRUE);
-		else if (m_pGrid->GetSafeHwnd() && m_pChilds->GetCount() == 1)
-			m_pGrid->Invalidate(FALSE);
+		if (m_bExpanded) m_pGrid->SetPropertySort(m_pGrid->m_properetySort, TRUE);
+		else if (m_pGrid->GetSafeHwnd() && m_pChilds->GetCount() == 1) m_pGrid->Invalidate(FALSE);
 	}
 
 	return pItem;
@@ -355,6 +336,7 @@ void CXTPPropertyGridItem::Expand()
 	m_bExpanded = TRUE;
 
 	m_pGrid->SendNotifyMessage(XTP_PGN_ITEMEXPANDCHANGED, (LPARAM)this);
+
 }
 
 BOOL CXTPPropertyGridItem::HasParent(CXTPPropertyGridItem* pParent)
@@ -370,21 +352,11 @@ void CXTPPropertyGridItem::Select()
 	if (!m_pGrid)
 		return;
 
-	EnsureVisible();
-
-	if (!m_bVisible)
-		return;
-
-	if (m_pGrid->GetStyle() & LBS_MULTIPLESEL)
-	{
-		m_pGrid->SelItemRange(FALSE, 0, m_pGrid->GetCount());
-		m_pGrid->SetSel(m_nIndex);
-	}
-	else
+	if (m_bVisible)
 	{
 		m_pGrid->SetCurSel(m_nIndex);
+		m_pGrid->OnSelectionChanged();
 	}
-	m_pGrid->OnSelectionChanged();
 }
 
 void CXTPPropertyGridItem::OnDeselect()
@@ -432,50 +404,11 @@ void CXTPPropertyGridItem::SetEditText(const CString& str)
 	if (wndEdit.GetSafeHwnd() && wndEdit.m_pItem == this)
 	{
 		wndEdit.SetWindowText(str);
-		wndEdit.SetFont(m_pGrid->GetPaintManager()->GetItemFont(this, TRUE));
-		wndEdit.SetMargins(3, 3);
-	}
-}
-
-void CXTPPropertyGridItem::SetMultiLinesCount(int nLinesCount)
-{
-	if (m_nLinesCount == nLinesCount)
-		return;
-
-	m_nLinesCount = nLinesCount;
-
-	RefreshHeight();
-}
-
-void CXTPPropertyGridItem::SetHeight(int nHeight)
-{
-	if (m_nHeight == nHeight)
-		return;
-
-	m_nHeight = nHeight;
-
-	RefreshHeight();
-}
-
-void CXTPPropertyGridItem::RefreshHeight()
-{
-	if (IsVisible() && m_pGrid->GetSafeHwnd() && m_pGrid->GetStyle() & LBS_OWNERDRAWVARIABLE && m_nIndex >= 0)
-	{
-		MEASUREITEMSTRUCT measureItemStruct =
-		{
-			ODT_LISTBOX, 0, m_nIndex, 0, 0, (ULONG_PTR)this
-		};
-		m_pGrid->MeasureItem(&measureItemStruct);
-		m_pGrid->SetItemHeight(m_nIndex, measureItemStruct.itemHeight);
-		m_pGrid->Invalidate(FALSE);
 	}
 }
 
 void CXTPPropertyGridItem::SetValue(CString strValue)
 {
-	if (m_strValue == strValue)
-		return;
-
 	m_strValue = strValue;
 
 	if (m_pBindString)
@@ -500,12 +433,8 @@ void CXTPPropertyGridItem::OnValueChanged(CString strValue)
 		return;
 
 	SetValue(strValue);
-	NotifyValueChanged();
-}
-
-void CXTPPropertyGridItem::NotifyValueChanged()
-{
-	if (m_pGrid && m_pGrid->GetSafeHwnd()) m_pGrid->SendNotifyMessage(XTP_PGN_ITEMVALUE_CHANGED, (LPARAM)this);
+	SAFE_INVALIDATE(m_pGrid);
+	m_pGrid->SendNotifyMessage(XTP_PGN_ITEMVALUE_CHANGED, (LPARAM)this);
 }
 
 BOOL CXTPPropertyGridItem::OnRequestEdit()
@@ -551,6 +480,7 @@ void CXTPPropertyGridItem::OnCancelEdit()
 	}
 }
 
+
 void CXTPPropertyGridItem::OnSelect()
 {
 	ASSERT(m_bVisible);
@@ -568,13 +498,13 @@ void CXTPPropertyGridItem::OnSelect()
 		}
 	}
 
-	if ((m_nFlags & xtpGridItemHasEdit) && !m_pGrid->m_bTracking)
+	if (m_nFlags & xtpGridItemHasEdit)
 	{
 		CXTPPropertyGridInplaceEdit& wndEdit = GetInplaceEdit();
 
 		wndEdit.SetValue(strValue);
 		wndEdit.Create(this, GetValueRect());
-		wndEdit.SetReadOnly(!IsAllowEdit() || m_bConstraintEdit);
+		wndEdit.SetReadOnly(GetReadOnly() || m_bConstraintEdit);
 	}
 	else
 	{
@@ -589,7 +519,7 @@ DWORD CXTPPropertyGridItem::GetEditStyle() const
 
 void CXTPPropertyGridItem::OnInplaceButtonDown(CXTPPropertyGridInplaceButton* pButton)
 {
-	if (!IsAllowEdit())
+	if (GetReadOnly())
 		return;
 
 	if (m_pGrid->SendNotifyMessage(XTP_PGN_INPLACEBUTTONDOWN, (LPARAM)pButton) == TRUE)
@@ -608,12 +538,10 @@ CRect CXTPPropertyGridItem::GetInplaceWindowsRect()
 	CRect rc = GetItemRect();
 	CRect rcValue(m_pGrid->GetDividerPos() + 1, rc.top + 1, rc.right, rc.bottom - 1);
 
-	for (int i = 0; i < m_pInplaceButtons->GetCount(); i++)
+	if (IsInplaceButtonsVisible())
 	{
-
-		CXTPPropertyGridInplaceButton* pButton = m_pInplaceButtons->GetAt(i);
-		if (pButton && IsInplaceButtonVisible(pButton))
-			if (pButton->GetAlignment() & DT_RIGHT) rcValue.right -= pButton->GetWidth(); else rcValue.left += pButton->GetWidth();
+		for (int i = 0; i < m_pInplaceButtons->GetCount(); i++)
+			rcValue.right -= m_pInplaceButtons->GetAt(i)->GetWidth();
 	}
 
 	m_pGrid->GetPaintManager()->AdjustItemValueRect(this, rcValue);
@@ -698,7 +626,7 @@ BOOL CXTPPropertyGridItem::PtInValueRect(CPoint point)
 void CXTPPropertyGridItem::OnLButtonDblClk(UINT /*nFlags*/, CPoint point)
 {
 	CXTPPropertyGridInplaceButton* pInplaceButton = m_pInplaceButtons->HitTest(point);
-	if (pInplaceButton && IsInplaceButtonVisible(pInplaceButton))
+	if (pInplaceButton && IsInplaceButtonsVisible())
 	{
 		OnSelect();
 		return;
@@ -722,7 +650,7 @@ void CXTPPropertyGridItem::OnLButtonDblClk(UINT /*nFlags*/, CPoint point)
 			{
 				wndEdit.SetFocus();
 
-				if (wndEdit.GetItem() == this && IsAllowEdit() && wndEdit.SelectConstraint(+1, TRUE))
+				if (wndEdit.GetItem() == this && !GetReadOnly() && wndEdit.SelectConstraint(+1, TRUE))
 				{
 					OnValidateEdit();
 
@@ -733,7 +661,7 @@ void CXTPPropertyGridItem::OnLButtonDblClk(UINT /*nFlags*/, CPoint point)
 				}
 			}
 		}
-		else if (IsAllowEdit())
+		else if (!GetReadOnly())
 		{
 			SelectNextConstraint();
 		}
@@ -755,9 +683,6 @@ BOOL CXTPPropertyGridItem::SelectNextConstraint()
 	if (nIndex >= pList->GetCount()) nIndex = 0;
 	if (nIndex < 0) nIndex = (ULONG)pList->GetCount() - 1;
 
-	if (!pList->GetConstraintAt(nIndex)->m_bEnabled)
-		return FALSE;
-
 	CString strValue = pList->GetAt(nIndex);
 
 	if (!OnAfterEdit(strValue))
@@ -768,52 +693,15 @@ BOOL CXTPPropertyGridItem::SelectNextConstraint()
 	return TRUE;
 }
 
-void CXTPPropertyGridItem::RedrawItem()
-{
-	if (m_pGrid && m_pGrid->GetSafeHwnd() && m_bVisible)
-	{
-		m_pGrid->InvalidateRect(GetItemRect(), FALSE);
-	}
-}
-
-BOOL CXTPPropertyGridItem::OnInpaceControlFocus(BOOL /*bForward*/)
-{
-	if (GetInplaceControls()->GetCount() > 0)
-	{
-		CWnd* pWnd = GetInplaceControls()->GetAt(0);
-		if (pWnd && pWnd->GetSafeHwnd() && pWnd->GetStyle() & WS_TABSTOP)
-		{
-			pWnd->SetFocus();
-			return TRUE;
-		}
-	}
-
-	return FALSE;
-}
-
-BOOL CXTPPropertyGridItem::IsAllowEdit() const
-{
-	return !GetReadOnly() && GetGrid()->GetPropertyGrid()->m_bAllowEdit;
-}
-
 BOOL CXTPPropertyGridItem::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	BOOL bOldSelected = IsSelected();
-
-	if (GetGrid()->GetStyle() & LBS_MULTIPLESEL)
-	{
-		GetGrid()->Default();
-		GetGrid()->OnSelectionChanged();
-		ReleaseCapture();
-
-	}
-	else
-		Select();
+	Select();
 
 	CXTPPropertyGridInplaceButton* pInplaceButton = m_pInplaceButtons->HitTest(point);
-	if (pInplaceButton && IsInplaceButtonVisible(pInplaceButton))
+	if (pInplaceButton && IsInplaceButtonsVisible())
 	{
-		if (!bOldSelected && !m_pGrid->GetPropertyGrid()->GetShowInplaceButtonsAlways() && !pInplaceButton->GetShowAlways())
+		if (!bOldSelected && !m_pGrid->GetPropertyGrid()->GetShowInplaceButtonsAlways())
 			return TRUE;
 		pInplaceButton->OnLButtonDown(nFlags, point);
 		return TRUE;
@@ -834,8 +722,8 @@ BOOL CXTPPropertyGridItem::OnLButtonDown(UINT nFlags, CPoint point)
 		mouse_event(GetSystemMetrics(SM_SWAPBUTTON) ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
 	}
 
-	if (m_nFlags == xtpGridItemHasComboButton && PtInValueRect(point) && IsAllowEdit()
-		&& (m_pInplaceButtons->GetCount() >= 1) && !IsCategory())
+	if (m_nFlags == xtpGridItemHasComboButton && PtInValueRect(point) && !GetReadOnly()
+		&& (m_pInplaceButtons->GetCount() == 1))
 	{
 		OnInplaceButtonDown(m_pInplaceButtons->GetAt(0));
 	}
@@ -932,18 +820,15 @@ CXTPPropertyGridInplaceList& CXTPPropertyGridItem::GetInplaceList()
 	return wndListBox;
 }
 
-BOOL CXTPPropertyGridItem::IsInplaceButtonVisible(CXTPPropertyGridInplaceButton* pButton) const
+BOOL CXTPPropertyGridItem::IsInplaceButtonsVisible() const
 {
-	if (!m_pGrid || !pButton)
+	if (!m_pGrid)
 		return FALSE;
 
-	if (!IsAllowEdit())
+	if (!IsSelected() && !m_pGrid->GetPropertyGrid()->GetShowInplaceButtonsAlways())
 		return FALSE;
 
-	if (!IsSelected() && !m_pGrid->GetPropertyGrid()->GetShowInplaceButtonsAlways() && !pButton->GetShowAlways())
-		return FALSE;
-
-	return TRUE;
+	return !GetReadOnly() && m_pInplaceButtons->GetCount() > 0;
 }
 
 CXTPPropertyGridInplaceButtons* CXTPPropertyGridItem::GetInplaceButtons() const
@@ -1003,28 +888,6 @@ BOOL CXTPPropertyGridItem::HasVisibleChilds() const
 
 BOOL CXTPPropertyGridItem::IsSelected() const
 {
-	if (!m_pGrid->GetSafeHwnd())
-		return FALSE;
-
-	if (!m_bVisible)
-		return FALSE;
-
-	int nCount = m_pGrid->GetSelCount();
-
-	if (nCount != LB_ERR && nCount > 1)
-	{
-		CArray<int,int> arr;
-
-		arr.SetSize(nCount);
-		m_pGrid->GetSelItems(nCount, arr.GetData());
-
-		for (int i = 0; i < nCount; i++)
-		{
-			if (arr[i] == m_nIndex)
-				return TRUE;
-		}
-	}
-
 	return m_pGrid && m_pGrid->GetSelectedItem() == this;
 }
 
@@ -1056,11 +919,10 @@ void CXTPPropertyGridItem::SetReadOnly(BOOL bReadOnly)
 
 void CXTPPropertyGridItem::SetMask(LPCTSTR strMask, LPCTSTR strLiteral, TCHAR chPrompt /*= _T('_')*/)
 {
+	m_bUseMask = TRUE;
 	m_strMask = strMask;
 	m_strLiteral = strLiteral;
 	m_chPrompt = chPrompt;
-	m_bUseMask = !m_strMask.IsEmpty();
-
 	Refresh(FALSE);
 }
 
@@ -1145,20 +1007,7 @@ void CXTPPropertyGridItem::SetMaskedText(LPCTSTR lpszMaskedText)
 
 void CXTPPropertyGridItem::SetDescription(LPCTSTR lpszDescription)
 {
-	CString strDescription = lpszDescription;
-
-	if (m_strDescription == strDescription)
-		return;
-
-	XTPMarkupReleaseElement(m_pMarkupDescription);
-
-	m_strDescription = strDescription;
-
-	if (m_pGrid && m_pGrid->m_pGrid && m_pGrid->m_pGrid->GetMarkupContext())
-	{
-		m_pMarkupDescription = XTPMarkupParseText(m_pGrid->m_pGrid->GetMarkupContext(), m_strDescription);
-	}
-
+	m_strDescription = lpszDescription;
 	if (IsSelected()) GetGrid()->GetParent()->Invalidate(FALSE);
 }
 
@@ -1217,21 +1066,6 @@ CXTPPropertyGridInplaceSpinButton* CXTPPropertyGridItem::AddSpinButton()
 	m_pInplaceControls->Add(pSpinButton);
 
 	return pSpinButton;
-}
-
-void CXTPPropertyGridItem::OnCaptionChanged()
-{
-	XTPMarkupReleaseElement(m_pMarkupCaption);
-
-	if (!m_pGrid || !m_pGrid->m_pGrid)
-		return;
-
-	if (m_pGrid->m_pGrid->GetMarkupContext())
-	{
-		m_pMarkupCaption = XTPMarkupParseText(m_pGrid->m_pGrid->GetMarkupContext(), GetCaption());
-	}
-
-	RedrawItem();
 }
 
 
@@ -1410,7 +1244,9 @@ void CXTPPropertyGridItems::Clear()
 		pGrid->m_nLockUpdate--;
 		if (pGrid->m_nLockUpdate == 0)
 			pGrid->Refresh();
+
 	}
+
 }
 
 CXTPPropertyGridItem* CXTPPropertyGridItems::GetAt(int nIndex) const
@@ -1510,7 +1346,6 @@ CXTPPropertyGridItemConstraint::CXTPPropertyGridItemConstraint()
 	m_dwData = 0;
 	m_nImage = -1;
 	m_pItem = 0;
-	m_bEnabled = TRUE;
 }
 
 CXTPImageManagerIcon* CXTPPropertyGridItemConstraint::GetImage() const

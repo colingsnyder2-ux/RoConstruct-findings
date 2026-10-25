@@ -1,18 +1,17 @@
-// from server: 43% by atomic.potato
-struct S
-{
-    static void f(void *, unsigned int);
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_004f9280 {
+    T4_004f9280();
+    virtual void f_004f9280();
+    char m_a;
+    char m_b;
 };
-
-void S::f(void *a, unsigned int b)
+T4_004f9280::T4_004f9280() : m_a(0), m_b(0) {}
+extern "C" void* create_other_004f9280(void*, void*, int);
+void* create_004f9280(void* unused, T4_004f9280* out, int type)
 {
-    if (b != 4)
-    {
-        S::f(a, b);
-        return;
-    }
-
-    *(unsigned int *)a = 0x00c2b3a8;
-    ((unsigned char *)a)[4] = 0;
-    ((unsigned char *)a)[5] = 0;
+    if (type != 4)
+        return create_other_004f9280(unused, out, type);
+    out->T4_004f9280::T4_004f9280();
+    return out;
 }

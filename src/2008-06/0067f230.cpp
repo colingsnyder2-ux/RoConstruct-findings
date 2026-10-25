@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // from server: 99% by Espeon
 // from server: 84% by king_originala
 // roc-cl: 21022
@@ -118,7 +119,7 @@ void RbxSky::drawMoonAndStars(G3D::RenderDevice*,const G3D::LightingParameters&i
   visible=true;
   MeshPtr mesh(MeshManager::getSingleton().getByName("starsMesh"));
   if(!mesh.isNull()){
-   if(input.skyAmbient.r>.3f&&input.skyAmbient.r<.7f){
+   if(0.3f<input.skyAmbient.r&&input.skyAmbient.r<.7f){
     for(int i=0;i<3;++i){MaterialManager&manager=MaterialManager::getSingleton();MaterialPtr material(manager.getByName(mesh->getSubMesh((unsigned short)i)->getMaterialName()));material->setSceneBlending(SBF_ONE_MINUS_DEST_COLOUR,SBF_ZERO);}
    }else{
     for(int i=0;i<3;++i){MaterialManager&manager=MaterialManager::getSingleton();MaterialPtr material(manager.getByName(mesh->getSubMesh((unsigned short)i)->getMaterialName()));material->setSceneBlending(SBT_REPLACE);}

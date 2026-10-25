@@ -1,12 +1,10 @@
-// from server: 80% by atomic.potato
-struct S
-{
-    char padding[168];
-    int value;
-    void f(int*);
+// from server: 100% by tester
+// roc-flags: /O2 /GS- /EHsc /MD
+struct seg_004c0000 {
+    int get_19c(int *out);
 };
 
-void S::f(int* out)
-{
-    *out = value;
+int seg_004c0000::get_19c(int *out) {
+    *out = *(int *)((char *)this + 0xa8);
+    return (int)out;
 }

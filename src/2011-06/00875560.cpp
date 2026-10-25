@@ -1,14 +1,14 @@
-// from server: 36% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Controls/XTGlobal.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/Controls/XTGlobal.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTGlobal.cpp : implementation of the CXTAuxData struct.
 //
 // This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -87,12 +87,12 @@ void CXTLogFont::operator=(LOGFONT& logfont)
 
 CXTAuxDataTheme::operator BOOL()
 {
-	return XTThemeManager()->GetTheme() == xtThemeOffice2000 ? FALSE : TRUE;
+	return XTThemeManager()->GetTheme() == xtThemeDefault ? FALSE : TRUE;
 }
 
 BOOL CXTAuxDataTheme::operator=(BOOL bXPMode)
 {
-	XTThemeManager()->SetTheme(bXPMode ? xtThemeOfficeXP : xtThemeOffice2000);
+	XTThemeManager()->SetTheme(bXPMode ? xtThemeOfficeXP : xtThemeDefault);
 	return bXPMode;
 }
 
@@ -257,7 +257,6 @@ BOOL CXTAuxData::LoadSysFonts(LPCTSTR strHorzFaceName/*= _T("")*/, LPCTSTR strVe
 
 	LOGFONT lfMenuFont;
 	MEMCPY_S(&lfMenuFont, &ncm.lfMenuFont, sizeof(LOGFONT));
-	lfMenuFont.lfCharSet = XTPResourceManager()->GetFontCharset();
 
 	if (strHorzFaceName != NULL)
 	{
@@ -317,7 +316,8 @@ BOOL CXTAuxData::LoadSysFonts(LPCTSTR strHorzFaceName/*= _T("")*/, LPCTSTR strVe
 
 	// create the icon title fonts.
 	CXTLogFont lfIconTitleFont;
-	VERIFY(CXTPDrawHelpers::GetIconLogFont(&lfIconTitleFont));
+	VERIFY(::SystemParametersInfo(SPI_GETICONTITLELOGFONT,
+		sizeof(LOGFONT), &lfIconTitleFont, 0));
 
 	if (!CreateSysFont(lfIconTitleFont, fontIconTitle))
 		return FALSE;

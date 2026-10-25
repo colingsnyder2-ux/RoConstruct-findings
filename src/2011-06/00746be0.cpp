@@ -1,401 +1,208 @@
-// from server: 26% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/DataModel.cpp
+// from server: 44% by atomic.potato
+// roc 2011-06 00746be0  unit: RBX::VInstance::?$NonFactoryProduct  size: 372 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 00746be0
+//
+// 00746be0  56                   push esi
+// 00746be1  57                   push edi
+// 00746be2  8b7c240c             mov edi, dword ptr [esp + 0xc]
+// 00746be6  8bf1                 mov esi, ecx
+// 00746be8  3bf7                 cmp esi, edi
+// 00746bea  0f845d010000         je 0x746d4d
+// 00746bf0  8b4704               mov eax, dword ptr [edi + 4]
+// 00746bf3  8b4f08               mov ecx, dword ptr [edi + 8]
+// 00746bf6  2bc8                 sub ecx, eax
+// 00746bf8  b8398ee338           mov eax, 0x38e38e39
+// 00746bfd  f7e9                 imul ecx
+// 00746bff  55                   push ebp
+// 00746c00  c1fa03               sar edx, 3
+// 00746c03  8bea                 mov ebp, edx
+// 00746c05  c1ed1f               shr ebp, 0x1f
+// 00746c08  03ea                 add ebp, edx
+// 00746c0a  7538                 jne 0x746c44
+// 00746c0c  8b4608               mov eax, dword ptr [esi + 8]
+// 00746c0f  8b4e04               mov ecx, dword ptr [esi + 4]
+// 00746c12  3bc8                 cmp ecx, eax
+// 00746c14  0f8432010000         je 0x746d4c
+// 00746c1a  c644241000           mov byte ptr [esp + 0x10], 0
+// 00746c1f  8b542410             mov edx, dword ptr [esp + 0x10]
+// 00746c23  52                   push edx
+// 00746c24  8b542414             mov edx, dword ptr [esp + 0x14]
+// 00746c28  52                   push edx
+// 00746c29  8b542418             mov edx, dword ptr [esp + 0x18]
+// 00746c2d  52                   push edx
+// 00746c2e  51                   push ecx
+// 00746c2f  50                   push eax
+// 00746c30  50                   push eax
+// 00746c31  e86af2ffff           call 0x745ea0
+// 00746c36  83c418               add esp, 0x18
+// 00746c39  5d                   pop ebp
+// 00746c3a  894608               mov dword ptr [esi + 8], eax
+// 00746c3d  5f                   pop edi
+// 00746c3e  8bc6                 mov eax, esi
+// 00746c40  5e                   pop esi
+// 00746c41  c20400               ret 4
+// 00746c44  8b4e08               mov ecx, dword ptr [esi + 8]
+// 00746c47  53                   push ebx
+// 00746c48  8b5e04               mov ebx, dword ptr [esi + 4]
+// 00746c4b  2bcb                 sub ecx, ebx
+// 00746c4d  b8398ee338           mov eax, 0x38e38e39
+// 00746c52  f7e9                 imul ecx
+// 00746c54  c1fa03               sar edx, 3
+// 00746c57  8bca                 mov ecx, edx
+// 00746c59  c1e91f               shr ecx, 0x1f
+// 00746c5c  03ca                 add ecx, edx
+// 00746c5e  3be9                 cmp ebp, ecx
+// 00746c60  7751                 ja 0x746cb3
+// 00746c62  c644241400           mov byte ptr [esp + 0x14], 0
+// 00746c67  8b442414             mov eax, dword ptr [esp + 0x14]
+// 00746c6b  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 00746c6f  8b542414             mov edx, dword ptr [esp + 0x14]
+// 00746c73  50                   push eax
+// 00746c74  8b4708               mov eax, dword ptr [edi + 8]
+// 00746c77  51                   push ecx
+// 00746c78  52                   push edx
+// 00746c79  53                   push ebx
+// 00746c7a  50                   push eax
+// 00746c7b  8b4704               mov eax, dword ptr [edi + 4]
+// 00746c7e  50                   push eax
+// 00746c7f  e81cf2ffff           call 0x745ea0
+// 00746c84  8b4f08               mov ecx, dword ptr [edi + 8]
+// 00746c87  2b4f04               sub ecx, dword ptr [edi + 4]
+// 00746c8a  b8398ee338           mov eax, 0x38e38e39
+// 00746c8f  f7e9                 imul ecx
+// 00746c91  8b4e04               mov ecx, dword ptr [esi + 4]
+// 00746c94  c1fa03               sar edx, 3
+// 00746c97  83c418               add esp, 0x18
+// 00746c9a  8bc2                 mov eax, edx
+// 00746c9c  c1e81f               shr eax, 0x1f
+// 00746c9f  03c2                 add eax, edx
+// 00746ca1  5b                   pop ebx
+// 00746ca2  8d04c0               lea eax, [eax + eax*8]
+// 00746ca5  5d                   pop ebp
+// 00746ca6  8d1481               lea edx, [ecx + eax*4]
+// 00746ca9  5f                   pop edi
+// 00746caa  895608               mov dword ptr [esi + 8], edx
+// 00746cad  8bc6                 mov eax, esi
+// 00746caf  5e                   pop esi
+// 00746cb0  c20400               ret 4
+// 00746cb3  85db                 test ebx, ebx
+// 00746cb5  7504                 jne 0x746cbb
+// 00746cb7  33c0                 xor eax, eax
+// 00746cb9  eb16                 jmp 0x746cd1
+// 00746cbb  8b560c               mov edx, dword ptr [esi + 0xc]
+// 00746cbe  2bd3                 sub edx, ebx
+// 00746cc0  b8398ee338           mov eax, 0x38e38e39
+// 00746cc5  f7ea                 imul edx
+// 00746cc7  c1fa03               sar edx, 3
+// 00746cca  8bc2                 mov eax, edx
+// 00746ccc  c1e81f               shr eax, 0x1f
+// 00746ccf  03c2                 add eax, edx
+// 00746cd1  3be8                 cmp ebp, eax
+// 00746cd3  7730                 ja 0x746d05
+// 00746cd5  8b4704               mov eax, dword ptr [edi + 4]
+// 00746cd8  8d0cc9               lea ecx, [ecx + ecx*8]
+// 00746cdb  8d2c88               lea ebp, [eax + ecx*4]
+// 00746cde  53                   push ebx
+// 00746cdf  55                   push ebp
+// 00746ce0  50                   push eax
+// 00746ce1  e82af5ffff           call 0x746210
+// 00746ce6  8b5608               mov edx, dword ptr [esi + 8]
+// 00746ce9  8b4708               mov eax, dword ptr [edi + 8]
+// 00746cec  83c40c               add esp, 0xc
+// 00746cef  52                   push edx
+// 00746cf0  50                   push eax
+// 00746cf1  55                   push ebp
+// 00746cf2  8bce                 mov ecx, esi
+// 00746cf4  e837faffff           call 0x746730
+// 00746cf9  5b                   pop ebx
+// 00746cfa  5d                   pop ebp
+// 00746cfb  894608               mov dword ptr [esi + 8], eax
+// 00746cfe  5f                   pop edi
+// 00746cff  8bc6                 mov eax, esi
+// 00746d01  5e                   pop esi
+// 00746d02  c20400               ret 4
+// 00746d05  85db                 test ebx, ebx
+// 00746d07  7409                 je 0x746d12
+// 00746d09  53                   push ebx
+// 00746d0a  e849330c00           call 0x80a058
+// 00746d0f  83c404               add esp, 4
+// 00746d12  8b4f08               mov ecx, dword ptr [edi + 8]
+// 00746d15  2b4f04               sub ecx, dword ptr [edi + 4]
+// 00746d18  b8398ee338           mov eax, 0x38e38e39
+// 00746d1d  f7e9                 imul ecx
+// 00746d1f  c1fa03               sar edx, 3
+// 00746d22  8bc2                 mov eax, edx
+// 00746d24  c1e81f               shr eax, 0x1f
+// 00746d27  03c2                 add eax, edx
+// 00746d29  50                   push eax
+// 00746d2a  8bce                 mov ecx, esi
+// 00746d2c  e85ff4ffff           call 0x746190
+// 00746d31  84c0                 test al, al
+// 00746d33  7416                 je 0x746d4b
+// 00746d35  8b4e04               mov ecx, dword ptr [esi + 4]
+// 00746d38  8b5708               mov edx, dword ptr [edi + 8]
+// 00746d3b  8b4704               mov eax, dword ptr [edi + 4]
+// 00746d3e  51                   push ecx
+// 00746d3f  52                   push edx
+// 00746d40  50                   push eax
+// 00746d41  8bce                 mov ecx, esi
+// 00746d43  e8e8f9ffff           call 0x746730
+// 00746d48  894608               mov dword ptr [esi + 8], eax
+// 00746d4b  5b                   pop ebx
+// 00746d4c  5d                   pop ebp
+// 00746d4d  5f                   pop edi
+// 00746d4e  8bc6                 mov eax, esi
+// 00746d50  5e                   pop esi
+// 00746d51  c20400               ret 4
 
-// Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Lighting.h"
-#include "v8datamodel/DataModel.h"
-#include "v8datamodel/TimeState.h"
-#include "v8datamodel/Workspace.h"
-#include "v8datamodel/Hopper.h"
-#include "v8datamodel/Teams.h"
-#include "v8datamodel/JointsService.h"
-#include "v8datamodel/LocalBackpack.h"
-#include "script/ScriptContext.h"
-#include "gui/GUI.h"
-#include "util/Log.h"
-#include "util/IMetric.h"
-#include "util/standardout.h"
-#include "util/Http.h"
-#include "util/Sound.h"
+struct Elem {
+    char pad[36];
+};
 
-namespace RBX
-{
-	static Reflection::BoundFuncDesc<DataModel, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(ContentId), 1> getContentFunctionOld(&DataModel::get, "get", "url", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<DataModel, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(ContentId), 1> getContentFunction(&DataModel::get, "GetObjects", "url", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(ContentId), 1> loadFunction(&DataModel::loadContent, "Load", "url", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(ContentId), 1> saveFunction(&DataModel::save, "Save", "url", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, std::string(std::string, bool), 2> httpGetFunction(&DataModel::httpGet, "HttpGet", "url", "synchronous", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<DataModel, std::string(std::string, std::string, bool), 3> httpPostFunction(&DataModel::httpPost, "HttpPost", "url", "data", "synchronous", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(void), 0> sanitizeFunction(&DataModel::clearContents, "ClearContent", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(void), 0> closeFunction(&DataModel::close, "Close", Reflection::FunctionDescriptor::NeedTrustedCaller);
+struct Vec {
+    Elem* begin;
+    Elem* end;
+    Elem* cap;
+};
 
-	static Reflection::BoundFuncDesc<DataModel, void(std::string), 1> func_SetUIMessage(&DataModel::setUiMessage, "SetMessage", "message", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(void), 0> func_ClearUIMessage(&DataModel::clearUiMessage, "ClearMessage", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(void), 0> func_SetUIMessageBrickCount(&DataModel::setUiMessageBrickCount, "SetMessageBrickCount", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	
-	static Reflection::SignalDesc<DataModel, void(void)> event_Closing("Close");
+struct S {
+    Vec v;
+    S* assign(S* other);
+};
 
-#pragma warning (push)
-#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
+extern "C" void __cdecl free_(void*);
+extern "C" Elem* __cdecl alloc_fill(Elem*, Elem*, Elem*, int, int, int);
+extern "C" Elem* __cdecl copy_range(Elem*, Elem*, Elem*);
+extern "C" bool __cdecl reserve_check(S*, int);
+extern "C" Elem* __cdecl move_range(S*, Elem*, Elem*, Elem*);
 
-	DataModel::DataModel()
-		: VerbContainer(NULL),
-		  workspace(Creatable::create<Workspace>(this)),
-		  guiRoot(Creatable::create<GuiRoot>()),
-		  guiHooks(Creatable::create<GuiRoot>()),
-		  timeState(new TimeState),
-		  mutex(new boost::recursive_mutex),
-		  guiTarget(NULL),
-		  forceArrowCursor(true),
-		  dirty(false),
-		  drawId(0)
-	{
-		setName("Level");
-	}
-
-#pragma warning (pop)
-
-	DataModel::~DataModel()
-	{
-		Notifier<RunService, RunTransition>::disconnect(runService, this);
-		StandardOut::singleton()->print(MESSAGE_INFO, "~DataModel");
-	}
-
-	bool DataModel::askAddChild(const Instance* instance) const
-	{
-		return dynamic_cast<const Service*>(instance) != NULL;
-	}
-
-	boost::shared_ptr<DataModel> DataModel::createDataModel()
-	{
-		ContentProvider::singleton().clearContentCache();
-		
-		boost::shared_ptr<DataModel> dataModel = Creatable::create<DataModel>();
-
-		{
-			Lock lock(dataModel);
-			dataModel->initializeContents();
-		}
-
-		return dataModel;
-	}
-	
-	void DataModel::onChildAdded(Instance* child)
-	{
-		ServiceProvider::onChildAdded(child);
-
-		if (child->getClassName() == "NetworkClient")
-		{
-			Verb* lockPlayMode = getVerb("LockPlayMode");
-			if (lockPlayMode)
-				lockPlayMode->doIt(NULL);
-
-			workspace->setNullMouseCommand();
-		}
-	}
-
-	void DataModel::onEvent(const RunService* source, RunTransition event)
-	{
-		switch (event.newState)
-		{
-		case RS_NORMAL:
-			if (event.oldState == RS_RUNNING)
-				workspace->reset();
-
-			timeState->clear();
-			break;
-		case RS_RUNNING:
-			workspace->start();
-			break;
-		case RS_PAUSED:
-			workspace->stop();
-			break;
-		}
-	}
-
-	std::string DataModel::doHttpGet(std::string url)
-	{
-		std::string result;
-		Http(url.c_str()).get(result);
-
-		return result;
-	}
-
-	std::string DataModel::doHttpPost(std::string url, std::string data)
-	{
-		std::string result;
-		Http(url).post(std::istringstream(data), true, result);
-
-		return result;
-	}
-
-	void DataModel::close()
-	{
-		Verb* exitVerb = getVerb("Exit");
-		if (!exitVerb)
-			throw std::runtime_error("Couldn\'t find Exit Verb");
-
-		exitVerb->doIt(NULL);
-	}
-
-	std::string DataModel::httpGet(std::string url, bool synchronous)
-	{
-		if (synchronous)
-		{
-			return doHttpGet(url);
-		}
-		else
-		{
-			if (url.size() > 0)
-			{
-				boost::function0<void> f = boost::bind(&DataModel::doHttpGet, url);
-				boost::function0<void> g = boost::bind(&StandardOut::print_exception, f, MESSAGE_ERROR, false);
-
-				boost::thread(background_function(g, "rbx_httpGet"));
-			}
-
-			return "";
-		}
-	}
-
-	std::string DataModel::httpPost(std::string url, std::string data, bool synchronous)
-	{
-		if (synchronous)
-		{
-			return doHttpPost(url, data);
-		}
-		else
-		{
-			boost::function0<void> f = boost::bind(&DataModel::doHttpPost, url, data);
-			boost::function0<void> g = boost::bind(&StandardOut::print_exception, f, MESSAGE_ERROR, false);
-
-			boost::thread(background_function(g, "rbx_httpPost"));
-
-			return "";
-		}
-	}
-
-	void DataModel::clearContents()
-	{
-		workspace->setMouseCommand(NULL);
-		workspace->removeAllChildren();
-		workspace->setCamera(NULL);
-		
-		starterPackService->removeAllChildren();
-
-		Teams* teams = ServiceProvider::find<Teams>(this);
-		if (teams)
-			teams->removeAllChildren();
-
-		Lighting* lighting = ServiceProvider::find<Lighting>(this);
-		if (lighting)
-			lighting->removeAllChildren();
-
-		ScriptContext* script = ServiceProvider::find<ScriptContext>(this);
-		if (script)
-		{
-			script->closeState();
-			ScriptContext::propScriptsDisabled.setValue(script, false);
-		}
-	}
-
-	void DataModel::loadContent(ContentId contentId)
-	{
-		std::auto_ptr<std::istream> stream = ContentProvider::singleton().getContent(contentId);
-		StandardOut::singleton()->print(MESSAGE_INFO, "DataModel Loading %s", contentId.c_str());
-
-		SerializerV2 serializer;
-		serializer.load(*stream, this);
-
-		workspace->joinAllHack();
-	}
-
-	void DataModel::save(ContentId contentId)
-	{
-		std::stringstream stream;
-
-		{
-			boost::scoped_ptr<XmlElement> root(SerializerV2::newRootElement());
-			writeChildren(root.get());
-
-			TextXmlWriterWithEmbeddedContent machine(stream);
-			machine.serialize(root.get());
-
-			stream.flush();
-		}
-		
-		std::string response;
-		Http(contentId.toString()).post(stream, true, response);
-	}
-
-	boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> DataModel::get(ContentId contentId)
-	{
-		std::auto_ptr<std::istream> stream = ContentProvider::singleton().getContent(contentId);
-
-		TextXmlParser machine(stream->rdbuf());
-		std::auto_ptr<XmlElement> root = machine.parse();
-
-		boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> result(new std::vector<boost::shared_ptr<Instance>>);
-
-		SerializerV2 serializer;
-		serializer.loadInstances(root.get(), *result);
-
-		return result;
-	}
-
-	static std::string report(const G3D::Stopwatch& timer)
-	{
-		if (timer.smoothElapsedTime() > 0.0f)
-		{
-			std::string t = Log::formatTime(timer.smoothElapsedTime());
-			char buffer[256];
-			sprintf(buffer, "%s (%.3gfps)", t.c_str(), 1.0f / timer.smoothElapsedTime());
-
-			return std::string(buffer);
-		}
-		else
-		{
-			return Log::formatTime(timer.smoothElapsedTime());
-		}
-	}
-
-	std::string DataModel::evaluate(const std::string& valueName) const
-	{
-		World* world = workspace->getWorld();
-
-		if (valueName == "timer")
-		{
-			float time = timeState->totalVirtualTime;
-			return StringConverter<float>::convertToString(time);
-		}
-		else if (valueName == "FPS")
-		{
-			return G3D::format("%.3g", timeState->fpsStopwatch.smoothFPS());
-		}
-		else if (valueName == "simDC")
-		{
-			return report(timeState->simulationStopwatch);
-		}
-		else if (valueName == "drawId")
-		{
-			return StringConverter<int>::convertToString(drawId);
-		}
-		else if (valueName == "graphicsMode")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "culling")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "cullingPercent")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "antiAliasing")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "bevels")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "videoMemory")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "GfxTime")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "numPrimitives")
-		{
-			return StringConverter<int>::convertToString(world->getPrimitives().size());
-		}
-		else if (valueName == "numJoints")
-		{
-			return StringConverter<int>::convertToString(world->getNumJoints());
-		}
-		else if (valueName == "numContacts")
-		{
-			return StringConverter<int>::convertToString(world->getNumContacts());
-		}
-		else if (valueName == "numContactsInCollisionStage")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_CONTACTSTAGE_CONTACTS));
-		}
-		else if (valueName == "numSteppingContacts")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_STEPPING_CONTACTS));
-		}
-		else if (valueName == "numTouchingContacts")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_TOUCHING_CONTACTS));
-		}
-		else if (valueName == "maxTreeDepth")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::MAX_TREE_DEPTH));
-		}
-		else if (valueName == "contactPairHitRatio")
-		{
-			return StringConverter<float>::convertToString(BlockBlockContact::contactPairHitRatio());
-		}
-		else if (valueName == "numLinkCalls")
-		{
-			return StringConverter<int>::convertToString(world->getNumLinkCalls());
-		}
-		else if (valueName == "numHashNodes")
-		{
-			return StringConverter<int>::convertToString(world->getNumHashNodes());
-		}
-		else if (valueName == "maxBucketSize")
-		{
-			return StringConverter<int>::convertToString(world->getMaxBucketSize());
-		}
-		else if (valueName == "numBodies")
-		{
-			return StringConverter<int>::convertToString(world->getNumBodies());
-		}
-		else if (valueName == "numConstraints")
-		{
-			return StringConverter<int>::convertToString(world->getNumConstraints());
-		}
-		else if (valueName == "numPoints")
-		{
-			return StringConverter<int>::convertToString(world->getNumPoints());
-		}
-		else if (valueName == "energyBody")
-		{
-			return StringConverter<float>::convertToString(world->getKernel().bodyKineticEnergy());
-		}
-		else if (valueName == "energyConnector")
-		{
-			return StringConverter<float>::convertToString(world->getKernel().connectorSpringEnergy());
-		}
-		else if (valueName == "energyTotal")
-		{
-			return StringConverter<float>::convertToString(world->getKernel().totalKineticEnergy());
-		}
-		else
-		{
-			return "?";
-		}
-	}
-
-	void DataModel::Lock::doLock(const DataModel* dataModel)
-	{
-		if (dataModel)
-		{
-			mutex = dataModel->mutex;
-			lock = new boost::recursive_mutex::scoped_lock(*mutex);
-		}
-	}
-
-	DataModel::Lock::~Lock()
-	{
-		delete lock;
-	}
+S* S::assign(S* other) {
+    if (this == other) return this;
+    int n = (int)((other->v.end - other->v.begin) / 36);
+    if (n == 0) {
+        if (this->v.begin != this->v.end) {
+            this->v.end = alloc_fill(this->v.begin, this->v.end, this->v.end, 0, 0, 0);
+        }
+        return this;
+    }
+    int cur = (int)((this->v.end - this->v.begin) / 36);
+    if ((unsigned)n <= (unsigned)cur) {
+        Elem* src = other->v.begin;
+        Elem* dst = this->v.begin;
+        alloc_fill(dst, dst, src, 0, 0, 0);
+        this->v.end = this->v.begin + n * 36;
+        return this;
+    }
+    int cap = this->v.begin ? (int)((this->v.cap - this->v.begin) / 36) : 0;
+    if ((unsigned)n <= (unsigned)cap) {
+        Elem* mid = other->v.begin + cur * 36;
+        copy_range(this->v.begin, other->v.begin, mid);
+        this->v.end = move_range(this, mid, other->v.end, this->v.end);
+        return this;
+    }
+    if (this->v.begin) free_(this->v.begin);
+    if (reserve_check(this, n)) {
+        this->v.end = move_range(this, other->v.begin, other->v.end, this->v.begin);
+    }
+    return this;
 }

@@ -1,26 +1,4 @@
-// from server: 96% by atomic.potato
-typedef void (__cdecl *FunctionA)(int);
-typedef void (__cdecl *FunctionB)(int *);
-
-extern "C" void __cdecl CallA(int);
-extern "C" void __cdecl CallB(int *);
-
-struct S
-{
-    int reserved;
-    int reserved2;
-    int reserved3;
-    int *value;
-
-    void f();
-};
-
-void S::f()
-{
-    int *p = value;
-    if (p)
-    {
-        CallA(*p);
-        CallB(p);
-    }
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /MD
+extern "C" void __stdcall first(int); extern "C" void second(int*);
+struct S{char pad[12]; int* value; void f();}; void S::f(){int* p=value;if(p){first(*p);second(p);}}

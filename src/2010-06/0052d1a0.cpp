@@ -1,10 +1,4 @@
-// from server: 58% by atomic.potato
-struct S
-{
-    void f(float value);
-};
-
-void S::f(float value)
-{
-    *(float*)((char*)this + 0x10) = value;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /arch:SSE2
+struct S{char pad[0x10]; void f(float v);};
+void S::f(float v){*(float*)((char*)this+0x10)=v;}

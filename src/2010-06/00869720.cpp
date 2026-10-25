@@ -1,8 +1,8 @@
-// from server: 99% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/DockingPane/XTPDockingPaneSplitterContainer.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/DockingPane/XTPDockingPaneSplitterContainer.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPDockingPaneSplitterContainer.cpp : implementation of the CXTPDockingPaneSplitterContainer class.

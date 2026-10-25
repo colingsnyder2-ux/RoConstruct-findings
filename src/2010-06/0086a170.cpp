@@ -1,14 +1,14 @@
-// from server: 26% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/DockingPane/XTPDockingPanePaintManager.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/DockingPane/XTPDockingPanePaintManager.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPDockingPanePaintManager.cpp : implementation of the CXTPDockingPanePaintManager class.
 //
 // This file is a part of the XTREME DOCKINGPANE MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -32,8 +32,6 @@
 #include "Common/XTPColorManager.h"
 #include "Common/XTPDrawHelpers.h"
 #include "Common/XTPOffice2007Image.h"
-#include "Common/XTPResourceManager.h"
-
 #include "TabManager/XTPTabManager.h"
 #include "TabManager/XTPTabPaintManager.h"
 
@@ -44,7 +42,6 @@
 #include "XTPDockingPane.h"
 #include "XTPDockingPaneMiniWnd.h"
 #include "XTPDockingPaneSplitterContainer.h"
-#include "XTPDockingPaneSidePanel.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -296,7 +293,6 @@ CXTPDockingPanePaintManager::CXTPDockingPanePaintManager()
 
 	m_bDrawSingleTab = FALSE;
 	m_nSplitterSize = 4;
-	m_nSplitterIndent = 0;
 	m_bDrawCaptionIcon = FALSE;
 
 	m_rcCaptionMargin.SetRect(0, 2, 0, 1);
@@ -434,6 +430,7 @@ void CXTPDockingPanePaintManager::SetCaptionFontIndirect(LOGFONT* pLogFont, BOOL
 	CWindowDC dc(CWnd::GetDesktopWindow());
 	CXTPFontDC font(&dc, &m_fntTitle);
 	m_nTitleHeight = max(13, dc.GetTextExtent(_T(" "), 1).cy) + m_nCaptionFontGap;
+
 }
 
 void CXTPDockingPanePaintManager::RefreshMetrics()
@@ -448,7 +445,6 @@ void CXTPDockingPanePaintManager::RefreshMetrics()
 	m_clrSplitterGripper.SetStandardValue(m_arrColor[COLOR_3DSHADOW]);
 	m_clrSplitter.SetStandardValue(m_arrColor[COLOR_3DFACE]);
 	m_clrSplitterGradient.SetStandardValue(GetSysColor(COLOR_3DFACE), XTPColorManager()->LightColor(GetSysColor(COLOR_3DFACE), GetSysColor(COLOR_WINDOW), 0xcd));
-	m_clrDisabledCaptionText.SetStandardValue(m_arrColor[COLOR_GRAYTEXT]);
 
 	if (m_bUseStandardFont)
 	{
@@ -459,7 +455,6 @@ void CXTPDockingPanePaintManager::RefreshMetrics()
 		VERIFY(::SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, 0));
 		if (!m_bUseBoldCaptionFont)
 			ncm.lfSmCaptionFont.lfWeight = FW_NORMAL;
-		ncm.lfSmCaptionFont.lfCharSet = XTPResourceManager()->GetFontCharset();
 
 		SetCaptionFontIndirect(&ncm.lfSmCaptionFont, TRUE);
 	}
@@ -511,9 +506,6 @@ CRect CXTPDockingPanePaintManager::GetCaptionGripperRect(const CXTPDockingPaneTa
 
 void CXTPDockingPanePaintManager::DrawCaptionButtons(CDC* pDC, CXTPDockingPaneCaptionButtons* pButtons, CRect& rcCaption, COLORREF clr, int nButtonSize, int nButtonGap, BOOL bVertical)
 {
-	if (!pButtons)
-		return;
-
 	CRect rcButton(
 		bVertical ? CPoint(rcCaption.CenterPoint().x - nButtonSize / 2, rcCaption.bottom - nButtonSize) :
 			CPoint(rcCaption.right - nButtonSize , rcCaption.CenterPoint().y - nButtonSize / 2),
@@ -528,7 +520,7 @@ void CXTPDockingPanePaintManager::DrawCaptionButtons(CDC* pDC, CXTPDockingPaneCa
 			CXTPDockingPane* pPane = GetSelectedPane(pButton->GetPane());
 
 			if (pPane && ((pPane->GetEnabled() & xtpPaneEnableActions) == 0))
-				clr = m_clrDisabledCaptionText;
+				clr = GetXtremeColor(COLOR_GRAYTEXT);
 		}
 
 		if (pButton->IsVisible())
@@ -717,46 +709,26 @@ void CXTPDockingPanePaintManager::DrawCaptionButton(CDC* pDC, CXTPDockingPaneCap
 
 
 
-void CXTPDockingPanePaintManager::DrawPane(CDC* pDC, CXTPDockingPaneTabbedContainer* pPane, CRect rc)
+void CXTPDockingPanePaintManager::DrawPane(CDC& dc, CXTPDockingPaneTabbedContainer* pPane, CRect rc)
 {
-	pDC->FillSolidRect(rc, GetXtremeColor(COLOR_3DFACE));
-	pDC->SetBkMode(TRANSPARENT);
+	dc.FillSolidRect(rc, GetXtremeColor(COLOR_3DFACE));
+	dc.SetBkMode(TRANSPARENT);
 
 	CRect rcCaption(rc);
 
 	if (pPane->IsTabsVisible())
 	{
 		AdjustCaptionRect(pPane, rc);
-		m_pTabPaintManager->DrawTabControl(pPane, pDC, rc);
+		m_pTabPaintManager->DrawTabControl(pPane, &dc, rc);
 	}
 
 	if (pPane->IsTitleVisible())
 	{
-		DrawCaption(pDC, pPane, rcCaption);
+		DrawCaption(dc, pPane, rcCaption);
 	}
 
 }
 
-void CXTPDockingPanePaintManager::GetCaptionRect(const CXTPDockingPaneTabbedContainer* pPane, CRect& rc)
-{
-	if (pPane->IsTitleVisible())
-	{
-		GetClientRect(pPane->GetSafeHwnd(), rc);
-
-		if (pPane->IsCaptionVertical())
-		{
-			rc.right = rc.left + m_nTitleHeight + m_rcCaptionMargin.top + m_rcCaptionMargin.bottom;
-		}
-		else
-		{
-			rc.bottom = rc.top + m_nTitleHeight + m_rcCaptionMargin.top + m_rcCaptionMargin.bottom;
-		}
-	}
-	else
-	{
-		rc.SetRectEmpty();
-	}
-}
 
 void CXTPDockingPanePaintManager::AdjustCaptionRect(const CXTPDockingPaneTabbedContainer* pPane, CRect& rc)
 {
@@ -794,59 +766,25 @@ void CXTPDockingPanePaintManager::AdjustClientRect(CXTPDockingPaneTabbedContaine
 	}
 }
 
-void CXTPDockingPanePaintManager::AdjustClientRect(CXTPDockingPaneSidePanel* pPane, CRect& rect)
-{
-	rect.DeflateRect(3, 3);
-	AdjustCaptionRect(pPane, rect);
-}
-
-void CXTPDockingPanePaintManager::AdjustCaptionRect(const CXTPDockingPaneSidePanel* pPane, CRect& rect)
-{
-	int nTitleFont = GetCaptionHeight();
-	XTPDockingPaneDirection direction = pPane->GetDirection();
-
-	if (direction == xtpPaneDockLeft) rect.left += nTitleFont;
-	else if (direction == xtpPaneDockRight) rect.right -= nTitleFont;
-	else if (direction == xtpPaneDockTop) rect.top += nTitleFont;
-	else if (direction == xtpPaneDockBottom) rect.bottom -= nTitleFont;
-}
-
-CRect CXTPDockingPanePaintManager::GetPaneCaptionRect(const CXTPDockingPaneSidePanel* pPane)
-{
-	CXTPClientRect rect(pPane);
-	rect.DeflateRect(1, 1);
-
-	int nTitleFont = GetCaptionHeight();
-	XTPDockingPaneDirection direction = pPane->GetDirection();
-
-	if (direction == xtpPaneDockLeft) rect.right = rect.left + nTitleFont;
-	else if (direction == xtpPaneDockRight) rect.left = rect.right - nTitleFont;
-	else if (direction == xtpPaneDockTop) rect.bottom = rect.top + nTitleFont;
-	else if (direction == xtpPaneDockBottom) rect.top = rect.bottom - nTitleFont;
-
-	return rect;
-}
-
-
-void CXTPDockingPanePaintManager::DrawSplitter(CDC* pDC, CXTPDockingPaneSplitterWnd* pSplitter)
+void CXTPDockingPanePaintManager::DrawSplitter(CDC& dc, CXTPDockingPaneSplitterWnd* pSplitter)
 {
 	CXTPClientRect rc((CWnd*)pSplitter);
 
 	if (m_dwSplitterStyle & xtpPaneSplitter3D)
 	{
-		pDC->FillSolidRect(rc, m_clrSplitter);
+		dc.FillSolidRect(rc, m_clrSplitter);
 
 		if (pSplitter->IsHorizontal())
 		{
-			pDC->FillSolidRect(0, 0, rc.Width(), 1, GetXtremeColor(COLOR_3DHIGHLIGHT));
-			pDC->FillSolidRect(0, rc.bottom - 2, rc.Width(), 1, GetXtremeColor(XPCOLOR_3DSHADOW));
-			pDC->FillSolidRect(0, rc.bottom - 1, rc.Width(), 1, GetXtremeColor(COLOR_BTNTEXT));
+			dc.FillSolidRect(0, 0, rc.Width(), 1, GetXtremeColor(COLOR_3DHIGHLIGHT));
+			dc.FillSolidRect(0, rc.bottom - 2, rc.Width(), 1, GetXtremeColor(XPCOLOR_3DSHADOW));
+			dc.FillSolidRect(0, rc.bottom - 1, rc.Width(), 1, GetXtremeColor(COLOR_BTNTEXT));
 		}
 		else
 		{
-			pDC->FillSolidRect(0, 0, 1, rc.Height(), GetXtremeColor(COLOR_3DHIGHLIGHT));
-			pDC->FillSolidRect(rc.right - 2, 0, 1, rc.Height(), GetXtremeColor(XPCOLOR_3DSHADOW));
-			pDC->FillSolidRect(rc.right - 1, 0, 1, rc.Height(), GetXtremeColor(COLOR_BTNTEXT));
+			dc.FillSolidRect(0, 0, 1, rc.Height(), GetXtremeColor(COLOR_3DHIGHLIGHT));
+			dc.FillSolidRect(rc.right - 2, 0, 1, rc.Height(), GetXtremeColor(XPCOLOR_3DSHADOW));
+			dc.FillSolidRect(rc.right - 1, 0, 1, rc.Height(), GetXtremeColor(COLOR_BTNTEXT));
 		}
 	}
 	else if (m_dwSplitterStyle & xtpPaneSplitterSoft3D)
@@ -855,45 +793,45 @@ void CXTPDockingPanePaintManager::DrawSplitter(CDC* pDC, CXTPDockingPaneSplitter
 
 		if (pSplitter->IsHorizontal())
 		{
-			pDC->FillSolidRect(0, 0, rc.Width(), 1, GetXtremeColor(COLOR_3DDKSHADOW));
-			pDC->FillSolidRect(0, rc.bottom - 1, rc.Width(), 1, GetXtremeColor(COLOR_3DDKSHADOW));
+			dc.FillSolidRect(0, 0, rc.Width(), 1, GetXtremeColor(COLOR_3DDKSHADOW));
+			dc.FillSolidRect(0, rc.bottom - 1, rc.Width(), 1, GetXtremeColor(COLOR_3DDKSHADOW));
 
-			pDC->FillSolidRect(0, 1, rc.Width(), nCenter - 1, GetXtremeColor(COLOR_WINDOW));
-			pDC->FillSolidRect(0, nCenter, rc.Width(), rc.Height() - nCenter - 1, m_clrSplitter);
+			dc.FillSolidRect(0, 1, rc.Width(), nCenter - 1, GetXtremeColor(COLOR_WINDOW));
+			dc.FillSolidRect(0, nCenter, rc.Width(), rc.Height() - nCenter - 1, m_clrSplitter);
 		}
 		else
 		{
-			pDC->FillSolidRect(0, 0, 1, rc.Height(), GetXtremeColor(COLOR_3DDKSHADOW));
-			pDC->FillSolidRect(rc.right - 1, 0, 1, rc.Height(), GetXtremeColor(COLOR_3DDKSHADOW));
+			dc.FillSolidRect(0, 0, 1, rc.Height(), GetXtremeColor(COLOR_3DDKSHADOW));
+			dc.FillSolidRect(rc.right - 1, 0, 1, rc.Height(), GetXtremeColor(COLOR_3DDKSHADOW));
 
-			pDC->FillSolidRect(1, 0, nCenter - 1, rc.Height(), GetXtremeColor(COLOR_WINDOW));
-			pDC->FillSolidRect(nCenter, 0, rc.Width() - nCenter - 1, rc.Height(), m_clrSplitter);
+			dc.FillSolidRect(1, 0, nCenter - 1, rc.Height(), GetXtremeColor(COLOR_WINDOW));
+			dc.FillSolidRect(nCenter, 0, rc.Width() - nCenter - 1, rc.Height(), m_clrSplitter);
 		}
 	}
 	else if (m_dwSplitterStyle & xtpPaneSplitterGradient)
 	{
-		XTPFillFramePartRect(pDC, rc, (CWnd*)pSplitter, pSplitter->GetParent(), m_clrSplitterGradient, TRUE);
+		XTPFillFramePartRect(&dc, rc, (CWnd*)pSplitter, pSplitter->GetParent(), m_clrSplitterGradient, TRUE);
 	}
 	else if (m_dwSplitterStyle & xtpPaneSplitterGradientVert)
 	{
-		XTPFillFramePartRect(pDC, rc, (CWnd*)pSplitter, pSplitter->GetParent(), m_clrSplitterGradient, FALSE);
+		XTPFillFramePartRect(&dc, rc, (CWnd*)pSplitter, pSplitter->GetParent(), m_clrSplitterGradient, FALSE);
 	}
 	else
 	{
-		pDC->FillSolidRect(rc, m_clrSplitter);
+		dc.FillSolidRect(rc, m_clrSplitter);
 	}
 
 	if (m_dwSplitterStyle & xtpPaneSplitterGripperOfficeXP)
 	{
 		if (pSplitter->IsHorizontal())
 		{
-			pDC->FillSolidRect(rc.CenterPoint().x, 0 + 2, 11, 1, m_clrSplitterGripper);
-			pDC->FillSolidRect(rc.CenterPoint().x, 0 + 4, 11, 1, m_clrSplitterGripper);
+			dc.FillSolidRect(rc.CenterPoint().x, 0 + 2, 11, 1, m_clrSplitterGripper);
+			dc.FillSolidRect(rc.CenterPoint().x, 0 + 4, 11, 1, m_clrSplitterGripper);
 		}
 		else
 		{
-			pDC->FillSolidRect(2, rc.CenterPoint().y, 1, 11, m_clrSplitterGripper);
-			pDC->FillSolidRect(4, rc.CenterPoint().y, 1, 11, m_clrSplitterGripper);
+			dc.FillSolidRect(2, rc.CenterPoint().y, 1, 11, m_clrSplitterGripper);
+			dc.FillSolidRect(4, rc.CenterPoint().y, 1, 11, m_clrSplitterGripper);
 		}
 	}
 	if (m_dwSplitterStyle & xtpPaneSplitterGripperOffice2003)
@@ -906,8 +844,8 @@ void CXTPDockingPanePaintManager::DrawSplitter(CDC* pDC, CXTPDockingPaneSplitter
 
 			for (int x = nLeft; x < nRight; x += 4)
 			{
-				pDC->FillSolidRect(CRect(x + 1, y + 1, x + 3, y + 3), GetXtremeColor(COLOR_BTNHIGHLIGHT));
-				pDC->FillSolidRect(CRect(x, y, x + 2, y + 2), m_clrSplitterGripper);
+				dc.FillSolidRect(CRect(x + 1, y + 1, x + 3, y + 3), GetXtremeColor(COLOR_BTNHIGHLIGHT));
+				dc.FillSolidRect(CRect(x, y, x + 2, y + 2), m_clrSplitterGripper);
 			}
 		}
 		else
@@ -918,66 +856,28 @@ void CXTPDockingPanePaintManager::DrawSplitter(CDC* pDC, CXTPDockingPaneSplitter
 
 			for (int y = nTop; y < nBottom; y += 4)
 			{
-				pDC->FillSolidRect(CRect(x + 1, y + 1, x + 3, y + 3), GetXtremeColor(COLOR_BTNHIGHLIGHT));
-				pDC->FillSolidRect(CRect(x, y, x + 2, y + 2), m_clrSplitterGripper);
+				dc.FillSolidRect(CRect(x + 1, y + 1, x + 3, y + 3), GetXtremeColor(COLOR_BTNHIGHLIGHT));
+				dc.FillSolidRect(CRect(x, y, x + 2, y + 2), m_clrSplitterGripper);
 			}
 		}
 
 	}
 }
 
-//////////////////////////////////////////////////////////////////////////
-// CXTPDockingPaneVisualStudio6Theme
-
-CXTPDockingPaneVisualStudio6Theme::CXTPDockingPaneVisualStudio6Theme()
-{
-	m_nCaptionButtonStyle = xtpPaneCaptionButtonDefault;
-}
-
-void CXTPDockingPaneVisualStudio6Theme::DrawCaptionPart(CDC* pDC, CXTPDockingPaneBase* pPane, CRect rcCaption, const CString& strTitle, BOOL bActive, BOOL bVertical)
-{
-	UNREFERENCED_PARAMETER(strTitle);
-	UNREFERENCED_PARAMETER(bActive);
-
-	XTPDeflateRectDirection(rcCaption, 0, 0, 2, 0, bVertical);
-	DrawCaptionButtons(pDC, pPane->GetCaptionButtons(), rcCaption, m_clrNormalCaptionText, 14, 2, bVertical);
-
-	int nOffset = 4;
-	XTPDeflateRectDirection(rcCaption, 4, 1, 2, 0, bVertical);
-
-	if (bVertical)
-	{
-		if (rcCaption.bottom > nOffset)
-		{
-			int nCenter = rcCaption.CenterPoint().x;
-			pDC->Draw3dRect(nCenter - 3, nOffset, 3, rcCaption.bottom - nOffset, GetXtremeColor(COLOR_BTNHILIGHT), GetXtremeColor(COLOR_3DSHADOW));
-			pDC->Draw3dRect(nCenter + 1, nOffset, 3, rcCaption.bottom - nOffset, GetXtremeColor(COLOR_BTNHILIGHT), GetXtremeColor(COLOR_3DSHADOW));
-		}
-	}
-	else
-	{
-		if (rcCaption.right > nOffset)
-		{
-			int nCenter = rcCaption.CenterPoint().y;
-			pDC->Draw3dRect(nOffset, nCenter - 3, rcCaption.right - nOffset, 3, GetXtremeColor(COLOR_BTNHILIGHT), GetXtremeColor(COLOR_3DSHADOW));
-			pDC->Draw3dRect(nOffset, nCenter + 1, rcCaption.right - nOffset, 3, GetXtremeColor(COLOR_BTNHILIGHT), GetXtremeColor(COLOR_3DSHADOW));
-		}
-	}
-}
 
 ///////////////////////////////////////////////////////////////////////////////
-// CXTPDockingPaneVisualStudio2003Theme
+// CXTPDockingPaneOfficeTheme
 
-class CXTPDockingPaneVisualStudio2003Theme::COfficePanelColorSet :
-	public CXTPTabPaintManager::CColorSetVisualStudio2003
+class CXTPDockingPaneOfficeTheme::COfficePanelColorSet :
+	public CXTPTabPaintManager::CColorSetVisualStudio
 {
 public:
 	virtual void RefreshMetrics();
 };
 
-void CXTPDockingPaneVisualStudio2003Theme::COfficePanelColorSet::RefreshMetrics()
+void CXTPDockingPaneOfficeTheme::COfficePanelColorSet::RefreshMetrics()
 {
-	CColorSetVisualStudio2003::RefreshMetrics();
+	CColorSetVisualStudio::RefreshMetrics();
 
 	if (m_pPaintManager->GetAppearance() == xtpTabAppearanceFlat)
 	{
@@ -987,7 +887,7 @@ void CXTPDockingPaneVisualStudio2003Theme::COfficePanelColorSet::RefreshMetrics(
 }
 
 
-CXTPDockingPaneVisualStudio2003Theme::CXTPDockingPaneVisualStudio2003Theme()
+CXTPDockingPaneOfficeTheme::CXTPDockingPaneOfficeTheme()
 {
 	m_pPanelPaintManager->SetAppearance(xtpTabAppearanceFlat);
 	m_pPanelPaintManager->SetColorSet(new COfficePanelColorSet);
@@ -996,7 +896,7 @@ CXTPDockingPaneVisualStudio2003Theme::CXTPDockingPaneVisualStudio2003Theme()
 	m_bUseBoldCaptionFont = FALSE;
 }
 
-void CXTPDockingPaneVisualStudio2003Theme::RefreshMetrics()
+void CXTPDockingPaneOfficeTheme::RefreshMetrics()
 {
 	CXTPDockingPaneGripperedTheme::RefreshMetrics();
 
@@ -1014,46 +914,46 @@ void CXTPDockingPaneVisualStudio2003Theme::RefreshMetrics()
 	}
 }
 
-COLORREF CXTPDockingPaneVisualStudio2003Theme::FillCaptionPart(CDC* pDC, CXTPDockingPaneBase* pPane, CRect rcCaption, BOOL bActive, BOOL bVertical)
+COLORREF CXTPDockingPaneOfficeTheme::FillCaptionPart(CDC& dc, CXTPDockingPaneBase* /*pPane*/, CRect rcCaption, BOOL bActive, BOOL /*bVertical*/)
 {
 	if (m_bGradientCaption)
 	{
-		XTPDrawHelpers()->GradientFill(pDC, rcCaption, bActive ? m_clrActiveCaption : m_clrNormalCaption, !bVertical);
+		XTPDrawHelpers()->GradientFill(&dc, rcCaption, bActive ? m_clrActiveCaption : m_clrNormalCaption, TRUE);
 	}
 	else
 	{
 		if (bActive)
 		{
-			pDC->FillSolidRect(rcCaption, m_clrActiveCaption.clrLight);
+			dc.FillSolidRect(rcCaption, m_clrActiveCaption.clrLight);
 		}
-		else if (pPane->GetType() != xtpPaneTypeSidePanel)
+		else
 		{
-			CXTPPenDC pen(*pDC, GetXtremeColor(XPCOLOR_3DSHADOW));
-			pDC->MoveTo(rcCaption.left + 1, rcCaption.top); pDC->LineTo(rcCaption.right - 1 , rcCaption.top);
-			pDC->MoveTo(rcCaption.left, rcCaption.top + 1); pDC->LineTo(rcCaption.left, rcCaption.bottom - 1);
-			pDC->MoveTo(rcCaption.left + 1, rcCaption.bottom - 1); pDC->LineTo(rcCaption.right - 1 , rcCaption.bottom - 1);
-			pDC->MoveTo(rcCaption.right -1 , rcCaption.top + 1); pDC->LineTo(rcCaption.right - 1, rcCaption.bottom - 1);
+			CXTPPenDC pen(dc, GetXtremeColor(XPCOLOR_3DSHADOW));
+			dc.MoveTo(rcCaption.left + 1, rcCaption.top); dc.LineTo(rcCaption.right - 1 , rcCaption.top);
+			dc.MoveTo(rcCaption.left, rcCaption.top + 1); dc.LineTo(rcCaption.left, rcCaption.bottom - 1);
+			dc.MoveTo(rcCaption.left + 1, rcCaption.bottom - 1); dc.LineTo(rcCaption.right - 1 , rcCaption.bottom - 1);
+			dc.MoveTo(rcCaption.right -1 , rcCaption.top + 1); dc.LineTo(rcCaption.right - 1, rcCaption.bottom - 1);
 		}
 	}
 
-	return  bActive ? m_clrActiveCaptionText : m_clrNormalCaptionText;
+	return  GetXtremeColor(bActive ? COLOR_CAPTIONTEXT : COLOR_BTNTEXT);
 }
 
-void CXTPDockingPaneVisualStudio2003Theme::DrawCaptionPart(CDC* pDC, CXTPDockingPaneBase* pPane, CRect rcCaption, const CString& strTitle, BOOL bActive, BOOL bVertical)
+void CXTPDockingPaneOfficeTheme::DrawCaptionPart(CDC& dc, CXTPDockingPaneBase* pPane, CRect rcCaption, const CString& strTitle, BOOL bActive, BOOL bVertical)
 {
-	COLORREF clrButton = FillCaptionPart(pDC, pPane, rcCaption, bActive, bVertical);
+	COLORREF clrButton = FillCaptionPart(dc, pPane, rcCaption, bActive, bVertical);
 
 	COLORREF clrText = bActive ? m_clrActiveCaptionText : m_clrNormalCaptionText;
 
 	XTPDeflateRectDirection(rcCaption, 0, 0, 2, 0, bVertical);
-	DrawCaptionButtons(pDC, pPane->GetCaptionButtons(), rcCaption, clrButton, 14, 2, bVertical);
+	DrawCaptionButtons(&dc, pPane->GetCaptionButtons(), rcCaption, clrButton, 14, 2, bVertical);
 
 	// Title text
-	pDC->SetTextColor(IsCaptionEnabled(pPane) ? clrText : m_clrDisabledCaptionText);
+	dc.SetTextColor(IsCaptionEnabled(pPane) ? clrText : GetXtremeColor(COLOR_GRAYTEXT));
 	XTPDeflateRectDirection(rcCaption, 4, 1, 0, 0, bVertical);
 
-	DrawCaptionIcon(pDC, pPane, rcCaption, bVertical);
-	DrawCaptionText(pDC, strTitle, rcCaption, bVertical);
+	DrawCaptionIcon(dc, pPane, rcCaption, bVertical);
+	DrawCaptionText(dc, strTitle, rcCaption, bVertical);
 }
 
 
@@ -1068,75 +968,49 @@ CXTPDockingPaneDefaultTheme::CXTPDockingPaneDefaultTheme()
 	m_nCaptionButtonStyle = xtpPaneCaptionButtonDefault;
 }
 
-
-void CXTPDockingPaneDefaultTheme::RefreshMetrics()
+void CXTPDockingPaneDefaultTheme::DrawFloatingFrame(CDC& dc, CXTPDockingPaneMiniWnd* pPane, CRect rc)
 {
-	CXTPDockingPanePaintManager::RefreshMetrics();
-
-	m_clrActiveCaption.SetStandardValue(GetXtremeColor(COLOR_ACTIVECAPTION));
-	m_clrNormalCaption.SetStandardValue(GetXtremeColor(COLOR_INACTIVECAPTION));
-
-	m_clrActiveCaptionText.SetStandardValue(GetXtremeColor(COLOR_CAPTIONTEXT));
-	m_clrNormalCaptionText.SetStandardValue(GetXtremeColor(COLOR_INACTIVECAPTIONTEXT));
-}
-
-void CXTPDockingPaneDefaultTheme::DrawFloatingFrame(CDC* pDC, CXTPDockingPaneMiniWnd* pPane, CRect rc)
-{
-	pDC->Draw3dRect(rc, GetXtremeColor(COLOR_3DFACE), 0);
+	dc.Draw3dRect(rc, GetXtremeColor(COLOR_3DFACE), 0);
 	rc.DeflateRect(1, 1);
-	pDC->Draw3dRect(rc, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
+	dc.Draw3dRect(rc, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
 	rc.DeflateRect(1, 1);
-	pDC->Draw3dRect(rc, GetXtremeColor(COLOR_3DFACE), GetXtremeColor(COLOR_3DFACE));
+	dc.Draw3dRect(rc, GetXtremeColor(COLOR_3DFACE), GetXtremeColor(COLOR_3DFACE));
 
 	int nTitleHeight = m_nTitleHeight;
 	CRect rcCaption(rc);
 	rcCaption.DeflateRect(0, 0, 0, rc.Height() - nTitleHeight - 3);
 
-	CXTPBufferDC dcCache(*pDC, rcCaption);
+	CXTPBufferDC dcCache(dc, rcCaption);
 	dcCache.SetBkMode(TRANSPARENT);
 
 	dcCache.FillSolidRect(rcCaption, GetXtremeColor(COLOR_3DFACE));
 
-	CString strTitle;
-	pPane->GetWindowText(strTitle);
-
 	rcCaption.DeflateRect(1, 2, 1, 2);
 
 	BOOL bActive = m_bHighlightActiveCaption && pPane->IsActive();
-	DrawCaptionPart(&dcCache, pPane, rcCaption, strTitle, bActive, FALSE);
+
+	CString strTitle;
+	pPane->GetWindowText(strTitle);
+
+	DrawCaptionPart(dcCache, pPane, rcCaption, strTitle, bActive, FALSE);
 }
 
-void CXTPDockingPaneDefaultTheme::DrawSidePanel(CDC* pDC, CXTPDockingPaneSidePanel* pPane, CRect rc)
+void CXTPDockingPaneDefaultTheme::DrawCaptionPart(CDC& dc, CXTPDockingPaneBase* pPane, CRect rcCaption, const CString& strTitle, BOOL bActive, BOOL bVertical)
 {
-	pDC->FillSolidRect(rc, GetXtremeColor(COLOR_3DFACE));
-	pDC->SetBkMode(TRANSPARENT);
-
-	pDC->Draw3dRect(rc, GetXtremeColor(COLOR_WINDOWFRAME), GetXtremeColor(COLOR_WINDOWFRAME));
-
-	CRect rcCaption = GetPaneCaptionRect(pPane);
-
-	BOOL bActive = m_bHighlightActiveCaption && pPane->IsActive();
-
-	CString strTitle = pPane->GetTitle();
-
-	DrawCaptionPart(pDC, pPane, rcCaption, strTitle, bActive, pPane->GetDirection() == xtpPaneDockLeft || pPane->GetDirection() == xtpPaneDockRight);
-}
-
-void CXTPDockingPaneDefaultTheme::DrawCaptionPart(CDC* pDC, CXTPDockingPaneBase* pPane, CRect rcCaption, const CString& strTitle, BOOL bActive, BOOL bVertical)
-{
-	pDC->FillSolidRect(rcCaption, bActive ? m_clrActiveCaption : m_clrNormalCaption);
+	dc.FillSolidRect(rcCaption, GetXtremeColor(bActive ? COLOR_ACTIVECAPTION : COLOR_INACTIVECAPTION));
 
 	XTPDeflateRectDirection(rcCaption, 0, 0, 2, 0, bVertical);
-	DrawCaptionButtons(pDC, pPane->GetCaptionButtons(), rcCaption, GetXtremeColor(COLOR_BTNTEXT), 14, 0, bVertical);
+	DrawCaptionButtons(&dc, pPane->GetCaptionButtons(), rcCaption, GetXtremeColor(COLOR_BTNTEXT), 14, 0, bVertical);
 
-	pDC->SetTextColor(IsCaptionEnabled(pPane) ? (bActive ? m_clrActiveCaptionText : m_clrNormalCaptionText) : m_clrDisabledCaptionText);
+	dc.SetTextColor(IsCaptionEnabled(pPane) ? (GetXtremeColor(bActive ? COLOR_CAPTIONTEXT : COLOR_INACTIVECAPTIONTEXT))
+		: GetXtremeColor(COLOR_GRAYTEXT));
 	XTPDeflateRectDirection(rcCaption, 4, 1, 0, 0, bVertical);
 
-	DrawCaptionIcon(pDC, pPane, rcCaption, bVertical);
-	DrawCaptionText(pDC, strTitle, rcCaption, bVertical);
+	DrawCaptionIcon(dc, pPane, rcCaption, bVertical);
+	DrawCaptionText(dc, strTitle, rcCaption, bVertical);
 }
 
-void CXTPDockingPaneDefaultTheme::DrawCaption(CDC* pDC, CXTPDockingPaneTabbedContainer* pPane, CRect rc)
+void CXTPDockingPaneDefaultTheme::DrawCaption(CDC& dc, CXTPDockingPaneTabbedContainer* pPane, CRect rc)
 {
 	BOOL bVertical = pPane->IsCaptionVertical();
 
@@ -1147,16 +1021,15 @@ void CXTPDockingPaneDefaultTheme::DrawCaption(CDC* pDC, CXTPDockingPaneTabbedCon
 
 	if (bVertical)
 	{
-		pDC->FillSolidRect(rc.left, rc.top, rcCaption.right + 2, rcCaption.Height(), GetXtremeColor(COLOR_3DFACE));
+		dc.FillSolidRect(rc.left, rc.top, rcCaption.right + 2, rcCaption.Height(), GetXtremeColor(COLOR_3DFACE));
 	}
 	else
 	{
-		pDC->FillSolidRect(rc.left, rc.top, rc.Width(), rcCaption.bottom + 2, GetXtremeColor(COLOR_3DFACE));
+		dc.FillSolidRect(rc.left, rc.top, rc.Width(), rcCaption.bottom + 2, GetXtremeColor(COLOR_3DFACE));
 	}
 
-	DrawCaptionPart(pDC, pPane, rcCaption, pPane->GetTitle(), bActive, bVertical);
+	DrawCaptionPart(dc, pPane, rcCaption, pPane->GetSelected() ? pPane->GetSelected()->GetTitle() : _T(""), bActive, bVertical);
 }
-
 ///////////////////////////////////////////////////////////////////////////////
 // CXTPDockingPaneGripperedTheme
 
@@ -1197,34 +1070,23 @@ CXTPDockingPaneGripperedTheme::CXTPDockingPaneGripperedTheme()
 	m_nCaptionButtonStyle = xtpPaneCaptionButtonOffice;
 }
 
-void CXTPDockingPaneGripperedTheme::RefreshMetrics()
+void CXTPDockingPaneGripperedTheme::DrawCaptionPart(CDC& dc, CXTPDockingPaneBase* pPane, CRect rcCaption, const CString& strTitle, BOOL, BOOL bVertical)
 {
-	CXTPDockingPaneDefaultTheme::RefreshMetrics();
-
-	m_clrActiveCaption.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
-	m_clrNormalCaption.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
-
-	m_clrActiveCaptionText.SetStandardValue(GetXtremeColor(COLOR_BTNTEXT));
-	m_clrNormalCaptionText.SetStandardValue(GetXtremeColor(COLOR_BTNTEXT));
-}
-
-void CXTPDockingPaneGripperedTheme::DrawCaptionPart(CDC* pDC, CXTPDockingPaneBase* pPane, CRect rcCaption, const CString& strTitle, BOOL bActive, BOOL bVertical)
-{
-	COLORREF clrText = bActive ? m_clrActiveCaptionText : m_clrNormalCaptionText;
+	COLORREF clrText = GetXtremeColor(COLOR_BTNTEXT);
 
 	XTPDeflateRectDirection(rcCaption, 0, 0, 2, 0, bVertical);
-	DrawCaptionButtons(pDC, pPane->GetCaptionButtons(), rcCaption, clrText, 14, 2, bVertical);
+	DrawCaptionButtons(&dc, pPane->GetCaptionButtons(), rcCaption, clrText, 14, 2, bVertical);
 
 	int nOffset = 4;
 	XTPDeflateRectDirection(rcCaption, 4, 1, 2, 0, bVertical);
 
 	if (!strTitle.IsEmpty())
 	{
-		pDC->SetTextColor(IsCaptionEnabled(pPane) ? clrText : m_clrDisabledCaptionText);
+		dc.SetTextColor(IsCaptionEnabled(pPane) ? clrText : GetXtremeColor(COLOR_GRAYTEXT));
 
 
-		DrawCaptionIcon(pDC, pPane, rcCaption, bVertical);
-		int nWidth = DrawCaptionText(pDC, strTitle, rcCaption, bVertical, TRUE);
+		DrawCaptionIcon(dc, pPane, rcCaption, bVertical);
+		int nWidth = DrawCaptionText(dc, strTitle, rcCaption, bVertical, TRUE);
 
 		nOffset = nWidth + 4 + (bVertical ? rcCaption.top : rcCaption.left);
 	}
@@ -1234,8 +1096,8 @@ void CXTPDockingPaneGripperedTheme::DrawCaptionPart(CDC* pDC, CXTPDockingPaneBas
 		if (rcCaption.bottom > nOffset)
 		{
 			int nCenter = rcCaption.CenterPoint().x;
-			pDC->Draw3dRect(nCenter - 3, nOffset, 3, rcCaption.bottom - nOffset, GetXtremeColor(COLOR_BTNHILIGHT), GetXtremeColor(COLOR_3DSHADOW));
-			pDC->Draw3dRect(nCenter + 1, nOffset, 3, rcCaption.bottom - nOffset, GetXtremeColor(COLOR_BTNHILIGHT), GetXtremeColor(COLOR_3DSHADOW));
+			dc.Draw3dRect(nCenter - 3, nOffset, 3, rcCaption.bottom - nOffset, GetXtremeColor(COLOR_BTNHILIGHT), GetXtremeColor(COLOR_3DSHADOW));
+			dc.Draw3dRect(nCenter + 1, nOffset, 3, rcCaption.bottom - nOffset, GetXtremeColor(COLOR_BTNHILIGHT), GetXtremeColor(COLOR_3DSHADOW));
 		}
 	}
 	else
@@ -1243,18 +1105,39 @@ void CXTPDockingPaneGripperedTheme::DrawCaptionPart(CDC* pDC, CXTPDockingPaneBas
 		if (rcCaption.right > nOffset)
 		{
 			int nCenter = rcCaption.CenterPoint().y;
-			pDC->Draw3dRect(nOffset, nCenter - 3, rcCaption.right - nOffset, 3, GetXtremeColor(COLOR_BTNHILIGHT), GetXtremeColor(COLOR_3DSHADOW));
-			pDC->Draw3dRect(nOffset, nCenter + 1, rcCaption.right - nOffset, 3, GetXtremeColor(COLOR_BTNHILIGHT), GetXtremeColor(COLOR_3DSHADOW));
+			dc.Draw3dRect(nOffset, nCenter - 3, rcCaption.right - nOffset, 3, GetXtremeColor(COLOR_BTNHILIGHT), GetXtremeColor(COLOR_3DSHADOW));
+			dc.Draw3dRect(nOffset, nCenter + 1, rcCaption.right - nOffset, 3, GetXtremeColor(COLOR_BTNHILIGHT), GetXtremeColor(COLOR_3DSHADOW));
 		}
 	}
 }
 
-void CXTPDockingPaneGripperedTheme::DrawFloatingFrame(CDC* pDC, CXTPDockingPaneMiniWnd* pPane, CRect rc)
+void CXTPDockingPaneGripperedTheme::DrawFloatingFrame(CDC& dc, CXTPDockingPaneMiniWnd* pPane, CRect rc)
 {
-	CXTPDockingPaneDefaultTheme::DrawFloatingFrame(pDC, pPane, rc);
+	dc.Draw3dRect(rc, GetXtremeColor(COLOR_3DFACE), 0);
+	rc.DeflateRect(1, 1);
+	dc.Draw3dRect(rc, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
+	rc.DeflateRect(1, 1);
+	dc.Draw3dRect(rc, GetXtremeColor(COLOR_3DFACE), GetXtremeColor(COLOR_3DFACE));
+
+	int nTitleHeight = m_nTitleHeight;
+	CRect rcCaption(rc);
+	rcCaption.DeflateRect(0, 0, 0, rc.Height() - nTitleHeight - 3);
+
+	CXTPBufferDC dcCache(dc, rcCaption);
+	dcCache.SetBkMode(TRANSPARENT);
+
+	dcCache.FillSolidRect(rcCaption, GetXtremeColor(COLOR_3DFACE));
+
+	CString strTitle;
+	pPane->GetWindowText(strTitle);
+
+	rcCaption.DeflateRect(1, 2, 1, 2);
+
+	BOOL bActive = m_bHighlightActiveCaption && pPane->IsActive();
+	DrawCaptionPart(dcCache, pPane, rcCaption, strTitle, bActive, FALSE);
 }
 
-void CXTPDockingPaneGripperedTheme::DrawCaption(CDC* pDC, CXTPDockingPaneTabbedContainer* pPane, CRect rc)
+void CXTPDockingPaneGripperedTheme::DrawCaption(CDC& dc, CXTPDockingPaneTabbedContainer* pPane, CRect rc)
 {
 	BOOL bVertical = pPane->IsCaptionVertical();
 
@@ -1262,24 +1145,25 @@ void CXTPDockingPaneGripperedTheme::DrawCaption(CDC* pDC, CXTPDockingPaneTabbedC
 	CRect rcCaption(rc);
 	XTPDeflateRectDirection(rcCaption, 0, m_rcCaptionMargin.top, 0, XTPGetRectDirectionHeight(rc, bVertical) - nTitleHeight - 1, bVertical);
 
-	BOOL bActive = m_bHighlightActiveCaption && pPane->IsActive();
-
 	if (bVertical)
 	{
-		pDC->FillSolidRect(rc.left, rc.top, rcCaption.right + 2, rc.Height(), GetXtremeColor(COLOR_3DFACE));
+		dc.FillSolidRect(rc.left, rc.top, rcCaption.right + 2, rc.Height(), m_clrSplitter);
 	}
 	else
 	{
-		pDC->FillSolidRect(rc.left, rc.top, rc.Width(), rcCaption.bottom + 2, GetXtremeColor(COLOR_3DFACE));
+		dc.FillSolidRect(rc.left, rc.top, rc.Width(), rcCaption.bottom + 2, m_clrSplitter);
 	}
 
-	DrawCaptionPart(pDC, pPane, rcCaption, pPane->GetTitle(), bActive, bVertical);
+	CString strTitle = pPane->GetSelected() ? pPane->GetSelected()->GetTitle() : _T("");
+	BOOL bActive = m_bHighlightActiveCaption && pPane->IsActive();
+	DrawCaptionPart(dc, pPane, rcCaption, strTitle, bActive, bVertical);
+
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CXTPDockingPaneWinExplorerTheme
+// CXTPDockingPaneExplorerTheme
 
-CXTPDockingPaneWinExplorerTheme::CXTPDockingPaneWinExplorerTheme()
+CXTPDockingPaneExplorerTheme::CXTPDockingPaneExplorerTheme()
 {
 	m_bUseBoldCaptionFont = FALSE;
 	m_rcCaptionMargin.SetRect(0, 0, 0, 0);
@@ -1288,11 +1172,12 @@ CXTPDockingPaneWinExplorerTheme::CXTPDockingPaneWinExplorerTheme()
 	m_nCaptionButtonStyle = xtpPaneCaptionButtonThemedToolBar;
 }
 
-void CXTPDockingPaneWinExplorerTheme::DrawCaptionPart(CDC* pDC, CXTPDockingPaneBase* pPane, CRect rcCaption, const CString& strTitle, BOOL bActive, BOOL bVertical)
+void CXTPDockingPaneExplorerTheme::DrawCaptionPart(CDC& dc, CXTPDockingPaneBase* pPane, CRect rcCaption, const CString& strTitle, BOOL, BOOL bVertical)
 {
 	if (m_themeRebar.IsAppThemed())
 	{
-		CWnd* pWnd = CWnd::FromHandle(pPane->GetPaneHwnd());
+		CWnd* pWnd = pPane->GetType() == xtpPaneTypeTabbedContainer ? (CWnd*)(CXTPDockingPaneTabbedContainer*)pPane :
+			pPane->GetType() == xtpPaneTypeMiniWnd ? (CWnd*)(CXTPDockingPaneMiniWnd*)pPane : 0;
 
 		ASSERT(pWnd);
 		if (!pWnd)
@@ -1304,7 +1189,7 @@ void CXTPDockingPaneWinExplorerTheme::DrawCaptionPart(CDC* pDC, CXTPDockingPaneB
 			pWnd->GetWindowRect(rcClient);
 			rcClient.OffsetRect(-rcClient.TopLeft());
 
-			m_themeRebar.DrawThemeBackground(pDC->GetSafeHdc(), 0, 0, &rcClient, &rcCaption);
+			m_themeRebar.DrawThemeBackground(dc, 0, 0, &rcClient, &rcCaption);
 		}
 		else
 		{
@@ -1324,23 +1209,23 @@ void CXTPDockingPaneWinExplorerTheme::DrawCaptionPart(CDC* pDC, CXTPDockingPaneB
 				rcClient.BottomRight() += rcParent.BottomRight() - rc.BottomRight();
 			}
 
-			m_themeRebar.DrawThemeBackground(pDC->GetSafeHdc(), 0, 0, &rcClient, &rcCaption);
+			m_themeRebar.DrawThemeBackground(dc, 0, 0, &rcClient, &rcCaption);
 		}
 	}
 
-	COLORREF clrText = bActive ? m_clrActiveCaptionText : m_clrNormalCaptionText;
+	COLORREF clrText = GetXtremeColor(COLOR_BTNTEXT);
 
 	XTPDeflateRectDirection(rcCaption, 0, 0, 2, 0, bVertical);
-	DrawCaptionButtons(pDC, pPane->GetCaptionButtons(), rcCaption, clrText, 16, 2, bVertical);
+	DrawCaptionButtons(&dc, pPane->GetCaptionButtons(), rcCaption, clrText, 16, 2, bVertical);
 
-	pDC->SetTextColor(IsCaptionEnabled(pPane) ? clrText : m_clrDisabledCaptionText);
+	dc.SetTextColor(IsCaptionEnabled(pPane) ? clrText : GetXtremeColor(COLOR_GRAYTEXT));
 	XTPDeflateRectDirection(rcCaption, 4, 1, 0, 0, bVertical);
 
-	DrawCaptionIcon(pDC, pPane, rcCaption, bVertical);
-	DrawCaptionText(pDC, strTitle, rcCaption, bVertical);
+	DrawCaptionIcon(dc, pPane, rcCaption, bVertical);
+	DrawCaptionText(dc, strTitle, rcCaption, bVertical);
 }
 
-void CXTPDockingPaneWinExplorerTheme::RefreshMetrics()
+void CXTPDockingPaneExplorerTheme::RefreshMetrics()
 {
 	CXTPDockingPaneGripperedTheme::RefreshMetrics();
 
@@ -1349,11 +1234,11 @@ void CXTPDockingPaneWinExplorerTheme::RefreshMetrics()
 	if (m_themeRebar.IsAppThemed())
 	{
 		m_pPanelPaintManager->SetAppearance(xtpTabAppearancePropertyPage);
-		m_pPanelPaintManager->SetColor(xtpTabColorWinNative);
+		m_pPanelPaintManager->SetColor(xtpTabColorWinXP);
 		m_pPanelPaintManager->m_bHotTracking = TRUE;
 
 		m_pTabPaintManager->SetAppearance(xtpTabAppearancePropertyPage);
-		m_pTabPaintManager->SetColor(xtpTabColorWinNative);
+		m_pTabPaintManager->SetColor(xtpTabColorWinXP);
 		m_pTabPaintManager->m_bHotTracking = TRUE;
 	}
 	else
@@ -1368,9 +1253,9 @@ void CXTPDockingPaneWinExplorerTheme::RefreshMetrics()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CXTPDockingPaneOffice2002VisioTheme
+// CXTPDockingPaneVisioTheme
 
-CXTPDockingPaneOffice2002VisioTheme::CXTPDockingPaneOffice2002VisioTheme()
+CXTPDockingPaneVisioTheme::CXTPDockingPaneVisioTheme()
 {
 	m_pPanelPaintManager->SetAppearance(xtpTabAppearanceFlat);
 
@@ -1381,15 +1266,17 @@ CXTPDockingPaneOffice2002VisioTheme::CXTPDockingPaneOffice2002VisioTheme()
 	m_nCaptionButtonStyle = xtpPaneCaptionButtonOffice2003;
 }
 
-void CXTPDockingPaneOffice2002VisioTheme::RefreshMetrics()
+
+
+void CXTPDockingPaneVisioTheme::RefreshMetrics()
 {
 	CXTPDockingPanePaintManager::RefreshMetrics();
 }
 
 
-void CXTPDockingPaneOffice2002VisioTheme::AdjustCaptionRect(const CXTPDockingPaneTabbedContainer* pPane, CRect& rc)
+void CXTPDockingPaneVisioTheme::AdjustCaptionRect(const CXTPDockingPaneTabbedContainer* pPane, CRect& rc)
 {
-	CXTPDockingPaneVisualStudio2003Theme::AdjustCaptionRect(pPane, rc);
+	CXTPDockingPaneOfficeTheme::AdjustCaptionRect(pPane, rc);
 
 	BOOL bVertical = pPane->IsCaptionVertical();
 
@@ -1405,18 +1292,18 @@ void CXTPDockingPaneOffice2002VisioTheme::AdjustCaptionRect(const CXTPDockingPan
 	}
 }
 
-void CXTPDockingPaneOffice2002VisioTheme::DrawPane(CDC* pDC, CXTPDockingPaneTabbedContainer* pPane, CRect rc)
+void CXTPDockingPaneVisioTheme::DrawPane(CDC& dc, CXTPDockingPaneTabbedContainer* pPane, CRect rc)
 {
 	BOOL bActive = m_bHighlightActiveCaption && pPane->IsActive();
-	pDC->FillSolidRect(rc, GetXtremeColor(bActive ? XPCOLOR_HIGHLIGHT : XPCOLOR_TOOLBAR_FACE));
-	pDC->SetBkMode(TRANSPARENT);
+	dc.FillSolidRect(rc, GetXtremeColor(bActive ? XPCOLOR_HIGHLIGHT : XPCOLOR_TOOLBAR_FACE));
+	dc.SetBkMode(TRANSPARENT);
 
 	CRect rcClient(rc);
 
 	if (pPane->IsTitleVisible())
 	{
-		pDC->FillSolidRect(rc.left, rc.top, rc.Width(), 1, m_clrSplitter);
-		DrawCaption(pDC, pPane, rc);
+		dc.FillSolidRect(rc.left, rc.top, rc.Width(), 1, m_clrSplitter);
+		DrawCaption(dc, pPane, rc);
 		rcClient.top++;
 	}
 
@@ -1424,39 +1311,39 @@ void CXTPDockingPaneOffice2002VisioTheme::DrawPane(CDC* pDC, CXTPDockingPaneTabb
 
 	if (pPane->IsTabsVisible())
 	{
-		m_pTabPaintManager->DrawTabControl(pPane, pDC, rc);
+		m_pTabPaintManager->DrawTabControl(pPane, &dc, rc);
 	}
 	else if (m_pTabPaintManager->m_clientFrame != xtpTabFrameNone)
 	{
-		pDC->Draw3dRect(rc.left - 1, rc.top - 1, rc.Width() + 2, rc.Height() + 2, m_pTabPaintManager->GetColorSet()->m_clrFrameBorder, m_pTabPaintManager->GetColorSet()->m_clrFrameBorder);
+		dc.Draw3dRect(rc.left - 1, rc.top - 1, rc.Width() + 2, rc.Height() + 2, m_pTabPaintManager->GetColorSet()->m_clrFrameBorder, m_pTabPaintManager->GetColorSet()->m_clrFrameBorder);
 	}
 
 
-	Pixel(pDC, rcClient.left, rcClient.top, XPCOLOR_3DFACE);
-	Pixel(pDC, rcClient.right - 1, rcClient.top, XPCOLOR_3DFACE);
-	Pixel(pDC, rcClient.left, rcClient.bottom -1, XPCOLOR_3DFACE);
-	Pixel(pDC, rcClient.right - 1, rcClient.bottom -1, XPCOLOR_3DFACE);
+	Pixel(&dc, rcClient.left, rcClient.top, XPCOLOR_3DFACE);
+	Pixel(&dc, rcClient.right - 1, rcClient.top, XPCOLOR_3DFACE);
+	Pixel(&dc, rcClient.left, rcClient.bottom -1, XPCOLOR_3DFACE);
+	Pixel(&dc, rcClient.right - 1, rcClient.bottom -1, XPCOLOR_3DFACE);
 }
 
-void CXTPDockingPaneOffice2002VisioTheme::DrawFloatingFrame(CDC* pDC, CXTPDockingPaneMiniWnd* pPane, CRect rc)
+void CXTPDockingPaneVisioTheme::DrawFloatingFrame(CDC& dc, CXTPDockingPaneMiniWnd* pPane, CRect rc)
 {
 	BOOL bActive = m_bHighlightActiveCaption && pPane->IsActive();
 	COLORREF clrFrame = GetXtremeColor(bActive ? XPCOLOR_HIGHLIGHT : XPCOLOR_TOOLBAR_FACE);
 
-	pDC->Draw3dRect(rc, clrFrame, 0);
+	dc.Draw3dRect(rc, clrFrame, 0);
 	rc.DeflateRect(1, 1);
-	pDC->Draw3dRect(rc, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
+	dc.Draw3dRect(rc, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
 	rc.DeflateRect(1, 1);
-	pDC->Draw3dRect(rc, clrFrame, clrFrame);
+	dc.Draw3dRect(rc, clrFrame, clrFrame);
 
 	int nTitleHeight = m_nTitleHeight;
 	CRect rcCaption(rc);
 	rcCaption.DeflateRect(0, 0, 0, rc.Height() - nTitleHeight - 3);
 
-	pDC->FillSolidRect(rcCaption, clrFrame);
+	dc.FillSolidRect(rcCaption, clrFrame);
 
 	rcCaption.right -= 2;
-	DrawCaptionButtons(pDC, pPane->GetCaptionButtons(), rcCaption, GetXtremeColor(COLOR_BTNTEXT), 16, 0, FALSE);
+	DrawCaptionButtons(&dc, pPane->GetCaptionButtons(), rcCaption, GetXtremeColor(COLOR_BTNTEXT), 16, 0, FALSE);
 
 	CString strTitle;
 	pPane->GetWindowText(strTitle);
@@ -1469,14 +1356,14 @@ void CXTPDockingPaneOffice2002VisioTheme::DrawFloatingFrame(CDC* pDC, CXTPDockin
 	int nLeft = 4;
 	if (!strTitle.IsEmpty())
 	{
-		pDC->SetBkMode(TRANSPARENT);
+		dc.SetBkMode(TRANSPARENT);
 		CRect rcText(rcCaption.left + 4, rcCaption.top + 1, nRight - 2, rcCaption.bottom);
-		pDC->SetTextColor(clrText);
-		CXTPFontDC font(pDC, &m_fntTitle);
-		pDC->DrawText(strTitle, rcText, DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER | DT_NOPREFIX);
+		dc.SetTextColor(clrText);
+		CXTPFontDC font(&dc, &m_fntTitle);
+		dc.DrawText(strTitle, rcText, DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER | DT_NOPREFIX);
 
 		CRect rcCalc(0, 0, 0, 0);
-		pDC->DrawText(strTitle, rcCalc, DT_CALCRECT | DT_SINGLELINE | DT_NOPREFIX);
+		dc.DrawText(strTitle, rcCalc, DT_CALCRECT | DT_SINGLELINE | DT_NOPREFIX);
 
 		nLeft = rcCalc.Width() + rcCaption.left + 14;
 	}
@@ -1485,25 +1372,25 @@ void CXTPDockingPaneOffice2002VisioTheme::DrawFloatingFrame(CDC* pDC, CXTPDockin
 	if (nRight - nLeft > 0)
 	{
 		int nCenter = rcCaption.CenterPoint().y;
-		Line(pDC, nLeft, nCenter - 3, nRight, nCenter - 3, !bActive ? XPCOLOR_TOOLBAR_GRIPPER : COLOR_BTNTEXT);
-		Line(pDC, nLeft, nCenter - 1, nRight, nCenter - 1, !bActive ? XPCOLOR_TOOLBAR_GRIPPER : COLOR_BTNTEXT);
-		Line(pDC, nLeft, nCenter + 1, nRight, nCenter + 1, !bActive ? XPCOLOR_TOOLBAR_GRIPPER : COLOR_BTNTEXT);
-		Line(pDC, nLeft, nCenter + 3, nRight, nCenter + 3, !bActive ? XPCOLOR_TOOLBAR_GRIPPER : COLOR_BTNTEXT);
+		Line(&dc, nLeft, nCenter - 3, nRight, nCenter - 3, !bActive ? XPCOLOR_TOOLBAR_GRIPPER : COLOR_BTNTEXT);
+		Line(&dc, nLeft, nCenter - 1, nRight, nCenter - 1, !bActive ? XPCOLOR_TOOLBAR_GRIPPER : COLOR_BTNTEXT);
+		Line(&dc, nLeft, nCenter + 1, nRight, nCenter + 1, !bActive ? XPCOLOR_TOOLBAR_GRIPPER : COLOR_BTNTEXT);
+		Line(&dc, nLeft, nCenter + 3, nRight, nCenter + 3, !bActive ? XPCOLOR_TOOLBAR_GRIPPER : COLOR_BTNTEXT);
 	}
 }
 
-void CXTPDockingPaneOffice2002VisioTheme::DrawCaption(CDC* pDC, CXTPDockingPaneTabbedContainer* pPane, CRect rc)
+void CXTPDockingPaneVisioTheme::DrawCaption(CDC& dc, CXTPDockingPaneTabbedContainer* pPane, CRect rc)
 {
 	BOOL bVertical = pPane->IsCaptionVertical();
 	BOOL bActive = m_bHighlightActiveCaption && pPane->IsActive();
 	int nTitleHeight = m_nTitleHeight;
-	CString strTitle = pPane->GetTitle();
+	CString strTitle = pPane->GetSelected()->GetTitle();
 
 	CRect rcCaption(rc);
 	XTPDeflateRectDirection(rcCaption, 0, 2, 1, XTPGetRectDirectionHeight(rc, bVertical) - nTitleHeight - 3, bVertical);
 
 
-	DrawCaptionButtons(pDC, pPane->GetCaptionButtons(), rcCaption, 0, 16, 0, bVertical);
+	DrawCaptionButtons(&dc, pPane->GetCaptionButtons(), rcCaption, 0, 16, 0, bVertical);
 
 	COLORREF clrText = GetXtremeColor(COLOR_BTNTEXT);
 
@@ -1512,8 +1399,8 @@ void CXTPDockingPaneOffice2002VisioTheme::DrawCaption(CDC* pDC, CXTPDockingPaneT
 
 	if (!strTitle.IsEmpty())
 	{
-		pDC->SetTextColor(IsCaptionEnabled(pPane) ? clrText : m_clrDisabledCaptionText);
-		int nWidth = DrawCaptionText(pDC, strTitle, rcCaption, bVertical, TRUE);
+		dc.SetTextColor(IsCaptionEnabled(pPane) ? clrText : GetXtremeColor(COLOR_GRAYTEXT));
+		int nWidth = DrawCaptionText(dc, strTitle, rcCaption, bVertical, TRUE);
 
 		nOffset = nWidth + 10 + (bVertical ? rcCaption.top : rcCaption.left);
 	}
@@ -1523,10 +1410,10 @@ void CXTPDockingPaneOffice2002VisioTheme::DrawCaption(CDC* pDC, CXTPDockingPaneT
 		if (rcCaption.bottom - nOffset > 0)
 		{
 			int nCenter = rcCaption.CenterPoint().x;
-			Line(pDC, nCenter - 3, nOffset, nCenter - 3, rcCaption.bottom, !bActive ? XPCOLOR_TOOLBAR_GRIPPER : COLOR_BTNTEXT);
-			Line(pDC, nCenter - 1, nOffset, nCenter - 1, rcCaption.bottom, !bActive ? XPCOLOR_TOOLBAR_GRIPPER : COLOR_BTNTEXT);
-			Line(pDC, nCenter + 1, nOffset, nCenter + 1, rcCaption.bottom, !bActive ? XPCOLOR_TOOLBAR_GRIPPER : COLOR_BTNTEXT);
-			Line(pDC, nCenter + 3, nOffset, nCenter + 3, rcCaption.bottom, !bActive ? XPCOLOR_TOOLBAR_GRIPPER : COLOR_BTNTEXT);
+			Line(&dc, nCenter - 3, nOffset, nCenter - 3, rcCaption.bottom, !bActive ? XPCOLOR_TOOLBAR_GRIPPER : COLOR_BTNTEXT);
+			Line(&dc, nCenter - 1, nOffset, nCenter - 1, rcCaption.bottom, !bActive ? XPCOLOR_TOOLBAR_GRIPPER : COLOR_BTNTEXT);
+			Line(&dc, nCenter + 1, nOffset, nCenter + 1, rcCaption.bottom, !bActive ? XPCOLOR_TOOLBAR_GRIPPER : COLOR_BTNTEXT);
+			Line(&dc, nCenter + 3, nOffset, nCenter + 3, rcCaption.bottom, !bActive ? XPCOLOR_TOOLBAR_GRIPPER : COLOR_BTNTEXT);
 		}
 	}
 	else
@@ -1534,32 +1421,19 @@ void CXTPDockingPaneOffice2002VisioTheme::DrawCaption(CDC* pDC, CXTPDockingPaneT
 		if (rcCaption.right - nOffset > 0)
 		{
 			int nCenter = rcCaption.CenterPoint().y;
-			Line(pDC, nOffset, nCenter - 3, rcCaption.right, nCenter - 3, !bActive ? XPCOLOR_TOOLBAR_GRIPPER : COLOR_BTNTEXT);
-			Line(pDC, nOffset, nCenter - 1, rcCaption.right, nCenter - 1, !bActive ? XPCOLOR_TOOLBAR_GRIPPER : COLOR_BTNTEXT);
-			Line(pDC, nOffset, nCenter + 1, rcCaption.right, nCenter + 1, !bActive ? XPCOLOR_TOOLBAR_GRIPPER : COLOR_BTNTEXT);
-			Line(pDC, nOffset, nCenter + 3, rcCaption.right, nCenter + 3, !bActive ? XPCOLOR_TOOLBAR_GRIPPER : COLOR_BTNTEXT);
+			Line(&dc, nOffset, nCenter - 3, rcCaption.right, nCenter - 3, !bActive ? XPCOLOR_TOOLBAR_GRIPPER : COLOR_BTNTEXT);
+			Line(&dc, nOffset, nCenter - 1, rcCaption.right, nCenter - 1, !bActive ? XPCOLOR_TOOLBAR_GRIPPER : COLOR_BTNTEXT);
+			Line(&dc, nOffset, nCenter + 1, rcCaption.right, nCenter + 1, !bActive ? XPCOLOR_TOOLBAR_GRIPPER : COLOR_BTNTEXT);
+			Line(&dc, nOffset, nCenter + 3, rcCaption.right, nCenter + 3, !bActive ? XPCOLOR_TOOLBAR_GRIPPER : COLOR_BTNTEXT);
 		}
 	}
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// CXTPDockingPaneOffice2003VisioTheme
 
-CXTPDockingPaneOffice2003VisioTheme::CXTPDockingPaneOffice2003VisioTheme()
-{
-
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CXTPDockingPaneOffice2007VisioTheme
-
-CXTPDockingPaneOffice2007VisioTheme::CXTPDockingPaneOffice2007VisioTheme()
-{
-
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // CXTPDockingPaneOffice2003Theme
+
 
 CXTPDockingPaneOffice2003Theme::CXTPDockingPaneOffice2003Theme()
 {
@@ -1587,7 +1461,7 @@ CXTPDockingPaneOffice2003Theme::~CXTPDockingPaneOffice2003Theme()
 
 void CXTPDockingPaneOffice2003Theme::RefreshMetrics()
 {
-	CXTPDockingPaneVisualStudio2003Theme::RefreshMetrics();
+	CXTPDockingPaneOfficeTheme::RefreshMetrics();
 
 	m_clrNormalCaption.SetStandardValue(XTPColorManager()->LightColor(GetXtremeColor(COLOR_3DFACE), GetXtremeColor(COLOR_WINDOW), 0xcd), GetXtremeColor(COLOR_3DFACE));
 	m_clrNormalCaptionText.SetStandardValue(GetXtremeColor(COLOR_BTNTEXT));
@@ -1686,23 +1560,9 @@ CRect CXTPDockingPaneOffice2003Theme::GetCaptionGripperRect(const CXTPDockingPan
 	return CRect(0, 0, 10, m_nTitleHeight);
 }
 
-CRect CXTPDockingPaneOffice2003Theme::GetPaneCaptionRect(const CXTPDockingPaneSidePanel* pPane)
-{
-	CXTPClientRect rect(pPane);
-	rect.DeflateRect(1, 1);
 
-	int nTitleFont = GetCaptionHeight() + 2;
-	XTPDockingPaneDirection direction = pPane->GetDirection();
 
-	if (direction == xtpPaneDockLeft) rect.right = rect.left + nTitleFont;
-	else if (direction == xtpPaneDockRight) rect.left = rect.right - nTitleFont;
-	else if (direction == xtpPaneDockTop) rect.bottom = rect.top + nTitleFont;
-	else if (direction == xtpPaneDockBottom) rect.top = rect.bottom - nTitleFont;
-
-	return rect;
-}
-
-int CXTPDockingPanePaintManager::DrawCaptionText(CDC* pDC, const CString& strTitle, CRect rcText, BOOL bVertical, BOOL bCalcWidth)
+int CXTPDockingPanePaintManager::DrawCaptionText(CDC& dc, const CString& strTitle, CRect rcText, BOOL bVertical, BOOL bCalcWidth)
 {
 	int nWidth = 0;
 	if (strTitle.IsEmpty())
@@ -1710,27 +1570,27 @@ int CXTPDockingPanePaintManager::DrawCaptionText(CDC* pDC, const CString& strTit
 
 	if (bVertical)
 	{
-		CXTPFontDC font(pDC, &m_fntTitleVertical);
+		CXTPFontDC font(&dc, &m_fntTitleVertical);
 
-		CSize sz = pDC->GetTextExtent(strTitle);
+		CSize sz = dc.GetTextExtent(strTitle);
 		if (rcText.bottom > rcText.top)
 		{
 			rcText.left = (rcText.right - (rcText.Width() - sz.cy) / 2);
 			rcText.right = rcText.left + rcText.Height();
 
-			pDC->DrawText(strTitle, rcText, DT_NOPREFIX | DT_SINGLELINE | DT_NOCLIP | DT_END_ELLIPSIS);
+			dc.DrawText(strTitle, rcText, DT_NOPREFIX | DT_SINGLELINE | DT_NOCLIP | DT_END_ELLIPSIS);
 		}
 		nWidth = sz.cx;
 	}
 	else
 	{
-		CXTPFontDC font(pDC, &m_fntTitle);
-		pDC->DrawText(strTitle, rcText, DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER | DT_NOPREFIX);
+		CXTPFontDC font(&dc, &m_fntTitle);
+		dc.DrawText(strTitle, rcText, DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER | DT_NOPREFIX);
 
 		if (bCalcWidth)
 		{
 			CXTPEmptyRect rcCalc;
-			pDC->DrawText(strTitle, rcCalc, DT_CALCRECT | DT_SINGLELINE | DT_NOPREFIX);
+			dc.DrawText(strTitle, rcCalc, DT_CALCRECT | DT_SINGLELINE | DT_NOPREFIX);
 			nWidth = rcCalc.Width();
 		}
 	}
@@ -1742,10 +1602,6 @@ CXTPDockingPane* CXTPDockingPanePaintManager::GetSelectedPane(CXTPDockingPaneBas
 	if (pPane->GetType() == xtpPaneTypeTabbedContainer)
 	{
 		return ((CXTPDockingPaneTabbedContainer*)pPane)->GetSelected();
-	}
-	if (pPane->GetType() == xtpPaneTypeSidePanel)
-	{
-		return ((CXTPDockingPaneSidePanel*)pPane)->GetSelectedPane();
 	}
 	else if (pPane->GetType() == xtpPaneTypeMiniWnd)
 	{
@@ -1768,7 +1624,7 @@ BOOL CXTPDockingPanePaintManager::IsCaptionEnabled(CXTPDockingPaneBase* pPane)
 	return pSelectedPane->GetEnabled() & xtpPaneEnableClient;
 }
 
-void CXTPDockingPanePaintManager::DrawCaptionIcon(CDC* pDC, CXTPDockingPaneBase* pPane, CRect& rcCaption, BOOL bVertical)
+void CXTPDockingPanePaintManager::DrawCaptionIcon(CDC& dc, CXTPDockingPaneBase* pPane, CRect& rcCaption, BOOL bVertical)
 {
 	if (!m_bDrawCaptionIcon)
 		return;
@@ -1786,73 +1642,73 @@ void CXTPDockingPanePaintManager::DrawCaptionIcon(CDC* pDC, CXTPDockingPaneBase*
 
 	if (!bVertical && rcCaption.Width() >= szIcon.cx)
 	{
-		pImage->Draw(pDC, CPoint(rcCaption.left, rcCaption.CenterPoint().y - szIcon.cy / 2),
+		pImage->Draw(&dc, CPoint(rcCaption.left, rcCaption.CenterPoint().y - szIcon.cy / 2),
 			imageHandle, szIcon);
 
 		rcCaption.left += szIcon.cx + 3;
 	}
 	else if (bVertical && rcCaption.Height() >= szIcon.cy)
 	{
-		pImage->Draw(pDC, CPoint(rcCaption.CenterPoint().x - szIcon.cy / 2, rcCaption.top),
+		pImage->Draw(&dc, CPoint(rcCaption.CenterPoint().x - szIcon.cy / 2, rcCaption.top),
 			imageHandle, szIcon);
 
 		rcCaption.top += szIcon.cy + 3;
 	}
 }
 
-void CXTPDockingPaneOffice2003Theme::DrawCaptionPart(CDC* pDC, CXTPDockingPaneBase* pPane, CRect rcCaption, const CString& strTitle, BOOL bActive, BOOL bVertical)
+void CXTPDockingPaneOffice2003Theme::DrawCaptionPart(CDC& dc, CXTPDockingPaneBase* pPane, CRect rcCaption, const CString& strTitle, BOOL bActive, BOOL bVertical)
 {
 	COLORREF clrText = bActive ? m_clrActiveCaptionText : m_clrNormalCaptionText ;
 
 	XTPDeflateRectDirection(rcCaption, 0, 0, 4, 0, bVertical);
-	DrawCaptionButtons(pDC, pPane->GetCaptionButtons(), rcCaption, clrText, 16, 0, bVertical);
+	DrawCaptionButtons(&dc, pPane->GetCaptionButtons(), rcCaption, clrText, 16, 0, bVertical);
 
 	if (!bVertical && m_bDrawGripper && (rcCaption.right > rcCaption.left + 7))
 	{
-		for (int y = rcCaption.top + 5; y < rcCaption.bottom - 3; y += 4)
+		for (int y = 5; y < rcCaption.Height() - 3; y += 4)
 		{
-			pDC->FillSolidRect(rcCaption.left + 4 + 2, y + 1, 2, 2, GetXtremeColor(COLOR_WINDOW));
-			pDC->FillSolidRect(rcCaption.left + 3 + 2, y, 2, 2, GetXtremeColor(XPCOLOR_TOOLBAR_GRIPPER));
+			dc.FillSolidRect(rcCaption.left + 4 + 2, y + 1, 2, 2, GetXtremeColor(COLOR_WINDOW));
+			dc.FillSolidRect(rcCaption.left + 3 + 2, y, 2, 2, GetXtremeColor(XPCOLOR_TOOLBAR_GRIPPER));
 		}
 		rcCaption.left += 8;
 	}
 
 	if (bVertical && m_bDrawGripper && (rcCaption.bottom > rcCaption.top + 7))
 	{
-		for (int x = rcCaption.left + 3; x < rcCaption.right - 5; x += 4)
+		for (int x = 3; x < rcCaption.Width() - 5; x += 4)
 		{
-			pDC->FillSolidRect(x + 2, rcCaption.top + 4 + 2, 2, 2, GetXtremeColor(COLOR_WINDOW));
-			pDC->FillSolidRect(x + 1, rcCaption.top + 3 + 2, 2, 2, GetXtremeColor(XPCOLOR_TOOLBAR_GRIPPER));
+			dc.FillSolidRect(x + 2, rcCaption.top + 4 + 2, 2, 2, GetXtremeColor(COLOR_WINDOW));
+			dc.FillSolidRect(x + 1, rcCaption.top + 3 + 2, 2, 2, GetXtremeColor(XPCOLOR_TOOLBAR_GRIPPER));
 		}
 		rcCaption.top += 8;
 	}
 
-	pDC->SetTextColor(IsCaptionEnabled(pPane) ? clrText : m_clrDisabledCaptionText);
+	dc.SetTextColor(IsCaptionEnabled(pPane) ? clrText : GetXtremeColor(COLOR_GRAYTEXT));
 
 	XTPDeflateRectDirection(rcCaption, 6, 1, 2, 0, bVertical);
 
-	DrawCaptionIcon(pDC, pPane, rcCaption, bVertical);
-	DrawCaptionText(pDC, strTitle, rcCaption, bVertical);
+	DrawCaptionIcon(dc, pPane, rcCaption, bVertical);
+	DrawCaptionText(dc, strTitle, rcCaption, bVertical);
 }
 
-void CXTPDockingPaneOffice2003Theme::DrawFloatingFrame(CDC* pDC, CXTPDockingPaneMiniWnd* pPane, CRect rc)
+void CXTPDockingPaneOffice2003Theme::DrawFloatingFrame(CDC& dc, CXTPDockingPaneMiniWnd* pPane, CRect rc)
 {
 	COLORREF clrFrame = GetXtremeColor(XPCOLOR_MENUBAR_BORDER);
 
-	pDC->Draw3dRect(rc, clrFrame, clrFrame);
+	dc.Draw3dRect(rc, clrFrame, clrFrame);
 	rc.DeflateRect(1, 1);
-	pDC->Draw3dRect(rc, clrFrame, clrFrame);
+	dc.Draw3dRect(rc, clrFrame, clrFrame);
 	rc.DeflateRect(1, 1);
 
-	pDC->Draw3dRect(rc, clrFrame, clrFrame);
-	XTPDrawHelpers()->ExcludeCorners(pDC, rc);
-	pDC->Draw3dRect(rc, m_clrNormalCaption.clrDark, m_clrNormalCaption.clrDark);
+	dc.Draw3dRect(rc, clrFrame, clrFrame);
+	XTPDrawHelpers()->ExcludeCorners(&dc, rc);
+	dc.Draw3dRect(rc, m_clrNormalCaption.clrDark, m_clrNormalCaption.clrDark);
 
 	int nTitleHeight = m_nTitleHeight;
 	CRect rcCaption(rc);
 	rcCaption.DeflateRect(0, 0, 0, rc.Height() - nTitleHeight - 3);
 
-	CXTPBufferDC dcCache(*pDC, rcCaption);
+	CXTPBufferDC dcCache(dc, rcCaption);
 	dcCache.SetBkMode(TRANSPARENT);
 
 	BOOL bActive = m_bHighlightActiveCaption && pPane->IsActive();
@@ -1868,37 +1724,10 @@ void CXTPDockingPaneOffice2003Theme::DrawFloatingFrame(CDC* pDC, CXTPDockingPane
 	CString strTitle;
 	pPane->GetWindowText(strTitle);
 
-	DrawCaptionPart(&dcCache, pPane, rcCaption, strTitle, bActive, FALSE);
+	DrawCaptionPart(dcCache, pPane, rcCaption, strTitle, bActive, FALSE);
 }
 
-void CXTPDockingPaneOffice2003Theme::DrawSidePanel(CDC* pDC, CXTPDockingPaneSidePanel* pPane, CRect rc)
-{
-	BOOL bActive = m_bHighlightActiveCaption && pPane->IsActive();
-
-	pDC->FillSolidRect(rc, bActive ? m_clrActiveCaption : m_clrNormalCaption);
-	pDC->SetBkMode(TRANSPARENT);
-
-	pDC->Draw3dRect(rc, GetXtremeColor(COLOR_WINDOWFRAME), GetXtremeColor(COLOR_WINDOWFRAME));
-	rc.DeflateRect(1, 1);
-
-	CRect rcCaption = rc;
-	int nTitleFont = GetCaptionHeight() + 2;
-	XTPDockingPaneDirection direction = pPane->GetDirection();
-
-	if (direction == xtpPaneDockLeft) rcCaption.right = rcCaption.left + nTitleFont;
-	else if (direction == xtpPaneDockRight) rcCaption.left = rcCaption.right - nTitleFont;
-	else if (direction == xtpPaneDockTop) rcCaption.bottom = rcCaption.top + nTitleFont;
-	else if (direction == xtpPaneDockBottom) rcCaption.top = rcCaption.bottom - nTitleFont;
-
-
-	BOOL bVertical = direction == xtpPaneDockLeft || direction == xtpPaneDockRight;
-
-	XTPDrawHelpers()->GradientFill(pDC, rcCaption, bActive ? m_clrActiveCaption : m_clrNormalCaption, bVertical);
-
-	DrawCaptionPart(pDC, pPane, rcCaption, pPane->GetTitle(), bActive, bVertical);
-}
-
-void CXTPDockingPaneOffice2003Theme::DrawCaption(CDC* pDC, CXTPDockingPaneTabbedContainer* pPane, CRect rc)
+void CXTPDockingPaneOffice2003Theme::DrawCaption(CDC& dc, CXTPDockingPaneTabbedContainer* pPane, CRect rc)
 {
 	BOOL bVertical = pPane->IsCaptionVertical();
 
@@ -1919,36 +1748,34 @@ void CXTPDockingPaneOffice2003Theme::DrawCaption(CDC* pDC, CXTPDockingPaneTabbed
 	if (m_bRoundedCaption)
 	{
 		XTPDeflateRectDirection(rcFill, 1, 0, 0, 0, bVertical);
-		pDC->FillSolidRect(rcCaption, m_clrSplitter);
+		dc.FillSolidRect(rcCaption, m_clrSplitter);
 
-		XTPDrawHelpers()->ExcludeCorners(pDC, rcFill);
+		XTPDrawHelpers()->ExcludeCorners(&dc, rcFill);
 	}
 
 	BOOL bActive = m_bHighlightActiveCaption && pPane->IsActive();
 
-	XTPDrawHelpers()->GradientFill(pDC, rcFill,
+	XTPDrawHelpers()->GradientFill(&dc, rcFill,
 		bActive ? m_clrActiveCaption : m_clrNormalCaption, bVertical);
 
 	if (!m_bRoundedCaption)
 	{
-		pDC->FillSolidRect(rcCaption.left, rcCaption.top, 1, rcCaption.Height(), GetXtremeColor(XPCOLOR_FRAME));
-		pDC->FillSolidRect(rcCaption.left, rcCaption.top, rcCaption.Width(), 1, GetXtremeColor(XPCOLOR_FRAME));
-		pDC->FillSolidRect(rcCaption.right - 1, rcCaption.top, 1, rcCaption.Height(), GetXtremeColor(XPCOLOR_FRAME));
+		dc.FillSolidRect(rcCaption.left, rcCaption.top, 1, rcCaption.Height(), GetXtremeColor(XPCOLOR_FRAME));
+		dc.FillSolidRect(rcCaption.left, rcCaption.top, rcCaption.Width(), 1, GetXtremeColor(XPCOLOR_FRAME));
+		dc.FillSolidRect(rcCaption.right - 1, rcCaption.top, 1, rcCaption.Height(), GetXtremeColor(XPCOLOR_FRAME));
 	}
 
-	CString strTitle = pPane->GetTitle();
-	DrawCaptionPart(pDC, pPane, rcCaption, strTitle, bActive, bVertical);
+	CString strTitle = pPane->GetSelected() ? pPane->GetSelected()->GetTitle() : _T("");
+	DrawCaptionPart(dc, pPane, rcCaption, strTitle, bActive, bVertical);
 }
 
 
-//////////////////////////////////////////////////////////////////////////
-// CXTPDockingPaneOffice2007Theme
+
 
 CXTPDockingPaneOffice2007Theme::CXTPDockingPaneOffice2007Theme()
 {
 	m_bRoundedCaption = FALSE;
 	m_dwSplitterStyle = xtpPaneSplitterGradientVert;
-	m_bDrawGripper = FALSE;
 
 	m_pPanelPaintManager->SetAppearance(xtpTabAppearancePropertyPage2007);
 	m_pPanelPaintManager->m_bHotTracking = TRUE;
@@ -1959,10 +1786,9 @@ CXTPDockingPaneOffice2007Theme::CXTPDockingPaneOffice2007Theme()
 	m_pPanelPaintManager->m_rcButtonMargin.SetRect(2, 1, 2, 1);
 	m_pTabPaintManager->m_rcButtonMargin.SetRect(2, 1, 2, 1);
 
-	m_nCaptionFontGap = 5;
 }
 
-void CXTPDockingPaneOffice2007Theme::DrawCaption(CDC* pDC, CXTPDockingPaneTabbedContainer* pPane, CRect rc)
+void CXTPDockingPaneOffice2007Theme::DrawCaption(CDC& dc, CXTPDockingPaneTabbedContainer* pPane, CRect rc)
 {
 	BOOL bVertical = pPane->IsCaptionVertical();
 
@@ -1978,43 +1804,52 @@ void CXTPDockingPaneOffice2007Theme::DrawCaption(CDC* pDC, CXTPDockingPaneTabbed
 		rcCaption.DeflateRect(0, 0, 0, rc.Height() - nTitleHeight - 3);
 	}
 
+	CRect rcFill(rcCaption);
+
 	BOOL bActive = m_bHighlightActiveCaption && pPane->IsActive();
 
-	XTPDrawHelpers()->GradientFill(pDC, rcCaption,  bActive ? m_clrActiveCaption : m_clrNormalCaption, bVertical);
+	XTPDrawHelpers()->GradientFill(&dc, rcFill,
+		bActive ? m_clrActiveCaption : m_clrNormalCaption, bVertical);
 
-	DrawCaptionPart(pDC, pPane, rcCaption, pPane->GetTitle(), bActive, bVertical);
+	dc.FillSolidRect(rcFill.left, rcFill.top, rcFill.Width(), 1, m_arrColor[XPCOLOR_FRAME]);
+	dc.FillSolidRect(rcFill.left, rcFill.top + 1, rcFill.Width(), 1, m_arrColor[COLOR_3DHIGHLIGHT]);
+
+	dc.FillSolidRect(rcFill.left, rcFill.top, 1, rcFill.Height(), m_arrColor[XPCOLOR_FRAME]);
+	dc.FillSolidRect(rcFill.left + 1, rcFill.top + 1, 1, rcFill.Height() - 1, m_arrColor[COLOR_3DHIGHLIGHT]);
+	dc.FillSolidRect(rcFill.right - 1, rcFill.top, 1, rcFill.Height(), m_arrColor[XPCOLOR_FRAME]);
+
+	CString strTitle = pPane->GetSelected() ? pPane->GetSelected()->GetTitle() : _T("");
+	DrawCaptionPart(dc, pPane, rcCaption, strTitle, bActive, bVertical);
 }
 
 void CXTPDockingPaneOffice2007Theme::RefreshMetrics()
 {
 	CXTPDockingPaneOffice2003Theme::RefreshMetrics();
 
-	CXTPOffice2007Images* pImages = XTPOffice2007Images();
-
 	if (XTPOffice2007Images()->IsValid())
 	{
-		m_arrColor[XPCOLOR_FRAME] = pImages->GetImageColor(_T("Window"), _T("WindowFrame"));
-		m_arrColor[XPCOLOR_3DFACE] = pImages->GetImageColor(_T("Window"), _T("ButtonFace"));
-		m_arrColor[COLOR_3DHIGHLIGHT] = pImages->GetImageColor(_T("Window"), _T("EdgeHighLightColor"));
+		m_arrColor[XPCOLOR_FRAME] = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("WindowFrame"));
+		m_arrColor[XPCOLOR_3DFACE] = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("ButtonFace"));
+		m_arrColor[COLOR_3DHIGHLIGHT] = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("EdgeHighLightColor"));
 
-		m_clrSplitter.SetStandardValue(pImages->GetImageColor(_T("DockingPane"), _T("Splitter")));
+		m_clrSplitter.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("DockingPane"), _T("Splitter")));
 		m_clrSplitterGripper.SetStandardValue(m_arrColor[XPCOLOR_FRAME]);
 
-		m_arrColor[XPCOLOR_TOOLBAR_GRIPPER] = pImages->GetImageColor(_T("Toolbar"), _T("ToolbarGripper"));
-		m_arrColor[XPCOLOR_MENUBAR_BORDER] = pImages->GetImageColor(_T("Toolbar"), _T("MenuPopupBorder"));
+		m_arrColor[XPCOLOR_TOOLBAR_GRIPPER] = XTPOffice2007Images()->GetImageColor(_T("Toolbar"), _T("ToolbarGripper"));
+		m_arrColor[XPCOLOR_MENUBAR_BORDER] = XTPOffice2007Images()->GetImageColor(_T("Toolbar"), _T("MenuPopupBorder"));
 
 		m_bLunaTheme = TRUE;
 
-		m_clrSplitterGradient.SetStandardValue(pImages->GetImageColor(_T("DockingPane"), _T("SplitterLight")),
-			pImages->GetImageColor(_T("DockingPane"), _T("SplitterDark")));
+		m_clrSplitterGradient.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("DockingPane"), _T("SplitterLight")),
+			XTPOffice2007Images()->GetImageColor(_T("DockingPane"), _T("SplitterDark")));
 
-		m_clrNormalCaption.SetStandardValue(pImages->GetImageColor(_T("DockingPane"), _T("NormalCaptionLight")),
-			pImages->GetImageColor(_T("DockingPane"), _T("NormalCaptionDark")), 0.25f);
-		m_clrNormalCaptionText.SetStandardValue(pImages->GetImageColor(_T("DockingPane"), _T("NormalCaptionText")));
+		m_clrNormalCaption.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("DockingPane"), _T("NormalCaptionLight")),
+			XTPOffice2007Images()->GetImageColor(_T("DockingPane"), _T("NormalCaptionDark")), 0.25f);
+		m_clrNormalCaptionText.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("DockingPane"), _T("NormalCaptionText")));
 
-		m_clrActiveCaption.SetStandardValue(pImages->GetImageColor(_T("DockingPane"), _T("ActiveCaptionLight")),
-			pImages->GetImageColor(_T("DockingPane"), _T("ActiveCaptionDark")), 0.25f);
-		m_clrActiveCaptionText.SetStandardValue(pImages->GetImageColor(_T("DockingPane"), _T("ActiveCaptionText")));
+		m_clrActiveCaption.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("DockingPane"), _T("ActiveCaptionLight")),
+			XTPOffice2007Images()->GetImageColor(_T("DockingPane"), _T("ActiveCaptionDark")), 0.25f);
+		m_clrActiveCaptionText.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("DockingPane"), _T("ActiveCaptionText")));
 
 	}
 	else
@@ -2044,243 +1879,37 @@ void CXTPDockingPaneOffice2007Theme::RefreshMetrics()
 		m_clrNormalCaptionText.SetStandardValue(RGB(8, 55, 114));
 		m_clrActiveCaptionText.SetStandardValue(RGB(8, 55, 114));
 	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPDockingPaneOffice2007OutlookTheme
-
-CXTPDockingPaneOffice2007OutlookTheme::CXTPDockingPaneOffice2007OutlookTheme()
-{
-	m_nCaptionFontGap = 3;
-}
-
-void CXTPDockingPaneOffice2007OutlookTheme::DrawCaption(CDC* pDC, CXTPDockingPaneTabbedContainer* pPane, CRect rc)
-{
-	BOOL bVertical = pPane->IsCaptionVertical();
-
-	int nTitleHeight = m_nTitleHeight;
-	CRect rcCaption(rc);
-
-	if (bVertical)
-	{
-		rcCaption.DeflateRect(0, 0, rc.Width() - nTitleHeight - 3, 0);
-	}
-	else
-	{
-		rcCaption.DeflateRect(0, 0, 0, rc.Height() - nTitleHeight - 3);
-	}
-
-	BOOL bActive = m_bHighlightActiveCaption && pPane->IsActive();
-
-	XTPDrawHelpers()->GradientFill(pDC, rcCaption,  bActive ? m_clrActiveCaption : m_clrNormalCaption, bVertical);
-
-	if (bVertical)
-	{
-		pDC->FillSolidRect(rcCaption.left, rcCaption.top, rcCaption.Width(), 1, GetXtremeColor(XPCOLOR_FRAME));
-		pDC->FillSolidRect(rcCaption.left, rcCaption.top, 1, rcCaption.Height(), GetXtremeColor(XPCOLOR_FRAME));
-		pDC->FillSolidRect(rcCaption.left, rcCaption.bottom - 1, rcCaption.Width(), 1, GetXtremeColor(XPCOLOR_FRAME));
-
-		pDC->FillSolidRect(rcCaption.left + 1, rcCaption.top + 1, rcCaption.Width() - 1, 1, GetXtremeColor(COLOR_3DHIGHLIGHT));
-		pDC->FillSolidRect(rcCaption.left + 1, rcCaption.top + 1, 1, rcCaption.Height() - 2, GetXtremeColor(COLOR_3DHIGHLIGHT));
-
-	}
-	else
-	{
-		pDC->FillSolidRect(rcCaption.left, rcCaption.top, rcCaption.Width(), 1, GetXtremeColor(XPCOLOR_FRAME));
-		pDC->FillSolidRect(rcCaption.left, rcCaption.top, 1, rcCaption.Height(), GetXtremeColor(XPCOLOR_FRAME));
-		pDC->FillSolidRect(rcCaption.right - 1, rcCaption.top, 1, rcCaption.Height(), GetXtremeColor(XPCOLOR_FRAME));
-
-		pDC->FillSolidRect(rcCaption.left + 1, rcCaption.top + 1, rcCaption.Width() - 2, 1, GetXtremeColor(COLOR_3DHIGHLIGHT));
-		pDC->FillSolidRect(rcCaption.left + 1, rcCaption.top + 1, 1, rcCaption.Height() - 1, GetXtremeColor(COLOR_3DHIGHLIGHT));
-	}
-
-	DrawCaptionPart(pDC, pPane, rcCaption, pPane->GetTitle(), bActive, bVertical);
-}
-
-void CXTPDockingPaneOffice2007OutlookTheme::RefreshMetrics()
-{
-	CXTPDockingPaneOffice2007Theme::RefreshMetrics();
-
-	if (m_bUseStandardFont)
-	{
-		LOGFONT lf;
-		VERIFY(CXTPDrawHelpers::GetIconLogFont(&lf));
-
-		CString strOfficeFont = _T("Segoe UI");
-
-		BOOL bOfficeFont = XTPDrawHelpers()->FontExists(m_strOfficeFont);
-
-		if (bOfficeFont)
-		{
-			STRCPY_S(lf.lfFaceName, LF_FACESIZE, strOfficeFont);
-			if (XTPSystemVersion()->IsClearTypeTextQualitySupported()) lf.lfQuality = 5;
-		}
-		else
-		{
-			STRCPY_S(lf.lfFaceName, LF_FACESIZE, _T("Arial"));
-		}
-
-		lf.lfWeight = FW_BOLD;
-		lf.lfHeight = 20;
-
-		SetCaptionFontIndirect(&lf);
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPDockingPaneOffice2007WordTheme
-
-
-CXTPDockingPaneOffice2007WordTheme::CXTPDockingPaneOffice2007WordTheme()
-{
-	m_bRoundedCaption = FALSE;
-	m_dwSplitterStyle = xtpPaneSplitterFlat;
-	m_bDrawGripper = FALSE;
-
-	m_pPanelPaintManager->SetAppearance(xtpTabAppearancePropertyPageAccess2007);
-	m_pPanelPaintManager->m_bHotTracking = TRUE;
-
-	m_pTabPaintManager->SetAppearance(xtpTabAppearancePropertyPageAccess2007);
-	m_pTabPaintManager->m_bHotTracking = TRUE;
-
-	m_nCaptionFontGap = 2;
-	m_nSplitterSize = 0;
-	m_nSplitterIndent = 2;
-}
-
-void CXTPDockingPaneOffice2007WordTheme::DrawCaption(CDC* pDC, CXTPDockingPaneTabbedContainer* pPane, CRect rc)
-{
-	BOOL bVertical = pPane->IsCaptionVertical();
-
-	int nTitleHeight = m_nTitleHeight;
-	CRect rcCaption(rc);
-
-	if (bVertical)
-	{
-		rcCaption.DeflateRect(0, 0, rc.Width() - nTitleHeight - 3, 0);
-	}
-	else
-	{
-		rcCaption.DeflateRect(0, 0, 0, rc.Height() - nTitleHeight - 3);
-	}
-
-	CRect rcFill(rcCaption);
-
-	BOOL bActive = m_bHighlightActiveCaption && pPane->IsActive();
-
-	XTPDrawHelpers()->GradientFill(pDC, rcFill, bActive ? m_clrActiveCaption : m_clrNormalCaption, bVertical);
-
-	CString strTitle = pPane->GetTitle();
-	DrawCaptionPart(pDC, pPane, rcCaption, strTitle, bActive, bVertical);
-}
-
-void CXTPDockingPaneOffice2007WordTheme::DrawCaptionPart(CDC* pDC, CXTPDockingPaneBase* pPane, CRect rcCaption, const CString& strTitle, BOOL bActive, BOOL bVertical)
-{
-	COLORREF clrText = bActive ? m_clrActiveCaptionText : m_clrNormalCaptionText;
-
-	DrawCaptionButtons(pDC, pPane->GetCaptionButtons(), rcCaption, clrText, 16, 0, bVertical);
-
-	pDC->SetTextColor(IsCaptionEnabled(pPane) ? clrText : m_clrDisabledCaptionText);
-
-	XTPDeflateRectDirection(rcCaption, 2, 1, 2, 0, bVertical);
-
-	DrawCaptionIcon(pDC, pPane, rcCaption, bVertical);
-	DrawCaptionText(pDC, strTitle, rcCaption, bVertical);
 
 }
-
-BOOL CXTPDockingPaneOffice2007WordTheme::PaneHasBorders(CXTPDockingPaneTabbedContainer* pPane) const
-{
-	return pPane->IsTitleVisible();
-}
-
-void CXTPDockingPaneOffice2007WordTheme::AdjustClientRect(CXTPDockingPaneTabbedContainer* pPane, CRect& rect, BOOL bApply)
-{
-	if (PaneHasBorders(pPane))
-	{
-		rect.DeflateRect(3, 3);
-	}
-	CXTPDockingPaneOffice2003Theme::AdjustClientRect(pPane, rect, bApply);
-}
-
-void CXTPDockingPaneOffice2007WordTheme::DrawPane(CDC* pDC, CXTPDockingPaneTabbedContainer* pPane, CRect rc)
-{
-	if (PaneHasBorders(pPane))
-	{
-		pDC->FillSolidRect(rc, m_arrColor[XPCOLOR_FRAME]);
-
-		pDC->FillSolidRect(rc.left + 3, rc.top + 2, rc.Width() - 6, 1, m_arrColor[XPCOLOR_TOOLBAR_GRIPPER]);
-		pDC->FillSolidRect(rc.left + 2, rc.top + 3, 1, rc.Height() - 5, m_arrColor[XPCOLOR_TOOLBAR_GRIPPER]);
-		pDC->FillSolidRect(rc.right - 3, rc.top + 3, 1, rc.Height() - 5, m_arrColor[XPCOLOR_TOOLBAR_GRIPPER]);
-		pDC->FillSolidRect(rc.left + 2, rc.bottom - 3, rc.Width() - 4, 1, m_arrColor[XPCOLOR_TOOLBAR_GRIPPER]);
-
-		rc.DeflateRect(3, 3);
-	}
-
-	CXTPDockingPaneOffice2003Theme::DrawPane(pDC, pPane, rc);
-}
-
-void CXTPDockingPaneOffice2007WordTheme::RefreshMetrics()
-{
-	CXTPDockingPaneOffice2003Theme::RefreshMetrics();
-
-	CXTPOffice2007Images* pImages = XTPOffice2007Images();
-	pImages->AssertValid();
-
-	m_arrColor[XPCOLOR_FRAME] = pImages->GetImageColor(_T("DockingPane"), _T("WordSplitter"));
-	m_arrColor[XPCOLOR_3DFACE] = pImages->GetImageColor(_T("DockingPane"), _T("WordPaneBackground"));
-	m_arrColor[COLOR_3DHIGHLIGHT] = pImages->GetImageColor(_T("Window"), _T("EdgeHighLightColor"));
-
-
-	m_arrColor[XPCOLOR_TOOLBAR_GRIPPER] = pImages->GetImageColor(_T("DockingPane"), _T("WordPaneBorder"));
-	m_arrColor[XPCOLOR_MENUBAR_BORDER] = pImages->GetImageColor(_T("DockingPane"), _T("WordSplitter"));
-
-	m_arrColor[XPCOLOR_HIGHLIGHT_BORDER] = pImages->GetImageColor(_T("Window"), _T("HighlightSelectedBorder"));
-	m_arrColor[XPCOLOR_HIGHLIGHT] = pImages->GetImageColor(_T("Window"), _T("HighlightSelected"));
-	m_arrColor[XPCOLOR_HIGHLIGHT_PUSHED_BORDER] = pImages->GetImageColor(_T("Window"), _T("HighlightPressedBorder"));
-	m_arrColor[XPCOLOR_HIGHLIGHT_PUSHED] = pImages->GetImageColor(_T("Window"), _T("HighlightPressed"));
-	m_arrColor[XPCOLOR_HIGHLIGHT_TEXT] = 0;
-	m_arrColor[XPCOLOR_PUSHED_TEXT] = 0;
-
-	m_bLunaTheme = FALSE;
-
-	m_clrSplitterGradient.SetStandardValue(pImages->GetImageColor(_T("DockingPane"), _T("WordSplitter")));
-	m_clrSplitter.SetStandardValue(m_clrSplitterGradient);
-
-	m_clrNormalCaption.SetStandardValue(pImages->GetImageColor(_T("DockingPane"), _T("WordNormalCaption")));
-	m_clrNormalCaptionText.SetStandardValue(pImages->GetImageColor(_T("DockingPane"), _T("WordCaptionText")));
-
-	m_clrActiveCaption.SetStandardValue(pImages->GetImageColor(_T("DockingPane"), _T("WordActiveCaption")));
-	m_clrActiveCaptionText.SetStandardValue(pImages->GetImageColor(_T("DockingPane"), _T("WordCaptionText")));
-	m_clrSplitterGripper.SetStandardValue(m_clrNormalCaptionText);
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
-// CXTPDockingPaneOffice2003OutlookTheme
+// CXTPDockingPaneShortcutBar2003Theme
 
 
-CXTPDockingPaneOffice2003OutlookTheme::CXTPDockingPaneOffice2003OutlookTheme()
+CXTPDockingPaneShortcutBar2003Theme::CXTPDockingPaneShortcutBar2003Theme()
 {
 	m_bDrawGripper = FALSE;
 	m_bRoundedCaption = FALSE;
 	m_nCaptionFontGap = 3;
 }
 
-CXTPDockingPaneOffice2003OutlookTheme::~CXTPDockingPaneOffice2003OutlookTheme()
+CXTPDockingPaneShortcutBar2003Theme::~CXTPDockingPaneShortcutBar2003Theme()
 {
 }
 
 
-void CXTPDockingPaneOffice2003OutlookTheme::RefreshMetrics()
+void CXTPDockingPaneShortcutBar2003Theme::RefreshMetrics()
 {
 	CXTPDockingPaneOffice2003Theme::RefreshMetrics();
 
+	CWindowDC dc(CWnd::GetDesktopWindow());
+
 	if (m_bUseStandardFont)
 	{
-		LOGFONT lf;
-		VERIFY(CXTPDrawHelpers::GetIconLogFont(&lf));
+		LOGFONT lf = { sizeof(LOGFONT)};
+
+		VERIFY(::SystemParametersInfo(SPI_GETICONTITLELOGFONT,
+			sizeof(LOGFONT), &lf, 0));
 
 		STRCPY_S(lf.lfFaceName, LF_FACESIZE, _T("Arial"));
 		lf.lfWeight = FW_BOLD;
@@ -2302,7 +1931,7 @@ void CXTPDockingPaneOffice2003OutlookTheme::RefreshMetrics()
 	}
 }
 
-CRect CXTPDockingPaneOffice2003OutlookTheme::GetCaptionGripperRect(const CXTPDockingPaneTabbedContainer* /*pPane*/)
+CRect CXTPDockingPaneShortcutBar2003Theme::GetCaptionGripperRect(const CXTPDockingPaneTabbedContainer* /*pPane*/)
 {
 	return CRect(0, 0, 0, 0);
 }
@@ -2311,14 +1940,14 @@ CRect CXTPDockingPaneOffice2003OutlookTheme::GetCaptionGripperRect(const CXTPDoc
 //////////////////////////////////////////////////////////////////////////
 ///
 
-CXTPDockingPaneWinNativeTheme::CXTPDockingPaneWinNativeTheme()
+CXTPDockingPaneNativeXPTheme::CXTPDockingPaneNativeXPTheme()
 {
 	m_pPanelPaintManager->SetAppearance(xtpTabAppearancePropertyPage);
-	m_pPanelPaintManager->SetColor(xtpTabColorWinNative);
+	m_pPanelPaintManager->SetColor(xtpTabColorWinXP);
 	m_pPanelPaintManager->m_bHotTracking = TRUE;
 
 	m_pTabPaintManager->SetAppearance(xtpTabAppearancePropertyPage);
-	m_pTabPaintManager->SetColor(xtpTabColorWinNative);
+	m_pTabPaintManager->SetColor(xtpTabColorWinXP);
 	m_pTabPaintManager->m_bHotTracking = TRUE;
 
 	m_bGradientCaption = TRUE;
@@ -2327,37 +1956,31 @@ CXTPDockingPaneWinNativeTheme::CXTPDockingPaneWinNativeTheme()
 	m_nCaptionButtonStyle = xtpPaneCaptionButtonThemedExplorerBar;
 }
 
-void CXTPDockingPaneWinNativeTheme::RefreshMetrics()
+void CXTPDockingPaneNativeXPTheme::RefreshMetrics()
 {
-	CXTPDockingPaneVisualStudio2003Theme::RefreshMetrics();
-
-	if (m_themeWindow.IsAppThemed())
-	{
-		m_clrActiveCaptionText.SetStandardValue(GetXtremeColor(COLOR_CAPTIONTEXT));
-		m_clrNormalCaptionText.SetStandardValue(GetXtremeColor(COLOR_INACTIVECAPTIONTEXT));
-	}
+	CXTPDockingPaneOfficeTheme::RefreshMetrics();
 }
 
-void CXTPDockingPaneWinNativeTheme::DrawFloatingFrame(CDC* pDC, CXTPDockingPaneMiniWnd* pPane, CRect rc)
+void CXTPDockingPaneNativeXPTheme::DrawFloatingFrame(CDC& dc, CXTPDockingPaneMiniWnd* pPane, CRect rc)
 {
 	if (!m_themeWindow.IsAppThemed())
 	{
-		CXTPDockingPaneVisualStudio2003Theme::DrawFloatingFrame(pDC, pPane, rc);
+		CXTPDockingPaneOfficeTheme::DrawFloatingFrame(dc, pPane, rc);
 		return;
 	}
 	BOOL bActive = m_bHighlightActiveCaption && pPane->IsActive();
 
 	int nState = bActive ? CS_ACTIVE : CS_INACTIVE;
 
-	m_themeWindow.DrawThemeBackground(pDC->GetSafeHdc(), WP_SMALLFRAMELEFT, nState, CRect(rc.left, rc.top, rc.left + 3, rc.bottom), 0);
-	m_themeWindow.DrawThemeBackground(pDC->GetSafeHdc(), WP_SMALLFRAMERIGHT, nState, CRect(rc.right - 3, rc.top, rc.right, rc.bottom), 0);
-	m_themeWindow.DrawThemeBackground(pDC->GetSafeHdc(), WP_SMALLFRAMEBOTTOM, nState, CRect(rc.left, rc.bottom - 3, rc.right, rc.bottom), 0);
+	m_themeWindow.DrawThemeBackground(dc, WP_SMALLFRAMELEFT, nState, CRect(rc.left, rc.top, rc.left + 3, rc.bottom), 0);
+	m_themeWindow.DrawThemeBackground(dc, WP_SMALLFRAMERIGHT, nState, CRect(rc.right - 3, rc.top, rc.right, rc.bottom), 0);
+	m_themeWindow.DrawThemeBackground(dc, WP_SMALLFRAMEBOTTOM, nState, CRect(rc.left, rc.bottom - 3, rc.right, rc.bottom), 0);
 
 	int nTitleHeight = m_nTitleHeight;
 	CRect rcCaption(rc);
 	rcCaption.DeflateRect(0, 0, 0, rc.Height() - nTitleHeight - 3 - 2);
 
-	CXTPBufferDC dcCache(*pDC, rcCaption);
+	CXTPBufferDC dcCache(dc, rcCaption);
 	dcCache.SetBkMode(TRANSPARENT);
 
 	m_themeWindow.DrawThemeBackground(dcCache, WP_SMALLCAPTION, nState, rcCaption, 0);
@@ -2367,45 +1990,34 @@ void CXTPDockingPaneWinNativeTheme::DrawFloatingFrame(CDC* pDC, CXTPDockingPaneM
 	CString strTitle;
 	pPane->GetWindowText(strTitle);
 
-	DrawCaptionPart(&dcCache, pPane, rcCaption, strTitle, bActive, FALSE);
+	DrawCaptionPart(dcCache, pPane, rcCaption, strTitle, bActive, FALSE);
 }
 
-void CXTPDockingPaneWinNativeTheme::DrawSidePanel(CDC* pDC, CXTPDockingPaneSidePanel* pPane, CRect rc)
-{
-	CXTPDockingPaneVisualStudio2003Theme::DrawSidePanel(pDC, pPane, rc);
-}
-
-void CXTPDockingPaneWinNativeTheme::DrawCaptionPart(CDC* pDC, CXTPDockingPaneBase* pPane, CRect rcCaption, const CString& strTitle, BOOL bActive, BOOL bVertical)
+void CXTPDockingPaneNativeXPTheme::DrawCaptionPart(CDC& dc, CXTPDockingPaneBase* pPane, CRect rcCaption, const CString& strTitle, BOOL bActive, BOOL bVertical)
 {
 	if (!m_themeWindow.IsAppThemed())
 	{
-		CXTPDockingPaneVisualStudio2003Theme::DrawCaptionPart(pDC, pPane, rcCaption, strTitle, bActive, bVertical);
+		CXTPDockingPaneOfficeTheme::DrawCaptionPart(dc, pPane, rcCaption, strTitle, bActive, bVertical);
 		return;
 	}
 
-	COLORREF clrText = bActive ? m_clrActiveCaptionText : m_clrNormalCaptionText;
-	COLORREF clrButton = clrText;
-
-	if (pPane->GetType() == xtpPaneTypeSidePanel)
-	{
-		clrButton = FillCaptionPart(pDC, pPane, rcCaption, bActive, bVertical);
-	}
+	COLORREF clrText = GetXtremeColor(bActive ? COLOR_CAPTIONTEXT : COLOR_INACTIVECAPTIONTEXT);
 
 	XTPDeflateRectDirection(rcCaption, 0, 0, 2, 0, bVertical);
-	DrawCaptionButtons(pDC, pPane->GetCaptionButtons(), rcCaption, clrButton, 16, 3, bVertical);
+	DrawCaptionButtons(&dc, pPane->GetCaptionButtons(), rcCaption, clrText, 16, 3, bVertical);
 
-	pDC->SetTextColor(IsCaptionEnabled(pPane) ? clrText : m_clrDisabledCaptionText);
+	dc.SetTextColor(IsCaptionEnabled(pPane) ? clrText : GetXtremeColor(COLOR_GRAYTEXT));
 	XTPDeflateRectDirection(rcCaption, 4, 1, 0, 0, bVertical);
 
-	DrawCaptionIcon(pDC, pPane, rcCaption, bVertical);
-	DrawCaptionText(pDC, strTitle, rcCaption, bVertical);
+	DrawCaptionIcon(dc, pPane, rcCaption, bVertical);
+	DrawCaptionText(dc, strTitle, rcCaption, bVertical);
 }
 
-void CXTPDockingPaneWinNativeTheme::DrawCaption(CDC* pDC, CXTPDockingPaneTabbedContainer* pPane, CRect rc)
+void CXTPDockingPaneNativeXPTheme::DrawCaption(CDC& dc, CXTPDockingPaneTabbedContainer* pPane, CRect rc)
 {
 	if (!m_themeWindow.IsAppThemed())
 	{
-		CXTPDockingPaneVisualStudio2003Theme::DrawCaption(pDC, pPane, rc);
+		CXTPDockingPaneOfficeTheme::DrawCaption(dc, pPane, rc);
 		return;
 	}
 
@@ -2418,20 +2030,20 @@ void CXTPDockingPaneWinNativeTheme::DrawCaption(CDC* pDC, CXTPDockingPaneTabbedC
 		rcCaption = CRect(0, 0, m_nTitleHeight + 1, rc.bottom);
 	}
 
-	m_themeWindow.DrawThemeBackground(pDC->GetSafeHdc(), WP_SMALLCAPTION, bActive ? CS_ACTIVE : CS_INACTIVE, rcCaption, 0);
+	m_themeWindow.DrawThemeBackground(dc, WP_SMALLCAPTION, bActive ? CS_ACTIVE : CS_INACTIVE, rcCaption, 0);
 
-	CString strTitle = pPane->GetTitle();
-	DrawCaptionPart(pDC, pPane, rcCaption, strTitle, bActive, bVertical);
+	CString strTitle = pPane->GetSelected() ? pPane->GetSelected()->GetTitle() : _T("");
+	DrawCaptionPart(dc, pPane, rcCaption, strTitle, bActive, bVertical);
 }
 
 
 //////////////////////////////////////////////////////////////////////////
-// CXTPDockingPaneVisualStudio2005Beta1Theme
+// CXTPDockingPaneWhidbeyTheme
 
-class CXTPDockingPaneVisualStudio2005Beta1Theme::CColorSetVisualStudio2005 : public CXTPTabPaintManager::CColorSetOffice2003
+class CXTPDockingPaneWhidbeyTheme::CColorSetWhidbey : public CXTPTabPaintManager::CColorSetOffice2003
 {
 public:
-	CColorSetVisualStudio2005(BOOL bHighlightSelected)
+	CColorSetWhidbey(BOOL bHighlightSelected)
 	{
 		m_bHighlightSelected = bHighlightSelected;
 		m_bTransparentButton = FALSE;
@@ -2468,15 +2080,13 @@ protected:
 
 };
 
-void CXTPDockingPaneVisualStudio2005Beta1Theme::CColorSetVisualStudio2005::RefreshMetrics()
+void CXTPDockingPaneWhidbeyTheme::CColorSetWhidbey::RefreshMetrics()
 {
 	CColorSet::RefreshMetrics();
 
 	if (m_bHighlightSelected)
 	{
-		m_clrButtonSelected.SetStandardValue(XTPColorManager()->LightColor(
-			GetSysColor(COLOR_HIGHLIGHT), GetSysColor(COLOR_WINDOW), 0x02));
-
+		m_clrButtonSelected.SetStandardValue(GetSysColor(COLOR_WINDOW));
 		m_clrSelectedText.SetStandardValue(GetSysColor(COLOR_WINDOWTEXT));
 	}
 	else
@@ -2521,11 +2131,11 @@ void CXTPDockingPaneVisualStudio2005Beta1Theme::CColorSetVisualStudio2005::Refre
 	m_clrAutoHideFace.SetStandardValue(m_clrHeaderFace);
 }
 
-class CXTPDockingPaneVisualStudio2005Beta1Theme::CColorSetVisualStudio2003 : public CColorSetVisualStudio2005
+class CXTPDockingPaneWhidbeyTheme::CColorSetVisualStudio2005 : public CColorSetWhidbey
 {
 public:
-	CColorSetVisualStudio2003(BOOL bHighlightSelected)
-		: CColorSetVisualStudio2005(bHighlightSelected)
+	CColorSetVisualStudio2005(BOOL bHighlightSelected)
+		: CColorSetWhidbey(bHighlightSelected)
 	{
 		m_bTransparentButton = TRUE;
 	}
@@ -2533,9 +2143,9 @@ public:
 	void RefreshMetrics();
 };
 
-void CXTPDockingPaneVisualStudio2005Beta1Theme::CColorSetVisualStudio2003::RefreshMetrics()
+void CXTPDockingPaneWhidbeyTheme::CColorSetVisualStudio2005::RefreshMetrics()
 {
-	CColorSetVisualStudio2005::RefreshMetrics();
+	CColorSetWhidbey::RefreshMetrics();
 
 	m_bGradientButton = FALSE;
 	m_bLunaTheme = FALSE;
@@ -2552,21 +2162,21 @@ void CXTPDockingPaneVisualStudio2005Beta1Theme::CColorSetVisualStudio2003::Refre
 }
 
 
-CXTPDockingPaneVisualStudio2005Beta1Theme::CXTPDockingPaneVisualStudio2005Beta1Theme()
+CXTPDockingPaneWhidbeyTheme::CXTPDockingPaneWhidbeyTheme()
 {
 	CXTPTabPaintManager::CAppearanceSetPropertyPageFlat* pAppearanceFlat = (CXTPTabPaintManager::CAppearanceSetPropertyPageFlat*)
 		m_pTabPaintManager->SetAppearance(xtpTabAppearancePropertyPageFlat);
 
 	m_pTabPaintManager->m_bDisableLunaColors = TRUE;
 	pAppearanceFlat->m_bBlurPoints = FALSE;
-	m_pTabPaintManager->SetColorSet(new CColorSetVisualStudio2005(TRUE));
+	m_pTabPaintManager->SetColorSet(new CColorSetWhidbey(TRUE));
 	m_pTabPaintManager->m_bHotTracking = FALSE;
 	m_pTabPaintManager->m_clientFrame = xtpTabFrameNone;
 
 	m_pPanelPaintManager->m_bDisableLunaColors = TRUE;
 	pAppearanceFlat = (CXTPTabPaintManager::CAppearanceSetPropertyPageFlat*)m_pPanelPaintManager->SetAppearance(xtpTabAppearancePropertyPageFlat);
 	pAppearanceFlat->m_bBlurPoints = FALSE;
-	m_pPanelPaintManager->SetColorSet(new CColorSetVisualStudio2005(FALSE));
+	m_pPanelPaintManager->SetColorSet(new CColorSetWhidbey(FALSE));
 	m_pPanelPaintManager->m_bHotTracking = FALSE;
 	m_pPanelPaintManager->SetLayout(xtpTabLayoutAutoSize);
 
@@ -2578,9 +2188,9 @@ CXTPDockingPaneVisualStudio2005Beta1Theme::CXTPDockingPaneVisualStudio2005Beta1T
 	m_systemTheme = xtpSystemThemeUnknown;
 }
 
-void CXTPDockingPaneVisualStudio2005Beta1Theme::RefreshMetrics()
+void CXTPDockingPaneWhidbeyTheme::RefreshMetrics()
 {
-	CXTPDockingPaneVisualStudio2003Theme::RefreshMetrics();
+	CXTPDockingPaneOfficeTheme::RefreshMetrics();
 
 	m_clrNormalCaptionText.SetStandardValue(GetXtremeColor(COLOR_INACTIVECAPTIONTEXT));
 
@@ -2607,13 +2217,13 @@ void CXTPDockingPaneVisualStudio2005Beta1Theme::RefreshMetrics()
 	}
 
 }
-CXTPDockingPaneVisualStudio2005Beta2Theme::CXTPDockingPaneVisualStudio2005Beta2Theme()
+CXTPDockingPaneVisualStudio2005SecondTheme::CXTPDockingPaneVisualStudio2005SecondTheme()
 {
 	m_pTabPaintManager->SetAppearance(xtpTabAppearanceVisualStudio2005);
-	m_pTabPaintManager->SetColorSet(new CColorSetVisualStudio2005(TRUE));
+	m_pTabPaintManager->SetColorSet(new CColorSetWhidbey(TRUE));
 
 	m_pPanelPaintManager->SetAppearance(xtpTabAppearanceVisualStudio2005);
-	m_pPanelPaintManager->SetColorSet(new CColorSetVisualStudio2005(TRUE));
+	m_pPanelPaintManager->SetColorSet(new CColorSetWhidbey(TRUE));
 }
 
 CXTPDockingPaneVisualStudio2005Theme::CXTPDockingPaneVisualStudio2005Theme()
@@ -2623,7 +2233,7 @@ CXTPDockingPaneVisualStudio2005Theme::CXTPDockingPaneVisualStudio2005Theme()
 	pAppearance->m_bBlurPoints = FALSE;
 
 	m_pPanelPaintManager->SetAppearanceSet(pAppearance);
-	m_pPanelPaintManager->SetColorSet(new CColorSetVisualStudio2003(FALSE));
+	m_pPanelPaintManager->SetColorSet(new CColorSetVisualStudio2005(FALSE));
 	m_pPanelPaintManager->m_bRotateImageOnVerticalDraw = TRUE;
 
 
@@ -2632,7 +2242,7 @@ CXTPDockingPaneVisualStudio2005Theme::CXTPDockingPaneVisualStudio2005Theme()
 	pAppearance->m_bVisualStudio2005Style = TRUE;
 
 	m_pTabPaintManager->SetAppearanceSet(pAppearance);
-	m_pTabPaintManager->SetColorSet(new CColorSetVisualStudio2003(TRUE));
+	m_pTabPaintManager->SetColorSet(new CColorSetVisualStudio2005(TRUE));
 
 	m_pTabPaintManager->m_clientFrame = xtpTabFrameSingleLine;
 	m_pTabPaintManager->m_rcClientMargin.top = 1;
@@ -2641,9 +2251,9 @@ CXTPDockingPaneVisualStudio2005Theme::CXTPDockingPaneVisualStudio2005Theme()
 
 
 
-void CXTPDockingPaneVisualStudio2005Beta2Theme::RefreshMetrics()
+void CXTPDockingPaneVisualStudio2005SecondTheme::RefreshMetrics()
 {
-	CXTPDockingPaneVisualStudio2005Beta1Theme::RefreshMetrics();
+	CXTPDockingPaneWhidbeyTheme::RefreshMetrics();
 
 	m_clrNormalCaption.SetStandardValue(GetXtremeColor(COLOR_INACTIVECAPTION));
 	m_clrActiveCaption.SetStandardValue(GetXtremeColor(COLOR_ACTIVECAPTION));
@@ -2670,73 +2280,28 @@ void CXTPDockingPaneVisualStudio2005Beta2Theme::RefreshMetrics()
 	}
 }
 
-COLORREF CXTPDockingPaneVisualStudio2005Beta2Theme::FillCaptionPart(CDC* pDC, CXTPDockingPaneBase* pPane, CRect rcCaption, BOOL bActive, BOOL bVertical)
+COLORREF CXTPDockingPaneVisualStudio2005SecondTheme::FillCaptionPart(CDC& dc, CXTPDockingPaneBase* /*pPane*/, CRect rcCaption, BOOL bActive, BOOL bVertical)
 {
-	XTPDrawHelpers()->GradientFill(pDC, rcCaption, bActive ? m_clrActiveCaption : m_clrNormalCaption, bVertical);
+	XTPDrawHelpers()->GradientFill(&dc, rcCaption, bActive ? m_clrActiveCaption : m_clrNormalCaption, bVertical);
 
-	if (pPane->GetType() == xtpPaneTypeSidePanel)
-		return bActive ? m_clrActiveCaptionText : m_clrNormalCaptionText;
-
-	CXTPPenDC pen(*pDC, m_clrCaptionBorder);
+	CXTPPenDC pen(dc, m_clrCaptionBorder);
 	if (bVertical)
 	{
-		pDC->MoveTo(rcCaption.right, rcCaption.bottom - 1);
-		pDC->LineTo(rcCaption.left , rcCaption.bottom - 1);
-		pDC->LineTo(rcCaption.left, rcCaption.top);
-		pDC->LineTo(rcCaption.right, rcCaption.top);
+		dc.MoveTo(rcCaption.right, rcCaption.bottom - 1);
+		dc.LineTo(rcCaption.left , rcCaption.bottom - 1);
+		dc.LineTo(rcCaption.left, rcCaption.top);
+		dc.LineTo(rcCaption.right, rcCaption.top);
 
 	}
 	else
 	{
-		pDC->MoveTo(rcCaption.left, rcCaption.bottom);
-		pDC->LineTo(rcCaption.left , rcCaption.top);
-		pDC->LineTo(rcCaption.right - 1, rcCaption.top);
-		pDC->LineTo(rcCaption.right - 1, rcCaption.bottom - 1);
+		dc.MoveTo(rcCaption.left, rcCaption.bottom);
+		dc.LineTo(rcCaption.left , rcCaption.top);
+		dc.LineTo(rcCaption.right - 1, rcCaption.top);
+		dc.LineTo(rcCaption.right - 1, rcCaption.bottom - 1);
 	}
 
 	return bActive ? m_clrActiveCaptionText : m_clrNormalCaptionText;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPDockingPaneVisualStudio2008Theme
-
-CXTPDockingPaneVisualStudio2008Theme::CXTPDockingPaneVisualStudio2008Theme()
-{
-
-}
-
-void CXTPDockingPaneVisualStudio2008Theme::RefreshMetrics()
-{
-	CXTPDockingPaneVisualStudio2005Theme::RefreshMetrics();
-
-	m_themeRebar.OpenThemeData(0, L"REBAR");
-
-	if (m_themeRebar.IsAppThemed())
-	{
-		m_pPanelPaintManager->SetAppearance(xtpTabAppearancePropertyPage);
-		m_pPanelPaintManager->SetColor(xtpTabColorWinNative);
-		m_pPanelPaintManager->m_bHotTracking = TRUE;
-
-		m_pTabPaintManager->SetAppearance(xtpTabAppearancePropertyPage);
-		m_pTabPaintManager->SetColor(xtpTabColorWinNative);
-		m_pTabPaintManager->m_bHotTracking = TRUE;
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPDockingPaneVisualStudio2010Theme
-
-CXTPDockingPaneVisualStudio2010Theme::CXTPDockingPaneVisualStudio2010Theme()
-{
-
-}
-
-void CXTPDockingPaneVisualStudio2010Theme::RefreshMetrics()
-{
-	CXTPDockingPaneVisualStudio2005Theme::RefreshMetrics();
-
-	m_pPanelPaintManager->SetColor(xtpTabColorVisualStudio2010);
-	m_pTabPaintManager->SetColor(xtpTabColorVisualStudio2010);
 }
 
 

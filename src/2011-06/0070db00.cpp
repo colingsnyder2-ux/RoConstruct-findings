@@ -1,17 +1,11 @@
-// from server: 80% by atomic.potato
-extern void G1_func_0080b15d();
-
-int g_00CD3428;
-int g_00CD342C;
-int g_00CD3430;
-
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+extern "C" void seh_fn_0070db00(void*);
+extern int g_a_0070db00;
+extern int g_b_0070db00;
+extern int g_arg_0070db00;
+struct Reg_0070db00 { Reg_0070db00() { g_a_0070db00 = 0; g_b_0070db00 = 0; seh_fn_0070db00(&g_arg_0070db00); } };
 void func_0070db00()
 {
-    if ((g_00CD3430 & 1) == 0)
-    {
-        g_00CD3430 |= 1;
-        g_00CD3428 = 0;
-        g_00CD342C = 0;
-        G1_func_0080b15d();
-    }
+    static Reg_0070db00 reg;
 }

@@ -12,4 +12,10 @@ struct CalleeClass
 typedef void (CalleeClass::*CalleeFunc)(const void *);
 
 extern "C" CalleeClass *getCallee(void *);
-extern "C" CalleeFu
+extern "C" CalleeFunc getCalleeFunc();
+
+void S::f()
+{
+    CalleeClass *callee = getCallee((char *)this - 0xa4);
+    (callee->*getCalleeFunc())( (const void *)0x00b92a00 );
+}

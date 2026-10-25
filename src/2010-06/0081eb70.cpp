@@ -1,15 +1,14 @@
-// from server: 25% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Calendar/XTPCalendarEventLabel.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/Controls/XTColorPopup.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPCalendarEventLabel.cpp: implementation of the CXTPCalendarEventLabel and
-// CXTPCalendarEventLabels classes.
+// XTColorPopup.cpp : implementation file
 //
-// This file is a part of the XTREME CALENDAR MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME CONTROLS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -27,18 +26,27 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "Resource.h"
-#include "Common/Resource.h"
 
-#include "Common/XTPPropExchange.h"
-#include "Common/XTPVC50Helpers.h"
-#include "Common/XTPVC80Helpers.h"
 #include "Common/XTPDrawHelpers.h"
-#include "Common/XTPResourceManager.h"
+#include "Common/XTPWinThemeWrapper.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPSystemHelpers.h"
 
-#include "XTPCalendarEventLabel.h"
-#include "XTPCalendarUtils.h"
-#include "XTPCalendarDefines.h"
+#include "Resource.h"
+#include "XTDefines.h"
+#include "XTGlobal.h"
+#include "XTColorSelectorCtrl.h"
+#include "XTWndShadow.h"
+#include "XTColorPopup.h"
+#include "XTColorSelectorCtrlTheme.h"
+
+#ifdef _XTP_INCLUDE_CONTROLBARS
+#include "ControlBars/XTOptionsManager.h"
+#include "ControlBars/XTDelegate.h"
+#include "ControlBars/XTControlbar.h"
+#include "ControlBars/XTToolBar.h"
+#include "ControlBars/XTCoolMenu.h"
+#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -46,392 +54,251 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-IMPLEMENT_DYNAMIC(CXTPCalendarEventLabel, CCmdTarget)
-IMPLEMENT_DYNAMIC(CXTPCalendarEventLabels, CCmdTarget)
+/////////////////////////////////////////////////////////////////////////////
+// CXTColorPopup
 
-IMPLEMENT_DYNCREATE(CXTPCalendarEventCategory, CCmdTarget)
-IMPLEMENT_DYNCREATE(CXTPCalendarEventCategories, CCmdTarget)
-
-IMPLEMENT_DYNAMIC(CXTPCalendarUIntArray,    CCmdTarget)
-IMPLEMENT_DYNAMIC(CXTPCalendarIconIDs,          CXTPCalendarUIntArray)
-IMPLEMENT_DYNAMIC(CXTPCalendarEventCategoryIDs, CXTPCalendarUIntArray)
-
-////////////////////////////////////////////////////////////////////////////
-CXTPCalendarEventLabel::CXTPCalendarEventLabel(int nID, COLORREF clrColor, LPCTSTR pcszName)
+CXTColorPopup::CXTColorPopup(BOOL bAutoDelete/*= FALSE*/, LPARAM callerParam /*= 0*/)
+: m_callerParam(callerParam)
 {
-	m_nLabelID = nID;
-	m_clrColor = clrColor;
-	m_strName = pcszName;
-
+	m_bAutoDelete = bAutoDelete;
+	m_bDisplayShadow = TRUE;
 }
 
-////////////////////////////////////////////////////////////////////////////
-CXTPCalendarEventLabels::CXTPCalendarEventLabels()
+CXTColorPopup::~CXTColorPopup()
 {
 
 }
 
-CXTPCalendarEventLabels::~CXTPCalendarEventLabels()
-{
-	RemoveAll();
-}
+BEGIN_MESSAGE_MAP(CXTColorPopup, CXTColorSelectorCtrl)
+	//{{AFX_MSG_MAP(CXTColorPopup)
+	ON_WM_ACTIVATE()
+	ON_WM_DESTROY()
+	ON_WM_CREATE()
+	ON_WM_KILLFOCUS()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_NCPAINT()
+	ON_WM_NCCALCSIZE()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
 
-CXTPCalendarEventLabel* CXTPCalendarEventLabels::Find(int nLabelID) const
+/////////////////////////////////////////////////////////////////////////////
+// CXTColorPopup message handlers
+
+BOOL CXTColorPopup::Create(CRect& rect, CWnd* pParentWnd, DWORD dwPopup, COLORREF clrColor,
+	COLORREF clrDefault/*= CLR_DEFAULT*/)
 {
-	int nFIdx = FindIndex(nLabelID);
-	if (nFIdx >= 0)
+	BOOL bOfficeTheme = GetTheme()->GetTheme() != xtThemeDefault;
+
+	if (bOfficeTheme)
 	{
-		return GetAt(nFIdx);
-	}
-	return NULL;
-}
-
-int CXTPCalendarEventLabels::FindIndex(int nLabelID) const
-{
-	int nCount = GetCount();
-
-	if (nLabelID >= 0 && nLabelID < nCount)
-	{
-		CXTPCalendarEventLabel* pLabel = GetAt(nLabelID);
-
-		if (pLabel && pLabel->m_nLabelID == nLabelID)
-		{
-			return nLabelID;
-		}
-	}
-
-	for (int i = 0; i < nCount; i++)
-	{
-		CXTPCalendarEventLabel* pLabel = GetAt(i);
-
-		if (pLabel && pLabel->m_nLabelID == nLabelID)
-		{
-			return i;
-		}
-	}
-
-	return -1;
-}
-
-void CXTPCalendarEventLabels::InitDefaultValues()
-{
-	RemoveAll();
-
-	//XTP_CALENDAR_NONE_LABEL_ID = 0
-	CXTPCalendarEventLabel* pLabel;
-	pLabel = new CXTPCalendarEventLabel(0, RGB(255, 255, 255), XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_EVENT_LABEL_NONE));
-	InsertAt(0, pLabel);
-
-	pLabel = new CXTPCalendarEventLabel(1, RGB(255, 148, 132), XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_EVENT_LABEL_IMPORTANT));
-	InsertAt(1, pLabel);
-
-	pLabel = new CXTPCalendarEventLabel(2, RGB(132, 156, 231), XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_EVENT_LABEL_BUSINESS));
-	InsertAt(2, pLabel);
-
-	pLabel = new CXTPCalendarEventLabel(3, RGB(165, 222, 99), XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_EVENT_LABEL_PERSONAL));
-	InsertAt(3, pLabel);
-
-	pLabel = new CXTPCalendarEventLabel(4, RGB(231, 231, 214), XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_EVENT_LABEL_VACATION));
-	InsertAt(4, pLabel);
-
-	pLabel = new CXTPCalendarEventLabel(5, RGB(255, 181, 115), XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_EVENT_LABEL_MUSTATTEND));
-	InsertAt(5, pLabel);
-
-	pLabel = new CXTPCalendarEventLabel(6, RGB(132, 239, 247), XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_EVENT_LABEL_TRAVELREQUIRED));
-	InsertAt(6, pLabel);
-
-	pLabel = new CXTPCalendarEventLabel(7, RGB(214, 206, 132), XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_EVENT_LABEL_NEEDSPREPARATION));
-	InsertAt(7, pLabel);
-
-	pLabel = new CXTPCalendarEventLabel(8, RGB(198, 165, 247), XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_EVENT_LABEL_BIRTHDAY));
-	InsertAt(8, pLabel);
-
-	pLabel = new CXTPCalendarEventLabel(9, RGB(165, 206, 198), XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_EVENT_LABEL_ANNIVERSARY));
-	InsertAt(9, pLabel);
-
-	pLabel = new CXTPCalendarEventLabel(10, RGB(255, 231, 115), XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_EVENT_LABEL_PHONECALL));
-	InsertAt(10, pLabel);
-}
-
-//===========================================================================
-// CXTPCalendarEventCategory
-CXTPCalendarEventCategory::CXTPCalendarEventCategory(UINT nID, LPCTSTR pcszName,
-							COLORREF clrBorder, COLORREF clrBkBase)
-{
-	m_nID = nID;
-	m_strName = pcszName;
-
-	m_clrBorder = clrBorder;
-	m_clrBkBase = clrBkBase;
-
-}
-
-CXTPCalendarEventCategory::~CXTPCalendarEventCategory()
-{
-}
-
-CXTPPaintManagerColorGradient& CXTPCalendarEventCategory::GetBackgroundColor()
-{
-	if (m_grclrBackground.IsNull())
-	{
-		m_grclrBackground.clrLight.SetStandardValue(XTPDrawHelpers()->LightenColor(156, m_clrBkBase));// 156 - 242, 178, 179;
-		m_grclrBackground.clrDark.SetStandardValue(XTPDrawHelpers()->LightenColor(56, m_clrBkBase));  // 56  - 229,100, 107
-	}
-
-	return m_grclrBackground;
-}
-
-COLORREF CXTPCalendarEventCategory::GetBkColorAllDayEvents()
-{
-	return m_clrBkBase;
-}
-
-COLORREF CXTPCalendarEventCategory::GetBkColorWorkCell()
-{
-	return XTPDrawHelpers()->LightenColor(185, m_clrBkBase); // 185 - 245, 201, 203
-}
-
-COLORREF CXTPCalendarEventCategory::GetBkColorNonWorkCell()
-{
-	return XTPDrawHelpers()->LightenColor(115, m_clrBkBase); // 115 - 237, 146, 150
-}
-
-COLORREF CXTPCalendarEventCategory::GetColorCellBorder()
-{
-	return XTPDrawHelpers()->LightenColor(45, m_clrBkBase); // 45 - 227, 91, 98
-}
-
-
-CXTPCalendarEventCategories::CXTPCalendarEventCategories()
-{
-	InitDefaultValues();
-
-}
-
-CXTPCalendarEventCategories::~CXTPCalendarEventCategories()
-{
-}
-
-CXTPCalendarEventCategory* CXTPCalendarEventCategories::Find(UINT nID) const
-{
-	int nFIdx = FindIndex(nID);
-	if (nFIdx >= 0)
-	{
-		return GetAt(nFIdx);
-	}
-	return NULL;
-}
-
-int CXTPCalendarEventCategories::FindIndex(UINT nID) const
-{
-	int nCount = GetCount();
-
-	//---------------------------------------------------------
-	int nDirectIdx = (int)(nID - 1);
-
-	if (nDirectIdx >= 0 && nDirectIdx < nCount)
-	{
-		CXTPCalendarEventCategory* pEvCat = GetAt(nDirectIdx);
-
-		if (pEvCat && pEvCat->GetID() == nID)
-		{
-			return nDirectIdx;
-		}
-	}
-
-	//---------------------------------------------------------
-	for (int i = 0; i < nCount; i++)
-	{
-		CXTPCalendarEventCategory* pEvCat = GetAt(i);
-
-		if (pEvCat && pEvCat->GetID() == nID)
-		{
-			return i;
-		}
-	}
-
-	return -1;
-}
-
-CString CXTPCalendarEventCategories::LoadCategoryName(UINT nIDResource) const
-{
-	CString strFormat = XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_CATEGORY);
-	CString strColor = XTPResourceManager()->LoadString(nIDResource);
-
-	CString strCategory;
-	strCategory.Format(strFormat, (LPCTSTR)strColor);
-
-	return strCategory;
-}
-
-void CXTPCalendarEventCategories::InitDefaultValues()
-{
-	RemoveAll();
-
-	CXTPCalendarEventCategory* pEvCat;
-
-	//---------------------------------------
-	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryYellow, LoadCategoryName(XTP_IDS_CLR_YELLOW),
-		RGB(154, 149, 25), RGB(255, 251, 155));//RGB(255, 252, 179), RGB(255,249, 91));
-	Add(pEvCat);
-	//---------------------------------------
-	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryGreen, LoadCategoryName(XTP_IDS_CLR_GREEN),
-		RGB(55, 126, 45), RGB(96, 194, 82)); //RGB(196, 232, 190), RGB(136, 210, 127));
-	Add(pEvCat);
-	//---------------------------------------
-	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryRed, LoadCategoryName(XTP_IDS_CLR_RED),
-		RGB(167, 29, 35), RGB(220, 56, 65)); //RGB(242, 178, 179), RGB(229,100, 107));
-	Add(pEvCat);
-	//---------------------------------------
-	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryPink, LoadCategoryName(XTP_IDS_CLR_PINK),
-		RGB(77, 49, 141), RGB(184, 164, 224)); //RGB(202, 187, 232), RGB(150, 125, 210));
-	Add(pEvCat);
-	//---------------------------------------
-	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryOrange, LoadCategoryName(XTP_IDS_CLR_ORANGE),
-		RGB(173, 77, 13), RGB(247, 187, 137)); //RGB(249, 204, 167), RGB(244, 152, 90));
-	Add(pEvCat);
-	//---------------------------------------
-	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryBlue, LoadCategoryName(XTP_IDS_CLR_BLUE),
-		RGB(40, 81, 142), RGB(159, 183, 232)); // RGB(183, 201, 238), RGB(119, 158, 218));
-	Add(pEvCat);
-}
-
-
-//===========================================================================
-int CXTPCalendarUIntArray::Find(UINT uID) const
-{
-	return TBase::FindElement(uID);
-}
-
-BOOL CXTPCalendarUIntArray::RemoveID(UINT uID)
-{
-	return TBase::RemoveElement(uID);
-}
-
-CString CXTPCalendarUIntArray::SaveToString() const
-{
-	CString strData;
-
-	TCHAR szNumber[34];
-
-	int nCount = GetSize();
-	for (int i = 0; i < nCount; i++)
-	{
-		UINT uElement = GetAt(i);
-
-		ITOT_S((int)uElement, szNumber, _countof(szNumber));
-		szNumber[33] = 0;
-
-		if (!strData.IsEmpty())
-		{
-			strData += _T(",");
-		}
-
-		strData += szNumber;
-	}
-
-	return strData;
-}
-
-void CXTPCalendarUIntArray::LoadFromString(LPCTSTR pcszData)
-{
-	RemoveAll();
-
-	CString strData = pcszData;
-
-	while (!strData.IsEmpty())
-	{
-		CString strNumber = strData.SpanExcluding(_T(","));
-
-		UINT uElement = (UINT)_ttoi(strNumber);
-		Add(uElement);
-
-		int nDelCount = strNumber.GetLength() + 1;
-		nDelCount = min(nDelCount, strData.GetLength());
-		DELETE_S(strData, 0, nDelCount);
-	}
-}
-
-void CXTPCalendarUIntArray::DoPropExchange(CXTPPropExchange* pPX, LPCTSTR pcszSection, LPCTSTR pcszElement)
-{
-	if (!pPX || !pcszSection || !pcszElement)
-	{
-		ASSERT(FALSE);
-		return;
-	}
-
-	long nVersion = 1;
-
-	if (pPX->IsStoring())
-	{
-		CXTPPropExchangeSection secArray(pPX->GetSection(pcszSection));
-		secArray->EmptySection();
-
-		PX_Long(&secArray, _T("Version"), nVersion, 1);
-
-		int nCount = GetSize();
-		CXTPPropExchangeEnumeratorPtr pEnumerator(secArray->GetEnumerator(pcszElement));
-		POSITION posStorage = pEnumerator->GetPosition(nCount);
-
-		for (int i = 0; i < nCount; i++)
-		{
-			ULONG ulElement = (ULONG)GetAt(i);
-
-			CXTPPropExchangeSection secElement(pEnumerator->GetNext(posStorage));
-			PX_ULong(&secElement, _T("Value"), ulElement);
-		}
-	}
-	else if (pPX->IsLoading())
-	{
-		RemoveAll();
-
-		CXTPPropExchangeSection secArray(pPX->GetSection(pcszSection));
-
-		PX_Long(&secArray, _T("Version"), nVersion, 1);
-
-		if (nVersion != 1)
-		{
-			TRACE(_T("ERROR! CXTPCalendarIconIDs::DoPropExchange: Unsupported data version: %d \n"), nVersion);
-			return;
-		}
-
-		CXTPPropExchangeEnumeratorPtr pEnumerator(secArray->GetEnumerator(pcszElement));
-		POSITION posStorage = pEnumerator->GetPosition();
-
-		while (posStorage)
-		{
-			ULONG ulElement = 0;
-
-			CXTPPropExchangeSection secElement(pEnumerator->GetNext(posStorage));
-			PX_ULong(&secElement, _T("Value"), ulElement, 0);
-
-			Add((ULONG)ulElement);
-		}
+		SetBorders(4, 4, 6, 6);
 	}
 	else
 	{
-		ASSERT(FALSE);
+		SetBorders(4, 4, 10, 10);
+	}
+
+	m_rcExclude = rect;
+
+#ifdef _XTP_INCLUDE_CONTROLBARS
+	if (bOfficeTheme && DYNAMIC_DOWNCAST(CXTToolBar, pParentWnd)) rect.bottom--;
+#endif
+
+	return CXTColorSelectorCtrl::Create(rect, pParentWnd, dwPopup | WS_POPUP, clrColor, clrDefault);
+}
+
+void CXTColorPopup::PostNcDestroy()
+{
+	CXTPMouseMonitor::SetupHook(NULL);
+
+	if (m_bAutoDelete)
+	{
+		delete this;
 	}
 }
 
-//===========================================================================
-CXTPCalendarIconIDs::CXTPCalendarIconIDs()
+void CXTColorPopup::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 {
+	CWnd::OnActivate(nState, pWndOther, bMinimized);
+
+	// If we lose activation (other than to the color dialog) post
+	// a close message...
+
+	if (nState == WA_INACTIVE && !IsColorDlgVisible())
+	{
+		PostMessage(WM_CLOSE);
+	}
+}
+
+void CXTColorPopup::OnDestroy()
+{
+	CWnd::OnDestroy();
+
+	// Inform the parent that we are closing up.
+	m_pParentWnd->SendMessage(CPN_XT_CLOSEUP,
+		(WPARAM)m_clrColor, m_callerParam);
+
+#ifdef _XTP_INCLUDE_CONTROLBARS
+	CXTCoolMenu::m_iMenuBarAlign = 0;
+	if (DYNAMIC_DOWNCAST(CXTToolBar, m_pParentWnd))
+	{
+		int iIndex = ((CXTToolBar*)m_pParentWnd)->CommandToIndex((UINT)m_callerParam);
+		((CXTToolBar*)m_pParentWnd)->SetDroppedItem(iIndex, false);
+		m_pParentWnd->Invalidate(FALSE);
+	}
+#endif
+}
+
+
+int CXTColorPopup::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+	if (CXTColorSelectorCtrl::OnCreate(lpCreateStruct) == -1)
+		return -1;
+
+	BOOL bOfficeTheme = GetTheme()->GetTheme() != xtThemeDefault;
+
+	if (bOfficeTheme)
+	{
+		ModifyStyle(WS_DLGFRAME | WS_THICKFRAME | WS_BORDER, 0, SWP_FRAMECHANGED);
+		ModifyStyleEx(WS_EX_STATICEDGE | WS_EX_WINDOWEDGE | WS_EX_DLGMODALFRAME, 0, SWP_FRAMECHANGED);
+	}
+	else
+	{
+		ModifyStyle(0, WS_DLGFRAME, SWP_FRAMECHANGED);
+	}
+
+	if (bOfficeTheme && XTAuxData().bMenuShadows && m_bDisplayShadow)
+	{
+		XTShadowsManager()->SetShadow(m_hWnd, m_rcExclude);
+
+#ifdef _XTP_INCLUDE_CONTROLBARS
+		if (CXTCoolMenu::m_iMenuBarAlign && !m_rcExclude.IsRectEmpty())
+			XTShadowsManager()->SetShadow(m_rcExclude, m_hWnd);
+#endif
+	}
+
+	CXTPWindowRect rcWindow(this);
+	CRect rcWork = XTPMultiMonitor()->GetWorkArea(rcWindow);
+
+	bool bMoveWindow = false;
+	CSize size = rcWindow.Size();
+
+	// move right
+	if (rcWindow.left < rcWork.left)
+	{
+		rcWindow.left = rcWork.left;
+		rcWindow.right = rcWindow.left + size.cx;
+		bMoveWindow = true;
+	}
+
+	// move left
+	else if (rcWindow.right > rcWork.right)
+	{
+		rcWindow.right = rcWork.right;
+		rcWindow.left = rcWindow.right - size.cx;
+		bMoveWindow = true;
+	}
+
+	// move up
+	if (rcWindow.bottom > rcWork.bottom)
+	{
+		rcWindow.bottom = rcWork.bottom;
+		rcWindow.top = rcWindow.bottom - size.cy;
+		bMoveWindow = true;
+	}
+
+	if (bMoveWindow)
+	{
+		MoveWindow(&rcWindow);
+	}
+
+	CXTPMouseMonitor::SetupHook(this);
+
+	m_pParentWnd->SendMessage(CPN_XT_DROPDOWN,
+		(WPARAM)m_clrColor, m_callerParam);
+
+	return 0;
+}
+
+// Adds a window to send color picker notifications to.
+void CXTColorPopup::AddListener(HWND hwndListener)
+{
+	m_listeners.Add(hwndListener);
+}
+
+void CXTColorPopup::EndSelection(int nCurSel)
+{
+	CXTPMouseMonitor::SetupHook(NULL);
+
+	OnEndSelection(nCurSel, m_callerParam);
+
+	PostMessage(WM_CLOSE);
 
 }
 
-CXTPCalendarIconIDs::~CXTPCalendarIconIDs()
+void CXTColorPopup::OnKillFocus(CWnd* pNewWnd)
 {
+	CWnd::OnKillFocus(pNewWnd);
+
+	if (!m_pColorDlg)
+	{
+		EndSelection(-1);
+	}
 }
 
-//===========================================================================
-CXTPCalendarEventCategoryIDs::CXTPCalendarEventCategoryIDs()
+void CXTColorPopup::OnLButtonDown(UINT nFlags, CPoint point)
 {
+	CRect rc;
+	GetClientRect(&rc);
+
+	if (!rc.PtInRect(point) && !IsColorDlgVisible())
+	{
+		EndSelection(-1);
+		return;
+	}
+	CXTColorSelectorCtrl::OnLButtonDown(nFlags, point);
 }
 
-CXTPCalendarEventCategoryIDs::~CXTPCalendarEventCategoryIDs()
+void CXTColorPopup::OnNcPaint()
 {
+	BOOL bOfficeTheme = GetTheme()->GetTheme() != xtThemeDefault;
+
+	if (bOfficeTheme)
+	{
+		CWindowDC dc(this);
+		const COLORREF clrFrame = GetXtremeColor(XPCOLOR_MENUBAR_BORDER);
+		CRect rc;
+		GetWindowRect(&rc);
+		int cx = rc.Width(); // for right border is exclusive
+		int cy = rc.Height() ; // see above
+		dc.Draw3dRect(0, 0, cx, cy, clrFrame, clrFrame);
+
+	#ifdef _XTP_INCLUDE_CONTROLBARS
+		if (!m_rcExclude.IsRectEmpty())
+			::DrawAdjacentBorder(&dc, GetXtremeColor(XPCOLOR_TOOLBAR_FACE), m_rcExclude, rc);
+	#endif
+
+	}
+	else
+	{
+		Default();
+	}
 }
 
+void CXTColorPopup::OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS FAR* lpncsp)
+{
+	BOOL bOfficeTheme = GetTheme()->GetTheme() != xtThemeDefault;
 
-/////////////////////////////////////////////////////////////////////////////
+	if (bOfficeTheme)
+	{
+		// adjust non-client area for border space
+		lpncsp->rgrc[0].left += 1;
+		lpncsp->rgrc[0].top += 1;
+		lpncsp->rgrc[0].right += -1;
+		lpncsp->rgrc[0].bottom += -1;
+	}
+	else
+	{
+		CWnd::OnNcCalcSize(bCalcValidRects, lpncsp);
+	}
+}

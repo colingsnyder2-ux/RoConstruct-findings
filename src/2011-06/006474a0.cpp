@@ -1,25 +1,4 @@
-// from server: 96% by atomic.potato
-struct Vector3
-{
-    float x;
-    float y;
-    float z;
-};
-
-struct MemoryManager
-{
-    void get(Vector3*, int);
-};
-
-struct CoreGuiService
-{
-    char pad0[200];
-    Vector3 f(int);
-};
-
-Vector3 CoreGuiService::f(int value)
-{
-    Vector3 result;
-    ((MemoryManager*)((char*)this + 200))->get(&result, 1);
-    return result;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct B{void get(void*,int);}; struct S{void* f(void*);};
+void* S::f(void* p){((B*)((char*)this+200))->get(p,1); return p;}

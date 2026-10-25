@@ -1,14 +1,14 @@
-// from server: 50% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Common/XTPSystemHelpers.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPControlPopup.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPSystemHelpers.cpp
+// XTPControlPopup.cpp : implementation of the CXTPControlPopup class.
 //
-// This file is a part of the XTREME TOOLKIT PRO MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,21 +26,15 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "XTPMacros.h"
-#include "XTPSystemHelpers.h"
 
-#ifdef _XTP_INCLUDE_GRAPHICLIBRARY
-#include "GraphicLibrary/zlib/zlib.h"
-#endif
-
-#pragma warning (disable : 4201)
-	#include <mmsystem.h>
-#pragma warning (default : 4201)
-
-#pragma message("   Automatically linking with WinMM library")
-#pragma message("      (Windows Multimedia System)")
-#pragma comment(lib, "winmm.lib")
-
+#include "XTPControlPopup.h"
+#include "XTPCommandBar.h"
+#include "XTPControls.h"
+#include "XTPPopupBar.h"
+#include "XTPShadowsManager.h"
+#include "XTPPaintManager.h"
+#include "XTPToolBar.h"
+#include "XTPCommandBars.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -48,1135 +42,382 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define TRACE_ACCESSIBLE(x)
 
+IMPLEMENT_XTP_CONTROL(CXTPControlPopup, CXTPControlButton)
 
-//===========================================================================
-// CXTPSystemVersion class
-//===========================================================================
-
-CXTPSystemVersion::CXTPSystemVersion()
+CXTPControlPopup::CXTPControlPopup()
 {
-	// zero memory and set struct size.
-	::ZeroMemory((OSVERSIONINFO*)this, sizeof(OSVERSIONINFO));
-	dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+	EnableAutomation();
 
-	// get the Windows OS version information.
-	::GetVersionEx((OSVERSIONINFO*)this);
+	m_controlType = xtpControlPopup;
+	m_bPopup = FALSE;
+	m_pCommandBar = NULL;
+	m_dwCommandBarID = 0;
+	m_bShowShadow = TRUE;
 }
 
-_XTP_EXT_CLASS CXTPSystemVersion* AFXAPI XTPSystemVersion()
+CXTPControlPopup::~CXTPControlPopup()
 {
-	static CXTPSystemVersion instance;
-	return &instance;
+	if (m_pCommandBar)
+		m_pCommandBar->InternalRelease();
+
 }
 
-bool CXTPSystemVersion::IsWin31() const
+CXTPControlPopup* CXTPControlPopup::CreateControlPopup(XTPControlType controlType)
 {
-	return (dwPlatformId == VER_PLATFORM_WIN32s);
+	ASSERT(IsPopupControlType(controlType));
+
+	CXTPControlPopup* pControl = (CXTPControlPopup*)CXTPControlPopup::CreateObject();
+	pControl->m_controlType = controlType;
+	return pControl;
 }
 
-bool CXTPSystemVersion::IsWin95() const
+void CXTPControlPopup::OnUnderlineActivate()
 {
-	return (dwPlatformId == VER_PLATFORM_WIN32_WINDOWS) &&
-		(dwMajorVersion == 4) && (dwMinorVersion < 10);
+	if (m_pCommandBar)
+		m_pParent->SetPopuped(m_nIndex, TRUE);
+	else
+		CXTPControlButton::OnUnderlineActivate();
 }
 
-bool CXTPSystemVersion::IsWin98() const
+void CXTPControlPopup::OnClick(BOOL bKeyboard, CPoint pt)
 {
-	return (dwPlatformId == VER_PLATFORM_WIN32_WINDOWS) &&
-		EqualTo(4, 10);
-}
-
-bool CXTPSystemVersion::IsWin9x() const
-{
-	return (dwPlatformId == VER_PLATFORM_WIN32_WINDOWS);
-}
-
-bool CXTPSystemVersion::IsWinME() const
-{
-	return (dwPlatformId == VER_PLATFORM_WIN32_WINDOWS) &&
-		EqualTo(4, 90);
-}
-
-bool CXTPSystemVersion::IsWinNT4() const
-{
-	return (dwPlatformId == VER_PLATFORM_WIN32_NT) &&
-		EqualTo(4, 0);
-}
-
-bool CXTPSystemVersion::IsWin2K() const
-{
-	return (dwPlatformId == VER_PLATFORM_WIN32_NT) &&
-		EqualTo(5, 0);
-}
-
-bool CXTPSystemVersion::IsWinXP() const
-{
-	return (dwPlatformId == VER_PLATFORM_WIN32_NT) &&
-		EqualTo(5, 1);
-}
-
-bool CXTPSystemVersion::IsWin95OrGreater() const
-{
-	return (dwPlatformId == VER_PLATFORM_WIN32_WINDOWS) &&
-		(dwMajorVersion >= 4);
-}
-
-bool CXTPSystemVersion::IsWin98OrGreater() const
-{
-	return (dwPlatformId == VER_PLATFORM_WIN32_WINDOWS) &&
-		GreaterThanEqualTo(4, 10);
-}
-
-bool CXTPSystemVersion::IsWinMEOrGreater() const
-{
-	return (dwPlatformId == VER_PLATFORM_WIN32_WINDOWS) &&
-		GreaterThanEqualTo(4, 90);
-}
-
-bool CXTPSystemVersion::IsWinNT4OrGreater() const
-{
-	return (dwPlatformId >= VER_PLATFORM_WIN32_NT) &&
-		(dwMajorVersion >= 4);
-}
-
-bool CXTPSystemVersion::IsWin2KOrGreater() const
-{
-	return (dwPlatformId >= VER_PLATFORM_WIN32_NT) &&
-		(dwMajorVersion >= 5);
-}
-
-bool CXTPSystemVersion::IsWinXPOrGreater() const
-{
-	return (dwPlatformId >= VER_PLATFORM_WIN32_NT) &&
-		GreaterThanEqualTo(5, 1);
-}
-
-bool CXTPSystemVersion::IsWinVistaOrGreater() const
-{
-	return (dwPlatformId >= VER_PLATFORM_WIN32_NT) &&
-		GreaterThanEqualTo(6, 0);
-}
-
-bool CXTPSystemVersion::IsWin7OrGreater() const
-{
-	return (dwPlatformId >= VER_PLATFORM_WIN32_NT) &&
-		GreaterThanEqualTo(6, 1);
-}
-
-bool CXTPSystemVersion::GreaterThanEqualTo(const DWORD maj, const DWORD min) const
-{
-	return (dwMajorVersion > maj) || (dwMajorVersion == maj &&
-		dwMinorVersion >= min);
-}
-
-bool CXTPSystemVersion::EqualTo(const DWORD maj, const DWORD min) const
-{
-	return (dwMajorVersion == maj) && (dwMinorVersion == min);
-}
-
-DWORD CXTPSystemVersion::GetComCtlVersion() const
-{
-	static DWORD dwVersion = 0;
-	if (dwVersion != 0)
-		return dwVersion;
-
-	CXTPModuleHandle modComCtl32(_T("COMCTL32.DLL"));
-
-	dwVersion = modComCtl32.GetVersion();
-
-	if (dwVersion == NULL)
-		dwVersion = MAKELONG(0, 4);   // Old ComCtl32 had version 4.0
-
-	return dwVersion;
-}
-
-BOOL CXTPSystemVersion::IsLayoutRTLSupported() const
-{
-	return IsWin2KOrGreater() || GetSystemMetrics(SM_MIDEASTENABLED);
-}
-
-BOOL CXTPSystemVersion::IsClearTypeTextQualitySupported() const
-{
-	return IsWinXPOrGreater();
-}
-
-int CXTPSystemVersion::GetMaxCharSize() const
-{
-#ifdef _UNICODE
-	return 1;
-#else
-	static int nMaxCharSize = -1;
-	if (nMaxCharSize == -1)
-	{
-		CPINFO info;
-		GetCPInfo(GetOEMCP(), &info);
-		nMaxCharSize = info.MaxCharSize;
-	}
-	return nMaxCharSize;
-#endif
-}
-
-
-//=============================================================================
-// Multi-Monitor API
-//=============================================================================
-
-
-_XTP_EXT_CLASS CXTPMultiMonitor* AFX_CDECL XTPMultiMonitor()
-{
-	static CXTPMultiMonitor instance;
-	return &instance;
-}
-
-CXTPMultiMonitor::CXTPMultiMonitor()
-{
-#ifdef UNICODE
-	BOOL bIsPlatformNT = XTPSystemVersion()->IsWinNT4OrGreater();
-#endif
-
-	m_modUser32.Init(TEXT("User32.dll"));
-	if (!m_modUser32)
-	{
-		TRACE(_T("WARNING: Could not locate User32.dll.\n"));
-	}
-
-	if (!m_modUser32 ||
-		!m_modUser32.GetProcAddress((FARPROC*)&m_pfnGetSystemMetrics, "GetSystemMetrics") ||
-		!m_modUser32.GetProcAddress((FARPROC*)&m_pfnMonitorFromWindow, "MonitorFromWindow") ||
-		!m_modUser32.GetProcAddress((FARPROC*)&m_pfnMonitorFromRect, "MonitorFromRect") ||
-		!m_modUser32.GetProcAddress((FARPROC*)&m_pfnMonitorFromPoint, "MonitorFromPoint") ||
-#ifndef UNICODE
-		!m_modUser32.GetProcAddress((FARPROC*)&m_pfnGetMonitorInfo, "GetMonitorInfoA"))
-#else
-		!m_modUser32.GetProcAddress((FARPROC*)&m_pfnGetMonitorInfo, bIsPlatformNT ? "GetMonitorInfoW" : "GetMonitorInfoA"))
-#endif
-	{
-		m_pfnGetSystemMetrics   = NULL;
-		m_pfnMonitorFromWindow  = NULL;
-		m_pfnMonitorFromRect    = NULL;
-		m_pfnMonitorFromPoint   = NULL;
-		m_pfnGetMonitorInfo     = NULL;
-	}
-}
-
-BOOL CXTPMultiMonitor::GetMonitorInfo(XTP_HMONITOR hMonitor, XTP_MONITORINFO* lpMonitorInfo)
-{
-	if (hMonitor && m_pfnGetMonitorInfo)
-	{
-		lpMonitorInfo->cbSize = sizeof(XTP_MONITORINFO);
-		ASSERT(sizeof(XTP_MONITORINFO) == 40);
-
-		if (m_pfnGetMonitorInfo(hMonitor, lpMonitorInfo))
-			return TRUE;
-	}
-	return FALSE;
-}
-
-CRect CXTPMultiMonitor::GetWorkArea(XTP_HMONITOR hMonitor)
-{
-	XTP_MONITORINFO info;
-
-	if (GetMonitorInfo(hMonitor, &info))
-	{
-		return info.rcWork;
-	}
-
-	RECT rcWork;
-	::SystemParametersInfo(SPI_GETWORKAREA, NULL, &rcWork, 0);
-	return rcWork;
-}
-
-CRect CXTPMultiMonitor::GetScreenArea(XTP_HMONITOR hMonitor)
-{
-	XTP_MONITORINFO info;
-
-	if (GetMonitorInfo(hMonitor, &info))
-	{
-		return info.rcMonitor;
-	}
-
-	return CRect(0, 0, ::GetSystemMetrics(SM_CXSCREEN), ::GetSystemMetrics(SM_CYSCREEN));
-}
-
-
-CRect CXTPMultiMonitor::GetScreenArea(HWND hWnd)
-{
-	return GetScreenArea(m_pfnMonitorFromWindow ? m_pfnMonitorFromWindow(hWnd, 0) : 0);
-}
-
-CRect CXTPMultiMonitor::GetScreenArea(const CWnd* pWnd)
-{
-	return GetScreenArea(pWnd->GetSafeHwnd());
-}
-
-CRect CXTPMultiMonitor::GetScreenArea(const POINT& ptScreenCoords)
-{
-	return GetScreenArea(m_pfnMonitorFromPoint ? m_pfnMonitorFromPoint(ptScreenCoords, 0) : 0);
-}
-
-CRect CXTPMultiMonitor::GetScreenArea(LPCRECT lprcScreenCoords)
-{
-	return GetScreenArea(m_pfnMonitorFromRect ? m_pfnMonitorFromRect(lprcScreenCoords, 0) : 0);
-}
-
-CRect CXTPMultiMonitor::GetWorkArea(HWND hWnd)
-{
-	return GetWorkArea(m_pfnMonitorFromWindow ? m_pfnMonitorFromWindow(hWnd, 0) : 0);
-}
-
-CRect CXTPMultiMonitor::GetWorkArea(const POINT& ptScreenCoords)
-{
-	return GetWorkArea(m_pfnMonitorFromPoint ? m_pfnMonitorFromPoint(ptScreenCoords, 0) : 0);
-}
-
-CRect CXTPMultiMonitor::GetWorkArea(LPCRECT lprcScreenCoords)
-{
-	return GetWorkArea(m_pfnMonitorFromRect ? m_pfnMonitorFromRect(lprcScreenCoords, 0) : 0);
-}
-
-CRect CXTPMultiMonitor::GetWorkArea(const CWnd* pWnd)
-{
-	return GetWorkArea(pWnd->GetSafeHwnd());
-}
-
-CRect CXTPMultiMonitor::GetWorkArea()
-{
-	POINT point;
-	::GetCursorPos(&point);
-
-	return GetWorkArea(point);
-}
-
-
-//=============================================================================
-// CXTPModuleHandle :
-//=============================================================================
-
-CXTPModuleHandle::CXTPModuleHandle()
-	: m_hModule(0)
-	, m_eModuleState(xtpModNone)
-{
-	::ZeroMemory(&m_dvInfo, sizeof(m_dvInfo));
-}
-
-CXTPModuleHandle::CXTPModuleHandle(LPCTSTR lpszModuleName)
-	: m_hModule(0)
-	, m_eModuleState(xtpModNone)
-{
-	::ZeroMemory(&m_dvInfo, sizeof(m_dvInfo));
-
-	Init(lpszModuleName);
-}
-
-CXTPModuleHandle::~CXTPModuleHandle()
-{
-	VERIFY(FreeLibrary());
-}
-
-BOOL CXTPModuleHandle::Init(LPCTSTR lpszModuleName)
-{
-	// first, try to obtain the module that was mapped into
-	// the address space of the calling process, if not found,
-	// attempt to load the library.
-
-	return (GetModuleHandle(lpszModuleName) || LoadLibrary(lpszModuleName));
-}
-
-BOOL CXTPModuleHandle::GetModuleHandle(LPCTSTR lpszModuleName)
-{
-	FreeLibrary();
-
-	if ((m_hModule = ::GetModuleHandle(lpszModuleName)) != NULL)
-	{
-		m_eModuleState = xtpModMapped;
-		m_strModuleName = lpszModuleName;
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-BOOL CXTPModuleHandle::LoadLibrary(LPCTSTR lpszModuleName)
-{
-	FreeLibrary();
-
-	if ((m_hModule = ::LoadLibrary(lpszModuleName)) != NULL)
-	{
-		m_eModuleState = xtpModLoaded;
-		m_strModuleName = lpszModuleName;
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-BOOL CXTPModuleHandle::FreeLibrary()
-{
-	BOOL bRet = TRUE;
-
-	if (m_hModule && m_eModuleState == xtpModLoaded)
-		bRet = ::FreeLibrary(m_hModule);
-
-	m_hModule = NULL;
-	m_eModuleState = xtpModNone;
-	m_strModuleName.Empty();
-
-	return bRet;
-}
-
-BOOL CXTPModuleHandle::GetVersionInfo()
-{
-	if (!m_hModule)
-		return FALSE;
-
-	m_dvInfo.cbSize = sizeof(m_dvInfo);
-
-	typedef HRESULT (WINAPI* PFNDLLVERSIONINFO)(XTP_DLLVERSIONINFO*);
-	PFNDLLVERSIONINFO pfn = (PFNDLLVERSIONINFO)::GetProcAddress(m_hModule, "DllGetVersion");
-
-	if (pfn != NULL)
-	{
-		return (pfn(&m_dvInfo) != NOERROR);
-	}
-
-	return FALSE;
-}
-
-DWORD CXTPModuleHandle::GetVersion()
-{
-	if (m_dvInfo.cbSize == 0)
-		GetVersionInfo();
-
-	DWORD dwModVer = MAKELONG(m_dvInfo.dwMinorVersion, m_dvInfo.dwMajorVersion);
-
-	ASSERT(HIWORD(dwModVer) <= 0xFFFF);
-	ASSERT(LOWORD(dwModVer) <= 0xFFFF);
-
-	return dwModVer;
-}
-
-BOOL CXTPModuleHandle::GetProcAddress(FARPROC* ppFnPtr, LPCSTR lpProcName, DWORD dwMinVer /*= NULL*/)
-{
-	if (!m_hModule)
-		return FALSE;
-
-	if (dwMinVer != NULL)
-	{
-		DWORD dwModVer = GetVersion();
-
-		if ((HIWORD(dwMinVer) >  HIWORD(dwModVer)) ||
-			(HIWORD(dwMinVer) == HIWORD(dwModVer)) &&
-			(LOWORD(dwMinVer) >  LOWORD(dwModVer)))
-		{
-			*ppFnPtr = NULL;
-			return FALSE;
-		}
-	}
-
-	*ppFnPtr = ::GetProcAddress(m_hModule, lpProcName);
-	return (*ppFnPtr != NULL);
-}
-
-
-//=============================================================================
-// CXTPCriticalSection
-//=============================================================================
-
-CXTPCriticalSection::CXTPCriticalSection()
-{
-	::InitializeCriticalSection(&m_csMutex);
-}
-
-CXTPCriticalSection::~CXTPCriticalSection()
-{
-	::DeleteCriticalSection(&m_csMutex);
-}
-
-void CXTPCriticalSection::EnterCritical()
-{
-	::EnterCriticalSection(&m_csMutex);
-}
-
-void CXTPCriticalSection::LeaveCritical()
-{
-	::LeaveCriticalSection(&m_csMutex);
-}
-
-//=============================================================================
-// CXTPLockGuard
-//=============================================================================
-
-CXTPLockGuard::CXTPLockGuard(CRITICAL_SECTION& key)
-: m_key(key)
-{
-	LockThread();
-}
-
-CXTPLockGuard::~CXTPLockGuard()
-{
-	UnLockThread();
-}
-
-void CXTPLockGuard::LockThread()
-{
-	::EnterCriticalSection(&m_key);
-}
-
-void CXTPLockGuard::UnLockThread()
-{
-	::LeaveCriticalSection(&m_key);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPAccessible
-
-
-CXTPAccessible::CXTPAccessible()
-{
-	m_pNotifyWinEvent = NULL;
-	m_pLresultFromObject = NULL;
-	m_pAccessibleObjectFromWindow = NULL;
-
-	m_hOleAcc = NULL;
-	m_hUser32 = NULL;
-}
-
-CXTPAccessible::~CXTPAccessible()
-{
-	if (m_hOleAcc && m_hOleAcc != INVALID_HANDLE_VALUE)
-	{
-		FreeLibrary(m_hOleAcc);
-	}
-}
-
-void CXTPAccessible::AccessibleNotifyWinEvent(DWORD event, HWND hwnd, LONG idObject, LONG idChild)
-{
-	if (m_hUser32 == INVALID_HANDLE_VALUE)
+	if (!GetEnabled())
 		return;
 
-	if (m_hUser32 == NULL)
+	if (IsCustomizeMode())
 	{
-		m_hUser32 = GetModuleHandle(_T("user32.dll"));
+		ASSERT(m_pParent);
+		if (!m_pParent)
+			return;
+		CXTPCommandBars* pCommandBars = m_pParent->GetCommandBars();
+		ASSERT(pCommandBars);
+		if (!pCommandBars)
+			return;
+
+		pCommandBars->SetDragControl(this);
 	}
 
-	if (m_pNotifyWinEvent == NULL && m_hUser32)
+	if (m_bPopup && (GetParent()->GetPosition() != xtpBarPopup))
+		m_pParent->SetTrackingMode(FALSE, FALSE);
+	else
 	{
-		m_pNotifyWinEvent = (LPFNNOTIFYWINEVENT)GetProcAddress(m_hUser32, "NotifyWinEvent");
-
-		if (!m_pNotifyWinEvent)
+		if (!IsCustomizeMode() && (m_controlType == xtpControlSplitButtonPopup))
 		{
-			m_hUser32 = (HMODULE)INVALID_HANDLE_VALUE;
-		}
-	}
-
-	if (m_pNotifyWinEvent != NULL)
-	{
-		m_pNotifyWinEvent(event, hwnd, idObject, idChild);
-	}
-}
-
-HRESULT CXTPAccessible::AccessibleObjectFromWindow(HWND hwnd, DWORD dwId, REFIID riid, void** ppvObject)
-{
-	if (m_hOleAcc == INVALID_HANDLE_VALUE)
-		return E_FAIL;
-
-	if (m_hOleAcc == NULL)
-	{
-		m_hOleAcc = LoadLibrary(_T("oleacc.dll"));
-	}
-
-	if (m_hOleAcc != NULL && m_pAccessibleObjectFromWindow == NULL)
-	{
-		m_pAccessibleObjectFromWindow = (LPFNACCESSIBLEOBJECTFROMWINDOW)GetProcAddress(m_hOleAcc, "AccessibleObjectFromWindow");
-
-		if (!m_pAccessibleObjectFromWindow)
-		{
-			FreeLibrary(m_hOleAcc);
-
-			m_hOleAcc = (HMODULE)INVALID_HANDLE_VALUE;
-			m_pLresultFromObject = NULL;
-			m_pAccessibleObjectFromWindow = NULL;
-		}
-	}
-
-	if (m_pAccessibleObjectFromWindow)
-	{
-		return m_pAccessibleObjectFromWindow(hwnd, dwId, riid, ppvObject);
-	}
-	return E_FAIL;
-}
-
-LRESULT CXTPAccessible::LresultFromObject(REFIID riid, WPARAM wParam, LPUNKNOWN punk)
-{
-	if (m_hOleAcc == INVALID_HANDLE_VALUE)
-		return E_FAIL;
-
-	if (m_hOleAcc == NULL)
-	{
-		m_hOleAcc = LoadLibrary(_T("oleacc.dll"));
-	}
-
-	if (m_hOleAcc != NULL && m_pLresultFromObject == NULL)
-	{
-		m_pLresultFromObject = (LPFNLRESULTFROMOBJECT)GetProcAddress(m_hOleAcc, "LresultFromObject");
-
-		if (!m_pLresultFromObject)
-		{
-			FreeLibrary(m_hOleAcc);
-
-			m_hOleAcc = (HMODULE)INVALID_HANDLE_VALUE;
-			m_pLresultFromObject = NULL;
-			m_pAccessibleObjectFromWindow = NULL;
-		}
-	}
-
-	if (m_pLresultFromObject)
-	{
-		return m_pLresultFromObject(riid, wParam, punk);
-	}
-
-	return E_FAIL;
-}
-
-long CXTPAccessible::GetChildIndex(VARIANT* varChild)
-{
-	if (!varChild) return -1;
-	if (varChild->vt == VT_EMPTY)
-		return CHILDID_SELF;
-
-	if (varChild->vt == VT_I4) return V_I4(varChild);
-	if (varChild->vt == VT_I2) return V_I2(varChild);
-
-	if (varChild->vt == (VT_I4 | VT_BYREF) && V_I4REF(varChild)) return *V_I4REF(varChild);
-	if (varChild->vt == (VT_I2 | VT_BYREF) && V_I2REF(varChild)) return *V_I2REF(varChild);
-
-	if (varChild->vt == (VT_VARIANT | VT_BYREF)) return GetChildIndex(varChild->pvarVal);
-	return -1;
-}
-
-STDMETHODIMP_(ULONG) CXTPAccessible::XAccessible::AddRef()
-{
-	METHOD_PROLOGUE_EX_(CXTPAccessible, ExternalAccessible)
-	return (ULONG)pThis->GetAccessible()->ExternalAddRef();
-}
-
-STDMETHODIMP_(ULONG) CXTPAccessible::XAccessible::Release()
-{
-	METHOD_PROLOGUE_EX_(CXTPAccessible, ExternalAccessible)
-	return (ULONG)pThis->GetAccessible()->ExternalRelease();
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::QueryInterface(
-	REFIID iid, LPVOID* ppvObj)
-{
-	METHOD_PROLOGUE_EX_(CXTPAccessible, ExternalAccessible)
-	return (HRESULT)pThis->GetAccessible()->ExternalQueryInterface(&iid, ppvObj);
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::GetTypeInfoCount(
-	unsigned int*)
-{
-	return E_NOTIMPL;
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::GetTypeInfo(
-	unsigned int, LCID, ITypeInfo**)
-{
-	return E_NOTIMPL;
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::GetIDsOfNames(
-	REFIID, LPOLESTR*, unsigned int, LCID, DISPID*)
-{
-	return E_NOTIMPL;
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::get_accParent(IDispatch* FAR* ppdispParent)
-{
-	TRACE_ACCESSIBLE(_T("get_accParent\n"));
-	METHOD_PROLOGUE_EX_(CXTPAccessible, ExternalAccessible);
-
-	return pThis->GetAccessibleParent(ppdispParent);
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::get_accChildCount(long FAR* pChildCount)
-{
-	TRACE_ACCESSIBLE(_T("get_accChildCount\n"));
-	METHOD_PROLOGUE_EX_(CXTPAccessible, ExternalAccessible);
-
-	return pThis->GetAccessibleChildCount(pChildCount);
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::get_accChild(VARIANT varChild, IDispatch* FAR* ppdispChild)
-{
-	TRACE_ACCESSIBLE(_T("get_accChild\n"));
-	METHOD_PROLOGUE_EX_(CXTPAccessible, ExternalAccessible);
-
-	return pThis->GetAccessibleChild(varChild, ppdispChild);
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::get_accName(VARIANT varChild, BSTR* pszName)
-{
-	TRACE_ACCESSIBLE(_T("get_accName\n"));
-	METHOD_PROLOGUE_EX_(CXTPAccessible, ExternalAccessible);
-
-	return pThis->GetAccessibleName(varChild, pszName);
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::get_accValue(VARIANT varChild, BSTR* pszValue)
-{
-	TRACE_ACCESSIBLE(_T("get_accValue\n"));
-	METHOD_PROLOGUE_EX_(CXTPAccessible, ExternalAccessible);
-
-	return pThis->GetAccessibleValue(varChild, pszValue);
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::get_accDescription(VARIANT varChild, BSTR FAR* pszDescription)
-{
-	TRACE_ACCESSIBLE(_T("get_accDescription\n"));
-	METHOD_PROLOGUE_EX_(CXTPAccessible, ExternalAccessible);
-
-	return pThis->GetAccessibleDescription(varChild, pszDescription);
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::get_accRole(VARIANT varChild, VARIANT* pvarRole)
-{
-	TRACE_ACCESSIBLE(_T("get_accRole\n"));
-	METHOD_PROLOGUE_EX_(CXTPAccessible, ExternalAccessible);
-
-	return pThis->GetAccessibleRole(varChild, pvarRole);
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::get_accState(VARIANT varChild, VARIANT* pvarState)
-{
-	TRACE_ACCESSIBLE(_T("get_accState\n"));
-	METHOD_PROLOGUE_EX_(CXTPAccessible, ExternalAccessible);
-
-	return pThis->GetAccessibleState(varChild, pvarState);
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::get_accHelp(VARIANT varChild, BSTR* pszHelp)
-{
-	TRACE_ACCESSIBLE(_T("get_accHelp\n"));
-	METHOD_PROLOGUE_EX_(CXTPAccessible, ExternalAccessible);
-
-	return pThis->GetAccessibleHelp(varChild, pszHelp);
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::get_accHelpTopic(BSTR* pszHelpFile, VARIANT varChild, long* pidTopic)
-{
-	TRACE_ACCESSIBLE(_T("get_accHelpTopic\n"));
-	METHOD_PROLOGUE_EX_(CXTPAccessible, ExternalAccessible);
-
-	return pThis->GetAccessibleHelpTopic(pszHelpFile, varChild, pidTopic);
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::get_accKeyboardShortcut(VARIANT varChild, BSTR* pszKeyboardShortcut)
-{
-	TRACE_ACCESSIBLE(_T("get_accKeyboardShortcut\n"));
-	METHOD_PROLOGUE_EX_(CXTPAccessible, ExternalAccessible);
-
-	return pThis->GetAccessibleKeyboardShortcut(varChild, pszKeyboardShortcut);
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::get_accFocus(VARIANT FAR* pvarFocusChild)
-{
-	TRACE_ACCESSIBLE(_T("get_accFocus\n"));
-	METHOD_PROLOGUE_EX_(CXTPAccessible, ExternalAccessible);
-
-	return pThis->GetAccessibleFocus(pvarFocusChild);
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::get_accSelection(VARIANT FAR* pvarSelectedChildren)
-{
-	TRACE_ACCESSIBLE(_T("get_accSelection\n"));
-	METHOD_PROLOGUE_EX_(CXTPAccessible, ExternalAccessible);
-
-	return pThis->GetAccessibleSelection(pvarSelectedChildren);
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::get_accDefaultAction(VARIANT varChild, BSTR* pszDefaultAction)
-{
-	TRACE_ACCESSIBLE(_T("get_accDefaultAction\n"));
-	METHOD_PROLOGUE_EX_(CXTPAccessible, ExternalAccessible);
-
-	return pThis->GetAccessibleDefaultAction(varChild, pszDefaultAction);
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::accSelect(long flagsSelect, VARIANT varChild)
-{
-	TRACE_ACCESSIBLE(_T("accSelect\n"));
-	METHOD_PROLOGUE_EX_(CXTPAccessible, ExternalAccessible);
-
-	return pThis->AccessibleSelect(flagsSelect, varChild);
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::accLocation(long* pxLeft, long* pyTop, long* pcxWidth, long* pcyHeight, VARIANT varChild)
-{
-	TRACE_ACCESSIBLE(_T("accLocation\n"));
-	METHOD_PROLOGUE_EX_(CXTPAccessible, ExternalAccessible);
-
-	return pThis->AccessibleLocation(pxLeft, pyTop, pcxWidth, pcyHeight, varChild);
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::accNavigate(long navDir, VARIANT varStart, VARIANT* pvarEndUpAt)
-{
-	TRACE_ACCESSIBLE(_T("accNavigate\n"));
-	METHOD_PROLOGUE_EX_(CXTPAccessible, ExternalAccessible);
-
-	return pThis->AccessibleNavigate(navDir, varStart, pvarEndUpAt);
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::accHitTest(long xLeft, long yTop, VARIANT* pvarID)
-{
-	TRACE_ACCESSIBLE(_T("accHitTest\n"));
-	METHOD_PROLOGUE_EX_(CXTPAccessible, ExternalAccessible);
-
-	return pThis->AccessibleHitTest(xLeft, yTop, pvarID);
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::accDoDefaultAction(VARIANT varChild)
-{
-	TRACE_ACCESSIBLE(_T("accDoDefaultAction\n"));
-	METHOD_PROLOGUE_EX_(CXTPAccessible, ExternalAccessible);
-
-	return pThis->AccessibleDoDefaultAction(varChild);
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::put_accName(VARIANT varChild, BSTR szName)
-{
-	TRACE_ACCESSIBLE(_T("put_accName\n"));
-	METHOD_PROLOGUE_EX_(CXTPAccessible, ExternalAccessible);
-
-	return pThis->PutAccessibleName(varChild, szName);
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::put_accValue(VARIANT varChild, BSTR pszValue)
-{
-	TRACE_ACCESSIBLE(_T("put_accValue\n"));
-	METHOD_PROLOGUE_EX_(CXTPAccessible, ExternalAccessible);
-
-	return pThis->PutAccessibleValue(varChild, pszValue);
-}
-
-STDMETHODIMP CXTPAccessible::XAccessible::Invoke(
-	DISPID /*dispid*/, REFIID, LCID, unsigned short /*wFlags*/,
-	DISPPARAMS* /*pDispParams*/, VARIANT* /*pvarResult*/,
-	EXCEPINFO*, unsigned int*)
-{
-	return E_NOTIMPL;
-}
-
-
-HRESULT CXTPAccessible::GetAccessibleParent(IDispatch**  /*ppdispParent*/)
-{
-	return E_NOTIMPL;
-}
-HRESULT CXTPAccessible::GetAccessibleChildCount(long* /*pcountChildren*/)
-{
-	return E_NOTIMPL;
-}
-HRESULT CXTPAccessible::GetAccessibleChild(VARIANT /*varChild*/, IDispatch** /*ppdispChild*/)
-{
-	return E_NOTIMPL;
-}
-HRESULT CXTPAccessible::GetAccessibleName(VARIANT /*varChild*/, BSTR* /*pszName*/)
-{
-	return E_NOTIMPL;
-}
-HRESULT CXTPAccessible::GetAccessibleValue(VARIANT /*varChild*/, BSTR* /*pszValue*/)
-{
-	return E_NOTIMPL;
-}
-HRESULT CXTPAccessible::GetAccessibleDescription(VARIANT /*varChild*/, BSTR* /*pszDescription*/)
-{
-	return E_NOTIMPL;
-}
-HRESULT CXTPAccessible::GetAccessibleRole(VARIANT /*varChild*/, VARIANT* /*pvarRole*/)
-{
-	return E_NOTIMPL;
-}
-HRESULT CXTPAccessible::GetAccessibleState(VARIANT /*varChild*/, VARIANT* /*pvarState*/)
-{
-	return E_NOTIMPL;
-}
-HRESULT CXTPAccessible::GetAccessibleHelp(VARIANT /*varChild*/, BSTR* /*pszHelp*/)
-{
-	return E_NOTIMPL;
-}
-HRESULT CXTPAccessible::GetAccessibleHelpTopic(BSTR* /*pszHelpFile*/, VARIANT /*varChild*/, long* /*pidTopic*/)
-{
-	return E_NOTIMPL;
-}
-HRESULT CXTPAccessible::GetAccessibleKeyboardShortcut(VARIANT /*varChild*/, BSTR* /*pszKeyboardShortcut*/)
-{
-	return E_NOTIMPL;
-}
-HRESULT CXTPAccessible::GetAccessibleFocus(VARIANT* /*pvarChild*/)
-{
-	return S_FALSE;
-}
-HRESULT CXTPAccessible::GetAccessibleSelection(VARIANT* /*pvarChildren*/)
-{
-	return S_FALSE;
-}
-HRESULT CXTPAccessible::GetAccessibleDefaultAction(VARIANT /*varChild*/, BSTR* /*pszDefaultAction*/)
-{
-	return E_NOTIMPL;
-}
-HRESULT CXTPAccessible::AccessibleSelect(long /*flagsSelect*/, VARIANT /*varChild*/)
-{
-	return E_NOTIMPL;
-}
-HRESULT CXTPAccessible::AccessibleLocation(long* /*pxLeft*/, long* /*pyTop*/, long* /*pcxWidth*/, long* /*pcyHeight*/, VARIANT /*varChild*/)
-{
-	return E_NOTIMPL;
-}
-HRESULT CXTPAccessible::AccessibleNavigate(long /*navDir*/, VARIANT /*varStart*/, VARIANT* /*pvarEndUpAt*/)
-{
-	return E_NOTIMPL;
-}
-HRESULT CXTPAccessible::AccessibleHitTest(long /*xLeft*/, long /*yTop*/, VARIANT* /*pvarChild*/)
-{
-	return E_NOTIMPL;
-}
-HRESULT CXTPAccessible::AccessibleDoDefaultAction(VARIANT /*varChild*/)
-{
-	return E_NOTIMPL;
-}
-HRESULT CXTPAccessible::PutAccessibleName(VARIANT /*varChild*/, BSTR /*szName*/)
-{
-	return E_NOTIMPL;
-}
-HRESULT CXTPAccessible::PutAccessibleValue(VARIANT /*varChild*/, BSTR /*szValue*/)
-{
-	return E_NOTIMPL;
-}
-CCmdTarget* CXTPAccessible::GetAccessible()
-{
-	ASSERT(FALSE);
-	return NULL;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPSoundManager
-
-CXTPSoundManager::CXTPSoundManager()
-{
-	m_hThread = 0;
-	m_bSystemSounds = TRUE;
-	m_bTerminate = FALSE;
-	m_soundState = xtpSoundNone;
-
-	m_bSoundAvailable = waveOutGetNumDevs() > 0;
-
-	m_hEvent = CreateEvent(NULL, TRUE, FALSE, 0);
-}
-
-CXTPSoundManager* AFX_CDECL XTPSoundManager()
-{
-	static CXTPSoundManager s_managerInstance;
-	return &s_managerInstance;
-}
-
-CXTPSoundManager::~CXTPSoundManager()
-{
-	StopThread();
-
-	CloseHandle(m_hEvent);
-}
-
-DWORD WINAPI CXTPSoundManager::SoundThreadProc(LPVOID lp)
-{
-	CXTPSoundManager* pSoundManager = (CXTPSoundManager*)lp;
-
-	XTPSoundManagerState& soundState = pSoundManager->m_soundState;
-
-	while (!pSoundManager->m_bTerminate)
-	{
-		switch (soundState)
-		{
-		case xtpSoundMenuCommand:
-			::PlaySound (_T("MenuCommand"), NULL, (SND_SYNC | SND_NODEFAULT | SND_ALIAS | SND_NOWAIT));
-			break;
-
-		case xtpSoundMenuPopup:
-			::PlaySound (_T("MenuPopup"), NULL, (SND_SYNC | SND_NODEFAULT | SND_ALIAS | SND_NOWAIT));
-			break;
-		}
-		soundState = xtpSoundNone;
-
-		WaitForSingleObject(pSoundManager->m_hEvent, INFINITE);
-
-		if (!pSoundManager->m_bTerminate)
-			ResetEvent(pSoundManager->m_hEvent);
-	}
-
-	::PlaySound(NULL, NULL, SND_PURGE);
-
-	return 0;
-}
-
-void CXTPSoundManager::StartThread()
-{
-	ASSERT (m_hThread == NULL);
-
-	m_soundState = xtpSoundNone;
-	m_bTerminate = FALSE;
-
-	::ResetEvent(m_hEvent);
-
-	DWORD dwThreadID;
-
-	m_hThread = ::CreateThread(NULL, 0, SoundThreadProc, this, CREATE_SUSPENDED, &dwThreadID);
-	if (m_hThread != NULL)
-	{
-		::SetThreadPriority(m_hThread, THREAD_PRIORITY_BELOW_NORMAL);
-		::ResumeThread(m_hThread);
-	}
-}
-
-void CXTPSoundManager::StopThread()
-{
-	if (m_hThread)
-	{
-		m_bTerminate = TRUE;
-		SetEvent(m_hEvent);
-
-		DWORD dwCount = 0, dwExitCode = 0;
-
-		while (GetExitCodeThread(m_hThread, &dwExitCode) && dwExitCode == STILL_ACTIVE)
-		{
-			dwCount++;
-
-			if (dwCount > 10)
+			if (bKeyboard)
 			{
-				TerminateThread(m_hThread, 0);
-				break;
+				if (GetEnabled() != TRUE_SPLITDROPDOWN)
+					OnExecute();
+				else
+					m_pParent->SetPopuped(m_nIndex);
+				return;
 			}
 
-			::WaitForSingleObject(m_hThread, 100);
+			CRect rcCommandRect = GetPaintManager()->GetSplitButtonCommandRect(this);
+
+			if ((m_pParent->GetType() == xtpBarTypePopup) && rcCommandRect.PtInRect(pt))
+			{
+				m_pParent->KillTimer(XTP_TID_HOVER);
+				return;
+			}
+
+			if ((m_pParent->GetType() != xtpBarTypePopup) && rcCommandRect.PtInRect(pt))
+			{
+				if (GetEnabled() != TRUE_SPLITDROPDOWN)
+					ClickToolBarButton(rcCommandRect);
+				return;
+			}
+
+			if (GetEnabled() == TRUE_SPLITCOMMAND)
+				return;
 		}
 
-		::CloseHandle(m_hThread);
-		m_hThread = 0;
+
+		if (!(IsCustomizeMode() && m_pCommandBar && !m_pCommandBar->IsCustomizable()))
+		{
+			m_pParent->SetPopuped(m_nIndex);
+		}
+	}
+
+	if (IsCustomizeMode())
+	{
+		CustomizeStartDrag(pt);
 	}
 }
 
-void CXTPSoundManager::PlaySystemSound(XTPSoundManagerState state)
+void CXTPControlPopup::OnLButtonUp(CPoint point)
 {
-	if (m_bSystemSounds && m_bSoundAvailable)
+	if (!m_pCommandBar)
 	{
-		if (m_hThread == 0)
-			StartThread();
-
-		m_soundState = state;
-		SetEvent(m_hEvent);
-	}
-}
-void CXTPSoundManager::EnableSystemSounds(BOOL bEnable)
-{
-	m_bSystemSounds = bEnable;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPZipMemFile
-
-#define ZIP_HEADER ('Z' + ('I' << 8) + ('P' << 16) + ('!' << 24))
-
-
-CXTPZipMemFile::CXTPZipMemFile()
-{
-}
-
-CXTPZipMemFile::CXTPZipMemFile(BYTE* lpBuffer, UINT nBufferSize)
-{
-	AttachCompressedBuffer(lpBuffer, nBufferSize);
-}
-
-CXTPZipMemFile::~CXTPZipMemFile()
-{
-}
-
-void CXTPZipMemFile::AttachCompressedBuffer(BYTE* lpBuffer, UINT nBufferSize, BOOL bAutoDelete)
-{
-#ifdef ZLIB_H
-	ZIPBUFFERINFO* pbi = (ZIPBUFFERINFO*)lpBuffer;
-
-	if (nBufferSize < sizeof(ZIPBUFFERINFO) ||
-		pbi->bh.dwType != ZIP_HEADER)
-	{
-		Attach(lpBuffer, nBufferSize);
-		m_bAutoDelete = bAutoDelete;
+		CXTPControlButton::OnLButtonUp(point);
 		return;
 	}
 
-	DWORD dwDestCount = pbi->bh.dwSize;
-
-	BYTE* lpBufferDest = (BYTE*)malloc(dwDestCount);
-	uncompress(lpBufferDest, &dwDestCount, (LPBYTE)&pbi->bBuffer, nBufferSize - sizeof(ZIPBUFFERHEADER));
-
-	ASSERT(dwDestCount == pbi->bh.dwSize);
-
-	Attach(lpBufferDest, dwDestCount);
-	m_bAutoDelete = TRUE;
-
-	if (bAutoDelete)
+	if (GetEnabled() && GetType() == xtpControlSplitButtonPopup && m_pParent->GetType() == xtpBarTypePopup)
 	{
-		free(lpBuffer);
+		if (m_rcControl.right > point.x + GetPaintManager()->m_nSplitButtonPopupWidth && GetEnabled() != TRUE_SPLITDROPDOWN)
+			OnExecute();
 	}
-#else
-	Attach(lpBuffer, nBufferSize);
-	m_bAutoDelete = bAutoDelete;
-#endif
 }
 
-BOOL CXTPZipMemFile::OpenCompressedFile(LPCTSTR lpszFileName)
+void CXTPControlPopup::OnMouseMove(CPoint point)
 {
-	CFile file;
-	if (!file.Open(lpszFileName, CFile::modeRead))
+	if (!m_pCommandBar)
+	{
+		CXTPControlButton::OnMouseMove(point);
+		return;
+	}
+
+	if (GetEnabled() && GetType() == xtpControlSplitButtonPopup && m_pParent->GetType() != xtpBarTypePopup && m_bSelected)
+	{
+		CRect rcCommandRect = GetPaintManager()->GetSplitButtonCommandRect(this);
+
+		if (rcCommandRect.PtInRect(point) && m_bSelected != TRUE_SPLITCOMMAND)
+		{
+			m_bSelected = TRUE_SPLITCOMMAND;
+			RedrawParent(FALSE);
+		}
+		else if (!rcCommandRect.PtInRect(point) && m_bSelected != TRUE_SPLITDROPDOWN)
+		{
+			m_bSelected = TRUE_SPLITDROPDOWN;
+			RedrawParent(FALSE);
+		}
+	}
+}
+
+BOOL CXTPControlPopup::OnSetSelected(int bSelected)
+{
+	if (!CXTPControlButton::OnSetSelected(bSelected))
 		return FALSE;
 
-	UINT nSize = (UINT)file.GetLength();
-	LPBYTE lpBuffer = (LPBYTE)malloc(nSize);
-	file.Read(lpBuffer, nSize);
+	if (!m_pCommandBar)
+		return TRUE;
 
-	file.Close();
+	if (m_controlType == xtpControlPopup || m_pParent->GetType() == xtpBarTypePopup)
+	{
+		if (GetEnabled() && bSelected && m_pParent->IsTrackingMode() == TRUE_POPUP && GetParent()->GetPosition() != xtpBarPopup)
+		{
+			m_pParent->SetPopuped(m_nIndex);
+		}
+		else if (!bSelected && m_bPopup && GetParent()->GetPosition() != xtpBarPopup)
+		{
+			m_pParent->SetPopuped(-1);
+		}
+	}
+	else
+	{
+		if (GetEnabled() && IsKeyboardSelected(bSelected) && m_pParent->IsTrackingMode() == TRUE_POPUP)
+		{
+			m_pParent->SetPopuped(m_nIndex);
+		}
 
-	AttachCompressedBuffer(lpBuffer, nSize, TRUE);
+	}
 
 	return TRUE;
 }
 
-void CXTPZipMemFile::DetachCompressedBuffer(BYTE*& lpBuffer, DWORD& dwCount)
+void CXTPControlPopup::UpdateShadow()
 {
-	dwCount = (DWORD)GetPosition();
-	lpBuffer = Detach();
-
-#ifdef ZLIB_H
-	if (dwCount < 20)
-		return;
-
-	ZIPBUFFERINFO* pbi = (ZIPBUFFERINFO*)malloc(dwCount + sizeof(ZIPBUFFERHEADER));
-	if (!pbi)
-		return;
-
-	DWORD dwDestCount = dwCount;
-
-	if (compress((LPBYTE)&pbi->bBuffer, &dwDestCount, lpBuffer, dwCount) != Z_OK)
+	if (m_pCommandBar && m_pParent->GetPosition() != xtpBarPopup && IsPopupControlType(m_controlType))
 	{
-		free(pbi);
-		return;
+		if (m_pParent->GetPosition() == xtpBarFloating && m_pParent->GetType() == xtpBarTypePopup)
+			return;
+
+		CXTPPopupBar* pPopupBar = DYNAMIC_DOWNCAST(CXTPPopupBar, m_pCommandBar);
+		if (pPopupBar && pPopupBar->m_bShowShadow && m_bShowShadow)
+			XTPShadowsManager()->SetShadow(this);
+	}
+}
+
+BOOL CXTPControlPopup::OnSetPopup(BOOL bPopup)
+{
+	if (!m_pCommandBar)
+		return FALSE;
+
+	if (GetType() == xtpControlSplitButtonPopup && GetEnabled() == TRUE_SPLITCOMMAND)
+		return FALSE;
+
+	if (m_pParent->GetSafeHwnd() == NULL)
+		return FALSE;
+
+	m_bPopup = bPopup;
+
+	if (bPopup)
+	{
+		RedrawParent(FALSE);
+		m_pParent->GetSite()->UpdateWindow();
+		m_pParent->UpdateWindow();
+
+		if (!m_pCommandBar->IsTrackingMode())
+		{
+			if (!m_pCommandBar->Popup(this, IsKeyboardSelected(GetSelected())))
+				return FALSE;
+
+			UpdateShadow();
+		}
+	}
+	else
+	{
+		m_pCommandBar->SetTrackingMode(FALSE);
+		RedrawParent();
 	}
 
-	pbi->bh.dwType = ZIP_HEADER;
-	pbi->bh.dwSize = dwCount;
-
-	free(lpBuffer);
-	dwCount = dwDestCount + sizeof(ZIPBUFFERHEADER);
-	lpBuffer = (LPBYTE)pbi;
-#endif
+	return TRUE;
 }
+
+void CXTPControlPopup::ExpandCommandBar()
+{
+	CXTPPopupBar* pPopupBar = DYNAMIC_DOWNCAST(CXTPPopupBar, m_pCommandBar);
+	if (m_bPopup && pPopupBar && m_controlType == xtpControlPopup)
+	{
+		pPopupBar->ExpandBar();
+	}
+}
+
+void CXTPControlPopup::OnMouseHover()
+{
+	if (m_pCommandBar && GetEnabled() && (m_pParent->IsTrackingMode() == TRUE_POPUP || GetParent()->GetPosition() == xtpBarPopup))
+		GetParent()->SetPopuped(m_nIndex);
+	else CXTPControlButton::OnMouseHover();
+}
+
+BOOL CXTPControlPopup::OnLButtonDblClk(CPoint point)
+{
+	CXTPPopupBar* pPopupBar = DYNAMIC_DOWNCAST(CXTPPopupBar, m_pCommandBar);
+	if (pPopupBar && (m_controlType == xtpControlPopup || m_controlType == xtpControlButtonPopup))
+	{
+		if (!m_bPopup)
+			m_pParent->OnLButtonDown(0, point);
+
+		if (m_pCommandBar != pPopupBar)
+			return FALSE;
+
+		if (m_bPopup && pPopupBar->GetDefaultItem(0, TRUE) != (UINT)-1)
+		{
+			CXTPControl* pControl = pPopupBar->GetControl(pPopupBar->GetDefaultItem(0, TRUE));
+			pControl->OnExecute();
+			return TRUE;
+		}
+
+		if (m_bPopup && pPopupBar->m_bCollapsed)
+		{
+			pPopupBar->ExpandBar();
+			return TRUE;
+		}
+	}
+	else
+	{
+		return CXTPControlButton::OnLButtonDblClk(point);
+	}
+	return FALSE;
+}
+
+
+
+void CXTPControlPopup::Copy(CXTPControl* pControl, BOOL bRecursive)
+{
+	ASSERT(DYNAMIC_DOWNCAST(CXTPControlPopup, pControl));
+
+	CXTPControlButton::Copy(pControl, bRecursive);
+
+	if (bRecursive && ((CXTPControlPopup*)pControl)->m_pCommandBar)
+	{
+		CXTPCommandBar* pCommandBar = ((CXTPControlPopup*)pControl)->m_pCommandBar->Clone(bRecursive);
+		SetCommandBar(pCommandBar);
+		pCommandBar->InternalRelease();
+
+	}
+	else
+	{
+		SetCommandBar(((CXTPControlPopup*)pControl)->m_pCommandBar);
+	}
+
+}
+
+void CXTPControlPopup::SetCommandBar(CXTPCommandBar* pBar)
+{
+	if (m_pCommandBar)
+		m_pCommandBar->InternalRelease();
+
+	m_pCommandBar = pBar;
+
+	if (m_pCommandBar)
+		m_pCommandBar->InternalAddRef();
+
+}
+
+void CXTPControlPopup::SetCommandBar(CMenu* pMenu)
+{
+	if (!m_pCommandBar)
+		m_pCommandBar = CXTPPopupBar::CreatePopupBar(m_pParent ? m_pParent->GetCommandBars() : NULL);
+
+	m_pCommandBar->LoadMenu(pMenu);
+}
+
+BOOL CXTPControlPopup::IsContainPopup(CXTPControlPopup* pControlPopup)
+{
+	if (!m_pCommandBar || !pControlPopup->GetCommandBar())
+		return FALSE;
+
+	if (m_pCommandBar == pControlPopup->GetCommandBar()) return TRUE;
+
+	for (int i = 0; i < m_pCommandBar->GetControlCount(); i++)
+	{
+		CXTPControlPopup* pControlChild = DYNAMIC_DOWNCAST(CXTPControlPopup, m_pCommandBar->GetControl(i));
+		if (pControlChild)
+		{
+			if (pControlPopup->IsContainPopup(pControlChild))
+				return TRUE;
+
+			if (pControlChild->IsContainPopup(pControlPopup))
+				return TRUE;
+		}
+
+	}
+	return FALSE;
+}
+
+
+BOOL CXTPControlPopup::Compare(CXTPControl* pOther)
+{
+	if (!CXTPControlButton::Compare(pOther))
+		return FALSE;
+
+	CXTPControlPopup* pPopup = DYNAMIC_DOWNCAST(CXTPControlPopup, pOther);
+	if (!pPopup)
+		return FALSE;
+
+	if (m_pCommandBar != NULL && pPopup->m_pCommandBar != NULL)
+	{
+		if (!m_pCommandBar->GetControls()->Compare(pPopup->m_pCommandBar->GetControls()))
+			return FALSE;
+	}
+
+	return TRUE;
+
+}
+
+void CXTPControlPopup::OnCustomizeDragOver(CXTPControl* pDataObject, CPoint /*point*/, DROPEFFECT& /*dropEffect*/)
+{
+	if (m_pCommandBar && m_pCommandBar->IsCustomizable())
+	{
+		CXTPControlPopup* pControlPopup = DYNAMIC_DOWNCAST(CXTPControlPopup, pDataObject);
+
+		if (!(pControlPopup && pControlPopup->IsContainPopup(this)))
+		{
+			m_pParent->SetPopuped(m_nIndex);
+		}
+		else
+		{
+			m_pParent->SetPopuped(-1);
+			m_pParent->SetSelected(-1);
+		}
+	}
+}
+
+void CXTPControlPopup::AdjustExcludeRect(CRect& rc, BOOL bVertical)
+{
+	GetPaintManager()->AdjustExcludeRect(rc, this, bVertical);
+}
+
+

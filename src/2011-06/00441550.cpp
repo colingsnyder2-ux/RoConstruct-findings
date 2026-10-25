@@ -1,18 +1,11 @@
-// from server: 76% by atomic.potato
-extern "C" void __cdecl Call80B15D(const char *);
-
-unsigned char g_cb280c;
-int g_cb2804;
-int g_cb2808;
-
-int Function00441550()
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+extern "C" void seh_fn_00441550(void*);
+extern int g_a_00441550;
+extern int g_b_00441550;
+extern int g_arg_00441550;
+struct Reg_00441550 { Reg_00441550() { g_a_00441550 = 0; g_b_00441550 = 0; seh_fn_00441550(&g_arg_00441550); } };
+void func_00441550()
 {
-    if (g_cb280c != 0)
-        return 0;
-
-    g_cb280c |= 1;
-    g_cb2804 = 0;
-    g_cb2808 = 0;
-    Call80B15D("8csm");
-    return 0;
+    static Reg_00441550 reg;
 }

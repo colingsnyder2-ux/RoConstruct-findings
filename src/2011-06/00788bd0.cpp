@@ -1,14 +1,5 @@
-// from server: 59% by atomic.potato
-struct FillTool
-{
-    FillTool();
-    int value;
-};
-
-extern "C" void __cdecl sub_788BD0(void*, const char*);
-
-FillTool::FillTool()
-{
-    value = 0;
-    sub_788BD0(this, "FillCursor");
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <string>
+struct Tool { virtual std::string name() const; };
+std::string Tool::name() const { return "FillCursor"; }

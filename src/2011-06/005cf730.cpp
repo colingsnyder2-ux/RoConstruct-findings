@@ -1,25 +1,5 @@
-// from server: 68% by atomic.potato
-struct Inner {
-    int value;
-};
-
-struct Outer {
-    char pad0[0x68];
-    Inner** begin;
-    char pad1[4];
-    Inner** end;
-    Inner* get(int index);
-};
-
-extern "C" Inner** __stdcall sub_5c2030(int* p);
-
-Inner* Outer::get(int index)
-{
-    Inner** p = sub_5c2030(&index);
-    int i = (*p)->value;
-    if (i < 0)
-        return 0;
-    if ((unsigned)i >= (unsigned)((end - begin)))
-        return 0;
-    return begin[i];
-}
+// from server: 83% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct S{char pad[0x68]; char* begin; char* end; int f(int);};
+extern "C" int* sub(int);
+int S::f(int index){int* p=sub(index); int v=*p; if(v<0)return 0; if((unsigned)v>=(unsigned)((end-begin)>>2))return 0; return ((int*)begin)[v];}

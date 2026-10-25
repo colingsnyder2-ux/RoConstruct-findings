@@ -1,8 +1,8 @@
-// from server: 99% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2-vc8 Source/DockingPane/XTPDockingPaneContext.cpp
+// roc-lib: xtp-11.2.2-vc8-shared-mfc Source/DockingPane/XTPDockingPaneContext.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPDockingPaneContext.cpp : implementation of the CXTPDockingPaneContext class.

@@ -1,13 +1,4 @@
-// from server: 88% by atomic.potato
-extern "C" void __stdcall imported_call(void *, const char *);
-
-struct S_func_005e6230
-{
-    char pad0[2828];
-    void f();
-};
-
-void S_func_005e6230::f()
-{
-    imported_call((char *)this + 0xb0c, "[[[progress]]]");
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct S{void f();}; typedef void(__thiscall* Fn)(void*,const char*); extern Fn assign;
+void S::f(){assign((char*)this+2828,"[[[progress]]]");}

@@ -1,361 +1,41 @@
-// from server: 73% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Chart/XTPChartSeriesPoint.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPChartSeriesPoint.cpp
+// from server: 100% by atomic.potato
+// roc 2011-06 00425310  unit: CInstanceRecord  size: 68 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 00425310
 //
-// This file is a part of the XTREME TOOLKIT PRO MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
+// 00425310  68e0524200           push 0x4252e0
+// 00425315  687c25cb00           push 0xcb257c
+// 0042531a  e8f1c2fdff           call 0x401610
+// 0042531f  b801000000           mov eax, 1
+// 00425324  83c408               add esp, 8
+// 00425327  84057825cb00         test byte ptr [0xcb2578], al
+// 0042532d  751f                 jne 0x42534e
+// 0042532f  09057825cb00         or dword ptr [0xcb2578], eax
+// 00425335  33c0                 xor eax, eax
+// 00425337  68500aa300           push 0xa30a50
+// 0042533c  a37025cb00           mov dword ptr [0xcb2570], eax
+// 00425341  a37425cb00           mov dword ptr [0xcb2574], eax
+// 00425346  e8125e3e00           call 0x80b15d
+// 0042534b  83c404               add esp, 4
+// 0042534e  b87025cb00           mov eax, 0xcb2570
+// 00425353  c3                   ret 
 
-#include "stdafx.h"
+extern "C" void __cdecl fn_00401610(void*, void*);
+extern "C" void __cdecl fn_0080b15d(void*);
+extern void fn_004252e0();
 
-#include "Common/XTPResourceManager.h"
-#include "Common/XTPPropExchange.h"
-#include "Common/XTPCustomHeap.h"
+int g_00cb2570;
+int g_00cb2574;
+int g_00cb2578;
+char g_00cb257c;
 
-#include "Types/XTPChartTypes.h"
-
-#include "XTPChartDefines.h"
-#include "XTPChartElement.h"
-#include "XTPChartSeriesPoint.h"
-#include "XTPChartSeries.h"
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPChartSeries
-
-IMPLEMENT_DYNAMIC(CXTPChartSeriesPoint, CXTPChartElement);
-
-CXTPChartSeriesPoint::CXTPChartSeriesPoint()
+int* func_00425310()
 {
-	ZeroMemory(m_dValues, sizeof(m_dValues));
-	m_nLength = 1;
-
-	CommonConstruct();
+    fn_00401610((void*)0xcb257c, (void*)0x4252e0);
+    if (!(g_00cb2578 & 1)) {
+        g_00cb2578 |= 1;
+        g_00cb2570 = 0;
+        g_00cb2574 = 0;
+        fn_0080b15d((void*)0xa30a50);
+    }
+    return &g_00cb2570;
 }
-
-CXTPChartSeriesPoint::~CXTPChartSeriesPoint()
-{
-}
-
-
-CXTPChartSeriesPoint::CXTPChartSeriesPoint(const CXTPChartString& strArgument, double dValue)
-{
-	m_strArgument = strArgument;
-
-	ZeroMemory(m_dValues, sizeof(m_dValues));
-	m_dValues[0] = dValue;
-	m_nLength = 1;
-
-	CommonConstruct();
-}
-
-CXTPChartSeriesPoint::CXTPChartSeriesPoint(double dArgument, double dValue)
-{
-	m_dArgument = dArgument;
-
-	ZeroMemory(m_dValues, sizeof(m_dValues));
-	m_dValues[0] = dValue;
-	m_nLength = 1;
-	m_dInternalArgument = dArgument;
-
-	CommonConstruct();
-}
-
-CXTPChartSeriesPoint::CXTPChartSeriesPoint(double dArgument, double dValue1, double dValue2)
-{
-	m_dArgument = dArgument;
-
-	ZeroMemory(m_dValues, sizeof(m_dValues));
-	m_dValues[0] = dValue1;
-	m_dValues[1] = dValue2;
-	m_nLength = 2;
-	m_dInternalArgument = dArgument;
-
-	CommonConstruct();
-}
-
-CXTPChartSeriesPoint::CXTPChartSeriesPoint(const CXTPChartString& strArgument, double dValue1, double dValue2)
-{
-	m_strArgument = strArgument;
-
-	ZeroMemory(m_dValues, sizeof(m_dValues));
-	m_dValues[0] = dValue1;
-	m_dValues[1] = dValue2;
-	m_nLength = 2;
-
-	CommonConstruct();
-}
-
-CXTPChartSeriesPoint::CXTPChartSeriesPoint(const CXTPChartString& strArgument, double dValue1, double dValue2, double dValue3, double dValue4)
-{
-	m_strArgument = strArgument;
-
-	ZeroMemory(m_dValues, sizeof(m_dValues));
-	m_dValues[0] = dValue1;
-	m_dValues[1] = dValue2;
-	m_dValues[2] = dValue3;
-	m_dValues[3] = dValue4;
-	m_nLength = 4;
-
-	CommonConstruct();
-}
-
-CXTPChartSeriesPoint::CXTPChartSeriesPoint(double dArgument, double dValue1, double dValue2, double dValue3, double dValue4)
-{
-	m_dArgument = dArgument;
-
-	ZeroMemory(m_dValues, sizeof(m_dValues));
-	m_dValues[0] = dValue1;
-	m_dValues[1] = dValue2;
-	m_dValues[2] = dValue3;
-	m_dValues[3] = dValue4;
-	m_nLength = 4;
-
-	CommonConstruct();
-}
-
-void CXTPChartSeriesPoint::CommonConstruct()
-{
-	m_nPaletteIndex = 0;
-	m_bSpecial= 0;
-
-	if (m_strArgument.IsEmpty())
-	{
-		CString str;
-		str.Format(_T("%g"), m_dArgument);
-		m_strArgument = str;
-	}
-	else
-	{
-		m_dArgument = atof(XTP_CT2CA(m_strArgument));
-		m_dInternalArgument = m_dArgument;
-
-	}
-	m_nIndex = -1;
-
-	m_clrPoint = CXTPChartColor::Empty;
-
-
-}
-
-double CXTPChartSeriesPoint::GetValue(int nIndex) const
-{
-	if (nIndex >= m_nLength)
-		return 0;
-
-	return m_dValues[nIndex];
-}
-
-void CXTPChartSeriesPoint::SetValue(int nIndex, double dValue)
-{
-	if (nIndex >= m_nLength)
-		return;
-
-	m_dValues[nIndex] = dValue;
-}
-
-CXTPChartSeriesPoint* CXTPChartSeriesPoint::GetPreviousPoint() const
-{
-	if (!m_pOwner)
-		return NULL;
-
-	CXTPChartSeriesPointCollection* pOwner = (CXTPChartSeriesPointCollection*)m_pOwner;
-
-	return pOwner->GetAt(m_nIndex - 1);
-}
-
-CXTPChartSeriesPoint* CXTPChartSeriesPoint::GetNextPoint() const
-{
-	if (!m_pOwner)
-		return NULL;
-
-	CXTPChartSeriesPointCollection* pOwner = (CXTPChartSeriesPointCollection*)m_pOwner;
-
-	return pOwner->GetAt(m_nIndex + 1);
-}
-
-void CXTPChartSeriesPoint::DoPropExchange(CXTPPropExchange* pPX)
-{
-	PX_String(pPX, _T("Argument"), m_strArgument, _T(""));
-	PX_Double(pPX, _T("ArgumentValue"), m_dArgument, 0);
-
-	PX_Int(pPX, _T("Length"), m_nLength, 1);
-	PX_Bool(pPX, _T("Special"), m_bSpecial, FALSE);
-
-	for (int i = 0; i < m_nLength; i++)
-	{
-		CString strValue;
-		strValue.Format(_T("Value%d"), i);
-		PX_Double(pPX, strValue, m_dValues[i]);
-	}
-
-	if (pPX->IsLoading())
-	{
-		m_dInternalArgument = m_dArgument;
-	}
-}
-
-CXTPChartSeries* CXTPChartSeriesPoint::GetSeries() const
-{
-	CXTPChartSeriesPointCollection* pCollection = DYNAMIC_DOWNCAST(CXTPChartSeriesPointCollection, m_pOwner);
-	if (!pCollection)
-		return NULL;
-
-	CXTPChartSeries* pSeries = DYNAMIC_DOWNCAST(CXTPChartSeries, pCollection->GetOwner());
-
-	return pSeries;
-}
-
-void CXTPChartSeriesPoint::SetInternalArgument(double dInternalArgument)
-{
-	m_dInternalArgument = dInternalArgument;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPChartSeriesPointCollection
-
-IMPLEMENT_DYNAMIC(CXTPChartSeriesPointCollection, CXTPChartElementCollection)
-
-CXTPChartSeriesPointCollection::CXTPChartSeriesPointCollection()
-{
-}
-
-CXTPChartSeriesPointCollection::~CXTPChartSeriesPointCollection()
-{
-}
-
-
-CXTPChartSeriesPoint* CXTPChartSeriesPointCollection::Add(CXTPChartSeriesPoint* pPoint)
-{
-	pPoint->m_nIndex = GetCount();
-
-	InsertAt(GetCount(), pPoint);
-
-	return pPoint;
-}
-
-void CXTPChartSeriesPointCollection::DoPropExchange(CXTPPropExchange* pPX)
-{
-	if (pPX->IsLoading())
-	{
-		RemoveAll();
-
-		CXTPPropExchangeEnumeratorPtr pEnumerator(pPX->GetEnumerator(_T("Point")));
-		POSITION pos = pEnumerator->GetPosition(0);
-
-		while (pos)
-		{
-			CXTPPropExchangeSection pxItem(pEnumerator->GetNext(pos));
-
-
-			CXTPChartSeriesPoint* pPoint = new CXTPChartSeriesPoint();
-			Add(pPoint);
-
-			pPoint->DoPropExchange(&pxItem);
-		}
-	}
-	else
-	{
-		CXTPPropExchangeEnumeratorPtr pEnumerator(pPX->GetEnumerator(_T("Point")));
-		POSITION pos = pEnumerator->GetPosition((int)m_arrElements.GetSize());
-
-		for (int i = 0; i < GetCount(); i++)
-		{
-			CXTPPropExchangeSection pxItem(pEnumerator->GetNext(pos));
-
-			m_arrElements[i]->DoPropExchange(&pxItem);
-		}
-
-	}
-}
-
-
-XTP_DECLARE_HEAP_ALLOCATOR_(CXTPChartSeriesPointAllocator, XTP_EXPORT_PARAMS_NO)
-XTP_IMPLEMENT_HEAP_ALLOCATOR(CXTPChartSeriesPointAllocator, FALSE)
-
-
-XTP_DECLARE_BATCH_ALLOC_OBJ_DATA_(CXTPChartSeriesBatchPointData, XTP_EXPORT_PARAMS_NO);
-
-class CXTPChartSeriesBatchPoint : public CXTPBatchAllocObjT<CXTPHeapObjectT<CXTPChartSeriesPoint, CXTPChartSeriesPointAllocator>,
-	 CXTPChartSeriesBatchPointData>
-{
-
-};
-
-XTP_IMPLEMENT_BATCH_ALLOC_OBJ_DATA(CXTPChartSeriesBatchPointData, CXTPChartSeriesBatchPoint, TRUE)
-
-
-void CXTPChartSeriesPointCollection::AddPoints(int nCount)
-{
-
-	CXTPChartSeriesBatchPointData::m_nBlockSize = nCount;
-
-	for (int i = 0; i < nCount; i++)
-	{
-		CXTPChartSeriesBatchPoint* pPoint = new CXTPChartSeriesBatchPoint();
-
-		Add(pPoint);
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPChartSeriesVirtualPointCollection
-
-CXTPChartSeriesVirtualPointCollection::CXTPChartSeriesVirtualPointCollection(double dMinRange, double dMaxRange, double dStep, GETPOINTVALUEPTR pCallbackPtr)
-{
-	m_dMinRange = dMinRange;
-	m_dMaxRange = dMaxRange;
-	m_dStep = dStep;
-
-	if (dStep == 0)
-		dStep = 1;
-
-	m_nCount = int((m_dMaxRange - m_dMinRange) / dStep);
-
-	m_pVirtualPoint = new CXTPChartSeriesPoint();
-	m_pVirtualPoint->m_pOwner = this;
-	m_pCallbackPtr = pCallbackPtr;
-}
-
-CXTPChartSeriesVirtualPointCollection::~CXTPChartSeriesVirtualPointCollection()
-{
-	SAFE_RELEASE(m_pVirtualPoint);
-}
-
-int CXTPChartSeriesVirtualPointCollection::GetCount() const
-{
-	return m_nCount;
-}
-
-CXTPChartSeriesPoint* CXTPChartSeriesVirtualPointCollection::GetAt(int nIndex) const
-{
-	double x = m_dMinRange + nIndex * m_dStep;
-
-	m_pVirtualPoint->m_dArgument = m_pVirtualPoint->m_dInternalArgument = x;
-	m_pVirtualPoint->m_nLength = 1;
-	m_pVirtualPoint->m_dValues[0] = m_pCallbackPtr((CXTPChartSeries*)m_pOwner, x);
-
-	return m_pVirtualPoint;
-}
-

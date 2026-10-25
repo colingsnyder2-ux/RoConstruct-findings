@@ -1,17 +1,17 @@
-// from server: 91% by atomic.potato
-struct Tool {
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_005f9f70 {
+    T4_005f9f70();
+    virtual void f_005f9f70();
+    char m_a;
+    char m_b;
 };
-
-extern "C" void __cdecl sub_5f9900(int, int);
-
-void __cdecl f(int a, int b)
+T4_005f9f70::T4_005f9f70() : m_a(0), m_b(0) {}
+extern "C" void* create_other_005f9f70(void*, void*, int);
+void* create_005f9f70(void* unused, T4_005f9f70* out, int type)
 {
-    if (b != 4) {
-        sub_5f9900(a, b);
-        return;
-    }
-
-    *(int*)a = 0x00bad1f8;
-    ((char*)a)[4] = 0;
-    ((char*)a)[5] = 0;
+    if (type != 4)
+        return create_other_005f9f70(unused, out, type);
+    out->T4_005f9f70::T4_005f9f70();
+    return out;
 }

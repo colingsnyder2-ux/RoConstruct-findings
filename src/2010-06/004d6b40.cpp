@@ -1,13 +1,18 @@
-// from server: 90% by atomic.potato
-struct S
-{
-    void f();
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct X_004d6b40 {
+    void* f_0;
+    void* f_4;
+    char pad_8[16];
+    void* f_18;
+    void* f_1c;
+    X_004d6b40* base();
+    X_004d6b40* run() {
+    f_0 = (void*)0xa19efc;
+    f_4 = (void*)0xa19ef4;
+    f_18 = (void*)0xa19ee8;
+    f_1c = (void*)0xa19edc;
+        return base();
+    }
 };
-
-void S::f()
-{
-    *(unsigned long*)((char*)this + 0) = 0x00a19efc;
-    *(unsigned long*)((char*)this + 4) = 0x00a19ef4;
-    *(unsigned long*)((char*)this + 0x18) = 0x00a19ee8;
-    *(unsigned long*)((char*)this + 0x1c) = 0x00a19edc;
-}
+X_004d6b40* func_004d6b40(X_004d6b40* x) { return x->run(); }

@@ -1,348 +1,445 @@
-// from server: 56% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net Player.cpp
+// roc-lib: rbxgs script/LuaInstanceBridge.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "Client.h"
-#include "Player.h"
-#include "security/SecurityContext.h"
-#include "v8datamodel/TimerService.h"
-#include "v8datamodel/CharacterAppearance.h"
-#include "v8datamodel/Accoutrement.h"
-#include "v8datamodel/Hopper.h"
-#include "v8datamodel/SpawnLocation.h"
-#include "v8world/World.h"
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/algorithm/string/split.hpp>
+#include "script/LuaInstanceBridge.h"
+#include "script/LuaSignalBridge.h"
+#include "script/LuaArguments.h"
+#include "script/LuaAtomicClasses.h"
+#include "script/ThreadRef.h"
+#include "util/Sound.h"
+#include "util/TextureId.h"
+#include "util/standardout.h"
+#include "v8tree/Instance.h"
+#include "G3D/format.h"
+#include "G3D/Vector3.h"
 
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Player, void(void), 0> loadCharacterFunction(&RBX::Network::Player::loadCharacter, "LoadCharacter", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Player, void(void), 0> removeCharacterFunction(&RBX::Network::Player::removeCharacter, "RemoveCharacter", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Player, void(bool), 1> func_SetUnder13(&RBX::Network::Player::setUnder13, "SetUnder13", "value", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Player, void(bool), 1> func_SetSuperSafeChat(&RBX::Network::Player::setSuperSafeChat, "SetSuperSafeChat", "value", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+// matches generally aren't very good here
 
-static RBX::Reflection::PropDescriptor<RBX::Network::Player, RBX::BrickColor> prop_teamColor("TeamColor", "Team", &RBX::Network::Player::getTeamColor, &RBX::Network::Player::setTeamColor, RBX::Reflection::PropertyDescriptor::STANDARD);
-static RBX::Reflection::PropDescriptor<RBX::Network::Player, bool> prop_neutral("Neutral", "Team", &RBX::Network::Player::getNeutral, &RBX::Network::Player::setNeutral, RBX::Reflection::PropertyDescriptor::STANDARD);
-static RBX::Reflection::PropDescriptor<RBX::Network::Player, std::string> prop_characterAppearance("CharacterAppearance", "Data", &RBX::Network::Player::getCharacterAppearance, &RBX::Network::Player::setCharacterAppearance, RBX::Reflection::PropertyDescriptor::STANDARD);
+using namespace RBX;
+using namespace RBX::Lua;
+using namespace RBX::Reflection;
+using namespace RBX::Soundscape;
 
-static RBX::Reflection::RefPropDescriptor<RBX::Network::Player, RBX::ModelInstance> prop_Character("Character", "Data", &RBX::Network::Player::getCharacter, &RBX::Network::Player::setCharacter, RBX::Reflection::PropertyDescriptor::STANDARD);
-
-static RBX::Reflection::SignalDesc<RBX::Network::Player, void(float)> event_Idled("Idled", "time");
-
-static void addChild(const boost::shared_ptr<RBX::ModelInstance>& parent, const boost::shared_ptr<RBX::Instance>& child)
+void RBX::Lua::newweaktable(lua_State* L, const char* mode)
 {
-	child->setParent(parent.get());
+    lua_newtable(L);
+    lua_pushvalue(L, -1);
+    lua_setmetatable(L, -2);
+    lua_pushliteral(L, "__mode");
+    lua_pushstring(L, mode);
+    lua_settable(L, -3);
 }
 
-static void setAppearanceParent(boost::shared_ptr<RBX::Instance> parent, boost::shared_ptr<RBX::Instance> instance)
+const luaL_Reg ObjectBridge::classLibrary[] = 
 {
-	if (dynamic_cast<RBX::CharacterAppearance*>(instance.get()))
-	{
-		instance->setParent(parent.get());
-	}
-	else if (dynamic_cast<RBX::Accoutrement*>(instance.get()))
-	{
-		instance->setParent(parent.get());
-	}
-	else
-	{
-		throw std::runtime_error("Attempt to add a non-CharacterAppearance/Accoutrement object to a character");
-	}
+    {"new", ObjectBridge::newInstance},
+    {NULL, NULL}
+};
+
+int ObjectBridge::newInstance(lua_State* thread)
+{
+    const Name& name = Name::lookup(lua_tostring(thread, 1));
+    boost::shared_ptr<Instance> instance = AbstractFactoryProduct<Instance>::create(name);
+
+    if (lua_gettop(thread) >= 2)
+    {
+        boost::shared_ptr<Instance> parent = ObjectBridge::getInstance(thread, 2);
+
+        if (parent)
+            instance->setParent(parent.get());
+    }
+
+    ObjectBridge::push(thread, instance);
+
+    return 1;
 }
 
-static void setAppearanceParentNull(RBX::Instance* instance)
+// TODO: 98.80% (functional match)
+static void pushLuaValue(ConstProperty p, lua_State* L)
 {
-	if (dynamic_cast<RBX::CharacterAppearance*>(instance))
-		instance->setParent(NULL);
+    // (0024BC)  S_BPREL32: [FFFFFF40], Type:             0x3639, objects
+    // (0024D0)  S_BPREL32: [FFFFFF50], Type:             0x36A2, end
+    // (0024E0)  S_BPREL32: [FFFFFF48], Type:             0x36A2, iter
+
+    PropertyDescriptor& descriptor = const_cast<PropertyDescriptor&>(p.getDescriptor());
+
+    if (descriptor.type == Type::singleton<int>())
+    {
+        lua_pushinteger(L, p.getValue<int>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<bool>())
+    {
+        lua_pushboolean(L, p.getValue<bool>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<float>())
+    {
+        lua_pushnumber(L, p.getValue<float>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<std::string>())
+    {
+        lua_pushstring(L, p.getStringValue().c_str());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<boost::shared_ptr<Instance>>())
+    {
+        ObjectBridge::push(L, p.getValue<boost::shared_ptr<Instance>>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<boost::shared_ptr<DescribedBase>>())
+    {
+        ObjectBridge::push(L, p.getValue<boost::shared_ptr<DescribedBase>>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<G3D::Vector3>())
+    {
+        Vector3Bridge::pushVector3(L, p.getValue<G3D::Vector3>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<G3D::CoordinateFrame>())
+    {
+        CoordinateFrameBridge::pushCoordinateFrame(L, p.getValue<G3D::CoordinateFrame>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<G3D::Color3>())
+    {
+        Color3Bridge::pushColor3(L, p.getValue<G3D::Color3>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<BrickColor>())
+    {
+        BrickColorBridge::pushNewObject(L, p.getValue<BrickColor>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<ContentId>())
+    {
+        lua_pushstring(L, p.getStringValue().c_str());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<FunctionRef>())
+    {
+        lua_pushfunction(L, p.getValue<FunctionRef>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<boost::shared_ptr<Instances>>())
+    {
+        boost::shared_ptr<Instances> objects = p.getValue<boost::shared_ptr<Instances>>();
+        if (objects)
+        {
+            Instances::const_iterator iter = objects->begin();
+            Instances::const_iterator end = objects->end();
+
+            // objects->size() doesn't match
+            lua_createtable(L, end-iter, 0);
+
+            for (int i = 1; iter != end; i++)
+            {
+                ObjectBridge::push(L, *iter);
+                lua_rawseti(L, -2, i);
+                ++iter;
+            }
+        }
+        else
+        {
+            lua_newtable(L);
+        }
+        return;
+    }
+
+    EnumPropertyDescriptor* enumDesc = dynamic_cast<EnumPropertyDescriptor*>(&descriptor);
+    if (enumDesc)
+    {
+        lua_pushinteger(L, enumDesc->getEnumValue(p.getInstance()));
+        return;
+    }
+
+    RefPropertyDescriptor* refDesc = dynamic_cast<RefPropertyDescriptor*>(&descriptor);
+    if (refDesc)
+    {
+        DescribedBase* ref = refDesc->getRefValue(p.getInstance());
+
+        // this just seems strange /shrug
+        if (ref)
+            ObjectBridge::push(L, static_cast<Instance*>(ref)->shared_from_this());
+        else
+            ObjectBridge::push(L, boost::shared_ptr<Instance>());
+
+        return;
+    }
+
+    throw std::runtime_error(G3D::format(
+        "Unable to get property %s, type %s",
+        descriptor.name.c_str(),
+        descriptor.type.name.c_str()));
 }
 
-namespace RBX
+template<>
+int ObjectBridge::on_index(const boost::shared_ptr<DescribedBase>& object, const char* name, lua_State* L)
 {
-	namespace Network
-	{
-		Player::Player()
-			: teamColor(BrickColor::lego_1),
-			  neutral(true),
-			  under13(false),
-			  superSafeChat(false),
-			  userId(0),
-			  lastActivityTime(0.0)
-		{
-			Security::Context::current().requirePermission(Security::Administrator, "create a Player");
-			setName("Player");
-		}
+    if (!object)
+        throw std::runtime_error("The object has been deleted");
 
-		Player::~Player()
-		{
-			setCharacter(NULL);
-		}
+    const Name& name2 = Name::lookup(name);
 
-		Backpack* Player::getPlayerBackpack() const
-		{
-			Backpack* backpack = findFirstChildOfType<Backpack>();
+    // what's with the scopes? they can't be inlines
 
-			RBXASSERT(backpack != NULL);
-			return backpack;
-		}
+    {
+        PropertyIterator iter = object->findProperty(name2);
+        if (iter != object->properties_end())
+        {
+            pushLuaValue(*iter, L);
+            return 1;
+        }
+    }
 
-		void Player::onCharacterChangedFrontend()
-		{
-			RBXASSERT(Players::frontendProcessing(this, true));
+    {
+        FunctionIterator iter = object->findFunction(name2);
+        if (iter != object->functions_end())
+        {
+            const FunctionDescriptor* fd = (*iter).getDescriptor();
 
-			Player* localPlayer = Players::findLocalPlayer(this);
-			if (this == localPlayer)
-			{
-				Workspace* workspace = ServiceProvider::find<Workspace>(this);
-				RBXASSERT(workspace != NULL);
+            lua_pushlightuserdata(L, (void*)fd);
+            lua_rawget(L, LUA_ENVIRONINDEX);
 
-				if (!character)
-				{
-					workspace->getCamera()->setCameraType(Camera::FIXED_CAMERA);
-					workspace->getCamera()->setDistanceFromTarget(0.0f);
-					workspace->getCamera()->zoom(-1.0f);
-				}
-				else
-				{
-					workspace->getCamera()->setCameraSubject(Humanoid::modelIsCharacter(character.get()));
-					workspace->getCamera()->setCameraType(Camera::CUSTOM_CAMERA);
-					workspace->getCamera()->setDistanceFromTarget(13.0f);
-					workspace->getCamera()->zoom(-1.0f);
-					workspace->setDefaultMouseCommand();
-				}
-			}
-		}
+            if (lua_type(L, -1) == LUA_TNIL)
+            {
+                lua_pop(L, 1);
+                lua_pushlightuserdata(L, (void*)fd);
+                lua_pushcclosure(L, ObjectBridge::callMemberFunction, 1);
+                lua_pushlightuserdata(L, (void*)fd);
+                lua_pushvalue(L, -2);
+                lua_settable(L, LUA_ENVIRONINDEX);
+            }
 
-		void Player::setTeamColor(BrickColor value)
-		{
-			if (value != teamColor)
-			{
-				teamColor = value;
-				raisePropertyChanged(prop_teamColor);
-			}
-		}
+            RBXASSERT(lua_type(L, -1) == LUA_TFUNCTION);
 
-		void Player::setNeutral(bool value)
-		{
-			if (value != neutral)
-			{
-				neutral = value;
-				raisePropertyChanged(prop_neutral);
-			}
-		}
+            return 1;
+        }
+    }
 
-		void Player::removeCharacter()
-		{
-			if (!Players::backendProcessing(this, true))
-				throw std::runtime_error("RemoveCharacter can only be called by the backend server");
+    {
+        SignalIterator iter = object->findSignal(name2);
+        if (iter != object->signals_end())
+        {
+            Signal s = *iter;
+            SignalBridge::push(L, s.getSignalInstance());
+            return 1;
+        }
+    }
 
-			setCharacter(NULL);
-		}
+    Instance* instance = dynamic_cast<Instance*>(object.get());
+    if (instance)
+    {
+        Instance* child = instance->findFirstChildByName(name);
+        if (child)
+        {
+            ObjectBridge::push(L, shared_from(child));
+            return 1;
+        }
+    }
 
-		void Player::setName(const std::string& value)
-		{
-			Security::Context::current().requirePermission(Security::Administrator, "set a Player's name");
-			Instance::setName(value);
-		}
+    if (name2.empty())
+    {
+        std::string pascalName = name;
+        pascalName[0] = toupper(name[0]);
 
-		void Player::setCharacterAppearance(const std::string& value)
-		{
-			if (value != characterAppearance)
-			{
-				characterAppearance = value;
-				if (Players::backendProcessing(this, false))
-					loadCharacterAppearance();
+        if (pascalName[0] != name[0] && !Name::lookup(pascalName).empty())
+            return on_index(object, pascalName.c_str(), L);
+    }
 
-				raisePropertyChanged(prop_characterAppearance);
-			}
-		}
+    throw std::runtime_error(G3D::format("%s is not a valid member of %s", name, instance->getClassName().c_str()));
+}
 
-		void Player::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
-		{
-			if (oldProvider && Players::backendProcessing(oldProvider, true))
-				setCharacter(NULL);
+// TODO: 94.38% (functional match)
+static void assignLuaValue(Property p, lua_State* L, int index)
+{
+    // (002DA8)  S_BPREL32: [FFFFFF60], Type:             0x238B, value
 
-			Instance::onServiceProvider(oldProvider, newProvider);
+    PropertyDescriptor& descriptor = const_cast<PropertyDescriptor&>(p.getDescriptor());
 
-			if (newProvider && Players::frontendProcessing(newProvider, true))
-				onCharacterChangedFrontend();
+    if (descriptor.type == Type::singleton<int>())
+    {
+        p.setValue<int>(lua_tointeger(L, index));
+        return;
+    }
 
-			if (!oldProvider && Players::frontendProcessing(newProvider, true))
-			{
-				RBXASSERT(Players::frontendProcessing(this, true));
-				lastActivityTime = G3D::System::getLocalTime();
-				doPeriodicIdleCheck();
-			}
-		}
+    if (descriptor.type == Type::singleton<bool>())
+    {
+        p.setValue<bool>(lua_toboolean(L, index) != 0);
+        return;
+    }
 
-		void Player::doPeriodicIdleCheck()
-		{
-			if (ServiceProvider::findServiceProvider(this))
-			{
-				RBXASSERT(Players::frontendProcessing(this, true));
-				if (lastActivityTime != 0.0)
-				{
-					G3D::RealTime idleTime = G3D::System::getLocalTime() - lastActivityTime;
-					if (idleTime > 120.0)
-					{
-						Players* players = ServiceProvider::find<Players>(this);
-						if (players && players->getLocalPlayer() && Players::clientIsPresent(this, true))
-						{
-							event_Idled.fire(this, idleTime);
-						}
-					}
-				}
+    if (descriptor.type == Type::singleton<float>())
+    {
+        p.setValue<float>(lua_tonumber(L, index));
+        return;
+    }
 
-				TimerService* timerService = ServiceProvider::create<TimerService>(this);
+    if (descriptor.type == Type::singleton<std::string>())
+    {
+        p.setValue<std::string>(lua_tostring(L, index));
+        return;
+    }
 
-				if (timerService)
-					timerService->delay(boost::bind(&Player::doPeriodicIdleCheck, shared_from(this)), 30.0);
-			}
-		}
+    if (descriptor.type == Type::singleton<FunctionRef>())
+    {
+        p.setValue(FunctionRef(L, index));
+        return;
+    }
 
-		void Player::setCharacter(ModelInstance* value)
-		{
-			if (value != character.get())
-			{
-				if (character.get())
-				{
-					characterDiedConnection.disconnect();
+    if (descriptor.type == Type::singleton<boost::shared_ptr<Instance>>())
+    {
+        p.setValue(ObjectBridge::getInstance(L, index));
+        return;
+    }
 
-					Notifier<Player, CharacterRemoving>::raise(character.get());
+    if (descriptor.type == Type::singleton<boost::shared_ptr<DescribedBase>>())
+    {
+        p.setValue(ObjectBridge::getPtr(L, index));
+        return;
+    }
 
-					if (Players::backendProcessing(this, false))
-						character->setParent(NULL);
+    if (descriptor.type == Type::singleton<G3D::Vector3>())
+    {
+        p.setValue(Vector3Bridge::getObject(L, index));
+        return;
+    }
 
-					character.reset();
-				}
+    if (descriptor.type == Type::singleton<G3D::CoordinateFrame>())
+    {
+        p.setValue(CoordinateFrameBridge::getObject(L, index));
+        return;
+    }
 
-				if (value)
-				{
-					character = shared_from(value);
+    if (descriptor.type == Type::singleton<G3D::Color3>())
+    {
+        p.setValue(Color3Bridge::getObject(L, index));
+        return;
+    }
 
-					Notifier<Player, CharacterAdded>::raise(character.get());
+    if (descriptor.type == Type::singleton<BrickColor>())
+    {
+        p.setValue(BrickColorBridge::getObject(L, index));
+        return;
+    }
 
-					if (Players::frontendProcessing(this, false))
-						onCharacterChangedFrontend();
-				}
+    // the contentid dtors for these two checks should be merged
+    // seems like an inline, but i can't get it to work
+    if (dynamic_cast<TypedPropertyDescriptor<SoundId>*>(&descriptor))
+    {
+        p.setValue<SoundId>(ContentId(lua_tostring(L, index)));
+        return;
+    }
 
-				raisePropertyChanged(prop_Character);
-			}
-		}
+    if (dynamic_cast<TypedPropertyDescriptor<TextureId>*>(&descriptor))
+    {
+        p.setValue<TextureId>(ContentId(lua_tostring(L, index)));
+        return;
+    }
 
-		void Player::loadCharacterAppearance()
-		{
-			if (!Players::backendProcessing(this, true))
-				throw std::runtime_error("LoadCharacterAppearance can only be called by the backend server");
+    EnumPropertyDescriptor* enumDesc = dynamic_cast<EnumPropertyDescriptor*>(&descriptor);
+    if (enumDesc)
+    {
+        int value = lua_tointeger(L, index);
+        enumDesc->setEnumValue(p.getInstance(), value);
+        return;
+    }
 
-			removeCharacterAppearance();
+    RefPropertyDescriptor* refDesc = dynamic_cast<RefPropertyDescriptor*>(&descriptor);
+    if (refDesc)
+    {
+        boost::shared_ptr<Instance> value = ObjectBridge::getInstance(L, index);
+        refDesc->setRefValue(p.getInstance(), value.get());
+        return;
+    }
 
-			if (character && !characterAppearance.empty())
-			{
-				std::vector<boost::shared_ptr<Instance>> characterApperance; // yes, the name's correct
+    throw std::runtime_error(G3D::format("Unable to set property %s, type %s", descriptor.name.c_str(), descriptor.type.name.c_str()));
+}
 
-				{
-					std::vector<std::string> strings;
-					boost::algorithm::split(strings, this->characterAppearance, boost::algorithm::is_any_of(";"));
+// TODO: 91.56%
+// a lot of stack space gets wasted for some reason
+template <>
+void ObjectBridge::on_newindex(boost::shared_ptr<DescribedBase>& object, const char* name, lua_State* L)
+{
+    // (0033F8)  S_BPREL32: [FFFFFF68], Type:             0x3058, iter
+    // (00340C)  S_BPREL32: [FFFFFF58], Type:             0x238B, parent (boost::shared_ptr<RBX::Instance>)
 
-					for (size_t i = 0; i < strings.size(); i++)
-					{
-						ContentProvider::singleton().load(ContentId(strings[i]), characterApperance);
-					}
-				}
+    if (!object)
+        throw std::runtime_error("The object has been deleted");
 
-				std::for_each(characterApperance.begin(), characterApperance.end(), boost::bind(&setAppearanceParent, character, _1));
+    DescribedBase* objectPtr = object.get();
+    PropertyIterator iter = object->findProperty(Name::lookup(name));
+    if (iter != object->properties_end())
+    {
+        if ((*iter).getDescriptor() == Instance::propParent)
+        {
+            Instance* instance = dynamic_cast<Instance*>(objectPtr);
 
-				if (Workspace* workspace = ServiceProvider::find<Workspace>(this))
-					workspace->getWorld()->update();
-			}
-		}
+            if (!instance)
+                throw std::runtime_error(G3D::format("%s is not a valid member of %s", name, object->classDescriptor().name.c_str()));
 
-		void Player::removeCharacterAppearance()
-		{
-			if (!Players::backendProcessing(this, true))
-				throw std::runtime_error("RemoveCharacterAppearance can only be called by the backend server");
+            boost::shared_ptr<Instance> parent = ObjectBridge::getInstance(L, 3);
 
-			if (character)
-				character->for_eachChild(&setAppearanceParentNull);
-		}
+            if (instance->getParent() != parent.get())
+            {
+                if (!instance->canSetParent(parent.get()))
+                    StandardOut::singleton()->print(MESSAGE_WARNING, "%s should not be a child of %s", instance->getName().c_str(), parent->getName().c_str());
 
-		void Player::rebuildBackpack()
-		{
-			if (!Players::backendProcessing(this, true))
-				throw std::runtime_error("rebuildBackpack can only be called by the backend server");
+                instance->setParent2(parent);
+            }
+        }
+        else
+        {
+            assignLuaValue(*iter, L, 3);    
+        }
 
-			while (Backpack* r = findFirstChildOfType<Backpack>())
-			{
-				r->setParent(NULL);
-			}
+        return;
+    }
 
-			boost::shared_ptr<Instance> backpack = Creatable::create<Backpack>();
-			backpack->setParent(this);
+    throw std::runtime_error(G3D::format("%s is not a valid member of %s", name, object->classDescriptor().name.c_str()));
+}
 
-			StarterPackService* starterPack = ServiceProvider::find<StarterPackService>(this);
-			if (starterPack)
-			{
-				for (size_t i = 0; i < starterPack->numChildren(); i++)
-				{
-					boost::shared_ptr<Instance> copy = starterPack->getChild(i)->clone();
-					copy->setParent(backpack.get());
-				}
-			}
-		}
+int ObjectBridge::callMemberFunction(lua_State* L)
+{
+    int idx = lua_upvalueindex(1);
+    RBXASSERT(lua_type(L, idx) == LUA_TLIGHTUSERDATA);
+    Reflection::FunctionDescriptor* fd = static_cast<Reflection::FunctionDescriptor*>(lua_touserdata(L, idx));
 
-		void Player::loadCharacter()
-		{
-			Workspace* workspace = ServiceProvider::find<Workspace>(this);
-			if (!workspace)
-				throw std::runtime_error("LoadCharacter can only be called when Player is in the world");
+    if (fd->security == FunctionDescriptor::NeedTrustedCaller)
+        Security::Context::current().requirePermission(Security::Administrator, fd->name.c_str());
 
-			if (!Players::backendProcessing(this, true))
-				throw std::runtime_error("LoadCharacter can only be called by the backend server");
+    boost::shared_ptr<Reflection::DescribedBase> instance;
 
-			std::vector<boost::shared_ptr<Instance>> instances;
-			ContentProvider::singleton().load(ContentId::fromAssets("fonts\\character.rbxm"), instances);
+    if (!getPtr(L, 1, instance) || !instance)
+        throw std::runtime_error(G3D::format(
+            "Did you forget a semicolon?  The first argument of member function %s must be an Object",
+            fd->name.c_str()));
 
-			if (instances.size() != 1)
-				throw std::runtime_error("character.rbxm should contain a Character model");
+    if (!fd->isMemberOf(instance.get()))
+        throw std::runtime_error(G3D::format(
+        "The function %s is not a member of \"%s\"",
+        fd->name.c_str(),
+        instance->classDescriptor().name.c_str()));
 
-			boost::shared_ptr<ModelInstance> model = boost::shared_dynamic_cast<ModelInstance>(instances.front());
-			if (!model)
-				throw std::runtime_error("character.rbxm should contain a Character model");
-
-			Humanoid* humanoid = Humanoid::modelIsCharacter(model.get());
-			if (!humanoid)
-				throw std::runtime_error("character.rbxm should contain a humanoid");
-
-			{
-				std::vector<boost::shared_ptr<Instance>> extraSound;
-				ContentProvider::singleton().load(ContentId::fromAssets("fonts\\humanoidSound.rbxm"), extraSound);
-				std::for_each(extraSound.begin(), extraSound.end(), boost::bind(&addChild, model, _1));
-			}
-
-			{
-				std::vector<boost::shared_ptr<Instance>> extraHealth;
-				ContentProvider::singleton().load(ContentId::fromAssets("fonts\\humanoidHealth.rbxm"), extraHealth);
-				std::for_each(extraHealth.begin(), extraHealth.end(), boost::bind(&addChild, model, _1));
-			}
-
-			{
-				std::vector<boost::shared_ptr<Instance>> extraAnimate;
-				ContentProvider::singleton().load(ContentId::fromAssets("fonts\\humanoidAnimate.rbxm"), extraAnimate);
-				std::for_each(extraAnimate.begin(), extraAnimate.end(), boost::bind(&addChild, model, _1));
-			}
-
-			model->setName(getName());
-			humanoid->buildJoints();
-			Instance::propArchivable.setValue(model.get(), false);
-			setCharacter(model.get());
-			
-			model->setParent(workspace);
-			loadCharacterAppearance();
-			
-			SpawnerService* spawnerService = ServiceProvider::find<SpawnerService>(this);
-			G3D::Vector3 dropPoint = spawnerService ? spawnerService->FindSpawnPositionForPlayer(this) : G3D::Vector3(0.0f, 20.0f, 25.0f);
-			workspace->moveToPoint(model.get(), dropPoint);
-		}
-	}
+    LuaArguments args(L, 1);
+    fd->execute(instance.get(), args);
+    return args.pushReturnValue();
 }

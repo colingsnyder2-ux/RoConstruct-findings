@@ -1,14 +1,14 @@
-// from server: 43% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/CommandBars/XTPMessageBar.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/Controls/XTCaption.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPMessageBar.cpp : implementation of the CXTPMessageBar class.
+// XTCaption.cpp : implementation of the CXTCaption class.
 //
-// This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME CONTROLS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -27,13 +27,19 @@
 
 #include "stdafx.h"
 
-#include "Common/XTPMarkupRender.h"
-#include "Common/XTPOffice2007Image.h"
-#include "Common/XTPToolTipContext.h"
+#include "Common/XTPWinThemeWrapper.h"
+#include "Common/XTPDrawHelpers.h"
 
-#include "XTPCommandBars.h"
-#include "XTPPaintManager.h"
-#include "XTPMessageBar.h"
+#include "Resource.h"
+#include "XTDefines.h"
+#include "XTUtil.h"
+#include "XTGlobal.h"
+#include "XTButton.h"
+#include "XTThemeManager.h"
+#include "XTButtonTheme.h"
+#include "XTCaptionTheme.h"
+#include "XTCaption.h"
+#include "XTCaptionPopupWnd.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -42,491 +48,545 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 
-CXTPMessageBarButton::CXTPMessageBarButton()
+/////////////////////////////////////////////////////////////////////////////
+// CXTCaptionButton
+
+IMPLEMENT_THEME_HOST(CXTCaptionButton)
+IMPLEMENT_THEME_REFRESH(CXTCaptionButton, CXTButton)
+
+CXTCaptionButton::CXTCaptionButton()
+: CXTButton(GetThemeFactoryClass())
+, m_pCaption(NULL)
 {
-	m_rcButton.SetRectEmpty();
-	m_nID = 0;
-	m_bPressed = FALSE;
-	m_bHot = FALSE;
 }
 
-void CXTPMessageBarButton::PerformClick(CXTPMessageBar* pBar, CPoint pt)
+DWORD CXTCaptionButton::SetXButtonStyle(DWORD /*dwxStyle*/, BOOL bRedraw/*= TRUE*/)
 {
-	if ((::GetCapture() != NULL))
-		return;
+	DWORD dwOldStyle = m_dwxStyle;
 
-	m_bPressed = TRUE;
-	pBar->InvalidateRect(m_rcButton, FALSE);
-
-	::SetCapture(pBar->GetSafeHwnd());
-
-	BOOL bClick = FALSE, bPressed;
-
-	while (::GetCapture() == pBar->GetSafeHwnd())
+	CXTCaption* pCaption = DYNAMIC_DOWNCAST(CXTCaption, GetSafeHwnd() ? GetParent() : 0);
+	if (pCaption)
 	{
-		MSG msg;
+		// set the button font and colors.
+		SetColorFace(pCaption->m_clrFace);
+		SetColorText(pCaption->m_clrText);
+		SetColorShadow(GetXtremeColor(COLOR_3DDKSHADOW));
 
-		if (!::GetMessage(&msg, NULL, 0, 0))
-			break;
+		// set the button font to match caption font.
+		SetFont(pCaption->GetFont());
 
-		switch (msg.message)
-		{
-			case WM_MOUSEMOVE:
-				pt = CPoint((short signed)LOWORD(msg.lParam), (short signed)HIWORD(msg.lParam));
-
-				bPressed = m_rcButton.PtInRect(pt);
-
-				if (bPressed != m_bPressed)
-				{
-					m_bPressed = bPressed;
-					pBar->InvalidateRect(m_rcButton, FALSE);
-				}
-
-				break;
-
-			case WM_LBUTTONUP:
-				bClick = m_bPressed;
-				goto ExitLoop;
-
-			case WM_KEYDOWN:
-				if (msg.wParam != VK_ESCAPE)
-					break;
-
-			case WM_CANCELMODE:
-			case WM_RBUTTONDOWN:
-				goto ExitLoop;
-
-			default:
-				DispatchMessage (&msg);
-				break;
-		}
+		// Redraw the button.
+		if (bRedraw)
+			Invalidate();
 	}
 
-ExitLoop:
-	ReleaseCapture();
-
-	m_bPressed = FALSE;
-	pBar->InvalidateRect(m_rcButton, FALSE);
-
-	if (bClick)
-	{
-		pBar->Click(this);
-	}
+	return dwOldStyle;
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// CXTPMessageBar
+// CXTCaption
 
-CXTPMessageBar::CXTPMessageBar()
+IMPLEMENT_THEME_HOST(CXTCaption)
+IMPLEMENT_THEME_REFRESH(CXTCaption, CStatic)
+
+CXTCaption::CXTCaption()
+: CXTThemeManagerStyleHost(GetThemeFactoryClass())
 {
-	m_pMarkupContext = NULL;
-	m_pUIElement = NULL;
+	m_bAppCaption = false;
+	m_bUserColors = false;
+	m_strCaption = _T("");
+	m_hIcon = NULL;
+	m_pChildWnd = NULL;
+	m_pParentView = NULL;
+	m_pSplitterWnd = NULL;
+	m_pPopupWnd = NULL;
+	m_nOffset = 0;
+	m_nBorder = 0;
+	m_sizeIcon.cx = __min(XTAuxData().cxSmIcon, 16);
+	m_sizeIcon.cy = __min(XTAuxData().cySmIcon, 16);
+	m_dwExStyle = 0L;
+	m_clrText = ::GetSysColor(COLOR_BTNTEXT);
+	m_clrBorder = ::GetSysColor(COLOR_3DFACE);
+	m_clrFace = ::GetSysColor(COLOR_3DFACE);
+}
 
-	m_rcBorder.SetRect(3, 3, 3, 3);
-	m_rcPadding.SetRect(5, 0, 5, 0);
-	m_rcContent.SetRectEmpty();
-
-	m_pCommandBars = NULL;
-
-	m_pHotButton = NULL;
+CXTCaption::~CXTCaption()
+{
 
 }
 
-CXTPMessageBar::~CXTPMessageBar()
-{
-	XTPMarkupReleaseElement(m_pUIElement);
-	XTPMarkupReleaseContext(m_pMarkupContext);
+IMPLEMENT_DYNAMIC(CXTCaption, CStatic)
 
-	RemoveButtons();
+BEGIN_MESSAGE_MAP(CXTCaption, CStatic)
+	//{{AFX_MSG_MAP(CXTCaption)
+	ON_WM_PAINT()
+	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
+	ON_WM_ERASEBKGND()
+	ON_WM_WINDOWPOSCHANGED()
+	ON_WM_SYSCOLORCHANGE()
+	ON_WM_SIZE()
+	//}}AFX_MSG_MAP
+
+	ON_BN_CLICKED(XT_IDC_BTN_CLOSE, OnCaptButton)
+	ON_MESSAGE_VOID(CPWN_XT_PUSHPINBUTTON, OnPushPinButton)
+	ON_MESSAGE_VOID(CPWN_XT_PUSHPINCANCEL, OnPushPinCancel)
+
+END_MESSAGE_MAP()
+
+void CXTCaption::OnSize(UINT nType, int cx, int cy)
+{
+	CStatic::OnSize(nType, cx, cy);
+
+	if (m_hIcon != NULL)
+		RedrawWindow();
 }
 
-BOOL CXTPMessageBar::Create(CXTPCommandBars* pCommandBars, DWORD dwStyle, UINT nID)
+void CXTCaption::OnPaint()
 {
-	m_dwStyle = (dwStyle & CBRS_ALL);
-	m_pCommandBars = pCommandBars;
+	// background is already filled in gray
+	CPaintDC dc(this);
 
-	if (!CWnd::Create(AfxRegisterWndClass(0, AfxGetApp()->LoadStandardCursor(IDC_ARROW)), NULL, dwStyle, CRect(0, 0, 0, 0), pCommandBars->GetSite(), nID))
-		return FALSE;
+	// Get the client rect.
+	CXTPClientRect rectClient(this);
 
-	if (m_pCommandBars->IsLayoutRTL())
+	// Paint to a memory device context to help
+	// eliminate screen flicker.
+	CXTPBufferDC memDC(dc);
+
+	// If the caption button is a valid window and visible exclude from painting...
+	if (::IsWindow(m_btnCaption.m_hWnd) && m_btnCaption.IsWindowVisible())
 	{
-		ModifyStyleEx(0, WS_EX_LAYOUTRTL);
+		CXTPWindowRect rcButton(&m_btnCaption);
+		ScreenToClient(&rcButton);
+		memDC.ExcludeClipRect(&rcButton);
 	}
+
+	// draw the background, text and icon.
+	DrawCaptionBack(&memDC, rectClient);
+	DrawCaptionText(&memDC);
+	DrawCaptionIcon(&memDC, rectClient);
+}
+
+LRESULT CXTCaption::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
+{
+	CDC* pDC = CDC::FromHandle((HDC)wParam);
+	if (pDC)
+	{
+		CXTPClientRect rectClient(this);
+
+		DrawCaptionBack(pDC, rectClient);
+		DrawCaptionText(pDC);
+		DrawCaptionIcon(pDC, rectClient);
+	}
+	return 1;
+}
+
+BOOL CXTCaption::OnEraseBkgnd(CDC* /*pDC*/)
+{
+	return TRUE;
+}
+
+void CXTCaption::DrawCaptionBack(CDC* pDC, CRect& rcItem)
+{
+	GetTheme()->DrawCaptionBack(pDC, this, rcItem);
+}
+
+void CXTCaption::DrawCaptionText(CDC* pDC)
+{
+	GetTheme()->DrawCaptionText(pDC, this);
+}
+
+void CXTCaption::DrawCaptionIcon(CDC* pDC, CRect& rcItem)
+{
+	GetTheme()->DrawCaptionIcon(pDC, this, rcItem);
+}
+
+BOOL CXTCaption::Create(CWnd* pParentWnd, LPCTSTR lpszWindowName, DWORD dwExStyle, DWORD dwStyle, const CRect& rect, UINT nID)
+{
+	// Let the base class create the control.
+	if (!CStatic::Create(NULL, dwStyle | WS_CLIPCHILDREN, rect, pParentWnd, nID))
+	{
+		TRACE(_T("Unable to create caption.\n"));
+		return FALSE;
+	}
+
+	SetFont(&XTAuxData().font);
+
+	// save the style.
+	m_dwExStyle = (dwExStyle & (CPWS_EX_GROOVE_EDGE | CPWS_EX_RAISED_EDGE | CPWS_EX_CLOSEBUTTON));
+	ModifyStyleEx(0, (dwExStyle & ~m_dwExStyle));
+
+	// Save the window text.
+	m_strCaption = lpszWindowName;
+
+	if (HasCloseButton())
+	{
+		// Create the caption's close button.
+		if (!m_btnCaption.Create(NULL, WS_VISIBLE | WS_CHILD | BS_ICON | BS_OWNERDRAW | BS_CENTER | BS_VCENTER,
+			CRect(0, 0, 0, 0), this, XT_IDC_BTN_CLOSE))
+		{
+			TRACE0("Unable to create caption button.\n");
+			return -1;
+		}
+
+		// Create the image list used by frame buttons.
+		m_ilButton.Create (XT_IDB_BTN_OUT, 16, 1, RGB(255, 0, 255));
+
+		// and set the icon for the caption's close button
+		m_btnCaption.SetIcon(CSize(16, 15), m_ilButton.ExtractIcon(2));
+	}
+	else
+	{
+		// Create the button to be used with child window.
+		if (!m_btnCaption.Create(m_strCaption, BS_ICON | BS_OWNERDRAW | BS_VCENTER,
+			CRect(0, 0, 0, 0), this, XT_IDC_BTN_CLOSE))
+		{
+			TRACE0("Unable to create caption button.\n");
+			return FALSE;
+		}
+
+		m_bAppCaption = true;
+	}
+
+	m_btnCaption.SetCaption(this);
+	m_btnCaption.SetXButtonStyle(0, FALSE);
+
+	SetWindowPos(NULL, 0, 0, 0, 0,
+		SWP_NOSIZE | SWP_NOMOVE | SWP_FRAMECHANGED);
 
 	return TRUE;
 }
 
-
-void CXTPMessageBar::OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHndler)
+void CXTCaption::ModifyCaptionStyle(int nBorderSize, CFont* pFont, LPCTSTR lpszWindText, HICON hIcon)
 {
-	// update the dialog controls added to the status bar
-	UpdateDialogControls(pTarget, bDisableIfNoHndler);
-}
-
-CSize CXTPMessageBar::CalcFixedLayout(BOOL, BOOL /*bHorz*/)
-{
-	ASSERT_VALID(this);
 	ASSERT(::IsWindow(m_hWnd));
 
-	CSize size(32767, 40);
-	return size;
-}
-
-
-void CXTPMessageBar::EnableMarkup(BOOL bEnableMarkup)
-{
-	XTPMarkupReleaseContext(m_pMarkupContext);
-
-	if (bEnableMarkup)
+	if (nBorderSize != 0)
 	{
-		m_pMarkupContext = XTPMarkupCreateContext(m_hWnd);
+		m_nBorder = nBorderSize;
 	}
-}
 
-void CXTPMessageBar::AddButton(UINT nID, LPCTSTR lpszCaption, LPCTSTR lpszToolTop)
-{
-	CXTPMessageBarButton* pButton = new CXTPMessageBarButton();
-	pButton->m_nID = nID;
-	pButton->m_strCaption = lpszCaption;
-	pButton->m_strToolTip = lpszToolTop;
-
-	m_arrButtons.Add(pButton);
-	Invalidate(FALSE);
-}
-
-void CXTPMessageBar::RemoveButtons()
-{
-	for (int i = 0; i < m_arrButtons.GetSize(); i++)
+	if (pFont != NULL)
 	{
-		delete m_arrButtons[i];
+		SetFont(pFont);
+
+		// button font should match caption
+		if (::IsWindow(m_btnCaption.m_hWnd))
+			m_btnCaption.SetFont(GetFont());
 	}
-	m_arrButtons.RemoveAll();
-	m_pHotButton = NULL;
 
-	if (m_hWnd) Invalidate(FALSE);
-}
-
-void CXTPMessageBar::SetMessage(LPCTSTR lpszMessage)
-{
-	m_strContent = lpszMessage;
-
-	XTPMarkupReleaseElement(m_pUIElement);
-
-	if (m_pMarkupContext)
+	if (lpszWindText != NULL)
 	{
-		m_pUIElement = XTPMarkupParseText(m_pMarkupContext, lpszMessage);
+		m_strCaption = lpszWindText;
 	}
-	Invalidate(FALSE);
-}
 
-CXTPPaintManager* CXTPMessageBar::GetPaintManager() const
-{
-	return m_pCommandBars->GetPaintManager();
-}
-
-BEGIN_MESSAGE_MAP(CXTPMessageBar, CControlBar)
-	//{{AFX_MSG_MAP(CXTPMessageBar)
-	ON_WM_PAINT()
-	ON_WM_SIZE()
-	ON_WM_MOUSEMOVE()
-	ON_WM_LBUTTONDOWN()
-	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPMessageBar message handlers
-
-
-void CXTPMessageBar::OnPaint()
-{
-	CPaintDC dcPaint(this); // device context for painting
-
-	CXTPBufferDC dc(dcPaint);
-
-	CXTPFontDC font(&dc, GetPaintManager()->GetRegularFont());
-
-	RecalcLayout(&dc);
-
-	FillMessageBar(&dc);
-
-	DrawContent(&dc);
-
-	DrawButtons(&dc);
-}
-
-void CXTPMessageBar::DrawButtons(CDC* pDC)
-{
-	for (int i = 0; i < m_arrButtons.GetSize(); i++)
+	if (hIcon != NULL)
 	{
-		CXTPMessageBarButton* pButton = m_arrButtons.GetAt(i);
-		DrawButton(pDC, pButton);
+		m_hIcon = hIcon;
 	}
-};
 
-void CXTPMessageBar::DrawButton(CDC* pDC, CXTPMessageBarButton* pButton)
+	Invalidate();
+}
+
+void CXTCaption::SetChildWindow(CWnd* pChild, CWnd* pNotifyWnd)
 {
-	BOOL bCloseButton = (pButton->m_nID == SC_CLOSE);
+	ASSERT_VALID (pChild);      // must be valid.
+	ASSERT_VALID (pNotifyWnd);  // must be valid.
 
-	GetPaintManager()->DrawMessageBarButton(pDC, pButton);
+	// save window pointers, and show caption button.
+	m_pChildWnd = pChild;
+	SetOwner(pNotifyWnd);
 
-	if (!bCloseButton)
+	m_pParentView = pChild->GetParent();
+	ASSERT_KINDOF(CView, m_pParentView);
+
+	m_pSplitterWnd = m_pParentView->GetParent();
+	ASSERT_KINDOF(CSplitterWnd, m_pSplitterWnd);
+
+	// get the size of the child and parent windows.
+	m_pChildWnd->GetClientRect (&m_rcChild);
+	m_pParentView->GetClientRect (&m_rcParent);
+	m_pSplitterWnd->GetClientRect (&m_rcSplitter);
+
+	// save the size of the childs caption area.
+	m_nOffset = (m_rcParent.Height() - m_rcChild.Height());
+
+	// make the caption button visible.
+	m_btnCaption.ShowWindow(SW_SHOW);
+	m_btnCaption.UpdateWindow();
+
+	// inflate the size of the parent to add a border, this will
+	// also be the size of the popup window.
+	int cx = ::GetSystemMetrics (SM_CXEDGE)*2;
+	int cy = ::GetSystemMetrics (SM_CYEDGE)*2;
+	m_rcParent.InflateRect(cx, cy);
+}
+
+void CXTCaption::KillChildWindow()
+{
+	// Hide the caption button.
+	if (::IsWindow(m_btnCaption.m_hWnd))
 	{
-		pDC->SetBkMode(TRANSPARENT);
-		pDC->SetTextColor(GetPaintManager()->m_clrMessageBarText);
-		pDC->DrawText(pButton->m_strCaption, pButton->m_rcButton, DT_CENTER | DT_VCENTER | DT_NOPREFIX | DT_SINGLELINE);
+		m_btnCaption.ShowWindow(SW_HIDE);
+		m_btnCaption.SetState(FALSE);
 	}
-}
 
-void CXTPMessageBar::FillMessageBar(CDC* pDC)
-{
-	GetPaintManager()->FillMessageBar(pDC, this);
-}
-
-void CXTPMessageBar::DrawContent(CDC* pDC)
-{
-	COLORREF clrText = GetPaintManager()->m_clrMessageBarText;
-
-	if (m_pUIElement)
+	// Destroy the pop-up window.
+	if (::IsWindow(m_pPopupWnd->GetSafeHwnd()))
 	{
-		XTPMarkupSetDefaultFont(m_pMarkupContext, (HFONT)GetPaintManager()->GetRegularFont()->GetSafeHandle(), clrText);
-		XTPMarkupRenderElement(m_pUIElement, pDC->GetSafeHdc(), m_rcContent);
+		m_pPopupWnd->DestroyWindow();
+	}
+
+	SAFE_DELETE(m_pPopupWnd);
+}
+
+BOOL CXTCaption::ShowPopupWindow()
+{
+	// already visible return TRUE.
+	if (::IsWindowVisible(m_pPopupWnd->GetSafeHwnd()))
+		return TRUE;
+
+	// if not a window yet create it.
+	if (!::IsWindow(m_pPopupWnd->GetSafeHwnd()))
+	{
+		m_pPopupWnd = new CXTCaptionPopupWnd;
+
+		if (!m_pPopupWnd->Create(CRect(0, 0, 0, 0), this, m_pChildWnd))
+		{
+			SAFE_DELETE(m_pPopupWnd);
+			return FALSE;
+		}
+	}
+
+	// view pointer is not valid.
+	if (!::IsWindow(m_pParentView->GetSafeHwnd()))
+		return FALSE;
+
+	// splitter pointer is not valid.
+	if (!::IsWindow(m_pSplitterWnd->GetSafeHwnd()))
+		return FALSE;
+
+	CRect rcPopup(m_rcParent);
+	m_pParentView->ClientToScreen(&rcPopup);
+
+	// get the current size of the splitter window.
+	CRect rcSplitter;
+	m_pSplitterWnd->GetClientRect(&rcSplitter);
+
+	// check to see if the size has changed.
+	if (rcSplitter.Height() > m_rcSplitter.Height())
+	{
+		rcPopup.bottom += (rcSplitter.Height() - m_rcSplitter.Height());
+	}
+	else if (m_rcSplitter.Height() > rcSplitter.Height())
+	{
+		rcPopup.bottom -= (m_rcSplitter.Height() - rcSplitter.Height());
+	}
+
+	// display the popup window.
+	m_pPopupWnd->MoveWindow(&rcPopup);
+	m_pPopupWnd->ShowWindow(SW_SHOW);
+	m_pPopupWnd->RecalcLayout();
+
+	// press the caption button.
+	m_btnCaption.SetState(TRUE);
+
+	return TRUE;
+}
+
+void CXTCaption::OnCaptButton()
+{
+	if (HasCloseButton())
+	{
+		CWnd* pOwner = GetOwner();
+		ASSERT_VALID(pOwner);
+
+		if (pOwner)
+		{
+			// Notify of selection change.
+			pOwner->SendMessage(WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(),
+				BN_CLICKED), (LPARAM)m_hWnd);
+		}
 	}
 	else
 	{
-		pDC->SetBkMode(TRANSPARENT);
-		pDC->SetTextColor(clrText);
-		pDC->DrawText(m_strContent, m_rcContent, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX);
+		ShowPopupWindow();
 	}
 }
 
-CRect CXTPMessageBar::GetMessageRect()
+void CXTCaption::OnPushPinButton()
 {
-	BOOL bCloseButton = FindButton(SC_CLOSE) != NULL;
+	KillChildWindow();
 
-	CXTPClientRect rc(this);
-	rc.left += m_rcBorder.left;
-	rc.top += m_rcBorder.top;
-	rc.right -= m_rcBorder.right + (bCloseButton ? 18 : 0);
-	rc.bottom -= m_rcBorder.bottom;
+	// get the current size of the child's parent window and
+	// adjust the size of the child accordingly.
+	m_pParentView->GetClientRect (&m_rcParent);
+	m_rcChild = m_rcParent;
+	m_rcChild.top += m_nOffset;
 
-	return rc;
-}
+	// move the child window to its correct location.
+	m_pChildWnd->MoveWindow (m_rcChild);
 
-CSize CXTPMessageBar::MeasureContent(CDC* pDC)
-{
-	if (m_pUIElement)
+	CWnd* pNotifyWnd = GetOwner();
+	ASSERT_VALID(pNotifyWnd);
+
+	if (::IsWindow(pNotifyWnd->GetSafeHwnd()))
 	{
-		XTPMarkupSetDefaultFont(m_pMarkupContext, (HFONT)GetPaintManager()->GetRegularFont()->GetSafeHandle(), COLORREF_NULL);
-		CSize sz = XTPMarkupMeasureElement(m_pUIElement);
-		return sz;
+		// Notify that push pin button was pressed.
+		pNotifyWnd->SendMessage(CPWN_XT_PUSHPINBUTTON);
+		Invalidate();
+	}
+}
+
+void CXTCaption::OnPushPinCancel()
+{
+	m_btnCaption.SetState(FALSE);
+	m_pPopupWnd->DestroyWindow();
+
+	SAFE_DELETE (m_pPopupWnd);
+
+	CWnd* pNotifyWnd = GetOwner();
+	ASSERT_VALID(pNotifyWnd);
+
+	if (::IsWindow(pNotifyWnd->GetSafeHwnd()))
+	{
+		// Notify that popup window has lost input focus.
+		pNotifyWnd->SendMessage(CPWN_XT_PUSHPINCANCEL);
+		Invalidate();
+	}
+}
+
+void CXTCaption::UpdateCaption(LPCTSTR lpszWindowText, HICON hIcon)
+{
+	ASSERT(::IsWindow(m_hWnd));
+
+	CRect rcClient;
+	GetClientRect(&rcClient);
+	CDC* pDC = GetDC();
+
+	DrawCaptionBack(pDC, rcClient);
+
+	if (lpszWindowText != NULL)
+	{
+		m_strCaption = lpszWindowText;
+		UpdateCaptionText(pDC);
 	}
 
-	CSize sz = pDC->GetTextExtent(m_strContent);
-	return sz;
+	if (hIcon != NULL)
+	{
+		m_hIcon = hIcon;
+		DrawCaptionIcon(pDC, rcClient);
+	}
+
+	ReleaseDC(pDC);
 }
 
-CSize CXTPMessageBar::MeasureButton(CDC* pDC, CXTPMessageBarButton* pButton)
+void CXTCaption::UpdateCaptionText(CDC* pDC)
 {
-	if (pButton->m_nID == SC_CLOSE)
-		return CSize(18, 18);
+	if (::IsWindow(m_btnCaption.m_hWnd))
+	{
+		m_btnCaption.SetWindowText(m_strCaption);
+		m_btnCaption.MoveWindow(GetButtonRect());
+	}
 
-
-	CSize sz = pDC->GetTextExtent(pButton->m_strCaption);
-	sz.cy = max(sz.cy + 2, 23);
-	sz.cx = max(89, sz.cx + 10);
-
-	return sz;
+	DrawCaptionText(pDC);
 }
 
-void CXTPMessageBar::RecalcLayout(CDC* pDC)
+CRect CXTCaption::GetTextRect() const
 {
-	if (!m_hWnd)
-		return;
+	if (m_strCaption.IsEmpty())
+		return CXTPEmptyRect();
 
 	CXTPClientRect rcClient(this);
 
-	CSize szContent = MeasureContent(pDC);
+	// Use a NULL window dc to get the size the caption button
+	// should be using CDC::GetTextExtent(...).
+	CWindowDC dc(NULL);
+	CXTPFontDC fontDC(&dc, GetFont());
 
-	m_rcContent = CRect(CPoint(m_rcBorder.left + m_rcPadding.left, (rcClient.Height() - szContent.cy) /2), szContent);
+	TEXTMETRIC tm;
+	dc.GetTextMetrics(&tm);
 
-	int nLeft = m_rcContent.right, i;
+	// Calculate the button area size.
+	CSize size = dc.GetTextExtent(m_strCaption, m_strCaption.GetLength());
+	size.cx += tm.tmAveCharWidth + 12;
+	size.cy = rcClient.Height();
 
-	CXTPMessageBarButton* pCloseButton = NULL;
+	int iWidth = rcClient.Width() - (m_hIcon ? 18 : 0);
+	if (size.cx > iWidth)
+		size.cx = iWidth;
 
-	for (i = 0; i < m_arrButtons.GetSize(); i++)
-	{
-		CXTPMessageBarButton* pButton = m_arrButtons.GetAt(i);
-		if (pButton->m_nID == SC_CLOSE)
-		{
-			pCloseButton = pButton;
-			continue;
-		}
-
-		CSize szButton = MeasureButton(pDC, pButton);
-
-		pButton->m_rcButton = CRect(CPoint(nLeft + m_rcPadding.right, (rcClient.Height() - szButton.cy) /2), szButton);
-		nLeft = pButton->m_rcButton.right;
-	}
-
-	int nRight = rcClient.right - m_rcBorder.right - m_rcPadding.right - (pCloseButton ? 18 : 0);
-	if (nLeft > nRight)
-	{
-		nLeft = m_rcBorder.left + m_rcPadding.left;
-
-		for (i = (int)m_arrButtons.GetSize() - 1; i >= 0; i--)
-		{
-			CXTPMessageBarButton* pButton = m_arrButtons.GetAt(i);
-			if (pButton->m_nID == SC_CLOSE)
-				continue;
-
-			int nWidth = pButton->m_rcButton.Width();
-			pButton->m_rcButton.right = nRight;
-			pButton->m_rcButton.left = nRight - nWidth;
-			if (pButton->m_rcButton.left < nLeft)
-			{
-				pButton->m_rcButton.SetRectEmpty();
-			}
-			else
-			{
-				nRight = nRight - nWidth - m_rcPadding.right;
-			}
-		}
-
-		m_rcContent.right = nRight;
-	}
-
-	if (pCloseButton)
-	{
-		CSize szButton = MeasureButton(pDC, pCloseButton);
-		pCloseButton->m_rcButton = CRect(CPoint(rcClient.right - szButton.cx - 1, m_rcBorder.top), szButton);
-	}
-};
-
-void CXTPMessageBar::OnSize(UINT nType, int cx, int cy)
-{
-	CControlBar::OnSize(nType, cx, cy);
-
-	Invalidate(FALSE);
+	return CRect(m_nBorder, m_nBorder, m_nBorder + size.cx, size.cy - m_nBorder);
 }
 
-BOOL CXTPMessageBar::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+CRect CXTCaption::GetButtonRect() const
 {
-	if (m_pUIElement)
-	{
-		if (XTPMarkupRelayMessage(m_pUIElement, message, wParam, lParam, pResult))
-			return TRUE;
-	}
+	if (!::IsWindow(m_btnCaption.m_hWnd))
+		return CXTPEmptyRect();
 
-	m_pCommandBars->GetToolTipContext()->FilterToolTipMessage(this, message, wParam, lParam);
+	if (!HasCloseButton())
+		return GetTextRect();
 
-	return CControlBar::OnWndMsg(message, wParam, lParam, pResult);
+	CSize szIcon(16, 15);
+	CXTPClientRect rcClient(this);
+
+	CRect rcButton;
+	rcButton.left = (rcClient.Width() -szIcon.cx)-2;
+	rcButton.top = (rcClient.Height()-szIcon.cy)/2;
+	rcButton.right = rcButton.left + szIcon.cx;
+	rcButton.bottom = rcButton.top + szIcon.cy;
+
+	return rcButton;
 }
 
-CXTPMessageBarButton* CXTPMessageBar::FindButton(UINT nID) const
+void CXTCaption::OnWindowPosChanged(WINDOWPOS FAR* lpwndpos)
 {
-	for (int i = 0; i < m_arrButtons.GetSize(); i++)
-	{
-		CXTPMessageBarButton* pButton = m_arrButtons.GetAt(i);
-		if (pButton->m_nID == nID)
-			return pButton;
-	}
+	CStatic::OnWindowPosChanged(lpwndpos);
 
-	return NULL;
-
-}
-CXTPMessageBarButton* CXTPMessageBar::HitTestButton(CPoint point) const
-{
-	for (int i = 0; i < m_arrButtons.GetSize(); i++)
-	{
-		CXTPMessageBarButton* pButton = m_arrButtons.GetAt(i);
-		if (pButton->m_rcButton.PtInRect(point))
-			return pButton;
-	}
-
-	return NULL;
+	if (::IsWindow(m_btnCaption.m_hWnd))
+		m_btnCaption.MoveWindow(GetButtonRect());
 }
 
-void CXTPMessageBar::OnMouseLeave()
+void CXTCaption::SetCaptionColors(COLORREF clrBorder, COLORREF clrFace, COLORREF clrText)
 {
-	OnMouseMove(0, CPoint(-1, -1));
-}
-
-void CXTPMessageBar::OnMouseMove(UINT nFlags, CPoint point)
-{
-	CXTPMessageBarButton* pButton = HitTestButton(point);
-
-	if (pButton != m_pHotButton)
-	{
-		if (m_pHotButton) m_pHotButton->m_bHot = FALSE;
-
-		m_pHotButton = pButton;
-
-		if (m_pHotButton) m_pHotButton->m_bHot = TRUE;
-
-		if (m_pHotButton)
-		{
-			TRACKMOUSEEVENT tme =
-			{
-				sizeof(TRACKMOUSEEVENT), TME_LEAVE, m_hWnd
-			};
-			_TrackMouseEvent(&tme);
-		}
-
-		Invalidate(FALSE);
-	}
-
-	CControlBar::OnMouseMove(nFlags, point);
-}
-
-void CXTPMessageBar::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	if (m_pHotButton)
-	{
-		m_pHotButton->PerformClick(this, point);
-		return;
-	}
-
-	CControlBar::OnLButtonDown(nFlags, point);
-}
-
-INT_PTR CXTPMessageBar::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
-{
-	ASSERT_VALID(this);
 	ASSERT(::IsWindow(m_hWnd));
 
-	// check child windows first by calling CControlBar
-	INT_PTR nHit = CControlBar::OnToolHitTest(point, pTI);
-	if (nHit != -1)
-		return nHit;
+	m_bUserColors = true;
 
-	if (m_pHotButton)
+	m_clrBorder = clrBorder;
+	m_clrFace = clrFace;
+	m_clrText = clrText;
+
+	if (::IsWindow(m_btnCaption.m_hWnd))
 	{
-		nHit = m_pHotButton->m_nID;
-
-		CString strTip = m_pHotButton->m_strToolTip;
-		if (strTip.IsEmpty())
-			return -1;
-
-		CXTPToolTipContext::FillInToolInfo(pTI, m_hWnd, m_pHotButton->m_rcButton, nHit, strTip, strTip, _T(""), m_pCommandBars->GetImageManager());
-
-		return nHit;
+		m_btnCaption.SetColorFace(m_clrFace);
+		m_btnCaption.SetColorText(m_clrText);
+		m_btnCaption.SetColorShadow(::GetSysColor(COLOR_3DDKSHADOW));
 	}
-	return -1;
 }
 
-void CXTPMessageBar::Click(CXTPMessageBarButton* pButton)
+void CXTCaption::SetOffice2003Colors(bool b2003Colors/*= true*/)
 {
-	if (pButton->m_nID == SC_CLOSE)
-	{
-		SetWindowPos(NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_HIDEWINDOW);
-
-		m_pCommandBars->RecalcFrameLayout();
-	}
-	else
-	{
-		m_pCommandBars->GetSite()->SendMessage(WM_COMMAND, pButton->m_nID);
-	}
+	m_bUserColors = b2003Colors;
+	SetTheme(b2003Colors ? new CXTCaptionThemeOffice2003() : NULL);
 }
 
+void CXTCaption::OnSysColorChange()
+{
+	CStatic::OnSysColorChange();
+
+	// update caption colors if not user defined.
+	if (m_bUserColors == false)
+	{
+		m_clrText = ::GetSysColor(COLOR_BTNTEXT);
+		m_clrBorder = ::GetSysColor(COLOR_3DFACE);
+		m_clrFace = ::GetSysColor(COLOR_3DFACE);
+
+		if (::IsWindow(m_btnCaption.m_hWnd))
+		{
+			m_btnCaption.SetColorFace(m_clrFace);
+			m_btnCaption.SetColorText(m_clrText);
+			m_btnCaption.SetColorShadow(::GetSysColor(COLOR_3DDKSHADOW));
+		}
+	}
+}

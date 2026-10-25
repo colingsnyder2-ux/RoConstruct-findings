@@ -1,14 +1,14 @@
-// from server: 99% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/CommandBars/XTPDefaultTheme.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPDefaultTheme.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPDefaultTheme.cpp : implementation of the CXTPDefaultTheme class.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -46,10 +46,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+using namespace XTPPaintThemes;
 
 // CXTPDefaultTheme
-
-IMPLEMENT_DYNAMIC(CXTPDefaultTheme, CXTPPaintManager)
 
 CXTPDefaultTheme::CXTPDefaultTheme()
 {
@@ -67,15 +66,8 @@ void CXTPDefaultTheme::RefreshMetrics()
 	m_clrFloatingGripperText.SetStandardValue(GetXtremeColor(COLOR_CAPTIONTEXT));
 }
 
-void CXTPDefaultTheme::DrawRectangle(CDC* pDC, CRect rc, BOOL bSelected, BOOL bPressed, BOOL bEnabled, BOOL bChecked, BOOL bPopuped, XTPBarType barType, XTPBarPosition barPosition = xtpBarPopup)
+void CXTPDefaultTheme::DrawRectangle(CDC* pDC, CRect rc, BOOL bSelected, BOOL bPressed, BOOL bEnabled, BOOL bChecked, BOOL bPopuped, XTPBarType barType, XTPBarPosition /*barPosition = xtpBarPopup*/)
 {
-	if (m_bSelectImageInPopupBar && barPosition == xtpBarPopup && barType == xtpBarTypePopup && bChecked)
-	{
-		DrawShadedRect(pDC, rc);
-		Draw3dRect(pDC, rc, COLOR_3DSHADOW, COLOR_BTNHILIGHT);
-		return;
-	}
-
 	if (barType == xtpBarTypePopup && !bChecked)
 	{
 		if (bSelected || bPressed)
@@ -179,12 +171,12 @@ void CXTPDefaultTheme::DrawControlEditSpin(CDC* pDC, CXTPControlEdit* pControlEd
 	{
 		pDC->FillSolidRect(rcSpin, GetXtremeColor(COLOR_3DFACE));
 
-		if (bPressed == XTP_EDITSPIN_UP)
+		if (bPressed == 3)
 			pDC->Draw3dRect(rcTop, GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_WINDOW));
 		else
 			pDC->Draw3dRect(rcTop, GetXtremeColor(COLOR_WINDOW), GetXtremeColor(COLOR_3DSHADOW));
 
-		if (bPressed == XTP_EDITSPIN_DOWN)
+		if (bPressed == 4)
 			pDC->Draw3dRect(rcBottom, GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_WINDOW));
 		else
 			pDC->Draw3dRect(rcBottom, GetXtremeColor(COLOR_WINDOW), GetXtremeColor(COLOR_3DSHADOW));
@@ -222,10 +214,6 @@ CSize CXTPDefaultTheme::DrawControlEdit(CDC* pDC, CXTPControlEdit* pControlEdit,
 	}
 
 	DrawControlEditFrame(pDC, rc, bEnabled, bSelected);
-
-	CRect rcText(pControlEdit->GetRect());
-	rcText.DeflateRect(pControlEdit->GetLabelWidth() + 3, 1, 3, 1);
-	pControlEdit->DrawEditText(pDC, rcText);
 
 	if (pControlEdit->IsSpinButtonsVisible())
 	{
@@ -343,8 +331,6 @@ CSize CXTPDefaultTheme::GetPopupBarImageSize(CXTPCommandBar* pBar)
 
 CSize CXTPDefaultTheme::DrawControlPopupParent(CDC* pDC, CXTPControl* pButton, BOOL bDraw)
 {
-	CXTPFontDC font(pDC, GetControlFont(pButton));
-
 	CXTPCommandBar* pParent = pButton->GetParent();
 
 	CRect rcButton = pButton->GetRect();
@@ -368,6 +354,9 @@ CSize CXTPDefaultTheme::DrawControlPopupParent(CDC* pDC, CXTPControl* pButton, B
 	CSize szIcon = GetIconSize(pButton);
 	CSize szImage(max(szIcon.cx + 4, m_nTextHeight), max(szIcon.cy + 4, m_nTextHeight));
 
+	if (pButton->GetType() == xtpControlLabel && !bDrawImage)
+		szImage.cy = m_nTextHeight;
+
 	if (bDraw)
 	{
 		CRect rcSelection(rcButton.left, rcButton.top, rcButton.right, rcButton.bottom);
@@ -376,27 +365,19 @@ CSize CXTPDefaultTheme::DrawControlPopupParent(CDC* pDC, CXTPControl* pButton, B
 
 		if (pButton->GetExpanded())
 		{
-			int nGripperWidth = GetPopupBarGripperWidth(pParent);
-
 			pDC->FillSolidRect(rcButton, GetXtremeColor(COLOR_3DLIGHT));
-
-			if (pButton->GetExpanded() && rcButton.left < nGripperWidth)
-			{
-				DrawPopupBarGripper(pDC, rcButton.left - 1, rcButton.top, nGripperWidth + 1, rcButton.Height(), TRUE);
-			}
-
 		}
 
 
-		COLORREF clrText = GetRectangleTextColor(bSelected, FALSE, bEnabled, FALSE, FALSE, xtpBarTypePopup, xtpBarPopup);
+		COLORREF clrText = GetControlTextColor(pButton);
 		pDC->SetTextColor(clrText);
 
 		if (m_bSelectImageInPopupBar && bSelected)
 			DrawRectangle(pDC, rcSelection, bSelected, FALSE, TRUE, FALSE, FALSE, xtpBarTypePopup, xtpBarPopup);
 
-		if (bChecked)
+		if (bChecked && !m_bSelectImageInPopupBar)
 		{
-			DrawRectangle(pDC, rcImageRect, bSelected, FALSE, bEnabled, bChecked, FALSE, xtpBarTypePopup, xtpBarPopup);
+			DrawRectangle(pDC, rcImageRect, bSelected, FALSE, bEnabled, bChecked, FALSE, xtpBarTypeNormal, xtpBarPopup);
 			rcSelection.left = rcImageRect.right + 1;
 		}
 
@@ -406,7 +387,7 @@ CSize CXTPDefaultTheme::DrawControlPopupParent(CDC* pDC, CXTPControl* pButton, B
 		CXTPImageManagerIcon* pImage = pButton->GetIconId() != 0 && bDrawImage ? pButton->GetImage(szIcon.cx) : NULL;
 		if (pImage)
 		{
-			szIcon = GetStretchIconSize(pImage, szIcon);
+			szIcon.cy = pImage->GetHeight() * szIcon.cx / pImage->GetWidth();
 			if (!m_bSelectImageInPopupBar) DrawRectangle(pDC, rcImageRect, bSelected, FALSE, bEnabled, bDoubleGripper ? FALSE : bChecked, FALSE, xtpBarTypeNormal, xtpBarPopup);
 			CPoint ptImage = CPoint(rcImageRect.left + rcImageRect.Width()/2 - szIcon.cx/2, rcImageRect.top + rcImageRect.Height()/2 - szIcon.cy/2);
 			DrawImage(pDC, ptImage, szIcon, pImage, bSelected, FALSE, bEnabled, bChecked, FALSE, FALSE);
@@ -416,9 +397,9 @@ CSize CXTPDefaultTheme::DrawControlPopupParent(CDC* pDC, CXTPControl* pButton, B
 		if (bChecked && (bDoubleGripper || !pImage))
 		{
 			if (controlType != xtpControlRadioButton)
-				DrawPopupBarCheckMark(pDC, rcCheck, bEnabled, GetXtremeColor(!bEnabled ? COLOR_GRAYTEXT : m_nPopupBarText));
+				DrawCheckMark(pDC, rcCheck, m_bSelectImageInPopupBar ? clrText: GetXtremeColor(!bEnabled ? COLOR_GRAYTEXT : m_nPopupBarText));
 			else
-				DrawPopupBarRadioMark(pDC, rcCheck, bEnabled, GetXtremeColor(!bEnabled ? COLOR_GRAYTEXT : m_nPopupBarText));
+				DrawRadioMark(pDC, rcCheck, m_bSelectImageInPopupBar ? clrText: GetXtremeColor(!bEnabled ? COLOR_GRAYTEXT : m_nPopupBarText));
 		}
 
 
@@ -441,7 +422,7 @@ CSize CXTPDefaultTheme::DrawControlPopupParent(CDC* pDC, CXTPControl* pButton, B
 					if (bSelected && !m_bSelectImageInPopupBar) DrawRectangle(pDC, rcSelection, bSelected, FALSE, TRUE, FALSE, FALSE, xtpBarTypePopup, xtpBarPopup);
 				}
 
-				Triangle(pDC, CPoint(pt.x, pt.y - 3), CPoint(pt.x + 3, pt.y), CPoint(pt.x, pt.y + 3), m_bSelectImageInPopupBar || !bPopuped || !bSelected ? clrText : GetXtremeColor(m_nPopupBarText));
+				Triangle(pDC, CPoint(pt.x, pt.y - 3), CPoint(pt.x + 3, pt.y), CPoint(pt.x, pt.y + 3), !bPopuped || !bSelected ? clrText : GetXtremeColor(m_nPopupBarText));
 			}
 			else
 			{
@@ -458,11 +439,11 @@ CSize CXTPDefaultTheme::DrawControlPopupParent(CDC* pDC, CXTPControl* pButton, B
 
 }
 
-COLORREF CXTPDefaultTheme::GetRectangleTextColor(BOOL bSelected, BOOL /*bPressed*/, BOOL bEnabled, BOOL bChecked, BOOL /*bPopuped*/, XTPBarType barType, XTPBarPosition barPosition)
+COLORREF CXTPDefaultTheme::GetRectangleTextColor(BOOL bSelected, BOOL /*bPressed*/, BOOL bEnabled, BOOL /*bChecked*/, BOOL /*bPopuped*/, XTPBarType barType, XTPBarPosition barPosition)
 {
 	if (barType == xtpBarTypePopup)
 	{
-		return GetXtremeColor(!bEnabled ? COLOR_GRAYTEXT: bSelected && !bChecked ? COLOR_HIGHLIGHTTEXT : m_nPopupBarText);
+		return GetXtremeColor(!bEnabled ? COLOR_GRAYTEXT: bSelected ? COLOR_HIGHLIGHTTEXT : m_nPopupBarText);
 	}
 
 	int nColorFace = barPosition == xtpBarPopup ? m_nPopupBarText : COLOR_BTNTEXT;
@@ -506,7 +487,8 @@ void CXTPDefaultTheme::DrawSplitButtonFrame(CDC* pDC, CXTPControl* pButton, CRec
 	{
 		int nSplitDropDownHeight = GetSplitDropDownHeight();
 
-		BOOL bVert = GetControlTextOrientation(pButton) == xtpBarTextVertical;
+		BOOL bVert = pButton->GetParent()->GetPosition() == xtpBarLeft ||
+			pButton->GetParent()->GetPosition() == xtpBarRight;
 
 		if (bVert)
 			DrawRectangle(pDC, CRect(rcButton.left + nSplitDropDownHeight, rcButton.top, rcButton.right, rcButton.bottom),
@@ -697,7 +679,7 @@ CSize CXTPDefaultTheme::DrawListBoxControl(CDC* pDC, CXTPControl* pButton, CRect
 		CXTPImageManagerIcon* pImage = pButton->GetIconId() != 0 && bDrawImage ? pButton->GetImage(szIcon.cx) : NULL;
 		if (pImage)
 		{
-			szIcon = GetStretchIconSize(pImage, szIcon);
+			szIcon.cy = pImage->GetHeight() * szIcon.cx / pImage->GetWidth();
 			CRect rcImageRect(rcButton.left, rcButton.top, rcButton.left + szImage.cx, rcButton.bottom);
 			DrawRectangle(pDC, rcImageRect, bSelected, FALSE, TRUE, FALSE, FALSE, xtpBarTypeNormal, xtpBarPopup);
 			CPoint ptImage = CPoint(rcImageRect.left + rcImageRect.Width()/2 - szIcon.cx/2, rcImageRect.top +  rcImageRect.Height()/2 - szIcon.cy/2);

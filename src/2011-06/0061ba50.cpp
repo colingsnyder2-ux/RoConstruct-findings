@@ -1,18 +1,17 @@
-// from server: 91% by atomic.potato
-struct S
-{
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_0061ba50 {
+    T4_0061ba50();
+    virtual void f_0061ba50();
+    char m_a;
+    char m_b;
 };
-
-void __cdecl f(void *p, int value)
+T4_0061ba50::T4_0061ba50() : m_a(0), m_b(0) {}
+extern "C" void* create_other_0061ba50(void*, void*, int);
+void* create_0061ba50(void* unused, T4_0061ba50* out, int type)
 {
-    if (value != 4)
-    {
-        extern void target(void *, int);
-        target(p, value);
-        return;
-    }
-
-    *(unsigned long *)p = 0x00c4a6e0;
-    ((unsigned char *)p)[4] = 0;
-    ((unsigned char *)p)[5] = 0;
+    if (type != 4)
+        return create_other_0061ba50(unused, out, type);
+    out->T4_0061ba50::T4_0061ba50();
+    return out;
 }

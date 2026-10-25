@@ -1,19 +1,11 @@
-// from server: 89% by atomic.potato
-typedef unsigned char BYTE;
-
-extern "C" void __cdecl sub_0080b15d(const char *);
-
-volatile int g_cbd9ec;
-volatile int g_cbd9e4;
-volatile int g_cbd9e8;
-
-void sub_005a9ae0()
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+extern "C" void seh_fn_005a9ae0(void*);
+extern int g_a_005a9ae0;
+extern int g_b_005a9ae0;
+extern int g_arg_005a9ae0;
+struct Reg_005a9ae0 { Reg_005a9ae0() { g_a_005a9ae0 = 0; g_b_005a9ae0 = 0; seh_fn_005a9ae0(&g_arg_005a9ae0); } };
+void func_005a9ae0()
 {
-    if ((g_cbd9ec & 1) == 0)
-    {
-        g_cbd9ec |= 1;
-        g_cbd9e4 = 0;
-        g_cbd9e8 = 0;
-        sub_0080b15d("8csm");
-    }
+    static Reg_005a9ae0 reg;
 }

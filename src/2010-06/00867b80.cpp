@@ -1,14 +1,14 @@
-// from server: 48% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/CommandBars/XTPMessageBar.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/DockingPane/XTPDockingPaneSplitterContainer.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPMessageBar.cpp : implementation of the CXTPMessageBar class.
+// XTPDockingPaneSplitterContainer.cpp : implementation of the CXTPDockingPaneSplitterContainer class.
 //
-// This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME DOCKINGPANE MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,14 +26,17 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "Common/Resource.h"
 
-#include "Common/XTPMarkupRender.h"
-#include "Common/XTPOffice2007Image.h"
-#include "Common/XTPToolTipContext.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPResourceManager.h"
 
-#include "XTPCommandBars.h"
-#include "XTPPaintManager.h"
-#include "XTPMessageBar.h"
+#include "XTPDockingPaneBase.h"
+#include "XTPDockingPaneLayout.h"
+#include "XTPDockingPaneManager.h"
+#include "XTPDockingPaneSplitterContainer.h"
+#include "XTPDockingPanePaintManager.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -42,491 +45,862 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 
-CXTPMessageBarButton::CXTPMessageBarButton()
+
+CXTPDockingPaneSplitterWnd::CXTPDockingPaneSplitterWnd()
 {
-	m_rcButton.SetRectEmpty();
-	m_nID = 0;
-	m_bPressed = FALSE;
-	m_bHot = FALSE;
+	m_hCursor = 0;
+	m_pFirst = 0;
+	m_pSecond = 0;
+	m_pContainer = 0;
+	m_pManager = 0;
+	m_bHoriz = FALSE;
 }
 
-void CXTPMessageBarButton::PerformClick(CXTPMessageBar* pBar, CPoint pt)
+void CXTPDockingPaneSplitterWnd::Create(CXTPDockingPaneManager* pManager, BOOL bHoriz)
 {
-	if ((::GetCapture() != NULL))
-		return;
+	m_bHoriz = bHoriz;
+	m_pManager = pManager;
+	CWnd::Create(_T("XTPDockingPaneSplitter"), _T("Splitter"), WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, CRect(0, 0, 0, 0), pManager->GetSite(), 0);
+}
 
-	m_bPressed = TRUE;
-	pBar->InvalidateRect(m_rcButton, FALSE);
+void CXTPDockingPaneSplitterWnd::Create(CXTPDockingPaneSplitterContainer* pContainer, CXTPDockingPaneBase* pFirst, CXTPDockingPaneBase* pSecond)
+{
+	m_pFirst = pFirst;
+	m_pSecond = pSecond;
+	m_pContainer = pContainer;
+	m_bHoriz = !m_pContainer->IsHoriz();
+	m_pManager = m_pContainer->GetDockingPaneManager();
 
-	::SetCapture(pBar->GetSafeHwnd());
+	m_hCursor = XTPResourceManager()->LoadCursor(pContainer->m_bHoriz ? XTP_IDC_HSPLITBAR :  XTP_IDC_VSPLITBAR);
 
-	BOOL bClick = FALSE, bPressed;
+	CWnd::Create(_T("XTPDockingPaneSplitter"), _T("Splitter"), WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, CRect(0, 0, 0, 0), pContainer->GetDockingSite(), 0);
+}
 
-	while (::GetCapture() == pBar->GetSafeHwnd())
+CXTPDockingPaneSplitterWnd::~CXTPDockingPaneSplitterWnd()
+{
+	if (m_hWnd) DestroyWindow();
+}
+
+BEGIN_MESSAGE_MAP(CXTPDockingPaneSplitterWnd, CWnd)
+	ON_WM_PAINT()
+	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
+	ON_WM_LBUTTONDOWN()
+	ON_WM_ERASEBKGND()
+	ON_WM_SETCURSOR()
+END_MESSAGE_MAP()
+
+BOOL CXTPDockingPaneSplitterWnd::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
+{
+	if (m_pContainer == 0)
+		return CWnd::OnSetCursor(pWnd, nHitTest, message);
+
+	if (GetDockingPaneManager()->IsSplittersLocked())
+		return CWnd::OnSetCursor(pWnd, nHitTest, message);
+
+	CRect rcAvail, rcUnion;
+	if (!GetAvailableRect(rcAvail, rcUnion))
+		return CWnd::OnSetCursor(pWnd, nHitTest, message);
+
+	::SetCursor(m_hCursor);
+	return TRUE;
+}
+
+void CXTPDockingPaneSplitterWnd::OnPaint()
+{
+	CPaintDC dc(this);
+
+	if (m_pManager)
+		m_pManager->GetPaintManager()->DrawSplitter(dc, this);
+}
+
+LRESULT CXTPDockingPaneSplitterWnd::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
+{
+	CDC* pDC = CDC::FromHandle((HDC)wParam);
+	if (pDC && m_pManager)
 	{
-		MSG msg;
-
-		if (!::GetMessage(&msg, NULL, 0, 0))
-			break;
-
-		switch (msg.message)
-		{
-			case WM_MOUSEMOVE:
-				pt = CPoint((short signed)LOWORD(msg.lParam), (short signed)HIWORD(msg.lParam));
-
-				bPressed = m_rcButton.PtInRect(pt);
-
-				if (bPressed != m_bPressed)
-				{
-					m_bPressed = bPressed;
-					pBar->InvalidateRect(m_rcButton, FALSE);
-				}
-
-				break;
-
-			case WM_LBUTTONUP:
-				bClick = m_bPressed;
-				goto ExitLoop;
-
-			case WM_KEYDOWN:
-				if (msg.wParam != VK_ESCAPE)
-					break;
-
-			case WM_CANCELMODE:
-			case WM_RBUTTONDOWN:
-				goto ExitLoop;
-
-			default:
-				DispatchMessage (&msg);
-				break;
-		}
-	}
-
-ExitLoop:
-	ReleaseCapture();
-
-	m_bPressed = FALSE;
-	pBar->InvalidateRect(m_rcButton, FALSE);
-
-	if (bClick)
-	{
-		pBar->Click(this);
-	}
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPMessageBar
-
-CXTPMessageBar::CXTPMessageBar()
-{
-	m_pMarkupContext = NULL;
-	m_pUIElement = NULL;
-
-	m_rcBorder.SetRect(3, 3, 3, 3);
-	m_rcPadding.SetRect(5, 0, 5, 0);
-	m_rcContent.SetRectEmpty();
-
-	m_pCommandBars = NULL;
-
-	m_pHotButton = NULL;
-
-}
-
-CXTPMessageBar::~CXTPMessageBar()
-{
-	XTPMarkupReleaseElement(m_pUIElement);
-	XTPMarkupReleaseContext(m_pMarkupContext);
-
-	RemoveButtons();
-}
-
-BOOL CXTPMessageBar::Create(CXTPCommandBars* pCommandBars, DWORD dwStyle, UINT nID)
-{
-	m_dwStyle = (dwStyle & CBRS_ALL);
-	m_pCommandBars = pCommandBars;
-
-	if (!CWnd::Create(AfxRegisterWndClass(0, AfxGetApp()->LoadStandardCursor(IDC_ARROW)), NULL, dwStyle, CRect(0, 0, 0, 0), pCommandBars->GetSite(), nID))
-		return FALSE;
-
-	if (m_pCommandBars->IsLayoutRTL())
-	{
-		ModifyStyleEx(0, WS_EX_LAYOUTRTL);
+		m_pManager->GetPaintManager()->DrawSplitter(*pDC, this);
 	}
 
 	return TRUE;
 }
 
-
-void CXTPMessageBar::OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHndler)
+BOOL CXTPDockingPaneSplitterWnd::OnEraseBkgnd(CDC* /*pDC*/)
 {
-	// update the dialog controls added to the status bar
-	UpdateDialogControls(pTarget, bDisableIfNoHndler);
+	return TRUE;
 }
 
-CSize CXTPMessageBar::CalcFixedLayout(BOOL, BOOL /*bHorz*/)
+BOOL CXTPDockingPaneSplitterWnd::IsHorizontal() const
 {
-	ASSERT_VALID(this);
-	ASSERT(::IsWindow(m_hWnd));
-
-	CSize size(32767, 40);
-	return size;
+	return m_bHoriz;
 }
 
-
-void CXTPMessageBar::EnableMarkup(BOOL bEnableMarkup)
+void CXTPDockingPaneSplitterWnd::Reposition(CRect rc, CRect rcAvail)
 {
-	XTPMarkupReleaseContext(m_pMarkupContext);
+	int nSplitterSize = m_pContainer->GetDockingPaneManager()->GetPaintManager()->m_nSplitterSize;
 
-	if (bEnableMarkup)
+	if (m_pContainer->m_bHoriz)
 	{
-		m_pMarkupContext = XTPMarkupCreateContext(m_hWnd);
-	}
-}
-
-void CXTPMessageBar::AddButton(UINT nID, LPCTSTR lpszCaption, LPCTSTR lpszToolTop)
-{
-	CXTPMessageBarButton* pButton = new CXTPMessageBarButton();
-	pButton->m_nID = nID;
-	pButton->m_strCaption = lpszCaption;
-	pButton->m_strToolTip = lpszToolTop;
-
-	m_arrButtons.Add(pButton);
-	Invalidate(FALSE);
-}
-
-void CXTPMessageBar::RemoveButtons()
-{
-	for (int i = 0; i < m_arrButtons.GetSize(); i++)
-	{
-		delete m_arrButtons[i];
-	}
-	m_arrButtons.RemoveAll();
-	m_pHotButton = NULL;
-
-	if (m_hWnd) Invalidate(FALSE);
-}
-
-void CXTPMessageBar::SetMessage(LPCTSTR lpszMessage)
-{
-	m_strContent = lpszMessage;
-
-	XTPMarkupReleaseElement(m_pUIElement);
-
-	if (m_pMarkupContext)
-	{
-		m_pUIElement = XTPMarkupParseText(m_pMarkupContext, lpszMessage);
-	}
-	Invalidate(FALSE);
-}
-
-CXTPPaintManager* CXTPMessageBar::GetPaintManager() const
-{
-	return m_pCommandBars->GetPaintManager();
-}
-
-BEGIN_MESSAGE_MAP(CXTPMessageBar, CControlBar)
-	//{{AFX_MSG_MAP(CXTPMessageBar)
-	ON_WM_PAINT()
-	ON_WM_SIZE()
-	ON_WM_MOUSEMOVE()
-	ON_WM_LBUTTONDOWN()
-	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPMessageBar message handlers
-
-
-void CXTPMessageBar::OnPaint()
-{
-	CPaintDC dcPaint(this); // device context for painting
-
-	CXTPBufferDC dc(dcPaint);
-
-	CXTPFontDC font(&dc, GetPaintManager()->GetRegularFont());
-
-	RecalcLayout(&dc);
-
-	FillMessageBar(&dc);
-
-	DrawContent(&dc);
-
-	DrawButtons(&dc);
-}
-
-void CXTPMessageBar::DrawButtons(CDC* pDC)
-{
-	for (int i = 0; i < m_arrButtons.GetSize(); i++)
-	{
-		CXTPMessageBarButton* pButton = m_arrButtons.GetAt(i);
-		DrawButton(pDC, pButton);
-	}
-};
-
-void CXTPMessageBar::DrawButton(CDC* pDC, CXTPMessageBarButton* pButton)
-{
-	BOOL bCloseButton = (pButton->m_nID == SC_CLOSE);
-
-	GetPaintManager()->DrawMessageBarButton(pDC, pButton);
-
-	if (!bCloseButton)
-	{
-		pDC->SetBkMode(TRANSPARENT);
-		pDC->SetTextColor(GetPaintManager()->m_clrMessageBarText);
-		pDC->DrawText(pButton->m_strCaption, pButton->m_rcButton, DT_CENTER | DT_VCENTER | DT_NOPREFIX | DT_SINGLELINE);
-	}
-}
-
-void CXTPMessageBar::FillMessageBar(CDC* pDC)
-{
-	GetPaintManager()->FillMessageBar(pDC, this);
-}
-
-void CXTPMessageBar::DrawContent(CDC* pDC)
-{
-	COLORREF clrText = GetPaintManager()->m_clrMessageBarText;
-
-	if (m_pUIElement)
-	{
-		XTPMarkupSetDefaultFont(m_pMarkupContext, (HFONT)GetPaintManager()->GetRegularFont()->GetSafeHandle(), clrText);
-		XTPMarkupRenderElement(m_pUIElement, pDC->GetSafeHdc(), m_rcContent);
+		double d = double(rc.left - rcAvail.left) / rcAvail.Width();
+		int nSum = m_pFirst->m_szDocking.cx + m_pSecond->m_szDocking.cx + nSplitterSize;
+		m_pFirst->m_szDocking.cx = GetExStyle() & WS_EX_LAYOUTRTL ? nSum - int(d * nSum) - nSplitterSize : int(d * nSum);
+		m_pSecond->m_szDocking.cx = nSum - m_pFirst->m_szDocking.cx - nSplitterSize;
 	}
 	else
 	{
-		pDC->SetBkMode(TRANSPARENT);
-		pDC->SetTextColor(clrText);
-		pDC->DrawText(m_strContent, m_rcContent, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX);
+		double d = double(rc.top - rcAvail.top) / rcAvail.Height();
+		int nSum = m_pFirst->m_szDocking.cy + m_pSecond->m_szDocking.cy + nSplitterSize;
+		m_pFirst->m_szDocking.cy = int(d * nSum);
+		m_pSecond->m_szDocking.cy = nSum - m_pFirst->m_szDocking.cy - nSplitterSize;
 	}
+
 }
 
-CRect CXTPMessageBar::GetMessageRect()
+void CXTPDockingPaneSplitterContainer::NormalizeDockingSize()
 {
-	BOOL bCloseButton = FindButton(SC_CLOSE) != NULL;
+	if (m_bHoriz) m_szDocking.cx = m_rcWindow.Width();
+		else m_szDocking.cy = m_rcWindow.Height();
 
-	CXTPClientRect rc(this);
-	rc.left += m_rcBorder.left;
-	rc.top += m_rcBorder.top;
-	rc.right -= m_rcBorder.right + (bCloseButton ? 18 : 0);
-	rc.bottom -= m_rcBorder.bottom;
-
-	return rc;
-}
-
-CSize CXTPMessageBar::MeasureContent(CDC* pDC)
-{
-	if (m_pUIElement)
+	POSITION pos = GetHeadPosition();
+	while (pos)
 	{
-		XTPMarkupSetDefaultFont(m_pMarkupContext, (HFONT)GetPaintManager()->GetRegularFont()->GetSafeHandle(), COLORREF_NULL);
-		CSize sz = XTPMarkupMeasureElement(m_pUIElement);
-		return sz;
+		CXTPDockingPaneBase* pPane = GetNext(pos);
+		if (!pPane->IsEmpty())
+		{
+			if (m_bHoriz) pPane->m_szDocking.cx = pPane->m_rcWindow.Width();
+				else pPane->m_szDocking.cy = pPane->m_rcWindow.Height();
+		}
 	}
-
-	CSize sz = pDC->GetTextExtent(m_strContent);
-	return sz;
 }
 
-CSize CXTPMessageBar::MeasureButton(CDC* pDC, CXTPMessageBarButton* pButton)
+BOOL CXTPDockingPaneSplitterWnd::GetAvailableRect(CRect& rcAvail, CRect& rcUnion)
 {
-	if (pButton->m_nID == SC_CLOSE)
-		return CSize(18, 18);
+	CXTPDockingPaneManager* pManager = GetDockingPaneManager();
+	if (!pManager)
+		return FALSE;
 
+	int nSplitterSize = pManager->GetPaintManager()->m_nSplitterSize;
 
-	CSize sz = pDC->GetTextExtent(pButton->m_strCaption);
-	sz.cy = max(sz.cy + 2, 23);
-	sz.cx = max(89, sz.cx + 10);
+	BOOL bHoriz = m_pContainer->m_bHoriz;
+	ASSERT(m_pFirst && m_pSecond);
+	if (!m_pFirst || !m_pSecond)
+		return FALSE;
 
-	return sz;
+	CRect rcFirst = m_pFirst->GetPaneWindowRect();
+	CRect rcSecond = m_pSecond->GetPaneWindowRect();
+
+	MINMAXINFO mmiFirst, mmiSecond;
+	m_pFirst->GetMinMaxInfo(&mmiFirst);
+	m_pSecond->GetMinMaxInfo(&mmiSecond);
+
+	rcAvail.UnionRect(rcFirst, rcSecond);
+	rcUnion = rcAvail;
+
+	int nGap = pManager->m_nSplitterGap;
+	if (bHoriz)
+	{
+		rcAvail.DeflateRect(max(mmiFirst.ptMinTrackSize.x, nGap), 0,
+			max(mmiSecond.ptMinTrackSize.x + nSplitterSize, nGap), 0);
+
+		if (rcUnion.Width() > mmiFirst.ptMaxTrackSize.x)
+			rcAvail.right = min(rcAvail.right, rcUnion.left + mmiFirst.ptMaxTrackSize.x);
+
+		if (rcUnion.Width() > mmiSecond.ptMaxTrackSize.x)
+			rcAvail.left = max(rcAvail.left, rcUnion.right - mmiSecond.ptMaxTrackSize.x - nSplitterSize);
+
+		if (rcAvail.left >= rcAvail.right)
+			return FALSE;
+	}
+	else
+	{
+		rcAvail.DeflateRect(0, max(mmiFirst.ptMinTrackSize.y, nGap),
+			0, max(mmiSecond.ptMinTrackSize.y + nSplitterSize, nGap));
+
+		if (rcUnion.Height() > mmiFirst.ptMaxTrackSize.y)
+			rcAvail.bottom = min(rcAvail.bottom, rcUnion.top + mmiFirst.ptMaxTrackSize.y);
+
+		if (rcUnion.Height() > mmiSecond.ptMaxTrackSize.y)
+			rcAvail.top = max(rcAvail.top, rcUnion.bottom - mmiSecond.ptMaxTrackSize.y - nSplitterSize);
+
+		if (rcAvail.top >= rcAvail.bottom)
+			return FALSE;
+	}
+	return TRUE;
 }
 
-void CXTPMessageBar::RecalcLayout(CDC* pDC)
+void CXTPDockingPaneSplitterWnd::OnLButtonDown(UINT /*nFlags*/, CPoint point)
 {
-	if (!m_hWnd)
+	if (m_pContainer == 0)
 		return;
 
-	CXTPClientRect rcClient(this);
+	CXTPDockingPaneManager* pManager = GetDockingPaneManager();
 
-	CSize szContent = MeasureContent(pDC);
+	if (pManager->IsSplittersLocked())
+		return;
 
-	m_rcContent = CRect(CPoint(m_rcBorder.left + m_rcPadding.left, (rcClient.Height() - szContent.cy) /2), szContent);
+	CXTPWindowRect rc(this);
 
-	int nLeft = m_rcContent.right, i;
+	CRect rcAvail, rcUnion;
+	if (!GetAvailableRect(rcAvail, rcUnion))
+		return;
 
-	CXTPMessageBarButton* pCloseButton = NULL;
+	m_pContainer->NormalizeDockingSize();
 
-	for (i = 0; i < m_arrButtons.GetSize(); i++)
+	BOOL bHoriz = m_pContainer->m_bHoriz;
+
+
+	//point = rc.TopLeft();
+	ClientToScreen(&point);
+
+	if (pManager->IsSplitterTrackerUsed())
 	{
-		CXTPMessageBarButton* pButton = m_arrButtons.GetAt(i);
-		if (pButton->m_nID == SC_CLOSE)
+
+		CXTPSplitterTracker tracker;
+		BOOL bAccept = tracker.Track(this, rcAvail, rc, point, bHoriz);
+
+		if (bAccept)
 		{
-			pCloseButton = pButton;
-			continue;
+			Reposition(rc, rcUnion);
+
+
+			pManager->RecalcFrameLayout(m_pContainer, TRUE);
+		}
+	}
+	else
+	{
+		CPoint ptOffset = bHoriz ? CPoint(rc.left - point.x, 0) :
+			CPoint(0, rc.top - point.y);
+
+		SetCapture();
+
+		while (CWnd::GetCapture() == this)
+		{
+			MSG msg;
+
+			while (::PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_NOREMOVE))
+			{
+				if (!GetMessage(&msg, NULL, WM_PAINT, WM_PAINT))
+					return;
+				DispatchMessage(&msg);
+			}
+
+			if (!GetMessage(&msg, NULL, 0, 0))
+				break;
+
+			if (msg.message == WM_MOUSEMOVE)
+			{
+
+				point = CPoint(msg.lParam);
+				ClientToScreen(&point);
+				point += ptOffset;
+
+				point.x = max(min(point.x, rcAvail.right), rcAvail.left);
+				point.y = max(min(point.y, rcAvail.bottom), rcAvail.top);
+
+				if (bHoriz)
+				{
+					if (rc.left == point.x)
+						continue;
+					rc.OffsetRect(point.x - rc.left, 0);
+				}
+				else
+				{
+					if (rc.top == point.y)
+						continue;
+					rc.OffsetRect(0, point.y - rc.top);
+				}
+
+				Reposition(rc, rcUnion);
+
+				pManager->RecalcFrameLayout(m_pContainer);
+			}
+			else if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE) break;
+			else if (msg.message == WM_LBUTTONUP) break;
+			else ::DispatchMessage(&msg);
 		}
 
-		CSize szButton = MeasureButton(pDC, pButton);
-
-		pButton->m_rcButton = CRect(CPoint(nLeft + m_rcPadding.right, (rcClient.Height() - szButton.cy) /2), szButton);
-		nLeft = pButton->m_rcButton.right;
+		if (CWnd::GetCapture() == this) ReleaseCapture();
 	}
 
-	int nRight = rcClient.right - m_rcBorder.right - m_rcPadding.right - (pCloseButton ? 18 : 0);
-	if (nLeft > nRight)
-	{
-		nLeft = m_rcBorder.left + m_rcPadding.left;
+}
 
-		for (i = (int)m_arrButtons.GetSize() - 1; i >= 0; i--)
+CXTPDockingPaneManager* CXTPDockingPaneSplitterWnd::GetDockingPaneManager() const
+{
+	return m_pManager;
+}
+
+
+CXTPDockingPaneSplitterContainer::CXTPDockingPaneSplitterContainer(CXTPDockingPaneLayout* pLayout)
+	: CXTPDockingPaneBaseContainer(xtpPaneTypeSplitterContainer, pLayout)
+{
+	m_bRecalcLayout = FALSE;
+	m_bHoriz = FALSE;
+
+}
+
+void CXTPDockingPaneSplitterContainer::Init(CXTPDockingPaneBase* pPane, BOOL bHoriz, CWnd* pFrame)
+{
+	ASSERT(pPane);
+	if (!pPane)
+		return;
+
+	m_bHoriz = bHoriz;
+	m_pDockingSite = pFrame;
+	_InsertPane(pPane);
+
+	m_szDocking = pPane->m_szDocking;
+}
+
+void CXTPDockingPaneSplitterContainer::_UpdateSplitters()
+{
+	if (m_bRecalcLayout)
+		return;
+
+	if (m_pLayout->IsUserLayout())
+		return;
+
+	while (!m_lstSpliters.IsEmpty())
+	{
+		delete m_lstSpliters.RemoveTail();
+	}
+
+	if (m_lstPanes.GetCount() > 1)
+	{
+		POSITION posPane = GetHeadPosition();
+		CXTPDockingPaneBase* pFirstPane = NULL;
+
+		// Finding first nonempty pane
+		while (posPane)
 		{
-			CXTPMessageBarButton* pButton = m_arrButtons.GetAt(i);
-			if (pButton->m_nID == SC_CLOSE)
+			pFirstPane = GetNext(posPane);
+			if (!pFirstPane->IsEmpty())
+				break;
+		}
+
+		// Splitting
+		while (posPane)
+		{
+			CXTPDockingPaneBase* pSecondPane = GetNext(posPane);
+			if (pSecondPane->IsEmpty())
 				continue;
 
-			int nWidth = pButton->m_rcButton.Width();
-			pButton->m_rcButton.right = nRight;
-			pButton->m_rcButton.left = nRight - nWidth;
-			if (pButton->m_rcButton.left < nLeft)
-			{
-				pButton->m_rcButton.SetRectEmpty();
-			}
-			else
-			{
-				nRight = nRight - nWidth - m_rcPadding.right;
-			}
+			CXTPDockingPaneSplitterWnd* pSplitter = OnCreateSplitter();
+			pSplitter->Create(this, pFirstPane, pSecondPane);
+
+			m_lstSpliters.AddTail(pSplitter);
+
+			pFirstPane = pSecondPane;
 		}
-
-		m_rcContent.right = nRight;
 	}
-
-	if (pCloseButton)
-	{
-		CSize szButton = MeasureButton(pDC, pCloseButton);
-		pCloseButton->m_rcButton = CRect(CPoint(rcClient.right - szButton.cx - 1, m_rcBorder.top), szButton);
-	}
-};
-
-void CXTPMessageBar::OnSize(UINT nType, int cx, int cy)
-{
-	CControlBar::OnSize(nType, cx, cy);
-
-	Invalidate(FALSE);
 }
 
-BOOL CXTPMessageBar::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+CXTPDockingPaneSplitterWnd* CXTPDockingPaneSplitterContainer::OnCreateSplitter()
 {
-	if (m_pUIElement)
+	return new CXTPDockingPaneSplitterWnd();
+}
+
+void CXTPDockingPaneSplitterContainer::_Replace(CXTPDockingPaneBase* pPane, CXTPDockingPaneBase* pReplace)
+{
+	ASSERT(pPane && pReplace);
+
+	POSITION pos = m_lstPanes.Find(pPane);
+	ASSERT(pos);
+
+	m_lstPanes.InsertAfter(pos, pReplace);
+	m_lstPanes.RemoveAt(pos);
+
+	pReplace->m_pParentContainer = this;
+
+	_UpdateSplitters();
+
+	if (m_pParentContainer)
 	{
-		if (XTPMarkupRelayMessage(m_pUIElement, message, wParam, lParam, pResult))
-			return TRUE;
+		m_pParentContainer->OnChildContainerChanged(this);
 	}
-
-	m_pCommandBars->GetToolTipContext()->FilterToolTipMessage(this, message, wParam, lParam);
-
-	return CControlBar::OnWndMsg(message, wParam, lParam, pResult);
 }
 
-CXTPMessageBarButton* CXTPMessageBar::FindButton(UINT nID) const
+void CXTPDockingPaneSplitterContainer::_InsertPane(CXTPDockingPaneBase* pPane, CXTPDockingPaneBase* pNeighbour, BOOL bAfter)
 {
-	for (int i = 0; i < m_arrButtons.GetSize(); i++)
+	POSITION pos = pNeighbour ? m_lstPanes.Find(pNeighbour) : NULL;
+
+	if (bAfter)
 	{
-		CXTPMessageBarButton* pButton = m_arrButtons.GetAt(i);
-		if (pButton->m_nID == nID)
-			return pButton;
-	}
-
-	return NULL;
-
-}
-CXTPMessageBarButton* CXTPMessageBar::HitTestButton(CPoint point) const
-{
-	for (int i = 0; i < m_arrButtons.GetSize(); i++)
-	{
-		CXTPMessageBarButton* pButton = m_arrButtons.GetAt(i);
-		if (pButton->m_rcButton.PtInRect(point))
-			return pButton;
-	}
-
-	return NULL;
-}
-
-void CXTPMessageBar::OnMouseLeave()
-{
-	OnMouseMove(0, CPoint(-1, -1));
-}
-
-void CXTPMessageBar::OnMouseMove(UINT nFlags, CPoint point)
-{
-	CXTPMessageBarButton* pButton = HitTestButton(point);
-
-	if (pButton != m_pHotButton)
-	{
-		if (m_pHotButton) m_pHotButton->m_bHot = FALSE;
-
-		m_pHotButton = pButton;
-
-		if (m_pHotButton) m_pHotButton->m_bHot = TRUE;
-
-		if (m_pHotButton)
-		{
-			TRACKMOUSEEVENT tme =
-			{
-				sizeof(TRACKMOUSEEVENT), TME_LEAVE, m_hWnd
-			};
-			_TrackMouseEvent(&tme);
-		}
-
-		Invalidate(FALSE);
-	}
-
-	CControlBar::OnMouseMove(nFlags, point);
-}
-
-void CXTPMessageBar::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	if (m_pHotButton)
-	{
-		m_pHotButton->PerformClick(this, point);
-		return;
-	}
-
-	CControlBar::OnLButtonDown(nFlags, point);
-}
-
-INT_PTR CXTPMessageBar::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
-{
-	ASSERT_VALID(this);
-	ASSERT(::IsWindow(m_hWnd));
-
-	// check child windows first by calling CControlBar
-	INT_PTR nHit = CControlBar::OnToolHitTest(point, pTI);
-	if (nHit != -1)
-		return nHit;
-
-	if (m_pHotButton)
-	{
-		nHit = m_pHotButton->m_nID;
-
-		CString strTip = m_pHotButton->m_strToolTip;
-		if (strTip.IsEmpty())
-			return -1;
-
-		CXTPToolTipContext::FillInToolInfo(pTI, m_hWnd, m_pHotButton->m_rcButton, nHit, strTip, strTip, _T(""), m_pCommandBars->GetImageManager());
-
-		return nHit;
-	}
-	return -1;
-}
-
-void CXTPMessageBar::Click(CXTPMessageBarButton* pButton)
-{
-	if (pButton->m_nID == SC_CLOSE)
-	{
-		SetWindowPos(NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_HIDEWINDOW);
-
-		m_pCommandBars->RecalcFrameLayout();
+		if (pos == NULL) pos = m_lstPanes.GetTailPosition();
+		m_lstPanes.InsertAfter(pos, pPane);
 	}
 	else
 	{
-		m_pCommandBars->GetSite()->SendMessage(WM_COMMAND, pButton->m_nID);
+		if (pos == NULL) pos = GetHeadPosition();
+		m_lstPanes.InsertBefore(pos, pPane);
+	}
+	pPane->m_pParentContainer = this;
+	pPane->SetDockingSite(GetDockingSite());
+
+	GetDockingPaneManager()->RecalcFrameLayout(this, TRUE);
+
+	_UpdateSplitters();
+
+	if (m_pParentContainer)
+	{
+		m_pParentContainer->OnChildContainerChanged(this);
+	}
+
+	pPane->OnParentContainerChanged(this);
+
+}
+
+void CXTPDockingPaneSplitterContainer::RemovePane(CXTPDockingPaneBase* pPane)
+{
+	POSITION pos = m_lstPanes.Find(pPane);
+	ASSERT(pos);
+
+	m_lstPanes.RemoveAt(pos);
+	_UpdateSplitters();
+
+	GetDockingPaneManager()->RecalcFrameLayout(this, TRUE);
+
+	if (m_pParentContainer)
+	{
+		m_pParentContainer->OnChildContainerChanged(this);
+	}
+
+	if (m_lstPanes.IsEmpty())
+	{
+		m_pParentContainer->RemovePane(this);
+	}
+
+	pPane->m_pParentContainer = NULL;
+}
+
+void CXTPDockingPaneSplitterContainer::OnChildContainerChanged(CXTPDockingPaneBase* pContainer)
+{
+	if (m_pParentContainer)
+	{
+		m_pParentContainer->OnChildContainerChanged(pContainer);
+	}
+
+	_UpdateSplitters();
+	GetDockingPaneManager()->RecalcFrameLayout(this, TRUE);
+}
+
+void CXTPDockingPaneSplitterContainer::OnParentContainerChanged(CXTPDockingPaneBase* pContainer)
+{
+	m_pDockingSite = pContainer->m_pDockingSite;
+	_UpdateSplitters();
+
+	POSITION pos = GetHeadPosition();
+	while (pos)
+	{
+		GetNext(pos)->OnParentContainerChanged(pContainer);
+	}
+}
+
+
+CXTPDockingPaneSplitterContainer::~CXTPDockingPaneSplitterContainer()
+{
+	while (!m_lstSpliters.IsEmpty())
+	{
+		delete m_lstSpliters.RemoveTail();
+	}
+}
+
+void CXTPDockingPaneSplitterContainer::OnSizeParent(CWnd* pParent, CRect rect, LPVOID lParam)
+{
+	int nSplitterSize = GetDockingPaneManager()->GetPaintManager()->m_nSplitterSize;
+	CXTPDockingPaneBase* pClient = GetDockingPaneManager()->GetClientPane();
+
+
+	AFX_SIZEPARENTPARAMS* lpLayout = (AFX_SIZEPARENTPARAMS*)lParam;
+
+	m_pDockingSite = pParent;
+	m_rcWindow = rect;
+
+	BOOL bClientPane = !GetDockingPaneManager()->m_bHideClient;
+
+	// getting list of nonempty panes
+	CXTPDockingPaneBaseList lst;
+	POSITION pos = GetHeadPosition();
+	while (pos)
+	{
+		CXTPDockingPaneBase* pPane = GetNext(pos);
+		if (!pPane->IsEmpty())
+			lst.AddTail(pPane);
+
+		if (!bClientPane && pPane->ContainPane(pClient))
+			bClientPane = TRUE;
+
+	}
+
+	if (!lst.IsEmpty() && bClientPane & GetDockingPaneManager()->m_bHideClient)
+	{
+		pClient->OnSizeParent(pParent, CXTPEmptyRect(), lParam);
+	}
+
+
+	if (lst.GetCount() == 0)
+		return;
+
+	if (lst.GetCount() == 1)
+	{
+		lst.GetHead()->OnSizeParent(pParent, rect, lParam);
+		return;
+	}
+
+	if (m_bRecalcLayout)
+		return;
+
+	m_bRecalcLayout = TRUE;
+
+	//ASSERT(m_lstSpliters.GetCount() == lst.GetCount() - 1);
+
+	int nTotalLength = 0;
+	int nLengthAvail = 0;
+
+	_AdjustPanesLength(GetDockingPaneManager(), lst, rect, m_bHoriz, TRUE, nTotalLength, nLengthAvail);
+
+	pos = lst.GetHeadPosition();
+	POSITION posSplitter = m_lstSpliters.GetHeadPosition();
+
+	CRect rcPane(rect);
+	while (pos)
+	{
+		CXTPDockingPaneBase* pPane = lst.GetNext(pos);
+
+		int nLength = -pPane->m_nLength;
+		if (pPane->m_nLength > 0)
+		{
+			nLength = nTotalLength == 0 ? 0 : int((nLengthAvail * pPane->m_nLength) / nTotalLength);
+
+			nTotalLength -= pPane->m_nLength;
+			nLengthAvail = max(nLengthAvail - nLength, 0);
+		}
+
+		CRect rcSplitter;
+
+		if (m_bHoriz)
+		{
+			rcPane.right = pos == NULL ? rect.right : rcPane.left + nLength;
+
+			pPane->OnSizeParent(pParent, rcPane, lParam);
+			rcSplitter.SetRect(rcPane.right, rect.top, rcPane.right + nSplitterSize, rect.bottom);
+			rcPane.left = rcPane.right + nSplitterSize;
+		}
+		else
+		{
+			rcPane.bottom = pos == NULL ? rect.bottom : rcPane.top + nLength;
+
+			pPane->OnSizeParent(pParent, rcPane, lParam);
+			rcSplitter.SetRect(rect.left, rcPane.bottom, rect.right, rcPane.bottom + nSplitterSize);
+			rcPane.top = rcPane.bottom + nSplitterSize;
+		}
+
+		if (lpLayout->hDWP != NULL && posSplitter)
+		{
+			CXTPDockingPaneSplitterWnd* pSplitter = m_lstSpliters.GetNext(posSplitter);
+			if (pSplitter)
+			{
+				rcSplitter.IntersectRect(rcSplitter, rect);
+				pSplitter->SetWindowPos(&CWnd::wndBottom, rcSplitter.left, rcSplitter.top, rcSplitter.Width(), rcSplitter.Height(), 0);
+				pSplitter->Invalidate(FALSE);
+			}
+		}
+	}
+
+	m_bRecalcLayout = FALSE;
+}
+
+void CXTPDockingPaneSplitterContainer::FindChildPane(XTPDockingPaneType type, CXTPDockingPaneBaseList* pList) const
+{
+	POSITION pos = GetHeadPosition();
+	while (pos)
+	{
+		CXTPDockingPaneBase* pPane = GetNext(pos);
+
+		if (pPane->GetType() == type && !pPane->IsEmpty())
+		{
+			pList->AddTail(pPane);
+		}
+	}
+}
+
+void CXTPDockingPaneSplitterContainer::Copy(CXTPDockingPaneSplitterContainer* pClone, CXTPPaneToPaneMap* pMap)
+{
+	ASSERT(pClone);
+	if (!pClone)
+		return;
+
+	m_bHoriz = pClone->m_bHoriz;
+	m_pDockingSite = GetDockingPaneManager()->GetSite();
+
+	POSITION pos = pClone->GetHeadPosition();
+	while (pos)
+	{
+		CXTPDockingPaneBase* pPane = (CXTPDockingPaneBase*)pClone->GetNext(pos);
+		if (!pPane->IsEmpty() || pMap)
+		{
+			_InsertPane(pPane->Clone(m_pLayout, pMap));
+		}
+	}
+	m_szDocking = pClone->m_szDocking;
+	m_rcWindow = pClone->m_rcWindow;
+}
+
+CXTPDockingPaneBase* CXTPDockingPaneSplitterContainer::Clone(CXTPDockingPaneLayout* pLayout, CXTPPaneToPaneMap* pMap, DWORD /*dwIgnoredOptions*/)
+{
+	CXTPDockingPaneSplitterContainer* pPane = (CXTPDockingPaneSplitterContainer*)GetDockingPaneManager()->OnCreatePane(GetType(), pLayout);
+
+	pPane->Copy(this, pMap);
+
+	SAFE_CALLPTR(pMap, SetAt(this, pPane));
+
+	return pPane;
+}
+
+BOOL CXTPDockingPaneSplitterContainer::_Before(const CXTPDockingPaneBase* pPane, POSITION pos) const
+{
+	POSITION p = GetHeadPosition();
+	while (p)
+	{
+		if (p == pos) return FALSE;
+		CXTPDockingPaneBase* pBase = GetNext(p);
+		if (pBase == pPane) return TRUE;
+	}
+
+	ASSERT(FALSE);
+	return FALSE;
+}
+
+void CXTPDockingPaneSplitterContainer::_AdjustPanesLength(CXTPDockingPaneManager* pManager, CXTPDockingPaneBaseList& lst, CRect rect, BOOL bHoriz, BOOL bApply, int& nTotalLength, int& nLengthAvail)
+{
+	nTotalLength = 0;
+	nLengthAvail = 0;
+
+	CXTPDockingPaneBase* pClientPane = NULL;
+	CXTPDockingPaneBase* pClient = pManager->GetClientPane();
+	int nSplitterSize = pManager->GetPaintManager()->m_nSplitterSize;
+
+	POSITION pos = lst.GetHeadPosition();
+	while (pos)
+	{
+		CXTPDockingPaneBase* pPane = lst.GetNext(pos);
+		pPane->m_nLength = bHoriz ? pPane->m_szDocking.cx : pPane->m_szDocking.cy;
+
+		MINMAXINFO mmi;
+		pPane->GetMinMaxInfo(&mmi);
+		pPane->m_nLength = max(GetMinSize(&mmi, bHoriz), min(GetMaxSize(&mmi, bHoriz), pPane->m_nLength));
+
+		if (pClientPane == NULL && pPane->ContainPane(pClient))
+		{
+			if (!pManager->m_bHideClient || pPane->m_szDocking == CSize(0, 0))
+			{
+				pClientPane = pPane;
+				if (bApply) pClientPane->m_szDocking = CSize(0, 0);
+				pClientPane->m_nLength = 0;
+			}
+		}
+		nTotalLength += pPane->m_nLength;
+	}
+	nLengthAvail = (bHoriz ? rect.Width() : rect.Height()) - (nSplitterSize * ((int)lst.GetCount() - 1));
+
+
+	if (pClientPane && nTotalLength < nLengthAvail)
+	{
+		pClientPane->m_nLength = nLengthAvail - nTotalLength;
+		if (bApply)
+		{
+			if (bHoriz) pClientPane->m_szDocking.cx = pClientPane->m_nLength;
+			else pClientPane->m_szDocking.cy = pClientPane->m_nLength;
+		}
+		nTotalLength = nLengthAvail;
+	}
+
+	if (nLengthAvail > 0)
+	{
+		pos = lst.GetHeadPosition();
+		while (pos)
+		{
+			CXTPDockingPaneBase* pPane = lst.GetNext(pos);
+
+			if ((pPane->m_nLength < 0) || (nTotalLength == 0))
+				continue;
+
+			MINMAXINFO mmi;
+			pPane->GetMinMaxInfo(&mmi);
+
+			int nLength = pPane->m_nLength;
+
+			if (nLengthAvail * nLength / nTotalLength < GetMinSize(&mmi, bHoriz))
+				pPane->m_nLength = -GetMinSize(&mmi, bHoriz);
+			else if (nLengthAvail * nLength / nTotalLength > GetMaxSize(&mmi, bHoriz))
+				pPane->m_nLength = -GetMaxSize(&mmi, bHoriz);
+
+			if (pPane->m_nLength < 0)
+			{
+				nLengthAvail += pPane->m_nLength;
+				nTotalLength -= nLength;
+
+				if (nLengthAvail < 0)
+				{
+					pPane->m_nLength -= nLengthAvail;
+					nLengthAvail = 0;
+					break;
+				}
+
+				pos = lst.GetHeadPosition();
+			}
+		}
+	}
+}
+
+
+CRect CXTPDockingPaneSplitterContainer::_CalculateResultDockingRect(BOOL bHoriz, CXTPDockingPaneBaseList& lst, CRect rect, CXTPDockingPaneBase* pPaneI)
+{
+	CXTPDockingPaneManager* pManager = pPaneI->GetDockingPaneManager();
+	int nSplitterSize = pManager->GetPaintManager()->m_nSplitterSize;
+
+	int nTotalLength = 0;
+	int nLengthAvail = 0;
+
+	_AdjustPanesLength(pManager, lst, rect, bHoriz, FALSE, nTotalLength, nLengthAvail);
+
+
+	POSITION pos = lst.GetHeadPosition();
+
+	CRect rcPane(rect);
+	while (pos)
+	{
+		CXTPDockingPaneBase* pPane = lst.GetNext(pos);
+
+		int nLength = -pPane->m_nLength;
+		if (pPane->m_nLength > 0)
+		{
+			nLength = nTotalLength == 0 ? 0 : int((nLengthAvail * pPane->m_nLength) / nTotalLength);
+
+			nTotalLength -= pPane->m_nLength;
+			nLengthAvail = max(nLengthAvail - nLength, 0);
+		}
+
+		if (bHoriz)
+		{
+			rcPane.right = pos == NULL ? rect.right : rcPane.left + nLength;
+
+			if (pPaneI == pPane)
+				break;
+
+			rcPane.left = rcPane.right + nSplitterSize;
+		}
+		else
+		{
+			rcPane.bottom = pos == NULL ? rect.bottom : rcPane.top + nLength;
+
+			if (pPaneI == pPane)
+				break;
+
+			rcPane.top = rcPane.bottom + nSplitterSize;
+		}
+	}
+
+	return rcPane;
+}
+
+
+CRect CXTPDockingPaneSplitterContainer::_CalculateResultDockingRectSelf(CXTPDockingPaneBase* pPaneI, XTPDockingPaneDirection direction, CXTPDockingPaneBase* pNeighbour)
+{
+	direction = GetDockingPaneManager()->GetRTLDirection(direction);
+
+	ASSERT(pNeighbour);
+
+	BOOL bAfter = (direction == xtpPaneDockRight || direction == xtpPaneDockBottom);
+
+	// getting list of nonempty panes
+	CXTPDockingPaneBaseList lst;
+	POSITION posPanes = GetHeadPosition();
+	while (posPanes)
+	{
+		CXTPDockingPaneBase* pPane = GetNext(posPanes);
+		if (pPane->IsEmpty() || (pPane == pPaneI))
+			continue;
+
+		POSITION pos = lst.AddTail(pPane);
+
+		if (pPane == pNeighbour)
+		{
+			if (bAfter)
+				lst.InsertAfter(pos, pPaneI);
+			else
+				lst.InsertBefore(pos, pPaneI);
+		}
+	}
+
+	CRect rcResult = _CalculateResultDockingRect(m_bHoriz, lst, m_rcWindow, pPaneI);
+
+	m_pDockingSite->ClientToScreen(rcResult);
+
+	return rcResult;
+
+}
+
+
+CRect CXTPDockingPaneSplitterContainer::_CalculateResultDockingRectChild(CXTPDockingPaneBase* pSplitter, CXTPDockingPaneBase* pPane, XTPDockingPaneDirection direction)
+{
+	BOOL bAfter = (direction == xtpPaneDockRight || direction == xtpPaneDockBottom);
+	BOOL bHoriz = (direction == xtpPaneDockLeft || direction == xtpPaneDockRight);
+
+	CXTPDockingPaneBaseList lst;
+	lst.AddTail(pSplitter);
+
+	if (bAfter)
+		lst.AddTail(pPane);
+	else
+		lst.AddHead(pPane);
+
+	CRect rect = pSplitter->GetPaneWindowRect();
+
+	return _CalculateResultDockingRect(bHoriz, lst, rect, pPane);
+
+}
+
+void CXTPDockingPaneSplitterContainer::DeletePane()
+{
+	InternalRelease();
+}
+
+void CXTPDockingPaneSplitterContainer::GetMinMaxInfo(LPMINMAXINFO pMinMaxInfo) const
+{
+	CXTPDockingPaneBase::GetMinMaxInfo(pMinMaxInfo);
+
+	int nCount = 0;
+
+	POSITION pos = GetHeadPosition();
+	while (pos)
+	{
+		CXTPDockingPaneBase* pPane = GetNext(pos);
+		if (pPane->IsEmpty())
+			continue;
+
+		nCount++;
+
+		MINMAXINFO info;
+		pPane->GetMinMaxInfo(&info);
+
+		if (nCount == 1)
+		{
+			*pMinMaxInfo = info;
+
+		}
+		else
+		{
+			GetMinSize(pMinMaxInfo, m_bHoriz) += GetMinSize(&info, m_bHoriz);
+			GetMaxSize(pMinMaxInfo, m_bHoriz) += GetMaxSize(&info, m_bHoriz);
+
+			GetMinSize(pMinMaxInfo, !m_bHoriz) = max(GetMinSize(pMinMaxInfo, !m_bHoriz), GetMinSize(&info, !m_bHoriz));
+			GetMaxSize(pMinMaxInfo, !m_bHoriz) = min(GetMaxSize(pMinMaxInfo, !m_bHoriz), GetMaxSize(&info, !m_bHoriz));
+		}
+	}
+
+	if (nCount > 0)
+	{
+		GetMinSize(pMinMaxInfo, m_bHoriz) += GetPaintManager()->m_nSplitterSize * (nCount - 1);
+		GetMaxSize(pMinMaxInfo, m_bHoriz) += GetPaintManager()->m_nSplitterSize * (nCount - 1);
 	}
 }
 

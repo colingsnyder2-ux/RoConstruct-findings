@@ -1,14 +1,4 @@
-// from server: 76% by atomic.potato
-extern "C" void sub_005400e0(float* result, int index);
-
-struct CoreGuiService_006474c0
-{
-    int m_data[50];
-    void* f(void* value);
-};
-
-void* CoreGuiService_006474c0::f(void* value)
-{
-    sub_005400e0((float*)value, 0);
-    return value;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct B{void get(void*,int);}; struct S{void* f(void*);};
+void* S::f(void* p){((B*)((char*)this+200))->get(p,0); return p;}

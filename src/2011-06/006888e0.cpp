@@ -1,11 +1,4 @@
-// from server: 97% by atomic.potato
-struct S_func_006888e0 {
-    int f(void *);
-};
-
-extern "C" int __cdecl sub_0080b2ea(void *, const char *, const char *, int, int);
-
-int S_func_006888e0::f(void *arg)
-{
-    return sub_0080b2ea(arg, ".?AVPose@RBX@@", ".?AVInstance@RBX@@", 0, 0) != 0;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+extern "C" int helper(void*,int,void*,void*,int);
+bool __stdcall func(void* p){return helper(p,0,(void*)0xc071f8,(void*)0xc5d6e4,0)!=0;}

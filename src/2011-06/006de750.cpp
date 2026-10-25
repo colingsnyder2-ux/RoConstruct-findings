@@ -1,517 +1,454 @@
-// from server: 38% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/World.cpp
+// roc-lib: rbxgs v8tree/Instance.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8world/World.h"
-#include "v8world/JointStage.h"
-#include "v8world/Contact.h"
-#include "util/Debug.h"
-#include "v8world/ContactManager.h"
-#include "v8world/SpatialHash.h"
-#include "v8world/IWorldStage.h"
-#include "v8world/Assembly.h"
-#include "v8world/CollisionStage.h"
-#include "v8world/SleepStage.h"
-#include "v8world/ClumpStage.h"
-#include "v8world/SimJobStage.h"
-#include "v8world/JointBuilder.h"
+#include "v8tree/Instance.h"
+#include "reflection/function.h"
+#include "reflection/property.h"
+#include <algorithm>
 
 namespace RBX
 {
-	bool World::disableEnvironmentalThrottle = false;
+	const char* sInstance = "Instance";
 
-	#pragma warning (push)
-	#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
-	World::World() : 
-		contactManager(new ContactManager(this)),
-		jointStage(new JointStage(NULL, this)),
-		canThrottle(true),
-		inStepCode(false),
-		inJointNotification(false),
-		worldStepId(0),
-		numJoints(0),
-		numContacts(0),
-		numLinkCalls(0),
-		profilingWorldStep(new Profiling::CodeProfiler("World Step")),
-		profilingUiStep(new Profiling::CodeProfiler("UI Step")),
-		profilingBroadphase(new Profiling::CodeProfiler("Broadphase"))
+	Reflection::BoundProp<bool, 1> Instance::propArchivable("archivable", "Behavior", &Instance::archivable, Reflection::PropertyDescriptor::STANDARD); // L14
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(std::string, bool), 2> findFirstChild(&Instance::findFirstChildByName2, "FindFirstChild", "name", "recursive", false, Reflection::FunctionDescriptor::AnyCaller); // L15
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(), 0> func_clone(&Instance::clone, "Clone", Reflection::FunctionDescriptor::AnyCaller); // L16
+	static Reflection::BoundFuncDesc<Instance, void(), 0> func_Remove(&Instance::remove, "Remove", Reflection::FunctionDescriptor::AnyCaller); // L17
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_childrenOld(&Instance::getChildren2, "children", Reflection::FunctionDescriptor::AnyCaller); // L18
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_children(&Instance::getChildren2, "GetChildren", Reflection::FunctionDescriptor::AnyCaller); // L19
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isDescendentOf(&Instance::isDescendentOf2, "IsDescendentOf", "ancestor", Reflection::FunctionDescriptor::AnyCaller); // L20
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isAncestorOf(&Instance::isAncestorOf2, "IsAncestorOf", "descendent", Reflection::FunctionDescriptor::AnyCaller); // L21
+	static Reflection::PropDescriptor<Instance, std::string> prop_className("className", "Data", &Instance::getClassNameStr, NULL, Reflection::PropertyDescriptor::UI); // L22
+
+	const Reflection::PropDescriptor<Instance, std::string> Instance::desc_Name("Name", "Data", &Instance::getName, &Instance::setName, Reflection::PropertyDescriptor::STANDARD); // L24
+	const Reflection::RefPropDescriptor<Instance, Instance> Instance::propParent("Parent", "Data", &Instance::getParent, &Instance::setParent, Reflection::PropertyDescriptor::UI); // L25
+
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childAdded("ChildAdded", "child"); // L27
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childRemoved("ChildRemoved", "child"); // L28
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentAdded("DescendentAdded", "descendent"); // L29
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentRemoving("DescendentRemoving", "descendent"); // L30
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_ancestryChanged("AncestryChanged", "child"); // L31
+	Reflection::SignalDesc<Instance, void(const Reflection::PropertyDescriptor*)> Instance::event_propertyChanged("Changed", "property"); // L32 
+
+	Instance::Instance(const char* name)
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name(name),
+		  archivable(true),
+		  guid()
+	{
+	}
+
+	Instance::Instance()
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name("Instance"),
+		  archivable(true),
+		  guid()
+	{
+	}
+
+	Instance::~Instance()
+	{
+		RBXASSERT(!parent);
+	}
+
+	bool Instance::askAddChild(const Instance* instance) const
+	{
+		return false;
+	}
+
+	bool Instance::askSetParent(const Instance* instance) const
+	{
+		return false;
+	}
+
+	void Instance::setName(const std::string& value)
+	{
+		if (name != value)
 		{
-			profilingBroadphase->parent = profilingWorldStep.get();
-			profilingUiStep->parent = profilingWorldStep.get();
-			getCollisionStage()->profilingCollision->parent = profilingWorldStep.get();
-			getSleepStage()->profilingSleep->parent = profilingWorldStep.get();
-			jointStage->getKernel()->profilingKernel->parent = profilingWorldStep.get(); 
-		}
-	#pragma warning (pop)
-
-	World::~World()
-	{
-		RBXASSERT(numJoints == 0);
-		RBXASSERT(numContacts == 0);
-		RBXASSERT(primitives.size() == 0);
-		RBXASSERT(breakableJoints.size() == 0);
-		
-		delete jointStage;
-		delete contactManager;
-	}
-
-	void World::addedBodyForce() 
-	{ 
-	}
-
-	Kernel& World::getKernel()
-	{
-		return *jointStage->getKernel();
-	}
-
-	const Kernel& World::getKernel() const
-	{
-		return *jointStage->getKernel();
-	}
-
-	int World::getNumBodies() const
-	{
-		return jointStage->getKernel()->numBodies();
-	}
-
-	int World::getNumPoints() const
-	{
-		return jointStage->getKernel()->numPoints();
-	}
-
-	int World::getNumConstraints() const
-	{
-		return jointStage->getKernel()->numConnectors();
-	}
-
-	int World::getMetric(IWorldStage::MetricType metricType) const
-	{
-		return jointStage->getMetric(metricType);
-	}
-
-	int World::getNumHashNodes() const
-	{
-		return contactManager->getSpatialHash().getNodesOut();
-	}
-
-	int World::getMaxBucketSize() const
-	{
-		return contactManager->getSpatialHash().getMaxBucket();
-	}
-
-	void World::onPrimitiveContactParametersChanged(Primitive* p)
-	{
-		for (Contact* curContact = p->getFirstContact(); curContact != NULL; curContact = p->getNextContact(curContact))
-		{
-			curContact->onPrimitiveContactParametersChanged();
+			name = value;
+			raisePropertyChanged(desc_Name);
 		}
 	}
 
-	void World::onPrimitiveExtentsChanged(Primitive* p)
+	void Instance::onDescendentAdded(Instance* instance)
 	{
-		assertNotInStep();
+		if (Notifier<Instance, DescendentAdded>::hasListeners())
+			Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent));
 
-		contactManager->onPrimitiveExtentsChanged(p);
+		event_descendentAdded.fire(this, shared_from(instance));
 	}
 
-	void World::onPrimitiveGeometryTypeChanged(Primitive* p)
+	void Instance::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
 	{
-		assertNotInStep();
+		event_descendentRemoving.fire(this, instance);
 
-		contactManager->onPrimitiveGeometryTypeChanged(p);
+		if (Notifier<Instance, DescendentRemoving>::hasListeners())
+			Notifier<Instance, DescendentRemoving>::raise(DescendentRemoving(instance, shared_from(instance->parent)));
 	}
 
-	void World::onJointPrimitiveNulling(Joint* j, Primitive* p)
+	class RaiseDescendentAdded2
 	{
-		jointStage->onJointPrimitiveNulling(j,p);
-	}
-
-	void World::onJointPrimitiveSet(Joint* j, Primitive* p)
-	{
-		jointStage->onJointPrimitiveSet(j,p);
-	}
-
-	void World::insertContact(Contact* c)
-	{
-		jointStage->onEdgeAdded(c);
-		numContacts++;
-	}
-
-	void World::destroyContact(Contact* c) 
-	{
-		jointStage->onEdgeRemoving(c);
-
-		if (c)
-			delete c;
-
-		numContacts--;
-	}
-
-	void World::ticklePrimitive(Primitive* p)
-	{
-		Assembly* pAssembly = p->getAssembly();
-
-		if (pAssembly)
-			getSleepStage()->onWakeUpRequest(pAssembly);
-	}
-
-	void World::onPrimitiveCanSleepChanged(Primitive* p)
-	{
-		assertNotInStep();
-
-		getClumpStage()->onPrimitiveCanSleepChanged(p);
-	}
-
-	void World::onPrimitiveAddedAnchor(Primitive* p)
-	{
-		assertNotInStep();
-
-		getClumpStage()->onPrimitiveAddedAnchor(p);
-	}
-
-	void World::onPrimitiveRemovingAnchor(Primitive* p)
-	{
-		assertNotInStep();
-
-		getClumpStage()->onPrimitiveRemovingAnchor(p);
-	}
-
-	void World::onPrimitiveCanCollideChanged(Primitive* p)
-	{
-		getClumpStage()->onPrimitiveCanCollideChanged(p);
-	}
-
-	void World::onAssemblyExtentsChanged(RBX::Assembly * a)
-	{
-		assertNotInStep();
-
-		Assembly::PrimIterator endIt = Assembly::PrimIterator::end(a);
-		Assembly::PrimIterator beginIt = Assembly::PrimIterator::begin(a);
-		
-		for (; beginIt != endIt; ++beginIt)
+	private:
+		const Instance* notifier;
+		Listener<Instance, DescendentAdded>* listener;
+	  
+	public:
+		RaiseDescendentAdded2(const Instance* notifier, Listener<Instance, DescendentAdded>* listener)
+			: notifier(notifier),
+			  listener(listener)
 		{
-			contactManager->onPrimitiveExtentsChanged(*beginIt);
+		}
+	public:
+		void operator()(Instance* instance)
+		{
+			notifier->Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent), listener);
+			instance->for_eachChild(*this);
+		}
+	};
+
+	void Instance::onAddListener(Listener<Instance, DescendentAdded>* listener) const
+	{
+		for_eachChild(RaiseDescendentAdded2(this, listener));
+	}
+
+	void Instance::onAddListener(Listener<Instance, ChildAdded>* listener) const
+	{
+		if (children)
+		{
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = children.read();
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				Notifier<Instance, ChildAdded>::raise(ChildAdded((*iter).get()), listener);
+			}
 		}
 	}
 
-	void World::onMotorAngleChanged(MotorJoint* m)
+	void Instance::removeAllChildren()
 	{
-		getClumpStage()->onMotorAngleChanged(m);
-	}
-
-	void World::update()
-	{
-		getClumpStage()->process();
-	}
-
-	void World::onPrimitiveTouched(Primitive* touchP, Primitive* touchOtherP)
-	{
-		touch.append(touchP);
-		touchOther.append(touchOtherP);
-	}
-
-	void World::createJoints(Primitive *p)
-	{
-		createJoints(p, NULL);
-	}
-
-	void World::destroyJoints(Primitive *p)
-	{
-		destroyJoints(p, NULL);
-	}
-
-	void World::createJointsToWorld(const G3D::Array<Primitive*>& primitives)
-	{
-		assertNotInStep();
-
-		std::set<Primitive*> ignore;
-		for (int i = 0; i < primitives.size(); i++)
-			ignore.insert(primitives[i]);
-
-		for (int i = 0; i < primitives.size(); i++)
-			createJoints(primitives[i], &ignore);
-	}
-
-	void World::destroyJointsToWorld(const G3D::Array<Primitive*>& primitives)
-	{
-		assertNotInStep();
-
-		std::set<Primitive*> ignore;
-		for (int i = 0; i < primitives.size(); i++)
-			ignore.insert(primitives[i]);
-
-		for (int i = 0; i < primitives.size(); i++)
-			destroyJoints(primitives[i], &ignore);
-	}
-
-	SimJobStage& World::getSimJobStage()
-	{
-		return *rbx_static_cast<SimJobStage*>(jointStage->findStage(IStage::SIMJOB_STAGE));
-	}
-
-	SleepStage* World::getSleepStage()
-	{
-		return rbx_static_cast<SleepStage*>(jointStage->findStage(IStage::SLEEP_STAGE));
-	}
-
-	const SleepStage* World::getSleepStage() const
-	{
-		return rbx_static_cast<SleepStage*>(jointStage->findStage(IStage::SLEEP_STAGE));
-	}
-
-	CollisionStage* World::getCollisionStage()
-	{
-		return rbx_static_cast<CollisionStage*>(jointStage->findStage(IStage::COLLISION_STAGE));
-	}
-
-	const CollisionStage* World::getCollisionStage() const
-	{
-		return rbx_static_cast<CollisionStage*>(jointStage->findStage(IStage::COLLISION_STAGE));
-	}
-
-	ClumpStage* World::getClumpStage()
-	{
-		return rbx_static_cast<ClumpStage*>(jointStage->findStage(IStage::CLUMP_STAGE));
-	}
-
-	void World::removeFromBreakable(Joint* j)
-	{
-		if (j->isBreakable())
+		while (children)
 		{
-			size_t success = breakableJoints.erase(j);
-			RBXASSERT(success == 1);
+			children->back()->setParent(NULL);
+		}
+	}
+
+	void Instance::onChildChanged(Instance* instance, const PropertyChanged& event)
+	{
+		Instance* p = parent;
+
+		if (p)
+			p->onChildChanged(instance, event);
+	}
+
+	void Instance::readProperties(const XmlElement* container, IReferenceBinder& binder)
+	{
+		for (const XmlElement* i = container->firstChild(); i != NULL; i = i->nextSibling())
+			readProperty(i, binder);
+	}
+
+	void Instance::readChild(const XmlElement* childElement, IReferenceBinder& binder)
+	{
+		const Name* className = NULL;
+		const XmlAttribute* classAttrib = childElement->findAttribute(tag_class);
+
+		if (classAttrib)
+		{
+			if (classAttrib->getValue(className))
+			{
+				boost::shared_ptr<Instance> childInstance = createChild(*className);
+				if (childInstance)
+				{
+					childInstance->read(childElement, binder);
+					if (childInstance)
+						childInstance->setParent(this);
+				}
+				else
+				{
+					const XmlAttribute* nameRef = childElement->findAttribute(name_referent);
+					if (nameRef)
+						binder.announceID(nameRef, NULL);
+				}
+			}
+		}
+	}
+
+	void Instance::readChildren(const XmlElement* element, IReferenceBinder& binder)
+	{
+		if (element)
+		{
+			for (const XmlElement* current = element->findFirstChildByTag(tag_Item); current != NULL; current = element->findNextChildWithSameTag(current))
+			{
+				readChild(current, binder);
+			}
+		}
+	}
+
+	void Instance::read(const XmlElement* element, IReferenceBinder& binder)
+	{
+		const XmlAttribute* nameRef = element->findAttribute(name_referent);
+		if (nameRef)
+		{
+			binder.announceID(nameRef, this);
+		}
+
+		if (element->getTag() == tag_Item)
+		{
+			const XmlElement* properties = element->findFirstChildByTag(tag_Properties);
+			if (properties)
+			{
+				readProperties(properties, binder);
+			}
+			readChildren(element, binder);
 		}
 		else
-			RBXASSERT(breakableJoints.find(j) == breakableJoints.end());
+			readProperty(element, binder);
 	}
 
-	void World::removeJoint(Joint* j)
+	void Instance::predelete(Instance* instance)
 	{
-		assertNotInStep();
-		RBXASSERT(j);
-
-		removeFromBreakable(j);
-		jointStage->onEdgeRemoving(j);
-		numJoints--;
+		instance->predelete();
 	}
 
-	void World::joinAll()
+	void Instance::onAncestorChanged(const AncestorChanged& event)
 	{
-		for (int i = 0; i < primitives.size(); i++)
-			createJoints(primitives[i]);
-	}
+		typedef std::vector<boost::shared_ptr<Instance>>::const_iterator Iterator;
 
-	void World::removePrimitive(Primitive* p)
-	{
-		assertNotInStep();
-		RBXASSERT(p->inPipeline());
-		RBXASSERT(p->getWorld());
-
-		destroyJoints(p);
-		contactManager->onPrimitiveRemoved(p);
-		jointStage->onPrimitiveRemoving(p);
-		primitives.fastRemove(p);
-		p->setWorld(NULL);
-
-		RBXASSERT(!p->getFirstEdge());
-		RBXASSERT(p->getNumJoints2() + p->getNumContacts() == 0);
-		assertNotInStep();
-		RBXASSERT(!p->getClump());
-		RBXASSERT(!p->inPipeline());
-		RBXASSERT(!p->getWorld());
-	}
-
-	void World::insertPrimitive(Primitive* p)
-	{
-		assertNotInStep();
-		RBXASSERT(!p->getClump());
-		RBXASSERT(!p->inPipeline());
-		RBXASSERT(!p->getFirstEdge());
-		RBXASSERT(p->getNumJoints2() + p->getNumContacts() == 0);
-		RBXASSERT(!p->getWorld());
-
-		primitives.fastAppend(p);
-		p->setWorld(this);
-		jointStage->onPrimitiveAdded(p);
-		contactManager->onPrimitiveAdded(p);
-
-		assertNotInStep();
-	}
-
-	void World::computeFallen(G3D::Array<Primitive*>& fallen) const
-	{
-		typedef std::set<Assembly*>::const_iterator Iter; 
-
-		RBXASSERT(fallen.size() == 0);
-
-		const SleepStage* sStage = rbx_static_cast<SleepStage*>(jointStage->findStage(IStage::SLEEP_STAGE)); // World::getSleepStage()
-
-		for (Iter cIt = sStage->getAwakeAssemblies().begin(); cIt != sStage->getAwakeAssemblies().end(); cIt++)
+		if (children)
 		{
-			const Assembly* current = *cIt;
-			if (current->getMainPrimitive()->getCoordinateFrame().translation.y < -500.0f)
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> r = children.read();
+
+			for (Iterator it = r->begin(); it != r->end(); it++)
 			{
-				Assembly::PrimIterator it = Assembly::PrimIterator::begin(current);
-				Assembly::PrimIterator pEnd = Assembly::PrimIterator::end(current);
-				for (; it != pEnd; ++it)
+				(*it)->onAncestorChanged(event);
+			}
+		}
+
+		event_ancestryChanged.fire(this, shared_from(event.child));
+		Notifier<Instance, AncestorChanged>::raise(event);
+	}
+
+	void Instance::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
+		return;
+	}
+
+	bool Instance::contains(const Instance* child) const
+	{
+		for (; child != NULL; child = child->parent)
+		{
+			if (child == this)
+				return true;
+		}
+
+		return false;
+	}
+
+	boost::shared_ptr<Instance> Instance::createChild(const Name& className)
+	{
+		return AbstractFactoryProduct::create(className);
+	}
+
+	int Instance::findChildIndex(const Instance* instance) const
+	{
+		RBXASSERT(children);
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		std::vector<boost::shared_ptr<Instance>>::const_iterator found = std::find(c.begin(), c.end(), instance->shared_from_this());
+		return (int)std::distance(c.begin(), found);
+	}
+
+	void Instance::writeChildren(XmlElement* container)
+	{
+		if (children)
+		{
+			const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator it = c.begin(); it != c.end(); it++)
+			{
+				XmlElement* element = (*it)->write();
+				if (element)
+					container->pushBackChild(element);
+			}
+		}
+	}
+
+	Instance* Instance::findFirstChildByName(const std::string& findName) const
+	{
+		if (!children)
+			return NULL;
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		for (size_t i = 0; i < c.size(); i++)
+		{
+			if (c[i]->name == findName)
+				return c[i].get();
+		}
+
+		return NULL;
+	}
+
+	Instance* Instance::findFirstChildByNameRecursive(const std::string& findName) const
+	{
+		Instance* foundChild = findFirstChildByName(findName);
+		if (foundChild)
+			return foundChild;
+
+		if (!children)
+			return NULL;
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		for (size_t i = 0; i < c.size(); i++)
+		{
+			Instance* child = c[i]->findFirstChildByNameRecursive(findName);
+			if (child)
+				return child;
+		}
+
+		return NULL;
+	}
+
+	void Instance::signalDescendentAdded(Instance* instance, Instance* beginParent, Instance* oldParent)
+	{
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
+		{
+			if (parent == oldParent || parent->isAncestorOf(oldParent))
+				break;
+
+			parent->onDescendentAdded(instance);
+		}
+
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
+
+		if (c)
+		{
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				signalDescendentAdded((*iter).get(), beginParent, oldParent);
+			}
+		}
+	}
+
+	void Instance::signalDescendentRemoving(const boost::shared_ptr<Instance>& instance, Instance* beginParent, Instance* newParent)
+	{
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
+		{
+			if (parent == newParent || parent->isAncestorOf(newParent))
+				break;
+
+			parent->onDescendentRemoving(instance);
+		}
+
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
+
+		if (c)
+		{
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				signalDescendentRemoving((*iter), beginParent, newParent);
+			}
+		}
+	}
+
+	//96.19% matching.
+	void Instance::readProperty(const XmlElement* propertyElement, IReferenceBinder& binder)
+	{
+		const Name* value = NULL;
+
+		if (const XmlAttribute* attribute = propertyElement->findAttribute(name_name))
+		{
+			if (attribute->getValue(value))
+			{
+				Reflection::PropertyIterator iter = findProperty(*value);
+
+				if (iter != properties_end())
 				{
-					Primitive* currentPrim = *it;
-					if (currentPrim->getCoordinateFrame().translation.y < -500.0f)
-						fallen.push_back(currentPrim);
+					(*iter).read(propertyElement, binder);
 				}
 			}
 		}
 	}
 
-	float World::step(float desiredInterval)
+	XmlElement* Instance::write()
 	{
-		assertNotInStep();
-
-		Profiling::Mark mark(*profilingWorldStep, true);
-		
-		RBXASSERT(desiredInterval > 0.01);
-		RBXASSERT(desiredInterval < 0.1);
-
-		update();
-
-		double startTick = G3D::System::getTick();
-		bool throttling = false;
-		int startTime = G3D::max(1, Math::iRound(floorf(desiredInterval * Constants::worldStepsPerSec())));
-
-		for (int i = 0; i < startTime; i++)
+		if (archivable)
 		{
-			int numOfSteps = worldStepId / Constants::worldStepsPerUiStep();
-
-			if (worldStepId % Constants::worldStepsPerUiStep() == 0)
+			if (getClassName() != Name::getNullName())
 			{
-				Profiling::Mark markUI(*profilingUiStep, false);
-				doBreakJoints();
-				touch.fastClear();
-				touchOther.fastClear();
+				XmlElement* element = new XmlElement(tag_Item);
+				element->addAttribute(tag_class, &getClassName());
+				element->addAttribute(name_referent, InstanceHandle(this));
 
-				inStepCode = true;
-				getClumpStage()->stepUi(numOfSteps);
-				getSimJobStage().notifyMovingPrimitives();
-				inStepCode = false;
+				writeProperties(element->addChild(tag_Properties));
+				writeChildren(element);
+
+				return element;
 			}
-
-			{
-				inStepCode = true;
-				Profiling::Mark markBroadphase(*profilingBroadphase, false);
-				contactManager->stepWorld();
-				inStepCode = false;
-			}
-
-			inStepCode = true;
-			jointStage->stepWorld(worldStepId, numOfSteps, throttling);
-			inStepCode = false;
-
-			if (!World::disableEnvironmentalThrottle && canThrottle)
-				throttling = G3D::System::getTick() > (i + 1) * Constants::worldDt() + startTick;
-			else
-				throttling = false;
-
-			worldStepId++;
 		}
 
-		return Constants::worldDt() * startTime;
+		return new XmlElement(tag_External, InstanceHandle(this));
 	}
-
-	void World::insertJoint(Joint* j)
+  
+	void Instance::setParent(Instance* newParent)
 	{
-		assertNotInStep();
-		RBXASSERT(!inJointNotification);
+		if (newParent == parent)
+			return;
 
-		if (j->getPrimitive(0) && j->getPrimitive(1))
+		boost::shared_ptr<Instance> oldParent = shared_from(parent);
+		boost::shared_ptr<Instance> self = this->shared_from_this();
+
+		if (oldParent)
 		{
-			Joint* d = Primitive::getJoint(j->getPrimitive(0), j->getPrimitive(1));
-			if (d)
-			{
-				inJointNotification = true;
-				Notifier<World, AutoDestroy>::raise(AutoDestroy(d));
-				inJointNotification = false;
-			}
+			if (!oldParent->contains(newParent))
+				signalDescendentRemoving(self, oldParent.get(), newParent);
+
+			oldParent->onChildRemoving(this);
+
+			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& c = oldParent->children.write();
+			c->erase(std::find(c->begin(), c->end(), self));
+
+			if (c->empty())
+				oldParent->children.reset();
+
+			parent = NULL;
+
+			event_childRemoved.fire(oldParent.get(), self);
+			oldParent->Notifier<Instance, ChildRemoved>::raise(ChildRemoved(this));
+
+			oldParent->onChildRemoved(this);
+
+			if (oldParent->numChildren() == 0)
+				oldParent->onLastChildRemoved();
 		}
 
-		jointStage->onEdgeAdded(j);
-		numJoints++;
-
-		if (j->isBreakable())
+		if (newParent)
 		{
-			size_t success = breakableJoints.insert(j).second; 
-			RBXASSERT(success);
+			newParent->children.write()->push_back(self);
 		}
-	}
 
-	void World::doBreakJoints()
-	{
-		std::set<Joint*>::iterator cIt = this->breakableJoints.begin();
+		parent = newParent;
 
-		while (cIt != this->breakableJoints.end())
+		if (newParent)
 		{
-			Joint* currentJoint = *cIt;
-			cIt++;
+			newParent->onChildAdded(this);
 
-			if (currentJoint->inKernel() && currentJoint->isBroken())
-			{
-				this->inJointNotification = true;
-				Notifier<World, AutoDestroy>::raise(AutoDestroy(currentJoint));
-				this->inJointNotification = false;
-			}
+			if (!newParent->contains(oldParent.get()))
+				signalDescendentAdded(this, newParent, oldParent.get());
+
+			newParent->Notifier<Instance, ChildAdded>::raise(ChildAdded(this));
+			event_childAdded.fire(newParent, self);
 		}
-	}
 
-	void World::createJoints(Primitive* p, std::set<Primitive*>* ignoreGroup)
-	{
-		assertNotInStep();
-		this->numLinkCalls++;
-		this->tempPrimitives.fastClear();
-		this->contactManager->getPrimitivesTouchingExtents(p->getFastFuzzyExtents(), p, this->tempPrimitives);
-
-		for (int i = 0; i < this->tempPrimitives.length(); i++)
-		{
-			Primitive* currentPrim = this->tempPrimitives[i];
-
-			if (ignoreGroup == NULL || ignoreGroup->find(currentPrim) == ignoreGroup->end())
-			{
-				if (!Primitive::getJoint(p, currentPrim))
-				{
-					Joint* canJoin = JointBuilder::canJoin(p, currentPrim);
-					if (canJoin)
-					{
-						this->insertJoint(canJoin);
-						this->inJointNotification = true;
-						Notifier<World, AutoJoin>::raise(AutoJoin(canJoin));
-						this->inJointNotification = false;
-					}
-				}
-			}
-		}
-	}
-
-	void World::destroyJoints(Primitive* p, std::set<Primitive*>* ignoreGroup)
-	{
-		assertNotInStep();
-		Joint* nextJoint = p->getFirstJoint();
-
-		while (nextJoint)
-		{
-			Joint* prevJoint = nextJoint;
-			nextJoint = p->getNextJoint(prevJoint);
-			Joint::JointType jointType = prevJoint->getJointType();
-			if (jointType != Joint::FREE_JOINT && jointType != Joint::ANCHOR_JOINT)
-			{
-				Primitive* otherPrim = prevJoint->otherPrimitive(p);
-				if (ignoreGroup == NULL || ignoreGroup->find(otherPrim) == ignoreGroup->end())
-				{
-					this->inJointNotification = true;
-					Notifier<World, AutoDestroy>::raise(AutoDestroy(prevJoint));
-					this->inJointNotification = false;
-				}
-			}
-		}
+		onAncestorChanged(AncestorChanged(this, oldParent.get(), newParent));
+		raisePropertyChanged(propParent);
 	}
 }

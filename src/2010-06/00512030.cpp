@@ -1,19 +1,17 @@
-// from server: 91% by atomic.potato
-extern "C" void __cdecl Function5118B0(void *, int);
-
-struct UHistory
-{
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_00512030 {
+    T4_00512030();
+    virtual void f_00512030();
+    char m_a;
+    char m_b;
 };
-
-void __cdecl f(void *a, int value)
+T4_00512030::T4_00512030() : m_a(0), m_b(0) {}
+extern "C" void* create_other_00512030(void*, void*, int);
+void* create_00512030(void* unused, T4_00512030* out, int type)
 {
-    if (value != 4)
-    {
-        Function5118B0(a, value);
-        return;
-    }
-
-    *(int *)a = 0xB954A8;
-    *((unsigned char *)a + 4) = 0;
-    *((unsigned char *)a + 5) = 0;
+    if (type != 4)
+        return create_other_00512030(unused, out, type);
+    out->T4_00512030::T4_00512030();
+    return out;
 }

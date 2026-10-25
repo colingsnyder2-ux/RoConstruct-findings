@@ -1,14 +1,16 @@
-// from server: 70% by atomic.potato
-struct CWebToolbox
-{
+// from server: 100% by colin
+
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+struct Str_0049bd70 { int words[8]; };
+extern void (__thiscall* str_ctor_0049bd70)(Str_0049bd70*, Str_0049bd70*);
+struct X_0049bd70 {
     char pad[0xca0];
-    char *f(char *s);
+    Str_0049bd70 value;
+    Str_0049bd70* copy(Str_0049bd70* out);
 };
-
-extern "C" void __stdcall basic_string_copy(char *, const char *);
-
-char *CWebToolbox::f(char *s)
+Str_0049bd70* X_0049bd70::copy(Str_0049bd70* out)
 {
-    basic_string_copy(this->pad + 0xca0, s);
-    return s;
+    volatile int zero = 0;
+    str_ctor_0049bd70(out, &value);
+    return out;
 }

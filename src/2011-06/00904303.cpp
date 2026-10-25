@@ -1,11 +1,5 @@
-// from server: 28% by atomic.potato
-extern "C" int __cdecl sub_009092d5(int);
-
-struct S_func_00904303 {
-    void f();
-};
-
-void S_func_00904303::f()
-{
-    sub_009092d5(1);
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /Oy- /hotpatch
+extern "C" int __stdcall helper(int);
+extern "C" int __declspec(dllimport) tail(int);
+int func_00904303(int x) { helper(1); return tail(x); }

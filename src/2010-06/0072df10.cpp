@@ -1,219 +1,233 @@
-// from server: 49% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/thread/src/tss_hooks.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs script/LuaSignalBridge.cpp
 
 // Candidate translation unit (score above; library headers required).
-// Copyright (C) 2004 Michael Glassford
-// Copyright (C) 2006 Roland Schwarz
-// Use, modification and distribution are subject to the
-// Boost Software License, Version 1.0. (See accompanying file
-// LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+#include "script/LuaSignalBridge.h"
+#include "script/LuaInstanceBridge.h"
+#include "G3D/format.h"
 
-#include <boost/thread/detail/config.hpp>
+using namespace RBX;
+using namespace RBX::Lua;
+using namespace RBX::Reflection;
 
-#if defined(BOOST_HAS_WINTHREADS)
+template<>
+int SignalBridge::on_index(const boost::shared_ptr<Reflection::SignalInstance>& object, const char* name, lua_State* L)
+{
+    if (!object.get())
+        throw std::runtime_error(G3D::format("The %s event has been deleted", name));
 
-    #include <boost/thread/detail/tss_hooks.hpp>
-
-    #include <boost/assert.hpp>
-//    #include <boost/thread/mutex.hpp>
-    #include <boost/thread/once.hpp>
-
-    #include <list>
-
-    #define WIN32_LEAN_AND_MEAN
-    #include <windows.h>
-
-    namespace
+    if (strcmp(name, "connect") == 0)
     {
-        class CScopedCSLock
-        {
-        public:
-            CScopedCSLock(LPCRITICAL_SECTION cs) : cs(cs), lk(true) {
-                ::EnterCriticalSection(cs);
-            }
-            ~CScopedCSLock() {
-                if (lk) ::LeaveCriticalSection(cs);
-            }
-            void Unlock() {
-                lk = false;
-                ::LeaveCriticalSection(cs);
-            }
-        private:
-            bool lk;
-            LPCRITICAL_SECTION cs;
-        };
-
-        typedef std::list<thread_exit_handler> thread_exit_handlers;
-
-        boost::once_flag once_init_threadmon_mutex = BOOST_ONCE_INIT;
-        //boost::mutex* threadmon_mutex;
-        // We don't use boost::mutex here, to avoid a memory leak report,
-        // because we cannot delete it again easily.
-        CRITICAL_SECTION threadmon_mutex;
-        void init_threadmon_mutex(void)
-        {
-            //threadmon_mutex = new boost::mutex;
-            //if (!threadmon_mutex)
-            //    throw boost::thread_resource_error();
-            ::InitializeCriticalSection(&threadmon_mutex);
-        }
-
-        const DWORD invalid_tls_key = TLS_OUT_OF_INDEXES;
-        DWORD tls_key = invalid_tls_key;
-
-        unsigned long attached_thread_count = 0;
+        lua_pushcfunction(L, SignalBridge::connect);
+        return 1;
     }
 
-    /*
-    Calls to DllMain() and tls_callback() are serialized by the OS;
-    however, calls to at_thread_exit are not, so it must be protected
-    by a mutex. Since we already need a mutex for at_thread_exit(),
-    and since there is no guarantee that on_process_enter(),
-    on_process_exit(), on_thread_enter(), and on_thread_exit()
-    will be called only from DllMain() or tls_callback(), it makes
-    sense to protect those, too.
-    */
-
-    extern "C" BOOST_THREAD_DECL int at_thread_exit(
-        thread_exit_handler exit_handler
-        )
+    if (strcmp(name, "wait") == 0)
     {
-        boost::call_once(init_threadmon_mutex, once_init_threadmon_mutex);
-        //boost::mutex::scoped_lock lock(*threadmon_mutex);
-        CScopedCSLock lock(&threadmon_mutex);
-
-        //Allocate a tls slot if necessary.
-
-        if (tls_key == invalid_tls_key)
-            tls_key = TlsAlloc();
-
-        if (tls_key == invalid_tls_key)
-            return -1;
-
-        //Get the exit handlers list for the current thread from tls.
-
-        thread_exit_handlers* exit_handlers =
-            static_cast<thread_exit_handlers*>(TlsGetValue(tls_key));
-
-        if (!exit_handlers)
-        {
-            //No exit handlers list was created yet.
-
-            try
-            {
-                //Attempt to create a new exit handlers list.
-
-                exit_handlers = new thread_exit_handlers;
-                if (!exit_handlers)
-                    return -1;
-
-                //Attempt to store the list pointer in tls.
-
-                if (TlsSetValue(tls_key, exit_handlers))
-                    ++attached_thread_count;
-                else
-                {
-                    delete exit_handlers;
-                    return -1;
-                }
-            }
-            catch (...)
-            {
-                return -1;
-            }
-        }
-
-        //Like the C runtime library atexit() function,
-        //functions should be called in the reverse of
-        //the order they are added, so push them on the
-        //front of the list.
-
-        try
-        {
-            exit_handlers->push_front(exit_handler);
-        }
-        catch (...)
-        {
-            return -1;
-        }
-
-        //Like the atexit() function, a result of zero
-        //indicates success.
-
-        return 0;
+        lua_pushcfunction(L, SignalBridge::wait);
+        return 1;
     }
 
-    extern "C" BOOST_THREAD_DECL void on_process_enter(void)
+    if (strcmp(name, "disconnect") == 0)
+        throw std::runtime_error(G3D::format("Event:disconnect() has been deprecated. Use connection object returned by connect()"));
+
+    throw std::runtime_error(G3D::format("%s is not a valid member", name));
+}
+
+template<>
+void SignalBridge::on_newindex(boost::shared_ptr<Reflection::SignalInstance>& object, const char* name, lua_State* L)
+{
+    if (!object.get())
+        throw std::runtime_error(G3D::format("The %s event has been deleted", name));
+
+    throw std::runtime_error(G3D::format("%s cannot be assigned to", name));
+}
+
+static size_t pushArgs(lua_State* L, const Arguments& arguments)
+{
+    Arguments::const_iterator iter = arguments.begin();
+    Arguments::const_iterator end = arguments.end();
+
+    for (; iter != end; iter++)
     {
-        boost::call_once(init_threadmon_mutex, once_init_threadmon_mutex);
-//        boost::mutex::scoped_lock lock(*threadmon_mutex);
-        CScopedCSLock lock(&threadmon_mutex);
+        const type_info& argType = iter->type();
 
-        BOOST_ASSERT(attached_thread_count == 0);
-    }
-
-    extern "C" BOOST_THREAD_DECL void on_process_exit(void)
-    {
-        boost::call_once(init_threadmon_mutex, once_init_threadmon_mutex);
-//        boost::mutex::scoped_lock lock(*threadmon_mutex);
-        CScopedCSLock lock(&threadmon_mutex);
-
-        BOOST_ASSERT(attached_thread_count == 0);
-
-        //Free the tls slot if one was allocated.
-
-        if (tls_key != invalid_tls_key)
+        if (argType == typeid(std::string))
         {
-            TlsFree(tls_key);
-            tls_key = invalid_tls_key;
+            lua_pushstring(L, boost::any_cast<std::string>(*iter).c_str());
+        }
+        else if (argType == typeid(int))
+        {
+            lua_pushinteger(L, boost::any_cast<int>(*iter));
+        }
+        else if (argType == typeid(size_t))
+        {
+            lua_pushinteger(L, boost::any_cast<size_t>(*iter));
+        }
+        else if (argType == typeid(float))
+        {
+            lua_pushnumber(L, boost::any_cast<float>(*iter));
+        }
+        else if (argType == typeid(double))
+        {
+            lua_pushnumber(L, boost::any_cast<double>(*iter));
+        }
+        else if (argType == typeid(bool))
+        {
+            lua_pushboolean(L,boost::any_cast<bool>(*iter));
+        }
+        else if (argType == typeid(boost::shared_ptr<Instance>))
+        {
+            ObjectBridge::push(L, boost::any_cast<boost::shared_ptr<Instance>>(*iter));
+        }
+        else if (argType == typeid(const Reflection::PropertyDescriptor*))
+        {
+            lua_pushstring(L, boost::any_cast<const Reflection::PropertyDescriptor*>(*iter)->name.c_str());
+        }
+        else if (argType == typeid(const char*))
+        {
+            lua_pushstring(L, boost::any_cast<const char*>(*iter));
+        }
+        else
+        {
+            // Â¯\_(ãƒ„)_/Â¯
+            // maybe they meant to print it? lol
+            argType.name();
         }
     }
 
-    extern "C" BOOST_THREAD_DECL void on_thread_enter(void)
+    return arguments.size();
+}
+
+FunctionScriptSlot::FunctionScriptSlot(lua_State* thread, int functionIndex)
+    : context(ScriptContext::getContext(thread)),
+      function(FunctionRef(thread, functionIndex)),
+      cachedSlotThread(ThreadRef())
+{
+}
+
+// TODO: 99.09% (functional match - registers swapped in codegen)
+void FunctionScriptSlot::operator()(const Arguments& arguments)
+{
+    lua_State* mainThread = function.thread();
+
+    if (!mainThread)
     {
-        //boost::call_once(init_threadmon_mutex, once_init_threadmon_mutex);
-        //boost::mutex::scoped_lock lock(*threadmon_mutex);
+        cnction->disconnect();
+        return;
     }
 
-    extern "C" BOOST_THREAD_DECL void on_thread_exit(void)
+    lua_State* newThread = cachedSlotThread.thread();
+    bool createdThread = false;
+
+    if (!newThread)
     {
-        boost::call_once(init_threadmon_mutex, once_init_threadmon_mutex);
-//        boost::mutex::scoped_lock lock(*threadmon_mutex);
-        CScopedCSLock lock(&threadmon_mutex);
+        newThread = lua_newthread(mainThread);
 
-        //Get the exit handlers list for the current thread from tls.
+        if (!newThread)
+            throw std::runtime_error("lua_newthread failed");
 
-        if (tls_key == invalid_tls_key)
-            return;
-
-        thread_exit_handlers* exit_handlers =
-            static_cast<thread_exit_handlers*>(TlsGetValue(tls_key));
-
-        //If a handlers list was found, use it.
-
-        if (exit_handlers && TlsSetValue(tls_key, 0))
-        {
-            BOOST_ASSERT(attached_thread_count > 0);
-            --attached_thread_count;
-
-            //lock.unlock();
-            lock.Unlock();
-
-            //Call each handler and remove it from the list
-
-            while (!exit_handlers->empty())
-            {
-                if (thread_exit_handler exit_handler = *exit_handlers->begin())
-                    (*exit_handler)();
-                exit_handlers->pop_front();
-            }
-
-            delete exit_handlers;
-            exit_handlers = 0;
-        }
+        createdThread = true;
     }
 
-#endif //defined(BOOST_HAS_WINTHREADS)
+    lua_pushfunction(mainThread, function);
+    lua_xmove(mainThread, newThread, 1);
+    int narg = static_cast<int>(pushArgs(newThread, arguments));
+    ScriptContext::Result resumeResult = context.resume(newThread, narg);
+
+    switch (resumeResult)
+    {
+    case ScriptContext::Yield:
+        cachedSlotThread.reset();
+        break;
+
+    case ScriptContext::Error:
+        cachedSlotThread.reset();
+        cnction->disconnect();
+        break;
+    }
+
+    if (!function.thread())
+        cnction->disconnect();
+
+    if (createdThread)
+    {
+        if (resumeResult == ScriptContext::Success && function.thread())
+            cachedSlotThread = ThreadRef(newThread);
+
+        lua_pop(mainThread, 1);
+    }
+
+    lua_settop(newThread, 0);
+}
+
+WaitScriptSlot::WaitScriptSlot(lua_State* thread)
+    : waitThread(ThreadRef(thread))
+{
+}
+
+void WaitScriptSlot::operator()(const Arguments& arguments)
+{
+	Slot::cnction->disconnect();
+	
+	if (lua_State* state = waitThread.thread())
+	{
+		int top = lua_gettop(state);
+		ScriptContext::getContext(state).resume(state, pushArgs(state, arguments));
+		lua_settop(state, top);
+	}
+}
+
+int SignalBridge::connect(lua_State* L)
+{
+    boost::shared_ptr<Reflection::SignalInstance> si = getObject(L, 1);
+
+    FunctionScriptSlot slot(L, 2);
+    *(slot.cnction) = si->connectGeneric(slot, boost::signals::at_front);
+
+    SignalConnectionBridge::pushNewObject(L, *(slot.cnction));
+
+    return 1;
+}
+
+int SignalBridge::wait(lua_State* L)
+{
+    // what's with the scope? connect probably does the same thing
+    {
+        boost::shared_ptr<Reflection::SignalInstance> si = getObject(L, 1);
+
+        WaitScriptSlot slot(L);
+        *(slot.cnction) = si->connectGeneric(slot, boost::signals::at_front);
+
+        RobloxExtraSpace::get(L)->yieldCaptured = true;
+    }
+
+    return lua_yield(L, 0);
+}
+
+template<>
+int SignalConnectionBridge::on_index(const boost::signals::connection& object, const char* name, lua_State* L)
+{
+    if (strcmp(name, "disconnect") == 0)
+    {
+        lua_pushcfunction(L, SignalConnectionBridge::disconnect);
+        return 1;
+    }
+    else if (strcmp(name, "connected") == 0)
+    {
+        lua_pushboolean(L, object.connected());
+        return 1;
+    }
+
+    throw std::runtime_error(G3D::format("%s is not a valid member", name));
+}
+
+int SignalConnectionBridge::disconnect(lua_State* L)
+{
+    boost::signals::connection& cnction = getObject(L, 1);
+    cnction.disconnect();
+    return 0;
+}

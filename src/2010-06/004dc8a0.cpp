@@ -1,20 +1,18 @@
-// from server: 83% by atomic.potato
-struct EventDesc {
-    int a;
-    int b;
-    int c;
-    int d;
-    int e;
-    int f;
-    int g;
-
-    void set();
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct X_004dc8a0 {
+    void* f_0;
+    void* f_4;
+    char pad_8[16];
+    void* f_18;
+    void* f_1c;
+    X_004dc8a0* base();
+    X_004dc8a0* run() {
+    f_0 = (void*)0xa1aafc;
+    f_4 = (void*)0xa1aaf4;
+    f_18 = (void*)0xa1aae8;
+    f_1c = (void*)0xa1aadc;
+        return base();
+    }
 };
-
-void EventDesc::set()
-{
-    a = 0xA1AAFC;
-    b = 0xA1AAF4;
-    e = 0xA1AAE8;
-    f = 0xA1AADC;
-}
+X_004dc8a0* func_004dc8a0(X_004dc8a0* x) { return x->run(); }

@@ -1,22 +1,11 @@
-// from server: 87% by atomic.potato
-extern "C" int __cdecl sub_7A93C6(int);
-
-struct TToolVerb
-{
-    int f();
-    int pad0[3];
-};
-
-int TToolVerb::f()
-{
-    int a = *(int *)((char *)this + 0x0c);
-    int b = *(int *)((char *)a + 0x0aa0);
-    int c = *(int *)((char *)b + 0x1b4);
-    if (c)
-    {
-        int d = sub_7A93C6(c);
-        typedef int (__thiscall *Fn)(void *, int);
-        return ((Fn)0x009ea8d8)((void *)0x00bb705c, d);
-    }
-    return 0;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct P3 { char pad[0x1b4]; void* value; };
+struct P2 { char pad[0xaa0]; P3* p; };
+struct Obj { char pad[0xc]; P2* p; bool f(); };
+struct C {};
+extern "C" void* helper(void*);
+extern C c;
+typedef bool (__thiscall *Fn)(C*,void*);
+extern Fn slot;
+bool Obj::f(){ void* x=p->p->value; if(x){ x=helper(x); return slot(&c,x); } return false; }

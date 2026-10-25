@@ -1,23 +1,11 @@
-// from server: 70% by atomic.potato
-extern "C" int __cdecl sub_0080bbc2(int);
-
-typedef int (__cdecl *FunctionType)(int);
-
-struct TToolVerb
-{
-    int f();
-    int unused;
-    int field_0c;
-};
-
-int TToolVerb::f()
-{
-    int* p = reinterpret_cast<int*>(field_0c);
-    int value = *reinterpret_cast<int*>(reinterpret_cast<char*>(p) + 0xACC);
-    value = *reinterpret_cast<int*>(reinterpret_cast<char*>(value) + 0x188);
-    if (!value)
-        return 0;
-
-    value = sub_0080bbc2(value);
-    return reinterpret_cast<FunctionType>(0xA40A50)(value);
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct P3 { char pad[0x188]; void* value; };
+struct P2 { char pad[0xacc]; P3* p; };
+struct Obj { char pad[0xc]; P2* p; bool f(); };
+struct C {};
+extern "C" void* helper(void*);
+extern C c;
+typedef bool (__thiscall *Fn)(C*,void*);
+extern Fn slot;
+bool Obj::f(){ void* x=p->p->value; if(x){ x=helper(x); return slot(&c,x); } return false; }

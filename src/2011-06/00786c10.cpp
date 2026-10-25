@@ -1,20 +1,11 @@
-// from server: 59% by atomic.potato
-struct S
-{
-    int f();
-};
-
-extern "C" int __cdecl G1_func_0080bbc2(int);
-extern "C" int __cdecl G2_func_00c903e0(int, int);
-
-int S::f()
-{
-    int value;
-    value = *(int *)(*(int *)((char *)this + 12) + 2764);
-    if (value)
-    {
-        value = G1_func_0080bbc2(value);
-        return G2_func_00c903e0(value, 0xC903E0);
-    }
-    return 0;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct P3 { char pad[0x188]; void* value; };
+struct P2 { char pad[0xacc]; P3* p; };
+struct Obj { char pad[0xc]; P2* p; bool f(); };
+struct C {};
+extern "C" void* helper(void*);
+extern C c;
+typedef bool (__thiscall *Fn)(C*,void*);
+extern Fn slot;
+bool Obj::f(){ void* x=p->p->value; if(x){ x=helper(x); return slot(&c,x); } return false; }

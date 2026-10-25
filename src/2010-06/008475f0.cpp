@@ -1,14 +1,14 @@
-// from server: 94% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/CommandBars/XTPMenuBar.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPMenuBar.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPMenuBar.cpp : implementation of the CXTPMenuBar class.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -32,11 +32,11 @@
 #include "Common/XTPImageManager.h"
 #include "Common/XTPVC50Helpers.h"
 #include "Common/XTPIntel80Helpers.h"
-#include "Common/XTPHookManager.h"
 
 #include "XTPMenuBar.h"
 #include "XTPControls.h"
 #include "XTPControl.h"
+#include "XTPHookManager.h"
 #include "XTPControlButton.h"
 #include "XTPControlPopup.h"
 #include "XTPPaintManager.h"
@@ -318,7 +318,13 @@ public:
 
 void CXTPMenuBar::CControlMDIButton::Draw(CDC* pDC)
 {
-	GetPaintManager()->DrawControlMDIButton(pDC, this);
+	CFont font;
+	font.CreatePointFont(MulDiv(80, 96, pDC->GetDeviceCaps(LOGPIXELSX)), _T("Marlett"));
+	CFont* pFont = pDC->SelectObject(&font);
+	GetPaintManager()->DrawControlEntry(pDC, this);
+	pDC->SetTextColor(GetPaintManager()->GetControlTextColor(this));
+	pDC->DrawText(m_strParameter, m_rcControl, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+	pDC->SelectObject(pFont);
 }
 
 
@@ -351,20 +357,13 @@ CXTPMenuBar::~CXTPMenuBar()
 	FreeMDIMenus();
 
 	CMDTARGET_RELEASE(m_pMDIMenus);
-}
 
-
-void CXTPMenuBar::OnDestroy()
-{
 	if (m_hMenuDefault)
 	{
-		::SetMenu(GetSite()->GetSafeHwnd(), m_hMenuDefault);
-		m_hMenuDefault = NULL;
+		DestroyMenu(m_hMenuDefault);
 	}
-
-	CXTPToolBar::OnDestroy();
-
 }
+
 
 void CXTPMenuBar::SetupHook()
 {
@@ -722,39 +721,8 @@ int CXTPMenuBar::OnHookMessage(HWND hWnd, UINT nMessage, WPARAM& wParam, LPARAM&
 				PostMessage(WM_TIMER, TID_REFRESH, 0);
 			break;
 
-		case WM_DESTROY:
-			if (m_hMenuDefault && (hWnd == GetSite()->GetSafeHwnd()))
-			{
-				::SetMenu(hWnd, m_hMenuDefault);
-				m_hMenuDefault = NULL;
-			}
-			break;
-
 	}
 	return CXTPToolBar::OnHookMessage(hWnd, nMessage, wParam, lParam, lResult);
-}
-
-void CXTPMenuBar::SetupMenu()
-{
-
-	SetupHook();
-
-	UINT nIDMenuBarIcons[] =
-	{
-		SC_RESTORE, SC_MINIMIZE, SC_MAXIMIZE, SC_CLOSE
-	};
-
-	CXTPCommandBars* pCommandBars = GetCommandBars();
-	if (pCommandBars)
-	{
-		pCommandBars->GetImageManager()->SetIcons(XTP_IDB_MENUBAR_ICONS, nIDMenuBarIcons, 4, CSize(16, 16));
-	}
-
-	if (m_hMenuDefault == NULL)
-	{
-		m_hMenuDefault = ::GetMenu(GetSite()->GetSafeHwnd());
-		GetSite()->SetMenu(0);
-	}
 }
 
 BOOL CXTPMenuBar::LoadMenuBar(UINT nIDResource)
@@ -773,7 +741,20 @@ BOOL CXTPMenuBar::LoadMenuBar(UINT nIDResource)
 		m_nIDResourceCurrent = m_nIDResource = nIDResource;
 	}
 
-	SetupMenu();
+
+	SetupHook();
+
+	UINT nIDMenuBarIcons[] =
+	{
+		SC_RESTORE, SC_MINIMIZE, SC_MAXIMIZE, SC_CLOSE
+	};
+
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (pCommandBars)
+		pCommandBars->GetImageManager()->SetIcons(XTP_IDB_MENUBAR_ICONS, nIDMenuBarIcons, 4, CSize(16, 16));
+
+	m_hMenuDefault = ::GetMenu(GetSite()->GetSafeHwnd());
+	GetSite()->SetMenu(0);
 
 	return TRUE;
 }
@@ -781,7 +762,6 @@ BOOL CXTPMenuBar::LoadMenuBar(UINT nIDResource)
 
 BEGIN_MESSAGE_MAP(CXTPMenuBar, CXTPToolBar)
 	ON_WM_TIMER()
-	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 void CXTPMenuBar::OnTimer(UINT_PTR nIDEvent)
@@ -804,12 +784,12 @@ void CXTPMenuBar::Reset(BOOL bShowWarningMessage)
 		{
 			CString strMessage, strTitle = GetTitle(), strReset;
 
-			CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&strReset, XTP_IDS_CONFIRM_RESET));
+			VERIFY(XTPResourceManager()->LoadString(&strReset, XTP_IDS_CONFIRM_RESET));
 			strMessage.Format(strReset, (LPCTSTR)strTitle);
 
 			CXTPPushRoutingFrame push(GetFrameSite());
 
-			if (XTPResourceManager()->ShowMessageBox(strMessage, MB_ICONWARNING | MB_OKCANCEL) != IDOK)
+			if (AfxMessageBox(strMessage, MB_ICONWARNING | MB_OKCANCEL) != IDOK)
 				return;
 		}
 
@@ -849,9 +829,9 @@ void CXTPMenuBar::Copy(CXTPCommandBar* pCommandBar, BOOL bRecursive)
 				pInfo->m_pControls->SetOriginalControls(pOriginalControls);
 			}
 
-			CMDTARGET_RELEASE(pInfoOrig->m_pControls);
+			pInfoOrig->m_pControls->InternalRelease();
 			pInfoOrig->m_pControls = pInfo->m_pControls;
-			CMDTARGET_ADDREF(pInfoOrig->m_pControls);
+			pInfoOrig->m_pControls->InternalAddRef();
 		}
 		else
 		{

@@ -1,63 +1,32 @@
+// from server: 100% by king_originala
 // from server: 85% by king_originala
-extern "C" long __stdcall SendMessageA(void *, unsigned int, unsigned int, long);
-extern "C" void __stdcall helper_006a0eba(long);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: xtp-11.2.2-shared-mfc roc_king_originala_tree_init_11a382612b4457e0.cpp
 
-struct S;
-struct Sub;
-
-struct SubTable
-{
-    void *unused0[16];
-    void (__thiscall *set)(Sub *, int);
-    void *unused1;
-    void (__thiscall *clear)(Sub *);
+// Candidate translation unit (score above; library headers required).
+#define _AFXDLL 1
+#include <afxwin.h>
+#include <afxext.h>
+#include <XTToolkitPro.h>
+namespace boost {template<class T>class shared_ptr;}
+namespace RBX {class DataModel;class Selection;}
+class CRobloxTreeCtrlNode;
+class CRobloxTreeCtrl:public CXTTreeCtrl {
+public:
+ virtual RBX::Selection* getSelection()=0;
+ virtual boost::shared_ptr<RBX::DataModel> getDataModel()=0;
+ virtual void onNodeCreated(CRobloxTreeCtrlNode*)=0;
+ virtual void onNodeChanged(CRobloxTreeCtrlNode*)=0;
+ virtual void onNodeDeleted(CRobloxTreeCtrlNode*)=0;
+ virtual void refreshTree();
+ int onCreate(LPCREATESTRUCT);
 };
-
-struct Sub
-{
-    SubTable *table;
-};
-
-struct Table
-{
-    void *unused[89];
-    void (__thiscall *refresh)(S *);
-};
-
-struct Handle
-{
-    unsigned int unused;
-    long value;
-    long get() const;
-};
-
-inline long Handle::get() const
-{
-    return this ? value : 0;
-}
-
-struct S
-{
-    Table *table;
-    char padding0[0x1c];
-    void *window;
-    char padding1[0x30];
-    Sub control;
-    char padding2[0x64];
-    Handle handle;
-
-    int helper_006a0c68();
-    int func_00422da0(int);
-};
-
-int S::func_00422da0(int)
-{
-    if (helper_006a0c68() == -1)
-        return -1;
-
-    control.table->clear(&control);
-    helper_006a0eba(SendMessageA(window, 0x1109, 0, handle.get()));
-    control.table->set(&control, 1);
-    table->refresh(this);
-    return 0;
+int CRobloxTreeCtrl::onCreate(LPCREATESTRUCT cs){
+ if(CXTTreeCtrl::OnCreate(cs)==-1)return -1;
+ SetImageList(reinterpret_cast<CImageList*>(reinterpret_cast<char*>(this)+0xbc),TVSIL_NORMAL);
+ EnableMultiSelect(TRUE);
+ refreshTree();
+ return 0;
 }

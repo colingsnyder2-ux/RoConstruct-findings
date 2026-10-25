@@ -1,12 +1,4 @@
-// from server: 94% by atomic.potato
-extern "C" void __stdcall sub_5400e0(void*, void*, int);
-
-struct Tool {
-    char pad[0x1fc];
-    int func(int value);
-};
-
-int Tool::func(int value) {
-    sub_5400e0((char*)this + 0x1fc, (void*)value, 0);
-    return value;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct B{void get(void*,int);}; struct S{void* f(void*);};
+void* S::f(void* p){((B*)((char*)this+508))->get(p,0); return p;}

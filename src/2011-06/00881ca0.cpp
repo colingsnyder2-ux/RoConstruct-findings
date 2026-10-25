@@ -1,14 +1,14 @@
-// from server: 35% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/SkinFramework/XTPSkinObjectMenu.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPControlGallery.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPSkinObjectMDI.cpp: implementation of the CXTPSkinObjectMDI class.
+// XTPControlGallery.cpp : implementation file.
 //
-// This file is a part of the XTREME SKINFRAMEWORK MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,3230 +26,2410 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include <math.h>
+#include "Resource.h"
 
-#include "Common/XTPDrawHelpers.h"
-#include "Common/XTPWinThemeWrapper.h"
-#include "Common/XTPSystemHelpers.h"
 #include "Common/XTPImageManager.h"
+#include "Common/XTPPropExchange.h"
+#include "Common/XTPToolTipContext.h"
 
-#include "XTPSkinObject.h"
-#include "XTPSkinObjectFrame.h"
-#include "XTPSkinObjectMenu.h"
-#include "XTPSkinManager.h"
-#include "XTPSkinManagerSchema.h"
-#include "XTPSkinDrawTools.h"
-
-#define TIMERID_MENUSHOW 0xACC
-#define TIMERID_MENUHIDE 0xABB
-
-#ifndef WM_UNINITMENUPOPUP
-#define WM_MENURBUTTONUP                0x0122
-#define WM_MENUDRAG                     0x0123
-#define WM_MENUGETOBJECT                0x0124
-#define WM_UNINITMENUPOPUP              0x0125
-#define WM_MENUCOMMAND                  0x0126
-#endif
-
-#ifndef SPI_GETMENUSHOWDELAY
-#define SPI_GETMENUSHOWDELAY       0x006A
-#endif
-
-#define TPM_SYSMENU 0x0200L
-
-#ifndef HBMMENU_CALLBACK
-#define MIIM_STRING      0x00000040
-#define MIIM_BITMAP      0x00000080
-#define MIIM_FTYPE       0x00000100
-
-#define HBMMENU_CALLBACK            ((HBITMAP) -1)
-#define HBMMENU_SYSTEM              ((HBITMAP)  1)
-#define HBMMENU_MBAR_RESTORE        ((HBITMAP)  2)
-#define HBMMENU_MBAR_MINIMIZE       ((HBITMAP)  3)
-#define HBMMENU_MBAR_CLOSE          ((HBITMAP)  5)
-#define HBMMENU_MBAR_CLOSE_D        ((HBITMAP)  6)
-#define HBMMENU_MBAR_MINIMIZE_D     ((HBITMAP)  7)
-#define HBMMENU_POPUP_CLOSE         ((HBITMAP)  8)
-#define HBMMENU_POPUP_RESTORE       ((HBITMAP)  9)
-#define HBMMENU_POPUP_MAXIMIZE      ((HBITMAP) 10)
-#define HBMMENU_POPUP_MINIMIZE      ((HBITMAP) 11)
-#endif
-
+#include "XTPControls.h"
+#include "XTPCommandBar.h"
+#include "XTPControlGallery.h"
+#include "XTPPaintManager.h"
+#include "XTPMouseManager.h"
+#include "XTPCommandBars.h"
 
 #ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlGalleryItem
 
+CXTPControlGalleryItem::CXTPControlGalleryItem()
+{
+	m_pItems = NULL;
+
+	m_nId = 0;
+	m_nIndex = -1;
+	m_nImage = -1;
+	m_dwData = 0;
+	m_bLabel = FALSE;
+
+	m_szItem = CSize(0, 0);
+
+}
+
+int CXTPControlGalleryItem::GetIndex() const
+{
+	return m_nIndex;
+}
+
+CSize CXTPControlGalleryItem::GetSize()
+{
+	return CSize(m_szItem.cx == 0 ? m_pItems->m_szItem.cx : m_szItem.cx,
+		m_szItem.cy == 0 ? m_pItems->m_szItem.cy : m_szItem.cy);
+}
+
+void CXTPControlGalleryItem::SetSize(CSize szItem)
+{
+	m_szItem = szItem;
+}
+
+void CXTPControlGalleryItem::Draw(CDC* pDC, CXTPControlGallery* pGallery, CRect rcItem, BOOL bEnabled, BOOL bSelected, BOOL bPressed, BOOL bChecked)
+{
+	if (IsLabel())
+	{
+		pGallery->GetGalleryPaintManager()->
+			DrawLabel(pDC, this, rcItem);
+		return;
+	}
+
+	CXTPPaintManager* pPaintManager = pGallery->GetPaintManager();
+
+	CXTPImageManagerIcon* pImage = GetImage();
+
+	BOOL bDrawImgeAndText = (pImage != NULL && !m_strCaption.IsEmpty()) &&
+		(pGallery->GetStyle() == xtpButtonIconAndCaption || pGallery->GetStyle() == xtpButtonCaptionAndDescription);
+
+	if (bDrawImgeAndText)
+	{
+		pPaintManager->DrawRectangle(pDC, rcItem, bSelected, FALSE, bEnabled, FALSE, FALSE, xtpBarTypePopup, xtpBarPopup);
+
+		CSize szImage(pImage->GetWidth(), pImage->GetHeight());
+		int nImageBoxWidth  = max(rcItem.Height() - 4, szImage.cx);
+
+		if (bChecked)
+		{
+			CRect rcCheckBox(rcItem.left + 2, rcItem.top + 2, rcItem.left + 2 + nImageBoxWidth, rcItem.bottom - 2);
+			pPaintManager->DrawRectangle(pDC, rcCheckBox, FALSE, FALSE, bEnabled, TRUE, FALSE, xtpBarTypePopup, xtpBarPopup);
+		}
+
+		CPoint pt(rcItem.left + 2 + (nImageBoxWidth - szImage.cx) / 2, (rcItem.top + rcItem.bottom - szImage.cy) / 2);
+
+		pImage->Draw(pDC, pt, pImage->GetIcon(bEnabled ? xtpImageNormal : xtpImageDisabled), szImage);
+
+		COLORREF clrTextColor = pPaintManager->GetRectangleTextColor(bSelected, FALSE, bEnabled, FALSE, FALSE, xtpBarTypePopup, xtpBarPopup);
+
+		pDC->SetTextColor(clrTextColor);
+
+		CRect rcText(rcItem);
+		rcText.left += 2 + nImageBoxWidth + szImage.cx / 3;
+
+		if (pGallery->GetStyle() == xtpButtonCaptionAndDescription)
+		{
+			CXTPFontDC font(pDC, pPaintManager->GetRegularBoldFont());
+			pDC->DrawText(m_strCaption, rcText, DT_END_ELLIPSIS | DT_SINGLELINE | DT_TOP | DT_NOPREFIX);
+
+			rcText.top += pDC->GetTextExtent(_T("XXX"), 3).cy;
+			font.SetFont(pPaintManager->GetRegularFont());
+			pDC->DrawText(m_strDescriptionText, rcText, DT_WORDBREAK | DT_TOP | DT_NOPREFIX);
+		}
+		else
+		{
+			CXTPFontDC font(pDC, pPaintManager->GetRegularFont());
+			pDC->DrawText(m_strCaption, rcText, DT_END_ELLIPSIS | DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
+		}
+	}
+	else if (pImage)
+	{
+		pPaintManager->DrawRectangle(pDC, rcItem, bSelected, bPressed, bEnabled, bChecked, FALSE, xtpBarTypeNormal, xtpBarPopup);
+		CSize szImage(pImage->GetWidth(), pImage->GetHeight());
+		CPoint pt((rcItem.left + rcItem.right - szImage.cx) / 2, (rcItem.top + rcItem.bottom - szImage.cy) / 2);
+
+		pImage->Draw(pDC, pt, pImage->GetIcon(bEnabled ? xtpImageNormal : xtpImageDisabled), szImage);
+	}
+	else
+	{
+		pPaintManager->DrawRectangle(pDC, rcItem, bSelected, FALSE, bEnabled, bChecked, FALSE, xtpBarTypePopup, xtpBarPopup);
+		COLORREF clrTextColor = pPaintManager->GetRectangleTextColor(bSelected, FALSE, bEnabled, FALSE, FALSE, xtpBarTypePopup, xtpBarPopup);
+
+		pDC->SetTextColor(clrTextColor);
+		CXTPFontDC font(pDC, pPaintManager->GetRegularFont());
+
+		CRect rcText(rcItem);
+		rcText.left += 3;
+
+		pDC->DrawText(m_strCaption, rcText, DT_END_ELLIPSIS | DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
+	}
+}
+
+CXTPImageManagerIcon* CXTPControlGalleryItem::GetImage()
+{
+	if (!m_pItems)
+		return NULL;
+
+	return m_pItems->GetImageManager()->GetImage(m_nImage >= 0 ? m_nImage : m_nId, 0);
+}
 
 
 //////////////////////////////////////////////////////////////////////////
-// CXTPSkinObjectApplicationFrame
+// CXTPControlGalleryItems
 
-IMPLEMENT_DYNCREATE(CXTPSkinObjectApplicationFrame, CXTPSkinObjectFrame)
+IMPLEMENT_DYNAMIC(CXTPControlGalleryItems, CCmdTarget)
 
-CXTPSkinObjectApplicationFrame::CXTPSkinObjectApplicationFrame()
+CXTPControlGalleryItems::CXTPControlGalleryItems(CXTPControlAction* pAction)
+	: m_pAction(pAction)
 {
-	m_rcMenuBar.SetRectEmpty();
+	m_szItem = CSize(20, 20);
+	m_pImageManager = new CXTPImageManager();
+	m_pImageManager->DrawReverted(2);
+	m_bClipItems = TRUE;
 
-	m_pPopupMenu = new CXTPSkinPopupMenu();
-	m_pPopupMenu->m_bMenuBar = TRUE;
-};
-
-
-
-CXTPSkinObjectApplicationFrame::~CXTPSkinObjectApplicationFrame()
-{
-	if (m_pPopupMenu) m_pPopupMenu->InternalRelease();
-};
-
-BEGIN_MESSAGE_MAP(CXTPSkinObjectApplicationFrame, CXTPSkinObjectFrame)
-	//{{AFX_MSG_MAP(CXTPSkinObjectMenu)
-	ON_WM_NCCALCSIZE()
-	ON_WM_CONTEXTMENU()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-BOOL CXTPSkinObjectApplicationFrame::FrameHasMenuBar()
-{
-	if (GetStyle() & WS_CHILD)
-		return FALSE;
-
-	HMENU hMenu = ::GetMenu(m_hWnd);
-	if (!hMenu)
-		return FALSE;
-
-	return GetMenuItemCount(hMenu) > 0;
 }
 
-void CXTPSkinObjectApplicationFrame::DrawFrame(CDC* pDC)
+CXTPControlGalleryItems::~CXTPControlGalleryItems()
 {
-	if (m_bLockFrameDraw)
+	m_pAction = NULL;
+
+	RemoveAll();
+	CMDTARGET_RELEASE(m_pImageManager);
+
+}
+
+void CXTPControlGalleryItems::RemoveAll()
+{
+	for (int i = 0; i < m_arrItems.GetSize(); i++)
+	{
+		m_arrItems[i]->InternalRelease();
+	}
+
+	m_arrItems.RemoveAll();
+	OnItemsChanged();
+}
+
+void CXTPControlGalleryItems::Remove(int nIndex)
+{
+	CXTPControlGalleryItem* pItem = GetItem(nIndex);
+	if (!pItem)
 		return;
 
-	if (!m_rcMenuBar.IsRectEmpty())
-	{
-		DrawFrameMenuBar(pDC);
-	}
+	m_arrItems.RemoveAt(nIndex);
+	pItem->InternalRelease();
 
-	CXTPSkinObjectFrame::DrawFrame(pDC);
+	UpdateIndexes(nIndex);
+	OnItemsChanged();
 }
 
-void CXTPSkinObjectApplicationFrame::UpdateMenuBar()
+void CXTPControlGalleryItems::UpdateIndexes(int nStart /*= 0*/)
 {
-	if (FrameHasMenuBar())
-	{
-		RebuildMenuItems();
-	}
-	else
-	{
-		if (m_pPopupMenu) m_pPopupMenu->m_hMenu = NULL;
-		m_rcMenuBar.SetRectEmpty();
-	}
+	for (int i = nStart; i < GetItemCount(); i++)
+		GetItem(i)->m_nIndex = i;
 }
 
-void CXTPSkinObjectApplicationFrame::RedrawMenuBar()
+CXTPControlGalleryItem* CXTPControlGalleryItems::InsertItem(int nIndex, CXTPControlGalleryItem* pItem, int nId, int nImage)
 {
-	if (!m_rcMenuBar.IsRectEmpty())
+	if (!pItem)
+		return NULL;
+
+	if (nIndex < 0 || nIndex > GetItemCount())
+		nIndex = GetItemCount();
+
+	m_arrItems.InsertAt(nIndex, pItem);
+	UpdateIndexes(nIndex);
+
+	pItem->m_pItems = this;
+	pItem->m_nImage = nImage;
+
+	if (nId != -1)
 	{
-		CWindowDC dc(this);
-		DrawFrameMenuBar(&dc);
+		pItem->m_nId = nId;
 
-		CXTPClientRect rect(this);
-		if (rect.Height() <= 0)
-			CXTPSkinObjectFrame::DrawFrame(&dc);
-	}
-}
-
-
-void CXTPSkinObjectApplicationFrame::DrawFrameMenuBar(CDC* pDC)
-{
-	CXTPSkinManager* pSkinManager = XTPSkinManager();
-	CXTPSkinManagerClass* pClassWindow = pSkinManager->GetSkinClass(this, _T("WINDOW"));
-
-	CRect rc = m_rcMenuBar;
-	CXTPBufferDC dc(*pDC, rc);
-
-	dc.FillSolidRect(rc.left, rc.top, rc.Width(), rc.Height() - 1, GetColor(COLOR_3DFACE));
-	dc.FillSolidRect(rc.left, rc.bottom - 1, rc.Width(), 1, GetColor(COLOR_WINDOW));
-
-	CXTPFontDC font(&dc, &GetMetrics()->m_fntMenu);
-	dc.SetBkMode(TRANSPARENT);
-
-	int nCount = m_pPopupMenu->GetCount();
-
-
-	for (int nIndex = 0; nIndex < nCount; nIndex++ )
-	{
-		CXTPSkinPopupMenuItem* pItem = m_pPopupMenu->GetItem(nIndex);
-		CRect rcItem = pItem->m_rcItem;
-		BOOL bSelected = nIndex == m_pPopupMenu->m_nSelected;
-		BOOL bEnabled = pItem->IsEnabled();
-
-		HBITMAP hbm = pItem->GetItemBitmap();
-
-		if (hbm == HBMMENU_SYSTEM)
+		CString strCaption;
+		if (nId > 0 && strCaption.LoadString(nId))
 		{
-			HWND hwndItem = (HWND)pItem->GetItemData();
-			if (hwndItem && IsWindow(hwndItem))
+			pItem->m_strCaption = pItem->m_strToolTip = strCaption;
+		}
+	}
+
+	OnItemsChanged();
+
+	return pItem;
+}
+
+void CXTPControlGalleryItems::OnItemsChanged()
+{
+	if (!m_pAction)
+		return;
+
+	for (int i = 0; i < m_pAction->GetCount(); i++)
+	{
+		CXTPControlGallery* pGallery = DYNAMIC_DOWNCAST(CXTPControlGallery, m_pAction->GetControl(i));
+		if (pGallery)
+		{
+			pGallery->m_nSelected = -1;
+			pGallery->m_nScrollPos = 0;
+			pGallery->Reposition();
+
+			if (pGallery->m_bPreview)
 			{
-				HICON hIcon = GetSchema()->GetFrameSmIcon(hwndItem, FALSE);
-
-				if (hIcon)
-				{
-					rcItem = CRect(CPoint(rcItem.CenterPoint().x - 8, rcItem.CenterPoint().y - 8), CSize(16, 16));
-
-					DrawIconEx(dc.m_hDC, rcItem.left, rcItem.top, hIcon,
-						rcItem.Width(), rcItem.Height(), 0, NULL, DI_NORMAL);
-				}
+				pGallery->m_bPreview = FALSE;
+				pGallery->NotifySite(XTP_GN_PREVIEWCANCEL);
 			}
-
-			continue;
 		}
-
-		if (pItem->IsSeparator())
-			continue;
-
-		if (pItem->IsMDISysButton())
-		{
-			UINT nID = pItem->GetID();
-			int nPartID = nID == SC_RESTORE ? WP_MDIRESTOREBUTTON : nID == SC_MINIMIZE ? WP_MDIMINBUTTON : WP_MDICLOSEBUTTON;
-			int nState = !bEnabled ? SBS_DISABLED : bSelected ?  SBS_HOT : SBS_NORMAL;
-
-			pClassWindow->DrawThemeBackground(&dc, nPartID, nState, &rcItem);
-
-			continue;
-		}
-
-		CString strMenuText = m_pPopupMenu->GetMenuString(nIndex);
-
-		if (bSelected)
-		{
-			dc.FillSolidRect(rcItem, GetColor(COLOR_HIGHLIGHT));
-		}
-
-		dc.SetTextColor(GetColor(!bEnabled ? COLOR_GRAYTEXT : bSelected ? COLOR_HIGHLIGHTTEXT : COLOR_MENUTEXT));
-
-		dc.DrawText(strMenuText, rcItem, DT_VCENTER | DT_CENTER | DT_SINGLELINE);
 	}
 }
 
-void CXTPSkinObjectApplicationFrame::OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS FAR* lpncsp)
+CXTPControlGalleryItem* CXTPControlGalleryItems::AddItem(CXTPControlGalleryItem* pItem, int nId, int nImage)
 {
-	CXTPSkinObjectFrame::OnNcCalcSize(bCalcValidRects, lpncsp);
-
-	if (FrameHasMenuBar())
-	{
-		m_rcMenuBar.SetRect(m_rcBorders.left, m_rcBorders.top, m_rcBorders.left + lpncsp[0].rgrc->right - lpncsp[0].rgrc->left, m_rcBorders.top);
-
-		RebuildMenuItems();
-
-		lpncsp[0].rgrc->top += m_rcMenuBar.Height();
-	}
-	else
-	{
-		if (m_pPopupMenu) m_pPopupMenu->m_hMenu = NULL;
-		m_rcMenuBar.SetRectEmpty();
-	}
+	return InsertItem(GetItemCount(), pItem, nId, nImage);
 }
 
-BOOL CXTPSkinPopupMenuItem::IsMDISysButton() const
+CXTPControlGalleryItem* CXTPControlGalleryItems::AddItem(int nId, int nImage)
 {
-	int nID = GetID();
-	if (nID == SC_CLOSE || nID == SC_RESTORE || nID == SC_MINIMIZE)
-		return TRUE;
+	return AddItem(new CXTPControlGalleryItem(), nId, nImage);
+}
+
+CXTPControlGalleryItem* CXTPControlGalleryItems::AddItem(LPCTSTR lpszCaption, int nImage)
+{
+	CXTPControlGalleryItem* pItem = AddItem(new CXTPControlGalleryItem(), -1, nImage);
+	pItem->SetCaption(lpszCaption);
+
+	return pItem;
+}
+
+CXTPControlGalleryItem* CXTPControlGalleryItems::AddItem(LPCTSTR lpszCaption, int nId, int nImage)
+{
+	CXTPControlGalleryItem* pItem = AddItem(nId, nImage);
+	pItem->SetCaption(lpszCaption);
+
+	return pItem;
+}
+
+CXTPControlGalleryItem* CXTPControlGalleryItems::AddLabel(int nId)
+{
+	CXTPControlGalleryItem* pItem = AddItem(new CXTPControlGalleryItem(), nId);
+	pItem->m_bLabel = TRUE;
+
+	return pItem;
+}
+
+CXTPControlGalleryItem* CXTPControlGalleryItems::AddLabel(LPCTSTR lpszCaption)
+{
+	CXTPControlGalleryItem* pItem = AddItem(new CXTPControlGalleryItem());
+	pItem->SetCaption(lpszCaption);
+	pItem->m_bLabel = TRUE;
+
+	return pItem;
+}
+
+int CXTPControlGalleryItems::GetItemCount() const
+{
+	return (int)m_arrItems.GetSize();
+}
+
+CXTPControlGalleryItem* CXTPControlGalleryItems::GetItem(int nIndex) const
+{
+	return nIndex >= 0 && nIndex < GetItemCount() ? m_arrItems.GetAt(nIndex) : NULL;
+}
+
+void CXTPControlGalleryItems::SetImageManager(CXTPImageManager* pImageManager)
+{
+	CMDTARGET_RELEASE(m_pImageManager);
+
+	m_pImageManager = pImageManager;
+}
+
+BOOL CXTPControlGalleryItems::PreDrawItem(CDC* pDC, CXTPControlGallery* pGallery, CXTPControlGalleryItem* pItem, CRect rcItem,
+	BOOL bEnabled, BOOL bSelected, BOOL bPressed, BOOL bChecked)
+{
+	UNREFERENCED_PARAMETER(pDC);
+	UNREFERENCED_PARAMETER(pGallery);
+	UNREFERENCED_PARAMETER(pItem);
+	UNREFERENCED_PARAMETER(rcItem);
+	UNREFERENCED_PARAMETER(bEnabled);
+	UNREFERENCED_PARAMETER(bSelected);
+	UNREFERENCED_PARAMETER(bPressed);
+	UNREFERENCED_PARAMETER(bChecked);
+
 
 	return FALSE;
 }
 
-void CXTPSkinObjectApplicationFrame::RebuildMenuItems()
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlGallery
+
+IMPLEMENT_XTP_CONTROL(CXTPControlGallery, CXTPControlPopup)
+
+
+CXTPControlGallery::CXTPControlGallery()
 {
-	m_pPopupMenu->RemoveAll();
-	m_pPopupMenu->m_hMenu = NULL;
+	m_nChecked = -1;
+	m_nSelected = -1;
+	m_bPressed = FALSE;
+	m_bKeyboardSelected = FALSE;
+	m_bHideSelection = FALSE;
 
-	if (GetStyle() & WS_CHILD)
-		return;
+	m_nScrollPos = 0;
+	m_nTotalHeight = 0;
+	m_bShowLabels = TRUE;
 
-	HMENU hMenu = ::GetMenu(m_hWnd);
-	if (!hMenu)
-		return;
+	m_nWidth = 120;
+	m_nHeight = 60;
 
-	m_pPopupMenu->m_hMenu = hMenu;
-	m_pPopupMenu->m_hWnd = m_hWnd;
-	m_pPopupMenu->m_hWndNotify = m_hWnd;
+	m_rcMargin.SetRectEmpty();
+	m_ptPressed = CPoint(0, 0);
 
-	int nCount = ::GetMenuItemCount(hMenu);
+	m_bShowScrollBar = TRUE;
 
-	CWindowDC dc(this);
 
-	CXTPFontDC font(&dc, &GetMetrics()->m_fntMenu);
+	m_bShowBorders = FALSE;
+	m_bShowShadow = FALSE;
 
-	int nHeight = GetSystemMetrics(SM_CYMENUSIZE);
+	m_bPreview = FALSE;
+	m_nResizable = 0;
 
-	//CRect rc = m_rcMenuBar;
+	m_controlType = xtpControlGallery;
 
-	int x = m_rcMenuBar.left;
-	int y = m_rcMenuBar.top;
+	m_bAnimation = FALSE;
+	m_nScrollPosTarget = 0;
+	m_dAnimationStep = 0;
 
-	TEXTMETRIC tm;
-	dc.GetTextMetrics(&tm);
 
-	int nIndex;
-
-	for (nIndex = 0; nIndex < nCount; nIndex++ )
-	{
-		CXTPSkinPopupMenuItem* pItem = new CXTPSkinPopupMenuItem(m_pPopupMenu, nIndex);
-
-		CSize sz(0, 0);
-
-		HBITMAP hbm = pItem->GetItemBitmap();
-		if ((UINT_PTR)hbm == 1)
-		{
-			sz.cx = 16 + 2 + 2;
-			sz.cy = 16;
-		}
-		else if (pItem->IsSeparator())
-			sz.cx = 6;
-		else if (pItem->IsMDISysButton())
-		{
-			sz.cx = sz.cy = nHeight;
-		}
-		else
-		{
-			CString strMenuText = pItem->GetText();
-			XTPDrawHelpers()->StripMnemonics(strMenuText);
-
-			int nText = dc.GetTextExtent(strMenuText).cx;
-			sz.cx = nText + (tm.tmAveCharWidth + 1) * 2;
-			sz.cy = nHeight;
-		}
-
-		if (x + sz.cx > m_rcMenuBar.right && nIndex != 0)
-		{
-			y += nHeight;
-			x = m_rcMenuBar.left;
-		}
-
-		CRect rcItem(x, y, x + sz.cx, y + nHeight);
-
-		pItem->m_rcItem = rcItem;
-
-		m_pPopupMenu->m_arrItems.Add(pItem);
-
-		x = rcItem.right;
-	}
-
-	x = m_rcMenuBar.right;
-
-	for (nIndex = nCount - 1; nIndex >= 0; nIndex--)
-	{
-		CXTPSkinPopupMenuItem* pItem = m_pPopupMenu->GetItem(nIndex);
-
-		if ((pItem->GetType() & MFT_RIGHTJUSTIFY || pItem->IsMDISysButton()) && pItem->m_rcItem.top == y)
-		{
-			pItem->m_rcItem.OffsetRect(x - pItem->m_rcItem.right, 0);
-			x -= pItem->m_rcItem.Width();
-		}
-		else
-		{
-			break;
-		}
-	}
-
-	m_rcMenuBar.bottom = y + nHeight + 1;
+	SetFlags(xtpFlagShowPopupBarTip);
 }
 
-int CXTPSkinObjectApplicationFrame::HitTestMenuItem(CPoint point)
+CXTPControlGalleryItems* CXTPControlGalleryItems::CreateItems(CXTPCommandBars* pCommandBars, int nId)
 {
-	if (!m_rcMenuBar.PtInRect(point))
+	CXTPControlAction* pAction = pCommandBars->CreateAction(nId);
+
+	if (pAction->m_pTarget == NULL)
+	{
+		pAction->m_pTarget = new CXTPControlGalleryItems(pAction);
+	}
+
+	ASSERT_KINDOF(CXTPControlGalleryItems, pAction->m_pTarget);
+
+	return (CXTPControlGalleryItems*)pAction->m_pTarget;
+}
+
+CXTPControlGalleryItems* CXTPControlGallery::GetItems() const
+{
+	CXTPControlAction* pAction = GetAction();
+	if (!pAction)
+		return NULL;
+
+	return (CXTPControlGalleryItems*)pAction->m_pTarget;
+}
+
+CXTPControlGallery::~CXTPControlGallery()
+{
+}
+
+int CXTPControlGallery::GetCustomizeMinWidth() const
+{
+	if (!m_pParent || !GetItems())
+		return 0;
+
+	if (DYNAMIC_DOWNCAST(CXTPPopupBar, m_pParent))
+	{
+		CXTPControl* pParentControl = ((CXTPPopupBar*)m_pParent)->GetControlPopup();
+		if (pParentControl && pParentControl->GetType() == xtpControlGallery)
+			return pParentControl->GetRect().Width();
+	}
+
+	CRect rcBorders(GetBorders());
+	return max(16, GetItems()->m_szItem.cx) + rcBorders.left + rcBorders.right;
+}
+
+int CXTPControlGallery::GetCustomizeMinHeight() const
+{
+	if (!m_pParent || !GetItems())
+		return 0;
+
+	CRect rcBorders(GetBorders());
+	int nHeight = GetItems()->m_szItem.cy + rcBorders.top + rcBorders.bottom;
+	return max(nHeight, 32);
+}
+
+void CXTPControlGallery::SetAction(CXTPControlAction* pAction)
+{
+	CXTPControlPopup::SetAction(pAction);
+	Reposition();
+}
+
+BOOL CXTPControlGallery::IsShowAsButton() const
+{
+	return GetStyle() == xtpButtonIconAndCaptionBelow || GetStyle() == xtpButtonIcon;
+}
+
+void CXTPControlGallery::SetItems(CXTPControlGalleryItems* pItems)
+{
+	if (pItems)
+	{
+		SetAction(pItems->m_pAction);
+	}
+}
+
+void CXTPControlGallery::Reposition()
+{
+	if (GetParent() == NULL)
+		return;
+
+	if (IsShowAsButton())
+		return;
+
+	CRect rcItems = GetItemsRect();
+
+	int x = rcItems.left;
+	int y = rcItems.top;
+	BOOL bFirstItem = TRUE;
+
+	int nCount = GetItemCount();
+
+	m_arrRects.SetSize(nCount);
+	int nRowHeight = 0;
+
+	for (int i = 0 ; i < nCount; i++)
+	{
+		CXTPControlGalleryItem* pItem = GetItem(i);
+		m_arrRects[i].pItem = pItem;
+		m_arrRects[i].bBeginRow = FALSE;
+
+		if (pItem->IsLabel())
+		{
+			if (!m_bShowLabels)
+			{
+				m_arrRects[i].rcItem = CRect(0, 0, 0, 0);
+				continue;
+			}
+
+			if (!bFirstItem)
+			{
+				y += nRowHeight;
+			}
+
+			CRect rcItem(rcItems.left, y, rcItems.right, y + 19);
+			m_arrRects[i].rcItem = rcItem;
+			m_arrRects[i].bBeginRow = TRUE;
+
+			y += 20;
+			nRowHeight = 0;
+			x = rcItems.left;
+			bFirstItem = TRUE;
+
+		}
+		else
+		{
+			CSize szItem = pItem->GetSize();
+			if (szItem.cx == 0)
+				szItem.cx = rcItems.Width();
+
+			if (bFirstItem)
+			{
+				m_arrRects[i].bBeginRow = TRUE;
+			}
+
+			if (!bFirstItem && x + szItem.cx > rcItems.right)
+			{
+				y += nRowHeight;
+				x = rcItems.left;
+				m_arrRects[i].bBeginRow = TRUE;
+				nRowHeight = 0;
+			}
+
+			CRect rcItem(x, y, x + szItem.cx, y + szItem.cy);
+			m_arrRects[i].rcItem = rcItem;
+
+			nRowHeight = max(nRowHeight, szItem.cy);
+
+			bFirstItem = FALSE;
+			x += szItem.cx;
+		}
+	}
+
+	if (!bFirstItem)
+		y += nRowHeight;
+
+	m_nTotalHeight = y - rcItems.top;
+
+	if (m_nScrollPos > m_nTotalHeight - rcItems.Height())
+		m_nScrollPos = max(0, m_nTotalHeight - rcItems.Height());
+
+	SetupScrollInfo();
+}
+
+void CXTPControlGallery::SetCheckedItem(int nId)
+{
+	if (m_nChecked != nId)
+	{
+		m_nChecked = nId;
+		InvalidateItems();
+	}
+}
+
+int CXTPControlGallery::GetCheckedItem() const
+{
+	return m_nChecked;
+}
+
+int CXTPControlGallery::GetSelectedItem() const
+{
+	return m_nSelected;
+}
+
+int CXTPControlGallery::GetItemCount() const
+{
+	CXTPControlGalleryItems* pItems = GetItems();
+
+	return pItems ? pItems->GetItemCount() : 0;
+}
+
+CXTPControlGalleryItem* CXTPControlGallery::GetItem(int nIndex) const
+{
+	CXTPControlGalleryItems* pItems = GetItems();
+
+	return pItems ? pItems->GetItem(nIndex) : NULL;
+}
+
+void CXTPControlGallery::DrawItems(CDC* pDC)
+{
+	CXTPControlGalleryItems* pItems = GetItems();
+	if (!pItems)
+		return;
+
+	ASSERT(m_arrRects.GetSize() == pItems->GetItemCount());
+
+	CRect rcItems = GetItemsRect();
+
+	CRgn rgn;
+	CPoint point = pDC->GetViewportOrg();
+	CRect rcClipBox(rcItems);
+	rcClipBox.OffsetRect(point);
+
+	rgn.CreateRectRgnIndirect(rcClipBox);
+	pDC->SelectClipRgn(&rgn);
+
+	int nSelected = m_bHideSelection ? -1 : m_nSelected;
+
+	for (int i = 0; i < m_arrRects.GetSize(); i++)
+	{
+		const GALLERYITEM_POSITION& pos = m_arrRects[i];
+
+		CRect rcItem = pos.rcItem;
+		rcItem.OffsetRect(0, -m_nScrollPos);
+
+		if (rcItem.bottom < rcItems.top)
+			continue;
+
+		if (!rcItem.IsRectEmpty())
+		{
+			if (!pItems->PreDrawItem(pDC, this, pos.pItem, rcItem, GetEnabled(), nSelected == i, nSelected == i && m_bPressed, m_nChecked == pos.pItem->GetID()))
+			{
+				pos.pItem->Draw(pDC, this, rcItem, GetEnabled(), nSelected == i, nSelected == i && m_bPressed, m_nChecked == pos.pItem->GetID());
+			}
+		}
+
+		if (rcItem.top > rcItems.bottom)
+			break;
+	}
+
+	pDC->SelectClipRgn(NULL);
+}
+
+int CXTPControlGallery::HitTestItem(CPoint point, LPRECT lpRect) const
+{
+	if (!GetEnabled())
 		return -1;
 
-	for (int i = 0; i < m_pPopupMenu->GetCount(); i++)
+	if (IsShowAsButton())
+		return -1;
+
+	ASSERT(m_arrRects.GetSize() == GetItemCount());
+
+	CRect rcItems = GetItemsRect();
+
+	for (int i = 0; i < m_arrRects.GetSize(); i++)
 	{
-		if (::PtInRect(&m_pPopupMenu->GetItem(i)->m_rcItem, point))
-			return i;
+		const GALLERYITEM_POSITION& pos = m_arrRects[i];
+
+		CRect rcItem = pos.rcItem;
+		rcItem.OffsetRect(0, -m_nScrollPos);
+
+		if (rcItem.top >= rcItems.bottom)
+			break;
+
+		if (rcItem.PtInRect(point))
+		{
+			if (lpRect)
+			{
+				*lpRect = rcItem;
+			}
+			return pos.pItem->IsLabel() ? -1 : i;
+		}
 	}
 
 	return -1;
 }
 
-BOOL CXTPSkinObjectApplicationFrame::HandleMouseMove(CPoint point)
+void CXTPControlGallery::InvalidateItems(LPCRECT lpRect, BOOL bAnimate)
 {
-	if (CXTPSkinObjectFrame::HandleMouseMove(point))
-		return TRUE;
-
-	if (m_rcMenuBar.IsRectEmpty())
-		return FALSE;
-
-	CPoint ptClient(point);
-	ScreenToFrame(&ptClient);
-
-	int nSelected = HitTestMenuItem(ptClient);
-
-	if (nSelected != -1 && HandleNcHitTest(point) != HTMENU)
-		nSelected = -1;
-
-	if (m_pPopupMenu->m_nSelected != nSelected)
-	{
-		m_pPopupMenu->m_nSelected = nSelected;
-		RedrawMenuBar();
-
-		if (nSelected != -1)
-			SetTimer (XTP_TID_MOUSELEAVE, 50, &CXTPSkinObjectFrame::OnTimerInternal);
-		else
-			CancelMouseLeaveTracking();
-
-	}
-	return TRUE;
+	GetParent()->Redraw(lpRect ? lpRect : GetRect(), bAnimate);
 }
 
-LRESULT CXTPSkinObjectApplicationFrame::HandleNcHitTest(CPoint point)
+void CXTPControlGallery::OnExecute()
 {
-	if (!m_rcMenuBar.IsRectEmpty())
+	if (m_bPreview)
 	{
-		CPoint ptMenu(point);
-		ScreenToFrame(&ptMenu);
-
-		CRect rcMenuBar(m_rcMenuBar);
-
-		CXTPWindowRect rcWindow(this);
-		rcWindow.OffsetRect(-rcWindow.TopLeft());
-		rcWindow.DeflateRect(m_rcBorders);
-
-		rcMenuBar.IntersectRect(rcMenuBar, rcWindow);
-		rcMenuBar.top += 1;
-
-		if (rcMenuBar.PtInRect(ptMenu))
-			return HTMENU;
+		NotifySite(XTP_GN_PREVIEWAPPLY);
+		m_bPreview = FALSE;
 	}
 
-	return CXTPSkinObjectFrame::HandleNcHitTest(point);
+	CXTPControlPopup::OnExecute();
 }
 
-CXTPSkinPopupMenuState* CXTPSkinObjectApplicationFrame::StartMenuState(UINT /*nID*/, LPARAM /*lParam*/)
+BOOL CXTPControlGallery::OnSetPopup(BOOL bPopup)
 {
-	if (m_pPopupMenu->m_hMenu == 0)
+	if (m_bPreview)
 	{
-		HMENU hMenu = ::GetSystemMenu(m_hWnd, FALSE);
-		if (!hMenu)
-			return NULL;
-
-		::SetMenuDefaultItem(hMenu, SC_CLOSE, MF_BYCOMMAND);
-
-		m_pPopupMenu->m_hMenu = hMenu;
-		m_pPopupMenu->m_bSysMenu = TRUE;
-		m_pPopupMenu->m_hWnd = m_hWnd;
-		m_pPopupMenu->m_hWndNotify = m_hWnd;
-
-		m_pPopupMenu->PositionSysMenu();
+		NotifySite(XTP_GN_PREVIEWCANCEL);
+		m_bPreview = FALSE;
 	}
 
-	CXTPSkinPopupMenuState* pState = new CXTPSkinPopupMenuState(m_hWnd);
-	pState->InitMenu(m_pPopupMenu);
-
-	return pState;
+	return CXTPControlPopup::OnSetPopup(bPopup);
 }
 
-void CXTPSkinPopupMenuState::PlayEventSound(UINT nID)
-{
-	XTPSoundManager()->PlaySystemSound((XTPSoundManagerState)nID);
-}
 
-void CXTPSkinPopupMenuState::EndState()
+void CXTPControlGallery::OnMouseHover()
 {
-	if (m_pAlternatePopup)
+	if (IsItemSelected() && !m_bPreview && GetSelected())
 	{
-		if (!m_pAlternatePopup->IsSysMenuBar())
+		m_bPreview = TRUE;
+		NotifySite(XTP_GN_PREVIEWSTART);
+
+		NotifySite(XTP_GN_PREVIEWCHANGE);
+	}
+	if (!m_pParent->m_bTrackOnHover)
+		return;
+
+	CXTPControlPopup::OnMouseHover();
+}
+
+void CXTPControlGallery::PerformMouseMove(CPoint point)
+{
+	int nItem = HitTestItem(point);
+
+	if (nItem == -1 && m_bKeyboardSelected)
+		return;
+
+	if (nItem == -1 && point == CPoint(-1, -1) && m_nSelected != -1)
+	{
+		HideSelection();
+		return;
+	}
+
+	int nSelected = m_nSelected;
+
+	if (nItem != m_nSelected || m_bHideSelection || m_bKeyboardSelected)
+	{
+		m_nSelected = nItem;
+		m_bHideSelection = FALSE;
+		m_bKeyboardSelected = FALSE;
+		m_bPressed = FALSE;
+
+		CXTPControlGalleryItems* pItems = GetItems();
+
+		if (pItems && pItems->m_bClipItems)
 		{
-			CXTPSkinPopupMenu* pAlternatePopup = m_pAlternatePopup;
-			m_pAlternatePopup = m_pRootPopup;
-			m_pRootPopup = pAlternatePopup;
+			if (nSelected != -1)
+			{
+				InvalidateItems(GetItemDrawRect(nSelected), TRUE);
+			}
+
+			if (m_nSelected != -1)
+			{
+				InvalidateItems(GetItemDrawRect(m_nSelected), FALSE);
+			}
+		}
+		else
+		{
+			InvalidateItems();
 		}
 
-		m_pAlternatePopup->InternalRelease();
-	}
-	else if (m_pRootPopup && m_pRootPopup->m_bSysMenu)
-	{
-		m_pRootPopup->m_bSysMenu = FALSE;
-		m_pRootPopup->m_hMenu = NULL;
-		m_pRootPopup->m_hWnd = NULL;
+		if (!m_bPreview && m_nSelected != -1)
+		{
+			m_pParent->SetTimer(XTP_TID_HOVER, 200, NULL);
+		}
+
+		if (m_bPreview)
+		{
+			NotifySite(XTP_GN_PREVIEWCHANGE);
+		}
+
+		if (m_nSelected == -1 && m_bPreview)
+		{
+			m_bPreview = FALSE;
+			NotifySite(XTP_GN_PREVIEWCANCEL);
+		}
+
+		OnSelectedItemChanged();
 	}
 
-	if (m_pRootPopup)
+	if (m_bPressed && (m_ptPressed != CPoint(0, 0)) && (m_nSelected != -1) &&
+		(abs(m_ptPressed.x - point.x) > 4 || abs(m_ptPressed.y - point.y) > 4))
 	{
-		m_pRootPopup->InternalRelease();
+		m_ptPressed = CPoint(0, 0);
+		NotifySite(XTP_GN_STARTDRAG);
 	}
-
-	delete this;
+}
+void CXTPControlGallery::PerformMouseDown(CPoint point)
+{
+	if (m_nSelected != -1 && !m_bKeyboardSelected)
+	{
+		m_bPressed = TRUE;
+		m_ptPressed = point;
+		InvalidateItems();
+	}
 }
 
-void CXTPSkinPopupMenuState::FilterMenuKey(LPARAM lParam)
+void CXTPControlGallery::PerformMouseUp(CPoint /*point*/)
 {
-
-
-	if (m_bButtonDown)
-		return;
-
-	if (!StartMenu(focusKeyboard))
-		return;
-
-	m_bInsideMenuLoop = TRUE;
-
-	switch (lParam)
+	if (m_bPressed || (GetParent()->GetPosition() == xtpBarPopup && IsItemSelected()))
 	{
-		case 0:
-			SelectItem(m_pRootPopup, 0);
-			RunLoop(lParam);
-			return;
+		m_bPressed = FALSE;
+		InvalidateItems();
 
-		case '-':
-			if ((GetWindowLong(m_pRootPopup->m_hWndNotify, GWL_STYLE) & WS_CHILD) == 0)
+		OnExecute();
+	}
+}
+
+BOOL CXTPControlGallery::HasBottomSeparator() const
+{
+	if (GetParent()->GetType() != xtpBarTypePopup)
+		return FALSE;
+
+	if (m_bShowBorders)
+		return FALSE;
+
+	int nIndex = GetIndex();
+	int nNextIndex = GetParent()->GetControls()->GetNext(nIndex, +1, TRUE);
+
+	return nNextIndex > nIndex;
+}
+
+CRect CXTPControlGallery::GetItemDrawRect(int nIndex)
+{
+	if (nIndex < 0 || nIndex >= m_arrRects.GetSize())
+		return CRect(0, 0, 0, 0);
+
+	CRect rc(m_arrRects[nIndex].rcItem);
+	rc.OffsetRect(0, -m_nScrollPos);
+
+	rc.IntersectRect(rc, GetItemsRect());
+
+	return rc;
+}
+
+CRect CXTPControlGallery::GetBorders() const
+{
+	CRect rcBorders(0, 0, 0, 0);
+	if (m_bShowBorders)
+	{
+		rcBorders.SetRect(1, 1, 1, 1);
+	}
+	if (m_pParent && m_bShowScrollBar)
+	{
+		rcBorders.right += (GetCommandBar() ? GetGalleryPaintManager()->m_cxPopup : GetGalleryPaintManager()->m_cxVScroll);
+	}
+
+	if (m_pParent && HasBottomSeparator())
+	{
+		rcBorders.bottom = 2;
+	}
+
+	rcBorders.DeflateRect(m_rcMargin.left, m_rcMargin.top, -m_rcMargin.right, -m_rcMargin.bottom);
+
+	return rcBorders;
+}
+
+CXTPControlGalleryPaintManager* CXTPControlGallery::GetGalleryPaintManager() const
+{
+	return GetPaintManager()->GetGalleryPaintManager();
+}
+
+void CXTPControlGallery::SetResizable(BOOL bResizeWidth, BOOL bResizeHeight)
+{
+	m_nResizable = (bResizeWidth ? 1 : 0) +  (bResizeHeight ? 2 : 0);
+}
+
+CRect CXTPControlGallery::GetItemsRect() const
+{
+	CRect rc = GetRect();
+	rc.DeflateRect(GetBorders());
+
+	return rc;
+}
+
+void CXTPControlGallery::FillControl(CDC* pDC, CRect rcControl)
+{
+	GetGalleryPaintManager()->FillControl(pDC, this, rcControl);
+}
+
+void CXTPControlGallery::DoAnimate()
+{
+	if (abs(m_nScrollPos - m_nScrollPosTarget) > fabs(m_dAnimationStep))
+	{
+		m_nScrollPos = int((double)m_nScrollPos + m_dAnimationStep);
+	}
+	else
+	{
+		m_bAnimation = FALSE;
+		m_nScrollPos = m_nScrollPosTarget;
+		::KillTimer(GetParent()->GetSafeHwnd(), IDSYS_ANIMATE);
+	}
+	Reposition();
+
+	OnScrollChanged();
+	InvalidateItems(NULL, FALSE);
+	GetParent()->UpdateWindow();
+}
+
+void CXTPControlGallery::StartAnimation(int nScrollPos)
+{
+	CRect rcItems = GetItemsRect();
+
+	if (nScrollPos > m_nTotalHeight - rcItems.Height())
+		nScrollPos = m_nTotalHeight - rcItems.Height();
+
+	if (nScrollPos < 0)
+		nScrollPos = 0;
+
+	if (m_bAnimation && m_nScrollPosTarget == nScrollPos)
+		return;
+
+	if (!m_bAnimation && m_nScrollPos == nScrollPos)
+		return;
+
+	m_bAnimation = TRUE;
+	m_nScrollPosTarget = nScrollPos;
+	m_dAnimationStep = double(m_nScrollPosTarget - m_nScrollPos) / (m_nTimerElapse > 200 ? 8.0 : 3.0);
+	if (m_dAnimationStep > 0 && m_dAnimationStep < 1) m_dAnimationStep = 1;
+	if (m_dAnimationStep < 0 && m_dAnimationStep > -1) m_dAnimationStep = -1;
+
+	UINT nms = 40;
+	SetTimer(GetParent()->GetSafeHwnd(), IDSYS_ANIMATE, nms, NULL);
+	DoAnimate();
+}
+
+void CXTPControlGallery::SetScrollPos(int nScrollPos)
+{
+	CRect rcItems = GetItemsRect();
+
+	if (nScrollPos > m_nTotalHeight - rcItems.Height())
+		nScrollPos = m_nTotalHeight - rcItems.Height();
+
+	if (nScrollPos < 0)
+		nScrollPos = 0;
+
+	if (m_bAnimation)
+	{
+		m_bAnimation = FALSE;
+		::KillTimer(GetParent()->GetSafeHwnd(), IDSYS_ANIMATE);
+		m_nScrollPos = -1;
+	}
+
+	if (m_nScrollPos == nScrollPos)
+		return;
+
+	m_nScrollPos = nScrollPos;
+	Reposition();
+
+	OnScrollChanged();
+	InvalidateItems(NULL, FALSE);
+}
+
+
+void CXTPControlGallery::EnsureVisible(int nIndex)
+{
+	if (!GetParent()->GetSafeHwnd())
+		return;
+
+	if (GetItemCount() == 0 || nIndex == -1 || nIndex >= GetItemCount() || nIndex >= (int)m_arrRects.GetSize())
+		return;
+
+	const GALLERYITEM_POSITION& pos = m_arrRects[nIndex];
+
+	CRect rcItem = pos.rcItem;
+	rcItem.OffsetRect(0, -m_nScrollPos);
+
+	CRect rcItems = GetItemsRect();
+
+	if (rcItem.top < rcItems.top)
+	{
+		int nScrollPos = pos.rcItem.top - rcItems.top;
+
+		if (m_bShowLabels)
+		{
+			for (int i = nIndex - 1; i >= 0; i--)
 			{
+				const GALLERYITEM_POSITION& posLabel = m_arrRects[i];
+
+				if (posLabel.pItem->IsLabel() && pos.rcItem.top - posLabel.rcItem.top <= rcItems.Height() - rcItem.Height())
+				{
+					nScrollPos = posLabel.rcItem.top - rcItems.top;
+					break;
+				}
+
+				if (pos.rcItem.top - posLabel.rcItem.top > rcItems.Height()  - rcItem.Height())
+					break;
+			}
+		}
+
+		SetScrollPos(nScrollPos);
+	}
+	else if (rcItem.bottom > rcItems.bottom)
+	{
+		SetScrollPos(pos.rcItem.bottom - rcItems.bottom);
+	}
+}
+
+long CXTPControlGallery::GetNextInRow(long nIndex, int nDirection) const
+{
+	if (GetItemCount() == 0 || nIndex == -1 || nIndex >= GetItemCount())
+		return -1;
+
+	CRect rcItems = GetItemsRect();
+	CSize szItem = GetItems()->GetItemSize();
+
+	if (szItem.cx * 2 > rcItems.Width() || szItem.cx == 0)
+		return nIndex;
+	int i;
+
+	if (nDirection < 0)
+	{
+		if (!m_arrRects[nIndex].bBeginRow)
+		{
+			for (i = nIndex - 1; i >= 0; i--)
+			{
+				const GALLERYITEM_POSITION& pos = m_arrRects[i];
+
+				if (!IsRectEmpty(&pos.rcItem))
+				{
+					return i;
+				}
+			}
+		}
+
+		for (i = nIndex + 1; i < m_arrRects.GetSize(); i++)
+		{
+			const GALLERYITEM_POSITION& pos = m_arrRects[i];
+
+			if (pos.bBeginRow)
+			{
+				return nIndex;
+			}
+
+			if (!IsRectEmpty(&pos.rcItem))
+			{
+				nIndex = i;
+			}
+		}
+		return nIndex;
+	}
+	else
+	{
+		for (i = nIndex + 1; i < GetItemCount(); i++)
+		{
+			const GALLERYITEM_POSITION& pos = m_arrRects[i];
+
+			if (!IsRectEmpty(&pos.rcItem) && !pos.bBeginRow)
+			{
+				return i;
+			}
+
+			if (pos.bBeginRow)
 				break;
-			}
-			// else fall through.
+		}
 
-		case ' ':
-			if (!m_pAlternatePopup && !m_pRootPopup->m_bSysMenu)
+		for (i = nIndex; i >= 0; i--)
+		{
+			const GALLERYITEM_POSITION& pos = m_arrRects[i];
+
+			if (pos.bBeginRow)
 			{
-				Dismiss();
-				return;
+				return i;
 			}
-
-			CloseHierarchy(m_pRootPopup);
-
-			if (!m_pRootPopup->m_bSysMenu)
-				SwitchToAlternateMenu();
-
-			SelectItem(m_pRootPopup, 0);
-			OpenHierarchy(m_pRootPopup);
-			m_pRootPopup->m_bToggle = FALSE;
-			RunLoop(lParam);
-			return;
-
-	}
-
-	if (m_pRootPopup->m_bSysMenu && m_pRootPopup->m_pState == 0)
-	{
-
-	}
-	else
-	{
-		OnChar(m_pRootPopup, (UINT)lParam);
-	}
-	if (m_pRootPopup->m_nSelected != -1)
-	{
-		RunLoop(lParam);
-	}
-	else
-	{
-		Dismiss();
-	}
-}
-
-BOOL CXTPSkinObjectApplicationFrame::HandleSysCommand(UINT nID, LPARAM lParam)
-{
-	if ((GetSkinManager()->GetApplyOptions() & xtpSkinApplyMenus) == 0)
-		return CXTPSkinObjectFrame::HandleSysCommand(nID, lParam);
-
-	UINT nCmd = (nID & 0xFFF0);
-
-	if (nCmd == SC_DEFAULT)
-	{
-		return TRUE;
-	}
-	if (nCmd == SC_MOUSEMENU)
-	{
-		CXTPSkinPopupMenuState* pState = StartMenuState(nID, lParam);
-		if (pState)
-		{
-			pState->RunLoop(lParam);
-
-			pState->EndState();
 		}
-		return TRUE;
 	}
 
-	if (nCmd == SC_KEYMENU)
+	return nIndex;
+}
+
+long CXTPControlGallery::GetNextInPage(long nIndex, int nDirection) const
+{
+	if (GetItemCount() == 0)
+		return -1;
+
+	if (nIndex == -1 || nIndex >= GetItemCount())
+		nIndex = GetNext(-1, nDirection);
+
+	int i;
+	RECT rcItem = m_arrRects[nIndex].rcItem;
+	CRect rcItems = GetItemsRect();
+
+	if (nDirection < 0)
 	{
-		CXTPSkinPopupMenuState* pState = StartMenuState(nID, lParam);
-		if (pState)
+		for (i = nIndex - 1; i >= 0; i--)
 		{
-			pState->FilterMenuKey(lParam);
+			const GALLERYITEM_POSITION& pos = m_arrRects[i];
 
-			pState->EndState();
-		}
-		else
-		{
-			CXTPSkinObjectFrame::HandleSysCommand(nID, lParam);
-		}
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPSkinPopupMenuItem
-
-CXTPSkinPopupMenuItem::CXTPSkinPopupMenuItem(CXTPSkinPopupMenu* pPopupMenu, int nItem)
-{
-	m_hMenu = pPopupMenu->m_hMenu;
-	m_nItem = nItem;
-	m_pPopupMenu = pPopupMenu;
-
-	m_rcItem.SetRectEmpty();
-}
-
-CRect CXTPSkinPopupMenuItem::GetScreenPos() const
-{
-	CRect rcItem(m_rcItem);
-
-	CXTPSkinPopupMenuState::WindowToScreen(m_pPopupMenu->m_hWnd, rcItem);
-
-	return rcItem;
-}
-
-HMENU CXTPSkinPopupMenuItem::GetPopupMenu() const
-{
-	if (m_pPopupMenu->IsSysMenuBar())
-		return m_hMenu;
-
-	return ::GetSubMenu(m_hMenu, m_nItem);
-}
-
-DWORD CXTPSkinPopupMenuItem::GetState() const
-{
-	if (m_pPopupMenu->IsSysMenuBar())
-		return MF_ENABLED;
-
-	MENUITEMINFO mii;
-	GetMenuItemInfo(MIIM_STATE, &mii);
-
-	return mii.fState;
-}
-
-void CXTPSkinPopupMenuItem::GetMenuItemInfo(UINT fMask, LPMENUITEMINFO lpMII) const
-{
-	ZeroMemory(lpMII, sizeof(MENUITEMINFO));
-	lpMII->cbSize = sizeof(MENUITEMINFO);
-	lpMII->fMask = fMask;
-
-	::GetMenuItemInfo(m_hMenu, m_nItem, TRUE, lpMII);
-}
-
-UINT CXTPSkinPopupMenuItem::GetID() const
-{
-	MENUITEMINFO mii;
-	GetMenuItemInfo(MIIM_ID, &mii);
-
-	return mii.wID;
-}
-
-BOOL CXTPSkinPopupMenuItem::IsEnabled() const
-{
-	return (GetState() & MFS_GRAYED) == 0;
-}
-
-BOOL CXTPSkinPopupMenuItem::IsChecked() const
-{
-	return (GetState() & MFS_CHECKED);
-}
-
-BOOL CXTPSkinPopupMenuItem::IsDefault() const
-{
-	return (GetState() & MFS_DEFAULT);
-}
-
-
-DWORD_PTR CXTPSkinPopupMenuItem::GetItemData() const
-{
-	MENUITEMINFO mii;
-	GetMenuItemInfo(MIIM_DATA, &mii);
-
-	return mii.dwItemData;
-}
-
-CString CXTPSkinPopupMenuItem::GetText() const
-{
-	CString strText;
-	::GetMenuString(m_hMenu, m_nItem, strText.GetBuffer(256), 256, MF_BYPOSITION);
-	strText.ReleaseBuffer();
-	return strText;
-}
-
-BOOL CXTPSkinPopupMenuItem::IsSeparator() const
-{
-	MENUITEMINFO mii;
-	GetMenuItemInfo(MIIM_TYPE, &mii);
-
-	return mii.fType & MFT_SEPARATOR;
-}
-
-BOOL CXTPSkinPopupMenuItem::IsOwnerDraw() const
-{
-	MENUITEMINFO mii;
-	GetMenuItemInfo(MIIM_TYPE, &mii);
-
-	return mii.fType & MFT_OWNERDRAW;
-}
-
-UINT CXTPSkinPopupMenuItem::GetType() const
-{
-	MENUITEMINFO mii;
-	GetMenuItemInfo(MIIM_TYPE, &mii);
-
-	return mii.fType;
-}
-
-#ifndef MIIM_BITMAP
-#define MIIM_BITMAP      0x00000080
-#endif
-
-HBITMAP CXTPSkinPopupMenuItem::GetItemBitmap() const
-{
-	struct MENUITEMINFO98
-	{
-		UINT    cbSize;
-		UINT    fMask;
-		UINT    fType;          // used if MIIM_TYPE (4.0) or MIIM_FTYPE (>4.0)
-		UINT    fState;         // used if MIIM_STATE
-		UINT    wID;            // used if MIIM_ID
-		HMENU   hSubMenu;       // used if MIIM_SUBMENU
-		HBITMAP hbmpChecked;    // used if MIIM_CHECKMARKS
-		HBITMAP hbmpUnchecked;  // used if MIIM_CHECKMARKS
-		DWORD   dwItemData;     // used if MIIM_DATA
-		LPWSTR  dwTypeData;     // used if MIIM_TYPE (4.0) or MIIM_STRING (>4.0)
-		UINT    cch;            // used if MIIM_TYPE (4.0) or MIIM_STRING (>4.0)
-		HBITMAP hbmpItem;       // used if MIIM_BITMAP
-	};
-
-	if (XTPSystemVersion()->IsWin95() || XTPSystemVersion()->IsWinNT4())
-		return NULL;
-
-	MENUITEMINFO98 mii;
-	ZeroMemory(&mii, sizeof(MENUITEMINFO98));
-	mii.cbSize = sizeof(MENUITEMINFO98);
-	mii.fMask = MIIM_BITMAP;
-
-	::GetMenuItemInfo(m_hMenu, m_nItem, TRUE, (MENUITEMINFO*)&mii);
-
-	return mii.hbmpItem;
-}
-
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPSkinPopupMenu
-
-CXTPSkinPopupMenu::CXTPSkinPopupMenu()
-{
-	m_bMenuBar = FALSE;
-	m_bSendUninit = FALSE;
-	m_bSysMenu = FALSE;
-	m_hWnd = 0;
-	m_nSelected = -1;
-	m_nDropped = -1;
-	m_hMenu = NULL;
-	m_pNextPopup = NULL;
-	m_pPrevPopup = NULL;
-	m_bToggle = FALSE;
-	m_bDropNextPopup = FALSE;
-	m_hWndNotify = 0;
-	m_bAboutToHide = FALSE;
-	m_bDroppedLeft = FALSE;
-
-	m_pState = NULL;
-
-	m_nHideTimer = 0;
-	m_nShowTimer = 0;
-
-	m_nGripperWidth = 0;
-}
-
-CXTPSkinPopupMenu::~CXTPSkinPopupMenu()
-{
-	m_hWnd = NULL;
-	RemoveAll();
-}
-
-void CXTPSkinPopupMenu::OnFinalRelease()
-{
-	delete this;
-}
-
-void CXTPSkinPopupMenu::RemoveAll()
-{
-	for (int i = 0; i < m_arrItems.GetSize(); i++)
-	{
-		delete m_arrItems[i];
-	}
-	m_arrItems.RemoveAll();
-}
-
-CString CXTPSkinPopupMenu::GetMenuString(int nIndex)
-{
-	CString strMenuText;
-
-	if (m_hMenu)
-	{
-		::GetMenuString(m_hMenu, nIndex, strMenuText.GetBuffer(256), 256, MF_BYPOSITION);
-		strMenuText.ReleaseBuffer();
-	}
-	return strMenuText;
-}
-
-void CXTPSkinPopupMenu::RebuildItems()
-{
-	RemoveAll();
-
-	int nCount = !IsSysMenuBar() ? GetMenuItemCount(m_hMenu) : 1;
-
-	for (int i = 0; i < nCount; i++)
-	{
-		m_arrItems.Add(new CXTPSkinPopupMenuItem(this, i));
-	}
-}
-
-int CXTPSkinPopupMenu::GetCount()
-{
-	int nCount = !IsSysMenuBar() ? GetMenuItemCount(m_hMenu) : 1;
-	if (nCount != m_arrItems.GetSize())
-	{
-		RebuildItems();
-	}
-
-	return nCount;
-}
-
-CXTPSkinPopupMenuItem* CXTPSkinPopupMenu::GetItem(int nIndex) const
-{
-	return nIndex >= 0 && nIndex < m_arrItems.GetSize() ? m_arrItems.GetAt(nIndex) : NULL;
-}
-
-BEGIN_MESSAGE_MAP(CXTPSkinPopupMenu, CWnd)
-	//{{AFX_MSG_MAP(CXTPSkinObjectMenu)
-	ON_WM_PAINT()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-BOOL CXTPSkinPopupMenu::IsMenuThemed()
-{
-	CXTPSkinManager* pSkinManager = XTPSkinManager();
-	CXTPSkinManagerClass* pClass = pSkinManager->GetSkinClass(pSkinManager->Lookup(m_hWndNotify), _T("MENU"));
-
-	BOOL bTheme = pClass->GetThemeInt(XTP_MP_POPUPBACKGROUND, 0, TMT_BORDERSIZE, 0) != 0;
-	if (!bTheme)
-		return FALSE;
-
-	int nCount = ::GetMenuItemCount(m_hMenu);
-
-	for (int i = 0; i < nCount; i++)
-	{
-		MENUITEMINFO mii;
-		ZeroMemory(&mii, sizeof(MENUITEMINFO));
-		mii.cbSize = sizeof(MENUITEMINFO);
-		mii.fMask = MIIM_TYPE;
-		::GetMenuItemInfo(m_hMenu, i, TRUE, &mii);
-
-		if (mii.fType & MFT_OWNERDRAW)
-			return FALSE;
-	}
-
-	return TRUE;
-
-}
-
-void CXTPSkinPopupMenu::PositionSysMenu()
-{
-	RebuildItems();
-
-	ASSERT(GetCount() == 1);
-
-	CXTPSkinPopupMenuItem* pItem = GetItem(0);
-
-	HWND hWnd = m_hWndNotify;
-	DWORD dwStyle = GetWindowLong(hWnd, GWL_STYLE);
-	DWORD dwExStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
-
-	CRect rcBorders = XTPSkinManager()->GetSchema()->CalcFrameBorders(dwStyle, dwExStyle);
-
-	pItem->m_rcItem.SetRect(rcBorders.left, rcBorders.left, rcBorders.top, rcBorders.top);
-}
-
-CSize CXTPSkinPopupMenu::RecalcLayout()
-{
-	ASSERT(m_pState);
-	ASSERT(!m_bMenuBar);
-
-	CXTPSkinManagerMetrics* pMetrics = m_pState->m_pSchema->GetMetrics();
-
-	BOOL bTheme = IsMenuThemed();
-
-	CDC dc;
-	dc.Attach(::GetWindowDC(m_hWnd));
-
-	CXTPFontDC font(&dc, &pMetrics->m_fntMenu);
-
-	CRect rcBorders(3, 3, 3, 3);
-
-	int x = rcBorders.left;
-	int y = rcBorders.top;
-
-	TEXTMETRIC tm;
-	dc.GetTextMetrics(&tm);
-
-	RemoveAll();
-
-	int nCount = ::GetMenuItemCount(m_hMenu), nItem;
-
-	int nMaxWidthColumn = 0;
-	int nFirstColumn = 0;
-	int nMaxHeight = 0;
-
-	m_nGripperWidth = bTheme ? 33 : 17;
-
-	for (nItem = 0; nItem < nCount; nItem++ )
-	{
-		CXTPSkinPopupMenuItem* pItem = new CXTPSkinPopupMenuItem(this, nItem);
-
-		MENUITEMINFO mii;
-		ZeroMemory(&mii, sizeof(mii));
-		mii.cbSize = sizeof(mii);
-		mii.fMask = MIIM_STATE | MIIM_ID;
-
-		::GetMenuItemInfo(m_hMenu, nItem, TRUE, &mii);
-
-		BOOL bSeparator = pItem->IsSeparator();
-
-		if (!pItem->IsOwnerDraw() && !bSeparator)
-		{
-			HBITMAP hbm = pItem->GetItemBitmap();
-
-			if (hbm && HIWORD(hbm) != 0)
+			if (!pos.pItem->IsLabel() &&
+				rcItem.top - pos.rcItem.top< rcItems.Height())
 			{
-				BITMAP bmpInfo;
-				::GetObject(hbm, sizeof(BITMAP), &bmpInfo);
-
-
-				m_nGripperWidth = max(m_nGripperWidth, bmpInfo.bmWidth + 4 + (bTheme ? 5 + 3 : 0));
-			}
-		}
-
-
-		m_arrItems.Add(pItem);
-	}
-
-	for (nItem = 0; nItem < nCount; nItem++ )
-	{
-		CXTPSkinPopupMenuItem* pItem = m_arrItems[nItem];
-
-
-		MENUITEMINFO mii;
-		ZeroMemory(&mii, sizeof(mii));
-		mii.cbSize = sizeof(mii);
-		mii.fMask = MIIM_STATE | MIIM_ID;
-
-		::GetMenuItemInfo(m_hMenu, nItem, TRUE, &mii);
-
-		BOOL bSeparator = pItem->IsSeparator();
-
-		CString strMenuText = pItem->GetText();
-
-		CSize szText(0, 0);
-
-		if (pItem->IsOwnerDraw())
-		{
-			MEASUREITEMSTRUCT mis;
-			mis.CtlType = ODT_MENU;
-			mis.CtlID = 0;
-			mis.itemID  = pItem->GetID();
-			mis.itemWidth = 0;
-			mis.itemHeight= (UINT) dc.GetTextExtent(_T(" "), 1).cy;
-			mis.itemData = pItem->GetItemData();
-
-			::SendMessage(m_hWndNotify, WM_MEASUREITEM, 0, (LPARAM)&mis);
-
-			szText.cx = mis.itemWidth + 12;
-			szText.cy = mis.itemHeight;
-
-		}
-		else if (bSeparator)
-		{
-			szText.cy = bTheme ? 6 : 9;
-		}
-		else
-		{
-			BOOL bDefault = pItem->IsDefault();
-			CFont fontDefault;
-
-			if (bDefault)
-			{
-				LOGFONT lf;
-				pMetrics->m_fntMenu.GetLogFont(&lf);
-				lf.lfWeight  = FW_BOLD;
-				fontDefault.CreateFontIndirect(&lf);
-				font.SetFont(&fontDefault);
+				nIndex = i;
 			}
 
-			int nIndex = strMenuText.Find(_T('\t'));
-
-			CSize szShortcut(0, 0);
-
-			if (nIndex != -1)
-			{
-				CString strShortcutText = strMenuText.Mid(nIndex);
-				strMenuText.ReleaseBuffer(nIndex);
-
-				szShortcut = dc.GetTextExtent(strShortcutText);
-			}
-
-			szText = dc.GetTextExtent(strMenuText);
-
-			if (bTheme)
-			{
-				szText.cx = m_nGripperWidth + szText.cx + szShortcut.cx + 55;
-				szText.cy = max(szText.cy, 22);
-			}
-			else
-			{
-				szText.cx = m_nGripperWidth + szText.cx + szShortcut.cx + 44;
-				szText.cy = max(szText.cy, 17);
-			}
-
-			if (bDefault)
-			{
-				font.SetFont(&pMetrics->m_fntMenu);
-			}
-		}
-
-		if ((pItem->GetType() & (MF_MENUBREAK | MF_MENUBARBREAK)) && (nItem != nFirstColumn))
-		{
-			for (; nFirstColumn < nItem; nFirstColumn++ )
-			{
-				CXTPSkinPopupMenuItem* pItem = m_arrItems[nFirstColumn];
-				pItem->m_rcItem.right = pItem->m_rcItem.left + nMaxWidthColumn;
-			}
-
-			x += nMaxWidthColumn + 4;
-			nMaxHeight = max(nMaxHeight, y);
-			y = rcBorders.top;
-			nMaxWidthColumn = 0;
-		}
-
-		if (!pItem->IsOwnerDraw() && !bSeparator)
-		{
-			HBITMAP hbm = pItem->GetItemBitmap();
-
-			if (hbm && HIWORD(hbm) != 0)
-			{
-				BITMAP bmpInfo;
-				::GetObject(hbm, sizeof(BITMAP), &bmpInfo);
-
-				szText.cy = max(szText.cy, bmpInfo.bmHeight + 4);
-			}
-		}
-
-
-		CRect rcItem(x, y, x + szText.cx, y + szText.cy);
-		nMaxWidthColumn = max(nMaxWidthColumn, szText.cx);
-
-		pItem->m_rcItem = rcItem;
-
-		y = rcItem.bottom;
-	}
-
-	for (nItem = nFirstColumn; nItem < nCount; nItem++ )
-	{
-		CXTPSkinPopupMenuItem* pItem = m_arrItems[nItem];
-		pItem->m_rcItem.right = pItem->m_rcItem.left + nMaxWidthColumn;
-	}
-
-	int nTotalWidth = x + nMaxWidthColumn + rcBorders.right;
-	nMaxHeight = max(nMaxHeight, y)  + rcBorders.bottom;
-
-	font.ReleaseFont();
-
-	::ReleaseDC(m_hWnd, dc.Detach());
-	return CSize(nTotalWidth, nMaxHeight);
-}
-
-void CXTPSkinPopupMenu::OnPaint()
-{
-
-	CPaintDC dcPaint(this);
-	CXTPBufferDC dc(dcPaint);
-
-	if (!m_pState)
-		return;
-
-	CXTPSkinManager* pSkinManager = XTPSkinManager();
-	CXTPSkinManagerMetrics* pMetrics = m_pState->m_pSchema->GetMetrics();
-
-	CXTPClientRect rc(this);
-
-	CXTPSkinManagerClass* pClass = pSkinManager->GetSkinClass(pSkinManager->Lookup(m_hWndNotify), _T("MENU"));
-
-	BOOL bTheme = IsMenuThemed();;
-
-	if (bTheme)
-	{
-		CRect rcBackground(rc);
-		pClass->DrawThemeBackground(&dc, XTP_MP_POPUPBORDERS, 0, &rcBackground);
-		rcBackground.DeflateRect(3, 3);
-		pClass->DrawThemeBackground(&dc, XTP_MP_POPUPBACKGROUND, 0, &rcBackground);
-
-		rcBackground.right = rcBackground.left + m_nGripperWidth - 5;
-		pClass->DrawThemeBackground(&dc, XTP_MP_POPUPGUTTER, 0, &rcBackground);
-
-	}
-	else
-	{
-		dc.FillSolidRect(rc, pMetrics->GetColor(COLOR_MENU));
-		dc.Draw3dRect(rc, pMetrics->GetColor(COLOR_3DSHADOW), pMetrics->GetColor(COLOR_3DSHADOW));
-	}
-
-	CXTPFontDC font(&dc, &pMetrics->m_fntMenu);
-	dc.SetBkMode(TRANSPARENT);
-
-	int nCount = GetCount();
-
-	for (int nIndex = 0; nIndex < nCount; nIndex++)
-	{
-		CXTPSkinPopupMenuItem* pItem = GetItem(nIndex);
-
-		MENUITEMINFO mii;
-		ZeroMemory(&mii, sizeof(mii));
-		mii.cbSize = sizeof(mii);
-		mii.fMask = MIIM_STATE | MIIM_CHECKMARKS | MIIM_ID;
-
-		::GetMenuItemInfo(m_hMenu, nIndex, TRUE, &mii);
-
-		BOOL bSeparator = pItem->IsSeparator();
-		BOOL bEnabled = pItem->IsEnabled();
-		BOOL bSelected = (nIndex == m_nSelected) && !bSeparator;
-
-
-		CRect rcItem(pItem->m_rcItem);
-
-		if ((pItem->GetType() & MF_MENUBARBREAK) && (nIndex != 0) && !bTheme)
-		{
-			dc.FillSolidRect(rcItem.left - 3, rc.top + 3, 1, rc.Height() - 6, pMetrics->GetColor(COLOR_3DSHADOW));
-			dc.FillSolidRect(rcItem.left - 2, rc.top + 3, 1, rc.Height() - 6, pMetrics->GetColor(COLOR_3DHIGHLIGHT));
-		}
-
-		if (pItem->IsOwnerDraw())
-		{
-			dc.SetTextColor(pMetrics->GetColor(COLOR_MENUTEXT));
-			dc.SetBkColor(pMetrics->GetColor(COLOR_MENU));
-
-			DWORD dwState = mii.fState;
-
-			DRAWITEMSTRUCT dis;
-			dis.CtlType = ODT_MENU;
-			dis.CtlID = 0;
-			dis.itemID = mii.wID;
-			dis.itemAction = ODA_DRAWENTIRE;
-			dis.itemState   =
-				((dwState & MF_GRAYED)       ? ODS_GRAYED    : 0) |
-				((dwState & MFS_DEFAULT)     ? ODS_DEFAULT   : 0) |
-				((dwState & MFS_CHECKED)     ? ODS_CHECKED   : 0) |
-				((dwState & MFS_DISABLED)    ? ODS_DISABLED  : 0) |
-				(bSelected                   ? ODS_SELECTED  : 0);
-
-			dis.hwndItem = (HWND)m_hMenu;
-			dis.hDC = dc.GetSafeHdc();
-
-
-			dis.rcItem = pItem->m_rcItem;
-			dis.itemData = pItem->GetItemData();
-
-			if (m_hWndNotify)
-			{
-				::SendMessage(m_hWndNotify, WM_DRAWITEM, 0, (LPARAM)&dis);
-			}
-
-			if (pItem->GetPopupMenu())
-			{
-				CPoint ptCenter(rcItem.right - (bTheme ? 10 : 5), rcItem.CenterPoint().y);
-				XTPDrawHelpers()->Triangle(&dc, ptCenter, CPoint(ptCenter.x - 3, ptCenter.y - 3),
-					CPoint(ptCenter.x - 3, ptCenter.y + 3), pMetrics->GetColor(!bEnabled ? COLOR_GRAYTEXT : bSelected ? COLOR_HIGHLIGHTTEXT : COLOR_MENUTEXT));
-			}
-			continue;
-		}
-		if (bSeparator)
-		{
-			if (!bTheme)
-			{
-				dc.FillSolidRect(rcItem.left + 1, rcItem.CenterPoint().y, rcItem.Width() - 2, 1, pMetrics->GetColor(COLOR_3DSHADOW));
-				dc.FillSolidRect(rcItem.left + 1, rcItem.CenterPoint().y + 1, rcItem.Width() - 2, 1, pMetrics->GetColor(COLOR_3DHIGHLIGHT));
-			}
-			else
-			{
-				CRect rcSeparator(rcItem.left + m_nGripperWidth - 5, rcItem.top, rcItem.right, rcItem.bottom);
-				pClass->DrawThemeBackground(&dc, XTP_MP_POPUPSEPARATOR, 0, &rcSeparator);
-
-			}
-			continue;
-		}
-
-		if (bTheme)
-		{
-			if (bSelected)
-			{
-				pClass->DrawThemeBackground(&dc, XTP_MP_POPUPITEM, 2, &rcItem);
-			}
-
-			dc.SetTextColor(pMetrics->GetColor(!bEnabled ? COLOR_GRAYTEXT : COLOR_MENUTEXT));
-		}
-		else
-		{
-			if (bSelected)
-			{
-				dc.FillSolidRect(rcItem, pMetrics->GetColor(COLOR_HIGHLIGHT));
-			}
-
-			dc.SetTextColor(pMetrics->GetColor(!bEnabled ? COLOR_GRAYTEXT : bSelected ? COLOR_HIGHLIGHTTEXT : COLOR_MENUTEXT));
-		}
-
-		BOOL bDefault = pItem->IsDefault();
-		CFont fontDefault;
-
-		if (bDefault)
-		{
-			LOGFONT lf;
-			pMetrics->m_fntMenu.GetLogFont(&lf);
-			lf.lfWeight  = FW_BOLD;
-			fontDefault.CreateFontIndirect(&lf);
-			font.SetFont(&fontDefault);
-		}
-
-		CString strMenuText = pItem->GetText();
-		int nFind = strMenuText.Find(_T('\t'));
-
-		CSize szShortcut(0, 0);
-
-		if (nFind != -1)
-		{
-			CString strShortcutText = strMenuText.Mid(nFind + 1);
-			strMenuText.ReleaseBuffer(nFind);
-
-			CRect rcShortcut(rcItem);
-			rcShortcut.right -= 20;
-
-			dc.DrawText(strShortcutText, rcShortcut, DT_VCENTER | DT_RIGHT | DT_SINGLELINE);
-		}
-
-		CRect rcText(rcItem);
-		rcText.left += m_nGripperWidth;
-
-		dc.DrawText(strMenuText, rcText, DT_VCENTER | DT_LEFT | DT_SINGLELINE);
-
-		if (pItem->GetPopupMenu())
-		{
-			if (bTheme)
-			{
-				CRect rcPopup(rcText.right - 16, rcText.top, rcText.right - 7, rcText.bottom);
-				pClass->DrawThemeBackground(&dc, XTP_MP_POPUPSUBMENU, bEnabled ? 1 : 2, &rcPopup);
-			}
-			else
-			{
-				CPoint ptCenter(rcText.right - (bTheme ? 10 : 5), rcText.CenterPoint().y);
-				XTPDrawHelpers()->Triangle(&dc, ptCenter, CPoint(ptCenter.x - 3, ptCenter.y - 3),
-					CPoint(ptCenter.x - 3, ptCenter.y + 3), dc.GetTextColor());
-			}
-		}
-
-		if (bDefault)
-		{
-			font.SetFont(&pMetrics->m_fntMenu);
-		}
-
-		BOOL bChecked = pItem->IsChecked();
-
-		HBITMAP hbm = bChecked ? mii.hbmpChecked : mii.hbmpUnchecked;
-
-		if (hbm)
-		{
-			BITMAP bmpInfo;
-			::GetObject(hbm, sizeof(BITMAP), &bmpInfo);
-
-			CXTPCompatibleDC dcBitmap(&dcPaint, hbm);
-
-			dc.SetTextColor(0);
-			dc.SetBkColor(0xFFFFFF);
-
-			dc.BitBlt((bTheme ? 16 : 11) -  bmpInfo.bmWidth / 2 , (rcItem.top + rcItem.bottom - bmpInfo.bmHeight) / 2, bmpInfo.bmWidth, bmpInfo.bmHeight,
-				&dcBitmap, 0, 0, SRCAND);
-		}
-		else if (bChecked)
-		{
-			if (bTheme)
-			{
-				CRect rcCheck(rcItem.left, rcItem.top, rcItem.left + 22, rcItem.bottom);
-
-				pClass->DrawThemeBackground(&dc, XTP_MP_POPUPCHECKBACKGROUND, bEnabled ? 2 : 1, rcCheck);
-				pClass->DrawThemeBackground(&dc, XTP_MP_POPUPCHECK, bEnabled ? 1 : 2, rcCheck);
-			}
-			else
-			{
-				CXTPPenDC pen (dc, dc.GetTextColor());
-				CXTPBrushDC brush (dc, dc.GetTextColor());
-
-				CPoint pt(rcItem.left + 5, rcItem.CenterPoint().y);
-				CPoint pts[] = {pt, CPoint(pt.x + 2, pt.y + 2), CPoint(pt.x + 6, pt.y - 2),
-					CPoint(pt.x + 6, pt.y), CPoint(pt.x + 2, pt.y + 4), CPoint(pt.x, pt.y + 2)};
-				dc.Polygon(pts, _countof(pts));
-			}
-		}
-		else
-		{
-			hbm = pItem->GetItemBitmap();
-
-			int nSysBitmap = 0;
-
-			switch ((UINT_PTR)hbm)
-			{
-				case (UINT_PTR)HBMMENU_POPUP_RESTORE: nSysBitmap = XTP_MP_SYSTEMRESTORE; break;
-				case (UINT_PTR)HBMMENU_POPUP_MINIMIZE: nSysBitmap = XTP_MP_SYSTEMMINIMIZE; break;
-				case (UINT_PTR)HBMMENU_POPUP_MAXIMIZE: nSysBitmap = XTP_MP_SYSTEMMAXIMIZE; break;
-				case (UINT_PTR)HBMMENU_POPUP_CLOSE: nSysBitmap = XTP_MP_SYSTEMCLOSE; break;
-			}
-
-			if (nSysBitmap != 0)
-			{
-				if (bTheme)
-				{
-					CSize sz(20, 20);
-					CRect rcBitmap(CPoint((bTheme ? 16 : 11) -  sz.cx / 2 , (rcItem.top + rcItem.bottom - sz.cy) / 2), sz);
-
-					pClass->DrawThemeBackground(&dc, nSysBitmap, bEnabled ? 1 : 2, rcBitmap);
-				}
-				else
-				{
-					CSize sz(20, 20);
-					CRect rcBitmap(CPoint((bTheme ? 16 : 11) -  sz.cx / 2 , (rcItem.top + rcItem.bottom - sz.cy) / 2 + 1), sz);
-
-					CFont fontMarlett;
-					fontMarlett.CreatePointFont(MulDiv(80, 96, dc.GetDeviceCaps(LOGPIXELSX)), _T("Marlett"));
-					CFont* pFont = dc.SelectObject(&fontMarlett);
-					dc.DrawText(nSysBitmap == XTP_MP_SYSTEMMINIMIZE ? _T("0") :
-						nSysBitmap == XTP_MP_SYSTEMRESTORE ?  _T("2") :
-						nSysBitmap == XTP_MP_SYSTEMMAXIMIZE ?  _T("1") :_T("r"),
-						1, rcBitmap, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
-					dc.SelectObject(pFont);
-				}
-			}
-			else if (hbm)
-			{
-				BITMAP bmpInfo;
-				::GetObject(hbm, sizeof(BITMAP), &bmpInfo);
-
-				int nCenter = 3 + (m_nGripperWidth - (bTheme ? 3 + 5 : 0)) / 2;
-
-				if (bmpInfo.bmBitsPixel == 32 && bmpInfo.bmBits && XTPSystemVersion()->IsWinVistaOrGreater())
-				{
-					CXTPImageManagerIcon::DrawAlphaBitmap(&dc, hbm, CPoint(nCenter -  bmpInfo.bmWidth / 2 , (rcItem.top + rcItem.bottom - bmpInfo.bmHeight) / 2),
-						CSize(bmpInfo.bmWidth, bmpInfo.bmHeight));
-				}
-				else
-				{
-					CXTPCompatibleDC dcBitmap(&dcPaint, hbm);
-
-					dc.SetTextColor(0);
-					dc.SetBkColor(0xFFFFFF);
-
-					dc.BitBlt(nCenter -  bmpInfo.bmWidth / 2 , (rcItem.top + rcItem.bottom - bmpInfo.bmHeight) / 2, bmpInfo.bmWidth, bmpInfo.bmHeight,
-						&dcBitmap, 0, 0, SRCAND);
-				}
-			}
-		}
-	}
-
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPSkinPopupMenuState
-
-CXTPSkinPopupMenuState::CXTPSkinPopupMenuState(HWND hWndNotify)
-{
-	m_bInsideMenuLoop = FALSE;
-	m_bButtonDown = 0;
-	m_bRightButton = FALSE;
-	m_nFocus = focusMouse;
-	m_hWndCapture = 0;
-	m_bDismiss = FALSE;
-	m_bNofyByPos = FALSE;
-	m_pRootPopup = NULL;
-	m_bNoNotify = FALSE;
-	m_ptMouseLast = CPoint(0);
-	m_nLastCommand = 0;
-
-	m_bFirstClick = FALSE;
-	m_bMenuStarted = FALSE;
-	m_bSynchronous = FALSE;
-	m_pAlternatePopup = NULL;
-
-	CXTPSkinObject* pSkinObject = XTPSkinManager()->Lookup(hWndNotify);
-	m_pSchema = pSkinObject ? pSkinObject->GetSchema() : XTPSkinManager()->GetSchema();
-
-	m_dwMenuShowDelay = 400;
-	SystemParametersInfo(SPI_GETMENUSHOWDELAY, 0, &m_dwMenuShowDelay, 0);
-}
-
-void CXTPSkinPopupMenuState::InitMenu(CXTPSkinPopupMenu* pPopupMenu)
-{
-	m_pRootPopup = pPopupMenu;
-	m_pRootPopup->InternalAddRef();
-
-	m_bButtonDown = ((GetKeyState(VK_LBUTTON) & 0x8000) != 0);
-
-	pPopupMenu->m_bDropNextPopup = FALSE;
-
-	if (m_pRootPopup->m_hWndNotify && !m_bNoNotify)
-	{
-		SendMessage(m_pRootPopup->m_hWndNotify, WM_ENTERMENULOOP, 0, 0);
-	}
-}
-
-#ifndef MNS_NOTIFYBYPOS
-#define MNS_NOTIFYBYPOS     0x08000000
-#define MIM_STYLE 0x00000010
-#endif
-
-int CXTPSkinPopupMenuState::GetMenuFlags(HMENU hMenu)
-{
-	struct XTP_MENUINFO
-	{
-		DWORD   cbSize;
-		DWORD   fMask;
-		DWORD   dwStyle;
-		UINT    cyMax;
-		HBRUSH  hbrBack;
-		DWORD   dwContextHelpID;
-		ULONG_PTR dwMenuData;
-	};
-
-	HMODULE hLib = GetModuleHandle(_T("USER32"));
-	if (!hLib)
-		return 0;
-
-	typedef BOOL (WINAPI *PFNGETMENUINFO) (HMENU hmenu, XTP_MENUINFO* lpcmi);
-
-	PFNGETMENUINFO pfnGetMenuInfo = (PFNGETMENUINFO)::GetProcAddress(hLib, "GetMenuInfo");
-	if (!pfnGetMenuInfo)
-		return 0;
-
-	XTP_MENUINFO mi;
-	ZeroMemory(&mi, sizeof(mi));
-	mi.cbSize = sizeof(mi);
-	mi.fMask = MIM_STYLE;
-
-	if (!(*pfnGetMenuInfo)(hMenu, &mi))
-		return FALSE;
-
-	return mi.dwStyle;
-}
-
-BOOL CXTPSkinPopupMenuState::StartMenu(MenuFocus nFocus)
-{
-	m_bMenuStarted = TRUE;
-
-	m_nFocus = nFocus;
-
-	m_pRootPopup->m_bToggle = FALSE;
-	m_pRootPopup->m_bAboutToHide = FALSE;
-
-	HWND hWndNotify = m_pRootPopup->m_hWndNotify;
-
-	m_hWndCapture= hWndNotify;
-	::SetCapture(m_hWndCapture);
-	::SendMessage(hWndNotify, WM_SETCURSOR, (WPARAM)hWndNotify, MAKELONG(MSGF_MENU, 0));
-
-	if (m_pRootPopup->m_bMenuBar)
-	{
-		// TODO GetSysMenu from Child xxxGetInitMenuParam
-		BOOL bSystemMenu = m_pRootPopup->m_bSysMenu;
-
-		if (!bSystemMenu)
-		{
-			HMENU hMenu = ::GetSystemMenu(hWndNotify, FALSE);
-			if (hMenu)
-			{
-				::SetMenuDefaultItem(hMenu, SC_CLOSE, MF_BYCOMMAND);
-				m_pAlternatePopup = new CXTPSkinPopupMenu();
-				m_pAlternatePopup->m_hMenu = hMenu;
-				m_pAlternatePopup->m_hWnd = hWndNotify;
-				m_pAlternatePopup->m_hWndNotify = hWndNotify;
-				m_pAlternatePopup->m_bSysMenu = TRUE;
-				m_pAlternatePopup->m_bMenuBar = TRUE;
-				m_pAlternatePopup->PositionSysMenu();
-				m_pAlternatePopup->m_pState = this;
-			}
-		}
-	}
-
-	int nFlags = GetMenuFlags(m_pRootPopup->m_hMenu);
-
-	if (nFlags & MNS_NOTIFYBYPOS)
-		m_bNofyByPos = TRUE;
-
-	if (!m_bNoNotify && hWndNotify)
-	{
-		::SendMessage(hWndNotify, WM_INITMENU, (WPARAM)m_pRootPopup->m_hMenu, 0);
-	}
-
-	// TODO: Add EVENT_SYSTEM_MENUSTART WinEvent.
-
-	return TRUE;
-}
-
-
-#define MENU_NOITEM (int)-1
-
-int CXTPSkinPopupMenuState::ItemHitTest(CPoint point, CXTPSkinPopupMenu* pPopupMenu)
-{
-	for (int i = 0; i < pPopupMenu->GetCount(); i++)
-	{
-		CXTPSkinPopupMenuItem* pItem = pPopupMenu->m_arrItems.GetAt(i);
-
-		CRect rcItem(pItem->m_rcItem);
-
-		WindowToScreen(pPopupMenu->m_hWnd, rcItem);
-
-		if (rcItem.PtInRect(point))
-			return i;
-	}
-	return MENU_NOITEM;
-}
-
-void CXTPSkinPopupMenuState::WindowToScreen(HWND hWnd, CRect& rcItem)
-{
-	CXTPWindowRect rcWindow(hWnd);
-
-	if (GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_LAYOUTRTL )
-	{
-		rcItem.OffsetRect(rcWindow.right - rcItem.right - rcItem.left, rcWindow.top);
-	}
-	else
-	{
-		rcItem.OffsetRect(rcWindow.TopLeft());
-	}
-}
-
-CXTPSkinPopupMenu* CXTPSkinPopupMenuState::FindMenu(CPoint point, CXTPSkinPopupMenu* pPopupMenu, int* pnItem)
-{
-	*pnItem = 0;
-
-	if (pPopupMenu->m_pNextPopup)
-	{
-		CXTPSkinPopupMenu* lResult = FindMenu(point, pPopupMenu->m_pNextPopup, pnItem);
-		if (lResult)
-		{
-			return lResult;
-		}
-	}
-
-	if (pPopupMenu->m_bMenuBar)
-	{
-		HWND hWnd = pPopupMenu->m_hWndNotify;
-
-		if (pPopupMenu->m_bSysMenu)
-		{
-			HICON hIcon = m_pSchema->GetFrameSmIcon(hWnd);
-			if (!hIcon)
-				return NULL;
-
-			CXTPWindowRect rcWindow(hWnd);
-
-			if (GetWindowLong(hWnd, GWL_STYLE) & WS_MINIMIZE)
-			{
-				if (rcWindow.PtInRect(point))
-					return pPopupMenu;
-				return NULL;
-			}
-
-			CRect rcIcon(pPopupMenu->GetItem(0)->m_rcItem);
-			WindowToScreen(hWnd, rcIcon);
-
-			if (rcIcon.PtInRect(point))
-			{
-				*pnItem = 0;
-				return pPopupMenu;
-			}
-
-			if (m_pAlternatePopup && m_pAlternatePopup != pPopupMenu)
-			{
-				int nHitTest = CXTPSkinPopupMenuState::ItemHitTest(point, m_pAlternatePopup);
-				if (nHitTest != MENU_NOITEM)
-				{
-					*pnItem = nHitTest;
-					return m_pAlternatePopup;
-				}
-			}
-
-			return NULL;
-		}
-		else
-		{
-			if (GetWindowLong(hWnd, GWL_STYLE) & WS_MINIMIZE)
-				return NULL;
-		}
-
-	}
-	else
-	{
-		CXTPWindowRect rc(pPopupMenu->m_hWnd);
-		if (!rc.PtInRect(point))
-			return NULL;
-	}
-
-	int nHitTest = CXTPSkinPopupMenuState::ItemHitTest(point, pPopupMenu);
-
-	if (pPopupMenu->m_bMenuBar)
-	{
-		if (nHitTest == MENU_NOITEM)
-		{
-			if (m_pAlternatePopup && m_pAlternatePopup != pPopupMenu)
-			{
-				CXTPSkinPopupMenu* pAlternatePopup = FindMenu(point, m_pAlternatePopup, pnItem);
-
-				if (pAlternatePopup)
-					return pAlternatePopup;
-			}
-			return NULL;
-		}
-	}
-
-	*pnItem = nHitTest;
-	return pPopupMenu;
-}
-
-BOOL CXTPSkinPopupMenuState::SetTimerToCloseHierarchy(CXTPSkinPopupMenu* pPopupMenu)
-{
-	CXTPSkinPopupMenu* pNextPopup = GetNextPopup(pPopupMenu);
-
-	if (!pNextPopup)
-		return FALSE;
-
-	if (pPopupMenu->m_nHideTimer)
-		return TRUE;
-
-	if (!SetTimer(pPopupMenu->m_hWnd, TIMERID_MENUHIDE, m_dwMenuShowDelay, NULL))
-		return FALSE;
-
-	pPopupMenu->m_nHideTimer = TIMERID_MENUHIDE;
-
-	pNextPopup->m_bAboutToHide = TRUE;
-
-	return TRUE;
-}
-
-BOOL CXTPSkinPopupMenuState::SetTimerToOpenHierarchy(CXTPSkinPopupMenu* pPopupMenu)
-{
-	ASSERT(!pPopupMenu->m_bMenuBar);
-
-	CXTPSkinPopupMenuItem* pItem = pPopupMenu->GetItem(pPopupMenu->m_nSelected);
-	if (!pItem)
-		return FALSE;
-
-	if (pPopupMenu->m_nShowTimer || pPopupMenu->m_nSelected == pPopupMenu->m_nDropped)
-		return 1;
-
-	if (!SetTimer(pPopupMenu->m_hWnd, TIMERID_MENUSHOW, m_dwMenuShowDelay, NULL))
-		return FALSE;
-
-	pPopupMenu->m_nShowTimer = TIMERID_MENUSHOW;
-
-	return TRUE;
-}
-
-void CXTPSkinPopupMenuState::RedrawPopup(CXTPSkinPopupMenu* pPopupMenu)
-{
-	if (pPopupMenu->m_bMenuBar) ::SendMessage(pPopupMenu->m_hWnd, WM_NCPAINT, 0, 0); else ::InvalidateRect(pPopupMenu->m_hWnd, 0, FALSE);
-}
-
-void CXTPSkinPopupMenuState::SendMenuSelect(CXTPSkinPopupMenu* pPopupMenu)
-{
-	UINT dwFlags = 0;
-	UINT nCommand = 0;
-	int nIndex = -1;
-
-	CXTPSkinPopupMenuItem* pItem = pPopupMenu->GetItem(pPopupMenu->m_nSelected);
-	if (pItem)
-	{
-		dwFlags = pItem->GetType() | pItem->GetState();
-		nIndex = pItem->m_nItem;
-
-		if (pItem->GetPopupMenu())
-			dwFlags |= MF_POPUP;
-
-		if (dwFlags & MF_POPUP)
-			nCommand = nIndex;
-		else
-			nCommand = pItem->GetID();
-
-		if (m_nFocus == focusMouse)
-			dwFlags |= MF_MOUSESELECT;
-
-		if (pPopupMenu->m_bSysMenu)
-			dwFlags |= MF_SYSMENU;
-
-	}
-
-	::SendMessage(pPopupMenu->m_hWndNotify, WM_MENUSELECT, (DWORD)MAKELONG(nCommand, dwFlags), (LPARAM)pPopupMenu->m_hMenu);
-
-}
-
-CXTPSkinPopupMenuItem* CXTPSkinPopupMenuState::SelectItem(CXTPSkinPopupMenu* pPopupMenu, int nItem)
-{
-	if (pPopupMenu->m_nSelected == nItem)
-	{
-		return pPopupMenu->GetItem(nItem);
-	}
-
-	if (pPopupMenu->m_nShowTimer)
-	{
-		KillTimer(pPopupMenu->m_hWnd, pPopupMenu->m_nShowTimer);
-		pPopupMenu->m_nShowTimer = 0;
-	}
-
-	if (pPopupMenu->m_bAboutToHide && pPopupMenu->m_pPrevPopup)
-	{
-		CXTPSkinPopupMenu* pPrevPopup = pPopupMenu->m_pPrevPopup;
-
-		if (pPrevPopup->m_nHideTimer)
-		{
-			::KillTimer(pPrevPopup->m_hWnd, pPrevPopup->m_nHideTimer);
-			pPrevPopup->m_nHideTimer = NULL;
-		}
-
-		if (pPrevPopup->m_nShowTimer)
-		{
-			::KillTimer(pPrevPopup->m_hWnd, pPrevPopup->m_nShowTimer);
-			pPrevPopup->m_nShowTimer = NULL;
-		}
-
-		if (pPrevPopup->m_nSelected != pPrevPopup->m_nDropped)
-		{
-			pPrevPopup->m_nSelected = pPrevPopup->m_nDropped;
-			RedrawPopup(pPrevPopup);
-			SendMenuSelect(pPrevPopup);
-		}
-
-		pPopupMenu->m_bAboutToHide = FALSE;
-	}
-
-	if (pPopupMenu->m_nSelected != MENU_NOITEM)
-	{
-		if (GetNextPopup(pPopupMenu))
-		{
-			if (pPopupMenu->m_bMenuBar)
-			{
-				CloseHierarchy(pPopupMenu);
-			}
-			else
-			{
-				SetTimerToCloseHierarchy(pPopupMenu);
-			}
-		}
-	}
-
-	pPopupMenu->m_nSelected = nItem;
-
-	RedrawPopup(pPopupMenu);
-
-	SendMenuSelect(pPopupMenu);
-
-	return pPopupMenu->GetItem(nItem);
-}
-
-CPoint CXTPSkinPopupMenuState::PositionHierarchy(CXTPSkinPopupMenu* pSubMenu, CXTPSkinPopupMenu* pPopupMenu, CRect rcItem, CSize sz)
-{
-	CPoint pt(pPopupMenu->m_bMenuBar ? rcItem.left : rcItem.right - 3, pPopupMenu->m_bMenuBar ? rcItem.bottom : rcItem.top - 3);
-	CRect rcMonitor(XTPMultiMonitor()->GetScreenArea(pt));
-
-	if (pPopupMenu->m_bMenuBar)
-	{
-		BOOL bMinimized = (GetWindowLong(pPopupMenu->m_hWnd, GWL_STYLE) & WS_MINIMIZE) != 0;
-
-		if (bMinimized)
-		{
-			pt.y = rcItem.top - sz.cy;
-			if (pt.y < rcMonitor.top) pt.y = rcItem.bottom;
-		}
-
-		if (GetWindowLong(pPopupMenu->m_hWnd, GWL_EXSTYLE) & (WS_EX_LAYOUTRTL | WS_EX_RIGHT))
-		{
-			pt.x = rcItem.right - sz.cx;
-			pSubMenu->m_bDroppedLeft = TRUE;
-		}
-		pt.x = min(pt.x, rcMonitor.right - sz.cx);
-	}
-	else
-	{
-		if (pPopupMenu->m_bDroppedLeft)
-		{
-			int x = rcItem.left + 3 - sz.cx;
-			if (x >= rcMonitor.left)
-			{
-				pt.x = x;
-				pSubMenu->m_bDroppedLeft = TRUE;
-			}
-		}
-
-		if (pt.x + sz.cx > rcMonitor.right)
-		{
-			pt.x = rcItem.left + 3 - sz.cx;
-			pSubMenu->m_bDroppedLeft = TRUE;
-		}
-	}
-
-	if (pt.y + sz.cy > rcMonitor.bottom)
-	{
-		pt.y -= sz.cy;
-
-		if (pPopupMenu->m_bMenuBar)
-		{
-			pt.y -= GetSystemMetrics(SM_CYMENUSIZE);
-		}
-		else
-		{
-			pt.y += rcItem.Height() + 3;
-		}
-
-		if ((pt.y < rcMonitor.top) || (pt.y + sz.cy > rcMonitor.bottom))
-			pt.y = rcMonitor.bottom - sz.cy;
-	}
-
-	pt.x = max(pt.x, rcMonitor.left);
-	pt.y = max(pt.y, rcMonitor.top);
-
-	CRect rcPopup(pt.x, pt.y, pt.x + sz.cx, pt.y + sz.cy);
-	rcPopup.DeflateRect(3, 3);
-
-	if (CRect().IntersectRect(rcItem, rcPopup))
-	{
-		if ((rcItem.right + sz.cx) <= rcMonitor.right)
-			pt.x = rcItem.right;
-		else if ((rcItem.left - sz.cx) >= rcMonitor.left)
-			pt.x = rcItem.left - sz.cx;
-	}
-
-
-
-	return pt;
-}
-
-HWND CXTPSkinPopupMenuState::OpenHierarchy(CXTPSkinPopupMenu* pPopupMenu)
-{
-	if (pPopupMenu->m_nSelected < 0 || pPopupMenu->m_nSelected >= pPopupMenu->GetCount())
-		return NULL;
-
-	if (GetNextPopup(pPopupMenu))
-	{
-		if (pPopupMenu->m_nHideTimer)
-		{
-			CloseHierarchy(pPopupMenu);
-		}
-		else
-		{
-			return NULL;
-		}
-	}
-
-	if (pPopupMenu->m_nShowTimer)
-	{
-		KillTimer(pPopupMenu->m_hWnd, pPopupMenu->m_nShowTimer);
-		pPopupMenu->m_nShowTimer = 0;
-	}
-
-	CXTPSkinPopupMenuItem* pItem = pPopupMenu->GetItem(pPopupMenu->m_nSelected);
-
-	HMENU hSubMenu = pItem->GetPopupMenu();
-	if (!hSubMenu)
-		return NULL;
-
-	BOOL bSendNotify = FALSE;
-
-	HWND hwndResult = NULL;
-
-	TRY
-	{
-		if (pPopupMenu->m_hWndNotify && !m_bNoNotify)
-		{
-			SendMessage(pPopupMenu->m_hWndNotify, WM_INITMENUPOPUP, (WPARAM)hSubMenu, MAKELONG(pPopupMenu->m_nSelected, pPopupMenu->m_bSysMenu ? 1 : 0));
-
-			bSendNotify = TRUE;
-		}
-
-		if (!m_bInsideMenuLoop)
-			AfxThrowMemoryException();
-
-		if (pPopupMenu->m_nSelected < 0 || pPopupMenu->m_nSelected >= pPopupMenu->GetCount())
-			AfxThrowMemoryException();
-
-		pItem = pPopupMenu->GetItem(pPopupMenu->m_nSelected);
-
-		if (!pItem->IsEnabled() || !pItem->GetPopupMenu() || GetMenuItemCount(pItem->GetPopupMenu()) == 0)
-			AfxThrowMemoryException();
-
-
-
-		CXTPSkinPopupMenu* pSubMenu = new CXTPSkinPopupMenu();
-		pSubMenu->m_pState = this;
-
-		if (!pSubMenu->Create(pPopupMenu->m_hWndNotify))
-		{
-			pSubMenu->InternalRelease();
-			AfxThrowMemoryException();
-		}
-
-		pSubMenu->m_hMenu = hSubMenu;
-		pSubMenu->m_hWndNotify = pPopupMenu->m_hWndNotify;
-		pSubMenu->m_bSysMenu = pPopupMenu->m_bSysMenu;
-
-		bSendNotify = FALSE;
-		pSubMenu->m_bSendUninit = TRUE;
-
-		pPopupMenu->m_pNextPopup = pSubMenu;
-		pSubMenu->m_pPrevPopup = pPopupMenu;
-
-		if (pPopupMenu->m_bMenuBar)
-		{
-			pPopupMenu->m_bDropNextPopup = TRUE;
-		}
-
-		if (pPopupMenu->m_hWndNotify)
-		{
-			UpdateWindow(pPopupMenu->m_hWndNotify);
-		}
-
-		CSize size = pSubMenu->RecalcLayout();
-
-		CRect rcItem = pItem->GetScreenPos();
-
-		CPoint pt = PositionHierarchy(pSubMenu, pPopupMenu, rcItem, size);
-
-		PlayEventSound(xtpSoundMenuPopup);
-
-		::SetWindowPos(pSubMenu->m_hWnd, HWND_TOPMOST, pt.x, pt.y, size.cx, size.cy, SWP_SHOWWINDOW | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
-
-		if (m_nFocus == focusKeyboard)
-		{
-			SelectItem(pSubMenu, 0);
-		}
-
-		pPopupMenu->m_nDropped = pPopupMenu->m_nSelected;
-
-		UpdateWindow(pSubMenu->m_hWnd);
-
-		hwndResult = pSubMenu->m_hWnd;
-
-	}
-	CATCH (CMemoryException, e)
-	{
-	}
-	END_CATCH
-
-	if (bSendNotify)
-	{
-		SendMessage(pPopupMenu->m_hWndNotify, WM_UNINITMENUPOPUP, (WPARAM)hSubMenu, MAKELONG(0, pPopupMenu->m_bSysMenu ? 1 : 0));
-	}
-
-
-	return hwndResult;
-}
-
-void CXTPSkinPopupMenuState::CloseHierarchy(CXTPSkinPopupMenu* pPopupMenu)
-{
-	if (pPopupMenu->m_nHideTimer)
-	{
-		::KillTimer(pPopupMenu->m_hWnd, pPopupMenu->m_nHideTimer);
-		pPopupMenu->m_nHideTimer = 0;
-	}
-
-	CXTPSkinPopupMenu* pNextPopup = GetNextPopup(pPopupMenu);
-
-	if (pNextPopup)
-	{
-		CloseHierarchy(pNextPopup);
-
-		if (!pNextPopup->m_bMenuBar)
-		{
-			if (pNextPopup->m_bSendUninit && !m_bNoNotify)
-			{
-				SendMessage(pNextPopup->m_hWndNotify, WM_UNINITMENUPOPUP,
-					(WPARAM)pNextPopup->m_hMenu, MAKELONG(0, pNextPopup->m_bSysMenu ? MF_SYSMENU: 0));
-			}
-
-			pNextPopup->DestroyWindow();
-			pNextPopup->InternalRelease();
-		}
-
-		pPopupMenu->m_pNextPopup = NULL;
-		pPopupMenu->m_nDropped = MENU_NOITEM;
-	}
-
-	if (pPopupMenu->m_nSelected != MENU_NOITEM)
-	{
-		SendMenuSelect(pPopupMenu);
-	}
-
-}
-
-
-CXTPSkinPopupMenu* CXTPSkinPopupMenuState::GetNextPopup(CXTPSkinPopupMenu* pPopupMenu) const
-{
-	return pPopupMenu->m_pNextPopup;
-}
-
-CXTPSkinPopupMenu* CXTPSkinPopupMenuState::GetActivePopup() const
-{
-	CXTPSkinPopupMenu* pActivePopup = m_pRootPopup;
-
-	while (pActivePopup->m_pNextPopup != NULL)
-	{
-		pActivePopup = pActivePopup->m_pNextPopup;
-	}
-
-	return pActivePopup;
-}
-
-BOOL CXTPSkinPopupMenuState::HideNextHierarchy(CXTPSkinPopupMenu* pPopupMenu)
-{
-	CXTPSkinPopupMenu* pNextPopup = GetNextPopup(pPopupMenu);
-	if (pNextPopup)
-	{
-		if (GetNextPopup(pPopupMenu) != GetActivePopup())
-			CloseHierarchy(pNextPopup);
-
-		SelectItem(pNextPopup, -1);
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-void CXTPSkinPopupMenuState::DismissNotify(CXTPSkinPopupMenu* pPopupMenu, int nItem)
-{
-	DismissNotify(pPopupMenu->m_hMenu, nItem);
-}
-
-void CXTPSkinPopupMenuState::DismissNotify(HMENU hMenu, int nItem)
-{
-	if (nItem < 0 || nItem >= GetMenuItemCount(hMenu))
-		return;
-
-	UINT nMessage = 0;
-	UINT nCommand = 0;
-	LPARAM lParam = 0;
-
-	if (m_pRootPopup->m_bSysMenu)
-	{
-		nMessage = WM_SYSCOMMAND;
-		nCommand = ::GetMenuItemID(hMenu, nItem);
-	}
-	else if (m_bNofyByPos)
-	{
-		nMessage = WM_MENUCOMMAND;
-		nCommand = nItem;
-		lParam = (LPARAM)hMenu;
-	}
-	else
-	{
-		nMessage = WM_COMMAND;
-		nCommand =  ::GetMenuItemID(hMenu, nItem);
-	}
-
-	Notify(nMessage, nCommand, lParam);
-}
-
-void CXTPSkinPopupMenuState::OnButtonUp(CXTPSkinPopupMenu* pPopupMenu, int nItem)
-{
-	if (!m_bButtonDown)
-		return;
-
-	if (nItem == MENU_NOITEM)
-		return;
-
-	if (nItem != pPopupMenu->m_nSelected)
-		return;
-
-	if (pPopupMenu->m_bMenuBar)
-	{
-		if (GetNextPopup(pPopupMenu))
-		{
-			if (!pPopupMenu->m_bToggle)
-				return;
-
-			pPopupMenu->m_bToggle = FALSE;
-			Dismiss();
-			return;
-		}
-
-	}
-	else if (pPopupMenu->m_nShowTimer)
-	{
-		pPopupMenu->m_bToggle = FALSE;
-		OpenHierarchy(pPopupMenu);
-		return;
-	}
-
-	CXTPSkinPopupMenuItem* pItem = pPopupMenu->GetItem(pPopupMenu->m_nSelected);
-	if (!pItem)
-		return;
-
-	if (!pItem->IsSeparator() && pItem->IsEnabled() && !pItem->GetPopupMenu())
-	{
-		DismissNotify(pPopupMenu, pPopupMenu->m_nSelected);
-	}
-}
-
-void CXTPSkinPopupMenuState::OnButtonDblClick(CXTPSkinPopupMenu* pPopupMenu, int nItem)
-{
-	CXTPSkinPopupMenuItem* pItem = pPopupMenu->GetItem(nItem);
-	if (!pItem)
-		return;
-
-	if (!pItem->IsEnabled())
-		return;
-
-	HMENU hMenu = pItem->GetPopupMenu();
-	if (hMenu)
-	{
-		nItem = GetMenuDefaultItem(hMenu, MF_BYPOSITION, 0);
-		if (nItem == -1)
-			return;
-	}
-	else
-	{
-		hMenu = pPopupMenu->m_hMenu;
-	}
-
-	DismissNotify(hMenu, nItem);
-}
-
-void CXTPSkinPopupMenuState::OnButtonDown(CXTPSkinPopupMenu* pPopupMenu, int nItem, BOOL bClick)
-{
-	if (pPopupMenu->m_nSelected != nItem)
-	{
-		BOOL bOpenPopup = FALSE;
-
-		if (bClick)
-		{
-			bOpenPopup = TRUE;
-			pPopupMenu->m_bToggle = FALSE;
-
-		}
-		else
-		{
-			bOpenPopup = pPopupMenu->m_bDropNextPopup;
-		}
-
-		CXTPSkinPopupMenuItem* pItem = SelectItem(pPopupMenu, nItem);
-
-		if (pItem && pItem->GetPopupMenu() && bOpenPopup)
-		{
-			if (!OpenHierarchy(pPopupMenu))
-				return;
+			if (rcItem.top - pos.rcItem.top> rcItems.Height())
+				return nIndex;
 		}
 	}
 	else
 	{
-		if (bClick) pPopupMenu->m_bToggle = TRUE;
-
-		if (!HideNextHierarchy(pPopupMenu) && bClick && OpenHierarchy(pPopupMenu))
-			pPopupMenu->m_bToggle = FALSE;
-	}
-
-	if (bClick)
-	{
-		m_bButtonDown = TRUE;
-	}
-}
-
-void CXTPSkinPopupMenuState::Dismiss()
-{
-	Notify(0, 0, 0);
-}
-
-void CXTPSkinPopupMenuState::Notify(UINT nMessage, UINT nCommand, LPARAM lParam)
-{
-	if (m_bDismiss)
-		return;
-
-	m_bDismiss = TRUE;
-	m_bInsideMenuLoop = FALSE;
-	m_bButtonDown = FALSE;
-
-	CloseHierarchy(m_pRootPopup);
-	SelectItem(m_pRootPopup, MENU_NOITEM);
-
-	ReleaseCapture();
-
-	HWND hWndNotify = m_pRootPopup->m_hWndNotify;
-
-	if (hWndNotify == 0)
-		return;
-
-	if (!m_pRootPopup->m_bMenuBar)
-	{
-		CloseHierarchy(m_pRootPopup);
-		m_pRootPopup->DestroyWindow();
-	}
-
-	::SendMessage(hWndNotify, WM_MENUSELECT, (DWORD)MAKELONG(0, 0xFFFF), 0); // Send WM_MENUSELECT with flags = 0xFFFF
-
-	if (!m_bNoNotify)
-	{
-		SendMessage(hWndNotify, WM_EXITMENULOOP, 0, 0);
-	}
-
-	m_nLastCommand = nCommand;
-
-	if (nMessage != 0)
-	{
-		PlayEventSound(xtpSoundMenuCommand);
-
-		if (!m_bSynchronous)
+		for (i = nIndex + 1; i < GetItemCount(); i++)
 		{
-			if (nMessage == WM_COMMAND)
-				PostMessage(hWndNotify, nMessage, nCommand, lParam);
-			else
-				SendMessage(hWndNotify, nMessage, nCommand, lParam);
+			const GALLERYITEM_POSITION& pos = m_arrRects[i];
 
-			if (nMessage == WM_SYSCOMMAND && IsWindow(hWndNotify))
+			if (!pos.pItem->IsLabel() &&
+				pos.rcItem.bottom - rcItem.bottom < rcItems.Height())
 			{
-				::SendMessage(hWndNotify, WM_NCPAINT, 0, 0);
+				nIndex = i;
 			}
+
+			if (pos.rcItem.bottom - rcItem.bottom > rcItems.Height())
+				return nIndex;
 		}
 	}
+
+	return nIndex;
+
 }
 
-void CXTPSkinPopupMenuState::OnMouseMove(CPoint point)
+long CXTPControlGallery::GetNextInColumn(long nIndex, int nDirection) const
 {
-   if (point == m_ptMouseLast)
-		return;
+	if (GetItemCount() == 0)
+		return -1;
 
-	m_ptMouseLast = point;
+	if (nIndex == -1 || nIndex >= GetItemCount())
+		return GetNext(-1, nDirection);
 
-	int nItem;
-	CXTPSkinPopupMenu* pMenuHit = FindMenu(point, m_pRootPopup, &nItem);
+	int i;
+	RECT rcItem = m_arrRects[nIndex].rcItem;
 
-	if (m_nFocus == focusKeyboard)
+	if (nDirection < 0)
 	{
-		if (pMenuHit == NULL)
-			return;
-
-		m_nFocus = focusMouse;
-	}
-
-	if (pMenuHit == m_pAlternatePopup)
-	{
-		if (m_bButtonDown)
+		for (i = nIndex - 1; i >= 0; i--)
 		{
-			SwitchToAlternateMenu();
-		}
-		else
-		{
-			pMenuHit = NULL;
-		}
+			const GALLERYITEM_POSITION& pos = m_arrRects[i];
 
-	}
-
-	if (pMenuHit)
-	{
-		if (pMenuHit->m_bMenuBar)
-		{
-			OnButtonDown(pMenuHit, nItem, FALSE);
-		}
-		else
-		{
-			CXTPSkinPopupMenuItem* pItem = SelectItem(pMenuHit, nItem);
-			if (pItem && pItem->GetPopupMenu() && pItem->IsEnabled())
+			if (!pos.pItem->IsLabel() && pos.rcItem.left == rcItem.left)
 			{
-				if (!SetTimerToOpenHierarchy(pMenuHit))
-				{
-					HideNextHierarchy(pMenuHit);
-				}
+				return i;
 			}
 		}
 	}
 	else
 	{
-		SelectItem(GetActivePopup(), MENU_NOITEM);
-	}
-
-}
-
-CXTPSkinPopupMenu* CXTPSkinPopupMenuState::FindPopup(HWND hWnd) const
-{
-	CXTPSkinPopupMenu* pPopupMenu = m_pRootPopup;
-	while (pPopupMenu)
-	{
-		if (pPopupMenu->m_hWnd == hWnd)
-			return pPopupMenu;
-
-		pPopupMenu = GetNextPopup(pPopupMenu);
-	}
-
-	return NULL;
-}
-
-BOOL CXTPSkinPopupMenuState::RemoveMessage(UINT nMessage)
-{
-	MSG msg;
-	if (!PeekMessage(&msg, NULL, 0, 0, PM_NOYIELD | PM_NOREMOVE))
-	{
-		return FALSE;
-	}
-
-	if (msg.message == nMessage)
-	{
-		PeekMessage(&msg, NULL, msg.message, msg.message, PM_REMOVE);
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-int CXTPSkinPopupMenuState::FindNextItem(CXTPSkinPopupMenu* pPopupMenu, int nItem, BOOL bForward, UINT nFlags) const
-{
-	int nCount = pPopupMenu->GetCount();
-	int nStart = nItem;
-
-	if ((nItem < 0) && bForward)
-		// going forward from beginning -- stop after last menu item
-		nItem = nStart = nCount;
-	else if ((nItem >= nCount) && (!bForward))
-		// going backward from end -- stop after first menu item
-		nItem = nStart = -1;
-
-
-	if (!nCount)
-		return MENU_NOITEM;
-
-	BOOL bFirst = TRUE;
-
-	for (;;)
-	{
-		nItem += bForward ? +1 : -1;
-
-		if (nItem == nStart && !bFirst)
-			return MENU_NOITEM;
-
-		if (nItem >= nCount)
+		for (i = nIndex + 1; i < GetItemCount(); i++)
 		{
-			if (nFlags)
-				return MENU_NOITEM;
+			const GALLERYITEM_POSITION& pos = m_arrRects[i];
 
-			nItem = -1;
-			continue;
-		}
-		else if (nItem < 0)
-		{
-			if (nFlags)
-				return MENU_NOITEM;
-
-			nItem = nCount;
-			continue;
+			if (!pos.pItem->IsLabel() && pos.rcItem.left == rcItem.left)
+			{
+				return i;
+			}
 		}
 
-		bFirst = FALSE;
-
-		CXTPSkinPopupMenuItem* pItem = pPopupMenu->GetItem(nItem);
-
-		if (pItem->IsSeparator())
-			continue;
-
-		if (pPopupMenu->m_bMenuBar && !pPopupMenu->m_bSysMenu && pItem->IsMDISysButton())
-			continue;
-
-		break;
 	}
 
-	return nItem;
+	return -1;
 }
 
-void CXTPSkinPopupMenuState::OnKeyDown(CXTPSkinPopupMenu* pPopupMenu, WPARAM nKey)
+long CXTPControlGallery::GetNext(long nIndex, int nDirection) const
 {
-	if (m_bButtonDown)
-		return;
+	ASSERT(nDirection == +1 || nDirection == -1);
+	if (GetItemCount() == 0) return -1;
 
-	switch (nKey)
+	long nNext = nIndex + nDirection;
+
+	if (nDirection == -1 && nIndex == -1)
 	{
-		case VK_MENU:
-		case VK_F10:
-			Dismiss();
-			return;
-
-		case VK_ESCAPE:
-
-			if (pPopupMenu->m_bMenuBar || pPopupMenu == m_pRootPopup || pPopupMenu->m_pPrevPopup == NULL)
-			{
-				Dismiss();
-			}
-			else
-			{
-				CXTPSkinPopupMenu* pPrevPopup = pPopupMenu->m_pPrevPopup;
-				CloseHierarchy(pPrevPopup);
-
-				pPrevPopup->m_bDropNextPopup = FALSE;
-			}
-			return;
-
-		case VK_UP:
-		case VK_DOWN:
-
-			if (pPopupMenu->m_bMenuBar)
-			{
-				OpenHierarchy(pPopupMenu);
-			}
-			else
-			{
-				int nItem = FindNextItem(pPopupMenu, pPopupMenu->m_nSelected, (nKey == VK_UP ? FALSE : TRUE), 0);
-				SelectItem(pPopupMenu, nItem);
-			}
-
-			return;
-
-		case VK_LEFT:
-		case VK_RIGHT:
-			{
-				int nScreenKey = GetWindowLong(pPopupMenu->m_hWnd, GWL_EXSTYLE) & WS_EX_LAYOUTRTL ? (nKey == VK_LEFT ? VK_RIGHT : VK_LEFT) : (int)nKey;
-
-				if (!pPopupMenu->m_bMenuBar && nScreenKey == VK_RIGHT && !GetNextPopup(pPopupMenu))
-				{
-					if (OpenHierarchy(pPopupMenu))
-						return;
-				}
-				BOOL bHierarchyWasDropped = FALSE;
-
-				if (GetNextPopup(pPopupMenu))
-				{
-					bHierarchyWasDropped = TRUE;
-
-					if (nScreenKey == VK_LEFT && !pPopupMenu->m_bMenuBar)
-					{
-						CloseHierarchy(pPopupMenu);
-						return;
-					}
-				}
-				else
-				{
-					if (pPopupMenu->m_bDropNextPopup) bHierarchyWasDropped = TRUE;
-				}
-
-
-				if (pPopupMenu->m_pPrevPopup)
-				{
-					OnKeyDown(pPopupMenu->m_pPrevPopup, nKey);
-					return;
-				}
-
-				if (pPopupMenu->m_bMenuBar)
-				{
-					int nItem = FindNextItem(pPopupMenu, pPopupMenu->m_nSelected, (nScreenKey == VK_RIGHT  ? TRUE : FALSE), 1);
-
-					if (nItem == MENU_NOITEM)
-					{
-						if (m_pAlternatePopup)
-						{
-							if (SwitchToAlternateMenu())
-							{
-								pPopupMenu = m_pRootPopup;
-								nItem = FindNextItem(pPopupMenu, MENU_NOITEM, (nScreenKey == VK_RIGHT ? TRUE : FALSE), 0);
-							}
-						}
-
-					}
-
-					if (nItem != MENU_NOITEM)
-					{
-						if (GetNextPopup(pPopupMenu))
-						{
-							CloseHierarchy(pPopupMenu);
-						}
-
-						SelectItem(pPopupMenu, nItem);
-
-						if (bHierarchyWasDropped)
-						{
-							OpenHierarchy(pPopupMenu);
-						}
-					}
-				}
-			}
-			return;
-
-		case VK_RETURN:
-			{
-				CXTPSkinPopupMenuItem* pItem = pPopupMenu->GetItem(pPopupMenu->m_nSelected);
-				if (!pItem)
-					return;
-
-				if (!pItem->IsEnabled())
-				{
-					Dismiss();
-					return;
-				}
-
-				if (pItem->GetPopupMenu())
-				{
-					OpenHierarchy(pPopupMenu);
-					return;
-				}
-
-				DismissNotify(pPopupMenu, pPopupMenu->m_nSelected);
-
-			}
-			return;
+		nNext = GetItemCount() - 1;
 	}
+
+	BOOL bCircle = FALSE;
+
+	while (nNext != nIndex)
+	{
+		if (nNext >= GetItemCount())
+		{
+			if ((nIndex == -1 && nDirection == +1) || bCircle) return -1;
+			nNext = 0;
+			bCircle = TRUE;
+		}
+		if (nNext < 0)
+		{
+			if ((nIndex == -1 && nDirection == -1) || bCircle) return -1;
+			nNext = GetItemCount() - 1;
+			bCircle = TRUE;
+		}
+
+		if (!GetItem(nNext)->IsLabel())
+		{
+			return nNext;
+		}
+		nNext += nDirection;
+	}
+	return nNext;
 }
 
-int CXTPSkinPopupMenuState::FindChar(CXTPSkinPopupMenu* pPopupMenu, WPARAM nKey, int nItem)
+void CXTPControlGallery::SetSelectedItem(int nItem)
 {
-	if (!nKey)
-		return MENU_NOITEM;
+	int nSelected = m_nSelected;
 
-	CString sKey((TCHAR)nKey);
-	sKey.MakeLower();
+	m_bHideSelection = FALSE;
+	m_nSelected = nItem;
+	m_bPressed = FALSE;
+	m_bKeyboardSelected = TRUE;
 
-	int nResult = MENU_NOITEM;
-	int nFirst = MENU_NOITEM;
+	CXTPControlGalleryItems* pItems = GetItems();
 
-	int nStart = nItem;
+	if (pItems && pItems->m_bClipItems && nSelected != -1)
+	{
+		InvalidateItems(GetItemDrawRect(nSelected), TRUE);
+	}
 
-	if (nStart < 0)
-		nStart = FindNextItem(pPopupMenu, -1, FALSE, 0);
+	EnsureVisible(m_nSelected);
+
+	if (pItems && pItems->m_bClipItems && m_nSelected != -1)
+	{
+		InvalidateItems(GetItemDrawRect(m_nSelected), FALSE);
+	}
+
+	if (!pItems || !pItems->m_bClipItems)
+	{
+		InvalidateItems();
+	}
+
+	if (m_nSelected != -1)
+	{
+		AccessibleNotifyWinEvent(EVENT_OBJECT_FOCUS , GetParent()->GetSafeHwnd(), GetID(), m_nSelected + 1);
+	}
+
+	if (m_nSelected != -1 && !m_bPreview)
+	{
+		m_bPreview = TRUE;
+		NotifySite(XTP_GN_PREVIEWSTART);
+	}
+
+	if (m_bPreview)
+	{
+		NotifySite(XTP_GN_PREVIEWCHANGE);
+	}
+
+	if (m_nSelected == -1 && m_bPreview)
+	{
+		m_bPreview = FALSE;
+		NotifySite(XTP_GN_PREVIEWCANCEL);
+	}
+
+	OnSelectedItemChanged();
+}
+
+int CXTPControlGallery::FindItem(int nStartAfter, LPCTSTR lpszItem, BOOL bExact) const
+{
+	if (GetItemCount() == 0)
+		return -1;
+
+	UINT len1 = lpszItem ? (UINT)_tcslen(lpszItem) : 0;
+	if (len1 < 1)
+		return -1;
+
+	int nItem = nStartAfter + 1;
+	if (nItem >= GetItemCount())
+		nItem = 0;
+
+	if (nItem < 0)
+		nItem = 0;
+
+	int nStop = nItem;
 
 	do
 	{
-		int nPrev = nItem;
+		CXTPControlGalleryItem* pItem = GetItem(nItem);
 
-		nItem = FindNextItem(pPopupMenu, nItem, TRUE, 0);
-		if (nItem == MENU_NOITEM || nItem == nFirst)
-			break;
-
-		if (nFirst == MENU_NOITEM)
-			nFirst = nItem;
-
-		CString str = pPopupMenu->GetMenuString(nItem);
-		if (!str.IsEmpty())
+		if (bExact )
 		{
-			str.MakeLower();
+			if (pItem->GetCaption().CompareNoCase(lpszItem) == 0)
+				return nItem;
+		}
+		else
+		{
+			UINT len2 = pItem->GetCaption().GetLength();
 
-			int nIndex = str.Find(_T('&'));
-			if (nIndex == -1)
+			int nResult = CompareString(LOCALE_SYSTEM_DEFAULT, NORM_IGNORECASE, lpszItem, min(len1,len2),
+				pItem->GetCaption(), min(len1,len2));
+
+			if (nResult == CSTR_EQUAL)
 			{
-				if (str[0] == sKey[0] && nResult == MENU_NOITEM)
-					nResult = nItem;
-			}
-			else
-			{
-				if (str[nIndex + 1] == sKey[0])
+				if (len1 <= len2)
 				{
 					return nItem;
 				}
 			}
+
+
 		}
 
-		if (nItem == nPrev)
-			break;
-
-	} while (nItem != nStart);
-
-	return nResult;
-}
-
-void CXTPSkinPopupMenuState::OnChar(CXTPSkinPopupMenu* pPopupMenu, WPARAM nKey)
-{
-	int nItem = FindChar(pPopupMenu, nKey, pPopupMenu->m_nSelected);
-	BOOL bExecute = FALSE;
-
-	if (nItem != MENU_NOITEM)
-	{
-		int nFirstItem = nItem;
-
-		while (!pPopupMenu->GetItem(nItem)->IsEnabled())
-		{
-			nItem = FindChar(pPopupMenu, nKey, nItem);
-
-			if (nItem == nFirstItem)
-			{
-				Dismiss();
-				return;
-			}
-		}
-		int nItemExecute = nItem;
-
-		do
-		{
-			nItem = FindChar(pPopupMenu, nKey, nItem);
-
-		} while (!pPopupMenu->GetItem(nItem)->IsEnabled() && (nItem != nFirstItem));
-
-		if (nFirstItem == nItem || nItem == nItemExecute)
-			bExecute = TRUE;
-
-		nItem = nItemExecute;
-	}
-
-	if (nItem == MENU_NOITEM && pPopupMenu->m_bMenuBar && nKey == ' ')
-	{
-		if (pPopupMenu->m_bSysMenu)
-		{
+		if (++nItem == GetItemCount())
 			nItem = 0;
-			bExecute = TRUE;
-		}
-		else if (m_pAlternatePopup)
-		{
-			if (SwitchToAlternateMenu())
-			{
-				OnChar(m_pRootPopup, nKey);
-			}
-			return;
-		}
+
+	} while (nItem != nStop);
+
+	return -1;
+}
+
+int CXTPControlGallery::GetScrollPos() const
+{
+	return m_nScrollPos;
+}
+
+int CXTPControlGallery::SetTopIndex(int nIndex)
+{
+	if (nIndex == -1 || nIndex > m_arrRects.GetSize())
+		return -1;
+
+	SetScrollPos(m_arrRects[nIndex].rcItem.top);
+	return 0;
+}
+
+CString CXTPControlGallery::GetItemCaption(int nIndex)
+{
+	CXTPControlGalleryItem* pItem = GetItem(nIndex);
+
+	if (pItem)
+		return pItem->GetCaption();
+
+	return _T("");
+}
+
+void CXTPControlGallery::DoScroll(int cmd, int pos)
+{
+	int y = m_bAnimation ? m_nScrollPosTarget : m_nScrollPos;
+	CRect rcItems = GetItemsRect();
+
+	CXTPControlGalleryItems* pItems = GetItems();
+	if (!pItems)
+		return;
+
+	switch (cmd)
+	{
+	case SB_TOP:
+		y = 0;
+		break;
+	case SB_BOTTOM:
+		y = m_nTotalHeight;
+		break;
+	case SB_LINEUP:
+		y -= pItems->GetItemSize().cy;
+		break;
+	case SB_LINEDOWN:
+		y += pItems->GetItemSize().cy;
+		break;
+	case SB_PAGEUP:
+		y -= rcItems.Height();
+		break;
+	case SB_PAGEDOWN:
+		y += rcItems.Height();
+		break;
+	case SB_THUMBTRACK:
+		y = pos;
+		break;
 	}
 
-#if 0
-	if (nItem == MENU_NOITEM && pPopupMenu->m_bMenuBar && m_pAlternatePopup && m_pAlternatePopup != pPopupMenu)
+	if (GetCommandBar() && (cmd == SB_LINEUP || cmd == SB_LINEDOWN || cmd == SB_ENDSCROLL))
 	{
-		nItem = FindChar(m_pAlternatePopup, nKey, 0);
-		if (nItem != MENU_NOITEM)
-		{
-			if (SwitchToAlternateMenu())
-			{
-				OnChar(m_pRootPopup , nKey);
-			}
-			return;
-		}
+		StartAnimation(y);
 	}
-#endif
-
-	if (nItem == MENU_NOITEM && pPopupMenu->m_hWndNotify && !m_bNoNotify)
+	else
 	{
-		int nFlag = (pPopupMenu->m_bSysMenu ? MF_SYSMENU : 0) | (pPopupMenu->m_bMenuBar ? 0 : MF_POPUP);
-
-		LRESULT lResult = ::SendMessage(pPopupMenu->m_hWndNotify, WM_MENUCHAR, MAKELONG((WORD)nKey, (WORD)nFlag), (LPARAM)pPopupMenu->m_hMenu);
-
-		switch (HIWORD(lResult))
-		{
-		case MNC_IGNORE:
-			MessageBeep(0);
-
-			if (nFlag & MF_POPUP)
-				return;
-
-			Dismiss();
-			return;
-
-		case MNC_CLOSE:
-			Dismiss();
-			return;
-
-		case MNC_EXECUTE:
-			bExecute = TRUE;
-
-		case MNC_SELECT:
-			nItem = (short)LOWORD(lResult);
-			if (nItem < 0 || nItem < pPopupMenu->GetCount())
-				return;
-
-			break;
-		}
-	}
-
-	if (nItem != MENU_NOITEM)
-	{
-		SelectItem(pPopupMenu, nItem);
-
-		if (bExecute)
-		{
-			OnKeyDown(pPopupMenu, VK_RETURN);
-		}
+		SetScrollPos(y);
 	}
 }
 
-BOOL CXTPSkinPopupMenuState::SwitchToAlternateMenu()
+void CXTPControlGallery::GetScrollInfo(SCROLLINFO* pSI)
 {
-	if (!m_pRootPopup->m_bMenuBar || !m_pAlternatePopup)
+	CRect rcItems = GetItemsRect();
+
+	pSI->nMin = 0;
+	pSI->nMax = max(0, m_nTotalHeight - 1);
+	pSI->nPos = m_nScrollPos;
+	pSI->nPage = rcItems.Height();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+
+CSize CXTPControlGallery::GetSize(CDC* pDC)
+{
+	if (IsShowAsButton())
+	{
+		int nWidth = m_nWidth, nHeight = m_nHeight;
+		m_nWidth = m_nHeight = 0;
+
+		CSize sz = CXTPControlPopup::GetSize(pDC);
+		m_nWidth = nWidth; m_nHeight = nHeight;
+		return sz;
+	}
+
+	return CSize(max(IsResizable() ? GetCustomizeMinWidth() : 0, m_nWidth), m_nHeight);
+}
+
+void CXTPControlGallery::RedrawScrollBar()
+{
+	InvalidateItems(NULL, FALSE);
+}
+
+void CXTPControlGallery::DrawScrollBar(CDC* pDC)
+{
+	if (GetCommandBar())
+		GetGalleryPaintManager()->DrawPopupScrollBar(pDC, this);
+	else
+		GetGalleryPaintManager()->DrawScrollBar(pDC, this);
+}
+
+void CXTPControlGallery::Draw(CDC* pDC)
+{
+	if (IsShowAsButton())
+	{
+		CXTPControlPopup::Draw(pDC);
+		return;
+	}
+	FillControl(pDC, m_rcControl);
+
+	DrawItems(pDC);
+
+	if (m_bShowScrollBar)
+	{
+		DrawScrollBar(pDC);
+	}
+}
+
+void CXTPControlGallery::OnMouseMove(CPoint point)
+{
+	if (IsShowAsButton())
+	{
+		CXTPControlPopup::OnMouseMove(point);
+		return;
+	}
+
+	PerformMouseMove(point);
+
+	int ht = HitTestScrollBar(point);
+
+	if (ht != m_spi.ht)
+	{
+		m_spi.ht = ht;
+		RedrawParent();
+	}
+}
+
+void CXTPControlGallery::HideSelection()
+{
+	m_bHideSelection = TRUE;
+	m_bKeyboardSelected = FALSE;
+
+	if (m_nSelected != -1)
+	{
+		CXTPControlGalleryItems* pItems = GetItems();
+
+		if (pItems && pItems->m_bClipItems)
+		{
+			InvalidateItems(GetItemDrawRect(m_nSelected), FALSE);
+		}
+		else
+		{
+			InvalidateItems();
+		}
+	}
+
+	if (m_bPreview && m_nSelected != -1)
+	{
+		NotifySite(XTP_GN_PREVIEWCHANGE);
+	}
+
+	if (m_bPreview)
+	{
+		m_bPreview = FALSE;
+		NotifySite(XTP_GN_PREVIEWCANCEL);
+	}
+
+	OnSelectedItemChanged();
+}
+
+void CXTPControlGallery::OnSelectedItemChanged()
+{
+	NotifySite(XTP_GN_SELCHANGE);
+}
+
+BOOL CXTPControlGallery::OnSetSelected(int bSelected)
+{
+	if (IsShowAsButton())
+	{
+		return CXTPControlPopup::OnSetSelected(bSelected);
+	}
+
+	if (!bSelected)
+	{
+		m_bPressed = FALSE;
+		m_spi.ht = HTNOWHERE;
+		HideSelection();
+	}
+
+	if (IsKeyboardSelected(bSelected) && !IsItemSelected())
+	{
+		SetSelectedItem(GetNext(-1, bSelected == TRUE_KEYBOARD_PREV ? -1 : +1));
+	}
+
+	return CXTPControl::OnSetSelected(bSelected);
+}
+
+
+BOOL CXTPControlGallery::IsFocused() const
+{
+	return IsShowAsButton() ? FALSE : GetSelected();
+}
+
+
+BOOL CXTPControlGallery::OnHookKeyDown(UINT nChar, LPARAM /*lParam*/)
+{
+	ASSERT(IsFocused());
+
+	if (!IsFocused())
 		return FALSE;
 
-	SelectItem(m_pRootPopup, MENU_NOITEM);
+	int nSelected;
+	CXTPDrawHelpers::KeyToLayout(CXTPControl::GetParent(), nChar);
 
-	CXTPSkinPopupMenu* pAlternatePopup = m_pAlternatePopup;
-	m_pAlternatePopup = m_pRootPopup;
-	m_pRootPopup = pAlternatePopup;
-
-	m_pRootPopup->m_bDropNextPopup = m_pAlternatePopup->m_bDropNextPopup;
-
-	return TRUE;
-}
-
-BOOL CXTPSkinPopupMenuState::HandleMenuMessage(LPMSG lpMsg)
-{
-	switch (lpMsg->message)
+	switch (nChar)
 	{
-		case WM_RBUTTONDOWN:
-		case WM_NCRBUTTONDOWN:
-			if (!m_bRightButton)
-			{
-				m_nFocus = CXTPSkinPopupMenuState::focusMouse;
-				CPoint point;
-				GetCursorPos(&point);
-
-				int nItem = 0;
-				CXTPSkinPopupMenu* pMenuHit = FindMenu(point, m_pRootPopup, &nItem);
-
-				if (!pMenuHit)
-				{
-					Dismiss();
-					return TRUE;
-				}
-
-				RemoveMessage(lpMsg->message);
-				return TRUE;
-			}
-
-		case WM_LBUTTONDBLCLK:
-		case WM_NCLBUTTONDBLCLK:
-		{
-			CPoint point;
-			GetCursorPos(&point);
-
-			int nItem = 0;
-			CXTPSkinPopupMenu* pMenuHit = FindMenu(point, m_pRootPopup, &nItem);
-
-			if (!pMenuHit)
-			{
-				Dismiss();
-				return TRUE;
-			}
-
-			OnButtonDblClick(pMenuHit, nItem);
-		}
+	case VK_HOME:
+		SetSelectedItem(GetNext(-1, +1));
 		return TRUE;
 
-		case WM_LBUTTONDOWN:
-		case WM_NCLBUTTONDOWN:
+	case VK_END:
+		SetSelectedItem(GetNext(-1, -1));
+		return TRUE;
+
+	case VK_LEFT:
+		SetSelectedItem(GetNextInRow(m_nSelected, -1));
+		return TRUE;
+
+	case VK_RIGHT:
+		SetSelectedItem(GetNextInRow(m_nSelected, +1));
+		return TRUE;
+
+	case VK_UP:
+		nSelected = GetNextInColumn(m_nSelected, -1);
+
+		if (nSelected == -1 && GetControls()->GetNext(m_nIndex, -1) == m_nIndex)
 		{
-			m_nFocus = CXTPSkinPopupMenuState::focusMouse;
-			CPoint point;
-			GetCursorPos(&point);
+			nSelected = GetNext(-1, -1);
+		}
 
-			int nItem = 0;
-			CXTPSkinPopupMenu* pMenuHit = FindMenu(point, m_pRootPopup, &nItem);
-
-			if (!pMenuHit && !nItem)
-			{
-				Dismiss();
-				return TRUE;
-			}
-
-			if (pMenuHit == m_pAlternatePopup)
-			{
-				SwitchToAlternateMenu();
-			}
-
-			if (pMenuHit)
-			{
-				OnButtonDown(pMenuHit, nItem, TRUE);
-			}
-
-			RemoveMessage(lpMsg->message);
-
+		if (nSelected != -1)
+		{
+			SetSelectedItem(nSelected);
 			return TRUE;
 		}
-		case WM_RBUTTONUP:
-		case WM_NCRBUTTONUP:
-			if (!m_bRightButton)
-			{
-				if (m_bButtonDown)
-				{
-					RemoveMessage(lpMsg->message);
-					return TRUE;
-				}
+		return FALSE;
 
-				return TRUE;
-			}
+	case VK_PRIOR:
+		SetSelectedItem(GetNextInPage(m_nSelected, -1));
+		return TRUE;
 
-		case WM_LBUTTONUP:
-		case WM_NCLBUTTONUP:
-			{
-				if (!m_bButtonDown)
-					return TRUE;
+	case VK_NEXT:
+		SetSelectedItem(GetNextInPage(m_nSelected, +1));
+		return TRUE;
 
+	case VK_DOWN:
+		nSelected = GetNextInColumn(m_nSelected, +1);
 
-				CPoint point;
-				GetCursorPos(&point);
+		if (nSelected == -1 && GetControls()->GetNext(m_nIndex, +1) == m_nIndex)
+		{
+			nSelected = GetNext(-1, +1);
+		}
 
-				int nItem = 0;
-				CXTPSkinPopupMenu* pMenuHit = FindMenu(point, m_pRootPopup, &nItem);
-
-
-				if (m_pRootPopup->m_bMenuBar)
-				{
-					if (pMenuHit == NULL)
-					{
-						Dismiss();
-						return TRUE;
-					}
-				}
-				else
-				{
-					if (pMenuHit == NULL)
-					{
-						if (!m_bFirstClick)
-						{
-							Dismiss();
-							return TRUE;
-						}
-					}
-					m_bFirstClick = FALSE;
-				}
-
-				if (pMenuHit)
-				{
-					OnButtonUp(pMenuHit, nItem);
-				}
-
-				m_bButtonDown = FALSE;
-
-				return TRUE;
-			}
-
-		case WM_MOUSEMOVE:
-		case WM_NCMOUSEMOVE:
-			{
-				CPoint point;
-				GetCursorPos(&point);
-
-				OnMouseMove(point);
-				return TRUE;
-			}
-
-		case WM_TIMER:
-			{
-				CXTPSkinPopupMenu* pPopupMenu = FindPopup(lpMsg->hwnd);
-				if (pPopupMenu)
-				{
-					if (lpMsg->wParam == TIMERID_MENUSHOW && pPopupMenu->m_nShowTimer == lpMsg->wParam)
-					{
-						pPopupMenu->m_bToggle = FALSE;
-						OpenHierarchy(pPopupMenu);
-					}
-					if (lpMsg->wParam == TIMERID_MENUHIDE && pPopupMenu->m_nHideTimer == lpMsg->wParam)
-					{
-						pPopupMenu->m_bToggle = FALSE;
-						CloseHierarchy(pPopupMenu);
-					}
-					return TRUE;
-				}
-
-				return FALSE;
-			}
-
-		case WM_KEYDOWN:
-		case WM_SYSKEYDOWN:
-			{
-				if (m_bButtonDown)
-					return TRUE;
-
-				m_nFocus = focusKeyboard;
-
-				switch (lpMsg->wParam)
-				{
-					case VK_UP:
-					case VK_DOWN:
-					case VK_LEFT:
-					case VK_RIGHT:
-					case VK_RETURN:
-					case VK_CANCEL:
-					case VK_ESCAPE:
-					case VK_MENU:
-					case VK_F10:
-					case VK_F1:
-						OnKeyDown(GetActivePopup(), lpMsg->wParam);
-						break;
-
-					case VK_TAB:
-						if (m_pRootPopup->m_bMenuBar && !GetNextPopup(m_pRootPopup))
-						{
-							Dismiss();
-							return TRUE;
-						}
-
-					default:
-						TranslateMessage(lpMsg);
-						break;
-				}
-				return TRUE;
-			}
-
-		case WM_CHAR:
-		case WM_SYSCHAR:
-			OnChar(GetActivePopup(), lpMsg->wParam);
+		if (nSelected != -1)
+		{
+			SetSelectedItem(nSelected);
 			return TRUE;
+		}
+		return FALSE;
 
-		case WM_SYSKEYUP:
-			return TRUE;
+	case VK_TAB:
+		if (GetKeyState(VK_SHIFT) >= 0)
+		{
+			nSelected = GetNext(m_nSelected, +1);
+			if (nSelected > m_nSelected)
+			{
+				SetSelectedItem(nSelected);
+				return TRUE;
+			}
+		}
+		else
+		{
+			nSelected = GetNext(m_nSelected, -1);
+			if (nSelected < m_nSelected)
+			{
+				SetSelectedItem(nSelected);
+				return TRUE;
+			}
+		}
+		return FALSE;
 
-		case WM_KEYUP:
-			TranslateMessage(lpMsg);
-			return TRUE;
+	case VK_RETURN:
+		OnExecute();
+		break;
 	}
 
 	return FALSE;
 }
 
-BOOL CXTPSkinPopupMenuState::ContinueLoop() const
+BOOL CXTPControlGallery::OnHookMouseWheel(UINT /*nFlags*/, short zDelta, CPoint /*pt*/)
 {
-	return (::GetCapture() == m_hWndCapture) && (m_pRootPopup != NULL) && m_bInsideMenuLoop;
+	CXTPControlGalleryItems* pItems = GetItems();
+	if (!pItems)
+		return FALSE;
+
+	SetScrollPos(m_nScrollPos + (zDelta < 0 ? 3 * pItems->GetItemSize().cy : -3 * pItems->GetItemSize().cy));
+	return TRUE;
 }
 
-void CXTPSkinPopupMenuState::EndMenuLoop()
+void CXTPControlGallery::OnScrollChanged()
 {
-	Dismiss();
+	SetupScrollInfo();
 }
 
-void CXTPSkinPopupMenuState::RunLoop(LPARAM lParam)
+void CXTPControlGallery::OnClick(BOOL bKeyboard /*= FALSE*/, CPoint point /*= CPoint(0, 0)*/)
 {
-
-	CPoint pt(0, 0);
-
-	m_bInsideMenuLoop = TRUE;
-	m_bDismiss = FALSE;
-	BOOL bSendIdle = TRUE;
-
-	if (!m_bMenuStarted)
+	if (IsShowAsButton())
 	{
-		if (!StartMenu(focusMouse))
-		{
-			EndMenuLoop();
-			return;
-		}
-
-		if (m_pRootPopup->m_bMenuBar)
-		{
-			MSG msg;
-			msg.message = WM_LBUTTONDOWN;
-			msg.wParam = MK_LBUTTON;
-			msg.lParam = lParam;
-			msg.hwnd = m_pRootPopup->m_hWnd;
-			HandleMenuMessage(&msg);
-		}
+		CXTPControlPopup::OnClick(bKeyboard, point);
+		return;
 	}
 
-	// get messages until capture lost or cancelled/accepted
-	while (ContinueLoop())
+	if (IsCustomizeMode())
 	{
-		MSG msg;
+		m_pParent->SetPopuped(-1);
+		m_pParent->SetSelected(-1);
+		CustomizeStartDrag(point);
+		return;
+	}
 
-		BOOL bPeek = PeekMessage(&msg, NULL, 0, 0, PM_NOYIELD | PM_NOREMOVE);
+	if (!GetEnabled())
+		return;
 
-		if (bPeek)
+	if (!bKeyboard)
+	{
+		OnMouseMove(point);
+
+		if (m_spi.ht == XTP_HTSCROLLPOPUP)
 		{
-			BOOL bQueue = (msg.message == WM_LBUTTONDOWN ||
-				msg.message == WM_RBUTTONDOWN ||
-				msg.message == WM_NCLBUTTONDOWN ||
-				msg.message == WM_NCRBUTTONDOWN);
-
-			if (!bQueue)
-			{
-				PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
-			}
-
-			if (!HandleMenuMessage(&msg))
-			{
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
-
-
-			if (!ContinueLoop())
-				break;
-
-			if ((msg.message == WM_TIMER) || (msg.message == WM_PAINT))
-				continue;
-
-			bSendIdle = TRUE;
+			m_pParent->SetPopuped(m_nIndex);
+		}
+		else if (m_spi.ht != HTNOWHERE)
+		{
+			PerformTrackInit(CXTPControl::GetParent()->GetSafeHwnd(), point, &m_spi, (GetKeyState(VK_SHIFT) < 0) ? TRUE : FALSE);
 		}
 		else
 		{
-			if (!ContinueLoop())
-				break;
-
-			if (bSendIdle && !m_bNoNotify && m_pRootPopup->m_hWndNotify)
-			{
-				SendMessage(m_pRootPopup->m_hWndNotify, WM_ENTERIDLE, MSGF_MENU, (LPARAM)GetActivePopup()->m_hWnd);
-
-			}
-			bSendIdle = FALSE;
-
-			WaitMessage();
+			m_pParent->SetPopuped(-1);
+			PerformMouseDown(point);
 		}
 	}
+	else
+	{
 
-	m_bInsideMenuLoop = FALSE;
-	m_hWndCapture = 0;
+	}
+}
 
-	EndMenuLoop();
-	ReleaseCapture();
-
+void CXTPControlGallery::OnLButtonUp(CPoint point)
+{
+	if (IsShowAsButton())
+	{
+		CXTPControlPopup::OnLButtonUp(point);
+	}
+	else
+	{
+		PerformMouseUp(point);
+	}
 }
 
 
-void CXTPSkinObjectApplicationFrame::OnContextMenu(CWnd* pWnd, CPoint pos)
+CRect CXTPControlGallery::GetScrollBarRect()
 {
-	if ((GetSkinManager()->GetApplyOptions() & xtpSkinApplyMenus) == 0)
+	if (!m_bShowScrollBar)
+		return CRect(0, 0, 0, 0);
+
+	CRect rc(m_rcControl);
+
+	rc.left = rc.right - (GetCommandBar() ? GetGalleryPaintManager()->m_cxPopup :
+		GetGalleryPaintManager()->m_cxVScroll);
+
+	if (m_bShowBorders)
 	{
-		CXTPSkinObjectFrame::OnContextMenu(pWnd, pos);
-		return;
+		rc.top++;
+		rc.bottom--;
+		rc.right--;
+		rc.left--;
 	}
 
-	if (pWnd && pWnd->m_hWnd != m_hWnd)
-	{
-		CXTPSkinObjectFrame::OnContextMenu(pWnd, pos);
-		return;
-	}
+	if (HasBottomSeparator())
+		rc.bottom -= 2;
 
-	LRESULT nHit = SendMessage(WM_NCHITTEST, 0, MAKELONG(pos.x, pos.y));
-
-	if (nHit == HTCAPTION || nHit == HTSYSMENU || nHit == HTMINBUTTON  || nHit == HTMAXBUTTON || nHit == HTCLOSE)
-	{
-		HMENU hMenu = ::GetSystemMenu(m_hWnd, FALSE);
-		if (hMenu)
-		{
-			int nDefault = SC_CLOSE;
-
-			if (nHit != HTSYSMENU)
-			{
-				if (GetStyle() & (WS_MAXIMIZE | WS_MINIMIZE)) nDefault = SC_RESTORE; else nDefault = SC_MAXIMIZE;
-			}
-
-			::SetMenuDefaultItem(hMenu, nDefault, MF_BYCOMMAND);
-
-			CXTPSkinObjectApplicationFrame::TrackPopupMenu(hMenu, TPM_RIGHTBUTTON | TPM_SYSMENU, pos.x, pos.y, m_hWnd, 0);
-
-			return;
-		}
-	}
-	else if (nHit == HTMENU)
-		return;
-
-	CXTPSkinObjectFrame::OnContextMenu(pWnd, pos);
+	return rc;
 }
 
-BOOL CXTPSkinObjectApplicationFrame::TrackPopupMenu(HMENU hMenu, UINT dwFlags, int x, int y, HWND hWnd, CONST RECT *prcRect)
+void CXTPControlGallery::CalcScrollBarInfo(LPRECT lprc, SCROLLBARPOSINFO* pSBInfo, SCROLLINFO* pSI)
 {
-	CXTPSkinPopupMenuState* pState = new CXTPSkinPopupMenuState(hWnd);
-	BOOL bResult = pState->TrackPopupMenu(hMenu, dwFlags, x, y, hWnd, prcRect);
-	pState->EndState();
+	if (GetCommandBar())
+	{
+		pSBInfo->rc = *lprc;
+		pSBInfo->pxTop = lprc->top;
+		pSBInfo->pxBottom = lprc->bottom;
+		pSBInfo->pxLeft = lprc->left;
+		pSBInfo->pxRight = lprc->right;
 
-	return bResult;
+		pSBInfo->pos = pSI->nPos;
+		pSBInfo->page = pSI->nPage;
+		pSBInfo->posMin = pSI->nMin;
+		pSBInfo->posMax = pSI->nMax;
+
+		pSBInfo->pxDownArrow = pSBInfo->pxUpArrow  = pSBInfo->pxTop + GetGalleryPaintManager()->m_cyPopupUp;
+		pSBInfo->pxPopup = pSBInfo->pxDownArrow + GetGalleryPaintManager()->m_cyPopupDown;
+	}
+	else
+	{
+		CXTPScrollBase::CalcScrollBarInfo(lprc, pSBInfo, pSI);
+	}
 }
 
-#define CS_DROPSHADOW       0x00020000
-
-#ifndef SPI_GETDROPSHADOW
-#define SPI_GETDROPSHADOW     0x1024
-#endif
-
-BOOL CXTPSkinPopupMenu::Create(HWND hwndParent)
+CWnd* CXTPControlGallery::GetParentWindow() const
 {
-	UINT nClassStyle = CS_SAVEBITS | CS_DBLCLKS;
+	return CXTPControl::GetParent();
+}
 
-	BOOL bDropShadow = FALSE;
+void CXTPControlGallery::SetRect(CRect rcControl)
+{
+	if (m_rcControl == rcControl)
+		return;
 
-	if (XTPSystemVersion()->IsWinXPOrGreater() && SystemParametersInfo(SPI_GETDROPSHADOW, 0, &bDropShadow, 0))
+	CXTPControl::SetRect(rcControl);
+	Reposition();
+}
+
+void CXTPControlGallery::Copy(CXTPControl* pControl, BOOL bRecursive)
+{
+	ASSERT(DYNAMIC_DOWNCAST(CXTPControlGallery, pControl));
+
+	CXTPControlPopup::Copy(pControl, bRecursive);
+
+	CXTPControlGallery* pGallery = (CXTPControlGallery*)pControl;
+
+	m_bShowLabels = pGallery->m_bShowLabels;
+	m_bShowBorders = pGallery->m_bShowBorders;
+	m_bShowScrollBar = pGallery->m_bShowScrollBar;
+
+	m_rcMargin = pGallery->m_rcMargin;
+	m_nResizable = pGallery->m_nResizable;
+}
+
+void CXTPControlGallery::DoPropExchange(CXTPPropExchange* pPX)
+{
+	CXTPControlPopup::DoPropExchange(pPX);
+
+	PX_Bool(pPX, _T("ShowLabels"), m_bShowLabels, TRUE);
+	PX_Bool(pPX, _T("ShowBorders"), m_bShowBorders, TRUE);
+	PX_Bool(pPX, _T("ShowScrollBar"), m_bShowScrollBar, TRUE);
+
+	PX_Rect(pPX, _T("GalleryMargin"), m_rcMargin, CRect(0, 0, 0, 0));
+
+	if (pPX->GetSchema() > _XTP_SCHEMA_110)
 	{
-		if (bDropShadow)
-		{
-			nClassStyle |= CS_DROPSHADOW;
-		}
+		PX_Int(pPX, _T("Resizable"), m_nResizable, 0);
+	}
+}
+
+INT_PTR CXTPControlGallery::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
+{
+	if (IsShowAsButton() || GetItems() == NULL)
+	{
+		return -1;
 	}
 
-	XTPDrawHelpers()->RegisterWndClass(0, _T("XTPSkinManagerMenu"), nClassStyle);
-
-	UINT nWindowStyle = WS_EX_TOOLWINDOW;
-
-	if (GetWindowLong(hwndParent, GWL_EXSTYLE) & (WS_EX_LAYOUTRTL | WS_EX_RIGHT))
+	RECT rcItem;
+	int nIndex = HitTestItem(point, &rcItem);
+	if (nIndex != -1)
 	{
-		nWindowStyle |= WS_EX_LAYOUTRTL;
+		CXTPControlGalleryItem* pItem = GetItem(nIndex);
+
+		INT_PTR nHit = pItem->m_nImage >= 0 ? pItem->m_nImage : pItem->m_nId;
+
+		CXTPToolTipContext::FillInToolInfo(pTI, GetParent()->GetSafeHwnd(), rcItem, nHit,
+			pItem->GetToolTip(), pItem->GetToolTip(), pItem->GetDescription(), GetItems()->GetImageManager());
+
+		return nHit;
 	}
+	return 0;
+}
 
-	HWND hWnd = ::CreateWindowEx(nWindowStyle, _T("XTPSkinManagerMenu"),
-		NULL, WS_POPUP, 0, 0, 100, 100, hwndParent, 0, AfxGetInstanceHandle(), 0);
+BOOL CXTPControlGallery::IsScrollBarEnabled() const
+{
+	return GetEnabled();
+}
 
-	if (!hWnd)
+BOOL CXTPControlGallery::IsScrollButtonEnabled(int ht)
+{
+	if (!GetEnabled())
 		return FALSE;
 
-	SubclassWindow(hWnd);
+	if (!GetCommandBar())
+		return TRUE;
+
+	if (ht == XTP_HTSCROLLUP)
+	{
+		return m_nScrollPos > 0;
+	}
+	else if (ht == XTP_HTSCROLLDOWN)
+	{
+		CRect rcItems = GetItemsRect();
+		return m_nScrollPos < m_nTotalHeight - rcItems.Height();
+	}
+	else
+	{
+		ASSERT(FALSE);
+	}
 
 	return TRUE;
 }
 
-void CXTPSkinPopupMenuState::AdjustMonitorRect(CXTPSkinPopupMenu* pPopupMenu, CPoint& pt, CSize sz, UINT wFlags, LPCRECT prcExclude)
+void CXTPControlGallery::SetItemsMargin(int nLeft, int nTop, int nRight, int nBottom)
 {
-	CRect rcExclude(pt.x, pt.y, pt.x, pt.y);
-	CRect rcMonitor(XTPMultiMonitor()->GetScreenArea(pt));
+	m_rcMargin.SetRect(nLeft, nTop, nRight, nBottom);
+}
 
-	if (prcExclude)
+void CXTPControlGallery::AdjustExcludeRect(CRect& rc, BOOL bVertical)
+{
+	if (IsShowAsButton())
 	{
-		rcExclude.IntersectRect(prcExclude, rcMonitor);
+		CXTPControlPopup::AdjustExcludeRect(rc, bVertical);
+	}
+	else
+	{
+		rc.SetRect(m_rcControl.left - 1, m_rcControl.top, m_rcControl.left - 1, m_rcControl.top);
+	}
+}
+
+HRESULT CXTPControlGallery::GetAccessibleChildCount(long FAR* pChildCount)
+{
+	if (pChildCount == 0)
+		return E_INVALIDARG;
+
+	*pChildCount = GetItemCount();
+
+	return S_OK;
+}
+HRESULT CXTPControlGallery::GetAccessibleChild(VARIANT /*varChild*/, IDispatch* FAR* ppdispChild)
+{
+	SAFE_MANAGE_STATE(m_pModuleState);
+
+	*ppdispChild = NULL;
+	return S_FALSE;
+}
+
+HRESULT CXTPControlGallery::GetAccessibleName(VARIANT varChild, BSTR* pszName)
+{
+	SAFE_MANAGE_STATE(m_pModuleState);
+
+	int nIndex = GetChildIndex(&varChild);
+
+	if (nIndex == CHILDID_SELF)
+		return CXTPControl::GetAccessibleName(varChild, pszName);
+
+	CXTPControlGalleryItem* pItem = GetItem(nIndex - 1);
+	if (!pItem)
+		return E_INVALIDARG;
+
+	CString strCaption = pItem->GetCaption();
+	CXTPDrawHelpers::StripMnemonics(strCaption);
+
+	if (strCaption.IsEmpty())
+	{
+		strCaption = pItem->GetToolTip();
 	}
 
-	if (pt.x + sz.cx > rcMonitor.right)
+	*pszName = strCaption.AllocSysString();
+	return S_OK;
+}
+
+HRESULT CXTPControlGallery::GetAccessibleRole(VARIANT varChild, VARIANT* pvarRole)
+{
+	pvarRole->vt = VT_I4;
+	pvarRole->lVal = GetChildIndex(&varChild) == CHILDID_SELF ? ROLE_SYSTEM_LISTITEM : ROLE_SYSTEM_LIST;
+	return S_OK;
+}
+
+HRESULT CXTPControlGallery::AccessibleSelect(long flagsSelect, VARIANT varChild)
+{
+	SAFE_MANAGE_STATE(m_pModuleState);
+
+	int nIndex = GetChildIndex(&varChild);
+	if (nIndex == CHILDID_SELF)
+		return CXTPControl::AccessibleSelect(flagsSelect, varChild);
+
+	SetSelectedItem(nIndex - 1);
+
+	return S_OK;
+}
+
+HRESULT CXTPControlGallery::GetAccessibleState(VARIANT varChild, VARIANT* pvarState)
+{
+	int nIndex = GetChildIndex(&varChild);
+
+	if (nIndex == CHILDID_SELF)
+		return CXTPControl::GetAccessibleState(varChild, pvarState);
+
+	CXTPControlGalleryItem* pItem = GetItem(nIndex - 1);
+	if (!pItem)
+		return E_INVALIDARG;
+
+	pvarState->vt = VT_I4;
+	pvarState->lVal = STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_SELECTABLE;
+
+	if (m_nSelected == pItem->GetIndex())
+		pvarState->lVal |= STATE_SYSTEM_FOCUSED;
+
+	if (m_nChecked == pItem->GetID())
+		pvarState->lVal |= STATE_SYSTEM_SELECTED;
+
+	return S_OK;
+}
+
+HRESULT CXTPControlGallery::GetAccessibleDefaultAction(VARIANT varChild, BSTR* pszDefaultAction)
+{
+	if (GetChildIndex(&varChild) == CHILDID_SELF)
+			return CXTPControl::GetAccessibleDefaultAction(varChild, pszDefaultAction);
+
+	*pszDefaultAction = SysAllocString(L"Click");
+
+	return S_OK;
+}
+
+HRESULT CXTPControlGallery::AccessibleDoDefaultAction(VARIANT varChild)
+{
+	SAFE_MANAGE_STATE(m_pModuleState);
+
+	int nIndex = GetChildIndex(&varChild);
+
+	if (nIndex == CHILDID_SELF)
+		return CXTPControl::AccessibleDoDefaultAction(varChild);
+
+	CXTPControlGalleryItem* pItem = GetItem(nIndex - 1);
+	if (!pItem)
+		return E_INVALIDARG;
+
+	SetSelectedItem(nIndex - 1);
+	return S_OK;
+}
+
+
+HRESULT CXTPControlGallery::AccessibleLocation(long* pxLeft, long* pyTop, long* pcxWidth, long* pcyHeight, VARIANT varChild)
+{
+	*pxLeft = *pyTop = *pcxWidth = *pcyHeight = 0;
+
+	int nIndex = GetChildIndex(&varChild);
+
+	if (!m_pParent->GetSafeHwnd())
+		return S_OK;
+
+	if (!IsVisible())
+		return S_OK;
+
+	CRect rcControl = GetRect();
+
+	if (nIndex != CHILDID_SELF)
 	{
-		if ((wFlags & TPM_CENTERALIGN) || (pt.x - sz.cx < rcMonitor.left) || (pt.x >= rcMonitor.right))
-			pt.x = rcMonitor.right - sz.cx;
-		else
-			pt.x -= sz.cx;
+		rcControl = GetItemDrawRect(nIndex - 1);
+	}
 
-		pPopupMenu->m_bDroppedLeft = TRUE;
+	m_pParent->ClientToScreen(&rcControl);
 
-		if (!rcExclude.IsRectEmpty())
+	*pxLeft = rcControl.left;
+	*pyTop = rcControl.top;
+	*pcxWidth = rcControl.Width();
+	*pcyHeight = rcControl.Height();
+
+	return S_OK;
+}
+
+HRESULT CXTPControlGallery::AccessibleHitTest(long xLeft, long yTop, VARIANT* pvarID)
+{
+	if (pvarID == NULL)
+		return E_INVALIDARG;
+
+	pvarID->vt = VT_EMPTY;
+
+	if (!m_pParent->GetSafeHwnd())
+		return S_FALSE;
+
+	if (!CXTPWindowRect(m_pParent).PtInRect(CPoint(xLeft, yTop)))
+		return S_FALSE;
+
+	pvarID->vt = VT_I4;
+	pvarID->lVal = CHILDID_SELF;
+
+	CPoint pt(xLeft, yTop);
+	m_pParent->ScreenToClient(&pt);
+
+	if (!GetRect().PtInRect(pt))
+		return S_FALSE;
+
+	int nIndex = HitTestItem(pt);
+	if (nIndex != -1)
+	{
+		pvarID->lVal = nIndex + 1;
+	}
+
+	return S_OK;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlComboBoxGalleryPopupBar
+
+IMPLEMENT_XTP_COMMANDBAR(CXTPControlComboBoxGalleryPopupBar, CXTPControlComboBoxPopupBar)
+
+CXTPControlComboBoxGalleryPopupBar::CXTPControlComboBoxGalleryPopupBar()
+{
+}
+
+CXTPControlComboBoxGalleryPopupBar* AFX_CDECL CXTPControlComboBoxGalleryPopupBar::CreateComboBoxGalleryPopupBar(CXTPCommandBars* pCommandBars)
+{
+	CXTPControlComboBoxGalleryPopupBar* pPopupBar = new CXTPControlComboBoxGalleryPopupBar();
+	pPopupBar->SetCommandBars(pCommandBars);
+	return pPopupBar;
+}
+
+BEGIN_MESSAGE_MAP(CXTPControlComboBoxGalleryPopupBar, CXTPControlComboBoxPopupBar)
+	ON_WM_LBUTTONUP()
+END_MESSAGE_MAP()
+
+CXTPControlGallery* CXTPControlComboBoxGalleryPopupBar::GetGalleryItem() const
+{
+	CXTPControl* pItem = GetControl(0);
+	ASSERT_KINDOF(CXTPControlGallery, pItem);
+
+	return (CXTPControlGallery*)pItem;
+}
+
+void CXTPControlComboBoxGalleryPopupBar::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	if (GetControls()->HitTest(point) == GetGalleryItem())
+	{
+		CXTPControlComboBox* pComboBox = (CXTPControlComboBox*)m_pControlPopup;
+		pComboBox->OnSelChanged();
+		pComboBox->OnExecute();
+		return;
+	}
+
+	CXTPPopupBar::OnLButtonUp(nFlags, point);
+}
+
+BOOL CXTPControlComboBoxGalleryPopupBar::SetTrackingMode(int bMode, BOOL bSelectFirst, BOOL bKeyboard)
+{
+	CXTPControlComboBox* pComboBox = ((CXTPControlComboBox*)m_pControlPopup);
+
+	if (!CXTPPopupBar::SetTrackingMode(bMode, bSelectFirst, bKeyboard))
+		return FALSE;
+
+	if (!bMode)
+	{
+		pComboBox->NotifySite(CBN_CLOSEUP);
+
+	}
+	else
+	{
+		SetSelected(0, TRUE);
+
+		pComboBox->UpdatePopupSelection();
+		pComboBox->NotifySite(CBN_DROPDOWN);
+
+	}
+
+	return TRUE;
+}
+
+BOOL CXTPControlComboBoxGalleryPopupBar::OnHookKeyDown(UINT nChar, LPARAM lParam)
+{
+	ASSERT(m_pControlPopup);
+	CXTPControlComboBox* pComboBox = ((CXTPControlComboBox*)m_pControlPopup);
+	if (!pComboBox)
+		return CXTPCommandBar::OnHookKeyDown(nChar, lParam);
+
+	if (nChar == VK_ESCAPE)
+	{
+		if (pComboBox->IsFocused())
+			return FALSE;
+
+		return CXTPCommandBar::OnHookKeyDown(nChar, lParam);
+	}
+
+	if (nChar == VK_TAB) return FALSE;
+
+	if (nChar == VK_RETURN)
+	{
+		if (GetControl(m_nSelected) == GetGalleryItem())
 		{
-			if (CRect().IntersectRect(rcExclude, CRect(pt, sz)))
-			{
-				pt.x = rcExclude.left - sz.cx;
-			}
+			m_pControlPopup->OnExecute();
+			return TRUE;
 		}
 	}
 
-	if (pt.x < rcMonitor.left)
+	return ProcessHookKeyDown(pComboBox, nChar, lParam);
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+CXTPControlGalleryPaintManager::CXTPControlGalleryPaintManager(CXTPPaintManager* pPaintManager)
+{
+	m_pPaintManager = pPaintManager;
+
+	m_cxHScroll = GetSystemMetrics(SM_CXHSCROLL);
+	m_cyHScroll = GetSystemMetrics(SM_CYHSCROLL);
+	m_cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
+	m_cyVScroll = GetSystemMetrics(SM_CYVSCROLL);
+
+	m_cyPopupUp = m_cyPopupDown = 19;
+	m_cxPopup = 16;
+}
+
+void CXTPControlGalleryPaintManager::DrawLabel(CDC* pDC, CXTPControlGalleryItem* pLabel, CRect rcItem)
+{
+	CXTPPaintManager* pPaintManager = m_pPaintManager;
+	pDC->FillSolidRect(rcItem, pPaintManager->GetXtremeColor(XPCOLOR_LABEL));
+
+	pDC->FillSolidRect(rcItem.left, rcItem.bottom - 1, rcItem.Width(), 1, pPaintManager->GetXtremeColor(XPCOLOR_3DSHADOW));
+
+	CXTPFontDC fnt(pDC, pPaintManager->GetRegularBoldFont());
+
+	CRect rcText(rcItem);
+	rcText.DeflateRect(10, 0);
+	pDC->SetTextColor(pPaintManager->GetXtremeColor(XPCOLOR_MENUBAR_TEXT));
+	pDC->DrawText(pLabel->GetCaption(), rcText, DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
+}
+
+void CXTPControlGalleryPaintManager::FillControl(CDC* pDC, CXTPControlGallery* pGallery, CRect rcControl)
+{
+	pDC->FillSolidRect(rcControl, m_pPaintManager->GetXtremeColor(XPCOLOR_MENUBAR_FACE));
+
+	if (pGallery->IsShowBorders())
 	{
-		pt.x += sz.cx;
-		if ((wFlags & TPM_CENTERALIGN) || (pt.x >= rcMonitor.right) || (pt.x < rcMonitor.left))
-			pt.x = rcMonitor.left;
+		pDC->Draw3dRect(rcControl, m_pPaintManager->GetXtremeColor(XPCOLOR_3DSHADOW),
+			m_pPaintManager->GetXtremeColor(XPCOLOR_3DSHADOW));
 	}
 
-
-	if (pt.y + sz.cy > rcMonitor.bottom)
+	if (pGallery->HasBottomSeparator())
 	{
-		if ((wFlags & TPM_VCENTERALIGN) || (pt.y - sz.cy < rcMonitor.top) || (pt.y >= rcMonitor.bottom))
-			pt.y = rcMonitor.bottom - sz.cy;
-		else
-			pt.y -= sz.cy;
+		pDC->FillSolidRect(rcControl.left, rcControl.bottom - 2, rcControl.Width(), 1, m_pPaintManager->GetXtremeColor(XPCOLOR_SEPARATOR));
+	}
+}
 
-		if (!rcExclude.IsRectEmpty())
+void CXTPControlGalleryPaintManager::RefreshMetrics()
+{
+	m_cxHScroll = GetSystemMetrics(SM_CXHSCROLL);
+	m_cyHScroll = GetSystemMetrics(SM_CYHSCROLL);
+	m_cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
+	m_cyVScroll = GetSystemMetrics(SM_CYVSCROLL);
+
+	m_themeScrollBar.OpenTheme(0, L"SCROLLBAR");
+
+	m_cyPopupUp = m_cyPopupDown = 19;
+	m_cxPopup = 16;
+}
+
+void DrawArrowGlyph(CDC* pDC, CRect rcArrow, BOOL bHorz, BOOL bUpArrow, BOOL bEnabled)
+{
+	int nHeight = min(rcArrow.Width(), rcArrow.Height());
+	if (nHeight < 6) return;
+
+	int x = rcArrow.left + ((rcArrow.Width() - nHeight) / 2) + 2;
+	int y = rcArrow.top + ((rcArrow.Height() - nHeight) / 2) + 2;
+	nHeight -= 4;
+
+	COLORREF clr = bEnabled ? RGB(0, 0, 0) : GetSysColor(COLOR_3DSHADOW);
+
+	HFONT hFont = CreateFont(nHeight, 0, 0, 0, FW_NORMAL, 0, 0, 0, SYMBOL_CHARSET, 0, 0, 0, 0, _T("MARLETT"));
+	HFONT hOldFont = (HFONT)SelectObject(pDC->GetSafeHdc(), hFont);
+
+	SetTextColor(pDC->GetSafeHdc(), clr);
+	pDC->SetBkMode(TRANSPARENT);
+	TextOut(pDC->GetSafeHdc(), x, y, bHorz ? (bUpArrow ? _T("3") : _T("4")) : (bUpArrow ? _T("5") : _T("6")), 1);
+
+	SelectObject(pDC->GetSafeHdc(), hOldFont);
+	DeleteObject(hFont);
+}
+
+void CXTPControlGalleryPaintManager::DrawScrollBar(CDC* pDC, CXTPScrollBase* pGallery)
+{
+	#define GETPARTSTATE(ht, pressed, hot, normal, disabled) \
+		(!bEnabled ? disabled : nPressetHt == ht ? pressed : nHotHt == ht ? hot : normal)
+
+	CXTPControlGallery::SCROLLBARTRACKINFO* pSBTrack = pGallery->GetScrollBarTrackInfo();
+	CXTPControlGallery::SCROLLBARPOSINFO* pSBInfo = pGallery->GetScrollBarPosInfo();
+
+	BOOL nPressetHt = pSBTrack ? (pSBTrack->bTrackThumb || pSBTrack->fHitOld ? pSBInfo->ht : -1) : -1;
+	BOOL nHotHt = pSBTrack ? -1 : pSBInfo->ht;
+
+
+	int cWidth = (pSBInfo->pxRight - pSBInfo->pxLeft);
+
+	if (cWidth <= 0)
+	{
+		return;
+	}
+
+	BOOL bEnabled = (pSBInfo->posMax - pSBInfo->posMin - pSBInfo->page + 1 > 0) && pGallery->IsScrollBarEnabled();
+
+	int nBtnTrackSize =   pSBInfo->pxThumbBottom - pSBInfo->pxThumbTop;
+	int nBtnTrackPos = pSBInfo->pxThumbTop - pSBInfo->pxUpArrow;
+
+	if (!bEnabled || pSBInfo->pxThumbBottom > pSBInfo->pxDownArrow)
+		nBtnTrackPos = nBtnTrackSize = 0;
+	XTPScrollBarStyle style = pGallery->GetScrollBarStyle();
+
+	if (pSBInfo->fVert)
+	{
+		CRect rcVScroll(pSBInfo->rc);
+
+		CRect rcArrowUp(rcVScroll.left, rcVScroll.top, rcVScroll.right, pSBInfo->pxUpArrow);
+		CRect rcArrowDown(rcVScroll.left, pSBInfo->pxDownArrow, rcVScroll.right, rcVScroll.bottom);
+		CRect rcTrack(rcVScroll.left, rcArrowUp.bottom, rcVScroll.right, rcArrowDown.top);
+
+		CRect rcLowerTrack(rcTrack.left, rcTrack.top, rcTrack.right, rcTrack.top + nBtnTrackPos);
+		CRect rcBtnTrack(rcTrack.left, rcLowerTrack.bottom, rcTrack.right, rcLowerTrack.bottom + nBtnTrackSize);
+		CRect rcUpperTrack(rcTrack.left, rcBtnTrack.bottom, rcTrack.right, rcTrack.bottom);
+
+
+		if (style == xtpScrollStyleSystem  && m_themeScrollBar.IsAppThemed())
 		{
-			if (CRect().IntersectRect(rcExclude, CRect(pt, sz)))
+			m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_ARROWBTN, GETPARTSTATE(XTP_HTSCROLLUP, ABS_UPPRESSED, ABS_UPHOT, ABS_UPNORMAL, ABS_UPDISABLED),  rcArrowUp, NULL);
+			m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_ARROWBTN, GETPARTSTATE(XTP_HTSCROLLDOWN, ABS_DOWNPRESSED, ABS_DOWNHOT, ABS_DOWNNORMAL, ABS_DOWNDISABLED),  rcArrowDown, NULL);
+
+			if (!rcTrack.IsRectEmpty())
 			{
-				pt.y = rcExclude.top - sz.cy;
+				if (!rcLowerTrack.IsRectEmpty())
+					m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_LOWERTRACKVERT, GETPARTSTATE(XTP_HTSCROLLUPPAGE, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcLowerTrack, NULL);
+
+				if (!rcBtnTrack.IsRectEmpty())
+				{
+					m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_THUMBBTNVERT, GETPARTSTATE(XTP_HTSCROLLTHUMB, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcBtnTrack, NULL);
+					if (rcBtnTrack.Height() > 13)
+						m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_GRIPPERVERT, GETPARTSTATE(XTP_HTSCROLLTHUMB, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcBtnTrack, NULL);
+				}
+
+				if (!rcUpperTrack.IsRectEmpty())
+					m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_UPPERTRACKVERT, GETPARTSTATE(XTP_HTSCROLLDOWNPAGE, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcUpperTrack, NULL);
 			}
 		}
-	 }
+		else
+		{
+			if (style == xtpScrollStyleFlat)
+			{
+				pDC->FillSolidRect(rcArrowUp, GetXtremeColor(COLOR_3DFACE));
+				if (bEnabled && nPressetHt == XTP_HTSCROLLUP)
+					pDC->Draw3dRect(rcArrowUp,GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DHIGHLIGHT));
+				else
+					pDC->Draw3dRect(rcArrowUp, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
 
-	if (pt.y < rcMonitor.top)
+				DrawArrowGlyph(pDC, rcArrowUp, FALSE, TRUE, bEnabled);
+
+				pDC->FillSolidRect(rcArrowDown, GetXtremeColor(COLOR_3DFACE));
+				if (bEnabled && nPressetHt == XTP_HTSCROLLDOWN)
+					pDC->Draw3dRect(rcArrowDown,GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DHIGHLIGHT));
+				else
+					pDC->Draw3dRect(rcArrowDown, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
+				DrawArrowGlyph(pDC, rcArrowDown, FALSE, FALSE, bEnabled);
+
+			}
+			else
+			{
+				DrawFrameControl(pDC->GetSafeHdc(), &rcArrowUp, DFC_SCROLL, DFCS_SCROLLUP | (!bEnabled ? DFCS_INACTIVE : 0) | (nPressetHt == XTP_HTSCROLLUP ? DFCS_PUSHED : 0));
+				DrawFrameControl(pDC->GetSafeHdc(), &rcArrowDown, DFC_SCROLL, DFCS_SCROLLDOWN | (!bEnabled ? DFCS_INACTIVE : 0)  | (nPressetHt == XTP_HTSCROLLDOWN ? DFCS_PUSHED : 0));
+			}
+
+			CWnd* pParent = pGallery->GetParentWindow();
+			HBRUSH hbrRet = (HBRUSH)DefWindowProc(pParent->GetSafeHwnd(), WM_CTLCOLORSCROLLBAR, (WPARAM)pDC->GetSafeHdc(), (LPARAM)pParent->GetSafeHwnd());
+
+			::FillRect(pDC->GetSafeHdc(), &rcTrack, hbrRet);
+
+			if (nPressetHt == XTP_HTSCROLLUPPAGE)
+			{
+				::InvertRect(pDC->GetSafeHdc(), &rcLowerTrack);
+			}
+
+			if (!rcTrack.IsRectEmpty() && !rcBtnTrack.IsRectEmpty())
+			{
+				pDC->FillSolidRect(rcBtnTrack, GetXtremeColor(COLOR_3DFACE));
+
+				if (style == xtpScrollStyleFlat)
+				{
+					pDC->Draw3dRect(rcBtnTrack, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
+				}
+				else
+				{
+					DrawEdge(pDC->GetSafeHdc(), &rcBtnTrack, EDGE_RAISED, (UINT)(BF_ADJUST | BF_RECT));
+				}
+			}
+
+			if (nPressetHt == XTP_HTSCROLLDOWNPAGE)
+			{
+				::InvertRect(pDC->GetSafeHdc(), &rcUpperTrack);
+			}
+		}
+	}
+	else
 	{
-		pt.y += sz.cy;
-		if ((wFlags & TPM_VCENTERALIGN) || (pt.y >= rcMonitor.bottom) || (pt.y < rcMonitor.top))
-			pt.y = rcMonitor.top;
-	 }
+		CRect rcHScroll(pSBInfo->rc);
+
+		CRect rcArrowLeft(rcHScroll.left, rcHScroll.top, pSBInfo->pxUpArrow, rcHScroll.bottom);
+		CRect rcArrowRight(pSBInfo->pxDownArrow, rcHScroll.top, rcHScroll.right, rcHScroll.bottom);
+		CRect rcTrack(rcArrowLeft.right, rcHScroll.top, rcArrowRight.left, rcHScroll.bottom);
+
+		CRect rcLowerTrack(rcTrack.left, rcTrack.top, rcTrack.left + nBtnTrackPos, rcTrack.bottom);
+		CRect rcBtnTrack(rcLowerTrack.right, rcTrack.top, rcLowerTrack.right + nBtnTrackSize, rcTrack.bottom);
+		CRect rcUpperTrack(rcBtnTrack.right, rcTrack.top, rcTrack.right, rcTrack.bottom);
+
+
+		if (style == xtpScrollStyleSystem  && m_themeScrollBar.IsAppThemed())
+		{
+			m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_ARROWBTN, GETPARTSTATE(XTP_HTSCROLLUP, ABS_LEFTPRESSED, ABS_LEFTHOT, ABS_LEFTNORMAL, ABS_LEFTDISABLED),  rcArrowLeft, NULL);
+			m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_ARROWBTN, GETPARTSTATE(XTP_HTSCROLLDOWN, ABS_RIGHTPRESSED, ABS_RIGHTHOT, ABS_RIGHTNORMAL, ABS_RIGHTDISABLED),  rcArrowRight, NULL);
+
+			if (!rcTrack.IsRectEmpty())
+			{
+				if (!rcLowerTrack.IsRectEmpty())
+					m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_LOWERTRACKHORZ, GETPARTSTATE(XTP_HTSCROLLUPPAGE, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcLowerTrack, NULL);
+
+				if (!rcBtnTrack.IsRectEmpty())
+				{
+					m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_THUMBBTNHORZ, GETPARTSTATE(XTP_HTSCROLLTHUMB, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcBtnTrack, NULL);
+					if (rcBtnTrack.Width() > 13)
+						m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_GRIPPERHORZ, GETPARTSTATE(XTP_HTSCROLLTHUMB, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcBtnTrack, NULL);
+				}
+
+				if (!rcUpperTrack.IsRectEmpty())
+					m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_UPPERTRACKHORZ, GETPARTSTATE(XTP_HTSCROLLDOWNPAGE, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcUpperTrack, NULL);
+			}
+		}
+		else
+		{
+			if (style == xtpScrollStyleFlat)
+			{
+				pDC->FillSolidRect(rcArrowLeft, GetXtremeColor(COLOR_3DFACE));
+				if (bEnabled && nPressetHt == XTP_HTSCROLLUP)
+					pDC->Draw3dRect(rcArrowLeft,GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DHIGHLIGHT));
+				else
+					pDC->Draw3dRect(rcArrowLeft, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
+
+				DrawArrowGlyph(pDC, rcArrowLeft, TRUE, TRUE, bEnabled);
+
+				pDC->FillSolidRect(rcArrowRight, GetXtremeColor(COLOR_3DFACE));
+				if (bEnabled && nPressetHt == XTP_HTSCROLLDOWN)
+					pDC->Draw3dRect(rcArrowRight,GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DHIGHLIGHT));
+				else
+					pDC->Draw3dRect(rcArrowRight, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
+				DrawArrowGlyph(pDC, rcArrowRight, TRUE, FALSE, bEnabled);
+
+			}
+			else
+			{
+				DrawFrameControl(pDC->GetSafeHdc(), &rcArrowLeft, DFC_SCROLL, DFCS_SCROLLLEFT | (!bEnabled ? DFCS_INACTIVE : 0) | (nPressetHt == XTP_HTSCROLLUP ? DFCS_PUSHED : 0));
+				DrawFrameControl(pDC->GetSafeHdc(), &rcArrowRight, DFC_SCROLL, DFCS_SCROLLRIGHT | (!bEnabled ? DFCS_INACTIVE : 0)  | (nPressetHt == XTP_HTSCROLLDOWN ? DFCS_PUSHED : 0));
+			}
+
+			CWnd* pParent = pGallery->GetParentWindow();
+			HBRUSH hbrRet = (HBRUSH)DefWindowProc(pParent->GetSafeHwnd(), WM_CTLCOLORSCROLLBAR, (WPARAM)pDC->GetSafeHdc(), (LPARAM)pParent->GetSafeHwnd());
+
+			::FillRect(pDC->GetSafeHdc(), &rcTrack, hbrRet);
+
+			if (nPressetHt == XTP_HTSCROLLUPPAGE)
+			{
+				::InvertRect(pDC->GetSafeHdc(), &rcLowerTrack);
+			}
+
+			if (!rcTrack.IsRectEmpty() && !rcBtnTrack.IsRectEmpty())
+			{
+				pDC->FillSolidRect(rcBtnTrack, GetXtremeColor(COLOR_3DFACE));
+
+				if (style == xtpScrollStyleFlat)
+				{
+					pDC->Draw3dRect(rcBtnTrack, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
+				}
+				else
+				{
+					DrawEdge(pDC->GetSafeHdc(), &rcBtnTrack, EDGE_RAISED, (UINT)(BF_ADJUST | BF_RECT));
+				}
+			}
+
+			if (nPressetHt == XTP_HTSCROLLDOWNPAGE)
+			{
+				::InvertRect(pDC->GetSafeHdc(), &rcUpperTrack);
+			}
+		}
+	}
 }
 
-BOOL CXTPSkinPopupMenuState::TrackPopupMenu(HMENU hMenu, UINT dwFlags, int x, int y, HWND hWnd, CONST RECT* prcRect)
+void CXTPControlGalleryPaintManager::DrawPopupScrollBar(CDC* pDC, CXTPControlGallery* pGallery)
 {
+	#define GETPARTSTATE3(ht, bEnabled) \
+	(!bEnabled ? 4 : nPressetHt == ht ? 3 : nHotHt == ht ? 2 : 0)
 
-	if (!hWnd)
-		return FALSE;
+	CXTPControlGallery::SCROLLBARTRACKINFO* pSBTrack = pGallery->GetScrollBarTrackInfo();
+	CXTPControlGallery::SCROLLBARPOSINFO* pSBInfo = pGallery->GetScrollBarPosInfo();
 
-	if (!hMenu)
-		return FALSE;
+	CRect rcScroll = pSBInfo->rc;
+	pDC->FillSolidRect(rcScroll, m_pPaintManager->GetXtremeColor(XPCOLOR_TOOLBAR_FACE));
 
-	if (GetMenuItemCount(hMenu) == 0)
-		return FALSE;
+	CRect rcScrollUp(rcScroll.left, rcScroll.top, rcScroll.right, rcScroll.top + m_cyPopupUp);
+	CRect rcScrollDown(rcScroll.left, rcScrollUp.bottom, rcScroll.right, rcScrollUp.bottom + m_cyPopupDown);
+	CRect rcScrollPopup(rcScroll.left, rcScrollDown.bottom, rcScroll.right, rcScroll.bottom);
 
-	BOOL bButtonDown = (GetKeyState(dwFlags & TPM_RIGHTBUTTON ? VK_RBUTTON : VK_LBUTTON) & 0x8000) != 0;
+	BOOL bControlEnabled = pGallery->GetEnabled();
+	BOOL nPressetHt = pSBTrack ? pSBInfo->ht : -1;
+	BOOL nHotHt = pSBTrack ? -1 : pSBInfo->ht;
 
-	CXTPSkinPopupMenu* pSubMenu = new CXTPSkinPopupMenu();
-	pSubMenu->m_pState = this;
+	int nState = GETPARTSTATE3(XTP_HTSCROLLUP, (bControlEnabled && pGallery->IsScrollButtonEnabled(XTP_HTSCROLLUP)));
+	m_pPaintManager->DrawRectangle(pDC, rcScrollUp, nState == 3 || nState == 2, nState == 3, nState != 4, FALSE, FALSE, xtpBarTypeNormal, xtpBarPopup);
+	COLORREF clr = m_pPaintManager->GetRectangleTextColor(nState == 2, nState == 3, nState != 4, FALSE, FALSE, xtpBarTypeNormal, xtpBarPopup);
+	CPoint pt = rcScrollUp.CenterPoint();
+	m_pPaintManager->Triangle(pDC, CPoint(pt.x - 4 , pt.y + 2), CPoint(pt.x + 4, pt.y + 2), CPoint (pt.x, pt.y - 2), clr);
 
-	if (!pSubMenu->Create(hWnd))
-	{
-		pSubMenu->InternalRelease();
-		return 0;
-	}
+	nState = GETPARTSTATE3(XTP_HTSCROLLDOWN, (bControlEnabled && pGallery->IsScrollButtonEnabled(XTP_HTSCROLLDOWN)));
+	m_pPaintManager->DrawRectangle(pDC, rcScrollDown, nState == 3 || nState == 2, nState == 3, nState != 4, FALSE, FALSE, xtpBarTypeNormal, xtpBarPopup);
+	clr = m_pPaintManager->GetRectangleTextColor(nState == 2, nState == 3, nState != 4, FALSE, FALSE, xtpBarTypeNormal, xtpBarPopup);
+	pt = rcScrollDown.CenterPoint();
+	m_pPaintManager->Triangle(pDC, CPoint(pt.x - 4 , pt.y - 2), CPoint(pt.x + 4, pt.y - 2), CPoint (pt.x, pt.y + 2), clr);
 
-	pSubMenu->m_hMenu = hMenu;
-	pSubMenu->m_hWndNotify = hWnd;
-	pSubMenu->m_bSysMenu =  ((dwFlags & TPM_SYSMENU) != 0);
-
-	m_bRightButton = ((dwFlags & TPM_RIGHTBUTTON) != 0);
-	m_bNoNotify = ((dwFlags & TPM_NONOTIFY) != 0);
-	m_bSynchronous = (dwFlags & TPM_RETURNCMD);
-
-	InitMenu(pSubMenu);
-
-	if (!StartMenu(CXTPSkinPopupMenuState::focusMouse))
-	{
-		pSubMenu->InternalRelease();
-		return 0;
-	}
-
-	m_bFirstClick = bButtonDown;
-
-
-	if (!m_bNoNotify)
-	{
-		SendMessage(hWnd, WM_INITMENUPOPUP, (WPARAM)hMenu, MAKELONG(0, (pSubMenu->m_bSysMenu ? 1 : 0)));
-	}
-
-	pSubMenu->m_bSendUninit = TRUE;
-
-	CSize size = pSubMenu->RecalcLayout();
-
-	if ((GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_LAYOUTRTL) && ((dwFlags & TPM_CENTERALIGN) == 0))
-		dwFlags ^= TPM_RIGHTALIGN;
-
-	CPoint pt(x, y);
-
-	if (dwFlags & TPM_RIGHTALIGN)
-	{
-		pt.x -= size.cx;
-		pSubMenu->m_bDroppedLeft = TRUE;
-	}
-	else if (dwFlags & TPM_CENTERALIGN)
-	{
-		pt.x -= size.cx / 2;
-	}
-
-	if (dwFlags & TPM_BOTTOMALIGN)
-	{
-		pt.y -= size.cy;
-	}
-	else if (dwFlags & TPM_VCENTERALIGN)
-	{
-		pt.y -= size.cy / 2;
-	}
-
-	AdjustMonitorRect(pSubMenu, pt, size, dwFlags, prcRect);
-
-	PlayEventSound(xtpSoundMenuPopup);
-
-	::SetWindowPos(pSubMenu->m_hWnd, HWND_TOPMOST, pt.x, pt.y, size.cx, size.cy, SWP_SHOWWINDOW | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
-
-	m_bButtonDown = bButtonDown;
-
-	RunLoop(0);
-
-
-	CloseHierarchy(pSubMenu);
-	if (pSubMenu->m_bSendUninit && !m_bNoNotify)
-	{
-		SendMessage(pSubMenu->m_hWndNotify, WM_UNINITMENUPOPUP,
-			(WPARAM)pSubMenu->m_hMenu, MAKELONG(0, pSubMenu->m_bSysMenu ? MF_SYSMENU: 0));
-	}
-
-	pSubMenu->DestroyWindow();
-	pSubMenu->InternalRelease();
-
-	return m_bSynchronous ? m_nLastCommand : TRUE;
+	nState = GETPARTSTATE3(XTP_HTSCROLLPOPUP, bControlEnabled);
+	m_pPaintManager->DrawRectangle(pDC, rcScrollPopup, nState == 3 || nState == 2, nState == 3, nState != 4, FALSE, FALSE, xtpBarTypeNormal, xtpBarPopup);
+	clr = m_pPaintManager->GetRectangleTextColor(nState == 2, nState == 3, nState != 4, FALSE, FALSE, xtpBarTypeNormal, xtpBarPopup);
+	pt = rcScrollPopup.CenterPoint();
+	m_pPaintManager->Triangle(pDC, CPoint(pt.x - 4 , pt.y - 1), CPoint(pt.x + 4, pt.y - 1), CPoint (pt.x, pt.y + 3), clr);
+	pDC->FillSolidRect(pt.x - 4, pt.y - 4, 9, 2, clr);
 }
+
+
+

@@ -1,20 +1,17 @@
-// from server: 70% by atomic.potato
-extern "C" void __cdecl Function_0041ae90(void*, void*, int);
-
-struct CInstanceRecord
-{
-    void __cdecl f(void*, int);
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_0041b600 {
+    T4_0041b600();
+    virtual void f_0041b600();
+    char m_a;
+    char m_b;
 };
-
-void CInstanceRecord::f(void* p, int value)
+T4_0041b600::T4_0041b600() : m_a(0), m_b(0) {}
+extern "C" void* create_other_0041b600(void*, void*, int);
+void* create_0041b600(void* unused, T4_0041b600* out, int type)
 {
-    if (value != 4)
-    {
-        Function_0041ae90(0, p, value);
-        return;
-    }
-
-    *(unsigned int*)p = 0x00b7ca38;
-    *((unsigned char*)p + 4) = 0;
-    *((unsigned char*)p + 5) = 0;
+    if (type != 4)
+        return create_other_0041b600(unused, out, type);
+    out->T4_0041b600::T4_0041b600();
+    return out;
 }

@@ -1,14 +1,14 @@
-// from server: 23% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/CommandBars/XTPDockState.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPDockState.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPDockState.cpp : implementation of the CXTPDockState class.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -36,6 +36,9 @@
 #include "Common/XTPVC50Helpers.h"
 #include "Common/XTPVC80Helpers.h"
 
+#ifdef _XTP_INCLUDE_GRAPHICLIBRARY
+#include "GraphicLibrary/zlib/zlib.h"
+#endif
 
 #include "XTPShortcutManager.h"
 #include "XTPDockState.h"
@@ -53,7 +56,6 @@
 #include "XTPToolBar.h"
 #include "XTPDialogBar.h"
 #include "XTPPaintManager.h"
-#include "XTPStatusBar.h"
 
 
 #ifdef _DEBUG
@@ -561,6 +563,115 @@ BOOL CXTPCommandBars::GetControlsFileName(CString& strFileName, LPCTSTR lpszProf
 	return TRUE;
 }
 
+#define ZIP_HEADER ('Z' + ('I' << 8) + ('P' << 16) + ('!' << 24))
+
+class CXTPZipMemFile : public CMemFile
+{
+	struct ZIPBUFFERHEADER
+	{
+		DWORD    dwType;
+		DWORD    dwSize;
+	};
+
+	struct ZIPBUFFERINFO
+	{
+		ZIPBUFFERHEADER bh;
+		BYTE     bBuffer[1];
+	};
+public:
+	CXTPZipMemFile()
+	{
+	}
+	CXTPZipMemFile(BYTE* lpBuffer, UINT nBufferSize)
+	{
+		AttachCompressedBuffer(lpBuffer, nBufferSize);
+	}
+	void AttachCompressedBuffer(BYTE* lpBuffer, UINT nBufferSize, BOOL bAutoDelete = FALSE)
+	{
+#ifdef ZLIB_H
+		ZIPBUFFERINFO* pbi = (ZIPBUFFERINFO*)lpBuffer;
+
+		if (nBufferSize < sizeof(ZIPBUFFERINFO) ||
+			pbi->bh.dwType != ZIP_HEADER)
+		{
+			Attach(lpBuffer, nBufferSize);
+			m_bAutoDelete = bAutoDelete;
+			return;
+		}
+
+		DWORD dwDestCount = pbi->bh.dwSize;
+
+		BYTE* lpBufferDest = (BYTE*)malloc(dwDestCount);
+		uncompress(lpBufferDest, &dwDestCount, (LPBYTE)&pbi->bBuffer, nBufferSize - sizeof(ZIPBUFFERHEADER));
+
+		ASSERT(dwDestCount == pbi->bh.dwSize);
+
+		Attach(lpBufferDest, dwDestCount);
+		m_bAutoDelete = TRUE;
+
+		if (bAutoDelete)
+		{
+			free(lpBuffer);
+		}
+#else
+		Attach(lpBuffer, nBufferSize);
+		m_bAutoDelete = bAutoDelete;
+#endif
+	}
+
+	BOOL OpenCompressedFile(LPCTSTR lpszFileName)
+	{
+		CFile file;
+		if (!file.Open(lpszFileName, CFile::modeRead))
+			return FALSE;
+
+		UINT nSize = (UINT)file.GetLength();
+		LPBYTE lpBuffer = (LPBYTE)malloc(nSize);
+		file.Read(lpBuffer, nSize);
+
+		file.Close();
+
+		AttachCompressedBuffer(lpBuffer, nSize, TRUE);
+
+		return TRUE;
+	}
+
+	~CXTPZipMemFile()
+	{
+	}
+
+public:
+	void DetachCompressedBuffer(BYTE*& lpBuffer, DWORD& dwCount)
+	{
+		dwCount = (DWORD)GetPosition();
+		lpBuffer = Detach();
+
+#ifdef ZLIB_H
+		if (dwCount < 20)
+			return;
+
+		ZIPBUFFERINFO* pbi = (ZIPBUFFERINFO*)malloc(dwCount + sizeof(ZIPBUFFERHEADER));
+		if (!pbi)
+			return;
+
+		DWORD dwDestCount = dwCount;
+
+		if (compress((LPBYTE)&pbi->bBuffer, &dwDestCount, lpBuffer, dwCount) != Z_OK)
+		{
+			free(pbi);
+			return;
+		}
+
+		pbi->bh.dwType = ZIP_HEADER;
+		pbi->bh.dwSize = dwCount;
+
+		free(lpBuffer);
+		dwCount = dwDestCount + sizeof(ZIPBUFFERHEADER);
+		lpBuffer = (LPBYTE)pbi;
+#endif
+	}
+};
+
 void CXTPCommandBars::SaveBarState(LPCTSTR lpszProfileName, BOOL bOnlyCustomized /*= TRUE*/)
 {
 	OnSetPreviewMode(FALSE); // Lets be sure we not in preview mode.
@@ -726,13 +837,6 @@ void CXTPCommandBars::LoadBarState(LPCTSTR lpszProfileName, BOOL bSilent)
 
 }
 
-CXTPStatusBar* CXTPCommandBars::GetStatusBar() const
-{
-	CWnd* pBar = m_pFrame->GetDlgItem(AFX_IDW_STATUS_BAR);
-
-	return DYNAMIC_DOWNCAST(CXTPStatusBar, pBar);
-}
-
 void CXTPCommandBars::SaveDockBarsState(LPCTSTR lpszProfileName)
 {
 	CWinApp* pApp = AfxGetApp();
@@ -766,11 +870,11 @@ void CXTPCommandBars::SaveDockBarsState(LPCTSTR lpszProfileName)
 	}
 
 
-	CXTPStatusBar* pBar = GetStatusBar();
+	CControlBar* pBar = m_pFrame && m_pFrame->IsKindOf(RUNTIME_CLASS(CFrameWnd)) ? ((CFrameWnd*)m_pFrame)->GetControlBar(AFX_IDW_STATUS_BAR) : 0;
 
-	if (pBar != NULL)
+	if (pBar != NULL && pBar->GetSafeHwnd() && !pBar->IsVisible())
 	{
-		pBar->SaveState(lpszProfileName);
+		pApp->WriteProfileInt(lpszProfileName, _T("StatusBar"), FALSE);
 	}
 	else
 	{
@@ -780,7 +884,6 @@ void CXTPCommandBars::SaveDockBarsState(LPCTSTR lpszProfileName)
 
 void CXTPCommandBars::LoadDockBarsState(LPCTSTR lpszProfileName)
 {
-
 	CWinApp* pApp = AfxGetApp();
 	TCHAR szSection[256];
 	for (int nIndex = 0; nIndex < 4; nIndex++)
@@ -802,10 +905,7 @@ void CXTPCommandBars::LoadDockBarsState(LPCTSTR lpszProfileName)
 				if (pBar)
 				{
 					if (pBar->m_hWnd && pBar->GetParent() != pDock)
-					{
-						pBar->ModifyStyle(WS_POPUP, WS_CHILD);
 						pBar->SetParent(pDock);
-					}
 					if (pBar->m_pDockBar != NULL)
 						pBar->m_pDockBar->RemoveCommandBar(pBar);
 					pBar->m_pDockBar = pDock;
@@ -817,8 +917,11 @@ void CXTPCommandBars::LoadDockBarsState(LPCTSTR lpszProfileName)
 		}
 	}
 
-	CXTPStatusBar* pBar = GetStatusBar();
-	if (pBar != NULL) pBar->LoadState(lpszProfileName);
+	CControlBar* pBar = m_pFrame && m_pFrame->IsKindOf(RUNTIME_CLASS(CFrameWnd)) ? ((CFrameWnd*)m_pFrame)->GetControlBar(AFX_IDW_STATUS_BAR) : 0;
+	if (pBar != NULL && !pApp->GetProfileInt(lpszProfileName, _T("StatusBar"), TRUE))
+	{
+		((CFrameWnd*)m_pFrame)->ShowControlBar(pBar, FALSE, FALSE);
+	}
 }
 
 void CXTPCommandBars::DoPropExchange(CXTPPropExchange* pPX, XTP_COMMANDBARS_PROPEXCHANGE_PARAM* pParam)
@@ -910,7 +1013,7 @@ void CXTPCommandBars::DoPropExchange(CXTPPropExchange* pPX, XTP_COMMANDBARS_PROP
 				CXTPMenuBar* pMenuBar = GetMenuBar();
 				if (pMenuBar)
 				{
-					pMenuBar->SetupMenu();
+					pMenuBar->SetupHook();
 					pMenuBar->RefreshMenu();
 				}
 			}
@@ -1084,10 +1187,7 @@ void CXTPCommandBars::SerializeDockBarsState(CXTPPropExchange* pPX)
 					if (pBar)
 					{
 						if (pBar->m_hWnd && pBar->GetParent() != pDock)
-						{
-							pBar->ModifyStyle(WS_POPUP, WS_CHILD);
 							pBar->SetParent(pDock);
-						}
 						if (pBar->m_pDockBar != NULL)
 							pBar->m_pDockBar->RemoveCommandBar(pBar);
 						pBar->m_pDockBar = pDock;
@@ -1096,24 +1196,6 @@ void CXTPCommandBars::SerializeDockBarsState(CXTPPropExchange* pPX)
 					pDock->m_arrBars.InsertAt(i, pBar);
 				}
 			}
-		}
-	}
-
-	if (pPX->GetSchema() > _XTP_SCHEMA_1200)
-	{
-		CXTPPropExchangeSection secStatusBar(pPX->GetSection(_T("StatusBar")));
-		CXTPStatusBar* pStatusBar = GetStatusBar();
-		if (pStatusBar)
-		{
-			pStatusBar->DoPropExchange(&secStatusBar);
-		}
-		else
-		{
-			BOOL bVisible = TRUE;
-			PX_Bool(pPX, _T("Visible"), bVisible, TRUE);
-
-			CString strValue;
-			PX_String(pPX, _T("Panes"), strValue, _T(""));
 		}
 	}
 
@@ -1356,10 +1438,10 @@ void CXTPToolBar::MergeToolBar(CXTPCommandBar* pCommandBar, BOOL bSilent)
 		if (!bSilent && pLastControls->Compare(pCommandBar->GetControls()) == FALSE)
 		{
 			CString strMessage, strUpdate;
-			CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&strUpdate, XTP_IDS_CONFIRM_UPDATE));
+			VERIFY(XTPResourceManager()->LoadString(&strUpdate, XTP_IDS_CONFIRM_UPDATE));
 			strMessage.Format(strUpdate, (LPCTSTR)m_strTitle);
 
-			if (XTPResourceManager()->ShowMessageBox(strMessage, MB_YESNO | MB_ICONQUESTION) == IDNO)
+			if (AfxMessageBox(strMessage, MB_YESNO | MB_ICONQUESTION) == IDNO)
 			{
 				CXTPOriginalControls* pControls = GetControls()->GetOriginalControls();
 				CMDTARGET_ADDREF(pControls);
@@ -1835,11 +1917,6 @@ void CXTPControlAction::DoPropExchange(CXTPPropExchange* pPX)
 	PX_String(pPX, _T("TooltipText"), m_strTooltipText, _T(""));
 	PX_String(pPX, _T("DescriptionText"), m_strDescriptionText, _T(""));
 	PX_String(pPX, _T("Category"), m_strCategory, _T(""));
-
-	if (pPX->GetSchema() > _XTP_SCHEMA_1122)
-	{
-		PX_String(pPX, _T("Key"), m_strKey, _T(""));
-	}
 }
 
 
@@ -1929,11 +2006,6 @@ void CXTPControl::DoPropExchange(CXTPPropExchange* pPX)
 
 	if (pPX->GetSchema() > _XTP_SCHEMA_1121)
 		PX_Size(pPX, _T("IconSize"), m_szIcon, CSize(0, 0));
-
-	if (pPX->IsLoading())
-	{
-		OnCaptionChanged();
-	}
 }
 
 
@@ -1985,11 +2057,6 @@ void CXTPControlComboBox::DoPropExchange(CXTPPropExchange* pPX)
 		PX_DWord(pPX, _T("EditStyle"), m_dwEditStyle, 0);
 	}
 
-	if (pPX->GetSchema() > _XTP_SCHEMA_1210)
-	{
-		PX_Int(pPX, _T("TextLimit"), m_nTextLimit, 0);
-	}
-
 	if (pPX->IsLoading())
 	{
 		SetDropDownListStyle(m_bDropDown);
@@ -2024,11 +2091,6 @@ void CXTPControlEdit::DoPropExchange(CXTPPropExchange* pPX)
 	if (pPX->GetSchema() > _XTP_SCHEMA_103)
 	{
 		PX_Bool(pPX, _T("ShowSpinButtons"), m_bShowSpinButtons, FALSE);
-	}
-
-	if (pPX->GetSchema() > _XTP_SCHEMA_1210)
-	{
-		PX_Int(pPX, _T("TextLimit"), m_nTextLimit, 0);
 	}
 
 	if (pPX->IsLoading())

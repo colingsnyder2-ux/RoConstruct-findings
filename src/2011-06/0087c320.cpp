@@ -1,14 +1,14 @@
-// from server: 15% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Controls/Popup/XTPColorPopup.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/Controls/XTColorPopup.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPColorPopup.cpp : implementation file
+// XTColorPopup.cpp : implementation file
 //
 // This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -28,14 +28,25 @@
 #include "stdafx.h"
 
 #include "Common/XTPDrawHelpers.h"
+#include "Common/XTPWinThemeWrapper.h"
+#include "Common/XTPColorManager.h"
 #include "Common/XTPSystemHelpers.h"
-#include "Common/XTPHookManager.h"
-#include "../Util/XTPControlTheme.h"
 
-#include "../Defines.h"
-#include "XTPColorSelectorCtrl.h"
-#include "XTPColorPopup.h"
+#include "Resource.h"
+#include "XTDefines.h"
+#include "XTGlobal.h"
+#include "XTColorSelectorCtrl.h"
+#include "XTWndShadow.h"
+#include "XTColorPopup.h"
+#include "XTColorSelectorCtrlTheme.h"
 
+#ifdef _XTP_INCLUDE_CONTROLBARS
+#include "ControlBars/XTOptionsManager.h"
+#include "ControlBars/XTDelegate.h"
+#include "ControlBars/XTControlbar.h"
+#include "ControlBars/XTToolBar.h"
+#include "ControlBars/XTCoolMenu.h"
+#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -44,25 +55,22 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
-// CXTPColorPopup
+// CXTColorPopup
 
-CXTPColorPopup::CXTPColorPopup(BOOL bAutoDelete/*= FALSE*/, LPARAM callerParam /*= 0*/)
+CXTColorPopup::CXTColorPopup(BOOL bAutoDelete/*= FALSE*/, LPARAM callerParam /*= 0*/)
 : m_callerParam(callerParam)
 {
 	m_bAutoDelete = bAutoDelete;
 	m_bDisplayShadow = TRUE;
-	m_bEndSelection = FALSE;
-
-	m_pShadowManager = new CXTPShadowManager();
 }
 
-CXTPColorPopup::~CXTPColorPopup()
+CXTColorPopup::~CXTColorPopup()
 {
-	CMDTARGET_RELEASE(m_pShadowManager);
+
 }
 
-BEGIN_MESSAGE_MAP(CXTPColorPopup, CXTPColorSelectorCtrl)
-	//{{AFX_MSG_MAP(CXTPColorPopup)
+BEGIN_MESSAGE_MAP(CXTColorPopup, CXTColorSelectorCtrl)
+	//{{AFX_MSG_MAP(CXTColorPopup)
 	ON_WM_ACTIVATE()
 	ON_WM_DESTROY()
 	ON_WM_CREATE()
@@ -74,12 +82,14 @@ BEGIN_MESSAGE_MAP(CXTPColorPopup, CXTPColorSelectorCtrl)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
-// CXTPColorPopup message handlers
+// CXTColorPopup message handlers
 
-BOOL CXTPColorPopup::Create(CRect& rect, CWnd* pParentWnd, DWORD dwPopup, COLORREF clrColor,
+BOOL CXTColorPopup::Create(CRect& rect, CWnd* pParentWnd, DWORD dwPopup, COLORREF clrColor,
 	COLORREF clrDefault/*= CLR_DEFAULT*/)
 {
-	if (m_pTheme->GetThemeStyle() != xtpControlThemeDefault)
+	BOOL bOfficeTheme = GetTheme()->GetTheme() != xtThemeDefault;
+
+	if (bOfficeTheme)
 	{
 		SetBorders(4, 4, 6, 6);
 	}
@@ -90,16 +100,14 @@ BOOL CXTPColorPopup::Create(CRect& rect, CWnd* pParentWnd, DWORD dwPopup, COLORR
 
 	m_rcExclude = rect;
 
-	if (!CXTPColorSelectorCtrl::Create(rect, pParentWnd, dwPopup | WS_POPUP, clrColor, clrDefault))
-		return FALSE;
+#ifdef _XTP_INCLUDE_CONTROLBARS
+	if (bOfficeTheme && DYNAMIC_DOWNCAST(CXTToolBar, pParentWnd)) rect.bottom--;
+#endif
 
-	SetFont(pParentWnd->GetFont());
-
-
-	return TRUE;
+	return CXTColorSelectorCtrl::Create(rect, pParentWnd, dwPopup | WS_POPUP, clrColor, clrDefault);
 }
 
-void CXTPColorPopup::PostNcDestroy()
+void CXTColorPopup::PostNcDestroy()
 {
 	CXTPMouseMonitor::SetupHook(NULL);
 
@@ -109,7 +117,7 @@ void CXTPColorPopup::PostNcDestroy()
 	}
 }
 
-void CXTPColorPopup::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
+void CXTColorPopup::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 {
 	CWnd::OnActivate(nState, pWndOther, bMinimized);
 
@@ -122,23 +130,32 @@ void CXTPColorPopup::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 	}
 }
 
-void CXTPColorPopup::OnDestroy()
+void CXTColorPopup::OnDestroy()
 {
 	CWnd::OnDestroy();
 
 	// Inform the parent that we are closing up.
-	m_pParentWnd->SendMessage(CPN_XTP_CLOSEUP,
+	m_pParentWnd->SendMessage(CPN_XT_CLOSEUP,
 		(WPARAM)m_clrColor, m_callerParam);
 
+#ifdef _XTP_INCLUDE_CONTROLBARS
+	CXTCoolMenu::m_iMenuBarAlign = 0;
+	if (DYNAMIC_DOWNCAST(CXTToolBar, m_pParentWnd))
+	{
+		int iIndex = ((CXTToolBar*)m_pParentWnd)->CommandToIndex((UINT)m_callerParam);
+		((CXTToolBar*)m_pParentWnd)->SetDroppedItem(iIndex, false);
+		m_pParentWnd->Invalidate(FALSE);
+	}
+#endif
 }
 
 
-int CXTPColorPopup::OnCreate(LPCREATESTRUCT lpCreateStruct)
+int CXTColorPopup::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
-	if (CXTPColorSelectorCtrl::OnCreate(lpCreateStruct) == -1)
+	if (CXTColorSelectorCtrl::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-	BOOL bOfficeTheme = GetTheme()->m_bFlatTheme;
+	BOOL bOfficeTheme = GetTheme()->GetTheme() != xtThemeDefault;
 
 	if (bOfficeTheme)
 	{
@@ -150,92 +167,86 @@ int CXTPColorPopup::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		ModifyStyle(0, WS_DLGFRAME, SWP_FRAMECHANGED);
 	}
 
-	CRect rcWork = XTPMultiMonitor()->GetWorkArea(m_rcWnd);
+	if (bOfficeTheme && XTAuxData().bMenuShadows && m_bDisplayShadow)
+	{
+		XTShadowsManager()->SetShadow(m_hWnd, m_rcExclude);
 
-	CSize size = m_rcWnd.Size();
+#ifdef _XTP_INCLUDE_CONTROLBARS
+		if (CXTCoolMenu::m_iMenuBarAlign && !m_rcExclude.IsRectEmpty())
+			XTShadowsManager()->SetShadow(m_rcExclude, m_hWnd);
+#endif
+	}
+
+	CXTPWindowRect rcWindow(this);
+	CRect rcWork = XTPMultiMonitor()->GetWorkArea(rcWindow);
+
+	bool bMoveWindow = false;
+	CSize size = rcWindow.Size();
 
 	// move right
-	if (m_rcWnd.left < rcWork.left)
+	if (rcWindow.left < rcWork.left)
 	{
-		m_rcWnd.left = rcWork.left;
-		m_rcWnd.right = m_rcWnd.left + size.cx;
+		rcWindow.left = rcWork.left;
+		rcWindow.right = rcWindow.left + size.cx;
+		bMoveWindow = true;
 	}
 
 	// move left
-	else if (m_rcWnd.right > rcWork.right)
+	else if (rcWindow.right > rcWork.right)
 	{
-		m_rcWnd.right = rcWork.right;
-		m_rcWnd.left = m_rcWnd.right - size.cx;
+		rcWindow.right = rcWork.right;
+		rcWindow.left = rcWindow.right - size.cx;
+		bMoveWindow = true;
 	}
 
 	// move up
-	if (m_rcWnd.bottom > rcWork.bottom)
+	if (rcWindow.bottom > rcWork.bottom)
 	{
-		if (m_rcExclude.IsRectEmpty())
-			m_rcWnd.bottom = rcWork.top;
-		else
-			m_rcWnd.bottom = m_rcExclude.top;
-
-		m_rcWnd.top = m_rcWnd.bottom - size.cy;
+		rcWindow.bottom = rcWork.bottom;
+		rcWindow.top = rcWindow.bottom - size.cy;
+		bMoveWindow = true;
 	}
 
-	HWND hWnd = m_hWnd;
-	SetFocus();
-
-	if (!IsWindow(hWnd))
-		return -1;
-
-	SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, 0);
-	ModifyStyle(WS_CHILD, WS_POPUP);
-	SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, (LONG_PTR)m_pParentWnd->m_hWnd);
-
-	CWnd* pTopParent = m_pParentWnd->GetParentOwner();
-
-	SetWindowPos(pTopParent->GetExStyle() & WS_EX_TOPMOST ? &CWnd::wndTopMost : &CWnd::wndTop, m_rcWnd.left, m_rcWnd.top, m_rcWnd.Width(), m_rcWnd.Height(), SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
-
-	if (bOfficeTheme && m_bDisplayShadow)
+	if (bMoveWindow)
 	{
-		m_pShadowManager->SetShadowOptions(xtpShadowOfficeAlpha);
-		m_pShadowManager->SetShadow(this);
+		MoveWindow(&rcWindow);
 	}
 
 	CXTPMouseMonitor::SetupHook(this);
-	m_bEndSelection = FALSE;
 
-	m_pParentWnd->SendMessage(CPN_XTP_DROPDOWN,
+	m_pParentWnd->SendMessage(CPN_XT_DROPDOWN,
 		(WPARAM)m_clrColor, m_callerParam);
 
 	return 0;
 }
 
 // Adds a window to send color picker notifications to.
-void CXTPColorPopup::AddListener(HWND hwndListener)
+void CXTColorPopup::AddListener(HWND hwndListener)
 {
 	m_listeners.Add(hwndListener);
 }
 
-void CXTPColorPopup::EndSelection(int nCurSel)
+void CXTColorPopup::EndSelection(int nCurSel)
 {
-	m_bEndSelection = TRUE;
-
 	CXTPMouseMonitor::SetupHook(NULL);
 
 	OnEndSelection(nCurSel, m_callerParam);
 
-	DestroyWindow();
+	PostMessage(WM_CLOSE);
+
 }
 
-void CXTPColorPopup::OnKillFocus(CWnd* pNewWnd)
+void CXTColorPopup::OnKillFocus(CWnd* pNewWnd)
 {
 	CWnd::OnKillFocus(pNewWnd);
 
-	if (!m_pColorDlg && !m_bEndSelection)
+	if (!m_pColorDlg)
 	{
 		EndSelection(-1);
 	}
 }
 
-void CXTPColorPopup::OnLButtonDown(UINT nFlags, CPoint point)
+void CXTColorPopup::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	CRect rc;
 	GetClientRect(&rc);
@@ -245,22 +256,27 @@ void CXTPColorPopup::OnLButtonDown(UINT nFlags, CPoint point)
 		EndSelection(-1);
 		return;
 	}
-	CXTPColorSelectorCtrl::OnLButtonDown(nFlags, point);
+	CXTColorSelectorCtrl::OnLButtonDown(nFlags, point);
 }
 
-void CXTPColorPopup::OnNcPaint()
+void CXTColorPopup::OnNcPaint()
 {
-	BOOL bOfficeTheme = GetTheme()->m_bFlatTheme;
+	BOOL bOfficeTheme = GetTheme()->GetTheme() != xtThemeDefault;
 
 	if (bOfficeTheme)
 	{
 		CWindowDC dc(this);
-		const COLORREF clrFrame = GetTheme()->m_crPopupBorder;
+		const COLORREF clrFrame = GetXtremeColor(XPCOLOR_MENUBAR_BORDER);
 		CRect rc;
 		GetWindowRect(&rc);
 		int cx = rc.Width(); // for right border is exclusive
 		int cy = rc.Height() ; // see above
 		dc.Draw3dRect(0, 0, cx, cy, clrFrame, clrFrame);
+
+	#ifdef _XTP_INCLUDE_CONTROLBARS
+		if (!m_rcExclude.IsRectEmpty())
+			::DrawAdjacentBorder(&dc, GetXtremeColor(XPCOLOR_TOOLBAR_FACE), m_rcExclude, rc);
+	#endif
 
 	}
 	else
@@ -269,9 +285,9 @@ void CXTPColorPopup::OnNcPaint()
 	}
 }
 
-void CXTPColorPopup::OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS FAR* lpncsp)
+void CXTColorPopup::OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS FAR* lpncsp)
 {
-	BOOL bOfficeTheme = GetTheme()->m_bFlatTheme;
+	BOOL bOfficeTheme = GetTheme()->GetTheme() != xtThemeDefault;
 
 	if (bOfficeTheme)
 	{

@@ -1,21 +1,11 @@
-// from server: 60% by atomic.potato
-typedef int (__cdecl *FunctionType)(int);
-typedef void (*CallType)(int, int);
-
-extern "C" int __cdecl sub_0080bbc2(int);
-extern "C" void sub_00a40a50(int, int);
-
-struct TToolVerb
-{
-    int f();
-};
-
-int TToolVerb::f()
-{
-    int value = *(int *)(*(int *)((char *)this + 12) + 2764);
-    if (!value)
-        return 0;
-    value = sub_0080bbc2(value);
-    sub_00a40a50(0xC91210, value);
-    return 0;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct P3 { char pad[0x188]; void* value; };
+struct P2 { char pad[0xacc]; P3* p; };
+struct Obj { char pad[0xc]; P2* p; bool f(); };
+struct C {};
+extern "C" void* helper(void*);
+extern C c;
+typedef bool (__thiscall *Fn)(C*,void*);
+extern Fn slot;
+bool Obj::f(){ void* x=p->p->value; if(x){ x=helper(x); return slot(&c,x); } return false; }

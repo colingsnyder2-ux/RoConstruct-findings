@@ -1,14 +1,14 @@
-// from server: 33% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/CommandBars/XTPControlPopupColor.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPControlPopupColor.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPControlPopupColor.cpp : implementation of the CXTPControlPopupColor class.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,6 +26,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "Resource.h"
 #include "Common/Resource.h"
 
 #include "Common/XTPResourceManager.h"
@@ -34,13 +35,9 @@
 #include "Common/XTPImageManager.h"
 #include "Common/XTPPropExchange.h"
 #include "Common/XTPToolTipContext.h"
-#include "Common/XTPSystemHelpers.h"
-#include "Common/XTPHookManager.h"
 
-#include "XTPCommandBarsDefines.h"
-#include "XTPControl.h"
-#include "XTPControlButton.h"
 #include "XTPControlPopup.h"
+#include "XTPControlButton.h"
 #include "XTPControlPopupColor.h"
 #include "XTPCommandBar.h"
 #include "XTPPaintManager.h"

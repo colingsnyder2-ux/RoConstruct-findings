@@ -1,239 +1,222 @@
+// from server: 100% by king_originala
 // from server: 93% by colin
 // from server: 91% by king_originala
-// roc 2008-06 00426a80  unit: CSelectionTreeCtrl  size: 332 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00426a80
-//
-// 00426a80  6aff                 push -1
-// 00426a82  64a100000000         mov eax, dword ptr fs:[0]
-// 00426a88  68f8ed7b00           push 0x7bedf8
-// 00426a8d  50                   push eax
-// 00426a8e  64892500000000       mov dword ptr fs:[0], esp
-// 00426a95  83ec10               sub esp, 0x10
-// 00426a98  53                   push ebx
-// 00426a99  55                   push ebp
-// 00426a9a  56                   push esi
-// 00426a9b  8bd9                 mov ebx, ecx
-// 00426a9d  57                   push edi
-// 00426a9e  8dbbc4000000         lea edi, [ebx + 0xc4]
-// 00426aa4  8bcf                 mov ecx, edi
-// 00426aa6  33f6                 xor esi, esi
-// 00426aa8  e8e3c51300           call 0x563090
-// 00426aad  39b320010000         cmp dword ptr [ebx + 0x120], esi
-// 00426ab3  762a                 jbe 0x426adf
-// 00426ab5  8b831c010000         mov eax, dword ptr [ebx + 0x11c]
-// 00426abb  8b30                 mov esi, dword ptr [eax]
-// 00426abd  8b8304010000         mov eax, dword ptr [ebx + 0x104]
-// 00426ac3  8b2d90288000         mov ebp, dword ptr [0x802890]
-// 00426ac9  85c0                 test eax, eax
-// 00426acb  0f85f4000000         jne 0x426bc5
-// 00426ad1  ffd5                 call ebp
-// 00426ad3  33c0                 xor eax, eax
-// 00426ad5  3b7018               cmp esi, dword ptr [eax + 0x18]
-// 00426ad8  7502                 jne 0x426adc
-// 00426ada  ffd5                 call ebp
-// 00426adc  8b760c               mov esi, dword ptr [esi + 0xc]
-// 00426adf  8bcf                 mov ecx, edi
-// 00426ae1  e8fac51300           call 0x5630e0
-// 00426ae6  85f6                 test esi, esi
-// 00426ae8  0f84ae000000         je 0x426b9c
-// 00426aee  8a83e1000000         mov al, byte ptr [ebx + 0xe1]
-// 00426af4  8dabe1000000         lea ebp, [ebx + 0xe1]
-// 00426afa  896c2418             mov dword ptr [esp + 0x18], ebp
-// 00426afe  8844241c             mov byte ptr [esp + 0x1c], al
-// 00426b02  c6450001             mov byte ptr [ebp], 1
-// 00426b06  8bce                 mov ecx, esi
-// 00426b08  c744242800000000     mov dword ptr [esp + 0x28], 0
-// 00426b10  e83bbbffff           call 0x422650
-// 00426b15  8b16                 mov edx, dword ptr [esi]
-// 00426b17  8b4208               mov eax, dword ptr [edx + 8]
-// 00426b1a  8bce                 mov ecx, esi
-// 00426b1c  ffd0                 call eax
-// 00426b1e  8a8be0000000         mov cl, byte ptr [ebx + 0xe0]
-// 00426b24  8dbbe0000000         lea edi, [ebx + 0xe0]
-// 00426b2a  897c2410             mov dword ptr [esp + 0x10], edi
-// 00426b2e  884c2414             mov byte ptr [esp + 0x14], cl
-// 00426b32  c60701               mov byte ptr [edi], 1
-// 00426b35  8bce                 mov ecx, esi
-// 00426b37  c644242801           mov byte ptr [esp + 0x28], 1
-// 00426b3c  e8dfe9ffff           call 0x425520
-// 00426b41  8a542414             mov dl, byte ptr [esp + 0x14]
-// 00426b45  8bce                 mov ecx, esi
-// 00426b47  c644242800           mov byte ptr [esp + 0x28], 0
-// 00426b4c  8817                 mov byte ptr [edi], dl
-// 00426b4e  e8fdf8ffff           call 0x426450
-// 00426b53  8dbbc4000000         lea edi, [ebx + 0xc4]
-// 00426b59  8bcf                 mov ecx, edi
-// 00426b5b  897c2410             mov dword ptr [esp + 0x10], edi
-// 00426b5f  e82cc51300           call 0x563090
-// 00426b64  c644241401           mov byte ptr [esp + 0x14], 1
-// 00426b69  837e7c00             cmp dword ptr [esi + 0x7c], 0
-// 00426b6d  c644242802           mov byte ptr [esp + 0x28], 2
-// 00426b72  750d                 jne 0x426b81
-// 00426b74  8b03                 mov eax, dword ptr [ebx]
-// 00426b76  8b9060010000         mov edx, dword ptr [eax + 0x160]
-// 00426b7c  56                   push esi
-// 00426b7d  8bcb                 mov ecx, ebx
-// 00426b7f  ffd2                 call edx
-// 00426b81  8bcf                 mov ecx, edi
-// 00426b83  c644242800           mov byte ptr [esp + 0x28], 0
-// 00426b88  e853c51300           call 0x5630e0
-// 00426b8d  8a44241c             mov al, byte ptr [esp + 0x1c]
-// 00426b91  c7442428ffffffff     mov dword ptr [esp + 0x28], 0xffffffff
-// 00426b99  884500               mov byte ptr [ebp], al
-// 00426b9c  8bcb                 mov ecx, ebx
-// 00426b9e  e85dfdffff           call 0x426900
-// 00426ba3  8b4c2430             mov ecx, dword ptr [esp + 0x30]
-// 00426ba7  51                   push ecx
-// 00426ba8  8d4b54               lea ecx, [ebx + 0x54]
-// 00426bab  e8606c2b00           call 0x6dd810
-// 00426bb0  8b4c2420             mov ecx, dword ptr [esp + 0x20]
-// 00426bb4  5f                   pop edi
-// 00426bb5  5e                   pop esi
-// 00426bb6  5d                   pop ebp
-// 00426bb7  5b                   pop ebx
-// 00426bb8  64890d00000000       mov dword ptr fs:[0], ecx
-// 00426bbf  83c41c               add esp, 0x1c
-// 00426bc2  c20400               ret 4
-// 00426bc5  8b00                 mov eax, dword ptr [eax]
-// 00426bc7  e909ffffff           jmp 0x426ad5
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: xtp-11.2.2-shared-mfc roc_king_originala_tree_timer_b766cf8d251287ae.cpp
 
-extern "C" __declspec(dllimport) void __cdecl _invalid_parameter_noinfo();
-
-struct Mutex {
-    unsigned char storage[0x1c];
-    void lock();
-    void unlock();
+// Candidate translation unit (score above; library headers required).
+#ifndef _CPPUNWIND
+#define _CPPUNWIND 1
+#endif
+#define _AFXDLL 1
+#define _XTP_STATICLINK 1
+#include <afxwin.h>
+#include <afxext.h>
+#include <XTToolkitPro.h>
+#include <map>
+#include <set>
+#include <intrin.h>
+#include <typeinfo>
+#include <stdexcept>
+namespace boost {namespace detail {
+class sp_counted_base {
+ sp_counted_base(const sp_counted_base&);
+ sp_counted_base&operator=(const sp_counted_base&);
+ long use_count_,weak_count_;
+public:
+ sp_counted_base():use_count_(1),weak_count_(1){}
+ virtual ~sp_counted_base(){}
+ virtual void dispose()=0;
+ virtual void destroy(){delete this;}
+ virtual void*get_deleter(const std::type_info&)=0;
+ void add_ref_copy(){_InterlockedIncrement(&use_count_);}
+ void weak_release(){if(_InterlockedDecrement(&weak_count_)==0)destroy();}
+ void release(){if(_InterlockedDecrement(&use_count_)==0){dispose();weak_release();}}
 };
-
-struct Event {
-    unsigned char storage[0x70];
-    void notify(unsigned int);
+class shared_count {
+ sp_counted_base*pi_;
+public:
+ shared_count():pi_(0){}
+ shared_count(const shared_count&r):pi_(r.pi_){if(pi_)pi_->add_ref_copy();}
+ ~shared_count(){if(pi_)pi_->release();}
+ friend inline bool operator<(shared_count const&a,shared_count const&b){return std::less<sp_counted_base*>()(a.pi_,b.pi_);}
 };
-
-struct Node;
-
-struct NodeVTable {
-    void* reserved[2];
-    void (__thiscall *update)(Node*);
-};
-
-struct Node {
-    NodeVTable* vtable;
-    unsigned char padding04[8];
-    Node* value;
-    unsigned char padding10[8];
-    Node* sentinel;
-    unsigned char padding1c[0x60];
-    unsigned int state;
-
-    void prepare();
-    void select();
-    void finish();
-};
-
-struct Container {
-    Node* sentinel;
-};
-
-struct FlagGuard {
-    bool& flag;
-    bool previous;
-
-    FlagGuard(bool&, bool);
-    ~FlagGuard();
-};
-
-__forceinline FlagGuard::FlagGuard(bool& p, bool value)
-    : flag(p)
-{
-    previous = p;
-    p = value;
 }
-
-__forceinline FlagGuard::~FlagGuard()
-{
-    flag = previous;
-}
-
-struct LockGuard {
-    Mutex* mutex;
-    bool locked;
-
-    LockGuard(Mutex*);
-    ~LockGuard();
+template<class T>class shared_ptr {
+ T*px;detail::shared_count pn;
+public:
+ shared_ptr():px(0),pn(){}
+ shared_ptr(const shared_ptr&r):px(r.px),pn(r.pn){}
+ template<class Y>shared_ptr(const shared_ptr<Y>&r):px(r.px),pn(r.pn){}
+ T*get()const{return px;}
+ template<class Y>bool _internal_less(shared_ptr<Y>const&r)const{return pn<r.pn;}
+ template<class Y>friend class shared_ptr;
 };
-
-__forceinline LockGuard::LockGuard(Mutex* p)
-    : mutex(p)
-{
-    mutex->lock();
-    locked = true;
 }
-
-__forceinline LockGuard::~LockGuard()
+namespace boost {template<class T,class U>inline bool operator<(shared_ptr<T>const&a,shared_ptr<U>const&b){return a._internal_less(b);}}
+namespace boost {namespace noncopyable_ {class noncopyable {protected:noncopyable(){}~noncopyable(){}private:noncopyable(const noncopyable&);const noncopyable&operator=(const noncopyable&);};}typedef noncopyable_::noncopyable noncopyable;
+class condition;struct xtime;
+class thread_exception:public std::exception {protected:thread_exception();thread_exception(int);public:~thread_exception()throw();int native_error()const;private:int m_sys_err;};
+class lock_error:public thread_exception {public:lock_error();lock_error(int);~lock_error()throw();virtual const char*what()const throw();};
+namespace detail {namespace thread {
+template <typename Mutex>
+class lock_ops : private noncopyable
 {
-    if (locked)
-        mutex->unlock();
-}
+private:
+    lock_ops() { }
 
-struct SelectionTree;
+public:
+    typedef typename Mutex::cv_state lock_state;
 
-struct SelectionTreeVTable {
-    void* reserved[0x58];
-    void (__thiscall *apply)(SelectionTree*, Node*);
-};
-
-struct SelectionTree {
-    SelectionTreeVTable* vtable;
-    unsigned char padding04[0x50];
-    Event event;
-    Mutex mutex;
-    bool flag0;
-    bool flag1;
-    unsigned char paddinge2[0x22];
-    Container* container;
-    unsigned char padding108[0x14];
-    Node** entries;
-    unsigned int count;
-
-    void refresh();
-    void process(unsigned int argument);
-};
-
-void SelectionTree::process(unsigned int argument)
-{
-    Node* selected = 0;
-
-    mutex.lock();
-    if (count > 0) {
-        Node* entry = entries[0];
-        Container* owner = container;
-        void (__cdecl *invalid)() = _invalid_parameter_noinfo;
-        if (!owner)
-            invalid();
-        Node* sentinel = owner ? owner->sentinel : 0;
-        if (entry == sentinel->sentinel)
-            invalid();
-        selected = entry->value;
+    static void lock(Mutex& m)
+    {
+        m.do_lock();
     }
-    mutex.unlock();
+    static bool trylock(Mutex& m)
+    {
+        return m.do_trylock();
+    }
+    static bool timedlock(Mutex& m, const xtime& xt)
+    {
+        return m.do_timedlock(xt);
+    }
+    static void unlock(Mutex& m)
+    {
+        m.do_unlock();
+    }
+    static void lock(Mutex& m, lock_state& state)
+    {
+        m.do_lock(state);
+    }
+    static void unlock(Mutex& m, lock_state& state)
+    {
+        m.do_unlock(state);
+    }
+};
 
-    if (selected) {
-        FlagGuard outer(flag1, true);
-        selected->prepare();
-        selected->vtable->update(selected);
-        {
-            FlagGuard inner(flag0, true);
-            selected->select();
-        }
-        selected->finish();
-        {
-            LockGuard lock(&mutex);
-            if (selected->state == 0)
-                vtable->apply(this, selected);
-        }
+template <typename Mutex>
+class scoped_lock : private noncopyable
+{
+public:
+    typedef Mutex mutex_type;
+
+    explicit scoped_lock(Mutex& mx, bool initially_locked=true)
+        : m_mutex(mx), m_locked(false)
+    {
+        if (initially_locked) lock();
+    }
+    ~scoped_lock()
+    {
+        if (m_locked) unlock();
     }
 
-    refresh();
-    event.notify(argument);
+    void lock()
+    {
+        if (m_locked) throw lock_error();
+        lock_ops<Mutex>::lock(m_mutex);
+        m_locked = true;
+    }
+    void unlock()
+    {
+        if (!m_locked) throw lock_error();
+        lock_ops<Mutex>::unlock(m_mutex);
+        m_locked = false;
+    }
+
+    bool locked() const { return m_locked; }
+    operator const void*() const { return m_locked ? this : 0; }
+
+private:
+    friend class boost::condition;
+
+    Mutex& m_mutex;
+    bool m_locked;
+};
+
+}}class recursive_mutex:private noncopyable {public:friend class detail::thread::lock_ops<recursive_mutex>;typedef detail::thread::scoped_lock<recursive_mutex> scoped_lock;recursive_mutex();~recursive_mutex();private:typedef std::size_t cv_state;void do_lock();void do_unlock();void do_lock(cv_state&);void do_unlock(cv_state&);void*m_mutex;bool m_critical_section;unsigned long m_count;};}
+
+namespace RBX {class Instance;class PropertyChanged;struct ChildAdded;struct ChildRemoved;namespace Reflection {class ClassDescriptor;}
+template<class C,class E>class __declspec(novtable) Listener {protected:virtual void onEvent(const C*,E)=0;Listener&operator=(const Listener&);virtual~Listener(){}};
+}
+
+namespace RBX {class DataModel;class Selection;}
+class CRobloxTreeCtrlNode;
+class CRobloxTreeCtrl:public CXTTreeCtrl {
+public:
+ virtual RBX::Selection*getSelection()=0;
+ virtual boost::shared_ptr<RBX::DataModel>getDataModel()=0;
+ virtual void onNodeCreated(CRobloxTreeCtrlNode*)=0;
+ virtual void onNodeChanged(CRobloxTreeCtrlNode*)=0;
+ virtual void onNodeDeleted(CRobloxTreeCtrlNode*)=0;
+ virtual void refreshTree();
+ CRobloxTreeCtrlNode*root;
+ std::map<RBX::Instance*,CRobloxTreeCtrlNode*>nodes;
+ bool changing;
+ CImageList images;
+ boost::recursive_mutex mutex;
+};
+struct NativeTreeWriteGuard {
+ boost::shared_ptr<boost::recursive_mutex>mutex;
+ boost::recursive_mutex::scoped_lock*lock;
+ NativeTreeWriteGuard(boost::shared_ptr<const RBX::DataModel>);
+ ~NativeTreeWriteGuard();
+};
+extern int nativeTreeSortPriority(RBX::Instance*);
+class CRobloxTreeCtrlNode:
+ public RBX::Listener<RBX::Instance,RBX::PropertyChanged>,
+ public RBX::Listener<RBX::Instance,RBX::ChildAdded>,
+ public RBX::Listener<RBX::Instance,RBX::ChildRemoved> {
+public:
+ boost::shared_ptr<RBX::Instance>instance;
+ std::map<RBX::Instance*,CRobloxTreeCtrlNode*>children;
+ std::set<CRobloxTreeCtrlNode*>removedChildren;
+ bool expanded:1;
+ bool expandedOnce:1;
+ bool changing;
+ CRobloxTreeCtrl*tree;
+ CRobloxTreeCtrlNode*parent;
+ std::set<boost::shared_ptr<RBX::Instance> >pendingChildren;
+ HTREEITEM item;
+ int priority;
+ const RBX::Reflection::ClassDescriptor*descriptor;
+ CRobloxTreeCtrlNode(CRobloxTreeCtrlNode*,boost::shared_ptr<RBX::Instance>,CRobloxTreeCtrl*);
+ virtual~CRobloxTreeCtrlNode();
+ virtual void onEvent(const RBX::Instance*,RBX::PropertyChanged);
+ virtual void onEvent(const RBX::Instance*,RBX::ChildAdded);
+ virtual void onEvent(const RBX::Instance*,RBX::ChildRemoved);
+ virtual void updateSelection();
+ virtual void createItem();
+ virtual void updateExpansion(int);
+ virtual void getDisplayInfo(NMTVDISPINFOA*);
+ virtual HTREEITEM insertItem();
+ void prepareTreeItem();void updateTreeItem();void finishTreeItem();
+};
+
+struct NativeScopedFlag {
+ bool&flag;bool previous;
+ NativeScopedFlag(bool&v,bool value):flag(v){previous=v;v=value;}
+ ~NativeScopedFlag(){flag=previous;}
+};
+class NativeSelectionTimer:public CRobloxTreeCtrl {
+public:void refreshPending();void onTimer(UINT_PTR);
+};
+void NativeSelectionTimer::onTimer(UINT_PTR argument){
+ CRobloxTreeCtrlNode*selected=0;
+ typedef std::set<CRobloxTreeCtrlNode*> DirtyNodes;
+ DirtyNodes&dirty=*reinterpret_cast<DirtyNodes*>(reinterpret_cast<char*>(this)+0x104);
+ boost::detail::thread::lock_ops<boost::recursive_mutex>::lock(mutex);
+ if(dirty.size()>0)selected=*dirty.begin();
+ boost::detail::thread::lock_ops<boost::recursive_mutex>::unlock(mutex);
+ if(selected){
+  NativeScopedFlag outer(*reinterpret_cast<bool*>(reinterpret_cast<char*>(this)+0xe1),true);
+  selected->prepareTreeItem();
+  selected->updateSelection();
+  {NativeScopedFlag inner(*reinterpret_cast<bool*>(reinterpret_cast<char*>(this)+0xe0),true);selected->updateTreeItem();}
+  selected->finishTreeItem();
+  {boost::recursive_mutex::scoped_lock lock(mutex);if(selected->pendingChildren.empty())onNodeDeleted(selected);}
+ }
+ refreshPending();
+ CXTTreeCtrl::OnTimer(argument);
 }

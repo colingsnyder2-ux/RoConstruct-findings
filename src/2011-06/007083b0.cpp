@@ -1,11 +1,10 @@
-// from server: 73% by atomic.potato
-struct EventDesc
-{
-    int value[101];
-    void get(int* result);
+// from server: 100% by tester
+// roc-flags: /O2 /GS- /EHsc /MD
+struct seg_004c0000 {
+    int get_19c(int *out);
 };
 
-void EventDesc::get(int* result)
-{
-    *result = value[100];
+int seg_004c0000::get_19c(int *out) {
+    *out = *(int *)((char *)this + 0x194);
+    return (int)out;
 }

@@ -1,14 +1,14 @@
-// from server: 50% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Common/XTPWinThemeWrapper.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/PropertyGrid/XTPPropertyGridItemBool.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPWinThemeWrapper.cpp: implementation of the CXTPWinThemeWrapper class.
+// CXTPPropertyGridItemBool.cpp : implementation of the XTPPropertyGridItemBool class.
 //
-// This file is a part of the XTREME TOOLKIT PRO MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME PROPERTYGRID MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,740 +26,542 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "Resource.h"
 
-#include "XTPWinThemeWrapper.h"
-#include "XTPSystemHelpers.h"
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPVC50Helpers.h"
+#include "Common/XTPResourceManager.h"
 
+#include "XTPPropertyGridInplaceEdit.h"
+#include "XTPPropertyGridInplaceButton.h"
+#include "XTPPropertyGridInplaceList.h"
+#include "XTPPropertyGridItem.h"
+#include "XTPPropertyGridItemBool.h"
+#include "XTPPropertyGridPaintManager.h"
+#include "XTPPropertyGrid.h"
+#include "XTPPropertyGridView.h"
 
 #ifdef _DEBUG
+#define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
-#define new DEBUG_NEW
 #endif
 
-#pragma warning(disable: 4571) // warning C4571: catch(...) blocks compiled with /EHs do not catch or re-throw Structured Exceptions
 
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridItemBool
 
-#define TRY_POINTER_CALL(proc)\
-	try\
-	{\
-		CSharedData& sData = GetSharedData();\
-		if (sData.m_hThemeDll != NULL && sData.m_ptrWrappers[xtpWrapper##proc] == NULL)\
-		{\
-			sData.m_ptrWrappers[xtpWrapper##proc] = ::GetProcAddress(\
-				sData.m_hThemeDll, xtpWrapperProc##proc);\
-		}\
-		PFN##proc ptr = (PFN##proc)sData.m_ptrWrappers[xtpWrapper##proc];\
-		if (ptr)\
-		{
-#define POINTER_CALL (*ptr)
-#define CATCH_POINTER_CALL()\
-		}\
-	}\
-	catch (...)\
-	{\
-	}
+IMPLEMENT_DYNAMIC(CXTPPropertyGridItemBool, CXTPPropertyGridItem)
 
-
-BOOL CXTPWinThemeWrapper::m_bDllDetached = FALSE;
-
-CXTPWinThemeWrapper::CSharedData::CSharedData()
+CXTPPropertyGridItemBool::CXTPPropertyGridItemBool(LPCTSTR strCaption, BOOL bValue, BOOL* pBindBool)
+: CXTPPropertyGridItem(strCaption)
+, m_strTrueText(_T("True"))
+, m_strFalseText(_T("False"))
 {
-	m_dwComCtlVersion = XTPSystemVersion()->GetComCtlVersion();
-	ZeroMemory(&m_ptrWrappers, sizeof(m_ptrWrappers));
-
-	m_hThemeDll = ::LoadLibrary(_T("UXTHEME.DLL"));
+	m_pBindBool = pBindBool;
+	_Init(bValue);
 }
 
-CXTPWinThemeWrapper::CSharedData& CXTPWinThemeWrapper::GetSharedData() const
+CXTPPropertyGridItemBool::CXTPPropertyGridItemBool(UINT nID, BOOL bValue, BOOL* pBindBool)
+: CXTPPropertyGridItem(nID)
+, m_strTrueText(_T("True"))
+, m_strFalseText(_T("False"))
 {
-	if (m_pSharedDara)
-		return (CSharedData&)*m_pSharedDara;
+	m_pBindBool = pBindBool;
+	_Init(bValue);
+}
 
-	if (!m_bUseSkinFramework)
+CXTPPropertyGridItemBool::~CXTPPropertyGridItemBool()
+{
+}
+
+/////////////////////////////////////////////////////////////////////////////
+//
+
+void CXTPPropertyGridItemBool::_Init(BOOL bValue)
+{
+	m_nFlags = xtpGridItemHasComboButton | xtpGridItemHasEdit;
+
+	CString strTrueFalse;
+	if (XTPResourceManager()->LoadString(&strTrueFalse, XTP_IDS_PROPERTYGRID_TRUEFALSE)
+		&& (strTrueFalse.Find(_T('\n')) != -1))
 	{
-		static CSharedData sDataSystem;
-		return sDataSystem;
+		AfxExtractSubString(m_strTrueText, strTrueFalse, 0);
+		AfxExtractSubString(m_strFalseText, strTrueFalse, 1);
+	}
+	SetBool(bValue);
+
+	m_pConstraints->AddConstraint(m_strTrueText);
+	m_pConstraints->AddConstraint(m_strFalseText);
+
+	SetConstraintEdit(TRUE);
+	m_strDefaultValue = m_strValue;
+
+	m_bCheckBoxStyle = FALSE;
+}
+
+void CXTPPropertyGridItemBool::SetValue(CString strValue)
+{
+	SetBool(strValue.CompareNoCase(m_strTrueText) == 0);
+}
+
+void CXTPPropertyGridItemBool::SetBool(BOOL bValue)
+{
+	m_bValue = bValue;
+
+	if (m_pBindBool)
+	{
+		*m_pBindBool = bValue;
 	}
 
-	static CSharedData sData;
-	return sData;
+	CXTPPropertyGridItem::SetValue(bValue ? m_strTrueText : m_strFalseText);
+}
+
+void CXTPPropertyGridItemBool::BindToBool(BOOL* pBindBool)
+{
+	m_pBindBool = pBindBool;
+	if (m_pBindBool)
+	{
+		*m_pBindBool = m_bValue;
+	}
+}
+
+void CXTPPropertyGridItemBool::OnBeforeInsert()
+{
+	if (m_pBindBool && *m_pBindBool != m_bValue)
+	{
+		SetBool(*m_pBindBool);
+	}
+}
+
+
+BOOL CXTPPropertyGridItemBool::SetValueText(CString& strValueText, LPCTSTR strNewText)
+{
+	// see if the value exists.
+	int iIndex = m_pConstraints->FindConstraint(strValueText);
+	if (iIndex != -1)
+	{
+		// if this is the current value change it as well.
+		if (GetValue() == strValueText)
+		{
+			CXTPPropertyGridItem::SetValue(strNewText);
+		}
+
+		// update the value.
+		strValueText = strNewText;
+		m_pConstraints->GetConstraintAt(iIndex)->m_strConstraint = strValueText;
+		return TRUE;
+	}
+	return FALSE;
+}
+
+BOOL CXTPPropertyGridItemBool::SetTrueFalseText(LPCTSTR strTrueText, LPCTSTR strFalseText)
+{
+	// update the "True" value text
+	if (!SetValueText(m_strTrueText, strTrueText))
+		return FALSE;
+
+	// update the "False" value text
+	if (!SetValueText(m_strFalseText, strFalseText))
+		return FALSE;
+
+	return TRUE;
+}
+
+void CXTPPropertyGridItemBool::SetCheckBoxStyle(BOOL bCheckBoxStyle /*= TRUE*/)
+{
+	m_bCheckBoxStyle = bCheckBoxStyle;
+	SetFlags(m_bCheckBoxStyle ? 0 : xtpGridItemHasComboButton | xtpGridItemHasEdit);
+}
+
+BOOL CXTPPropertyGridItemBool::IsCheckBoxStyle() const
+{
+	return m_bCheckBoxStyle;
+}
+
+CString CXTPPropertyGridItemBool::GetViewValue()
+{
+	return m_bCheckBoxStyle ? _T("") : CXTPPropertyGridItem::GetViewValue();
+}
+
+BOOL CXTPPropertyGridItemBool::OnKeyDown (UINT nChar)
+{
+	if (m_bCheckBoxStyle && !GetReadOnly() && (nChar == VK_SPACE))
+	{
+		CRect rc = GetValueRect();
+		OnLButtonDblClk(0, rc.CenterPoint());
+
+		return TRUE;
+	}
+	return FALSE;
+}
+
+void CXTPPropertyGridItemBool::OnLButtonDblClk(UINT nFlags, CPoint point)
+{
+	if (m_bCheckBoxStyle && PtInValueRect(point) && !GetReadOnly())
+	{
+		OnSelect();
+		SelectNextConstraint();
+	}
+	else
+	{
+		CXTPPropertyGridItem::OnLButtonDblClk(nFlags, point);
+	}
+}
+
+BOOL CXTPPropertyGridItemBool::PtInCheckBoxRect(CPoint point)
+{
+	CRect rc = GetValueRect();
+	rc.right = rc.left + 15;
+
+	return rc.PtInRect(point);
+}
+
+BOOL CXTPPropertyGridItemBool::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	if (!CXTPPropertyGridItem::OnLButtonDown(nFlags, point))
+		return FALSE;
+
+	if (m_bCheckBoxStyle)
+	{
+		if (PtInCheckBoxRect(point) && !GetReadOnly())
+		{
+			OnLButtonDblClk(nFlags, point);
+		}
+	}
+
+	return TRUE;
+}
+
+BOOL CXTPPropertyGridItemBool::OnDrawItemValue(CDC& dc, CRect rcValue)
+{
+	if (!m_bCheckBoxStyle)
+		return FALSE;
+
+	CRect rcSample(rcValue.left - 1, rcValue.CenterPoint().y - 6, rcValue.left - 1 + 13, rcValue.CenterPoint().y + 7);
+
+	CXTPPropertyGridPaintManager* pPaintManager = m_pGrid->GetPaintManager();
+
+	if (pPaintManager->m_buttonsStyle == xtpGridButtonsThemed && pPaintManager->m_themeButton.IsAppThemed())
+	{
+		pPaintManager->m_themeButton.DrawThemeBackground(dc, BP_CHECKBOX,
+			GetReadOnly() ? (GetBool() ? CBS_CHECKEDDISABLED : CBS_UNCHECKEDDISABLED) :
+			(GetBool() ? CBS_CHECKEDNORMAL : CBS_UNCHECKEDNORMAL),
+			rcSample, 0);
+	}
+	else
+	{
+		dc.DrawFrameControl(rcSample, DFC_BUTTON, DFCS_BUTTONCHECK |
+			(GetReadOnly() ? DFCS_INACTIVE : 0) | (GetBool() ? DFCS_CHECKED : 0));
+	}
+
+	return TRUE;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridItemEnum
+
+IMPLEMENT_DYNAMIC(CXTPPropertyGridItemEnum, CXTPPropertyGridItem)
+
+CXTPPropertyGridItemEnum::CXTPPropertyGridItemEnum(LPCTSTR strCaption, int nValue, int* pBindEnum)
+: CXTPPropertyGridItem(strCaption)
+{
+	m_pBindEnum = pBindEnum;
+	_Init(nValue);
 
 }
 
-void CXTPWinThemeWrapper::CreateSharedData()
+CXTPPropertyGridItemEnum::CXTPPropertyGridItemEnum(UINT nID, int nValue, int* pBindEnum)
+: CXTPPropertyGridItem(nID)
 {
-	SAFE_DELETE(m_pSharedDara);
-	m_pSharedDara = new CSharedData();
+	m_pBindEnum = pBindEnum;
+	_Init(nValue);
+}
+
+CXTPPropertyGridItemEnum::~CXTPPropertyGridItemEnum()
+{
+}
+
+void CXTPPropertyGridItemEnum::_Init(int nValue)
+{
+	SetEnum(nValue);
+	m_nFlags = xtpGridItemHasComboButton | xtpGridItemHasEdit;
+
+	SetConstraintEdit(TRUE);
+	m_strDefaultValue = m_strValue;
+}
+
+void CXTPPropertyGridItemEnum::SetValue(CString strValue)
+{
+	int nIndex = m_pConstraints->FindConstraint(strValue);
+	ASSERT(nIndex >= 0);
+	if (nIndex >= 0)
+	{
+		SetEnum(m_pConstraints->GetConstraintAt(nIndex));
+	}
+}
+
+void CXTPPropertyGridItemEnum::SetEnum(int nValue)
+{
+	m_nValue = nValue;
+
+	if (m_pBindEnum)
+	{
+		*m_pBindEnum = nValue;
+	}
+
+	int nIndex = m_pConstraints->FindConstraint(nValue);
+	CXTPPropertyGridItem::SetValue(m_pConstraints->GetAt(nIndex));
+}
+
+void CXTPPropertyGridItemEnum::SetEnum(CXTPPropertyGridItemConstraint* pContraint)
+{
+	m_nValue = (int)pContraint->m_dwData;
+
+	if (m_pBindEnum)
+	{
+		*m_pBindEnum = m_nValue;
+	}
+
+	CXTPPropertyGridItem::SetValue(pContraint->m_strConstraint);
+}
+
+void CXTPPropertyGridItemEnum::BindToEnum(int* pBindEnum)
+{
+	m_pBindEnum = pBindEnum;
+	if (m_pBindEnum)
+	{
+		*m_pBindEnum = m_nValue;
+	}
+}
+
+void CXTPPropertyGridItemEnum::OnBeforeInsert()
+{
+	if (m_pBindEnum && *m_pBindEnum != m_nValue)
+	{
+		SetEnum(*m_pBindEnum);
+	}
+}
+
+void CXTPPropertyGridItemEnum::OnConstraintsChanged()
+{
+	if (m_strValue.IsEmpty())
+	{
+		int nIndex = m_pConstraints->FindConstraint(m_nValue);
+		if (nIndex != -1)
+			m_strDefaultValue = m_strValue = m_pConstraints->GetAt(nIndex);
+	}
+
 }
 
 
-//===========================================================================
-// CXTPWinThemeWrapper class
-//===========================================================================
 
-CXTPWinThemeWrapper::CXTPWinThemeWrapper(BOOL bUseSkinFramework)
-	: m_hTheme(NULL), m_bUseSkinFramework(bUseSkinFramework), m_pSharedDara(0)
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridItemFlags
+
+class CXTPPropertyGridItemFlags::CXTPPropertyGridItemFlag : public CXTPPropertyGridItemBool
 {
+public:
 
-}
+	CXTPPropertyGridItemFlag(CString strCaption, DWORD dwFlag)
+		:  CXTPPropertyGridItemBool(strCaption), m_dwFlag(dwFlag)
+	{
+	}
 
-CXTPWinThemeWrapper::~CXTPWinThemeWrapper()
+	void OnValueChanged(CString strValue);
+
+	virtual BOOL GetReadOnly() const
+	{
+		return m_pParent->GetReadOnly();
+	}
+
+	DWORD m_dwFlag;
+};
+
+void CXTPPropertyGridItemFlags::CXTPPropertyGridItemFlag::OnValueChanged(CString strValue)
 {
-	CloseThemeData();
+	SetValue(strValue);
 
-	SAFE_DELETE(m_pSharedDara);
-}
-
-void CXTPWinThemeWrapper::ReloadLibrary() const
-{
-	if (!m_bUseSkinFramework)
+	CXTPPropertyGridItemFlags* pParent = DYNAMIC_DOWNCAST(CXTPPropertyGridItemFlags, m_pParent);
+	ASSERT(pParent);
+	if (!pParent)
 		return;
 
-	HMODULE hThemeDll = GetModuleHandleA("UXTHEME.DLL");
+	if (GetBool())
+		pParent->m_nValue |= m_dwFlag;
+	else
+		pParent->m_nValue &= ~m_dwFlag;
 
-	CSharedData& sData = GetSharedData();
-	if (hThemeDll != sData.m_hThemeDll)
+	pParent->OnValueChanged(pParent->GetFlagsString());
+
+}
+
+IMPLEMENT_DYNAMIC(CXTPPropertyGridItemFlags, CXTPPropertyGridItem)
+
+CXTPPropertyGridItemFlags::CXTPPropertyGridItemFlags(LPCTSTR strCaption, int nValue, int* pBindFlags)
+: CXTPPropertyGridItem(strCaption)
+{
+	m_pBindFlags = pBindFlags;
+	_Init(nValue);
+
+}
+
+CXTPPropertyGridItemFlags::CXTPPropertyGridItemFlags(UINT nID, int nValue, int* pBindFlags)
+: CXTPPropertyGridItem(nID)
+{
+	m_pBindFlags = pBindFlags;
+	_Init(nValue);
+}
+
+CXTPPropertyGridItemFlags::~CXTPPropertyGridItemFlags()
+{
+}
+
+void CXTPPropertyGridItemFlags::_Init(int nValue)
+{
+	SetFlags(nValue);
+	m_nFlags = xtpGridItemHasEdit;
+	m_strDefaultValue = m_strValue;
+}
+
+BOOL CXTPPropertyGridItemFlags::HasFlag(const CString& strValue, CString strFlag) const
+{
+	strFlag.MakeLower();
+	int nIndex = -1;
+
+	do
 	{
-		sData.m_hThemeDll = hThemeDll;
-		ZeroMemory(&sData.m_ptrWrappers, sizeof(sData.m_ptrWrappers));
-	}
-}
-
-void CXTPWinThemeWrapper::SetThemeWrapperPtr(int nThemeWrapper, LPVOID lpWrapperPtr)
-{
-	GetSharedData().m_ptrWrappers[nThemeWrapper] = lpWrapperPtr;
-}
-
-
-void CXTPWinThemeWrapper::CloseThemeData()
-{
-	if (m_hTheme && !m_bDllDetached)
-	{
-		TRY_POINTER_CALL(CloseThemeData)
-			POINTER_CALL(m_hTheme);
-		CATCH_POINTER_CALL()
-	}
-
-	m_hTheme = NULL;
-}
-
-HRESULT CXTPWinThemeWrapper::DrawThemeBackground(HDC hDC, int iPartID, int iStateID, const RECT* pRect, const RECT* pClipRect)
-{
-	TRY_POINTER_CALL(DrawThemeBackground);
-		return POINTER_CALL(m_hTheme, hDC, iPartID, iStateID, pRect, pClipRect);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::DrawThemeBackgroundEx(HDC hDC, int iPartID, int iStateID, const RECT* pRect, const PDTBGOPTS pOptions)
-{
-	TRY_POINTER_CALL(DrawThemeBackgroundEx)
-		return POINTER_CALL(m_hTheme, hDC, iPartID, iStateID, pRect, pOptions);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-
-HRESULT CXTPWinThemeWrapper::DrawThemeEdge(HDC hDC, int iPartID, int iStateID, const RECT* pDestRect, UINT uEdge, UINT uFlags, RECT* pContentRect)
-{
-	TRY_POINTER_CALL(DrawThemeEdge)
-		return POINTER_CALL(m_hTheme, hDC, iPartID, iStateID, pDestRect, uEdge, uFlags, pContentRect);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::DrawThemeIcon(HDC hDC, int iPartID, int iStateID, const RECT* pRect, HIMAGELIST himl, int iImageIndex)
-{
-	TRY_POINTER_CALL(DrawThemeIcon)
-		return POINTER_CALL(m_hTheme, hDC, iPartID, iStateID, pRect, himl, iImageIndex);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::DrawThemeParentBackground(HWND hWnd, HDC hDC, RECT* pRect)
-{
-	TRY_POINTER_CALL(DrawThemeParentBackground)
-		return POINTER_CALL(hWnd, hDC, pRect);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::DrawThemeText(HDC hDC, int iPartID, int iStateID, LPCWSTR pszText, int iCharCount, DWORD dwTextFlags, DWORD dwTextFlags2, const RECT* pRect)
-{
-	TRY_POINTER_CALL(DrawThemeText)
-		return POINTER_CALL(m_hTheme, hDC, iPartID, iStateID, pszText, iCharCount, dwTextFlags, dwTextFlags2, pRect);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::EnableThemeDialogTexture(HWND hWnd, DWORD dwFlags)
-{
-	TRY_POINTER_CALL(EnableThemeDialogTexture)
-		return POINTER_CALL(hWnd, dwFlags);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::EnableTheming(BOOL fEnable)
-{
-	TRY_POINTER_CALL(EnableTheming)
-		return POINTER_CALL(fEnable);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::GetCurrentThemeName(LPWSTR pszThemeFileName, int dwMaxNameChars, LPWSTR pszColorBuff, int cchMaxColorChars, LPWSTR pszSizeBuff, int cchMaxSizeChars)
-{
-	ReloadLibrary();
-
-	TRY_POINTER_CALL(GetCurrentThemeName)
-		return POINTER_CALL(pszThemeFileName, dwMaxNameChars, pszColorBuff, cchMaxColorChars, pszSizeBuff, cchMaxSizeChars);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-DWORD CXTPWinThemeWrapper::ThemeAppProperties()
-{
-	TRY_POINTER_CALL(ThemeAppProperties)
-		return POINTER_CALL();
-	CATCH_POINTER_CALL()
-
-	return 0L;
-}
-
-HRESULT CXTPWinThemeWrapper::GetThemeBackgroundContentRect(HDC hDC, int iPartID, int iStateID, const RECT* pBoundingRect, RECT* pContentRect)
-{
-	TRY_POINTER_CALL(GetThemeBackgroundContentRect)
-		return POINTER_CALL(m_hTheme, hDC, iPartID, iStateID, pBoundingRect, pContentRect);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::GetThemeBackgroundExtent(HDC hDC, int iPartID, int iStateID, const RECT* pContentRect, RECT* pExtentRect)
-{
-	TRY_POINTER_CALL(GetThemeBackgroundExtent)
-		return POINTER_CALL(m_hTheme, hDC, iPartID, iStateID, pContentRect, pExtentRect);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::GetThemeBackgroundRegion(HDC hDC, int iPartID, int iStateID, const RECT* pRect, HRGN* pRegion)
-{
-	TRY_POINTER_CALL(GetThemeBackgroundRegion)
-		return POINTER_CALL(m_hTheme, hDC, iPartID, iStateID, pRect, pRegion);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::GetThemeBool(int iPartID, int iStateID, int iPropID, BOOL* pfVal)
-{
-	TRY_POINTER_CALL(GetThemeBool)
-		return POINTER_CALL(m_hTheme, iPartID, iStateID, iPropID, pfVal);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::GetThemeColor(int iPartID, int iStateID, int iPropID, COLORREF* pColor)
-{
-	TRY_POINTER_CALL(GetThemeColor)
-		return POINTER_CALL(m_hTheme, iPartID, iStateID, iPropID, pColor);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::GetThemeDocumentationProperty(LPCWSTR pszThemeName, LPCWSTR pszPropertyName, LPWSTR pszValueBuff, int cchMaxValChars)
-{
-	TRY_POINTER_CALL(GetThemeDocumentationProperty)
-		return POINTER_CALL(pszThemeName, pszPropertyName, pszValueBuff, cchMaxValChars);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::GetThemeEnumValue(int iPartID, int iStateID, int iPropID, int* piVal)
-{
-	TRY_POINTER_CALL(GetThemeEnumValue)
-		return POINTER_CALL(m_hTheme, iPartID, iStateID, iPropID, piVal);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::GetThemeFilename(int iPartID, int iStateID, int iPropID, LPWSTR pszThemeFilename, int cchMaxBuffChars)
-{
-	TRY_POINTER_CALL(GetThemeFilename)
-		return POINTER_CALL(m_hTheme, iPartID, iStateID, iPropID, pszThemeFilename, cchMaxBuffChars);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::GetThemeFont(HDC hDC, int iPartID, int iStateID, int iPropID, LOGFONT* pFont)
-{
-	TRY_POINTER_CALL(GetThemeFont)
-		return POINTER_CALL(m_hTheme, hDC, iPartID, iStateID, iPropID, pFont);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::GetThemeInt(int iPartID, int iStateID, int iPropID, int* piVal)
-{
-	TRY_POINTER_CALL(GetThemeInt)
-		return POINTER_CALL(m_hTheme, iPartID, iStateID, iPropID, piVal);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::GetThemeIntList(int iPartID, int iStateID, int iPropID, INTLIST* pIntList)
-{
-	TRY_POINTER_CALL(GetThemeIntList)
-		return POINTER_CALL(m_hTheme, iPartID, iStateID, iPropID, pIntList);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::GetThemeMargins(HDC hDC, int iPartID, int iStateID, int iPropID, RECT* pRect, MARGINS* pMargins)
-{
-	TRY_POINTER_CALL(GetThemeMargins)
-		return POINTER_CALL(m_hTheme, hDC, iPartID, iStateID, iPropID, pRect, pMargins);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::GetThemeMetric(HDC hDC, int iPartID, int iStateID, int iPropID, int* piVal)
-{
-	TRY_POINTER_CALL(GetThemeMetric)
-		return POINTER_CALL(m_hTheme, hDC, iPartID, iStateID, iPropID, piVal);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::GetThemePartSize(HDC hDC, int iPartID, int iStateID, RECT* pRect, THEMESIZE eSize, SIZE* pSize)
-{
-	TRY_POINTER_CALL(GetThemePartSize)
-		return POINTER_CALL(m_hTheme, hDC, iPartID, iStateID, pRect, eSize, pSize);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::GetThemePosition(int iPartID, int iStateID, int iPropID, POINT* pPoint)
-{
-	TRY_POINTER_CALL(GetThemePosition)
-		return POINTER_CALL(m_hTheme, iPartID, iStateID, iPropID, pPoint);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::GetThemePropertyOrigin(int iPartID, int iStateID, int iPropID, PROPERTYORIGIN* pOrigin)
-{
-	TRY_POINTER_CALL(GetThemePropertyOrigin)
-		return POINTER_CALL(m_hTheme, iPartID, iStateID, iPropID, pOrigin);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::GetThemeRect(int iPartID, int iStateID, int iPropID, RECT* pRect)
-{
-	TRY_POINTER_CALL(GetThemeRect)
-		return POINTER_CALL(m_hTheme, iPartID, iStateID, iPropID, pRect);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::GetThemeString(int iPartID, int iStateID, int iPropID, LPWSTR pszBuff, int cchMaxBuffChars)
-{
-	TRY_POINTER_CALL(GetThemeString)
-		return POINTER_CALL(m_hTheme, iPartID, iStateID, iPropID, pszBuff, cchMaxBuffChars);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-BOOL CXTPWinThemeWrapper::GetThemeSysBool(int iBoolID)
-{
-	TRY_POINTER_CALL(GetThemeSysBool)
-		return POINTER_CALL(m_hTheme, iBoolID);
-	CATCH_POINTER_CALL()
-
-	return FALSE;
-}
-
-COLORREF CXTPWinThemeWrapper::GetThemeSysColor(int iColorID)
-{
-	TRY_POINTER_CALL(GetThemeSysColor)
-		return POINTER_CALL(m_hTheme, iColorID);
-	CATCH_POINTER_CALL()
-
-	return (COLORREF)-1;
-}
-
-HBRUSH CXTPWinThemeWrapper::GetThemeSysColorBrush(int iColorID)
-{
-	TRY_POINTER_CALL(GetThemeSysColorBrush)
-		return POINTER_CALL(m_hTheme, iColorID);
-	CATCH_POINTER_CALL()
-
-	return NULL;
-}
-
-HRESULT CXTPWinThemeWrapper::GetThemeSysFont(int iFontID, LOGFONT* pLF)
-{
-	TRY_POINTER_CALL(GetThemeSysFont)
-		return POINTER_CALL(m_hTheme, iFontID, pLF);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::GetThemeSysInt(int iIntID, int* piValue)
-{
-	TRY_POINTER_CALL(GetThemeSysInt)
-		return POINTER_CALL(m_hTheme, iIntID, piValue);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-int CXTPWinThemeWrapper::GetThemeSysSize(int iSizeID)
-{
-	TRY_POINTER_CALL(GetThemeSysSize)
-		return POINTER_CALL(m_hTheme, iSizeID);
-	CATCH_POINTER_CALL()
-
-	return 0;
-}
-
-HRESULT CXTPWinThemeWrapper::GetThemeSysString(int iStringID, LPWSTR pszStringBuff, int cchMaxStringChars)
-{
-	TRY_POINTER_CALL(GetThemeSysString)
-		return POINTER_CALL(m_hTheme, iStringID, pszStringBuff, cchMaxStringChars);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::GetThemeTextExtent(HDC hDC, int iPartID, int iStateID, LPCWSTR pszText, int iCharCount, DWORD dwTextFlags, const RECT* pBoundingRect, RECT* pExtentRect)
-{
-	TRY_POINTER_CALL(GetThemeTextExtent)
-		return POINTER_CALL(m_hTheme, hDC, iPartID, iStateID, pszText, iCharCount, dwTextFlags, pBoundingRect, pExtentRect);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HRESULT CXTPWinThemeWrapper::GetThemeTextMetrics(HDC hDC, int iPartID, int iStateID, TEXTMETRIC* ptm)
-{
-	TRY_POINTER_CALL(GetThemeTextMetrics)
-		return POINTER_CALL(m_hTheme, hDC, iPartID, iStateID, ptm);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HTHEME CXTPWinThemeWrapper::GetWindowTheme(HWND hWnd)
-{
-	TRY_POINTER_CALL(GetWindowTheme)
-		return POINTER_CALL(hWnd);
-	CATCH_POINTER_CALL()
-
-	return NULL;
-}
-
-HRESULT CXTPWinThemeWrapper::HitTestThemeBackground(HDC hDC, int iPartID, int iStateID, DWORD dwOptions, const RECT* pRect, HRGN hRgn, POINT ptTest, WORD* pwHitTestCode)
-{
-	TRY_POINTER_CALL(HitTestThemeBackground)
-		return POINTER_CALL(m_hTheme, hDC, iPartID, iStateID, dwOptions, pRect, hRgn, ptTest, pwHitTestCode);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-BOOL CXTPWinThemeWrapper::IsAppThemed() const
-{
-	if (!m_hTheme)
-		return FALSE;
-
-	TRY_POINTER_CALL(IsAppThemed)
-		return POINTER_CALL();
-	CATCH_POINTER_CALL()
-
-	return FALSE;
-}
-
-BOOL CXTPWinThemeWrapper::IsThemeActive() const
-{
-	if (m_hTheme == 0)
-	{
-		ReloadLibrary();
-	}
-
-	TRY_POINTER_CALL(IsThemeActive)
-		return POINTER_CALL();
-	CATCH_POINTER_CALL()
-
-	return FALSE;
-}
-
-BOOL CXTPWinThemeWrapper::IsThemeBackgroundPartiallyTransparent(int iPartID, int iStateID)
-{
-	TRY_POINTER_CALL(IsThemeBackgroundPartiallyTransparent)
-		return POINTER_CALL(m_hTheme, iPartID, iStateID);
-	CATCH_POINTER_CALL()
-
-	return FALSE;
-}
-
-BOOL CXTPWinThemeWrapper::IsThemeDialogTextureEnabled(HWND hWnd)
-{
-	TRY_POINTER_CALL(IsThemeDialogTextureEnabled)
-		return POINTER_CALL(hWnd);
-	CATCH_POINTER_CALL()
-
-	return FALSE;
-}
-
-BOOL CXTPWinThemeWrapper::IsThemePartDefined(int iPartID, int iStateID)
-{
-	TRY_POINTER_CALL(IsThemePartDefined)
-		return POINTER_CALL(m_hTheme, iPartID, iStateID);
-	CATCH_POINTER_CALL()
-
-	return FALSE;
-}
-
-void CXTPWinThemeWrapper::OpenThemeData(HWND hWnd, LPCWSTR pszClassList)
-{
-	ReloadLibrary();
-
-	CloseThemeData();
-
-	TRY_POINTER_CALL(OpenThemeData)
-		m_hTheme = POINTER_CALL(hWnd, pszClassList);
-	CATCH_POINTER_CALL()
-}
-
-void CXTPWinThemeWrapper::SetThemeAppProperties(DWORD dwFlags)
-{
-	TRY_POINTER_CALL(SetThemeAppProperties)
-		POINTER_CALL(dwFlags);
-	CATCH_POINTER_CALL()
-}
-
-HRESULT CXTPWinThemeWrapper::SetWindowTheme(HWND hWnd, LPCWSTR pszSubAppName, LPCWSTR pszSubIdList)
-{
-	TRY_POINTER_CALL(SetWindowTheme)
-		return POINTER_CALL(hWnd, pszSubAppName, pszSubIdList);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-DWORD CXTPWinThemeWrapper::GetThemeAppProperties()
-{
-	TRY_POINTER_CALL(GetThemeAppProperties)
-		return POINTER_CALL();
-	CATCH_POINTER_CALL()
-
-	return 0;
-}
-
-BOOL CXTPWinThemeWrapper::ThemeDataOpen() const
-{
-	return (m_hTheme != NULL);
-}
-
-BOOL CXTPWinThemeWrapper::IsAppThemeReady() const
-{
-	// This will fail when using Windows "classic" or any non
-	// theme mode the system themes are not available to use.
-
-	if (!IsThemeActive())
-		return FALSE;
-
-	if (GetSharedData().m_hThemeDll == XTP_UXTHEME_HANDLE)
-		return TRUE;
-
-	// By loading the comctl32.dll, we can determine if the application
-	// has a manifest file because the application will load comctl32.dll
-	// version 6.0 (or greater).  If it does not contain a manifest file
-	// the application will load version 5.0 or earlier.
-
-	// Our application is able to display Windows XP themes.
-	if (HIWORD(GetSharedData().m_dwComCtlVersion) > 5)
-		return TRUE;
-
-	return FALSE;
-}
-
-/// Vista
-
-HRESULT CXTPWinThemeWrapper::DrawThemeTextEx(HDC hDC, int iPartId, int iStateId, LPCWSTR pszText, int cchText, DWORD dwTextFlags, LPRECT pRect, const XTP_UX_DTTOPTS *pOptions)
-{
-	TRY_POINTER_CALL(DrawThemeTextEx)
-		return POINTER_CALL(m_hTheme, hDC, iPartId, iStateId, pszText, cchText, dwTextFlags, pRect, pOptions);
-	CATCH_POINTER_CALL()
-
-	return E_FAIL;
-}
-
-HPAINTBUFFER CXTPWinThemeWrapper::BeginBufferedPaint(HDC hdcTarget, const RECT* prcTarget, XTP_UX_BUFFERFORMAT dwFormat, XTP_UX_PAINTPARAMS *pPaintParams, HDC *phdc)
-{
-	TRY_POINTER_CALL(BeginBufferedPaint)
-		return POINTER_CALL(hdcTarget, prcTarget, dwFormat, pPaintParams, phdc);
-	CATCH_POINTER_CALL()
-
-	return NULL;
-}
-
-void CXTPWinThemeWrapper::EndBufferedPaint(HPAINTBUFFER hBufferedPaint, BOOL fUpdateTarget)
-{
-	TRY_POINTER_CALL(EndBufferedPaint)
-		POINTER_CALL(hBufferedPaint, fUpdateTarget);
-	CATCH_POINTER_CALL()
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-
-CXTPWinDwmWrapper::CSharedData::CSharedData()
-{
-	ZeroMemory(&m_ptrWrappers, sizeof(m_ptrWrappers));
-	m_hDwmDll = ::LoadLibrary(_T("dwmapi.dll"));
-}
-
-
-CXTPWinDwmWrapper::CSharedData& CXTPWinDwmWrapper::GetSharedData() const
-{
-	static CSharedData sData;
-	return sData;
-}
-
-
-CXTPWinDwmWrapper::CXTPWinDwmWrapper()
-{
-
-}
-
-CXTPWinDwmWrapper::~CXTPWinDwmWrapper()
-{
-
-}
-
-BOOL CXTPWinDwmWrapper::IsCompositionEnabled()
-{
-	CSharedData& sData = GetSharedData();
-	if (sData.m_hDwmDll != NULL && sData.m_ptrWrappers[xtpWrapperDwmIsCompositionEnabled] == NULL)
-	{
-		sData.m_ptrWrappers[xtpWrapperDwmIsCompositionEnabled] = ::GetProcAddress(
-			sData.m_hDwmDll, xtpWrapperProcDwmIsCompositionEnabled);
-	}
-
-	PFNDwmIsCompositionEnabled ptr = (PFNDwmIsCompositionEnabled)sData.m_ptrWrappers[xtpWrapperDwmIsCompositionEnabled];
-	if (ptr)
-	{
-		BOOL bEnabled = FALSE;
-		LRESULT lResult = (*ptr)(&bEnabled);
-		if (FAILED(lResult))
+		nIndex = FIND_S(strValue, strFlag, nIndex + 1);
+		if (nIndex == -1)
 			return FALSE;
 
-		return bEnabled;
+		TCHAR chLast = nIndex + strFlag.GetLength() == strValue.GetLength() ? _T(']') : strValue[strFlag.GetLength() + nIndex];
+		TCHAR chFirst = nIndex == 0 ? _T('[') : strValue[nIndex - 1];
+
+		if ((chLast == ',' || chLast == ';' || chLast == ']')
+			&& (chFirst == ',' || chFirst == ';' || chFirst == '['))
+		{
+			return TRUE;
+		}
 	}
+	while (nIndex != -1);
+
 	return FALSE;
 }
 
-HRESULT CXTPWinDwmWrapper::DefWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, LRESULT *plResult)
+void CXTPPropertyGridItemFlags::SetValue(CString strValue)
 {
-	CSharedData& sData = GetSharedData();
-	if (sData.m_hDwmDll != NULL && sData.m_ptrWrappers[xtpWrapperDwmDefWindowProc] == NULL)
+	int nValue = 0;
+	strValue.MakeLower();
+
+	CXTPPropertyGridItemConstraints* pConstraints = GetConstraints();
+	for (int i = 0; i < pConstraints->GetCount(); i++)
 	{
-		sData.m_ptrWrappers[xtpWrapperDwmDefWindowProc] = ::GetProcAddress(
-			sData.m_hDwmDll, xtpWrapperProcDwmDefWindowProc);
+		if (HasFlag(strValue, pConstraints->GetAt(i)))
+			nValue |= pConstraints->GetConstraintAt(i)->m_dwData;
 	}
 
-	PFNDwmDefWindowProc ptr = (PFNDwmDefWindowProc)sData.m_ptrWrappers[xtpWrapperDwmDefWindowProc];
-	if (ptr)
-	{
-		return (*ptr)(hWnd, msg, wParam, lParam, plResult);
-	}
-	return E_FAIL;
-
+	SetFlags(nValue);
 }
 
-HRESULT CXTPWinDwmWrapper::ExtendFrameIntoClientArea(HWND hWnd, int cxLeftWidth, int cyTopHeight, int cxRightWidth, int cyBottomHeight)
+void CXTPPropertyGridItemFlags::SetFlags(int nValue)
 {
-	CSharedData& sData = GetSharedData();
-	if (sData.m_hDwmDll != NULL && sData.m_ptrWrappers[xtpWrapperDwmExtendFrameIntoClientArea] == NULL)
+	m_nValue = nValue;
+
+	if (m_pBindFlags)
 	{
-		sData.m_ptrWrappers[xtpWrapperDwmExtendFrameIntoClientArea] = ::GetProcAddress(
-			sData.m_hDwmDll, xtpWrapperProcDwmExtendFrameIntoClientArea);
+		*m_pBindFlags = nValue;
 	}
 
-	PFNDwmExtendFrameIntoClientArea ptr = (PFNDwmExtendFrameIntoClientArea)sData.m_ptrWrappers[xtpWrapperDwmExtendFrameIntoClientArea];
-	if (ptr)
-	{
-		XTP_DWM_MARGINS margins;
-		margins.cxLeftWidth = cxLeftWidth;
-		margins.cyTopHeight = cyTopHeight;
-		margins.cxRightWidth = cxRightWidth;
-		margins.cyBottomHeight = cyBottomHeight;
+	UpdateChilds();
 
-		return (*ptr)(hWnd, &margins);
-	}
-	return E_FAIL;
+	CXTPPropertyGridItem::SetValue(GetFlagsString());
 }
 
-void CXTPWinDwmWrapper::LogicalToPhysicalPoint(HWND hWnd, LPPOINT lpPoint)
+void CXTPPropertyGridItemFlags::BindToFlags(int* pBindFlags)
 {
-	HMODULE hModule = GetModuleHandle(_T("user32.dll"));
-	ASSERT(hModule);
-	if (!hModule)
-		return;
-
-	typedef void (WINAPI* PFNLOGICALTOPHYSICALPOINT)(HWND, LPPOINT);
-	PFNLOGICALTOPHYSICALPOINT pfnLogicalToPhysicalPoint =
-		(PFNLOGICALTOPHYSICALPOINT)GetProcAddress(hModule, "LogicalToPhysicalPoint");
-	if (pfnLogicalToPhysicalPoint)
+	m_pBindFlags = pBindFlags;
+	if (m_pBindFlags)
 	{
-		pfnLogicalToPhysicalPoint(hWnd, lpPoint);
+		*m_pBindFlags = m_nValue;
 	}
 }
 
-void CXTPWinDwmWrapper::SetProcessDPIAware()
+CString CXTPPropertyGridItemFlags::GetFlagsString()
 {
-	HMODULE hModule = GetModuleHandle(_T("user32.dll"));
-	ASSERT(hModule);
-	if (!hModule)
-		return;
+	CString str;
 
-	typedef void (WINAPI* PFNSETPROCESSDPIAWARE)();
-	PFNSETPROCESSDPIAWARE pfnSetProcessDPIAware =
-		(PFNSETPROCESSDPIAWARE)GetProcAddress(hModule, "SetProcessDPIAware");
-	if (pfnSetProcessDPIAware)
+	CXTPPropertyGridItemConstraints* pConstraints = GetConstraints();
+	int nValue = 0;
+
+	for (int i = 0; i < pConstraints->GetCount(); i++)
 	{
-		pfnSetProcessDPIAware();
+		CXTPPropertyGridItemConstraint* pConstraint = pConstraints->GetConstraintAt(i);
+
+		if ((nValue & pConstraint->m_dwData) == pConstraint->m_dwData)
+			continue;
+
+		if ((m_nValue & pConstraint->m_dwData) == pConstraint->m_dwData)
+		{
+			str += (str.IsEmpty() ? _T("") : _T(";")) + pConstraint->m_strConstraint;
+			nValue |= pConstraint->m_dwData;
+		}
+	}
+
+	return  _T("[") + str + _T("]");
+}
+
+void CXTPPropertyGridItemFlags::UpdateChilds()
+{
+	CXTPPropertyGridItems* pItems = GetChilds();
+	for (int i = 0; i < pItems->GetCount(); i++)
+	{
+		CXTPPropertyGridItemFlag* pItem = (CXTPPropertyGridItemFlag*)pItems->GetAt(i);
+		pItem->SetBool((m_nValue & pItem->m_dwFlag) == pItem->m_dwFlag);
+		pItem->SetReadOnly(GetReadOnly());
 	}
 }
+
+
+void CXTPPropertyGridItemFlags::OnBeforeInsert()
+{
+	if (m_pBindFlags && *m_pBindFlags != m_nValue)
+	{
+		SetFlags(*m_pBindFlags);
+	}
+}
+
+void CXTPPropertyGridItemFlags::OnConstraintsChanged()
+{
+	GetChilds()->Clear();
+
+	CXTPPropertyGridItemConstraints* pConstraints = GetConstraints();
+
+	int i;
+
+	for (i = 0; i < pConstraints->GetCount(); i++)
+	{
+		AddChildItem(new CXTPPropertyGridItemFlag(pConstraints->GetAt(i), (int)pConstraints->GetConstraintAt(i)->m_dwData));
+	}
+	UpdateChilds();
+	m_strDefaultValue = m_strValue = GetFlagsString();
+
+	CXTPPropertyGridItems* pItems = GetChilds();
+	for (i = 0; i < pItems->GetCount(); i++)
+	{
+		CXTPPropertyGridItemFlag* pItem = (CXTPPropertyGridItemFlag*)pItems->GetAt(i);
+		pItem->SetDefaultValue(pItem->GetValue());
+	}
+
+}
+
+void CXTPPropertyGridItemFlags::SetReadOnly(BOOL bReadOnly)
+{
+	CXTPPropertyGridItem::SetReadOnly(bReadOnly);
+
+	UpdateChilds();
+}
+
+

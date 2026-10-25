@@ -1,14 +1,14 @@
-// from server: 96% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/PropertyGrid/XTPPropertyGridItemBool.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/PropertyGrid/XTPPropertyGridItemBool.cpp
 
 // Candidate translation unit (score above; library headers required).
 // CXTPPropertyGridItemBool.cpp : implementation of the XTPPropertyGridItemBool class.
 //
 // This file is a part of the XTREME PROPERTYGRID MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -28,14 +28,17 @@
 #include "stdafx.h"
 #include "Resource.h"
 
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPVC50Helpers.h"
 #include "Common/XTPResourceManager.h"
-#include "Common/XTPSystemHelpers.h"
-#include "Common/XTPColorManager.h"
 
-#include "XTPPropertyGridDefines.h"
+#include "XTPPropertyGridInplaceEdit.h"
+#include "XTPPropertyGridInplaceButton.h"
+#include "XTPPropertyGridInplaceList.h"
 #include "XTPPropertyGridItem.h"
 #include "XTPPropertyGridItemBool.h"
 #include "XTPPropertyGridPaintManager.h"
+#include "XTPPropertyGrid.h"
 #include "XTPPropertyGridView.h"
 
 #ifdef _DEBUG
@@ -183,7 +186,7 @@ CString CXTPPropertyGridItemBool::GetViewValue()
 
 BOOL CXTPPropertyGridItemBool::OnKeyDown (UINT nChar)
 {
-	if (m_bCheckBoxStyle && IsAllowEdit() && (nChar == VK_SPACE))
+	if (m_bCheckBoxStyle && !GetReadOnly() && (nChar == VK_SPACE))
 	{
 		CRect rc = GetValueRect();
 		OnLButtonDblClk(0, rc.CenterPoint());
@@ -195,7 +198,7 @@ BOOL CXTPPropertyGridItemBool::OnKeyDown (UINT nChar)
 
 void CXTPPropertyGridItemBool::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
-	if (m_bCheckBoxStyle && PtInValueRect(point) && IsAllowEdit())
+	if (m_bCheckBoxStyle && PtInValueRect(point) && !GetReadOnly())
 	{
 		OnSelect();
 		SelectNextConstraint();
@@ -221,7 +224,7 @@ BOOL CXTPPropertyGridItemBool::OnLButtonDown(UINT nFlags, CPoint point)
 
 	if (m_bCheckBoxStyle)
 	{
-		if (PtInCheckBoxRect(point) && IsAllowEdit())
+		if (PtInCheckBoxRect(point) && !GetReadOnly())
 		{
 			OnLButtonDblClk(nFlags, point);
 		}
@@ -230,13 +233,27 @@ BOOL CXTPPropertyGridItemBool::OnLButtonDown(UINT nFlags, CPoint point)
 	return TRUE;
 }
 
-BOOL CXTPPropertyGridItemBool::OnDrawItemValue(CDC& dc, CRect /*rcValue*/)
+BOOL CXTPPropertyGridItemBool::OnDrawItemValue(CDC& dc, CRect rcValue)
 {
 	if (!m_bCheckBoxStyle)
 		return FALSE;
 
+	CRect rcSample(rcValue.left - 1, rcValue.CenterPoint().y - 6, rcValue.left - 1 + 13, rcValue.CenterPoint().y + 7);
+
 	CXTPPropertyGridPaintManager* pPaintManager = m_pGrid->GetPaintManager();
-	pPaintManager->DrawCheckBox(&dc, this);
+
+	if (pPaintManager->m_buttonsStyle == xtpGridButtonsThemed && pPaintManager->m_themeButton.IsAppThemed())
+	{
+		pPaintManager->m_themeButton.DrawThemeBackground(dc, BP_CHECKBOX,
+			GetReadOnly() ? (GetBool() ? CBS_CHECKEDDISABLED : CBS_UNCHECKEDDISABLED) :
+			(GetBool() ? CBS_CHECKEDNORMAL : CBS_UNCHECKEDNORMAL),
+			rcSample, 0);
+	}
+	else
+	{
+		dc.DrawFrameControl(rcSample, DFC_BUTTON, DFCS_BUTTONCHECK |
+			(GetReadOnly() ? DFCS_INACTIVE : 0) | (GetBool() ? DFCS_CHECKED : 0));
+	}
 
 	return TRUE;
 }
@@ -416,7 +433,7 @@ BOOL CXTPPropertyGridItemFlags::HasFlag(const CString& strValue, CString strFlag
 
 	do
 	{
-		nIndex = strValue.Find(strFlag, nIndex + 1);
+		nIndex = FIND_S(strValue, strFlag, nIndex + 1);
 		if (nIndex == -1)
 			return FALSE;
 

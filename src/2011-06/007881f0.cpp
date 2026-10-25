@@ -1,13 +1,5 @@
-// from server: 51% by atomic.potato
-extern "C" void* __cdecl sub_00788100(void*, const char*);
-
-struct HingeTool
-{
-    int f(const char*);
-};
-
-int HingeTool::f(const char*)
-{
-    sub_00788100(0, "HingeCursor");
-    return 0;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <string>
+struct Tool { virtual std::string name() const; };
+std::string Tool::name() const { return "HingeCursor"; }

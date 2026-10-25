@@ -1,108 +1,44 @@
-// from server: 46% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 52% by atomic.potato
+// roc 2010-06 006e3ca0  unit: RBX::VLuaDragger::?$FactoryProduct  size: 206 bytes
 
-// Candidate translation unit (score above; library headers required).
-#include "util/Name.h"
-#include "util/Debug.h"
-#include <boost/thread/once.hpp>
+struct S {
+    char pad0[0x94];
+    int state;
+    char pad1[0x20];
+    void* ptr_b8;
+    char pad2[4];
+    char buf_c0[0x10];
+    void mouseUp();
+};
 
-// intentionally outside of the RBX namespace
-boost::once_flag flag = BOOST_ONCE_INIT;
+extern "C" void __stdcall sub_71ad40(void*);
+extern "C" void __stdcall sub_71a880(void*);
+extern "C" void __stdcall sub_7657d0(void*);
+extern "C" void __stdcall sub_7a799a(void*);
+extern "C" void __stdcall sub_7a89b2(void*, void*);
+extern "C" void __stdcall sub_4093b0(void*, void*);
+extern "C" void __stdcall sub_9ea410(void*, const char*);
 
-boost::mutex& moo2()
-{
-	static boost::mutex mutex2;
-	return mutex2;
-}
-
-void initMoo()
-{
-	moo2();
-}
-
-namespace RBX
-{
-	// seems to be inlined
-	boost::mutex& Name::mutex()
-	{
-		boost::call_once(initMoo, flag);
-		return moo2();
-	}
-
-	std::map<int, Name*>& Name::dictionary()
-	{
-		static std::map<int, Name*> d;
-		return d;
-	}
-
-	Name::NamMap& Name::namMap()
-	{
-		static NamMap n;
-		return n;
-	}
-
-	const Name& Name::getNullName()
-	{
-		boost::mutex::scoped_lock scoped_lock(mutex());
-		static const Name& nullName = declare("", 0);
-		return nullName;
-	}
-
-	const Name& Name::declare(const char* sName, int dictionaryIndex)
-	{
-		if (!sName)
-		{
-			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
-			return getNullName();
-		}
-
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			if (dictionaryIndex != -1)
-			{
-				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
-				dictionary()[dictionaryIndex] = iter->second;
-			}
-			return *iter->second;
-		}
-		else
-		{
-			Name* name = new Name(sName, dictionaryIndex);
-			namMap()[sName] = name;
-			dictionary()[dictionaryIndex] = name;
-			return *name;
-		}
-	}
-
-	const Name& Name::lookup(const std::string& sName)
-	{
-		RBXASSERT(sName.size() < 50);
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			return *iter->second;
-		}
-		else
-		{
-			return getNullName();
-		}
-	}
-
-	const Name& Name::lookup(const char* sName)
-	{
-		if (!sName)
-		{
-			return getNullName();
-		}
-
-		return lookup(std::string(sName));
-	}
+void S::mouseUp() {
+    if (state == 2) {
+        sub_71ad40(buf_c0);
+        sub_71a880(buf_c0);
+        void* p = ptr_b8;
+        if (p) {
+            sub_7657d0(p);
+            sub_7a799a(p);
+        }
+        ptr_b8 = 0;
+        state = 3;
+        return;
+    }
+    if (state == 1) {
+        state = 4;
+        return;
+    }
+    char local[0x20];
+    sub_9ea410(local, "Call to LuaDragger::mouseUp without mouseDown");
+    void* v = local;
+    sub_4093b0(local + 0x1c, &v);
+    sub_7a89b2(local + 0x1c, (void*)0xb03074);
 }

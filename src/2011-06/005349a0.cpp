@@ -1,147 +1,36 @@
-// from server: 62% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 G3Dcpp/Color4.cpp
+// from server: 100% by tester
+// roc 2011-06 005349a0  unit: seg_00530000  size: 51 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 005349a0
+//
+// 005349a0  8b442404             mov eax, dword ptr [esp + 4]
+// 005349a4  83c801               or eax, 1
+// 005349a7  c781c809000000000000 mov dword ptr [ecx + 0x9c8], 0
+// 005349b1  8901                 mov dword ptr [ecx], eax
+// 005349b3  83c104               add ecx, 4
+// 005349b6  ba6f020000           mov edx, 0x26f
+// 005349bb  eb03                 jmp 0x5349c0
+// 005349bd  8d4900               lea ecx, [ecx]
+// 005349c0  69c0cd0d0100         imul eax, eax, 0x10dcd
+// 005349c6  8901                 mov dword ptr [ecx], eax
+// 005349c8  83c104               add ecx, 4
+// 005349cb  83ea01               sub edx, 1
+// 005349ce  75f0                 jne 0x5349c0
+// 005349d0  c20400               ret 4
 
-// Candidate translation unit (score above; library headers required).
-/**
- @file Color4.cpp
+struct CSHA1 {
+    void Reset(unsigned int seed);
+};
 
- Color class.
-
- @author Morgan McGuire, matrix@graphics3d.com
- @cite Portions by Laura Wollstadt, graphics3d.com
- @cite Portions based on Dave Eberly's Magic Software Library at http://www.magic-software.com
-
-
- @created 2002-06-25
- @edited  2006-01-10
- */
-
-#include <stdlib.h>
-#include "G3D/Color4.h"
-#include "G3D/Color4uint8.h"
-#include "G3D/Vector4.h"
-#include "G3D/format.h"
-#include "G3D/BinaryInput.h"
-#include "G3D/BinaryOutput.h"
-
-namespace G3D {
-
-const Color4& Color4::zero() {
-    static Color4 c(0.0f, 0.0f, 0.0f, 0.0f);
-    return c;
+void CSHA1::Reset(unsigned int seed) {
+    unsigned int v = seed | 1;
+    *(unsigned int*)((char*)this + 0x9c8) = 0;
+    *(unsigned int*)this = v;
+    unsigned int* p = (unsigned int*)((char*)this + 4);
+    int count = 0x26f;
+    do {
+        v = v * 0x10dcd;
+        *p = v;
+        p++;
+        count--;
+    } while (count != 0);
 }
-
-const Color4& Color4::inf() {
-    static Color4 c((float)G3D::inf(), (float)G3D::inf(), (float)G3D::inf(), (float)G3D::inf());
-    return c;
-}
-
-const Color4& Color4::clear() {
-    return Color4::zero();
-}
-
-Color4::Color4(const Vector4& v) {
-    r = v.x;
-    g = v.y;
-    b = v.z;
-    a = v.w;
-}
-
-// Deprecated.
-const Color4 Color4::ZERO   (0.0f, 0.0f, 0.0f, 0.0f);
-const Color4 Color4::CLEAR  (0.0f, 0.0f, 0.0f, 0.0f);
-
-Color4::Color4(const Color4uint8& c) : r(c.r), g(c.g), b(c.b), a(c.a) {
-    *this /= 255.0f;
-}
-
-unsigned int Color4::hashCode() const {
-    unsigned int rhash = (*(int*)(void*)(&r));
-    unsigned int ghash = (*(int*)(void*)(&g));
-    unsigned int bhash = (*(int*)(void*)(&b));
-    unsigned int ahash = (*(int*)(void*)(&a));
-
-    return rhash + (ghash * 37) + (bhash * 101) + (ahash * 241);
-}
-
-Color4 Color4::fromARGB(uint32 x) {
-    return Color4(
-        (float)((x >> 16) & 0xFF), 
-        (float)((x >> 8) & 0xFF),
-        (float)(x & 0xFF), 
-        (float)((x >> 24) & 0xFF)) / 255.0;
-}
-
-
-Color4::Color4(BinaryInput& bi) {
-    deserialize(bi);
-}
-
-
-void Color4::deserialize(BinaryInput& bi) {
-    r = bi.readFloat32();
-    g = bi.readFloat32();
-    b = bi.readFloat32();
-    a = bi.readFloat32();
-}
-
-
-void Color4::serialize(BinaryOutput& bo) const {
-    bo.writeFloat32(r);
-    bo.writeFloat32(g);
-    bo.writeFloat32(b);
-    bo.writeFloat32(a);
-}
-
-
-//----------------------------------------------------------------------------
-
-Color4 Color4::operator/ (float fScalar) const {
-    Color4 kQuot;
-
-    if (fScalar != 0.0f) {
-		float fInvScalar = 1.0f / fScalar;
-        kQuot.r = fInvScalar * r;
-        kQuot.g = fInvScalar * g;
-        kQuot.b = fInvScalar * b;
-        kQuot.a = fInvScalar * a;
-        return kQuot;
-
-    } else {
-
-        return Color4::inf();
-    }
-}
-
-//----------------------------------------------------------------------------
-
-Color4& Color4::operator/= (float fScalar) {
-    if (fScalar != 0.0f) {
-		float fInvScalar = 1.0f / fScalar;
-        r *= fInvScalar;
-        g *= fInvScalar;
-        b *= fInvScalar;
-        a *= fInvScalar;
-    } else {
-        r = (float)G3D::inf();
-        g = (float)G3D::inf();
-        b = (float)G3D::inf();
-        a = (float)G3D::inf();
-    }
-
-    return *this;
-}
-
-//----------------------------------------------------------------------------
-
-std::string Color4::toString() const {
-    return G3D::format("(%g, %g, %g, %g)", r, g, b, a);
-}
-
-//----------------------------------------------------------------------------
-
-}; // namespace
-

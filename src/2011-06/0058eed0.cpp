@@ -1,19 +1,5 @@
-// from server: 79% by atomic.potato
-struct W4ThreadPoolConfig {
-    char pad0[0x68];
-    int* begin;
-    int* end;
-    int getIndex(int);
-    int getValue(int);
-};
-
-int W4ThreadPoolConfig::getValue(int index) {
-    int* p = (int*)getIndex(index);
-    int v = *p;
-    if (v < 0)
-        return 0;
-    int count = (int)(((char*)end - (char*)begin) >> 2);
-    if ((unsigned)v >= (unsigned)count)
-        return 0;
-    return begin[v];
-}
+// from server: 83% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct S{char pad[0x68]; char* begin; char* end; int f(int);};
+extern "C" int* sub(int);
+int S::f(int index){int* p=sub(index); int v=*p; if(v<0)return 0; if((unsigned)v>=(unsigned)((end-begin)>>2))return 0; return ((int*)begin)[v];}

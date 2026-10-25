@@ -1,81 +1,167 @@
-// from server: 42% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/DebrisService.cpp
+// roc-lib: openrbx-client App/util/RunStateOwner.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/DebrisService.h"
-#include "v8datamodel/TimerService.h"
-#include "util/standardout.h"
+#include "util/RunStateOwner.h"
 
-static RBX::Reflection::BoundFuncDesc<RBX::DebrisService, void(boost::shared_ptr<RBX::Instance>, double), 2> func_AddItem(&RBX::DebrisService::addItem, "AddItem", "item", "lifetime", RBX::Reflection::FunctionDescriptor::AnyCaller);
-static RBX::Reflection::PropDescriptor<RBX::DebrisService, int> prop_MaxItems("MaxItems", "Data", &RBX::DebrisService::getMaxItems, &RBX::DebrisService::setMaxItems, RBX::Reflection::PropertyDescriptor::STANDARD);
+#include "util/Timer.h"
+#include "v8datamodel/DataModel.h"
 
-static void cleanup(boost::weak_ptr<RBX::Instance> item)
+#include <algorithm>
+#include <boost/thread/thread.hpp>
+#include <boost/thread/xtime.hpp>
+
+namespace RBX {
+
+const char sRunService[] = "RunService";
+
+Reflection::SignalDesc<RunService, void(float, float)> RunService::event_Stepped("Stepped", "time", "step");
+
+static Reflection::SignalDesc<RunService, void(float)> event_Heartbeat("Heartbeat", "step");
+
+// FUNCTION: WEBSERVICE 0x10054320
+void RunService::endRunThread(bool join)
 {
-	try
-	{
-		boost::shared_ptr<RBX::Instance> i = item.lock();
-		if (i)
-			i->setParent(NULL);
-	}
-	catch (std::exception& e)
-	{
-		RBX::StandardOut::singleton()->print(RBX::MESSAGE_WARNING, e);
+	stopRequested = true;
+	stateChangedCondition.notify_all();
+
+	if (join) {
+		runThread->join();
 	}
 }
 
-namespace RBX
+// FUNCTION: WEBSERVICE 0x100543b0
+void RunService::onAncestorChanged(const AncestorChanged& event)
 {
-	DebrisService::DebrisService()
-		: Base("Debris"),
-		  maxItems(300),
-		  timer(NULL)
-	{
-	}
-
-	void DebrisService::setMaxItems(int value)
-	{
-		if (value != maxItems)
-		{
-			if (value < 0)
-				throw std::runtime_error("DebrisService MaxItems must be greater than 0");
-
-			maxItems = value;
-			raisePropertyChanged(prop_MaxItems);
-			DebrisService::cleanup();
-		}
-	}
-
-	void DebrisService::addItem(boost::shared_ptr<Instance> item, double lifetime)
-	{
-		if (timer)
-			timer->delay(boost::bind(&::cleanup, item), lifetime);
-
-		queue.push(item);
-		DebrisService::cleanup();
-	}
-
-	void DebrisService::cleanup()
-	{
-		while ((int)queue.size() > maxItems)
-		{
-			::cleanup(queue.front());
-			queue.pop();
-		}
-	}
-
-	void DebrisService::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
-	{
-		while ((int)queue.size() > 0)
-		{
-			::cleanup(queue.front());
-			queue.pop();
-		}
-
-		Instance::onServiceProvider(oldProvider, newProvider);
-
-		timer = ServiceProvider::create<TimerService>(newProvider);
+	if (getParent() == NULL) {
+		endRunThread(false);
 	}
 }
+
+// FUNCTION: WEBSERVICE 0x10054cb0
+void RunService::runProc(boost::shared_ptr<DataModel> dataModel)
+{
+	double desiredTime = getRealTime();
+
+	while (true) {
+		const double timeLeft = desiredTime - getRealTime();
+
+		{
+			boost::mutex::scoped_lock lock(viewMutex);
+
+			for (Views::iterator iter = views.begin(); iter != views.end(); ++iter) {
+				iter->first->AdjustThrottle(timeLeft);
+			}
+		}
+
+		const double waitTime = std::max(0.0, timeLeft);
+
+		boost::xtime xt;
+
+		boost::xtime_get(&xt, boost::TIME_UTC);
+		xt.nsec += (int) (waitTime * 1000000000.0);
+
+		bool signalled;
+
+		{
+			boost::mutex::scoped_lock lock(runMutex);
+
+			signalled = stateChangedCondition.timed_wait(lock, xt);
+		}
+
+		if (!signalled) {
+			boost::xtime xt;
+
+			boost::xtime_get(&xt, boost::TIME_UTC);
+			xt.sec += 1;
+
+			boost::mutex::scoped_lock lock(runMutex);
+
+			if (invalidRunViewCount != 0) {
+				runViewsDoneCondition.timed_wait(lock, xt);
+			}
+		}
+
+		if (timeLeft <= 0.0) {
+			desiredTime = getRealTime();
+		}
+
+		{
+			DataModel::Lock lock(dataModel);
+
+			if (stopRequested) {
+				break;
+			}
+
+			dataModel->step(framePeriod);
+		}
+
+		desiredTime += framePeriod;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10054fd0
+void RunService::invalidateRunViews()
+{
+	boost::mutex::scoped_lock lock(viewMutex);
+
+	if (invalidRunViewCount != 0) {
+		return;
+	}
+
+	invalidRunViewCount = views.size();
+
+	if (invalidRunViewCount > 0) {
+		for (Views::iterator iter = views.begin(); iter != views.end(); ++iter) {
+			iter->first->InvalidateRunView();
+			iter->second = false;
+		}
+
+		runViewsDoneCondition.notify_all();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10055380
+RunService::~RunService()
+{
+}
+
+// FUNCTION: WEBSERVICE 0x10056950
+RunService::RunService()
+	: runState(RS_NORMAL), stopRequested(false), framePeriod(1.0f / 30.0f), runThread(NULL), invalidRunViewCount(0),
+	  runDisabled(false)
+{
+	setName("Run Service");
+}
+
+// STUB: WEBSERVICE 0x100573e0
+void RunService::start()
+{
+	STUB(0x100573e0);
+}
+
+// FUNCTION: WEBSERVICE 0x100577f0
+void RunService::raiseHeartbeat(float time, float step)
+{
+	Notifier<RunService, Heartbeat>::raise(Heartbeat(time, step));
+	event_Heartbeat.fire(this, step);
+}
+
+// FUNCTION: WEBSERVICE 0x10057860
+void RunService::raiseStepped(float time, float step)
+{
+	Notifier<RunService, Stepped>::raise(Stepped(time, step));
+	event_Stepped.fire(this, time, step);
+}
+
+} // namespace RBX
+
+template class RBX::FactoryProduct<RBX::RunService, RBX::Instance, RBX::sRunService>;
+template class RBX::Reflection::Described<
+	RBX::RunService,
+	RBX::sRunService,
+	RBX::FactoryProduct<RBX::RunService, RBX::Instance, RBX::sRunService> >;
+template class RBX::DescribedCreatable<RBX::RunService, RBX::Instance, RBX::sRunService>;

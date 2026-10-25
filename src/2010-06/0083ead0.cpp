@@ -1,14 +1,14 @@
-// from server: 40% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Controls/XTColorDialog.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPControlEdit.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTColorDialog.cpp : implementation file
+// XTPControlEdit.cpp : implementation of the CXTPControlEdit class.
 //
-// This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,17 +26,16 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "Resource.h"
-
-#include "Common/XTPResourceManager.h"
-#include "Common/XTPVC80Helpers.h"  // Visual Studio 2005 helper functions
-#include "Common/XTPColorManager.h"
 #include "Common/XTPDrawHelpers.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPToolTipContext.h"
 
-#include "XTDefines.h"
-#include "XTColorDialog.h"
-#include "XTColorPageCustom.h"
-#include "XTColorPageStandard.h"
+#include "XTPControlEdit.h"
+#include "XTPCommandBar.h"
+#include "XTPToolBar.h"
+#include "XTPCommandBars.h"
+#include "XTPPaintManager.h"
+#include "XTPMouseManager.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -44,686 +43,823 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-/////////////////////////////////////////////////////////////////////////////
-// CXTColorDialog
+// CXTPControlEdit
 
-IMPLEMENT_DYNAMIC(CXTColorDialog, CPropertySheet)
+IMPLEMENT_XTP_CONTROL(CXTPControlEdit, CXTPControl)
 
-CXTColorDialog::CXTColorDialog(COLORREF clrNew, COLORREF clrCurrent,
-	DWORD dwFlags/*= 0L*/, CWnd* pWndParent/*= NULL*/)
+CXTPControlEdit::CXTPControlEdit()
 {
-	CString strCaption;
-	XTPResourceManager()->LoadString(&strCaption, XT_IDS_COLOR_CAPTION);
+	EnableAutomation();
 
-	Construct(strCaption, pWndParent);
+	m_controlType = xtpControlEdit;
+	m_nWidth = 100;
+	m_nLabelWidth = 0;
+	m_bLabel = FALSE;
+	m_strEditText = _T("");
+	m_pEdit = NULL;
+	m_bReadOnly = FALSE;
+	m_bDelayReposition = FALSE;
+	m_bDelayDestroy = FALSE;
+	m_bFocused = FALSE;
 
-	m_psh.dwFlags = (m_psh.dwFlags & ~PSH_HASHELP) | PSH_NOAPPLYNOW;
+	m_pAutoCompleteWnd = NULL;
+	m_dwShellAutoCompleteFlags = 0;
+	m_bEditChanged = TRUE;
+	m_dwEditStyle = 0;
 
-	m_clrNew = clrNew;
-	m_clrCurrent = clrCurrent;
-	m_dwStyle = dwFlags;
-
-	AddPage(new CXTColorPageStandard(this));
-	AddPage(new CXTColorPageCustom(this));
-
+	m_bShowSpinButtons = FALSE;
 }
 
-void CXTColorDialog::AddPage(CPropertyPage* pPage)
+CXTPControlEdit::~CXTPControlEdit()
 {
-	CPropertySheet::AddPage(pPage);
-
-	LPCDLGTEMPLATE pResource = XTPResourceManager()->LoadDialogTemplate((UINT)(UINT_PTR)pPage->m_psp.pszTemplate);
-
-	if (pResource)
+	if (m_pEdit)
 	{
-		pPage->m_psp.pResource = pResource;
-		pPage->m_psp.dwFlags |= PSP_DLGINDIRECT;
+		m_pEdit->m_pControl = NULL;
+		delete m_pEdit;
 	}
+	SAFE_DELETE(m_pAutoCompleteWnd);
 }
 
-CXTColorDialog::~CXTColorDialog()
+void CXTPControlEdit::OnEditChanged()
 {
-	int iPage;
-	for (iPage = 0; iPage < GetPageCount(); ++iPage)
+	NotifySite(EN_CHANGE);
+}
+
+CString CXTPControlEdit::GetEditText() const
+{
+	CString strEditText = _GetEditText();
+
+	return strEditText == GetEditHint() ? _T("") : strEditText;
+}
+
+CString CXTPControlEdit::_GetEditText() const
+{
+	if (m_pEdit && m_pEdit->GetSafeHwnd() && m_bEditChanged)
 	{
-		CPropertyPage* pPage = GetPage(iPage);
-		SAFE_DELETE (pPage);
+		m_pEdit->GetWindowTextEx(m_strEditText);
+		m_bEditChanged = FALSE;
 	}
+	return m_strEditText;
 }
 
 
-BEGIN_MESSAGE_MAP(CXTColorDialog, CPropertySheet)
-	//{{AFX_MSG_MAP(CXTColorDialog)
-	ON_WM_PAINT()
-	ON_WM_CREATE()
-	ON_MESSAGE(XTWM_EYEDROPPER_MOVING, OnEyeDropperMoving)
-	ON_MESSAGE(XTWM_EYEDROPPER_SELECT, OnEyeDropperSelect)
-	ON_WM_LBUTTONDOWN()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTColorDialog message handlers
-
-void CXTColorDialog::CalculateRects()
+void CXTPControlEdit::SetEditText(const CString& strText)
 {
-	CRect rcBtnOK;
-	CRect rcBtnCancel;
-	CRect rcTabCtrl;
-	CRect rcItem;
+	_SetEditText(strText.IsEmpty() ? GetEditHint() : strText);
+}
 
-	// get the tab control size.
-	CTabCtrl* pTabCtrl = GetTabControl();
-	pTabCtrl->GetWindowRect(&rcTabCtrl);
-	ScreenToClient(&rcTabCtrl);
-
-	// get the size of the first tab item.
-	pTabCtrl->GetItemRect(0, &rcItem);
-
-	// get the OK button size.
-	CButton* pBtnOK = (CButton*)GetDlgItem(IDOK);
-	pBtnOK->GetWindowRect(&rcBtnOK);
-	ScreenToClient(&rcBtnOK);
-
-	// get the Cancel button size.
-	CButton* pBtnCancel = (CButton*)GetDlgItem(IDCANCEL);
-	pBtnCancel->GetWindowRect(&rcBtnCancel);
-	ScreenToClient(&rcBtnCancel);
-	rcBtnCancel.OffsetRect(-15, 0);
-
-	// resize the tab control
-	rcTabCtrl.right = rcBtnCancel.left - 5;
-	rcTabCtrl.bottom = rcBtnCancel.top - 15;
-	pTabCtrl->MoveWindow(&rcTabCtrl);
-
-	// reposition the OK button.
-	rcBtnOK = rcBtnCancel;
-	rcBtnOK.top = rcTabCtrl.top + rcItem.Height() + 1;
-	rcBtnOK.bottom = rcBtnOK.top + rcBtnCancel.Height();
-	pBtnOK->MoveWindow(&rcBtnOK);
-
-	// reposition the Cancel button.
-	rcBtnCancel = rcBtnOK;
-	rcBtnCancel.top = rcBtnOK.bottom + 5;
-	rcBtnCancel.bottom = rcBtnCancel.top + rcBtnOK.Height();
-	pBtnCancel->MoveWindow(&rcBtnCancel);
-
-	// reposition the hex display
-	if (::IsWindow(m_wndHexEdit.m_hWnd))
+void CXTPControlEdit::_SetEditText(const CString& strText)
+{
+	if (m_pEdit && m_pEdit->GetSafeHwnd() && _GetEditText() != strText)
 	{
-		CRect rcWnd;
-		rcWnd = rcBtnCancel;
-		rcWnd.top = rcBtnCancel.bottom + 5;
-		rcWnd.bottom = rcWnd.top + 18;
-		m_wndHexEdit.MoveWindow(&rcWnd);
+		m_pEdit->SetWindowTextEx(strText);
 	}
-
-	// reposition the eye dropper.
-	if (::IsWindow(m_wndEyeDropper.m_hWnd))
-	{
-		CRect rcWnd;
-		m_wndEyeDropper.GetWindowRect(&rcWnd);
-
-		CSize size = rcWnd.Size();
-		rcWnd.right = rcBtnOK.right;
-		rcWnd.left = rcBtnOK.right - size.cx;
-		rcWnd.bottom = rcTabCtrl.bottom;
-		rcWnd.top = rcTabCtrl.bottom - size.cy;
-
-		m_wndEyeDropper.MoveWindow(&rcWnd);
-	}
-
-	// resize the property sheet.
-	CXTPWindowRect rcWindow(this);
-	ClientToScreen(&rcTabCtrl);
-	rcWindow.bottom = rcTabCtrl.bottom + 10;
-	rcWindow.right -= 15;
-	MoveWindow(&rcWindow);
+	m_strEditText = strText;
+	m_bEditChanged = FALSE;
 }
 
-BOOL CXTColorDialog::OnInitDialog()
+BOOL CXTPControlEdit::OnHookKeyDown(UINT nChar, LPARAM lParam)
 {
-	BOOL bResult = CPropertySheet::OnInitDialog();
+	ASSERT(IsFocused());
 
-	CalculateRects();
-	SetActivePage(0);
-
-	if (m_wndHexEdit.GetSafeHwnd())
-	{
-		m_wndHexEdit.SetFont(GetFont());
-	}
-
-
-	return bResult;
-}
-
-void CXTColorDialog::OnPaint()
-{
-	CPaintDC dc(this); // device context for painting
-
-	dc.SetBkMode(TRANSPARENT);
-	dc.SetTextColor(GetXtremeColor(COLOR_WINDOWTEXT));
-
-	CXTPFontDC fontDC(&dc, GetFont());
-
-	// get the Cancel button size.
-	CXTPWindowRect rcBtnCancel(GetDlgItem(IDCANCEL));
-	ScreenToClient(&rcBtnCancel);
-
-	// construct the size for the the new / current color box.
-	CXTPClientRect rect(this);
-	rect.right = rcBtnCancel.right;
-	rect.left = rcBtnCancel.left;
-	rect.top = rcBtnCancel.bottom + (::IsWindow(m_wndHexEdit.m_hWnd) ? 46 : 23);
-	rect.bottom = rect.top + 66;
-
-	// draw the borders for the new / current color box.
-	if (m_dwStyle & CPS_XT_SHOW3DSELECTION)
-	{
-		dc.Draw3dRect(&rect, GetXtremeColor(COLOR_3DHILIGHT),
-			GetXtremeColor(COLOR_3DDKSHADOW));
-
-		rect.DeflateRect(3, 3);
-		dc.Draw3dRect(&rect, GetXtremeColor(COLOR_3DSHADOW),
-			GetXtremeColor(COLOR_3DHILIGHT));
-	}
-	else
-	{
-		dc.Draw3dRect(&rect, GetXtremeColor(COLOR_WINDOWFRAME),
-			GetXtremeColor(COLOR_WINDOWFRAME));
-	}
-
-	// draw the new text string.
-	CRect rcText = rect;
-	rcText = rect;
-	rcText.top -= 22;
-	rcText.bottom = rcText.top + 22;
-
-	CString strText;
-	CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&strText, XT_IDS_NEW));
-	dc.DrawText(strText, rcText, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-
-	// draw the current text string.
-	rcText = rect;
-	rcText.top = rcText.bottom;
-	rcText.bottom = rcText.top + 22;
-
-	CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&strText, XT_IDS_CURRENT));
-	dc.DrawText(strText, rcText, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-
-	rect.DeflateRect(1, 1);
-	int cy = rect.Height()/2;
-
-	// fill the new color box.
-	m_rcNew = rect;
-	m_rcNew.bottom = rect.top + cy;
-	dc.FillSolidRect(&m_rcNew, m_clrNew);
-
-	// fill the current color box.
-	m_rcCurrent = rect;
-	m_rcCurrent.top = rect.bottom - cy;
-	dc.FillSolidRect(&m_rcCurrent, m_clrCurrent);
-}
-
-void CXTColorDialog::SetNewColor(COLORREF clr, BOOL bNotify/*= TRUE*/)
-{
-	m_clrNew = clr;
-
-	if (IsWindowVisible())
-	{
-		CClientDC dc(this);
-		dc.FillSolidRect(&m_rcNew, m_clrNew);
-
-		if (m_dwStyle & CPS_XT_SHOWHEXVALUE)
-		{
-			m_wndHexEdit.SetWindowText(RGBtoHex(m_clrNew));
-		}
-	}
-
-	if (bNotify && GetTabControl() && GetTabControl()->GetSafeHwnd())
-	{
-		int iPage;
-		for (iPage = 0; iPage < GetPageCount(); ++iPage)
-		{
-			CWnd* pWnd = GetPage(iPage);
-
-			if (::IsWindow(pWnd->GetSafeHwnd()))
-			{
-				pWnd->SendMessage(XTWM_UPDATECOLOR,
-					(WPARAM)m_clrNew, (LPARAM)m_hWnd);
-			}
-		}
-	}
-}
-
-void CXTColorDialog::SetCurrentColor(COLORREF clr)
-{
-	m_clrCurrent = clr;
-
-	if (IsWindowVisible())
-	{
-		CClientDC dc(this);
-		dc.FillSolidRect(&m_rcCurrent, m_clrCurrent);
-	}
-}
-
-BOOL CXTColorDialog::CopyToClipboard(const CString& strText)
-{
-	if (::OpenClipboard(m_hWnd))
-	{
-		::EmptyClipboard();
-
-		HGLOBAL hGlobalBuff = ::GlobalAlloc(GMEM_MOVEABLE, strText.GetLength() + 1);
-		if (!hGlobalBuff)
-		{
-			::CloseClipboard();
-			return FALSE;
-		}
-
-		CHAR* szBuffer = (CHAR*)::GlobalLock(hGlobalBuff);
-
-		WCSTOMBS_S(szBuffer, strText, strText.GetLength() + 1);
-		::GlobalUnlock(hGlobalBuff);
-
-		if (::SetClipboardData(CF_TEXT, hGlobalBuff) == NULL)
-			return FALSE;
-
-		::CloseClipboard();
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-CString CXTColorDialog::RGBtoHex(COLORREF clr)
-{
-	int r = GetRValue(clr);
-	int g = GetGValue(clr);
-	int b = GetBValue(clr);
-
-	CString strHex;
-
-	if (r < 16 && g < 16 && b < 16)
-		strHex.Format(_T("Hex= 0%X0%X0%X"), r, g, b);
-	else if (r < 16 && g < 16)
-		strHex.Format(_T("Hex= 0%X0%X%X"), r, g, b);
-	else if (r < 16 && b < 16)
-		strHex.Format(_T("Hex= 0%X%X0%X"), r, g, b);
-	else if (g < 16 && b < 16)
-		strHex.Format(_T("Hex=%X0%X0%X"), r, g, b);
-	else if (r < 16)
-		strHex.Format(_T("Hex= 0%X%X%X"), r, g, b);
-	else if (g < 16)
-		strHex.Format(_T("Hex=%X0%X%X"), r, g, b);
-	else if (b < 16)
-		strHex.Format(_T("Hex=%X%X0%X"), r, g, b);
-	else
-		strHex.Format(_T("Hex=%X%X%X"), r, g, b);
-
-	return strHex;
-}
-
-int CXTColorDialog::OnCreate(LPCREATESTRUCT lpCreateStruct)
-{
-	if (CPropertySheet::OnCreate(lpCreateStruct) == -1)
-		return -1;
-
-	if (m_dwStyle & CPS_XT_SHOWHEXVALUE)
-	{
-		if (!m_wndHexEdit.CreateEx(WS_EX_STATICEDGE, _T("EDIT"), RGBtoHex(m_clrNew),
-			WS_CHILD | WS_VISIBLE | ES_READONLY, CRect(0, 0, 0, 0), this, AFX_IDC_CHANGE))
-		{
-			TRACE0("Failed to create edit control.\n");
-			return -1;
-		}
-	}
-
-	if (m_dwStyle & CPS_XT_SHOWEYEDROPPER)
-	{
-		if (!m_wndEyeDropper.Create(WS_CHILD | WS_VISIBLE, CRect(0,0,0,0), this, AFX_IDC_BROWSE))
-		{
-			TRACE0("Failed to create eye dropper.\n");
-			return -1;
-		}
-	}
-
-	((CXTColorPageStandard*)GetPage(0))->SetColor(m_clrNew);
-
-	return 0;
-}
-
-LRESULT CXTColorDialog::OnEyeDropperMoving(WPARAM wParam, LPARAM lParam)
-{
-	UNREFERENCED_PARAMETER(lParam);
-	COLORREF color = (COLORREF)wParam;
-	SetNewColor(color, FALSE);
-	return 0;
-}
-
-LRESULT CXTColorDialog::OnEyeDropperSelect(WPARAM wParam, LPARAM lParam)
-{
-	UNREFERENCED_PARAMETER(lParam);
-	COLORREF color = (COLORREF)wParam;
-	SetNewColor(color, TRUE);
-	return 0;
-}
-
-void CXTColorDialog::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	CPropertySheet::OnLButtonDown(nFlags, point);
-
-	if (m_rcCurrent.PtInRect(point))
-	{
-		SetNewColor(m_clrCurrent);
-	}
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTEyeDropper
-
-const TCHAR XTPEYEDROPPER_CLASSNAME[] = _T("XTPEyeDropper");
-
-AFX_STATIC BOOL RegisterEyeDropperClass()
-{
-	WNDCLASS wndcls;
-	::ZeroMemory(&wndcls, sizeof(wndcls));
-
-	wndcls.hInstance = AfxGetInstanceHandle();
-	wndcls.style = CS_DBLCLKS;
-	wndcls.lpfnWndProc = ::DefWindowProc;
-	wndcls.hCursor = ::LoadCursor(NULL, IDC_ARROW);
-	wndcls.lpszClassName = XTPEYEDROPPER_CLASSNAME;
-	wndcls.hbrBackground = HBRUSH(COLOR_WINDOW+1);
-
-	return AfxRegisterClass(&wndcls);
-}
-
-CXTEyeDropper::CXTEyeDropper()
-: m_nPadding(2)
-, m_icoSize(24,24)
-, m_bPreInit(TRUE)
-, m_bShowPreview(FALSE)
-, m_bSetClipboard(FALSE)
-, m_hIcon(NULL)
-, m_hCurEyeDropper(NULL)
-, m_hCurPrevious(NULL)
-, m_color(COLORREF_NULL)
-{
-	VERIFY(RegisterEyeDropperClass());
-
-	m_hIcon = XTPResourceManager()->LoadIcon(
-		XT_IDI_EYEDROPPER, CSize(24,24));
-
-	m_hCurEyeDropper = XTPResourceManager()->LoadCursor(
-		XT_IDC_EYEDROPPER);
-
-	m_color = ::GetSysColor(COLOR_3DFACE);
-}
-
-CXTEyeDropper::~CXTEyeDropper()
-{
-}
-
-BEGIN_MESSAGE_MAP(CXTEyeDropper, CWnd)
-	//{{AFX_MSG_MAP(CXTEyeDropper)
-	ON_WM_CREATE()
-	ON_WM_PAINT()
-	ON_WM_ERASEBKGND()
-	ON_WM_MOUSEMOVE()
-	ON_WM_SETCURSOR()
-	ON_WM_LBUTTONDOWN()
-	ON_WM_LBUTTONUP()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTEyeDropper message handlers
-
-BOOL CXTEyeDropper::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, CCreateContext* pContext /*=NULL*/)
-{
-	UNREFERENCED_PARAMETER(lpszClassName);
-	return CWnd::Create(XTPEYEDROPPER_CLASSNAME, lpszWindowName, dwStyle, rect, pParentWnd, nID, pContext);
-}
-
-BOOL CXTEyeDropper::Create(DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID)
-{
-	return CXTEyeDropper::Create(XTPEYEDROPPER_CLASSNAME, NULL, dwStyle, rect, pParentWnd, nID);
-}
-
-BOOL CXTEyeDropper::Init()
-{
-	CRect rc;
-	GetWindowRect(&rc);
-
-	rc.bottom = rc.top + m_icoSize.cy;
-	rc.right = rc.left + m_icoSize.cx;
-
-	if (m_bShowPreview)
-	{
-		rc.right += m_icoSize.cx + m_nPadding*2;
-	}
-
-	SetWindowPos(NULL, 0, 0, rc.Width(), rc.Height(), SWP_NOMOVE|SWP_FRAMECHANGED);
-
-	return TRUE;
-}
-
-void CXTEyeDropper::PreSubclassWindow()
-{
-	CWnd::PreSubclassWindow();
-
-	if (m_bPreInit)
-	{
-		// Initialize the control.
-		Init();
-	}
-}
-
-int CXTEyeDropper::OnCreate(LPCREATESTRUCT lpCreateStruct)
-{
-	if (CWnd::OnCreate(lpCreateStruct) == -1)
-		return -1;
-
-	// Initialize the control.
-	Init();
-
-	return 0;
-}
-
-BOOL CXTEyeDropper::PreCreateWindow(CREATESTRUCT& cs)
-{
-	if (!CWnd::PreCreateWindow(cs))
+	if (!IsFocused() || !m_pEdit->GetSafeHwnd())
 		return FALSE;
 
-	// When creating controls dynamically Init() must
-	// be called from OnCreate() and not from
-	// PreSubclassWindow().
+	if (m_pEdit && m_pEdit->m_bImeMode)
+		return FALSE_EXIT;
 
-	m_bPreInit = FALSE;
+	if (nChar == VK_RETURN || nChar == VK_TAB)
+		return FALSE;
 
-	return TRUE;
-}
-
-CRect CXTEyeDropper::GetColorRect()
-{
-	CRect rc = GetDropperRect();
-	rc.OffsetRect(m_icoSize.cx + m_nPadding, 0);
-	return rc;
-}
-
-CRect CXTEyeDropper::GetDropperRect()
-{
-	return CRect(0, 0, m_icoSize.cx, m_icoSize.cy);
-}
-
-void CXTEyeDropper::OnPaint()
-{
-	CPaintDC dc(this); // device context for painting
-
-	CRect rc;
-	GetClientRect(&rc);
-
-	CDC memDC;
-	memDC.CreateCompatibleDC(&dc);
-
-	CBitmap bitmap;
-	bitmap.CreateCompatibleBitmap(&dc, rc.Width(), rc.Height());
-	CBitmap* pOldBitmap = memDC.SelectObject(&bitmap);
-
-	memDC.FillSolidRect(&rc, ::GetSysColor(COLOR_3DFACE));
-
-	DrawDropper(&memDC);
-	DrawColor(&memDC);
-
-	dc.BitBlt(0, 0, rc.right, rc.bottom, &memDC, 0, 0, SRCCOPY);
-	memDC.SelectObject(pOldBitmap);
-}
-
-BOOL CXTEyeDropper::OnEraseBkgnd(CDC* pDC)
-{
-	UNREFERENCED_PARAMETER(pDC);
-	return TRUE;
-}
-
-void CXTEyeDropper::DrawDropper(CDC* pDC)
-{
-	CRect rc = GetDropperRect();
-
-	if (m_hCurPrevious == NULL)
+	if (nChar == VK_ESCAPE)
 	{
-		pDC->DrawState(rc.TopLeft(), rc.Size(), m_hIcon,
-			DST_ICON | DSS_NORMAL, (HBRUSH)NULL);
+		SetEditText(m_strLastText);
+		SetFocused(FALSE);
+
+		return GetParent()->GetType() == xtpBarTypePopup;
 	}
 
-	pDC->Draw3dRect(rc, ::GetSysColor(COLOR_3DSHADOW),
-		::GetSysColor(COLOR_3DHILIGHT));
-
-	rc.DeflateRect(1,1);
-
-	pDC->Draw3dRect(rc, ::GetSysColor(COLOR_3DHILIGHT),
-		::GetSysColor(COLOR_3DSHADOW));
-}
-
-void CXTEyeDropper::DrawColor(CDC* pDC)
-{
-	if (m_bShowPreview)
+	if (m_pEdit && m_pEdit->GetSafeHwnd() && GetKeyState(VK_MENU) < 0 && GetKeyState(VK_CONTROL) >= 0)
 	{
-		CRect rc = GetColorRect();
-
-		pDC->FillSolidRect(rc, m_color);
-
-		pDC->Draw3dRect(rc, ::GetSysColor(COLOR_3DSHADOW),
-			::GetSysColor(COLOR_3DHILIGHT));
-	}
-}
-
-BOOL CXTEyeDropper::SetClipboardText(LPCTSTR lpszClipText)
-{
-	if (::OpenClipboard(NULL))
-	{
-		HGLOBAL hGlobal = GlobalAlloc(GMEM_SHARE | GMEM_MOVEABLE,
-			(_tcslen(lpszClipText)+1)*sizeof(lpszClipText[0]) );
-
-		LPTSTR lpszGlobal = (LPTSTR)::GlobalLock(hGlobal);
-		STRCPY_S(lpszGlobal, _tcslen(lpszClipText), lpszClipText);
-		::GlobalUnlock(hGlobal);
-
-		HANDLE hData = ::SetClipboardData(CF_TEXT, hGlobal);
-
-		::CloseClipboard();
-
-		return (hData != NULL);
+		CXTPCommandBars* pCommandBars = m_pParent->GetCommandBars();
+		if (pCommandBars && pCommandBars->OnFrameAccel((TCHAR)nChar))
+			return TRUE;
 	}
 
-	return FALSE;
-}
-
-BOOL CXTEyeDropper::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
-{
-	if (::GetCapture() == m_hWnd && m_hCurEyeDropper)
+	if (IsSpinButtonsVisible() && (nChar == VK_UP || nChar == VK_DOWN))
 	{
-		::SetCursor(m_hCurEyeDropper);
+		NotifySpinChanged(1, nChar == VK_UP ? +1 : -1);
+		if (m_pEdit && ::GetFocus() == m_pEdit->GetSafeHwnd()) m_pEdit->SetSel(0, -1);
 		return TRUE;
 	}
 
-	return CWnd::OnSetCursor(pWnd, nHitTest, message);
+	if (m_pAutoCompleteWnd && m_pAutoCompleteWnd->IsDialogCode(nChar, lParam))
+		return TRUE;
+
+	if (m_pEdit->IsDialogCode(nChar, lParam))
+		return TRUE;
+
+	return FALSE_EXIT;
 }
 
-void CXTEyeDropper::OnMouseMove(UINT nFlags, CPoint point)
+CXTPControlEditCtrl* CXTPControlEdit::CreateEditControl()
 {
-	if (::GetCapture() == m_hWnd)
+	return new CXTPControlEditCtrl();
+}
+
+void CXTPControlEdit::EnableShellAutoComplete(DWORD dwFlags /*= SHACF_FILESYSTEM | SHACF_URLALL*/)
+{
+	m_dwShellAutoCompleteFlags = dwFlags;
+	SAFE_DELETE(m_pAutoCompleteWnd);
+
+	if (m_pEdit->GetSafeHwnd() && dwFlags)
 	{
-		CRect rc;
-		GetClientRect(&rc);
+		m_pAutoCompleteWnd = new CXTPControlComboBoxAutoCompleteWnd();
 
-		if (!rc.PtInRect(point))
+		if (FAILED(m_pAutoCompleteWnd->ShellAutoComplete(m_pEdit->GetSafeHwnd(), m_dwShellAutoCompleteFlags)))
 		{
-			CPoint pt;
-			::GetCursorPos(&pt);
+			SAFE_DELETE(m_pAutoCompleteWnd);
+		}
+	}
+}
 
-			CWindowDC dc(NULL);
-			m_color = dc.GetPixel(pt.x, pt.y);
+BOOL CXTPControlEdit::HasFocus() const
+{
+	return IsFocused();
+}
 
-			CWnd* pWnd = GetOwner();
-			if (pWnd)
+BOOL CXTPControlEdit::IsFocusable() const
+{
+	return m_pEdit && m_pEdit->GetSafeHwnd();
+}
+
+void CXTPControlEdit::SetRect(CRect rcControl)
+{
+	CString strEditText = GetEditText();
+
+	if (!m_pEdit)
+	{
+		m_pEdit = CreateEditControl();
+		m_pEdit->m_pControl = this;
+	}
+
+	if (m_bDelayDestroy && m_pEdit && m_pEdit->GetSafeHwnd())
+	{
+		m_pEdit->DestroyWindow();
+		m_bDelayDestroy = FALSE;
+	}
+	if (m_pEdit && m_pEdit->GetSafeHwnd() && m_pEdit->GetExStyle() & WS_EX_LAYOUTRTL)
+	{
+		m_pEdit->DestroyWindow();
+	}
+
+	if (m_pEdit && m_pEdit->GetSafeHwnd() && m_pEdit->GetParent() != m_pParent)
+	{
+		m_pEdit->DestroyWindow();
+	}
+
+	if (m_rcControl == rcControl && !(m_pEdit && !m_pEdit->GetSafeHwnd()) && (m_bDelayReposition == FALSE))
+	{
+		if (!(m_pEdit && m_pEdit->GetSafeHwnd() && m_pEdit->GetParent() != m_pParent))
+			return;
+	}
+
+	m_rcControl = rcControl;
+
+	if (m_pEdit)
+	{
+		if (!m_pEdit->GetSafeHwnd())
+		{
+			m_pEdit->CreateEdit(WS_CHILD | ES_AUTOHSCROLL | m_dwEditStyle, m_pParent);
+
+			if (!GetEnabled()) m_pEdit->EnableWindow(FALSE);
+
+			if (m_dwShellAutoCompleteFlags != 0) EnableShellAutoComplete(m_dwShellAutoCompleteFlags);
+		}
+
+		m_pEdit->SetFont(GetPaintManager()->GetIconFont(), FALSE);
+		m_pEdit->SetMargins(0, 0);
+		m_pEdit->UpdateCharFormat();
+		if (m_pEdit->GetSafeHwnd() != ::GetFocus()) SetEditText(strEditText);
+		m_pEdit->m_bComposited = HasDwmCompositedRect();
+
+		m_pEdit->SetReadOnly(m_bReadOnly);
+		rcControl.DeflateRect(m_nLabelWidth + 1 + 3, 3, 3 + (m_bShowSpinButtons ? 17 : 0), 3);
+		m_pEdit->MoveWindow(rcControl);
+		ShowHideEditControl();
+	}
+	m_bDelayReposition = FALSE;
+}
+
+void CXTPControlEdit::ShowHideEditControl()
+{
+	if (m_pEdit && m_pEdit->GetSafeHwnd())
+	{
+		m_pEdit->SetWindowPos(0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE
+			| (m_pParent && IsVisible() && m_pParent->GetSafeHwnd() ? SWP_SHOWWINDOW : SWP_HIDEWINDOW));
+	}
+}
+
+void CXTPControlEdit::OnRemoved()
+{
+	ShowHideEditControl();
+
+	CXTPControl::OnRemoved();
+}
+
+void CXTPControlEdit::SetReadOnly(BOOL bReadOnly /* = TRUE */)
+{
+	m_bReadOnly = bReadOnly;
+
+	if (m_pEdit && m_pEdit->GetSafeHwnd())
+	{
+		m_pEdit->SetReadOnly(bReadOnly);
+	}
+}
+
+BOOL CXTPControlEdit::GetReadOnly() const
+{
+	return m_bReadOnly;
+}
+
+void CXTPControlEdit::SetEnabled(BOOL bEnabled)
+{
+	if (bEnabled != m_bEnabled)
+	{
+		m_bEnabled = bEnabled;
+		if (m_pEdit && m_pEdit->GetSafeHwnd())
+		{
+			m_pEdit->EnableWindow(GetEnabled());
+			m_pEdit->UpdateCharFormat();
+		}
+		RedrawParent();
+	}
+}
+void CXTPControlEdit::SetParent(CXTPCommandBar* pParent)
+{
+	CXTPControl::SetParent(pParent);
+
+	if (!pParent && m_pEdit && m_pEdit->GetSafeHwnd())
+	{
+		m_pEdit->DestroyWindow();
+	}
+}
+
+BOOL  CXTPControlEdit::OnSetSelected(int bSelected)
+{
+	if (!CXTPControl::OnSetSelected(bSelected))
+		return FALSE;
+
+	if (!bSelected)
+	{
+		SetFocused(FALSE);
+	}
+
+	if (m_pEdit->GetSafeHwnd())
+	{
+		m_pEdit->UpdateCharFormat();
+	}
+
+	return TRUE;
+}
+
+void CXTPControlEdit::OnUnderlineActivate()
+{
+	m_pParent->HideKeyboardTips();
+	SetFocused(TRUE);
+}
+
+void CXTPControlEdit::OnClick(BOOL bKeyboard, CPoint pt)
+{
+	if (IsCustomizeMode())
+	{
+		m_pParent->SetPopuped(-1);
+		m_pParent->SetSelected(-1);
+		CustomizeStartDrag(pt);
+	}
+	else
+	{
+		if (bKeyboard && CWnd::GetFocus() == m_pEdit)
+		{
+			OnExecute();
+		}
+		else if (!bKeyboard && GetSpinButtonsRect().PtInRect(pt))
+		{
+			TrackSpinButton(pt);
+		}
+		else
+		{
+			m_pEdit->SetFocus();
+		}
+	}
+}
+
+void CXTPControlEdit::NotifySpinChanged(int increment, int direction)
+{
+	NMXTPUPDOWN nm;
+	nm.iDelta = increment * direction;
+
+	if (NotifySite(direction > 0 ? XTP_FN_SPINUP : XTP_FN_SPINDOWN, &nm) != 0)
+		return;
+
+	int nPos = _ttoi(GetEditText());
+	nPos += nm.iDelta;
+
+	while (nPos % increment)
+	{
+		nPos += direction;
+	}
+
+	CString strEditText;
+	strEditText.Format(_T("%i"), nPos);
+	SetEditText(strEditText);
+
+	NotifySite(CBN_XTP_EXECUTE);
+}
+
+void CXTPControlEdit::TrackSpinButton(CPoint pt)
+{
+	m_pParent->SetSelected(-1);
+	m_pParent->SetSelected(GetIndex(), FALSE);
+	#define TID_TIMER 435
+
+	CRect rc = GetSpinButtonsRect();
+	CRect rcTop(rc.left, rc.top, rc.right, rc.CenterPoint().y);
+	CRect rcBottom(rc.left, rcTop.bottom, rc.right, rc.bottom);
+
+	const BOOL bTop = rcTop.PtInRect(pt);
+	const CRect rcActiveRect = bTop ? rcTop : rcBottom;
+	const int direction = bTop ? +1 : -1;
+	int increment = 1;
+
+	m_bSelected = m_bPressed = bTop ? 3 : 4;
+	RedrawParent(FALSE);
+
+	NotifySpinChanged(increment, direction);
+
+	m_pParent->SetCapture();
+
+	m_pParent->SetTimer(TID_TIMER, 530, NULL);
+	BOOL bFirst = TRUE;
+	DWORD dwStart = GetTickCount();
+
+	for (;;)
+	{
+		MSG msg;
+		VERIFY(::GetMessage(&msg, NULL, 0, 0));
+
+		if (msg.message == WM_LBUTTONUP)
+		{
+			break;
+		}
+
+		if (msg.message == WM_MOUSEMOVE)
+		{
+			pt = CPoint(LOWORD(msg.lParam), HIWORD(msg.lParam));
+
+			if (OnSetSelected(rcActiveRect.PtInRect(pt)))
 			{
-				pWnd->SendMessage(XTWM_EYEDROPPER_MOVING,
-					(WPARAM)m_color, MAKELPARAM(pt.x,pt.y));
+				dwStart = GetTickCount();
+				RedrawParent();
+			}
+			continue;
+		}
+		if (msg.message == WM_TIMER && msg.wParam == TID_TIMER)
+		{
+			if (m_bSelected)
+			{
+				UINT uElapsed = (UINT)((GetTickCount() - dwStart) / 1024);
+
+				increment = 1;
+				if (uElapsed >= 5)
+					increment = 20;
+				else if (uElapsed >= 2)
+					increment = 5;
+
+				NotifySpinChanged(increment, direction);
 			}
 
-			RedrawWindow();
+			if (bFirst)
+			{
+				m_pParent->SetTimer(TID_TIMER, 100, NULL);
+			}
+			bFirst = FALSE;
 		}
+
+		DispatchMessage (&msg);
+
+		if (CWnd::GetCapture() != m_pParent)
+			break;
 	}
 
-	CWnd::OnMouseMove(nFlags, point);
+	m_pParent->KillTimer(TID_TIMER);
+	m_bPressed = FALSE;
+	ReleaseCapture();
+
+	RedrawParent(FALSE);
+
+	if (GetParent()->GetPosition() != xtpBarPopup)
+		GetParent()->SetTrackingMode(FALSE);
 }
 
-void CXTEyeDropper::OnLButtonDown(UINT nFlags, CPoint point)
+CRect CXTPControlEdit::GetSpinButtonsRect() const
 {
-	CWnd::OnLButtonDown(nFlags, point);
+	if (!IsSpinButtonsVisible())
+		return CRect(0, 0, 0, 0);
 
-	if (m_hCurEyeDropper)
-	{
-		m_hCurPrevious = ::SetCursor(m_hCurEyeDropper);
-	}
-
-	SetCapture();
-	RedrawWindow();
+	CRect rc(GetRect());
+	return CRect(rc.right - 18, rc.top + 1, rc.right - 1, rc.bottom - 1);
 }
 
-void CXTEyeDropper::OnLButtonUp(UINT nFlags, CPoint point)
+void CXTPControlEdit::OnMouseMove(CPoint point)
 {
-	CWnd::OnLButtonUp(nFlags, point);
+	CXTPControl::OnMouseMove(point);
 
-	if (::GetCapture() == m_hWnd)
+	if (GetEnabled() && IsSpinButtonsVisible() && m_bSelected)
 	{
-		CPoint pt;
-		::GetCursorPos(&pt);
+		CRect rc(GetSpinButtonsRect());
 
-		CWindowDC dc(NULL);
-		m_color = dc.GetPixel(pt.x, pt.y);
+		CRect rcTop(rc.left, rc.top, rc.right, rc.CenterPoint().y);
+		CRect rcBottom(rc.left, rcTop.bottom, rc.right, rc.bottom);
 
-		CWnd* pWnd = GetOwner();
-		if (pWnd)
+		if (rcTop.PtInRect(point) && m_bSelected != 3)
 		{
-			pWnd->SendMessage(XTWM_EYEDROPPER_SELECT,
-				(WPARAM)m_color, MAKELPARAM(pt.x,pt.y));
+			m_bSelected = 3;
+			RedrawParent(FALSE);
 		}
-
-		if (m_bSetClipboard)
+		else if (rcBottom.PtInRect(point) && m_bSelected != 4)
 		{
-			CString strClip;
-			strClip.Format(_T("%i,%i,%i"),
-				GetRValue(m_color),
-				GetGValue(m_color),
-				GetBValue(m_color));
-
-			SetClipboardText(strClip);
+			m_bSelected = 4;
+			RedrawParent(FALSE);
 		}
-
-		m_hCurPrevious = NULL;
-
-		ReleaseCapture();
-		RedrawWindow();
+		else if ((m_bSelected == 3 || m_bSelected == 4) && !rc.PtInRect(point))
+		{
+			m_bSelected = 1;
+			RedrawParent(FALSE);
+		}
 	}
 }
+
+void CXTPControlEdit::OnMouseHover()
+{
+	if (!XTPMouseManager()->IsMouseLocked())
+		CXTPControl::OnMouseHover();
+}
+
+
+void CXTPControlEdit::SetHideFlags(DWORD dwFlags)
+{
+	if (m_dwHideFlags != dwFlags)
+	{
+		m_dwHideFlags = dwFlags;
+
+		ShowHideEditControl();
+		DelayLayoutParent();
+	}
+}
+
+
+void CXTPControlEdit::OnActionChanged(int nProperty)
+{
+	if (nProperty == 2)
+	{
+		ShowHideEditControl();
+	}
+
+	if (nProperty == 0 && m_pEdit && m_pEdit->GetSafeHwnd())    // Enabled
+	{
+		m_pEdit->EnableWindow(GetEnabled());
+		m_pEdit->UpdateCharFormat();
+	}
+
+	if (nProperty == 4)
+	{
+		if (_GetEditText().IsEmpty() && !GetEditHint().IsEmpty())
+		{
+			_SetEditText(GetEditHint());
+		}
+	}
+}
+
+void CXTPControlEdit::OnActionChanging(int nProperty)
+{
+	if (nProperty == 4 && !GetEditHint().IsEmpty() && _GetEditText() == GetEditHint())
+	{
+		_SetEditText(_T(""));
+	}
+}
+
+void CXTPControlEdit::OnCalcDynamicSize(DWORD dwMode)
+{
+	if (dwMode & LM_VERTDOCK) SetHideFlags(m_dwHideFlags | xtpHideDockingPosition);
+	else SetHideFlags(m_dwHideFlags & ~xtpHideDockingPosition);
+}
+
+void CXTPControlEdit::SetEditHint(LPCTSTR lpszEditHint)
+{
+	if (!GetEditHint().IsEmpty() && _GetEditText() == GetEditHint())
+	{
+		_SetEditText(_T(""));
+	}
+
+	m_strEditHint = lpszEditHint;
+
+	if (_GetEditText().IsEmpty() && !GetEditHint().IsEmpty())
+	{
+		_SetEditText(GetEditHint());
+	}
+}
+
+CString CXTPControlEdit::GetEditHint() const
+{
+	return !m_strEditHint.IsEmpty() ? m_strEditHint : m_pAction ? m_pAction->GetEditHint() : _T("");
+}
+
+DWORD CXTPControlEdit::GetEditStyle() const
+{
+	return m_dwEditStyle;
+}
+
+void CXTPControlEdit::SetEditStyle(DWORD dwStyle)
+{
+	m_dwEditStyle = dwStyle;
+
+	if (m_pEdit && m_pEdit->GetSafeHwnd())
+	{
+		m_bDelayDestroy = TRUE;
+		DelayLayoutParent();
+	}
+}
+
+void CXTPControlEdit::Copy(CXTPControl* pControl, BOOL bRecursive)
+{
+	CXTPControl::Copy(pControl, bRecursive);
+
+	CXTPControlEdit* pControlEdit = DYNAMIC_DOWNCAST(CXTPControlEdit, pControl);
+	if (!pControlEdit)
+		return;
+
+	m_dwEditStyle = pControlEdit->m_dwEditStyle;
+	SetEditText(pControlEdit->GetEditText());
+	m_bLabel = pControlEdit->m_bLabel;
+	SetReadOnly(pControlEdit->m_bReadOnly);
+	SetEditHint(pControlEdit->m_strEditHint);
+	EnableShellAutoComplete(pControlEdit->m_dwShellAutoCompleteFlags);
+	m_bShowSpinButtons = pControlEdit->m_bShowSpinButtons;
+}
+
+BOOL CXTPControlEdit::Compare(CXTPControl* pOther)
+{
+	if (!CXTPControl ::Compare(pOther))
+		return FALSE;
+
+	if (!pOther->IsKindOf(RUNTIME_CLASS(CXTPControlEdit)))
+		return FALSE;
+
+
+	return TRUE;
+}
+
+
+BOOL CXTPControlEdit::IsFocused() const
+{
+	return m_bFocused;
+}
+
+void CXTPControlEdit::SetFocused(BOOL bFocused)
+{
+	if (m_bFocused == bFocused)
+		return;
+
+	m_bFocused = bFocused;
+
+	if (bFocused)
+	{
+		if (m_pEdit->GetSafeHwnd() && ::GetFocus() != m_pEdit->GetSafeHwnd())
+			m_pEdit->SetFocus();
+
+		m_pParent->SetTrackingMode(TRUE, FALSE);
+		m_pParent->SetSelected(m_nIndex);
+
+		XTPMouseManager()->LockMouseMove();
+
+		NotifySite(EN_SETFOCUS);
+	}
+	else
+	{
+		if (m_pEdit->GetSafeHwnd() && ::GetFocus() == m_pEdit->GetSafeHwnd())
+			::SetFocus(m_pParent->GetTrackFocus());
+
+		XTPMouseManager()->UnlockMouseMove();
+
+		NotifySite(EN_KILLFOCUS);
+	}
+
+	RedrawParent();
+}
+
+
+void CXTPControlEdit::OnSetFocus(CWnd* pOldWnd)
+{
+	if (!GetEditHint().IsEmpty() && m_pEdit->GetSafeHwnd() && GetEditHint() == _GetEditText())
+	{
+		_SetEditText(_T(""));
+	}
+
+	m_strLastText = GetEditText();
+
+	if (m_pParent->GetTrackFocus() == 0)
+		m_pParent->SetTrackFocus(pOldWnd ? pOldWnd->GetSafeHwnd() : m_pParent->GetSite()->GetSafeHwnd());
+
+	m_pParent->SetPopuped(-1);
+
+	SetFocused(TRUE);
+	if (m_pAutoCompleteWnd) m_pAutoCompleteWnd->SetupMessageHook(TRUE);
+}
+
+void CXTPControlEdit::OnKillFocus()
+{
+	if (!GetEditHint().IsEmpty() && m_pEdit->GetSafeHwnd() && _GetEditText().IsEmpty())
+	{
+		_SetEditText(GetEditHint());
+	}
+
+	SetFocused(FALSE);
+	if (m_pAutoCompleteWnd) m_pAutoCompleteWnd->SetupMessageHook(FALSE);
+}
+
+BOOL CXTPControlEdit::IsImageVisible() const
+{
+	if (GetParent()->GetType() == xtpBarTypePopup)
+		return GetImage(0) != NULL;
+
+	BOOL bImageVisible = (CXTPControl::GetStyle() == xtpButtonIcon || CXTPControl::GetStyle() == xtpButtonIconAndCaption)
+		&& (GetImage(0) != NULL);
+
+	return bImageVisible;
+}
+
+BOOL CXTPControlEdit::IsCaptionVisible() const
+{
+	if (GetParent()->GetType() == xtpBarTypePopup)
+		return TRUE;
+
+	if (GetCaption().IsEmpty())
+		return FALSE;
+
+	XTPButtonStyle buttonStyle = GetStyle();
+
+	if ((buttonStyle == xtpButtonCaption) || (buttonStyle == xtpButtonIconAndCaption) || (buttonStyle == xtpButtonIconAndCaptionBelow))
+		return TRUE;
+
+	return m_bLabel;
+}
+
+BEGIN_MESSAGE_MAP(CXTPControlEditCtrl, CXTPEdit)
+	ON_WM_SETFOCUS()
+	ON_WM_MOUSEMOVE()
+	ON_WM_KILLFOCUS()
+	ON_WM_DESTROY()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_RBUTTONDOWN()
+	ON_WM_CONTEXTMENU()
+	ON_MESSAGE(XTP_TTM_WINDOWFROMPOINT, OnWindowFromPoint)
+	ON_CONTROL_REFLECT(EN_CHANGE, OnEditChanged)
+END_MESSAGE_MAP()
+
+CXTPControlEditCtrl::CXTPControlEditCtrl()
+{
+	m_pControl = NULL;
+}
+
+void CXTPControlEditCtrl::OnEditChanged()
+{
+	m_pControl->m_bEditChanged = TRUE;
+
+	if (::GetFocus() == m_hWnd && !m_bIgonoreEditChanged)
+		m_pControl->OnEditChanged();
+
+	SetMargins(0, 0);
+	UpdateCharFormat();
+}
+
+void CXTPControlEditCtrl::UpdateCharFormat()
+{
+	CHARFORMAT2 cf = m_pControl->GetDefaultCharFormat();
+	cf.cbSize = GetRichEditContext().m_bRichEdit2 ? sizeof(CHARFORMAT2) : sizeof(CHARFORMAT);
+
+	::SendMessage(m_hWnd, EM_SETCHARFORMAT, 0, (LPARAM)&cf);
+	::SendMessage(m_hWnd, EM_SETBKGNDCOLOR, FALSE, cf.crBackColor);
+}
+
+void CXTPControlEditCtrl::OnContextMenu(CWnd* /*pWnd*/, CPoint /*point*/)
+{
+}
+
+
+void CXTPControlEditCtrl::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	if (m_pControl->IsCustomizeMode())
+	{
+		if (m_pControl->IsCustomizeMovable())
+			m_pControl->OnClick();
+	}
+	else CEdit::OnLButtonDown(nFlags, point);
+}
+
+void CXTPControlEditCtrl::OnRButtonDown(UINT nFlags, CPoint point)
+{
+	if (m_pControl->IsCustomizeMode())
+	{
+		ClientToScreen(&point);
+		m_pControl->GetParent()->ScreenToClient(&point);
+
+		m_pControl->GetParent()->OnRButtonDown(nFlags, point);
+		return;
+	}
+
+	m_pControl->SetFocused(TRUE);
+
+	if (!ShowContextMenu(m_pControl, point))
+		CXTPEdit::OnRButtonDown(nFlags, point);
+}
+
+void CXTPControlEditCtrl::OnDestroy()
+{
+	if (m_pControl) GetWindowTextEx(m_pControl->m_strEditText);
+	CEdit::OnDestroy();
+}
+
+
+void CXTPControlEditCtrl::OnSetFocus(CWnd* pOldWnd)
+{
+	if (!m_pControl->IsCustomizeMode())
+	{
+		m_pControl->OnSetFocus(pOldWnd);
+		CEdit::OnSetFocus(pOldWnd);
+
+		SetSel(0, 0);
+		::PostMessage(m_hWnd, EM_SETSEL, 0, -1);
+	}
+}
+
+void CXTPControlEditCtrl::OnKillFocus(CWnd* pNewWnd)
+{
+	CXTPEdit::OnKillFocus(pNewWnd);
+	m_pControl->OnKillFocus();
+}
+
+void CXTPControlEditCtrl::OnMouseMove(UINT nFlags, CPoint point)
+{
+	CEdit::OnMouseMove(nFlags, point);
+
+	MapWindowPoints(m_pControl->GetParent(), &point, 1);
+	m_pControl->GetParent()->OnMouseMove(nFlags, point);
+}
+
+
+CHARFORMAT2 CXTPControlEdit::GetDefaultCharFormat()
+{
+	CHARFORMAT2 cf;
+	ZeroMemory(&cf, sizeof(CHARFORMAT2));
+	cf.dwMask = CFM_COLOR | CFM_BACKCOLOR;
+
+	if (GetEnabled())
+	{
+		cf.crTextColor = GetXtremeColor(COLOR_WINDOWTEXT);
+
+		if (!GetEditHint().IsEmpty() && GetEditHint() == _GetEditText())
+		{
+			cf.crTextColor = GetXtremeColor(COLOR_GRAYTEXT);
+		}
+	}
+	else
+	{
+		cf.crTextColor = GetXtremeColor(COLOR_GRAYTEXT);
+	}
+
+	cf.crBackColor = GetPaintManager()->GetControlEditBackColor(this);
+
+	return cf;
+}
+
+BOOL CXTPControlEditCtrl::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+{
+	CXTPCommandBar* pCommandBar = m_pControl->GetParent();
+
+	if (pCommandBar)
+	{
+		pCommandBar->FilterToolTipMessage(message, wParam, lParam);
+	}
+
+	return CWnd::OnWndMsg(message, wParam, lParam, pResult);
+}
+
+LRESULT CXTPControlEditCtrl::OnWindowFromPoint(WPARAM, LPARAM)
+{
+	return 1;
+}
+
+
+
+

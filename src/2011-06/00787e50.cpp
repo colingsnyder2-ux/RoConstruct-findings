@@ -1,12 +1,5 @@
-// from server: 58% by atomic.potato
-extern "C" void* sub_00787E50(void*, const char*);
-
-struct InletTool
-{
-    InletTool();
-};
-
-InletTool::InletTool()
-{
-    sub_00787E50(this, "InletCursor");
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <string>
+struct Tool { virtual std::string name() const; };
+std::string Tool::name() const { return "InletCursor"; }

@@ -1,21 +1,17 @@
-// from server: 94% by atomic.potato
-extern "C" void __stdcall target_79e110(int, int, int);
-
-struct S
-{
-    void f(int, int, int);
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_0079e380 {
+    T4_0079e380();
+    virtual void f_0079e380();
+    char m_a;
+    char m_b;
 };
-
-void S::f(int a, int b, int c)
+T4_0079e380::T4_0079e380() : m_a(0), m_b(0) {}
+extern "C" void* create_other_0079e380(void*, void*, int);
+void* create_0079e380(void* unused, T4_0079e380* out, int type)
 {
-    if (c != 4)
-    {
-        target_79e110(a, b, c);
-        return;
-    }
-
-    unsigned char *p = (unsigned char *)b;
-    *(unsigned int *)p = 0x00be5db0;
-    p[4] = 0;
-    p[5] = 0;
+    if (type != 4)
+        return create_other_0079e380(unused, out, type);
+    out->T4_0079e380::T4_0079e380();
+    return out;
 }

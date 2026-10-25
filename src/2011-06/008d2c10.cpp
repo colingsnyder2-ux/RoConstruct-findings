@@ -1,14 +1,14 @@
-// from server: 94% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/CommandBars/XTPControlCustom.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPControlCustom.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPControlCustom.cpp : implementation of the CXTPControlCustom class.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -28,16 +28,11 @@
 #include "stdafx.h"
 #include "Common/XTPDrawHelpers.h"
 #include "Common/XTPPropExchange.h"
-#include "Common/XTPHookManager.h"
-#include "Common/XTPSystemHelpers.h"
 
-#include "XTPCommandBarsDefines.h"
-#include "XTPControl.h"
-#include "XTPControlButton.h"
-#include "XTPControls.h"
 #include "XTPCommandBar.h"
 #include "XTPToolBar.h"
 #include "XTPCommandBars.h"
+#include "XTPHookManager.h"
 #include "XTPControlCustom.h"
 
 
@@ -141,11 +136,17 @@ void CXTPControlCustom::SetRect(CRect rcControl)
 	}
 }
 
-void CXTPControlCustom::OnEnabledChanged()
+void CXTPControlCustom::SetEnabled(BOOL bEnabled)
 {
-	if (m_hwndControl)
+	if (bEnabled != m_bEnabled)
 	{
-		::EnableWindow(m_hwndControl, GetEnabled());
+		m_bEnabled = bEnabled;
+		if (m_hwndControl)
+		{
+			::EnableWindow(m_hwndControl, bEnabled);
+		}
+
+		RedrawParent();
 	}
 }
 
@@ -185,8 +186,6 @@ void CXTPControlCustom::SetHideFlags(DWORD dwFlags)
 
 void CXTPControlCustom::OnActionChanged(int nProperty)
 {
-	CXTPControl::OnActionChanged(nProperty);
-
 	if (nProperty == 2 && m_hwndControl)
 	{
 		ShowHideChildControl();

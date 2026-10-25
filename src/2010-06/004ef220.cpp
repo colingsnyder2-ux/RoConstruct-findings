@@ -1,20 +1,17 @@
-// from server: 65% by atomic.potato
-extern "C" void __cdecl sub_004ec8b0();
-
-struct S
-{
-    void f(int, int, int);
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_004ef220 {
+    T4_004ef220();
+    virtual void f_004ef220();
+    char m_a;
+    char m_b;
 };
-
-void S::f(int a, int b, int c)
+T4_004ef220::T4_004ef220() : m_a(0), m_b(0) {}
+extern "C" void* create_other_004ef220(void*, void*, int);
+void* create_004ef220(void* unused, T4_004ef220* out, int type)
 {
-    if (c != 4)
-    {
-        sub_004ec8b0();
-        return;
-    }
-
-    *(unsigned long*)b = 0x00b92d30;
-    *((unsigned char*)b + 4) = 0;
-    *((unsigned char*)b + 5) = 0;
+    if (type != 4)
+        return create_other_004ef220(unused, out, type);
+    out->T4_004ef220::T4_004ef220();
+    return out;
 }

@@ -1,15 +1,23 @@
-// from server: 85% by atomic.potato
-struct CIDEBrowserView
-{
-    char padding[0xf0];
-    void* field_f0;
-    void f();
+// from server: 100% by tester
+// roc 2011-06 00412e10  unit: CIDEBrowserView  size: 15 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 00412e10
+//
+// 00412e10  8b81f0000000         mov eax, dword ptr [ecx + 0xf0]
+// 00412e16  8b08                 mov ecx, dword ptr [eax]
+// 00412e18  8b5138               mov edx, dword ptr [ecx + 0x38]
+// 00412e1b  50                   push eax
+// 00412e1c  ffd2                 call edx
+// 00412e1e  c3                   ret 
+
+struct CNullDoc {
+    char pad[0xf0];
+    void* field_ec;
+    void method();
 };
 
-void CIDEBrowserView::f()
-{
-    void* object = *(void**)field_f0;
-    void (__thiscall *method)(void*) =
-        *(void (__thiscall **)(void*))((char*)object + 0x38);
-    method(object);
+void CNullDoc::method() {
+    void* p = field_ec;
+    void** vtbl = *(void***)p;
+    void (__stdcall *fn)(void*) = (void (__stdcall *)(void*))vtbl[0x38 / 4];
+    fn(p);
 }

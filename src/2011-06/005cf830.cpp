@@ -1,26 +1,5 @@
-// from server: 76% by atomic.potato
-struct Inner {
-    int field0;
-};
-
-struct Outer {
-    char pad0[0x68];
-    Inner* begin;
-    Inner* end;
-    int get(int);
-};
-
-extern "C" Inner* __cdecl helper(Outer*, int);
-
-int Outer::get(int index) {
-    Inner* p = helper(this, index);
-    int v = p->field0;
-    if (v < 0) {
-        return 0;
-    }
-    int count = (int)((end - begin));
-    if ((unsigned)v >= (unsigned)count) {
-        return 0;
-    }
-    return begin[v].field0;
-}
+// from server: 83% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct S{char pad[0x68]; char* begin; char* end; int f(int);};
+extern "C" int* sub(int);
+int S::f(int index){int* p=sub(index); int v=*p; if(v<0)return 0; if((unsigned)v>=(unsigned)((end-begin)>>2))return 0; return ((int*)begin)[v];}

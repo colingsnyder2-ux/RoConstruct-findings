@@ -1,22 +1,17 @@
-// from server: 60% by atomic.potato
-typedef unsigned int DWORD;
-
-extern "C" void __cdecl target_006916f0();
-
-struct S
-{
-    void f(DWORD, DWORD*);
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_00691a60 {
+    T4_00691a60();
+    virtual void f_00691a60();
+    char m_a;
+    char m_b;
 };
-
-void S::f(DWORD value, DWORD* result)
+T4_00691a60::T4_00691a60() : m_a(0), m_b(0) {}
+extern "C" void* create_other_00691a60(void*, void*, int);
+void* create_00691a60(void* unused, T4_00691a60* out, int type)
 {
-    if (value != 4)
-    {
-        target_006916f0();
-        return;
-    }
-
-    result[0] = 0xc60370;
-    ((unsigned char*)result)[4] = 0;
-    ((unsigned char*)result)[5] = 0;
+    if (type != 4)
+        return create_other_00691a60(unused, out, type);
+    out->T4_00691a60::T4_00691a60();
+    return out;
 }

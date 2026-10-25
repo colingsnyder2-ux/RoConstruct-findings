@@ -1,19 +1,17 @@
-// from server: 91% by atomic.potato
-extern "C" void __cdecl leaf_target(void *, unsigned int);
-
-struct S
-{
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_00655430 {
+    T4_00655430();
+    virtual void f_00655430();
+    char m_a;
+    char m_b;
 };
-
-void __cdecl f(void *a, unsigned int b)
+T4_00655430::T4_00655430() : m_a(0), m_b(0) {}
+extern "C" void* create_other_00655430(void*, void*, int);
+void* create_00655430(void* unused, T4_00655430* out, int type)
 {
-    if (b != 4)
-    {
-        leaf_target(a, b);
-        return;
-    }
-
-    *(unsigned int *)a = 0x00c54bc0;
-    ((unsigned char *)a)[4] = 0;
-    ((unsigned char *)a)[5] = 0;
+    if (type != 4)
+        return create_other_00655430(unused, out, type);
+    out->T4_00655430::T4_00655430();
+    return out;
 }

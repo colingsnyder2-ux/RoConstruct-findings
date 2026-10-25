@@ -1,17 +1,11 @@
-// from server: 89% by atomic.potato
-extern "C" void __cdecl sub_80B15D(const char*);
-
-volatile int g_cce6fc;
-volatile int g_cce6f4;
-volatile int g_cce6f8;
-
-void f_681770()
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+extern "C" void seh_fn_00681770(void*);
+extern int g_a_00681770;
+extern int g_b_00681770;
+extern int g_arg_00681770;
+struct Reg_00681770 { Reg_00681770() { g_a_00681770 = 0; g_b_00681770 = 0; seh_fn_00681770(&g_arg_00681770); } };
+void func_00681770()
 {
-    if (g_cce6fc & 1)
-        return;
-
-    g_cce6fc |= 1;
-    g_cce6f4 = 0;
-    g_cce6f8 = 0;
-    sub_80B15D((const char*)0xA3B4D0);
+    static Reg_00681770 reg;
 }

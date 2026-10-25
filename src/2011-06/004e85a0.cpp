@@ -1,20 +1,11 @@
-// from server: 82% by atomic.potato
-typedef unsigned char BYTE;
-typedef unsigned long DWORD;
-
-extern "C" void __cdecl sub_0080B15D(const char *);
-
-BYTE g_initialized = *(BYTE *)0x00CB8048;
-DWORD g_value0 = *(DWORD *)0x00CB8040;
-DWORD g_value1 = *(DWORD *)0x00CB8044;
-
-void __cdecl function_004E85A0()
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+extern "C" void seh_fn_004e85a0(void*);
+extern int g_a_004e85a0;
+extern int g_b_004e85a0;
+extern int g_arg_004e85a0;
+struct Reg_004e85a0 { Reg_004e85a0() { g_a_004e85a0 = 0; g_b_004e85a0 = 0; seh_fn_004e85a0(&g_arg_004e85a0); } };
+void func_004e85a0()
 {
-    if (!g_initialized)
-    {
-        g_initialized = 1;
-        g_value0 = 0;
-        g_value1 = 0;
-        sub_0080B15D("8csm");
-    }
+    static Reg_004e85a0 reg;
 }

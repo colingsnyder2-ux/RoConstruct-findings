@@ -1,21 +1,17 @@
-// from server: 48% by atomic.potato
-struct S
-{
-    void __stdcall f(void*, unsigned int);
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_004b3af0 {
+    T4_004b3af0();
+    virtual void f_004b3af0();
+    char m_a;
+    char m_b;
 };
-
-typedef void (__thiscall *Fn)(S*, void*, unsigned int);
-
-void __stdcall S::f(void* p, unsigned int value)
+T4_004b3af0::T4_004b3af0() : m_a(0), m_b(0) {}
+extern "C" void* create_other_004b3af0(void*, void*, int);
+void* create_004b3af0(void* unused, T4_004b3af0* out, int type)
 {
-    if (value == 4)
-    {
-        *(unsigned int*)p = 0x00c1d9e0;
-        ((unsigned char*)p)[4] = 0;
-        ((unsigned char*)p)[5] = 0;
-    }
-    else
-    {
-        ((Fn)0x004b3790)(this, p, value);
-    }
+    if (type != 4)
+        return create_other_004b3af0(unused, out, type);
+    out->T4_004b3af0::T4_004b3af0();
+    return out;
 }

@@ -1,24 +1,11 @@
-// from server: 87% by atomic.potato
-typedef int (__cdecl *Predicate)(void *);
-typedef int (__thiscall *TypeInfoEqual)(void *, const void *);
-
-extern "C" void *__cdecl sub_0080BBC2(void *);
-extern "C" TypeInfoEqual g_type_info_equal;
-
-struct TToolVerb
-{
-    int f();
-    void *field_0c;
-};
-
-int TToolVerb::f()
-{
-    void *p = *(void **)((char *)field_0c + 0xACC);
-    void *q = *(void **)((char *)p + 0x188);
-    if (q)
-    {
-        q = sub_0080BBC2(q);
-        return g_type_info_equal((void *)0xC90E60, q);
-    }
-    return 0;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct P3 { char pad[0x188]; void* value; };
+struct P2 { char pad[0xacc]; P3* p; };
+struct Obj { char pad[0xc]; P2* p; bool f(); };
+struct C {};
+extern "C" void* helper(void*);
+extern C c;
+typedef bool (__thiscall *Fn)(C*,void*);
+extern Fn slot;
+bool Obj::f(){ void* x=p->p->value; if(x){ x=helper(x); return slot(&c,x); } return false; }

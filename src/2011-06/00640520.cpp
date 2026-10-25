@@ -1,12 +1,5 @@
-// from server: 60% by atomic.potato
-extern "C" void __stdcall sub_6404C4(void*, const char*, int);
-
-struct DecalTool
-{
-    DecalTool(const char*);
-};
-
-DecalTool::DecalTool(const char*)
-{
-    sub_6404C4(this, "ArrowCursorDecalDrag", 0);
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <string>
+struct Tool { virtual std::string name() const; };
+std::string Tool::name() const { return "ArrowCursorDecalDrag"; }

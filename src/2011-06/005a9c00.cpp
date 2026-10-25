@@ -1,21 +1,5 @@
-// from server: 81% by atomic.potato
-struct S_005a9c00 {
-    char pad[0x68];
-    int* m_begin;
-    int* m_end;
-    int f(int);
-};
-
-extern "C" int* __cdecl sub_004d3040(int);
-
-int S_005a9c00::f(int a)
-{
-    int* p = sub_004d3040(a);
-    int idx = *p;
-    if (idx < 0)
-        return 0;
-    int count = (int)((m_end - m_begin) >> 2);
-    if ((unsigned)idx >= (unsigned)count)
-        return 0;
-    return m_begin[idx];
-}
+// from server: 83% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct S{char pad[0x68]; char* begin; char* end; int f(int);};
+extern "C" int* sub(int);
+int S::f(int index){int* p=sub(index); int v=*p; if(v<0)return 0; if((unsigned)v>=(unsigned)((end-begin)>>2))return 0; return ((int*)begin)[v];}

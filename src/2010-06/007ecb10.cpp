@@ -1,14 +1,14 @@
-// from server: 86% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD /Ob1 /Oy-
-// roc-lib: xtp-13.2.1 Source/DockingPane/XTPDockingPaneManager.cpp
+// roc-lib: xtp-11.2.2 Source/DockingPane/XTPDockingPaneManager.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPDockingPaneManager.cpp : implementation of the CXTPDockingPaneManager class.
 //
 // This file is a part of the XTREME DOCKINGPANE MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -43,7 +43,6 @@
 #include "XTPDockingPanePaintManager.h"
 #include "XTPDockingPaneLayout.h"
 #include "XTPDockingPaneAutoHidePanel.h"
-#include "XTPDockingPaneSidePanel.h"
 #include "XTPDockingPaneContext.h"
 #include "XTPDockingPaneKeyboardHook.h"
 
@@ -83,7 +82,7 @@ CXTPDockingPaneManager::CXTPDockingPaneManager()
 
 	m_bAlphaDockingContext = FALSE;
 	m_bShowDockingContextStickers = FALSE;
-	m_nDockingContextStickerStyle = xtpPaneStickerStyleVisualStudio2005;
+	m_nDockingContextStickerStyle = xtpPaneStickerStyleWhidbey;
 
 	m_bCloseGroupOnButtonClick = FALSE;
 	m_bHideGroupOnButtonClick = TRUE;
@@ -102,7 +101,6 @@ CXTPDockingPaneManager::CXTPDockingPaneManager()
 
 	m_bShowSizeCursorWhileDragging = FALSE;
 	m_bInitialUpdateCalled = FALSE;
-	m_bAutoInitialUpdate = TRUE;
 
 	m_ptMinClientSize = CPoint(60, 60);
 
@@ -111,11 +109,6 @@ CXTPDockingPaneManager::CXTPDockingPaneManager()
 	m_bStickyFloatingFrames = FALSE;
 	m_nStickyGap = 15;
 	m_nFloatingFramesOpacity = 255;
-	m_rcSideDockingMargin.SetRect(0, 0, 0, 0);
-
-	m_bSideDocking = FALSE;
-
-	m_bShowPanelScrollButtons = FALSE;
 
 	m_bKeyboardEnabled = xtpPaneKeyboardUnused;
 
@@ -130,7 +123,6 @@ CXTPDockingPaneManager::CXTPDockingPaneManager()
 	XTPDrawHelpers()->RegisterWndClass(0, _T("XTPDockingPaneManager"), 0);
 	XTPDrawHelpers()->RegisterWndClass(0, _T("XTPDockingPaneAutoHidePanel"), 0);
 	XTPDrawHelpers()->RegisterWndClass(0, _T("XTPDockingPaneMiniWnd"), CS_DBLCLKS);
-	XTPDrawHelpers()->RegisterWndClass(0, _T("XTPDockingPaneSidePanel"), CS_DBLCLKS);
 
 	m_pWindowSelectClass = RUNTIME_CLASS(CXTPDockingPaneWindowSelect);
 
@@ -188,11 +180,7 @@ void CXTPDockingPaneManager::OnSysColorChange()
 void CXTPDockingPaneManager::OnSettingChange(UINT /*uFlags*/, LPCTSTR /*lpszSection*/)
 {
 	m_pPaintManager->RefreshMetrics();
-
-	if ((GetSite()->GetStyle() & (WS_VISIBLE | WS_MINIMIZE)) == WS_VISIBLE)
-	{
-		_Redraw();
-	}
+	_Redraw();
 }
 
 void CXTPDockingPaneManager::SetFloatingFramesOpacity(int nOpacity)
@@ -225,7 +213,7 @@ void CXTPDockingPaneManager::UpdatePanes()
 	{
 		CXTPDockingPaneBase* pPane = GetPaneStack().GetNext(pos);
 
-		if (pPane->GetType() == xtpPaneTypeTabbedContainer || pPane->GetType() == xtpPaneTypeMiniWnd  || pPane->GetType() == xtpPaneTypeSidePanel)
+		if (pPane->GetType() == xtpPaneTypeTabbedContainer || pPane->GetType() == xtpPaneTypeMiniWnd)
 		{
 			pPane->OnFocusChanged();
 		}
@@ -242,7 +230,7 @@ void CXTPDockingPaneManager::OnInitialUpdate()
 	OnIdleUpdateCmdUI(TRUE, 0L);
 
 
-	if (m_pLayout && m_bAutoInitialUpdate)
+	if (m_pLayout)
 	{
 		POSITION pos = m_pLayout->m_lstStack.GetHeadPosition();
 		while (pos)
@@ -321,7 +309,7 @@ CXTPDockingPaneBase* CXTPDockingPaneManager::_Clone(CXTPDockingPaneBase* pPane)
 	return (CXTPDockingPaneBase*)pPane->Clone(m_pLayout, 0);
 }
 
-BOOL CXTPDockingPaneManager::NotifyAction(XTPDockingPaneAction action, CXTPDockingPane* pPane, CXTPDockingPaneBase* pDockContainer /*= NULL*/, XTPDockingPaneDirection dockDirection /*= xtpPaneDockLeft*/)
+BOOL CXTPDockingPaneManager::_OnAction(XTPDockingPaneAction action, CXTPDockingPane* pPane, CXTPDockingPaneBase* pDockContainer /*= NULL*/, XTPDockingPaneDirection dockDirection /*= xtpPaneDockLeft*/)
 {
 	XTP_DOCKINGPANE_ACTION dpAction(action);
 	dpAction.pPane = pPane;
@@ -349,18 +337,6 @@ void CXTPDockingPaneManager::LockSplitters(BOOL bLock /*= TRUE*/)
 	}
 }
 
-CXTPDockingPaneSidePanel* CXTPDockingPaneManager::DockSidePane(CXTPDockingPaneBase* pPane, XTPDockingPaneDirection direction, CRect rc)
-{
-	CXTPDockingPaneSidePanel* pMiniFrame = (CXTPDockingPaneSidePanel*)OnCreatePane(xtpPaneTypeSidePanel, m_pLayout);
-	pMiniFrame->Init(pPane, direction, rc);
-
-	SyncPanesState();
-	m_hwndLastFocus = 0;
-
-	RecalcFrameLayout(NULL, TRUE);
-
-	return pMiniFrame;
-}
 
 CXTPDockingPaneMiniWnd* CXTPDockingPaneManager::FloatPane(CXTPDockingPaneBase* pPane, CRect rc)
 {
@@ -435,10 +411,6 @@ CXTPDockingPaneBase* CXTPDockingPaneManager::OnCreatePane(XTPDockingPaneType typ
 		case xtpPaneTypeAutoHidePanel:
 			pPane = new CXTPDockingPaneAutoHidePanel(pLayout);
 			break;
-
-		case xtpPaneTypeSidePanel:
-			pPane = new CXTPDockingPaneSidePanel(pLayout);
-			break;
 	}
 	ASSERT(pPane);
 	return pPane;
@@ -477,6 +449,7 @@ void CXTPDockingPaneManager::_RemovePane(CXTPDockingPaneBase* pPane)
 	if (!pPane)
 		return;
 
+	ASSERT(pPane->m_pParentContainer);
 	if (!pPane->m_pParentContainer)
 		return;
 
@@ -764,7 +737,7 @@ BOOL CXTPDockingPaneManager::_ToggleDocking(CXTPDockingPane* pPane, CXTPDockingP
 	if (bDocking && (pPane->GetOptions() & xtpPaneNoFloatable))
 		return FALSE;
 
-	if (NotifyAction(bHidden ? xtpPaneActionPinning : !bDocking ? xtpPaneActionDocking : xtpPaneActionFloating, pPane, pHolder))
+	if (_OnAction(bHidden ? xtpPaneActionPinning : !bDocking ? xtpPaneActionDocking : xtpPaneActionFloating, pPane, pHolder))
 		return FALSE;
 
 	if (pHolder)
@@ -778,7 +751,7 @@ BOOL CXTPDockingPaneManager::_ToggleDocking(CXTPDockingPane* pPane, CXTPDockingP
 		FloatPane(pPane, pPane->GetContainer()->GetPaneWindowRect());
 	}
 
-	NotifyAction(bHidden ? xtpPaneActionPinned : !bDocking ? xtpPaneActionDocked : xtpPaneActionFloated, pPane);
+	_OnAction(bHidden ? xtpPaneActionPinned : !bDocking ? xtpPaneActionDocked : xtpPaneActionFloated, pPane);
 
 	return TRUE;
 }
@@ -914,7 +887,7 @@ void CXTPDockingPaneManager::ShowPane(CXTPDockingPane* pPane, BOOL bSetFocus /*=
 		((CXTPDockingPaneTabbedContainer*)pPane->m_pParentContainer)->ShowPane(pPane, bSetFocus);
 	}
 
-	if (bSetFocus && m_bLayoutCreated)
+	if (m_bLayoutCreated)
 	{
 		pPane->ShowWindow(TRUE);
 	}
@@ -1015,10 +988,7 @@ void CXTPDockingPaneManager::_Redraw()
 			((CXTPDockingPaneMiniWnd*)pFrame)->OnThemedChanged();
 		}
 
-		if (pPane->GetContainer())
-		{
-			pPane->GetContainer()->InvalidatePane(FALSE);
-		}
+		SAFE_INVALIDATE(((CXTPDockingPaneTabbedContainer*)pPane->GetContainer()));
 	}
 }
 
@@ -1050,33 +1020,27 @@ void CXTPDockingPaneManager::SetTheme(XTPDockingPanePaintTheme paintTheme)
 	if (m_pPaintManager != NULL)
 		m_pPaintManager->InternalRelease();
 
-	switch (paintTheme)
-	{
-	case xtpPaneThemeGrippered: m_pPaintManager = new CXTPDockingPaneGripperedTheme(); break;
-	case xtpPaneThemeWinNative: m_pPaintManager = new CXTPDockingPaneWinNativeTheme(); break;
-	case xtpPaneThemeWinExplorer: m_pPaintManager = new CXTPDockingPaneWinExplorerTheme(); break;
-	case xtpPaneThemeVisualStudio6: m_pPaintManager = new CXTPDockingPaneVisualStudio6Theme(); break;
-	case xtpPaneThemeVisualStudio2003: m_pPaintManager = new CXTPDockingPaneVisualStudio2003Theme(); break;
-	case xtpPaneThemeVisualStudio2005Beta1: m_pPaintManager = new CXTPDockingPaneVisualStudio2005Beta1Theme(); break;
-	case xtpPaneThemeVisualStudio2005Beta2: m_pPaintManager = new CXTPDockingPaneVisualStudio2005Beta2Theme(); break;
-	case xtpPaneThemeVisualStudio2005: m_pPaintManager = new CXTPDockingPaneVisualStudio2005Theme(); break;
-	case xtpPaneThemeVisualStudio2008: m_pPaintManager = new CXTPDockingPaneVisualStudio2008Theme(); break;
-	case xtpPaneThemeVisualStudio2010: m_pPaintManager = new CXTPDockingPaneVisualStudio2010Theme(); break;
-	case xtpPaneThemeOffice2002Visio: m_pPaintManager = new CXTPDockingPaneOffice2002VisioTheme(); break;
-	case xtpPaneThemeOffice2003: m_pPaintManager = new CXTPDockingPaneOffice2003Theme(); break;
-	case xtpPaneThemeOffice2003Visio: m_pPaintManager = new CXTPDockingPaneOffice2003VisioTheme(); break;
-	case xtpPaneThemeOffice2003Outlook: m_pPaintManager = new CXTPDockingPaneOffice2003OutlookTheme(); break;
-	case xtpPaneThemeOffice2007: m_pPaintManager = new CXTPDockingPaneOffice2007Theme(); break;
-	case xtpPaneThemeOffice2007Visio: m_pPaintManager = new CXTPDockingPaneOffice2007VisioTheme(); break;
-	case xtpPaneThemeOffice2007Outlook: m_pPaintManager = new CXTPDockingPaneOffice2007OutlookTheme(); break;
-	case xtpPaneThemeOffice2007Word: m_pPaintManager = new CXTPDockingPaneOffice2007WordTheme(); break;
-	default: m_pPaintManager = new CXTPDockingPaneDefaultTheme(); break;
-	}
+	if (paintTheme == xtpPaneThemeOffice) m_pPaintManager = new CXTPDockingPaneOfficeTheme();
+	else if (paintTheme == xtpPaneThemeGrippered) m_pPaintManager = new CXTPDockingPaneGripperedTheme();
+	else if (paintTheme == xtpPaneThemeVisio) m_pPaintManager = new CXTPDockingPaneVisioTheme();
+	else if (paintTheme == xtpPaneThemeOffice2003) m_pPaintManager = new CXTPDockingPaneOffice2003Theme();
+	else if (paintTheme == xtpPaneThemeNativeWinXP) m_pPaintManager = new CXTPDockingPaneNativeXPTheme();
+	else if (paintTheme == xtpPaneThemeWhidbey) m_pPaintManager = new CXTPDockingPaneWhidbeyTheme();
+	else if (paintTheme == xtpPaneThemeVisualStudio2005) m_pPaintManager = new CXTPDockingPaneVisualStudio2005Theme();
+	else if (paintTheme == xtpPaneThemeShortcutBar2003) m_pPaintManager = new CXTPDockingPaneShortcutBar2003Theme();
+	else if (paintTheme == xtpPaneThemeExplorer) m_pPaintManager = new CXTPDockingPaneExplorerTheme();
+	else if (paintTheme == xtpPaneThemeOffice2007) m_pPaintManager = new CXTPDockingPaneOffice2007Theme();
+	else m_pPaintManager = new CXTPDockingPaneDefaultTheme();
 
 	m_pPaintManager->m_themeCurrent = paintTheme;
 	m_pPaintManager->RefreshMetrics();
 
 	_Redraw();
+
+	if (paintTheme == xtpPaneThemeVisualStudio2005)
+	{
+		SetDockingContextStickerStyle(xtpPaneStickerStyleVisualStudio2005);
+	}
 }
 
 void CXTPDockingPaneManager::SetCustomTheme(CXTPDockingPanePaintManager* pTheme)
@@ -1353,7 +1317,7 @@ void CXTPDockingPaneManager::OnActivatePane(BOOL bActive, CXTPDockingPane* pPane
 	{
 		if (m_pActivePane)
 		{
-			NotifyAction(xtpPaneActionDeactivated, m_pActivePane);
+			_OnAction(xtpPaneActionDeactivated, m_pActivePane);
 			m_pActivePane->InternalRelease();
 		}
 
@@ -1362,13 +1326,13 @@ void CXTPDockingPaneManager::OnActivatePane(BOOL bActive, CXTPDockingPane* pPane
 		if (m_pActivePane)
 		{
 			m_pActivePane->InternalAddRef();
-			NotifyAction(xtpPaneActionActivated, m_pActivePane);
+			_OnAction(xtpPaneActionActivated, m_pActivePane);
 		}
 	}
 	else if (!bActive && pPane && m_pActivePane == pPane)
 	{
 		m_pActivePane = 0;
-		NotifyAction(xtpPaneActionDeactivated, pPane);
+		_OnAction(xtpPaneActionDeactivated, pPane);
 
 		pPane->InternalRelease();
 	}

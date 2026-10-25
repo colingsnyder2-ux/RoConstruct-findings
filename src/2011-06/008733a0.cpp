@@ -1,14 +1,14 @@
-// from server: 38% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Common/XTPToolTipContext.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-13.2.1-shared-mfc Source/Common/XTPToolTipContext.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPToolTipContext.cpp: implementation of the CXTPToolTipContext class.
 //
 // This file is a part of the XTREME TOOLKIT PRO MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2009 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -39,7 +39,7 @@
 #include "XTPDrawHelpers.h"
 #include "XTPColorManager.h"
 #include "XTPImageManager.h"
-#include "XTPResourceImage.h"
+#include "XTPOffice2007Image.h"
 #include "XTPSystemHelpers.h"
 #include "XTPRichRender.h"
 #include "XTPResourceManager.h"
@@ -95,26 +95,6 @@ CXTPToolTipContext* CXTPToolTipContext::m_pModuleContext = 0;
 
 IMPLEMENT_DYNAMIC(CXTPToolTipContextToolTip, CWnd)
 
-
-void XTPStripEllipsis(LPTSTR lpszText)
-{
-	if (lpszText == NULL || lpszText == LPSTR_TEXTCALLBACK)
-		return;
-
-	int len = (int)_tcslen(lpszText);
-
-	if (len > 3)
-	{
-		for (int i = len - 3; i < len; i++)
-		{
-			if (lpszText[i] != _T('.'))
-				return;
-		}
-
-		lpszText[len - 3] = 0;
-	}
-};
-
 //////////////////////////////////////////////////////////////////////////
 // CXTPToolTipContextToolTip
 
@@ -131,12 +111,10 @@ CXTPToolTipContextToolTip::CXTPToolTipContextToolTip(CXTPToolTipContext* pContex
 	m_bWindowRegion = FALSE;
 
 	m_nDelayTimer = 0;
-	m_nAutoPopTimer = 0;
-
 	m_dwLastTip = 0;
 	m_nDelayInitial = 500;
 	m_nDelayReshow = 200;
-	m_nDelayAutoPop = 0;
+
 }
 
 void CXTPToolTipContext::SetFont(CFont* pFont)
@@ -264,10 +242,6 @@ LRESULT CXTPToolTipContextToolTip::OnSetDelayTime(WPARAM dwDuration, LPARAM lPar
 
 	case TTDT_INITIAL:
 		m_nDelayInitial = iTime;
-		break;
-
-	case TTDT_AUTOPOP:
-		m_nDelayAutoPop = iTime;
 		break;
 	}
 	return 0;
@@ -479,7 +453,6 @@ CString CXTPToolTipContextToolTip::GetToolText(TOOLITEM* lpToolInfo)
 		lpToolInfo->bAutoCaption = FALSE;
 	}
 
-
 	return lpToolInfo->strCaption;
 }
 
@@ -639,7 +612,7 @@ void CXTPToolTipContextToolTip::EnsureVisible(CRect& rcToolTip)
 	}
 }
 
-int CXTPToolTipContext::GetCursorHeight()
+int CXTPToolTipContextToolTip::GetCursorHeight() const
 {
 	HCURSOR hCursor = GetCursor();
 
@@ -759,7 +732,7 @@ void CXTPToolTipContextToolTip::SetVisibleTool(TOOLITEM* pVisibleTool)
 			{
 				CPoint pt;
 				GetCursorPos(&pt);
-				int nCursorHeight = CXTPToolTipContext::GetCursorHeight();
+				int nCursorHeight = GetCursorHeight();
 
 				rcToolTip.SetRect(pt.x, pt.y + nCursorHeight, pt.x + sz.cx, pt.y + nCursorHeight + sz.cy);
 
@@ -794,28 +767,11 @@ void CXTPToolTipContextToolTip::SetVisibleTool(TOOLITEM* pVisibleTool)
 			HookMouseMove(TRUE);
 
 			m_toolDisabled.Reset();
-
-			if (m_nDelayAutoPop > 0)
-			{
-				if (m_nAutoPopTimer > 0)
-				{
-					KillTimer(m_nAutoPopTimer);
-					m_nAutoPopTimer = 0;
-				}
-
-				m_nAutoPopTimer = SetTimer(3, m_nDelayAutoPop, NULL);
-			}
 		}
 		else
 		{
 			HookMouseMove(FALSE);
 			m_toolDelay.Reset();
-
-			if (m_nAutoPopTimer > 0)
-			{
-				if (m_hWnd) KillTimer(m_nAutoPopTimer);
-				m_nAutoPopTimer = 0;
-			}
 		}
 
 		m_toolVisible.Assign(pVisibleTool);
@@ -952,7 +908,37 @@ void CXTPToolTipContextToolTip::DrawEntry(CDC* pDC, TOOLITEM* lpToolInfo, CRect 
 
 void CXTPToolTipContextToolTip::DrawBackground(CDC* pDC, TOOLITEM* /*lpToolInfo*/, CRect rc)
 {
-	m_pContext->DrawBackground(pDC, rc);
+	if (GetStyle() & XTP_TTS_OFFICE2007FRAME)
+	{
+		COLORREF clrLight = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("TooltipLight"));
+		COLORREF clrDark = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("TooltipDark"));
+
+		if (clrLight == COLORREF_NULL) clrLight = RGB(255, 255, 255);
+		if (clrDark == COLORREF_NULL) clrDark = RGB(201, 217, 239);
+
+		XTPDrawHelpers()->GradientFill(pDC, rc, clrLight, clrDark, FALSE);
+
+		CXTPOffice2007Image* pImage = XTPOffice2007Images()->LoadFile(_T("TOOLTIPFRAME"));
+		if (pImage)
+		{
+			pImage->DrawImage(pDC, rc, pImage->GetSource(0, 1), CRect(3, 3, 3, 3), 0xFF00FF);
+		}
+		else
+		{
+			COLORREF clrBorder = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("TooltipBorder"));
+			if (clrBorder == COLORREF_NULL) clrBorder = RGB(118, 118, 118);
+			pDC->Draw3dRect(rc, clrBorder, clrBorder);
+		}
+	}
+	else
+	{
+		pDC->FillSolidRect(rc, m_pContext->GetTipBkColor());
+
+		if (GetStyle() & XTP_TTS_OFFICEFRAME)
+			pDC->Draw3dRect(rc, GetSysColor(COLOR_3DFACE), 0);
+		else
+			pDC->Draw3dRect(rc, 0, 0);
+	}
 }
 
 void CXTPToolTipContextToolTip::OnPaint()
@@ -969,45 +955,6 @@ void CXTPToolTipContextToolTip::OnPaint()
 	CXTPFontDC font(&dc, &m_pContext->m_fnt);
 
 	DrawEntry(&dc, &m_toolVisible, rc);
-}
-
-void CXTPToolTipContext::DrawBackground(CDC* pDC, CRect rc)
-{
-	if (m_dwStyle & XTP_TTS_OFFICE2007FRAME)
-	{
-		CXTPResourceImages* pImages = XTPResourceImages();
-
-		COLORREF clrLight = pImages->GetImageColor(_T("Window"), _T("TooltipLight"));
-		COLORREF clrDark = pImages->GetImageColor(_T("Window"), _T("TooltipDark"));
-
-		if (clrLight == COLORREF_NULL) clrLight = RGB(255, 255, 255);
-		if (clrDark == COLORREF_NULL) clrDark = RGB(201, 217, 239);
-
-		XTPDrawHelpers()->GradientFill(pDC, rc, clrLight, clrDark, FALSE);
-
-		CXTPResourceImage* pImage = pImages->LoadFile(_T("TOOLTIPFRAME"));
-		if (pImage)
-		{
-			pImage->DrawImage(pDC, rc, pImage->GetSource(0, 1), CRect(3, 3, 3, 3), 0xFF00FF);
-		}
-		else
-		{
-			COLORREF clrBorder = pImages->GetImageColor(_T("Window"), _T("TooltipBorder"));
-			if (clrBorder == COLORREF_NULL) clrBorder = RGB(118, 118, 118);
-			pDC->Draw3dRect(rc, clrBorder, clrBorder);
-		}
-	}
-	else
-	{
-		pDC->FillSolidRect(rc, GetTipBkColor());
-
-		if (m_dwStyle & XTP_TTS_OFFICEFRAME)
-			pDC->Draw3dRect(rc, GetSysColor(COLOR_3DFACE), 0);
-		else
-			pDC->Draw3dRect(rc, 0, 0);
-	}
-
-	pDC->SetTextColor(GetTipTextColor());
 }
 
 BOOL CXTPToolTipContextToolTip::OnEraseBkgnd(CDC* /*pDC*/)
@@ -1046,14 +993,6 @@ void CXTPToolTipContextToolTip::OnTimer(UINT_PTR nIDEvent)
 		KillTimer(m_nDelayTimer);
 		m_nDelayTimer = 0;
 		m_toolDelay.Reset();
-	}
-
-	if (nIDEvent == m_nAutoPopTimer)
-	{
-		KillTimer(m_nAutoPopTimer);
-		m_nAutoPopTimer = 0;
-
-		Activate(FALSE);
 	}
 
 	CWnd::OnTimer(nIDEvent);
@@ -1754,8 +1693,6 @@ CXTPToolTipContext::CXTPToolTipContext()
 	ncm.lfStatusFont.lfWeight = FW_BOLD;
 	m_fntTitle.CreateFontIndirect(&ncm.lfStatusFont);
 
-	m_bStripEllipsisFromToolTip = TRUE;
-
 
 }
 
@@ -1848,7 +1785,7 @@ void CXTPToolTipContext::SetStyle(XTPToolTipStyle toolStyle)
 		SAFE_DELETEWINDOW(m_pToolTip);
 
 		ModifyToolTipStyle(XTP_TTS_OFFICEFRAME | XTP_TTS_NOSHADOW, m_toolStyle == xtpToolTipOffice ? XTP_TTS_OFFICEFRAME | XTP_TTS_NOSHADOW : 0);
-		ModifyToolTipStyle(XTP_TTS_OFFICE2007FRAME, m_toolStyle == xtpToolTipResource ? XTP_TTS_OFFICE2007FRAME : 0);
+		ModifyToolTipStyle(XTP_TTS_OFFICE2007FRAME, m_toolStyle == xtpToolTipOffice2007 ? XTP_TTS_OFFICE2007FRAME : 0);
 	}
 }
 
@@ -1993,7 +1930,7 @@ CWnd* CXTPToolTipContext::CreateToolTip(CWnd* /*pOwner*/)
 	case xtpToolTipLuna:
 		return new CLunaToolTip(this);
 
-	case xtpToolTipResource:
+	case xtpToolTipOffice2007:
 		return new CXTPToolTipContextToolTip(this);
 
 #ifndef _XTP_EXCLUDE_HTML
@@ -2148,12 +2085,6 @@ void CXTPToolTipContext::FilterToolTipMessageHelper(CWnd* pWndHost, MSG* pMsg, B
 		{
 			CXTPDrawHelpers::StripMnemonics(tiHit.lpszText);
 			CXTPDrawHelpers::StripMnemonics(tiHit.pToolInfo->lpszTitle);
-		}
-
-		if (m_bStripEllipsisFromToolTip)
-		{
-			XTPStripEllipsis(tiHit.lpszText);
-			XTPStripEllipsis(tiHit.pToolInfo->lpszTitle);
 		}
 
 

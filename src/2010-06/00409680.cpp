@@ -1,39 +1,24 @@
-// from server: 71% by colin
-// roc-lang: cpp
-// roc-cl: 21022
+// from server: 100% by colin
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.40.0 libs/regex/src/instances.cpp
-
-// Candidate translation unit (score above; library headers required).
-/*
- *
- * Copyright (c) 1998-2002
- * John Maddock
- *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
- * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
- *
- */
-
- /*
-  *   LOCATION:    see http://www.boost.org for most recent version.
-  *   FILE:        instances.cpp
-  *   VERSION:     see <boost/version.hpp>
-  *   DESCRIPTION: regex narrow character template instances.
-  */
-
-#define BOOST_REGEX_SOURCE
-
-#include <boost/regex/config.hpp>
-
-#if !defined(BOOST_REGEX_NO_EXTERNAL_TEMPLATES)
-#define BOOST_REGEX_NARROW_INSTANTIATE
-
-#ifdef __BORLANDC__
-#pragma hrdstop
-#endif
-
-#include <boost/regex.hpp>
-
-#endif
+extern void* g_a_00409680;
+extern void* g_b_00409680;
+extern void* g_c_00409680;
+extern "C" void atexit_fn_00409680(void*);
+struct X_00409680 {
+    X_00409680(int flags);
+    virtual void f_00409680();
+    void* m_a;
+    void* m_p0;
+    void* m_p1;
+    void* m_p2;
+    void* m_p3;
+    void* m_b;
+    void* m_c;
+    void init_00409680();
+};
+X_00409680::X_00409680(int flags) : m_a(&g_a_00409680), m_b(&g_b_00409680), m_c(&g_c_00409680)
+{
+    init_00409680();
+    if (flags & 1)
+        atexit_fn_00409680(this);
+}

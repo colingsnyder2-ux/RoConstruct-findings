@@ -1,12 +1,4 @@
-// from server: 55% by atomic.potato
-extern "C" void __fastcall sub_556100(float*, int);
-
-struct Tool
-{
-    void f(int);
-};
-
-void Tool::f(int value)
-{
-    sub_556100((float*)this + 0x16c / sizeof(float), value);
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct B{void get(void*,int);}; struct S{void* f(void*);};
+void* S::f(void* p){((B*)((char*)this+364))->get(p,0); return p;}

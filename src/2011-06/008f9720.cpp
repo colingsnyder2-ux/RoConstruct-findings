@@ -1,14 +1,14 @@
-// from server: 41% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/CommandBars/XTPDialogBar.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPDialogBar.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPDialogBar.cpp : implementation of the CXTPDialogBar class.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -204,16 +204,12 @@ CRect CXTPDialogBar::GetMargins()
 {
 	CRect rcBorder = m_rcBorders;
 
-	if (m_bCaptionVisible)
-	{
-		CClientDC dc(this);
-		CXTPFontDC font(&dc, GetPaintManager()->GetCommandBarFont(this));
-		CSize szGripper = GetPaintManager()->DrawCommandBarGripper(&dc, this, FALSE);
-		int nTitleSize = szGripper.cy;
+	CClientDC dc(this);
+	CXTPFontDC font(&dc, GetPaintManager()->GetCommandBarFont(this));
+	CSize szGripper = GetPaintManager()->DrawCommandBarGripper(&dc, this, FALSE);
+	int nTitleSize = szGripper.cy;
 
-		rcBorder.top += nTitleSize;
-	}
-
+	rcBorder.top += nTitleSize;
 	return rcBorder;
 }
 
@@ -227,15 +223,6 @@ CSize CXTPDialogBar::CalcSize(int nLength, DWORD dwMode, CSize szClient)
 
 	if (!m_bCaptionVisible)
 	{
-		m_nCaptionHeight = 0;
-
-		if (dwMode & LM_STRETCH)
-		{
-			if (dwMode & LM_VERTDOCK)
-				sizeResult.cy = max(nLength, sizeResult.cy);
-			else
-				sizeResult.cx = max(nLength, sizeResult.cx);
-		}
 		return sizeResult;
 	}
 

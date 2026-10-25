@@ -1,16 +1,16 @@
-// from server: 70% by atomic.potato
-struct EventDesc
-{
-    int value;
+// from server: 100% by colin
 
-    EventDesc& f(EventDesc& other);
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+struct Str_006f5bd0 { int words[8]; };
+extern void (__thiscall* str_ctor_006f5bd0)(Str_006f5bd0*, Str_006f5bd0*);
+struct X_006f5bd0 {
+    char pad[0xac];
+    Str_006f5bd0 value;
+    Str_006f5bd0* copy(Str_006f5bd0* out);
 };
-
-extern "C" EventDesc* __stdcall std_basic_string_copy(EventDesc*, const EventDesc*);
-
-EventDesc& EventDesc::f(EventDesc& other)
+Str_006f5bd0* X_006f5bd0::copy(Str_006f5bd0* out)
 {
-    EventDesc* p = (EventDesc*)((char*)this + 0xac);
-    EventDesc* result = std_basic_string_copy(&other, p);
-    return other;
+    volatile int zero = 0;
+    str_ctor_006f5bd0(out, &value);
+    return out;
 }

@@ -1,13 +1,13 @@
-// from server: 40% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/Controls/XTCaptionTheme.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/DockingPane/XTPDockingPane.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTCaptionTheme.cpp: implementation of the CXTCaptionTheme class.
+// XTPDockingPane.cpp : implementation of the CXTPDockingPaneclass.
 //
-// This file is a part of the XTREME CONTROLS MFC class library.
+// This file is a part of the XTREME DOCKINGPANE MFC class library.
 // (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
@@ -26,15 +26,15 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "TabManager/XTPTabManager.h"
 #include "Common/XTPDrawHelpers.h"
-#include "Common/XTPWinThemeWrapper.h"
 
-#include "XTThemeManager.h"
-#include "XTButtonTheme.h"
-#include "XTDefines.h"
-#include "XTButton.h"
-#include "XTCaption.h"
-#include "XTCaptionTheme.h"
+#include "XTPDockingPane.h"
+#include "XTPDockingPaneContext.h"
+#include "XTPDockingPaneManager.h"
+#include "XTPDockingPaneTabbedContainer.h"
+#include "XTPDockingPaneAutoHidePanel.h"
+#include "XTPDockingPaneMiniWnd.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -42,403 +42,555 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-IMPLEMENT_THEME_FACTORY(CXTCaptionTheme)
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTCaptionTheme
-
-CXTCaptionTheme::CXTCaptionTheme()
+CXTPDockingPane::CXTPDockingPane(CXTPDockingPaneLayout* pLayout)
+	: CXTPDockingPaneBase(xtpPaneTypeDockingPane, pLayout)
 {
+	m_dwOptions = 0;
+	m_hwndChild = 0;
+	m_nID = 0;
+	m_nIconID = -1;
+	m_dwData = 0;
+	m_clrItemTab = COLORREF_NULL;
+	m_nIDHelp = 0;
+	m_bEnabled = xtpPaneEnabled;
+
+	m_ptMinTrackSize = CPoint(0, 0);
+	m_ptMaxTrackSize = CPoint(32000, 32000);
+
+	EnableAutomation();
+
+
 }
 
-void CXTCaptionTheme::RefreshMetrics()
+CXTPDockingPane::~CXTPDockingPane()
 {
-	CXTThemeManagerStyle ::RefreshMetrics();
 
-	m_clrEdgeShadow.SetStandardValue(GetXtremeColor(COLOR_3DSHADOW));
-	m_clrEdgeLight.SetStandardValue(GetXtremeColor(COLOR_3DHILIGHT));
 }
 
-void CXTCaptionTheme::DrawCaptionBack(CDC* pDC, CXTCaption* pCaption, CRect& rcItem)
+void CXTPDockingPane::SetID(int nID)
 {
-	CRect rc = rcItem;
+	ASSERT(nID != 0);
 
-	// Set the background mode to transparent.
-	pDC->SetBkMode(TRANSPARENT);
-
-	// repaint the background.
-	pDC->FillSolidRect(rc, pCaption->m_clrBorder);
-
-	// draw the caption border.
-	if (pCaption->m_dwExStyle & CPWS_EX_GROOVE_EDGE)
+	m_nID = nID;
+	CString strTitle;
+	if (strTitle.LoadString(nID))
 	{
-		pDC->Draw3dRect(rc, m_clrEdgeShadow, m_clrEdgeLight);
-		rc.DeflateRect(1, 1);
-		pDC->Draw3dRect(rc, m_clrEdgeLight, m_clrEdgeShadow);
-
-		if (pCaption->m_nBorder == 0)
-		{
-			rc.DeflateRect(1, 1);
-		}
+		m_strTitle = strTitle;
 	}
 
-	else
-	if (pCaption->m_dwExStyle & CPWS_EX_RAISED_EDGE)
-	{
-		pDC->Draw3dRect(rc, m_clrEdgeLight, m_clrEdgeShadow);
-
-		if (pCaption->m_nBorder == 0)
-		{
-			rc.DeflateRect(1, 1);
-		}
-	}
-
-	// draw the caption banner border.
-	rc.DeflateRect(pCaption->m_nBorder, pCaption->m_nBorder);
-	pDC->FillSolidRect(rc, pCaption->m_clrFace);
 }
 
-void CXTCaptionTheme::DrawCaptionText(CDC* pDC, CXTCaption* pCaption)
+void CXTPDockingPane::SetWindowRect(CRect rc)
 {
-		// if the caption text is empty, return.
-	if (pCaption->GetCaptionText().IsEmpty())
+	m_rcWindow = rc;
+	m_szDocking = m_rcWindow.Size();
+}
+
+XTPXTPDockingPaneEnableOptions CXTPDockingPane::GetEnabled() const
+{
+	return m_bEnabled;
+}
+
+void CXTPDockingPane::SetEnabled(XTPXTPDockingPaneEnableOptions bEnabled)
+{
+	if (m_bEnabled != bEnabled)
 	{
+		m_bEnabled = bEnabled;
+		InvalidatePane(TRUE);
+	}
+}
+
+void CXTPDockingPane::OnSizeParent(CWnd* pParent, CRect rect, LPVOID lParam)
+{
+	AFX_SIZEPARENTPARAMS* lpLayout = (AFX_SIZEPARENTPARAMS*)lParam;
+	SetDockingSite(pParent);
+
+	if (lpLayout == 0 || lpLayout->hDWP != NULL)
+	{
+		m_rcWindow = rect;
+
+		if (pParent && m_pParentContainer)
+		{
+			MapWindowPoints(pParent->GetSafeHwnd(), m_pParentContainer->GetPaneHwnd(), (LPPOINT)&rect, 2);
+			if (m_hwndChild) ::MoveWindow(m_hwndChild, rect.left, rect.top, rect.Width(), rect.Height(), TRUE);
+			if (m_hwndChild) ::EnableWindow(m_hwndChild, m_bEnabled & xtpPaneEnableClient ? TRUE : FALSE);
+		}
+	}
+}
+
+void CXTPDockingPane::SetFocus()
+{
+	if (m_hwndChild)
+	{
+		if (!IsChild(m_hwndChild, ::GetFocus()))
+			::SetFocus(m_hwndChild);
+	}
+}
+BOOL CXTPDockingPane::IsFocus() const
+{
+	HWND hwndFocus = ::GetFocus();
+	return (m_hwndChild != 0) && (hwndFocus == m_hwndChild || IsChild(m_hwndChild, hwndFocus));
+
+}
+
+void CXTPDockingPane::SetParentContainer(CXTPDockingPaneBase* pContainer)
+{
+	m_pParentContainer = pContainer;
+
+	if (m_hwndChild == 0)
 		return;
-	}
 
-	// Get the display area for the text.
-	CRect rcText(pCaption->GetTextRect());
-
-	// Set the text color and select the caption font.
-	CXTPFontDC fontDC(pDC, pCaption->GetFont());
-	pDC->SetTextColor(pCaption->m_clrText);
-
-	// draw the text, and select the original font.
-	pDC->DrawText(pCaption->GetCaptionText(), rcText,
-		DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER | DT_CENTER | DT_NOPREFIX);
-}
-
-void CXTCaptionTheme::DrawCaptionIcon(CDC* pDC, CXTCaption* pCaption, CRect& rcItem)
-{
-	// If no icon was defined, just return.
-	if (pCaption->m_hIcon == NULL)
-		return;
-
-	CRect rc = rcItem;
-	rc.left = (rc.right - pCaption->m_sizeIcon.cx)-(pCaption->m_nBorder + 2);
-
-	// stop the icon at the left hand border
-	if (rc.left < pCaption->m_nBorder)
+	if (pContainer)
 	{
-		rc.left = pCaption->m_nBorder;
-	}
+		ASSERT(pContainer->GetType() == xtpPaneTypeTabbedContainer);
+		::SetParent(m_hwndChild, pContainer->GetPaneHwnd());
 
-	rc.top = (rcItem.Height() - pCaption->m_sizeIcon.cy)/2;
-	rc.right = rc.left + pCaption->m_sizeIcon.cx;
-	rc.bottom = rc.top + pCaption->m_sizeIcon.cy;
-
-	// Only draw the icon if it will fit into the space between the borders
-	if (rc.right < rcItem.right - pCaption->m_nBorder)
-	{
-		// draw the icon associated with the caption.
-		::DrawIconEx(pDC->GetSafeHdc(), rc.left, rc.top, pCaption->m_hIcon,
-			rc.Width(), rc.Height(), NULL, (HBRUSH)NULL, DI_NORMAL);
-	}
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTCaptionThemeOfficeXP
-
-void CXTCaptionThemeOfficeXP::DrawCaptionBack(CDC* pDC, CXTCaption* pCaption, CRect& rcItem)
-{
-	CRect rc = rcItem;
-
-	pDC->SetBkMode(TRANSPARENT);
-
-	// repaint the background.
-	pDC->FillSolidRect(rc, pCaption->m_clrBorder);
-
-	if (!pCaption->IsAppCaption())
-	{
-		pDC->Draw3dRect(rc, GetXtremeColor(COLOR_3DHILIGHT), GetXtremeColor(COLOR_3DSHADOW));
 	}
 	else
 	{
-		// draw the caption banner border.
-		rc.DeflateRect(pCaption->m_nBorder, pCaption->m_nBorder);
-		pDC->FillSolidRect(rc, pCaption->m_clrFace);
+		::ShowWindow(m_hwndChild, SW_HIDE);
+		::SetParent(m_hwndChild, GetDockingPaneManager()->GetSafeHwnd());
+
+		m_pDockingSite = NULL;
 	}
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// CXTCaptionThemeOffice2003
-
-CXTCaptionThemeOffice2003::CXTCaptionThemeOffice2003()
+void CXTPDockingPane::ShowWindow(BOOL bShow)
 {
-
-}
-
-CXTCaptionThemeOffice2003::CXTCaptionThemeOffice2003(BOOL /*bPrimaryCaption*/)
-{
-	XT_ERROR_MSG("CXTCaptionThemeOffice2003::CXTCaptionThemeOffice2003(BOOL bPrimaryCaption) has been deprecated.\n\n"
-		"Use CXTCaption::SetAppCaption(bool bAppCaption) to set the application's primary caption.");
-}
-
-void CXTCaptionThemeOffice2003::DrawCaptionBack(CDC* pDC, CXTCaption* pCaption, CRect& rcItem)
-{
-	pDC->SetBkMode(TRANSPARENT);
-
-	if (pCaption->IsAppCaption())
+	if (bShow)
 	{
-		XTPDrawHelpers()->GradientFill(pDC, rcItem, XTPColorManager()->grcCaption, FALSE);
-		pDC->Draw3dRect(rcItem, GetXtremeColor(XPCOLOR_FRAME), GetXtremeColor(XPCOLOR_FRAME));
+		GetDockingPaneManager()->NotifyOwner(XTP_DPN_SHOWWINDOW, (LPARAM)this);
 	}
-	else
+	if (m_hwndChild)
 	{
-		XTPDrawHelpers()->GradientFill(pDC, rcItem, XTPColorManager()->grcToolBar, FALSE);
-		pDC->FillSolidRect(rcItem.left, rcItem.bottom - 1, rcItem.Width(), 1, GetXtremeColor(XPCOLOR_FRAME));
+		::ShowWindow(m_hwndChild, bShow ? SW_SHOW : SW_HIDE);
 	}
 }
 
-IMPLEMENT_THEME_FACTORY(CXTCaptionButtonTheme)
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTCaptionButtonTheme
-
-CXTCaptionButtonTheme::CXTCaptionButtonTheme()
+void CXTPDockingPane::Close()
 {
-	m_bOffsetHiliteText = FALSE;
+	GetDockingPaneManager()->ClosePane(this);
 }
 
-BOOL CXTCaptionButtonTheme::DrawButtonThemeBackground(LPDRAWITEMSTRUCT lpDIS, CXTButton* pButton)
+void CXTPDockingPane::Hide()
 {
-	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
-	if (::IsWindow(pCaption->GetSafeHwnd()))
-	{
-		SetColorFace(pCaption->m_clrFace);
-	}
-
-	return CXTButtonTheme::DrawButtonThemeBackground(lpDIS, pButton);
+	GetDockingPaneManager()->HidePane(this);
 }
 
-COLORREF CXTCaptionButtonTheme::GetTextColor(UINT /*nState*/, CXTButton* pButton)
+void CXTPDockingPane::Select()
 {
-	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
-	if (::IsWindow(pCaption->GetSafeHwnd()))
-	{
-		return pCaption->m_clrText;
-	}
-
-	return m_crText;
+	GetDockingPaneManager()->ShowPane(this);
 }
 
-void CXTCaptionButtonTheme::DrawButtonText(CDC* pDC, UINT nState, CRect& rcItem, CXTButton* pButton)
+CWnd* CXTPDockingPane::GetDockingSite() const
 {
-	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
-	if (::IsWindow(pCaption->GetSafeHwnd()))
+	return m_pParentContainer ? m_pParentContainer->m_pDockingSite : 0;
+
+}
+
+CFrameWnd* CXTPDockingPane::GetParentFrame() const
+{
+	CWnd* pSite = GetDockingSite();
+
+	return pSite && pSite->IsFrameWnd() ? (CFrameWnd*)pSite : NULL;
+}
+
+void CXTPDockingPane::Copy(CXTPDockingPane* pClone)
+{
+	m_szDocking = pClone->m_szDocking;
+	m_strTitle = pClone->m_strTitle;
+	m_nIconID = pClone->m_nIconID;
+	m_dwOptions = pClone->m_dwOptions;
+	m_dwData = pClone->m_dwData;
+	m_nID = pClone->m_nID;
+	m_bEnabled = pClone->m_bEnabled;
+
+	m_ptMinTrackSize = pClone->m_ptMinTrackSize;
+	m_ptMaxTrackSize = pClone->m_ptMaxTrackSize;
+
+	m_hwndChild = 0;
+}
+
+CXTPDockingPaneBase* CXTPDockingPane::Clone(CXTPDockingPaneLayout* pLayout, CXTPPaneToPaneMap* pMap, DWORD /*dwIgnoredOptions*/)
+{
+	ASSERT(pMap);
+
+	CXTPDockingPane* pPane = (CXTPDockingPane*)GetDockingPaneManager()->OnCreatePane(GetType(), pLayout);
+
+	pPane->Copy(this);
+
+	if (pMap) pMap->SetAt(this, pPane);
+
+	return pPane;
+}
+
+
+BOOL CXTPDockingPane::IsValid() const
+{
+	return m_hwndChild != NULL;
+
+}
+void CXTPDockingPane::Attach(CWnd* pWnd)
+{
+	if (pWnd)
 	{
-		if (pCaption->IsAppCaption() && !pCaption->GetCaptionText().IsEmpty())
+		m_hwndChild = pWnd->GetSafeHwnd();
+		GetDockingPaneManager()->_Redraw();
+		if (m_pParentContainer)
 		{
-			// select font into device context.
-			CXTPFontDC fontDC(pDC, GetThemeFont(pButton));
-			pDC->SetTextColor(GetTextColor(nState, pButton));
+			::SetParent(m_hwndChild, m_pParentContainer->GetPaneHwnd());
+		}
 
-			if (nState & ODS_SELECTED && m_bOffsetHiliteText)
-				rcItem.OffsetRect(1, 1);
-
-			// draw the text, and select the original font.
-			pDC->DrawText(pCaption->GetCaptionText(), rcItem,
-				DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER | DT_CENTER | DT_NOPREFIX);
+		if (GetDockingPaneManager()->m_bInitialUpdateCalled)
+		{
+			pWnd->SendMessage(WM_INITIALUPDATE, 0, 0);
+			pWnd->SendMessageToDescendants(WM_INITIALUPDATE, 0, 0, TRUE, TRUE);
 		}
 	}
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// CXTCaptionButtonThemeOfficeXP
-
-CXTCaptionButtonThemeOfficeXP::CXTCaptionButtonThemeOfficeXP()
+CWnd* CXTPDockingPane::AttachView(CWnd* pParentWnd, CRuntimeClass* pViewClass, CDocument* pDocument/*= NULL*/, CCreateContext* pContext/*= NULL*/)
 {
-	m_bAnimateIcon = FALSE;
-	m_bFadedIcon = FALSE;
-	m_bOffsetHiliteText = FALSE;
-}
+	if (!pContext && !pViewClass)
+		return NULL;
 
-COLORREF CXTCaptionButtonThemeOfficeXP::GetTextColor(UINT nState, CXTButton* pButton)
-{
-	if (nState & ODS_DISABLED)
-		return GetXtremeColor(COLOR_GRAYTEXT);
+#ifdef _DEBUG
+	ASSERT(pContext != NULL || pViewClass != NULL);
+	ASSERT(pContext != NULL || pViewClass->IsDerivedFrom(RUNTIME_CLASS(CWnd)));
+	ASSERT(pContext != NULL || AfxIsValidAddress(pViewClass, sizeof(CRuntimeClass), FALSE));
+#endif
 
-	if (pButton->GetHilite() || (nState & ODS_SELECTED))
-		return m_crTextHilite;
-
-	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
-	if (::IsWindow(pCaption->GetSafeHwnd()))
+	CCreateContext contextT;
+	if (pContext == NULL)
 	{
-		return pCaption->m_clrText;
+		// if no context specified, generate one from the
+		// currently selected client if possible.
+		contextT.m_pLastView = NULL;
+		contextT.m_pCurrentFrame = NULL;
+		contextT.m_pNewDocTemplate = NULL;
+		contextT.m_pCurrentDoc = pDocument;
+		contextT.m_pNewViewClass = pViewClass;
+
+		if (pDocument != NULL)
+			contextT.m_pNewDocTemplate = pDocument->GetDocTemplate();
+
+		pContext = &contextT;
 	}
 
-	return m_crText;
-}
+	CFrameWnd* pFrame = new CFrameWnd;
 
-BOOL CXTCaptionButtonThemeOfficeXP::DrawButtonThemeBackground(LPDRAWITEMSTRUCT lpDIS, CXTButton* pButton)
-{
-	// define some temporary variables.
-	CDC*  pDC = CDC::FromHandle(lpDIS->hDC);
-	CRect rcItem = lpDIS->rcItem;
-	int   nState = lpDIS->itemState;
+	pFrame->Create(NULL, NULL, WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
+		CRect(0, 0, 0, 0), pParentWnd, NULL, 0, pContext);
 
-	// Paint the background.
-	if (pButton->GetHilite() || (nState & ODS_SELECTED))
+	pFrame->ModifyStyleEx(WS_EX_CLIENTEDGE, 0);
+
+	Attach(pFrame);
+
+	CWnd* pView = pFrame->GetDescendantWindow(AFX_IDW_PANE_FIRST, TRUE);
+
+	if (DYNAMIC_DOWNCAST(CView, pView))
 	{
-		pDC->FillSolidRect(rcItem, (nState & ODS_SELECTED) ?
-			GetXtremeColor(XPCOLOR_HIGHLIGHT_PUSHED) : GetXtremeColor(XPCOLOR_HIGHLIGHT));
-
-		pDC->Draw3dRect(rcItem, GetXtremeColor(XPCOLOR_HIGHLIGHT_BORDER),
-			GetXtremeColor(XPCOLOR_HIGHLIGHT_BORDER));
-	}
-	else
-	{
-		CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
-		if (::IsWindow(pCaption->GetSafeHwnd()))
-		{
-			m_crBack = pCaption->m_clrFace;
-		}
-
-		pDC->FillSolidRect(rcItem, m_crBack);
-
-		if (m_bWordTheme)
-		{
-			pDC->Draw3dRect(rcItem,
-				m_crBorderShadow, m_crBorderShadow);
-
-		}
+		pFrame->SetActiveView((CView*)pView);
 	}
 
-	return TRUE;
+	return pView;
 }
 
-void CXTCaptionButtonThemeOfficeXP::DrawButtonText(CDC* pDC, UINT nState, CRect& rcItem, CXTButton* pButton)
+void CXTPDockingPane::Detach()
 {
-	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
-	if (::IsWindow(pCaption->GetSafeHwnd()))
+	if (m_hwndChild)
 	{
-		if (pCaption->IsAppCaption() && !pCaption->GetCaptionText().IsEmpty())
-		{
-			// select font into device context.
-			CXTPFontDC fontDC(pDC, GetThemeFont(pButton));
-			pDC->SetTextColor(GetTextColor(nState, pButton));
-
-			if (nState & ODS_SELECTED && m_bOffsetHiliteText)
-				rcItem.OffsetRect(1, 1);
-
-			// draw the text, and select the original font.
-			pDC->DrawText(pCaption->GetCaptionText(), rcItem,
-				DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER | DT_CENTER | DT_NOPREFIX);
-		}
+		::ShowWindow(m_hwndChild, SW_HIDE);
+		::SetParent(m_hwndChild, GetDockingPaneManager()->GetSite()->GetSafeHwnd());
+		m_hwndChild = 0;
 	}
+	GetDockingPaneManager()->_Redraw();
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// CXTCaptionButtonThemeOffice2003
-
-BOOL CXTCaptionButtonThemeOffice2003::GetGradientValues(CRect& rButton, CXTCaption* pCaption, CXTPPaintManagerColorGradient& clr)
+CString CXTPDockingPane::GetTitle() const
 {
-	if (!::IsWindow(pCaption->GetSafeHwnd()))
+	int nIndex = m_strTitle.Find('\n');
+	if (nIndex == -1)
+		return m_strTitle;
+	return m_strTitle.Left(nIndex);
+}
+
+CString CXTPDockingPane::GetShortTitle() const
+{
+	int nIndex = m_strTitle.Find('\n');
+	if (nIndex == -1)
+		return m_strTitle;
+	return m_strTitle.Mid(nIndex + 1);
+}
+
+void CXTPDockingPane::SetTitle(LPCTSTR lpszTitle)
+{
+	m_strTitle = lpszTitle;
+	InvalidatePane(FALSE);
+}
+
+BOOL CXTPDockingPane::IsClosed() const
+{
+	return m_pParentContainer == NULL;
+}
+
+BOOL CXTPDockingPane::IsHidden() const
+{
+	if (m_pParentContainer == NULL)
 		return FALSE;
 
-	// get caption and button coordinates.
-	CXTPClientRect rCaption(pCaption);
-	pCaption->ScreenToClient(&rButton);
-
-	// get the caption's device context.
-	CClientDC dc(pCaption);
-
-	// create a memory device context to simulate caption background.
-	CDC memDC;
-	if (memDC.CreateCompatibleDC(&dc))
-	{
-		CBitmap bitmap;
-		bitmap.CreateCompatibleBitmap(&dc, rCaption.Width(), rCaption.Height());
-		CBitmap* pBmp = memDC.SelectObject(&bitmap);
-
-		// draw a gradient to the memory device context that matches what should be drawn
-		// on the caption background.
-		XTPDrawHelpers()->GradientFill(&memDC, rCaption, pCaption->IsAppCaption() ?
-			XTPColorManager()->grcCaption: XTPColorManager()->grcToolBar, FALSE);
-
-		// determine the light color gradient.
-		COLORREF crLight = memDC.GetPixel(rButton.TopLeft());
-
-		// determine the dark color gradient.
-		COLORREF crDark = memDC.GetPixel(rButton.BottomRight());
-
-		// set the gradient to and from values.
-		clr.SetStandardValue(crLight, crDark);
-
-		// cleanup GDI
-		memDC.SelectObject(pBmp);
-		memDC.DeleteDC();
-		bitmap.DeleteObject();
-
-		return TRUE;
-	}
-
-	return FALSE;
+	return m_pParentContainer->IsHidden();
 }
 
-BOOL CXTCaptionButtonThemeOffice2003::DrawButtonThemeBackground(LPDRAWITEMSTRUCT lpDIS, CXTButton* pButton)
+BOOL CXTPDockingPane::IsSelected() const
 {
-	if (!::IsWindow(pButton->GetSafeHwnd()))
-		return FALSE;
-
-	CDC* pDC = CDC::FromHandle(lpDIS->hDC);
-	CRect rc = lpDIS->rcItem;
-	int nState = lpDIS->itemState;
-
-	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
-	if (::IsWindow(pCaption->GetSafeHwnd()))
-	{
-		BOOL bHilite = pButton->GetHilite();
-		BOOL bSelected = (nState & ODS_SELECTED) != 0;
-
-		// Paint the background.
-		if (bSelected || bHilite)
-		{
-			XTPDrawHelpers()->GradientFill(pDC, rc, bSelected ?
-				XTPColorManager()->grcLunaPushed: XTPColorManager()->grcLunaSelected, FALSE);
-
-			pDC->Draw3dRect(&rc, GetMSO2003Color(XPCOLOR_HIGHLIGHT_BORDER),
-				GetMSO2003Color(XPCOLOR_HIGHLIGHT_BORDER));
-		}
-		else
-		{
-			CXTPWindowRect rButton(pButton);
-
-			CXTPPaintManagerColorGradient clr;
-			GetGradientValues(rButton, pCaption, clr);
-
-			XTPDrawHelpers()->GradientFill(pDC, rc, clr, FALSE);
-		}
-
-		return TRUE;
-	}
-
-	return CXTButtonThemeOffice2003::DrawButtonThemeBackground(lpDIS, pButton);
+	if (m_pParentContainer == NULL) return FALSE;
+	ASSERT(m_pParentContainer->GetType() == xtpPaneTypeTabbedContainer);
+	return ((CXTPDockingPaneTabbedContainer*)m_pParentContainer)->GetSelected() == this;
 }
 
-COLORREF CXTCaptionButtonThemeOffice2003::GetTextColor(UINT nState, CXTButton* pButton)
+BOOL CXTPDockingPane::IsFloating() const
 {
-	if (nState & ODS_DISABLED)
-		return GetXtremeColor(COLOR_GRAYTEXT);
+	if (m_pParentContainer == NULL) return FALSE;
+	if (IsHidden()) return FALSE;
+	ASSERT(m_pParentContainer->GetType() == xtpPaneTypeTabbedContainer);
 
-	if (pButton->GetHilite() || (nState & ODS_SELECTED))
-		return m_crTextHilite;
+	if (m_pParentContainer->GetPaneHwnd() == 0) return FALSE;
 
-	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
-	if (::IsWindow(pCaption->GetSafeHwnd()))
+	CWnd* pFrame = m_pParentContainer->GetDockingSite();
+	return pFrame && pFrame->IsKindOf(RUNTIME_CLASS(CXTPDockingPaneMiniWnd));
+}
+
+
+CXTPImageManagerIcon* CXTPDockingPane::GetIcon(int nWidth) const
+{
+	return GetDockingPaneManager()->GetIcon(GetIconID(), nWidth);
+}
+
+
+void CXTPDockingPane::SetItemColor(COLORREF clr)
+{
+	m_clrItemTab = clr;
+	InvalidatePane(FALSE);
+}
+
+COLORREF CXTPDockingPane::GetItemColor() const
+{
+	if (m_clrItemTab != COLORREF_NULL)
+		return m_clrItemTab;
+
+	if (m_hwndChild)
 	{
-		return pCaption->m_clrText;
+		COLORREF clr = (COLORREF)::SendMessage(m_hwndChild, WM_XTP_GETTABCOLOR, 0, 0);
+		if (clr != 0)
+			return clr;
+	}
+	return xtpTabColorBlue + GetID() % 8;
+}
+
+void CXTPDockingPane::GetMinMaxInfo(LPMINMAXINFO pMinMaxInfo) const
+{
+	ZeroMemory(pMinMaxInfo, sizeof(MINMAXINFO));
+	pMinMaxInfo->ptMinTrackSize = m_ptMinTrackSize;
+	pMinMaxInfo->ptMaxTrackSize = m_ptMaxTrackSize;
+}
+
+DWORD CXTPDockingPane::GetOptions() const
+{
+	return GetDockingPaneManager()->m_dwDefaultPaneOptions | m_dwOptions;
+}
+
+void CXTPDockingPane::DeletePane()
+{
+	InternalRelease();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Accessible
+
+CCmdTarget* CXTPDockingPane::GetAccessible()
+{
+	return this;
+}
+
+HRESULT CXTPDockingPane::GetAccessibleParent(IDispatch* FAR* ppdispParent)
+{
+	SAFE_MANAGE_STATE(m_pModuleState);
+
+	*ppdispParent = NULL;
+
+	if (m_pParentContainer)
+	{
+		*ppdispParent = ((CXTPDockingPaneTabbedContainer*)m_pParentContainer)->GetIDispatch(TRUE);
+		return S_OK;
+	}
+	return E_FAIL;
+}
+
+HRESULT CXTPDockingPane::GetAccessibleChildCount(long FAR* pChildCount)
+{
+	if (pChildCount == 0)
+		return E_INVALIDARG;
+
+	*pChildCount = m_hwndChild ? 1 : 0;
+
+	return S_OK;
+}
+
+HRESULT CXTPDockingPane::GetAccessibleChild(VARIANT varChild, IDispatch* FAR* ppdispChild)
+{
+	SAFE_MANAGE_STATE(m_pModuleState);
+
+	*ppdispChild = NULL;
+
+	if (GetChildIndex(&varChild) == 1)
+	{
+		return AccessibleObjectFromWindow(m_hwndChild, OBJID_WINDOW, IID_IDispatch, (void**)ppdispChild);
 	}
 
-	return m_crText;
+	return S_OK;
 }
+
+HRESULT CXTPDockingPane::GetAccessibleName(VARIANT varChild, BSTR* pszName)
+{
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	*pszName = GetShortTitle().AllocSysString();
+	return S_OK;
+}
+
+HRESULT CXTPDockingPane::GetAccessibleDescription(VARIANT varChild, BSTR* pszDescription)
+{
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	*pszDescription = GetTitle().AllocSysString();
+	return S_OK;
+}
+
+HRESULT CXTPDockingPane::GetAccessibleRole(VARIANT varChild, VARIANT* pvarRole)
+{
+	pvarRole->vt = VT_EMPTY;
+
+	if (GetChildIndex(&varChild) == CHILDID_SELF)
+	{
+		pvarRole->vt = VT_I4;
+		pvarRole->lVal = ROLE_SYSTEM_PAGETAB;
+		return S_OK;
+	}
+
+	return E_INVALIDARG;
+}
+
+HRESULT CXTPDockingPane::AccessibleSelect(long /*flagsSelect*/, VARIANT varChild)
+{
+	SAFE_MANAGE_STATE(m_pModuleState);
+
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	Select();
+
+	return S_OK;
+}
+
+
+HRESULT CXTPDockingPane::GetAccessibleState(VARIANT varChild, VARIANT* pvarState)
+{
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	pvarState->vt = VT_I4;
+	pvarState->lVal = STATE_SYSTEM_SELECTABLE;
+
+	if (!m_pParentContainer)
+		pvarState->lVal |= STATE_SYSTEM_INVISIBLE;
+
+	if (m_pParentContainer && ((CXTPDockingPaneTabbedContainer*)m_pParentContainer)->GetSelected() == this)
+		pvarState->lVal |= STATE_SYSTEM_SELECTED;
+
+	return S_OK;
+}
+
+HRESULT CXTPDockingPane::GetAccessibleDefaultAction(VARIANT varChild, BSTR* pszDefaultAction)
+{
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	*pszDefaultAction = SysAllocString(L"Switch");
+
+	return S_OK;
+}
+
+HRESULT CXTPDockingPane::AccessibleDoDefaultAction(VARIANT varChild)
+{
+	SAFE_MANAGE_STATE(m_pModuleState);
+
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	Select();
+
+	return S_OK;
+}
+
+HRESULT CXTPDockingPane::AccessibleLocation(long* pxLeft, long* pyTop, long* pcxWidth, long* pcyHeight, VARIANT varChild)
+{
+	CRect rc;
+
+	if (GetChildIndex(&varChild) == 1)
+	{
+		GetWindowRect(m_hwndChild, &rc);
+	}
+	else if (GetChildIndex(&varChild) != CHILDID_SELF)
+	{
+		return E_INVALIDARG;
+	}
+	else
+	{
+		CXTPDockingPaneTabbedContainer* pContainer = (CXTPDockingPaneTabbedContainer*)m_pParentContainer;
+		if (!pContainer)
+			return S_FALSE;
+
+		pContainer->GetWindowRect(&rc);
+
+		if (pContainer->GetItemCount() > 1)
+		{
+			for (int i = 0; i < pContainer->GetItemCount(); i++)
+			{
+				CXTPTabManagerItem* pItem = pContainer->GetItem(i);
+				if (pItem->GetData() == (DWORD_PTR)this)
+				{
+					CRect rcItem = pItem->GetRect();
+					rc = CRect(CPoint(rc.left + rcItem.left, rc.top + rcItem.top), rcItem.Size());
+					break;
+				}
+			}
+		}
+	}
+
+
+	*pxLeft = rc.left;
+	*pyTop = rc.top;
+	*pcxWidth = rc.Width();
+	*pcyHeight = rc.Height();
+
+	return S_OK;
+}
+
+HRESULT CXTPDockingPane::AccessibleHitTest(long /*xLeft*/, long /*yTop*/, VARIANT* pvarID)
+{
+	pvarID->vt = VT_I4;
+	pvarID->lVal = 0;
+
+	return S_OK;
+}
+
+
+
+
+
+BEGIN_INTERFACE_MAP(CXTPDockingPane, CCmdTarget)
+	INTERFACE_PART(CXTPDockingPane, IID_IAccessible, ExternalAccessible)
+END_INTERFACE_MAP()

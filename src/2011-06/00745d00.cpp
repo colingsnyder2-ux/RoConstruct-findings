@@ -1,7 +1,4 @@
-// from server: 95% by atomic.potato
-extern "C" int __stdcall sub_0080B2EA(int, int, int, int, int);
-
-int __stdcall Function00745D00(int value)
-{
-    return sub_0080B2EA(value, 0, 0x00C071F8, 0x00C8DAF4, 0) != 0;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+extern "C" int helper(void*,int,void*,void*,int);
+bool __stdcall func(void* p){return helper(p,0,(void*)0xc071f8,(void*)0xc8daf4,0)!=0;}

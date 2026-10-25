@@ -1,12 +1,4 @@
-// from server: 58% by atomic.potato
-struct TextureProxyBase
-{
-    char pad[16];
-    float value;
-    void setValue(float);
-};
-
-void TextureProxyBase::setValue(float v)
-{
-    value = v;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /arch:SSE2
+struct S{char pad[0x10]; void f(float v);};
+void S::f(float v){*(float*)((char*)this+0x10)=v;}

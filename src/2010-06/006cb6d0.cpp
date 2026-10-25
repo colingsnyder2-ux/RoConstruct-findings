@@ -1,21 +1,17 @@
-// from server: 63% by atomic.potato
-extern "C" void G1_func_006cb1d0();
-
-struct ArcHandles
-{
-    void f(int, int, int);
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_006cb6d0 {
+    T4_006cb6d0();
+    virtual void f_006cb6d0();
+    char m_a;
+    char m_b;
 };
-
-void ArcHandles::f(int a, int, int value)
+T4_006cb6d0::T4_006cb6d0() : m_a(0), m_b(0) {}
+extern "C" void* create_other_006cb6d0(void*, void*, int);
+void* create_006cb6d0(void* unused, T4_006cb6d0* out, int type)
 {
-    if (value != 4)
-    {
-        G1_func_006cb1d0();
-        return;
-    }
-
-    int* p = (int*)a;
-    *p = 0x00bd28e0;
-    ((unsigned char*)p)[4] = 0;
-    ((unsigned char*)p)[5] = 0;
+    if (type != 4)
+        return create_other_006cb6d0(unused, out, type);
+    out->T4_006cb6d0::T4_006cb6d0();
+    return out;
 }

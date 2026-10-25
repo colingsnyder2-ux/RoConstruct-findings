@@ -1,20 +1,17 @@
-// from server: 80% by atomic.potato
-extern "C" void __stdcall func_005f5730(int);
-
-struct S
-{
-    void __cdecl f(void*, int);
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_005f6380 {
+    T4_005f6380();
+    virtual void f_005f6380();
+    char m_a;
+    char m_b;
 };
-
-void S::f(void* p, int value)
+T4_005f6380::T4_005f6380() : m_a(0), m_b(0) {}
+extern "C" void* create_other_005f6380(void*, void*, int);
+void* create_005f6380(void* unused, T4_005f6380* out, int type)
 {
-    if (value != 4)
-    {
-        func_005f5730(value);
-        return;
-    }
-
-    *(unsigned long*)p = 0x00babe48;
-    *((unsigned char*)p + 4) = 0;
-    *((unsigned char*)p + 5) = 0;
+    if (type != 4)
+        return create_other_005f6380(unused, out, type);
+    out->T4_005f6380::T4_005f6380();
+    return out;
 }

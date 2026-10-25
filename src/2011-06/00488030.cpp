@@ -1,25 +1,31 @@
-// from server: 94% by atomic.potato
-typedef unsigned int UINT;
-typedef unsigned long WPARAM;
-typedef long LPARAM;
-typedef int BOOL;
-typedef void* HWND;
+// from server: 100% by tester
+// roc 2011-06 00488030  unit: CRobloxWnd::RenderRequestJob  size: 37 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 00488030
+//
+// 00488030  8b81e4010000         mov eax, dword ptr [ecx + 0x1e4]
+// 00488036  6a00                 push 0
+// 00488038  6a00                 push 0
+// 0048803a  6884040000           push 0x484
+// 0048803f  50                   push eax
+// 00488040  c681e001000000       mov byte ptr [ecx + 0x1e0], 0
+// 00488047  ff15b419a400         call dword ptr [0xa419b4]
+// 0048804d  b801000000           mov eax, 1
+// 00488052  c20400               ret 4
 
-extern "C" BOOL __declspec(dllimport) __stdcall PostMessageA(HWND, UINT, WPARAM, LPARAM);
+extern "C" int __declspec(dllimport) __stdcall PostMessageA(void *, unsigned int, unsigned int, long);
 
 struct CRobloxWnd
 {
-    unsigned char pad0[0x1e0];
-    unsigned char flag;
-    unsigned char pad1[3];
-    HWND window;
-    int RenderRequestJob();
+    char pad_1d0[0x1e0];
+    unsigned char field_1d0;
+    char pad_1d1[3];
+    void *field_1d4;
+    int RenderRequestJob(int);
 };
 
-int CRobloxWnd::RenderRequestJob()
+int CRobloxWnd::RenderRequestJob(int)
 {
-    window;
-    flag = 0;
-    PostMessageA(window, 0x484, 0, 0);
+    field_1d0 = 0;
+    PostMessageA(field_1d4, 0x484, 0, 0);
     return 1;
 }

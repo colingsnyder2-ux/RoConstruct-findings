@@ -1,10 +1,16 @@
-// from server: 92% by atomic.potato
-struct S_func_0052d990 {
-    unsigned int __cdecl f(unsigned int value);
-};
+// from server: 100% by tester
+// roc 2011-06 0052d990  unit: RBX::Network::ProfiledRakPeer  size: 14 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 0052d990
+//
+// 0052d990  8b442404             mov eax, dword ptr [esp + 4]
+// 0052d994  8b08                 mov ecx, dword ptr [eax]
+// 0052d996  8bc1                 mov eax, ecx
+// 0052d998  c1e803               shr eax, 3
+// 0052d99b  03c1                 add eax, ecx
+// 0052d99d  c3                   ret 
 
-unsigned int __cdecl S_func_0052d990::f(unsigned int value)
+int __cdecl sub_5122C0(unsigned int* p)
 {
-    value = *(unsigned int*)value;
-    return value + (value >> 3);
+    unsigned int v = *p;
+    return (v >> 3) + v;
 }

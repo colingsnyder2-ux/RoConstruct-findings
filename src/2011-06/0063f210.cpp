@@ -1,19 +1,17 @@
-// from server: 61% by atomic.potato
-extern "C" void __cdecl sub_63e0b0();
-
-void f(unsigned int, unsigned int, unsigned int);
-
-void f(unsigned int a, unsigned int b, unsigned int c)
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_0063f210 {
+    T4_0063f210();
+    virtual void f_0063f210();
+    char m_a;
+    char m_b;
+};
+T4_0063f210::T4_0063f210() : m_a(0), m_b(0) {}
+extern "C" void* create_other_0063f210(void*, void*, int);
+void* create_0063f210(void* unused, T4_0063f210* out, int type)
 {
-    if (c != 4)
-    {
-        c = c;
-        sub_63e0b0();
-        return;
-    }
-
-    unsigned int *p = (unsigned int *)b;
-    *p = 0x00c51678;
-    ((unsigned char *)p)[4] = 0;
-    ((unsigned char *)p)[5] = 0;
+    if (type != 4)
+        return create_other_0063f210(unused, out, type);
+    out->T4_0063f210::T4_0063f210();
+    return out;
 }

@@ -1,13 +1,4 @@
-// from server: 93% by atomic.potato
-struct S
-{
-    int f(void *value);
-};
-
-extern "C" void __stdcall fn(void *, void *);
-
-int S::f(void *value)
-{
-    fn((char *)this + 0xb0, value);
-    return (int)value;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct B{void sub(void*);}; struct S{void* func(void*);};
+void* S::func(void* p){((B*)((char*)this+176))->sub(p); return p;}

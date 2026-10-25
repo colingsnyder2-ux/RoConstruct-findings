@@ -1,8 +1,8 @@
-// from server: 98% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/ReportControl/XTPReportRow.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/ReportControl/XTPReportRow.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPReportRow.cpp : implementation of the CXTPReportRow class.

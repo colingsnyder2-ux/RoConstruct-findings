@@ -1,14 +1,14 @@
-// from server: 29% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O1 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Calendar/XTPDatePickerDaysCollection.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/Controls/XTCaption.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPDatePickerDaysCollection.cpp: implementation of the CXTPDatePickerDaysCollection class.
+// XTCaption.cpp : implementation of the CXTCaption class.
 //
-// This file is a part of the XTREME CALENDAR MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME CONTROLS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -27,11 +27,19 @@
 
 #include "stdafx.h"
 
+#include "Common/XTPWinThemeWrapper.h"
+#include "Common/XTPDrawHelpers.h"
 
-#include "XTPCalendarDefines.h"
-
-#include "XTPDatePickerDaysCollection.h"
-#include "XTPDatePickerControl.h"
+#include "Resource.h"
+#include "XTDefines.h"
+#include "XTUtil.h"
+#include "XTGlobal.h"
+#include "XTButton.h"
+#include "XTThemeManager.h"
+#include "XTButtonTheme.h"
+#include "XTCaptionTheme.h"
+#include "XTCaption.h"
+#include "XTCaptionPopupWnd.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -39,225 +47,546 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+
 /////////////////////////////////////////////////////////////////////////////
-// CXTPDatePickerDaysCollection
+// CXTCaptionButton
 
-CXTPDatePickerDaysCollection::CXTPDatePickerDaysCollection(CXTPDatePickerControl* pControl)
-	: m_pControl(pControl)
+IMPLEMENT_THEME_HOST(CXTCaptionButton)
+IMPLEMENT_THEME_REFRESH(CXTCaptionButton, CXTButton)
+
+CXTCaptionButton::CXTCaptionButton()
+: CXTButton(GetThemeFactoryClass())
+, m_pCaption(NULL)
 {
 }
 
-CXTPDatePickerDaysCollection::~CXTPDatePickerDaysCollection()
+DWORD CXTCaptionButton::SetXButtonStyle(DWORD /*dwxStyle*/, BOOL bRedraw/*= TRUE*/)
 {
-}
+	DWORD dwOldStyle = m_dwxStyle;
 
-void CXTPDatePickerDaysCollection::_InsertBlock(int nIndexInsert, long nDateBegin, long nDateEnd)
-{
-	SELECTED_BLOCK block;
-	block.nDateBegin = nDateBegin;
-	block.nDateEnd = nDateEnd;
-	m_arrSelectedBlocks.InsertAt(nIndexInsert, block);
-}
-
-void CXTPDatePickerDaysCollection::AddBlock(long nBegin, long nEnd)
-{
-	int i = 0;
-	int nCount = (int)m_arrSelectedBlocks.GetSize();
-
-	if (nCount > 0)
+	CXTCaption* pCaption = DYNAMIC_DOWNCAST(CXTCaption, GetSafeHwnd() ? GetParent() : 0);
+	if (pCaption)
 	{
-		long& nDateEnd = m_arrSelectedBlocks[nCount - 1].nDateEnd;
+		// set the button font and colors.
+		SetColorFace(pCaption->m_clrFace);
+		SetColorText(pCaption->m_clrText);
+		SetColorShadow(GetXtremeColor(COLOR_3DDKSHADOW));
 
-		if (nDateEnd == nBegin)
-		{
-			nDateEnd = nEnd + 1;
-			m_pControl->_RedrawControl(FALSE);
-			return;
-		}
+		// set the button font to match caption font.
+		SetFont(pCaption->GetFont());
 
-		if (nDateEnd < nBegin)
-		{
-			i = nCount;
-		}
+		// Redraw the button.
+		if (bRedraw)
+			Invalidate();
 	}
 
-	for (; i < nCount; i++)
+	return dwOldStyle;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTCaption
+
+IMPLEMENT_THEME_HOST(CXTCaption)
+IMPLEMENT_THEME_REFRESH(CXTCaption, CStatic)
+
+CXTCaption::CXTCaption()
+: CXTThemeManagerStyleHost(GetThemeFactoryClass())
+{
+	m_bAppCaption = false;
+	m_bUserColors = false;
+	m_strCaption = _T("");
+	m_hIcon = NULL;
+	m_pChildWnd = NULL;
+	m_pParentView = NULL;
+	m_pSplitterWnd = NULL;
+	m_pPopupWnd = NULL;
+	m_nOffset = 0;
+	m_nBorder = 0;
+	m_sizeIcon.cx = __min(XTAuxData().cxSmIcon, 16);
+	m_sizeIcon.cy = __min(XTAuxData().cySmIcon, 16);
+	m_dwExStyle = 0L;
+	m_clrText = ::GetSysColor(COLOR_BTNTEXT);
+	m_clrBorder = ::GetSysColor(COLOR_3DFACE);
+	m_clrFace = ::GetSysColor(COLOR_3DFACE);
+}
+
+CXTCaption::~CXTCaption()
+{
+
+}
+
+IMPLEMENT_DYNAMIC(CXTCaption, CStatic)
+
+BEGIN_MESSAGE_MAP(CXTCaption, CStatic)
+	//{{AFX_MSG_MAP(CXTCaption)
+	ON_WM_PAINT()
+	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
+	ON_WM_ERASEBKGND()
+	ON_WM_WINDOWPOSCHANGED()
+	ON_WM_SYSCOLORCHANGE()
+	ON_WM_SIZE()
+	//}}AFX_MSG_MAP
+
+	ON_BN_CLICKED(XT_IDC_BTN_CLOSE, OnCaptButton)
+	ON_MESSAGE_VOID(CPWN_XT_PUSHPINBUTTON, OnPushPinButton)
+	ON_MESSAGE_VOID(CPWN_XT_PUSHPINCANCEL, OnPushPinCancel)
+
+END_MESSAGE_MAP()
+
+void CXTCaption::OnSize(UINT nType, int cx, int cy)
+{
+	CStatic::OnSize(nType, cx, cy);
+
+	if (m_hIcon != NULL)
+		RedrawWindow();
+}
+
+void CXTCaption::OnPaint()
+{
+	// background is already filled in gray
+	CPaintDC dc(this);
+
+	// Get the client rect.
+	CXTPClientRect rectClient(this);
+
+	// Paint to a memory device context to help
+	// eliminate screen flicker.
+	CXTPBufferDC memDC(dc);
+
+	// If the caption button is a valid window and visible exclude from painting...
+	if (::IsWindow(m_btnCaption.m_hWnd) && m_btnCaption.IsWindowVisible())
 	{
-		long& nDateBegin = m_arrSelectedBlocks[i].nDateBegin;
-		long& nDateEnd = m_arrSelectedBlocks[i].nDateEnd;
-
-		if ((nDateBegin <= nBegin) && (nDateEnd > nEnd))
-		{
-			return;
-		}
-
-		if (nDateEnd == nBegin)
-		{
-			nDateEnd = nEnd + 1;
-			if (i + 1 < nCount && m_arrSelectedBlocks[i + 1].nDateBegin == nDateEnd)
-			{
-				nDateEnd = m_arrSelectedBlocks[i + 1].nDateEnd;
-				m_arrSelectedBlocks.RemoveAt(i + 1);
-			}
-
-			m_pControl->_RedrawControl(FALSE);
-			return;
-		}
-		if (nDateBegin == nEnd + 1)
-		{
-			nDateBegin = nBegin;
-			m_pControl->_RedrawControl(FALSE);
-			return;
-		}
-
-		if (nDateBegin > nEnd)
-			break;
+		CXTPWindowRect rcButton(&m_btnCaption);
+		ScreenToClient(&rcButton);
+		memDC.ExcludeClipRect(&rcButton);
 	}
 
-	_InsertBlock(i, nBegin, nEnd + 1);
-	m_pControl->_RedrawControl(FALSE);
+	// draw the background, text and icon.
+	DrawCaptionBack(&memDC, rectClient);
+	DrawCaptionText(&memDC);
+	DrawCaptionIcon(&memDC, rectClient);
 }
 
-void CXTPDatePickerDaysCollection::Clear()
+LRESULT CXTCaption::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
 {
-	m_arrSelectedBlocks.RemoveAll();
-}
-
-void CXTPDatePickerDaysCollection::Add(const COleDateTime& dtDay)
-{
-	AddBlock((long)dtDay, (long)dtDay);
-}
-
-void CXTPDatePickerDaysCollection::Remove(const COleDateTime& dtDay)
-{
-	long nDate = (long)dtDay;
-
-	for (int i = 0; i < (int)m_arrSelectedBlocks.GetSize(); i++)
+	CDC* pDC = CDC::FromHandle((HDC)wParam);
+	if (pDC)
 	{
-		long nDateBegin = m_arrSelectedBlocks[i].nDateBegin;
-		long nDateEnd = m_arrSelectedBlocks[i].nDateEnd;
+		CXTPClientRect rectClient(this);
 
-		if ((nDateBegin <= nDate) && (nDateEnd > nDate))
-		{
-			if (nDateBegin != nDate)
-			{
-				_InsertBlock(i, nDateBegin, nDate);
-				i++;
-			}
-
-			if (nDateEnd - 1 != nDate)
-			{
-				_InsertBlock(i + 1, nDate + 1, nDateEnd);
-			}
-
-			m_arrSelectedBlocks.RemoveAt(i);
-			return;
-		}
+		DrawCaptionBack(pDC, rectClient);
+		DrawCaptionText(pDC);
+		DrawCaptionIcon(pDC, rectClient);
 	}
+	return 1;
 }
 
-
-void CXTPDatePickerDaysCollection::Select(const COleDateTime& dtDay)
+BOOL CXTCaption::OnEraseBkgnd(CDC* /*pDC*/)
 {
-	long nDate = (long)dtDay;
+	return TRUE;
+}
 
-	if (m_arrSelectedBlocks.GetSize() == 1 && m_arrSelectedBlocks[0].nDateBegin ==
-		m_arrSelectedBlocks[0].nDateEnd - 1 && m_arrSelectedBlocks[0].nDateBegin == nDate)
+void CXTCaption::DrawCaptionBack(CDC* pDC, CRect& rcItem)
+{
+	GetTheme()->DrawCaptionBack(pDC, this, rcItem);
+}
+
+void CXTCaption::DrawCaptionText(CDC* pDC)
+{
+	GetTheme()->DrawCaptionText(pDC, this);
+}
+
+void CXTCaption::DrawCaptionIcon(CDC* pDC, CRect& rcItem)
+{
+	GetTheme()->DrawCaptionIcon(pDC, this, rcItem);
+}
+
+BOOL CXTCaption::Create(CWnd* pParentWnd, LPCTSTR lpszWindowName, DWORD dwExStyle, DWORD dwStyle, const CRect& rect, UINT nID)
+{
+	// Let the base class create the control.
+	if (!CStatic::Create(NULL, dwStyle | WS_CLIPCHILDREN, rect, pParentWnd, nID))
 	{
+		TRACE(_T("Unable to create caption.\n"));
+		return FALSE;
+	}
 
+	SetFont(&XTAuxData().font);
+
+	// save the style.
+	m_dwExStyle = (dwExStyle & (CPWS_EX_GROOVE_EDGE | CPWS_EX_RAISED_EDGE | CPWS_EX_CLOSEBUTTON));
+	ModifyStyleEx(0, (dwExStyle & ~m_dwExStyle));
+
+	// Save the window text.
+	m_strCaption = lpszWindowName;
+
+	if (HasCloseButton())
+	{
+		// Create the caption's close button.
+		if (!m_btnCaption.Create(NULL, WS_VISIBLE | WS_CHILD | BS_ICON | BS_OWNERDRAW | BS_CENTER | BS_VCENTER,
+			CRect(0, 0, 0, 0), this, XT_IDC_BTN_CLOSE))
+		{
+			TRACE0("Unable to create caption button.\n");
+			return -1;
+		}
+
+		// Create the image list used by frame buttons.
+		m_ilButton.Create (XT_IDB_BTN_OUT, 16, 1, RGB(255, 0, 255));
+
+		// and set the icon for the caption's close button
+		m_btnCaption.SetIcon(CSize(16, 15), m_ilButton.ExtractIcon(2));
 	}
 	else
 	{
-		Clear();
-		Add(dtDay);
-	}
-}
-
-void CXTPDatePickerDaysCollection::SelectRange(const COleDateTime& dtDayBegin, const COleDateTime& dtDayEnd)
-{
-	COleDateTime dtDayBeginCopy;
-	dtDayBeginCopy.SetDate(dtDayBegin.GetYear(), dtDayBegin.GetMonth(), dtDayBegin.GetDay());
-	COleDateTime dtDayEndCopy;
-	dtDayEndCopy.SetDate(dtDayEnd.GetYear(), dtDayEnd.GetMonth(), dtDayEnd.GetDay());
-
-	//From MSDN: The COleDateTime class handles dates from 1 January 100 - 31 December 9999.
-	if (dtDayBeginCopy.GetYear() < 100)
-		dtDayBeginCopy.SetDate(100, dtDayBeginCopy.GetMonth(), dtDayBeginCopy.GetDay());
-
-	if (dtDayEndCopy.GetYear() < 100)
-		dtDayEndCopy.SetDate(100, dtDayEndCopy.GetMonth(), dtDayEndCopy.GetDay());
-
-	if (dtDayBeginCopy.GetYear() >= 10000)
-		dtDayBeginCopy.SetDate(9999, dtDayBeginCopy.GetMonth(), dtDayBeginCopy.GetDay());
-
-	if (dtDayEndCopy.GetYear() >= 10000)
-		dtDayEndCopy.SetDate(9999, dtDayEndCopy.GetMonth(), dtDayEndCopy.GetDay());
-
-	long nBeginDate = (long)dtDayBeginCopy;
-	long nEndDate = (long)dtDayEndCopy;
-
-	if (nBeginDate > nEndDate)
-	{
-		long nBlockBegin = nBeginDate;
-		nBeginDate = nEndDate;
-		nEndDate = nBlockBegin;
-	}
-
-	if (m_arrSelectedBlocks.GetSize() == 1 && m_arrSelectedBlocks[0].nDateBegin == nBeginDate &&
-		m_arrSelectedBlocks[0].nDateEnd == nEndDate + 1)
-	{
-		return;
-	}
-
-	Clear();
-
-	_InsertBlock(0, nBeginDate, nEndDate + 1);
-}
-
-BOOL CXTPDatePickerDaysCollection::Contains(const COleDateTime& dtDay) const
-{
-	long nDay = (long)dtDay;
-
-	int nCount = (int)m_arrSelectedBlocks.GetSize();
-	if (nCount == 0)
-		return FALSE;
-
-	if (m_arrSelectedBlocks[0].nDateBegin > nDay)
-		return FALSE;
-
-	if (m_arrSelectedBlocks[nCount - 1].nDateEnd <= nDay)
-		return FALSE;
-
-	for (int i = 0; i < nCount; i++)
-	{
-		if ((m_arrSelectedBlocks[i].nDateBegin <= nDay) &&
-			(m_arrSelectedBlocks[i].nDateEnd > nDay))
+		// Create the button to be used with child window.
+		if (!m_btnCaption.Create(m_strCaption, BS_ICON | BS_OWNERDRAW | BS_VCENTER,
+			CRect(0, 0, 0, 0), this, XT_IDC_BTN_CLOSE))
 		{
-			return TRUE;
+			TRACE0("Unable to create caption button.\n");
+			return FALSE;
 		}
+
+		m_bAppCaption = true;
 	}
-	return FALSE;
-}
 
-BOOL CXTPDatePickerDaysCollection::GetMinMaxRange(COleDateTime& refMinRange, COleDateTime& refMaxRange) const
-{
-	int nSelCount = (int)m_arrSelectedBlocks.GetSize();
-	if (nSelCount == 0)
-		return FALSE;
+	m_btnCaption.SetCaption(this);
+	m_btnCaption.SetXButtonStyle(0, FALSE);
 
-	refMinRange = (DATE)(double)m_arrSelectedBlocks[0].nDateBegin;
-	refMaxRange = (DATE)(double)m_arrSelectedBlocks[nSelCount - 1].nDateEnd - 1;
+	SetWindowPos(NULL, 0, 0, 0, 0,
+		SWP_NOSIZE | SWP_NOMOVE | SWP_FRAMECHANGED);
 
 	return TRUE;
 }
 
-int CXTPDatePickerDaysCollection::GetSelectedDaysCount() const
+void CXTCaption::ModifyCaptionStyle(int nBorderSize, CFont* pFont, LPCTSTR lpszWindText, HICON hIcon)
 {
-	int nCount = 0;
-	for (int i = 0; i < (int)m_arrSelectedBlocks.GetSize(); i++)
+	ASSERT(::IsWindow(m_hWnd));
+
+	if (nBorderSize != 0)
 	{
-		nCount += m_arrSelectedBlocks[i].nDateEnd - m_arrSelectedBlocks[i].nDateBegin;
+		m_nBorder = nBorderSize;
 	}
-	return nCount;
+
+	if (pFont != NULL)
+	{
+		SetFont(pFont);
+
+		// button font should match caption
+		if (::IsWindow(m_btnCaption.m_hWnd))
+			m_btnCaption.SetFont(GetFont());
+	}
+
+	if (lpszWindText != NULL)
+	{
+		m_strCaption = lpszWindText;
+	}
+
+	if (hIcon != NULL)
+	{
+		m_hIcon = hIcon;
+	}
+
+	Invalidate();
 }
 
+void CXTCaption::SetChildWindow(CWnd* pChild, CWnd* pNotifyWnd)
+{
+	ASSERT_VALID (pChild);      // must be valid.
+	ASSERT_VALID (pNotifyWnd);  // must be valid.
+
+	// save window pointers, and show caption button.
+	m_pChildWnd = pChild;
+	SetOwner(pNotifyWnd);
+
+	m_pParentView = pChild->GetParent();
+	ASSERT_KINDOF(CView, m_pParentView);
+
+	m_pSplitterWnd = m_pParentView->GetParent();
+	ASSERT_KINDOF(CSplitterWnd, m_pSplitterWnd);
+
+	// get the size of the child and parent windows.
+	m_pChildWnd->GetClientRect (&m_rcChild);
+	m_pParentView->GetClientRect (&m_rcParent);
+	m_pSplitterWnd->GetClientRect (&m_rcSplitter);
+
+	// save the size of the childs caption area.
+	m_nOffset = (m_rcParent.Height() - m_rcChild.Height());
+
+	// make the caption button visible.
+	m_btnCaption.ShowWindow(SW_SHOW);
+	m_btnCaption.UpdateWindow();
+
+	// inflate the size of the parent to add a border, this will
+	// also be the size of the popup window.
+	int cx = ::GetSystemMetrics (SM_CXEDGE)*2;
+	int cy = ::GetSystemMetrics (SM_CYEDGE)*2;
+	m_rcParent.InflateRect(cx, cy);
+}
+
+void CXTCaption::KillChildWindow()
+{
+	// Hide the caption button.
+	if (::IsWindow(m_btnCaption.m_hWnd))
+	{
+		m_btnCaption.ShowWindow(SW_HIDE);
+		m_btnCaption.SetState(FALSE);
+	}
+
+	// Destroy the pop-up window.
+	if (::IsWindow(m_pPopupWnd->GetSafeHwnd()))
+	{
+		m_pPopupWnd->DestroyWindow();
+	}
+
+	SAFE_DELETE(m_pPopupWnd);
+}
+
+BOOL CXTCaption::ShowPopupWindow()
+{
+	// already visible return TRUE.
+	if (::IsWindowVisible(m_pPopupWnd->GetSafeHwnd()))
+		return TRUE;
+
+	// if not a window yet create it.
+	if (!::IsWindow(m_pPopupWnd->GetSafeHwnd()))
+	{
+		m_pPopupWnd = new CXTCaptionPopupWnd;
+
+		if (!m_pPopupWnd->Create(CRect(0, 0, 0, 0), this, m_pChildWnd))
+		{
+			SAFE_DELETE(m_pPopupWnd);
+			return FALSE;
+		}
+	}
+
+	// view pointer is not valid.
+	if (!::IsWindow(m_pParentView->GetSafeHwnd()))
+		return FALSE;
+
+	// splitter pointer is not valid.
+	if (!::IsWindow(m_pSplitterWnd->GetSafeHwnd()))
+		return FALSE;
+
+	CRect rcPopup(m_rcParent);
+	m_pParentView->ClientToScreen(&rcPopup);
+
+	// get the current size of the splitter window.
+	CRect rcSplitter;
+	m_pSplitterWnd->GetClientRect(&rcSplitter);
+
+	// check to see if the size has changed.
+	if (rcSplitter.Height() > m_rcSplitter.Height())
+	{
+		rcPopup.bottom += (rcSplitter.Height() - m_rcSplitter.Height());
+	}
+	else if (m_rcSplitter.Height() > rcSplitter.Height())
+	{
+		rcPopup.bottom -= (m_rcSplitter.Height() - rcSplitter.Height());
+	}
+
+	// display the popup window.
+	m_pPopupWnd->MoveWindow(&rcPopup);
+	m_pPopupWnd->ShowWindow(SW_SHOW);
+	m_pPopupWnd->RecalcLayout();
+
+	// press the caption button.
+	m_btnCaption.SetState(TRUE);
+
+	return TRUE;
+}
+
+void CXTCaption::OnCaptButton()
+{
+	if (HasCloseButton())
+	{
+		CWnd* pOwner = GetOwner();
+		ASSERT_VALID(pOwner);
+
+		if (pOwner)
+		{
+			// Notify of selection change.
+			pOwner->SendMessage(WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(),
+				BN_CLICKED), (LPARAM)m_hWnd);
+		}
+	}
+	else
+	{
+		ShowPopupWindow();
+	}
+}
+
+void CXTCaption::OnPushPinButton()
+{
+	KillChildWindow();
+
+	// get the current size of the child's parent window and
+	// adjust the size of the child accordingly.
+	m_pParentView->GetClientRect (&m_rcParent);
+	m_rcChild = m_rcParent;
+	m_rcChild.top += m_nOffset;
+
+	// move the child window to its correct location.
+	m_pChildWnd->MoveWindow (m_rcChild);
+
+	CWnd* pNotifyWnd = GetOwner();
+	ASSERT_VALID(pNotifyWnd);
+
+	if (::IsWindow(pNotifyWnd->GetSafeHwnd()))
+	{
+		// Notify that push pin button was pressed.
+		pNotifyWnd->SendMessage(CPWN_XT_PUSHPINBUTTON);
+		Invalidate();
+	}
+}
+
+void CXTCaption::OnPushPinCancel()
+{
+	m_btnCaption.SetState(FALSE);
+	m_pPopupWnd->DestroyWindow();
+
+	SAFE_DELETE (m_pPopupWnd);
+
+	CWnd* pNotifyWnd = GetOwner();
+	ASSERT_VALID(pNotifyWnd);
+
+	if (::IsWindow(pNotifyWnd->GetSafeHwnd()))
+	{
+		// Notify that popup window has lost input focus.
+		pNotifyWnd->SendMessage(CPWN_XT_PUSHPINCANCEL);
+		Invalidate();
+	}
+}
+
+void CXTCaption::UpdateCaption(LPCTSTR lpszWindowText, HICON hIcon)
+{
+	ASSERT(::IsWindow(m_hWnd));
+
+	CRect rcClient;
+	GetClientRect(&rcClient);
+	CDC* pDC = GetDC();
+
+	DrawCaptionBack(pDC, rcClient);
+
+	if (lpszWindowText != NULL)
+	{
+		m_strCaption = lpszWindowText;
+		UpdateCaptionText(pDC);
+	}
+
+	if (hIcon != NULL)
+	{
+		m_hIcon = hIcon;
+		DrawCaptionIcon(pDC, rcClient);
+	}
+
+	ReleaseDC(pDC);
+}
+
+void CXTCaption::UpdateCaptionText(CDC* pDC)
+{
+	if (::IsWindow(m_btnCaption.m_hWnd))
+	{
+		m_btnCaption.SetWindowText(m_strCaption);
+		m_btnCaption.MoveWindow(GetButtonRect());
+	}
+
+	DrawCaptionText(pDC);
+}
+
+CRect CXTCaption::GetTextRect() const
+{
+	if (m_strCaption.IsEmpty())
+		return CXTPEmptyRect();
+
+	CXTPClientRect rcClient(this);
+
+	// Use a NULL window dc to get the size the caption button
+	// should be using CDC::GetTextExtent(...).
+	CWindowDC dc(NULL);
+	CXTPFontDC fontDC(&dc, GetFont());
+
+	TEXTMETRIC tm;
+	dc.GetTextMetrics(&tm);
+
+	// Calculate the button area size.
+	CSize size = dc.GetTextExtent(m_strCaption, m_strCaption.GetLength());
+	size.cx += tm.tmAveCharWidth + 12;
+	size.cy = rcClient.Height();
+
+	int iWidth = rcClient.Width() - (m_hIcon ? 18 : 0);
+	if (size.cx > iWidth)
+		size.cx = iWidth;
+
+	return CRect(m_nBorder, m_nBorder, m_nBorder + size.cx, size.cy - m_nBorder);
+}
+
+CRect CXTCaption::GetButtonRect() const
+{
+	if (!::IsWindow(m_btnCaption.m_hWnd))
+		return CXTPEmptyRect();
+
+	if (!HasCloseButton())
+		return GetTextRect();
+
+	CSize szIcon(16, 15);
+	CXTPClientRect rcClient(this);
+
+	CRect rcButton;
+	rcButton.left = (rcClient.Width() -szIcon.cx)-2;
+	rcButton.top = (rcClient.Height()-szIcon.cy)/2;
+	rcButton.right = rcButton.left + szIcon.cx;
+	rcButton.bottom = rcButton.top + szIcon.cy;
+
+	return rcButton;
+}
+
+void CXTCaption::OnWindowPosChanged(WINDOWPOS FAR* lpwndpos)
+{
+	CStatic::OnWindowPosChanged(lpwndpos);
+
+	if (::IsWindow(m_btnCaption.m_hWnd))
+		m_btnCaption.MoveWindow(GetButtonRect());
+}
+
+void CXTCaption::SetCaptionColors(COLORREF clrBorder, COLORREF clrFace, COLORREF clrText)
+{
+	ASSERT(::IsWindow(m_hWnd));
+
+	m_bUserColors = true;
+
+	m_clrBorder = clrBorder;
+	m_clrFace = clrFace;
+	m_clrText = clrText;
+
+	if (::IsWindow(m_btnCaption.m_hWnd))
+	{
+		m_btnCaption.SetColorFace(m_clrFace);
+		m_btnCaption.SetColorText(m_clrText);
+		m_btnCaption.SetColorShadow(::GetSysColor(COLOR_3DDKSHADOW));
+	}
+}
+
+void CXTCaption::SetOffice2003Colors(bool b2003Colors/*= true*/)
+{
+	m_bUserColors = b2003Colors;
+	SetTheme(b2003Colors ? new CXTCaptionThemeOffice2003() : NULL);
+}
+
+void CXTCaption::OnSysColorChange()
+{
+	CStatic::OnSysColorChange();
+
+	// update caption colors if not user defined.
+	if (m_bUserColors == false)
+	{
+		m_clrText = ::GetSysColor(COLOR_BTNTEXT);
+		m_clrBorder = ::GetSysColor(COLOR_3DFACE);
+		m_clrFace = ::GetSysColor(COLOR_3DFACE);
+
+		if (::IsWindow(m_btnCaption.m_hWnd))
+		{
+			m_btnCaption.SetColorFace(m_clrFace);
+			m_btnCaption.SetColorText(m_clrText);
+			m_btnCaption.SetColorShadow(::GetSysColor(COLOR_3DDKSHADOW));
+		}
+	}
+}

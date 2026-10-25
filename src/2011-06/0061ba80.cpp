@@ -1,19 +1,17 @@
-// from server: 86% by atomic.potato
-struct WeakThreadRef
-{
-    void f(void *, int);
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_0061ba80 {
+    T4_0061ba80();
+    virtual void f_0061ba80();
+    char m_a;
+    char m_b;
 };
-
-void WeakThreadRef::f(void *a, int b)
+T4_0061ba80::T4_0061ba80() : m_a(0), m_b(0) {}
+extern "C" void* create_other_0061ba80(void*, void*, int);
+void* create_0061ba80(void* unused, T4_0061ba80* out, int type)
 {
-    if (b != 4)
-    {
-        extern void __stdcall g(void *, int);
-        g(a, b);
-        return;
-    }
-
-    *(int *)a = 0x00c4a768;
-    *((char *)a + 4) = 0;
-    *((char *)a + 5) = 0;
+    if (type != 4)
+        return create_other_0061ba80(unused, out, type);
+    out->T4_0061ba80::T4_0061ba80();
+    return out;
 }

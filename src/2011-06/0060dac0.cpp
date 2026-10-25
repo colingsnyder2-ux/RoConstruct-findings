@@ -1,20 +1,18 @@
-// from server: 83% by atomic.potato
-struct S {
-    int a;
-    int b;
-    int c;
-    int d;
-    int e;
-    int value;
-    int g;
-
-    void f();
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct X_0060dac0 {
+    void* f_0;
+    void* f_4;
+    char pad_8[16];
+    void* f_18;
+    void* f_1c;
+    X_0060dac0* base();
+    X_0060dac0* run() {
+    f_0 = (void*)0xa93acc;
+    f_4 = (void*)0xa93ac4;
+    f_18 = (void*)0xa93ab8;
+    f_1c = (void*)0xa93aac;
+        return base();
+    }
 };
-
-void S::f()
-{
-    a = 0xA93ACC;
-    b = 0xA93AC4;
-    e = 0xA93AB8;
-    value = 0xA93AAC;
-}
+X_0060dac0* func_0060dac0(X_0060dac0* x) { return x->run(); }

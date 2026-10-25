@@ -1,23 +1,5 @@
-// from server: 77% by atomic.potato
-struct S {
-    char pad[0x68];
-    int* begin;
-    int* end;
-    int f(int);
-};
-
-struct T {
-    int* g(int);
-};
-
-int S::f(int a)
-{
-    T* t = (T*)this;
-    int* p = t->g(a);
-    int idx = *p;
-    if (idx < 0)
-        return 0;
-    if ((unsigned)idx >= (unsigned)((end - begin) >> 2))
-        return 0;
-    return begin[idx];
-}
+// from server: 83% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct S{char pad[0x68]; char* begin; char* end; int f(int);};
+extern "C" int* sub(int);
+int S::f(int index){int* p=sub(index); int v=*p; if(v<0)return 0; if((unsigned)v>=(unsigned)((end-begin)>>2))return 0; return ((int*)begin)[v];}

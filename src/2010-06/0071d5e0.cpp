@@ -1,58 +1,17 @@
-// from server: 44% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/ScriptMouseCommand.cpp
-
-// Candidate translation unit (score above; library headers required).
-#include "v8datamodel/ScriptMouseCommand.h"
-#include "v8datamodel/Mouse.h"
-
-namespace RBX
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_0071d5e0 {
+    T4_0071d5e0();
+    virtual void f_0071d5e0();
+    char m_a;
+    char m_b;
+};
+T4_0071d5e0::T4_0071d5e0() : m_a(0), m_b(0) {}
+extern "C" void* create_other_0071d5e0(void*, void*, int);
+void* create_0071d5e0(void* unused, T4_0071d5e0* out, int type)
 {
-	ScriptMouseCommand::ScriptMouseCommand(Workspace* workspace)
-		: MouseCommand(workspace)
-	{
-		mouse = Creatable<Instance>::create<Mouse>();
-		mouse->setCommand(this);
-	}
-
-	ScriptMouseCommand::~ScriptMouseCommand()
-	{
-		mouse->setCommand(NULL);
-		mouse->disconnect_all_slots();
-	}
-
-	TextureId ScriptMouseCommand::getCursorId() const
-	{
-		return mouse->getIcon();
-	}
-
-	MouseCommand* ScriptMouseCommand::onMouseDown(const UIEvent& uiEvent)
-	{
-		mouse->update(uiEvent);
-		return this;
-	}
-
-	MouseCommand* ScriptMouseCommand::onMouseUp(const UIEvent& uiEvent)
-	{
-		mouse->update(uiEvent);
-		return this;
-	}
-
-	MouseCommand* ScriptMouseCommand::onPeekKeyDown(const UIEvent& uiEvent)
-	{
-		mouse->update(uiEvent);
-		return this;
-	}
-
-	void ScriptMouseCommand::onMouseIdle(const UIEvent& uiEvent)
-	{
-		mouse->update(uiEvent);
-	}
-
-	void ScriptMouseCommand::onMouseHover(const UIEvent& uiEvent)
-	{
-		mouse->update(uiEvent);
-	}
+    if (type != 4)
+        return create_other_0071d5e0(unused, out, type);
+    out->T4_0071d5e0::T4_0071d5e0();
+    return out;
 }

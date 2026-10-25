@@ -1,14 +1,14 @@
-// from server: 47% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Common/XTPNotifyConnection.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/ReportControl/XTPReportInplaceControls.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPNotifyConnection.cpp: implementation of the CXTPNotifyConnection and CXTPNotifySink classes.
+// XTPReportInplaceEdit.cpp : implementation of the CXTPReportInplaceEdit class.
 //
-// This file is a part of the XTREME TOOLKIT PRO MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME REPORTCONTROL MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,8 +26,14 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPSystemHelpers.h"
 
-#include "XTPNotifyConnection.h"
+#include "XTPReportControl.h"
+#include "XTPReportDefines.h"
+#include "XTPReportInplaceControls.h"
+#include "XTPReportColumn.h"
+#include "XTPReportRecordItemText.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -35,535 +41,829 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#pragma warning(disable: 4571) // warning C4571: catch(...) blocks compiled with /EHs do not catch or re-throw Structured Exceptions
 
-/////////////////////////////////////////////////////////////////////////////
-static LPCTSTR XTP_NOTIFICATION_SINK_MT_MSGWND_NAME  = _T("XTPNotificationSinkMT_MsgWnd");
-
-
-/////////////////////////////////////////////////////////////////////////////
-//class CEmptySyncObject : public CSyncObject
-
-CXTPNotifyConnection::CEmptySyncObject::CEmptySyncObject() :
-		CSyncObject(_T("XTPEmptySyncObject"))
+CXTPReportInplaceControl::CXTPReportInplaceControl()
 {
 }
 
-////////////////////////////////////////////////////////////////////////////
-
-CXTPNotifyConnection::CXTPNotifyConnection()
+CXTPReportInplaceControl::~CXTPReportInplaceControl()
 {
-	m_nSendQueueCacheSize = 0;
+	SetItemArgs(0);
 }
 
-CXTPNotifyConnection::~CXTPNotifyConnection()
+void CXTPReportInplaceControl::SetItemArgs(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
 {
-	RemoveAll();
-}
-
-void CXTPNotifyConnection::RemoveAll()
-{
-	CSingleLock singleLock(GetDataLock(), TRUE);
-
-	int nCount = (int)m_arrConnections.GetSize();
-	for (int i = 0; i < nCount; i++)
+	if (pItemArgs)
 	{
-		CONNECTION_DESCRIPTOR* pCurElem = m_arrConnections[i];
-		ASSERT(pCurElem);
-		if (pCurElem)
-		{
-			delete pCurElem;
-		}
-		m_arrConnections[i] = NULL;
+		pItemArgs->AddRef();
+		Release();
+
+		pItem = pItemArgs->pItem;
+		pControl = pItemArgs->pControl;
+		pRow = pItemArgs->pRow;
+		pColumn = pItemArgs->pColumn;
+		rcItem = pItemArgs->rcItem;
 	}
-
-	m_arrConnections.RemoveAll();
-}
-
-XTP_CONNECTION_ID CXTPNotifyConnection::Advise(XTP_NOTIFY_CODE Event, CXTPNotifySinkBase* pSink)
-{
-	ASSERT(pSink);
-
-	CSingleLock singleLock(GetDataLock(), TRUE);
-
-	CONNECTION_DESCRIPTOR* pNewElem = new CONNECTION_DESCRIPTOR;
-
-	if (!pNewElem)
+	else
 	{
-		return 0;
-	}
+		Release();
 
-	pNewElem->dwConnectionID = (XTP_CONNECTION_ID)pNewElem;
-	pNewElem->dwNotifyCode = Event;
-	pNewElem->pSink = pSink;
-
-	m_arrConnections.Add(pNewElem);
-
-	return pNewElem->dwConnectionID;
-}
-
-void  CXTPNotifyConnection::Unadvise(XTP_CONNECTION_ID ConnectionID)
-{
-	CSingleLock singleLock(GetDataLock(), TRUE);
-
-	try
-	{
-		int nCount = (int)m_arrConnections.GetSize();
-		int nFIndex = FindConnection(ConnectionID);
-
-		if (nFIndex >= 0 && nFIndex < nCount)
-		{
-			CONNECTION_DESCRIPTOR* pElem = m_arrConnections[nFIndex];
-
-			ASSERT(pElem);
-			if (pElem)
-			{
-				delete pElem;
-			}
-			m_arrConnections.RemoveAt(nFIndex);
-		}
-		else
-		{
-			ASSERT(FALSE);
-		}
-	}
-	catch(...)
-	{
-		ASSERT(FALSE);
-		TRACE(_T("EXCEPTION! CXTPNotifyConnection::Unadvise(ConnectionID = %d)\n"), ConnectionID);
+		pItem = 0;
+		pControl = 0;
+		pRow = 0;
+		pColumn = 0;
 	}
 }
 
-BOOL CXTPNotifyConnection::SendEvent(XTP_NOTIFY_CODE Event,
-								WPARAM wParam , LPARAM lParam, DWORD dwFlags)
+IMPLEMENT_DYNAMIC(CXTPReportInplaceEdit, CEdit)
+
+CXTPReportInplaceEdit::CXTPReportInplaceEdit()
 {
-	CSingleLock singleLock(GetDataLock(), TRUE);
-	InternalAddRef();
-
-	int nCount = (int)m_arrConnections.GetSize();
-
-	if (m_arrSendQueueCache.GetSize() < nCount + m_nSendQueueCacheSize)
-	{
-		m_arrSendQueueCache.SetSize(nCount + m_nSendQueueCacheSize);
-	}
-	//******************************************************************************
-	int nFirstLocalClientIndex = m_nSendQueueCacheSize;
-
-	int i;
-	for (i = 0; i < nCount; i++)
-	{
-		CONNECTION_DESCRIPTOR* pElem = m_arrConnections[i];
-		ASSERT(pElem);
-		if (pElem && pElem->dwNotifyCode == Event)
-		{
-			m_arrSendQueueCache.SetAt(m_nSendQueueCacheSize, *pElem);
-			m_nSendQueueCacheSize++;
-		}
-	}
-	int nLastLocalClientIndex = m_nSendQueueCacheSize-1;
-
-	singleLock.Unlock();
-	//************************************************************************
-	for (i = nFirstLocalClientIndex; i <= nLastLocalClientIndex; i++)
-	{
-		singleLock.Lock();
-
-		if (i >= m_arrSendQueueCache.GetSize())
-		{
-			ASSERT(FALSE);
-			return FALSE;
-		}
-
-		CONNECTION_DESCRIPTOR& rElem = m_arrSendQueueCache.ElementAt(i);
-		int nFIndex = FindConnection(rElem.dwConnectionID);
-		if (nFIndex < 0)
-		{
-			// Unadvise was called inside OnEvent(...) Call
-			continue;
-		}
-		try
-		{
-			CXTPNotifySinkBase* ptrSink = rElem.pSink;
-
-			singleLock.Unlock();
-
-			if (ptrSink)
-			{
-				ptrSink->OnEvent(Event, wParam, lParam, dwFlags);
-			}
-			else
-			{
-				ASSERT(FALSE);
-				TRACE(_T("CXTPNotifyConnection::SendEvent(Event = %d, wParam = %d, lParam = %d, dwFlags = %x) pSink = %x\n"),
-						Event, wParam, lParam, dwFlags, rElem.pSink);
-			}
-		}
-		catch(...)
-		{
-			ASSERT(FALSE);
-			TRACE(_T("EXCEPTION! CXTPNotifyConnection::SendEvent(Event = %d, wParam = %d, lParam = %d, dwFlags = %x)\n"),
-					Event, wParam, lParam, dwFlags);
-		}
-	}
-
-	//==============================================================================
-	singleLock.Lock();
-
-	m_nSendQueueCacheSize = nFirstLocalClientIndex;
-
-	singleLock.Unlock();
-
-	InternalRelease();
-	return (nFirstLocalClientIndex <= nLastLocalClientIndex);
+	m_pSelectedConstraint = NULL;
+	m_clrText = 0;
+	m_bSetWindowText = FALSE;
 }
 
-int CXTPNotifyConnection::FindConnection(XTP_CONNECTION_ID ConnectionID)
-{
-	CSingleLock singleLock(GetDataLock(), TRUE);
-
-	int nCount = (int)m_arrConnections.GetSize();
-	for (int i = 0; i < nCount; i++)
-	{
-		CONNECTION_DESCRIPTOR* pCurElem = m_arrConnections[i];
-		ASSERT(pCurElem);
-		if (pCurElem)
-		{
-			if (pCurElem->dwConnectionID == ConnectionID)
-			{
-				return i;
-			}
-		}
-	}
-	return -1;
-}
-
-////////////////////////////////////////////////////////////////////////////
-//class CXTPNotifyConnectionMT : public CXTPNotifyConnection
-
-CXTPNotifyConnectionMT::CXTPNotifyConnectionMT()
-{
-}
-
-CXTPNotifyConnectionMT::~CXTPNotifyConnectionMT()
+CXTPReportInplaceEdit::~CXTPReportInplaceEdit()
 {
 }
 
 
-////////////////////////////////////////////////////////////////////////////
-BEGIN_MESSAGE_MAP(CXTPNotifySinkImplMTMsgWnd, CWnd)
-	ON_REGISTERED_MESSAGE(xtp_wm_NotificationSinkMTOnEvent, HandleInterThreadEvent)
+BEGIN_MESSAGE_MAP(CXTPReportInplaceEdit, CEdit)
+	//{{AFX_MSG_MAP(CXTPReportInplaceEdit)
+	ON_WM_MOUSEACTIVATE()
+	ON_WM_CTLCOLOR_REFLECT()
+	ON_CONTROL_REFLECT(EN_KILLFOCUS, OnEnKillfocus)
+	ON_CONTROL_REFLECT(EN_CHANGE, OnEnChange)
+	ON_WM_LBUTTONDBLCLK()
+	ON_WM_KEYDOWN()
+	ON_WM_SYSKEYDOWN()
+	ON_WM_GETDLGCODE()
+	ON_WM_CHAR()
+	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
-CXTPNotifySinkImplMTMsgWnd::CXTPNotifySinkImplMTMsgWnd()
+
+void CXTPReportInplaceEdit::HideWindow()
 {
-}
-
-CXTPNotifySinkImplMTMsgWnd::~CXTPNotifySinkImplMTMsgWnd()
-{
-}
-
-LRESULT CXTPNotifySinkImplMTMsgWnd::HandleInterThreadEvent(WPARAM wParam, LPARAM lParam)
-{
-	return OnInterThreadEvent(wParam, lParam);
-}
-
-BOOL CXTPNotifySinkImplMTMsgWnd::CreateWnd()
-{
-	LPCTSTR pcszSimpleWndClass = AfxRegisterWndClass(0);
-	CRect rcEmpty(0, 0, 0, 0);
-
-	BOOL bCreated = CreateEx(0, pcszSimpleWndClass,
-		XTP_NOTIFICATION_SINK_MT_MSGWND_NAME,
-		WS_POPUP, rcEmpty, NULL, 0);
-	ASSERT(bCreated);
-	return bCreated;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPNotifySinkBase
-
-CXTPNotifySinkBase::CXTPNotifySinkBase()
-{
-}
-
-CXTPNotifySinkBase::~CXTPNotifySinkBase()
-{
-	// Should call UnadviseAll before delete
-	ASSERT(m_mapAdviseData.IsEmpty());
-}
-
-XTP_CONNECTION_ID CXTPNotifySinkBase::Advise(CXTPNotifyConnection* pConnection,
-								XTP_NOTIFY_CODE dwNotifyCode)
-{
-	ASSERT(pConnection);
-	if (!pConnection)
+	if (m_hWnd)
 	{
-		return 0;
+		ShowWindow(SW_HIDE);
+		SetItemArgs(0);
+	}
+}
+
+void CXTPReportInplaceEdit::Create(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
+{
+	SetItemArgs(pItemArgs);
+	m_pSelectedConstraint = NULL;
+
+	XTP_REPORTRECORDITEM_METRICS* pMetrics = new XTP_REPORTRECORDITEM_METRICS;
+
+	//pMetrics->strText = pItem->GetCaption(pColumn);
+	CXTPReportRecordItemText* pTextItem = DYNAMIC_DOWNCAST(CXTPReportRecordItemText, pItem);
+
+	if(pTextItem != NULL)
+		pMetrics->strText = pTextItem->GetValue();
+	else
+		pMetrics->strText = pItem->GetCaption(pColumn);
+
+	pItemArgs->pRow->FillMetrics(pColumn, pItem, pMetrics);
+
+	CRect rect = pItemArgs->rcItem;
+	pItem->GetCaptionRect(pItemArgs, rect);
+	rect.DeflateRect(2, 1, 2, 2);
+
+	CXTPReportRecordItemEditOptions* pEditOptions = pItem->GetEditOptions(pColumn);
+	ASSERT(pEditOptions);
+	if (!pEditOptions)
+		return;
+
+	m_clrText = pMetrics->clrForeground;
+	m_strValue = pMetrics->strText;
+	m_strText_prev = pMetrics->strText;
+
+	DWORD dwEditStyle = WS_CHILD | pEditOptions->m_dwEditStyle;
+
+	if (m_hWnd)
+	{
+		DWORD dwStyle = WS_CHILD | WS_VISIBLE | ES_LEFT | ES_RIGHT | ES_CENTER | ES_READONLY;
+
+		if ((GetStyle() & dwStyle) != (dwEditStyle & dwStyle))
+			DestroyWindow();
 	}
 
-	XTP_CONNECTION_ID dwConnectionID = pConnection->Advise(dwNotifyCode, this);
-	ASSERT(dwConnectionID);
-
-	if (dwConnectionID)
+	if (!m_hWnd)
 	{
-		ADVISE_DESCRIPTOR advDataNew;
-		ASSERT(!m_mapAdviseData.Lookup(dwConnectionID, advDataNew));
-
-		advDataNew.dwConnectionID = dwConnectionID;
-		advDataNew.pConnection = pConnection;
-		advDataNew.dwNotifyCode = dwNotifyCode;
-		pConnection->InternalAddRef();
-
-		m_mapAdviseData.SetAt(dwConnectionID, advDataNew);
-
+		CEdit::Create(dwEditStyle, rect, pControl, 0);
 	}
-	return dwConnectionID;
-}
 
-void CXTPNotifySinkBase::UnadviseAll()
-{
-	XTP_CONNECTION_ID ConnectionID = 0;
-	ADVISE_DESCRIPTOR advData;
-	POSITION pos = m_mapAdviseData.GetStartPosition();
-	while (pos)
+	if (pControl->GetExStyle() & WS_EX_RTLREADING)
 	{
-		m_mapAdviseData.GetNextAssoc(pos, ConnectionID, advData);
-		if (advData.pConnection)
+		ModifyStyleEx(0, WS_EX_RTLREADING);
+	}
+
+	ModifyStyle(ES_LEFT | ES_RIGHT | ES_CENTER, 0);
+
+	if (pControl->GetPaintManager()->m_bUseEditTextAlignment)
+	{
+		if (pMetrics->nColumnAlignment & DT_RIGHT)
 		{
-			OnUnadvise(advData.dwNotifyCode);
-
-			advData.pConnection->Unadvise(advData.dwConnectionID);
-			advData.pConnection->InternalRelease();
+			ModifyStyle(0, ES_RIGHT);
+		}
+		else if (pMetrics->nColumnAlignment & DT_CENTER)
+		{
+			ModifyStyle(0, ES_CENTER);
 		}
 	}
-	m_mapAdviseData.RemoveAll();
+
+	SetLimitText(pEditOptions->m_nMaxLength);
+
+	SetFocus();
+	SetFont(pMetrics->pFont);
+	SetWindowText(m_strValue);
+
+	pMetrics->InternalRelease();
+
+
+	if (rect.right > rect.left)
+	{
+		SetWindowPos(0, rect.left, rect.top, rect.Width(), rect.Height(), SWP_NOZORDER | SWP_SHOWWINDOW);
+	}
+	else
+	{
+		HideWindow();
+	}
+
+	SetMargins(0, 0);
 }
 
-void CXTPNotifySinkBase::Unadvise(XTP_CONNECTION_ID ConnectionID)
+void CXTPReportInplaceEdit::SetWindowText(LPCTSTR lpszString)
 {
-	ADVISE_DESCRIPTOR advData;
-	if (m_mapAdviseData.Lookup(ConnectionID, advData))
+	m_bSetWindowText = TRUE;
+
+	CWnd::SetWindowText(lpszString);
+	m_strText_prev = lpszString;
+
+	m_bSetWindowText = FALSE;
+}
+
+void CXTPReportInplaceEdit::SetFont(CFont* pFont)
+{
+	m_fntEdit.DeleteObject();
+	LOGFONT lf;
+	pFont->GetLogFont(&lf);
+	m_fntEdit.CreateFontIndirect(&lf);
+
+	CEdit::SetFont(&m_fntEdit);
+}
+
+void CXTPReportInplaceEdit::OnEnKillfocus()
+{
+	if (pControl && pItem)
 	{
-		if (advData.pConnection)
+		pItem->OnValidateEdit((XTP_REPORTRECORDITEM_ARGS*)this);
+		HideWindow();
+
+	}
+}
+
+void CXTPReportInplaceEdit::OnEnChange()
+{
+	if(m_bSetWindowText || !pControl || !pItem)
+		return;
+
+	CString strValue, strValNew;
+	GetWindowText(strValue);
+	strValNew = strValue;
+
+	BOOL bCommit = pItem->OnEditChanging((XTP_REPORTRECORDITEM_ARGS*)this, strValNew);
+	if (!bCommit || strValNew != strValue)
+	{
+		int nSelStart = 0, nSelEnd = 0;
+		GetSel(nSelStart, nSelEnd);
+
+		SetWindowText(bCommit ? strValNew : m_strText_prev);
+
+		SetSel(nSelStart, nSelEnd);
+	}
+	else
+	{
+		m_strText_prev = strValue;
+	}
+}
+
+int CXTPReportInplaceEdit::OnMouseActivate(CWnd* , UINT , UINT ) //(CWnd* pDesktopWnd, UINT nHitTest, UINT message)
+{
+	return MA_NOACTIVATE;
+}
+
+UINT CXTPReportInplaceEdit::OnGetDlgCode()
+{
+	return DLGC_WANTALLKEYS;
+}
+
+void CXTPReportInplaceEdit::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+//  TRACE(_T("ReportControl, OnChar('%d') \n"), nChar);
+
+	if (!pControl)
+		return;
+
+	// Moved to PreTranslateMessage
+//  if (!pControl->OnPreviewKeyDown(nChar, nRepCnt, nFlags))
+//  {
+//      return;
+//  }
+
+	if (nChar == VK_TAB) return;
+	if (nChar == VK_ESCAPE || nChar == VK_RETURN)
+	{
+		pControl->EditItem(NULL);
+		return;
+	}
+	if (pItem && pColumn && pItem->GetEditOptions(pColumn)->m_bConstraintEdit)
+	{
+		CXTPReportRecordItemEditOptions* pEditOptions = pItem->GetEditOptions(pColumn);
+
+		CXTPReportRecordItemConstraints* pConstraints = pEditOptions->GetConstraints();
+		int nCount = pConstraints->GetCount();
+		if (nCount > 0)
 		{
-			OnUnadvise(advData.dwNotifyCode);
 
-			advData.pConnection->Unadvise(advData.dwConnectionID);
-			advData.pConnection->InternalRelease();
-		}
-		m_mapAdviseData.RemoveKey(ConnectionID);
-	}
-	else
-	{
-		ASSERT(FALSE);
-	}
-}
+			CString str, strActual;
+			GetWindowText(str);
+			strActual = str;
 
-void CXTPNotifySinkBase::OnUnadvise(XTP_NOTIFY_CODE /*dwNotifyCode*/)
-{
+			CXTPReportRecordItemConstraint* pConstraint = (m_pSelectedConstraint == NULL) ?
+				pEditOptions->FindConstraint(str): m_pSelectedConstraint;
 
-}
+			int nIndexStart, nIndex;
+			nIndexStart = nIndex = (pConstraint == NULL ? nCount - 1 : pConstraint->GetIndex());
 
+			CString strSeach ((TCHAR)nChar);
 
-//////////////////////////////////////////////////////////////////////////
-// CXTPNotifySink
+			do
+			{
 
+				nIndex = nIndex < nCount - 1 ? nIndex + 1 : 0;
 
-CXTPNotifySink::CXTPNotifySink()
-{
-	m_mapHandlers.InitHashTable(10, FALSE);
-}
+				pConstraint = pConstraints->GetAt(nIndex);
+				str = pConstraint->m_strConstraint;
 
-CXTPNotifySink::~CXTPNotifySink()
-{
-	ASSERT(m_mapHandlers.IsEmpty());
-}
+				if (strSeach.CompareNoCase(str.Left(1)) == 0)
+				{
+					m_pSelectedConstraint = pConstraint;
+					SetWindowText(str);
+					SetSel(0, -1);
 
-void CXTPNotifySink::OnUnadvise(XTP_NOTIFY_CODE dwNotifyCode)
-{
-	CXTPNotifySinkDelegate* pOldDelegate = NULL;
+					if(strActual.CompareNoCase(str) != 0)
+						((CXTPReportControl*)pControl)->OnConstraintSelecting(pRow, pItem, pColumn, pConstraint);
 
-	if (m_mapHandlers.Lookup(dwNotifyCode, pOldDelegate))
-	{
-		delete pOldDelegate;
-		m_mapHandlers.RemoveKey(dwNotifyCode);
-	}
-	else
-	{
-		ASSERT(FALSE);
-	}
-}
+					return;
+				}
 
-XTP_CONNECTION_ID CXTPNotifySink::Advise(CXTPNotifyConnection* pConnection, XTP_NOTIFY_CODE dwNotifyCode, CXTPNotifySinkDelegate* pDelegate)
-{
-	CXTPNotifySinkDelegate* pOldDelegate = NULL;
+			} while (nIndex != nIndexStart);
 
-	if (m_mapHandlers.Lookup(dwNotifyCode, pOldDelegate))
-	{
-		ASSERT(FALSE);
-		delete pOldDelegate;
-	}
-
-	m_mapHandlers[dwNotifyCode] = pDelegate;
-
-	return CXTPNotifySinkBase::Advise(pConnection, dwNotifyCode);
-}
-
-void CXTPNotifySink::OnEvent(XTP_NOTIFY_CODE dwNotifyCode, WPARAM wParam, LPARAM lParam, DWORD /*dwFlags*/)
-{
-	CXTPNotifySinkDelegate* pDelegate = NULL;
-	if (m_mapHandlers.Lookup(dwNotifyCode, pDelegate) && (pDelegate != NULL))
-	{
-		pDelegate->OnEvent(dwNotifyCode, wParam, lParam);
-	}
-	else
-	{
-		//WARNING. no handler found. ???
-		ASSERT(FALSE);
-	}
-}
-
-void CXTPNotifySink::Delete()
-{
-	UnadviseAll();
-	delete this;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPNotifySinkMT
-
-
-
-CXTPNotifySinkMT::CXTPNotifySinkMT(BOOL bInitInternal /*= TRUE*/)
-{
-	m_dwTraceFlag0 = 0;
-	m_dwNexDataID = 0;
-	m_bWndCreated = FALSE;
-	m_dwOwnerThreadID = ::GetCurrentThreadId();
-
-	if (bInitInternal)
-	{
-		m_bWndCreated = CreateWnd();
-	}
-
-	m_PostedEvents.InitHashTable(199, FALSE);
-}
-
-CXTPNotifySinkMT::~CXTPNotifySinkMT()
-{
-	UnadviseAll();
-
-	DestroyWindow();
-	m_bWndCreated = FALSE;
-}
-
-void CXTPNotifySinkMT::OnEvent(XTP_NOTIFY_CODE dwNotifyCode, WPARAM wParam, LPARAM lParam, DWORD dwFlags)
-{
-	ASSERT(m_bWndCreated);
-
-	if (dwFlags & xtpNotifyDirectCallForOneThread)
-	{
-		if (GetCurrentThreadId() == m_dwOwnerThreadID)
-		{
-			CXTPNotifySink::OnEvent(dwNotifyCode, wParam, lParam, dwFlags);
 			return;
 		}
 	}
 
-	//====================================================================
-	XTP_INTER_THREAD_EVENT_DATA ithData = {dwNotifyCode, wParam, lParam, dwFlags};
+	CEdit::OnChar(nChar, nRepCnt, nFlags);
+}
 
-	if (dwFlags & xtpNotifyPostMessage)
+void CXTPReportInplaceEdit::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	CXTPReportControl* _pControl = pControl;
+	ASSERT(_pControl);
+
+	if (!_pControl)
 	{
-		CSingleLock singleLock(&m_DataCS, TRUE);
+		return;
+	}
 
-#ifdef _DEBUG
-		XTP_INTER_THREAD_EVENT_DATA ithDataTmp;
-		ASSERT(m_PostedEvents.Lookup(m_dwNexDataID, ithDataTmp) == FALSE);
-#endif
+	//-----------------------------------------------------------------------
 
-		DWORD dwDataID = m_dwNexDataID;
-		m_dwNexDataID++;
+	if (nChar == VK_TAB && _pControl)
+	{
+		_pControl->SetFocus();
+		_pControl->SendMessage(WM_CHAR, nChar);
+		return;
 
-
-		BOOL bTrace1 = FALSE;
-		BOOL bPosted = FALSE;
-		do
+	}
+	if (nChar == VK_ESCAPE)
+	{
+		SetWindowText(m_strValue);
+		return;
+	}
+	else if (nChar == VK_RETURN)
+	{
+		return;
+	}
+	else if (nChar == VK_UP || nChar == VK_DOWN || nChar == VK_PRIOR || nChar == VK_NEXT)
+	{
+		if (pItem && pColumn && pItem->GetEditOptions(pColumn)->m_bConstraintEdit)
 		{
-			bPosted = PostMessage(xtp_wm_NotificationSinkMTOnEvent, NULL, dwDataID);
-			if (!bPosted && (dwFlags & xtpNotifyGuarantyPost))
+			CXTPReportRecordItemConstraint* pConstraint;
+			CXTPReportRecordItemEditOptions* pEditOptions = pItem->GetEditOptions(pColumn);
+			CXTPReportRecordItemConstraints* pConstraints = pEditOptions->GetConstraints();
+
+			int nCount = pConstraints->GetCount();
+			if (nCount > 1)
 			{
-				if (!bTrace1) {
-					TRACE(_T("WARNING!  CXTPNotifySinkBaseImplMT: PostMessage return FALSE. WAIT and retry. (ThreadID = %x, dataID = %d) \n"),
-						GetCurrentThreadId(),   dwDataID);
-					bTrace1 = TRUE;
+				CString strActual, str;
+				GetWindowText(strActual);
+
+				int nIndex = 0;          // the first item
+
+				if(nChar == VK_NEXT)
+				{
+					nIndex = nCount - 1; // the last item
+				}
+				else if (nChar != VK_PRIOR)
+				{
+					// look for the actually selected item
+					for(int i = 0; i < nCount; i++)
+					{
+						pConstraint = pConstraints->GetAt(i);
+
+						if (strActual.CompareNoCase(pConstraint->m_strConstraint) == 0)
+						{
+							if(nChar == VK_UP)
+								nIndex = max(0, i - 1);
+							else if(nChar == VK_DOWN)
+								nIndex = min(nCount-1, i + 1);
+
+							break;
+						}
+					}
 				}
 
-				singleLock.Unlock();
-				Sleep(100);
-				singleLock.Lock();
-			}
-		}
-		while (!bPosted && (dwFlags & xtpNotifyGuarantyPost));
+				pConstraint = pConstraints->GetAt(max(0, min(nIndex, nCount-1)));
+				str = pConstraint->m_strConstraint;
+				m_pSelectedConstraint = pConstraint;
 
-		if (bPosted)
-		{
-			m_PostedEvents[dwDataID] = ithData;
+				// set the default font, because user could change the font (for ex. to striked one)
+				SetFont(pControl->GetPaintManager()->GetTextFont());
+				SetWindowText(str);
+				SetSel(0, -1);
 
-			if (bTrace1) {
-				TRACE(_T("WARNING.*  CXTPNotifySinkBaseImplMT: Event is posted! (ThreadID = %x, dataID = %d) \n"),
-					GetCurrentThreadId(),   dwDataID);
-			}
+				if(strActual.CompareNoCase(str) != 0)
+					((CXTPReportControl*)pControl)->OnConstraintSelecting(pRow, pItem, pColumn, pConstraint);
 
-			m_dwTraceFlag0 = 0;
-		}
-		else if (!(dwFlags & xtpNotifyGuarantyPost))
-		{
-			if (m_dwTraceFlag0 < 3)
-			{
-				TRACE(_T("WARNING!  CXTPNotifySinkBaseImplMT: PostMessage return FALSE - Event is skipped! (ThreadID = %x, dataID = %d) \n"),
-					GetCurrentThreadId(),   dwDataID);
-				TRACE(_T("          Use xtpNotifyGuarantyPost flag for important events. \n"));
+				return;
 			}
-			m_dwTraceFlag0++;
 		}
 	}
-	else
-	{
-		SendMessage(xtp_wm_NotificationSinkMTOnEvent, (WPARAM)&ithData, 0);
-	}
-};
 
-LRESULT CXTPNotifySinkMT::OnInterThreadEvent(WPARAM pEventData, LPARAM dwPostDataID)
+	CEdit::OnKeyDown(nChar, nRepCnt, nFlags);
+}
+
+void CXTPReportInplaceEdit::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-	XTP_INTER_THREAD_EVENT_DATA* pIthData = (XTP_INTER_THREAD_EVENT_DATA*)pEventData;
-
-	if (pIthData)
+	if ((nChar == VK_UP || nChar == VK_DOWN) && pControl)
 	{
-		CXTPNotifySink::OnEvent(pIthData->dwNotifyCode, pIthData->wParam,
-			pIthData->lParam, pIthData->dwFlags);
+		if (pControl->GetInplaceButtons()->GetSize() > 0)
+		{
+			CXTPReportInplaceButton* pButton = pControl->GetInplaceButtons()->GetAt(0);
+
+			if (pButton->GetItem() == pItem)
+			{
+				pItem->OnInplaceButtonDown(pButton);
+			}
+		}
+	}
+
+	CEdit::OnSysKeyDown(nChar, nRepCnt, nFlags);
+}
+
+BOOL CXTPReportInplaceEdit::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->message == WM_KEYDOWN && pControl)
+	{
+		if (!pControl->OnPreviewKeyDown((UINT&)pMsg->wParam, LOWORD(pMsg->lParam), HIWORD(pMsg->lParam)) )
+		{
+			// TRACE(_T("InplaceEdit, PreTranslateMessagem-OnPreviewKeyDown('%d') = CANCEL  \n"), pMsg->wParam);
+			return TRUE;
+		}
+	}
+
+	if (pMsg->message == WM_KEYDOWN && IsDialogMessage(pMsg))
+		return TRUE;
+
+	return CEdit::PreTranslateMessage(pMsg);
+}
+
+void CXTPReportInplaceEdit::OnLButtonDblClk(UINT nFlags, CPoint point)
+{
+	if (pRow && pItem)
+	{
+		MapWindowPoints(pControl, &point, 1);
+		pRow->OnDblClick(point);
+	}
+
+	if (pItem)
+	{
+		CEdit::OnLButtonDblClk(nFlags, point);
+	}
+}
+
+HBRUSH CXTPReportInplaceEdit::CtlColor(CDC* pDC, UINT /*nCtlColor*/)
+{
+	pDC->SetTextColor(m_clrText);
+
+	return GetSysColorBrush(COLOR_WINDOW);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPReportInplaceButton
+
+CXTPReportInplaceButton::CXTPReportInplaceButton(UINT nID)
+{
+	m_nID = nID;
+	m_nWidth = 17;
+	m_nFixedHeight = 19;
+	m_bInsideCell = FALSE;
+
+	m_bPressed = m_bOver = FALSE;
+
+}
+
+void CXTPReportInplaceButton::Create(XTP_REPORTRECORDITEM_ARGS* pItemArgs, CRect& rcButtons)
+{
+	m_bPressed = m_bOver = FALSE;
+	SetItemArgs(pItemArgs);
+
+	CRect rect(rcButtons);
+	if (pControl->GetPaintManager()->IsFixedInplaceButtonHeight())
+		rect.bottom = rect.top + m_nFixedHeight;
+
+	if (m_bInsideCell)
+	{
+		rect.right = rcButtons.left;
+		rect.left = rect.right - m_nWidth;
+
+		rcButtons.left = rect.left;
 	}
 	else
 	{
-		XTP_INTER_THREAD_EVENT_DATA ithData;
+		rect.left = rcButtons.right;
+		rect.right = rect.left + m_nWidth;
 
-		CSingleLock singleLock(&m_DataCS, TRUE);
+		rcButtons.right = rect.right;
+	}
 
-		if (m_PostedEvents.Lookup((DWORD)dwPostDataID, ithData))
+	if (!m_hWnd)
+	{
+		CStatic::Create(NULL, SS_NOTIFY | WS_CHILD, rect, pItemArgs->pControl);
+	}
+
+	SetWindowPos(0, rect.left, rect.top, rect.Width(), rect.Height(), SWP_NOZORDER | SWP_SHOWWINDOW);
+}
+
+BEGIN_MESSAGE_MAP(CXTPReportInplaceButton, CStatic)
+	//{{AFX_MSG_MAP(CXTPReportInplaceButton)
+	ON_WM_PAINT()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_LBUTTONUP()
+	ON_WM_MOUSEMOVE()
+	ON_WM_CAPTURECHANGED()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+void CXTPReportInplaceButton::OnPaint()
+{
+	CPaintDC dc(this);
+
+	if (pControl)
+	{
+		pControl->GetPaintManager()->DrawInplaceButton(&dc, this);
+	}
+}
+
+void CXTPReportInplaceButton::OnFinalRelease()
+{
+	if (m_hWnd != NULL)
+		DestroyWindow();
+
+	CCmdTarget::OnFinalRelease();
+}
+
+void CXTPReportInplaceButton::OnLButtonDown(UINT, CPoint)
+{
+	m_bOver = m_bPressed = TRUE;
+	Invalidate(FALSE);
+	SetCapture();
+}
+
+void CXTPReportInplaceButton::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	if (m_bPressed && pItem)
+	{
+		m_bPressed = FALSE;
+		Invalidate(FALSE);
+		ReleaseCapture();
+		if (m_bOver)
 		{
-			m_PostedEvents.RemoveKey((DWORD)dwPostDataID);
-
-			singleLock.Unlock();
-
-			CXTPNotifySink::OnEvent(ithData.dwNotifyCode, ithData.wParam,
-				ithData.lParam, ithData.dwFlags);
+			pItem->OnInplaceButtonDown(this);
 		}
-		else
+	}
+	CStatic::OnLButtonUp(nFlags, point);
+}
+
+void CXTPReportInplaceButton::OnMouseMove(UINT nFlags, CPoint point)
+{
+	if (m_bPressed)
+	{
+		CXTPClientRect rect(this);
+		if ((rect.PtInRect(point) && !m_bOver) ||
+			(!rect.PtInRect(point) && m_bOver))
 		{
-			ASSERT(FALSE);
+			m_bOver = rect.PtInRect(point);
+			Invalidate(FALSE);
 		}
 	}
 
-	//====================================================================
-	return 0;
-};
+	CStatic::OnMouseMove(nFlags, point);
+}
+
+void CXTPReportInplaceButton::OnCaptureChanged(CWnd* pWnd)
+{
+	m_bPressed = FALSE;
+	Invalidate(FALSE);
+
+	CStatic::OnCaptureChanged(pWnd);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPReportInplaceList
+
+CXTPReportInplaceList::CXTPReportInplaceList()
+{
+	m_bApply = FALSE;
+	m_dwLastKeyDownTime = 0;
+}
+
+
+void CXTPReportInplaceList::Create(XTP_REPORTRECORDITEM_ARGS* pItemArgs, CXTPReportRecordItemConstraints* pConstaints)
+{
+	SetItemArgs(pItemArgs);
+
+	CRect rect(pItemArgs->rcItem);
+
+	if (!m_hWnd)
+	{
+		CListBox::CreateEx(WS_EX_TOOLWINDOW | (pControl->GetExStyle() & WS_EX_LAYOUTRTL), _T("LISTBOX"), _T(""), LBS_NOTIFY | WS_CHILD | WS_BORDER | WS_VSCROLL, CRect(0, 0, 0, 0), pControl, 0);
+		SetOwner(pControl);
+	}
+
+	SetFont(pControl->GetPaintManager()->GetTextFont());
+	ResetContent();
+
+	int dx = rect.right - rect.left + 1;
+
+	CWindowDC dc(pControl);
+	CXTPFontDC font(&dc, GetFont());
+	int nThumbLength = GetSystemMetrics(SM_CXHTHUMB);
+
+	CString strCaption = pItem->GetCaption(pColumn);
+	DWORD dwData = pItem->GetSelectedConstraintData(pItemArgs);
+
+	for (int i = 0; i < pConstaints->GetCount(); i++)
+	{
+		CXTPReportRecordItemConstraint* pConstaint = pConstaints->GetAt(i);
+		CString str = pConstaint->m_strConstraint;
+		int nIndex = AddString(str);
+		SetItemDataPtr(nIndex, pConstaint);
+
+		dx = max(dx, dc.GetTextExtent(str).cx + nThumbLength);
+
+		if ((dwData == (DWORD)-1 && strCaption == str) || (dwData == pConstaint->m_dwData))
+			SetCurSel(nIndex);
+	}
+
+	int nHeight = GetItemHeight(0);
+	rect.top = rect.bottom;
+	rect.bottom += nHeight * min(10, GetCount()) + 2;
+	rect.left = rect.right - dx;
+
+	pControl->ClientToScreen(&rect);
+
+	CRect rcWork = XTPMultiMonitor()->GetWorkArea(rect);
+	if (rect.bottom > rcWork.bottom && rect.top > rcWork.CenterPoint().y)
+	{
+		rect.OffsetRect(0, - rect.Height() - pItemArgs->rcItem.Height());
+	}
+
+	if (rect.left < rcWork.left) rect.OffsetRect(rcWork.left - rect.left, 0);
+	if (rect.right > rcWork.right) rect.OffsetRect(rcWork.right - rect.right, 0);
+
+
+	SetFocus();
+
+	if (!m_hWnd) // Can be destroyed after focus set
+		return;
+
+	SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, 0);
+	ModifyStyle(WS_CHILD, WS_POPUP);
+	SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, (LONG_PTR)pControl->m_hWnd);
+
+	SetWindowPos(&CWnd::wndTopMost, rect.left, rect.top, rect.Width(), rect.Height(), SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+
+	CXTPMouseMonitor::SetupHook(this);
+
+}
+
+BEGIN_MESSAGE_MAP(CXTPReportInplaceList, CListBox)
+	//{{AFX_MSG_MAP(CXTPReportInplaceList)
+	ON_WM_MOUSEACTIVATE()
+	ON_WM_KILLFOCUS()
+	ON_WM_LBUTTONUP()
+	ON_WM_CHAR()
+	ON_WM_KEYDOWN()
+	ON_WM_SYSKEYDOWN()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+int CXTPReportInplaceList::OnMouseActivate(CWnd* /*pDesktopWnd*/, UINT /*nHitTest*/, UINT /*message*/)
+{
+	return MA_NOACTIVATE;
+}
+
+void CXTPReportInplaceList::SetItemArgs(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
+{
+	m_bApply = FALSE;
+	CXTPReportInplaceControl::SetItemArgs(pItemArgs);
+
+	m_dwLastKeyDownTime = 0;
+	m_strHotSearchContext.Empty();
+}
+
+void CXTPReportInplaceList::PostNcDestroy()
+{
+	CXTPMouseMonitor::SetupHook(NULL);
+	SetItemArgs(NULL);
+
+	CListBox::PostNcDestroy();
+}
+
+
+void CXTPReportInplaceList::OnKillFocus(CWnd* pNewWnd)
+{
+	//ASSERT(pItem || m_bApply);
+
+	if (pItem && !m_bApply)
+		pItem->OnEditCanceled(this);
+
+	CListBox::OnKillFocus(pNewWnd);
+	DestroyWindow();
+}
+
+void CXTPReportInplaceList::OnLButtonUp(UINT, CPoint point)
+{
+	CXTPClientRect rc(this);
+
+	if (rc.PtInRect(point))
+		Apply();
+	else
+		Cancel();
+}
+
+
+void CXTPReportInplaceList::Cancel()
+{
+	m_bApply = FALSE;
+
+	GetOwner()->SetFocus();
+}
+
+void CXTPReportInplaceList::Apply()
+{
+	if (!pControl)
+		return;
+
+	CXTPReportControl* pReportControl = pControl;
+
+	int nIndex = GetCurSel();
+	if (nIndex != LB_ERR)
+	{
+		m_bApply = TRUE;
+
+		CXTPReportRecordItemConstraint* pConstraint = (CXTPReportRecordItemConstraint*)GetItemDataPtr(nIndex);
+
+		XTP_REPORTRECORDITEM_ARGS itemArgs = *((XTP_REPORTRECORDITEM_ARGS*)this);
+		itemArgs.AddRef();
+
+		pItem->OnConstraintChanged(&itemArgs, pConstraint);
+		pReportControl->RedrawControl();
+
+		pReportControl->SendMessageToParent(itemArgs.pRow, itemArgs.pItem, itemArgs.pColumn, XTP_NM_REPORT_VALUECHANGED, 0);
+
+		itemArgs.Release();
+	}
+
+	pReportControl->SetFocus();
+}
+
+void CXTPReportInplaceList::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	UNREFERENCED_PARAMETER(nRepCnt); UNREFERENCED_PARAMETER(nFlags);
+
+	const DWORD cwdHotSearchTomeOut_ms = 1300;
+
+	DWORD dwTime = GetTickCount();
+
+	if (dwTime - m_dwLastKeyDownTime > cwdHotSearchTomeOut_ms)
+		m_strHotSearchContext.Empty();
+
+	m_dwLastKeyDownTime = dwTime;
+
+	//----------------------------------------------
+	m_strHotSearchContext += (TCHAR)nChar;
+
+	int nIndex = GetCurSel();
+	if (nIndex == LB_ERR)
+		nIndex = 0;
+
+	int nFindIdx = FindString(nIndex, m_strHotSearchContext);
+
+	if(nFindIdx == LB_ERR && nIndex > 0)
+		nFindIdx = FindString(0, m_strHotSearchContext);
+
+	if(nFindIdx != LB_ERR)
+	{
+		SetCurSel(nFindIdx);
+
+		if(nIndex != nFindIdx)
+			OnSelectionChanged(nFindIdx);
+	}
+}
+
+void CXTPReportInplaceList::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	switch(nChar)
+	{
+	case VK_UP:
+	case VK_DOWN:
+	case VK_PRIOR:
+	case VK_NEXT:
+	case VK_HOME:
+	case VK_END:
+		m_strHotSearchContext.Empty();
+	}
+
+	//----------------------------------------------
+	if (nChar == VK_ESCAPE)
+	{
+		Cancel();
+	}
+	else if (nChar == VK_RETURN || nChar == VK_F4)
+	{
+		 Apply();
+	}
+	else
+	{
+		int nPrevSel = CListBox::GetCurSel();
+		CListBox::OnKeyDown(nChar, nRepCnt, nFlags);
+		int nActualSel = CListBox::GetCurSel();
+
+		if(nPrevSel != nActualSel)
+			OnSelectionChanged(nActualSel);
+	}
+}
+
+void CXTPReportInplaceList::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if (nChar == VK_DOWN || nChar == VK_UP)
+	{
+		Apply();
+		return;
+	}
+
+	CListBox::OnSysKeyDown(nChar, nRepCnt, nFlags);
+}
+
+void CXTPReportInplaceList::OnSelectionChanged(int nLBIndex)
+{
+	CString strActual, str;
+	CListBox::GetText(nLBIndex,strActual);
+
+	CXTPReportRecordItemEditOptions* pEditOptions = pItem->GetEditOptions(pColumn);
+	CXTPReportRecordItemConstraints* pConstraints = pEditOptions->GetConstraints();
+
+	int nCount = pConstraints->GetCount();
+	for(int nIndex = 0; nIndex < nCount; nIndex++)
+	{
+		CXTPReportRecordItemConstraint* pConstraint = pConstraints->GetAt(nIndex);
+		str = pConstraint->m_strConstraint;
+
+		if(strActual.CompareNoCase(str) == 0)
+		{
+			((CXTPReportControl*)pControl)->OnConstraintSelecting(pRow, pItem, pColumn, pConstraint);
+			break;
+		}
+	}
+}
+
+

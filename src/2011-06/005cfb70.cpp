@@ -1,18 +1,5 @@
-// from server: 77% by atomic.potato
-struct W4KeywordFilterType_EnumDesc {
-    char pad0[0x68];
-    int* begin;
-    int* end;
-    int get(int index);
-};
-
-extern "C" int* __stdcall sub_5c4e80(int value);
-
-int W4KeywordFilterType_EnumDesc::get(int index) {
-    int* p = sub_5c4e80(index);
-    int v = *p;
-    if (v < 0) return 0;
-    int count = (int)(end - begin);
-    if (v >= count) return 0;
-    return begin[v];
-}
+// from server: 83% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct S{char pad[0x68]; char* begin; char* end; int f(int);};
+extern "C" int* sub(int);
+int S::f(int index){int* p=sub(index); int v=*p; if(v<0)return 0; if((unsigned)v>=(unsigned)((end-begin)>>2))return 0; return ((int*)begin)[v];}

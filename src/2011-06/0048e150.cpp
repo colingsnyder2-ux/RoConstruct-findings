@@ -1,19 +1,11 @@
-// from server: 99% by atomic.potato
-typedef unsigned long DWORD;
-
-extern DWORD g_00CB4178;
-extern DWORD g_00CB4170;
-extern DWORD g_00CB4174;
-
-extern void G1_func_0080b15d(const char *);
-
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+extern "C" void seh_fn_0048e150(void*);
+extern int g_a_0048e150;
+extern int g_b_0048e150;
+extern int g_arg_0048e150;
+struct Reg_0048e150 { Reg_0048e150() { g_a_0048e150 = 0; g_b_0048e150 = 0; seh_fn_0048e150(&g_arg_0048e150); } };
 void func_0048e150()
 {
-    if ((g_00CB4178 & 1) == 0)
-    {
-        g_00CB4178 |= 1;
-        g_00CB4170 = 0;
-        g_00CB4174 = 0;
-        G1_func_0080b15d("8csm");
-    }
+    static Reg_0048e150 reg;
 }

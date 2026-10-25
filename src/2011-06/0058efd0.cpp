@@ -1,21 +1,5 @@
-// from server: 79% by colin
-struct EnumDesc {
-    char pad[0x68];
-    int* begin;
-    int* end;
-    int getItem(int index);
-};
-
-extern "C" int* __stdcall lookup(int index);
-
-int EnumDesc::getItem(int index)
-{
-    int* p = lookup(index);
-    int v = *p;
-    if (v < 0)
-        return 0;
-    int count = (int)(((char*)end - (char*)begin) >> 2);
-    if ((unsigned)v >= (unsigned)count)
-        return 0;
-    return begin[v];
-}
+// from server: 83% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct S{char pad[0x68]; char* begin; char* end; int f(int);};
+extern "C" int* sub(int);
+int S::f(int index){int* p=sub(index); int v=*p; if(v<0)return 0; if((unsigned)v>=(unsigned)((end-begin)>>2))return 0; return ((int*)begin)[v];}

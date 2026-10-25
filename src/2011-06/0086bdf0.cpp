@@ -1,14 +1,14 @@
-// from server: 39% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Controls/Deprecated/XTThemeManager.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-13.2.1-shared-mfc Source/Controls/XTThemeManager.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTThemeManager.cpp: implementation of the CXTThemeManager class.
 //
 // This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2009 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,11 +26,8 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-
-#include "Common/XTPDrawHelpers.h"
-#include "Common/XTPColorManager.h"
-
 #include "XTThemeManager.h"
+#include "Common/XTPDrawHelpers.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -146,19 +143,20 @@ CXTThemeManagerStyle* CXTThemeManagerStyleFactory::CreateTheme(XTThemeStyle /*th
 
 void CXTThemeManagerStyleFactory::SetTheme(CXTThemeManagerStyle* pTheme)
 {
+	ASSERT(pTheme);
+	if (!pTheme)
+		return;
+
 	SAFE_DELETE(m_pTheme);
+	m_pTheme = pTheme;
 
-	if (pTheme)
-	{
-		m_pTheme = pTheme;
-		m_pTheme->m_pFactory = this;
-		m_pTheme->RefreshMetrics();
+	m_pTheme->m_pFactory = this;
+	m_pTheme->RefreshMetrics();
 
-		for (CXTThemeManagerStyleHost* pHost = m_hostList.GetHead();
+	for (CXTThemeManagerStyleHost* pHost = m_hostList.GetHead();
 			pHost != NULL; pHost = pHost->m_pNextHost)
-		{
-			pHost->OnThemeChanged();
-		}
+	{
+		pHost->OnThemeChanged();
 	}
 }
 
@@ -169,17 +167,13 @@ void CXTThemeManagerStyleFactory::SetTheme(XTThemeStyle theme)
 
 CXTThemeManagerStyle* CXTThemeManagerStyleFactory::GetSafeTheme()
 {
-	if (m_pTheme == NULL)
+	if (m_pTheme == 0)
 	{
 		m_pTheme = CreateTheme(XTThemeManager()->m_enumTheme);
-	}
 
-	if (m_pTheme)
-	{
 		m_pTheme->m_pFactory = this;
 		m_pTheme->RefreshMetrics();
 	}
-
 	return m_pTheme;
 }
 

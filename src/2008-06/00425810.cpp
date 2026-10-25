@@ -1,270 +1,188 @@
+// from server: 100% by king_originala
 // from server: 99% by colin
 // from server: 98% by king_originala
-// roc 2008-06 00425810  unit: CSelectionTreeCtrl  size: 475 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00425810
-//
-// 00425810  6aff                 push -1
-// 00425812  6810ec7b00           push 0x7bec10
-// 00425817  64a100000000         mov eax, dword ptr fs:[0]
-// 0042581d  50                   push eax
-// 0042581e  64892500000000       mov dword ptr fs:[0], esp
-// 00425825  83ec1c               sub esp, 0x1c
-// 00425828  56                   push esi
-// 00425829  8bf1                 mov esi, ecx
-// 0042582b  807e0e00             cmp byte ptr [esi + 0xe], 0
-// 0042582f  c744242800000000     mov dword ptr [esp + 0x28], 0
-// 00425837  7423                 je 0x42585c
-// 00425839  8d4c2434             lea ecx, [esp + 0x34]
-// 0042583d  c7442428ffffffff     mov dword ptr [esp + 0x28], 0xffffffff
-// 00425845  e816d4ffff           call 0x422c60
-// 0042584a  5e                   pop esi
-// 0042584b  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
-// 0042584f  64890d00000000       mov dword ptr fs:[0], ecx
-// 00425856  83c428               add esp, 0x28
-// 00425859  c21400               ret 0x14
-// 0042585c  837c243400           cmp dword ptr [esp + 0x34], 0
-// 00425861  53                   push ebx
-// 00425862  55                   push ebp
-// 00425863  57                   push edi
-// 00425864  b301                 mov bl, 1
-// 00425866  0f84c2000000         je 0x42592e
-// 0042586c  8d6ef0               lea ebp, [esi - 0x10]
-// 0042586f  8bcd                 mov ecx, ebp
-// 00425871  896c2424             mov dword ptr [esp + 0x24], ebp
-// 00425875  e816d81300           call 0x563090
-// 0042587a  885c2428             mov byte ptr [esp + 0x28], bl
-// 0042587e  8b442440             mov eax, dword ptr [esp + 0x40]
-// 00425882  8d4c2410             lea ecx, [esp + 0x10]
-// 00425886  51                   push ecx
-// 00425887  8d542420             lea edx, [esp + 0x20]
-// 0042588b  8d7ec4               lea edi, [esi - 0x3c]
-// 0042588e  52                   push edx
-// 0042588f  8bcf                 mov ecx, edi
-// 00425891  885c243c             mov byte ptr [esp + 0x3c], bl
-// 00425895  89442418             mov dword ptr [esp + 0x18], eax
-// 00425899  e862bd0200           call 0x451600
-// 0042589e  8b4718               mov eax, dword ptr [edi + 0x18]
-// 004258a1  8b3f                 mov edi, dword ptr [edi]
-// 004258a3  89442414             mov dword ptr [esp + 0x14], eax
-// 004258a7  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 004258ab  85c0                 test eax, eax
-// 004258ad  7404                 je 0x4258b3
-// 004258af  3bc7                 cmp eax, edi
-// 004258b1  7406                 je 0x4258b9
-// 004258b3  ff1590288000         call dword ptr [0x802890]
-// 004258b9  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 004258bd  394c2420             cmp dword ptr [esp + 0x20], ecx
-// 004258c1  742d                 je 0x4258f0
-// 004258c3  8b962cffffff         mov edx, dword ptr [esi - 0xd4]
-// 004258c9  8dbe2cffffff         lea edi, [esi - 0xd4]
-// 004258cf  8d4c241c             lea ecx, [esp + 0x1c]
-// 004258d3  89542410             mov dword ptr [esp + 0x10], edx
-// 004258d7  e8142f2500           call 0x6787f0
-// 004258dc  8b4004               mov eax, dword ptr [eax + 4]
-// 004258df  8b542410             mov edx, dword ptr [esp + 0x10]
-// 004258e3  50                   push eax
-// 004258e4  8b825c010000         mov eax, dword ptr [edx + 0x15c]
-// 004258ea  8bcf                 mov ecx, edi
-// 004258ec  ffd0                 call eax
-// 004258ee  eb32                 jmp 0x425922
-// 004258f0  8b4c2440             mov ecx, dword ptr [esp + 0x40]
-// 004258f4  51                   push ecx
-// 004258f5  8d542420             lea edx, [esp + 0x20]
-// 004258f9  52                   push edx
-// 004258fa  e841311f00           call 0x618a40
-// 004258ff  83c408               add esp, 8
-// 00425902  50                   push eax
-// 00425903  8d442414             lea eax, [esp + 0x14]
-// 00425907  50                   push eax
-// 00425908  8d4e10               lea ecx, [esi + 0x10]
-// 0042590b  c644243c02           mov byte ptr [esp + 0x3c], 2
-// 00425910  e81be7ffff           call 0x424030
-// 00425915  8d4c241c             lea ecx, [esp + 0x1c]
-// 00425919  885c2434             mov byte ptr [esp + 0x34], bl
-// 0042591d  e83ead1d00           call 0x600660
-// 00425922  8bcd                 mov ecx, ebp
-// 00425924  c644243400           mov byte ptr [esp + 0x34], 0
-// 00425929  e8b2d71300           call 0x5630e0
-// 0042592e  837c244800           cmp dword ptr [esp + 0x48], 0
-// 00425933  0f848c000000         je 0x4259c5
-// 00425939  8d6ef0               lea ebp, [esi - 0x10]
-// 0042593c  8bcd                 mov ecx, ebp
-// 0042593e  896c2424             mov dword ptr [esp + 0x24], ebp
-// 00425942  e849d71300           call 0x563090
-// 00425947  885c2428             mov byte ptr [esp + 0x28], bl
-// 0042594b  8d4c2448             lea ecx, [esp + 0x48]
-// 0042594f  51                   push ecx
-// 00425950  8d4e10               lea ecx, [esi + 0x10]
-// 00425953  c644243803           mov byte ptr [esp + 0x38], 3
-// 00425958  e8d3eeffff           call 0x424830
-// 0042595d  8b542448             mov edx, dword ptr [esp + 0x48]
-// 00425961  8d442410             lea eax, [esp + 0x10]
-// 00425965  50                   push eax
-// 00425966  8d4c2420             lea ecx, [esp + 0x20]
-// 0042596a  8d7ec4               lea edi, [esi - 0x3c]
-// 0042596d  51                   push ecx
-// 0042596e  8bcf                 mov ecx, edi
-// 00425970  89542418             mov dword ptr [esp + 0x18], edx
-// 00425974  e887bc0200           call 0x451600
-// 00425979  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 0042597d  8b5f18               mov ebx, dword ptr [edi + 0x18]
-// 00425980  8b3f                 mov edi, dword ptr [edi]
-// 00425982  85c0                 test eax, eax
-// 00425984  7404                 je 0x42598a
-// 00425986  3bc7                 cmp eax, edi
-// 00425988  7406                 je 0x425990
-// 0042598a  ff1590288000         call dword ptr [0x802890]
-// 00425990  395c2420             cmp dword ptr [esp + 0x20], ebx
-// 00425994  7423                 je 0x4259b9
-// 00425996  8bbe2cffffff         mov edi, dword ptr [esi - 0xd4]
-// 0042599c  81c62cffffff         add esi, 0xffffff2c
-// 004259a2  8d4c241c             lea ecx, [esp + 0x1c]
-// 004259a6  e8452e2500           call 0x6787f0
-// 004259ab  8b5004               mov edx, dword ptr [eax + 4]
-// 004259ae  8b875c010000         mov eax, dword ptr [edi + 0x15c]
-// 004259b4  52                   push edx
-// 004259b5  8bce                 mov ecx, esi
-// 004259b7  ffd0                 call eax
-// 004259b9  8bcd                 mov ecx, ebp
-// 004259bb  c644243400           mov byte ptr [esp + 0x34], 0
-// 004259c0  e81bd71300           call 0x5630e0
-// 004259c5  8d4c2440             lea ecx, [esp + 0x40]
-// 004259c9  c7442434ffffffff     mov dword ptr [esp + 0x34], 0xffffffff
-// 004259d1  e88ad2ffff           call 0x422c60
-// 004259d6  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 004259da  5f                   pop edi
-// 004259db  5d                   pop ebp
-// 004259dc  5b                   pop ebx
-// 004259dd  5e                   pop esi
-// 004259de  64890d00000000       mov dword ptr fs:[0], ecx
-// 004259e5  83c428               add esp, 0x28
-// 004259e8  c21400               ret 0x14
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: xtp-11.2.2-shared-mfc roc_king_originala_selection_change_69b407b1b216697d.cpp
 
-struct Change {
-    void *added;
-    unsigned long addedControl;
-    void *removed;
-    unsigned long removedControl;
-    ~Change();
+// Candidate translation unit (score above; library headers required).
+#ifndef _CPPUNWIND
+#define _CPPUNWIND 1
+#endif
+#define _AFXDLL 1
+#include <afxwin.h>
+#include <afxext.h>
+#include <XTToolkitPro.h>
+#include <map>
+#include <set>
+#include <intrin.h>
+#include <typeinfo>
+#include <stdexcept>
+namespace boost {namespace detail {
+class sp_counted_base {
+ sp_counted_base(const sp_counted_base&);
+ sp_counted_base&operator=(const sp_counted_base&);
+ long use_count_,weak_count_;
+public:
+ sp_counted_base():use_count_(1),weak_count_(1){}
+ virtual ~sp_counted_base(){}
+ virtual void dispose()=0;
+ virtual void destroy(){delete this;}
+ virtual void*get_deleter(const std::type_info&)=0;
+ void add_ref_copy(){_InterlockedIncrement(&use_count_);}
+ void weak_release(){if(_InterlockedDecrement(&weak_count_)==0)destroy();}
+ void release(){if(_InterlockedDecrement(&use_count_)==0){dispose();weak_release();}}
 };
-
-struct Temporary {
-    void *object;
-    void *control;
-    ~Temporary();
+class shared_count {
+ sp_counted_base*pi_;
+public:
+ shared_count():pi_(0){}
+ shared_count(const shared_count&r):pi_(r.pi_){if(pi_)pi_->add_ref_copy();}
+ ~shared_count(){if(pi_)pi_->release();}
+ friend inline bool operator<(shared_count const&a,shared_count const&b){return std::less<sp_counted_base*>()(a.pi_,b.pi_);}
 };
-
-struct Iterator {
-    void *owner;
-    void *node;
-    void **value();
+}
+template<class T>class shared_ptr {
+ T*px;detail::shared_count pn;
+public:
+ shared_ptr():px(0),pn(){}
+ shared_ptr(const shared_ptr&r):px(r.px),pn(r.pn){}
+ T*get()const{return px;}
+ template<class Y>bool _internal_less(shared_ptr<Y>const&r)const{return pn<r.pn;}
+ template<class Y>friend class shared_ptr;
 };
-
-struct Map {
-    void *owner;
-    char padding[20];
-    void *endNode;
-    Iterator *find(Iterator *, void *const *);
-};
-
-struct Mutex {
-    void lock();
-    void unlock();
-};
-
-struct Guard {
-    Mutex *mutex;
-    bool locked;
-    Guard(Mutex *p) : mutex(p) {
-        mutex->lock();
-        locked = true;
-    }
-    ~Guard() {
-        if (locked)
-            mutex->unlock();
-    }
-};
-
-struct Selection {
-    void insert(void **, const Temporary &);
-    void remove(void **);
-};
-
-typedef void (__thiscall *TreeAction)(void *, void *);
-
-struct TreeVTable {
-    TreeAction entries[88];
-};
-
-struct Tree {
-    TreeVTable *vtable;
-};
-
-extern "C" void (__cdecl *_invalid_parameter_noinfo)();
-extern Temporary __cdecl convert(void *);
-
-struct S {
-    char padding[14];
-    bool disabled;
-    void update(unsigned long, Change);
-};
-
-void S::update(unsigned long, Change change)
+}
+namespace boost {template<class T,class U>inline bool operator<(shared_ptr<T>const&a,shared_ptr<U>const&b){return a._internal_less(b);}}
+namespace boost {namespace noncopyable_ {class noncopyable {protected:noncopyable(){}~noncopyable(){}private:noncopyable(const noncopyable&);const noncopyable&operator=(const noncopyable&);};}typedef noncopyable_::noncopyable noncopyable;
+class condition;struct xtime;
+class thread_exception:public std::exception {protected:thread_exception();thread_exception(int);public:~thread_exception()throw();int native_error()const;private:int m_sys_err;};
+class lock_error:public thread_exception {public:lock_error();lock_error(int);~lock_error()throw();virtual const char*what()const throw();};
+namespace detail {namespace thread {
+template <typename Mutex>
+class lock_ops : private noncopyable
 {
-    if (disabled)
-        return;
-    void *key;
+private:
+    lock_ops() { }
 
-    if (change.added) {
-        Guard guard(reinterpret_cast<Mutex *>(
-            reinterpret_cast<char *>(this) - 16));
+public:
+    typedef typename Mutex::cv_state lock_state;
 
-        key = change.added;
-        Map *map = reinterpret_cast<Map *>(
-            reinterpret_cast<char *>(this) - 60);
-        Iterator found;
-        map->find(&found, &key);
+    static void lock(Mutex& m)
+    {
+        m.do_lock();
+    }
+    static bool trylock(Mutex& m)
+    {
+        return m.do_trylock();
+    }
+    static bool timedlock(Mutex& m, const xtime& xt)
+    {
+        return m.do_timedlock(xt);
+    }
+    static void unlock(Mutex& m)
+    {
+        m.do_unlock();
+    }
+    static void lock(Mutex& m, lock_state& state)
+    {
+        m.do_lock(state);
+    }
+    static void unlock(Mutex& m, lock_state& state)
+    {
+        m.do_unlock(state);
+    }
+};
 
-        void *endNode = map->endNode;
-        void *owner = map->owner;
-        if (!found.owner || found.owner != owner)
-            _invalid_parameter_noinfo();
+template <typename Mutex>
+class scoped_lock : private noncopyable
+{
+public:
+    typedef Mutex mutex_type;
 
-        if (found.node != endNode) {
-            Tree *tree = reinterpret_cast<Tree *>(
-                reinterpret_cast<char *>(this) - 212);
-            TreeVTable *vtable = tree->vtable;
-            vtable->entries[87](tree, found.value()[1]);
-        } else {
-            reinterpret_cast<Selection *>(
-                reinterpret_cast<char *>(this) + 16)->insert(
-                    &key, convert(change.added));
-        }
+    explicit scoped_lock(Mutex& mx, bool initially_locked=true)
+        : m_mutex(mx), m_locked(false)
+    {
+        if (initially_locked) lock();
+    }
+    ~scoped_lock()
+    {
+        if (m_locked) unlock();
     }
 
-    if (change.removed) {
-        Guard guard(reinterpret_cast<Mutex *>(
-            reinterpret_cast<char *>(this) - 16));
-
-        reinterpret_cast<Selection *>(
-            reinterpret_cast<char *>(this) + 16)->remove(&change.removed);
-
-        key = change.removed;
-        Map *map = reinterpret_cast<Map *>(
-            reinterpret_cast<char *>(this) - 60);
-        Iterator found;
-        map->find(&found, &key);
-
-        void *endNode = map->endNode;
-        void *owner = map->owner;
-        if (!found.owner || found.owner != owner)
-            _invalid_parameter_noinfo();
-
-        if (found.node != endNode) {
-            Tree *tree = reinterpret_cast<Tree *>(
-                reinterpret_cast<char *>(this) - 212);
-            TreeVTable *vtable = tree->vtable;
-            vtable->entries[87](tree, found.value()[1]);
-        }
+    void lock()
+    {
+        if (m_locked) throw lock_error();
+        lock_ops<Mutex>::lock(m_mutex);
+        m_locked = true;
     }
+    void unlock()
+    {
+        if (!m_locked) throw lock_error();
+        lock_ops<Mutex>::unlock(m_mutex);
+        m_locked = false;
+    }
+
+    bool locked() const { return m_locked; }
+    operator const void*() const { return m_locked ? this : 0; }
+
+private:
+    friend class boost::condition;
+
+    Mutex& m_mutex;
+    bool m_locked;
+};
+
+}}class recursive_mutex:private noncopyable {public:friend class detail::thread::lock_ops<recursive_mutex>;typedef detail::thread::scoped_lock<recursive_mutex> scoped_lock;recursive_mutex();~recursive_mutex();private:typedef std::size_t cv_state;void do_lock();void do_unlock();void do_lock(cv_state&);void do_unlock(cv_state&);void*m_mutex;bool m_critical_section;unsigned long m_count;};}
+
+namespace RBX {
+class Instance;class DataModel;class Selection;
+class SelectionChanged {
+public:
+ const boost::shared_ptr<Instance> addedItem;
+ const boost::shared_ptr<Instance> removedItem;
+ ~SelectionChanged();
+};
+}
+class CRobloxTreeCtrlNode;
+class CRobloxTreeCtrl:public CXTTreeCtrl {
+public:
+ virtual RBX::Selection* getSelection()=0;
+ virtual boost::shared_ptr<RBX::DataModel> getDataModel()=0;
+ virtual void onNodeCreated(CRobloxTreeCtrlNode*)=0;
+ virtual void onNodeChanged(CRobloxTreeCtrlNode*)=0;
+ virtual void onNodeDeleted(CRobloxTreeCtrlNode*)=0;
+ virtual void refreshTree();
+};
+extern boost::shared_ptr<RBX::Instance> nativeSharedInstance(RBX::Instance*);
+struct NativeSelectionEventView {
+ char prefix[14];bool disabled;
+ void onEvent(const RBX::Selection*,RBX::SelectionChanged);
+};
+void NativeSelectionEventView::onEvent(const RBX::Selection*,RBX::SelectionChanged change){
+ if(disabled)return;
+ RBX::Instance*key;
+ typedef std::map<RBX::Instance*,CRobloxTreeCtrlNode*> NodeMap;
+ typedef std::set<boost::shared_ptr<RBX::Instance> > PendingSet;
+ if(change.addedItem.get()){
+  boost::recursive_mutex::scoped_lock guard(*reinterpret_cast<boost::recursive_mutex*>(reinterpret_cast<char*>(this)-16));
+  key=change.addedItem.get();
+  NodeMap&nodes=*reinterpret_cast<NodeMap*>(reinterpret_cast<char*>(this)-60);
+  NodeMap::iterator found=nodes.find(key);
+  if(found!=nodes.end()){
+   CRobloxTreeCtrl*tree=reinterpret_cast<CRobloxTreeCtrl*>(reinterpret_cast<char*>(this)-212);
+   tree->onNodeChanged(found->second);
+  }else reinterpret_cast<PendingSet*>(reinterpret_cast<char*>(this)+16)->insert(nativeSharedInstance(change.addedItem.get()));
+ }
+ if(change.removedItem.get()){
+  boost::recursive_mutex::scoped_lock guard(*reinterpret_cast<boost::recursive_mutex*>(reinterpret_cast<char*>(this)-16));
+  reinterpret_cast<PendingSet*>(reinterpret_cast<char*>(this)+16)->erase(change.removedItem);
+  key=change.removedItem.get();
+  NodeMap&nodes=*reinterpret_cast<NodeMap*>(reinterpret_cast<char*>(this)-60);
+  NodeMap::iterator found=nodes.find(key);
+  if(found!=nodes.end()){
+   CRobloxTreeCtrl*tree=reinterpret_cast<CRobloxTreeCtrl*>(reinterpret_cast<char*>(this)-212);
+   tree->onNodeChanged(found->second);
+  }
+ }
 }

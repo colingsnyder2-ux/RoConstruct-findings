@@ -1,23 +1,11 @@
-// from server: 86% by atomic.potato
-extern "C" void* __cdecl sub_0080BBC2(void*);
-extern "C" int imported_type_info_equal(void*, const void*);
-
-struct TToolVerb
-{
-    void* p;
-    int f();
-};
-
-TToolVerb* g_object = (TToolVerb*)0x00C912C8;
-
-int TToolVerb::f()
-{
-    void* a = *(void**)((char*)p + 0xACC);
-    void* b = *(void**)((char*)a + 0x188);
-    if (b)
-    {
-        void* c = sub_0080BBC2(b);
-        return imported_type_info_equal(g_object, c);
-    }
-    return 0;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct P3 { char pad[0x188]; void* value; };
+struct P2 { char pad[0xacc]; P3* p; };
+struct Obj { char pad[0xc]; P2* p; bool f(); };
+struct C {};
+extern "C" void* helper(void*);
+extern C c;
+typedef bool (__thiscall *Fn)(C*,void*);
+extern Fn slot;
+bool Obj::f(){ void* x=p->p->value; if(x){ x=helper(x); return slot(&c,x); } return false; }

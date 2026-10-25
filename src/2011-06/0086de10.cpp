@@ -1,14 +1,14 @@
-// from server: 40% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/CommandBars/XTPMessageBar.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/DockingPane/XTPDockingPane.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPMessageBar.cpp : implementation of the CXTPMessageBar class.
+// XTPDockingPane.cpp : implementation of the CXTPDockingPaneclass.
 //
-// This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME DOCKINGPANE MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,16 +26,15 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-
-#include "Common/XTPMarkupRender.h"
-#include "Common/XTPToolTipContext.h"
-#include "Common/XTPColorManager.h"
+#include "TabManager/XTPTabManager.h"
 #include "Common/XTPDrawHelpers.h"
 
-#include "XTPCommandBarsDefines.h"
-#include "XTPCommandBars.h"
-#include "XTPPaintManager.h"
-#include "XTPMessageBar.h"
+#include "XTPDockingPane.h"
+#include "XTPDockingPaneContext.h"
+#include "XTPDockingPaneManager.h"
+#include "XTPDockingPaneTabbedContainer.h"
+#include "XTPDockingPaneAutoHidePanel.h"
+#include "XTPDockingPaneMiniWnd.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -43,525 +42,555 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-
-CXTPMessageBarButton::CXTPMessageBarButton()
+CXTPDockingPane::CXTPDockingPane(CXTPDockingPaneLayout* pLayout)
+	: CXTPDockingPaneBase(xtpPaneTypeDockingPane, pLayout)
 {
-	m_rcButton.SetRectEmpty();
+	m_dwOptions = 0;
+	m_hwndChild = 0;
 	m_nID = 0;
-	m_bPressed = FALSE;
-	m_bHot = FALSE;
-	m_pUIElement = NULL;
+	m_nIconID = -1;
+	m_dwData = 0;
+	m_clrItemTab = COLORREF_NULL;
+	m_nIDHelp = 0;
+	m_bEnabled = xtpPaneEnabled;
+
+	m_ptMinTrackSize = CPoint(0, 0);
+	m_ptMaxTrackSize = CPoint(32000, 32000);
+
+	EnableAutomation();
+
+
 }
 
-CXTPMessageBarButton::~CXTPMessageBarButton()
+CXTPDockingPane::~CXTPDockingPane()
 {
-	XTPMarkupReleaseElement(m_pUIElement);
+
 }
 
-void CXTPMessageBarButton::PerformClick(CXTPMessageBar* pBar, CPoint pt)
+void CXTPDockingPane::SetID(int nID)
 {
-	if ((::GetCapture() != NULL))
-		return;
+	ASSERT(nID != 0);
 
-	m_bPressed = TRUE;
-	pBar->InvalidateRect(m_rcButton, FALSE);
-
-	::SetCapture(pBar->GetSafeHwnd());
-
-	BOOL bClick = FALSE, bPressed;
-
-	while (::GetCapture() == pBar->GetSafeHwnd())
+	m_nID = nID;
+	CString strTitle;
+	if (strTitle.LoadString(nID))
 	{
-		MSG msg;
+		m_strTitle = strTitle;
+	}
 
-		if (!::GetMessage(&msg, NULL, 0, 0))
-			break;
+}
 
-		switch (msg.message)
+void CXTPDockingPane::SetWindowRect(CRect rc)
+{
+	m_rcWindow = rc;
+	m_szDocking = m_rcWindow.Size();
+}
+
+XTPXTPDockingPaneEnableOptions CXTPDockingPane::GetEnabled() const
+{
+	return m_bEnabled;
+}
+
+void CXTPDockingPane::SetEnabled(XTPXTPDockingPaneEnableOptions bEnabled)
+{
+	if (m_bEnabled != bEnabled)
+	{
+		m_bEnabled = bEnabled;
+		InvalidatePane(TRUE);
+	}
+}
+
+void CXTPDockingPane::OnSizeParent(CWnd* pParent, CRect rect, LPVOID lParam)
+{
+	AFX_SIZEPARENTPARAMS* lpLayout = (AFX_SIZEPARENTPARAMS*)lParam;
+	SetDockingSite(pParent);
+
+	if (lpLayout == 0 || lpLayout->hDWP != NULL)
+	{
+		m_rcWindow = rect;
+
+		if (pParent && m_pParentContainer)
 		{
-			case WM_MOUSEMOVE:
-				pt = CPoint((short signed)LOWORD(msg.lParam), (short signed)HIWORD(msg.lParam));
-
-				bPressed = m_rcButton.PtInRect(pt);
-
-				if (bPressed != m_bPressed)
-				{
-					m_bPressed = bPressed;
-					pBar->InvalidateRect(m_rcButton, FALSE);
-				}
-
-				break;
-
-			case WM_LBUTTONUP:
-				bClick = m_bPressed;
-				goto ExitLoop;
-
-			case WM_KEYDOWN:
-				if (msg.wParam != VK_ESCAPE)
-					break;
-
-			case WM_CANCELMODE:
-			case WM_RBUTTONDOWN:
-				goto ExitLoop;
-
-			default:
-				DispatchMessage (&msg);
-				break;
+			MapWindowPoints(pParent->GetSafeHwnd(), m_pParentContainer->GetPaneHwnd(), (LPPOINT)&rect, 2);
+			if (m_hwndChild) ::MoveWindow(m_hwndChild, rect.left, rect.top, rect.Width(), rect.Height(), TRUE);
+			if (m_hwndChild) ::EnableWindow(m_hwndChild, m_bEnabled & xtpPaneEnableClient ? TRUE : FALSE);
 		}
 	}
+}
 
-ExitLoop:
-	ReleaseCapture();
-
-	m_bPressed = FALSE;
-	pBar->InvalidateRect(m_rcButton, FALSE);
-
-	if (bClick)
+void CXTPDockingPane::SetFocus()
+{
+	if (m_hwndChild)
 	{
-		pBar->Click(this);
+		if (!IsChild(m_hwndChild, ::GetFocus()))
+			::SetFocus(m_hwndChild);
+	}
+}
+BOOL CXTPDockingPane::IsFocus() const
+{
+	HWND hwndFocus = ::GetFocus();
+	return (m_hwndChild != 0) && (hwndFocus == m_hwndChild || IsChild(m_hwndChild, hwndFocus));
+
+}
+
+void CXTPDockingPane::SetParentContainer(CXTPDockingPaneBase* pContainer)
+{
+	m_pParentContainer = pContainer;
+
+	if (m_hwndChild == 0)
+		return;
+
+	if (pContainer)
+	{
+		ASSERT(pContainer->GetType() == xtpPaneTypeTabbedContainer);
+		::SetParent(m_hwndChild, pContainer->GetPaneHwnd());
+
+	}
+	else
+	{
+		::ShowWindow(m_hwndChild, SW_HIDE);
+		::SetParent(m_hwndChild, GetDockingPaneManager()->GetSafeHwnd());
+
+		m_pDockingSite = NULL;
 	}
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// CXTPMessageBar
-
-CXTPMessageBar::CXTPMessageBar()
+void CXTPDockingPane::ShowWindow(BOOL bShow)
 {
-	m_pMarkupContext = NULL;
-	m_pUIElement = NULL;
+	if (bShow)
+	{
+		GetDockingPaneManager()->NotifyOwner(XTP_DPN_SHOWWINDOW, (LPARAM)this);
+	}
+	if (m_hwndChild)
+	{
+		::ShowWindow(m_hwndChild, bShow ? SW_SHOW : SW_HIDE);
+	}
+}
 
-	m_rcBorder.SetRect(3, 3, 3, 3);
-	m_rcPadding.SetRect(5, 0, 5, 0);
-	m_rcContent.SetRectEmpty();
+void CXTPDockingPane::Close()
+{
+	GetDockingPaneManager()->ClosePane(this);
+}
 
-	m_pCommandBars = NULL;
+void CXTPDockingPane::Hide()
+{
+	GetDockingPaneManager()->HidePane(this);
+}
 
-	m_pHotButton = NULL;
+void CXTPDockingPane::Select()
+{
+	GetDockingPaneManager()->ShowPane(this);
+}
+
+CWnd* CXTPDockingPane::GetDockingSite() const
+{
+	return m_pParentContainer ? m_pParentContainer->m_pDockingSite : 0;
 
 }
 
-CXTPMessageBar::~CXTPMessageBar()
+CFrameWnd* CXTPDockingPane::GetParentFrame() const
 {
-	RemoveButtons();
+	CWnd* pSite = GetDockingSite();
 
-	XTPMarkupReleaseElement(m_pUIElement);
-	XTPMarkupReleaseContext(m_pMarkupContext);
+	return pSite && pSite->IsFrameWnd() ? (CFrameWnd*)pSite : NULL;
 }
 
-BOOL CXTPMessageBar::Create(CXTPCommandBars* pCommandBars, DWORD dwStyle, UINT nID)
+void CXTPDockingPane::Copy(CXTPDockingPane* pClone)
 {
-	m_dwStyle = (dwStyle & CBRS_ALL);
-	m_pCommandBars = pCommandBars;
+	m_szDocking = pClone->m_szDocking;
+	m_strTitle = pClone->m_strTitle;
+	m_nIconID = pClone->m_nIconID;
+	m_dwOptions = pClone->m_dwOptions;
+	m_dwData = pClone->m_dwData;
+	m_nID = pClone->m_nID;
+	m_bEnabled = pClone->m_bEnabled;
 
-	if (!CWnd::Create(AfxRegisterWndClass(0, AfxGetApp()->LoadStandardCursor(IDC_ARROW)), NULL, dwStyle, CRect(0, 0, 0, 0), pCommandBars->GetSite(), nID))
+	m_ptMinTrackSize = pClone->m_ptMinTrackSize;
+	m_ptMaxTrackSize = pClone->m_ptMaxTrackSize;
+
+	m_hwndChild = 0;
+}
+
+CXTPDockingPaneBase* CXTPDockingPane::Clone(CXTPDockingPaneLayout* pLayout, CXTPPaneToPaneMap* pMap, DWORD /*dwIgnoredOptions*/)
+{
+	ASSERT(pMap);
+
+	CXTPDockingPane* pPane = (CXTPDockingPane*)GetDockingPaneManager()->OnCreatePane(GetType(), pLayout);
+
+	pPane->Copy(this);
+
+	if (pMap) pMap->SetAt(this, pPane);
+
+	return pPane;
+}
+
+
+BOOL CXTPDockingPane::IsValid() const
+{
+	return m_hwndChild != NULL;
+
+}
+void CXTPDockingPane::Attach(CWnd* pWnd)
+{
+	if (pWnd)
+	{
+		m_hwndChild = pWnd->GetSafeHwnd();
+		GetDockingPaneManager()->_Redraw();
+		if (m_pParentContainer)
+		{
+			::SetParent(m_hwndChild, m_pParentContainer->GetPaneHwnd());
+		}
+
+		if (GetDockingPaneManager()->m_bInitialUpdateCalled)
+		{
+			pWnd->SendMessage(WM_INITIALUPDATE, 0, 0);
+			pWnd->SendMessageToDescendants(WM_INITIALUPDATE, 0, 0, TRUE, TRUE);
+		}
+	}
+}
+
+CWnd* CXTPDockingPane::AttachView(CWnd* pParentWnd, CRuntimeClass* pViewClass, CDocument* pDocument/*= NULL*/, CCreateContext* pContext/*= NULL*/)
+{
+	if (!pContext && !pViewClass)
+		return NULL;
+
+#ifdef _DEBUG
+	ASSERT(pContext != NULL || pViewClass != NULL);
+	ASSERT(pContext != NULL || pViewClass->IsDerivedFrom(RUNTIME_CLASS(CWnd)));
+	ASSERT(pContext != NULL || AfxIsValidAddress(pViewClass, sizeof(CRuntimeClass), FALSE));
+#endif
+
+	CCreateContext contextT;
+	if (pContext == NULL)
+	{
+		// if no context specified, generate one from the
+		// currently selected client if possible.
+		contextT.m_pLastView = NULL;
+		contextT.m_pCurrentFrame = NULL;
+		contextT.m_pNewDocTemplate = NULL;
+		contextT.m_pCurrentDoc = pDocument;
+		contextT.m_pNewViewClass = pViewClass;
+
+		if (pDocument != NULL)
+			contextT.m_pNewDocTemplate = pDocument->GetDocTemplate();
+
+		pContext = &contextT;
+	}
+
+	CFrameWnd* pFrame = new CFrameWnd;
+
+	pFrame->Create(NULL, NULL, WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
+		CRect(0, 0, 0, 0), pParentWnd, NULL, 0, pContext);
+
+	pFrame->ModifyStyleEx(WS_EX_CLIENTEDGE, 0);
+
+	Attach(pFrame);
+
+	CWnd* pView = pFrame->GetDescendantWindow(AFX_IDW_PANE_FIRST, TRUE);
+
+	if (DYNAMIC_DOWNCAST(CView, pView))
+	{
+		pFrame->SetActiveView((CView*)pView);
+	}
+
+	return pView;
+}
+
+void CXTPDockingPane::Detach()
+{
+	if (m_hwndChild)
+	{
+		::ShowWindow(m_hwndChild, SW_HIDE);
+		::SetParent(m_hwndChild, GetDockingPaneManager()->GetSite()->GetSafeHwnd());
+		m_hwndChild = 0;
+	}
+	GetDockingPaneManager()->_Redraw();
+}
+
+CString CXTPDockingPane::GetTitle() const
+{
+	int nIndex = m_strTitle.Find('\n');
+	if (nIndex == -1)
+		return m_strTitle;
+	return m_strTitle.Left(nIndex);
+}
+
+CString CXTPDockingPane::GetShortTitle() const
+{
+	int nIndex = m_strTitle.Find('\n');
+	if (nIndex == -1)
+		return m_strTitle;
+	return m_strTitle.Mid(nIndex + 1);
+}
+
+void CXTPDockingPane::SetTitle(LPCTSTR lpszTitle)
+{
+	m_strTitle = lpszTitle;
+	InvalidatePane(FALSE);
+}
+
+BOOL CXTPDockingPane::IsClosed() const
+{
+	return m_pParentContainer == NULL;
+}
+
+BOOL CXTPDockingPane::IsHidden() const
+{
+	if (m_pParentContainer == NULL)
 		return FALSE;
 
-	if (m_pCommandBars->IsLayoutRTL())
+	return m_pParentContainer->IsHidden();
+}
+
+BOOL CXTPDockingPane::IsSelected() const
+{
+	if (m_pParentContainer == NULL) return FALSE;
+	ASSERT(m_pParentContainer->GetType() == xtpPaneTypeTabbedContainer);
+	return ((CXTPDockingPaneTabbedContainer*)m_pParentContainer)->GetSelected() == this;
+}
+
+BOOL CXTPDockingPane::IsFloating() const
+{
+	if (m_pParentContainer == NULL) return FALSE;
+	if (IsHidden()) return FALSE;
+	ASSERT(m_pParentContainer->GetType() == xtpPaneTypeTabbedContainer);
+
+	if (m_pParentContainer->GetPaneHwnd() == 0) return FALSE;
+
+	CWnd* pFrame = m_pParentContainer->GetDockingSite();
+	return pFrame && pFrame->IsKindOf(RUNTIME_CLASS(CXTPDockingPaneMiniWnd));
+}
+
+
+CXTPImageManagerIcon* CXTPDockingPane::GetIcon(int nWidth) const
+{
+	return GetDockingPaneManager()->GetIcon(GetIconID(), nWidth);
+}
+
+
+void CXTPDockingPane::SetItemColor(COLORREF clr)
+{
+	m_clrItemTab = clr;
+	InvalidatePane(FALSE);
+}
+
+COLORREF CXTPDockingPane::GetItemColor() const
+{
+	if (m_clrItemTab != COLORREF_NULL)
+		return m_clrItemTab;
+
+	if (m_hwndChild)
 	{
-		ModifyStyleEx(0, WS_EX_LAYOUTRTL);
+		COLORREF clr = (COLORREF)::SendMessage(m_hwndChild, WM_XTP_GETTABCOLOR, 0, 0);
+		if (clr != 0)
+			return clr;
+	}
+	return xtpTabColorBlue + GetID() % 8;
+}
+
+void CXTPDockingPane::GetMinMaxInfo(LPMINMAXINFO pMinMaxInfo) const
+{
+	ZeroMemory(pMinMaxInfo, sizeof(MINMAXINFO));
+	pMinMaxInfo->ptMinTrackSize = m_ptMinTrackSize;
+	pMinMaxInfo->ptMaxTrackSize = m_ptMaxTrackSize;
+}
+
+DWORD CXTPDockingPane::GetOptions() const
+{
+	return GetDockingPaneManager()->m_dwDefaultPaneOptions | m_dwOptions;
+}
+
+void CXTPDockingPane::DeletePane()
+{
+	InternalRelease();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Accessible
+
+CCmdTarget* CXTPDockingPane::GetAccessible()
+{
+	return this;
+}
+
+HRESULT CXTPDockingPane::GetAccessibleParent(IDispatch* FAR* ppdispParent)
+{
+	SAFE_MANAGE_STATE(m_pModuleState);
+
+	*ppdispParent = NULL;
+
+	if (m_pParentContainer)
+	{
+		*ppdispParent = ((CXTPDockingPaneTabbedContainer*)m_pParentContainer)->GetIDispatch(TRUE);
+		return S_OK;
+	}
+	return E_FAIL;
+}
+
+HRESULT CXTPDockingPane::GetAccessibleChildCount(long FAR* pChildCount)
+{
+	if (pChildCount == 0)
+		return E_INVALIDARG;
+
+	*pChildCount = m_hwndChild ? 1 : 0;
+
+	return S_OK;
+}
+
+HRESULT CXTPDockingPane::GetAccessibleChild(VARIANT varChild, IDispatch* FAR* ppdispChild)
+{
+	SAFE_MANAGE_STATE(m_pModuleState);
+
+	*ppdispChild = NULL;
+
+	if (GetChildIndex(&varChild) == 1)
+	{
+		return AccessibleObjectFromWindow(m_hwndChild, OBJID_WINDOW, IID_IDispatch, (void**)ppdispChild);
 	}
 
-	return TRUE;
+	return S_OK;
 }
 
-
-void CXTPMessageBar::OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHndler)
+HRESULT CXTPDockingPane::GetAccessibleName(VARIANT varChild, BSTR* pszName)
 {
-	// update the dialog controls added to the status bar
-	UpdateDialogControls(pTarget, bDisableIfNoHndler);
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	*pszName = GetShortTitle().AllocSysString();
+	return S_OK;
 }
 
-CSize CXTPMessageBar::CalcFixedLayout(BOOL, BOOL /*bHorz*/)
+HRESULT CXTPDockingPane::GetAccessibleDescription(VARIANT varChild, BSTR* pszDescription)
 {
-	ASSERT_VALID(this);
-	ASSERT(::IsWindow(m_hWnd));
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
 
-	CSize size(32767, 40);
-	return size;
+	*pszDescription = GetTitle().AllocSysString();
+	return S_OK;
 }
 
-
-void CXTPMessageBar::EnableMarkup(BOOL bEnableMarkup)
+HRESULT CXTPDockingPane::GetAccessibleRole(VARIANT varChild, VARIANT* pvarRole)
 {
-	XTPMarkupReleaseContext(m_pMarkupContext);
+	pvarRole->vt = VT_EMPTY;
 
-	if (bEnableMarkup)
+	if (GetChildIndex(&varChild) == CHILDID_SELF)
 	{
-		m_pMarkupContext = XTPMarkupCreateContext(m_hWnd);
+		pvarRole->vt = VT_I4;
+		pvarRole->lVal = ROLE_SYSTEM_PAGETAB;
+		return S_OK;
 	}
+
+	return E_INVALIDARG;
 }
 
-void CXTPMessageBar::AddButton(UINT nID, LPCTSTR lpszCaption, LPCTSTR lpszToolTop)
+HRESULT CXTPDockingPane::AccessibleSelect(long /*flagsSelect*/, VARIANT varChild)
 {
-	CXTPMessageBarButton* pButton = new CXTPMessageBarButton();
-	pButton->m_nID = nID;
-	pButton->m_strCaption = lpszCaption;
-	pButton->m_strToolTip = lpszToolTop;
-	pButton->m_pUIElement = XTPMarkupParseText(m_pMarkupContext, lpszCaption);
+	SAFE_MANAGE_STATE(m_pModuleState);
 
-	m_arrButtons.Add(pButton);
-	Invalidate(FALSE);
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	Select();
+
+	return S_OK;
 }
 
-void CXTPMessageBar::RemoveButtons()
+
+HRESULT CXTPDockingPane::GetAccessibleState(VARIANT varChild, VARIANT* pvarState)
 {
-	for (int i = 0; i < m_arrButtons.GetSize(); i++)
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	pvarState->vt = VT_I4;
+	pvarState->lVal = STATE_SYSTEM_SELECTABLE;
+
+	if (!m_pParentContainer)
+		pvarState->lVal |= STATE_SYSTEM_INVISIBLE;
+
+	if (m_pParentContainer && ((CXTPDockingPaneTabbedContainer*)m_pParentContainer)->GetSelected() == this)
+		pvarState->lVal |= STATE_SYSTEM_SELECTED;
+
+	return S_OK;
+}
+
+HRESULT CXTPDockingPane::GetAccessibleDefaultAction(VARIANT varChild, BSTR* pszDefaultAction)
+{
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	*pszDefaultAction = SysAllocString(L"Switch");
+
+	return S_OK;
+}
+
+HRESULT CXTPDockingPane::AccessibleDoDefaultAction(VARIANT varChild)
+{
+	SAFE_MANAGE_STATE(m_pModuleState);
+
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	Select();
+
+	return S_OK;
+}
+
+HRESULT CXTPDockingPane::AccessibleLocation(long* pxLeft, long* pyTop, long* pcxWidth, long* pcyHeight, VARIANT varChild)
+{
+	CRect rc;
+
+	if (GetChildIndex(&varChild) == 1)
 	{
-		delete m_arrButtons[i];
+		GetWindowRect(m_hwndChild, &rc);
 	}
-	m_arrButtons.RemoveAll();
-	m_pHotButton = NULL;
-
-	if (m_hWnd) Invalidate(FALSE);
-}
-
-void CXTPMessageBar::SetMessage(LPCTSTR lpszMessage)
-{
-	m_strContent = lpszMessage;
-
-	XTPMarkupReleaseElement(m_pUIElement);
-
-	if (m_pMarkupContext)
+	else if (GetChildIndex(&varChild) != CHILDID_SELF)
 	{
-		m_pUIElement = XTPMarkupParseText(m_pMarkupContext, lpszMessage);
-	}
-	Invalidate(FALSE);
-}
-
-CXTPPaintManager* CXTPMessageBar::GetPaintManager() const
-{
-	return m_pCommandBars->GetPaintManager();
-}
-
-BEGIN_MESSAGE_MAP(CXTPMessageBar, CControlBar)
-	//{{AFX_MSG_MAP(CXTPMessageBar)
-	ON_WM_PAINT()
-	ON_WM_SIZE()
-	ON_WM_MOUSEMOVE()
-	ON_WM_LBUTTONDOWN()
-	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPMessageBar message handlers
-
-
-void CXTPMessageBar::OnPaint()
-{
-	CPaintDC dcPaint(this); // device context for painting
-
-	CXTPBufferDC dc(dcPaint);
-
-	CXTPFontDC font(&dc, GetPaintManager()->GetRegularFont());
-
-	RecalcLayout(&dc);
-
-	FillMessageBar(&dc);
-
-	DrawContent(&dc);
-
-	DrawButtons(&dc);
-}
-
-void CXTPMessageBar::DrawButtons(CDC* pDC)
-{
-	for (int i = 0; i < m_arrButtons.GetSize(); i++)
-	{
-		CXTPMessageBarButton* pButton = m_arrButtons.GetAt(i);
-		DrawButton(pDC, pButton);
-	}
-};
-
-void CXTPMessageBar::DrawButton(CDC* pDC, CXTPMessageBarButton* pButton)
-{
-	BOOL bCloseButton = (pButton->m_nID == SC_CLOSE);
-
-	GetPaintManager()->DrawMessageBarButton(pDC, pButton);
-
-	if (!bCloseButton)
-	{
-		COLORREF clrText = GetPaintManager()->m_clrMessageBarText;
-
-		if (pButton->m_pUIElement)
-		{
-			XTPMarkupSetDefaultFont(m_pMarkupContext, (HFONT)GetPaintManager()->GetRegularFont()->GetSafeHandle(), clrText);
-
-			CSize sz = XTPMarkupMeasureElement(pButton->m_pUIElement);
-
-			CPoint pt((pButton->m_rcButton.left + pButton->m_rcButton.right - sz.cx) / 2,
-				(pButton->m_rcButton.top + pButton->m_rcButton.bottom - sz.cy) / 2);
-
-			XTPMarkupRenderElement(pButton->m_pUIElement, pDC->GetSafeHdc(), CRect(pt, sz));
-		}
-		else
-		{
-			pDC->SetBkMode(TRANSPARENT);
-			pDC->SetTextColor(clrText);
-			pDC->DrawText(pButton->m_strCaption, pButton->m_rcButton, DT_CENTER | DT_VCENTER | DT_NOPREFIX | DT_SINGLELINE);
-		}
-	}
-}
-
-void CXTPMessageBar::FillMessageBar(CDC* pDC)
-{
-	GetPaintManager()->FillMessageBar(pDC, this);
-}
-
-void CXTPMessageBar::DrawContent(CDC* pDC)
-{
-	COLORREF clrText = GetPaintManager()->m_clrMessageBarText;
-
-	if (m_pUIElement)
-	{
-		XTPMarkupSetDefaultFont(m_pMarkupContext, (HFONT)GetPaintManager()->GetRegularFont()->GetSafeHandle(), clrText);
-		XTPMarkupRenderElement(m_pUIElement, pDC->GetSafeHdc(), m_rcContent);
+		return E_INVALIDARG;
 	}
 	else
 	{
-		pDC->SetBkMode(TRANSPARENT);
-		pDC->SetTextColor(clrText);
-		pDC->DrawText(m_strContent, m_rcContent, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX);
-	}
-}
+		CXTPDockingPaneTabbedContainer* pContainer = (CXTPDockingPaneTabbedContainer*)m_pParentContainer;
+		if (!pContainer)
+			return S_FALSE;
 
-CRect CXTPMessageBar::GetMessageRect()
-{
-	BOOL bCloseButton = FindButton(SC_CLOSE) != NULL;
+		pContainer->GetWindowRect(&rc);
 
-	CXTPClientRect rc(this);
-	rc.left += m_rcBorder.left;
-	rc.top += m_rcBorder.top;
-	rc.right -= m_rcBorder.right + (bCloseButton ? 18 : 0);
-	rc.bottom -= m_rcBorder.bottom;
-
-	return rc;
-}
-
-CSize CXTPMessageBar::MeasureContent(CDC* pDC)
-{
-	if (m_pUIElement)
-	{
-		XTPMarkupSetDefaultFont(m_pMarkupContext, (HFONT)GetPaintManager()->GetRegularFont()->GetSafeHandle(), COLORREF_NULL);
-		CSize sz = XTPMarkupMeasureElement(m_pUIElement);
-		return sz;
-	}
-
-	CSize sz = pDC->GetTextExtent(m_strContent);
-	return sz;
-}
-
-CSize CXTPMessageBar::MeasureButton(CDC* pDC, CXTPMessageBarButton* pButton)
-{
-	if (pButton->m_nID == SC_CLOSE)
-		return CSize(18, 18);
-
-	CSize sz;
-
-	if (pButton->m_pUIElement)
-	{
-		XTPMarkupSetDefaultFont(m_pMarkupContext, (HFONT)GetPaintManager()->GetRegularFont()->GetSafeHandle(), COLORREF_NULL);
-		sz = XTPMarkupMeasureElement(pButton->m_pUIElement);
-	}
-	else
-	{
-		sz = pDC->GetTextExtent(pButton->m_strCaption);
-	}
-
-	sz.cy = max(sz.cy + 2, 23);
-	sz.cx = max(89, sz.cx + 10);
-
-	return sz;
-}
-
-void CXTPMessageBar::RecalcLayout(CDC* pDC)
-{
-	if (!m_hWnd)
-		return;
-
-	CXTPClientRect rcClient(this);
-
-	CSize szContent = MeasureContent(pDC);
-
-	m_rcContent = CRect(CPoint(m_rcBorder.left + m_rcPadding.left, (rcClient.Height() - szContent.cy) /2), szContent);
-
-	int nLeft = m_rcContent.right, i;
-
-	CXTPMessageBarButton* pCloseButton = NULL;
-
-	for (i = 0; i < m_arrButtons.GetSize(); i++)
-	{
-		CXTPMessageBarButton* pButton = m_arrButtons.GetAt(i);
-		if (pButton->m_nID == SC_CLOSE)
+		if (pContainer->GetItemCount() > 1)
 		{
-			pCloseButton = pButton;
-			continue;
-		}
-
-		CSize szButton = MeasureButton(pDC, pButton);
-
-		pButton->m_rcButton = CRect(CPoint(nLeft + m_rcPadding.right, (rcClient.Height() - szButton.cy) /2), szButton);
-		nLeft = pButton->m_rcButton.right;
-	}
-
-	int nRight = rcClient.right - m_rcBorder.right - m_rcPadding.right - (pCloseButton ? 18 : 0);
-	if (nLeft > nRight)
-	{
-		nLeft = m_rcBorder.left + m_rcPadding.left;
-
-		for (i = (int)m_arrButtons.GetSize() - 1; i >= 0; i--)
-		{
-			CXTPMessageBarButton* pButton = m_arrButtons.GetAt(i);
-			if (pButton->m_nID == SC_CLOSE)
-				continue;
-
-			int nWidth = pButton->m_rcButton.Width();
-			pButton->m_rcButton.right = nRight;
-			pButton->m_rcButton.left = nRight - nWidth;
-			if (pButton->m_rcButton.left < nLeft)
+			for (int i = 0; i < pContainer->GetItemCount(); i++)
 			{
-				pButton->m_rcButton.SetRectEmpty();
-			}
-			else
-			{
-				nRight = nRight - nWidth - m_rcPadding.right;
+				CXTPTabManagerItem* pItem = pContainer->GetItem(i);
+				if (pItem->GetData() == (DWORD_PTR)this)
+				{
+					CRect rcItem = pItem->GetRect();
+					rc = CRect(CPoint(rc.left + rcItem.left, rc.top + rcItem.top), rcItem.Size());
+					break;
+				}
 			}
 		}
-
-		m_rcContent.right = nRight;
 	}
 
-	if (pCloseButton)
-	{
-		CSize szButton = MeasureButton(pDC, pCloseButton);
-		pCloseButton->m_rcButton = CRect(CPoint(rcClient.right - szButton.cx - 1, m_rcBorder.top), szButton);
-	}
-};
 
-void CXTPMessageBar::OnSize(UINT nType, int cx, int cy)
-{
-	CControlBar::OnSize(nType, cx, cy);
+	*pxLeft = rc.left;
+	*pyTop = rc.top;
+	*pcxWidth = rc.Width();
+	*pcyHeight = rc.Height();
 
-	Invalidate(FALSE);
+	return S_OK;
 }
 
-BOOL CXTPMessageBar::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+HRESULT CXTPDockingPane::AccessibleHitTest(long /*xLeft*/, long /*yTop*/, VARIANT* pvarID)
 {
-	if (m_pUIElement)
-	{
-		if (XTPMarkupRelayMessage(m_pUIElement, message, wParam, lParam, pResult))
-			return TRUE;
-	}
+	pvarID->vt = VT_I4;
+	pvarID->lVal = 0;
 
-	m_pCommandBars->GetToolTipContext()->FilterToolTipMessage(this, message, wParam, lParam);
-
-	return CControlBar::OnWndMsg(message, wParam, lParam, pResult);
+	return S_OK;
 }
 
-CXTPMessageBarButton* CXTPMessageBar::FindButton(UINT nID) const
-{
-	for (int i = 0; i < m_arrButtons.GetSize(); i++)
-	{
-		CXTPMessageBarButton* pButton = m_arrButtons.GetAt(i);
-		if (pButton->m_nID == nID)
-			return pButton;
-	}
 
-	return NULL;
 
-}
-CXTPMessageBarButton* CXTPMessageBar::HitTestButton(CPoint point) const
-{
-	for (int i = 0; i < m_arrButtons.GetSize(); i++)
-	{
-		CXTPMessageBarButton* pButton = m_arrButtons.GetAt(i);
-		if (pButton->m_rcButton.PtInRect(point))
-			return pButton;
-	}
 
-	return NULL;
-}
 
-void CXTPMessageBar::OnMouseLeave()
-{
-	OnMouseMove(0, CPoint(-1, -1));
-}
-
-void CXTPMessageBar::OnMouseMove(UINT nFlags, CPoint point)
-{
-	CXTPMessageBarButton* pButton = HitTestButton(point);
-
-	if (pButton != m_pHotButton)
-	{
-		if (m_pHotButton) m_pHotButton->m_bHot = FALSE;
-
-		m_pHotButton = pButton;
-
-		if (m_pHotButton) m_pHotButton->m_bHot = TRUE;
-
-		if (m_pHotButton)
-		{
-			TRACKMOUSEEVENT tme =
-			{
-				sizeof(TRACKMOUSEEVENT), TME_LEAVE, m_hWnd
-			};
-			_TrackMouseEvent(&tme);
-		}
-
-		Invalidate(FALSE);
-	}
-
-	CControlBar::OnMouseMove(nFlags, point);
-}
-
-void CXTPMessageBar::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	if (m_pHotButton)
-	{
-		m_pHotButton->PerformClick(this, point);
-		return;
-	}
-
-	CControlBar::OnLButtonDown(nFlags, point);
-}
-
-INT_PTR CXTPMessageBar::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
-{
-	ASSERT_VALID(this);
-	ASSERT(::IsWindow(m_hWnd));
-
-	// check child windows first by calling CControlBar
-	INT_PTR nHit = CControlBar::OnToolHitTest(point, pTI);
-	if (nHit != -1)
-		return nHit;
-
-	if (m_pHotButton)
-	{
-		nHit = m_pHotButton->m_nID;
-
-		CString strTip = m_pHotButton->m_strToolTip;
-		if (strTip.IsEmpty())
-			return -1;
-
-		CXTPToolTipContext::FillInToolInfo(pTI, m_hWnd, m_pHotButton->m_rcButton, nHit, strTip, strTip, _T(""), m_pCommandBars->GetImageManager());
-
-		return nHit;
-	}
-	return -1;
-}
-
-void CXTPMessageBar::Click(CXTPMessageBarButton* pButton)
-{
-	if (pButton->m_nID == SC_CLOSE)
-	{
-		SetWindowPos(NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_HIDEWINDOW);
-
-		m_pCommandBars->RecalcFrameLayout();
-	}
-	else
-	{
-		m_pCommandBars->GetSite()->SendMessage(WM_COMMAND, pButton->m_nID);
-	}
-}
-
+BEGIN_INTERFACE_MAP(CXTPDockingPane, CCmdTarget)
+	INTERFACE_PART(CXTPDockingPane, IID_IAccessible, ExternalAccessible)
+END_INTERFACE_MAP()

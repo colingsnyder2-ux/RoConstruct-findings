@@ -1,18 +1,11 @@
-// from server: 89% by atomic.potato
-extern "C" void G1_func_0080b15d(const void *);
-
-volatile unsigned long g_00cb5960;
-volatile unsigned long g_00cb5958;
-volatile unsigned long g_00cb595c;
-const char g_00a321b0[] = "8csm";
-
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+extern "C" void seh_fn_004b43d0(void*);
+extern int g_a_004b43d0;
+extern int g_b_004b43d0;
+extern int g_arg_004b43d0;
+struct Reg_004b43d0 { Reg_004b43d0() { g_a_004b43d0 = 0; g_b_004b43d0 = 0; seh_fn_004b43d0(&g_arg_004b43d0); } };
 void func_004b43d0()
 {
-    if (!(g_00cb5960 & 1))
-    {
-        g_00cb5960 |= 1;
-        g_00cb5958 = 0;
-        g_00cb595c = 0;
-        G1_func_0080b15d(g_00a321b0);
-    }
+    static Reg_004b43d0 reg;
 }

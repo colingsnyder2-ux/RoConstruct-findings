@@ -1,17 +1,5 @@
-// from server: 64% by atomic.potato
-struct BasicString
-{
-    BasicString(const char*);
-};
-
-struct AdvArrowTool
-{
-    AdvArrowTool* f(const char* value);
-};
-
-AdvArrowTool* AdvArrowTool::f(const char* value)
-{
-    AdvArrowTool* result = this;
-    BasicString command("advancedMove");
-    return result;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <string>
+struct Tool { virtual std::string name() const; };
+std::string Tool::name() const { return "advancedMove"; }

@@ -1,14 +1,14 @@
-// from server: 41% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Ribbon/XTPRibbonPopups.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/Ribbon/XTPRibbonPopups.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPRibbonPopups.cpp : implementation file
 //
 // This file is a part of the XTREME RIBBON MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -45,7 +45,7 @@
 #include "CommandBars/XTPCustomizeTools.h"
 
 #include "XTPRibbonTab.h"
-#include "XTPRibbonPaintManager.h"
+#include "XTPRibbonTheme.h"
 #include "XTPRibbonQuickAccessControls.h"
 #include "XTPRibbonGroups.h"
 #include "XTPRibbonGroup.h"
@@ -73,17 +73,7 @@ public:
 
 	void Draw(CDC* pDC)
 	{
-		GetParent()->GetPaintManager()->GetRibbonPaintManager()->DrawRibbonScrollButton(pDC, this, m_bScrollLeft);
-	}
-
-	BOOL IsCustomizeMovable() const
-	{
-		return FALSE;
-	}
-
-	void OnLButtonDown(CPoint point)
-	{
-		OnClick(FALSE, point);
+		((CXTPRibbonTheme*)GetParent()->GetPaintManager())->DrawRibbonScrollButton(pDC, this, m_bScrollLeft);
 	}
 
 	virtual void OnClick(BOOL /*bKeyboard  = FALSE */, CPoint /*pt  = CPoint */)
@@ -158,7 +148,7 @@ IMPLEMENT_DYNAMIC(CXTPRibbonBarMorePopupToolBar, CXTPPopupToolBar)
 
 void CXTPRibbonBarMorePopupToolBar::FillCommandBarEntry(CDC* pDC)
 {
-	CXTPRibbonPaintManager* pPaintManager = GetPaintManager()->GetRibbonPaintManager();
+	CXTPRibbonTheme* pPaintManager = (CXTPRibbonTheme*)GetPaintManager();
 	pPaintManager->FillMorePopupToolBarEntry(pDC, this);
 }
 
@@ -367,7 +357,7 @@ CSize CXTPRibbonTabPopupToolBar::CalcDynamicLayout(int, DWORD /*nMode*/)
 
 void CXTPRibbonTabPopupToolBar::DrawCommandBar(CDC* pDC, CRect rcClipBox)
 {
-	CXTPRibbonPaintManager* pPaintManager = GetPaintManager()->GetRibbonPaintManager();
+	CXTPRibbonTheme* pPaintManager = (CXTPRibbonTheme*)GetPaintManager();
 
 	pPaintManager->FillTabPopupToolBar(pDC, this);
 	pPaintManager->FillGroupRect(pDC, m_pRibbonTab, m_rcGroups);
@@ -406,9 +396,9 @@ CSize CXTPRibbonTabPopupToolBar::GetIconSize() const
 
 }
 
-CRect CXTPRibbonTabPopupToolBar::CalculatePopupRect(CPoint ptPopup, CSize sz)
+CRect CXTPRibbonTabPopupToolBar::CalculatePopupRect(CSize sz)
 {
-	return CRect(ptPopup, sz);
+	return CRect(m_ptPopup, sz);
 }
 
 CXTPRibbonGroup* CXTPRibbonTabPopupToolBar::HitTestGroup(CPoint point) const
@@ -522,23 +512,6 @@ void CXTPRibbonTabPopupToolBar::OnMouseLeave()
 	HighlightGroup(NULL);
 
 	CXTPPopupToolBar::OnMouseLeave();
-}
-
-BOOL CXTPRibbonTabPopupToolBar::ProcessSpecialKey(XTPSpecialKey key)
-{
-	if (key != xtpKeyEscape)
-		HideKeyboardTips();
-
-	if (CXTPRibbonScrollableBar::ProcessSpecialKey(key))
-		return TRUE;
-
-	if (key == xtpKeyEscape && !m_pRibbonBar->m_bKeyboardSelect)
-	{
-		GetCommandBars()->ClosePopups();
-		return TRUE;
-	}
-
-	return CXTPPopupToolBar::ProcessSpecialKey(key);
 }
 
 INT_PTR CXTPRibbonTabPopupToolBar::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
@@ -704,17 +677,6 @@ void CXTPRibbonGroupPopupToolBar::OnGroupsScroll(BOOL /*bScrollLeft*/)
 CRect CXTPRibbonGroupPopupToolBar::GetGroupsRect() const
 {
 	return CXTPClientRect(this);
-}
-
-BOOL CXTPRibbonGroupPopupToolBar::ProcessSpecialKey(XTPSpecialKey key)
-{
-	if (key != xtpKeyEscape)
-		HideKeyboardTips();
-
-	if (CXTPRibbonScrollableBar::ProcessSpecialKey(key))
-		return TRUE;
-
-	return CXTPPopupToolBar::ProcessSpecialKey(key);
 }
 
 

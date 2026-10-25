@@ -1,12 +1,10 @@
-// from server: 80% by atomic.potato
-struct TweenService
-{
-    int padding[128];
-    int value;
-    void getValue(int* result);
+// from server: 100% by tester
+// roc-flags: /O2 /GS- /EHsc /MD
+struct seg_004c0000 {
+    int get_19c(int *out);
 };
 
-void TweenService::getValue(int* result)
-{
-    *result = value;
+int seg_004c0000::get_19c(int *out) {
+    *out = *(int *)((char *)this + 0x200);
+    return (int)out;
 }

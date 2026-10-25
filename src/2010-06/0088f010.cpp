@@ -1,5 +1,6 @@
-// from server: 57% by atomic.potato
-// roc 2010-06 0088f010  unit: CXTColorHex::PAUHEXCOLOR_CELL::?$CList size: 49 bytes
+// from server: 100% by atomic.potato
+// roc 2010-06 0088f010  unit: CXTColorHex::PAUHEXCOLOR_CELL::?$CList  size: 49 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 0088f010
 //
 // 0088f010  8b442404             mov eax, dword ptr [esp + 4]
 // 0088f014  56                   push esi
@@ -22,31 +23,22 @@
 // 0088f03d  5e                   pop esi
 // 0088f03e  c20400               ret 4
 
-extern "C" int __stdcall _00895b60(int, int);
-extern "C" int __stdcall _0088ee00(int, int, int, int);
-
-struct S {
-    int f(int);
+struct Sub {
+    int get(int);
 };
 
-int S::f(int a) {
-    int eax = a;
-    int esi = (int)this;
-    if (eax == -1) {
-        goto loc_88f03d;
-    }
-    int ecx = esi;
-    ecx += 0x74;
-    _00895b60(eax, ecx);
-    eax = *(int*)(eax + 8);
-    if (!eax) {
-        goto loc_88f03d;
-    }
-    eax = *(int*)(eax + 0x14);
-    int ecx2 = *(int*)(eax + 4);
-    int edx = *(int*)eax;
-    _0088ee00(ecx2, edx, esi, 0);
-loc_88f03d:
-    esi = 0;
-    return 0;
+struct S {
+    char pad[0x74];
+    Sub sub;
+    void f(int a);
+    void g(int, int);
+};
+
+void S::f(int a) {
+    if (a == -1) return;
+    int* p = (int*)sub.get(a);
+    int* r = (int*)p[2];
+    if (!r) return;
+    int* q = (int*)r[5];
+    g(q[0], q[1]);
 }

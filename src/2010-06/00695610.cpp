@@ -1,23 +1,4 @@
-// from server: 17% by atomic.potato
-struct S_func_007541b0
-{
-    float* __cdecl f(int value);
-};
-
-struct S_func_00695610
-{
-    char pad0[180];
-    S_func_007541b0* m_value;
-    int f();
-};
-
-float* S_func_007541b0::f(int value)
-{
-    return (float*)((char*)this + value * 12);
-}
-
-int S_func_00695610::f()
-{
-    m_value->f(0);
-    return 0;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T{void m(int);}; struct S{char pad[0xb4]; void* p; void f();};
+void S::f(){((T*)((char*)p+0xd0))->m(0);}

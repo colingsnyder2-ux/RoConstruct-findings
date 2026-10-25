@@ -1,17 +1,17 @@
-// from server: 64% by atomic.potato
-extern "C" void __cdecl fallback(void*);
-
-void f(void* a, void* b, int c)
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_0076b4e0 {
+    T4_0076b4e0();
+    virtual void f_0076b4e0();
+    char m_a;
+    char m_b;
+};
+T4_0076b4e0::T4_0076b4e0() : m_a(0), m_b(0) {}
+extern "C" void* create_other_0076b4e0(void*, void*, int);
+void* create_0076b4e0(void* unused, T4_0076b4e0* out, int type)
 {
-    if (c != 4)
-    {
-        c = c;
-        fallback(a);
-    }
-    else
-    {
-        *(unsigned long*)b = 0x00be4190;
-        *((unsigned char*)b + 4) = 0;
-        *((unsigned char*)b + 5) = 0;
-    }
+    if (type != 4)
+        return create_other_0076b4e0(unused, out, type);
+    out->T4_0076b4e0::T4_0076b4e0();
+    return out;
 }

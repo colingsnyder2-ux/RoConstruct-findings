@@ -1,14 +1,14 @@
-// from server: 55% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O1 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/TabManager/XTPTabManager.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/TabManager/XTPTabManager.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPTabManager.cpp: implementation of the CXTPTabManager class.
 //
 // This file is a part of the XTREME TOOLKIT PRO MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -28,13 +28,11 @@
 #include "stdafx.h"
 #include "Resource.h"
 
+#include "Common/XTPVC80Helpers.h"
 #include "Common/XTPDrawHelpers.h"
 #include "Common/XTPToolTipContext.h"
 #include "Common/XTPResourceManager.h"
 #include "Common/XTPImageManager.h"
-#include "Common/XTPMarkupRender.h"
-#include "Common/XTPColorManager.h"
-#include "Common/XTPWinThemeWrapper.h"
 
 #include "XTPTabManager.h"
 #include "XTPTabPaintManager.h"
@@ -71,21 +69,21 @@ CXTPTabManagerItem::CXTPTabManagerItem()
 	m_bClosable = TRUE;
 	m_pTabManager = NULL;
 	m_bFound = FALSE;
-
-	m_pMarkupUIElement = 0;
 }
 
 void CXTPTabManagerItem::OnRemoved()
 {
+	for (int j = 0; j < m_arrNavigateButtons.GetSize(); j++)
+		delete m_arrNavigateButtons[j];
+
 	m_arrNavigateButtons.RemoveAll();
 }
 
 
 CXTPTabManagerItem::~CXTPTabManagerItem()
 {
-	m_arrNavigateButtons.RemoveAll();
-
-	XTPMarkupReleaseElement(m_pMarkupUIElement);
+	for (int j = 0; j < m_arrNavigateButtons.GetSize(); j++)
+		delete m_arrNavigateButtons[j];
 }
 
 
@@ -97,29 +95,16 @@ void CXTPTabManagerItem::Reposition()
 
 void CXTPTabManagerItem::SetCaption(LPCTSTR lpszCaption)
 {
-	CString strCaption(lpszCaption);
-
-	if (m_strCaption != strCaption)
+	if (m_strCaption != lpszCaption)
 	{
-		m_strCaption = strCaption;
-
-		XTPMarkupReleaseElement(m_pMarkupUIElement);
-		if (m_pTabManager && m_pTabManager->GetMarkupContext())
-		{
-			m_pMarkupUIElement = XTPMarkupParseText(m_pTabManager->GetMarkupContext(), lpszCaption);
-		}
-
+		m_strCaption = lpszCaption;
 		Reposition();
 	}
 }
-
 void CXTPTabManagerItem::SetColor(COLORREF clr)
 {
-	if (m_clrItem != clr)
-	{
-		m_clrItem = clr;
-		m_pTabManager->RedrawControl(GetRect(), FALSE);
-	}
+	m_clrItem = clr;
+	m_pTabManager->RedrawControl(GetRect(), FALSE);
 }
 
 CString CXTPTabManagerItem::GetCaption() const
@@ -136,7 +121,6 @@ COLORREF CXTPTabManagerItem::GetColor()
 {
 	return m_pTabManager->GetItemColor(this);
 }
-
 void CXTPTabManagerItem::SetHandle(HWND hWnd)
 {
 	m_hWnd = hWnd;
@@ -144,19 +128,16 @@ void CXTPTabManagerItem::SetHandle(HWND hWnd)
 
 void CXTPTabManagerItem::Remove()
 {
-	if (m_pTabManager) m_pTabManager->DeleteItem(m_nIndex);
+	m_pTabManager->DeleteItem(m_nIndex);
 }
-
 void CXTPTabManagerItem::Select()
 {
-	if (m_pTabManager) m_pTabManager->OnItemClick(this);
+	m_pTabManager->OnItemClick(this);
 }
-
 HWND CXTPTabManagerItem::GetHandle() const
 {
 	return m_hWnd;
 }
-
 BOOL CXTPTabManagerItem::IsVisible() const
 {
 	return m_bVisible;
@@ -296,34 +277,6 @@ void CXTPTabManagerItem::SetRect(CRect rcItem)
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CXTPTabManagerNavigateButtons
-
-CXTPTabManagerNavigateButtons::CXTPTabManagerNavigateButtons()
-{
-
-}
-
-CXTPTabManagerNavigateButtons::~CXTPTabManagerNavigateButtons()
-{
-	RemoveAll();
-}
-
-void CXTPTabManagerNavigateButtons::RemoveAll()
-{
-	for (int i = 0; i < m_arrButtons.GetSize(); i++)
-	{
-		delete m_arrButtons[i];
-	}
-	m_arrButtons.RemoveAll();
-}
-
-void CXTPTabManagerNavigateButtons::RemoveAt(int nIndex)
-{
-	delete m_arrButtons[nIndex];
-	m_arrButtons.RemoveAt(nIndex);
-}
-
-//////////////////////////////////////////////////////////////////////////
 // CXTPTabManagerNavigateButton
 
 CXTPTabManagerNavigateButton::CXTPTabManagerNavigateButton(CXTPTabManager* pManager, UINT nID, XTPTabNavigateButtonFlags dwFlags)
@@ -352,7 +305,8 @@ CSize CXTPTabManagerNavigateButton::GetSize() const
 
 void CXTPTabManagerNavigateButton::AdjustWidth(int& nWidth)
 {
-	if (m_pManager->IsNavigateButtonVisible(this))
+	if ((m_dwFlags == xtpTabNavigateButtonAlways) ||
+		(m_dwFlags == xtpTabNavigateButtonAutomatic && m_pManager->IsNavigateButtonAutomaticVisible(this)))
 	{
 		if ((m_pManager->GetPosition() == xtpTabPositionTop) || (m_pManager->GetPosition() == xtpTabPositionBottom))
 		{
@@ -372,7 +326,9 @@ void CXTPTabManagerNavigateButton::SetRect(CRect rcButton)
 
 void CXTPTabManagerNavigateButton::Reposition(CRect& rcNavigateButtons)
 {
-	if (m_pManager->IsNavigateButtonVisible(this))
+
+	if ((m_dwFlags == xtpTabNavigateButtonAlways) ||
+		(m_dwFlags == xtpTabNavigateButtonAutomatic && m_pManager->IsNavigateButtonAutomaticVisible(this)))
 	{
 		CSize szButton = GetSize();
 
@@ -538,6 +494,7 @@ public:
 	CNavigateButtonArrowLeft(CXTPTabManager* pManager, XTPTabNavigateButtonFlags dwFlags)
 		: CNavigateButtonArrow(pManager, xtpTabNavigateButtonLeft, dwFlags)
 	{
+		XTPResourceManager()->LoadString(&m_strToolTip, XTP_IDS_TABNAVIGATEBUTTON_LEFT);
 	}
 protected:
 	virtual void DrawEntry(CDC* pDC, CRect rc);
@@ -551,6 +508,7 @@ public:
 	CNavigateButtonArrowRight(CXTPTabManager* pManager, XTPTabNavigateButtonFlags dwFlags)
 		: CNavigateButtonArrow(pManager, xtpTabNavigateButtonRight, dwFlags)
 	{
+		XTPResourceManager()->LoadString(&m_strToolTip, XTP_IDS_TABNAVIGATEBUTTON_RIGHT);
 	}
 protected:
 	virtual void DrawEntry(CDC* pDC, CRect rc);
@@ -564,7 +522,7 @@ public:
 	CNavigateButtonClose(CXTPTabManager* pManager, XTPTabNavigateButtonFlags dwFlags)
 		: CXTPTabManagerNavigateButton(pManager, xtpTabNavigateButtonClose, dwFlags)
 	{
-		CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&m_strToolTip, XTP_IDS_TABNAVIGATEBUTTON_CLOSE));
+		XTPResourceManager()->LoadString(&m_strToolTip, XTP_IDS_TABNAVIGATEBUTTON_CLOSE);
 	}
 protected:
 	virtual void DrawEntry(CDC* pDC, CRect rc);
@@ -651,8 +609,6 @@ void CXTPTabManager::CNavigateButtonArrow::Reposition(CRect& rcNavigateButtons)
 }
 void CXTPTabManager::CNavigateButtonArrowRight::Reposition(CRect& rcNavigateButtons)
 {
-	XTPResourceManager()->LoadString(&m_strToolTip, m_pManager->IsHorizontalPosition() ? XTP_IDS_TABNAVIGATEBUTTON_RIGHT : XTP_IDS_TABNAVIGATEBUTTON_DOWN);
-
 	CRect rcHeaderMargin = m_pManager->GetPaintManager()->GetAppearanceSet()->GetHeaderMargin();
 
 	m_bEnabled = m_pManager->GetItemsLength() + m_pManager->GetHeaderOffset() >
@@ -690,11 +646,8 @@ void CXTPTabManager::CNavigateButtonArrowLeft::DrawEntry(CDC* pDC, CRect rc)
 	else
 		CXTPDrawHelpers::Triangle(pDC, CPoint(pt.x - 5, pt.y + 2), CPoint(pt.x - 1, pt.y - 2), CPoint(pt.x + 3, pt.y + 2));
 }
-
 void CXTPTabManager::CNavigateButtonArrowLeft::Reposition(CRect& rcNavigateButtons)
 {
-	XTPResourceManager()->LoadString(&m_strToolTip, m_pManager->IsHorizontalPosition() ? XTP_IDS_TABNAVIGATEBUTTON_LEFT : XTP_IDS_TABNAVIGATEBUTTON_UP);
-
 	m_bEnabled = m_pManager->GetHeaderOffset() < 0;
 
 	CNavigateButtonArrow::Reposition(rcNavigateButtons);
@@ -740,8 +693,6 @@ CXTPTabManager::CXTPTabManager()
 	m_arrNavigateButtons.Add(new CNavigateButtonArrowLeft(this, xtpTabNavigateButtonAutomatic));
 	m_arrNavigateButtons.Add(new CNavigateButtonArrowRight(this, xtpTabNavigateButtonAutomatic));
 	m_arrNavigateButtons.Add(new CNavigateButtonClose(this, xtpTabNavigateButtonNone));
-
-	m_pMarkupContext = NULL;
 }
 
 CXTPTabManager::~CXTPTabManager()
@@ -753,32 +704,11 @@ CXTPTabManager::~CXTPTabManager()
 		pItem->InternalRelease();
 	}
 
-	m_arrNavigateButtons.RemoveAll();
+	for (int j = 0; j < m_arrNavigateButtons.GetSize(); j++)
+		delete m_arrNavigateButtons[j];
 
 	delete m_pRowIndexer;
-
-	XTPMarkupReleaseContext(m_pMarkupContext);
 }
-
-void CXTPTabManager::EnableMarkup(BOOL bEnable)
-{
-	BOOL bMarkupContext = m_pMarkupContext != NULL;
-	if (bMarkupContext == bEnable)
-		return;
-
-	for (int i = 0; i < m_arrItems.GetSize(); i++)
-	{
-		XTPMarkupReleaseElement(m_arrItems[i]->m_pMarkupUIElement);
-	}
-
-	XTPMarkupReleaseContext(m_pMarkupContext);
-
-	if (bEnable)
-	{
-		m_pMarkupContext = XTPMarkupCreateContext();
-	}
-}
-
 
 void CXTPTabManager::SetActive(BOOL bActive)
 {
@@ -789,31 +719,10 @@ void CXTPTabManager::SetActive(BOOL bActive)
 	}
 }
 
-BOOL CXTPTabManager::IsNavigateButtonVisible(CXTPTabManagerNavigateButton* pButton)
-{
-	if (pButton->GetFlags() == xtpTabNavigateButtonAutomatic)
-		return IsNavigateButtonAutomaticVisible(pButton);
-
-	if (pButton->GetFlags() == xtpTabNavigateButtonAlways)
-	{
-		if (pButton->GetID() == xtpTabNavigateButtonClose && pButton->GetItem())
-		{
-			return pButton->GetItem()->IsClosable();
-		}
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
 BOOL CXTPTabManager::IsNavigateButtonAutomaticVisible(CXTPTabManagerNavigateButton* pButton)
 {
 	if (pButton->GetID() == xtpTabNavigateButtonClose)
 	{
-		if (pButton->GetItem())
-		{
-			return pButton->GetItem()->IsSelected() ?  pButton->GetItem()->IsClosable() : FALSE;
-		}
 		return m_pSelected ? m_pSelected->IsClosable() : FALSE;
 	}
 
@@ -822,9 +731,9 @@ BOOL CXTPTabManager::IsNavigateButtonAutomaticVisible(CXTPTabManagerNavigateButt
 
 void CXTPTabManager::EnableTabThemeTexture(HWND hWnd, BOOL bEnable)
 {
-	CXTPWinThemeWrapper themeTabControl;  // Internal helper for drawing XP interface parts.
-	themeTabControl.OpenTheme(hWnd, L"TAB");
-	themeTabControl.EnableThemeDialogTexture(hWnd, bEnable ? ETDT_ENABLETAB : ETDT_DISABLE | ETDT_USETABTEXTURE);
+	m_themeTabControl.OpenTheme(hWnd, L"TAB");
+	m_themeTabControl.EnableThemeDialogTexture(hWnd, bEnable ? ETDT_ENABLETAB : ETDT_DISABLE | ETDT_USETABTEXTURE);
+
 }
 
 CXTPTabManagerNavigateButton* CXTPTabManager::FindNavigateButton(UINT nID) const
@@ -1172,8 +1081,6 @@ void CXTPTabManager::ReOrder(HWND hWnd, CPoint pt, CXTPTabManagerItem* pItem)
 		arrRects.Add(rc);
 	}
 
-	int nIndex = pItem->GetIndex();
-
 	::SetCapture(hWnd);
 
 	while (::GetCapture() == hWnd)
@@ -1197,18 +1104,11 @@ void CXTPTabManager::ReOrder(HWND hWnd, CPoint pt, CXTPTabManagerItem* pItem)
 						if (i != pItem->GetIndex() && arrRects[i].PtInRect(pt))
 						{
 
-							while (i != pItem->GetIndex())
-							{
-								int j = i < pItem->GetIndex() ? pItem->GetIndex() - 1 : pItem->GetIndex() + 1;
+							CXTPTabManagerItem* p = pItem;
+							m_arrItems[pItem->GetIndex()] = m_arrItems[i];
+							m_arrItems[i] = p;
 
-								CXTPTabManagerItem* p1 = pItem;
-								CXTPTabManagerItem* p2 = m_arrItems[pItem->GetIndex()] = m_arrItems[j];
-								m_arrItems[j] = p1;
-
-								OnItemsChanged();
-
-								OnSwitchItem(p1, p2);
-							}
+							OnItemsChanged();
 							break;
 						}
 					}
@@ -1236,11 +1136,6 @@ ExitLoop:
 
 	m_pSelected = pSelected;
 	OnItemClick(pItem);
-
-	if (nIndex != pItem->GetIndex())
-	{
-		OnItemOrderChanged(pItem, nIndex, pItem->GetIndex());
-	}
 }
 
 void CXTPTabManager::OnItemClick(CXTPTabManagerItem* pItem)
@@ -1412,9 +1307,9 @@ BOOL CXTPTabManager::PerformClick(HWND hWnd, CPoint pt, BOOL bNoItemClick)
 
 void CXTPTabManager::PerformMouseMove(HWND hWnd, CPoint pt)
 {
-	CXTPTabPaintManagerAppearanceSet* pAppearance = GetPaintManager()->GetAppearanceSet();
+	 CXTPTabPaintManager::CAppearanceSet* pAppearance = GetPaintManager()->GetAppearanceSet();
 
-	if (!CXTPDrawHelpers::IsTopParentActive(hWnd) || IsMouseLocked())
+	 if (!CXTPDrawHelpers::IsTopParentActive(hWnd) || IsMouseLocked())
 	{
 		if (m_pHighlighted)
 		{
@@ -1554,49 +1449,29 @@ BOOL CXTPTabManager::IsDrawStaticFrame() const
 }
 
 
-CXTPTabPaintManagerColorSet* CXTPTabManager::SetColor(XTPTabColorStyle tabColor)
+CXTPTabPaintManager::CColorSet* CXTPTabManager::SetColor(XTPTabColorStyle tabColor)
 {
-	CXTPTabPaintManagerColorSet* pColorSet = GetPaintManager()->SetColor(tabColor);
+	CXTPTabPaintManager::CColorSet* pColorSet = GetPaintManager()->SetColor(tabColor);
 	Reposition();
 	return pColorSet;
 }
 
-CXTPTabPaintManagerColorSet* CXTPTabManager::SetColorSet(CXTPTabPaintManagerColorSet* pColorSet)
+CXTPTabPaintManager::CColorSet* CXTPTabManager::SetColorSet(CXTPTabPaintManager::CColorSet* pColorSet)
 {
 	GetPaintManager()->SetColorSet(pColorSet);
 	Reposition();
 	return pColorSet;
 }
-CXTPTabPaintManagerAppearanceSet* CXTPTabManager::SetAppearance(XTPTabAppearanceStyle tabAppearance)
+CXTPTabPaintManager::CAppearanceSet* CXTPTabManager::SetAppearance(XTPTabAppearanceStyle tabAppearance)
 {
-	CXTPTabPaintManagerAppearanceSet* pAppearanceSet = GetPaintManager()->SetAppearance(tabAppearance);
+	CXTPTabPaintManager::CAppearanceSet* pAppearanceSet = GetPaintManager()->SetAppearance(tabAppearance);
 	Reposition();
 	return pAppearanceSet;
 }
-CXTPTabPaintManagerAppearanceSet* CXTPTabManager::SetAppearanceSet(CXTPTabPaintManagerAppearanceSet* pAppearanceSet)
+CXTPTabPaintManager::CAppearanceSet* CXTPTabManager::SetAppearanceSet(CXTPTabPaintManager::CAppearanceSet* pAppearanceSet)
 {
 	GetPaintManager()->SetAppearanceSet(pAppearanceSet);
 	Reposition();
 	return pAppearanceSet;
-}
-
-CXTPTabPaintManagerAppearanceSet* CXTPTabManager::GetAppearanceSet() const
-{
-	return GetPaintManager()->GetAppearanceSet();
-}
-CXTPTabPaintManagerColorSet* CXTPTabManager::GetColorSet() const
-
-{
-	return GetPaintManager()->GetColorSet();
-}
-
-XTPTabAppearanceStyle CXTPTabManager::GetAppearance() const
-{
-	return GetPaintManager()->GetAppearance();
-}
-
-XTPTabColorStyle CXTPTabManager::GetColor() const
-{
-	return GetPaintManager()->GetColor();
 }
 

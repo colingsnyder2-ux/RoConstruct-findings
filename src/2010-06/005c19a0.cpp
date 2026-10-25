@@ -1,27 +1,24 @@
-// from server: 96% by atomic.potato
-struct FactoryProduct {
-    int field_0;
-    int field_4;
-    int field_18;
-    int field_1C;
-    
-    FactoryProduct* __thiscall ctor(int arg);
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+extern void* g_a_005c19a0;
+extern void* g_b_005c19a0;
+extern void* g_c_005c19a0;
+extern "C" void atexit_fn_005c19a0(void*);
+struct X_005c19a0 {
+    X_005c19a0(int flags);
+    virtual void f_005c19a0();
+    void* m_a;
+    void* m_p0;
+    void* m_p1;
+    void* m_p2;
+    void* m_p3;
+    void* m_b;
+    void* m_c;
+    void init_005c19a0();
 };
-
-extern "C" void __cdecl sub_599C50();
-extern "C" void __cdecl sub_7A799A(void*);
-
-FactoryProduct* __thiscall FactoryProduct::ctor(int arg) {
-    field_0 = 0xA2BCCC;
-    field_4 = 0xA2BCC0;
-    field_18 = 0xA2BCB4;
-    field_1C = 0xA2BCA8;
-    
-    sub_599C50();
-    
-    if (arg & 1) {
-        sub_7A799A(this);
-    }
-    
-    return this;
+X_005c19a0::X_005c19a0(int flags) : m_a(&g_a_005c19a0), m_b(&g_b_005c19a0), m_c(&g_c_005c19a0)
+{
+    init_005c19a0();
+    if (flags & 1)
+        atexit_fn_005c19a0(this);
 }

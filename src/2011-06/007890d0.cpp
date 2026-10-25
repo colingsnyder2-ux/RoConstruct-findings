@@ -1,26 +1,11 @@
-// from server: 97% by atomic.potato
-struct S
-{
-    int f();
-};
-
-typedef int (__cdecl *Fn)(int);
-typedef int (__thiscall *TypeInfoEqual)(void *, const void *);
-
-extern "C" int __cdecl sub_0080bbc2(int);
-extern "C" TypeInfoEqual g_import_00a40a50;
-
-int g_00c911b4;
-
-int S::f()
-{
-    int value = *(int *)((char *)this + 12);
-    value = *(int *)((char *)value + 0xacc);
-    value = *(int *)((char *)value + 0x188);
-    if (value)
-    {
-        value = sub_0080bbc2(value);
-        return g_import_00a40a50((void *)0xc911b4, (const void *)value);
-    }
-    return 0;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct P3 { char pad[0x188]; void* value; };
+struct P2 { char pad[0xacc]; P3* p; };
+struct Obj { char pad[0xc]; P2* p; bool f(); };
+struct C {};
+extern "C" void* helper(void*);
+extern C c;
+typedef bool (__thiscall *Fn)(C*,void*);
+extern Fn slot;
+bool Obj::f(){ void* x=p->p->value; if(x){ x=helper(x); return slot(&c,x); } return false; }

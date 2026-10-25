@@ -1,14 +1,16 @@
-// from server: 46% by atomic.potato
-extern "C" void std_string_copy(void *, const void *);
+// from server: 100% by colin
 
-struct S_func_005e61c0 {
-    char m_data[0xB90];
-    void *f(const void *);
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+struct Str_005e61c0 { int words[8]; };
+extern void (__thiscall* str_ctor_005e61c0)(Str_005e61c0*, Str_005e61c0*);
+struct X_005e61c0 {
+    char pad[0xb8c];
+    Str_005e61c0 value;
+    Str_005e61c0* copy(Str_005e61c0* out);
 };
-
-void *S_func_005e61c0::f(const void *value)
+Str_005e61c0* X_005e61c0::copy(Str_005e61c0* out)
 {
-    void *result = this;
-    std_string_copy((char *)this + 0xB8C, value);
-    return result;
+    volatile int zero = 0;
+    str_ctor_005e61c0(out, &value);
+    return out;
 }

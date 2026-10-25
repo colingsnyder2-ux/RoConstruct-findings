@@ -1,74 +1,24 @@
-// from server: 71% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/TimerService.cpp
-
-// Candidate translation unit (score above; library headers required).
-#include "v8datamodel/TimerService.h"
-#include "util/standardout.h"
-
-namespace RBX
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+extern void* g_a_0066bf90;
+extern void* g_b_0066bf90;
+extern void* g_c_0066bf90;
+extern "C" void atexit_fn_0066bf90(void*);
+struct X_0066bf90 {
+    X_0066bf90(int flags);
+    virtual void f_0066bf90();
+    void* m_a;
+    void* m_p0;
+    void* m_p1;
+    void* m_p2;
+    void* m_p3;
+    void* m_b;
+    void* m_c;
+    void init_0066bf90();
+};
+X_0066bf90::X_0066bf90(int flags) : m_a(&g_a_0066bf90), m_b(&g_b_0066bf90), m_c(&g_c_0066bf90)
 {
-	TimerService::TimerService() {}
-
-	void TimerService::delay(boost::function0<void> func, double seconds)
-	{
-		Item item;
-		item.time = G3D::System::getLocalTime() + seconds;
-		item.func = func;
-
-		std::list<Item>::iterator pos = items.end();
-
-		std::list<Item>::reverse_iterator iter = items.rbegin();
-		std::list<Item>::reverse_iterator end = items.rend();
-
-		for (; iter != end; iter++)
-		{
-			if (iter->time > item.time)
-				pos = iter.base();
-			else
-				break;
-		}
-
-		items.insert(pos, item);
-	}
-
-	void TimerService::onEvent(const RunService* source, Heartbeat event)
-	{
-		G3D::RealTime time = G3D::System::getLocalTime();
-
-		while (items.size() > 0)
-		{
-			Item& item = items.front();
-
-			if (time >= item.time)
-			{
-				try
-				{
-					item.func();
-				}
-				catch (std::exception& e)
-				{
-					StandardOut::singleton()->print(MESSAGE_WARNING, e);
-				}
-
-				items.pop_front();
-			}
-			else
-			{
-				break;
-			}
-		}
-	}
-
-	void TimerService::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
-	{
-		Notifier<RunService, Heartbeat>::disconnect(runService, this);
-
-		Instance::onServiceProvider(oldProvider, newProvider);
-		runService = shared_from(ServiceProvider::create<RunService>(newProvider));
-
-		Notifier<RunService,Heartbeat>::connect(runService, this);
-	}
+    init_0066bf90();
+    if (flags & 1)
+        atexit_fn_0066bf90(this);
 }

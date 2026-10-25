@@ -1,13 +1,13 @@
-// from server: 32% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2-vc8 Source/CommandBars/XTPPaintManager.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/Common/XTPToolTipContext.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPPaintManager.cpp : implementation of the CXTPPaintManager class.
+// XTPToolTipContext.cpp: implementation of the CXTPToolTipContext class.
 //
-// This file is a part of the XTREME COMMANDBARS MFC class library.
+// This file is a part of the XTREME TOOLKIT PRO MFC class library.
 // (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
@@ -26,2064 +26,2023 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include <math.h>
 
-#include "Common/XTPVC80Helpers.h"
-#include "Common/XTPImageManager.h"
-#include "Common/XTPColorManager.h"
-#include "Common/XTPDrawHelpers.h"
-#include "Common/XTPResourceManager.h"
+#if _MSC_VER < 1200
+#define _XTP_EXCLUDE_HTML
+#else
+#include <mshtml.h>
+#include <mshtmhst.h>
+#endif // !_MSC_VER < 1200
 
-#include "XTPPaintManager.h"
-#include "XTPControlButton.h"
-#include "XTPControlPopup.h"
-#include "XTPControlGallery.h"
-#include "XTPToolBar.h"
-#include "XTPCommandBars.h"
-#include "XTPPopupBar.h"
-#include "XTPControlComboBox.h"
-#include "XTPControlEdit.h"
-#include "XTPControls.h"
-#include "XTPStatusBar.h"
+#include "XTPToolTipContext.h"
+#include "XTPVC80Helpers.h"
+#include "XTPDrawHelpers.h"
+#include "XTPColorManager.h"
+#include "XTPImageManager.h"
+#include "XTPOffice2007Image.h"
+#include "XTPSystemHelpers.h"
+#include "XTPRichRender.h"
+#include "XTPResourceManager.h"
 
-#ifdef _XTP_INCLUDE_RIBBON
-#include "XTPOffice2007Theme.h"
-#include "Ribbon/XTPRibbonTheme.h"
+#ifdef _INC_COMDEF
+// Warning "ComDef.h" was included
 #endif
 
 #ifdef _DEBUG
-#define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
+#define new DEBUG_NEW
 #endif
 
-using namespace XTPPaintThemes;
+#pragma warning (disable : 4097) // typedef-name 'CXTPToolTipContextTipOfficeCtrl' used as synonym for class-name 'CRichEditToolTip'
 
-CXTPPaintManager* CXTPPaintManager::s_pInstance = NULL;
+#define WM_SYSKEYFIRST WM_SYSKEYDOWN
+#define WM_SYSKEYLAST WM_SYSDEADCHAR
 
-//////////////////////////////////////////////////////////////////////
-// CXTPPaintManager::CXTPPaintManagerDestructor
+#define VERSION_IE5             MAKELONG(80, 5)
 
-static class CXTPPaintManager::CPaintManagerDestructor
-{
-public:
-	~CPaintManagerDestructor()
-	{
-		CXTPPaintManager::Done();
-	}
-
-} __xtpPaintManagerDestructor;
+#define TTS_NOANIMATE           0x10
+#define TTS_NOFADE              0x20
+#define TTS_BALLOON             0x40
 
 
-///////////////////////////////////////////////////////////////////////////////
-// CXTPDockingPanePaintManager::CLogFont
-
-CXTPPaintManager::CLogFont::CLogFont()
-{
-	::ZeroMemory(this, sizeof(LOGFONT));
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CXTPDockingPanePaintManager::CNonClientMetrics
-
-CXTPPaintManager::CNonClientMetrics::CNonClientMetrics()
-{
-	::ZeroMemory(this, sizeof(NONCLIENTMETRICS));
-	cbSize = sizeof(NONCLIENTMETRICS);
-	VERIFY(::SystemParametersInfo(SPI_GETNONCLIENTMETRICS,
-		sizeof(NONCLIENTMETRICS), this, 0));
-}
-
-CXTPPaintManager::CXTPPaintManager()
-{
-	m_bFlatToolBar = FALSE;
-	m_bFlatMenuBar = FALSE;
-
-	m_nTextHeight = 0;
-	m_bUseOfficeFont = FALSE;
-	m_strOfficeFont = _T("Tahoma");
-	m_bUseStandardFont = TRUE;
-	m_bShowShadow = TRUE;
-	m_bEmbossedDisabledText = TRUE;
-	m_nShadowOptions = 0;
-	m_nStatusBarMinHeight = 20;
-
-	m_bThemedStatusBar = FALSE;
-	m_bThemedCheckBox = FALSE;
-
-	m_iconsInfo.bUseFadedIcons = FALSE;
-	m_iconsInfo.bIconsWithShadow = FALSE;
-	m_iconsInfo.bUseDisabledIcons = FALSE;
-	m_iconsInfo.bOfficeStyleDisabledIcons = FALSE;
-
-	m_nAnimationSteps = 10;
-	m_nAnimationTime = 100;
-	m_bThickCheckMark = FALSE;
-	m_bClearTypeTextQuality = FALSE;
-
-	m_systemTheme = xtpSystemThemeDefault;
-	m_bShowKeyboardCues = -1;
-
-	m_nSplitButtonDropDownWidth = 11;
-	m_nPopupBarTextPadding = 4;
-	m_nSplitButtonPopupWidth = 20;
-
-	m_bSelectImageInPopupBar = FALSE;
-	m_bEnableAnimation = FALSE;
-
-	m_bOffice2007Padding = FALSE;
-
-	m_bOffsetPopupLabelText = TRUE;
-
-	m_nEditHeight = 0;
-	m_bAutoResizeIcons = FALSE;
-
-	m_bWrapCaptionBelowText = TRUE;
-	m_bResourceCharSet = FALSE;
-
-	m_rcStatusButtonMargins.SetRect(0, 0, 0, 0);
+#define CS_DROPSHADOW       0x00020000
 
 
-	XTPImageManager()->RefreshAll();
+#ifndef TTM_SETTITLE
 
-	m_pGalleryPaintManager = new CXTPControlGalleryPaintManager(this);
+#define TTM_SETTITLEA           (WM_USER + 32)  // wParam = TTI_*, lParam = char* szTitle
+#define TTM_SETTITLEW           (WM_USER + 33)  // wParam = TTI_*, lParam = wchar* szTitle
 
-
-	m_pfnSetLayeredWindowAttributes = NULL;
-	//init layered function  (for Win98 compatible)
-	HMODULE hLib = GetModuleHandle(_T("USER32"));
-	if (hLib)
-	{
-		m_pfnSetLayeredWindowAttributes = (PVOID) ::GetProcAddress(hLib, "SetLayeredWindowAttributes");
-	}
-}
-
-XTPCurrentSystemTheme CXTPPaintManager::GetCurrentSystemTheme()
-{
-	if (m_systemTheme == xtpSystemThemeDefault)
-		return XTPColorManager()->IsLunaColorsDisabled() ? xtpSystemThemeUnknown :
-			XTPColorManager()->GetCurrentSystemTheme();
-
-	if (m_systemTheme == xtpSystemThemeAuto)
-		return XTPColorManager()->GetWinThemeWrapperTheme();
-
-	return m_systemTheme;
-}
-void CXTPPaintManager::SetLunaTheme(XTPCurrentSystemTheme systemTheme)
-{
-	m_systemTheme = systemTheme;
-	RefreshMetrics();
-
-}
-
-COLORREF CXTPPaintManager::GetXtremeColor(UINT nIndex)
-{
-	if (nIndex > XPCOLOR_LAST) return nIndex;
-	return m_arrColor[nIndex];
-}
-
-void CXTPPaintManager::SetColors(int cElements, CONST INT* lpaElements, CONST COLORREF* lpaRgbValues)
-{
-	for (int i = 0; i < cElements; i++)
-		m_arrColor[lpaElements[i]].SetStandardValue(lpaRgbValues[i]);
-}
-
-
-CXTPPaintManager::~CXTPPaintManager()
-{
-	delete m_pGalleryPaintManager;
-}
-
-XTP_COMMANDBARS_ICONSINFO* CXTPPaintManager::GetIconsInfo()
-{
-	return &m_iconsInfo;
-}
-
-void CXTPPaintManager::RefreshMetrics()
-{
-	UpdateFonts();
-
-	RefreshXtremeColors();
-
-	CXTPColorManager* pColorManager = XTPColorManager();
-
-	for (int i = 0; i <= XPCOLOR_LAST; i++)
-		m_arrColor[i].SetStandardValue(pColorManager->GetColor(i));
-
-	m_clrShadowFactor = 0;
-	m_clrStatusTextColor = GetXtremeColor(COLOR_BTNTEXT);
-
-	m_clrFloatingGripper.SetStandardValue(GetXtremeColor(COLOR_3DSHADOW));
-	m_clrFloatingGripperText.SetStandardValue(GetXtremeColor(COLOR_3DHIGHLIGHT));
-
-	m_clrDisabledIcon.SetStandardValue(GetXtremeColor(COLOR_3DFACE), GetXtremeColor(COLOR_3DSHADOW));
-
-	m_themeStatusBar.CloseTheme();
-
-	if (m_bThemedStatusBar)
-	{
-		m_themeStatusBar.OpenThemeData(NULL, L"STATUS");
-
-		if (m_themeStatusBar.IsAppThemed())
-			m_themeStatusBar.GetThemeColor(SP_PANE, 0, TMT_TEXTCOLOR, &m_clrStatusTextColor);
-	}
-
-	m_themeButton.CloseTheme();
-	if (m_bThemedCheckBox)
-	{
-		m_themeButton.OpenTheme(NULL, L"BUTTON");
-	}
-
-	m_pGalleryPaintManager->RefreshMetrics();
-}
-
-int CXTPPaintManager::GetControlHeight() const
-{
-	return max(22, m_nTextHeight);
-}
-
-CXTPPaintManager* CXTPPaintManager::CreateTheme(XTPPaintTheme paintTheme)
-{
-	CXTPPaintManager* pInstance = NULL;
-
-	if (paintTheme == xtpThemeOfficeXP) pInstance = new CXTPOfficeTheme();
-	else if (paintTheme == xtpThemeOffice2003) pInstance = new CXTPOffice2003Theme();
-	else if (paintTheme == xtpThemeNativeWinXP) pInstance = new CXTPNativeXPTheme();
-	else if (paintTheme == xtpThemeWhidbey) pInstance = new CXTPWhidbeyTheme();
-#ifdef _XTP_INCLUDE_RIBBON
-	else if (paintTheme == xtpThemeOffice2007) pInstance = new CXTPOffice2007Theme();
-	else if (paintTheme == xtpThemeRibbon) pInstance = new CXTPRibbonTheme();
+#ifdef UNICODE
+#define TTM_SETTITLE            TTM_SETTITLEW
+#else
+#define TTM_SETTITLE            TTM_SETTITLEA
 #endif
-	else pInstance = new CXTPDefaultTheme();
 
-	ASSERT(pInstance);
+#endif
 
-	pInstance->m_themeCurrent = paintTheme;
+#ifndef WF_TRACKINGTOOLTIPS
+#define WF_TRACKINGTOOLTIPS 0x0400
+#endif
 
-	return pInstance;
+#define SAFE_DELETEWINDOW(ptr) \
+	if (ptr) { ptr->DestroyWindow(); delete ptr; ptr = NULL; }
+
+CXTPToolTipContext* CXTPToolTipContext::m_pModuleContext = 0;
+
+
+IMPLEMENT_DYNAMIC(CXTPToolTipContextToolTip, CWnd)
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPToolTipContextToolTip
+
+CXTPToolTipContextToolTip::CXTPToolTipContextToolTip(CXTPToolTipContext* pContext)
+	: m_pContext(pContext)
+{
+	m_bActive = FALSE;
+	m_toolVisible.Reset();
+	m_toolDisabled.Reset();
+	m_toolDelay.Reset();
+
+	m_pIcon = NULL;
+
+	m_nDelayTimer = 0;
+	m_dwLastTip = 0;
+	m_nDelayInitial = 500;
+	m_nDelayReshow = 200;
+
 }
 
-void CXTPPaintManager::SetTheme(XTPPaintTheme paintTheme)
+void CXTPToolTipContext::SetFont(CFont* pFont)
 {
-	SetCustomTheme(CreateTheme(paintTheme));
-	s_pInstance->m_themeCurrent = paintTheme;
+	LOGFONT lf;
+	pFont->GetLogFont(&lf);
+
+	SetFontIndirect(&lf);
 }
 
-void CXTPPaintManager::SetCustomTheme(CXTPPaintManager* pTheme)
+void CXTPToolTipContext::SetFontIndirect(LOGFONT* lpLogFont)
 {
-	if (s_pInstance != NULL)
-		s_pInstance->InternalRelease();
-
-	s_pInstance = pTheme;
-
-	s_pInstance->m_themeCurrent = xtpThemeCustom;
-	s_pInstance->RefreshMetrics();
-}
-
-
-void CXTPPaintManager::Done()
-{
-	if (s_pInstance != NULL)
-		s_pInstance->InternalRelease();
-	s_pInstance = NULL;
-}
-
-
-
-void CXTPPaintManager::Triangle(CDC* pDC, CPoint pt0, CPoint pt1, CPoint pt2, COLORREF clr)
-{
-	CXTPPenDC pen (*pDC, clr);
-	CXTPBrushDC brush (*pDC, clr);
-
-	CPoint pts[3];
-	pts[0] = pt0;
-	pts[1] = pt1;
-	pts[2] = pt2;
-	pDC->Polygon(pts, 3);
-}
-
-void CXTPPaintManager::Rectangle(CDC* pDC, CRect rc, int nPen, int nBrush)
-{
-	if (nBrush != -1) pDC->FillSolidRect(rc, GetXtremeColor(nBrush));
-	if (nPen != nBrush && nPen != -1) pDC->Draw3dRect(rc, GetXtremeColor(nPen), GetXtremeColor(nPen));
-}
-
-void CXTPPaintManager::Draw3dRect(CDC* pDC, CRect rc, int nTopLeft, int nBottomRight)
-{
-	pDC->Draw3dRect(&rc, GetXtremeColor(nTopLeft), GetXtremeColor(nBottomRight));
-}
-
-void CXTPPaintManager::_DrawCheckMark(CDC* pDC, CRect rc, COLORREF clr, BOOL bLayoutRTL /*= FALSE*/)
-{
-	CRect rcCheck(CPoint(rc.left + rc.Width()/2 - 10, rc.top + rc.Height()/2 - 10), CSize(20, 20));
-
-	CXTPPenDC pen(*pDC, clr);
-
-	if (bLayoutRTL)
-	{
-		pDC->MoveTo(rcCheck.left + 6, rcCheck.top + 7);
-		pDC->LineTo(rcCheck.left + 10, rcCheck.top + 11);
-		pDC->LineTo(rcCheck.left + 13, rcCheck.top + 8);
-
-		pDC->MoveTo(rcCheck.left + 6, rcCheck.top + 8);
-		pDC->LineTo(rcCheck.left + 10, rcCheck.top + 12);
-		pDC->LineTo(rcCheck.left + 13, rcCheck.top + 9);
-	}
-	else
-	{
-		pDC->MoveTo(rcCheck.left + 6, rcCheck.top + 9);
-		pDC->LineTo(rcCheck.left + 8, rcCheck.top + 11);
-		pDC->LineTo(rcCheck.left + 13, rcCheck.top + 6);
-
-		pDC->MoveTo(rcCheck.left + 6, rcCheck.top + 10);
-		pDC->LineTo(rcCheck.left + 8, rcCheck.top + 12);
-		pDC->LineTo(rcCheck.left + 13, rcCheck.top + 7);
-	}
-}
-
-AFX_INLINE COLORREF Mix(CDC* pDC, int x, int y, COLORREF clrBorder, COLORREF clrFace, double a)
-{
-	COLORREF clr = clrFace;
-
-	if (a < 0)
-		a = -a;
-	else
-	{
-		clr = pDC->GetPixel(x, y);
-	}
-	int r = int(GetRValue(clrBorder) + a * double(GetRValue(clr) -  GetRValue(clrBorder)));
-	int g = int(GetGValue(clrBorder) + a * double(GetGValue(clr) -  GetGValue(clrBorder)));
-	int b = int(GetBValue(clrBorder) + a * double(GetBValue(clr) -  GetBValue(clrBorder)));
-
-	return RGB(r, g, b);
-}
-
-void CXTPPaintManager::AlphaEllipse(CDC* pDC, CRect rc, COLORREF clrBorder, COLORREF clrFace)
-{
-	ASSERT(rc.Width() == rc.Height());
-	double x0 = double(rc.left + rc.right - 1) / 2;
-	double y0 = double(rc.top + rc.bottom - 1) / 2;
-	double radius = double(rc.right - rc.left - 1) / 2 - 0.25;
-
-	for (int x = rc.left; x < rc.right; x++)
-	for (int y = rc.top; y < rc.bottom; y++)
-	{
-		double distance = sqrt(pow(x0 - x, 2) + pow(y0 - y, 2));
-
-		if (distance >= radius - 1 && distance <= radius + 1)
-		{
-			pDC->SetPixel(x, y, Mix(pDC, x, y, clrBorder, clrFace, distance - radius));
-		}
-		else if (distance < radius - 1)
-		{
-			pDC->SetPixel(x, y, clrFace);
-		}
-	}
-}
-
-void CXTPPaintManager::DrawRadioMark(CDC* pDC, CRect rcCheck, COLORREF clr)
-{
-	CPoint pt(rcCheck.CenterPoint());
-	CRect rcRadio(pt.x - 3, pt.y - 3, pt.x + 3, pt.y + 3);
-
-	AlphaEllipse(pDC, rcRadio, clr, clr);
-}
-
-void CXTPPaintManager::DrawCheckMark(CDC* pDC, CRect rc, COLORREF clr)
-{
-	BOOL bLayoutRTL = CXTPDrawHelpers::IsContextRTL(pDC);
-
-	_DrawCheckMark(pDC, rc, clr, bLayoutRTL);
-	if (m_bThickCheckMark)
-	{
-		rc.OffsetRect(0, 1);
-		_DrawCheckMark(pDC, rc, clr, bLayoutRTL);
-	}
-}
-
-void CXTPPaintManager::DrawComboExpandMark(CDC* pDC, CRect rc, COLORREF clr)
-{
-	CPoint pt(rc.CenterPoint());
-	int nWidth = max(2, rc.Width() / 2 - 4);
-
-	Triangle(pDC, CPoint(pt.x - nWidth, pt.y - nWidth/2), CPoint(pt.x + nWidth, pt.y - nWidth/2), CPoint (pt.x , pt.y - nWidth/2 + nWidth), clr);
-}
-
-void CXTPPaintManager::HorizontalLine(CDC* pDC, int x0, int y, int x1, COLORREF clrPen)
-{
-	pDC->FillSolidRect(x0, y, x1 - x0, 1, clrPen);
-}
-
-void CXTPPaintManager::VerticalLine(CDC* pDC, int x, int y0, int y1, COLORREF clrPen)
-{
-	pDC->FillSolidRect(x, y0, 1, y1 - y0, clrPen);
-}
-
-void CXTPPaintManager::Line(CDC* pDC, CPoint p0, CPoint p1)
-{
-	pDC->MoveTo(p0);
-	pDC->LineTo(p1);
-}
-void CXTPPaintManager::Line(CDC* pDC, int x0, int y0, int x1, int y1, int nPen)
-{
-	CXTPPenDC pen(*pDC, GetXtremeColor(nPen));
-	pDC->MoveTo(x0, y0);
-	pDC->LineTo(x1, y1);
-}
-void CXTPPaintManager::Pixel(CDC* pDC, int x, int y, int nPen)
-{
-	pDC->SetPixel(x, y, GetXtremeColor(nPen));
-}
-
-void CXTPPaintManager::StripMnemonics(CString& strClear)
-{
-	CXTPDrawHelpers::StripMnemonics(strClear);
-}
-
-
-void CXTPPaintManager::SplitString(const CString& str, CString& strFirstRow, CString& strSecondRow)
-{
-	strFirstRow = str;
-	strSecondRow.Empty();
-
-	int nIndex = str.Find(_T(' '));
-	if (nIndex < 1)
+	if (!lpLogFont)
 		return;
 
-	int nCenter = str.GetLength() / 2;
-	for (int i = 0; i < nCenter - 1; i++)
-	{
-		ASSERT(nCenter - i >= 0 && nCenter + i + 1 < str.GetLength());
+	lpLogFont->lfWeight = FW_NORMAL;
+	m_fnt.DeleteObject();
+	m_fnt.CreateFontIndirect(lpLogFont);
 
-		if (str[nCenter - i] == _T(' '))
-		{
-			strFirstRow = str.Left(nCenter - i);
-			strSecondRow = str.Mid(nCenter - i + 1);
-			return;
-		}
+	lpLogFont->lfWeight = FW_BOLD;
+	m_fntTitle.DeleteObject();
+	m_fntTitle.CreateFontIndirect(lpLogFont);
 
-		if (str[nCenter + i + 1] == _T(' '))
-		{
-			strFirstRow = str.Left(nCenter + i + 1);
-			strSecondRow = str.Mid(nCenter + i + 2);
-			return;
-		}
-	}
-
-}
-
-#define XTP_DTT_COMPOSITED      (1UL << 13)     // Draws text with antialiased alpha (needs a DIB section)
-#define XTP_DTT_TEXTCOLOR       (1UL << 0)
-
-void DrawTextApi(CDC* pDC, const CString& str, LPRECT lpRect, UINT format, BOOL bComposited)
-{
-	if (!bComposited)
-	{
-		pDC->DrawText(str, lpRect, format);
-	}
-	else
-	{
-		CXTPWinThemeWrapper wrapper(FALSE);
-		wrapper.OpenTheme(0, L"GLOBALS");
-
-		if (!wrapper.IsAppThemed())
-		{
-			pDC->DrawText(str, lpRect, format);
-			return;
-		}
-
-		CRect rcBuffer(lpRect);
-
-		HDC hDC = 0;
-		HPAINTBUFFER pb = wrapper.BeginBufferedPaint(pDC->GetSafeHdc(), rcBuffer, XTP_BPBF_TOPDOWNDIB, 0, &hDC);
-
-		if (hDC != NULL)
-		{
-			::BitBlt(hDC, rcBuffer.left, rcBuffer.top, rcBuffer.Width(), rcBuffer.Height(), pDC->GetSafeHdc(), rcBuffer.left, rcBuffer.top, SRCCOPY);
-
-			XTP_UX_DTTOPTS op;
-			op.dwSize = sizeof(op);
-			op.dwFlags = XTP_DTT_COMPOSITED | XTP_DTT_TEXTCOLOR;
-			op.crText = pDC->GetTextColor();
-
-
-			CXTPFontDC font(CDC::FromHandle(hDC), pDC->GetCurrentFont());
-
-			wrapper.DrawThemeTextEx(hDC, 0, 0, XTP_CT2CW(str), -1,
-				format,  rcBuffer, &op);
-		}
-
-		wrapper.EndBufferedPaint(pb, TRUE);
-	}
+	if (m_pToolTip) m_pToolTip->DestroyWindow();
 }
 
 
-void CXTPPaintManager::DrawControlText3(CDC* pDC, CXTPControl* pButton, const CString& str, const CString& strClear, CRect rcText, BOOL bVert, BOOL bCentered)
+CXTPToolTipContextToolTip::~CXTPToolTipContextToolTip()
 {
-	BOOL bEmbossed = !pButton->GetEnabled() && m_bEmbossedDisabledText;
-	BOOL bShowKeyboardCues = pButton->GetParent()->IsKeyboardCuesVisible();
-
-	if (m_bShowKeyboardCues > -1)
-		bShowKeyboardCues = m_bShowKeyboardCues;
-
-	int nFormat = DT_SINGLELINE | (bCentered ? DT_CENTER : DT_LEFT);
-
-	if (!bVert)
+	for (int i = 0; i < (int)m_arrTools.GetSize(); i++)
 	{
-		if (bEmbossed)
-		{
-			COLORREF clrText = pDC->GetTextColor();
-			pDC->SetTextColor(GetXtremeColor(COLOR_3DHIGHLIGHT));
-			pDC->DrawText(strClear, rcText + CPoint(1, 1), nFormat | DT_VCENTER | DT_NOPREFIX);
-			pDC->SetTextColor(clrText);
-		}
-
-		if (bShowKeyboardCues)
-			DrawTextApi(pDC, str, &rcText, nFormat | DT_VCENTER, pButton->HasDwmCompositedRect());
-		else
-			DrawTextApi(pDC, strClear, &rcText, nFormat | DT_VCENTER | DT_NOPREFIX, pButton->HasDwmCompositedRect());
+		delete m_arrTools[i];
 	}
-	else
-	{
-		if (bEmbossed)
-		{
-			COLORREF clrText = pDC->GetTextColor();
-			pDC->SetTextColor(GetXtremeColor(COLOR_3DHIGHLIGHT));
-			pDC->DrawText(strClear, rcText + CPoint(1, 1), nFormat | DT_NOPREFIX | DT_NOCLIP);
-			pDC->SetTextColor(clrText);
-		}
+	m_arrTools.RemoveAll();
+	HookMouseMove(FALSE);
 
-		pDC->DrawText(strClear, &rcText, nFormat | DT_NOPREFIX | DT_NOCLIP);
-	}
 }
 
-void CXTPPaintManager::DrawDropDownGlyph(CDC* pDC, CXTPControl* /*pControl*/, CPoint pt, BOOL bSelected, BOOL bPopuped, BOOL bEnabled, BOOL bVert)
-{
-	COLORREF clr = GetRectangleTextColor(bSelected, FALSE, bEnabled, FALSE, bPopuped, xtpBarTypeNormal, xtpBarTop);
 
-	if (bVert)
+BEGIN_MESSAGE_MAP(CXTPToolTipContextToolTip, CWnd)
+	//{{AFX_MSG_MAP(CXTPToolTipContextToolTip)
+	ON_MESSAGE(TTM_ADDTOOL, OnAddTool)
+	ON_MESSAGE(TTM_ACTIVATE, OnActivate)
+	ON_MESSAGE(TTM_DELTOOL, OnDelTool)
+	ON_MESSAGE(TTM_RELAYEVENT, OnRelayEvent)
+	ON_MESSAGE(TTM_SETTITLE, OnSetTitle)
+	ON_MESSAGE(TTM_UPDATETIPTEXT, OnUpdateTipText)
+	ON_MESSAGE(TTM_SETDELAYTIME, OnSetDelayTime)
+	ON_MESSAGE(XTP_TTM_SETIMAGE, OnSetImage)
+	ON_WM_PAINT()
+	ON_WM_ERASEBKGND()
+	ON_WM_NCHITTEST_EX()
+	ON_WM_MOUSEACTIVATE()
+	ON_WM_MOUSEMOVE()
+	ON_WM_TIMER()
+	ON_WM_DESTROY()
+	ON_MESSAGE(TTM_WINDOWFROMPOINT, OnWindowFromPoint)
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPToolTipContextToolTip message handlers
+BOOL CXTPToolTipContextToolTip::Create(CWnd* pParentWnd, DWORD dwStyle)
+{
+	UINT nClassStyle = (dwStyle & XTP_TTS_NOSHADOW ? 0 : CS_DROPSHADOW) | CS_SAVEBITS | CS_OWNDC;
+
+	if ((nClassStyle & CS_DROPSHADOW) && !XTPSystemVersion()->IsWinXPOrGreater()) // Windows XP only
 	{
-		Triangle(pDC, CPoint(pt.x + 2 , pt.y - 2), CPoint(pt.x + 2, pt.y + 2), CPoint (pt.x, pt.y), clr);
+		nClassStyle &= ~CS_DROPSHADOW;
 	}
-	else
-	{
-		Triangle(pDC, CPoint(pt.x - 2 , pt.y - 1), CPoint(pt.x + 2, pt.y - 1), CPoint (pt.x, pt.y + 1), clr);
-	}
+
+
+	BOOL bResult = CWnd::CreateEx(WS_EX_TOOLWINDOW, AfxRegisterWndClass(nClassStyle, AfxGetApp()->LoadStandardCursor(IDC_ARROW)), NULL,
+		WS_POPUP | dwStyle, // force WS_POPUP
+		CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+		pParentWnd->GetSafeHwnd(), NULL, NULL);
+
+	if (bResult)
+		SetOwner(pParentWnd);
+	return bResult;
 }
 
-CSize CXTPPaintManager::DrawControlText2(CDC* pDC, CXTPControl* pButton, CRect rcText, BOOL bDraw, BOOL bVert, BOOL bTrangled)
+void CXTPToolTipContextToolTip::OnDestroy()
 {
-	CString str = pButton->GetCaption();
-	CString strClear(str);
-	StripMnemonics(strClear);
+	m_toolVisible.Reset();
+	m_toolDisabled.Reset();
+	m_toolDelay.Reset();
 
-	CString strFirstRow, strSecondRow;
-	if (m_bWrapCaptionBelowText)
-		SplitString(str, strFirstRow, strSecondRow);
-	else strFirstRow = str;
-
-	CString strFirstRowClear(strFirstRow), strSecondRowClear(strSecondRow);
-	StripMnemonics(strFirstRowClear);
-	StripMnemonics(strSecondRowClear);
-
-
-	if (!bDraw)
+	for (int i = 0; i < (int)m_arrTools.GetSize(); i++)
 	{
-		CSize szFirstRow = pDC->GetTextExtent(strClear.IsEmpty() ? _T(" ") : strFirstRowClear);
-		CSize szSecondRow = pDC->GetTextExtent(strClear.IsEmpty() ? _T(" ") : strSecondRowClear);
-
-		if (bTrangled) szSecondRow.cx += 8;
-		CSize sz(max(szFirstRow.cx, szSecondRow.cx), 24);
-		return bVert ? CSize(sz.cy, sz.cx) : sz;
+		delete m_arrTools[i];
 	}
+	m_arrTools.RemoveAll();
 
-	if (!bVert)
+	m_strTitle.Empty();
+	m_pIcon = NULL;
+
+	Activate(FALSE);
+	HookMouseMove(FALSE);
+
+	CWnd::OnDestroy();
+}
+
+LRESULT CXTPToolTipContextToolTip::OnSetImage(WPARAM, LPARAM lParam)
+{
+	m_pIcon = (CXTPImageManagerIcon*)lParam;
+	return 0;
+}
+
+LRESULT CXTPToolTipContextToolTip::OnSetTitle(WPARAM, LPARAM lParam)
+{
+	m_strTitle = (LPCTSTR)lParam;
+	return 0;
+}
+
+LRESULT CXTPToolTipContextToolTip::OnSetDelayTime(WPARAM dwDuration, LPARAM lParam)
+{
+	UINT iTime = LOWORD(lParam);
+
+	switch (dwDuration)
 	{
-		CRect rcFirstRowText(rcText.left, rcText.top, rcText.right, rcText.CenterPoint().y + 1);
-		CRect rcSecondRowText(rcText.left, rcText.CenterPoint().y, rcText.right, rcText.bottom);
+	case TTDT_RESHOW:
+		m_nDelayReshow = iTime;
+		break;
 
-		DrawControlText3(pDC, pButton, strFirstRow, strFirstRowClear, rcFirstRowText, bVert, TRUE);
-
-		int nWidth = pDC->GetTextExtent(strSecondRowClear).cx + (bTrangled ? 9 : 0);
-		rcSecondRowText.left += (rcText.Width() - nWidth) /2;
-		DrawControlText3(pDC, pButton, strSecondRow, strSecondRowClear, rcSecondRowText, bVert, FALSE);
-
-		if (bTrangled)
-		{
-			CPoint pt = CPoint(strSecondRow.IsEmpty() ? rcText.CenterPoint().x - 1:
-				rcSecondRowText.left + nWidth - 4, rcSecondRowText.CenterPoint().y);
-			DrawDropDownGlyph(pDC, pButton, pt, pButton->GetSelected(), pButton->GetPopuped(), pButton->GetEnabled(), bVert);
-		}
-	}
-	else
-	{
-		CRect rcSecondRowText(rcText.left + 1, rcText.top, rcText.CenterPoint().x + 1, rcText.bottom);
-		CRect rcFirstRowText(rcText.CenterPoint().x, rcText.top, rcText.right - 1, rcText.bottom);
-
-		CSize szText = pDC->GetTextExtent (strFirstRowClear);
-		rcFirstRowText.left = rcFirstRowText.right - (rcFirstRowText.Width() - szText.cy + 1) / 2;
-		rcFirstRowText.top = rcFirstRowText.top + (rcFirstRowText.Height() - szText.cx + 1) / 2;
-		DrawControlText3(pDC, pButton, strFirstRow, strFirstRowClear, rcFirstRowText, bVert, FALSE);
-
-		szText = pDC->GetTextExtent (strSecondRowClear);
-		szText.cx += (bTrangled ? 8 : 0);
-		CRect rcSecondRow(rcSecondRowText);
-		rcSecondRowText.left = rcSecondRowText.right - (rcSecondRowText.Width() - szText.cy + 1) / 2;
-		rcSecondRowText.top = rcSecondRowText.top + (rcSecondRowText.Height() - szText.cx + 1) / 2;
-		DrawControlText3(pDC, pButton, strSecondRow, strSecondRowClear, rcSecondRowText, bVert, FALSE);
-
-		if (bTrangled)
-		{
-			CPoint pt = CPoint(rcSecondRow.CenterPoint().x - 2, rcSecondRowText.top + szText.cx - 4);
-			DrawDropDownGlyph(pDC, pButton, pt, pButton->GetSelected(), pButton->GetPopuped(), pButton->GetEnabled(), bVert);
-		}
+	case TTDT_INITIAL:
+		m_nDelayInitial = iTime;
+		break;
 	}
 	return 0;
 }
 
-CSize CXTPPaintManager::DrawControlText(CDC* pDC, CXTPControl* pButton, CRect rcText, BOOL bDraw, BOOL bVert, BOOL bCentered, BOOL bTriangled)
+LRESULT CXTPToolTipContextToolTip::OnUpdateTipText(WPARAM, LPARAM lParam)
 {
-	CString str = pButton->GetCaption();
+	LPTOOLINFO lpToolInfo = LPTOOLINFO(lParam);
 
-	CString strClear(str);
-	StripMnemonics(strClear);
-
-	if (!bDraw)
+	for (int i = 0; i < (int)m_arrTools.GetSize(); i++)
 	{
-		CSize sz = pDC->GetTextExtent(strClear.IsEmpty() ? _T(" ") : strClear);
-		if (bTriangled) sz.cx += m_bOffice2007Padding ? 8 : 10;
-		return bVert ? CSize(sz.cy, sz.cx) : sz;
+		TOOLITEM* pItem = m_arrTools[i];
+
+		if ((pItem->uId == lpToolInfo->uId) && (pItem->hwnd == lpToolInfo->hwnd))
+		{
+			pItem->bAutoCaption = (lpToolInfo->lpszText == LPSTR_TEXTCALLBACK);
+			pItem->strCaption = pItem->bAutoCaption ? _T("") : lpToolInfo->lpszText;
+			break;
+		}
 	}
 
-	if (!bVert)
-	{
-		int nWidth = pDC->GetTextExtent(strClear).cx + (bTriangled ? 5 : 0);
-
-		if (bCentered)
-		{
-			rcText.left += (rcText.Width() - nWidth) /2;
-		}
-
-		DrawControlText3(pDC, pButton, str, strClear, rcText, bVert, FALSE);
-
-		if (bTriangled)
-		{
-			CPoint pt = CPoint(rcText.left + nWidth, rcText.CenterPoint().y);
-			DrawDropDownGlyph(pDC, pButton, pt, pButton->GetSelected(), pButton->GetPopuped(), pButton->GetEnabled(), bVert);
-		}
-	}
-	else
-	{
-		CRect rc(rcText);
-		CSize szText = pDC->GetTextExtent (strClear);
-		szText.cx += (bTriangled ? 5 : 0);
-		rcText.left = rcText.right - (rcText.Width() - szText.cy + 1) / 2;
-		if (bCentered)
-		{
-			rcText.top = rcText.top + (rcText.Height() - szText.cx + 1) / 2;
-		}
-
-		DrawControlText3(pDC, pButton, str, strClear, rcText, bVert, FALSE);
-
-		if (bTriangled)
-		{
-			CPoint pt = CPoint(rc.CenterPoint().x, rcText.top + szText.cx - 1);
-			DrawDropDownGlyph(pDC, pButton, pt, pButton->GetSelected(), pButton->GetPopuped(), pButton->GetEnabled(), bVert);
-		}
-	}
 	return 0;
 }
 
-void CXTPPaintManager::UseOfficeFont(bool bUseOfficeFont)
+
+LRESULT CXTPToolTipContextToolTip::OnAddTool(WPARAM, LPARAM lParam)
 {
-	m_bUseOfficeFont = bUseOfficeFont;
-	RefreshMetrics();
+	return AddTool((LPTOOLINFO)lParam);
 }
 
-BOOL CXTPPaintManager::FontExists(LPCTSTR strFaceName)
+LRESULT CXTPToolTipContextToolTip::OnActivate(WPARAM wParam, LPARAM)
 {
-	return CXTPDrawHelpers::FontExists(strFaceName);
+	Activate((BOOL)wParam);
+	return 0;
 }
 
-void CXTPPaintManager::SetCommandBarsFontIndirect(LOGFONT* pLogFont, BOOL bUseStandardFont /*= FALSE*/)
+LRESULT CXTPToolTipContextToolTip::OnDelTool(WPARAM, LPARAM lParam)
 {
-	m_bUseStandardFont = bUseStandardFont;
+	DelTool((LPTOOLINFO)lParam);
+	return 0;
+}
 
-	if (!pLogFont)
+LRESULT CXTPToolTipContextToolTip::OnRelayEvent(WPARAM, LPARAM lParam)
+{
+	RelayEvent((LPMSG)lParam);
+	return 0;
+}
+
+LRESULT CXTPToolTipContextToolTip::OnWindowFromPoint(WPARAM, LPARAM lParam)
+{
+	LPPOINT lpPoint = (LPPOINT)lParam;
+	HWND hWnd = lpPoint ? ::WindowFromPoint(*lpPoint) : 0;
+
+	if ((hWnd != NULL) && (GetWindowLong(hWnd, GWL_STYLE) & WS_CHILD) && (::SendMessage(hWnd, XTP_TTM_WINDOWFROMPOINT, 0, 0) == 1))
+	{
+		return (LRESULT)::GetParent(hWnd);
+	}
+
+	return (LRESULT)hWnd;
+}
+
+BOOL CXTPToolTipContextToolTip::AddTool(LPTOOLINFO lpToolInfo)
+{
+	ASSERT(lpToolInfo);
+
+	if (!lpToolInfo)
+		return FALSE;
+
+	TOOLITEM* pti = new TOOLITEM;
+	pti->hwnd = lpToolInfo->hwnd;
+	pti->uFlags = lpToolInfo->uFlags;
+	pti->uId = lpToolInfo->uId;
+	pti->rect = lpToolInfo->rect;
+	pti->bAutoCaption = (lpToolInfo->lpszText == LPSTR_TEXTCALLBACK);
+	pti->strCaption = pti->bAutoCaption ? _T("") : lpToolInfo->lpszText;
+	pti->hinst = lpToolInfo->hinst;
+
+	pti->rectExclude.SetRectEmpty();
+
+	if (lpToolInfo->cbSize == sizeof(XTP_TOOLTIP_TOOLINFO_EX))
+	{
+		pti->rectExclude = ((XTP_TOOLTIP_TOOLINFO_EX*)lpToolInfo)->pToolInfo->rcExclude;
+	}
+
+
+	m_arrTools.Add(pti);
+
+	return TRUE;
+}
+
+void CXTPToolTipContextToolTip::Activate(BOOL bActivate)
+{
+	m_bActive = bActivate;
+
+	if (!bActivate && GetSafeHwnd() && m_nDelayTimer)
+	{
+		KillTimer(m_nDelayTimer);
+		m_nDelayTimer = 0;
+		m_toolDelay.Reset();
+	}
+	if (!bActivate && GetSafeHwnd() && IsWindowVisible())
+	{
+		SetVisibleTool(NULL);
+	}
+}
+
+void CXTPToolTipContextToolTip::DelTool(LPTOOLINFO lpToolInfo)
+{
+	ASSERT(lpToolInfo);
+	if (!lpToolInfo)
 		return;
 
-	if (m_bClearTypeTextQuality && XTPSystemVersion()->IsClearTypeTextQualitySupported())
+	for (int i = 0; i < (int)m_arrTools.GetSize(); i++)
 	{
-		pLogFont->lfQuality = 5;
-	}
+		TOOLITEM* pItem = m_arrTools[i];
 
-	m_fontRegular.DeleteObject();
-	m_fontRegularBold.DeleteObject();
-	m_fontVert.DeleteObject();
-	m_fontVertBold.DeleteObject();
-	m_fontIconBold.DeleteObject();
-
-	// see if the Tahoma font was found.
-	BOOL bTahomaExists = FontExists(m_strOfficeFont);
-
-	// see if the system font is set to the Tahoma font, if so set the office font flag to true.
-	bool bTahomaLF = m_strOfficeFont.CompareNoCase(pLogFont->lfFaceName) == 0;
-	if (bTahomaLF)
-	{
-		m_bUseOfficeFont = true;
-	}
-
-	// set the office font if applicable.
-	//BOOL bUseSystemFont = (pLogFont->lfCharSet > SYMBOL_CHARSET);
-	if (bUseStandardFont)
-	{
-		if (m_bUseOfficeFont && bTahomaExists)
-			STRCPY_S(pLogFont->lfFaceName, LF_FACESIZE, m_strOfficeFont);
-	}
-
-	m_fontRegular.CreateFontIndirect (pLogFont);
-
-	int nWeight = pLogFont->lfWeight;
-
-	pLogFont->lfWeight = FW_BOLD;
-	m_fontRegularBold.CreateFontIndirect (pLogFont);
-
-
-	pLogFont->lfOrientation = 900;
-	pLogFont->lfEscapement = 2700;
-	pLogFont->lfWeight = nWeight;
-	STRCPY_S(pLogFont->lfFaceName, LF_FACESIZE, CXTPDrawHelpers::GetVerticalFontName(m_bUseOfficeFont));
-
-	m_fontVert.CreateFontIndirect (pLogFont);
-
-	pLogFont->lfWeight = FW_BOLD;
-	m_fontVertBold.CreateFontIndirect (pLogFont);
-
-	CWindowDC dc (NULL);
-	CXTPFontDC font(&dc, &m_fontRegular);
-	m_nTextHeight = dc.GetTextExtent(_T(" "), 1).cy + 6;
-}
-
-void CXTPPaintManager::UpdateFonts()
-{
-	CNonClientMetrics ncm;
-
-	BYTE lfCharSet = m_bResourceCharSet ? XTPResourceManager()->GetLanguageInfo()->nFontCharSet : ncm.lfMenuFont.lfCharSet;
-
-	if (m_bUseStandardFont)
-	{
-		CLogFont lf;
-
-		lf.lfHeight = ncm.lfMenuFont.lfHeight < 0 ? min(-11, ncm.lfMenuFont.lfHeight) : ncm.lfMenuFont.lfHeight;
-		lf.lfWeight = ncm.lfMenuFont.lfWeight;
-		lf.lfItalic = ncm.lfMenuFont.lfItalic;
-		lf.lfCharSet = lfCharSet;
-		lf.lfQuality = ncm.lfMenuFont.lfQuality;
-
-		STRCPY_S(lf.lfFaceName, LF_FACESIZE, ncm.lfMenuFont.lfFaceName);
-
-		if (m_bClearTypeTextQuality && XTPSystemVersion()->IsClearTypeTextQualitySupported())
+		if ((pItem->uId == lpToolInfo->uId) && (pItem->hwnd == lpToolInfo->hwnd))
 		{
-			lf.lfQuality = 5;
+
+			if (m_toolVisible.IsEqual(pItem))
+				SetVisibleTool(0);
+
+			if (m_toolDisabled.IsEqual(pItem)) m_toolDisabled.Reset();
+
+			if (m_toolDelay.IsEqual(pItem)) m_toolDelay.Reset();
+
+			m_arrTools.RemoveAt(i);
+			delete pItem;
+
+			break;
 		}
-
-		SetCommandBarsFontIndirect(&lf, TRUE);
 	}
 
-	LOGFONT lfIcon;
-	VERIFY(::SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(lfIcon), &lfIcon, 0));
+}
 
-	if (m_bClearTypeTextQuality && XTPSystemVersion()->IsClearTypeTextQualitySupported())
+CXTPToolTipContextToolTip::TOOLITEM* CXTPToolTipContextToolTip::FindTool()
+{
+	if (!(GetKeyState(VK_LBUTTON) >= 0 && GetKeyState(VK_RBUTTON) >= 0 &&
+		GetKeyState(VK_MBUTTON) >= 0))
 	{
-		lfIcon.lfQuality = 5;
-		ncm.lfSmCaptionFont.lfQuality = 5;
-		ncm.lfStatusFont.lfQuality = 5;
+		return NULL;
 	}
-	lfIcon.lfCharSet = lfCharSet;
-	ncm.lfSmCaptionFont.lfCharSet = lfCharSet;
-	ncm.lfStatusFont.lfCharSet = lfCharSet;
 
-	m_fontSmCaption.SetStandardFont(&ncm.lfSmCaptionFont);
+	CPoint pt;
+	GetCursorPos(&pt);
 
-	VERIFY(m_fontIcon.SetStandardFont(&lfIcon));
-
-	lfIcon.lfWeight = FW_BOLD;
-	VERIFY(m_fontIconBold.SetStandardFont(&lfIcon));
-
-	m_fontToolTip.SetStandardFont(&ncm.lfStatusFont);
-}
-
-void CXTPPaintManager::DrawControlEntry(CDC* pDC, CXTPControl* pButton)
-{
-	DrawRectangle(pDC, pButton->GetRect(), pButton->GetSelected(), pButton->GetPressed(), pButton->GetEnabled(), pButton->GetChecked(),
-		pButton->GetPopuped(), pButton->GetParent()->GetType(), pButton->GetParent()->GetPosition());
-}
-
-COLORREF CXTPPaintManager::GetControlTextColor(CXTPControl* pButton)
-{
-	BOOL bEnabled = pButton->GetType() == xtpControlSplitButtonPopup ? (pButton->GetStyle() != xtpButtonIconAndCaptionBelow ?
-		IsControlCommandEnabled(pButton->GetEnabled()) : IsControlDropDownEnabled(pButton->GetEnabled())) : pButton->GetEnabled();
-
-	BOOL bCheckBoxStyle = (pButton->GetType() == xtpControlCheckBox || pButton->GetType() == xtpControlRadioButton)
-		&& (pButton->GetParent()->GetType() != xtpBarTypePopup);
-
-	if (bCheckBoxStyle)
-		return GetRectangleTextColor(FALSE, FALSE, bEnabled, FALSE, FALSE, pButton->GetParent()->GetType(), pButton->GetParent()->GetPosition());
-
-	return GetRectangleTextColor(pButton->GetSelected(), pButton->GetPressed(), bEnabled, pButton->GetChecked(),
-		pButton->GetPopuped(), pButton->GetParent()->GetType(), pButton->GetParent()->GetPosition());
-}
-
-int CXTPPaintManager::GetPopupBarGripperWidth(CXTPCommandBar* pBar)
-{
-	if (pBar->GetType() != xtpBarTypePopup)
-		return 0;
-
-	int nDoubleGripper = pBar->IsPopupBar() && ((CXTPPopupBar*)pBar)->IsDoubleGripper() ? 2 : 1;
-	CSize szImage(GetPopupBarImageSize(pBar));
-
-	return szImage.cx * nDoubleGripper + 1;
-}
-
-COLORREF CXTPPaintManager::GetControlEditBackColor(CXTPControl* pControl)
-{
-	return GetXtremeColor(pControl->GetEnabled() ? COLOR_WINDOW : COLOR_3DFACE);
-}
-
-CSize CXTPPaintManager::DrawControlEdit(CDC* pDC, CXTPControlEdit* pControlEdit, BOOL bDraw)
-{
-	if (bDraw)
+	for (int i = 0; i < m_arrTools.GetSize(); i++)
 	{
-		if (pControlEdit->GetParent()->GetType() == xtpBarTypePopup)
+		TOOLITEM* pItem = m_arrTools[i];
+
+		if (!::IsWindow(pItem->hwnd))
+			continue;
+
+		CWnd* pWnd = CWnd::FromHandle(pItem->hwnd);
+
+		CRect rcTool = pItem->rect;
+
+		if (pItem->uFlags & TTF_IDISHWND)
 		{
-			DrawControlPopupParent(pDC, pControlEdit, TRUE);
+			pWnd->GetWindowRect(rcTool);
 		}
 		else
 		{
-			CRect rc = pControlEdit->GetRect();
-			CRect rcLabelText(rc);
-			rcLabelText.left += 2;
-			BOOL bEnabled = pControlEdit->GetEnabled();
+			pWnd->ClientToScreen(rcTool);
+		}
 
-			if (pControlEdit->IsImageVisible())
+		if (rcTool.PtInRect(pt) && ((pItem->uFlags & TTF_IDISHWND) || ((HWND)OnWindowFromPoint(0, (LRESULT)(LPPOINT)&pt) == pItem->hwnd)))
+			return pItem;
+	}
+	return NULL;
+}
+
+#ifndef IS_INTRESOURCE
+#define IS_INTRESOURCE(x) (((size_t)(x) >> 16) == 0)
+#endif
+
+CString CXTPToolTipContextToolTip::GetToolText(TOOLITEM* lpToolInfo)
+{
+	if (lpToolInfo->bAutoCaption)
+	{
+		UINT_PTR id = lpToolInfo->uId;
+		TOOLTIPTEXT tt = {0};
+		tt.hdr.hwndFrom = m_hWnd;
+		tt.hdr.idFrom = lpToolInfo->uId;
+		tt.hdr.code = TTN_NEEDTEXT;
+
+		tt.uFlags = lpToolInfo->uFlags;
+		tt.hinst = NULL;
+
+		tt.szText[0] = _T('\0');
+		tt.lpszText = tt.szText;
+
+		::SendMessage(lpToolInfo->hwnd, WM_NOTIFY, id, (LPARAM)&tt);
+
+		if (IS_INTRESOURCE(tt.lpszText))
+		{
+			XTPResourceManager()->LoadLocaleString(tt.hinst, (UINT)(UINT_PTR)tt.lpszText, lpToolInfo->strCaption);
+		}
+		else
+		{
+			lpToolInfo->strCaption = tt.lpszText;
+		}
+
+		if ((m_pContext->GetControlStyle() & TTS_NOPREFIX) == 0)
+		{
+			CXTPDrawHelpers::StripMnemonics(lpToolInfo->strCaption);
+		}
+
+		lpToolInfo->bAutoCaption = FALSE;
+	}
+
+	return lpToolInfo->strCaption;
+}
+
+int CXTPToolTipContextToolTip::GetMaxTipWidth() const
+{
+	const int nWidth = m_pContext->GetMaxTipWidth();
+
+	if (nWidth == -1)
+	{
+		return ::GetSystemMetrics(SM_CXSCREEN);
+	}
+	return nWidth;
+}
+
+CSize CXTPToolTipContextToolTip::GetToolSize(TOOLITEM* lpToolInfo)
+{
+	CClientDC dc(this);
+
+	CFont* pOldFont = dc.SelectObject(&m_pContext->m_fnt);
+
+	CString str = GetToolText(lpToolInfo);
+
+	if (str.IsEmpty())
+		return CSize(0);
+
+	int nMaxTipWidth = GetMaxTipWidth();
+
+	CRect rcMargin = m_pContext->GetMargin();
+	CSize szMargin(3 + rcMargin.left + rcMargin.right + 3, 3 + rcMargin.top + rcMargin.bottom + 3);
+
+	CRect rc(0, 0, nMaxTipWidth - szMargin.cx, 0);
+	dc.DrawText(str, rc, DT_NOPREFIX | DT_CALCRECT | DT_WORDBREAK);
+	CSize sz = rc.Size();
+
+	BOOL bDrawImage = m_pIcon != NULL;
+	BOOL bDrawTitle = !m_strTitle.IsEmpty();
+	BOOL bDrawImageTop = TRUE;
+	CSize szImage(0, 0);
+
+	if (bDrawImage)
+	{
+		szImage = CSize(m_pIcon->GetWidth(), m_pIcon->GetHeight());
+		bDrawImageTop = (szImage.cy <= 16);
+
+		if (bDrawImageTop)
+		{
+			if (!bDrawTitle)
 			{
-				CSize szIcon = pControlEdit->GetIconSize();
-
-				CXTPImageManagerIcon* pImage = pControlEdit->GetImage(szIcon.cx);
-				szIcon.cy = pImage->GetHeight() * szIcon.cx / pImage->GetWidth();
-
-				CPoint pt = CPoint(rc.left + 3, rc.CenterPoint().y - szIcon.cy/2);
-				DrawImage(pDC, pt, szIcon, pImage, FALSE, FALSE, bEnabled, FALSE, FALSE);
-
-				rcLabelText.left = rc.left + szIcon.cx + 6;
-			}
-
-			if (pControlEdit->IsCaptionVisible())
-			{
-				CXTPFontDC fontLabel(pDC, GetRegularFont());
-
-				pDC->SetTextColor(GetRectangleTextColor(FALSE, FALSE, bEnabled, FALSE, FALSE, pControlEdit->GetParent()->GetType(), pControlEdit->GetParent()->GetPosition()));
-				DrawControlText(pDC, pControlEdit, rcLabelText, TRUE, FALSE, FALSE, FALSE);
+				sz.cx += szImage.cx + 3;
 			}
 		}
-		return 0;
-	}
-
-	BOOL bPopupBar = pControlEdit->GetParent()->GetType() == xtpBarTypePopup;
-	CString strCaption(pControlEdit->GetCaption());
-
-	StripMnemonics(strCaption);
-
-	CXTPFontDC font(pDC, GetIconFont());
-	int nHeight = m_nEditHeight > 0 ? m_nEditHeight : pDC->GetTextExtent(_T(" "), 1).cy + 7;
-
-	font.SetFont(GetRegularFont());
-
-	BOOL bCaptionVisible = pControlEdit->IsCaptionVisible();
-
-	if (bCaptionVisible && m_nEditHeight == 0)
-		nHeight = max(nHeight, pDC->GetTextExtent(_T(" "), 1).cy + 7);
-
-	int nCaptionWidth = pDC->GetTextExtent(strCaption).cx + 5;
-
-	if (bPopupBar)
-	{
-		int nGripperWidth = GetPopupBarGripperWidth(pControlEdit->GetParent());
-		pControlEdit->SetLabelWidth(nCaptionWidth + nGripperWidth + m_nPopupBarTextPadding);
-
-		return CSize(pControlEdit->GetWidth() + nGripperWidth, nHeight);
-	}
-
-	BOOL bImageVisible = pControlEdit->IsImageVisible();
-
-	int nLabelWidth = (bImageVisible ? pControlEdit->GetIconSize().cx  + 4 : 0) +
-		(bCaptionVisible ? nCaptionWidth : 0);
-
-	if (bImageVisible)
-		nHeight = max(nHeight, pControlEdit->GetButtonSize().cy);
-
-	pControlEdit->SetLabelWidth(nLabelWidth);
-
-	return CSize(pControlEdit->GetWidth(), nHeight);
-}
-
-CSize CXTPPaintManager::DrawControlComboBox(CDC* pDC, CXTPControlComboBox* pControlCombo, BOOL bDraw)
-{
-	if (bDraw)
-	{
-		if (pControlCombo->GetParent()->GetType() == xtpBarTypePopup)
-		{
-			DrawControlPopupParent(pDC, pControlCombo, TRUE);
-		}
 		else
 		{
-			CRect rc = pControlCombo->GetRect();
-			CRect rcLabelText(rc);
-			rcLabelText.left += 2;
-			BOOL bEnabled = pControlCombo->GetEnabled();
-
-			if (pControlCombo->IsImageVisible())
-			{
-				CSize szIcon = pControlCombo->GetIconSize();
-
-				CXTPImageManagerIcon* pImage = pControlCombo->GetImage(szIcon.cx);
-				szIcon.cy = pImage->GetHeight() * szIcon.cx / pImage->GetWidth();
-
-				CPoint pt = CPoint(rc.left + 3, rc.CenterPoint().y - szIcon.cy/2);
-				DrawImage(pDC, pt, szIcon, pImage, FALSE, FALSE, bEnabled, FALSE, FALSE);
-
-				rcLabelText.left = rc.left + szIcon.cx + 6;
-			}
-
-			if (pControlCombo->IsCaptionVisible())
-			{
-				CXTPFontDC fontLabel(pDC, GetRegularFont());
-
-				pDC->SetTextColor(GetRectangleTextColor(FALSE, FALSE, bEnabled, FALSE, FALSE, pControlCombo->GetParent()->GetType(), pControlCombo->GetParent()->GetPosition()));
-				DrawControlText(pDC, pControlCombo, rcLabelText, TRUE, FALSE, FALSE, FALSE);
-			}
+			sz.cx += szImage.cx + 5;
 		}
-		return 0;
+		sz.cy = max(sz.cy, szImage.cy);
 	}
 
-	BOOL bPopupBar = pControlCombo->GetParent()->GetType() == xtpBarTypePopup;
-	CString strCaption(pControlCombo->GetCaption());
-
-	StripMnemonics(strCaption);
-
-	CXTPFontDC font(pDC, GetIconFont());
-	int nHeight = m_nEditHeight > 0 ? m_nEditHeight : max(20, pDC->GetTextExtent(_T(" "), 1).cy + 7);
-
-	pControlCombo->SetThumbWidth(max(15, MulDiv(nHeight, 9, 14) + 1));
-
-	font.SetFont(GetRegularFont());
-
-	BOOL bCaptionVisible = pControlCombo->IsCaptionVisible();
-
-	if (bCaptionVisible && m_nEditHeight == 0)
-		nHeight = max(nHeight, pDC->GetTextExtent(_T(" "), 1).cy + 7);
-
-	int nCaptionWidth = pDC->GetTextExtent(strCaption).cx + 5;
-
-	if (bPopupBar)
+	if (bDrawTitle)
 	{
-		int nGripperWidth = GetPopupBarGripperWidth(pControlCombo->GetParent());
-		pControlCombo->SetLabelWidth(nCaptionWidth + nGripperWidth + m_nPopupBarTextPadding);
+		CXTPFontDC fntTitle(&dc, &m_pContext->m_fntTitle);
 
-		return CSize(pControlCombo->GetWidth() + nGripperWidth, nHeight);
+		CRect rcTitle(0, 0, nMaxTipWidth - szMargin.cx - 25, 0);
+		dc.DrawText(m_strTitle, rcTitle, DT_NOPREFIX | DT_CALCRECT | DT_SINGLELINE);
+
+		sz.cy += rcTitle.Height() + 10 + 10;
+		sz.cx = max(sz.cx + 10 + 15, min(nMaxTipWidth - szMargin.cx, rcTitle.Width() + 4) + (bDrawImage && bDrawImageTop ? szImage.cx + 1: 0));
+
 	}
 
-	BOOL bImageVisible = pControlCombo->IsImageVisible();
+	dc.SelectObject(pOldFont);
 
-	int nLabelWidth = (bImageVisible ? pControlCombo->GetIconSize().cx  + 4 : 0) +
-		(bCaptionVisible ? nCaptionWidth : 0);
-
-	if (bImageVisible)
-		nHeight = max(nHeight, pControlCombo->GetParent()->GetButtonSize().cy);
-
-	pControlCombo->SetLabelWidth(nLabelWidth);
-
-	return CSize(pControlCombo->GetWidth(), nHeight);
-}
-
-CSize CXTPPaintManager::DrawControl(CDC* pDC, CXTPControl* pButton, BOOL bDraw)
-{
-	if (pButton->GetType() == xtpControlEdit)
-	{
-		return DrawControlEdit(pDC, (CXTPControlEdit*)pButton, bDraw);
-	}
-
-	if (pButton->GetType() == xtpControlComboBox)
-	{
-		return DrawControlComboBox(pDC, (CXTPControlComboBox*)pButton, bDraw);
-	}
-
-	return (pButton->GetParent()->GetType() == xtpBarTypePopup) ?
-		DrawControlPopupParent(pDC, pButton, bDraw): DrawControlToolBarParent(pDC, pButton, bDraw);
-}
-
-void CXTPPaintManager::FillDockBar(CDC* pDC, CXTPDockBar* pBar)
-{
-	pDC->FillSolidRect(CXTPClientRect((CWnd*)pBar), GetXtremeColor(COLOR_3DFACE));
-}
-
-void CXTPPaintManager::FillStatusBar(CDC* pDC, CXTPStatusBar* pBar)
-{
-	if (m_bThemedStatusBar && m_themeStatusBar.IsAppThemed())
-	{
-		m_themeStatusBar.DrawThemeBackground(pDC->GetSafeHdc(), 0, 0, CXTPClientRect((CWnd*)pBar), 0);
-	}
-	else
-	{
-		pDC->FillSolidRect(CXTPClientRect(pBar), GetXtremeColor(COLOR_3DFACE));
-	}
-}
-
-CFont* CXTPPaintManager::GetCommandBarFont(CXTPCommandBar* pBar, BOOL bBold)
-{
-	return (pBar->GetPosition() == xtpBarLeft || pBar->GetPosition() == xtpBarRight) ? (bBold ? &m_fontVertBold: &m_fontVert) : (bBold ? &m_fontRegularBold : &m_fontRegular);
-
-}
-
-CSize CXTPPaintManager::DrawSpecialControl(CDC* pDC, XTPSpecialControl controlType, CXTPControl* pButton, CXTPCommandBar* pBar, BOOL bDraw, LPVOID lpParam)
-{
-	if (controlType == xtpButtonExpandToolbar)
-	{
-		if (!bDraw)
-		{
-			CSize szBar = *(CSize*)lpParam;
-			if (!IsVerticalPosition(pBar->GetPosition()))
-				pButton->SetRect(CRect(szBar.cx - (11 + 2), 2, szBar.cx - 2, szBar.cy - 2));
-			else
-				pButton->SetRect(CRect(2, szBar.cy - (11 + 2), szBar.cx - 2, szBar.cy - 2));
-		}
-		else
-		{
-			DrawControlEntry(pDC, pButton);
-			COLORREF clrText = GetControlTextColor(pButton);
-
-			BOOL bHiddenExists = *(BOOL*)lpParam;
-			CRect rcButton = pButton->GetRect();
-			if (!IsVerticalPosition(pBar->GetPosition()))
-			{
-				CPoint pt = CPoint(rcButton.left + rcButton.Width()/2, rcButton.bottom - 6);
-				Triangle(pDC, CPoint(pt.x -2 , pt.y - 1), CPoint(pt.x + 2, pt.y - 1), CPoint (pt.x, pt.y + 1), clrText);
-				if (bHiddenExists)
-				{
-					CXTPPenDC pen(*pDC, clrText);
-					pDC->MoveTo(rcButton.left + 2, rcButton.top + 4); pDC->LineTo(rcButton.left + 4, rcButton.top + 6);     pDC->LineTo(rcButton.left + 1, rcButton.top + 9);
-					pDC->MoveTo(rcButton.left + 3, rcButton.top + 4); pDC->LineTo(rcButton.left + 5, rcButton.top + 6);     pDC->LineTo(rcButton.left + 2, rcButton.top + 9);
-
-					pDC->MoveTo(rcButton.left + 6, rcButton.top + 4); pDC->LineTo(rcButton.left + 8, rcButton.top + 6);     pDC->LineTo(rcButton.left + 5, rcButton.top + 9);
-					pDC->MoveTo(rcButton.left + 7, rcButton.top + 4); pDC->LineTo(rcButton.left + 9, rcButton.top + 6);     pDC->LineTo(rcButton.left + 6, rcButton.top + 9);
-				}
-			}
-			else
-			{
-				CPoint pt = CPoint(rcButton.left + 4, rcButton.top + 5);
-				Triangle(pDC, CPoint(pt.x +2 , pt.y - 2), CPoint(pt.x + 2, pt.y + 2), CPoint (pt.x, pt.y), clrText);
-
-				if (bHiddenExists)
-				{
-					CXTPPenDC pen(*pDC, clrText);
-					pDC->MoveTo(rcButton.right - 8, rcButton.top + 2); pDC->LineTo(rcButton.right - 6, rcButton.top + 4);   pDC->LineTo(rcButton.right - 3, rcButton.top + 1);
-					pDC->MoveTo(rcButton.right - 8, rcButton.top + 3); pDC->LineTo(rcButton.right - 6, rcButton.top + 5);   pDC->LineTo(rcButton.right - 3, rcButton.top + 2);
-
-					pDC->MoveTo(rcButton.right - 8, rcButton.top + 6); pDC->LineTo(rcButton.right - 6, rcButton.top + 8);   pDC->LineTo(rcButton.right - 3, rcButton.top + 5);
-					pDC->MoveTo(rcButton.right - 8, rcButton.top + 7); pDC->LineTo(rcButton.right - 6, rcButton.top + 9);   pDC->LineTo(rcButton.right - 3, rcButton.top + 6);
-				}
-
-			}
-		}
-	}
-	else if (controlType == xtpButtonExpandFloating)
-	{
-		DrawControlEntry(pDC, pButton);
-		CRect rcButton = pButton->GetRect();
-		COLORREF clrText = GetControlTextColor(pButton);
-
-		if (!pButton->GetSelected() && !pButton->GetPopuped())
-			clrText = m_clrFloatingGripperText;
-		CPoint pt = CPoint(rcButton.left + rcButton.Width()/2, rcButton.top + rcButton.Height()/2);
-		Triangle(pDC, CPoint(pt.x -3 , pt.y - 2), CPoint(pt.x + 3, pt.y - 2), CPoint (pt.x, pt.y + 1), clrText);
-	}
-	else if (controlType == xtpButtonHideFloating)
-	{
-		CFont font;
-		font.CreatePointFont(MulDiv(80, 96, pDC->GetDeviceCaps(LOGPIXELSX)), _T("Marlett"));
-		CFont* pFont = pDC->SelectObject(&font);
-		DrawControlEntry(pDC, pButton);
-		if (!pButton->GetPressed() && !pButton->GetSelected())
-			pDC->SetTextColor(m_clrFloatingGripperText);
-		else
-			pDC->SetTextColor(GetControlTextColor(pButton));
-
-		pDC->DrawText(_T("r"), 1, pButton->GetRect(), DT_SINGLELINE | DT_CENTER | DT_VCENTER);
-		pDC->SelectObject(pFont);
-	}
-	else if (controlType == xtpButtonExpandMenu)
-	{
-		if (bDraw)
-		{
-			DrawControlEntry(pDC, pButton);
-			CRect rcButton = pButton->GetRect();
-			int nCenter = rcButton.CenterPoint().x;
-			CXTPPenDC pen(pDC->GetSafeHdc(), 0);
-
-			pDC->MoveTo(nCenter - 2, rcButton.top + 2); pDC->LineTo(nCenter, rcButton.top + 4);     pDC->LineTo(nCenter + 3, rcButton.top + 1);
-			pDC->MoveTo(nCenter - 2, rcButton.top + 3); pDC->LineTo(nCenter, rcButton.top + 5);     pDC->LineTo(nCenter + 3, rcButton.top + 2);
-
-			pDC->MoveTo(nCenter - 2, rcButton.top + 6); pDC->LineTo(nCenter, rcButton.top + 8);     pDC->LineTo(nCenter + 3, rcButton.top + 5);
-			pDC->MoveTo(nCenter - 2, rcButton.top + 7); pDC->LineTo(nCenter, rcButton.top + 9);     pDC->LineTo(nCenter + 3, rcButton.top + 6);
-
-		}
-		return CSize(0, 12);
-	}
-	return 0;
-}
-
-CSize CXTPPaintManager::DrawControlText(CDC* pDC, CXTPControl* pButton, CRect rcText, BOOL bDraw, BOOL bTriangled, CSize szButton, BOOL bDrawImage)
-{
-	BOOL bVert = pButton->GetParent()->GetPosition() == xtpBarRight || pButton->GetParent()->GetPosition() == xtpBarLeft;
-
-	if (!bVert)
-	{
-		if (bDrawImage)
-		{
-			rcText.left += m_bOffice2007Padding ? szButton.cx : szButton.cx - 1;
-
-			CSize sz = DrawControlText(pDC, pButton, &rcText, bDraw, bVert, FALSE, bTriangled);
-
-			return CSize((m_bOffice2007Padding ? 4 : 3) + sz.cx + szButton.cx, max(sz.cy + 6, szButton.cy));
-		}
-		else
-		{
-			CSize sz = DrawControlText(pDC, pButton, &rcText, bDraw, bVert, TRUE, bTriangled);
-			return CSize(8 + sz.cx, max(sz.cy + 6, szButton.cy));
-		}
-	}
-	else
-	{
-		if (bDrawImage)
-		{
-			rcText.top += szButton.cy;
-
-			CSize sz = DrawControlText(pDC, pButton, &rcText, bDraw, bVert, FALSE, bTriangled);
-
-			return CSize(max(sz.cx + 6, szButton.cx), 3 + sz.cy + szButton.cx);
-		}
-		else
-		{
-			CSize sz = DrawControlText(pDC, pButton, &rcText, bDraw, bVert, TRUE, bTriangled);
-			return CSize(max(sz.cx + 6, szButton.cx), 8 + sz.cy);
-
-		}
-	}
-}
-
-CRect CXTPPaintManager::GetSplitButtonCommandRect(CXTPControl* pButton)
-{
-	CRect rc(pButton->GetRect());
-	CXTPCommandBar* pParent = pButton->GetParent();
-
-	if (pParent->GetType() != xtpBarTypePopup && pButton->GetStyle() == xtpButtonIconAndCaptionBelow)
-	{
-		int nSplitDropDownHeight = GetSplitDropDownHeight();
-
-		BOOL bVert = pParent->GetPosition() == xtpBarLeft ||
-			pParent->GetPosition() == xtpBarRight;
-
-		return bVert ? CRect(rc.left + nSplitDropDownHeight, rc.top, rc.right, rc.bottom) :
-			CRect(rc.left, rc.top, rc.right, rc.bottom - nSplitDropDownHeight);
-	}
-
-	int nSize = pParent->GetType() == xtpBarTypePopup ? m_nSplitButtonPopupWidth : m_nSplitButtonDropDownWidth + 1;
-	return CRect(rc.left, rc.top, rc.right - nSize, rc.bottom);
-}
-
-CSize CXTPPaintManager::DrawControlCheckBoxMark(CDC* pDC, CRect rc, BOOL bDraw, BOOL bSelected, BOOL bPressed, BOOL bChecked, BOOL bEnabled)
-{
-	if (bDraw)
-	{
-		if (m_bThemedCheckBox && m_themeButton.IsAppThemed())
-		{
-			int nState = 0;
-			if (!bEnabled)
-				nState = 3;
-			else if (bSelected && bPressed)
-				nState = 2;
-			else if (bSelected)
-				nState = 1;
-
-			if (bChecked == 1)
-				nState += 4;
-
-			if (bChecked == 2)
-				nState += 8;
-
-			m_themeButton.DrawThemeBackground(pDC->GetSafeHdc(), BP_CHECKBOX, nState + 1, rc, 0);
-
-		}
-		else
-		{
-			pDC->DrawFrameControl(rc, DFC_BUTTON, DFCS_BUTTONCHECK |
-				(!bEnabled || bChecked == 2 ? DFCS_INACTIVE : 0) | (bChecked ? DFCS_CHECKED : 0) |
-				(bPressed ? DFCS_PUSHED : 0));
-		}
-	}
-
-	return CSize(13, 13);
-}
-
-CSize CXTPPaintManager::DrawControlRadioButtonMark(CDC* pDC, CRect rc, BOOL bDraw, BOOL bSelected, BOOL bPressed, BOOL bChecked, BOOL bEnabled)
-{
-	if (bDraw)
-	{
-		if (m_bThemedCheckBox && m_themeButton.IsAppThemed())
-		{
-			int nState = 0;
-			if (!bEnabled)
-				nState = 3;
-			else if (bSelected && bPressed)
-				nState = 2;
-			else if (bSelected)
-				nState = 1;
-
-			if (bChecked == 1)
-				nState += 4;
-
-			if (bChecked == 2)
-				nState += 8;
-
-			m_themeButton.DrawThemeBackground(pDC->GetSafeHdc(), BP_RADIOBUTTON, nState + 1, rc, 0);
-
-		}
-		else
-		{
-			pDC->DrawFrameControl(rc, DFC_BUTTON, DFCS_BUTTONRADIO |
-				(!bEnabled || bChecked == 2 ? DFCS_INACTIVE : 0) | (bChecked ? DFCS_CHECKED : 0) |
-				(bPressed ? DFCS_PUSHED : 0));
-		}
-	}
-
-	return CSize(13, 13);
-}
-
-CSize CXTPPaintManager::GetControlSize(CXTPControl* pControl, CSize sz, BOOL bVert)
-{
-	if (bVert)
-	{
-		if (pControl->GetWidth() > 0)
-			sz.cy = pControl->GetWidth();
-
-		if (pControl->GetHeight() > 0)
-			sz.cx = pControl->GetHeight();
-	}
-	else
-	{
-		if (pControl->GetWidth() > 0)
-			sz.cx = pControl->GetWidth();
-
-		if (pControl->GetHeight() > 0)
-			sz.cy = pControl->GetHeight();
-	}
+	sz += szMargin;
 
 	return sz;
 }
 
-CSize CXTPPaintManager::GetPopupBarImageSize(CXTPCommandBar* pBar)
-{
-	CSize szIcon = pBar->GetIconSize();
-	CSize szImage(max(szIcon.cx + 4, m_nTextHeight + 4), max(szIcon.cy + 6, m_nTextHeight));
-	return szImage;
-}
+HHOOK CXTPToolTipContextToolTip::m_hHookMouse = 0;
+CXTPToolTipContextToolTip* CXTPToolTipContextToolTip::m_pWndMonitor = 0;
 
-void CXTPPaintManager::DrawPopupBarText(CDC* pDC, const CString& strText, CRect& rcText, UINT nFlags, BOOL bDraw, BOOL bSelected, BOOL bEnabled)
+LRESULT CALLBACK CXTPToolTipContextToolTip::MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
-	if (bDraw && !bEnabled && !bSelected && m_bEmbossedDisabledText)
+	if (nCode != HC_ACTION || !m_pWndMonitor || m_pWndMonitor->m_toolVisible.IsEmpty())
+		return CallNextHookEx(m_hHookMouse, nCode, wParam, lParam);
+
+	POINT pt = ((PMOUSEHOOKSTRUCT)lParam)->pt;
+	HWND hWnd = (HWND)m_pWndMonitor->OnWindowFromPoint(0, (LPARAM)&pt);
+
+	if (hWnd != m_pWndMonitor->m_toolVisible.hwnd)
 	{
-		COLORREF clrText = pDC->GetTextColor();
-		pDC->SetTextColor(GetXtremeColor(COLOR_3DHIGHLIGHT));
-		pDC->DrawText(strText, rcText + CPoint(1, 1), DT_SINGLELINE | DT_VCENTER | nFlags);
-		pDC->SetTextColor(clrText);
+		MSG msg;
+		msg.pt = pt;
+		msg.message = WM_MOUSEMOVE;
+		m_pWndMonitor->RelayEvent(&msg);
 	}
 
-	pDC->DrawText(strText, &rcText, DT_SINGLELINE | DT_VCENTER | (!bDraw ? DT_CALCRECT : nFlags));
+	return CallNextHookEx(m_hHookMouse, nCode, wParam, lParam);
 }
 
-CSize CXTPPaintManager::DrawControlPopupParent(CDC* pDC, CXTPControl* pButton, BOOL bDraw)
+void CXTPToolTipContextToolTip::HookMouseMove(BOOL bSetupHook)
 {
-	CXTPCommandBar* pParent = pButton->GetParent();
-
-	CRect rcText(0, 0, 0, 0), rcShortcut(0, 0, 0, 0);
-	CRect rcButton = pButton->GetRect();
-	XTPControlType controlType = pButton->GetType();
-	XTPButtonStyle buttonStyle = pButton->GetStyle();
-	CString strCaption = pButton->GetCaption();
-
-	BOOL bDrawImage = (buttonStyle == xtpButtonAutomatic && controlType != xtpControlPopup) ||
-		(buttonStyle != xtpButtonCaption);
-
-	CSize szImage(GetPopupBarImageSize(pParent));
-
-	BOOL bDoubleGripper = pParent->IsPopupBar() ? ((CXTPPopupBar*)pParent)->IsDoubleGripper() : FALSE;
-	int nGripperWidth = bDoubleGripper ? szImage.cx * 2 : szImage.cx;
-
-	BOOL bSelected = pButton->GetSelected(), bEnabled = pButton->GetEnabled();
-	if (controlType == xtpControlSplitButtonPopup && bEnabled == TRUE_SPLITDROPDOWN)
-		bEnabled = FALSE;
-
-	if (pButton->GetType() == xtpControlLabel && !m_bOffsetPopupLabelText)
-		nGripperWidth = 0;
-	if (pButton->GetType() == xtpControlLabel && !bDrawImage)
-		szImage.cy = m_nTextHeight;
-
-	if (bDraw)
+	if (bSetupHook && m_hHookMouse == 0 && (m_pWndMonitor == NULL))
 	{
-		rcText.SetRect(rcButton.left + nGripperWidth + m_nPopupBarTextPadding, rcButton.top, rcButton.right, rcButton.bottom);
-		rcShortcut.SetRect(rcButton.left + nGripperWidth + 8, rcButton.top, rcButton.right - 19, rcButton.bottom);
+		m_hHookMouse = SetWindowsHookEx(WH_MOUSE, MouseProc, 0, GetCurrentThreadId ());
+		m_pWndMonitor = this;
+	}
+	else if (!bSetupHook && m_hHookMouse && (m_pWndMonitor == this))
+	{
+		UnhookWindowsHookEx(m_hHookMouse);
+		m_hHookMouse = 0;
+		m_pWndMonitor = NULL;
+	}
+}
 
-		if (controlType == xtpControlButton && pButton->GetShortcutText().GetLength() != 0)
-			rcText.right -= pDC->GetTextExtent(pButton->GetShortcutText()).cx + 19;
+void CXTPToolTipContextToolTip::EnsureVisible(CRect& rcToolTip)
+{
+	CRect rcWork = XTPMultiMonitor()->GetWorkArea();
+	int nGap = 4;
+
+	if (rcWork.right - nGap < rcToolTip.right)
+	{
+		rcToolTip.OffsetRect(- rcToolTip.right + rcWork.right - nGap, 0);
 	}
 
-	BOOL bShowKeyboardCues = pParent->IsKeyboardCuesVisible();
-
-	if (!bShowKeyboardCues)
-		StripMnemonics(strCaption);
-
-	if (buttonStyle == xtpButtonCaptionAndDescription && !pButton->GetDescription().IsEmpty())
+	if (rcWork.left > rcToolTip.left)
 	{
+		rcToolTip.OffsetRect(rcWork.left - rcToolTip.left, 0);
+	}
+
+	if (rcWork.bottom - nGap < rcToolTip.bottom)
+	{
+		CPoint pt;
+		GetCursorPos(&pt);
+		rcToolTip.OffsetRect(0, pt.y - rcToolTip.bottom - 3);
+	}
+}
+
+int CXTPToolTipContextToolTip::GetCursorHeight() const
+{
+	HCURSOR hCursor = GetCursor();
+
+	ICONINFO iconInfo;
+	if (!GetIconInfo(hCursor, &iconInfo))
+		return 21;
+
+	BITMAP bm;
+	if (!GetObject(iconInfo.hbmMask, sizeof(BITMAP), &bm))
+		return 21;
+
+	WORD curBits[16 * 8];
+	memset(&curBits, -1, sizeof(curBits));
+
+	if (!GetBitmapBits(iconInfo.hbmMask, sizeof(curBits), curBits))
+		return 21;
+
+	int nBitSize = sizeof(WORD) * 8;
+	int nCount = MulDiv(bm.bmWidth, bm.bmHeight, nBitSize);
+	int nXor = 0;
+
+	if (!iconInfo.hbmColor)
+	{
+		nXor = nCount - 1;
+		nCount = nCount / 2;
+	}
+
+	if (nCount >= sizeof(curBits)/sizeof(WORD)) nCount = sizeof(curBits)/sizeof(WORD) - 1;
+	if (nXor >= sizeof(curBits)/sizeof(WORD)) nXor = 0;
+
+	int i = nCount - 1;
+
+	for (; i >= 0; i--)
+	{
+		if (curBits[i] != 0xFFFF || (nXor && (curBits[nXor--] != 0)))
+			break;
+	}
+
+	if (iconInfo.hbmColor) DeleteObject(iconInfo.hbmColor);
+	if (iconInfo.hbmMask) DeleteObject(iconInfo.hbmMask);
+
+	return MulDiv(i + 1, nBitSize, (int)bm.bmWidth) - (int)iconInfo.yHotspot;
+}
+
+
+void CXTPToolTipContextToolTip::SetVisibleTool(TOOLITEM* pVisibleTool)
+{
+	if (!m_toolVisible.IsEqual(pVisibleTool))
+	{
+		CSize sz(0);
+
+		if (pVisibleTool)
 		{
-			CXTPFontDC font(pDC, GetRegularBoldFont());
-			if (bDraw)
-			{
-				rcShortcut.bottom = rcText.bottom = rcText.top + pDC->GetTextExtent(_T(" "), 1).cy + 10;
-			}
-			DrawPopupBarText(pDC, strCaption, rcText, DT_END_ELLIPSIS | (!bShowKeyboardCues ? DT_NOPREFIX : 0), bDraw, bSelected, bEnabled);
-
-			if (controlType == xtpControlButton && pButton->GetShortcutText().GetLength() != 0)
-				DrawPopupBarText(pDC, pButton->GetShortcutText(), rcShortcut, DT_RIGHT, bDraw, bSelected, bEnabled);
+			sz = GetToolSize(pVisibleTool);
+			if (sz == CSize(0)) pVisibleTool = 0;
 		}
 
-		if (bDraw)
+		if (m_hWnd)
 		{
-			CRect rcDescription(rcText.left, rcText.bottom - 2, rcButton.right - 10, rcButton.bottom);
-			pDC->DrawText(pButton->GetDescription(),rcDescription, DT_WORDBREAK | DT_TOP | DT_NOPREFIX);
+			SetWindowPos(0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_HIDEWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+		}
+
+		if (pVisibleTool)
+		{
+			CRect rcToolTip(0, 0, 0, 0);
+
+			if (!pVisibleTool->rectExclude.IsRectEmpty())
+			{
+				CWnd* pWnd = CWnd::FromHandle(pVisibleTool->hwnd);
+				//CRect rcExclude = pVisibleTool->rectExclude;
+				//rcToolTip = pVisibleTool->rect;
+				rcToolTip.SetRect(pVisibleTool->rect.left, pVisibleTool->rectExclude.bottom,
+					pVisibleTool->rect.left + sz.cx, pVisibleTool->rectExclude.bottom + sz.cy);
+
+				pWnd->ClientToScreen(rcToolTip);
+
+			}
+			else
+			{
+				CPoint pt;
+				GetCursorPos(&pt);
+				int nCursorHeight = GetCursorHeight();
+
+				rcToolTip.SetRect(pt.x, pt.y + nCursorHeight, pt.x + sz.cx, pt.y + nCursorHeight + sz.cy);
+
+				if (GetWindowLong(pVisibleTool->hwnd, GWL_EXSTYLE) & WS_EX_LAYOUTRTL)
+				{
+					rcToolTip.OffsetRect(-sz.cx, 0);
+				}
+			}
+
+
+			EnsureVisible(rcToolTip);
+
+			SetWindowPos(&CWnd::wndTop, rcToolTip.left, rcToolTip.top,
+				rcToolTip.Width(), rcToolTip.Height(), SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+			Invalidate(FALSE);
+
+			HookMouseMove(TRUE);
+
+			m_toolDisabled.Reset();
 		}
 		else
 		{
-			CSize szDescription = pDC->GetTextExtent(pButton->GetDescription());
-			CRect rcDescription(0, 0, (szDescription.cx + 20) / 2, 0);
-			pDC->DrawText(_T("1\n2"), rcDescription, DT_CALCRECT | DT_WORDBREAK);
-
-			int nWidth = nGripperWidth + m_nPopupBarTextPadding + rcText.Width() +  rcShortcut.Width() + 32;
-
-			return GetControlSize(pButton, CSize(max(nWidth, nGripperWidth + m_nPopupBarTextPadding + szDescription.cx / 2 + 32),
-				max(szImage.cy, rcDescription.Height() + rcText.Height() + 19)), FALSE);
+			HookMouseMove(FALSE);
+			m_toolDelay.Reset();
 		}
+
+		m_toolVisible.Assign(pVisibleTool);
+
+		m_dwLastTip = GetTickCount();
+
+		OnVisibleChanged(pVisibleTool != NULL);
+	}
+}
+
+void CXTPToolTipContextToolTip::RelayEvent(LPMSG lpMsg)
+{
+	if (!m_bActive)
+		return;
+
+	if (!((lpMsg->message >= WM_MOUSEFIRST && lpMsg->message <= WM_MOUSELAST) ||
+		(lpMsg->message >= WM_NCMOUSEMOVE && lpMsg->message <= WM_NCMBUTTONDBLCLK)))
+		return;
+
+	TOOLITEM* pVisibleTool = FindTool();
+
+	if (lpMsg->message == WM_LBUTTONDOWN)
+	{
+		if (pVisibleTool)
+		{
+			m_toolDisabled = *pVisibleTool;
+			pVisibleTool = 0;
+		}
+	}
+	if (pVisibleTool && (m_toolDisabled.IsEqual(pVisibleTool)))
+	{
+		pVisibleTool = 0;
+	}
+
+	if (m_nDelayTimer && !m_toolDelay.IsEqual(pVisibleTool))
+	{
+		KillTimer(m_nDelayTimer);
+		m_nDelayTimer = 0;
+		m_toolDelay.Reset();
+	}
+
+	if (pVisibleTool)
+	{
+		if (!m_toolVisible.IsEqual(pVisibleTool))
+		{
+			if (GetTickCount() - m_dwLastTip < m_nDelayReshow)
+			{
+				SetVisibleTool(pVisibleTool);
+			}
+			else if (!m_toolDelay.IsEqual(pVisibleTool))
+			{
+				m_toolDelay = *pVisibleTool;
+				m_nDelayTimer = SetTimer(1, m_nDelayInitial, NULL);
+			}
+		}
+	}
+	else
+	{
+		SetVisibleTool(0);
+	}
+
+
+}
+
+void CXTPToolTipContextToolTip::DrawEntry(CDC* pDC, TOOLITEM* lpToolInfo, CRect rc)
+{
+	CString str = lpToolInfo->strCaption;
+
+	rc.DeflateRect(m_pContext->GetMargin());
+	rc.DeflateRect(3, 3, 3, 3);
+
+	DWORD dwFlags = DT_NOPREFIX;
+	BOOL bLayoutRTL = lpToolInfo->hwnd && GetWindowLong(lpToolInfo->hwnd, GWL_EXSTYLE) & WS_EX_LAYOUTRTL;
+
+	if (bLayoutRTL)
+	{
+		dwFlags |= DT_RTLREADING | DT_RIGHT;
+	}
+
+	CRect rcTitle(rc.left + 2, rc.top + 2, rc.right - 2, rc.bottom);
+
+	BOOL bDrawImage = m_pIcon != NULL;
+	BOOL bDrawTitle = !m_strTitle.IsEmpty();
+	BOOL bDrawImageTop = TRUE;
+	CSize szImage(0, 0);
+
+	if (bDrawImage)
+	{
+		szImage = CSize(m_pIcon->GetWidth(), m_pIcon->GetHeight());
+		bDrawImageTop = (szImage.cy <= 16);
+
+		if (bDrawImageTop)
+		{
+			CPoint ptIcon = bLayoutRTL ? CPoint(rc.right - szImage.cx, rc.top) : rc.TopLeft();
+			m_pIcon->Draw(pDC, ptIcon);
+
+			if (bLayoutRTL)
+			{
+				if (bDrawTitle) rcTitle.right -= szImage.cx + 1; else rc.right -= szImage.cx + 3;
+			}
+			else
+			{
+				if (bDrawTitle) rcTitle.left += szImage.cx + 1; else rc.left += szImage.cx + 3;
+			}
+		}
+	}
+
+	if (bDrawTitle)
+	{
+		CXTPFontDC fnt(pDC, &m_pContext->m_fntTitle);
+		pDC->DrawText(m_strTitle, rcTitle, dwFlags | DT_SINGLELINE);
+
+		rc.top += pDC->GetTextExtent(m_strTitle).cy;
+
+		if (bLayoutRTL)
+		{
+			rc.DeflateRect(15, 12, 10, 0);
+		}
+		else
+		{
+			rc.DeflateRect(10, 12, 15, 0);
+		}
+	}
+
+	if (bDrawImage && !bDrawImageTop)
+	{
+		CPoint ptIcon = bLayoutRTL ? CPoint(rc.right - szImage.cx, rc.top) : rc.TopLeft();
+		m_pIcon->Draw(pDC, ptIcon);
+		if (bLayoutRTL) rc.right -= szImage.cx + 5; else rc.left += szImage.cx + 5;
+	}
+
+	pDC->DrawText(str, rc, dwFlags | DT_WORDBREAK);
+}
+
+void CXTPToolTipContextToolTip::DrawBackground(CDC* pDC, TOOLITEM* /*lpToolInfo*/, CRect rc)
+{
+	pDC->FillSolidRect(rc, m_pContext->GetTipBkColor());
+
+	if (GetStyle() & XTP_TTS_OFFICEFRAME)
+		pDC->Draw3dRect(rc, GetSysColor(COLOR_3DFACE), 0);
+	else
+		pDC->Draw3dRect(rc, 0, 0);
+}
+
+void CXTPToolTipContextToolTip::OnPaint()
+{
+	CPaintDC dc(this); // device context for painting
+
+	CXTPClientRect rc(this);
+
+	DrawBackground(&dc, &m_toolVisible, rc);
+
+	COLORREF clrTextColor = m_pContext->GetTipTextColor();
+	dc.SetBkMode(TRANSPARENT);
+	dc.SetTextColor(clrTextColor);
+	CXTPFontDC font(&dc, &m_pContext->m_fnt);
+
+	DrawEntry(&dc, &m_toolVisible, rc);
+}
+
+BOOL CXTPToolTipContextToolTip::OnEraseBkgnd(CDC* /*pDC*/)
+{
+	return TRUE;
+}
+
+LRESULT CXTPToolTipContextToolTip::OnNcHitTest(CPoint /*point*/)
+{
+	return (LRESULT)HTTRANSPARENT;
+}
+
+int CXTPToolTipContextToolTip::OnMouseActivate(CWnd* /*pDesktopWnd*/, UINT /*nHitTest*/, UINT /*message*/)
+{
+	return MA_NOACTIVATE;
+}
+
+void CXTPToolTipContextToolTip::OnMouseMove(UINT /*nFlags*/, CPoint /*point*/)
+{
+	SetVisibleTool(NULL);
+}
+
+void CXTPToolTipContextToolTip::OnTimer(UINT_PTR nIDEvent)
+{
+	if (nIDEvent == m_nDelayTimer)
+	{
+		if (!m_toolDelay.IsEmpty())
+		{
+			TOOLITEM* pVisibleTool = FindTool();
+
+			if (m_toolDelay.IsEqual(pVisibleTool))
+			{
+				SetVisibleTool(pVisibleTool);
+			}
+		}
+		KillTimer(m_nDelayTimer);
+		m_nDelayTimer = 0;
+		m_toolDelay.Reset();
+	}
+
+	CWnd::OnTimer(nIDEvent);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPToolTipContext::CStandardToolTip
+
+class CXTPToolTipContext::CStandardToolTip : public CToolTipCtrl
+{
+	DECLARE_MESSAGE_MAP()
+	LRESULT OnWindowFromPoint(WPARAM, LPARAM);
+};
+
+typedef CXTPToolTipContext::CStandardToolTip CXTPToolTipContextStandardTip;
+
+BEGIN_MESSAGE_MAP(CXTPToolTipContextStandardTip, CToolTipCtrl)
+	ON_MESSAGE(TTM_WINDOWFROMPOINT, OnWindowFromPoint)
+END_MESSAGE_MAP()
+
+LRESULT CXTPToolTipContext::CStandardToolTip::OnWindowFromPoint(WPARAM, LPARAM)
+{
+	HWND hWnd = (HWND)Default();
+
+
+	if ((hWnd != NULL) && (GetWindowLong(hWnd, GWL_STYLE) & WS_CHILD) && (::SendMessage(hWnd, XTP_TTM_WINDOWFROMPOINT, 0, 0) == 1))
+	{
+		return (LRESULT)::GetParent(hWnd);
+	}
+
+	return (LRESULT)hWnd;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPToolTipContext::CLunaToolTip
+
+class CXTPToolTipContext::CLunaToolTip : public CXTPToolTipContextToolTip
+{
+public:
+	CLunaToolTip(CXTPToolTipContext* pContext)
+		: CXTPToolTipContextToolTip(pContext)
+	{
+
+	}
+
+	void DrawBackground(CDC* pDC, TOOLITEM* /*lpToolInfo*/, CRect rc)
+	{
+		switch (XTPColorManager()->GetCurrentSystemTheme())
+		{
+			case xtpSystemThemeBlue:
+			case xtpSystemThemeRoyale:
+			case xtpSystemThemeAero:
+				XTPDrawHelpers()->GradientFill(pDC, rc, RGB(255, 212, 151), RGB(255, 242, 200), FALSE);
+				pDC->Draw3dRect(rc, RGB(0, 0, 128), RGB(0, 0, 128));
+				break;
+			case xtpSystemThemeOlive:
+				XTPDrawHelpers()->GradientFill(pDC, rc, RGB(255, 212, 151), RGB(255, 242, 200), FALSE);
+				pDC->Draw3dRect(rc, RGB(63, 93, 56), RGB(63, 93, 56));
+				break;
+			case xtpSystemThemeSilver:
+				XTPDrawHelpers()->GradientFill(pDC, rc, RGB(255, 212, 151), RGB(255, 242, 200), FALSE);
+				pDC->Draw3dRect(rc, RGB(75, 75, 111), RGB(75, 75, 111));
+				break;
+			default:
+				XTPDrawHelpers()->GradientFill(pDC, rc, m_pContext->GetTipBkColor(), RGB(255, 255, 255), FALSE);
+				pDC->Draw3dRect(rc, 0, 0);
+		}
+	}
+};
+
+class CXTPToolTipContext::COffice2007ToolTip : public CXTPToolTipContextToolTip
+{
+public:
+	COffice2007ToolTip(CXTPToolTipContext* pContext)
+		: CXTPToolTipContextToolTip(pContext)
+	{
+
+	}
+
+	void DrawBackground(CDC* pDC, TOOLITEM* /*lpToolInfo*/, CRect rc)
+	{
+		COLORREF clrLight = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("TooltipLight"));
+		COLORREF clrDark = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("TooltipDark"));
+		COLORREF clrBorder = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("TooltipBorder"));
+
+		if (clrLight == COLORREF_NULL) clrLight = RGB(255, 255, 255);
+		if (clrDark == COLORREF_NULL) clrDark = RGB(201, 217, 239);
+		if (clrBorder == COLORREF_NULL) clrBorder = RGB(118, 118, 118);
+
+		XTPDrawHelpers()->GradientFill(pDC, rc, clrLight, clrDark, FALSE);
+
+		pDC->Draw3dRect(rc, clrBorder, clrBorder);
+
+	}
+};
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPToolTipContext::CRichEditToolTip
+
+class CXTPToolTipContext::CRichEditToolTip : public CXTPToolTipContextToolTip
+{
+public:
+	CRichEditToolTip(CXTPToolTipContext* pContext)
+		: CXTPToolTipContextToolTip(pContext)
+	{
+
+	}
+
+protected:
+	virtual void DrawEntry(CDC* pDC, TOOLITEM* lpToolInfo, CRect rc);
+	virtual CSize GetToolSize(TOOLITEM* lpToolInfo);
+
+protected:
+	CXTPRichRender m_render;
+};
+
+CSize CXTPToolTipContext::CRichEditToolTip::GetToolSize(TOOLITEM* lpToolInfo)
+{
+	if (!m_render.GetTextService())
+		return CSize(0);
+
+	CString sText = GetToolText(lpToolInfo);
+	if (sText.IsEmpty())
+		return CSize(0);
+
+	CClientDC dc(this);
+	CXTPFontDC font(&dc, &m_pContext->m_fnt);
+
+	CHARFORMATW cf;
+	ZeroMemory(&cf, sizeof(CHARFORMATW));
+
+	cf.cbSize = sizeof(CHARFORMATW);
+	cf.dwMask = CFM_BOLD | CFM_COLOR | CFM_ITALIC | CFM_PROTECTED | CFM_STRIKEOUT | CFM_UNDERLINE;
+	cf.crTextColor = m_pContext->GetTipTextColor();
+
+	LOGFONT lf;
+	if (m_pContext->GetFont()->GetLogFont(&lf))
+	{
+		cf.yHeight = -MulDiv(lf.lfHeight, 1440, ::GetDeviceCaps(dc, LOGPIXELSY));
+		WCSNCPY_S(cf.szFaceName, XTP_CT2CW(lf.lfFaceName), LF_FACESIZE);
+		cf.dwMask |= CFM_FACE | CFM_SIZE;
+	}
+
+	m_render.SetText(NULL);
+	m_render.SetDefaultCharFormat(&cf);
+	m_render.SetText(sText);
+
+	CRect rcMargin = m_pContext->GetMargin();
+	CSize szMargin(3 + rcMargin.left + rcMargin.right + 3, 3 + rcMargin.top + rcMargin.bottom + 3);
+
+	CSize size = m_render.GetTextExtent(&dc, GetMaxTipWidth() - szMargin.cx);
+
+	size += szMargin;
+
+	return size;
+}
+
+void CXTPToolTipContext::CRichEditToolTip::DrawEntry(CDC* pDC, TOOLITEM* /*lpToolInfo*/, CRect rc)
+{
+	rc.DeflateRect(m_pContext->GetMargin());
+	rc.DeflateRect(3, 3, 3, 3);
+
+	m_render.DrawText(pDC, rc);
+}
+
+#ifndef _XTP_EXCLUDE_HTML
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPToolTipContext::CHTMLToolTip
+
+class CXTPToolTipContext::CHTMLToolTip : public CXTPToolTipContextToolTip
+{
+public:
+	CHTMLToolTip(CXTPToolTipContext* pContext);
+	~CHTMLToolTip();
+
+protected:
+	virtual void DrawEntry(CDC* pDC, TOOLITEM* lpToolInfo, CRect rc);
+	virtual CSize GetToolSize(TOOLITEM* lpToolInfo);
+	virtual void OnVisibleChanged(BOOL bVisble);
+
+protected:
+	DECLARE_INTERFACE_MAP()
+
+BEGIN_INTERFACE_PART(OleClientSite, IOleClientSite)
+	STDMETHOD(SaveObject)( void) { return E_NOTIMPL;}
+	STDMETHOD (GetMoniker)(
+		/* [in] */ DWORD /*dwAssign*/,
+		/* [in] */ DWORD /*dwWhichMoniker*/,
+		/* [out] */ IMoniker ** /*ppmk*/) { return E_NOTIMPL;}
+	STDMETHOD(GetContainer)(
+		/* [out] */ IOleContainer ** /*ppContainer*/) { return E_NOTIMPL;}
+	STDMETHOD(ShowObject)( void) { return E_NOTIMPL;}
+	STDMETHOD(OnShowWindow)(
+		/* [in] */ BOOL /*fShow*/) { return E_NOTIMPL;}
+	STDMETHOD(RequestNewObjectLayout)( void) { return E_NOTIMPL;}
+END_INTERFACE_PART(OleClientSite)
+
+BEGIN_INTERFACE_PART(DocHostUIHandler, IDocHostUIHandler)
+	STDMETHOD(ShowContextMenu)(/* [in] */ DWORD dwID,
+		/* [in] */ POINT __RPC_FAR *ppt,
+		/* [in] */ IUnknown __RPC_FAR *pcmdtReserved,
+		/* [in] */ IDispatch __RPC_FAR *pdispReserved);
+	STDMETHOD(GetHostInfo)(
+		/* [out][in] */ DOCHOSTUIINFO __RPC_FAR *pInfo);
+	STDMETHOD(ShowUI)(
+		/* [in] */ DWORD dwID,
+		/* [in] */ IOleInPlaceActiveObject __RPC_FAR *pActiveObject,
+		/* [in] */ IOleCommandTarget __RPC_FAR *pCommandTarget,
+		/* [in] */ IOleInPlaceFrame __RPC_FAR *pFrame,
+		/* [in] */ IOleInPlaceUIWindow __RPC_FAR *pDoc);
+	STDMETHOD(HideUI)(void);
+	STDMETHOD(UpdateUI)(void);
+	STDMETHOD(EnableModeless)(/* [in] */ BOOL fEnable);
+	STDMETHOD(OnDocWindowActivate)(/* [in] */ BOOL fEnable);
+	STDMETHOD(OnFrameWindowActivate)(/* [in] */ BOOL fEnable);
+	STDMETHOD(ResizeBorder)(
+		/* [in] */ LPCRECT prcBorder,
+		/* [in] */ IOleInPlaceUIWindow __RPC_FAR *pUIWindow,
+		/* [in] */ BOOL fRameWindow);
+	STDMETHOD(TranslateAccelerator)(
+		/* [in] */ LPMSG lpMsg,
+		/* [in] */ const GUID __RPC_FAR *pguidCmdGroup,
+		/* [in] */ DWORD nCmdID);
+	STDMETHOD(GetOptionKeyPath)(
+		/* [out] */ LPOLESTR __RPC_FAR *pchKey,
+		/* [in] */ DWORD dw);
+	STDMETHOD(GetDropTarget)(
+		/* [in] */ IDropTarget __RPC_FAR *pDropTarget,
+		/* [out] */ IDropTarget __RPC_FAR *__RPC_FAR *ppDropTarget);
+	STDMETHOD(GetExternal)(
+		/* [out] */ IDispatch __RPC_FAR *__RPC_FAR *ppDispatch);
+	STDMETHOD(TranslateUrl)(
+		/* [in] */ DWORD dwTranslate,
+		/* [in] */ OLECHAR __RPC_FAR *pchURLIn,
+		/* [out] */ OLECHAR __RPC_FAR *__RPC_FAR *ppchURLOut);
+	STDMETHOD(FilterDataObject)(
+		/* [in] */ IDataObject __RPC_FAR *pDO,
+		/* [out] */ IDataObject __RPC_FAR *__RPC_FAR *ppDORet);
+END_INTERFACE_PART(DocHostUIHandler)
+
+
+protected:
+	CBitmap m_bmpScreen;
+	CWnd m_wndBrowser;
+	IWebBrowser2* m_pBrowserApp;
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+// CWebBrowserSite
+
+BEGIN_INTERFACE_MAP(CXTPToolTipContext::CHTMLToolTip, CWnd)
+	INTERFACE_PART(CXTPToolTipContext::CHTMLToolTip, IID_IOleClientSite, OleClientSite)
+	INTERFACE_PART(CXTPToolTipContext::CHTMLToolTip, IID_IDocHostUIHandler, DocHostUIHandler)
+END_INTERFACE_MAP()
+
+#define IMPLEMENT_INTERFACE_PART(theClass, localClass)\
+STDMETHODIMP_(ULONG) theClass::X##localClass::AddRef()\
+{\
+	METHOD_PROLOGUE(theClass, localClass)\
+	return pThis->ExternalAddRef();\
+}\
+STDMETHODIMP_(ULONG) theClass::X##localClass::Release()\
+{\
+	METHOD_PROLOGUE(theClass, localClass)\
+	return pThis->ExternalRelease();\
+}\
+STDMETHODIMP theClass::X##localClass::QueryInterface(REFIID riid, void **ppvObj)\
+{\
+	METHOD_PROLOGUE(theClass, localClass)\
+	HRESULT hr = (HRESULT)pThis->ExternalQueryInterface(&riid, ppvObj);\
+	return hr;\
+}
+
+IMPLEMENT_INTERFACE_PART(CXTPToolTipContext::CHTMLToolTip, OleClientSite)
+
+IMPLEMENT_INTERFACE_PART(CXTPToolTipContext::CHTMLToolTip, DocHostUIHandler)
+
+STDMETHODIMP CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::GetHostInfo( DOCHOSTUIINFO* pInfo )
+{
+	pInfo->dwFlags = 0x40000 | DOCHOSTUIFLAG_NO3DBORDER;
+	pInfo->dwFlags |= DOCHOSTUIFLAG_DIALOG;
+	pInfo->dwFlags |= DOCHOSTUIFLAG_SCROLL_NO;
+	pInfo->dwDoubleClick = DOCHOSTUIDBLCLK_DEFAULT;
+	return S_OK;
+}
+
+STDMETHODIMP  CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::ShowUI(
+				DWORD /*dwID*/,
+				IOleInPlaceActiveObject * /*pActiveObject*/,
+				IOleCommandTarget * /*pCommandTarget*/,
+				IOleInPlaceFrame * /*pFrame*/,
+				IOleInPlaceUIWindow * /*pDoc*/)
+{
+	return S_OK;
+}
+
+STDMETHODIMP  CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::HideUI(void)
+{
+	return S_OK;
+}
+
+STDMETHODIMP  CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::UpdateUI(void)
+{
+	return S_OK;
+}
+
+STDMETHODIMP  CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::EnableModeless(BOOL /*fEnable*/)
+{
+	return E_NOTIMPL;
+}
+
+STDMETHODIMP  CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::OnDocWindowActivate(BOOL /*fActivate*/)
+{
+	return E_NOTIMPL;
+}
+
+STDMETHODIMP  CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::OnFrameWindowActivate(BOOL /*fActivate*/)
+{
+	return E_NOTIMPL;
+}
+
+STDMETHODIMP CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::ResizeBorder(
+				LPCRECT /*prcBorder*/,
+				IOleInPlaceUIWindow* /*pUIWindow*/,
+				BOOL /*fRameWindow*/)
+{
+	return E_NOTIMPL;
+}
+
+STDMETHODIMP  CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::ShowContextMenu(
+				DWORD /*dwID*/,
+				POINT* /*pptPosition*/,
+				IUnknown* /*pCommandTarget*/,
+				IDispatch* /*pDispatchObjectHit*/)
+{
+	return S_OK;
+}
+
+STDMETHODIMP  CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::TranslateAccelerator(LPMSG /*lpMsg*/,
+			/* [in] */ const GUID __RPC_FAR* /*pguidCmdGroup*/,
+			/* [in] */ DWORD /*nCmdID*/)
+{
+	return S_FALSE;
+}
+
+STDMETHODIMP  CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::GetOptionKeyPath(BSTR* /*pbstrKey*/, DWORD)
+{
+	return E_NOTIMPL;
+}
+
+STDMETHODIMP CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::GetDropTarget(
+			/* [in] */ IDropTarget __RPC_FAR* /*pDropTarget*/,
+			/* [out] */ IDropTarget __RPC_FAR *__RPC_FAR* /*ppDropTarget*/)
+{
+	return E_NOTIMPL;
+}
+
+STDMETHODIMP CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::GetExternal(
+			/* [out] */ IDispatch __RPC_FAR *__RPC_FAR* /*ppDispatch*/)
+{
+	return E_NOTIMPL;
+}
+
+STDMETHODIMP CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::TranslateUrl(
+			/* [in] */ DWORD /*dwTranslate*/,
+			/* [in] */ OLECHAR __RPC_FAR* /*pchURLIn*/,
+			/* [out] */ OLECHAR __RPC_FAR *__RPC_FAR* /*ppchURLOut*/)
+{
+	return E_NOTIMPL;
+}
+
+STDMETHODIMP CXTPToolTipContext::CHTMLToolTip::XDocHostUIHandler::FilterDataObject(
+			/* [in] */ IDataObject __RPC_FAR* /*pDO*/,
+			/* [out] */ IDataObject __RPC_FAR *__RPC_FAR* /*ppDORet*/)
+{
+	return E_NOTIMPL;
+}
+
+CXTPToolTipContext::CHTMLToolTip::CHTMLToolTip(CXTPToolTipContext* pContext)
+	: CXTPToolTipContextToolTip(pContext)
+{
+	AfxEnableControlContainer();
+	m_pBrowserApp = 0;
+}
+
+CXTPToolTipContext::CHTMLToolTip::~CHTMLToolTip()
+{
+	SAFE_RELEASE(m_pBrowserApp);
+}
+
+CSize CXTPToolTipContext::CHTMLToolTip::GetToolSize(TOOLITEM* lpToolInfo)
+{
+	m_bmpScreen.DeleteObject();
+
+	if (m_wndBrowser.GetSafeHwnd() == 0)
+	{
+		// create the control window
+		// AFX_IDW_PANE_FIRST is a safe but arbitrary ID
+		if (!m_wndBrowser.CreateControl(CLSID_WebBrowser, 0,
+			WS_VISIBLE | WS_CHILD, CRect(0, 0, 200, 200), this, AFX_IDW_PANE_FIRST))
+		{
+			return 0;
+		}
+
+		LPUNKNOWN lpUnk = m_wndBrowser.GetControlUnknown();
+		HRESULT hr = lpUnk->QueryInterface(IID_IWebBrowser2, (void**) &m_pBrowserApp);
+		if (!SUCCEEDED(hr) || !m_pBrowserApp)
+		{
+			m_pBrowserApp = NULL;
+			m_wndBrowser.DestroyWindow();
+			return 0;
+		}
+
+		IOleObject* spOleObj = NULL;
+
+		m_pBrowserApp->QueryInterface(IID_IOleObject, (void**)&spOleObj);
+		if (spOleObj)
+		{
+			spOleObj->SetClientSite((IOleClientSite*)GetInterface(&IID_IOleClientSite));
+			spOleObj->Release();
+		}
+
+		CString strFaceName = _T("Arial");
+		int nFontSize = 11;
+
+		LOGFONT lf;
+		if (m_pContext->GetFont()->GetLogFont(&lf))
+		{
+			strFaceName = lf.lfFaceName;
+			nFontSize = lf.lfHeight < 0 ? -lf.lfHeight : lf.lfHeight;
+		}
+
+		CString strBackColor; COLORREF clrBack = m_pContext->GetTipBkColor();
+		strBackColor.Format(_T("#%0.2x%0.2x%0.2x"), GetRValue(clrBack), GetGValue(clrBack), GetBValue(clrBack));
+
+		CString strBody;
+		strBody.Format(
+			_T("about:<head><style> body {font-family:%s; font-size:%i;}")
+			_T("table {font-family:%s; font-size:%i;}</style></head>")
+			_T("<body topmargin=0 leftmargin=0 bottommargin=0 rightmargin=0 bgColor=%s></body>"),
+			(LPCTSTR)strFaceName, nFontSize, (LPCTSTR)strFaceName, nFontSize, (LPCTSTR)strBackColor);
+
+		COleVariant varEmpty;
+		BSTR bstrBody = strBody.AllocSysString();
+		m_pBrowserApp->Navigate(bstrBody,
+			(VARIANT*)&varEmpty,
+			(VARIANT*)&varEmpty,
+			(VARIANT*)&varEmpty,
+			(VARIANT*)&varEmpty);
+		SysFreeString(bstrBody);
+
+		READYSTATE rs;
+		do
+		{
+			AfxGetApp()->PumpMessage();
+			m_pBrowserApp->get_ReadyState (&rs);
+		}
+		while (rs != READYSTATE_COMPLETE);
+	}
+
+	CString strText = GetToolText(lpToolInfo);
+
+	if (strText.IsEmpty())
+		return CSize(0);
+
+	IDispatch* lpDocument = NULL;
+	m_pBrowserApp->get_Document(&lpDocument);
+
+	if (lpDocument == 0)
+		return 0;
+
+	// Verify that what we get is a pointer to a IHTMLDocument2
+	// interface. To be sure, let's query for
+	// the IHTMLDocument2 interface (through smart pointers)
+	IHTMLDocument2* lpHTML = NULL;
+	lpDocument->QueryInterface(IID_IHTMLDocument2, (void**)&lpHTML);
+	if (lpHTML == 0)
+	{
+		lpDocument->Release();
 		return 0;
 	}
 
-	DrawPopupBarText(pDC, strCaption, rcText, DT_END_ELLIPSIS | (!bShowKeyboardCues ? DT_NOPREFIX : 0), bDraw, bSelected, bEnabled);
+	// The previous step is sufficient to keep Explorer aside
+	// without an explicit check against the loader module
 
-	if (controlType == xtpControlButton && pButton->GetShortcutText().GetLength() != 0)
-		DrawPopupBarText(pDC, pButton->GetShortcutText(), rcShortcut, DT_RIGHT, bDraw, bSelected, bEnabled);
+	// Extract the source code of the document
+	IHTMLElement* lpBody = NULL;
 
-	return GetControlSize(pButton, CSize(nGripperWidth + m_nPopupBarTextPadding + rcText.Width() +  rcShortcut.Width() + 32, szImage.cy), FALSE);
-}
-
-CSize CXTPPaintManager::GetIconSize(CXTPControl* pButton)
-{
-	XTPButtonStyle buttonStyle = pButton->GetStyle();
-
-	CSize szIcon = buttonStyle == xtpButtonIconAndCaptionBelow
-		&& pButton->GetParent()->GetType() != xtpBarTypePopup ?
-		pButton->GetParent()->GetLargeIconSize(TRUE) : pButton->GetIconSize();
-
-	return szIcon;
-}
-
-int CXTPPaintManager::GetSplitDropDownHeight() const
-{
-	int nTextHeight = m_nEditHeight > 0 ? m_nTextHeight : max(22, m_nTextHeight + 3);
-	int nSplitDropDownHeight = (nTextHeight * 2 - 17);
-
-	return nSplitDropDownHeight;
-}
-
-CSize CXTPPaintManager::DrawControlToolBarParent(CDC* pDC, CXTPControl* pButton, BOOL bDraw)
-{
-	CXTPFontDC font(pDC, GetCommandBarFont(pButton->GetParent(), pButton->IsItemDefault()));
-
-	CRect rcButton = bDraw ? pButton->GetRect() : CXTPEmptyRect();
-	XTPControlType controlType = pButton->GetType();
-	XTPButtonStyle buttonStyle = pButton->GetStyle();
-
-	CSize szIcon = GetIconSize(pButton);
-	CSize szButton = pButton->GetButtonSize();
-
-	BOOL bVert = pButton->GetParent()->GetPosition() == xtpBarRight || pButton->GetParent()->GetPosition() == xtpBarLeft;
-
-	BOOL bDrawImage = (buttonStyle == xtpButtonAutomatic && controlType != xtpControlPopup) ||
-		(buttonStyle == xtpButtonIcon) || (buttonStyle == xtpButtonIconAndCaption) || (buttonStyle == xtpButtonIconAndCaptionBelow);
-
-	CXTPImageManagerIcon* pImage = (bDrawImage && pButton->GetIconId() != 0) ? pButton->GetImage(szIcon.cx) : NULL;
-	bDrawImage = bDrawImage && (pImage != NULL);
-
-	BOOL bDrawText = pButton->IsCaptionVisible();
-
-	BOOL bPressed = pButton->GetPressed(), bSelected = pButton->GetSelected(), bEnabled = pButton->GetEnabled(), bChecked = pButton->GetChecked(),
-		bPopuped = pButton->GetPopuped();
-
-	if (controlType == xtpControlSplitButtonPopup && bEnabled == TRUE_SPLITDROPDOWN)
-		bEnabled = FALSE;
-
-	if (controlType == xtpControlCheckBox || controlType == xtpControlRadioButton)
+		// Get the BODY object
+	HRESULT hr = lpHTML->get_body(&lpBody);
+	if (FAILED(hr) || (lpBody == 0))
 	{
-		CSize szCheckBox = controlType == xtpControlRadioButton ?
-			DrawControlRadioButtonMark(pDC, rcButton, FALSE, bSelected, bPressed, bChecked, bEnabled) :
-			DrawControlCheckBoxMark(pDC, rcButton, FALSE, bSelected, bPressed, bChecked, bEnabled);
+		lpHTML->Release();
+		lpDocument->Release();
+		return 0;
+	}
 
-		if (bDraw)
+	BSTR bstrText = strText.AllocSysString();
+	lpBody->put_innerHTML(bstrText);
+	SysFreeString(bstrText);
+
+	m_wndBrowser.MoveWindow(0, 0, 650, 200);
+
+
+	IHTMLTextContainer* lpHTMLContainer = NULL;
+	lpBody->QueryInterface(IID_IHTMLTextContainer, (void**)&lpHTMLContainer);
+
+	if (lpHTMLContainer == 0)
+	{
+		lpBody->Release();
+		lpHTML->Release();
+		lpDocument->Release();
+		return 0;
+	}
+
+	long nScrollHeight, nScrollWidth;
+	lpHTMLContainer->get_scrollHeight(&nScrollHeight);
+
+	int nBestWidth = m_pContext->GetMaxTipWidth();
+	int nBestHeight = nScrollHeight;
+
+	int cxFirst = 0;
+	int cxLast = nBestWidth * 2;
+
+	do
+	{
+		// Taking a guess
+		int cx = (cxFirst + cxLast) / 2;
+
+		m_wndBrowser.MoveWindow(0, 0, cx, nScrollHeight);
+
+		lpHTMLContainer->get_scrollHeight(&nScrollHeight);
+		lpHTMLContainer->get_scrollWidth(&nScrollWidth);
+
+		if (nScrollWidth > cx && nScrollHeight <= nBestHeight)
 		{
-			pDC->SetTextColor(GetControlTextColor(pButton));
-			CRect rcCheck;
-			if (!bVert)
-			{
-				rcCheck = CRect(CPoint(rcButton.left + 3, (rcButton.bottom + rcButton.top - szCheckBox.cy)/2), szCheckBox);
-				rcButton.left += szCheckBox.cx + 5;
-			}
-			else
-			{
-				rcCheck = CRect(CPoint(rcButton.CenterPoint().x - szCheckBox.cx / 2, rcButton.top + 3), szCheckBox);
-				rcButton.top += szCheckBox.cy + 5;
-			}
+			nBestWidth = nScrollWidth;
+			break;
+		}
 
-			if (controlType == xtpControlRadioButton)
-				DrawControlRadioButtonMark(pDC, rcCheck, TRUE, bSelected, bPressed, bChecked, bEnabled);
-			else
-				DrawControlCheckBoxMark(pDC, rcCheck, TRUE, bSelected, bPressed, bChecked, bEnabled);
-
-			DrawControlText(pDC, pButton, rcButton, bDraw, FALSE, szButton, FALSE);
-
-			if (IsKeyboardSelected(bSelected))
-			{
-				pDC->SetTextColor(GetXtremeColor(COLOR_BTNTEXT));
-				pDC->SetBkColor(GetXtremeColor(COLOR_BTNFACE));
-				pDC->DrawFocusRect(rcButton);
-			}
-
-			return GetControlSize(pButton, szCheckBox, bVert);
+		if (nScrollHeight > nBestHeight)
+		{
+			// If the control required a larger height, then
+			// it's too narrow.
+			cxFirst = cx + 1;
 		}
 		else
 		{
-			CSize sz = DrawControlText(pDC, pButton, rcButton, bDraw, FALSE, szButton, FALSE);
-			if (bVert)
-				sz.cy += szCheckBox.cy + 5;
-			else
-				sz.cx += szCheckBox.cx + 5;
-			return GetControlSize(pButton, sz, bVert);
+			// If the control didn't required a larger height,
+			// then it's too wide.
+			cxLast = cx - 1;
+			nBestWidth = cx;
 		}
 	}
+	while (cxFirst <= cxLast);
 
-	if (bDraw)
+	m_wndBrowser.MoveWindow(0, 0, nBestWidth, nBestHeight);
+
+	CSize sz(nBestWidth, nBestHeight);
+	CRect rcMargin = m_pContext->GetMargin();
+
+#if 0
+	if (sz.cx > 0 && sz.cy > 0)
 	{
-		if (controlType != xtpControlSplitButtonPopup)
-		{
-			if (!pButton->IsTransparent())
-			{
-				DrawControlEntry(pDC, pButton);
-			}
-		}
-		else
-		{
-			DrawSplitButtonFrame(pDC, pButton, rcButton);
-		}
-		pDC->SetTextColor(GetControlTextColor(pButton));
+		CWindowDC dcPaint(this);
+
+		CDC dc;
+		dc.CreateCompatibleDC(&dcPaint);
+		m_bmpScreen.CreateCompatibleBitmap(&dcPaint, sz.cx, sz.cy);
+
+		CBitmap* pOldBitmap = dc.SelectObject(&m_bmpScreen);
+
+		dc.FillSolidRect(0, 0, sz.cx, sz.cy, m_pContext->GetTipBkColor());
+		m_wndBrowser.SendMessage(WM_PRINT, (WPARAM)dc.GetSafeHdc(), PRF_CLIENT | PRF_CHILDREN);
+
+		dc.SelectObject(pOldBitmap);
 	}
+	m_wndBrowser.MoveWindow(0, 0, 0, 0);
+#else
+	m_wndBrowser.MoveWindow(3 + rcMargin.left, 3 + rcMargin.top, nBestWidth, nBestHeight);
+#endif
 
-	if (buttonStyle == xtpButtonIconAndCaptionBelow)
-	{
-		BOOL bTriangled = pButton->GetCommandBar() != NULL;
-
-		int nTextHeight = GetControlHeight();
-		int nSplitDropDownHeight = GetSplitDropDownHeight();
-
-		szButton = CSize(max(42, nTextHeight * 2 - 3),
-			m_nEditHeight > 0 ? m_nEditHeight * 3 : nSplitDropDownHeight + szIcon.cy + 7);
-		if (bVert) szButton = CSize(szButton.cy, szButton.cx);
-
-		if (bDraw)
-		{
-			if (bDrawImage)
-			{
-				CPoint pt = bVert ? CPoint(rcButton.left + 4 + nSplitDropDownHeight, rcButton.CenterPoint().y - szIcon.cy / 2) :
-					CPoint(rcButton.CenterPoint().x - szIcon.cx / 2, rcButton.top + 3);
-				DrawImage(pDC, pt, CSize(szIcon.cx, 0), pImage, bSelected, bPressed, bEnabled, bChecked, bPopuped);
-			}
-
-			CRect rcText = rcButton;
-			if (bVert)
-				rcText.right = rcText.left + nSplitDropDownHeight;
-			else
-			{
-				rcText.bottom -= 1;
-				rcText.top = rcText.bottom - nSplitDropDownHeight;
-			}
-
-			DrawControlText2(pDC, pButton, rcText, TRUE, bVert, bTriangled);
-		}
-		else
-		{
-			CSize szText = DrawControlText2(pDC, pButton, CXTPEmptyRect(), FALSE, bVert, bTriangled);
-
-			if (bVert)
-			{
-				szButton.cy = max(szButton.cy, szText.cy + 6);
-			}
-			else
-			{
-				szButton.cx = max(szButton.cx, szText.cx + 5);
-			}
-		}
-		return GetControlSize(pButton, szButton, bVert);
-	}
-
-	if (pButton->GetParent()->IsTextBelowIcons() && bDrawImage)
-	{
-		CXTPFontDC fontHorizontal (pDC, pButton->IsItemDefault() ? &m_fontRegularBold : &m_fontRegular);
-		BOOL bTriangled = controlType == xtpControlPopup;
-
-		if (bDraw)
-		{
-			if (controlType == xtpControlSplitButtonPopup) rcButton.right -= m_nSplitButtonDropDownWidth;
-
-			CPoint pt = CPoint(rcButton.CenterPoint().x - szIcon.cx / 2, rcButton.top + 4);
-			DrawImage(pDC, pt, CSize(szIcon.cx, 0), pImage, bSelected, bPressed, bEnabled, bChecked, bPopuped);
-
-			CRect rcText = rcButton;
-			rcText.top += szButton.cy - 4;
-
-			DrawControlText(pDC, pButton, rcText, TRUE, FALSE, TRUE, bTriangled);
-		}
-		else
-		{
-			CSize szText = DrawControlText(pDC, pButton, CXTPEmptyRect(), FALSE, FALSE, TRUE, bTriangled);
-
-			szButton.cy += szText.cy;
-			szButton.cx = max(szButton.cx, szText.cx + 10);
-
-			if (pButton->GetType() == xtpControlSplitButtonPopup)
-				szButton.cx += 11;
-
-			szButton.cx = max(szButton.cx, szButton.cy);
-		}
-		return GetControlSize(pButton, szButton, bVert);
-	}
-
-	if (bDraw && pImage)
-	{
-		szIcon.cy = pImage->GetHeight() * szIcon.cx / pImage->GetWidth();
-
-		CPoint pt = !bVert ? CPoint(rcButton.left + 3, rcButton.CenterPoint().y - szIcon.cy / 2) :
-			CPoint(rcButton.CenterPoint().x - szIcon.cx / 2, rcButton.top + 3);
-
-		if (controlType == xtpControlSplitButtonPopup) pt.x = rcButton.left + 3;
-		if (controlType == xtpControlPopup && bDrawImage && !bDrawText) pt.x = rcButton.left + 3;
-		if ((controlType == xtpControlButtonPopup || controlType == xtpControlButton) && bDrawImage && !bDrawText)
-		{
-			if (!bVert)
-				pt.x = rcButton.CenterPoint().x - szIcon.cx / 2;
-			else
-				pt.y = rcButton.CenterPoint().y - szIcon.cy / 2;
-		}
-
-		pImage->m_bDrawComposited = pButton->HasDwmCompositedRect();
-		DrawImage(pDC, pt, szIcon, pImage, bSelected, bPressed, bEnabled, bChecked, bPopuped);
-		pImage->m_bDrawComposited = FALSE;
-	}
+	CSize szMargin(3 + rcMargin.left + rcMargin.right + 3, 3 + rcMargin.top + rcMargin.bottom + 3);
+	sz += szMargin;
 
 
-	switch (controlType)
-	{
-	case xtpControlPopup:
-		{
-			if (!bDrawImage)
-			{
-				CSize sz = DrawControlText(pDC, pButton, rcButton, bDraw, bVert, TRUE, !bDraw || pButton->GetParent()->GetType() != xtpBarTypeMenuBar);
-				return GetControlSize(pButton, CSize(sz.cx + 6, sz.cy + 6), bVert);
-			}
-			else
-			{
-				if (!bDrawText)
-				{
-					CPoint pt = CPoint(rcButton.right - 7, rcButton.CenterPoint().y);
-					DrawDropDownGlyph(pDC, pButton, pt, pButton->GetSelected(), pButton->GetPopuped(), pButton->GetEnabled(), FALSE);
-					return GetControlSize(pButton, CSize(szButton.cy + 7, szButton.cy), bVert);
-				}
-				return GetControlSize(pButton, DrawControlText(pDC, pButton, rcButton, bDraw, pButton->GetParent()->GetType() != xtpBarTypeMenuBar, szButton, bDrawImage), bVert);
-			}
-		}
-	case xtpControlSplitButtonPopup:
-		{
-			if (!bDrawImage) szButton = CSize(22, 22);
+	lpHTMLContainer->Release();
+	lpBody->Release();
+	lpHTML->Release();
+	lpDocument->Release();
 
-			if (!bDrawText)
-				return GetControlSize(pButton, CSize(szButton.cx + m_nSplitButtonDropDownWidth, szButton.cy), bVert);
-
-			rcButton.right -= m_nSplitButtonDropDownWidth;
-
-			CSize sz = DrawControlText(pDC, pButton, rcButton, bDraw, FALSE, szButton, bDrawImage);
-			return GetControlSize(pButton, CSize(sz.cx + m_nSplitButtonDropDownWidth, sz.cy), bVert);
-
-		}
-	case xtpControlButtonPopup:
-	case xtpControlButton:
-	case xtpControlLabel:
-	case xtpControlCheckBox:
-	case xtpControlGallery:
-		{
-			if (!bDrawText)
-				return GetControlSize(pButton, szButton, bVert);
-
-			if (!bDrawImage) szButton = CSize(22, szButton.cy);
-
-			return GetControlSize(pButton, DrawControlText(pDC, pButton, rcButton, bDraw, FALSE, szButton, bDrawImage), bVert);
-		}
-	}
-	return 0;
+	return sz;
 }
 
-CRect CXTPPaintManager::GetCommandBarBorders(CXTPCommandBar* /*pBar*/)
+void CXTPToolTipContext::CHTMLToolTip::DrawEntry(CDC* pDC, TOOLITEM* /*lpToolInfo*/, CRect rc)
 {
-	return CRect(2, 2, 2, 2);
+	rc.DeflateRect(m_pContext->GetMargin());
+	rc.DeflateRect(3, 3, 3, 3);
+
+	if (m_bmpScreen.GetSafeHandle())
+	{
+		pDC->DrawState(rc.TopLeft(), CSize(0, 0), &m_bmpScreen, DSS_NORMAL, 0);
+	}
 }
 
-void CXTPPaintManager::GradientFill(CDC* pDC, LPRECT lpRect, COLORREF crFrom, COLORREF crTo, BOOL bHorz, LPCRECT lpRectClip)
+void CXTPToolTipContext::CHTMLToolTip::OnVisibleChanged(BOOL bVisble)
 {
-	XTPDrawHelpers()->GradientFill(pDC, lpRect, crFrom, crTo, bHorz, lpRectClip);
+	if (!bVisble)
+	{
+		m_bmpScreen.DeleteObject();
+	}
+}
+
+#endif // _XTP_EXCLUDE_HTML
+
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+CXTPToolTipContext::CXTPToolTipContext()
+{
+	m_pToolTip = 0;
+	m_bShowTitleAndDescription = FALSE;
+	m_bShowImage = FALSE;
+	m_nImageSize = ICON_BIG;
+	m_nImageBase = 0;
+	m_toolStyle = xtpToolTipStandard;
+	m_nMaxTipWidth = ::GetSystemMetrics(SM_CXSCREEN) / 2;
+	ZeroMemory(&m_lastInfo, sizeof(m_lastInfo));
+
+	m_dwComCtlVersion = XTPSystemVersion()->GetComCtlVersion();
+
+	m_clrTipTextColor = m_clrTipBkColor = COLORREF_NULL;
+	m_nIconTitle = TTI_INFO;
+	m_dwStyle = TTS_NOPREFIX;
+	m_rcMargin.SetRect(0, 0, 0, 0);
+
+	m_nDelayAutoPop = m_nDelayInitial = m_nDelayReshow = -1;
+
+
+	NONCLIENTMETRICS ncm;
+	::ZeroMemory(&ncm, sizeof(NONCLIENTMETRICS));
+
+	ncm.cbSize = sizeof(NONCLIENTMETRICS);
+	VERIFY(::SystemParametersInfo(SPI_GETNONCLIENTMETRICS,
+		sizeof(NONCLIENTMETRICS), &ncm, 0));
+
+	ncm.lfStatusFont.lfWeight = FW_NORMAL;
+	m_fnt.CreateFontIndirect(&ncm.lfStatusFont);
+
+	ncm.lfStatusFont.lfWeight = FW_BOLD;
+	m_fntTitle.CreateFontIndirect(&ncm.lfStatusFont);
+
 
 }
 
-void CXTPPaintManager::DrawStatusBarGripper(CDC* pDC, CRect rcClient)
+CXTPToolTipContext::~CXTPToolTipContext()
 {
-	if (m_bThemedStatusBar && m_themeStatusBar.IsAppThemed())
+	SAFE_DELETEWINDOW(m_pToolTip);
+
+	if (m_pModuleContext == this)
 	{
-		CRect rcGripper(rcClient.right - 18, rcClient.top, rcClient.right, rcClient.bottom);
-		m_themeStatusBar.DrawThemeBackground(pDC->GetSafeHdc(), SP_GRIPPER, 0, &rcGripper, 0);
+		m_pModuleContext = 0;
+	}
+
+}
+
+BOOL CXTPToolTipContext::IsBalloonStyleSupported() const
+{
+	return m_dwComCtlVersion >= VERSION_IE5;
+}
+
+void CXTPToolTipContext::ShowTitleAndDescription(BOOL bShowTitleAndDescription, int nIconTitle)
+{
+	m_bShowTitleAndDescription = bShowTitleAndDescription;
+	m_nIconTitle = nIconTitle;
+}
+
+void CXTPToolTipContext::ShowImage(BOOL bShowImage, int nImageBase, int nImageSize)
+{
+	m_bShowImage = bShowImage;
+	m_nImageBase = nImageBase;
+	m_nImageSize = nImageSize;
+
+	SAFE_DELETEWINDOW(m_pToolTip);
+}
+
+void CXTPToolTipContext::FillInToolInfo(TOOLINFO* pTI, HWND hWnd, CRect rect, INT_PTR nHit, const CString& strToolTip)
+{
+#if _MSC_VER < 1200 // MFC 5.0
+	if (pTI != NULL && pTI->cbSize >= sizeof(TOOLINFO))
+#else
+	if (pTI != NULL && pTI->cbSize >= sizeof(XTP_TOOLTIP_TOOLINFO))
+#endif
+	{
+		pTI->hwnd = hWnd;
+		pTI->rect = rect;
+		pTI->uId = nHit;
+		pTI->lpszText = (LPTSTR) ::calloc(strToolTip.GetLength() + 1, sizeof(TCHAR));
+		if (pTI->lpszText != NULL) STRCPY_S(pTI->lpszText, strToolTip.GetLength() + 1, (LPCTSTR)strToolTip);
+	}
+}
+
+void CXTPToolTipContext::FillInToolInfo(TOOLINFO* pTI, HWND hWnd, CRect rect, INT_PTR nHit,
+	const CString& strToolTip, const CString& strTitle, const CString& strDescription, CXTPImageManager* pImageManager)
+{
+	FillInToolInfo(pTI, hWnd, rect, nHit, strToolTip);
+
+	if (pTI != NULL && pTI->cbSize == sizeof(XTP_TOOLTIP_TOOLINFO_EX))
+	{
+		XTP_TOOLTIP_CONTEXT* ptc = ((XTP_TOOLTIP_TOOLINFO_EX*)pTI)->pToolInfo;
+		if (!ptc)
+			return;
+
+		if (!strDescription.IsEmpty() && !strTitle.IsEmpty())
+		{
+			ptc->lpszDescription = (LPTSTR)::calloc(strDescription.GetLength() + 1, sizeof(TCHAR));
+			if (ptc->lpszDescription != NULL) STRCPY_S(ptc->lpszDescription, strDescription.GetLength() + 1, (LPCTSTR)strDescription);
+
+			ptc->lpszTitle = (LPTSTR)::calloc(strTitle.GetLength() + 1, sizeof(TCHAR));
+			if (ptc->lpszTitle != NULL) STRCPY_S(ptc->lpszTitle, strTitle.GetLength() + 1, (LPCTSTR)strTitle);
+		}
+
+		ptc->pImageManager = pImageManager;
+	}
+}
+
+
+void CXTPToolTipContext::SetMargin(LPCRECT lprc)
+{
+	if (lprc)
+	{
+		m_rcMargin = *lprc;
+		if (m_pToolTip) m_pToolTip->DestroyWindow();
+	}
+}
+
+void CXTPToolTipContext::SetStyle(XTPToolTipStyle toolStyle)
+{
+	if (m_toolStyle != toolStyle && (toolStyle != xtpToolTipBalloon || IsBalloonStyleSupported()))
+	{
+		m_toolStyle = toolStyle;
+		SAFE_DELETEWINDOW(m_pToolTip);
+
+		ModifyToolTipStyle(m_toolStyle == xtpToolTipOffice ? 0: XTP_TTS_OFFICEFRAME | XTP_TTS_NOSHADOW, m_toolStyle == xtpToolTipOffice ? XTP_TTS_OFFICEFRAME | XTP_TTS_NOSHADOW : 0);
+	}
+}
+
+XTPToolTipStyle CXTPToolTipContext::GetStyle() const
+{
+	return m_toolStyle;
+}
+
+
+void CXTPToolTipContext::SetMaxTipWidth(int iWidth)
+{
+	m_nMaxTipWidth = iWidth;
+	if (m_pToolTip) m_pToolTip->DestroyWindow();
+}
+
+int CXTPToolTipContext::GetMaxTipWidth() const
+{
+	return m_nMaxTipWidth;
+}
+
+COLORREF CXTPToolTipContext::GetTipBkColor() const
+{
+	return m_clrTipBkColor != COLORREF_NULL ? m_clrTipBkColor :GetXtremeColor(COLOR_INFOBK);
+}
+
+void CXTPToolTipContext::SetTipBkColor(COLORREF clr)
+{
+	m_clrTipBkColor = clr;
+	if (m_pToolTip) m_pToolTip->DestroyWindow();
+}
+
+
+void CXTPToolTipContext::ModifyToolTipStyle(DWORD dwRemove, DWORD dwAdd)
+{
+	DWORD dwStyle = (m_dwStyle | dwAdd) & ~dwRemove;
+
+	if (m_dwStyle != dwStyle)
+	{
+		m_dwStyle = dwStyle;
+		SAFE_DELETEWINDOW(m_pToolTip);
+	}
+}
+
+COLORREF CXTPToolTipContext::GetTipTextColor() const
+{
+	return m_clrTipTextColor != COLORREF_NULL ? m_clrTipTextColor :
+		m_toolStyle == xtpToolTipOffice2007 ?  RGB(76, 76, 76) : GetXtremeColor(COLOR_INFOTEXT);
+}
+
+void CXTPToolTipContext::SetTipTextColor(COLORREF clr)
+{
+	m_clrTipTextColor = clr;
+	if (m_pToolTip) m_pToolTip->DestroyWindow();
+}
+
+void CXTPToolTipContext::SetDelayTime(DWORD dwDuration, int iTime)
+{
+	switch (dwDuration)
+	{
+	case TTDT_RESHOW:
+		m_nDelayReshow = iTime;
+		break;
+
+	case TTDT_INITIAL:
+		m_nDelayInitial = iTime;
+		break;
+
+	case TTDT_AUTOPOP:
+		m_nDelayAutoPop = iTime;
+		break;
+
+	default:
+		ASSERT(FALSE);
+
+	}
+	if (m_pToolTip) m_pToolTip->DestroyWindow();
+}
+
+
+void CXTPToolTipContext::RelayToolTipMessage(CWnd* pToolTip, MSG* pMsg)
+{
+	// transate the message based on TTM_WINDOWFROMPOINT
+	MSG msg = *pMsg;
+	msg.hwnd = (HWND)pToolTip->SendMessage(TTM_WINDOWFROMPOINT, 0, (LPARAM)&msg.pt);
+	CPoint pt = pMsg->pt;
+	if (msg.message >= WM_MOUSEFIRST && msg.message <= WM_MOUSELAST)
+		::ScreenToClient(msg.hwnd, &pt);
+	msg.lParam = MAKELONG(pt.x, pt.y);
+
+	// relay mouse event before deleting old tool
+	pToolTip->SendMessage(TTM_RELAYEVENT, 0, (LPARAM)&msg);
+}
+
+
+void CXTPToolTipContext::FilterToolTipMessage(CWnd* pWndHost, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	MSG msg;
+	msg.wParam = wParam;
+	msg.lParam = lParam;
+	msg.message = message;
+	msg.hwnd = pWndHost->m_hWnd;
+	GetCursorPos(&msg.pt);
+
+	FilterToolTipMessage(pWndHost, &msg);
+}
+
+void CXTPToolTipContext::FilterToolTipMessage(CWnd* pWndHost, MSG* pMsg)
+{
+	FilterToolTipMessageHelper(pWndHost, pMsg, TRUE);
+}
+
+
+void PASCAL CXTPToolTipContext::FilterToolTipMessageStatic(MSG* pMsg, CWnd* pWnd)
+{
+	if (m_pModuleContext)
+	{
+		m_pModuleContext->FilterToolTipMessageHelper(pWnd, pMsg, FALSE);
 	}
 	else
 	{
-		CXTPPenDC penBorder(*pDC, GetXtremeColor(COLOR_3DSHADOW));
-		int i;
-		for (i = 0; i < 3; i++)
-		{
-
-			pDC->MoveTo(rcClient.Width() - 3 -i * 4, rcClient.Height() - 2);
-			pDC->LineTo(rcClient.Width() - 1, rcClient.Height() - 4 - i * 4);
-
-			pDC->MoveTo(rcClient.Width() - 4 -i * 4, rcClient.Height() - 2);
-			pDC->LineTo(rcClient.Width() - 1, rcClient.Height() - 4 - i * 4 - 1);
-		}
-
-		CXTPPenDC penBorderWhite(*pDC, GetXtremeColor(COLOR_BTNHIGHLIGHT));
-		for (i = 0; i < 3; i++)
-		{
-			pDC->MoveTo(rcClient.Width() - 5 -i * 4, rcClient.Height() - 2);
-			pDC->LineTo(rcClient.Width() - 1 , rcClient.Height() - 4 - i * 4 - 2);
-		}
+		pWnd->FilterToolTipMessage(pMsg);
 	}
 }
 
-void CXTPPaintManager::AnimateExpanding(CXTPCommandBar* pCommandBar, CDC* pDestDC, CDC* pSrcDC, BOOL bExpandDown)
+void CXTPToolTipContext::SetModuleToolTipContext()
 {
-	CXTPClientRect rc(pCommandBar);
-	int nWidth = rc.Width();
-	int nHeight = rc.Height();
-
-	int nSteps = m_nAnimationSteps;
-	int nAnimationTime = m_nAnimationTime;
-
-	CXTPControls* pControls = pCommandBar->GetControls();
-
-	for (int i = 0; i < nSteps; ++i)
-	{
-		double dPercent = double(i + 1) / nSteps;
-
-		int nTopDest = 0;
-		int nTopSrc = 0;
-		BOOL bPrevExpanded = FALSE;
-
-		if (bExpandDown)
-		{
-			for (int j = 0; j < pControls->GetCount(); ++j)
-			{
-				CXTPControl* pControl = pControls->GetAt(j);
-				if (!pControl->IsVisible())
-					continue;
-
-				BOOL bExpanded = pControl->GetExpanded();
-
-				if (bExpanded != bPrevExpanded)
-				{
-					int nTopSrcCurrent = pControl->GetRect().top;
-					int nHeightDstr = int((bPrevExpanded ? dPercent : 1) * (nTopSrcCurrent - nTopSrc));
-
-					pDestDC->StretchBlt(0, nTopDest, nWidth, nHeightDstr, pSrcDC,
-						0, nTopSrc, nWidth, nTopSrcCurrent - nTopSrc, SRCCOPY);
-
-					nTopDest = nTopDest + nHeightDstr;
-					nTopSrc = nTopSrcCurrent;
-				}
-
-				bPrevExpanded = bExpanded;
-			}
-
-			int nTopSrcCurrent = nHeight;
-			int nHeightDstr = int((bPrevExpanded ? dPercent : 1) * (nTopSrcCurrent - nTopSrc));
-
-			pDestDC->StretchBlt(0, nTopDest, nWidth, nHeightDstr, pSrcDC,
-				0, nTopSrc, nWidth, nTopSrcCurrent - nTopSrc, SRCCOPY);
-		}
-		else
-		{
-			for (int j = pControls->GetCount() - 1; j >= 0; j--)
-			{
-				CXTPControl* pControl = pControls->GetAt(j);
-				if (!pControl->IsVisible())
-					continue;
-
-				BOOL bExpanded = pControl->GetExpanded();
-
-				if (bExpanded != bPrevExpanded)
-				{
-					int nTopSrcCurrent = nHeight - pControl->GetRect().bottom;
-					int nHeightDstr = int((bPrevExpanded ? dPercent : 1) * (nTopSrcCurrent - nTopSrc));
-
-					pDestDC->StretchBlt(0, nHeight - nTopDest - nHeightDstr, nWidth, nHeightDstr, pSrcDC,
-						0, nHeight - nTopSrcCurrent, nWidth, nTopSrcCurrent - nTopSrc, SRCCOPY);
-
-					nTopDest = nTopDest + nHeightDstr;
-					nTopSrc = nTopSrcCurrent;
-				}
-
-				bPrevExpanded = bExpanded;
-			}
-
-			int nTopSrcCurrent = nHeight;
-			int nHeightDstr = int((bPrevExpanded ? dPercent : 1) * (nTopSrcCurrent - nTopSrc));
-
-			pDestDC->StretchBlt(0, nHeight - nTopDest - nHeightDstr, nWidth, nHeightDstr, pSrcDC,
-				0, nHeight - nTopSrcCurrent, nWidth, nTopSrcCurrent - nTopSrc, SRCCOPY);
-
-		}
-
-		Sleep(nAnimationTime / nSteps);
-	}
-
-
+	AFX_MODULE_STATE* pModuleState = _AFX_CMDTARGET_GETSTATE();
+	pModuleState->m_pfnFilterToolTipMessage = &CXTPToolTipContext::FilterToolTipMessageStatic;
+	m_pModuleContext = this;
 }
 
-void CXTPPaintManager::AlphaBlendU(PBYTE pDest, PBYTE pSrcBack, int cx, int cy, PBYTE pSrc, BYTE byAlpha)
+CWnd* CXTPToolTipContext::CreateToolTip(CWnd* /*pOwner*/)
 {
-	const BYTE byDiff = (BYTE)(255 - byAlpha);
-
-	for (int i = 0; i < cx * cy; i++)
+	switch (m_toolStyle)
 	{
-		pDest[0] = (BYTE)((pSrcBack[0] * byDiff + pSrc[0] * byAlpha) >> 8);
-		pDest[1] = (BYTE)((pSrcBack[1] * byDiff + pSrc[1] * byAlpha) >> 8);
-		pDest[2] = (BYTE)((pSrcBack[2] * byDiff + pSrc[2] * byAlpha) >> 8);
+	case xtpToolTipOffice:
+		return new CXTPToolTipContextToolTip(this);
 
-		pDest += 4;
-		pSrcBack += 4;
-		pSrc += 4;
+	case xtpToolTipRTF:
+		return new CRichEditToolTip(this);
+
+	case xtpToolTipLuna:
+		return new CLunaToolTip(this);
+
+	case xtpToolTipOffice2007:
+		return new COffice2007ToolTip(this);
+
+#ifndef _XTP_EXCLUDE_HTML
+	case xtpToolTipHTML:
+		return new CHTMLToolTip(this);
+#endif
 	}
+
+	return new CStandardToolTip();
 }
 
-
-void CXTPPaintManager::Animate(CDC* pDestDC, CDC* pSrcDC, CRect rc, XTPAnimationType animationType)
+void CXTPToolTipContext::SetToolTipCtrl(CXTPToolTipContextToolTip* pToolTipCtrl)
 {
-	int nSteps = m_nAnimationSteps;
-	int nAnimationTime = m_nAnimationTime;
+	SAFE_DELETEWINDOW(m_pToolTip);
+	m_pToolTip = pToolTipCtrl;
+}
 
-	switch (animationType)
+void CXTPToolTipContext::CancelToolTips()
+{
+	if (m_pToolTip->GetSafeHwnd() != NULL)
+		m_pToolTip->SendMessage(TTM_ACTIVATE, FALSE);
+}
+
+void CXTPToolTipContext::FilterToolTipMessageHelper(CWnd* pWndHost, MSG* pMsg, BOOL bIgnoreFlags)
+{
+	// this CWnd has tooltips enabled
+	UINT message = pMsg->message;
+	if ((message == WM_MOUSEMOVE || message == WM_NCMOUSEMOVE ||
+		message == WM_LBUTTONUP || message == WM_RBUTTONUP ||
+		message == WM_MBUTTONUP) &&
+		(GetKeyState(VK_LBUTTON) >= 0 && GetKeyState(VK_RBUTTON) >= 0 &&
+		GetKeyState(VK_MBUTTON) >= 0))
 	{
-		case xtpAnimateSlide:
+		if (!bIgnoreFlags)
+		{
+			// make sure that tooltips are not already being handled
+			CWnd* pWnd = CWnd::FromHandle(pMsg->hwnd);
+			while (pWnd != NULL && !(pWnd->m_nFlags & (WF_TOOLTIPS | WF_TRACKINGTOOLTIPS)))
 			{
-				for (int i = 0; i < nSteps; ++i)
+				pWnd = pWnd->GetParent();
+			}
+			if (pWnd != pWndHost)
+			{
+				return;
+			}
+		}
+
+		BOOL bTopParentActive = CXTPDrawHelpers::IsTopParentActive(pWndHost->GetSafeHwnd());
+
+		if (m_pToolTip->GetSafeHwnd() && m_pToolTip->IsWindowVisible() && !bTopParentActive)
+		{
+			m_pToolTip->SendMessage(TTM_ACTIVATE, FALSE);
+			return;
+		}
+
+
+		CWnd* pOwner = pWndHost->GetParentOwner();
+
+		if (m_pToolTip != NULL && m_pToolTip->GetOwner() != pOwner)
+		{
+			m_pToolTip->DestroyWindow();
+		}
+
+		if (m_pToolTip == NULL || m_pToolTip->GetSafeHwnd() == NULL)
+		{
+			if (m_pToolTip == NULL)
+			{
+				m_pToolTip = CreateToolTip(pOwner);
+			}
+
+			if (!m_pToolTip)
+				return;
+
+			if (!m_pToolTip->GetSafeHwnd())
+			{
+				if (DYNAMIC_DOWNCAST(CXTPToolTipContextToolTip, m_pToolTip))
 				{
-					int nHeight = rc.Height() * (i + 1) / nSteps;
-
-					pDestDC->BitBlt(0, 0, rc.Width(), nHeight, pSrcDC,
-						0, rc.Height() - nHeight, SRCCOPY);
-
-					Sleep(nAnimationTime / nSteps);
+					((CXTPToolTipContextToolTip*)m_pToolTip)->Create(pOwner, m_dwStyle | TTS_ALWAYSTIP | TTS_NOPREFIX);
+				}
+				else if (DYNAMIC_DOWNCAST(CToolTipCtrl, m_pToolTip))
+				{
+					((CToolTipCtrl*)m_pToolTip)->Create(pOwner, m_dwStyle | TTS_ALWAYSTIP | TTS_NOPREFIX | (m_toolStyle == xtpToolTipBalloon ? TTS_BALLOON : 0));
+				}
+				else
+				{
+					ASSERT(FALSE);
+					return;
 				}
 			}
-			break;
 
-		case xtpAnimateUnfold:
+			if (!m_pToolTip->GetSafeHwnd())
+				return;
+
+			m_pToolTip->SetFont(&m_fnt);
+
+			m_pToolTip->SendMessage(TTM_SETMAXTIPWIDTH, 0, m_nMaxTipWidth);
+			m_pToolTip->SendMessage(TTM_SETMARGIN, 0, (LPARAM)(LPRECT)&m_rcMargin);
+
+			if (m_clrTipBkColor != COLORREF_NULL)
+				m_pToolTip->SendMessage(TTM_SETTIPBKCOLOR, m_clrTipBkColor);
+
+			if (m_clrTipTextColor != COLORREF_NULL)
+				m_pToolTip->SendMessage(TTM_SETTIPTEXTCOLOR, m_clrTipTextColor);
+
+			if (m_nDelayReshow != -1)
+				m_pToolTip->SendMessage(TTM_SETDELAYTIME, TTDT_RESHOW, MAKELPARAM(m_nDelayReshow, 0));
+
+			if (m_nDelayInitial != -1)
+				m_pToolTip->SendMessage(TTM_SETDELAYTIME, TTDT_INITIAL, MAKELPARAM(m_nDelayInitial, 0));
+
+			if (m_nDelayAutoPop != -1)
+				m_pToolTip->SendMessage(TTM_SETDELAYTIME, TTDT_AUTOPOP, MAKELPARAM(m_nDelayAutoPop, 0));
+
+			m_pToolTip->SendMessage(TTM_ACTIVATE, FALSE);
+		}
+
+		CWnd* pToolTip = m_pToolTip;
+
+		ASSERT_VALID(pToolTip);
+		ASSERT(::IsWindow(pToolTip->m_hWnd));
+
+		XTP_TOOLTIP_CONTEXT tc;
+		ZeroMemory(&tc, sizeof(tc));
+
+		// determine which tool was hit
+		CPoint point = pMsg->pt;
+		::ScreenToClient(pWndHost->m_hWnd, &point);
+
+		XTP_TOOLTIP_TOOLINFO_EX tiHit;
+		memset(&tiHit, 0, sizeof(XTP_TOOLTIP_TOOLINFO_EX));
+
+		tiHit.cbSize = m_bShowTitleAndDescription || m_bShowImage ? sizeof(XTP_TOOLTIP_TOOLINFO_EX) : sizeof(XTP_TOOLTIP_TOOLINFO);
+		tiHit.pToolInfo = &tc;
+		INT_PTR nHit = pWndHost->OnToolHitTest(point, (TOOLINFO*)&tiHit);
+
+		if (m_bShowTitleAndDescription && tc.lpszDescription &&
+			tc.lpszTitle && (_tcscmp(tc.lpszDescription, tc.lpszTitle) == 0))
+		{
+			free(tc.lpszDescription);
+			tc.lpszDescription = 0;
+		}
+
+		if ((m_dwStyle & TTS_NOPREFIX) == 0)
+		{
+			CXTPDrawHelpers::StripMnemonics(tiHit.lpszText);
+			CXTPDrawHelpers::StripMnemonics(tiHit.pToolInfo->lpszTitle);
+		}
+
+
+		// build new toolinfo and if different than current, register it
+		BOOL bTipInfoChanged = m_lastInfo.uId != tiHit.uId || m_lastInfo.hwnd != tiHit.hwnd;
+
+		if (bTipInfoChanged || CRect(m_lastInfo.rect) != CRect(tiHit.rect))
+		{
+			if (m_lastInfo.cbSize >= sizeof(XTP_TOOLTIP_TOOLINFO) && !bTipInfoChanged)
+				pToolTip->SendMessage(TTM_DELTOOL, 0, (LPARAM)&m_lastInfo);
+
+			if (nHit != -1)
 			{
+				// add new tool and activate the tip
+				XTP_TOOLTIP_TOOLINFO_EX ti = tiHit;
+				ti.uFlags &= ~(TTF_NOTBUTTON | TTF_ALWAYSTIP);
 
-				for (int i = 0; i < nSteps; ++i)
+				VERIFY(pToolTip->SendMessage(TTM_ADDTOOL, 0, (LPARAM)&ti));
+
+				if ((m_toolStyle != xtpToolTipRTF && m_toolStyle != xtpToolTipHTML) && ((m_dwComCtlVersion >= VERSION_IE5) || (m_toolStyle != xtpToolTipStandard)))
 				{
-					CRect rcDest(rc.right - rc.Width() * (i + 1) / nSteps, rc.bottom - rc.Height() * (i + 1) / nSteps, rc.right, rc.bottom);
-
-					pDestDC->BitBlt(0, 0, rcDest.Width(), rcDest.Height(), pSrcDC,
-						rcDest.left, rcDest.top, SRCCOPY);
-
-					Sleep(nAnimationTime / nSteps);
-				}
-			}
-			break;
-
-		case xtpAnimateFade:
-			{
-				const int cx = rc.Width();
-				const int cy = rc.Height();
-
-				BITMAPINFOHEADER BMI;
-				// Fill in the header info.
-				ZeroMemory (&BMI, sizeof(BMI));
-				BMI.biSize = sizeof(BITMAPINFOHEADER);
-				BMI.biWidth = cx;
-				BMI.biHeight = cy;
-				BMI.biPlanes = 1;
-				BMI.biBitCount = 32;
-				BMI.biCompression = BI_RGB;   // No compression
-
-				BYTE * pSrcBits = NULL;
-				HBITMAP hbmSrc = CreateDIBSection (NULL, (BITMAPINFO *)&BMI, DIB_RGB_COLORS, (void **)&pSrcBits, 0, 0l);
-
-				BYTE * pSrcBackBits = NULL;
-				HBITMAP hbmSrcBack = CreateDIBSection (NULL, (BITMAPINFO *)&BMI, DIB_RGB_COLORS, (void **)&pSrcBackBits, 0, 0l);
-
-				BYTE * pDestBits = NULL;
-				HBITMAP hbmDest = CreateDIBSection (NULL, (BITMAPINFO *)&BMI, DIB_RGB_COLORS, (void **)&pDestBits, 0, 0l);
-
-				// Copy our source and destination bitmaps onto our DIBSections,
-				// so we can get access to their bits using the BYTE *'s we passed into CreateDIBSection
-
-				CDC dc;
-				dc.CreateCompatibleDC(NULL);
-				HBITMAP hbmpOld = (HBITMAP) ::SelectObject(dc, hbmSrc);
-				::BitBlt(dc, 0, 0, cx, cy, pSrcDC->GetSafeHdc(), 0, 0, SRCCOPY);
-
-				::SelectObject(dc, hbmSrcBack);
-				::BitBlt(dc, 0, 0, cx, cy, pDestDC->GetSafeHdc (), 0, 0, SRCCOPY);
-
-				DWORD dwTimePer = nAnimationTime / nSteps;
-
-				::SelectObject(dc, hbmDest);
-				for (int i = 1; i < nSteps; ++i)
-				{
-					DWORD dwTime = GetTickCount ();
-					AlphaBlendU(pDestBits, pSrcBackBits, cx, cy, pSrcBits, (BYTE)(255 * i  / nSteps));
-					pDestDC->BitBlt(rc.left, rc.top, rc.Width(), rc.Height(), &dc, 0, 0, SRCCOPY);
-					dwTime = GetTickCount () - dwTime;
-					if (dwTime < dwTimePer)
+					if (m_bShowTitleAndDescription && tc.lpszDescription && tc.lpszTitle)
 					{
-						Sleep(dwTimePer - dwTime);
+						pToolTip->SendMessage(TTM_SETTITLE, m_nIconTitle, (LPARAM)(LPCTSTR)tc.lpszTitle);
+
+						ti.lpszText = tc.lpszDescription;
+						pToolTip->SendMessage(TTM_UPDATETIPTEXT, 0, (LPARAM)&ti);
+					}
+					else
+					{
+						pToolTip->SendMessage(TTM_SETTITLE, 0, 0);
 					}
 				}
-				::SelectObject(dc, hbmpOld);
-				DeleteObject(hbmSrc);
-				DeleteObject(hbmSrcBack);
-				DeleteObject(hbmDest);
+
+				if (m_bShowImage)
+				{
+					CXTPImageManagerIcon* pIcon = NULL;
+					pIcon =  tc.pImageManager ? tc.pImageManager->GetImage(UINT(m_nImageBase + nHit), m_nImageSize) : 0;
+					if (pIcon)
+					{
+						pToolTip->SendMessage(XTP_TTM_SETIMAGE, 0, (LPARAM)pIcon);
+					}
+					else
+					{
+						pToolTip->SendMessage(XTP_TTM_SETIMAGE, 0, NULL);
+					}
+				}
+
+				if ((tiHit.uFlags & TTF_ALWAYSTIP) || bTopParentActive)
+				{
+					// allow the tooltip to popup when it should
+					pToolTip->SendMessage(TTM_ACTIVATE, TRUE);
+
+					// bring the tooltip window above other popup windows
+					::SetWindowPos(pToolTip->m_hWnd, HWND_TOP, 0, 0, 0, 0,
+						SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER);
+				}
+			}
+			else
+			{
+				pToolTip->SendMessage(TTM_ACTIVATE, FALSE);
 			}
 
-			break;
-	}
+			// relay mouse event before deleting old tool
+			RelayToolTipMessage(pToolTip, pMsg);
 
-}
+			//// now safe to delete the old tool
+			if (m_lastInfo.cbSize >= sizeof(XTP_TOOLTIP_TOOLINFO) && bTipInfoChanged)
+				pToolTip->SendMessage(TTM_DELTOOL, 0, (LPARAM)&m_lastInfo);
 
-void CXTPPaintManager::UpdateRTLCaption(CString& /*strCaption*/)
-{
-}
+			m_lastInfo = tiHit;
+		}
+		else
+		{
+			// relay mouse events through the tooltip
+			if (nHit != -1)
+				RelayToolTipMessage(pToolTip, pMsg);
+		}
 
-void CXTPPaintManager::DrawStatusBarButtonFace(CDC* pDC, CRect rcItem, CXTPStatusBarPane* pPane)
-{
-	if (pPane->IsHighlighted() || pPane->IsPressed() || pPane->IsChecked())
-	{
-		rcItem.DeflateRect(m_rcStatusButtonMargins);
+		if ((tiHit.lpszText != LPSTR_TEXTCALLBACK) && (tiHit.hinst == 0))
+			free(tiHit.lpszText);
 
-		DrawRectangle(pDC, rcItem, pPane->IsHighlighted(), pPane->IsPressed(), TRUE,
-			pPane->IsChecked(), FALSE, xtpBarTypeNormal, xtpBarBottom);
-	}
-}
+		if (tc.lpszDescription  != 0)
+			free(tc.lpszDescription);
 
-
-void CXTPPaintManager::DrawStatusBarPaneBorder(CDC* pDC, CRect rc, CXTPStatusBarPane* pPane, BOOL bGripperPane)
-{
-	if (m_bThemedStatusBar && m_themeStatusBar.IsAppThemed())
-	{
-		m_themeStatusBar.DrawThemeBackground(pDC->GetSafeHdc(), bGripperPane ? SP_GRIPPERPANE : SP_PANE, 0, rc, 0);
+		if (tc.lpszTitle != 0)
+			free(tc.lpszTitle);
 	}
 	else
 	{
-		if (!pPane->IsButton())
-			Draw3dRect(pDC, rc, COLOR_3DSHADOW, COLOR_BTNHILIGHT);
-	}
-}
-
-void CXTPPaintManager::DrawStatusBarPaneEntry(CDC* pDC, CRect rcItem, CXTPStatusBarPane* pPane)
-{
-	BOOL bEnabled = !(pPane->GetStyle() & SBPS_DISABLED);
-	BOOL bDrawText = bEnabled || pPane->GetStatusBar()->GetDrawDisabledText();
-
-	if (pPane->GetBackgroundColor() != (COLORREF)-1)
-	{
-		CRect rcBackground(rcItem);
-
-		if (!(pPane->GetStyle() & SBPS_NOBORDERS))
-			rcBackground.DeflateRect(1, 1);
-
-		pDC->FillSolidRect(rcBackground, pPane->GetBackgroundColor());
-	}
-	if (pPane->IsButton())
-	{
-		DrawStatusBarButtonFace(pDC, rcItem, pPane);
-	}
-
-	CXTPFontDC font(pDC, pPane->GetTextFont());
-	rcItem.DeflateRect(pPane->GetMargins());
-	CString str = pPane->GetText();
-
-	CXTPImageManagerIcon* pIcon = pPane->GetImage();
-
-	if (pPane->GetTextAlignment() != DT_LEFT)
-	{
-		int nWidth = pDC->GetTextExtent(str).cx;
-		nWidth += pIcon ? pIcon->GetWidth() + (nWidth > 0 ? 2 : 0) : 0;
-
-		if (rcItem.Width() > nWidth)
+		if (!bIgnoreFlags)
 		{
-			if (pPane->GetTextAlignment() == DT_RIGHT)
+			// make sure that tooltips are not already being handled
+			CWnd* pWnd = CWnd::FromHandle(pMsg->hwnd);
+			while (pWnd != NULL && pWnd != pWndHost && !(pWnd->m_nFlags & (WF_TOOLTIPS | WF_TRACKINGTOOLTIPS)))
 			{
-				rcItem.left = rcItem.right - nWidth;
+				pWnd = pWnd->GetParent();
 			}
-			if (pPane->GetTextAlignment() == DT_CENTER)
-			{
-				rcItem.left = (rcItem.left + rcItem.right - nWidth) / 2;
-			}
+			if (pWnd != pWndHost)
+				return;
 		}
-	}
 
-	if (pIcon)
-	{
-		if (rcItem.right >= rcItem.left + pIcon->GetWidth())
+		BOOL bKeys = (message >= WM_KEYFIRST && message <= WM_KEYLAST) ||
+			(message >= WM_SYSKEYFIRST && message <= WM_SYSKEYLAST);
+		if ((bKeys ||
+			(message == WM_LBUTTONDOWN || message == WM_LBUTTONDBLCLK) ||
+			(message == WM_RBUTTONDOWN || message == WM_RBUTTONDBLCLK) ||
+			(message == WM_MBUTTONDOWN || message == WM_MBUTTONDBLCLK) ||
+			(message == WM_NCLBUTTONDOWN || message == WM_NCLBUTTONDBLCLK) ||
+			(message == WM_NCRBUTTONDOWN || message == WM_NCRBUTTONDBLCLK) ||
+			(message == WM_NCMBUTTONDOWN || message == WM_NCMBUTTONDBLCLK)))
 		{
-			pIcon->Draw(pDC, CPoint(rcItem.left, (rcItem.top + rcItem.bottom - pIcon->GetHeight()) / 2), bEnabled ? pIcon->GetIcon() : pIcon->GetDisabledIcon());
+			CancelToolTips();
 		}
-		rcItem.OffsetRect(pIcon->GetWidth() + 2, 0);
-	}
-
-	if (bDrawText)
-	{
-		pDC->SetBkMode(TRANSPARENT);
-		pDC->SetTextColor(!bEnabled ? GetXtremeColor(COLOR_GRAYTEXT): pPane->GetTextColor() != (COLORREF)-1 ? pPane->GetTextColor() : m_clrStatusTextColor);
-		pDC->DrawText(str, rcItem, DT_SINGLELINE | DT_VCENTER | DT_EXPANDTABS | DT_NOPREFIX);
 	}
 }
-
-
-CSize CXTPPaintManager::DrawCommandBarGripper(CDC* pDC, CXTPCommandBar* pBar, BOOL bDraw)
-{
-	if (pBar->GetPosition() == xtpBarFloating)
-	{
-		CRect rc;
-		pBar->GetClientRect(&rc);
-
-		ASSERT(pDC);
-		if (!pDC)
-			return CSize(0, 0);
-		CXTPFontDC font(pDC, GetSmCaptionFont());
-		CSize sz = pDC->GetTextExtent(_T(" "), 1);
-
-		rc.SetRect(3, 3, rc.right - 3, 3 + max(15, sz.cy));
-		if (pDC && bDraw)
-		{
-			pDC->SetBkMode(TRANSPARENT);
-			pDC->FillSolidRect(rc, m_clrFloatingGripper);
-			pDC->SetTextColor(m_clrFloatingGripperText);
-			pDC->DrawText(pBar->GetTitle(), CRect(5, 3, rc.right - 2* rc.Size().cy, rc.bottom), DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
-		}
-		return rc.Size();
-
-	}
-	return 0;
-}
-
-void CXTPPaintManager::SetCommandBarRegion(CXTPCommandBar* /*pCommandBar*/)
-{
-}
-
-BOOL CXTPPaintManager::IsFlatToolBar(CXTPCommandBar* pCommandBar)
-{
-	return pCommandBar->GetType() == xtpBarTypeMenuBar ? m_bFlatMenuBar : m_bFlatToolBar;
-}
-
-void CXTPPaintManager::DrawPopupBarGripper(CDC* /*pDC*/, int /*xPos*/, int /*yPos*/, int /*cx*/, int /*cy*/, BOOL /*bExpanded = FALSE*/)
-{
-
-}
-void CXTPPaintManager::FillWorkspace(CDC* pDC, CRect rc, CRect /*rcExclude*/)
-{
-	pDC->FillSolidRect(rc, GetXtremeColor(COLOR_APPWORKSPACE));
-}
-
-void AFX_CDECL CXTPPaintManager::FillCompositeAlpha(CDC* pDC, CRect rc)
-{
-	CSize sz(rc.Width(), rc.Height());
-	CBitmap bmp;
-	LPDWORD lpBits;
-	bmp.Attach(CXTPImageManager::Create32BPPDIBSection(pDC->GetSafeHdc(), sz.cx, sz.cy, (LPBYTE*)&lpBits));
-
-	CXTPCompatibleDC dc(pDC, &bmp);
-
-	CRect rcDestOrig(0, 0, sz.cx, sz.cy);
-
-	dc.BitBlt(0, 0, sz.cx, sz.cy, pDC, rc.left, rc.top, SRCCOPY);
-
-	for (int i = 0; i < sz.cx * sz.cy; i++)
-	{
-		lpBits[0] |= 0xFF000000;
-		lpBits++;
-	}
-
-	pDC->BitBlt(rc.left, rc.top, sz.cx, sz.cy, &dc, 0, 0, SRCCOPY);
-}
-
-void CXTPPaintManager::DrawKeyboardTip(CDC* pDC, CXTPCommandBarKeyboardTip* pWnd, BOOL bSetRegion)
-{
-	if (!bSetRegion)
-	{
-		CXTPClientRect rc(pWnd);
-		CXTPFontDC font(pDC, &m_fontToolTip);
-
-		pDC->FillSolidRect(rc, GetXtremeColor(COLOR_INFOBK));
-		pDC->Draw3dRect(rc, GetSysColor(COLOR_3DSHADOW), GetSysColor(COLOR_3DSHADOW));
-
-		pDC->SetBkMode(TRANSPARENT);
-		pDC->SetTextColor(GetXtremeColor(pWnd->m_bEnabled ? COLOR_INFOTEXT : COLOR_GRAYTEXT));
-		pDC->DrawText(pWnd->m_strTip, rc, DT_VCENTER | DT_CENTER | DT_SINGLELINE);
-	}
-}
-
-CSize CXTPPaintManager::GetAutoIconSize(BOOL bLarge) const
-{
-	if (m_bAutoResizeIcons)
-	{
-		int nHeight = GetControlHeight() - 4;
-		if (bLarge) nHeight = nHeight * 2;
-
-		nHeight = max(2, nHeight / 8);
-
-		return CSize(nHeight * 8, nHeight * 8);
-	}
-
-	return bLarge ? CSize(32, 32) : CSize(16, 16);
-}
-
 

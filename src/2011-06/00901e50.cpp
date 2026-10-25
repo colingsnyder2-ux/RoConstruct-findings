@@ -1,14 +1,14 @@
-// from server: 46% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/Controls/XTButtonTheme.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-15.2.1-shared-mfc Source/Controls/Deprecated/XTButtonTheme.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTButtonTheme.cpp: implementation of the CXTButtonTheme class.
 //
 // This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
+// (c)1998-2011 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -29,12 +29,14 @@
 #include "Common/XTPDrawHelpers.h"
 #include "Common/XTPImageManager.h"
 #include "Common/XTPWinThemeWrapper.h"
+#include "Common/XTPColorManager.h"
 
 #include "XTThemeManager.h"
 #include "XTButtonTheme.h"
 #include "XTButton.h"
-#include "XTHelpers.h"
-#include "XTFunctions.h"
+
+#include "../Util/XTPHelpers.h"
+#include "../Util/XTPFunctions.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -57,11 +59,13 @@ CXTButtonTheme::CXTButtonTheme()
 , m_bOffsetHiliteText(TRUE)
 , m_pFont(NULL)
 {
+	m_themeWrapper = new CXTPWinThemeWrapper();
+
 }
 
 CXTButtonTheme::~CXTButtonTheme()
 {
-
+	SAFE_DELETE(m_themeWrapper);
 }
 
 void CXTButtonTheme::RefreshMetrics()
@@ -70,7 +74,7 @@ void CXTButtonTheme::RefreshMetrics()
 
 	RefreshXtremeColors();
 
-	m_themeWrapper.OpenThemeData(0, L"BUTTON");
+	m_themeWrapper->OpenThemeData(0, L"BUTTON");
 
 	// background colors.
 	m_crBack.SetStandardValue(GetXtremeColor(COLOR_BTNFACE));
@@ -218,7 +222,7 @@ COLORREF CXTButtonTheme::GetTextColor(UINT nState, CXTButton* pButton)
 			iStateId = PBS_DISABLED;
 
 		COLORREF clr = m_crText;
-		if (SUCCEEDED(m_themeWrapper.GetThemeColor(BP_PUSHBUTTON, iStateId, TMT_TEXTCOLOR, &clr)))
+		if (SUCCEEDED(m_themeWrapper->GetThemeColor(BP_PUSHBUTTON, iStateId, TMT_TEXTCOLOR, &clr)))
 		{
 			return clr;
 		}
@@ -381,16 +385,16 @@ BOOL CXTButtonTheme::UseWinXPThemes(CXTButton* pButton)
 
 	// if we got this far then we try to load the theme data for
 	// this control if it is not currently open.
-	if (!m_themeWrapper.ThemeDataOpen())
-		m_themeWrapper.OpenThemeData(0, L"BUTTON");
+	if (!m_themeWrapper->ThemeDataOpen())
+		m_themeWrapper->OpenThemeData(0, L"BUTTON");
 
 	// if our application is not "Theme Ready" meaning that we cannot
 	// display Windows XP themes, then return FALSE.
-	if (!m_themeWrapper.IsAppThemeReady())
+	if (!m_themeWrapper->IsAppThemeReady())
 		return FALSE;
 
 	// this will return TRUE if we can display visual styles.
-	return m_themeWrapper.ThemeDataOpen();
+	return m_themeWrapper->ThemeDataOpen();
 }
 
 BOOL CXTButtonTheme::CanHilite(CXTButton* pButton)
@@ -436,7 +440,7 @@ BOOL CXTButtonTheme::DrawWinThemeBackground(LPDRAWITEMSTRUCT lpDIS, CXTButton* p
 			pDC->FillSolidRect(rcItem, GetXtremeColor(COLOR_3DFACE));
 		}
 
-		if (m_themeWrapper.DrawThemeBackground(pDC->GetSafeHdc(),
+		if (m_themeWrapper->DrawThemeBackground(pDC->GetSafeHdc(),
 			BP_PUSHBUTTON, iStateId, &rcItem, NULL) != S_OK)
 		{
 			TRACE0("Error drawing background using WinTheme API.\n");
@@ -469,7 +473,7 @@ BOOL CXTButtonTheme::DrawButtonThemeBackground(LPDRAWITEMSTRUCT lpDIS, CXTButton
 	{
 		if ((pButton->GetChecked() && !rcItem.PtInRect(pt)) || bSelected)
 		{
-			XTFuncDrawShadedRect(pDC, rcItem);
+			XTPDrawShadedRect(pDC, rcItem);
 		}
 	}
 
@@ -478,15 +482,15 @@ BOOL CXTButtonTheme::DrawButtonThemeBackground(LPDRAWITEMSTRUCT lpDIS, CXTButton
 		if (pButton->GetHilite() || bSelected)
 		{
 			pDC->Draw3dRect(rcItem,
-				bSelected ? m_crBorderShadow : m_crBorder3DHilite,
-				bSelected ? m_crBorder3DHilite : m_crBorderShadow);
+				bSelected ? m_crBorderShadow : m_crBorderHilite,
+				bSelected ? m_crBorderHilite : m_crBorderShadow);
 		}
 	}
 	else if (dwxStyle & BS_XT_SEMIFLAT)
 	{
 		pDC->Draw3dRect(rcItem,
-			bSelected ? m_crBorderShadow : m_crBorder3DHilite,
-			bSelected ? m_crBorder3DHilite : m_crBorderShadow);
+			bSelected ? m_crBorderShadow : m_crBorderHilite,
+			bSelected ? m_crBorderHilite : m_crBorderShadow);
 	}
 	else // classic button
 	{
@@ -512,7 +516,7 @@ BOOL CXTButtonTheme::DrawButtonThemeBackground(LPDRAWITEMSTRUCT lpDIS, CXTButton
 
 void CXTButtonTheme::DrawFocusRect(CDC* pDC, UINT /*nState*/, CRect& rcItem, CXTButton* pButton)
 {
-	CXTContextTextColorHandler foreHandler(pDC,
+	CXTPContextTextColorHandler foreHandler(pDC,
 		m_crText);
 
 	if (pButton->GetXButtonStyle() & (BS_XT_FLAT|BS_XT_SEMIFLAT))
@@ -539,7 +543,7 @@ void CXTButtonTheme::DrawItem(LPDRAWITEMSTRUCT lpDIS, CXTButton* pButton)
 	int   nState = lpDIS->itemState;
 
 	// Set the background mode to transparent.
-	CXTContextBkModeHandler modeHandler(pDC, TRANSPARENT);
+	CXTPContextBkModeHandler modeHandler(pDC, TRANSPARENT);
 
 	// draw the button text, icon or bitmap.
 	DrawButtonText(pDC, nState, rcItem, pButton);
@@ -913,7 +917,7 @@ void CXTToolbarButtonTheme::RefreshMetrics()
 {
 	CXTDisabledButtonTheme::RefreshMetrics();
 
-	m_themeWrapper.OpenThemeData(0, L"TOOLBAR");
+	m_themeWrapper->OpenThemeData(0, L"TOOLBAR");
 }
 
 BOOL CXTToolbarButtonTheme::UseWinXPThemes(CXTButton* pButton)
@@ -924,14 +928,14 @@ BOOL CXTToolbarButtonTheme::UseWinXPThemes(CXTButton* pButton)
 
 	// if we got this far then we try to load the theme data for
 	// this control if it is not currently open.
-	if (!m_themeWrapper.ThemeDataOpen())
-		m_themeWrapper.OpenThemeData(pButton->m_hWnd, L"TOOLBAR");
+	if (!m_themeWrapper->ThemeDataOpen())
+		m_themeWrapper->OpenThemeData(pButton->m_hWnd, L"TOOLBAR");
 
 	// if our application is not "Theme Ready" meaning that we cannot
 	// display Windows XP themes, then return FALSE.
-	if (!m_themeWrapper.IsAppThemeReady())
+	if (!m_themeWrapper->IsAppThemeReady())
 		return FALSE;
 
 	// this will return TRUE if we can display visual styles.
-	return m_themeWrapper.ThemeDataOpen();
+	return m_themeWrapper->ThemeDataOpen();
 }

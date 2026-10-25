@@ -1,18 +1,11 @@
-// from server: 79% by atomic.potato
-extern void G1_func_0080b15d(const char *);
-
-int func_00740e80()
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+extern "C" void seh_fn_00740e80(void*);
+extern int g_a_00740e80;
+extern int g_b_00740e80;
+extern int g_arg_00740e80;
+struct Reg_00740e80 { Reg_00740e80() { g_a_00740e80 = 0; g_b_00740e80 = 0; seh_fn_00740e80(&g_arg_00740e80); } };
+void func_00740e80()
 {
-    static volatile int initialized;
-    static int value1;
-    static int value2;
-
-    if (!initialized)
-    {
-        initialized = 1;
-        value1 = 0;
-        value2 = 0;
-        G1_func_0080b15d("8csm");
-    }
-    return 0;
+    static Reg_00740e80 reg;
 }

@@ -1,1001 +1,770 @@
-// from server: 66% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/dcprev.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPDockBar.cpp
 
 // Candidate translation unit (score above; library headers required).
-// This is a part of the Microsoft Foundation Classes C++ library.
-// Copyright (C) Microsoft Corporation
-// All rights reserved.
+// XTPDockBar.cpp : implementation of the CXTPDockBar class.
 //
-// This source code is only intended as a supplement to the
-// Microsoft Foundation Classes Reference and related
-// electronic documentation provided with the library.
-// See these sources for detailed information regarding the
-// Microsoft Foundation Classes product.
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "sal.h"
+#include <afxpriv.h>
+#include "Common/XTPDrawHelpers.h"
 
+#include "XTPDockBar.h"
+#include "XTPToolBar.h"
+#include "XTPCommandBars.h"
+#include "XTPDockContext.h"
+#include "XTPPaintManager.h"
 
-
-#define new DEBUG_NEW
-
-/////////////////////////////////////////////////////////////////////////////
-// Helper functions
-
-AFX_STATIC long AFXAPI _AfxMultMultDivDiv(
-	int factor, int num1, int num2,
-	int den1, int den2)
-{
-#ifdef _AFX_PORTABLE
-	// make sure that (num1 * num2) does not overflow 31-bits.
-	long temp = num1 < 0 ? -num1 : num1;
-	for (int nBitsResult = 0; temp != 0; nBitsResult++)
-		temp >>= 1;
-	temp = num2 < 0 ? -num2 : num2;
-	for (; temp != 0; nBitsResult++)
-		temp >>= 1;
-	if (nBitsResult > 31)
-	{
-		num1 >>= nBitsResult - 31;
-		num2 >>= nBitsResult - 31;
-	}
-
-	// make sure that (den1 * den2) does not overflow 31-bits
-	temp = den1 < 0 ? -den1 : den1;
-	for (nBitsResult = 0; temp != 0; nBitsResult++)
-		temp >>= 1;
-	temp = den2 < 0 ? -den2 : den2;
-	for (; temp != 0; nBitsResult++)
-		temp >>= 1;
-	if (nBitsResult > 31)
-	{
-		den1 >>= nBitsResult - 31;
-		den2 >>= nBitsResult - 31;
-	}
-
-	long numerator = (long)num1 * (long)num2;   // no overflow
-	long denominator = (long)den1 * (long)den2; // no overflow
-#else
-	__int64 numerator = (__int64)num1 * (__int64)num2;   // no overflow
-	__int64 denominator = (__int64)den1 * (__int64)den2; // no overflow
-	__int64 temp;
-#endif
-
-	temp = numerator < 0 ? -numerator : numerator;
-	int nBitsInNum;
-	for (nBitsInNum = 0; temp != 0; nBitsInNum++)
-		temp >>= 1;
-
-	temp = factor < 0 ? -factor : factor;
-	int nBitsInFactor;
-	for (nBitsInFactor = 0; temp != 0; nBitsInFactor++)
-		temp >>= 1;
-
-	nBitsInNum += nBitsInFactor;
-
-	//
-	// normalizing the denominator to positive results in an easier
-	// determination of whether there is overflow
-	//
-	if (denominator < 0)
-	{
-		denominator = -denominator;
-		numerator = -numerator;
-	}
-
-	// Get the product of factor * numerator representable in a long/__int64
-	// while distributing loss of presision across all three numerator terms
-	// Adjust denominator as well
-	//
-	while (nBitsInNum-- > 31)
-	{
-		numerator >>= 1;
-		denominator >>= 1;
-		if (nBitsInNum-- <= 31)
-			break;
-		numerator >>= 1;
-		denominator >>= 1;
-		if (nBitsInNum-- <= 31)
-			break;
-		factor >>= 1;
-		denominator >>= 1;
-	}
-	numerator *= factor;
-
-	if (denominator == 0)
-		return numerator < 0 ? LONG_MIN : LONG_MAX;
-
-	return (long) ((numerator + denominator/2) / denominator);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// Print Preview DC (CPreviewDC)
-
-CPreviewDC::CPreviewDC()
-{
-	// Initial scale factor and top-left offset
-	m_nScaleNum = m_nScaleDen = 1;
-	m_sizeTopLeft.cx = m_sizeTopLeft.cy = 8;
-	m_hFont = m_hPrinterFont = NULL;
-}
-
-void CPreviewDC::SetOutputDC(HDC hDC)
-{
-	ASSERT(hDC != NULL);
-	m_nSaveDCIndex = ::SaveDC(hDC); // restore in ReleaseOutputDC()
-	CDC::SetOutputDC(hDC);
-
-	if (m_hAttribDC != NULL)
-	{
-		MirrorMappingMode(FALSE);
-
-		if (m_hFont)
-			::SelectObject(m_hDC, m_hFont);
-		else
-			MirrorFont();
-		MirrorAttributes();
-	}
-}
-
-void CPreviewDC::ReleaseOutputDC()
-{
-	ASSERT(m_hDC != NULL);
-	::RestoreDC(m_hDC, m_nSaveDCIndex); // Saved in SetOutputDC()
-	CDC::ReleaseOutputDC();
-}
-
-void CPreviewDC::SetAttribDC(HDC hDC)
-{
-	ASSERT(hDC != NULL);
-	CDC::SetAttribDC(hDC);
-
-	MirrorMappingMode(TRUE);
-	MirrorFont();
-	MirrorAttributes();
-}
-
-CPreviewDC::~CPreviewDC()
-{
-	ASSERT(m_hDC == NULL);      // Should not have a screen DC at this time
-	AfxDeleteObject((HGDIOBJ*)&m_hFont);
-}
-
-void CPreviewDC::SetScaleRatio(int nNumerator, int nDenominator)
-{
-	m_nScaleNum = nNumerator;
-	m_nScaleDen = nDenominator;
-	if (m_hAttribDC != NULL)
-	{
-		MirrorMappingMode(TRUE);
-		MirrorFont();
-	}
-}
-
-// Implementation support
 #ifdef _DEBUG
-void CPreviewDC::AssertValid() const
-{
-	CDC::AssertValid();
-}
-
-
-void CPreviewDC::Dump(CDumpContext& dc) const
-{
-	CDC::Dump(dc);
-
-	dc << "Scale Factor: " << m_nScaleNum << "/" << m_nScaleDen;
-	dc << "\n";
-}
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
-int CPreviewDC::SaveDC()
+// CXTPDockBar
+
+IMPLEMENT_DYNCREATE(CXTPDockBar, CWnd)
+
+CXTPDockBar::CXTPDockBar()
 {
-	ASSERT(m_hAttribDC != NULL);
-	int nAttribIndex = ::SaveDC(m_hAttribDC);
-	if (m_hDC != NULL)
-	{
-		// remove font from object
-		::SelectObject(m_hDC, GetStockObject(SYSTEM_FONT));
-		m_nSaveDCDelta = ::SaveDC(m_hDC) - nAttribIndex;
-		// Select font back in after save
-		::SelectObject(m_hDC, m_hFont);
-	}
-	else
-	{
-		m_nSaveDCDelta = 0x7fff;        // impossibly high value
-	}
-	return nAttribIndex;
+	m_arrBars.Add(NULL);
+	m_dwStyle = 0;
+	m_pCommandBars = NULL;
+
+	CXTPDrawHelpers::RegisterWndClass(0, _T("XTPDockBar"), 0);
 }
 
-BOOL CPreviewDC::RestoreDC(int nSavedDC)
+CXTPDockBar::~CXTPDockBar()
 {
-	ASSERT(m_hAttribDC != NULL);
-	BOOL bSuccess = ::RestoreDC(m_hAttribDC, nSavedDC);
-	if (bSuccess)
-	{
-		if (m_nSaveDCDelta != 0x7fff)
-		{
-			ASSERT(m_hDC != NULL);      // removed Output DC after save
+}
 
-			if (nSavedDC != -1)
-				nSavedDC += m_nSaveDCDelta;
-			bSuccess = ::RestoreDC(m_hDC, nSavedDC);
-			MirrorFont();               // mirror the font
+
+BEGIN_MESSAGE_MAP(CXTPDockBar, CWnd)
+	ON_MESSAGE(WM_SIZEPARENT, OnSizeParent)
+	ON_WM_PAINT()
+	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
+	ON_WM_ERASEBKGND()
+	ON_WM_RBUTTONDOWN()
+	ON_WM_NCHITTEST_EX()
+END_MESSAGE_MAP()
+
+
+
+// CXTPDockBar message handlers
+
+LRESULT CXTPDockBar::OnNcHitTest(CPoint point)
+{
+	if (GetPosition() == xtpBarTop && m_pCommandBars->GetMenuBar() != NULL && m_pCommandBars->GetMenuBar()->IsRibbonBar() &&
+		FindBar(m_pCommandBars->GetMenuBar()) != -1)
+	{
+		return HTTRANSPARENT;
+	}
+
+	return (LRESULT)CWnd::OnNcHitTest(point);
+}
+
+BOOL CXTPDockBar::Create(CWnd* pParentWnd, DWORD dwStyle, UINT nID)
+{
+	ASSERT(pParentWnd != NULL);
+
+	// save the xtp
+	m_dwStyle = (dwStyle & CBRS_ALL);
+
+	XTPBarPosition barPosition = GetPosition();
+	CString strWindowName = barPosition == xtpBarTop ? _T("xtpBarTop") :
+		barPosition == xtpBarLeft ? _T("xtpBarLeft") :
+		barPosition == xtpBarBottom ? _T("xtpBarBottom") : _T("xtpBarRight");
+
+	return CWnd::Create(_T("XTPDockBar"), strWindowName, dwStyle, CXTPEmptyRect(), pParentWnd, nID);
+}
+
+BOOL CXTPDockBar::PreCreateWindow(CREATESTRUCT& cs)
+{
+	if (!CWnd::PreCreateWindow(cs))
+		return FALSE;
+
+	// force clipsliblings (otherwise will cause repaint problems)
+	cs.style |= WS_CLIPSIBLINGS;
+	return TRUE;
+}
+
+
+
+CSize CXTPDockBar::CalcFixedLayout(BOOL /*bStretch*/, BOOL /*bHorz*/, AFX_SIZEPARENTPARAMS* /*lpLayout*/)
+{
+	return 0;
+}
+
+
+struct CXTPDockBar::DOCK_INFO
+{
+	DOCK_INFO(CXTPToolBar* p = 0, CRect rc = 0, int n = 0)
+	{
+		pBar = p;
+		rcMRUPos = rcBar = rc;
+		nIndex = n;
+		nMinWidth = 0;
+		nTotlaMinWidth = 0;
+	}
+
+	CXTPToolBar* pBar;
+	CRect rcBar;
+	CRect rcMRUPos;
+	int nIndex;
+	int nMinWidth;
+	int nTotlaMinWidth;
+};
+
+class CXTPDockBar::CDockInfoArray : public CArray<DOCK_INFO, DOCK_INFO&>
+{
+public:
+	void Sort()
+	{
+		qsort(GetData(), GetSize(), sizeof(DOCK_INFO), CompareFunc);
+	}
+	static int _cdecl CompareFunc(const void* elem1, const void* elem2)
+	{
+		return ((DOCK_INFO*)elem1)->rcBar.left < ((DOCK_INFO*)elem2)->rcBar.left ? -1 : 1;
+	}
+	void _swap(LONG& A, LONG& B)
+	{
+		int C = B;
+		B = A;
+		A = C;
+	}
+	void InvertRects()
+	{
+		for (int nPos = 0; nPos < GetSize(); nPos++)
+		{
+			CRect& rect = ElementAt(nPos).rcBar;
+			_swap(rect.left, rect.top);
+			_swap(rect.right, rect.bottom);
+		}
+	}
+};
+
+int CXTPDockBar::_GetMode(BOOL bHorz, CXTPToolBar* pBar)
+{
+	DWORD dwMode = bHorz ? LM_HORZ | LM_HORZDOCK : LM_VERTDOCK;
+
+	if (pBar->GetFlags() & xtpFlagStretched) dwMode |= LM_STRETCH;
+	if ((!m_pCommandBars->IsCustomizeMode() || m_pCommandBars->IsQuickCustomizeMode()) && pBar->GetFlags() & xtpFlagHideWrap)
+		return dwMode | LM_HIDEWRAP;
+
+	return dwMode;
+}
+
+int CXTPDockBar::_AdjustRow(CToolBarArray& arrRow, CPoint pt, int nLength, BOOL bHorz, AFX_SIZEPARENTPARAMS* lpLayout, int& nRemove)
+{
+	CDockInfoArray arrInfo;
+
+	int nPos;
+
+	// Step 1. Getting maximum available size;
+	for (nPos = 0; nPos < arrRow.GetSize(); nPos++)
+	{
+		CXTPToolBar* pBar = arrRow[nPos];
+		CSize sizeBar = pBar->CalcDockingLayout(nLength, _GetMode(bHorz, pBar));
+
+		CPoint p = bHorz ? CPoint(pBar->m_pDockContext->m_rectMRUDockPos.left, pt.y) :
+			CPoint(pt.x, pBar->m_pDockContext->m_rectMRUDockPos.top);
+
+		DOCK_INFO dockInfo(pBar, CRect(p, sizeBar), nPos);
+		arrInfo.Add(dockInfo);
+	}
+
+	ASSERT(arrInfo.GetSize() == arrRow.GetSize());
+
+	if (!bHorz) arrInfo.InvertRects();
+	arrInfo.Sort();
+
+	// Step 2. if Total length is more than available, fill empty area.
+	int nIndex = -1;
+	int nLen = 0;
+	BOOL bMove = TRUE;
+
+	for (nPos = 0; nPos < arrInfo.GetSize(); nPos++)
+	{
+		CRect& rect = arrInfo[nPos].rcBar;
+
+		bMove = (rect.left < nLen && (nIndex < arrInfo[nPos].nIndex || bMove));
+		if (bMove) rect.OffsetRect(nLen - rect.left, 0);
+		nLen = rect.right;
+
+		nIndex = arrInfo[nPos].nIndex;
+	}
+
+	nLen = nLength;
+	nIndex = -1;
+	bMove = TRUE;
+
+	for (nPos = (int)arrInfo.GetSize() - 1; nPos >= 0; nPos--)
+	{
+		CRect& rect = arrInfo[nPos].rcBar;
+		bMove = (rect.right - nLen > 0 && (nIndex < arrInfo[nPos].nIndex || bMove));
+		if (bMove) rect.OffsetRect(nLen - rect.right, 0);
+
+		nLen = rect.left;
+		nIndex = arrInfo[nPos].nIndex;
+	}
+
+	nLen = 0;
+	for (nPos = 0; nPos < arrInfo.GetSize(); nPos++)
+	{
+		CRect& rect = arrInfo[nPos].rcBar;
+		if (rect.left < nLen)
+			rect.OffsetRect(nLen - rect.left, 0);
+
+		nLen = rect.left + rect.Width();
+	}
+
+	// Step 3. if Total length is more than available, make it expandable.
+	if (nLen > nLength)
+	{
+		int nSum = 0;
+		for (nPos = 0; nPos < arrInfo.GetSize(); nPos++)
+		{
+			CXTPToolBar* pBar = arrInfo[nPos].pBar;
+
+			if (!(_GetMode(bHorz, pBar) & LM_HIDEWRAP))
+				arrInfo[nPos].nMinWidth = nLength;
+			else
+			{
+				CSize sz = pBar->CalcDockingLayout(1, _GetMode(bHorz, pBar));
+				arrInfo[nPos].nMinWidth = bHorz ? sz.cx : sz.cy;
+			}
+
+			arrInfo[nPos].nTotlaMinWidth = nSum;
+			nSum += arrInfo[nPos].nMinWidth;
+		}
+
+		nLen = nLength;
+		for (nPos = (int)arrInfo.GetSize() - 1; nPos >= 0; nPos--)
+		{
+			CRect& rect = arrInfo[nPos].rcBar;
+			int nLeft = bHorz ? arrInfo[nPos].rcMRUPos.left : arrInfo[nPos].rcMRUPos.top;
+
+			if (nLeft > rect.left) nLeft = rect.left;
+			if (nLeft < nLen - rect.Width()) nLeft = nLen - rect.Width();
+
+			if (nLeft < arrInfo[nPos].nTotlaMinWidth) nLeft = arrInfo[nPos].nTotlaMinWidth;
+			if (nLen - nLeft < arrInfo[nPos].nMinWidth) nLeft = nLen - arrInfo[nPos].nMinWidth;
+
+			if ((nLen - nLeft < arrInfo[nPos].nMinWidth || nLeft < arrInfo[nPos].nTotlaMinWidth)
+				&& arrInfo.GetSize() != 1)
+			{
+				nRemove = arrInfo[arrInfo.GetSize() - 1].nIndex;
+				return -1;
+			}
+
+			rect.right = nLen;
+			nLen = rect.left = max(0, nLeft);
+		}
+	}
+
+	if (!bHorz) arrInfo.InvertRects();
+
+
+	int nWidth = 0;
+	// Calculate total width
+	for (nPos = 0; nPos < arrInfo.GetSize(); nPos++)
+	{
+		CXTPToolBar* pBar = arrInfo[nPos].pBar;
+		CRect& rect = arrInfo[nPos].rcBar;
+		CSize sizeBar = pBar->CalcDockingLayout(bHorz ? rect.Width() : rect.Height(), _GetMode(bHorz, pBar));
+		nWidth = max(nWidth, bHorz ? sizeBar.cy : sizeBar.cx);
+	}
+
+	if (lpLayout->hDWP == 0)
+		return nWidth;
+
+	// Step 4. Move it.
+	for (nPos = 0; nPos < arrInfo.GetSize(); nPos++)
+	{
+		CXTPToolBar* pBar = arrInfo[nPos].pBar;
+		CRect& rect = arrInfo[nPos].rcBar;
+		int nMode = _GetMode(bHorz, pBar) | LM_COMMIT;
+
+		if (pBar->GetFlags() & xtpFlagStretchedShared)
+		{
+			if (bHorz)
+			{
+				rect.right = nPos == arrInfo.GetSize() - 1 ? nLength : arrInfo[nPos + 1].rcBar.left;
+				rect.left = nPos == 0 ? 0 : min(arrInfo[nPos - 1].rcBar.right, rect.left);
+			}
+			else
+			{
+				rect.bottom = nPos == arrInfo.GetSize() - 1 ? nLength : arrInfo[nPos + 1].rcBar.top;
+				rect.top = nPos == 0 ? 0 : min(arrInfo[nPos - 1].rcBar.bottom, rect.top);
+			}
+
+			nMode |= LM_STRETCH;
+		}
+
+		CSize sz = pBar->CalcDockingLayout(bHorz ? rect.Width() : rect.Height(), nMode, nWidth);
+		rect = CRect(rect.TopLeft(), sz);
+
+		pBar->m_pDockContext->m_uMRUDockPosition = GetPosition();
+
+		CXTPWindowRect rectOld(pBar);
+		ScreenToClient(&rectOld);
+
+		if (!::EqualRect(rectOld, rect))
+		{
+			AfxRepositionWindow(lpLayout, pBar->m_hWnd, &rect);
+			pBar->Redraw();
+		}
+	}
+	return nWidth;
+}
+
+int CXTPDockBar::AdjustRow(CToolBarArray& arrRow, CPoint pt, int nLength, BOOL bHorz, AFX_SIZEPARENTPARAMS* lpLayout)
+{
+	int nTotalWidth = 0;
+	CToolBarArray arrNext;
+
+	for (;;)
+	{
+		int nRemove = -1;
+		ASSERT(arrRow.GetSize() > 0);
+		int nWidth = _AdjustRow(arrRow, pt, nLength, bHorz, lpLayout, nRemove);
+
+		if (nWidth == -1)
+		{
+			ASSERT(nRemove != -1);
+			arrNext.Add(arrRow[nRemove]);
+			arrRow.RemoveAt(nRemove);
 		}
 		else
 		{
-			ASSERT(m_hDC == NULL);      // Added the Output DC after save
+			nTotalWidth += nWidth;
+
+			if (bHorz)
+				pt.y += nWidth;
+			else
+				pt.x += nWidth;
+
+			if (arrNext.GetSize() > 0)
+			{
+				arrRow.Copy(arrNext);
+				arrNext.RemoveAll();
+				continue;
+			}
+			break;
 		}
 	}
-	return bSuccess;
+	return nTotalWidth;
 }
 
-void CPreviewDC::MirrorAttributes()
+
+CSize CXTPDockBar::CalcDynamicLayout(int nLength, DWORD nMode, AFX_SIZEPARENTPARAMS* lpLayout)
 {
-	ASSERT(m_hAttribDC != NULL);
+	BOOL bHorz = nMode & LM_HORZ;
+	BOOL bStretch = nMode & LM_STRETCH;
 
-	if (m_hDC != NULL)
+	CSize sizeFixed (bStretch && bHorz ? 32767 : 0, bStretch && !bHorz ? 32767 : 0);
+
+	BOOL bLayoutQuery = (lpLayout->hDWP == NULL);
+
+	// prepare for layout
+	AFX_SIZEPARENTPARAMS layout;
+	layout.hDWP = bLayoutQuery ? 0 : ::BeginDeferWindowPos((int)m_arrBars.GetSize());
+
+	CPoint pt(0, 0);
+	// layout all the control bars
+	for (int nPos = 0; nPos < m_arrBars.GetSize(); nPos++)
 	{
-		// extract and re-set Pen and Brush
-		HGDIOBJ hTemp = ::SelectObject(m_hAttribDC, ::GetStockObject(BLACK_PEN));
-		::SelectObject(m_hAttribDC, hTemp);
-		::SelectObject(m_hDC, hTemp);
-		hTemp = ::SelectObject(m_hAttribDC, ::GetStockObject(BLACK_BRUSH));
-		::SelectObject(m_hAttribDC, hTemp);
-		::SelectObject(m_hDC, hTemp);
+		CToolBarArray lst;
+		CXTPToolBar* pBar = GetDockedCommandBar(nPos);
 
-		SetROP2(GetROP2());
-		SetBkMode(GetBkMode());
-		SetTextAlign(GetTextAlign());
-		SetPolyFillMode(GetPolyFillMode());
-		SetStretchBltMode(GetStretchBltMode());
-		SetTextColor(GetNearestColor(GetTextColor()));
-		SetBkColor(GetNearestColor(GetBkColor()));
-	}
-}
-
-CGdiObject* CPreviewDC::SelectStockObject(int nIndex)
-{
-	ASSERT(m_hAttribDC != NULL);
-
-	HGDIOBJ hObj = ::GetStockObject(nIndex);
-
-	switch (nIndex)
-	{
-	case ANSI_FIXED_FONT:
-	case ANSI_VAR_FONT:
-	case DEVICE_DEFAULT_FONT:
-	case OEM_FIXED_FONT:
-	case SYSTEM_FONT:
-	case SYSTEM_FIXED_FONT:
-	case DEFAULT_GUI_FONT:
-		// Handle the stock fonts correctly
+		while (pBar)
 		{
-			CGdiObject* pObject = CGdiObject::FromHandle(
-							::SelectObject(m_hAttribDC, hObj));
-
-			// Don't re-mirror screen font if this is the same font.
-			if (m_hPrinterFont == (HFONT) hObj)
-				return pObject;
-
-			m_hPrinterFont = (HFONT) hObj;
-
-			ASSERT(m_hPrinterFont != NULL); // Do not allow infinite recursion
-
-			MirrorFont();
-			return pObject;
+			if (pBar->IsVisible()) lst.Add(pBar);
+			pBar = GetDockedCommandBar(++nPos);
 		}
 
-	default:
-		if (m_hDC != NULL)
-			::SelectObject(m_hDC, hObj);
-		return CGdiObject::FromHandle(::SelectObject(m_hAttribDC, hObj));
+		int nWidth = 0;
+
+		if (lst.GetSize() != 0)
+		{
+			nWidth = AdjustRow(lst, pt, nLength, bHorz, &layout);
+			lst.RemoveAll();
+		}
+		if (pBar == NULL && nWidth != 0)
+		{
+			// end of row because pBar == NULL
+			if (bHorz)
+			{
+				pt.y += nWidth;
+				sizeFixed.cy = max(sizeFixed.cy, pt.y);
+			}
+			else
+			{
+				pt.x += nWidth;
+				sizeFixed.cx = max(sizeFixed.cx, pt.x);
+			}
+		}
 	}
+	if (!bLayoutQuery)
+	{
+		// move and resize all the windows at once!
+		if (layout.hDWP == NULL || !::EndDeferWindowPos(layout.hDWP))
+			TRACE0("Warning: DeferWindowPos failed - low system resources.\n");
+	}
+
+	return sizeFixed;
 }
 
-void CPreviewDC::MirrorFont()
+
+
+LRESULT CXTPDockBar::OnSizeParent(WPARAM, LPARAM lParam)
 {
-	if (m_hAttribDC == NULL)
-		return;         // Can't do anything without Attrib DC
+	AFX_SIZEPARENTPARAMS* lpLayout = (AFX_SIZEPARENTPARAMS*)lParam;
 
-	if (m_hPrinterFont == NULL)
+	DWORD dwStyle = GetStyle();
+	if (dwStyle & WS_VISIBLE)
 	{
-		SelectStockObject(DEVICE_DEFAULT_FONT); // will recurse
-		return;
-	}
+		// align the control bar
+		CRect rect;
+		rect.CopyRect(&lpLayout->rect);
 
-	if (m_hDC == NULL)
-		return;         // can't mirror font without a screen DC
+		CSize sizeAvail = rect.Size();  // maximum size available
 
-	LOGFONT logFont;
-	// Fill the logFont structure with the original info
-	::GetObject(m_hPrinterFont, sizeof(LOGFONT), (LPVOID)&logFont);
-
-	TEXTMETRIC tm;
-
-	GetTextFace(LF_FACESIZE, (LPTSTR)&logFont.lfFaceName[0]);
-	GetTextMetrics(&tm);
-
-	// Set real values based on the Printer's text metrics.
-
-	if (tm.tmHeight < 0)
-		logFont.lfHeight = tm.tmHeight;
-	else
-		logFont.lfHeight = -(tm.tmHeight - tm.tmInternalLeading);
-
-	logFont.lfWidth = tm.tmAveCharWidth;
-	logFont.lfWeight = tm.tmWeight;
-	logFont.lfItalic = tm.tmItalic;
-	logFont.lfUnderline = tm.tmUnderlined;
-	logFont.lfStrikeOut = tm.tmStruckOut;
-	logFont.lfCharSet = tm.tmCharSet;
-	logFont.lfPitchAndFamily = tm.tmPitchAndFamily;
-
-	HFONT hNewFont = ::CreateFontIndirect(&logFont);
-	::SelectObject(m_hDC, hNewFont);
-
-	::GetTextMetrics(m_hDC, &tm);
-
-	// Is the displayed font too large?
-
-	int cyDesired = -logFont.lfHeight;
-	int cyActual;
-	if (tm.tmHeight < 0)
-		cyActual = -tm.tmHeight;
-	else
-		cyActual = tm.tmHeight - tm.tmInternalLeading;
-
-	CSize sizeWinExt;
-	VERIFY(::GetWindowExtEx(m_hDC, &sizeWinExt));
-	CSize sizeVpExt;
-	VERIFY(::GetViewportExtEx(m_hDC, &sizeVpExt));
-
-	// Only interested in Extent Magnitudes, not direction
-	if (sizeWinExt.cy < 0)
-		sizeWinExt.cy = -sizeWinExt.cy;
-	if (sizeVpExt.cy < 0)
-		sizeVpExt.cy = -sizeVpExt.cy;
-
-	// Convert to screen device coordinates to eliminate rounding
-	// errors as a source of SmallFont aliasing
-
-	cyDesired = MulDiv(cyDesired, sizeVpExt.cy, sizeWinExt.cy);
-	cyActual = MulDiv(cyActual, sizeVpExt.cy, sizeWinExt.cy);
-
-	ASSERT(cyDesired >= 0 && cyActual >= 0);
-
-	if (cyDesired < cyActual)
-	{
-		logFont.lfFaceName[0] = 0;      // let the mapper find a good fit
-
-		if ((logFont.lfPitchAndFamily & 0xf0) == FF_DECORATIVE)
-			logFont.lfPitchAndFamily = DEFAULT_PITCH | FF_DECORATIVE;
+		// get maximum requested size
+		DWORD dwMode = lpLayout->bStretch ? LM_STRETCH : 0;
+		if ((m_dwStyle & CBRS_SIZE_DYNAMIC) && m_dwStyle & CBRS_FLOATING)
+			dwMode |= LM_HORZ | LM_MRUWIDTH;
+		else if (dwStyle & CBRS_ORIENT_HORZ)
+			dwMode |= LM_HORZ | LM_HORZDOCK;
 		else
-			logFont.lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
+			dwMode |= LM_VERTDOCK;
 
-		HFONT hTempFont = ::CreateFontIndirect(&logFont);
-		::SelectObject(m_hDC, hTempFont);           // Select it in.
-		::DeleteObject(hNewFont);
-		hNewFont = hTempFont;
+
+		int nLength = (dwStyle & CBRS_ORIENT_HORZ ? sizeAvail.cx : sizeAvail.cy) /*- 2 * GetSystemMetrics(SM_CXBORDER)*/;
+
+		CSize size = CalcDynamicLayout(nLength, dwMode, lpLayout);
+
+		size.cx = min(size.cx, sizeAvail.cx);
+		size.cy = min(size.cy, sizeAvail.cy);
+
+		if (dwStyle & CBRS_ORIENT_HORZ)
+		{
+			lpLayout->sizeTotal.cy += size.cy;
+			lpLayout->sizeTotal.cx = max(lpLayout->sizeTotal.cx, size.cx);
+			if (dwStyle & CBRS_ALIGN_TOP)
+				lpLayout->rect.top += size.cy;
+			else if (dwStyle & CBRS_ALIGN_BOTTOM)
+			{
+				rect.top = rect.bottom - size.cy;
+				lpLayout->rect.bottom -= size.cy;
+			}
+		}
+		else
+		{
+			lpLayout->sizeTotal.cx += size.cx;
+			lpLayout->sizeTotal.cy = max(lpLayout->sizeTotal.cy, size.cy);
+			if (dwStyle & CBRS_ALIGN_LEFT)
+				lpLayout->rect.left += size.cx;
+			else if (dwStyle & CBRS_ALIGN_RIGHT)
+			{
+				rect.left = rect.right - size.cx;
+				lpLayout->rect.right -= size.cx;
+			}
+		}
+
+		rect.right = rect.left + size.cx;
+		rect.bottom = rect.top + size.cy;
+
+		// only resize the window if doing layout and not just rect query
+		if (lpLayout->hDWP != NULL)
+			AfxRepositionWindow(lpLayout, m_hWnd, &rect);
+		Invalidate(FALSE);
 	}
-
-	AfxDeleteObject((HGDIOBJ*)&m_hFont);  // delete the old logical font
-	m_hFont = hNewFont;         // save the new one
+	return 0;
 }
 
-CFont* CPreviewDC::SelectObject(CFont* pFont)
+
+
+
+void CXTPDockBar::OnPaint()
 {
-	if (pFont == NULL)
-		return NULL;
+	CPaintDC dc(this);
+	m_pCommandBars->GetPaintManager()->FillDockBar(&dc, this);
+}
 
-	ASSERT(m_hAttribDC != NULL);
-	ASSERT_VALID(pFont);
-
-	CFont* pOldFont = (CFont*) CGdiObject::FromHandle(
-				::SelectObject(m_hAttribDC, pFont->m_hObject));
-
-	// If same as already selected, don't re-mirror screen font
-	if (m_hPrinterFont != pFont->m_hObject)
+LRESULT CXTPDockBar::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
+{
+	CDC* pDC = CDC::FromHandle((HDC)wParam);
+	if (pDC)
 	{
-		m_hPrinterFont = (HFONT)pFont->m_hObject;
-		MirrorFont();
+		m_pCommandBars->GetPaintManager()->FillDockBar(pDC, this);
 	}
 
-	return pOldFont;
+	return TRUE;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// Drawing-Attribute Functions
 
-COLORREF CPreviewDC::SetBkColor(COLORREF crColor)
+BOOL CXTPDockBar::OnEraseBkgnd(CDC* /*pDC*/)
 {
-	ASSERT(m_hAttribDC != NULL);
-	if (m_hDC != NULL)
-		::SetBkColor(m_hDC, ::GetNearestColor(m_hAttribDC, crColor));
-	return ::SetBkColor(m_hAttribDC, crColor);
+	return TRUE;
 }
 
-COLORREF CPreviewDC::SetTextColor(COLORREF crColor)
+void CXTPDockBar::AdjustStretchBars()
 {
-	ASSERT(m_hAttribDC != NULL);
-	if (m_hDC != NULL)
-		::SetTextColor(m_hDC, ::GetNearestColor(m_hAttribDC, crColor));
-	return ::SetTextColor(m_hAttribDC, crColor);
-}
-
-int CPreviewDC::SetMapMode(int nMapMode)
-{
-	ASSERT(m_hAttribDC != NULL);
-	int nModeOld = ::SetMapMode(m_hAttribDC, nMapMode);
-	MirrorMappingMode(TRUE);
-	return nModeOld;
-}
-
-CPoint CPreviewDC::SetViewportOrg(int x, int y)
-{
-	ASSERT(m_hAttribDC != NULL);
-	CPoint ptOrgOld;
-	VERIFY(::SetViewportOrgEx(m_hAttribDC, x, y, &ptOrgOld));
-	MirrorViewportOrg();
-	return ptOrgOld;
-}
-
-CPoint CPreviewDC::OffsetViewportOrg(int nWidth, int nHeight)
-{
-	ASSERT(m_hAttribDC != NULL);
-	CPoint ptOrgOld;
-	VERIFY(::OffsetViewportOrgEx(m_hAttribDC, nWidth, nHeight, &ptOrgOld));
-	MirrorViewportOrg();
-	return ptOrgOld;
-}
-
-CSize CPreviewDC::SetViewportExt(int x, int y)
-{
-	ASSERT(m_hAttribDC != NULL);
-	CSize sizeExtOld;
-	VERIFY(::SetViewportExtEx(m_hAttribDC, x, y, &sizeExtOld));
-	MirrorMappingMode(TRUE);
-	return sizeExtOld;
-}
-
-CSize CPreviewDC::ScaleViewportExt(int xNum, int xDenom, int yNum, int yDenom)
-{
-	ASSERT(m_hAttribDC != NULL);
-	CSize sizeExtOld;
-	VERIFY(::ScaleViewportExtEx(m_hAttribDC, xNum, xDenom,
-		yNum, yDenom, &sizeExtOld));
-	MirrorMappingMode(TRUE);
-	return sizeExtOld;
-}
-
-CSize CPreviewDC::SetWindowExt(int x, int y)
-{
-	ASSERT(m_hAttribDC != NULL);
-	CSize sizeExtOld;
-	VERIFY(::SetWindowExtEx(m_hAttribDC, x, y, &sizeExtOld));
-	MirrorMappingMode(TRUE);
-	return sizeExtOld;
-}
-
-CSize CPreviewDC::ScaleWindowExt(int xNum, int xDenom, int yNum, int yDenom)
-{
-	ASSERT(m_hAttribDC != NULL);
-	CSize sizeExtOld;
-	VERIFY(::ScaleWindowExtEx(m_hAttribDC, xNum, xDenom, yNum, yDenom,
-		&sizeExtOld));
-	MirrorMappingMode(TRUE);
-	return sizeExtOld;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// Text Functions
-
-// private helpers for TextOut functions
-
-AFX_STATIC int AFXAPI _AfxComputeNextTab(int x, UINT nTabStops, LPINT lpnTabStops, int nTabOrigin, int nTabWidth)
-{
-	ENSURE(nTabWidth!=0);
-	x -= nTabOrigin;        // normalize position to tab origin
-	for (UINT i = 0; i < nTabStops; i++, lpnTabStops++)
+	for (int nPos = 0; nPos < m_arrBars.GetSize(); nPos++)
 	{
-		if (*lpnTabStops > x)
-        {
-			return *lpnTabStops + nTabOrigin;
-        }
+		CXTPToolBar* pBar = GetDockedCommandBar(nPos);
+		if (pBar && pBar->GetFlags() & xtpFlagStretched)
+		{
+			if (nPos > 0 && GetDockedCommandBar(nPos - 1) != NULL)
+			{
+				m_arrBars.InsertAt(nPos, (CXTPToolBar*)NULL);
+				nPos++;
+			}
+			if (nPos < m_arrBars.GetSize() -1 && GetDockedCommandBar(nPos + 1) != NULL)
+			{
+				m_arrBars.InsertAt(nPos + 1, (CXTPToolBar*)NULL);
+				nPos++;
+			}
+		}
 	}
-	return (x / nTabWidth + 1) * nTabWidth + nTabOrigin;
 }
 
-// Compute a character delta table for correctly positioning the screen
-// font characters where the printer characters will appear on the page
-CSize CPreviewDC::ComputeDeltas(int& x, LPCTSTR lpszString, UINT &nCount,
-	BOOL bTabbed, UINT nTabStops, LPINT lpnTabStops, int nTabOrigin,
-	_Pre_notnull_ _Post_z_ LPTSTR lpszOutputString, int* pnDxWidths, int& nRightFixup)
+void CXTPDockBar::DockCommandBar(CXTPToolBar* pBar, LPCRECT lpRect)
 {
 	ASSERT_VALID(this);
+	ASSERT_VALID(pBar);
+	ASSERT_KINDOF(CXTPToolBar, pBar);
 
-	TEXTMETRIC tmAttrib;
-	TEXTMETRIC tmScreen;
-	::GetTextMetrics(m_hAttribDC, &tmAttrib);
-	::GetTextMetrics(m_hDC, &tmScreen);
-
-	CSize sizeExtent;
-	::GetTextExtentPoint32A(m_hAttribDC, "A", 1, &sizeExtent);
-
-	CPoint ptCurrent;
-	UINT nAlignment = ::GetTextAlign(m_hAttribDC);
-	BOOL bUpdateCP = (nAlignment & TA_UPDATECP) != 0;
-	if (bUpdateCP)
+	CRect rectBar;
+	pBar->GetWindowRect(&rectBar);
+	if (pBar->m_pDockBar == this && (lpRect == NULL || rectBar == *lpRect))
 	{
-		::GetCurrentPositionEx(m_hDC, &ptCurrent);
-		x = ptCurrent.x;
-	}
-
-	LPCTSTR lpszCurChar = lpszString;
-	LPCTSTR lpszStartRun = lpszString;
-	int* pnCurDelta = pnDxWidths;
-	int nStartRunPos = x;
-	int nCurrentPos = x;
-	int nStartOffset = 0;
-
-	int nTabWidth = 0;
-	if (bTabbed)
-	{
-		if (nTabStops == 1)
-		{
-			nTabWidth = lpnTabStops[0];
-		}
-		else
-		{
-			// Get default size of a tab
-			nTabWidth = LOWORD(::GetTabbedTextExtentA(m_hAttribDC,
-				"\t", 1, 0, NULL));
-		}
-	}
-
-	for (UINT i = 0; i < nCount; i++)
-	{
-		BOOL bSpace = ((_TUCHAR)*lpszCurChar == (_TUCHAR)tmAttrib.tmBreakChar);
-		if (bSpace || (bTabbed && *lpszCurChar == '\t'))
-		{
-			// bSpace will be either TRUE (==1) or FALSE (==0).  For spaces
-			// we want the space included in the GetTextExtent, for tabs we
-			// do not want the tab included
-			int nRunLength = (int)(lpszCurChar - lpszStartRun) + bSpace;
-
-			CSize sizeExtent;
-			::GetTextExtentPoint32(m_hAttribDC, lpszStartRun, nRunLength,
-				&sizeExtent);
-			int nNewPos = nStartRunPos + sizeExtent.cx
-				- tmAttrib.tmOverhang;
-
-			// now, if this is a Tab (!bSpace), compute the next tab stop
-			if (!bSpace)
-			{
-				nNewPos = _AfxComputeNextTab(nNewPos, nTabStops, lpnTabStops,
-								nTabOrigin, nTabWidth);
-			}
-
-			// Add this width to previous width
-			if (pnCurDelta == pnDxWidths)
-				nStartOffset += nNewPos - nCurrentPos;
-			else
-				*(pnCurDelta-1) += nNewPos - nCurrentPos;
-
-			nCurrentPos = nNewPos;
-
-			nStartRunPos = nCurrentPos;     // set start of run
-			// *lpszCurChar must be SBC: tmBreakChar or '\t'
-			lpszStartRun = lpszCurChar + 1;
-		}
-		else
-		{
-			// For the non-tabbed or non-tab-character case
-			int cxScreen;
-			if (_istlead(*lpszCurChar) && i+1 < nCount)
-			{
-				SIZE size;
-				if (::GetTextExtentPoint(m_hDC, lpszCurChar, 2, &size))
-					cxScreen = size.cx /2;   // average of the 2 chars
-				else
-					cxScreen = tmScreen.tmAveCharWidth; // revert to default average
-
-				if (::GetTextExtentPoint(m_hAttribDC, lpszCurChar, 2, &size))
-					*pnCurDelta = size.cx /2; // average of the 2 chars
-				else
-					*pnCurDelta = tmAttrib.tmAveCharWidth; // revert to default average
-			}
-			else
-			{
-				::GetCharWidth(m_hDC, (_TUCHAR)*lpszCurChar,
-					(_TUCHAR)*lpszCurChar, &cxScreen);
-				if (!::GetCharWidth(m_hAttribDC, (_TUCHAR)*lpszCurChar,
-					(_TUCHAR)*lpszCurChar, pnCurDelta))
-				{
-					// If printer driver fails the above call, use the average width
-					*pnCurDelta = tmAttrib.tmAveCharWidth;
-				}
-			}
-			*pnCurDelta -= tmAttrib.tmOverhang;
-			cxScreen -= tmScreen.tmOverhang;
-			nCurrentPos += *pnCurDelta;     // update current position
-
-			// Center character in allotted space
-			if (pnCurDelta != pnDxWidths)
-			{
-				int diff = (*pnCurDelta - cxScreen) / 2;
-				*pnCurDelta -= diff;
-				*(pnCurDelta - 1) += diff;
-			}
-			*lpszOutputString++ = *lpszCurChar;
-			if (_istlead(*lpszCurChar) && i+1 < nCount)
-			{
-				*lpszOutputString++ = *(lpszCurChar+1); // copy trailing byte
-				*(pnCurDelta + 1) = *pnCurDelta;        // double wide
-				nCurrentPos += *pnCurDelta;
-				pnCurDelta++;
-				i++;
-			}
-			pnCurDelta++;
-		}
-		lpszCurChar = _tcsinc(lpszCurChar);
-	}
-
-	nAlignment &= TA_CENTER|TA_RIGHT;
-	sizeExtent.cx = nCurrentPos - x;
-	nRightFixup = 0;
-
-	if (nAlignment == TA_LEFT)
-		x += nStartOffset;      // Full left side adjustment
-	else if (nAlignment == TA_CENTER)
-		x += nStartOffset/2;    // Adjust Center by 1/2 left side adjustment
-	else if (nAlignment == TA_RIGHT)
-		nRightFixup = nStartOffset; // Right adjust needed later if TA_UPDATECP
-
-	if (bUpdateCP)
-		::MoveToEx(m_hDC, x, ptCurrent.y, NULL);
-
-	nCount = (UINT)(pnCurDelta - pnDxWidths);   // number of characters output
-	return sizeExtent;
-}
-
-BOOL CPreviewDC::TextOut(int x, int y, LPCTSTR lpszString, int nCount)
-{
-	return ExtTextOut(x, y, 0, NULL, lpszString, nCount, NULL);
-}
-
-BOOL CPreviewDC::ExtTextOut(int x, int y, UINT nOptions, LPCRECT lpRect,
-	LPCTSTR lpszString, UINT nCount, LPINT lpDxWidths)
-{
-	ASSERT(m_hDC != NULL);
-	ASSERT(m_hAttribDC != NULL);
-	ASSERT(lpszString != NULL);
-	ASSERT(lpDxWidths == NULL ||
-			AfxIsValidAddress(lpDxWidths, sizeof(int) * nCount, FALSE));
-	ASSERT(AfxIsValidAddress(lpszString, nCount, FALSE));
-
-	::ATL::CAutoVectorPtr<int> spDeltas;
-	::ATL::CAutoVectorPtr<TCHAR> spOutputString;
-	int nRightFixup = 0;
-
-	if (lpDxWidths == NULL)
-	{
-		if (nCount == 0)    // Do nothing
-			return TRUE;
-
-		if(	!spDeltas.Allocate(nCount) || 
-			!spOutputString.Allocate(nCount)
-			)
-		{
-			return FALSE;
-		}
-
-		ComputeDeltas(x, (LPTSTR)lpszString, nCount, FALSE, 0, NULL, 0,
-										spOutputString, spDeltas, nRightFixup);
-
-		lpDxWidths = spDeltas;
-		lpszString = spOutputString;
-	}
-
-	BOOL bSuccess = ::ExtTextOut(m_hDC, x, y, nOptions, lpRect, lpszString,
-														nCount, lpDxWidths);
-	if (nRightFixup != 0 && bSuccess && (GetTextAlign() & TA_UPDATECP))
-	{
-		CPoint pt;
-		::GetCurrentPositionEx(m_hDC, &pt);
-		MoveTo(pt.x - nRightFixup, pt.y);
-	}
-
-	return bSuccess;
-}
-
-CSize CPreviewDC::TabbedTextOut(int x, int y, LPCTSTR lpszString, int nCount,
-	int nTabPositions, LPINT lpnTabStopPositions, int nTabOrigin)
-{
-	ASSERT(m_hAttribDC != NULL);
-	ASSERT(m_hDC != NULL);
-	ASSERT(lpszString != NULL);
-	ASSERT(AfxIsValidAddress(lpszString, nCount, FALSE));
-	ASSERT(lpnTabStopPositions == NULL ||
-			AfxIsValidAddress(lpnTabStopPositions, sizeof(int) * nTabPositions,
-				FALSE));
-
-	if (nCount <= 0)
-		return 0;         // nCount is zero, there is nothing to print
-
-	int nRightFixup;
-
-	::ATL::CAutoVectorPtr<int> spDeltas;
-	::ATL::CAutoVectorPtr<TCHAR> spOutputString;
-	if(	!spDeltas.Allocate(nCount) || 
-		!spOutputString.Allocate(nCount)
-		)
-	{
-		return 0;
-	}
-
-	UINT uCount = nCount;
-	CSize sizeFinalExtent = ComputeDeltas(x, lpszString, uCount, TRUE,
-							nTabPositions, lpnTabStopPositions, nTabOrigin,
-							spOutputString, spDeltas, nRightFixup);
-
-	BOOL bSuccess = ExtTextOut(x, y, 0, NULL, spOutputString, uCount, spDeltas);
-
-	if (bSuccess && (GetTextAlign() & TA_UPDATECP))
-	{
-		CPoint pt;
-		::GetCurrentPositionEx(m_hDC, &pt);
-		MoveTo(pt.x - nRightFixup, pt.y);
-	}
-
-	return sizeFinalExtent;
-}
-
-// This one is too complicated to do character-by-character output positioning
-// All we really need to do here is mirror the current position
-int CPreviewDC::DrawText(LPCTSTR lpszString, int nCount, LPRECT lpRect,
-	UINT nFormat)
-{
-	ASSERT(m_hAttribDC != NULL);
-	ASSERT(m_hDC != NULL);
-	ASSERT(lpszString != NULL);
-	ASSERT(lpRect != NULL);
-	ASSERT(AfxIsValidAddress(lpRect, sizeof(RECT)));
-	ASSERT(nCount == -1 ?
-		AfxIsValidString(lpszString) :
-		AfxIsValidAddress(lpszString, nCount, FALSE));
-
-	int retVal = ::DrawText(m_hDC, lpszString, nCount, lpRect, nFormat);
-
-	CPoint pos;
-	::GetCurrentPositionEx(m_hDC, &pos);
-	::MoveToEx(m_hAttribDC, pos.x, pos.y, NULL);
-	return retVal;
-}
-
-int CPreviewDC::DrawTextEx(_In_count_(nCount) LPTSTR lpszString, int nCount, LPRECT lpRect,
-	UINT nFormat, LPDRAWTEXTPARAMS lpDTParams)
-{
-	ASSERT(m_hAttribDC != NULL);
-	ASSERT(m_hDC != NULL);
-	ASSERT(lpszString != NULL);
-	ASSERT(lpRect != NULL);
-	ASSERT(AfxIsValidAddress(lpRect, sizeof(RECT)));
-	ASSERT(nCount == -1 ?
-		AfxIsValidString(lpszString) :
-		AfxIsValidAddress(lpszString, nCount, FALSE));
-
-	int retVal = ::DrawTextEx(m_hDC, lpszString, nCount, lpRect, nFormat, lpDTParams);
-
-	CPoint pos;
-	::GetCurrentPositionEx(m_hDC, &pos);
-	::MoveToEx(m_hAttribDC, pos.x, pos.y, NULL);
-	return retVal;
-}
-
-BOOL CPreviewDC::GrayString(CBrush*,
-				BOOL (CALLBACK *)(HDC, LPARAM, int),
-					LPARAM lpData, int nCount, int x, int y, int, int)
-{
-	TRACE(traceAppMsg, 0, "TextOut() substituted for GrayString() in Print Preview.\n");
-	return TextOut(x, y, (LPCTSTR)lpData, nCount);
-}
-
-int CPreviewDC::Escape(int nEscape, int nCount, LPCSTR lpszInData, void* lpOutData)
-{
-	// The tact here is to NOT allow any of the document control escapes
-	// to be passed through.  Elimination of StartDoc and EndDoc should
-	// eliminate anything actually going to the printer.  Also anything
-	// that actually draws something will be filtered.
-
-	ASSERT(m_hAttribDC != NULL);
-
-	switch (nEscape)
-	{
-	case NEXTBAND:
-	case SETCOLORTABLE:
-	case GETCOLORTABLE:
-	case FLUSHOUTPUT:
-	case DRAFTMODE:
-	case QUERYESCSUPPORT:
-	case GETPHYSPAGESIZE:
-	case GETPRINTINGOFFSET:
-	case GETSCALINGFACTOR:
-	case GETPENWIDTH:
-	case SETCOPYCOUNT:
-	case SELECTPAPERSOURCE:
-	case GETTECHNOLOGY:
-	case SETLINECAP:
-	case SETLINEJOIN:
-	case SETMITERLIMIT:
-	case BANDINFO:
-	case GETVECTORPENSIZE:
-	case GETVECTORBRUSHSIZE:
-	case ENABLEDUPLEX:
-	case GETSETPAPERBINS:
-	case GETSETPRINTORIENT:
-	case ENUMPAPERBINS:
-	case SETDIBSCALING:
-	case ENUMPAPERMETRICS:
-	case GETSETPAPERMETRICS:
-	case GETEXTENDEDTEXTMETRICS:
-	case GETEXTENTTABLE:
-	case GETPAIRKERNTABLE:
-	case GETTRACKKERNTABLE:
-	case ENABLERELATIVEWIDTHS:
-	case ENABLEPAIRKERNING:
-	case SETKERNTRACK:
-	case SETALLJUSTVALUES:
-	case SETCHARSET:
-	case SET_BACKGROUND_COLOR:
-	case SET_SCREEN_ANGLE:
-	case SET_SPREAD:
-		return ::Escape(m_hAttribDC, nEscape, nCount, lpszInData, lpOutData);
-
-	default:
-		return 0;
-	}
-}
-
-void CPreviewDC::MirrorMappingMode(BOOL bCompute)
-{
-	ASSERT(m_hAttribDC != NULL);
-	if (bCompute)
-	{
-		//
-		// The following formula is used to compute the screen's viewport extent
-		// From the printer and screen information and the Printer's Viewport
-		// Extents.  (Note:  This formula is used twice, once for horizontal
-		// and once for vertical)
-		//
-		// It is assumed that the Window Extents are maintained as equal.
-		//
-		//                  m * LogPixPerInch(Screen) * VpExt(Printer)
-		// VpExt(Screen) = -------------------------------------------------
-		//                          n * LogPixPerInch(Printer)
-		//
-		// Where m/n is the scaling factor.  (m/n > 1 is expansion)
-		//
-
-		VERIFY(::GetViewportExtEx(m_hAttribDC, &m_sizeVpExt));
-		VERIFY(::GetWindowExtEx(m_hAttribDC, &m_sizeWinExt));
-
-		while (m_sizeWinExt.cx > -0x4000 && m_sizeWinExt.cx < 0x4000 &&
-			   m_sizeVpExt.cx  > -0x4000 && m_sizeVpExt.cx  < 0x4000)
-		{
-			m_sizeWinExt.cx <<= 1;
-			m_sizeVpExt.cx  <<= 1;
-		}
-
-		while (m_sizeWinExt.cy > -0x4000 && m_sizeWinExt.cy < 0x4000 &&
-			   m_sizeVpExt.cy  > -0x4000 && m_sizeVpExt.cy  < 0x4000)
-		{
-			m_sizeWinExt.cy <<= 1;
-			m_sizeVpExt.cy  <<= 1;
-		}
-
-		long lTempExt = _AfxMultMultDivDiv(m_sizeVpExt.cx,
-			m_nScaleNum, afxData.cxPixelsPerInch,
-			m_nScaleDen, ::GetDeviceCaps(m_hAttribDC, LOGPIXELSX));
-
-		ASSERT(m_sizeWinExt.cx != 0);
-		m_sizeVpExt.cx = (int)lTempExt;
-
-		lTempExt = _AfxMultMultDivDiv(m_sizeVpExt.cy,
-			m_nScaleNum, afxData.cyPixelsPerInch,
-			m_nScaleDen, ::GetDeviceCaps(m_hAttribDC, LOGPIXELSY));
-
-		ASSERT(m_sizeWinExt.cy != 0);
-		m_sizeVpExt.cy = (int)lTempExt;
-	}
-
-	if (m_hDC != NULL)
-	{
-		::SetMapMode(m_hDC, MM_ANISOTROPIC);
-		::SetWindowExtEx(m_hDC, m_sizeWinExt.cx, m_sizeWinExt.cy, NULL);
-		::SetViewportExtEx(m_hDC, m_sizeVpExt.cx, m_sizeVpExt.cy, NULL);
-
-		// Now that the Logical Units are synchronized, we can set the Viewport Org
-		MirrorViewportOrg();
-	}
-}
-
-void CPreviewDC::MirrorViewportOrg()
-{
-	if (m_hAttribDC == NULL || m_hDC == NULL)
+		// already docked and no change in position
 		return;
+	}
 
-	CPoint ptVpOrg;
-	VERIFY(::GetViewportOrgEx(m_hAttribDC, &ptVpOrg));
-	PrinterDPtoScreenDP(&ptVpOrg);
-	ptVpOrg += m_sizeTopLeft;
-	::SetViewportOrgEx(m_hDC, ptVpOrg.x, ptVpOrg.y, NULL);
+	int nPos = -1;
+	if (lpRect != NULL)
+	{
+		// insert into appropriate row
+		CRect rect(lpRect);
+		ScreenToClient(&rect);
+		CPoint ptMid(rect.left + rect.Width()/2, rect.top + rect.Height()/2);
+		nPos = Insert(pBar, rect, ptMid);
 
-	CPoint ptWinOrg;
-	VERIFY(::GetWindowOrgEx(m_hAttribDC, &ptWinOrg));
-	::SetWindowOrgEx(m_hDC, ptWinOrg.x, ptWinOrg.y, NULL);
+		pBar->m_pDockContext->m_rectMRUDockPos = rect;
+	}
+	else
+	{
+		// always add on current row, then create new one
+		m_arrBars.Add(pBar);
+		m_arrBars.Add(NULL);
+
+		pBar->m_pDockContext->m_rectMRUDockPos.SetRectEmpty();
+	}
+
+	// attach it to the docking site
+	if (pBar->GetParent() != this)
+		pBar->SetParent(this);
+	if (pBar->m_pDockBar == this)
+		pBar->m_pDockBar->RemoveCommandBar(pBar, nPos);
+	else if (pBar->m_pDockBar != NULL)
+		pBar->m_pDockBar->RemoveCommandBar(pBar, -1);
+	pBar->m_pDockBar = this;
+
+	AdjustStretchBars();
+
+	// get parent frame for recalc layout
+	m_pCommandBars->RecalcFrameLayout(TRUE);
 }
 
-void CPreviewDC::SetTopLeftOffset(CSize sizeTopLeft)
+BOOL CXTPDockBar::RemoveCommandBar(CXTPToolBar* pBar, int nPosExclude)
 {
-	ASSERT(m_hAttribDC != NULL);
-	m_sizeTopLeft = sizeTopLeft;
-	MirrorViewportOrg();
+	ASSERT_VALID(this);
+	ASSERT(pBar != NULL);
+	if (!pBar)
+		return FALSE;
+
+	int nPos = FindBar(pBar, nPosExclude);
+	ASSERT(nPos > 0);
+	if (nPos <= 0)
+		return FALSE;
+
+	m_arrBars.RemoveAt(nPos);
+	if (m_arrBars[nPos-1] == NULL && m_arrBars[nPos] == NULL)
+		m_arrBars.RemoveAt(nPos);
+
+	pBar->m_pDockBar = NULL;
+
+	// get parent frame for recalc layout/frame destroy
+	m_pCommandBars->RecalcFrameLayout(TRUE);
+
+	return TRUE;
 }
 
-void CPreviewDC::ClipToPage()
+
+
+CXTPToolBar* CXTPDockBar::GetDockedCommandBar(int nPos) const
 {
-	ASSERT(m_hAttribDC != NULL);
-	ASSERT(m_hDC != NULL);
-	// Create a rect in Screen Device coordinates that is one pixel larger
-	// on all sides than the actual page.  This is to hide the fact that
-	// the printer to screen mapping mode is approximate and may result
-	// in rounding error.
-
-	CPoint pt(::GetDeviceCaps(m_hAttribDC, HORZRES),
-				::GetDeviceCaps(m_hAttribDC, VERTRES));
-	PrinterDPtoScreenDP(&pt);
-
-	// Set the screen dc to MM_TEXT and no WindowOrg for the interesection
-
-	::SetMapMode(m_hDC, MM_TEXT);
-	::SetWindowOrgEx(m_hDC, 0, 0, NULL);
-	::SetViewportOrgEx(m_hDC, m_sizeTopLeft.cx, m_sizeTopLeft.cy, NULL);
-	::IntersectClipRect(m_hDC, -1, -1, pt.x + 2, pt.y + 2);
-
-	// Resynchronize the mapping mode
-	MirrorMappingMode(FALSE);
+	CXTPToolBar* pResult = (CXTPToolBar*)m_arrBars[nPos];
+	ASSERT(pResult == 0 || HIWORD(pResult) != 0); // XTPLibrary don't use placeholder
+	return pResult;
 }
-
-// these conversion functions can be used without an attached screen DC
-
-void CPreviewDC::PrinterDPtoScreenDP(LPPOINT lpPoint) const
+int CXTPDockBar::GetDockedCount() const
 {
-	ASSERT(m_hAttribDC != NULL);
+	int nCount = 0;
+	for (int i = 0; i < m_arrBars.GetSize(); i++)
+	{
+		if (GetDockedCommandBar(i) != NULL)
+			nCount++;
+	}
+	return nCount;
+}
 
-	CSize sizePrinterVpExt;
-	VERIFY(::GetViewportExtEx(m_hAttribDC, &sizePrinterVpExt));
-	CSize sizePrinterWinExt;
-	VERIFY(::GetWindowExtEx(m_hAttribDC, &sizePrinterWinExt));
+int CXTPDockBar::GetDockedVisibleCount() const
+{
+	int nCount = 0;
+	for (int i = 0; i < m_arrBars.GetSize(); i++)
+	{
+		CXTPToolBar* pBar = GetDockedCommandBar(i);
+		if (pBar != NULL && pBar->IsVisible())
+			nCount++;
+	}
+	return nCount;
+}
 
-	long xScreen = _AfxMultMultDivDiv(lpPoint->x,
-		sizePrinterWinExt.cx, m_sizeVpExt.cx,
-		sizePrinterVpExt.cx, m_sizeWinExt.cx);
+int CXTPDockBar::FindBar(CXTPToolBar* pBar, int nPosExclude)
+{
+	for (int nPos = 0; nPos < m_arrBars.GetSize(); nPos++)
+	{
+		if (nPos != nPosExclude && m_arrBars[nPos] == pBar)
+			return nPos;
+	}
+	return -1;
+}
 
-	lpPoint->x = (int)xScreen;
+int CXTPDockBar::Insert(CXTPToolBar* pBarIns, CRect /*rect*/, CPoint ptMid)
+{
+	ASSERT_VALID(this);
+	ASSERT(pBarIns != NULL);
 
-	long yScreen = _AfxMultMultDivDiv(lpPoint->y,
-		sizePrinterWinExt.cy, m_sizeVpExt.cy,
-		sizePrinterVpExt.cy, m_sizeWinExt.cy);
+	int nPos = 0;
+	int nPosInsAfter = 0;
+	int nWidth = 0;
+	int nTotalWidth = 0;
+	//int nPosInsBefore = 0;
+	BOOL bHorz = m_dwStyle & CBRS_ORIENT_HORZ;
+	BOOL bAllowTopMost = m_pCommandBars->GetMenuBar() == NULL ||
+		!m_pCommandBars->GetMenuBar()->IsRibbonBar() || FindBar(m_pCommandBars->GetMenuBar()) == -1;
 
-	lpPoint->y = (int)yScreen;
+	for (nPos = 0; nPos < m_arrBars.GetSize(); nPos++)
+	{
+		CXTPToolBar* pBar = GetDockedCommandBar(nPos);
+		if (pBar && !pBar->IsVisible())
+			continue;
+
+		if (pBar != NULL)
+		{
+			CRect rectBar;
+			pBar->GetWindowRect(&rectBar);
+			ScreenToClient(&rectBar);
+			nWidth = max(nWidth,
+				bHorz ? rectBar.bottom : rectBar.right);
+		}
+		else // end of row because pBar == NULL
+		{
+			if ((bHorz ? ptMid.y : ptMid.x) < nWidth && (bAllowTopMost || nPosInsAfter > 1))
+			{
+				if (nPos == 0 || ((bHorz ? ptMid.y : ptMid.x) == nTotalWidth)) // first section
+					m_arrBars.InsertAt(nPosInsAfter + 1, (CXTPToolBar*)NULL);
+				m_arrBars.InsertAt(nPosInsAfter + 1, pBarIns);
+
+				return nPosInsAfter + 1;
+			}
+			nTotalWidth = nWidth;
+			nWidth = 0;
+			nPosInsAfter = nPos;
+		}
+	}
+
+	// create a new row
+	m_arrBars.InsertAt(nPosInsAfter + 1, (CXTPToolBar*)NULL);
+	m_arrBars.InsertAt(nPosInsAfter + 1, pBarIns);
+
+	return nPosInsAfter + 1;
 }
 
 
+XTPBarPosition CXTPDockBar::GetPosition() const
+{
+	if (m_dwStyle & CBRS_TOP) return xtpBarTop;
+	if (m_dwStyle & CBRS_BOTTOM) return xtpBarBottom;
+	if (m_dwStyle & CBRS_LEFT) return xtpBarLeft;
+	return xtpBarRight;
+}
 
-IMPLEMENT_DYNAMIC(CPreviewDC, CDC)
+BOOL CXTPDockBar::IsVerticalPosition() const
+{
+	return !(m_dwStyle & CBRS_ORIENT_HORZ);
+}
 
-/////////////////////////////////////////////////////////////////////////////
+void CXTPDockBar::OnRButtonDown(UINT /*nFlags*/, CPoint point)
+{
+	ClientToScreen(&point);
+	m_pCommandBars->ContextMenu(NULL, point);
+}
+
+
+void CXTPDockBar::GetVisibleToolbars(int nPos, CToolBarArray& arrBars)
+{
+	ASSERT(nPos != -1);
+	ASSERT(m_arrBars[nPos]);
+
+	while (m_arrBars[nPos] != NULL && nPos > 0)
+	{
+		nPos--;
+	}
+	nPos++;
+
+	CDockInfoArray arrInfo;
+
+	while (m_arrBars[nPos] != NULL)
+	{
+		CXTPToolBar* pBar = m_arrBars[nPos++];
+		if (pBar->IsVisible())
+		{
+			DOCK_INFO dockInfo(pBar, CXTPWindowRect(pBar), nPos);
+			arrInfo.Add(dockInfo);
+		}
+	}
+
+	if (m_dwStyle & CBRS_LEFT || m_dwStyle & CBRS_RIGHT) arrInfo.InvertRects();
+	arrInfo.Sort();
+
+	for (int i = 0; i < arrInfo.GetSize(); i++)
+	{
+		arrBars.Add(arrInfo[i].pBar);
+	}
+
+}

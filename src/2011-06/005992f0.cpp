@@ -1,21 +1,18 @@
-// from server: 83% by atomic.potato
-struct PhysicsJob
-{
-    int a;
-    int b;
-    int c;
-    int d;
-    int e;
-    int f;
-    int g;
-
-    void Initialize();
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct X_005992f0 {
+    void* f_0;
+    void* f_4;
+    char pad_8[16];
+    void* f_18;
+    void* f_1c;
+    X_005992f0* base();
+    X_005992f0* run() {
+    f_0 = (void*)0xa8a23c;
+    f_4 = (void*)0xa8a234;
+    f_18 = (void*)0xa8a228;
+    f_1c = (void*)0xa8a21c;
+        return base();
+    }
 };
-
-void PhysicsJob::Initialize()
-{
-    a = 0xA8A23C;
-    b = 0xA8A234;
-    e = 0xA8A228;
-    f = 0xA8A21C;
-}
+X_005992f0* func_005992f0(X_005992f0* x) { return x->run(); }

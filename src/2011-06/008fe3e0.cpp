@@ -1,14 +1,14 @@
-// from server: 29% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Ribbon/XTPRibbonControlTab.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/Ribbon/XTPRibbonControlTab.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPRibbonTab.cpp: implementation of the CXTPRibbonTab class.
 //
 // This file is a part of the XTREME RIBBON MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -103,12 +103,7 @@ CXTPTabPaintManager* CXTPRibbonControlTab::GetPaintManager() const
 
 void CXTPRibbonControlTab::ShowPopupBar(BOOL bKeyboard)
 {
-	if (!GetSelectedItem())
-		return;
-
 	CXTPRibbonBar* pRibbonBar = GetRibbonBar();
-	if (!pRibbonBar->IsRibbonMinimized())
-		return;
 
 	if (pRibbonBar->m_nPopuped == m_nIndex)
 	{
@@ -132,19 +127,6 @@ CString CXTPRibbonControlTab::GetItemTooltip(const CXTPTabManagerItem* pItem) co
 		return strToolTip;
 
 	return pItem->GetCaption();
-}
-
-void CXTPRibbonControlTab::OnItemClick(CXTPTabManagerItem* pItem)
-{
-	CXTPRibbonBar* pRibbonBar = GetRibbonBar();
-
-	if (pRibbonBar->IsCustomizable() && pRibbonBar->IsCustomizeMode())
-	{
-		CXTPRibbonTab* pTab = (CXTPRibbonTab*)pItem;
-		pRibbonBar->GetCommandBars()->SetDragControl(pTab);
-	}
-
-	CXTPTabManager::OnItemClick(pItem);
 }
 
 void CXTPRibbonControlTab::SetSelectedItem(CXTPTabManagerItem* pItem)
@@ -183,17 +165,18 @@ void CXTPRibbonControlTab::SetSelectedItem(CXTPTabManagerItem* pItem)
 
 	pRibbonBar->OnTabChanged(pTab);
 
+	if (pRibbonBar->IsRibbonMinimized() && pTab)
+	{
+		ShowPopupBar(pRibbonBar->m_bKeyboardSelect);
+	}
+
 	NotifySite(CBN_XTP_EXECUTE);
 
 	if (pItem)
 	{
 		AccessibleNotifyWinEvent(EVENT_OBJECT_FOCUS , GetParent()->GetSafeHwnd(), GetID(), pItem->GetIndex() + 1);
 	}
-}
 
-void CXTPRibbonControlTab::AdjustExcludeRect(CRect& rc, BOOL /*bVertical*/)
-{
-	rc.bottom--;
 }
 
 
@@ -282,11 +265,6 @@ void CXTPRibbonControlTab::Draw(CDC* /*pDC*/)
 
 }
 
-BOOL CXTPRibbonControlTab::IsPopupBarTracking() const
-{
-	return m_pCommandBar && m_pCommandBar->IsTrackingMode();
-}
-
 void CXTPRibbonControlTab::SetFocused(BOOL bFocused)
 {
 	if (m_bFocused == bFocused)
@@ -327,16 +305,15 @@ BOOL CXTPRibbonControlTab::OnHookKeyDown(UINT nChar, LPARAM /*lParam*/)
 			return TRUE;
 	}
 
+	if (nCharLayout == VK_UP)
+	{
+		m_pParent->SetSelected(m_pControls->GetNext(-1, +1), TRUE_KEYBOARD_PREV);
+		return TRUE;
+	}
 
 	if (nCharLayout == VK_DOWN)
 	{
 		m_pParent->SetSelected(m_pControls->GetNext(CXTPControl::GetIndex(), +1), TRUE_KEYBOARD_NEXT);
-		return TRUE;
-	}
-
-	if (nCharLayout == VK_RETURN || nCharLayout == VK_SPACE && GetRibbonBar()->IsRibbonMinimized())
-	{
-		ShowPopupBar(TRUE);
 		return TRUE;
 	}
 	return FALSE;
@@ -376,6 +353,12 @@ BOOL CXTPRibbonControlTab::OnSetPopup(BOOL bPopup)
 	{
 		ASSERT(m_pCommandBar);
 		m_pCommandBar->SetTrackingMode(FALSE);
+
+		if (GetRibbonBar()->IsRibbonMinimized())
+		{
+			SetSelectedItem(NULL);
+		}
+
 	}
 	RedrawParent();
 	return TRUE;

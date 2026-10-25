@@ -1,108 +1,167 @@
-// from server: 32% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// roc-lib: openrbx-client App/util/RunStateOwner.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/Name.h"
-#include "util/Debug.h"
-#include <boost/thread/once.hpp>
+#include "util/RunStateOwner.h"
 
-// intentionally outside of the RBX namespace
-boost::once_flag flag = BOOST_ONCE_INIT;
+#include "util/Timer.h"
+#include "v8datamodel/DataModel.h"
 
-boost::mutex& moo2()
+#include <algorithm>
+#include <boost/thread/thread.hpp>
+#include <boost/thread/xtime.hpp>
+
+namespace RBX {
+
+const char sRunService[] = "RunService";
+
+Reflection::SignalDesc<RunService, void(float, float)> RunService::event_Stepped("Stepped", "time", "step");
+
+static Reflection::SignalDesc<RunService, void(float)> event_Heartbeat("Heartbeat", "step");
+
+// FUNCTION: WEBSERVICE 0x10054320
+void RunService::endRunThread(bool join)
 {
-	static boost::mutex mutex2;
-	return mutex2;
+	stopRequested = true;
+	stateChangedCondition.notify_all();
+
+	if (join) {
+		runThread->join();
+	}
 }
 
-void initMoo()
+// FUNCTION: WEBSERVICE 0x100543b0
+void RunService::onAncestorChanged(const AncestorChanged& event)
 {
-	moo2();
+	if (getParent() == NULL) {
+		endRunThread(false);
+	}
 }
 
-namespace RBX
+// FUNCTION: WEBSERVICE 0x10054cb0
+void RunService::runProc(boost::shared_ptr<DataModel> dataModel)
 {
-	// seems to be inlined
-	boost::mutex& Name::mutex()
-	{
-		boost::call_once(initMoo, flag);
-		return moo2();
-	}
+	double desiredTime = getRealTime();
 
-	std::map<int, Name*>& Name::dictionary()
-	{
-		static std::map<int, Name*> d;
-		return d;
-	}
+	while (true) {
+		const double timeLeft = desiredTime - getRealTime();
 
-	Name::NamMap& Name::namMap()
-	{
-		static NamMap n;
-		return n;
-	}
-
-	const Name& Name::getNullName()
-	{
-		boost::mutex::scoped_lock scoped_lock(mutex());
-		static const Name& nullName = declare("", 0);
-		return nullName;
-	}
-
-	const Name& Name::declare(const char* sName, int dictionaryIndex)
-	{
-		if (!sName)
 		{
-			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
-			return getNullName();
-		}
+			boost::mutex::scoped_lock lock(viewMutex);
 
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			if (dictionaryIndex != -1)
-			{
-				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
-				dictionary()[dictionaryIndex] = iter->second;
+			for (Views::iterator iter = views.begin(); iter != views.end(); ++iter) {
+				iter->first->AdjustThrottle(timeLeft);
 			}
-			return *iter->second;
-		}
-		else
-		{
-			Name* name = new Name(sName, dictionaryIndex);
-			namMap()[sName] = name;
-			dictionary()[dictionaryIndex] = name;
-			return *name;
-		}
-	}
-
-	const Name& Name::lookup(const std::string& sName)
-	{
-		RBXASSERT(sName.size() < 50);
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			return *iter->second;
-		}
-		else
-		{
-			return getNullName();
-		}
-	}
-
-	const Name& Name::lookup(const char* sName)
-	{
-		if (!sName)
-		{
-			return getNullName();
 		}
 
-		return lookup(std::string(sName));
+		const double waitTime = std::max(0.0, timeLeft);
+
+		boost::xtime xt;
+
+		boost::xtime_get(&xt, boost::TIME_UTC);
+		xt.nsec += (int) (waitTime * 1000000000.0);
+
+		bool signalled;
+
+		{
+			boost::mutex::scoped_lock lock(runMutex);
+
+			signalled = stateChangedCondition.timed_wait(lock, xt);
+		}
+
+		if (!signalled) {
+			boost::xtime xt;
+
+			boost::xtime_get(&xt, boost::TIME_UTC);
+			xt.sec += 1;
+
+			boost::mutex::scoped_lock lock(runMutex);
+
+			if (invalidRunViewCount != 0) {
+				runViewsDoneCondition.timed_wait(lock, xt);
+			}
+		}
+
+		if (timeLeft <= 0.0) {
+			desiredTime = getRealTime();
+		}
+
+		{
+			DataModel::Lock lock(dataModel);
+
+			if (stopRequested) {
+				break;
+			}
+
+			dataModel->step(framePeriod);
+		}
+
+		desiredTime += framePeriod;
 	}
 }
+
+// FUNCTION: WEBSERVICE 0x10054fd0
+void RunService::invalidateRunViews()
+{
+	boost::mutex::scoped_lock lock(viewMutex);
+
+	if (invalidRunViewCount != 0) {
+		return;
+	}
+
+	invalidRunViewCount = views.size();
+
+	if (invalidRunViewCount > 0) {
+		for (Views::iterator iter = views.begin(); iter != views.end(); ++iter) {
+			iter->first->InvalidateRunView();
+			iter->second = false;
+		}
+
+		runViewsDoneCondition.notify_all();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10055380
+RunService::~RunService()
+{
+}
+
+// FUNCTION: WEBSERVICE 0x10056950
+RunService::RunService()
+	: runState(RS_NORMAL), stopRequested(false), framePeriod(1.0f / 30.0f), runThread(NULL), invalidRunViewCount(0),
+	  runDisabled(false)
+{
+	setName("Run Service");
+}
+
+// STUB: WEBSERVICE 0x100573e0
+void RunService::start()
+{
+	STUB(0x100573e0);
+}
+
+// FUNCTION: WEBSERVICE 0x100577f0
+void RunService::raiseHeartbeat(float time, float step)
+{
+	Notifier<RunService, Heartbeat>::raise(Heartbeat(time, step));
+	event_Heartbeat.fire(this, step);
+}
+
+// FUNCTION: WEBSERVICE 0x10057860
+void RunService::raiseStepped(float time, float step)
+{
+	Notifier<RunService, Stepped>::raise(Stepped(time, step));
+	event_Stepped.fire(this, time, step);
+}
+
+} // namespace RBX
+
+template class RBX::FactoryProduct<RBX::RunService, RBX::Instance, RBX::sRunService>;
+template class RBX::Reflection::Described<
+	RBX::RunService,
+	RBX::sRunService,
+	RBX::FactoryProduct<RBX::RunService, RBX::Instance, RBX::sRunService> >;
+template class RBX::DescribedCreatable<RBX::RunService, RBX::Instance, RBX::sRunService>;

@@ -1,23 +1,5 @@
-// from server: 76% by atomic.potato
-struct Inner {
-    int value;
-};
-
-struct Outer {
-    char pad[0x68];
-    Inner* begin;
-    Inner* end;
-    int get(int index);
-};
-
-extern "C" Inner* __cdecl lookup(Outer* self, int index);
-
-int Outer::get(int index) {
-    Inner* p = lookup(this, index);
-    int i = p->value;
-    if (i < 0)
-        return 0;
-    if ((unsigned int)i >= (unsigned int)((end - begin)))
-        return 0;
-    return begin[i].value;
-}
+// from server: 83% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct S{char pad[0x68]; char* begin; char* end; int f(int);};
+extern "C" int* sub(int);
+int S::f(int index){int* p=sub(index); int v=*p; if(v<0)return 0; if((unsigned)v>=(unsigned)((end-begin)>>2))return 0; return ((int*)begin)[v];}

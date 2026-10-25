@@ -1,17 +1,11 @@
-// from server: 89% by atomic.potato
-extern "C" void __cdecl fn_80b15d(const char *);
-
-volatile unsigned int g_cd1c04;
-volatile int g_cd1bfc;
-volatile int g_cd1c00;
-
-void f_006dfb10()
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+extern "C" void seh_fn_006dfb10(void*);
+extern int g_a_006dfb10;
+extern int g_b_006dfb10;
+extern int g_arg_006dfb10;
+struct Reg_006dfb10 { Reg_006dfb10() { g_a_006dfb10 = 0; g_b_006dfb10 = 0; seh_fn_006dfb10(&g_arg_006dfb10); } };
+void func_006dfb10()
 {
-    if ((g_cd1c04 & 1) == 0)
-    {
-        g_cd1c04 |= 1;
-        g_cd1bfc = 0;
-        g_cd1c00 = 0;
-        fn_80b15d("8csm");
-    }
+    static Reg_006dfb10 reg;
 }

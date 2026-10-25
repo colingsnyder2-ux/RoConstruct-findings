@@ -1,14 +1,14 @@
-// from server: 40% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Chart/Styles/Bar/XTPChartStackedBarSeriesStyle.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPControlPopupColor.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPChartStackedBarSeriesStyle.cpp
+// XTPControlPopupColor.cpp : implementation of the CXTPControlPopupColor class.
 //
-// This file is a part of the XTREME TOOLKIT PRO MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,250 +26,502 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "Resource.h"
+#include "Common/Resource.h"
 
+#include "Common/XTPResourceManager.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPImageManager.h"
 #include "Common/XTPPropExchange.h"
+#include "Common/XTPToolTipContext.h"
 
-#include "../../Types/XTPChartTypes.h"
-#include "../../XTPChartDefines.h"
-#include "../../XTPChartElement.h"
-#include "../../XTPChartElementView.h"
-#include "../../XTPChartSeriesLabel.h"
-#include "../../XTPChartSeries.h"
-#include "../../XTPChartSeriesView.h"
-#include "../../XTPChartSeriesStyle.h"
-#include "../../XTPChartDiagramView.h"
+#include "XTPControlPopup.h"
+#include "XTPControlButton.h"
+#include "XTPControlPopupColor.h"
+#include "XTPCommandBar.h"
+#include "XTPPaintManager.h"
 
-#include "../../XTPChartSeriesPoint.h"
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
 
-#include "../../Diagram/Axis/XTPChartAxisView.h"
-#include "../../Diagram/Axis/XTPChartAxis.h"
-#include "../../Diagram/Diagram2D/XTPChartDiagram2DSeriesStyle.h"
-#include "../../Diagram/Diagram2D/XTPChartDiagram2DSeriesView.h"
-#include "../../Diagram/Diagram2D/XTPChartDiagram2DSeriesLabel.h"
+#define CLR_TO_RGBQUAD(clr) (RGB(GetBValue(clr), GetGValue(clr), GetRValue(clr)))
 
+#define XTP_SELECTOR_SIZE 18
+#define XTP_SELECTOR_MARGIN 2
 
-#include "XTPChartBarSeriesView.h"
-#include "XTPChartBarSeriesStyle.h"
-#include "XTPChartStackedBarSeriesStyle.h"
-#include "XTPChartBarSeriesLabel.h"
+#define XTP_SELECTOR_WIDTH (XTP_SELECTOR_SIZE * 8 + XTP_SELECTOR_MARGIN * 2)
+#define XTP_SELECTOR_HEIGHT (XTP_SELECTOR_SIZE * 5 + XTP_SELECTOR_MARGIN * 2)
 
-//////////////////////////////////////////////////////////////////////////
-// CXTPChartStackedBarSeriesStyle
+IMPLEMENT_XTP_CONTROL(CXTPControlPopupColor, CXTPControlPopup)
 
-IMPLEMENT_SERIAL(CXTPChartStackedBarSeriesStyle, CXTPChartBarSeriesStyle, VERSIONABLE_SCHEMA | _XTP_SCHEMA_CURRENT);
-
-CXTPChartStackedBarSeriesStyle::CXTPChartStackedBarSeriesStyle()
+CXTPControlPopupColor::CXTPControlPopupColor()
 {
-	m_dStackHeight = 0;
-	m_nStackGroup = 0;
-
-	CXTPChartBarSeriesLabel* pLabel = (CXTPChartBarSeriesLabel*)SetLabel(new CXTPChartBarSeriesLabel());
-	pLabel->SetPosition(xtpChartBarLabelCenter);
+	m_controlType = xtpControlSplitButtonPopup;
+	m_clr = (COLORREF)-1;
+	EnableAutomation();
 }
 
-CXTPChartStackedBarSeriesStyle::~CXTPChartStackedBarSeriesStyle()
-{
-
-}
-
-void CXTPChartStackedBarSeriesStyle::DoPropExchange(CXTPPropExchange* pPX)
-{
-	CXTPChartBarSeriesStyle::DoPropExchange(pPX);
-
-	PX_Double(pPX, _T("StackHeight"), m_dStackHeight, 0);
-	PX_Int(pPX, _T("StackGroup"), m_nStackGroup, 0);
-}
-
-CXTPChartSeriesView* CXTPChartStackedBarSeriesStyle::CreateView(CXTPChartSeries* pSeries, CXTPChartDiagramView* pDiagramView)
-{
-	return new CXTPChartStackedBarSeriesView(pSeries, pDiagramView);
-}
-
-void CXTPChartStackedBarSeriesStyle::CorrectAxisSideMargins(CXTPChartAxis* pAxis, double /*nMinValue*/, double /*nMaxValue*/, double& nCorrection)
-{
-	if (!pAxis->IsValuesAxis())
-		nCorrection = max(nCorrection, 0.5);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPChartStackedBarSeriesView
-
-CXTPChartStackedBarSeriesView::CXTPChartStackedBarSeriesView(CXTPChartSeries* pSeries, CXTPChartDiagramView* pDiagramView)
-	: CXTPChartBarSeriesView(pSeries,pDiagramView)
-{
-	m_nBarCount = 0;
-	m_nBarIndex = -1;
-}
-
-CXTPChartStackedBarSeriesView::~CXTPChartStackedBarSeriesView()
+CXTPControlPopupColor::~CXTPControlPopupColor()
 {
 }
 
-CXTPChartSeriesPointView* CXTPChartStackedBarSeriesView::CreateSeriesPointView(CXTPChartDeviceContext* pDC, CXTPChartSeriesPoint* pPoint, CXTPChartElementView* pParentView)
+void CXTPControlPopupColor::Copy(CXTPControl* pControl, BOOL bRecursive)
 {
-	UNREFERENCED_PARAMETER(pDC);
-	return new CXTPChartStackedBarSeriesPointView(pPoint, pParentView);
+	CXTPControlPopup::Copy(pControl, bRecursive);
+	m_clr = ((CXTPControlPopupColor*)pControl)->m_clr;
 }
 
-void CXTPChartStackedBarSeriesView::UpdateRange(CXTPChartDeviceContext* pDC)
+void CXTPControlPopupColor::RedrawIcon(CXTPImageManagerIcon* pImage, CXTPImageManagerIconHandle& hHandle)
 {
-	CXTPChartBarSeriesView::UpdateRange(pDC);
+	CXTPImageManagerIconHandle& hIcon = pImage->GetIcon();
 
-	CXTPChartDiagramView* pDiagramView = GetDiagramView();
-
-	BOOL bFound = FALSE;
-
-	for (int i = 0; i < pDiagramView->GetSeriesView()->GetCount(); i++)
-	{
-		CXTPChartSeriesView* pView = (CXTPChartSeriesView*)pDiagramView->GetSeriesView()->GetAt(i);
-
-		if (DYNAMIC_DOWNCAST(CXTPChartStackedBarSeriesStyle, pView->GetSeries()->GetStyle()))
-		{
-			CXTPChartStackedBarSeriesView* pStackedBarSeriesView = (CXTPChartStackedBarSeriesView*)pView;
-
-			if (pStackedBarSeriesView->m_bFirstStack && pView == this)
-			{
-				bFound = TRUE;
-				break;
-			}
-		}
-	}
-	if (!bFound)
+	if (hIcon.IsEmpty())
 		return;
 
-	CMap<double, double, double, double> mapValues;
+	hHandle.CopyHandle(hIcon);
 
-	for (int j = 0; j < pDiagramView->GetSeriesView()->GetCount(); j++)
+	if (!hHandle.IsAlpha())
 	{
-		CXTPChartSeriesView* pView = (CXTPChartSeriesView*)pDiagramView->GetSeriesView()->GetAt(j);
+		ICONINFO info;
 
-		if (DYNAMIC_DOWNCAST(CXTPChartStackedBarSeriesStyle, pView->GetSeries()->GetStyle()))
+		if (GetIconInfo(hHandle.GetIcon(), &info))
 		{
-			CXTPChartStackedBarSeriesView* pStackedBarSeriesView = (CXTPChartStackedBarSeriesView*)pView;
-			if (pStackedBarSeriesView->m_nBarIndex != m_nBarIndex)
-				continue;
-
-			for (int i = 0; i < pStackedBarSeriesView->m_pPointsView->GetCount(); i++)
 			{
-				CXTPChartStackedBarSeriesPointView* pPointView = (CXTPChartStackedBarSeriesPointView*)pStackedBarSeriesView->m_pPointsView->GetAt(i);
+				CXTPCompatibleDC dc(NULL, CBitmap::FromHandle(info.hbmColor));
+				CXTPCompatibleDC dcMask(NULL, CBitmap::FromHandle(info.hbmMask));
 
-				double dValue = pPointView->GetPoint()->GetValue(0);
+				BITMAP bmp;
+				ZeroMemory(&bmp, sizeof(BITMAP));
+				::GetObject(info.hbmColor, sizeof(BITMAP), &bmp);
+				int nHeight = int((double)bmp.bmHeight / 5);
 
-				pPointView->m_dValueFrom = mapValues[pPointView->GetPoint()->GetInternalArgumentValue()];
-				pPointView->m_dInternalValue = pPointView->m_dValueTo = pPointView->m_dValueFrom + dValue;
-
-				mapValues[pPointView->GetPoint()->GetInternalArgumentValue()] = pPointView->m_dValueTo;
+				CRect rc(0, bmp.bmHeight - nHeight, bmp.bmWidth, bmp.bmHeight);
+				dc.FillSolidRect(rc, m_clr);
+				dcMask.FillSolidRect(rc, 1);
 			}
+
+			hHandle = CreateIconIndirect(&info);
+
+			::DeleteObject(info.hbmMask);
+			::DeleteObject(info.hbmColor);
 		}
 	}
-
-	double dStackHeight = ((CXTPChartStackedBarSeriesStyle*)GetStyle())->GetStackHeight();
-	if (dStackHeight != 0)
+	else if (hHandle.PreMultiply())
 	{
-		for (int j = 0; j < pDiagramView->GetSeriesView()->GetCount(); j++)
+		LPDWORD pBits = (LPDWORD)hHandle.PreMultiply();
+		CSize szIcon = hHandle.GetExtent();
+
+		DWORD dwColor = 0xFF000000 | CLR_TO_RGBQUAD(m_clr);
+		int nCount = (szIcon.cy / 5) * szIcon.cx;
+
+		for (int i = 0; i < nCount; i++)
 		{
-			CXTPChartSeriesView* pView = (CXTPChartSeriesView*)pDiagramView->GetSeriesView()->GetAt(j);
+			*pBits++ = dwColor;
+		}
+	}
+}
 
-			if (DYNAMIC_DOWNCAST(CXTPChartStackedBarSeriesStyle, pView->GetSeries()->GetStyle()))
+void CXTPControlPopupColor::SetColor(COLORREF clr)
+{
+	if (clr != m_clr)
+	{
+		m_clr = clr;
+
+		CXTPImageManagerIconSet* pIconSet = GetImageManager()->GetIconSet(GetIconId());
+		if (pIconSet)
+		{
+			pIconSet->RefreshAll();
+
+			CXTPImageManagerIconSet::CIconSetMap* pMap = pIconSet->GetIcons();
+
+			POSITION pos = pMap->GetStartPosition();
+			UINT nWidth;
+			CXTPImageManagerIcon* pImage;
+			while (pos != NULL)
 			{
-				CXTPChartStackedBarSeriesView* pStackedBarSeriesView = (CXTPChartStackedBarSeriesView*)pView;
-				if (pStackedBarSeriesView->m_nBarIndex != m_nBarIndex)
-					continue;
+				pMap->GetNextAssoc(pos, nWidth, pImage);
 
-				for (int i = 0; i < pStackedBarSeriesView->m_pPointsView->GetCount(); i++)
+				CXTPImageManagerIconHandle hIcon;
+				RedrawIcon(pImage, hIcon);
+
+				if (!hIcon.IsEmpty())
 				{
-					CXTPChartStackedBarSeriesPointView* pPointView = (CXTPChartStackedBarSeriesPointView*)pStackedBarSeriesView->m_pPointsView->GetAt(i);
-
-					double dLimit = mapValues[pPointView->GetPoint()->GetInternalArgumentValue()];
-
-					pPointView->m_dValueFrom = pPointView->m_dValueFrom * dStackHeight / dLimit;
-					pPointView->m_dInternalValue = pPointView->m_dValueTo = pPointView->m_dValueTo * dStackHeight / dLimit;
+					pImage->SetIcon(hIcon);
 				}
 			}
+			RedrawParent(FALSE);
 		}
 	}
+}
+
+
+COLORREF CXTPControlPopupColor::GetColor() const
+{
+	return m_clr;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CXTPChartStackedBarSeriesPointView
 
-CXTPChartStackedBarSeriesPointView::CXTPChartStackedBarSeriesPointView(CXTPChartSeriesPoint* pPoint, CXTPChartElementView* pParentView)
-	: CXTPChartBarSeriesPointView(pPoint, pParentView)
+IMPLEMENT_XTP_CONTROL(CXTPControlButtonColor, CXTPControlButton)
+
+
+CXTPControlButtonColor::CXTPControlButtonColor()
 {
+	SetStyle(xtpButtonCaption);
+	m_clr = COLORREF_NULL;
+}
 
+void CXTPControlButtonColor::Copy(CXTPControl* pControl, BOOL bRecursive)
+{
+	CXTPControlButton::Copy(pControl, bRecursive);
+	m_clr = ((CXTPControlButtonColor*)pControl)->m_clr;
+}
+
+void CXTPControlButtonColor::DoPropExchange(CXTPPropExchange* pPX)
+{
+	CXTPControlButton::DoPropExchange(pPX);
+
+	if (pPX->GetSchema() > _XTP_SCHEMA_1041)
+	{
+		PX_DWord(pPX, _T("Color"), m_clr, COLORREF_NULL);
+	}
+}
+
+CSize CXTPControlButtonColor::GetSize(CDC* /*pDC*/)
+{
+	return CSize(XTP_SELECTOR_WIDTH, max(23, GetPaintManager()->GetControlHeight()));
+}
+
+void CXTPControlButtonColor::Draw(CDC* pDC)
+{
+	CXTPPaintManager* pPaintManager = GetPaintManager();
+	CXTPFontDC font (pDC, pPaintManager->GetRegularFont());
+
+	pPaintManager->DrawControlEntry(pDC, this);
+	pDC->SetTextColor(pPaintManager->GetControlTextColor(this));
+
+	CRect rcText = GetRect();
+	pPaintManager->DrawControlText(pDC, this, &rcText, TRUE, FALSE, TRUE, FALSE);
+
+	if (m_clr != COLORREF_NULL)
+	{
+		CRect rcButton(CPoint(m_rcControl.left + 2, m_rcControl.CenterPoint().y - XTP_SELECTOR_SIZE / 2), CSize(XTP_SELECTOR_SIZE, XTP_SELECTOR_SIZE));
+		rcButton.DeflateRect(3, 3);
+
+		if (GetEnabled())
+			pDC->FillSolidRect(rcButton, m_clr);
+
+		pDC->Draw3dRect(rcButton, GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DSHADOW));
+	}
+}
+
+void CXTPControlButtonColor::SetColor(COLORREF clr)
+{
+	if (clr != m_clr)
+	{
+		m_clr = clr;
+		RedrawParent(FALSE);
+	}
+}
+
+COLORREF CXTPControlButtonColor::GetColor() const
+{
+	return m_clr;
 }
 
 
-CXTPChartRectF CXTPChartStackedBarSeriesPointView::GetScreenRect() const
+struct CXTPControlColorSelector::CColorInfo
 {
-	CXTPChartStackedBarSeriesView* pSeriesView = (CXTPChartStackedBarSeriesView*)GetSeriesView();
-	CXTPChartStackedBarSeriesStyle* pSeriesStyle = STATIC_DOWNCAST(CXTPChartStackedBarSeriesStyle, GetSeriesView()->GetStyle());
-
-	CXTPChartDiagram2DAxisView* pAxisXView = pSeriesView->GetAxisViewX();
-
-	if (pSeriesView->m_nBarIndex != -1)
+	CColorInfo(COLORREF _clrButton, UINT _toolTipID)
 	{
-		int nCount = pSeriesView->m_nBarCount;
-		int nIndex = pSeriesView->m_nBarIndex;
-
-		double dOffset = 3 / pAxisXView->GetScale();
-
-		double dBarWidth = (pSeriesStyle->GetBarWidth() - dOffset * (nCount - 1)) / nCount;
-
-		CXTPChartPointF ptTopLeft(pSeriesView->GetScreenPoint(m_pPoint->GetInternalArgumentValue() -
-			pSeriesStyle->GetBarWidth() / 2 + dBarWidth * nIndex + dOffset * nIndex, m_dValueTo));
-
-		CXTPChartPointF ptBottomRight(pSeriesView->GetScreenPoint(m_pPoint->GetInternalArgumentValue() -
-			pSeriesStyle->GetBarWidth() / 2 + dBarWidth * nIndex + dOffset * nIndex + dBarWidth, m_dValueFrom));
-
-		CXTPChartRectF rc(ptTopLeft, ptBottomRight);
-		rc.Width++;
-		rc.Height++;
-
-		return rc;
+		clrButton = _clrButton;
+		toolTipID = _toolTipID;
 	}
 
-	return CXTPChartRectF(0, 0, 0, 0);
+	COLORREF clrButton;
+	UINT  toolTipID;
+	CString strTip;
+};
+
+static CXTPControlColorSelector::CColorInfo extendedColors[] =
+{
+	CXTPControlColorSelector::CColorInfo(RGB(0x00, 0x00, 0x00), XTP_IDS_CLR_BLACK),
+	CXTPControlColorSelector::CColorInfo(RGB(0x99, 0x33, 0x00), XTP_IDS_CLR_BROWN),
+	CXTPControlColorSelector::CColorInfo(RGB(0x33, 0x33, 0x00), XTP_IDS_CLR_OLIVE_GREEN),
+	CXTPControlColorSelector::CColorInfo(RGB(0x00, 0x33, 0x00), XTP_IDS_CLR_DARK_GREEN),
+	CXTPControlColorSelector::CColorInfo(RGB(0x00, 0x33, 0x66), XTP_IDS_CLR_DARK_TEAL),
+	CXTPControlColorSelector::CColorInfo(RGB(0x00, 0x00, 0x80), XTP_IDS_CLR_DARK_BLUE),
+	CXTPControlColorSelector::CColorInfo(RGB(0x33, 0x33, 0x99), XTP_IDS_CLR_INDIGO),
+	CXTPControlColorSelector::CColorInfo(RGB(0x33, 0x33, 0x33), XTP_IDS_CLR_GRAY80),
+	CXTPControlColorSelector::CColorInfo(RGB(0x80, 0x00, 0x00), XTP_IDS_CLR_DARK_RED),
+	CXTPControlColorSelector::CColorInfo(RGB(0xFF, 0x66, 0x00), XTP_IDS_CLR_ORANGE),
+	CXTPControlColorSelector::CColorInfo(RGB(0x80, 0x80, 0x00), XTP_IDS_CLR_DARK_YELLOW),
+	CXTPControlColorSelector::CColorInfo(RGB(0x00, 0x80, 0x00), XTP_IDS_CLR_GREEN),
+	CXTPControlColorSelector::CColorInfo(RGB(0x00, 0x80, 0x80), XTP_IDS_CLR_TEAL),
+	CXTPControlColorSelector::CColorInfo(RGB(0x00, 0x00, 0xFF), XTP_IDS_CLR_BLUE),
+	CXTPControlColorSelector::CColorInfo(RGB(0x66, 0x66, 0x99), XTP_IDS_CLR_BLUEGRAY),
+	CXTPControlColorSelector::CColorInfo(RGB(0x80, 0x80, 0x80), XTP_IDS_CLR_GRAY50),
+	CXTPControlColorSelector::CColorInfo(RGB(0xFF, 0x00, 0x00), XTP_IDS_CLR_RED),
+	CXTPControlColorSelector::CColorInfo(RGB(0xFF, 0x99, 0x00), XTP_IDS_CLR_LIGHTORANGE),
+	CXTPControlColorSelector::CColorInfo(RGB(0x99, 0xCC, 0x00), XTP_IDS_CLR_LIME),
+	CXTPControlColorSelector::CColorInfo(RGB(0x33, 0x99, 0x66), XTP_IDS_CLR_SEA_GREEN),
+	CXTPControlColorSelector::CColorInfo(RGB(0x33, 0xCC, 0xCC), XTP_IDS_CLR_AQUA),
+	CXTPControlColorSelector::CColorInfo(RGB(0x33, 0x66, 0xFF), XTP_IDS_CLR_LIGHT_BLUE),
+	CXTPControlColorSelector::CColorInfo(RGB(0x80, 0x00, 0x80), XTP_IDS_CLR_VIOLET),
+	CXTPControlColorSelector::CColorInfo(RGB(0x99, 0x99, 0x99), XTP_IDS_CLR_GRAY40),
+	CXTPControlColorSelector::CColorInfo(RGB(0xFF, 0x00, 0xFF), XTP_IDS_CLR_PINK),
+	CXTPControlColorSelector::CColorInfo(RGB(0xFF, 0xCC, 0x00), XTP_IDS_CLR_GOLD),
+	CXTPControlColorSelector::CColorInfo(RGB(0xFF, 0xFF, 0x00), XTP_IDS_CLR_YELLOW),
+	CXTPControlColorSelector::CColorInfo(RGB(0x00, 0xFF, 0x00), XTP_IDS_CLR_BRIGHT_GREEN),
+	CXTPControlColorSelector::CColorInfo(RGB(0x00, 0xFF, 0xFF), XTP_IDS_CLR_TURQUOISE),
+	CXTPControlColorSelector::CColorInfo(RGB(0x00, 0xCC, 0xFF), XTP_IDS_CLR_SKY_BLUE),
+	CXTPControlColorSelector::CColorInfo(RGB(0x99, 0x33, 0x66), XTP_IDS_CLR_PLUM),
+	CXTPControlColorSelector::CColorInfo(RGB(0xC0, 0xC0, 0xC0), XTP_IDS_CLR_GRAY25),
+	CXTPControlColorSelector::CColorInfo(RGB(0xFF, 0x99, 0xCC), XTP_IDS_CLR_ROSE),
+	CXTPControlColorSelector::CColorInfo(RGB(0xFF, 0xCC, 0x99), XTP_IDS_CLR_TAN),
+	CXTPControlColorSelector::CColorInfo(RGB(0xFF, 0xFF, 0x99), XTP_IDS_CLR_LIGHT_YELLOW),
+	CXTPControlColorSelector::CColorInfo(RGB(0xCC, 0xFF, 0xCC), XTP_IDS_CLR_LIGHT_GREEN),
+	CXTPControlColorSelector::CColorInfo(RGB(0xCC, 0xFF, 0xFF), XTP_IDS_CLR_LIGHT_TURQUOISE),
+	CXTPControlColorSelector::CColorInfo(RGB(0x99, 0xCC, 0xFF), XTP_IDS_CLR_PALE_BLUE),
+	CXTPControlColorSelector::CColorInfo(RGB(0xCC, 0x99, 0xFF), XTP_IDS_CLR_LAVENDER),
+	CXTPControlColorSelector::CColorInfo(RGB(0xFF, 0xFF, 0xFF), XTP_IDS_CLR_WHITE),
+};
+
+IMPLEMENT_XTP_CONTROL(CXTPControlColorSelector, CXTPControl)
+
+
+CXTPControlColorSelector::CXTPControlColorSelector()
+{
+	EnableAutomation();
+
+	m_nSelected = -1;
+	m_clr = (COLORREF)-1;
+	SetFlags(xtpFlagNoMovable);
+
+	int nCount = GetItemCount();
+	for (int i = 0; i < nCount; i++)
+	{
+		XTPResourceManager()->LoadString(&extendedColors[i].strTip, extendedColors[i].toolTipID);
+	}
+	m_nPressed = -1;
 }
 
-CXTPChartDeviceCommand* CXTPChartStackedBarSeriesPointView::CreateDeviceCommand(CXTPChartDeviceContext* pDC)
+CSize CXTPControlColorSelector::GetSize(CDC* /*pDC*/)
 {
 
-	return CXTPChartBarSeriesPointView::CreateDeviceCommand(pDC);
+	return CSize (XTP_SELECTOR_WIDTH, XTP_SELECTOR_HEIGHT);
 }
 
-
-#ifdef _XTP_ACTIVEX
-
-BEGIN_DISPATCH_MAP(CXTPChartStackedBarSeriesStyle, CXTPChartBarSeriesStyle)
-	DISP_PROPERTY_EX_ID(CXTPChartStackedBarSeriesStyle, "StackHeight", 14, OleGetStackHeight, OleSetStackHeight, VT_R8)
-	DISP_PROPERTY_EX_ID(CXTPChartStackedBarSeriesStyle, "StackGroup", 15, GetStackGroup, SetStackGroup, VT_I4)
-END_DISPATCH_MAP()
-
-
-// {323BCC77-27BF-4cb1-9ABF-4558D9835456}
-static const GUID IID_IChartStackedBarSeriesStyle =
-{ 0x323bcc77, 0x27bf, 0x4cb1, { 0x9a, 0xbf, 0x45, 0x58, 0xd9, 0x83, 0x54, 0x56 } };
-
-BEGIN_INTERFACE_MAP(CXTPChartStackedBarSeriesStyle, CXTPChartBarSeriesStyle)
-	INTERFACE_PART(CXTPChartStackedBarSeriesStyle, IID_IChartStackedBarSeriesStyle , Dispatch)
-END_INTERFACE_MAP()
-
-IMPLEMENT_OLETYPELIB_EX(CXTPChartStackedBarSeriesStyle, IID_IChartStackedBarSeriesStyle )
-
-// {32490E6F-92B6-4671-9613-6B2A0FBF8789}
-IMPLEMENT_OLECREATE_EX2(CXTPChartStackedBarSeriesStyle, "Codejock.ChartStackedBarSeriesStyle." _XTP_AXLIB_VERSION,
-						0x32490e6f, 0x92b6, 0x4671, 0x96, 0x13, 0x6b, 0x2a, 0xf, 0xbf, 0x87, 0x89);
-
-double CXTPChartStackedBarSeriesStyle::OleGetStackHeight()
+INT_PTR CXTPControlColorSelector::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
 {
-	return GetStackHeight();
+	int nIndex = HitTest(point);
+	if (nIndex == -1)
+		return 0;
+
+	INT_PTR nHit = extendedColors[nIndex].toolTipID;
+
+	CXTPToolTipContext::FillInToolInfo(pTI, GetParent()->GetSafeHwnd(), GetRect(nIndex), nHit, extendedColors[nIndex].strTip);
+
+	return nHit;
 }
 
-void CXTPChartStackedBarSeriesStyle::OleSetStackHeight(double dStackHeight)
+CRect CXTPControlColorSelector::GetRect(int nIndex) const
 {
-	SetStackHeight(dStackHeight);
+	int x = nIndex % 8, y = nIndex / 8;
+
+	return CRect(
+		CPoint(
+			XTP_SELECTOR_MARGIN + m_rcControl.left + x * XTP_SELECTOR_SIZE,
+			XTP_SELECTOR_MARGIN + m_rcControl.top + y * XTP_SELECTOR_SIZE),
+		CSize(XTP_SELECTOR_SIZE, XTP_SELECTOR_SIZE));
 }
 
-#endif
+int CXTPControlColorSelector::HitTest(CPoint point) const
+{
+	int nCount = GetItemCount();
+
+	if (!m_rcControl.PtInRect(point))
+		return -1;
+
+	for (int i = 0; i < nCount; i++)
+	{
+		if (GetRect(i).PtInRect(point))
+			return i;
+	}
+
+	return -1;
+}
+
+void CXTPControlColorSelector::Draw(CDC* pDC)
+{
+	int nCount = GetItemCount();
+
+	for (int i = 0; i < nCount; i++)
+	{
+		CRect rcButton = GetRect(i);
+
+		if (i == m_nSelected || extendedColors[i].clrButton == m_clr)
+		{
+			BOOL bPressed = GetPressed() && i == m_nSelected;
+			GetPaintManager()->DrawRectangle(pDC, rcButton, i == m_nSelected, bPressed, GetEnabled(), extendedColors[i].clrButton == m_clr, FALSE, xtpBarTypeNormal, xtpBarPopup);
+		}
+
+
+		rcButton.DeflateRect(3, 3);
+		if (GetEnabled())
+			pDC->FillSolidRect(rcButton, extendedColors[i].clrButton);
+
+		pDC->Draw3dRect(rcButton, GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DSHADOW));
+
+	}
+}
+
+void CXTPControlColorSelector::SetSelectedItem(int nItem)
+{
+	if (m_nSelected != nItem)
+	{
+		m_nSelected = nItem;
+		RedrawParent();
+	}
+}
+
+void CXTPControlColorSelector::OnMouseMove(CPoint point)
+{
+	int nHit = HitTest(point);
+	if (nHit != -1)
+	{
+		SetSelectedItem(nHit);
+	}
+}
+
+BOOL CXTPControlColorSelector::OnSetSelected(int bSelected)
+{
+	if (!bSelected) m_nSelected = -1;
+
+	if (IsKeyboardSelected(bSelected) && !m_bSelected)
+	{
+		SetSelectedItem(bSelected == TRUE_KEYBOARD_PREV ? GetItemCount() - 1 : 0);
+	}
+
+	return CXTPControl::OnSetSelected(bSelected);
+}
+
+BOOL CXTPControlColorSelector::IsFocused() const
+{
+	return GetSelected();
+}
+
+int CXTPControlColorSelector::GetItemCount() const
+{
+	return sizeof(extendedColors) / sizeof(extendedColors[0]);
+}
+
+BOOL CXTPControlColorSelector::OnHookKeyDown(UINT nChar, LPARAM /*lParam*/)
+{
+	ASSERT(IsFocused());
+
+	if (!IsFocused())
+		return FALSE;
+
+	CXTPDrawHelpers::KeyToLayout(GetParent(), nChar);
+
+	switch (nChar)
+	{
+	case VK_HOME:
+		SetSelectedItem(0);
+		return TRUE;
+
+	case VK_END:
+		SetSelectedItem(GetItemCount() - 1);
+		return TRUE;
+
+	case VK_LEFT:
+		if (m_nSelected <= 0)
+			return FALSE;
+
+		SetSelectedItem(m_nSelected - 1);
+		return TRUE;
+
+	case VK_RIGHT:
+		if (m_nSelected >= GetItemCount() - 1)
+			return FALSE;
+
+		SetSelectedItem(m_nSelected + 1);
+		return TRUE;
+
+	case VK_UP:
+		if (m_nSelected < 8)
+			return FALSE;
+
+		SetSelectedItem(m_nSelected - 8);
+		return TRUE;
+
+	case VK_DOWN:
+		if (m_nSelected >= GetItemCount() - 8)
+			return FALSE;
+
+		SetSelectedItem(m_nSelected + 8);
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+void CXTPControlColorSelector::OnExecute()
+{
+	if (m_nPressed != -1)
+	{
+		m_clr = extendedColors[m_nPressed].clrButton;
+	}
+	CXTPControl::OnExecute();
+
+}
+
+
+COLORREF CXTPControlColorSelector::GetColor() const
+{
+	return m_clr;
+}
+
+void CXTPControlColorSelector::SetColor(COLORREF clr)
+{
+	if (clr != m_clr)
+	{
+		m_clr = clr;
+		RedrawParent();
+	}
+}
+
+
+void CXTPControlColorSelector::OnClick(BOOL bKeyboard, CPoint pt)
+{
+	if (!GetEnabled()) return;
+
+	int nHit = bKeyboard ? m_nSelected : HitTest(pt);
+	if (nHit == -1) return;
+
+	m_nPressed = nHit;
+
+	if (!bKeyboard)
+	{
+		ClickToolBarButton();
+	}
+	else
+	{
+		OnExecute();
+	}
+	m_nPressed = -1;
+}
+
+void CXTPControlColorSelector::OnLButtonUp(CPoint point)
+{
+	if (GetEnabled() && m_pParent->GetPosition() == xtpBarPopup)
+	{
+		OnClick(TRUE, point);
+	}
+}
+

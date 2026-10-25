@@ -1,20 +1,21 @@
-// from server: 92% by atomic.potato
-struct S_func_004e5d40 {
-    int m_0;
-    int m_4;
-    char pad8[16];
-    int m_18;
-    int m_1c;
-    char pad20[112];
-    int m_90;
-    void f();
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct X_004e5d40 {
+    void* f_0;
+    void* f_4;
+    char pad_8[16];
+    void* f_18;
+    void* f_1c;
+    char pad_20[112];
+    void* f_90;
+    X_004e5d40* base();
+    X_004e5d40* run() {
+    f_0 = (void*)0xa7a67c;
+    f_4 = (void*)0xa7a670;
+    f_18 = (void*)0xa7a664;
+    f_1c = (void*)0xa7a658;
+    f_90 = (void*)0xa7a630;
+        return base();
+    }
 };
-
-void S_func_004e5d40::f()
-{
-    m_0 = 0x00a7a67c;
-    m_4 = 0x00a7a670;
-    m_18 = 0x00a7a664;
-    m_1c = 0x00a7a658;
-    m_90 = 0x00a7a630;
-}
+X_004e5d40* func_004e5d40(X_004e5d40* x) { return x->run(); }

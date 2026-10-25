@@ -1,19 +1,17 @@
-// from server: 70% by atomic.potato
-extern "C" void Function_004719c0(int, int, int);
-
-struct CScriptDoc
-{
-    void __cdecl f(int, int);
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_00471f20 {
+    T4_00471f20();
+    virtual void f_00471f20();
+    char m_a;
+    char m_b;
 };
-
-void CScriptDoc::f(int a, int b)
+T4_00471f20::T4_00471f20() : m_a(0), m_b(0) {}
+extern "C" void* create_other_00471f20(void*, void*, int);
+void* create_00471f20(void* unused, T4_00471f20* out, int type)
 {
-    if (b != 4)
-        Function_004719c0(0, a, b);
-    else
-    {
-        *(int*)a = 0x00b84fa0;
-        *((char*)a + 4) = 0;
-        *((char*)a + 5) = 0;
-    }
+    if (type != 4)
+        return create_other_00471f20(unused, out, type);
+    out->T4_00471f20::T4_00471f20();
+    return out;
 }

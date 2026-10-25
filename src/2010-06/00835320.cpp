@@ -1,14 +1,14 @@
-// from server: 83% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/CommandBars/XTPOffice2007Theme.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPOffice2007Theme.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPOffice2007Theme.cpp : implementation of the CXTPOffice2007Theme class.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -30,9 +30,6 @@
 #include "Common/XTPDrawHelpers.h"
 #include "Common/XTPOffice2007Image.h"
 #include "Common/XTPVc80Helpers.h"
-#include "Common/XTPHookManager.h"
-#include "Common/XTPMarkupRender.h"
-#include "Common/XTPResourceManager.h"
 
 #include "XTPControls.h"
 #include "XTPControl.h"
@@ -41,17 +38,10 @@
 #include "XTPPopupBar.h"
 #include "XTPControlGallery.h"
 #include "XTPStatusBar.h"
-#include "XTPMessageBar.h"
-#include "XTPControlProgress.h"
 
 #include "XTPOffice2007Theme.h"
 
 #include "XTPOffice2007FrameHook.h"
-
-#ifdef _XTP_INCLUDE_RIBBON
-#include "Ribbon/XTPRibbonPaintManager.h"
-#endif
-
 
 #ifndef OIC_WINLOGO
 #define OIC_WINLOGO 32517
@@ -67,79 +57,49 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+using namespace XTPPaintThemes;
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-
-class _XTP_EXT_CLASS CXTPSliderOffice2007Theme : public CXTPSliderPaintManager
+class _XTP_EXT_CLASS CXTPControlGalleryOffice2007Theme : public CXTPControlGalleryPaintManager
 {
 public:
-	CXTPSliderOffice2007Theme(CXTPPaintManager* pPaintManager)
-		: CXTPSliderPaintManager(pPaintManager)
+	CXTPControlGalleryOffice2007Theme(CXTPPaintManager* pPaintManager)
+		: CXTPControlGalleryPaintManager(pPaintManager)
 	{
 
 	}
 
 public:
+	virtual void FillControl(CDC* pDC, CXTPControlGallery* pGallery, CRect rc);
+	virtual void DrawPopupScrollBar(CDC* pDC, CXTPControlGallery* pGallery);
 	virtual void DrawScrollBar(CDC* pDC, CXTPScrollBase* pGallery);
+	virtual void DrawLabel(CDC* pDC, CXTPControlGalleryItem* pLabel, CRect rc);
 	virtual void RefreshMetrics();
+
+protected:
+	COLORREF m_clrControlGallerySelected;
+	COLORREF m_clrControlGalleryNormal;
+	COLORREF m_clrControlGalleryBorder;
+
 };
 
-class _XTP_EXT_CLASS CXTPProgressOffice2007Theme : public CXTPProgressPaintManager
-{
-public:
-	CXTPProgressOffice2007Theme(CXTPPaintManager* pPaintManager);
-
-public:
-	virtual void DrawProgress(CDC* pDC, CXTPProgressBase* pGallery);
-};
-
-IMPLEMENT_DYNAMIC(CXTPOffice2007Theme, CXTPOffice2003Theme)
 
 CXTPOffice2007Theme::CXTPOffice2007Theme()
 {
-	m_pShadowManager->SetShadowOptions(xtpShadowOfficeAlpha | xtpShadowShowPopupControl);
-
+	m_nShadowOptions = xtpShadowOfficeAlpha;
 	m_systemTheme = xtpSystemThemeUnknown;
 	m_bThemedStatusBar = TRUE;
+	m_bFrameStatusBar = FALSE;
 	m_bOffice2007Padding = TRUE;
 
 	delete m_pGalleryPaintManager;
 	m_pGalleryPaintManager = new CXTPControlGalleryOffice2007Theme(this);
 
-	delete m_pSliderPaintManager;
-	m_pSliderPaintManager = new CXTPSliderOffice2007Theme(this);
-
-	delete m_pProgressPaintManager;
-	m_pProgressPaintManager = new CXTPProgressOffice2007Theme(this);
-
 	m_pImages = XTPOffice2007Images();
 }
-
-CXTPFramePaintManager* CXTPOffice2007Theme::GetFramePaintManager()
-{
-	if (!m_pFramePaintManager)
-	{
-		m_pFramePaintManager = new CXTPFramePaintManager(this);
-		m_pFramePaintManager->RefreshMetrics();
-	}
-	return m_pFramePaintManager;
-}
-
-CXTPRibbonPaintManager* CXTPOffice2007Theme::GetRibbonPaintManager()
-{
-#ifdef _XTP_INCLUDE_RIBBON
-	if (!m_pRibbonPaintManager)
-	{
-		m_pRibbonPaintManager = new CXTPRibbonPaintManager(this);
-		m_pRibbonPaintManager->RefreshMetrics();
-	}
-#endif
-	return m_pRibbonPaintManager;
-}
-
-
 
 CXTPOffice2007Theme::~CXTPOffice2007Theme()
 {
@@ -187,8 +147,32 @@ void CXTPOffice2007Theme::RefreshMetrics()
 
 //////////////////////////////////////////////////////////////////////////
 
-	GetImages()->AssertValid();
+	CXTPPaintManager::CNonClientMetrics ncm;
+	ncm.lfSmCaptionFont.lfWeight = FW_NORMAL;
 
+	if (m_bClearTypeTextQuality &&
+		XTPSystemVersion()->IsClearTypeTextQualitySupported())
+	{
+		ncm.lfCaptionFont.lfQuality = 5;
+	}
+
+	ncm.lfCaptionFont.lfWeight = FW_NORMAL;
+	if (m_bUseOfficeFont && FontExists(m_strOfficeFont))
+		STRCPY_S(ncm.lfCaptionFont.lfFaceName, LF_FACESIZE, m_strOfficeFont);
+
+	if (ncm.lfCaptionFont.lfHeight < 0)
+		ncm.lfCaptionFont.lfHeight = min(-11, ncm.lfCaptionFont.lfHeight);
+
+	m_fontFrameCaption.SetStandardFont(&ncm.lfCaptionFont);
+
+	int nBorderSize = 1;
+	SystemParametersInfo(SPI_GETBORDER, 0, &nBorderSize, FALSE);
+
+	m_nFrameCaptionHeight = GetSystemMetrics(SM_CYCAPTION);
+	m_nFrameCaptionHeight = max(m_nFrameCaptionHeight, 17);
+
+	m_nRibbonCaptionHeight = GetSystemMetrics(SM_CYCAPTION) + 1;
+	m_nRibbonCaptionHeight = max(m_nRibbonCaptionHeight, 18);
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -214,13 +198,11 @@ void CXTPOffice2007Theme::RefreshMetrics()
 
 	m_clrPopupControl.SetStandardValue(GetImages()->GetImageColor(_T("Toolbar"), _T("ControlHighlightPopupedLight")),
 		GetImages()->GetImageColor(_T("Toolbar"), _T("ControlHighlightPopupedDark")));
-	m_clrMenuGripper.SetStandardValue(GetImages()->GetImageColor(_T("Toolbar"), _T("MenuPopupGripperLight")),
-		GetImages()->GetImageColor(_T("Toolbar"), _T("MenuPopupGripperDark")));
 	m_clrMenuExpandedGripper.SetStandardValue(GetImages()->GetImageColor(_T("Toolbar"), _T("MenuPopupExpandedGripperLight")),
 		GetImages()->GetImageColor(_T("Toolbar"), _T("MenuPopupExpandedGripperDark")));
 	m_clrMenuExpand = m_clrPopupControl;
 
-	m_pShadowManager->SetShadowColor(0);
+	m_clrShadowFactor = 0;
 	m_clrTearOffGripper.SetStandardValue(GetImages()->GetImageColor(_T("Toolbar"), _T("MenuPopupTearOffGripper")));
 
 	m_clrMenuBarText = GetImages()->GetImageColor(_T("Toolbar"), _T("MenuBarText"));
@@ -275,7 +257,18 @@ void CXTPOffice2007Theme::RefreshMetrics()
 	m_grcLunaPushed.SetStandardValue(GetImages()->GetImageColor(_T("Window"), _T("HighlightPressedLight")),
 		GetImages()->GetImageColor(_T("Window"), _T("HighlightPressedDark")));
 
+	m_clrFrameBorderActive0 = GetImages()->GetImageColor(_T("Window"), _T("BorderActive0"));
+	m_clrFrameBorderActive1 = GetImages()->GetImageColor(_T("Window"), _T("BorderActive1"));
+	m_clrFrameBorderActive2 = GetImages()->GetImageColor(_T("Window"), _T("BorderActive2"));
+	m_clrFrameBorderActive3 = GetImages()->GetImageColor(_T("Window"), _T("BorderActive3"));
+	m_clrFrameBorderInactive0 = GetImages()->GetImageColor(_T("Window"), _T("BorderInactive0"));
+	m_clrFrameBorderInactive1 = GetImages()->GetImageColor(_T("Window"), _T("BorderInactive1"));
+	m_clrFrameBorderInactive2 = GetImages()->GetImageColor(_T("Window"), _T("BorderInactive2"));
+	m_clrFrameBorderInactive3 = GetImages()->GetImageColor(_T("Window"), _T("BorderInactive3"));
 
+	m_clrFrameCaptionTextActiveTitle = GetImages()->GetImageColor(_T("Window"), _T("CaptionTextActiveTitle"));
+	m_clrFrameCaptionTextInActive = GetImages()->GetImageColor(_T("Window"), _T("CaptionTextInActive"));
+	m_clrFrameCaptionTextActive = GetImages()->GetImageColor(_T("Window"), _T("CaptionTextActive"));
 
 	m_arrColor[XPCOLOR_LABEL].SetStandardValue(GetImages()->GetImageColor(_T("Toolbar"), _T("ControlLabel")));
 	m_arrColor[XPCOLOR_EDITCTRLBORDER].SetStandardValue(GetImages()->GetImageColor(_T("Toolbar"), _T("ControlEditBorder")));
@@ -283,18 +276,313 @@ void CXTPOffice2007Theme::RefreshMetrics()
 	m_clrDisabledIcon.SetStandardValue(GetImages()->GetImageColor(_T("Toolbar"), _T("ControlDisabledIconLight")),
 		GetImages()->GetImageColor(_T("Toolbar"), _T("ControlDisabledIconDark")));
 
-	m_clrMessageBar.SetStandardValue(GetImages()->GetImageColor(_T("MessageBar"), _T("MessageBarLight")),
-		GetImages()->GetImageColor(_T("MessageBar"), _T("MessageBarDark")));
-	m_clrMessageBarFrame = GetImages()->GetImageColor(_T("MessageBar"), _T("MessageBarFrame"));
-	m_clrMessageBarText = GetImages()->GetImageColor(_T("MessageBar"), _T("MessageBarText"));
-	m_clrMessageBarFace = GetImages()->GetImageColor(_T("MessageBar"), _T("MessageBar"));
-
 	CreateGradientCircle();
 }
 
 
 
+//////////////////////////////////////////////////////////////////////////
+//
 
+void CXTPOffice2007Theme::DrawCaptionText(CDC* pDC, CRect rcCaptionText, CWnd* pSite, BOOL bActive)
+{
+	CString strWindowText;
+	pSite->GetWindowText(strWindowText);
+
+	pDC->SetBkMode(TRANSPARENT);
+	CXTPFontDC font(pDC, &m_fontFrameCaption);
+
+	pDC->SetTextColor(!bActive ? m_clrFrameCaptionTextInActive : m_clrFrameCaptionTextActive); //RGB(62, 106, 170));
+
+	if (pSite->GetStyle() & FWS_PREFIXTITLE)
+	{
+#if _MSC_VER >= 1200
+		CFrameWnd* pFrame = pSite->IsFrameWnd() ? (CFrameWnd*)pSite : NULL;
+		CString strTitle = pFrame ? pFrame->GetTitle() : _T("");
+
+		if (!strTitle.IsEmpty() && strWindowText.Right(strTitle.GetLength()) == strTitle & ((pSite->GetExStyle() & WS_EX_LAYOUTRTL) == 0))
+		{
+			strWindowText.Delete(strWindowText.GetLength() - strTitle.GetLength(), strTitle.GetLength());
+			pDC->DrawText(strWindowText, rcCaptionText, DT_VCENTER | DT_LEFT| DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX);
+
+			int nExtent = pDC->GetTextExtent(strWindowText).cx;
+			rcCaptionText.left += nExtent + 2;
+
+			if (rcCaptionText.left < rcCaptionText.right - 5)
+			{
+				if (bActive) pDC->SetTextColor(m_clrFrameCaptionTextActiveTitle);
+				pDC->DrawText(strTitle, rcCaptionText, DT_VCENTER | DT_LEFT| DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX);
+			}
+
+		}
+		else
+#endif
+		{
+			pDC->DrawText(strWindowText, rcCaptionText, DT_VCENTER | DT_LEFT| DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX);
+		}
+	}
+	else
+	{
+		pDC->DrawText(strWindowText, rcCaptionText, DT_VCENTER | DT_LEFT| DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX);
+	}
+}
+
+
+
+HICON CXTPOffice2007Theme::GetFrameSmallIcon(CWnd* pFrame)
+{
+	if (!pFrame)
+		return NULL;
+
+	DWORD dwStyle = pFrame->GetStyle();
+	DWORD dwExStyle = pFrame->GetExStyle();
+
+	if (dwExStyle & WS_EX_TOOLWINDOW)
+		return NULL;
+
+	if ((dwStyle & WS_SYSMENU) == 0)
+		return NULL;
+
+	HICON hIcon = (HICON)(DWORD_PTR)::SendMessage(pFrame->m_hWnd, WM_GETICON, ICON_SMALL, 0);
+	if (hIcon)
+		return hIcon;
+
+	hIcon = (HICON)(DWORD_PTR)::GetClassLongPtr(pFrame->m_hWnd, GCLP_HICONSM);
+	if (hIcon)
+		return hIcon;
+
+	if (((dwStyle & (WS_BORDER | WS_DLGFRAME)) != WS_DLGFRAME) && ((dwExStyle & WS_EX_DLGMODALFRAME) == 0))
+	{
+		ULONG_PTR dwResult;
+
+		if (SendMessageTimeout(pFrame->GetSafeHwnd(),
+			WM_QUERYDRAGICON,
+			0,
+			0,
+			SMTO_NORMAL,
+			100,
+			&dwResult))
+		{
+			hIcon = (HICON)dwResult;
+		}
+
+		if (hIcon == NULL)
+		{
+			hIcon = AfxGetApp()->LoadOEMIcon(OIC_WINLOGO);
+		}
+	}
+
+	return hIcon;
+}
+
+HICON CXTPOffice2007Theme::GetFrameLargeIcon(CWnd* pFrame)
+{
+	if (!pFrame)
+		return NULL;
+
+	HICON hIcon = (HICON)(DWORD_PTR)::SendMessage(pFrame->m_hWnd, WM_GETICON, ICON_BIG, 0);
+	if (hIcon)
+		return hIcon;
+
+	hIcon = (HICON)(DWORD_PTR)::GetClassLongPtr(pFrame->m_hWnd, GCLP_HICON);
+	if (hIcon)
+		return hIcon;
+
+	return hIcon;
+}
+
+
+
+void CXTPOffice2007Theme::DrawRibbonFrame(CDC* pDC, CXTPOffice2007FrameHook* pFrameHook)
+{
+	CWnd* pSite = pFrameHook->GetSite();
+	BOOL bActive = pFrameHook->IsFrameActive();
+
+	CXTPClientRect rcBorders(pSite);
+	pSite->ClientToScreen(rcBorders);
+
+	CXTPWindowRect rc(pSite);
+
+	int nRightBorder = rcBorders.left - rc.left, nLeftBorder = rcBorders.left - rc.left;
+	int nBottomBorder = rc.bottom - rcBorders.bottom;
+
+	rc.OffsetRect(-rc.TopLeft());
+	CRect rcFrame(rc);
+
+	int nCaptionHeight = pFrameHook->GetCaptionHeight();
+	rcFrame.top += nCaptionHeight;
+
+	int nStatusHeight = 0;
+	BOOL bHasStatusBar = pFrameHook->IsFrameHasStatusBar(&nStatusHeight);
+
+	int nBordersHeight = bHasStatusBar ? rcFrame.Height() - nStatusHeight - 1 : rcFrame.Height();
+
+
+	if (nLeftBorder > 0) pDC->FillSolidRect(rc.left + 0, rcFrame.top, 1, rcFrame.Height(), bActive ? m_clrFrameBorderActive0 : m_clrFrameBorderInactive0);
+	if (nLeftBorder > 1) pDC->FillSolidRect(rc.left + 1, rcFrame.top, 1, nBordersHeight, bActive ? m_clrFrameBorderActive1 : m_clrFrameBorderInactive1);
+	if (nLeftBorder > 2) pDC->FillSolidRect(rc.left + 2, rcFrame.top, 1, nBordersHeight, bActive ? m_clrFrameBorderActive2 : m_clrFrameBorderInactive2);
+	if (nLeftBorder > 3) pDC->FillSolidRect(rc.left + 3, rcFrame.top, nLeftBorder - 3, nBordersHeight, bActive ? m_clrFrameBorderActive3 : m_clrFrameBorderInactive3);
+
+	if (nRightBorder > 0) pDC->FillSolidRect(rc.right - 1, rcFrame.top, 1, rcFrame.Height(), bActive ? m_clrFrameBorderActive0 : m_clrFrameBorderInactive0);
+	if (nRightBorder > 1) pDC->FillSolidRect(rc.right - 2, rcFrame.top, 1, nBordersHeight, bActive ? m_clrFrameBorderActive1 : m_clrFrameBorderInactive1);
+	if (nRightBorder > 2) pDC->FillSolidRect(rc.right - 3, rcFrame.top, 1, nBordersHeight, bActive ? m_clrFrameBorderActive2 : m_clrFrameBorderInactive2);
+	if (nRightBorder > 3) pDC->FillSolidRect(rc.right - nRightBorder, rcFrame.top, nRightBorder - 3, nBordersHeight, bActive ? m_clrFrameBorderActive3 : m_clrFrameBorderInactive3);
+
+	pDC->FillSolidRect(rc.left, rc.bottom - 1, rc.Width(), 1,
+		bActive ? pSite->GetStyle() & WS_MAXIMIZE ? m_clrFrameBorderActive3 : m_clrFrameBorderActive0 : m_clrFrameBorderInactive0);
+
+	if (nBottomBorder > 1)
+	{
+		pDC->FillSolidRect(rc.left + 1, rc.bottom - nBottomBorder, rc.Width() - 2, nBottomBorder - 1, bActive ? m_clrFrameBorderActive3 : m_clrFrameBorderInactive3);
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	CRect rcCaption(rc.left, rc.top, rc.right, rc.top + nCaptionHeight);
+
+	if (pFrameHook->IsCaptionVisible())
+	{
+		CXTPBufferDC dc(*pDC, rcCaption);
+
+		CXTPOffice2007Image* pImage = LoadImage(_T("FRAMETOPLEFT"));
+		CRect rcSrcTopLeft(pImage->GetSource(bActive ? 0 : 1, 2));
+
+		CRect rcTopLeft(rc.left, rc.top, rc.left + rcSrcTopLeft.Width(), rcCaption.bottom);
+		pImage->DrawImage(&dc, rcTopLeft, rcSrcTopLeft, CRect(0, 5, 0, 3));
+
+		//
+
+		pImage = LoadImage(_T("FRAMETOPRIGHT"));
+		CRect rcSrcTopRight(pImage->GetSource(bActive ? 0 : 1, 2));
+
+		CRect rcTopRight(rc.right - rcSrcTopRight.Width(), rc.top, rc.right, rcCaption.bottom);
+		pImage->DrawImage(&dc, rcTopRight, rcSrcTopRight, CRect(0, 5, 0, 3));
+
+		pImage = LoadImage(_T("FRAMETOPCENTER"));
+
+		CRect rcTopCenter(rc.left + rcTopLeft.Width(), rc.top, rc.right - rcSrcTopRight.Width(), rcCaption.bottom);
+		pImage->DrawImage(&dc, rcTopCenter, pImage->GetSource(bActive ? 0 : 1, 2), CRect(0, 5, 0, 3));
+
+		CRect rcCaptionText(rcCaption);
+		rcCaptionText.left = 7;
+		rcCaptionText.DeflateRect(0, pFrameHook->GetFrameBorder(), 0, 3);
+
+		HICON hIcon = GetFrameSmallIcon(pSite);
+		if (hIcon)
+		{
+			CSize szIcon(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON));
+
+			int cBorders = pFrameHook->GetFrameBorder() - 1;
+			int cxySlot = rcCaption.Height() - cBorders;
+			int nTop = cBorders + (cxySlot - szIcon.cy)/2;
+
+			DWORD dwLayout = XTPDrawHelpers()->IsContextRTL(&dc);
+			if (dwLayout & LAYOUT_RTL)
+				XTPDrawHelpers()->SetContextRTL(&dc, dwLayout | LAYOUT_BITMAPORIENTATIONPRESERVED);
+
+			DrawIconEx(dc.m_hDC, rcCaptionText.left, nTop, hIcon,
+				szIcon.cx, szIcon.cy, 0, NULL, DI_NORMAL);
+
+			if (dwLayout & LAYOUT_RTL)
+				XTPDrawHelpers()->SetContextRTL(&dc, dwLayout);
+
+
+			rcCaptionText.left = 7 + szIcon.cx + 5;
+		}
+
+		CXTPControls* pCaptionButtons = pFrameHook->GetCaptionButtons();
+		for (int i = 0; i < pCaptionButtons->GetCount(); i++)
+		{
+			CXTPControl* pControl = pCaptionButtons->GetAt(i);
+			if (!pControl->IsVisible())
+				continue;
+
+			DrawRibbonFrameCaptionButton(&dc, pControl->GetRect(), pControl->GetID(), pControl->GetSelected(), pControl->GetPressed(), pControl->GetEnabled() && bActive);
+
+			rcCaptionText.right = min(rcCaptionText.right, pControl->GetRect().left);
+		}
+
+		rcCaptionText.right -= nRightBorder;
+
+
+		DrawCaptionText(&dc, rcCaptionText, pSite, bActive);
+	}
+	else
+	{
+
+		CXTPOffice2007Image* pImage = LoadImage(_T("FRAMETOPLEFT"));
+		CRect rcSrc(pImage->GetSource(bActive ? 0 : 1, 2));
+		rcSrc.right = nLeftBorder;
+
+		CRect rcTopLeft(rc.left, rcCaption.top, rc.left + nLeftBorder, rcCaption.bottom);
+		pImage->DrawImage(pDC, rcTopLeft, rcSrc, CRect(0, 5, 0, 3));
+
+		//////////////////////////////////////////////////////////////////////////
+
+		pImage = LoadImage(_T("FRAMETOPRIGHT"));
+		rcSrc = pImage->GetSource(bActive ? 0 : 1, 2);
+		rcSrc.left = rcSrc.right - nRightBorder;
+
+		CRect rcTopRight(rc.right - nRightBorder, rcCaption.top, rc.right, rcCaption.bottom);
+		pImage->DrawImage(pDC, rcTopRight, rcSrc, CRect(0, 5, 0, 3));
+	}
+
+	if (bHasStatusBar)
+	{
+		CXTPOffice2007Image* pImage = LoadImage(_T("STATUSBARLIGHT"));
+		CRect rcSrc(0, 0, nLeftBorder - 1, pImage->GetHeight());
+		CRect rcLight(rc.left + 1, rc.bottom - nStatusHeight - nBottomBorder, rc.left + nLeftBorder, rc.bottom - nBottomBorder);
+		pImage->DrawImage(pDC, rcLight, rcSrc, CRect(0, 0, 0, 0));
+
+		pImage = LoadImage(_T("STATUSBARDARK"));
+		rcSrc.SetRect(0, 0, nRightBorder - 1, pImage->GetHeight());
+		CRect rcDark(rc.right - nRightBorder, rc.bottom - nStatusHeight - nBottomBorder, rc.right - 1, rc.bottom - nBottomBorder);
+		pImage->DrawImage(pDC, rcDark, rcSrc, CRect(0, 0, 0, 0));
+
+		if (nLeftBorder > 3)
+		{
+			pImage = LoadImage(_T("FRAMEBOTTOMLEFT"));
+			rcSrc = pImage->GetSource(bActive ? 0 : 1, 2);
+			CRect rcBottomLeft(rc.left, rc.bottom - rcSrc.Height(), rc.left + rcSrc.Width(), rc.bottom);
+			pImage->DrawImage(pDC, rcBottomLeft, rcSrc, CRect(0, 0, 0, 0), 0xFF00FF);
+		}
+
+		if (nRightBorder > 3)
+		{
+			pImage = LoadImage(_T("FRAMEBOTTOMRIGHT"));
+			rcSrc = pImage->GetSource(bActive ? 0 : 1, 2);
+			CRect rcBottomRight(rc.right - rcSrc.Width(), rc.bottom - rcSrc.Height(), rc.right, rc.bottom);
+			pImage->DrawImage(pDC, rcBottomRight, rcSrc, CRect(0, 0, 0, 0), 0xFF00FF);
+		}
+	}
+}
+
+void CXTPOffice2007Theme::DrawRibbonFrameCaptionButton(CDC* pDC, CRect rc, int nId, BOOL bSelected, BOOL bPressed, BOOL bActive)
+{
+	int nState = !bActive ? 3 : bPressed && bSelected ? 2 : bSelected || bPressed ? 1 : 0;
+
+	if (bSelected || bPressed)
+	{
+		CXTPOffice2007Image* pImage = LoadImage(_T("FRAMECAPTIONBUTTON"));
+		pImage->DrawImage(pDC, rc, pImage->GetSource(bPressed && bSelected ? 1 : 0, 2), CRect(3, 3, 3, 3), 0xFF00FF);
+	}
+
+	int nGlyphSize = 23;
+	if (rc.Width() < 27) nGlyphSize = 17;
+	if (rc.Width() < 15) nGlyphSize = 13;
+
+	LPCTSTR lpszButton = nId == SC_CLOSE ? _T("CLOSE") : nId == SC_MINIMIZE ? _T("MINIMIZE") :
+		nId == SC_MAXIMIZE ? _T("MAXIMIZE") : _T("RESTORE");
+
+	CString strImage;
+	strImage.Format(_T("FRAMECAPTION%s%i"), lpszButton, nGlyphSize);
+	CXTPOffice2007Image* pImage = LoadImage(strImage);
+
+	CRect rcSrc(pImage->GetSource(nState, 5));
+
+	CRect rcGlyph(CPoint((rc.right + rc.left - rcSrc.Width()) / 2, (rc.top + rc.bottom - rcSrc.Height()) / 2), rcSrc.Size());
+
+	pImage->DrawImage(pDC, rcGlyph, rcSrc, CRect(0, 0, 0, 0), 0xFF00FF);
+}
 
 void CXTPOffice2007Theme::FillWorkspace(CDC* pDC, CRect rc, CRect rcExclude)
 {
@@ -326,6 +614,58 @@ void CXTPOffice2007Theme::FillWorkspace(CDC* pDC, CRect rc, CRect rcExclude)
 	pDC->SelectClipRgn(NULL);
 }
 
+HRGN CXTPOffice2007Theme::CalcRibbonFrameRegion(CXTPOffice2007FrameHook* pFrameHook, CSize sz)
+{
+	if (pFrameHook->GetSite()->GetStyle() & WS_MAXIMIZE)
+	{
+		return NULL;
+	}
+
+	int cx = sz.cx, cy = sz.cy;
+
+	RECT rgnTopFrame[] =
+	{
+		{4, 0, cx - 4, 1}, {2, 1, cx - 2, 2}, {1, 2, cx - 1, 3}, {1, 3, cx - 1, 4}, {0, 4, cx, cy - 4}
+	};
+
+	RECT rgnRibbonBottomFrame[] =
+	{
+		{1, cy - 4, cx - 1, cy - 2}, {2, cy - 2, cx - 2, cy - 1}, {4, cy - 1, cx - 4, cy - 0}
+	};
+
+	RECT rgnSimpleBottomFrame[] =
+	{
+		{0, cy - 4, cx, cy}
+	};
+
+	BOOL bHasStatusBar = pFrameHook->IsFrameHasStatusBar() && pFrameHook->GetFrameBorder() > 3;
+
+	int nSizeTopRect = sizeof(rgnTopFrame);
+	int nSizeBottomRect = bHasStatusBar ? sizeof(rgnRibbonBottomFrame) : sizeof(rgnSimpleBottomFrame);
+
+	int nSizeData = sizeof(RGNDATAHEADER) + nSizeTopRect + nSizeBottomRect;
+
+	RGNDATA* pRgnData = (RGNDATA*)malloc(nSizeData);
+	if (!pRgnData)
+		return NULL;
+
+	memcpy(&pRgnData->Buffer, (void*)&rgnTopFrame, nSizeTopRect);
+	memcpy(&pRgnData->Buffer + nSizeTopRect, bHasStatusBar ? (void*)&rgnRibbonBottomFrame : (void*)&rgnSimpleBottomFrame, nSizeBottomRect);
+
+	pRgnData->rdh.dwSize = sizeof(RGNDATAHEADER);
+	pRgnData->rdh.iType = RDH_RECTANGLES;
+	pRgnData->rdh.nCount = (nSizeTopRect + nSizeBottomRect) / sizeof(RECT);
+	pRgnData->rdh.nRgnSize = 0;
+	pRgnData->rdh.rcBound = CRect(0, 0, cx, cy);
+
+	CRgn rgnResult;
+	VERIFY(rgnResult.CreateFromData(NULL, nSizeData, pRgnData));
+
+	free(pRgnData);
+
+	return (HRGN)rgnResult.Detach();
+}
+
 void CXTPOffice2007Theme::FillStatusBar(CDC* pDC, CXTPStatusBar* pBar)
 {
 	CXTPClientRect rc(pBar);
@@ -335,54 +675,8 @@ void CXTPOffice2007Theme::FillStatusBar(CDC* pDC, CXTPStatusBar* pBar)
 		m_clrStatusBarTop, FALSE);
 	XTPDrawHelpers()->GradientFill(pDC, CRect(rc.left, rc.top + 9, rc.right, rc.bottom),
 		m_clrStatusBarBottom, FALSE);
+
 }
-
-void CXTPOffice2007Theme::FillMessageBar(CDC* pDC, CXTPMessageBar* pBar)
-{
-	CXTPClientRect rcClient(pBar);
-	pDC->FillSolidRect(rcClient, m_clrMessageBarFace);
-
-	CRect rcMessage = pBar->GetMessageRect();
-	pDC->Draw3dRect(rcMessage, m_clrMessageBarFrame, m_clrMessageBarFrame);
-
-	rcMessage.DeflateRect(1, 1);
-	XTPDrawHelpers()->GradientFill(pDC, rcMessage, m_clrMessageBar, FALSE);
-}
-
-void CXTPOffice2007Theme::DrawMessageBarButton(CDC* pDC, CXTPMessageBarButton* pButton)
-{
-	BOOL bCloseButton = (pButton->m_nID == SC_CLOSE);
-	CRect rc(pButton->m_rcButton);
-
-	if (pButton->m_bPressed && bCloseButton)
-	{
-		pDC->FillSolidRect(rc, GetXtremeColor(XPCOLOR_HIGHLIGHT_PUSHED));
-		pDC->Draw3dRect(rc, GetXtremeColor(XPCOLOR_HIGHLIGHT_PUSHED_BORDER), GetXtremeColor(XPCOLOR_HIGHLIGHT_PUSHED_BORDER));
-	}
-	else if (pButton->m_bHot)
-	{
-		pDC->FillSolidRect(rc, GetXtremeColor(XPCOLOR_HIGHLIGHT));
-		pDC->Draw3dRect(rc, GetXtremeColor(XPCOLOR_HIGHLIGHT_BORDER), GetXtremeColor(XPCOLOR_HIGHLIGHT_BORDER));
-	}
-	else if (!bCloseButton)
-	{
-		pDC->FillSolidRect(rc, 0xFFFFFF);
-		pDC->Draw3dRect(rc, m_clrMessageBarFrame, m_clrMessageBarFrame);
-	}
-
-	if (bCloseButton)
-	{
-		CXTPOffice2007Image* pImage = LoadImage(_T("FRAMECAPTIONCLOSE17"));
-
-		CRect rcSrc(pImage->GetSource(0, 5));
-
-		CRect rcGlyph(CPoint((rc.right + rc.left - rcSrc.Width()) / 2, (rc.top + rc.bottom - rcSrc.Height()) / 2), rcSrc.Size());
-
-		pImage->DrawImage(pDC, rcGlyph, rcSrc, CRect(0, 0, 0, 0), 0xFF00FF);
-
-	}
-}
-
 
 void CXTPOffice2007Theme::DrawStatusBarPaneBorder(CDC* pDC, CRect rc, CXTPStatusBarPane* /*pPane*/, BOOL bGripperPane)
 {
@@ -408,13 +702,7 @@ void CXTPOffice2007Theme::DrawStatusBarGripper(CDC* pDC, CRect rcClient)
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CXTPControlGalleryOffice2007Theme
-
-CXTPControlGalleryOffice2007Theme::CXTPControlGalleryOffice2007Theme(CXTPPaintManager* pPaintManager)
-	: CXTPControlGalleryPaintManager(pPaintManager)
-{
-
-}
+//
 
 void CXTPControlGalleryOffice2007Theme::FillControl(CDC* pDC, CXTPControlGallery* pGallery, CRect rcControl)
 {
@@ -493,9 +781,6 @@ void CXTPControlGalleryOffice2007Theme::DrawPopupScrollBar(CDC* pDC, CXTPControl
 	BOOL bControlEnabled = pGallery->GetEnabled();
 	BOOL nPressetHt = pSBTrack ? pSBInfo->ht : -1;
 	BOOL nHotHt = pSBTrack ? -1 : pSBInfo->ht;
-
-	if (nHotHt == HTNOWHERE && nPressetHt == -1 && bControlEnabled && IsKeyboardSelected(pGallery->GetSelected()) && pGallery->GetSelectedItem() == -1)
-		nHotHt = XTP_HTSCROLLPOPUP;
 
 	int nState = GETPARTSTATE3(XTP_HTSCROLLUP, (bControlEnabled && pGallery->IsScrollButtonEnabled(XTP_HTSCROLLUP)));
 	pImage->DrawImage(pDC, rcScrollUp, pImage->GetSource(nState, 5), CRect(3, 3, 3, 3), 0xFF00FF);
@@ -732,988 +1017,5 @@ void CXTPControlGalleryOffice2007Theme::DrawScrollBar(CDC* pDC, CXTPScrollBase* 
 					pImageBackground->GetSource(1, 2), CRect(0, 1, 0, 1));
 			}
 		}
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPControlSliderOffice2007Theme
-
-void CXTPSliderOffice2007Theme::RefreshMetrics()
-{
-	CXTPSliderPaintManager::RefreshMetrics();
-
-	CXTPOffice2007Image* pImage = ((CXTPOffice2007Theme*)m_pPaintManager)->LoadImage(_T("SLIDERUP"));
-
-	if (pImage)
-	{
-		m_cyHScroll = pImage->GetSource(0, 3).Height();
-		m_cxHScroll = pImage->GetSource(0, 3).Width();
-	}
-
-	m_cThumb = 11;
-}
-
-void CXTPSliderOffice2007Theme::DrawScrollBar(CDC* pDC, CXTPScrollBase* pGallery)
-{
-	#define GETPARTSTATE4(ht) (nPressetHt == ht ? 2 : nHotHt == ht ? 1 : 0)
-
-	CXTPScrollBase::SCROLLBARTRACKINFO* pSBTrack = pGallery->GetScrollBarTrackInfo();
-	CXTPScrollBase::SCROLLBARPOSINFO* pSBInfo = pGallery->GetScrollBarPosInfo();
-
-	BOOL nPressetHt = pSBTrack ? (pSBTrack->bTrackThumb || pSBTrack->fHitOld ? pSBInfo->ht : -1) : -1;
-	BOOL nHotHt = pSBTrack ? -1 : pSBInfo->ht;
-
-
-	int cWidth = (pSBInfo->pxRight - pSBInfo->pxLeft);
-
-	if (cWidth <= 0)
-	{
-		return;
-	}
-
-	BOOL bEnabled = (pSBInfo->posMax - pSBInfo->posMin - pSBInfo->page + 1 > 0) && pGallery->IsScrollBarEnabled();
-
-	int nBtnTrackSize =   pSBInfo->pxThumbBottom - pSBInfo->pxThumbTop;
-	int nBtnTrackPos = pSBInfo->pxThumbTop - pSBInfo->pxUpArrow;
-
-	if (!bEnabled || pSBInfo->pxThumbBottom > pSBInfo->pxDownArrow)
-		nBtnTrackPos = nBtnTrackSize = 0;
-
-	CXTPOffice2007Theme* pPaintManager = (CXTPOffice2007Theme*)m_pPaintManager;
-
-	if (!pSBInfo->fVert)
-	{
-		CRect rcHScroll(pSBInfo->rc);
-
-		CRect rcArrowLeft(rcHScroll.left, rcHScroll.top, pSBInfo->pxUpArrow, rcHScroll.bottom);
-		CRect rcArrowRight(pSBInfo->pxDownArrow, rcHScroll.top, rcHScroll.right, rcHScroll.bottom);
-		CRect rcTrack(rcArrowLeft.right, rcHScroll.top, rcArrowRight.left, rcHScroll.bottom);
-		CRect rcBtnTrack(rcTrack.left + nBtnTrackPos, rcTrack.top, rcTrack.left + nBtnTrackPos + nBtnTrackSize, rcTrack.bottom);
-
-		CXTPOffice2007Image* pImage =  pPaintManager->LoadImage(_T("SLIDERTRACK"));
-		ASSERT(pImage);
-		if (!pImage)
-			return;
-
-		CRect rcTrackDest(CPoint(rcTrack.left, (rcTrack.top + rcTrack.bottom - pImage->GetHeight()) / 2), CSize(rcTrack.Width(), pImage->GetHeight()));
-		pImage->DrawImage(pDC, rcTrackDest, pImage->GetSource());
-
-		pImage =  pPaintManager->LoadImage(_T("SLIDERTICK"));
-
-		CXTPScrollBase::SLIDERTICKS* pTicks = pGallery->GetTicks();
-		if (!pTicks || (pSBInfo->posMax <= pSBInfo->posMin))
-		{
-			CRect rcTrackTickDest(CPoint((rcTrackDest.left + rcTrackDest.right - pImage->GetWidth()) / 2,
-				(rcTrackDest.top + rcTrackDest.bottom - pImage->GetHeight()) / 2), pImage->GetExtent());
-
-			pImage->DrawImage(pDC, rcTrackTickDest, pImage->GetSource(), CRect(0, 0, 0, 0), 0xFF00FF);
-		}
-		else
-		{
-			rcTrackDest.DeflateRect(6, 0);
-
-			for (int i = 0; i < pTicks->nCount; i++)
-			{
-				double dTick = pTicks->pTicks[i];
-				double dPos = (dTick - pSBInfo->posMin) * rcTrackDest.Width() / (pSBInfo->posMax - pSBInfo->posMin);
-
-				if (dPos >= 0 && dPos <= rcTrackDest.Width())
-				{
-					CRect rcTrackTickDest(CPoint(rcTrackDest.left + (int)dPos - pImage->GetWidth() / 2,
-						(rcTrackDest.top + rcTrackDest.bottom - pImage->GetHeight()) / 2), pImage->GetExtent());
-
-					pImage->DrawImage(pDC, rcTrackTickDest, pImage->GetSource(), CRect(0, 0, 0, 0), 0xFF00FF);
-				}
-			}
-		}
-
-		pImage = pPaintManager->LoadImage(_T("SLIDERUP"));
-		pImage->DrawImage(pDC, rcArrowLeft, pImage->GetSource(GETPARTSTATE4(XTP_HTSCROLLUP), 3));
-
-		pImage = pPaintManager->LoadImage(_T("SLIDERDOWN"));
-		pImage->DrawImage(pDC, rcArrowRight, pImage->GetSource(GETPARTSTATE4(XTP_HTSCROLLDOWN), 3));
-
-		if (bEnabled)
-		{
-			pImage = pPaintManager->LoadImage(_T("SLIDERTHUMB"));
-
-			CRect rcImgSrc = pImage->GetSource(
-				nPressetHt == XTP_HTSCROLLTHUMB  ? 2 : nPressetHt == XTP_HTSCROLLUPPAGE || nPressetHt == XTP_HTSCROLLDOWNPAGE ||
-					nHotHt == XTP_HTSCROLLUPPAGE || nHotHt == XTP_HTSCROLLDOWNPAGE || nHotHt == XTP_HTSCROLLTHUMB ? 1 : 0, 3);
-
-			CRect rcBtnTrackDest(CPoint((rcBtnTrack.left + rcBtnTrack.right - rcImgSrc.Width()) / 2,
-				(rcBtnTrack.top + rcBtnTrack.bottom - rcImgSrc.Height()) / 2), rcImgSrc.Size());
-			pImage->DrawImage(pDC, rcBtnTrackDest, rcImgSrc);
-		}
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPProgressOffice2007Theme
-
-CXTPProgressOffice2007Theme::CXTPProgressOffice2007Theme(CXTPPaintManager* pPaintManager)
-	: CXTPProgressPaintManager(pPaintManager)
-{
-	m_cyProgress = 12;
-}
-
-void CXTPProgressOffice2007Theme::DrawProgress(CDC* pDC, CXTPProgressBase* pProgressBar)
-{
-	CXTPOffice2007Theme* pPaintManager = (CXTPOffice2007Theme*)m_pPaintManager;
-
-	CXTPOffice2007Image* pImage =  pPaintManager->LoadImage(_T("PROGRESSTRACK"));
-	ASSERT(pImage);
-	if (!pImage)
-		return;
-
-	CRect rc = pProgressBar->GetProgressRect();
-
-	pImage->DrawImage(pDC, rc, pImage->GetSource(), CRect(2, 2, 2, 2), 0xFF00FF);
-
-	int nLower, nUpper, nPos;
-	pProgressBar->GetRange(nLower, nUpper);
-	nPos = pProgressBar->GetPos();
-
-	rc.DeflateRect(2, 2);
-
-	int nWidth = rc.Width();
-
-	int x = MulDiv(nWidth, nPos - nLower, nUpper - nLower);
-
-	pImage =  pPaintManager->LoadImage(_T("PROGRESSCHUNK"));
-	ASSERT(pImage);
-	if (!pImage)
-		return;
-
-	CRect rcSrc(pImage->GetSource());
-	rcSrc.right -= 4;
-
-	CRect rcDest(rc.left, rc.top, rc.left + x, rc.bottom);
-
-	if (rcDest.Width() < rcSrc.Width())
-		rcSrc.left = rcSrc.right - rcDest.Width();
-
-	pImage->DrawImage(pDC, rcDest, rcSrc, CRect(2, 2, 2, 2), 0xFF00FF);
-
-	if (rc.left + x < rc.right - 1)
-	{
-		int nShadow = min(4, rc.right - rc.left - x);
-		rcSrc = CRect(rcSrc.right, rcSrc.top, rcSrc.right + nShadow, rcSrc.bottom);
-
-		rcDest = CRect(rcDest.right, rcDest.top, rcDest.right + nShadow, rcDest.bottom);
-
-		pImage->DrawImage(pDC, rcDest, rcSrc, CRect(0, 2, 0, 2), 0xFF00FF);
-		return;
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPFramePaintManager
-
-CXTPFramePaintManager::CXTPFramePaintManager(CXTPPaintManager* pPaintManager)
-{
-	m_pPaintManager = pPaintManager;
-	m_bFrameStatusBar = FALSE;
-}
-
-CXTPFramePaintManager::~CXTPFramePaintManager()
-{
-
-}
-
-HRGN CXTPFramePaintManager::CalcFrameRegion(CXTPOffice2007FrameHook* pFrameHook, CSize sz)
-{
-	if (pFrameHook->GetSite()->GetStyle() & WS_MAXIMIZE)
-	{
-		return NULL;
-	}
-
-	int cx = sz.cx, cy = sz.cy;
-
-	RECT rgnTopFrame[] =
-	{
-		{4, 0, cx - 4, 1}, {2, 1, cx - 2, 2}, {1, 2, cx - 1, 3}, {1, 3, cx - 1, 4}, {0, 4, cx, cy - 4}
-	};
-
-	RECT rgnRibbonBottomFrame[] =
-	{
-		{1, cy - 4, cx - 1, cy - 2}, {2, cy - 2, cx - 2, cy - 1}, {4, cy - 1, cx - 4, cy - 0}
-	};
-
-	RECT rgnSimpleBottomFrame[] =
-	{
-		{0, cy - 4, cx, cy}
-	};
-
-	BOOL bHasStatusBar = pFrameHook->IsFrameHasStatusBar() && pFrameHook->GetFrameBorder() > 3;
-
-	int nSizeTopRect = sizeof(rgnTopFrame);
-	int nSizeBottomRect = bHasStatusBar ? sizeof(rgnRibbonBottomFrame) : sizeof(rgnSimpleBottomFrame);
-
-	int nSizeData = sizeof(RGNDATAHEADER) + nSizeTopRect + nSizeBottomRect;
-
-	RGNDATA* pRgnData = (RGNDATA*)malloc(nSizeData);
-	if (!pRgnData)
-		return NULL;
-
-	memcpy(&pRgnData->Buffer, (void*)&rgnTopFrame, nSizeTopRect);
-	memcpy(&pRgnData->Buffer + nSizeTopRect, bHasStatusBar ? (void*)&rgnRibbonBottomFrame : (void*)&rgnSimpleBottomFrame, nSizeBottomRect);
-
-	pRgnData->rdh.dwSize = sizeof(RGNDATAHEADER);
-	pRgnData->rdh.iType = RDH_RECTANGLES;
-	pRgnData->rdh.nCount = (nSizeTopRect + nSizeBottomRect) / sizeof(RECT);
-	pRgnData->rdh.nRgnSize = 0;
-	pRgnData->rdh.rcBound = CRect(0, 0, cx, cy);
-
-	CRgn rgnResult;
-	VERIFY(rgnResult.CreateFromData(NULL, nSizeData, pRgnData));
-
-	free(pRgnData);
-
-	return (HRGN)rgnResult.Detach();
-}
-void CXTPFramePaintManager::DrawCaptionText(CDC* pDC, CRect rcCaptionText, CWnd* pSite, BOOL bActive)
-{
-	CString strWindowText;
-	CXTPDrawHelpers::GetWindowCaption(pSite->GetSafeHwnd(), strWindowText);
-
-	pDC->SetBkMode(TRANSPARENT);
-	CXTPFontDC font(pDC, &m_fontFrameCaption);
-
-	pDC->SetTextColor(!bActive ? m_clrFrameCaptionTextInActive : m_clrFrameCaptionTextActive); //RGB(62, 106, 170));
-
-	if (pSite->GetStyle() & FWS_PREFIXTITLE)
-	{
-#if _MSC_VER >= 1200
-		CFrameWnd* pFrame = pSite->IsFrameWnd() ? (CFrameWnd*)pSite : NULL;
-		CString strTitle = pFrame ? pFrame->GetTitle() : _T("");
-
-		if (!strTitle.IsEmpty() && strWindowText.Right(strTitle.GetLength()) == strTitle & ((pSite->GetExStyle() & WS_EX_LAYOUTRTL) == 0))
-		{
-			strWindowText.Delete(strWindowText.GetLength() - strTitle.GetLength(), strTitle.GetLength());
-			pDC->DrawText(strWindowText, rcCaptionText, DT_VCENTER | DT_LEFT| DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX);
-
-			int nExtent = pDC->GetTextExtent(strWindowText).cx;
-			rcCaptionText.left += nExtent + 2;
-
-			if (rcCaptionText.left < rcCaptionText.right - 5)
-			{
-				if (bActive) pDC->SetTextColor(m_clrFrameCaptionTextActiveTitle);
-				pDC->DrawText(strTitle, rcCaptionText, DT_VCENTER | DT_LEFT| DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX);
-			}
-
-		}
-		else
-#endif
-		{
-			pDC->DrawText(strWindowText, rcCaptionText, DT_VCENTER | DT_LEFT| DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX);
-		}
-	}
-	else
-	{
-		pDC->DrawText(strWindowText, rcCaptionText, DT_VCENTER | DT_LEFT| DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX);
-	}
-}
-
-void CXTPFramePaintManager::RefreshMetrics()
-{
-	GetImages()->AssertValid();
-
-	m_nFrameCaptionHeight = GetSystemMetrics(SM_CYCAPTION);
-	m_nFrameCaptionHeight = max(m_nFrameCaptionHeight, 17);
-
-	m_clrFrameBorderActive0 = GetImages()->GetImageColor(_T("Window"), _T("BorderActive0"));
-	m_clrFrameBorderActive1 = GetImages()->GetImageColor(_T("Window"), _T("BorderActive1"));
-	m_clrFrameBorderActive2 = GetImages()->GetImageColor(_T("Window"), _T("BorderActive2"));
-	m_clrFrameBorderActive3 = GetImages()->GetImageColor(_T("Window"), _T("BorderActive3"));
-	m_clrFrameBorderInactive0 = GetImages()->GetImageColor(_T("Window"), _T("BorderInactive0"));
-	m_clrFrameBorderInactive1 = GetImages()->GetImageColor(_T("Window"), _T("BorderInactive1"));
-	m_clrFrameBorderInactive2 = GetImages()->GetImageColor(_T("Window"), _T("BorderInactive2"));
-	m_clrFrameBorderInactive3 = GetImages()->GetImageColor(_T("Window"), _T("BorderInactive3"));
-
-	m_clrFrameCaptionTextActiveTitle = GetImages()->GetImageColor(_T("Window"), _T("CaptionTextActiveTitle"));
-	m_clrFrameCaptionTextInActive = GetImages()->GetImageColor(_T("Window"), _T("CaptionTextInActive"));
-	m_clrFrameCaptionTextActive = GetImages()->GetImageColor(_T("Window"), _T("CaptionTextActive"));
-
-	m_bFlatFrame = GetImages()->GetImageInt(_T("Window"), _T("FlatFrame"), 0);
-
-
-	CXTPPaintManager::CNonClientMetrics ncm;
-	ncm.lfSmCaptionFont.lfWeight = FW_NORMAL;
-
-	if (m_pPaintManager->m_bClearTypeTextQuality &&
-		XTPSystemVersion()->IsClearTypeTextQualitySupported())
-	{
-		ncm.lfCaptionFont.lfQuality = 5;
-	}
-
-	ncm.lfCaptionFont.lfWeight = FW_NORMAL;
-	if (m_pPaintManager->m_bUseOfficeFont && CXTPDrawHelpers::FontExists(m_pPaintManager->m_strOfficeFont))
-		STRCPY_S(ncm.lfCaptionFont.lfFaceName, LF_FACESIZE, m_pPaintManager->m_strOfficeFont);
-
-	if (ncm.lfCaptionFont.lfHeight < 0)
-		ncm.lfCaptionFont.lfHeight = min(-11, ncm.lfCaptionFont.lfHeight);
-
-	ncm.lfCaptionFont.lfCharSet = XTPResourceManager()->GetFontCharset();
-
-	m_fontFrameCaption.SetStandardFont(&ncm.lfCaptionFont);
-}
-
-CXTPOffice2007Images* CXTPFramePaintManager::GetImages() const
-{
-	return XTPOffice2007Images();
-}
-
-CXTPOffice2007Image* CXTPFramePaintManager::LoadImage(LPCTSTR lpszFileName)
-{
-	return GetImages()->LoadFile(lpszFileName);
-}
-
-void CXTPFramePaintManager::DrawFrame(CDC* pDC, CXTPOffice2007FrameHook* pFrameHook)
-{
-	CWnd* pSite = pFrameHook->GetSite();
-	BOOL bActive = pFrameHook->IsFrameActive();
-
-	CXTPClientRect rcBorders(pSite);
-	pSite->ClientToScreen(rcBorders);
-
-	CXTPWindowRect rc(pSite);
-
-	int nRightBorder = rcBorders.left - rc.left, nLeftBorder = rcBorders.left - rc.left, nBorder = pFrameHook->GetFrameBorder();
-	int nBottomBorder = rc.bottom - rcBorders.bottom;
-
-	rc.OffsetRect(-rc.TopLeft());
-	CRect rcFrame(rc);
-
-	int nCaptionHeight = pFrameHook->GetCaptionHeight();
-	rcFrame.top += nCaptionHeight;
-
-	int nStatusHeight = 0;
-	BOOL bHasStatusBar = pFrameHook->IsFrameHasStatusBar(&nStatusHeight);
-
-	int nBordersHeight = bHasStatusBar ? rcFrame.Height() - nStatusHeight - 1 : rcFrame.Height();
-
-	if (nLeftBorder > 0) pDC->FillSolidRect(rc.left + 0, rcFrame.top, 1, rcFrame.Height(), bActive ? m_clrFrameBorderActive0 : m_clrFrameBorderInactive0);
-	if (nLeftBorder > 1) pDC->FillSolidRect(rc.left + 1, rcFrame.top, 1, nBordersHeight, bActive ? m_clrFrameBorderActive1 : m_clrFrameBorderInactive1);
-
-	if (nRightBorder > 0) pDC->FillSolidRect(rc.right - 1, rcFrame.top, 1, rcFrame.Height(), bActive ? m_clrFrameBorderActive0 : m_clrFrameBorderInactive0);
-	if (nRightBorder > 1) pDC->FillSolidRect(rc.right - 2, rcFrame.top, 1, nBordersHeight, bActive ? m_clrFrameBorderActive1 : m_clrFrameBorderInactive1);
-
-	if (m_bFlatFrame)
-	{
-		if (nLeftBorder > 2) pDC->FillSolidRect(rc.left + 2, rcFrame.top, nLeftBorder - 3, nBordersHeight, bActive ? m_clrFrameBorderActive2 : m_clrFrameBorderInactive2);
-		if (nLeftBorder > 2) pDC->FillSolidRect(rc.left + nLeftBorder - 1, rcFrame.top, 1, nBordersHeight, bActive ? m_clrFrameBorderActive3 : m_clrFrameBorderInactive3);
-
-		if (nRightBorder > 2) pDC->FillSolidRect(rc.right - nRightBorder + 1, rcFrame.top, nRightBorder - 3, nBordersHeight, bActive ? m_clrFrameBorderActive2 : m_clrFrameBorderInactive2);
-		if (nRightBorder > 2) pDC->FillSolidRect(rc.right - nRightBorder, rcFrame.top, 1, nBordersHeight, bActive ? m_clrFrameBorderActive3 : m_clrFrameBorderInactive3);
-	}
-	else
-	{
-		if (nLeftBorder > 2) pDC->FillSolidRect(rc.left + 2, rcFrame.top, 1, nBordersHeight, bActive ? m_clrFrameBorderActive2 : m_clrFrameBorderInactive2);
-		if (nLeftBorder > 3) pDC->FillSolidRect(rc.left + 3, rcFrame.top, nLeftBorder - 3, nBordersHeight, bActive ? m_clrFrameBorderActive3 : m_clrFrameBorderInactive3);
-
-		if (nRightBorder > 2) pDC->FillSolidRect(rc.right - 3, rcFrame.top, 1, nBordersHeight, bActive ? m_clrFrameBorderActive2 : m_clrFrameBorderInactive2);
-		if (nRightBorder > 3) pDC->FillSolidRect(rc.right - nRightBorder, rcFrame.top, nRightBorder - 3, nBordersHeight, bActive ? m_clrFrameBorderActive3 : m_clrFrameBorderInactive3);
-	}
-
-	pDC->FillSolidRect(rc.left, rc.bottom - 1, rc.Width(), 1,
-		bActive ? pSite->GetStyle() & WS_MAXIMIZE ? m_clrFrameBorderActive3 : m_clrFrameBorderActive0 : m_clrFrameBorderInactive0);
-
-	if (nBottomBorder > 1)
-	{
-		if (m_bFlatFrame)
-		{
-			pDC->FillSolidRect(rc.left + nLeftBorder, rc.bottom - nBottomBorder, rc.Width() - nLeftBorder - nRightBorder, 1, bActive ? m_clrFrameBorderActive3 : m_clrFrameBorderInactive3);
-			pDC->FillSolidRect(rc.left + 1, rc.bottom - nBottomBorder + 1, rc.Width() - 2, nBottomBorder - 2, bActive ? m_clrFrameBorderActive2 : m_clrFrameBorderInactive2);
-		}
-		else
-		{
-			pDC->FillSolidRect(rc.left + 1, rc.bottom - nBottomBorder, rc.Width() - 2, nBottomBorder - 1, bActive ? m_clrFrameBorderActive3 : m_clrFrameBorderInactive3);
-		}
-	}
-
-	//////////////////////////////////////////////////////////////////////////
-	CRect rcCaption(rc.left, rc.top, rc.right, rc.top + nCaptionHeight);
-
-	if (pFrameHook->IsCaptionVisible())
-	{
-		CXTPBufferDC dc(*pDC, rcCaption);
-		CRect rcTopLeft, rcTopRight, rcTopCenter, rcSrcTopLeft, rcSrcTopRight;
-		rcTopLeft.SetRectEmpty();
-		rcTopRight.SetRectEmpty();
-		rcTopCenter.SetRectEmpty();
-		rcSrcTopLeft.SetRectEmpty();
-		rcSrcTopRight.SetRectEmpty();
-
-		CXTPOffice2007Image* pImage = LoadImage(_T("FRAMETOPLEFT"));
-		if (pImage)
-		{
-			rcSrcTopLeft = pImage->GetSource(bActive ? 0 : 1, 2);
-
-			rcTopLeft.SetRect(rc.left, rc.top, rc.left + rcSrcTopLeft.Width(), rcCaption.bottom);
-			pImage->DrawImage(&dc, rcTopLeft, rcSrcTopLeft, CRect(0, 5, 0, 3));
-		}
-		//
-
-		pImage = LoadImage(_T("FRAMETOPRIGHT"));
-		if (pImage)
-		{
-			rcSrcTopRight = pImage->GetSource(bActive ? 0 : 1, 2);
-
-			rcTopRight.SetRect(rc.right - rcSrcTopRight.Width(), rc.top, rc.right, rcCaption.bottom);
-			pImage->DrawImage(&dc, rcTopRight, rcSrcTopRight, CRect(0, 5, 0, 3));
-		}
-
-		pImage = LoadImage(_T("FRAMETOPCENTER"));
-		if (pImage)
-		{
-			rcTopCenter.SetRect(rc.left + rcTopLeft.Width(), rc.top, rc.right - rcSrcTopRight.Width(), rcCaption.bottom);
-			pImage->DrawImage(&dc, rcTopCenter, pImage->GetSource(bActive ? 0 : 1, 2), CRect(0, 5, 0, 3));
-		}
-
-		CRect rcCaptionText(rcCaption);
-		rcCaptionText.left = 7;
-		rcCaptionText.DeflateRect(0, nBorder, 0, 3);
-
-		HICON hIcon = GetFrameSmallIcon(pSite);
-		if (hIcon)
-		{
-			CSize szIcon(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON));
-
-			int cBorders = nBorder - 1;
-			int cxySlot = rcCaption.Height() - cBorders;
-			int nTop = cBorders + (cxySlot - szIcon.cy - 1)/2;
-
-			DWORD dwLayout = XTPDrawHelpers()->IsContextRTL(&dc);
-			if (dwLayout & LAYOUT_RTL)
-				XTPDrawHelpers()->SetContextRTL(&dc, dwLayout | LAYOUT_BITMAPORIENTATIONPRESERVED);
-
-			DrawIconEx(dc.m_hDC, rcCaptionText.left, nTop, hIcon,
-				szIcon.cx, szIcon.cy, 0, NULL, DI_NORMAL);
-
-			if (dwLayout & LAYOUT_RTL)
-				XTPDrawHelpers()->SetContextRTL(&dc, dwLayout);
-
-
-			rcCaptionText.left = 7 + szIcon.cx + 5;
-		}
-
-		CXTPControls* pCaptionButtons = pFrameHook->GetCaptionButtons();
-		for (int i = 0; i < pCaptionButtons->GetCount(); i++)
-		{
-			CXTPControl* pControl = pCaptionButtons->GetAt(i);
-			if (!pControl->IsVisible())
-				continue;
-
-			DrawFrameCaptionButton(&dc, pControl->GetRect(), pControl->GetID(), pControl->GetSelected(), pControl->GetPressed(), pControl->GetEnabled() && bActive);
-
-			rcCaptionText.right = min(rcCaptionText.right, pControl->GetRect().left);
-		}
-
-		rcCaptionText.right -= nRightBorder;
-
-
-		DrawCaptionText(&dc, rcCaptionText, pSite, bActive);
-	}
-	else
-	{
-		CRect rcSrc;
-		rcSrc.SetRectEmpty();
-
-		CXTPOffice2007Image* pImage = LoadImage(_T("FRAMETOPLEFT"));
-		if (pImage)
-		{
-			rcSrc = pImage->GetSource(bActive ? 0 : 1, 2);
-			rcSrc.right = nLeftBorder;
-
-			CRect rcTopLeft(rc.left, rcCaption.top, rc.left + nLeftBorder, rcCaption.bottom);
-			pImage->DrawImage(pDC, rcTopLeft, rcSrc, CRect(0, 5, 0, 3));
-		}
-
-		pImage = LoadImage(_T("FRAMETOPRIGHT"));
-		if (pImage)
-		{
-			rcSrc = pImage->GetSource(bActive ? 0 : 1, 2);
-			rcSrc.left = rcSrc.right - nRightBorder;
-
-			CRect rcTopRight(rc.right - nRightBorder, rcCaption.top, rc.right, rcCaption.bottom);
-			pImage->DrawImage(pDC, rcTopRight, rcSrc, CRect(0, 5, 0, 3));
-		}
-
-
-		pImage = LoadImage(_T("FRAMETOPCENTER"));
-		if (pImage)
-		{
-			rcSrc = pImage->GetSource(bActive ? 0 : 1, 2);
-			rcSrc.bottom = rcSrc.top + nBorder;
-
-			CRect rcTopCenter(rc.left + nLeftBorder, rc.top, rc.right - nRightBorder, rc.top + nBorder);
-			pImage->DrawImage(pDC, rcTopCenter, rcSrc, CRect(0, 0, 0, 0));
-		}
-
-		pFrameHook->DrawRibbonFramePart(pDC);
-	}
-
-	if (bHasStatusBar)
-	{
-		CRect rcSrc;
-		rcSrc.SetRectEmpty();
-
-		CXTPOffice2007Image* pImage;
-
-		if (!m_bFlatFrame)
-		{
-			pImage = LoadImage(_T("STATUSBARLIGHT"));
-			if (pImage)
-			{
-				rcSrc.SetRect(0, 0, nLeftBorder - 1, pImage->GetHeight());
-				CRect rcLight(rc.left + 1, rc.bottom - nStatusHeight - nBottomBorder, rc.left + nLeftBorder, rc.bottom - nBottomBorder);
-				pImage->DrawImage(pDC, rcLight, rcSrc, CRect(0, 0, 0, 0));
-			}
-
-			pImage = LoadImage(_T("STATUSBARDARK"));
-			if (pImage)
-			{
-				rcSrc.SetRect(0, 0, nRightBorder - 1, pImage->GetHeight());
-				CRect rcDark(rc.right - nRightBorder, rc.bottom - nStatusHeight - nBottomBorder, rc.right - 1, rc.bottom - nBottomBorder);
-				pImage->DrawImage(pDC, rcDark, rcSrc, CRect(0, 0, 0, 0));
-			}
-		}
-		else
-		{
-			CRect rcLight(rc.left + 1, rc.bottom - nStatusHeight - nBottomBorder, rc.left + nLeftBorder, rc.bottom - nBottomBorder + 1);
-			pDC->FillSolidRect(rcLight, bActive ? m_clrFrameBorderActive2 : m_clrFrameBorderInactive2);
-
-			CRect rcDark(rc.right - nRightBorder, rc.bottom - nStatusHeight - nBottomBorder, rc.right - 1, rc.bottom - nBottomBorder + 1);
-			pDC->FillSolidRect(rcDark, bActive ? m_clrFrameBorderActive2 : m_clrFrameBorderInactive2);
-
-			if (nBottomBorder > 1)
-			{
-				pDC->FillSolidRect(rc.left + nLeftBorder - 1, rc.bottom - nStatusHeight - nBottomBorder, 1, nStatusHeight,
-					bActive ? m_clrFrameBorderActive3 : m_clrFrameBorderInactive3);
-				pDC->FillSolidRect(rc.right - nRightBorder, rc.bottom - nStatusHeight - nBottomBorder, 1, nStatusHeight,
-					bActive ? m_clrFrameBorderActive3 : m_clrFrameBorderInactive3);
-
-			}
-		}
-
-		if (nLeftBorder > 3)
-		{
-			pImage = LoadImage(_T("FRAMEBOTTOMLEFT"));
-			if (pImage)
-			{
-				rcSrc = pImage->GetSource(bActive ? 0 : 1, 2);
-				CRect rcBottomLeft(rc.left, rc.bottom - rcSrc.Height(), rc.left + rcSrc.Width(), rc.bottom);
-				pImage->DrawImage(pDC, rcBottomLeft, rcSrc, CRect(0, 0, 0, 0), 0xFF00FF);
-			}
-		}
-
-		if (nRightBorder > 3)
-		{
-			pImage = LoadImage(_T("FRAMEBOTTOMRIGHT"));
-			if (pImage)
-			{
-				rcSrc = pImage->GetSource(bActive ? 0 : 1, 2);
-				CRect rcBottomRight(rc.right - rcSrc.Width(), rc.bottom - rcSrc.Height(), rc.right, rc.bottom);
-				pImage->DrawImage(pDC, rcBottomRight, rcSrc, CRect(0, 0, 0, 0), 0xFF00FF);
-			}
-		}
-	}
-}
-
-void CXTPFramePaintManager::DrawFrameCaptionButton(CDC* pDC, CRect rc, int nId, BOOL bSelected, BOOL bPressed, BOOL bActive)
-{
-	int nState = !bActive ? 3 : bPressed && bSelected ? 2 : bSelected || bPressed ? 1 : 0;
-
-
-	int nGlyphSize = 23;
-	if (rc.Width() < 27) nGlyphSize = 17;
-	if (rc.Width() < 15) nGlyphSize = 13;
-
-	LPCTSTR lpszButton = nId == SC_CLOSE ? _T("CLOSE") : nId == SC_MINIMIZE ? _T("MINIMIZE") :
-		nId == SC_MAXIMIZE ? _T("MAXIMIZE") : _T("RESTORE");
-
-	if (bSelected || bPressed)
-	{
-		CString strImage;
-		strImage.Format(_T("FRAMECAPTION%sBUTTON"), lpszButton);
-		CXTPOffice2007Image* pImage = LoadImage(strImage);
-
-		if (!pImage) pImage = LoadImage(_T("FRAMECAPTIONBUTTON"));
-		pImage->DrawImage(pDC, rc, pImage->GetSource(bPressed && bSelected ? 1 : 0, 2), CRect(3, 3, 3, 3), 0xFF00FF);
-	}
-
-	CString strImage;
-	strImage.Format(_T("FRAMECAPTION%s%i"), lpszButton, nGlyphSize);
-	CXTPOffice2007Image* pImage = LoadImage(strImage);
-
-	CRect rcSrc(pImage->GetSource(nState, 5));
-
-	CRect rcGlyph(CPoint((rc.right + rc.left - rcSrc.Width()) / 2, (rc.top + rc.bottom - rcSrc.Height()) / 2), rcSrc.Size());
-
-	pImage->DrawImage(pDC, rcGlyph, rcSrc, CRect(0, 0, 0, 0), 0xFF00FF);
-}
-
-HICON CXTPFramePaintManager::GetFrameSmallIcon(CWnd* pFrame)
-{
-	if (!pFrame)
-		return NULL;
-
-	DWORD dwStyle = pFrame->GetStyle();
-	DWORD dwExStyle = pFrame->GetExStyle();
-
-	if (dwExStyle & WS_EX_TOOLWINDOW)
-		return NULL;
-
-	if ((dwStyle & WS_SYSMENU) == 0)
-		return NULL;
-
-	HICON hIcon = (HICON)(DWORD_PTR)::SendMessage(pFrame->m_hWnd, WM_GETICON, ICON_SMALL, 0);
-	if (hIcon)
-		return hIcon;
-
-	hIcon = (HICON)(DWORD_PTR)::GetClassLongPtr(pFrame->m_hWnd, GCLP_HICONSM);
-	if (hIcon)
-		return hIcon;
-
-	if (((dwStyle & (WS_BORDER | WS_DLGFRAME)) != WS_DLGFRAME) && ((dwExStyle & WS_EX_DLGMODALFRAME) == 0))
-	{
-		ULONG_PTR dwResult;
-
-		if (SendMessageTimeout(pFrame->GetSafeHwnd(),
-			WM_QUERYDRAGICON,
-			0,
-			0,
-			SMTO_NORMAL,
-			100,
-			&dwResult))
-		{
-			hIcon = (HICON)dwResult;
-		}
-
-		if (hIcon == NULL)
-		{
-			hIcon = AfxGetApp()->LoadOEMIcon(OIC_WINLOGO);
-		}
-	}
-
-	return hIcon;
-}
-
-HICON CXTPFramePaintManager::GetFrameLargeIcon(CWnd* pFrame)
-{
-	if (!pFrame)
-		return NULL;
-
-	HICON hIcon = (HICON)(DWORD_PTR)::SendMessage(pFrame->m_hWnd, WM_GETICON, ICON_BIG, 0);
-	if (hIcon)
-		return hIcon;
-
-	hIcon = (HICON)(DWORD_PTR)::GetClassLongPtr(pFrame->m_hWnd, GCLP_HICON);
-	if (hIcon)
-		return hIcon;
-
-	return hIcon;
-}
-
-
-
-
-///
-//
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPRibbonSystemFrameTheme
-
-
-
-CXTPRibbonSystemFrameTheme::CXTPRibbonSystemFrameTheme(CXTPPaintManager* pPaintManager)
-	: CXTPFramePaintManager(pPaintManager)
-{
-	m_pMarkupContext = XTPMarkupCreateContext(0);
-
-}
-CXTPRibbonSystemFrameTheme::~CXTPRibbonSystemFrameTheme()
-{
-	XTPMarkupReleaseContext(m_pMarkupContext);
-
-}
-
-void CXTPRibbonSystemFrameTheme::RefreshMetrics()
-{
-	CXTPFramePaintManager::RefreshMetrics();
-
-	m_clrFrameBorderActive0 = GetXtremeColor(COLOR_ACTIVECAPTION);
-	m_clrFrameBorderActive1 = GetXtremeColor(COLOR_GRADIENTACTIVECAPTION);
-	m_clrFrameBorderActive2 = GetXtremeColor(COLOR_GRADIENTACTIVECAPTION);
-	m_clrFrameBorderActive3 = GetXtremeColor(COLOR_GRADIENTACTIVECAPTION);
-	m_clrFrameBorderInactive0 = GetXtremeColor(COLOR_INACTIVECAPTION);
-	m_clrFrameBorderInactive1 = GetXtremeColor(COLOR_GRADIENTINACTIVECAPTION);
-	m_clrFrameBorderInactive2 = GetXtremeColor(COLOR_GRADIENTINACTIVECAPTION);
-	m_clrFrameBorderInactive3 = GetXtremeColor(COLOR_GRADIENTINACTIVECAPTION);
-
-	m_clrFrameCaptionTextActiveTitle = GetXtremeColor(COLOR_CAPTIONTEXT);
-	m_clrFrameCaptionTextInActive = GetXtremeColor(COLOR_INACTIVECAPTIONTEXT);
-	m_clrFrameCaptionTextActive = GetXtremeColor(COLOR_CAPTIONTEXT);
-
-	m_bFlatFrame = FALSE;
-}
-
-void CXTPRibbonSystemFrameTheme::RenderMarkup(CDC* pDC, CRect rc, LPCTSTR lpszMarkupText)
-{
-	CXTPMarkupUIElement* pMarkupUIElement = XTPMarkupParseText(m_pMarkupContext, lpszMarkupText);
-
-	XTPMarkupRenderElement(pMarkupUIElement, pDC->GetSafeHdc(), rc);
-
-	XTPMarkupReleaseElement(pMarkupUIElement);
-
-}
-
-void CXTPRibbonSystemFrameTheme::DrawFrame(CDC* pDC, CXTPOffice2007FrameHook* pFrameHook)
-{
-	CWnd* pSite = pFrameHook->GetSite();
-	BOOL bActive = pFrameHook->IsFrameActive();
-
-	CXTPClientRect rcBorders(pSite);
-	pSite->ClientToScreen(rcBorders);
-
-	CXTPWindowRect rc(pSite);
-
-	int nRightBorder = rcBorders.left - rc.left, nLeftBorder = rcBorders.left - rc.left, nBorder = pFrameHook->GetFrameBorder();
-	int nBottomBorder = rc.bottom - rcBorders.bottom;
-	int nTopBorder = rcBorders.top - rc.top;
-
-	rc.OffsetRect(-rc.TopLeft());
-	CRect rcFrame(rc);
-
-	int nCaptionHeight = pFrameHook->GetCaptionHeight();
-	rcFrame.top += nCaptionHeight;
-
-	int nStatusHeight = 0;
-	BOOL bHasStatusBar = pFrameHook->IsFrameHasStatusBar(&nStatusHeight);
-
-	int nBordersHeight = bHasStatusBar ? rcFrame.Height() - nStatusHeight - 1 : rcFrame.Height();
-
-
-	if (nLeftBorder > 0) pDC->FillSolidRect(rc.left + 0, rcFrame.top, 1, rcFrame.Height(), bActive ? m_clrFrameBorderActive0 : m_clrFrameBorderInactive0);
-	if (nLeftBorder > 1) pDC->FillSolidRect(rc.left + 1, rcFrame.top, 1, nBordersHeight, bActive ? m_clrFrameBorderActive1 : m_clrFrameBorderInactive1);
-	if (nLeftBorder > 2) pDC->FillSolidRect(rc.left + 2, rcFrame.top, 1, nBordersHeight, bActive ? m_clrFrameBorderActive2 : m_clrFrameBorderInactive2);
-	if (nLeftBorder > 3) pDC->FillSolidRect(rc.left + 3, rcFrame.top, nLeftBorder - 3, nBordersHeight, bActive ? m_clrFrameBorderActive3 : m_clrFrameBorderInactive3);
-
-	if (nRightBorder > 0) pDC->FillSolidRect(rc.right - 1, rcFrame.top, 1, rcFrame.Height(), bActive ? m_clrFrameBorderActive0 : m_clrFrameBorderInactive0);
-	if (nRightBorder > 1) pDC->FillSolidRect(rc.right - 2, rcFrame.top, 1, nBordersHeight, bActive ? m_clrFrameBorderActive1 : m_clrFrameBorderInactive1);
-	if (nRightBorder > 2) pDC->FillSolidRect(rc.right - 3, rcFrame.top, 1, nBordersHeight, bActive ? m_clrFrameBorderActive2 : m_clrFrameBorderInactive2);
-	if (nRightBorder > 3) pDC->FillSolidRect(rc.right - nRightBorder, rcFrame.top, nRightBorder - 3, nBordersHeight, bActive ? m_clrFrameBorderActive3 : m_clrFrameBorderInactive3);
-
-	pDC->FillSolidRect(rc.left, rc.bottom - 1, rc.Width(), 1,
-		bActive ? pSite->GetStyle() & WS_MAXIMIZE ? m_clrFrameBorderActive3 : m_clrFrameBorderActive0 : m_clrFrameBorderInactive0);
-
-	if (nBottomBorder > 1)
-	{
-		pDC->FillSolidRect(rc.left + 1, rc.bottom - nBottomBorder, rc.Width() - 2, nBottomBorder - 1, bActive ? m_clrFrameBorderActive3 : m_clrFrameBorderInactive3);
-	}
-
-	//////////////////////////////////////////////////////////////////////////
-	CRect rcCaption(rc.left, rc.top, rc.right, rc.top + nCaptionHeight);
-
-	if (pFrameHook->IsCaptionVisible())
-	{
-		CXTPBufferDC dc(*pDC, rcCaption);
-
-		LPCTSTR lpszMarkupText = bActive ?
-			_T("<Grid>")
-			_T("<Border BorderThickness='0,0,0,1'> <Border.Background>")
-			_T("<LinearGradientBrush StartPoint='0,0' EndPoint='0,1'>")
-			_T("    <GradientStop Offset='0' Color='{x:Static SystemColors.GradientActiveCaptionColor}'/>")
-			_T("    <GradientStop Offset='0.2' Color='{x:Static SystemColors.ActiveCaptionColor}'/>")
-			_T("    <GradientStop Offset='1.5' Color='{x:Static SystemColors.GradientActiveCaptionColor}'/>")
-			_T("</LinearGradientBrush></Border.Background></Border>")
-			_T("<Border BorderThickness='1' CornerRadius='5, 5, 0, 0' BorderBrush='{x:Static SystemColors.ActiveCaptionBrush}' />")
-			_T("</Grid>") :
-
-		_T("<Grid>")
-			_T("<Border BorderThickness='0,0,0,1'> <Border.Background>")
-			_T("<LinearGradientBrush StartPoint='0,0' EndPoint='0,1'>")
-			_T("    <GradientStop Offset='0' Color='{x:Static SystemColors.GradientInactiveCaptionColor}'/>")
-			_T("    <GradientStop Offset='0.2' Color='{x:Static SystemColors.InactiveCaptionColor}'/>")
-			_T("    <GradientStop Offset='1.5' Color='{x:Static SystemColors.GradientInactiveCaptionColor}'/>")
-			_T("</LinearGradientBrush></Border.Background></Border>")
-			_T("<Border BorderThickness='1' CornerRadius='5, 5, 0, 0' BorderBrush='{x:Static SystemColors.InactiveCaptionBrush}' />")
-			_T("</Grid>");
-
-		RenderMarkup(&dc, rcCaption, lpszMarkupText);
-
-
-		CRect rcCaptionText(rcCaption);
-		rcCaptionText.left = 7;
-		rcCaptionText.DeflateRect(0, nBorder, 0, 3);
-
-		HICON hIcon = GetFrameSmallIcon(pSite);
-		if (hIcon)
-		{
-			CSize szIcon(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON));
-
-			int cBorders = nBorder - 1;
-			int cxySlot = rcCaption.Height() - cBorders;
-			int nTop = cBorders + (cxySlot - szIcon.cy - 1)/2;
-
-			DWORD dwLayout = XTPDrawHelpers()->IsContextRTL(&dc);
-			if (dwLayout & LAYOUT_RTL)
-				XTPDrawHelpers()->SetContextRTL(&dc, dwLayout | LAYOUT_BITMAPORIENTATIONPRESERVED);
-
-			DrawIconEx(dc.m_hDC, rcCaptionText.left, nTop, hIcon,
-				szIcon.cx, szIcon.cy, 0, NULL, DI_NORMAL);
-
-			if (dwLayout & LAYOUT_RTL)
-				XTPDrawHelpers()->SetContextRTL(&dc, dwLayout);
-
-
-			rcCaptionText.left = 7 + szIcon.cx + 5;
-		}
-
-		CXTPControls* pCaptionButtons = pFrameHook->GetCaptionButtons();
-		for (int i = 0; i < pCaptionButtons->GetCount(); i++)
-		{
-			CXTPControl* pControl = pCaptionButtons->GetAt(i);
-			if (!pControl->IsVisible())
-				continue;
-
-			DrawFrameCaptionButton(&dc, pControl->GetRect(), pControl->GetID(), pControl->GetSelected(), pControl->GetPressed(), pControl->GetEnabled() && bActive);
-
-			rcCaptionText.right = min(rcCaptionText.right, pControl->GetRect().left);
-		}
-
-		rcCaptionText.right -= nRightBorder;
-
-
-		DrawCaptionText(&dc, rcCaptionText, pSite, bActive);
-	}
-	else
-	{
-
-		LPCTSTR lpszMarkupText = bActive ?
-			_T("<Grid>")
-			_T("<Border BorderThickness='0,0,0,1'> <Border.Background>")
-			_T("<LinearGradientBrush StartPoint='0,0' EndPoint='0,1'>")
-			_T("    <GradientStop Offset='0' Color='{x:Static SystemColors.GradientActiveCaptionColor}'/>")
-			_T("    <GradientStop Offset='0.2' Color='{x:Static SystemColors.ActiveCaptionColor}'/>")
-			_T("    <GradientStop Offset='1.5' Color='{x:Static SystemColors.GradientActiveCaptionColor}'/>")
-			_T("</LinearGradientBrush></Border.Background></Border>")
-			_T("<Border BorderThickness='1' CornerRadius='5, 5, 0, 0' BorderBrush='{x:Static SystemColors.ActiveCaptionBrush}' />")
-			_T("</Grid>") :
-
-		_T("<Grid>")
-			_T("<Border BorderThickness='0,0,0,1'> <Border.Background>")
-			_T("<LinearGradientBrush StartPoint='0,0' EndPoint='0,1'>")
-			_T("    <GradientStop Offset='0' Color='{x:Static SystemColors.GradientInactiveCaptionColor}'/>")
-			_T("    <GradientStop Offset='0.2' Color='{x:Static SystemColors.InactiveCaptionColor}'/>")
-			_T("    <GradientStop Offset='1.5' Color='{x:Static SystemColors.GradientInactiveCaptionColor}'/>")
-			_T("</LinearGradientBrush></Border.Background></Border>")
-			_T("<Border BorderThickness='1' CornerRadius='5, 5, 0, 0' BorderBrush='{x:Static SystemColors.InactiveCaptionBrush}' />")
-			_T("</Grid>");
-
-		CRect rcClient(rcCaption.left + nLeftBorder, rcCaption.top + nTopBorder, rcCaption.right - nRightBorder, rcCaption.bottom);
-		pDC->ExcludeClipRect(rcClient);
-
-		RenderMarkup(pDC, rcCaption, lpszMarkupText);
-	}
-
-
-}
-
-void CXTPRibbonSystemFrameTheme::DrawFrameCaptionButton(CDC* pDC, CRect rc, int nId, BOOL bSelected, BOOL bPressed, BOOL /*bActive*/)
-{
-
-	LPCTSTR lpszMarkupText = NULL;
-
-	if (bPressed && bSelected)
-	{
-		lpszMarkupText =
-
-			_T("<Grid>")
-			_T("<Border Margin='1' BorderThickness='1' CornerRadius ='2' BorderBrush='{x:Static SystemColors.ActiveCaptionTextBrush}'> <Border.Background>")
-			_T("<LinearGradientBrush StartPoint='0,0' EndPoint='1,1'>")
-			_T("    <GradientStop Offset='-0.5' Color='{x:Static SystemColors.ActiveCaptionColor}'/>")
-			_T("    <GradientStop Offset='2.0' Color='Black'/>")
-			_T("</LinearGradientBrush></Border.Background></Border>")
-			_T("</Grid>");
-	}
-	else if (bSelected || bPressed)
-	{
-		lpszMarkupText =
-
-			_T("<Grid>")
-			_T("<Border Margin='1' BorderThickness='1' CornerRadius ='2' BorderBrush='{x:Static SystemColors.ActiveCaptionTextBrush}'> <Border.Background>")
-			_T("<LinearGradientBrush StartPoint='0,0' EndPoint='1,1'>")
-			_T("    <GradientStop Offset='-0.5' Color='{x:Static SystemColors.ControlLightLightColor}'/>")
-			_T("    <GradientStop Offset='0.8' Color='Transparent'/>")
-			_T("    <GradientStop Offset='1' Color='Transparent'/>")
-			_T("</LinearGradientBrush></Border.Background></Border>")
-			_T("</Grid>");
-
-	}
-
-	if (lpszMarkupText)
-	{
-		RenderMarkup(pDC, rc, lpszMarkupText);
-
-	}
-
-	lpszMarkupText = NULL;
-
-	int nGlyphSize = rc.Width() >= 21 ? 11 : 9;
-	CRect rcGlyph(CPoint((rc.left + rc.right - nGlyphSize) / 2, (rc.top + rc.bottom - nGlyphSize) / 2),
-		CSize(nGlyphSize, nGlyphSize));
-
-	if (nId == SC_CLOSE)
-	{
-		lpszMarkupText =
-			nGlyphSize == 11 ?
-			_T("<Canvas><Line X2='11' Y2='11' StrokeThickness='2' Stroke='{x:Static SystemColors.ActiveCaptionTextBrush}'/>")
-			_T("<Line X1='11' Y2='11' StrokeThickness='2' Stroke='{x:Static SystemColors.ActiveCaptionTextBrush}'/></Canvas>") :
-
-			_T("<Canvas><Line X2='9' Y2='9' StrokeThickness='2' Stroke='{x:Static SystemColors.ActiveCaptionTextBrush}'/>")
-			_T("<Line X1='9' Y2='9' StrokeThickness='2' Stroke='{x:Static SystemColors.ActiveCaptionTextBrush}'/></Canvas>");
-	}
-	if (nId == SC_MINIMIZE)
-	{
-		lpszMarkupText =
-			nGlyphSize == 11 ?
-			_T("<Canvas><Line X1 ='0' X2='8' Y1='9' Y2='9' StrokeThickness='3' Stroke='{x:Static SystemColors.ActiveCaptionTextBrush}'/></Canvas>") :
-			_T("<Canvas><Line X1 ='0' X2='7' Y1='8' Y2='8' StrokeThickness='2' Stroke='{x:Static SystemColors.ActiveCaptionTextBrush}'/></Canvas>");
-	}
-
-	if (nId == SC_MAXIMIZE)
-	{
-		lpszMarkupText =
-			nGlyphSize == 11 ?
-			_T("<Canvas Margin='0, 1, 0, 0'><Line X1 ='0' X2='11'  StrokeThickness='3' Stroke='{x:Static SystemColors.ActiveCaptionTextBrush}'/>")
-			_T("<Rectangle Width='11' Height='10'  StrokeThickness='1' Stroke='{x:Static SystemColors.ActiveCaptionTextBrush}'/></Canvas>") :
-
-		_T("<Canvas Margin='0, 1, 0, 0'><Line X1 ='0' X2='9'  StrokeThickness='2' Stroke='{x:Static SystemColors.ActiveCaptionTextBrush}'/>")
-			_T("<Rectangle Width='9' Height='8'  StrokeThickness='1' Stroke='{x:Static SystemColors.ActiveCaptionTextBrush}'/></Canvas>");
-
-	}
-	if (nId == SC_RESTORE)
-	{
-		lpszMarkupText =
-			nGlyphSize == 11 ?
-			_T("<Canvas Margin='0, 1, 0, 0'><Line X1 ='3' X2='9' Y1='1' Y2='1' StrokeThickness='2' Stroke='{x:Static SystemColors.ActiveCaptionTextBrush}'/>")
-			_T("<Line X1 ='9' X2='9' Y1='0' Y2 = '6' StrokeThickness='1' Stroke='{x:Static SystemColors.ActiveCaptionTextBrush}'/><Line X1 ='8' X2='9' Y1='6' Y2 = '6' StrokeThickness='1' Stroke='{x:Static SystemColors.ActiveCaptionTextBrush}'/>")
-			_T("<Line X1 ='0' Y1='4' X2='7' Y2='4'  StrokeThickness='2' Stroke='{x:Static SystemColors.ActiveCaptionTextBrush}'/>")
-			_T("<Rectangle Canvas.Top='4' Width='7' Height='6'  StrokeThickness='1' Stroke='{x:Static SystemColors.ActiveCaptionTextBrush}'/></Canvas>"):
-
-		_T("<Canvas Margin='0, 1, 0, 0'><Line X1 ='2' X2='8' Y1='1' Y2='1' StrokeThickness='2' Stroke='{x:Static SystemColors.ActiveCaptionTextBrush}'/>")
-			_T("<Line X1 ='8' X2='8' Y1='0' Y2 = '5' StrokeThickness='1' Stroke='{x:Static SystemColors.ActiveCaptionTextBrush}'/><Line X1 ='7' X2='8' Y1='5' Y2 = '5' StrokeThickness='1' Stroke='{x:Static SystemColors.ActiveCaptionTextBrush}'/>")
-			_T("<Line X1 ='0' Y1='4' X2='7' Y2='4'  StrokeThickness='2' Stroke='{x:Static SystemColors.ActiveCaptionTextBrush}'/>")
-			_T("<Rectangle Canvas.Top='4' Width='7' Height='5'  StrokeThickness='1' Stroke='{x:Static SystemColors.ActiveCaptionTextBrush}'/></Canvas>");
-	}
-
-
-	if (lpszMarkupText)
-	{
-		RenderMarkup(pDC, rcGlyph, lpszMarkupText);
 	}
 }

@@ -1,9 +1,4 @@
-// from server: 91% by atomic.potato
-extern "C" int __cdecl sub_0080B2EA(void *, const void *, const void *, int, int);
-
-int __stdcall FactoryProduct(void *arg)
-{
-    int result = sub_0080B2EA(arg, (const void *)0x00C071F8,
-                               (const void *)0x00C5AF50, 0, 0);
-    return result != 0;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+extern "C" int helper(void*,int,void*,void*,int);
+bool __stdcall func(void* p){return helper(p,0,(void*)0xc071f8,(void*)0xc5af50,0)!=0;}

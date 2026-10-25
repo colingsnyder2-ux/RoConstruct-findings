@@ -1,13 +1,5 @@
-// from server: 72% by atomic.potato
-extern "C" void* __stdcall basic_string_ctor(void*, const char*);
-
-struct MaterialTool
-{
-    MaterialTool* f(const char*);
-};
-
-MaterialTool* MaterialTool::f(const char* value)
-{
-    basic_string_ctor((void*)0xAB9710, "MaterialCursor");
-    return this;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <string>
+struct Tool { virtual std::string name() const; };
+std::string Tool::name() const { return "MaterialCursor"; }

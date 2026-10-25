@@ -1,13 +1,16 @@
-// from server: 64% by atomic.potato
-extern "C" void __stdcall CallA42DE4(void *, void *, int);
+// from server: 100% by colin
 
-struct CXTPReportGroupRow_Batch
-{
-    int f(void *);
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+struct Str_008b2a30 { int words[8]; };
+extern void (__thiscall* str_ctor_008b2a30)(Str_008b2a30*, Str_008b2a30*);
+struct X_008b2a30 {
+    char pad[0x74];
+    Str_008b2a30 value;
+    Str_008b2a30* copy(Str_008b2a30* out);
 };
-
-int CXTPReportGroupRow_Batch::f(void *arg)
+Str_008b2a30* X_008b2a30::copy(Str_008b2a30* out)
 {
-    CallA42DE4((char *)this + 0x74, arg, 0);
-    return (int)arg;
+    volatile int zero = 0;
+    str_ctor_008b2a30(out, &value);
+    return out;
 }

@@ -1,14 +1,14 @@
-// from server: 19% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Ribbon/XTPRibbonGroups.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/Ribbon/XTPRibbonGroups.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPRibbonGroups.cpp: implementation of the CXTPRibbonGroups class.
 //
 // This file is a part of the XTREME RIBBON MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -34,14 +34,12 @@
 #include "CommandBars/XTPControlPopup.h"
 #include "CommandBars/XTPControls.h"
 #include "CommandBars/XTPControlGallery.h"
-#include "CommandBars/XTPControlEdit.h"
-#include "CommandBars/XTPControlComboBox.h"
 
 #include "XTPRibbonGroup.h"
 #include "XTPRibbonGroups.h"
 #include "XTPRibbonTab.h"
 #include "XTPRibbonBar.h"
-#include "XTPRibbonPaintManager.h"
+#include "XTPRibbonTheme.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -295,7 +293,7 @@ BOOL CXTPRibbonGroup::OnReduceSize(int nLevel, int nWidthAvail)
 
 	int* pButtons = new int[nControlsPerGroup];
 
-	if (nLevel == 0 && !m_bControlsGrouping && m_nAllowReduce > nLevel)
+	if (nLevel == 0 && !m_bControlsGrouping)
 	{
 		if (nControlsPerGroup > 1)
 		{
@@ -336,7 +334,7 @@ BOOL CXTPRibbonGroup::OnReduceSize(int nLevel, int nWidthAvail)
 		}
 	}
 
-	if (nLevel == 1 && !m_bControlsGrouping && m_nAllowReduce > nLevel)
+	if (nLevel == 1 && !m_bControlsGrouping)
 	{
 		if (nControlsPerGroup > 1)
 		{
@@ -381,13 +379,13 @@ BOOL CXTPRibbonGroup::OnReduceSize(int nLevel, int nWidthAvail)
 		}
 	}
 
-	if (nLevel == 1 && m_bControlsGrouping && m_nRowCount == 2 && m_nAllowReduce > nLevel)
+	if (nLevel == 1 && m_bControlsGrouping && m_nRowCount == 2)
 	{
 		m_nRowCount = 3;
 		bReduced = TRUE;
 	}
 
-	if (nLevel == 2 && !bReduced && !m_bControlsGrouping && m_nAllowReduce > nLevel)
+	if (nLevel == 2 && !bReduced && !m_bControlsGrouping)
 	{
 		if (nControlsPerGroup > 1)
 		{
@@ -434,7 +432,7 @@ BOOL CXTPRibbonGroup::OnReduceSize(int nLevel, int nWidthAvail)
 		}
 	}
 
-	if (nLevel == 2 && !bReduced && !m_bControlsGrouping && m_nAllowReduce > nLevel)
+	if (nLevel == 2 && !bReduced && !m_bControlsGrouping)
 	{
 		for (int i = nDataCount - 1; i >= 0; i--)
 		{
@@ -453,7 +451,7 @@ BOOL CXTPRibbonGroup::OnReduceSize(int nLevel, int nWidthAvail)
 
 	if (nLevel == 3)
 	{
-		if (nDataCount > 1 && !m_bReduced && m_nAllowReduce > nLevel)
+		if (nDataCount > 1 && !m_bReduced)
 		{
 			m_bReduced = TRUE;
 
@@ -529,75 +527,10 @@ void CXTPRibbonGroup::OnBeforeCalcSize(CDC* pDC)
 	m_nRowCount = 2;
 }
 
-void CXTPRibbonGroup::ArrangeEditCaption()
-{
-	CArray<CXTPControl*, CXTPControl*> arrColumn;
-
-	int i = 0, j = 0, k;
-	while (i < m_pLayoutInfo->nControlCount)
-	{
-		arrColumn.RemoveAll();
-
-		for (j = i; j < m_pLayoutInfo->nControlCount; j++)
-		{
-			if (m_pLayoutInfo->pControls[j].rcControl.left != m_pLayoutInfo->pControls[i].rcControl.left ||
-				m_pLayoutInfo->pControls[j].rcControl.right != m_pLayoutInfo->pControls[i].rcControl.right)
-			{
-				break;
-			}
-
-			if (m_pLayoutInfo->pControls[j].pControl->GetType() == xtpControlEdit ||
-				m_pLayoutInfo->pControls[j].pControl->GetType() == xtpControlComboBox)
-			{
-				arrColumn.Add(m_pLayoutInfo->pControls[j].pControl);
-			}
-		}
-
-		if (arrColumn.GetSize() > 1)
-		{
-			int nLabelWidth = 0;
-
-			for (k = 0; k < (int)arrColumn.GetSize(); k++)
-			{
-				CXTPControl* pControl = arrColumn[k];
-
-				if (pControl->GetType() == xtpControlEdit)
-				{
-					nLabelWidth = max(nLabelWidth, ((CXTPControlEdit*)pControl)->GetLabelWidth());
-				}
-				else
-				{
-					nLabelWidth = max(nLabelWidth, ((CXTPControlComboBox*)pControl)->GetLabelWidth());
-				}
-			}
-
-			for (k = 0; k < (int)arrColumn.GetSize(); k++)
-			{
-				CXTPControl* pControl = arrColumn[k];
-
-				if (pControl->GetType() == xtpControlEdit)
-				{
-					((CXTPControlEdit*)pControl)->SetLabelWidth(nLabelWidth);
-				}
-				else
-				{
-					((CXTPControlComboBox*)pControl)->SetLabelWidth(nLabelWidth);
-				}
-			}
-		}
-
-		i = j;
-
-	}
-}
-
 void CXTPRibbonGroup::OnAfterCalcSize()
 {
 	if (!m_pLayoutInfo)
 		return;
-
-	if (!m_bReduced && m_bAutoArrangeEditCaption && !m_bControlsGrouping)
-		ArrangeEditCaption();
 
 	for (int i = 0; i < m_pLayoutInfo->nControlCount; i++)
 	{
@@ -633,14 +566,7 @@ int CXTPRibbonGroup::_WrapSpecialDynamicSize(int nWidth, BOOL bIncludeTail)
 		BOOL bBeginGroup = pControl->bBeginGroup && i > 0;
 		BOOL bWrapGroup = pControl->bWrapGroup && i > 0;
 
-		if (bWrapGroup && (pControl->pControl->GetFlags() & xtpFlagWrapRow))
-		{
-			x = szControl.cx;
-			pControl->bWrap = TRUE;
-			nWraps++;
-			continue;
-		}
-		else if (bWrapGroup)
+		if (bWrapGroup)
 		{
 			if ((bIncludeTail && (x + pControl->nTailWidth >= nWidth))
 				|| (!bIncludeTail && nWraps == 0 && (x + pControl->nTailWidth >= nWidth)))
@@ -759,32 +685,25 @@ int CXTPRibbonGroup::_CalcSpecialDynamicSize(CDC* /*pDC*/)
 
 	int nBaseHeight = GetRibbonBar()->GetRibbonPaintManager()->GetEditHeight();
 
-	int nRowCount = _WrapSpecialDynamicSize(32000, FALSE) + 1;
-	int nTotalWidth = 0;
+	_WrapSpecialDynamicSize(32000, FALSE);
+	int nTotalWidth = _GetSizeSpecialDynamicSize();
+	int nRowCount = 3;
+	BOOL bAllow3Row = nResultHeight >= nBaseHeight * 3;
+	BOOL bAllow2Row = nResultHeight >= nBaseHeight * 2 ;
 
-	if (nRowCount == 1)
+	if (!bAllow2Row)
 	{
-		nRowCount = 3;
-		nTotalWidth = _GetSizeSpecialDynamicSize();
+		_WrapSpecialDynamicSize(32000, FALSE);
+		nRowCount = 1;
 
-		BOOL bAllow3Row = nResultHeight >= nBaseHeight * 3;
-		BOOL bAllow2Row = nResultHeight >= nBaseHeight * 2 ;
-
-		if (!bAllow2Row)
+	}
+	else
+	{
+		if (!(bAllow3Row && m_nRowCount == 3 && _FindBestWrapSpecialDynamicSize()))
 		{
-			_WrapSpecialDynamicSize(32000, FALSE);
-			nRowCount = 1;
-
-		}
-		else
-		{
-			if (!(bAllow3Row && m_nRowCount == 3 && _FindBestWrapSpecialDynamicSize()))
-			{
-				nRowCount = _WrapSpecialDynamicSize(nTotalWidth / 2, FALSE) + 1;
-			}
+			nRowCount = _WrapSpecialDynamicSize(nTotalWidth / 2, FALSE) + 1;
 		}
 	}
-
 	nTotalWidth = _GetSizeSpecialDynamicSize();
 
 	int nOffset = (nResultHeight + 1 - nBaseHeight * nRowCount) / (nRowCount + 1);
@@ -985,7 +904,7 @@ void CXTPRibbonGroup::CenterColumn(int nFirstItem, int nLastItem, int nGroupHeig
 
 void CXTPRibbonGroup::OnAdjustBorders(int nWidth, CRect rcBorder)
 {
-	CXTPRibbonPaintManager* pPaintManager = GetRibbonBar()->GetRibbonPaintManager();
+	CXTPRibbonTheme* pPaintManager = GetRibbonBar()->GetRibbonPaintManager();
 	int nGroupCaptionHeigh = pPaintManager->GetGroupCaptionHeight();
 	int nGroupHeight = GetRibbonBar()->CalcGroupsHeight();
 	int nGroupClientHeight = nGroupHeight - 2 - 3 - 2;
@@ -1075,8 +994,6 @@ void CXTPRibbonGroups::CalcDynamicSize(CDC* pDC, int nLength, DWORD /*dwMode*/, 
 
 	CRect rcBorders = rcBorder;
 
-	const int nGroupSpacing = GetRibbonBar()->GetRibbonPaintManager()->m_nGroupSpacing;
-
 	int nTotalWidth = -7;
 
 	for (i = 0; i < nCount; i++)
@@ -1084,7 +1001,7 @@ void CXTPRibbonGroups::CalcDynamicSize(CDC* pDC, int nLength, DWORD /*dwMode*/, 
 		CXTPRibbonGroup* pGroup = GetAt(i);
 		if (pGroup->IsVisible())
 		{
-			nTotalWidth += pData[i] + nGroupSpacing + 5;
+			nTotalWidth += pData[i] + 2 + 5;
 		}
 	}
 
@@ -1115,7 +1032,7 @@ void CXTPRibbonGroups::CalcDynamicSize(CDC* pDC, int nLength, DWORD /*dwMode*/, 
 		if (pGroup->IsVisible())
 		{
 			pGroup->OnAdjustBorders(pData[i], rcBorders);
-			rcBorders.left += pData[i] + nGroupSpacing + 5;
+			rcBorders.left += pData[i] + 2 + 5;
 		}
 	}
 

@@ -1,108 +1,35 @@
-// from server: 48% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 50% by atomic.potato
+// roc 2011-06 00713dd0  unit: RBX::VSmoke::?$FactoryProduct  size: 60 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 00713dd0
+//
+// 00713dd0  f30f10442404         movss xmm0, dword ptr [esp + 4]
+// 00713dd6  56                   push esi
+// 00713dd7  8bf1                 mov esi, ecx
+// 00713dd9  f30f108ea8000000     movss xmm1, dword ptr [esi + 0xa8]
+// 00713de1  0f2ec8               ucomiss xmm1, xmm0
+// 00713de4  9f                   lahf 
+// 00713de5  f6c444               test ah, 0x44
+// 00713de8  7b1e                 jnp 0x713e08
+// 00713dea  68d836cd00           push 0xcd36d8
+// 00713def  f30f1186a8000000     movss dword ptr [esi + 0xa8], xmm0
+// 00713df7  e864e1cfff           call 0x411f60
+// 00713dfc  686037cd00           push 0xcd3760
+// 00713e01  8bce                 mov ecx, esi
+// 00713e03  e858e1cfff           call 0x411f60
+// 00713e08  5e                   pop esi
+// 00713e09  c20400               ret 4
 
-// Candidate translation unit (score above; library headers required).
-#include "util/Name.h"
-#include "util/Debug.h"
-#include <boost/thread/once.hpp>
+struct VSmoke {
+    char pad[0xa8];
+    float field_a8;
+    void sub_411f60(const char*);
+    void set(float);
+};
 
-// intentionally outside of the RBX namespace
-boost::once_flag flag = BOOST_ONCE_INIT;
-
-boost::mutex& moo2()
-{
-	static boost::mutex mutex2;
-	return mutex2;
-}
-
-void initMoo()
-{
-	moo2();
-}
-
-namespace RBX
-{
-	// seems to be inlined
-	boost::mutex& Name::mutex()
-	{
-		boost::call_once(initMoo, flag);
-		return moo2();
-	}
-
-	std::map<int, Name*>& Name::dictionary()
-	{
-		static std::map<int, Name*> d;
-		return d;
-	}
-
-	Name::NamMap& Name::namMap()
-	{
-		static NamMap n;
-		return n;
-	}
-
-	const Name& Name::getNullName()
-	{
-		boost::mutex::scoped_lock scoped_lock(mutex());
-		static const Name& nullName = declare("", 0);
-		return nullName;
-	}
-
-	const Name& Name::declare(const char* sName, int dictionaryIndex)
-	{
-		if (!sName)
-		{
-			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
-			return getNullName();
-		}
-
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			if (dictionaryIndex != -1)
-			{
-				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
-				dictionary()[dictionaryIndex] = iter->second;
-			}
-			return *iter->second;
-		}
-		else
-		{
-			Name* name = new Name(sName, dictionaryIndex);
-			namMap()[sName] = name;
-			dictionary()[dictionaryIndex] = name;
-			return *name;
-		}
-	}
-
-	const Name& Name::lookup(const std::string& sName)
-	{
-		RBXASSERT(sName.size() < 50);
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			return *iter->second;
-		}
-		else
-		{
-			return getNullName();
-		}
-	}
-
-	const Name& Name::lookup(const char* sName)
-	{
-		if (!sName)
-		{
-			return getNullName();
-		}
-
-		return lookup(std::string(sName));
-	}
+void VSmoke::set(float v) {
+    if (field_a8 != v) {
+        sub_411f60((const char*)0xcd36d8);
+        field_a8 = v;
+        sub_411f60((const char*)0xcd3760);
+    }
 }

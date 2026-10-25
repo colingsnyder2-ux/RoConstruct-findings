@@ -1,15 +1,17 @@
-// from server: 48% by atomic.potato
-extern "C" void __cdecl helper(int, int, int);
-
-int Function(int a, int b)
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_007343d0 {
+    T4_007343d0();
+    virtual void f_007343d0();
+    char m_a;
+    char m_b;
+};
+T4_007343d0::T4_007343d0() : m_a(0), m_b(0) {}
+extern "C" void* create_other_007343d0(void*, void*, int);
+void* create_007343d0(void* unused, T4_007343d0* out, int type)
 {
-    if (a == 4)
-    {
-        *(int*)b = 0x00c89128;
-        *((char*)b + 4) = 0;
-        *((char*)b + 5) = 0;
-        return 0;
-    }
-    helper(0, b, a);
-    return 0;
+    if (type != 4)
+        return create_other_007343d0(unused, out, type);
+    out->T4_007343d0::T4_007343d0();
+    return out;
 }

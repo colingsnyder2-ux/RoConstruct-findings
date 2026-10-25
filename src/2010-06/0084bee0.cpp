@@ -1,8 +1,8 @@
-// from server: 51% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/Ribbon/XTPRibbonBar.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/Ribbon/XTPRibbonBar.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPRibbonBar.cpp : implementation file

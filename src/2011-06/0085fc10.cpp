@@ -1,14 +1,14 @@
-// from server: 54% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Common/XTPPropExchange.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/Common/XTPPropExchange.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPPropExchange.cpp: implementation of the CXTPPropExchange class.
 //
 // This file is a part of the XTREME TOOLKIT PRO MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -29,10 +29,8 @@
 #include "XTPMacros.h"
 #include "XTPPropExchange.h"
 #include "XTPVC80Helpers.h"
-
+#include "XTPVC50Helpers.h"
 #include "XTPResourceManager.h"
-
-#include <afxole.h>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -317,18 +315,18 @@ void CXTPPropExchange::PreformatString(CString& strValue, BOOL bLoading)
 		if (strValue.Find(_T('\\')) == -1)
 			return;
 
-		strValue.Replace(_T("\\\\"), _T("\001\001"));
-		strValue.Replace(_T("\\n"), _T("\n"));
-		strValue.Replace(_T("\\r"), _T("\r"));
-		strValue.Replace(_T("\\t"), _T("\t"));
-		strValue.Replace(_T("\001\001"), _T("\\"));
+		REPLACE_S(strValue, _T("\\\\"), _T("\001\001"));
+		REPLACE_S(strValue, _T("\\n"), _T("\n"));
+		REPLACE_S(strValue, _T("\\r"), _T("\r"));
+		REPLACE_S(strValue, _T("\\t"), _T("\t"));
+		REPLACE_S(strValue, _T("\001\001"), _T("\\"));
 	}
 	else
 	{
-		strValue.Replace(_T("\\"), _T("\\\\"));
-		strValue.Replace(_T("\n"), _T("\\n"));
-		strValue.Replace(_T("\r"), _T("\\r"));
-		strValue.Replace(_T("\t"), _T("\\t"));
+		REPLACE_S(strValue, _T("\\"), _T("\\\\"));
+		REPLACE_S(strValue, _T("\n"), _T("\\n"));
+		REPLACE_S(strValue, _T("\r"), _T("\\r"));
+		REPLACE_S(strValue, _T("\t"), _T("\\t"));
 	}
 }
 
@@ -550,59 +548,6 @@ BOOL CXTPPropExchange::ExchangePropStringHelper(CString& strValue, VARTYPE vtPro
 	return FALSE;
 }
 
-void CXTPPropExchange::BinToString(BYTE* pData, DWORD nBytes, CString& str)
-{
-	if (nBytes > 0)
-	{
-		LPTSTR lpsz = str.GetBuffer(nBytes * 2);
-
-		for (UINT i = 0; i < nBytes; i++)
-		{
-			*lpsz++ = (TCHAR)((pData[i] & 0x0F) + 'A'); //low nibble
-			*lpsz++ = (TCHAR)(((pData[i] >> 4) & 0x0F) + 'A'); //high nibble
-		}
-
-		str.ReleaseBuffer(nBytes * 2);
-	}
-	else
-	{
-		str.Empty();
-	}
-}
-
-BOOL CXTPPropExchange::StringToBin(const CString& str, BYTE*& pData, DWORD& nBytes)
-{
-	if (str.GetLength() > 0)
-	{
-		int nLen = str.GetLength();
-		if ((nLen == 0) || (nLen % 2 != 0))
-			return FALSE;
-
-		DWORD nCount = nLen/2;
-		if (pData == NULL)
-		{
-			pData = (BYTE*)malloc(nCount);
-			nBytes = nCount;
-		}
-		if (pData == NULL)
-			return FALSE;
-
-		if (nBytes < nCount)
-			return FALSE;
-
-		for (int i = 0; i < nLen; i += 2)
-		{
-			(pData)[i/2] = (BYTE)
-				(((str[i + 1] - 'A') << 4) + (str[i] - 'A'));
-		}
-	}
-	else
-	{
-		nBytes = 0;
-	}
-
-	return TRUE;
-}
 
 
 BOOL CXTPPropExchange::ExchangeBlobProp(LPCTSTR pszPropName, BYTE*& pData, DWORD& nBytes)
@@ -610,8 +555,19 @@ BOOL CXTPPropExchange::ExchangeBlobProp(LPCTSTR pszPropName, BYTE*& pData, DWORD
 	if (IsStoring())
 	{
 		CString str;
-		BinToString(pData, nBytes, str);
+		if (nBytes > 0)
+		{
+			LPTSTR lpsz = new TCHAR[nBytes * 2 + 1];
+			for (UINT i = 0; i < nBytes; i++)
+			{
+				lpsz[i * 2] = (TCHAR)((pData[i] & 0x0F) + 'A'); //low nibble
+				lpsz[i * 2 + 1] = (TCHAR)(((pData[i] >> 4) & 0x0F) + 'A'); //high nibble
+			}
+			lpsz[nBytes * 2] = 0;
 
+			str = lpsz;
+			delete[] lpsz;
+		}
 		PX_String(this, pszPropName, str, _T(""));
 	}
 	else
@@ -620,7 +576,30 @@ BOOL CXTPPropExchange::ExchangeBlobProp(LPCTSTR pszPropName, BYTE*& pData, DWORD
 		if (!PX_String(this, pszPropName, str))
 			return FALSE;
 
-		return StringToBin(str, pData, nBytes);
+		if (str.GetLength() > 0)
+		{
+			int nLen = str.GetLength();
+			if ((nLen == 0) || (nLen % 2 != 0))
+				return FALSE;
+
+			DWORD nCount = nLen/2;
+			if (pData == NULL)
+			{
+				pData = (BYTE*)malloc(nCount);
+				nBytes = nCount;
+			}
+			if (pData == NULL)
+				return FALSE;
+
+			if (nBytes < nCount)
+				return FALSE;
+
+			for (int i = 0; i < nLen; i += 2)
+			{
+				(pData)[i/2] = (BYTE)
+					(((str[i + 1] - 'A') << 4) + (str[i] - 'A'));
+			}
+		}
 	}
 	return TRUE;
 
@@ -905,7 +884,7 @@ void CXTPPropExchange::ExchangeSchema()
 
 void CXTPPropExchange::ExchangeSchemaSafe()
 {
-	PX_Long(this, _T("Schema"), (long&)m_nSchema, _XTP_SCHEMA_1122);
+	ExchangeSchema();
 }
 
 void CXTPPropExchange::ExchangeLocale()
@@ -1158,9 +1137,7 @@ void CXTPPropExchangeArchive::ExchangeSchemaSafe()
 	}
 	else
 	{
-		if (m_ar.m_lpBufCur + sizeof(DWORD) > m_ar.m_lpBufMax)
-			m_ar.FillBuffer(sizeof(DWORD));
-
+		m_ar.FillBuffer(sizeof(DWORD));
 		DWORD dw = *(DWORD*)m_ar.m_lpBufCur;
 
 		if (dw == dwSafe)
@@ -1572,19 +1549,13 @@ void CXTPPropExchangeXMLNode::TraceParseError()
 #endif
 }
 
-BOOL CXTPPropExchangeXMLNode::LoadFromEncodedString(LPCWSTR lpszState)
-{
-	return LoadFromEncodedString(XTP_CW2CA(lpszState));
-}
-
-BOOL CXTPPropExchangeXMLNode::LoadFromEncodedString(LPCSTR lpszState)
+BOOL CXTPPropExchangeXMLNode::LoadFromString(LPCSTR lpszState)
 {
 	if (!lpszState)
 		return FALSE;
 
 	if (!CreateDocumentInstance())
 		return FALSE;
-
 
 	ASSERT(m_xmlDocPtr != 0);
 
@@ -1613,14 +1584,9 @@ BOOL CXTPPropExchangeXMLNode::LoadFromEncodedString(LPCSTR lpszState)
 	return TRUE;
 }
 
-BOOL CXTPPropExchangeXMLNode::LoadFromString(LPCSTR lpszState)
-{
-	return LoadFromString((BSTR)XTP_CA2CW(lpszState));
-}
-
 BOOL CXTPPropExchangeXMLNode::LoadFromString(LPCWSTR lpszState)
 {
-	return LoadFromString((BSTR)(lpszState));
+	return LoadFromString((BSTR)lpszState);
 }
 
 BOOL CXTPPropExchangeXMLNode::LoadFromString(BSTR lpszState)
@@ -1670,7 +1636,7 @@ BOOL CXTPPropExchangeXMLNode::LoadFromResource(HINSTANCE hInstance, LPCTSTR lpsz
 	MEMCPY_S(lpstr, pData, dwSize);
 	lpstr[dwSize] = 0;
 
-	BOOL bResult = LoadFromEncodedString(lpstr);
+	BOOL bResult = LoadFromString(lpstr);
 
 	UnlockResource(hGlobal);
 	FreeResource(hGlobal);
@@ -1706,91 +1672,15 @@ BOOL CXTPPropExchangeXMLNode::LoadFromFile(LPCTSTR strFileName)
 	return TRUE;
 }
 
-
-void CXTPPropExchangeXMLNode::FormatString(CString& str)
+CString CXTPPropExchangeXMLNode::GetXML(BOOL bFormatted)
 {
 	const LPCTSTR lpszCrLf = _T("\r\n");
 
 #define ADDINDENT(str, i, strOffset)\
-	str.Insert(i, lpszCrLf);\
-	str.Insert(i + 2, strOffset);\
+	INSERT_S(str, i, lpszCrLf);\
+	INSERT_S(str, i + 2, strOffset);\
 	i += strOffset.GetLength() + 2;
 
-
-	CString strOffset(_T('\t'));
-
-	for (int i = 1; i < str.GetLength(); i++)
-	{
-		if (((str[i] == _T('>')) && (str[i - 1] == _T('/'))) || ((str[i] == _T('<')) && (str[i + 1] == _T('/'))))
-		{
-			strOffset.Delete(strOffset.GetLength() - 1);
-			if (str[i] == _T('<') && str[i - 1] == _T('>'))
-			{
-				ADDINDENT(str, i, strOffset);
-			}
-		}
-		else if (str[i] == _T('<'))
-		{
-			ADDINDENT(str, i, strOffset);
-			strOffset += _T('\t');
-		}
-	}
-}
-
-
-CString CXTPPropExchangeXMLNode::GetEncodedXML(BOOL bFormatted)
-{
-	CString str;
-	if (!OnBeforeExchange())
-		return str;
-
-	ASSERT(m_xmlDocPtr != 0);
-
-	if (IsRootSection())
-	{
-		UpdateDocumentEncoding();
-
-		COleStreamFile stream;
-		if(!stream.CreateMemoryStream())
-			return str;
-
-		VARIANT var;
-		var.vt = VT_UNKNOWN;
-		var.punkVal = stream.GetStream();
-
-		if (FAILED(m_xmlDocPtr->save(var)))
-			return str;
-
-		stream.SeekToBegin();
-		DWORD dwLength = (DWORD)stream.GetLength();
-
-		char* lpszBuffer = new char[dwLength + 1];
-		stream.Read(lpszBuffer, dwLength);
-
-		if (dwLength > 0 && lpszBuffer[dwLength - 1] <= 13) dwLength--; // Remove /n
-		if (dwLength > 0 && lpszBuffer[dwLength - 1] <= 13) dwLength--; // Remove /r
-
-		lpszBuffer[dwLength] = 0;
-
-		str = lpszBuffer;
-
-		delete[] lpszBuffer;
-	}
-	else
-	{
-		ASSERT(FALSE);
-	}
-
-	if (bFormatted)
-	{
-		FormatString(str);
-	}
-
-	return str;
-}
-
-CString CXTPPropExchangeXMLNode::GetXML(BOOL bFormatted)
-{
 	CString str;
 	if (!OnBeforeExchange())
 		return str;
@@ -1815,11 +1705,32 @@ CString CXTPPropExchangeXMLNode::GetXML(BOOL bFormatted)
 
 	if (bFormatted)
 	{
-		FormatString(str);
+		CString strOffset(_T('\t'));
+
+		for (int i = 1; i < str.GetLength(); i++)
+		{
+			if (((str[i] == _T('>')) && (str[i - 1] == _T('/'))) || ((str[i] == _T('<')) && (str[i + 1] == _T('/'))))
+			{
+				DELETE_S(strOffset, strOffset.GetLength() - 1);
+				if (str[i] == _T('<') && str[i - 1] == _T('>'))
+				{
+					ADDINDENT(str, i, strOffset);
+				}
+			}
+			else if (str[i] == _T('<'))
+			{
+				ADDINDENT(str, i, strOffset);
+				strOffset += _T('\t');
+
+			}
+		}
 	}
 
 	return str;
+
 }
+
+
 
 void CXTPPropExchangeXMLNode::FormatFile(LPCTSTR lpszFileName)
 {
@@ -1827,9 +1738,9 @@ void CXTPPropExchangeXMLNode::FormatFile(LPCTSTR lpszFileName)
 	const LPCSTR lpszOffset = "\t";
 
 	#define WRITEINDENT\
-		fileBuffer.Write(lpszBegin, int(lpszCurrent - lpszBegin) - nWhiteSpace);\
-		fileBuffer.Write(lpszCrLf, 2);\
-		for (int j = 0; j < nOffset; j++) fileBuffer.Write(lpszOffset, 1);\
+		file.Write(lpszBegin, int(lpszCurrent - lpszBegin) - nWhiteSpace);\
+		file.Write(lpszCrLf, 2);\
+		for (int j = 0; j < nOffset; j++) file.Write(lpszOffset, 1);\
 		lpszBegin = lpszCurrent
 
 
@@ -1853,8 +1764,6 @@ void CXTPPropExchangeXMLNode::FormatFile(LPCTSTR lpszFileName)
 		delete[] lpszBuffer;
 		return;
 	}
-
-	CMemFile fileBuffer;
 
 	int nOffset = 1, nWhiteSpace = 0;
 	if (dwLength > 2 && lpszBuffer[dwLength - 2] == '\r')
@@ -1884,22 +1793,19 @@ void CXTPPropExchangeXMLNode::FormatFile(LPCTSTR lpszFileName)
 		nWhiteSpace = (chCurrent == '\r' || chCurrent == '\n' || chCurrent == '\t') ? nWhiteSpace + 1 : 0;
 	}
 
-	fileBuffer.Write(lpszBegin, int(lpszCurrent - lpszBegin) - 1);
-	fileBuffer.Write(lpszCrLf, 2);
+	file.Write(lpszBegin, int(lpszCurrent - lpszBegin) - 1);
+	file.Write(lpszCrLf, 2);
 
-	delete[] lpszBuffer;
-
-	dwLength = (DWORD)fileBuffer.GetLength();
-	BYTE* lpszFileBuffer = fileBuffer.Detach();
-
-	file.Write(lpszFileBuffer, dwLength);
 	file.Close();
-
-	free(lpszFileBuffer);
+	delete[] lpszBuffer;
 }
 
-void CXTPPropExchangeXMLNode::UpdateDocumentEncoding()
+HRESULT CXTPPropExchangeXMLNode::SaveToFile(LPCTSTR strFileName, BOOL bFormatted)
 {
+	CString str;
+	if (!OnBeforeExchange())
+		return E_FAIL;
+
 	ASSERT(m_xmlDocPtr != 0);
 
 	CString strInstruction = _T("version=\"1.0\" encoding=\"") + m_strEncoding + _T("\"");
@@ -1929,15 +1835,6 @@ void CXTPPropExchangeXMLNode::UpdateDocumentEncoding()
 			m_xmlDocPtr->insertBefore(ptrInstruction, _variant_t(xmlNodePtr.GetInterfacePtr()), 0);
 		}
 	}
-}
-
-HRESULT CXTPPropExchangeXMLNode::SaveToFile(LPCTSTR strFileName, BOOL bFormatted)
-{
-	CString str;
-	if (!OnBeforeExchange())
-		return E_FAIL;
-
-	UpdateDocumentEncoding();
 
 	HRESULT hr = m_xmlDocPtr->save(COleVariant(strFileName));
 	if (FAILED(hr))
@@ -2214,58 +2111,6 @@ BOOL CXTPPropExchangeXMLNode::PutSection(CXTPPropExchangeXMLNode* pNode)
 	return TRUE;
 }
 
-CXTPPropExchangeXMLNode* CXTPPropExchangeXMLNode::Clone(BOOL bRecursive)
-{
-	if (!OnBeforeExchange())
-		return NULL;
-
-	ASSERT(m_xmlParentNode != 0);
-	CXTPDOMNodePtr xmlNodePtr;
-
-	VARIANT_BOOL vbRecursive;
-	vbRecursive = bRecursive ? VARIANT_TRUE : VARIANT_FALSE;
-	if (FAILED(m_xmlSectionNode->cloneNode(vbRecursive, &xmlNodePtr)))
-		return NULL;
-
-	CXTPPropExchangeXMLNode* pSection = (CXTPPropExchangeXMLNode*)GetSection(GetSectionName());
-
-	pSection->m_bInitialized = TRUE;
-	pSection->m_xmlSectionNode = xmlNodePtr;
-
-	return pSection;
-}
-
-CXTPPropExchangeXMLNode* CXTPPropExchangeXMLNode::CreateSection(LPCTSTR pszSection)
-{
-	if (!pszSection || !OnBeforeExchange())
-		return NULL;
-
-	ASSERT(m_xmlParentNode != 0);
-	CXTPDOMNodePtr xmlNodePtr;
-	CXTPDOMElementPtr xmlElementPtr;
-
-	if (m_xmlSectionNode == 0 || m_xmlDocPtr == 0)
-		return NULL;
-
-	m_xmlDocPtr->createElement(CT2BSTR(pszSection), &xmlElementPtr);
-	if (xmlElementPtr == 0)
-	{
-		ASSERT(0);
-		return NULL;
-	}
-
-	if (FAILED(m_xmlSectionNode->appendChild(xmlElementPtr, &xmlNodePtr)))
-		return NULL;
-
-	CXTPPropExchangeXMLNode* pSection = (CXTPPropExchangeXMLNode*)GetSection(pszSection);
-
-	pSection->m_bInitialized = TRUE;
-	pSection->m_xmlSectionNode = xmlNodePtr;
-
-	return pSection;
-}
-
-
 void CXTPPropExchangeXMLNode::SetLoading(BOOL bLoading)
 {
 	m_bLoading = bLoading;
@@ -2296,13 +2141,14 @@ public:
 	{
 		CXTPDOMNodePtr xmlNodePtr;
 
-		if (m_xmlNodes == NULL)
-			return NULL;
+		CString strNode;
+		strNode.Format(_T("%s[%i]"), m_strSectionName.IsEmpty() ? _T("*") : (LPCTSTR)m_strSectionName, (int)(INT_PTR)pos);
 
-		if (SUCCEEDED(m_xmlNodes->get_item((int)(INT_PTR)pos, &xmlNodePtr)))
+		if (SUCCEEDED(((CXTPPropExchangeXMLNode*)m_pContainer)->m_xmlSectionNode->selectSingleNode(CT2BSTR(strNode), &xmlNodePtr)))
 			return xmlNodePtr;
 
 		return 0;
+
 	}
 
 	POSITION GetPosition(DWORD dwCount = 0, BOOL /*bCompactMode*/ = TRUE)
@@ -2317,16 +2163,8 @@ public:
 			if (!m_pContainer->OnBeforeExchange())
 				return NULL;
 
-			CString strNode;
-			strNode.Format(_T("%s"), m_strSectionName.IsEmpty() ? _T("*") : (LPCTSTR)m_strSectionName);
-
-			if (FAILED(((CXTPPropExchangeXMLNode*)m_pContainer)->m_xmlSectionNode->selectNodes(CT2BSTR(strNode), &m_xmlNodes)))
-			{
-				return NULL;
-			}
-
-			m_xmlNextNode = GetProfileNode(0);
-			if (m_xmlNextNode == 0)
+			m_xmNextNode = GetProfileNode(0);
+			if (m_xmNextNode == 0)
 				return NULL;
 		}
 
@@ -2357,13 +2195,12 @@ public:
 		}
 		else
 		{
-			ASSERT(m_xmlNextNode != NULL);
-			ASSERT(m_xmlNodes != NULL);
+			ASSERT(m_xmNextNode != NULL);
 
-			xmlNodePtr = m_xmlNextNode;
+			xmlNodePtr = m_xmNextNode;
 
-			m_xmlNextNode = GetProfileNode(pos);
-			if (m_xmlNextNode == NULL)
+			m_xmNextNode = GetProfileNode(pos);
+			if (m_xmNextNode == NULL)
 				pos = NULL;
 			else
 				pos++;
@@ -2375,22 +2212,8 @@ public:
 
 		return pSection;
 	}
-
-	int GetCount() const
-	{
-		long nCount = m_nCount;
-
-		if (m_pContainer && m_pContainer->IsLoading() && SUCCEEDED(m_xmlNodes->get_length(&nCount)))
-		{
-			return nCount;
-		}
-
-		return nCount;
-	}
-
 protected:
-	CXTPDOMNodePtr m_xmlNextNode;
-	XTPXML::IXMLDOMNodeListPtr m_xmlNodes;
+	CXTPDOMNodePtr m_xmNextNode;
 };
 
 

@@ -1,25 +1,11 @@
-// from server: 85% by atomic.potato
-typedef int BOOL;
-
-struct TToolVerb
-{
-    int f();
-    int pad0[3];
-};
-
-extern "C" int __cdecl sub_80bbc2(int);
-extern "C" BOOL type_info_equal(void *, const void *);
-extern void *g_type_info;
-
-int TToolVerb::f()
-{
-    int *a = *(int **)((char *)this + 12);
-    int x = *(int *)((char *)a + 0xacc);
-    x = *(int *)((char *)x + 0x188);
-    if (x)
-    {
-        x = sub_80bbc2(x);
-        return type_info_equal((void *)0xc90984, (const void *)x);
-    }
-    return 0;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct P3 { char pad[0x188]; void* value; };
+struct P2 { char pad[0xacc]; P3* p; };
+struct Obj { char pad[0xc]; P2* p; bool f(); };
+struct C {};
+extern "C" void* helper(void*);
+extern C c;
+typedef bool (__thiscall *Fn)(C*,void*);
+extern Fn slot;
+bool Obj::f(){ void* x=p->p->value; if(x){ x=helper(x); return slot(&c,x); } return false; }

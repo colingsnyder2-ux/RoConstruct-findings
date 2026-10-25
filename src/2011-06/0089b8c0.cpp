@@ -1,14 +1,14 @@
-// from server: 97% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/CommandBars/XTPControlEdit.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPControlEdit.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPControlEdit.cpp : implementation of the CXTPControlEdit class.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -29,291 +29,19 @@
 #include "Common/XTPDrawHelpers.h"
 #include "Common/XTPColorManager.h"
 #include "Common/XTPToolTipContext.h"
-#include "Common/XTPImageManager.h"
-#include "Common/XTPSystemHelpers.h"
-#include "Common/XTPHookManager.h"
 
-#include "XTPCommandBarsDefines.h"
-#include "XTPControl.h"
-#include "XTPControlButton.h"
-#include "XTPControlPopup.h"
-#include "XTPCommandBar.h"
-#include "XTPPopupBar.h"
 #include "XTPControlEdit.h"
-#include "XTPControlComboBox.h"
+#include "XTPCommandBar.h"
+#include "XTPToolBar.h"
 #include "XTPCommandBars.h"
 #include "XTPPaintManager.h"
 #include "XTPMouseManager.h"
-#include "XTPControls.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
-
-
-
-CXTPCommandBarEditCtrl::CRichEditContext::CRichEditContext()
-{
-	m_hInstance = LoadLibraryA("RICHED20.DLL");
-	m_bRichEdit2 = TRUE;
-
-	if (m_hInstance)
-	{
-	#ifdef _UNICODE
-		m_strClassName = _T("RichEdit20W");
-	#else
-		m_strClassName = _T("RichEdit20A");
-	#endif
-	}
-	else
-	{
-		m_hInstance = LoadLibraryA("RICHED32.DLL");
-		m_strClassName = _T("RICHEDIT");
-		m_bRichEdit2 = FALSE;
-	}
-}
-
-CXTPCommandBarEditCtrl::CRichEditContext::~CRichEditContext()
-{
-}
-
-CXTPCommandBarEditCtrl::CRichEditContext& CXTPCommandBarEditCtrl::GetRichEditContext()
-{
-	static CRichEditContext s_RichContext;
-	return s_RichContext;
-}
-
-// CXTPCommandBarEditCtrl
-
-IMPLEMENT_DYNCREATE(CXTPCommandBarEditCtrl, CEdit)
-
-CXTPCommandBarEditCtrl::CXTPCommandBarEditCtrl()
-{
-	m_bImeMode = FALSE;
-	m_bComposited = FALSE;
-	m_bIgonoreEditChanged = FALSE;
-}
-
-BOOL CXTPCommandBarEditCtrl::IsCommandEnabled(UINT nID)
-{
-	if (nID == ID_EDIT_PASTE)
-	{
-		return ((GetStyle() & (ES_READONLY | WS_DISABLED)) == 0) && ::IsClipboardFormatAvailable(CF_TEXT);
-	}
-	else if (nID == ID_EDIT_CUT || nID == ID_EDIT_COPY)
-	{
-		int nStartChar, nEndChar;
-		GetSel(nStartChar, nEndChar);
-		return (nStartChar != nEndChar) && ((nID == ID_EDIT_COPY) || ((GetStyle() & (ES_READONLY | WS_DISABLED)) == 0));
-	}
-	return TRUE;
-}
-
-BOOL CXTPCommandBarEditCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* /*pHandlerInfo*/)
-{
-	if ((nID == ID_EDIT_PASTE || nID == ID_EDIT_CUT || nID == ID_EDIT_COPY) && (nCode == CN_UPDATE_COMMAND_UI))
-	{
-		CCmdUI* pCmdUI = (CCmdUI*)pExtra;
-		pCmdUI->Enable(IsCommandEnabled(nID));
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-BOOL CXTPCommandBarEditCtrl::OnCommand(WPARAM wParam, LPARAM)
-{
-	UINT nID = LOWORD(wParam);
-
-	if (nID == ID_EDIT_PASTE) Paste();
-	else if (nID == ID_EDIT_COPY) Copy();
-	else if (nID == ID_EDIT_CUT) Cut();
-	else return FALSE;
-
-	return TRUE;
-}
-
-BOOL CXTPCommandBarEditCtrl::ShowContextMenu(CXTPControl* pControl, CPoint point)
-{
-	CString strPrompt;
-	if (!strPrompt.LoadString(ID_EDIT_CUT))
-		return FALSE;
-
-	CXTPCommandBar* pParentBar = pControl->GetParent();
-
-	CXTPCommandBars* pCommandBars = pParentBar->GetCommandBars();
-
-	CXTPMouseManager* pMouseManager = pCommandBars ? pCommandBars->GetMouseManager() : XTPMouseManager();
-	pMouseManager->UnlockMouseMove();
-
-	ClientToScreen(&point);
-
-	MSG msg;
-	if (PeekMessage(&msg, m_hWnd, EM_SETSEL, EM_SETSEL, PM_NOREMOVE))
-	{
-		SendMessage(EM_SETSEL, 0, -1);
-	}
-
-	CXTPPopupBar* pPopupBar = CXTPPopupBar::CreatePopupBar(pCommandBars);
-	CXTPControl* pControlCut = pPopupBar->GetControls()->Add(xtpControlButton, ID_EDIT_CUT);
-	pControlCut->SetEnabled(IsCommandEnabled(ID_EDIT_CUT));
-	CXTPControl* pControlCopy = pPopupBar->GetControls()->Add(xtpControlButton, ID_EDIT_COPY);
-	pControlCopy->SetEnabled(IsCommandEnabled(ID_EDIT_COPY));
-	CXTPControl* pControlPaste = pPopupBar->GetControls()->Add(xtpControlButton, ID_EDIT_PASTE);
-	pControlPaste->SetEnabled(IsCommandEnabled(ID_EDIT_PASTE));
-
-	pPopupBar->SetGrabFocus(FALSE);
-
-	int nAlign = pControl->GetParent()->GetExStyle() & (WS_EX_LAYOUTRTL | WS_EX_RIGHT) ? TPM_RIGHTALIGN : TPM_LEFTALIGN;
-
-
-	int nCommand = CXTPCommandBars::TrackPopupMenu(pPopupBar, TPM_NONOTIFY | TPM_RECURSE | TPM_RETURNCMD | nAlign, point.x, point.y, this, NULL, this);
-
-	if (nCommand > 0)
-	{
-		OnCommand(nCommand, 0);
-	}
-
-	pMouseManager->LockMouseMove();
-
-	pPopupBar->InternalRelease();
-
-	if (pParentBar->GetSafeHwnd())
-	{
-		pParentBar->Redraw();
-		pParentBar->UpdateWindow();
-	}
-
-	return TRUE;
-}
-
-BOOL CXTPCommandBarEditCtrl::CreateEdit(DWORD dwStyle, CWnd* pParentWnd)
-{
-	if (GetRichEditContext().m_hInstance)
-	{
-		if (!CWnd::Create(GetRichEditContext().m_strClassName, 0, dwStyle, CRect(0, 0, 0, 0), pParentWnd, 0))
-			return FALSE;
-
-		SendMessage(EM_SETEVENTMASK, 0, ENM_CHANGE);
-		SendMessage(EM_SETTEXTMODE, TM_PLAINTEXT | TM_SINGLELEVELUNDO);
-	}
-	else
-	{
-		if (!Create(dwStyle, CRect(0, 0, 0, 0), pParentWnd, 0))
-			return FALSE;
-	}
-
-	SetDlgCtrlID(0); // Prevent Visual Studio 2010 to assign non zero ID.
-
-	return TRUE;
-}
-
-BOOL CXTPCommandBarEditCtrl::IsDialogCode(UINT nChar, LPARAM lParam)
-{
-	const BOOL bNavigateKeys = (nChar == VK_BACK) || (nChar >= VK_PRIOR && nChar <= VK_DELETE) ||
-		((nChar == 'C' || nChar == 'V' || nChar == 'X' || nChar == 'Z') && (GetKeyState(VK_CONTROL) < 0));
-
-	if (!bNavigateKeys)
-		return FALSE;
-
-	MSG msg;
-	msg.message = WM_KEYDOWN;
-	msg.hwnd = m_hWnd;
-	msg.wParam = (WPARAM)nChar;
-	msg.lParam = lParam;
-
-	if (IsDialogMessage(&msg))
-		return TRUE;
-
-	return FALSE;
-}
-
-void CXTPCommandBarEditCtrl::SetWindowTextEx(LPCTSTR lpszString)
-{
-	m_bIgonoreEditChanged = TRUE;
-	SetWindowText(0);
-	m_bIgonoreEditChanged = FALSE;
-	SetWindowText(lpszString);
-}
-
-BOOL CXTPCommandBarEditCtrl::IsImeMode() const
-{
-	return m_bImeMode;
-}
-
-
-void CXTPCommandBarEditCtrl::GetWindowTextEx(CString& rString)
-{
-#ifdef _UNICODE
-	if (GetRichEditContext().m_bRichEdit2)
-	{
-		GETTEXTLENGTHEX gtl =
-		{
-			GTL_DEFAULT, 1200
-		};
-
-		int nLen = (int)SendMessage(EM_GETTEXTLENGTHEX, (WPARAM)&gtl);
-
-		if (nLen > 0)
-		{
-			GETTEXTEX gt =
-			{
-				(nLen + 1) * sizeof(TCHAR), GT_DEFAULT, 1200, 0, 0
-			};
-
-			SendMessage(EM_GETTEXTEX, (WPARAM)&gt, (LPARAM)rString.GetBufferSetLength(nLen));
-			rString.ReleaseBuffer();
-		}
-		else
-		{
-			rString.Empty();
-		}
-	}
-	else
-#endif
-	{
-		GetWindowText(rString);
-	}
-}
-
-BEGIN_MESSAGE_MAP(CXTPCommandBarEditCtrl, CEdit)
-	ON_MESSAGE_VOID(WM_IME_STARTCOMPOSITION, OnImeStartComposition)
-	ON_MESSAGE_VOID(WM_IME_ENDCOMPOSITION, OnImeEndComposition)
-	ON_WM_KILLFOCUS()
-	ON_WM_PAINT()
-END_MESSAGE_MAP()
-
-void CXTPCommandBarEditCtrl::OnImeStartComposition()
-{
-	Default();
-	m_bImeMode = TRUE;
-}
-
-void CXTPCommandBarEditCtrl::OnImeEndComposition()
-{
-	Default();
-	m_bImeMode = FALSE;
-}
-
-void CXTPCommandBarEditCtrl::OnKillFocus(CWnd* pNewWnd)
-{
-	CEdit::OnKillFocus(pNewWnd);
-	m_bImeMode = FALSE;
-}
-
-void CXTPCommandBarEditCtrl::OnPaint()
-{
-	Default();
-
-	if (m_bComposited)
-	{
-		CClientDC dc(this);
-		CXTPPaintManager::FillCompositeAlpha(&dc, CXTPClientRect(this));
-	}
-}
-
 
 // CXTPControlEdit
 
@@ -339,11 +67,7 @@ CXTPControlEdit::CXTPControlEdit()
 	m_bEditChanged = TRUE;
 	m_dwEditStyle = 0;
 
-	m_nEditIconId = 0;
-	m_nTextLimit = 0;
-
 	m_bShowSpinButtons = FALSE;
-	m_nBuddyButtonId = 0;
 }
 
 CXTPControlEdit::~CXTPControlEdit()
@@ -422,7 +146,7 @@ BOOL CXTPControlEdit::OnHookKeyDown(UINT nChar, LPARAM lParam)
 			return TRUE;
 	}
 
-	if (GetEnabled() && IsSpinButtonsVisible() && (nChar == VK_UP || nChar == VK_DOWN) && !GetReadOnly())
+	if (IsSpinButtonsVisible() && (nChar == VK_UP || nChar == VK_DOWN))
 	{
 		NotifySpinChanged(1, nChar == VK_UP ? +1 : -1);
 		if (m_pEdit && ::GetFocus() == m_pEdit->GetSafeHwnd()) m_pEdit->SetSel(0, -1);
@@ -511,8 +235,6 @@ void CXTPControlEdit::SetRect(CRect rcControl)
 			if (!GetEnabled()) m_pEdit->EnableWindow(FALSE);
 
 			if (m_dwShellAutoCompleteFlags != 0) EnableShellAutoComplete(m_dwShellAutoCompleteFlags);
-
-			if (m_nTextLimit) m_pEdit->LimitText(m_nTextLimit);
 		}
 
 		m_pEdit->SetFont(GetPaintManager()->GetIconFont(), FALSE);
@@ -522,39 +244,11 @@ void CXTPControlEdit::SetRect(CRect rcControl)
 		m_pEdit->m_bComposited = HasDwmCompositedRect();
 
 		m_pEdit->SetReadOnly(m_bReadOnly);
-		rcControl.DeflateRect(m_nLabelWidth + 1 + 3, 3, 3 + (m_bShowSpinButtons ? 17 : 0) + (m_nBuddyButtonId > 0 ? 18 : 0), 3);
-
-		if (GetPaintManager()->GetEditHeight() > 0)
-			rcControl.OffsetRect(0, 1);
-
-		DeflateEditRect(rcControl);
+		rcControl.DeflateRect(m_nLabelWidth + 1 + 3, 3, 3 + (m_bShowSpinButtons ? 17 : 0), 3);
 		m_pEdit->MoveWindow(rcControl);
 		ShowHideEditControl();
 	}
 	m_bDelayReposition = FALSE;
-}
-
-
-void CXTPControlEdit::DrawEditText(CDC* pDC, CRect rcText)
-{
-	if (m_nEditIconId > 0)
-	{
-		CXTPImageManagerIcon* pIcon = m_pParent->GetImageManager()->GetImage(m_nEditIconId, 0);
-		if (pIcon)
-		{
-			pIcon->Draw(pDC, CPoint(rcText.left, rcText.CenterPoint().y - pIcon->GetHeight() / 2), GetEnabled() ? pIcon->GetIcon() : pIcon->GetDisabledIcon());
-		}
-	}
-}
-
-void CXTPControlEdit::DeflateEditRect(CRect& rcControl)
-{
-	if (m_nEditIconId > 0)
-	{
-		CXTPImageManagerIcon* pIcon = m_pParent->GetImageManager()->GetImage(m_nEditIconId, 0);
-		if (pIcon)
-			rcControl.left += pIcon->GetWidth() + 2;
-	}
 }
 
 void CXTPControlEdit::ShowHideEditControl()
@@ -562,18 +256,13 @@ void CXTPControlEdit::ShowHideEditControl()
 	if (m_pEdit && m_pEdit->GetSafeHwnd())
 	{
 		m_pEdit->SetWindowPos(0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE
-			| (m_pControls && m_pParent && IsVisible() && m_pParent->GetSafeHwnd() ? SWP_SHOWWINDOW : SWP_HIDEWINDOW));
+			| (m_pParent && IsVisible() && m_pParent->GetSafeHwnd() ? SWP_SHOWWINDOW : SWP_HIDEWINDOW));
 	}
 }
 
 void CXTPControlEdit::OnRemoved()
 {
 	ShowHideEditControl();
-
-	if (!m_pControls && m_pEdit && m_pEdit->GetSafeHwnd())
-	{
-		m_pEdit->DestroyWindow();
-	}
 
 	CXTPControl::OnRemoved();
 }
@@ -593,15 +282,19 @@ BOOL CXTPControlEdit::GetReadOnly() const
 	return m_bReadOnly;
 }
 
-void CXTPControlEdit::OnEnabledChanged()
+void CXTPControlEdit::SetEnabled(BOOL bEnabled)
 {
-	if (m_pEdit && m_pEdit->GetSafeHwnd())
+	if (bEnabled != m_bEnabled)
 	{
-		m_pEdit->EnableWindow(GetEnabled());
-		m_pEdit->UpdateCharFormat();
+		m_bEnabled = bEnabled;
+		if (m_pEdit && m_pEdit->GetSafeHwnd())
+		{
+			m_pEdit->EnableWindow(GetEnabled());
+			m_pEdit->UpdateCharFormat();
+		}
+		RedrawParent();
 	}
 }
-
 void CXTPControlEdit::SetParent(CXTPCommandBar* pParent)
 {
 	CXTPControl::SetParent(pParent);
@@ -640,6 +333,8 @@ void CXTPControlEdit::OnClick(BOOL bKeyboard, CPoint pt)
 {
 	if (IsCustomizeMode())
 	{
+		m_pParent->SetPopuped(-1);
+		m_pParent->SetSelected(-1);
 		CustomizeStartDrag(pt);
 	}
 	else
@@ -648,13 +343,9 @@ void CXTPControlEdit::OnClick(BOOL bKeyboard, CPoint pt)
 		{
 			OnExecute();
 		}
-		else if (!bKeyboard && GetSpinButtonsRect().PtInRect(pt) && GetEnabled() && !GetReadOnly())
+		else if (!bKeyboard && GetSpinButtonsRect().PtInRect(pt))
 		{
 			TrackSpinButton(pt);
-		}
-		else if (!bKeyboard && GetBuddyButtonRect().PtInRect(pt) && GetEnabled())
-		{
-			TrackBuddyButton(pt);
 		}
 		else
 		{
@@ -701,7 +392,7 @@ void CXTPControlEdit::TrackSpinButton(CPoint pt)
 	const int direction = bTop ? +1 : -1;
 	int increment = 1;
 
-	m_bSelected = m_bPressed = bTop ? XTP_EDITSPIN_UP : XTP_EDITSPIN_DOWN;
+	m_bSelected = m_bPressed = bTop ? 3 : 4;
 	RedrawParent(FALSE);
 
 	NotifySpinChanged(increment, direction);
@@ -771,63 +462,6 @@ void CXTPControlEdit::TrackSpinButton(CPoint pt)
 		GetParent()->SetTrackingMode(FALSE);
 }
 
-void CXTPControlEdit::TrackBuddyButton(CPoint pt)
-{
-	m_pParent->SetSelected(-1);
-	m_pParent->SetSelected(GetIndex(), FALSE);
-
-	CRect rc = GetBuddyButtonRect();
-
-	m_bSelected = m_bPressed = XTP_EDITBUDDYBUTTON;
-	RedrawParent(FALSE);
-
-	m_pParent->SetCapture();
-
-	for (;;)
-	{
-		MSG msg;
-		VERIFY(::GetMessage(&msg, NULL, 0, 0));
-
-		if (msg.message == WM_LBUTTONUP)
-		{
-			break;
-		}
-
-		if (msg.message == WM_MOUSEMOVE)
-		{
-			pt = CPoint(LOWORD(msg.lParam), HIWORD(msg.lParam));
-
-			BOOL bSelected = rc.PtInRect(pt) ? XTP_EDITBUDDYBUTTON : 1;
-
-			if (bSelected != m_bSelected)
-			{
-				m_bSelected = bSelected;
-				RedrawParent();
-			}
-			continue;
-		}
-
-		DispatchMessage (&msg);
-
-		if (CWnd::GetCapture() != m_pParent)
-			break;
-	}
-
-	BOOL bExecute = m_bSelected == XTP_EDITBUDDYBUTTON;
-
-	m_bPressed = FALSE;
-	m_bSelected = 1;
-
-	ReleaseCapture();
-
-	RedrawParent(FALSE);
-
-	if (bExecute)
-	{
-		NotifySite(XTP_FN_BUDDYBUTTONCLICK);
-	}
-}
-
 CRect CXTPControlEdit::GetSpinButtonsRect() const
 {
 	if (!IsSpinButtonsVisible())
@@ -837,65 +471,32 @@ CRect CXTPControlEdit::GetSpinButtonsRect() const
 	return CRect(rc.right - 18, rc.top + 1, rc.right - 1, rc.bottom - 1);
 }
 
-CRect CXTPControlEdit::GetBuddyButtonRect() const
-{
-	if (!IsBuddyButtonVisible())
-		return CRect(0, 0, 0, 0);
-
-	CRect rc(GetRect());
-	rc = CRect(rc.right - 19, rc.top + 1, rc.right - 1, rc.bottom - 1);
-
-	if (IsSpinButtonsVisible())
-		rc.OffsetRect(-17, 0);
-
-	return rc;
-}
-
 void CXTPControlEdit::OnMouseMove(CPoint point)
 {
 	CXTPControl::OnMouseMove(point);
 
-	BOOL bSelected = m_bSelected;
-
-	if (GetEnabled() && IsSpinButtonsVisible() && bSelected)
+	if (GetEnabled() && IsSpinButtonsVisible() && m_bSelected)
 	{
 		CRect rc(GetSpinButtonsRect());
 
 		CRect rcTop(rc.left, rc.top, rc.right, rc.CenterPoint().y);
 		CRect rcBottom(rc.left, rcTop.bottom, rc.right, rc.bottom);
 
-		if (rcTop.PtInRect(point))
+		if (rcTop.PtInRect(point) && m_bSelected != 3)
 		{
-			bSelected = XTP_EDITSPIN_UP;
+			m_bSelected = 3;
+			RedrawParent(FALSE);
 		}
-		else if (rcBottom.PtInRect(point))
+		else if (rcBottom.PtInRect(point) && m_bSelected != 4)
 		{
-			bSelected = XTP_EDITSPIN_DOWN;
+			m_bSelected = 4;
+			RedrawParent(FALSE);
 		}
-		else if ((m_bSelected == XTP_EDITSPIN_UP || m_bSelected == XTP_EDITSPIN_DOWN) && !rc.PtInRect(point))
+		else if ((m_bSelected == 3 || m_bSelected == 4) && !rc.PtInRect(point))
 		{
-			bSelected = 1;
+			m_bSelected = 1;
+			RedrawParent(FALSE);
 		}
-	}
-
-	if (GetEnabled() && IsBuddyButtonVisible() && bSelected)
-	{
-		CRect rc(GetBuddyButtonRect());
-
-		if (rc.PtInRect(point))
-		{
-			bSelected = XTP_EDITBUDDYBUTTON;
-		}
-		else if (m_bSelected == XTP_EDITBUDDYBUTTON && !rc.PtInRect(point))
-		{
-			bSelected = 1;
-		}
-	}
-
-	if (bSelected != m_bSelected)
-	{
-		m_bSelected = bSelected;
-		RedrawParent(FALSE);
 	}
 }
 
@@ -920,11 +521,15 @@ void CXTPControlEdit::SetHideFlags(DWORD dwFlags)
 
 void CXTPControlEdit::OnActionChanged(int nProperty)
 {
-	CXTPControl::OnActionChanged(nProperty);
-
 	if (nProperty == 2)
 	{
 		ShowHideEditControl();
+	}
+
+	if (nProperty == 0 && m_pEdit && m_pEdit->GetSafeHwnd())    // Enabled
+	{
+		m_pEdit->EnableWindow(GetEnabled());
+		m_pEdit->UpdateCharFormat();
 	}
 
 	if (nProperty == 4)
@@ -970,19 +575,6 @@ CString CXTPControlEdit::GetEditHint() const
 	return !m_strEditHint.IsEmpty() ? m_strEditHint : m_pAction ? m_pAction->GetEditHint() : _T("");
 }
 
-void CXTPControlEdit::SetTextLimit(int nTextLimit)
-{
-	m_nTextLimit = nTextLimit;
-
-	if (m_pEdit && m_pEdit->GetSafeHwnd())
-		m_pEdit->LimitText(m_nTextLimit);
-}
-
-int CXTPControlEdit::GetTextLimit() const
-{
-	return m_nTextLimit;
-}
-
 DWORD CXTPControlEdit::GetEditStyle() const
 {
 	return m_dwEditStyle;
@@ -1014,9 +606,6 @@ void CXTPControlEdit::Copy(CXTPControl* pControl, BOOL bRecursive)
 	SetEditHint(pControlEdit->m_strEditHint);
 	EnableShellAutoComplete(pControlEdit->m_dwShellAutoCompleteFlags);
 	m_bShowSpinButtons = pControlEdit->m_bShowSpinButtons;
-	m_nTextLimit = pControlEdit->m_nTextLimit;
-	m_nBuddyButtonId = pControlEdit->m_nBuddyButtonId;
-
 }
 
 BOOL CXTPControlEdit::Compare(CXTPControl* pOther)
@@ -1126,7 +715,7 @@ BOOL CXTPControlEdit::IsCaptionVisible() const
 	return m_bLabel;
 }
 
-BEGIN_MESSAGE_MAP(CXTPControlEditCtrl, CXTPCommandBarEditCtrl)
+BEGIN_MESSAGE_MAP(CXTPControlEditCtrl, CXTPEdit)
 	ON_WM_SETFOCUS()
 	ON_WM_MOUSEMOVE()
 	ON_WM_KILLFOCUS()
@@ -1134,7 +723,6 @@ BEGIN_MESSAGE_MAP(CXTPControlEditCtrl, CXTPCommandBarEditCtrl)
 	ON_WM_LBUTTONDOWN()
 	ON_WM_RBUTTONDOWN()
 	ON_WM_CONTEXTMENU()
-	ON_WM_KEYDOWN()
 	ON_MESSAGE(XTP_TTM_WINDOWFROMPOINT, OnWindowFromPoint)
 	ON_CONTROL_REFLECT(EN_CHANGE, OnEditChanged)
 END_MESSAGE_MAP()
@@ -1153,17 +741,6 @@ void CXTPControlEditCtrl::OnEditChanged()
 
 	SetMargins(0, 0);
 	UpdateCharFormat();
-}
-
-void CXTPControlEditCtrl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	if (nChar == VK_RETURN && ::GetFocus() == m_hWnd)
-	{
-		m_pControl->OnExecute();
-		return;
-	}
-
-	CXTPCommandBarEditCtrl::OnKeyDown(nChar, nRepCnt, nFlags);
 }
 
 void CXTPControlEditCtrl::UpdateCharFormat()
@@ -1204,7 +781,7 @@ void CXTPControlEditCtrl::OnRButtonDown(UINT nFlags, CPoint point)
 	m_pControl->SetFocused(TRUE);
 
 	if (!ShowContextMenu(m_pControl, point))
-		CXTPCommandBarEditCtrl::OnRButtonDown(nFlags, point);
+		CXTPEdit::OnRButtonDown(nFlags, point);
 }
 
 void CXTPControlEditCtrl::OnDestroy()
@@ -1228,7 +805,7 @@ void CXTPControlEditCtrl::OnSetFocus(CWnd* pOldWnd)
 
 void CXTPControlEditCtrl::OnKillFocus(CWnd* pNewWnd)
 {
-	CXTPCommandBarEditCtrl::OnKillFocus(pNewWnd);
+	CXTPEdit::OnKillFocus(pNewWnd);
 	m_pControl->OnKillFocus();
 }
 

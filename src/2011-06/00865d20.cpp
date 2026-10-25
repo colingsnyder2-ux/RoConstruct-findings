@@ -1,14 +1,14 @@
-// from server: 30% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/CommandBars/XTPTabClientWnd.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPTabClientWnd.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPTabClientWnd.cpp : implementation of the CXTPTabClientWnd class.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -28,37 +28,25 @@
 #include "stdafx.h"
 #include "Resource.h"
 
-#include "Common/Resource.h"
 #include "Common/XTPResourceManager.h"
 #include "Common/XTPImageManager.h"
 #include "Common/XTPDrawHelpers.h"
 #include "Common/XTPToolTipContext.h"
-#include "Common/XTPMarkupRender.h"
-#include "Common/XTPColorManager.h"
-#include "Common/XTPSystemHelpers.h"
-#include "Common/XTPHookManager.h"
 
+#include "Common/Resource.h"
 #include "TabManager/XTPTabManager.h"
-#include "TabManager/XTPTabPaintManager.h"
 
 #include "XTPCommandBarsDefines.h"
-#include "XTPCommandBars.h"
-#include "XTPCommandBar.h"
+#include "XTPTabClientWnd.h"
+#include "XTPMouseManager.h"
+#include "XTPPaintManager.h"
 #include "XTPPopupBar.h"
 #include "XTPToolBar.h"
-#include "XTPMenuBar.h"
-#include "XTPControls.h"
-#include "XTPControl.h"
-#include "XTPControlButton.h"
-#include "XTPControlEdit.h"
-#include "XTPControlExt.h"
-#include "XTPMouseManager.h"
-#include "XTPCommandBarsFrameHook.h"
-#include "XTPPaintManager.h"
-#include "XTPOffice2003Theme.h"
-#include "XTPTabClientWnd.h"
-#include "XTPShortcutManager.h"
+#include "XTPCommandBars.h"
 #include "XTPFrameWnd.h"
+#include "XTPControls.h"
+#include "XTPControlExt.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -69,9 +57,6 @@ static char THIS_FILE[] = __FILE__;
 #ifndef OIC_WINLOGO
 #define OIC_WINLOGO         32517
 #endif
-
-#define XTP_TID_REFRESHFRAME 0xACD1
-
 
 #define xtpTabNavigateButtonActiveFiles 4
 
@@ -136,15 +121,11 @@ public:
 		int nIconId = 0;
 		HICON hIconLast = 0;
 
-		CWnd* pActiveWnd = m_pTabClientWnd->MDIGetActive();
-
 		for (int nIndex = 0; nIndex < m_pManager->GetItemCount(); nIndex++)
 		{
 			CXTPTabManagerItem* pItem = m_pManager->GetItem(nIndex);
-			if (!pItem->GetHandle())
-				continue;
 
-			CString strCaption = pItem->GetCaption();
+			CString pCaption = pItem->GetCaption();
 			CXTPControl* pControl = pPopupBar->GetControls()->Add(xtpControlButton, nIndex + 1, _T(""), nIndex, TRUE);
 
 			HICON hIcon = m_pTabClientWnd->GetItemIcon(pItem);
@@ -156,11 +137,8 @@ public:
 			}
 
 			pControl->SetIconId(nIconId);
-			pControl->SetCaption(CXTPControlWindowList::ConstructCaption(strCaption, 0));
+			pControl->SetCaption(CXTPControlWindowList::ConstructCaption(pCaption, 0));
 			pControl->SetDescription(_T(""));
-
-			if (pActiveWnd && pItem->GetHandle() == pActiveWnd->GetSafeHwnd())
-				pControl->SetChecked(TRUE);
 		}
 
 		int nItem = pCommandBars->TrackPopupMenu(pPopupBar, TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_NONOTIFY, pt.x, pt.y, m_pTabClientWnd, &rcExclude);
@@ -174,7 +152,7 @@ public:
 		{
 			CXTPTabManagerItem* pItem = m_pManager->GetItem(nItem - 1);
 
-			if (pItem)
+			if (pItem && !pItem->IsSelected())
 			{
 				m_pTabClientWnd->MDIActivate(CWnd::FromHandle(pItem->GetHandle()));
 			}
@@ -189,19 +167,6 @@ protected:
 
 class CXTPTabClientWnd::CTabClientDropTarget : public COleDropTarget
 {
-public:
-	CTabClientDropTarget()
-	{
-		m_ptDragLastPoint = CPoint(-1, -1);
-		m_dwDragLastTick = 0;
-	}
-
-	void OnDragLeave(CWnd* /*pWnd*/)
-	{
-		m_dwDragLastTick = 0;
-		m_ptDragLastPoint = CPoint(-1, -1);
-	}
-
 	virtual DROPEFFECT OnDragOver(CWnd* /*pWnd*/, COleDataObject* /*pDataObject*/, DWORD /*dwKeyState*/, CPoint point)
 	{
 		ASSERT(m_pTabClientWnd);
@@ -209,45 +174,17 @@ public:
 		if (!m_pTabClientWnd || !m_pTabClientWnd->GetPaintManager()->m_bSelectOnDragOver)
 			return DROPEFFECT_NONE;
 
-		if (m_dwDragLastTick != (DWORD)-1 && m_pTabClientWnd->GetPaintManager()->m_bSelectOnDragOver == 2)
+		CXTPTabManagerItem* pItem = m_pTabClientWnd->HitTest(point);
+
+		if (pItem && !pItem->IsSelected())
 		{
-			DWORD dwTick = GetTickCount();
-
-			if (point != m_ptDragLastPoint)
-			{
-				m_dwDragLastTick = dwTick;
-				m_ptDragLastPoint = point;
-			}
-
-			if (dwTick - m_dwDragLastTick > CXTPTabPaintManager::m_nSelectOnDragOverDelay)
-			{
-				m_dwDragLastTick = (DWORD)-1;
-			}
-		}
-		else
-		{
-			CXTPTabManagerItem* pItem = m_pTabClientWnd->HitTest(point);
-
-			if (pItem)
-			{
-				if (!pItem->IsSelected())
-				m_pTabClientWnd->MDIActivate(CWnd::FromHandle(pItem->GetHandle()));
-			}
-			else
-			{
-				m_dwDragLastTick = 0;
-			}
+			m_pTabClientWnd->MDIActivate(CWnd::FromHandle(pItem->GetHandle()));
 		}
 
 		return DROPEFFECT_NONE;
 	}
 public:
 	CXTPTabClientWnd* m_pTabClientWnd;
-
-protected:
-	DWORD m_dwDragHoverMode;
-	DWORD m_dwDragLastTick;
-	CPoint m_ptDragLastPoint;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -257,8 +194,6 @@ CXTPTabClientWnd::CWorkspace::CWorkspace()
 {
 	m_pTabClientWnd = NULL;
 	m_dHeight = 100;
-
-	m_pNewWindowItem = NULL;
 }
 
 CXTPTabClientWnd::CWorkspace::~CWorkspace()
@@ -268,11 +203,12 @@ CXTPTabClientWnd::CWorkspace::~CWorkspace()
 
 void CXTPTabClientWnd::CWorkspace::SetSelectedItem(CXTPTabManagerItem* pItem)
 {
-	if (pItem == m_pNewWindowItem)
-		pItem = GetItem(GetItemCount() - 1);
-
+	if (m_pSelected != pItem)
+	{
+	}
 
 	CXTPTabManager::SetSelectedItem(pItem);
+
 }
 
 
@@ -318,39 +254,14 @@ BOOL CXTPTabClientWnd::CWorkspace::IsDrawStaticFrame() const
 }
 
 
+
 BOOL CXTPTabClientWnd::CWorkspace::DrawIcon(CDC* pDC, CPoint pt, CXTPTabManagerItem* pItem, BOOL bDraw, CSize& szIcon) const
 {
-	if (pItem == m_pNewWindowItem)
-	{
-		if (!bDraw)
-			return TRUE;
-
-		CXTPCommandBars* pCommandBars = m_pTabClientWnd->GetCommandBars();
-		CXTPImageManager* pImageManager = pCommandBars ? pCommandBars->GetImageManager() : XTPImageManager();
-
-		CXTPImageManagerIcon* pIcon = pImageManager->GetImage(m_pTabClientWnd->m_nNewWindowTabCommand);
-		if (pIcon) pIcon->Draw(pDC, pt, szIcon);
-
-		return TRUE;
-	}
-
 	if (GetPaintManager()->m_bShowIcons == FALSE)
 		return FALSE;
 
 	if (!bDraw)
 	{
-		return TRUE;
-	}
-
-
-	if (pItem->GetImageIndex() != -1)
-	{
-		CXTPCommandBars* pCommandBars = m_pTabClientWnd->GetCommandBars();
-		CXTPImageManager* pImageManager = pCommandBars ? pCommandBars->GetImageManager() : XTPImageManager();
-
-		CXTPImageManagerIcon* pIcon = pImageManager->GetImage(pItem->GetImageIndex());
-		if (pIcon) pIcon->Draw(pDC, pt, szIcon);
-
 		return TRUE;
 	}
 
@@ -403,14 +314,7 @@ CXTPTabManagerItem* CXTPTabClientWnd::CWorkspace::AddItem(const CWnd* pChildWnd)
 	if ((pChildWnd->GetExStyle() & WS_EX_MDICHILD) == 0)
 		return NULL;
 
-	if (GetItemCount() == 0)
-		AddNewWindowItem();
-
 	int nIndex = GetItemCount();
-
-	if (m_pNewWindowItem) nIndex--;
-
-
 	switch (m_pTabClientWnd->GetNewTabPositon())
 	{
 	case xtpWorkspaceNewTabLeftMost:
@@ -439,13 +343,6 @@ void CXTPTabClientWnd::CWorkspace::OnItemClick(CXTPTabManagerItem* pItem)
 	ASSERT(pItem);
 	if (!pItem)
 		return;
-
-	if (pItem == m_pNewWindowItem)
-	{
-		m_pTabClientWnd->GetParent()->SendMessage(WM_COMMAND, m_pTabClientWnd->m_nNewWindowTabCommand);
-
-		return;
-	}
 
 	CWnd* pWnd = CWnd::FromHandle(pItem->GetHandle());
 	if (pWnd)
@@ -488,11 +385,6 @@ void CXTPTabClientWnd::CWorkspace::OnRecalcLayout()
 
 }
 
-CXTPMarkupContext* CXTPTabClientWnd::CWorkspace::GetMarkupContext() const
-{
-	return m_pTabClientWnd->m_pMarkupContext;
-}
-
 HICON CXTPTabClientWnd::CWorkspace::GetItemIcon(const CXTPTabManagerItem* pItem) const
 {
 	return m_pTabClientWnd->GetItemIcon(pItem);
@@ -515,17 +407,6 @@ COLORREF CXTPTabClientWnd::CWorkspace::GetItemColor(const CXTPTabManagerItem* pI
 
 void CXTPTabClientWnd::CWorkspace::ReOrder(HWND hWnd, CPoint pt, CXTPTabManagerItem* pItem)
 {
-	if (pItem == m_pNewWindowItem)
-	{
-		m_pTabClientWnd->SetActiveWorkspace(this);
-
-		m_pHighlighted = NULL;
-
-		OnItemClick(pItem);
-
-		return;
-	}
-
 	if (m_pTabClientWnd->GetWorkspaceCount() == 1 && pItem->GetTabManager()->GetItemCount() == 1)
 	{
 		OnItemClick(pItem);
@@ -587,7 +468,7 @@ void CXTPTabClientWnd::CWorkspace::ReOrder(HWND hWnd, CPoint pt, CXTPTabManagerI
 						}
 						for (int i = 0; i < arrRects.GetSize(); i++)
 						{
-							if (i != pItem->GetIndex() && arrRects[i].PtInRect(pt) && m_arrItems[i] != m_pNewWindowItem)
+							if (i != pItem->GetIndex() && arrRects[i].PtInRect(pt))
 							{
 
 								CXTPTabManagerItem* p = pItem;
@@ -652,33 +533,6 @@ ExitLoop:
 
 	pItem->GetTabManager()->EnsureVisible(pItem);
 }
-
-BOOL CXTPTabClientWnd::CWorkspace::DrawParentBackground(CDC* pDC, CRect rc)
-{
-	if (m_pTabClientWnd->m_themeCommandBars == xtpThemeVisualStudio2008)
-	{
-		CXTPCommandBars* pCommandBars = m_pTabClientWnd->GetCommandBars();
-		if (!pCommandBars)
-			return FALSE;
-
-		CXTPOffice2003Theme* pPaintManager = (CXTPOffice2003Theme*)pCommandBars->GetPaintManager();
-		if (((CXTPPaintManager*)pPaintManager)->BaseTheme() != xtpThemeVisualStudio2008)
-			return FALSE;
-
-		CWnd* pWnd = m_pTabClientWnd->GetParentFrame();
-		CXTPWindowRect rcFill((CWnd*)pWnd);
-
-		m_pTabClientWnd->ScreenToClient(rcFill);
-		rcFill.right = rcFill.left + max(rcFill.Width(), GetSystemMetrics(SM_CXFULLSCREEN) / 2);
-		rcFill.top = rc.top;
-		rcFill.bottom = rc.bottom;
-
-		XTPDrawHelpers()->GradientFill(pDC, rcFill, pPaintManager->m_clrDockBar, TRUE, rc);
-		return TRUE;
-	}
-	return FALSE;
-}
-
 
 //////////////////////////////////////////////////////////////////////////
 // CSingleWorkspace
@@ -985,7 +839,7 @@ CXTPTabClientWnd::CXTPTabClientWnd()
 	m_pPaintManager = new CXTPTabPaintManager();
 	m_pPaintManager->m_bBoldSelected = TRUE;
 
-	m_themeCommandBars = xtpThemeNone;
+	m_themeCommandBars = xtpThemeOffice2000;
 	m_bAutoTheme = TRUE;
 
 	m_bLockUpdate = FALSE;
@@ -1000,16 +854,9 @@ CXTPTabClientWnd::CXTPTabClientWnd()
 	m_bThemedBackColor = TRUE;
 	m_bUpdateContents = FALSE;
 	m_bRightToLeft = FALSE;
-	m_bAutoUpdateTabCaption = TRUE;
-	m_pMarkupContext = NULL;
 
 	m_bUseSplitterTracker = TRUE;
 	m_bIgnoreFlickersOnActivate = FALSE;
-
-	m_bShowNewWindowTab = FALSE;
-	m_nNewWindowTabCommand = ID_FILE_NEW;
-
-	m_pCommandBars = NULL;
 
 	m_nSplitterSize = 5;
 
@@ -1071,20 +918,7 @@ CXTPTabClientWnd::~CXTPTabClientWnd()
 
 	CMDTARGET_RELEASE(m_pToolTipContext);
 
-
-	XTPMarkupReleaseContext(m_pMarkupContext);
 }
-
-void CXTPTabClientWnd::EnableMarkup(BOOL bEnableMarkup)
-{
-	XTPMarkupReleaseContext(m_pMarkupContext);
-
-	if (bEnableMarkup)
-	{
-		m_pMarkupContext = XTPMarkupCreateContext(m_hWnd);
-	}
-}
-
 
 BOOL CXTPTabClientWnd::IsLayoutRTL() const
 {
@@ -1155,15 +989,10 @@ CWnd* CXTPTabClientWnd::MDIGetActive()
 
 void CXTPTabClientWnd::MDIActivate(CWnd* pWnd)
 {
-	if (!pWnd || !::IsWindow(pWnd->GetSafeHwnd()))
+	if (!pWnd)
 		return;
 
-	SendMessage(WM_MDIACTIVATE, (WPARAM)pWnd->m_hWnd, 0);
-
-	if (pWnd->GetStyle() & WS_MINIMIZE)
-	{
-		pWnd->SendMessage(WM_SYSCOMMAND, (WPARAM)SC_RESTORE, 0L);
-	}
+	GetParentFrame()->MDIActivate(pWnd);
 }
 
 CString CXTPTabClientWnd::GetItemTooltip(const CXTPTabManagerItem* pItem) const
@@ -1207,7 +1036,7 @@ CString CXTPTabClientWnd::GetItemText(const CWnd* pChildWnd) const
 			sWindowText = pDoc->GetTitle();
 
 		if (sWindowText.IsEmpty())
-			CXTPDrawHelpers::GetWindowCaption(pChildWnd->GetSafeHwnd(), sWindowText);
+			pChildWnd->GetWindowText(sWindowText);
 	}
 
 	return sWindowText;
@@ -1312,8 +1141,6 @@ CXTPTabClientWnd::CWorkspace*  CXTPTabClientWnd::AddWorkspace(int nIndex)
 	m_arrWorkspace.InsertAt(nIndex, pWorkspace);
 
 	pWorkspace->m_pTabClientWnd = this;
-
-
 	pWorkspace->SetActive(FALSE);
 	pWorkspace->SetItemMetrics(CSize(70, 18), 0, CSize(220, 0));
 	pWorkspace->GetNavigateButtons()->InsertAt(2, new CNavigateButtonActiveFiles(pWorkspace, this));
@@ -1326,12 +1153,9 @@ CXTPTabClientWnd::CWorkspace*  CXTPTabClientWnd::AddWorkspace(int nIndex)
 
 }
 
-BOOL CXTPTabClientWnd::Attach(CXTPMDIFrameWnd* pParentFrame, BOOL bEnableGroups /*= FALSE*/)
-{
-	return Attach(pParentFrame->GetCommandBars(), pParentFrame, bEnableGroups);
-}
 
-BOOL CXTPTabClientWnd::Attach(CXTPCommandBars* pCommandBars, CMDIFrameWnd* pParentFrame, BOOL bEnableGroups)
+BOOL CXTPTabClientWnd::Attach(CXTPMDIFrameWnd* pParentFrame,
+	BOOL bEnableGroups /*= FALSE*/)
 {
 	ASSERT(GetWorkspaceCount() == 0);
 	ASSERT(pParentFrame != NULL);
@@ -1341,7 +1165,6 @@ BOOL CXTPTabClientWnd::Attach(CXTPCommandBars* pCommandBars, CMDIFrameWnd* pPare
 
 	m_bEnableGroups = bEnableGroups;
 
-	m_pCommandBars = NULL;
 
 	// check if already attached
 	if (IsAttached())
@@ -1363,8 +1186,6 @@ BOOL CXTPTabClientWnd::Attach(CXTPCommandBars* pCommandBars, CMDIFrameWnd* pPare
 		TRACE(_T("CXTPTabClientWnd::Attach: failed to subclass MDI Client window\n"));
 		return FALSE;
 	}
-
-	m_pCommandBars = pCommandBars;
 
 	SendMessage(m_nMsgUpdateSkinState);
 
@@ -1451,8 +1272,6 @@ BOOL CXTPTabClientWnd::Detach()
 		m_pParentFrame->RecalcLayout();
 
 	m_pParentFrame = NULL;
-	m_pCommandBars = NULL;
-
 	::SendMessage(hWnd, m_nMsgUpdateSkinState, 0, 0);
 
 	return TRUE;
@@ -1488,151 +1307,72 @@ void CXTPTabClientWnd::CheckCommandBarsTheme()
 	if (!pCommandBars)
 		return;
 
-	XTPPaintTheme themeCommandBars = pCommandBars->GetPaintManager()->GetCurrentTheme();
-	if (m_themeCommandBars == themeCommandBars)
-		return;
+	XTPPaintTheme themeCommandBars = pCommandBars->GetPaintManager()->BaseTheme();
 
-	// initialize attributes common to most themes.
-	m_pPaintManager->m_bStaticFrame = FALSE;
-	m_pPaintManager->m_clientFrame = xtpTabFrameBorder;
-	m_pPaintManager->m_bOneNoteColors = FALSE;
-	m_pPaintManager->m_bHotTracking = FALSE;
-	m_pPaintManager->m_rcButtonMargin.SetRect(0,0,0,0);
-	m_pPaintManager->m_bClearTypeTextQuality = pCommandBars->GetPaintManager()->m_bClearTypeTextQuality;
-	m_pPaintManager->m_bBoldSelected = FALSE;
-	m_pPaintManager->m_rcClientMargin.SetRect(2,2,2,2);
-
-	// set theme specific attributes.
-	switch (themeCommandBars)
+	if (m_themeCommandBars != themeCommandBars)
 	{
-	case xtpThemeOffice2000:
-		{
-			m_pPaintManager->m_bBoldSelected = TRUE;
-			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPageSelected);
-			m_pPaintManager->SetColor(xtpTabColorDefault);
-		}
-		break;
 
-	case xtpThemeOfficeXP:
+		m_pPaintManager->m_bStaticFrame = FALSE;
+		m_pPaintManager->m_clientFrame = xtpTabFrameBorder;
+		m_pPaintManager->m_bOneNoteColors = FALSE;
+		m_pPaintManager->m_bHotTracking = FALSE;
+		m_pPaintManager->m_rcButtonMargin.SetRect(0, 0, 0, 0);
+
+		switch (themeCommandBars)
 		{
+		case xtpThemeOfficeXP:
 			m_pPaintManager->SetAppearance(xtpTabAppearanceVisualStudio);
 			m_pPaintManager->m_bStaticFrame = TRUE;
 			m_pPaintManager->m_clientFrame = xtpTabFrameSingleLine;
-		}
-		break;
+			break;
 
-	case xtpThemeOffice2003:
-		{
-			m_pPaintManager->m_bBoldSelected = TRUE;
+		case xtpThemeOffice2007:
 			m_pPaintManager->m_bDisableLunaColors = FALSE;
 			m_pPaintManager->m_bOneNoteColors = TRUE;
 			m_pPaintManager->m_bHotTracking = TRUE;
 			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage2003);
-			m_pPaintManager->SetColor(xtpTabColorOffice2003);
-		}
-		break;
+			m_pPaintManager->SetColor(xtpTabColorOffice2007);
+			break;
 
-	case xtpThemeNativeWinXP:
-		{
-			m_pPaintManager->m_bBoldSelected = TRUE;
-			m_pPaintManager->m_bHotTracking = TRUE;
-			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage);
-			m_pPaintManager->SetColor(xtpTabColorWinNative);
-		}
-		break;
-
-	case xtpThemeWhidbey:
-		{
-			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage2003);
-			m_pPaintManager->SetColor(xtpTabColorVisualStudio2005);
-			m_pPaintManager->m_bStaticFrame = TRUE;
-			m_pPaintManager->m_clientFrame = xtpTabFrameSingleLine;
-			m_pPaintManager->m_bDisableLunaColors = TRUE;
-		}
-		break;
-
-	case xtpThemeResource:
-		{
-			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage2003);
-			m_pPaintManager->SetColor(xtpTabColorResource);
-			m_pPaintManager->m_bDisableLunaColors = FALSE;
-			m_pPaintManager->m_bOneNoteColors = TRUE;
-			m_pPaintManager->m_bHotTracking = TRUE;
-		}
-		break;
-
-	case xtpThemeRibbon:
-		{
+		case xtpThemeRibbon:
 			m_pPaintManager->m_bDisableLunaColors = FALSE;
 			m_pPaintManager->m_bOneNoteColors = FALSE;
 			m_pPaintManager->m_bHotTracking = TRUE;
-			m_pPaintManager->m_rcClientMargin.SetRect(3,2,3,4);
+			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage2007);
+			m_pPaintManager->m_rcButtonMargin.SetRect(3, 2, 3, 1);
+			break;
 
-			if (pCommandBars->GetMenuBar() && pCommandBars->GetMenuBar()->GetType() == xtpBarTypeRibbon)
-			{
-				m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPageAccess2007);
-				m_pPaintManager->m_rcButtonMargin.SetRect(3, 0, 3, 0);
-			}
-			else
-			{
-				m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage2007);
-				m_pPaintManager->m_rcButtonMargin.SetRect(2, 2, 2, 2);
-			}
-		}
-		break;
-
-	case xtpThemeVisualStudio2008:
-		{
+		case xtpThemeOffice2003:
+			m_pPaintManager->m_bDisableLunaColors = FALSE;
+			m_pPaintManager->m_bOneNoteColors = TRUE;
+			m_pPaintManager->m_bHotTracking = TRUE;
 			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage2003);
-			m_pPaintManager->SetColor(xtpTabColorVisualStudio2008);
-			m_pPaintManager->m_bStaticFrame = FALSE;
-			m_pPaintManager->m_clientFrame = xtpTabFrameBorder;
-			m_pPaintManager->m_bDisableLunaColors = TRUE;
-			m_pPaintManager->m_bHotTracking = TRUE;
-		}
-		break;
+			break;
 
-	case xtpThemeVisualStudio6:
-		{
-			m_pPaintManager->m_bBoldSelected = TRUE;
+		case xtpThemeNativeWinXP:
 			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage);
-			m_pPaintManager->SetColor(xtpTabColorDefault);
-		}
-		break;
-
-	case xtpThemeVisualStudio2010:
-		{
-			m_pPaintManager->m_bStaticFrame = FALSE;
-			m_pPaintManager->m_clientFrame = xtpTabFrameBorder;
-			m_pPaintManager->m_bDisableLunaColors = TRUE;
+			m_pPaintManager->SetColor(xtpTabColorWinXP);
 			m_pPaintManager->m_bHotTracking = TRUE;
-			m_pPaintManager->m_rcClientMargin.SetRect(0, 2, 0, 2);
-			m_pPaintManager->m_rcButtonMargin.SetRect(0, 2, 0, 1);
+			break;
 
-			CXTPTabPaintManager::CAppearanceSetPropertyPageFlat* pAppearance =
-				new CXTPTabPaintManager::CAppearanceSetVisualStudio2010();
+		case xtpThemeWhidbey:
+			m_pPaintManager->m_bStaticFrame = TRUE;
+			m_pPaintManager->m_clientFrame = xtpTabFrameSingleLine;
+			m_pPaintManager->m_bDisableLunaColors = TRUE;
+			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage2003);
+			m_pPaintManager->SetColor(xtpTabColorWhidbey);
+			break;
 
-			pAppearance->m_rcHeaderMargin.left = 1;
-			pAppearance->m_rcHeaderMargin.top = 0;
-
-			m_pPaintManager->SetAppearanceSet(pAppearance);
-			m_pPaintManager->SetColor(xtpTabColorVisualStudio2010);
-			SetFlags(xtpWorkspaceHideClose | xtpWorkspaceShowCloseTab);
-		}
-		break;
-
-	default:
-		{
+		default:
 			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage);
-			m_pPaintManager->SetColor(xtpTabColorDefault);
+			break;
 		}
-		break;
+
+		m_themeCommandBars = themeCommandBars;
+
+		Refresh();
+
 	}
-
-	m_pPaintManager->RefreshMetrics();
-	m_themeCommandBars = themeCommandBars;
-
-	Refresh();
 }
 
 int CXTPTabClientWnd::GetWorkspaceCount() const
@@ -1655,16 +1395,6 @@ void CXTPTabClientWnd::OnIdleUpdateCmdUI()
 	}
 
 	UpdateContents();
-}
-
-void CXTPTabClientWnd::CWorkspace::AddNewWindowItem()
-{
-	if (!m_pNewWindowItem && m_pTabClientWnd->m_bShowNewWindowTab)
-	{
-		m_pNewWindowItem = CXTPTabManager::AddItem(-1);
-		m_pNewWindowItem->SetClosable(FALSE);
-		m_pNewWindowItem->GetNavigateButtons()->RemoveAll();
-	}
 }
 
 CXTPTabManagerItem* CXTPTabClientWnd::AddItem(CWnd* pChildWnd)
@@ -1760,7 +1490,7 @@ void CXTPTabClientWnd::Refresh(BOOL bRecalcLayout)
 	if (bRecalcLayout)
 	{
 		if (m_bEnableGroups)
-			SetWindowPos(NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+			SetWindowPos(NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
 
 		CXTPCommandBars* pCommandBars = GetCommandBars();
 		if (pCommandBars)
@@ -1823,7 +1553,7 @@ void CXTPTabClientWnd::UpdateContents()
 			if ((pChildWnd->GetStyle() & WS_VISIBLE) == WS_VISIBLE)
 			{
 				// update text if necessary
-				if (m_bAutoUpdateTabCaption) pFoundItem->SetCaption(GetItemText(pChildWnd));
+				pFoundItem->SetCaption(GetItemText(pChildWnd));
 
 			}
 			else
@@ -1867,13 +1597,13 @@ void CXTPTabClientWnd::UpdateContents()
 		for (int nIndex = pWorkspace->GetItemCount() - 1; nIndex >= 0; nIndex--)
 		{
 			CXTPTabManagerItem* pItem = pWorkspace->GetItem(nIndex);
-			if (!pItem->m_bFound && pItem != pWorkspace->m_pNewWindowItem)
+			if (!pItem->m_bFound)
 			{
 				pItem->Remove();
 			}
 		}
 
-		if (pWorkspace->GetItemCount() - (pWorkspace->m_pNewWindowItem ? 1 : 0) == 0)
+		if (pWorkspace->GetItemCount() == 0)
 		{
 			if (pWorkspace == m_pActiveWorkspace)
 				m_pActiveWorkspace = NULL;
@@ -2375,6 +2105,13 @@ void CXTPTabClientWnd::TrackSplitter(int nWorkspace, CPoint point)
 		{
 			MSG msg;
 
+			while (::PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_NOREMOVE))
+			{
+				if (!GetMessage(&msg, NULL, WM_PAINT, WM_PAINT))
+					return;
+				DispatchMessage(&msg);
+			}
+
 			if (!GetMessage(&msg, NULL, 0, 0))
 				break;
 
@@ -2614,12 +2351,9 @@ CXTPTabManagerItem* CXTPTabClientWnd::HitTest(CPoint pt) const
 
 CXTPCommandBars* CXTPTabClientWnd::GetCommandBars() const
 {
-	return m_pCommandBars;
-}
-
-void CXTPTabClientWnd::SetCommandBars(CXTPCommandBars* pCommandBars)
-{
-	m_pCommandBars = pCommandBars;
+	if (!m_pParentFrame)
+		return NULL;
+	return ((CXTPMDIFrameWnd*)m_pParentFrame)->GetCommandBars();
 }
 
 void CXTPTabClientWnd::ContextMenu(CPoint pt)
@@ -2788,10 +2522,7 @@ void CXTPTabClientWnd::DoWorkspaceCommand(CXTPTabManagerItem* pItem, CWorkspace*
 					pItem->Remove();
 
 					COLORREF clr = pItem->m_clrItem;
-
-					int nInsert = pFocusWorkspace->GetItemCount() + (pFocusWorkspace->m_pNewWindowItem ? -1 : 0);
-					pFocusWorkspace->CXTPTabManager::AddItem(nInsert, pItem);
-
+					pFocusWorkspace->CXTPTabManager::AddItem(-1, pItem);
 					pItem->m_clrItem = clr;
 				}
 
@@ -2818,10 +2549,7 @@ void CXTPTabClientWnd::DoWorkspaceCommand(CXTPTabManagerItem* pItem, CWorkspace*
 				int nIndex = FindIndex(pFocusWorkspace) + 1;
 				CWorkspace* pWorkspace = AddWorkspace(nIndex);
 
-				pWorkspace->AddNewWindowItem();
-
-				int nInsert = pWorkspace->GetItemCount() + (pWorkspace->m_pNewWindowItem ? -1 : 0);
-				pWorkspace->CXTPTabManager::AddItem(nInsert, pItem);
+				pWorkspace->CXTPTabManager::AddItem(-1, pItem);
 
 				pItem->m_clrItem = clr;
 				pWorkspace->SetSelectedItem(pItem);
@@ -3050,28 +2778,18 @@ LRESULT CXTPTabClientWnd::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		XTPPaintTheme theme = GetCommandBars()->GetPaintManager()->BaseTheme();
 
-		if (theme == xtpThemeResource || theme == xtpThemeRibbon)
+		if (theme == xtpThemeOffice2007 || theme == xtpThemeRibbon)
 		{
-			CArray<CXTPCommandBarsFrameHook*, CXTPCommandBarsFrameHook*> arrChildren;
+			CArray<HWND, HWND&> arrChildren;
 
 			HWND hWnd = ::GetWindow(m_hWnd, GW_CHILD);
 			while (hWnd)
 			{
-				if (GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_MDICHILD)
+				if ((GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_MDICHILD)
+					&& ((GetWindowLong(hWnd, GWL_STYLE) & WS_CAPTION) != WS_CAPTION))
 				{
-					CXTPCommandBarsFrameHook* pFrame = (CXTPCommandBarsFrameHook*)::SendMessage(hWnd, CXTPCommandBarsFrameHook::m_nMsgQueryFrameHook, 0, 0);
-
-					if (pFrame)
-					{
-						RECT rc = CXTPWindowRect(hWnd);
-						pFrame->m_bLockNCPaint += 1;
-						::SendMessage(hWnd, WM_NCCALCSIZE, FALSE, (LPARAM)&rc);
-						pFrame->m_bLockNCPaint -= 1;
-
-						::SetTimer(hWnd, XTP_TID_REFRESHFRAME, 100, NULL);
-
-						arrChildren.Add(pFrame);
-					}
+					CWnd::ModifyStyle(hWnd, 0, WS_CAPTION, 0);
+					arrChildren.Add(hWnd);
 				}
 				hWnd = ::GetWindow(hWnd, GW_HWNDNEXT);
 			}
@@ -3080,8 +2798,7 @@ LRESULT CXTPTabClientWnd::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 
 			for (int i = 0; i < (int)arrChildren.GetSize(); i++)
 			{
-				CXTPCommandBarsFrameHook* pFrame = arrChildren[i];
-				pFrame->RedrawFrame();
+				CWnd::ModifyStyle(arrChildren[i], WS_CAPTION, 0, 0);
 			}
 
 			return lResult;
@@ -3099,25 +2816,6 @@ void CXTPTabClientWnd::SetTabWorkspace(CWorkspace* pWorkspace)
 	m_bUserWorkspace = pWorkspace != NULL;
 
 	if (pWorkspace) pWorkspace->m_pTabClientWnd = this;
-}
-
-void CXTPTabClientWnd::ShowNewWindowTab(BOOL bShowNewWindowTab, int nCommand)
-{
-	m_bShowNewWindowTab = bShowNewWindowTab;
-	m_nNewWindowTabCommand = nCommand;
-}
-
-
-void CXTPTabClientWnd::SaveState()
-{
-	AfxGetApp()->WriteProfileInt(_T("TabDocking"), _T("Position"), (int)m_pPaintManager->GetPosition());
-}
-
-void CXTPTabClientWnd::LoadState()
-{
-	int nValue = AfxGetApp()->GetProfileInt(_T("TabDocking"), _T("Position"), xtpTabPositionTop);
-	m_pPaintManager->SetPosition(XTPTabPosition(nValue));
-	m_bForceToRecalc = TRUE;
 }
 
 

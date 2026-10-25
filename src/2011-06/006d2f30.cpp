@@ -1,12 +1,4 @@
-// from server: 51% by atomic.potato
-struct RotatePJoint
-{
-    int f();
-};
-
-extern "C" int __stdcall Ball(int, int);
-
-int RotatePJoint::f()
-{
-    return Ball((int)this + 0xcc, 0);
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T{void m(int);}; struct S{char pad[0xb4]; void* p; void f();};
+void S::f(){((T*)((char*)p+0xcc))->m(0);}

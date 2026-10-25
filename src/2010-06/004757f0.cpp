@@ -1,20 +1,17 @@
-// from server: 58% by atomic.potato
-extern "C" void __cdecl continuation(void*, void*);
-
-struct S
-{
-    void f(void*, int);
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_004757f0 {
+    T4_004757f0();
+    virtual void f_004757f0();
+    char m_a;
+    char m_b;
 };
-
-void S::f(void* p, int value)
+T4_004757f0::T4_004757f0() : m_a(0), m_b(0) {}
+extern "C" void* create_other_004757f0(void*, void*, int);
+void* create_004757f0(void* unused, T4_004757f0* out, int type)
 {
-    if (value != 4)
-    {
-        continuation(p, this);
-        return;
-    }
-
-    *(unsigned long*)p = 0x00b852e8UL;
-    ((unsigned char*)p)[4] = 0;
-    ((unsigned char*)p)[5] = 0;
+    if (type != 4)
+        return create_other_004757f0(unused, out, type);
+    out->T4_004757f0::T4_004757f0();
+    return out;
 }

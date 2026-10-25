@@ -1,127 +1,153 @@
-// from server: 39% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/MotorJoint.cpp
+// roc-lib: rbxgs script/LuaMemory.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8world/MotorJoint.h"
-#include "v8world/World.h"
-#include "v8world/Primitive.h"
-#include "v8world/Assembly.h"
-#include "util/Math.h"
+#include "script/LuaMemory.h"
+#include "boost/pool/singleton_pool.hpp"
+#include <algorithm>
 
-namespace RBX
+LuaAllocator::LuaAllocator()
+    : heapSize(0),
+      heapCount(0),
+      maxHeapSize(0),
+      maxHeapCount(0)
 {
-	// TODO: check which of these belong in the header file
+}
 
-	MotorJoint::MotorJoint()
-		: currentAngle(0.0f),
-		  link(new RevoluteLink()),
-		  maxVelocity(0.0f),
-		  desiredAngle(0.0f),
-		  polarity(1.0f)
-	{
-	}
+void LuaAllocator::clearHeapMax()
+{
+    maxHeapSize = 0;
+    maxHeapCount = 0;
+}
 
-	MotorJoint::~MotorJoint()
-	{
-		delete link;
-	}
+void LuaAllocator::getHeapStats(size_t& heapSize, size_t& heapCount, size_t& maxHeapSize, size_t& maxHeapCount) const
+{
+    heapSize = this->heapSize;
+    heapCount = this->heapCount;
+    maxHeapSize = this->maxHeapSize;
+    maxHeapCount = this->maxHeapCount;
+}
 
-	G3D::CoordinateFrame MotorJoint::getMeInOther(Primitive* me)
-	{
-		G3D::CoordinateFrame rotatedCoord0 = G3D::CoordinateFrame(
-			Math::rotateAboutZ(jointCoord0.rotation, currentAngle),
-			jointCoord0.translation);
+void* LuaAllocator::alloc(void* ud, void* ptr, size_t osize, size_t nsize)
+{
+    return static_cast<LuaAllocator*>(ud)->alloc(ptr, osize, nsize);
+}
 
-		G3D::CoordinateFrame p1InP0 = rotatedCoord0 * jointCoord1.inverse();
-		if (me == getPrimitive(1))
-		{
-			return p1InP0;
-		}
-		else
-		{
-			RBXASSERT(me == getPrimitive(0));
-			return p1InP0.inverse();
-		}
-	}
+template <int a, int b>
+void* bucketRealloc(void* ptr, size_t osize, size_t nsize)
+{
+    void* result;
 
-	size_t MotorJoint::hashCode() const
-	{
-		const int magic = 1640531527;
-		size_t h;
+    if (nsize > b)
+    {
+        if (osize <= b && osize)
+        {
+            result = malloc(nsize);
+            memcpy(result, ptr, osize);
 
-		h = (Math::hash(jointCoord0.translation) - magic);
-		h = (Math::hash(jointCoord1.translation) - magic + (h >> 2) + (h << 6)) ^ h;
-		return h;
-	}
+            if (osize > a)
+                boost::singleton_pool<LuaAllocator, b>::free(ptr);
+            else
+                boost::singleton_pool<LuaAllocator, a>::free(ptr);
+        }
+        else
+        {
+            result = realloc(ptr, nsize);
+        }
+    }
+    else
+    {
+        if (nsize > a)
+        {
+            if (osize > b)
+            {
+                result = boost::singleton_pool<LuaAllocator, b>::malloc();
+                memcpy(result, ptr, nsize);
+                free(ptr);
+            }
+            else
+            {
+                if (osize > a)
+                {
+                    result = ptr;
+                }
+                else
+                {
+                    result = boost::singleton_pool<LuaAllocator, b>::malloc();
 
-	void MotorJoint::setCurrentAngle(float value)
-	{
-		if (currentAngle != value)
-		{
-			currentAngle = value;
-			World* world = getWorld();
-			if (world)
-				world->onMotorAngleChanged(this);
-			setJointAngle(value);
-		}
-	}
+                    if (osize > 0)
+                    {
+                        memcpy(result, ptr, osize);
+                        boost::singleton_pool<LuaAllocator, a>::free(ptr);
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (nsize > 0)
+            {
+                if (osize > b)
+                {
+                    result = boost::singleton_pool<LuaAllocator, a>::malloc();
+                    memcpy(result, ptr, nsize);
+                    free(ptr);
+                }
+                else if (osize > a)
+                {
+                    result = boost::singleton_pool<LuaAllocator, a>::malloc();
+                    memcpy(result, ptr, nsize);
+                    boost::singleton_pool<LuaAllocator, b>::free(ptr);
+                }
+                else if (osize > 0)
+                {
+                    result = ptr;
+                }
+                else 
+                {
+                    result = boost::singleton_pool<LuaAllocator, a>::malloc();
+                }
+            }
+            else 
+            {
+                if (osize > b)
+                {
+                    free(ptr);
+                }
+                else if (osize > a)
+                {
+                    boost::singleton_pool<LuaAllocator, b>::free(ptr);
+                }
+                else if (osize > 0)
+                {
+                    boost::singleton_pool<LuaAllocator, a>::free(ptr);
+                }
 
-	void MotorJoint::setJointAngle(float value)
-	{
-		RBXASSERT(link);
-		if (polarity == -1)
-		{
-			RBXASSERT(0);
+                result = 0;
+            }
+        }
+    }
 
-			Primitive* p0 = getPrimitive(0);
+    return result;
+}
 
-			G3D::CoordinateFrame oldParentCoord = p0->getCoordinateFrame();
-			link->setJointAngle(-value);
-			Assembly* assembly = getPrimitive(1)->getAssembly();
-			if (!assembly->getAnchored())
-			{
-				Primitive* mainPrim = assembly->getMainPrimitive();
-				G3D::CoordinateFrame newParentCoord = p0->getCoordinateFrame();
-				G3D::CoordinateFrame parentInRoot = mainPrim->getCoordinateFrame().toObjectSpace(newParentCoord);
-				G3D::CoordinateFrame newRoot = oldParentCoord * parentInRoot.inverse();
-				mainPrim->getBody()->setCoordinateFrame(newRoot);
-			}
-		}
-		else
-		{
-			link->setJointAngle(value);
-		}
-	}
+void* LuaAllocator::alloc(void* ptr, size_t osize, size_t nsize)
+{
+    void* result = bucketRealloc<16, 32>(ptr, osize, nsize);
 
-	bool MotorJoint::isAligned()
-	{
-		G3D::CoordinateFrame baseWorld = getPrimitive(0)->getCoordinateFrame() * jointCoord0;
-		G3D::CoordinateFrame otherBaseWorld = getPrimitive(1)->getCoordinateFrame() * jointCoord1;
+    heapSize += (nsize-osize);
 
-		if (Math::fuzzyEq(baseWorld.translation, otherBaseWorld.translation, 0.00001f))
-		{
-			if (Math::fuzzyEq(baseWorld.rotation.getColumn(2), otherBaseWorld.rotation.getColumn(2), 0.00001f))
-				return true;
-		}
+    if (osize == 0)
+        heapCount++;
 
-		return false;
-	}
+    if (nsize == 0)
+        heapCount--;
 
-	void MotorJoint::stepUi(int uiStepId)
-	{
-		if (fabs(desiredAngle - currentAngle) < fabs(maxVelocity))
-		{
-			setCurrentAngle(desiredAngle);
-		}
-		else
-		{
-			if (fabs(maxVelocity) > 0.0f)
-				setCurrentAngle(currentAngle + fabs(maxVelocity));
-			else
-				setCurrentAngle(currentAngle - fabs(maxVelocity));
-		}
-	}
+    maxHeapSize = std::max<size_t>(maxHeapSize, heapSize);
+    maxHeapCount = std::max<size_t>(maxHeapCount, heapCount);
+
+    return result;
 }

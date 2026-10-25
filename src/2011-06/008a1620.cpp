@@ -1,14 +1,14 @@
-// from server: 40% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Chart/Styles/Bar/XTPChartStackedBarSeriesStyle.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/Ribbon/XTPRibbonSystemButton.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPChartStackedBarSeriesStyle.cpp
+// XTPRibbonSystemButton.cpp : implementation file
 //
-// This file is a part of the XTREME TOOLKIT PRO MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME RIBBON MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,250 +26,402 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "Resource.h"
 
-#include "Common/XTPPropExchange.h"
+#include "Common/XTPOffice2007Image.h"
+#include "Common/XTPIntel80Helpers.h"
+#include "CommandBars/XTPCommandBars.h"
+#include "CommandBars/XTPControlExt.h"
 
-#include "../../Types/XTPChartTypes.h"
-#include "../../XTPChartDefines.h"
-#include "../../XTPChartElement.h"
-#include "../../XTPChartElementView.h"
-#include "../../XTPChartSeriesLabel.h"
-#include "../../XTPChartSeries.h"
-#include "../../XTPChartSeriesView.h"
-#include "../../XTPChartSeriesStyle.h"
-#include "../../XTPChartDiagramView.h"
+#include "XTPRibbonSystemButton.h"
+#include "XTPRibbonBar.h"
+#include "XTPRibbonTheme.h"
 
-#include "../../XTPChartSeriesPoint.h"
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
 
-#include "../../Diagram/Axis/XTPChartAxisView.h"
-#include "../../Diagram/Axis/XTPChartAxis.h"
-#include "../../Diagram/Diagram2D/XTPChartDiagram2DSeriesStyle.h"
-#include "../../Diagram/Diagram2D/XTPChartDiagram2DSeriesView.h"
-#include "../../Diagram/Diagram2D/XTPChartDiagram2DSeriesLabel.h"
+IMPLEMENT_XTP_CONTROL(CXTPRibbonControlSystemButton, CXTPControlPopup)
 
-
-#include "XTPChartBarSeriesView.h"
-#include "XTPChartBarSeriesStyle.h"
-#include "XTPChartStackedBarSeriesStyle.h"
-#include "XTPChartBarSeriesLabel.h"
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPChartStackedBarSeriesStyle
-
-IMPLEMENT_SERIAL(CXTPChartStackedBarSeriesStyle, CXTPChartBarSeriesStyle, VERSIONABLE_SCHEMA | _XTP_SCHEMA_CURRENT);
-
-CXTPChartStackedBarSeriesStyle::CXTPChartStackedBarSeriesStyle()
+CXTPRibbonControlSystemButton::CXTPRibbonControlSystemButton()
 {
-	m_dStackHeight = 0;
-	m_nStackGroup = 0;
-
-	CXTPChartBarSeriesLabel* pLabel = (CXTPChartBarSeriesLabel*)SetLabel(new CXTPChartBarSeriesLabel());
-	pLabel->SetPosition(xtpChartBarLabelCenter);
+	SetFlags(xtpFlagNoMovable | xtpFlagManualUpdate);
 }
 
-CXTPChartStackedBarSeriesStyle::~CXTPChartStackedBarSeriesStyle()
+void CXTPRibbonControlSystemButton::Draw(CDC* pDC)
 {
-
+	((CXTPRibbonBar*)GetParent())->GetRibbonPaintManager()->DrawRibbonFrameSystemButton(pDC, this, GetRect());
 }
 
-void CXTPChartStackedBarSeriesStyle::DoPropExchange(CXTPPropExchange* pPX)
+BOOL CXTPRibbonControlSystemButton::OnLButtonDblClk(CPoint /*point*/)
 {
-	CXTPChartBarSeriesStyle::DoPropExchange(pPX);
+	GetParent()->GetCommandBars()->ClosePopups();
+	GetParent()->GetSite()->SendMessage(WM_SYSCOMMAND, SC_CLOSE | HTSYSMENU, 0);
 
-	PX_Double(pPX, _T("StackHeight"), m_dStackHeight, 0);
-	PX_Int(pPX, _T("StackGroup"), m_nStackGroup, 0);
+	return TRUE;
 }
 
-CXTPChartSeriesView* CXTPChartStackedBarSeriesStyle::CreateView(CXTPChartSeries* pSeries, CXTPChartDiagramView* pDiagramView)
+void CXTPRibbonControlSystemButton::AdjustExcludeRect(CRect& rc, BOOL bVertical)
 {
-	return new CXTPChartStackedBarSeriesView(pSeries, pDiagramView);
-}
-
-void CXTPChartStackedBarSeriesStyle::CorrectAxisSideMargins(CXTPChartAxis* pAxis, double /*nMinValue*/, double /*nMaxValue*/, double& nCorrection)
-{
-	if (!pAxis->IsValuesAxis())
-		nCorrection = max(nCorrection, 0.5);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPChartStackedBarSeriesView
-
-CXTPChartStackedBarSeriesView::CXTPChartStackedBarSeriesView(CXTPChartSeries* pSeries, CXTPChartDiagramView* pDiagramView)
-	: CXTPChartBarSeriesView(pSeries,pDiagramView)
-{
-	m_nBarCount = 0;
-	m_nBarIndex = -1;
-}
-
-CXTPChartStackedBarSeriesView::~CXTPChartStackedBarSeriesView()
-{
-}
-
-CXTPChartSeriesPointView* CXTPChartStackedBarSeriesView::CreateSeriesPointView(CXTPChartDeviceContext* pDC, CXTPChartSeriesPoint* pPoint, CXTPChartElementView* pParentView)
-{
-	UNREFERENCED_PARAMETER(pDC);
-	return new CXTPChartStackedBarSeriesPointView(pPoint, pParentView);
-}
-
-void CXTPChartStackedBarSeriesView::UpdateRange(CXTPChartDeviceContext* pDC)
-{
-	CXTPChartBarSeriesView::UpdateRange(pDC);
-
-	CXTPChartDiagramView* pDiagramView = GetDiagramView();
-
-	BOOL bFound = FALSE;
-
-	for (int i = 0; i < pDiagramView->GetSeriesView()->GetCount(); i++)
+	CXTPRibbonBar* pRibbonBar = DYNAMIC_DOWNCAST(CXTPRibbonBar, GetParent());
+	if (!pRibbonBar)
 	{
-		CXTPChartSeriesView* pView = (CXTPChartSeriesView*)pDiagramView->GetSeriesView()->GetAt(i);
-
-		if (DYNAMIC_DOWNCAST(CXTPChartStackedBarSeriesStyle, pView->GetSeries()->GetStyle()))
-		{
-			CXTPChartStackedBarSeriesView* pStackedBarSeriesView = (CXTPChartStackedBarSeriesView*)pView;
-
-			if (pStackedBarSeriesView->m_bFirstStack && pView == this)
-			{
-				bFound = TRUE;
-				break;
-			}
-		}
+		CXTPControlPopup::AdjustExcludeRect(rc, bVertical);
+		return;
 	}
-	if (!bFound)
+
+	if (pRibbonBar->IsCaptionVisible() && pRibbonBar->IsTabsVisible() &&
+		DYNAMIC_DOWNCAST(CXTPRibbonSystemPopupBar, GetCommandBar()))
+	{
+		rc.bottom -= 18;
+		return;
+	}
+
+	//rc.bottom -= 20;
+	CXTPControlPopup::AdjustExcludeRect(rc, bVertical);
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+IMPLEMENT_XTP_COMMANDBAR(CXTPRibbonSystemPopupBar, CXTPPopupBar)
+
+BEGIN_MESSAGE_MAP(CXTPRibbonSystemPopupBar, CXTPPopupBar)
+	ON_WM_NCHITTEST_EX()
+END_MESSAGE_MAP()
+
+CXTPRibbonSystemPopupBar::CXTPRibbonSystemPopupBar()
+{
+	m_rcBorders.SetRect(6, 18, 6, 29);
+	SetShowGripper(FALSE);
+}
+
+CRect CXTPRibbonSystemPopupBar::GetBorders()
+{
+	return m_rcBorders;
+}
+
+void CXTPRibbonSystemPopupBar::FillCommandBarEntry(CDC* pDC)
+{
+	CXTPClientRect rc(this);
+	CXTPOffice2007Theme* pPaintManager = (CXTPOffice2007Theme*)GetPaintManager();
+
+	CXTPOffice2007Image* pImage = pPaintManager->LoadImage(_T("RIBBONSYSTEMMENU"));
+	if (!pImage)
 		return;
 
-	CMap<double, double, double, double> mapValues;
+	pImage->DrawImage(pDC, rc, pImage->GetSource(), m_rcBorders, COLORREF_NULL);
 
-	for (int j = 0; j < pDiagramView->GetSeriesView()->GetCount(); j++)
+	if (!DYNAMIC_DOWNCAST(CXTPRibbonControlSystemButton, m_pControlPopup))
+		return;
+
+	CXTPRibbonBar* pRibbonBar = DYNAMIC_DOWNCAST(CXTPRibbonBar, m_pControlPopup->GetParent());
+	if (!pRibbonBar)
+		return;
+
+	CRect rcPopup = m_pControlPopup->GetRect();
+	m_pControlPopup->GetParent()->ClientToScreen(rcPopup);
+	ScreenToClient(rcPopup);
+
+	if (pRibbonBar->IsCaptionVisible() && CRect().IntersectRect(rcPopup, rc))
 	{
-		CXTPChartSeriesView* pView = (CXTPChartSeriesView*)pDiagramView->GetSeriesView()->GetAt(j);
+		((CXTPRibbonTheme*)pPaintManager)->DrawRibbonFrameSystemButton(pDC, m_pControlPopup, rcPopup);
+	}
 
-		if (DYNAMIC_DOWNCAST(CXTPChartStackedBarSeriesStyle, pView->GetSeries()->GetStyle()))
+	for (int i = 0; i < GetControlCount(); i++)
+	{
+		CXTPControl* pControl = GetControl(i);
+		if (pControl && pControl->GetWrap())
 		{
-			CXTPChartStackedBarSeriesView* pStackedBarSeriesView = (CXTPChartStackedBarSeriesView*)pView;
-			if (pStackedBarSeriesView->m_nBarIndex != m_nBarIndex)
-				continue;
-
-			for (int i = 0; i < pStackedBarSeriesView->m_pPointsView->GetCount(); i++)
-			{
-				CXTPChartStackedBarSeriesPointView* pPointView = (CXTPChartStackedBarSeriesPointView*)pStackedBarSeriesView->m_pPointsView->GetAt(i);
-
-				double dValue = pPointView->GetPoint()->GetValue(0);
-
-				pPointView->m_dValueFrom = mapValues[pPointView->GetPoint()->GetInternalArgumentValue()];
-				pPointView->m_dInternalValue = pPointView->m_dValueTo = pPointView->m_dValueFrom + dValue;
-
-				mapValues[pPointView->GetPoint()->GetInternalArgumentValue()] = pPointView->m_dValueTo;
-			}
+			CRect rcRow = pControl->GetRowRect();
+			pDC->FillSolidRect(rcRow, pPaintManager->GetImages()->GetImageColor(_T("Ribbon"), _T("RecentFileListBackground")));
+			break;
 		}
 	}
 
-	double dStackHeight = ((CXTPChartStackedBarSeriesStyle*)GetStyle())->GetStackHeight();
-	if (dStackHeight != 0)
+}
+
+LRESULT CXTPRibbonSystemPopupBar::OnNcHitTest(CPoint point)
+{
+	if (!DYNAMIC_DOWNCAST(CXTPRibbonControlSystemButton, m_pControlPopup))
+		return CXTPPopupBar::OnNcHitTest(point);
+
+	CRect rcPopup = m_pControlPopup->GetRect();
+	m_pControlPopup->GetParent()->ClientToScreen(rcPopup);
+	if (rcPopup.PtInRect(point))
+		return HTTRANSPARENT;
+
+	return CXTPPopupBar::OnNcHitTest(point);
+}
+
+CSize CXTPRibbonSystemPopupBar::CalcDynamicLayout(int nLength, DWORD dwMode)
+{
+	CArray<CXTPControl*, CXTPControl*> arrButtons;
+	int i;
+
+	for (i = 0; i < GetControlCount(); i++)
 	{
-		for (int j = 0; j < pDiagramView->GetSeriesView()->GetCount(); j++)
+		CXTPControl* pControl = GetControl(i);
+		if (pControl && pControl->IsKindOf(RUNTIME_CLASS(CXTPRibbonControlSystemPopupBarButton)))
 		{
-			CXTPChartSeriesView* pView = (CXTPChartSeriesView*)pDiagramView->GetSeriesView()->GetAt(j);
-
-			if (DYNAMIC_DOWNCAST(CXTPChartStackedBarSeriesStyle, pView->GetSeries()->GetStyle()))
-			{
-				CXTPChartStackedBarSeriesView* pStackedBarSeriesView = (CXTPChartStackedBarSeriesView*)pView;
-				if (pStackedBarSeriesView->m_nBarIndex != m_nBarIndex)
-					continue;
-
-				for (int i = 0; i < pStackedBarSeriesView->m_pPointsView->GetCount(); i++)
-				{
-					CXTPChartStackedBarSeriesPointView* pPointView = (CXTPChartStackedBarSeriesPointView*)pStackedBarSeriesView->m_pPointsView->GetAt(i);
-
-					double dLimit = mapValues[pPointView->GetPoint()->GetInternalArgumentValue()];
-
-					pPointView->m_dValueFrom = pPointView->m_dValueFrom * dStackHeight / dLimit;
-					pPointView->m_dInternalValue = pPointView->m_dValueTo = pPointView->m_dValueTo * dStackHeight / dLimit;
-				}
-			}
+			arrButtons.Add(pControl);
+			pControl->SetHideFlag(xtpHideDockingPosition, TRUE);
 		}
 	}
+
+	CSize sz = CXTPPopupBar::CalcDynamicLayout(nLength, dwMode);
+
+	if (arrButtons.GetSize() == 0)
+		return sz;
+
+	CClientDC dc(this);
+	CXTPFontDC font(&dc, GetPaintManager()->GetCommandBarFont(this));
+
+	int nRight = sz.cx - m_rcBorders.right + 1;
+
+	for (i = (int)arrButtons.GetSize() - 1; i >= 0; i--)
+	{
+		CXTPControl* pControl = arrButtons[i];
+		pControl->SetHideFlag(xtpHideDockingPosition, FALSE);
+
+		CSize szControl = pControl->GetSize(&dc);
+		pControl->SetRect(CRect(nRight - szControl.cx, sz.cy - m_rcBorders.bottom + 4, nRight, sz.cy - 3));
+		nRight -= szControl.cx + 6;
+	}
+
+	return sz;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CXTPChartStackedBarSeriesPointView
+// CXTPRibbonControlSystemPopupBarButton
 
-CXTPChartStackedBarSeriesPointView::CXTPChartStackedBarSeriesPointView(CXTPChartSeriesPoint* pPoint, CXTPChartElementView* pParentView)
-	: CXTPChartBarSeriesPointView(pPoint, pParentView)
+IMPLEMENT_XTP_CONTROL(CXTPRibbonControlSystemPopupBarButton, CXTPControlButton)
+
+CXTPRibbonControlSystemPopupBarButton::CXTPRibbonControlSystemPopupBarButton()
 {
 
 }
 
-
-CXTPChartRectF CXTPChartStackedBarSeriesPointView::GetScreenRect() const
+BOOL CXTPRibbonControlSystemPopupBarButton::IsTransparent() const
 {
-	CXTPChartStackedBarSeriesView* pSeriesView = (CXTPChartStackedBarSeriesView*)GetSeriesView();
-	CXTPChartStackedBarSeriesStyle* pSeriesStyle = STATIC_DOWNCAST(CXTPChartStackedBarSeriesStyle, GetSeriesView()->GetStyle());
+	return TRUE;
+}
 
-	CXTPChartDiagram2DAxisView* pAxisXView = pSeriesView->GetAxisViewX();
+void CXTPRibbonControlSystemPopupBarButton::Draw(CDC* pDC)
+{
+	CXTPOffice2007Theme* pPaintManager = (CXTPOffice2007Theme*)GetPaintManager();
+	CXTPOffice2007Image* pImage = pPaintManager->LoadImage(_T("RIBBONSYSTEMMENUBUTTON"));
 
-	if (pSeriesView->m_nBarIndex != -1)
+	if (pImage)
 	{
-		int nCount = pSeriesView->m_nBarCount;
-		int nIndex = pSeriesView->m_nBarIndex;
-
-		double dOffset = 3 / pAxisXView->GetScale();
-
-		double dBarWidth = (pSeriesStyle->GetBarWidth() - dOffset * (nCount - 1)) / nCount;
-
-		CXTPChartPointF ptTopLeft(pSeriesView->GetScreenPoint(m_pPoint->GetInternalArgumentValue() -
-			pSeriesStyle->GetBarWidth() / 2 + dBarWidth * nIndex + dOffset * nIndex, m_dValueTo));
-
-		CXTPChartPointF ptBottomRight(pSeriesView->GetScreenPoint(m_pPoint->GetInternalArgumentValue() -
-			pSeriesStyle->GetBarWidth() / 2 + dBarWidth * nIndex + dOffset * nIndex + dBarWidth, m_dValueFrom));
-
-		CXTPChartRectF rc(ptTopLeft, ptBottomRight);
-		rc.Width++;
-		rc.Height++;
-
-		return rc;
+		pImage->DrawImage(pDC, GetRect(), pImage->GetSource(GetSelected() ? 1 : 0, 2), CRect(2, 2, 2, 2), 0xFF00FF);
 	}
 
-	return CXTPChartRectF(0, 0, 0, 0);
+	GetPaintManager()->DrawControlToolBarParent(pDC, this, TRUE);
 }
 
-CXTPChartDeviceCommand* CXTPChartStackedBarSeriesPointView::CreateDeviceCommand(CXTPChartDeviceContext* pDC)
+CSize CXTPRibbonControlSystemPopupBarButton::GetSize(CDC* pDC)
+{
+	return GetPaintManager()->DrawControlToolBarParent(pDC, this, FALSE);
+}
+
+CSize CXTPRibbonControlSystemPopupBarButton::GetButtonSize() const
+{
+	return CSize(22, 22);
+}
+
+CSize CXTPRibbonControlSystemPopupBarButton::GetIconSize() const
+{
+	return CSize(16, 16);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlRecentFileList
+IMPLEMENT_XTP_CONTROL(CXTPRibbonControlSystemPopupBarListItem, CXTPControlButton)
+
+CXTPRibbonControlSystemPopupBarListItem::CXTPRibbonControlSystemPopupBarListItem()
+{
+	m_nWidth = 300;
+	m_nHeight = 21;
+}
+
+CSize CXTPRibbonControlSystemPopupBarListItem::GetSize(CDC* /*pDC*/)
+{
+	return CSize(m_nWidth, m_nHeight);
+}
+
+void CXTPRibbonControlSystemPopupBarListItem::Draw(CDC* pDC)
+{
+	CXTPPaintManager* pPaintManager = (CXTPPaintManager*)GetPaintManager();
+
+	pPaintManager->DrawControlEntry(pDC, this);
+
+	COLORREF clrText = pPaintManager->GetControlTextColor(this);
+
+	pDC->SetTextColor(clrText);
+	pDC->SetBkMode (TRANSPARENT);
+
+	CRect rc(GetRect());
+	CRect rcText(rc.left + 7, rc.top, rc.right, rc.bottom);
+
+	pDC->DrawText(GetCaption(), &rcText, DT_SINGLELINE | DT_VCENTER);
+}
+
+
+IMPLEMENT_XTP_CONTROL(CXTPRibbonControlSystemPopupBarListCaption, CXTPControl)
+
+CXTPRibbonControlSystemPopupBarListCaption::CXTPRibbonControlSystemPopupBarListCaption()
+{
+	SetFlags(xtpFlagManualUpdate | xtpFlagSkipFocus | xtpFlagNoMovable | xtpFlagWrapRow);
+	m_nWidth = 300;
+	m_nHeight = 27;
+}
+
+CSize CXTPRibbonControlSystemPopupBarListCaption::GetSize(CDC* /*pDC*/)
+{
+	return CSize(m_nWidth, m_nHeight);
+}
+
+void CXTPRibbonControlSystemPopupBarListCaption::Draw(CDC* pDC)
+{
+	CXTPOffice2007Theme* pPaintManager = (CXTPOffice2007Theme*)GetPaintManager();
+	CXTPFontDC dont(pDC, pPaintManager->GetRegularBoldFont());
+
+	COLORREF clrText = pPaintManager->GetControlTextColor(this);
+
+	pDC->SetTextColor(clrText);
+	pDC->SetBkMode (TRANSPARENT);
+
+	CRect rc(GetRect());
+	CRect rcText(rc.left + 7, rc.top + 4, rc.right, rc.bottom - 5);
+
+	pDC->DrawText(GetCaption(), &rcText, DT_SINGLELINE | DT_TOP);
+
+	pPaintManager->HorizontalLine(pDC, rc.left, rc.bottom - 6, rc.right,
+		pPaintManager->GetImages()->GetImageColor(_T("Ribbon"), _T("RecentFileListEdgeShadow")));
+	pPaintManager->HorizontalLine(pDC, rc.left, rc.bottom - 5, rc.right,
+		pPaintManager->GetImages()->GetImageColor(_T("Ribbon"), _T("RecentFileListEdgeHighLight")));
+}
+
+IMPLEMENT_XTP_CONTROL(CXTPRibbonControlSystemRecentFileList, CXTPRibbonControlSystemPopupBarListCaption)
+
+CXTPRibbonControlSystemRecentFileList::CXTPRibbonControlSystemRecentFileList()
+{
+}
+
+CRecentFileList* CXTPRibbonControlSystemRecentFileList::GetRecentFileList()
+{
+	USES_PROTECTED_ACCESS(CXTPRibbonControlSystemRecentFileList, CWinApp, CRecentFileList*, m_pRecentFileList)
+
+	return PROTECTED_ACCESS(CWinApp, AfxGetApp(), m_pRecentFileList);
+
+}
+
+int CXTPRibbonControlSystemRecentFileList::GetFirstMruID()
+{
+	return ID_FILE_MRU_FILE1;
+}
+
+UINT AFXAPI AfxGetFileTitle(LPCTSTR lpszPathName, LPTSTR lpszTitle, UINT nMax);
+
+void CXTPRibbonControlSystemRecentFileList::OnCalcDynamicSize(DWORD /*dwMode*/)
+{
+	CRecentFileList* pRecentFileList = GetRecentFileList();
+
+	if (!pRecentFileList)
+		return;
+
+	ASSERT(pRecentFileList->m_arrNames != NULL);
+	if (!pRecentFileList->m_arrNames)
+		return;
+
+	while (m_nIndex + 1 < m_pControls->GetCount())
+	{
+		CXTPControl* pControl = m_pControls->GetAt(m_nIndex + 1);
+		if (pControl->GetID() >= GetFirstMruID() && pControl->GetID() <= GetFirstMruID() + pRecentFileList->m_nSize)
+		{
+			m_pControls->Remove(pControl);
+		}
+		else break;
+	}
+
+	if (m_pParent->IsCustomizeMode())
+	{
+		m_dwHideFlags = 0;
+		SetEnabled(TRUE);
+		return;
+	}
+
+	CString strName;
+
+	for (int iMRU = 0; iMRU < pRecentFileList->m_nSize; iMRU++)
+	{
+		if (pRecentFileList->m_arrNames[iMRU].IsEmpty())
+			break;
+
+		// copy file name only since directories are same
+		AfxGetFileTitle(pRecentFileList->m_arrNames[iMRU], strName.GetBuffer(_MAX_PATH), _MAX_PATH);
+		strName.ReleaseBuffer();
+
+		CXTPControl* pControl = m_pControls->Add(new CXTPRibbonControlSystemPopupBarListItem(), iMRU + GetFirstMruID(), _T(""), m_nIndex + iMRU + 1 , TRUE);
+
+		pControl->SetCaption(CXTPControlWindowList::ConstructCaption(strName, iMRU + 1));
+		pControl->SetFlags(xtpFlagManualUpdate|xtpFlagShowPopupBarTip);
+		pControl->SetTooltip(pRecentFileList->m_arrNames[iMRU]);
+		pControl->SetDescription(NULL);
+	}
+}
+
+BOOL CXTPRibbonControlSystemRecentFileList::IsCustomizeDragOverAvail(CXTPCommandBar* pCommandBar, CPoint /*point*/, DROPEFFECT& dropEffect)
+{
+	if (pCommandBar->GetType() != xtpBarTypePopup)
+	{
+		dropEffect = DROPEFFECT_NONE;
+		return FALSE;
+	}
+	return TRUE;
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPRibbonSystemPopupBarPage
+
+
+IMPLEMENT_XTP_COMMANDBAR(CXTPRibbonSystemPopupBarPage, CXTPPopupBar)
+
+CXTPRibbonSystemPopupBarPage::CXTPRibbonSystemPopupBarPage()
 {
 
-	return CXTPChartBarSeriesPointView::CreateDeviceCommand(pDC);
 }
 
-
-#ifdef _XTP_ACTIVEX
-
-BEGIN_DISPATCH_MAP(CXTPChartStackedBarSeriesStyle, CXTPChartBarSeriesStyle)
-	DISP_PROPERTY_EX_ID(CXTPChartStackedBarSeriesStyle, "StackHeight", 14, OleGetStackHeight, OleSetStackHeight, VT_R8)
-	DISP_PROPERTY_EX_ID(CXTPChartStackedBarSeriesStyle, "StackGroup", 15, GetStackGroup, SetStackGroup, VT_I4)
-END_DISPATCH_MAP()
-
-
-// {323BCC77-27BF-4cb1-9ABF-4558D9835456}
-static const GUID IID_IChartStackedBarSeriesStyle =
-{ 0x323bcc77, 0x27bf, 0x4cb1, { 0x9a, 0xbf, 0x45, 0x58, 0xd9, 0x83, 0x54, 0x56 } };
-
-BEGIN_INTERFACE_MAP(CXTPChartStackedBarSeriesStyle, CXTPChartBarSeriesStyle)
-	INTERFACE_PART(CXTPChartStackedBarSeriesStyle, IID_IChartStackedBarSeriesStyle , Dispatch)
-END_INTERFACE_MAP()
-
-IMPLEMENT_OLETYPELIB_EX(CXTPChartStackedBarSeriesStyle, IID_IChartStackedBarSeriesStyle )
-
-// {32490E6F-92B6-4671-9613-6B2A0FBF8789}
-IMPLEMENT_OLECREATE_EX2(CXTPChartStackedBarSeriesStyle, "Codejock.ChartStackedBarSeriesStyle." _XTP_AXLIB_VERSION,
-						0x32490e6f, 0x92b6, 0x4671, 0x96, 0x13, 0x6b, 0x2a, 0xf, 0xbf, 0x87, 0x89);
-
-double CXTPChartStackedBarSeriesStyle::OleGetStackHeight()
+CSize CXTPRibbonSystemPopupBarPage::CalcDynamicLayout(int nLength, DWORD dwMode)
 {
-	return GetStackHeight();
+	CSize sz = CXTPPopupBar::CalcDynamicLayout(nLength, dwMode);
+
+	if (!m_pControlPopup->GetParent()->IsKindOf(RUNTIME_CLASS(CXTPRibbonSystemPopupBar)))
+		return sz;
+
+	CXTPRibbonSystemPopupBar* pParent = ((CXTPRibbonSystemPopupBar*)m_pControlPopup->GetParent());
+
+	int nHeight = CXTPClientRect(pParent).Height() - (pParent->GetBorders().top + pParent->GetBorders().bottom) - 2;
+
+	if (nHeight > sz.cy)
+		sz.cy = nHeight;
+
+	return sz;
 }
 
-void CXTPChartStackedBarSeriesStyle::OleSetStackHeight(double dStackHeight)
+void CXTPRibbonSystemPopupBarPage::AdjustExcludeRect(CRect& rc, BOOL bVertical)
 {
-	SetStackHeight(dStackHeight);
-}
+	if (!m_pControlPopup->GetParent()->IsKindOf(RUNTIME_CLASS(CXTPRibbonSystemPopupBar)))
+	{
+		CXTPPopupBar::AdjustExcludeRect(rc, bVertical);
+		return;
+	}
 
-#endif
+	rc.top = ((CXTPRibbonSystemPopupBar*)m_pControlPopup->GetParent())->GetBorders().top + 1;
+	rc.right += 1;
+}

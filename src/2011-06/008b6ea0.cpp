@@ -1,14 +1,14 @@
-// from server: 47% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/ReportControl/XTPReportInplaceControls.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/ReportControl/XTPReportNavigator.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPReportInplaceControls.cpp
+// XTPReportNavigator.cpp : implementation of the CXTPReportNavigator class.
 //
 // This file is a part of the XTREME REPORTCONTROL MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -25,615 +25,495 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#include "StdAfx.h"
-#include "Common/Tmschema.h"
-#include "Common/XTPDrawHelpers.h"
-#include "Common/XTPSystemHelpers.h"
-#include "Common/XTPCustomHeap.h"
-#include "Common/XTPSmartPtrInternalT.h"
-#include "Common/XTPColorManager.h"
+#include "stdafx.h"
+#include "Resource.h"
 
-#include "XTPReportDefines.h"
-#include "XTPReportRecordItem.h"
+#include "Common/XTPResourceManager.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPImageManager.h"
+#include "Common/XTPVC80Helpers.h"
+
+#include "XTPReportNavigator.h"
 #include "XTPReportControl.h"
-#include "XTPReportInplaceControls.h"
+#include "XTPReportRecord.h"
+#include "XTPReportRecordItem.h"
 #include "XTPReportColumn.h"
-//#include "ItemTypes/XTPReportRecordItemText.h"
-#include "XTPReportRecordItemConstraint.h"
-#include "XTPReportPaintManager.h"
-#include "XTPReportRow.h"
+#include "XTPReportColumns.h"
+#include "XTPReportInplaceControls.h"
+
 
 #ifdef _DEBUG
-#define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
+#define new DEBUG_NEW
 #endif
 
 
-CXTPReportInplaceControl::CXTPReportInplaceControl()
+//////////////////////////////////////////////////////////////////////
+// CXTPReportNavigator
+
+CXTPReportNavigator::CXTPReportNavigator(CXTPReportControl* pReportControl)
+	: m_pReportControl(pReportControl), m_bCurrentFocusInHeadersRows(FALSE), m_bCurrentFocusInFootersRows(FALSE)
 {
-}
-
-CXTPReportInplaceControl::~CXTPReportInplaceControl()
-{
-	SetItemArgs(0);
-}
-
-void CXTPReportInplaceControl::SetItemArgs(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
-{
-	if (pItemArgs)
-	{
-		pItemArgs->AddRef();
-		Release();
-
-		pItem = pItemArgs->pItem;
-		pControl = pItemArgs->pControl;
-		pRow = pItemArgs->pRow;
-		pColumn = pItemArgs->pColumn;
-		rcItem = pItemArgs->rcItem;
-	}
-	else
-	{
-		Release();
-
-		pItem = NULL;
-		pControl = NULL;
-		pRow = NULL;
-		pColumn = NULL;
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPReportInplaceButton
-
-CXTPReportInplaceButton::CXTPReportInplaceButton(UINT nID)
-{
-	m_nID = nID;
-	m_nWidth = 17;
-	m_nFixedHeight = 19;
-	m_bInsideCell = FALSE;
-	m_nIconIndex = XTP_REPORT_NOICON;
-
-	m_bPressed = m_bOver = FALSE;
-	m_nState = 0;
-	m_nSpinIncrement = 0;
-	m_unSpinTimerCnt = 0;
-	m_unSpinTimerId = 0;
-
-	m_nSpinMin = INT_MIN;
-	m_nSpinMax = INT_MAX;
-	m_nSpinStep = 1;
-
-	m_Items2Show = 10;
 
 }
 
-void CXTPReportInplaceButton::Create(XTP_REPORTRECORDITEM_ARGS* pItemArgs, CRect& rcButtons)
+CXTPReportNavigator::~CXTPReportNavigator()
 {
-	m_bPressed = m_bOver = FALSE;
-	m_nState = 0;
-	m_nSpinIncrement = 0;
-	m_unSpinTimerCnt = 0;
-	m_unSpinTimerId = 0;
-	SetItemArgs(pItemArgs);
-
-	CRect rect(rcButtons);
-	if (pControl->GetPaintManager()->IsFixedInplaceButtonHeight())
-	{
-		rect.bottom = min(rect.bottom, rect.top + m_nFixedHeight);
-	}
-
-	if (m_bInsideCell)
-	{
-		rect.right = rcButtons.left;
-		rect.left = rect.right - m_nWidth;
-
-		rcButtons.left = rect.left;
-	}
-	else
-	{
-		rect.left = rcButtons.right;
-		rect.right = rect.left + m_nWidth;
-
-		rcButtons.right = rect.right;
-	}
-
-	//to keep focused frame no touched
-	rect.top++;
-	rect.bottom -= 2;
-	rect.left--;
-	if (m_nID == XTP_ID_REPORT_COMBOBUTTON)
-		rect.right--;
-
-	if (!m_hWnd)
-		CStatic::Create(NULL, SS_NOTIFY | WS_CHILD, rect, pItemArgs->pControl);
-
-	SetWindowPos(0, rect.left, rect.top, rect.Width(), rect.Height(), SWP_NOZORDER | SWP_SHOWWINDOW);
 }
 
-BEGIN_MESSAGE_MAP(CXTPReportInplaceButton, CStatic)
-	//{{AFX_MSG_MAP(CXTPReportInplaceButton)
-	ON_WM_PAINT()
-	ON_WM_LBUTTONDOWN()
-	ON_WM_LBUTTONUP()
-	ON_WM_LBUTTONDBLCLK()
-	ON_WM_MOUSEMOVE()
-	ON_WM_CAPTURECHANGED()
-	ON_WM_TIMER()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-void CXTPReportInplaceButton::OnPaint()
+void CXTPReportNavigator::MoveDown(BOOL bSelectBlock, BOOL bIgnoreSelection)
 {
-	CPaintDC dc(this);
+	if  (!m_pReportControl)
+		return;
 
-	if (pControl)
+	CXTPReportRow* pNextRow = NULL;
+	CXTPReportRow* pFocusedRow = m_pReportControl->GetFocusedRow();
+
+	if (m_bCurrentFocusInHeadersRows)
 	{
-		pControl->GetPaintManager()->DrawInplaceButton(&dc, this);
-	}
-}
+		pNextRow = m_pReportControl->m_pHeaderRows->GetNext(pFocusedRow, m_pReportControl->m_bSkipGroupsFocus);
 
-void CXTPReportInplaceButton::OnFinalRelease()
-{
-	if (m_hWnd != NULL)
-		DestroyWindow();
-
-	CCmdTarget::OnFinalRelease();
-}
-
-void CXTPReportInplaceButton::OnLButtonDown(UINT, CPoint point)
-{
-	switch (m_nID)
-	{
-		case XTP_ID_REPORT_COMBOBUTTON :
-			m_bOver = m_bPressed = TRUE;
-			break;
-		case XTP_ID_REPORT_EXPANDBUTTON :
-			m_bOver = m_bPressed = TRUE;
-			break;
-		case XTP_ID_REPORT_SPINBUTTON :
+		// from the last header row jump to the first visible body row
+		if (pFocusedRow == pNextRow)
 		{
-			CXTPClientRect rect(this);
-			m_bOver = TRUE;
-			rect.bottom -= rect.Height() / 2;
-			m_nState = rect.PtInRect(point) ? SPNP_UP : SPNP_DOWN;
-
-			m_nSpinIncrement = m_nState == SPNP_UP ? m_nSpinStep : -m_nSpinStep;
-
-			pItem->OnInplaceButtonDown(this);
-
-			// start timer
-			m_unSpinTimerCnt = 0;
-			m_unSpinTimerId = SetTimer(1, 500, NULL);
-			break;
+			MoveFirstVisibleRow(xtpRowTypeBody);
 		}
-	}
-	Invalidate(FALSE);
-	SetCapture();
-}
-
-void CXTPReportInplaceButton::OnLButtonUp(UINT nFlags, CPoint point)
-{
-	if ((m_bPressed || m_nState) && pItem)
-	{
-		if (m_unSpinTimerId)
-		{
-			KillTimer(1);
-			m_unSpinTimerId = 0;
-		}
-		m_nSpinIncrement = 0;
-		m_unSpinTimerCnt = 0;
-		m_bPressed = FALSE;
-		m_nState = 0;
-		Invalidate(FALSE);
-		ReleaseCapture();
-		if (m_bOver && m_nID != XTP_ID_REPORT_SPINBUTTON)
-		{
-			pItem->OnInplaceButtonDown(this);
-		}
-	}
-	CStatic::OnLButtonUp(nFlags, point);
-}
-
-void CXTPReportInplaceButton::Activate()
-{
-	m_bOver = m_bPressed = TRUE;
-	Invalidate(FALSE);
-	SetCapture();
-}
-
-void CXTPReportInplaceButton::OnLButtonDblClk(UINT nFlags, CPoint point)
-{
-	UNREFERENCED_PARAMETER(nFlags);
-
-	if (m_nID == XTP_ID_REPORT_SPINBUTTON)
-	{
-		CXTPClientRect rect(this);
-		if (rect.PtInRect(point))
-		{
-			rect.bottom -= rect.Height() / 2;
-			m_nState = rect.PtInRect(point) ? SPNP_UP : SPNP_DOWN;
-			m_nSpinIncrement = m_nState == SPNP_UP ? m_nSpinStep : -m_nSpinStep;
-			pItem->OnInplaceButtonDown(this);
-			// start timer
-			m_unSpinTimerCnt = 0;
-			m_unSpinTimerId = SetTimer(1, 500, NULL);
-		}
-		Invalidate(FALSE);
-		SetCapture();
-	}
-}
-
-void CXTPReportInplaceButton::OnMouseMove(UINT nFlags, CPoint point)
-{
-	if (m_bPressed || m_nState)
-	{
-		CXTPClientRect rect(this);
-		BOOL bOver;
-		if (m_nID != XTP_ID_REPORT_SPINBUTTON)
-			bOver = rect.PtInRect(point);
 		else
 		{
-			bOver = rect.PtInRect(point) &&
-				(point.y < (rect.bottom - rect.Height() / 2) && m_nState == SPNP_UP ||
-				point.y >= (rect.bottom - rect.Height() / 2) && m_nState == SPNP_DOWN);
+			m_pReportControl->SetFocusedRow(pNextRow, bSelectBlock, bIgnoreSelection);
 		}
-		if ((bOver && !m_bOver) || (!bOver && m_bOver))
+	}
+	else if (m_bCurrentFocusInFootersRows)
+	{
+		m_pReportControl->SetFocusedRow(
+				m_pReportControl->m_pFooterRows->GetNext(pFocusedRow, m_pReportControl->m_bSkipGroupsFocus),
+				bSelectBlock,
+				bIgnoreSelection);
+	}
+	else
+	{
+		// body rows
+		pNextRow = m_pReportControl->m_pRows->GetNext(pFocusedRow, m_pReportControl->m_bSkipGroupsFocus);
+
+		if (pNextRow)
 		{
-			m_bOver = bOver;
-			if (m_nID == XTP_ID_REPORT_SPINBUTTON)
+			// from the last body row jump to the first header row
+			if (m_pReportControl->m_nFocusedRow == pNextRow->GetIndex())
 			{
-				if (m_bOver)
+				if (m_pReportControl->IsFooterRowsVisible() && m_pReportControl->IsFooterRowsAllowAccess())
+					MoveFirstVisibleRow(xtpRowTypeFooter);
+			}
+			else
+			{
+				m_pReportControl->SetFocusedRow(pNextRow, bSelectBlock, bIgnoreSelection);
+			}
+		}
+	}
+}
+
+void CXTPReportNavigator::MoveUp(BOOL bSelectBlock, BOOL bIgnoreSelection)
+{
+	if  (!m_pReportControl)
+		return;
+
+	CXTPReportRow* pPrevRow = NULL;
+	CXTPReportRow* pFocusedRow = m_pReportControl->GetFocusedRow();
+
+	if (m_bCurrentFocusInHeadersRows)
+	{
+		m_pReportControl->SetFocusedRow(
+			m_pReportControl->m_pHeaderRows->GetPrev(pFocusedRow, m_pReportControl->m_bSkipGroupsFocus),
+			bSelectBlock,
+			bIgnoreSelection);
+	}
+	else if (m_bCurrentFocusInFootersRows)
+	{
+		pPrevRow = m_pReportControl->m_pFooterRows->GetPrev(pFocusedRow, m_pReportControl->m_bSkipGroupsFocus);
+
+		// from the first footer row jump to the last visible body row
+		if (pFocusedRow == pPrevRow)
+		{
+			MoveLastVisibleRow(xtpRowTypeBody);
+		}
+		else
+		{
+			m_pReportControl->SetFocusedRow(pPrevRow, bSelectBlock, bIgnoreSelection);
+		}
+	}
+	else
+	{
+		// body rows
+		pPrevRow = m_pReportControl->m_pRows->GetPrev(pFocusedRow, m_pReportControl->m_bSkipGroupsFocus);
+
+		if (pPrevRow)
+		{
+			// from the first body row jump to the last header row
+			if (m_pReportControl->m_nFocusedRow == pPrevRow->GetIndex())
+			{
+				if (m_pReportControl->IsHeaderRowsVisible() && m_pReportControl->IsHeaderRowsAllowAccess())
+					MoveLastVisibleRow(xtpRowTypeHeader);
+			}
+			else
+			{
+				m_pReportControl->SetFocusedRow(pPrevRow, bSelectBlock, bIgnoreSelection);
+			}
+		}
+	}
+}
+
+void CXTPReportNavigator::MovePageDown(BOOL bSelectBlock, BOOL bIgnoreSelection)
+{
+	if  (!m_pReportControl)
+		return;
+
+	int nCurrentRowIndex = m_pReportControl->m_nFocusedRow != -1 ? m_pReportControl->m_nFocusedRow : 0;
+	nCurrentRowIndex = min(
+		m_pReportControl->m_pRows->GetCount() - 1,
+		nCurrentRowIndex + m_pReportControl->GetReportAreaRows(nCurrentRowIndex, true));
+
+	m_pReportControl->SetFocusedRow(
+		m_pReportControl->m_pRows->GetAt(nCurrentRowIndex),
+		bSelectBlock,
+		bIgnoreSelection);
+}
+
+void CXTPReportNavigator::MovePageUp(BOOL bSelectBlock, BOOL bIgnoreSelection)
+{
+	if  (!m_pReportControl)
+		return;
+
+	int nCurrentRowIndex = m_pReportControl->m_nFocusedRow != -1 ? m_pReportControl->m_nFocusedRow : 0;
+	nCurrentRowIndex = max(0, nCurrentRowIndex - m_pReportControl->GetReportAreaRows(nCurrentRowIndex, false));
+
+	m_pReportControl->SetFocusedRow(
+		m_pReportControl->m_pRows->GetAt(nCurrentRowIndex),
+		bSelectBlock,
+		bIgnoreSelection);
+}
+
+void CXTPReportNavigator::MoveFirstRow(BOOL bSelectBlock, BOOL bIgnoreSelection)
+{
+	if  (!m_pReportControl)
+		return;
+
+	m_pReportControl->SetFocusedRow(
+		m_pReportControl->m_pRows->GetAt(0),
+		bSelectBlock,
+		bIgnoreSelection);
+}
+
+void CXTPReportNavigator::MoveLastRow(BOOL bSelectBlock, BOOL bIgnoreSelection)
+{
+	if  (!m_pReportControl)
+		return;
+
+	m_pReportControl->SetFocusedRow(
+		m_pReportControl->m_pRows->GetAt(m_pReportControl->m_pRows->GetCount() - 1),
+		bSelectBlock,
+		bIgnoreSelection);
+}
+
+void CXTPReportNavigator::MoveToRow(int nRowIndex, BOOL bSelectBlock, BOOL bIgnoreSelection)
+{
+	if  (!m_pReportControl)
+		return;
+
+	int nCurrentRowIndex = max(0, nRowIndex);
+	nCurrentRowIndex = min(nCurrentRowIndex, m_pReportControl->m_pRows->GetCount() - 1);
+	if (nCurrentRowIndex < 0)
+	{
+		return;
+	}
+
+	m_pReportControl->SetFocusedRow(
+		m_pReportControl->m_pRows->GetAt(nCurrentRowIndex),
+		bSelectBlock,
+		bIgnoreSelection);
+}
+
+
+void CXTPReportNavigator::BeginEdit()
+{
+	if  (!m_pReportControl)
+		return;
+
+	m_pReportControl->AdjustScrollBars();
+	m_pReportControl->RedrawControl();
+	m_pReportControl->UpdateWindow();
+
+	CXTPReportRow* pFocusedRow = m_pReportControl->GetFocusedRow();
+
+	if (m_pReportControl->m_pFocusedColumn &&
+		pFocusedRow && pFocusedRow->GetRecord())
+	{
+		XTP_REPORTRECORDITEM_ARGS itemArgs(m_pReportControl, pFocusedRow, m_pReportControl->m_pFocusedColumn);
+
+		if (itemArgs.pItem && itemArgs.pItem->IsAllowEdit(&itemArgs))
+		{
+			if (!m_pReportControl->IsVirtualMode())
+			{
+				m_pReportControl->EnsureVisible(pFocusedRow);
+			}
+
+			m_pReportControl->EditItem(&itemArgs);
+
+			if (m_pReportControl->GetInplaceEdit()->GetSafeHwnd() &&
+				m_pReportControl->GetInplaceEdit()->GetItem() == itemArgs.pItem)
+			{
+				CXTPReportRecordItemEditOptions* pEditOptions = itemArgs.pItem->GetEditOptions(itemArgs.pColumn);
+				if (pEditOptions && pEditOptions->m_bSelectTextOnEdit)
 				{
-					m_nSpinIncrement = m_nState == SPNP_UP ? 1 : -1;
-					m_unSpinTimerCnt = 0;
-					m_unSpinTimerId = SetTimer(1, 500, NULL); // start timer
+					m_pReportControl->GetInplaceEdit()->SetSel(0, -1);
 				}
-				else if (m_unSpinTimerId)
+				else
 				{
-					// stop timer
-					KillTimer(1);
-					m_nSpinIncrement = 0;
-					m_unSpinTimerCnt = 0;
-					m_unSpinTimerId = 0;
+					CString str;
+					m_pReportControl->GetInplaceEdit()->GetWindowText(str);
+					m_pReportControl->GetInplaceEdit()->SetSel(str.GetLength(), str.GetLength());
 				}
 			}
-			Invalidate(FALSE);
+		}
+	}
+}
+
+void CXTPReportNavigator::MoveLeftRight(BOOL bBack, BOOL bSelectBlock, BOOL bIgnoreSelection)
+{
+	if  (!m_pReportControl)
+		return;
+
+	CXTPReportControl::CUpdateContext updateContext(m_pReportControl);
+
+	CXTPReportRow* pFocusedRow = m_pReportControl->GetFocusedRow();
+	CXTPReportColumn* pFocusedColumn = m_pReportControl->GetNextFocusableColumn(pFocusedRow,
+		m_pReportControl->m_pFocusedColumn ? m_pReportControl->m_pFocusedColumn->GetIndex() : -1,
+		bBack ? -1 : 1);
+
+	if (pFocusedColumn)
+	{
+		m_pReportControl->SetFocusedColumn(pFocusedColumn);
+	}
+	else
+	{
+		CXTPReportRows* pRows;
+		int nFocusedRow = m_pReportControl->GetFocusedRow() ? m_pReportControl->GetFocusedRow()->GetIndex() : -1;
+		switch(pFocusedRow->GetType())
+		{
+			case xtpRowTypeHeader : pRows = m_pReportControl->GetHeaderRows(); break;
+			case xtpRowTypeFooter : pRows = m_pReportControl->GetFooterRows(); break;
+			default : pRows = m_pReportControl->GetRows(); break;
+		}
+		CXTPReportRow* pRow = bBack ? pRows->GetPrev(pFocusedRow, FALSE) : pRows->GetNext(pFocusedRow, FALSE);
+		if (pRow && pRow->GetIndex() != nFocusedRow)
+		{
+			m_pReportControl->SetFocusedRow(pRow, bSelectBlock, bIgnoreSelection);
+			m_pReportControl->SetFocusedColumn(
+				m_pReportControl->GetNextFocusableColumn(
+					m_pReportControl->GetFocusedRow(),
+					bBack ? m_pReportControl->m_pColumns->GetCount() : -1,
+					bBack ? -1 : +1)
+				);
+		}
+	}
+}
+
+void CXTPReportNavigator::MoveLeft(BOOL bSelectBlock, BOOL bIgnoreSelection)
+{
+	MoveLeftRight(TRUE, bSelectBlock, bIgnoreSelection);
+}
+
+void CXTPReportNavigator::MoveRight(BOOL bSelectBlock, BOOL bIgnoreSelection)
+{
+	MoveLeftRight(FALSE, bSelectBlock, bIgnoreSelection);
+}
+
+void CXTPReportNavigator::MoveFirstColumn()
+{
+	if  (!m_pReportControl)
+		return;
+
+	CXTPReportControl::CUpdateContext updateContext(m_pReportControl);
+	CXTPReportRow* pFocusedRow = m_pReportControl->GetFocusedRow();
+	CXTPReportColumn* pFocusedColumn = m_pReportControl->GetNextFocusableColumn(pFocusedRow, -1, +1);
+	if (pFocusedColumn)
+	{
+		m_pReportControl->SetFocusedColumn(pFocusedColumn);
+	}
+}
+
+void CXTPReportNavigator::MoveLastColumn()
+{
+	if  (!m_pReportControl)
+		return;
+
+	CXTPReportControl::CUpdateContext updateContext(m_pReportControl);
+	CXTPReportRow* pFocusedRow = m_pReportControl->GetFocusedRow();
+	CXTPReportColumn* pFocusedColumn = m_pReportControl->GetNextFocusableColumn(pFocusedRow, m_pReportControl->GetColumns()->GetCount(), -1);
+	if (pFocusedColumn)
+	{
+		m_pReportControl->SetFocusedColumn(pFocusedColumn);
+	}
+}
+
+void CXTPReportNavigator::MoveToColumn(int nColumnIndex, BOOL bClearIfNonFocusable)
+{
+	if (!m_pReportControl)
+	{
+		return;
+	}
+
+	nColumnIndex = max(0, nColumnIndex);
+	nColumnIndex = min(nColumnIndex, m_pReportControl->GetColumns()->GetCount()-1);
+	if (nColumnIndex < 0)
+	{
+		return;
+	}
+
+	CXTPReportControl::CUpdateContext updateContext(m_pReportControl);
+
+	CXTPReportRow* pFocusedRow = m_pReportControl->GetFocusedRow();
+	CXTPReportColumn* pColumn = m_pReportControl->GetColumns()->GetAt(nColumnIndex);
+	if (!pColumn)
+	{
+		return;
+	}
+
+	CXTPReportRecordItem* pItem = pFocusedRow->GetRecord()->GetItem(pColumn);
+
+	if (!pItem || !pItem->IsFocusable())
+	{
+		if (bClearIfNonFocusable)
+		{
+			pColumn = NULL;
+		}
+		else
+		{
+			return;
 		}
 	}
 
-	CStatic::OnMouseMove(nFlags, point);
+	m_pReportControl->SetFocusedColumn(pColumn);
 }
 
-void CXTPReportInplaceButton::OnCaptureChanged(CWnd* pWnd)
+void CXTPReportNavigator::SetCurrentFocusInHeadersRows(BOOL bCurrentFocusInHeadersRows)
 {
-	m_bPressed = FALSE;
-	m_nState = 0;
-	Invalidate(FALSE);
+	if(m_pReportControl->m_bHeaderRecordsVisible && m_pReportControl->m_bHeaderRowsAllowAccess)
+	{
+		m_bCurrentFocusInHeadersRows = bCurrentFocusInHeadersRows;
+	}
+	else
+	{
+		m_bCurrentFocusInHeadersRows = FALSE;
+	}
 
-	CStatic::OnCaptureChanged(pWnd);
+
+	if (m_bCurrentFocusInHeadersRows)
+	{
+		MoveFirstVisibleRow(xtpRowTypeHeader);
+	}
+	else if (!m_bCurrentFocusInFootersRows && m_pReportControl->m_bHeaderRowsAllowAccess)
+	{
+		MoveFirstVisibleRow(xtpRowTypeBody);    // neither header nor footer is active
+	}
 }
 
-void CXTPReportInplaceButton::OnTimer(UINT_PTR nIDEvent)
+void CXTPReportNavigator::SetCurrentFocusInFootersRows(BOOL bCurrentFocusInFootersRows)
 {
-	if (m_unSpinTimerCnt == 0 && abs(m_nSpinIncrement) < 10)
+	if(m_pReportControl->m_bFooterRecordsVisible && m_pReportControl->m_bFooterRowsAllowAccess)
 	{
-		// first timer event, reset timer
-		KillTimer(1);
-		m_unSpinTimerId = SetTimer(1, 100, NULL);
+		m_bCurrentFocusInFootersRows = bCurrentFocusInFootersRows;
 	}
-	m_unSpinTimerCnt++;
-	if (m_unSpinTimerCnt >= 20 && abs(m_nSpinIncrement < 100000))
+	else
 	{
-		m_nSpinIncrement *= 10;
-		m_unSpinTimerCnt = 0;
+		m_bCurrentFocusInFootersRows = FALSE;
 	}
-	pItem->OnInplaceButtonDown(this);
 
-	CStatic::OnTimer(nIDEvent);
+	if (m_bCurrentFocusInFootersRows)
+	{
+		MoveFirstVisibleRow(xtpRowTypeFooter);
+	}
+	else if (!m_bCurrentFocusInHeadersRows && m_pReportControl->m_bFooterRowsAllowAccess)
+	{
+		MoveFirstVisibleRow(xtpRowTypeBody);    // neither header nor footer is active
+	}
+}
+
+BOOL CXTPReportNavigator::GetCurrentFocusInHeadersRows()
+{
+	return m_bCurrentFocusInHeadersRows;
+}
+
+BOOL CXTPReportNavigator::GetCurrentFocusInFootersRows()
+{
+	return m_bCurrentFocusInFootersRows;
+}
+
+void CXTPReportNavigator::SetMovePosition(XTPReportRowType RowType)
+{
+	switch(RowType)
+	{
+		case xtpRowTypeBody:    m_bCurrentFocusInHeadersRows = FALSE;   m_bCurrentFocusInFootersRows = FALSE; break;
+		case xtpRowTypeHeader:  m_bCurrentFocusInHeadersRows = TRUE;    m_bCurrentFocusInFootersRows = FALSE; break;
+		case xtpRowTypeFooter:  m_bCurrentFocusInHeadersRows = FALSE;   m_bCurrentFocusInFootersRows = TRUE; break;
+	}
+}
+
+void CXTPReportNavigator::MoveFirstVisibleRow(XTPReportRowType TargetType)
+{
+	switch(TargetType)
+	{
+		case xtpRowTypeBody:    m_pReportControl->SetFocusedRow(m_pReportControl->m_pRows->GetAt(m_pReportControl->m_nTopRow));
+
+								break;
+
+		case xtpRowTypeHeader:  if (m_pReportControl->m_pHeaderRows)
+								{
+									if (m_pReportControl->m_pHeaderRows->GetCount()>0)
+										m_pReportControl->SetFocusedRow(m_pReportControl->m_pHeaderRows->GetAt(0));
+								}
+								break;
+
+		case xtpRowTypeFooter:  if (m_pReportControl->m_pFooterRows)
+								{
+									if (m_pReportControl->m_pFooterRows->GetCount()>0)
+										m_pReportControl->SetFocusedRow(m_pReportControl->m_pFooterRows->GetAt(0));
+								}
+								break;
+	}
+}
+
+void CXTPReportNavigator::MoveLastVisibleRow(XTPReportRowType TargetType)
+{
+	switch(TargetType)
+	{
+		case xtpRowTypeBody:    {
+									int nRows = m_pReportControl->GetReportAreaRows(m_pReportControl->m_nTopRow, TRUE);
+
+									if (nRows > -1 && m_pReportControl->m_pRows->GetCount()>0)
+									{
+										int nIdx = min(m_pReportControl->m_nTopRow + nRows, m_pReportControl->m_pRows->GetCount()-1);
+
+										m_pReportControl->SetFocusedRow(m_pReportControl->m_pRows->GetAt(nIdx));
+									}
+								}
+								break;
+
+		case xtpRowTypeHeader:  if (m_pReportControl->m_pHeaderRows && m_pReportControl->m_pHeaderRows->GetCount()>0)
+								{
+									m_pReportControl->SetFocusedRow(
+										m_pReportControl->m_pHeaderRows->GetAt(m_pReportControl->m_pHeaderRows->GetCount()-1));
+
+								}
+								break;
+
+		case xtpRowTypeFooter:  if (m_pReportControl->m_pFooterRows && m_pReportControl->m_pFooterRows->GetCount()>0)
+								{
+									m_pReportControl->SetFocusedRow(
+										m_pReportControl->m_pFooterRows->GetAt(m_pReportControl->m_pFooterRows->GetCount()-1));
+								}
+								break;
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CXTPReportInplaceList
-
-CXTPReportInplaceList::CXTPReportInplaceList()
-{
-	m_bApply = FALSE;
-	m_dwLastKeyDownTime = 0;
-	m_Items2Show = 10;
-}
-
-
-void CXTPReportInplaceList::Create(XTP_REPORTRECORDITEM_ARGS* pItemArgs, CXTPReportRecordItemConstraints* pConstaints)
-{
-	SetItemArgs(pItemArgs);
-
-	CRect rect(pItemArgs->rcItem);
-
-	if (!m_hWnd)
-	{
-		CListBox::CreateEx(WS_EX_TOOLWINDOW | (pControl->GetExStyle() & WS_EX_LAYOUTRTL), _T("LISTBOX"), _T(""), LBS_NOTIFY | WS_CHILD | WS_BORDER | WS_VSCROLL, CRect(0, 0, 0, 0), pControl, 0);
-		SetOwner(pControl);
-	}
-
-	SetFont(pControl->GetPaintManager()->GetTextFont());
-	ResetContent();
-
-	int dx = rect.right - rect.left + 1;
-
-	CWindowDC dc(pControl);
-	CXTPFontDC font(&dc, GetFont());
-	int nThumbLength = GetSystemMetrics(SM_CXHTHUMB);
-
-	CString strCaption = pItem->GetCaption(pColumn);
-	DWORD dwData = pItem->GetSelectedConstraintData(pItemArgs);
-
-	for (int i = 0; i < pConstaints->GetCount(); i++)
-	{
-		CXTPReportRecordItemConstraint* pConstaint = pConstaints->GetAt(i);
-		CString str = pConstaint->m_strConstraint;
-		int nIndex = AddString(str);
-		SetItemDataPtr(nIndex, pConstaint);
-
-		dx = max(dx, dc.GetTextExtent(str).cx + nThumbLength);
-
-		if ((dwData == (DWORD)-1 && strCaption == str) || (dwData == pConstaint->m_dwData))
-			SetCurSel(nIndex);
-	}
-
-	int nHeight = GetItemHeight(0);
-	rect.top = rect.bottom;
-	//rect.bottom += nHeight * min(10, GetCount()) + 2;
-	rect.bottom += nHeight * min(m_Items2Show, GetCount()) + 2;
-	rect.left = rect.right - dx;
-
-	pControl->ClientToScreen(&rect);
-
-	CRect rcWork = XTPMultiMonitor()->GetWorkArea(rect);
-	if (rect.bottom > rcWork.bottom && rect.top > rcWork.CenterPoint().y)
-		rect.OffsetRect(0, - rect.Height() - pItemArgs->rcItem.Height());
-
-	if (rect.left < rcWork.left) rect.OffsetRect(rcWork.left - rect.left, 0);
-	if (rect.right > rcWork.right) rect.OffsetRect(rcWork.right - rect.right, 0);
-
-	SetFocus();
-
-	if (!m_hWnd) // Can be destroyed after focus set
-		return;
-
-	SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, 0);
-	ModifyStyle(WS_CHILD, WS_POPUP);
-	SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, (LONG_PTR)pControl->m_hWnd);
-
-	SetWindowPos(&CWnd::wndTopMost, rect.left, rect.top, rect.Width(), rect.Height(), SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
-
-	CXTPMouseMonitor::SetupHook(this);
-}
-
-BEGIN_MESSAGE_MAP(CXTPReportInplaceList, CListBox)
-	//{{AFX_MSG_MAP(CXTPReportInplaceList)
-	ON_WM_MOUSEACTIVATE()
-	ON_WM_KILLFOCUS()
-	ON_WM_LBUTTONUP()
-	ON_WM_CHAR()
-	ON_WM_KEYDOWN()
-	ON_WM_SYSKEYDOWN()
-	ON_WM_GETDLGCODE()
-	ON_WM_NCPAINT()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-void CXTPReportInplaceList::OnNcPaint()
-{
-	Default();
-
-	CWindowDC dc(this);
-
-	CXTPWindowRect rc(this);
-	rc.OffsetRect(-rc.TopLeft());
-
-	dc.Draw3dRect(rc, GetSysColor(COLOR_WINDOWFRAME), GetSysColor(COLOR_WINDOWFRAME));
-}
-
-
-int CXTPReportInplaceList::OnMouseActivate(CWnd* /*pDesktopWnd*/, UINT /*nHitTest*/, UINT /*message*/)
-{
-	return MA_NOACTIVATE;
-}
-
-UINT CXTPReportInplaceList::OnGetDlgCode()
-{
-	return DLGC_WANTALLKEYS;
-}
-
-void CXTPReportInplaceList::SetItemArgs(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
-{
-	m_bApply = FALSE;
-	CXTPReportInplaceControl::SetItemArgs(pItemArgs);
-
-	m_dwLastKeyDownTime = 0;
-	m_strHotSearchContext.Empty();
-}
-
-void CXTPReportInplaceList::PostNcDestroy()
-{
-	CXTPMouseMonitor::SetupHook(NULL);
-	SetItemArgs(NULL);
-
-	CListBox::PostNcDestroy();
-}
-
-
-void CXTPReportInplaceList::OnKillFocus(CWnd* pNewWnd)
-{
-	//ASSERT(pItem || m_bApply);
-
-	if (pItem && !m_bApply)
-		pItem->OnEditCanceled(this);
-
-	CListBox::OnKillFocus(pNewWnd);
-	DestroyWindow();
-}
-
-void CXTPReportInplaceList::OnLButtonUp(UINT, CPoint point)
-{
-	CXTPClientRect rc(this);
-
-	if (rc.PtInRect(point))
-		Apply();
-	else
-		Cancel();
-}
-
-
-void CXTPReportInplaceList::Cancel()
-{
-	m_bApply = FALSE;
-
-	GetOwner()->SetFocus();
-}
-
-void CXTPReportInplaceList::Apply()
-{
-	if (!pControl)
-		return;
-
-	CXTPReportControl* pReportControl = pControl;
-
-	int nIndex = GetCurSel();
-	if (nIndex != LB_ERR)
-	{
-		m_bApply = TRUE;
-
-		CXTPReportRecordItemConstraint* pConstraint = (CXTPReportRecordItemConstraint*)GetItemDataPtr(nIndex);
-
-		XTP_REPORTRECORDITEM_ARGS itemArgs = *((XTP_REPORTRECORDITEM_ARGS*)this);
-		itemArgs.AddRef();
-
-		pItem->OnConstraintChanged(&itemArgs, pConstraint);
-		pReportControl->RedrawControl();
-
-		pReportControl->SendMessageToParent(itemArgs.pRow, itemArgs.pItem, itemArgs.pColumn, XTP_NM_REPORT_VALUECHANGED, 0);
-
-		itemArgs.Release();
-	}
-
-	pReportControl->SetFocus();
-}
-
-void CXTPReportInplaceList::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	UNREFERENCED_PARAMETER(nRepCnt); UNREFERENCED_PARAMETER(nFlags);
-
-	const DWORD cwdHotSearchTomeOut_ms = 1300;
-
-	DWORD dwTime = GetTickCount();
-
-	if (dwTime - m_dwLastKeyDownTime > cwdHotSearchTomeOut_ms)
-		m_strHotSearchContext.Empty();
-
-	m_dwLastKeyDownTime = dwTime;
-
-	//----------------------------------------------
-	m_strHotSearchContext += (TCHAR)nChar;
-
-	int nIndex = GetCurSel();
-	if (nIndex == LB_ERR)
-		nIndex = 0;
-
-	int nFindIdx = FindString(nIndex, m_strHotSearchContext);
-
-	if (nFindIdx == LB_ERR && nIndex > 0)
-		nFindIdx = FindString(0, m_strHotSearchContext);
-
-	if (nFindIdx != LB_ERR)
-	{
-		SetCurSel(nFindIdx);
-
-		if (nIndex != nFindIdx)
-			OnSelectionChanged(nFindIdx);
-	}
-}
-
-void CXTPReportInplaceList::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	switch (nChar)
-	{
-	case VK_UP:
-	case VK_DOWN:
-	case VK_PRIOR:
-	case VK_NEXT:
-	case VK_HOME:
-	case VK_END:
-		m_strHotSearchContext.Empty();
-	}
-
-	//----------------------------------------------
-	if (nChar == VK_ESCAPE)
-	{
-		Cancel();
-	}
-	else if (nChar == VK_RETURN || nChar == VK_F4)
-	{
-		Apply();
-	}
-	else
-	{
-		int nPrevSel = CListBox::GetCurSel();
-		CListBox::OnKeyDown(nChar, nRepCnt, nFlags);
-		int nActualSel = CListBox::GetCurSel();
-
-		if (nPrevSel != nActualSel)
-			OnSelectionChanged(nActualSel);
-	}
-}
-
-BOOL CXTPReportInplaceList::PreTranslateMessage(MSG* pMsg)
-{
-	if (pMsg->message == WM_KEYDOWN && pControl)
-	{
-		if (!pControl->OnPreviewKeyDown((UINT&)pMsg->wParam, LOWORD(pMsg->lParam), HIWORD(pMsg->lParam)) )
-			return TRUE;
-	}
-
-	if (pMsg->message == WM_KEYDOWN && IsDialogMessage(pMsg))
-		return TRUE;
-
-	return CListBox::PreTranslateMessage(pMsg);
-}
-
-void CXTPReportInplaceList::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	if (nChar == VK_DOWN || nChar == VK_UP)
-	{
-		Apply();
-		return;
-	}
-
-	CListBox::OnSysKeyDown(nChar, nRepCnt, nFlags);
-}
-
-void CXTPReportInplaceList::OnSelectionChanged(int nLBIndex)
-{
-	CString strActual, str;
-	CListBox::GetText(nLBIndex,strActual);
-
-	CXTPReportRecordItemEditOptions* pEditOptions = pItem->GetEditOptions(pColumn);
-	CXTPReportRecordItemConstraints* pConstraints = pEditOptions->GetConstraints();
-
-	int nCount = pConstraints->GetCount();
-	for (int nIndex = 0; nIndex < nCount; nIndex++)
-	{
-		CXTPReportRecordItemConstraint* pConstraint = pConstraints->GetAt(nIndex);
-		str = pConstraint->m_strConstraint;
-
-		if (strActual.CompareNoCase(str) == 0)
-		{
-			((CXTPReportControl*) pControl)->OnConstraintSelecting(pRow, pItem, pColumn, pConstraint);
-			break;
-		}
-	}
-}
-
 

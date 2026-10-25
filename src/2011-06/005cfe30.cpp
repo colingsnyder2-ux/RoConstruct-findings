@@ -1,24 +1,5 @@
-// from server: 68% by atomic.potato
-struct W4VisualTrussStyle_EnumDesc {
-    int* field_68;
-    int* field_6c;
-    
-    int __thiscall method(int arg);
-};
-
-extern "C" int* __cdecl sub_5C6DF0(int*);
-
-int __thiscall W4VisualTrussStyle_EnumDesc::method(int arg) {
-    int* result = sub_5C6DF0(&arg);
-    int value = *result;
-    if (value < 0) {
-        return 0;
-    }
-    
-    int count = (field_6c - field_68) >> 2;
-    if (value >= count) {
-        return 0;
-    }
-    
-    return field_68[value];
-}
+// from server: 83% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct S{char pad[0x68]; char* begin; char* end; int f(int);};
+extern "C" int* sub(int);
+int S::f(int index){int* p=sub(index); int v=*p; if(v<0)return 0; if((unsigned)v>=(unsigned)((end-begin)>>2))return 0; return ((int*)begin)[v];}

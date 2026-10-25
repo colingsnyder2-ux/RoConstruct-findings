@@ -1,14 +1,14 @@
-// from server: 47% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/CommandBars/XTPControlEdit.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPControlEdit.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPControlEdit.cpp : implementation of the CXTPControlEdit class.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -29,7 +29,6 @@
 #include "Common/XTPDrawHelpers.h"
 #include "Common/XTPColorManager.h"
 #include "Common/XTPToolTipContext.h"
-#include "Common/XTPImageManager.h"
 
 #include "XTPControlEdit.h"
 #include "XTPCommandBar.h"
@@ -67,9 +66,6 @@ CXTPControlEdit::CXTPControlEdit()
 	m_dwShellAutoCompleteFlags = 0;
 	m_bEditChanged = TRUE;
 	m_dwEditStyle = 0;
-
-	m_nEditIconId = 0;
-	m_nTextLimit = 0;
 
 	m_bShowSpinButtons = FALSE;
 }
@@ -150,7 +146,7 @@ BOOL CXTPControlEdit::OnHookKeyDown(UINT nChar, LPARAM lParam)
 			return TRUE;
 	}
 
-	if (GetEnabled() && IsSpinButtonsVisible() && (nChar == VK_UP || nChar == VK_DOWN) && !GetReadOnly())
+	if (IsSpinButtonsVisible() && (nChar == VK_UP || nChar == VK_DOWN))
 	{
 		NotifySpinChanged(1, nChar == VK_UP ? +1 : -1);
 		if (m_pEdit && ::GetFocus() == m_pEdit->GetSafeHwnd()) m_pEdit->SetSel(0, -1);
@@ -239,8 +235,6 @@ void CXTPControlEdit::SetRect(CRect rcControl)
 			if (!GetEnabled()) m_pEdit->EnableWindow(FALSE);
 
 			if (m_dwShellAutoCompleteFlags != 0) EnableShellAutoComplete(m_dwShellAutoCompleteFlags);
-
-			if (m_nTextLimit) m_pEdit->LimitText(m_nTextLimit);
 		}
 
 		m_pEdit->SetFont(GetPaintManager()->GetIconFont(), FALSE);
@@ -251,34 +245,10 @@ void CXTPControlEdit::SetRect(CRect rcControl)
 
 		m_pEdit->SetReadOnly(m_bReadOnly);
 		rcControl.DeflateRect(m_nLabelWidth + 1 + 3, 3, 3 + (m_bShowSpinButtons ? 17 : 0), 3);
-		DeflateEditRect(rcControl);
 		m_pEdit->MoveWindow(rcControl);
 		ShowHideEditControl();
 	}
 	m_bDelayReposition = FALSE;
-}
-
-
-void CXTPControlEdit::DrawEditText(CDC* pDC, CRect rcText)
-{
-	if (m_nEditIconId > 0)
-	{
-		CXTPImageManagerIcon* pIcon = m_pParent->GetImageManager()->GetImage(m_nEditIconId, 0);
-		if (pIcon)
-		{
-			pIcon->Draw(pDC, CPoint(rcText.left, rcText.CenterPoint().y - pIcon->GetHeight() / 2), GetEnabled() ? pIcon->GetIcon() : pIcon->GetDisabledIcon());
-		}
-	}
-}
-
-void CXTPControlEdit::DeflateEditRect(CRect& rcControl)
-{
-	if (m_nEditIconId > 0)
-	{
-		CXTPImageManagerIcon* pIcon = m_pParent->GetImageManager()->GetImage(m_nEditIconId, 0);
-		if (pIcon)
-			rcControl.left += pIcon->GetWidth() + 2;
-	}
 }
 
 void CXTPControlEdit::ShowHideEditControl()
@@ -286,18 +256,13 @@ void CXTPControlEdit::ShowHideEditControl()
 	if (m_pEdit && m_pEdit->GetSafeHwnd())
 	{
 		m_pEdit->SetWindowPos(0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE
-			| (m_pControls && m_pParent && IsVisible() && m_pParent->GetSafeHwnd() ? SWP_SHOWWINDOW : SWP_HIDEWINDOW));
+			| (m_pParent && IsVisible() && m_pParent->GetSafeHwnd() ? SWP_SHOWWINDOW : SWP_HIDEWINDOW));
 	}
 }
 
 void CXTPControlEdit::OnRemoved()
 {
 	ShowHideEditControl();
-
-	if (!m_pControls && m_pEdit && m_pEdit->GetSafeHwnd())
-	{
-		m_pEdit->DestroyWindow();
-	}
 
 	CXTPControl::OnRemoved();
 }
@@ -368,6 +333,8 @@ void CXTPControlEdit::OnClick(BOOL bKeyboard, CPoint pt)
 {
 	if (IsCustomizeMode())
 	{
+		m_pParent->SetPopuped(-1);
+		m_pParent->SetSelected(-1);
 		CustomizeStartDrag(pt);
 	}
 	else
@@ -376,7 +343,7 @@ void CXTPControlEdit::OnClick(BOOL bKeyboard, CPoint pt)
 		{
 			OnExecute();
 		}
-		else if (!bKeyboard && GetSpinButtonsRect().PtInRect(pt) && GetEnabled() && !GetReadOnly())
+		else if (!bKeyboard && GetSpinButtonsRect().PtInRect(pt))
 		{
 			TrackSpinButton(pt);
 		}
@@ -425,7 +392,7 @@ void CXTPControlEdit::TrackSpinButton(CPoint pt)
 	const int direction = bTop ? +1 : -1;
 	int increment = 1;
 
-	m_bSelected = m_bPressed = bTop ? XTP_EDITSPIN_UP : XTP_EDITSPIN_DOWN;
+	m_bSelected = m_bPressed = bTop ? 3 : 4;
 	RedrawParent(FALSE);
 
 	NotifySpinChanged(increment, direction);
@@ -515,17 +482,17 @@ void CXTPControlEdit::OnMouseMove(CPoint point)
 		CRect rcTop(rc.left, rc.top, rc.right, rc.CenterPoint().y);
 		CRect rcBottom(rc.left, rcTop.bottom, rc.right, rc.bottom);
 
-		if (rcTop.PtInRect(point) && m_bSelected != XTP_EDITSPIN_UP)
+		if (rcTop.PtInRect(point) && m_bSelected != 3)
 		{
-			m_bSelected = XTP_EDITSPIN_UP;
+			m_bSelected = 3;
 			RedrawParent(FALSE);
 		}
-		else if (rcBottom.PtInRect(point) && m_bSelected != XTP_EDITSPIN_DOWN)
+		else if (rcBottom.PtInRect(point) && m_bSelected != 4)
 		{
-			m_bSelected = XTP_EDITSPIN_DOWN;
+			m_bSelected = 4;
 			RedrawParent(FALSE);
 		}
-		else if ((m_bSelected == XTP_EDITSPIN_UP || m_bSelected == XTP_EDITSPIN_DOWN) && !rc.PtInRect(point))
+		else if ((m_bSelected == 3 || m_bSelected == 4) && !rc.PtInRect(point))
 		{
 			m_bSelected = 1;
 			RedrawParent(FALSE);
@@ -608,19 +575,6 @@ CString CXTPControlEdit::GetEditHint() const
 	return !m_strEditHint.IsEmpty() ? m_strEditHint : m_pAction ? m_pAction->GetEditHint() : _T("");
 }
 
-void CXTPControlEdit::SetTextLimit(int nTextLimit)
-{
-	m_nTextLimit = nTextLimit;
-
-	if (m_pEdit && m_pEdit->GetSafeHwnd())
-		m_pEdit->LimitText(m_nTextLimit);
-}
-
-int CXTPControlEdit::GetTextLimit() const
-{
-	return m_nTextLimit;
-}
-
 DWORD CXTPControlEdit::GetEditStyle() const
 {
 	return m_dwEditStyle;
@@ -652,7 +606,6 @@ void CXTPControlEdit::Copy(CXTPControl* pControl, BOOL bRecursive)
 	SetEditHint(pControlEdit->m_strEditHint);
 	EnableShellAutoComplete(pControlEdit->m_dwShellAutoCompleteFlags);
 	m_bShowSpinButtons = pControlEdit->m_bShowSpinButtons;
-	m_nTextLimit = pControlEdit->m_nTextLimit;
 }
 
 BOOL CXTPControlEdit::Compare(CXTPControl* pOther)
@@ -762,7 +715,7 @@ BOOL CXTPControlEdit::IsCaptionVisible() const
 	return m_bLabel;
 }
 
-BEGIN_MESSAGE_MAP(CXTPControlEditCtrl, CXTPCommandBarEditCtrl)
+BEGIN_MESSAGE_MAP(CXTPControlEditCtrl, CXTPEdit)
 	ON_WM_SETFOCUS()
 	ON_WM_MOUSEMOVE()
 	ON_WM_KILLFOCUS()
@@ -770,7 +723,6 @@ BEGIN_MESSAGE_MAP(CXTPControlEditCtrl, CXTPCommandBarEditCtrl)
 	ON_WM_LBUTTONDOWN()
 	ON_WM_RBUTTONDOWN()
 	ON_WM_CONTEXTMENU()
-	ON_WM_KEYDOWN()
 	ON_MESSAGE(XTP_TTM_WINDOWFROMPOINT, OnWindowFromPoint)
 	ON_CONTROL_REFLECT(EN_CHANGE, OnEditChanged)
 END_MESSAGE_MAP()
@@ -789,17 +741,6 @@ void CXTPControlEditCtrl::OnEditChanged()
 
 	SetMargins(0, 0);
 	UpdateCharFormat();
-}
-
-void CXTPControlEditCtrl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	if (nChar == VK_RETURN && ::GetFocus() == m_hWnd)
-	{
-		m_pControl->OnExecute();
-		return;
-	}
-
-	CXTPCommandBarEditCtrl::OnKeyDown(nChar, nRepCnt, nFlags);
 }
 
 void CXTPControlEditCtrl::UpdateCharFormat()
@@ -840,7 +781,7 @@ void CXTPControlEditCtrl::OnRButtonDown(UINT nFlags, CPoint point)
 	m_pControl->SetFocused(TRUE);
 
 	if (!ShowContextMenu(m_pControl, point))
-		CXTPCommandBarEditCtrl::OnRButtonDown(nFlags, point);
+		CXTPEdit::OnRButtonDown(nFlags, point);
 }
 
 void CXTPControlEditCtrl::OnDestroy()
@@ -864,7 +805,7 @@ void CXTPControlEditCtrl::OnSetFocus(CWnd* pOldWnd)
 
 void CXTPControlEditCtrl::OnKillFocus(CWnd* pNewWnd)
 {
-	CXTPCommandBarEditCtrl::OnKillFocus(pNewWnd);
+	CXTPEdit::OnKillFocus(pNewWnd);
 	m_pControl->OnKillFocus();
 }
 

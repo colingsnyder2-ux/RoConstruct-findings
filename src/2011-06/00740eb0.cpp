@@ -1,20 +1,11 @@
-// from server: 79% by atomic.potato
-typedef unsigned char byte;
-typedef void (*InitFunc)();
-
-volatile byte g_flag_00cd4e74;
-volatile int g_value_00cd4e6c;
-volatile int g_value_00cd4e70;
-
-extern InitFunc g_init_00a3f360;
-
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+extern "C" void seh_fn_00740eb0(void*);
+extern int g_a_00740eb0;
+extern int g_b_00740eb0;
+extern int g_arg_00740eb0;
+struct Reg_00740eb0 { Reg_00740eb0() { g_a_00740eb0 = 0; g_b_00740eb0 = 0; seh_fn_00740eb0(&g_arg_00740eb0); } };
 void func_00740eb0()
 {
-    if (g_flag_00cd4e74 == 0)
-    {
-        g_flag_00cd4e74 = 1;
-        g_value_00cd4e6c = 0;
-        g_value_00cd4e70 = 0;
-        g_init_00a3f360();
-    }
+    static Reg_00740eb0 reg;
 }

@@ -1,14 +1,14 @@
-// from server: 42% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/SkinFramework/XTPSkinObjectMenu.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPControlComboBox.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPSkinObjectMDI.cpp: implementation of the CXTPSkinObjectMDI class.
+// XTPControlComboBox.cpp : implementation of the CXTPControlComboBox class.
 //
-// This file is a part of the XTREME SKINFRAMEWORK MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -28,3128 +28,1905 @@
 #include "stdafx.h"
 
 #include "Common/XTPDrawHelpers.h"
-#include "Common/XTPWinThemeWrapper.h"
-#include "Common/XTPSystemHelpers.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPPropExchange.h"
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPImageManager.h"
+#include "Common/XTPToolTipContext.h"
 
-#include "XTPSkinObjectMenu.h"
-#include "XTPSkinManager.h"
-#include "XTPSkinDrawTools.h"
-
-#define TIMERID_MENUSHOW 0xACC
-#define TIMERID_MENUHIDE 0xABB
-
-#ifndef WM_UNINITMENUPOPUP
-#define WM_MENURBUTTONUP                0x0122
-#define WM_MENUDRAG                     0x0123
-#define WM_MENUGETOBJECT                0x0124
-#define WM_UNINITMENUPOPUP              0x0125
-#define WM_MENUCOMMAND                  0x0126
-#endif
-
-#ifndef SPI_GETMENUSHOWDELAY
-#define SPI_GETMENUSHOWDELAY       0x006A
-#endif
-
-#define TPM_SYSMENU 0x0200L
-
-#ifndef HBMMENU_CALLBACK
-#define MIIM_STRING      0x00000040
-#define MIIM_BITMAP      0x00000080
-#define MIIM_FTYPE       0x00000100
-
-#define HBMMENU_CALLBACK            ((HBITMAP) -1)
-#define HBMMENU_SYSTEM              ((HBITMAP)  1)
-#define HBMMENU_MBAR_RESTORE        ((HBITMAP)  2)
-#define HBMMENU_MBAR_MINIMIZE       ((HBITMAP)  3)
-#define HBMMENU_MBAR_CLOSE          ((HBITMAP)  5)
-#define HBMMENU_MBAR_CLOSE_D        ((HBITMAP)  6)
-#define HBMMENU_MBAR_MINIMIZE_D     ((HBITMAP)  7)
-#define HBMMENU_POPUP_CLOSE         ((HBITMAP)  8)
-#define HBMMENU_POPUP_RESTORE       ((HBITMAP)  9)
-#define HBMMENU_POPUP_MAXIMIZE      ((HBITMAP) 10)
-#define HBMMENU_POPUP_MINIMIZE      ((HBITMAP) 11)
-#endif
-
+#include "XTPControlComboBox.h"
+#include "XTPCommandBar.h"
+#include "XTPToolBar.h"
+#include "XTPCommandBars.h"
+#include "XTPPaintManager.h"
+#include "XTPMouseManager.h"
+#include "XTPControls.h"
 
 #ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPSkinObjectApplicationFrame
-
-IMPLEMENT_DYNCREATE(CXTPSkinObjectApplicationFrame, CXTPSkinObjectFrame)
-
-CXTPSkinObjectApplicationFrame::CXTPSkinObjectApplicationFrame()
+CXTPEdit::CRichEditContext::CRichEditContext()
 {
-	m_rcMenuBar.SetRectEmpty();
+	m_hInstance = LoadLibraryA("RICHED20.DLL");
+	m_bRichEdit2 = TRUE;
 
-	m_pPopupMenu = new CXTPSkinPopupMenu();
-	m_pPopupMenu->m_bMenuBar = TRUE;
-};
-
-
-
-CXTPSkinObjectApplicationFrame::~CXTPSkinObjectApplicationFrame()
-{
-	if (m_pPopupMenu) m_pPopupMenu->InternalRelease();
-};
-
-BEGIN_MESSAGE_MAP(CXTPSkinObjectApplicationFrame, CXTPSkinObjectFrame)
-	//{{AFX_MSG_MAP(CXTPSkinObjectMenu)
-	ON_WM_NCCALCSIZE()
-	ON_WM_CONTEXTMENU()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-BOOL CXTPSkinObjectApplicationFrame::FrameHasMenuBar()
-{
-	if (GetStyle() & WS_CHILD)
-		return FALSE;
-
-	HMENU hMenu = ::GetMenu(m_hWnd);
-	if (!hMenu)
-		return FALSE;
-
-	return GetMenuItemCount(hMenu) > 0;
-}
-
-void CXTPSkinObjectApplicationFrame::DrawFrame(CDC* pDC)
-{
-	if (m_bLockFrameDraw)
-		return;
-
-	if (!m_rcMenuBar.IsRectEmpty())
+	if (m_hInstance)
 	{
-		DrawFrameMenuBar(pDC);
-	}
-
-	CXTPSkinObjectFrame::DrawFrame(pDC);
-}
-
-void CXTPSkinObjectApplicationFrame::UpdateMenuBar()
-{
-	if (FrameHasMenuBar())
-	{
-		RebuildMenuItems();
+	#ifdef _UNICODE
+		m_strClassName = _T("RichEdit20W");
+	#else
+		m_strClassName = _T("RichEdit20A");
+	#endif
 	}
 	else
 	{
-		if (m_pPopupMenu) m_pPopupMenu->m_hMenu = NULL;
-		m_rcMenuBar.SetRectEmpty();
+		m_hInstance = LoadLibraryA("RICHED32.DLL");
+		m_strClassName = _T("RICHEDIT");
+		m_bRichEdit2 = FALSE;
 	}
 }
 
-void CXTPSkinObjectApplicationFrame::RedrawMenuBar()
+CXTPEdit::CRichEditContext::~CRichEditContext()
 {
-	if (!m_rcMenuBar.IsRectEmpty())
-	{
-		CWindowDC dc(this);
-		DrawFrameMenuBar(&dc);
-
-		CXTPClientRect rect(this);
-		if (rect.Height() <= 0)
-			CXTPSkinObjectFrame::DrawFrame(&dc);
-	}
 }
 
-
-void CXTPSkinObjectApplicationFrame::DrawFrameMenuBar(CDC* pDC)
+CXTPEdit::CRichEditContext& CXTPEdit::GetRichEditContext()
 {
-	CXTPSkinManager* pSkinManager = XTPSkinManager();
-	CXTPSkinManagerClass* pClassWindow = pSkinManager->GetSkinClass(this, _T("WINDOW"));
-
-	CRect rc = m_rcMenuBar;
-	CXTPBufferDC dc(*pDC, rc);
-
-	dc.FillSolidRect(rc.left, rc.top, rc.Width(), rc.Height() - 1, GetColor(COLOR_3DFACE));
-	dc.FillSolidRect(rc.left, rc.bottom - 1, rc.Width(), 1, GetColor(COLOR_WINDOW));
-
-	CXTPFontDC font(&dc, &GetMetrics()->m_fntMenu);
-	dc.SetBkMode(TRANSPARENT);
-
-	int nCount = m_pPopupMenu->GetCount();
-
-
-	for (int nIndex = 0; nIndex < nCount; nIndex++ )
-	{
-		CXTPSkinPopupMenuItem* pItem = m_pPopupMenu->GetItem(nIndex);
-		CRect rcItem = pItem->m_rcItem;
-		BOOL bSelected = nIndex == m_pPopupMenu->m_nSelected;
-		BOOL bEnabled = pItem->IsEnabled();
-
-		HBITMAP hbm = pItem->GetItemBitmap();
-
-		if (hbm == HBMMENU_SYSTEM)
-		{
-			HWND hwndItem = (HWND)pItem->GetItemData();
-			if (hwndItem && IsWindow(hwndItem))
-			{
-				HICON hIcon = GetSchema()->GetFrameSmIcon(hwndItem, FALSE);
-
-				if (hIcon)
-				{
-					rcItem = CRect(CPoint(rcItem.CenterPoint().x - 8, rcItem.CenterPoint().y - 8), CSize(16, 16));
-
-					DrawIconEx(dc.m_hDC, rcItem.left, rcItem.top, hIcon,
-						rcItem.Width(), rcItem.Height(), 0, NULL, DI_NORMAL);
-				}
-			}
-
-			continue;
-		}
-
-		if (pItem->IsSeparator())
-			continue;
-
-		if (pItem->IsMDISysButton())
-		{
-			UINT nID = pItem->GetID();
-			int nPartID = nID == SC_RESTORE ? WP_MDIRESTOREBUTTON : nID == SC_MINIMIZE ? WP_MDIMINBUTTON : WP_MDICLOSEBUTTON;
-			int nState = !bEnabled ? SBS_DISABLED : bSelected ?  SBS_HOT : SBS_NORMAL;
-
-			pClassWindow->DrawThemeBackground(&dc, nPartID, nState, &rcItem);
-
-			continue;
-		}
-
-		CString strMenuText = m_pPopupMenu->GetMenuString(nIndex);
-
-		if (bSelected)
-		{
-			dc.FillSolidRect(rcItem, GetColor(COLOR_HIGHLIGHT));
-		}
-
-		dc.SetTextColor(GetColor(!bEnabled ? COLOR_GRAYTEXT : bSelected ? COLOR_HIGHLIGHTTEXT : COLOR_MENUTEXT));
-
-		dc.DrawText(strMenuText, rcItem, DT_VCENTER | DT_CENTER | DT_SINGLELINE);
-	}
+	static CRichEditContext s_RichContext;
+	return s_RichContext;
 }
 
-void CXTPSkinObjectApplicationFrame::OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS FAR* lpncsp)
+// CXTPEdit
+
+IMPLEMENT_DYNCREATE(CXTPEdit, CEdit)
+
+CXTPEdit::CXTPEdit()
 {
-	CXTPSkinObjectFrame::OnNcCalcSize(bCalcValidRects, lpncsp);
-
-	if (FrameHasMenuBar())
-	{
-		m_rcMenuBar.SetRect(m_rcBorders.left, m_rcBorders.top, m_rcBorders.left + lpncsp[0].rgrc->right - lpncsp[0].rgrc->left, m_rcBorders.top);
-
-		RebuildMenuItems();
-
-		lpncsp[0].rgrc->top += m_rcMenuBar.Height();
-	}
-	else
-	{
-		if (m_pPopupMenu) m_pPopupMenu->m_hMenu = NULL;
-		m_rcMenuBar.SetRectEmpty();
-	}
+	m_bImeMode = FALSE;
+	m_bComposited = FALSE;
+	m_bIgonoreEditChanged = FALSE;
 }
 
-BOOL CXTPSkinPopupMenuItem::IsMDISysButton() const
+BOOL CXTPEdit::IsCommandEnabled(UINT nID)
 {
-	int nID = GetID();
-	if (nID == SC_CLOSE || nID == SC_RESTORE || nID == SC_MINIMIZE)
-		return TRUE;
-
-	return FALSE;
-}
-
-void CXTPSkinObjectApplicationFrame::RebuildMenuItems()
-{
-	m_pPopupMenu->RemoveAll();
-	m_pPopupMenu->m_hMenu = NULL;
-
-	if (GetStyle() & WS_CHILD)
-		return;
-
-	HMENU hMenu = ::GetMenu(m_hWnd);
-	if (!hMenu)
-		return;
-
-	m_pPopupMenu->m_hMenu = hMenu;
-	m_pPopupMenu->m_hWnd = m_hWnd;
-	m_pPopupMenu->m_hWndNotify = m_hWnd;
-
-	int nCount = ::GetMenuItemCount(hMenu);
-
-	CWindowDC dc(this);
-
-	CXTPFontDC font(&dc, &GetMetrics()->m_fntMenu);
-
-	int nHeight = GetSystemMetrics(SM_CYMENUSIZE);
-
-	//CRect rc = m_rcMenuBar;
-
-	int x = m_rcMenuBar.left;
-	int y = m_rcMenuBar.top;
-
-	TEXTMETRIC tm;
-	dc.GetTextMetrics(&tm);
-
-	int nIndex;
-
-	for (nIndex = 0; nIndex < nCount; nIndex++ )
+	if (nID == ID_EDIT_PASTE)
 	{
-		CXTPSkinPopupMenuItem* pItem = new CXTPSkinPopupMenuItem(m_pPopupMenu, nIndex);
-
-		CSize sz(0, 0);
-
-		HBITMAP hbm = pItem->GetItemBitmap();
-		if ((UINT_PTR)hbm == 1)
-		{
-			sz.cx = 16 + 2 + 2;
-			sz.cy = 16;
-		}
-		else if (pItem->IsSeparator())
-			sz.cx = 6;
-		else if (pItem->IsMDISysButton())
-		{
-			sz.cx = sz.cy = nHeight;
-		}
-		else
-		{
-			CString strMenuText = pItem->GetText();
-			XTPDrawHelpers()->StripMnemonics(strMenuText);
-
-			int nText = dc.GetTextExtent(strMenuText).cx;
-			sz.cx = nText + (tm.tmAveCharWidth + 1) * 2;
-			sz.cy = nHeight;
-		}
-
-		if (x + sz.cx > m_rcMenuBar.right && nIndex != 0)
-		{
-			y += nHeight;
-			x = m_rcMenuBar.left;
-		}
-
-		CRect rcItem(x, y, x + sz.cx, y + nHeight);
-
-		pItem->m_rcItem = rcItem;
-
-		m_pPopupMenu->m_arrItems.Add(pItem);
-
-		x = rcItem.right;
+		return ((GetStyle() & (ES_READONLY | WS_DISABLED)) == 0) && ::IsClipboardFormatAvailable(CF_TEXT);
 	}
-
-	x = m_rcMenuBar.right;
-
-	for (nIndex = nCount - 1; nIndex >= 0; nIndex--)
+	else if (nID == ID_EDIT_CUT || nID == ID_EDIT_COPY)
 	{
-		CXTPSkinPopupMenuItem* pItem = m_pPopupMenu->GetItem(nIndex);
-
-		if ((pItem->GetType() & MFT_RIGHTJUSTIFY || pItem->IsMDISysButton()) && pItem->m_rcItem.top == y)
-		{
-			pItem->m_rcItem.OffsetRect(x - pItem->m_rcItem.right, 0);
-			x -= pItem->m_rcItem.Width();
-		}
-		else
-		{
-			break;
-		}
-	}
-
-	m_rcMenuBar.bottom = y + nHeight + 1;
-}
-
-int CXTPSkinObjectApplicationFrame::HitTestMenuItem(CPoint point)
-{
-	if (!m_rcMenuBar.PtInRect(point))
-		return -1;
-
-	for (int i = 0; i < m_pPopupMenu->GetCount(); i++)
-	{
-		if (::PtInRect(&m_pPopupMenu->GetItem(i)->m_rcItem, point))
-			return i;
-	}
-
-	return -1;
-}
-
-BOOL CXTPSkinObjectApplicationFrame::HandleMouseMove(CPoint point)
-{
-	if (CXTPSkinObjectFrame::HandleMouseMove(point))
-		return TRUE;
-
-	if (m_rcMenuBar.IsRectEmpty())
-		return FALSE;
-
-	CPoint ptClient(point);
-	ScreenToFrame(&ptClient);
-
-	int nSelected = HitTestMenuItem(ptClient);
-
-	if (nSelected != -1 && HandleNcHitTest(point) != HTMENU)
-		nSelected = -1;
-
-	if (m_pPopupMenu->m_nSelected != nSelected)
-	{
-		m_pPopupMenu->m_nSelected = nSelected;
-		RedrawMenuBar();
-
-		if (nSelected != -1)
-			SetTimer (XTP_TID_MOUSELEAVE, 50, &CXTPSkinObjectFrame::OnTimerInternal);
-		else
-			CancelMouseLeaveTracking();
-
+		int nStartChar, nEndChar;
+		GetSel(nStartChar, nEndChar);
+		return (nStartChar != nEndChar) && ((nID == ID_EDIT_COPY) || ((GetStyle() & (ES_READONLY | WS_DISABLED)) == 0));
 	}
 	return TRUE;
 }
 
-LRESULT CXTPSkinObjectApplicationFrame::HandleNcHitTest(CPoint point)
+BOOL CXTPEdit::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* /*pHandlerInfo*/)
 {
-	if (!m_rcMenuBar.IsRectEmpty())
+	if ((nID == ID_EDIT_PASTE || nID == ID_EDIT_CUT || nID == ID_EDIT_COPY) && (nCode == CN_UPDATE_COMMAND_UI))
 	{
-		CPoint ptMenu(point);
-		ScreenToFrame(&ptMenu);
-
-		CRect rcMenuBar(m_rcMenuBar);
-
-		CXTPWindowRect rcWindow(this);
-		rcWindow.OffsetRect(-rcWindow.TopLeft());
-		rcWindow.DeflateRect(m_rcBorders);
-
-		rcMenuBar.IntersectRect(rcMenuBar, rcWindow);
-		rcMenuBar.top += 1;
-
-		if (rcMenuBar.PtInRect(ptMenu))
-			return HTMENU;
-	}
-
-	return CXTPSkinObjectFrame::HandleNcHitTest(point);
-}
-
-CXTPSkinPopupMenuState* CXTPSkinObjectApplicationFrame::StartMenuState(UINT /*nID*/, LPARAM /*lParam*/)
-{
-	if (m_pPopupMenu->m_hMenu == 0)
-	{
-		HMENU hMenu = ::GetSystemMenu(m_hWnd, FALSE);
-		if (!hMenu)
-			return NULL;
-
-		::SetMenuDefaultItem(hMenu, SC_CLOSE, MF_BYCOMMAND);
-
-		m_pPopupMenu->m_hMenu = hMenu;
-		m_pPopupMenu->m_bSysMenu = TRUE;
-		m_pPopupMenu->m_hWnd = m_hWnd;
-		m_pPopupMenu->m_hWndNotify = m_hWnd;
-
-		m_pPopupMenu->PositionSysMenu();
-	}
-
-	CXTPSkinPopupMenuState* pState = new CXTPSkinPopupMenuState(m_hWnd);
-	pState->InitMenu(m_pPopupMenu);
-
-	return pState;
-}
-
-void CXTPSkinPopupMenuState::PlayEventSound(UINT nID)
-{
-	XTPSoundManager()->PlaySystemSound((XTPSoundManagerState)nID);
-}
-
-void CXTPSkinPopupMenuState::EndState()
-{
-	if (m_pAlternatePopup)
-	{
-		if (!m_pAlternatePopup->IsSysMenuBar())
-		{
-			CXTPSkinPopupMenu* pAlternatePopup = m_pAlternatePopup;
-			m_pAlternatePopup = m_pRootPopup;
-			m_pRootPopup = pAlternatePopup;
-		}
-
-		m_pAlternatePopup->InternalRelease();
-	}
-	else if (m_pRootPopup && m_pRootPopup->m_bSysMenu)
-	{
-		m_pRootPopup->m_bSysMenu = FALSE;
-		m_pRootPopup->m_hMenu = NULL;
-		m_pRootPopup->m_hWnd = NULL;
-	}
-
-	if (m_pRootPopup)
-	{
-		m_pRootPopup->InternalRelease();
-	}
-
-	delete this;
-}
-
-void CXTPSkinPopupMenuState::FilterMenuKey(LPARAM lParam)
-{
-
-
-	if (m_bButtonDown)
-		return;
-
-	if (!StartMenu(focusKeyboard))
-		return;
-
-	m_bInsideMenuLoop = TRUE;
-
-	switch (lParam)
-	{
-		case 0:
-			SelectItem(m_pRootPopup, 0);
-			RunLoop(lParam);
-			return;
-
-		case '-':
-			if ((GetWindowLong(m_pRootPopup->m_hWndNotify, GWL_STYLE) & WS_CHILD) == 0)
-			{
-				break;
-			}
-			// else fall through.
-
-		case ' ':
-			if (!m_pAlternatePopup && !m_pRootPopup->m_bSysMenu)
-			{
-				Dismiss();
-				return;
-			}
-
-			CloseHierarchy(m_pRootPopup);
-
-			if (!m_pRootPopup->m_bSysMenu)
-				SwitchToAlternateMenu();
-
-			SelectItem(m_pRootPopup, 0);
-			OpenHierarchy(m_pRootPopup);
-			m_pRootPopup->m_bToggle = FALSE;
-			RunLoop(lParam);
-			return;
-
-	}
-
-	OnChar(m_pRootPopup, (UINT)lParam);
-	if (m_pRootPopup->m_nSelected != -1)
-	{
-		RunLoop(lParam);
-	}
-	else
-	{
-		Dismiss();
-	}
-}
-
-BOOL CXTPSkinObjectApplicationFrame::HandleSysCommand(UINT nID, LPARAM lParam)
-{
-	if ((GetSkinManager()->GetApplyOptions() & xtpSkinApplyMenus) == 0)
-		return CXTPSkinObjectFrame::HandleSysCommand(nID, lParam);
-
-	UINT nCmd = (nID & 0xFFF0);
-
-	if (nCmd == SC_DEFAULT)
-	{
-		return TRUE;
-	}
-	if (nCmd == SC_MOUSEMENU)
-	{
-		CXTPSkinPopupMenuState* pState = StartMenuState(nID, lParam);
-		if (pState)
-		{
-			pState->RunLoop(lParam);
-
-			pState->EndState();
-		}
-		return TRUE;
-	}
-
-	if (nCmd == SC_KEYMENU)
-	{
-		CXTPSkinPopupMenuState* pState = StartMenuState(nID, lParam);
-		if (pState)
-		{
-			pState->FilterMenuKey(lParam);
-
-			pState->EndState();
-		}
-		else
-		{
-			CXTPSkinObjectFrame::HandleSysCommand(nID, lParam);
-		}
+		CCmdUI* pCmdUI = (CCmdUI*)pExtra;
+		pCmdUI->Enable(IsCommandEnabled(nID));
 		return TRUE;
 	}
 
 	return FALSE;
 }
 
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPSkinPopupMenuItem
-
-CXTPSkinPopupMenuItem::CXTPSkinPopupMenuItem(CXTPSkinPopupMenu* pPopupMenu, int nItem)
+BOOL CXTPEdit::OnCommand(WPARAM wParam, LPARAM)
 {
-	m_hMenu = pPopupMenu->m_hMenu;
-	m_nItem = nItem;
-	m_pPopupMenu = pPopupMenu;
-
-	m_rcItem.SetRectEmpty();
-}
-
-CRect CXTPSkinPopupMenuItem::GetScreenPos() const
-{
-	CRect rcItem(m_rcItem);
-
-	CXTPSkinPopupMenuState::WindowToScreen(m_pPopupMenu->m_hWnd, rcItem);
-
-	return rcItem;
-}
-
-HMENU CXTPSkinPopupMenuItem::GetPopupMenu() const
-{
-	if (m_pPopupMenu->IsSysMenuBar())
-		return m_hMenu;
-
-	return ::GetSubMenu(m_hMenu, m_nItem);
-}
-
-DWORD CXTPSkinPopupMenuItem::GetState() const
-{
-	if (m_pPopupMenu->IsSysMenuBar())
-		return MF_ENABLED;
-
-	MENUITEMINFO mii;
-	GetMenuItemInfo(MIIM_STATE, &mii);
-
-	return mii.fState;
-}
-
-void CXTPSkinPopupMenuItem::GetMenuItemInfo(UINT fMask, LPMENUITEMINFO lpMII) const
-{
-	ZeroMemory(lpMII, sizeof(MENUITEMINFO));
-	lpMII->cbSize = sizeof(MENUITEMINFO);
-	lpMII->fMask = fMask;
-
-	::GetMenuItemInfo(m_hMenu, m_nItem, TRUE, lpMII);
-}
-
-UINT CXTPSkinPopupMenuItem::GetID() const
-{
-	MENUITEMINFO mii;
-	GetMenuItemInfo(MIIM_ID, &mii);
-
-	return mii.wID;
-}
-
-BOOL CXTPSkinPopupMenuItem::IsEnabled() const
-{
-	return (GetState() & MFS_GRAYED) == 0;
-}
-
-BOOL CXTPSkinPopupMenuItem::IsChecked() const
-{
-	return (GetState() & MFS_CHECKED);
-}
-
-BOOL CXTPSkinPopupMenuItem::IsDefault() const
-{
-	return (GetState() & MFS_DEFAULT);
-}
-
-
-DWORD_PTR CXTPSkinPopupMenuItem::GetItemData() const
-{
-	MENUITEMINFO mii;
-	GetMenuItemInfo(MIIM_DATA, &mii);
-
-	return mii.dwItemData;
-}
-
-CString CXTPSkinPopupMenuItem::GetText() const
-{
-	CString strText;
-	::GetMenuString(m_hMenu, m_nItem, strText.GetBuffer(256), 256, MF_BYPOSITION);
-	strText.ReleaseBuffer();
-	return strText;
-}
-
-BOOL CXTPSkinPopupMenuItem::IsSeparator() const
-{
-	MENUITEMINFO mii;
-	GetMenuItemInfo(MIIM_TYPE, &mii);
-
-	return mii.fType & MFT_SEPARATOR;
-}
-
-BOOL CXTPSkinPopupMenuItem::IsOwnerDraw() const
-{
-	MENUITEMINFO mii;
-	GetMenuItemInfo(MIIM_TYPE, &mii);
-
-	return mii.fType & MFT_OWNERDRAW;
-}
-
-UINT CXTPSkinPopupMenuItem::GetType() const
-{
-	MENUITEMINFO mii;
-	GetMenuItemInfo(MIIM_TYPE, &mii);
-
-	return mii.fType;
-}
-
-#ifndef MIIM_BITMAP
-#define MIIM_BITMAP      0x00000080
-#endif
-
-HBITMAP CXTPSkinPopupMenuItem::GetItemBitmap() const
-{
-	struct MENUITEMINFO98
-	{
-		UINT    cbSize;
-		UINT    fMask;
-		UINT    fType;          // used if MIIM_TYPE (4.0) or MIIM_FTYPE (>4.0)
-		UINT    fState;         // used if MIIM_STATE
-		UINT    wID;            // used if MIIM_ID
-		HMENU   hSubMenu;       // used if MIIM_SUBMENU
-		HBITMAP hbmpChecked;    // used if MIIM_CHECKMARKS
-		HBITMAP hbmpUnchecked;  // used if MIIM_CHECKMARKS
-		DWORD   dwItemData;     // used if MIIM_DATA
-		LPWSTR  dwTypeData;     // used if MIIM_TYPE (4.0) or MIIM_STRING (>4.0)
-		UINT    cch;            // used if MIIM_TYPE (4.0) or MIIM_STRING (>4.0)
-		HBITMAP hbmpItem;       // used if MIIM_BITMAP
-	};
-
-	if (XTPSystemVersion()->IsWin95() || XTPSystemVersion()->IsWinNT4())
-		return NULL;
-
-	MENUITEMINFO98 mii;
-	ZeroMemory(&mii, sizeof(MENUITEMINFO98));
-	mii.cbSize = sizeof(MENUITEMINFO98);
-	mii.fMask = MIIM_BITMAP;
-
-	::GetMenuItemInfo(m_hMenu, m_nItem, TRUE, (MENUITEMINFO*)&mii);
-
-	return mii.hbmpItem;
-}
-
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPSkinPopupMenu
-
-CXTPSkinPopupMenu::CXTPSkinPopupMenu()
-{
-	m_bMenuBar = FALSE;
-	m_bSendUninit = FALSE;
-	m_bSysMenu = FALSE;
-	m_hWnd = 0;
-	m_nSelected = -1;
-	m_nDropped = -1;
-	m_hMenu = NULL;
-	m_pNextPopup = NULL;
-	m_pPrevPopup = NULL;
-	m_bToggle = FALSE;
-	m_bDropNextPopup = FALSE;
-	m_hWndNotify = 0;
-	m_bAboutToHide = FALSE;
-	m_bDroppedLeft = FALSE;
-
-	m_pState = NULL;
-
-	m_nHideTimer = 0;
-	m_nShowTimer = 0;
-}
-
-CXTPSkinPopupMenu::~CXTPSkinPopupMenu()
-{
-	m_hWnd = NULL;
-	RemoveAll();
-}
-
-void CXTPSkinPopupMenu::OnFinalRelease()
-{
-	delete this;
-}
-
-void CXTPSkinPopupMenu::RemoveAll()
-{
-	for (int i = 0; i < m_arrItems.GetSize(); i++)
-	{
-		delete m_arrItems[i];
-	}
-	m_arrItems.RemoveAll();
-}
-
-CString CXTPSkinPopupMenu::GetMenuString(int nIndex)
-{
-	CString strMenuText;
-
-	if (m_hMenu)
-	{
-		::GetMenuString(m_hMenu, nIndex, strMenuText.GetBuffer(256), 256, MF_BYPOSITION);
-		strMenuText.ReleaseBuffer();
-	}
-	return strMenuText;
-}
-
-void CXTPSkinPopupMenu::RebuildItems()
-{
-	RemoveAll();
-
-	int nCount = !IsSysMenuBar() ? GetMenuItemCount(m_hMenu) : 1;
-
-	for (int i = 0; i < nCount; i++)
-	{
-		m_arrItems.Add(new CXTPSkinPopupMenuItem(this, i));
-	}
-}
-
-int CXTPSkinPopupMenu::GetCount()
-{
-	int nCount = !IsSysMenuBar() ? GetMenuItemCount(m_hMenu) : 1;
-	if (nCount != m_arrItems.GetSize())
-	{
-		RebuildItems();
-	}
-
-	return nCount;
-}
-
-CXTPSkinPopupMenuItem* CXTPSkinPopupMenu::GetItem(int nIndex) const
-{
-	return nIndex >= 0 && nIndex < m_arrItems.GetSize() ? m_arrItems.GetAt(nIndex) : NULL;
-}
-
-BEGIN_MESSAGE_MAP(CXTPSkinPopupMenu, CWnd)
-	//{{AFX_MSG_MAP(CXTPSkinObjectMenu)
-	ON_WM_PAINT()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-BOOL CXTPSkinPopupMenu::IsMenuThemed()
-{
-	CXTPSkinManager* pSkinManager = XTPSkinManager();
-	CXTPSkinManagerClass* pClass = pSkinManager->GetSkinClass(pSkinManager->Lookup(m_hWndNotify), _T("MENU"));
-
-	BOOL bTheme = pClass->GetThemeInt(XTP_MP_POPUPBACKGROUND, 0, TMT_BORDERSIZE, 0) != 0;
-	if (!bTheme)
-		return FALSE;
-
-	int nCount = ::GetMenuItemCount(m_hMenu);
-
-	for (int i = 0; i < nCount; i++)
-	{
-		MENUITEMINFO mii;
-		ZeroMemory(&mii, sizeof(MENUITEMINFO));
-		mii.cbSize = sizeof(MENUITEMINFO);
-		mii.fMask = MIIM_TYPE;
-		::GetMenuItemInfo(m_hMenu, i, TRUE, &mii);
-
-		if (mii.fType & MFT_OWNERDRAW)
-			return FALSE;
-	}
-
-	return TRUE;
-
-}
-
-void CXTPSkinPopupMenu::PositionSysMenu()
-{
-	RebuildItems();
-
-	ASSERT(GetCount() == 1);
-
-	CXTPSkinPopupMenuItem* pItem = GetItem(0);
-
-	HWND hWnd = m_hWndNotify;
-	DWORD dwStyle = GetWindowLong(hWnd, GWL_STYLE);
-	DWORD dwExStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
-
-	CRect rcBorders = XTPSkinManager()->GetSchema()->CalcFrameBorders(dwStyle, dwExStyle);
-
-	pItem->m_rcItem.SetRect(rcBorders.left, rcBorders.left, rcBorders.top, rcBorders.top);
-}
-
-CSize CXTPSkinPopupMenu::RecalcLayout()
-{
-	ASSERT(m_pState);
-	ASSERT(!m_bMenuBar);
-
-	CXTPSkinManagerMetrics* pMetrics = m_pState->m_pSchema->GetMetrics();
-
-	BOOL bTheme = IsMenuThemed();
-
-	CDC dc;
-	dc.Attach(::GetWindowDC(m_hWnd));
-
-	CXTPFontDC font(&dc, &pMetrics->m_fntMenu);
-
-	CRect rcBorders(3, 3, 3, 3);
-
-	int x = rcBorders.left;
-	int y = rcBorders.top;
-
-	TEXTMETRIC tm;
-	dc.GetTextMetrics(&tm);
-
-	RemoveAll();
-
-	int nCount = ::GetMenuItemCount(m_hMenu), nItem;
-
-	int nMaxWidthColumn = 0;
-	int nFirstColumn = 0;
-	int nMaxHeight = 0;
-
-	for (nItem = 0; nItem < nCount; nItem++ )
-	{
-		CXTPSkinPopupMenuItem* pItem = new CXTPSkinPopupMenuItem(this, nItem);
-
-		CString strMenuText = pItem->GetText();
-
-		CSize szText(0, 0);
-
-		if (pItem->IsOwnerDraw())
-		{
-			MEASUREITEMSTRUCT mis;
-			mis.CtlType = ODT_MENU;
-			mis.CtlID = 0;
-			mis.itemID  = pItem->GetID();
-			mis.itemWidth = 0;
-			mis.itemHeight= (UINT) dc.GetTextExtent(_T(" "), 1).cy;
-			mis.itemData = pItem->GetItemData();
-
-			::SendMessage(m_hWndNotify, WM_MEASUREITEM, 0, (LPARAM)&mis);
-
-			szText.cx = mis.itemWidth + 12;
-			szText.cy = mis.itemHeight;
-
-		}
-		else if (pItem->IsSeparator())
-		{
-			szText.cy = bTheme ? 6 : 9;
-		}
-		else
-		{
-			BOOL bDefault = pItem->IsDefault();
-			CFont fontDefault;
-
-			if (bDefault)
-			{
-				LOGFONT lf;
-				pMetrics->m_fntMenu.GetLogFont(&lf);
-				lf.lfWeight  = FW_BOLD;
-				fontDefault.CreateFontIndirect(&lf);
-				font.SetFont(&fontDefault);
-			}
-
-			int nIndex = strMenuText.Find(_T('\t'));
-
-			CSize szShortcut(0, 0);
-
-			if (nIndex != -1)
-			{
-				CString strShortcutText = strMenuText.Mid(nIndex);
-				strMenuText.ReleaseBuffer(nIndex);
-
-				szShortcut = dc.GetTextExtent(strShortcutText);
-			}
-
-			szText = dc.GetTextExtent(strMenuText);
-
-			if (bTheme)
-			{
-				szText.cx = 33 + szText.cx + szShortcut.cx + 55;
-				szText.cy = max(szText.cy, 22);
-			}
-			else
-			{
-				szText.cx = 17 + szText.cx + szShortcut.cx + 44;
-				szText.cy = max(szText.cy, 17);
-			}
-
-			if (bDefault)
-			{
-				font.SetFont(&pMetrics->m_fntMenu);
-			}
-		}
-
-		if ((pItem->GetType() & (MF_MENUBREAK | MF_MENUBARBREAK)) && (nItem != nFirstColumn))
-		{
-			for (; nFirstColumn < nItem; nFirstColumn++ )
-			{
-				CXTPSkinPopupMenuItem* pItem = m_arrItems[nFirstColumn];
-				pItem->m_rcItem.right = pItem->m_rcItem.left + nMaxWidthColumn;
-			}
-
-			x += nMaxWidthColumn + 4;
-			nMaxHeight = max(nMaxHeight, y);
-			y = rcBorders.top;
-			nMaxWidthColumn = 0;
-		}
-
-		CRect rcItem(x, y, x + szText.cx, y + szText.cy);
-		nMaxWidthColumn = max(nMaxWidthColumn, szText.cx);
-
-		pItem->m_rcItem = rcItem;
-
-		m_arrItems.Add(pItem);
-
-		y = rcItem.bottom;
-	}
-
-	for (nItem = nFirstColumn; nItem < nCount; nItem++ )
-	{
-		CXTPSkinPopupMenuItem* pItem = m_arrItems[nItem];
-		pItem->m_rcItem.right = pItem->m_rcItem.left + nMaxWidthColumn;
-	}
-
-	int nTotalWidth = x + nMaxWidthColumn + rcBorders.right;
-	nMaxHeight = max(nMaxHeight, y)  + rcBorders.bottom;
-
-	font.ReleaseFont();
-
-	::ReleaseDC(m_hWnd, dc.Detach());
-	return CSize(nTotalWidth, nMaxHeight);
-}
-
-void CXTPSkinPopupMenu::OnPaint()
-{
-
-	CPaintDC dcPaint(this);
-	CXTPBufferDC dc(dcPaint);
-
-	if (!m_pState)
-		return;
-
-	CXTPSkinManager* pSkinManager = XTPSkinManager();
-	CXTPSkinManagerMetrics* pMetrics = m_pState->m_pSchema->GetMetrics();
-
-	CXTPClientRect rc(this);
-
-	CXTPSkinManagerClass* pClass = pSkinManager->GetSkinClass(pSkinManager->Lookup(m_hWndNotify), _T("MENU"));
-
-	BOOL bTheme = IsMenuThemed();;
-
-	if (bTheme)
-	{
-		CRect rcBackground(rc);
-		pClass->DrawThemeBackground(&dc, XTP_MP_POPUPBORDERS, 0, &rcBackground);
-		rcBackground.DeflateRect(3, 3);
-		pClass->DrawThemeBackground(&dc, XTP_MP_POPUPBACKGROUND, 0, &rcBackground);
-
-		rcBackground.right = rcBackground.left + 28;
-		pClass->DrawThemeBackground(&dc, XTP_MP_POPUPGUTTER, 0, &rcBackground);
-
-	}
-	else
-	{
-		dc.FillSolidRect(rc, pMetrics->GetColor(COLOR_MENU));
-		dc.Draw3dRect(rc, pMetrics->GetColor(COLOR_3DSHADOW), pMetrics->GetColor(COLOR_3DSHADOW));
-	}
-
-	CXTPFontDC font(&dc, &pMetrics->m_fntMenu);
-	dc.SetBkMode(TRANSPARENT);
-
-	int nCount = GetCount();
-
-	for (int nIndex = 0; nIndex < nCount; nIndex++)
-	{
-		CXTPSkinPopupMenuItem* pItem = GetItem(nIndex);
-
-		MENUITEMINFO mii;
-		ZeroMemory(&mii, sizeof(mii));
-		mii.cbSize = sizeof(mii);
-		mii.fMask = MIIM_STATE | MIIM_CHECKMARKS | MIIM_ID;
-
-		::GetMenuItemInfo(m_hMenu, nIndex, TRUE, &mii);
-
-		BOOL bSeparator = pItem->IsSeparator();
-		BOOL bEnabled = pItem->IsEnabled();
-		BOOL bSelected = (nIndex == m_nSelected) && !bSeparator;
-
-
-		CRect rcItem(pItem->m_rcItem);
-
-		if ((pItem->GetType() & MF_MENUBARBREAK) && (nIndex != 0) && !bTheme)
-		{
-			dc.FillSolidRect(rcItem.left - 3, rc.top + 3, 1, rc.Height() - 6, pMetrics->GetColor(COLOR_3DSHADOW));
-			dc.FillSolidRect(rcItem.left - 2, rc.top + 3, 1, rc.Height() - 6, pMetrics->GetColor(COLOR_3DHIGHLIGHT));
-		}
-
-		if (pItem->IsOwnerDraw())
-		{
-			dc.SetTextColor(pMetrics->GetColor(COLOR_MENUTEXT));
-			dc.SetBkColor(pMetrics->GetColor(COLOR_MENU));
-
-			DWORD dwState = mii.fState;
-
-			DRAWITEMSTRUCT dis;
-			dis.CtlType = ODT_MENU;
-			dis.CtlID = 0;
-			dis.itemID = mii.wID;
-			dis.itemAction = ODA_DRAWENTIRE;
-			dis.itemState   =
-				((dwState & MF_GRAYED)       ? ODS_GRAYED    : 0) |
-				((dwState & MFS_DEFAULT)     ? ODS_DEFAULT   : 0) |
-				((dwState & MFS_CHECKED)     ? ODS_CHECKED   : 0) |
-				((dwState & MFS_DISABLED)    ? ODS_DISABLED  : 0) |
-				(bSelected                   ? ODS_SELECTED  : 0);
-
-			dis.hwndItem = (HWND)m_hMenu;
-			dis.hDC = dc.GetSafeHdc();
-
-
-			dis.rcItem = pItem->m_rcItem;
-			dis.itemData = pItem->GetItemData();
-
-			if (m_hWndNotify)
-			{
-				::SendMessage(m_hWndNotify, WM_DRAWITEM, 0, (LPARAM)&dis);
-			}
-
-			if (pItem->GetPopupMenu())
-			{
-				CPoint ptCenter(rcItem.right - (bTheme ? 10 : 5), rcItem.CenterPoint().y);
-				XTPDrawHelpers()->Triangle(&dc, ptCenter, CPoint(ptCenter.x - 3, ptCenter.y - 3),
-					CPoint(ptCenter.x - 3, ptCenter.y + 3), pMetrics->GetColor(!bEnabled ? COLOR_GRAYTEXT : bSelected ? COLOR_HIGHLIGHTTEXT : COLOR_MENUTEXT));
-			}
-			continue;
-		}
-		if (bSeparator)
-		{
-			if (!bTheme)
-			{
-				dc.FillSolidRect(rcItem.left + 1, rcItem.CenterPoint().y, rcItem.Width() - 2, 1, pMetrics->GetColor(COLOR_3DSHADOW));
-				dc.FillSolidRect(rcItem.left + 1, rcItem.CenterPoint().y + 1, rcItem.Width() - 2, 1, pMetrics->GetColor(COLOR_3DHIGHLIGHT));
-			}
-			else
-			{
-				CRect rcSeparator(rcItem.left + 28, rcItem.top, rcItem.right, rcItem.bottom);
-				pClass->DrawThemeBackground(&dc, XTP_MP_POPUPSEPARATOR, 0, &rcSeparator);
-
-			}
-			continue;
-		}
-
-		if (bTheme)
-		{
-			if (bSelected)
-			{
-				pClass->DrawThemeBackground(&dc, XTP_MP_POPUPITEM, 2, &rcItem);
-			}
-
-			dc.SetTextColor(pMetrics->GetColor(!bEnabled ? COLOR_GRAYTEXT : COLOR_MENUTEXT));
-		}
-		else
-		{
-			if (bSelected)
-			{
-				dc.FillSolidRect(rcItem, pMetrics->GetColor(COLOR_HIGHLIGHT));
-			}
-
-			dc.SetTextColor(pMetrics->GetColor(!bEnabled ? COLOR_GRAYTEXT : bSelected ? COLOR_HIGHLIGHTTEXT : COLOR_MENUTEXT));
-		}
-
-		BOOL bDefault = pItem->IsDefault();
-		CFont fontDefault;
-
-		if (bDefault)
-		{
-			LOGFONT lf;
-			pMetrics->m_fntMenu.GetLogFont(&lf);
-			lf.lfWeight  = FW_BOLD;
-			fontDefault.CreateFontIndirect(&lf);
-			font.SetFont(&fontDefault);
-		}
-
-		CString strMenuText = pItem->GetText();
-		int nFind = strMenuText.Find(_T('\t'));
-
-		CSize szShortcut(0, 0);
-
-		if (nFind != -1)
-		{
-			CString strShortcutText = strMenuText.Mid(nFind + 1);
-			strMenuText.ReleaseBuffer(nFind);
-
-			CRect rcShortcut(rcItem);
-			rcShortcut.right -= 20;
-
-			dc.DrawText(strShortcutText, rcShortcut, DT_VCENTER | DT_RIGHT | DT_SINGLELINE);
-		}
-
-		CRect rcText(rcItem);
-		rcText.left += bTheme ? 33 : 17;
-
-		dc.DrawText(strMenuText, rcText, DT_VCENTER | DT_LEFT | DT_SINGLELINE);
-
-		if (pItem->GetPopupMenu())
-		{
-			if (bTheme)
-			{
-				CRect rcPopup(rcText.right - 16, rcText.top, rcText.right - 7, rcText.bottom);
-				pClass->DrawThemeBackground(&dc, XTP_MP_POPUPSUBMENU, bEnabled ? 1 : 2, &rcPopup);
-			}
-			else
-			{
-				CPoint ptCenter(rcText.right - (bTheme ? 10 : 5), rcText.CenterPoint().y);
-				XTPDrawHelpers()->Triangle(&dc, ptCenter, CPoint(ptCenter.x - 3, ptCenter.y - 3),
-					CPoint(ptCenter.x - 3, ptCenter.y + 3), dc.GetTextColor());
-			}
-		}
-
-		if (bDefault)
-		{
-			font.SetFont(&pMetrics->m_fntMenu);
-		}
-
-		BOOL bChecked = pItem->IsChecked();
-
-		HBITMAP hbm = bChecked ? mii.hbmpChecked : mii.hbmpUnchecked;
-
-		if (hbm)
-		{
-			BITMAP bmpInfo;
-			::GetObject(hbm, sizeof(BITMAP), &bmpInfo);
-
-			CXTPCompatibleDC dcBitmap(&dcPaint, hbm);
-
-			dc.SetTextColor(0);
-			dc.SetBkColor(0xFFFFFF);
-
-			dc.BitBlt((bTheme ? 16 : 11) -  bmpInfo.bmWidth / 2 , (rcItem.top + rcItem.bottom - bmpInfo.bmHeight) / 2, bmpInfo.bmWidth, bmpInfo.bmHeight,
-				&dcBitmap, 0, 0, SRCAND);
-		}
-		else if (bChecked)
-		{
-			if (bTheme)
-			{
-				CRect rcCheck(rcItem.left, rcItem.top, rcItem.left + 22, rcItem.bottom);
-
-				pClass->DrawThemeBackground(&dc, XTP_MP_POPUPCHECKBACKGROUND, bEnabled ? 1 : 2, rcCheck);
-				pClass->DrawThemeBackground(&dc, XTP_MP_POPUPCHECK, bEnabled ? 1 : 2, rcCheck);
-			}
-			else
-			{
-				CXTPPenDC pen (dc, dc.GetTextColor());
-				CXTPBrushDC brush (dc, dc.GetTextColor());
-
-				CPoint pt(rcItem.left + 5, rcItem.CenterPoint().y);
-				CPoint pts[] = {pt, CPoint(pt.x + 2, pt.y + 2), CPoint(pt.x + 6, pt.y - 2),
-					CPoint(pt.x + 6, pt.y), CPoint(pt.x + 2, pt.y + 4), CPoint(pt.x, pt.y + 2)};
-				dc.Polygon(pts, _countof(pts));
-			}
-		}
-		else
-		{
-			hbm = pItem->GetItemBitmap();
-
-			int nSysBitmap = 0;
-
-			switch ((UINT_PTR)hbm)
-			{
-				case (UINT_PTR)HBMMENU_POPUP_RESTORE: nSysBitmap = XTP_MP_SYSTEMRESTORE; break;
-				case (UINT_PTR)HBMMENU_POPUP_MINIMIZE: nSysBitmap = XTP_MP_SYSTEMMINIMIZE; break;
-				case (UINT_PTR)HBMMENU_POPUP_MAXIMIZE: nSysBitmap = XTP_MP_SYSTEMMAXIMIZE; break;
-				case (UINT_PTR)HBMMENU_POPUP_CLOSE: nSysBitmap = XTP_MP_SYSTEMCLOSE; break;
-			}
-
-			if (nSysBitmap != 0)
-			{
-				if (bTheme)
-				{
-					CSize sz(20, 20);
-					CRect rcBitmap(CPoint((bTheme ? 16 : 11) -  sz.cx / 2 , (rcItem.top + rcItem.bottom - sz.cy) / 2), sz);
-
-					pClass->DrawThemeBackground(&dc, nSysBitmap, bEnabled ? 1 : 2, rcBitmap);
-				}
-				else
-				{
-					CSize sz(20, 20);
-					CRect rcBitmap(CPoint((bTheme ? 16 : 11) -  sz.cx / 2 , (rcItem.top + rcItem.bottom - sz.cy) / 2 + 1), sz);
-
-					CFont fontMarlett;
-					fontMarlett.CreatePointFont(MulDiv(80, 96, dc.GetDeviceCaps(LOGPIXELSX)), _T("Marlett"));
-					CFont* pFont = dc.SelectObject(&fontMarlett);
-					dc.DrawText(nSysBitmap == XTP_MP_SYSTEMMINIMIZE ? _T("0") :
-						nSysBitmap == XTP_MP_SYSTEMRESTORE ?  _T("2") :
-						nSysBitmap == XTP_MP_SYSTEMMAXIMIZE ?  _T("1") :_T("r"),
-						1, rcBitmap, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
-					dc.SelectObject(pFont);
-				}
-			}
-			else if (hbm)
-			{
-				BITMAP bmpInfo;
-				::GetObject(hbm, sizeof(BITMAP), &bmpInfo);
-
-				CXTPCompatibleDC dcBitmap(&dcPaint, hbm);
-
-				dc.SetTextColor(0);
-				dc.SetBkColor(0xFFFFFF);
-
-				dc.BitBlt((bTheme ? 16 : 11) -  bmpInfo.bmWidth / 2 , (rcItem.top + rcItem.bottom - bmpInfo.bmHeight) / 2, bmpInfo.bmWidth, bmpInfo.bmHeight,
-					&dcBitmap, 0, 0, SRCAND);
-
-			}
-		}
-	}
-
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPSkinPopupMenuState
-
-CXTPSkinPopupMenuState::CXTPSkinPopupMenuState(HWND hWndNotify)
-{
-	m_bInsideMenuLoop = FALSE;
-	m_bButtonDown = 0;
-	m_bRightButton = FALSE;
-	m_nFocus = focusMouse;
-	m_hWndCapture = 0;
-	m_bDismiss = FALSE;
-	m_bNofyByPos = FALSE;
-	m_pRootPopup = NULL;
-	m_bNoNotify = FALSE;
-	m_ptMouseLast = CPoint(0);
-	m_nLastCommand = 0;
-
-	m_bFirstClick = FALSE;
-	m_bMenuStarted = FALSE;
-	m_bSynchronous = FALSE;
-	m_pAlternatePopup = NULL;
-
-	CXTPSkinObject* pSkinObject = XTPSkinManager()->Lookup(hWndNotify);
-	m_pSchema = pSkinObject ? pSkinObject->GetSchema() : XTPSkinManager()->GetSchema();
-
-	m_dwMenuShowDelay = 400;
-	SystemParametersInfo(SPI_GETMENUSHOWDELAY, 0, &m_dwMenuShowDelay, 0);
-}
-
-void CXTPSkinPopupMenuState::InitMenu(CXTPSkinPopupMenu* pPopupMenu)
-{
-	m_pRootPopup = pPopupMenu;
-	m_pRootPopup->InternalAddRef();
-
-	m_bButtonDown = ((GetKeyState(VK_LBUTTON) & 0x8000) != 0);
-
-	pPopupMenu->m_bDropNextPopup = FALSE;
-
-	if (m_pRootPopup->m_hWndNotify && !m_bNoNotify)
-	{
-		SendMessage(m_pRootPopup->m_hWndNotify, WM_ENTERMENULOOP, 0, 0);
-	}
-}
-
-#ifndef MNS_NOTIFYBYPOS
-#define MNS_NOTIFYBYPOS     0x08000000
-#define MIM_STYLE 0x00000010
-#endif
-
-int CXTPSkinPopupMenuState::GetMenuFlags(HMENU hMenu)
-{
-	struct XTP_MENUINFO
-	{
-		DWORD   cbSize;
-		DWORD   fMask;
-		DWORD   dwStyle;
-		UINT    cyMax;
-		HBRUSH  hbrBack;
-		DWORD   dwContextHelpID;
-		ULONG_PTR dwMenuData;
-	};
-
-	HMODULE hLib = GetModuleHandle(_T("USER32"));
-	if (!hLib)
-		return 0;
-
-	typedef BOOL (WINAPI *PFNGETMENUINFO) (HMENU hmenu, XTP_MENUINFO* lpcmi);
-
-	PFNGETMENUINFO pfnGetMenuInfo = (PFNGETMENUINFO)::GetProcAddress(hLib, "GetMenuInfo");
-	if (!pfnGetMenuInfo)
-		return 0;
-
-	XTP_MENUINFO mi;
-	ZeroMemory(&mi, sizeof(mi));
-	mi.cbSize = sizeof(mi);
-	mi.fMask = MIM_STYLE;
-
-	if (!(*pfnGetMenuInfo)(hMenu, &mi))
-		return FALSE;
-
-	return mi.dwStyle;
-}
-
-BOOL CXTPSkinPopupMenuState::StartMenu(MenuFocus nFocus)
-{
-	m_bMenuStarted = TRUE;
-
-	m_nFocus = nFocus;
-
-	m_pRootPopup->m_bToggle = FALSE;
-	m_pRootPopup->m_bAboutToHide = FALSE;
-
-	HWND hWndNotify = m_pRootPopup->m_hWndNotify;
-
-	m_hWndCapture= hWndNotify;
-	::SetCapture(m_hWndCapture);
-	::SendMessage(hWndNotify, WM_SETCURSOR, (WPARAM)hWndNotify, MAKELONG(MSGF_MENU, 0));
-
-	if (m_pRootPopup->m_bMenuBar)
-	{
-		// TODO GetSysMenu from Child xxxGetInitMenuParam
-		BOOL bSystemMenu = m_pRootPopup->m_bSysMenu;
-
-		if (!bSystemMenu)
-		{
-			HMENU hMenu = ::GetSystemMenu(hWndNotify, FALSE);
-			if (hMenu)
-			{
-				::SetMenuDefaultItem(hMenu, SC_CLOSE, MF_BYCOMMAND);
-				m_pAlternatePopup = new CXTPSkinPopupMenu();
-				m_pAlternatePopup->m_hMenu = hMenu;
-				m_pAlternatePopup->m_hWnd = hWndNotify;
-				m_pAlternatePopup->m_hWndNotify = hWndNotify;
-				m_pAlternatePopup->m_bSysMenu = TRUE;
-				m_pAlternatePopup->m_bMenuBar = TRUE;
-				m_pAlternatePopup->PositionSysMenu();
-				m_pAlternatePopup->m_pState = this;
-			}
-		}
-	}
-
-	int nFlags = GetMenuFlags(m_pRootPopup->m_hMenu);
-
-	if (nFlags & MNS_NOTIFYBYPOS)
-		m_bNofyByPos = TRUE;
-
-	if (!m_bNoNotify && hWndNotify)
-	{
-		::SendMessage(hWndNotify, WM_INITMENU, (WPARAM)m_pRootPopup->m_hMenu, 0);
-	}
-
-	// TODO: Add EVENT_SYSTEM_MENUSTART WinEvent.
+	UINT nID = LOWORD(wParam);
+
+	if (nID == ID_EDIT_PASTE) Paste();
+	else if (nID == ID_EDIT_COPY) Copy();
+	else if (nID == ID_EDIT_CUT) Cut();
+	else return FALSE;
 
 	return TRUE;
 }
 
-
-#define MENU_NOITEM (int)-1
-
-int CXTPSkinPopupMenuState::ItemHitTest(CPoint point, CXTPSkinPopupMenu* pPopupMenu)
+BOOL CXTPEdit::ShowContextMenu(CXTPControl* pControl, CPoint point)
 {
-	for (int i = 0; i < pPopupMenu->GetCount(); i++)
-	{
-		CXTPSkinPopupMenuItem* pItem = pPopupMenu->m_arrItems.GetAt(i);
-
-		CRect rcItem(pItem->m_rcItem);
-
-		WindowToScreen(pPopupMenu->m_hWnd, rcItem);
-
-		if (rcItem.PtInRect(point))
-			return i;
-	}
-	return MENU_NOITEM;
-}
-
-void CXTPSkinPopupMenuState::WindowToScreen(HWND hWnd, CRect& rcItem)
-{
-	CXTPWindowRect rcWindow(hWnd);
-
-	if (GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_LAYOUTRTL )
-	{
-		rcItem.OffsetRect(rcWindow.right - rcItem.right - rcItem.left, rcWindow.top);
-	}
-	else
-	{
-		rcItem.OffsetRect(rcWindow.TopLeft());
-	}
-}
-
-CXTPSkinPopupMenu* CXTPSkinPopupMenuState::FindMenu(CPoint point, CXTPSkinPopupMenu* pPopupMenu, int* pnItem)
-{
-	*pnItem = 0;
-
-	if (pPopupMenu->m_pNextPopup)
-	{
-		CXTPSkinPopupMenu* lResult = FindMenu(point, pPopupMenu->m_pNextPopup, pnItem);
-		if (lResult)
-		{
-			return lResult;
-		}
-	}
-
-	if (pPopupMenu->m_bMenuBar)
-	{
-		HWND hWnd = pPopupMenu->m_hWndNotify;
-
-		if (pPopupMenu->m_bSysMenu)
-		{
-			HICON hIcon = m_pSchema->GetFrameSmIcon(hWnd);
-			if (!hIcon)
-				return NULL;
-
-			CXTPWindowRect rcWindow(hWnd);
-
-			if (GetWindowLong(hWnd, GWL_STYLE) & WS_MINIMIZE)
-			{
-				if (rcWindow.PtInRect(point))
-					return pPopupMenu;
-				return NULL;
-			}
-
-			CRect rcIcon(pPopupMenu->GetItem(0)->m_rcItem);
-			WindowToScreen(hWnd, rcIcon);
-
-			if (rcIcon.PtInRect(point))
-			{
-				*pnItem = 0;
-				return pPopupMenu;
-			}
-
-			if (m_pAlternatePopup && m_pAlternatePopup != pPopupMenu)
-			{
-				int nHitTest = CXTPSkinPopupMenuState::ItemHitTest(point, m_pAlternatePopup);
-				if (nHitTest != MENU_NOITEM)
-				{
-					*pnItem = nHitTest;
-					return m_pAlternatePopup;
-				}
-			}
-
-			return NULL;
-		}
-		else
-		{
-			if (GetWindowLong(hWnd, GWL_STYLE) & WS_MINIMIZE)
-				return NULL;
-		}
-
-	}
-	else
-	{
-		CXTPWindowRect rc(pPopupMenu->m_hWnd);
-		if (!rc.PtInRect(point))
-			return NULL;
-	}
-
-	int nHitTest = CXTPSkinPopupMenuState::ItemHitTest(point, pPopupMenu);
-
-	if (pPopupMenu->m_bMenuBar)
-	{
-		if (nHitTest == MENU_NOITEM)
-		{
-			if (m_pAlternatePopup && m_pAlternatePopup != pPopupMenu)
-			{
-				CXTPSkinPopupMenu* pAlternatePopup = FindMenu(point, m_pAlternatePopup, pnItem);
-
-				if (pAlternatePopup)
-					return pAlternatePopup;
-			}
-			return NULL;
-		}
-	}
-
-	*pnItem = nHitTest;
-	return pPopupMenu;
-}
-
-BOOL CXTPSkinPopupMenuState::SetTimerToCloseHierarchy(CXTPSkinPopupMenu* pPopupMenu)
-{
-	CXTPSkinPopupMenu* pNextPopup = GetNextPopup(pPopupMenu);
-
-	if (!pNextPopup)
+	CString strPrompt;
+	if (!strPrompt.LoadString(ID_EDIT_CUT))
 		return FALSE;
 
-	if (pPopupMenu->m_nHideTimer)
-		return TRUE;
+	CXTPCommandBar* pParentBar = pControl->GetParent();
 
-	if (!SetTimer(pPopupMenu->m_hWnd, TIMERID_MENUHIDE, m_dwMenuShowDelay, NULL))
+	CXTPCommandBars* pCommandBars = pParentBar->GetCommandBars();
+	if (pCommandBars == NULL)
 		return FALSE;
 
-	pPopupMenu->m_nHideTimer = TIMERID_MENUHIDE;
+	CXTPMouseManager* pMouseManager = pCommandBars->GetMouseManager();
+	pMouseManager->UnlockMouseMove();
 
-	pNextPopup->m_bAboutToHide = TRUE;
+	ClientToScreen(&point);
 
-	return TRUE;
-}
-
-BOOL CXTPSkinPopupMenuState::SetTimerToOpenHierarchy(CXTPSkinPopupMenu* pPopupMenu)
-{
-	ASSERT(!pPopupMenu->m_bMenuBar);
-
-	CXTPSkinPopupMenuItem* pItem = pPopupMenu->GetItem(pPopupMenu->m_nSelected);
-	if (!pItem)
-		return FALSE;
-
-	if (pPopupMenu->m_nShowTimer || pPopupMenu->m_nSelected == pPopupMenu->m_nDropped)
-		return 1;
-
-	if (!SetTimer(pPopupMenu->m_hWnd, TIMERID_MENUSHOW, m_dwMenuShowDelay, NULL))
-		return FALSE;
-
-	pPopupMenu->m_nShowTimer = TIMERID_MENUSHOW;
-
-	return TRUE;
-}
-
-void CXTPSkinPopupMenuState::RedrawPopup(CXTPSkinPopupMenu* pPopupMenu)
-{
-	if (pPopupMenu->m_bMenuBar) ::SendMessage(pPopupMenu->m_hWnd, WM_NCPAINT, 0, 0); else ::InvalidateRect(pPopupMenu->m_hWnd, 0, FALSE);
-}
-
-void CXTPSkinPopupMenuState::SendMenuSelect(CXTPSkinPopupMenu* pPopupMenu)
-{
-	UINT dwFlags = 0;
-	UINT nCommand = 0;
-	int nIndex = -1;
-
-	CXTPSkinPopupMenuItem* pItem = pPopupMenu->GetItem(pPopupMenu->m_nSelected);
-	if (pItem)
-	{
-		dwFlags = pItem->GetType() | pItem->GetState();
-		nIndex = pItem->m_nItem;
-
-		if (pItem->GetPopupMenu())
-			dwFlags |= MF_POPUP;
-
-		if (dwFlags & MF_POPUP)
-			nCommand = nIndex;
-		else
-			nCommand = pItem->GetID();
-
-		if (m_nFocus == focusMouse)
-			dwFlags |= MF_MOUSESELECT;
-
-		if (pPopupMenu->m_bSysMenu)
-			dwFlags |= MF_SYSMENU;
-
-	}
-
-	::SendMessage(pPopupMenu->m_hWndNotify, WM_MENUSELECT, (DWORD)MAKELONG(nCommand, dwFlags), (LPARAM)pPopupMenu->m_hMenu);
-
-}
-
-CXTPSkinPopupMenuItem* CXTPSkinPopupMenuState::SelectItem(CXTPSkinPopupMenu* pPopupMenu, int nItem)
-{
-	if (pPopupMenu->m_nSelected == nItem)
-	{
-		return pPopupMenu->GetItem(nItem);
-	}
-
-	if (pPopupMenu->m_nShowTimer)
-	{
-		KillTimer(pPopupMenu->m_hWnd, pPopupMenu->m_nShowTimer);
-		pPopupMenu->m_nShowTimer = 0;
-	}
-
-	if (pPopupMenu->m_bAboutToHide && pPopupMenu->m_pPrevPopup)
-	{
-		CXTPSkinPopupMenu* pPrevPopup = pPopupMenu->m_pPrevPopup;
-
-		if (pPrevPopup->m_nHideTimer)
-		{
-			::KillTimer(pPrevPopup->m_hWnd, pPrevPopup->m_nHideTimer);
-			pPrevPopup->m_nHideTimer = NULL;
-		}
-
-		if (pPrevPopup->m_nShowTimer)
-		{
-			::KillTimer(pPrevPopup->m_hWnd, pPrevPopup->m_nShowTimer);
-			pPrevPopup->m_nShowTimer = NULL;
-		}
-
-		if (pPrevPopup->m_nSelected != pPrevPopup->m_nDropped)
-		{
-			pPrevPopup->m_nSelected = pPrevPopup->m_nDropped;
-			RedrawPopup(pPrevPopup);
-			SendMenuSelect(pPrevPopup);
-		}
-
-		pPopupMenu->m_bAboutToHide = FALSE;
-	}
-
-	if (pPopupMenu->m_nSelected != MENU_NOITEM)
-	{
-		if (GetNextPopup(pPopupMenu))
-		{
-			if (pPopupMenu->m_bMenuBar)
-			{
-				CloseHierarchy(pPopupMenu);
-			}
-			else
-			{
-				SetTimerToCloseHierarchy(pPopupMenu);
-			}
-		}
-	}
-
-	pPopupMenu->m_nSelected = nItem;
-
-	RedrawPopup(pPopupMenu);
-
-	SendMenuSelect(pPopupMenu);
-
-	return pPopupMenu->GetItem(nItem);
-}
-
-CPoint CXTPSkinPopupMenuState::PositionHierarchy(CXTPSkinPopupMenu* pSubMenu, CXTPSkinPopupMenu* pPopupMenu, CRect rcItem, CSize sz)
-{
-	CPoint pt(pPopupMenu->m_bMenuBar ? rcItem.left : rcItem.right - 3, pPopupMenu->m_bMenuBar ? rcItem.bottom : rcItem.top - 3);
-	CRect rcMonitor(XTPMultiMonitor()->GetScreenArea(pt));
-
-	if (pPopupMenu->m_bMenuBar)
-	{
-		BOOL bMinimized = (GetWindowLong(pPopupMenu->m_hWnd, GWL_STYLE) & WS_MINIMIZE) != 0;
-
-		if (bMinimized)
-		{
-			pt.y = rcItem.top - sz.cy;
-			if (pt.y < rcMonitor.top) pt.y = rcItem.bottom;
-		}
-
-		if (GetWindowLong(pPopupMenu->m_hWnd, GWL_EXSTYLE) & (WS_EX_LAYOUTRTL | WS_EX_RIGHT))
-		{
-			pt.x = rcItem.right - sz.cx;
-			pSubMenu->m_bDroppedLeft = TRUE;
-		}
-		pt.x = min(pt.x, rcMonitor.right - sz.cx);
-	}
-	else
-	{
-		if (pPopupMenu->m_bDroppedLeft)
-		{
-			int x = rcItem.left + 3 - sz.cx;
-			if (x >= rcMonitor.left)
-			{
-				pt.x = x;
-				pSubMenu->m_bDroppedLeft = TRUE;
-			}
-		}
-
-		if (pt.x + sz.cx > rcMonitor.right)
-		{
-			pt.x = rcItem.left + 3 - sz.cx;
-			pSubMenu->m_bDroppedLeft = TRUE;
-		}
-	}
-
-	if (pt.y + sz.cy > rcMonitor.bottom)
-	{
-		pt.y -= sz.cy;
-
-		if (pPopupMenu->m_bMenuBar)
-		{
-			pt.y -= GetSystemMetrics(SM_CYMENUSIZE);
-		}
-		else
-		{
-			pt.y += rcItem.Height() + 3;
-		}
-
-		if ((pt.y < rcMonitor.top) || (pt.y + sz.cy > rcMonitor.bottom))
-			pt.y = rcMonitor.bottom - sz.cy;
-	}
-
-	pt.x = max(pt.x, rcMonitor.left);
-	pt.y = max(pt.y, rcMonitor.top);
-
-	CRect rcPopup(pt.x, pt.y, pt.x + sz.cx, pt.y + sz.cy);
-	rcPopup.DeflateRect(3, 3);
-
-	if (CRect().IntersectRect(rcItem, rcPopup))
-	{
-		if ((rcItem.right + sz.cx) <= rcMonitor.right)
-			pt.x = rcItem.right;
-		else if ((rcItem.left - sz.cx) >= rcMonitor.left)
-			pt.x = rcItem.left - sz.cx;
-	}
-
-
-
-	return pt;
-}
-
-HWND CXTPSkinPopupMenuState::OpenHierarchy(CXTPSkinPopupMenu* pPopupMenu)
-{
-	if (pPopupMenu->m_nSelected < 0 || pPopupMenu->m_nSelected >= pPopupMenu->GetCount())
-		return NULL;
-
-	if (GetNextPopup(pPopupMenu))
-	{
-		if (pPopupMenu->m_nHideTimer)
-		{
-			CloseHierarchy(pPopupMenu);
-		}
-		else
-		{
-			return NULL;
-		}
-	}
-
-	if (pPopupMenu->m_nShowTimer)
-	{
-		KillTimer(pPopupMenu->m_hWnd, pPopupMenu->m_nShowTimer);
-		pPopupMenu->m_nShowTimer = 0;
-	}
-
-	CXTPSkinPopupMenuItem* pItem = pPopupMenu->GetItem(pPopupMenu->m_nSelected);
-
-	HMENU hSubMenu = pItem->GetPopupMenu();
-	if (!hSubMenu)
-		return NULL;
-
-	BOOL bSendNotify = FALSE;
-
-	HWND hwndResult = NULL;
-
-	TRY
-	{
-		if (pPopupMenu->m_hWndNotify && !m_bNoNotify)
-		{
-			SendMessage(pPopupMenu->m_hWndNotify, WM_INITMENUPOPUP, (WPARAM)hSubMenu, MAKELONG(pPopupMenu->m_nSelected, pPopupMenu->m_bSysMenu ? 1 : 0));
-
-			bSendNotify = TRUE;
-		}
-
-		if (!m_bInsideMenuLoop)
-			AfxThrowMemoryException();
-
-		if (pPopupMenu->m_nSelected < 0 || pPopupMenu->m_nSelected >= pPopupMenu->GetCount())
-			AfxThrowMemoryException();
-
-		pItem = pPopupMenu->GetItem(pPopupMenu->m_nSelected);
-
-		if (!pItem->IsEnabled() || !pItem->GetPopupMenu() || GetMenuItemCount(pItem->GetPopupMenu()) == 0)
-			AfxThrowMemoryException();
-
-
-
-		CXTPSkinPopupMenu* pSubMenu = new CXTPSkinPopupMenu();
-		pSubMenu->m_pState = this;
-
-		if (!pSubMenu->Create(pPopupMenu->m_hWndNotify))
-		{
-			pSubMenu->InternalRelease();
-			AfxThrowMemoryException();
-		}
-
-		pSubMenu->m_hMenu = hSubMenu;
-		pSubMenu->m_hWndNotify = pPopupMenu->m_hWndNotify;
-		pSubMenu->m_bSysMenu = pPopupMenu->m_bSysMenu;
-
-		bSendNotify = FALSE;
-		pSubMenu->m_bSendUninit = TRUE;
-
-		pPopupMenu->m_pNextPopup = pSubMenu;
-		pSubMenu->m_pPrevPopup = pPopupMenu;
-
-		if (pPopupMenu->m_bMenuBar)
-		{
-			pPopupMenu->m_bDropNextPopup = TRUE;
-		}
-
-		if (pPopupMenu->m_hWndNotify)
-		{
-			UpdateWindow(pPopupMenu->m_hWndNotify);
-		}
-
-		CSize size = pSubMenu->RecalcLayout();
-
-		CRect rcItem = pItem->GetScreenPos();
-
-		CPoint pt = PositionHierarchy(pSubMenu, pPopupMenu, rcItem, size);
-
-		PlayEventSound(xtpSoundMenuPopup);
-
-		::SetWindowPos(pSubMenu->m_hWnd, HWND_TOPMOST, pt.x, pt.y, size.cx, size.cy, SWP_SHOWWINDOW | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
-
-		if (m_nFocus == focusKeyboard)
-		{
-			SelectItem(pSubMenu, 0);
-		}
-
-		pPopupMenu->m_nDropped = pPopupMenu->m_nSelected;
-
-		UpdateWindow(pSubMenu->m_hWnd);
-
-		hwndResult = pSubMenu->m_hWnd;
-
-	}
-	CATCH (CMemoryException, e)
-	{
-	}
-	END_CATCH
-
-	if (bSendNotify)
-	{
-		SendMessage(pPopupMenu->m_hWndNotify, WM_UNINITMENUPOPUP, (WPARAM)hSubMenu, MAKELONG(0, pPopupMenu->m_bSysMenu ? 1 : 0));
-	}
-
-
-	return hwndResult;
-}
-
-void CXTPSkinPopupMenuState::CloseHierarchy(CXTPSkinPopupMenu* pPopupMenu)
-{
-	if (pPopupMenu->m_nHideTimer)
-	{
-		::KillTimer(pPopupMenu->m_hWnd, pPopupMenu->m_nHideTimer);
-		pPopupMenu->m_nHideTimer = 0;
-	}
-
-	CXTPSkinPopupMenu* pNextPopup = GetNextPopup(pPopupMenu);
-
-	if (pNextPopup)
-	{
-		CloseHierarchy(pNextPopup);
-
-		if (!pNextPopup->m_bMenuBar)
-		{
-			if (pNextPopup->m_bSendUninit && !m_bNoNotify)
-			{
-				SendMessage(pNextPopup->m_hWndNotify, WM_UNINITMENUPOPUP,
-					(WPARAM)pNextPopup->m_hMenu, MAKELONG(0, pNextPopup->m_bSysMenu ? MF_SYSMENU: 0));
-			}
-
-			pNextPopup->DestroyWindow();
-			pNextPopup->InternalRelease();
-		}
-
-		pPopupMenu->m_pNextPopup = NULL;
-		pPopupMenu->m_nDropped = MENU_NOITEM;
-	}
-
-	if (pPopupMenu->m_nSelected != MENU_NOITEM)
-	{
-		SendMenuSelect(pPopupMenu);
-	}
-
-}
-
-
-CXTPSkinPopupMenu* CXTPSkinPopupMenuState::GetNextPopup(CXTPSkinPopupMenu* pPopupMenu) const
-{
-	return pPopupMenu->m_pNextPopup;
-}
-
-CXTPSkinPopupMenu* CXTPSkinPopupMenuState::GetActivePopup() const
-{
-	CXTPSkinPopupMenu* pActivePopup = m_pRootPopup;
-
-	while (pActivePopup->m_pNextPopup != NULL)
-	{
-		pActivePopup = pActivePopup->m_pNextPopup;
-	}
-
-	return pActivePopup;
-}
-
-BOOL CXTPSkinPopupMenuState::HideNextHierarchy(CXTPSkinPopupMenu* pPopupMenu)
-{
-	CXTPSkinPopupMenu* pNextPopup = GetNextPopup(pPopupMenu);
-	if (pNextPopup)
-	{
-		if (GetNextPopup(pPopupMenu) != GetActivePopup())
-			CloseHierarchy(pNextPopup);
-
-		SelectItem(pNextPopup, -1);
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-void CXTPSkinPopupMenuState::DismissNotify(CXTPSkinPopupMenu* pPopupMenu, int nItem)
-{
-	DismissNotify(pPopupMenu->m_hMenu, nItem);
-}
-
-void CXTPSkinPopupMenuState::DismissNotify(HMENU hMenu, int nItem)
-{
-	if (nItem < 0 || nItem >= GetMenuItemCount(hMenu))
-		return;
-
-	UINT nMessage = 0;
-	UINT nCommand = 0;
-	LPARAM lParam = 0;
-
-	if (m_pRootPopup->m_bSysMenu)
-	{
-		nMessage = WM_SYSCOMMAND;
-		nCommand = ::GetMenuItemID(hMenu, nItem);
-	}
-	else if (m_bNofyByPos)
-	{
-		nMessage = WM_MENUCOMMAND;
-		nCommand = nItem;
-		lParam = (LPARAM)hMenu;
-	}
-	else
-	{
-		nMessage = WM_COMMAND;
-		nCommand =  ::GetMenuItemID(hMenu, nItem);
-	}
-
-	Notify(nMessage, nCommand, lParam);
-}
-
-void CXTPSkinPopupMenuState::OnButtonUp(CXTPSkinPopupMenu* pPopupMenu, int nItem)
-{
-	if (!m_bButtonDown)
-		return;
-
-	if (nItem == MENU_NOITEM)
-		return;
-
-	if (nItem != pPopupMenu->m_nSelected)
-		return;
-
-	if (pPopupMenu->m_bMenuBar)
-	{
-		if (GetNextPopup(pPopupMenu))
-		{
-			if (!pPopupMenu->m_bToggle)
-				return;
-
-			pPopupMenu->m_bToggle = FALSE;
-			Dismiss();
-			return;
-		}
-
-	}
-	else if (pPopupMenu->m_nShowTimer)
-	{
-		pPopupMenu->m_bToggle = FALSE;
-		OpenHierarchy(pPopupMenu);
-		return;
-	}
-
-	CXTPSkinPopupMenuItem* pItem = pPopupMenu->GetItem(pPopupMenu->m_nSelected);
-	if (!pItem)
-		return;
-
-	if (!pItem->IsSeparator() && pItem->IsEnabled() && !pItem->GetPopupMenu())
-	{
-		DismissNotify(pPopupMenu, pPopupMenu->m_nSelected);
-	}
-}
-
-void CXTPSkinPopupMenuState::OnButtonDblClick(CXTPSkinPopupMenu* pPopupMenu, int nItem)
-{
-	CXTPSkinPopupMenuItem* pItem = pPopupMenu->GetItem(nItem);
-	if (!pItem)
-		return;
-
-	if (!pItem->IsEnabled())
-		return;
-
-	HMENU hMenu = pItem->GetPopupMenu();
-	if (hMenu)
-	{
-		nItem = GetMenuDefaultItem(hMenu, MF_BYPOSITION, 0);
-		if (nItem == -1)
-			return;
-	}
-	else
-	{
-		hMenu = pPopupMenu->m_hMenu;
-	}
-
-	DismissNotify(hMenu, nItem);
-}
-
-void CXTPSkinPopupMenuState::OnButtonDown(CXTPSkinPopupMenu* pPopupMenu, int nItem, BOOL bClick)
-{
-	if (pPopupMenu->m_nSelected != nItem)
-	{
-		BOOL bOpenPopup = FALSE;
-
-		if (bClick)
-		{
-			bOpenPopup = TRUE;
-			pPopupMenu->m_bToggle = FALSE;
-
-		}
-		else
-		{
-			bOpenPopup = pPopupMenu->m_bDropNextPopup;
-		}
-
-		CXTPSkinPopupMenuItem* pItem = SelectItem(pPopupMenu, nItem);
-
-		if (pItem && pItem->GetPopupMenu() && bOpenPopup)
-		{
-			if (!OpenHierarchy(pPopupMenu))
-				return;
-		}
-	}
-	else
-	{
-		if (bClick) pPopupMenu->m_bToggle = TRUE;
-
-		if (!HideNextHierarchy(pPopupMenu) && bClick && OpenHierarchy(pPopupMenu))
-			pPopupMenu->m_bToggle = FALSE;
-	}
-
-	if (bClick)
-	{
-		m_bButtonDown = TRUE;
-	}
-}
-
-void CXTPSkinPopupMenuState::Dismiss()
-{
-	Notify(0, 0, 0);
-}
-
-void CXTPSkinPopupMenuState::Notify(UINT nMessage, UINT nCommand, LPARAM lParam)
-{
-	if (m_bDismiss)
-		return;
-
-	m_bDismiss = TRUE;
-	m_bInsideMenuLoop = FALSE;
-	m_bButtonDown = FALSE;
-
-	CloseHierarchy(m_pRootPopup);
-	SelectItem(m_pRootPopup, MENU_NOITEM);
-
-	ReleaseCapture();
-
-	HWND hWndNotify = m_pRootPopup->m_hWndNotify;
-
-	if (hWndNotify == 0)
-		return;
-
-	if (!m_pRootPopup->m_bMenuBar)
-	{
-		CloseHierarchy(m_pRootPopup);
-		m_pRootPopup->DestroyWindow();
-	}
-
-	if (!m_bNoNotify)
-	{
-		SendMessage(hWndNotify, WM_EXITMENULOOP, 0, 0);
-	}
-
-	m_nLastCommand = nCommand;
-
-	if (nMessage != 0)
-	{
-		PlayEventSound(xtpSoundMenuCommand);
-
-		if (!m_bSynchronous)
-		{
-			SendMessage(hWndNotify, nMessage, nCommand, lParam);
-
-			if (nMessage == WM_SYSCOMMAND && IsWindow(hWndNotify))
-			{
-				::SendMessage(hWndNotify, WM_NCPAINT, 0, 0);
-			}
-		}
-	}
-}
-
-void CXTPSkinPopupMenuState::OnMouseMove(CPoint point)
-{
-   if (point == m_ptMouseLast)
-		return;
-
-	m_ptMouseLast = point;
-
-	int nItem;
-	CXTPSkinPopupMenu* pMenuHit = FindMenu(point, m_pRootPopup, &nItem);
-
-	if (m_nFocus == focusKeyboard)
-	{
-		if (pMenuHit == NULL)
-			return;
-
-		m_nFocus = focusMouse;
-	}
-
-	if (pMenuHit == m_pAlternatePopup)
-	{
-		if (m_bButtonDown)
-		{
-			SwitchToAlternateMenu();
-		}
-		else
-		{
-			pMenuHit = NULL;
-		}
-
-	}
-
-	if (pMenuHit)
-	{
-		if (pMenuHit->m_bMenuBar)
-		{
-			OnButtonDown(pMenuHit, nItem, FALSE);
-		}
-		else
-		{
-			CXTPSkinPopupMenuItem* pItem = SelectItem(pMenuHit, nItem);
-			if (pItem && pItem->GetPopupMenu() && pItem->IsEnabled())
-			{
-				if (!SetTimerToOpenHierarchy(pMenuHit))
-				{
-					HideNextHierarchy(pMenuHit);
-				}
-			}
-		}
-	}
-	else
-	{
-		SelectItem(GetActivePopup(), MENU_NOITEM);
-	}
-
-}
-
-CXTPSkinPopupMenu* CXTPSkinPopupMenuState::FindPopup(HWND hWnd) const
-{
-	CXTPSkinPopupMenu* pPopupMenu = m_pRootPopup;
-	while (pPopupMenu)
-	{
-		if (pPopupMenu->m_hWnd == hWnd)
-			return pPopupMenu;
-
-		pPopupMenu = GetNextPopup(pPopupMenu);
-	}
-
-	return NULL;
-}
-
-BOOL CXTPSkinPopupMenuState::RemoveMessage(UINT nMessage)
-{
 	MSG msg;
-	if (!PeekMessage(&msg, NULL, 0, 0, PM_NOYIELD | PM_NOREMOVE))
+	if (PeekMessage(&msg, m_hWnd, EM_SETSEL, EM_SETSEL, PM_NOREMOVE))
 	{
-		return FALSE;
+		SendMessage(EM_SETSEL, 0, -1);
 	}
 
-	if (msg.message == nMessage)
+	CXTPPopupBar* pPopupBar = CXTPPopupBar::CreatePopupBar(pCommandBars);
+	CXTPControl* pControlCut = pPopupBar->GetControls()->Add(xtpControlButton, ID_EDIT_CUT);
+	pControlCut->SetEnabled(IsCommandEnabled(ID_EDIT_CUT));
+	CXTPControl* pControlCopy = pPopupBar->GetControls()->Add(xtpControlButton, ID_EDIT_COPY);
+	pControlCopy->SetEnabled(IsCommandEnabled(ID_EDIT_COPY));
+	CXTPControl* pControlPaste = pPopupBar->GetControls()->Add(xtpControlButton, ID_EDIT_PASTE);
+	pControlPaste->SetEnabled(IsCommandEnabled(ID_EDIT_PASTE));
+
+	pPopupBar->SetGrabFocus(FALSE);
+
+	int nAlign = pControl->GetParent()->GetExStyle() & (WS_EX_LAYOUTRTL | WS_EX_RIGHT) ? TPM_RIGHTALIGN : TPM_LEFTALIGN;
+
+
+	int nCommand = CXTPCommandBars::TrackPopupMenu(pPopupBar, TPM_NONOTIFY | TPM_RECURSE | TPM_RETURNCMD | nAlign, point.x, point.y, this, NULL, this);
+
+	if (nCommand > 0)
 	{
-		PeekMessage(&msg, NULL, msg.message, msg.message, PM_REMOVE);
-		return TRUE;
+		OnCommand(nCommand, 0);
 	}
 
-	return FALSE;
-}
+	pMouseManager->LockMouseMove();
 
-int CXTPSkinPopupMenuState::FindNextItem(CXTPSkinPopupMenu* pPopupMenu, int nItem, BOOL bForward, UINT nFlags) const
-{
-	int nCount = pPopupMenu->GetCount();
-	int nStart = nItem;
+	pPopupBar->InternalRelease();
 
-	if ((nItem < 0) && bForward)
-		// going forward from beginning -- stop after last menu item
-		nItem = nStart = nCount;
-	else if ((nItem >= nCount) && (!bForward))
-		// going backward from end -- stop after first menu item
-		nItem = nStart = -1;
-
-
-	if (!nCount)
-		return MENU_NOITEM;
-
-	BOOL bFirst = TRUE;
-
-	for (;;)
+	if (pParentBar->GetSafeHwnd())
 	{
-		nItem += bForward ? +1 : -1;
-
-		if (nItem == nStart && !bFirst)
-			return MENU_NOITEM;
-
-		if (nItem >= nCount)
-		{
-			if (nFlags)
-				return MENU_NOITEM;
-
-			nItem = -1;
-			continue;
-		}
-		else if (nItem < 0)
-		{
-			if (nFlags)
-				return MENU_NOITEM;
-
-			nItem = nCount;
-			continue;
-		}
-
-		bFirst = FALSE;
-
-		CXTPSkinPopupMenuItem* pItem = pPopupMenu->GetItem(nItem);
-
-		if (pItem->IsSeparator())
-			continue;
-
-		if (pPopupMenu->m_bMenuBar && !pPopupMenu->m_bSysMenu && pItem->IsMDISysButton())
-			continue;
-
-		break;
+		pParentBar->Redraw();
+		pParentBar->UpdateWindow();
 	}
-
-	return nItem;
-}
-
-void CXTPSkinPopupMenuState::OnKeyDown(CXTPSkinPopupMenu* pPopupMenu, WPARAM nKey)
-{
-	if (m_bButtonDown)
-		return;
-
-	switch (nKey)
-	{
-		case VK_MENU:
-		case VK_F10:
-			Dismiss();
-			return;
-
-		case VK_ESCAPE:
-
-			if (pPopupMenu->m_bMenuBar || pPopupMenu == m_pRootPopup || pPopupMenu->m_pPrevPopup == NULL)
-			{
-				Dismiss();
-			}
-			else
-			{
-				CXTPSkinPopupMenu* pPrevPopup = pPopupMenu->m_pPrevPopup;
-				CloseHierarchy(pPrevPopup);
-
-				pPrevPopup->m_bDropNextPopup = FALSE;
-			}
-			return;
-
-		case VK_UP:
-		case VK_DOWN:
-
-			if (pPopupMenu->m_bMenuBar)
-			{
-				OpenHierarchy(pPopupMenu);
-			}
-			else
-			{
-				int nItem = FindNextItem(pPopupMenu, pPopupMenu->m_nSelected, (nKey == VK_UP ? FALSE : TRUE), 0);
-				SelectItem(pPopupMenu, nItem);
-			}
-
-			return;
-
-		case VK_LEFT:
-		case VK_RIGHT:
-			{
-				int nScreenKey = GetWindowLong(pPopupMenu->m_hWnd, GWL_EXSTYLE) & WS_EX_LAYOUTRTL ? (nKey == VK_LEFT ? VK_RIGHT : VK_LEFT) : (int)nKey;
-
-				if (!pPopupMenu->m_bMenuBar && nScreenKey == VK_RIGHT && !GetNextPopup(pPopupMenu))
-				{
-					if (OpenHierarchy(pPopupMenu))
-						return;
-				}
-				BOOL bHierarchyWasDropped = FALSE;
-
-				if (GetNextPopup(pPopupMenu))
-				{
-					bHierarchyWasDropped = TRUE;
-
-					if (nScreenKey == VK_LEFT && !pPopupMenu->m_bMenuBar)
-					{
-						CloseHierarchy(pPopupMenu);
-						return;
-					}
-				}
-				else
-				{
-					if (pPopupMenu->m_bDropNextPopup) bHierarchyWasDropped = TRUE;
-				}
-
-
-				if (pPopupMenu->m_pPrevPopup)
-				{
-					OnKeyDown(pPopupMenu->m_pPrevPopup, nKey);
-					return;
-				}
-
-				if (pPopupMenu->m_bMenuBar)
-				{
-					int nItem = FindNextItem(pPopupMenu, pPopupMenu->m_nSelected, (nScreenKey == VK_RIGHT  ? TRUE : FALSE), 1);
-
-					if (nItem == MENU_NOITEM)
-					{
-						if (m_pAlternatePopup)
-						{
-							if (SwitchToAlternateMenu())
-							{
-								pPopupMenu = m_pRootPopup;
-								nItem = FindNextItem(pPopupMenu, MENU_NOITEM, (nScreenKey == VK_RIGHT ? TRUE : FALSE), 0);
-							}
-						}
-
-					}
-
-					if (nItem != MENU_NOITEM)
-					{
-						if (GetNextPopup(pPopupMenu))
-						{
-							CloseHierarchy(pPopupMenu);
-						}
-
-						SelectItem(pPopupMenu, nItem);
-
-						if (bHierarchyWasDropped)
-						{
-							OpenHierarchy(pPopupMenu);
-						}
-					}
-				}
-			}
-			return;
-
-		case VK_RETURN:
-			{
-				CXTPSkinPopupMenuItem* pItem = pPopupMenu->GetItem(pPopupMenu->m_nSelected);
-				if (!pItem)
-					return;
-
-				if (!pItem->IsEnabled())
-				{
-					Dismiss();
-					return;
-				}
-
-				if (pItem->GetPopupMenu())
-				{
-					OpenHierarchy(pPopupMenu);
-					return;
-				}
-
-				DismissNotify(pPopupMenu, pPopupMenu->m_nSelected);
-
-			}
-			return;
-	}
-}
-
-int CXTPSkinPopupMenuState::FindChar(CXTPSkinPopupMenu* pPopupMenu, WPARAM nKey, int nItem)
-{
-	if (!nKey)
-		return MENU_NOITEM;
-
-	CString sKey((TCHAR)nKey);
-	sKey.MakeLower();
-
-	int nResult = MENU_NOITEM;
-	int nFirst = MENU_NOITEM;
-
-	int nStart = nItem;
-
-	if (nStart < 0)
-		nStart = FindNextItem(pPopupMenu, -1, FALSE, 0);
-
-	do
-	{
-		int nPrev = nItem;
-
-		nItem = FindNextItem(pPopupMenu, nItem, TRUE, 0);
-		if (nItem == MENU_NOITEM || nItem == nFirst)
-			break;
-
-		if (nFirst == MENU_NOITEM)
-			nFirst = nItem;
-
-		CString str = pPopupMenu->GetMenuString(nItem);
-		if (!str.IsEmpty())
-		{
-			str.MakeLower();
-
-			int nIndex = str.Find(_T('&'));
-			if (nIndex == -1)
-			{
-				if (str[0] == sKey[0] && nResult == MENU_NOITEM)
-					nResult = nItem;
-			}
-			else
-			{
-				if (str[nIndex + 1] == sKey[0])
-				{
-					return nItem;
-				}
-			}
-		}
-
-		if (nItem == nPrev)
-			break;
-
-	} while (nItem != nStart);
-
-	return nResult;
-}
-
-void CXTPSkinPopupMenuState::OnChar(CXTPSkinPopupMenu* pPopupMenu, WPARAM nKey)
-{
-	int nItem = FindChar(pPopupMenu, nKey, pPopupMenu->m_nSelected);
-	BOOL bExecute = FALSE;
-
-	if (nItem != MENU_NOITEM)
-	{
-		int nFirstItem = nItem;
-
-		while (!pPopupMenu->GetItem(nItem)->IsEnabled())
-		{
-			nItem = FindChar(pPopupMenu, nKey, nItem);
-
-			if (nItem == nFirstItem)
-			{
-				Dismiss();
-				return;
-			}
-		}
-		int nItemExecute = nItem;
-
-		do
-		{
-			nItem = FindChar(pPopupMenu, nKey, nItem);
-
-		} while (!pPopupMenu->GetItem(nItem)->IsEnabled() && (nItem != nFirstItem));
-
-		if (nFirstItem == nItem || nItem == nItemExecute)
-			bExecute = TRUE;
-
-		nItem = nItemExecute;
-	}
-
-	if (nItem == MENU_NOITEM && pPopupMenu->m_bMenuBar && nKey == ' ')
-	{
-		if (pPopupMenu->m_bSysMenu)
-		{
-			nItem = 0;
-			bExecute = TRUE;
-		}
-		else if (m_pAlternatePopup)
-		{
-			if (SwitchToAlternateMenu())
-			{
-				OnChar(m_pRootPopup, nKey);
-			}
-			return;
-		}
-	}
-
-	if (nItem == MENU_NOITEM && pPopupMenu->m_bMenuBar && m_pAlternatePopup && m_pAlternatePopup != pPopupMenu)
-	{
-		nItem = FindChar(m_pAlternatePopup, nKey, 0);
-		if (nItem != MENU_NOITEM)
-		{
-			if (SwitchToAlternateMenu())
-			{
-				OnChar(m_pRootPopup , nKey);
-			}
-			return;
-		}
-	}
-
-	if (nItem == MENU_NOITEM && pPopupMenu->m_hWndNotify && !m_bNoNotify)
-	{
-		int nFlag = (pPopupMenu->m_bSysMenu ? MF_SYSMENU : 0) | (pPopupMenu->m_bMenuBar ? 0 : MF_POPUP);
-
-		LRESULT lResult = ::SendMessage(pPopupMenu->m_hWndNotify, WM_MENUCHAR, MAKELONG((WORD)nKey, (WORD)nFlag), (LPARAM)pPopupMenu->m_hMenu);
-
-		switch (HIWORD(lResult))
-		{
-		case MNC_IGNORE:
-			MessageBeep(0);
-
-			if (nFlag & MF_POPUP)
-				return;
-
-			Dismiss();
-			return;
-
-		case MNC_CLOSE:
-			Dismiss();
-			return;
-
-		case MNC_EXECUTE:
-			bExecute = TRUE;
-
-		case MNC_SELECT:
-			nItem = (short)LOWORD(lResult);
-			if (nItem < 0 || nItem < pPopupMenu->GetCount())
-				return;
-
-			break;
-		}
-	}
-
-	if (nItem != MENU_NOITEM)
-	{
-		SelectItem(pPopupMenu, nItem);
-
-		if (bExecute)
-		{
-			OnKeyDown(pPopupMenu, VK_RETURN);
-		}
-	}
-}
-
-BOOL CXTPSkinPopupMenuState::SwitchToAlternateMenu()
-{
-	if (!m_pRootPopup->m_bMenuBar || !m_pAlternatePopup)
-		return FALSE;
-
-	SelectItem(m_pRootPopup, MENU_NOITEM);
-
-	CXTPSkinPopupMenu* pAlternatePopup = m_pAlternatePopup;
-	m_pAlternatePopup = m_pRootPopup;
-	m_pRootPopup = pAlternatePopup;
-
-	m_pRootPopup->m_bDropNextPopup = m_pAlternatePopup->m_bDropNextPopup;
 
 	return TRUE;
 }
 
-BOOL CXTPSkinPopupMenuState::HandleMenuMessage(LPMSG lpMsg)
+BOOL CXTPEdit::CreateEdit(DWORD dwStyle, CWnd* pParentWnd)
 {
-	switch (lpMsg->message)
+	if (GetRichEditContext().m_hInstance)
 	{
-		case WM_RBUTTONDOWN:
-		case WM_NCRBUTTONDOWN:
-			if (!m_bRightButton)
-			{
-				m_nFocus = CXTPSkinPopupMenuState::focusMouse;
-				CPoint point;
-				GetCursorPos(&point);
+		BOOL bResult = CWnd::Create(GetRichEditContext().m_strClassName, 0, dwStyle, CRect(0, 0, 0, 0), pParentWnd, 0);
+		SendMessage(EM_SETEVENTMASK, 0, ENM_CHANGE);
+		SendMessage(EM_SETTEXTMODE, TM_PLAINTEXT | TM_SINGLELEVELUNDO);
 
-				int nItem = 0;
-				CXTPSkinPopupMenu* pMenuHit = FindMenu(point, m_pRootPopup, &nItem);
-
-				if (!pMenuHit)
-				{
-					Dismiss();
-					return TRUE;
-				}
-
-				RemoveMessage(lpMsg->message);
-				return TRUE;
-			}
-
-		case WM_LBUTTONDBLCLK:
-		case WM_NCLBUTTONDBLCLK:
-		{
-			CPoint point;
-			GetCursorPos(&point);
-
-			int nItem = 0;
-			CXTPSkinPopupMenu* pMenuHit = FindMenu(point, m_pRootPopup, &nItem);
-
-			if (!pMenuHit)
-			{
-				Dismiss();
-				return TRUE;
-			}
-
-			OnButtonDblClick(pMenuHit, nItem);
-		}
-		return TRUE;
-
-		case WM_LBUTTONDOWN:
-		case WM_NCLBUTTONDOWN:
-		{
-			m_nFocus = CXTPSkinPopupMenuState::focusMouse;
-			CPoint point;
-			GetCursorPos(&point);
-
-			int nItem = 0;
-			CXTPSkinPopupMenu* pMenuHit = FindMenu(point, m_pRootPopup, &nItem);
-
-			if (!pMenuHit && !nItem)
-			{
-				Dismiss();
-				return TRUE;
-			}
-
-			if (pMenuHit == m_pAlternatePopup)
-			{
-				SwitchToAlternateMenu();
-			}
-
-			if (pMenuHit)
-			{
-				OnButtonDown(pMenuHit, nItem, TRUE);
-			}
-
-			RemoveMessage(lpMsg->message);
-
-			return TRUE;
-		}
-		case WM_RBUTTONUP:
-		case WM_NCRBUTTONUP:
-			if (!m_bRightButton)
-			{
-				if (m_bButtonDown)
-				{
-					RemoveMessage(lpMsg->message);
-					return TRUE;
-				}
-
-				return TRUE;
-			}
-
-		case WM_LBUTTONUP:
-		case WM_NCLBUTTONUP:
-			{
-				if (!m_bButtonDown)
-					return TRUE;
-
-
-				CPoint point;
-				GetCursorPos(&point);
-
-				int nItem = 0;
-				CXTPSkinPopupMenu* pMenuHit = FindMenu(point, m_pRootPopup, &nItem);
-
-
-				if (m_pRootPopup->m_bMenuBar)
-				{
-					if (pMenuHit == NULL)
-					{
-						Dismiss();
-						return TRUE;
-					}
-				}
-				else
-				{
-					if (pMenuHit == NULL)
-					{
-						if (!m_bFirstClick)
-						{
-							Dismiss();
-							return TRUE;
-						}
-					}
-					m_bFirstClick = FALSE;
-				}
-
-				if (pMenuHit)
-				{
-					OnButtonUp(pMenuHit, nItem);
-				}
-
-				m_bButtonDown = FALSE;
-
-				return TRUE;
-			}
-
-		case WM_MOUSEMOVE:
-		case WM_NCMOUSEMOVE:
-			{
-				CPoint point;
-				GetCursorPos(&point);
-
-				OnMouseMove(point);
-				return TRUE;
-			}
-
-		case WM_TIMER:
-			{
-				CXTPSkinPopupMenu* pPopupMenu = FindPopup(lpMsg->hwnd);
-				if (pPopupMenu)
-				{
-					if (lpMsg->wParam == TIMERID_MENUSHOW && pPopupMenu->m_nShowTimer == lpMsg->wParam)
-					{
-						pPopupMenu->m_bToggle = FALSE;
-						OpenHierarchy(pPopupMenu);
-					}
-					if (lpMsg->wParam == TIMERID_MENUHIDE && pPopupMenu->m_nHideTimer == lpMsg->wParam)
-					{
-						pPopupMenu->m_bToggle = FALSE;
-						CloseHierarchy(pPopupMenu);
-					}
-					return TRUE;
-				}
-
-				return FALSE;
-			}
-
-		case WM_KEYDOWN:
-		case WM_SYSKEYDOWN:
-			{
-				if (m_bButtonDown)
-					return TRUE;
-
-				m_nFocus = focusKeyboard;
-
-				switch (lpMsg->wParam)
-				{
-					case VK_UP:
-					case VK_DOWN:
-					case VK_LEFT:
-					case VK_RIGHT:
-					case VK_RETURN:
-					case VK_CANCEL:
-					case VK_ESCAPE:
-					case VK_MENU:
-					case VK_F10:
-					case VK_F1:
-						OnKeyDown(GetActivePopup(), lpMsg->wParam);
-						break;
-
-					case VK_TAB:
-						if (m_pRootPopup->m_bMenuBar && !GetNextPopup(m_pRootPopup))
-						{
-							Dismiss();
-							return TRUE;
-						}
-
-					default:
-						TranslateMessage(lpMsg);
-						break;
-				}
-				return TRUE;
-			}
-
-		case WM_CHAR:
-		case WM_SYSCHAR:
-			OnChar(GetActivePopup(), lpMsg->wParam);
-			return TRUE;
-
-		case WM_SYSKEYUP:
-			return TRUE;
-
-		case WM_KEYUP:
-			TranslateMessage(lpMsg);
-			return TRUE;
+		return bResult;
 	}
+
+	return Create(dwStyle, CRect(0, 0, 0, 0), pParentWnd, 0);
+}
+
+BOOL CXTPEdit::IsDialogCode(UINT nChar, LPARAM lParam)
+{
+	const BOOL bNavigateKeys = (nChar == VK_BACK) || (nChar >= VK_PRIOR && nChar <= VK_DELETE) ||
+		((nChar == 'C' || nChar == 'V' || nChar == 'X' || nChar == 'Z') && (GetKeyState(VK_CONTROL) < 0));
+
+	if (!bNavigateKeys)
+		return FALSE;
+
+	MSG msg;
+	msg.message = WM_KEYDOWN;
+	msg.hwnd = m_hWnd;
+	msg.wParam = (WPARAM)nChar;
+	msg.lParam = lParam;
+
+	if (IsDialogMessage(&msg))
+		return TRUE;
 
 	return FALSE;
 }
 
-BOOL CXTPSkinPopupMenuState::ContinueLoop() const
+void CXTPEdit::SetWindowTextEx(LPCTSTR lpszString)
 {
-	return (::GetCapture() == m_hWndCapture) && (m_pRootPopup != NULL) && m_bInsideMenuLoop;
+	m_bIgonoreEditChanged = TRUE;
+	SetWindowText(0);
+	m_bIgonoreEditChanged = FALSE;
+	SetWindowText(lpszString);
 }
 
-void CXTPSkinPopupMenuState::EndMenuLoop()
+
+void CXTPEdit::GetWindowTextEx(CString& rString)
 {
-	Dismiss();
-}
-
-void CXTPSkinPopupMenuState::RunLoop(LPARAM lParam)
-{
-
-	CPoint pt(0, 0);
-
-	m_bInsideMenuLoop = TRUE;
-	m_bDismiss = FALSE;
-	BOOL bSendIdle = TRUE;
-
-	if (!m_bMenuStarted)
+#ifdef _UNICODE
+	if (GetRichEditContext().m_bRichEdit2)
 	{
-		if (!StartMenu(focusMouse))
+		GETTEXTLENGTHEX gtl =
 		{
-			EndMenuLoop();
-			return;
+			GTL_DEFAULT, 1200
+		};
+
+		int nLen = (int)SendMessage(EM_GETTEXTLENGTHEX, (WPARAM)&gtl);
+
+		if (nLen > 0)
+		{
+			GETTEXTEX gt =
+			{
+				(nLen + 1) * sizeof(TCHAR), GT_DEFAULT, 1200, 0, 0
+			};
+
+			SendMessage(EM_GETTEXTEX, (WPARAM)&gt, (LPARAM)rString.GetBufferSetLength(nLen));
+			rString.ReleaseBuffer();
+		}
+		else
+		{
+			rString.Empty();
+		}
+	}
+	else
+#endif
+	{
+		GetWindowText(rString);
+	}
+}
+
+BEGIN_MESSAGE_MAP(CXTPEdit, CEdit)
+	ON_MESSAGE_VOID(WM_IME_STARTCOMPOSITION, OnImeStartComposition)
+	ON_MESSAGE_VOID(WM_IME_ENDCOMPOSITION, OnImeEndComposition)
+	ON_WM_KILLFOCUS()
+	ON_WM_PAINT()
+END_MESSAGE_MAP()
+
+void CXTPEdit::OnImeStartComposition()
+{
+	Default();
+	m_bImeMode = TRUE;
+}
+
+void CXTPEdit::OnImeEndComposition()
+{
+	Default();
+	m_bImeMode = FALSE;
+}
+
+void CXTPEdit::OnKillFocus(CWnd* pNewWnd)
+{
+	CEdit::OnKillFocus(pNewWnd);
+	m_bImeMode = FALSE;
+}
+
+void CXTPEdit::OnPaint()
+{
+	Default();
+
+	if (m_bComposited)
+	{
+		CClientDC dc(this);
+		CXTPPaintManager::FillCompositeAlpha(&dc, CXTPClientRect(this));
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlComboBoxAutoCompleteWnd
+
+
+HHOOK CXTPControlComboBoxAutoCompleteWnd::m_hHookMessage = 0;
+CXTPControlComboBoxAutoCompleteWnd* CXTPControlComboBoxAutoCompleteWnd::m_pWndMonitor = 0;
+
+#define WM_XTP_SHELLAUTOCOMPLETESTART (WM_XTP_COMMANDBARS_BASE + 30)
+
+CXTPControlComboBoxAutoCompleteWnd::CXTPControlComboBoxAutoCompleteWnd()
+{
+	m_hWndAutoComplete = 0;
+	m_hWndEdit = 0;
+}
+
+CXTPControlComboBoxAutoCompleteWnd::~CXTPControlComboBoxAutoCompleteWnd()
+{
+	SetupMessageHook(FALSE);
+	SetAutoCompeteHandle(NULL);
+}
+
+BOOL CXTPControlComboBoxAutoCompleteWnd::IsDialogCode(UINT nChar, LPARAM lParam)
+{
+	if (!m_hWndAutoComplete)
+		return FALSE;
+
+	if (! ((nChar == VK_UP || nChar == VK_DOWN || nChar == VK_NEXT || nChar == VK_PRIOR) && (GetKeyState(VK_MENU) >= 0)))
+		return FALSE;
+
+	HWND hWnd = ::GetWindow(m_hWndAutoComplete, GW_CHILD);
+	hWnd = ::GetWindow(hWnd, GW_HWNDLAST);
+
+	MSG msg;
+	msg.message = WM_KEYDOWN;
+	msg.hwnd = hWnd;
+	msg.wParam = (WPARAM)nChar;
+	msg.lParam = lParam;
+
+	if (::IsDialogMessage(m_hWndAutoComplete, &msg))
+		return TRUE;
+
+	return FALSE;
+}
+
+
+HRESULT CXTPControlComboBoxAutoCompleteWnd::ShellAutoComplete(HWND hEdit, DWORD dwFlags)
+{
+	m_hWndEdit = hEdit;
+	HRESULT hResult = E_FAIL;
+
+	HMODULE hLib = LoadLibraryA("shlwapi.dll");
+	if (hLib)
+	{
+		typedef HRESULT (STDAPICALLTYPE *SHAUTOCOMPLETE)(HWND hwndEdit, DWORD dwFlags);
+
+		SHAUTOCOMPLETE _SHAutoComplete = NULL;
+		_SHAutoComplete = (SHAUTOCOMPLETE)GetProcAddress(hLib, "SHAutoComplete");
+
+		if (_SHAutoComplete)
+		{
+			hResult = _SHAutoComplete(hEdit, dwFlags);
 		}
 
-		if (m_pRootPopup->m_bMenuBar)
+		FreeLibrary(hLib);
+	}
+
+	return hResult;
+}
+
+void CXTPControlComboBoxAutoCompleteWnd::CloseWindow()
+{
+	if (m_hWndAutoComplete)
+	{
+		ShowWindow(m_hWndAutoComplete, SW_HIDE);
+	}
+}
+
+void CXTPControlComboBoxAutoCompleteWnd::SetAutoCompeteHandle(HWND hWnd)
+{
+	if (m_hWndAutoComplete == hWnd)
+		return;
+
+	if (hWnd)
+	{
+		XTPMouseManager()->AddTrustedWindow(hWnd);
+	}
+	else
+	{
+		XTPMouseManager()->RemoveTrustedWindow(m_hWndAutoComplete);
+	}
+
+	m_hWndAutoComplete = hWnd;
+}
+
+void CXTPControlComboBoxAutoCompleteWnd::SetupMessageHook(BOOL bSetup)
+{
+	if (bSetup && m_hHookMessage == 0)
+	{
+		ASSERT(m_pWndMonitor == NULL);
+		m_hHookMessage = SetWindowsHookEx(WH_CALLWNDPROC, CallWndProc, AfxGetInstanceHandle(), GetCurrentThreadId());
+		XTPKeyboardManager()->HookKeyboard(this);
+		m_pWndMonitor = this;
+	}
+
+	if (!bSetup && m_hHookMessage && (m_pWndMonitor == this))
+	{
+		UnhookWindowsHookEx(m_hHookMessage);
+		XTPKeyboardManager()->UnhookKeyboard(m_pWndMonitor);
+		m_hHookMessage = 0;
+		m_pWndMonitor = NULL;
+	}
+
+	if (!bSetup)
+	{
+		SetAutoCompeteHandle(NULL);
+	}
+}
+
+int CXTPControlComboBoxAutoCompleteWnd::OnHookMessage(HWND /*hWnd*/, UINT nMessage, WPARAM& /*wParam*/, LPARAM& /*lParam*/, LRESULT& /*lResult*/)
+{
+	if (nMessage == WM_MOUSEWHEEL && m_hWndAutoComplete)
+		return FALSE_EXIT;
+
+	return FALSE;
+}
+
+LRESULT CALLBACK CXTPControlComboBoxAutoCompleteWnd::CallWndProc(int code, WPARAM wParam, LPARAM lParam)
+{
+	CWPSTRUCT* pMSG = (CWPSTRUCT*)lParam;
+
+	if (pMSG && m_pWndMonitor && pMSG->message == WM_WINDOWPOSCHANGING)
+	{
+		const HWND& hWndAutoComplete = m_pWndMonitor->m_hWndAutoComplete;
+		WINDOWPOS* pWindowPos = (WINDOWPOS*)pMSG->lParam;
+
+		if ((hWndAutoComplete != 0 && hWndAutoComplete == pWindowPos->hwnd) && (pWindowPos->flags & SWP_HIDEWINDOW))
+		{
+			m_pWndMonitor->SetAutoCompeteHandle(NULL);
+		}
+		else if ((hWndAutoComplete == 0) && (pWindowPos->flags & SWP_SHOWWINDOW))
+		{
+			HWND hWnd = pWindowPos->hwnd;
+			TCHAR szClassName[255];
+			::GetClassName(hWnd, szClassName, 255);
+
+			if (_tcscmp(szClassName, _T("Auto-Suggest Dropdown")) == 0)
+			{
+				m_pWndMonitor->SetAutoCompeteHandle(hWnd);
+				PostMessage(m_pWndMonitor->m_hWndEdit, WM_XTP_SHELLAUTOCOMPLETESTART, 0, 0);
+			}
+		}
+	}
+
+	return CallNextHookEx(m_hHookMessage, code, wParam, lParam);
+}
+
+
+
+// CXTPControlComboBox
+
+IMPLEMENT_XTP_CONTROL(CXTPControlComboBox, CXTPControlPopup)
+
+CXTPControlComboBox::CXTPControlComboBox(CXTPCommandBars* pCommandBars)
+{
+	EnableAutomation();
+
+	m_controlType = xtpControlComboBox;
+	m_bDropDown = FALSE;
+	m_comboStyle = xtpComboNormal;
+	m_nWidth = 100;
+	m_nLabelWidth = 0;
+	m_nThumbWidth = 0;
+	m_pEdit = NULL;
+	m_strEditText = _T("");
+	m_nCurSel = m_nLastSel = -1;
+	m_bDelayReposition = FALSE;
+	m_bDelayDestroy = FALSE;
+	m_bIgnoreAutoComplete = m_bAutoComplete = FALSE;
+	m_bFocused = FALSE;
+	m_nDropDownItemCount = 12;
+	m_bIgnoreSelection = FALSE;
+
+	m_pCommandBar = new CXTPControlComboBoxList();
+	m_pCommandBar->SetCommandBars(pCommandBars);
+
+	((CXTPControlComboBoxList*)m_pCommandBar)->CreateListBox();
+
+	m_dwShellAutoCompleteFlags = 0;
+
+	m_pAutoCompleteWnd = NULL;
+	m_nEditIconId = 0;
+	m_bSelEndOk = FALSE;
+	m_bEditChanged = TRUE;
+
+	m_dwEditStyle = 0;
+}
+
+CXTPControlComboBox::~CXTPControlComboBox()
+{
+	if (m_pEdit)
+	{
+		delete m_pEdit;
+	}
+	SAFE_DELETE(m_pAutoCompleteWnd);
+}
+
+CString CXTPControlComboBox::GetEditText() const
+{
+	CString strEditText = _GetEditText();
+
+	return strEditText == GetEditHint() ? _T("") : strEditText;
+}
+
+CString CXTPControlComboBox::_GetEditText() const
+{
+	if (m_pEdit && m_pEdit->GetSafeHwnd() && m_bEditChanged)
+	{
+		m_pEdit->GetWindowTextEx(m_strEditText);
+		m_bEditChanged = FALSE;
+	}
+
+	return m_strEditText;
+}
+
+void CXTPControlComboBox::SetEditText(const CString& strText)
+{
+	_SetEditText(strText.IsEmpty() ? GetEditHint() : strText);
+}
+
+void CXTPControlComboBox::_SetEditText(const CString& strText)
+{
+	if (m_pEdit && m_pEdit->GetSafeHwnd() && _GetEditText() != strText)
+	{
+		m_pEdit->SetWindowTextEx(strText);
+	}
+	m_strEditText = strText;
+	m_bEditChanged = FALSE;
+}
+
+void CXTPControlComboBox::SetEditHint(LPCTSTR lpszEditHint)
+{
+	if (!GetEditHint().IsEmpty() && _GetEditText() == GetEditHint())
+	{
+		_SetEditText(_T(""));
+	}
+
+	m_strEditHint = lpszEditHint;
+
+	if (_GetEditText().IsEmpty() && !GetEditHint().IsEmpty())
+	{
+		_SetEditText(GetEditHint());
+	}
+}
+
+BOOL CXTPControlComboBox::IsImageVisible() const
+{
+	if (GetParent()->GetType() == xtpBarTypePopup)
+		return GetImage(0) != NULL;
+
+	BOOL bImageVisible = (CXTPControl::GetStyle() == xtpButtonIcon || CXTPControl::GetStyle() == xtpButtonIconAndCaption)
+		&& (GetImage(0) != NULL);
+
+	return bImageVisible;
+}
+
+BOOL CXTPControlComboBox::IsCaptionVisible() const
+{
+	if (GetParent()->GetType() == xtpBarTypePopup)
+		return TRUE;
+
+	if (GetCaption().IsEmpty())
+		return FALSE;
+
+	XTPButtonStyle buttonStyle = CXTPControl::GetStyle();
+
+	if ((buttonStyle == xtpButtonCaption) || (buttonStyle == xtpButtonIconAndCaption) || (buttonStyle == xtpButtonIconAndCaptionBelow))
+		return TRUE;
+
+	return m_comboStyle == xtpComboLabel;
+}
+
+CString CXTPControlComboBox::GetEditHint() const
+{
+	return !m_strEditHint.IsEmpty() ? m_strEditHint : m_pAction ? m_pAction->GetEditHint() : _T("");
+}
+
+void CXTPControlComboBox::UpdatePopupSelection()
+{
+	CEdit* pEdit = GetEditCtrl();
+	CXTPControlComboBoxPopupBar* pPopupBar = GetComboBoxPopupBar();
+
+	if (!m_bIgnoreSelection && pEdit && pEdit->GetSafeHwnd() && pPopupBar)
+	{
+		CString strWindowText = _GetEditText();
+
+		int nIndex = pPopupBar->FindStringExact(0, strWindowText);
+		if (nIndex != LB_ERR)
+			pPopupBar->SetCurSel(nIndex);
+		else
+		{
+			nIndex = pPopupBar->FindString(0, strWindowText);
+			pPopupBar->SetTopIndex(nIndex);
+			pPopupBar->SetCurSel(nIndex);
+			pPopupBar->SetCurSel(-1);
+		}
+	}
+}
+
+void CXTPControlComboBox::OnEditChanged()
+{
+	CEdit* pEdit = GetEditCtrl();
+
+	CXTPControlComboBoxPopupBar* pPopupBar = GetComboBoxPopupBar();
+
+	if (!m_bIgnoreSelection && m_bAutoComplete && !m_bIgnoreAutoComplete && pEdit && pEdit->GetSafeHwnd() && pPopupBar)
+	{
+		CString strWindowText = _GetEditText();
+		int nLength = strWindowText.GetLength();
+
+		if (nLength > 0)
+		{
+			// Currently selected range
+			int nStart = 0, nEnd = 0;
+			pEdit->GetSel(nStart, nEnd);
+
+			if (nStart == nEnd && nLength == nEnd)
+			{
+				int nIndex = pPopupBar->FindString(0, strWindowText);
+				if (nIndex != LB_ERR)
+				{
+					CString strWindowTextNew;
+					pPopupBar->GetText(nIndex, strWindowTextNew);
+
+					_SetEditText(strWindowTextNew);
+					pEdit->SetSel(strWindowTextNew.GetLength(), nLength);
+				}
+
+			}
+		}
+		m_bIgnoreAutoComplete = TRUE;
+	}
+
+	UpdatePopupSelection();
+
+	NotifySite(CBN_EDITCHANGE);
+}
+
+
+
+void CXTPControlComboBox::OnSelChanged()
+{
+	m_bIgnoreSelection = TRUE;
+	_SetEditText(GetListBoxText());
+	m_bIgnoreSelection = FALSE;
+
+	RedrawParent();
+
+	NotifySite(CBN_SELCHANGE);
+}
+
+BOOL CXTPControlComboBox::OnHookMouseWheel(UINT /*nFlags*/, short zDelta, CPoint /*pt*/)
+{
+	if (!IsFocused())
+		return FALSE;
+
+	if (GetDroppedState())
+		return FALSE;
+
+	if (m_pAutoCompleteWnd)
+		return FALSE;
+
+	if (!IsValidList())
+		return FALSE;
+
+	((CXTPControlComboBoxPopupBar*)m_pCommandBar)->ProcessHookKeyDown(this, zDelta > 0 ? VK_UP : VK_DOWN, 0);
+	return TRUE;
+}
+
+BOOL CXTPControlComboBox::OnHookKeyDown(UINT nChar, LPARAM lParam)
+{
+	ASSERT(IsFocused());
+
+	if (!IsFocused())
+		return FALSE;
+
+	m_bIgnoreAutoComplete = (nChar == VK_DELETE) || (nChar == VK_BACK);
+
+	if (m_pEdit && m_pEdit->m_bImeMode)
+		return FALSE_EXIT;
+
+	if (nChar == VK_TAB && ((m_pAutoCompleteWnd == NULL) || ((m_dwShellAutoCompleteFlags & SHACF_USETAB) == 0)))
+		return FALSE;
+
+	if (nChar == VK_RETURN)
+		return FALSE;
+
+	if (nChar == VK_ESCAPE)
+	{
+		m_pCommandBar->OnTrackLost();
+
+		SetCurSel(m_nLastSel);
+		SetEditText(m_strLastText);
+
+		SetFocused(FALSE);
+
+		return GetParent()->GetType() == xtpBarTypePopup;
+	}
+
+	if (m_pEdit && m_pEdit->GetSafeHwnd() && GetKeyState(VK_MENU) < 0 && GetKeyState(VK_CONTROL) >= 0)
+	{
+		CXTPCommandBars* pCommandBars = m_pParent->GetCommandBars();
+		if (pCommandBars && pCommandBars->OnFrameAccel((TCHAR)nChar))
+			return TRUE;
+	}
+
+	if ((nChar == VK_F4 && GetKeyState(VK_MENU) >= 0) || ((nChar == VK_UP || nChar == VK_DOWN) && GetKeyState(VK_MENU) < 0))
+	{
+		OnClick(FALSE);
+		return TRUE;
+	}
+
+	if (m_pAutoCompleteWnd && m_pAutoCompleteWnd->IsDialogCode(nChar, lParam))
+		return TRUE;
+
+	if ((!m_pEdit || (nChar == VK_UP || nChar == VK_DOWN || nChar == VK_NEXT || nChar == VK_PRIOR) && (GetKeyState(VK_MENU) >= 0)) && IsValidList())
+	{
+		((CXTPControlComboBoxPopupBar*)m_pCommandBar)->ProcessHookKeyDown(this, nChar, lParam);
+		return TRUE;
+	}
+
+	if (m_pEdit && m_pEdit->GetSafeHwnd() && m_pEdit->IsDialogCode(nChar, lParam))
+	{
+		return TRUE;
+	}
+
+	return FALSE_EXIT;
+}
+
+BOOL CXTPControlComboBox::GetDropDownListStyle() const
+{
+	return m_pEdit != NULL;
+}
+
+CXTPControlComboBoxEditCtrl* CXTPControlComboBox::CreateEditControl()
+{
+	return new CXTPControlComboBoxEditCtrl();
+}
+
+void CXTPControlComboBox::SetDropDownListStyle(BOOL bSet)
+{
+	m_bDropDown = bSet;
+
+	if (bSet && m_pEdit == NULL)
+	{
+		m_pEdit = CreateEditControl();
+		m_pEdit->m_pControl = this;
+	}
+	else if (!bSet && m_pEdit != NULL)
+	{
+		delete m_pEdit;
+		m_pEdit = NULL;
+	}
+}
+
+void CXTPControlComboBox::EnableShellAutoComplete(DWORD dwFlags /*= SHACF_FILESYSTEM | SHACF_URLALL*/)
+{
+	m_dwShellAutoCompleteFlags = dwFlags;
+	SAFE_DELETE(m_pAutoCompleteWnd);
+
+	if (m_pEdit->GetSafeHwnd() && dwFlags)
+	{
+		m_pAutoCompleteWnd = new CXTPControlComboBoxAutoCompleteWnd();
+
+		if (FAILED(m_pAutoCompleteWnd->ShellAutoComplete(m_pEdit->GetSafeHwnd(), m_dwShellAutoCompleteFlags)))
+		{
+			SAFE_DELETE(m_pAutoCompleteWnd);
+		}
+	}
+}
+
+void CXTPControlComboBox::EnableAutoComplete(BOOL bAutoComplete /*= TRUE*/)
+{
+	m_bAutoComplete = bAutoComplete;
+}
+
+
+void CXTPControlComboBox::SetRect(CRect rcControl)
+{
+	CString strEditText = GetEditText();
+
+	if (m_bDelayDestroy && m_pEdit && m_pEdit->GetSafeHwnd())
+	{
+		m_pEdit->DestroyWindow();
+		m_bDelayDestroy = FALSE;
+	}
+	if (m_pEdit && m_pEdit->GetSafeHwnd() && m_pEdit->GetExStyle() & WS_EX_LAYOUTRTL)
+	{
+		m_pEdit->DestroyWindow();
+	}
+
+	if (m_pEdit && m_pEdit->GetSafeHwnd() && m_pEdit->GetParent() != m_pParent)
+	{
+		m_pEdit->DestroyWindow();
+	}
+
+	if (m_rcControl == rcControl && !(m_pEdit && !m_pEdit->GetSafeHwnd()) && (m_bDelayReposition == FALSE))
+	{
+		if (!(m_pEdit && m_pEdit->GetSafeHwnd() && m_pEdit->GetParent() != m_pParent))
+			return;
+	}
+
+	m_rcControl = rcControl;
+
+	if (m_pEdit)
+	{
+		if (!m_pEdit->GetSafeHwnd())
+		{
+			m_pEdit->CreateEdit(WS_CHILD | ES_AUTOHSCROLL | m_dwEditStyle, m_pParent);
+
+			if (!GetEnabled()) m_pEdit->EnableWindow(FALSE);
+
+			if (m_dwShellAutoCompleteFlags != 0) EnableShellAutoComplete(m_dwShellAutoCompleteFlags);
+		}
+
+		m_pEdit->SetFont(GetPaintManager()->GetIconFont(), FALSE);
+		m_pEdit->SetMargins(0, 0);
+		m_pEdit->UpdateCharFormat();
+		if (m_pEdit->GetSafeHwnd() != ::GetFocus()) SetEditText(strEditText);
+		m_pEdit->m_bComposited = HasDwmCompositedRect();
+
+		rcControl.DeflateRect(m_nLabelWidth + 1 + 3, 3, m_nThumbWidth + 3, 3);
+		DeflateEditRect(rcControl);
+		m_pEdit->MoveWindow(rcControl);
+		ShowHideEditControl();
+	}
+	m_bDelayReposition = FALSE;
+}
+
+void CXTPControlComboBox::ShowHideEditControl()
+{
+	if (m_pEdit && m_pEdit->GetSafeHwnd())
+	{
+		m_pEdit->SetWindowPos(0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE
+			| (m_pParent && IsVisible() && m_pParent->GetSafeHwnd() ? SWP_SHOWWINDOW : SWP_HIDEWINDOW));
+	}
+}
+
+void CXTPControlComboBox::OnRemoved()
+{
+	ShowHideEditControl();
+
+	CXTPControlPopup::OnRemoved();
+}
+
+void CXTPControlComboBox::SetEnabled(BOOL bEnabled)
+{
+	if (bEnabled != m_bEnabled)
+	{
+		m_bEnabled = bEnabled;
+		if (m_pEdit && m_pEdit->GetSafeHwnd())
+		{
+			m_pEdit->EnableWindow(GetEnabled());
+			m_pEdit->UpdateCharFormat();
+		}
+
+		RedrawParent();
+	}
+}
+
+void CXTPControlComboBox::SetParent(CXTPCommandBar* pParent)
+{
+	if (pParent != m_pParent && pParent)
+	{
+		CWnd* pSite = pParent->GetSite();
+		if (pSite)
+			SetWindowLongPtr(m_pCommandBar->GetSafeHwnd(), GWLP_HWNDPARENT, (LONG_PTR)pSite->GetSafeHwnd());
+	}
+	if (!pParent && m_pEdit && m_pEdit->GetSafeHwnd())
+	{
+		m_pEdit->DestroyWindow();
+
+	}
+	CXTPControlPopup::SetParent(pParent);
+}
+
+BOOL  CXTPControlComboBox::OnSetSelected(int bSelected)
+{
+	if (!CXTPControl::OnSetSelected(bSelected))
+		return FALSE;
+
+	if (!bSelected)
+	{
+		SetFocused(FALSE);
+	}
+
+	if (m_pEdit->GetSafeHwnd())
+	{
+		m_pEdit->UpdateCharFormat();
+	}
+
+	return TRUE;
+}
+
+BOOL CXTPControlComboBox::HasFocus() const
+{
+	return IsFocused() || (m_pCommandBar->IsTrackingMode()) || m_pParent->GetCommandBars()->GetMouseManager()->IsMouseLocked();
+}
+
+BOOL CXTPControlComboBox::IsFocusable() const
+{
+	return TRUE;
+}
+
+void CXTPControlComboBox::OnClick(BOOL bKeyboard , CPoint pt)
+{
+	if (m_pEdit && m_pEdit->m_bImeMode)
+		return;
+
+	if (IsCustomizeMode())
+	{
+		m_pParent->SetPopuped(-1);
+		m_pParent->SetSelected(-1);
+		CustomizeStartDrag(pt);
+	}
+	else if (bKeyboard && GetEnabled())
+	{
+		if (IsFocused())
+		{
+			OnExecute();
+		}
+		else
+		{
+			SetFocused(TRUE);
+		}
+	}
+	else if (m_bPopup && IsFocused())
+	{
+		m_pParent->SetPopuped(-1);
+
+	}
+	else CXTPControlPopup::OnClick(bKeyboard, pt);
+}
+
+void CXTPControlComboBox::OnUnderlineActivate()
+{
+	m_pParent->HideKeyboardTips();
+	SetFocused(TRUE);
+}
+
+void CXTPControlComboBox::OnMouseHover()
+{
+}
+
+void CXTPControlComboBox::SetHideFlags(DWORD dwFlags)
+{
+	if (m_dwHideFlags != dwFlags)
+	{
+		m_dwHideFlags = dwFlags;
+
+		ShowHideEditControl();
+		DelayLayoutParent();
+	}
+}
+
+void CXTPControlComboBox::OnActionChanged(int nProperty)
+{
+	if (nProperty == 2)    // Visible
+	{
+		ShowHideEditControl();
+	}
+
+	if (nProperty == 0 && m_pEdit && m_pEdit->GetSafeHwnd())    // Enabled
+	{
+		m_pEdit->EnableWindow(GetEnabled());
+		m_pEdit->UpdateCharFormat();
+	}
+
+	if (nProperty == 4) // EditHint
+	{
+		if (_GetEditText().IsEmpty() && !GetEditHint().IsEmpty())
+		{
+			_SetEditText(GetEditHint());
+		}
+	}
+}
+
+void CXTPControlComboBox::OnActionChanging(int nProperty)
+{
+	if (nProperty == 4 && !GetEditHint().IsEmpty() && _GetEditText() == GetEditHint())
+	{
+		_SetEditText(_T(""));
+	}
+}
+
+void CXTPControlComboBox::OnCalcDynamicSize(DWORD dwMode)
+{
+	if (dwMode & LM_VERTDOCK) SetHideFlags(m_dwHideFlags | xtpHideDockingPosition);
+	else SetHideFlags(m_dwHideFlags & ~xtpHideDockingPosition);
+}
+
+DWORD CXTPControlComboBox::GetEditStyle() const
+{
+	return m_dwEditStyle;
+}
+
+void CXTPControlComboBox::SetEditStyle(DWORD dwStyle)
+{
+	m_dwEditStyle = dwStyle;
+
+	if (m_pEdit && m_pEdit->GetSafeHwnd())
+	{
+		m_bDelayDestroy = TRUE;
+		DelayLayoutParent();
+	}
+}
+
+
+void CXTPControlComboBox::Copy(CXTPControl* pControl, BOOL bRecursive)
+{
+	CXTPControlComboBox* pControlCombo = DYNAMIC_DOWNCAST(CXTPControlComboBox, pControl);
+	ASSERT(pControlCombo);
+	if (!pControlCombo)
+	{
+		CXTPControlPopup::Copy(pControl, bRecursive);
+		return;
+	}
+
+	m_dwEditStyle = pControlCombo->m_dwEditStyle;
+	m_comboStyle = pControlCombo->m_comboStyle;
+
+	SetEditText(pControlCombo->GetEditText());
+	SetEditHint(pControlCombo->m_strEditHint);
+	SetDropDownListStyle(pControlCombo->m_pEdit != NULL);
+	m_bAutoComplete = pControlCombo->m_bAutoComplete;
+	EnableShellAutoComplete(pControlCombo->m_dwShellAutoCompleteFlags);
+	m_nEditIconId = pControlCombo->m_nEditIconId;
+	m_nDropDownItemCount = pControlCombo->m_nDropDownItemCount;
+
+	CXTPControlPopup::Copy(pControl, bRecursive);
+}
+
+BOOL CXTPControlComboBox::Compare(CXTPControl* pOther)
+{
+	if (!CXTPControlPopup::Compare(pOther))
+		return FALSE;
+
+	if (!pOther->IsKindOf(RUNTIME_CLASS(CXTPControlComboBox)))
+		return FALSE;
+
+	return TRUE;
+}
+
+CString CXTPControlComboBox::GetListBoxText() const
+{
+	CXTPControlComboBoxPopupBar* pPopupBar = GetComboBoxPopupBar();
+
+	if (!pPopupBar)
+		return _T("");
+
+	int nSel = pPopupBar->GetCurSel();
+	CString str;
+	if (nSel >= 0)
+		pPopupBar->GetText(nSel, str);
+	return str;
+}
+
+BOOL CXTPControlComboBox::IsValidList() const
+{
+	return GetComboBoxPopupBar() != NULL;
+}
+
+CXTPControlComboBoxPopupBar* CXTPControlComboBox::GetComboBoxPopupBar() const
+{
+	return DYNAMIC_DOWNCAST(CXTPControlComboBoxPopupBar, m_pCommandBar);
+}
+
+int CXTPControlComboBox::GetCurSel() const
+{
+	CXTPControlComboBoxPopupBar* pPopupBar = GetComboBoxPopupBar();
+	return pPopupBar ? pPopupBar->GetCurSel() : m_nCurSel;
+}
+
+void CXTPControlComboBox::SetCurSel(int nIndex)
+{
+	if ((GetCurSel() != nIndex) || (m_nCurSel != nIndex))
+	{
+		m_nCurSel = nIndex;
+
+		CXTPControlComboBoxPopupBar* pPopupBar = GetComboBoxPopupBar();
+		if (pPopupBar)
+		{
+			pPopupBar->SetCurSel(nIndex);
+		}
+
+		OnSelChanged();
+	}
+}
+
+BOOL CXTPControlComboBox::IsFocused() const
+{
+	return m_bFocused;
+}
+
+void CXTPControlComboBox::SetFocused(BOOL bFocused)
+{
+	if (m_bFocused == bFocused)
+		return;
+
+	m_bFocused = bFocused;
+
+	if (bFocused)
+	{
+		m_nLastSel = GetCurSel();
+		m_bSelEndOk = FALSE;
+
+		if (m_pEdit->GetSafeHwnd() && ::GetFocus() != m_pEdit->GetSafeHwnd())
+			m_pEdit->SetFocus();
+
+		m_pParent->SetTrackingMode(TRUE, FALSE);
+		m_pParent->SetSelected(m_nIndex);
+
+		XTPMouseManager()->LockMouseMove();
+
+		NotifySite(CBN_SETFOCUS);
+	}
+	else
+	{
+		if (!m_bSelEndOk && !GetDroppedState() && !m_pEdit)
+		{
+			SetCurSel(m_nLastSel);
+			NotifySite(CBN_SELENDCANCEL);
+		}
+
+
+		if (m_pEdit->GetSafeHwnd() && ::GetFocus() == m_pEdit->GetSafeHwnd())
+			::SetFocus(m_pParent->GetTrackFocus());
+
+		XTPMouseManager()->UnlockMouseMove();
+
+		NotifySite(CBN_KILLFOCUS);
+	}
+
+	RedrawParent();
+}
+
+
+void CXTPControlComboBox::OnSetFocus(CWnd* pOldWnd)
+{
+	if (!GetEditHint().IsEmpty() && m_pEdit->GetSafeHwnd() && GetEditHint() == _GetEditText())
+	{
+		_SetEditText(_T(""));
+	}
+
+	m_strLastText = GetEditText();
+
+
+	m_bIgnoreAutoComplete = TRUE;
+	UpdatePopupSelection();
+
+	if (m_pParent->GetTrackFocus() == 0)
+		m_pParent->SetTrackFocus(pOldWnd ? pOldWnd->GetSafeHwnd() : m_pParent->GetSite()->GetSafeHwnd());
+
+	if (!m_bPopup)
+		m_pParent->SetPopuped(-1);
+
+	SetFocused(TRUE);
+	if (m_pAutoCompleteWnd) m_pAutoCompleteWnd->SetupMessageHook(TRUE);
+}
+
+void CXTPControlComboBox::OnKillFocus()
+{
+	if (!GetEditHint().IsEmpty() && m_pEdit->GetSafeHwnd() && _GetEditText().IsEmpty())
+	{
+		_SetEditText(GetEditHint());
+	}
+
+	SetFocused(FALSE);
+
+	if (GetDroppedState())
+		m_pParent->SetPopuped(-1);
+
+	if (m_pAutoCompleteWnd) m_pAutoCompleteWnd->SetupMessageHook(FALSE);
+}
+
+BOOL CXTPControlComboBox::GetDroppedState() const
+{
+	return m_bPopup;
+	//return m_pCommandBar->IsTrackingMode() && ((CXTPPopupBar*)m_pCommandBar)->GetControlPopup() == (CXTPControlPopup*)this;
+}
+
+BOOL CXTPControlComboBox::OnSetPopup(BOOL bPopup)
+{
+	if (bPopup)
+	{
+		m_bSelEndOk = FALSE;
+		m_nLastSel = GetCurSel();
+	}
+	else if (!IsFocused() && m_pEdit == NULL && !m_bSelEndOk)
+	{
+		SetCurSel(m_nLastSel);
+	}
+
+	if (!bPopup && !m_bSelEndOk)
+	{
+		NotifySite(CBN_SELENDCANCEL);
+	}
+
+
+	if (m_pAutoCompleteWnd && bPopup) m_pAutoCompleteWnd->CloseWindow();
+
+	m_bPopup = bPopup;
+	if (bPopup && GetEditCtrl()) GetEditCtrl()->SetFocus();
+
+	return CXTPControlPopup::OnSetPopup(bPopup);
+}
+
+void CXTPControlComboBox::OnExecute()
+{
+	if (GetCurSel() != -1 && (GetDroppedState() || (!m_pEdit && IsFocused())))
+		NotifySite(CBN_SELENDOK);
+
+	m_bSelEndOk = TRUE;
+
+	m_nLastSel = GetCurSel();
+
+	CXTPControlPopup::OnExecute();
+}
+
+CHARFORMAT2 CXTPControlComboBox::GetDefaultCharFormat()
+{
+	CHARFORMAT2 cf;
+	ZeroMemory(&cf, sizeof(CHARFORMAT2));
+	cf.dwMask = CFM_COLOR | CFM_BACKCOLOR;
+
+	if (GetEnabled())
+	{
+		cf.crTextColor = GetXtremeColor(COLOR_WINDOWTEXT);
+
+		if (!GetEditHint().IsEmpty() && GetEditHint() == _GetEditText())
+		{
+			cf.crTextColor = GetXtremeColor(COLOR_GRAYTEXT);
+		}
+	}
+	else
+	{
+		cf.crTextColor = GetXtremeColor(COLOR_GRAYTEXT);
+	}
+
+	cf.crBackColor = GetPaintManager()->GetControlEditBackColor(this);
+
+	return cf;
+}
+
+void CXTPControlComboBox::ModifyListBoxStyle(DWORD dwRemove, DWORD dwAdd)
+{
+	if (IsValidList())
+	{
+		CXTPControlComboBoxList* pComboBoxList = ((CXTPControlComboBoxList*)m_pCommandBar);
+
+		pComboBoxList->m_dwStyle |= dwAdd;
+		pComboBoxList->m_dwStyle &= ~dwRemove;
+
+		pComboBoxList->DestroyWindow();
+		pComboBoxList->CreateListBox();
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlComboBoxPopup
+
+
+IMPLEMENT_XTP_COMMANDBAR(CXTPControlComboBoxPopupBar, CXTPPopupBar)
+
+CXTPControlComboBoxPopupBar::CXTPControlComboBoxPopupBar()
+{
+	m_bComboBar = TRUE;
+	m_bGrabFocus = FALSE;
+}
+
+BOOL CXTPControlComboBoxPopupBar::ProcessHookKeyDown(CXTPControlComboBox* pComboBox, UINT nChar, LPARAM lParam)
+{
+	int nSel = GetCurSel();
+
+	if (pComboBox->GetEditCtrl())
+	{
+		if ((GetKeyState(VK_MENU) >= 0) && (nChar == VK_UP || nChar == VK_DOWN || nChar == VK_PRIOR || nChar == VK_NEXT))
+		{
+			CXTPCommandBar::OnHookKeyDown(nChar, lParam);
+		}
+		else
+		{
+			return FALSE;
+		}
+	}
+	else
+	{
+		if ((nChar == VK_F4 && GetKeyState(VK_MENU) >= 0) || ((nChar == VK_UP || nChar == VK_DOWN) && GetKeyState(VK_MENU) < 0))
+		{
+			return FALSE;
+		}
+		else
+		{
+			CXTPCommandBar::OnHookKeyDown(nChar, lParam);
+		}
+	}
+
+	if (nSel != GetCurSel())
+	{
+		pComboBox->OnSelChanged();
+		if (pComboBox->GetEditCtrl()->GetSafeHwnd()) pComboBox->GetEditCtrl()->SetSel(0, -1);
+	}
+	return TRUE;
+}
+
+BOOL CXTPControlComboBoxPopupBar::OnHookKeyDown(UINT nChar, LPARAM lParam)
+{
+	ASSERT(m_pControlPopup);
+	CXTPControlComboBox* pComboBox = ((CXTPControlComboBox*)m_pControlPopup);
+	if (!pComboBox)
+		return CXTPCommandBar::OnHookKeyDown(nChar, lParam);
+
+	if (nChar == VK_ESCAPE)
+	{
+		if (pComboBox->IsFocused())
+			return FALSE;
+
+		return CXTPCommandBar::OnHookKeyDown(nChar, lParam);
+	}
+
+	if (nChar == VK_TAB) return FALSE;
+
+	return ProcessHookKeyDown(pComboBox, nChar, lParam);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlComboBoxList
+
+CXTPControlComboBoxList::CXTPControlComboBoxList()
+{
+	m_barPosition = xtpBarListBox;
+	m_nMRUWidth = 0;
+	m_bGrabFocus = FALSE;
+	m_dwStyle = 0;
+	m_nListIconId = -1;
+}
+
+BEGIN_MESSAGE_MAP(CXTPControlComboBoxList, CXTPPopupBar)
+	ON_WM_LBUTTONUP()
+	ON_WM_NCPAINT()
+	ON_WM_ERASEBKGND()
+	ON_WM_MOUSEMOVE()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_DRAWITEM_REFLECT()
+	ON_WM_MEASUREITEM_REFLECT()
+END_MESSAGE_MAP()
+
+
+IMPLEMENT_XTP_COMMANDBAR(CXTPControlComboBoxList, CXTPControlComboBoxPopupBar)
+
+
+void CXTPControlComboBoxList::CreateListBox()
+{
+	DWORD dwStyle = m_dwStyle & ~CBRS_GRIPPER;
+
+	CWnd* pSite = GetSite();
+
+	if (pSite && ((dwStyle & (LBS_OWNERDRAWFIXED|LBS_OWNERDRAWVARIABLE)) != 0))
+	{
+		CreateEx(WS_EX_CLIENTEDGE|WS_EX_TOOLWINDOW, _T("LISTBOX"), _T(""),
+			WS_CHILD | WS_VSCROLL | WS_CLIPCHILDREN | dwStyle | LBS_NOTIFY,
+			CRect(0, 0, 0, 0), pSite, 0);
+
+		SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, 0 );
+		ModifyStyle(WS_CHILD, WS_POPUP);
+		SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, (LONG_PTR)(pSite->m_hWnd));
+	}
+	else
+	{
+		CreateEx(WS_EX_CLIENTEDGE | WS_EX_TOOLWINDOW, _T("LISTBOX"), _T(""),
+			WS_POPUP | WS_VSCROLL | WS_CLIPCHILDREN | dwStyle, CRect(0, 0, 0, 0), 0, 0);
+	}
+
+	if (m_pCommandBars && m_nListIconId != -1)
+	{
+		CXTPImageManagerIcon* pIcon = GetImageManager()->GetImage(m_nListIconId, 0);
+		if (pIcon)
+		{
+			((CListBox*)this)->SetItemHeight(-1, pIcon->GetHeight() + 4);
+		}
+	}
+}
+
+void CXTPControlComboBoxList::DrawItem (LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	CXTPControlComboBox* pComboBox = (CXTPControlComboBox*)m_pControlPopup;
+	if (pComboBox) pComboBox->DrawItem(lpDrawItemStruct);
+}
+
+void CXTPControlComboBoxList::MeasureItem(LPMEASUREITEMSTRUCT lpMeasureItemStruct)
+{
+	CXTPControlComboBox* pComboBox = (CXTPControlComboBox*)m_pControlPopup;
+	if (pComboBox) pComboBox->MeasureItem(lpMeasureItemStruct);
+}
+
+void CXTPControlComboBoxList::OnLButtonDown(UINT /*nFlags*/, CPoint /*point*/)
+{
+	// do nothing.
+}
+
+int CXTPControlComboBoxList::OnHookMessage(HWND hWnd, UINT nMessage, WPARAM& wParam, LPARAM& lParam, LRESULT& lResult)
+{
+	if (nMessage == WM_MOUSEWHEEL)
+	{
+		CWnd::DefWindowProc(WM_MOUSEWHEEL, wParam, lParam);
+		return TRUE;
+	}
+	return CXTPCommandBar::OnHookMessage(hWnd, nMessage, wParam, lParam, lResult);
+}
+
+
+void CXTPControlComboBoxList::OnNcPaint()
+{
+	CXTPPaintManager* pPaintManager = GetPaintManager();
+
+	Default();
+	CWindowDC dc(this);
+	CXTPWindowRect rc(this);
+	rc.OffsetRect(-rc.TopLeft());
+	dc.Draw3dRect(rc, pPaintManager->GetXtremeColor(XPCOLOR_MENUBAR_BORDER), pPaintManager->GetXtremeColor(XPCOLOR_MENUBAR_BORDER));
+
+	rc.DeflateRect(1, 1);
+	dc.Draw3dRect(rc, GetXtremeColor(COLOR_WINDOW), GetXtremeColor(COLOR_WINDOW));
+
+}
+
+BOOL CXTPControlComboBoxList::OnEraseBkgnd(CDC* pDC)
+{
+	return CWnd::OnEraseBkgnd(pDC);
+}
+
+void CXTPControlComboBoxList::OnLButtonUp(UINT /*nFlags*/, CPoint /*point*/)
+{
+	CXTPControlComboBox* pComboBox = (CXTPControlComboBox*)m_pControlPopup;
+
+	pComboBox->OnSelChanged();
+	pComboBox->OnExecute();
+}
+
+BOOL CXTPControlComboBoxList::SetTrackingMode(int bMode, BOOL bSelectFirst, BOOL bKeyboard)
+{
+	if (!CXTPCommandBar::SetTrackingMode(bMode, bSelectFirst, bKeyboard))
+		return FALSE;
+
+	CXTPControlComboBox* pComboBox = ((CXTPControlComboBox*)m_pControlPopup);
+
+	if (!bMode)
+	{
+		pComboBox->NotifySite(CBN_CLOSEUP);
+
+		XTPMouseManager()->UnlockMouseMove();
+		ShowWindow(SW_HIDE);
+
+		if (GetParentCommandBar())
+			GetParentCommandBar()->SetPopuped(-1);
+
+		m_pControlPopup = 0;
+
+	}
+	else
+	{
+		XTPMouseManager()->LockMouseMove();
+
+		pComboBox->UpdatePopupSelection();
+
+		pComboBox->NotifySite(CBN_DROPDOWN);
+	}
+
+
+	return TRUE;
+}
+
+CListBox* CXTPControlComboBoxList::GetListBoxCtrl() const
+{
+	return (CListBox*)this;
+}
+
+BOOL CXTPControlComboBoxList::ProcessHookKeyDown(CXTPControlComboBox* pComboBox, UINT nChar, LPARAM lParam)
+{
+	int nSel = GetCurSel();
+
+	if (pComboBox->GetEditCtrl())
+	{
+		if ((GetKeyState(VK_MENU) >= 0) && (nChar == VK_UP || nChar == VK_DOWN || nChar == VK_PRIOR || nChar == VK_NEXT))
+		{
+			CWnd::DefWindowProc(WM_KEYDOWN, (WPARAM)nChar, lParam);
+		}
+		else
+		{
+			return FALSE;
+		}
+	}
+	else
+	{
+		if ((nChar == VK_F4 && GetKeyState(VK_MENU) >= 0) || ((nChar == VK_UP || nChar == VK_DOWN) && GetKeyState(VK_MENU) < 0))
+		{
+			return FALSE;
+		}
+		else
 		{
 			MSG msg;
-			msg.message = WM_LBUTTONDOWN;
-			msg.wParam = MK_LBUTTON;
+			msg.message = WM_KEYDOWN;
+			msg.hwnd = m_hWnd;
+			msg.wParam = (WPARAM)nChar;
 			msg.lParam = lParam;
-			msg.hwnd = m_pRootPopup->m_hWnd;
-			HandleMenuMessage(&msg);
+
+			::IsDialogMessage(m_hWnd, &msg);
+			AfxGetThread()->PumpMessage();
 		}
 	}
 
-	// get messages until capture lost or cancelled/accepted
-	while (ContinueLoop())
+	if (nSel != GetCurSel())
 	{
-		MSG msg;
+		pComboBox->OnSelChanged();
+		if (pComboBox->GetEditCtrl()->GetSafeHwnd()) pComboBox->GetEditCtrl()->SetSel(0, -1);
+	}
+	return TRUE;
+}
 
-		BOOL bPeek = PeekMessage(&msg, NULL, 0, 0, PM_NOYIELD | PM_NOREMOVE);
+BOOL CXTPControlComboBoxList::OnHookKeyDown(UINT nChar, LPARAM lParam)
+{
+	ASSERT(m_pControlPopup);
+	CXTPControlComboBox* pComboBox = ((CXTPControlComboBox*)m_pControlPopup);
+	if (!pComboBox)
+		return CXTPCommandBar::OnHookKeyDown(nChar, lParam);
 
-		if (bPeek)
-		{
-			BOOL bQueue = (msg.message == WM_LBUTTONDOWN ||
-				msg.message == WM_RBUTTONDOWN ||
-				msg.message == WM_NCLBUTTONDOWN ||
-				msg.message == WM_NCRBUTTONDOWN);
+	if (nChar == VK_ESCAPE)
+	{
+		if (pComboBox->IsFocused())
+			return FALSE;
 
-			if (!bQueue)
-			{
-				PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
-			}
-
-			if (!HandleMenuMessage(&msg))
-			{
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
-
-
-			if (!ContinueLoop())
-				break;
-
-			if ((msg.message == WM_TIMER) || (msg.message == WM_PAINT))
-				continue;
-
-			bSendIdle = TRUE;
-		}
-		else
-		{
-			if (!ContinueLoop())
-				break;
-
-			if (bSendIdle && !m_bNoNotify && m_pRootPopup->m_hWndNotify)
-			{
-				SendMessage(m_pRootPopup->m_hWndNotify, WM_ENTERIDLE, MSGF_MENU, (LPARAM)GetActivePopup()->m_hWnd);
-
-			}
-			bSendIdle = FALSE;
-
-			WaitMessage();
-		}
+		return CXTPCommandBar::OnHookKeyDown(nChar, lParam);
 	}
 
-	m_bInsideMenuLoop = FALSE;
-	m_hWndCapture = 0;
+	if (nChar == VK_TAB) return FALSE;
 
-	EndMenuLoop();
-	ReleaseCapture();
+	if (nChar == VK_RETURN)
+	{
+		m_pControlPopup->OnExecute();
+		return TRUE;
+	}
 
+	return ProcessHookKeyDown(pComboBox, nChar, lParam);
+}
+
+void CXTPControlComboBoxList::OnMouseMove(UINT nFlags, CPoint point)
+{
+	BOOL bOutside;
+	UINT nItem = GetListBoxCtrl()->ItemFromPoint(point, bOutside);
+
+	if (!bOutside && GetCurSel() != (int)nItem)
+		SetCurSel(nItem);
+
+	CXTPPopupBar::OnMouseMove(nFlags, point);
 }
 
 
-void CXTPSkinObjectApplicationFrame::OnContextMenu(CWnd* pWnd, CPoint pos)
+
+BOOL CXTPControlComboBoxList::Popup(CXTPControlPopup* pControlPopup, BOOL /*bSelectFirst*/)
 {
-	if ((GetSkinManager()->GetApplyOptions() & xtpSkinApplyMenus) == 0)
-	{
-		CXTPSkinObjectFrame::OnContextMenu(pWnd, pos);
-		return;
-	}
+	m_pControlPopup = pControlPopup;
 
-	if (pWnd && pWnd->m_hWnd != m_hWnd)
-	{
-		CXTPSkinObjectFrame::OnContextMenu(pWnd, pos);
-		return;
-	}
+	SetFont(GetPaintManager()->GetIconFont());
 
-	LRESULT nHit = SendMessage(WM_NCHITTEST, 0, MAKELONG(pos.x, pos.y));
+	CWnd* pWndOwner = GetOwnerSite();
+	if (pWndOwner) pWndOwner->SendMessage(WM_XTP_INITCOMMANDSPOPUP, 0, (LPARAM)this);
 
-	if (nHit == HTCAPTION || nHit == HTSYSMENU || nHit == HTMINBUTTON  || nHit == HTMAXBUTTON || nHit == HTCLOSE)
-	{
-		HMENU hMenu = ::GetSystemMenu(m_hWnd, FALSE);
-		if (hMenu)
-		{
-			int nDefault = SC_CLOSE;
+	CXTPCommandBars* pCommandBars = GetCommandBars();
 
-			if (nHit != HTSYSMENU)
-			{
-				if (GetStyle() & (WS_MAXIMIZE | WS_MINIMIZE)) nDefault = SC_RESTORE; else nDefault = SC_MAXIMIZE;
-			}
+	if (pCommandBars && pCommandBars->IsLayoutRTL())
+		ModifyStyleEx(WS_EX_LAYOUTRTL, WS_EX_RIGHT | WS_EX_LEFTSCROLLBAR | WS_EX_RTLREADING);
+	else ModifyStyleEx(WS_EX_RIGHT | WS_EX_LEFTSCROLLBAR | WS_EX_RTLREADING, 0);
 
-			::SetMenuDefaultItem(hMenu, nDefault, MF_BYCOMMAND);
+	SetTrackingMode(TRUE, FALSE);
 
-			CXTPSkinObjectApplicationFrame::TrackPopupMenu(hMenu, TPM_RIGHTBUTTON | TPM_SYSMENU, pos.x, pos.y, m_hWnd, 0);
+	UpdateFlags();
 
-			return;
-		}
-	}
-	else if (nHit == HTMENU)
-		return;
+	CRect rcControl = pControlPopup->GetRect();
 
-	CXTPSkinObjectFrame::OnContextMenu(pWnd, pos);
-}
+	int nItemHeight = GetListBoxCtrl()->GetItemHeight(0);
+	int nHeight = min (((CXTPControlComboBox*)m_pControlPopup)->m_nDropDownItemCount,
+		max(1, GetListBoxCtrl()->GetCount())) * nItemHeight + 4;
+	int nWidth = m_nMRUWidth <= 0 ? rcControl.Width() : m_nMRUWidth;
+	UpdateLocation(CSize(nWidth, nHeight));
 
-BOOL CXTPSkinObjectApplicationFrame::TrackPopupMenu(HMENU hMenu, UINT dwFlags, int x, int y, HWND hWnd, CONST RECT *prcRect)
-{
-	CXTPSkinPopupMenuState* pState = new CXTPSkinPopupMenuState(hWnd);
-	BOOL bResult = pState->TrackPopupMenu(hMenu, dwFlags, x, y, hWnd, prcRect);
-	pState->EndState();
-
-	return bResult;
-}
-
-#define CS_DROPSHADOW       0x00020000
-
-#ifndef SPI_GETDROPSHADOW
-#define SPI_GETDROPSHADOW     0x1024
-#endif
-
-BOOL CXTPSkinPopupMenu::Create(HWND hwndParent)
-{
-	UINT nClassStyle = CS_SAVEBITS | CS_DBLCLKS;
-
-	BOOL bDropShadow = FALSE;
-
-	if (XTPSystemVersion()->IsWinXPOrGreater() && SystemParametersInfo(SPI_GETDROPSHADOW, 0, &bDropShadow, 0))
-	{
-		if (bDropShadow)
-		{
-			nClassStyle |= CS_DROPSHADOW;
-		}
-	}
-
-	XTPDrawHelpers()->RegisterWndClass(0, _T("XTPSkinManagerMenu"), nClassStyle);
-
-	UINT nWindowStyle = WS_EX_TOOLWINDOW;
-
-	if (GetWindowLong(hwndParent, GWL_EXSTYLE) & (WS_EX_LAYOUTRTL | WS_EX_RIGHT))
-	{
-		nWindowStyle |= WS_EX_LAYOUTRTL;
-	}
-
-	HWND hWnd = ::CreateWindowEx(nWindowStyle, _T("XTPSkinManagerMenu"),
-		NULL, WS_POPUP, 0, 0, 100, 100, hwndParent, 0, AfxGetInstanceHandle(), 0);
-
-	if (!hWnd)
-		return FALSE;
-
-	SubclassWindow(hWnd);
+	EnableWindow();
 
 	return TRUE;
 }
 
-void CXTPSkinPopupMenuState::AdjustMonitorRect(CXTPSkinPopupMenu* pPopupMenu, CPoint& pt, CSize sz, UINT wFlags, LPCRECT prcExclude)
+void CXTPControlComboBoxList::DrawCommandBar(CDC* pDC, CRect /*rcClipBox*/)
 {
-	CRect rcExclude(pt.x, pt.y, pt.x, pt.y);
-	CRect rcMonitor(XTPMultiMonitor()->GetScreenArea(pt));
-
-	if (prcExclude)
-	{
-		rcExclude.IntersectRect(prcExclude, rcMonitor);
-	}
-
-	if (pt.x + sz.cx > rcMonitor.right)
-	{
-		if ((wFlags & TPM_CENTERALIGN) || (pt.x - sz.cx < rcMonitor.left) || (pt.x >= rcMonitor.right))
-			pt.x = rcMonitor.right - sz.cx;
-		else
-			pt.x -= sz.cx;
-
-		pPopupMenu->m_bDroppedLeft = TRUE;
-	}
-
-	if (pt.x < rcMonitor.left)
-	{
-		pt.x += sz.cx;
-		if ((wFlags & TPM_CENTERALIGN) || (pt.x >= rcMonitor.right) || (pt.x < rcMonitor.left))
-			pt.x = rcMonitor.left;
-	}
-
-
-	if (pt.y + sz.cy > rcMonitor.bottom)
-	{
-		if ((wFlags & TPM_VCENTERALIGN) || (pt.y - sz.cy < rcMonitor.top) || (pt.y >= rcMonitor.bottom))
-			pt.y = rcMonitor.bottom - sz.cy;
-		else
-			pt.y -= sz.cy;
-	 }
-
-	if (pt.y < rcMonitor.top)
-	{
-		pt.y += sz.cy;
-		if ((wFlags & TPM_VCENTERALIGN) || (pt.y >= rcMonitor.bottom) || (pt.y < rcMonitor.top))
-			pt.y = rcMonitor.top;
-	 }
+	pDC->FillSolidRect(CXTPClientRect(this), GetXtremeColor(COLOR_WINDOW));
+	CWnd::DefWindowProc(WM_PAINT, (WPARAM)pDC->m_hDC, 0);
 }
 
-BOOL CXTPSkinPopupMenuState::TrackPopupMenu(HMENU hMenu, UINT dwFlags, int x, int y, HWND hWnd, CONST RECT* prcRect)
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlComboBoxEditCtrl
+
+BEGIN_MESSAGE_MAP(CXTPControlComboBoxEditCtrl, CXTPEdit)
+	ON_WM_SETFOCUS()
+	ON_WM_MOUSEMOVE()
+	ON_WM_KILLFOCUS()
+	ON_WM_DESTROY()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_RBUTTONDOWN()
+	ON_WM_CONTEXTMENU()
+	ON_MESSAGE(XTP_TTM_WINDOWFROMPOINT, OnWindowFromPoint)
+	ON_MESSAGE_VOID(WM_XTP_SHELLAUTOCOMPLETESTART, OnShellAutoCompleteStart)
+	ON_CONTROL_REFLECT(EN_CHANGE, OnEditChanged)
+END_MESSAGE_MAP()
+
+void CXTPControlComboBoxEditCtrl::OnEditChanged()
+{
+	m_pControl->m_bEditChanged = TRUE;
+
+	if (::GetFocus() == m_hWnd && !m_bIgonoreEditChanged)
+		m_pControl->OnEditChanged();
+
+	SetMargins(0, 0);
+	UpdateCharFormat();
+}
+
+void CXTPControlComboBoxEditCtrl::UpdateCharFormat()
+{
+	CHARFORMAT2 cf = m_pControl->GetDefaultCharFormat();
+	cf.cbSize = GetRichEditContext().m_bRichEdit2 ? sizeof(CHARFORMAT2) : sizeof(CHARFORMAT);
+
+	::SendMessage(m_hWnd, EM_SETCHARFORMAT, 0, (LPARAM)&cf);
+	::SendMessage(m_hWnd, EM_SETBKGNDCOLOR, FALSE, cf.crBackColor);
+}
+
+void CXTPControlComboBoxEditCtrl::OnShellAutoCompleteStart()
+{
+	m_pControl->GetCommandBar()->OnTrackLost();
+}
+
+void CXTPControlComboBoxEditCtrl::OnContextMenu(CWnd* /*pWnd*/, CPoint /*point*/)
+{
+}
+
+void CXTPControlComboBoxEditCtrl::OnRButtonDown(UINT nFlags, CPoint point)
+{
+	if (m_pControl->IsCustomizeMode())
+	{
+		ClientToScreen(&point);
+		m_pControl->GetParent()->ScreenToClient(&point);
+
+		m_pControl->GetParent()->OnRButtonDown(nFlags, point);
+		return;
+	}
+
+	m_pControl->GetCommandBar()->OnTrackLost();
+	m_pControl->SetFocused(TRUE);
+
+	if (!ShowContextMenu(m_pControl, point))
+		CXTPEdit::OnRButtonDown(nFlags, point);
+}
+
+void CXTPControlComboBoxEditCtrl::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	if (m_pControl->IsCustomizeMode())
+	{
+		if (m_pControl->IsCustomizeMovable())
+			m_pControl->OnClick();
+	}
+	else CEdit::OnLButtonDown(nFlags, point);
+}
+
+void CXTPControlComboBoxEditCtrl::OnDestroy()
+{
+	GetWindowTextEx(m_pControl->m_strEditText);
+	CEdit::OnDestroy();
+}
+
+BOOL CXTPControlComboBoxEditCtrl::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+{
+	CXTPCommandBar* pCommandBar = m_pControl->GetParent();
+
+	if (pCommandBar)
+	{
+		pCommandBar->FilterToolTipMessage(message, wParam, lParam);
+	}
+
+	return CWnd::OnWndMsg(message, wParam, lParam, pResult);
+}
+
+LRESULT CXTPControlComboBoxEditCtrl::OnWindowFromPoint(WPARAM, LPARAM)
+{
+	return 1;
+}
+
+void CXTPControlComboBoxEditCtrl::OnSetFocus(CWnd* pOldWnd)
+{
+	if (!m_pControl->IsCustomizeMode())
+	{
+		m_pControl->OnSetFocus(pOldWnd);
+		CEdit::OnSetFocus(pOldWnd);
+
+		SetSel(0, 0);
+		::PostMessage(m_hWnd, EM_SETSEL, 0, -1);
+	}
+}
+
+void CXTPControlComboBoxEditCtrl::OnKillFocus(CWnd* pNewWnd)
+{
+	CXTPEdit::OnKillFocus(pNewWnd);
+	m_pControl->OnKillFocus();
+}
+
+void CXTPControlComboBoxEditCtrl::OnMouseMove(UINT nFlags, CPoint point)
+{
+	CEdit::OnMouseMove(nFlags, point);
+
+	MapWindowPoints(m_pControl->GetParent(), &point, 1);
+	m_pControl->GetParent()->OnMouseMove(nFlags, point);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlComboBoxList
+
+void CXTPControlComboBoxList::Copy(CXTPCommandBar* pCommandBar, BOOL bRecursive)
+{
+	CXTPPopupBar::Copy(pCommandBar, bRecursive);
+
+	m_nListIconId = ((CXTPControlComboBoxList*)pCommandBar)->m_nListIconId;
+
+	if (!m_hWnd)
+		CreateListBox();
+
+	CListBox* pListBox = (CListBox*)(CXTPControlComboBoxList*)pCommandBar;
+	DWORD dwCount = pListBox->m_hWnd ? pListBox->GetCount() : 0;
+
+	for (UINT i = 0; i < dwCount; i++)
+	{
+		CString str;
+		pListBox->GetText(i, str);
+		GetListBoxCtrl()->AddString(str);
+	}
+
+}
+
+void CXTPControlComboBoxList::DoPropExchange(CXTPPropExchange* pPX)
+{
+	CXTPPopupBar::DoPropExchange(pPX);
+
+	if (pPX->GetSchema() > _XTP_SCHEMA_110)
+	{
+		PX_Int(pPX, _T("ListIconId"), m_nListIconId, -1);
+	}
+
+	CListBox* pThis = (CListBox*)this;
+	CString str;
+
+	CXTPPropExchangeSection secItems(pPX->GetSection(_T("Items")));
+
+	if (pPX->IsStoring())
+	{
+		if (m_hWnd)
+		{
+			DWORD dwCount = pThis->GetCount();
+			secItems->WriteCount(dwCount);
+
+			for (int i = 0; i < (int)dwCount; i++)
+			{
+				pThis->GetText(i, str);
+
+				CString strSection;
+				strSection.Format(_T("Item%i"), i);
+				PX_String(&secItems, strSection, str, _T(""));
+
+			}
+		}
+		else
+		{
+			pPX->WriteCount(0);
+		}
+	}
+	else
+	{
+		if (!m_hWnd)
+			CreateListBox();
+
+		DWORD nNewCount = secItems->ReadCount();
+		for (DWORD i = 0; i < nNewCount; i++)
+		{
+			CString strSection;
+			strSection.Format(_T("Item%i"), i);
+
+			PX_String(&secItems, strSection, str, _T(""));
+			pThis->AddString(str);
+		}
+	}
+}
+
+
+void CXTPControlComboBox::SetListIconId(int nId)
+{
+	if (m_pParent) GetCommandBar()->SetCommandBars(m_pParent->GetCommandBars());
+
+	if (IsValidList())
+	{
+		CXTPControlComboBoxList* pComboBoxList = ((CXTPControlComboBoxList*)m_pCommandBar);
+		pComboBoxList->m_nListIconId = nId;
+
+		ModifyListBoxStyle(0, LBS_OWNERDRAWFIXED | LBS_HASSTRINGS);
+	}
+}
+
+int CXTPControlComboBox::GetListIconId() const
+{
+	return IsValidList() ?  ((CXTPControlComboBoxList*)m_pCommandBar)->m_nListIconId : -1;
+}
+
+int CXTPControlComboBox::GetDropDownWidth() const
+{
+	return m_pCommandBar->GetWidth();
+}
+
+int CXTPControlComboBox::GetCustomizeMinWidth() const
+{
+	return m_nLabelWidth + m_nThumbWidth + 5;
+
+}
+
+void CXTPControlComboBox::DeflateEditRect(CRect& rcControl)
+{
+	if (m_nEditIconId > 0)
+	{
+		CXTPImageManagerIcon* pIcon = m_pParent->GetImageManager()->GetImage(m_nEditIconId, 0);
+		if (pIcon)
+			rcControl.left += pIcon->GetWidth() + 2;
+	}
+}
+
+void CXTPControlComboBox::DrawEditText(CDC* pDC, CRect rcText)
+{
+	if (!GetEditCtrl() && GetEnabled() && IsFocused())
+	{
+		CRect rcFocus(rcText.left - 1, rcText.top + 1, rcText.right - 1, rcText.bottom - 1);
+		pDC->FillSolidRect(rcFocus, GetXtremeColor(COLOR_HIGHLIGHT));
+	}
+
+	if (m_nEditIconId > 0)
+	{
+		CXTPImageManagerIcon* pIcon = m_pParent->GetImageManager()->GetImage(m_nEditIconId, 0);
+		if (pIcon)
+		{
+			pIcon->Draw(pDC, CPoint(rcText.left, rcText.CenterPoint().y - pIcon->GetHeight() / 2), GetEnabled() ? pIcon->GetIcon() : pIcon->GetDisabledIcon());
+			rcText.left += pIcon->GetWidth() + 2;
+		}
+	}
+
+	if (GetEditCtrl())
+		return;
+
+	CString strListBoxText = GetListBoxText();
+
+	if (!strListBoxText.IsEmpty())
+	{
+		pDC->SetTextColor(GetXtremeColor(!GetEnabled() ? COLOR_GRAYTEXT: IsFocused() ? COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT));
+		pDC->DrawText(strListBoxText, rcText, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
+	}
+	else if (!GetEditHint().IsEmpty() && GetEnabled() && !IsFocused())
+	{
+		pDC->SetTextColor(GetXtremeColor(COLOR_GRAYTEXT));
+		pDC->DrawText(GetEditHint(), rcText, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
+	}
+}
+
+void CXTPControlComboBox::MeasureItem(LPMEASUREITEMSTRUCT /*lpMeasureItemStruct*/)
 {
 
-	if (!hWnd)
-		return FALSE;
-
-	if (!hMenu)
-		return FALSE;
-
-	if (GetMenuItemCount(hMenu) == 0)
-		return FALSE;
-
-	BOOL bButtonDown = (GetKeyState(dwFlags & TPM_RIGHTBUTTON ? VK_RBUTTON : VK_LBUTTON) & 0x8000) != 0;
-
-	CXTPSkinPopupMenu* pSubMenu = new CXTPSkinPopupMenu();
-	pSubMenu->m_pState = this;
-
-	if (!pSubMenu->Create(hWnd))
-	{
-		pSubMenu->InternalRelease();
-		return 0;
-	}
-
-	pSubMenu->m_hMenu = hMenu;
-	pSubMenu->m_hWndNotify = hWnd;
-	pSubMenu->m_bSysMenu =  ((dwFlags & TPM_SYSMENU) != 0);
-
-	m_bRightButton = ((dwFlags & TPM_RIGHTBUTTON) != 0);
-	m_bNoNotify = ((dwFlags & TPM_NONOTIFY) != 0);
-	m_bSynchronous = (dwFlags & TPM_RETURNCMD);
-
-	InitMenu(pSubMenu);
-
-	if (!StartMenu(CXTPSkinPopupMenuState::focusMouse))
-	{
-		pSubMenu->InternalRelease();
-		return 0;
-	}
-
-	m_bFirstClick = bButtonDown;
-
-
-	if (!m_bNoNotify)
-	{
-		SendMessage(hWnd, WM_INITMENUPOPUP, (WPARAM)hMenu, MAKELONG(0, (pSubMenu->m_bSysMenu ? 1 : 0)));
-	}
-
-	pSubMenu->m_bSendUninit = TRUE;
-
-	CSize size = pSubMenu->RecalcLayout();
-
-	if ((GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_LAYOUTRTL) && ((dwFlags & TPM_CENTERALIGN) == 0))
-		dwFlags ^= TPM_RIGHTALIGN;
-
-	CPoint pt(x, y);
-
-	if (dwFlags & TPM_RIGHTALIGN)
-	{
-		pt.x -= size.cx;
-		pSubMenu->m_bDroppedLeft = TRUE;
-	}
-	else if (dwFlags & TPM_CENTERALIGN)
-	{
-		pt.x -= size.cx / 2;
-	}
-
-	if (dwFlags & TPM_BOTTOMALIGN)
-	{
-		pt.y -= size.cy;
-	}
-	else if (dwFlags & TPM_VCENTERALIGN)
-	{
-		pt.y -= size.cy / 2;
-	}
-
-	AdjustMonitorRect(pSubMenu, pt, size, dwFlags, prcRect);
-
-	PlayEventSound(xtpSoundMenuPopup);
-
-	::SetWindowPos(pSubMenu->m_hWnd, HWND_TOPMOST, pt.x, pt.y, size.cx, size.cy, SWP_SHOWWINDOW | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
-
-	m_bButtonDown = bButtonDown;
-
-	RunLoop(0);
-
-
-	CloseHierarchy(pSubMenu);
-	if (pSubMenu->m_bSendUninit && !m_bNoNotify)
-	{
-		SendMessage(pSubMenu->m_hWndNotify, WM_UNINITMENUPOPUP,
-			(WPARAM)pSubMenu->m_hMenu, MAKELONG(0, pSubMenu->m_bSysMenu ? MF_SYSMENU: 0));
-	}
-
-	pSubMenu->DestroyWindow();
-	pSubMenu->InternalRelease();
-
-	return m_bSynchronous ? m_nLastCommand : TRUE;
 }
+
+void CXTPControlComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	CString strText;
+	GetLBText(lpDrawItemStruct->itemID, strText);
+
+	CRect rc(&lpDrawItemStruct->rcItem);
+
+	ASSERT(lpDrawItemStruct->CtlType == ODT_LISTBOX);
+
+	CDC* pDC = CDC::FromHandle(lpDrawItemStruct->hDC);
+
+	BOOL bSelected = lpDrawItemStruct->itemState & ODS_SELECTED;
+	CXTPPaintManager* pPaintManager = GetPaintManager();
+
+	COLORREF crOldTextColor = pDC->SetTextColor(pPaintManager->GetRectangleTextColor(bSelected, FALSE, TRUE, FALSE, FALSE, xtpBarTypePopup, xtpBarPopup));
+
+	if (bSelected)
+		pPaintManager->DrawRectangle(pDC, rc, TRUE, FALSE, TRUE, FALSE, FALSE, xtpBarTypePopup, xtpBarPopup);
+	else
+		pDC->FillSolidRect(rc, pPaintManager->GetXtremeColor(COLOR_WINDOW));
+
+	int nListIconId = GetListIconId();
+	if (nListIconId != -1)
+	{
+		CXTPImageManager* pImageManager = GetCommandBar()->GetImageManager();
+		CXTPImageManagerIcon* pImage = pImageManager->GetImage(nListIconId + lpDrawItemStruct->itemID, 0);
+
+		if (pImage)
+		{
+			pImage->Draw(pDC, CPoint(rc.left + 2, (rc.top + rc.bottom - pImage->GetHeight()) / 2),
+				pImage->GetIcon(bSelected ? xtpImageHot : xtpImageNormal));
+			rc.left += pImage->GetWidth() + 2;
+		}
+	}
+
+	CXTPFontDC font(pDC, pPaintManager->GetIconFont());
+
+	pDC->SetBkMode(TRANSPARENT);
+	rc.left += 3;
+	pDC->DrawText(strText, rc, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
+
+	pDC->SetTextColor(crOldTextColor);
+}
+
+

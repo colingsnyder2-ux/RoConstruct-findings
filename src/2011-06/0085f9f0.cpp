@@ -1,14 +1,14 @@
-// from server: 63% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Common/XTPPropExchange.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-15.2.1-shared-mfc Source/Common/XTPPropExchange.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPPropExchange.cpp: implementation of the CXTPPropExchange class.
 //
 // This file is a part of the XTREME TOOLKIT PRO MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2011 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -29,8 +29,10 @@
 #include "XTPMacros.h"
 #include "XTPPropExchange.h"
 #include "XTPVC80Helpers.h"
-#include "XTPVC50Helpers.h"
+
 #include "XTPResourceManager.h"
+
+#include <afxole.h>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -315,18 +317,18 @@ void CXTPPropExchange::PreformatString(CString& strValue, BOOL bLoading)
 		if (strValue.Find(_T('\\')) == -1)
 			return;
 
-		REPLACE_S(strValue, _T("\\\\"), _T("\001\001"));
-		REPLACE_S(strValue, _T("\\n"), _T("\n"));
-		REPLACE_S(strValue, _T("\\r"), _T("\r"));
-		REPLACE_S(strValue, _T("\\t"), _T("\t"));
-		REPLACE_S(strValue, _T("\001\001"), _T("\\"));
+		strValue.Replace(_T("\\\\"), _T("\001\001"));
+		strValue.Replace(_T("\\n"), _T("\n"));
+		strValue.Replace(_T("\\r"), _T("\r"));
+		strValue.Replace(_T("\\t"), _T("\t"));
+		strValue.Replace(_T("\001\001"), _T("\\"));
 	}
 	else
 	{
-		REPLACE_S(strValue, _T("\\"), _T("\\\\"));
-		REPLACE_S(strValue, _T("\n"), _T("\\n"));
-		REPLACE_S(strValue, _T("\r"), _T("\\r"));
-		REPLACE_S(strValue, _T("\t"), _T("\\t"));
+		strValue.Replace(_T("\\"), _T("\\\\"));
+		strValue.Replace(_T("\n"), _T("\\n"));
+		strValue.Replace(_T("\r"), _T("\\r"));
+		strValue.Replace(_T("\t"), _T("\\t"));
 	}
 }
 
@@ -1570,13 +1572,19 @@ void CXTPPropExchangeXMLNode::TraceParseError()
 #endif
 }
 
-BOOL CXTPPropExchangeXMLNode::LoadFromString(LPCSTR lpszState)
+BOOL CXTPPropExchangeXMLNode::LoadFromEncodedString(LPCWSTR lpszState)
+{
+	return LoadFromEncodedString(XTP_CW2CA(lpszState));
+}
+
+BOOL CXTPPropExchangeXMLNode::LoadFromEncodedString(LPCSTR lpszState)
 {
 	if (!lpszState)
 		return FALSE;
 
 	if (!CreateDocumentInstance())
 		return FALSE;
+
 
 	ASSERT(m_xmlDocPtr != 0);
 
@@ -1605,9 +1613,14 @@ BOOL CXTPPropExchangeXMLNode::LoadFromString(LPCSTR lpszState)
 	return TRUE;
 }
 
+BOOL CXTPPropExchangeXMLNode::LoadFromString(LPCSTR lpszState)
+{
+	return LoadFromString((BSTR)XTP_CA2CW(lpszState));
+}
+
 BOOL CXTPPropExchangeXMLNode::LoadFromString(LPCWSTR lpszState)
 {
-	return LoadFromString((BSTR)lpszState);
+	return LoadFromString((BSTR)(lpszState));
 }
 
 BOOL CXTPPropExchangeXMLNode::LoadFromString(BSTR lpszState)
@@ -1657,7 +1670,7 @@ BOOL CXTPPropExchangeXMLNode::LoadFromResource(HINSTANCE hInstance, LPCTSTR lpsz
 	MEMCPY_S(lpstr, pData, dwSize);
 	lpstr[dwSize] = 0;
 
-	BOOL bResult = LoadFromString(lpstr);
+	BOOL bResult = LoadFromEncodedString(lpstr);
 
 	UnlockResource(hGlobal);
 	FreeResource(hGlobal);
@@ -1693,15 +1706,91 @@ BOOL CXTPPropExchangeXMLNode::LoadFromFile(LPCTSTR strFileName)
 	return TRUE;
 }
 
-CString CXTPPropExchangeXMLNode::GetXML(BOOL bFormatted)
+
+void CXTPPropExchangeXMLNode::FormatString(CString& str)
 {
 	const LPCTSTR lpszCrLf = _T("\r\n");
 
 #define ADDINDENT(str, i, strOffset)\
-	INSERT_S(str, i, lpszCrLf);\
-	INSERT_S(str, i + 2, strOffset);\
+	str.Insert(i, lpszCrLf);\
+	str.Insert(i + 2, strOffset);\
 	i += strOffset.GetLength() + 2;
 
+
+	CString strOffset(_T('\t'));
+
+	for (int i = 1; i < str.GetLength(); i++)
+	{
+		if (((str[i] == _T('>')) && (str[i - 1] == _T('/'))) || ((str[i] == _T('<')) && (str[i + 1] == _T('/'))))
+		{
+			strOffset.Delete(strOffset.GetLength() - 1);
+			if (str[i] == _T('<') && str[i - 1] == _T('>'))
+			{
+				ADDINDENT(str, i, strOffset);
+			}
+		}
+		else if (str[i] == _T('<'))
+		{
+			ADDINDENT(str, i, strOffset);
+			strOffset += _T('\t');
+		}
+	}
+}
+
+
+CString CXTPPropExchangeXMLNode::GetEncodedXML(BOOL bFormatted)
+{
+	CString str;
+	if (!OnBeforeExchange())
+		return str;
+
+	ASSERT(m_xmlDocPtr != 0);
+
+	if (IsRootSection())
+	{
+		UpdateDocumentEncoding();
+
+		COleStreamFile stream;
+		if(!stream.CreateMemoryStream())
+			return str;
+
+		VARIANT var;
+		var.vt = VT_UNKNOWN;
+		var.punkVal = stream.GetStream();
+
+		if (FAILED(m_xmlDocPtr->save(var)))
+			return str;
+
+		stream.SeekToBegin();
+		DWORD dwLength = (DWORD)stream.GetLength();
+
+		char* lpszBuffer = new char[dwLength + 1];
+		stream.Read(lpszBuffer, dwLength);
+
+		if (dwLength > 0 && lpszBuffer[dwLength - 1] <= 13) dwLength--; // Remove /n
+		if (dwLength > 0 && lpszBuffer[dwLength - 1] <= 13) dwLength--; // Remove /r
+
+		lpszBuffer[dwLength] = 0;
+
+		str = lpszBuffer;
+
+		delete[] lpszBuffer;
+	}
+	else
+	{
+		ASSERT(FALSE);
+	}
+
+	if (bFormatted)
+	{
+		FormatString(str);
+	}
+
+	return str;
+}
+
+CString CXTPPropExchangeXMLNode::GetXML(BOOL bFormatted)
+{
 	CString str;
 	if (!OnBeforeExchange())
 		return str;
@@ -1726,29 +1815,10 @@ CString CXTPPropExchangeXMLNode::GetXML(BOOL bFormatted)
 
 	if (bFormatted)
 	{
-		CString strOffset(_T('\t'));
-
-		for (int i = 1; i < str.GetLength(); i++)
-		{
-			if (((str[i] == _T('>')) && (str[i - 1] == _T('/'))) || ((str[i] == _T('<')) && (str[i + 1] == _T('/'))))
-			{
-				DELETE_S(strOffset, strOffset.GetLength() - 1);
-				if (str[i] == _T('<') && str[i - 1] == _T('>'))
-				{
-					ADDINDENT(str, i, strOffset);
-				}
-			}
-			else if (str[i] == _T('<'))
-			{
-				ADDINDENT(str, i, strOffset);
-				strOffset += _T('\t');
-
-			}
-		}
+		FormatString(str);
 	}
 
 	return str;
-
 }
 
 void CXTPPropExchangeXMLNode::FormatFile(LPCTSTR lpszFileName)
@@ -1828,12 +1898,8 @@ void CXTPPropExchangeXMLNode::FormatFile(LPCTSTR lpszFileName)
 	free(lpszFileBuffer);
 }
 
-HRESULT CXTPPropExchangeXMLNode::SaveToFile(LPCTSTR strFileName, BOOL bFormatted)
+void CXTPPropExchangeXMLNode::UpdateDocumentEncoding()
 {
-	CString str;
-	if (!OnBeforeExchange())
-		return E_FAIL;
-
 	ASSERT(m_xmlDocPtr != 0);
 
 	CString strInstruction = _T("version=\"1.0\" encoding=\"") + m_strEncoding + _T("\"");
@@ -1863,6 +1929,15 @@ HRESULT CXTPPropExchangeXMLNode::SaveToFile(LPCTSTR strFileName, BOOL bFormatted
 			m_xmlDocPtr->insertBefore(ptrInstruction, _variant_t(xmlNodePtr.GetInterfacePtr()), 0);
 		}
 	}
+}
+
+HRESULT CXTPPropExchangeXMLNode::SaveToFile(LPCTSTR strFileName, BOOL bFormatted)
+{
+	CString str;
+	if (!OnBeforeExchange())
+		return E_FAIL;
+
+	UpdateDocumentEncoding();
 
 	HRESULT hr = m_xmlDocPtr->save(COleVariant(strFileName));
 	if (FAILED(hr))

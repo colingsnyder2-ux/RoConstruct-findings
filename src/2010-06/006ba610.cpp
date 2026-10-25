@@ -1,197 +1,167 @@
-// from server: 35% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs script/ThreadRef.cpp
+// roc-lib: openrbx-client App/util/RunStateOwner.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "script/ThreadRef.h"
-#include "script/ScriptContext.h"
-#include "lua.h"
-#include "lauxlib.h"
+#include "util/RunStateOwner.h"
 
-namespace RBX
+#include "util/Timer.h"
+#include "v8datamodel/DataModel.h"
+
+#include <algorithm>
+#include <boost/thread/thread.hpp>
+#include <boost/thread/xtime.hpp>
+
+namespace RBX {
+
+const char sRunService[] = "RunService";
+
+Reflection::SignalDesc<RunService, void(float, float)> RunService::event_Stepped("Stepped", "time", "step");
+
+static Reflection::SignalDesc<RunService, void(float)> event_Heartbeat("Heartbeat", "step");
+
+// FUNCTION: WEBSERVICE 0x10054320
+void RunService::endRunThread(bool join)
 {
-    namespace Lua
-    {
-        ThreadRef::ThreadRef(lua_State* thread)
-            : sync(syncSingleton),
-              node(NULL),
-              previous(NULL),
-              next(NULL),
-              L(thread),
-              threadId(0)
-        {
-            boost::mutex::scoped_lock lock(*sync);
+	stopRequested = true;
+	stateChangedCondition.notify_all();
 
-            node = Node::get(thread).get();
-            addToNode();
-            addRef();
-        }
-
-        ThreadRef::ThreadRef(const ThreadRef& other)
-            : sync(syncSingleton),
-              node(other.node),
-              L(other.L)
-        {
-            boost::mutex::scoped_lock lock(*sync);
-
-            addRef();
-            addToNode();
-        }
-
-        ThreadRef::~ThreadRef()
-        {
-            reset();
-        }
-
-        void ThreadRef::reset()
-        {
-            boost::mutex::scoped_lock lock(*sync);
-
-            removeFromNode();
-            removeRef();
-        }
-
-        ThreadRef& ThreadRef::operator=(const ThreadRef& other)
-        {
-            if (L != other.L)
-            {
-                boost::mutex::scoped_lock lock(*sync);
-
-                removeRef();
-                L = other.L;
-
-                if (L)
-                {
-                    lua_pushthread(L);
-                    threadId = luaL_ref(L, LUA_REGISTRYINDEX);
-                }
-            }
-
-            if (node != other.node)
-            {
-                boost::mutex::scoped_lock lock(*sync);
-
-                removeFromNode();
-
-                node = other.node;
-                addToNode();
-            }
-
-            return *this;
-        }
-
-        void ThreadRef::removeRef()
-        {
-            if (L)
-            {
-                lua_unref(L, threadId);
-                threadId = 0;
-                L = NULL;
-            }
-        }
-
-        void ThreadRef::Node::eraseAllRefs()
-        {
-            boost::mutex::scoped_lock lock(*sync);
-
-            for (ThreadRef* ref = first; ref; ref = ref->next)
-            {
-                ref->removeRef();
-                ref->node = NULL;
-            }
-
-            first = NULL;
-        }
-
-        ThreadRef::Node::~Node()
-        {
-            eraseAllRefs();
-        }
-
-        ThreadRef::NodePtr ThreadRef::Node::create(lua_State* thread)
-        {
-            lua_pushlightuserdata(thread, RBX_LUA_GLOBAL_THREADREFNODE);
-            ThreadRef::NodePtr* newPtr = NodeBridge::pushNewObject(thread);
-            lua_settable(thread, LUA_GLOBALSINDEX);
-
-            *newPtr = ThreadRef::NodePtr(new Node());
-            return *newPtr;
-        }
-
-        ThreadRef::NodePtr ThreadRef::Node::get(lua_State* thread)
-        {
-            lua_pushlightuserdata(thread, RBX_LUA_GLOBAL_THREADREFNODE);
-            lua_gettable(thread, LUA_GLOBALSINDEX);
-            ThreadRef::NodePtr& node = NodeBridge::getObject(thread, lua_gettop(thread));
-            lua_pop(thread, 1);
-            return node;
-        }
-
-        // TODO: this might also be the base definition of Bridge::on_index, not currently clear
-        template<>
-        int ThreadRef::NodeBridge::on_index(const ThreadRef::NodePtr& object, const char* name, lua_State* L)
-        {
-            throw std::runtime_error(G3D::format("%s is not a valid member", name));
-        }
-
-        FunctionRef::FunctionRef(lua_State* thread, int functionIndex)
-            : ThreadRef(thread)
-        {
-            lua_pushvalue(thread, functionIndex);
-            functionId = luaL_ref(thread, LUA_REGISTRYINDEX);
-        }
-
-        FunctionRef lua_tofunction(lua_State* L, int index)
-        {
-            return FunctionRef(L, index);
-        }
-
-        void lua_pushfunction(lua_State* L, const FunctionRef& function)
-        {
-            lua_getref(L, function.functionId);
-        }
-
-        FunctionRef::~FunctionRef()
-        {
-            if (functionId && !empty())
-                lua_unref(thread(), functionId);  
-        }
-
-        void FunctionRef::removeRef()
-        {
-            if (functionId && !empty())
-            {
-                lua_unref(thread(), functionId);  
-                functionId = 0;
-            }
-
-            ThreadRef::removeRef();
-        }
-
-        FunctionRef::FunctionRef(const FunctionRef& other)
-            : ThreadRef(other)
-        {
-            if (empty())
-            {
-                functionId = 0;
-            }
-            else
-            {
-                lua_getref(thread(), other.functionId);
-                functionId = luaL_ref(thread(), LUA_REGISTRYINDEX);
-            }
-        }
-    }
-
-    namespace Reflection
-    {
-		template<>
-		const Type& Type::singleton<Lua::FunctionRef>()
-		{
-			static Type type("Function", typeid(Lua::FunctionRef));
-			return type;
-		}
-    }
+	if (join) {
+		runThread->join();
+	}
 }
+
+// FUNCTION: WEBSERVICE 0x100543b0
+void RunService::onAncestorChanged(const AncestorChanged& event)
+{
+	if (getParent() == NULL) {
+		endRunThread(false);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10054cb0
+void RunService::runProc(boost::shared_ptr<DataModel> dataModel)
+{
+	double desiredTime = getRealTime();
+
+	while (true) {
+		const double timeLeft = desiredTime - getRealTime();
+
+		{
+			boost::mutex::scoped_lock lock(viewMutex);
+
+			for (Views::iterator iter = views.begin(); iter != views.end(); ++iter) {
+				iter->first->AdjustThrottle(timeLeft);
+			}
+		}
+
+		const double waitTime = std::max(0.0, timeLeft);
+
+		boost::xtime xt;
+
+		boost::xtime_get(&xt, boost::TIME_UTC);
+		xt.nsec += (int) (waitTime * 1000000000.0);
+
+		bool signalled;
+
+		{
+			boost::mutex::scoped_lock lock(runMutex);
+
+			signalled = stateChangedCondition.timed_wait(lock, xt);
+		}
+
+		if (!signalled) {
+			boost::xtime xt;
+
+			boost::xtime_get(&xt, boost::TIME_UTC);
+			xt.sec += 1;
+
+			boost::mutex::scoped_lock lock(runMutex);
+
+			if (invalidRunViewCount != 0) {
+				runViewsDoneCondition.timed_wait(lock, xt);
+			}
+		}
+
+		if (timeLeft <= 0.0) {
+			desiredTime = getRealTime();
+		}
+
+		{
+			DataModel::Lock lock(dataModel);
+
+			if (stopRequested) {
+				break;
+			}
+
+			dataModel->step(framePeriod);
+		}
+
+		desiredTime += framePeriod;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10054fd0
+void RunService::invalidateRunViews()
+{
+	boost::mutex::scoped_lock lock(viewMutex);
+
+	if (invalidRunViewCount != 0) {
+		return;
+	}
+
+	invalidRunViewCount = views.size();
+
+	if (invalidRunViewCount > 0) {
+		for (Views::iterator iter = views.begin(); iter != views.end(); ++iter) {
+			iter->first->InvalidateRunView();
+			iter->second = false;
+		}
+
+		runViewsDoneCondition.notify_all();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10055380
+RunService::~RunService()
+{
+}
+
+// FUNCTION: WEBSERVICE 0x10056950
+RunService::RunService()
+	: runState(RS_NORMAL), stopRequested(false), framePeriod(1.0f / 30.0f), runThread(NULL), invalidRunViewCount(0),
+	  runDisabled(false)
+{
+	setName("Run Service");
+}
+
+// STUB: WEBSERVICE 0x100573e0
+void RunService::start()
+{
+	STUB(0x100573e0);
+}
+
+// FUNCTION: WEBSERVICE 0x100577f0
+void RunService::raiseHeartbeat(float time, float step)
+{
+	Notifier<RunService, Heartbeat>::raise(Heartbeat(time, step));
+	event_Heartbeat.fire(this, step);
+}
+
+// FUNCTION: WEBSERVICE 0x10057860
+void RunService::raiseStepped(float time, float step)
+{
+	Notifier<RunService, Stepped>::raise(Stepped(time, step));
+	event_Stepped.fire(this, time, step);
+}
+
+} // namespace RBX
+
+template class RBX::FactoryProduct<RBX::RunService, RBX::Instance, RBX::sRunService>;
+template class RBX::Reflection::Described<
+	RBX::RunService,
+	RBX::sRunService,
+	RBX::FactoryProduct<RBX::RunService, RBX::Instance, RBX::sRunService> >;
+template class RBX::DescribedCreatable<RBX::RunService, RBX::Instance, RBX::sRunService>;

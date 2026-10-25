@@ -1,4 +1,5 @@
-// from server: 68% by colin
-// roc-flags: /O2 /Ob2 /Oy- /hotpatch /GS- /EHsc /MD
-extern "C" void __stdcall helper_008aa534(int); extern "C" __declspec(dllimport) void target_008aa534();
-void func_008aa534() { helper_008aa534(1); target_008aa534(); }
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /Oy- /hotpatch
+extern "C" int __stdcall helper(int);
+extern "C" int __declspec(dllimport) tail(int);
+int func_008aa534(int x) { helper(1); return tail(x); }

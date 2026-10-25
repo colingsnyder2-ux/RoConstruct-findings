@@ -1,10 +1,4 @@
-// from server: 66% by atomic.potato
-struct GuiButton
-{
-    void SetValue(float value);
-};
-
-void GuiButton::SetValue(float value)
-{
-    *(float*)((char*)this + 0x184) = value;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /arch:SSE2
+struct S{char pad[0x184]; void f(float v);};
+void S::f(float v){*(float*)((char*)this+0x184)=v;}

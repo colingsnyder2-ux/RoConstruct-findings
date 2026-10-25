@@ -1,19 +1,16 @@
-// from server: 54% by atomic.potato
-struct String
-{
-    String(const String&);
+// from server: 100% by colin
+
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+struct Str_005cc000 { int words[8]; };
+extern void (__thiscall* str_ctor_005cc000)(Str_005cc000*, Str_005cc000*);
+struct X_005cc000 {
+    char pad[0xb60];
+    Str_005cc000 value;
+    Str_005cc000* copy(Str_005cc000* out);
 };
-
-extern "C" void __stdcall string_construct(String*, const String*);
-
-struct S
+Str_005cc000* X_005cc000::copy(Str_005cc000* out)
 {
-    S& f(const String&);
-};
-
-S& S::f(const String& value)
-{
-    String* destination = (String*)((char*)this + 0xb60);
-    string_construct(destination, &value);
-    return *this;
+    volatile int zero = 0;
+    str_ctor_005cc000(out, &value);
+    return out;
 }

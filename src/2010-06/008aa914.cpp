@@ -1,10 +1,5 @@
-// from server: 45% by atomic.potato
-extern "C" void __cdecl f008af41a(int);
-
-extern void (__cdecl *g008bec0a0)();
-
-void f008aa914()
-{
-    f008af41a(1);
-    g008bec0a0();
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /Oy- /hotpatch
+extern "C" int __stdcall helper(int);
+extern "C" int __declspec(dllimport) tail(int);
+int func_008aa914(int x) { helper(1); return tail(x); }

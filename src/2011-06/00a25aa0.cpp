@@ -1,379 +1,359 @@
-// from server: 79% by colin
+// from server: 97% by colin
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: ogre-1.7.0 OgreOptimisedUtilGeneral.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-net Players.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-    (Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org/
+#include <RakPeer.h>
+#include <BitStream.h>
+#include "Client.h"
+#include "Server.h"
+#include "Players.h"
+#include "Streaming.h"
+#include "PacketIds.h"
+#include "v8datamodel/GameSettings.h"
+#include "v8datamodel/Teams.h"
+#include "util/standardout.h"
 
-Copyright (c) 2000-2009 Torus Knot Software Ltd
+template<class Class>
+class PluginInterfaceAdapter : public PluginInterface
+{
+private:
+	Class* c;
+protected:
+	PluginInterfaceAdapter(Class* c)
+		: PluginInterface(),
+		  c(c)
+	{
+	}
+public:
+	virtual PluginReceiveResult OnReceive(RakPeerInterface* peer, Packet* packet);
+};
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, void(boost::shared_ptr<RBX::Instance>, std::string), 2> funcReportAbuse(&RBX::Network::Players::reportAbuse, "ReportAbuse", "player", "message", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<const std::vector<boost::shared_ptr<RBX::Instance>>>(void), 0> func_players(&RBX::Network::Players::getPlayers, "players", RBX::Reflection::FunctionDescriptor::AnyCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<const std::vector<boost::shared_ptr<RBX::Instance>>>(void), 0> func_GetPlayers(&RBX::Network::Players::getPlayers, "GetPlayers", RBX::Reflection::FunctionDescriptor::AnyCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<RBX::Instance>(int), 1> func_createLocalPlayer(&RBX::Network::Players::createLocalPlayer, "CreateLocalPlayer", "userId", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, void(std::string), 1> func_setAbuseReportUrl(&RBX::Network::Players::setAbuseReportUrl, "SetAbuseReportUrl", "url", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<RBX::Instance>(boost::shared_ptr<RBX::Instance>), 1> func_playerFromCharacterOld(&RBX::Network::Players::playerFromCharacter, "playerFromCharacter", "character", RBX::Reflection::FunctionDescriptor::AnyCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<RBX::Instance>(boost::shared_ptr<RBX::Instance>), 1> func_playerFromCharacter(&RBX::Network::Players::playerFromCharacter, "GetPlayerFromCharacter", "character", RBX::Reflection::FunctionDescriptor::AnyCaller);
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+static RBX::Reflection::SignalDesc<RBX::Network::Players, void(boost::shared_ptr<RBX::Instance>)> event_PlayerAdded("PlayerAdded", "player");
+static RBX::Reflection::SignalDesc<RBX::Network::Players, void(boost::shared_ptr<RBX::Instance>)> event_PlayerRemoving("PlayerRemoving", "player");
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
------------------------------------------------------------------------------
-*/
-#include "OgreStableHeaders.h"
+static RBX::Reflection::PropDescriptor<RBX::Network::Players, int> propPlayerCount("NumPlayers", "Data", &RBX::Network::Players::numPlayers, NULL, RBX::Reflection::PropertyDescriptor::UI);
+static RBX::Reflection::PropDescriptor<RBX::Network::Players, int> propPlayerMaxCount("MaxPlayers", "Data", &RBX::Network::Players::getMaxPlayers, &RBX::Network::Players::setMaxPlayers, RBX::Reflection::PropertyDescriptor::STANDARD);
 
-#include "OgreOptimisedUtil.h"
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<RBX::Instance>(int), 1> func_GetPlayerByID(&RBX::Network::Players::getPlayerByID, "GetPlayerByID", "userID", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, void(std::string), 1> funcChat(&RBX::Network::Players::chat, "Chat", "message", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
 
-#include "OgreVector3.h"
-#include "OgreMatrix4.h"
+namespace RBX
+{
+	namespace Network
+	{
+		class Players::Plugin : public PluginInterfaceAdapter<Players>
+		{
+		public:
+			Plugin(Players* players)
+				: PluginInterfaceAdapter<Players>(players)
+			{
+			}
+		};
+		
+		Players::Players()
+			: players(std::vector<boost::shared_ptr<Instance>>()),
+			  peer(NULL),
+			  maxPlayers(12)
+		{
+			setName("Players");
+			plugin.reset(new Plugin(this));
+		}
 
-namespace Ogre {
+		Players::~Players()
+		{
+			if (peer)
+				peer->DetachPlugin(plugin.get());
 
-//-------------------------------------------------------------------------
-// Local classes
-//-------------------------------------------------------------------------
+			peer = NULL;
+		}
 
-    /** General implementation of OptimisedUtil.
-    @note
-        Don't use this class directly, use OptimisedUtil instead.
-    */
-    class _OgrePrivate OptimisedUtilGeneral : public OptimisedUtil
-    {
-    public:
-        /// @copydoc OptimisedUtil::softwareVertexSkinning
-        virtual void softwareVertexSkinning(
-            const float *srcPosPtr, float *destPosPtr,
-            const float *srcNormPtr, float *destNormPtr,
-            const float *blendWeightPtr, const unsigned char* blendIndexPtr,
-            const Matrix4* const* blendMatrices,
-            size_t srcPosStride, size_t destPosStride,
-            size_t srcNormStride, size_t destNormStride,
-            size_t blendWeightStride, size_t blendIndexStride,
-            size_t numWeightsPerVertex,
-            size_t numVertices);
+		bool Players::clientIsPresent(const Instance* context, bool testInDatamodel)
+		{
+			return Client::clientIsPresent(context, testInDatamodel);
+		}
 
-        /// @copydoc OptimisedUtil::softwareVertexMorph
-        virtual void softwareVertexMorph(
-            Real t,
-            const float *srcPos1, const float *srcPos2,
-            float *dstPos,
-            size_t numVertices);
+		bool Players::askAddChild(const Instance* instance) const
+		{
+			return dynamic_cast<const Player*>(instance) != NULL;
+		}
 
-        /// @copydoc OptimisedUtil::concatenateAffineMatrices
-        virtual void concatenateAffineMatrices(
-            const Matrix4& baseMatrix,
-            const Matrix4* srcMatrices,
-            Matrix4* dstMatrices,
-            size_t numMatrices);
+		void Players::setConnection(RakPeerInterface* peer)
+		{
+			if (this->peer)
+				this->peer->DetachPlugin(plugin.get());
 
-        /// @copydoc OptimisedUtil::calculateFaceNormals
-        virtual void calculateFaceNormals(
-            const float *positions,
-            const EdgeData::Triangle *triangles,
-            Vector4 *faceNormals,
-            size_t numTriangles);
+			this->peer = peer;
 
-        /// @copydoc OptimisedUtil::calculateLightFacing
-        virtual void calculateLightFacing(
-            const Vector4& lightPos,
-            const Vector4* faceNormals,
-            char* lightFacings,
-            size_t numFaces);
+			if (peer)
+				peer->AttachPlugin(plugin.get());
+		}
 
-        /// @copydoc OptimisedUtil::extrudeVertices
-        virtual void extrudeVertices(
-            const Vector4& lightPos,
-            Real extrudeDist,
-            const float* srcPositions,
-            float* destPositions,
-            size_t numVertices);
-    };
-    //---------------------------------------------------------------------
-    //---------------------------------------------------------------------
-    //---------------------------------------------------------------------
-    void OptimisedUtilGeneral::softwareVertexSkinning(
-        const float *pSrcPos, float *pDestPos,
-        const float *pSrcNorm, float *pDestNorm,
-        const float *pBlendWeight, const unsigned char* pBlendIndex,
-        const Matrix4* const* blendMatrices,
-        size_t srcPosStride, size_t destPosStride,
-        size_t srcNormStride, size_t destNormStride,
-        size_t blendWeightStride, size_t blendIndexStride,
-        size_t numWeightsPerVertex,
-        size_t numVertices)
-    {
-        // Source vectors
-        Vector3 sourceVec = Vector3::ZERO, sourceNorm = Vector3::ZERO;
-        // Accumulation vectors
-        Vector3 accumVecPos, accumVecNorm;
+		Player* Players::findLocalPlayer(const Instance* context)
+		{
+			Players* players = ServiceProvider::find<Players>(context);
+			return players ? players->getLocalPlayer() : NULL;
+		}
 
-        // Loop per vertex
-        for (size_t vertIdx = 0; vertIdx < numVertices; ++vertIdx)
-        {
-            // Load source vertex elements
-            sourceVec.x = pSrcPos[0];
-            sourceVec.y = pSrcPos[1];
-            sourceVec.z = pSrcPos[2];
+		ModelInstance* Players::findLocalCharacter(const Instance* context)
+		{
+			Player* player = Players::findLocalPlayer(context);
+			return player ? player->getCharacter() : NULL;
+		}
 
-            if (pSrcNorm)
-            {
-                sourceNorm.x = pSrcNorm[0];
-                sourceNorm.y = pSrcNorm[1];
-                sourceNorm.z = pSrcNorm[2];
-            }
+		void Players::setAbuseReportUrl(std::string value)
+		{
+			if (value.empty())
+				abuseReporter.reset(NULL);
+			else
+				abuseReporter.reset(new AbuseReporter(value));
+		}
 
-            // Load accumulators
-            accumVecPos = Vector3::ZERO;
-            accumVecNorm = Vector3::ZERO;
+		void Players::setMaxPlayers(int value)
+		{
+			if (value != maxPlayers)
+			{
+				maxPlayers = value;
+				raisePropertyChanged(propPlayerMaxCount);
+			}
+		}
 
-            // Loop per blend weight
-            //
-            // Note: Don't change "unsigned short" here!!! If use "size_t" instead,
-            // VC7.1 unroll this loop to four blend weights pre-iteration, and then
-            // loss performance 10% in this function. Ok, this give a hint that we
-            // should unroll this loop manually for better performance, will do that
-            // later.
-            //
-            for (unsigned short blendIdx = 0; blendIdx < numWeightsPerVertex; ++blendIdx)
-            {
-                // Blend by multiplying source by blend matrix and scaling by weight
-                // Add to accumulator
-                // NB weights must be normalised!!
-                Real weight = pBlendWeight[blendIdx];
-                if (weight)
-                {
-                    // Blend position, use 3x4 matrix
-                    const Matrix4& mat = *blendMatrices[pBlendIndex[blendIdx]];
-                    accumVecPos.x +=
-                        (mat[0][0] * sourceVec.x +
-                         mat[0][1] * sourceVec.y +
-                         mat[0][2] * sourceVec.z +
-                         mat[0][3])
-                         * weight;
-                    accumVecPos.y +=
-                        (mat[1][0] * sourceVec.x +
-                         mat[1][1] * sourceVec.y +
-                         mat[1][2] * sourceVec.z +
-                         mat[1][3])
-                         * weight;
-                    accumVecPos.z +=
-                        (mat[2][0] * sourceVec.x +
-                         mat[2][1] * sourceVec.y +
-                         mat[2][2] * sourceVec.z +
-                         mat[2][3])
-                         * weight;
-                    if (pSrcNorm)
-                    {
-                        // Blend normal
-                        // We should blend by inverse transpose here, but because we're assuming the 3x3
-                        // aspect of the matrix is orthogonal (no non-uniform scaling), the inverse transpose
-                        // is equal to the main 3x3 matrix
-                        // Note because it's a normal we just extract the rotational part, saves us renormalising here
-                        accumVecNorm.x +=
-                            (mat[0][0] * sourceNorm.x +
-                             mat[0][1] * sourceNorm.y +
-                             mat[0][2] * sourceNorm.z)
-                             * weight;
-                        accumVecNorm.y +=
-                            (mat[1][0] * sourceNorm.x +
-                             mat[1][1] * sourceNorm.y +
-                             mat[1][2] * sourceNorm.z)
-                            * weight;
-                        accumVecNorm.z +=
-                            (mat[2][0] * sourceNorm.x +
-                             mat[2][1] * sourceNorm.y +
-                             mat[2][2] * sourceNorm.z)
-                            * weight;
-                    }
-                }
-            }
+		void Players::reportAbuse(boost::shared_ptr<Instance> player, std::string comment)
+		{
+			reportAbuse(dynamic_cast<Player*>(player.get()), comment);
+		}
 
-            // Stored blended vertex in hardware buffer
-            pDestPos[0] = accumVecPos.x;
-            pDestPos[1] = accumVecPos.y;
-            pDestPos[2] = accumVecPos.z;
+		void Players::reportAbuse(Player* player, std::string comment)
+		{
+			if (abuseReporter)
+			{
+				StandardOut::singleton()->print(MESSAGE_INFO, "Submitting abuse report from %s", player ? player->getName().c_str() : "[[[anonymous]]]");
+				
+				AbuseReport r;
+				r.submitterID = localPlayer ? localPlayer->getUserID() : 0;
+				r.allegedAbuserID = player ? player->getUserID() : 0;
+				r.comment = comment;
 
-            // Stored blended vertex in temp buffer
-            if (pSrcNorm)
-            {
-                // Normalise
-                accumVecNorm.normalise();
-                pDestNorm[0] = accumVecNorm.x;
-                pDestNorm[1] = accumVecNorm.y;
-                pDestNorm[2] = accumVecNorm.z;
-                // Advance pointers
-                advanceRawPointer(pSrcNorm, srcNormStride);
-                advanceRawPointer(pDestNorm, destNormStride);
-            }
+				abuseReporter->add(r, chatHistory);
+			}
+			else
+			{
+				StandardOut::singleton()->print(MESSAGE_INFO, "Sending abuse report to game server via Raknet");
+				if (!peer)
+					throw std::runtime_error("Can\'t report abuse: Not in a networked game");
 
-            // Advance pointers
-            advanceRawPointer(pSrcPos, srcPosStride);
-            advanceRawPointer(pDestPos, destPosStride);
-            advanceRawPointer(pBlendWeight, blendWeightStride);
-            advanceRawPointer(pBlendIndex, blendIndexStride);
-        }
-    }
-    //---------------------------------------------------------------------
-    void OptimisedUtilGeneral::concatenateAffineMatrices(
-        const Matrix4& baseMatrix,
-        const Matrix4* pSrcMat,
-        Matrix4* pDstMat,
-        size_t numMatrices)
-    {
-        const Matrix4& m = baseMatrix;
+				RakNet::BitStream bitStream;
+				bitStream << (unsigned char)ID_REPORT_ABUSE;
+				bitStream << (localPlayer ? localPlayer->getUserID() : 0);
+				bitStream << (player ? player->getUserID() : 0);
+				bitStream << comment;
 
-        for (size_t i = 0; i < numMatrices; ++i)
-        {
-            const Matrix4& s = *pSrcMat;
-            Matrix4& d = *pDstMat;
+				peer->Send(&bitStream, HIGH_PRIORITY, RELIABLE, 2, UNASSIGNED_SYSTEM_ADDRESS, true);
+			}
+		}
 
-            // TODO: Promote following code to Matrix4 class.
+		Player* Players::getPlayerFromCharacter(Instance* character)
+		{
+			Players* players = ServiceProvider::find<Players>(character);
+			if (players)
+			{
+				boost::shared_ptr<Instance> found = players->playerFromCharacter(shared_from(character));
+				return static_cast<Player*>(found.get());
+			}
+			else
+			{
+				return NULL;
+			}
+		}
 
-            d[0][0] = m[0][0] * s[0][0] + m[0][1] * s[1][0] + m[0][2] * s[2][0];
-            d[0][1] = m[0][0] * s[0][1] + m[0][1] * s[1][1] + m[0][2] * s[2][1];
-            d[0][2] = m[0][0] * s[0][2] + m[0][1] * s[1][2] + m[0][2] * s[2][2];
-            d[0][3] = m[0][0] * s[0][3] + m[0][1] * s[1][3] + m[0][2] * s[2][3] + m[0][3];
+		void Players::chat(std::string message)
+		{
+			if (!localPlayer)
+				throw std::runtime_error("No local Player to chat from");
 
-            d[1][0] = m[1][0] * s[0][0] + m[1][1] * s[1][0] + m[1][2] * s[2][0];
-            d[1][1] = m[1][0] * s[0][1] + m[1][1] * s[1][1] + m[1][2] * s[2][1];
-            d[1][2] = m[1][0] * s[0][2] + m[1][1] * s[1][2] + m[1][2] * s[2][2];
-            d[1][3] = m[1][0] * s[0][3] + m[1][1] * s[1][3] + m[1][2] * s[2][3] + m[1][3];
+			RakNet::BitStream bitStream;
+			bitStream << (unsigned char)ID_CHAT_ALL;
 
-            d[2][0] = m[2][0] * s[0][0] + m[2][1] * s[1][0] + m[2][2] * s[2][0];
-            d[2][1] = m[2][0] * s[0][1] + m[2][1] * s[1][1] + m[2][2] * s[2][1];
-            d[2][2] = m[2][0] * s[0][2] + m[2][1] * s[1][2] + m[2][2] * s[2][2];
-            d[2][3] = m[2][0] * s[0][3] + m[2][1] * s[1][3] + m[2][2] * s[2][3] + m[2][3];
+			Guid::Data data;
+			localPlayer->getGuid().extract(data);
 
-            d[3][0] = 0;
-            d[3][1] = 0;
-            d[3][2] = 0;
-            d[3][3] = 1;
+			bitStream << data.scope->name;
+			bitStream << data.index;
+			bitStream << message;
 
-            ++pSrcMat;
-            ++pDstMat;
-        }
-    }
-    //---------------------------------------------------------------------
-    void OptimisedUtilGeneral::softwareVertexMorph(
-        Real t,
-        const float *pSrc1, const float *pSrc2,
-        float *pDst,
-        size_t numVertices)
-    {
-        for (size_t i = 0; i < numVertices; ++i)
-        {
-            // x
-            *pDst++ = *pSrc1 + t * (*pSrc2 - *pSrc1) ;
-            ++pSrc1; ++pSrc2;
-            // y
-            *pDst++ = *pSrc1 + t * (*pSrc2 - *pSrc1) ;
-            ++pSrc1; ++pSrc2;
-            // z
-            *pDst++ = *pSrc1 + t * (*pSrc2 - *pSrc1) ;
-            ++pSrc1; ++pSrc2;
-        }
-    }
-    //---------------------------------------------------------------------
-    void OptimisedUtilGeneral::calculateFaceNormals(
-        const float *positions,
-        const EdgeData::Triangle *triangles,
-        Vector4 *faceNormals,
-        size_t numTriangles)
-    {
-        for ( ; numTriangles; --numTriangles)
-        {
-            const EdgeData::Triangle& t = *triangles++;
-            size_t offset;
+			peer->Send(&bitStream, MEDIUM_PRIORITY, RELIABLE, 2, UNASSIGNED_SYSTEM_ADDRESS, true);
 
-            offset = t.vertIndex[0] * 3;
-            Vector3 v1(positions[offset+0], positions[offset+1], positions[offset+2]);
+			ChatMessage event = {message, localPlayer, boost::shared_ptr<Player>()};
+			Notifier<Players, ChatMessage>::raise(event);
+		}
 
-            offset = t.vertIndex[1] * 3;
-            Vector3 v2(positions[offset+0], positions[offset+1], positions[offset+2]);
+		bool Players::backendProcessing(const Instance* context, bool testInDatamodel)
+		{
+			const ServiceProvider* sp = ServiceProvider::findServiceProvider(context);
+			RBXASSERT(!testInDatamodel || sp);
 
-            offset = t.vertIndex[2] * 3;
-            Vector3 v3(positions[offset+0], positions[offset+1], positions[offset+2]);
+			return sp && !Client::clientIsPresent(context, testInDatamodel);
+		}
 
-            *faceNormals++ = Math::calculateFaceNormalWithoutNormalize(v1, v2, v3);
-        }
-    }
-    //---------------------------------------------------------------------
-    void OptimisedUtilGeneral::calculateLightFacing(
-        const Vector4& lightPos,
-        const Vector4* faceNormals,
-        char* lightFacings,
-        size_t numFaces)
-    {
-        for (size_t i = 0; i < numFaces; ++i)
-        {
-            *lightFacings++ = (lightPos.dotProduct(*faceNormals++) > 0);
-        }
-    }
-    //---------------------------------------------------------------------
-    void OptimisedUtilGeneral::extrudeVertices(
-        const Vector4& lightPos,
-        Real extrudeDist,
-        const float* pSrcPos,
-        float* pDestPos,
-        size_t numVertices)
-    {
-        if (lightPos.w == 0.0f)
-        {
-            // Directional light, extrusion is along light direction
+		bool Players::frontendProcessing(const Instance* context, bool testInDatamodel)
+		{
+			const ServiceProvider* sp = ServiceProvider::findServiceProvider(context);
+			RBXASSERT(!testInDatamodel || sp);
 
-            Vector3 extrusionDir(
-                -lightPos.x,
-                -lightPos.y,
-                -lightPos.z);
-            extrusionDir.normalise();
-            extrusionDir *= extrudeDist;
+			return sp && !Server::serverIsPresent(context, testInDatamodel);
+		}
 
-            for (size_t vert = 0; vert < numVertices; ++vert)
-            {
-                *pDestPos++ = *pSrcPos++ + extrusionDir.x;
-                *pDestPos++ = *pSrcPos++ + extrusionDir.y;
-                *pDestPos++ = *pSrcPos++ + extrusionDir.z;
-            }
-        }
-        else
-        {
-            // Point light, calculate extrusionDir for every vertex
-            assert(lightPos.w == 1.0f);
+		boost::shared_ptr<Instance> Players::playerFromCharacter(boost::shared_ptr<Instance> character)
+		{
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> myPlayers = getPlayers();
 
-            for (size_t vert = 0; vert < numVertices; ++vert)
-            {
-                Vector3 extrusionDir(
-                    pSrcPos[0] - lightPos.x,
-                    pSrcPos[1] - lightPos.y,
-                    pSrcPos[2] - lightPos.z);
-                extrusionDir.normalise();
-                extrusionDir *= extrudeDist;
+			std::vector<boost::shared_ptr<Instance>>::const_iterator iter = myPlayers->begin();
+			std::vector<boost::shared_ptr<Instance>>::const_iterator end = myPlayers->end();
 
-                *pDestPos++ = *pSrcPos++ + extrusionDir.x;
-                *pDestPos++ = *pSrcPos++ + extrusionDir.y;
-                *pDestPos++ = *pSrcPos++ + extrusionDir.z;
-            }
-        }
-    }
-    //---------------------------------------------------------------------
-    //---------------------------------------------------------------------
-    //---------------------------------------------------------------------
-    extern OptimisedUtil* _getOptimisedUtilGeneral(void)
-    {
-        static OptimisedUtilGeneral msOptimisedUtilGeneral;
-        return &msOptimisedUtilGeneral;
-    }
+			for (; iter != end; iter++)
+			{
+				if (static_cast<Player*>(iter->get())->getCharacter() == static_cast<ModelInstance*>(character.get()))
+					return *iter;
+			}
 
+			return boost::shared_ptr<Instance>();
+		}
+
+		boost::shared_ptr<Instance> Players::getPlayerByID(int userID)
+		{
+			std::vector<boost::shared_ptr<Instance>>::const_iterator iter = players->begin();
+			std::vector<boost::shared_ptr<Instance>>::const_iterator end = players->end();
+
+			for (; iter != end; iter++)
+			{
+				if (static_cast<Player*>(iter->get())->getUserID() == userID)
+					return *iter;
+			}
+
+			return boost::shared_ptr<Instance>();
+		}
+
+		void Players::onEvent(const Player* source, CharacterAdded event)
+		{
+			RBXASSERT(backendProcessing(this, true));
+			const_cast<Player*>(source)->rebuildBackpack();
+		}
+
+		void Players::addChatMessage(const ChatMessage& message)
+		{
+			chatHistory.push_front(message);
+
+			while (chatHistory.size() > (size_t)GameSettings::singleton().chatHistory)
+			{
+				chatHistory.pop_back();
+			}
+
+			Notifier<Players, ChatMessage>::raise(message);
+			Player::event_Chatted.fire(message.source.get(), message.message, message.destination);
+		}
+
+		void Players::onChildAdded(Instance* child)
+		{
+			Player* player = dynamic_cast<Player*>(child);
+			if (!player)
+				return;
+
+			if (player->getUserID() > 0)
+			{
+				boost::shared_ptr<Instance> otherPlayer = getPlayerByID(player->getUserID());
+				if (otherPlayer)
+					otherPlayer->setParent(NULL);
+			}
+
+			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& myPlayers = players.write();
+			myPlayers->push_back(shared_from(child));
+
+			if (backendProcessing(this, true))
+			{
+				player->Notifier<Player, CharacterAdded>::addListener(this);
+				player->rebuildBackpack();
+
+				if (Teams* teams = ServiceProvider::find<Teams>(this))
+					teams->assignNewPlayerToTeam(player);
+
+				event_PlayerAdded.fire(this, shared_from(player));
+			}
+		}
+		
+		void Players::onChildRemoving(Instance* child)
+		{
+			Player* player = dynamic_cast<Player*>(child);
+			if (!player)
+				return;
+
+			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& myPlayers = players.write();
+			myPlayers->erase(std::find(myPlayers->begin(), myPlayers->end(), shared_from(child)));
+
+			if (backendProcessing(this, false))
+				event_PlayerRemoving.fire(this, shared_from(player));
+
+			Notifier<Player, CharacterAdded>::disconnect(player, this);
+		}
+
+		void Players::onChildChanged(Instance* instance, const PropertyChanged& event)
+		{
+			if (instance == localPlayer.get() && &event.getProperty().getDescriptor() == &Player::prop_SuperSafeChat)
+			{
+				bool s = localPlayer ? Player::prop_SuperSafeChat.getValue(localPlayer.get()) : false;
+				Notifier<Players, SuperSafeChanged>::raise(SuperSafeChanged(s));
+			}
+		}
+
+		// 98% match
+		boost::shared_ptr<Instance> Players::createLocalPlayer(int userId)
+		{
+			if (localPlayer)
+				throw std::runtime_error("Local player already exists");
+
+			localPlayer = Creatable::create<Player>();
+			Player::prop_userId.setValue(localPlayer.get(), userId);
+			localPlayer->setParent(this);
+			raisePropertyChanged(propLocalPlayer);
+
+			bool s = localPlayer ? Player::prop_SuperSafeChat.getValue(localPlayer.get()) : false;
+			Notifier<Players, SuperSafeChanged>::raise(SuperSafeChanged(s));
+
+			return localPlayer;
+		}
+
+		void AbuseReport::addMessage(const ChatMessage& cm)
+		{
+			int userId = cm.source ? Player::prop_userId.getValue(cm.source.get()) : 0;
+			AbuseReport::Message m = {userId, cm.message};
+			messages.push_back(m);
+		}
+
+		AbuseReporter::AbuseReporter(std::string abuseUrl)
+			: _data(new AbuseReporter::data)
+		{
+			requestProcessor.reset(new worker_thread(boost::bind(&AbuseReporter::processRequests, _data, abuseUrl), "rbx_abusereporter"));
+		}
+
+		void AbuseReporter::add(AbuseReport& r, const std::list<ChatMessage>& chatHistory)
+		{
+			std::for_each(chatHistory.begin(), chatHistory.end(), boost::bind(&AbuseReport::addMessage, boost::ref(r), _1));
+
+			{
+				boost::mutex::scoped_lock lock(_data->requestSync);
+				_data->queue.push(r);
+			}
+
+			requestProcessor->wake();
+		}
+	}
 }

@@ -1,14 +1,14 @@
-// from server: 30% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/CommandBars/XTPControlExt.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPControlExt.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPControlExt.cpp : implementation file.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -28,30 +28,22 @@
 #include "stdafx.h"
 #include "Resource.h"
 
+#include "Common/XTPResourceManager.h"
 #include "Common/XTPIntel80Helpers.h"
 #include "Common/XTPColorManager.h"
 #include "Common/XTPPropExchange.h"
-#include "Common/XTPMarkupRender.h"
-#include "Common/XTPImageManager.h"
-#include "Common/XTPSystemHelpers.h"
-#include "Common/XTPHookManager.h"
-#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPVC80Helpers.h"
 
-#include "TabManager/XTPTabManager.h"
-
-#include "XTPCommandBarsDefines.h"
-#include "XTPControl.h"
-#include "XTPControlButton.h"
 #include "XTPControlExt.h"
+#include "XTPMouseManager.h"
 #include "XTPControls.h"
-#include "XTPCommandBar.h"
 #include "XTPToolBar.h"
 #include "XTPPopupBar.h"
 #include "XTPControlPopup.h"
 #include "XTPCommandBars.h"
+#include "TabManager/XTPTabManager.h"
 #include "XTPTabClientWnd.h"
 #include "XTPPaintManager.h"
-#include "XTPRecentFileList.h"
 
 
 #ifdef _DEBUG
@@ -139,7 +131,7 @@ void CXTPControlWindowList::OnCalcDynamicSize(DWORD /*dwMode*/)
 
 	int nIndex = m_nIndex + 1;
 
-	CString strTitle;
+	TCHAR lpTitle[256];
 	HWND hWndActive = (HWND)::SendMessage(hWndClient, WM_MDIGETACTIVE, 0, 0);
 
 	if (hWndActive)
@@ -160,12 +152,13 @@ void CXTPControlWindowList::OnCalcDynamicSize(DWORD /*dwMode*/)
 	{
 		if (::IsWindowVisible(hWndChild))
 		{
-			CXTPDrawHelpers::GetWindowCaption(hWndChild, strTitle);
+			::GetWindowText(hWndChild, lpTitle, 256);
 
 			CXTPControl* pControl = m_pControls->Add(m_bShowRadioButtons ? xtpControlRadioButton : xtpControlButton,
 				nID, _T(""), nIndex, TRUE);
 
-			pControl->SetCaption(ConstructCaption(strTitle, nIndex - m_nIndex));
+
+			pControl->SetCaption(ConstructCaption(lpTitle, nIndex - m_nIndex));
 			pControl->SetBeginGroup(nIndex == m_nIndex + 1);
 			pControl->SetChecked(hWndActive == hWndChild);
 			pControl->SetFlags(xtpFlagManualUpdate);
@@ -386,6 +379,7 @@ CRecentFileList* CXTPControlRecentFileList::GetRecentFileList()
 	USES_PROTECTED_ACCESS(CXTPControlRecentFileList, CWinApp, CRecentFileList*, m_pRecentFileList)
 
 	return PROTECTED_ACCESS(CWinApp, AfxGetApp(), m_pRecentFileList);
+
 }
 
 int CXTPControlRecentFileList::GetFirstMruID()
@@ -437,8 +431,6 @@ void CXTPControlRecentFileList::OnCalcDynamicSize(DWORD /*dwMode*/)
 	szCurDir[nCurDir] = '\\';
 	szCurDir[++nCurDir] = '\0';
 
-	BOOL bExtendedRecentFileList = pRecentFileList->m_strOriginal == _T("PinableRecentFileList");
-
 	CString strName;
 	CString strTemp;
 	for (int iMRU = 0; iMRU < pRecentFileList->m_nSize; iMRU++)
@@ -446,26 +438,11 @@ void CXTPControlRecentFileList::OnCalcDynamicSize(DWORD /*dwMode*/)
 		if (!pRecentFileList->GetDisplayName(strName, iMRU, szCurDir, nCurDir))
 			break;
 
-		CXTPRecentFileListItem* pItem = bExtendedRecentFileList ? ((CXTPRecentFileList*)pRecentFileList)->GetItem(iMRU) : NULL;
-		if (pItem)
-		{
-			if (!pItem->GetCaption().IsEmpty())
-				strName = pItem->GetCaption();
-		}
-
-		int nId = iMRU + GetFirstMruID();
-
-		CXTPControl* pControl = m_pControls->Add(xtpControlButton, nId, _T(""), m_nIndex + iMRU + 1 , TRUE);
+		CXTPControl* pControl = m_pControls->Add(xtpControlButton, iMRU + GetFirstMruID(), _T(""), m_nIndex + iMRU + 1 , TRUE);
 
 		pControl->SetCaption(CXTPControlWindowList::ConstructCaption(strName, iMRU + 1));
 		pControl->SetFlags(xtpFlagManualUpdate);
 		pControl->SetBeginGroup(iMRU == 0 && m_nIndex != 0);
-		pControl->SetParameter(pRecentFileList->m_arrNames[iMRU]);
-
-		if (pItem)
-		{
-			pControl->SetIconId(pItem->GetIconId());
-		}
 
 		if ((GetFlags() & xtpFlagWrapRow) && iMRU == 0)
 			pControl->SetFlags(pControl->GetFlags() | xtpFlagWrapRow);
@@ -723,6 +700,8 @@ void CXTPControlLabel::OnClick(BOOL bKeyboard, CPoint pt)
 {
 	if (!bKeyboard && IsCustomizeMode() && IsCustomizeMovable())
 	{
+		m_pParent->SetPopuped(-1);
+		m_pParent->SetSelected(-1);
 		CustomizeStartDrag(pt);
 		return;
 	}
@@ -740,21 +719,6 @@ CXTPControlCheckBox::CXTPControlCheckBox()
 	m_controlType = xtpControlCheckBox;
 }
 
-BOOL CXTPControlCheckBox::IsFocused() const
-{
-	return GetSelected();
-}
-
-BOOL CXTPControlCheckBox::OnHookKeyDown(UINT nChar, LPARAM lParam)
-{
-	if (nChar == VK_SPACE)
-	{
-		OnClick(TRUE);
-		return TRUE;
-	}
-
-	return CXTPControlButton::OnHookKeyDown(nChar, lParam);
-}
 
 //////////////////////////////////////////////////////////////////////////
 // CXTPControlRadioButton
@@ -766,160 +730,3 @@ CXTPControlRadioButton::CXTPControlRadioButton()
 {
 	m_controlType = xtpControlRadioButton;
 }
-
-BOOL CXTPControlRadioButton::IsFocused() const
-{
-	return GetSelected();
-}
-
-BOOL CXTPControlRadioButton::OnHookKeyDown(UINT nChar, LPARAM lParam)
-{
-	if (nChar == VK_SPACE)
-	{
-		OnClick(TRUE);
-		return TRUE;
-	}
-
-	return CXTPControlButton::OnHookKeyDown(nChar, lParam);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPControlMarkupLabel
-
-IMPLEMENT_XTP_CONTROL(CXTPControlMarkupLabel, CXTPControlLabel)
-
-CXTPControlMarkupLabel::CXTPControlMarkupLabel()
-{
-	m_pMarkupUIElement = NULL;
-}
-
-CXTPControlMarkupLabel::~CXTPControlMarkupLabel()
-{
-	XTPMarkupReleaseElement(m_pMarkupUIElement);
-}
-
-void CXTPControlMarkupLabel::OnCaptionChanged()
-{
-	XTPMarkupReleaseElement(m_pMarkupUIElement);
-
-	CXTPMarkupContext* pContext = XTPMarkupCreateContext(0);
-
-	m_pMarkupUIElement = XTPMarkupParseText(pContext, m_strCaption);
-
-	XTPMarkupReleaseContext(pContext);
-}
-
-
-CSize CXTPControlMarkupLabel::GetSize(CDC* pDC)
-{
-	if (!m_pMarkupUIElement)
-	{
-		return CXTPControlLabel::GetSize(pDC);
-	}
-
-	CFont* pFont = GetPaintManager()->GetRegularFont();
-	XTPMarkupSetDefaultFont(XTPMarkupElementContext(m_pMarkupUIElement), (HFONT)pFont->GetSafeHandle(), COLORREF_NULL);
-
-	return XTPMarkupMeasureElement(m_pMarkupUIElement, INT_MAX, INT_MAX);
-}
-
-
-void CXTPControlMarkupLabel::Draw(CDC* pDC)
-{
-	if (!m_pMarkupUIElement)
-	{
-		CXTPControlLabel::Draw(pDC);
-	}
-	else
-	{
-		CFont* pFont = GetPaintManager()->GetRegularFont();
-		COLORREF clrText = GetPaintManager()->GetRectangleTextColor(FALSE, FALSE, GetEnabled(), FALSE, FALSE, GetParent()->GetType(), GetParent()->GetPosition());
-
-		XTPMarkupSetDefaultFont(XTPMarkupElementContext(m_pMarkupUIElement), (HFONT)pFont->GetSafeHandle(), clrText);
-		XTPMarkupRenderElement(m_pMarkupUIElement, pDC->GetSafeHdc(), GetRect());
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPControlBitmap
-
-IMPLEMENT_XTP_CONTROL(CXTPControlBitmap, CXTPControlLabel)
-
-CXTPControlBitmap::CXTPControlBitmap()
-{
-
-}
-
-CSize CXTPControlBitmap::GetSize(CDC* /*pDC*/)
-{
-	CXTPImageManagerIcon* pIcon = GetImageManager()->GetImage(m_nId, ICON_BIG);
-	if (!pIcon)
-		return CSize(0, 0);
-
-	return pIcon->GetExtent();
-}
-
-void CXTPControlBitmap::Draw(CDC* pDC)
-{
-	CXTPImageManagerIcon* pIcon = GetImageManager()->GetImage(m_nId, ICON_BIG);
-	if (pIcon)
-	{
-		pIcon->Draw(pDC, GetRect().TopLeft());
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPControlHyperlink
-
-IMPLEMENT_XTP_CONTROL(CXTPControlHyperlink, CXTPControl)
-
-CXTPControlHyperlink::CXTPControlHyperlink()
-{
-	m_hCursor = AfxGetApp()->LoadStandardCursor(MAKEINTRESOURCE(32649));
-}
-
-CSize CXTPControlHyperlink::GetSize(CDC* pDC)
-{
-	CFont* pFont = GetPaintManager()->GetRegularFont();
-	CXTPFontDC font(pDC, pFont);
-
-	CSize sz = pDC->GetTextExtent(GetCaption());
-
-	return sz;
-}
-
-void CXTPControlHyperlink::Draw(CDC* pDC)
-{
-	CFont* pFont = GetPaintManager()->GetRegularFont();
-	CXTPFontDC font(pDC, pFont);
-
-	pDC->SetTextColor(!GetEnabled() ? GetXtremeColor(COLOR_GRAYTEXT) : GetSelected() ? RGB(255, 0, 0) : RGB(0, 0, 255));
-
-	CXTPPaintManager::DrawTextApi(pDC, GetCaption(), GetRect(), DT_SINGLELINE | DT_NOPREFIX, HasDwmCompositedRect());
-}
-
-void CXTPControlHyperlink::OnClick(BOOL bKeyboard, CPoint pt)
-{
-	if (!bKeyboard && IsCustomizeMode() && IsCustomizeMovable())
-	{
-		CustomizeStartDrag(pt);
-		return;
-	}
-
-	OnExecute();
-}
-
-void CXTPControlHyperlink::OnExecute()
-{
-	::ShellExecute(NULL, _T("open"), m_strTooltipText, NULL, NULL, SW_SHOW);
-
-}
-
-void CXTPControlHyperlink::OnMouseMove(CPoint /*point*/)
-{
-	SetCursor(m_hCursor);
-}
-
-
-

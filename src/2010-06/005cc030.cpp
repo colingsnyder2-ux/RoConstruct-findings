@@ -1,12 +1,4 @@
-// from server: 66% by atomic.potato
-extern "C" void std_string_assign(void *, const char *);
-
-struct S_func_005cc030 {
-    char pad0[0xADC];
-    void f();
-};
-
-void S_func_005cc030::f()
-{
-    std_string_assign((char *)this, "[[[progress]]]");
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct S{void f();}; typedef void(__thiscall* Fn)(void*,const char*); extern Fn assign;
+void S::f(){assign((char*)this+2780,"[[[progress]]]");}

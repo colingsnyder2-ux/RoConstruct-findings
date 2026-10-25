@@ -1,12 +1,4 @@
-// from server: 74% by atomic.potato
-struct S
-{
-    void ActionStation(int* result);
-};
-
-extern "C" void __stdcall CallTarget(void*, int*);
-
-void S::ActionStation(int* result)
-{
-    CallTarget((char*)this - 192, result);
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct B{void sub(void*);}; struct S{void* func(void*);};
+void* S::func(void* p){((B*)((char*)this+-192))->sub(p); return p;}

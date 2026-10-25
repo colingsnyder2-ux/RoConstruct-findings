@@ -1,16 +1,17 @@
-// from server: 82% by atomic.potato
-extern "C" void func_0067ade0(int);
-
-void func_0067ca40(void* a, void* b, int c)
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_0067ca40 {
+    T4_0067ca40();
+    virtual void f_0067ca40();
+    char m_a;
+    char m_b;
+};
+T4_0067ca40::T4_0067ca40() : m_a(0), m_b(0) {}
+extern "C" void* create_other_0067ca40(void*, void*, int);
+void* create_0067ca40(void* unused, T4_0067ca40* out, int type)
 {
-    int value = c;
-    if (value != 4)
-    {
-        func_0067ade0(value);
-        return;
-    }
-
-    *(unsigned long*)b = 0x00bc1388;
-    *((unsigned char*)b + 4) = 0;
-    *((unsigned char*)b + 5) = 0;
+    if (type != 4)
+        return create_other_0067ca40(unused, out, type);
+    out->T4_0067ca40::T4_0067ca40();
+    return out;
 }

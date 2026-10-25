@@ -1,17 +1,11 @@
-// from server: 82% by atomic.potato
-extern "C" void __cdecl Function_80B15D();
-
-extern "C" unsigned long Global_CD0078;
-extern "C" unsigned long Global_CD0070;
-extern "C" unsigned long Global_CD0074;
-
-extern "C" void __cdecl Function_6AB080()
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+extern "C" void seh_fn_006ab080(void*);
+extern int g_a_006ab080;
+extern int g_b_006ab080;
+extern int g_arg_006ab080;
+struct Reg_006ab080 { Reg_006ab080() { g_a_006ab080 = 0; g_b_006ab080 = 0; seh_fn_006ab080(&g_arg_006ab080); } };
+void func_006ab080()
 {
-    if (Global_CD0078 & 1)
-        return;
-
-    Global_CD0078 |= 1;
-    Global_CD0070 = 0;
-    Global_CD0074 = 0;
-    Function_80B15D();
+    static Reg_006ab080 reg;
 }

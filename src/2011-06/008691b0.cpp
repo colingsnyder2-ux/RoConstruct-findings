@@ -1,14 +1,14 @@
-// from server: 61% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/CommandBars/XTPTabClientWnd.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/PropertyGrid/XTPPropertyGrid.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPTabClientWnd.cpp : implementation of the CXTPTabClientWnd class.
+// XTPPropertyGrid.cpp : implementation of the CXTPPropertyGrid class.
 //
-// This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME PROPERTYGRID MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -27,38 +27,20 @@
 
 #include "stdafx.h"
 #include "Resource.h"
-
 #include "Common/Resource.h"
+
 #include "Common/XTPResourceManager.h"
-#include "Common/XTPImageManager.h"
+#include "Common/XTPVC80Helpers.h"
 #include "Common/XTPDrawHelpers.h"
+#include "Common/XTPImageManager.h"
 #include "Common/XTPToolTipContext.h"
-#include "Common/XTPMarkupRender.h"
-#include "Common/XTPColorManager.h"
-#include "Common/XTPSystemHelpers.h"
-#include "Common/XTPHookManager.h"
 
-#include "TabManager/XTPTabManager.h"
-#include "TabManager/XTPTabPaintManager.h"
-
-#include "XTPCommandBarsDefines.h"
-#include "XTPCommandBars.h"
-#include "XTPCommandBar.h"
-#include "XTPPopupBar.h"
-#include "XTPToolBar.h"
-#include "XTPMenuBar.h"
-#include "XTPControls.h"
-#include "XTPControl.h"
-#include "XTPControlButton.h"
-#include "XTPControlEdit.h"
-#include "XTPControlExt.h"
-#include "XTPMouseManager.h"
-#include "XTPCommandBarsFrameHook.h"
-#include "XTPPaintManager.h"
-#include "XTPOffice2003Theme.h"
-#include "XTPTabClientWnd.h"
-#include "XTPShortcutManager.h"
-#include "XTPFrameWnd.h"
+#include "XTPPropertyGridInplaceEdit.h"
+#include "XTPPropertyGridInplaceButton.h"
+#include "XTPPropertyGridInplaceList.h"
+#include "XTPPropertyGridItem.h"
+#include "XTPPropertyGrid.h"
+#include "XTPPropertyGridDefines.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -66,3058 +48,1408 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#ifndef OIC_WINLOGO
-#define OIC_WINLOGO         32517
-#endif
-
-#define XTP_TID_REFRESHFRAME 0xACD1
-
-
-#define xtpTabNavigateButtonActiveFiles 4
-
-#define ACTION_CANCEL       0
-#define ACTION_POPUP        1
-#define ACTION_ATTACH       2
-#define ACTION_INSERTHORIZ  3
-#define ACTION_INSERTVERT   4
-
-class CXTPTabClientWnd::CNavigateButtonActiveFiles : public CXTPTabManagerNavigateButton
-{
-public:
-	CNavigateButtonActiveFiles(CXTPTabManager* pManager, CXTPTabClientWnd* pTabClientWnd)
-		: CXTPTabManagerNavigateButton(pManager, xtpTabNavigateButtonActiveFiles, xtpTabNavigateButtonNone)
-	{
-		m_bHiddenTabs = FALSE;
-		m_pTabClientWnd = pTabClientWnd;
-		XTPResourceManager()->LoadString(&m_strToolTip, XTP_IDS_TABNAVIGATEBUTTON_ACTIVEFILES);
-	}
-
-	void DrawEntry(CDC* pDC, CRect rc)
-	{
-		CPoint pt(rc.CenterPoint().x, rc.CenterPoint().y + 1);
-		CPoint pts[] =
-		{
-			CPoint(pt.x - 4, pt.y - 1), CPoint(pt.x - 1, pt.y + 2) , CPoint(pt.x, pt.y + 2), CPoint(pt.x + 3, pt.y - 1)
-		};
-		pDC->Polygon(pts, 4);
-
-		if (m_bHiddenTabs)
-		{
-			pDC->Rectangle(pt.x - 4, pt.y - 5, pt.x + 4, pt.y - 3);
-		}
-	}
-
-	void Reposition(CRect& rcNavigateButtons)
-	{
-		CRect rc = m_pManager->GetAppearanceSet()->GetHeaderMargin();
-
-		m_bHiddenTabs = m_pManager->GetItemsLength() > m_pManager->GetRectLength(rcNavigateButtons) - rc.left - rc.right - GetSize().cx;
-
-		CXTPTabManagerNavigateButton::Reposition(rcNavigateButtons);
-	}
-	void PerformClick(HWND hWnd, CPoint /*pt*/)
-	{
-		CXTPCommandBars* pCommandBars = m_pTabClientWnd->GetCommandBars();
-		if (!pCommandBars || pCommandBars->IsCustomizeMode())
-			return;
-
-		m_bPressed = TRUE;
-		m_pManager->RedrawControl(NULL, FALSE);
-
-		CPoint pt(m_rcButton.left, m_rcButton.bottom);
-		m_pTabClientWnd->WorkspaceToScreen(&pt);
-		CRect rcExclude(pt.x, pt.y - m_rcButton.Height(), pt.x + m_rcButton.Width(), pt.y);
-
-		CXTPPopupBar* pPopupBar = CXTPPopupBar::CreatePopupBar(pCommandBars);
-
-		CXTPImageManager* pImageManager = new CXTPImageManager();
-		pPopupBar->SetImageManager(pImageManager);
-
-		int nIconId = 0;
-		HICON hIconLast = 0;
-
-		CWnd* pActiveWnd = m_pTabClientWnd->MDIGetActive();
-
-		for (int nIndex = 0; nIndex < m_pManager->GetItemCount(); nIndex++)
-		{
-			CXTPTabManagerItem* pItem = m_pManager->GetItem(nIndex);
-			if (!pItem->GetHandle())
-				continue;
-
-			CString strCaption = pItem->GetCaption();
-			CXTPControl* pControl = pPopupBar->GetControls()->Add(xtpControlButton, nIndex + 1, _T(""), nIndex, TRUE);
-
-			HICON hIcon = m_pTabClientWnd->GetItemIcon(pItem);
-			if (hIconLast != hIcon)
-			{
-				nIconId++;
-				pImageManager->SetIcon(CXTPImageManagerIconHandle(hIcon, FALSE), nIconId);
-				hIconLast = hIcon;
-			}
-
-			pControl->SetIconId(nIconId);
-			pControl->SetCaption(CXTPControlWindowList::ConstructCaption(strCaption, 0));
-			pControl->SetDescription(_T(""));
-
-			if (pActiveWnd && pItem->GetHandle() == pActiveWnd->GetSafeHwnd())
-				pControl->SetChecked(TRUE);
-		}
-
-		int nItem = pCommandBars->TrackPopupMenu(pPopupBar, TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_NONOTIFY, pt.x, pt.y, m_pTabClientWnd, &rcExclude);
-		pPopupBar->InternalRelease();
-
-		m_bPressed = FALSE;
-		m_pManager->PerformMouseMove(hWnd, CPoint(-1, -1));
-		m_pManager->RedrawControl(NULL, FALSE);
-
-		if (nItem > 0)
-		{
-			CXTPTabManagerItem* pItem = m_pManager->GetItem(nItem - 1);
-
-			if (pItem)
-			{
-				m_pTabClientWnd->MDIActivate(CWnd::FromHandle(pItem->GetHandle()));
-			}
-		}
-	}
-
-protected:
-	BOOL m_bHiddenTabs;
-	CXTPTabClientWnd* m_pTabClientWnd;
-
-};
-
-class CXTPTabClientWnd::CTabClientDropTarget : public COleDropTarget
-{
-public:
-	CTabClientDropTarget()
-	{
-		m_ptDragLastPoint = CPoint(-1, -1);
-		m_dwDragLastTick = 0;
-	}
-
-	void OnDragLeave(CWnd* /*pWnd*/)
-	{
-		m_dwDragLastTick = 0;
-		m_ptDragLastPoint = CPoint(-1, -1);
-	}
-
-	virtual DROPEFFECT OnDragOver(CWnd* /*pWnd*/, COleDataObject* /*pDataObject*/, DWORD /*dwKeyState*/, CPoint point)
-	{
-		ASSERT(m_pTabClientWnd);
-
-		if (!m_pTabClientWnd || !m_pTabClientWnd->GetPaintManager()->m_bSelectOnDragOver)
-			return DROPEFFECT_NONE;
-
-		if (m_dwDragLastTick != (DWORD)-1 && m_pTabClientWnd->GetPaintManager()->m_bSelectOnDragOver == 2)
-		{
-			DWORD dwTick = GetTickCount();
-
-			if (point != m_ptDragLastPoint)
-			{
-				m_dwDragLastTick = dwTick;
-				m_ptDragLastPoint = point;
-			}
-
-			if (dwTick - m_dwDragLastTick > CXTPTabPaintManager::m_nSelectOnDragOverDelay)
-			{
-				m_dwDragLastTick = (DWORD)-1;
-			}
-		}
-		else
-		{
-			CXTPTabManagerItem* pItem = m_pTabClientWnd->HitTest(point);
-
-			if (pItem)
-			{
-				if (!pItem->IsSelected())
-				m_pTabClientWnd->MDIActivate(CWnd::FromHandle(pItem->GetHandle()));
-			}
-			else
-			{
-				m_dwDragLastTick = 0;
-			}
-		}
-
-		return DROPEFFECT_NONE;
-	}
-public:
-	CXTPTabClientWnd* m_pTabClientWnd;
-
-protected:
-	DWORD m_dwDragHoverMode;
-	DWORD m_dwDragLastTick;
-	CPoint m_ptDragLastPoint;
-};
+const int SPLITTER_HEIGHT = 3;
+const int TOOLBAR_HEIGHT = 25;
 
 //////////////////////////////////////////////////////////////////////////
-// CWorkspace
+// CXTPPropertyGridUpdateContext
 
-CXTPTabClientWnd::CWorkspace::CWorkspace()
+CXTPPropertyGridUpdateContext::CXTPPropertyGridUpdateContext()
 {
-	m_pTabClientWnd = NULL;
-	m_dHeight = 100;
+	m_nSelected = 0;
+	m_nTopIndex = 0;
+	m_propertySort = xtpGridSortAlphabetical;
 
-	m_pNewWindowItem = NULL;
-}
-
-CXTPTabClientWnd::CWorkspace::~CWorkspace()
-{
 
 }
 
-void CXTPTabClientWnd::CWorkspace::SetSelectedItem(CXTPTabManagerItem* pItem)
+//////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridVerb
+
+CXTPPropertyGridVerb::CXTPPropertyGridVerb()
 {
-	if (pItem == m_pNewWindowItem)
-		pItem = GetItem(GetItemCount() - 1);
+	m_nID = 0;
+	m_nIndex = -1;
+	m_pVerbs = 0;
 
-
-	CXTPTabManager::SetSelectedItem(pItem);
 }
 
+//////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridVerbs
 
-BOOL CXTPTabClientWnd::CWorkspace::IsMouseLocked() const
+CXTPPropertyGridVerbs::CXTPPropertyGridVerbs()
 {
-	return CXTPTabManager::IsMouseLocked() || XTPMouseManager()->IsTrackedLock();
+	m_pGrid = 0;
+
+
 }
 
-void CXTPTabClientWnd::CWorkspace::RedrawControl(LPCRECT lpRect, BOOL /*bAnimate*/)
+CXTPPropertyGridVerbs::~CXTPPropertyGridVerbs()
 {
-	if (!m_pTabClientWnd->m_bLockReposition)
-		m_pTabClientWnd->InvalidateRect(lpRect, FALSE);
+	for (int i = 0; i < m_arrVerbs.GetSize(); i++)
+		m_arrVerbs[i]->InternalRelease();
 }
 
-void CXTPTabClientWnd::CWorkspace::Reposition()
+void CXTPPropertyGridVerbs::RemoveAll()
 {
-	if (!m_pTabClientWnd)
+	if (IsEmpty())
 		return;
 
-	if (m_pTabClientWnd->m_bLockReposition)
+	for (int i = 0; i < m_arrVerbs.GetSize(); i++)
+		m_arrVerbs[i]->InternalRelease();
+
+	m_arrVerbs.RemoveAll();
+
+	m_pGrid->OnVerbsChanged();
+}
+
+int CXTPPropertyGridVerbs::GetCount() const
+{
+	return (int)m_arrVerbs.GetSize();
+}
+
+void CXTPPropertyGridVerbs::Add(LPCTSTR strCaption, UINT nID)
+{
+	CXTPPropertyGridVerb* pVerb = new CXTPPropertyGridVerb();
+
+	pVerb->m_nID = nID;
+	pVerb->m_strCaption = strCaption;
+	pVerb->m_pVerbs = this;
+	pVerb->m_rcPart.SetRectEmpty();
+	pVerb->m_ptClick = CPoint(0);
+
+	pVerb->m_nIndex = (UINT)m_arrVerbs.Add(pVerb);
+
+	m_pGrid->OnVerbsChanged();
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridToolBar
+
+CXTPPropertyGridToolBar::CXTPPropertyGridToolBar()
+{
+	m_cxLeftBorder = m_cxRightBorder = m_cyBottomBorder = m_cyTopBorder = 0;
+}
+
+CXTPPropertyGridToolBar::~CXTPPropertyGridToolBar()
+{
+}
+
+BEGIN_MESSAGE_MAP(CXTPPropertyGridToolBar, CToolBar)
+	//{{AFX_MSG_MAP(CToolBar)
+	ON_WM_PAINT()
+	ON_WM_ERASEBKGND()
+	ON_WM_NCCALCSIZE()
+	ON_NOTIFY_REFLECT(NM_CUSTOMDRAW, OnCustomDraw)
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+void CXTPPropertyGridToolBar::OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	NMLVCUSTOMDRAW* lpLVCD = reinterpret_cast<NMLVCUSTOMDRAW*>(pNMHDR);
+	*pResult = CDRF_DODEFAULT;
+
+	switch (lpLVCD->nmcd.dwDrawStage)
 	{
-		m_pTabClientWnd->m_bForceToRecalc = TRUE;
-	}
-	else
-	{
-		m_pTabClientWnd->Reposition();
+	case CDDS_PREPAINT:
+		CWnd* pGrid = GetParent();
+		HBRUSH hBrush = (HBRUSH)pGrid->GetParent()->SendMessage(WM_CTLCOLORSTATIC,
+			(WPARAM)lpLVCD->nmcd.hdc, (LPARAM)pGrid->m_hWnd);
+
+		::FillRect(lpLVCD->nmcd.hdc, &lpLVCD->nmcd.rc, hBrush ? hBrush : GetSysColorBrush(COLOR_3DFACE));
+		break;
 	}
 }
 
-BOOL CXTPTabClientWnd::CWorkspace::IsAllowReorder() const
+
+BOOL CXTPPropertyGridToolBar::OnEraseBkgnd(CDC*)
 {
-	return m_pTabClientWnd->m_bAllowReorder;
-}
-
-void CXTPTabClientWnd::CWorkspace::SetAllowReorder(BOOL bAllowReorder)
-{
-	m_pTabClientWnd->m_bAllowReorder = bAllowReorder;
-}
-
-BOOL CXTPTabClientWnd::CWorkspace::IsDrawStaticFrame() const
-{
-	return GetPaintManager()->m_bStaticFrame && !m_pTabClientWnd->m_bEnableGroups;
-}
-
-
-BOOL CXTPTabClientWnd::CWorkspace::DrawIcon(CDC* pDC, CPoint pt, CXTPTabManagerItem* pItem, BOOL bDraw, CSize& szIcon) const
-{
-	if (pItem == m_pNewWindowItem)
-	{
-		if (!bDraw)
-			return TRUE;
-
-		CXTPCommandBars* pCommandBars = m_pTabClientWnd->GetCommandBars();
-		CXTPImageManager* pImageManager = pCommandBars ? pCommandBars->GetImageManager() : XTPImageManager();
-
-		CXTPImageManagerIcon* pIcon = pImageManager->GetImage(m_pTabClientWnd->m_nNewWindowTabCommand);
-		if (pIcon) pIcon->Draw(pDC, pt, szIcon);
-
-		return TRUE;
-	}
-
-	if (GetPaintManager()->m_bShowIcons == FALSE)
-		return FALSE;
-
-	if (!bDraw)
-	{
-		return TRUE;
-	}
-
-
-	if (pItem->GetImageIndex() != -1)
-	{
-		CXTPCommandBars* pCommandBars = m_pTabClientWnd->GetCommandBars();
-		CXTPImageManager* pImageManager = pCommandBars ? pCommandBars->GetImageManager() : XTPImageManager();
-
-		CXTPImageManagerIcon* pIcon = pImageManager->GetImage(pItem->GetImageIndex());
-		if (pIcon) pIcon->Draw(pDC, pt, szIcon);
-
-		return TRUE;
-	}
-
-	HICON hIcon = GetItemIcon(pItem);
-	if (hIcon)
-	{
-		DrawIconEx(pDC->GetSafeHdc(), pt.x, pt.y, hIcon, szIcon.cx, szIcon.cy, 0, NULL, DI_NORMAL);
-	}
-
 	return TRUE;
 }
 
-CXTPTabPaintManager* CXTPTabClientWnd::CWorkspace::GetPaintManager() const
+void CXTPPropertyGridToolBar::OnNcCalcSize(BOOL /*bCalcValidRects*/, NCCALCSIZE_PARAMS* /*lpncsp*/)
 {
-	return m_pTabClientWnd ? m_pTabClientWnd->m_pPaintManager : NULL;
 }
 
-CString CXTPTabClientWnd::CWorkspace::GetItemTooltip(const CXTPTabManagerItem* pItem) const
+void CXTPPropertyGridToolBar::OnPaint()
 {
-	return m_pTabClientWnd->GetItemTooltip(pItem);
+	CPaintDC dc(this);
+
+	CXTPClientRect rc(this);
+	CXTPBufferDC memDC(dc, rc);
+	memDC.FillSolidRect(rc, GetXtremeColor(COLOR_3DFACE));
+
+	CToolBar::DefWindowProc(WM_PAINT, (WPARAM)memDC.m_hDC, 0);
 }
 
-// finds the tab item for specified window. Returns NULL if not found
-CXTPTabManagerItem* CXTPTabClientWnd::CWorkspace::FindItem(const HWND hWnd) const
+void CXTPPropertyGridToolBar::OnUpdateCmdUI(CFrameWnd* /*pTarget*/, BOOL /*bDisableIfNoHndler*/)
 {
-	// loop through all tab items
-	for (int nIndex = 0; nIndex < GetItemCount(); nIndex++)
+}
+
+BOOL CXTPPropertyGridToolBar::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+{
+	CXTPPropertyGrid* pGrid = (CXTPPropertyGrid*)GetParent();
+	if (pGrid->GetToolTipContext())
 	{
-		// check for window handle
-		if (GetItem(nIndex)->GetHandle() == hWnd)
-		{
-			return GetItem(nIndex);
-		}
-	}
-
-	return NULL;
-}
-
-
-// add new item into the tab control for specified MDIChild. If bRedraw is
-// set to TRUE then framework will be redrawn in order to show new item.
-CXTPTabManagerItem* CXTPTabClientWnd::CWorkspace::AddItem(const CWnd* pChildWnd)
-{
-	ASSERT(pChildWnd != NULL);
-	if (!pChildWnd)
-		return NULL;
-	ASSERT(::IsWindow(pChildWnd->GetSafeHwnd()));
-
-	// make sure we add MDIChild window
-	if ((pChildWnd->GetExStyle() & WS_EX_MDICHILD) == 0)
-		return NULL;
-
-	if (GetItemCount() == 0)
-		AddNewWindowItem();
-
-	int nIndex = GetItemCount();
-
-	if (m_pNewWindowItem) nIndex--;
-
-
-	switch (m_pTabClientWnd->GetNewTabPositon())
-	{
-	case xtpWorkspaceNewTabLeftMost:
-		nIndex = 0;
-		break;
-
-	case xtpWorkspaceNewTabNextToActive:
-		nIndex = GetCurSel() + 1;
-		break;
-	}
-
-	// save information about new entry
-	CXTPTabManagerItem* pItem = CXTPTabManager::AddItem(nIndex);
-	pItem->SetCaption(m_pTabClientWnd->GetItemText(pChildWnd));
-
-	return pItem;
-}
-
-BOOL CXTPTabClientWnd::CWorkspace::OnBeforeItemClick(CXTPTabManagerItem* pItem)
-{
-	return m_pTabClientWnd->OnBeforeItemClick(pItem);
-}
-
-void CXTPTabClientWnd::CWorkspace::OnItemClick(CXTPTabManagerItem* pItem)
-{
-	ASSERT(pItem);
-	if (!pItem)
-		return;
-
-	if (pItem == m_pNewWindowItem)
-	{
-		m_pTabClientWnd->GetParent()->SendMessage(WM_COMMAND, m_pTabClientWnd->m_nNewWindowTabCommand);
-
-		return;
-	}
-
-	CWnd* pWnd = CWnd::FromHandle(pItem->GetHandle());
-	if (pWnd)
-	{
-		m_pTabClientWnd->MDIActivate(pWnd);
-
-		CWnd* pFocus = GetFocus();
-
-		BOOL bHasFocus = pFocus->GetSafeHwnd() &&
-			(pFocus == pWnd || pWnd->IsChild(pFocus) || (pFocus->GetOwner()->GetSafeHwnd() && pWnd->IsChild(pFocus->GetOwner())));
-
-		if (!bHasFocus)
-			pWnd->SetFocus();
-	}
-}
-
-CWnd* CXTPTabClientWnd::CWorkspace::GetWindow() const
-{
-	return m_pTabClientWnd;
-}
-
-void CXTPTabClientWnd::CWorkspace::OnNavigateButtonClick(CXTPTabManagerNavigateButton* pButton)
-{
-	if (pButton->GetID() != xtpTabNavigateButtonClose)
-		return;
-
-	CXTPTabManagerItem* pItem = pButton->GetItem() ? pButton->GetItem() : m_pSelected;
-
-	if (!pItem)
-		return;
-
-	m_pTabClientWnd->PostMessage(WM_IDLEUPDATECMDUI);
-
-	HWND hWnd = pItem->GetHandle();
-	::SendMessage(hWnd, WM_CLOSE, 0, 0);
-}
-
-void CXTPTabClientWnd::CWorkspace::OnRecalcLayout()
-{
-
-}
-
-CXTPMarkupContext* CXTPTabClientWnd::CWorkspace::GetMarkupContext() const
-{
-	return m_pTabClientWnd->m_pMarkupContext;
-}
-
-HICON CXTPTabClientWnd::CWorkspace::GetItemIcon(const CXTPTabManagerItem* pItem) const
-{
-	return m_pTabClientWnd->GetItemIcon(pItem);
-}
-
-COLORREF CXTPTabClientWnd::CWorkspace::GetItemColor(const CXTPTabManagerItem* pItem) const
-{
-	COLORREF clr = m_pTabClientWnd->GetItemColor(pItem);
-
-	if (clr != COLORREF_NULL)
-	{
-		if (clr >= xtpTabColorBlue && clr <= xtpTabColorMagenta)
-			return CXTPTabPaintManager::GetOneNoteColor((XTPTabOneNoteColor)clr);
-
-		return clr;
-	}
-
-	return CXTPTabManager::GetItemColor(pItem);
-}
-
-void CXTPTabClientWnd::CWorkspace::ReOrder(HWND hWnd, CPoint pt, CXTPTabManagerItem* pItem)
-{
-	if (pItem == m_pNewWindowItem)
-	{
-		m_pTabClientWnd->SetActiveWorkspace(this);
-
-		m_pHighlighted = NULL;
-
-		OnItemClick(pItem);
-
-		return;
-	}
-
-	if (m_pTabClientWnd->GetWorkspaceCount() == 1 && pItem->GetTabManager()->GetItemCount() == 1)
-	{
-		OnItemClick(pItem);
-		return;
-	}
-
-	if (m_pSelected != pItem)
-	{
-		m_pSelected = pItem;
-	}
-
-
-	m_pTabClientWnd->m_bLockReposition = TRUE;
-	m_pTabClientWnd->SetActiveWorkspace(this);
-	m_pTabClientWnd->m_bLockReposition = FALSE;
-
-	if (GetPaintManager()->m_bHotTracking)
-		m_pHighlighted = pItem;
-
-	::SetCapture(hWnd);
-
-	Reposition();
-
-	CArray<CRect, CRect&> arrRects;
-
-	for (int j = 0; j < GetItemCount(); j++)
-	{
-		CRect rc = GetItem(j)->GetRect();
-		arrRects.Add(rc);
-	}
-
-	BOOL bRefreshCursor = FALSE;
-	BOOL bAccept = FALSE;
-
-	for (;;)
-	{
-		MSG msg;
-		VERIFY(::GetMessage(&msg, NULL, 0, 0));
-
-		if (::GetCapture() != hWnd)
-		{
-			DispatchMessage (&msg);
-			goto ExitLoop;
-		}
-		switch (msg.message)
-		{
-			case WM_MOUSEMOVE:
-				{
-					pt = CPoint((short signed)LOWORD(msg.lParam), (short signed)HIWORD(msg.lParam));
-
-					if (m_rcHeaderRect.IsRectEmpty() || m_rcHeaderRect.PtInRect(pt))
-					{
-						if (bRefreshCursor)
-						{
-							m_pTabClientWnd->CancelLoop();
-							::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
-							bRefreshCursor = FALSE;
-
-						}
-						for (int i = 0; i < arrRects.GetSize(); i++)
-						{
-							if (i != pItem->GetIndex() && arrRects[i].PtInRect(pt) && m_arrItems[i] != m_pNewWindowItem)
-							{
-
-								CXTPTabManagerItem* p = pItem;
-								m_arrItems[pItem->GetIndex()] = m_arrItems[i];
-								m_arrItems[i] = p;
-
-								OnItemsChanged();
-								break;
-							}
-						}
-
-					}
-					else if (m_pTabClientWnd->m_bEnableGroups)
-					{
-						if (!bRefreshCursor)
-						{
-							m_pTabClientWnd->InitLoop();
-							bRefreshCursor = TRUE;
-						}
-						m_pTabClientWnd->ReorderWorkspace(pt, pItem);
-					}
-				}
-
-				break;
-
-			case WM_KEYDOWN:
-				if (msg.wParam != VK_ESCAPE)
-					break;
-			case WM_CANCELMODE:
-			case WM_RBUTTONDOWN:
-				goto ExitLoop;
-
-			case WM_LBUTTONUP:
-				bAccept = TRUE;
-				goto ExitLoop;
-
-
-			default:
-				DispatchMessage (&msg);
-				break;
-		}
-	}
-
-ExitLoop:
-
-	ReleaseCapture();
-	PerformMouseMove(hWnd, pt);
-	OnItemClick(pItem);
-
-	if (bRefreshCursor)
-	{
-		m_pTabClientWnd->CancelLoop();
-		::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
-
-		if (bAccept && m_pTabClientWnd->m_nFocusedAction != ACTION_CANCEL)
-		{
-			if (m_pTabClientWnd->m_nFocusedAction == ACTION_POPUP)
-				m_pTabClientWnd->ContextMenu(pt);
-			else  m_pTabClientWnd->DoWorkspaceCommand(pItem, m_pTabClientWnd->m_pFocusWorkspace, m_pTabClientWnd->m_nFocusedAction);
-		}
-	}
-
-	pItem->GetTabManager()->EnsureVisible(pItem);
-}
-
-BOOL CXTPTabClientWnd::CWorkspace::DrawParentBackground(CDC* pDC, CRect rc)
-{
-	if (m_pTabClientWnd->m_themeCommandBars == xtpThemeVisualStudio2008)
-	{
-		CXTPCommandBars* pCommandBars = m_pTabClientWnd->GetCommandBars();
-		if (!pCommandBars)
-			return FALSE;
-
-		CXTPOffice2003Theme* pPaintManager = (CXTPOffice2003Theme*)pCommandBars->GetPaintManager();
-		if (((CXTPPaintManager*)pPaintManager)->BaseTheme() != xtpThemeVisualStudio2008)
-			return FALSE;
-
-		CWnd* pWnd = m_pTabClientWnd->GetParentFrame();
-		CXTPWindowRect rcFill((CWnd*)pWnd);
-
-		m_pTabClientWnd->ScreenToClient(rcFill);
-		rcFill.right = rcFill.left + max(rcFill.Width(), GetSystemMetrics(SM_CXFULLSCREEN) / 2);
-		rcFill.top = rc.top;
-		rcFill.bottom = rc.bottom;
-
-		XTPDrawHelpers()->GradientFill(pDC, rcFill, pPaintManager->m_clrDockBar, TRUE, rc);
-		return TRUE;
-	}
-	return FALSE;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CSingleWorkspace
-
-CXTPTabClientWnd::CSingleWorkspace::~CSingleWorkspace()
-{
-	DestroyWindow();
-}
-
-CWnd* CXTPTabClientWnd::CSingleWorkspace::GetWindow() const
-{
-	return (CWnd*)this;
-}
-
-INT_PTR CXTPTabClientWnd::CSingleWorkspace::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
-{
-	return PerformToolHitTest(m_hWnd, point, pTI);
-}
-
-BOOL CXTPTabClientWnd::CSingleWorkspace::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
-{
-	if (m_pTabClientWnd)
-	{
-		m_pTabClientWnd->m_pToolTipContext->FilterToolTipMessage(this, message, wParam, lParam);
+		pGrid->GetToolTipContext()->FilterToolTipMessage(this, message, wParam, lParam);
 	}
 
 	return CWnd::OnWndMsg(message, wParam, lParam, pResult);
 }
 
-BOOL CXTPTabClientWnd::CSingleWorkspace::PreTranslateMessage(MSG* pMsg)
-{
-	if (pMsg->message == WM_LBUTTONDOWN ||
-		pMsg->message == WM_RBUTTONDOWN ||
-		pMsg->message == WM_MBUTTONDOWN ||
-		pMsg->message == WM_LBUTTONDBLCLK ||
-		pMsg->message == WM_RBUTTONDBLCLK)
-	{
-
-		if (GetParentFrame()->SendMessage(WM_XTP_PRETRANSLATEMOUSEMSG, (WPARAM)pMsg->message, pMsg->lParam))
-			return TRUE;
-	}
-
-
-	return CWnd::PreTranslateMessage(pMsg);
-}
-
-void CXTPTabClientWnd::CSingleWorkspace::RedrawControl(LPCRECT lpRect, BOOL /*bAnimate*/)
-{
-	if (!m_pTabClientWnd->m_bLockReposition)
-		InvalidateRect(lpRect, FALSE);
-}
-
-BEGIN_MESSAGE_MAP(CXTPTabClientWnd::CSingleWorkspace, CWnd)
-	{ WM_LBUTTONDBLCLK, 0, 0, 0, AfxSig_vwp, (AFX_PMSG)(AFX_PMSGW)(void (AFX_MSG_CALL CWnd::*)(UINT, CPoint))&CXTPTabClientWnd::CSingleWorkspace::OnLButtonDblClk },
-	{ WM_PAINT, 0, 0, 0, AfxSig_vv, (AFX_PMSG)(AFX_PMSGW)(void (AFX_MSG_CALL CWnd::*)(void))&CXTPTabClientWnd::CSingleWorkspace::OnPaint },
-	{ WM_PRINTCLIENT, 0, 0, 0, AfxSig_lwl, (AFX_PMSG)(AFX_PMSGW)(LRESULT (AFX_MSG_CALL CWnd::*)(WPARAM, LPARAM))&CXTPTabClientWnd::CSingleWorkspace::OnPrintClient },
-	{ WM_ERASEBKGND, 0, 0, 0, AfxSig_bD, (AFX_PMSG)(AFX_PMSGW)(BOOL (AFX_MSG_CALL CWnd::*)(CDC*))&CXTPTabClientWnd::CSingleWorkspace::OnEraseBkgnd },
-	{ WM_LBUTTONDOWN, 0, 0, 0, AfxSig_vwp, (AFX_PMSG)(AFX_PMSGW)(void (AFX_MSG_CALL CWnd::*)(UINT, CPoint))&CXTPTabClientWnd::CSingleWorkspace::OnLButtonDown },
-	{ WM_MOUSEMOVE, 0, 0, 0, AfxSig_vwp, (AFX_PMSG)(AFX_PMSGW)(void (AFX_MSG_CALL CWnd::*)(UINT, CPoint))&CXTPTabClientWnd::CSingleWorkspace::OnMouseMove },
-	{ WM_MOUSELEAVE, 0, 0, 0, AfxSig_vv, (AFX_PMSG)(AFX_PMSGW)(void (AFX_MSG_CALL CWnd::*)(void))&CXTPTabClientWnd::CSingleWorkspace::OnMouseLeave },
-	{ WM_RBUTTONDOWN, 0, 0, 0, AfxSig_vwp, (AFX_PMSG)(AFX_PMSGW)(void (AFX_MSG_CALL CWnd::*)(UINT, CPoint))&CXTPTabClientWnd::CSingleWorkspace::OnRButtonDown },
-END_MESSAGE_MAP()
-
-void CXTPTabClientWnd::CSingleWorkspace::OnRButtonDown(UINT /*nFlags*/, CPoint point)
-{
-	UNREFERENCED_PARAMETER(point);
-
-}
-
-void CXTPTabClientWnd::CSingleWorkspace::OnPaint()
-{
-	CPaintDC dcPaint(this);
-	CXTPClientRect rc(this);
-	CXTPBufferDC dc(dcPaint);
-
-	if (m_pTabClientWnd)
-	{
-		CRect rectClient;
-		m_pTabClientWnd->GetWindowRect(rectClient);
-		ScreenToClient(&rectClient);
-		dcPaint.ExcludeClipRect(rectClient);
-		dc.ExcludeClipRect(rectClient);
-
-	}
-	GetPaintManager()->DrawTabControl(this, &dc, rc);
-}
-
-LRESULT CXTPTabClientWnd::CSingleWorkspace::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
-{
-	CDC* pDC = CDC::FromHandle((HDC)wParam);
-	if (pDC)
-	{
-		if (m_pTabClientWnd)
-		{
-			CRect rectClient;
-			m_pTabClientWnd->GetWindowRect(rectClient);
-			ScreenToClient(&rectClient);
-			pDC->ExcludeClipRect(rectClient);
-
-		}
-		CXTPClientRect rc(this);
-		GetPaintManager()->DrawTabControl(this, pDC, rc);
-	}
-	return TRUE;
-}
-
-BOOL CXTPTabClientWnd::CSingleWorkspace::OnEraseBkgnd(CDC* /*pDC*/)
-{
-	return TRUE;
-}
-
-void CXTPTabClientWnd::CSingleWorkspace::OnLButtonDown(UINT /*nFlags*/, CPoint point)
-{
-	m_pTabClientWnd->m_bLockUpdate = TRUE;
-	m_pTabClientWnd->m_bDelayLock = TRUE;
-
-	PerformClick(m_hWnd, point);
-
-
-}
-
-void CXTPTabClientWnd::CSingleWorkspace::OnLButtonDblClk(UINT nFlags, CPoint point)
-{
-	OnLButtonDown(nFlags, point);
-}
-
-
-void CXTPTabClientWnd::CSingleWorkspace::OnMouseMove(UINT /*nFlags*/, CPoint point)
-{
-	PerformMouseMove(m_hWnd, point);
-}
-
-void CXTPTabClientWnd::CSingleWorkspace::OnMouseLeave()
-{
-	PerformMouseMove(m_hWnd, CPoint(-1, -1));
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPControlTabWorkspace
-
-IMPLEMENT_XTP_CONTROL(CXTPControlTabWorkspace, CXTPControlButton)
-
-CXTPControlTabWorkspace::CXTPControlTabWorkspace()
-{
-	m_bForceRecalc = FALSE;
-	m_nWidth = 220;
-
-	SetFlags(xtpFlagSkipFocus | xtpFlagNoMovable);
-}
-
-CXTPControlTabWorkspace::~CXTPControlTabWorkspace()
-{
-
-}
-
-void CXTPControlTabWorkspace::RedrawControl(LPCRECT lpRect, BOOL bAnimate)
-{
-	m_pParent->Redraw(lpRect, bAnimate);
-}
-
-CXTPTabPaintManager* CXTPControlTabWorkspace::GetPaintManager() const
-{
-	return CWorkspace::GetPaintManager();
-}
-
-CWnd* CXTPControlTabWorkspace::GetWindow() const
-{
-	return (CWnd*)GetParent();
-}
-
-void CXTPControlTabWorkspace::OnMouseMove(CPoint point)
-{
-	CXTPControl::OnMouseMove(point);
-
-	if (!m_pTabClientWnd)
-		return;
-
-	PerformMouseMove(m_pParent->m_hWnd, point);
-}
-
-void CXTPControlTabWorkspace::OnRecalcLayout()
-{
-	m_bForceRecalc = TRUE;
-	m_pParent->OnRecalcLayout();
-	RedrawControl(GetRect(), FALSE);
-}
-
-XTPTabPosition CXTPControlTabWorkspace::GetPosition() const
-{
-	switch (m_pParent->GetPosition())
-	{
-		case xtpBarLeft: return xtpTabPositionLeft;
-		case xtpBarRight: return xtpTabPositionRight;
-		case xtpBarBottom: return xtpTabPositionBottom;
-	}
-	return xtpTabPositionTop;
-}
-
-void CXTPControlTabWorkspace::OnRemoved()
-{
-	if (m_pTabClientWnd && m_pTabClientWnd->m_pTabWorkspace == this)
-	{
-		m_pTabClientWnd->m_pTabWorkspace = NULL;
-		m_pTabClientWnd->m_arrWorkspace.RemoveAll();
-	}
-}
-
-void CXTPControlTabWorkspace::SetRect(CRect rcControl)
-{
-	if (rcControl == CXTPControl::m_rcControl && !m_bForceRecalc)
-		return;
-
-	m_bForceRecalc = FALSE;
-	CXTPControl::SetRect(rcControl);
-
-	CXTPTabPaintManager* pPaintManager = GetPaintManager();
-	if (!pPaintManager)
-		return;
-
-	CClientDC dc(m_pParent);
-	pPaintManager->RepositionTabControl(this, &dc, rcControl);
-}
-
-void CXTPControlTabWorkspace::Draw(CDC* pDC)
-{
-	CXTPTabPaintManager* pPaintManager = GetPaintManager();
-	if (!pPaintManager)
-	{
-		CXTPControlButton::Draw(pDC);
-		return;
-	}
-	pPaintManager->DrawTabControl(this, pDC, GetRect());
-}
-
-CSize CXTPControlTabWorkspace::GetSize(CDC* pDC)
-{
-	CXTPTabPaintManager* pPaintManager = GetPaintManager();
-	if (!pPaintManager)
-		return CXTPControl::GetSize(pDC);
-
-	int nHeight = pPaintManager->GetAppearanceSet()->GetHeaderHeight(this);
-	if (pPaintManager->m_bStaticFrame) nHeight += 2;
-
-	return IsVerticalPosition(m_pParent->GetPosition()) ? CSize(nHeight, m_nWidth) : CSize(m_nWidth, nHeight);
-}
-
-INT_PTR CXTPControlTabWorkspace::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
-{
-	if (!m_pTabClientWnd)
-		return -1;
-
-	CXTPTabManagerItem* pItem = HitTest(point);
-
-	if (pItem)
-	{
-		if (GetPaintManager()->m_toolBehaviour == xtpTabToolTipNever)
-			return 0;
-
-		if (GetPaintManager()->m_toolBehaviour == xtpTabToolTipShrinkedOnly && !pItem->IsItemShrinked())
-			return 0;
-
-		CString strTip = GetItemTooltip(pItem);
-		if (strTip.IsEmpty())
-			return 0;
-
-		INT_PTR nHit = pItem->GetIndex();
-
-		CXTPToolTipContext::FillInToolInfo(pTI, GetParent()->GetSafeHwnd(), pItem->GetRect(), nHit, strTip);
-
-		return nHit;
-	}
-
-	return 0;
-}
-
-void CXTPControlTabWorkspace::OnClick(BOOL bKeyboard, CPoint point)
-{
-	if (!m_pTabClientWnd)
-	{
-		CXTPControlButton::OnClick(bKeyboard, point);
-		return;
-	}
-
-	if (!bKeyboard)
-	{
-		m_pTabClientWnd->m_bLockUpdate = TRUE;
-		m_pTabClientWnd->m_bDelayLock = TRUE;
-
-		PerformClick(m_pParent->m_hWnd, point);
-
-	}
-}
 
 /////////////////////////////////////////////////////////////////////////////
-// CXTPTabClientWnd
+// CXTPPropertyGrid
 
-IMPLEMENT_DYNAMIC(CXTPTabClientWnd, CWnd)
-
-CXTPTabClientWnd::CXTPTabClientWnd()
+CXTPPropertyGrid::CXTPPropertyGrid()
+: m_bHelpVisible(TRUE)
+, m_bToolBarVisible(FALSE)
+, m_nHelpHeight(58)
+, m_bPreSubclassWindow(TRUE)
 {
-	m_pParentFrame = NULL;
-	m_bAllowReorder = TRUE;
+	RegisterWindowClass();
 
-	m_pPaintManager = new CXTPTabPaintManager();
-	m_pPaintManager->m_bBoldSelected = TRUE;
+	m_pView = 0;
 
-	m_themeCommandBars = xtpThemeNone;
-	m_bAutoTheme = TRUE;
+	m_hCursorSplit = XTPResourceManager()->LoadCursor(XTP_IDC_VSPLITBAR);
 
-	m_bLockUpdate = FALSE;
-	m_bLockReposition = FALSE;
-	m_bForceToRecalc = FALSE;
+	m_hCursorHand = AfxGetApp()->LoadStandardCursor(MAKEINTRESOURCE(32649));
 
-	m_pActiveWorkspace = NULL;
-	m_bHorizSplitting = TRUE;
+	if (m_hCursorHand == 0)
+		m_hCursorHand = XTPResourceManager()->LoadCursor(XTP_IDC_HAND);
 
-	m_bRefreshed = FALSE;
 
-	m_bThemedBackColor = TRUE;
-	m_bUpdateContents = FALSE;
-	m_bRightToLeft = FALSE;
-	m_bAutoUpdateTabCaption = TRUE;
-	m_pMarkupContext = NULL;
+	m_pPaintManager = new CXTPPropertyGridPaintManager(this);
+	m_pPaintManager->RefreshMetrics();
 
-	m_bUseSplitterTracker = TRUE;
-	m_bIgnoreFlickersOnActivate = FALSE;
+	m_themeCurrent = xtpGridThemeDefault;
 
-	m_bShowNewWindowTab = FALSE;
-	m_nNewWindowTabCommand = ID_FILE_NEW;
+	m_pVerbs = new CXTPPropertyGridVerbs;
+	m_pVerbs->m_pGrid = this;
 
-	m_pCommandBars = NULL;
+	m_nVerbsHeight = 25;
+	m_nFocusedVerb = -1;
+	m_bVerbActivate = FALSE;
+	m_bVerbsVisible = FALSE;
+	m_bEnableTooltips = TRUE;
 
-	m_nSplitterSize = 5;
+	m_bTabItems = FALSE;
+	m_bVariableItemsHeight = FALSE;
 
-	m_pDC = NULL;
+	m_borderStyle = xtpGridBorderStaticEdge;
 
-	m_hCursorHoriz = XTPResourceManager()->LoadCursor(XTP_IDC_HSPLITBAR);
-	m_hCursorVert = XTPResourceManager()->LoadCursor(XTP_IDC_VSPLITBAR);
-	m_hCursorNew = XTPResourceManager()->LoadCursor(XTP_IDC_WORKSPACE_NEW);
-	m_hCursorDelete = XTPResourceManager()->LoadCursor(XTP_IDC_WORKSPACE_DELETE);
+	m_bShowInplaceButtonsAlways = FALSE;
 
-	m_bShowWorkspace = TRUE;
-	m_pTabWorkspace = NULL;
-	m_bEnableGroups = FALSE;
-	m_bUserWorkspace = FALSE;
+	LOGFONT lfIcon;
+	VERIFY(::SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(lfIcon), &lfIcon, 0));
+	lfIcon.lfWeight = FW_NORMAL;
+	lfIcon.lfItalic = FALSE;
+	VERIFY(m_pPaintManager->GetItemMetrics()->m_fontNormal.CreateFontIndirect(&lfIcon));
 
-	m_nMsgUpdateSkinState = RegisterWindowMessage(_T("WM_SKINFRAMEWORK_UPDATESTATE"));
-	m_nMsgQuerySkinState = RegisterWindowMessage(_T("WM_SKINFRAMEWORK_QUERYSTATE"));
+	lfIcon.lfWeight = FW_BOLD;
+	VERIFY(m_pPaintManager->GetItemMetrics()->m_fontBold.CreateFontIndirect(&lfIcon));
 
-	CImageList il;
-	il.Create(XTP_IDB_WORKSPACE_ICONS, 16, 1, RGB(0, 255, 0));
-	UINT nIDs[] =
-	{
-		XTP_ID_WORKSPACE_NEWHORIZONTAL, XTP_ID_WORKSPACE_NEWVERTICAL
-	};
-	XTPImageManager()->SetIcons(il, nIDs, 2, CSize(16, 16));
+	m_bHighlightChanged = FALSE;
 
-	m_dwFlags = 0;
+	m_pImageManager = new CXTPImageManager;
 
-	m_pDropTarget = new CTabClientDropTarget();
-	m_pDropTarget->m_pTabClientWnd = this;
+	m_pInplaceEdit = new CXTPPropertyGridInplaceEdit;
+	m_pInplaceListBox = new CXTPPropertyGridInplaceList;
+
+	m_bVariableHelpHeight = TRUE;
 
 	m_pToolTipContext = new CXTPToolTipContext;
 
-	m_bDelayLock = FALSE;
+	m_bHideSelection = FALSE;
 
-	m_newTabPosition = xtpWorkspaceNewTabRightMost;
-	m_afterCloseTabPosition = xtpWorkspaceActivateTopmost;
+
 
 }
 
-CXTPTabClientWnd::~CXTPTabClientWnd()
+BOOL CXTPPropertyGrid::RegisterWindowClass(HINSTANCE hInstance /*= NULL*/)
 {
-	CMDTARGET_RELEASE(m_pPaintManager);
+	return XTPDrawHelpers()->RegisterWndClass(hInstance, XTPPROPERTYGRID_CLASSNAME, 0);
+}
 
-	if (m_pTabWorkspace != NULL)
+CXTPPropertyGrid::~CXTPPropertyGrid()
+{
+	if (m_pView)
 	{
-		m_pTabWorkspace->m_pTabClientWnd = NULL;
-		m_pTabWorkspace->DeleteAllItems();
-	}
-	else
-	{
-		for (int i = 0; i < GetWorkspaceCount(); i++)
-		{
-			delete GetWorkspace(i);
-		}
+		delete m_pView;
 	}
 
-	SAFE_DELETE(m_pDropTarget);
+	CMDTARGET_RELEASE(m_pVerbs);
+	CMDTARGET_RELEASE(m_pImageManager);
+
+	SAFE_DELETE(m_pInplaceEdit);
+	SAFE_DELETE(m_pInplaceListBox);
+
+	delete m_pPaintManager;
 
 	CMDTARGET_RELEASE(m_pToolTipContext);
-
-
-	XTPMarkupReleaseContext(m_pMarkupContext);
 }
 
-void CXTPTabClientWnd::EnableMarkup(BOOL bEnableMarkup)
+void CXTPPropertyGrid::SetInplaceEdit(CXTPPropertyGridInplaceEdit*  pInplaceEdit)
 {
-	XTPMarkupReleaseContext(m_pMarkupContext);
+	ASSERT(pInplaceEdit);
 
-	if (bEnableMarkup)
+	SAFE_DELETE(m_pInplaceEdit);
+	m_pInplaceEdit = pInplaceEdit;
+}
+
+void CXTPPropertyGrid::SetInplaceList(CXTPPropertyGridInplaceList*  pInplaceList)
+{
+	ASSERT(pInplaceList);
+
+	SAFE_DELETE(m_pInplaceListBox);
+	m_pInplaceListBox = pInplaceList;
+}
+
+
+CXTPPropertyGridView* CXTPPropertyGrid::CreateView() const
+{
+	return new CXTPPropertyGridView();
+}
+
+CXTPPropertyGridView& CXTPPropertyGrid::GetGridView() const
+{
+	if (m_pView == 0)
 	{
-		m_pMarkupContext = XTPMarkupCreateContext(m_hWnd);
-	}
-}
-
-
-BOOL CXTPTabClientWnd::IsLayoutRTL() const
-{
-	if (GetParentFrame()->GetExStyle() & WS_EX_LAYOUTRTL)
-		return TRUE;
-
-	return m_bRightToLeft;
-}
-
-#ifndef WS_EX_NOINHERITLAYOUT
-#define WS_EX_NOINHERITLAYOUT   0x00100000L
-#endif
-
-void CXTPTabClientWnd::SetLayoutRTL(BOOL bRightToLeft)
-{
-	if (!XTPSystemVersion()->IsLayoutRTLSupported())
-		return;
-
-	if (m_bUserWorkspace)
-		return;
-
-	m_bRightToLeft = bRightToLeft;
-
-	if (!m_bEnableGroups && GetWorkspaceCount() == 1)
-	{
-		((CSingleWorkspace*)GetWorkspace(0))->ModifyStyleEx(m_bRightToLeft ? 0 : WS_EX_LAYOUTRTL,
-			m_bRightToLeft ? WS_EX_LAYOUTRTL : 0);
+		m_pView = CreateView();
+		m_pView->m_pGrid = (CXTPPropertyGrid*)this;
 	}
 
-	if (m_bEnableGroups)
-	{
-		ModifyStyleEx(m_bRightToLeft ? 0 : WS_EX_LAYOUTRTL,
-			m_bRightToLeft ? WS_EX_LAYOUTRTL | WS_EX_NOINHERITLAYOUT : 0);
-	}
-
-	RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_ALLCHILDREN);
-	m_pParentFrame->DelayRecalcLayout();
+	return *m_pView;
 }
 
+IMPLEMENT_DYNAMIC(CXTPPropertyGrid, CWnd)
 
-CXTPTabManagerItem* CXTPTabClientWnd::FindItem(const HWND hWnd) const
-{
-	// loop through all tab items
-	for (int nIndex = 0; nIndex < GetWorkspaceCount(); nIndex++)
-	{
-		CXTPTabManagerItem* pItem = GetWorkspace(nIndex)->FindItem(hWnd);
-
-		if (pItem)
-			return pItem;
-	}
-
-	return NULL;
-}
-
-BOOL CXTPTabClientWnd::OnBeforeItemClick(CXTPTabManagerItem* pItem)
-{
-	UNREFERENCED_PARAMETER(pItem);
-
-
-	return TRUE;
-}
-
-CWnd* CXTPTabClientWnd::MDIGetActive()
-{
-	return (GetParentFrame()->MDIGetActive());
-
-}
-
-void CXTPTabClientWnd::MDIActivate(CWnd* pWnd)
-{
-	if (!pWnd || !::IsWindow(pWnd->GetSafeHwnd()))
-		return;
-
-	SendMessage(WM_MDIACTIVATE, (WPARAM)pWnd->m_hWnd, 0);
-
-	if (pWnd->GetStyle() & WS_MINIMIZE)
-	{
-		pWnd->SendMessage(WM_SYSCOMMAND, (WPARAM)SC_RESTORE, 0L);
-	}
-}
-
-CString CXTPTabClientWnd::GetItemTooltip(const CXTPTabManagerItem* pItem) const
-{
-	CString strTooltip = pItem->m_strToolTip;
-	if (!strTooltip.IsEmpty())
-		return strTooltip;
-
-	CMDIChildWnd* pChild = DYNAMIC_DOWNCAST(CMDIChildWnd, CWnd::FromHandle(pItem->GetHandle()));
-	if (pChild)
-	{
-		strTooltip = (LPCTSTR)pChild->SendMessage(WM_XTP_GETWINDOWTOOLTIP, (WPARAM)pItem);
-		if (!strTooltip.IsEmpty())
-			return strTooltip;
-
-
-		if (pChild->GetActiveDocument())
-			strTooltip = pChild->GetActiveDocument()->GetPathName();
-
-		if (!strTooltip.IsEmpty())
-			return strTooltip;
-	}
-	return pItem->GetCaption();
-}
-
-CString CXTPTabClientWnd::GetItemText(const CWnd* pChildWnd) const
-{
-	ASSERT(pChildWnd != NULL);
-	if (!pChildWnd)
-		return _T("");
-
-	ASSERT(pChildWnd->IsKindOf(RUNTIME_CLASS(CMDIChildWnd)));
-
-	CString sWindowText = (LPCTSTR)((CWnd*)pChildWnd)->
-		SendMessage(WM_XTP_GETWINDOWTEXT);
-
-	if (sWindowText.IsEmpty())
-	{
-		CDocument* pDoc = ((CMDIChildWnd*)pChildWnd)->GetActiveDocument();
-		if (pDoc != NULL)
-			sWindowText = pDoc->GetTitle();
-
-		if (sWindowText.IsEmpty())
-			CXTPDrawHelpers::GetWindowCaption(pChildWnd->GetSafeHwnd(), sWindowText);
-	}
-
-	return sWindowText;
-}
-
-COLORREF CXTPTabClientWnd::GetItemColor(const CXTPTabManagerItem* pItem) const
-{
-	COLORREF clr = (COLORREF)::SendMessage(pItem->GetHandle(), WM_XTP_GETTABCOLOR, 0, 0);
-
-	if (clr != 0)
-	{
-		return clr;
-	}
-
-	return COLORREF_NULL;
-}
-
-
-HICON CXTPTabClientWnd::GetItemIcon(const CXTPTabManagerItem* pItem) const
-{
-	HWND hWnd = pItem->GetHandle();
-	HICON hIcon;
-
-	hIcon = (HICON)::SendMessage(hWnd, WM_XTP_GETTABICON, 0, 0);
-
-	if (!hIcon) hIcon = (HICON)::SendMessage(hWnd, WM_GETICON, ICON_SMALL, 0);
-	if (!hIcon) hIcon = (HICON)::SendMessage(hWnd, WM_GETICON, ICON_BIG, 0);
-	if (!hIcon) hIcon = (HICON)(ULONG_PTR)::GetClassLongPtr(hWnd, GCLP_HICONSM);
-	if (!hIcon) hIcon = (HICON)(ULONG_PTR)::GetClassLongPtr(hWnd, GCLP_HICON);
-
-	return hIcon ? hIcon : AfxGetApp()->LoadOEMIcon(OIC_WINLOGO);
-}
-
-
-BEGIN_MESSAGE_MAP(CXTPTabClientWnd, CWnd)
-	//{{AFX_MSG_MAP(CXTPTabClientWnd)
-	ON_MESSAGE(WM_MDIACTIVATE, OnMDIActivate)
-	ON_MESSAGE(WM_MDINEXT, OnMDINext)
-	ON_MESSAGE(WM_MDICREATE, OnMDICreate)
-	ON_MESSAGE(WM_MDIDESTROY, OnMDIDestroy)
-	ON_WM_SIZE()
-	ON_MESSAGE_VOID(WM_IDLEUPDATECMDUI, OnIdleUpdateCmdUI)
+BEGIN_MESSAGE_MAP(CXTPPropertyGrid, CWnd)
+	//{{AFX_MSG_MAP(CXTPPropertyGrid)
+	ON_WM_ERASEBKGND()
 	ON_WM_PAINT()
 	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
-	ON_WM_ERASEBKGND()
-	ON_WM_NCPAINT()
-	ON_WM_NCCALCSIZE()
-	ON_WM_NCACTIVATE()
-	ON_WM_LBUTTONDBLCLK()
-	ON_WM_PAINT()
-	ON_WM_ERASEBKGND()
-	ON_WM_LBUTTONDOWN()
-	ON_WM_MOUSEMOVE()
-	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
-	ON_WM_SYSCOLORCHANGE()
+	ON_WM_SETFOCUS()
+	ON_WM_KILLFOCUS()
+	ON_WM_SIZE()
 	ON_WM_SETCURSOR()
-	ON_WM_RBUTTONDOWN()
-
-	ON_COMMAND_RANGE(XTP_ID_WORKSPACE_MOVEPREVIOUS, XTP_ID_WORKSPACE_NEWVERTICAL, OnWorkspaceCommand)
-	ON_UPDATE_COMMAND_UI_RANGE(XTP_ID_WORKSPACE_MOVEPREVIOUS, XTP_ID_WORKSPACE_NEWVERTICAL, OnUpdateWorkspaceCommand)
+	ON_WM_LBUTTONDOWN()
+	ON_WM_LBUTTONUP()
+	ON_COMMAND(XTP_IDC_PROPERTYGRID_ALPHABETIC, OnSortAlphabetic)
+	ON_COMMAND(XTP_IDC_PROPERTYGRID_CATEGORIZED, OnSortCategorized)
+	ON_WM_SYSCOLORCHANGE()
+	ON_WM_KEYDOWN()
+	ON_WM_GETDLGCODE()
 	//}}AFX_MSG_MAP
+	ON_NOTIFY_EX_RANGE(TTN_NEEDTEXTW, 0, 0xFFFF, OnToolTipText)
+	ON_NOTIFY_EX_RANGE(TTN_NEEDTEXTA, 0, 0xFFFF, OnToolTipText)
 END_MESSAGE_MAP()
 
-CXTPTabClientWnd::CWorkspace* CXTPTabClientWnd::CreateWorkspace()
+UINT CXTPPropertyGrid::OnGetDlgCode()
 {
-	if (m_pTabWorkspace != NULL)
-		return m_pTabWorkspace;
-
-	if (m_bUserWorkspace)
-		return NULL;
-
-	if (m_bEnableGroups)
-		return new CWorkspace();
-
-	return new CSingleWorkspace();
+	return DLGC_WANTALLKEYS;
 }
 
-CXTPTabClientWnd::CWorkspace*  CXTPTabClientWnd::AddWorkspace(int nIndex)
+BOOL CXTPPropertyGrid::CreateGridView(DWORD dwListStyle)
 {
-	if (m_pDropTarget) m_pDropTarget->Revoke();
+	CXTPEmptyRect rect;
 
-	CWorkspace* pWorkspace = CreateWorkspace();
-	if (!pWorkspace)
-		return NULL;
-
-	if (m_bEnableGroups)
+	if (dwListStyle == NULL)
 	{
-		if (m_pDropTarget) m_pDropTarget->Register(this);
-	}
-	else if (!m_bUserWorkspace)
-	{
-		VERIFY(((CSingleWorkspace*)pWorkspace)->Create(AfxRegisterWndClass(CS_DBLCLKS, AfxGetApp()->LoadStandardCursor(IDC_ARROW)), _T(""), WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_CHILD | WS_VISIBLE, CXTPEmptyRect(), m_pParentFrame, 0));
-		if (m_pDropTarget) m_pDropTarget->Register((CSingleWorkspace*)pWorkspace);
-
-		if (IsLayoutRTL())
-		{
-			((CSingleWorkspace*)pWorkspace)->ModifyStyleEx(0, WS_EX_LAYOUTRTL);
-		}
+		dwListStyle = m_bVariableItemsHeight ? LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT :
+			LBS_OWNERDRAWFIXED | LBS_NOINTEGRALHEIGHT;
 	}
 
-	if (nIndex == -1) nIndex = GetWorkspaceCount();
-	m_arrWorkspace.InsertAt(nIndex, pWorkspace);
+	// Must be owner draw.
+	ASSERT((dwListStyle & (LBS_OWNERDRAWVARIABLE|LBS_OWNERDRAWFIXED)) != 0);
 
-	pWorkspace->m_pTabClientWnd = this;
+	m_bVariableItemsHeight = (dwListStyle & LBS_OWNERDRAWVARIABLE) != 0;
 
-
-	pWorkspace->SetActive(FALSE);
-	pWorkspace->SetItemMetrics(CSize(70, 18), 0, CSize(220, 0));
-	pWorkspace->GetNavigateButtons()->InsertAt(2, new CNavigateButtonActiveFiles(pWorkspace, this));
-
-	UpdateFlags(pWorkspace);
-
-	m_bForceToRecalc = TRUE;
-
-	return pWorkspace;
-
-}
-
-BOOL CXTPTabClientWnd::Attach(CXTPMDIFrameWnd* pParentFrame, BOOL bEnableGroups /*= FALSE*/)
-{
-	return Attach(pParentFrame->GetCommandBars(), pParentFrame, bEnableGroups);
-}
-
-BOOL CXTPTabClientWnd::Attach(CXTPCommandBars* pCommandBars, CMDIFrameWnd* pParentFrame, BOOL bEnableGroups)
-{
-	ASSERT(GetWorkspaceCount() == 0);
-	ASSERT(pParentFrame != NULL);
-	if (!pParentFrame)
-		return FALSE;
-	ASSERT(::IsWindow(pParentFrame->GetSafeHwnd()));
-
-	m_bEnableGroups = bEnableGroups;
-
-	m_pCommandBars = NULL;
-
-	// check if already attached
-	if (IsAttached())
+	if (!GetGridView().CreateEx(0, _T("LISTBOX"), NULL,
+		WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_CHILD | WS_VISIBLE |
+		LBS_NOTIFY | WS_VSCROLL | WS_TABSTOP | dwListStyle, rect, this, 0))
 	{
-		TRACE(_T("CXTPTabClientWnd::Attach: window has already been attached. Call Detach() function before !\n"));
+		TRACE0("Error creating property grid view.\n");
 		return FALSE;
 	}
 
-	// make sure the specified window is/derived from CMDIFrameWnd class
-	if (!pParentFrame->IsKindOf(RUNTIME_CLASS(CMDIFrameWnd)))
-	{
-		TRACE(_T("CXTPTabClientWnd::Attach: specified frame window is not of CMDIFrameWnd class (or derived)!\n"));
-		return FALSE;
-	}
-
-	// try to sublass MDIClient window
-	if (!SubclassWindow(pParentFrame->m_hWndMDIClient))
-	{
-		TRACE(_T("CXTPTabClientWnd::Attach: failed to subclass MDI Client window\n"));
-		return FALSE;
-	}
-
-	m_pCommandBars = pCommandBars;
-
-	SendMessage(m_nMsgUpdateSkinState);
-
-	// save the pointer to parent MDIFrame
-	m_pParentFrame = pParentFrame;
-
-	CheckCommandBarsTheme();
-	GetPaintManager()->RefreshMetrics();
-
-
-	SetWindowPos(NULL, 0, 0, 0, 0, SWP_NOZORDER);
-
-	// update the size and position of the tab control and MDIClient window
-	Reposition();
-
-	if (bEnableGroups)
-	{
-		::SetClassLong(m_hWnd, GCL_STYLE, ::GetClassLong(m_hWnd, GCL_STYLE) | CS_DBLCLKS);
-	}
-
-	// populate tab control with MDIChild windows if any exist at the moment
-	UpdateContents();
+	GetGridView().ResetContent();
+	SetStandardColors();
 
 	return TRUE;
 }
 
-void CXTPTabClientWnd::EnableToolTips(XTPTabToolTipBehaviour behaviour /*= xtpTabToolTipAlways*/)
+BOOL CXTPPropertyGrid::Create(const RECT& rect, CWnd* pParentWnd, UINT nID, DWORD dwListStyle /*= LBS_OWNERDRAWFIXED|LBS_NOINTEGRALHEIGHT*/)
 {
-	m_pPaintManager->EnableToolTips(behaviour);
+	if (!CreateEx(0, XTPPROPERTYGRID_CLASSNAME, _T(""),
+		WS_TABSTOP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_CHILD | WS_GROUP, rect, pParentWnd, nID))
+	{
+		TRACE0("Error creating property grid.\n");
+		return FALSE;
+	}
+
+	if (!CreateGridView(dwListStyle))
+		return FALSE;
+
+	Reposition(rect.right - rect.left, rect.bottom - rect.top);
+
+	SetWindowPos(NULL, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top,
+		SWP_SHOWWINDOW|SWP_NOZORDER);
+
+	return TRUE;
 }
 
-void CXTPTabClientWnd::ShowWorkspace(BOOL bShow)
+BOOL CXTPPropertyGrid::PreCreateWindow(CREATESTRUCT& cs)
 {
-	if (m_bShowWorkspace == bShow)
-		return;
+	if (!CWnd::PreCreateWindow(cs))
+		return FALSE;
 
-	if (!m_bEnableGroups && !m_bUserWorkspace)
+	//
+	// PreCreateWindow is called when a control is dynamically
+	// created. We want to set m_bPreSubclassWindow to FALSE
+	// here so the control is initialized from CWnd::Create and
+	// not CWnd::PreSubclassWindow.
+	//
+
+	m_bPreSubclassWindow = FALSE;
+
+	return TRUE;
+}
+
+void CXTPPropertyGrid::PreSubclassWindow()
+{
+	CWnd::PreSubclassWindow();
+
+	if (m_bPreSubclassWindow)
 	{
-		if (GetWorkspaceCount() == 1 && ((CSingleWorkspace*)GetWorkspace(0))->m_hWnd)
-		{
-			((CSingleWorkspace*)GetWorkspace(0))->ShowWindow(bShow ? SW_SHOW : SW_HIDE);
-		}
+		// Initialize the control.
+		VERIFY(CreateGridView(NULL));
 
-		m_bShowWorkspace = bShow;
-		UpdateContents();
 		Reposition();
 	}
 }
 
-BOOL CXTPTabClientWnd::Detach()
+void CXTPPropertyGrid::SetVariableItemsHeight(BOOL bVariable /*= TRUE*/)
 {
-	// check if any attached
-	if (!IsAttached())
+	if (m_bVariableItemsHeight == bVariable)
+		return;
+
+	m_bVariableItemsHeight = bVariable;
+
+	CXTPPropertyGridView& wndView = GetGridView();
+	if (!wndView.GetSafeHwnd())
+		return;
+
+	wndView.ResetContent();
+	wndView.DestroyWindow();
+
+	DWORD dwListStyle = bVariable ? LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT : LBS_OWNERDRAWFIXED | LBS_NOINTEGRALHEIGHT;
+
+	VERIFY(GetGridView().CreateEx(0, _T("LISTBOX"), NULL, WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_CHILD | WS_VISIBLE | LBS_NOTIFY | WS_VSCROLL | WS_TABSTOP | dwListStyle, CXTPEmptyRect(), this, 0));
+
+	wndView.Refresh();
+
+	Reposition();
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGrid message handlers
+
+BOOL CXTPPropertyGrid::OnEraseBkgnd(CDC*)
+{
+	return TRUE;
+}
+
+void CXTPPropertyGrid::OnPaint()
+{
+	CPaintDC dcPaint(this);
+	CXTPBufferDC dc(dcPaint);
+
+	m_pPaintManager->FillPropertyGrid(&dc);
+}
+
+LRESULT CXTPPropertyGrid::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
+{
+	CDC* pDC = CDC::FromHandle((HDC)wParam);
+	if (pDC)
 	{
-		TRACE(_T("CXTPTabClientWnd::Attach: there is nothing to detach! Window hasn't been attached!\n"));
-		return FALSE;
+		m_pPaintManager->FillPropertyGrid(pDC);
 	}
-
-	if (m_pDropTarget) m_pDropTarget->Revoke();
-
-	if (m_pTabWorkspace)
-	{
-		m_pTabWorkspace->m_pTabClientWnd = NULL;
-		m_pTabWorkspace->DeleteAllItems();
-	}
-	else
-	{
-		for (int i = 0; i < GetWorkspaceCount(); i++)
-		{
-			delete GetWorkspace(i);
-		}
-	}
-
-	m_arrWorkspace.RemoveAll();
-
-	m_pActiveWorkspace = NULL;
-
-	HWND hWnd = m_hWnd;
-	// unsubclass MDIClient window
-	UnsubclassWindow();
-
-	// update the size and position of the MDIClient window
-	if (::IsWindow(m_pParentFrame->GetSafeHwnd()))
-		m_pParentFrame->RecalcLayout();
-
-	m_pParentFrame = NULL;
-	m_pCommandBars = NULL;
-
-	::SendMessage(hWnd, m_nMsgUpdateSkinState, 0, 0);
 
 	return TRUE;
 }
 
-
-
-INT_PTR CXTPTabClientWnd::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
+CWnd* CXTPPropertyGrid::GetNextGridTabItem(BOOL bForward)
 {
-	if (XTPMouseManager()->IsTrackedLock())
-		return -1;
+	CWnd* pThis = this;
+	CWnd* pParent = pThis->GetParent();
 
-	if (!m_bShowWorkspace)
-		return -1;
-
-	for (int i = 0; i < GetWorkspaceCount(); i++)
+	if (!pThis || !pParent)
 	{
-		if (GetWorkspace(i)->GetControlRect().PtInRect(point))
-		{
-			return GetWorkspace(i)->PerformToolHitTest(m_hWnd, point, pTI);
-		}
-	}
-	return -1;
-}
-
-
-void CXTPTabClientWnd::CheckCommandBarsTheme()
-{
-	if (!m_bAutoTheme)
-		return;
-
-	CXTPCommandBars* pCommandBars = GetCommandBars();
-	if (!pCommandBars)
-		return;
-
-	XTPPaintTheme themeCommandBars = pCommandBars->GetPaintManager()->GetCurrentTheme();
-	if (m_themeCommandBars == themeCommandBars)
-		return;
-
-	// initialize attributes common to most themes.
-	m_pPaintManager->m_bStaticFrame = FALSE;
-	m_pPaintManager->m_clientFrame = xtpTabFrameBorder;
-	m_pPaintManager->m_bOneNoteColors = FALSE;
-	m_pPaintManager->m_bHotTracking = FALSE;
-	m_pPaintManager->m_rcButtonMargin.SetRect(0,0,0,0);
-	m_pPaintManager->m_bClearTypeTextQuality = pCommandBars->GetPaintManager()->m_bClearTypeTextQuality;
-	m_pPaintManager->m_bBoldSelected = FALSE;
-	m_pPaintManager->m_rcClientMargin.SetRect(2,2,2,2);
-
-	// set theme specific attributes.
-	switch (themeCommandBars)
-	{
-	case xtpThemeOffice2000:
-		{
-			m_pPaintManager->m_bBoldSelected = TRUE;
-			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPageSelected);
-			m_pPaintManager->SetColor(xtpTabColorDefault);
-		}
-		break;
-
-	case xtpThemeOfficeXP:
-		{
-			m_pPaintManager->SetAppearance(xtpTabAppearanceVisualStudio);
-			m_pPaintManager->m_bStaticFrame = TRUE;
-			m_pPaintManager->m_clientFrame = xtpTabFrameSingleLine;
-		}
-		break;
-
-	case xtpThemeOffice2003:
-		{
-			m_pPaintManager->m_bBoldSelected = TRUE;
-			m_pPaintManager->m_bDisableLunaColors = FALSE;
-			m_pPaintManager->m_bOneNoteColors = TRUE;
-			m_pPaintManager->m_bHotTracking = TRUE;
-			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage2003);
-			m_pPaintManager->SetColor(xtpTabColorOffice2003);
-		}
-		break;
-
-	case xtpThemeNativeWinXP:
-		{
-			m_pPaintManager->m_bBoldSelected = TRUE;
-			m_pPaintManager->m_bHotTracking = TRUE;
-			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage);
-			m_pPaintManager->SetColor(xtpTabColorWinNative);
-		}
-		break;
-
-	case xtpThemeWhidbey:
-		{
-			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage2003);
-			m_pPaintManager->SetColor(xtpTabColorVisualStudio2005);
-			m_pPaintManager->m_bStaticFrame = TRUE;
-			m_pPaintManager->m_clientFrame = xtpTabFrameSingleLine;
-			m_pPaintManager->m_bDisableLunaColors = TRUE;
-		}
-		break;
-
-	case xtpThemeResource:
-		{
-			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage2003);
-			m_pPaintManager->SetColor(xtpTabColorResource);
-			m_pPaintManager->m_bDisableLunaColors = FALSE;
-			m_pPaintManager->m_bOneNoteColors = TRUE;
-			m_pPaintManager->m_bHotTracking = TRUE;
-		}
-		break;
-
-	case xtpThemeRibbon:
-		{
-			m_pPaintManager->m_bDisableLunaColors = FALSE;
-			m_pPaintManager->m_bOneNoteColors = FALSE;
-			m_pPaintManager->m_bHotTracking = TRUE;
-			m_pPaintManager->m_rcClientMargin.SetRect(3,2,3,4);
-
-			if (pCommandBars->GetMenuBar() && pCommandBars->GetMenuBar()->GetType() == xtpBarTypeRibbon)
-			{
-				m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPageAccess2007);
-				m_pPaintManager->m_rcButtonMargin.SetRect(3, 0, 3, 0);
-			}
-			else
-			{
-				m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage2007);
-				m_pPaintManager->m_rcButtonMargin.SetRect(2, 2, 2, 2);
-			}
-		}
-		break;
-
-	case xtpThemeVisualStudio2008:
-		{
-			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage2003);
-			m_pPaintManager->SetColor(xtpTabColorVisualStudio2008);
-			m_pPaintManager->m_bStaticFrame = FALSE;
-			m_pPaintManager->m_clientFrame = xtpTabFrameBorder;
-			m_pPaintManager->m_bDisableLunaColors = TRUE;
-			m_pPaintManager->m_bHotTracking = TRUE;
-		}
-		break;
-
-	case xtpThemeVisualStudio6:
-		{
-			m_pPaintManager->m_bBoldSelected = TRUE;
-			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage);
-			m_pPaintManager->SetColor(xtpTabColorDefault);
-		}
-		break;
-
-	case xtpThemeVisualStudio2010:
-		{
-			m_pPaintManager->m_bStaticFrame = FALSE;
-			m_pPaintManager->m_clientFrame = xtpTabFrameBorder;
-			m_pPaintManager->m_bDisableLunaColors = TRUE;
-			m_pPaintManager->m_bHotTracking = TRUE;
-			m_pPaintManager->m_rcClientMargin.SetRect(0, 2, 0, 2);
-			m_pPaintManager->m_rcButtonMargin.SetRect(0, 2, 0, 1);
-
-			CXTPTabPaintManager::CAppearanceSetPropertyPageFlat* pAppearance =
-				new CXTPTabPaintManager::CAppearanceSetVisualStudio2010();
-
-			pAppearance->m_rcHeaderMargin.left = 1;
-			pAppearance->m_rcHeaderMargin.top = 0;
-
-			m_pPaintManager->SetAppearanceSet(pAppearance);
-			m_pPaintManager->SetColor(xtpTabColorVisualStudio2010);
-			SetFlags(xtpWorkspaceHideClose | xtpWorkspaceShowCloseTab);
-		}
-		break;
-
-	default:
-		{
-			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage);
-			m_pPaintManager->SetColor(xtpTabColorDefault);
-		}
-		break;
+		ASSERT(FALSE);
+		return 0 ;
 	}
 
-	m_pPaintManager->RefreshMetrics();
-	m_themeCommandBars = themeCommandBars;
-
-	Refresh();
-}
-
-int CXTPTabClientWnd::GetWorkspaceCount() const
-{
-	return (int)m_arrWorkspace.GetSize();
-}
-
-CXTPTabClientWnd::CWorkspace* CXTPTabClientWnd::GetWorkspace(int nIndex) const
-{
-	return m_arrWorkspace[nIndex];
-}
-
-
-void CXTPTabClientWnd::OnIdleUpdateCmdUI()
-{
-	if (m_bDelayLock)
+	if ((pParent->GetExStyle() & WS_EX_CONTROLPARENT) && (pParent->GetStyle() & WS_CHILD))
 	{
-		m_bDelayLock = FALSE;
-		m_bLockUpdate = FALSE;
+		pParent = pParent->GetParent();
 	}
 
-	UpdateContents();
-}
+	CWnd* pNextItem = pParent->GetNextDlgTabItem(pThis, bForward);
 
-void CXTPTabClientWnd::CWorkspace::AddNewWindowItem()
-{
-	if (!m_pNewWindowItem && m_pTabClientWnd->m_bShowNewWindowTab)
-	{
-		m_pNewWindowItem = CXTPTabManager::AddItem(-1);
-		m_pNewWindowItem->SetClosable(FALSE);
-		m_pNewWindowItem->GetNavigateButtons()->RemoveAll();
-	}
-}
-
-CXTPTabManagerItem* CXTPTabClientWnd::AddItem(CWnd* pChildWnd)
-{
-#ifdef _DEBUG
-	if (m_bEnableGroups)
-	{
-		ASSERT((pChildWnd->GetStyle() & WS_MAXIMIZE) == 0);
-	}
-#endif
-
-	if (GetWorkspaceCount() == 0)
-		AddWorkspace();
-
-	if (GetWorkspaceCount() == 0)
+	if (pNextItem == pThis)
 		return NULL;
 
-	CWorkspace* pActiveWorkspace = m_pActiveWorkspace ? m_pActiveWorkspace : m_arrWorkspace[GetWorkspaceCount() - 1];
-
-	return pActiveWorkspace->AddItem(pChildWnd);
+	return pNextItem;
 }
 
-
-void CXTPTabClientWnd::SetActiveWorkspace(CWorkspace* pWorkspace)
+void CXTPPropertyGrid::OnNavigate(XTPPropertyGridUI nUIElement, BOOL bForward, CXTPPropertyGridItem* pItem)
 {
-	if (m_pActiveWorkspace != pWorkspace)
+	int nNextElement = bForward ? +1 : -1;
+	int nUI = nUIElement + nNextElement;
+
+	CXTPPropertyGridView& wndView = GetGridView();
+
+	if (pItem == NULL)
+		pItem = wndView.GetSelectedItem();
+
+	while (nUI != nUIElement)
 	{
-		if (m_pActiveWorkspace)
-			m_pActiveWorkspace->SetActive(FALSE);
-
-		m_pActiveWorkspace = pWorkspace;
-		m_pActiveWorkspace->SetActive(TRUE);
-	}
-}
-
-void CXTPTabClientWnd::WorkspaceToScreen(LPPOINT lpPoint) const
-{
-	if (m_bEnableGroups)
-	{
-		ClientToScreen(lpPoint);
-	}
-	else if (GetWorkspaceCount() != 0)
-	{
-		CWorkspace* pWorkspace = GetWorkspace(0);
-		pWorkspace->GetWindow()->ClientToScreen(lpPoint);
-	}
-
-}
-void CXTPTabClientWnd::ScreenToWorkspace(LPPOINT lpPoint) const
-{
-	if (m_bEnableGroups)
-	{
-		ScreenToClient(lpPoint);
-	}
-	else if (GetWorkspaceCount() != 0)
-	{
-		CWorkspace* pWorkspace = GetWorkspace(0);
-		pWorkspace->GetWindow()->ScreenToClient(lpPoint);
-	}
-}
-
-
-void CXTPTabClientWnd::Refresh(BOOL bRecalcLayout)
-{
-	if (!IsAttached())
-		return;
-
-	if (m_bRefreshed)
-		return;
-
-	m_bRefreshed = TRUE;
-
-	UpdateContents();
-
-	if (GetWorkspaceCount() != 0)
-	{
-		CPoint pt;
-		GetCursorPos(&pt);
-		ScreenToWorkspace(&pt);
-
-		if (m_bEnableGroups)
+		if (nUI == xtpGridUIViewPrev)
 		{
-			OnMouseMove(0, pt);
-		}
-		else if (!m_bUserWorkspace)
-		{
-			((CSingleWorkspace*)GetWorkspace(0))->OnMouseMove(0, pt);
-		}
-	}
+			nUI += nNextElement;
 
-	Invalidate(FALSE);
-
-	if (bRecalcLayout)
-	{
-		if (m_bEnableGroups)
-			SetWindowPos(NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-
-		CXTPCommandBars* pCommandBars = GetCommandBars();
-		if (pCommandBars)
-			pCommandBars->RecalcFrameLayout();
-	}
-
-	m_bRefreshed = FALSE;
-}
-
-
-void CXTPTabClientWnd::UpdateContents()
-{
-	if (m_hWnd == 0)
-		return;
-
-	if (!m_bShowWorkspace)
-		return;
-
-	if (m_bLockUpdate)
-		return;
-
-	// check MDI windows
-	CFrameWnd* pFrameWnd = GetParentFrame();
-	if (pFrameWnd == NULL)
-		return;
-
-	if (m_bUpdateContents)
-		return;
-
-	m_bUpdateContents = TRUE;
-
-	CheckCommandBarsTheme();
-
-	m_bLockReposition = TRUE;
-
-	// get pointer to currently active MDIChild
-	CWnd* pActiveChildWnd = MDIGetActive();
-
-	CXTPTabManagerItem* pActiveItem = NULL, *pNewItem = NULL;
-
-	int i;
-	for (i = 0; i < GetWorkspaceCount(); i++)
-	{
-		for (int nIndex = 0; nIndex < GetWorkspace(i)->GetItemCount(); nIndex++)
-			GetWorkspace(i)->GetItem(nIndex)->m_bFound = FALSE;
-	}
-
-
-	// start enumerating from currently active MDIChild
-	CWnd* pChildWnd = GetWindow(GW_CHILD);
-
-	// enumerate all child windows
-	while (pChildWnd)
-	{
-		// see if can find
-		CXTPTabManagerItem* pFoundItem = FindItem(pChildWnd->GetSafeHwnd());
-
-		if (pFoundItem != NULL)
-		{
-			if ((pChildWnd->GetStyle() & WS_VISIBLE) == WS_VISIBLE)
+			if (m_bTabItems)
 			{
-				// update text if necessary
-				if (m_bAutoUpdateTabCaption) pFoundItem->SetCaption(GetItemText(pChildWnd));
+				int nIndex = !bForward && pItem ? pItem->m_nIndex - 1 : 0;
+				if (nIndex >= 0)
+				{
+					wndView.SetFocus();
+					wndView.SetCurSel(nIndex);
+					wndView.OnSelectionChanged();
 
+					if (bForward)
+						return;
+
+					nUI = xtpGridUIInplaceButton;
+					pItem = wndView.GetSelectedItem();
+				}
 			}
-			else
+		}
+		if (nUI == xtpGridUIView)
+		{
+			wndView.SetFocus();
+			wndView.FocusInplaceButton(NULL);
+			return;
+		}
+		if (nUI == xtpGridUIInplaceEdit)
+		{
+			if (pItem && pItem->GetFlags() & xtpGridItemHasEdit)
 			{
-				pFoundItem->Remove();
-				pFoundItem = NULL;
+				pItem->OnSelect();
+				pItem->SetFocusToInplaceControl();
+				return;
 			}
+			nUI += nNextElement;
+		}
+		if (nUI == xtpGridUIInplaceControl)
+		{
+			if (pItem && pItem->GetInplaceControls()->GetCount() > 0)
+			{
+				CWnd* pWnd = pItem->GetInplaceControls()->GetAt(0);
+				if (pWnd && pWnd->GetSafeHwnd() && pWnd->GetStyle() & WS_TABSTOP)
+				{
+					pWnd->SetFocus();
+					return;
+				}
+			}
+			nUI += nNextElement;
+		}
+		if (nUI == xtpGridUIInplaceButton)
+		{
+			if (pItem && pItem->IsInplaceButtonsVisible())
+			{
+				CXTPPropertyGridInplaceButtons* pButtons = pItem->GetInplaceButtons();
+
+				if (wndView.m_pFocusedButton && wndView.m_pFocusedButton->GetItem() == pItem)
+				{
+					int nIndex = wndView.m_pFocusedButton->GetIndex();
+					if (bForward && nIndex < pButtons->GetCount() -1)
+					{
+						wndView.FocusInplaceButton(pButtons->GetAt(nIndex + 1));
+						return;
+					}
+					else if (!bForward && nIndex > 0)
+					{
+						wndView.FocusInplaceButton(pButtons->GetAt(nIndex - 1));
+						return;
+					}
+				}
+				else
+				{
+					wndView.FocusInplaceButton(pButtons->GetAt(bForward ? 0 : pButtons->GetCount() - 1));
+					return;
+				}
+			}
+			nUI += nNextElement;
+		}
+		if (nUI == xtpGridUIViewNext)
+		{
+			if (m_bTabItems)
+			{
+				int nIndex = bForward ? (pItem ? pItem->m_nIndex + 1 : 0) : wndView.GetCount() - 1;
+				if (nIndex < wndView.GetCount())
+				{
+					wndView.SetFocus();
+					wndView.SetCurSel(nIndex);
+					wndView.OnSelectionChanged();
+					if (bForward)
+						return;
+					pItem = wndView.GetSelectedItem();
+				}
+			}
+
+			nUI += nNextElement;
+		}
+		if (nUI == xtpGridUIVerb)
+		{
+			if (IsVerbsVisible())
+			{
+				m_nFocusedVerb = bForward ? 0 : m_pVerbs->GetCount() - 1;
+				m_bVerbActivate = TRUE;
+				SetFocus();
+				m_bVerbActivate = FALSE;
+				Invalidate(FALSE);
+				return;
+			}
+			nUI += nNextElement;
+		}
+		if (nUI == xtpGridUIParentNext || nUI == xtpGridUIParentPrev)
+		{
+
+			CWnd* pWndNext = GetNextGridTabItem(!bForward);
+
+			if (pWndNext != NULL)
+			{
+				pWndNext->SetFocus();
+				return;
+			}
+
+			nUI = (nUI == xtpGridUIParentNext) ? xtpGridUIViewPrev : xtpGridUIVerb;
+		}
+		if (nUI < xtpGridUIParentPrev || nUI > xtpGridUIParentNext)
+		{
+			ASSERT(FALSE);
+			return;
+		}
+	}
+}
+
+void CXTPPropertyGrid::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if (m_nFocusedVerb != -1 && IsVerbsVisible())
+	{
+		if (m_nFocusedVerb >= m_pVerbs->GetCount())
+			m_nFocusedVerb = m_pVerbs->GetCount() -1;
+
+		BOOL bForward = GetKeyState(VK_SHIFT) >= 0;
+		CXTPDrawHelpers::KeyToLayout(this, nChar);
+
+		if ((nChar == VK_TAB) && bForward && (m_nFocusedVerb == m_pVerbs->GetCount() -1))
+		{
+			OnNavigate(xtpGridUIVerb, TRUE, NULL);
+			return;
+
+		}
+		else if ((nChar == VK_TAB) && !bForward && (m_nFocusedVerb == 0))
+		{
+			OnNavigate(xtpGridUIVerb, FALSE, NULL);
+			return;
+		}
+		else if (nChar == VK_RIGHT || nChar == VK_DOWN || ((nChar == VK_TAB) && bForward))
+		{
+			m_nFocusedVerb++;
+			if (m_nFocusedVerb >= m_pVerbs->GetCount())
+				m_nFocusedVerb = 0;
+			Invalidate(FALSE);
+		}
+		else if (nChar == VK_LEFT || nChar == VK_UP || nChar == VK_TAB)
+		{
+			m_nFocusedVerb--;
+			if (m_nFocusedVerb < 0)
+				m_nFocusedVerb = m_pVerbs->GetCount() -1;
+			Invalidate(FALSE);
+		}
+		else if (nChar == VK_RETURN)
+		{
+			CRect rcPart = m_pVerbs->GetAt(m_nFocusedVerb)->GetPart();
+			OnVerbClick(m_nFocusedVerb, CPoint(rcPart.left, rcPart.bottom));
+		}
+	}
+
+	CWnd::OnKeyDown(nChar, nRepCnt, nFlags);
+}
+
+void CXTPPropertyGrid::OnKillFocus(CWnd* pNewWnd)
+{
+	if (m_nFocusedVerb != -1)
+	{
+		m_nFocusedVerb = -1;
+		Invalidate(FALSE);
+	}
+	CWnd::OnKillFocus(pNewWnd);
+}
+
+void CXTPPropertyGrid::OnSetFocus(CWnd* pOldWnd)
+{
+	if (!m_bVerbActivate)
+	{
+		if (pOldWnd && pOldWnd == GetNextGridTabItem(FALSE) && GetKeyState(VK_SHIFT) < 0)
+		{
+			OnNavigate(xtpGridUIParentNext, FALSE, NULL);
+		}
+		else if (pOldWnd && pOldWnd == GetNextGridTabItem(TRUE) && GetKeyState(VK_SHIFT) >= 0)
+		{
+			OnNavigate(xtpGridUIParentPrev, TRUE, NULL);
 		}
 		else
 		{
-			if ((pChildWnd->GetStyle() & WS_VISIBLE) == WS_VISIBLE)
-			{
-				// add item
-				pNewItem = pFoundItem = AddItem(pChildWnd);
-				if (pNewItem)
-				{
-
-					pFoundItem->m_hWnd = pChildWnd->GetSafeHwnd();
-
-					pFrameWnd->SendMessage(WM_XTP_NEWTABITEM, (WPARAM)pNewItem);
-					pNewItem->GetTabManager()->SetSelectedItem(pNewItem);
-				}
-
-			}
+			GetGridView().SetFocus();
 		}
-		if (pFoundItem)
-		{
-			pFoundItem->m_bFound = TRUE;
-
-			if (pChildWnd == pActiveChildWnd)
-				pActiveItem = pFoundItem;
-		}
-
-		// get next MDIChild
-		pChildWnd = pChildWnd->GetWindow(GW_HWNDNEXT);
-	}
-
-	for (i = GetWorkspaceCount() - 1; i >= 0; i--)
-	{
-		CWorkspace* pWorkspace = GetWorkspace(i);
-		for (int nIndex = pWorkspace->GetItemCount() - 1; nIndex >= 0; nIndex--)
-		{
-			CXTPTabManagerItem* pItem = pWorkspace->GetItem(nIndex);
-			if (!pItem->m_bFound && pItem != pWorkspace->m_pNewWindowItem)
-			{
-				pItem->Remove();
-			}
-		}
-
-		if (pWorkspace->GetItemCount() - (pWorkspace->m_pNewWindowItem ? 1 : 0) == 0)
-		{
-			if (pWorkspace == m_pActiveWorkspace)
-				m_pActiveWorkspace = NULL;
-
-			CWorkspace* pWorkcpaceGrow = i == 0 ? (GetWorkspaceCount() > 1 ? GetWorkspace(i + 1): NULL) : GetWorkspace(i - 1);
-			if (pWorkcpaceGrow)
-			{
-				pWorkcpaceGrow->m_dHeight += pWorkspace->m_dHeight + m_nSplitterSize;
-			}
-
-			if (pWorkspace != m_pTabWorkspace) delete pWorkspace;
-			m_arrWorkspace.RemoveAt(i);
-
-			m_bForceToRecalc = TRUE;
-
-			if (m_bEnableGroups)
-			{
-				Invalidate(FALSE);
-			}
-		}
-	}
-
-	// set the active item
-	if (pActiveItem != NULL)
-	{
-		if (pActiveItem->GetTabManager()->GetSelectedItem() != pActiveItem)
-		{
-			pActiveItem->GetTabManager()->SetSelectedItem(pActiveItem);
-		}
-
-		SetActiveWorkspace((CWorkspace*)pActiveItem->GetTabManager());
-
-	}
-
-	m_bLockReposition = FALSE;
-
-	if (m_bForceToRecalc)
-	{
-		// update the size and position of the tab control and MDIClient window
-		if (::IsWindow(GetParentFrame()->GetSafeHwnd()))
-		{
-			Reposition();
-		}
-
-		if (pNewItem)
-			pNewItem->GetTabManager()->EnsureVisible(pNewItem);
-
-
-		m_bForceToRecalc = FALSE;
-	}
-
-	m_bUpdateContents = FALSE;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPTabClientWnd message handlers
-
-
-// handler for WM_MDIACTIVATE message. Will select corresponding
-// tab control item
-LRESULT CXTPTabClientWnd::OnMDIActivate(WPARAM /*wParam*/, LPARAM /*lParam*/)
-{
-	LRESULT lResult = 0;
-
-	if (m_bEnableGroups || m_bIgnoreFlickersOnActivate || !m_bShowWorkspace)
-	{
-		lResult = Default();
 	}
 	else
 	{
-		SetRedraw(FALSE);
-
-		lResult = Default();
-
-		SetRedraw(TRUE);
-		RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_ALLCHILDREN);
+		CWnd::OnSetFocus(pOldWnd);
 	}
-
-	UpdateContents();
-	return lResult;
 }
 
-
-// handler for WM_MDICREATE message. Will add new item into the
-// tab control
-LRESULT CXTPTabClientWnd::OnMDICreate(WPARAM /*wParam*/, LPARAM /*lParam*/)
+void CXTPPropertyGrid::OnSize(UINT nType, int cx, int cy)
 {
-	LRESULT lResult = Default();
+	CWnd::OnSize(nType, cx, cy);
 
-	if (lResult && m_bEnableGroups)
+	if (!GetGridView().GetSafeHwnd())
+		return;
+
+	Reposition(cx, cy);
+}
+
+int CXTPPropertyGrid::HitTest(CPoint pt)
+{
+	CXTPClientRect rc(this);
+
+	if (m_bHelpVisible)
 	{
-		CWnd* pWnd = CWnd::FromHandle((HWND)lResult);
-		if (pWnd)
+		CRect rcSplitter(CPoint(rc.left, rc.bottom - SPLITTER_HEIGHT - m_nHelpHeight), CSize(rc.Width(), SPLITTER_HEIGHT));
+
+		if (m_bVariableHelpHeight && rcSplitter.PtInRect(pt))
+			return xtpGridHitHelpSplitter;
+
+		rc.bottom -= SPLITTER_HEIGHT + m_nHelpHeight;
+	}
+	if (IsVerbsVisible())
+	{
+		CRect rcSplitter(CPoint(rc.left, rc.bottom - SPLITTER_HEIGHT - m_nVerbsHeight), CSize(rc.Width(), SPLITTER_HEIGHT));
+
+		if (rcSplitter.PtInRect(pt))
+			return xtpGridHitVerbsSplitter;
+
+		CRect rcVerbs(rc);
+		rcVerbs.top = rc.bottom - m_nVerbsHeight;
+
+		if (rcVerbs.PtInRect(pt))
 		{
-			pWnd->ModifyStyle(WS_BORDER | WS_DLGFRAME | WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX, 0);
-			pWnd->ModifyStyleEx(WS_EX_CLIENTEDGE, 0);
-			pWnd->MoveWindow(0, 0, 0, 0);
+			CWindowDC dc(this);
+			int nIndex = m_pPaintManager->HitTestVerbs(&dc, rcVerbs, pt);
+			if (nIndex != -1)
+			{
+				return xtpGridHitFirstVerb + nIndex;
+			}
 		}
 	}
 
-	UpdateContents();
-	return lResult;
+	return xtpGridHitError;
 }
 
-void CXTPTabClientWnd::ActivateNextItem(CXTPTabManagerItem* pItem)
+BOOL CXTPPropertyGrid::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 {
-	if (!pItem)
-		return;
-
-	CXTPTabManagerItem* pItemActivate = pItem->GetTabManager()->GetItem(pItem->GetIndex() + 1);
-
-	if (!pItemActivate)
-	{
-		pItemActivate = pItem->GetTabManager()->GetItem(pItem->GetIndex() - 1);
-	}
-
-	if (!pItemActivate)
-		return;
-
-	HWND hWndActivate = pItemActivate->GetHandle();
-	if (!hWndActivate)
-		return;
-
-	::BringWindowToTop(hWndActivate);
-}
-
-// handler for WM_MDIDESTROY message. Will remove the correspondent item
-// from the tab control
-LRESULT CXTPTabClientWnd::OnMDIDestroy(WPARAM wParam, LPARAM /*lParam*/)
-{
-	if (m_afterCloseTabPosition == xtpWorkspaceActivateNextToClosed)
-		ActivateNextItem(FindItem((HWND)wParam));
-
-	LRESULT lResult = Default();
-	UpdateContents();
-	return lResult;
-}
-
-LRESULT CXTPTabClientWnd::OnMDINext(WPARAM /*wParam*/, LPARAM /*lParam*/)
-{
-	LRESULT lResult = Default();
-	UpdateContents();
-	return lResult;
-}
-
-BOOL CXTPTabClientWnd::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
-{
-	if (nHitTest == HTCLIENT && m_bEnableGroups)
+	if (nHitTest == HTCLIENT)
 	{
 		CPoint point;
 
 		GetCursorPos(&point);
 		ScreenToClient(&point);
 
-		for (int nIndex = 0; nIndex < GetWorkspaceCount(); nIndex++)
+		int nHit = HitTest(point);
+
+		if (nHit == xtpGridHitHelpSplitter || nHit == xtpGridHitVerbsSplitter)
 		{
-			CWorkspace* pWorkspace = GetWorkspace(nIndex);
-			if (pWorkspace->m_rcSplitter.PtInRect(point))
-			{
-				SetCursor(!m_bHorizSplitting ? m_hCursorHoriz : m_hCursorVert);
-				return TRUE;
-			}
+			SetCursor(m_hCursorSplit);
+			return TRUE;
+		}
+		if ((nHit != -1) && (nHit >= xtpGridHitFirstVerb))
+		{
+			SetCursor(m_hCursorHand);
+			return TRUE;
 		}
 	}
 
 	return CWnd::OnSetCursor(pWnd, nHitTest, message);
 }
 
-void CXTPTabClientWnd::CalcWindowRect(LPRECT lpClientRect, UINT nAdjustType)
+void CXTPPropertyGrid::OnInvertTracker(CRect rect)
 {
-	if (GetWorkspaceCount() == 0 || !m_bShowWorkspace || m_bUserWorkspace)
-	{
-		CWnd::CalcWindowRect(lpClientRect, nAdjustType);
+	ASSERT_VALID(this);
+	ASSERT(!rect.IsRectEmpty());
+	ASSERT((GetStyle() & WS_CLIPCHILDREN) == 0);
+
+	// pat-blt without clip children on
+	CDC* pDC = GetDC();
+
+	CBrush brush(GetXtremeColor(COLOR_3DFACE));
+	CBrush* pBrush = (CBrush*)pDC->SelectObject(&brush);
+	pDC->PatBlt(rect.left, rect.top, rect.Width(), rect.Height(), PATINVERT);
+	pDC->SelectObject(pBrush);
+
+	ReleaseDC(pDC);
+}
+
+void CXTPPropertyGrid::OnSelectionChanged(CXTPPropertyGridItem* pItem)
+{
+	if (!m_hWnd)
 		return;
-	}
 
-	if (!m_bEnableGroups)
-	{
-		CSingleWorkspace* pWorkspace = (CSingleWorkspace*)GetWorkspace(0);
-
-		// now do the laying out
-		HDWP dwh = BeginDeferWindowPos(2);
-
-		// move tab window
-		if (::IsWindow(pWorkspace->m_hWnd) && (pWorkspace->GetStyle() & WS_VISIBLE) == WS_VISIBLE)
-		{
-			{
-
-				// move tab control
-				dwh = ::DeferWindowPos(dwh, pWorkspace->m_hWnd, NULL, lpClientRect->left,
-					lpClientRect->top,
-					lpClientRect->right-lpClientRect->left,
-					lpClientRect->bottom-lpClientRect->top, SWP_NOZORDER);
-
-
-				CClientDC dc(pWorkspace);
-
-				CRect rectTab(lpClientRect);
-				rectTab.OffsetRect(-rectTab.TopLeft());
-
-				GetPaintManager()->RepositionTabControl(pWorkspace, &dc, rectTab);
-
-				CRect rectTabAdjust(lpClientRect);
-				GetPaintManager()->AdjustClientRect(pWorkspace, rectTabAdjust);
-				*lpClientRect = rectTabAdjust;
-
-
-				pWorkspace->Invalidate(FALSE);
-			}
-
-			if (lpClientRect->bottom < lpClientRect->top ||
-				lpClientRect->right < lpClientRect->left)
-				::memset(lpClientRect, 0, sizeof(RECT));
-
-			::ShowWindow(pWorkspace->m_hWnd, SW_SHOWNA);
-		}
-
-		// move MDIClient window
-		dwh = ::DeferWindowPos(dwh, m_hWnd, NULL, lpClientRect->left, lpClientRect->top,
-			lpClientRect->right - lpClientRect->left,
-			lpClientRect->bottom - lpClientRect->top,
-			SWP_NOZORDER);
-
-		EndDeferWindowPos(dwh);
-	}
-	else
-	{
-
-		CClientDC dc(this);
-
-		CRect rcBorders(2, 2, -2, -2);
-		m_pPaintManager->GetAppearanceSet()->DrawWorkspacePart(NULL, rcBorders, xtpTabWorkspacePartWidth);
-
-		CRect rcClient(0, 0, lpClientRect->right-lpClientRect->left + rcBorders.Width(), lpClientRect->bottom-lpClientRect->top + rcBorders.Height());
-
-		int nIndex;
-		double dTotalHeight = 0;
-		int nWorkspaceCount = GetWorkspaceCount();
-
-		for (nIndex = 0; nIndex < nWorkspaceCount; nIndex++)
-		{
-			dTotalHeight += GetWorkspace(nIndex)->m_dHeight;
-		}
-		int nTotalHeight = (m_bHorizSplitting ? rcClient.Height() : rcClient.Width()) - m_nSplitterSize * (nWorkspaceCount - 1);
-		double dHeight = 0;
-		if ((int)dTotalHeight == 0) dTotalHeight = 1.0;
-
-		CRect rcWorkspace(rcClient);
-
-		for (nIndex = 0; nIndex < nWorkspaceCount; nIndex++)
-		{
-			CWorkspace* pWorkspace = GetWorkspace(nIndex);
-
-			CRect rc(rcClient);
-			if (nIndex != nWorkspaceCount - 1)
-			{
-				dHeight = dHeight += pWorkspace->m_dHeight;
-
-				int nHeight = int(dHeight * nTotalHeight / dTotalHeight) + m_nSplitterSize * nIndex;
-
-				if (m_bHorizSplitting)
-				{
-					pWorkspace->m_rcSplitter.SetRect(rc.left, rcWorkspace.top + nHeight, rc.right, rcWorkspace.top + nHeight + m_nSplitterSize);
-
-					rc.bottom = rcWorkspace.top + nHeight;
-					rcClient.top = rc.bottom + m_nSplitterSize;
-				}
-				else
-				{
-					pWorkspace->m_rcSplitter.SetRect(rcWorkspace.left + nHeight, rc.top, rcWorkspace.left + nHeight + m_nSplitterSize, rc.bottom);
-
-					rc.right = rcWorkspace.left + nHeight;
-					rcClient.left = rc.right + m_nSplitterSize;
-				}
-			}
-			else
-			{
-				pWorkspace->m_rcSplitter.SetRectEmpty();
-
-			}
-
-
-			GetPaintManager()->RepositionTabControl(pWorkspace, &dc, rc);
-			rc = pWorkspace->GetClientRect();
-
-			for (int i = 0; i < pWorkspace->GetItemCount(); i++)
-			{
-				HWND hWndChild = pWorkspace->GetItem(i)->m_hWnd;
-				::MoveWindow(hWndChild, rc.left, rc.top, rc.Width(), rc.Height(), TRUE);
-			}
-		}
-
-		Invalidate(FALSE);
-		//UpdateWindow();
-	}
-
-	CWnd::CalcWindowRect(lpClientRect, nAdjustType);
-}
-
-// update the size of the tab control and the MDIClient window
-void CXTPTabClientWnd::OnSize(UINT nType, int cx, int cy)
-{
-	CWnd::OnSize(nType, cx, cy);
-}
-
-BOOL CXTPTabClientWnd::OnEraseBkgnd(CDC*)
-{
-	if (!m_bThemedBackColor && !m_bEnableGroups)
-	{
-		return (BOOL)Default();
-	}
-	return TRUE;
-}
-
-LRESULT CXTPTabClientWnd::OnPrintClient(WPARAM wParam, LPARAM)
-{
-	if (!m_bThemedBackColor && !m_bEnableGroups)
-	{
-		return (LRESULT)Default();
-	}
-
-	CDC* pDC = CDC::FromHandle((HDC)wParam);
-	if (pDC)
-	{
-		CXTPClientRect rc(this);
-		OnDraw(pDC, rc);
-	}
-	return TRUE;
-}
-
-void CXTPTabClientWnd::OnFillBackground(CDC* pDC, CRect rc)
-{
-	CXTPCommandBars* pCommandBars = GetCommandBars();
-	if (pCommandBars)
-	{
-		if (!m_bThemedBackColor)
-			DefWindowProc(WM_PAINT, (WPARAM)pDC->m_hDC, 0);
-		else
-			pDC->FillSolidRect(rc, pCommandBars->GetPaintManager()->GetXtremeColor(COLOR_APPWORKSPACE));
-	}
-	else
-	{
-		pDC->FillSolidRect(rc, GetSysColor(COLOR_APPWORKSPACE));
-	}
-
-}
-
-void CXTPTabClientWnd::OnDraw(CDC* pDC, CRect rc)
-{
-	if (GetWorkspaceCount() == 0 || !m_bEnableGroups)
-	{
-		OnFillBackground(pDC, rc);
-	}
-	else
-	{
-		CRect rcClipBox;
-		pDC->GetClipBox(&rcClipBox);
-
-		for (int i = GetWorkspaceCount() - 1; i >= 0; i--)
-		{
-			CWorkspace* pWorkspace = GetWorkspace(i);
-
-			if (CRect().IntersectRect(rcClipBox, pWorkspace->m_rcControl))
-			{
-				GetPaintManager()->DrawTabControl(GetWorkspace(i), pDC, pWorkspace->m_rcControl);
-			}
-
-			if (!pWorkspace->m_rcSplitter.IsRectEmpty())
-			{
-				m_pPaintManager->GetAppearanceSet()->DrawWorkspacePart(pDC, pWorkspace->m_rcSplitter, m_bHorizSplitting ? xtpTabWorkspacePartHSplitter : xtpTabWorkspacePartVSplitter);
-			}
-		}
-	}
-}
-
-void CXTPTabClientWnd::OnPaint()
-{
-	if (!m_bThemedBackColor && !m_bEnableGroups)
-	{
-		Default();
-		return;
-	}
-	CPaintDC dcPaint(this);
 	CXTPClientRect rc(this);
-	CXTPBufferDC dc(dcPaint);
+	CRect rcHelp(rc);
+	rcHelp.top = rc.bottom - m_nHelpHeight;
 
-	OnDraw(&dc, rc);
+	if (pItem) SendNotifyMessage(XTP_PGN_SELECTION_CHANGED, (LPARAM)pItem);
+
+	InvalidateRect(rcHelp, FALSE);
 }
 
-void CXTPTabClientWnd::OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS FAR* lpncsp)
+void CXTPPropertyGrid::OnVerbsChanged()
 {
-	if (m_bEnableGroups)
+	if (m_bVerbsVisible != IsVerbsVisible() && GetGridView().m_nLockUpdate == 0)
 	{
-		m_pPaintManager->GetAppearanceSet()->DrawWorkspacePart(NULL, &lpncsp->rgrc[0], xtpTabWorkspacePartWidth);
+		Reposition();
 	}
-
-	CWnd::OnNcCalcSize(bCalcValidRects, lpncsp);
-}
-
-
-BOOL CXTPTabClientWnd::OnNcActivate(BOOL bActive)
-{
-	if (m_bEnableGroups)
-		return TRUE;
-
-	return CWnd::OnNcActivate(bActive);
-}
-
-void CXTPTabClientWnd::OnNcPaint()
-{
-	if (!m_bEnableGroups)
+	else if (GetSafeHwnd() && GetGridView().m_nLockUpdate == 0)
 	{
-		Default();
-		return;
+		Invalidate(FALSE);
 	}
-
-	CWindowDC dcPaint(this);
-	CXTPWindowRect rc(this);
-	rc.OffsetRect(rc.TopLeft());
-
-	m_pPaintManager->GetAppearanceSet()->DrawWorkspacePart(&dcPaint, rc, xtpTabWorkspacePartBorder);
 }
 
-void CXTPTabClientWnd::OnRButtonDown(UINT nFlags, CPoint point)
+void CXTPPropertyGrid::OnVerbClick(int nIndex, CPoint pt)
 {
-	CWnd::OnRButtonDown(nFlags, point);
+	ClientToScreen(&pt);
+	ASSERT(nIndex < m_pVerbs->GetCount());
 
+	CXTPPropertyGridVerb* pVerb = m_pVerbs->GetAt(nIndex);
+	pVerb->m_ptClick = pt;
+
+	SendNotifyMessage(XTP_PGN_VERB_CLICK, (LPARAM)pVerb);
 }
 
-void CXTPTabClientWnd::RepositionWorkspaces(CRect rc, CRect rcAvail, CWorkspace* pWorkspaceFirst, CWorkspace* pWorkspaceSecond)
+void CXTPPropertyGrid::OnLButtonUp(UINT nFlags, CPoint point)
 {
-	double dTotal = pWorkspaceFirst->m_dHeight + pWorkspaceSecond->m_dHeight + m_nSplitterSize;
-
-	if (!m_bHorizSplitting)
+	if ((m_nFocusedVerb != -1) && (m_nFocusedVerb == HitTest(point) - xtpGridHitFirstVerb))
 	{
-		double dDelta = double(rc.left - rcAvail.left) / rcAvail.Width();
-		pWorkspaceFirst->m_dHeight = GetExStyle() & WS_EX_LAYOUTRTL ? dTotal - dDelta * dTotal - m_nSplitterSize : dDelta * dTotal;
+		OnVerbClick(m_nFocusedVerb, point);
 	}
 	else
 	{
-		double dDelta = double(rc.top - rcAvail.top) / rcAvail.Height();
-		pWorkspaceFirst->m_dHeight = dDelta * dTotal;
+		CWnd::OnLButtonUp(nFlags, point);
 	}
 
-	pWorkspaceSecond->m_dHeight = dTotal - pWorkspaceFirst->m_dHeight - m_nSplitterSize;
 }
 
-void CXTPTabClientWnd::NormalizeWorkspaceSize()
+void CXTPPropertyGrid::OnLButtonDown(UINT nFlags, CPoint point)
 {
-	for (int i = 0; i < GetWorkspaceCount(); i++)
+	int nHitTest = HitTest(point);
+
+	if ((nHitTest != -1) && (nHitTest >= xtpGridHitFirstVerb))
 	{
-		CWorkspace* pWorkspace = GetWorkspace (i);
-		pWorkspace->m_dHeight = !m_bHorizSplitting ? pWorkspace->GetControlRect().Width() : pWorkspace->GetControlRect().Height();
-	}
-}
-
-void CXTPTabClientWnd::TrackSplitter(int nWorkspace, CPoint point)
-{
-	ASSERT(nWorkspace >= 0 && nWorkspace < GetWorkspaceCount() - 1);
-
-	if (nWorkspace < 0 || nWorkspace >= GetWorkspaceCount() - 1)
+		m_nFocusedVerb = nHitTest - xtpGridHitFirstVerb;
+		m_bVerbActivate = TRUE;
+		SetFocus();
+		m_bVerbActivate = FALSE;
+		Invalidate(FALSE);
 		return;
 
-	NormalizeWorkspaceSize();
-
-	CXTPSplitterTracker tracker;
-
-	CWorkspace* pWorkspaceFirst = m_arrWorkspace[nWorkspace];
-	CWorkspace* pWorkspaceSecond = m_arrWorkspace[nWorkspace + 1];
-
-	CRect rcFirst = pWorkspaceFirst->GetControlRect();
-	CRect rcSecond = pWorkspaceSecond->GetControlRect();
-
-	CRect rcAvail;
-	rcAvail.UnionRect(rcFirst, rcSecond);
-
-	CRect rc = pWorkspaceFirst->m_rcSplitter;
-
-	ClientToScreen(&rc);
-	ClientToScreen(&rcAvail);
-	ClientToScreen(&point);
-
-	if (m_bUseSplitterTracker)
-	{
-		if (tracker.Track(this, rcAvail, rc, point, !m_bHorizSplitting))
-		{
-			RepositionWorkspaces(rc, rcAvail, pWorkspaceFirst, pWorkspaceSecond);
-			GetParentFrame()->RecalcLayout();
-		}
 	}
-	else
-	{
-		CPoint ptOffset = !m_bHorizSplitting ? CPoint(rc.left - point.x, 0) :
-			CPoint(0, rc.top - point.y);
+	SetFocus();
 
+	if ((nHitTest == xtpGridHitHelpSplitter) || (nHitTest == xtpGridHitVerbsSplitter))
+	{
 		SetCapture();
+		CXTPClientRect rc(this);
+		BOOL bHelpHitTest = nHitTest == xtpGridHitHelpSplitter;
 
-		while (CWnd::GetCapture() == this)
+		CRect rcAvail = bHelpHitTest ? CRect(0, 20 + TOOLBAR_HEIGHT, rc.right, rc.bottom) :
+			CRect(0, 20 + TOOLBAR_HEIGHT, rc.right, rc.bottom - (IsHelpVisible() ? m_nHelpHeight + SPLITTER_HEIGHT : 0));
+
+		ModifyStyle(WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0, FALSE);
+
+		m_rectTracker.SetRect(0, point.y, rc.Width(), point.y + 3);
+
+		OnInvertTracker(m_rectTracker);
+
+		BOOL bAccept = FALSE;
+		while (GetCapture() == this)
 		{
 			MSG msg;
-
 			if (!GetMessage(&msg, NULL, 0, 0))
 				break;
 
 			if (msg.message == WM_MOUSEMOVE)
 			{
-
 				point = CPoint(msg.lParam);
-				ClientToScreen(&point);
-				point += ptOffset;
+				point.y = __min(point.y, rcAvail.bottom - 20);
+				point.y = __max((int)point.y, int(rcAvail.top));
 
-				point.x = max(min(point.x, rcAvail.right), rcAvail.left);
-				point.y = max(min(point.y, rcAvail.bottom), rcAvail.top);
-
-				if (!m_bHorizSplitting)
+				if (m_rectTracker.top != point.y)
 				{
-					if (rc.left == point.x)
-						continue;
-					rc.OffsetRect(point.x - rc.left, 0);
+					OnInvertTracker(m_rectTracker);
+					m_rectTracker.OffsetRect(0, point.y - m_rectTracker.top);
+					OnInvertTracker(m_rectTracker);
 				}
-				else
-				{
-					if (rc.top == point.y)
-						continue;
-					rc.OffsetRect(0, point.y - rc.top);
-				}
-
-				RepositionWorkspaces(rc, rcAvail, pWorkspaceFirst, pWorkspaceSecond);
-
-				GetParentFrame()->RecalcLayout();
 			}
 			else if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE) break;
-			else if (msg.message == WM_LBUTTONUP) break;
-			else ::DispatchMessage(&msg);
-		}
-
-		if (CWnd::GetCapture() == this) ReleaseCapture();
-
-	}
-
-}
-
-void CXTPTabClientWnd::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	if (!m_bEnableGroups)
-	{
-		CWnd::OnLButtonDown(nFlags, point);
-		return;
-	}
-
-	m_bLockUpdate = TRUE;
-
-	m_bDelayLock = TRUE;
-
-	for (int i = 0; i < GetWorkspaceCount(); i++)
-	{
-		CWorkspace* pWorkspace = GetWorkspace(i);
-		if (pWorkspace->m_rcSplitter.PtInRect(point) && i < GetWorkspaceCount() - 1)
-		{
-			TrackSplitter(i, point);
-			break;
-		}
-
-		if (pWorkspace->GetControlRect().PtInRect(point))
-		{
-			if (!pWorkspace->IsActive())
+			else if (msg.message == WM_LBUTTONUP)
 			{
-				CXTPTabManagerItem* pSelectedItem = pWorkspace->GetSelectedItem();
-				if (pSelectedItem) pWorkspace->OnItemClick(pSelectedItem);
+				bAccept = TRUE;
+				break;
 			}
-
-			pWorkspace->PerformClick(m_hWnd, point);
-			break;
+			else  ::DispatchMessage(&msg);
 		}
+
+		ReleaseCapture();
+
+		if (bAccept)
+		{
+			if (bHelpHitTest) m_nHelpHeight = rcAvail.bottom - m_rectTracker.top -2; else
+				m_nVerbsHeight = rcAvail.bottom - m_rectTracker.top -2;
+			Reposition(rc.Width(), rc.Height());
+		}
+		Invalidate(FALSE);
+		ModifyStyle(0, WS_CLIPCHILDREN | WS_CLIPSIBLINGS, FALSE);
+		return;
 	}
 
+	CWnd::OnLButtonDown(nFlags, point);
 }
 
-
-void CXTPTabClientWnd::InitLoop()
+void CXTPPropertyGrid::Reposition()
 {
-	// handle pending WM_PAINT messages
-	MSG msg;
-	while (::PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_NOREMOVE))
-	{
-		if (!GetMessage(&msg, NULL, WM_PAINT, WM_PAINT))
-			return;
-		DispatchMessage(&msg);
-	}
-
-	// initialize state
-	m_rectLast.SetRectEmpty();
-	m_sizeLast.cx = m_sizeLast.cy = 0;
-	m_rcGroup.SetRectEmpty();
-	m_pFocusWorkspace = NULL;
-
-	// lock window update while dragging
-	ASSERT(m_pDC == NULL);
-	CWnd* pWnd = CWnd::GetDesktopWindow();
-	if (pWnd->LockWindowUpdate())
-		m_pDC = pWnd->GetDCEx(NULL, DCX_WINDOW | DCX_CACHE | DCX_LOCKWINDOWUPDATE);
-	else
-		m_pDC = pWnd->GetDCEx(NULL, DCX_WINDOW | DCX_CACHE);
-	ASSERT(m_pDC != NULL);
-}
-
-void CXTPTabClientWnd::CancelLoop()
-{
-	DrawFocusRect(TRUE);    // gets rid of focus rect
-
-	CWnd* pWnd = CWnd::GetDesktopWindow();
-	pWnd->UnlockWindowUpdate();
-	if (m_pDC != NULL)
-	{
-		pWnd->ReleaseDC(m_pDC);
-		m_pDC = NULL;
-	}
-}
-
-void CXTPTabClientWnd::DrawFocusRect(BOOL bRemoveRect)
-{
-	ASSERT(m_pDC != NULL);
-	if (!m_pDC)
+	if (GetSafeHwnd() == 0)
 		return;
 
-	// determine new rect and size
-	CBrush* pDitherBrush = CDC::GetHalftoneBrush();
-	CRect rect = m_rcGroup;
-	ClientToScreen(rect);
-
-	CSize size(GetSystemMetrics(SM_CXFRAME), GetSystemMetrics(SM_CYFRAME));
-
-	if (bRemoveRect)
-		size.cx = size.cy = 0;
-
-	// draw it and remember last size
-	m_pDC->DrawDragRect(&rect, size, &m_rectLast, m_sizeLast,
-		pDitherBrush, pDitherBrush);
-
-	m_rectLast = rect;
-	m_sizeLast = size;
-}
-
-
-void CXTPTabClientWnd::ReorderWorkspace(CPoint pt, CXTPTabManagerItem* pItem)
-{
 	CXTPClientRect rc(this);
+	Reposition(rc.Width(), rc.Height());
+}
 
-	CRect rcGroup(0, 0, 0, 0);
-	m_pFocusWorkspace = NULL;
-	m_nFocusedAction = ACTION_CANCEL;
+void CXTPPropertyGrid::Reposition(int cx, int cy)
+{
+	if (GetGridView().m_nLockUpdate > 0)
+		return;
 
-	if (rc.PtInRect(pt))
+	if (GetSafeHwnd() == 0)
+		return;
+
+	CRect rcView(0, 0, cx, cy);
+
+	int nMinViewHeight = 20 + (m_bToolBarVisible ? TOOLBAR_HEIGHT : 0);
+
+	if (m_bHelpVisible)
 	{
-		m_nFocusedAction = ACTION_POPUP;
-		::SetCursor(m_hCursorNew);
-
-		for (int i = 0; i < GetWorkspaceCount(); i++)
+		if (cy > nMinViewHeight && cy - m_nHelpHeight - SPLITTER_HEIGHT < nMinViewHeight && m_bVariableHelpHeight)
 		{
-			CWorkspace* pWorkspace = GetWorkspace(i);
-
-			BOOL bSelfAvail = pItem->GetTabManager() != pWorkspace || pWorkspace->GetItemCount() > 1;
-
-			if (pWorkspace->GetHeaderRect().PtInRect(pt))
-			{
-				rcGroup = pWorkspace->GetClientRect();
-
-				m_pFocusWorkspace = pWorkspace;
-				m_nFocusedAction = ACTION_ATTACH;
-				break;
-			}
-
-			if ((GetWorkspaceCount() == 1 || m_bHorizSplitting) && bSelfAvail)
-			{
-				int nOffset = pWorkspace->GetControlRect().bottom - pt.y;
-				if (nOffset > 0 && nOffset < 30)
-				{
-					rcGroup = pWorkspace->GetControlRect();
-					rcGroup.top = rcGroup.CenterPoint().y;
-
-					m_pFocusWorkspace = pWorkspace;
-					m_nFocusedAction = ACTION_INSERTHORIZ;
-					break;
-				}
-
-			}
-
-			if ((GetWorkspaceCount() == 1 || !m_bHorizSplitting) && bSelfAvail)
-			{
-				int nOffset = pWorkspace->GetControlRect().right - pt.x;
-				if (nOffset > 0 && nOffset < 30)
-				{
-					rcGroup = pWorkspace->GetControlRect();
-					rcGroup.left = rcGroup.CenterPoint().x;
-
-					m_pFocusWorkspace = pWorkspace;
-					m_nFocusedAction = ACTION_INSERTVERT;
-					break;
-				}
-			}
+			m_nHelpHeight = max(0, cy - SPLITTER_HEIGHT - nMinViewHeight);
 		}
+
+		rcView.bottom -= m_nHelpHeight + SPLITTER_HEIGHT;
+	}
+
+	if (IsVerbsVisible())
+	{
+		rcView.bottom -= m_nVerbsHeight + SPLITTER_HEIGHT;
+	}
+
+	m_bVerbsVisible = IsVerbsVisible();
+
+	if (m_bToolBarVisible)
+	{
+		ASSERT(m_wndToolbar.GetSafeHwnd());
+		CRect rcToolBar(0, 0, cx, TOOLBAR_HEIGHT);
+		m_wndToolbar.MoveWindow(rcToolBar);
+
+		rcView.top += TOOLBAR_HEIGHT;
+	}
+
+	GetGridView().MoveWindow(rcView);
+	GetGridView().Invalidate(FALSE);
+	Invalidate(FALSE);
+}
+
+void CXTPPropertyGrid::CreateToolbar()
+{
+#if _MSC_VER < 1200
+	m_wndToolbar.Create(this, TBSTYLE_TRANSPARENT | TBSTYLE_FLAT | WS_CHILD | WS_VISIBLE | WS_BORDER, 0);
+#else
+	m_wndToolbar.CreateEx(this, TBSTYLE_TRANSPARENT | TBSTYLE_FLAT, WS_BORDER | WS_CHILD | WS_VISIBLE | CBRS_ALIGN_TOP);
+#endif
+
+	VERIFY(XTPResourceManager()->LoadToolBar(&m_wndToolbar, XTP_IDR_PROPERTYGRID_TOOLBAR));
+}
+
+void CXTPPropertyGrid::ShowToolBar(BOOL bShow)
+{
+	if (bShow && !m_wndToolbar.GetSafeHwnd())
+	{
+		CreateToolbar();
 	}
 	else
 	{
-		::SetCursor(m_hCursorDelete);
+		if (m_wndToolbar.GetSafeHwnd())
+			m_wndToolbar.ShowWindow(bShow ? SW_SHOW : SW_HIDE);
 	}
 
-	if (m_rcGroup != rcGroup)
+	m_bToolBarVisible = bShow;
+
+	Reposition();
+	RefreshToolBarButtons();
+}
+
+void CXTPPropertyGrid::RefreshToolBarButtons()
+{
+	if (m_bToolBarVisible)
 	{
-		m_rcGroup = rcGroup;
-		DrawFocusRect();
+		m_wndToolbar.GetToolBarCtrl().SetState(XTP_IDC_PROPERTYGRID_CATEGORIZED, TBSTATE_ENABLED | (GetGridView().m_properetySort == xtpGridSortCategorized ? TBSTATE_CHECKED : 0));
+		m_wndToolbar.GetToolBarCtrl().SetState(XTP_IDC_PROPERTYGRID_ALPHABETIC, TBSTATE_ENABLED | (GetGridView().m_properetySort == xtpGridSortAlphabetical ? TBSTATE_CHECKED : 0));
 	}
 }
 
-int CXTPTabClientWnd::FindIndex(CXTPTabManager* pWorkspace) const
+void CXTPPropertyGrid::ShowHelp(BOOL bShow)
 {
-	for (int i = 0; i < GetWorkspaceCount(); i++)
-	{
-		if (GetWorkspace(i) == pWorkspace)
-			return i;
-	}
-	return -1;
-}
-
-CXTPTabManagerItem* CXTPTabClientWnd::HitTest(CPoint pt) const
-{
-	if (!m_bShowWorkspace)
-		return NULL;
-
-	for (int i = 0; i < GetWorkspaceCount(); i++)
-	{
-		CXTPTabManagerItem* pItem = GetWorkspace(i)->HitTest(pt);
-		if (pItem)
-			return pItem;
-	}
-	return NULL;
-}
-
-CXTPCommandBars* CXTPTabClientWnd::GetCommandBars() const
-{
-	return m_pCommandBars;
-}
-
-void CXTPTabClientWnd::SetCommandBars(CXTPCommandBars* pCommandBars)
-{
-	m_pCommandBars = pCommandBars;
-}
-
-void CXTPTabClientWnd::ContextMenu(CPoint pt)
-{
-	CXTPPopupBar* pPopupBar = CXTPPopupBar::CreatePopupBar(GetCommandBars());
-
-	ClientToScreen(&pt);
-
-	pPopupBar->GetControls()->Add(new CXTPControlWorkspaceActions, 0);
-
-	CXTPControl* pControl = pPopupBar->GetControls()->Add(xtpControlButton, XTP_ID_WORKSPACE_CANCEL);
-	pControl->SetBeginGroup(TRUE);
-	pControl->SetFlags(xtpFlagManualUpdate);
-
-	CXTPCommandBars::TrackPopupMenu(pPopupBar, 0, pt.x, pt.y, GetParentFrame());
-
-	pPopupBar->InternalRelease();
-
-}
-
-void CXTPTabClientWnd::OnWorkspaceCommand(UINT nID)
-{
-	CXTPTabManagerItem* pItem = NULL;
-
-	if (!IsWorkspaceCommandEnabled(nID, &pItem))
-		return;
-
-	ASSERT(pItem);
-	if (!pItem)
-		return;
-
-	switch (nID)
-	{
-		case XTP_ID_WORKSPACE_NEWVERTICAL:
-			DoWorkspaceCommand(pItem, (CWorkspace*)pItem->GetTabManager(), ACTION_INSERTVERT);
-			break;
-
-		case XTP_ID_WORKSPACE_NEWHORIZONTAL:
-			DoWorkspaceCommand(pItem, (CWorkspace*)pItem->GetTabManager(), ACTION_INSERTHORIZ);
-			break;
-
-		case XTP_ID_WORKSPACE_MOVEPREVIOUS:
-			{
-				int nIndex = FindIndex(pItem->GetTabManager());
-				DoWorkspaceCommand(pItem, GetWorkspace(nIndex - 1), ACTION_ATTACH);
-			}
-			break;
-		case XTP_ID_WORKSPACE_MOVENEXT:
-			{
-				int nIndex = FindIndex(pItem->GetTabManager());
-				DoWorkspaceCommand(pItem, GetWorkspace(nIndex + 1), ACTION_ATTACH);
-			}
-			break;
-	}
-}
-
-void CXTPTabClientWnd::OnUpdateWorkspaceCommand(CCmdUI* pCmdUI)
-{
-	pCmdUI->Enable(IsWorkspaceCommandEnabled(pCmdUI->m_nID));
-}
-
-BOOL CXTPTabClientWnd::IsWorkspaceCommandEnabled(UINT nID, CXTPTabManagerItem** ppItem)
-{
-	if (!m_bEnableGroups)
-		return FALSE;
-
-	CWnd* pWnd = MDIGetActive();
-	if (!pWnd)
-		return FALSE;
-
-	CXTPTabManagerItem* pItem = FindItem(pWnd->GetSafeHwnd());
-	if (!pItem)
-		return FALSE;
-
-	if (ppItem)
-		*ppItem = pItem;
-
-	switch (nID)
-	{
-		case XTP_ID_WORKSPACE_NEWVERTICAL:
-			return (GetWorkspaceCount() == 1 || !m_bHorizSplitting) && pItem->GetTabManager()->GetItemCount() > 1;
-
-		case XTP_ID_WORKSPACE_NEWHORIZONTAL:
-			return (GetWorkspaceCount() == 1 || m_bHorizSplitting) && pItem->GetTabManager()->GetItemCount() > 1;
-
-		case XTP_ID_WORKSPACE_MOVEPREVIOUS:
-			return FindIndex(pItem->GetTabManager()) != 0;
-
-		case XTP_ID_WORKSPACE_MOVENEXT:
-			return FindIndex(pItem->GetTabManager()) != GetWorkspaceCount() - 1;
-
-	}
-	return TRUE;
-}
-
-
-void CXTPTabClientWnd::MDITile(BOOL bHorizontal)
-{
-	if (!m_bEnableGroups || m_bUserWorkspace)
-		return;
-
-	if (GetItemCount() < 2)
-		return;
-
-	m_bLockUpdate = m_bLockReposition = TRUE;
-
-	CArray<CXTPTabManagerItem*, CXTPTabManagerItem*> arrItems;
-
-	while (GetWorkspaceCount() > 0)
-	{
-		CWorkspace* pWorkspace = GetWorkspace(0);
-
-		for (int j = 0; j < pWorkspace->GetItemCount(); j++)
-		{
-			CXTPTabManagerItem* pItem = pWorkspace->GetItem(j);
-			arrItems.Add(pItem);
-			pItem->InternalAddRef();
-		}
-
-		m_arrWorkspace.RemoveAt(0);
-		delete pWorkspace;
-	}
-
-	for (int i = 0; i < (int)arrItems.GetSize(); i++)
-	{
-		CXTPTabManagerItem* pItem = arrItems[i];
-		COLORREF clr = pItem->m_clrItem;
-
-		CWorkspace* pWorkspace = AddWorkspace(i);
-
-		pWorkspace->CXTPTabManager::AddItem(-1, pItem);
-
-		pItem->m_clrItem = clr;
-		pWorkspace->SetSelectedItem(pItem);
-
-		pWorkspace->m_dHeight = 100;
-	}
-
-	m_pActiveWorkspace = NULL;
-	m_bHorizSplitting = bHorizontal;
-
-	m_bLockUpdate = m_bLockReposition = FALSE;
-	m_bForceToRecalc = TRUE;
-	UpdateContents();
-
-	NormalizeWorkspaceSize();
-}
-
-void CXTPTabClientWnd::DoWorkspaceCommand(CXTPTabManagerItem* pItem, CWorkspace* pFocusWorkspace, int nAction)
-{
-	m_bLockUpdate = m_bLockReposition = TRUE;
-	CWorkspace* pOldWorkspace = NULL;
-
-	switch (nAction)
-	{
-		case ACTION_ATTACH:
-			{
-				ASSERT(pFocusWorkspace);
-				if (!pFocusWorkspace)
-					return;
-
-				if (pFocusWorkspace != pItem->GetTabManager())
-				{
-					pOldWorkspace = (CWorkspace*)pItem->GetTabManager();
-					pItem->InternalAddRef();
-					pItem->Remove();
-
-					COLORREF clr = pItem->m_clrItem;
-
-					int nInsert = pFocusWorkspace->GetItemCount() + (pFocusWorkspace->m_pNewWindowItem ? -1 : 0);
-					pFocusWorkspace->CXTPTabManager::AddItem(nInsert, pItem);
-
-					pItem->m_clrItem = clr;
-				}
-
-				pFocusWorkspace->SetSelectedItem(pItem);
-
-				break;
-			}
-		case ACTION_INSERTHORIZ:
-		case ACTION_INSERTVERT:
-			{
-				NormalizeWorkspaceSize();
-
-				ASSERT(pFocusWorkspace);
-				if (!pFocusWorkspace)
-					return;
-
-				pOldWorkspace = (CWorkspace*)pItem->GetTabManager();
-
-				pItem->InternalAddRef();
-				pItem->Remove();
-
-				COLORREF clr = pItem->m_clrItem;
-
-				int nIndex = FindIndex(pFocusWorkspace) + 1;
-				CWorkspace* pWorkspace = AddWorkspace(nIndex);
-
-				pWorkspace->AddNewWindowItem();
-
-				int nInsert = pWorkspace->GetItemCount() + (pWorkspace->m_pNewWindowItem ? -1 : 0);
-				pWorkspace->CXTPTabManager::AddItem(nInsert, pItem);
-
-				pItem->m_clrItem = clr;
-				pWorkspace->SetSelectedItem(pItem);
-
-				pWorkspace->m_dHeight = (pFocusWorkspace->m_dHeight - m_nSplitterSize) / 2;
-				pFocusWorkspace->m_dHeight = pFocusWorkspace->m_dHeight - pWorkspace->m_dHeight - m_nSplitterSize;
-
-				m_bHorizSplitting = (nAction == ACTION_INSERTHORIZ);
-				break;
-			}
-
-	}
-
-	if (pOldWorkspace && pOldWorkspace->GetItemCount() > 1)
-	{
-		HWND hWndChild = ::GetWindow(m_hWnd, GW_CHILD);
-		while (hWndChild)
-		{
-			CXTPTabManagerItem* pItemOld = FindItem(hWndChild);
-			if (pItemOld && pItemOld->GetTabManager() == pOldWorkspace)
-			{
-				pOldWorkspace->SetSelectedItem(pItemOld);
-				break;
-			}
-			hWndChild = ::GetWindow(hWndChild, GW_HWNDNEXT);
-		}
-	}
-
-	m_bLockUpdate = m_bLockReposition = FALSE;
-	m_bForceToRecalc = TRUE;
-	UpdateContents();
-}
-
-void CXTPTabClientWnd::OnMouseMove(UINT nFlags, CPoint point)
-{
-	if (m_bEnableGroups)
-	{
-		for (int i = 0; i < GetWorkspaceCount(); i++)
-		{
-			GetWorkspace(i)->PerformMouseMove(m_hWnd, point);
-		}
-	}
-
-	CWnd::OnMouseMove(nFlags, point);
-}
-
-
-void CXTPTabClientWnd::OnMouseLeave()
-{
-	if (m_bEnableGroups)
-	{
-		for (int i = 0; i < GetWorkspaceCount(); i++)
-		{
-			GetWorkspace(i)->PerformMouseMove(m_hWnd, CPoint(-1, -1));
-		}
-	}
-}
-
-
-
-void CXTPTabClientWnd::OnLButtonDblClk(UINT nFlags, CPoint point)
-{
-	OnLButtonDown(nFlags, point);
-}
-
-void CXTPTabClientWnd::OnSysColorChange()
-{
-	CWnd::OnSysColorChange();
-
-	GetPaintManager()->RefreshMetrics();
-
-	Refresh();
-}
-
-BOOL CXTPTabClientWnd::PreTranslateMessage(MSG* pMsg)
-{
-	if (m_bEnableGroups)
-	{
-
-		if (pMsg->message == WM_LBUTTONDOWN ||
-			pMsg->message == WM_RBUTTONDOWN ||
-			pMsg->message == WM_MBUTTONDOWN ||
-			pMsg->message == WM_LBUTTONDBLCLK ||
-			pMsg->message == WM_RBUTTONDBLCLK)
-		{
-			if (pMsg->hwnd != m_hWnd)
-				return CWnd::PreTranslateMessage(pMsg);
-
-			if (GetParentFrame()->SendMessage(WM_XTP_PRETRANSLATEMOUSEMSG, (WPARAM)pMsg->message, pMsg->lParam))
-				return TRUE;
-		}
-	}
-
-	return CWnd::PreTranslateMessage(pMsg);
-}
-
-CXTPTabPaintManager* CXTPTabClientWnd::GetPaintManager() const
-{
-	return m_pPaintManager;
-}
-
-void CXTPTabClientWnd::SetPaintManager(CXTPTabPaintManager* pPaintManager)
-{
-	m_pPaintManager->InternalRelease();
-	m_pPaintManager = pPaintManager;
-	m_pPaintManager->RefreshMetrics();
-
-	m_themeCommandBars = xtpThemeCustom;
-	m_bAutoTheme = FALSE;
-
-	Refresh();
-}
-
-void CXTPTabClientWnd::SetAutoTheme(BOOL bAutoTheme /*= FALSE*/)
-{
-	m_bAutoTheme = bAutoTheme;
-}
-
-BOOL CXTPTabClientWnd::GetAutoTheme() const
-{
-	return m_bAutoTheme;
-}
-
-void CXTPTabClientWnd::UpdateFlags(CWorkspace* pWorkspace)
-{
-	pWorkspace->FindNavigateButton(xtpTabNavigateButtonClose)->SetFlags(
-		m_dwFlags & xtpWorkspaceHideClose ? xtpTabNavigateButtonNone : xtpTabNavigateButtonAutomatic);
-
-	pWorkspace->FindNavigateButton(xtpTabNavigateButtonActiveFiles)->SetFlags(
-		m_dwFlags & xtpWorkspaceShowActiveFiles ? xtpTabNavigateButtonAlways : xtpTabNavigateButtonNone);
-
-	pWorkspace->FindNavigateButton(xtpTabNavigateButtonLeft)->SetFlags((m_dwFlags & xtpWorkspaceHideArrowsAlways) == xtpWorkspaceHideArrowsAlways ? xtpTabNavigateButtonNone :
-		m_dwFlags & xtpWorkspaceHideArrows ? xtpTabNavigateButtonAutomatic : xtpTabNavigateButtonAlways);
-	pWorkspace->FindNavigateButton(xtpTabNavigateButtonRight)->SetFlags((m_dwFlags & xtpWorkspaceHideArrowsAlways) == xtpWorkspaceHideArrowsAlways ? xtpTabNavigateButtonNone :
-		m_dwFlags & xtpWorkspaceHideArrows ? xtpTabNavigateButtonAutomatic : xtpTabNavigateButtonAlways);
-
-
-	if (m_dwFlags & xtpWorkspaceShowCloseTab || m_dwFlags & xtpWorkspaceShowCloseSelectedTab)
-	{
-		pWorkspace->ShowCloseItemButton(m_dwFlags & xtpWorkspaceShowCloseSelectedTab ?
-			xtpTabNavigateButtonAutomatic : xtpTabNavigateButtonAlways);
-	}
-}
-
-
-void CXTPTabClientWnd::SetFlags(DWORD dwFlags)
-{
-	m_dwFlags = dwFlags;
-
-	for (int i = 0; i < GetWorkspaceCount(); i++)
-		UpdateFlags(GetWorkspace(i));
+	m_bHelpVisible = bShow;
 
 	Reposition();
 }
 
-void CXTPTabClientWnd::Reposition()
+void CXTPPropertyGrid::OnSortAlphabetic()
 {
-	m_bForceToRecalc = FALSE;
+	SetPropertySort(xtpGridSortAlphabetical);
+}
 
-	if (m_pTabWorkspace)
+void CXTPPropertyGrid::OnSortCategorized()
+{
+	SetPropertySort(xtpGridSortCategorized);
+}
+
+void CXTPPropertyGrid::OnSortChanged()
+{
+	RefreshToolBarButtons();
+	OnSelectionChanged(NULL);
+	SendNotifyMessage(XTP_PGN_SORTORDER_CHANGED, (LPARAM)GetDlgCtrlID());
+}
+
+LRESULT CXTPPropertyGrid::SendNotifyMessage(WPARAM wParam /*= 0*/, LPARAM lParam /*= 0*/)
+{
+	return GetOwner()->SendMessage(XTPWM_PROPERTYGRID_NOTIFY, wParam, lParam);
+}
+
+void CXTPPropertyGrid::SetStandardColors()
+{
+	m_pPaintManager->GetItemMetrics()->SetDefaultValues();
+
+	m_pPaintManager->RefreshMetrics();
+	RedrawControl();
+}
+
+void CXTPPropertyGrid::RedrawControl()
+{
+	if (GetSafeHwnd())
 	{
-		m_pTabWorkspace->OnRecalcLayout();
+		RedrawWindow(NULL, NULL, RDW_ALLCHILDREN | RDW_UPDATENOW | RDW_INVALIDATE | RDW_ERASE);
 	}
-	else if (!m_bUserWorkspace)
+}
+
+void CXTPPropertyGrid::SetCustomColors(
+	COLORREF clrHelpBack, COLORREF clrHelpFore, COLORREF clrViewLine,
+	COLORREF clrViewBack, COLORREF clrViewFore, COLORREF clrCategoryFore)
+{
+	CXTPPropertyGridItemMetrics* pMetrics = m_pPaintManager->GetItemMetrics();
+
+	pMetrics->m_clrHelpBack.SetCustomValue(clrHelpBack);
+	pMetrics->m_clrHelpFore.SetCustomValue(clrHelpFore);
+	pMetrics->m_clrLine.SetCustomValue(clrViewLine);
+	pMetrics->m_clrBack.SetCustomValue(clrViewBack);
+	pMetrics->m_clrFore.SetCustomValue(clrViewFore);
+	pMetrics->m_clrCategoryFore.SetCustomValue(clrCategoryFore);
+
+	RedrawControl();
+}
+
+void CXTPPropertyGrid::ResetContent()
+{
+	m_pVerbs->RemoveAll();
+	GetGridView().ResetContent();
+
+	GetGridView().m_nLockUpdate++;
+	GetGridView().m_pCategories->Clear();
+	GetGridView().m_nLockUpdate--;
+}
+
+CXTPPropertyGridItems* CXTPPropertyGrid::GetCategories() const
+{
+	return GetGridView().m_pCategories;
+}
+
+CXTPPropertyGridItem* CXTPPropertyGrid::AddCategory(int nID)
+{
+	CString strCaption;
+	VERIFY(strCaption.LoadString(nID));
+	CXTPPropertyGridItem* pItem = GetGridView().AddCategory(strCaption);
+	pItem->SetID(nID);
+	return pItem;
+}
+
+CXTPPropertyGridItem* CXTPPropertyGrid::InsertCategory(int nIndex, int nID)
+{
+	CString strCaption;
+	VERIFY(strCaption.LoadString(nID));
+	CXTPPropertyGridItem* pItem = GetGridView().InsertCategory(nIndex, strCaption);
+	pItem->SetID(nID);
+	return pItem;
+}
+
+
+void CXTPPropertyGrid::SetFont(CFont* pFont)
+{
+	LOGFONT lf;
+	if (pFont->GetLogFont(&lf))
 	{
-		GetParentFrame()->RecalcLayout();
-	}
-}
+		CXTPPropertyGridItemMetrics* pMetrics = m_pPaintManager->GetItemMetrics();
 
-BOOL CXTPTabClientWnd::IsAllowReorder() const
-{
-	return m_bAllowReorder;
-}
+		pMetrics->m_fontNormal.DeleteObject();
+		pMetrics->m_fontBold.DeleteObject();
 
-void CXTPTabClientWnd::SetAllowReorder(BOOL bAllowReorder)
-{
-	m_bAllowReorder = bAllowReorder;
-}
+		lf.lfWeight = FW_NORMAL;
+		VERIFY(pMetrics->m_fontNormal.CreateFontIndirect(&lf));
 
-CXTPTabManagerItem* CXTPTabClientWnd::GetSelectedItem () const
-{
-	if (m_pActiveWorkspace)
-		return m_pActiveWorkspace->GetSelectedItem();
-	return NULL;
-}
+		lf.lfWeight = FW_BOLD;
+		VERIFY(pMetrics->m_fontBold.CreateFontIndirect(&lf));
 
-CXTPTabManagerItem* CXTPTabClientWnd::GetItem(int nIndex) const
-{
-	for (int i = 0; i < GetWorkspaceCount(); i++)
-	{
-		CWorkspace* pWorkspace = GetWorkspace(i);
-		int nCount = pWorkspace->GetItemCount();
-
-		if (nIndex < nCount)
-			return pWorkspace->GetItem(nIndex);
-
-		nIndex -= nCount;
-	}
-	return NULL;
-}
-
-int CXTPTabClientWnd::GetItemCount() const
-{
-	int nCount = 0;
-
-	for (int i = 0; i < GetWorkspaceCount(); i++)
-		nCount += GetWorkspace(i)->GetItemCount();
-
-	return nCount;
-}
-
-LRESULT CXTPTabClientWnd::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
-{
-	if (m_bEnableGroups && IsAttached())
-	{
-		m_pToolTipContext->FilterToolTipMessage(this, message, wParam, lParam);
-	}
-
-	if (message == m_nMsgQuerySkinState && m_bEnableGroups && IsAttached())
-	{
-		return TRUE;
-	}
-
-	if (!m_bEnableGroups && (message == WM_MDIICONARRANGE || message == WM_MDICASCADE
-		|| message == WM_MDITILE) && GetCommandBars())
-	{
-		XTPPaintTheme theme = GetCommandBars()->GetPaintManager()->BaseTheme();
-
-		if (theme == xtpThemeResource || theme == xtpThemeRibbon)
+		if (m_pInplaceEdit->GetSafeHwnd())
 		{
-			CArray<CXTPCommandBarsFrameHook*, CXTPCommandBarsFrameHook*> arrChildren;
+			m_pInplaceEdit->SetFont(&pMetrics->m_fontNormal);
+		}
 
-			HWND hWnd = ::GetWindow(m_hWnd, GW_CHILD);
-			while (hWnd)
+		Refresh();
+	}
+}
+
+void CXTPPropertyGrid::Refresh()
+{
+	GetGridView().SetPropertySort(GetPropertySort(), TRUE);
+}
+
+
+void CXTPPropertyGrid::SaveExpandingState(CXTPPropertyGridItems* pItems, CXTPPropertyGridUpdateContext& context)
+{
+	int nTopIndex = GetGridView().GetTopIndex();
+
+	for (int nItem = 0; nItem < pItems->GetCount(); nItem++)
+	{
+		CXTPPropertyGridItem* pItem = pItems->GetAt(nItem);
+
+		if (pItem->GetID() != 0)
+		{
+			if (pItem->HasChilds())
 			{
-				if (GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_MDICHILD)
-				{
-					CXTPCommandBarsFrameHook* pFrame = (CXTPCommandBarsFrameHook*)::SendMessage(hWnd, CXTPCommandBarsFrameHook::m_nMsgQueryFrameHook, 0, 0);
-
-					if (pFrame)
-					{
-						RECT rc = CXTPWindowRect(hWnd);
-						pFrame->m_bLockNCPaint += 1;
-						::SendMessage(hWnd, WM_NCCALCSIZE, FALSE, (LPARAM)&rc);
-						pFrame->m_bLockNCPaint -= 1;
-
-						::SetTimer(hWnd, XTP_TID_REFRESHFRAME, 100, NULL);
-
-						arrChildren.Add(pFrame);
-					}
-				}
-				hWnd = ::GetWindow(hWnd, GW_HWNDNEXT);
+				BOOL bExpanded = pItem->IsExpanded();
+				context.m_mapState.SetAt(pItem->GetID(), bExpanded);
 			}
 
-			LRESULT lResult = CWnd::WindowProc(message, wParam, lParam);
+			if (pItem->IsSelected()) context.m_nSelected = pItem->GetID();
+			if (pItem->GetIndex() == nTopIndex) context.m_nTopIndex= pItem->GetID();
+		}
+		SaveExpandingState(pItem->GetChilds(), context);
+	}
+}
 
-			for (int i = 0; i < (int)arrChildren.GetSize(); i++)
+void CXTPPropertyGrid::RestoreExpandingState(CXTPPropertyGridItems* pItems, CXTPPropertyGridUpdateContext& context)
+{
+	for (int nItem = 0; nItem < pItems->GetCount(); nItem++)
+	{
+		CXTPPropertyGridItem* pItem = pItems->GetAt(nItem);
+
+		BOOL bExpanded;
+		if (pItem->GetID() != 0 && context.m_mapState.Lookup(pItem->GetID(), bExpanded))
+		{
+			if (bExpanded)
+				pItem->Expand();
+			else
+				pItem->Collapse();
+		}
+		RestoreExpandingState(pItem->GetChilds(), context);
+	}
+}
+
+void CXTPPropertyGrid::BeginUpdate(CXTPPropertyGridUpdateContext& context)
+{
+	GetGridView().m_nLockUpdate = 1;
+	GetGridView().SetRedraw(FALSE);
+
+	context.m_nSelected = 0;
+	context.m_nTopIndex = 0;
+
+	SaveExpandingState(GetCategories(), context);
+	context.m_propertySort = GetPropertySort();
+
+	ResetContent();
+}
+
+void CXTPPropertyGrid::EndUpdate(CXTPPropertyGridUpdateContext& context)
+{
+	RestoreExpandingState(GetCategories(), context);
+	GetGridView().m_nLockUpdate = 0;
+
+	GetGridView().SetPropertySort(context.m_propertySort, TRUE, FALSE);
+	if (context.m_nSelected > 0 || context.m_nTopIndex > 0)
+	{
+		for (int i = 0; i < GetGridView().GetCount(); i++)
+		{
+			CXTPPropertyGridItem* pItem = GetGridView().GetItem(i);
+
+			if (context.m_nTopIndex > 0 && pItem && pItem->GetID() == context.m_nTopIndex)
 			{
-				CXTPCommandBarsFrameHook* pFrame = arrChildren[i];
-				pFrame->RedrawFrame();
+				SetTopIndex(pItem->GetIndex());
+				context.m_nTopIndex = 0;
+				if (context.m_nSelected == 0)
+					break;
 			}
 
-			return lResult;
+			if (context.m_nSelected > 0 && pItem && pItem->GetID() == context.m_nSelected)
+			{
+				pItem->Select();
+				break;
+			}
 		}
 	}
 
-	return CWnd::WindowProc(message, wParam, lParam);
+	GetGridView().SetRedraw(TRUE);
+
+	Reposition();
 }
 
-void CXTPTabClientWnd::SetTabWorkspace(CWorkspace* pWorkspace)
+void CXTPPropertyGrid::SetVerbsHeight(int nHeight)
 {
-	ASSERT(!m_bEnableGroups);
+	ASSERT(nHeight > 0);
+	m_nVerbsHeight = nHeight;
 
-	m_pTabWorkspace = pWorkspace;
-	m_bUserWorkspace = pWorkspace != NULL;
-
-	if (pWorkspace) pWorkspace->m_pTabClientWnd = this;
+	Reposition();
 }
 
-void CXTPTabClientWnd::ShowNewWindowTab(BOOL bShowNewWindowTab, int nCommand)
+void CXTPPropertyGrid::SetHelpHeight(int nHeight)
 {
-	m_bShowNewWindowTab = bShowNewWindowTab;
-	m_nNewWindowTabCommand = nCommand;
+
+	ASSERT(nHeight > 0);
+	m_nHelpHeight = nHeight;
+
+	Reposition();
+}
+
+void CXTPPropertyGrid::SetViewDivider(double dDivider)
+{
+	ASSERT(dDivider > 0 && dDivider < 1);
+	GetGridView().m_dDivider = dDivider;
+
+	Reposition();
+}
+
+double CXTPPropertyGrid::GetViewDivider() const
+{
+	return GetGridView().m_dDivider;
+}
+
+void CXTPPropertyGrid::SetViewDividerPos(int nDivider, BOOL bLockDivider /*= FALSE*/)
+{
+	if (bLockDivider)
+	{
+		GetGridView().LockDivider();
+	}
+
+	GetGridView().SetDividerPos(nDivider);
+
+	Reposition();
+}
+
+CXTPPropertyGridItem* CXTPPropertyGrid::GetSelectedItem() const
+{
+	return GetGridView().GetSelectedItem();
+}
+
+int CXTPPropertyGrid::GetTopIndex() const
+{
+	return GetGridView().GetTopIndex();
+}
+
+void CXTPPropertyGrid::SetTopIndex(int nIndex)
+{
+	GetGridView().SetTopIndex(nIndex);
+}
+
+void CXTPPropertyGrid::SetTheme(XTPPropertyGridPaintTheme paintTheme)
+{
+	if (paintTheme == xtpGridThemeDefault) SetCustomTheme(new CXTPPropertyGridPaintManager(this));
+	else if (paintTheme == xtpGridThemeCool) SetCustomTheme(new CXTPPropertyGridCoolTheme(this));
+	else if (paintTheme == xtpGridThemeDelphi) SetCustomTheme(new CXTPPropertyGridDelphiTheme(this));
+	else if (paintTheme == xtpGridThemeNativeWinXP) SetCustomTheme(new CXTPPropertyGridNativeXPTheme(this));
+	else if (paintTheme == xtpGridThemeOffice2003) SetCustomTheme(new CXTPPropertyGridOffice2003Theme(this));
+	else if (paintTheme == xtpGridThemeSimple) SetCustomTheme(new CXTPPropertyGridSimpleTheme(this));
+	else if (paintTheme == xtpGridThemeWhidbey) SetCustomTheme(new CXTPPropertyGridWhidbeyTheme(this));
+	else if (paintTheme == xtpGridThemeOfficeXP) SetCustomTheme(new CXTPPropertyGridOfficeXPTheme(this));
+	else if (paintTheme == xtpGridThemeOffice2007) SetCustomTheme(new CXTPPropertyGridOffice2007Theme(this));
+	else
+	{
+		ASSERT(FALSE);
+	}
+
+	m_themeCurrent = paintTheme;
+}
+
+void CXTPPropertyGrid::SetCustomTheme(CXTPPropertyGridPaintManager* pPaintManager)
+{
+	CXTPPropertyGridItemMetrics* pMetrics = m_pPaintManager->m_pMetrics;
+	m_pPaintManager->m_pMetrics = 0;
+
+	ASSERT(m_pPaintManager);
+	delete m_pPaintManager;
+
+	m_pPaintManager = pPaintManager;
+
+	CMDTARGET_RELEASE(m_pPaintManager->m_pMetrics);
+	m_pPaintManager->m_pMetrics = pMetrics;
+	m_pPaintManager->RefreshMetrics();
+
+	RedrawControl();
+}
+
+CXTPImageManager* CXTPPropertyGrid::GetImageManager() const
+{
+	return m_pImageManager ? m_pImageManager : XTPImageManager();
+}
+
+void CXTPPropertyGrid::SetImageManager(CXTPImageManager* pImageManager)
+{
+	if (m_pImageManager)
+		m_pImageManager->InternalRelease();
+
+	m_pImageManager = pImageManager;
+}
+
+void CXTPPropertyGrid::OnSysColorChange()
+{
+	CWnd::OnSysColorChange();
+
+	m_pPaintManager->RefreshMetrics();
+	RedrawControl();
+}
+
+BOOL CXTPPropertyGrid::OnToolTipText(UINT, NMHDR* pNMHDR, LRESULT* pResult)
+{
+	ASSERT(pNMHDR->code == TTN_NEEDTEXTA || pNMHDR->code == TTN_NEEDTEXTW);
+
+	// need to handle both ANSI and UNICODE versions of the message
+	TOOLTIPTEXTA* pTTTA = (TOOLTIPTEXTA*)pNMHDR;
+	TOOLTIPTEXTW* pTTTW = (TOOLTIPTEXTW*)pNMHDR;
+
+	CString strTipText;
+
+	// don't handle the message if no string resource found
+	if (!XTPResourceManager()->LoadString(&strTipText, (UINT)pNMHDR->idFrom))
+		return FALSE;
+
+#ifndef _UNICODE
+	if (pNMHDR->code == TTN_NEEDTEXTA)
+		lstrcpyn(pTTTA->szText, strTipText, _countof(pTTTA->szText));
+	else
+		_mbstowcsz(pTTTW->szText, strTipText, _countof(pTTTW->szText));
+#else
+	if (pNMHDR->code == TTN_NEEDTEXTA)
+		_wcstombsz(pTTTA->szText, strTipText, _countof(pTTTA->szText));
+	else
+		lstrcpyn(pTTTW->szText, strTipText, _countof(pTTTW->szText));
+#endif
+	*pResult = 0;
+
+	// bring the tooltip window above other popup windows
+	::SetWindowPos(pNMHDR->hwndFrom, HWND_TOP, 0, 0, 0, 0,
+		SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER);
+
+	return TRUE;    // message was handled
 }
 
 
-void CXTPTabClientWnd::SaveState()
+BOOL CXTPPropertyGrid::IsLayoutRTL() const
 {
-	AfxGetApp()->WriteProfileInt(_T("TabDocking"), _T("Position"), (int)m_pPaintManager->GetPosition());
+	return GetExStyle() & WS_EX_LAYOUTRTL ? TRUE : FALSE;
 }
 
-void CXTPTabClientWnd::LoadState()
+void CXTPPropertyGrid::SetLayoutRTL(CWnd* pWnd, BOOL bRTLLayout)
 {
-	int nValue = AfxGetApp()->GetProfileInt(_T("TabDocking"), _T("Position"), xtpTabPositionTop);
-	m_pPaintManager->SetPosition(XTPTabPosition(nValue));
-	m_bForceToRecalc = TRUE;
+	pWnd->ModifyStyleEx(bRTLLayout ? 0 : WS_EX_LAYOUTRTL, !bRTLLayout ? 0 : WS_EX_LAYOUTRTL);
+
+	// walk through HWNDs to avoid creating temporary CWnd objects
+	// unless we need to call this function recursively
+	for (CWnd* pChild = pWnd->GetWindow(GW_CHILD); pChild != NULL;
+		pChild = pChild->GetWindow(GW_HWNDNEXT))
+	{
+
+		// send to child windows after parent
+		SetLayoutRTL(pChild, bRTLLayout);
+	}
+}
+
+
+void CXTPPropertyGrid::SetLayoutRTL(BOOL bRightToLeft)
+{
+	if (!XTPSystemVersion()->IsLayoutRTLSupported())
+		return;
+
+	SetLayoutRTL(this, bRightToLeft);
+
+	if (m_pInplaceEdit && m_pInplaceEdit->GetSafeHwnd())
+	{
+		m_pInplaceEdit->HideWindow();
+		m_pInplaceEdit->m_bDelayCreate = TRUE;
+	}
+
+	if (GetSelectedItem()) GetSelectedItem()->OnSelect();
+
+	Reposition();
+	RedrawWindow(NULL, NULL, RDW_ALLCHILDREN | RDW_UPDATENOW | RDW_INVALIDATE | RDW_ERASE);
+}
+
+
+void CXTPPropertyGrid::SetBorderStyle(XTPPropertyGridBorderStyle borderStyle)
+{
+	m_borderStyle = borderStyle;
+
+	Reposition();
+
+	if (GetGridView().GetSafeHwnd())
+	{
+		GetGridView().SetWindowPos(0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+	}
+}
+
+XTPPropertyGridBorderStyle CXTPPropertyGrid::GetBorderStyle() const
+{
+	return m_borderStyle;
 }
 
 

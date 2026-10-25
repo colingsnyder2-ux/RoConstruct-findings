@@ -1,12 +1,5 @@
-// from server: 56% by atomic.potato
-extern "C" void* __cdecl sub_00787C80(void*, const char*);
-
-struct StudsTool
-{
-    StudsTool(const char*);
-};
-
-StudsTool::StudsTool(const char* value)
-{
-    sub_00787C80(this, value);
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <string>
+struct Tool { virtual std::string name() const; };
+std::string Tool::name() const { return "StudsCursor"; }

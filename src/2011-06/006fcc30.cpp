@@ -1,11 +1,10 @@
-// from server: 80% by atomic.potato
-struct Flag
-{
-    int value;
-    void get(int* result);
+// from server: 100% by tester
+// roc-flags: /O2 /GS- /EHsc /MD
+struct seg_004c0000 {
+    int get_19c(int *out);
 };
 
-void Flag::get(int* result)
-{
-    *result = *(int*)((char*)this + 0x2ac);
+int seg_004c0000::get_19c(int *out) {
+    *out = *(int *)((char *)this + 0x2ac);
+    return (int)out;
 }

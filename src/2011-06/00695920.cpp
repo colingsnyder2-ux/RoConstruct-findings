@@ -1,22 +1,18 @@
-// from server: 90% by atomic.potato
-struct SocialService
-{
-    int field0;
-    int field4;
-    int field8;
-    int fieldC;
-    int field10;
-    int field14;
-    int field18;
-    int field1C;
-
-    void initialize();
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct X_00695920 {
+    void* f_0;
+    void* f_4;
+    char pad_8[16];
+    void* f_18;
+    void* f_1c;
+    X_00695920* base();
+    X_00695920* run() {
+    f_0 = (void*)0xaa20c4;
+    f_4 = (void*)0xaa20bc;
+    f_18 = (void*)0xaa20b0;
+    f_1c = (void*)0xaa20a4;
+        return base();
+    }
 };
-
-void SocialService::initialize()
-{
-    field0 = 0x00AA20C4;
-    field4 = 0x00AA20BC;
-    field18 = 0x00AA20B0;
-    field1C = 0x00AA20A4;
-}
+X_00695920* func_00695920(X_00695920* x) { return x->run(); }

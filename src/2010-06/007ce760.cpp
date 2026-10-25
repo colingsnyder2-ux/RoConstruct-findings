@@ -1,14 +1,14 @@
-// from server: 98% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/ReportControl/XTPReportRecordItem.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/ReportControl/XTPReportRecordItem.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPReportRecordItem.cpp : implementation of the CXTPReportRecordItem class.
 //
 // This file is a part of the XTREME REPORTCONTROL MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -27,10 +27,6 @@
 
 #include "stdafx.h"
 #include "Common/XTPDrawHelpers.h"
-#include "Common/XTPMarkupRender.h"
-#include "Common/XTPResourceManager.h"
-#include "Common/XTPPropExchange.h"
-#include "Common/XTPVc50Helpers.h"
 
 #include "XTPReportRow.h"
 #include "XTPReportRecords.h"
@@ -41,11 +37,9 @@
 #include "XTPReportHyperlink.h"
 #include "XTPReportRecord.h"
 #include "XTPReportRecordItem.h"
-
 #include "XTPReportInplaceControls.h"
-#include "XTPReportRecordItemControls.h"
 
-#include <math.h>
+#include "Common/XTPPropExchange.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -79,7 +73,6 @@ XTP_REPORTRECORDITEM_ARGS::XTP_REPORTRECORDITEM_ARGS(CXTPReportControl* pControl
 	this->pItem = pRow->GetRecord()->GetItem(pColumn);
 	this->rcItem = pRow->GetItemRect(pItem);
 }
-
 XTP_REPORTRECORDITEM_ARGS::~XTP_REPORTRECORDITEM_ARGS()
 {
 
@@ -142,7 +135,6 @@ int CXTPReportRecordItemConstraint::GetIndex() const
 CXTPReportRecordItemConstraints::CXTPReportRecordItemConstraints()
 {
 }
-
 CXTPReportRecordItemConstraints::~CXTPReportRecordItemConstraints()
 {
 	RemoveAll();
@@ -162,10 +154,7 @@ CXTPReportRecordItemConstraint* CXTPReportRecordItemConstraints::GetAt(int nInde
 void CXTPReportRecordItemConstraints::RemoveAll()
 {
 	for (int i = 0; i < GetCount(); i++)
-	{
-		if (m_arrConstraints[i] != NULL)
-			m_arrConstraints[i]->InternalRelease();
-	}
+		m_arrConstraints[i]->InternalRelease();
 	m_arrConstraints.RemoveAll();
 }
 
@@ -194,50 +183,19 @@ CXTPReportRecordItemEditOptions::~CXTPReportRecordItemEditOptions()
 void CXTPReportRecordItemEditOptions::RemoveButtons()
 {
 	for (int j = 0; j < arrInplaceButtons.GetSize(); j++)
-		if (arrInplaceButtons[j] != NULL)
-			arrInplaceButtons[j]->InternalRelease();
+		arrInplaceButtons[j]->InternalRelease();
 
 	arrInplaceButtons.RemoveAll();
 }
 
-CXTPReportInplaceButton* CXTPReportRecordItemEditOptions::AddComboButton(BOOL bInside)
+void CXTPReportRecordItemEditOptions::AddComboButton()
 {
-	CXTPReportInplaceButton* pButton = new CXTPReportInplaceButton(XTP_ID_REPORT_COMBOBUTTON);
-	if (pButton)
-	{
-		arrInplaceButtons.Add(pButton);
-		pButton->SetInsideCellButton(bInside);
-	}
-	return pButton;
+	arrInplaceButtons.Add(new CXTPReportInplaceButton(XTP_ID_REPORT_COMBOBUTTON));
 }
 
-CXTPReportInplaceButton* CXTPReportRecordItemEditOptions::AddExpandButton(BOOL bInside)
+void CXTPReportRecordItemEditOptions::AddExpandButton()
 {
-	CXTPReportInplaceButton* pButton = new CXTPReportInplaceButton(XTP_ID_REPORT_EXPANDBUTTON);
-	if (pButton)
-	{
-		arrInplaceButtons.Add(pButton);
-		pButton->SetInsideCellButton(bInside);
-	}
-	return pButton;
-}
-
-CXTPReportInplaceButton* CXTPReportRecordItemEditOptions::AddSpinButton(BOOL bInside)
-{
-	CXTPReportInplaceButton* pButton = new CXTPReportInplaceButton(XTP_ID_REPORT_SPINBUTTON);
-	if (pButton)
-	{
-		arrInplaceButtons.Add(pButton);
-		pButton->SetInsideCellButton(bInside);
-	}
-	return pButton;
-}
-
-CXTPReportInplaceButton* CXTPReportRecordItemEditOptions::GetButton(int nIndex)
-{
-	if (nIndex >= arrInplaceButtons.GetSize())
-		return NULL;
-	return arrInplaceButtons.GetAt(nIndex);
+	arrInplaceButtons.Add(new CXTPReportInplaceButton(XTP_ID_REPORT_EXPANDBUTTON));
 }
 
 CXTPReportRecordItemConstraint* CXTPReportRecordItemEditOptions::FindConstraint(DWORD_PTR dwData)
@@ -276,7 +234,6 @@ CXTPReportRecordItemConstraint* CXTPReportRecordItemEditOptions::AddConstraint(L
 //////////////////////////////////////////////////////////////////////////
 // CXTPReportRecordItem
 
-
 IMPLEMENT_SERIAL(CXTPReportRecordItem, CCmdTarget, VERSIONABLE_SCHEMA | _XTP_SCHEMA_CURRENT)
 
 CXTPReportRecordItem::CXTPReportRecordItem()
@@ -284,12 +241,9 @@ CXTPReportRecordItem::CXTPReportRecordItem()
 	static const CString g_strFormatStringDef = _T("%s");
 
 	m_strFormatString = g_strFormatStringDef;
-	m_strFormula.Empty();
-
 	m_bEditable = TRUE;
 	m_pFontCaption = NULL;
 	m_bBoldText = FALSE;
-
 	m_clrText = XTP_REPORT_COLOR_DEFAULT;
 	m_clrBackground = XTP_REPORT_COLOR_DEFAULT;
 
@@ -301,245 +255,23 @@ CXTPReportRecordItem::CXTPReportRecordItem()
 	m_nSortPriority = -1;
 	m_nGroupPriority = -1;
 
-	m_Alignment = (XTPReportColumnIconAlignment)(-1);
-
 	m_bChecked = FALSE;
 	m_bHasCheckbox = FALSE;
-	m_bCheckedGrayed = FALSE;
-	m_bTristateCheckbox = FALSE;
 	m_pEditOptions = NULL;
-	m_pItemControls = NULL;
-	m_pFocusedItemControl = NULL;
-	m_bItemControlUnderMouse = FALSE;
-	m_pItemControlHookWnd = NULL;
 
 	m_bFocusable = TRUE;
 
 	m_pHyperlinks = NULL;
 
-	m_pMarkupUIElement = NULL;
-	m_pControl = NULL;
-
-	m_rcGlyph.SetRectEmpty();
 
 }
+
 
 CXTPReportRecordItem::~CXTPReportRecordItem()
 {
 	CMDTARGET_RELEASE(m_pEditOptions);
-	CMDTARGET_RELEASE(m_pItemControls);
 	CMDTARGET_RELEASE(m_pHyperlinks);
-
-	XTPMarkupReleaseElement(m_pMarkupUIElement);
 }
-
-void CXTPReportRecordItem::SetCaption(LPCTSTR lpszCaption)
-{
-	CString strCaption(lpszCaption);
-
-	if (!m_strFormula.IsEmpty()
-		&& m_pRecord != NULL)
-	{
-		COLORREF clrSum = RGB(255,0,0);
-		COLORREF clrSubSum = RGB(0,0,255);
-		if (m_pControl)
-		{
-			clrSum = m_pControl->GetPaintManager()->m_clrFormulaSum;
-			clrSubSum = m_pControl->GetPaintManager()->m_clrFormulaSubSum;
-		}
-//CODE FOR RECALC
-		double d(0.0);
-		int m(0), M(0), n(0), N(0);
-		CString s, t, u, v;
-		CString sFormula(m_strFormula);
-		int pos = sFormula.Find(_T("SUMSUB("));
-		//pattern SUMSUB(R#C#:R#C#) or * instead of # - means all row or column
-		if (pos > -1 && m_pRecord->GetChilds() != NULL)
-		{
-			int mMax = m_pRecord->GetChilds()->GetCount();
-			int nMax = m_pRecord->GetItemCount();
-			REPLACE_S(sFormula, _T(" "), _T(""));
-			sFormula = sFormula.Mid(pos + 7);
-			pos = sFormula.Find(_T(":"));
-			if (pos > -1)
-			{
-				s = sFormula.Left(pos);
-				t = sFormula.Mid(pos + 1);
-				pos = s.Find(_T("C"));
-				if (pos > -1)
-				{
-					u = s.Left(pos);
-					s = s.Mid(pos + 1);
-					REPLACE_S(u, _T("R"), _T(""));
-					if (u == _T("*"))
-						m = 0;
-					else
-						m = _ttoi(u);
-					if (s == _T("*"))
-						n = 0;
-					else
-						n = _ttoi(s);
-
-					pos = t.Find(_T("C"));
-					if (pos > -1)
-					{
-						u = t.Left(pos);
-						t = t.Mid(pos + 1);
-						REPLACE_S(u, _T("R"), _T(""));
-						if (u == _T("*"))
-							M = mMax;
-						else
-							M = _ttoi(u);
-						REPLACE_S(t, _T(")"), _T(""));
-						if (t == _T("*"))
-							N = nMax;
-						else
-							N = _ttoi(t);
-
-						CXTPReportRecord* pRec = NULL;
-						CXTPReportRecordItem* pItem = NULL;
-						if (mMax > 0)
-						{
-							for (int row = m; row < M; row++)
-							{
-								for (int col = n; col < N; col++)
-								{
-									if (row < mMax)
-									{
-										pRec = m_pRecord->GetChilds()->GetAt(row);
-										if (pRec)
-										{
-											if (col < pRec->GetItemCount())
-											{
-												pItem = pRec->GetItem(col);
-												if (pItem && pItem != this) //no circular ref!)
-												{
-													s = pItem->GetCaption(NULL);
-													d += atof(XTP_CT2CA(s));
-												}
-											}
-										}
-									}
-								}
-							}
-							CString sFmt = GetFormatString();
-							if (sFmt.IsEmpty() || sFmt == _T("%s"))
-								sFmt = _T("%f");
-							else if (sFmt == _T("%d"))
-								sFmt = _T("%.0f");
-
-							strCaption.Format(sFmt, d);
-							SetTextColor(clrSubSum );
-						}
-					}
-				}
-			}
-		}
-		sFormula = m_strFormula;
-		pos = sFormula.Find(_T("SUM("));
-		//pattern SUM(R#C#:R#C#) or * instead of # - means all row or column
-		if (pos > -1 && m_pRecord->GetRecords() != NULL)
-		{
-			int mMax = m_pRecord->GetRecords()->GetCount();
-			int nMax = m_pRecord->GetItemCount();
-			REPLACE_S(sFormula, _T(" "), _T(""));
-			sFormula = sFormula.Mid(pos + 4);
-			pos = sFormula.Find(_T(":"));
-			if (pos > -1)
-			{
-				s = sFormula.Left(pos);
-				t = sFormula.Mid(pos + 1);
-				pos = s.Find(_T("C"));
-				if (pos > -1)
-				{
-					u = s.Left(pos);
-					s = s.Mid(pos + 1);
-					REPLACE_S(u, _T("R"), _T(""));
-					if (u == _T("*"))
-						m = 0;
-					else
-						m = _ttoi(u);
-					if (s == _T("*"))
-						n = 0;
-					else
-						n = _ttoi(s);
-
-					pos = t.Find(_T("C"));
-					if (pos > -1)
-					{
-						u = t.Left(pos);
-						t = t.Mid(pos + 1);
-						REPLACE_S(u, _T("R"), _T(""));
-						if (u == _T("*"))
-							M = mMax;
-						else
-							M = _ttoi(u);
-						REPLACE_S(t, _T(")"), _T(""));
-						if (t == _T("*"))
-							N = nMax;
-						else
-							N = _ttoi(t);
-
-						CXTPReportRecord* pRec = NULL;
-						CXTPReportRecordItem* pItem = NULL;
-						if (m_pRecord->GetRecords())
-						{
-							for (int row = m; row < M; row++)
-							{
-								for (int col = n; col < N; col++)
-								{
-									if (row < mMax)
-									{
-										pRec = m_pRecord->GetRecords()->GetAt(row);
-										if (pRec)
-										{
-											if (col < pRec->GetItemCount())
-											{
-												pItem = pRec->GetItem(col);
-												if (pItem && pItem != this) //no circular ref!
-												{
-													s = pItem->GetCaption(NULL);
-													d += atof(XTP_CT2CA(s));
-												}
-											}
-										}
-									}
-								}
-							}
-							CString sFmt = GetFormatString();
-							if (sFmt.IsEmpty() || sFmt == _T("%s"))
-								sFmt = _T("%f");
-							else if (sFmt == _T("%d"))
-								sFmt = _T("%.0f");
-
-							strCaption.Format(sFmt, d);
-							SetTextColor(clrSum );
-						}
-					}
-				}
-			}
-		}
-	}
-	if (m_strCaption == strCaption)
-		return;
-
-	m_strCaption = strCaption;
-
-	XTPMarkupReleaseElement(m_pMarkupUIElement);
-
-	if (m_pRecord == NULL) return;
-
-	CXTPMarkupContext* pMarkupContext = m_pRecord->GetMarkupContext();
-	if (pMarkupContext)
-		m_pMarkupUIElement = XTPMarkupParseText(pMarkupContext, strCaption);
-	else if (m_pRecord->m_pRecords) //extra source of markup
-	{
-		pMarkupContext = m_pRecord->m_pRecords->GetMarkupContext();
-		if (pMarkupContext)
-			m_pMarkupUIElement = XTPMarkupParseText(pMarkupContext, strCaption);
-	}
-}
-
 
 void CXTPReportRecordItem::DoMouseButtonClick()
 {
@@ -552,65 +284,31 @@ void CXTPReportRecordItem::GetCaptionRect(XTP_REPORTRECORDITEM_ARGS* pDrawArgs, 
 	ASSERT(pDrawArgs->pControl);
 	if (!pDrawArgs->pControl)
 		return;
-	else
-		m_pControl = pDrawArgs->pControl;
 
 	if (GetIconIndex() != XTP_REPORT_NOICON)
 		rcItem.left += pDrawArgs->pControl->GetPaintManager()->DrawBitmap(NULL, pDrawArgs->pControl, rcItem, GetIconIndex());
 
 	if (m_bHasCheckbox)
 		rcItem.left += 15;
-
-	if (m_pItemControls && m_pItemControls->GetSize())
-	{
-		for (int i = 0; i < m_pItemControls->GetSize() && rcItem.Width() > 0; i++)
-		{
-			int nWidth = m_pItemControls->GetAt(i)->GetSize().cx;
-			nWidth = nWidth < 0 ? rcItem.Width() : nWidth;
-			if (m_pItemControls->GetAt(i)->GetAlignment() == xtpItemControlRight)
-				rcItem.right -= nWidth;
-			else
-				rcItem.left += nWidth;
-		}
-	}
 }
 
 void CXTPReportRecordItem::DrawCheckBox(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, CRect& rcItem)
 {
-	BOOL bEditable = IsEditable()
-		&& (pDrawArgs->pColumn == NULL || pDrawArgs->pColumn->IsEditable());
+	BOOL bEditable = IsEditable() && (pDrawArgs->pColumn == NULL || pDrawArgs->pColumn->IsEditable());
 
 	CDC* pDC = pDrawArgs->pDC;
-	//int eState = (bEditable ? 0: 2) + (IsChecked() ? 1 : 0);
-	int eState(0);
-	if (bEditable)
-	{
-		if (IsChecked())
-			eState = 3;
-		else
-			eState = 2;
-	}
-	else
-	{
-		if (IsChecked())
-			eState = 5;
-		else
-			eState = 4;
-	}
-	//int eState = (bEditable ? 0: 2) + (IsChecked() ? 3 : 0);
+	int eState = (bEditable ? 0: 2) + (IsChecked() ? 1 : 0);
 
 	CXTPReportPaintManager* pPaintManager = pDrawArgs->pControl->GetPaintManager();
 
 	int nIconAlign = pDrawArgs->nTextAlign & xtpColumnIconMask;
-	int nIconAlignV = nIconAlign & 0x0F000000;
-	int nIconAlignH = nIconAlign & 0x00F00000;
 
 	m_rcGlyph = rcItem;
 	CSize sizeGlyph = pPaintManager->DrawGlyph(NULL, m_rcGlyph, eState + 2);
 
 	CRect rcGlyph(m_rcGlyph);
 	// horizontal alignment
-	switch (nIconAlignH)
+	switch(nIconAlign)
 	{
 	case xtpColumnIconRight:
 		rcGlyph.left = rcItem.right - sizeGlyph.cx - 2;
@@ -630,7 +328,7 @@ void CXTPReportRecordItem::DrawCheckBox(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs
 		break;
 	}
 	// vertical alignment
-	switch (nIconAlignV)
+	switch(nIconAlign)
 	{
 	case xtpColumnIconTop:
 		rcGlyph.bottom = rcItem.top + sizeGlyph.cy + 2;
@@ -640,84 +338,18 @@ void CXTPReportRecordItem::DrawCheckBox(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs
 		break;
 	}
 	// draw the glyph
-	if (m_bTristateCheckbox && GetCheckedState() == 2)
-		pPaintManager->DrawGlyph(pDC, rcGlyph, 8); //checkbox in 3d state
-	else
-		//pPaintManager->DrawGlyph(pDC, rcGlyph, eState + 2); //range (2 - 5)
-		pPaintManager->DrawGlyph(pDC, rcGlyph, eState);
-
-	m_rcGlyph = rcGlyph; //to restrict click on Glyph area only
+	pPaintManager->DrawGlyph(pDC, rcGlyph, eState + 2);
 }
 
 void CXTPReportRecordItem::OnDrawCaption(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, XTP_REPORTRECORDITEM_METRICS* pMetrics)
 {
 	ASSERT(pDrawArgs->pItem == this);
-
-	CXTPReportPaintManager* pPaintManager = pDrawArgs->pControl->GetPaintManager();
-	BOOL bForceMarkUp(FALSE);
-	if (pPaintManager)
-		bForceMarkUp = pPaintManager->m_bForceDynamicMarkupForCell;
-	//THIS CONDITION - IsVirtualMode() [Rev 7687 Oct 2008] PREVENTS MARKUP in Non-Virtual mode
-	//if (pDrawArgs->pControl->IsVirtualMode() && pDrawArgs->pControl->GetMarkupContext())
-	//if (pDrawArgs->pControl->GetMarkupContext()
-	//  && !m_pMarkupUIElement) - rev 9113
-	//if (pDrawArgs->pControl->IsVirtualMode()
-	//  && pDrawArgs->pControl->GetMarkupContext() && !m_pMarkupUIElement) - rev 9114
-	// FIXED BACK! Only for virtual mode! Developer have to set Caption of Item to have markup
-	// FIXED AGAIN WITH SPECIAL Flag to use
-	if ((pDrawArgs->pControl->IsVirtualMode() || bForceMarkUp)
-		&& pDrawArgs->pControl->GetMarkupContext() && !m_pMarkupUIElement)
-	{
-		CXTPMarkupUIElement* pMarkupUIElement = XTPMarkupParseText(pDrawArgs->pControl->GetMarkupContext(), pMetrics->strText);
-		if (pMarkupUIElement)
-		{
-
-			CRect rcItem = pDrawArgs->rcItem;
-			rcItem.DeflateRect(2, 1, 2, 0);
-
-			XTPMarkupSetDefaultFont(XTPMarkupElementContext(pMarkupUIElement), (HFONT)pMetrics->pFont->GetSafeHandle(), pMetrics->clrForeground);
-			XTPMarkupMeasureElement(pMarkupUIElement, rcItem.Width(), INT_MAX);
-			XTPMarkupRenderElement(pMarkupUIElement, pDrawArgs->pDC->GetSafeHdc(), &rcItem);
-			XTPMarkupReleaseElement(pMarkupUIElement);
-			return;
-		}
-	}
-
-	if (m_pMarkupUIElement)
-	{
-		CRect rcItem = pDrawArgs->rcItem;
-		rcItem.DeflateRect(2, 1, 2, 0);
-
-		XTPMarkupSetDefaultFont(XTPMarkupElementContext(m_pMarkupUIElement), (HFONT)pMetrics->pFont->GetSafeHandle(), pMetrics->clrForeground);
-		XTPMarkupMeasureElement(m_pMarkupUIElement, rcItem.Width(), INT_MAX);
-		XTPMarkupRenderElement(m_pMarkupUIElement, pDrawArgs->pDC->GetSafeHdc(), &rcItem);
-	}
-	else
-	{
-		if (pPaintManager)
-			pPaintManager->DrawItemCaption(pDrawArgs, pMetrics);
-	}
+	pDrawArgs->pControl->GetPaintManager()->DrawItemCaption(pDrawArgs, pMetrics);
 }
 
-void CXTPReportRecordItem::OnDrawControls(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, CRect& rcItem)
-{
-	ASSERT(pDrawArgs->pItem == this);
-	if (!m_pItemControls)
-		return;
-	for (int i = 0; i < m_pItemControls->GetSize() && rcItem.Width(); i++)
-	{
-		pDrawArgs->pControl->GetPaintManager()->DrawItemControl(pDrawArgs, m_pItemControls->GetAt(i), rcItem);
-	}
-}
 
 int CXTPReportRecordItem::Draw(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs)
 {
-	ASSERT(pDrawArgs->pControl);
-	if (!pDrawArgs->pControl)
-		return 0;
-	else
-		m_pControl = pDrawArgs->pControl;
-
 	CDC* pDC = pDrawArgs->pDC;
 	CRect& rcItem = pDrawArgs->rcItem;
 	CXTPReportPaintManager* pPaintManager = pDrawArgs->pControl->GetPaintManager();
@@ -746,27 +378,10 @@ int CXTPReportRecordItem::Draw(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs)
 		int nTreeDepth = pDrawArgs->pRow->GetTreeDepth() - pDrawArgs->pRow->GetGroupLevel();
 		if (nTreeDepth > 0)
 			nTreeDepth++;
-
-		BOOL bHasChildren = TRUE;
-		if (pDrawArgs->pControl->IsVirtualMode())
-		{
-			bHasChildren = (pMetrics->nVirtRowFlags & xtpVirtRowHasChildren) > 0;
-			if (!bHasChildren)
-				pDrawArgs->pRow->m_rcCollapse = CRect(NULL);
-
-			if (pDrawArgs->pColumn == pDrawArgs->pControl->GetColumns()->GetIndentColumn())
-				pDrawArgs->nTextAlign = DT_LEFT; //to make compact tree presentation
-		}
-		else
-		{
-			bHasChildren = pDrawArgs->pRow->HasChildren();
-		}
 		rcItem.left += pDrawArgs->pControl->GetIndent(nTreeDepth);
 
-//<EXTRA TREE INDENT>>
-		if (pPaintManager->m_bBaseTreeIndent)
-			rcItem.left += pPaintManager->m_nTreeIndent;
-//<EXTRA TREE INDENT>>
+		BOOL bHasChildren = pDrawArgs->pRow->HasChildren();
+
 		CRect rcBitmap(rcItem);
 		CSize sizeBitmap = pPaintManager->DrawCollapsedBitmap(NULL, pDrawArgs->pRow, rcBitmap);
 
@@ -774,7 +389,7 @@ int CXTPReportRecordItem::Draw(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs)
 
 		int nIconAlign = pDrawArgs->nTextAlign & xtpColumnIconMask;
 		// horizontal alignment
-		switch (nIconAlign)
+		switch(nIconAlign)
 		{
 		case xtpColumnIconRight:
 			rcBitmap.left = rcBitmap.right - sizeBitmap.cx - 2;
@@ -784,7 +399,7 @@ int CXTPReportRecordItem::Draw(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs)
 			break;
 		}
 		// vertical alignment
-		switch (nIconAlign)
+		switch(nIconAlign)
 		{
 		case xtpColumnIconTop:
 			rcBitmap.bottom = rcBitmap.top + sizeBitmap.cy + 2;
@@ -793,7 +408,6 @@ int CXTPReportRecordItem::Draw(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs)
 			rcBitmap.top = rcBitmap.bottom - sizeBitmap.cy - 2;
 			break;
 		}
-
 		sizeBitmap = pPaintManager->DrawCollapsedBitmap(bHasChildren ? pDC : NULL, pDrawArgs->pRow, rcBitmap);
 
 		if (!pDC->IsPrinting() && bHasChildren)
@@ -814,74 +428,17 @@ int CXTPReportRecordItem::Draw(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs)
 	if (m_bHasCheckbox)
 		DrawCheckBox(pDrawArgs, rcItem);
 
-	BOOL bShowLock = !IsEditable() && pDrawArgs->pControl->GetPaintManager()->m_bShowLockIcon;
 	// Do the draw bitmap pDC, rcItem, GetIconIndex()
-	if (bShowLock && !pDrawArgs->pControl->IsIconView()) //to prevent reaction on always read-only IconColumn / NumberColumn
+	if (pMetrics->nItemIcon != XTP_REPORT_NOICON || GetIconIndex() != XTP_REPORT_NOICON)
 	{
-		rcItem.left++;
-
-		if (pDrawArgs->pControl->GetPaintManager()->m_bUseShellIcon)//variant without resources
-			pPaintManager->DrawShellIcon(pDC, rcItem, 47);          //need index of Lock Icon (SI_LOCK)
-		else                                                        //variant with resources
-			pPaintManager->DrawGlyph(pDC, rcItem, 9);               //need index of Lock Icon - now it is 9 and 10 (open lock)
-
-		rcItem.left += 17;
-	}
-	else if (pMetrics->nItemIcon != XTP_REPORT_NOICON || GetIconIndex() != XTP_REPORT_NOICON)
-	{
-		rcItem.left++; //Forum TID=13346&PID=45535#45535
 		pPaintManager->DrawItemBitmap(pDrawArgs, rcItem, pMetrics->nItemIcon != XTP_REPORT_NOICON ? pMetrics->nItemIcon : GetIconIndex());
-	}
-	else
-	{
-		CXTPReportRecordItemEditOptions* pEditOptions = GetEditOptions(pDrawArgs->pColumn);
-		if (pEditOptions && pEditOptions->arrInplaceButtons.GetSize() > 0)
-		{
-			CXTPReportInplaceButton* pButton = pEditOptions->GetButton(0);
-			if (pButton
-				&& pButton->IsInsideCellButton())
-			{
-				if (pButton->GetID() == XTP_ID_REPORT_COMBOBUTTON)
-				{
-					rcItem.left++;
-					CRect rc(rcItem);
-					rc.left = rc.right - rc.Height() + 2;
-					rc.top++;
-					pPaintManager->DrawInplaceComboButton(pDC, &rc);
-				}
-				else if (pButton->GetID() == XTP_ID_REPORT_EXPANDBUTTON)
-				{
-					rcItem.left++;
-					CRect rc(rcItem);
-					rc.left = rc.right - rc.Height() + 2;
-					rc.top++;
-					pPaintManager->DrawInplaceExpandButton(pDC, &rc);
-				}
-				else if (pButton->GetID() == XTP_ID_REPORT_SPINBUTTON)
-				{
-					rcItem.left++;
-					CRect rc(rcItem);
-					rc.left = rc.right - rc.Height() + 2;
-					rc.top++;
-					pPaintManager->DrawInplaceSpinButton(pDC, &rc);
-				}
-
-			}
-		}
 	}
 
 	nItemGlyphs = (rcItem.left - nItemGlyphs);
 
-	OnDrawControls(pDrawArgs, rcItem);
+	OnDrawCaption(pDrawArgs, pMetrics);
 
-	if (rcItem.Width() > 2)
-		OnDrawCaption(pDrawArgs, pMetrics);
-
-	int nItemTextWidth = nItemGlyphs + 7;
-	if (m_pMarkupUIElement)
-		nItemTextWidth += XTPMarkupMeasureElement(m_pMarkupUIElement, rcItem.Width() - 4, INT_MAX).cx;
-	else
-		nItemTextWidth += pDC->GetTextExtent(pMetrics->strText).cx;
+	int nItemTextWidth = nItemGlyphs + pDC->GetTextExtent(pMetrics->strText).cx + 4;
 
 	pDC->SelectObject(pOldFont);
 
@@ -893,65 +450,10 @@ int CXTPReportRecordItem::Draw(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs)
 	return nItemTextWidth;
 }
 
-CXTPReportRecordItemControl* CXTPReportRecordItem::HitTest(CPoint ptPoint)
-{
-	if (!(m_pItemControls && m_pItemControls->GetSize()))
-		return NULL;
-
-	for (int i = 0; i < m_pItemControls->GetSize(); i++)
-	{
-		CRect rcControl = m_pItemControls->GetAt(i)->GetRect();
-		if (rcControl.PtInRect(ptPoint))
-			return m_pItemControls->GetAt(i);
-	}
-
-	return NULL;
-}
-
-BOOL CXTPReportRecordItem::OnLButtonDown(XTP_REPORTRECORDITEM_CLICKARGS* pClickArgs)
-{
-	CXTPReportRecordItemControl* pItemControl = HitTest(pClickArgs->ptClient);
-	if (!pItemControl)
-		return FALSE;
-
-	pItemControl->OnLButtonDown(pClickArgs);
-	// create item control window
-	m_pItemControlHookWnd = new CXTPReportRecordItemControlHookWnd(pClickArgs);
-	m_pItemControlHookWnd->Create(AfxRegisterWndClass(0), _T(""), WS_CHILD, pItemControl->GetRect(), pClickArgs->pControl, 0);
-	m_pItemControlHookWnd->SetCapture();
-	// redraw control
-	pClickArgs->pControl->RedrawControl();
-	return TRUE;
-}
-
-BOOL CXTPReportRecordItem::OnLButtonUp(XTP_REPORTRECORDITEM_CLICKARGS* pClickArgs)
-{
-	if (m_pItemControlHookWnd && m_pFocusedItemControl)
-	{
-		pClickArgs->pControl->ScreenToClient(&pClickArgs->ptClient);
-		m_pFocusedItemControl->OnLButtonUp(pClickArgs);
-		pClickArgs->pControl->RedrawControl();
-		// destroy item control window
-		ReleaseCapture();
-		m_pItemControlHookWnd->DestroyWindow();
-		delete m_pItemControlHookWnd;
-		m_pItemControlHookWnd = NULL;
-		return TRUE;
-	}
-	CXTPReportRecordItemControl* pItemControl = HitTest(pClickArgs->ptClient);
-	if (!pItemControl)
-		return FALSE;
-	pItemControl->OnLButtonUp(pClickArgs);
-	pClickArgs->pControl->RedrawControl();
-	return TRUE;
-}
 
 void CXTPReportRecordItem::OnClick(XTP_REPORTRECORDITEM_CLICKARGS* pClickArgs)
 {
 	if (!pClickArgs || !pClickArgs->pControl)
-		return;
-
-	if (OnLButtonUp(pClickArgs)) //old version (10) did not have this call
 		return;
 
 	InternalAddRef();
@@ -964,9 +466,7 @@ void CXTPReportRecordItem::OnClick(XTP_REPORTRECORDITEM_CLICKARGS* pClickArgs)
 	BOOL bCheckBoxClicked = FALSE;
 	CXTPReportControl* pControl = pClickArgs->pControl;
 
-	if (IsEditable()
-		&& m_bHasCheckbox &&
-		(pClickArgs->pColumn == NULL || pClickArgs->pColumn->IsEditable())
+	if (IsEditable() && m_bHasCheckbox && (pClickArgs->pColumn == NULL || pClickArgs->pColumn->IsEditable())
 		&& OnRequestEdit(pClickArgs))
 	{
 		// adjust vertical coordinates if virtual mode
@@ -976,25 +476,9 @@ void CXTPReportRecordItem::OnClick(XTP_REPORTRECORDITEM_CLICKARGS* pClickArgs)
 			m_rcGlyph.bottom = pClickArgs->rcItem.bottom;
 		}
 		// check whether we're clicking glyph area
-		if (m_rcGlyph.PtInRect(pClickArgs->ptClient) && 
-			m_rcGlyph.PtInRect(pControl->m_ptMouseDown))
+		if (m_rcGlyph.PtInRect(pClickArgs->ptClient))
 		{
-			if (pControl->IsAutoCheckItems())
-			{
-				if (!m_bTristateCheckbox)
-					SetChecked(!IsChecked());
-				else
-				{
-					int iN = (GetCheckedState() + 1) % 3;
-					SetCheckedState(iN);
-					m_bCheckedGrayed = FALSE;
-					SetChecked(FALSE);
-					if (iN == 1)
-						SetChecked(TRUE);
-					else if (iN == 2)
-						m_bCheckedGrayed = TRUE;
-				}
-			}
+			if (pControl->IsAutoCheckItems()) SetChecked(!IsChecked());
 			pControl->RedrawControl();
 
 			pControl->SendMessageToParent(pClickArgs->pRow, this, pClickArgs->pColumn, XTP_NM_REPORT_CHECKED, &pClickArgs->ptClient);
@@ -1002,29 +486,7 @@ void CXTPReportRecordItem::OnClick(XTP_REPORTRECORDITEM_CLICKARGS* pClickArgs)
 		}
 	}
 
-	BOOL bEdit = TRUE;
-	if (!bCheckBoxClicked
-		&& IsAllowEdit(pClickArgs)
-		&& pControl->IsEditOnDelayClick())
-	{
-		if (pClickArgs->pColumn->GetItemIndex() != pControl->GetLastRqstEditCol()
-			|| pClickArgs->pRow->GetIndex() != pControl->GetLastRqstEditRow())
-		{
-			pControl->EnsureStopLastRqstTimer();
-			pControl->SetLastRqstEdit(pClickArgs->pRow->GetIndex(), pClickArgs->pColumn->GetItemIndex());
-			pControl->StartLastRqstTimer();
-			bEdit = FALSE;
-		}
-		else
-		{
-			pControl->EnsureStopLastRqstTimer();
-		}
-	}
-
-	if (bEdit
-		&& !bCheckBoxClicked
-		&& pControl->IsEditOnClick()
-		&& IsAllowEdit(pClickArgs))
+	if (!bCheckBoxClicked && IsAllowEdit(pClickArgs) && pControl->IsEditOnClick())
 	{
 		pControl->EditItem(pClickArgs);
 
@@ -1037,19 +499,24 @@ void CXTPReportRecordItem::OnClick(XTP_REPORTRECORDITEM_CLICKARGS* pClickArgs)
 			CXTPReportRecordItemEditOptions* pEditOptions = GetEditOptions(pClickArgs->pColumn);
 
 			if (pEditOptions->m_bSelectTextOnEdit)
+			{
 				pEdit->SetSel(0, -1);
+			}
 			else
+			{
 				DoMouseButtonClick();
+			}
 		}
 	}
-	pClickArgs->pControl->SendMessageToParent(pClickArgs->pRow, this, pClickArgs->pColumn,
-		NM_CLICK, &pClickArgs->ptClient);
+
+	pClickArgs->pControl->SendMessageToParent(pClickArgs->pRow, this, pClickArgs->pColumn, NM_CLICK, &pClickArgs->ptClient);
 
 	// Determine Hyperlink Click
 	int nHyperlink = HitTestHyperlink(pClickArgs->ptClient);
-	int mHyperlink = HitTestHyperlink(pControl->m_ptMouseDown);
-	if (nHyperlink >= 0 && mHyperlink >= 0)
+	if (nHyperlink >= 0)
+	{
 		pClickArgs->pControl->SendMessageToParent(pClickArgs->pRow, this, pClickArgs->pColumn, XTP_NM_REPORT_HYPERLINK, &pClickArgs->ptClient, nHyperlink);
+	}
 
 	CMDTARGET_RELEASE(pRow);
 	CMDTARGET_RELEASE(pClickArgs->pColumn);
@@ -1073,17 +540,9 @@ int CXTPReportRecordItem::HitTestHyperlink(CPoint ptClick)
 
 void CXTPReportRecordItem::OnDblClick(XTP_REPORTRECORDITEM_CLICKARGS* pClickArgs)
 {
-	if (!pClickArgs || !pClickArgs->pControl)
-		return;
-
-	if (OnLButtonDown(pClickArgs))  //old version (10) did not have this call
-		return;
-
 	CXTPReportControl* pControl = pClickArgs->pControl;
 
-	if (IsAllowEdit(pClickArgs)
-		&& !pControl->IsEditOnClick()
-		&& pControl->GetInplaceEdit()->GetItem() != this)
+	if (IsAllowEdit(pClickArgs) && !pControl->IsEditOnClick() && pControl->GetInplaceEdit()->GetItem() != this)
 	{
 		pControl->EditItem(pClickArgs);
 
@@ -1096,72 +555,26 @@ void CXTPReportRecordItem::OnDblClick(XTP_REPORTRECORDITEM_CLICKARGS* pClickArgs
 			CXTPReportRecordItemEditOptions* pEditOptions = GetEditOptions(pClickArgs->pColumn);
 
 			if (pEditOptions->m_bSelectTextOnEdit)
+			{
 				pEdit->SetSel(0, -1);
+			}
 			else
+			{
 				DoMouseButtonClick();
+			}
 		}
 	}
 
 	pControl->SendMessageToParent(pClickArgs->pRow, this, pClickArgs->pColumn, NM_DBLCLK, &pClickArgs->ptClient, -1);
 }
 
-void CXTPReportRecordItem::OnMouseMove(UINT nFlags, CPoint point, CXTPReportControl* pControl)
+void CXTPReportRecordItem::OnMouseMove(UINT /*nFlags*/, CPoint point)
 {
 	int nHyperlink = HitTestHyperlink(point);
 	if (nHyperlink >= 0)
 	{
 		SetCursor(AfxGetApp()->LoadStandardCursor(IDC_HAND));
-		return;
 	}
-
-	CXTPReportRecordItemControl* pItemControl = HitTest(point);
-
-	if (m_pItemControlHookWnd && m_pFocusedItemControl && (nFlags & MK_LBUTTON))
-	{
-		pControl->ScreenToClient(&point);
-		if (m_bItemControlUnderMouse && !m_pFocusedItemControl->GetRect().PtInRect(point))
-		{
-			m_pFocusedItemControl->OnMouseLeave(nFlags, point);
-			m_bItemControlUnderMouse = FALSE;
-		}
-		else if (!m_bItemControlUnderMouse && m_pFocusedItemControl->GetRect().PtInRect(point))
-		{
-			m_pFocusedItemControl->OnMouseEnter(nFlags, point);
-			m_bItemControlUnderMouse = TRUE;
-		}
-		else
-			m_pFocusedItemControl->OnMouseMove(nFlags, point);
-		pControl->RedrawControl();
-		return;
-	}
-
-	if (pItemControl)
-	{
-		if (pItemControl != m_pFocusedItemControl)
-		{
-			if (m_pFocusedItemControl)
-			{
-				m_pFocusedItemControl->OnMouseLeave(nFlags, point);
-				m_bItemControlUnderMouse = FALSE;
-			}
-			pItemControl->OnMouseEnter(nFlags, point);
-			m_bItemControlUnderMouse = TRUE;
-		}
-		pItemControl->OnMouseMove(nFlags, point);
-		if (pControl)
-			pControl->RedrawControl();
-	}
-	else
-	{
-		if (m_pFocusedItemControl)
-		{
-			m_pFocusedItemControl->OnMouseLeave(nFlags, point);
-			m_bItemControlUnderMouse = FALSE;
-			if (pControl)
-				pControl->RedrawControl();
-		}
-	}
-	m_pFocusedItemControl = pItemControl;
 }
 
 void CXTPReportRecordItem::SetFont(CFont* pFont)
@@ -1179,19 +592,9 @@ void CXTPReportRecordItem::SetTextColor(COLORREF clrText)
 	m_clrText = clrText;
 }
 
-COLORREF CXTPReportRecordItem::GetTextColor()
-{
-	return m_clrText;
-}
-
 void CXTPReportRecordItem::SetBackgroundColor(COLORREF clrBackground)
 {
 	m_clrBackground = clrBackground;
-}
-
-COLORREF CXTPReportRecordItem::GetBackgroundColor()
-{
-	return m_clrBackground;
 }
 
 int CXTPReportRecordItem::Compare(CXTPReportColumn* pColumn, CXTPReportRecordItem* pItem)
@@ -1221,11 +624,10 @@ CString CXTPReportRecordItem::GetGroupCaption(CXTPReportColumn* pColumn)
 	{
 		CString str;
 		if (str.LoadString(nID))
+		{
 			return str;
+		}
 	}
-
-	if (m_pMarkupUIElement || pColumn->GetMarkupUIElement())
-		return GetCaption(pColumn);
 
 	return pColumn->GetCaption() + _T(": ") + GetCaption(pColumn);
 }
@@ -1265,8 +667,6 @@ void CXTPReportRecordItem::GetItemMetrics(XTP_REPORTRECORDITEM_DRAWARGS* pDrawAr
 	else if (m_bBoldText)
 		pItemMetrics->pFont = &pDrawArgs->pControl->GetPaintManager()->m_fontBoldText;
 
-	if (m_Alignment != (XTPReportColumnIconAlignment)(-1))
-		pItemMetrics->nColumnAlignment = m_Alignment;
 }
 
 int CXTPReportRecordItem::GetIndex() const
@@ -1274,28 +674,12 @@ int CXTPReportRecordItem::GetIndex() const
 	return m_pRecord ? m_pRecord->IndexOf(this) : -1;
 }
 
-CXTPReportColumn* CXTPReportRecordItem::GetColumn()
-{
-	if (m_pControl)
-	{
-		int nItemIndex = GetIndex();
-		CXTPReportColumns* pCols = m_pControl->GetColumns();
-		if (pCols)
-			//return pCols->GetAt(nItemIndex);
-			return pCols->Find(nItemIndex);
-	}
-
-	return NULL;
-}
-
 BOOL CXTPReportRecordItem::IsEditable() const
 {
 	if (this == NULL)
 		return FALSE;
 
-	if (!m_pRecord)
-		return FALSE;
-
+	ASSERT(m_pRecord);
 	return m_pRecord ? m_pRecord->m_bEditable && m_bEditable && IsFocusable() : FALSE;
 }
 
@@ -1314,13 +698,11 @@ void CXTPReportRecordItem::OnBeginEdit(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
 	if (!pItemArgs)
 		return;
 
+	CXTPReportControl* pControl = pItemArgs->pControl;
+	CXTPReportInplaceEdit* pEdit = pControl->GetInplaceEdit();
+
 	if (IsEditable() && OnRequestEdit(pItemArgs))
 	{
-		CXTPReportControl* pControl = pItemArgs->pControl;
-		CXTPReportInplaceEdit* pEdit = pControl->GetInplaceEdit();
-		CRect rcCaption(pItemArgs->rcItem);
-		GetCaptionRect(pItemArgs, rcCaption);
-
 		CXTPReportRecordItemEditOptions* pEditOptions = GetEditOptions(pItemArgs->pColumn);
 		ASSERT(pEditOptions);
 
@@ -1330,17 +712,7 @@ void CXTPReportRecordItem::OnBeginEdit(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
 		CXTPClientRect rcControl(pItemArgs->pControl);
 
 		int i;
-		// calculate right-aligned item controls width
-		int nControlsWidthRight = 0;
-		if (m_pItemControls && m_pItemControls->GetSize() > 0)
-		{
-			for (i = 0; m_pItemControls && i < m_pItemControls->GetSize(); i++)
-			{
-				if (m_pItemControls->GetAt(i)->GetAlignment() == xtpItemControlRight)
-					nControlsWidthRight += m_pItemControls->GetAt(i)->GetRect().Width();
-			}
-		}
-		// calculate inplace buttons widths
+		// calculate buttons widths
 		int nButtonsWidthIn = 0, nButtonsWidthOut = 0;
 		for (i = 0; i < pInpaceButtons->GetSize(); i++)
 		{
@@ -1355,9 +727,13 @@ void CXTPReportRecordItem::OnBeginEdit(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
 		if (rcButtons.right + nButtonsWidthOut > rcControl.right)
 			rcButtons.right = rcControl.right - nButtonsWidthOut;
 
-		rcButtons.left = min(rcButtons.right, pItemArgs->rcItem.right - nControlsWidthRight);
+		int nLeftMin = max(rcControl.left, pItemArgs->rcItem.left);
+		if (rcButtons.right - nButtonsWidthIn < nLeftMin)
+			rcButtons.right = nLeftMin + nButtonsWidthIn;
 
 		// create buttons
+		rcButtons.left = rcButtons.right;
+
 		for (i = 0; i < pInpaceButtons->GetSize(); i++)
 		{
 			CXTPReportInplaceButton* pButton = pInpaceButtons->GetAt(i);
@@ -1366,19 +742,19 @@ void CXTPReportRecordItem::OnBeginEdit(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
 			pControl->GetInplaceButtons()->Add(pButton);
 		}
 
-// adjust item rect
-		pItemArgs->rcItem.right = rcButtons.left - 1;
+		// adjust item rect
+		pItemArgs->rcItem.right = rcButtons.left + 1;
 
 		if (pEditOptions->m_bAllowEdit)
+		{
 			pEdit->Create(pItemArgs);
+		}
 		else if (pInpaceButtons->GetSize() > 0)
 		{
-			CXTPReportInplaceButton* pBtn = pInpaceButtons->GetAt(0);
-			OnInplaceButtonDown(pBtn);
-			if (!pControl->IsEditOnClick())
-				pBtn->Activate();
+			OnInplaceButtonDown(pInpaceButtons->GetAt(0));
 		}
 
+		//----------------------------------------------------
 		XTP_NM_REPORTRECORDITEM nm;
 		::ZeroMemory(&nm, sizeof(nm));
 
@@ -1390,93 +766,42 @@ void CXTPReportRecordItem::OnBeginEdit(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
 	}
 }
 
-//void CXTPReportRecordItem::OnCancelEdit(CXTPReportControl* pControl, BOOL bApply)
-//{
-//  CXTPReportInplaceButtons* pInpaceButtons = pControl->GetInplaceButtons();
-//
-//  for (int i = 0; i < pInpaceButtons->GetSize(); i++)
-//  {
-//      CXTPReportInplaceButton* pButton = pInpaceButtons->GetAt(i);
-//      pButton->DestroyWindow();
-//      pButton->SetItemArgs(0);
-//  }
-//  pInpaceButtons->RemoveAll();
-//
-//  CXTPReportInplaceList* pInpaceList = pControl->GetInplaceList();
-//  if (pInpaceList->GetSafeHwnd())
-//  {
-//      pInpaceList->DestroyWindow();
-//  }
-//
-//  CXTPReportInplaceEdit* pEdit = pControl->GetInplaceEdit();
-//
-//  if (bApply && pEdit->GetSafeHwnd() && pEdit->GetItem() == this)
-//  {
-//      OnValidateEdit((XTP_REPORTRECORDITEM_ARGS*)pEdit);
-//  }
-//
-//  pEdit->HideWindow();
-//  pEdit->SetItemArgs(0);
-//  pEdit->DestroyWindow(); // pControl->SetFocus();
-//}
-
 void CXTPReportRecordItem::OnCancelEdit(CXTPReportControl* pControl, BOOL bApply)
 {
-	if (pControl == NULL) return;
 	CXTPReportInplaceButtons* pInpaceButtons = pControl->GetInplaceButtons();
 
 	for (int i = 0; i < pInpaceButtons->GetSize(); i++)
 	{
 		CXTPReportInplaceButton* pButton = pInpaceButtons->GetAt(i);
-		if (pButton->GetSafeHwnd())
-			pButton->DestroyWindow();
-		if (pButton)
-		{
-			pButton->SetItemArgs(0);
-			pButton->m_bDraw = TRUE; //to eliminate flickering
-		}
+		pButton->DestroyWindow();
+		pButton->SetItemArgs(0);
 	}
 	pInpaceButtons->RemoveAll();
 
 	CXTPReportInplaceList* pInpaceList = pControl->GetInplaceList();
 	if (pInpaceList->GetSafeHwnd())
+	{
 		pInpaceList->DestroyWindow();
+	}
+
 
 	CXTPReportInplaceEdit* pEdit = pControl->GetInplaceEdit();
-	if (pEdit == NULL) return;
 
-	if (pEdit->GetSafeHwnd())
+	if (bApply && pEdit->GetSafeHwnd() && pEdit->GetItem() == this)
 	{
-		if (bApply && pEdit->GetItem() == this)
-			OnValidateEdit((XTP_REPORTRECORDITEM_ARGS*) pEdit);
-		pEdit->HideWindow();
-		pEdit->SetItemArgs(0);
-		pEdit->DestroyWindow();
+		OnValidateEdit((XTP_REPORTRECORDITEM_ARGS*)pEdit);
 	}
+
+	pEdit->HideWindow();
+	pEdit->SetItemArgs(0);
+	pEdit->DestroyWindow(); // pControl->SetFocus();
+
+
 }
 
 void CXTPReportRecordItem::OnConstraintChanged(XTP_REPORTRECORDITEM_ARGS* pItemArgs, CXTPReportRecordItemConstraint* pConstraint)
 {
 	OnEditChanged(pItemArgs, pConstraint->m_strConstraint);
-}
-
-BOOL CXTPReportRecordItem::OnEditChanging(XTP_REPORTRECORDITEM_ARGS* pItemArgs, CString& rstrNewText)
-{
-	UNREFERENCED_PARAMETER(pItemArgs);
-	UNREFERENCED_PARAMETER(rstrNewText);
-	return TRUE;
-}
-
-void CXTPReportRecordItem::OnEditChanged(XTP_REPORTRECORDITEM_ARGS* pItemArgs, LPCTSTR szText)
-{
-	if (pItemArgs)
-	{
-		int r = pItemArgs->pRow->GetIndex();
-		int i = pItemArgs->pItem->GetIndex();
-		CXTPReportRecord* pRec = pItemArgs->pRow->GetRecord();
-		if (pRec)
-			pRec->UpdateRecordField(r, i, szText);
-	}
 }
 
 void CXTPReportRecordItem::OnValidateEdit(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
@@ -1509,17 +834,11 @@ void CXTPReportRecordItem::OnValidateEdit(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
 			CString strValue;
 			pEdit->GetWindowText(strValue);
 
-			CString  sOldValue = GetCaption(args.pColumn);
-			if (sOldValue != strValue || pControl->IsVirtualMode())
+			if (GetCaption(args.pColumn) != strValue)
 			{
 				OnEditChanged(&args, strValue);
 				bRedraw = TRUE;
 			}
-			//else if (GetCaption(args.pColumn) != strValue) //<<>>
-			//{
-			//  OnEditChanged(&args, strValue);
-			//  bRedraw = TRUE;
-			//}
 		}
 		if (bRedraw)
 		{
@@ -1544,15 +863,26 @@ BOOL CXTPReportRecordItem::IsAllowEdit(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
 
 	if (m_pRecord)
 	{
-		if (m_pRecord->m_pRecords == pItemArgs->pControl->GetHeaderRecords()) // is header record
+		// is header record
+		if (m_pRecord->m_pRecords == pItemArgs->pControl->GetHeaderRecords())
+		{
 			bIsAllowEdit = pItemArgs->pControl->IsHeaderRowsAllowEdit();
-		else if (m_pRecord->m_pRecords == pItemArgs->pControl->GetFooterRecords()) // is footer record
-			bIsAllowEdit = pItemArgs->pControl->IsFooterRowsAllowEdit();
+		}
+		else
+			// is footer record
+			if (m_pRecord->m_pRecords == pItemArgs->pControl->GetFooterRecords())
+			{
+				bIsAllowEdit = pItemArgs->pControl->IsFooterRowsAllowEdit();
+			}
 	}
 
 	return bIsAllowEdit && IsEditable() &&
-		((pItemArgs->pColumn && pItemArgs->pColumn->IsEditable())
-		|| (!pItemArgs->pColumn && m_pEditOptions && m_pEditOptions->m_bAllowEdit));
+		((pItemArgs->pColumn && pItemArgs->pColumn->IsEditable()) || (!pItemArgs->pColumn && m_pEditOptions &&
+		m_pEditOptions->m_bAllowEdit));
+
+/*  return pItemArgs->pControl->IsAllowEdit() && IsEditable() &&
+		((pItemArgs->pColumn && pItemArgs->pColumn->IsEditable()) || (!pItemArgs->pColumn && m_pEditOptions &&
+		m_pEditOptions->m_bAllowEdit));*/
 }
 
 BOOL CXTPReportRecordItem::OnRequestEdit(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
@@ -1579,24 +909,7 @@ BOOL CXTPReportRecordItem::OnChar(XTP_REPORTRECORDITEM_ARGS* pItemArgs, UINT nCh
 	if ((nChar == VK_SPACE) && IsEditable() && m_bHasCheckbox && (pItemArgs->pColumn == NULL || pItemArgs->pColumn->IsEditable())
 		&& OnRequestEdit(pItemArgs))
 	{
-		if (pControl->IsAutoCheckItems())
-		{
-			//SetChecked(!IsChecked());
-
-			if (!m_bTristateCheckbox)
-				SetChecked(!IsChecked());
-			else
-			{
-				int iN = (GetCheckedState() + 1) % 3;
-				SetCheckedState(iN);
-				m_bCheckedGrayed = FALSE;
-				SetChecked(FALSE);
-				if (iN == 1)
-					SetChecked(TRUE);
-				else if (iN == 2)
-					m_bCheckedGrayed = TRUE;
-			}
-		}
+		if (pControl->IsAutoCheckItems()) SetChecked(!IsChecked());
 		pControl->RedrawControl();
 
 		pControl->SendMessageToParent(pItemArgs->pRow, this, pItemArgs->pColumn, XTP_NM_REPORT_CHECKED, NULL);
@@ -1613,8 +926,7 @@ BOOL CXTPReportRecordItem::OnChar(XTP_REPORTRECORDITEM_ARGS* pItemArgs, UINT nCh
 		{
 			pEdit->SetFocus();
 			pEdit->SetSel(0, -1);
-			if (nChar != VK_TAB)
-				pEdit->SendMessage(WM_CHAR, nChar);
+			if (nChar != VK_TAB) pEdit->SendMessage(WM_CHAR, nChar);
 		}
 		return TRUE;
 
@@ -1631,13 +943,6 @@ CXTPReportRecordItemEditOptions* CXTPReportRecordItem::GetEditOptions(CXTPReport
 		return pColumn->GetEditOptions();
 
 	return m_pEditOptions = new CXTPReportRecordItemEditOptions();
-}
-
-CXTPReportRecordItemControls* CXTPReportRecordItem::GetItemControls()
-{
-	if (!m_pItemControls)
-		m_pItemControls = new CXTPReportRecordItemControls(this);
-	return m_pItemControls;
 }
 
 void CXTPReportRecordItem::OnInplaceButtonDown(CXTPReportInplaceButton* pButton)
@@ -1658,50 +963,22 @@ void CXTPReportRecordItem::OnInplaceButtonDown(CXTPReportInplaceButton* pButton)
 		CXTPReportInplaceList* pList = pControl->GetInplaceList();
 
 		XTP_REPORTRECORDITEM_ARGS itemArgs = *pButton;
-		if (!itemArgs.pColumn
-			&& !itemArgs.pControl
-			&& !itemArgs.pItem
-			&& !itemArgs.pRow)
+		if (!itemArgs.pColumn && !itemArgs.pControl && !itemArgs.pItem && !itemArgs.pRow)
+		{
 			return;
+		}
 		ASSERT(itemArgs.pItem == this);
 
 		CXTPWindowRect rcButton(pButton);
 		pControl->ScreenToClient(&rcButton);
 		itemArgs.rcItem.right = rcButton.right;
-		itemArgs.rcItem.bottom = rcButton.bottom;
+		itemArgs.rcItem.bottom  = rcButton.bottom;
 
 		CXTPReportRecordItemEditOptions* pEditOptions = GetEditOptions(itemArgs.pColumn);
 
 		if (pEditOptions->GetConstraints()->GetCount() > 0)
-			pList->Create(&itemArgs, pEditOptions->GetConstraints());
-	}
-	else if (pButton->GetID() == XTP_ID_REPORT_SPINBUTTON)
-	{
-		XTP_REPORTRECORDITEM_ARGS itemArgs = *pButton;
-		ASSERT(itemArgs.pItem == this);
-		CXTPReportInplaceEdit* pEdit = pControl->GetInplaceEdit();
-		if (itemArgs.pRow && itemArgs.pColumn && pEdit->GetSafeHwnd() && pEdit->GetItem() == this)
 		{
-			CString strValue;
-			pEdit->GetWindowText(strValue);
-
-			int nValue = _ttoi(strValue);
-
-			int nValue2 = nValue + pButton->m_nSpinIncrement;
-			nValue2 = max(nValue2, pButton->m_nSpinMin);
-			nValue2 = min(nValue2, pButton->m_nSpinMax);
-
-			if (nValue2 != nValue)
-			{
-				strValue.Format(_T("%d"), nValue2);
-
-				BOOL bCommit = OnEditChanging(&itemArgs, strValue);
-				if (bCommit)
-					pEdit->SetWindowText(strValue);
-
-				pControl->RedrawControl();
-				//pControl->SendMessageToParent(itemArgs.pRow, this, itemArgs.pColumn, XTP_NM_REPORT_VALUECHANGED, 0);
-			}
+			pList->Create(&itemArgs, pEditOptions->GetConstraints());
 		}
 	}
 }
@@ -1736,7 +1013,6 @@ void CXTPReportRecordItem::DoPropExchange(CXTPPropExchange* pPX)
 
 	PX_Bool(pPX, _T("Checked"), m_bChecked, FALSE);
 	PX_Bool(pPX, _T("HasCheckbox"), m_bHasCheckbox, FALSE);
-	PX_Bool(pPX, _T("TristateCheckbox"), m_bTristateCheckbox, FALSE);
 
 	ULONGLONG ullData = m_dwData;
 	PX_UI8(pPX, _T("Data"), ullData, 0);
@@ -1772,42 +1048,6 @@ void CXTPReportRecordItem::DoPropExchange(CXTPPropExchange* pPX)
 		else if (m_pHyperlinks)
 		{
 			m_pHyperlinks->RemoveAll();
-		}
-	}
-
-	// Item controls
-	CXTPReportRecordItemControls arItemControls;
-	if (pPX->IsStoring() && m_pItemControls)
-		arItemControls.CopyFrom(m_pItemControls);
-
-	if (pPX->GetSchema() >= _XTP_SCHEMA_1200)
-	{
-		CXTPPropExchangeSection secItemControls(pPX->GetSection(_T("ItemControls")));
-		arItemControls.DoPropExchange(&secItemControls);
-	}
-	if (pPX->IsLoading())
-	{
-		if (arItemControls.GetSize())
-		{
-			if (GetItemControls())
-				GetItemControls()->CopyFrom(&arItemControls);
-		}
-		else if (m_pItemControls)
-		{
-			m_pItemControls->RemoveAll();
-		}
-	}
-
-	// Update Markup data
-	if (pPX->IsLoading())
-	{
-		XTPMarkupReleaseElement(m_pMarkupUIElement);
-
-		CXTPMarkupContext* pMarkupContext = m_pRecord ? m_pRecord->GetMarkupContext() : NULL;
-
-		if (pMarkupContext)
-		{
-			m_pMarkupUIElement = XTPMarkupParseText(pMarkupContext, m_strCaption);
 		}
 	}
 }

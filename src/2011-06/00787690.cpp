@@ -1,22 +1,11 @@
-// from server: 79% by atomic.potato
-typedef int (__thiscall *VerbCall)(int);
-
-extern "C" int __cdecl helper(int);
-extern "C" VerbCall g_call;
-
-struct TToolVerb
-{
-    int f();
-    int pad0[3];
-};
-
-int TToolVerb::f()
-{
-    int a = *(int *)((char *)this + 12);
-    int b = *(int *)((char *)a + 2764);
-    int c = *(int *)((char *)b + 392);
-    if (!c)
-        return 0;
-    int d = helper(c);
-    return g_call(d);
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct P3 { char pad[0x188]; void* value; };
+struct P2 { char pad[0xacc]; P3* p; };
+struct Obj { char pad[0xc]; P2* p; bool f(); };
+struct C {};
+extern "C" void* helper(void*);
+extern C c;
+typedef bool (__thiscall *Fn)(C*,void*);
+extern Fn slot;
+bool Obj::f(){ void* x=p->p->value; if(x){ x=helper(x); return slot(&c,x); } return false; }

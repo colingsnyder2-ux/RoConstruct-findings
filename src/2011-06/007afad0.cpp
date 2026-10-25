@@ -1,113 +1,153 @@
-// from server: 58% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/GlueJoint.cpp
+// roc-lib: rbxgs script/LuaMemory.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8world/GlueJoint.h"
-#include "v8world/Primitive.h"
-#include "v8kernel/Kernel.h"
-#include "v8kernel/Body.h"
-#include "v8kernel/Connector.h"
-#include "v8kernel/Constants.h"
-#include "util/Units.h"
+#include "script/LuaMemory.h"
+#include "boost/pool/singleton_pool.hpp"
+#include <algorithm>
 
-namespace RBX
+LuaAllocator::LuaAllocator()
+    : heapSize(0),
+      heapCount(0),
+      maxHeapSize(0),
+      maxHeapCount(0)
 {
-	// TODO: check what needs to go into the header file
+}
 
-	GlueJoint::GlueJoint()
-		: MultiJoint(4),
-		  overlapInP0(),
-		  overlapInP1()
-	{
-	}
+void LuaAllocator::clearHeapMax()
+{
+    maxHeapSize = 0;
+    maxHeapCount = 0;
+}
 
-	GlueJoint::GlueJoint(Primitive* p0, Primitive* p1, const G3D::CoordinateFrame& jointCoord0, const G3D::CoordinateFrame& jointCoord1)
-		: MultiJoint(p0, p1, jointCoord0, jointCoord1, 4),
-		  overlapInP0(),
-		  overlapInP1()
-	{
-		NormalId nId0 = Matrix3ToNormalId(this->jointCoord0.rotation);
-		Face face0inP0 = p0->getFaceInObject(nId0);
+void LuaAllocator::getHeapStats(size_t& heapSize, size_t& heapCount, size_t& maxHeapSize, size_t& maxHeapCount) const
+{
+    heapSize = this->heapSize;
+    heapCount = this->heapCount;
+    maxHeapSize = this->maxHeapSize;
+    maxHeapCount = this->maxHeapCount;
+}
 
-		NormalId nId1 = normalIdOpposite(Matrix3ToNormalId(this->jointCoord1.rotation));
-		Face face1inP1 = p1->getFaceInObject(nId1);
+void* LuaAllocator::alloc(void* ud, void* ptr, size_t osize, size_t nsize)
+{
+    return static_cast<LuaAllocator*>(ud)->alloc(ptr, osize, nsize);
+}
 
-		Face face0inJoint0 = face0inP0.toObjectSpace(jointCoord0);
-		Face face1inJoint1 = face1inP1.toObjectSpace(jointCoord1);
+template <int a, int b>
+void* bucketRealloc(void* ptr, size_t osize, size_t nsize)
+{
+    void* result;
 
-		Face overlapInJoint0 = face0inJoint0.projectOverlapOnMe(face1inJoint1);
-		overlapInJoint0.snapToGrid(0.1f);
+    if (nsize > b)
+    {
+        if (osize <= b && osize)
+        {
+            result = malloc(nsize);
+            memcpy(result, ptr, osize);
 
-		this->overlapInP0 = overlapInJoint0.toWorldSpace(jointCoord0);
-		this->overlapInP1 = overlapInJoint0.toWorldSpace(jointCoord1);
-	}
+            if (osize > a)
+                boost::singleton_pool<LuaAllocator, b>::free(ptr);
+            else
+                boost::singleton_pool<LuaAllocator, a>::free(ptr);
+        }
+        else
+        {
+            result = realloc(ptr, nsize);
+        }
+    }
+    else
+    {
+        if (nsize > a)
+        {
+            if (osize > b)
+            {
+                result = boost::singleton_pool<LuaAllocator, b>::malloc();
+                memcpy(result, ptr, nsize);
+                free(ptr);
+            }
+            else
+            {
+                if (osize > a)
+                {
+                    result = ptr;
+                }
+                else
+                {
+                    result = boost::singleton_pool<LuaAllocator, b>::malloc();
 
-	float GlueJoint::getMaxForce()
-	{
-		G3D::Vector2 size = overlapInP0.size();
-		return Units::kmsForceToRbx(Constants::getKmsMaxJointForce(size.x, size.y));
-	}
+                    if (osize > 0)
+                    {
+                        memcpy(result, ptr, osize);
+                        boost::singleton_pool<LuaAllocator, a>::free(ptr);
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (nsize > 0)
+            {
+                if (osize > b)
+                {
+                    result = boost::singleton_pool<LuaAllocator, a>::malloc();
+                    memcpy(result, ptr, nsize);
+                    free(ptr);
+                }
+                else if (osize > a)
+                {
+                    result = boost::singleton_pool<LuaAllocator, a>::malloc();
+                    memcpy(result, ptr, nsize);
+                    boost::singleton_pool<LuaAllocator, b>::free(ptr);
+                }
+                else if (osize > 0)
+                {
+                    result = ptr;
+                }
+                else 
+                {
+                    result = boost::singleton_pool<LuaAllocator, a>::malloc();
+                }
+            }
+            else 
+            {
+                if (osize > b)
+                {
+                    free(ptr);
+                }
+                else if (osize > a)
+                {
+                    boost::singleton_pool<LuaAllocator, b>::free(ptr);
+                }
+                else if (osize > 0)
+                {
+                    boost::singleton_pool<LuaAllocator, a>::free(ptr);
+                }
 
-	void GlueJoint::putInKernel(Kernel* _kernel)
-	{
-		MultiJoint::putInKernel(_kernel);
+                result = 0;
+            }
+        }
+    }
 
-		Body* b0 = getPrimitive(0)->getBody();
-		Body* b1 = getPrimitive(1)->getBody();
+    return result;
+}
 
-		NormalId nId0 = Matrix3ToNormalId(jointCoord0.rotation);
+void* LuaAllocator::alloc(void* ptr, size_t osize, size_t nsize)
+{
+    void* result = bucketRealloc<16, 32>(ptr, osize, nsize);
 
-		for (int i = 0; i < 4; ++i)
-		{
-			G3D::Vector3 p0World = b0->getPV().position.pointToWorldSpace(overlapInP0[i]);
-			G3D::Vector3 p1World = b1->getPV().position.pointToWorldSpace(overlapInP1[i]);
+    heapSize += (nsize-osize);
 
-			Point* p0 = getKernel()->newPoint(b0, p0World);
-			Point* p1 = getKernel()->newPoint(b1, p1World);
+    if (osize == 0)
+        heapCount++;
 
-			NormalBreakConnector* connector = new NormalBreakConnector(p0, p1, getJointK(), getMaxForce(), nId0);
-			addToMultiJoint(p0, p1, connector);
-		}
-	}
+    if (nsize == 0)
+        heapCount--;
 
-	bool GlueJoint::compatibleSurfaces(Primitive* p0, Primitive* p1, NormalId nId0, NormalId nId1)
-	{
-		SurfaceType s0 = p0->getSurfaceType(nId0);
-		SurfaceType s1 = p1->getSurfaceType(nId1);
-		return s0 == GLUE || s1 == GLUE;
-	}
+    maxHeapSize = std::max<size_t>(maxHeapSize, heapSize);
+    maxHeapCount = std::max<size_t>(maxHeapCount, heapCount);
 
-	GlueJoint* GlueJoint::canBuildJoint(Primitive* p0, Primitive* p1, NormalId nId0, NormalId nId1)
-	{
-		if (!compatibleSurfaces(p0, p1, nId0, nId1) || !canBuildJointLoose(p0, p1, nId0, nId1))
-			return NULL;
-
-		Face f0 = p0->getFaceInWorld(nId0);
-		Face f1 = p1->getFaceInWorld(nId1);
-
-		Face overlapOn0 = f0.projectOverlapOnMe(f1);
-		Face overlapOn1 = f1.projectOverlapOnMe(f0);
-
-		Face offsetInP0 = overlapOn0.toObjectSpace(p0->getCoordinateFrame());
-		Face offsetInP1 = overlapOn1.toObjectSpace(p1->getCoordinateFrame());
-
-		offsetInP0.snapToGrid(0.1f);
-		offsetInP1.snapToGrid(0.1f);
-
-		Face offset0World = offsetInP0.toWorldSpace(p0->getCoordinateFrame());
-		Face offset1World = offsetInP1.toWorldSpace(p1->getCoordinateFrame());
-
-		if (!Face::cornersAligned(offset0World, offset1World, 0.05f))
-			return NULL;
-
-		G3D::CoordinateFrame jointCoord0 = p0->getFaceCoordInObject(nId0);
-		G3D::CoordinateFrame jointCoord0InWorld = p0->getCoordinateFrame() * jointCoord0;
-		G3D::CoordinateFrame jc0InP1 = p1->getCoordinateFrame().toObjectSpace(jointCoord0InWorld);
-		G3D::CoordinateFrame jointCoord1 = Math::snapToGrid(jc0InP1, 0.1f);
-
-		return new GlueJoint(p0, p1, jointCoord0, jointCoord1);
-	}
+    return result;
 }

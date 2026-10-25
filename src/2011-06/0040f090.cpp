@@ -1,20 +1,18 @@
-// from server: 93% by atomic.potato
-struct FactoryProduct
-{
-    int field0;
-    int field4;
-    int field8;
-    int fieldc;
-    void initialize();
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct X_0040f090 {
+    void* f_0;
+    void* f_4;
+    char pad_8[16];
+    void* f_18;
+    void* f_1c;
+    X_0040f090* base();
+    X_0040f090* run() {
+    f_0 = (void*)0xa5c6e4;
+    f_4 = (void*)0xa5c6d8;
+    f_18 = (void*)0xa5c6cc;
+    f_1c = (void*)0xa5c6c0;
+        return base();
+    }
 };
-
-extern "C" void __cdecl sub_5980d0();
-
-void FactoryProduct::initialize()
-{
-    field0 = 0xA5C6E4;
-    field4 = 0xA5C6D8;
-    field8 = 0xA5C6CC;
-    fieldc = 0xA5C6C0;
-    sub_5980d0();
-}
+X_0040f090* func_0040f090(X_0040f090* x) { return x->run(); }

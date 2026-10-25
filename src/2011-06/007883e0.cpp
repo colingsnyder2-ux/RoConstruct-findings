@@ -1,12 +1,5 @@
-// from server: 35% by atomic.potato
-struct RightMotorTool
-{
-    RightMotorTool* f(const char*);
-};
-
-extern "C" RightMotorTool* sub_007883e0(RightMotorTool*, const char*);
-
-RightMotorTool* RightMotorTool::f(const char* text)
-{
-    return sub_007883e0(this, text);
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <string>
+struct Tool { virtual std::string name() const; };
+std::string Tool::name() const { return "MotorCursor"; }
