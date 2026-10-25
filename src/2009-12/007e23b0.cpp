@@ -2,8 +2,7 @@
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // from server: 95% by atomic.potato
 extern "C" const void *type_info_object;
-typedef int (__stdcall *TypeCompareFn)(const void*, const void*);
-extern TypeCompareFn type_compare_ptr;
+extern "C" int __stdcall type_compare(const void*, const void*);
 
 struct TypeInfo
 {
@@ -17,7 +16,7 @@ struct S
 
 void* S::f(void* p)
 {
-    if (type_compare_ptr(p, type_info_object))
+    if (type_compare(p, type_info_object))
         return (char*)this + 16;
     return 0;
 }

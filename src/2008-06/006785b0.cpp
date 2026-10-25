@@ -29,8 +29,6 @@
 
 extern float initialValue;
 
-__declspec(noinline) unsigned int getConstant(float);
-
 struct S {
     int count;
     int reserved;
@@ -47,23 +45,12 @@ S::S()
     count = 0;
     Record* p = records;
     int n = 99;
-    
-    // Force fst before constant load - do the value store first
-    p->value = initialValue;
-    
-    // Force constant load after the first store by making it depend on the stored value
-    unsigned int c = getConstant(p->value);
-    int m = 99;
     do {
-        p->a = c;
-        p->b = c;
-        p->c = c;
-        p->d = c;
+        p->value = initialValue;
+        p->a = 0xbf800000;
+        p->b = 0xbf800000;
+        p->c = 0xbf800000;
+        p->d = 0xbf800000;
         ++p;
-    } while (--m >= 0);
-}
-
-__declspec(noinline) unsigned int getConstant(float v)
-{
-    return 0xbf800000;
+    } while (--n >= 0);
 }

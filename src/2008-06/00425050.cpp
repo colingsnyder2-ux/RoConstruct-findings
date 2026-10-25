@@ -1,127 +1,219 @@
+// from server: 92% by king_originala
 // from server: 72% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espeon_treevisiblechildmodelconst2d85e4c4df34ddf3.cpp
+// roc-lib: xtp-11.2.2-shared-mfc roc_king_originala_tree_visible_75e352b396f692de.cpp
 
 // Candidate translation unit (score above; library headers required).
-
-#include <boost/shared_ptr.hpp>
+#ifndef _CPPUNWIND
+#define _CPPUNWIND 1
+#endif
+#define _AFXDLL 1
+#define _XTP_STATICLINK 1
+#include <afxwin.h>
+#include <afxext.h>
+#include <XTToolkitPro.h>
+#include <map>
+#include <set>
 #include <vector>
-struct Instance;
-struct DataModel;
-typedef boost::shared_ptr<const DataModel> SharedModel;
-typedef boost::shared_ptr<Instance> SharedInstance;
-typedef std::vector<SharedInstance> Children;
-typedef boost::shared_ptr<const Children> SharedChildren;
-// Constructor411b40 initializes three words; dtor5773c0 receives the same 12-byte object.
-class ModelLock {unsigned char storage[12];public:ModelLock(SharedModel);~ModelLock();};
-// Borrowed owner vtable call at425072 uses slot0x154 and returns an 8-byte shared owner.
-// Only observed method is used; preceding vtable slots remain opaque.
-struct Owner {
- virtual void slot0();
- virtual void slot1();
- virtual void slot2();
- virtual void slot3();
- virtual void slot4();
- virtual void slot5();
- virtual void slot6();
- virtual void slot7();
- virtual void slot8();
- virtual void slot9();
- virtual void slot10();
- virtual void slot11();
- virtual void slot12();
- virtual void slot13();
- virtual void slot14();
- virtual void slot15();
- virtual void slot16();
- virtual void slot17();
- virtual void slot18();
- virtual void slot19();
- virtual void slot20();
- virtual void slot21();
- virtual void slot22();
- virtual void slot23();
- virtual void slot24();
- virtual void slot25();
- virtual void slot26();
- virtual void slot27();
- virtual void slot28();
- virtual void slot29();
- virtual void slot30();
- virtual void slot31();
- virtual void slot32();
- virtual void slot33();
- virtual void slot34();
- virtual void slot35();
- virtual void slot36();
- virtual void slot37();
- virtual void slot38();
- virtual void slot39();
- virtual void slot40();
- virtual void slot41();
- virtual void slot42();
- virtual void slot43();
- virtual void slot44();
- virtual void slot45();
- virtual void slot46();
- virtual void slot47();
- virtual void slot48();
- virtual void slot49();
- virtual void slot50();
- virtual void slot51();
- virtual void slot52();
- virtual void slot53();
- virtual void slot54();
- virtual void slot55();
- virtual void slot56();
- virtual void slot57();
- virtual void slot58();
- virtual void slot59();
- virtual void slot60();
- virtual void slot61();
- virtual void slot62();
- virtual void slot63();
- virtual void slot64();
- virtual void slot65();
- virtual void slot66();
- virtual void slot67();
- virtual void slot68();
- virtual void slot69();
- virtual void slot70();
- virtual void slot71();
- virtual void slot72();
- virtual void slot73();
- virtual void slot74();
- virtual void slot75();
- virtual void slot76();
- virtual void slot77();
- virtual void slot78();
- virtual void slot79();
- virtual void slot80();
- virtual void slot81();
- virtual void slot82();
- virtual void slot83();
- virtual void slot84();
- virtual boost::shared_ptr<DataModel> model()=0;
+#include <intrin.h>
+#include <typeinfo>
+#include <stdexcept>
+namespace boost {namespace detail {
+class sp_counted_base {
+ sp_counted_base(const sp_counted_base&);
+ sp_counted_base&operator=(const sp_counted_base&);
+ long use_count_,weak_count_;
+public:
+ sp_counted_base():use_count_(1),weak_count_(1){}
+ virtual ~sp_counted_base(){}
+ virtual void dispose()=0;
+ virtual void destroy(){delete this;}
+ virtual void*get_deleter(const std::type_info&)=0;
+ void add_ref_copy(){_InterlockedIncrement(&use_count_);}
+ void weak_release(){if(_InterlockedDecrement(&weak_count_)==0)destroy();}
+ void release(){if(_InterlockedDecrement(&use_count_)==0){dispose();weak_release();}}
 };
-struct ChildStore {SharedChildren snapshot() const;};
-struct MetadataItem {int index()const;};
-struct Metadata {MetadataItem* find(void*,bool);};
-boost::shared_ptr<Metadata> metadata();
-template<class T>T& at(void* p,unsigned n){return *reinterpret_cast<T*>(reinterpret_cast<char*>(p)+n);}
-class TreeNodeRecovery {public:bool hasVisibleChild();};
-bool TreeNodeRecovery::hasVisibleChild() {
- Owner* owner=at<Owner*>(this,0x58);
- ModelLock lock(owner->model());
- SharedChildren children=at<ChildStore>(at<Instance*>(this,0xc),0x108).snapshot();
+class shared_count {
+ sp_counted_base*pi_;
+public:
+ shared_count():pi_(0){}
+ shared_count(const shared_count&r):pi_(r.pi_){if(pi_)pi_->add_ref_copy();}
+ ~shared_count(){if(pi_)pi_->release();}
+ friend inline bool operator<(shared_count const&a,shared_count const&b){return std::less<sp_counted_base*>()(a.pi_,b.pi_);}
+};
+}
+template<class T>class shared_ptr {
+ T*px;detail::shared_count pn;
+public:
+ shared_ptr():px(0),pn(){}
+ template<class Y>shared_ptr(const shared_ptr<Y>&r):px(r.px),pn(r.pn){}
+ T*get()const{return px;}
+ bool operator!()const{return px==0;}
+ T*operator->()const{return px;}
+ template<class Y>bool _internal_less(shared_ptr<Y>const&r)const{return pn<r.pn;}
+ template<class Y>friend class shared_ptr;
+};
+}
+namespace boost {template<class T,class U>inline bool operator<(shared_ptr<T>const&a,shared_ptr<U>const&b){return a._internal_less(b);}}
+namespace boost {namespace noncopyable_ {class noncopyable {protected:noncopyable(){}~noncopyable(){}private:noncopyable(const noncopyable&);const noncopyable&operator=(const noncopyable&);};}typedef noncopyable_::noncopyable noncopyable;
+class condition;struct xtime;
+class thread_exception:public std::exception {protected:thread_exception();thread_exception(int);public:~thread_exception()throw();int native_error()const;private:int m_sys_err;};
+class lock_error:public thread_exception {public:lock_error();lock_error(int);~lock_error()throw();virtual const char*what()const throw();};
+namespace detail {namespace thread {
+template <typename Mutex>
+class lock_ops : private noncopyable
+{
+private:
+    lock_ops() { }
+
+public:
+    typedef typename Mutex::cv_state lock_state;
+
+    static void lock(Mutex& m)
+    {
+        m.do_lock();
+    }
+    static bool trylock(Mutex& m)
+    {
+        return m.do_trylock();
+    }
+    static bool timedlock(Mutex& m, const xtime& xt)
+    {
+        return m.do_timedlock(xt);
+    }
+    static void unlock(Mutex& m)
+    {
+        m.do_unlock();
+    }
+    static void lock(Mutex& m, lock_state& state)
+    {
+        m.do_lock(state);
+    }
+    static void unlock(Mutex& m, lock_state& state)
+    {
+        m.do_unlock(state);
+    }
+};
+
+template <typename Mutex>
+class scoped_lock : private noncopyable
+{
+public:
+    typedef Mutex mutex_type;
+
+    explicit scoped_lock(Mutex& mx, bool initially_locked=true)
+        : m_mutex(mx), m_locked(false)
+    {
+        if (initially_locked) lock();
+    }
+    ~scoped_lock()
+    {
+        if (m_locked) unlock();
+    }
+
+    void lock()
+    {
+        if (m_locked) throw lock_error();
+        lock_ops<Mutex>::lock(m_mutex);
+        m_locked = true;
+    }
+    void unlock()
+    {
+        if (!m_locked) throw lock_error();
+        lock_ops<Mutex>::unlock(m_mutex);
+        m_locked = false;
+    }
+
+    bool locked() const { return m_locked; }
+    operator const void*() const { return m_locked ? this : 0; }
+
+private:
+    friend class boost::condition;
+
+    Mutex& m_mutex;
+    bool m_locked;
+};
+
+}}class recursive_mutex:private noncopyable {public:friend class detail::thread::lock_ops<recursive_mutex>;typedef detail::thread::scoped_lock<recursive_mutex> scoped_lock;recursive_mutex();~recursive_mutex();private:typedef std::size_t cv_state;void do_lock();void do_unlock();void do_lock(cv_state&);void do_unlock(cv_state&);void*m_mutex;bool m_critical_section;unsigned long m_count;};}
+
+namespace RBX {class Instance;class PropertyChanged;struct ChildAdded;struct ChildRemoved;namespace Reflection {class ClassDescriptor;}
+template<class C,class E>class __declspec(novtable) Listener {protected:virtual void onEvent(const C*,E)=0;Listener&operator=(const Listener&);virtual~Listener(){}};
+}
+
+
+
+namespace RBX {class DataModel;class Selection;}
+class CRobloxTreeCtrlNode;
+class CRobloxTreeCtrl:public CXTTreeCtrl {
+public:
+ virtual RBX::Selection*getSelection()=0;
+ virtual boost::shared_ptr<RBX::DataModel>getDataModel()=0;
+ virtual void onNodeCreated(CRobloxTreeCtrlNode*)=0;
+ virtual void onNodeChanged(CRobloxTreeCtrlNode*)=0;
+ virtual void onNodeDeleted(CRobloxTreeCtrlNode*)=0;
+ virtual void refreshTree();
+ CRobloxTreeCtrlNode*root;
+ std::map<RBX::Instance*,CRobloxTreeCtrlNode*>nodes;
+ bool changing;
+ CImageList images;
+ boost::recursive_mutex mutex;
+};
+struct NativeTreeWriteGuard {
+ boost::shared_ptr<boost::recursive_mutex>mutex;
+ boost::recursive_mutex::scoped_lock*lock;
+ NativeTreeWriteGuard(boost::shared_ptr<const RBX::DataModel>);
+ ~NativeTreeWriteGuard();
+};
+extern int nativeTreeSortPriority(RBX::Instance*);
+class CRobloxTreeCtrlNode:
+ public RBX::Listener<RBX::Instance,RBX::PropertyChanged>,
+ public RBX::Listener<RBX::Instance,RBX::ChildAdded>,
+ public RBX::Listener<RBX::Instance,RBX::ChildRemoved> {
+public:
+ boost::shared_ptr<RBX::Instance>instance;
+ std::map<RBX::Instance*,CRobloxTreeCtrlNode*>children;
+ std::set<CRobloxTreeCtrlNode*>removedChildren;
+ bool expanded:1;
+ bool expandedOnce:1;
+ bool changing;
+ CRobloxTreeCtrl*tree;
+ CRobloxTreeCtrlNode*parent;
+ std::set<boost::shared_ptr<RBX::Instance> >pendingChildren;
+ HTREEITEM item;
+ int priority;
+ const RBX::Reflection::ClassDescriptor*descriptor;
+ CRobloxTreeCtrlNode(CRobloxTreeCtrlNode*,boost::shared_ptr<RBX::Instance>,CRobloxTreeCtrl*);
+ virtual~CRobloxTreeCtrlNode();
+ virtual void onEvent(const RBX::Instance*,RBX::PropertyChanged);
+ virtual void onEvent(const RBX::Instance*,RBX::ChildAdded);
+ virtual void onEvent(const RBX::Instance*,RBX::ChildRemoved);
+ virtual void updateSelection();
+ virtual void createItem();
+ virtual void updateExpansion(int);
+ virtual void getDisplayInfo(NMTVDISPINFOA*);
+ virtual HTREEITEM insertItem();
+ CRobloxTreeCtrlNode*findChild(const boost::shared_ptr<RBX::Instance>&);
+ bool hasVisibleChildren();
+};
+
+class NativeTreeMetadata {public:int priority();};
+class NativeTreeRegistry {public:NativeTreeMetadata*lookup(const RBX::Reflection::ClassDescriptor*,bool);};
+extern boost::shared_ptr<NativeTreeRegistry>nativeTreeRegistry();
+
+typedef std::vector<boost::shared_ptr<RBX::Instance> > NativeChildren;
+struct NativeChildSnapshot {boost::shared_ptr<const NativeChildren>snapshot()const;};
+bool CRobloxTreeCtrlNode::hasVisibleChildren(){
+ NativeTreeWriteGuard guard(tree->getDataModel());
+ boost::shared_ptr<const NativeChildren>children=reinterpret_cast<NativeChildSnapshot*>(reinterpret_cast<char*>(instance.get())+0x108)->snapshot();
  if(!children)return false;
- Children::const_iterator end=children->end();
- for(Children::const_iterator it=children->begin();it!=end;++it) {
-  boost::shared_ptr<Metadata> info=metadata();
-  MetadataItem* item=info->find(at<void*>(it->get(),0x1c),true);
-  if(item && item->index()>=0)return true;
+ NativeChildren::const_iterator end=children->end();
+ for(NativeChildren::const_iterator it=children->begin();it!=end;++it){
+  boost::shared_ptr<NativeTreeRegistry>info=nativeTreeRegistry();
+  const RBX::Reflection::ClassDescriptor*descriptor=*reinterpret_cast<const RBX::Reflection::ClassDescriptor**>(reinterpret_cast<char*>(it->get())+0x1c);
+  NativeTreeMetadata*metadata=info->lookup(descriptor,true);
+  if(metadata&&metadata->priority()>=0)return true;
  }
  return false;
 }
