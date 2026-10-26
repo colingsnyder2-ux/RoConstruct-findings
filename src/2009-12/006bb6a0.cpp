@@ -1,134 +1,27 @@
-// from server: 80% by atomic.potato
+// from server: 100% by nuck16
+// roc 2009-12 006bb6a0  unit: RBX::VDecal::?$FactoryProduct  size: 42 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 006bb6a0
+//
+// 006bb6a0  c701ac679d00         mov dword ptr [ecx], 0x9d67ac
+// 006bb6a6  c74104a0679d00       mov dword ptr [ecx + 4], 0x9d67a0
+// 006bb6ad  c7411894679d00       mov dword ptr [ecx + 0x18], 0x9d6794
+// 006bb6b4  c7411c8c679d00       mov dword ptr [ecx + 0x1c], 0x9d678c
+// 006bb6bb  c7819400000074679d00 mov dword ptr [ecx + 0x94], 0x9d6774
+// 006bb6c5  e936ffffff           jmp 0x6bb600
+
+extern "C" void func_6bb600();
+
 struct S
 {
-    int a;
-    int b;
-    int c;
-    int d;
-    int e;
-    int f0;
-    int g;
-    int h;
-    int i;
-    int j;
-    int k;
-    int l;
-    int m;
-    int n;
-    int o;
-    int p;
-    int q;
-    int r;
-    int s;
-    int t;
-    int u;
-    int v;
-    int w;
-    int x;
-    int y;
-    int z;
-    int aa;
-    int ab;
-    int ac;
-    int ad;
-    int ae;
-    int af;
-    int ag;
-    int ah;
-    int ai;
-    int aj;
-    int ak;
-    int al;
-    int am;
-    int an;
-    int ao;
-    int ap;
-    int aq;
-    int ar;
-    int as;
-    int at;
-    int au;
-    int av;
-    int aw;
-    int ax;
-    int ay;
-    int az;
-    int ba;
-    int bb;
-    int bc;
-    int bd;
-    int be;
-    int bf;
-    int bg;
-    int bh;
-    int bi;
-    int bj;
-    int bk;
-    int bl;
-    int bm;
-    int bn;
-    int bo;
-    int bp;
-    int bq;
-    int br;
-    int bs;
-    int bt;
-    int bu;
-    int bv;
-    int bw;
-    int bx;
-    int by;
-    int bz;
-    int ca;
-    int cb;
-    int cc;
-    int cd;
-    int ce;
-    int cf;
-    int cg;
-    int ch;
-    int ci;
-    int cj;
-    int ck;
-    int cl;
-    int cm;
-    int cn;
-    int co;
-    int cp;
-    int cq;
-    int cr;
-    int cs;
-    int ct;
-    int cu;
-    int cv;
-    int cw;
-    int cx;
-    int cy;
-    int cz;
-    int da;
-    int db;
-    int dc;
-    int dd;
-    int de;
-    int df;
-    int dg;
-    int dh;
-    int di;
-    int dj;
-    int dk;
-    int dl;
-    int dm;
-    int dn;
-    int dq;
-    int f();
+    void f();
 };
 
-int S::f()
+void S::f()
 {
-    a = 0x9d67ac;
-    b = 0x9d67a0;
-    y = 0x9d6794;
-    z = 0x9d678c;
-    dq = 0x9d6774;
-    return 0;
+    *(int *)((char *)this + 0x0) = 0x9d67ac;
+    *(int *)((char *)this + 0x4) = 0x9d67a0;
+    *(int *)((char *)this + 0x18) = 0x9d6794;
+    *(int *)((char *)this + 0x1c) = 0x9d678c;
+    *(int *)((char *)this + 0x94) = 0x9d6774;
+    func_6bb600();
 }

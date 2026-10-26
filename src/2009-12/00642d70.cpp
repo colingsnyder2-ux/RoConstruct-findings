@@ -1,19 +1,28 @@
-// from server: 82% by atomic.potato
-struct Descriptor
+// from server: 100% by nuck16
+// roc 2009-12 00642d70  unit: RBX::Reflection::Descriptor  size: 18 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 00642d70
+//
+// 00642d70  8b09                 mov ecx, dword ptr [ecx]
+// 00642d72  8b4108               mov eax, dword ptr [ecx + 8]
+// 00642d75  50                   push eax
+// 00642d76  b93831b100           mov ecx, 0xb13138
+// 00642d7b  ff1568b79800         call dword ptr [0x98b768]
+// 00642d81  c3                   ret 
+
+#include <typeinfo>
+
+// 0xb13138 is the RTTI type descriptor of the expected type
+extern const type_info type_descriptor_b13138;
+
+struct Holder { char pad[8]; const type_info *type; bool is(const type_info &t) const { return t == *type; } };
+
+struct S
 {
-    int f();
+    Holder *holder;
+    bool f();
 };
 
-struct TypeInfo
+bool S::f()
 {
-    bool operator==(const TypeInfo&) const;
-};
-
-extern "C" bool (__thiscall *type_info_equal)(TypeInfo*, const TypeInfo&);
-
-int Descriptor::f()
-{
-    TypeInfo* p = *(TypeInfo**)this;
-    TypeInfo* q = *(TypeInfo**)((char*)p + 8);
-    return type_info_equal((TypeInfo*)0x00b13138, *q);
+    return holder->is(type_descriptor_b13138);
 }

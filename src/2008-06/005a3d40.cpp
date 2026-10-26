@@ -58,9 +58,9 @@ inline void Guard::release()
 void Descriptor::f(void* value)
 {
     Guard guard;
-    guard.owner = this;
-    guard.pointer = 0;
     guard.control = 0;
+    guard.pointer = 0;
+    guard.owner = this;
     if (value)
         guard.acquire(1, value)->finish();
     attach(new Object(this, value));

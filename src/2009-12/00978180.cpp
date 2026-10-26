@@ -1,13 +1,35 @@
-// from server: 74% by atomic.potato
-typedef void (__thiscall *FuncType)(void *, const char *, const char *, const char *, void *, int);
-typedef void (__cdecl *RegisterType)(const char *);
+// from server: 100% by nuck16
+// roc 2009-12 00978180  unit: seg_00970000  size: 43 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 00978180
+//
+// 00978180  6a01                 push 1
+// 00978182  6874e29d00           push 0x9de274
+// 00978187  33c9                 xor ecx, ecx
+// 00978189  6860e29d00           push 0x9de260
+// 0097818e  51                   push ecx
+// 0097818f  b870684700           mov eax, 0x476870
+// 00978194  50                   push eax
+// 00978195  b9a051b900           mov ecx, 0xb951a0
+// 0097819a  e8512dd9ff           call 0x70aef0
+// 0097819f  68a0789800           push 0x9878a0
+// 009781a4  e880c7e7ff           call 0x7f4929
+// 009781a9  59                   pop ecx
+// 009781aa  c3                   ret 
 
-FuncType g_func = (FuncType)0x70aef0;
-RegisterType g_register = (RegisterType)0x7f4929;
-
-void func_00978180()
+// dynamic initializer of a static reflection descriptor: ctor on the static object, then atexit(destructor).
+// Member function pointers are {fn, 0} pairs, so the owner uses multiple inheritance.
+struct BaseA { int a; };
+struct BaseB { int b; };
+class Owner : public BaseA, public BaseB
 {
-    g_func((void *)0xb951a0, (const char *)0x476870,
-           (const char *)0x9de260, (const char *)0x9de274, 0, 1);
-    g_register((const char *)0x9878a0);
-}
+public:
+    void m0();
+};
+
+struct Desc
+{
+    Desc(void (Owner::*)(), const char *, const char *, int);
+    ~Desc();
+};
+
+static Desc desc(&Owner::m0, "SetAssetVersionUrl", "assetVersionUrl", 1);

@@ -1,19 +1,34 @@
-// from server: 81% by atomic.potato
-extern int G1_func_006bad20;
-extern int G2_func_009d668c;
-extern int G3_func_00b91a48;
-extern int G4_func_00985890;
+// from server: 100% by nuck16
+// roc 2009-12 00974450  unit: seg_00970000  size: 37 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 00974450
+//
+// 00974450  33c9                 xor ecx, ecx
+// 00974452  51                   push ecx
+// 00974453  688c669d00           push 0x9d668c
+// 00974458  51                   push ecx
+// 00974459  b820ad6b00           mov eax, 0x6bad20
+// 0097445e  50                   push eax
+// 0097445f  b9481ab900           mov ecx, 0xb91a48
+// 00974464  e8372fd4ff           call 0x6b73a0
+// 00974469  6890589800           push 0x985890
+// 0097446e  e8b604e8ff           call 0x7f4929
+// 00974473  59                   pop ecx
+// 00974474  c3                   ret 
 
-struct G5_type
+// dynamic initializer of a static reflection descriptor: ctor on the static object, then atexit(destructor).
+// Member function pointers are {fn, 0} pairs, so the owner uses multiple inheritance.
+struct BaseA { int a; };
+struct BaseB { int b; };
+class Owner : public BaseA, public BaseB
 {
-    int G5_func_006b73a0(int, int, int);
+public:
+    void m0();
 };
 
-extern "C" int __cdecl G6_func_007f4929(int);
-
-int func_00974450()
+struct Desc
 {
-    G5_type *p = (G5_type *)G3_func_00b91a48;
-    p->G5_func_006b73a0(G1_func_006bad20, 0, G2_func_009d668c);
-    return G6_func_007f4929(G4_func_00985890);
-}
+    Desc(void (Owner::*)(), const char *, int);
+    ~Desc();
+};
+
+static Desc desc(&Owner::m0, "Play", 0);

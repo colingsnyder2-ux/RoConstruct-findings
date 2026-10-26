@@ -1,73 +1,27 @@
-// from server: 85% by atomic.potato
-struct VerbWidget
-{
-    int a0;
-    int a4;
-    int a8;
-    int ac;
-    int b0;
-    int b4;
-    int b8;
-    int bc;
-    int c0;
-    int c4;
-    int c8;
-    int cc;
-    int d0;
-    int d4;
-    int d8;
-    int dc;
-    int e0;
-    int e4;
-    int e8;
-    int ec;
-    int f0;
-    int f4;
-    int f8;
-    int fc;
-    int g0;
-    int g4;
-    int g8;
-    int gc;
-    int h0;
-    int h4;
-    int h8;
-    int hc;
-    int i0;
-    int i4;
-    int i8;
-    int ic;
-    int j0;
-    int j4;
-    int j8;
-    int jc;
-    int k0;
-    int k4;
-    int k8;
-    int kc;
-    int l0;
-    int l4;
-    int l8;
-    int lc;
-    int m0;
-    int m4;
-    int m8;
-    int mc;
-    int n0;
-    int n4;
-    int n8;
-    int nc;
-    int o0;
-    int o4;
+// from server: 100% by nuck16
+// roc 2009-12 00774a90  unit: RBX::VerbWidget  size: 42 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 00774a90
+//
+// 00774a90  c701f48e9e00         mov dword ptr [ecx], 0x9e8ef4
+// 00774a96  c74104ec8e9e00       mov dword ptr [ecx + 4], 0x9e8eec
+// 00774a9d  c74118e08e9e00       mov dword ptr [ecx + 0x18], 0x9e8ee0
+// 00774aa4  c7411cd88e9e00       mov dword ptr [ecx + 0x1c], 0x9e8ed8
+// 00774aab  c78194000000d08e9e00 mov dword ptr [ecx + 0x94], 0x9e8ed0
+// 00774ab5  e9b6abc9ff           jmp 0x40f670
 
+extern "C" void func_40f670();
+
+struct S
+{
     void f();
 };
 
-void VerbWidget::f()
+void S::f()
 {
-    a0 = 0x9e8ef4;
-    a4 = 0x9e8eec;
-    e0 = 0x9e8ee0;
-    e4 = 0x9e8ed8;
-    o4 = 0x9e8ed0;
+    *(int *)((char *)this + 0x0) = 0x9e8ef4;
+    *(int *)((char *)this + 0x4) = 0x9e8eec;
+    *(int *)((char *)this + 0x18) = 0x9e8ee0;
+    *(int *)((char *)this + 0x1c) = 0x9e8ed8;
+    *(int *)((char *)this + 0x94) = 0x9e8ed0;
+    func_40f670();
 }

@@ -1,12 +1,35 @@
-// from server: 83% by atomic.potato
-typedef void (__thiscall *Func1)(void *, void *, void *, void *, void *, int);
-typedef void (__cdecl *Func2)(void *);
+// from server: 100% by nuck16
+// roc 2009-12 0097b5a0  unit: seg_00970000  size: 43 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 0097b5a0
+//
+// 0097b5a0  6a01                 push 1
+// 0097b5a2  68547b9e00           push 0x9e7b54
+// 0097b5a7  33c9                 xor ecx, ecx
+// 0097b5a9  68487b9e00           push 0x9e7b48
+// 0097b5ae  51                   push ecx
+// 0097b5af  b8300e7600           mov eax, 0x760e30
+// 0097b5b4  50                   push eax
+// 0097b5b5  b9507db900           mov ecx, 0xb97d50
+// 0097b5ba  e8b184deff           call 0x763a70
+// 0097b5bf  68d0999800           push 0x9899d0
+// 0097b5c4  e86093e7ff           call 0x7f4929
+// 0097b5c9  59                   pop ecx
+// 0097b5ca  c3                   ret 
 
-Func1 g_func1 = (Func1)0x763a70;
-Func2 g_func2 = (Func2)0x7f4929;
-
-void func_0097b5a0()
+// dynamic initializer of a static reflection descriptor: ctor on the static object, then atexit(destructor).
+// Member function pointers are {fn, 0} pairs, so the owner uses multiple inheritance.
+struct BaseA { int a; };
+struct BaseB { int b; };
+class Owner : public BaseA, public BaseB
 {
-    g_func1((void *)0x00b97d50, (void *)0x00760e30, 0, (void *)0x009e7b48, (void *)0x009e7b54, 1);
-    g_func2((void *)0x009899d0);
-}
+public:
+    void m0();
+};
+
+struct Desc
+{
+    Desc(void (Owner::*)(), const char *, const char *, int);
+    ~Desc();
+};
+
+static Desc desc(&Owner::m0, "SetPlaceId", "placeId", 1);

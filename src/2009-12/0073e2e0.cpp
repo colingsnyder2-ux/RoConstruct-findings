@@ -1,21 +1,25 @@
-// from server: 57% by atomic.potato
-struct Configuration
-{
-    int value0;
-    int value4;
-    int value18;
-    int value1c;
+// from server: 100% by nuck16
+// roc 2009-12 0073e2e0  unit: RBX::Configuration  size: 32 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 0073e2e0
+//
+// 0073e2e0  c701ac249e00         mov dword ptr [ecx], 0x9e24ac
+// 0073e2e6  c74104a0249e00       mov dword ptr [ecx + 4], 0x9e24a0
+// 0073e2ed  c7411894249e00       mov dword ptr [ecx + 0x18], 0x9e2494
+// 0073e2f4  c7411c8c249e00       mov dword ptr [ecx + 0x1c], 0x9e248c
+// 0073e2fb  e90098efff           jmp 0x637b00
 
-    void Configuration_tail(Configuration* value);
+extern "C" void func_637b00();
+
+struct S
+{
+    void f();
 };
 
-extern "C" void Configuration_tail(Configuration*);
-
-void Configuration::Configuration_tail(Configuration* value)
+void S::f()
 {
-    value->value0 = 0x9e24ac;
-    value->value4 = 0x9e24a0;
-    value->value18 = 0x9e2494;
-    value->value1c = 0x9e248c;
-    Configuration_tail(value);
+    *(int *)((char *)this + 0x0) = 0x9e24ac;
+    *(int *)((char *)this + 0x4) = 0x9e24a0;
+    *(int *)((char *)this + 0x18) = 0x9e2494;
+    *(int *)((char *)this + 0x1c) = 0x9e248c;
+    func_637b00();
 }

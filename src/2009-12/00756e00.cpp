@@ -1,26 +1,29 @@
-// from server: 85% by atomic.potato
-struct ScreenGui
+// from server: 100% by nuck16
+// roc 2009-12 00756e00  unit: RBX::ScreenGui  size: 52 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 00756e00
+//
+// 00756e00  c7015c509e00         mov dword ptr [ecx], 0x9e505c
+// 00756e06  c7410450509e00       mov dword ptr [ecx + 4], 0x9e5050
+// 00756e0d  c7411844509e00       mov dword ptr [ecx + 0x18], 0x9e5044
+// 00756e14  c7411c3c509e00       mov dword ptr [ecx + 0x1c], 0x9e503c
+// 00756e1b  c781940000002c509e00 mov dword ptr [ecx + 0x94], 0x9e502c
+// 00756e25  c7819800000014509e00 mov dword ptr [ecx + 0x98], 0x9e5014
+// 00756e2f  e9fc0bffff           jmp 0x747a30
+
+extern "C" void func_747a30();
+
+struct S
 {
-    int field00;
-    int field04;
-    int padding08[4];
-    int field18;
-    int field1c;
-    int padding20[29];
-    int field94;
-    int field98;
-    void Initialize();
+    void f();
 };
 
-extern "C" void __cdecl Function747A30(ScreenGui *);
-
-void ScreenGui::Initialize()
+void S::f()
 {
-    field00 = 0x009e505c;
-    field04 = 0x009e5050;
-    field18 = 0x009e5044;
-    field1c = 0x009e503c;
-    field94 = 0x009e502c;
-    field98 = 0x009e5014;
-    Function747A30(this);
+    *(int *)((char *)this + 0x0) = 0x9e505c;
+    *(int *)((char *)this + 0x4) = 0x9e5050;
+    *(int *)((char *)this + 0x18) = 0x9e5044;
+    *(int *)((char *)this + 0x1c) = 0x9e503c;
+    *(int *)((char *)this + 0x94) = 0x9e502c;
+    *(int *)((char *)this + 0x98) = 0x9e5014;
+    func_747a30();
 }

@@ -1,135 +1,29 @@
-// from server: 86% by atomic.potato
+// from server: 100% by nuck16
+// roc 2009-12 0075a620  unit: RBX::VTextLabel::?$FactoryProduct  size: 52 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 0075a620
+//
+// 0075a620  c701f4619e00         mov dword ptr [ecx], 0x9e61f4
+// 0075a626  c74104e8619e00       mov dword ptr [ecx + 4], 0x9e61e8
+// 0075a62d  c74118dc619e00       mov dword ptr [ecx + 0x18], 0x9e61dc
+// 0075a634  c7411cd4619e00       mov dword ptr [ecx + 0x1c], 0x9e61d4
+// 0075a63b  c78194000000c4619e00 mov dword ptr [ecx + 0x94], 0x9e61c4
+// 0075a645  c78198000000ac619e00 mov dword ptr [ecx + 0x98], 0x9e61ac
+// 0075a64f  e93cd0ffff           jmp 0x757690
+
+extern "C" void func_757690();
+
 struct S
 {
-    int a;
-    int b;
-    int c;
-    int d;
-    int e;
-    int f0;
-    int g;
-    int h;
-    int i;
-    int j;
-    int k;
-    int l;
-    int m;
-    int n;
-    int o;
-    int p;
-    int q;
-    int r;
-    int s;
-    int t;
-    int u;
-    int v;
-    int w;
-    int x;
-    int y;
-    int z;
-    int aa;
-    int ab;
-    int ac;
-    int ad;
-    int ae;
-    int af;
-    int ag;
-    int ah;
-    int ai;
-    int aj;
-    int ak;
-    int al;
-    int am;
-    int an;
-    int ao;
-    int ap;
-    int aq;
-    int ar;
-    int as;
-    int at;
-    int au;
-    int av;
-    int aw;
-    int ax;
-    int ay;
-    int az;
-    int ba;
-    int bb;
-    int bc;
-    int bd;
-    int be;
-    int bf;
-    int bg;
-    int bh;
-    int bi;
-    int bj;
-    int bk;
-    int bl;
-    int bm;
-    int bn;
-    int bo;
-    int bp;
-    int bq;
-    int br;
-    int bs;
-    int bt;
-    int bu;
-    int bv;
-    int bw;
-    int bx;
-    int by;
-    int bz;
-    int ca;
-    int cb;
-    int cc;
-    int cd;
-    int ce;
-    int cf;
-    int cg;
-    int ch;
-    int ci;
-    int cj;
-    int ck;
-    int cl;
-    int cm;
-    int cn;
-    int co;
-    int cp;
-    int cq;
-    int cr;
-    int cs;
-    int ct;
-    int cu;
-    int cv;
-    int cw;
-    int cx;
-    int cy;
-    int cz;
-    int da;
-    int db;
-    int dc;
-    int dd;
-    int de;
-    int df;
-    int dg;
-    int dh;
-    int di;
-    int dj;
-    int dk;
-    int dl;
-    int dm;
-    int dn;
-    int e0;
-    int f;
-    void init();
+    void f();
 };
 
-void S::init()
+void S::f()
 {
-    a = 0x9e61f4;
-    b = 0x9e61e8;
-    g = 0x9e61dc;
-    h = 0x9e61d4;
-    e0 = 0x9e61c4;
-    f = 0x9e61ac;
+    *(int *)((char *)this + 0x0) = 0x9e61f4;
+    *(int *)((char *)this + 0x4) = 0x9e61e8;
+    *(int *)((char *)this + 0x18) = 0x9e61dc;
+    *(int *)((char *)this + 0x1c) = 0x9e61d4;
+    *(int *)((char *)this + 0x94) = 0x9e61c4;
+    *(int *)((char *)this + 0x98) = 0x9e61ac;
+    func_757690();
 }

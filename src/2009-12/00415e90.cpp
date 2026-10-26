@@ -1,20 +1,28 @@
-// from server: 70% by atomic.potato
-struct PasteVerb
+// from server: 100% by nuck16
+// roc 2009-12 00415e90  unit: PasteVerb  size: 18 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 00415e90
+//
+// 00415e90  8b09                 mov ecx, dword ptr [ecx]
+// 00415e92  8b4108               mov eax, dword ptr [ecx + 8]
+// 00415e95  50                   push eax
+// 00415e96  b95034b000           mov ecx, 0xb03450
+// 00415e9b  ff1568b79800         call dword ptr [0x98b768]
+// 00415ea1  c3                   ret 
+
+#include <typeinfo>
+
+// 0xb03450 is the RTTI type descriptor of the expected type
+extern const type_info type_descriptor_b03450;
+
+struct Holder { char pad[8]; const type_info *type; bool is(const type_info &t) const { return t == *type; } };
+
+struct S
 {
-    int f();
+    Holder *holder;
+    bool f();
 };
 
-typedef int (__thiscall *PasteVerbFn)(PasteVerb *);
-
-extern "C" int __cdecl type_info_equal(void *, void *);
-
-PasteVerb *g_pasteverb;
-void *g_typeinfo;
-void *g_import;
-
-int PasteVerb::f()
+bool S::f()
 {
-    void *p = *(void **)this;
-    void *q = *(void **)((char *)p + 8);
-    return ((int (__thiscall *)(void *, void *))g_import)(g_typeinfo, q);
+    return holder->is(type_descriptor_b03450);
 }

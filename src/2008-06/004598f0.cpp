@@ -1,8 +1,8 @@
-// from server: 91% by EspClaude
+// from server: 100% by nuck16
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy- /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espclaude_9e50ddc64bcd58dd.cpp
+// roc-lib: rbxgs-dll roc_unit_072ba420bcef31fd.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define _CPPUNWIND 1
@@ -116,7 +116,7 @@
 #include <exception>
 #include <intrin.h>
 struct DMArg { void* px; long* pn; DMArg(const DMArg&); };
-__forceinline DMArg::DMArg(const DMArg& o) : px(o.px), pn(o.pn) { long* q = o.pn; if (q) { volatile long* c = q + 1; _InterlockedExchangeAdd(c, 1); } }
+__forceinline DMArg::DMArg(const DMArg& o) { px = o.px; long* q = o.pn; pn = q; if (q) { _InterlockedIncrement(q + 1); } }
 namespace RBX { class DataModel;
 // Native DataModel::Lock member types; constructor/destructor called out of line.
 class CommandDataLock {
