@@ -1,7 +1,6 @@
-// from server: 100% by king_originala_sol_native
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-dll roc_sol_native_input_integer_a89a5d40d7db7e42.cpp
 
 // Candidate translation unit (score above; library headers required).
