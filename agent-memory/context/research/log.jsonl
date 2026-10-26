@@ -1307,3 +1307,15 @@
 {"date": "2026-10-25", "title": "roc repair 2008-06 006131e0", "text": "98 -> 98, tried 0 variants []."}
 {"date": "2026-10-25", "title": "roc repair 2008-06 00427310", "text": "92 -> 92, tried 12 variants [toggle_char_signedness=92, toggle_struct_class=92, commutative=0, commutative=0, commutative=0, commutative=0, commutative=0, commutative=0, commutative=0, commutative=0, commutative=0, commutative=0]."}
 {"date": "2026-10-25", "title": "roc repair 2008-06 006477b0", "text": "95 -> 95, tried 0 variants []."}
+{"date": "2026-10-26", "title": "roc repair 2008-06 0044c4d0", "text": "95 -> 95, tried 0 variants []."}
+{"date": "2026-10-26", "title": "roc repair 2008-06 007b8180", "text": "81 -> 81, tried 0 variants []."}
+{"date": "2026-10-26", "title": "roc repair 2008-06 007b8180", "text": "81 -> 81, tried 0 variants []."}
+{"date": "2026-10-26", "title": "roc repair 2008-06 005ea3f0", "text": "93 -> 93, tried 0 variants []."}
+{"date": "2026-10-26", "title": "roc repair 2008-06 004339d0", "text": "95 -> 95, tried 0 variants []."}
+{"date": "2026-10-26", "title": "roc repair 2008-06 005a20e0", "text": "90 -> 90, tried 0 variants []."}
+{"date": "2026-10-26", "title": "roc repair 2008-06 006825b0", "text": "91 -> 91, tried 16 variants [commutative=91, commutative=91, commutative=0, commutative=0, commutative=0, commutative=91, commutative=0, commutative=0, commutative=91, commutative=91, commutative=91, commutative=91, commutative=91, commutative=91, commutative=91, commutative=91]."}
+{"date": "2026-10-26", "title": "roc repair 2008-06 005e74c0", "text": "97 -> 97, tried 16 variants [toggle_char_signedness=97, toggle_int_signedness=0, negate_comparison=80, toggle_struct_class=97, commutative=0, commutative=0, commutative=0, commutative=0, commutative=0, commutative=0, commutative=0, commutative=0, commutative=0, commutative=0, commutative=0, commutative=0]."}
+{"date": "2026-10-26", "title": "roc repair 2008-06 00467b50", "text": "97 -> 97, tried 0 variants []."}
+{"date": "2026-10-26", "title": "roc repair 2008-06 006594b0", "text": "96 -> 96, tried 0 variants []."}
+{"date": "2026-10-26", "title": "roc repair 2008-06 005df270", "text": "74 -> 74, tried 16 variants [commutative=74, commutative=74, commutative=74, commutative=49, commutative=54, commutative=0, commutative=69, commutative=0, commutative=74, commutative=74, commutative=74, commutative=74, commutative=74, commutative=74, commutative=0, commutative=0]."}
+{"date": "2026-10-26", "title": "roc repair 2008-06 00420c20", "text": "95 -> 95, tried 16 variants [reorder_decls=95, commutative=0, commutative=0, commutative=0, commutative=0, commutative=0, commutative=0, commutative=0, commutative=0, commutative=0, commutative=0, commutative=0, commutative=0, commutative=0, commutative=0, commutative=0]."}

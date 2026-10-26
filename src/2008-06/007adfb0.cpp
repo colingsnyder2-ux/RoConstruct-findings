@@ -1,8 +1,8 @@
-// from server: 81% by EspClaude
+// from server: 100% by nuck16
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: ogre-1.4.5-dll roc_espclaude_1742bd992bcc61d5.cpp
+// roc-lib: ogre-1.4.5-dll roc_unit_afab3054ff45be52.cpp
 
 // Candidate translation unit (score above; library headers required).
 #undef OGRE_NONCLIENT_BUILD
@@ -73,33 +73,33 @@ bool loadTexture(const Ogre::String& filename, Ogre::Image& image)
         } catch (...) {
             success = false;
         }
-        return success;
-    }
+    } else {
     int type = classify(filename);
     if (type == 9) {
         RBX::StandardOut::singleton()->printf(3, "Failed to load texture '%s': unknown format", filename.c_str());
         success = false;
-        return success;
+    } else {
+        const char* ext;
+        switch (type) {
+        case 0: ext = "jpg"; break;
+        case 1: ext = "bmp"; break;
+        case 5: ext = "png"; break;
+        case 2: ext = "tga"; break;
+        case 4: ext = "ico"; break;
+        case 3: ext = "pcx"; break;
+        case 6: case 7: ext = "ppm"; break;
+        }
+        try {
+            std::ifstream stream;
+            stream.open(filename.c_str(), std::ios::in | std::ios::binary);
+            Ogre::DataStreamPtr data(new Ogre::FileStreamDataStream(&stream, false));
+            image.load(data, ext);
+            success = true;
+        } catch (...) {
+            RBX::StandardOut::singleton()->printf(3, "Failed to load texture '%s'", filename.c_str());
+            success = false;
+        }
     }
-    const char* ext;
-    switch (type) {
-    case 0: ext = "jpg"; break;
-    case 1: ext = "bmp"; break;
-    case 5: ext = "png"; break;
-    case 2: ext = "tga"; break;
-    case 4: ext = "ico"; break;
-    case 3: ext = "pcx"; break;
-    case 6: case 7: ext = "ppm"; break;
-    }
-    try {
-        std::ifstream stream;
-        stream.open(filename.c_str(), std::ios::in | std::ios::binary);
-        Ogre::DataStreamPtr data(new Ogre::FileStreamDataStream(&stream, false));
-        image.load(data, ext);
-        success = true;
-    } catch (...) {
-        RBX::StandardOut::singleton()->printf(3, "Failed to load texture '%s'", filename.c_str());
-        success = false;
     }
     return success;
 }
