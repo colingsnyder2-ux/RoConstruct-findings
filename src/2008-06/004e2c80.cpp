@@ -1,8 +1,9 @@
+// from server: 59% by colin
 // from server: 58% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_mesh_plain_native_level_cacheb16815302eb58c3b.cpp
+// roc-lib: rbxgs-dll roc_mutsearch_004e2c80_52e215dfee53fd4d.cpp
 
 // Candidate translation unit (score above; library headers required).
 // Binary-derived level population. This is a codegen analogue, not an original declaration.
@@ -41,8 +42,8 @@ void BrickMeshPlainRecovery::populate(const Vector3& size,unsigned surfaces,RBX:
  LevelRef level=new Level2008(RenderDevice::QUADS);
  Mesh::Level* nativeLevel=level.getPointer();
  levels.append(level);
- Vector3 half=size*0.5f;
  float palette=static_cast<float>(color.getClosestPaletteIndex());
+ Vector3 half=size*0.5f;
  unsigned face[24];
  recoveredMeshFace<RBX::NORM_X>(half,meshBevel,surfaces,palette,level,face);
  recoveredMeshFace<RBX::NORM_Y>(half,meshBevel,surfaces,palette,level,face+4);
