@@ -1,4 +1,3 @@
-// from server: 100% by king_originala_sol_resume_native
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
