@@ -1,45 +1,17 @@
-// from server: 47% by king_originala
+// from server: 82% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-view-dll roc_claude_meshface_f8d85df25fc8cd77.cpp
+
+// Candidate translation unit (score above; library headers required).
+// meshFace<NormalId> face builder (2008 shape with corners out-param) rebuilt inside the authentic BrickMesh.cpp TU;
+// six explicit instantiations cover 004de360/004def80/004dfbb0/004e07e0/004e1410/004e2040. Partial (81-82%).
+#include "BrickMesh.cpp"
 #include <vector>
 #include <algorithm>
-#include <cstdlib>
-#include <cmath>
-#include <cstddef>
-namespace G3D {
-class Vector2 {public:float x,y;
- Vector2():x(0.0f),y(0.0f){}Vector2(float a,float b):x(a),y(b){}
- Vector2(const Vector2&v){x=v.x;y=v.y;}
- Vector2&operator=(const Vector2&v){x=v.x;y=v.y;return *this;}
- Vector2 operator-(const Vector2&v)const{return Vector2(x-v.x,y-v.y);}
- Vector2 operator*(float scalar)const{return Vector2(scalar*x,scalar*y);}
- Vector2 operator/(const Vector2&v)const{return Vector2(x/v.x,y/v.y);}
-};
-class Vector3 {public:float x,y,z;
- Vector3():x(0.0f),y(0.0f),z(0.0f){}Vector3(float a,float b,float c):x(a),y(b),z(c){}
- Vector3(const Vector3&v):x(v.x),y(v.y),z(v.z){}
- Vector3&operator=(const Vector3&v){x=v.x;y=v.y;z=v.z;return *this;}
- Vector2 xy()const;
-};
-
-class AtomicInt32 {volatile long _value;};
-class _WeakPtrLinkedList;
-class ReferenceCountedObject {public:AtomicInt32 ReferenceCountedObject_refCount;_WeakPtrLinkedList*ReferenceCountedObject_weakPointer;virtual ~ReferenceCountedObject();};
-template<class T>class ReferenceCountedPointer {T*m_pointer;public:ReferenceCountedPointer();ReferenceCountedPointer(const ReferenceCountedPointer&);ReferenceCountedPointer&operator=(const ReferenceCountedPointer&);T*operator->()const{return m_pointer;}T*getPointer()const{return m_pointer;}~ReferenceCountedPointer();};
-// Actual Array data prefix and existing four-item append boundary004dc6a0.
-template<class T>class Array {T*data;int num,numAllocated;public:Array();Array(const Array&);~Array();Array&operator=(const Array&);void append(const T&,const T&,const T&,const T&);};
-}
-namespace RBX {
-enum NormalId {NORM_X=0,NORM_Y=1,NORM_Z=2,NORM_X_NEG=3,NORM_Y_NEG=4,NORM_Z_NEG=5,NORM_UNDEFINED=6};
-template<NormalId id>G3D::Vector3 uvwToObject(const G3D::Vector3&);
-namespace Render {class Mesh:public G3D::ReferenceCountedObject {public:
- // Observed native Level prefix; no local Level creation/RTTI or complete-size claim.
- class Level:public G3D::ReferenceCountedObject {public:G3D::Array<unsigned>indexArray;virtual ~Level();};
- static unsigned allocVertex(const G3D::Vector3&,const G3D::Vector3&,const G3D::Vector2&,bool);
-};}
-}
-static inline float faceMinimum(float x,float y){return x>y?y:x;}
+#include <stdlib.h>
+#include <math.h>
 extern bool buildingShadowMesh;
 extern const G3D::Vector2 flatTextureOrigin;
 template<RBX::NormalId id>
@@ -61,42 +33,78 @@ void recoveredMeshFace(const G3D::Vector3& size,float inset,unsigned surfaces,fl
     origin.x+=color*(1.0f/32.0f);
     static Vector2 first(0,0);
     static Vector2 last(0,0);
+    Vector2 faceFirst,faceLast;
     if(!buildingShadowMesh) {
-        first.x=rand()*(0.1f/32767)-0.05f;
-        first.y=rand()*(0.1f/32767)-0.05f;
-        last.x=rand()*(1.0f/32767)>0.5f?first.x:-first.x;
-        last.y=rand()*(1.0f/32767)>0.5f?first.y:-first.y;
+        faceFirst.x=rand()*(0.1f/32767)-0.05f;
+        faceFirst.y=rand()*(0.1f/32767)-0.05f;
+        faceLast.x=rand()*(1.0f/32767)>0.5f?faceFirst.x:-faceFirst.x;
+        faceLast.y=rand()*(1.0f/32767)>0.5f?faceFirst.y:-faceFirst.y;
+        first=faceFirst;last=faceLast;
+    } else {
+        faceFirst=first;faceLast=last;
     }
-    const Vector2 faceFirst(first),faceLast(last);
     if(surface==0) {
-        unsigned a=RBX::Render::Mesh::allocVertex(RBX::uvwToObject<id>(Vector3(-half.x,-half.y,half.z)),RBX::uvwToObject<id>(Vector3(faceFirst.x,faceFirst.y,1)),origin,true);
-        unsigned b=RBX::Render::Mesh::allocVertex(RBX::uvwToObject<id>(Vector3(half.x,-half.y,half.z)),RBX::uvwToObject<id>(Vector3(faceLast.x,faceFirst.y,1)),origin,true);
-        unsigned c=RBX::Render::Mesh::allocVertex(RBX::uvwToObject<id>(Vector3(half.x,half.y,half.z)),RBX::uvwToObject<id>(Vector3(faceLast.x,faceLast.y,1)),origin,true);
-        unsigned d=RBX::Render::Mesh::allocVertex(RBX::uvwToObject<id>(Vector3(-half.x,half.y,half.z)),RBX::uvwToObject<id>(Vector3(faceFirst.x,faceLast.y,1)),origin,true);
+        Vector3 n3(faceFirst.x,faceLast.y,1),n0(faceFirst.x,faceFirst.y,1),n1(faceLast.x,faceFirst.y,1),n2(faceLast.x,faceLast.y,1);
+        unsigned a;
+        {
+            Vector3 tn=RBX::uvwToObject<id>(n0);
+            Vector3 tp=RBX::uvwToObject<id>(Vector3(-half.x,-half.y,half.z));
+            a=RBX::Render::Mesh::allocVertex(tp,tn,origin,true);
+        }
+        unsigned b;
+        {
+            Vector3 tn=RBX::uvwToObject<id>(n1);
+            Vector3 tp=RBX::uvwToObject<id>(Vector3(half.x,-half.y,half.z));
+            b=RBX::Render::Mesh::allocVertex(tp,tn,origin,true);
+        }
+        unsigned c;
+        {
+            Vector3 tn=RBX::uvwToObject<id>(n2);
+            Vector3 tp=RBX::uvwToObject<id>(Vector3(half.x,half.y,half.z));
+            c=RBX::Render::Mesh::allocVertex(tp,tn,origin,true);
+        }
+        unsigned d;
+        {
+            Vector3 tn=RBX::uvwToObject<id>(n3);
+            Vector3 tp=RBX::uvwToObject<id>(Vector3(-half.x,half.y,half.z));
+            d=RBX::Render::Mesh::allocVertex(tp,tn,origin,true);
+        }
         level->indexArray.append(a,b,c,d);
         corners[0]=a;corners[1]=b;corners[2]=c;corners[3]=d;
         return;
     }
+    float x=-half.x;
+    unsigned rows=0;
     Vector2 delta=(faceLast-faceFirst)*0.5f/half.xy();
-    static std::vector<unsigned> indices;
-    indices.erase(indices.begin(),indices.end());
-    unsigned rows=0,columns=0;
     float normalX=faceFirst.x;
-    for(float x=-half.x;x<half.x;++rows) {
-        float right=faceMinimum(x+step.x,half.x);
-        float nextNormalX=normalX+delta.x;
+    static std::vector<int> indices;
+    indices.erase(indices.begin(),indices.end());
+    unsigned columns;
+    for(;x<half.x;++rows) {
+        float right=std::min(x+step.x,half.x);
         float normalY=faceFirst.y;
         columns=0;
-        for(float y=-half.y;y<half.y;++columns) {
-            float top=faceMinimum(y+step.y,half.y);
+        float nextNormalX=normalX+delta.x;
+        float y=-half.y;
+        for(;y<half.y;++columns) {
+            float top=std::min(y+step.y,half.y);
             float nextNormalY=normalY+delta.y;
-            float textureRight=origin.x+(right-x)*(1.0f/64.0f)-1.0f/1024.0f;
-            float textureTop=origin.y+(top-y)*(1.0f/12.0f);
-            float textureLeft=origin.x+1.0f/1024.0f;
-            unsigned a=RBX::Render::Mesh::allocVertex(RBX::uvwToObject<id>(Vector3(x,y,half.z)),RBX::uvwToObject<id>(Vector3(normalX,normalY,1)),Vector2(textureLeft,textureTop),true);
-            unsigned b=RBX::Render::Mesh::allocVertex(RBX::uvwToObject<id>(Vector3(right,y,half.z)),RBX::uvwToObject<id>(Vector3(nextNormalX,normalY,1)),Vector2(textureRight,textureTop),true);
-            unsigned c=RBX::Render::Mesh::allocVertex(RBX::uvwToObject<id>(Vector3(right,top,half.z)),RBX::uvwToObject<id>(Vector3(nextNormalX,nextNormalY,1)),Vector2(textureRight,origin.y),true);
-            unsigned d=RBX::Render::Mesh::allocVertex(RBX::uvwToObject<id>(Vector3(x,top,half.z)),RBX::uvwToObject<id>(Vector3(normalX,nextNormalY,1)),Vector2(textureLeft,origin.y),true);
+            Vector2 t0(origin.x+1.0f/1024.0f,origin.y+(top-y)*(1.0f/12.0f));
+            Vector2 t1(origin.x-1.0f/1024.0f+(right-x)*(1.0f/64.0f),origin.y+(top-y)*(1.0f/12.0f));
+            Vector2 t2(origin.x-1.0f/1024.0f+(right-x)*(1.0f/64.0f),origin.y);
+            Vector2 t3(origin.x+1.0f/1024.0f,origin.y);
+            Vector3 tn0=RBX::uvwToObject<id>(Vector3(normalX,normalY,1));
+            Vector3 tp0=RBX::uvwToObject<id>(Vector3(x,y,half.z));
+            unsigned a=RBX::Render::Mesh::allocVertex(tp0,tn0,t0,true);
+            Vector3 tn1=RBX::uvwToObject<id>(Vector3(nextNormalX,normalY,1));
+            Vector3 tp1=RBX::uvwToObject<id>(Vector3(right,y,half.z));
+            unsigned b=RBX::Render::Mesh::allocVertex(tp1,tn1,t1,true);
+            Vector3 tn2=RBX::uvwToObject<id>(Vector3(nextNormalX,nextNormalY,1));
+            Vector3 tp2=RBX::uvwToObject<id>(Vector3(right,top,half.z));
+            unsigned c=RBX::Render::Mesh::allocVertex(tp2,tn2,t2,true);
+            Vector3 tn3=RBX::uvwToObject<id>(Vector3(normalX,nextNormalY,1));
+            Vector3 tp3=RBX::uvwToObject<id>(Vector3(x,top,half.z));
+            unsigned d=RBX::Render::Mesh::allocVertex(tp3,tn3,t3,true);
             indices.push_back(a);indices.push_back(b);indices.push_back(c);indices.push_back(d);
             level->indexArray.append(a,b,c,d);
             y=top;normalY=nextNormalY;
@@ -108,12 +116,9 @@ void recoveredMeshFace(const G3D::Vector3& size,float inset,unsigned surfaces,fl
     corners[2]=indices[rows*columns*4-2];
     corners[3]=indices[columns*4-1];
 }
+template void recoveredMeshFace<RBX::NORM_X>(const G3D::Vector3&,float,unsigned,float,G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>&,unsigned*);
+template void recoveredMeshFace<RBX::NORM_Y>(const G3D::Vector3&,float,unsigned,float,G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>&,unsigned*);
+template void recoveredMeshFace<RBX::NORM_Z>(const G3D::Vector3&,float,unsigned,float,G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>&,unsigned*);
 template void recoveredMeshFace<RBX::NORM_X_NEG>(const G3D::Vector3&,float,unsigned,float,G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>&,unsigned*);
-
-typedef char native_face_vector2[sizeof(G3D::Vector2)==8?1:-1];
-typedef char native_face_vector3[sizeof(G3D::Vector3)==12?1:-1];
-typedef char native_face_atomic[sizeof(G3D::AtomicInt32)==4?1:-1];
-typedef char native_face_counted[sizeof(G3D::ReferenceCountedObject)==12?1:-1];
-typedef char native_face_handle[sizeof(G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>)==4?1:-1];
-typedef char native_face_array[sizeof(G3D::Array<unsigned>)==12?1:-1];
-typedef char native_face_index_offset[offsetof(RBX::Render::Mesh::Level,indexArray)==12?1:-1];
+template void recoveredMeshFace<RBX::NORM_Y_NEG>(const G3D::Vector3&,float,unsigned,float,G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>&,unsigned*);
+template void recoveredMeshFace<RBX::NORM_Z_NEG>(const G3D::Vector3&,float,unsigned,float,G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>&,unsigned*);

@@ -1,105 +1,100 @@
-// from server: 17% by colin
+// from server: 98% by nuck16
+// roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /Od /Ob0 /GS /EHsc /MD
-// from server: 8% by colin
-struct Type {
-    virtual ~Type();
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_unit_46581a17682b44a1.cpp
+
+// Candidate translation unit (score above; library headers required).
+#define _CPPUNWIND 1
+#include <exception>
+#include <vector>
+#include <map>
+#include <string>
+#include <algorithm>
+#include <boost/shared_ptr.hpp>
+#include <boost/bind.hpp>
+// 2008-06 0043ee40 (float), 0043fc00 / 004402d0 siblings: Studio property-grid item applies a
+// value to every instance selected under its keys (same key/map walk as 0043e140), then takes
+// the DataModel lock, records a waypoint named after the property and marks the data dirty.
+namespace RBX {
+class Instance;
+template<class E> struct ImpStr : std::basic_string<E> { __declspec(noinline) const E* c_str() const { return std::basic_string<E>::c_str(); } };
+extern template struct __declspec(dllimport) ImpStr<char>;
+class Name { int dictionaryIndex; public: const std::string name; const char* c_str() const { return static_cast<const ImpStr<char>&>(name).c_str(); } };
+namespace Reflection { class PropertyDescriptor { public: virtual ~PropertyDescriptor(); const Name& name; }; }
+class IDataState { public: virtual void setDirty(bool); };
+class DataModel { char prefix[0x1f0]; public: IDataState state; void setDirty(bool dirty) { state.setDirty(dirty); }
+	class Lock {
+		boost::shared_ptr<void> mutex;
+		void* lock;
+		void doLock(const DataModel* dataModel);
+	public:
+		Lock(const DataModel* dataModel) : lock(0) { doLock(dataModel); }
+		~Lock();
+	};
 };
-
-struct EnumDescriptor;
-
-struct Item {
-    Item(const char*, int, int, unsigned int, const EnumDescriptor&);
-    virtual ~Item();
-    const EnumDescriptor& owner;
-    const int value;
-    const unsigned int index;
-};
-
-struct EnumDescriptor : Type {
-    EnumDescriptor(const char*);
-    virtual ~EnumDescriptor();
-    char pad0[0x110 - 4];
-    void* allItemsBegin;
-    void* allItemsEnd;
-    void* allItemsCap;
-    unsigned int enumCount;
-    unsigned int enumCountMSB;
-    char pad1[0x198 - 0x128];
-    void* field198;
-    char pad2[0x218 - 0x19c];
-    void* field218;
-    char pad3[0x230 - 0x21c];
-    void* field230;
-};
-
-struct ScriptItem {
-    char pad0[0x110];
-    void* field110;
-    char pad1[0x11c - 0x114];
-    unsigned int field11c;
-    unsigned int field120;
-    char pad2[0x128 - 0x124];
-    EnumDescriptor* field128;
-    void* field12c;
-    void construct(const Item*);
-};
-
-extern "C" void* __cdecl operator_new(unsigned int);
-extern "C" void __cdecl _invalid_parameter_noinfo();
-extern "C" void __stdcall mfc798(void*);
-extern "C" void __stdcall mfc45c(void*, const void*);
-extern "C" void __stdcall mfc464(void*);
-extern "C" void __stdcall mfc468(void*);
-extern "C" void __stdcall string_copy(void*, const void*);
-extern "C" void __stdcall string_dtor(void*);
-extern "C" const char* __stdcall string_cstr(const void*);
-extern "C" void __cdecl func_43a320(void*, void*, void*);
-extern "C" void __cdecl func_43d0e0(void*, void*, void*, void*, void*, void*, void*);
-extern "C" void __cdecl func_43d1d0(void*, void*, void*, void*, void*, void*);
-extern "C" void __cdecl func_576f00(void*, void*);
-extern "C" long __cdecl func_5773c0(void*, void*);
-extern "C" void __cdecl func_58c5c0(void*, void*);
-extern "C" void __cdecl func_5a2fe0(void*);
-extern "C" void __cdecl func_420110(void*, void*);
-
-void ScriptItem::construct(const Item* item)
-{
-    void* p = operator_new(4);
-    if (p) {
-        *(void**)p = &p;
-    } else {
-        p = 0;
-    }
-    void* local = p;
-    void* v0 = 0;
-    void* v1 = 0;
-    void* v2 = 0;
-
-    EnumDescriptor* ed = field128;
-    void* a = *(void**)((char*)ed + 0x218);
-    void* b = *(void**)((char*)ed + 0x230);
-    unsigned int end = field120;
-    if (field11c > end) _invalid_parameter_noinfo();
-    void* begin = field110;
-    unsigned int e2 = field11c;
-    if (e2 > field120) _invalid_parameter_noinfo();
-    void* cur = field110;
-    unsigned int c2 = e2;
-    while (true) {
-        if (cur) {
-            if (cur == begin) break;
-        } else {
-            _invalid_parameter_noinfo();
-        }
-        if (c2 == end) break;
-        if (cur) {
-            cur = *(void**)cur;
-        } else {
-            _invalid_parameter_noinfo();
-        }
-    }
-    (void)v0; (void)v1; (void)v2; (void)a; (void)b;
-    (void)local;
-    (void)item;
+struct ChangeHistoryService { static void __cdecl requestWaypoint(const char* name, DataModel* dataModel); };
 }
+
+int __stdcall AfxMessageBox(const char* text, unsigned int type = 0, unsigned int helpId = 0);
+
+struct KeyBase { int x; };
+struct KeyDerived : KeyBase {};
+typedef std::vector<boost::shared_ptr<RBX::Instance> > Instances;
+typedef std::map<KeyBase*, Instances> InstanceMap;
+
+struct Owner {
+    char pad[0x198];
+    RBX::DataModel* dataModel;
+    char pad19c[0x218 - 0x19c];
+    InstanceMap instances;
+};
+
+#define V(N) virtual void slot##N();
+#define V10(N) V(N##0) V(N##1) V(N##2) V(N##3) V(N##4) V(N##5) V(N##6) V(N##7) V(N##8) V(N##9)
+// Primary bases: 60 virtuals before apply() (float/string items, apply at vtable +0xf0) and
+// 64 virtuals with 8 more bytes of data (enum item, apply at +0x100, keys at 0x118).
+class GridItemBase { public: V10(0) V10(1) V10(2) V10(3) V10(4) V10(5) char data[0x108]; };
+class EnumGridItemBase { public: V10(0) V10(1) V10(2) V10(3) V10(4) V10(5) V(60) V(61) V(62) V(63) char data[0x110]; };
+class GridItemSink { public: virtual void sink(); };
+#undef V10
+#undef V
+
+template<class Base, class T>
+class ValueItem : public Base, public GridItemSink {
+public:
+    std::vector<KeyDerived*> keys;
+    Owner* owner;
+    const RBX::Reflection::PropertyDescriptor* descriptor;
+    virtual void apply(RBX::Instance* instance, const T& value);
+    void setValue(const T& value);
+};
+
+template<class Base, class T>
+void ValueItem<Base, T>::setValue(const T& value)
+{
+    try {
+        Instances instances;
+        InstanceMap::iterator mapEnd = owner->instances.end();
+        std::vector<KeyDerived*>::const_iterator end = keys.end();
+        for (std::vector<KeyDerived*>::const_iterator it = keys.begin(); it != end; ++it) {
+            InstanceMap::iterator found = owner->instances.find(*it);
+            if (found != mapEnd) {
+                for (Instances::iterator j = found->second.begin(), jEnd = found->second.end(); j != jEnd; ++j)
+                    instances.push_back(*j);
+            }
+        }
+        std::for_each(instances.begin(), instances.end(),
+            boost::bind(&ValueItem::apply, this, boost::bind(&boost::shared_ptr<RBX::Instance>::get, _1), value));
+        if (owner->dataModel) {
+            RBX::DataModel::Lock lock(owner->dataModel);
+            RBX::ChangeHistoryService::requestWaypoint(descriptor->name.c_str(), owner->dataModel);
+            owner->dataModel->setDirty(true);
+        }
+    } catch (std::exception& e) {
+        AfxMessageBox(e.what());
+    }
+}
+
+namespace RBX { class ContentId { std::string id; const Name* mimeTypePtr; }; }
+template class ValueItem<GridItemBase, RBX::ContentId>;

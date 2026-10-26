@@ -1,5 +1,5 @@
 // from server: 100% by king_originala
-// roc 2008-06 0055e010  unit: RBX::VInstance::?$NonFactoryProduct  size: 126 bytes
+// roc 2008-06 0055e010  unit: RBX::VInstance::?$NonFactoryProduct  size: 147 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0055e010
 //
 // 0055e010  55                   push ebp
@@ -46,6 +46,13 @@
 // 0055e088  8be5                 mov esp, ebp
 // 0055e08a  5d                   pop ebp
 // 0055e08b  c21400               ret 0x14
+// 0055e08e  8b55ec               mov edx, dword ptr [ebp - 0x14]
+// 0055e091  52                   push edx
+// 0055e092  e8e3251400           call 0x6a067a
+// 0055e097  83c404               add esp, 4
+// 0055e09a  6a00                 push 0
+// 0055e09c  6a00                 push 0
+// 0055e09e  e8e9341400           call 0x6a158c
 
 typedef unsigned int size_t;
 

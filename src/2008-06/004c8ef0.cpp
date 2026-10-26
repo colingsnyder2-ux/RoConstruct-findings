@@ -1,5 +1,5 @@
 // from server: 100% by colin
-// roc 2008-06 004c8ef0  unit: RBX::Network::DirectPhysicsReceiver  size: 151 bytes
+// roc 2008-06 004c8ef0  unit: RBX::Network::DirectPhysicsReceiver  size: 172 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004c8ef0
 //
 // 004c8ef0  55                   push ebp
@@ -56,6 +56,13 @@
 // 004c8f81  8be5                 mov esp, ebp
 // 004c8f83  5d                   pop ebp
 // 004c8f84  c20800               ret 8
+// 004c8f87  8b4dec               mov ecx, dword ptr [ebp - 0x14]
+// 004c8f8a  51                   push ecx
+// 004c8f8b  e8ea761d00           call 0x6a067a
+// 004c8f90  83c404               add esp, 4
+// 004c8f93  6a00                 push 0
+// 004c8f95  6a00                 push 0
+// 004c8f97  e8f0851d00           call 0x6a158c
 
 // from server: 100% by king_originala
 typedef unsigned int UInt;

@@ -1,5 +1,5 @@
 // from server: 100% by king_originala
-// roc 2008-06 004a8830  unit: RBX::VHint::?$FactoryProduct::Creator  size: 140 bytes
+// roc 2008-06 004a8830  unit: RBX::VHint::?$FactoryProduct::Creator  size: 161 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004a8830
 //
 // 004a8830  55                   push ebp
@@ -51,6 +51,13 @@
 // 004a88b6  8be5                 mov esp, ebp
 // 004a88b8  5d                   pop ebp
 // 004a88b9  c21400               ret 0x14
+// 004a88bc  8b4dec               mov ecx, dword ptr [ebp - 0x14]
+// 004a88bf  51                   push ecx
+// 004a88c0  e8b57d1f00           call 0x6a067a
+// 004a88c5  83c404               add esp, 4
+// 004a88c8  6a00                 push 0
+// 004a88ca  6a00                 push 0
+// 004a88cc  e8bb8c1f00           call 0x6a158c
 
 typedef unsigned int size_t;
 

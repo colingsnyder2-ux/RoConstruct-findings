@@ -1,5 +1,5 @@
 // from server: 100% by king_originala
-// roc 2008-06 00414d00  unit: RBX::VScript::?$FactoryProduct::Creator  size: 110 bytes
+// roc 2008-06 00414d00  unit: RBX::VScript::?$FactoryProduct::Creator  size: 131 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00414d00
 //
 // 00414d00  55                   push ebp
@@ -40,6 +40,13 @@
 // 00414d68  8be5                 mov esp, ebp
 // 00414d6a  5d                   pop ebp
 // 00414d6b  c20800               ret 8
+// 00414d6e  8b5508               mov edx, dword ptr [ebp + 8]
+// 00414d71  52                   push edx
+// 00414d72  8d4d0c               lea ecx, [ebp + 0xc]
+// 00414d75  e8b610ffff           call 0x405e30
+// 00414d7a  6a00                 push 0
+// 00414d7c  6a00                 push 0
+// 00414d7e  e809c82800           call 0x6a158c
 
 void* __cdecl operator new(unsigned int);
 

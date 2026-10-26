@@ -1,5 +1,5 @@
 // from server: 100% by king_originala
-// roc 2008-06 0048f5c0  unit: RBX::VShirtGraphic::?$FactoryProduct::Creator  size: 110 bytes
+// roc 2008-06 0048f5c0  unit: RBX::VShirtGraphic::?$FactoryProduct::Creator  size: 131 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0048f5c0
 //
 // 0048f5c0  55                   push ebp
@@ -40,6 +40,13 @@
 // 0048f628  8be5                 mov esp, ebp
 // 0048f62a  5d                   pop ebp
 // 0048f62b  c20800               ret 8
+// 0048f62e  8b5508               mov edx, dword ptr [ebp + 8]
+// 0048f631  52                   push edx
+// 0048f632  8d4d0c               lea ecx, [ebp + 0xc]
+// 0048f635  e8f667f7ff           call 0x405e30
+// 0048f63a  6a00                 push 0
+// 0048f63c  6a00                 push 0
+// 0048f63e  e8491f2100           call 0x6a158c
 
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);

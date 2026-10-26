@@ -1,5 +1,5 @@
 // from server: 100% by king_originala
-// roc 2008-06 00587640  unit: RBX::VChangeHistoryService::?$FactoryProduct  size: 114 bytes
+// roc 2008-06 00587640  unit: RBX::VChangeHistoryService::?$FactoryProduct  size: 135 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00587640
 //
 // 00587640  55                   push ebp
@@ -45,6 +45,13 @@
 // 005876ac  8be5                 mov esp, ebp
 // 005876ae  5d                   pop ebp
 // 005876af  c21400               ret 0x14
+// 005876b2  8b55ec               mov edx, dword ptr [ebp - 0x14]
+// 005876b5  52                   push edx
+// 005876b6  e8bf8f1100           call 0x6a067a
+// 005876bb  83c404               add esp, 4
+// 005876be  6a00                 push 0
+// 005876c0  6a00                 push 0
+// 005876c2  e8c59e1100           call 0x6a158c
 
 typedef unsigned int size_t;
 

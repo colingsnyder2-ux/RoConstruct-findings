@@ -1,6 +1,7 @@
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
 // roc-lib: rbxgs-dll roc_claude_cylinder_decal_9d1ee56be8d1f428.cpp
 
 // Candidate translation unit (score above; library headers required).

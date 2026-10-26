@@ -1,5 +1,5 @@
 // from server: 100% by king_originala
-// roc 2008-06 004cc960  unit: RBX::VInstance::?$NonFactoryProduct  size: 148 bytes
+// roc 2008-06 004cc960  unit: RBX::VInstance::?$NonFactoryProduct  size: 169 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004cc960
 //
 // 004cc960  55                   push ebp
@@ -56,6 +56,13 @@
 // 004cc9ee  8be5                 mov esp, ebp
 // 004cc9f0  5d                   pop ebp
 // 004cc9f1  c20800               ret 8
+// 004cc9f4  8b4dec               mov ecx, dword ptr [ebp - 0x14]
+// 004cc9f7  51                   push ecx
+// 004cc9f8  e87d3c1d00           call 0x6a067a
+// 004cc9fd  83c404               add esp, 4
+// 004cca00  6a00                 push 0
+// 004cca02  6a00                 push 0
+// 004cca04  e8834b1d00           call 0x6a158c
 
 typedef unsigned int UInt;
 

@@ -1,4 +1,4 @@
-// from server: 82% by EspClaude
+// from server: 83% by nuck16
 // roc 2008-06 00433e30  unit: CMemberTreeView  size: 106 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00433e30
 //
@@ -187,9 +187,11 @@ struct MemberTree {
     int onCreate(void*);
 };
 int MemberTree::onCreate(void* cs) {
-    if(baseOnCreate(cs)==-1) return -1;
-    control.initialize();
-    if(!createBitmap(&images,196)) return -1;
-    fromHandle((HANDLE)SendMessageA(window,0x1109,0,(long)images.GetSafeHandle()));
-    return 0;
+    if(baseOnCreate(cs)!=-1) {
+        control.initialize();
+        if(!createBitmap(&images,196)) return -1;
+        fromHandle((HANDLE)SendMessageA(window,0x1109,0,(long)images.GetSafeHandle()));
+        return 0;
+    }
+    return -1;
 }

@@ -1,57 +1,12 @@
-// from server: 76% by EspClaude
+// from server: 88% by nuck16
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
-extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long*);
-#define NULL 0
-namespace G3D {
-class AtomicInt32 {
-	volatile long _value;
-public:
-	void increment() { InterlockedIncrement(&_value); }
-	unsigned int decrement() { return InterlockedDecrement(&_value) != 0; }
-};
-class ReferenceCountedObject {
-public:
-	AtomicInt32 ReferenceCountedObject_refCount;
-	void* ReferenceCountedObject_weakPointer;
-	void ReferenceCountedObject_zeroWeakPointers();
-	virtual ~ReferenceCountedObject() {}
-};
-template <class T>
-class ReferenceCountedPointer {
-private:
-	T* m_pointer;
-	void zeroPointer() {
-		if (m_pointer != 0) {
-			if (m_pointer->ReferenceCountedObject_refCount.decrement() == 0) {
-				m_pointer->ReferenceCountedObject_zeroWeakPointers();
-				delete m_pointer;
-			}
-			m_pointer = 0;
-		}
-	}
-	void setPointer(T* x) {
-		if (x != m_pointer) {
-			zeroPointer();
-			if (x != 0) {
-				m_pointer = x;
-				m_pointer->ReferenceCountedObject_refCount.increment();
-			}
-		}
-	}
-public:
-	inline ReferenceCountedPointer() : m_pointer(0) {}
-	inline ReferenceCountedPointer(const ReferenceCountedPointer<T>& p) : m_pointer(0) { setPointer(p.m_pointer); }
-	inline ReferenceCountedPointer(T* p) : m_pointer(0) { setPointer(p); }
-	inline ~ReferenceCountedPointer() { zeroPointer(); }
-	inline const ReferenceCountedPointer<T>& operator=(const ReferenceCountedPointer<T>& p) { setPointer(p.m_pointer); return *this; }
-	inline T* operator->() const { return m_pointer; }
-	inline bool notNull() const { return m_pointer != 0; }
-};
-}
+// roc-lib: rbxgs-dll roc_unit_a20dfdf7051be079.cpp
 
+// Candidate translation unit (score above; library headers required).
+#include "G3D/ReferenceCount.h"
+#include "util/ComputeProp.h"
 namespace RBX
 {
 	class Controller : public G3D::ReferenceCountedObject
@@ -64,18 +19,7 @@ namespace RBX
 		virtual bool isUserController() const;
 	};
 
-	template<class T, class U>
-	class ComputeProp
-	{
-	private:
-		mutable T val;
-		mutable bool dirty;
-		U* object;
-		T(U::* getFunc)() const;
-	public:
-		T getValue() const;
-		operator T() const;
-	};
+
 
 	class Instance
 	{
@@ -130,10 +74,9 @@ namespace RBX
 
 	G3D::ReferenceCountedPointer<Controller> PVInstance::computeTopPVController() const
 	{
-		if (!isTopLevelPVInstance())
+		if (queryTypedParent<PVInstance>() && getTypedRoot<PVInstance>() != getTypedParent<PVInstance>())
 		{
-			G3D::ReferenceCountedPointer<RBX::Controller> controller;
-			controller = getTypedParent<PVInstance>()->TopPVController.getValue();
+			G3D::ReferenceCountedPointer<RBX::Controller> controller = getTypedParent<PVInstance>()->TopPVController;
 
 			if (controller.notNull())
 			{

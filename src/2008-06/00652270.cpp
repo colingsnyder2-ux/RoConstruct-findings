@@ -1,5 +1,5 @@
 // from server: 100% by king_originala
-// roc 2008-06 00652270  unit: RBX::ScoreHud  size: 126 bytes
+// roc 2008-06 00652270  unit: RBX::ScoreHud  size: 147 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00652270
 //
 // 00652270  55                   push ebp
@@ -46,6 +46,13 @@
 // 006522e8  8be5                 mov esp, ebp
 // 006522ea  5d                   pop ebp
 // 006522eb  c21400               ret 0x14
+// 006522ee  8b55ec               mov edx, dword ptr [ebp - 0x14]
+// 006522f1  52                   push edx
+// 006522f2  e883e30400           call 0x6a067a
+// 006522f7  83c404               add esp, 4
+// 006522fa  6a00                 push 0
+// 006522fc  6a00                 push 0
+// 006522fe  e889f20400           call 0x6a158c
 
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);

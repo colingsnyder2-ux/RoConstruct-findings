@@ -1,5 +1,5 @@
 // from server: 100% by king_originala
-// roc 2008-06 004323e0  unit: CMainFrame  size: 110 bytes
+// roc 2008-06 004323e0  unit: CMainFrame  size: 131 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004323e0
 //
 // 004323e0  55                   push ebp
@@ -40,6 +40,13 @@
 // 00432448  8be5                 mov esp, ebp
 // 0043244a  5d                   pop ebp
 // 0043244b  c20800               ret 8
+// 0043244e  8b5508               mov edx, dword ptr [ebp + 8]
+// 00432451  52                   push edx
+// 00432452  8d4d0c               lea ecx, [ebp + 0xc]
+// 00432455  e8d639fdff           call 0x405e30
+// 0043245a  6a00                 push 0
+// 0043245c  6a00                 push 0
+// 0043245e  e829f12600           call 0x6a158c
 
 void* __cdecl operator new(unsigned int);
 

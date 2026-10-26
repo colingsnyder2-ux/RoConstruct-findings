@@ -1,8 +1,8 @@
-// from server: 85% by EspClaude
+// from server: 86% by nuck16
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: atl-9.0-dll-rtm roc_espclaude_8be70805f83bcffd.cpp
+// roc-lib: atl-9.0-dll-rtm roc_unit_f0ade9a71a05a644.cpp
 
 // Candidate translation unit (score above; library headers required).
 #ifndef _CPPUNWIND
@@ -47,6 +47,7 @@ class LuaArgs {
 public:
     ~LuaArgs();
     void push(ATL::CComVariant value);
+    template<class T> __forceinline void add(const T& v) { values.push_back(v); }
     std::vector<Value> values;
 };
 
@@ -55,22 +56,22 @@ void LuaArgs::push(ATL::CComVariant value)
     switch (value.vt)
     {
     case VT_R4:
-        values.push_back(value.fltVal);
+        add(value.fltVal);
         break;
     case VT_R8:
-        values.push_back((float)value.dblVal);
+        add((float)value.dblVal);
         break;
     case VT_BSTR:
-        values.push_back(std::string(BStr(value.bstrVal)));
+        add(std::string(BStr(value.bstrVal)));
         break;
     case VT_BOOL:
-        values.push_back(value.boolVal == VARIANT_TRUE);
+        add(value.boolVal == VARIANT_TRUE);
         break;
     case VT_I2:
-        values.push_back((int)value.iVal);
+        add((int)value.iVal);
         break;
     case VT_I4:
-        values.push_back((int)value.lVal);
+        add((int)value.lVal);
         break;
     case VT_NULL:
         values.push_back(Value());

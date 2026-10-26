@@ -1,5 +1,5 @@
 // from server: 100% by king_originala
-// roc 2008-06 0041e230  unit: VDHTMLWindow::?$SignalDesc  size: 110 bytes
+// roc 2008-06 0041e230  unit: VDHTMLWindow::?$SignalDesc  size: 131 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0041e230
 //
 // 0041e230  55                   push ebp
@@ -40,6 +40,13 @@
 // 0041e298  8be5                 mov esp, ebp
 // 0041e29a  5d                   pop ebp
 // 0041e29b  c20800               ret 8
+// 0041e29e  8b5508               mov edx, dword ptr [ebp + 8]
+// 0041e2a1  52                   push edx
+// 0041e2a2  8d4d0c               lea ecx, [ebp + 0xc]
+// 0041e2a5  e8867bfeff           call 0x405e30
+// 0041e2aa  6a00                 push 0
+// 0041e2ac  6a00                 push 0
+// 0041e2ae  e8d9322800           call 0x6a158c
 
 typedef unsigned int size_t;
 
