@@ -156,7 +156,10 @@ void S::notify(void* argument)
                     static_cast<char*>(object) + 0x138)->notify(argument);
 
             if (!disabled)
-                owner->secondary->dispatch->notify(argument);
+                {
+                    Secondary* sec = owner->secondary;
+                    sec->dispatch->notify(argument);
+                }
 
             if (flag1 && flag2)
             {

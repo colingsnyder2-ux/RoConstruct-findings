@@ -1,8 +1,8 @@
-// from server: 99% by EspClaude
+// from server: 100% by king_originala_sol_resume_high
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espclaude_ec29278c295eeeec.cpp
+// roc-lib: rbxgs-dll roc_resume_high_ctor_callbacks_64792766c44c05d8.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define _DLL
@@ -10,6 +10,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
+namespace RBX { class Instance; namespace Reflection { class PropertyDescriptor; } }
+typedef boost::shared_ptr<RBX::Instance> Ancestor;
 typedef boost::shared_ptr<void> Shared;
 Shared __cdecl makeShared(void*);
 extern const float initialValue;
@@ -30,17 +32,18 @@ struct S : Base {
 
     S(void*, void*, void*);
     virtual void virtualFunction();
-    void firstCallback();
-    void secondCallback();
+    void firstCallback(Ancestor);
+    void secondCallback(const RBX::Reflection::PropertyDescriptor*);
 };
 
-typedef boost::slot<boost::function<void(Shared)> > Function;
+typedef boost::slot<boost::function<void(Ancestor)> > AncestorSlot;
+typedef boost::slot<boost::function<void(const RBX::Reflection::PropertyDescriptor*)> > PropertySlot;
 struct ManagerA {
-    Result connect(void*, const Function&, int);
+    Result connect(void*, const AncestorSlot&, int);
 };
 
 struct ManagerB {
-    Result connect(void*, const Function&, int);
+    Result connect(void*, const PropertySlot&, int);
 };
 
 extern ManagerA managerA;
@@ -53,8 +56,8 @@ S::S(void* object, void* baseObject, void* argument)
 {
     firstConnection = managerA.connect(
             object ? static_cast<unsigned char*>(object) + 20 : 0,
-            boost::bind(&S::firstCallback,this), 10);
+            boost::bind(&S::firstCallback,this,_1), 10);
     secondConnection = managerB.connect(
             object ? static_cast<unsigned char*>(object) + 20 : 0,
-            boost::bind(&S::secondCallback,this), 10);
+            boost::bind(&S::secondCallback,this,_1), 10);
 }

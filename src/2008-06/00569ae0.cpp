@@ -1,4 +1,4 @@
-// from server: 92% by EspClaude
+// from server: 100% by colin
 // roc-cl: 21022
 // roc-flags: /GS- /EHsc /MD /O2 /Ob0 /Oy-
 #include <sstream>
@@ -32,6 +32,9 @@ void S::f(const char* message)
             report1(0, &stream, 0, text, message);
     }
     catch (...) {
-        report0(0, &stream, 0, text, message);
+        if (assertionHook == 0)
+            report0(0, &stream, 0, text, message);
+        else if (assertionHook == 1)
+            report1(0, &stream, 0, text, message);
     }
 }
