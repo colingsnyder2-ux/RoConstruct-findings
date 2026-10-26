@@ -1,8 +1,6 @@
-// from server: 100% by EspClaude
-// from server: 93% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
 // roc-lib: rbxgs-dll roc_espclaude_bc7768735680516f.cpp
 
 // Candidate translation unit (score above; library headers required).
