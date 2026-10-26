@@ -1,3 +1,4 @@
+// from server: 88% by colin
 // from server: 84% by king_originala_sol_native
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 // roc-cl: 21022
@@ -47,7 +48,8 @@ bool PartInstance::resize(int normal,int amount){
  else delta=Vector3(static_cast<float>(amount),static_cast<float>(amount),static_cast<float>(amount));
  Vector3 newUiSize=xmlToUiSize(oldSize)+delta;
  Vector3 xmlDelta=uiToXmlSize(newUiSize)-oldSize;
- Frame desired(oldFrame.rotation,oldFrame.translation+oldFrame.vectorToWorldSpace(xmlDelta)*0.5f*sign);
+ Vector3 t=oldFrame.translation+oldFrame.vectorToWorldSpace(xmlDelta)*0.5f*sign;
+ Frame desired(oldFrame.rotation,t);
  setCoordinateFrame(desired);
  setPartSizeXml(uiToXmlSize(newUiSize));
  join();

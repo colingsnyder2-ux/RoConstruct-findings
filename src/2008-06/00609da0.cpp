@@ -1,8 +1,8 @@
-// from server: 96% by colin
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs roc_unit_189f147085beb4c6.cpp
+// roc-lib: rbxgs roc_trial_5f2510aaf1d0b5ed.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias("v8world/Primitive.h", "roc_unit_3cb14e7bbff2e8e6.cpp")
@@ -17,6 +17,7 @@
 #include "AppDraw/Draw.h"
 #include "AppDraw/DrawAdorn.h"
 
+namespace { inline float sign2016(float value) { return (value > 0.0f) ? 1.0f : (value < 0.0f ? -1.0f : 0.0f); } }
 namespace RBX 
 {
 	static Reflection::RefPropDescriptor<VelocityMotor, Hole> prop_Hole ("Hole", "Data", &VelocityMotor::getHole, &VelocityMotor::setHole, Reflection::PropertyDescriptor::LEGACY);
@@ -136,8 +137,10 @@ namespace RBX
 		switch (inOut)
 		{
 		case INSET:
-			uv.x = RBX::Math::sign(uv.x) * std::max(0.0f, std::abs(uv.x) - 1.0f);
-			uv.y = RBX::Math::sign(uv.y) * std::max(0.0f, std::abs(uv.y) - 1.0f);
+			for (int i = 0; i < 2; ++i)
+			{
+				uv[i] = sign2016(uv[i]) * std::max(0.0f, static_cast<float>(fabs(uv[i]) - 1.0f));
+			}
 			break;
 
 		case CENTER_IO:

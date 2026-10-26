@@ -1,8 +1,8 @@
-// from server: 77% by Espeon
+// from server: 95% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espeon_cameracenterconstvector4a72739ca65494fc.cpp
+// roc-lib: rbxgs-dll roc_trial_6c2ae36358d88bf4.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define _CPPUNWIND 1
@@ -47,6 +47,7 @@ public:
     char pad[0x13c];
     std::vector<PVInstance*> items;
     size_t size() const { return items.size(); }
+    const std::vector<PVInstance*>& getItems() const { return items; }
     PVInstance* operator[](size_t i) const { return items[i]; }
 };
 class Instance;
@@ -82,10 +83,11 @@ void CameraCenterCommand::doIt(IDataState& dataState)
     ServiceClient<Selection> selection((Instance*)workspace);
     G3D::Vector3 center;
     if (selection.get(true)->size() >= 1) {
-        const std::vector<PVInstance*>& s = selection.get(true)->items;
-        Extents extents = s[0]->getExtentsWorld();
-        for (size_t i = 1; i < s.size(); ++i)
-            extents.unionWith(s[i]->getExtentsWorld());
+        const std::vector<PVInstance*>& items(selection.get(true)->getItems());
+        Extents extents = items[0]->getExtentsWorld();
+        for (size_t i = 1; i < items.size(); ++i) {
+            extents.unionWith(items[i]->getExtentsWorld());
+        }
         center = extents.center();
     } else {
         center = G3D::Vector3::zero();

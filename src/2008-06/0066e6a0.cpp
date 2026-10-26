@@ -1,3 +1,4 @@
+// from server: 98% by colin
 // from server: 97% by king_originala
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
@@ -12,6 +13,7 @@ struct Vector3 {
  Vector3 operator+(const Vector3&v)const{return Vector3(x+v.x,y+v.y,z+v.z);}Vector3 operator-(const Vector3&v)const{return Vector3(x-v.x,y-v.y,z-v.z);}
  Vector3 operator*(const Vector3&v)const{return Vector3(x*v.x,y*v.y,z*v.z);}Vector3 operator*(float f)const{return Vector3(x*f,y*f,z*f);}
  Vector3&operator+=(const Vector3&v){x+=v.x;y+=v.y;z+=v.z;return *this;}
+ Vector3&operator-=(const Vector3&v){x-=v.x;y-=v.y;z-=v.z;return *this;}
  Vector3 cross(const Vector3&v)const{return Vector3(y*v.z-z*v.y,z*v.x-x*v.z,x*v.y-y*v.x);}
  static const Vector3&unitY(){static Vector3 v(0,1,0);return v;}
 };
@@ -52,8 +54,10 @@ void Balancing::onComputeForce(float){
  G3D::Vector3 totalTorque=localTorque+desiredTorque;
  G3D::Vector3 inertia=RBX::Math::toDiagonal(root->getBranchIBody());
  for(int i=0;i<3;i+=2){if(fabs(desiredTorque[i]-localTorque[i])<inertia[i]*4000.0f)totalTorque[i]=desiredTorque[i];}
- G3D::Vector3 delta=rootFrame.vectorToWorldSpace(totalTorque-kD*inertia*localAngularVelocity)-torque;
- root->accumulateTorque(delta);
+ totalTorque-=kD*inertia*localAngularVelocity;
+ G3D::Vector3 torqueWorld=rootFrame.vectorToWorldSpace(totalTorque);
+ G3D::Vector3 addedTorque=torqueWorld-torque;
+ root->accumulateTorque(addedTorque);
 }
 }
 }

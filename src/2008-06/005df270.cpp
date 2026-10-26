@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // from server: 74% by colin
 // roc-lang: cpp
 // roc-cl: 21022
@@ -18,6 +19,7 @@ public:
 };
 }
 
+namespace G3D { inline Vector3 operator*(float s,const Vector3&v){return v*s;} }
 namespace RBX {
 class RbxRay {
 public:
@@ -26,20 +28,23 @@ public:
     G3D::Vector3 direction;
 };
 
-G3D::Vector3 closestPoint(const RbxRay& a, const RbxRay& b)
+G3D::Vector3 closestPoint(const RbxRay& pointOnRay, const RbxRay& otherRay)
 {
-    G3D::Vector3 p1 = a.origin;
-    G3D::Vector3 p2 = b.origin;
-    G3D::Vector3 d1 = a.direction;
-    G3D::Vector3 d2 = b.direction;
-    float d = d1.dot(d2);
-    G3D::Vector3 r = p2 - p1;
-    float denom = 1.0f - d * d;
-    if (denom > 1e-5)
-    {
-        float t = (-r.dot(d2) * d + r.dot(d1)) / denom;
-        return p1 + d1 * t;
+    G3D::Vector3 pa = pointOnRay.origin;
+    G3D::Vector3 pPlane = otherRay.origin;
+    G3D::Vector3 ua = pointOnRay.direction;
+    G3D::Vector3 ub = otherRay.direction;
+    G3D::Vector3 p = pPlane - pa;
+    float uaub = ua.dot(ub);
+    float q1 = ua.dot(p);
+    float q2 = -ub.dot(p);
+    float d = 1 - uaub*uaub;
+    if (d > 1e-5) {
+        float alpha = (q1 + uaub*q2) / d;
+        return pa + alpha * ua;
     }
-    return p1;
+    else {
+        return pa;
+    }
 }
 }

@@ -1,8 +1,8 @@
-// from server: 85% by king_originala_sol_resume_high
+// from server: 97% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_resume_high_running_04fee17f478498e8.cpp
+// roc-lib: rbxgs-dll roc_trial_2d97174f63d50eb3.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define _CPPUNWIND 1
@@ -36,21 +36,20 @@ void RunningBase::onComputeForce(float dt){
  Body*root=getHumanoid()->getRootBody();if(!root)return;
  const Velocity&vel=root->getVelocity();
  float walkRotation=getHumanoid()->getWalkRotationalVelocity();
- float turnTorque=(walkRotation*4.0f+desiredYRotationalVelocity+floorRotationalVelocity-vel.rotational.y)*root->getBranchIBodyV3().y*7500.0f;
+ float turnTorque=((walkRotation*4.0f+desiredYRotationalVelocity)+floorRotationalVelocity-vel.rotational.y)*root->getBranchIBodyV3().y*7500.0f;
  turnTorque-=root->getBranchTorque().y;
  float maxTorque=root->getBranchIBodyV3().y*160000.0f;
  root->accumulateTorque(G3D::Vector3(0,G3D::clamp(turnTorque,-maxTorque,maxTorque),0));
  Primitive*floor=getFloorPrimitive();
  float moveMass;
  if(!floor)moveMass=root->getBranchMass();
- else{float floorMass=floor->getBody()->getRoot()->getBranchMass();moveMass=G3D::min(floorMass,root->getBranchMass());
+ else{float floorMass=floor->getBody()->getRoot()->getBranchMass();moveMass=std::min(root->getBranchMass(),floorMass);
  if(desiredAltitude!=0.0f){
   const G3D::CoordinateFrame&torsoFrame=torso->getCoordinateFrame();
   const Velocity&rootVelocity=root->getVelocity();
   float altitudeAcceleration=(desiredAltitude-torsoFrame.translation.y)*10000.0f-rootVelocity.linear.y*1250.0f;
   if(altitudeAcceleration>0.0f){
-   const G3D::Vector3&branchForce=root->getBranchForce();
-   float currentAcceleration=branchForce.y/root->getBranchMass();
+   const float currentAcceleration=root->getBranchForce().y/root->getBranchMass();
    if(currentAcceleration<altitudeAcceleration){
     float upwardForce=std::min(altitudeAcceleration-currentAcceleration,maxMoveAcceleration().y)*moveMass;
     root->accumulateForceAtBranchCofm(G3D::Vector3(0,upwardForce,0));
@@ -67,10 +66,12 @@ void RunningBase::onComputeForce(float dt){
  float accelY=desiredVelocity.y>0.0f?(desiredVelocity.y-branchVelocity.linear.y)*1250.0f:currentAcceleration.y;
  float accelZ=(desiredZ-branchVelocity.linear.z)*1250.0f;
  G3D::Vector3 limitedAcceleration=(G3D::Vector3(accelX,accelY,accelZ)-currentAcceleration).clamp(minMoveAcceleration(),maxMoveAcceleration());
+ {
  G3D::Vector3 force=limitedAcceleration*moveMass;
  if(floor){float friction=floor->getFriction();if(friction<0.3f){float scale=friction*friction;force.x*=scale;force.z*=scale;}}
  root->accumulateForceAtBranchCofm(force);
  if(floor)floor->getBody()->accumulateForce(-force,floorTouchInWorld);
+ }
 }
 }
 }
