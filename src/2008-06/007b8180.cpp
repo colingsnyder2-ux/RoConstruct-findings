@@ -131,7 +131,7 @@ struct Image {
 void downsample(const Image* source, const char* filename)
 {
     Image result(source->width / 2, source->height / 2, source->channels);
-    const int stride = source->width * source->channels;
+    int stride = source->width * source->channels;
 
     for (int y = 0; y < result.height; ++y) {
         for (int x = 0; x < result.width; ++x) {

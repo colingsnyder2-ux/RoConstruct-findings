@@ -1,4 +1,4 @@
-// from server: 94% by colin
+// from server: 100% by nuck16
 // roc 2008-06 00582300  unit: RBX::CameraCenterCommand  size: 229 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00582300
 //
@@ -70,7 +70,6 @@
 // 005823e1  83c41c               add esp, 0x1c
 // 005823e4  c3                   ret 
 
-// from server: 87% by colin
 // roc 2008-06 00582300  unit: RBX::CameraCenterCommand  size: 229 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00582300
 //
@@ -181,7 +180,7 @@ struct World {
 struct SelectionAccess {
     World* world;
     Selection* object;
-    Control* control;
+    Control* volatile control;
 
     SelectionAccess(World*);
     ~SelectionAccess();
@@ -196,8 +195,7 @@ inline SelectionAccess::~SelectionAccess() {
     Control* p = control;
     if (p && _InterlockedDecrement(&p->strong) == 0) {
         p->dispose();
-        long weakValue = _InterlockedExchangeAdd(&p->weak, -1);
-        if (weakValue == 1)
+        if (_InterlockedDecrement(&p->weak) == 0)
             p->destroy();
     }
 }

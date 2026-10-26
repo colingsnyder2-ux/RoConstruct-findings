@@ -1,14 +1,34 @@
-// from server: 78% by atomic.potato
-extern "C" void sub_0074CD50(void *, void *, void *, unsigned int, unsigned int);
-extern "C" void __cdecl sub_007F4929(void *);
+// from server: 100% by nuck16
+// roc 2009-12 0097a800  unit: seg_00970000  size: 41 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 0097a800
+//
+// 0097a800  6a00                 push 0
+// 0097a802  6a02                 push 2
+// 0097a804  6894010000           push 0x194
+// 0097a809  68801b9d00           push 0x9d1b80
+// 0097a80e  68e03e9e00           push 0x9e3ee0
+// 0097a813  b93072b900           mov ecx, 0xb97230
+// 0097a818  e83325ddff           call 0x74cd50
+// 0097a81d  6890919800           push 0x989190
+// 0097a822  e802a1e7ff           call 0x7f4929
+// 0097a827  59                   pop ecx
+// 0097a828  c3                   ret 
 
-struct S
+// dynamic initializer of a static reflection descriptor: ctor on the static object, then atexit(destructor).
+// Member function pointers are {fn, 0} pairs, so the owner uses multiple inheritance.
+struct BaseA { int a; };
+struct BaseB { int b; };
+class Owner : public BaseA, public BaseB
 {
-    void f();
+public:
+
 };
 
-void S::f()
+
+struct Desc
 {
-    sub_0074CD50((void *)0xB97230, (void *)0x9E3EE0, (void *)0x9D1B80, 0x194, 2);
-    sub_007F4929((void *)0x989190);
-}
+    Desc(const char *, const char *, int, int, int);
+    ~Desc();
+};
+
+static Desc desc("MouseButton1UpConnectionCount", "EventReplicator", 404, 2, 0);

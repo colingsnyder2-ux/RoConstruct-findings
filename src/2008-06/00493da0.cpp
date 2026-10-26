@@ -1,8 +1,8 @@
-// from server: 97% by Espeon
+// from server: 100% by nuck16
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espeon_playerpackedtemporaryb04e8c0cef685af7.cpp
+// roc-lib: rbxgs-dll roc_unit_aa41507c7ce2107d.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias("util/Object.h", "roc_espeon_arrowfactoryheader347662b16dc22b66.cpp")
@@ -31,12 +31,15 @@
 #include "security/SecurityContext.h"
 #include <G3D/Vector2.h>
 namespace RBX {namespace Network {
+struct PlayerIdleBox {G3D::Vector2 low,high;PlayerIdleBox(const G3D::Vector2& l,const G3D::Vector2& h):low(l),high(h){}};
+}}
+namespace RBX {namespace Network {
 Player::Player():teamColor(BrickColor::lego_1),neutral(true),under13(false),superSafeChat(false),userId(0),lastActivityTime(0.0) {
  Security::Context::current().requirePermission(Security::Administrator,"create a Player");
  setName("Player");
  const G3D::Vector2& center=G3D::Vector2::zero();
- G3D::Vector2 low(center.x-0.5f,center.y-0.5f);
- G3D::Vector2 high(center.x+0.5f,center.y+0.5f);
+ PlayerIdleBox box(G3D::Vector2(center.x-0.5f,center.y-0.5f),G3D::Vector2(center.x+0.5f,center.y+0.5f));
+ G3D::Vector2& low=box.low;G3D::Vector2& high=box.high;
  { G3D::Vector2int16 packed(low); idle0=packed; }
  { G3D::Vector2int16 packed(high); idle1=packed; }
  { G3D::Vector2int16 packed(low); idle2=packed; }

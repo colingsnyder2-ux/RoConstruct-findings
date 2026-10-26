@@ -1,4 +1,4 @@
-// from server: 94% by EspClaude
+// from server: 100% by nuck16
 // roc 2008-06 00582d70  unit: RBX::AttachCameraCommand  size: 221 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00582d70
 //
@@ -66,7 +66,6 @@
 // 00582e49  83c41c               add esp, 0x1c
 // 00582e4c  c3                   ret 
 
-// from server: 84% by king_originala
 // roc 2008-06 00582d70  unit: RBX::AttachCameraCommand  size: 221 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00582d70
 //
@@ -185,7 +184,7 @@ struct Source {
 struct Temporary {
     void* object;
     void* cached;
-    ReferenceCount* control;
+    ReferenceCount* volatile control;
 
     Temporary(void*);
     ~Temporary();
@@ -215,11 +214,12 @@ bool AttachCameraCommand::execute() {
     if (!((unsigned)(entries->last - entries->first) > 0))
         return false;
 
-    volatile char ok;
+    bool ok;
     {
         Temporary temporary(object);
         Result* result = temporary.get(true);
         ok = (unsigned)(result->last - result->first) == 1;
     }
-    return ok;
+    if (ok) return true;
+    return false;
 }

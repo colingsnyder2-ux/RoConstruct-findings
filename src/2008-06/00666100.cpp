@@ -1,4 +1,4 @@
-// from server: 97% by king_originala_sol_high
+// from server: 99% by nuck16
 // roc 2008-06 00666100  unit: RBX::PartDragTool  size: 313 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00666100
 //
@@ -137,7 +137,7 @@ struct Service {
 struct Context {
     int owner;
     void* object;
-    Control* volatile control;
+    Control* control;
     Context(int);
     Service* get(int);
     ~Context();
@@ -150,7 +150,7 @@ inline Context::Context(int value)
 
 inline Context::~Context()
 {
-    Control* value = control;
+    Control* value = *const_cast<Control* volatile*>(&control);
     if (value) value->release();
 }
 
