@@ -1,8 +1,7 @@
-// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: g3d-6.09 G3Dcpp/roc_claude_gimage_smooth_b6205ab30eea6e87.cpp
+// roc-lib: g3d-6.09-dll G3Dcpp/roc_claude_gimage_smooth_b6205ab30eea6e87.cpp
 
 // Candidate translation unit (score above; library headers required).
 // Roblox additions to G3D 6.09 GImage.cpp (same TU as 0050d3c0 blend, 0050d530 pasteSubImage,

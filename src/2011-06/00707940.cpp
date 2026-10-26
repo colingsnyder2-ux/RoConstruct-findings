@@ -1,24 +1,19 @@
-// from server: 21% by atomic.potato
-struct EventDesc {
-    char pad0[4];
-    char sub[0x10];
-    int init(int);
-    int run(int, int);
+// from server: 100% by sophus
+struct Desc {
+    void set(int);
 };
 
-int EventDesc::init(int) {
-    return 0;
-}
+struct S {
+    int pad;
+    Desc desc;
+    void* connect(void** out, const void* src);
+    void* invoke(void** out, const void* src);
+};
 
-int EventDesc::run(int a, int b) {
-    int tmp = 0;
-    init(1);
-    return a;
-}
-
-int EventDesc_entry(EventDesc *self, int a, int b) {
-    int tmp = 0;
-    self->init(1);
-    self->run(a, b);
-    return a;
+void* S::invoke(void** out, const void* src)
+{
+    volatile int c = 0;
+    desc.set(1);
+    connect(out, src);
+    return out;
 }
