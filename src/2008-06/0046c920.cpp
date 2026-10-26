@@ -1,3 +1,4 @@
+// from server: 99% by coldek
 // from server: 89% by nuck16
 // roc 2008-06 0046c920  unit: VCWorkspace::?$CComObject  size: 344 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0046c920
@@ -371,6 +372,14 @@ inline Text::Text()
     textDefault(this);
 }
 
+struct InputText
+{
+    const wchar_t* value;
+    __declspec(dllimport) InputText(const wchar_t*);
+    __declspec(dllimport) ~InputText() throw();
+    __declspec(dllimport) const char* data() const;
+};
+
 struct State
 {
     void* previous;
@@ -413,7 +422,7 @@ int __stdcall S::f(S* object, const wchar_t* url)
         if (result)
         {
             Text message;
-            textFormat(&message, "Untrusted Url: %s", Text(url).value);
+            textFormat(&message, "Untrusted Url: %s", InputText(url).value);
             typedef int (__cdecl *Report)(int, int, int);
             return reinterpret_cast<Report>(&logMessage)(
                 reinterpret_cast<int>(logContext),

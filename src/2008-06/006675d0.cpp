@@ -1,8 +1,8 @@
-// from server: 93% by king_originala_sol_native
+// from server: 97% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_sol_native_freefall_scopertm_18ceacd96e50cafb.cpp
+// roc-lib: rbxgs-dll roc_trial_fb34bc115e3110c2.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "util/Velocity.h"
@@ -42,9 +42,9 @@ void Freefall::onComputeForce(float dt){
   body->accumulateTorque(Vector3(0,clampValue(torque,-limit,limit),0));
   Vector3 accel=(desiredVelocity-body->getBranchVelocity().linear)*1250.0f;
   Vector3 bounded=accel.clamp(lowerAcceleration(),upperAcceleration());
-  Vector3 force=bounded*body->getBranchMass();
+  {Vector3 force=bounded*body->getBranchMass();
   force.y=0;
-  body->accumulateForceAtBranchCofm(force);
+  body->accumulateForceAtBranchCofm(force);}
  }
 }
 }
