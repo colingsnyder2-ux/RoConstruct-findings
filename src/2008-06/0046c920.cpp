@@ -1,5 +1,5 @@
-// from server: 80% by colin
-// roc 2008-06 0046c920  unit: VCWorkspace::?$CComObject  size: 416 bytes
+// from server: 89% by nuck16
+// roc 2008-06 0046c920  unit: VCWorkspace::?$CComObject  size: 344 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0046c920
 //
 // 0046c920  55                   push ebp
@@ -112,30 +112,6 @@
 // 0046ca72  8be5                 mov esp, ebp
 // 0046ca74  5d                   pop ebp
 // 0046ca75  c20800               ret 8
-// 0046ca78  8b4de8               mov ecx, dword ptr [ebp - 0x18]
-// 0046ca7b  8b01                 mov eax, dword ptr [ecx]
-// 0046ca7d  8b5004               mov edx, dword ptr [eax + 4]
-// 0046ca80  6a00                 push 0
-// 0046ca82  ffd2                 call edx
-// 0046ca84  50                   push eax
-// 0046ca85  68f8648100           push 0x8164f8
-// 0046ca8a  e8a1c8fbff           call 0x429330
-// 0046ca8f  89450c               mov dword ptr [ebp + 0xc], eax
-// 0046ca92  83c40c               add esp, 0xc
-// 0046ca95  b89bca4600           mov eax, 0x46ca9b
-// 0046ca9a  c3                   ret 
-// 0046ca9b  8d4dd8               lea ecx, [ebp - 0x28]
-// 0046ca9e  c745fcffffffff       mov dword ptr [ebp - 4], 0xffffffff
-// 0046caa5  e84696f9ff           call 0x4060f0
-// 0046caaa  8b4df4               mov ecx, dword ptr [ebp - 0xc]
-// 0046caad  8b450c               mov eax, dword ptr [ebp + 0xc]
-// 0046cab0  5f                   pop edi
-// 0046cab1  5e                   pop esi
-// 0046cab2  64890d00000000       mov dword ptr fs:[0], ecx
-// 0046cab9  5b                   pop ebx
-// 0046caba  8be5                 mov esp, ebp
-// 0046cabc  5d                   pop ebp
-// 0046cabd  c20800               ret 8
 
 // from server: 85% by Espeon
 // from server: 82% by colin
@@ -372,6 +348,7 @@ extern "C" void* __cdecl getState();
 void __stdcall releaseState(int, void*);
 extern "C" int __cdecl checkUrl(const wchar_t*);
 extern "C" void __cdecl logMessage(int, int, int);
+#include <exception>
 extern const char logContext[];
 
 struct Text
@@ -447,8 +424,12 @@ int __stdcall S::f(S* object, const wchar_t* url)
         object->navigate(String(Text(url).data()), 0);
         return 0;
     }
-    catch (...)
+    catch (const std::exception& e)
     {
-        return -2147467259;
+        typedef int (__cdecl *Report)(int, int, int);
+        return reinterpret_cast<Report>(&logMessage)(
+            reinterpret_cast<int>(logContext),
+            reinterpret_cast<int>(e.what()),
+            0);
     }
 }

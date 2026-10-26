@@ -1,16 +1,23 @@
-// from server: 61% by atomic.potato
-struct S {
-    int f();
+// from server: 100% by sophus
+struct CXTPControlComboBoxListTarget;
+typedef void (__thiscall *CXTPControlComboBoxListProc)(CXTPControlComboBoxListTarget*, int);
+
+struct CXTPControlComboBoxListTarget {
+    void** vtbl;
 };
 
-int S::f()
-{
-    struct VTable {
-        int (__thiscall *fn)(void *);
-    };
+struct CXTPControlComboBoxList {
+    char reserved[0x180];
+    CXTPControlComboBoxListTarget* target;
+    void f(int value);
+};
 
-    void *p = *(void **)((char *)this + 0x180);
-    if (p != 0)
-        return ((VTable *)*(void **)p)->fn(p);
-    return 0;
+void CXTPControlComboBoxList::f(int value)
+{
+    CXTPControlComboBoxListTarget* target = this->target;
+    if (target)
+    {
+        CXTPControlComboBoxListProc proc = (CXTPControlComboBoxListProc)target->vtbl[95];
+        proc(target, value);
+    }
 }

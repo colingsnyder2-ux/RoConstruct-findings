@@ -1,9 +1,8 @@
-// from server: 99% by colin
-// from server: 95% by Espeon
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_manual_cylinder_d910398abac86202.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_claude_cylinder_decal_9d1ee56be8d1f428.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma float_control(precise,off)
@@ -106,12 +105,20 @@ public:
         : LevelBuilder(level, size, surfaceTypes), sides(6) {}
     virtual void buildFace(NormalId face, Usage usage);
 };
-class CylinderAlongXMesh : public Render::Mesh, public Dummy1, public Dummy2, public Dummy3 {
+class CylinderAlongXMesh : public Render::Mesh {
 public:
     CylinderAlongXMesh(const G3D::Vector3& size, NormalId textureFace);
 };
 CylinderAlongXMesh::CylinderAlongXMesh(const G3D::Vector3& size, NormalId textureFace)
 {
+    // The target unwind map has null-action states 1->0, 2->0, 3->2 with the same shape as the live
+    // new/level/builder states 4->0, 5->0, 6->5: a compiled-out copy of this block precedes it.
+    if (false) {
+        G3D::ReferenceCountedPointer<Render::Mesh::Level> level = new Render::Mesh::Level(G3D::RenderDevice::QUADS);
+        levels.push_back(level);
+        CylinderBuilder builder(level, size, RenderSurfaceTypes());
+        builder.buildFace(textureFace, LevelBuilder::Surface);
+    }
     G3D::ReferenceCountedPointer<Render::Mesh::Level> level = new Render::Mesh::Level(G3D::RenderDevice::QUADS);
     levels.push_back(level);
 

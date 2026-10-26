@@ -1,131 +1,59 @@
-// from server: 82% by king_originala_sol_native
+// from server: 100% by nuck16
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_sol_boolproperty_import_66ba6bd19498f059.cpp
+// roc-lib: rbxgs-dll roc_unit_92001885dd6c4dcc.cpp
 
 // Candidate translation unit (score above; library headers required).
-
-#include <intrin.h>
-
-
-extern "C" __declspec(dllimport) void __cdecl _invalid_parameter_noinfo();
-extern "C" void* __cdecl __RTDynamicCast(void*, long, void*, void*, int);
-
-extern char propertyType;
-extern char booleanPropertyType;
-
-struct Control {
-    virtual void reserved() = 0;
-    virtual void dispose() = 0;
-    virtual void destroy() = 0;
-    volatile long strong;
-    volatile long weak;
-    __forceinline void release() {
-        if (_InterlockedDecrement(&strong) == 0) {
-            dispose();
-            if (_InterlockedDecrement(&weak) == 0)
-                destroy();
-        }
-    }
-};
-
-struct Model;
-
-struct Shared {
-    Model* object;
-    Control* control;
-    ~Shared();
-};
-
-inline Shared::~Shared()
+#pragma include_alias("v8tree/Instance.h", "roc_espeon_nativeinstanceguidportablea1682bda32c99cd2.cpp")
+#include "v8tree/Instance.h"
+#include "reflection/property.h"
+// 2008-06 0057f960 / 0057f810: bool-property functors applied to selected instances
+// (std::for_each over shared_ptr<Instance>), authentic reflection iterators.
+namespace RBX {
+// 2008 PropertyIterator exposes its descriptor like ConstIterator::getDescriptor() (**iter);
+// this view has the header Iterator's layout (instance, CollectionType::const_iterator).
+struct PropertyIteratorView
 {
-    if (control)
-        control->release();
+	Reflection::DescribedBase* instance;
+	Reflection::PropertyContainer::CollectionType::const_iterator iter;
+	const Reflection::PropertyDescriptor& getDescriptor() const { return **iter; }
+};
+static inline const Reflection::PropertyDescriptor& descriptorOf(const Reflection::PropertyIterator& iter)
+{
+	return reinterpret_cast<const PropertyIteratorView&>(iter).getDescriptor();
 }
-
-struct Property {
-    bool get();
-};
-
-struct Vector;
-
-struct Proxy {
-    Vector* owner;
-};
-
-struct Position {
-    Proxy* proxy;
-    Property** position;
-};
-
-struct Vector {
-    Proxy* proxy;
-    unsigned reserved[2];
-    Property** first;
-    Property** last;
-
-    Position find(void* key);
-};
-
-struct Storage {
-    unsigned reserved[2];
-    Vector values;
-};
-
-struct Selection {
-    unsigned reserved[2];
-    Storage* storage;
-};
-
-struct Model {
-    unsigned reserved[5];
-    Selection selection;
-};
-
-struct Iterator {
-    Selection* owner;
-    Proxy* proxy;
-    Property** position;
-
-    Iterator(Selection*o,const Position&p):owner(o),proxy(p.proxy),position(p.position){}
-    Property* get(Position* temporary);
-};
-
-bool filteredSelection(void* key, Shared model)
+class SetBoolPropertyFunctor
 {
-    Selection* selection = &model.object->selection;
-    Iterator iterator(selection,selection->storage->values.find(key));
-    Proxy* proxy=iterator.proxy;
-    Property** position=iterator.position;
-
-    Storage* storage = model.object->selection.storage;
-    Property** end = storage->values.last;
-
-    if (storage->values.first > end)
-        _invalid_parameter_noinfo();
-
-    Proxy* expected = storage->values.proxy;
-    if (!proxy || proxy != expected)
-        _invalid_parameter_noinfo();
-
-    if (position != end) {
-        Vector* vector;
-        if (!proxy)
-            _invalid_parameter_noinfo();
-        vector = proxy->owner;
-
-        if (position >= vector->last)
-            _invalid_parameter_noinfo();
-
-        Property* property = *position;
-        if (__RTDynamicCast(property, 0, &propertyType,
-                            &booleanPropertyType, 0)) {
-            Position temporary;
-            if (iterator.get(&temporary)->get())
-                return true;
-        }
-    }
-
-    return false;
+	const Name& name;
+	bool value;
+public:
+	SetBoolPropertyFunctor(const Name& name, bool value) : name(name), value(value) {}
+	void operator()(boost::shared_ptr<Instance> instance);
+};
+void SetBoolPropertyFunctor::operator()(boost::shared_ptr<Instance> instance)
+{
+	Reflection::PropertyIterator iter = instance->findProperty(name);
+	if (iter != instance->properties_end())
+	{
+		if (dynamic_cast<const Reflection::TypedPropertyDescriptor<bool>*>(&descriptorOf(iter)))
+		{
+			if ((*iter).getValue<bool>() != value)
+				(*iter).setValue(value);
+		}
+	}
+}
+bool hasTrueBoolProperty(const Name& name, boost::shared_ptr<Instance> instance)
+{
+	Reflection::PropertyIterator iter = instance->findProperty(name);
+	if (iter != instance->properties_end())
+	{
+		if (dynamic_cast<const Reflection::TypedPropertyDescriptor<bool>*>(&descriptorOf(iter)))
+		{
+			if ((*iter).getValue<bool>())
+				return true;
+		}
+	}
+	return false;
+}
 }

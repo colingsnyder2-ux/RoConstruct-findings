@@ -1,589 +1,90 @@
-// from server: 52% by colin
-// roc 2008-06 0046c430  unit: VCWorkspace::?$CComObject  size: 841 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0046c430
-//
-// 0046c430  55                   push ebp
-// 0046c431  8d6c24d8             lea ebp, [esp - 0x28]
-// 0046c435  83ec28               sub esp, 0x28
-// 0046c438  6aff                 push -1
-// 0046c43a  689a3b7c00           push 0x7c3b9a
-// 0046c43f  64a100000000         mov eax, dword ptr fs:[0]
-// 0046c445  50                   push eax
-// 0046c446  64892500000000       mov dword ptr fs:[0], esp
-// 0046c44d  81ecd8010000         sub esp, 0x1d8
-// 0046c453  53                   push ebx
-// 0046c454  56                   push esi
-// 0046c455  57                   push edi
-// 0046c456  8965f0               mov dword ptr [ebp - 0x10], esp
-// 0046c459  c745fc00000000       mov dword ptr [ebp - 4], 0
-// 0046c460  e803452300           call 0x6a0968
-// 0046c465  50                   push eax
-// 0046c466  8d4d14               lea ecx, [ebp + 0x14]
-// 0046c469  e8f4442300           call 0x6a0962
-// 0046c46e  6a01                 push 1
-// 0046c470  6a02                 push 2
-// 0046c472  8d8d1cffffff         lea ecx, [ebp - 0xe4]
-// 0046c478  c645fc01             mov byte ptr [ebp - 4], 1
-// 0046c47c  ff1530248000         call dword ptr [0x802430]
-// 0046c482  8b4534               mov eax, dword ptr [ebp + 0x34]
-// 0046c485  50                   push eax
-// 0046c486  8d4d34               lea ecx, [ebp + 0x34]
-// 0046c489  c645fc03             mov byte ptr [ebp - 4], 3
-// 0046c48d  ff15d83e8000         call dword ptr [0x803ed8]
-// 0046c493  b304                 mov bl, 4
-// 0046c495  8d4d34               lea ecx, [ebp + 0x34]
-// 0046c498  885dfc               mov byte ptr [ebp - 4], bl
-// 0046c49b  ff15e03e8000         call dword ptr [0x803ee0]
-// 0046c4a1  83ec20               sub esp, 0x20
-// 0046c4a4  8bf4                 mov esi, esp
-// 0046c4a6  896508               mov dword ptr [ebp + 8], esp
-// 0046c4a9  50                   push eax
-// 0046c4aa  8bce                 mov ecx, esi
-// 0046c4ac  897500               mov dword ptr [ebp], esi
-// 0046c4af  ff1558248000         call dword ptr [0x802458]
-// 0046c4b5  c645fc05             mov byte ptr [ebp - 4], 5
-// 0046c4b9  e8b27d0e00           call 0x554270
-// 0046c4be  89461c               mov dword ptr [esi + 0x1c], eax
-// 0046c4c1  8b7d30               mov edi, dword ptr [ebp + 0x30]
-// 0046c4c4  8b4f24               mov ecx, dword ptr [edi + 0x24]
-// 0046c4c7  c645fc06             mov byte ptr [ebp - 4], 6
-// 0046c4cb  85c9                 test ecx, ecx
-// 0046c4cd  7409                 je 0x46c4d8
-// 0046c4cf  e8cc29fbff           call 0x41eea0
-// 0046c4d4  8bc8                 mov ecx, eax
-// 0046c4d6  eb02                 jmp 0x46c4da
-// 0046c4d8  33c9                 xor ecx, ecx
-// 0046c4da  8d5524               lea edx, [ebp + 0x24]
-// 0046c4dd  52                   push edx
-// 0046c4de  885dfc               mov byte ptr [ebp - 4], bl
-// 0046c4e1  e83a5a0f00           call 0x561f20
-// 0046c4e6  8b30                 mov esi, dword ptr [eax]
-// 0046c4e8  c70000000000         mov dword ptr [eax], 0
-// 0046c4ee  897530               mov dword ptr [ebp + 0x30], esi
-// 0046c4f1  8b4524               mov eax, dword ptr [ebp + 0x24]
-// 0046c4f4  c645fc07             mov byte ptr [ebp - 4], 7
-// 0046c4f8  85c0                 test eax, eax
-// 0046c4fa  7410                 je 0x46c50c
-// 0046c4fc  8b08                 mov ecx, dword ptr [eax]
-// 0046c4fe  8b5104               mov edx, dword ptr [ecx + 4]
-// 0046c501  8d0c02               lea ecx, [edx + eax]
-// 0046c504  8b01                 mov eax, dword ptr [ecx]
-// 0046c506  8b10                 mov edx, dword ptr [eax]
-// 0046c508  6a01                 push 1
-// 0046c50a  ffd2                 call edx
-// 0046c50c  6800100000           push 0x1000
-// 0046c511  8d851cffffff         lea eax, [ebp - 0xe4]
-// 0046c517  50                   push eax
-// 0046c518  56                   push esi
-// 0046c519  e8e24dfeff           call 0x451300
-// 0046c51e  83c40c               add esp, 0xc
-// 0046c521  885dfc               mov byte ptr [ebp - 4], bl
-// 0046c524  85f6                 test esi, esi
-// 0046c526  7411                 je 0x46c539
-// 0046c528  8b0e                 mov ecx, dword ptr [esi]
-// 0046c52a  8b5104               mov edx, dword ptr [ecx + 4]
-// 0046c52d  8b0432               mov eax, dword ptr [edx + esi]
-// 0046c530  8d0c32               lea ecx, [edx + esi]
-// 0046c533  8b10                 mov edx, dword ptr [eax]
-// 0046c535  6a01                 push 1
-// 0046c537  ffd2                 call edx
-// 0046c539  8d4d34               lea ecx, [ebp + 0x34]
-// 0046c53c  ff15143f8000         call dword ptr [0x803f14]
-// 0046c542  8d45d4               lea eax, [ebp - 0x2c]
-// 0046c545  50                   push eax
-// 0046c546  8d8d1cffffff         lea ecx, [ebp - 0xe4]
-// 0046c54c  c745fc02000000       mov dword ptr [ebp - 4], 2
-// 0046c553  ff1534248000         call dword ptr [0x802434]
-// 0046c559  8bc8                 mov ecx, eax
-// 0046c55b  c645fc0a             mov byte ptr [ebp - 4], 0xa
-// 0046c55f  ff1564248000         call dword ptr [0x802464]
-// 0046c565  8b4d78               mov ecx, dword ptr [ebp + 0x78]
-// 0046c568  8b5568               mov edx, dword ptr [ebp + 0x68]
-// 0046c56b  51                   push ecx
-// 0046c56c  83ec10               sub esp, 0x10
-// 0046c56f  8bcc                 mov ecx, esp
-// 0046c571  8911                 mov dword ptr [ecx], edx
-// 0046c573  8b556c               mov edx, dword ptr [ebp + 0x6c]
-// 0046c576  895104               mov dword ptr [ecx + 4], edx
-// 0046c579  8b5570               mov edx, dword ptr [ebp + 0x70]
-// 0046c57c  895108               mov dword ptr [ecx + 8], edx
-// 0046c57f  8b5574               mov edx, dword ptr [ebp + 0x74]
-// 0046c582  89510c               mov dword ptr [ecx + 0xc], edx
-// 0046c585  8b5558               mov edx, dword ptr [ebp + 0x58]
-// 0046c588  83ec10               sub esp, 0x10
-// 0046c58b  8bcc                 mov ecx, esp
-// 0046c58d  8911                 mov dword ptr [ecx], edx
-// 0046c58f  8b555c               mov edx, dword ptr [ebp + 0x5c]
-// 0046c592  895104               mov dword ptr [ecx + 4], edx
-// 0046c595  8b5560               mov edx, dword ptr [ebp + 0x60]
-// 0046c598  895108               mov dword ptr [ecx + 8], edx
-// 0046c59b  8b5564               mov edx, dword ptr [ebp + 0x64]
-// 0046c59e  89510c               mov dword ptr [ecx + 0xc], edx
-// 0046c5a1  8b5548               mov edx, dword ptr [ebp + 0x48]
-// 0046c5a4  83ec10               sub esp, 0x10
-// 0046c5a7  8bcc                 mov ecx, esp
-// 0046c5a9  8911                 mov dword ptr [ecx], edx
-// 0046c5ab  8b554c               mov edx, dword ptr [ebp + 0x4c]
-// 0046c5ae  895104               mov dword ptr [ecx + 4], edx
-// 0046c5b1  8b5550               mov edx, dword ptr [ebp + 0x50]
-// 0046c5b4  895108               mov dword ptr [ecx + 8], edx
-// 0046c5b7  8b5554               mov edx, dword ptr [ebp + 0x54]
-// 0046c5ba  89510c               mov dword ptr [ecx + 0xc], edx
-// 0046c5bd  8b5538               mov edx, dword ptr [ebp + 0x38]
-// 0046c5c0  83ec10               sub esp, 0x10
-// 0046c5c3  8bcc                 mov ecx, esp
-// 0046c5c5  8911                 mov dword ptr [ecx], edx
-// 0046c5c7  8b553c               mov edx, dword ptr [ebp + 0x3c]
-// 0046c5ca  895104               mov dword ptr [ecx + 4], edx
-// 0046c5cd  8b5540               mov edx, dword ptr [ebp + 0x40]
-// 0046c5d0  895108               mov dword ptr [ecx + 8], edx
-// 0046c5d3  8b5544               mov edx, dword ptr [ebp + 0x44]
-// 0046c5d6  89510c               mov dword ptr [ecx + 0xc], edx
-// 0046c5d9  50                   push eax
-// 0046c5da  8bcf                 mov ecx, edi
-// 0046c5dc  e84fecffff           call 0x46b230
-// 0046c5e1  8d4dd4               lea ecx, [ebp - 0x2c]
-// 0046c5e4  8bf0                 mov esi, eax
-// 0046c5e6  c645fc02             mov byte ptr [ebp - 4], 2
-// 0046c5ea  ff1568248000         call dword ptr [0x802468]
-// 0046c5f0  8d8d1cffffff         lea ecx, [ebp - 0xe4]
-// 0046c5f6  c645fc01             mov byte ptr [ebp - 4], 1
-// 0046c5fa  ff1538248000         call dword ptr [0x802438]
-// 0046c600  8b4518               mov eax, dword ptr [ebp + 0x18]
-// 0046c603  c645fc00             mov byte ptr [ebp - 4], 0
-// 0046c607  85c0                 test eax, eax
-// 0046c609  7406                 je 0x46c611
-// 0046c60b  8b4d14               mov ecx, dword ptr [ebp + 0x14]
-// 0046c60e  894804               mov dword ptr [eax + 4], ecx
-// 0046c611  837d2000             cmp dword ptr [ebp + 0x20], 0
-// 0046c615  740b                 je 0x46c622
-// 0046c617  8b551c               mov edx, dword ptr [ebp + 0x1c]
-// 0046c61a  52                   push edx
-// 0046c61b  6a00                 push 0
-// 0046c61d  e83a432300           call 0x6a095c
-// 0046c622  8bc6                 mov eax, esi
-// 0046c624  eb75                 jmp 0x46c69b
-// 0046c626  8b4d04               mov ecx, dword ptr [ebp + 4]
-// 0046c629  8b01                 mov eax, dword ptr [ecx]
-// 0046c62b  8b5004               mov edx, dword ptr [eax + 4]
-// 0046c62e  ffd2                 call edx
-// 0046c630  50                   push eax
-// 0046c631  8d45d4               lea eax, [ebp - 0x2c]
-// 0046c634  689cc88100           push 0x81c89c
-// 0046c639  50                   push eax
-// 0046c63a  e8d1d40900           call 0x509b10
-// 0046c63f  83c40c               add esp, 0xc
-// 0046c642  8d4dd4               lea ecx, [ebp - 0x2c]
-// 0046c645  c645fc09             mov byte ptr [ebp - 4], 9
-// 0046c649  ff1564248000         call dword ptr [0x802464]
-// 0046c64f  6a00                 push 0
-// 0046c651  50                   push eax
-// 0046c652  68f8648100           push 0x8164f8
-// 0046c657  e8d4ccfbff           call 0x429330
-// 0046c65c  83c40c               add esp, 0xc
-// 0046c65f  8d4dd4               lea ecx, [ebp - 0x2c]
-// 0046c662  894534               mov dword ptr [ebp + 0x34], eax
-// 0046c665  c645fc08             mov byte ptr [ebp - 4], 8
-// 0046c669  ff1568248000         call dword ptr [0x802468]
-// 0046c66f  c745fc02000000       mov dword ptr [ebp - 4], 2
-// 0046c676  b87cc64600           mov eax, 0x46c67c
-// 0046c67b  c3                   ret 
-// 0046c67c  8d8d1cffffff         lea ecx, [ebp - 0xe4]
-// 0046c682  c645fc01             mov byte ptr [ebp - 4], 1
-// 0046c686  ff1538248000         call dword ptr [0x802438]
-// 0046c68c  8d4d14               lea ecx, [ebp + 0x14]
-// 0046c68f  c645fc00             mov byte ptr [ebp - 4], 0
-// 0046c693  e8589af9ff           call 0x4060f0
-// 0046c698  8b4534               mov eax, dword ptr [ebp + 0x34]
-// 0046c69b  8b4df4               mov ecx, dword ptr [ebp - 0xc]
-// 0046c69e  5f                   pop edi
-// 0046c69f  5e                   pop esi
-// 0046c6a0  64890d00000000       mov dword ptr fs:[0], ecx
-// 0046c6a7  5b                   pop ebx
-// 0046c6a8  83c528               add ebp, 0x28
-// 0046c6ab  8be5                 mov esp, ebp
-// 0046c6ad  5d                   pop ebp
-// 0046c6ae  c24c00               ret 0x4c
-// 0046c6b1  8b4d0c               mov ecx, dword ptr [ebp + 0xc]
-// 0046c6b4  8b11                 mov edx, dword ptr [ecx]
-// 0046c6b6  8b5214               mov edx, dword ptr [edx + 0x14]
-// 0046c6b9  6a00                 push 0
-// 0046c6bb  68ff000000           push 0xff
-// 0046c6c0  8d851cfeffff         lea eax, [ebp - 0x1e4]
-// 0046c6c6  50                   push eax
-// 0046c6c7  ffd2                 call edx
-// 0046c6c9  8d851cfeffff         lea eax, [ebp - 0x1e4]
-// 0046c6cf  50                   push eax
-// 0046c6d0  8d4d9c               lea ecx, [ebp - 0x64]
-// 0046c6d3  688cc88100           push 0x81c88c
-// 0046c6d8  51                   push ecx
-// 0046c6d9  e832d40900           call 0x509b10
-// 0046c6de  83c40c               add esp, 0xc
-// 0046c6e1  6a00                 push 0
-// 0046c6e3  8d4d9c               lea ecx, [ebp - 0x64]
-// 0046c6e6  c645fc0c             mov byte ptr [ebp - 4], 0xc
-// 0046c6ea  ff1564248000         call dword ptr [0x802464]
-// 0046c6f0  50                   push eax
-// 0046c6f1  68f8648100           push 0x8164f8
-// 0046c6f6  e835ccfbff           call 0x429330
-// 0046c6fb  83c40c               add esp, 0xc
-// 0046c6fe  8d4d9c               lea ecx, [ebp - 0x64]
-// 0046c701  894534               mov dword ptr [ebp + 0x34], eax
-// 0046c704  c645fc0b             mov byte ptr [ebp - 4], 0xb
-// 0046c708  ff1568248000         call dword ptr [0x802468]
-// 0046c70e  b898c64600           mov eax, 0x46c698
-// 0046c713  c3                   ret 
-// 0046c714  8b5510               mov edx, dword ptr [ebp + 0x10]
-// 0046c717  52                   push edx
-// 0046c718  8d45b8               lea eax, [ebp - 0x48]
-// 0046c71b  6878c88100           push 0x81c878
-// 0046c720  50                   push eax
-// 0046c721  e8ead30900           call 0x509b10
-// 0046c726  83c40c               add esp, 0xc
-// 0046c729  6a00                 push 0
-// 0046c72b  8d4db8               lea ecx, [ebp - 0x48]
-// 0046c72e  c645fc0d             mov byte ptr [ebp - 4], 0xd
-// 0046c732  ff1564248000         call dword ptr [0x802464]
-// 0046c738  50                   push eax
-// 0046c739  68f8648100           push 0x8164f8
-// 0046c73e  e8edcbfbff           call 0x429330
-// 0046c743  83c40c               add esp, 0xc
-// 0046c746  8d4db8               lea ecx, [ebp - 0x48]
-// 0046c749  894534               mov dword ptr [ebp + 0x34], eax
-// 0046c74c  c645fc0b             mov byte ptr [ebp - 4], 0xb
-// 0046c750  ff1568248000         call dword ptr [0x802468]
-// 0046c756  b898c64600           mov eax, 0x46c698
-// 0046c75b  c3                   ret 
-// 0046c75c  6a00                 push 0
-// 0046c75e  6860c88100           push 0x81c860
-// 0046c763  68f8648100           push 0x8164f8
-// 0046c768  e8c3cbfbff           call 0x429330
-// 0046c76d  894534               mov dword ptr [ebp + 0x34], eax
-// 0046c770  83c40c               add esp, 0xc
-// 0046c773  b898c64600           mov eax, 0x46c698
-// 0046c778  c3                   ret 
+// from server: 100% by nuck16
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: atl-9.0-dll-rtm roc_unit_11cb71645bae7820.cpp
 
-// from server: 65% by colin
-// from server: 63% by king_originala
-// roc 2008-06 0046c430  unit: VCWorkspace::?$CComObject  size: 502 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0046c430
-//
-// 0046c430  55                   push ebp
-// 0046c431  8d6c24d8             lea ebp, [esp - 0x28]
-// 0046c435  83ec28               sub esp, 0x28
-// 0046c438  6aff                 push -1
-// 0046c43a  689a3b7c00           push 0x7c3b9a
-// 0046c43f  64a100000000         mov eax, dword ptr fs:[0]
-// 0046c445  50                   push eax
-// 0046c446  64892500000000       mov dword ptr fs:[0], esp
-// 0046c44d  81ecd8010000         sub esp, 0x1d8
-// 0046c453  53                   push ebx
-// 0046c454  56                   push esi
-// 0046c455  57                   push edi
-// 0046c456  8965f0               mov dword ptr [ebp - 0x10], esp
-// 0046c459  c745fc00000000       mov dword ptr [ebp - 4], 0
-// 0046c460  e803452300           call 0x6a0968
-// 0046c465  50                   push eax
-// 0046c466  8d4d14               lea ecx, [ebp + 0x14]
-// 0046c469  e8f4442300           call 0x6a0962
-// 0046c46e  6a01                 push 1
-// 0046c470  6a02                 push 2
-// 0046c472  8d8d1cffffff         lea ecx, [ebp - 0xe4]
-// 0046c478  c645fc01             mov byte ptr [ebp - 4], 1
-// 0046c47c  ff1530248000         call dword ptr [0x802430]
-// 0046c482  8b4534               mov eax, dword ptr [ebp + 0x34]
-// 0046c485  50                   push eax
-// 0046c486  8d4d34               lea ecx, [ebp + 0x34]
-// 0046c489  c645fc03             mov byte ptr [ebp - 4], 3
-// 0046c48d  ff15d83e8000         call dword ptr [0x803ed8]
-// 0046c493  b304                 mov bl, 4
-// 0046c495  8d4d34               lea ecx, [ebp + 0x34]
-// 0046c498  885dfc               mov byte ptr [ebp - 4], bl
-// 0046c49b  ff15e03e8000         call dword ptr [0x803ee0]
-// 0046c4a1  83ec20               sub esp, 0x20
-// 0046c4a4  8bf4                 mov esi, esp
-// 0046c4a6  896508               mov dword ptr [ebp + 8], esp
-// 0046c4a9  50                   push eax
-// 0046c4aa  8bce                 mov ecx, esi
-// 0046c4ac  897500               mov dword ptr [ebp], esi
-// 0046c4af  ff1558248000         call dword ptr [0x802458]
-// 0046c4b5  c645fc05             mov byte ptr [ebp - 4], 5
-// 0046c4b9  e8b27d0e00           call 0x554270
-// 0046c4be  89461c               mov dword ptr [esi + 0x1c], eax
-// 0046c4c1  8b7d30               mov edi, dword ptr [ebp + 0x30]
-// 0046c4c4  8b4f24               mov ecx, dword ptr [edi + 0x24]
-// 0046c4c7  c645fc06             mov byte ptr [ebp - 4], 6
-// 0046c4cb  85c9                 test ecx, ecx
-// 0046c4cd  7409                 je 0x46c4d8
-// 0046c4cf  e8cc29fbff           call 0x41eea0
-// 0046c4d4  8bc8                 mov ecx, eax
-// 0046c4d6  eb02                 jmp 0x46c4da
-// 0046c4d8  33c9                 xor ecx, ecx
-// 0046c4da  8d5524               lea edx, [ebp + 0x24]
-// 0046c4dd  52                   push edx
-// 0046c4de  885dfc               mov byte ptr [ebp - 4], bl
-// 0046c4e1  e83a5a0f00           call 0x561f20
-// 0046c4e6  8b30                 mov esi, dword ptr [eax]
-// 0046c4e8  c70000000000         mov dword ptr [eax], 0
-// 0046c4ee  897530               mov dword ptr [ebp + 0x30], esi
-// 0046c4f1  8b4524               mov eax, dword ptr [ebp + 0x24]
-// 0046c4f4  c645fc07             mov byte ptr [ebp - 4], 7
-// 0046c4f8  85c0                 test eax, eax
-// 0046c4fa  7410                 je 0x46c50c
-// 0046c4fc  8b08                 mov ecx, dword ptr [eax]
-// 0046c4fe  8b5104               mov edx, dword ptr [ecx + 4]
-// 0046c501  8d0c02               lea ecx, [edx + eax]
-// 0046c504  8b01                 mov eax, dword ptr [ecx]
-// 0046c506  8b10                 mov edx, dword ptr [eax]
-// 0046c508  6a01                 push 1
-// 0046c50a  ffd2                 call edx
-// 0046c50c  6800100000           push 0x1000
-// 0046c511  8d851cffffff         lea eax, [ebp - 0xe4]
-// 0046c517  50                   push eax
-// 0046c518  56                   push esi
-// 0046c519  e8e24dfeff           call 0x451300
-// 0046c51e  83c40c               add esp, 0xc
-// 0046c521  885dfc               mov byte ptr [ebp - 4], bl
-// 0046c524  85f6                 test esi, esi
-// 0046c526  7411                 je 0x46c539
-// 0046c528  8b0e                 mov ecx, dword ptr [esi]
-// 0046c52a  8b5104               mov edx, dword ptr [ecx + 4]
-// 0046c52d  8b0432               mov eax, dword ptr [edx + esi]
-// 0046c530  8d0c32               lea ecx, [edx + esi]
-// 0046c533  8b10                 mov edx, dword ptr [eax]
-// 0046c535  6a01                 push 1
-// 0046c537  ffd2                 call edx
-// 0046c539  8d4d34               lea ecx, [ebp + 0x34]
-// 0046c53c  ff15143f8000         call dword ptr [0x803f14]
-// 0046c542  8d45d4               lea eax, [ebp - 0x2c]
-// 0046c545  50                   push eax
-// 0046c546  8d8d1cffffff         lea ecx, [ebp - 0xe4]
-// 0046c54c  c745fc02000000       mov dword ptr [ebp - 4], 2
-// 0046c553  ff1534248000         call dword ptr [0x802434]
-// 0046c559  8bc8                 mov ecx, eax
-// 0046c55b  c645fc0a             mov byte ptr [ebp - 4], 0xa
-// 0046c55f  ff1564248000         call dword ptr [0x802464]
-// 0046c565  8b4d78               mov ecx, dword ptr [ebp + 0x78]
-// 0046c568  8b5568               mov edx, dword ptr [ebp + 0x68]
-// 0046c56b  51                   push ecx
-// 0046c56c  83ec10               sub esp, 0x10
-// 0046c56f  8bcc                 mov ecx, esp
-// 0046c571  8911                 mov dword ptr [ecx], edx
-// 0046c573  8b556c               mov edx, dword ptr [ebp + 0x6c]
-// 0046c576  895104               mov dword ptr [ecx + 4], edx
-// 0046c579  8b5570               mov edx, dword ptr [ebp + 0x70]
-// 0046c57c  895108               mov dword ptr [ecx + 8], edx
-// 0046c57f  8b5574               mov edx, dword ptr [ebp + 0x74]
-// 0046c582  89510c               mov dword ptr [ecx + 0xc], edx
-// 0046c585  8b5558               mov edx, dword ptr [ebp + 0x58]
-// 0046c588  83ec10               sub esp, 0x10
-// 0046c58b  8bcc                 mov ecx, esp
-// 0046c58d  8911                 mov dword ptr [ecx], edx
-// 0046c58f  8b555c               mov edx, dword ptr [ebp + 0x5c]
-// 0046c592  895104               mov dword ptr [ecx + 4], edx
-// 0046c595  8b5560               mov edx, dword ptr [ebp + 0x60]
-// 0046c598  895108               mov dword ptr [ecx + 8], edx
-// 0046c59b  8b5564               mov edx, dword ptr [ebp + 0x64]
-// 0046c59e  89510c               mov dword ptr [ecx + 0xc], edx
-// 0046c5a1  8b5548               mov edx, dword ptr [ebp + 0x48]
-// 0046c5a4  83ec10               sub esp, 0x10
-// 0046c5a7  8bcc                 mov ecx, esp
-// 0046c5a9  8911                 mov dword ptr [ecx], edx
-// 0046c5ab  8b554c               mov edx, dword ptr [ebp + 0x4c]
-// 0046c5ae  895104               mov dword ptr [ecx + 4], edx
-// 0046c5b1  8b5550               mov edx, dword ptr [ebp + 0x50]
-// 0046c5b4  895108               mov dword ptr [ecx + 8], edx
-// 0046c5b7  8b5554               mov edx, dword ptr [ebp + 0x54]
-// 0046c5ba  89510c               mov dword ptr [ecx + 0xc], edx
-// 0046c5bd  8b5538               mov edx, dword ptr [ebp + 0x38]
-// 0046c5c0  83ec10               sub esp, 0x10
-// 0046c5c3  8bcc                 mov ecx, esp
-// 0046c5c5  8911                 mov dword ptr [ecx], edx
-// 0046c5c7  8b553c               mov edx, dword ptr [ebp + 0x3c]
-// 0046c5ca  895104               mov dword ptr [ecx + 4], edx
-// 0046c5cd  8b5540               mov edx, dword ptr [ebp + 0x40]
-// 0046c5d0  895108               mov dword ptr [ecx + 8], edx
-// 0046c5d3  8b5544               mov edx, dword ptr [ebp + 0x44]
-// 0046c5d6  89510c               mov dword ptr [ecx + 0xc], edx
-// 0046c5d9  50                   push eax
-// 0046c5da  8bcf                 mov ecx, edi
-// 0046c5dc  e84fecffff           call 0x46b230
-// 0046c5e1  8d4dd4               lea ecx, [ebp - 0x2c]
-// 0046c5e4  8bf0                 mov esi, eax
-// 0046c5e6  c645fc02             mov byte ptr [ebp - 4], 2
-// 0046c5ea  ff1568248000         call dword ptr [0x802468]
-// 0046c5f0  8d8d1cffffff         lea ecx, [ebp - 0xe4]
-// 0046c5f6  c645fc01             mov byte ptr [ebp - 4], 1
-// 0046c5fa  ff1538248000         call dword ptr [0x802438]
-// 0046c600  8b4518               mov eax, dword ptr [ebp + 0x18]
-// 0046c603  c645fc00             mov byte ptr [ebp - 4], 0
-// 0046c607  85c0                 test eax, eax
-// 0046c609  7406                 je 0x46c611
-// 0046c60b  8b4d14               mov ecx, dword ptr [ebp + 0x14]
-// 0046c60e  894804               mov dword ptr [eax + 4], ecx
-// 0046c611  837d2000             cmp dword ptr [ebp + 0x20], 0
-// 0046c615  740b                 je 0x46c622
-// 0046c617  8b551c               mov edx, dword ptr [ebp + 0x1c]
-// 0046c61a  52                   push edx
-// 0046c61b  6a00                 push 0
-// 0046c61d  e83a432300           call 0x6a095c
-// 0046c622  8bc6                 mov eax, esi
-// 0046c624  eb75                 jmp 0x46c69b
-#include <intrin.h>
+// Candidate translation unit (score above; library headers required).
+#ifndef _CPPUNWIND
+#define _CPPUNWIND 1
+#endif
+#ifndef _AFXDLL
+#define _AFXDLL
+#endif
+#include <new>
+#include <afxwin.h>
+#include <atlbase.h>
+#include <string>
+#include <sstream>
+#include <memory>
+#include <exception>
 
-struct Block16 { unsigned long value[4]; };
+template<class E> struct ImpStr : std::basic_string<E> { __declspec(noinline) const E* c_str() const { return std::basic_string<E>::c_str(); } };
+extern template struct __declspec(dllimport) ImpStr<char>;
+static inline const char* cstr(const std::string& x) { return static_cast<const ImpStr<char>&>(x).c_str(); }
+namespace G3D { std::string __cdecl format(const char* fmt, ...); }
+HRESULT __cdecl ReportError(const GUID& iid, const char* msg, HRESULT hr);
+extern const GUID IID_IWorkspace;
 
-struct String
-{
-    unsigned char data[28];
-    String();
-    String(const char*);
-    ~String();
-    const char* c_str() const;
+struct PathString {
+    char* m_pszData;
+    __declspec(dllimport) PathString(const wchar_t* psz);
+    __declspec(dllimport) operator const char*() const throw();
+    __declspec(dllimport) ~PathString() throw();
 };
 
-struct Text
-{
-    unsigned char data[4];
-    Text(const char*);
-    ~Text();
-    const char* get() const;
+namespace RBX {
+class Name { public: static const Name& getNullName(); };
+class ContentId {
+public:
+    ContentId(const char* id) : id(id), mimeTypePtr(&Name::getNullName()) {}
+private:
+    std::string id;
+    const Name* mimeTypePtr;
 };
-
-struct Output
-{
-    unsigned char data[184];
-    Output(int, bool);
-    ~Output();
-    String str() const;
+class ContentProvider {
+public:
+    std::auto_ptr<std::istream> getContent(ContentId ticket);
 };
-
-extern void (__thiscall *string_construct)(String*, const char*);
-extern void (__thiscall *string_destroy)(String*);
-extern const char* (__thiscall *string_data)(const String*);
-extern void (__thiscall *text_construct)(Text*, const char*);
-extern void (__thiscall *text_destroy)(Text*);
-extern const char* (__thiscall *text_data)(const Text*);
-extern void (__thiscall *output_construct)(Output*, int, bool);
-extern void (__thiscall *output_destroy)(Output*);
-extern String* (__thiscall *output_string)(const Output*, String*);
-
-inline String::String() {}
-inline String::String(const char* p) { string_construct(this, p); }
-inline String::~String() { string_destroy(this); }
-inline const char* String::c_str() const { return string_data(this); }
-inline Text::Text(const char* p) { text_construct(this, p); }
-inline Text::~Text() { text_destroy(this); }
-inline const char* Text::get() const { return text_data(this); }
-inline Output::Output(int mode, bool initialize)
-{
-    output_construct(this, mode, initialize);
-}
-inline Output::~Output() { output_destroy(this); }
-inline String Output::str() const
-{
-    String result;
-    output_string(this, &result);
-    return result;
+class DataModel { public: ContentProvider* contentProvider(); };
+inline ContentProvider* contentProvider(DataModel* dm) { return dm ? dm->contentProvider() : 0; }
+void __cdecl copyStream(std::istream&, std::ostream&, int);
 }
 
-extern void* __cdecl local_scope();
-extern void* __cdecl current_context();
-extern void __stdcall restore_context(int, void*);
+struct WorkspaceHead { void* a; void* b; };
+struct SiteCheck { HRESULT CheckSite(); };
 
-struct Context
-{
-    unsigned long saved;
-    unsigned long* target;
-    void* token;
-    int active;
-    Context(void*);
-    ~Context();
+class VCWorkspace : public WorkspaceHead, public SiteCheck {
+public:
+    char pad[0x24 - 8];
+    RBX::DataModel* dataModel;
+    HRESULT execScript(const char* script, VARIANT arg1, VARIANT arg2, VARIANT arg3, VARIANT arg4, IDispatch** result);
+    HRESULT __stdcall ExecUrlScript(BSTR url, VARIANT arg1, VARIANT arg2, VARIANT arg3, VARIANT arg4, IDispatch** result) throw();
 };
 
-inline Context::~Context()
+HRESULT __stdcall VCWorkspace::ExecUrlScript(BSTR url, VARIANT arg1, VARIANT arg2, VARIANT arg3, VARIANT arg4, IDispatch** result) throw()
 {
-    if (target)
-        target[1] = saved;
-    if (active)
-        restore_context(0, token);
-}
-
-struct Guid
-{
-    String text;
-    void* scope;
-    Guid(const char*);
-};
-
-inline Guid::Guid(const char* p) : text(p), scope(local_scope()) {}
-
-struct StreamBase { virtual ~StreamBase(); };
-struct Stream : virtual StreamBase {};
-
-struct TemporaryOwner
-{
-    mutable Stream* pointer;
-    ~TemporaryOwner();
-};
-
-struct Owner
-{
-    Stream* pointer;
-    Owner(const TemporaryOwner&);
-    ~Owner();
-};
-
-inline TemporaryOwner::~TemporaryOwner()
-{
-    if (pointer)
-        delete pointer;
-}
-
-inline Owner::Owner(const TemporaryOwner& other) : pointer(other.pointer)
-{
-    other.pointer = 0;
-}
-
-inline Owner::~Owner()
-{
-    if (pointer)
-        delete pointer;
-}
-
-struct Source
-{
-    Source* resolve();
-    TemporaryOwner open(Guid);
-};
-
-struct Workspace
-{
-    unsigned char padding[36];
-    Source* source;
-    int submit(const char*, Block16, Block16, Block16, Block16, int);
-};
-
-extern void __cdecl copy_stream(Stream*, Output*, int);
-
-int __cdecl function(Workspace* workspace, const char* text,
-                     Block16 a, Block16 b, Block16 c, Block16 d, int flags)
-{
-    try
-    {
-        Context context(current_context());
-        Output output(2, true);
-        _ReadWriteBarrier();
-        {
-            Text input(text);
-            Owner stream((workspace->source
-                ? workspace->source->resolve() : 0)->open(Guid(input.get())));
-            copy_stream(stream.pointer, &output, 4096);
+    try {
+        AFX_MANAGE_STATE(AfxGetAppModuleState());
+        std::ostringstream stream;
+        try {
+            PathString s(url);
+            std::auto_ptr<std::istream> content(RBX::contentProvider(dataModel)->getContent(RBX::ContentId(s)));
+            RBX::copyStream(*content, stream, 4096);
+        } catch (std::exception& e) {
+            std::string message = G3D::format("Failed to get URL, %s", e.what());
+            return ReportError(IID_IWorkspace, static_cast<const ImpStr<char>&>(message).c_str(), 0);
         }
-        return workspace->submit(output.str().c_str(), a, b, c, d, flags);
-    }
-    catch (...)
-    {
-        return -2147467259;
+        return execScript(cstr(stream.str()), arg1, arg2, arg3, arg4, result);
+    } catch (CException* e) {
+        char buffer[255];
+        e->GetErrorMessage(buffer, 255);
+        std::string message = G3D::format("CException %s", buffer);
+        return ReportError(IID_IWorkspace, static_cast<const ImpStr<char>&>(message).c_str(), 0);
+    } catch (ATL::CAtlException e) {
+        std::string message = G3D::format("CAtlException %d", e.m_hr);
+        return ReportError(IID_IWorkspace, static_cast<const ImpStr<char>&>(message).c_str(), 0);
+    } catch (...) {
+        return ReportError(IID_IWorkspace, "Unexpected exception", 0);
     }
 }
