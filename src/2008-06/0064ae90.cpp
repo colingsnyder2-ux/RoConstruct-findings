@@ -1,10 +1,7 @@
-// from server: 89% by Espeon
+// from server: 93% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espeon_sleepstagecompareorder_a7e607808b355395.cpp
-
-// Candidate translation unit (score above; library headers required).
 
 
 
@@ -96,7 +93,7 @@ void SleepStage::step(SleepStageArg *arg, int newStage)
 
     if (newStage == 4 || newStage == 5 || newStage == 6) {
         Stage *other = arg->stage;
-        int mine = level();
+        volatile int mine = level();
         if (other->level() > mine)
             manager->sleep(arg);
     }
