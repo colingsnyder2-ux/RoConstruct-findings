@@ -1,7 +1,8 @@
-// from server: 69% by king_originala
+// from server: 74% by king_originala
+// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_render_adorn_early_section_a4c2cd64fbe544e6.cpp
+// roc-lib: rbxgs-dll roc_sol_sphere_32ea7c8c8e363fcb.cpp
 
 // Candidate translation unit (score above; library headers required).
 #undef OGRE_NONCLIENT_BUILD
@@ -88,11 +89,11 @@ void AdornRbxGfx::sphere(const G3D::Sphere& value,const G3D::Color4& color,const
             object->setMaterialName(section,(*(Ogre::MaterialPtr*)((char*)this+0x24))->getName());
         mesh=object->convertToMesh(scene->getName()+"smsh"+Ogre::StringConverter::toString(*(unsigned int*)((char*)this+0x94)),Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
         (*(AdornMeshCache*)((char*)this+0x78))[key]=mesh;
-        float radius=mesh->getBoundingSphereRadius();
-        Ogre::Sphere parameter(mesh->getBounds().getCenter(),radius);
+        Ogre::Mesh* sphereMesh=mesh.getPointer();
+        float radius=sphereMesh->getBoundingSphereRadius();
+        Ogre::Sphere parameter(sphereMesh->getBounds().getCenter(),radius);
         for(int i=0;i<mesh->getNumSubMeshes();++i) {
-            Ogre::RbxSceneNode* node=*(Ogre::RbxSceneNode**)((char*)this+0x34);
-            node->setSphere((unsigned long)mesh->getSubMesh((unsigned short)i),parameter);
+            (*(Ogre::RbxSceneNode**)((char*)this+0x34))->setSphere((unsigned long)mesh->getSubMesh((unsigned short)i),parameter);
         }
     }
     Ogre::Matrix4 world;
