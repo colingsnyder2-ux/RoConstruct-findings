@@ -1,23 +1,42 @@
-// from server: 52% by atomic.potato
-extern "C" void* __cdecl func_007f3860(unsigned int);
-
-struct S {
-    void* f(int, int);
+// from server: 91% by nuck16
+// roc 2009-12 004f6af0  unit: RBX::VInstance::V?$shared_ptr::?$holder
+// boost::detail::shared_count::shared_count(P p, D d): pi_ = new sp_counted_impl_pd<P, D>(p, d)
+// (0x9ba0dc is that class's vtable; the catch funclet that calls d(p) and rethrows lies outside this extent)
+struct Deleter
+{
+    void operator()(void *p) const;
 };
 
-void* S::f(int a, int b)
+struct sp_counted_base
 {
-    void* p;
-    *(void**)this = 0;
-    p = func_007f3860(0x14);
-    if (p) {
-        *(int*)((char*)p + 4) = 1;
-        *(int*)((char*)p + 8) = 1;
-        *(int*)p = 0x9ba0dc;
-        *(int*)((char*)p + 0xc) = a;
-    } else {
-        p = 0;
+    int vtable;
+    long use_count_;
+    long weak_count_;
+    sp_counted_base() : use_count_(1), weak_count_(1) {}
+};
+
+struct sp_counted_impl_pd : sp_counted_base
+{
+    void *ptr;
+    Deleter del;
+    sp_counted_impl_pd(void *p, Deleter d) { vtable = 0x9ba0dc; ptr = p; del = d; }
+};
+
+struct shared_count
+{
+    sp_counted_base *pi_;
+    shared_count(void *p, Deleter d);
+};
+
+shared_count::shared_count(void *p, Deleter d) : pi_(0)
+{
+    try
+    {
+        pi_ = new sp_counted_impl_pd(p, d);
     }
-    *(void**)this = p;
-    return this;
+    catch (...)
+    {
+        d(p);
+        throw;
+    }
 }

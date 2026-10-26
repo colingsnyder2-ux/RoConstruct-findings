@@ -1,26 +1,26 @@
-// from server: 90% by atomic.potato
-struct FactoryProduct
-{
-    int value0;
-    int value1;
-    char pad0[0x10];
-    int value6;
-    int value7;
+// from server: 100% by nuck16
+// roc 2009-12 006d2820  (same-shape propagation from exact 0040bbb0)
 
-    void *initialize();
+void __fastcall sub_637b00(void*);
+void __cdecl sub_7f385a(void*);
+
+struct S {
+    void* vf0;
+    void* vf4;
+    char gap_8[0x10];
+    void* vf18;
+    void* vf1c;
+    void* destroy(unsigned int flags);
 };
 
-extern "C" void FactoryProductTarget();
-extern "C" void FactoryProductDestroy(void *);
-
-void *FactoryProduct::initialize()
-{
-    value0 = 0x9d7ffc;
-    value1 = 0x9d7ff0;
-    value6 = 0x9d7fe4;
-    value7 = 0x9d7fdc;
-    FactoryProductTarget();
-    if (*(unsigned char *)((char *)this - 4) & 1)
-        FactoryProductDestroy(this);
+void* S::destroy(unsigned int flags) {
+    vf0 = (void*)0x9a01a4;
+    vf4 = (void*)0x9a019c;
+    vf18 = (void*)0x9a0190;
+    vf1c = (void*)0x9a0188;
+    sub_637b00(this);
+    if (flags & 1) {
+        sub_7f385a(this);
+    }
     return this;
 }

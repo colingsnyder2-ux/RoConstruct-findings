@@ -1,8 +1,8 @@
-// from server: 99% by king_originala_sol_resume_high
+// from server: 100% by nuck16
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_resume_high_datamodel_2418d95548bb0ebb.cpp
+// roc-lib: rbxgs-dll roc_unit_b7e4c02ad8531df9.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "util/Rect.h"
@@ -27,7 +27,7 @@ template<class T>struct ReferenceCountedPointer {T*pointer;};
 namespace RBX {
 struct TextureProxyBase;struct Adorn;struct Name;struct XmlElement;struct IReferenceBinder;struct ServiceProvider;struct AncestorChanged;struct PropertyChanged;struct GuiEvent;
 template<class T>struct CopyOnWrite {boost::shared_ptr<T>object;const T*operator->()const{return object.get();}};
-struct Instance {
+class Instance {public:
  virtual ~Instance();virtual void setName(const std::string&);
  virtual bool askAddChild(const Instance*)const;virtual bool askSetParent(const Instance*)const;
  virtual void onAncestorChanged(const AncestorChanged&);virtual void onDescendentAdded(Instance*);virtual void onDescendentRemoving(const boost::shared_ptr<Instance>&);
@@ -51,7 +51,7 @@ struct Adorn {
  virtual void cylinderAlongX(float,float,const G3D::Color4&,const G3D::Color4&)=0;virtual void ray(const G3D::Ray&,const G3D::Color4&,float)=0;virtual void lineSegment(const G3D::LineSegment&,const G3D::Color4&,float)=0;virtual void axes(const G3D::Color4&,const G3D::Color4&,const G3D::Color4&,float)=0;virtual void quad(const G3D::Vector3&,const G3D::Vector3&,const G3D::Vector3&,const G3D::Vector3&,const G3D::Color4&)=0;
 };
 enum SelectState{SELECT_NONE};
-struct IRenderable {int index2d,index3d;void*bucket;virtual bool shouldRender2d()const=0;virtual bool shouldRender3dAdorn()const=0;virtual void render2d(Adorn*)=0;virtual void render3dAdorn(Adorn*)=0;virtual void render3dSelect(Adorn*,SelectState)=0;};
+class IRenderable {public:int index2d,index3d;void*bucket;virtual bool shouldRender2d()const=0;virtual bool shouldRender3dAdorn()const=0;virtual void render2d(Adorn*)=0;virtual void render3dAdorn(Adorn*)=0;virtual void render3dSelect(Adorn*,SelectState)=0;};
 struct GuiTarget;struct GuiResponse {int response;GuiTarget*target;};
 struct GuiTarget {virtual GuiResponse process(const GuiEvent&)=0;};
 struct GuiItem:Instance,GuiTarget {
@@ -91,7 +91,8 @@ void DataModel::renderPass2d(Adorn*adorn,IMetric*metric){
  if(!metric)return;
  tempMetric=metric;
  workspace->render2d(adorn);
- GuiRoot::render2dItem(adorn,Network::Players::findLocalPlayer(this)?static_cast<GuiItem*>(localBackpack.get()):static_cast<GuiItem*>(starterPack.get()));
+ if(Network::Players::findLocalPlayer(this))GuiRoot::render2dItem(adorn,static_cast<GuiItem*>(localBackpack.get()));
+ else GuiRoot::render2dItem(adorn,static_cast<GuiItem*>(starterPack.get()));
  guiRoot->render2d(adorn);
  Network::Players*players=getPlayers();
  Network::Player*player=players->localPlayer.get();

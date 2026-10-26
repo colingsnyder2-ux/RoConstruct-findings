@@ -1,28 +1,38 @@
-// from server: 52% by atomic.potato
-extern "C" void* __cdecl sub_7F3860(unsigned int);
-
-struct Inner {
-    void* vtable;
-    int refcount1;
-    int refcount2;
-    int value;
+// from server: 91% by nuck16
+// roc 2009-12 00546e90  unit: RBX::Stats::_N::?$TypedStatsItem
+// boost::detail::shared_count::shared_count(Y *p): pi_ = new sp_counted_impl_p<Y>(p)
+// (0x9bd0fc is that class's vtable; the catch funclet that deletes p and rethrows lies outside this extent)
+struct sp_counted_base
+{
+    int vtable;
+    long use_count_;
+    long weak_count_;
+    sp_counted_base() : use_count_(1), weak_count_(1) {}
 };
 
-struct Outer {
-    Inner* ptr;
-    Outer(int v);
+struct sp_counted_impl_p : sp_counted_base
+{
+    void *px_;
+    sp_counted_impl_p(void *px) { vtable = 0x9bd0fc; px_ = px; }
 };
 
-Outer::Outer(int v) {
-    ptr = 0;
-    Inner* p = (Inner*)sub_7F3860(0x10);
-    if (p) {
-        p->refcount1 = 1;
-        p->refcount2 = 1;
-        p->vtable = (void*)0x9BD0FC;
-        p->value = v;
-    } else {
-        p = 0;
+void checked_delete(void *p);
+
+struct shared_count
+{
+    sp_counted_base *pi_;
+    shared_count(void *p);
+};
+
+shared_count::shared_count(void *p) : pi_(0)
+{
+    try
+    {
+        pi_ = new sp_counted_impl_p(p);
     }
-    ptr = p;
+    catch (...)
+    {
+        checked_delete(p);
+        throw;
+    }
 }

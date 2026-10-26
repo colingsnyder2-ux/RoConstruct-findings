@@ -1,16 +1,32 @@
-// from server: 57% by atomic.potato
-struct RBX_VRotateP_FactoryProduct {
-    void construct(int);
+// from server: 100% by nuck16
+// roc 2009-12 007179f0  (same-shape propagation from exact 007175f0)
+
+struct Name {
+    char pad0[0x94];
+    void* field94;
 };
 
-extern "C" void __stdcall sub_717870();
+struct Base {
+    void sub_716fd0(void* arg);
+};
 
-void RBX_VRotateP_FactoryProduct::construct(int a) {
-    char pad[0x98];
-    sub_717870();
-    *(int*)((char*)this + 0x00) = 0x9df47c;
-    *(int*)((char*)this + 0x04) = 0x9df470;
-    *(int*)((char*)this + 0x18) = 0x9df464;
-    *(int*)((char*)this + 0x1c) = 0x9df45c;
-    *(int*)((char*)this + 0x94) = 0x9df444;
+struct VWeld : Base {
+    void* field0;
+    void* field4;
+    char pad8[0x10];
+    void* field18;
+    void* field1c;
+    char pad20[0x74];
+    void* field94;
+    VWeld* construct(void* arg);
+};
+
+VWeld* VWeld::construct(void* arg) {
+    sub_716fd0(arg);
+    *(void**)this = (void*)0x9df2dc;
+    *(void**)((char*)this + 4) = (void*)0x9df2d0;
+    *(void**)((char*)this + 0x18) = (void*)0x9df2c4;
+    *(void**)((char*)this + 0x1c) = (void*)0x9df2bc;
+    *(void**)((char*)this + 0x94) = (void*)0x9df2a4;
+    return this;
 }

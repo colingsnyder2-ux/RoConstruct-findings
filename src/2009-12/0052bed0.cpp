@@ -1,22 +1,42 @@
-// from server: 51% by atomic.potato
-struct Server {
-    void* field0;
-    void init(int arg);
+// from server: 91% by nuck16
+// roc 2009-12 0052bed0  unit: RBX::Network::Server
+// boost::detail::shared_count::shared_count(P p, D d): pi_ = new sp_counted_impl_pd<P, D>(p, d)
+// (0x9bc834 is that class's vtable; the catch funclet that calls d(p) and rethrows lies outside this extent)
+struct Deleter
+{
+    void operator()(void *p) const;
 };
 
-extern "C" void* __cdecl sub_7f3860(int size);
+struct sp_counted_base
+{
+    int vtable;
+    long use_count_;
+    long weak_count_;
+    sp_counted_base() : use_count_(1), weak_count_(1) {}
+};
 
-void Server::init(int arg) {
-    void* p;
-    this->field0 = 0;
-    p = sub_7f3860(0x14);
-    if (p != 0) {
-        *(int*)((char*)p + 4) = 1;
-        *(int*)((char*)p + 8) = 1;
-        *(int*)((char*)p + 0) = 0x9bc834;
-        *(int*)((char*)p + 0xc) = arg;
-    } else {
-        p = 0;
+struct sp_counted_impl_pd : sp_counted_base
+{
+    void *ptr;
+    Deleter del;
+    sp_counted_impl_pd(void *p, Deleter d) { vtable = 0x9bc834; ptr = p; del = d; }
+};
+
+struct shared_count
+{
+    sp_counted_base *pi_;
+    shared_count(void *p, Deleter d);
+};
+
+shared_count::shared_count(void *p, Deleter d) : pi_(0)
+{
+    try
+    {
+        pi_ = new sp_counted_impl_pd(p, d);
     }
-    this->field0 = p;
+    catch (...)
+    {
+        d(p);
+        throw;
+    }
 }

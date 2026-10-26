@@ -1,24 +1,38 @@
-// from server: 52% by atomic.potato
-struct S {
-    void* field0;
-    S* f(void* arg);
+// from server: 91% by nuck16
+// roc 2009-12 00465e70  unit: RBX::VSpecialShape::?$FactoryProduct::Creator
+// boost::detail::shared_count::shared_count(Y *p): pi_ = new sp_counted_impl_p<Y>(p)
+// (0x9ae714 is that class's vtable; the catch funclet that deletes p and rethrows lies outside this extent)
+struct sp_counted_base
+{
+    int vtable;
+    long use_count_;
+    long weak_count_;
+    sp_counted_base() : use_count_(1), weak_count_(1) {}
 };
 
-extern "C" void* __cdecl sub_7f3860(unsigned int size);
-
-S* S::f(void* arg)
+struct sp_counted_impl_p : sp_counted_base
 {
-    void* p;
-    this->field0 = 0;
-    p = sub_7f3860(0x10);
-    if (p) {
-        *(int*)((char*)p + 4) = 1;
-        *(int*)((char*)p + 8) = 1;
-        *(void**)p = (void*)0x9ae714;
-        *(void**)((char*)p + 0xc) = arg;
-    } else {
-        p = 0;
+    void *px_;
+    sp_counted_impl_p(void *px) { vtable = 0x9ae714; px_ = px; }
+};
+
+void checked_delete(void *p);
+
+struct shared_count
+{
+    sp_counted_base *pi_;
+    shared_count(void *p);
+};
+
+shared_count::shared_count(void *p) : pi_(0)
+{
+    try
+    {
+        pi_ = new sp_counted_impl_p(p);
     }
-    this->field0 = p;
-    return this;
+    catch (...)
+    {
+        checked_delete(p);
+        throw;
+    }
 }

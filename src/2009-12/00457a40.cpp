@@ -1,23 +1,42 @@
-// from server: 52% by atomic.potato
-struct S_func_00457a40 {
-    int m_x;
-    int f(int a, int b);
+// from server: 91% by nuck16
+// roc 2009-12 00457a40  unit: VCRobloxDoc::?$VerbBinder
+// boost::detail::shared_count::shared_count(P p, D d): pi_ = new sp_counted_impl_pd<P, D>(p, d)
+// (0x9acdd8 is that class's vtable; the catch funclet that calls d(p) and rethrows lies outside this extent)
+struct Deleter
+{
+    void operator()(void *p) const;
 };
 
-extern "C" void* __cdecl sub_7f3860(int size);
-
-int S_func_00457a40::f(int a, int b)
+struct sp_counted_base
 {
-    m_x = 0;
-    void* p = sub_7f3860(0x14);
-    if (p) {
-        *(int*)((char*)p + 4) = 1;
-        *(int*)((char*)p + 8) = 1;
-        *(int*)p = 0x9acdd8;
-        *(int*)((char*)p + 0xc) = a;
-    } else {
-        p = 0;
+    int vtable;
+    long use_count_;
+    long weak_count_;
+    sp_counted_base() : use_count_(1), weak_count_(1) {}
+};
+
+struct sp_counted_impl_pd : sp_counted_base
+{
+    void *ptr;
+    Deleter del;
+    sp_counted_impl_pd(void *p, Deleter d) { vtable = 0x9acdd8; ptr = p; del = d; }
+};
+
+struct shared_count
+{
+    sp_counted_base *pi_;
+    shared_count(void *p, Deleter d);
+};
+
+shared_count::shared_count(void *p, Deleter d) : pi_(0)
+{
+    try
+    {
+        pi_ = new sp_counted_impl_pd(p, d);
     }
-    m_x = (int)p;
-    return (int)this;
+    catch (...)
+    {
+        d(p);
+        throw;
+    }
 }

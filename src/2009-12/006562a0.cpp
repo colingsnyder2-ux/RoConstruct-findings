@@ -1,31 +1,42 @@
-// from server: 52% by atomic.potato
-extern "C" void* __cdecl sub_7F3860(unsigned int size);
-
-struct VBodyThrustCreator {
-    void* field0;
-    void* field4;
-    void* field8;
-    void* fieldC;
-};
-
-struct FactoryProductCreator {
-    void* field0;
-    void* __thiscall create(unsigned int a, unsigned int b);
-};
-
-void* __thiscall FactoryProductCreator::create(unsigned int a, unsigned int b)
+// from server: 91% by nuck16
+// roc 2009-12 006562a0  unit: RBX::VBodyThrust::?$FactoryProduct::Creator
+// boost::detail::shared_count::shared_count(P p, D d): pi_ = new sp_counted_impl_pd<P, D>(p, d)
+// (0x9cd190 is that class's vtable; the catch funclet that calls d(p) and rethrows lies outside this extent)
+struct Deleter
 {
-    VBodyThrustCreator* p;
-    this->field0 = 0;
-    p = (VBodyThrustCreator*)sub_7F3860(0x14);
-    if (p != 0) {
-        p->field4 = (void*)1;
-        p->field8 = (void*)1;
-        p->field0 = (void*)0x9cd190;
-        p->fieldC = (void*)a;
-    } else {
-        p = 0;
+    void operator()(void *p) const;
+};
+
+struct sp_counted_base
+{
+    int vtable;
+    long use_count_;
+    long weak_count_;
+    sp_counted_base() : use_count_(1), weak_count_(1) {}
+};
+
+struct sp_counted_impl_pd : sp_counted_base
+{
+    void *ptr;
+    Deleter del;
+    sp_counted_impl_pd(void *p, Deleter d) { vtable = 0x9cd190; ptr = p; del = d; }
+};
+
+struct shared_count
+{
+    sp_counted_base *pi_;
+    shared_count(void *p, Deleter d);
+};
+
+shared_count::shared_count(void *p, Deleter d) : pi_(0)
+{
+    try
+    {
+        pi_ = new sp_counted_impl_pd(p, d);
     }
-    this->field0 = p;
-    return this;
+    catch (...)
+    {
+        d(p);
+        throw;
+    }
 }

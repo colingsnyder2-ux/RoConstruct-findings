@@ -1,14 +1,11 @@
-// from server: 84% by atomic.potato
-struct BasicString
-{
-    BasicString(const char*);
-};
+// from server: 100% by nuck16
+// roc 2009-12 00969fe0  (same-shape propagation from exact 00969f40)
 
-extern "C" void func_0098b6f4(BasicString*, const char*);
+extern "C" void (__thiscall *func_00969f4a)(void*, const char*);
 extern "C" void __cdecl func_007f4929(const char*);
 
-void func_00969fe0()
+void func_00969f40()
 {
-    BasicString value("8csm");
-    func_007f4929("Entity");
+    func_00969f4a((void*)0x00b7cbd4, (const char*)0x009b26c4);
+    func_007f4929((const char*)0x0097edb0);
 }

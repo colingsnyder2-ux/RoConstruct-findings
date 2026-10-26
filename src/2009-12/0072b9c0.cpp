@@ -1,23 +1,38 @@
-// from server: 52% by atomic.potato
-struct PoolData {
-    void* field0;
-    PoolData* ctor(int);
+// from server: 91% by nuck16
+// roc 2009-12 0072b9c0  unit: RBX::BaseThreadPool::PoolData
+// boost::detail::shared_count::shared_count(Y *p): pi_ = new sp_counted_impl_p<Y>(p)
+// (0x9e0588 is that class's vtable; the catch funclet that deletes p and rethrows lies outside this extent)
+struct sp_counted_base
+{
+    int vtable;
+    long use_count_;
+    long weak_count_;
+    sp_counted_base() : use_count_(1), weak_count_(1) {}
 };
 
-extern "C" void* __cdecl sub_7F3860(unsigned int);
+struct sp_counted_impl_p : sp_counted_base
+{
+    void *px_;
+    sp_counted_impl_p(void *px) { vtable = 0x9e0588; px_ = px; }
+};
 
-PoolData* PoolData::ctor(int arg) {
-    void* p;
-    field0 = 0;
-    p = sub_7F3860(0x10);
-    if (p) {
-        *(int*)((char*)p + 4) = 1;
-        *(int*)((char*)p + 8) = 1;
-        *(int*)p = 0x9e0588;
-        *(int*)((char*)p + 0xc) = arg;
-    } else {
-        p = 0;
+void checked_delete(void *p);
+
+struct shared_count
+{
+    sp_counted_base *pi_;
+    shared_count(void *p);
+};
+
+shared_count::shared_count(void *p) : pi_(0)
+{
+    try
+    {
+        pi_ = new sp_counted_impl_p(p);
     }
-    field0 = p;
-    return this;
+    catch (...)
+    {
+        checked_delete(p);
+        throw;
+    }
 }

@@ -1,9 +1,11 @@
-// from server: 52% by atomic.potato
-extern "C" void func_0098b6f4(void*, const char*);
+// from server: 100% by nuck16
+// roc 2009-12 0096a000  (same-shape propagation from exact 00969f40)
+
+extern "C" void (__thiscall *func_00969f4a)(void*, const char*);
 extern "C" void __cdecl func_007f4929(const char*);
 
-void func_0096a000()
+void func_00969f40()
 {
-    func_0098b6f4((void*)0x00b7cdb8, (const char*)0x009b2800);
-    func_007f4929((const char*)0x0097eea0);
+    func_00969f4a((void*)0x00b7cbd4, (const char*)0x009b26c4);
+    func_007f4929((const char*)0x0097edb0);
 }
