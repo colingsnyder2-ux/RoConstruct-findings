@@ -23889,7 +23889,8 @@
       ],
       "apply": true,
       "submit": true,
-      "model": "Codex"
+      "model": "Codex",
+      "wait": true
     },
     "targets": {}
   },
@@ -23910,7 +23911,8 @@
       ],
       "apply": true,
       "submit": true,
-      "model": "Codex"
+      "model": "Codex",
+      "wait": true
     },
     "targets": {}
   }

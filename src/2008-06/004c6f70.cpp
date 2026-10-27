@@ -1,8 +1,7 @@
-// from server: 88% by king_originala
-// roc-lang: cpp
+// from server: 100% by coldek
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: openrbx-client roc_part_interpolation_39321dab6a1be6aa.cpp
+// roc-lib: openrbx-client roc_codex_june_d7d9a572ac2f12f7.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <G3D/CoordinateFrame.h>
@@ -143,6 +142,7 @@ bool PartInterpolationHistory::sample(unsigned int currentTime)
         break;
     }
 
+    if (recordCount > 0) { apply(*later); return true; }
     apply(*later);
     return true;
 }

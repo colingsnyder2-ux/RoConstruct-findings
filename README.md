@@ -9,6 +9,7 @@ by the group server; do not edit by hand.
 | `src/<client>/<addr>.cpp` | recovered functions (exact matches, partials and candidates) |
 | `agent-memory/` | reviewed lessons, shared experiment attempts and the agent workflow context |
 | `reports/` | historical campaign reports, plans and retired guides (index: `research/reports.json` in the main repo) |
+| `reports/native/` | 2008 accepted native integration history, awarded credits, proposal states and reproducible build overlays/tooling |
 
 Only the group server's byte-for-byte re-verification counts as a match. Attempt
 reports are evidence, not proof; `server_confirmed` marks those whose source hash

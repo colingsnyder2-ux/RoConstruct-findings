@@ -1,0 +1,1373 @@
+[
+  {
+    "created": 1793057152.0153751,
+    "id": "d2efbaed124e49d8b841be3aafda80c3",
+    "model": "Codex",
+    "patches": {
+      "App/include/v8datamodel/PartInstance.h": [
+        [
+          "\t\tvoid setPartLocked(bool value);\n",
+          "\t\tvoid setPartLocked(bool value);\n\t\tvirtual void setName(const std::string& value); // 0x598c20\n"
+        ]
+      ],
+      "App/include/v8world/Primitive.h": {
+        "after": [
+          [
+            "\tclass EdgeList\n\t{\n\tpublic:\n\t\tRBX::Edge* first;\n\t\tint num;\n  \n\tpublic:\n\t\tEdgeList() : num(0), first(NULL) {}\n\t\t~EdgeList()\n\t\t{\n\t\t\tRBXASSERT(!first);\n\t\t\tRBXASSERT(!num);\n\t\t}\n\tpublic:\n\t\tbool hasEdge();\n  \n\tpublic:\n\t\tstatic void insertEdge(Primitive*, Edge*, EdgeList&);\n\t\tstatic void removeEdge(Primitive*, Edge*, EdgeList&);\n\t};\n",
+            "\tclass EdgeList\n\t{\n\tpublic:\n\t\tPrimitive* owner;\n\t\tG3D::Array<Edge*> edges;\n\t\tG3D::Array<Primitive*> neighbors; // the other primitive of each edge\n\n\tpublic:\n\t\tEdgeList(Primitive* owner) : owner(owner) {}\n\n\t\tbool hasEdge();\n\t\tvoid insertEdge(Edge* e);\n\t\tvoid removeEdge(Edge* e);\n\t\tEdge* first() const;\n\t\tEdge* next(Edge* e) const;\n\t};\n"
+          ],
+          [
+            "\t\tbool guidSetExternally;\n\t\tEdgeList contacts;\n\t\tEdgeList joints;\n\t\tint worldIndex;\n\t\tWorld* world;\n\t\tClump* clump;\n\t\tint clumpDepth;\n\t\tint traverseId;\n",
+            "\t\tbool guidSetExternally;\n\t\tint unknown0x14; // 0x5e8770 initializes this to 1; purpose unknown\n\t\tEdgeList contacts;\n\t\tEdgeList joints;\n\t\tint worldIndex;\n\t\tint traverseId;\n\t\tWorld* world;\n\t\tClump* clump;\n\t\tint clumpDepth;\n"
+          ],
+          [
+            "\t\tIMoving* myOwner;\n\t\tAnchor* anchorObject;\n\t\tbool dragging;\n\t\tbool anchored;\n\t\tbool canCollide;\n\t\tbool canSleep;\n",
+            "\t\tIMoving* myOwner;\n\t\tbool dragging;\n\t\tbool anchored;\n\t\tbool flag0xaa; // 0xaa: third of the dragging/anchored set (exact 0x5e8140); name unknown\n\t\tbool canSleep;\n\t\tbool canCollide;\n"
+          ],
+          [
+            "\t\t\treturn anchorObject != NULL;\n\t\t}\n\t\tAnchor* getAnchorObject()\n\t\t{\n\t\t\treturn anchorObject;\n\t\t}\n",
+            "\t\t\treturn getAnchorObject() != NULL;\n\t\t}\n\t\tAnchor* getAnchorObject() const; // rebuild shim (glue_anchor_registry.cpp)\n\t\tvoid setAnchorObject(Anchor* anchor);\n"
+          ],
+          [
+            "\t\t\treturn joints.num;",
+            "\t\t\treturn joints.edges.size();"
+          ],
+          [
+            "\t\t\treturn contacts.num;",
+            "\t\t\treturn contacts.edges.size();"
+          ],
+          [
+            "\t\tvoid setGuid(const Guid&);\n",
+            "\t\tvoid setGuid(const Guid&);\n\t\tvoid setUnknown0x14(int value); // 0x5e7420\n"
+          ]
+        ],
+        "before": [
+          [
+            "\tclass EdgeList\n\t{\n\tpublic:\n\t\tRBX::Edge* first;\n\t\tint num;\n  \n\tpublic:\n\t\tEdgeList() : num(0), first(NULL) {}\n\t\t~EdgeList()\n\t\t{\n\t\t\tRBXASSERT(!first);\n\t\t\tRBXASSERT(!num);\n\t\t}\n\tpublic:\n\t\tbool hasEdge();\n  \n\tpublic:\n\t\tstatic void insertEdge(Primitive*, Edge*, EdgeList&);\n\t\tstatic void removeEdge(Primitive*, Edge*, EdgeList&);\n\t};\n",
+            "\tclass EdgeList\n\t{\n\tpublic:\n\t\tPrimitive* owner;\n\t\tG3D::Array<Edge*> edges;\n\t\tG3D::Array<Primitive*> neighbors; // the other primitive of each edge\n\n\tpublic:\n\t\tEdgeList(Primitive* owner) : owner(owner) {}\n\n\t\tbool hasEdge();\n\t\tvoid insertEdge(Edge* e);\n\t\tvoid removeEdge(Edge* e);\n\t\tEdge* first() const;\n\t\tEdge* next(Edge* e) const;\n\t};\n"
+          ],
+          [
+            "\t\tbool guidSetExternally;\n\t\tEdgeList contacts;\n\t\tEdgeList joints;\n\t\tint worldIndex;\n\t\tWorld* world;\n\t\tClump* clump;\n\t\tint clumpDepth;\n\t\tint traverseId;\n",
+            "\t\tbool guidSetExternally;\n\t\tint edgeVersion;\n\t\tEdgeList contacts;\n\t\tEdgeList joints;\n\t\tint worldIndex;\n\t\tint traverseId;\n\t\tWorld* world;\n\t\tClump* clump;\n\t\tint clumpDepth;\n"
+          ],
+          [
+            "\t\tIMoving* myOwner;\n\t\tAnchor* anchorObject;\n\t\tbool dragging;\n\t\tbool anchored;\n\t\tbool canCollide;\n\t\tbool canSleep;\n",
+            "\t\tIMoving* myOwner;\n\t\tbool dragging;\n\t\tbool anchored;\n\t\tbool flag0xaa; // 0xaa: third of the dragging/anchored set (exact 0x5e8140); name unknown\n\t\tbool canSleep;\n\t\tbool canCollide;\n"
+          ],
+          [
+            "\t\t\treturn anchorObject != NULL;\n\t\t}\n\t\tAnchor* getAnchorObject()\n\t\t{\n\t\t\treturn anchorObject;\n\t\t}\n",
+            "\t\t\treturn getAnchorObject() != NULL;\n\t\t}\n\t\tAnchor* getAnchorObject() const; // rebuild shim (glue_anchor_registry.cpp)\n\t\tvoid setAnchorObject(Anchor* anchor);\n"
+          ],
+          [
+            "\t\t\treturn joints.num;",
+            "\t\t\treturn joints.edges.size();"
+          ],
+          [
+            "\t\t\treturn contacts.num;",
+            "\t\t\treturn contacts.edges.size();"
+          ]
+        ]
+      },
+      "App/v8datamodel/PartInstance.cpp": [
+        [
+          "",
+          "\nnamespace RBX {\n    // 0x598c20: base name update, then the byte-proven Torso-dependent value.\n    void PartInstance::setName(const std::string& value)\n    {\n        Base::setName(value);\n        if (value == \"Torso\")\n            primitive.setUnknown0x14(5);\n        else\n            primitive.setUnknown0x14(1);\n    }\n}\n"
+        ]
+      ],
+      "App/v8world/Primitive.cpp": {
+        "after": [
+          [
+            "\t\t\tRBXASSERT(!anchorObject);\n\t\t\tanchorObject = new Anchor(this);",
+            "\t\t\tRBXASSERT(!getAnchorObject());\n\t\t\tsetAnchorObject(new Anchor(this));"
+          ],
+          [
+            "\t\t\tRBXASSERT(anchorObject);",
+            "\t\t\tRBXASSERT(getAnchorObject());"
+          ],
+          [
+            "\t\t\tif (anchorObject)\n\t\t\t\tdelete anchorObject;\n\n\t\t\tanchorObject = NULL;",
+            "\t\t\tdelete getAnchorObject();\n\t\t\tsetAnchorObject(NULL);"
+          ],
+          [
+            "\t\tmyOwner(NULL),\n\t\tanchorObject(NULL),\n\t\tdragging(false),\n\t\tanchored(false),\n",
+            "\t\tmyOwner(NULL),\n\t\tdragging(false),\n\t\tanchored(false),\n\t\tflag0xaa(false),\n"
+          ],
+          [
+            "\t\tspatialNodes(NULL),\n\t\tworldIndex(-1),\n",
+            "\t\tspatialNodes(NULL),\n\t\tunknown0x14(1),\n\t\tcontacts(this),\n\t\tjoints(this),\n\t\tworldIndex(-1),\n"
+          ],
+          [
+            "\t\treturn joints.first ? joints.first : contacts.first;",
+            "\t\treturn joints.edges.size() ? joints.first() : contacts.first();"
+          ],
+          [
+            "\t\treturn rbx_static_cast<Joint*>(joints.first);",
+            "\t\treturn rbx_static_cast<Joint*>(joints.first());"
+          ],
+          [
+            "\t\treturn rbx_static_cast<Contact*>(contacts.first);",
+            "\t\treturn rbx_static_cast<Contact*>(contacts.first());"
+          ],
+          [
+            "\t\treturn rbx_static_cast<Joint*>(prev->getNext(this));",
+            "\t\treturn rbx_static_cast<Joint*>(joints.next(prev));"
+          ],
+          [
+            "\t\treturn rbx_static_cast<Contact*>(prev->getNext(this));",
+            "\t\treturn rbx_static_cast<Contact*>(contacts.next(prev));"
+          ],
+          [
+            "\t\tEdge* next = e->getNext(this);\n\n\t\tif (next)\n\t\t\treturn next;\n\t\telse\n\t\t\treturn Joint::isJoint(e) ? contacts.first : NULL;",
+            "\t\tif (Joint::isJoint(e))\n\t\t{\n\t\t\tEdge* next = joints.next(e);\n\t\t\treturn next ? next : contacts.first();\n\t\t}\n\t\treturn contacts.next(e);"
+          ],
+          [
+            "@all:EdgeList::insertEdge(p0, e, e->getPrimitive(0)->joints);",
+            "e->getPrimitive(0)->joints.insertEdge(e);"
+          ],
+          [
+            "@all:EdgeList::insertEdge(p1, e, e->getPrimitive(1)->joints);",
+            "e->getPrimitive(1)->joints.insertEdge(e);"
+          ],
+          [
+            "@all:EdgeList::insertEdge(p0, e, e->getPrimitive(0)->contacts);",
+            "e->getPrimitive(0)->contacts.insertEdge(e);"
+          ],
+          [
+            "@all:EdgeList::insertEdge(p1, e, e->getPrimitive(1)->contacts);",
+            "e->getPrimitive(1)->contacts.insertEdge(e);"
+          ],
+          [
+            "@all:EdgeList::removeEdge(p0, e, e->getPrimitive(0)->joints);",
+            "e->getPrimitive(0)->joints.removeEdge(e);"
+          ],
+          [
+            "@all:EdgeList::removeEdge(p1, e, e->getPrimitive(1)->joints);",
+            "e->getPrimitive(1)->joints.removeEdge(e);"
+          ],
+          [
+            "@all:EdgeList::removeEdge(p0, e, e->getPrimitive(0)->contacts);",
+            "e->getPrimitive(0)->contacts.removeEdge(e);"
+          ],
+          [
+            "@all:EdgeList::removeEdge(p1, e, e->getPrimitive(1)->contacts);",
+            "e->getPrimitive(1)->contacts.removeEdge(e);"
+          ],
+          [
+            "\tvoid EdgeList::insertEdge(Primitive* p, Edge* e, EdgeList& list)\n\t{\n\t\te->setNext(p, list.first);\n\t\tlist.first = e;\n\t\tlist.num++;\n\t}\n\n\tvoid EdgeList::removeEdge(Primitive* p, Edge* e, EdgeList& list)\n\t{\n\t\tEdge* currentEdge = list.first;\n\n\t\tif (list.first == e)\n\t\t{\n\t\t\tlist.first = e->getNext(p);\n\t\t}\n\t\telse\n\t\t{\n\t\t\twhile (currentEdge->getNext(p) != e)\n\t\t\t{\n\t\t\t\tcurrentEdge = currentEdge->getNext(p);\n\t\t\t}\n\n\t\t\tcurrentEdge->setNext(p, e->getNext(p));\n\t\t}\n\n\t\tlist.num--;\n\t}\n",
+            "\tvoid EdgeList::insertEdge(Edge* e)\n\t{\n\t\te->setIndex(owner, edges.size());\n\t\tedges.append(e);\n\t\tneighbors.append(e->otherPrimitive(owner));\n\t}\n\n\tvoid EdgeList::removeEdge(Edge* e)\n\t{\n\t\tint index = e->getIndex(owner);\n\t\tEdge* lastEdge = edges.last();\n\t\tPrimitive* lastNeighbor = neighbors.last();\n\t\tedges[index] = lastEdge;\n\t\tneighbors[index] = lastNeighbor;\n\t\tedges.popDiscard();\n\t\tneighbors.popDiscard();\n\t\tlastEdge->setIndex(owner, index);\n\t\te->setIndex(owner, -1);\n\t}\n\n\tEdge* EdgeList::first() const\n\t{\n\t\treturn edges.size() ? edges[0] : NULL;\n\t}\n\n\tEdge* EdgeList::next(Edge* e) const\n\t{\n\t\tint i = e->getIndex(owner) + 1;\n\t\treturn i < edges.size() ? edges[i] : NULL;\n\t}\n"
+          ],
+          [
+            "",
+            "\nnamespace RBX {\n    // 0x5e7420: int +0x14, guarded by clump +0x58.\n    void Primitive::setUnknown0x14(int value)\n    {\n        if (value != unknown0x14 && !clump)\n            unknown0x14 = value;\n    }\n}\n"
+          ]
+        ],
+        "before": [
+          [
+            "\t\t\tRBXASSERT(!anchorObject);\n\t\t\tanchorObject = new Anchor(this);",
+            "\t\t\tRBXASSERT(!getAnchorObject());\n\t\t\tsetAnchorObject(new Anchor(this));"
+          ],
+          [
+            "\t\t\tRBXASSERT(anchorObject);",
+            "\t\t\tRBXASSERT(getAnchorObject());"
+          ],
+          [
+            "\t\t\tif (anchorObject)\n\t\t\t\tdelete anchorObject;\n\n\t\t\tanchorObject = NULL;",
+            "\t\t\tdelete getAnchorObject();\n\t\t\tsetAnchorObject(NULL);"
+          ],
+          [
+            "\t\tmyOwner(NULL),\n\t\tanchorObject(NULL),\n\t\tdragging(false),\n\t\tanchored(false),\n",
+            "\t\tmyOwner(NULL),\n\t\tdragging(false),\n\t\tanchored(false),\n\t\tflag0xaa(false),\n"
+          ],
+          [
+            "\t\tspatialNodes(NULL),\n\t\tworldIndex(-1),\n",
+            "\t\tspatialNodes(NULL),\n\t\tedgeVersion(1),\n\t\tcontacts(this),\n\t\tjoints(this),\n\t\tworldIndex(-1),\n"
+          ],
+          [
+            "\t\treturn joints.first ? joints.first : contacts.first;",
+            "\t\treturn joints.edges.size() ? joints.first() : contacts.first();"
+          ],
+          [
+            "\t\treturn rbx_static_cast<Joint*>(joints.first);",
+            "\t\treturn rbx_static_cast<Joint*>(joints.first());"
+          ],
+          [
+            "\t\treturn rbx_static_cast<Contact*>(contacts.first);",
+            "\t\treturn rbx_static_cast<Contact*>(contacts.first());"
+          ],
+          [
+            "\t\treturn rbx_static_cast<Joint*>(prev->getNext(this));",
+            "\t\treturn rbx_static_cast<Joint*>(joints.next(prev));"
+          ],
+          [
+            "\t\treturn rbx_static_cast<Contact*>(prev->getNext(this));",
+            "\t\treturn rbx_static_cast<Contact*>(contacts.next(prev));"
+          ],
+          [
+            "\t\tEdge* next = e->getNext(this);\n\n\t\tif (next)\n\t\t\treturn next;\n\t\telse\n\t\t\treturn Joint::isJoint(e) ? contacts.first : NULL;",
+            "\t\tif (Joint::isJoint(e))\n\t\t{\n\t\t\tEdge* next = joints.next(e);\n\t\t\treturn next ? next : contacts.first();\n\t\t}\n\t\treturn contacts.next(e);"
+          ],
+          [
+            "@all:EdgeList::insertEdge(p0, e, e->getPrimitive(0)->joints);",
+            "e->getPrimitive(0)->joints.insertEdge(e);"
+          ],
+          [
+            "@all:EdgeList::insertEdge(p1, e, e->getPrimitive(1)->joints);",
+            "e->getPrimitive(1)->joints.insertEdge(e);"
+          ],
+          [
+            "@all:EdgeList::insertEdge(p0, e, e->getPrimitive(0)->contacts);",
+            "e->getPrimitive(0)->contacts.insertEdge(e);"
+          ],
+          [
+            "@all:EdgeList::insertEdge(p1, e, e->getPrimitive(1)->contacts);",
+            "e->getPrimitive(1)->contacts.insertEdge(e);"
+          ],
+          [
+            "@all:EdgeList::removeEdge(p0, e, e->getPrimitive(0)->joints);",
+            "e->getPrimitive(0)->joints.removeEdge(e);"
+          ],
+          [
+            "@all:EdgeList::removeEdge(p1, e, e->getPrimitive(1)->joints);",
+            "e->getPrimitive(1)->joints.removeEdge(e);"
+          ],
+          [
+            "@all:EdgeList::removeEdge(p0, e, e->getPrimitive(0)->contacts);",
+            "e->getPrimitive(0)->contacts.removeEdge(e);"
+          ],
+          [
+            "@all:EdgeList::removeEdge(p1, e, e->getPrimitive(1)->contacts);",
+            "e->getPrimitive(1)->contacts.removeEdge(e);"
+          ],
+          [
+            "\tvoid EdgeList::insertEdge(Primitive* p, Edge* e, EdgeList& list)\n\t{\n\t\te->setNext(p, list.first);\n\t\tlist.first = e;\n\t\tlist.num++;\n\t}\n\n\tvoid EdgeList::removeEdge(Primitive* p, Edge* e, EdgeList& list)\n\t{\n\t\tEdge* currentEdge = list.first;\n\n\t\tif (list.first == e)\n\t\t{\n\t\t\tlist.first = e->getNext(p);\n\t\t}\n\t\telse\n\t\t{\n\t\t\twhile (currentEdge->getNext(p) != e)\n\t\t\t{\n\t\t\t\tcurrentEdge = currentEdge->getNext(p);\n\t\t\t}\n\n\t\t\tcurrentEdge->setNext(p, e->getNext(p));\n\t\t}\n\n\t\tlist.num--;\n\t}\n",
+            "\tvoid EdgeList::insertEdge(Edge* e)\n\t{\n\t\te->setIndex(owner, edges.size());\n\t\tedges.append(e);\n\t\tneighbors.append(e->otherPrimitive(owner));\n\t}\n\n\tvoid EdgeList::removeEdge(Edge* e)\n\t{\n\t\tint index = e->getIndex(owner);\n\t\tEdge* lastEdge = edges.last();\n\t\tPrimitive* lastNeighbor = neighbors.last();\n\t\tedges[index] = lastEdge;\n\t\tneighbors[index] = lastNeighbor;\n\t\tedges.popDiscard();\n\t\tneighbors.popDiscard();\n\t\tlastEdge->setIndex(owner, index);\n\t\te->setIndex(owner, -1);\n\t}\n\n\tEdge* EdgeList::first() const\n\t{\n\t\treturn edges.size() ? edges[0] : NULL;\n\t}\n\n\tEdge* EdgeList::next(Edge* e) const\n\t{\n\t\tint i = e->getIndex(owner) + 1;\n\t\treturn i < edges.size() ? edges[i] : NULL;\n\t}\n"
+          ]
+        ]
+      }
+    },
+    "phase": "withdrawn",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
+    "unit": "RBX::PartInstance",
+    "updated": 1793059862.1645324
+  },
+  {
+    "created": 1793059863.8817573,
+    "id": "faf71c09cb364b30abcd758bcc92a68a",
+    "model": "Codex",
+    "patches": {
+      "App/include/v8datamodel/PartInstance.h": [
+        [
+          "\t\tvoid setPartLocked(bool value);\n",
+          "\t\tvoid setPartLocked(bool value);\n\t\tvirtual void setName(const std::string& value); // 0x598c20\n"
+        ]
+      ],
+      "App/include/v8world/Primitive.h": {
+        "after": [
+          [
+            "\tclass EdgeList\n\t{\n\tpublic:\n\t\tRBX::Edge* first;\n\t\tint num;\n  \n\tpublic:\n\t\tEdgeList() : num(0), first(NULL) {}\n\t\t~EdgeList()\n\t\t{\n\t\t\tRBXASSERT(!first);\n\t\t\tRBXASSERT(!num);\n\t\t}\n\tpublic:\n\t\tbool hasEdge();\n  \n\tpublic:\n\t\tstatic void insertEdge(Primitive*, Edge*, EdgeList&);\n\t\tstatic void removeEdge(Primitive*, Edge*, EdgeList&);\n\t};\n",
+            "\tclass EdgeList\n\t{\n\tpublic:\n\t\tPrimitive* owner;\n\t\tG3D::Array<Edge*> edges;\n\t\tG3D::Array<Primitive*> neighbors; // the other primitive of each edge\n\n\tpublic:\n\t\tEdgeList(Primitive* owner) : owner(owner) {}\n\n\t\tbool hasEdge();\n\t\tvoid insertEdge(Edge* e);\n\t\tvoid removeEdge(Edge* e);\n\t\tEdge* first() const;\n\t\tEdge* next(Edge* e) const;\n\t};\n"
+          ],
+          [
+            "\t\tbool guidSetExternally;\n\t\tEdgeList contacts;\n\t\tEdgeList joints;\n\t\tint worldIndex;\n\t\tWorld* world;\n\t\tClump* clump;\n\t\tint clumpDepth;\n\t\tint traverseId;\n",
+            "\t\tbool guidSetExternally;\n\t\tint unknown0x14; // 0x5e8770 initializes this to 1; purpose unknown\n\t\tEdgeList contacts;\n\t\tEdgeList joints;\n\t\tint worldIndex;\n\t\tint traverseId;\n\t\tWorld* world;\n\t\tClump* clump;\n\t\tint clumpDepth;\n"
+          ],
+          [
+            "\t\tIMoving* myOwner;\n\t\tAnchor* anchorObject;\n\t\tbool dragging;\n\t\tbool anchored;\n\t\tbool canCollide;\n\t\tbool canSleep;\n",
+            "\t\tIMoving* myOwner;\n\t\tbool dragging;\n\t\tbool anchored;\n\t\tbool flag0xaa; // 0xaa: third of the dragging/anchored set (exact 0x5e8140); name unknown\n\t\tbool canSleep;\n\t\tbool canCollide;\n"
+          ],
+          [
+            "\t\t\treturn anchorObject != NULL;\n\t\t}\n\t\tAnchor* getAnchorObject()\n\t\t{\n\t\t\treturn anchorObject;\n\t\t}\n",
+            "\t\t\treturn getAnchorObject() != NULL;\n\t\t}\n\t\tAnchor* getAnchorObject() const; // rebuild shim (glue_anchor_registry.cpp)\n\t\tvoid setAnchorObject(Anchor* anchor);\n"
+          ],
+          [
+            "\t\t\treturn joints.num;",
+            "\t\t\treturn joints.edges.size();"
+          ],
+          [
+            "\t\t\treturn contacts.num;",
+            "\t\t\treturn contacts.edges.size();"
+          ],
+          [
+            "\t\tvoid setGuid(const Guid&);\n",
+            "\t\tvoid setGuid(const Guid&);\n\t\tvoid setUnknown0x14(int value); // 0x5e7420\n"
+          ]
+        ],
+        "before": [
+          [
+            "\tclass EdgeList\n\t{\n\tpublic:\n\t\tRBX::Edge* first;\n\t\tint num;\n  \n\tpublic:\n\t\tEdgeList() : num(0), first(NULL) {}\n\t\t~EdgeList()\n\t\t{\n\t\t\tRBXASSERT(!first);\n\t\t\tRBXASSERT(!num);\n\t\t}\n\tpublic:\n\t\tbool hasEdge();\n  \n\tpublic:\n\t\tstatic void insertEdge(Primitive*, Edge*, EdgeList&);\n\t\tstatic void removeEdge(Primitive*, Edge*, EdgeList&);\n\t};\n",
+            "\tclass EdgeList\n\t{\n\tpublic:\n\t\tPrimitive* owner;\n\t\tG3D::Array<Edge*> edges;\n\t\tG3D::Array<Primitive*> neighbors; // the other primitive of each edge\n\n\tpublic:\n\t\tEdgeList(Primitive* owner) : owner(owner) {}\n\n\t\tbool hasEdge();\n\t\tvoid insertEdge(Edge* e);\n\t\tvoid removeEdge(Edge* e);\n\t\tEdge* first() const;\n\t\tEdge* next(Edge* e) const;\n\t};\n"
+          ],
+          [
+            "\t\tbool guidSetExternally;\n\t\tEdgeList contacts;\n\t\tEdgeList joints;\n\t\tint worldIndex;\n\t\tWorld* world;\n\t\tClump* clump;\n\t\tint clumpDepth;\n\t\tint traverseId;\n",
+            "\t\tbool guidSetExternally;\n\t\tint edgeVersion;\n\t\tEdgeList contacts;\n\t\tEdgeList joints;\n\t\tint worldIndex;\n\t\tint traverseId;\n\t\tWorld* world;\n\t\tClump* clump;\n\t\tint clumpDepth;\n"
+          ],
+          [
+            "\t\tIMoving* myOwner;\n\t\tAnchor* anchorObject;\n\t\tbool dragging;\n\t\tbool anchored;\n\t\tbool canCollide;\n\t\tbool canSleep;\n",
+            "\t\tIMoving* myOwner;\n\t\tbool dragging;\n\t\tbool anchored;\n\t\tbool flag0xaa; // 0xaa: third of the dragging/anchored set (exact 0x5e8140); name unknown\n\t\tbool canSleep;\n\t\tbool canCollide;\n"
+          ],
+          [
+            "\t\t\treturn anchorObject != NULL;\n\t\t}\n\t\tAnchor* getAnchorObject()\n\t\t{\n\t\t\treturn anchorObject;\n\t\t}\n",
+            "\t\t\treturn getAnchorObject() != NULL;\n\t\t}\n\t\tAnchor* getAnchorObject() const; // rebuild shim (glue_anchor_registry.cpp)\n\t\tvoid setAnchorObject(Anchor* anchor);\n"
+          ],
+          [
+            "\t\t\treturn joints.num;",
+            "\t\t\treturn joints.edges.size();"
+          ],
+          [
+            "\t\t\treturn contacts.num;",
+            "\t\t\treturn contacts.edges.size();"
+          ]
+        ]
+      },
+      "App/v8datamodel/PartInstance.cpp": [
+        [
+          "",
+          "\nnamespace RBX {\n    // 0x598c20: base name update, then the byte-proven Torso-dependent value.\n    void PartInstance::setName(const std::string& value)\n    {\n        Base::setName(value);\n        if (value == \"Torso\")\n            primitive.setUnknown0x14(5);\n        else\n            primitive.setUnknown0x14(1);\n    }\n}\n"
+        ]
+      ],
+      "App/v8world/Primitive.cpp": {
+        "after": [
+          [
+            "\t\t\tRBXASSERT(!anchorObject);\n\t\t\tanchorObject = new Anchor(this);",
+            "\t\t\tRBXASSERT(!getAnchorObject());\n\t\t\tsetAnchorObject(new Anchor(this));"
+          ],
+          [
+            "\t\t\tRBXASSERT(anchorObject);",
+            "\t\t\tRBXASSERT(getAnchorObject());"
+          ],
+          [
+            "\t\t\tif (anchorObject)\n\t\t\t\tdelete anchorObject;\n\n\t\t\tanchorObject = NULL;",
+            "\t\t\tdelete getAnchorObject();\n\t\t\tsetAnchorObject(NULL);"
+          ],
+          [
+            "\t\tmyOwner(NULL),\n\t\tanchorObject(NULL),\n\t\tdragging(false),\n\t\tanchored(false),\n",
+            "\t\tmyOwner(NULL),\n\t\tdragging(false),\n\t\tanchored(false),\n\t\tflag0xaa(false),\n"
+          ],
+          [
+            "\t\tspatialNodes(NULL),\n\t\tworldIndex(-1),\n",
+            "\t\tspatialNodes(NULL),\n\t\tunknown0x14(1),\n\t\tcontacts(this),\n\t\tjoints(this),\n\t\tworldIndex(-1),\n"
+          ],
+          [
+            "\t\treturn joints.first ? joints.first : contacts.first;",
+            "\t\treturn joints.edges.size() ? joints.first() : contacts.first();"
+          ],
+          [
+            "\t\treturn rbx_static_cast<Joint*>(joints.first);",
+            "\t\treturn rbx_static_cast<Joint*>(joints.first());"
+          ],
+          [
+            "\t\treturn rbx_static_cast<Contact*>(contacts.first);",
+            "\t\treturn rbx_static_cast<Contact*>(contacts.first());"
+          ],
+          [
+            "\t\treturn rbx_static_cast<Joint*>(prev->getNext(this));",
+            "\t\treturn rbx_static_cast<Joint*>(joints.next(prev));"
+          ],
+          [
+            "\t\treturn rbx_static_cast<Contact*>(prev->getNext(this));",
+            "\t\treturn rbx_static_cast<Contact*>(contacts.next(prev));"
+          ],
+          [
+            "\t\tEdge* next = e->getNext(this);\n\n\t\tif (next)\n\t\t\treturn next;\n\t\telse\n\t\t\treturn Joint::isJoint(e) ? contacts.first : NULL;",
+            "\t\tif (Joint::isJoint(e))\n\t\t{\n\t\t\tEdge* next = joints.next(e);\n\t\t\treturn next ? next : contacts.first();\n\t\t}\n\t\treturn contacts.next(e);"
+          ],
+          [
+            "@all:EdgeList::insertEdge(p0, e, e->getPrimitive(0)->joints);",
+            "e->getPrimitive(0)->joints.insertEdge(e);"
+          ],
+          [
+            "@all:EdgeList::insertEdge(p1, e, e->getPrimitive(1)->joints);",
+            "e->getPrimitive(1)->joints.insertEdge(e);"
+          ],
+          [
+            "@all:EdgeList::insertEdge(p0, e, e->getPrimitive(0)->contacts);",
+            "e->getPrimitive(0)->contacts.insertEdge(e);"
+          ],
+          [
+            "@all:EdgeList::insertEdge(p1, e, e->getPrimitive(1)->contacts);",
+            "e->getPrimitive(1)->contacts.insertEdge(e);"
+          ],
+          [
+            "@all:EdgeList::removeEdge(p0, e, e->getPrimitive(0)->joints);",
+            "e->getPrimitive(0)->joints.removeEdge(e);"
+          ],
+          [
+            "@all:EdgeList::removeEdge(p1, e, e->getPrimitive(1)->joints);",
+            "e->getPrimitive(1)->joints.removeEdge(e);"
+          ],
+          [
+            "@all:EdgeList::removeEdge(p0, e, e->getPrimitive(0)->contacts);",
+            "e->getPrimitive(0)->contacts.removeEdge(e);"
+          ],
+          [
+            "@all:EdgeList::removeEdge(p1, e, e->getPrimitive(1)->contacts);",
+            "e->getPrimitive(1)->contacts.removeEdge(e);"
+          ],
+          [
+            "\tvoid EdgeList::insertEdge(Primitive* p, Edge* e, EdgeList& list)\n\t{\n\t\te->setNext(p, list.first);\n\t\tlist.first = e;\n\t\tlist.num++;\n\t}\n\n\tvoid EdgeList::removeEdge(Primitive* p, Edge* e, EdgeList& list)\n\t{\n\t\tEdge* currentEdge = list.first;\n\n\t\tif (list.first == e)\n\t\t{\n\t\t\tlist.first = e->getNext(p);\n\t\t}\n\t\telse\n\t\t{\n\t\t\twhile (currentEdge->getNext(p) != e)\n\t\t\t{\n\t\t\t\tcurrentEdge = currentEdge->getNext(p);\n\t\t\t}\n\n\t\t\tcurrentEdge->setNext(p, e->getNext(p));\n\t\t}\n\n\t\tlist.num--;\n\t}\n",
+            "\tvoid EdgeList::insertEdge(Edge* e)\n\t{\n\t\te->setIndex(owner, edges.size());\n\t\tedges.append(e);\n\t\tneighbors.append(e->otherPrimitive(owner));\n\t}\n\n\tvoid EdgeList::removeEdge(Edge* e)\n\t{\n\t\tint index = e->getIndex(owner);\n\t\tEdge* lastEdge = edges.last();\n\t\tPrimitive* lastNeighbor = neighbors.last();\n\t\tedges[index] = lastEdge;\n\t\tneighbors[index] = lastNeighbor;\n\t\tedges.popDiscard();\n\t\tneighbors.popDiscard();\n\t\tlastEdge->setIndex(owner, index);\n\t\te->setIndex(owner, -1);\n\t}\n\n\tEdge* EdgeList::first() const\n\t{\n\t\treturn edges.size() ? edges[0] : NULL;\n\t}\n\n\tEdge* EdgeList::next(Edge* e) const\n\t{\n\t\tint i = e->getIndex(owner) + 1;\n\t\treturn i < edges.size() ? edges[i] : NULL;\n\t}\n"
+          ],
+          [
+            "",
+            "\nnamespace RBX {\n    // 0x5e7420: int +0x14, guarded by world +0x58 (clump is +0x5c).\n    void Primitive::setUnknown0x14(int value)\n    {\n        if (value != unknown0x14 && !world)\n            unknown0x14 = value;\n    }\n}\n"
+          ]
+        ],
+        "before": [
+          [
+            "\t\t\tRBXASSERT(!anchorObject);\n\t\t\tanchorObject = new Anchor(this);",
+            "\t\t\tRBXASSERT(!getAnchorObject());\n\t\t\tsetAnchorObject(new Anchor(this));"
+          ],
+          [
+            "\t\t\tRBXASSERT(anchorObject);",
+            "\t\t\tRBXASSERT(getAnchorObject());"
+          ],
+          [
+            "\t\t\tif (anchorObject)\n\t\t\t\tdelete anchorObject;\n\n\t\t\tanchorObject = NULL;",
+            "\t\t\tdelete getAnchorObject();\n\t\t\tsetAnchorObject(NULL);"
+          ],
+          [
+            "\t\tmyOwner(NULL),\n\t\tanchorObject(NULL),\n\t\tdragging(false),\n\t\tanchored(false),\n",
+            "\t\tmyOwner(NULL),\n\t\tdragging(false),\n\t\tanchored(false),\n\t\tflag0xaa(false),\n"
+          ],
+          [
+            "\t\tspatialNodes(NULL),\n\t\tworldIndex(-1),\n",
+            "\t\tspatialNodes(NULL),\n\t\tedgeVersion(1),\n\t\tcontacts(this),\n\t\tjoints(this),\n\t\tworldIndex(-1),\n"
+          ],
+          [
+            "\t\treturn joints.first ? joints.first : contacts.first;",
+            "\t\treturn joints.edges.size() ? joints.first() : contacts.first();"
+          ],
+          [
+            "\t\treturn rbx_static_cast<Joint*>(joints.first);",
+            "\t\treturn rbx_static_cast<Joint*>(joints.first());"
+          ],
+          [
+            "\t\treturn rbx_static_cast<Contact*>(contacts.first);",
+            "\t\treturn rbx_static_cast<Contact*>(contacts.first());"
+          ],
+          [
+            "\t\treturn rbx_static_cast<Joint*>(prev->getNext(this));",
+            "\t\treturn rbx_static_cast<Joint*>(joints.next(prev));"
+          ],
+          [
+            "\t\treturn rbx_static_cast<Contact*>(prev->getNext(this));",
+            "\t\treturn rbx_static_cast<Contact*>(contacts.next(prev));"
+          ],
+          [
+            "\t\tEdge* next = e->getNext(this);\n\n\t\tif (next)\n\t\t\treturn next;\n\t\telse\n\t\t\treturn Joint::isJoint(e) ? contacts.first : NULL;",
+            "\t\tif (Joint::isJoint(e))\n\t\t{\n\t\t\tEdge* next = joints.next(e);\n\t\t\treturn next ? next : contacts.first();\n\t\t}\n\t\treturn contacts.next(e);"
+          ],
+          [
+            "@all:EdgeList::insertEdge(p0, e, e->getPrimitive(0)->joints);",
+            "e->getPrimitive(0)->joints.insertEdge(e);"
+          ],
+          [
+            "@all:EdgeList::insertEdge(p1, e, e->getPrimitive(1)->joints);",
+            "e->getPrimitive(1)->joints.insertEdge(e);"
+          ],
+          [
+            "@all:EdgeList::insertEdge(p0, e, e->getPrimitive(0)->contacts);",
+            "e->getPrimitive(0)->contacts.insertEdge(e);"
+          ],
+          [
+            "@all:EdgeList::insertEdge(p1, e, e->getPrimitive(1)->contacts);",
+            "e->getPrimitive(1)->contacts.insertEdge(e);"
+          ],
+          [
+            "@all:EdgeList::removeEdge(p0, e, e->getPrimitive(0)->joints);",
+            "e->getPrimitive(0)->joints.removeEdge(e);"
+          ],
+          [
+            "@all:EdgeList::removeEdge(p1, e, e->getPrimitive(1)->joints);",
+            "e->getPrimitive(1)->joints.removeEdge(e);"
+          ],
+          [
+            "@all:EdgeList::removeEdge(p0, e, e->getPrimitive(0)->contacts);",
+            "e->getPrimitive(0)->contacts.removeEdge(e);"
+          ],
+          [
+            "@all:EdgeList::removeEdge(p1, e, e->getPrimitive(1)->contacts);",
+            "e->getPrimitive(1)->contacts.removeEdge(e);"
+          ],
+          [
+            "\tvoid EdgeList::insertEdge(Primitive* p, Edge* e, EdgeList& list)\n\t{\n\t\te->setNext(p, list.first);\n\t\tlist.first = e;\n\t\tlist.num++;\n\t}\n\n\tvoid EdgeList::removeEdge(Primitive* p, Edge* e, EdgeList& list)\n\t{\n\t\tEdge* currentEdge = list.first;\n\n\t\tif (list.first == e)\n\t\t{\n\t\t\tlist.first = e->getNext(p);\n\t\t}\n\t\telse\n\t\t{\n\t\t\twhile (currentEdge->getNext(p) != e)\n\t\t\t{\n\t\t\t\tcurrentEdge = currentEdge->getNext(p);\n\t\t\t}\n\n\t\t\tcurrentEdge->setNext(p, e->getNext(p));\n\t\t}\n\n\t\tlist.num--;\n\t}\n",
+            "\tvoid EdgeList::insertEdge(Edge* e)\n\t{\n\t\te->setIndex(owner, edges.size());\n\t\tedges.append(e);\n\t\tneighbors.append(e->otherPrimitive(owner));\n\t}\n\n\tvoid EdgeList::removeEdge(Edge* e)\n\t{\n\t\tint index = e->getIndex(owner);\n\t\tEdge* lastEdge = edges.last();\n\t\tPrimitive* lastNeighbor = neighbors.last();\n\t\tedges[index] = lastEdge;\n\t\tneighbors[index] = lastNeighbor;\n\t\tedges.popDiscard();\n\t\tneighbors.popDiscard();\n\t\tlastEdge->setIndex(owner, index);\n\t\te->setIndex(owner, -1);\n\t}\n\n\tEdge* EdgeList::first() const\n\t{\n\t\treturn edges.size() ? edges[0] : NULL;\n\t}\n\n\tEdge* EdgeList::next(Edge* e) const\n\t{\n\t\tint i = e->getIndex(owner) + 1;\n\t\treturn i < edges.size() ? edges[i] : NULL;\n\t}\n"
+          ]
+        ]
+      }
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "cd90a31b4a5753f14b8faef506c73ac631e6ee6bf2dd523b5e9b1fceef2de28e",
+      "credits": 2,
+      "distinct_after": 9601,
+      "distinct_before": 9599,
+      "gains": [
+        "00598c20",
+        "005e7420"
+      ],
+      "input_hash": "0a1a5ba72dcc9fa3e49ac86d115383eb0242b9efa452e6adffc01c41366d6272",
+      "losses": [],
+      "new_distinct": [
+        "00598c20",
+        "005e7420"
+      ],
+      "overlay_hash": "baec1d64ab8f84b986ab09ce52a587cb138d3b6351555b1be4a2ef1c23f0d51e",
+      "owned_after": 2915,
+      "owned_before": 2913,
+      "rebased": false,
+      "submitted_revision": "cd90a31b4a5753f14b8faef506c73ac631e6ee6bf2dd523b5e9b1fceef2de28e"
+    },
+    "state": "accepted",
+    "unit": "RBX::PartInstance",
+    "updated": 1793061755.5754929
+  },
+  {
+    "created": 1793063201.1093352,
+    "id": "d48255983b3e46f6845a76d99d574ac4",
+    "model": "Codex",
+    "patches": {
+      "App/include/v8world/Primitive.h": [
+        [
+          "\t\t\t// TODO: get this fully matching\n\t\t\t// check RotateJoint::getChannelValue\n\t\t\tconst SurfaceData* data = surfaceData[id];\n\t\t\treturn data ? *data : SurfaceData::empty();\n",
+          "\t\t\tif (!surfaceData[id])\n\t\t\t\treturn SurfaceData::empty();\n\t\t\telse\n\t\t\t\treturn *surfaceData[id];\n"
+        ]
+      ],
+      "App/v8datamodel/Surface.cpp": [
+        [
+          "\tController::InputType Surface::getInput() const\n\t{\n\t\tRBXASSERT(partInstance->getPrimitive());\n",
+          "\tController::InputType Surface::getInput() const\n\t{\n"
+        ],
+        [
+          "\tfloat Surface::getParamA() const\n\t{\n\t\tRBXASSERT(partInstance->getPrimitive());\n",
+          "\tfloat Surface::getParamA() const\n\t{\n"
+        ],
+        [
+          "\tfloat Surface::getParamB() const\n\t{\n\t\tRBXASSERT(partInstance->getPrimitive());\n",
+          "\tfloat Surface::getParamB() const\n\t{\n"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "7d48dd1c9470167876d040526c131722e489a37629cc9365703571bb26f3bb56",
+      "credits": 3,
+      "distinct_after": 9604,
+      "distinct_before": 9601,
+      "gains": [
+        "005f12a0",
+        "005f1300",
+        "005f1360"
+      ],
+      "input_hash": "8bf32797cfc1da984a3a1ecf03901404b0dcd691d6e0e26e7f355f3e0b9c76e6",
+      "losses": [],
+      "new_distinct": [
+        "005f12a0",
+        "005f1300",
+        "005f1360"
+      ],
+      "overlay_hash": "6945dd2fb9e60638f1d0b5d64a0278fe510149c0d8937f542589a46a93071ff4",
+      "owned_after": 2918,
+      "owned_before": 2915,
+      "rebased": false,
+      "submitted_revision": "7d48dd1c9470167876d040526c131722e489a37629cc9365703571bb26f3bb56"
+    },
+    "state": "accepted",
+    "unit": "RBX::FaceInstance",
+    "updated": 1793066138.9009445
+  },
+  {
+    "created": 1793067696.49086,
+    "id": "b804464450b744acbca8198fcf0e50ee",
+    "model": "Codex",
+    "patches": {
+      "App/include/v8datamodel/DataModel.h": [
+        [
+          "\t\tbool dirty;\n",
+          "\t\tbool dirty;\n\t\tbool unknown0x259; // 2008: initialized after service setup\n"
+        ]
+      ],
+      "App/include/v8datamodel/MouseCommand.h": [
+        [
+          "\t\tstd::auto_ptr<XmlState> undoState;\n",
+          ""
+        ]
+      ],
+      "App/tool/GroupDragTool.cpp": [
+        [
+          "\t\tRBXASSERT(mousePart);\n",
+          ""
+        ],
+        [
+          "\tvoid GroupDragTool::onMouseMove(const UIEvent& uiEvent)\n\t{\n\t\tRBXASSERT(captured());\n",
+          "\tvoid GroupDragTool::onMouseMove(const UIEvent& uiEvent)\n\t{\n"
+        ],
+        [
+          "\tvoid GroupDragTool::onMouseIdle(const UIEvent& uiEvent)\n\t{\n\t\tRBXASSERT(captured());\n",
+          "\tvoid GroupDragTool::onMouseIdle(const UIEvent& uiEvent)\n\t{\n"
+        ],
+        [
+          "#include \"tool/GroupDragTool.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"tool/GroupDragTool.h\"\n"
+        ]
+      ],
+      "App/v8datamodel/DataModel.cpp": {
+        "after": [
+          [
+            "\t\t  timeState(new TimeState),\n",
+            ""
+          ],
+          [
+            "\t\t  dirty(false),\n",
+            "\t\t  dirty(false),\n\t\t  unknown0x259(false),\n"
+          ],
+          [
+            "\t\t\tdataModel->initializeContents();\n",
+            "\t\t\tdataModel->initializeContents();\n\t\t\tdataModel->unknown0x259 = true;\n"
+          ],
+          [
+            "\tvoid DataModel::onEvent(const RunService* source, RunTransition event)\n\t{\n",
+            "\tvoid DataModel::onEvent(const RunService* source, RunTransition event)\n\t{\n\t\tif (!unknown0x259)\n\t\t\treturn;\n"
+          ],
+          [
+            "\n\t\t\ttimeState->clear();\n",
+            ""
+          ],
+          [
+            "@all:timeState->",
+            "getTimeState()->"
+          ]
+        ],
+        "before": [
+          [
+            "\t\t  timeState(new TimeState),\n",
+            ""
+          ],
+          [
+            "@all:timeState->",
+            "getTimeState()->"
+          ]
+        ]
+      },
+      "App/v8datamodel/MouseCommand.cpp": [
+        [
+          "\t\tRBXASSERT(undoState.get() == NULL);\n",
+          ""
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
+    "unit": "RBX::GroupDragTool, RBX::DataModel",
+    "updated": 1793068582.0256634
+  },
+  {
+    "created": 1793067944.4859111,
+    "id": "ec74a9dced024175963db8a43e6090cd",
+    "model": "Codex",
+    "patches": {
+      "App/v8datamodel/Surface.cpp": [
+        [
+          "\tSurfaceType Surface::getSurfaceType() const\n\t{\n\t\tRBXASSERT(partInstance->getPrimitive());\n",
+          "\tSurfaceType Surface::getSurfaceType() const\n\t{\n"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "6490ae7b5c0915c6c70c4f529dc659157698c52ec96da0cfca2ea558432615f3",
+      "credits": 2,
+      "distinct_after": 9606,
+      "distinct_before": 9604,
+      "gains": [
+        "005f1290",
+        "005f13e0"
+      ],
+      "input_hash": "10b47a4506d55afc1b9dd6eb9c147e402f458d4abeff8ae6eee8ec8c4153b9c4",
+      "losses": [],
+      "new_distinct": [
+        "005f1290",
+        "005f13e0"
+      ],
+      "overlay_hash": "4d9960fce38a31518b37c069dc3961a48f2fecfe2bae14ab07de1732d5d53e8f",
+      "owned_after": 2920,
+      "owned_before": 2918,
+      "rebased": false,
+      "submitted_revision": "6490ae7b5c0915c6c70c4f529dc659157698c52ec96da0cfca2ea558432615f3"
+    },
+    "state": "accepted",
+    "unit": "RBX::FaceInstance",
+    "updated": 1793070876.9631813
+  },
+  {
+    "created": 1793069094.2949078,
+    "id": "d645173c406c40feba500a272f726a7e",
+    "model": "Codex",
+    "patches": {
+      "App/include/v8datamodel/DataModel.h": [
+        [
+          "\t\tbool dirty;\n",
+          "\t\tbool dirty;\n\t\tbool unknown0x259; // 2008: initialized after service setup\n"
+        ]
+      ],
+      "App/include/v8datamodel/MouseCommand.h": [
+        [
+          "\t\tstd::auto_ptr<XmlState> undoState;\n",
+          ""
+        ]
+      ],
+      "App/tool/GroupDragTool.cpp": [
+        [
+          "\t\tRBXASSERT(mousePart);\n",
+          ""
+        ],
+        [
+          "\tvoid GroupDragTool::onMouseMove(const UIEvent& uiEvent)\n\t{\n\t\tRBXASSERT(captured());\n",
+          "\tvoid GroupDragTool::onMouseMove(const UIEvent& uiEvent)\n\t{\n"
+        ],
+        [
+          "\tvoid GroupDragTool::onMouseIdle(const UIEvent& uiEvent)\n\t{\n\t\tRBXASSERT(captured());\n",
+          "\tvoid GroupDragTool::onMouseIdle(const UIEvent& uiEvent)\n\t{\n"
+        ],
+        [
+          "#include \"tool/GroupDragTool.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"tool/GroupDragTool.h\"\n"
+        ],
+        [
+          "\t\telse\n\t\t{\n\t\t\tRBXASSERT(0);\n\t\t\treturn NULL;\n\t\t}\n",
+          "\t\telse\n\t\t{\n\t\t\treturn NULL;\n\t\t}\n"
+        ],
+        [
+          "\tGroupDragTool::~GroupDragTool()\n\t{\n\t\tif (dragging)\n\t\t\tRBXASSERT(0);\n\t}",
+          "\tGroupDragTool::~GroupDragTool()\n\t{\n\t}"
+        ]
+      ],
+      "App/v8datamodel/DataModel.cpp": {
+        "after": [
+          [
+            "\t\t  timeState(new TimeState),\n",
+            ""
+          ],
+          [
+            "\t\t  dirty(false),\n",
+            "\t\t  dirty(false),\n\t\t  unknown0x259(false),\n"
+          ],
+          [
+            "\t\t\tdataModel->initializeContents();\n",
+            "\t\t\tdataModel->initializeContents();\n\t\t\tdataModel->unknown0x259 = true;\n"
+          ],
+          [
+            "\tvoid DataModel::onEvent(const RunService* source, RunTransition event)\n\t{\n",
+            "\tvoid DataModel::onEvent(const RunService* source, RunTransition event)\n\t{\n\t\tif (!unknown0x259)\n\t\t\treturn;\n"
+          ],
+          [
+            "\n\t\t\ttimeState->clear();\n",
+            ""
+          ],
+          [
+            "@all:timeState->",
+            "getTimeState()->"
+          ]
+        ],
+        "before": [
+          [
+            "\t\t  timeState(new TimeState),\n",
+            ""
+          ],
+          [
+            "@all:timeState->",
+            "getTimeState()->"
+          ]
+        ]
+      },
+      "App/v8datamodel/MouseCommand.cpp": [
+        [
+          "\t\tRBXASSERT(undoState.get() == NULL);\n",
+          ""
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
+    "unit": "RBX::GroupDragTool, RBX::DataModel",
+    "updated": 1793071597.9552355
+  },
+  {
+    "created": 1793070855.4372532,
+    "id": "9e9dfed56be04a56baf6aafd8cbbbb4d",
+    "model": "Codex",
+    "patches": {
+      "App/include/v8world/IPipelined.h": [
+        [
+          "\t\tvirtual ~IPipelined()\n\t\t{\n\t\t\tRBXASSERT(currentStage == NULL);\n\t\t}\n",
+          "\t\tvirtual ~IPipelined()\n\t\t{\n\t\t}\n"
+        ]
+      ],
+      "App/v8datamodel/Accoutrement.cpp": [
+        [
+          "\tvoid Accoutrement::onEvent_HandleTouched(boost::shared_ptr<Instance> other)\n\t{\n\t\tRBXASSERT(Network::Players::backendProcessing(this, true));\n\n\t\tif (backendAccoutrementState == IN_WORKSPACE)\n\t\t{\n\t\t\tInstance* otherParent = other->getParent();\n\t\t\tHumanoid* humanoid = Humanoid::modelIsCharacter(otherParent);\n\n\t\t\tif (humanoid && humanoid->getTorso() && !otherParent->findFirstChildOfType<Accoutrement>())\n\t\t\t{\n\t\t\t\tsetParent(otherParent);\n\t\t\t}\n\t\t}\n\t}",
+          "\tvoid Accoutrement::onEvent_HandleTouched(boost::shared_ptr<Instance> other)\n\t{\n\n\t\tif (backendAccoutrementState == IN_WORKSPACE)\n\t\t{\n\t\t\tInstance* otherParent = other->getParent();\n\t\t\tHumanoid* humanoid = Humanoid::modelIsCharacter(otherParent);\n\n\t\t\tif (humanoid && humanoid->getTorso() && !otherParent->findFirstChildOfType<Accoutrement>())\n\t\t\t{\n\t\t\t\tsetParent(otherParent);\n\t\t\t}\n\t\t}\n\t}"
+        ],
+        [
+          "#include \"v8datamodel/Accoutrement.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/Accoutrement.h\"\n"
+        ]
+      ],
+      "App/v8datamodel/JointsService.cpp": [
+        [
+          "\tvoid JointsService::onEvent(const World* source, AutoDestroy event)\n\t{\n\t\tRBXASSERT(event.joint != NULL);\n\n\t\tIJointOwner* jointOwner = event.joint->getJointOwner();\n\t\tRBXASSERT(jointOwner);\n\n\t\tif (jointOwner)\n\t\t\tstatic_cast<JointInstance*>(jointOwner)->setParent(NULL);\n\t}",
+          "\tvoid JointsService::onEvent(const World* source, AutoDestroy event)\n\t{\n\n\t\tIJointOwner* jointOwner = event.joint->getJointOwner();\n\n\t\tif (jointOwner)\n\t\t\tstatic_cast<JointInstance*>(jointOwner)->setParent(NULL);\n\t}"
+        ]
+      ],
+      "App/v8datamodel/ModelInstance.cpp": [
+        [
+          "\tvoid ModelInstance::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)\n\t{\n\t\tif (primaryPart == instance.get())\n\t\t\tprimaryPart = NULL;\n\n\t\tif (candidatePrimaryPart == instance)\n\t\t{\n\t\t\tRBXASSERT(0);\n\t\t\tcandidatePrimaryPart.reset();\n\t\t}\n\n\t\tdirtyAll();\n\t\tshouldRenderSetDirty();\n\t\tPVInstance::onDescendentRemoving(instance);\n\t}",
+          "\tvoid ModelInstance::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)\n\t{\n\t\tif (primaryPart == instance.get())\n\t\t\tprimaryPart = NULL;\n\n\t\tif (candidatePrimaryPart == instance)\n\t\t{\n\t\t\tcandidatePrimaryPart.reset();\n\t\t}\n\n\t\tdirtyAll();\n\t\tshouldRenderSetDirty();\n\t\tPVInstance::onDescendentRemoving(instance);\n\t}"
+        ],
+        [
+          "\tfloat ModelInstance::computeFlagHeight() const\n\t{\n\t\tfloat answer = 6.0f;\n\n\t\tif (primaryPart)\n\t\t{\n\t\t\tRBXASSERT(primaryPart->isDescendentOf(this));\n\t\t\tfloat primaryPartY = primaryPart->getExtentsWorld().max().y;\n\t\t\tanswer = (getExtentsWorld().max().y - primaryPartY) + 6.0f;\n\t\t}\n\n\t\treturn answer;\n\t}",
+          "\tfloat ModelInstance::computeFlagHeight() const\n\t{\n\t\tfloat answer = 6.0f;\n\n\t\tif (primaryPart)\n\t\t{\n\t\t\tfloat primaryPartY = primaryPart->getExtentsWorld().max().y;\n\t\t\tanswer = (getExtentsWorld().max().y - primaryPartY) + 6.0f;\n\t\t}\n\n\t\treturn answer;\n\t}"
+        ],
+        [
+          "\tvoid ModelInstance::updatePrimaryPart(PartInstance* set) const\n\t{\n\t\tif (primaryPart == set)\n\t\t{\n\t\t\tRBXASSERT(!set || primaryPart->isDescendentOf(this));\n\t\t}\n\t\telse if (set)\n\t\t{\n\t\t\tRBXASSERT(!set->getParent() || set->isDescendentOf(this));\n\t\t\tif (primaryPart)\n\t\t\t{\n\t\t\t\tRBXASSERT(primaryPart->isDescendentOf(this));\n\t\t\t\tG3D::Matrix3 oldMe = getLocation().rotation;\n\t\t\t\tmodelInPrimary = G3D::CoordinateFrame(primaryPart->getCoordinateFrame().rotation.transpose() * oldMe, G3D::Vector3::zero());\n\t\t\t\tprimaryPart = set;\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tmodelInPrimary = G3D::CoordinateFrame();\n\t\t\t\tprimaryPart = set;\n\t\t\t}\n\t\t}\n\t\telse\n\t\t{\n\t\t\tmodelInPrimary = G3D::CoordinateFrame();\n\t\t\tprimaryPart = NULL;\n\t\t}\n\t}",
+          "\tvoid ModelInstance::updatePrimaryPart(PartInstance* set) const\n\t{\n\t\tif (primaryPart == set)\n\t\t{\n\t\t}\n\t\telse if (set)\n\t\t{\n\t\t\tif (primaryPart)\n\t\t\t{\n\t\t\t\tG3D::Matrix3 oldMe = getLocation().rotation;\n\t\t\t\tmodelInPrimary = G3D::CoordinateFrame(primaryPart->getCoordinateFrame().rotation.transpose() * oldMe, G3D::Vector3::zero());\n\t\t\t\tprimaryPart = set;\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tmodelInPrimary = G3D::CoordinateFrame();\n\t\t\t\tprimaryPart = set;\n\t\t\t}\n\t\t}\n\t\telse\n\t\t{\n\t\t\tmodelInPrimary = G3D::CoordinateFrame();\n\t\t\tprimaryPart = NULL;\n\t\t}\n\t}"
+        ],
+        [
+          "#include \"v8datamodel/ModelInstance.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/ModelInstance.h\"\n"
+        ]
+      ],
+      "App/v8datamodel/MouseCommand.cpp": [
+        [
+          "\tG3D::Ray MouseCommand::getSearchRay(const G3D::Ray& unitRay)\n\t{\n\t\tRBXASSERT(unitRay.direction.isUnit());\n\t\treturn G3D::Ray::fromOriginAndDirection(unitRay.origin, unitRay.direction * 2048.0f);\n\t}",
+          "\tG3D::Ray MouseCommand::getSearchRay(const G3D::Ray& unitRay)\n\t{\n\t\treturn G3D::Ray::fromOriginAndDirection(unitRay.origin, unitRay.direction * 2048.0f);\n\t}"
+        ],
+        [
+          "#include \"v8datamodel/MouseCommand.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/MouseCommand.h\"\n"
+        ]
+      ],
+      "App/v8datamodel/Tool.cpp": [
+        [
+          "\tvoid Tool::onLocalClicked()\n\t{\n\t\tRBXASSERT(Network::Players::frontendProcessing(this, true));\n\n\t\tNetwork::Player* localPlayer = Network::Players::findLocalPlayer(this);\n\t\tif (localPlayer && characterCanUnequipTool(localPlayer->getCharacter()))\n\t\t{\n\t\t\tif (getParent() == localPlayer->getPlayerBackpack())\n\t\t\t{\n\t\t\t\tmoveAllToolsToBackpack(localPlayer);\n\t\t\t\tsetParent(localPlayer->getCharacter());\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tsetParent(localPlayer->getPlayerBackpack());\n\t\t\t}\n\t\t}\n\n\t\tRBXASSERT(getNumToolsInCharacter() < 2);\n\t}",
+          "\tvoid Tool::onLocalClicked()\n\t{\n\n\t\tNetwork::Player* localPlayer = Network::Players::findLocalPlayer(this);\n\t\tif (localPlayer && characterCanUnequipTool(localPlayer->getCharacter()))\n\t\t{\n\t\t\tif (getParent() == localPlayer->getPlayerBackpack())\n\t\t\t{\n\t\t\t\tmoveAllToolsToBackpack(localPlayer);\n\t\t\t\tsetParent(localPlayer->getCharacter());\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tsetParent(localPlayer->getPlayerBackpack());\n\t\t\t}\n\t\t}\n\n\t}"
+        ],
+        [
+          "\tvoid Tool::onLocalOtherClicked()\n\t{\n\t\tRBXASSERT(Network::Players::frontendProcessing(this, true));\n\n\t\tNetwork::Player* localPlayer = Network::Players::findLocalPlayer(this);\n\t\tif (localPlayer && characterCanUnequipTool(localPlayer->getCharacter()))\n\t\t{\n\t\t\tif (getParent() != localPlayer->getPlayerBackpack())\n\t\t\t{\n\t\t\t\tsetParent(localPlayer->getPlayerBackpack());\n\t\t\t}\n\t\t}\n\t}",
+          "\tvoid Tool::onLocalOtherClicked()\n\t{\n\n\t\tNetwork::Player* localPlayer = Network::Players::findLocalPlayer(this);\n\t\tif (localPlayer && characterCanUnequipTool(localPlayer->getCharacter()))\n\t\t{\n\t\t\tif (getParent() != localPlayer->getPlayerBackpack())\n\t\t\t{\n\t\t\t\tsetParent(localPlayer->getPlayerBackpack());\n\t\t\t}\n\t\t}\n\t}"
+        ],
+        [
+          "#include \"v8datamodel/Tool.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/Tool.h\"\n"
+        ]
+      ],
+      "App/v8world/Primitive.cpp": [
+        [
+          "\tPrimitive::~Primitive()\n\t{\n\t\tGeometry::GeometryType type = geometry->getGeometryType();\n\n\t\tif (type != Geometry::GEOMETRY_NONE) {\n\t\t\tdelete geometry;\n\t\t\tdelete body;\n\t\t}\n\n\t\tfor (int i = 0; i < 6; i++)\n\t\t\tdelete surfaceData[i];\n\n\t\tRBXASSERT(!world);\n\t\tRBXASSERT(!clump);\n\t}",
+          "\tPrimitive::~Primitive()\n\t{\n\t\tGeometry::GeometryType type = geometry->getGeometryType();\n\n\t\tif (type != Geometry::GEOMETRY_NONE) {\n\t\t\tdelete geometry;\n\t\t\tdelete body;\n\t\t}\n\n\t\tfor (int i = 0; i < 6; i++)\n\t\t\tdelete surfaceData[i];\n\n\t}"
+        ],
+        [
+          "\tvoid Primitive::setPrimitiveType(Geometry::GeometryType geometryType)\n\t{\n\t\tRBXASSERT(geometry->getGeometryType() != Geometry::GEOMETRY_NONE);\n\t\tRBXASSERT(geometryType != Geometry::GEOMETRY_NONE);\n\n\t\tif (geometry->getGeometryType() != geometryType)\n\t\t{\n\t\t\tG3D::Vector3 oldSize = geometry->getGridSize();\n\t\t\tif (geometry)\n\t\t\t\tdelete geometry;\n\n\t\t\tgeometry = newGeometry(geometryType);\n\n\t\t\tif (world)\n\t\t\t\tworld->onPrimitiveGeometryTypeChanged(this);\n\n\t\t\tsetGridSize(oldSize);\n\t\t\tJointK.setDirty();\n\t\t}\n\t}",
+          "\tvoid Primitive::setPrimitiveType(Geometry::GeometryType geometryType)\n\t{\n\n\t\tif (geometry->getGeometryType() != geometryType)\n\t\t{\n\t\t\tG3D::Vector3 oldSize = geometry->getGridSize();\n\t\t\tif (geometry)\n\t\t\t\tdelete geometry;\n\n\t\t\tgeometry = newGeometry(geometryType);\n\n\t\t\tif (world)\n\t\t\t\tworld->onPrimitiveGeometryTypeChanged(this);\n\n\t\t\tsetGridSize(oldSize);\n\t\t\tJointK.setDirty();\n\t\t}\n\t}"
+        ],
+        [
+          "#include \"v8world/Primitive.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8world/Primitive.h\"\n"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "e2d20943872e7fa8560e2395d96f84729a1966b11077dc54a2a2f6d576f0a81d",
+      "credits": 25,
+      "distinct_after": 9631,
+      "distinct_before": 9606,
+      "gains": [
+        "0045b950",
+        "00583520",
+        "00583a40",
+        "00583da0",
+        "00583ee0",
+        "00584670",
+        "00585630",
+        "005b0970",
+        "005b1620",
+        "005b2750",
+        "005e5500",
+        "005e7600",
+        "005e7640",
+        "005e76f0",
+        "005e7980",
+        "005e7df0",
+        "005e81b0",
+        "005e82e0",
+        "005e8500",
+        "005e86f0",
+        "005fd530",
+        "005fe140",
+        "005fe1d0",
+        "005ffc50",
+        "006158f0",
+        "00615cc0",
+        "006455c0"
+      ],
+      "input_hash": "929306debb692c93c4760dadbf86633f72423b1bf96e3a74ef27bb07abe4ada9",
+      "losses": [],
+      "new_distinct": [
+        "00583520",
+        "00583a40",
+        "00583da0",
+        "00583ee0",
+        "00584670",
+        "00585630",
+        "005b0970",
+        "005b1620",
+        "005b2750",
+        "005e5500",
+        "005e7600",
+        "005e7640",
+        "005e76f0",
+        "005e7980",
+        "005e7df0",
+        "005e81b0",
+        "005e82e0",
+        "005e8500",
+        "005e86f0",
+        "005fd530",
+        "005fe140",
+        "005fe1d0",
+        "005ffc50",
+        "006158f0",
+        "00615cc0"
+      ],
+      "overlay_hash": "6d1f21948d9b72eef84ba41ed4b2cb7545d058e9132587c53543d796303b761e",
+      "owned_after": 2947,
+      "owned_before": 2920,
+      "rebased": true,
+      "submitted_revision": "6490ae7b5c0915c6c70c4f529dc659157698c52ec96da0cfca2ea558432615f3"
+    },
+    "state": "accepted",
+    "unit": "RBX::Primitive, RBX::JointsService, RBX::ArrowTool, RBX::Accoutrement, RBX::Tool, RBX::Geometry, RBX::ModelInstance",
+    "updated": 1793072450.1607122
+  },
+  {
+    "created": 1793071960.698963,
+    "id": "1951ea2250fa463c845ada5fd2fb562d",
+    "model": "Codex",
+    "patches": {
+      "App/include/v8datamodel/DataModel.h": [
+        [
+          "\t\tbool dirty;\n",
+          "\t\tbool dirty;\n\t\tbool unknown0x259; // 2008: initialized after service setup\n"
+        ]
+      ],
+      "App/v8datamodel/DataModel.cpp": {
+        "after": [
+          [
+            "\t\t  timeState(new TimeState),\n",
+            ""
+          ],
+          [
+            "\t\t  dirty(false),\n",
+            "\t\t  dirty(false),\n\t\t  unknown0x259(false),\n"
+          ],
+          [
+            "\t\t\tdataModel->initializeContents();\n",
+            "\t\t\tdataModel->initializeContents();\n\t\t\tdataModel->unknown0x259 = true;\n"
+          ],
+          [
+            "\tvoid DataModel::onEvent(const RunService* source, RunTransition event)\n\t{\n",
+            "\tvoid DataModel::onEvent(const RunService* source, RunTransition event)\n\t{\n\t\tif (!unknown0x259)\n\t\t\treturn;\n"
+          ],
+          [
+            "\n\t\t\ttimeState->clear();\n",
+            ""
+          ],
+          [
+            "@all:timeState->",
+            "getTimeState()->"
+          ]
+        ],
+        "before": [
+          [
+            "\t\t  timeState(new TimeState),\n",
+            ""
+          ],
+          [
+            "@all:timeState->",
+            "getTimeState()->"
+          ]
+        ]
+      }
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "01728144e59febcf4ffd8dea09c5e016b8f2a94beefafa9d3dd874ec1a738510",
+      "credits": 2,
+      "distinct_after": 9633,
+      "distinct_before": 9631,
+      "gains": [
+        "00575840",
+        "0057b9f0"
+      ],
+      "input_hash": "5d6a2d9bd82962c7fafc192e8b33f01b425ae6f54832c5ac8a9a8e1c0da94bb3",
+      "losses": [],
+      "new_distinct": [
+        "00575840",
+        "0057b9f0"
+      ],
+      "overlay_hash": "4036787c8059d71b46afb3cf3588addfd23d6eb010a8e39c3750cf93f19a8b6e",
+      "owned_after": 2949,
+      "owned_before": 2947,
+      "rebased": true,
+      "submitted_revision": "6490ae7b5c0915c6c70c4f529dc659157698c52ec96da0cfca2ea558432615f3"
+    },
+    "state": "accepted",
+    "unit": "RBX::DataModel",
+    "updated": 1793073293.5889053
+  },
+  {
+    "created": 1793095636.1083016,
+    "id": "1319bfbff3b145839bb392d67a42c96d",
+    "model": "Codex",
+    "patches": {
+      "App/v8datamodel/PartInstance.cpp": [
+        [
+          "#include \"v8datamodel/PartInstance.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/PartInstance.h\"\n"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
+    "unit": "RBX::PartInstance",
+    "updated": 1793097062.6882951
+  },
+  {
+    "created": 1793096679.978817,
+    "id": "0a9469ae58624628891589ce3e1d4ae4",
+    "model": "Codex",
+    "patches": {
+      "App/gui/GUI.cpp": [
+        [
+          "#include \"gui/Gui.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"gui/Gui.h\"\n"
+        ]
+      ],
+      "App/v8datamodel/Decal.cpp": [
+        [
+          "#include \"v8datamodel/Decal.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/Decal.h\"\n"
+        ]
+      ],
+      "App/v8datamodel/Hopper.cpp": [
+        [
+          "#include \"v8datamodel/Hopper.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/Hopper.h\"\n"
+        ],
+        [
+          "HopperBin::onLocalClicked()\n\t{\n\t\tRBXASSERT(isEnabled());\n\n\t\tif (!active)\n\t\t{\n\t\t\tactive = true;\n\n\t\t\tif (binType == SCRIPT_BIN)\n\t\t\t{\n\t\t\t\tonSelectScript();\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tonSelectCommand();\n\t\t\t}\n\t\t}\n\t\telse\n\t\t{\n\t\t\tonLocalOtherClicked();\n\t\t}\n\t}",
+          "HopperBin::onLocalClicked()\n\t{\n\t\t                      ;\n\n\t\tif (!active)\n\t\t{\n\t\t\tactive = true;\n\n\t\t\tif (binType == SCRIPT_BIN)\n\t\t\t{\n\t\t\t\tonSelectScript();\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tonSelectCommand();\n\t\t\t}\n\t\t}\n\t\telse\n\t\t{\n\t\t\tonLocalOtherClicked();\n\t\t}\n\t}"
+        ]
+      ],
+      "App/v8datamodel/LocakBackpack.cpp": [
+        [
+          "#include \"v8datamodel/LocalBackpack.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/LocalBackpack.h\"\n"
+        ],
+        [
+          "LocalBackpack::onLocalPlayerAdded(Network::Player* added)\n\t{\n\t\tRBXASSERT(numChildren() == 0);\n\t\tRBXASSERT(added);\n\n\t\tlocalPlayer = shared_from(added);\n\n\t\tNotifier<Instance, ChildAdded>::connect(localPlayer, this);\n\t\tNotifier<Instance, ChildRemoved>::connect(localPlayer, this);\n\t\tNotifier<Network::Player, Network::CharacterAdded>::connect(localPlayer, this);\n\t\tNotifier<Network::Player, Network::CharacterRemoving>::connect(localPlayer, this);\n\t}",
+          "LocalBackpack::onLocalPlayerAdded(Network::Player* added)\n\t{\n\t\t                             ;\n\t\t                ;\n\n\t\tlocalPlayer = shared_from(added);\n\n\t\tNotifier<Instance, ChildAdded>::connect(localPlayer, this);\n\t\tNotifier<Instance, ChildRemoved>::connect(localPlayer, this);\n\t\tNotifier<Network::Player, Network::CharacterAdded>::connect(localPlayer, this);\n\t\tNotifier<Network::Player, Network::CharacterRemoving>::connect(localPlayer, this);\n\t}"
+        ]
+      ],
+      "App/v8kernel/Kernel.cpp": [
+        [
+          "#include \"v8kernel/Kernel.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8kernel/Kernel.h\"\n"
+        ]
+      ],
+      "App/v8world/Primitive.cpp": [
+        [
+          "Primitive::setSurfaceData(NormalId id, const SurfaceData& newSurfaceData)\n\t{\n\t\tif (!surfaceData[id] && newSurfaceData.isEmpty())\n\t\t\treturn;\n\n\t\tif (surfaceData[id] && *surfaceData[id] == newSurfaceData)\n\t\t\treturn;\n\n\t\tif (newSurfaceData.isEmpty())\n\t\t{\n\t\t\tRBXASSERT(surfaceData[id]);\n\t\t\tdelete surfaceData[id];\n\t\t\tsurfaceData[id] = NULL;\n\t\t\treturn;\n\t\t}\n\t\telse if (!surfaceData[id])\n\t\t{\n\t\t\tsurfaceData[id] = new SurfaceData;\n\t\t}\n\n\t\t*surfaceData[id] = newSurfaceData;\n\t}",
+          "Primitive::setSurfaceData(NormalId id, const SurfaceData& newSurfaceData)\n\t{\n\t\tif (!surfaceData[id] && newSurfaceData.isEmpty())\n\t\t\treturn;\n\n\t\tif (surfaceData[id] && *surfaceData[id] == newSurfaceData)\n\t\t\treturn;\n\n\t\tif (newSurfaceData.isEmpty())\n\t\t{\n\t\t\t                          ;\n\t\t\tdelete surfaceData[id];\n\t\t\tsurfaceData[id] = NULL;\n\t\t\treturn;\n\t\t}\n\t\telse if (!surfaceData[id])\n\t\t{\n\t\t\tsurfaceData[id] = new SurfaceData;\n\t\t}\n\n\t\t*surfaceData[id] = newSurfaceData;\n\t}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
+    "unit": "RBX::LocalBackpack, RBX::HopperBin, RBX::UnifiedWidget, RBX::Decal, RBX::LocalBackpackItem, RBX::Ball, RBX::TopMenuBar",
+    "updated": 1793097063.9771876
+  },
+  {
+    "created": 1793097556.1908789,
+    "id": "048f35f824994ce5902d561dcff520fb",
+    "model": "Claude Opus 5.5",
+    "patches": {
+      "App/v8datamodel/Lighting.cpp": [
+        [
+          "#include \"v8datamodel/Lighting.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/Lighting.h\"\n"
+        ]
+      ],
+      "App/v8datamodel/Message.cpp": [
+        [
+          "#include \"v8datamodel/Message.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/Message.h\"\n"
+        ]
+      ],
+      "App/v8datamodel/Tool.cpp": [
+        [
+          "Tool::activate()\n\t{\n\t\tRBXASSERT(Network::Players::frontendProcessing(this, true));\n\t\tsetFrontendActivationState(frontendActivationState + (frontendActivationState % 2) + 1);\n\t}",
+          "Tool::activate()\n\t{\n\t\t                                                           ;\n\t\tsetFrontendActivationState(frontendActivationState + (frontendActivationState % 2) + 1);\n\t}"
+        ],
+        [
+          "Tool::deactivate()\n\t{\n\t\tRBXASSERT(Network::Players::frontendProcessing(this, true));\n\t\tsetFrontendActivationState(frontendActivationState + ((frontendActivationState + 1) % 2) + 1);\n\t}",
+          "Tool::deactivate()\n\t{\n\t\t                                                           ;\n\t\tsetFrontendActivationState(frontendActivationState + ((frontendActivationState + 1) % 2) + 1);\n\t}"
+        ]
+      ],
+      "App/v8world/Contact.cpp": [
+        [
+          "#include \"v8world/Contact.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8world/Contact.h\"\n"
+        ]
+      ],
+      "App/v8world/MutilJoint.cpp": [
+        [
+          "#include \"v8world/MultiJoint.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8world/MultiJoint.h\"\n"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
+    "unit": "RBX::Lighting, RBX::MultiJoint, RBX::BallBlockContact, RBX::Message, RBX::Tool",
+    "updated": 1793097556.6275733
+  },
+  {
+    "created": 1793098161.0926125,
+    "id": "8a80f93fddcd4ea687a5534f899bd2ef",
+    "model": "Codex",
+    "patches": {
+      "App/v8datamodel/PartInstance.cpp": [
+        [
+          "#include \"v8datamodel/PartInstance.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/PartInstance.h\"\n"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
+    "unit": "RBX::PartInstance",
+    "updated": 1793098624.2048087
+  },
+  {
+    "created": 1793098313.1452851,
+    "id": "d9104db2807744d789321d72563d69e3",
+    "model": "Claude Opus 5.5",
+    "patches": {
+      "App/include/v8datamodel/MouseCommand.h": [
+        [
+          "\t\tWorkspace* workspace;\n\t\tstd::auto_ptr<XmlState> undoState;\n",
+          "\t\tWorkspace* workspace;\n"
+        ]
+      ],
+      "App/include/v8xml/XmlElement.h": [
+        [
+          "\t\tmutable RBX::InstanceHandle* handleValue;\n\t};",
+          "\t\tmutable RBX::InstanceHandle* handleValue;\n\t\tmutable double doubleValue;\n\t};"
+        ]
+      ],
+      "App/v8datamodel/MouseCommand.cpp": [
+        [
+          "\t\tRBXASSERT(undoState.get() == NULL);\n",
+          ""
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
+    "unit": "RBX::NullTool, RBX::NewNullTool, RBX::BoxSelectCommand, RBX::ArrowTool, RBX::Accoutrement, RBX::PartDragTool, RBX::ToolMouseCommand, RBX::ScriptMouseCommand",
+    "updated": 1793099129.1239805
+  },
+  {
+    "created": 1793098575.8878088,
+    "id": "90848ce84a8d4837b18bb874c3456a87",
+    "model": "Codex",
+    "patches": {
+      "App/gui/GUI.cpp": [
+        [
+          "#include \"gui/Gui.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"gui/Gui.h\"\n"
+        ]
+      ],
+      "App/v8datamodel/Decal.cpp": [
+        [
+          "#include \"v8datamodel/Decal.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/Decal.h\"\n"
+        ]
+      ],
+      "App/v8datamodel/Hopper.cpp": [
+        [
+          "#include \"v8datamodel/Hopper.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/Hopper.h\"\n"
+        ],
+        [
+          "HopperBin::onLocalClicked()\n\t{\n\t\tRBXASSERT(isEnabled());\n\n\t\tif (!active)\n\t\t{\n\t\t\tactive = true;\n\n\t\t\tif (binType == SCRIPT_BIN)\n\t\t\t{\n\t\t\t\tonSelectScript();\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tonSelectCommand();\n\t\t\t}\n\t\t}\n\t\telse\n\t\t{\n\t\t\tonLocalOtherClicked();\n\t\t}\n\t}",
+          "HopperBin::onLocalClicked()\n\t{\n\t\t                      ;\n\n\t\tif (!active)\n\t\t{\n\t\t\tactive = true;\n\n\t\t\tif (binType == SCRIPT_BIN)\n\t\t\t{\n\t\t\t\tonSelectScript();\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tonSelectCommand();\n\t\t\t}\n\t\t}\n\t\telse\n\t\t{\n\t\t\tonLocalOtherClicked();\n\t\t}\n\t}"
+        ]
+      ],
+      "App/v8datamodel/LocakBackpack.cpp": [
+        [
+          "#include \"v8datamodel/LocalBackpack.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/LocalBackpack.h\"\n"
+        ],
+        [
+          "LocalBackpack::onLocalPlayerAdded(Network::Player* added)\n\t{\n\t\tRBXASSERT(numChildren() == 0);\n\t\tRBXASSERT(added);\n\n\t\tlocalPlayer = shared_from(added);\n\n\t\tNotifier<Instance, ChildAdded>::connect(localPlayer, this);\n\t\tNotifier<Instance, ChildRemoved>::connect(localPlayer, this);\n\t\tNotifier<Network::Player, Network::CharacterAdded>::connect(localPlayer, this);\n\t\tNotifier<Network::Player, Network::CharacterRemoving>::connect(localPlayer, this);\n\t}",
+          "LocalBackpack::onLocalPlayerAdded(Network::Player* added)\n\t{\n\t\t                             ;\n\t\t                ;\n\n\t\tlocalPlayer = shared_from(added);\n\n\t\tNotifier<Instance, ChildAdded>::connect(localPlayer, this);\n\t\tNotifier<Instance, ChildRemoved>::connect(localPlayer, this);\n\t\tNotifier<Network::Player, Network::CharacterAdded>::connect(localPlayer, this);\n\t\tNotifier<Network::Player, Network::CharacterRemoving>::connect(localPlayer, this);\n\t}"
+        ]
+      ],
+      "App/v8kernel/Kernel.cpp": [
+        [
+          "#include \"v8kernel/Kernel.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8kernel/Kernel.h\"\n"
+        ]
+      ],
+      "App/v8world/Primitive.cpp": [
+        [
+          "Primitive::setSurfaceData(NormalId id, const SurfaceData& newSurfaceData)\n\t{\n\t\tif (!surfaceData[id] && newSurfaceData.isEmpty())\n\t\t\treturn;\n\n\t\tif (surfaceData[id] && *surfaceData[id] == newSurfaceData)\n\t\t\treturn;\n\n\t\tif (newSurfaceData.isEmpty())\n\t\t{\n\t\t\tRBXASSERT(surfaceData[id]);\n\t\t\tdelete surfaceData[id];\n\t\t\tsurfaceData[id] = NULL;\n\t\t\treturn;\n\t\t}\n\t\telse if (!surfaceData[id])\n\t\t{\n\t\t\tsurfaceData[id] = new SurfaceData;\n\t\t}\n\n\t\t*surfaceData[id] = newSurfaceData;\n\t}",
+          "Primitive::setSurfaceData(NormalId id, const SurfaceData& newSurfaceData)\n\t{\n\t\tif (!surfaceData[id] && newSurfaceData.isEmpty())\n\t\t\treturn;\n\n\t\tif (surfaceData[id] && *surfaceData[id] == newSurfaceData)\n\t\t\treturn;\n\n\t\tif (newSurfaceData.isEmpty())\n\t\t{\n\t\t\t                          ;\n\t\t\tdelete surfaceData[id];\n\t\t\tsurfaceData[id] = NULL;\n\t\t\treturn;\n\t\t}\n\t\telse if (!surfaceData[id])\n\t\t{\n\t\t\tsurfaceData[id] = new SurfaceData;\n\t\t}\n\n\t\t*surfaceData[id] = newSurfaceData;\n\t}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
+    "unit": "RBX::Ball, RBX::LocalBackpackItem, RBX::UnifiedWidget, RBX::TopMenuBar, RBX::LocalBackpack, RBX::HopperBin, RBX::Decal",
+    "updated": 1793100127.0749106
+  },
+  {
+    "created": 1793099052.3628974,
+    "id": "4cedfa30897e413d9e5d5ccc115cbd1b",
+    "model": "Codex",
+    "patches": {
+      "App/v8datamodel/PartInstance.cpp": [
+        [
+          "#include \"v8datamodel/PartInstance.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/PartInstance.h\"\n"
+        ]
+      ]
+    },
+    "phase": "fingerprinting inputs",
+    "receipt": {},
+    "state": "verifying",
+    "unit": "RBX::PartInstance",
+    "updated": 1793100128.275396
+  },
+  {
+    "created": 1793099095.1962473,
+    "id": "e1a136efe7084475bb4503e80d0f4af4",
+    "model": "Claude Opus 5.5",
+    "patches": {
+      "App/v8datamodel/Lighting.cpp": [
+        [
+          "#include \"v8datamodel/Lighting.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/Lighting.h\"\n"
+        ]
+      ],
+      "App/v8datamodel/Message.cpp": [
+        [
+          "#include \"v8datamodel/Message.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/Message.h\"\n"
+        ]
+      ],
+      "App/v8datamodel/Tool.cpp": [
+        [
+          "Tool::activate()\n\t{\n\t\tRBXASSERT(Network::Players::frontendProcessing(this, true));\n\t\tsetFrontendActivationState(frontendActivationState + (frontendActivationState % 2) + 1);\n\t}",
+          "Tool::activate()\n\t{\n\t\t                                                           ;\n\t\tsetFrontendActivationState(frontendActivationState + (frontendActivationState % 2) + 1);\n\t}"
+        ],
+        [
+          "Tool::deactivate()\n\t{\n\t\tRBXASSERT(Network::Players::frontendProcessing(this, true));\n\t\tsetFrontendActivationState(frontendActivationState + ((frontendActivationState + 1) % 2) + 1);\n\t}",
+          "Tool::deactivate()\n\t{\n\t\t                                                           ;\n\t\tsetFrontendActivationState(frontendActivationState + ((frontendActivationState + 1) % 2) + 1);\n\t}"
+        ]
+      ],
+      "App/v8world/Contact.cpp": [
+        [
+          "#include \"v8world/Contact.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8world/Contact.h\"\n"
+        ]
+      ],
+      "App/v8world/MutilJoint.cpp": [
+        [
+          "#include \"v8world/MultiJoint.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8world/MultiJoint.h\"\n"
+        ]
+      ]
+    },
+    "phase": "queued",
+    "receipt": {},
+    "state": "queued",
+    "unit": "RBX::Message, RBX::Lighting, RBX::BallBlockContact, RBX::MultiJoint, RBX::Tool",
+    "updated": 1793099095.1962473
+  },
+  {
+    "created": 1793099178.58189,
+    "id": "20b2f61b3db3447e84d0d62e37569d05",
+    "model": "Claude Opus 5.5",
+    "patches": {
+      "App/include/v8datamodel/MouseCommand.h": [
+        [
+          "\t\tWorkspace* workspace;\n\t\tstd::auto_ptr<XmlState> undoState;\n",
+          "\t\tWorkspace* workspace;\n"
+        ]
+      ],
+      "App/include/v8xml/XmlElement.h": [
+        [
+          "\t\tmutable RBX::InstanceHandle* handleValue;\n\t};",
+          "\t\tmutable RBX::InstanceHandle* handleValue;\n\t\tmutable double doubleValue;\n\t};"
+        ]
+      ],
+      "App/v8datamodel/MouseCommand.cpp": [
+        [
+          "\t\tRBXASSERT(undoState.get() == NULL);\n",
+          ""
+        ]
+      ]
+    },
+    "phase": "queued",
+    "receipt": {},
+    "state": "queued",
+    "unit": "RBX::NullTool, RBX::NewNullTool, RBX::BoxSelectCommand, RBX::ArrowTool, RBX::Accoutrement, RBX::PartDragTool, RBX::ToolMouseCommand, RBX::ScriptMouseCommand",
+    "updated": 1793099178.58189
+  }
+]

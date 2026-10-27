@@ -1,8 +1,7 @@
-// from server: 97% by colin
-// roc-lang: cpp
+// from server: 99% by coldek
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_trial_2d97174f63d50eb3.cpp
+// roc-lib: rbxgs-dll roc_codex_june_31d44ee93c8a31dd.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define _CPPUNWIND 1
@@ -30,6 +29,7 @@ G3D::Vector3 maxMoveAcceleration();G3D::Vector3 minMoveAcceleration();
 struct HumanoidState {char opaque[0x2c];G3D::Vector3 floorTouchInWorld;char opaque38[0xa0-0x38];Humanoid*getHumanoid()const;Primitive*getFloorPrimitive()const;};
 struct Balancing:HumanoidState {float kP,kD;void onComputeForce(float);};
 struct RunningBase:Balancing {G3D::Vector3 floorVelocity;float floorRotationalVelocity;G3D::Vector3 desiredVelocity;float desiredYRotationalVelocity,desiredAltitude;void onComputeForce(float);};
+__forceinline G3D::Vector3 clampMove(const G3D::Vector3& low,const G3D::Vector3& high,const G3D::Vector3& value){return value.clamp(low,high);}
 void RunningBase::onComputeForce(float dt){
  Balancing::onComputeForce(dt);
  Body*torso=getHumanoid()->getTorsoBody();if(!torso)return;
@@ -53,7 +53,8 @@ void RunningBase::onComputeForce(float dt){
    if(currentAcceleration<altitudeAcceleration){
     float upwardForce=std::min(altitudeAcceleration-currentAcceleration,maxMoveAcceleration().y)*moveMass;
     root->accumulateForceAtBranchCofm(G3D::Vector3(0,upwardForce,0));
-    floor->getBody()->accumulateForce(G3D::Vector3(0,-upwardForce,0),floorTouchInWorld);
+    Body* floorBody=floor->getBody();
+    floorBody->accumulateForce(G3D::Vector3(0,-upwardForce,0),floorTouchInWorld);
    }
   }
  }
@@ -65,12 +66,12 @@ void RunningBase::onComputeForce(float dt){
  float accelX=(desiredX-branchVelocity.linear.x)*1250.0f;
  float accelY=desiredVelocity.y>0.0f?(desiredVelocity.y-branchVelocity.linear.y)*1250.0f:currentAcceleration.y;
  float accelZ=(desiredZ-branchVelocity.linear.z)*1250.0f;
- G3D::Vector3 limitedAcceleration=(G3D::Vector3(accelX,accelY,accelZ)-currentAcceleration).clamp(minMoveAcceleration(),maxMoveAcceleration());
+ G3D::Vector3 limitedAcceleration=clampMove(minMoveAcceleration(),maxMoveAcceleration(),G3D::Vector3(accelX,accelY,accelZ)-currentAcceleration);
  {
  G3D::Vector3 force=limitedAcceleration*moveMass;
  if(floor){float friction=floor->getFriction();if(friction<0.3f){float scale=friction*friction;force.x*=scale;force.z*=scale;}}
  root->accumulateForceAtBranchCofm(force);
- if(floor)floor->getBody()->accumulateForce(-force,floorTouchInWorld);
+ if(floor){Body* floorBody=floor->getBody();floorBody->accumulateForce(-force,floorTouchInWorld);}
  }
 }
 }
