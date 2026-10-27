@@ -12,16 +12,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Package sources and required metadata
         run: |
-          mkdir -p dist/source
-          for client in [0-9][0-9][0-9][0-9]-[0-9][0-9]; do
-            if [ -d "$client/recovered" ]; then
-              mkdir -p "dist/source/$client"
-              cp -a "$client/recovered/." "dist/source/$client/"
-            fi
-          done
-          (cd dist/source && zip -qr ../roconstruct-findings-src.zip .)
-          zip -qr dist/roconstruct-evidence.zip data 2008-06/verification
-          zip -qr dist/roconstruct-native-source.zip 2008-06/src 2008-06/config 2008-06/patches 2008-06/tests 2008-06/scripts 2008-06/verification 2008-06/compile_test.bat 2008-06/README.md 2008-06/package.json
+          mkdir -p dist
+          (cd src && zip -qr ../dist/roconstruct-findings-src.zip .)
+          zip -qr dist/roconstruct-evidence.zip data units 2008-06/verification
+          zip -qr dist/roconstruct-native-source.zip 2008-06
           sha256sum dist/*.zip > dist/SHA256SUMS
       - name: Update stable source downloads
         env:

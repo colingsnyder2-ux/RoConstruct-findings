@@ -1,1 +1,0 @@
-Applied surgical patch to primary roc/rebuild.py after six-gain verification accepted and queue empty.8 primary fidelity checks pass;142 review focused tests previously passed. No server restart. Fresh native verifier snapshots load cache.

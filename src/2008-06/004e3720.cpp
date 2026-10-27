@@ -1,8 +1,7 @@
-// from server: 43% by colin
+// from server: 71% by coldek
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lang: cpp
-// roc-lib: rbxgs-dll roc_mesh_build_8a4e418739eedc87.cpp
+// roc-lib: rbxgs-dll roc_codex_next_93d117709057ec0d.cpp
 
 // Candidate translation unit (score above; library headers required).
 // Binary-derived level population. This is a codegen analogue, not an original declaration.
@@ -32,8 +31,15 @@ extern Array<Vector3> meshPositions;
 extern Array<Vector3> meshNormals;
 extern Array<Vector2> meshTextures;
 template<RBX::NormalId id>
-void recoveredMeshFace(const Vector3&,float,unsigned,float,LevelRef&,unsigned*);
-extern void __stdcall cloneMeshQuad(LevelRef&,unsigned,unsigned,unsigned,unsigned,unsigned*);
+__declspec(noalias) void recoveredMeshFace(const Vector3&,float,unsigned,float,LevelRef&,unsigned*);
+__declspec(noinline) void __stdcall cloneMeshQuad(LevelRef& level,unsigned a,unsigned b,unsigned c,unsigned d,unsigned* out) {
+ out[0]=Mesh::allocVertex(meshPositions[a],meshNormals[a],meshTextures[a],true);
+ out[1]=Mesh::allocVertex(meshPositions[b],meshNormals[b],meshTextures[b],true);
+ out[2]=Mesh::allocVertex(meshPositions[c],meshNormals[c],meshTextures[c],true);
+ out[3]=Mesh::allocVertex(meshPositions[d],meshNormals[d],meshTextures[d],true);
+ unsigned q0=out[0],q1=out[1],q2=out[2],q3=out[3];
+ level->indexArray.append(q0,q1,q2,q3);
+}
 
 static __forceinline void atlasFace(unsigned* corners,const Vector4& rectangle,unsigned flags,float margin) {
     Vector2 border(rectangle.z*6.0f,rectangle.w*6.0f);
@@ -104,19 +110,19 @@ void BrickMeshRecovery::populate(const Vector3& size,unsigned surfaces,RBX::Bric
         level->indexArray.append(copies[11],copies[10],copies[7],copies[6]);
         level->indexArray.append(copies[6],copies[5],copies[15],copies[14]);
         level->indexArray.append(copies[5],copies[4],copies[23],copies[22]);
-        unsigned quad[4];
-        cloneMeshQuad(level,face[10],face[9],face[0],face[3],quad);
-        extendTexture(quad[3],face[10],face[11],margin);
-        extendTexture(quad[2],face[9],face[8],margin);
-        cloneMeshQuad(level,face[2],face[1],face[20],face[23],quad);
-        extendTexture(quad[3],face[2],face[3],margin);
-        extendTexture(quad[2],face[1],face[0],margin);
-        cloneMeshQuad(level,face[22],face[21],face[12],face[15],quad);
-        extendTexture(quad[3],face[22],face[23],margin);
-        extendTexture(quad[2],face[21],face[20],margin);
-        cloneMeshQuad(level,face[14],face[13],face[8],face[11],quad);
-        extendTexture(quad[3],face[14],face[15],margin);
-        extendTexture(quad[2],face[13],face[12],margin);
+        unsigned quad0[4],quad1[4],quad2[4],quad3[4];
+        cloneMeshQuad(level,face[10],face[9],face[0],face[3],quad0);
+        extendTexture(quad0[3],face[10],face[11],margin);
+        extendTexture(quad0[2],face[9],face[8],margin);
+        cloneMeshQuad(level,face[2],face[1],face[20],face[23],quad1);
+        extendTexture(quad1[3],face[2],face[3],margin);
+        extendTexture(quad1[2],face[1],face[0],margin);
+        cloneMeshQuad(level,face[22],face[21],face[12],face[15],quad2);
+        extendTexture(quad2[3],face[22],face[23],margin);
+        extendTexture(quad2[2],face[21],face[20],margin);
+        cloneMeshQuad(level,face[14],face[13],face[8],face[11],quad3);
+        extendTexture(quad3[3],face[14],face[15],margin);
+        extendTexture(quad3[2],face[13],face[12],margin);
         level->indexArray.append(copies[17],copies[16],copies[21],copies[20]);
         level->indexArray.append(copies[13],copies[12],copies[16],copies[19]);
         level->indexArray.append(copies[9],copies[8],copies[19],copies[18]);

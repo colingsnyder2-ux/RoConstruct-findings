@@ -1,4 +1,4 @@
-// from server: 73% by king_originala
+// from server: 88% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
@@ -29,7 +29,7 @@ public:
     shared_ptr():px(0),pn(){}
     shared_ptr& operator=(const shared_ptr& r){px=r.px;pn=r.pn;return *this;}
     void swap(shared_ptr& r){std::swap(px,r.px);pn.swap(r.pn);}
-    void reset(){shared_ptr().swap(*this);}
+    __forceinline void reset(){shared_ptr().swap(*this);}
     typedef T* shared_ptr::*unspecified_bool_type;
     operator unspecified_bool_type()const{return px==0?0:&shared_ptr::px;}
     shared_ptr(const shared_ptr& r):px(r.px),pn(r.pn){}
@@ -48,7 +48,6 @@ class Decal:public Instance {};
 boost::shared_ptr<PartInstance> __cdecl shared_from(PartInstance*);
 namespace ViewNew {
 class ViewRbxGfx;
-// Allocation extents are 0xf0 for Part and 0x108 for Texture/Decal.
 class Part {char storage[0xf0];public:Part(const boost::shared_ptr<PartInstance>&,ViewRbxGfx*);};
 class Texture {char storage[0x108];public:Texture(RBX::Texture&,PartInstance&,ViewRbxGfx*);};
 class Decal {char storage[0x108];public:Decal(RBX::Decal&,PartInstance&,ViewRbxGfx*);};
@@ -56,6 +55,7 @@ class ViewRbxGfx {public:void onWorkspaceDescendentAdded(boost::shared_ptr<Insta
 void ViewRbxGfx::onWorkspaceDescendentAdded(boost::shared_ptr<Instance>instance){
  if(PartInstance*part=dynamic_cast<PartInstance*>(instance.get())){
   new Part(shared_from(part),this);
+  instance.reset();
   return;
  }
  {
