@@ -1,0 +1,32 @@
+{
+  "native-header-families-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "hypothesis": "Shared inline/template assertion bodies affect many native classes. Rank project-header dependency fan-out, test top eight headers through all dependent TUs against one accepted baseline, retain only new whole-client unique code+data bodies with no previously owned losses, then batch native integration.",
+    "native_sweep": {
+      "files": [
+        "App/*/*.cpp",
+        "Network/*.cpp",
+        "Rendering/AppDraw/*.cpp",
+        "Rendering/RenderLib/*.cpp",
+        "RbxView/*.cpp"
+      ],
+      "header_families": 8,
+      "new_coverage_only": true,
+      "source_kinds": [
+        "snippet",
+        "vendor-file",
+        "generated-unit"
+      ],
+      "settle_jobs": [
+        "981c606609864414b2c608ce100c68ef"
+      ],
+      "apply": true,
+      "submit": true,
+      "wait": true,
+      "model": "gpt-6.1-sol",
+      "split_rejected": true
+    },
+    "targets": {}
+  }
+}

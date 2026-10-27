@@ -1,8 +1,8 @@
-// from server: 95% by colin
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_trial_6c2ae36358d88bf4.cpp
+// roc-lib: rbxgs-dll roc_claudeNA_0b091297c4a19e75.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define _CPPUNWIND 1
@@ -56,7 +56,7 @@ ServiceProvider* __cdecl findServiceProvider(const Instance* context);
 template<class T> class ServiceClient {
 public:
     explicit ServiceClient(Instance* c) : context(c) {}
-    T* get(bool create);
+    __declspec(noalias) T* get(bool create);
     Instance* context;
     boost::shared_ptr<T> service;
 };

@@ -114,6 +114,18 @@ def test_factory_tag_uses_compiled_native_class_for_scheduling():
     assert sweep.claim_unit(hit, {'unit': 'RBX::VPartInstance::?$FactoryProduct'}) == 'RBX::PartInstance'
 
 
+def test_ownership_checks_twins_outside_the_discovery_pool(monkeypatch):
+    hits = [{'addr': '00500000', 'symbol': '?f@A@@'}, {'addr': '00500001', 'symbol': '?g@A@@'}]
+    monkeypatch.setattr(sweep.match, 'coff_functions', lambda _: [('?f@A@@', b'body', []), ('?g@A@@', b'other', [])])
+    def pair(client, funcs):
+        assert client == '2008-06' and len(funcs) == 2
+        return [('?f@A@@', 4, ['00500000', '00700000']), ('?g@A@@', 5, ['00500001'])]
+    monkeypatch.setattr(sweep.rebuild, 'pair', pair)
+    kept, deferred = sweep.ownership_witnesses(b'object', hits)
+    assert kept == [hits[1]]
+    assert deferred[0]['addr'] == '00500000'
+
+
 def test_unchanged_diagnostic_profiles_do_not_compile_twice():
     text = '#pragma float_control(precise, off)\nvoid A::f(){}\n'
     assert [mode for mode, _, error in sweep.experiments(text)] == ['baseline']
@@ -262,6 +274,7 @@ def test_pipeline_recompiles_minimal_fix_before_claim_and_apply(tmp_path, monkey
     monkeypatch.setitem(sweep.libs.RECIPES, 'rbxgs', {'include': [], 'defines': ''})
     monkeypatch.setattr(sweep, 'Matcher', Matcher)
     monkeypatch.setattr(sweep, 'compile_unit', compile_unit)
+    monkeypatch.setattr(sweep, 'ownership_witnesses', lambda obj, hits: (hits, []))
     actions = []
     def command(args):
         actions.append(args.action)

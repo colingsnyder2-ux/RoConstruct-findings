@@ -1,0 +1,3 @@
+# Shared-header native integration experiment
+
+Experimental contributor tooling and named recipe. Tests:108 passed. COFF metadata cache compared identical referenced data across30 real object symbols;18.7x speedup for that bounded metadata benchmark, not overall rebuild speed. Header families ranked by transitive quoted-include fan-out. Compile every affected native TU; reject failed compilation, prior owned-body loss and globally ambiguous bodies. Candidate addresses deduplicated. Combined patches submitted to independent linked/runtime/ABI verification; rejected combinations split and resync. Current native-header-families-2008 worker9352 is running; no new gain claimed. Accepted server receipts remain the authority. No vendor trees or objects exported.

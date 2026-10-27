@@ -152,6 +152,17 @@ def claim_unit(hit, row):
     return unit if re.fullmatch(r"RBX::(?:\w+::)*\w+", unit) else "RBX::" + symbol_method(hit["symbol"]).split("::")[0]
 
 
+def ownership_witnesses(obj, witnesses):
+    """Match the server's global unique-body ownership rule, beyond the discovery pool."""
+    symbols = {h["symbol"] for h in witnesses}
+    pairs = rebuild.pair("2008-06", [f for f in match.coff_functions(obj) if f[0] in symbols])
+    unique = {(symbol, addrs[0]) for symbol, _, addrs in pairs if len(addrs) == 1}
+    kept = [h for h in witnesses if (h["symbol"], h["addr"]) in unique]
+    deferred = [dict(h, reason="Not uniquely owned across the whole client") for h in witnesses
+                if (h["symbol"], h["addr"]) not in unique]
+    return kept, deferred
+
+
 def experiments(text, modes=MODES):
     seen, result = set(), []
     for mode in ("baseline", *modes):
@@ -340,6 +351,7 @@ def run(spec, name, server=None, jobs=4, limit=None, output=None, log=print):
         texts = {rel: (overlay / rel if (overlay / rel).exists() else tree / rel).read_text(errors="replace") for rel in files}
         trials = [(rel, *trial) for rel in files for trial in experiments(texts[rel], config.get("modes", MODES))]
         records, proofs, baseline_hits, baseline_ready = [], defaultdict(list), {}, set()
+        ownership_checks = []
         def compile_trial(item):
             rel, mode, source, error = item
             if error:
@@ -364,6 +376,10 @@ def run(spec, name, server=None, jobs=4, limit=None, output=None, log=print):
                     proposal = proven_proposal(texts[rel], mode, [h for h in result["hits"] if h["addr"] in targets - owned],
                                                exclude)
                     if proposal:
+                        witnesses, deferred = ownership_witnesses(Path(result["object"]).read_bytes(), proposal["witnesses"])
+                        ownership_checks.extend(dict(h, file=rel, mode=mode) for h in deferred)
+                        proposal = proven_proposal(texts[rel], mode, witnesses, exclude)
+                    if proposal:
                         proposal["file"] = rel
                         for hit in proposal["witnesses"]:
                             hit["claim_unit"] = claim_unit(hit, by_addr[hit["addr"]])
@@ -376,20 +392,25 @@ def run(spec, name, server=None, jobs=4, limit=None, output=None, log=print):
             for proposal in sorted(choices, key=lambda p: (-len(p["witnesses"]), len(p["edits"]))):
                 final = compile_unit(proposal["source"], rel, "final-" + proposal["mode"], output, tree, overlay, includes, defines, flags)
                 hits = matcher.scan(Path(final["object"]).read_bytes()) if final["ok"] else []
+                if final["ok"]:
+                    proposal["witnesses"], deferred = ownership_witnesses(Path(final["object"]).read_bytes(), proposal["witnesses"])
+                    ownership_checks.extend(dict(h, file=rel, mode=proposal["mode"]) for h in deferred)
                 addresses = {h["addr"] for h in hits}
                 wanted = {h["addr"] for h in proposal["witnesses"]}
                 lost = (baseline_hits[rel] & owned) - addresses
                 proposal["proof"] = dict(final, hits=hits, losses=sorted(lost))
                 final_checks.append(proposal["proof"])
                 proposal.pop("source")
-                if not lost and wanted <= addresses:
+                if wanted and not lost and wanted <= addresses:
                     proposals.append(proposal)
                     break
         integration.atomic_json(output / "proposals.json", proposals)
         integration.atomic_json(output / "final-checks.json", final_checks)
+        integration.atomic_json(output / "ownership-checks.json", ownership_checks)
         summary = {"recipe": name, "client": "2008-06", "op": "native-grid", "tried": len(records),
                    "proposed_files": len(proposals), "local_exact": sum(len(p["witnesses"]) for p in proposals),
                    "eligible_targets": len(targets - owned), "starting_revision": base["revision"],
+                   "deferred_ownership": len(ownership_checks),
                    "new_verified": 0}
         if not proposals or not config.get("apply"):
             return finish(summary)

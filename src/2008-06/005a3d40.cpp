@@ -1,4 +1,4 @@
-// from server: 74% by colin
+// from server: 100% by coldek
 // roc 2008-06 005a3d40  unit: RBX::VWorkspace::?$RefPropDescriptor  size: 205 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005a3d40
 //
@@ -71,7 +71,6 @@
 // 005a3e07  83c418               add esp, 0x18
 // 005a3e0a  c20400               ret 4
 
-// from server: 73% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // v2: nil-local for control init (drives esi-allocation before this), no barrier.
@@ -107,9 +106,11 @@ struct Guard {
     void* pointer;
     Control* control;
 
-    Guard* acquire(int, void*);
+    __declspec(noalias) Guard* acquire(int, void*);
     void finish();
     void release();
+    Guard(Descriptor* o) : owner(o), pointer(0), control(0) {}
+    ~Guard() { if (control) control->release(); }
 };
 
 struct Object {
@@ -130,12 +131,8 @@ inline void Guard::release()
 
 void Descriptor::f(void* value)
 {
-    Guard guard;
-    guard.control = 0;
-    guard.pointer = 0;
-    guard.owner = this;
+    Guard guard(this);
     if (value)
         guard.acquire(1, value)->finish();
     attach(new Object(this, value));
-    guard.release();
 }
