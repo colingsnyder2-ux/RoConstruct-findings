@@ -1,8 +1,8 @@
-// from server: 85% by Espeon
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espeon_mesahalvenative67d573bf4cce06ae.cpp
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast /arch:SSE2
+// roc-lib: rbxgs-dll roc_claudeM_67d573bf4cce06ae.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define NDEBUG 1

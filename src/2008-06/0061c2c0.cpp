@@ -1,12 +1,16 @@
-// from server: 99% by colin
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_lua_index_native_family_e38820bbe8166503.cpp
+// roc-lib: rbxgs-dll roc_claudeM_1feff24e20b19cb1.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include <boost/shared_ptr.hpp>
-namespace RBX { class Instance; template<typename Class> boost::shared_ptr<Class> shared_from(Class*); template<> boost::shared_ptr<Instance> shared_from<Instance>(Instance*); }
+#pragma include_alias("reflection/enumconverter.h", "roc_enum_item_genuine_owner_header4eec83b4b5d2a3a5.cpp")
+#pragma include_alias("reflection/enumConverter.h", "roc_enum_item_genuine_owner_header4eec83b4b5d2a3a5.cpp")
+#pragma include_alias("reflection/property.h", "roc_espeon_luapropertyenumitemexternal80d2c317f95c3a46.cpp")
+#pragma include_alias("v8tree/Instance.h", "roc_espeon_luainstanceexternalancestorsfe6ba092ad87ac69.cpp")
+#include "roc_genuine_lua_singleton_enum_headerf079742c7efc6c9f.cpp"
+namespace RBX { namespace Lua { template<> const char* Bridge<EnumDescriptorItemPtr, false>::className = "EnumItem"; } }
 // Native setter reloads its descriptor across type branches. Getter retains
 // its genuine source alias: removing it reduced the measured similarity.
 #include "script/LuaInstanceBridge.h"
@@ -21,13 +25,33 @@ namespace RBX { class Instance; template<typename Class> boost::shared_ptr<Class
 #include "G3D/format.h"
 #include "G3D/Vector3.h"
 
+namespace RBX { namespace Lua { extern const char* throwable_lua_tostring(lua_State*, int); } }
+
 // matches generally aren't very good here
 
+inline const RBX::Name& RBX::Reflection::ConstProperty::getName() const {return descriptor->name;}
 using namespace RBX;
 using namespace RBX::Lua;
 using namespace RBX::Reflection;
 using namespace RBX::Soundscape;
 
+namespace RBX {
+
+class DataModel:public Instance {public: char gap[0x21c-sizeof(Instance)];Instance* guiRoot;char gap2[4];Instance* guiHooks;};
+}
+struct NativePermissionContext {unsigned long identity;void report(int,const char*);};
+extern "C" NativePermissionContext* __cdecl nativePermissionContext();
+extern bool __cdecl nativeHasPermission(unsigned long,int);
+static __declspec(noinline) void nativeCheckModification(RBX::Instance* instance){
+ if(nativeHasPermission(nativePermissionContext()->identity,1))return;
+ if(dynamic_cast<RBX::Stats::StatsService*>(instance))nativePermissionContext()->report(1,"modify a StatsService");
+ RBX::Instance* root=instance->getParent()?instance->getParent()->getRootAncestor():instance;
+ RBX::DataModel* model=dynamic_cast<RBX::DataModel*>(root);
+ if(model){
+ if(model->guiRoot==instance||model->guiRoot->isAncestorOf(instance))nativePermissionContext()->report(1,"GuiRoot");
+ if(model->guiHooks==instance||model->guiHooks->isAncestorOf(instance))nativePermissionContext()->report(1,"GuiHooks");
+ }
+}
 // Declare the real specialization before explicit registration instantiation.
 // The public registration path below emits the otherwise unused callbacks.
 template<> void ObjectBridge::on_newindex(boost::shared_ptr<DescribedBase>&,const char*,lua_State*);
@@ -74,87 +98,87 @@ static void pushLuaValue(ConstProperty p, lua_State* L)
     // (0024D0)  S_BPREL32: [FFFFFF50], Type:             0x36A2, end
     // (0024E0)  S_BPREL32: [FFFFFF48], Type:             0x36A2, iter
 
-    PropertyDescriptor& descriptor = const_cast<PropertyDescriptor&>(p.getDescriptor());
 
-    if (descriptor.type == Type::singleton<int>())
+
+    if (p.getDescriptor().type == Type::singleton<int>())
     {
         lua_pushinteger(L, p.getValue<int>());
         return;
     }
 
-    if (descriptor.type == Type::singleton<bool>())
+    if (p.getDescriptor().type == Type::singleton<bool>())
     {
         lua_pushboolean(L, p.getValue<bool>());
         return;
     }
 
-    if (descriptor.type == Type::singleton<float>())
+    if (p.getDescriptor().type == Type::singleton<float>())
     {
         lua_pushnumber(L, p.getValue<float>());
         return;
     }
 
-    if (descriptor.type == Type::singleton<double>())
+    if (p.getDescriptor().type == Type::singleton<double>())
     {
         lua_pushnumber(L, p.getValue<double>());
         return;
     }
 
-    if (descriptor.type == Type::singleton<std::string>())
+    if (p.getDescriptor().type == Type::singleton<std::string>())
     {
         lua_pushstring(L, p.getStringValue().c_str());
         return;
     }
 
-    if (descriptor.type == Type::singleton<boost::shared_ptr<Instance>>())
+    if (p.getDescriptor().type == Type::singleton<boost::shared_ptr<Instance>>())
     {
         ObjectBridge::push(L, p.getValue<boost::shared_ptr<Instance>>());
         return;
     }
 
-    if (descriptor.type == Type::singleton<boost::shared_ptr<DescribedBase>>())
+    if (p.getDescriptor().type == Type::singleton<boost::shared_ptr<DescribedBase>>())
     {
         ObjectBridge::push(L, p.getValue<boost::shared_ptr<DescribedBase>>());
         return;
     }
 
-    if (descriptor.type == Type::singleton<G3D::Vector3>())
+    if (p.getDescriptor().type == Type::singleton<G3D::Vector3>())
     {
         Vector3Bridge::pushVector3(L, p.getValue<G3D::Vector3>());
         return;
     }
 
-    if (descriptor.type == Type::singleton<G3D::CoordinateFrame>())
+    if (p.getDescriptor().type == Type::singleton<G3D::CoordinateFrame>())
     {
         CoordinateFrameBridge::pushCoordinateFrame(L, p.getValue<G3D::CoordinateFrame>());
         return;
     }
 
-    if (descriptor.type == Type::singleton<G3D::Color3>())
+    if (p.getDescriptor().type == Type::singleton<G3D::Color3>())
     {
         Color3Bridge::pushColor3(L, p.getValue<G3D::Color3>());
         return;
     }
 
-    if (descriptor.type == Type::singleton<BrickColor>())
+    if (p.getDescriptor().type == Type::singleton<BrickColor>())
     {
         BrickColorBridge::pushNewObject(L, p.getValue<BrickColor>());
         return;
     }
 
-    if (descriptor.type == Type::singleton<ContentId>())
+    if (p.getDescriptor().type == Type::singleton<ContentId>())
     {
         lua_pushstring(L, p.getStringValue().c_str());
         return;
     }
 
-    if (descriptor.type == Type::singleton<FunctionRef>())
+    if (p.getDescriptor().type == Type::singleton<FunctionRef>())
     {
         lua_pushfunction(L, p.getValue<FunctionRef>());
         return;
     }
 
-    if (descriptor.type == Type::singleton<boost::shared_ptr<Instances>>())
+    if (p.getDescriptor().type == Type::singleton<boost::shared_ptr<Instances>>())
     {
         boost::shared_ptr<Instances> objects = p.getValue<boost::shared_ptr<Instances>>();
         if (objects)
@@ -179,14 +203,14 @@ static void pushLuaValue(ConstProperty p, lua_State* L)
         return;
     }
 
-    EnumPropertyDescriptor* enumDesc = dynamic_cast<EnumPropertyDescriptor*>(&descriptor);
+    EnumPropertyDescriptor* enumDesc = dynamic_cast<EnumPropertyDescriptor*>(&const_cast<PropertyDescriptor&>(p.getDescriptor()));
     if (enumDesc)
     {
-        lua_pushinteger(L, enumDesc->getEnumValue(p.getInstance()));
+        EnumItem::push(L, enumDesc->getEnumItem(p.getInstance()));
         return;
     }
 
-    RefPropertyDescriptor* refDesc = dynamic_cast<RefPropertyDescriptor*>(&descriptor);
+    RefPropertyDescriptor* refDesc = dynamic_cast<RefPropertyDescriptor*>(&const_cast<PropertyDescriptor&>(p.getDescriptor()));
     if (refDesc)
     {
         DescribedBase* ref = refDesc->getRefValue(p.getInstance());
@@ -202,8 +226,8 @@ static void pushLuaValue(ConstProperty p, lua_State* L)
 
     throw std::runtime_error(G3D::format(
         "Unable to get property %s, type %s",
-        descriptor.name.c_str(),
-        descriptor.type.name.c_str()));
+        p.getName().c_str(),
+        p.getDescriptor().type.name.c_str()));
 }
 
 template<>
@@ -244,7 +268,7 @@ int ObjectBridge::on_index(const boost::shared_ptr<DescribedBase>& object, const
                 lua_settable(L, LUA_ENVIRONINDEX);
             }
 
-            // Native index lookup omits this release assertion.
+            // No function-type assertion in the target callback.
 
             return 1;
         }
@@ -280,7 +304,7 @@ int ObjectBridge::on_index(const boost::shared_ptr<DescribedBase>& object, const
             return on_index(object, pascalName.c_str(), L);
     }
 
-    throw std::runtime_error(G3D::format("%s is not a valid member of %s", name, ((AbstractFactoryProduct<Instance>*)((char*)instance+0x10))->getClassName().c_str()));
+    throw std::runtime_error(G3D::format("%s is not a valid member of %s", name, instance->getClassName().c_str()));
 }
 
 // TODO: 94.38% (functional match)
@@ -316,7 +340,7 @@ static __declspec(noinline) void assignLuaValue(Property p, lua_State* L, int in
 
     if (p.getDescriptor().type == Type::singleton<std::string>())
     {
-        p.setValue<std::string>(lua_tostring(L, index));
+        p.setValue<std::string>(throwable_lua_tostring(L, index));
         return;
     }
 
@@ -366,23 +390,40 @@ static __declspec(noinline) void assignLuaValue(Property p, lua_State* L, int in
     // seems like an inline, but i can't get it to work
     if (dynamic_cast<TypedPropertyDescriptor<SoundId>*>(const_cast<PropertyDescriptor*>(&p.getDescriptor())))
     {
-        p.setValue<SoundId>(ContentId(lua_tostring(L, index)));
+        p.setValue<SoundId>(ContentId(throwable_lua_tostring(L, index)));
         return;
     }
 
     if (dynamic_cast<TypedPropertyDescriptor<TextureId>*>(const_cast<PropertyDescriptor*>(&p.getDescriptor())))
     {
-        p.setValue<TextureId>(ContentId(lua_tostring(L, index)));
+        p.setValue<TextureId>(ContentId(throwable_lua_tostring(L, index)));
         return;
     }
 
-    EnumPropertyDescriptor* enumDesc = dynamic_cast<EnumPropertyDescriptor*>(const_cast<PropertyDescriptor*>(&p.getDescriptor()));
-    if (enumDesc)
-    {
-        int value = lua_tointeger(L, index);
-        enumDesc->setEnumValue(p.getInstance(), value);
-        return;
-    }
+	const EnumPropertyDescriptor* enumDesc = dynamic_cast<const EnumPropertyDescriptor*>(&p.getDescriptor());
+	if (enumDesc!=NULL)
+	{
+		EnumDescriptorItemPtr item;
+		if (EnumItem::getItem(L, index, item))
+		{
+			if (!enumDesc->setEnumItem(p.getInstance(), *item))
+				throw std::runtime_error(G3D::format("Invalid type %s for enum %s", item->owner.name.c_str(), enumDesc->name.c_str()));
+		}
+		else if (lua_isnumber(L, index))
+		{
+			if (!enumDesc->setEnumValue(p.getInstance(), lua_tointeger(L, index) ))
+				throw std::runtime_error(G3D::format("Invalid value %d for enum %s", static_cast<int>(lua_tointeger(L, index)), enumDesc->name.c_str()));
+		}
+		else if (lua_isstring(L, index))
+		{
+			if (!enumDesc->setStringValue(p.getInstance(), lua_tostring(L, index)))
+				throw std::runtime_error(G3D::format("Invalid value \"%s\" for enum %s", lua_tostring(L, index), enumDesc->name.c_str()));
+		} 
+		else
+			throw std::runtime_error(G3D::format("Invalid value for enum %s", enumDesc->name.c_str()));
+		return;
+	}
+
 
     RefPropertyDescriptor* refDesc = dynamic_cast<RefPropertyDescriptor*>(const_cast<PropertyDescriptor*>(&p.getDescriptor()));
     if (refDesc)
@@ -392,7 +433,9 @@ static __declspec(noinline) void assignLuaValue(Property p, lua_State* L, int in
         return;
     }
 
-    throw std::runtime_error(G3D::format("Unable to set property %s, type %s", p.getDescriptor().name.c_str(), p.getDescriptor().type.name.c_str()));
+    const char* typeName=p.getDescriptor().type.name.c_str();
+    const char* propertyName=p.getName().c_str();
+    throw std::runtime_error(G3D::format("Unable to set property %s, type %s", propertyName, typeName));
 }
 
 // TODO: 91.56%
@@ -406,23 +449,26 @@ void ObjectBridge::on_newindex(boost::shared_ptr<DescribedBase>& object, const c
     if (!object)
         throw std::runtime_error("The object has been deleted");
 
-    DescribedBase* objectPtr = object.get();
-    PropertyIterator iter = object->findProperty(Name::lookup(name));
+    nativeCheckModification(dynamic_cast<Instance*>(object.get()));
+
+    
+    const Name& propertyName = Name::lookup(name);
+    PropertyIterator iter = object->findProperty(propertyName);
     if (iter != object->properties_end())
     {
         if ((*iter).getDescriptor() == Instance::propParent)
         {
-            Instance* instance = dynamic_cast<Instance*>(objectPtr);
+            Instance* instance = dynamic_cast<Instance*>(object.get());
 
             if (!instance)
-                throw std::runtime_error(G3D::format("%s is not a valid member of %s", name, object->classDescriptor().name.c_str()));
+                throw std::runtime_error(G3D::format("%s is not a valid member of %s", name, object->getDescriptor().name.c_str()));
 
             boost::shared_ptr<Instance> parent = ObjectBridge::getInstance(L, 3);
 
             if (instance->getParent() != parent.get())
             {
                 if (!instance->canSetParent(parent.get()))
-                    StandardOut::singleton()->print(MESSAGE_WARNING, "%s should not be a child of %s", instance->getName().c_str(), parent->getName().c_str());
+                    StandardOut::singleton()->print(MESSAGE_WARNING, "%s should not be a child of %s", instance->getFullName().c_str(), parent->getFullName().c_str());
 
                 instance->setParent2(parent);
             }
@@ -435,7 +481,7 @@ void ObjectBridge::on_newindex(boost::shared_ptr<DescribedBase>& object, const c
         return;
     }
 
-    throw std::runtime_error(G3D::format("%s is not a valid member of %s", name, object->classDescriptor().name.c_str()));
+    throw std::runtime_error(G3D::format("%s is not a valid member of %s", name, object->getDescriptor().name.c_str()));
 }
 
 int ObjectBridge::callMemberFunction(lua_State* L)

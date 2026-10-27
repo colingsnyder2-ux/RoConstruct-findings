@@ -1,8 +1,8 @@
-// from server: 61% by Espeon
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espeon_mesapaddedhalving470a40d0a96127aa.cpp
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast /arch:SSE2
+// roc-lib: rbxgs-dll roc_claudeM_b7d91332f26259ad.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define NDEBUG 1
@@ -74,6 +74,7 @@ static __declspec(noinline) void halveImage_ubyte(GLint components, GLuint width
 {
     int i, j, k;
     int newwidth, newheight;
+    int padBytes;
     GLubyte *s;
     const char *t;
 
@@ -85,9 +86,9 @@ static __declspec(noinline) void halveImage_ubyte(GLint components, GLuint width
        return;
     }
 
-    int padBytes=ysize - (width * group_size);
     newwidth = width / 2;
     newheight = height / 2;
+    padBytes = ysize - (width*group_size);
     s = dataout;
     t = (const char *)datain;
 
@@ -103,7 +104,8 @@ static __declspec(noinline) void halveImage_ubyte(GLint components, GLuint width
 	    }
 	    t += group_size;
 	}
-	t += ysize + padBytes;
+	t += padBytes;
+	t += ysize;
     }
 }
 
