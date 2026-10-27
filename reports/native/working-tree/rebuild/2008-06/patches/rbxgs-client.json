@@ -505,6 +505,10 @@
   [
    "#include \"v8world/Primitive.h\"\n",
    "#pragma float_control(precise, off)\n#include \"v8world/Primitive.h\"\n"
+  ],
+  [
+   "Primitive::setSurfaceData(NormalId id, const SurfaceData& newSurfaceData)\n\t{\n\t\tif (!surfaceData[id] && newSurfaceData.isEmpty())\n\t\t\treturn;\n\n\t\tif (surfaceData[id] && *surfaceData[id] == newSurfaceData)\n\t\t\treturn;\n\n\t\tif (newSurfaceData.isEmpty())\n\t\t{\n\t\t\tRBXASSERT(surfaceData[id]);\n\t\t\tdelete surfaceData[id];\n\t\t\tsurfaceData[id] = NULL;\n\t\t\treturn;\n\t\t}\n\t\telse if (!surfaceData[id])\n\t\t{\n\t\t\tsurfaceData[id] = new SurfaceData;\n\t\t}\n\n\t\t*surfaceData[id] = newSurfaceData;\n\t}",
+   "Primitive::setSurfaceData(NormalId id, const SurfaceData& newSurfaceData)\n\t{\n\t\tif (!surfaceData[id] && newSurfaceData.isEmpty())\n\t\t\treturn;\n\n\t\tif (surfaceData[id] && *surfaceData[id] == newSurfaceData)\n\t\t\treturn;\n\n\t\tif (newSurfaceData.isEmpty())\n\t\t{\n\t\t\t                          ;\n\t\t\tdelete surfaceData[id];\n\t\t\tsurfaceData[id] = NULL;\n\t\t\treturn;\n\t\t}\n\t\telse if (!surfaceData[id])\n\t\t{\n\t\t\tsurfaceData[id] = new SurfaceData;\n\t\t}\n\n\t\t*surfaceData[id] = newSurfaceData;\n\t}"
   ]
  ],
  "App/include/v8datamodel/PartInstance.h": [
@@ -545,6 +549,10 @@
   [
    "",
    "\nnamespace RBX {\n    // 0x598c20: base name update, then the byte-proven Torso-dependent value.\n    void PartInstance::setName(const std::string& value)\n    {\n        Base::setName(value);\n        if (value == \"Torso\")\n            primitive.setUnknown0x14(5);\n        else\n            primitive.setUnknown0x14(1);\n    }\n}\n"
+  ],
+  [
+   "#include \"v8datamodel/PartInstance.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"v8datamodel/PartInstance.h\"\n"
   ]
  ],
  "App/include/v8kernel/Body.h": [
@@ -585,6 +593,14 @@
   [
    "\t\tRBXASSERT(!getCurrentMouseCommand()->captured());\n",
    ""
+  ],
+  [
+   "Workspace::onDescendentAdded(Instance* instance)\n\t{\n\t\tRootInstance::onDescendentAdded(instance);\n\t\traiseDrawChanged();\n\n\t\tIRenderable* renderable = dynamic_cast<IRenderable*>(instance);\n\t\tif (renderable)\n\t\t\tonAdded(renderable);\n\n\t\tPVInstance* pvInstance = dynamic_cast<PVInstance*>(instance);\n\t\tif (pvInstance && pvInstance->getLegacyOffset())\n\t\t{\n\t\t\tRBXASSERT(instance->getParent() == this);\n\n\t\t\tpvInstance->legacyTraverseState(G3D::CoordinateFrame());\n\t\t\tpvInstance->clearLegacyOffset();\n\t\t\tif (legacyOffset)\n\t\t\t\tlegacyOffset.reset();\n\t\t}\n\t}",
+   "Workspace::onDescendentAdded(Instance* instance)\n\t{\n\t\tRootInstance::onDescendentAdded(instance);\n\t\traiseDrawChanged();\n\n\t\tIRenderable* renderable = dynamic_cast<IRenderable*>(instance);\n\t\tif (renderable)\n\t\t\tonAdded(renderable);\n\n\t\tPVInstance* pvInstance = dynamic_cast<PVInstance*>(instance);\n\t\tif (pvInstance && pvInstance->getLegacyOffset())\n\t\t{\n\t\t\t                                        ;\n\n\t\t\tpvInstance->legacyTraverseState(G3D::CoordinateFrame());\n\t\t\tpvInstance->clearLegacyOffset();\n\t\t\tif (legacyOffset)\n\t\t\t\tlegacyOffset.reset();\n\t\t}\n\t}"
+  ],
+  [
+   "Workspace::runScript(Script* script, ScriptContext* context)\n\t{\n\t\tRBXASSERT(context == scriptContext);\n\n\t\tif (Network::Players::backendProcessing(this, true) && !isSimulating)\n\t\t\tpendingScripts.insert(script);\n\t\telse\n\t\t\tcontext->addScript(script);\n\t}",
+   "Workspace::runScript(Script* script, ScriptContext* context)\n\t{\n\t\t                                   ;\n\n\t\tif (Network::Players::backendProcessing(this, true) && !isSimulating)\n\t\t\tpendingScripts.insert(script);\n\t\telse\n\t\t\tcontext->addScript(script);\n\t}"
   ]
  ],
  "App/include/script/ScriptContext.h": [
@@ -695,6 +711,14 @@
   [
    "#include \"v8datamodel/RootInstance.h\"\n",
    "#pragma float_control(precise, off)\n#include \"v8datamodel/RootInstance.h\"\n"
+  ],
+  [
+   "RootInstance::insertRaw(const std::vector<boost::shared_ptr<Instance>>& instances, Instance* requestedParent, std::vector<boost::weak_ptr<PartInstance>>& partArray)\n\t{\n\t\tRBXASSERT(requestedParent && this->contains(requestedParent));\n\n\t\tstd::for_each(instances.begin(), instances.end(), boost::bind(&Instance::setParent, _1, requestedParent));\n\n\t\tfor (size_t i = 0; i < instances.size(); ++i)\n\t\t\tPartInstance::findParts(instances[i].get(), partArray);\n\n\t\tDragUtilities::join(partArray);\n\t}",
+   "RootInstance::insertRaw(const std::vector<boost::shared_ptr<Instance>>& instances, Instance* requestedParent, std::vector<boost::weak_ptr<PartInstance>>& partArray)\n\t{\n\t\t                                                             ;\n\n\t\tstd::for_each(instances.begin(), instances.end(), boost::bind(&Instance::setParent, _1, requestedParent));\n\n\t\tfor (size_t i = 0; i < instances.size(); ++i)\n\t\t\tPartInstance::findParts(instances[i].get(), partArray);\n\n\t\tDragUtilities::join(partArray);\n\t}"
+  ],
+  [
+   "RootInstance::insertCharacterView(const std::vector<boost::shared_ptr<Instance>>& instances, std::vector<boost::weak_ptr<PartInstance>>& partArray)\n\t{\n\t\tRBXASSERT(instances.size() > 0);\n\n\t\tif (instances.size() == 1)\n\t\t{\n\t\t\tInstance* instance = instances[0].get();\n\t\t\tif (dynamic_cast<HopperBin*>(instance))\n\t\t\t{\n\t\t\t\tNetwork::Player* localPlayer = Network::Players::findLocalPlayer(this);\n\t\t\t\tif (localPlayer)\n\t\t\t\t{\n\t\t\t\t\tinstance->setParent(localPlayer->getPlayerBackpack());\n\t\t\t\t\treturn;\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\n\t\tinsertRaw(instances, this, partArray);\n\t\tmoveToCharacterInsertPoint(partArray);\n\t}",
+   "RootInstance::insertCharacterView(const std::vector<boost::shared_ptr<Instance>>& instances, std::vector<boost::weak_ptr<PartInstance>>& partArray)\n\t{\n\t\t                               ;\n\n\t\tif (instances.size() == 1)\n\t\t{\n\t\t\tInstance* instance = instances[0].get();\n\t\t\tif (dynamic_cast<HopperBin*>(instance))\n\t\t\t{\n\t\t\t\tNetwork::Player* localPlayer = Network::Players::findLocalPlayer(this);\n\t\t\t\tif (localPlayer)\n\t\t\t\t{\n\t\t\t\t\tinstance->setParent(localPlayer->getPlayerBackpack());\n\t\t\t\t\treturn;\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\n\t\tinsertRaw(instances, this, partArray);\n\t\tmoveToCharacterInsertPoint(partArray);\n\t}"
   ]
  ],
  "App/include/script/LuaArguments.h": [
@@ -813,6 +837,158 @@
   [
    "#include \"v8datamodel/Lighting.h\"\n",
    "#pragma float_control(precise, off)\n#include \"v8datamodel/Lighting.h\"\n"
+  ]
+ ],
+ "App/tool/RunDragger.cpp": [
+  [
+   "#include \"tool/RunDragger.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"tool/RunDragger.h\"\n"
+  ],
+  [
+   "RunDragger::rotatePart(PartInstance* part)\n\t{\n\t\tRBXASSERT(part);\n\n\t\tG3D::CoordinateFrame rotated = part->getCoordinateFrame();\n\t\tMath::rotateMatrixAboutY90(rotated.rotation, 1);\n\n\t\tpart->setCoordinateFrame(rotated);\n\t}",
+   "RunDragger::rotatePart(PartInstance* part)\n\t{\n\t\t               ;\n\n\t\tG3D::CoordinateFrame rotated = part->getCoordinateFrame();\n\t\tMath::rotateMatrixAboutY90(rotated.rotation, 1);\n\n\t\tpart->setCoordinateFrame(rotated);\n\t}"
+  ],
+  [
+   "RunDragger::notTried(Primitive* check, const G3D::Array<Primitive*>& tried)\n\t{\n\t\tRBXASSERT(check != drag);\n\t\treturn check && tried.find(check) == tried.end();\n\t}",
+   "RunDragger::notTried(Primitive* check, const G3D::Array<Primitive*>& tried)\n\t{\n\t\t                        ;\n\t\treturn check && tried.find(check) == tried.end();\n\t}"
+  ],
+  [
+   "RunDragger::turnUpright(PartInstance* part)\n\t{\n\t\tRBXASSERT(part);\n\n\t\tif (part->getSurfaces().isStandardPart())\n\t\t{\n\t\t\tG3D::CoordinateFrame dragCoord = part->getCoordinateFrame();\n\t\t\tif (Math::getClosestObjectNormalId(G3D::Vector3::unitY(), dragCoord.rotation) != NORM_Y)\n\t\t\t{\n\t\t\t\tdragCoord.rotation = G3D::Matrix3::identity();\n\t\t\t\tpart->setCoordinateFrame(dragCoord);\n\t\t\t}\n\t\t}\n\t}",
+   "RunDragger::turnUpright(PartInstance* part)\n\t{\n\t\t               ;\n\n\t\tif (part->getSurfaces().isStandardPart())\n\t\t{\n\t\t\tG3D::CoordinateFrame dragCoord = part->getCoordinateFrame();\n\t\t\tif (Math::getClosestObjectNormalId(G3D::Vector3::unitY(), dragCoord.rotation) != NORM_Y)\n\t\t\t{\n\t\t\t\tdragCoord.rotation = G3D::Matrix3::identity();\n\t\t\t\tpart->setCoordinateFrame(dragCoord);\n\t\t\t}\n\t\t}\n\t}"
+  ],
+  [
+   "RunDragger::tiltPart(PartInstance* part, const G3D::CoordinateFrame& camera)\n\t{\n\t\tRBXASSERT(part);\n\n\t\tG3D::CoordinateFrame dragCoord = part->getCoordinateFrame();\n\t\tG3D::Vector3 axis = Math::getWorldNormal(Math::getClosestObjectNormalId(camera.rightVector(), dragCoord.rotation), dragCoord);\n\t\tG3D::Matrix3 tiltM = G3D::Matrix3::fromAxisAngle(axis, G3D::halfPi());\n\n\t\tdragCoord.rotation = tiltM * dragCoord.rotation;\n\t\tpart->setCoordinateFrame(dragCoord);\n\t}",
+   "RunDragger::tiltPart(PartInstance* part, const G3D::CoordinateFrame& camera)\n\t{\n\t\t               ;\n\n\t\tG3D::CoordinateFrame dragCoord = part->getCoordinateFrame();\n\t\tG3D::Vector3 axis = Math::getWorldNormal(Math::getClosestObjectNormalId(camera.rightVector(), dragCoord.rotation), dragCoord);\n\t\tG3D::Matrix3 tiltM = G3D::Matrix3::fromAxisAngle(axis, G3D::halfPi());\n\n\t\tdragCoord.rotation = tiltM * dragCoord.rotation;\n\t\tpart->setCoordinateFrame(dragCoord);\n\t}"
+  ],
+  [
+   "RunDragger::findNoSnapPosition(const G3D::CoordinateFrame& original)\n\t{\n\t\tdragPart.lock()->setCoordinateFrame(original);\n\t\tfindSafeY();\n\n\t\tRBXASSERT(!workspace->getWorld()->getContactManager().intersectingOthers(drag, 0.01f));\n\t}",
+   "RunDragger::findNoSnapPosition(const G3D::CoordinateFrame& original)\n\t{\n\t\tdragPart.lock()->setCoordinateFrame(original);\n\t\tfindSafeY();\n\n\t\t                                                                                      ;\n\t}"
+  ]
+ ],
+ "App/v8world/IPipelined.cpp": [
+  [
+   "IPipelined::removeFromPipeline(IStage* stage)\n\t{\n\t\tRBXASSERT(stage);\n\t\tRBXASSERT(currentStage);\n\t\tRBXASSERT(currentStage == stage);\n\n\t\tcurrentStage = NULL;\n\t}",
+   "IPipelined::removeFromPipeline(IStage* stage)\n\t{\n\t\t                ;\n\t\t                       ;\n\t\t                                ;\n\n\t\tcurrentStage = NULL;\n\t}"
+  ],
+  [
+   "IPipelined::removeFromStage(IStage* stage)\n\t{\n\t\tRBXASSERT(currentStage);\n\t\tRBXASSERT(stage);\n\t\tRBXASSERT(stage == currentStage);\n\t\tRBXASSERT(stage->getUpstream());\n\n\t\tcurrentStage = currentStage->getUpstream();\n\t}",
+   "IPipelined::removeFromStage(IStage* stage)\n\t{\n\t\t                       ;\n\t\t                ;\n\t\t                                ;\n\t\t                               ;\n\n\t\tcurrentStage = currentStage->getUpstream();\n\t}"
+  ]
+ ],
+ "App/v8datamodel/UserController.cpp": [
+  [
+   "AIController::getLocalTargetPosition() const\n\t{\n\t\tG3D::Vector3 result;\n\n\t\tboost::shared_ptr<const PVInstance> lockPV = controlledInstance.lock();\n\t\tboost::shared_ptr<const PVInstance> lockTarget = target.lock();\n\n\t\tRBXASSERT(lockPV);\n\n\t\tif (lockPV && lockTarget)\n\t\t{\n\t\t\tG3D::CoordinateFrame controlledCoord = lockPV->getLocation();\n\t\t\tG3D::Vector3 targetLoc = lockTarget->getLocation().translation;\n\n\t\t\tresult = controlledCoord.pointToObjectSpace(targetLoc);\n\t\t}\n\t\t\n\t\treturn result;\n\t}",
+   "AIController::getLocalTargetPosition() const\n\t{\n\t\tG3D::Vector3 result;\n\n\t\tboost::shared_ptr<const PVInstance> lockPV = controlledInstance.lock();\n\t\tboost::shared_ptr<const PVInstance> lockTarget = target.lock();\n\n\t\t                 ;\n\n\t\tif (lockPV && lockTarget)\n\t\t{\n\t\t\tG3D::CoordinateFrame controlledCoord = lockPV->getLocation();\n\t\t\tG3D::Vector3 targetLoc = lockTarget->getLocation().translation;\n\n\t\t\tresult = controlledCoord.pointToObjectSpace(targetLoc);\n\t\t}\n\t\t\n\t\treturn result;\n\t}"
+  ],
+  [
+   "PlayerController::getHardwareDevice() const\n\t{\n\t\tRBXASSERT(!controllerService.expired());\n\t\treturn controllerService.expired() ? NULL : controllerService.lock()->getHardwareDevice();\n\t}",
+   "PlayerController::getHardwareDevice() const\n\t{\n\t\t                                       ;\n\t\treturn controllerService.expired() ? NULL : controllerService.lock()->getHardwareDevice();\n\t}"
+  ]
+ ],
+ "App/tool/Dragger.cpp": [
+  [
+   "#include \"tool/Dragger.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"tool/Dragger.h\"\n"
+  ],
+  [
+   "Dragger::movePrimitives(const G3D::Array<Primitive*>& primitives, const G3D::Vector3& delta)\n\t{\n\t\tRBXASSERT(primitives.size() > 0);\n\n\t\tif (delta != G3D::Vector3::zero())\n\t\t{\n\t\t\tfor (int i = 0; i < primitives.size(); i++)\n\t\t\t{\n\t\t\t\tPrimitive* prim = primitives[i];\n\t\t\t\tPartInstance* part = PartInstance::fromPrimitive(prim);\n\n\t\t\t\tDragUtilities::moveAndClean(part, delta);\n\t\t\t}\n\t\t}\n\t}",
+   "Dragger::movePrimitives(const G3D::Array<Primitive*>& primitives, const G3D::Vector3& delta)\n\t{\n\t\t                                ;\n\n\t\tif (delta != G3D::Vector3::zero())\n\t\t{\n\t\t\tfor (int i = 0; i < primitives.size(); i++)\n\t\t\t{\n\t\t\t\tPrimitive* prim = primitives[i];\n\t\t\t\tPartInstance* part = PartInstance::fromPrimitive(prim);\n\n\t\t\t\tDragUtilities::moveAndClean(part, delta);\n\t\t\t}\n\t\t}\n\t}"
+  ],
+  [
+   "Dragger::intersectingWorldOrOthers(const G3D::Array<Primitive*>& primitives, ContactManager& contactManager)\n\t{\n\t\tRBXASSERT(primitives.size() > 0);\n\n\t\tExtents group = computeExtents(primitives);\n\t\treturn group.min().y < -0.01f || contactManager.intersectingOthers(primitives, 0.01f);\n\t}",
+   "Dragger::intersectingWorldOrOthers(const G3D::Array<Primitive*>& primitives, ContactManager& contactManager)\n\t{\n\t\t                                ;\n\n\t\tExtents group = computeExtents(primitives);\n\t\treturn group.min().y < -0.01f || contactManager.intersectingOthers(primitives, 0.01f);\n\t}"
+  ],
+  [
+   "Dragger::movePrimitivesDelta(const G3D::Array<Primitive*>& primitives, const G3D::Vector3& delta, G3D::Vector3& movedSoFar)\n\t{\n\t\tRBXASSERT(delta == toGrid(delta));\n\t\tRBXASSERT(delta != G3D::Vector3::zero());\n\n\t\tmovePrimitives(primitives, delta);\n\t\tmovedSoFar = toGrid(movedSoFar + delta);\n\t}",
+   "Dragger::movePrimitivesDelta(const G3D::Array<Primitive*>& primitives, const G3D::Vector3& delta, G3D::Vector3& movedSoFar)\n\t{\n\t\t                                 ;\n\t\t                                        ;\n\n\t\tmovePrimitives(primitives, delta);\n\t\tmovedSoFar = toGrid(movedSoFar + delta);\n\t}"
+  ],
+  [
+   "Dragger::safeMoveYDrop(const G3D::Array<Primitive*>& primitives, const G3D::Vector3& tryMove, ContactManager& contactManager)\n\t{\n\t\tif (primitives.size() == 0)\n\t\t{\n\t\t\tRBXASSERT(0);\n\t\t\treturn G3D::Vector3::zero();\n\t\t}\n\n\t\tG3D::Vector3 moved = tryMove - G3D::Vector3(0.0f, 1.2f, 0.0f);\n\t\tmoved = Math::toGrid(moved, 0.1f);\n\n\t\tmovePrimitives(primitives, moved);\n\n\t\tif (intersectingWorldOrOthers(primitives, contactManager))\n\t\t\tsearchUpGross(primitives, moved, contactManager);\n\t\telse\n\t\t\tsearchDownGross(primitives, moved, contactManager);\n\n\t\tRBXASSERT(moved == Math::toGrid(moved, 0.1f));\n\n\t\treturn moved;\n\t}",
+   "Dragger::safeMoveYDrop(const G3D::Array<Primitive*>& primitives, const G3D::Vector3& tryMove, ContactManager& contactManager)\n\t{\n\t\tif (primitives.size() == 0)\n\t\t{\n\t\t\t            ;\n\t\t\treturn G3D::Vector3::zero();\n\t\t}\n\n\t\tG3D::Vector3 moved = tryMove - G3D::Vector3(0.0f, 1.2f, 0.0f);\n\t\tmoved = Math::toGrid(moved, 0.1f);\n\n\t\tmovePrimitives(primitives, moved);\n\n\t\tif (intersectingWorldOrOthers(primitives, contactManager))\n\t\t\tsearchUpGross(primitives, moved, contactManager);\n\t\telse\n\t\t\tsearchDownGross(primitives, moved, contactManager);\n\n\t\t                                             ;\n\n\t\treturn moved;\n\t}"
+  ],
+  [
+   "Dragger::safeRotate(const G3D::Array<Primitive*>& primitives, const G3D::Matrix3& rotate, ContactManager& contactManager)\n\t{\n\t\tif (primitives.size() == 0)\n\t\t{\n\t\t\tRBXASSERT(0);\n\t\t\treturn;\n\t\t}\n\n\t\tG3D::Vector3 center = toGrid(computeExtents(primitives).center());\n\t\tG3D::CoordinateFrame centerCoord(center);\n\t\tG3D::CoordinateFrame rotationCoord(rotate, G3D::Vector3::zero());\n\n\t\tfor (int i = 0; i < primitives.size(); i++)\n\t\t{\n\t\t\tPrimitive* prim = primitives[i];\n\n\t\t\tG3D::CoordinateFrame primInCenter = centerCoord.toObjectSpace(prim->getCoordinateFrame());\n\t\t\tG3D::CoordinateFrame newPrimInCenter = rotationCoord * primInCenter;\n\t\t\tG3D::CoordinateFrame primInWorld = centerCoord * newPrimInCenter;\n\n\t\t\tPartInstance* part = PartInstance::fromPrimitive(prim);\n\t\t\tpart->setCoordinateFrame(primInWorld);\n\t\t}\n\t}",
+   "Dragger::safeRotate(const G3D::Array<Primitive*>& primitives, const G3D::Matrix3& rotate, ContactManager& contactManager)\n\t{\n\t\tif (primitives.size() == 0)\n\t\t{\n\t\t\t            ;\n\t\t\treturn;\n\t\t}\n\n\t\tG3D::Vector3 center = toGrid(computeExtents(primitives).center());\n\t\tG3D::CoordinateFrame centerCoord(center);\n\t\tG3D::CoordinateFrame rotationCoord(rotate, G3D::Vector3::zero());\n\n\t\tfor (int i = 0; i < primitives.size(); i++)\n\t\t{\n\t\t\tPrimitive* prim = primitives[i];\n\n\t\t\tG3D::CoordinateFrame primInCenter = centerCoord.toObjectSpace(prim->getCoordinateFrame());\n\t\t\tG3D::CoordinateFrame newPrimInCenter = rotationCoord * primInCenter;\n\t\t\tG3D::CoordinateFrame primInWorld = centerCoord * newPrimInCenter;\n\n\t\t\tPartInstance* part = PartInstance::fromPrimitive(prim);\n\t\t\tpart->setCoordinateFrame(primInWorld);\n\t\t}\n\t}"
+  ]
+ ],
+ "App/v8world/ContactManager.cpp": [
+  [
+   "ContactManager::createContact(Primitive* p0, Primitive* p1)\n\t{\n\t\tGeometry::GeometryType type0 = p0->getGeometry()->getGeometryType();\n\t\tGeometry::GeometryType type1 = p1->getGeometry()->getGeometryType();\n\n\t\tif (type0 > type1)\n\t\t\tstd::swap(p0, p1);\n\n\t\ttype0 = p0->getGeometry()->getGeometryType();\n\t\ttype1 = p1->getGeometry()->getGeometryType();\n\n\t\tswitch (type0)\n\t\t{\n\t\tcase Geometry::GEOMETRY_BALL:\n\n\t\t\tswitch (type1)\n\t\t\t{\n\t\t\tcase Geometry::GEOMETRY_BALL:\n\t\t\t\treturn new BallBallContact(p0, p1);\n\t\t\tcase Geometry::GEOMETRY_BLOCK:\n\t\t\t\treturn new BallBlockContact(p0, p1);\n\t\t\t}\n\n\t\tcase Geometry::GEOMETRY_BLOCK:\n\t\t\treturn new BlockBlockContact(p0, p1);\n\t\tdefault:\n\t\t\tRBXASSERT(0);\n\t\t\treturn NULL;\n\t\t}\n\t}",
+   "ContactManager::createContact(Primitive* p0, Primitive* p1)\n\t{\n\t\tGeometry::GeometryType type0 = p0->getGeometry()->getGeometryType();\n\t\tGeometry::GeometryType type1 = p1->getGeometry()->getGeometryType();\n\n\t\tif (type0 > type1)\n\t\t\tstd::swap(p0, p1);\n\n\t\ttype0 = p0->getGeometry()->getGeometryType();\n\t\ttype1 = p1->getGeometry()->getGeometryType();\n\n\t\tswitch (type0)\n\t\t{\n\t\tcase Geometry::GEOMETRY_BALL:\n\n\t\t\tswitch (type1)\n\t\t\t{\n\t\t\tcase Geometry::GEOMETRY_BALL:\n\t\t\t\treturn new BallBallContact(p0, p1);\n\t\t\tcase Geometry::GEOMETRY_BLOCK:\n\t\t\t\treturn new BallBlockContact(p0, p1);\n\t\t\t}\n\n\t\tcase Geometry::GEOMETRY_BLOCK:\n\t\t\treturn new BlockBlockContact(p0, p1);\n\t\tdefault:\n\t\t\t            ;\n\t\t\treturn NULL;\n\t\t}\n\t}"
+  ]
+ ],
+ "App/tool/MegaDragger.cpp": [
+  [
+   "MegaDragger::~MegaDragger()\n\t{\n\t\tif (!joined)\n\t\t{\n\t\t\tRBXASSERT(0);\n\t\t\tDragUtilities::joinAndStopDragging(dragParts);\n\t\t}\n\t}",
+   "MegaDragger::~MegaDragger()\n\t{\n\t\tif (!joined)\n\t\t{\n\t\t\t            ;\n\t\t\tDragUtilities::joinAndStopDragging(dragParts);\n\t\t}\n\t}"
+  ],
+  [
+   "MegaDragger::continueDragging()\n\t{\n\t\tRBXASSERT(!joined);\n\t\tDragUtilities::unJoinAndSetDragging(dragParts);\n\t}",
+   "MegaDragger::continueDragging()\n\t{\n\t\t                  ;\n\t\tDragUtilities::unJoinAndSetDragging(dragParts);\n\t}"
+  ],
+  [
+   "MegaDragger::alignAndCleanParts()\n\t{\n\t\tRBXASSERT(!joined);\n\t\tif (PartInstance::nonNullInWorkspace(mousePart.lock()))\n\t\t{\n\t\t\tPartInstance* part = mousePart.lock().get();\n\n\t\t\tif (!part->aligned())\n\t\t\t{\n\t\t\t\tG3D::CoordinateFrame snap = part->worldSnapLocation();\n\t\t\t\tG3D::CoordinateFrame snapToGrid = Math::snapToGrid(snap, Dragger::dragSnap());\n\t\t\t\tDragUtilities::move(dragParts, snap, snapToGrid);\n\t\t\t}\n\t\t}\n\t\tDragUtilities::clean(dragParts);\n\t}",
+   "MegaDragger::alignAndCleanParts()\n\t{\n\t\t                  ;\n\t\tif (PartInstance::nonNullInWorkspace(mousePart.lock()))\n\t\t{\n\t\t\tPartInstance* part = mousePart.lock().get();\n\n\t\t\tif (!part->aligned())\n\t\t\t{\n\t\t\t\tG3D::CoordinateFrame snap = part->worldSnapLocation();\n\t\t\t\tG3D::CoordinateFrame snapToGrid = Math::snapToGrid(snap, Dragger::dragSnap());\n\t\t\t\tDragUtilities::move(dragParts, snap, snapToGrid);\n\t\t\t}\n\t\t}\n\t\tDragUtilities::clean(dragParts);\n\t}"
+  ],
+  [
+   "MegaDragger::safeRotate(const G3D::Matrix3& rotMatrix)\n\t{\n\t\tRBXASSERT(!joined);\n\n\t\tG3D::Array<Primitive*> primitives;\n\t\tDragUtilities::partsToPrimitives(dragParts, primitives);\n\n\t\tRBXASSERT(primitives.size() > 0);\n\n\t\tDragger::safeRotate(primitives, rotMatrix, contactManager);\n\n\t\tRBXASSERT(!contactManager.intersectingOthers(primitives, 0.01f));\n\t}",
+   "MegaDragger::safeRotate(const G3D::Matrix3& rotMatrix)\n\t{\n\t\t                  ;\n\n\t\tG3D::Array<Primitive*> primitives;\n\t\tDragUtilities::partsToPrimitives(dragParts, primitives);\n\n\t\t                                ;\n\n\t\tDragger::safeRotate(primitives, rotMatrix, contactManager);\n\n\t\t                                                                ;\n\t}"
+  ]
+ ],
+ "App/v8datamodel/Feature.cpp": [
+  [
+   "VelocityMotor::onEvent_HoleAncestorChanged()\n\t{\n\t\tRBXASSERT(hole.get());\n\t\tsetPart(1, hole.get());\n\t}",
+   "VelocityMotor::onEvent_HoleAncestorChanged()\n\t{\n\t\t                     ;\n\t\tsetPart(1, hole.get());\n\t}"
+  ]
+ ],
+ "App/v8datamodel/PVInstance.cpp": [
+  [
+   "PVInstance::setPVGridOffsetLegacy(const G3D::CoordinateFrame& _offset)\n\t{\n\t\tRBXASSERT(this->isTopLevelPVInstance());\n\n\t\tif (!legacyOffset)\n\t\t{\n\t\t\tlegacyOffset.reset(new G3D::CoordinateFrame());\n\t\t\t*legacyOffset = _offset;\n\t\t}\n\t}",
+   "PVInstance::setPVGridOffsetLegacy(const G3D::CoordinateFrame& _offset)\n\t{\n\t\t                                       ;\n\n\t\tif (!legacyOffset)\n\t\t{\n\t\t\tlegacyOffset.reset(new G3D::CoordinateFrame());\n\t\t\t*legacyOffset = _offset;\n\t\t}\n\t}"
+  ]
+ ],
+ "App/v8datamodel/Decal.cpp": [
+  [
+   "#include \"v8datamodel/Decal.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"v8datamodel/Decal.h\"\n"
+  ]
+ ],
+ "App/v8datamodel/LocakBackpack.cpp": [
+  [
+   "#include \"v8datamodel/LocalBackpack.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"v8datamodel/LocalBackpack.h\"\n"
+  ],
+  [
+   "LocalBackpack::onLocalPlayerAdded(Network::Player* added)\n\t{\n\t\tRBXASSERT(numChildren() == 0);\n\t\tRBXASSERT(added);\n\n\t\tlocalPlayer = shared_from(added);\n\n\t\tNotifier<Instance, ChildAdded>::connect(localPlayer, this);\n\t\tNotifier<Instance, ChildRemoved>::connect(localPlayer, this);\n\t\tNotifier<Network::Player, Network::CharacterAdded>::connect(localPlayer, this);\n\t\tNotifier<Network::Player, Network::CharacterRemoving>::connect(localPlayer, this);\n\t}",
+   "LocalBackpack::onLocalPlayerAdded(Network::Player* added)\n\t{\n\t\t                             ;\n\t\t                ;\n\n\t\tlocalPlayer = shared_from(added);\n\n\t\tNotifier<Instance, ChildAdded>::connect(localPlayer, this);\n\t\tNotifier<Instance, ChildRemoved>::connect(localPlayer, this);\n\t\tNotifier<Network::Player, Network::CharacterAdded>::connect(localPlayer, this);\n\t\tNotifier<Network::Player, Network::CharacterRemoving>::connect(localPlayer, this);\n\t}"
+  ]
+ ],
+ "App/v8datamodel/Hopper.cpp": [
+  [
+   "#include \"v8datamodel/Hopper.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"v8datamodel/Hopper.h\"\n"
+  ],
+  [
+   "HopperBin::onLocalClicked()\n\t{\n\t\tRBXASSERT(isEnabled());\n\n\t\tif (!active)\n\t\t{\n\t\t\tactive = true;\n\n\t\t\tif (binType == SCRIPT_BIN)\n\t\t\t{\n\t\t\t\tonSelectScript();\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tonSelectCommand();\n\t\t\t}\n\t\t}\n\t\telse\n\t\t{\n\t\t\tonLocalOtherClicked();\n\t\t}\n\t}",
+   "HopperBin::onLocalClicked()\n\t{\n\t\t                      ;\n\n\t\tif (!active)\n\t\t{\n\t\t\tactive = true;\n\n\t\t\tif (binType == SCRIPT_BIN)\n\t\t\t{\n\t\t\t\tonSelectScript();\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tonSelectCommand();\n\t\t\t}\n\t\t}\n\t\telse\n\t\t{\n\t\t\tonLocalOtherClicked();\n\t\t}\n\t}"
+  ]
+ ],
+ "App/gui/GUI.cpp": [
+  [
+   "#include \"gui/Gui.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"gui/Gui.h\"\n"
+  ]
+ ],
+ "App/v8kernel/Kernel.cpp": [
+  [
+   "#include \"v8kernel/Kernel.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"v8kernel/Kernel.h\"\n"
+  ]
+ ],
+ "App/include/v8xml/XmlElement.h": [
+  [
+   "\t\tmutable RBX::InstanceHandle* handleValue;\n\t};",
+   "\t\tmutable RBX::InstanceHandle* handleValue;\n\t\tmutable double doubleValue;\n\t};"
   ]
  ]
 }

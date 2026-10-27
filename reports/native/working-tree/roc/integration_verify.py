@@ -75,13 +75,14 @@ def file_hash(path):
         return hashlib.file_digest(stream, "sha256").digest()
 
 
-def input_hash(root):
-    """Content hash, including vendor/compiler bytes; no mtime-only receipts."""
-    result = hashlib.sha256()
-    paths = [root / "roc.py"] if (root / "roc.py").exists() else []
+def input_hash(root, live_only=False):
+    """Content hash, including vendor/compiler bytes; no mtime-only receipts.
+    live_only: only inputs a snapshot reads through from the live checkout (tools/clients junctions). Code,
+    patches, work/ and out/ are copied into the snapshot, so later edits there cannot affect a running build."""
+    paths = [root / "roc.py"] if (root / "roc.py").exists() and not live_only else []
     # The unit registry is mining transport metadata. Pinned native builds read
     # installed files, including adopted/referenced generated units hashed below.
-    for folder in ("roc", "clients/2008-06"):
+    for folder in ("clients/2008-06",) if live_only else ("roc", "clients/2008-06"):
         parent = root / folder
         if parent.exists():
             paths.extend(p for p in parent.rglob("*") if p.is_file()
@@ -104,6 +105,8 @@ def input_hash(root):
         paths.extend(p for p in parent.rglob("*") if p.is_file() and p.suffix.lower() in suffixes
                      and (not p.name.startswith("roc_") or p.resolve() in referenced))
     paths.extend(p for p in (root / "clients/clients.json", root / "clients/sources.json") if p.exists())
+    if live_only:
+        return digest_paths(root, paths)
     paths.extend(p for p in (root / "research/template-units.json", root / "research/libs-bundle.json") if p.exists())
     parent = root / "rebuild" / CLIENT
     paths.extend(p for p in parent.rglob("*") if p.is_file() and "out" not in p.relative_to(parent).parts)
@@ -117,10 +120,15 @@ def input_hash(root):
     for path in sorted((root / "rebuild" / CLIENT / "out").glob("*/linked/*")):
         if path.parent.parent.name != "RbxgsApp" and path.is_file() and path.suffix in (".obj", ".lib"):
             paths.append(path)
+    return digest_paths(root, paths)
+
+
+def digest_paths(root, paths):
+    result = hashlib.sha256()
     paths = sorted(set(paths))
     # Independent file reads overlap Windows filesystem/antivirus latency.
     # map preserves path order; content hashes never rely on size or mtime.
-    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
         for path, content in zip(paths, pool.map(file_hash, paths)):
             label = path.relative_to(root).as_posix() if path.is_relative_to(root) else str(path)
             result.update(label.encode() + b"\0" + content)
@@ -229,7 +237,20 @@ def collect(root):
             "milestones": json.loads((out / "milestones.json").read_text())}
 
 
-def check_gates(result, baseline=None):
+def other_module_owned(root):
+    """Addresses owned by linked modules other than RbxgsApp (their reports are fixed inputs of a native job)."""
+    owned = set()
+    for report in (root / "rebuild" / CLIENT / "out").glob("*/report.json"):
+        if report.parent.name != "RbxgsApp":
+            data = json.loads(report.read_text())
+            if data.get("linked"):
+                owned.update(data.get("owned_addrs", []))
+    return owned
+
+
+def check_gates(result, baseline=None, elsewhere=frozenset()):
+    """elsewhere: addresses another module still owns; RbxgsApp may stop claiming them (e.g. a coincidental
+    match that a real layout fix moves away) because global coverage does not drop."""
     report = result["report"]
     if not report["linked"] or report.get("test_exit") != 0:
         raise ValueError("Module build/runtime gate failed")
@@ -242,7 +263,7 @@ def check_gates(result, baseline=None):
     if not baseline:
         return
     before, after = set(baseline["report"]["owned_addrs"]), set(report["owned_addrs"])
-    if len(after) <= len(before) or before - after:
+    if not after - before or before - after - set(elsewhere):
         raise ValueError("Need new module ownership without losing existing owned bodies")
     if result["distinct"] < baseline["distinct"]:
         raise ValueError("Global distinct coverage regressed")
@@ -332,6 +353,8 @@ def verify(promotions, job):
         job["patches"] = json.dumps(kept)
     promotions.progress(job["id"], "fingerprinting inputs")
     before_hash = input_hash(root)
+    # Builds run in a copied snapshot: only read-through trees can still change under them.
+    live_hash = input_hash(root, live_only=True)
     cache = promotions.directory / "baselines" / before_hash
     index_file = promotions.directory / "baselines/index.json"
     index = json.loads(index_file.read_text()) if index_file.exists() else {}
@@ -358,7 +381,7 @@ def verify(promotions, job):
         before = verify_build(cache, lambda phase: progress("baseline: " + phase))
         check_gates(before)
         before["linked_addresses"] = json.loads((cache / "integration-linked.json").read_text())
-        if input_hash(root) != before_hash:
+        if input_hash(root, live_only=True) != live_hash:
             raise ValueError("Server inputs changed during baseline verification; retry on a stable baseline")
         atomic_json(baseline_file, before)
         index[before_hash] = cache.relative_to(root).as_posix()
@@ -373,8 +396,9 @@ def verify(promotions, job):
     snapshot(cache, candidate)
     atomic_json(candidate / "rebuild" / CLIENT / "patches" / "rbxgs-client.json", combined)
     after = verify_build(candidate, progress)
-    check_gates(after, before)
-    if input_hash(root) != before_hash or promotions.baseline()["revision"] != baseline["revision"]:
+    elsewhere = other_module_owned(candidate)
+    check_gates(after, before, elsewhere)
+    if input_hash(root, live_only=True) != live_hash or promotions.baseline()["revision"] != baseline["revision"]:
         raise ValueError("Server inputs changed during candidate verification; retry on a stable baseline")
     old_owned = set(before["report"]["owned_addrs"])
     gains = set(after["report"]["owned_addrs"]) - old_owned
@@ -382,7 +406,8 @@ def verify(promotions, job):
     if after["distinct"] - before["distinct"] != len(new_distinct):
         raise ValueError("Linked coverage changed outside the submitted module")
     atomic_json(candidate / "integration-native.json", sorted(set(before["linked_addresses"]) | gains))
-    return {"accepted": True, "gains": sorted(gains), "losses": [],
+    return {"accepted": True, "gains": sorted(gains),
+            "losses": sorted(old_owned - set(after["report"]["owned_addrs"])),  # each still owned by another module
             "new_distinct": sorted(new_distinct), "owned_before": len(old_owned),
             "owned_after": len(after["report"]["owned_addrs"]),
             "distinct_before": before["distinct"], "distinct_after": after["distinct"],

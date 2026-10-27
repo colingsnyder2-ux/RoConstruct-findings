@@ -295,8 +295,9 @@ def run(spec, name, server=None, jobs=4, limit=None, output=None, log=print):
         for job in api.call("/v1/integration")["jobs"]:
             if job["state"] == "accepted":
                 owned.update(job["receipt"].get("gains", []))
-        targets = {row["addr"] for row in rows if row.get("score") == 100
-                   and row.get("source_kind") == "snippet" and row.get("unit", "").startswith("RBX::")}
+        # Every byte-exact mined source kind (snippet, vendor-file, generated-unit) is a target: the linked
+        # rebuild owns an address by exact bytes. Snippet-only targeting hid ~5k exact app functions.
+        targets = {row["addr"] for row in rows if row.get("score") == 100 and row.get("unit", "").startswith("RBX::")}
         if spec.get("targets", {}).get("addresses"):
             targets &= set(spec["targets"]["addresses"])
         matcher = Matcher(targets | owned)

@@ -1,4 +1,4 @@
-// from server: 81% by colin
+// from server: 83% by coldek
 // roc 2008-06 007b8180  unit: RBX::Render::Material  size: 356 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 007b8180
 //
@@ -143,8 +143,7 @@ void downsample(const Image* source, const char* filename)
 
                 int sum;
                 if (2 * x + 1 < source->width && 2 * y + 1 < source->height) {
-                    const unsigned char* next = pixel + source->channels;
-                    sum = next[stride] + pixel[stride] + pixel[0] + next[0];
+                    sum = pixel[source->channels + stride] + pixel[stride] + pixel[0] + pixel[source->channels];
                 } else {
                     sum = pixel[0] * 4;
                 }

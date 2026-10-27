@@ -234,6 +234,15 @@ class Promotions:
             self.catalog_key = key
         return self.catalog_rows
 
+    def native_names(self):
+        """rebuild/2008-06/out/native-names.json ({addr: {symbol, score, strings}}), reloaded when it changes."""
+        path = self.root / "rebuild" / CLIENT / "out" / "native-names.json"
+        stamp = path.stat().st_mtime if path.exists() else None
+        if getattr(self, "_names_stamp", False) != stamp:
+            self._names = json.loads(path.read_text()) if stamp else {}
+            self._names_stamp = stamp
+        return self._names
+
     def packet(self, claim, baselines=None, abi=None, compact=False):
         identifier, unit, user, worker, expires, addresses, revision = claim
         evidence = []
@@ -255,10 +264,13 @@ class Promotions:
         if abi is None:
             path = self.root / "rebuild" / CLIENT / "manifests" / "abi-evidence.json"
             abi = json.loads(path.read_text()) if path.exists() else {}
+        names = self.native_names()
         packet = {"id": identifier, "client": CLIENT, "module": MODULE, "unit": unit,
                 "user": user, "worker": worker, "expires": expires,
                 "addresses": json.loads(addresses), "base_revision": revision,
                 "snippets": evidence,
+                # Real rebuilt symbol per target where vtables/call graph name it, with its current rebuilt score.
+                "native_names": {a: names[a] for a in json.loads(addresses) if a in names},
                 "native_paths": sorted(self.native_paths.get(unit.rsplit("::", 1)[-1], [])),
                 "abi": abi.get(unit, {}),
                 "instructions": "Edit make_rbxgs_client.py only; regenerate; submit a declarative overlay. "
@@ -442,9 +454,10 @@ class Promotions:
             members = job.get("members", [job["id"]])
             if len(members) > 1 and not accepted:
                 # One member may have broken the shared build: verify each on its own instead of rejecting all.
+                note = json.dumps({"merged_failure": receipt.get("reason", ""), "merged_jobs": members})
                 for identifier in members:
-                    self.store.db.execute("UPDATE integration_jobs SET state='queued',phase='solo',updated=? "
-                                          "WHERE id=? AND state='verifying'", (time.time(), identifier))
+                    self.store.db.execute("UPDATE integration_jobs SET state='queued',phase='solo',receipt=?,updated=? "
+                                          "WHERE id=? AND state='verifying'", (note, time.time(), identifier))
                 return False
             if accepted:
                 for addr in receipt["new_distinct"]:

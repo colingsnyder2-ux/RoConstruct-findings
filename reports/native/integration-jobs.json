@@ -1457,11 +1457,50 @@
         ]
       ]
     },
-    "phase": "checking",
-    "receipt": {},
-    "state": "verifying",
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "6b631fee66dc6392a31fec2c237d5d0ff847bca57e91984c0f8a87fb163ac237",
+      "credits": 10,
+      "distinct_after": 9650,
+      "distinct_before": 9640,
+      "gains": [
+        "005caba0",
+        "005cac20",
+        "00645820",
+        "00645840",
+        "0066c330",
+        "0066c5a0",
+        "0066c810",
+        "0066cc70",
+        "0066ccc0",
+        "0066ce20",
+        "0066ced0",
+        "0066e330"
+      ],
+      "input_hash": "f75e30b21dadb125f39c3b9903cfe82f27b8cd00d4d187a7742e8365aa3aa60f",
+      "losses": [],
+      "new_distinct": [
+        "005caba0",
+        "005cac20",
+        "0066c330",
+        "0066c5a0",
+        "0066c810",
+        "0066cc70",
+        "0066ccc0",
+        "0066ce20",
+        "0066ced0",
+        "0066e330"
+      ],
+      "overlay_hash": "975da962c56178625da56d6ca5f11cd727f211bb9b4d4f4fca9e47963e763095",
+      "owned_after": 2968,
+      "owned_before": 2956,
+      "rebased": true,
+      "submitted_revision": "f4f3c86f4802a24185b03715cc182cb64ac5898c5afe4db4d34e91ddbb1b3a4f"
+    },
+    "state": "accepted",
     "unit": "RBX::GroupDragTool, RBX::Primitive, RBX::AIController, RBX::RigidJoint",
-    "updated": 1793107397.7603712
+    "updated": 1793107797.8806574
   },
   {
     "created": 1793101372.758371,
@@ -1551,11 +1590,60 @@
         ]
       ]
     },
-    "phase": "solo",
-    "receipt": {},
-    "state": "queued",
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "ab5f5f32dddb0425f906bb01703765b639c1c38ada8c88a8ac194c424b096122",
+      "credits": 16,
+      "distinct_after": 9666,
+      "distinct_before": 9650,
+      "gains": [
+        "00590440",
+        "00590d00",
+        "005a1c20",
+        "005a2760",
+        "00609150",
+        "0060a230",
+        "0060d770",
+        "0060dd60",
+        "0060df80",
+        "0060e310",
+        "0060e700",
+        "0060fef0",
+        "00610130",
+        "00610270",
+        "00610830",
+        "00610a60"
+      ],
+      "input_hash": "a496794400b6be4eae98142fa7044803eed682f3c0c8acd628c8a4e151927d33",
+      "losses": [],
+      "new_distinct": [
+        "00590440",
+        "00590d00",
+        "005a1c20",
+        "005a2760",
+        "00609150",
+        "0060a230",
+        "0060d770",
+        "0060dd60",
+        "0060df80",
+        "0060e310",
+        "0060e700",
+        "0060fef0",
+        "00610130",
+        "00610270",
+        "00610830",
+        "00610a60"
+      ],
+      "overlay_hash": "590d9c0de65d0e50b34169ed80c2e72199367e1d4be214a8f5da318ef7d75d55",
+      "owned_after": 2984,
+      "owned_before": 2968,
+      "rebased": true,
+      "submitted_revision": "f4f3c86f4802a24185b03715cc182cb64ac5898c5afe4db4d34e91ddbb1b3a4f"
+    },
+    "state": "accepted",
     "unit": "RBX::SpecialShape",
-    "updated": 1793104831.1386907
+    "updated": 1793108441.2007976
   },
   {
     "created": 1793104532.3336027,
@@ -1607,11 +1695,90 @@
         ]
       ]
     },
-    "phase": "queued",
-    "receipt": {},
-    "state": "queued",
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "e43945b2cf1a609dc3e8d58460d2d2f6bd73989253d91f0d7e711dd8fc6d7f6c",
+      "credits": 31,
+      "distinct_after": 9697,
+      "distinct_before": 9666,
+      "gains": [
+        "00573310",
+        "00573960",
+        "00573c00",
+        "00573e30",
+        "00574050",
+        "00575040",
+        "00598690",
+        "005986d0",
+        "00598710",
+        "00598750",
+        "00598b60",
+        "00598d90",
+        "005993e0",
+        "00599690",
+        "00599eb0",
+        "0059a200",
+        "0059d950",
+        "0059da10",
+        "0059dad0",
+        "0059dc70",
+        "0059dd50",
+        "0059dee0",
+        "0059df10",
+        "0059dfa0",
+        "0059e090",
+        "0059e0f0",
+        "0059e430",
+        "005cf190",
+        "005d1340",
+        "005e7770",
+        "005fc810"
+      ],
+      "input_hash": "5308ddcf5ab5bdfea6e0fe2a270e69153ceef8faa9cb7810912163d167893687",
+      "losses": [],
+      "new_distinct": [
+        "00573310",
+        "00573960",
+        "00573c00",
+        "00573e30",
+        "00574050",
+        "00575040",
+        "00598690",
+        "005986d0",
+        "00598710",
+        "00598750",
+        "00598b60",
+        "00598d90",
+        "005993e0",
+        "00599690",
+        "00599eb0",
+        "0059a200",
+        "0059d950",
+        "0059da10",
+        "0059dad0",
+        "0059dc70",
+        "0059dd50",
+        "0059dee0",
+        "0059df10",
+        "0059dfa0",
+        "0059e090",
+        "0059e0f0",
+        "0059e430",
+        "005cf190",
+        "005d1340",
+        "005e7770",
+        "005fc810"
+      ],
+      "overlay_hash": "2fc48b95cee2b604bbac7c493d24d47d433ebd511d165764e5dfde2d8c0a88a8",
+      "owned_after": 3015,
+      "owned_before": 2984,
+      "rebased": true,
+      "submitted_revision": "f4f3c86f4802a24185b03715cc182cb64ac5898c5afe4db4d34e91ddbb1b3a4f"
+    },
+    "state": "accepted",
     "unit": "RBX::Ball, RBX::LocalBackpackItem, RBX::UnifiedWidget, RBX::TopMenuBar, RBX::LocalBackpack, RBX::HopperBin, RBX::Decal",
-    "updated": 1793104532.3336027
+    "updated": 1793109213.4551477
   },
   {
     "created": 1793104532.3696806,
@@ -1625,10 +1792,285 @@
         ]
       ]
     },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "e43945b2cf1a609dc3e8d58460d2d2f6bd73989253d91f0d7e711dd8fc6d7f6c",
+      "credits": 31,
+      "distinct_after": 9697,
+      "distinct_before": 9666,
+      "gains": [
+        "00573310",
+        "00573960",
+        "00573c00",
+        "00573e30",
+        "00574050",
+        "00575040",
+        "00598690",
+        "005986d0",
+        "00598710",
+        "00598750",
+        "00598b60",
+        "00598d90",
+        "005993e0",
+        "00599690",
+        "00599eb0",
+        "0059a200",
+        "0059d950",
+        "0059da10",
+        "0059dad0",
+        "0059dc70",
+        "0059dd50",
+        "0059dee0",
+        "0059df10",
+        "0059dfa0",
+        "0059e090",
+        "0059e0f0",
+        "0059e430",
+        "005cf190",
+        "005d1340",
+        "005e7770",
+        "005fc810"
+      ],
+      "input_hash": "5308ddcf5ab5bdfea6e0fe2a270e69153ceef8faa9cb7810912163d167893687",
+      "losses": [],
+      "new_distinct": [
+        "00573310",
+        "00573960",
+        "00573c00",
+        "00573e30",
+        "00574050",
+        "00575040",
+        "00598690",
+        "005986d0",
+        "00598710",
+        "00598750",
+        "00598b60",
+        "00598d90",
+        "005993e0",
+        "00599690",
+        "00599eb0",
+        "0059a200",
+        "0059d950",
+        "0059da10",
+        "0059dad0",
+        "0059dc70",
+        "0059dd50",
+        "0059dee0",
+        "0059df10",
+        "0059dfa0",
+        "0059e090",
+        "0059e0f0",
+        "0059e430",
+        "005cf190",
+        "005d1340",
+        "005e7770",
+        "005fc810"
+      ],
+      "overlay_hash": "2fc48b95cee2b604bbac7c493d24d47d433ebd511d165764e5dfde2d8c0a88a8",
+      "owned_after": 3015,
+      "owned_before": 2984,
+      "rebased": true,
+      "submitted_revision": "f4f3c86f4802a24185b03715cc182cb64ac5898c5afe4db4d34e91ddbb1b3a4f"
+    },
+    "state": "accepted",
+    "unit": "RBX::PartInstance",
+    "updated": 1793109213.4581468
+  },
+  {
+    "created": 1793110754.9504778,
+    "id": "70a1a98050e84962ac3e81e4bdef5d98",
+    "model": "Claude Opus 5.5",
+    "patches": {
+      "App/include/v8xml/XmlElement.h": [
+        [
+          "\t\tmutable RBX::InstanceHandle* handleValue;\n\t};",
+          "\t\tmutable RBX::InstanceHandle* handleValue;\n\t\tmutable double doubleValue;\n\t};"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "6959dfb4875942f1514b98c5a00c427c9223002b11754abff87f984159ace509",
+      "credits": 27,
+      "distinct_after": 9724,
+      "distinct_before": 9697,
+      "gains": [
+        "00413a70",
+        "00417510",
+        "004960a0",
+        "00496170",
+        "00496bc0",
+        "00497120",
+        "00557e30",
+        "00558030",
+        "00558830",
+        "00558c50",
+        "0055b5a0",
+        "0055b6f0",
+        "0056e5a0",
+        "0056e630",
+        "0056e6a0",
+        "0056e7b0",
+        "0056e820",
+        "0056e850",
+        "0056e900",
+        "0056f5f0",
+        "0056f6e0",
+        "0056f750",
+        "0056f7a0",
+        "0056f7e0",
+        "0057c230",
+        "0057c250",
+        "0057c2b0",
+        "0057c810",
+        "0058d780",
+        "0058e590",
+        "0058eb10",
+        "0058ecb0",
+        "00591970",
+        "00591a30",
+        "00591d30",
+        "0059d4a0",
+        "005b1480",
+        "00615640"
+      ],
+      "input_hash": "1b91f2f69c9491eda961c3c3e2897778131f8a8fa629830b8fd06b462761c7e3",
+      "losses": [],
+      "new_distinct": [
+        "00413a70",
+        "00417510",
+        "004960a0",
+        "00496170",
+        "00496bc0",
+        "00497120",
+        "00558030",
+        "00558830",
+        "00558c50",
+        "0055b5a0",
+        "0055b6f0",
+        "0056e5a0",
+        "0056e630",
+        "0056e6a0",
+        "0056e7b0",
+        "0056e820",
+        "0056e850",
+        "0056e900",
+        "0056f5f0",
+        "0056f6e0",
+        "0056f750",
+        "0056f7a0",
+        "0056f7e0",
+        "0058e590",
+        "0059d4a0",
+        "005b1480",
+        "00615640"
+      ],
+      "overlay_hash": "18a3d2dacf97bd37120ac9c4a4d0e929031ddbbcc876b914ac849ea77abdf7a3",
+      "owned_after": 3053,
+      "owned_before": 3015,
+      "rebased": false,
+      "submitted_revision": "6959dfb4875942f1514b98c5a00c427c9223002b11754abff87f984159ace509"
+    },
+    "state": "accepted",
+    "unit": "RBX::Network::Players",
+    "updated": 1793112378.302756
+  },
+  {
+    "created": 1793111779.5226657,
+    "id": "8595b00fea9743d6bda44afb9b0a49c8",
+    "model": "gpt-6.1-sol",
+    "patches": {
+      "App/include/v8xml/XmlElement.h": [
+        [
+          "\t\tHANDLE = 8\n",
+          "\t\tHANDLE = 8,\n\t\tDOUBLE = 9\n"
+        ],
+        [
+          "\t\tmutable float floatValue;\n",
+          "\t\tmutable float floatValue;\n\t\tmutable double doubleValue;\n"
+        ]
+      ]
+    },
+    "phase": "withdrawn",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
+    "unit": "RBX::Accoutrement",
+    "updated": 1793112430.4057038
+  },
+  {
+    "created": 1793112263.1211557,
+    "id": "4deaf2734e1a4170b95d218e5c551658",
+    "model": "gpt-6.1-sol",
+    "patches": {
+      "App/v8datamodel/Camera.cpp": [
+        [
+          "Camera::askSetParent(const Instance* instance) const\n\t{\n\t\treturn dynamic_cast<const Workspace*>(instance) != NULL;\n\t}",
+          "\n#pragma auto_inline(off)\nCamera::askSetParent(const Instance* instance) const\n\t{\n\t\treturn dynamic_cast<const Workspace*>(instance) != NULL;\n\t}\n#pragma auto_inline(on)\n"
+        ]
+      ],
+      "App/v8datamodel/ModelInstance.cpp": [
+        [
+          "ModelInstance::askSetParent(const Instance* instance) const\n\t{\n\t\treturn dynamic_cast<const ModelInstance*>(instance) != NULL;\n\t}",
+          "\n#pragma auto_inline(off)\nModelInstance::askSetParent(const Instance* instance) const\n\t{\n\t\treturn dynamic_cast<const ModelInstance*>(instance) != NULL;\n\t}\n#pragma auto_inline(on)\n"
+        ]
+      ]
+    },
+    "phase": "checking",
+    "receipt": {},
+    "state": "verifying",
+    "unit": "RBX::Humanoid, RBX::Camera",
+    "updated": 1793113714.778976
+  },
+  {
+    "created": 1793112861.433628,
+    "id": "981c606609864414b2c608ce100c68ef",
+    "model": "Claude Opus 5.5",
+    "patches": {
+      "App/include/v8datamodel/MouseCommand.h": [
+        [
+          "\t\tWorkspace* workspace;\n\t\tstd::auto_ptr<XmlState> undoState;\n",
+          "\t\tWorkspace* workspace;\n"
+        ]
+      ],
+      "App/include/v8datamodel/SpawnLocation.h": [
+        [
+          "\t\tbool allowTeamChangeOnTouch;\n",
+          "\t\tbool allowTeamChangeOnTouch;\n\t\tint forcefieldDuration;\n"
+        ]
+      ],
+      "App/include/v8world/MotorJoint.h": [
+        [
+          "\t\tint polarity;\n",
+          ""
+        ]
+      ],
+      "App/v8datamodel/MouseCommand.cpp": [
+        [
+          "\t\tRBXASSERT(undoState.get() == NULL);\n",
+          ""
+        ]
+      ],
+      "App/v8datamodel/SpawnLocation.cpp": [
+        [
+          "SpawnLocation::SpawnLocation()\n\t\t:",
+          "SpawnLocation::SpawnLocation()\n\t\t:\n\t\t  forcefieldDuration(10),"
+        ]
+      ],
+      "App/v8world/MotorJoint.cpp": [
+        [
+          "#include \"v8world/MotorJoint.h\"\n#include \"v8world/World.h\"\n#include \"v8world/Primitive.h\"\n#include \"v8world/Assembly.h\"\n#include \"util/Math.h\"\n\nnamespace RBX\n{\n\t// TODO: check which of these belong in the header file\n\n\tMotorJoint::MotorJoint()\n\t\t: currentAngle(0.0f),\n\t\t  link(new RevoluteLink()),\n\t\t  maxVelocity(0.0f),\n\t\t  desiredAngle(0.0f),\n\t\t  polarity(1.0f)\n\t{\n\t}\n\n\tMotorJoint::~MotorJoint()\n\t{\n\t\tdelete link;\n\t}\n\n\tG3D::CoordinateFrame MotorJoint::getMeInOther(Primitive* me)\n\t{\n\t\tG3D::CoordinateFrame rotatedCoord0 = G3D::CoordinateFrame(\n\t\t\tMath::rotateAboutZ(jointCoord0.rotation, currentAngle),\n\t\t\tjointCoord0.translation);\n\n\t\tG3D::CoordinateFrame p1InP0 = rotatedCoord0 * jointCoord1.inverse();\n\t\tif (me == getPrimitive(1))\n\t\t{\n\t\t\treturn p1InP0;\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(me == getPrimitive(0));\n\t\t\treturn p1InP0.inverse();\n\t\t}\n\t}\n\n\tsize_t MotorJoint::hashCode() const\n\t{\n\t\tconst int magic = 1640531527;\n\t\tsize_t h;\n\n\t\th = (Math::hash(jointCoord0.translation) - magic);\n\t\th = (Math::hash(jointCoord1.translation) - magic + (h >> 2) + (h << 6)) ^ h;\n\t\treturn h;\n\t}\n\n\tvoid MotorJoint::setCurrentAngle(float value)\n\t{\n\t\tif (currentAngle != value)\n\t\t{\n\t\t\tcurrentAngle = value;\n\t\t\tWorld* world = getWorld();\n\t\t\tif (world)\n\t\t\t\tworld->onMotorAngleChanged(this);\n\t\t\tsetJointAngle(value);\n\t\t}\n\t}\n\n\tvoid MotorJoint::setJointAngle(float value)\n\t{\n\t\tRBXASSERT(link);\n\t\tif (polarity == -1)\n\t\t{\n\t\t\tRBXASSERT(0);\n\n\t\t\tPrimitive* p0 = getPrimitive(0);\n\n\t\t\tG3D::CoordinateFrame oldParentCoord = p0->getCoordinateFrame();\n\t\t\tlink->setJointAngle(-value);\n\t\t\tAssembly* assembly = getPrimitive(1)->getAssembly();\n\t\t\tif (!assembly->getAnchored())\n\t\t\t{\n\t\t\t\tPrimitive* mainPrim = assembly->getMainPrimitive();\n\t\t\t\tG3D::CoordinateFrame newParentCoord = p0->getCoordinateFrame();\n\t\t\t\tG3D::CoordinateFrame parentInRoot = mainPrim->getCoordinateFrame().toObjectSpace(newParentCoord);\n\t\t\t\tG3D::CoordinateFrame newRoot = oldParentCoord * parentInRoot.inverse();\n\t\t\t\tmainPrim->getBody()->setCoordinateFrame(newRoot);\n\t\t\t}\n\t\t}\n\t\telse\n\t\t{\n\t\t\tlink->setJointAngle(value);\n\t\t}\n\t}\n\n\tbool MotorJoint::isAligned()\n\t{\n\t\tG3D::CoordinateFrame baseWorld = getPrimitive(0)->getCoordinateFrame() * jointCoord0;\n\t\tG3D::CoordinateFrame otherBaseWorld = getPrimitive(1)->getCoordinateFrame() * jointCoord1;\n\n\t\tif (Math::fuzzyEq(baseWorld.translation, otherBaseWorld.translation, 0.00001f))\n\t\t{\n\t\t\tif (Math::fuzzyEq(baseWorld.rotation.getColumn(2), otherBaseWorld.rotation.getColumn(2), 0.00001f))\n\t\t\t\treturn true;\n\t\t}\n\n\t\treturn false;\n\t}\n\n\tvoid MotorJoint::stepUi(int uiStepId)\n\t{\n\t\tif (fabs(desiredAngle - currentAngle) < fabs(maxVelocity))\n\t\t{\n\t\t\tsetCurrentAngle(desiredAngle);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tif (fabs(maxVelocity) > 0.0f)\n\t\t\t\tsetCurrentAngle(currentAngle + fabs(maxVelocity));\n\t\t\telse\n\t\t\t\tsetCurrentAngle(currentAngle - fabs(maxVelocity));\n\t\t}\n\t}\n}\n",
+          "#include \"v8world/MotorJoint.h\"\n#include \"v8world/World.h\"\n#include \"v8world/Primitive.h\"\n#include \"v8world/Assembly.h\"\n#include \"util/Math.h\"\n\nnamespace RBX\n{\n\t// TODO: check which of these belong in the header file\n\n\tMotorJoint::MotorJoint()\n\t\t: currentAngle(0.0f),\n\t\t  link(new RevoluteLink()),\n\t\t  maxVelocity(0.0f),\n\t\t  desiredAngle(0.0f)\n\t{\n\t}\n\n\tMotorJoint::~MotorJoint()\n\t{\n\t\tdelete link;\n\t}\n\n\tG3D::CoordinateFrame MotorJoint::getMeInOther(Primitive* me)\n\t{\n\t\tG3D::CoordinateFrame rotatedCoord0 = G3D::CoordinateFrame(\n\t\t\tMath::rotateAboutZ(jointCoord0.rotation, currentAngle),\n\t\t\tjointCoord0.translation);\n\n\t\tG3D::CoordinateFrame p1InP0 = rotatedCoord0 * jointCoord1.inverse();\n\t\tif (me == getPrimitive(1))\n\t\t{\n\t\t\treturn p1InP0;\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(me == getPrimitive(0));\n\t\t\treturn p1InP0.inverse();\n\t\t}\n\t}\n\n\tsize_t MotorJoint::hashCode() const\n\t{\n\t\tconst int magic = 1640531527;\n\t\tsize_t h;\n\n\t\th = (Math::hash(jointCoord0.translation) - magic);\n\t\th = (Math::hash(jointCoord1.translation) - magic + (h >> 2) + (h << 6)) ^ h;\n\t\treturn h;\n\t}\n\n\tvoid MotorJoint::setCurrentAngle(float value)\n\t{\n\t\tif (currentAngle != value)\n\t\t{\n\t\t\tcurrentAngle = value;\n\t\t\tWorld* world = getWorld();\n\t\t\tif (world)\n\t\t\t\tworld->onMotorAngleChanged(this);\n\t\t\tsetJointAngle(value);\n\t\t}\n\t}\n\n\tvoid MotorJoint::setJointAngle(float value)\n\t{\n\t\tRBXASSERT(link);\n\t\tif ((1.0f) == -1)\n\t\t{\n\t\t\tRBXASSERT(0);\n\n\t\t\tPrimitive* p0 = getPrimitive(0);\n\n\t\t\tG3D::CoordinateFrame oldParentCoord = p0->getCoordinateFrame();\n\t\t\tlink->setJointAngle(-value);\n\t\t\tAssembly* assembly = getPrimitive(1)->getAssembly();\n\t\t\tif (!assembly->getAnchored())\n\t\t\t{\n\t\t\t\tPrimitive* mainPrim = assembly->getMainPrimitive();\n\t\t\t\tG3D::CoordinateFrame newParentCoord = p0->getCoordinateFrame();\n\t\t\t\tG3D::CoordinateFrame parentInRoot = mainPrim->getCoordinateFrame().toObjectSpace(newParentCoord);\n\t\t\t\tG3D::CoordinateFrame newRoot = oldParentCoord * parentInRoot.inverse();\n\t\t\t\tmainPrim->getBody()->setCoordinateFrame(newRoot);\n\t\t\t}\n\t\t}\n\t\telse\n\t\t{\n\t\t\tlink->setJointAngle(value);\n\t\t}\n\t}\n\n\tbool MotorJoint::isAligned()\n\t{\n\t\tG3D::CoordinateFrame baseWorld = getPrimitive(0)->getCoordinateFrame() * jointCoord0;\n\t\tG3D::CoordinateFrame otherBaseWorld = getPrimitive(1)->getCoordinateFrame() * jointCoord1;\n\n\t\tif (Math::fuzzyEq(baseWorld.translation, otherBaseWorld.translation, 0.00001f))\n\t\t{\n\t\t\tif (Math::fuzzyEq(baseWorld.rotation.getColumn(2), otherBaseWorld.rotation.getColumn(2), 0.00001f))\n\t\t\t\treturn true;\n\t\t}\n\n\t\treturn false;\n\t}\n\n\tvoid MotorJoint::stepUi(int uiStepId)\n\t{\n\t\tif (fabs(desiredAngle - currentAngle) < fabs(maxVelocity))\n\t\t{\n\t\t\tsetCurrentAngle(desiredAngle);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tif (fabs(maxVelocity) > 0.0f)\n\t\t\t\tsetCurrentAngle(currentAngle + fabs(maxVelocity));\n\t\t\telse\n\t\t\t\tsetCurrentAngle(currentAngle - fabs(maxVelocity));\n\t\t}\n\t}\n}\n"
+        ]
+      ]
+    },
     "phase": "queued",
     "receipt": {},
     "state": "queued",
-    "unit": "RBX::PartInstance",
-    "updated": 1793104532.3696806
+    "unit": "RBX::Workspace, RBX::GroupDragTool, RBX::JointsService",
+    "updated": 1793112861.433628
   }
 ]
