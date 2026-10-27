@@ -1,12 +1,16 @@
-// from server: 97% by atomic.potato
-struct S {
-    int f(float *p);
+// from server: 100% by tajop
+struct Vector3 {
+    float x, y, z;
+    Vector3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
 };
 
-int S::f(float *p)
+struct S {
+    char pad[0x194];
+    float x, y, z;
+    Vector3 f() const;
+};
+
+Vector3 S::f() const
 {
-    p[0] = *(float *)((char *)this + 0x194);
-    p[1] = *(float *)((char *)this + 0x198);
-    p[2] = *(float *)((char *)this + 0x19c);
-    return 0;
+    return Vector3(x, y, z);
 }

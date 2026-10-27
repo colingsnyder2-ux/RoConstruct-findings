@@ -1,18 +1,25 @@
-// from server: 93% by atomic.potato
-extern "C" void __stdcall G1_func_00b229e4(void *);
-
-struct S
+// from server: 100% by tajop
+namespace std
 {
-    int f(void *);
+class exception
+{
+public:
+    __declspec(dllimport) exception(const exception &);
+    __declspec(dllimport) virtual ~exception();
+private:
+    const char *_m_what;
+    int _m_doFree;
+};
+}
+
+struct format_error : public std::exception
+{
+    format_error(const format_error &o);
+    unsigned int cur_;
+    unsigned int expected_;
 };
 
-int S::f(void *arg)
+format_error::format_error(const format_error &o)
+    : std::exception(o), cur_(o.cur_), expected_(o.expected_)
 {
-    G1_func_00b229e4(arg);
-    *(unsigned int *)this = 0x00b98880;
-    *(unsigned int *)((char *)this + 0x0c) =
-        *(unsigned int *)((char *)arg + 0x0c);
-    *(unsigned int *)((char *)this + 0x10) =
-        *(unsigned int *)((char *)arg + 0x10);
-    return (int)this;
 }

@@ -1,18 +1,25 @@
-// from server: 92% by atomic.potato
-extern "C" void __stdcall std_exception_copy(void *, const void *);
-
-struct S
+// from server: 100% by tajop
+namespace std
 {
-    int f(S *);
+class exception
+{
+public:
+    __declspec(dllimport) exception(const exception &);
+    __declspec(dllimport) virtual ~exception();
+private:
+    const char *_m_what;
+    int _m_doFree;
+};
+}
+
+struct bad_format_string : public std::exception
+{
+    bad_format_string(const bad_format_string &o);
+    unsigned int pos_;
+    unsigned int next_;
 };
 
-int S::f(S *p)
+bad_format_string::bad_format_string(const bad_format_string &o)
+    : std::exception(o), pos_(o.pos_), next_(o.next_)
 {
-    std_exception_copy(this, p);
-    *(unsigned long *)this = 0x00b9883c;
-    *(unsigned long *)((char *)this + 12) =
-        *(unsigned long *)((char *)p + 12);
-    *(unsigned long *)((char *)this + 16) =
-        *(unsigned long *)((char *)p + 16);
-    return (int)this;
 }

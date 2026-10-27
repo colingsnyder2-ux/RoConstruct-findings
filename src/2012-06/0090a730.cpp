@@ -1,11 +1,11 @@
-// from server: 92% by atomic.potato
+// from server: 100% by tajop
 struct Body {
     void sub_90a4a0();
     Body* f(unsigned int flags);
 };
 
-extern "C" void __stdcall EnterCriticalSection(void*);
-extern "C" void __stdcall LeaveCriticalSection(void*);
+extern "C" __declspec(dllimport) void __stdcall EnterCriticalSection(void*);
+extern "C" __declspec(dllimport) void __stdcall LeaveCriticalSection(void*);
 extern "C" void* __cdecl sub_7bbea0();
 
 Body* Body::f(unsigned int flags) {

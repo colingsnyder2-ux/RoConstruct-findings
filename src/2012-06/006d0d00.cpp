@@ -1,22 +1,25 @@
-// from server: 91% by atomic.potato
-extern "C" void __cdecl std_exception_copy(void*, const void*);
-
-struct S_func_006d0d00
+// from server: 100% by tajop
+namespace std
 {
-    int m_vftable;
-    int m_pad04;
-    int m_pad08;
-    int m_value0c;
-    int m_value10;
+class exception
+{
+public:
+    __declspec(dllimport) exception(const exception &);
+    __declspec(dllimport) virtual ~exception();
+private:
+    const char *_m_what;
+    int _m_doFree;
+};
+}
 
-    S_func_006d0d00* f(S_func_006d0d00* other);
+struct too_many_args : public std::exception
+{
+    too_many_args(const too_many_args &o);
+    unsigned int cur_;
+    unsigned int expected_;
 };
 
-S_func_006d0d00* S_func_006d0d00::f(S_func_006d0d00* other)
+too_many_args::too_many_args(const too_many_args &o)
+    : std::exception(o), cur_(o.cur_), expected_(o.expected_)
 {
-    std_exception_copy(other, other);
-    m_vftable = 0x00b988dc;
-    m_value0c = other->m_value0c;
-    m_value10 = other->m_value10;
-    return this;
 }

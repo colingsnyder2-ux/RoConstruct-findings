@@ -1,10 +1,8 @@
-// from server: 97% by colin
-// from server: 90% by EspClaude
-// from server: 95% by Espeon
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espclaude_cb3252ba35937d6e.cpp
+// roc-lib: rbxgs-dll roc_claudeL_184cf9025cd54f62.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <gui/GuiEvent.h>
@@ -84,6 +82,8 @@ Result Workspace::process(const RBX::GuiEvent& guiEvent)
             value.value = false;
             signal.fire(value);
         }
+        {Source* source=event->source;active=false;source->activate(false);}
+        break;
     case 2:
         {Source* source=event->source;active=false;source->activate(false);}
         break;
@@ -124,10 +124,6 @@ Result Workspace::process(const RBX::GuiEvent& guiEvent)
         return Result::notUsed();
     }
 
-    if (controller->active) {
-        Workspace* w = this;
-        if (w)
-            return Result::used(w);
-    }
-    return Result::used();
+    Workspace* w = controller->active ? this : NULL;
+    return Result::used(w);
 }

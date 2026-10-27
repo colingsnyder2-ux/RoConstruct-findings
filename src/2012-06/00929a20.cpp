@@ -1,4 +1,4 @@
-// from server: 92% by atomic.potato
+// from server: 100% by tajop
 struct BallPolyContact
 {
     int value0;
@@ -11,8 +11,8 @@ struct BallPolyContact
     BallPolyContact *destroy(char);
 };
 
-extern "C" void __stdcall EnterCriticalSection(void *);
-extern "C" void __stdcall LeaveCriticalSection(void *);
+extern "C" __declspec(dllimport) void __stdcall EnterCriticalSection(void *);
+extern "C" __declspec(dllimport) void __stdcall LeaveCriticalSection(void *);
 extern "C" void *__cdecl sub_82B600();
 extern "C" void __cdecl sub_965240();
 

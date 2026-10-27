@@ -1,16 +1,24 @@
-// from server: 95% by atomic.potato
+// from server: 100% by tajop
+struct Sub {
+    void assign(const int* v);
+};
+
+struct Out {
+    int head;
+    Sub tail;
+};
+
 struct S {
     char pad0[0x2c];
     unsigned int count;
     char pad1[0x90 - 0x30];
     int* items;
-    bool get(unsigned int index, int* out);
+    bool get(unsigned int index, Out* out);
 };
 
 extern "C" int __cdecl sub_783d30();
-extern "C" int __cdecl sub_754cd0(void* self, int* value);
 
-bool S::get(unsigned int index, int* out) {
+bool S::get(unsigned int index, Out* out) {
     bool ok;
     int value;
     if (index < count) {
@@ -19,7 +27,7 @@ bool S::get(unsigned int index, int* out) {
     } else {
         ok = false;
     }
-    *out = sub_783d30();
-    sub_754cd0(out + 1, &value);
+    out->head = sub_783d30();
+    out->tail.assign(&value);
     return ok;
 }

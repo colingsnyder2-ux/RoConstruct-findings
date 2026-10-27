@@ -1,25 +1,33 @@
-// from server: 81% by atomic.potato
-extern "C" int __cdecl sub_00495F40(int);
-extern "C" int __cdecl sub_00983B6A(int);
-extern "C" int (__thiscall *g_call)(int);
+// from server: 100% by tajop
+struct type_info {
+    __declspec(dllimport) bool operator==(const type_info&) const;
+};
+
+extern type_info type_info_0xdec8cc;
+extern "C" type_info* __cdecl sub_00983B6A(void*);
+
+struct Target {
+    void* sub_00495F40();
+};
+
+struct Owner {
+    char pad[0xac4];
+    Target* target;
+};
 
 struct TToolVerb
 {
     int pad0;
     int pad1;
     int pad2;
-    int material;
-    unsigned char f();
+    Owner* owner;
+    bool f();
 };
 
-unsigned char TToolVerb::f()
+bool TToolVerb::f()
 {
-    int value = sub_00495F40(*(int *)(material + 0xAC4));
+    void* value = owner->target->sub_00495F40();
     if (value)
-    {
-        value = sub_00983B6A(value);
-        g_call(value);
-        return 1;
-    }
-    return 0;
+        return type_info_0xdec8cc == *sub_00983B6A(value);
+    return false;
 }

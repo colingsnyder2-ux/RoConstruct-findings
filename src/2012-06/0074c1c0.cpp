@@ -1,14 +1,18 @@
-// from server: 77% by atomic.potato
+// from server: 100% by tajop
 struct S
 {
+    unsigned long value;
+    unsigned long pad;
+    unsigned long data;
+    unsigned long limit;
     void __thiscall f(unsigned long);
-    void __thiscall g(void*);
+    void __thiscall g(unsigned long);
 };
 
-void S::f(unsigned long n)
+void __thiscall S::f(unsigned long n)
 {
-    while (*(unsigned long*)((char*)this + 0x0c) > n)
+    while (limit > n)
     {
-        g((char*)(*(unsigned long*)((char*)this + 8)) + 0x0c);
+        g(*((unsigned long*)data + 1) + 8);
     }
 }

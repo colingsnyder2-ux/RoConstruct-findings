@@ -1,25 +1,33 @@
-// from server: 79% by atomic.potato
-struct S
-{
-    void *field_0c;
-    unsigned char f();
+// from server: 100% by tajop
+struct type_info {
+    __declspec(dllimport) bool operator==(const type_info&) const;
 };
 
-extern "C" void *__cdecl sub_495f40(void *);
-extern "C" void *__cdecl sub_983b6a(void *);
-typedef int (__cdecl *TypeInfoEqual)(void *, void *);
+extern type_info type_info_0xdeb9d8;
+extern "C" type_info* __cdecl sub_00983B6A(void*);
 
-S *g_00deb9d8 = (S *)0x00deb9d8;
-TypeInfoEqual g_b229ec;
+struct Target {
+    void* sub_00495F40();
+};
 
-unsigned char S::f()
+struct Owner {
+    char pad[0xac4];
+    Target* target;
+};
+
+struct TToolVerb
 {
-    void *value = sub_495f40(*(void **)((char *)field_0c + 0xac4));
+    int pad0;
+    int pad1;
+    int pad2;
+    Owner* owner;
+    bool f();
+};
+
+bool TToolVerb::f()
+{
+    void* value = owner->target->sub_00495F40();
     if (value)
-    {
-        void *converted = sub_983b6a(value);
-        g_b229ec((void *)0x00deb9d8, converted);
-        return 1;
-    }
-    return 0;
+        return type_info_0xdeb9d8 == *sub_00983B6A(value);
+    return false;
 }

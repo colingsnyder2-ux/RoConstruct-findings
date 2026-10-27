@@ -1,52 +1,51 @@
-// from server: 74% by atomic.potato
-extern "C" void* __cdecl operator_new(unsigned int);
-extern "C" void __cdecl free_fn(void*);
-extern "C" int __cdecl type_info_equal(void*, void*);
-
-struct VFunctionalTest_Product {
-    void* m_p;
+// from server: 100% by tajop
+struct type_info {
+    __declspec(dllimport) bool operator==(const type_info&) const;
 };
 
-struct FactoryProduct {
-    void* m_p;
+extern type_info type_info_00de83d8;
+
+void* __cdecl operator new(unsigned int);
+inline void* operator new(unsigned int, void* p) { return p; }
+
+struct Functor {
+    char storage[0x20];
+    Functor(const Functor&);
+    void* scalar_deleting_dtor(unsigned int);
 };
 
-extern void* g_type_00de83d8;
+union function_buffer {
+    void* obj_ptr;
+    struct {
+        const type_info* type;
+        bool const_qualified;
+        bool volatile_qualified;
+    } type;
+};
 
-void* __fastcall sub_00883180(void* self, void* arg);
-
-void __fastcall sub_0043cad0(void* self, int arg);
-
-void* __cdecl sub_0098211a(unsigned int size);
-
-void __cdecl func_00883790(int op, void** out, void** in)
+void __cdecl functor_manager_manage(const function_buffer& in_buffer,
+                                    function_buffer& out_buffer, int op)
 {
     if (op == 0) {
-        void* src = *out;
-        void* mem = sub_0098211a(0x20);
-        if (mem) {
-            void* r = sub_00883180(mem, src);
-            *out = r;
-        } else {
-            *out = 0;
-        }
+        const Functor* f = (const Functor*)in_buffer.obj_ptr;
+        void* mem = operator new(0x20);
+        out_buffer.obj_ptr = mem ? new (mem) Functor(*f) : 0;
     } else if (op == 1) {
-        *out = *in;
-        *in = 0;
+        out_buffer.obj_ptr = in_buffer.obj_ptr;
+        const_cast<function_buffer&>(in_buffer).obj_ptr = 0;
     } else if (op == 2) {
-        void* p = *out;
-        if (p) {
-            sub_0043cad0(p, 1);
-        }
-        *out = 0;
+        Functor* f = (Functor*)out_buffer.obj_ptr;
+        if (f)
+            f->scalar_deleting_dtor(1);
+        out_buffer.obj_ptr = 0;
     } else if (op == 3) {
-        void* p = *out;
-        if (type_info_equal(p, &g_type_00de83d8)) {
-            *out = *in;
-        }
+        if (*out_buffer.type.type == type_info_00de83d8)
+            out_buffer.obj_ptr = in_buffer.obj_ptr;
+        else
+            out_buffer.obj_ptr = 0;
     } else {
-        *out = &g_type_00de83d8;
-        ((char*)out)[4] = 0;
-        ((char*)out)[5] = 0;
+        out_buffer.type.type = &type_info_00de83d8;
+        out_buffer.type.const_qualified = false;
+        out_buffer.type.volatile_qualified = false;
     }
 }

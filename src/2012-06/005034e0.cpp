@@ -1,13 +1,16 @@
-// from server: 87% by atomic.potato
+// from server: 100% by tajop
+struct Vector3 {
+    float x, y, z;
+    Vector3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
+};
+
 struct OgreRbxMeshPartAdapter {
     char pad[0x94];
     float values[3];
 
-    void __thiscall getValues(float* out);
+    Vector3 getValues() const;
 };
 
-void __thiscall OgreRbxMeshPartAdapter::getValues(float* out) {
-    out[0] = values[0];
-    out[1] = values[1];
-    out[2] = values[2];
+Vector3 OgreRbxMeshPartAdapter::getValues() const {
+    return Vector3(values[0], values[1], values[2]);
 }

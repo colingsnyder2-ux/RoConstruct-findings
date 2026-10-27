@@ -1,3 +1,4 @@
+// from server: 100% by coldek
 // from server: 98% by Espeon
 // roc 2008-06 0064b0a0  unit: RBX::SleepStage  size: 263 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0064b0a0
@@ -185,15 +186,20 @@ extern "C" void __cdecl releaseMemory(void* memory);
 
 inline bool Primitive::inOrDownstream(Stage*s)const {_ReadWriteBarrier();Stage* current=owner;int requested=s->rank();return current->rank() >= requested;}
 
-void Stage::f(Primitive* primitive)
+void Stage::f(Primitive* volatile primitive)
 {
     Primitive* p = primitive;
-    _ReadWriteBarrier();
-    Primitive* key = p;
+    Primitive* key;
     int state;
 
-    if(p->owner && p->inOrDownstream(this))state=p->state->value;
-    else state=0;
+    if (p->owner) {
+        key = p;
+        if (p->inOrDownstream(this)) state = p->state->value;
+        else state = 0;
+    } else {
+        key = p;
+        state = 0;
+    }
 
     Container* selected = select(state);
     Container* destination = &container;
@@ -214,7 +220,7 @@ void Stage::f(Primitive* primitive)
     p->state->auxiliary = 0;
     p->state->value = 6;
     collection->remove(p, 0);
-    destination->erase(&primitive);
+    destination->erase((Primitive* const*)&primitive);
 
     State* oldState = p->state;
     if (oldState) {

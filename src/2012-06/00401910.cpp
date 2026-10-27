@@ -1,5 +1,5 @@
-// from server: 91% by tester
-extern "C" void __stdcall InitializeCriticalSection(void*);
+// from server: 100% by tajop
+extern "C" __declspec(dllimport) void __stdcall InitializeCriticalSection(void*);
 extern "C" void __cdecl func_009831f5(void*);
 
 struct CAboutRobloxDialog

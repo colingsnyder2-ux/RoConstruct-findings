@@ -1,16 +1,18 @@
-// from server: 77% by atomic.potato
-extern "C" void Function_007f88b0(void*, unsigned int);
-
+// from server: 100% by tajop
 struct S
 {
-    void f(unsigned int);
+    unsigned long value;
+    unsigned long pad;
+    unsigned long data;
+    unsigned long limit;
+    void __thiscall f(unsigned long);
+    void __thiscall g(unsigned long);
 };
 
-void S::f(unsigned int value)
+void __thiscall S::f(unsigned long n)
 {
-    while (value < *(unsigned int*)((char*)this + 0x0c))
+    while (limit > n)
     {
-        unsigned int* p = *(unsigned int**)((char*)this + 8);
-        Function_007f88b0(this, p[1] + 8);
+        g(*((unsigned long*)data + 1) + 8);
     }
 }

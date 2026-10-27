@@ -1,14 +1,19 @@
-// from server: 97% by atomic.potato
+// from server: 100% by tajop
+struct Iter {
+    char* ptr;
+    Iter(char* p) : ptr(p) {}
+};
+
 struct VTouchTransmitter {
     char pad0[4];
     char* begin;
     char* end;
     void insert(char* pos, int count, char* val);
 
-    void FactoryProduct(char** out, char* pos, char* val);
+    Iter FactoryProduct(char* pos, char* val);
 };
 
-void VTouchTransmitter::FactoryProduct(char** out, char* pos, char* val) {
+Iter VTouchTransmitter::FactoryProduct(char* pos, char* val) {
     char* first = this->begin;
     int n = (int)((this->end - first) / 24);
     int idx;
@@ -18,6 +23,5 @@ void VTouchTransmitter::FactoryProduct(char** out, char* pos, char* val) {
         idx = (int)((pos - first) / 24);
     }
     insert(pos, 1, val);
-    char* b = this->begin;
-    *out = b + idx * 24;
+    return Iter(this->begin + idx * 24);
 }

@@ -1,21 +1,22 @@
-// from server: 71% by atomic.potato
+// from server: 100% by tajop
 struct S {
-    void f(int);
+    void sub_41a5e0();
+    S* f(unsigned int flags);
 };
 
-extern "C" void __stdcall EnterCriticalSection(void*);
-extern "C" void __stdcall LeaveCriticalSection(void*);
+extern "C" __declspec(dllimport) void __stdcall EnterCriticalSection(void*);
+extern "C" __declspec(dllimport) void __stdcall LeaveCriticalSection(void*);
 
-void* __cdecl sub_401970();
-void __cdecl sub_41a5e0();
+extern "C" void* __cdecl sub_401970();
 
-void S::f(int a) {
+S* S::f(unsigned int flags) {
     sub_41a5e0();
-    if (a & 1) {
+    if (flags & 1) {
         void* p = sub_401970();
-        EnterCriticalSection((void*)0xb221b8);
+        EnterCriticalSection(p);
         *(void**)this = *(void**)((char*)p + 0x18);
         *(void**)((char*)p + 0x18) = this;
-        LeaveCriticalSection((void*)0xb221b4);
+        LeaveCriticalSection(p);
     }
+    return this;
 }

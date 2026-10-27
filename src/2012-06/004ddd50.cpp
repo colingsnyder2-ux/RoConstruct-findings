@@ -1,18 +1,20 @@
-// from server: 91% by atomic.potato
+// from server: 100% by tajop
+class TexturePtr {
+public:
+    __declspec(dllimport) TexturePtr(const TexturePtr& r);
+private:
+    char pad0[0x10];
+};
+
 struct S
 {
     float x;
     float y;
-    int texture;
-    S& f(const S&);
+    TexturePtr texture;
+    S(const S& value);
 };
 
-extern "C" S& __stdcall TexturePtr_ctor(S*, const S*);
-
-S& S::f(const S& value)
+S::S(const S& value)
+    : x(value.x), y(value.y), texture(value.texture)
 {
-    x = value.x;
-    y = value.y;
-    TexturePtr_ctor((S*)((char*)this + 8), (const S*)((char*)&value + 8));
-    return *this;
 }

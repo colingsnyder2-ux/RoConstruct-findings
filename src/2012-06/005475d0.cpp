@@ -1,30 +1,33 @@
-// from server: 86% by atomic.potato
-struct Name {
-    char pad0[0x2c];
-    unsigned int count;
-    char pad1[0x90 - 0x30];
-    void** items;
+// from server: 100% by tajop
+struct Sub {
+    void assign(const int* v);
 };
 
 struct Out {
-    void* value;
+    int head;
+    Sub tail;
 };
 
-extern "C" void* __stdcall sub_557590();
-extern "C" void __stdcall sub_545840(void** slot, void* value);
+struct S {
+    char pad0[0x2c];
+    unsigned int count;
+    char pad1[0x90 - 0x30];
+    int* items;
+    bool get(unsigned int index, Out* out);
+};
 
-bool __fastcall sub_5475d0(Name* self, unsigned int, unsigned int index, Out* out)
-{
-    bool found;
-    void* value;
-    if (index < self->count) {
-        value = self->items[index];
-        found = true;
+extern "C" int __cdecl sub_557590();
+
+bool S::get(unsigned int index, Out* out) {
+    bool ok;
+    int value;
+    if (index < count) {
+        value = items[index];
+        ok = true;
     } else {
-        found = false;
+        ok = false;
     }
-    void* n = sub_557590();
-    out->value = n;
-    sub_545840(&value, n);
-    return found;
+    out->head = sub_557590();
+    out->tail.assign(&value);
+    return ok;
 }

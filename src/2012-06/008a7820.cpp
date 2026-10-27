@@ -1,22 +1,33 @@
-// from server: 78% by atomic.potato
-struct S
-{
-    char pad[12];
-    void *field_data;
-    int field();
+// from server: 100% by tajop
+struct type_info {
+    __declspec(dllimport) bool operator==(const type_info&) const;
 };
 
-extern "C" void *__cdecl fn495f40(void *);
-extern "C" void *__cdecl fn983b6a(void *);
-extern "C" int __cdecl fnB229EC(void *, void *);
+extern type_info type_info_0xdecadc;
+extern "C" type_info* __cdecl sub_00983B6A(void*);
 
-S *g_decadc = (S *)0x00decadc;
+struct Target {
+    void* sub_00495F40();
+};
 
-int S::field()
+struct Owner {
+    char pad[0xac4];
+    Target* target;
+};
+
+struct TToolVerb
 {
-    void *p = fn495f40(((void **)field_data)[0xac4 / sizeof(void *)]);
-    if (!p)
-        return 0;
-    p = fn983b6a(p);
-    return fnB229EC(g_decadc, p);
+    int pad0;
+    int pad1;
+    int pad2;
+    Owner* owner;
+    bool f();
+};
+
+bool TToolVerb::f()
+{
+    void* value = owner->target->sub_00495F40();
+    if (value)
+        return type_info_0xdecadc == *sub_00983B6A(value);
+    return false;
 }
