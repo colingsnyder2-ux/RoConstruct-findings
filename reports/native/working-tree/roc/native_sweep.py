@@ -292,6 +292,49 @@ def model_evidence(addr, names, by_addr):
     return item
 
 
+def body_diff(obj, symbol, addr, limit=40):
+    """Unified diff of target vs rebuilt instructions for one method; long immediates (addresses) are masked."""
+    import difflib
+    code = {name: body for name, body, _ in match.coff_functions(obj)}.get(symbol)
+    if code is None:
+        return "rebuilt symbol %s is not in this object" % symbol
+    va = int(addr, 16)
+
+    def norm(lines):
+        return [re.sub(r"0x[0-9a-f]{5,}", "X", line[31:]) for line in lines]
+    lines = list(difflib.unified_diff(norm(match.disasm(match.target("2008-06", addr)[0], va)),
+                                      norm(match.disasm(code, va)), "target", "rebuilt", n=1, lineterm=""))
+    return "\n".join(lines[:limit]) + ("\n..." if len(lines) > limit else "") if lines else "identical after masking"
+
+
+def excerpt(text, symbols, around=20):
+    """The file's #include lines plus each target method with `around` lines of context, verbatim, so SEARCH
+    blocks still anchor in the full file. Falls back to the whole file when no target method is found."""
+    spans, lines = methods(text), text.split("\n")
+    starts = [0]
+    for line in lines:
+        starts.append(starts[-1] + len(line) + 1)
+
+    def line_of(offset):
+        return max(0, next(i for i, start in enumerate(starts) if start > offset) - 1)
+    keep = {i for i, line in enumerate(lines) if line.lstrip().startswith("#include")}
+    found = False
+    for symbol in symbols:
+        span = spans.get(symbol_method(symbol))
+        if span:
+            found = True
+            keep.update(range(max(0, line_of(span[0]) - around), min(len(lines), line_of(span[1]) + around + 1)))
+    if not found:
+        return text
+    out, last = [], -1
+    for i in sorted(keep):
+        if i != last + 1:
+            out.append("// ...")
+        out.append(lines[i])
+        last = i
+    return "\n".join(out)
+
+
 def apply_edits(text, edits):
     if not isinstance(edits, list) or not edits:
         raise ValueError("no edits")
@@ -320,35 +363,65 @@ def providers_text(reply):
     return providers.strip_reasoning(reply.text if hasattr(reply, "text") else str(reply))
 
 
-def model_proposal(rel, text, addrs, baseline, owned, model, rounds, compile_round, matcher, evidence, log):
+def model_proposal(rel, text, addrs, baseline, owned, model, rounds, compile_round, matcher, evidence, log, options=None,
+                   diff=None, shown=None):
     """Ask the model for anchored edits to one native file; keep the first that makes a new target exact and
     loses no owned exact in that file. Every round compiles the real TU; failures go back as feedback."""
     from roc import providers
     prompt = "%s\n\nFILE %s\n```cpp\n%s\n```\n\nTARGETS (exact 2008 functions this file should produce)\n%s" % (
-        MODEL_RULES, rel, text[:60000], json.dumps([evidence(a) for a in addrs[:6]], indent=1))
+        MODEL_RULES, rel, (shown or text)[:60000], json.dumps([evidence(a) for a in addrs[:6]], indent=1))
     messages, trials = [{"role": "user", "content": prompt}], []
     for n in range(rounds):
-        reply = providers.generate(model, messages, {"allow_cloud": True, "max_tokens": 8192, "timeout": 300})
+        # Edit blocks are short: no thinking and a small reply cap keep each round to seconds, not a minute.
+        # With thinking on, reasoning shares max_tokens: an 8192 cap left 27 of 29 replies without any edit.
+        settings = dict({"allow_cloud": True, "timeout": 600, "thinking": "disabled"}, **(options or {}))
+        settings.setdefault("max_tokens", 3072 if settings["thinking"] == "disabled" else 32768)
+        reply = providers.generate(model, messages, settings)
+        log("model %s round %d: %.1fs, %s reasoning tokens" % (rel, n, getattr(reply, "latency_s", 0) or 0,
+                                                              getattr(reply, "reasoning_tokens", None)))
         messages.append({"role": "assistant", "content": providers_text(reply)})
         try:
             edits = parse_edits(reply)
             result = compile_round(apply_edits(text, edits), "model-%d" % n)
         except ValueError as error:
-            trials.append({"file": rel, "mode": "model-%d" % n, "ok": False, "error": str(error)[:500]})
+            trials.append({"file": rel, "mode": "model-%d" % n, "ok": False, "error": str(error)[:500],
+                           "reply": providers_text(reply)[:3000]})
             messages.append({"role": "user", "content": "Rejected: %s\nReply with corrected SEARCH/REPLACE blocks." % error})
             continue
         hits = matcher.scan(Path(result["object"]).read_bytes()) if result["ok"] else []
         found = {h["addr"] for h in hits}
         new, lost = (found & set(addrs)) - baseline, (baseline & owned) - found
-        result.update(hits=hits, losses=sorted(lost))
+        result.update(hits=hits, losses=sorted(lost), reply=providers_text(reply)[:3000])
         trials.append(result)
         log("model %s round %d: %d new exact, %d lost" % (rel, n, len(new), len(lost)))
         if new and not lost:
+            # Keep only edits the new exacts need: models rewrite neighbouring methods too, and an unproven
+            # behaviour change in a method that was not exact would pass the loss check.
+            edits = [pair for pair in edits if pair[0] != pair[1]]
+            for pair in list(edits):
+                rest = [other for other in edits if other is not pair]
+                if not rest:
+                    continue
+                trial = compile_round(apply_edits(text, rest), "minimize-%d-%d" % (n, len(rest)))
+                found = {h["addr"] for h in matcher.scan(Path(trial["object"]).read_bytes())} if trial["ok"] else set()
+                if new <= found and not (baseline & owned) - found:
+                    edits = rest
+            result = compile_round(apply_edits(text, edits), "final-%d" % n)
+            hits = matcher.scan(Path(result["object"]).read_bytes()) if result["ok"] else []
+            found = {h["addr"] for h in hits}
+            if not (new <= found and not (baseline & owned) - found):
+                trials.append(dict(result, error="minimized edits lost the proof"))
+                return None, trials
+            result.update(hits=hits, losses=[])
             return {"file": rel, "edits": edits, "mode": "model",
                     "witnesses": [h for h in hits if h["addr"] in new], "proof": result}, trials
         feedback = result["error"][-1500:] if not result["ok"] else \
             "Compiled. Newly exact: %s. Still not exact: %s. Lost previously exact: %s." % (
                 sorted(new) or "none", sorted(set(addrs) - found) or "none", sorted(lost) or "none")
+        if result["ok"] and diff:
+            data = Path(result["object"]).read_bytes()
+            feedback += "".join("\n\n%s target vs your rebuilt code:\n%s" % (a, diff(data, a))
+                                for a in sorted(set(addrs) - found)[:2])
         messages.append({"role": "user", "content": feedback + "\nReply with the complete corrected set of "
                          "SEARCH/REPLACE blocks against the ORIGINAL file."})
     return None, trials
@@ -359,20 +432,34 @@ def model_discovery(config, texts, wanted, owned, by_addr, matcher, output, jobs
     evidence_root = Path(os.environ.get("ROC_NATIVE_EVIDENCE_ROOT", ROOT))
     path = evidence_root / "rebuild/2008-06/out/native-names.json"
     names = json.loads(path.read_text()) if path.exists() else {}
+    if config.get("only_rebuilt", True):
+        # Near misses first: the rebuild already compiles a body for the address, so the fix is local to that method.
+        # Targets with no rebuilt body need new methods and header declarations; .cpp-only edits rarely reach them.
+        wanted = {addr for addr in wanted if names.get(addr, {}).get("symbol")}
     homes = target_files(texts, wanted, names, by_addr)
     skip = set(config.get("exclude_files", []))
     files = sorted((rel for rel in homes if rel not in skip), key=lambda rel: -len(homes[rel]))[:config.get("max_files")]
     model, rounds = config["llm"], config.get("rounds", 3)
+    options = {key: config[key] for key in ("thinking", "max_tokens") if key in config}
+    context = config.get("context", "file")
 
     def one(rel):
         base = compile_source(texts[rel], rel, "baseline")
         if not base["ok"]:
             return None, [base]
-        baseline = {h["addr"] for h in matcher.scan(Path(base["object"]).read_bytes())}
+        data = Path(base["object"]).read_bytes()
+        baseline = {h["addr"] for h in matcher.scan(data)}
+
+        def diff(obj, addr):
+            return body_diff(obj, names[addr]["symbol"], addr) if names.get(addr, {}).get("symbol") else "no rebuilt body"
         try:
             proposal, trials = model_proposal(rel, texts[rel], homes[rel], baseline, owned, model, rounds,
                                               lambda source, label: compile_source(source, rel, label), matcher,
-                                              lambda addr: model_evidence(addr, names, by_addr), log)
+                                              lambda addr: dict(model_evidence(addr, names, by_addr), current_diff=diff(data, addr)),
+                                              log, options, diff,
+                                              excerpt(texts[rel], [names[a]["symbol"] for a in homes[rel]
+                                                                   if names.get(a, {}).get("symbol")])
+                                              if context == "methods" else None)
         except Exception as error:  # noqa: BLE001 - one provider/compile failure must not stop the other files
             return None, [base, {"file": rel, "mode": "model", "ok": False, "error": str(error)[:500]}]
         return proposal, [base] + trials

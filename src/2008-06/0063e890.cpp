@@ -1,8 +1,8 @@
-// from server: 85% by king_originala_sol_resume_medium
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_resume_medium_ff50cb6c003cb003.cpp
+// roc-lib: openrbx-client-dll roc_claudeS4_0414f5b2821e01fc.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <boost/shared_ptr.hpp>
@@ -35,7 +35,7 @@ namespace RBX {
 }
 
 extern Actor* __cdecl findActor(RBX::Instance*);
-extern Shared __cdecl convert(const Shared&) throw();
+extern __declspec(noalias) Shared __cdecl convert(const Shared&) throw();
 extern RBX::ServiceProvider* __cdecl func_005807b0(RBX::Instance*);
 
 struct Tool {
@@ -79,9 +79,7 @@ void Tool::execute(int argument)
 
         Shared selected = convert(stored.get()->getObject());
         selected->setParent(parent);
-        const G3D::CoordinateFrame& frame = actor->getTransform();
-        const RBX::PV& result = makeTransform(argument, frame);
-        selected->transform.assign(result);
+        selected->transform.assign(makeTransform(argument, actor->getTransform()));
         func_005807b0(parent)->notify(getNotification());
     }
 }

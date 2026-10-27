@@ -1,4 +1,4 @@
-dist/
-*.key
+**/work/
+**/__pycache__/
+*.pyc
 *.log
-__pycache__/

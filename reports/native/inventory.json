@@ -3,7 +3,7 @@
   "clients": [
     {
       "client": "2008-06",
-      "exact_sources": 22137,
+      "exact_sources": 22138,
       "stored_sources": 22290
     }
   ],
@@ -11,6 +11,7 @@
   "sha256": {
     "working-tree/rebuild/2008-06/POLICY.md": "77fcf38870a4e5cc7393873006999d30e1c6da7acebaf2813f8d7664c03cc200",
     "working-tree/rebuild/2008-06/base_check.py": "9097dd90dff04feafee7c3d314615b495e9c8cef18d55e7170ddd810ae6e9ebe",
+    "working-tree/rebuild/2008-06/compile_test.py": "57ca2158bd5e7429503855fce119462791ece58892c6b64102507767ebcd2468",
     "working-tree/rebuild/2008-06/glue/openrbx/glue_link_stubs.cpp": "c383ecade8df6a90dc7b28847765989911f8a7a8f0c6c8aae7b60a07f97a448e",
     "working-tree/rebuild/2008-06/glue/rbxgs/glue_anchor_registry.cpp": "5e2b609e439231ee18be54fa4c9b6bb639efe63dc392dba305081c7278156421",
     "working-tree/rebuild/2008-06/glue/rbxgs/glue_camera.cpp": "02a274d4dbb3b54c15145f99378a1c2c5c4c6e51f6cdce622e8b4aec11eaf1fd",
@@ -98,10 +99,10 @@
     "working-tree/rebuild/2008-06/tests/test_strip_symbols.py": "b8ad20118275c07e175d7b4ebd3c272b116d9a7b37827b5051380c2316fa8e7b",
     "working-tree/rebuild/2008-06/tests/xtp_colors.cpp": "bb4d67867daa9e6f8f29fd9178a9567021af40973faa93a2bcfbe46a419c1a9b",
     "working-tree/rebuild/2008-06/tests/zlib_roundtrip.cpp": "2e13794b8941477920550714a8eadae5eb7bb4fb2745629b2877be625a87040d",
-    "working-tree/roc/findings_publish.py": "f1ea6aea9acaba0c5d15a2c52e6cd9dab21810c5e61f0b38edb9c0c867940b1a",
+    "working-tree/roc/findings_publish.py": "6f1a0ce68a6fdeb998c6d778be7478cdd9cf6086c0e712841666739939eefb76",
     "working-tree/roc/integration.py": "9238af82b2fa34caf5aa5c2639bd6912ea4486c20d2081500af8a05d6856177d",
-    "working-tree/roc/integration_verify.py": "79181b0822647d26c0a9e14b5ceb7baafdb7675a46d4a81ea1ebbf100c0fc626",
-    "working-tree/roc/native_sweep.py": "10a5a6d477b878f8409f973ff199daf757380227923cbbe0c6bff789db09b409",
+    "working-tree/roc/integration_verify.py": "7a73e512c35515300d6fc051bca45a34515353a14e02c62f2b00e5589f849edb",
+    "working-tree/roc/native_sweep.py": "0a8d03e0d87f10fbf9d86389b0209fc54c8eca59f70768ce7495d5fa2a9be429",
     "working-tree/roc/rebuild.py": "aabdcd4bf4cc9e98499c593b4a54e0cdc3dc726ee4929e2ac38a915b1adb89ae"
   }
 }

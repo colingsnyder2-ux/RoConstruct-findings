@@ -1,8 +1,8 @@
-// from server: 90% by king_originala
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: ogre-1.4.5 roc_native_ogre_sky_update_b7a75280c6c88177.cpp
+// roc-lib: ogre-1.4.5 roc_claudeL_a8c771929549b29e.cpp
 
 // Candidate translation unit (score above; library headers required).
 #undef OGRE_NONCLIENT_BUILD
@@ -110,6 +110,9 @@ class GImage { public:
 static const char* const imageExtensions[] = {"JPG","BMP","TGA","PCX","ICO","PNG","PPM","PPM"};
 static const char materialTemplate[] = "material %s\n{\n\ttechnique\n\t{\n\t\tpass\n\t\t{\n\t\t\tlighting off\n\t\t\tdepth_write off\n\t\t\ttexture_unit\n\t\t\t{\n\t\t\t\tcubic_texture %s %s %s %s %s %s separateUV\n\t\t\t\ttex_address_mode clamp\n\t\t\t}\n\t\t}\n\t}\n}\n";
 namespace RBX {
+// Sky ContentId fields at 0x130 + 32*k, proven by the target's six offsets.
+struct NativeSkyFields { char observed[0x130]; ContentId skyUp, skyLeft, skyRight, skyBack, skyFront, skyDown; };
+inline NativeSkyFields* nativeSky(NativeLighting* l) { return *reinterpret_cast<NativeSkyFields**>(reinterpret_cast<char*>(l)+0x2d4); }
 void NativeView::updateSkybox(NativeVisualEngine* engine)
 {
     std::string filenames[6];
@@ -124,12 +127,12 @@ void NativeView::updateSkybox(NativeVisualEngine* engine)
         front = ContentId::fromAssets("Sky\\null_plainsky512_ft.jpg");
         down = ContentId::fromAssets("Sky\\null_plainsky512_dn.jpg");
     } else {
-        up = *reinterpret_cast<const ContentId*>(*reinterpret_cast<const char**>(reinterpret_cast<char*>(lighting)+0x2d4)+0x130);
-        down = *reinterpret_cast<const ContentId*>(*reinterpret_cast<const char**>(reinterpret_cast<char*>(lighting)+0x2d4)+0x1d0);
-        left = *reinterpret_cast<const ContentId*>(*reinterpret_cast<const char**>(reinterpret_cast<char*>(lighting)+0x2d4)+0x150);
-        right = *reinterpret_cast<const ContentId*>(*reinterpret_cast<const char**>(reinterpret_cast<char*>(lighting)+0x2d4)+0x170);
-        front = *reinterpret_cast<const ContentId*>(*reinterpret_cast<const char**>(reinterpret_cast<char*>(lighting)+0x2d4)+0x1b0);
-        back = *reinterpret_cast<const ContentId*>(*reinterpret_cast<const char**>(reinterpret_cast<char*>(lighting)+0x2d4)+0x190);
+        up = nativeSky(lighting)->skyUp;
+        down = nativeSky(lighting)->skyDown;
+        left = nativeSky(lighting)->skyLeft;
+        right = nativeSky(lighting)->skyRight;
+        front = nativeSky(lighting)->skyFront;
+        back = nativeSky(lighting)->skyBack;
     }
     try {
         // Nullable create-service receiver is inlined at each call in the target.
@@ -153,7 +156,7 @@ void NativeView::updateSkybox(NativeVisualEngine* engine)
     if (basename.find(".") == std::string::npos) {
         G3D::GImage::Format format = G3D::GImage::resolveFormat(filenames[0]);
         std::string extension;
-        if (format >= 0 && format < 8)
+        if (format >= 0 && format < sizeof(imageExtensions)/sizeof(imageExtensions[0]))
             extension = std::string(".") + imageExtensions[format];
         else
             extension = ".raw";

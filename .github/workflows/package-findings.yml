@@ -1,9 +1,7 @@
-name: Package findings ZIP
+name: Package usable findings
 on:
   push:
     branches: [main]
-  schedule:
-    - cron: "0 * * * *"
   workflow_dispatch:
 permissions:
   contents: write
@@ -12,21 +10,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Package sources and portable agent evidence
+      - name: Package sources and required metadata
         run: |
-          mkdir -p dist
-          (cd src && zip -qr ../dist/roconstruct-findings-src.zip .)
-          sha256sum dist/roconstruct-findings-src.zip > dist/roconstruct-findings-src.zip.sha256
-          evidence=$(ls -d agent-memory reports 2>/dev/null || true)
-          if [ -n "$evidence" ]; then
-            zip -qr dist/roconstruct-evidence.zip $evidence
-            sha256sum dist/roconstruct-evidence.zip > dist/roconstruct-evidence.zip.sha256
-          fi
-      - name: Update stable release assets
+          mkdir -p dist/source
+          for client in [0-9][0-9][0-9][0-9]-[0-9][0-9]; do
+            if [ -d "$client/recovered" ]; then
+              mkdir -p "dist/source/$client"
+              cp -a "$client/recovered/." "dist/source/$client/"
+            fi
+          done
+          (cd dist/source && zip -qr ../roconstruct-findings-src.zip .)
+          zip -qr dist/roconstruct-evidence.zip data 2008-06/verification
+          zip -qr dist/roconstruct-native-source.zip 2008-06/src 2008-06/config 2008-06/patches 2008-06/tests 2008-06/scripts 2008-06/verification 2008-06/compile_test.bat 2008-06/README.md 2008-06/package.json
+          sha256sum dist/*.zip > dist/SHA256SUMS
+      - name: Update stable source downloads
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release view findings-latest >/dev/null 2>&1 || \
-            gh release create findings-latest --title "Latest findings" \
-              --notes "Recovered sources and portable agent evidence. Updated on main push." --prerelease
-          gh release upload findings-latest dist/* --clobber
+          gh release view findings-latest >/dev/null 2>&1 || gh release create findings-latest --title "Latest findings" --notes "Recovered sources and usable native rebuild inputs." --prerelease
+          gh release upload findings-latest dist/*.zip dist/SHA256SUMS --clobber

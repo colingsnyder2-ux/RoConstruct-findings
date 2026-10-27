@@ -1,19 +1,13 @@
 # RoConstruct findings
 
-Recovered C++ sources and portable research evidence for
-[RoConstruct](https://github.com/colingsnyder2-ux/RoConstruct). Published automatically
-by the group server; do not edit by hand.
+Usable recovered C++ and native rebuild sources for [RoConstruct](https://github.com/colingsnyder2-ux/RoConstruct).
 
-| Folder | Contents |
-|---|---|
-| `src/<client>/<addr>.cpp` | recovered functions (exact matches, partials and candidates) |
-| `agent-memory/` | reviewed lessons, shared experiment attempts and the agent workflow context |
-| `reports/` | historical campaign reports, plans and retired guides (index: `research/reports.json` in the main repo) |
-| `reports/native/` | 2008 accepted native integration history, awarded credits, proposal states and reproducible build overlays/tooling |
+- `<client>/recovered/<address>.cpp`: recovered exact, partial and candidate functions. Scores remain authoritative on the progress website.
+- `2008-06/src/`, `config/`, `patches/`, `scripts/`: native source and required build inputs. See [2008-06/README.md](2008-06/README.md).
+- `2008-06/tests/`: runtime harnesses required to compile/test the rebuilt engine.
+- `2008-06/verification/`: accepted integration history, proposal states and required analysis metadata.
+- `data/`: generated source units and reviewed lessons used by RoConstruct.
 
-Only the group server's byte-for-byte re-verification counts as a match. Attempt
-reports are evidence, not proof; `server_confirmed` marks those whose source hash
-matches a verified score event. Releases: `roconstruct-findings-src.zip` (sources) and
-`roconstruct-evidence.zip` (agent memory and reports).
+Build output, caches, temporary work and experiment reports are excluded from the current tree. Required vendor license notices remain alongside source. Credentials and private configuration remain excluded.
 
-No client executables, compilers, credentials or private scratch files belong here.
+Historical reports and previous layouts remain in [the pre-cleanup archive](https://github.com/colingsnyder2-ux/RoConstruct-findings/tree/archive/pre-cleanup-20261027). Only server-verified receipts establish accepted integrations; proposals are kept separate.

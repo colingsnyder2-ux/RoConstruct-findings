@@ -14,6 +14,8 @@ from pathlib import Path
 
 from roc.integration import CLIENT, MODULE, ROOT, atomic_json, digest, merge_patches
 
+WRITABLE_OUT = {"RbxgsApp", "tests"}  # out/ folders a snapshot build or milestone link writes into
+
 WATCHDOG_SECONDS = 20 * 60  # cold baselines take minutes; stacks only after this long without a verdict
 
 
@@ -137,7 +139,7 @@ def digest_paths(root, paths):
     return result.hexdigest()
 
 
-def snapshot(root, destination):
+def snapshot(root, destination, link=False):
     """Private mutable outputs; installed source/toolchain trees are read-through."""
     destination.mkdir(parents=True, exist_ok=False)
     for name in ("roc", "research"):
@@ -159,10 +161,23 @@ def snapshot(root, destination):
             target.mkdir(parents=True, exist_ok=True)
             for path in source.glob("*.json*"):
                 shutil.copy2(path, target / path.name)
-    # Copy, never hard-link: linkers and compilers overwrite output files.
+    # Copy what a build may write: linkers and compilers overwrite output files in place. A snapshot only
+    # rebuilds rbxgs-app and links tests, so other modules' objects/libraries are read-only inputs: with link=True
+    # (only from an immutable baseline cache, never the live checkout) hard-link those
+    # (about half of a 1.3 GB copy that took minutes per job).
+    # ponytail: relies on nothing rewriting other modules' .obj/.lib in a snapshot; copy them if that ever changes.
     source = root / "rebuild" / CLIENT / "out"
+
+    def place(src, dst):
+        parts = Path(src).relative_to(source).parts
+        if link and parts[0] not in WRITABLE_OUT and Path(src).suffix.lower() in (".obj", ".lib"):
+            try:
+                return os.link(src, dst)
+            except OSError:
+                pass
+        return shutil.copy2(src, dst)
     if source.exists():
-        shutil.copytree(source, destination / "rebuild" / CLIENT / "out",
+        shutil.copytree(source, destination / "rebuild" / CLIENT / "out", copy_function=place,
             ignore=shutil.ignore_patterns("agent-*", "overlay-*", "*.pdb", "*.ilk", "promotions"))
         # Incremental include tracking must point at this private overlay, never
         # the baseline's headers: only changed headers should force recompilation.
@@ -396,7 +411,7 @@ def verify(promotions, job):
     if candidate.exists():
         candidate = candidate.with_name(candidate.name + "-" + str(time.time_ns()))
     # Reuse independently verified outputs, while all writable files remain copies.
-    snapshot(cache, candidate)
+    snapshot(cache, candidate, link=True)  # the baseline cache is never rebuilt: share its read-only objects
     atomic_json(candidate / "rebuild" / CLIENT / "patches" / "rbxgs-client.json", combined)
     after = verify_build(candidate, progress)
     elsewhere = other_module_owned(candidate)

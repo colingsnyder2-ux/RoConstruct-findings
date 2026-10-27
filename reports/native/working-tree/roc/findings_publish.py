@@ -73,7 +73,8 @@ def export_native(root, db):
         "unsubmitted edits may be present. Acceptance comes only from the server ledger. "
         "`inventory.json` records source counts and file hashes.\n\n"
         "Recovered exact and partial functions live at `/src/<client>/`. "
-        "Vendor trees, binaries, private config and credentials are excluded.\n", encoding="utf-8")
+        "The complete native rebuild is published at `/2008-06/`, including source and build artifacts. "
+        "Private configuration and credentials remain excluded.\n", encoding="utf-8")
     return outputs["inventory.json"]
 
 
@@ -84,6 +85,11 @@ def main():
     root = args.root.resolve()
     # Load the live checkout's established publisher, without editing its protected inputs.
     sys.path.insert(0, str(root))
+    import roc
+    # Review tooling may be newer than a busy host's pinned verifier files.
+    helper_path = str(Path(__file__).resolve().parent)
+    if helper_path not in roc.__path__:
+        roc.__path__.append(helper_path)
     from roc import server, libs
     store = server.Store.__new__(server.Store)
     store.lock = threading.Lock()
@@ -108,7 +114,17 @@ def main():
                 store.db = live
                 snapshot.close()
         print(json.dumps(inventory["clients"]), flush=True)
-        server.publish_findings(shutil.which("git"), log)
+        if (root / 'rebuild/2008-06').is_dir():
+            from roc import rebuild_package
+            print('Exporting complete 2008-06 rebuild package...', flush=True)
+            package = rebuild_package.export(root, root / 'local/findings/2008-06')
+            print('Packaged %d files; %d large files stored in lossless chunks.' %
+                  (len(package['files']), len(package['large_files'])), flush=True)
+            if package['pending_build_files']:
+                print('%d build artifacts still being written; recorded as pending in package.json.' %
+                      len(package['pending_build_files']), flush=True)
+        from roc import findings_transport
+        findings_transport.publish(root, shutil.which("git"), log)
 
     def log(message):
         logs.append(message)
