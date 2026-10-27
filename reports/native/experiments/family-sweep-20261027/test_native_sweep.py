@@ -15,6 +15,18 @@ def test_recipe_modes_select_only_requested_compiler_experiments():
     assert '#pragma auto_inline(off)' in trials[2][1]
 
 
+def test_network_uses_its_installed_native_recipe_includes(tmp_path, monkeypatch):
+    monkeypatch.setattr(sweep.libs, 'LIBS', tmp_path)
+    monkeypatch.setattr(sweep.libs, '_case_path', lambda p: p)
+    monkeypatch.setitem(sweep.libs.RECIPES, 'rbxgs-net', {'include': ['RakNet/source', 'Network/include/network', 'WINSDK'], 'defines': 'WIN32'})
+    monkeypatch.setattr(sweep.rebuild, '_overlaid', lambda roots, files, overlay: (roots, files))
+    contexts = sweep.compilation_contexts(['Network/API.cpp', 'App/A.cpp'], tmp_path, tmp_path / 'overlay')
+    roots, defines = contexts['Network/']
+    assert roots == [tmp_path / 'RakNet/source', tmp_path / 'Network/include/network']
+    assert defines == 'WIN32 BOOST_ALL_NO_LIB'
+    assert len(contexts) == 1
+
+
 def test_assertion_edit_keeps_control_flow_and_ignores_literals():
     source = '''void A::candidate() const {
     if (ready) RBXASSERT(check("brace } and )")); else fallback();
@@ -127,16 +139,19 @@ def test_ownership_checks_twins_outside_the_discovery_pool(monkeypatch):
 
 
 @pytest.mark.parametrize('failure', ['', 'lost', 'compile', 'ambiguous'])
-def test_header_family_checks_all_transitive_dependents(tmp_path, monkeypatch, failure):
+@pytest.mark.parametrize('custom', [False, True])
+def test_header_family_checks_all_transitive_dependents(tmp_path, monkeypatch, failure, custom):
     tree, overlay = tmp_path / 'tree', tmp_path / 'base'
     files = {'App/include/Core.h': 'inline void f(){RBXASSERT(ok);}\n',
-             'Network/include/Bridge.h': '#include "Core.h"\n',
+             'Network/include/Bridge.h': '#include <Core.h>\n',
              'Network/Net.cpp': '#include "Bridge.h"\n'}
+    if custom:
+        files['App/include/Core.h'] = 'inline void f(){first();}\n'
     for rel, text in files.items():
         p = tree / rel
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(text)
-    ranking = sweep.header_families(tree, overlay, ['Network/Net.cpp'])
+    ranking = sweep.header_families(tree, overlay, ['Network/Net.cpp'], ['App/include/Core.h'] if custom else [])
     assert ranking[0]['file'] == 'App/include/Core.h'
     assert ranking[0]['files'] == ['Network/Net.cpp']
     def compile_unit(text, rel, label, output, tree, shadow, roots, defines, flags):
@@ -144,6 +159,8 @@ def test_header_family_checks_all_transitive_dependents(tmp_path, monkeypatch, f
         if is_variant:
             assert (shadow / 'Network/include/Bridge.h').read_text() == files['Network/include/Bridge.h']
             assert 'RBXASSERT' not in (shadow / 'App/include/Core.h').read_text()
+            if custom:
+                assert 'second();' in (shadow / 'App/include/Core.h').read_text()
         obj = output / (label + '.obj')
         obj.write_bytes(b'variant' if is_variant else b'baseline')
         return {'file': rel, 'ok': not (failure == 'compile' and is_variant), 'object': str(obj)}
@@ -155,7 +172,10 @@ def test_header_family_checks_all_transitive_dependents(tmp_path, monkeypatch, f
                               ([gain] if failure == 'lost' else [keep, gain]))
     out = tmp_path / 'out'
     out.mkdir()
-    records, proposals, checks = sweep.discover_families({'header_families': 1}, ['Network/Net.cpp'],
+    config = {'header_families': 1}
+    if custom:
+        config['family_edits'] = {'App/include/Core.h': {'edits': [['first();', 'second();']], 'evidence': 'Native instruction evidence'}}
+    records, proposals, checks = sweep.discover_families(config, ['Network/Net.cpp'],
         tree, overlay, [tree / 'App/include', tree / 'Network/include'], '', '', matcher,
         {'00500001'}, {'00500000'}, {'00500001': {'unit': 'RBX::A'}}, out, 1, lambda _: None)
     assert len(records) == 2
@@ -263,6 +283,18 @@ def test_wait_does_not_retry_auth_failure():
         raise sweep.worker.ApiFailure('auth_fail', 'invalid invitation')
     with pytest.raises(sweep.worker.ApiFailure, match='auth_fail'):
         sweep.wait_for_job(SimpleNamespace(call=call), 'existing', 30, lambda _: None)
+
+
+def test_campaign_wait_rejects_stale_run_and_follows_saved_terminal_receipt(tmp_path, monkeypatch):
+    path = tmp_path / 'summary.json'
+    path.write_text(json.dumps({'run_id': 'old', 'state': 'accepted'}))
+    saved = tmp_path / 'runs/new.json'
+    def finish(_):
+        saved.parent.mkdir(exist_ok=True)
+        saved.write_text(json.dumps({'run_id': 'new', 'state': 'no-proposals'}))
+    monkeypatch.setattr(sweep.time, 'sleep', finish)
+    result = sweep.wait_for_campaign({'summary': str(path), 'run_id': 'new'}, 5, lambda _: None)
+    assert result['run_id'] == 'new' and result['state'] == 'no-proposals'
 
 
 @pytest.mark.parametrize('lose_owned,existing_owned,terminal', [(False, True, None), (True, True, None), (False, False, None),

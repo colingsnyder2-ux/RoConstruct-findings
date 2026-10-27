@@ -155,23 +155,35 @@ def claim_unit(hit, row):
 
 def project_headers(tree):
     return sorted({p.relative_to(tree).as_posix()
-                   for folder in ("App", "Network", "Rendering/AppDraw", "Rendering/RenderLib", "RbxView")
+                   for folder in ("App", "Network", "Rendering/AppDraw", "Rendering/RenderLib", "RbxView", "RbxViewBase", "RbxGraphics")
                    for p in (tree / folder).rglob("*") if p.suffix.lower() in {".h", ".hpp", ".inl", ".inc"}})
 
 
-def header_families(tree, overlay, files):
-    """Conservative quoted-include graph: duplicate basenames add work, never hide dependents."""
+def compilation_contexts(files, tree, overlay):
+    contexts = {}
+    for prefix, name in (("Network/", "rbxgs-net"), ("Rendering/AppDraw/", "rbxgs-appdraw"),
+                         ("Rendering/RenderLib/", "rbxgs-render"), ("RbxView/", "rbxgs-view")):
+        if not any(rel.startswith(prefix) for rel in files):
+            continue
+        recipe = libs.RECIPES[name]
+        roots = [libs._case_path(libs.LIBS / p).resolve() for p in recipe["include"] if p != "WINSDK"]
+        contexts[prefix] = (rebuild._overlaid(roots, [], (tree, overlay))[0], recipe["defines"] + " BOOST_ALL_NO_LIB")
+    return contexts
+
+
+def header_families(tree, overlay, files, extra=()):
+    """Conservative project-include graph: duplicate basenames add work, never hide dependents."""
     paths = set(project_headers(tree)) | set(files)
     texts = {rel: (overlay / rel if (overlay / rel).exists() else tree / rel).read_text(errors="replace")
              for rel in paths}
     reverse = defaultdict(set)
     for rel, text in texts.items():
-        for name in re.findall(r'^\s*#\s*include\s*"([^"]+)"', text, re.M):
+        for name in re.findall(r'^\s*#\s*include\s*[<"]([^>"\n]+)[>"]', text, re.M):
             reverse[Path(name).name].add(rel)
     ranked = []
     for rel, text in texts.items():
         changed = without_assertions(text)
-        if rel in files or changed == text:
+        if rel in files or changed == text and rel not in extra:
             continue
         todo, reached = [Path(rel).name], set()
         while todo:
@@ -187,9 +199,12 @@ def header_families(tree, overlay, files):
 
 
 def discover_families(config, files, tree, overlay, includes, defines, flags, matcher, targets, owned,
-                      by_addr, output, jobs, log):
+                      by_addr, output, jobs, log, contexts=None):
     """Test shared inline/template assertion bodies through every dependent native TU."""
-    ranking = header_families(tree, overlay, files)
+    custom = config.get("family_edits", {})
+    if any(not value.get("evidence") for value in custom.values()):
+        raise ValueError("Custom native family edits require recorded evidence")
+    ranking = header_families(tree, overlay, files, custom)
     integration.atomic_json(output / "family-ranking.json", ranking)
     selected = config["header_families"]
     families = ranking[:selected] if isinstance(selected, int) else [r for r in ranking if r["file"] in selected]
@@ -199,9 +214,18 @@ def discover_families(config, files, tree, overlay, includes, defines, flags, ma
     records, baseline, checks, proposals = [], {}, [], []
     cache_output = Path(config.get("family_cache", output))
     def compile_file(item):
-        rel, label, shadow, roots = item
+        rel, label, shadow, _ = item
+        roots, unit_defines = next((v for prefix, v in (contexts or {}).items() if rel.startswith(prefix)), (includes, defines))
+        if shadow != overlay:
+            original_roots, roots = roots, []
+            for inc in original_roots:
+                for base in (overlay, tree):
+                    if Path(inc).is_relative_to(base):
+                        roots.append(shadow / Path(inc).relative_to(base))
+                        break
+            roots += original_roots
         try:
-            result = compile_unit(texts[rel], rel, label, cache_output, tree, shadow, roots, defines, flags)
+            result = compile_unit(texts[rel], rel, label, cache_output, tree, shadow, roots, unit_defines, flags)
         except ValueError as error:
             result = {"file": rel, "mode": label, "ok": False, "error": str(error)}
         result["hits"] = matcher.scan(Path(result["object"]).read_bytes()) if result["ok"] else []
@@ -217,7 +241,14 @@ def discover_families(config, files, tree, overlay, includes, defines, flags, ma
         for number, family in enumerate(families, 1):
             header = family["file"]
             old = (overlay / header if (overlay / header).exists() else tree / header).read_text(errors="replace")
-            new = without_assertions(old)
+            new = old
+            if header in custom:
+                for anchor, replacement in custom[header]["edits"]:
+                    if not anchor or new.count(anchor) != 1:
+                        raise ValueError("Stale or ambiguous family anchor: " + header)
+                    new = new.replace(anchor, replacement, 1)
+            else:
+                new = without_assertions(old)
             shadow = cache_output / "families" / integration.digest(header)[:16] / "overlay"
             # Copy project headers so nested relative includes also see the changed header.
             for rel in project_headers(tree):
@@ -268,7 +299,9 @@ def discover_families(config, files, tree, overlay, includes, defines, flags, ma
             log("native family %s: %d unique candidates, %d losses, %d compile failures" %
                 (header, len(witnesses), len(losses), len(failed)))
             if safe and witnesses:
-                proposals.append({"file": header, "edits": [[old, new]], "mode": "shared-header-assertions",
+                proposals.append({"file": header, "edits": [[old, new]],
+                                  "mode": "shared-header-source" if header in custom else "shared-header-assertions",
+                                  "evidence": custom.get(header, {}).get("evidence", "Shared inline/template assertion profile"),
                                   "witnesses": list(witnesses.values()),
                                   "proof": {"object": proof[0], "objects": proof, "losses": [],
                                             "dependent_tus": family["dependent_tus"]}})
@@ -422,6 +455,26 @@ def wait_for_job(api, identifier, timeout, log):
     raise TimeoutError("Native verification still pending: " + identifier)
 
 
+def wait_for_campaign(prerequisite, timeout, log):
+    path = Path(prerequisite["summary"])
+    expected = prerequisite["run_id"]
+    started, last = time.monotonic(), None
+    while time.monotonic() - started < timeout:
+        saved = path.parent / "runs" / (expected + ".json")
+        current = saved if saved.exists() else path
+        if current.exists():
+            result = json.loads(current.read_text(encoding="utf-8"))
+            if result.get("run_id") == expected:
+                state = result.get("state")
+                if state != last:
+                    log("native prerequisite campaign %s: %s" % (expected, state))
+                    last = state
+                if state in {"accepted", "rejected", "split-complete", "no-proposals", "proposals", "staged"}:
+                    return result
+        time.sleep(5)
+    raise TimeoutError("Native prerequisite campaign did not finish: " + expected)
+
+
 def run(spec, name, server=None, jobs=4, limit=None, output=None, log=print):
     """Discover, minimize, recompile, claim, stage, and optionally submit real native fixes."""
     require_private_workspace()
@@ -445,13 +498,15 @@ def run(spec, name, server=None, jobs=4, limit=None, output=None, log=print):
     try:
         if config.get("submit") and not config.get("model"):
             raise ValueError("Submission requires actual model identity")
+        if config.get("after_campaign"):
+            wait_for_campaign(config["after_campaign"], config.get("verify_timeout", 4 * 3600), log)
         for identifier in config.get("settle_jobs", []):
             wait_for_job(api, identifier, config.get("verify_timeout", 4 * 3600), log)
         if config.get("after_job"):
             prior = wait_for_job(api, config["after_job"], config.get("verify_timeout", 4 * 3600), log)
             if prior["state"] != "accepted" or not prior["receipt"].get("accepted"):
                 raise ValueError("Prerequisite native batch was rejected; discovery not started")
-        if config.get("after_job") or config.get("settle_jobs"):
+        if config.get("after_campaign") or config.get("after_job") or config.get("settle_jobs"):
             integration.command(SimpleNamespace(action="sync", server=server, user=None, token=integration.native_token()))
         original = generator.read_bytes()
         base = api.call("/v1/integration/base")
@@ -490,11 +545,12 @@ def run(spec, name, server=None, jobs=4, limit=None, output=None, log=print):
                         for p in tree.glob(pattern) if not p.name.startswith("roc_")})
         if limit:
             files = files[:limit]
+        contexts = compilation_contexts(files, tree, overlay)
         rebuild.toolchain()  # Resolve discovery once before compile workers start.
         texts = {rel: (overlay / rel if (overlay / rel).exists() else tree / rel).read_text(errors="replace") for rel in files}
         if config.get("header_families"):
             records, proposals, ownership_checks = discover_families(config, files, tree, overlay, includes,
-                defines, flags, matcher, targets, owned, by_addr, output, jobs, log)
+                defines, flags, matcher, targets, owned, by_addr, output, jobs, log, contexts)
         else:
             trials = [(rel, *trial) for rel in files for trial in experiments(texts[rel], config.get("modes", MODES))]
             records, proofs, baseline_hits, baseline_ready = [], defaultdict(list), {}, set()
@@ -504,7 +560,8 @@ def run(spec, name, server=None, jobs=4, limit=None, output=None, log=print):
                 if error:
                     return {"file": rel, "mode": mode, "ok": False, "error": error, "seconds": 0}
                 try:
-                    return compile_unit(source, rel, mode, output, tree, overlay, includes, defines, flags)
+                    roots, unit_defines = next((v for prefix, v in contexts.items() if rel.startswith(prefix)), (includes, defines))
+                    return compile_unit(source, rel, mode, output, tree, overlay, roots, unit_defines, flags)
                 except ValueError as error:
                     return {"file": rel, "mode": mode, "ok": False, "error": str(error), "seconds": 0}
             with ThreadPoolExecutor(max_workers=jobs) as pool:
@@ -537,7 +594,8 @@ def run(spec, name, server=None, jobs=4, limit=None, output=None, log=print):
             proposals, final_checks = [], []
             for rel, choices in proofs.items():
                 for proposal in sorted(choices, key=lambda p: (-len(p["witnesses"]), len(p["edits"]))):
-                    final = compile_unit(proposal["source"], rel, "final-" + proposal["mode"], output, tree, overlay, includes, defines, flags)
+                    roots, unit_defines = next((v for prefix, v in contexts.items() if rel.startswith(prefix)), (includes, defines))
+                    final = compile_unit(proposal["source"], rel, "final-" + proposal["mode"], output, tree, overlay, roots, unit_defines, flags)
                     hits = matcher.scan(Path(final["object"]).read_bytes()) if final["ok"] else []
                     if final["ok"]:
                         proposal["witnesses"], deferred = ownership_witnesses(Path(final["object"]).read_bytes(), proposal["witnesses"])
@@ -612,7 +670,8 @@ def run(spec, name, server=None, jobs=4, limit=None, output=None, log=print):
                          "\n".join("Claim %s scheduling addresses: %s. Factory/RTTI tags may differ; exact native proof follows." %
                                    (unit, " ".join(units[unit]["addresses"][:3])) for unit in sorted(used)) + "\n\n" +
                          "\n".join("%s: %s %s; %s; object %s" % (h["claim_unit"], h["addr"], h["symbol"], p["mode"], p["proof"]["object"])
-                                   for p in selected for h in p["witnesses"]), encoding="utf-8")
+                                   for p in selected for h in p["witnesses"]) + "\n\n" +
+                         "\n".join(p.get("evidence", "") for p in selected), encoding="utf-8")
         batch = output / "batch.json"
         integration.atomic_json(batch, {"claims": [units[u]["id"] for u in sorted(used)]})
         (output / "generator-base.py").write_bytes(original)

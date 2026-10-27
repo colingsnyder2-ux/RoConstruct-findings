@@ -378,6 +378,18 @@
     "model": "Codex"
   },
   {
+    "addr": "005a0280",
+    "client": "2008-06",
+    "job": "981c606609864414b2c608ce100c68ef",
+    "model": "Claude Opus 5.5"
+  },
+  {
+    "addr": "005a04b0",
+    "client": "2008-06",
+    "job": "981c606609864414b2c608ce100c68ef",
+    "model": "Claude Opus 5.5"
+  },
+  {
     "addr": "005a1c20",
     "client": "2008-06",
     "job": "9167482492314a8b8a6e73ad3024c76e",
@@ -432,10 +444,22 @@
     "model": "Codex"
   },
   {
+    "addr": "005cf8d0",
+    "client": "2008-06",
+    "job": "981c606609864414b2c608ce100c68ef",
+    "model": "Claude Opus 5.5"
+  },
+  {
     "addr": "005d1340",
     "client": "2008-06",
     "job": "6c4c6e4f955944b8b0397c68491501e2",
     "model": "Codex"
+  },
+  {
+    "addr": "005d3490",
+    "client": "2008-06",
+    "job": "981c606609864414b2c608ce100c68ef",
+    "model": "Claude Opus 5.5"
   },
   {
     "addr": "005dcb50",
@@ -582,6 +606,18 @@
     "model": "Codex"
   },
   {
+    "addr": "005fe280",
+    "client": "2008-06",
+    "job": "981c606609864414b2c608ce100c68ef",
+    "model": "Claude Opus 5.5"
+  },
+  {
+    "addr": "005fe2f0",
+    "client": "2008-06",
+    "job": "981c606609864414b2c608ce100c68ef",
+    "model": "Claude Opus 5.5"
+  },
+  {
     "addr": "005ffc50",
     "client": "2008-06",
     "job": "9e9dfed56be04a56baf6aafd8cbbbb4d",
@@ -615,6 +651,12 @@
     "addr": "0060a230",
     "client": "2008-06",
     "job": "9167482492314a8b8a6e73ad3024c76e",
+    "model": "Claude Opus 5.5"
+  },
+  {
+    "addr": "0060bbb0",
+    "client": "2008-06",
+    "job": "981c606609864414b2c608ce100c68ef",
     "model": "Claude Opus 5.5"
   },
   {
@@ -690,15 +732,105 @@
     "model": "Codex"
   },
   {
+    "addr": "006159f0",
+    "client": "2008-06",
+    "job": "981c606609864414b2c608ce100c68ef",
+    "model": "Claude Opus 5.5"
+  },
+  {
     "addr": "00615cc0",
     "client": "2008-06",
     "job": "9e9dfed56be04a56baf6aafd8cbbbb4d",
     "model": "Codex"
   },
   {
+    "addr": "00616180",
+    "client": "2008-06",
+    "job": "981c606609864414b2c608ce100c68ef",
+    "model": "Claude Opus 5.5"
+  },
+  {
+    "addr": "006161a0",
+    "client": "2008-06",
+    "job": "981c606609864414b2c608ce100c68ef",
+    "model": "Claude Opus 5.5"
+  },
+  {
+    "addr": "006164a0",
+    "client": "2008-06",
+    "job": "981c606609864414b2c608ce100c68ef",
+    "model": "Claude Opus 5.5"
+  },
+  {
+    "addr": "00617150",
+    "client": "2008-06",
+    "job": "981c606609864414b2c608ce100c68ef",
+    "model": "Claude Opus 5.5"
+  },
+  {
+    "addr": "006171e0",
+    "client": "2008-06",
+    "job": "981c606609864414b2c608ce100c68ef",
+    "model": "Claude Opus 5.5"
+  },
+  {
+    "addr": "00617c10",
+    "client": "2008-06",
+    "job": "981c606609864414b2c608ce100c68ef",
+    "model": "Claude Opus 5.5"
+  },
+  {
+    "addr": "00617cb0",
+    "client": "2008-06",
+    "job": "981c606609864414b2c608ce100c68ef",
+    "model": "Claude Opus 5.5"
+  },
+  {
+    "addr": "00618160",
+    "client": "2008-06",
+    "job": "981c606609864414b2c608ce100c68ef",
+    "model": "Claude Opus 5.5"
+  },
+  {
+    "addr": "00642fc0",
+    "client": "2008-06",
+    "job": "981c606609864414b2c608ce100c68ef",
+    "model": "Claude Opus 5.5"
+  },
+  {
+    "addr": "00643090",
+    "client": "2008-06",
+    "job": "981c606609864414b2c608ce100c68ef",
+    "model": "Claude Opus 5.5"
+  },
+  {
+    "addr": "006430a0",
+    "client": "2008-06",
+    "job": "981c606609864414b2c608ce100c68ef",
+    "model": "Claude Opus 5.5"
+  },
+  {
+    "addr": "006430e0",
+    "client": "2008-06",
+    "job": "981c606609864414b2c608ce100c68ef",
+    "model": "Claude Opus 5.5"
+  },
+  {
     "addr": "00646af0",
     "client": "2008-06",
     "job": "e1a136efe7084475bb4503e80d0f4af4",
+    "model": "Claude Opus 5.5"
+  },
+  {
+    "addr": "00665e20",
+    "client": "2008-06",
+    "job": "981c606609864414b2c608ce100c68ef",
+    "model": "Claude Opus 5.5"
+  },
+  {
+    "addr": "0066a700",
+    "client": "2008-06",
+    "job": "981c606609864414b2c608ce100c68ef",
     "model": "Claude Opus 5.5"
   },
   {

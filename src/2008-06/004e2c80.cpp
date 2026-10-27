@@ -1,9 +1,8 @@
-// from server: 59% by colin
-// from server: 58% by colin
+// from server: 68% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_mutsearch_004e2c80_52e215dfee53fd4d.cpp
+// roc-lib: rbxgs-dll roc_codex_mesh_13eb7ca0d28216a9.cpp
 
 // Candidate translation unit (score above; library headers required).
 // Binary-derived level population. This is a codegen analogue, not an original declaration.
@@ -33,7 +32,7 @@ extern Array<Vector3> meshPositions;
 extern Array<Vector3> meshNormals;
 extern const Vector2 flatTextureOrigin;
 template<RBX::NormalId id>
-void recoveredMeshFace(const Vector3&,float,unsigned,float,LevelRef&,unsigned*);
+__declspec(noalias) void recoveredMeshFace(const Vector3&,float,unsigned,float,LevelRef&,unsigned*);
 extern void __stdcall cloneMeshQuad(LevelRef&,unsigned,unsigned,unsigned,unsigned,unsigned*);
 
 // Plain 004e2c80 sibling: same faces, flat UVs on bevel joins.

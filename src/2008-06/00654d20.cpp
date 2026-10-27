@@ -1,3 +1,4 @@
+// from server: 100% by coldek
 // from server: 77% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
@@ -38,7 +39,7 @@ public:shared_ptr():px(0),pn(){}
  operator unspecified_bool_type()const{return px==0?0:&shared_ptr::px;}
 };
 // The existing client instantiation at005018d0 is the genuine conversion boundary.
-template<class Target,class Source>Target lexical_cast(const Source&);
+template<class Target,class Source>__declspec(noalias) Target lexical_cast(const Source&);
 }
 namespace RBX {
 template<class T>class CopyOnWrite:public boost::noncopyable {boost::shared_ptr<T>object;
@@ -72,7 +73,7 @@ extern Reflection::TypedPropertyDescriptor<int>::GetSet*nativeIntValueGetSet;
 const Reflection::DescribedBase*observedDescribedBase(const Instance*p){return p?reinterpret_cast<const Reflection::DescribedBase*>(reinterpret_cast<const char*>(p)+0x14):0;}
 extern const type_info nativeInstanceType,nativeIntValueType;
 extern "C" void*__cdecl __RTDynamicCast(void*,long,void*,void*,int);
-namespace Network {class Players {public:boost::shared_ptr<const Instances>getPlayers();};}
+namespace Network {class Players {public:__declspec(noalias) boost::shared_ptr<const Instances>getPlayers();};}
 class BoardData {public:std::vector<std::vector<std::string> >data;std::vector<std::string>fields;
  void SetSize(int,int);
  void AddField(std::string,int);
@@ -101,8 +102,7 @@ void ScoreHud::BuildBoardData(BoardData&data){
    for(size_t j=0;j<stats->numChildren();++j){
     __RTDynamicCast(stats->getChild(j),0,(void*)&nativeInstanceType,(void*)&nativeIntValueType,0);
     int statValue=nativeIntValueGetSet->getValue(observedDescribedBase(stats->getChild(j)));
-    std::string value=boost::lexical_cast<std::string>(statValue);
-    data.data[i][j+1]=value;
+    data.data[i][j+1]=boost::lexical_cast<std::string>(statValue);
    }
   }else{
    data.SetSize((int)playerList->size(),1);

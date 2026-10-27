@@ -1,3 +1,4 @@
+// from server: 81% by coldek
 // from server: 78% by king_originala_sol_native
 // roc 2008-06 0066d710  unit: RBX::GroupDragTool  size: 723 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0066d710
@@ -290,7 +291,7 @@ struct Frame {Matrix3 rotation;Vector3 translation;Frame(const Frame&v):rotation
 };
 struct Face {Vector3 corner[4];const Vector3&operator[](int)const;};
 struct Primitive {Face getFaceInWorld(int);const Frame&getCoordinateFrame()const;};
-Vector3 __cdecl iRoundVector3(const Vector3&);
+__declspec(noalias) Vector3 __cdecl iRoundVector3(const Vector3&);
 struct PartInstance {void setCoordinateFrame(const Frame&);};
 struct WeakPart {char storage[8];boost::shared_ptr<PartInstance>lock()const;};
 struct DragSnap {

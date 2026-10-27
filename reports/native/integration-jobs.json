@@ -2019,11 +2019,13 @@
         ]
       ]
     },
-    "phase": "checking",
-    "receipt": {},
-    "state": "verifying",
+    "phase": "complete",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
     "unit": "RBX::Humanoid, RBX::Camera",
-    "updated": 1793113714.778976
+    "updated": 1793114115.5559638
   },
   {
     "created": 1793112861.433628,
@@ -2067,10 +2069,76 @@
         ]
       ]
     },
-    "phase": "queued",
-    "receipt": {},
-    "state": "queued",
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "6aab8bac89bd966f25026f704ee45c9397c5440d5b40f9635b6c78883b8b1afb",
+      "credits": 22,
+      "distinct_after": 9746,
+      "distinct_before": 9724,
+      "gains": [
+        "005a0280",
+        "005a04b0",
+        "005cf8d0",
+        "005d3490",
+        "005e4ee0",
+        "005e5bf0",
+        "005fe280",
+        "005fe2f0",
+        "0060bbb0",
+        "006159f0",
+        "00616180",
+        "006161a0",
+        "006164a0",
+        "00617150",
+        "006171e0",
+        "00617c10",
+        "00617cb0",
+        "00617e40",
+        "00618160",
+        "00642fc0",
+        "00643090",
+        "006430a0",
+        "006430e0",
+        "00665e20",
+        "0066a700"
+      ],
+      "input_hash": "ba7f4cf55d526907f578cea3a2a5c200f2ecabe952ada63c02b7d0fdde0a1414",
+      "losses": [
+        "007762d0"
+      ],
+      "new_distinct": [
+        "005a0280",
+        "005a04b0",
+        "005cf8d0",
+        "005d3490",
+        "005fe280",
+        "005fe2f0",
+        "0060bbb0",
+        "006159f0",
+        "00616180",
+        "006161a0",
+        "006164a0",
+        "00617150",
+        "006171e0",
+        "00617c10",
+        "00617cb0",
+        "00618160",
+        "00642fc0",
+        "00643090",
+        "006430a0",
+        "006430e0",
+        "00665e20",
+        "0066a700"
+      ],
+      "overlay_hash": "97addae056b36538416dc2d91c245e88ecd86ac5517c58488f6210e38205bfb0",
+      "owned_after": 3077,
+      "owned_before": 3053,
+      "rebased": false,
+      "submitted_revision": "6aab8bac89bd966f25026f704ee45c9397c5440d5b40f9635b6c78883b8b1afb"
+    },
+    "state": "accepted",
     "unit": "RBX::Workspace, RBX::GroupDragTool, RBX::JointsService",
-    "updated": 1793112861.433628
+    "updated": 1793115575.1110363
   }
 ]

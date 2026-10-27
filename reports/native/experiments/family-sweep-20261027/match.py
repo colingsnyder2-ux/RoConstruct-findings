@@ -6,6 +6,7 @@ import difflib
 import errno
 import contextlib
 import functools
+from bisect import bisect_left
 import hashlib
 import json
 import os
@@ -161,18 +162,15 @@ def coff_data_refs(obj, func_name):
     return out
 
 
-
-@functools.lru_cache(maxsize=None)
-def _base_relocs(client):
-    from roc.analyze import reloc_sites
-    entry = clients.load()[client]
-    return frozenset(reloc_sites(pefile.PE(str(clients.exe_path(client, entry)))))
+@functools.lru_cache(maxsize=4)
+def _relocation_index(relocs):
+    return tuple(sorted(relocs))
 
 
 def data_check(client, addr, code, refs):
     """Compare referenced data against the exe. Returns (matched [(va, len)], mismatch notes)."""
     base, image = _image(client)
-    exe_relocs = _base_relocs(client)
+    exe_relocs = _relocation_index(frozenset(_base_relocs(client)))
     ok, bad = [], []
     for off, data, inner in refs:
         if off + 4 > len(code):
@@ -182,12 +180,27 @@ def data_check(client, addr, code, refs):
         if not 0 <= rva < len(image) or not data:
             continue
         exe = bytes(image[rva:rva + len(data)])
-        mask = set(inner) | {r - va for r in exe_relocs if va <= r < va + len(data)}
+        lo, hi = bisect_left(exe_relocs, va), bisect_left(exe_relocs, va + len(data))
+        mask = set(inner) | {r - va for r in exe_relocs[lo:hi]}
         if masked(exe, mask) == masked(data, mask):
             ok.append((va, len(data)))
         else:
             bad.append("data at %08x differs: exe %r, yours %r" % (va, exe[:40], data[:40]))
     return ok, bad
+
+
+
+
+
+
+
+@functools.lru_cache(maxsize=None)
+def _base_relocs(client):
+    from roc.analyze import reloc_sites
+    entry = clients.load()[client]
+    return frozenset(reloc_sites(pefile.PE(str(clients.exe_path(client, entry)))))
+
+
 
 
 def masked(code, relocs):

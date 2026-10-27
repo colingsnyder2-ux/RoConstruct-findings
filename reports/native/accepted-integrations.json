@@ -665,6 +665,48 @@
         ]
       },
       "timestamp": 1793112377.8845727
+    },
+    {
+      "job": "981c606609864414b2c608ce100c68ef",
+      "patches": {
+        "App/include/v8datamodel/MouseCommand.h": [
+          [
+            "\t\tWorkspace* workspace;\n\t\tstd::auto_ptr<XmlState> undoState;\n",
+            "\t\tWorkspace* workspace;\n"
+          ]
+        ],
+        "App/include/v8datamodel/SpawnLocation.h": [
+          [
+            "\t\tbool allowTeamChangeOnTouch;\n",
+            "\t\tbool allowTeamChangeOnTouch;\n\t\tint forcefieldDuration;\n"
+          ]
+        ],
+        "App/include/v8world/MotorJoint.h": [
+          [
+            "\t\tint polarity;\n",
+            ""
+          ]
+        ],
+        "App/v8datamodel/MouseCommand.cpp": [
+          [
+            "\t\tRBXASSERT(undoState.get() == NULL);\n",
+            ""
+          ]
+        ],
+        "App/v8datamodel/SpawnLocation.cpp": [
+          [
+            "SpawnLocation::SpawnLocation()\n\t\t:",
+            "SpawnLocation::SpawnLocation()\n\t\t:\n\t\t  forcefieldDuration(10),"
+          ]
+        ],
+        "App/v8world/MotorJoint.cpp": [
+          [
+            "#include \"v8world/MotorJoint.h\"\n#include \"v8world/World.h\"\n#include \"v8world/Primitive.h\"\n#include \"v8world/Assembly.h\"\n#include \"util/Math.h\"\n\nnamespace RBX\n{\n\t// TODO: check which of these belong in the header file\n\n\tMotorJoint::MotorJoint()\n\t\t: currentAngle(0.0f),\n\t\t  link(new RevoluteLink()),\n\t\t  maxVelocity(0.0f),\n\t\t  desiredAngle(0.0f),\n\t\t  polarity(1.0f)\n\t{\n\t}\n\n\tMotorJoint::~MotorJoint()\n\t{\n\t\tdelete link;\n\t}\n\n\tG3D::CoordinateFrame MotorJoint::getMeInOther(Primitive* me)\n\t{\n\t\tG3D::CoordinateFrame rotatedCoord0 = G3D::CoordinateFrame(\n\t\t\tMath::rotateAboutZ(jointCoord0.rotation, currentAngle),\n\t\t\tjointCoord0.translation);\n\n\t\tG3D::CoordinateFrame p1InP0 = rotatedCoord0 * jointCoord1.inverse();\n\t\tif (me == getPrimitive(1))\n\t\t{\n\t\t\treturn p1InP0;\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(me == getPrimitive(0));\n\t\t\treturn p1InP0.inverse();\n\t\t}\n\t}\n\n\tsize_t MotorJoint::hashCode() const\n\t{\n\t\tconst int magic = 1640531527;\n\t\tsize_t h;\n\n\t\th = (Math::hash(jointCoord0.translation) - magic);\n\t\th = (Math::hash(jointCoord1.translation) - magic + (h >> 2) + (h << 6)) ^ h;\n\t\treturn h;\n\t}\n\n\tvoid MotorJoint::setCurrentAngle(float value)\n\t{\n\t\tif (currentAngle != value)\n\t\t{\n\t\t\tcurrentAngle = value;\n\t\t\tWorld* world = getWorld();\n\t\t\tif (world)\n\t\t\t\tworld->onMotorAngleChanged(this);\n\t\t\tsetJointAngle(value);\n\t\t}\n\t}\n\n\tvoid MotorJoint::setJointAngle(float value)\n\t{\n\t\tRBXASSERT(link);\n\t\tif (polarity == -1)\n\t\t{\n\t\t\tRBXASSERT(0);\n\n\t\t\tPrimitive* p0 = getPrimitive(0);\n\n\t\t\tG3D::CoordinateFrame oldParentCoord = p0->getCoordinateFrame();\n\t\t\tlink->setJointAngle(-value);\n\t\t\tAssembly* assembly = getPrimitive(1)->getAssembly();\n\t\t\tif (!assembly->getAnchored())\n\t\t\t{\n\t\t\t\tPrimitive* mainPrim = assembly->getMainPrimitive();\n\t\t\t\tG3D::CoordinateFrame newParentCoord = p0->getCoordinateFrame();\n\t\t\t\tG3D::CoordinateFrame parentInRoot = mainPrim->getCoordinateFrame().toObjectSpace(newParentCoord);\n\t\t\t\tG3D::CoordinateFrame newRoot = oldParentCoord * parentInRoot.inverse();\n\t\t\t\tmainPrim->getBody()->setCoordinateFrame(newRoot);\n\t\t\t}\n\t\t}\n\t\telse\n\t\t{\n\t\t\tlink->setJointAngle(value);\n\t\t}\n\t}\n\n\tbool MotorJoint::isAligned()\n\t{\n\t\tG3D::CoordinateFrame baseWorld = getPrimitive(0)->getCoordinateFrame() * jointCoord0;\n\t\tG3D::CoordinateFrame otherBaseWorld = getPrimitive(1)->getCoordinateFrame() * jointCoord1;\n\n\t\tif (Math::fuzzyEq(baseWorld.translation, otherBaseWorld.translation, 0.00001f))\n\t\t{\n\t\t\tif (Math::fuzzyEq(baseWorld.rotation.getColumn(2), otherBaseWorld.rotation.getColumn(2), 0.00001f))\n\t\t\t\treturn true;\n\t\t}\n\n\t\treturn false;\n\t}\n\n\tvoid MotorJoint::stepUi(int uiStepId)\n\t{\n\t\tif (fabs(desiredAngle - currentAngle) < fabs(maxVelocity))\n\t\t{\n\t\t\tsetCurrentAngle(desiredAngle);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tif (fabs(maxVelocity) > 0.0f)\n\t\t\t\tsetCurrentAngle(currentAngle + fabs(maxVelocity));\n\t\t\telse\n\t\t\t\tsetCurrentAngle(currentAngle - fabs(maxVelocity));\n\t\t}\n\t}\n}\n",
+            "#include \"v8world/MotorJoint.h\"\n#include \"v8world/World.h\"\n#include \"v8world/Primitive.h\"\n#include \"v8world/Assembly.h\"\n#include \"util/Math.h\"\n\nnamespace RBX\n{\n\t// TODO: check which of these belong in the header file\n\n\tMotorJoint::MotorJoint()\n\t\t: currentAngle(0.0f),\n\t\t  link(new RevoluteLink()),\n\t\t  maxVelocity(0.0f),\n\t\t  desiredAngle(0.0f)\n\t{\n\t}\n\n\tMotorJoint::~MotorJoint()\n\t{\n\t\tdelete link;\n\t}\n\n\tG3D::CoordinateFrame MotorJoint::getMeInOther(Primitive* me)\n\t{\n\t\tG3D::CoordinateFrame rotatedCoord0 = G3D::CoordinateFrame(\n\t\t\tMath::rotateAboutZ(jointCoord0.rotation, currentAngle),\n\t\t\tjointCoord0.translation);\n\n\t\tG3D::CoordinateFrame p1InP0 = rotatedCoord0 * jointCoord1.inverse();\n\t\tif (me == getPrimitive(1))\n\t\t{\n\t\t\treturn p1InP0;\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(me == getPrimitive(0));\n\t\t\treturn p1InP0.inverse();\n\t\t}\n\t}\n\n\tsize_t MotorJoint::hashCode() const\n\t{\n\t\tconst int magic = 1640531527;\n\t\tsize_t h;\n\n\t\th = (Math::hash(jointCoord0.translation) - magic);\n\t\th = (Math::hash(jointCoord1.translation) - magic + (h >> 2) + (h << 6)) ^ h;\n\t\treturn h;\n\t}\n\n\tvoid MotorJoint::setCurrentAngle(float value)\n\t{\n\t\tif (currentAngle != value)\n\t\t{\n\t\t\tcurrentAngle = value;\n\t\t\tWorld* world = getWorld();\n\t\t\tif (world)\n\t\t\t\tworld->onMotorAngleChanged(this);\n\t\t\tsetJointAngle(value);\n\t\t}\n\t}\n\n\tvoid MotorJoint::setJointAngle(float value)\n\t{\n\t\tRBXASSERT(link);\n\t\tif ((1.0f) == -1)\n\t\t{\n\t\t\tRBXASSERT(0);\n\n\t\t\tPrimitive* p0 = getPrimitive(0);\n\n\t\t\tG3D::CoordinateFrame oldParentCoord = p0->getCoordinateFrame();\n\t\t\tlink->setJointAngle(-value);\n\t\t\tAssembly* assembly = getPrimitive(1)->getAssembly();\n\t\t\tif (!assembly->getAnchored())\n\t\t\t{\n\t\t\t\tPrimitive* mainPrim = assembly->getMainPrimitive();\n\t\t\t\tG3D::CoordinateFrame newParentCoord = p0->getCoordinateFrame();\n\t\t\t\tG3D::CoordinateFrame parentInRoot = mainPrim->getCoordinateFrame().toObjectSpace(newParentCoord);\n\t\t\t\tG3D::CoordinateFrame newRoot = oldParentCoord * parentInRoot.inverse();\n\t\t\t\tmainPrim->getBody()->setCoordinateFrame(newRoot);\n\t\t\t}\n\t\t}\n\t\telse\n\t\t{\n\t\t\tlink->setJointAngle(value);\n\t\t}\n\t}\n\n\tbool MotorJoint::isAligned()\n\t{\n\t\tG3D::CoordinateFrame baseWorld = getPrimitive(0)->getCoordinateFrame() * jointCoord0;\n\t\tG3D::CoordinateFrame otherBaseWorld = getPrimitive(1)->getCoordinateFrame() * jointCoord1;\n\n\t\tif (Math::fuzzyEq(baseWorld.translation, otherBaseWorld.translation, 0.00001f))\n\t\t{\n\t\t\tif (Math::fuzzyEq(baseWorld.rotation.getColumn(2), otherBaseWorld.rotation.getColumn(2), 0.00001f))\n\t\t\t\treturn true;\n\t\t}\n\n\t\treturn false;\n\t}\n\n\tvoid MotorJoint::stepUi(int uiStepId)\n\t{\n\t\tif (fabs(desiredAngle - currentAngle) < fabs(maxVelocity))\n\t\t{\n\t\t\tsetCurrentAngle(desiredAngle);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tif (fabs(maxVelocity) > 0.0f)\n\t\t\t\tsetCurrentAngle(currentAngle + fabs(maxVelocity));\n\t\t\telse\n\t\t\t\tsetCurrentAngle(currentAngle - fabs(maxVelocity));\n\t\t}\n\t}\n}\n"
+          ]
+        ]
+      },
+      "timestamp": 1793115574.7781155
     }
   ],
   "initial_patches": {}
