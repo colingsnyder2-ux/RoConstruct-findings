@@ -1,5 +1,6 @@
 """Serialized authoritative native verifier. Uploaded data never becomes Python."""
 import concurrent.futures
+import faulthandler
 import functools
 import hashlib
 import json
@@ -12,6 +13,8 @@ import time
 from pathlib import Path
 
 from roc.integration import CLIENT, MODULE, ROOT, atomic_json, digest, merge_patches
+
+WATCHDOG_SECONDS = 20 * 60  # cold baselines take minutes; stacks only after this long without a verdict
 
 
 @functools.lru_cache(maxsize=1)
@@ -445,10 +448,16 @@ def loop(promotions, log=print):
             promotions.wake.wait(30)
             promotions.wake.clear()
             continue
+        # A verification that stops moving leaves every thread's stack here (it once hung silently for 24 min).
+        stacks = open(promotions.directory / "verifier-stacks.log", "a")
+        faulthandler.dump_traceback_later(WATCHDOG_SECONDS, repeat=True, file=stacks)
         try:
             receipt = verify(promotions, job)
         except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
             receipt = {"accepted": False, "reason": str(error)[:1000]}
+        finally:
+            faulthandler.cancel_dump_traceback_later()
+            stacks.close()
         try:
             finished = promotions.finish(job, receipt, lambda edits: publish(promotions, edits))
         except (OSError, ValueError, subprocess.SubprocessError) as error:

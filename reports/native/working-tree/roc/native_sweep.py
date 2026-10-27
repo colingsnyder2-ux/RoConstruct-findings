@@ -16,7 +16,10 @@ from roc import fingerprint, integration, libs, match, rebuild, worker
 
 ROOT = Path(__file__).resolve().parent.parent
 FLAGS = "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
-MODES = ("assertions", "fp-fast", "assertions-fp-fast")
+MODES = tuple(os.environ.get("ROC_NATIVE_MODES", "assertions,fp-fast,assertions-fp-fast").split(","))
+# TU-wide pragma families, prepended like fp-fast (each mode name lists its parts, joined by '-').
+PRAGMAS = {"fp": "#pragma float_control(precise, off)\n", "osize": '#pragma optimize("s", on)\n',
+           "noautoinline": "#pragma auto_inline(off)\n"}
 OUTPUT_MARKER = 'out.write_text(json.dumps(patches, indent=1) + "\\n", encoding="utf-8")'
 
 
@@ -96,12 +99,15 @@ def variant(text, mode, selected=None):
         if text.count(old) != 1:
             raise ValueError("Ambiguous method anchor")
         text = text.replace(old, new, 1)
-    if "fp-fast" in mode and not re.match(r"\s*#pragma float_control\(precise, off\)", text):
+    parts = mode.split("-")
+    pragmas = "".join(PRAGMAS[p] for p in ("fp", "osize", "noautoinline")
+                      if p in parts and not re.match(r"\s*" + re.escape(PRAGMAS[p].strip()), text))
+    if pragmas:
         prefix = re.match(r"(?:\s*\n)*[^\n]+\n", text)
         if prefix is None or text.count(prefix[0]) != 1:
             raise ValueError("Ambiguous TU prelude")
         old = prefix[0]
-        new = "#pragma float_control(precise, off)\n" + old
+        new = pragmas + old
         text = text.replace(old, new, 1)
         edits.insert(0, [old, new])
     return text, edits
@@ -190,6 +196,20 @@ def compile_unit(source, rel, label, output, tree, overlay, includes, defines, f
             "object": str(obj), "source_sha256": hashlib.sha256(source.encode()).hexdigest(),
             "object_sha256": hashlib.sha256(obj.read_bytes()).hexdigest() if ok else None,
             "error": message if not ok else None}
+
+
+def foreign_claims(user, identity):
+    """Classes with a live claim (claimed/submitted/parked) by any other worker, from the host server DB."""
+    import sqlite3
+    path = Path(os.environ.get("ROC_NATIVE_EVIDENCE_ROOT", ROOT)) / "work/server.db"
+    if not path.exists():
+        return set()  # contributor PC without the server DB: the server's claim checks still apply
+    db = sqlite3.connect("file:%s?mode=ro" % path.as_posix(), uri=True, timeout=30)
+    try:
+        return {unit for unit, worker in db.execute("SELECT unit,worker FROM integration_claims WHERE expires>?",
+                                                    (time.time(),)) if not worker.endswith(identity)}
+    finally:
+        db.close()
 
 
 def stage_generator(generator, original, additions):
@@ -358,12 +378,22 @@ def run(spec, name, server=None, jobs=4, limit=None, output=None, log=print):
                     if claim["base_revision"] != base["revision"]:
                         raise ValueError("Claim baseline changed; rerun discovery")
                     units[unit] = claim
-            if needed <= units.keys() and all(h["addr"] in units[h["claim_unit"]]["addresses"]
-                    or h["claim_unit"] != by_addr[h["addr"]]["unit"] for h in proposal["witnesses"]):
-                selected.append(proposal)
-        used = {h["claim_unit"] for p in selected for h in p["witnesses"]}
+            # Gains are credited from the linked rebuild, not per claim: take a proposal when it holds at least one
+            # claim and no other worker holds a live claim on any class it touches (catalog-less classes and
+            # sub-24-byte targets cannot be claimed at all).
+            if not needed & foreign_claims(settings["user"], identity):
+                selected.append(proposal)  # rides on any claim this batch holds; at least one is required below
+        if selected and not units:
+            result = api.call("/v1/integration/claim", {"user": settings["user"], "worker": settings["user"] + "@native-sweep:" + identity,
+                                                      "count": 1})
+            for claim in result["claims"]:
+                claimed.append(claim)
+                units[claim["unit"]] = claim
+        used = {h["claim_unit"] for p in selected for h in p["witnesses"]} & units.keys()
+        if selected and not used and units:
+            used = {sorted(units)[0]}  # carrier claim for catalog-less classes
         additions = {p["file"]: p["edits"] for p in selected}
-        if not additions:
+        if not additions or not used:
             return finish(summary)
         for unit in used:
             claim = units[unit]

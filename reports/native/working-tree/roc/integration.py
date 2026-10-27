@@ -17,6 +17,7 @@ CLIENT = "2008-06"
 MODULE = "rbxgs-app"
 LEASE_SECONDS = 2 * 3600
 MAX_CLAIMS = 1024
+MAX_MERGE = 8  # queued jobs verified together in one linked rebuild
 MAX_TARGETS = 100_000
 MAX_OVERLAY_PATHS = 1024
 MAX_EDITS_PER_PATH = 4096
@@ -393,15 +394,37 @@ class Promotions:
                 "leaderboard": [{"user": u, "model": m, "native_credits": n} for u, m, n in leaders]}
 
     def take(self):
+        """Next queued job. Later queued jobs from the same user/model/baseline that edit disjoint files ride along
+        in one verification (one linked rebuild for all); a merged batch that fails is re-queued as solo jobs."""
+        fields = ("id", "user", "model", "unit", "base", "patches", "evidence", "phase")
         with self.store.lock, self.store.db:
             self.store.db.execute("BEGIN IMMEDIATE")
-            row = self.store.db.execute("SELECT id,user,model,unit,base,patches,evidence FROM integration_jobs "
-                                       "WHERE state='queued' ORDER BY created LIMIT 1").fetchone()
-            if not row:
+            rows = [dict(zip(fields, r)) for r in self.store.db.execute(
+                "SELECT id,user,model,unit,base,patches,evidence,phase FROM integration_jobs "
+                "WHERE state='queued' ORDER BY created")]
+            if not rows:
                 return None
-            self.store.db.execute("UPDATE integration_jobs SET state='verifying',phase='snapshot',updated=? WHERE id=?",
-                                  (time.time(), row[0]))
-        return dict(zip(("id", "user", "model", "unit", "base", "patches", "evidence"), row))
+            lead, members = rows[0], [rows[0]]
+            if lead["phase"] != "solo":
+                files = set(json.loads(lead["patches"]))
+                for row in rows[1:]:
+                    patches = set(json.loads(row["patches"]))
+                    if len(members) < MAX_MERGE and row["phase"] != "solo" and not files & patches and \
+                            (row["user"], row["model"], row["base"]) == (lead["user"], lead["model"], lead["base"]):
+                        members.append(row)
+                        files |= patches
+            for row in members:
+                self.store.db.execute("UPDATE integration_jobs SET state='verifying',phase=?,updated=? WHERE id=?",
+                                      ("snapshot" if row is lead else "merged into " + lead["id"][:8], time.time(), row["id"]))
+        job = {k: lead[k] for k in fields[:-1]}
+        if len(members) > 1:
+            merged = {}
+            for row in members:
+                merged.update(json.loads(row["patches"]))
+            job.update(patches=json.dumps(merged), members=[row["id"] for row in members],
+                       unit=", ".join(row["unit"] for row in members),
+                       evidence="\n\n".join(row["evidence"] for row in members))
+        return job
 
     def progress(self, identifier, phase):
         with self.store.lock, self.store.db:
@@ -416,6 +439,13 @@ class Promotions:
             if not current or current[0] != "verifying":
                 return False
             accepted = receipt.get("accepted") is True
+            members = job.get("members", [job["id"]])
+            if len(members) > 1 and not accepted:
+                # One member may have broken the shared build: verify each on its own instead of rejecting all.
+                for identifier in members:
+                    self.store.db.execute("UPDATE integration_jobs SET state='queued',phase='solo',updated=? "
+                                          "WHERE id=? AND state='verifying'", (time.time(), identifier))
+                return False
             if accepted:
                 for addr in receipt["new_distinct"]:
                     self.store.db.execute("INSERT OR IGNORE INTO integration_credit VALUES(?,?,?,?,?,?)",
@@ -432,12 +462,15 @@ class Promotions:
                 receipt["credits"] = self.store.db.execute("SELECT COUNT(*) FROM integration_credit WHERE job=?",
                                                            (job["id"],)).fetchone()[0]
             receipt.update({"job": job["id"], "user": job["user"], "model": job["model"], "unit": job["unit"]})
-            self.store.db.execute("UPDATE integration_jobs SET state=?,phase=?,receipt=?,updated=? WHERE id=?",
-                ("accepted" if accepted else "rejected", "complete", json.dumps(receipt), time.time(), job["id"]))
-            claims = self.store.db.execute("SELECT claim_id FROM integration_jobs WHERE id=?", (job["id"],)).fetchone()[0]
-            for identifier in json.loads(claims):
-                self.store.db.execute("UPDATE integration_claims SET state=?,expires=? WHERE id=?",
-                    ("released" if accepted else "claimed", 0 if accepted else time.time() + LEASE_SECONDS, identifier))
+            if len(members) > 1:
+                receipt["merged_jobs"] = members
+            for member in members:
+                self.store.db.execute("UPDATE integration_jobs SET state=?,phase=?,receipt=?,updated=? WHERE id=?",
+                    ("accepted" if accepted else "rejected", "complete", json.dumps(receipt), time.time(), member))
+                claims = self.store.db.execute("SELECT claim_id FROM integration_jobs WHERE id=?", (member,)).fetchone()[0]
+                for identifier in json.loads(claims):
+                    self.store.db.execute("UPDATE integration_claims SET state=?,expires=? WHERE id=?",
+                        ("released" if accepted else "claimed", 0 if accepted else time.time() + LEASE_SECONDS, identifier))
         self.catalog_key = None
         return True
 

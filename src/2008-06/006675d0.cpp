@@ -1,8 +1,7 @@
-// from server: 97% by colin
-// roc-lang: cpp
+// from server: 100% by coldek
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_trial_fb34bc115e3110c2.cpp
+// roc-lib: rbxgs-dll roc_codex_june_7ce3ac7e38f6702c.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "util/Velocity.h"
@@ -30,6 +29,7 @@ Vector3 __cdecl lowerAcceleration();Vector3 __cdecl upperAcceleration();
 extern float maxYawAcceleration;
 float clampValue(float v,float lo,float hi){return v<=lo?lo:(v>=hi?hi:v);}
 struct Freefall {char prefix[0xa8];float desiredYaw;char reserved[8];Vector3 desiredVelocity;void baseComputeForce(float);Humanoid* getHumanoid()const;void onComputeForce(float);};
+__forceinline Vector3 clampAcceleration(const Vector3& low,const Vector3& high,const Vector3& value){return value.clamp(low,high);}
 void Freefall::onComputeForce(float dt){
  baseComputeForce(dt);
  Body* body=getHumanoid()->getTorsoBody();
@@ -38,10 +38,11 @@ void Freefall::onComputeForce(float dt){
   requested=(desiredYaw-body->getVelocity().rotational.y)*inertia.y*7500.0f;}
   float torque=requested-body->getBranchTorque().y;
   float limit;{Vector3 limitInertia=toDiagonal(body->getBranchIBody());
-  limit=limitInertia.y*maxYawAcceleration;}
-  body->accumulateTorque(Vector3(0,clampValue(torque,-limit,limit),0));
+  limit=limitInertia.y*120000.0f;}
+  torque=clampValue(torque,-limit,limit);
+  body->accumulateTorque(Vector3(0,torque,0));
   Vector3 accel=(desiredVelocity-body->getBranchVelocity().linear)*1250.0f;
-  Vector3 bounded=accel.clamp(lowerAcceleration(),upperAcceleration());
+  Vector3 bounded=clampAcceleration(lowerAcceleration(),upperAcceleration(),accel);
   {Vector3 force=bounded*body->getBranchMass();
   force.y=0;
   body->accumulateForceAtBranchCofm(force);}

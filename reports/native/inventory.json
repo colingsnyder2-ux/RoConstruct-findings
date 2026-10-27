@@ -3,8 +3,8 @@
   "clients": [
     {
       "client": "2008-06",
-      "exact_sources": 22104,
-      "stored_sources": 22289
+      "exact_sources": 22108,
+      "stored_sources": 22291
     }
   ],
   "native_credits": 34,
@@ -72,7 +72,7 @@
     "working-tree/rebuild/2008-06/patches/zlib-deflate-copyright.json": "790cd88217e1bc23ad931614ab4f9f3a03a25b9b1953069164dc0fa5dc58620b",
     "working-tree/rebuild/2008-06/patches/zlib-winapi-deflate-copyright.json": "790cd88217e1bc23ad931614ab4f9f3a03a25b9b1953069164dc0fa5dc58620b",
     "working-tree/rebuild/2008-06/size_check.py": "541888859fbf375d7225a96f85434bbe3b4ab5c91f74baf0671c140ccaaf425e",
-    "working-tree/rebuild/2008-06/swap_build.py": "8ab206f025eb23c315a45f645d3bd95b0d28263c6829813a44da9aa9154ab188",
+    "working-tree/rebuild/2008-06/swap_build.py": "56c8a213fe0536331fe1807c09b4445c127f3d91f4174aac4b17c186fc8628ec",
     "working-tree/rebuild/2008-06/swap_plan.py": "b3190067b25c8e48c490ec1b7a51282396088f8f623d4ee36d4619755c1fafb3",
     "working-tree/rebuild/2008-06/tests/boost_core.cpp": "ac6e96cd16b31dbfc9654ad1b322ef7a4bceb4614e65074e102f704760604d21",
     "working-tree/rebuild/2008-06/tests/crash_entry.cpp": "cd85bfe7dacb6ca95c53679669827ade9f36bae99d00e95dfe691c471b973415",
@@ -99,9 +99,9 @@
     "working-tree/rebuild/2008-06/tests/xtp_colors.cpp": "bb4d67867daa9e6f8f29fd9178a9567021af40973faa93a2bcfbe46a419c1a9b",
     "working-tree/rebuild/2008-06/tests/zlib_roundtrip.cpp": "2e13794b8941477920550714a8eadae5eb7bb4fb2745629b2877be625a87040d",
     "working-tree/roc/findings_publish.py": "f6243a1d3ff278d4c4122f1353ac8ffd69feac1697ddd3715e1b856d30ed3854",
-    "working-tree/roc/integration.py": "a97537298e2454f9a14af5939accbf5b438996db48754ad478c678a4214bf1cc",
-    "working-tree/roc/integration_verify.py": "8e05e7c62ed36764f9ea538e3540553be9a6c886059819549af6f0cff3f8572c",
-    "working-tree/roc/native_sweep.py": "17966cc9825366cca56c861f19b4aad538d3667e4e3a41f3cac3fd85b4eacd66",
+    "working-tree/roc/integration.py": "39d6abb211b42b912138ca1662124059ef67187717c02f19186cc6854de6b04a",
+    "working-tree/roc/integration_verify.py": "d2b7a70a229aaafdf95fe992617ca7469e0a3caa7fd11b1d4024153a4abea3d4",
+    "working-tree/roc/native_sweep.py": "952e91c6294134b0d7395d10d01e47fc1d6d363b1cdcf38c9f3b9667ff8be83e",
     "working-tree/roc/rebuild.py": "d339982b1e050b349593a43ff4741f4f3b31577564617d7bc1f84bc5d14153a9"
   }
 }
