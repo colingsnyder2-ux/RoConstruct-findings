@@ -1,7 +1,7 @@
-// from server: 99% by coldek
+// from server: 100% by coldek
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_codex_june_31d44ee93c8a31dd.cpp
+// roc-lib: rbxgs-dll roc_codex_june_08ee6b46d980a660.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define _CPPUNWIND 1
@@ -30,6 +30,7 @@ struct HumanoidState {char opaque[0x2c];G3D::Vector3 floorTouchInWorld;char opaq
 struct Balancing:HumanoidState {float kP,kD;void onComputeForce(float);};
 struct RunningBase:Balancing {G3D::Vector3 floorVelocity;float floorRotationalVelocity;G3D::Vector3 desiredVelocity;float desiredYRotationalVelocity,desiredAltitude;void onComputeForce(float);};
 __forceinline G3D::Vector3 clampMove(const G3D::Vector3& low,const G3D::Vector3& high,const G3D::Vector3& value){return value.clamp(low,high);}
+__forceinline void accumulateAtSimulation(SimBody* body,const G3D::Vector3& force,const G3D::Vector3& position){if(body)body->accumulateForce(force,position);}
 void RunningBase::onComputeForce(float dt){
  Balancing::onComputeForce(dt);
  Body*torso=getHumanoid()->getTorsoBody();if(!torso)return;
@@ -39,7 +40,8 @@ void RunningBase::onComputeForce(float dt){
  float turnTorque=((walkRotation*4.0f+desiredYRotationalVelocity)+floorRotationalVelocity-vel.rotational.y)*root->getBranchIBodyV3().y*7500.0f;
  turnTorque-=root->getBranchTorque().y;
  float maxTorque=root->getBranchIBodyV3().y*160000.0f;
- root->accumulateTorque(G3D::Vector3(0,G3D::clamp(turnTorque,-maxTorque,maxTorque),0));
+ turnTorque=G3D::clamp(turnTorque,-maxTorque,maxTorque);
+ root->accumulateTorque(G3D::Vector3(0,turnTorque,0));
  Primitive*floor=getFloorPrimitive();
  float moveMass;
  if(!floor)moveMass=root->getBranchMass();
@@ -54,7 +56,8 @@ void RunningBase::onComputeForce(float dt){
     float upwardForce=std::min(altitudeAcceleration-currentAcceleration,maxMoveAcceleration().y)*moveMass;
     root->accumulateForceAtBranchCofm(G3D::Vector3(0,upwardForce,0));
     Body* floorBody=floor->getBody();
-    floorBody->accumulateForce(G3D::Vector3(0,-upwardForce,0),floorTouchInWorld);
+    SimBody* simulation=floorBody->root->simBody;
+    accumulateAtSimulation(simulation,G3D::Vector3(0,-upwardForce,0),floorTouchInWorld);
    }
   }
  }
@@ -71,7 +74,7 @@ void RunningBase::onComputeForce(float dt){
  G3D::Vector3 force=limitedAcceleration*moveMass;
  if(floor){float friction=floor->getFriction();if(friction<0.3f){float scale=friction*friction;force.x*=scale;force.z*=scale;}}
  root->accumulateForceAtBranchCofm(force);
- if(floor){Body* floorBody=floor->getBody();floorBody->accumulateForce(-force,floorTouchInWorld);}
+ if(floor){Body* floorBody=floor->getBody();SimBody* simulation=floorBody->root->simBody;accumulateAtSimulation(simulation,-force,floorTouchInWorld);}
  }
 }
 }
