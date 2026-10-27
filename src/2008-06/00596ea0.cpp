@@ -1,8 +1,8 @@
-// from server: 88% by coldek
+// from server: 100% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs roc_codex_background_9a0d23f609525088.cpp
+// roc-lib: rbxgs-dll roc_unit_a7ba09e28ae2b551.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "util/boost.hpp"
@@ -101,7 +101,7 @@ namespace RBX
 		catch (std::exception& ex)
 		{
 			StandardOut::singleton()->print(MESSAGE_ERROR, "Crashed via C++ exception in thread_function:", ex.what());
-			RBXASSERT(false);
+			
 		}
 	}
 

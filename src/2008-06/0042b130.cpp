@@ -1,4 +1,4 @@
-// from server: 82% by coldek
+// from server: 100% by king_originala
 // roc 2008-06 0042b130  unit: EventHandler  size: 170 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0042b130
 //
@@ -60,6 +60,22 @@
 // 0042b1d6  5d                   pop ebp
 // 0042b1d7  c22400               ret 0x24
 
+#include <string>
+#include <exception>
+struct StandardOut {
+    void print(int, const std::exception&);
+};
+
+struct OutHandle {
+    StandardOut *pointer;
+    void *count;
+    ~OutHandle();
+    StandardOut *operator->() const { return pointer; }
+};
+
+OutHandle __cdecl singleton();
+
+
 // from server: 100% by king_originala
 // roc 2008-06 0042b130  unit: EventHandler  size: 97 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0042b130
@@ -112,10 +128,6 @@ struct Result {
     short value;
 };
 
-struct Error {
-    unsigned long words[3];
-};
-
 int __stdcall invoke(EventHandler* object, unsigned long arg2,
                      void* arg3, unsigned long arg4,
                      unsigned long arg5, void* arg6,
@@ -126,7 +138,8 @@ int __stdcall invoke(EventHandler* object, unsigned long arg2,
         result->value = object->state.query() ? 1 : 0;
         return 1;
     }
-    catch (Error error) {
-        return 0;
+    catch (std::exception& error) {
+        singleton()->print(2, error);
+        return static_cast<int>(0x80004005UL);
     }
 }

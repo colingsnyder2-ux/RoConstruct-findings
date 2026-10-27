@@ -1,4 +1,4 @@
-// from server: 55% by coldek
+// from server: 100% by king_originala
 // roc 2008-06 0048af10  unit: RBX::Network::P8Player::?$GetSetImpl  size: 283 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0048af10
 //
@@ -101,6 +101,8 @@
 // 0048b025  b87aaf4800           mov eax, 0x48af7a
 // 0048b02a  c3                   ret 
 
+#include <string>
+#include <exception>
 // from server: 100% by king_originala
 // roc 2008-06 0048af10  unit: RBX::Network::P8Player::?$GetSetImpl  size: 106 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0048af10
@@ -144,6 +146,8 @@
 // 0048af78  ffd2                 call edx
 
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 struct Count {
@@ -162,6 +166,16 @@ struct Control {
     virtual void destroy() = 0;
     Count strong;
     Count weak;
+    void release() {
+        if (_InterlockedDecrement(&strong.value) == 0) {
+            dispose();
+            weak_release();
+        }
+    }
+    void weak_release() {
+        if (_InterlockedDecrement(&weak.value) == 0)
+            destroy();
+    }
 };
 
 struct Shared {
@@ -180,12 +194,8 @@ inline Shared::Shared(const Shared& other)
 
 inline Shared::~Shared()
 {
-    if (control &&
-        _InterlockedExchangeAdd(&control->strong.value, -1) == 1) {
-        control->dispose();
-        if (_InterlockedExchangeAdd(&control->weak.value, -1) == 1)
-            control->destroy();
-    }
+    if (control)
+        control->release();
 }
 
 struct Object;
@@ -205,15 +215,27 @@ struct Prefix {
 struct Object : Prefix, S {
 };
 
+struct StandardOut {
+    void print(int, const char *, ...);
+};
+
+struct OutHandle {
+    StandardOut *pointer;
+    void *count;
+    ~OutHandle();
+    StandardOut *operator->() const { return pointer; }
+};
+
+OutHandle __cdecl singleton();
+
+
 void S::f(Shared value, Callback* callback)
 {
     try {
         callback->invoke(static_cast<Object*>(this), value);
-        __assume(0);
     }
-    catch (...) {
-        volatile char buffer[36];
-        buffer[0] = 0;
-        throw;
+    catch (std::exception& error) {
+        std::string what(error.what());
+        singleton()->print(2, "Exception caught in onEvent. %s", what.c_str());
     }
 }

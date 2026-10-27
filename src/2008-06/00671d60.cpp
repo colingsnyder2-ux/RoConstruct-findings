@@ -1,8 +1,8 @@
-// from server: 87% by Espeon
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: ogre-1.4.5-dll roc_espeon_renderpoolnativesubentity2626990e542d19db.cpp
+// roc-lib: ogre-1.4.5-dll roc_claudeC_rbxsubentitypool_2457577142b8f41d.cpp
 
 // Candidate translation unit (score above; library headers required).
 #undef OGRE_NONCLIENT_BUILD
@@ -32,7 +32,7 @@ struct Pool {
 };
 Ogre::RbxSubEntity* Pool::acquire(){
  Ogre::RbxSubEntity* result;
- if(cache.size()!=0){result=cache[cache.size()-1];cache.pop_back();}
- else result=new Ogre::RbxSubEntity(context);
+ if(cache.size()!=0){result=cache[cache.size()-1];cache.pop_back();active.push_back(result);return result;}
+ result=new Ogre::RbxSubEntity(context);
  active.push_back(result);return result;
 }

@@ -1,4 +1,4 @@
-// from server: 56% by coldek
+// from server: 91% by king_originala
 // roc 2008-06 0040a1c0  unit: VAuthoringSettings::?$FactoryProduct  size: 197 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0040a1c0
 //
@@ -71,6 +71,22 @@
 // 0040a27f  b80da24000           mov eax, 0x40a20d
 // 0040a284  c3                   ret 
 
+#include <string>
+#include <exception>
+struct StandardOut {
+    void print(int, const char *, ...);
+};
+
+struct OutHandle {
+    StandardOut *pointer;
+    void *count;
+    ~OutHandle();
+    StandardOut *operator->() const { return pointer; }
+};
+
+OutHandle __cdecl singleton();
+
+
 // from server: 100% by colin
 // roc 2008-06 0040a1c0  unit: VAuthoringSettings::?$FactoryProduct  size: 77 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0040a1c0
@@ -136,11 +152,9 @@ void S::f(Arguments arguments, Callback* callback)
         if (this)
             object = reinterpret_cast<char*>(this) - 0xC4;
         callback->invoke(object, arguments);
-        __assume(0);
     }
-    catch (...) {
-        volatile char storage[40];
-        storage[0] = 0;
-        throw;
+    catch (std::exception& error) {
+        std::string what(error.what());
+        singleton()->print(2, "Exception caught in onEvent. %s", what.c_str());
     }
 }

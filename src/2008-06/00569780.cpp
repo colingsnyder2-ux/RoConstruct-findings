@@ -1,9 +1,9 @@
-// from server: 71% by coldek
+// from server: 100% by king_originala
 // from server: 100% by tester
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lang: cpp
-// roc-lib: openrbx-client App/util/standardout.cpp
+// roc-lib: openrbx-client-dll App/util/standardout.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "util/standardout.h"

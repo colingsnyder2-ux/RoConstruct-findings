@@ -1,9 +1,8 @@
-// from server: 79% by colin
-// from server: 0% by Espeon
+// from server: 83% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espeon_insertdialoglabelorder5f902d69dc8f5c12.cpp
+// roc-lib: rbxgs-dll roc_unit_22712f528d29914e.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias(<boost/shared_ptr.hpp>, <roc_espeon_boostsharedinlineheader96f7848c627384e8.cpp>)
@@ -125,7 +124,7 @@
 #pragma include_alias("afxdlgs.inl", "roc_espeon_mfcdialogheader7566c5ad3dd249a3.cpp")
 #define _AFXDLL
 #pragma include_alias(<atlsimpstr.h>, <roc_espeon_editorcstringheaderfb14fe2507201232.cpp>)
-#pragma include_alias(<xstring>, <roc_dom_native_stdstring_cstr_boundary_header3da8e64d105bf835.cpp>)
+#pragma include_alias(<xstring>, <roc_unit_1c2a8fa334effd0c.cpp>)
 #pragma include_alias("v8tree/Instance.h", "roc_espeon_nativeinstanceguidportablea1682bda32c99cd2.cpp")
 #include <afxwin.h>
 #include <afxdlgs.h>
@@ -164,7 +163,7 @@ void InsertDialogRecovery::populate(const RBX::Reflection::ClassDescriptor* desc
   MetadataView* current=currentMetadata();
   if(metadata && (!metadata->field<bool>(0x131)||current->field<bool>(0x130)) && (!metadata->field<bool>(0x132)||current->field<bool>(0x131)) && metadata->field<bool>(0x130)) {
    boost::shared_ptr<RBX::Instance> instance;
-   try {instance=createInstance(descriptor->name);}catch(...){}
+   try {instance=createInstance(descriptor->name);}catch(std::exception&){}
    RBX::Instance* object=instance.get();
    if(object) {
     bool allowed;

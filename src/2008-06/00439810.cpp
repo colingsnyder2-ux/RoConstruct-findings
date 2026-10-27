@@ -1,8 +1,8 @@
-// from server: 96% by king_originala_sol_native
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_sol_grid_native120_fef4cfa22024fc18.cpp
+// roc-lib: rbxgs-dll roc_claudeA_selgrid32fc8a6d1bba2a76.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias(<afxwin.h>, <roc_espeon_mfcnativeheader280d8d01456bb571.cpp>)
@@ -296,16 +296,25 @@ struct Item {
     String copy();
 };
 
+// claudeA 2026-10-26: Arr/Items/Group model XTP's inline GetChilds()->GetCount() (CArray::GetSize, m_nSize at
+// items+0x28) chain; the nested inline accessors give the target's loop-exit reload order (selected, item, this).
+struct Arr {
+    char pad[8];
+    int size;
+    int GetSize() const { return size; }
+};
 struct Items {
-    char pad[0x28];
-    int count;
-    Item* at(int);
+    char pad[0x20];
+    Arr arr;
+    long GetCount() const { return (long)arr.GetSize(); }
+    Item* at(int) const;
 };
 
 struct Group {
     char pad[0xc0];
     Items* items;
-    void insert(int, Item*);
+    Group* insert(int, Item*);
+    Items* GetChilds() const { return items; }
 };
 
 struct Listener {
@@ -313,8 +322,11 @@ struct Listener {
     void notify(void* const&);
 };
 
+// Map::find stands in for std::map<K*,T*>::operator[] (0x5644a0). It must be a visible callee that the
+// compiler sees as not capturing the key's address (a leaf body here): only then may the push_back temp
+// reuse the dead `item` slot as in the target. An opaque or real std::map body leaves it in `selected`'s slot.
 struct Map {
-    void*& find(void* const&);
+    __declspec(noinline) void*& find(void* const& key) { static void* slot; slot = key; return slot; }
 };
 
 struct Selection {
@@ -329,14 +341,15 @@ void Selection::f(Item* item)
 {
     Group* selected = group(item->descriptor->key);
     int index = 0;
-    for (; index < selected->items->count; ++index) {
-        Item* other = selected->items->at(index);
+    for (; index < selected->GetChilds()->GetCount(); ++index) {
+        Item* other = selected->GetChilds()->at(index);
         if (item->copy().Compare((const char*)other->copy()) < 0)
             break;
     }
 
     selected->insert(index, item);
 
-    map.find(item->descriptor) = item->handle;
-    listener.notify(item->handle);
+    char* h = item->handle;
+    map.find(item->descriptor) = h;
+    listener.notify(h);
 }

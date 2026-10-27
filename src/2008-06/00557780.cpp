@@ -1,4 +1,4 @@
-// from server: 99% by coldek
+// from server: 100% by king_originala
 // roc 2008-06 00557780  unit: RBX::VInstance::?$NonFactoryProduct  size: 270 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00557780
 //
@@ -217,6 +217,6 @@ void S::f(Arguments arguments, Callback* callback)
     catch (std::exception &e)
     {
         std::string message(e.what());
-        singleton()->print(2, "%s", message.c_str());
+        singleton()->print(2, "Exception caught in onEvent. %s", message.c_str());
     }
 }

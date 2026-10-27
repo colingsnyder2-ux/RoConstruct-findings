@@ -1,4 +1,4 @@
-// from server: 65% by coldek
+// from server: 100% by king_originala
 // roc 2008-06 005a0ec0  unit: RBX::RootInstance  size: 185 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005a0ec0
 //
@@ -68,6 +68,22 @@
 // 005a0f73  b8fe0e5a00           mov eax, 0x5a0efe
 // 005a0f78  c3                   ret 
 
+#include <string>
+#include <exception>
+struct StandardOut {
+    void print(int, const char *, ...);
+};
+
+struct OutHandle {
+    StandardOut *pointer;
+    void *count;
+    ~OutHandle();
+    StandardOut *operator->() const { return pointer; }
+};
+
+OutHandle __cdecl singleton();
+
+
 // from server: 100% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
@@ -79,10 +95,12 @@ template <class T, class E> struct Notifier { void raise(E event, Listener* list
 struct Source : Padding, Notifier<Source, Event> {};
 template <class T, class E> void Notifier<T,E>::raise(E event, Listener* listener) const
 {
-    volatile char scratch[40];
     try {
         listener->onEvent(static_cast<const T*>(this), event);
     }
-    catch (...) { scratch[0] = 0; }
+    catch (std::exception& error) {
+        std::string what(error.what());
+        singleton()->print(2, "Exception caught in onEvent. %s", what.c_str());
+    }
 }
 template void Notifier<Source,Event>::raise(Event,Listener*) const;

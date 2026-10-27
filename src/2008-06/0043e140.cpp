@@ -1,4 +1,4 @@
-// from server: 99% by EspClaude
+// from server: 100% by coldek
 // roc-flags: /O2 /GS- /EHsc /MD
 #include <vector>
 #include <map>
@@ -64,10 +64,12 @@ struct KeyDerived : KeyBase {};
 typedef std::vector<boost::shared_ptr<RBX::Instance> > Instances;
 typedef std::map<KeyBase*, Instances> InstanceMap;
 
-struct Owner {
-    char pad[0x218];
+struct OwnerPrefix { char pad[0x218]; };
+struct MapHolder {
     InstanceMap instances;
+    InstanceMap::iterator findB(KeyBase* key) { return instances.find(key); }
 };
+struct Owner : OwnerPrefix, MapHolder {};
 
 class ScriptItem {
 public:
@@ -80,8 +82,8 @@ public:
 void ScriptItem::open(int)
 {
     InstanceMap::iterator mapEnd = owner->instances.end();
-    for (std::vector<KeyDerived*>::iterator it = keys.begin(), end = keys.end(); it != end; ++it) {
-        InstanceMap::iterator found = owner->instances.find(*it);
+    for (std::vector<KeyDerived*>::const_iterator it = keys.begin(), end = keys.end(); it != end; ++it) {
+        InstanceMap::iterator found = owner->findB(*it);
         if (found != mapEnd) {
             for (Instances::iterator j = found->second.begin(), jEnd = found->second.end(); j != jEnd; ++j) {
                 if (RBX::Script* script = dynamic_cast<RBX::Script*>(j->get()))

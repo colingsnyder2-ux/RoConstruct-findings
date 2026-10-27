@@ -1,12 +1,13 @@
-// from server: 93% by coldek
-// from server: 100% by EspClaude
-// from server: 98% by Espeon
+// from server: 100% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espclaude_15719117e15f8fac.cpp
+// roc-lib: openrbx-client-dll roc_unit_df783402a7119920.cpp
 
 // Candidate translation unit (score above; library headers required).
+#include <exception>
+extern const unsigned char errorContext[16];
+extern int __cdecl reportError(const void*, const char*, unsigned int);
 
 #include <boost/shared_ptr.hpp>
 
@@ -70,7 +71,7 @@ extern const char* (__thiscall* text_convert)(Text*, int, int);
 typedef boost::shared_ptr<void> Shared;
 
 struct Scope {
-    char storage[16];
+    char storage[12];
     Scope(Shared);
     ~Scope();
 };
@@ -112,7 +113,7 @@ int __stdcall function(S* source, const char* name)
         Scope scope(source->shared);
         return source->write(source->acquire().get(), &stream);
     }
-    catch (...) {
-        return 0;
+    catch (const std::exception& error) {
+        return reportError(errorContext, error.what(), 0);
     }
 }

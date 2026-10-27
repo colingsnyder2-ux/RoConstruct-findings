@@ -1,8 +1,8 @@
-// from server: 99% by coldek
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_claudeA_valueitemb5d48fac1928085d.cpp
+// roc-lib: rbxgs-dll roc_claudeA_valueitemv3727620bc493d2c5b.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define _CPPUNWIND 1
@@ -87,12 +87,14 @@ void ValueItem<Base, T>::setValue(const T& value)
         Instances instances;
         InstanceMap::iterator mapEnd = owner->instances.end();
         std::vector<KeyDerived*>::const_iterator end = keys.end();
-        for (std::vector<KeyDerived*>::const_iterator it = keys.begin(); it != end; ++it) {
+        std::vector<KeyDerived*>::const_iterator it = keys.begin();
+        while (it != end) {
             InstanceMap::iterator found = owner->findB(*it);
             if (found != mapEnd) {
                 for (Instances::iterator j = found->second.begin(), jEnd = found->second.end(); j != jEnd; j++)
                     instances.push_back(*j);
             }
+            ++it;
         }
         std::for_each(instances.begin(), instances.end(),
             boost::bind(&ValueItem::apply, this, boost::bind(&boost::shared_ptr<RBX::Instance>::get, _1), value));
@@ -110,12 +112,7 @@ void ValueItem<Base, T>::setValue(const T& value)
 // bound value is copied (float fld, 4-byte int mov, bool byte mov, 3-float x87 copy, string/ContentId ctor),
 // the base from keys offset (0x110/0x118/0x11c/0x124). /fp:fast drops the 3-float temp copy (0043ff70).
 namespace RBX { class ContentId { std::string id; const Name* mimeTypePtr; }; }
-template class ValueItem<GridItemBase, float>;
-template class ValueItem<GridItemBase, std::string>;
-template class ValueItem<GridItemBase, RBX::ContentId>;
+// claudeA 2026-10-26: Vector3 items (0043ff70, 0043f530) only. Their key loop is a while loop with ++it at the
+// end of the body: the for(;;++it) form of the other items gives the latch reloads in the opposite order here.
 template class ValueItem<GridItemBase, G3D::Vector3>;
-template class ValueItem<EnumGridItemBase, int>;
-template class ValueItem<IntGridItemBase, int>;
-template class ValueItem<BoolGridItemBase, bool>;
-template class ValueItem<GridItemBase, int>;
 template class ValueItem<IntGridItemBase, G3D::Vector3>;

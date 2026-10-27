@@ -1,9 +1,9 @@
-// from server: 94% by coldek
+// from server: 100% by king_originala
 // from server: 100% by tester
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lang: cpp
-// roc-lib: rbxgs v8world/World.cpp
+// roc-lib: rbxgs-dll v8world/World.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "v8world/World.h"

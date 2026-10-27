@@ -1,4 +1,4 @@
-// from server: 73% by coldek
+// from server: 100% by king_originala
 // roc 2008-06 004965a0  unit: RBX::Network::Players::Plugin  size: 215 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004965a0
 //
@@ -76,6 +76,8 @@
 // 00496671  b8ef654900           mov eax, 0x4965ef
 // 00496676  c3                   ret 
 
+#include <string>
+#include <exception>
 // from server: 100% by colin
 // roc 2008-06 004965a0  unit: RBX::Network::Players::Plugin  size: 79 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004965a0
@@ -193,17 +195,29 @@ struct Plugin {
     void dispatch(Message, Callback*);
 };
 
-struct Exception {
-    char data[0x24];
-    ~Exception();
+struct StandardOut {
+    void print(int, const char *, ...);
 };
+
+struct OutHandle {
+    StandardOut *pointer;
+    void *count;
+    ~OutHandle();
+    StandardOut *operator->() const { return pointer; }
+};
+
+OutHandle __cdecl singleton();
+
+
 void Plugin::dispatch(Message message, Callback* callback)
 {
     try {
         void* owner = this ? reinterpret_cast<char*>(this) - 0x130 : 0;
         callback->invoke(owner, message);
     }
-    catch (Exception exception) {
+    catch (std::exception& error) {
+        std::string what(error.what());
+        singleton()->print(2, "Exception caught in onEvent. %s", what.c_str());
     }
 }
 

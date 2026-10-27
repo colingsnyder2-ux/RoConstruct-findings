@@ -1,4 +1,5 @@
-// from server: 92% by colin
+// from server: 96% by coldek
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 // roc 2008-06 004ebcc0  unit: RBX::ViewNew::Part  size: 425 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004ebcc0
 //
@@ -140,7 +141,6 @@
 // 004ebe63  83c458               add esp, 0x58
 // 004ebe66  c20800               ret 8
 
-// from server: 90% by king_originala
 // roc 2008-06 004ebcc0  unit: RBX::ViewNew::Part  size: 425 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004ebcc0
 //
@@ -411,7 +411,8 @@ Part::Part(const ModelReference& model, const Services& services)
 {
     if (0 == model.value->mode) {
         services.service->insert(Reference(this), 1);
-        if (1.0 > value)
+        float v = value;
+        if (v < 1.0f)
             value = 0.0f;
     } else {
         if (minimumValue > value)

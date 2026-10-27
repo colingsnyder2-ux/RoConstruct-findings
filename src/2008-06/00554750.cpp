@@ -1,4 +1,4 @@
-// from server: 56% by coldek
+// from server: 100% by king_originala
 // roc 2008-06 00554750  unit: RBX::RunService  size: 185 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00554750
 //
@@ -68,6 +68,22 @@
 // 00554803  b88e475500           mov eax, 0x55478e
 // 00554808  c3                   ret 
 
+#include <string>
+#include <exception>
+struct StandardOut {
+    void print(int, const char *, ...);
+};
+
+struct OutHandle {
+    StandardOut *pointer;
+    void *count;
+    ~OutHandle();
+    StandardOut *operator->() const { return pointer; }
+};
+
+OutHandle __cdecl singleton();
+
+
 // from server: 100% by Gemini
 // roc 2008-06 00554750  unit: RBX::RunService  size: 62 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00554750
@@ -107,15 +123,14 @@ struct S {
 
 void S::f(void *a, Callback *callback)
 {
-    volatile char scratch[40];
     try {
         void *owner = 0;
         if (this)
             owner = reinterpret_cast<char *>(this) - 0x190;
         callback->invoke(owner, a);
-        __assume(0);
     }
-    catch (...) {
-        scratch[0] = 0;
+    catch (std::exception& error) {
+        std::string what(error.what());
+        singleton()->print(2, "Exception caught in onEvent. %s", what.c_str());
     }
 }

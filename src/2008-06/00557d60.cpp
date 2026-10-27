@@ -1,4 +1,4 @@
-// from server: 61% by coldek
+// from server: 100% by king_originala
 // roc 2008-06 00557d60  unit: RBX::VInstance::?$AbstractFactoryProduct  size: 203 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00557d60
 //
@@ -74,6 +74,22 @@
 // 00557e25  b8b07d5500           mov eax, 0x557db0
 // 00557e2a  c3                   ret 
 
+#include <string>
+#include <exception>
+struct StandardOut {
+    void print(int, const char *, ...);
+};
+
+struct OutHandle {
+    StandardOut *pointer;
+    void *count;
+    ~OutHandle();
+    StandardOut *operator->() const { return pointer; }
+};
+
+OutHandle __cdecl singleton();
+
+
 // from server: 100% by king_originala
 // roc 2008-06 00557d60  unit: RBX::VInstance::?$AbstractFactoryProduct  size: 80 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00557d60
@@ -133,18 +149,14 @@ struct Padding {
 struct Object : Padding, S {
 };
 
-struct Failure {
-    unsigned char data[40];
-};
-
 void S::f(Value value, Callback& callback)
 {
     try {
         Object* object = static_cast<Object*>(this);
         callback.invoke(object, value);
     }
-    catch (volatile Failure failure) {
-        failure.data[0] = 0;
+    catch (std::exception& error) {
+        std::string what(error.what());
+        singleton()->print(2, "Exception caught in onEvent. %s", what.c_str());
     }
-    __assume(0);
 }

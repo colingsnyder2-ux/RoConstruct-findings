@@ -1,4 +1,4 @@
-// from server: 91% by coldek
+// from server: 100% by king_originala
 // roc 2008-06 005aeb80  unit: RBX::ScriptContext  size: 323 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005aeb80
 //
@@ -118,6 +118,8 @@
 // 005aecbd  52                   push edx
 // 005aecbe  e8c9280f00           call 0x6a158c
 
+#include <string>
+#include <stdexcept>
 // from server: 100% by king_originala
 // roc 2008-06 005aeb80  unit: RBX::ScriptContext  size: 233 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005aeb80
@@ -211,16 +213,8 @@
 struct State;
 
 extern "C" int __cdecl lua_gettop(State*);
+extern "C" const char* __cdecl lua_tostring(State*, int);
 extern "C" void __cdecl lua_settop(State*, int);
-
-struct BadFunctionCall
-{
-    char data[68];
-    BadFunctionCall();
-    ~BadFunctionCall();
-};
-
-__declspec(noreturn) void __cdecl throw_exception(const BadFunctionCall&);
 
 typedef void (__cdecl *Manager)(void*, void*, int);
 
@@ -301,7 +295,7 @@ void ScriptContext::execute(State* state, Loader loader, Results results)
         {
             results(state, count);
         }
-        catch (...)
+        catch (std::exception&)
         {
             lua_settop(state, -1 - count);
             throw;
@@ -310,7 +304,8 @@ void ScriptContext::execute(State* state, Loader loader, Results results)
     }
     else
     {
-        BadFunctionCall error;
-        throw_exception(error);
+        std::string error(lua_tostring(state, -1));
+        lua_settop(state, 0);
+        throw std::runtime_error(error);
     }
 }
