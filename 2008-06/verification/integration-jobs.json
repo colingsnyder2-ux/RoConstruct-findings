@@ -2586,11 +2586,11 @@
         ]
       ]
     },
-    "phase": "resume after publishing-tool maintenance",
+    "phase": "fingerprinting inputs",
     "receipt": {},
-    "state": "queued",
+    "state": "verifying",
     "unit": "RBX::Workspace",
-    "updated": 1793138713.4070377,
+    "updated": 1793139747.8057046,
     "user": "colin"
   },
   {

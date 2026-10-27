@@ -1,8 +1,4 @@
 {
- "00409e60": {
-  "line": 25,
-  "path": "2008-06/src/glue/rbxgs/glue_stats_items.cpp"
- },
  "0040a320": {
   "line": 14,
   "path": "2008-06/src/rbxgs/Client/App/reflection/type.cpp"
@@ -55,6 +51,10 @@
   "line": 135,
   "path": "2008-06/src/rbxgs/Client/Network/Player.cpp"
  },
+ "00493da0": {
+  "line": 57,
+  "path": "2008-06/src/rbxgs/Client/Network/Player.cpp"
+ },
  "004944b0": {
   "line": 196,
   "path": "2008-06/src/rbxgs/Client/Network/Player.cpp"
@@ -73,6 +73,10 @@
  },
  "004947b0": {
   "line": 127,
+  "path": "2008-06/src/rbxgs/Client/Network/Player.cpp"
+ },
+ "00494c60": {
+  "line": 69,
   "path": "2008-06/src/rbxgs/Client/Network/Player.cpp"
  },
  "00495e60": {
@@ -258,10 +262,6 @@
  "00501d10": {
   "line": 24,
   "path": "2008-06/src/rbxgs/Client/Rendering/g3d/G3Dcpp/Sphere.cpp"
- },
- "00503820": {
-  "line": 22,
-  "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Lighting.cpp"
  },
  "00507180": {
   "line": 1175,
@@ -803,30 +803,6 @@
   "line": 141,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
- "00586960": {
-  "line": 22,
-  "path": "2008-06/src/rbxgs/Client/App/script/Script.cpp"
- },
- "00586a70": {
-  "line": 62,
-  "path": "2008-06/src/rbxgs/Client/App/script/Script.cpp"
- },
- "00586b10": {
-  "line": 113,
-  "path": "2008-06/src/rbxgs/Client/App/script/Script.cpp"
- },
- "00586bf0": {
-  "line": 103,
-  "path": "2008-06/src/rbxgs/Client/App/script/Script.cpp"
- },
- "00586f30": {
-  "line": 43,
-  "path": "2008-06/src/rbxgs/Client/App/script/Script.cpp"
- },
- "00586fc0": {
-  "line": 52,
-  "path": "2008-06/src/rbxgs/Client/App/script/Script.cpp"
- },
  "0058cab0": {
   "line": 32,
   "path": "2008-06/src/rbxgs/Client/App/v8xml/XmlSerializer.cpp"
@@ -1015,6 +991,10 @@
   "line": 22,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Decal.cpp"
  },
+ "00598870": {
+  "line": 52,
+  "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Decal.cpp"
+ },
  "00598ad0": {
   "line": 110,
   "path": "2008-06/src/rbxgs/Client/RbxView/Part.cpp"
@@ -1058,10 +1038,6 @@
  "00598f10": {
   "line": 110,
   "path": "2008-06/src/rbxgs/Client/RbxView/Part.cpp"
- },
- "00599360": {
-  "line": 40,
-  "path": "2008-06/src/rbxgs/Client/App/v8kernel/Body.cpp"
  },
  "005993e0": {
   "line": 249,
@@ -1334,50 +1310,6 @@
  "005a8300": {
   "line": 21,
   "path": "2008-06/src/rbxgs/Client/App/util/Guid.cpp"
- },
- "005a8660": {
-  "line": 208,
-  "path": "2008-06/src/rbxgs/Client/App/script/ScriptContext.cpp"
- },
- "005a86e0": {
-  "line": 241,
-  "path": "2008-06/src/rbxgs/Client/App/script/ScriptContext.cpp"
- },
- "005a8750": {
-  "line": 467,
-  "path": "2008-06/src/rbxgs/Client/App/script/ScriptContext.cpp"
- },
- "005a9120": {
-  "line": 233,
-  "path": "2008-06/src/rbxgs/Client/App/script/ScriptContext.cpp"
- },
- "005a9320": {
-  "line": 473,
-  "path": "2008-06/src/rbxgs/Client/App/script/ScriptContext.cpp"
- },
- "005aeaf0": {
-  "line": 219,
-  "path": "2008-06/src/rbxgs/Client/App/script/ScriptContext.cpp"
- },
- "005afd60": {
-  "line": 539,
-  "path": "2008-06/src/rbxgs/Client/App/script/ScriptContext.cpp"
- },
- "005affa0": {
-  "line": 703,
-  "path": "2008-06/src/rbxgs/Client/App/script/ScriptContext.cpp"
- },
- "005b0590": {
-  "line": 524,
-  "path": "2008-06/src/rbxgs/Client/App/script/ScriptContext.cpp"
- },
- "005b06a0": {
-  "line": 580,
-  "path": "2008-06/src/rbxgs/Client/App/script/ScriptContext.cpp"
- },
- "005b06c0": {
-  "line": 586,
-  "path": "2008-06/src/rbxgs/Client/App/script/ScriptContext.cpp"
  },
  "005b0840": {
   "line": 34,
@@ -2291,10 +2223,6 @@
   "line": 219,
   "path": "2008-06/src/rbxgs/Client/App/v8world/World.cpp"
  },
- "005ebae0": {
-  "line": 241,
-  "path": "2008-06/src/rbxgs/Client/Rendering/g3d/GLG3Dcpp/Sky.cpp"
- },
  "005ec180": {
   "line": 18,
   "path": "2008-06/src/rbxgs/Client/App/util/NormalId.cpp"
@@ -2322,22 +2250,6 @@
  "005f13c0": {
   "line": 12,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Surface.cpp"
- },
- "005faa20": {
-  "line": 75,
-  "path": "2008-06/src/rbxgs/Client/App/v8kernel/Kernel.cpp"
- },
- "005faa30": {
-  "line": 76,
-  "path": "2008-06/src/rbxgs/Client/App/v8kernel/Kernel.cpp"
- },
- "005faa40": {
-  "line": 77,
-  "path": "2008-06/src/rbxgs/Client/App/v8kernel/Kernel.cpp"
- },
- "005fb3f0": {
-  "line": 115,
-  "path": "2008-06/src/rbxgs/Client/App/v8kernel/Kernel.cpp"
  },
  "005fb900": {
   "line": 130,
@@ -2715,54 +2627,6 @@
   "line": 7,
   "path": "2008-06/src/rbxgs/Client/App/v8kernel/Pair.cpp"
  },
- "00613cc0": {
-  "line": 33,
-  "path": "2008-06/src/rbxgs/Client/App/v8kernel/Link.cpp"
- },
- "00613d20": {
-  "line": 6,
-  "path": "2008-06/src/rbxgs/Client/App/v8kernel/Link.cpp"
- },
- "00613d60": {
-  "line": 21,
-  "path": "2008-06/src/rbxgs/Client/App/v8kernel/Link.cpp"
- },
- "00613f20": {
-  "line": 71,
-  "path": "2008-06/src/rbxgs/Client/App/v8kernel/Body.cpp"
- },
- "00613f40": {
-  "line": 79,
-  "path": "2008-06/src/rbxgs/Client/App/v8kernel/Body.cpp"
- },
- "00613fb0": {
-  "line": 260,
-  "path": "2008-06/src/rbxgs/Client/App/v8kernel/Body.cpp"
- },
- "00614040": {
-  "line": 182,
-  "path": "2008-06/src/rbxgs/Client/App/v8kernel/Body.cpp"
- },
- "00614400": {
-  "line": 280,
-  "path": "2008-06/src/rbxgs/Client/App/v8kernel/Body.cpp"
- },
- "00614480": {
-  "line": 309,
-  "path": "2008-06/src/rbxgs/Client/App/v8kernel/Body.cpp"
- },
- "006144e0": {
-  "line": 314,
-  "path": "2008-06/src/rbxgs/Client/App/v8kernel/Body.cpp"
- },
- "00614560": {
-  "line": 319,
-  "path": "2008-06/src/rbxgs/Client/App/v8kernel/Body.cpp"
- },
- "006145e0": {
-  "line": 328,
-  "path": "2008-06/src/rbxgs/Client/App/v8kernel/Body.cpp"
- },
  "00614c20": {
   "line": 80,
   "path": "2008-06/src/rbxgs/Client/App/v8world/IMoving.cpp"
@@ -2883,48 +2747,12 @@
   "line": 25,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Flag.cpp"
  },
- "0061d430": {
-  "line": 271,
-  "path": "2008-06/src/rbxgs/Client/App/script/LuaAtomicClasses.cpp"
- },
- "0061d5f0": {
-  "line": 312,
-  "path": "2008-06/src/rbxgs/Client/App/script/LuaAtomicClasses.cpp"
- },
- "0061dcf0": {
-  "line": 476,
-  "path": "2008-06/src/rbxgs/Client/App/script/LuaAtomicClasses.cpp"
- },
- "0061dd60": {
-  "line": 483,
-  "path": "2008-06/src/rbxgs/Client/App/script/LuaAtomicClasses.cpp"
- },
- "0061de60": {
-  "line": 503,
-  "path": "2008-06/src/rbxgs/Client/App/script/LuaAtomicClasses.cpp"
- },
- "0061e2b0": {
-  "line": 583,
-  "path": "2008-06/src/rbxgs/Client/App/script/LuaAtomicClasses.cpp"
- },
- "0061e340": {
-  "line": 600,
-  "path": "2008-06/src/rbxgs/Client/App/script/LuaAtomicClasses.cpp"
- },
- "0061ecc0": {
-  "line": 458,
-  "path": "2008-06/src/rbxgs/Client/App/script/LuaAtomicClasses.cpp"
- },
  "0061f410": {
   "line": 160,
   "path": "2008-06/src/rbxgs/Client/App/script/LuaSignalBridge.cpp"
  },
  "00620190": {
   "line": 160,
-  "path": "2008-06/src/rbxgs/Client/App/script/LuaSignalBridge.cpp"
- },
- "00620470": {
-  "line": 189,
   "path": "2008-06/src/rbxgs/Client/App/script/LuaSignalBridge.cpp"
  },
  "00621330": {
@@ -3203,10 +3031,6 @@
   "line": 26,
   "path": "2008-06/src/rbxgs/Client/App/v8world/Ball.cpp"
  },
- "00649730": {
-  "line": 161,
-  "path": "2008-06/src/rbxgs/Client/App/v8kernel/Constants.cpp"
- },
  "006497e0": {
   "line": 16,
   "path": "2008-06/src/rbxgs/Client/App/util/Face.cpp"
@@ -3270,10 +3094,6 @@
  "0064d090": {
   "line": 35,
   "path": "2008-06/src/rbxgs/Client/App/v8world/SimJobStage.cpp"
- },
- "0064dc70": {
-  "line": 20,
-  "path": "2008-06/src/rbxgs/Client/App/v8kernel/Point.cpp"
  },
  "0064ddf0": {
   "line": 42,
