@@ -1,141 +1,150 @@
-// from server: 100% by auto
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/signals/src/named_slot_map.cpp
+// from server: 100% by coldek
+// roc 2008-06 00652270  unit: RBX::ScoreHud  size: 147 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 00652270
+//
+// 00652270  55                   push ebp
+// 00652271  8bec                 mov ebp, esp
+// 00652273  6aff                 push -1
+// 00652275  6841b87d00           push 0x7db841
+// 0065227a  64a100000000         mov eax, dword ptr fs:[0]
+// 00652280  50                   push eax
+// 00652281  64892500000000       mov dword ptr fs:[0], esp
+// 00652288  83ec0c               sub esp, 0xc
+// 0065228b  53                   push ebx
+// 0065228c  56                   push esi
+// 0065228d  57                   push edi
+// 0065228e  8965f0               mov dword ptr [ebp - 0x10], esp
+// 00652291  6a4c                 push 0x4c
+// 00652293  e888e60400           call 0x6a0920
+// 00652298  8bf0                 mov esi, eax
+// 0065229a  83c404               add esp, 4
+// 0065229d  8975ec               mov dword ptr [ebp - 0x14], esi
+// 006522a0  c745fc00000000       mov dword ptr [ebp - 4], 0
+// 006522a7  8975e8               mov dword ptr [ebp - 0x18], esi
+// 006522aa  c645fc01             mov byte ptr [ebp - 4], 1
+// 006522ae  85f6                 test esi, esi
+// 006522b0  7427                 je 0x6522d9
+// 006522b2  8b4508               mov eax, dword ptr [ebp + 8]
+// 006522b5  8b4d0c               mov ecx, dword ptr [ebp + 0xc]
+// 006522b8  8b5510               mov edx, dword ptr [ebp + 0x10]
+// 006522bb  8906                 mov dword ptr [esi], eax
+// 006522bd  8b4514               mov eax, dword ptr [ebp + 0x14]
+// 006522c0  894e04               mov dword ptr [esi + 4], ecx
+// 006522c3  50                   push eax
+// 006522c4  8d4e0c               lea ecx, [esi + 0xc]
+// 006522c7  895608               mov dword ptr [esi + 8], edx
+// 006522ca  e801f5ffff           call 0x6517d0
+// 006522cf  8a4d18               mov cl, byte ptr [ebp + 0x18]
+// 006522d2  884e48               mov byte ptr [esi + 0x48], cl
+// 006522d5  c6464900             mov byte ptr [esi + 0x49], 0
+// 006522d9  8b4df4               mov ecx, dword ptr [ebp - 0xc]
+// 006522dc  5f                   pop edi
+// 006522dd  8bc6                 mov eax, esi
+// 006522df  5e                   pop esi
+// 006522e0  64890d00000000       mov dword ptr fs:[0], ecx
+// 006522e7  5b                   pop ebx
+// 006522e8  8be5                 mov esp, ebp
+// 006522ea  5d                   pop ebp
+// 006522eb  c21400               ret 0x14
+// 006522ee  8b55ec               mov edx, dword ptr [ebp - 0x14]
+// 006522f1  52                   push edx
+// 006522f2  e883e30400           call 0x6a067a
+// 006522f7  83c404               add esp, 4
+// 006522fa  6a00                 push 0
+// 006522fc  6a00                 push 0
+// 006522fe  e889f20400           call 0x6a158c
 
-// Candidate translation unit (score above; library headers required).
-// Boost.Signals library
+// from server: 100% by king_originala
+// roc 2008-06 00652270  unit: RBX::ScoreHud  size: 126 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 00652270
+//
+// 00652270  55                   push ebp
+// 00652271  8bec                 mov ebp, esp
+// 00652273  6aff                 push -1
+// 00652275  6841b87d00           push 0x7db841
+// 0065227a  64a100000000         mov eax, dword ptr fs:[0]
+// 00652280  50                   push eax
+// 00652281  64892500000000       mov dword ptr fs:[0], esp
+// 00652288  83ec0c               sub esp, 0xc
+// 0065228b  53                   push ebx
+// 0065228c  56                   push esi
+// 0065228d  57                   push edi
+// 0065228e  8965f0               mov dword ptr [ebp - 0x10], esp
+// 00652291  6a4c                 push 0x4c
+// 00652293  e888e60400           call 0x6a0920
+// 00652298  8bf0                 mov esi, eax
+// 0065229a  83c404               add esp, 4
+// 0065229d  8975ec               mov dword ptr [ebp - 0x14], esi
+// 006522a0  c745fc00000000       mov dword ptr [ebp - 4], 0
+// 006522a7  8975e8               mov dword ptr [ebp - 0x18], esi
+// 006522aa  c645fc01             mov byte ptr [ebp - 4], 1
+// 006522ae  85f6                 test esi, esi
+// 006522b0  7427                 je 0x6522d9
+// 006522b2  8b4508               mov eax, dword ptr [ebp + 8]
+// 006522b5  8b4d0c               mov ecx, dword ptr [ebp + 0xc]
+// 006522b8  8b5510               mov edx, dword ptr [ebp + 0x10]
+// 006522bb  8906                 mov dword ptr [esi], eax
+// 006522bd  8b4514               mov eax, dword ptr [ebp + 0x14]
+// 006522c0  894e04               mov dword ptr [esi + 4], ecx
+// 006522c3  50                   push eax
+// 006522c4  8d4e0c               lea ecx, [esi + 0xc]
+// 006522c7  895608               mov dword ptr [esi + 8], edx
+// 006522ca  e801f5ffff           call 0x6517d0
+// 006522cf  8a4d18               mov cl, byte ptr [ebp + 0x18]
+// 006522d2  884e48               mov byte ptr [esi + 0x48], cl
+// 006522d5  c6464900             mov byte ptr [esi + 0x49], 0
+// 006522d9  8b4df4               mov ecx, dword ptr [ebp - 0xc]
+// 006522dc  5f                   pop edi
+// 006522dd  8bc6                 mov eax, esi
+// 006522df  5e                   pop esi
+// 006522e0  64890d00000000       mov dword ptr fs:[0], ecx
+// 006522e7  5b                   pop ebx
+// 006522e8  8be5                 mov esp, ebp
+// 006522ea  5d                   pop ebp
+// 006522eb  c21400               ret 0x14
 
-// Copyright Douglas Gregor 2001-2004. Use, modification and
-// distribution is subject to the Boost Software License, Version
-// 1.0. (See accompanying file LICENSE_1_0.txt or copy at
-// http://www.boost.org/LICENSE_1_0.txt)
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
 
-// For more information, see http://www.boost.org
-
-#define BOOST_SIGNALS_SOURCE
-
-#include <boost/signals/detail/named_slot_map.hpp>
-#include <cassert>
-#include <map>
-#include <list>
-#include <typeinfo>
-
-namespace boost { namespace BOOST_SIGNALS_NAMESPACE { namespace detail {
-
-typedef std::list<connection_slot_pair> group_list;
-typedef group_list::iterator slot_pair_iterator;
-typedef std::map<stored_group, group_list, compare_type> slot_container_type;
-typedef slot_container_type::iterator group_iterator;
-typedef slot_container_type::const_iterator const_group_iterator;
-
-
-#if BOOST_WORKAROUND(_MSC_VER, <= 1400)
-void named_slot_map_iterator::decrement() { assert(false); }
-void named_slot_map_iterator::advance(difference_type) { assert(false); }
-#endif
-
-named_slot_map::named_slot_map(const compare_type& compare) : groups(compare)
+inline void* __cdecl operator new(unsigned int, void* p)
 {
-  clear();
+    return p;
 }
 
-void named_slot_map::clear()
+inline void __cdecl operator delete(void*, void*)
 {
-  groups.clear();
-  groups[stored_group(stored_group::sk_front)];
-  groups[stored_group(stored_group::sk_back)];
-  back = groups.end();
-  --back;
 }
 
-named_slot_map::iterator named_slot_map::begin()
+struct Value {
+    char data[60];
+    Value(const void*);
+};
+
+struct Entry {
+    int first;
+    int second;
+    int third;
+    Value value;
+    bool enabled;
+    bool marked;
+
+    Entry(int, int, int, const void*, bool);
+};
+
+inline Entry::Entry(int a, int b, int c, const void* p, bool flag)
+    : first(a), second(b), third(c), value(p), enabled(flag), marked(false)
 {
-  return named_slot_map::iterator(groups.begin(), groups.end());
 }
 
-named_slot_map::iterator named_slot_map::end()
+Entry* __stdcall createEntry(int a, int b, int c, const void* p, bool flag)
 {
-  return named_slot_map::iterator(groups.end(), groups.end());
-}
-
-named_slot_map::iterator
-named_slot_map::insert(const stored_group& name, const connection& con,
-                       const any& slot, connect_position at)
-{
-  group_iterator group;
-  if (name.empty()) {
-    switch (at) {
-    case at_front: group = groups.begin(); break;
-    case at_back: group = back; break;
+    void* storage = operator new(sizeof(Entry));
+    try {
+        new (storage) Entry(a, b, c, p, flag);
     }
-  } else {
-    group = groups.find(name);
-    if (group == groups.end()) {
-      slot_container_type::value_type v(name, group_list());
-      group = groups.insert(v).first;
+    catch (...) {
+        operator delete(storage);
+        throw;
     }
-  }
-  iterator it;
-  it.group = group;
-  it.last_group = groups.end();
-
-  switch (at) {
-  case at_back:
-    group->second.push_back(connection_slot_pair(con, slot));
-    it.slot_ = group->second.end();
-    it.slot_assigned = true;
-    --(it.slot_);
-    break;
-
-  case at_front:
-    group->second.push_front(connection_slot_pair(con, slot));
-    it.slot_ = group->second.begin();
-    it.slot_assigned = true;
-    break;
-  }
-  return it;
+    return static_cast<Entry*>(storage);
 }
-
-void named_slot_map::disconnect(const stored_group& name)
-{
-  group_iterator group = groups.find(name);
-  if (group != groups.end()) {
-    slot_pair_iterator i = group->second.begin();
-    while (i != group->second.end()) {
-      slot_pair_iterator next = i;
-      ++next;
-      i->first.disconnect();
-      i = next;
-    }
-    groups.erase(group);
-  }
-}
-
-void named_slot_map::erase(iterator pos)
-{
-  // Erase the slot
-  pos.slot_->first.disconnect();
-  pos.group->second.erase(pos.slot_);
-}
-
-void named_slot_map::remove_disconnected_slots()
-{
-  // Remove any disconnected slots
-  group_iterator g = groups.begin();
-  while (g != groups.end()) {
-    slot_pair_iterator s = g->second.begin();
-    while (s != g->second.end()) {
-      if (s->first.connected()) ++s;
-      else g->second.erase(s++);
-    }
-
-    // Clear out empty groups
-    if (empty(g)) groups.erase(g++);
-    else ++g;
-  }
-}
-
-
-} } }

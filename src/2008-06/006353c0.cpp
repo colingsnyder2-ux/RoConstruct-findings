@@ -48,40 +48,46 @@
 // 0063543c  6a00                 push 0
 // 0063543e  e849c10600           call 0x6a158c
 
-typedef unsigned int size_t;
+#pragma optimize("y", off)
 
-void* __cdecl operator new(size_t);
-void __cdecl operator delete(void*);
+void* __cdecl operator new(unsigned int);
+extern void* controlVtable[];
+
+struct Deleter {
+    void operator()(void*) const;
+};
+
+
 
 struct Control {
-    unsigned long table;
-    long strong;
-    long weak;
+    void** vtable;
+    int strong;
+    int weak;
     void* object;
-    unsigned long unused;
+    Deleter deleter;
+
+    Control(void*, const Deleter&);
 };
+
+inline Control::Control(void* p, const Deleter& d)
+    : strong(1), weak(1), deleter(d)
+{
+    vtable = controlVtable;
+    object = p;
+}
 
 struct S {
     Control* control;
-    S(void* object, int deleter);
+    S(void*, Deleter);
 };
 
-S::S(void* object, int deleter)
+S::S(void* p, Deleter d) : control(0)
 {
-    control = 0;
     try {
-        Control* p = static_cast<Control*>(operator new(sizeof(Control)));
-        if (p) {
-            p->strong = 1;
-            p->weak = 1;
-            p->table = 0x8485d0;
-            p->object = object;
-        } else {
-            p = 0;
-        }
-        control = p;
-    } catch (...) {
-        operator delete(object);
+        control = new Control(p, d);
+    }
+    catch (...) {
+        d(p);
         throw;
     }
 }

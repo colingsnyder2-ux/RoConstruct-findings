@@ -1,41 +1,75 @@
 // from server: 100% by auto
+// from server: 100% by auto
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/reflection/type.cpp
+// roc-lib: rbxgs v8datamodel/TimerService.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "reflection/type.h"
+#include "v8datamodel/TimerService.h"
+#include "util/standardout.h"
 
-namespace RBX {
-namespace Reflection {
-
-// FUNCTION: WEBSERVICE 0x100711b0
-template <>
-const Type& Type::singleton<void>()
+namespace RBX
 {
-	static Type type("void", typeid(void));
+	TimerService::TimerService() {}
 
-	return type;
+	void TimerService::delay(boost::function0<void> func, double seconds)
+	{
+		Item item;
+		item.time = G3D::System::getLocalTime() + seconds;
+		item.func = func;
+
+		std::list<Item>::iterator pos = items.end();
+
+		std::list<Item>::reverse_iterator iter = items.rbegin();
+		std::list<Item>::reverse_iterator end = items.rend();
+
+		for (; iter != end; iter++)
+		{
+			if (iter->time > item.time)
+				pos = iter.base();
+			else
+				break;
+		}
+
+		items.insert(pos, item);
+	}
+
+	void TimerService::onEvent(const RunService* source, Heartbeat event)
+	{
+		G3D::RealTime time = G3D::System::getLocalTime();
+
+		while (items.size() > 0)
+		{
+			Item& item = items.front();
+
+			if (time >= item.time)
+			{
+				try
+				{
+					item.func();
+				}
+				catch (std::exception& e)
+				{
+					StandardOut::singleton()->print(MESSAGE_WARNING, e);
+				}
+
+				items.pop_front();
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+
+	void TimerService::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
+		Notifier<RunService, Heartbeat>::disconnect(runService, this);
+
+		Instance::onServiceProvider(oldProvider, newProvider);
+		runService = shared_from(ServiceProvider::create<RunService>(newProvider));
+
+		Notifier<RunService,Heartbeat>::connect(runService, this);
+	}
 }
-
-// FUNCTION: WEBSERVICE 0x10071220
-Value::Value() : _type(&Type::singleton<void>())
-{
-}
-
-// FUNCTION: WEBSERVICE 0x10071260
-void SignatureDescriptor::addArgument(const Name& name, const Type& type, const Value& defaultValue)
-{
-	Item i = {&name, &type, defaultValue};
-
-	arguments.push_back(i);
-}
-
-// FUNCTION: WEBSERVICE 0x10071310
-SignatureDescriptor::SignatureDescriptor() : resultType(&Type::singleton<void>())
-{
-}
-
-} // namespace Reflection
-} // namespace RBX

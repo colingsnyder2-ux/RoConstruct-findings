@@ -1,8 +1,8 @@
-// from server: 96% by Espeon
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espeon_characterocclusionearlyexit53aa06fb93cb2f80.cpp
+// roc-lib: rbxgs-dll roc_claude_occlusion_smul_24c238c1f78bc808.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "v8datamodel/ICharacterSubject.h"
@@ -29,7 +29,7 @@ class FilterCharacterOcclusion: public HitTestFilter {public: FilterCharacterOcc
 			FilterCharacterOcclusion filter(0);
 			for (int x = -2; x <= 2; x += 2)
 			{
-				G3D::Vector3 r = manLookCamera.translation + pointOnMan * (float)x;
+				G3D::Vector3 r = manLookCamera.translation + (float)x * pointOnMan;
 				G3D::Ray manToCamera = G3D::Ray::fromOriginAndDirection(r, cameraGoal.translation - r);
 
 				G3D::Vector3 hitPoint;

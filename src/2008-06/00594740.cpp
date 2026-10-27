@@ -48,35 +48,47 @@
 // 005947bc  6a00                 push 0
 // 005947be  e8c9cd1000           call 0x6a158c
 
-typedef unsigned int size_t;
-void* __cdecl operator new(size_t);
+void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
-struct Function {
-    ~Function();
+struct Object {
+    virtual ~Object();
 };
 
-struct Control {
-    virtual ~Control();
-    long strong;
-    long weak;
-    Function* object;
+namespace boost { template<class T> void checked_delete(T*); }
 
-    Control(Function* p) : strong(1), weak(1), object(p) {}
+struct CountBase {
+    long useCount;
+    long weakCount;
+
+    CountBase() : useCount(1), weakCount(1) {}
+    virtual ~CountBase();
+    virtual void dispose() = 0;
+    virtual void destroy();
+    virtual void* getDeleter(const void*) = 0;
 };
 
-struct Holder {
-    Control* control;
-    Holder(Function*);
+struct Count : CountBase {
+    Object* object;
+
+    explicit Count(Object* p) : object(p) {}
+    virtual ~Count();
+    virtual void dispose();
+    virtual void* getDeleter(const void*);
 };
 
-Holder::Holder(Function* p) : control(0)
+struct S {
+    CountBase* count;
+    explicit S(Object*);
+};
+
+S::S(Object* p) : count(0)
 {
     try {
-        control = new Control(p);
+        count = new Count(p);
     }
     catch (...) {
-        delete p;
+        boost::checked_delete(p);
         throw;
     }
 }

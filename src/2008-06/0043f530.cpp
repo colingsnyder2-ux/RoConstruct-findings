@@ -1,8 +1,9 @@
-// from server: 88% by nuck16
+// from server: 97% by coldek
+// from server: 97% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_unit_3a0967e7d7f2e01a.cpp
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_claude_valueitem_515340b2db47fc88.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define _CPPUNWIND 1
@@ -19,10 +20,8 @@
 // the DataModel lock, records a waypoint named after the property and marks the data dirty.
 namespace RBX {
 class Instance;
-}
 template<class E> struct ImpStr : std::basic_string<E> { __declspec(noinline) const E* c_str() const { return std::basic_string<E>::c_str(); } };
 extern template struct __declspec(dllimport) ImpStr<char>;
-namespace RBX {
 class Name { int dictionaryIndex; public: const std::string name; const char* c_str() const { return static_cast<const ImpStr<char>&>(name).c_str(); } };
 namespace Reflection { class PropertyDescriptor { public: virtual ~PropertyDescriptor(); const Name& name; }; }
 class IDataState { public: virtual void setDirty(bool); };
@@ -59,7 +58,9 @@ struct Owner {
 // 64 virtuals with 8 more bytes of data (enum item, apply at +0x100, keys at 0x118).
 class GridItemBase { public: V10(0) V10(1) V10(2) V10(3) V10(4) V10(5) char data[0x108]; };
 class EnumGridItemBase { public: V10(0) V10(1) V10(2) V10(3) V10(4) V10(5) V(60) V(61) V(62) V(63) char data[0x110]; };
-class VectorGridItemBase { public: V10(0) V10(1) V10(2) V10(3) V10(4) V10(5) V(60) V(61) V(62) char data[0x114]; };
+// Bases sized from the key-vector offsets in 0043f890 (keys 0x11c) and 0043ead0 (keys 0x124).
+class IntGridItemBase { public: V10(0) V10(1) V10(2) V10(3) V10(4) V10(5) V(60) V(61) V(62) char data[0x114]; };
+class BoolGridItemBase { public: V10(0) V10(1) V10(2) V10(3) V10(4) V10(5) V(60) V(61) V(62) char data[0x11c]; };
 class GridItemSink { public: virtual void sink(); };
 #undef V10
 #undef V
@@ -84,7 +85,7 @@ void ValueItem<Base, T>::setValue(const T& value)
         for (std::vector<KeyDerived*>::const_iterator it = keys.begin(); it != end; ++it) {
             InstanceMap::iterator found = owner->instances.find(*it);
             if (found != mapEnd) {
-                for (Instances::iterator j = found->second.begin(), jEnd = found->second.end(); j != jEnd; ++j)
+                for (Instances::iterator j = found->second.begin(), jEnd = found->second.end(); j != jEnd; j++)
                     instances.push_back(*j);
             }
         }
@@ -100,4 +101,15 @@ void ValueItem<Base, T>::setValue(const T& value)
     }
 }
 
-template class ValueItem<VectorGridItemBase, G3D::Vector3>;
+// agE 2026-10-26: one unit for the 2008-06 ValueItem::setValue family; the target T is read from how the
+// bound value is copied (float fld, 4-byte int mov, bool byte mov, 3-float x87 copy, string/ContentId ctor),
+// the base from keys offset (0x110/0x118/0x11c/0x124). /fp:fast drops the 3-float temp copy (0043ff70).
+namespace RBX { class ContentId { std::string id; const Name* mimeTypePtr; }; }
+template class ValueItem<GridItemBase, float>;
+template class ValueItem<GridItemBase, std::string>;
+template class ValueItem<GridItemBase, RBX::ContentId>;
+template class ValueItem<GridItemBase, G3D::Vector3>;
+template class ValueItem<EnumGridItemBase, int>;
+template class ValueItem<IntGridItemBase, int>;
+template class ValueItem<BoolGridItemBase, bool>;
+template class ValueItem<IntGridItemBase, G3D::Vector3>;

@@ -51,54 +51,44 @@
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
-struct Payload {
-    ~Payload();
+struct Object {
+    virtual ~Object();
 };
 
-struct CountBase {
-    int strong;
-    int weak;
+namespace boost { template<class T> void checked_delete(T*); }
 
-    CountBase();
+struct CountBase {
+    long useCount;
+    long weakCount;
+
+    CountBase() : useCount(1), weakCount(1) {}
     virtual ~CountBase();
     virtual void dispose() = 0;
     virtual void destroy();
-    virtual void* get_deleter(const void*) = 0;
+    virtual void* getDeleter(const void*) = 0;
 };
 
 struct Count : CountBase {
-    Payload* pointer;
+    Object* object;
 
-    Count(Payload*);
+    explicit Count(Object* p) : object(p) {}
     virtual ~Count();
     virtual void dispose();
-    virtual void* get_deleter(const void*);
+    virtual void* getDeleter(const void*);
 };
 
-struct EventHandler {
+struct S {
     CountBase* count;
-
-    EventHandler(Payload*);
+    explicit S(Object*);
 };
 
-__forceinline CountBase::CountBase()
-    : strong(1), weak(1)
-{
-}
-
-__forceinline Count::Count(Payload* p)
-    : pointer(p)
-{
-}
-
-EventHandler::EventHandler(Payload* p)
-    : count(0)
+S::S(Object* p) : count(0)
 {
     try {
         count = new Count(p);
     }
     catch (...) {
-        delete p;
+        boost::checked_delete(p);
         throw;
     }
 }

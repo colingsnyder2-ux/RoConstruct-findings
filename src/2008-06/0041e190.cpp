@@ -48,43 +48,43 @@
 // 0041e20c  6a00                 push 0
 // 0041e20e  e879332800           call 0x6a158c
 
+#pragma optimize("y", off)
+
 void* __cdecl operator new(unsigned int);
-void __cdecl operator delete(void*);
+extern void* controlVtable[];
 
 struct Deleter {
-    void operator()(void* p) const { operator delete(p); }
+    void operator()(void*) const;
 };
 
-struct CountBase {
-    long strong;
-    long weak;
 
-    CountBase() : strong(1), weak(1) {}
-    virtual ~CountBase();
-    virtual void dispose() = 0;
-    virtual void destroy();
-    virtual void* get_deleter(const void*) = 0;
-};
 
-struct CountBlock : CountBase {
-    void* pointer;
+struct Control {
+    void** vtable;
+    int strong;
+    int weak;
+    void* object;
     Deleter deleter;
 
-    CountBlock(void* p, Deleter d) : pointer(p), deleter(d) {}
-    virtual ~CountBlock();
-    virtual void dispose();
-    virtual void* get_deleter(const void*);
+    Control(void*, const Deleter&);
 };
+
+inline Control::Control(void* p, const Deleter& d)
+    : strong(1), weak(1), deleter(d)
+{
+    vtable = controlVtable;
+    object = p;
+}
 
 struct S {
-    CountBase* count;
-    S(void* p, Deleter d);
+    Control* control;
+    S(void*, Deleter);
 };
 
-S::S(void* p, Deleter d) : count(0)
+S::S(void* p, Deleter d) : control(0)
 {
     try {
-        count = new CountBlock(p, d);
+        control = new Control(p, d);
     }
     catch (...) {
         d(p);

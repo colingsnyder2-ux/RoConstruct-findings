@@ -1,4 +1,4 @@
-// from server: 100% by tester
+// from server: 100% by king_originala
 // roc 2008-06 0049df90  unit: RBX::Network::Players::Plugin  size: 131 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0049df90
 //
@@ -48,42 +48,47 @@
 // 0049e00c  6a00                 push 0
 // 0049e00e  e879352000           call 0x6a158c
 
-extern void* __cdecl operator new(unsigned int);
-extern const unsigned char control_table[];
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
 
 struct Object {
     virtual ~Object();
 };
 
-struct Deleter {};
+namespace boost { template<class T> void checked_delete(T*); }
 
-struct Control {
-    const void* table;
-    long strong;
-    long weak;
+struct CountBase {
+    long useCount;
+    long weakCount;
+
+    CountBase() : useCount(1), weakCount(1) {}
+    virtual ~CountBase();
+    virtual void dispose() = 0;
+    virtual void destroy();
+    virtual void* getDeleter(const void*) = 0;
+};
+
+struct Count : CountBase {
     Object* object;
+
+    explicit Count(Object* p) : object(p) {}
+    virtual ~Count();
+    virtual void dispose();
+    virtual void* getDeleter(const void*);
 };
 
 struct S {
-    Control* control;
-    S(Object* object);
+    CountBase* count;
+    explicit S(Object*);
 };
 
-S::S(Object* object) : control(0)
+S::S(Object* p) : count(0)
 {
     try {
-        Control* p = static_cast<Control*>(operator new(sizeof(Control)));
-        if (p) {
-            p->strong = 1;
-            p->weak = 1;
-            p->table = control_table;
-            p->object = object;
-        } else {
-            p = 0;
-        }
-        control = p;
-    } catch (...) {
-        delete object;
+        count = new Count(p);
+    }
+    catch (...) {
+        boost::checked_delete(p);
         throw;
     }
 }

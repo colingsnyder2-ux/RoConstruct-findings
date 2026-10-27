@@ -48,41 +48,46 @@
 // 004326cc  6a00                 push 0
 // 004326ce  e8b9ee2600           call 0x6a158c
 
-void* __cdecl allocate(unsigned int);
-extern const unsigned int controlTable[];
+#pragma optimize("y", off)
+
+void* __cdecl operator new(unsigned int);
+extern void* controlVtable[];
 
 struct Deleter {
     void operator()(void*) const;
 };
 
+
+
 struct Control {
-    const unsigned int* table;
-    long strong;
-    long weak;
+    void** vtable;
+    int strong;
+    int weak;
     void* object;
-    unsigned char deleter[4];
+    Deleter deleter;
+
+    Control(void*, const Deleter&);
 };
+
+inline Control::Control(void* p, const Deleter& d)
+    : strong(1), weak(1), deleter(d)
+{
+    vtable = controlVtable;
+    object = p;
+}
 
 struct S {
     Control* control;
-    S(void*, const Deleter&);
+    S(void*, Deleter);
 };
 
-S::S(void* object, const Deleter& deleter) : control(0)
+S::S(void* p, Deleter d) : control(0)
 {
     try {
-        Control* p = static_cast<Control*>(allocate(20));
-        if (p) {
-            p->strong = 1;
-            p->weak = 1;
-            p->table = controlTable;
-            p->object = object;
-        } else {
-            p = 0;
-        }
-        control = p;
-    } catch (...) {
-        deleter(object);
+        control = new Control(p, d);
+    }
+    catch (...) {
+        d(p);
         throw;
     }
 }

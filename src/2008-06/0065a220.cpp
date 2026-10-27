@@ -1,4 +1,4 @@
-// from server: 77% by Espeon
+// from server: 83% by coldek
 // roc 2008-06 0065a220  unit: RBX::BallBallContact  size: 695 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0065a220
 //
@@ -260,6 +260,12 @@ struct SpatialHash {
  void collide(TreeNode*,Primitive*);
  void addNode(int,Primitive*,const Vector&);
 };
+
+void onStub(int, unsigned);
+__declspec(noinline) SpatialNode* SpatialHash::allocate(int level,unsigned hash,const Vector& grid){ onStub(level+grid.x+grid.y+grid.z,hash); return freeSmall; }
+__declspec(noinline) TreeNode* SpatialHash::find(int level,unsigned hash,const Vector& grid){ onStub(level+grid.x+grid.y+grid.z,hash); return 0; }
+__declspec(noinline) TreeNode* SpatialHash::create(int level,unsigned hash,const Vector& grid){ onStub(level+grid.x+grid.y+grid.z,hash); return 0; }
+__declspec(noinline) void SpatialHash::collide(TreeNode* t,Primitive* p){ onStub((int)t,(unsigned)p); }
 void SpatialHash::addNode(int level,Primitive* primitive,const Vector& grid){
  unsigned hash=(grid.z*0x04f9ffb7u ^grid.y*0x0127409fu ^grid.x*0x0466f45du)&(0xffff>>level);
  ++nodeCount;
@@ -269,9 +275,9 @@ void SpatialHash::addNode(int level,Primitive* primitive,const Vector& grid){
  node->next=levels[level][hash].head;
  SpatialNode* current=node->next;
  levels[level][hash].head=node;
+ int count=1;
  Vector parent=grid;
  unsigned previousHash=~0u;
- int count=1;
  bool buildParent=true;
  for(int currentLevel=level;currentLevel<levelLimit;++currentLevel){
   if(currentLevel>level){
@@ -297,6 +303,5 @@ void SpatialHash::addNode(int level,Primitive* primitive,const Vector& grid){
   previousHash=hash;
  }
  if(node->level>0)collide(static_cast<LargeNode*>(node)->owner,primitive);
- maxBucket=std::max(maxBucket,count);
+ if(maxBucket<count)maxBucket=count;
 }
-

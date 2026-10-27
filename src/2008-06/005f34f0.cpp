@@ -48,52 +48,47 @@
 // 005f356c  6a00                 push 0
 // 005f356e  e819e00a00           call 0x6a158c
 
-
-
-
-
-typedef unsigned int size_t;
-void* __cdecl operator new(size_t);
+void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
 struct Object {
-    ~Object();
+    virtual ~Object();
 };
 
-struct CountBase {
-    long strong;
-    long weak;
+namespace boost { template<class T> void checked_delete(T*); }
 
-    CountBase();
+struct CountBase {
+    long useCount;
+    long weakCount;
+
+    CountBase() : useCount(1), weakCount(1) {}
     virtual ~CountBase();
     virtual void dispose() = 0;
     virtual void destroy();
-    virtual void* get_deleter(const void*) = 0;
+    virtual void* getDeleter(const void*) = 0;
 };
 
-struct CountImpl : CountBase {
+struct Count : CountBase {
     Object* object;
 
-    CountImpl(Object*);
-    virtual ~CountImpl();
+    explicit Count(Object* p) : object(p) {}
+    virtual ~Count();
     virtual void dispose();
-    virtual void* get_deleter(const void*);
+    virtual void* getDeleter(const void*);
 };
 
 struct S {
     CountBase* count;
-    S(Object*);
+    explicit S(Object*);
 };
 
-__forceinline CountBase::CountBase() : strong(1), weak(1) {}
-
-__forceinline CountImpl::CountImpl(Object* p) : object(p) {}
-
-S::S(Object* p) : count(0) {
+S::S(Object* p) : count(0)
+{
     try {
-        count = new CountImpl(p);
-    } catch (...) {
-        delete p;
+        count = new Count(p);
+    }
+    catch (...) {
+        boost::checked_delete(p);
         throw;
     }
 }

@@ -80,7 +80,8 @@
 struct Exception {
     long status;
     Exception(const Exception&);
-    ~Exception();
+    virtual ~Exception();
+    void Delete();
 };
 
 void* __cdecl operator new(size_t);
@@ -112,8 +113,9 @@ long __stdcall S::CreateInstance(void* outer, const void* iid, void** result)
     {
         object = new S(outer);
     }
-    catch (Exception exception)
+    catch (Exception* e)
     {
+        e->Delete();
     }
 
     if (object)

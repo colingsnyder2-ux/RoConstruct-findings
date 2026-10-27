@@ -48,39 +48,46 @@
 // 0048feac  6a00                 push 0
 // 0048feae  e8d9162100           call 0x6a158c
 
-void* __cdecl operator new(unsigned int);
-void __cdecl operator delete(void*);
+#pragma optimize("y", off)
 
-extern const void* control_vtable[];
+void* __cdecl operator new(unsigned int);
+extern void* controlVtable[];
+
+struct Deleter {
+    void operator()(void*) const;
+};
+
+
 
 struct Control {
-    const void** vtable;
-    long strong;
-    long weak;
+    void** vtable;
+    int strong;
+    int weak;
     void* object;
-    unsigned char deleter;
+    Deleter deleter;
+
+    Control(void*, const Deleter&);
 };
+
+inline Control::Control(void* p, const Deleter& d)
+    : strong(1), weak(1), deleter(d)
+{
+    vtable = controlVtable;
+    object = p;
+}
 
 struct S {
     Control* control;
-    S(void* object, int);
+    S(void*, Deleter);
 };
 
-S::S(void* object, int) : control(0)
+S::S(void* p, Deleter d) : control(0)
 {
     try {
-        Control* p = static_cast<Control*>(operator new(sizeof(Control)));
-        if (p) {
-            p->strong = 1;
-            p->weak = 1;
-            p->vtable = control_vtable;
-            p->object = object;
-        } else {
-            p = 0;
-        }
-        control = p;
-    } catch (...) {
-        operator delete(object);
+        control = new Control(p, d);
+    }
+    catch (...) {
+        d(p);
         throw;
     }
 }

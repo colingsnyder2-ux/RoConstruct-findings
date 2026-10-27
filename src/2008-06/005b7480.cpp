@@ -48,40 +48,46 @@
 // 005b74fc  6a00                 push 0
 // 005b74fe  e889a00e00           call 0x6a158c
 
+#pragma optimize("y", off)
+
 void* __cdecl operator new(unsigned int);
-void __cdecl operator delete(void*);
-extern unsigned int controlTable[];
+extern void* controlVtable[];
 
-struct ControlBlock {
-    const void* table;
-    long strong;
-    long weak;
-    void* object;
-    unsigned char deleter[4];
-
-    ControlBlock(void* value);
+struct Deleter {
+    void operator()(void*) const;
 };
 
-inline ControlBlock::ControlBlock(void* value)
+
+
+struct Control {
+    void** vtable;
+    int strong;
+    int weak;
+    void* object;
+    Deleter deleter;
+
+    Control(void*, const Deleter&);
+};
+
+inline Control::Control(void* p, const Deleter& d)
+    : strong(1), weak(1), deleter(d)
 {
-    strong = 1;
-    weak = 1;
-    table = controlTable;
-    object = value;
+    vtable = controlVtable;
+    object = p;
 }
 
 struct S {
-    ControlBlock* control;
-    S(void* object, int);
+    Control* control;
+    S(void*, Deleter);
 };
 
-S::S(void* object, int) : control(0)
+S::S(void* p, Deleter d) : control(0)
 {
     try {
-        control = new ControlBlock(object);
+        control = new Control(p, d);
     }
     catch (...) {
-        operator delete(object);
+        d(p);
         throw;
     }
 }

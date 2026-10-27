@@ -57,7 +57,7 @@ struct Deleter {
     void operator()(void*) const;
 };
 
-inline void Deleter::operator()(void*) const {}
+
 
 struct Control {
     void** vtable;

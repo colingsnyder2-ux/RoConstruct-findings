@@ -1,12 +1,10 @@
-// from server: 82% by coldek
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-view-dll roc_claude_meshface_f8d85df25fc8cd77.cpp
+// roc-lib: rbxgs-view-dll roc_claude_meshface22e769980f77f3e44.cpp
 
 // Candidate translation unit (score above; library headers required).
-// meshFace<NormalId> face builder (2008 shape with corners out-param) rebuilt inside the authentic BrickMesh.cpp TU;
-// six explicit instantiations cover 004de360/004def80/004dfbb0/004e07e0/004e1410/004e2040. Partial (81-82%).
 #include "BrickMesh.cpp"
 #include <vector>
 #include <algorithm>
@@ -15,13 +13,16 @@
 extern bool buildingShadowMesh;
 extern const G3D::Vector2 flatTextureOrigin;
 template<RBX::NormalId id>
+static inline G3D::Vector3 faceHalf(const G3D::Vector3& size,float inset){
+    const G3D::Vector3& mapped=RBX::uvwToObject<id>(size);
+    return G3D::Vector3(fabs(mapped.x),fabs(mapped.y),fabs(mapped.z))-G3D::Vector3(inset,inset,0);
+}
+template<RBX::NormalId id>
 void recoveredMeshFace(const G3D::Vector3& size,float inset,unsigned surfaces,float color,
                       G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>& level,unsigned* corners) {
     using namespace G3D;
     unsigned surface=(surfaces>>(3*id))&7;
-    const Vector3&mapped=RBX::uvwToObject<id>(size);
-    Vector3 half;
-    half=Vector3(fabs(mapped.x)-inset,fabs(mapped.y)-inset,fabs(mapped.z));
+    Vector3 half=faceHalf<id>(size,inset);
     Vector2 step(0,0),origin(0,0);
     switch(surface) {
     case 0: origin=flatTextureOrigin;step=half.xy()*2.0f;break;
@@ -44,7 +45,7 @@ void recoveredMeshFace(const G3D::Vector3& size,float inset,unsigned surfaces,fl
         faceFirst=first;faceLast=last;
     }
     if(surface==0) {
-        Vector3 n3(faceFirst.x,faceLast.y,1),n0(faceFirst.x,faceFirst.y,1),n1(faceLast.x,faceFirst.y,1),n2(faceLast.x,faceLast.y,1);
+        Vector3 n0(faceFirst.x,faceFirst.y,1),n3(faceFirst.x,faceLast.y,1),n1(faceLast.x,faceFirst.y,1),n2(faceLast.x,faceLast.y,1);
         unsigned a;
         {
             Vector3 tn=RBX::uvwToObject<id>(n0);
@@ -73,43 +74,47 @@ void recoveredMeshFace(const G3D::Vector3& size,float inset,unsigned surfaces,fl
         corners[0]=a;corners[1]=b;corners[2]=c;corners[3]=d;
         return;
     }
-    float x=-half.x;
-    unsigned rows=0;
+    Vector2 p;
+    p.x=-half.x;
     Vector2 delta=(faceLast-faceFirst)*0.5f/half.xy();
-    float normalX=faceFirst.x;
+    unsigned rows=0;
+    Vector2 normal;
+    normal.x=faceFirst.x;
     static std::vector<int> indices;
     indices.erase(indices.begin(),indices.end());
     unsigned columns;
-    for(;x<half.x;++rows) {
-        float right=std::min(x+step.x,half.x);
-        float normalY=faceFirst.y;
+    for(;p.x<half.x;++rows) {
+        Vector2 q;
+        q.x=std::min(p.x+step.x,half.x);
         columns=0;
-        float nextNormalX=normalX+delta.x;
-        float y=-half.y;
-        for(;y<half.y;++columns) {
-            float top=std::min(y+step.y,half.y);
-            float nextNormalY=normalY+delta.y;
-            Vector2 t0(origin.x+1.0f/1024.0f,origin.y+(top-y)*(1.0f/12.0f));
-            Vector2 t1(origin.x-1.0f/1024.0f+(right-x)*(1.0f/64.0f),origin.y+(top-y)*(1.0f/12.0f));
-            Vector2 t2(origin.x-1.0f/1024.0f+(right-x)*(1.0f/64.0f),origin.y);
+        Vector2 nextNormal;
+        nextNormal.x=normal.x+delta.x;
+        p.y=-half.y;
+        normal.y=faceFirst.y;
+        for(;p.y<half.y;++columns) {
+            q.y=std::min(p.y+step.y,half.y);
+            nextNormal.y=normal.y+delta.y;
+            Vector2 t0(origin.x+1.0f/1024.0f,origin.y+(q.y-p.y)*(1.0f/12.0f));
+            Vector2 t1(origin.x-1.0f/1024.0f+(q.x-p.x)*(1.0f/64.0f),origin.y+(q.y-p.y)*(1.0f/12.0f));
+            Vector2 t2(origin.x-1.0f/1024.0f+(q.x-p.x)*(1.0f/64.0f),origin.y);
             Vector2 t3(origin.x+1.0f/1024.0f,origin.y);
-            Vector3 tn0=RBX::uvwToObject<id>(Vector3(normalX,normalY,1));
-            Vector3 tp0=RBX::uvwToObject<id>(Vector3(x,y,half.z));
+            Vector3 tn0=RBX::uvwToObject<id>(Vector3(normal.x,normal.y,1));
+            Vector3 tp0=RBX::uvwToObject<id>(Vector3(p.x,p.y,half.z));
             unsigned a=RBX::Render::Mesh::allocVertex(tp0,tn0,t0,true);
-            Vector3 tn1=RBX::uvwToObject<id>(Vector3(nextNormalX,normalY,1));
-            Vector3 tp1=RBX::uvwToObject<id>(Vector3(right,y,half.z));
+            Vector3 tn1=RBX::uvwToObject<id>(Vector3(nextNormal.x,normal.y,1));
+            Vector3 tp1=RBX::uvwToObject<id>(Vector3(q.x,p.y,half.z));
             unsigned b=RBX::Render::Mesh::allocVertex(tp1,tn1,t1,true);
-            Vector3 tn2=RBX::uvwToObject<id>(Vector3(nextNormalX,nextNormalY,1));
-            Vector3 tp2=RBX::uvwToObject<id>(Vector3(right,top,half.z));
+            Vector3 tn2=RBX::uvwToObject<id>(Vector3(nextNormal.x,nextNormal.y,1));
+            Vector3 tp2=RBX::uvwToObject<id>(Vector3(q.x,q.y,half.z));
             unsigned c=RBX::Render::Mesh::allocVertex(tp2,tn2,t2,true);
-            Vector3 tn3=RBX::uvwToObject<id>(Vector3(normalX,nextNormalY,1));
-            Vector3 tp3=RBX::uvwToObject<id>(Vector3(x,top,half.z));
+            Vector3 tn3=RBX::uvwToObject<id>(Vector3(normal.x,nextNormal.y,1));
+            Vector3 tp3=RBX::uvwToObject<id>(Vector3(p.x,q.y,half.z));
             unsigned d=RBX::Render::Mesh::allocVertex(tp3,tn3,t3,true);
             indices.push_back(a);indices.push_back(b);indices.push_back(c);indices.push_back(d);
             level->indexArray.append(a,b,c,d);
-            y=top;normalY=nextNormalY;
+            p.y=q.y;normal.y=nextNormal.y;
         }
-        x=right;normalX=nextNormalX;
+        p.x=q.x;normal.x=nextNormal.x;
     }
     corners[0]=indices[0];
     corners[1]=indices[(rows-1)*columns*4+1];

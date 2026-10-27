@@ -1,4 +1,4 @@
-// from server: 100% by tester
+// from server: 100% by king_originala
 // roc 2008-06 00411940  unit: ChatEnter  size: 131 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00411940
 //
@@ -48,43 +48,46 @@
 // 004119bc  6a00                 push 0
 // 004119be  e8c9fb2800           call 0x6a158c
 
-extern void* __cdecl operator new(unsigned int);
-extern const unsigned char control_table[];
+#pragma optimize("y", off)
 
-struct Object {
-    virtual ~Object();
+void* __cdecl operator new(unsigned int);
+extern void* controlVtable[];
+
+struct Deleter {
+    void operator()(void*) const;
 };
 
-struct Deleter {};
+
 
 struct Control {
-    const void* table;
-    long strong;
-    long weak;
-    Object* object;
+    void** vtable;
+    int strong;
+    int weak;
+    void* object;
     Deleter deleter;
+
+    Control(void*, const Deleter&);
 };
+
+inline Control::Control(void* p, const Deleter& d)
+    : strong(1), weak(1), deleter(d)
+{
+    vtable = controlVtable;
+    object = p;
+}
 
 struct S {
     Control* control;
-    S(Object* object, Deleter deleter);
+    S(void*, Deleter);
 };
 
-S::S(Object* object, Deleter deleter) : control(0)
+S::S(void* p, Deleter d) : control(0)
 {
     try {
-        Control* p = static_cast<Control*>(operator new(sizeof(Control)));
-        if (p) {
-            p->strong = 1;
-            p->weak = 1;
-            p->table = control_table;
-            p->object = object;
-        } else {
-            p = 0;
-        }
-        control = p;
-    } catch (...) {
-        delete object;
+        control = new Control(p, d);
+    }
+    catch (...) {
+        d(p);
         throw;
     }
 }

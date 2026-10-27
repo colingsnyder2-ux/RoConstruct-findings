@@ -1,4 +1,4 @@
-// from server: 100% by tester
+// from server: 100% by king_originala
 // roc 2008-06 00635fd0  unit: G3D::VColor3::V?$Value::?$FactoryProduct  size: 131 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00635fd0
 //
@@ -57,7 +57,7 @@ struct Deleter {
     void operator()(void*) const;
 };
 
-inline void Deleter::operator()(void*) const {}
+
 
 struct Control {
     void** vtable;

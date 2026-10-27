@@ -1,93 +1,94 @@
-// from server: 100% by tester
-// roc 2008-06 006209d0  unit: CopyVerb  size: 131 bytes
+// from server: 100% by coldek
+// roc 2008-06 006209d0  unit: VWaitScriptSlot::?$TGenericSlotWrapper  size: 131 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006209d0
 //
 // 006209d0  55                   push ebp
-// 00414821  8bec                 mov ebp, esp
-// 00414823  6aff                 push -1
-// 00414825  6860d97b00           push 0x7bd960
-// 0041482a  64a100000000         mov eax, dword ptr fs:[0]
-// 00414830  50                   push eax
-// 00414831  64892500000000       mov dword ptr fs:[0], esp
-// 00414838  51                   push ecx
-// 00414839  53                   push ebx
-// 0041483a  56                   push esi
-// 0041483b  57                   push edi
-// 0041483c  8965f0               mov dword ptr [ebp - 0x10], esp
-// 0041483f  8bf1                 mov esi, ecx
-// 00414841  6a14                 push 0x14
-// 00414843  c70600000000         mov dword ptr [esi], 0
-// 00414849  c745fc00000000       mov dword ptr [ebp - 4], 0
-// 00414850  e8cbc02800           call 0x6a0920
-// 00414855  83c404               add esp, 4
-// 00414858  85c0                 test eax, eax
-// 0041485a  7419                 je 0x414875
-// 0041485c  b901000000           mov ecx, 1
-// 00414861  894804               mov dword ptr [eax + 4], ecx
-// 00414864  894808               mov dword ptr [eax + 8], ecx
-// 00414867  8b4d08               mov ecx, dword ptr [ebp + 8]
-// 0041486a  c700b4e98000         mov dword ptr [eax], 0x80e9b4
-// 00414870  89480c               mov dword ptr [eax + 0xc], ecx
-// 00414873  eb02                 jmp 0x414877
-// 00414875  33c0                 xor eax, eax
-// 00414877  8b4df4               mov ecx, dword ptr [ebp - 0xc]
-// 0041487a  8906                 mov dword ptr [esi], eax
-// 0041487c  5f                   pop edi
-// 0041487d  8bc6                 mov eax, esi
-// 0041487f  5e                   pop esi
-// 00414880  64890d00000000       mov dword ptr fs:[0], ecx
-// 00414887  5b                   pop ebx
-// 00414888  8be5                 mov esp, ebp
-// 0041488a  5d                   pop ebp
-// 0041488b  c20800               ret 8
-// 0041488e  8b5508               mov edx, dword ptr [ebp + 8]
-// 00414891  52                   push edx
-// 00414892  8d4d0c               lea ecx, [ebp + 0xc]
-// 00414895  e89615ffff           call 0x405e30
-// 0041489a  6a00                 push 0
-// 0041489c  6a00                 push 0
-// 0041489e  e8e9cc2800           call 0x6a158c
-
-#pragma optimize("y", off)
+// 006209d1  8bec                 mov ebp, esp
+// 006209d3  6aff                 push -1
+// 006209d5  68f0967d00           push 0x7d96f0
+// 006209da  64a100000000         mov eax, dword ptr fs:[0]
+// 006209e0  50                   push eax
+// 006209e1  64892500000000       mov dword ptr fs:[0], esp
+// 006209e8  51                   push ecx
+// 006209e9  53                   push ebx
+// 006209ea  56                   push esi
+// 006209eb  57                   push edi
+// 006209ec  8965f0               mov dword ptr [ebp - 0x10], esp
+// 006209ef  8bf1                 mov esi, ecx
+// 006209f1  6a10                 push 0x10
+// 006209f3  c70600000000         mov dword ptr [esi], 0
+// 006209f9  c745fc00000000       mov dword ptr [ebp - 4], 0
+// 00620a00  e81bff0700           call 0x6a0920
+// 00620a05  83c404               add esp, 4
+// 00620a08  85c0                 test eax, eax
+// 00620a0a  7419                 je 0x620a25
+// 00620a0c  b901000000           mov ecx, 1
+// 00620a11  894804               mov dword ptr [eax + 4], ecx
+// 00620a14  894808               mov dword ptr [eax + 8], ecx
+// 00620a17  8b4d08               mov ecx, dword ptr [ebp + 8]
+// 00620a1a  c7008c478400         mov dword ptr [eax], 0x84478c
+// 00620a20  89480c               mov dword ptr [eax + 0xc], ecx
+// 00620a23  eb02                 jmp 0x620a27
+// 00620a25  33c0                 xor eax, eax
+// 00620a27  8b4df4               mov ecx, dword ptr [ebp - 0xc]
+// 00620a2a  8906                 mov dword ptr [esi], eax
+// 00620a2c  5f                   pop edi
+// 00620a2d  8bc6                 mov eax, esi
+// 00620a2f  5e                   pop esi
+// 00620a30  64890d00000000       mov dword ptr fs:[0], ecx
+// 00620a37  5b                   pop ebx
+// 00620a38  8be5                 mov esp, ebp
+// 00620a3a  5d                   pop ebp
+// 00620a3b  c20400               ret 4
+// 00620a3e  8b5508               mov edx, dword ptr [ebp + 8]
+// 00620a41  52                   push edx
+// 00620a42  e829ffffff           call 0x620970
+// 00620a47  83c404               add esp, 4
+// 00620a4a  6a00                 push 0
+// 00620a4c  6a00                 push 0
+// 00620a4e  e8390b0800           call 0x6a158c
 
 void* __cdecl operator new(unsigned int);
-extern void* controlVtable[];
+void __cdecl operator delete(void*);
 
-extern void deleterCall(void*);
-struct Deleter {
-    void operator()(void*) const;
+struct Object {
+    virtual ~Object();
 };
 
-inline void Deleter::operator()(void* p) const { deleterCall(p); }
+namespace boost { template<class T> void checked_delete(T*); }
 
-struct Control {
-    void** vtable;
-    int strong;
-    int weak;
-    void* object;
+struct CountBase {
+    long useCount;
+    long weakCount;
 
-    Control(void*, const Deleter&);
+    CountBase() : useCount(1), weakCount(1) {}
+    virtual ~CountBase();
+    virtual void dispose() = 0;
+    virtual void destroy();
+    virtual void* getDeleter(const void*) = 0;
 };
 
-inline Control::Control(void* p, const Deleter& d)
-    : strong(1), weak(1)
-{
-    vtable = controlVtable;
-    object = p;
-}
+struct Count : CountBase {
+    Object* object;
+
+    explicit Count(Object* p) : object(p) {}
+    virtual ~Count();
+    virtual void dispose();
+    virtual void* getDeleter(const void*);
+};
 
 struct S {
-    Control* control;
-    S(void*, Deleter);
+    CountBase* count;
+    explicit S(Object*);
 };
 
-S::S(void* p, Deleter d) : control(0)
+S::S(Object* p) : count(0)
 {
     try {
-        control = new Control(p, d);
+        count = new Count(p);
     }
     catch (...) {
-        d(p);
+        boost::checked_delete(p);
         throw;
     }
 }

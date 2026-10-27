@@ -1,4 +1,4 @@
-// from server: 100% by tester
+// from server: 100% by king_originala
 // roc 2008-06 0056b2c0  unit: RBX::VInstance::?$NonFactoryProduct  size: 131 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0056b2c0
 //
@@ -55,6 +55,8 @@ struct Object {
     virtual ~Object();
 };
 
+namespace boost { template<class T> void checked_delete(T*); }
+
 struct CountBase {
     long useCount;
     long weakCount;
@@ -86,7 +88,7 @@ S::S(Object* p) : count(0)
         count = new Count(p);
     }
     catch (...) {
-        delete p;
+        boost::checked_delete(p);
         throw;
     }
 }

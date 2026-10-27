@@ -1,77 +1,10 @@
-// from server: 100% by colin
-// roc 2008-06 0040ff20  unit: UIEnumConnections::V?$CComEnum::?$CComObject  size: 193 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0040ff20
-//
-// 0040ff20  55                   push ebp
-// 0040ff21  8bec                 mov ebp, esp
-// 0040ff23  6aff                 push -1
-// 0040ff25  6830d57b00           push 0x7bd530
-// 0040ff2a  64a100000000         mov eax, dword ptr fs:[0]
-// 0040ff30  50                   push eax
-// 0040ff31  64892500000000       mov dword ptr fs:[0], esp
-// 0040ff38  83ec10               sub esp, 0x10
-// 0040ff3b  8b4508               mov eax, dword ptr [ebp + 8]
-// 0040ff3e  53                   push ebx
-// 0040ff3f  56                   push esi
-// 0040ff40  57                   push edi
-// 0040ff41  33ff                 xor edi, edi
-// 0040ff43  8965f0               mov dword ptr [ebp - 0x10], esp
-// 0040ff46  3bc7                 cmp eax, edi
-// 0040ff48  7518                 jne 0x40ff62
-// 0040ff4a  b803400080           mov eax, 0x80004003
-// 0040ff4f  8b4df4               mov ecx, dword ptr [ebp - 0xc]
-// 0040ff52  64890d00000000       mov dword ptr fs:[0], ecx
-// 0040ff59  5f                   pop edi
-// 0040ff5a  5e                   pop esi
-// 0040ff5b  5b                   pop ebx
-// 0040ff5c  8be5                 mov esp, ebp
-// 0040ff5e  5d                   pop ebp
-// 0040ff5f  c20400               ret 4
-// 0040ff62  bb0e000780           mov ebx, 0x8007000e
-// 0040ff67  6a1c                 push 0x1c
-// 0040ff69  8938                 mov dword ptr [eax], edi
-// 0040ff6b  895dec               mov dword ptr [ebp - 0x14], ebx
-// 0040ff6e  897de8               mov dword ptr [ebp - 0x18], edi
-// 0040ff71  897dfc               mov dword ptr [ebp - 4], edi
-// 0040ff74  e8a7092900           call 0x6a0920
-// 0040ff79  8bf0                 mov esi, eax
-// 0040ff7b  83c404               add esp, 4
-// 0040ff7e  3bf7                 cmp esi, edi
-// 0040ff80  742d                 je 0x40ffaf
-// 0040ff82  897e04               mov dword ptr [esi + 4], edi
-// 0040ff85  897e10               mov dword ptr [esi + 0x10], edi
-// 0040ff88  897e0c               mov dword ptr [esi + 0xc], edi
-// 0040ff8b  897e08               mov dword ptr [esi + 8], edi
-// 0040ff8e  897e14               mov dword ptr [esi + 0x14], edi
-// 0040ff91  897e18               mov dword ptr [esi + 0x18], edi
-// 0040ff94  c706f0d78000         mov dword ptr [esi], 0x80d7f0
-// 0040ff9a  8b0d68c29600         mov ecx, dword ptr [0x96c268]
-// 0040ffa0  8b01                 mov eax, dword ptr [ecx]
-// 0040ffa2  8b5004               mov edx, dword ptr [eax + 4]
-// 0040ffa5  ffd2                 call edx
-// 0040ffa7  3bf7                 cmp esi, edi
-// 0040ffa9  741c                 je 0x40ffc7
-// 0040ffab  33db                 xor ebx, ebx
-// 0040ffad  eb18                 jmp 0x40ffc7
-// 0040ffaf  33f6                 xor esi, esi
-// 0040ffb1  ebf4                 jmp 0x40ffa7
-// 0040ffb3  8b4de4               mov ecx, dword ptr [ebp - 0x1c]
-// 0040ffb6  e895092900           call 0x6a0950
-// 0040ffbb  b8c1ff4000           mov eax, 0x40ffc1
-// 0040ffc0  c3                   ret 
-// 0040ffc1  8b5dec               mov ebx, dword ptr [ebp - 0x14]
-// 0040ffc4  8b75e8               mov esi, dword ptr [ebp - 0x18]
-// 0040ffc7  8b4508               mov eax, dword ptr [ebp + 8]
-// 0040ffca  8b4df4               mov ecx, dword ptr [ebp - 0xc]
-// 0040ffcd  8930                 mov dword ptr [eax], esi
-// 0040ffcf  5f                   pop edi
-// 0040ffd0  5e                   pop esi
-// 0040ffd1  8bc3                 mov eax, ebx
-// 0040ffd3  64890d00000000       mov dword ptr fs:[0], ecx
-// 0040ffda  5b                   pop ebx
-// 0040ffdb  8be5                 mov esp, ebp
-// 0040ffdd  5d                   pop ebp
-// 0040ffde  c20400               ret 4
+// from server: 100% by coldek
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_codex_com_pointercatch_a18f3f1468ad233e.cpp
+
+// Candidate translation unit (score above; library headers required).
 
 extern void* __cdecl operator new(unsigned int);
 extern void* objectTable[];
@@ -89,7 +22,7 @@ extern Module* module;
 struct Exception {
     long status;
     Exception(const Exception&);
-    ~Exception();
+    ~Exception(); void Delete();
 };
 
 struct Object {
@@ -129,8 +62,7 @@ long __stdcall Object::Create(Object** result)
 try {
         object = new Object;
     }
-    catch (Exception exception) {
-    }
+    catch (Exception* exception) { exception->Delete(); }
     if (object)
         status = 0;
 
