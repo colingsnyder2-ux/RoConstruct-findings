@@ -2586,11 +2586,11 @@
         ]
       ]
     },
-    "phase": "fingerprinting inputs",
+    "phase": "resuming",
     "receipt": {},
-    "state": "verifying",
+    "state": "queued",
     "unit": "RBX::Workspace",
-    "updated": 1793139747.8057046,
+    "updated": 1793141575.5056155,
     "user": "colin"
   },
   {
@@ -2605,11 +2605,11 @@
         ]
       ]
     },
-    "phase": "queued",
+    "phase": "fingerprinting inputs",
     "receipt": {},
-    "state": "queued",
+    "state": "verifying",
     "unit": "RBX::JointInstance",
-    "updated": 1793137592.8503234,
+    "updated": 1793142592.1645293,
     "user": "colin"
   }
 ]

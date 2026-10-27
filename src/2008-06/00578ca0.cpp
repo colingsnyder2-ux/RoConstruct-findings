@@ -1,19 +1,18 @@
-// from server: 60% by coldek
+// from server: 65% by king_originala
+// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHa /MD
+// roc-lib: g3d-6.09 roc_datamodel_mark_native_0beeb8b2b37b1a32.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <G3D/Array.h>
+#include <G3D/Vector4.h>
+#include <stddef.h>
 #include <intrin.h>
 extern bool enabled;
 extern void __cdecl alignedFree(void*);
 
-struct Array
-{
-    void* data;
-    int size;
-    int capacity;
-
-    Array(const Array&);
-    ~Array() { alignedFree(data); }
-};
+typedef G3D::Array<G3D::Vector4> Array;
 
 struct Settings
 {
@@ -22,13 +21,22 @@ struct Settings
     bool second;
 };
 
-struct Scope
-{
-    char storage[24];
-
-    Scope(void*, int);
-    ~Scope();
+// Target constructor005c3f80: section0, frameTick8, wallTime16,
+// TlsGetValue return at4; dtor005c42d0 restores parent and calls CodeProfiler log.
+// 2016 util/Profiling.h corroborates reference/parent/frameTick ownership,
+// but its later Time and extra fields are not transplanted.
+struct CodeProfiler;
+struct Scope {
+ CodeProfiler& section;
+ Scope* enclosingMark;
+ bool frameTick;
+ double startTime;
+ Scope(CodeProfiler&,bool);
+ ~Scope();
 };
+typedef char mark_size[sizeof(Scope)==24?1:-1];
+typedef char mark_align[__alignof(Scope)==8?1:-1];
+typedef char mark_time[offsetof(Scope,startTime)==16?1:-1];
 
 struct World
 {
@@ -91,22 +99,22 @@ void S::f(float elapsed)
     if (active)
     {
         {
-            Scope scope(world->firstScope, 1);
+            Scope scope(*static_cast<CodeProfiler*>(world->firstScope), true);
             world->step(elapsed, &settings);
         }
         {
-            Scope scope(world->thirdScope, 1);
+            Scope scope(*static_cast<CodeProfiler*>(world->thirdScope), true);
             state->step(elapsed);
         }
     }
     else
     {
-        Scope scope(world->secondScope, 1);
+        Scope scope(*static_cast<CodeProfiler*>(world->secondScope), true);
         world->update();
     }
 
     {
-        Scope scope(world->fourthScope, 1);
+        Scope scope(*static_cast<CodeProfiler*>(world->fourthScope), true);
         state->update(elapsed);
     }
 }
