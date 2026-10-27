@@ -1,9 +1,8 @@
-// from server: 92% by king_originala
-// from server: 72% by Espeon
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: xtp-11.2.2-shared-mfc roc_king_originala_tree_visible_75e352b396f692de.cpp
+// roc-lib: xtp-11.2.2-shared-mfc roc_codex_vischildren_snapshot_alias_82e230881187a9c2.cpp
 
 // Candidate translation unit (score above; library headers required).
 #ifndef _CPPUNWIND
@@ -203,7 +202,7 @@ class NativeTreeRegistry {public:NativeTreeMetadata*lookup(const RBX::Reflection
 extern boost::shared_ptr<NativeTreeRegistry>nativeTreeRegistry();
 
 typedef std::vector<boost::shared_ptr<RBX::Instance> > NativeChildren;
-struct NativeChildSnapshot {boost::shared_ptr<const NativeChildren>snapshot()const;};
+struct NativeChildSnapshot {__declspec(noalias) boost::shared_ptr<const NativeChildren>snapshot()const;};
 bool CRobloxTreeCtrlNode::hasVisibleChildren(){
  NativeTreeWriteGuard guard(tree->getDataModel());
  boost::shared_ptr<const NativeChildren>children=reinterpret_cast<NativeChildSnapshot*>(reinterpret_cast<char*>(instance.get())+0x108)->snapshot();

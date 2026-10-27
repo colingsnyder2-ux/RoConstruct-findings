@@ -1,8 +1,8 @@
-// from server: 85% by coldek
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: xtp-11.2.2-shared-mfc roc_claudeM_0b5ccb43eb2e71c4.cpp
+// roc-lib: xtp-11.2.2-shared-mfc roc_codex_pending_visible_readonly_28fdcf6581cac7d7.cpp
 
 // Candidate translation unit (score above; library headers required).
 #ifndef _CPPUNWIND
@@ -190,6 +190,7 @@ public:
  virtual void updateExpansion(int);
  virtual void getDisplayInfo(NMTVDISPINFOA*);
  virtual HTREEITEM insertItem();
+ __declspec(noalias) __declspec(noinline) CRobloxTreeCtrlNode* findChild(const boost::shared_ptr<RBX::Instance>&);
  void prepareTreeItem();void updateTreeItem();void finishTreeItem();
 };
 
@@ -199,7 +200,7 @@ struct NativeScopedFlag {
  ~NativeScopedFlag(){flag=previous;}
 };
 class NativeSelectionTimer:public CRobloxTreeCtrl {
-public:char nativeGapD0[16];bool flagE0;bool flagE1;std::set<boost::shared_ptr<RBX::Instance> > pendingRoots;void refreshPending();void onTimer(UINT_PTR);__declspec(noalias) CRobloxTreeCtrlNode*findNode(const boost::shared_ptr<RBX::Instance>&);void processPendingRoots();
+public:char nativeGapD0[16];bool flagE0;bool flagE1;std::set<boost::shared_ptr<RBX::Instance> > pendingRoots;void refreshPending();void onTimer(UINT_PTR);__declspec(noalias) __declspec(noinline) CRobloxTreeCtrlNode*findNode(const boost::shared_ptr<RBX::Instance>&);void processPendingRoots();
 };
 void NativeSelectionTimer::onTimer(UINT_PTR argument){
  CRobloxTreeCtrlNode*selected=0;
@@ -221,6 +222,42 @@ void NativeSelectionTimer::onTimer(UINT_PTR argument){
 }
 
 typedef char pending_offset[offsetof(NativeSelectionTimer,pendingRoots)==0xe4?1:-1];
+
+
+// 00426100: metadata filter, mutex-protected child map, construct and create absent child.
+class PendingMetadata {public:int priority();};
+class PendingRegistry {public:PendingMetadata*lookup(const RBX::Reflection::ClassDescriptor*,bool);};
+extern boost::shared_ptr<PendingRegistry> __cdecl pendingRegistry();
+CRobloxTreeCtrlNode* CRobloxTreeCtrlNode::findChild(const boost::shared_ptr<RBX::Instance>& item){
+ boost::shared_ptr<PendingRegistry> info=pendingRegistry();
+ const RBX::Reflection::ClassDescriptor* desc=*reinterpret_cast<const RBX::Reflection::ClassDescriptor*const*>(reinterpret_cast<const char*>(item.get())+0x1c);
+ PendingMetadata* metadata=info.get()->lookup(desc,true);
+ if(!metadata||metadata->priority()<0)return 0;
+ {
+  boost::recursive_mutex::scoped_lock lock(tree->mutex);
+  std::map<RBX::Instance*,CRobloxTreeCtrlNode*>::iterator it=children.find(item.get());
+  if(it!=children.end())return it->second;
+ }
+ CRobloxTreeCtrlNode* node=new CRobloxTreeCtrlNode(this,item,tree);
+ node->createItem();
+ return node;
+}
+
+// 00426780: mutex-protected nodes.find, recursive parent lookup, then 00426100.
+extern boost::shared_ptr<RBX::Instance> __cdecl nativeTreeShared(RBX::Instance*);
+CRobloxTreeCtrlNode* NativeSelectionTimer::findNode(const boost::shared_ptr<RBX::Instance>& item){
+ if(!item.get())return 0;
+ {
+  boost::recursive_mutex::scoped_lock lock(mutex);
+  std::map<RBX::Instance*,CRobloxTreeCtrlNode*>::iterator it=nodes.find(item.get());
+  if(it!=nodes.end())return it->second;
+ }
+ RBX::Instance* parent=*reinterpret_cast<RBX::Instance*const*>(reinterpret_cast<const char*>(item.get())+0x104);
+ CRobloxTreeCtrlNode* parentNode=findNode(nativeTreeShared(parent));
+ if(!parentNode)return 0;
+ return parentNode->findChild(item);
+}
+
 void NativeSelectionTimer::processPendingRoots(){
  for(int i=0;i<10;++i){
   boost::shared_ptr<RBX::Instance> item;
@@ -235,4 +272,3 @@ void NativeSelectionTimer::processPendingRoots(){
   findNode(item);
  }
 }
-

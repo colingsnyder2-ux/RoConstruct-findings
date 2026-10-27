@@ -1,3 +1,4 @@
+// from server: 100% by coldek
 // from server: 84% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
@@ -102,6 +103,9 @@ struct Replicator {
  void readProperties(BitStream&,Instance*);
  void deserializeValue(BitStream&,Property&);
 };
+static __forceinline void printReadBool(const PropertyDescriptor& descriptor){standardOut()->print(1,"   read %s %s, 1 bit",descriptor.type.name.c_str(),descriptor.name.c_str());}
+
+static __forceinline bool isBooleanType(const Type& type){return typeid(bool)==type.info;}
 void Replicator::readProperties(BitStream&stream,Instance*instance){
  PropertyIterator iter=instance->properties_begin();
  PropertyIterator end=instance->properties_end();
@@ -109,10 +113,10 @@ void Replicator::readProperties(BitStream&stream,Instance*instance){
   Property property=*iter;
   const PropertyDescriptor&descriptor=property.getDescriptor();
   if(descriptor.canStreamWrite()&&&descriptor!=&parentDescriptor){
-   if(typeid(bool)==descriptor.type.info){
+   if(isBooleanType(descriptor.type)){
     bool value;readBool(stream,value);
     if(property.instance)property.setBool(value);
-    if(settings().printInstances&&settings().printProperties){standardOut()->print(1,"   read %s %s, 1 bit",descriptor.type.name.c_str(),descriptor.name.c_str());}
+    if(settings().printInstances&&settings().printProperties){printReadBool(descriptor);}
    }else{
     bool isDefault;readBool(stream,isDefault);
     if(isDefault){

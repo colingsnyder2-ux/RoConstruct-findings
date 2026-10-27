@@ -1,13 +1,13 @@
 {
-  "accepted_jobs": 11,
+  "accepted_jobs": 12,
   "clients": [
     {
       "client": "2008-06",
-      "exact_sources": 22123,
+      "exact_sources": 22132,
       "stored_sources": 22290
     }
   ],
-  "native_credits": 147,
+  "native_credits": 153,
   "sha256": {
     "working-tree/rebuild/2008-06/POLICY.md": "77fcf38870a4e5cc7393873006999d30e1c6da7acebaf2813f8d7664c03cc200",
     "working-tree/rebuild/2008-06/base_check.py": "6753a0b3b6f6029638b0670d38105217a8739f0bc6bb283e1577cc504b0863bd",
@@ -65,9 +65,9 @@
     "working-tree/rebuild/2008-06/modules/zlib-winapi.json": "3cd1909dee8323670ca492ae0d87ddb3a648daf9e75c62fe52f70d4a735403f3",
     "working-tree/rebuild/2008-06/modules/zlib.json": "7c7bc4ab866155c98ae68062b2c17de91343b498b138372b4cf013e385e28a42",
     "working-tree/rebuild/2008-06/patches/make_rbxgs_client.py": "564a733656a574ca1981df8aa22654258816eeeb953a50111ebab753ac2a14bb",
-    "working-tree/rebuild/2008-06/patches/native-promotions.json": "5e5ebfa38fbae0c4f3c543997397cd42faf8d8883df2a088945ed1b25d87554a",
+    "working-tree/rebuild/2008-06/patches/native-promotions.json": "636a6ac215ecedce35596a6183810edade7a092fcfc19ce17e098023b04f5a5f",
     "working-tree/rebuild/2008-06/patches/openrbx-client.json": "1f64aa08d845d5000000c55507e10589795861fc2b3174a9f630a647846b0880",
-    "working-tree/rebuild/2008-06/patches/rbxgs-client.json": "484dc1fba0d235be22b5d2c492db035d4750a7375c06d0b612ed8cf06faec1e3",
+    "working-tree/rebuild/2008-06/patches/rbxgs-client.json": "e0f3bf899a2ba2b477cef7785f54d4e5b32adc1a4a20702c79eaac77fcc0a154",
     "working-tree/rebuild/2008-06/patches/rbxgs_template_defs.h": "4bb1347378975e36c58806101c7c4b94f4e894c9a05894b786801a9b2378b159",
     "working-tree/rebuild/2008-06/patches/zlib-deflate-copyright.json": "120d11aad649274de37aa77ad7055fc871f1a0714287917ceabfa597edc6e993",
     "working-tree/rebuild/2008-06/patches/zlib-winapi-deflate-copyright.json": "120d11aad649274de37aa77ad7055fc871f1a0714287917ceabfa597edc6e993",
@@ -102,6 +102,6 @@
     "working-tree/roc/integration.py": "48fe09cb625bac46b521305dcf3bf427f6fa9806002467362c148b330fd06a47",
     "working-tree/roc/integration_verify.py": "8641021147a87c81ce5a1a49b8ece419a9bf3158d6909201715f5a0a0f2228ad",
     "working-tree/roc/native_sweep.py": "4421adbc01e3292adaee5e75600e6f70ceebf31d8e3a198c88422d8d23aaef93",
-    "working-tree/roc/rebuild.py": "b0e1a180a2feae5b438d1e19883444e6d70b2f6b9a7922162e7a5ba52c9bf09d"
+    "working-tree/roc/rebuild.py": "0e95caaf0ccb5bd53a9b32f09572ea97586910ab215109a48cbcba66c0a7fe95"
   }
 }

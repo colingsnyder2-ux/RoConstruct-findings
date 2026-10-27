@@ -1,3 +1,4 @@
+// from server: 87% by coldek
 // from server: 77% by king_originala
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
@@ -13,7 +14,7 @@
 #include <utility>
 #include <stddef.h>
 #include <ostream>
-namespace RakNet {class BitStream {public:bool ReadBits(unsigned char*,int,bool);};}
+namespace RakNet {class BitStream {public:__declspec(noalias) bool ReadBits(unsigned char*,int,bool);};}
 namespace boost {
 namespace detail {
 class sp_counted_base {public:
@@ -79,7 +80,7 @@ namespace RBX {
 class Name;class Instance;struct XmlElement;struct IReferenceBinder;struct ServiceProvider;
 class Guid:public boost::noncopyable {public:struct Data {const Name*scope;int index;std::string readableString(int)const;};Data data;void assign(Data);};
 class Name {int dictionaryIndex;public:const std::string name;const char*c_str()const{return name.c_str();}};
-template<class T>struct GuidItem {virtual void onGuidChanged();bool registeredGuid;Guid guid;void registerGuid();void unregisterGuid();static bool find(const Guid::Data&,Instance*&);};
+template<class T>struct GuidItem {virtual void onGuidChanged();bool registeredGuid;Guid guid;void registerGuid();void unregisterGuid();static __declspec(noalias) bool find(const Guid::Data&,Instance*&);};
 struct Object {virtual ~Object();};template<class T>struct Creatable:Object{};
 template<class T>struct AbstractFactoryProduct:Creatable<T> {virtual const Name&getClassName()const=0;};
 namespace Reflection {
@@ -96,7 +97,7 @@ template<class T,class Event>struct Notifier {
  virtual void onAddListener(Listener<T,Event>*)const;virtual void onRemoveListener(Listener<T,Event>*)const;
  __declspec(nothrow) void raise(Event)const;
 };
-template<class T>boost::shared_ptr<T> __cdecl shared_from(T*);
+template<class T>__declspec(noalias) boost::shared_ptr<T> __cdecl shared_from(T*);
 struct ChildAdded {const boost::shared_ptr<Instance>child;ChildAdded(Instance*p):child(shared_from(p)){}};
 struct ChildRemoved {const boost::shared_ptr<Instance>child;ChildRemoved(Instance*p):child(shared_from(p)){}};
 struct DescendentAdded;struct DescendentRemoving;struct PropertyChanged;

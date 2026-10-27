@@ -1022,5 +1022,11 @@
    "SpawnLocation::SpawnLocation()\n\t\t:",
    "SpawnLocation::SpawnLocation()\n\t\t:\n\t\t  forcefieldDuration(10),"
   ]
+ ],
+ "App/include/util/Debug.h": [
+  [
+   "#pragma once\n#include <ostream>\n\nnamespace RBX\n{\n\tclass __declspec(novtable) Debugable\n\t{\n\tpublic:\n\t\tenum AssertAction\n\t\t{\n\t\t\tCrashOnAssert,\n\t\t\tIgnoreAssert\n\t\t};\n\n\tpublic:\n\t\tstatic AssertAction assertAction;\n\t\tstatic bool validatingDebug;\n\n\tpublic:\n\t\tvirtual void dump(std::ostream& stream);\n\n\tpublic:\n\t\tstatic void forceBadTypeId();\n\t\tstatic void doCrash();\n\t\tstatic void dump(void*, std::ostream& stream);\n\t};\n}\n\n#define SCOPED(expr) do \\\n\t{ \\\n\t\texpr; \\\n\t} \\\n\twhile (0)\n#if defined(_DEBUG) || defined(_RELEASEASSERT)\n#define RBXASSERT(expr) SCOPED( if ( RBX::Debugable::assertAction == RBX::Debugable::CrashOnAssert ) if ( !(expr) ) RBX::Debugable::doCrash(); )\n#else\n#define RBXASSERT(expr)\n#endif\n\n#define RBXCRASH() { int* badPtr1 = (int*)0; int* badPtr2 = (int*)4; *badPtr1 = *badPtr2; }\n\ntemplate <typename To, typename From>\nTo rbx_static_cast(From u)\n{\n\tRBXASSERT(dynamic_cast<To>(u) == u);\n\treturn static_cast<To>(u);\n}\n",
+   "#pragma once\n#include <ostream>\n\nnamespace RBX\n{\n\tclass __declspec(novtable) Debugable\n\t{\n\tpublic:\n\t\tenum AssertAction\n\t\t{\n\t\t\tCrashOnAssert,\n\t\t\tIgnoreAssert\n\t\t};\n\n\tpublic:\n\t\tstatic AssertAction assertAction;\n\t\tstatic bool validatingDebug;\n\n\tpublic:\n\t\tvirtual void dump(std::ostream& stream);\n\n\tpublic:\n\t\tstatic void forceBadTypeId();\n\t\tstatic void doCrash();\n\t\tstatic void dump(void*, std::ostream& stream);\n\t};\n}\n\n#define SCOPED(expr) do \\\n\t{ \\\n\t\texpr; \\\n\t} \\\n\twhile (0)\n#if defined(_DEBUG) || defined(_RELEASEASSERT)\n#define RBXASSERT(expr) SCOPED( if ( RBX::Debugable::assertAction == RBX::Debugable::CrashOnAssert ) if ( !(expr) ) RBX::Debugable::doCrash(); )\n#else\n#define RBXASSERT(expr)\n#endif\n\n#define RBXCRASH() { int* badPtr1 = (int*)0; int* badPtr2 = (int*)4; *badPtr1 = *badPtr2; }\n\ntemplate <typename To, typename From>\nTo rbx_static_cast(From u)\n{\n\t                                   ;\n\treturn static_cast<To>(u);\n}\n"
+  ]
  ]
 }

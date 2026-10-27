@@ -1,8 +1,8 @@
-// from server: 65% by king_originala_sol_native
+// from server: 70% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_sol_writeprops_ptrforce_c6bf9f8764549469.cpp
+// roc-lib: rbxgs-dll roc_codex_writeprops_type_only_c220c85e875015f6.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <vector>
@@ -102,6 +102,7 @@ struct Replicator {
  void serializeValue(const Property&,bool,BitStream&);
  void writeProperties(const Instance*,BitStream&);
 };
+static __forceinline bool boolPropertyType(const Type& t){return typeid(bool)==t.info;}
 void Replicator::writeProperties(const Instance*instance,BitStream&stream){
  const Instance*defaults=getDefault(instance->getClassName());
  PropertyIterator iter=instance->properties_begin();
@@ -110,7 +111,7 @@ void Replicator::writeProperties(const Instance*instance,BitStream&stream){
   Property property=*iter;
   const PropertyDescriptor&descriptor=property.getDescriptor();
   if(descriptor.canStreamWrite()&&&descriptor!=&parentDescriptor){
-   if(typeid(bool)==descriptor.type.info){
+   if(boolPropertyType(descriptor.type)){
     serializeValue(property,false,stream);
     if(settings().printInstances&&settings().printProperties){standardOut()->print(1,"   write %s %s, 1 bit",descriptor.type.name.c_str(),descriptor.name.c_str());}
    }else if(defaults&&descriptor.equalValues(property.instance,defaults)){
