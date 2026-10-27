@@ -23,7 +23,8 @@ def export_native(root, db):
                 continue
             target = destination / "working-tree/rebuild" / client.name / relative
             target.parent.mkdir(parents=True, exist_ok=True)
-            data = path.read_bytes()
+            # Git publishes these text files with LF endings; hash the same bytes.
+            data = path.read_bytes().replace(b"\r\n", b"\n")
             target.write_bytes(data)
             files[target.relative_to(destination).as_posix()] = hashlib.sha256(data).hexdigest()
     for name in ("rebuild.py", "integration.py", "integration_verify.py", "native_sweep.py", "findings_publish.py"):
@@ -32,7 +33,7 @@ def export_native(root, db):
             continue
         target = destination / "working-tree/roc" / name
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_bytes(path.read_bytes())
+        target.write_bytes(path.read_bytes().replace(b"\r\n", b"\n"))
         files[target.relative_to(destination).as_posix()] = hashlib.sha256(target.read_bytes()).hexdigest()
     accepted = [{"job": job, "patches": json.loads(patches), "timestamp": ts}
                 for job, patches, ts in db.execute("SELECT job,patches,ts FROM integration_accepted ORDER BY ts,job")]
