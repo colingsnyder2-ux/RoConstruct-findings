@@ -1,8 +1,8 @@
-// from server: 71% by Espeon
+// from server: 72% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espeon_ogretexturemaxselect8d6cceb10bf21d5d.cpp
+// roc-lib: rbxgs-dll roc_texture_namedshade_1dba59cc07f18582.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <assert.h>
@@ -128,6 +128,7 @@ static void halve1Dimage_ubyte(GLint components, GLuint width, GLuint height,
 #include <stdio.h>
 #include <string.h>
 #include <exception>
+#include "../../../libs/ogre-1.4.5/ogrenew/OgreMain/include/OgreException.h"
 
 namespace RBX { namespace RenderNew {
 class VisualEngine;
@@ -209,7 +210,8 @@ G3D::TextureRef TextureProxy::resolve(VisualEngine* engine) {
                     finalImage.loadDynamicImage(image.getData(), image.getWidth(), image.getHeight(), 1,
                                                  Ogre::PF_B8G8R8, false, 1, 0);
                 }
-                ogreTexture = Ogre::TextureManager::getSingleton().create(name, shadeResourceGroup, false, 0, 0);
+                std::string textureName(name);
+                ogreTexture = Ogre::TextureManager::getSingleton().create(textureName, shadeResourceGroup, false, 0, 0);
                 ogreTexture->loadImage(finalImage);
                 root = 0;
                 loaded = true;
@@ -257,7 +259,7 @@ G3D::TextureRef TextureProxy::resolve(VisualEngine* engine) {
                         ogreTexture = Ogre::TextureManager::getSingleton().create(filename, "General", false, 0, 0);
                         ogreTexture->loadImage(image);
                         Ogre::LogManager::getSingleton().logMessage(std::string("create tex=") + ogreTexture->getName());
-                    } catch (const std::exception& error) {
+                    } catch (Ogre::Exception& error) {
                         ogreTexture.setNull();
                         // Preserve the observed name access after setNull; no
                         // invented fallback replaces the target's failure path.

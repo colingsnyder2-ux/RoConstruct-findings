@@ -1,3 +1,4 @@
+// from server: 81% by coldek
 // from server: 75% by colin
 // roc-lang: cpp
 // roc-cl: 21022
@@ -77,14 +78,15 @@ bool SleepStage::shouldSleep(Assembly* assembly)
     if (!computeShouldSleep(assembly))
         return false;
     G3D::Array<Edge*>& edges = assembly->getExternalEdges();
-    for (; i < edges.size(); ++i) {
-        if (edgeIsAwake(edges[i])) {
+    if (i < edges.size()) {
+        do {
             Edge* edge = edges[i];
-            if (isAffecting(edge)) {
-                if (preventNeighborSleep(assembly->otherAssembly(edge)))
-                    return false;
-            }
-        }
+            if (!edgeIsAwake(edge)) { ++i; continue; }
+            if (!isAffecting(edge)) { ++i; continue; }
+            if (preventNeighborSleep(assembly->otherAssembly(edge)))
+                return false;
+            ++i;
+        } while (i < edges.size());
     }
     return true;
 }

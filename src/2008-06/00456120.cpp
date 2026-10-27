@@ -1,8 +1,8 @@
-// from server: 97% by king_originala_sol_native
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_sol_date_nativecstring_0bbf84988b2c0dae.cpp
+// roc-lib: rbxgs-dll roc_claudeL_ba4bab31ef252c2c.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias(<afxwin.h>, <roc_espeon_mfcnativeheader280d8d01456bb571.cpp>)
@@ -94,7 +94,7 @@
 #include <afxwin.h>
 typedef CString S;
 typedef SYSTEMTIME LocalTime;
-S __cdecl f(bool includeDate) {
+static S __cdecl f(bool includeDate) {
     LocalTime time;
     char buffer[256];
 
@@ -117,3 +117,4 @@ S __cdecl f(bool includeDate) {
 
     return result;
 }
+S __cdecl keep_00456120(bool includeDate) { return f(includeDate); }

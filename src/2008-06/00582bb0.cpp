@@ -1,8 +1,8 @@
-// from server: 97% by king_originala_sol_native
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_sol_native_iter_endfirst_b920b6d3a1a1fcdf.cpp
+// roc-lib: rbxgs-dll roc_claudeL_a2880d8441105149.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias("reflection/function.h", "roc_espeon_machineheader2f6c7dcf10adead1.cpp")
@@ -58,7 +58,8 @@ void DuplicateRecovery::doIt(IDataState* state) {
  std::for_each(selection.get(true)->begin(),selection.get(true)->end(),boost::bind(writeInstance,root.get(),_1));
  SerializerV2::isolateHandles(root.get());
  DuplicateInstances result;
- at<DuplicateInsertion*>(this,0xc)->insert(root.get(),&result,2,0);
+ DuplicateInsertion* insertion=at<DuplicateInsertion*>(this,0xc);
+ insertion->insert(root.get(),&result,2,0);
  DuplicateInstances::iterator last=result.end(); DuplicateInstances::iterator first=result.begin(); DuplicateSelectionView* view=selection.get(true); view->replace(first,last);
  (at<DuplicateOwner*>(this,0x20)?at<DuplicateOwner*>(this,0x20)->recorder():0)->mark(8);
  markInsertAction(getName().c_str(),at<DuplicateOwner*>(this,0x20));

@@ -1,4 +1,4 @@
-// from server: 92% by king_originala
+// from server: 100% by coldek
 // roc 2008-06 00427310  unit: CSelectionTreeCtrl  size: 137 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00427310
 //
@@ -84,9 +84,11 @@ inline String &String::append(const char *text)
     return appendString(this, text);
 }
 
-String __cdecl func_00427310()
+static String __cdecl func_00427310()
 {
     String result(make_exception().text());
     result.append("/Game/KeepAlivePinger.ashx");
     return result;
 }
+
+String __cdecl keep_00427310() { return func_00427310(); }

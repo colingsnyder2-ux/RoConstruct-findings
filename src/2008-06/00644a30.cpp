@@ -1,3 +1,4 @@
+// from server: 100% by coldek
 // from server: 98% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
@@ -38,7 +39,7 @@ struct Adorn {
  virtual void box(const AABox&,const Color4&,const Color4&)=0;
 };
 struct Part;
-struct Instance {char prefix[0x104];Instance*parent;bool isDescendantOf(const Instance*)const;};
+struct Instance {char prefix[0x104];Instance*parent;bool isDescendantOf(const Instance*ancestor)const{if(ancestor==parent)return true;if(!parent)return false;return parent->isDescendantOf(ancestor);}};
 struct PartInstance:public Instance {const Part&getPart()const;};
 struct Body {char prefix[0x94];Frame frame;void updatePV()const;const Frame&getFrame()const{updatePV();return frame;}};
 struct Humanoid:public Instance {Body*getTorsoBody()const;};
@@ -56,11 +57,9 @@ bool Climbing::check(Adorn*adorn){
  query->collect(bounds,0,&parts);
  Instance*character=humanoid->parent;
  int count=parts.size();
- PartInstance**it=parts.getCArray();
- for(int i=0;i<count;++i,++it){
-  PartInstance*part=*it;
-  Instance*parent=part->parent;
-  if(character!=parent && (!parent||!parent->isDescendantOf(character))){
+ for(int i=0;i<count;++i){
+  PartInstance*part=parts.getCArray()[i];
+  if(!part->isDescendantOf(character)){
    if(adorn)selectionBox(part->getPart(),adorn,Color4(Vector3::unitX(),1));
    return true;
   }
