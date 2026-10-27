@@ -1,12 +1,11 @@
-// from server: 80% by colin
-// from server: 69% by colin
+// from server: 81% by king_originala
+// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lang: cpp
-// roc-lib: rbxgs-dll roc_xml_embedded_native_3db81fc0eeabb0bf.cpp
+// roc-lib: rbxgs-dll roc_unit_d9210621e39ca540.cpp
 
 // Candidate translation unit (score above; library headers required).
-#pragma include_alias("v8xml/XmlElement.h", "../roc_xml_native_double_header_414358b35d9237a4.cpp")
+#pragma include_alias("v8xml/XmlElement.h", "roc_unit_3373cfbf6826d597.cpp")
 #include <v8xml/XmlSerializer.h>
 #include <util/base64.hpp>
 #include <reflection/type.h>
@@ -41,7 +40,7 @@ void TextXmlWriterWithEmbeddedContent::serializeNode(const XmlElement* xmlNode, 
 				if (contentId.isAsset() || contentId.isHttp())
 				{
 					stream << "<url>";
-					TextXmlWriter::encodedWrite(stream, contentId.toString());
+					TextXmlWriter::encodedWrite(stream, contentId.c_str());
 					stream << "</url>";
 				}
 				else if (embeddedContent.find(contentId) == embeddedContent.end())
@@ -52,7 +51,7 @@ void TextXmlWriterWithEmbeddedContent::serializeNode(const XmlElement* xmlNode, 
 
 					try
 					{
-						contentStream = RBX::ContentProvider::singleton().getContent(contentId);
+						contentStream = (*reinterpret_cast<RBX::ContentProvider**>(reinterpret_cast<char*>(this) + 0x48))->getContent(contentId);
 
 						if (contentId.mimeType() == RBX::Name::getNullName())
 						{
