@@ -1,12 +1,12 @@
-// from server: 98% by king_originala
+// from server: 100% by coldek
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
 // Complete 868-byte grid emitter; native LevelBuilder and PBB Face/Side contracts.
 // Descriptive deformation/global labels identify observed ABI and arithmetic.
 // Native PBBMesh.cpp establishes Face12 (Vector2 perturbation,bool[2]) and Side inheritance.
 // Measured zero-valued inset global and sign comparison at zero replace the earlier unproved scratch.
-// Loop barrier preserves the target per-iteration memory ordering; absoluteSize scopes mapped storage.
-// Remaining difference is only the stack placement of normal and vertex objects (98%, not exact).
+// absoluteSize scopes mapped storage. The if/else form gives normal two weighted stores in the
+// per-axis loop, which places it below vertex in the frame (vertex shares the mapped slot).
 #include <stddef.h>
 #include <intrin.h>
 #include <math.h>
@@ -23,7 +23,7 @@ struct Face {Vector2 perturbation;bool bulge[2];void operator()(Vector3&,Vector3
 struct Side:Face {void operator()(Vector3&,Vector3&,Vector2&,const Vector3&,const Vector2int16&);};
 typedef Side Deformation;
 void Face::operator()(Vector3&vertex,Vector3&normal,Vector2&,const Vector3&size,const Vector2int16&){
- for(int k=0;k<2;++k){normal[k]=bulge[k]?vertex[k]/size[k]*perturbation[k]:perturbation[k];_ReadWriteBarrier();}
+ for(int k=0;k<2;++k){if(bulge[k])normal[k]=vertex[k]/size[k]*perturbation[k];else normal[k]=perturbation[k];}
 }
 void Side::operator()(Vector3&vertex,Vector3&normal,Vector2&texture,const Vector3&size,const Vector2int16&index){
  if(vertex.x>0)vertex.x-=inset;else vertex.x+=inset;

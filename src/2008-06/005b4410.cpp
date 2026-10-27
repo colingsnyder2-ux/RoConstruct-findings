@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 100% by coldek
 // roc 2008-06 005b4410  unit: RBX::VHat::?$FactoryProduct  size: 329 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005b4410
 //
@@ -182,6 +182,12 @@ struct S {
     void f(int, unsigned char, unsigned char, unsigned char, String);
 };
 
+inline FloatColor convert(const Color* c)
+{
+    FloatColor converted(c);
+    return converted;
+}
+
 void S::f(int key, unsigned char r, unsigned char g,
           unsigned char b, String text)
 {
@@ -202,8 +208,7 @@ void S::f(int key, unsigned char r, unsigned char g,
     }
 
     {
-        FloatColor converted(&color);
-        FloatEntry entry(key, converted);
+        FloatEntry entry(key, convert(&color));
         floats.insert(entry);
     }
 

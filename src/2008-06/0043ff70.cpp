@@ -1,9 +1,8 @@
-// from server: 97% by coldek
-// from server: 96% by nuck16
+// from server: 99% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_unit_02cbe5cfd83fbef0.cpp
+// roc-lib: rbxgs-dll roc_claudeA_valueitemb5d48fac1928085d.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define _CPPUNWIND 1
@@ -45,12 +44,18 @@ struct KeyDerived : KeyBase {};
 typedef std::vector<boost::shared_ptr<RBX::Instance> > Instances;
 typedef std::map<KeyBase*, Instances> InstanceMap;
 
-struct Owner {
+struct OwnerPrefix {
     char pad[0x198];
     RBX::DataModel* dataModel;
     char pad19c[0x218 - 0x19c];
-    InstanceMap instances;
 };
+// claudeA 2026-10-26: find goes through a by-value KeyBase* wrapper of a map-owning base at +0x218
+// (owner->findB(*it)): yields owner in ecx, add ecx,0x218 as base adjust, and the target's arg scheduling.
+struct MapHolder {
+    InstanceMap instances;
+    InstanceMap::iterator findB(KeyBase* key) { return instances.find(key); }
+};
+struct Owner : OwnerPrefix, MapHolder {};
 
 #define V(N) virtual void slot##N();
 #define V10(N) V(N##0) V(N##1) V(N##2) V(N##3) V(N##4) V(N##5) V(N##6) V(N##7) V(N##8) V(N##9)
@@ -83,7 +88,7 @@ void ValueItem<Base, T>::setValue(const T& value)
         InstanceMap::iterator mapEnd = owner->instances.end();
         std::vector<KeyDerived*>::const_iterator end = keys.end();
         for (std::vector<KeyDerived*>::const_iterator it = keys.begin(); it != end; ++it) {
-            InstanceMap::iterator found = owner->instances.find(*it);
+            InstanceMap::iterator found = owner->findB(*it);
             if (found != mapEnd) {
                 for (Instances::iterator j = found->second.begin(), jEnd = found->second.end(); j != jEnd; j++)
                     instances.push_back(*j);
@@ -112,3 +117,5 @@ template class ValueItem<GridItemBase, G3D::Vector3>;
 template class ValueItem<EnumGridItemBase, int>;
 template class ValueItem<IntGridItemBase, int>;
 template class ValueItem<BoolGridItemBase, bool>;
+template class ValueItem<GridItemBase, int>;
+template class ValueItem<IntGridItemBase, G3D::Vector3>;
