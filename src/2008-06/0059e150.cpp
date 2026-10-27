@@ -1,3 +1,4 @@
+// from server: 92% by coldek
 // from server: 88% by colin
 // roc 2008-06 0059e150  unit: VCRenderSettings::?$EnumPropDescriptor  size: 590 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0059e150
@@ -212,7 +213,7 @@ struct PartInstance {
  const Vector3&getPartSizeXml()const{return primitive.getSize();}
  const Frame&getCoordinateFrame()const{return primitive.getCoordinateFrame();}
  Vector3 xmlToUiSize(const Vector3&v)const{Vector3 r=v;switch(formFactor){case 1:r.y*=5.0f/6.0f;break;case 2:r.y*=2.5f;break;}return r;}
- Vector3 uiToXmlSize(const Vector3&)const;
+ __declspec(noalias) Vector3 uiToXmlSize(const Vector3&)const;
  void setCoordinateFrame(const Frame&);void setPartSizeXml(const Vector3&);void join();
  bool resize(int normal,int amount);
 };
@@ -227,7 +228,8 @@ bool PartInstance::resize(int normal,int amount){
  if(partType==1)delta[normal%3]=static_cast<float>(amount);
  else delta=Vector3(static_cast<float>(amount),static_cast<float>(amount),static_cast<float>(amount));
  Vector3 newUiSize=xmlToUiSize(oldSize)+delta;
- Vector3 xmlDelta=uiToXmlSize(newUiSize)-oldSize;
+ Vector3 convertedSize=uiToXmlSize(newUiSize);
+ Vector3 xmlDelta=convertedSize-oldSize;
  Vector3 t=oldFrame.translation+oldFrame.vectorToWorldSpace(xmlDelta)*0.5f*sign;
  Frame desired(oldFrame.rotation,t);
  setCoordinateFrame(desired);

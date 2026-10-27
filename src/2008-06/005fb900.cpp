@@ -1,3 +1,4 @@
+// from server: 100% by EspClaude
 // from server: 96% by Espeon
 // roc 2008-06 005fb900  unit: RBX::LocalBackpackItem  size: 746 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005fb900
@@ -293,9 +294,8 @@ struct Widget:GuiItem {
 };
 struct BackpackItem:Widget {
  TextureId getTextureId()const;
- typedef bool(BackpackItem::*DrawMethod)()const;
- DrawMethod drawEnabledMethod()const{DrawMethod m;void*entry=(*(void***)this)[31];memcpy(&m,&entry,sizeof(m));return m;}
- DrawMethod drawSelectedMethod()const{DrawMethod m;void*entry=(*(void***)this)[32];memcpy(&m,&entry,sizeof(m));return m;}
+ virtual void pv2(); virtual void pv3(); virtual void pv4(); virtual void pv5(); virtual void pv6(); virtual void pv7(); virtual void pv8(); virtual void pv9(); virtual void pv10(); virtual void pv11(); virtual void pv12(); virtual void pv13(); virtual void pv14(); virtual void pv15(); virtual void pv16(); virtual void pv17(); virtual void pv18(); virtual void pv19(); virtual void pv20(); virtual void pv21(); virtual void pv22(); virtual void pv23(); virtual void pv24(); virtual void pv25(); virtual void pv26(); virtual void pv27(); virtual void pv28(); virtual void pv29(); virtual void pv30();
+ virtual bool drawEnabled()const;virtual bool drawSelected()const;
 };
 struct GuiDrawImage {
  TextureId currentTexture;G3D::ReferenceCountedPointer<TextureProxyBase>normal,disable,hover,down;G3D::Vector2 size;
@@ -305,12 +305,10 @@ template<class T>struct StringConverter;template<>struct StringConverter<int>{st
 struct LocalBackpackItem:Widget {
  boost::shared_ptr<BackpackItem>myItem;GuiDrawImage guiImageDraw;
  void render2d(Adorn*);
+ void drawBack(Adorn*,const Rect&,float,int);
 };
 typedef char LayoutCheck[(sizeof(std::string)==28&&sizeof(Instance)==0x12c&&sizeof(Widget)==0x148&&sizeof(GuiDrawImage)==56)?1:-1];
-void LocalBackpackItem::render2d(Adorn*adorn){
- int fontSize=GuiRoot::normalizedFontSize(12);
- Rect rect=getMyRect();
- float side=rect.size().x*.2f;
+__forceinline void LocalBackpackItem::drawBack(Adorn*adorn,const Rect&rect,float side,int fontSize){
  Rect numberRect=Rect::fromLowSize(G3D::Vector2(rect.low.x+2,rect.high.y-2-side),G3D::Vector2(side,side));
  adorn->rect2d(rect.toRect2D(),translucentBackdrop());
  adorn->rect2d(numberRect.toRect2D(),G3D::Color3::gray());
@@ -318,11 +316,17 @@ void LocalBackpackItem::render2d(Adorn*adorn){
  int number=parent->findChildIndex(this)+1;
  adorn->drawFont2D(StringConverter<int>::convertToString(number),numberRect.center(),fontSize,fontColor,G3D::Color4::zero(),Adorn::XALIGN_CENTER,Adorn::YALIGN_CENTER,Adorn::PROPORTIONAL_SPACING);
  }
+}
+void LocalBackpackItem::render2d(Adorn*adorn){
+ int fontSize=GuiRoot::normalizedFontSize(12);
+ Rect rect=getMyRect();
+ float side=rect.size().x*.2f;
+ drawBack(adorn,rect,side,fontSize);
  if(myItem.get()){
-  if((myItem.get()->*myItem->drawSelectedMethod())())adorn->outlineRect2d(rect.toRect2D(),3,G3D::Color3::green());
+  if(myItem->drawSelected())adorn->outlineRect2d(rect.toRect2D(),3,G3D::Color3::green());
   if(guiImageDraw.setImage(adorn,myItem->getTextureId())){
    Rect imageRect(rect.low.x+fontSize,rect.low.y+fontSize,rect.high.x-fontSize,rect.high.y-fontSize);
-   guiImageDraw.render2d(adorn,(myItem.get()->*myItem->drawEnabledMethod())(),imageRect,widgetState);
+   guiImageDraw.render2d(adorn,myItem->drawEnabled(),imageRect,widgetState);
   }else{setName(myItem->name);Widget::render2d(adorn);}
  }else Widget::render2d(adorn);
 }

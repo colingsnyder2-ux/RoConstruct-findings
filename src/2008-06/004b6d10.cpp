@@ -1,3 +1,4 @@
+// from server: 100% by coldek
 // from server: 98% by Espeon
 // roc 2008-06 004b6d10  unit: RBX::Network::Replicator::ChangePropertyItem  size: 490 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004b6d10
@@ -225,6 +226,7 @@ struct Replicator {char prefix[0x2bf4];Dictionary propNames;Container objects;ch
  struct ChangePropertyItem {void* vptr;Replicator& replicator;const Descriptor& desc;boost::shared_ptr<const Instance> instance;void write(BitStream&);};
 };
 void __cdecl writeItemType(BitStream&,int);
+Container::const_iterator Container::find(const Instance*const& key)const{return std::set<const Instance*>::find(key);}
 void Replicator::ChangePropertyItem::write(BitStream& bitStream){
  if(replicator.objects.find(instance.get())!=replicator.objects.end()){
   writeItemType(bitStream,3);

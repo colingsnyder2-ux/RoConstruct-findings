@@ -1,16 +1,16 @@
-// from server: 93% by Espeon
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: xtp-11.2.2-lib-strlen roc_espeon_settingsvalueforceinline_1ad0885028f3c341.cpp
+// roc-lib: xtp-11.2.2-lib-strlen roc_codex_dialog_66cd7b32fec21723.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <afxwin.h>
 #include <afxext.h>
 #include <XTToolkitPro.h>
 struct Model{void*getValue();};
-struct ModelRef{Model*p;void*control;~ModelRef();Model*get()const{return p;}void*getValue()const{return p?p->getValue():0;}};
-extern ModelRef getModel();
+struct ModelRef{Model*p;void*control;__declspec(noalias) ~ModelRef();Model*get()const{return p;}void*getValue()const{return p?p->getValue():0;}};
+extern __declspec(noalias) ModelRef getModel();
 __forceinline void*getCurrentValue(){return getModel().getValue();}
 struct Explorer:CWnd{void setModel(Model*);};
 extern CRuntimeClass explorerClass;

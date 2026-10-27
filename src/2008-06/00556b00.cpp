@@ -1,133 +1,68 @@
-// from server: 59% by colin
-// roc 2008-06 00556b00  unit: RBX::VRunService::?$BoundFuncDesc  size: 531 bytes
-
-extern "C" {
-    int __stdcall sub_6A0920(int);
-    void __stdcall sub_802458(void*);
-    void __stdcall sub_802468(void*);
+// from server: 100% by EspClaude
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <string>
+#include <map>
+#include <deque>
+namespace G3D { class Stopwatch { char data[0x58]; public: Stopwatch(); void tick(); }; }
+namespace boost {
+class mutex { void* m; bool locked; public: mutex(); ~mutex(); };
+class condition { void* data[6]; public: condition(); ~condition(); };
+class thread;
+template<class T> class scoped_ptr { T* p; public: scoped_ptr(): p(0) {} ~scoped_ptr(); };
 }
-
-struct String {
-    char buf[16];
-    String(const char*);
-    ~String();
-};
-
-struct Sub_5E9EC0 {
-    void ctor();
-};
-
-struct Sub_594C90 {
-    void ctor();
-};
-
-struct Sub_5F1BD0 {
-    void ctor();
-};
-
-struct Sub_446110 {
-    void ctor(void*, void*);
-};
-
-struct Sub_512060 {
-    void ctor();
-};
-
-struct Sub_511CF0 {
-    void ctor();
-};
-
-struct Sub_556720 {
-    void ctor();
-};
-
-struct Sub_55AF90 {
-    void method(void*);
-};
-
-struct VRunService {
-    void ctor_556720();
-    void method_55af90(void*);
-    void init();
-};
-
-void VRunService::init()
+namespace RBX {
+class Base00 { public: virtual ~Base00(); char d[0xc]; };
+class Base10 { public: virtual ~Base10(); };
+class Base14 { public: virtual ~Base14(); char d[8]; };
+class Base20 { public: virtual ~Base20(); };
+template<int N> class InstNotifier { public: virtual ~InstNotifier(); char d[0x1c]; };
+class Instance : public Base00, public Base10, public Base14, public Base20,
+	public InstNotifier<0>, public InstNotifier<1>, public InstNotifier<2>, public InstNotifier<3>, public InstNotifier<4>, public InstNotifier<5>
+{ public: char rest[0x130 - 0xe4]; void setName(const std::string&); };
+class RunService;
+template<class Class, class Event> class Notifier { protected: Notifier(); public: virtual ~Notifier(); char d[0x1c]; };
+template<class Class, class Base> class DescribedCreatable : public Base { protected: DescribedCreatable(); public: virtual ~DescribedCreatable(); };
+class Service { void* unknown0x1b0; }; // 2008: 4 bytes at 0x1b0 before runState (0x1b4), never touched by the ctor
+class Heartbeat; class Stepped; class RunTransition; enum RunState { RS_NORMAL, RS_RUNNING, RS_PAUSED };
+class IRunView;
+class RunService : public DescribedCreatable<RunService, Instance>,
+	public Service,
+	public Notifier<RunService, Heartbeat>,
+	public Notifier<RunService, Stepped>,
+	public Notifier<RunService, RunTransition>,
+	public Notifier<RunService, RunState>
 {
-    this->ctor_556720();
-
-    Sub_5E9EC0* p130 = (Sub_5E9EC0*)((char*)this + 0x130);
-    p130->ctor();
-    Sub_5E9EC0* p150 = (Sub_5E9EC0*)((char*)this + 0x150);
-    p150->ctor();
-    Sub_5E9EC0* p170 = (Sub_5E9EC0*)((char*)this + 0x170);
-    p170->ctor();
-    Sub_5E9EC0* p190 = (Sub_5E9EC0*)((char*)this + 0x190);
-    p190->ctor();
-
-    *(double*)((char*)this + 0x1b8) = 0.0;
-    *(void**)((char*)this + 0x150) = (void*)0x82d424;
-    *(float*)((char*)this + 0x1c0) = *(float*)0x82d634;
-    *(void**)this = (void*)0x82d4c4;
-    *(double*)((char*)this + 0x1c8) = 0.0;
-    *(void**)((char*)this + 0x10) = (void*)0x82d4b4;
-    *(double*)((char*)this + 0x1d0) = 0.0;
-    *(void**)((char*)this + 0x14) = (void*)0x82d4ac;
-    *(double*)((char*)this + 0x1d8) = 0.0;
-    *(void**)((char*)this + 0x20) = (void*)0x82d4a4;
-    *(double*)((char*)this + 0x1e0) = 0.0;
-    *(void**)((char*)this + 0x24) = (void*)0x82d494;
-    *(void**)((char*)this + 0x44) = (void*)0x82d484;
-    *(void**)((char*)this + 0x64) = (void*)0x82d474;
-    *(void**)((char*)this + 0x84) = (void*)0x82d464;
-    *(void**)((char*)this + 0xa4) = (void*)0x82d454;
-    *(void**)((char*)this + 0xc4) = (void*)0x82d444;
-    *(void**)((char*)this + 0x130) = (void*)0x82d434;
-    *(void**)((char*)this + 0x170) = (void*)0x82d414;
-    *(void**)((char*)this + 0x190) = (void*)0x82d404;
-    *(int*)((char*)this + 0x1b4) = 0;
-
-    Sub_512060* p1e8 = (Sub_512060*)((char*)this + 0x1e8);
-    p1e8->ctor();
-
-    Sub_594C90* p240 = (Sub_594C90*)((char*)this + 0x240);
-    p240->ctor();
-
-    *(char*)((char*)this + 0x248) = 0;
-    Sub_5F1BD0* p24c = (Sub_5F1BD0*)((char*)this + 0x24c);
-    p24c->ctor();
-
-    Sub_5F1BD0* p264 = (Sub_5F1BD0*)((char*)this + 0x264);
-    p264->ctor();
-
-    *(int*)((char*)this + 0x27c) = 0;
-
-    Sub_594C90* p280 = (Sub_594C90*)((char*)this + 0x280);
-    p280->ctor();
-
-    char a, b;
-    Sub_446110* p288 = (Sub_446110*)((char*)this + 0x288);
-    p288->ctor(&a, &b);
-
-    *(int*)((char*)this + 0x2a8) = 0;
-    Sub_594C90* p2ac = (Sub_594C90*)((char*)this + 0x2ac);
-    p2ac->ctor();
-
-    void** p2b4 = (void**)((char*)this + 0x2b4);
-    void* r = (void*)sub_6A0920(4);
-    if (r != 0) {
-        *(void**)r = p2b4;
-    } else {
-        r = 0;
-    }
-    *p2b4 = r;
-    *(int*)((char*)this + 0x2b4 + 0x10) = 0;
-    *(int*)((char*)this + 0x2b4 + 0x14) = 0;
-    *(int*)((char*)this + 0x2b4 + 0x18) = 0;
-    *(int*)((char*)this + 0x2b4 + 0x1c) = 0;
-
-    String s("Run Service");
-    this->method_55af90(&s);
-    s.~String();
-
-    p1e8->ctor();
+	RunState runState;
+	double unknown0x1b8;
+	float framePeriod;
+	double unknown0x1c8;
+	double unknown0x1d0;
+	double unknown0x1d8;
+	double unknown0x1e0;
+	G3D::Stopwatch stopwatch;
+	boost::mutex runMutex;
+	bool stopRequested;
+	boost::condition runViewsDoneCondition;
+	boost::condition stateChangedCondition;
+	boost::scoped_ptr<boost::thread> runThread;
+	boost::mutex viewMutex;
+	std::map<IRunView*, bool> views;
+	int invalidRunViewCount;
+	boost::mutex unknownMutex0x2ac;
+	std::deque<void*> unknownQueue0x2b4;
+public:
+	RunService();
+	virtual ~RunService();
+};
+RunService::RunService()
+	: framePeriod(1.0f/30.0f),
+	  runState(RS_NORMAL),
+	  unknown0x1b8(0.0), unknown0x1c8(0.0), unknown0x1d0(0.0), unknown0x1d8(0.0), unknown0x1e0(0.0),
+	  invalidRunViewCount(0),
+	  stopRequested(false)
+{
+	setName("Run Service");
+	stopwatch.tick();
+}
 }

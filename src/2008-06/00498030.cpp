@@ -1,8 +1,8 @@
-// from server: 91% by Espeon
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espeon_playerlookupendfirst9c557fa6cb2e3993.cpp
+// roc-lib: rbxgs-dll roc_codex_lookup_2b694745c76e1751.cpp
 
 // Candidate translation unit (score above; library headers required).
 // roc-lang: cpp
@@ -27,7 +27,7 @@ public:
 
 class Players {
 public:
-    shared_ptr<const std::vector<shared_ptr<Instance> > > getPlayers();
+    __declspec(noalias) shared_ptr<const std::vector<shared_ptr<Instance> > > getPlayers();
     shared_ptr<Instance> playerFromCharacter(shared_ptr<Instance> character);
 };
 
@@ -36,8 +36,8 @@ shared_ptr<Instance> Players::playerFromCharacter(shared_ptr<Instance> character
     shared_ptr<const std::vector<shared_ptr<Instance> > > myPlayers = getPlayers();
 
     const std::vector<shared_ptr<Instance> >* v = myPlayers.get();
-    std::vector<shared_ptr<Instance> >::const_iterator end = v->end();
     std::vector<shared_ptr<Instance> >::const_iterator iter = v->begin();
+    std::vector<shared_ptr<Instance> >::const_iterator end = v->end();
 
     for (; iter != end; iter++)
     {

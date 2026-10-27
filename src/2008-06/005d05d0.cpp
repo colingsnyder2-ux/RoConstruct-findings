@@ -1,3 +1,4 @@
+// from server: 100% by EspClaude
 // from server: 86% by king_originala
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
@@ -65,28 +66,32 @@ template<class T>struct StringConverter;template<>struct StringConverter<int>{st
 struct Workspace {char opaque[0x43c];int overlayLayout;static Workspace*findWorkspace(const Instance*);};
 struct BackpackItem:Widget {
  GuiDrawImage guiImageDraw;TextureId textureId;
- bool isEnabled()const{typedef bool(__thiscall*Fn)(const BackpackItem*);return((Fn)(*(void***)this)[30])(this);}
- bool drawSelected()const{typedef bool(__thiscall*Fn)(const BackpackItem*);return((Fn)(*(void***)this)[32])(this);}
+ virtual void pv2(); virtual void pv3(); virtual void pv4(); virtual void pv5(); virtual void pv6(); virtual void pv7(); virtual void pv8(); virtual void pv9(); virtual void pv10(); virtual void pv11(); virtual void pv12(); virtual void pv13(); virtual void pv14(); virtual void pv15(); virtual void pv16(); virtual void pv17(); virtual void pv18(); virtual void pv19(); virtual void pv20(); virtual void pv21(); virtual void pv22(); virtual void pv23(); virtual void pv24(); virtual void pv25(); virtual void pv26(); virtual void pv27(); virtual void pv28(); virtual void pv29();
+ virtual bool isEnabled()const; virtual void pv31(); virtual bool drawSelected()const;
  void render2d(Adorn*);
+ void drawBack(Adorn*,const Rect&,bool,int);
 };
 typedef char LayoutCheck[(sizeof(std::string)==28&&sizeof(Widget)==0x148&&sizeof(GuiDrawImage)==56&&sizeof(BackpackItem)==0x1a0)?1:-1];
+__forceinline void BackpackItem::drawBack(Adorn*adorn,const Rect&rect,bool overlay,int fontSize){
+
+ float side=rect.size().x*.2f;
+ Rect numberRect=Rect::fromLowSize(G3D::Vector2(rect.low.x+2,rect.high.y-2-side),G3D::Vector2(side,side));
+ if(!overlay)adorn->rect2d(rect.toRect2D(),translucentBackdrop());
+ if(isEnabled()){
+  adorn->rect2d(numberRect.toRect2D(),G3D::Color3::gray());
+  {G3D::Color4 fontColor(G3D::Color3::white());
+  int number=(parent?parent->findChildIndex(this):-1)+1;
+  adorn->drawFont2D(StringConverter<int>::convertToString(number),numberRect.center(),fontSize,fontColor,G3D::Color4::zero(),Adorn::XALIGN_CENTER,Adorn::YALIGN_CENTER,Adorn::PROPORTIONAL_SPACING);
+ }}
+ 
+}
 void BackpackItem::render2d(Adorn*adorn){
  bool overlay=false;
  Workspace*workspace=Workspace::findWorkspace(this);
  if(workspace&&workspace->overlayLayout)overlay=true;
  Rect rect=overlay?Rect(GuiRoot::getCanvasSize()):getMyRect();
  int fontSize=GuiRoot::normalizedFontSize(12);
- {
- float side=rect.size().x*.2f;
- Rect numberRect=Rect::fromLowSize(G3D::Vector2(rect.low.x+2,rect.high.y-2-side),G3D::Vector2(side,side));
- if(!overlay)adorn->rect2d(rect.toRect2D(),translucentBackdrop());
- if(isEnabled()){
-  adorn->rect2d(numberRect.toRect2D(),G3D::Color3::gray());
-  G3D::Color4 fontColor(G3D::Color3::white());
-  int number=(parent?parent->findChildIndex(this):-1)+1;
-  adorn->drawFont2D(StringConverter<int>::convertToString(number),numberRect.center(),fontSize,fontColor,G3D::Color4::zero(),Adorn::XALIGN_CENTER,Adorn::YALIGN_CENTER,Adorn::PROPORTIONAL_SPACING);
- }
- }
+ drawBack(adorn,rect,overlay,fontSize);
  if(drawSelected())adorn->outlineRect2d(rect.toRect2D(),3,G3D::Color3::green());
  if(guiImageDraw.setImage(adorn,textureId)){
   guiImageDraw.render2d(adorn,isEnabled()||overlay,rect.inset(fontSize),widgetState);
