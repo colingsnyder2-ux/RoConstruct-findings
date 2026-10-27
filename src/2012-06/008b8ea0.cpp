@@ -1,619 +1,359 @@
-// from server: 50% by colin
+// from server: 96% by sophus
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob1 /GS- /MT
-// roc-lib: wildmagic-2-core Geometry/WmlConvexClipper.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-net Players.cpp
 
 // Candidate translation unit (score above; library headers required).
-// Magic Software, Inc.
-// http://www.magic-software.com
-// http://www.wild-magic.com
-// Copyright (c) 2003.  All Rights Reserved
-//
-// The Wild Magic Library (WML) source code is supplied under the terms of
-// the license agreement http://www.magic-software.com/License/WildMagic.pdf
-// and may not be copied or disclosed except in accordance with the terms of
-// that agreement.
+#include <RakPeer.h>
+#include <BitStream.h>
+#include "Client.h"
+#include "Server.h"
+#include "Players.h"
+#include "Streaming.h"
+#include "PacketIds.h"
+#include "v8datamodel/GameSettings.h"
+#include "v8datamodel/Teams.h"
+#include "util/standardout.h"
 
-#include "WmlConvexClipper.h"
-#include "WmlConvexPolyhedron3.h"
-using namespace Wml;
-
-#include <algorithm>
-#include <fstream>
-#include <map>
-using namespace std;
-
-//----------------------------------------------------------------------------
-template <class Real>
-ConvexClipper<Real>::ConvexClipper (const ConvexPolyhedron3<Real>& rkPoly,
-    Real fEpsilon)
+template<class Class>
+class PluginInterfaceAdapter : public PluginInterface
 {
-    m_fEpsilon = fEpsilon;
+private:
+	Class* c;
+protected:
+	PluginInterfaceAdapter(Class* c)
+		: PluginInterface(),
+		  c(c)
+	{
+	}
+public:
+	virtual PluginReceiveResult OnReceive(RakPeerInterface* peer, Packet* packet);
+};
 
-    const vector<Vector3<Real> >& rakPoint = rkPoly.GetPoints();
-    int iVQuantity = rkPoly.GetVQuantity();
-    m_akVertex.resize(iVQuantity);
-    for (int iV = 0; iV < iVQuantity; iV++)
-        m_akVertex[iV].m_kPoint = rakPoint[iV];
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, void(boost::shared_ptr<RBX::Instance>, std::string), 2> funcReportAbuse(&RBX::Network::Players::reportAbuse, "ReportAbuse", "player", "message", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<const std::vector<boost::shared_ptr<RBX::Instance>>>(void), 0> func_players(&RBX::Network::Players::getPlayers, "players", RBX::Reflection::FunctionDescriptor::AnyCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<const std::vector<boost::shared_ptr<RBX::Instance>>>(void), 0> func_GetPlayers(&RBX::Network::Players::getPlayers, "GetPlayers", RBX::Reflection::FunctionDescriptor::AnyCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<RBX::Instance>(int), 1> func_createLocalPlayer(&RBX::Network::Players::createLocalPlayer, "CreateLocalPlayer", "userId", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, void(std::string), 1> func_setAbuseReportUrl(&RBX::Network::Players::setAbuseReportUrl, "SetAbuseReportUrl", "url", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<RBX::Instance>(boost::shared_ptr<RBX::Instance>), 1> func_playerFromCharacterOld(&RBX::Network::Players::playerFromCharacter, "playerFromCharacter", "character", RBX::Reflection::FunctionDescriptor::AnyCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<RBX::Instance>(boost::shared_ptr<RBX::Instance>), 1> func_playerFromCharacter(&RBX::Network::Players::playerFromCharacter, "GetPlayerFromCharacter", "character", RBX::Reflection::FunctionDescriptor::AnyCaller);
 
-    int iEQuantity = rkPoly.GetEQuantity();
-    m_akEdge.resize(iEQuantity);
-    for (int iE = 0; iE < iEQuantity; iE++)
-    {
-        const MTEdge& rkE = rkPoly.GetEdge(iE);
-        for (int i = 0; i < 2; i++)
-        {
-            m_akEdge[iE].m_aiVertex[i] = rkPoly.GetVLabel(rkE.GetVertex(i));
-            m_akEdge[iE].m_aiFace[i] = rkE.GetTriangle(i);
-        }
-    }
+static RBX::Reflection::SignalDesc<RBX::Network::Players, void(boost::shared_ptr<RBX::Instance>)> event_PlayerAdded("PlayerAdded", "player");
+static RBX::Reflection::SignalDesc<RBX::Network::Players, void(boost::shared_ptr<RBX::Instance>)> event_PlayerRemoving("PlayerRemoving", "player");
 
-    int iTQuantity = rkPoly.GetTQuantity();
-    m_akFace.resize(iTQuantity);
-    for (int iT = 0; iT < iTQuantity; iT++)
-    {
-        m_akFace[iT].m_kPlane = rkPoly.GetPlane(iT);
+static RBX::Reflection::PropDescriptor<RBX::Network::Players, int> propPlayerCount("NumPlayers", "Data", &RBX::Network::Players::numPlayers, NULL, RBX::Reflection::PropertyDescriptor::UI);
+static RBX::Reflection::PropDescriptor<RBX::Network::Players, int> propPlayerMaxCount("MaxPlayers", "Data", &RBX::Network::Players::getMaxPlayers, &RBX::Network::Players::setMaxPlayers, RBX::Reflection::PropertyDescriptor::STANDARD);
 
-        const MTTriangle& rkT = rkPoly.GetTriangle(iT);
-        for (int i = 0; i < 3; i++)
-            m_akFace[iT].m_akEdge.insert(rkT.GetEdge(i));
-    }
-}
-//----------------------------------------------------------------------------
-template <class Real>
-int ConvexClipper<Real>::Clip (const Plane3<Real>& rkPlane)
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<RBX::Instance>(int), 1> func_GetPlayerByID(&RBX::Network::Players::getPlayerByID, "GetPlayerByID", "userID", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, void(std::string), 1> funcChat(&RBX::Network::Players::chat, "Chat", "message", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+
+namespace RBX
 {
-    // compute signed distances from vertices to plane
-    int iPositive = 0, iNegative = 0;
-    for (int iV = 0; iV < (int)m_akVertex.size(); iV++)
-    {
-        Vertex& rkV = m_akVertex[iV];
-        if ( rkV.m_bVisible )
-        {
-            rkV.m_fDistance = rkPlane.DistanceTo(rkV.m_kPoint);
-            if ( rkV.m_fDistance >= m_fEpsilon )
-            {
-                iPositive++;
-            }
-            else if ( rkV.m_fDistance <= -m_fEpsilon )
-            {
-                iNegative++;
-                rkV.m_bVisible = false;
-            }
-            else
-            {
-                // The point is on the plane (within floating point
-                // tolerance).
-                rkV.m_fDistance = (Real)0.0;
-            }
-        }
-    }
+	namespace Network
+	{
+		class Players::Plugin : public PluginInterfaceAdapter<Players>
+		{
+		public:
+			Plugin(Players* players)
+				: PluginInterfaceAdapter<Players>(players)
+			{
+			}
+		};
+		
+		Players::Players()
+			: players(std::vector<boost::shared_ptr<Instance>>()),
+			  peer(NULL),
+			  maxPlayers(12)
+		{
+			setName("Players");
+			plugin.reset(new Plugin(this));
+		}
 
-    if ( iPositive == 0 )
-    {
-        // mesh is in negative half-space, fully clipped
-        return Plane3<Real>::NEGATIVE_SIDE;
-    }
+		Players::~Players()
+		{
+			if (peer)
+				peer->DetachPlugin(plugin.get());
 
-    if ( iNegative == 0 )
-    {
-        // mesh is in positive half-space, fully visible
-        return Plane3<Real>::POSITIVE_SIDE;
-    }
+			peer = NULL;
+		}
 
-    // clip the visible edges
-    for (int iE = 0; iE < (int)m_akEdge.size(); iE++)
-    {
-        Edge& rkE = m_akEdge[iE];
-        if ( rkE.m_bVisible )
-        {
-            int iV0 = rkE.m_aiVertex[0], iV1 = rkE.m_aiVertex[1];
-            int iF0 = rkE.m_aiFace[0], iF1 = rkE.m_aiFace[1];
-            Face& rkF0 = m_akFace[iF0];
-            Face& rkF1 = m_akFace[iF1];
-            Real fD0 = m_akVertex[iV0].m_fDistance;
-            Real fD1 = m_akVertex[iV1].m_fDistance;
+		bool Players::clientIsPresent(const Instance* context, bool testInDatamodel)
+		{
+			return Client::clientIsPresent(context, testInDatamodel);
+		}
 
-            if ( fD0 <= (Real)0.0 && fD1 <= (Real)0.0 )
-            {
-                // The edge is culled.  If the edge is exactly on the clip
-                // plane, it is possible that a visible triangle shares it.
-                // The edge will be re-added during the face loop.
-                rkF0.m_akEdge.erase(iE);
-                if ( rkF0.m_akEdge.empty() )
-                    rkF0.m_bVisible = false;
+		bool Players::askAddChild(const Instance* instance) const
+		{
+			return dynamic_cast<const Player*>(instance) != NULL;
+		}
 
-                rkF1.m_akEdge.erase(iE);
-                if ( rkF1.m_akEdge.empty() )
-                    rkF1.m_bVisible = false;
+		void Players::setConnection(RakPeerInterface* peer)
+		{
+			if (this->peer)
+				this->peer->DetachPlugin(plugin.get());
 
-                rkE.m_bVisible = false;
-                continue;
-            }
+			this->peer = peer;
 
-            if ( fD0 >= (Real)0.0 && fD1 >= (Real)0.0 )
-            {
-                // face retains the edge
-                continue;
-            }
+			if (peer)
+				peer->AttachPlugin(plugin.get());
+		}
 
-            // The edge is split by the plane.  Compute the point of
-            // intersection.  If the old edge is <V0,V1> and I is the
-            // intersection point, the new edge is <V0,I> when d0 > 0 or
-            // <I,V1> when d1 > 0.
-            int iNV = (int)m_akVertex.size();
-            m_akVertex.push_back(Vertex());
-            Vertex& rkNV = m_akVertex[iNV];
+		Player* Players::findLocalPlayer(const Instance* context)
+		{
+			Players* players = ServiceProvider::find<Players>(context);
+			return players ? players->getLocalPlayer() : NULL;
+		}
 
-            Vector3<Real>& rkP0 = m_akVertex[iV0].m_kPoint;
-            Vector3<Real>& rkP1 = m_akVertex[iV1].m_kPoint;
-            rkNV.m_kPoint = rkP0+(fD0/(fD0-fD1))*(rkP1-rkP0);
+		ModelInstance* Players::findLocalCharacter(const Instance* context)
+		{
+			Player* player = Players::findLocalPlayer(context);
+			return player ? player->getCharacter() : NULL;
+		}
 
-            if ( fD0 > (Real)0.0 )
-                rkE.m_aiVertex[1] = iNV;
-            else
-                rkE.m_aiVertex[0] = iNV;
-        }
-    }
+		void Players::setAbuseReportUrl(std::string value)
+		{
+			if (value.empty())
+				abuseReporter.reset(NULL);
+			else
+				abuseReporter.reset(new AbuseReporter(value));
+		}
 
-    // The mesh straddles the plane.  A new convex polygonal face will be
-    // generated.  Add it now and insert edges when they are visited.
-    int iNF = (int)m_akFace.size();
-    m_akFace.push_back(Face());
-    Face& rkNF = m_akFace[iNF];
-    rkNF.m_kPlane = rkPlane;
+		void Players::setMaxPlayers(int value)
+		{
+			if (value != maxPlayers)
+			{
+				maxPlayers = value;
+				raisePropertyChanged(propPlayerMaxCount);
+			}
+		}
 
-    // process the faces
-    for (int iF = 0; iF < iNF; iF++)
-    {
-        Face& rkF = m_akFace[iF];
-        if ( rkF.m_bVisible )
-        {
-            // Determine if the face is on the negative side, the positive
-            // side, or split by the clipping plane.  The m_iOccurs members
-            // are set to zero to help find the end points of the polyline
-            // that results from clipping a face.
-            assert( rkF.m_akEdge.size() >= 2 );
-            set<int>::iterator pkIter = rkF.m_akEdge.begin();
-            while ( pkIter != rkF.m_akEdge.end() )
-            {
-                int iE = *pkIter++;
-                Edge& rkE = m_akEdge[iE];
-                assert( rkE.m_bVisible );
-                m_akVertex[rkE.m_aiVertex[0]].m_iOccurs = 0;
-                m_akVertex[rkE.m_aiVertex[1]].m_iOccurs = 0;
-            }
+		void Players::reportAbuse(boost::shared_ptr<Instance> player, std::string comment)
+		{
+			reportAbuse(dynamic_cast<Player*>(player.get()), comment);
+		}
 
-            int iVStart, iVFinal;
-            if ( GetOpenPolyline(rkF,iVStart,iVFinal) )
-            {
-                // polyline is open, close it up
-                int iNE = (int)m_akEdge.size();
-                m_akEdge.push_back(Edge());
-                Edge& rkNE = m_akEdge[iNE];
+		void Players::reportAbuse(Player* player, std::string comment)
+		{
+			if (abuseReporter)
+			{
+				StandardOut::singleton()->print(MESSAGE_INFO, "Submitting abuse report from %s", player ? player->getName().c_str() : "[[[anonymous]]]");
+				
+				AbuseReport r;
+				r.submitterID = localPlayer ? localPlayer->getUserID() : 0;
+				r.allegedAbuserID = player ? player->getUserID() : 0;
+				r.comment = comment;
 
-                rkNE.m_aiVertex[0] = iVStart;
-                rkNE.m_aiVertex[1] = iVFinal;
-                rkNE.m_aiFace[0] = iF;
-                rkNE.m_aiFace[1] = iNF;
+				abuseReporter->add(r, chatHistory);
+			}
+			else
+			{
+				StandardOut::singleton()->print(MESSAGE_INFO, "Sending abuse report to game server via Raknet");
+				if (!peer)
+					throw std::runtime_error("Can\'t report abuse: Not in a networked game");
 
-                // add new edge to polygons
-                rkF.m_akEdge.insert(iNE);
-                rkNF.m_akEdge.insert(iNE);
-            }
-        }
-    }
+				RakNet::BitStream bitStream;
+				bitStream << (unsigned char)ID_REPORT_ABUSE;
+				bitStream << (localPlayer ? localPlayer->getUserID() : 0);
+				bitStream << (player ? player->getUserID() : 0);
+				bitStream << comment;
 
-    // Process face rkNF to make sure it is a simple polygon (theoretically
-    // convex, but numerically may be slightly not convex).  Floating point
-    // round-off errors can cause the new face from the last loop to be
-    // needle-like with a collapse of two edges into a single edge.  This
-    // block guarantees the invariant "face always a simple polygon".
-    PostProcess(iNF,rkNF);
-    int iESize = (int)rkNF.m_akEdge.size();
-    if ( iESize < 3 )
-    {
-        // face is completely degenerate, remove it from mesh
-        m_akFace.pop_back();
-    }
+				peer->Send(&bitStream, HIGH_PRIORITY, RELIABLE, 2, UNASSIGNED_SYSTEM_ADDRESS, true);
+			}
+		}
 
-    return Plane3<Real>::NO_SIDE;
+		Player* Players::getPlayerFromCharacter(Instance* character)
+		{
+			Players* players = ServiceProvider::find<Players>(character);
+			if (players)
+			{
+				boost::shared_ptr<Instance> found = players->playerFromCharacter(shared_from(character));
+				return static_cast<Player*>(found.get());
+			}
+			else
+			{
+				return NULL;
+			}
+		}
+
+		void Players::chat(std::string message)
+		{
+			if (!localPlayer)
+				throw std::runtime_error("No local Player to chat from");
+
+			RakNet::BitStream bitStream;
+			bitStream << (unsigned char)ID_CHAT_ALL;
+
+			Guid::Data data;
+			localPlayer->getGuid().extract(data);
+
+			bitStream << data.scope->name;
+			bitStream << data.index;
+			bitStream << message;
+
+			peer->Send(&bitStream, MEDIUM_PRIORITY, RELIABLE, 2, UNASSIGNED_SYSTEM_ADDRESS, true);
+
+			ChatMessage event = {message, localPlayer, boost::shared_ptr<Player>()};
+			Notifier<Players, ChatMessage>::raise(event);
+		}
+
+		bool Players::backendProcessing(const Instance* context, bool testInDatamodel)
+		{
+			const ServiceProvider* sp = ServiceProvider::findServiceProvider(context);
+			RBXASSERT(!testInDatamodel || sp);
+
+			return sp && !Client::clientIsPresent(context, testInDatamodel);
+		}
+
+		bool Players::frontendProcessing(const Instance* context, bool testInDatamodel)
+		{
+			const ServiceProvider* sp = ServiceProvider::findServiceProvider(context);
+			RBXASSERT(!testInDatamodel || sp);
+
+			return sp && !Server::serverIsPresent(context, testInDatamodel);
+		}
+
+		boost::shared_ptr<Instance> Players::playerFromCharacter(boost::shared_ptr<Instance> character)
+		{
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> myPlayers = getPlayers();
+
+			std::vector<boost::shared_ptr<Instance>>::const_iterator iter = myPlayers->begin();
+			std::vector<boost::shared_ptr<Instance>>::const_iterator end = myPlayers->end();
+
+			for (; iter != end; iter++)
+			{
+				if (static_cast<Player*>(iter->get())->getCharacter() == static_cast<ModelInstance*>(character.get()))
+					return *iter;
+			}
+
+			return boost::shared_ptr<Instance>();
+		}
+
+		boost::shared_ptr<Instance> Players::getPlayerByID(int userID)
+		{
+			std::vector<boost::shared_ptr<Instance>>::const_iterator iter = players->begin();
+			std::vector<boost::shared_ptr<Instance>>::const_iterator end = players->end();
+
+			for (; iter != end; iter++)
+			{
+				if (static_cast<Player*>(iter->get())->getUserID() == userID)
+					return *iter;
+			}
+
+			return boost::shared_ptr<Instance>();
+		}
+
+		void Players::onEvent(const Player* source, CharacterAdded event)
+		{
+			RBXASSERT(backendProcessing(this, true));
+			const_cast<Player*>(source)->rebuildBackpack();
+		}
+
+		void Players::addChatMessage(const ChatMessage& message)
+		{
+			chatHistory.push_front(message);
+
+			while (chatHistory.size() > (size_t)GameSettings::singleton().chatHistory)
+			{
+				chatHistory.pop_back();
+			}
+
+			Notifier<Players, ChatMessage>::raise(message);
+			Player::event_Chatted.fire(message.source.get(), message.message, message.destination);
+		}
+
+		void Players::onChildAdded(Instance* child)
+		{
+			Player* player = dynamic_cast<Player*>(child);
+			if (!player)
+				return;
+
+			if (player->getUserID() > 0)
+			{
+				boost::shared_ptr<Instance> otherPlayer = getPlayerByID(player->getUserID());
+				if (otherPlayer)
+					otherPlayer->setParent(NULL);
+			}
+
+			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& myPlayers = players.write();
+			myPlayers->push_back(shared_from(child));
+
+			if (backendProcessing(this, true))
+			{
+				player->Notifier<Player, CharacterAdded>::addListener(this);
+				player->rebuildBackpack();
+
+				if (Teams* teams = ServiceProvider::find<Teams>(this))
+					teams->assignNewPlayerToTeam(player);
+
+				event_PlayerAdded.fire(this, shared_from(player));
+			}
+		}
+		
+		void Players::onChildRemoving(Instance* child)
+		{
+			Player* player = dynamic_cast<Player*>(child);
+			if (!player)
+				return;
+
+			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& myPlayers = players.write();
+			myPlayers->erase(std::find(myPlayers->begin(), myPlayers->end(), shared_from(child)));
+
+			if (backendProcessing(this, false))
+				event_PlayerRemoving.fire(this, shared_from(player));
+
+			Notifier<Player, CharacterAdded>::disconnect(player, this);
+		}
+
+		void Players::onChildChanged(Instance* instance, const PropertyChanged& event)
+		{
+			if (instance == localPlayer.get() && &event.getProperty().getDescriptor() == &Player::prop_SuperSafeChat)
+			{
+				bool s = localPlayer ? Player::prop_SuperSafeChat.getValue(localPlayer.get()) : false;
+				Notifier<Players, SuperSafeChanged>::raise(SuperSafeChanged(s));
+			}
+		}
+
+		// 98% match
+		boost::shared_ptr<Instance> Players::createLocalPlayer(int userId)
+		{
+			if (localPlayer)
+				throw std::runtime_error("Local player already exists");
+
+			localPlayer = Creatable::create<Player>();
+			Player::prop_userId.setValue(localPlayer.get(), userId);
+			localPlayer->setParent(this);
+			raisePropertyChanged(propLocalPlayer);
+
+			bool s = localPlayer ? Player::prop_SuperSafeChat.getValue(localPlayer.get()) : false;
+			Notifier<Players, SuperSafeChanged>::raise(SuperSafeChanged(s));
+
+			return localPlayer;
+		}
+
+		void AbuseReport::addMessage(const ChatMessage& cm)
+		{
+			int userId = cm.source ? Player::prop_userId.getValue(cm.source.get()) : 0;
+			AbuseReport::Message m = {userId, cm.message};
+			messages.push_back(m);
+		}
+
+		AbuseReporter::AbuseReporter(std::string abuseUrl)
+			: _data(new AbuseReporter::data)
+		{
+			requestProcessor.reset(new worker_thread(boost::bind(&AbuseReporter::processRequests, _data, abuseUrl), "rbx_abusereporter"));
+		}
+
+		void AbuseReporter::add(AbuseReport& r, const std::list<ChatMessage>& chatHistory)
+		{
+			std::for_each(chatHistory.begin(), chatHistory.end(), boost::bind(&AbuseReport::addMessage, boost::ref(r), _1));
+
+			{
+				boost::mutex::scoped_lock lock(_data->requestSync);
+				_data->queue.push(r);
+			}
+
+			requestProcessor->wake();
+		}
+	}
 }
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexClipper<Real>::PostProcess (int iNF, Face& rkNF)
-{
-    int i = 0, iEQuantity = (int)rkNF.m_akEdge.size();
-    vector<EdgePlus> kEdges(iEQuantity);
-    set<int>::iterator pkIter = rkNF.m_akEdge.begin();
-    while ( pkIter != rkNF.m_akEdge.end() )
-    {
-        int iE = *pkIter++;
-        kEdges[i++] = EdgePlus(iE,m_akEdge[iE]);
-    }
-    assert( i == iEQuantity );
-
-    sort(kEdges.begin(),kEdges.end());
-
-    // process duplicate edges
-    for (int i0 = 0, i1 = 1; i1 < iEQuantity; i0 = i1++)
-    {
-        if ( kEdges[i0] == kEdges[i1] )
-        {
-            // found two equivalent edges (same vertex end points)
-#ifdef _DEBUG
-            int i2 = i1+1;
-            if ( i2 < iEQuantity )
-            {
-                // Make sure an edge occurs at most twice.  If not, then
-                // algorithm needs to be modified to handle it.
-                assert( kEdges[i1] != kEdges[i2] );
-            }
-#endif
-            // Edge E0 has vertices V0, V1 and faces F0, NF.  Edge E1 has
-            // vertices V0, V1 and faces F1, NF.
-            int iE0 = kEdges[i0].m_iE;
-            int iE1 = kEdges[i1].m_iE;
-            Edge& rkE0 = m_akEdge[iE0];
-            Edge& rkE1 = m_akEdge[iE1];
-
-            // remove E0 and E1 from NF
-            rkNF.m_akEdge.erase(iE0);
-            rkNF.m_akEdge.erase(iE1);
-
-            // remove NF from E0
-            if ( rkE0.m_aiFace[0] == iNF )
-            {
-                rkE0.m_aiFace[0] = rkE0.m_aiFace[1];
-            }
-            else
-            {
-                assert( rkE0.m_aiFace[1] == iNF );
-            }
-            rkE0.m_aiFace[1] = -1;
-
-            // remove NF from E1
-            if ( rkE1.m_aiFace[0] == iNF )
-            {
-                rkE1.m_aiFace[0] = rkE1.m_aiFace[1];
-            }
-            else
-            {
-                assert( rkE1.m_aiFace[1] == iNF );
-            }
-            rkE1.m_aiFace[1] = -1;
-
-            // E2 is being booted from the system.  Update the face F1 that
-            // shares it.  Update E1 to share F1.
-            int iF1 = rkE1.m_aiFace[0];
-            Face& rkF1 = m_akFace[iF1];
-            rkF1.m_akEdge.erase(iE1);
-            rkF1.m_akEdge.insert(iE0);
-            rkE0.m_aiFace[1] = iF1;
-            rkE1.m_bVisible = false;
-        }
-    }
-}
-//----------------------------------------------------------------------------
-template <class Real>
-bool ConvexClipper<Real>::GetOpenPolyline (Face& rkF, int& riVStart,
-    int& riVFinal)
-{
-    // count the number of occurrences of each vertex in the polyline
-    bool bOkay = true;
-    set<int>::iterator pkIter = rkF.m_akEdge.begin();
-    while ( pkIter != rkF.m_akEdge.end() )
-    {
-        int iE = *pkIter++;
-        Edge& rkE = m_akEdge[iE];
-
-        int iV0 = rkE.m_aiVertex[0];
-        m_akVertex[iV0].m_iOccurs++;
-        if ( m_akVertex[iV0].m_iOccurs > 2 )
-            bOkay = false;
-
-        int iV1 = rkE.m_aiVertex[1];
-        m_akVertex[iV1].m_iOccurs++;
-        if ( m_akVertex[iV1].m_iOccurs > 2 )
-            bOkay = false;
-    }
-
-    if ( !bOkay )
-    {
-#ifdef _DEBUG
-        // If you reach this block, there is a good chance that floating
-        // point round-off error had caused this face to be needle-like and
-        // what was theoretically a narrow V-shaped portion (a vertex shared
-        // by two edges forming a small angle) has collapsed into a single
-        // line segment.
-        //
-        // NOTE.  Once I added PostProcess, I have not gotten to this block.
-        ofstream kOStr("error.txt");
-        pkIter = rkF.m_akEdge.begin();
-        while ( pkIter != rkF.m_akEdge.end() )
-        {
-            int iE = *pkIter++;
-            Edge& rkE = m_akEdge[iE];
-            kOStr << "e<" << iE << "> = <" << rkE.m_aiVertex[0] << ","
-                  << rkE.m_aiVertex[1] << "|" << rkE.m_aiFace[0] << ","
-                  << rkE.m_aiFace[1] << "> ";
-            if ( rkE.m_bVisible )
-                kOStr << "T" << endl;
-            else
-                kOStr << "F" << endl;
-        }
-        kOStr.close();
-
-        assert( false );
-#else
-        return false;
-#endif
-    }
-
-    // determine if the polyline is open
-    pkIter = rkF.m_akEdge.begin();
-    riVStart = -1;
-    riVFinal = -1;
-    while ( pkIter != rkF.m_akEdge.end() )
-    {
-        int iE = *pkIter++;
-        Edge& rkE = m_akEdge[iE];
-
-        int iV0 = rkE.m_aiVertex[0];
-        if ( m_akVertex[iV0].m_iOccurs == 1 )
-        {
-            if ( riVStart == -1 )
-            {
-                riVStart = iV0;
-            }
-            else if ( riVFinal == -1 )
-            {
-                riVFinal = iV0;
-            }
-            else
-            {
-                // If you reach this assert, there is a good chance that the
-                // polyhedron is not convex.  To check this, use the function
-                // ValidateHalfSpaceProperty() on your polyhedron right after
-                // you construct it.
-                assert( false );
-            }
-        }
-
-        int iV1 = rkE.m_aiVertex[1];
-        if ( m_akVertex[iV1].m_iOccurs == 1 )
-        {
-            if ( riVStart == -1 )
-            {
-                riVStart = iV1;
-            }
-            else if ( riVFinal == -1 )
-            {
-                riVFinal = iV1;
-            }
-            else
-            {
-                // If you reach this assert, there is a good chance that the
-                // polyhedron is not convex.  To check this, use the function
-                // ValidateHalfSpaceProperty() on your polyhedron right after
-                // you construct it.
-                assert( false );
-            }
-        }
-    }
-
-    assert( (riVStart == -1 && riVFinal == -1)
-        ||  (riVStart != -1 && riVFinal != -1) );
-
-    return riVStart != -1;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexClipper<Real>::OrderVertices (Face& rkF, vector<int>& aiVOrdered)
-{
-    // copy edge indices into contiguous memory
-    int i = 0, iQuantity = (int)rkF.m_akEdge.size();
-    vector<int> aiEOrdered(iQuantity);
-    set<int>::iterator pkIter = rkF.m_akEdge.begin();
-    while ( pkIter != rkF.m_akEdge.end() )
-        aiEOrdered[i++] = *pkIter++;
-
-    // bubble sort (yes, it is...)
-    for (int i0 = 0, i1 = 1, iChoice = 1; i1 < iQuantity-1; i0 = i1, i1++)
-    {
-        Edge& rkECurr = m_akEdge[aiEOrdered[i0]];
-        int j, iCurr = rkECurr.m_aiVertex[iChoice];
-        for (j = i1; j < iQuantity; j++)
-        {
-            Edge& rkETemp = m_akEdge[aiEOrdered[j]];
-            int iSave;
-            if ( rkETemp.m_aiVertex[0] == iCurr )
-            {
-                iSave = aiEOrdered[i1];
-                aiEOrdered[i1] = aiEOrdered[j];
-                aiEOrdered[j] = iSave;
-                iChoice = 1;
-                break;
-            }
-            if ( rkETemp.m_aiVertex[1] == iCurr )
-            {
-                iSave = aiEOrdered[i1];
-                aiEOrdered[i1] = aiEOrdered[j];
-                aiEOrdered[j] = iSave;
-                iChoice = 0;
-                break;
-            }
-        }
-        assert( j < iQuantity );
-    }
-
-    aiVOrdered[0] = m_akEdge[aiEOrdered[0]].m_aiVertex[0];
-    aiVOrdered[1] = m_akEdge[aiEOrdered[0]].m_aiVertex[1];
-    for (i = 1; i < iQuantity; i++)
-    {
-        Edge& rkE = m_akEdge[aiEOrdered[i]];
-        if ( rkE.m_aiVertex[0] == aiVOrdered[i] )
-            aiVOrdered[i+1] = rkE.m_aiVertex[1];
-        else
-            aiVOrdered[i+1] = rkE.m_aiVertex[0];
-    }
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexClipper<Real>::GetTriangles (vector<int>& raiConnect,
-    vector<Plane3<Real> >& rakPlane)
-{
-    for (int iF = 0; iF < (int)m_akFace.size(); iF++)
-    {
-        Face& rkF = m_akFace[iF];
-        if ( rkF.m_bVisible )
-        {
-            int iQuantity = (int)rkF.m_akEdge.size();
-            assert( iQuantity >= 3 );
-            vector<int> aiOrdered(iQuantity+1);
-            OrderVertices(rkF,aiOrdered);
-
-            int iV0 = aiOrdered[0], iV2 = aiOrdered[iQuantity-1];
-            int iV1 = aiOrdered[(iQuantity-1) >> 1];
-            Vector3<Real> kD1 = m_akVertex[iV1].m_kPoint -
-                m_akVertex[iV0].m_kPoint;
-            Vector3<Real> kD2 = m_akVertex[iV2].m_kPoint -
-                m_akVertex[iV0].m_kPoint;
-            Real fTSP = rkF.m_kPlane.GetNormal().Dot(kD1.Cross(kD2));
-            if ( fTSP > (Real)0.0 )
-            {
-                // clockwise, need to swap
-                for (int i = 1; i+1 < iQuantity; i++)
-                {
-                    raiConnect.push_back(iV0);
-                    raiConnect.push_back(aiOrdered[i+1]);
-                    raiConnect.push_back(aiOrdered[i]);
-                    rakPlane.push_back(rkF.m_kPlane);
-                }
-            }
-            else
-            {
-                // counterclockwise
-                for (int i = 1; i+1 < iQuantity; i++)
-                {
-                    raiConnect.push_back(iV0);
-                    raiConnect.push_back(aiOrdered[i]);
-                    raiConnect.push_back(aiOrdered[i+1]);
-                    rakPlane.push_back(rkF.m_kPlane);
-                }
-            }
-        }
-    }
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexClipper<Real>::Convert (ConvexPolyhedron3<Real>& rkPoly)
-{
-    // get visible vertices
-    int iVQuantity = (int)m_akVertex.size();
-    vector<Vector3<Real> > akPoint;
-    int* aiVMap = new int[iVQuantity];
-    memset(aiVMap,0xFF,iVQuantity*sizeof(int));
-    for (int iV = 0; iV < iVQuantity; iV++)
-    {
-        const Vertex& rkV = m_akVertex[iV];
-        if ( rkV.m_bVisible )
-        {
-            aiVMap[iV] = (int)akPoint.size();
-            akPoint.push_back(rkV.m_kPoint);
-        }
-    }
-
-    vector<int> aiConnect;
-    vector<Plane3<Real> > akPlane;
-    GetTriangles(aiConnect,akPlane);
-
-    // re-order
-    int iNewVQuantity = (int)akPoint.size();
-    for (int iC = 0; iC < (int)aiConnect.size(); iC++)
-    {
-        int iOldC = aiConnect[iC];
-        assert( 0 <= iOldC && iOldC < iVQuantity );
-        int iNewC = aiVMap[iOldC];
-        assert( 0 <= iNewC && iNewC < iNewVQuantity );
-        aiConnect[iC] = iNewC;
-    }
-
-    delete[] aiVMap;
-
-    rkPoly.Create(akPoint,aiConnect,akPlane);
-}
-//----------------------------------------------------------------------------
-template <class Real>
-bool ConvexClipper<Real>::Print (const char* acFilename) const
-{
-    ofstream kOStr(acFilename);
-    if ( !kOStr )
-        return false;
-
-    int iVQuantity = (int)m_akVertex.size();
-    int iEQuantity = (int)m_akEdge.size();
-    int iFQuantity = (int)m_akFace.size();
-    int iVDigits = (int)(ceil(log10((double)iVQuantity)));
-    int iEDigits = (int)(ceil(log10((double)iEQuantity)));
-    int iFDigits = (int)(ceil(log10((double)iFQuantity)));
-    char acMsg[1024];
-
-    kOStr << iVQuantity << " vertices" << endl;
-    for (int iV = 0; iV < iVQuantity; iV++)
-    {
-        const Vertex& rkV = m_akVertex[iV];
-        sprintf(acMsg,"v<%*d> %c: (%f,%f,%f)",
-            iVDigits,iV,(rkV.m_bVisible ? 'T' : 'F'),
-            rkV.m_kPoint.X(),
-            rkV.m_kPoint.Y(),
-            rkV.m_kPoint.Z());
-        kOStr << acMsg << endl;
-    }
-    kOStr << endl;
-
-    kOStr << iEQuantity << " edges" << endl;
-    for (int iE = 0; iE < iEQuantity; iE++)
-    {
-        const Edge& rkE = m_akEdge[iE];
-        sprintf(acMsg,"e<%*d> %c: v[%*d,%*d], t[%*d,%*d]",
-            iEDigits,iE,(rkE.m_bVisible ? 'T' : 'F'),
-            iVDigits,rkE.m_aiVertex[0],
-            iVDigits,rkE.m_aiVertex[1],
-            iFDigits,rkE.m_aiFace[0],
-            iFDigits,rkE.m_aiFace[1]);
-        kOStr << acMsg << endl;
-    }
-    kOStr << endl;
-
-    kOStr << iFQuantity << " faces" << endl;
-    for (int iF = 0; iF < iFQuantity; iF++)
-    {
-        const Face& rkF = m_akFace[iF];
-        sprintf(acMsg,"t<%*d> %d: e = ",
-            iFDigits,iF,(rkF.m_bVisible ? 'T' : 'F'));
-        kOStr << acMsg;
-
-        set<int>::const_iterator pkIter = rkF.m_akEdge.begin();
-        while ( pkIter != rkF.m_akEdge.end() )
-        {
-            kOStr << *pkIter << ' ';
-            pkIter++;
-        }
-        kOStr << endl;
-    }
-
-    return true;
-}
-//----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
-// explicit instantiation
-//----------------------------------------------------------------------------
-namespace Wml
-{
-template class WML_ITEM ConvexClipper<float>;
-template class WML_ITEM ConvexClipper<double>;
-}
-//----------------------------------------------------------------------------
