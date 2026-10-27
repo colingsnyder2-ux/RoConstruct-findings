@@ -1,3 +1,4 @@
+// from server: 100% by coldek
 // from server: 100% by auto
 // roc 2008-06 0044e5a0  unit: CRobloxControlColorSelector  size: 43 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0044e5a0

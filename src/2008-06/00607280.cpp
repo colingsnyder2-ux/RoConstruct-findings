@@ -33,7 +33,7 @@ extern unsigned int nativeBlockPlanePassed,nativeBlockPlaneRejected;
 enum NormalId {NORM_X,NORM_Y,NORM_Z,NORM_X_NEG,NORM_Y_NEG,NORM_Z_NEG};
 class Math {public:
  static const float&inf(){static float inf=std::numeric_limits<float>::infinity();return inf;}
- static float taxiCabMagnitude(const G3D::Vector3&v){return fabs(v.x)+fabs(v.y)+fabs(v.z);}
+ static float taxiCabMagnitude(const G3D::Vector3&v){float a=fabs(v.x),b=fabs(v.y),c=fabs(v.z);return a+b+c;}
 };
 class Geometry;
 class Block {public:char unobserved00[0x10];const G3D::Vector3*vertices;
