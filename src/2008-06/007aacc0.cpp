@@ -1,3 +1,4 @@
+// from server: 97% by coldek
 // from server: 94% by Espeon
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
@@ -209,4 +210,5 @@ void Scene::configure(Reference reference, Parameters input)
     createLight(&light, input.transform, color, true, true);
     p->lights.append(light);
     submit(lighting);
+    lighting.pointer = p;
 }

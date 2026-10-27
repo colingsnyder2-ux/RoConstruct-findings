@@ -1,8 +1,8 @@
-// from server: 90% by Espeon
+// from server: 93% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espeon_scorehudportablecounts790ae2c09beff122.cpp
+// roc-lib: rbxgs-dll roc_codex_scorehud_color_order_21a493d6c6b3d438.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "roc_espeon_scorehudportableheader11bfdf7c6129a99c.cpp"
@@ -155,7 +155,8 @@ void ScoreHud::renderTeamDeathmatchLeaderboard(Adorn* adorn,BoardType mode) {
                 position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
                 label=StringConverter<int>::convertToString(data.teamTotals[team][data.statNamesList[col-1]]);
             }
-            adorn->drawFont2D(label,position,row,G3D::Color4(team->getTeamColor().color3(),1),G3D::Color4(0,0,0,1),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+            G3D::Color4 teamColor(team->getTeamColor().color3(),1);
+            adorn->drawFont2D(label,position,row,teamColor,G3D::Color4(0,0,0,1),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
         }
         rect.low.y+=row;
         adorn->line2d(G3D::Vector2(rect.low.x+2,rect.low.y+7),G3D::Vector2(rect.high.x-2,rect.low.y+7),G3D::Color4(team->getTeamColor().color3(),1));

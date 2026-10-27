@@ -1,55 +1,75 @@
-// from server: 24% by colin
-// from server: 27% by colin
-// roc-cl: 50727
-// roc-flags: /GF /GS- /EHsc /MD /O2 /Ob0 /Oy-
+// from server: 82% by king_originala
 // roc-lang: cpp
-// roc-lib: openrbx-client-dll App/v8datamodel/Sky.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_native_sky_factory_e39f5c5835ae6416.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Sky.h"
-
+#pragma include_alias("GLG3D/Sky.h", "roc_native_sky_stars_affbed361cd74edc.cpp")
+#pragma include_alias(<GLG3D/Sky.h>, <roc_native_sky_stars_affbed361cd74edc.cpp>)
+#pragma include_alias("G3D/GImage.h", "roc_native_gimage_error_c1995d81e1168339.cpp")
+#pragma include_alias(<G3D/GImage.h>, <roc_native_gimage_error_c1995d81e1168339.cpp>)
+#include <winsock2.h>
+#include <string>
+#include <vector>
+#include <stdexcept>
 #include "util/ContentProvider.h"
+#include "util/StandardOut.h"
+#include "G3D/GImage.h"
+#include "GLG3D/Sky.h"
+
+typedef char proven_content_id_size[sizeof(RBX::ContentId)==32?1:-1];
+typedef char proven_image_error_size[sizeof(G3D::GImage::Error)==96?1:-1];
+
+// Native Sky.cpp helper; retain its definition so the compiler can select
+// the same internal calling convention as the target.
+static std::string testImage(const std::string& file, G3D::GImage& master)
+{
+    G3D::GImage image;
+    image.load(file);
+    if (image.width != master.width)
+        throw std::runtime_error("skybox images have different widths");
+    if (image.height != master.height)
+        throw std::runtime_error("skybox images have different heights");
+    if (image.channels != master.channels)
+        throw std::runtime_error("skybox images have different numbers of channels");
+    return file;
+}
 
 namespace RBX {
+// Only the static entry point is declared. No historical Sky layout is assumed.
+class Sky { public: static G3D::SkyRef getG3DSky(Sky* sky); };
+ContentProvider* skyContentProvider(Sky* sky); // 00465210, cdecl receiver pointer
+std::string skyAssetFolder(); // 0055c4c0, cdecl string return
 
-char sSky[] = "Sky";
-
-using namespace Reflection;
-
-BoundProp<TextureId, 1> Sky::prop_SkyUp("SkyboxUp", "Appearance", &RBX::Sky::skyUp);
-
-BoundProp<TextureId, 1> Sky::prop_SkyLf("SkyboxLf", "Appearance", &RBX::Sky::skyLf);
-
-BoundProp<TextureId, 1> Sky::prop_SkyRt("SkyboxRt", "Appearance", &RBX::Sky::skyRt);
-
-BoundProp<TextureId, 1> Sky::prop_SkyBk("SkyboxBk", "Appearance", &RBX::Sky::skyBk);
-
-BoundProp<TextureId, 1> Sky::prop_SkyFt("SkyboxFt", "Appearance", &RBX::Sky::skyFt);
-
-BoundProp<TextureId, 1> Sky::prop_SkyDn("SkyboxDn", "Appearance", &RBX::Sky::skyDn);
-
-BoundProp<bool, 1> Sky::prop_CelestialBodiesShown("CelestialBodiesShown", "Appearance", &RBX::Sky::drawCelestialBodies);
-
-BoundProp<int, 1> Sky::prop_StarCount("StarCount", "Appearance", &RBX::Sky::numStars);
-
-// STUB: WEBSERVICE 0x10094700
 G3D::SkyRef Sky::getG3DSky(Sky* sky)
 {
-	STUB(0x10094700);
-	return G3D::SkyRef();
+    if (sky) {
+        try {
+            std::vector<std::string> storage(6);
+            std::string* filenames = &storage[0];
+            {
+                // Each offset is an observed 32-byte ContentId copy in 005ebbb0.
+                filenames[0] = skyContentProvider(sky)->getFile(*reinterpret_cast<const ContentId*>(reinterpret_cast<const char*>(sky)+0x1b0));
+                G3D::GImage image;
+                image.load(filenames[0]);
+                filenames[1] = testImage(skyContentProvider(sky)->getFile(*reinterpret_cast<const ContentId*>(reinterpret_cast<const char*>(sky)+0x190)), image);
+                filenames[2] = testImage(skyContentProvider(sky)->getFile(*reinterpret_cast<const ContentId*>(reinterpret_cast<const char*>(sky)+0x130)), image);
+                filenames[3] = testImage(skyContentProvider(sky)->getFile(*reinterpret_cast<const ContentId*>(reinterpret_cast<const char*>(sky)+0x1d0)), image);
+                filenames[4] = testImage(skyContentProvider(sky)->getFile(*reinterpret_cast<const ContentId*>(reinterpret_cast<const char*>(sky)+0x170)), image);
+                filenames[5] = testImage(skyContentProvider(sky)->getFile(*reinterpret_cast<const ContentId*>(reinterpret_cast<const char*>(sky)+0x150)), image);
+            }
+            std::string directory = skyAssetFolder() + "Sky\\";
+            G3D::SkyRef result = G3D::Sky::fromFile(NULL, directory, filenames, *reinterpret_cast<const bool*>(reinterpret_cast<const char*>(sky)+0x1f0), 1.0);
+            if (result.notNull())
+                result->setNumStars(*reinterpret_cast<const int*>(reinterpret_cast<const char*>(sky)+0x1f4));
+            return result;
+        } catch (G3D::GImage::Error& e) {
+            StandardOut::singleton()->print(MESSAGE_WARNING, e.reason.c_str());
+        } catch (std::exception& e) {
+            StandardOut::singleton()->print(MESSAGE_WARNING, e);
+        }
+    }
+    return G3D::Sky::fromFile(NULL, skyAssetFolder()+"Sky\\", "null_plainsky512_*.jpg");
 }
-
-// FUNCTION: WEBSERVICE 0x10095110
-Sky::Sky() : drawCelestialBodies(true), numStars(3000)
-{
-	setName("Sky");
-
-	skyUp = ContentId::fromAssets("Sky\\null_plainsky512_up.jpg");
-	skyLf = ContentId::fromAssets("Sky\\null_plainsky512_lf.jpg");
-	skyRt = ContentId::fromAssets("Sky\\null_plainsky512_rt.jpg");
-	skyBk = ContentId::fromAssets("Sky\\null_plainsky512_bk.jpg");
-	skyFt = ContentId::fromAssets("Sky\\null_plainsky512_ft.jpg");
-	skyDn = ContentId::fromAssets("Sky\\null_plainsky512_dn.jpg");
 }
-
-} // namespace RBX

@@ -1,8 +1,7 @@
-// from server: 99% by Espeon
-// roc-lang: cpp
+// from server: 100% by coldek
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espeon_textureminimumorderf42976389be428a7.cpp
+// roc-lib: rbxgs-dll roc_codex_texture_implicit_color_654ccb20e062ae25.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <RenderLib/TextureProxy.h>
@@ -57,8 +56,7 @@ G3D::TextureRef TextureProxy::resolve(G3D::RenderDevice* rd) {
                 G3D::Color3uint8 lookup[256];
                 for (int i = 0; i < 256; ++i) {
                     lookup[i].r = lookup[i].g = lookup[i].b = i;
-                    G3D::Color3uint8 shadeColor(color);
-                    shadePixel(shadeColor, lookup[i]);
+                    shadePixel(color, lookup[i]);
                 }
                 int count = image.width * image.height;
                 for (int i = 0; i < count; ++i) {

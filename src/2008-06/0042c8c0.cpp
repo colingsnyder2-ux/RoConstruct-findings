@@ -455,10 +455,10 @@ void CLuaHtmlView::bindElement(boost::shared_ptr<RBX::Instance> instance, int pr
     if (!input)
         throw std::runtime_error(G3D::format("%s is not an input element", elementName));
     Binder* binder = 0;
-    BinderList::iterator it = binders.begin();
+    BaseList::iterator it = binders.begin();
     BaseList::iterator end = binders.end();
     for (; it != end; ++it)
-        if (isSameElement((*(BaseList::iterator&)it)->element, input)) {
+        if (isSameElement((*it)->element, input)) {
             binder = (*it).get();
             break;
         }
