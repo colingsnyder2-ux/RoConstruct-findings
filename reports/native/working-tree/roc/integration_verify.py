@@ -318,25 +318,28 @@ def preflight(root, base, patches):
 
 def verify_build(root, progress):
     progress("building")
+    # The size/base gates read only the header overlay: write it first (build_module rewrites nothing unchanged)
+    # and run them beside the compile instead of after the link.
+    overlay = ("from roc import rebuild; s=rebuild.load_module('2008-06','rbxgs-app'); "
+               "rebuild.build_overlay('2008-06', s['name'], s.get('overlay'))")
+    run(root, ["-c", overlay], root / "integration-overlay.log")
     # Reporting is separate: avoid another complete object scan/webhook per gate.
     build = ("from roc import rebuild; import sys; "
              "rebuild.progress=lambda *a,**kw: None; "
              "r=rebuild.build_module('2008-06','rbxgs-app'); "
              "sys.exit(0 if r['linked'] and r['test_exit']==0 else 1)")
-    run(root, ["-c", build], root / "integration-build.log")
-    progress("checking")
     status = ("from roc import rebuild; import json; from pathlib import Path; "
               "rebuild.progress=lambda *a,**kw: None; "
               "rows,owned=rebuild.status('2008-06'); "
               "Path('integration-linked.json').write_text(json.dumps(sorted(owned)))")
-    commands = [(["roc.py", "rebuild", CLIENT, "milestones"], "milestones"),
-                (["rebuild/2008-06/size_check.py"], "size"),
-                (["rebuild/2008-06/base_check.py"], "base"),
-                (["-c", status], "status")]
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
-        futures = [pool.submit(run, root, args, root / ("integration-" + name + ".log"))
-                   for args, name in commands]
-        for future in futures:
+        def submit(args, name):
+            return pool.submit(run, root, args, root / ("integration-" + name + ".log"))
+        early = [submit(["rebuild/2008-06/size_check.py"], "size"), submit(["rebuild/2008-06/base_check.py"], "base")]
+        submit(["-c", build], "build").result()
+        progress("checking")
+        late = [submit(["roc.py", "rebuild", CLIENT, "milestones"], "milestones"), submit(["-c", status], "status")]
+        for future in early + late:
             future.result()
     return collect(root)
 

@@ -105,23 +105,42 @@ def libs_recipes():
 
 def build_group(job):
     module, n, item = job
-    text = (ROOT / "src" / CLIENT / (item["addrs"][0] + ".cpp")).read_text(errors="replace")
+    text = original = (ROOT / "src" / CLIENT / (item["addrs"][0] + ".cpp")).read_text(errors="replace")
     twin = DLL_TWIN.get(item["recipe"])
     if twin is None and "_DLL" not in libs_recipes().get(item["recipe"], {}).get("defines", "")             and item["recipe"] + "-dll" in libs_recipes():
         twin = item["recipe"] + "-dll"  # e.g. g3d-6.09 -> g3d-6.09-dll
     if twin:
         item = dict(item, recipe=twin)
         text = re.sub(r"(?m)^(// roc-lib: )%s " % re.escape(job[2]["recipe"]), r"\g<1>%s " % twin, text)
+    objs = []
     try:
         obj = compile_against_overlay(module, item, n) if item.get("overlay") else match.compile_text(CLIENT, text)
     except Exception as error:  # noqa: BLE001 - report and continue with the other groups
-        return item, None, {}, str(error)[:300]
-    keep = {}
-    for addr in item["addrs"]:
-        value, symbol, _, _ = match.check_text(CLIENT, addr, text, obj=obj)
-        if value == 100 and symbol:
-            keep.setdefault(symbol, addr)
-    return item, obj, keep, None
+        if not twin:
+            return item, [], str(error)[:300]
+        obj = None
+    missed = list(item["addrs"])
+
+    def take(source, candidate):
+        keep = {}
+        for addr in missed:
+            value, symbol, _, _ = match.check_text(CLIENT, addr, source, obj=candidate)
+            if value == 100 and symbol:
+                keep.setdefault(symbol, addr)
+        if keep:
+            objs.append((candidate, keep))
+        return [a for a in missed if a not in set(keep.values())]
+
+    if obj is not None:
+        missed = take(text, obj)
+    # The twin rebuilds most groups inexact (sampled: 51 of 568 openrbx-client addresses); the addresses it misses
+    # fall back to the object mining verified. The module link then proves its CRT references resolve under /MD.
+    if twin and missed:
+        try:
+            missed = take(original, match.compile_text(CLIENT, original))
+        except Exception:  # noqa: BLE001 - the twin result stands
+            pass
+    return item, objs, None
 
 
 def main(module, limit=None):
@@ -148,14 +167,14 @@ def main(module, limit=None):
     folder.mkdir(parents=True)
     swaps, failed, wanted, found = [], [], 0, 0
     with ThreadPoolExecutor(8) as pool:
-        for n, (item, obj, keep, error) in enumerate(pool.map(build_group, [(module, i, g) for i, g in enumerate(groups)])):
+        for n, (item, objs, error) in enumerate(pool.map(build_group, [(module, i, g) for i, g in enumerate(groups)])):
             wanted += len(item["addrs"])
             if error:
                 failed.append({"file": item["file"], "cl": item["cl"], "flags": item["flags"], "error": error})
                 continue
-            found += len(set(keep.values()))
-            if keep:
-                name = "%04d.obj" % n
+            for k, (obj, keep) in enumerate(objs):
+                found += len(set(keep.values()))
+                name = "%04d.obj" % n if not k else "%04d-mined.obj" % n
                 (folder / name).write_bytes(obj)
                 swaps.append({"obj": name, "recipe": item["recipe"], "file": item["file"], "keep": keep})
     (folder / "swaps.json").write_text(json.dumps({"swaps": swaps, "failed": failed}, indent=1))
@@ -170,8 +189,20 @@ def kept_addresses(folder):
 
 
 def install(live, built):
-    """Replace the live layer only when the new one loses no exact address and gains at least one."""
+    """Replace the live layer only when the new one loses no exact address and gains at least one. Addresses the new
+    plan no longer lists (now owned elsewhere, or a regrouped compile) keep their verified objects from the live layer."""
     before, after = kept_addresses(live), kept_addresses(built)
+    if before - after and after - before:
+        lost, data = before - after, json.loads((built / "swaps.json").read_text())
+        for item in json.loads((live / "swaps.json").read_text())["swaps"]:
+            keep = {s: a for s, a in item["keep"].items() if a in lost}
+            if keep:
+                name = "live-" + item["obj"]
+                shutil.copy2(live / item["obj"], built / name)
+                data["swaps"].append(dict(item, obj=name, keep=keep))
+                lost -= set(keep.values())
+        (built / "swaps.json").write_text(json.dumps(data, indent=1))
+        after = kept_addresses(built)
     if before - after or not after - before:
         shutil.rmtree(built)
         return "kept existing layer (%d addresses; new layer lost %d, gained %d)" % (

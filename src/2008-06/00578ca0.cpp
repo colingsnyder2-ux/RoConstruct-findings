@@ -1,7 +1,6 @@
-// from server: 53% by colin
+// from server: 60% by coldek
 // roc-cl: 21022
-// roc-flags: /GS- /EHsc /MD /O2 /Ob1 /Oy-
-// from server: 45% by colin
+// roc-flags: /O2 /GS- /EHa /MD
 #include <intrin.h>
 extern bool enabled;
 extern void __cdecl alignedFree(void*);
@@ -69,7 +68,7 @@ extern const Settings* __cdecl getSettings();
 void S::f(float elapsed)
 {
     unsigned int mode = classify(this);
-    volatile bool active = false;
+    bool active = false;
 
     switch (mode)
     {
@@ -77,7 +76,6 @@ void S::f(float elapsed)
     case 3:
     case 4:
         active = state->mode == 1;
-        _ReadWriteBarrier();
         break;
     case 1:
     case 2:

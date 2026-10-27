@@ -1,16 +1,16 @@
 {
-  "accepted_jobs": 12,
+  "accepted_jobs": 16,
   "clients": [
     {
       "client": "2008-06",
-      "exact_sources": 22132,
+      "exact_sources": 22137,
       "stored_sources": 22290
     }
   ],
-  "native_credits": 153,
+  "native_credits": 165,
   "sha256": {
     "working-tree/rebuild/2008-06/POLICY.md": "77fcf38870a4e5cc7393873006999d30e1c6da7acebaf2813f8d7664c03cc200",
-    "working-tree/rebuild/2008-06/base_check.py": "6753a0b3b6f6029638b0670d38105217a8739f0bc6bb283e1577cc504b0863bd",
+    "working-tree/rebuild/2008-06/base_check.py": "9097dd90dff04feafee7c3d314615b495e9c8cef18d55e7170ddd810ae6e9ebe",
     "working-tree/rebuild/2008-06/glue/openrbx/glue_link_stubs.cpp": "c383ecade8df6a90dc7b28847765989911f8a7a8f0c6c8aae7b60a07f97a448e",
     "working-tree/rebuild/2008-06/glue/rbxgs/glue_anchor_registry.cpp": "5e2b609e439231ee18be54fa4c9b6bb639efe63dc392dba305081c7278156421",
     "working-tree/rebuild/2008-06/glue/rbxgs/glue_camera.cpp": "02a274d4dbb3b54c15145f99378a1c2c5c4c6e51f6cdce622e8b4aec11eaf1fd",
@@ -65,14 +65,14 @@
     "working-tree/rebuild/2008-06/modules/zlib-winapi.json": "3cd1909dee8323670ca492ae0d87ddb3a648daf9e75c62fe52f70d4a735403f3",
     "working-tree/rebuild/2008-06/modules/zlib.json": "7c7bc4ab866155c98ae68062b2c17de91343b498b138372b4cf013e385e28a42",
     "working-tree/rebuild/2008-06/patches/make_rbxgs_client.py": "564a733656a574ca1981df8aa22654258816eeeb953a50111ebab753ac2a14bb",
-    "working-tree/rebuild/2008-06/patches/native-promotions.json": "636a6ac215ecedce35596a6183810edade7a092fcfc19ce17e098023b04f5a5f",
+    "working-tree/rebuild/2008-06/patches/native-promotions.json": "c63c9d451809cb96170e666e9840d3d0a82123e601df52e4d9a979918b54034b",
     "working-tree/rebuild/2008-06/patches/openrbx-client.json": "1f64aa08d845d5000000c55507e10589795861fc2b3174a9f630a647846b0880",
-    "working-tree/rebuild/2008-06/patches/rbxgs-client.json": "e0f3bf899a2ba2b477cef7785f54d4e5b32adc1a4a20702c79eaac77fcc0a154",
+    "working-tree/rebuild/2008-06/patches/rbxgs-client.json": "b58cc54b081d2d9b9dae0f62dfc4aef09c24ab68b97abd56809c4c5fe4b03a91",
     "working-tree/rebuild/2008-06/patches/rbxgs_template_defs.h": "4bb1347378975e36c58806101c7c4b94f4e894c9a05894b786801a9b2378b159",
     "working-tree/rebuild/2008-06/patches/zlib-deflate-copyright.json": "120d11aad649274de37aa77ad7055fc871f1a0714287917ceabfa597edc6e993",
     "working-tree/rebuild/2008-06/patches/zlib-winapi-deflate-copyright.json": "120d11aad649274de37aa77ad7055fc871f1a0714287917ceabfa597edc6e993",
-    "working-tree/rebuild/2008-06/size_check.py": "8d2561d5fc05c606a01998614413a7021f815a94190f4630ffb877c1a79c9d47",
-    "working-tree/rebuild/2008-06/swap_build.py": "56c8a213fe0536331fe1807c09b4445c127f3d91f4174aac4b17c186fc8628ec",
+    "working-tree/rebuild/2008-06/size_check.py": "5bb60703daa9fc632e63dbd3765fef4a5cccddc3586971067f2c601c3ac38f6e",
+    "working-tree/rebuild/2008-06/swap_build.py": "5fec7f2077ef41d6a237a52b691e13164a3d76689c4edf6141913959471ef58f",
     "working-tree/rebuild/2008-06/swap_plan.py": "b3190067b25c8e48c490ec1b7a51282396088f8f623d4ee36d4619755c1fafb3",
     "working-tree/rebuild/2008-06/tests/boost_core.cpp": "720d2cbcdb07239512d8e95610c606ee13576d99858cc37707fb9c1914c82c62",
     "working-tree/rebuild/2008-06/tests/crash_entry.cpp": "b15cb9ce230b8fce049259cf1ba54b1a222486463ee325999dca6b14af0fd932",
@@ -98,10 +98,10 @@
     "working-tree/rebuild/2008-06/tests/test_strip_symbols.py": "b8ad20118275c07e175d7b4ebd3c272b116d9a7b37827b5051380c2316fa8e7b",
     "working-tree/rebuild/2008-06/tests/xtp_colors.cpp": "bb4d67867daa9e6f8f29fd9178a9567021af40973faa93a2bcfbe46a419c1a9b",
     "working-tree/rebuild/2008-06/tests/zlib_roundtrip.cpp": "2e13794b8941477920550714a8eadae5eb7bb4fb2745629b2877be625a87040d",
-    "working-tree/roc/findings_publish.py": "d0e9e116f0ea9a7dc380208ee6652ca01bd9a576c2cdd1acee0f5c699ee20f0d",
-    "working-tree/roc/integration.py": "48fe09cb625bac46b521305dcf3bf427f6fa9806002467362c148b330fd06a47",
-    "working-tree/roc/integration_verify.py": "8641021147a87c81ce5a1a49b8ece419a9bf3158d6909201715f5a0a0f2228ad",
-    "working-tree/roc/native_sweep.py": "4421adbc01e3292adaee5e75600e6f70ceebf31d8e3a198c88422d8d23aaef93",
-    "working-tree/roc/rebuild.py": "0e95caaf0ccb5bd53a9b32f09572ea97586910ab215109a48cbcba66c0a7fe95"
+    "working-tree/roc/findings_publish.py": "f1ea6aea9acaba0c5d15a2c52e6cd9dab21810c5e61f0b38edb9c0c867940b1a",
+    "working-tree/roc/integration.py": "9238af82b2fa34caf5aa5c2639bd6912ea4486c20d2081500af8a05d6856177d",
+    "working-tree/roc/integration_verify.py": "79181b0822647d26c0a9e14b5ceb7baafdb7675a46d4a81ea1ebbf100c0fc626",
+    "working-tree/roc/native_sweep.py": "10a5a6d477b878f8409f973ff199daf757380227923cbbe0c6bff789db09b409",
+    "working-tree/roc/rebuild.py": "aabdcd4bf4cc9e98499c593b4a54e0cdc3dc726ee4929e2ac38a915b1adb89ae"
   }
 }

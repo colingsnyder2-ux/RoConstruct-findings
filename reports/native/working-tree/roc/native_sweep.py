@@ -243,10 +243,160 @@ def wait_for_job(api, identifier, timeout, log):
     raise TimeoutError("Native verification still pending: " + identifier)
 
 
+MODEL_RULES = """You repair real 2008 Roblox C++ so MSVC compiles it to the exact bytes of the 2008 exe.
+Edit ONLY the file below. Reply with one or more blocks, nothing else:
+<<<<<<< SEARCH
+exact old text, copied verbatim from the file
+=======
+new text
+>>>>>>> REPLACE
+Each SEARCH text must occur exactly once in the file as shown. Blocks apply in order.
+The mined sources are byte-exact proofs written with placeholder types: copy their control flow, call order,
+constants and evaluation order, but use the real classes, members and methods. "standins" maps each placeholder
+to the real symbol, RTTI type or import the exe uses at that spot. Never add padding structs, offset views,
+invented fields, inline asm or casts to raw offsets. Keep every other method unchanged."""
+
+
+def strip_asm(source):
+    return "\n".join(line for line in source.splitlines() if not re.match(r"//\s*[0-9a-f]{8}\s", line))
+
+
+def target_files(texts, wanted, names, by_addr):
+    """{file: [addr]}: a target goes to the file defining its rebuilt method, else to the file named for its class."""
+    spans = {rel: methods(text) for rel, text in texts.items()}
+    stems = defaultdict(list)
+    for rel in texts:
+        stems[Path(rel).stem.lower()].append(rel)
+    out = defaultdict(list)
+    for addr in sorted(wanted):
+        symbol = names.get(addr, {}).get("symbol")
+        method = symbol_method(symbol) if symbol else None
+        homes = [rel for rel in texts if method and method in spans[rel]]
+        if not homes:
+            homes = stems.get(by_addr.get(addr, {}).get("unit", "").rsplit("::", 1)[-1].lower(), [])
+        if len(homes) == 1:
+            out[homes[0]].append(addr)
+    return out
+
+
+def model_evidence(addr, names, by_addr):
+    from roc import packet, standins
+    source = packet._source("2008-06", addr)[0]
+    code = match.target("2008-06", addr)[0]
+    item = {"addr": addr, "size": by_addr.get(addr, {}).get("size"), "rebuilt": names.get(addr),
+            "mined_source": strip_asm(source)[:4000], "target_asm": match.disasm(code, int(addr, 16))[:120]}
+    try:
+        item["standins"] = standins.mapping("2008-06", addr, source)
+    except Exception as error:  # noqa: BLE001 - the map is optional evidence
+        item["standins_error"] = str(error)[:200]
+    return item
+
+
+def apply_edits(text, edits):
+    if not isinstance(edits, list) or not edits:
+        raise ValueError("no edits")
+    for pair in edits:
+        if not (isinstance(pair, list) and len(pair) == 2 and all(isinstance(p, str) for p in pair)) or not pair[0]:
+            raise ValueError("each edit must be [old, new] strings with non-empty old")
+        if text.count(pair[0]) != 1:
+            raise ValueError("old text occurs %d times, need exactly 1: %r" % (text.count(pair[0]), pair[0][:80]))
+        text = text.replace(pair[0], pair[1], 1)
+    return text
+
+
+EDIT_BLOCK = re.compile(r"<{7} SEARCH\n(.*?)\n={7}\n(.*?)\n?>{7} REPLACE", re.S)
+
+
+def parse_edits(reply):
+    """SEARCH/REPLACE blocks: C++ needs no escaping, unlike JSON strings (most JSON replies failed to parse)."""
+    edits = [[old, new] for old, new in EDIT_BLOCK.findall(providers_text(reply).replace("\r\n", "\n"))]
+    if not edits:
+        raise ValueError("reply has no SEARCH/REPLACE block")
+    return edits
+
+
+def providers_text(reply):
+    from roc import providers
+    return providers.strip_reasoning(reply.text if hasattr(reply, "text") else str(reply))
+
+
+def model_proposal(rel, text, addrs, baseline, owned, model, rounds, compile_round, matcher, evidence, log):
+    """Ask the model for anchored edits to one native file; keep the first that makes a new target exact and
+    loses no owned exact in that file. Every round compiles the real TU; failures go back as feedback."""
+    from roc import providers
+    prompt = "%s\n\nFILE %s\n```cpp\n%s\n```\n\nTARGETS (exact 2008 functions this file should produce)\n%s" % (
+        MODEL_RULES, rel, text[:60000], json.dumps([evidence(a) for a in addrs[:6]], indent=1))
+    messages, trials = [{"role": "user", "content": prompt}], []
+    for n in range(rounds):
+        reply = providers.generate(model, messages, {"allow_cloud": True, "max_tokens": 8192, "timeout": 300})
+        messages.append({"role": "assistant", "content": providers_text(reply)})
+        try:
+            edits = parse_edits(reply)
+            result = compile_round(apply_edits(text, edits), "model-%d" % n)
+        except ValueError as error:
+            trials.append({"file": rel, "mode": "model-%d" % n, "ok": False, "error": str(error)[:500]})
+            messages.append({"role": "user", "content": "Rejected: %s\nReply with corrected SEARCH/REPLACE blocks." % error})
+            continue
+        hits = matcher.scan(Path(result["object"]).read_bytes()) if result["ok"] else []
+        found = {h["addr"] for h in hits}
+        new, lost = (found & set(addrs)) - baseline, (baseline & owned) - found
+        result.update(hits=hits, losses=sorted(lost))
+        trials.append(result)
+        log("model %s round %d: %d new exact, %d lost" % (rel, n, len(new), len(lost)))
+        if new and not lost:
+            return {"file": rel, "edits": edits, "mode": "model",
+                    "witnesses": [h for h in hits if h["addr"] in new], "proof": result}, trials
+        feedback = result["error"][-1500:] if not result["ok"] else \
+            "Compiled. Newly exact: %s. Still not exact: %s. Lost previously exact: %s." % (
+                sorted(new) or "none", sorted(set(addrs) - found) or "none", sorted(lost) or "none")
+        messages.append({"role": "user", "content": feedback + "\nReply with the complete corrected set of "
+                         "SEARCH/REPLACE blocks against the ORIGINAL file."})
+    return None, trials
+
+
+def model_discovery(config, texts, wanted, owned, by_addr, matcher, output, jobs, log, compile_source):
+    """Model-written proposals for every file that defines a waiting exact target, most targets first."""
+    evidence_root = Path(os.environ.get("ROC_NATIVE_EVIDENCE_ROOT", ROOT))
+    path = evidence_root / "rebuild/2008-06/out/native-names.json"
+    names = json.loads(path.read_text()) if path.exists() else {}
+    homes = target_files(texts, wanted, names, by_addr)
+    skip = set(config.get("exclude_files", []))
+    files = sorted((rel for rel in homes if rel not in skip), key=lambda rel: -len(homes[rel]))[:config.get("max_files")]
+    model, rounds = config["llm"], config.get("rounds", 3)
+
+    def one(rel):
+        base = compile_source(texts[rel], rel, "baseline")
+        if not base["ok"]:
+            return None, [base]
+        baseline = {h["addr"] for h in matcher.scan(Path(base["object"]).read_bytes())}
+        try:
+            proposal, trials = model_proposal(rel, texts[rel], homes[rel], baseline, owned, model, rounds,
+                                              lambda source, label: compile_source(source, rel, label), matcher,
+                                              lambda addr: model_evidence(addr, names, by_addr), log)
+        except Exception as error:  # noqa: BLE001 - one provider/compile failure must not stop the other files
+            return None, [base, {"file": rel, "mode": "model", "ok": False, "error": str(error)[:500]}]
+        return proposal, [base] + trials
+
+    proposals, records = [], []
+    with ThreadPoolExecutor(max_workers=jobs) as pool:
+        for n, (proposal, trials) in enumerate(pool.map(one, files)):
+            records.extend(trials)
+            if proposal:
+                for hit in proposal["witnesses"]:
+                    hit["claim_unit"] = claim_unit(hit, by_addr[hit["addr"]])
+                proposals.append(proposal)
+            integration.atomic_json(output / "trials.json", records)
+            integration.atomic_json(output / "progress.json", {"phase": "model", "files_done": n + 1, "total": len(files),
+                                                               "proposals": len(proposals)})
+    return proposals, records
+
+
 def run(spec, name, server=None, jobs=4, limit=None, output=None, log=print):
     """Discover, minimize, recompile, claim, stage, and optionally submit real native fixes."""
     require_private_workspace()
     config = spec["native_sweep"]
+    if config.get("llm"):
+        config.setdefault("model", config["llm"])  # submissions name the model that wrote the edits
     if spec.get("client", "2008-06") != "2008-06":
         raise ValueError("Native sweep supports the coherent 2008-06 module only")
     output = Path(output or ROOT / "work/research" / name)
@@ -307,55 +457,62 @@ def run(spec, name, server=None, jobs=4, limit=None, output=None, log=print):
             files = files[:limit]
         rebuild.toolchain()  # Resolve discovery once before compile workers start.
         texts = {rel: (overlay / rel if (overlay / rel).exists() else tree / rel).read_text(errors="replace") for rel in files}
-        trials = [(rel, *trial) for rel in files for trial in experiments(texts[rel])]
-        records, proofs, baseline_hits, baseline_ready = [], defaultdict(list), {}, set()
-        def compile_trial(item):
-            rel, mode, source, error = item
-            if error:
-                return {"file": rel, "mode": mode, "ok": False, "error": error, "seconds": 0}
-            try:
-                return compile_unit(source, rel, mode, output, tree, overlay, includes, defines, flags)
-            except ValueError as error:
-                return {"file": rel, "mode": mode, "ok": False, "error": str(error), "seconds": 0}
-        with ThreadPoolExecutor(max_workers=jobs) as pool:
-            for result in pool.map(compile_trial, trials):
-                result["hits"] = matcher.scan(Path(result["object"]).read_bytes()) if result["ok"] else []
-                records.append(result)
-                rel, mode = result["file"], result["mode"]
-                if mode == "baseline":
-                    baseline_hits[rel] = {h["addr"] for h in result["hits"]}
-                    if result["ok"]:
-                        baseline_ready.add(rel)
-                elif result["ok"] and rel in baseline_ready:
-                    proposal = proven_proposal(texts[rel], mode, [h for h in result["hits"] if h["addr"] in targets - owned],
-                                               baseline_hits.get(rel, set()))
-                    if proposal:
-                        proposal["file"] = rel
-                        for hit in proposal["witnesses"]:
-                            hit["claim_unit"] = claim_unit(hit, by_addr[hit["addr"]])
-                        proofs[rel].append(proposal)
-                log("native %s %s: %d exact code+data" % (rel, mode, len(result["hits"])))
-                integration.atomic_json(output / "trials.json", records)
-                integration.atomic_json(output / "progress.json", {"phase": "discovery", "tried": len(records), "total": len(trials), "file": rel, "mode": mode})
-        proposals, final_checks = [], []
-        for rel, choices in proofs.items():
-            for proposal in sorted(choices, key=lambda p: (-len(p["witnesses"]), len(p["edits"]))):
-                final = compile_unit(proposal["source"], rel, "final-" + proposal["mode"], output, tree, overlay, includes, defines, flags)
-                hits = matcher.scan(Path(final["object"]).read_bytes()) if final["ok"] else []
-                addresses = {h["addr"] for h in hits}
-                wanted = {h["addr"] for h in proposal["witnesses"]}
-                lost = (baseline_hits[rel] & owned) - addresses
-                proposal["proof"] = dict(final, hits=hits, losses=sorted(lost))
-                final_checks.append(proposal["proof"])
-                proposal.pop("source")
-                if not lost and wanted <= addresses:
-                    proposals.append(proposal)
-                    break
+        if config.get("llm"):
+            proposals, records = model_discovery(config, texts, targets - owned, owned, by_addr, matcher, output, jobs, log,
+                                                 lambda source, rel, label: compile_unit(source, rel, label, output, tree,
+                                                                                         overlay, includes, defines, flags))
+            final_checks = [p["proof"] for p in proposals]
+            trials = []
+        else:
+            trials = [(rel, *trial) for rel in files for trial in experiments(texts[rel])]
+            records, proofs, baseline_hits, baseline_ready = [], defaultdict(list), {}, set()
+            def compile_trial(item):
+                rel, mode, source, error = item
+                if error:
+                    return {"file": rel, "mode": mode, "ok": False, "error": error, "seconds": 0}
+                try:
+                    return compile_unit(source, rel, mode, output, tree, overlay, includes, defines, flags)
+                except ValueError as error:
+                    return {"file": rel, "mode": mode, "ok": False, "error": str(error), "seconds": 0}
+            with ThreadPoolExecutor(max_workers=jobs) as pool:
+                for result in pool.map(compile_trial, trials):
+                    result["hits"] = matcher.scan(Path(result["object"]).read_bytes()) if result["ok"] else []
+                    records.append(result)
+                    rel, mode = result["file"], result["mode"]
+                    if mode == "baseline":
+                        baseline_hits[rel] = {h["addr"] for h in result["hits"]}
+                        if result["ok"]:
+                            baseline_ready.add(rel)
+                    elif result["ok"] and rel in baseline_ready:
+                        proposal = proven_proposal(texts[rel], mode, [h for h in result["hits"] if h["addr"] in targets - owned],
+                                                   baseline_hits.get(rel, set()))
+                        if proposal:
+                            proposal["file"] = rel
+                            for hit in proposal["witnesses"]:
+                                hit["claim_unit"] = claim_unit(hit, by_addr[hit["addr"]])
+                            proofs[rel].append(proposal)
+                    log("native %s %s: %d exact code+data" % (rel, mode, len(result["hits"])))
+                    integration.atomic_json(output / "trials.json", records)
+                    integration.atomic_json(output / "progress.json", {"phase": "discovery", "tried": len(records), "total": len(trials), "file": rel, "mode": mode})
+            proposals, final_checks = [], []
+            for rel, choices in proofs.items():
+                for proposal in sorted(choices, key=lambda p: (-len(p["witnesses"]), len(p["edits"]))):
+                    final = compile_unit(proposal["source"], rel, "final-" + proposal["mode"], output, tree, overlay, includes, defines, flags)
+                    hits = matcher.scan(Path(final["object"]).read_bytes()) if final["ok"] else []
+                    addresses = {h["addr"] for h in hits}
+                    wanted = {h["addr"] for h in proposal["witnesses"]}
+                    lost = (baseline_hits[rel] & owned) - addresses
+                    proposal["proof"] = dict(final, hits=hits, losses=sorted(lost))
+                    final_checks.append(proposal["proof"])
+                    proposal.pop("source")
+                    if not lost and wanted <= addresses:
+                        proposals.append(proposal)
+                        break
         integration.atomic_json(output / "proposals.json", proposals)
         integration.atomic_json(output / "final-checks.json", final_checks)
         summary = {"recipe": name, "client": "2008-06", "op": "native-grid", "tried": len(records),
                    "proposed_files": len(proposals), "local_exact": sum(len(p["witnesses"]) for p in proposals),
-                   "new_verified": 0}
+                   "new_verified": 0, "files_tried": sorted({r["file"] for r in records})}
         if not proposals or not config.get("apply"):
             return finish(summary)
         if api.call("/v1/integration/base")["revision"] != base["revision"]:

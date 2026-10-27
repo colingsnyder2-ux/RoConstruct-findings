@@ -23915,5 +23915,22 @@
       "wait": true
     },
     "targets": {}
+  },
+  "native-model-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "hypothesis": "A cloud model reads each native file plus its waiting byte-exact mined sources (with binary-proven stand-in maps) and proposes anchored edits; only edits that make a new target exact and lose no owned exact in that TU are claimed and submitted.",
+    "native_sweep": {
+      "files": [
+        "App/*/*.cpp"
+      ],
+      "llm": "deepseek:deepseek-flash",
+      "rounds": 3,
+      "max_files": 40,
+      "apply": true,
+      "submit": true,
+      "wait": false
+    },
+    "targets": {}
   }
 }

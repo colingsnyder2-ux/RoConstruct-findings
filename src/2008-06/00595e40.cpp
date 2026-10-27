@@ -1,8 +1,8 @@
-// from server: 86% by Espeon
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1-dll roc_espeon_worker134exceptions0a589d1e382b4682.cpp
+// roc-lib: boost-1.34.1-dll roc_claudeS3_18320aa5e3e6405f.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define _CPPUNWIND 1
@@ -15,9 +15,11 @@ struct State {
  boost::mutex mutex;
  boost::condition condition;
  bool stopped;
+ bool running() const { if(stopped) return false; return true; }
 };
 void __cdecl worker(boost::shared_ptr<State> state, const boost::function0<int>& function) {
- while(!state->stopped) {
+ for(;;) {
+  if(!state->running()) break;
   if(function()==1) continue;
   boost::mutex::scoped_lock lock(state->mutex);
   state->condition.wait(lock);

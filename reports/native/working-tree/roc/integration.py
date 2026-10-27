@@ -488,6 +488,17 @@ class Promotions:
         return True
 
 
+def add_standins(claim):
+    """Each exact snippet's binary-proven placeholder -> real symbol map (roc/standins.py), when it compiles here."""
+    from roc import standins
+    for item in claim.get("snippets", []):
+        try:
+            item["standins"] = standins.mapping(CLIENT, item["addr"], item["source"])
+        except Exception as error:  # noqa: BLE001 - evidence is optional; the packet stays usable without it
+            item["standins_error"] = str(error)[:200]
+    return claim
+
+
 def command(args):
     from roc import worker
     settings = worker.load_settings()
@@ -536,12 +547,16 @@ def command(args):
                 claim["baseline"] = result["baselines"][claim["base_revision"]]
             folder = directory / "claims" / claim["id"]
             if not (folder / "packet.json").exists():
+                if not bulk:
+                    add_standins(claim)
                 atomic_json(folder / "packet.json", claim)
                 if generator.exists():
                     (folder / "generator-base.py").write_bytes(generator.read_bytes())
                 prompt = ("Integrate " + claim["unit"] + " in RoConstruct (2008-06).\n\n"
                     "Read CLAUDE.md, rebuild/2008-06/POLICY.md and patches/make_rbxgs_client.py.\n"
                     "Read packet.json: exact snippets are evidence, not structures to paste.\n"
+                    "Each snippet's standins maps its placeholder externs to the real symbol/RTTI type/import the exe\n"
+                    "relocates at that spot (binary-proven); use the real names, never the placeholders.\n"
                     "Find the real class/method; derive fields, signatures, constants and control flow from bytes.\n"
                     "Change real C++ only through make_rbxgs_client.py overlay patches. Cite addresses.\n"
                     "Never edit tools/, src/, clients/ or bounds.json. No padding structs or offset views.\n"

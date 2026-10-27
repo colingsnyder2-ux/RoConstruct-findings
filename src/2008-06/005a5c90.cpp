@@ -1,8 +1,8 @@
-// from server: 78% by king_originala
+// from server: 99% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_workspace_stats_boost135_f63b0b349a13ceab.cpp
+// roc-lib: rbxgs-dll roc_claudeS3_de1e2671550b184c.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias(<boost/function.hpp>, <roc_espeon_boost135functionheader672dcef995494068.cpp>)
@@ -82,6 +82,8 @@ public:
  Item* createBoundChildItem(const Profiling::Profiler&);
 };
 }
+template<class T> struct statsPtr { T* px; T& operator*() const { return *px; } };
+struct StatsSleepView { char pad[0x1e0]; statsPtr<Profiling::Profiler> p1e0, p1e4, p1e8; };
 template<class T> const T& statsField(const void* p,unsigned offset) {
  return *reinterpret_cast<const T*>(static_cast<const char*>(p)+offset);
 }
@@ -89,6 +91,7 @@ template<class T> const T& statsField(const void* p,unsigned offset) {
 // Boost bind closures: World/RunService16B, Workspace24B, Kernel8B.
 class StatsKernelView {public:
  int solverIterations()const;int matrixSize()const;int numBodies()const;int numConnectors()const;int numPoints()const;
+ char kpad[0x20]; statsPtr<Profiling::Profiler> profiler;
 };
 struct Heartbeat;struct Stepped;struct RunTransition;enum RunState {StatsRunStatePlaceholder};
 class Service {};
@@ -102,7 +105,7 @@ class StatsWorldView : public Notifier<StatsWorldView,AutoJoin>, public Notifier
  float environmentSpeed()const;
  int numPrimitives()const;int numJoints()const;int numContacts()const;
  int getMetric(int)const;int numLinkCalls()const;int numHashNodes()const;int maxBucketSize()const;
- const void* getSleepStage()const;
+ const StatsSleepView* getSleepStage()const;
  const StatsKernelView& getKernel()const;
 };
 class PartInstance;
@@ -132,10 +135,10 @@ WorkspaceStatsNative::WorkspaceStatsNative(const StatsWorkspaceView* workspace,c
  pWorldStep->createBoundChildItem(*statsField<Profiling::Profiler*>(world,0x104));
  pWorldStep->createBoundChildItem(*statsField<Profiling::Profiler*>(world,0x108));
  pWorldStep->createBoundChildItem(*statsField<Profiling::Profiler*>(world,0x110));
- pWorldStep->createBoundChildItem(*statsField<Profiling::Profiler*>(world->getSleepStage(),0x1e4));
- pWorldStep->createBoundChildItem(*statsField<Profiling::Profiler*>(world->getSleepStage(),0x1e0));
- pWorldStep->createBoundChildItem(*statsField<Profiling::Profiler*>(world->getSleepStage(),0x1e8));
- pWorldStep->createBoundChildItem(*statsField<Profiling::Profiler*>(&world->getKernel(),0x20));
+ pWorldStep->createBoundChildItem(*world->getSleepStage()->p1e4);
+ pWorldStep->createBoundChildItem(*world->getSleepStage()->p1e0);
+ pWorldStep->createBoundChildItem(*world->getSleepStage()->p1e8);
+ pWorldStep->createBoundChildItem(*world->getKernel().profiler);
  pDataModelStep->createBoundChildItem(*statsField<Profiling::Profiler*>(workspace,0x430));
  pDataModelStep->createBoundChildItem(*statsField<Profiling::Profiler*>(workspace,0x434));
  pDataModelStep->createBoundChildItem(*statsField<Profiling::Profiler*>(workspace,0x438));

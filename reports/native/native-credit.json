@@ -1,5 +1,11 @@
 [
   {
+    "addr": "0040a5c0",
+    "client": "2008-06",
+    "job": "739d5c3680d14c189fe8dca739b1d4c5",
+    "model": "gpt-6.1-sol"
+  },
+  {
     "addr": "00413a70",
     "client": "2008-06",
     "job": "70a1a98050e84962ac3e81e4bdef5d98",
@@ -10,6 +16,24 @@
     "client": "2008-06",
     "job": "70a1a98050e84962ac3e81e4bdef5d98",
     "model": "Claude Opus 5.5"
+  },
+  {
+    "addr": "00443530",
+    "client": "2008-06",
+    "job": "739d5c3680d14c189fe8dca739b1d4c5",
+    "model": "gpt-6.1-sol"
+  },
+  {
+    "addr": "00445b10",
+    "client": "2008-06",
+    "job": "739d5c3680d14c189fe8dca739b1d4c5",
+    "model": "gpt-6.1-sol"
+  },
+  {
+    "addr": "0048bb40",
+    "client": "2008-06",
+    "job": "739d5c3680d14c189fe8dca739b1d4c5",
+    "model": "gpt-6.1-sol"
   },
   {
     "addr": "004960a0",
@@ -30,10 +54,22 @@
     "model": "Claude Opus 5.5"
   },
   {
+    "addr": "00496cf0",
+    "client": "2008-06",
+    "job": "4dddca112ca54a5796c684a2c6e7e94f",
+    "model": "gpt-6.1-sol"
+  },
+  {
     "addr": "00497120",
     "client": "2008-06",
     "job": "70a1a98050e84962ac3e81e4bdef5d98",
     "model": "Claude Opus 5.5"
+  },
+  {
+    "addr": "004add50",
+    "client": "2008-06",
+    "job": "4dddca112ca54a5796c684a2c6e7e94f",
+    "model": "gpt-6.1-sol"
   },
   {
     "addr": "00558030",
@@ -186,6 +222,12 @@
     "model": "Codex"
   },
   {
+    "addr": "0057c670",
+    "client": "2008-06",
+    "job": "290919f07e694e5195771abe8c0d76cc",
+    "model": "gpt-6.1-sol"
+  },
+  {
     "addr": "00583520",
     "client": "2008-06",
     "job": "9e9dfed56be04a56baf6aafd8cbbbb4d",
@@ -222,10 +264,22 @@
     "model": "gpt-6.1-sol"
   },
   {
+    "addr": "00584620",
+    "client": "2008-06",
+    "job": "4213c22c0c7a41b58a1070d9bdd763f2",
+    "model": "gpt-6.1-sol"
+  },
+  {
     "addr": "00584670",
     "client": "2008-06",
     "job": "9e9dfed56be04a56baf6aafd8cbbbb4d",
     "model": "Codex"
+  },
+  {
+    "addr": "005846d0",
+    "client": "2008-06",
+    "job": "739d5c3680d14c189fe8dca739b1d4c5",
+    "model": "gpt-6.1-sol"
   },
   {
     "addr": "00585630",
@@ -318,6 +372,12 @@
     "model": "Codex"
   },
   {
+    "addr": "0059b2a0",
+    "client": "2008-06",
+    "job": "739d5c3680d14c189fe8dca739b1d4c5",
+    "model": "gpt-6.1-sol"
+  },
+  {
     "addr": "0059d4a0",
     "client": "2008-06",
     "job": "70a1a98050e84962ac3e81e4bdef5d98",
@@ -400,6 +460,18 @@
     "client": "2008-06",
     "job": "981c606609864414b2c608ce100c68ef",
     "model": "Claude Opus 5.5"
+  },
+  {
+    "addr": "005a0530",
+    "client": "2008-06",
+    "job": "4213c22c0c7a41b58a1070d9bdd763f2",
+    "model": "gpt-6.1-sol"
+  },
+  {
+    "addr": "005a0560",
+    "client": "2008-06",
+    "job": "4213c22c0c7a41b58a1070d9bdd763f2",
+    "model": "gpt-6.1-sol"
   },
   {
     "addr": "005a1c20",

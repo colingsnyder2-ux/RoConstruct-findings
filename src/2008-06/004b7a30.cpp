@@ -1,4 +1,4 @@
-// from server: 81% by EspClaude
+// from server: 100% by coldek
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 #include <intrin.h>
 #include <string>
@@ -108,7 +108,8 @@ void Replicator::readChangedProperty(RakNet::BitStream& bitStream)
         StandardOut::singleton()->print(MESSAGE_WARNING, "Replication rejected property: %s-%s.%s << %s", instance ? instance->getClassName().c_str() : "?", id.readableString(4).c_str(), desc->name.c_str(), remotePlayerId.ToString(true));
         instance = 0;
     }
-    deserializeValue(bitStream, Reflection::Property(*desc, instance));
+    Reflection::Property prop(*desc, instance);
+    deserializeValue(bitStream, prop);
     lastPropertyName = &desc->name;
 }
 }

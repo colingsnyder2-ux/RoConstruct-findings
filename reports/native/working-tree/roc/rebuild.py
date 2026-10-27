@@ -1162,7 +1162,7 @@ import time
 import urllib.request
 import urllib.error
 
-DEFAULT_REBUILD_WEBHOOK = "https://discord.com/api/webhooks/1563963572256768061/UlEfpuW48IqPmanJ2rr0gmawcff-DO19Crc4FMoZ24ufoe6Kp_qOhjIpF8oEzUm72IdW"
+DEFAULT_REBUILD_WEBHOOK = "DISCORD_WEBHOOK_REDACTED"
 
 
 def _rebuild_webhook_url():

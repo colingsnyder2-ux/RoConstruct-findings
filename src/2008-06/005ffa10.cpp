@@ -1,4 +1,4 @@
-// from server: 70% by colin
+// from server: 98% by coldek
 // roc 2008-06 005ffa10  unit: RBX::Tool  size: 345 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005ffa10
 //
@@ -116,7 +116,6 @@
 // 005ffb63  83c410               add esp, 0x10
 // 005ffb66  c20400               ret 4
 
-// from server: 64% by king_originala
 // roc 2008-06 005ffa10  unit: RBX::Tool  size: 345 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005ffa10
 //
@@ -256,6 +255,7 @@ inline EventArgument::~EventArgument()
 {
 }
 
+struct Guard { Guard(); ~Guard(); void f(); };
 struct Signal
 {
     void sub_4b5950(const EventArgument*);
@@ -300,6 +300,7 @@ struct S
 
 void S::sub_5ffa10(EventArgument argument)
 {
+    if (false) { Guard g; g.f(); }
     Event* event = argument.value;
     _ReadWriteBarrier();
     int previousState = state;
