@@ -1,100 +1,54 @@
-// from server: 100% by king_originala
-// roc 2008-06 00587640  unit: RBX::VChangeHistoryService::?$FactoryProduct  size: 135 bytes
+// from server: 100% by auto
+// roc 2008-06 00587640  unit: RBX::ViewNew::ViewG3D  size: 114 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00587640
 //
 // 00587640  55                   push ebp
-// 00587641  8bec                 mov ebp, esp
-// 00587643  6aff                 push -1
-// 00587645  6821147d00           push 0x7d1421
-// 0058764a  64a100000000         mov eax, dword ptr fs:[0]
-// 00587650  50                   push eax
-// 00587651  64892500000000       mov dword ptr fs:[0], esp
-// 00587658  83ec0c               sub esp, 0xc
-// 0058765b  53                   push ebx
-// 0058765c  56                   push esi
-// 0058765d  57                   push edi
-// 0058765e  8965f0               mov dword ptr [ebp - 0x10], esp
-// 00587661  6a1c                 push 0x1c
-// 00587663  e8b8921100           call 0x6a0920
-// 00587668  8bf0                 mov esi, eax
-// 0058766a  83c404               add esp, 4
-// 0058766d  8975ec               mov dword ptr [ebp - 0x14], esi
-// 00587670  c745fc00000000       mov dword ptr [ebp - 4], 0
-// 00587677  8975e8               mov dword ptr [ebp - 0x18], esi
-// 0058767a  c645fc01             mov byte ptr [ebp - 4], 1
-// 0058767e  85f6                 test esi, esi
-// 00587680  741b                 je 0x58769d
-// 00587682  8b4518               mov eax, dword ptr [ebp + 0x18]
-// 00587685  8b4d14               mov ecx, dword ptr [ebp + 0x14]
-// 00587688  8b5510               mov edx, dword ptr [ebp + 0x10]
-// 0058768b  50                   push eax
-// 0058768c  8b450c               mov eax, dword ptr [ebp + 0xc]
-// 0058768f  51                   push ecx
-// 00587690  8b4d08               mov ecx, dword ptr [ebp + 8]
-// 00587693  52                   push edx
-// 00587694  50                   push eax
-// 00587695  51                   push ecx
-// 00587696  8bce                 mov ecx, esi
-// 00587698  e823fdffff           call 0x5873c0
-// 0058769d  8b4df4               mov ecx, dword ptr [ebp - 0xc]
-// 005876a0  5f                   pop edi
-// 005876a1  8bc6                 mov eax, esi
-// 005876a3  5e                   pop esi
-// 005876a4  64890d00000000       mov dword ptr fs:[0], ecx
-// 005876ab  5b                   pop ebx
-// 005876ac  8be5                 mov esp, ebp
-// 005876ae  5d                   pop ebp
-// 005876af  c21400               ret 0x14
-// 005876b2  8b55ec               mov edx, dword ptr [ebp - 0x14]
-// 005876b5  52                   push edx
-// 005876b6  e8bf8f1100           call 0x6a067a
-// 005876bb  83c404               add esp, 4
-// 005876be  6a00                 push 0
-// 005876c0  6a00                 push 0
-// 005876c2  e8c59e1100           call 0x6a158c
+// 004dccd1  8bec                 mov ebp, esp
+// 004dccd3  6aff                 push -1
+// 004dccd5  6881a27c00           push 0x7ca281
+// 004dccda  64a100000000         mov eax, dword ptr fs:[0]
+// 004dcce0  50                   push eax
+// 004dcce1  64892500000000       mov dword ptr fs:[0], esp
+// 004dcce8  83ec0c               sub esp, 0xc
+// 004dcceb  53                   push ebx
+// 004dccec  56                   push esi
+// 004dcced  57                   push edi
+// 004dccee  8965f0               mov dword ptr [ebp - 0x10], esp
+// 004dccf1  6a38                 push 0x38
+// 004dccf3  e8283c1c00           call 0x6a0920
+// 004dccf8  8bf0                 mov esi, eax
+// 004dccfa  83c404               add esp, 4
+// 004dccfd  8975ec               mov dword ptr [ebp - 0x14], esi
+// 004dcd00  c745fc00000000       mov dword ptr [ebp - 4], 0
+// 004dcd07  8975e8               mov dword ptr [ebp - 0x18], esi
+// 004dcd0a  c645fc01             mov byte ptr [ebp - 4], 1
+// 004dcd0e  85f6                 test esi, esi
+// 004dcd10  741b                 je 0x4dcd2d
+// 004dcd12  8b4518               mov eax, dword ptr [ebp + 0x18]
+// 004dcd15  8b4d14               mov ecx, dword ptr [ebp + 0x14]
+// 004dcd18  8b5510               mov edx, dword ptr [ebp + 0x10]
+// 004dcd1b  50                   push eax
+// 004dcd1c  8b450c               mov eax, dword ptr [ebp + 0xc]
+// 004dcd1f  51                   push ecx
+// 004dcd20  8b4d08               mov ecx, dword ptr [ebp + 8]
+// 004dcd23  52                   push edx
+// 004dcd24  50                   push eax
+// 004dcd25  51                   push ecx
+// 004dcd26  8bce                 mov ecx, esi
+// 004dcd28  e883fcffff           call 0x4dc9b0
+// 004dcd2d  8b4df4               mov ecx, dword ptr [ebp - 0xc]
+// 004dcd30  5f                   pop edi
+// 004dcd31  8bc6                 mov eax, esi
+// 004dcd33  5e                   pop esi
+// 004dcd34  64890d00000000       mov dword ptr fs:[0], ecx
+// 004dcd3b  5b                   pop ebx
+// 004dcd3c  8be5                 mov esp, ebp
+// 004dcd3e  5d                   pop ebp
+// 004dcd3f  c21400               ret 0x14
+// standard library map_str<pod12> (function ?_Buynode@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@UE@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@UE@@@std@@@2@$0A@@std@@@std@@IAEPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@UE@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@UE@@@std@@@2@$0A@@std@@@2@PAU342@00ABU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@UE@@@2@D@Z)
 
-typedef unsigned int size_t;
-
-void * __cdecl operator new(size_t);
-void __cdecl operator delete(void *);
-
-inline void * __cdecl operator new(size_t, void *p)
-{
-    return p;
-}
-
-inline void __cdecl operator delete(void *, void *)
-{
-}
-
-struct Object {
-    virtual void first() = 0;
-    virtual void second() = 0;
-    virtual Object *clone() = 0;
-};
-
-struct Source {
-    int first;
-    int second;
-    Object *object;
-};
-
-struct S {
-    int first;
-    unsigned char remaining[24];
-
-    S(int, int, int, int, int);
-};
-
-S * __stdcall create(int a, int b, int c, int d, int e)
-{
-    S *p = static_cast<S *>(operator new(sizeof(S)));
-    try {
-        new (p) S(a, b, c, d, e);
-        return p;
-    }
-    catch (...) {
-        operator delete(p);
-        throw;
-    }
-}
+// stl: map_str<pod12>
+struct E { int v[3]; };
+#include <map>
+#include <string>
+template class std::map<std::string, E>;

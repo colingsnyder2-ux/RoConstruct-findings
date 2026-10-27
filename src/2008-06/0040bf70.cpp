@@ -1,90 +1,93 @@
 // from server: 100% by tester
-// roc 2008-06 0040bf70  unit: RBX::Reflection::Metadata::VFunctions::?$FactoryProduct  size: 131 bytes
+// roc 2008-06 0040bf70  unit: RBX::P8Tool::?$GetSetImpl  size: 131 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0040bf70
 //
 // 0040bf70  55                   push ebp
-// 0040bf71  8bec                 mov ebp, esp
-// 0040bf73  6aff                 push -1
-// 0040bf75  6850d27b00           push 0x7bd250
-// 0040bf7a  64a100000000         mov eax, dword ptr fs:[0]
-// 0040bf80  50                   push eax
-// 0040bf81  64892500000000       mov dword ptr fs:[0], esp
-// 0040bf88  51                   push ecx
-// 0040bf89  53                   push ebx
-// 0040bf8a  56                   push esi
-// 0040bf8b  57                   push edi
-// 0040bf8c  8965f0               mov dword ptr [ebp - 0x10], esp
-// 0040bf8f  8bf1                 mov esi, ecx
-// 0040bf91  6a14                 push 0x14
-// 0040bf93  c70600000000         mov dword ptr [esi], 0
-// 0040bf99  c745fc00000000       mov dword ptr [ebp - 4], 0
-// 0040bfa0  e87b492900           call 0x6a0920
-// 0040bfa5  83c404               add esp, 4
-// 0040bfa8  85c0                 test eax, eax
-// 0040bfaa  7419                 je 0x40bfc5
-// 0040bfac  b901000000           mov ecx, 1
-// 0040bfb1  894804               mov dword ptr [eax + 4], ecx
-// 0040bfb4  894808               mov dword ptr [eax + 8], ecx
-// 0040bfb7  8b4d08               mov ecx, dword ptr [ebp + 8]
-// 0040bfba  c70090c08000         mov dword ptr [eax], 0x80c090
-// 0040bfc0  89480c               mov dword ptr [eax + 0xc], ecx
-// 0040bfc3  eb02                 jmp 0x40bfc7
-// 0040bfc5  33c0                 xor eax, eax
-// 0040bfc7  8b4df4               mov ecx, dword ptr [ebp - 0xc]
-// 0040bfca  8906                 mov dword ptr [esi], eax
-// 0040bfcc  5f                   pop edi
-// 0040bfcd  8bc6                 mov eax, esi
-// 0040bfcf  5e                   pop esi
-// 0040bfd0  64890d00000000       mov dword ptr fs:[0], ecx
-// 0040bfd7  5b                   pop ebx
-// 0040bfd8  8be5                 mov esp, ebp
-// 0040bfda  5d                   pop ebp
-// 0040bfdb  c20800               ret 8
-// 0040bfde  8b5508               mov edx, dword ptr [ebp + 8]
-// 0040bfe1  52                   push edx
-// 0040bfe2  8d4d0c               lea ecx, [ebp + 0xc]
-// 0040bfe5  e8469effff           call 0x405e30
-// 0040bfea  6a00                 push 0
-// 0040bfec  6a00                 push 0
-// 0040bfee  e899552900           call 0x6a158c
+// 005fd9a1  8bec                 mov ebp, esp
+// 005fd9a3  6aff                 push -1
+// 005fd9a5  68d07e7d00           push 0x7d7ed0
+// 005fd9aa  64a100000000         mov eax, dword ptr fs:[0]
+// 005fd9b0  50                   push eax
+// 005fd9b1  64892500000000       mov dword ptr fs:[0], esp
+// 005fd9b8  51                   push ecx
+// 005fd9b9  53                   push ebx
+// 005fd9ba  56                   push esi
+// 005fd9bb  57                   push edi
+// 005fd9bc  8965f0               mov dword ptr [ebp - 0x10], esp
+// 005fd9bf  8bf1                 mov esi, ecx
+// 005fd9c1  6a14                 push 0x14
+// 005fd9c3  c70600000000         mov dword ptr [esi], 0
+// 005fd9c9  c745fc00000000       mov dword ptr [ebp - 4], 0
+// 005fd9d0  e84b2f0a00           call 0x6a0920
+// 005fd9d5  83c404               add esp, 4
+// 005fd9d8  85c0                 test eax, eax
+// 005fd9da  7419                 je 0x5fd9f5
+// 005fd9dc  b901000000           mov ecx, 1
+// 005fd9e1  894804               mov dword ptr [eax + 4], ecx
+// 005fd9e4  894808               mov dword ptr [eax + 8], ecx
+// 005fd9e7  8b4d08               mov ecx, dword ptr [ebp + 8]
+// 005fd9ea  c700c0178400         mov dword ptr [eax], 0x8417c0
+// 005fd9f0  89480c               mov dword ptr [eax + 0xc], ecx
+// 005fd9f3  eb02                 jmp 0x5fd9f7
+// 005fd9f5  33c0                 xor eax, eax
+// 005fd9f7  8b4df4               mov ecx, dword ptr [ebp - 0xc]
+// 005fd9fa  8906                 mov dword ptr [esi], eax
+// 005fd9fc  5f                   pop edi
+// 005fd9fd  8bc6                 mov eax, esi
+// 005fd9ff  5e                   pop esi
+// 005fda00  64890d00000000       mov dword ptr fs:[0], ecx
+// 005fda07  5b                   pop ebx
+// 005fda08  8be5                 mov esp, ebp
+// 005fda0a  5d                   pop ebp
+// 005fda0b  c20800               ret 8
+// 005fda0e  8b5508               mov edx, dword ptr [ebp + 8]
+// 005fda11  52                   push edx
+// 005fda12  8d4d0c               lea ecx, [ebp + 0xc]
+// 005fda15  e81684e0ff           call 0x405e30
+// 005fda1a  6a00                 push 0
+// 005fda1c  6a00                 push 0
+// 005fda1e  e8693b0a00           call 0x6a158c
 
-extern void* __cdecl operator new(unsigned int);
-extern const unsigned char control_table[];
+#pragma optimize("y", off)
 
-struct Object {
-    virtual ~Object();
+void* __cdecl operator new(unsigned int);
+extern void* controlVtable[];
+
+struct Deleter {
+    void operator()(void*) const;
 };
 
-struct Deleter {};
+inline void Deleter::operator()(void*) const {}
 
 struct Control {
-    const void* table;
-    long strong;
-    long weak;
-    Object* object;
+    void** vtable;
+    int strong;
+    int weak;
+    void* object;
     Deleter deleter;
+
+    Control(void*, const Deleter&);
 };
+
+inline Control::Control(void* p, const Deleter& d)
+    : strong(1), weak(1), deleter(d)
+{
+    vtable = controlVtable;
+    object = p;
+}
 
 struct S {
     Control* control;
-    S(Object* object, Deleter deleter);
+    S(void*, Deleter);
 };
 
-S::S(Object* object, Deleter deleter) : control(0)
+S::S(void* p, Deleter d) : control(0)
 {
     try {
-        Control* p = static_cast<Control*>(operator new(sizeof(Control)));
-        if (p) {
-            p->strong = 1;
-            p->weak = 1;
-            p->table = control_table;
-            p->object = object;
-        } else {
-            p = 0;
-        }
-        control = p;
-    } catch (...) {
-        delete object;
+        control = new Control(p, d);
+    }
+    catch (...) {
+        d(p);
         throw;
     }
 }
