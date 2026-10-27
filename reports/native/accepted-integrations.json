@@ -417,6 +417,46 @@
         }
       },
       "timestamp": 1793073293.3916793
+    },
+    {
+      "job": "e1a136efe7084475bb4503e80d0f4af4",
+      "patches": {
+        "App/v8datamodel/Lighting.cpp": [
+          [
+            "#include \"v8datamodel/Lighting.h\"\n",
+            "#pragma float_control(precise, off)\n#include \"v8datamodel/Lighting.h\"\n"
+          ]
+        ],
+        "App/v8datamodel/Message.cpp": [
+          [
+            "#include \"v8datamodel/Message.h\"\n",
+            "#pragma float_control(precise, off)\n#include \"v8datamodel/Message.h\"\n"
+          ]
+        ],
+        "App/v8datamodel/Tool.cpp": [
+          [
+            "Tool::activate()\n\t{\n\t\tRBXASSERT(Network::Players::frontendProcessing(this, true));\n\t\tsetFrontendActivationState(frontendActivationState + (frontendActivationState % 2) + 1);\n\t}",
+            "Tool::activate()\n\t{\n\t\t                                                           ;\n\t\tsetFrontendActivationState(frontendActivationState + (frontendActivationState % 2) + 1);\n\t}"
+          ],
+          [
+            "Tool::deactivate()\n\t{\n\t\tRBXASSERT(Network::Players::frontendProcessing(this, true));\n\t\tsetFrontendActivationState(frontendActivationState + ((frontendActivationState + 1) % 2) + 1);\n\t}",
+            "Tool::deactivate()\n\t{\n\t\t                                                           ;\n\t\tsetFrontendActivationState(frontendActivationState + ((frontendActivationState + 1) % 2) + 1);\n\t}"
+          ]
+        ],
+        "App/v8world/Contact.cpp": [
+          [
+            "#include \"v8world/Contact.h\"\n",
+            "#pragma float_control(precise, off)\n#include \"v8world/Contact.h\"\n"
+          ]
+        ],
+        "App/v8world/MutilJoint.cpp": [
+          [
+            "#include \"v8world/MultiJoint.h\"\n",
+            "#pragma float_control(precise, off)\n#include \"v8world/MultiJoint.h\"\n"
+          ]
+        ]
+      },
+      "timestamp": 1793106469.121217
     }
   ],
   "initial_patches": {}

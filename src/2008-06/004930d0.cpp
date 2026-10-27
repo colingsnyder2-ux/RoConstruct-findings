@@ -1,8 +1,7 @@
-// from server: 88% by king_originala
-// roc-lang: cpp
+// from server: 100% by coldek
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_king_originala_gui_bounds_453eb5946ebe4077.cpp
+// roc-lib: rbxgs-dll roc_codex_june2_5db4bc5ce93303a6.cpp
 
 // Candidate translation unit (score above; library headers required).
 // from server: 87% by colin
@@ -28,8 +27,6 @@ namespace RBX {
 extern RBX::ServiceProvider* func_00492e00(RBX::Instance*);
 extern const double lowerBound;
 extern const double upperBound;
-extern const float multiplier;
-extern const float expansion;
 struct NativeColor;
 extern const NativeColor color1;
 extern const NativeColor color2;
@@ -75,13 +72,13 @@ void S::f(Receiver* receiver)
 
     Vector2 adjusted;
     if(scale>lowerBound) {
-        adjusted=dimensions*multiplier;
+        adjusted=dimensions*0.5f;
     } else if(scale<upperBound) {
-        adjusted=dimensions+Vector2(expansion,expansion);
+        adjusted=dimensions+Vector2(2.0f,2.0f);
     } else {
         adjusted=dimensions;
     }
-    Vector2 halfSize=adjusted*multiplier;
+    Vector2 halfSize=adjusted*0.5f;
     const Vector2 high=center+halfSize;
     const Vector2 low=center-halfSize;
     Rect result(low,high);

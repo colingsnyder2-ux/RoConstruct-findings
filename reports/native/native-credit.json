@@ -72,6 +72,24 @@
     "model": "Codex"
   },
   {
+    "addr": "005dcb50",
+    "client": "2008-06",
+    "job": "e1a136efe7084475bb4503e80d0f4af4",
+    "model": "Claude Opus 5.5"
+  },
+  {
+    "addr": "005df480",
+    "client": "2008-06",
+    "job": "e1a136efe7084475bb4503e80d0f4af4",
+    "model": "Claude Opus 5.5"
+  },
+  {
+    "addr": "005e0610",
+    "client": "2008-06",
+    "job": "e1a136efe7084475bb4503e80d0f4af4",
+    "model": "Claude Opus 5.5"
+  },
+  {
     "addr": "005e5500",
     "client": "2008-06",
     "job": "9e9dfed56be04a56baf6aafd8cbbbb4d",
@@ -192,6 +210,24 @@
     "model": "Codex"
   },
   {
+    "addr": "006004b0",
+    "client": "2008-06",
+    "job": "e1a136efe7084475bb4503e80d0f4af4",
+    "model": "Claude Opus 5.5"
+  },
+  {
+    "addr": "006004d0",
+    "client": "2008-06",
+    "job": "e1a136efe7084475bb4503e80d0f4af4",
+    "model": "Claude Opus 5.5"
+  },
+  {
+    "addr": "00607ad0",
+    "client": "2008-06",
+    "job": "e1a136efe7084475bb4503e80d0f4af4",
+    "model": "Claude Opus 5.5"
+  },
+  {
     "addr": "006158f0",
     "client": "2008-06",
     "job": "9e9dfed56be04a56baf6aafd8cbbbb4d",
@@ -202,5 +238,11 @@
     "client": "2008-06",
     "job": "9e9dfed56be04a56baf6aafd8cbbbb4d",
     "model": "Codex"
+  },
+  {
+    "addr": "00646af0",
+    "client": "2008-06",
+    "job": "e1a136efe7084475bb4503e80d0f4af4",
+    "model": "Claude Opus 5.5"
   }
 ]

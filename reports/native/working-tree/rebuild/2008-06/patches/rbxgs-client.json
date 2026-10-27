@@ -685,6 +685,10 @@
   [
    "\tvoid BallBallContact::deleteAllConnectors()\n\t{\n\t\tthis->deleteConnector(this->ballBallConnector);\n\t}\n",
    "\tvoid BallBallContact::deleteAllConnectors()\n\t{\n\t\tif (this->ballBallConnector)\n\t\t\tthis->deleteConnector(this->ballBallConnector);\n\t}\n"
+  ],
+  [
+   "#include \"v8world/Contact.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"v8world/Contact.h\"\n"
   ]
  ],
  "App/v8datamodel/RootInstance.cpp": [
@@ -759,6 +763,14 @@
   [
    "#include \"v8datamodel/Tool.h\"\n",
    "#pragma float_control(precise, off)\n#include \"v8datamodel/Tool.h\"\n"
+  ],
+  [
+   "Tool::activate()\n\t{\n\t\tRBXASSERT(Network::Players::frontendProcessing(this, true));\n\t\tsetFrontendActivationState(frontendActivationState + (frontendActivationState % 2) + 1);\n\t}",
+   "Tool::activate()\n\t{\n\t\t                                                           ;\n\t\tsetFrontendActivationState(frontendActivationState + (frontendActivationState % 2) + 1);\n\t}"
+  ],
+  [
+   "Tool::deactivate()\n\t{\n\t\tRBXASSERT(Network::Players::frontendProcessing(this, true));\n\t\tsetFrontendActivationState(frontendActivationState + ((frontendActivationState + 1) % 2) + 1);\n\t}",
+   "Tool::deactivate()\n\t{\n\t\t                                                           ;\n\t\tsetFrontendActivationState(frontendActivationState + ((frontendActivationState + 1) % 2) + 1);\n\t}"
   ]
  ],
  "App/v8datamodel/ModelInstance.cpp": [
@@ -783,6 +795,24 @@
   [
    "\tvoid JointsService::onEvent(const World* source, AutoDestroy event)\n\t{\n\t\tRBXASSERT(event.joint != NULL);\n\n\t\tIJointOwner* jointOwner = event.joint->getJointOwner();\n\t\tRBXASSERT(jointOwner);\n\n\t\tif (jointOwner)\n\t\t\tstatic_cast<JointInstance*>(jointOwner)->setParent(NULL);\n\t}",
    "\tvoid JointsService::onEvent(const World* source, AutoDestroy event)\n\t{\n\n\t\tIJointOwner* jointOwner = event.joint->getJointOwner();\n\n\t\tif (jointOwner)\n\t\t\tstatic_cast<JointInstance*>(jointOwner)->setParent(NULL);\n\t}"
+  ]
+ ],
+ "App/v8world/MutilJoint.cpp": [
+  [
+   "#include \"v8world/MultiJoint.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"v8world/MultiJoint.h\"\n"
+  ]
+ ],
+ "App/v8datamodel/Message.cpp": [
+  [
+   "#include \"v8datamodel/Message.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"v8datamodel/Message.h\"\n"
+  ]
+ ],
+ "App/v8datamodel/Lighting.cpp": [
+  [
+   "#include \"v8datamodel/Lighting.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"v8datamodel/Lighting.h\"\n"
   ]
  ]
 }

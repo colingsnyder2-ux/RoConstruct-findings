@@ -1336,11 +1336,42 @@
         ]
       ]
     },
-    "phase": "checking",
-    "receipt": {},
-    "state": "verifying",
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "f4f3c86f4802a24185b03715cc182cb64ac5898c5afe4db4d34e91ddbb1b3a4f",
+      "credits": 7,
+      "distinct_after": 9640,
+      "distinct_before": 9633,
+      "gains": [
+        "005dcb50",
+        "005df480",
+        "005e0610",
+        "006004b0",
+        "006004d0",
+        "00607ad0",
+        "00646af0"
+      ],
+      "input_hash": "1bc8a46c56919f73d4eb34e7fdd35ea8590bf54bb7b3b9b96441dd36c5ec3efa",
+      "losses": [],
+      "new_distinct": [
+        "005dcb50",
+        "005df480",
+        "005e0610",
+        "006004b0",
+        "006004d0",
+        "00607ad0",
+        "00646af0"
+      ],
+      "overlay_hash": "4983f97da2bac42846661e8b00f4da9358c118616ebdaf17783294637ae8a7e6",
+      "owned_after": 2956,
+      "owned_before": 2949,
+      "rebased": false,
+      "submitted_revision": "f4f3c86f4802a24185b03715cc182cb64ac5898c5afe4db4d34e91ddbb1b3a4f"
+    },
+    "state": "accepted",
     "unit": "RBX::Message, RBX::Lighting, RBX::BallBlockContact, RBX::MultiJoint, RBX::Tool",
-    "updated": 1793103589.7043347
+    "updated": 1793106469.2384315
   },
   {
     "created": 1793099178.58189,
@@ -1366,11 +1397,13 @@
         ]
       ]
     },
-    "phase": "queued",
-    "receipt": {},
-    "state": "queued",
+    "phase": "complete",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
     "unit": "RBX::NullTool, RBX::NewNullTool, RBX::BoxSelectCommand, RBX::ArrowTool, RBX::Accoutrement, RBX::PartDragTool, RBX::ToolMouseCommand, RBX::ScriptMouseCommand",
-    "updated": 1793099178.58189
+    "updated": 1793107091.0050464
   },
   {
     "created": 1793100938.5157373,
@@ -1424,11 +1457,11 @@
         ]
       ]
     },
-    "phase": "queued",
+    "phase": "checking",
     "receipt": {},
-    "state": "queued",
+    "state": "verifying",
     "unit": "RBX::GroupDragTool, RBX::Primitive, RBX::AIController, RBX::RigidJoint",
-    "updated": 1793100938.5157373
+    "updated": 1793107397.7603712
   },
   {
     "created": 1793101372.758371,
@@ -1518,10 +1551,84 @@
         ]
       ]
     },
-    "phase": "queued",
+    "phase": "solo",
     "receipt": {},
     "state": "queued",
     "unit": "RBX::SpecialShape",
-    "updated": 1793101372.758371
+    "updated": 1793104831.1386907
+  },
+  {
+    "created": 1793104532.3336027,
+    "id": "6c4c6e4f955944b8b0397c68491501e2",
+    "model": "Codex",
+    "patches": {
+      "App/gui/GUI.cpp": [
+        [
+          "#include \"gui/Gui.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"gui/Gui.h\"\n"
+        ]
+      ],
+      "App/v8datamodel/Decal.cpp": [
+        [
+          "#include \"v8datamodel/Decal.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/Decal.h\"\n"
+        ]
+      ],
+      "App/v8datamodel/Hopper.cpp": [
+        [
+          "#include \"v8datamodel/Hopper.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/Hopper.h\"\n"
+        ],
+        [
+          "HopperBin::onLocalClicked()\n\t{\n\t\tRBXASSERT(isEnabled());\n\n\t\tif (!active)\n\t\t{\n\t\t\tactive = true;\n\n\t\t\tif (binType == SCRIPT_BIN)\n\t\t\t{\n\t\t\t\tonSelectScript();\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tonSelectCommand();\n\t\t\t}\n\t\t}\n\t\telse\n\t\t{\n\t\t\tonLocalOtherClicked();\n\t\t}\n\t}",
+          "HopperBin::onLocalClicked()\n\t{\n\t\t                      ;\n\n\t\tif (!active)\n\t\t{\n\t\t\tactive = true;\n\n\t\t\tif (binType == SCRIPT_BIN)\n\t\t\t{\n\t\t\t\tonSelectScript();\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tonSelectCommand();\n\t\t\t}\n\t\t}\n\t\telse\n\t\t{\n\t\t\tonLocalOtherClicked();\n\t\t}\n\t}"
+        ]
+      ],
+      "App/v8datamodel/LocakBackpack.cpp": [
+        [
+          "#include \"v8datamodel/LocalBackpack.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/LocalBackpack.h\"\n"
+        ],
+        [
+          "LocalBackpack::onLocalPlayerAdded(Network::Player* added)\n\t{\n\t\tRBXASSERT(numChildren() == 0);\n\t\tRBXASSERT(added);\n\n\t\tlocalPlayer = shared_from(added);\n\n\t\tNotifier<Instance, ChildAdded>::connect(localPlayer, this);\n\t\tNotifier<Instance, ChildRemoved>::connect(localPlayer, this);\n\t\tNotifier<Network::Player, Network::CharacterAdded>::connect(localPlayer, this);\n\t\tNotifier<Network::Player, Network::CharacterRemoving>::connect(localPlayer, this);\n\t}",
+          "LocalBackpack::onLocalPlayerAdded(Network::Player* added)\n\t{\n\t\t                             ;\n\t\t                ;\n\n\t\tlocalPlayer = shared_from(added);\n\n\t\tNotifier<Instance, ChildAdded>::connect(localPlayer, this);\n\t\tNotifier<Instance, ChildRemoved>::connect(localPlayer, this);\n\t\tNotifier<Network::Player, Network::CharacterAdded>::connect(localPlayer, this);\n\t\tNotifier<Network::Player, Network::CharacterRemoving>::connect(localPlayer, this);\n\t}"
+        ]
+      ],
+      "App/v8kernel/Kernel.cpp": [
+        [
+          "#include \"v8kernel/Kernel.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8kernel/Kernel.h\"\n"
+        ]
+      ],
+      "App/v8world/Primitive.cpp": [
+        [
+          "Primitive::setSurfaceData(NormalId id, const SurfaceData& newSurfaceData)\n\t{\n\t\tif (!surfaceData[id] && newSurfaceData.isEmpty())\n\t\t\treturn;\n\n\t\tif (surfaceData[id] && *surfaceData[id] == newSurfaceData)\n\t\t\treturn;\n\n\t\tif (newSurfaceData.isEmpty())\n\t\t{\n\t\t\tRBXASSERT(surfaceData[id]);\n\t\t\tdelete surfaceData[id];\n\t\t\tsurfaceData[id] = NULL;\n\t\t\treturn;\n\t\t}\n\t\telse if (!surfaceData[id])\n\t\t{\n\t\t\tsurfaceData[id] = new SurfaceData;\n\t\t}\n\n\t\t*surfaceData[id] = newSurfaceData;\n\t}",
+          "Primitive::setSurfaceData(NormalId id, const SurfaceData& newSurfaceData)\n\t{\n\t\tif (!surfaceData[id] && newSurfaceData.isEmpty())\n\t\t\treturn;\n\n\t\tif (surfaceData[id] && *surfaceData[id] == newSurfaceData)\n\t\t\treturn;\n\n\t\tif (newSurfaceData.isEmpty())\n\t\t{\n\t\t\t                          ;\n\t\t\tdelete surfaceData[id];\n\t\t\tsurfaceData[id] = NULL;\n\t\t\treturn;\n\t\t}\n\t\telse if (!surfaceData[id])\n\t\t{\n\t\t\tsurfaceData[id] = new SurfaceData;\n\t\t}\n\n\t\t*surfaceData[id] = newSurfaceData;\n\t}"
+        ]
+      ]
+    },
+    "phase": "queued",
+    "receipt": {},
+    "state": "queued",
+    "unit": "RBX::Ball, RBX::LocalBackpackItem, RBX::UnifiedWidget, RBX::TopMenuBar, RBX::LocalBackpack, RBX::HopperBin, RBX::Decal",
+    "updated": 1793104532.3336027
+  },
+  {
+    "created": 1793104532.3696806,
+    "id": "c1667165ae244c979735cf589386ba51",
+    "model": "Codex",
+    "patches": {
+      "App/v8datamodel/PartInstance.cpp": [
+        [
+          "#include \"v8datamodel/PartInstance.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/PartInstance.h\"\n"
+        ]
+      ]
+    },
+    "phase": "queued",
+    "receipt": {},
+    "state": "queued",
+    "unit": "RBX::PartInstance",
+    "updated": 1793104532.3696806
   }
 ]

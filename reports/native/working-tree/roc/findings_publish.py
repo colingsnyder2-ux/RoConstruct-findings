@@ -6,6 +6,7 @@ from pathlib import Path
 import shutil
 import sqlite3
 import sys
+import tempfile
 import threading
 
 
@@ -84,12 +85,20 @@ def main():
 
     def publish(store, public_url, log):
         print("Exporting stored sources and portable evidence...", flush=True)
-        store.db.execute("BEGIN")
-        try:
-            server.sync_findings(store)
-            inventory = export_native(root, store.db)
-        finally:
-            store.db.rollback()
+        # Export can take minutes. A live read transaction blocks commits in
+        # SQLite's DELETE journal mode; back up in short steps and read privately.
+        with tempfile.TemporaryDirectory(prefix="findings-db-", dir=root / "work") as folder:
+            snapshot = sqlite3.connect(Path(folder) / "snapshot.db")
+            live = store.db
+            try:
+                live.backup(snapshot, pages=1024)
+                snapshot.create_function("roc_library", 1, libs.library_of, deterministic=True)
+                store.db = snapshot
+                server.sync_findings(store)
+                inventory = export_native(root, snapshot)
+            finally:
+                store.db = live
+                snapshot.close()
         print(json.dumps(inventory["clients"]), flush=True)
         server.publish_findings(shutil.which("git"), log)
 
@@ -98,10 +107,12 @@ def main():
         print(message, flush=True)
 
     # Reuse the live publisher's cross-process lock; publish to findings only.
+    original_publish = server._publish_once
     server._publish_once = publish
     try:
         server.publish_once(store, None, log)
     finally:
+        server._publish_once = original_publish
         store.db.close()
     if any("failed" in line.lower() or "unavailable" in line.lower() or "already running" in line.lower() for line in logs):
         raise SystemExit(1)

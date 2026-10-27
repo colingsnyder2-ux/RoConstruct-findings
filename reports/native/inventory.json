@@ -1,13 +1,13 @@
 {
-  "accepted_jobs": 5,
+  "accepted_jobs": 6,
   "clients": [
     {
       "client": "2008-06",
-      "exact_sources": 22108,
+      "exact_sources": 22110,
       "stored_sources": 22291
     }
   ],
-  "native_credits": 34,
+  "native_credits": 41,
   "sha256": {
     "working-tree/rebuild/2008-06/POLICY.md": "77fcf38870a4e5cc7393873006999d30e1c6da7acebaf2813f8d7664c03cc200",
     "working-tree/rebuild/2008-06/base_check.py": "6753a0b3b6f6029638b0670d38105217a8739f0bc6bb283e1577cc504b0863bd",
@@ -65,9 +65,9 @@
     "working-tree/rebuild/2008-06/modules/zlib-winapi.json": "66db4556d4755b6cf015de08023b06c0a987af3e63b4f8609eeb1585adcedb0f",
     "working-tree/rebuild/2008-06/modules/zlib.json": "751aa388b2168789f9c56be7f0cf40a8149be8fbe25ef433146dbd464e5f2487",
     "working-tree/rebuild/2008-06/patches/make_rbxgs_client.py": "564a733656a574ca1981df8aa22654258816eeeb953a50111ebab753ac2a14bb",
-    "working-tree/rebuild/2008-06/patches/native-promotions.json": "89c60def3a57a9c53784384d8ad587ff040162ed36818b2ae54f70695226b57f",
+    "working-tree/rebuild/2008-06/patches/native-promotions.json": "12d3c8ef9bc551ae2d10ca28e090e290894195d6d9e9414205e1efe11bdc4aa7",
     "working-tree/rebuild/2008-06/patches/openrbx-client.json": "ab2f0ac7d5d87cff49f2e31a10c293a3dbdc54ffe17fbba87a76fe6ac006dde9",
-    "working-tree/rebuild/2008-06/patches/rbxgs-client.json": "82ddc13dab7a760d1a429d3da1de832d326a5267b68165dd1040cea1e646e0dd",
+    "working-tree/rebuild/2008-06/patches/rbxgs-client.json": "68fc6b5a365816cf3c9c40783fcf43a4346a818c2e24eb260e7dc41f2387091b",
     "working-tree/rebuild/2008-06/patches/rbxgs_template_defs.h": "13f22bde312fb9d09ee2cf66453bc0fa12ec6b23d34580e9ea8f6f5c80268aae",
     "working-tree/rebuild/2008-06/patches/zlib-deflate-copyright.json": "790cd88217e1bc23ad931614ab4f9f3a03a25b9b1953069164dc0fa5dc58620b",
     "working-tree/rebuild/2008-06/patches/zlib-winapi-deflate-copyright.json": "790cd88217e1bc23ad931614ab4f9f3a03a25b9b1953069164dc0fa5dc58620b",
