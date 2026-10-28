@@ -1,12 +1,14 @@
 {
   "schema": 1,
-  "workflow_version": 2,
+  "workflow_version": 3,
   "url": "https://raw.githubusercontent.com/colingsnyder2-ux/RoConstruct-findings/main/data/native-worker.zip",
-  "sha256": "287270d9bc919077c4d58762f6a024cd169b4f78d1f6c5a4f2e01f9f56b93dfe",
-  "size": 2613619,
+  "sha256": "7ab1c1662dada4e0d24770915cf2a1e012339fda10a1ef133866eea74aeb16eb",
+  "size": 2614418,
   "server": "https://colinpc.tail2879d0.ts.net",
   "native_clients": [
     "2008-06"
   ],
-  "guide": "https://raw.githubusercontent.com/colingsnyder2-ux/RoConstruct-findings/main/data/NATIVE_AGENT.md"
+  "guide": "https://raw.githubusercontent.com/colingsnyder2-ux/RoConstruct-findings/main/data/NATIVE_AGENT.md",
+  "invitation_required": false,
+  "status_url": "https://colinpc.tail2879d0.ts.net/v1/status"
 }

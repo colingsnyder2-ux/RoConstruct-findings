@@ -6,19 +6,24 @@ the DeepSeek native pass (`roc research run native-model-2008`). You write the e
 
 ## First response: select the client
 
-Unless the user already selected a client in this conversation, ask exactly:
-**"Which client do you want to run?"** Wait for their answer before client downloads, analysis, claims or trials.
-If an existing configured checkout can run `roc work`, show its real server progress before asking.
-Never fabricate totals when unavailable. Native integration currently supports **2008-06** only.
-If the user selects another client, explain that limitation and ask whether they want ordinary source mining;
-do not silently use 2008-06 or pretend another native rebuild exists. Keep the selected client locked for this run.
-An existing client selection remains valid; do not ask again just because the baseline or batch changed.
+Before setup or identity questions, fetch the public server's `/v1/status` using the agent's HTTP tool
+or one grouped HTTP request. Default server: `https://colinpc.tail2879d0.ts.net`; use an explicitly supplied server instead.
+Then make the first user-facing response a selectable question: **"Which client do you want to run?"**
+List every returned client, showing `integration_percent` as **X% integrated (integrated/functions)**.
+Use `native_supported` to label clients without a native rebuild **"integration unavailable; source mining available"**.
+A null percentage means **"integration unknown"**, never 0%. Do not show mined/matched percentages as integration.
+Do not substitute old screenshot numbers or cached example percentages. If the server is unreachable, show
+that error and fetch the registered client names from the public site's progress data; mark integration unknown.
+Use the agent's question tool when available. Wait for selection before client downloads, analysis, claims or trials.
+If a client was explicitly selected earlier, keep it; do not ask again. Native integration currently supports
+**2008-06** only. Other clients can use ordinary source mining; explain their native limitation in the choices.
+Keep the selected client locked for this run.
 
 ## Automatic Worker download
 
 Do not ask the user to locate or attach a Worker ZIP. If `roc/native_try.py`, `research/native-units.json`,
 or `research/native-source-lock.json` is missing, `roc native-try --help` is unavailable, or a package marker
-reports `native_workflow_version` below 2, download the current Worker package yourself:
+reports `native_workflow_version` below 3, download the current Worker package yourself:
 
 - Manifest: https://raw.githubusercontent.com/colingsnyder2-ux/RoConstruct-findings/main/data/native-worker.json
 - Package: https://raw.githubusercontent.com/colingsnyder2-ux/RoConstruct-findings/main/data/native-worker.zip
@@ -32,7 +37,7 @@ into a new folder without overwriting the user's existing checkout or edits:
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 $nativeManifest = Invoke-RestMethod ('https://raw.githubusercontent.com/colingsnyder2-ux/RoConstruct-findings/main/data/native-worker.json?t=' + [guid]::NewGuid().ToString('N'))
-if ($nativeManifest.workflow_version -lt 2 -or
+if ($nativeManifest.workflow_version -lt 3 -or
     $nativeManifest.url -ne 'https://raw.githubusercontent.com/colingsnyder2-ux/RoConstruct-findings/main/data/native-worker.zip' -or
     $nativeManifest.sha256 -notmatch '^[0-9a-fA-F]{64}$') { throw 'Invalid Worker manifest' }
 $nativeFolder = Join-Path (Get-Location) ('RoConstruct-Native-' + [guid]::NewGuid().ToString('N'))
@@ -51,11 +56,10 @@ Write-Output ('Native checkout: ' + $nativeFolder)
 On Linux use the same HTTPS manifest/package, verify SHA-256, and extract into a fresh authorized folder.
 Capture the printed absolute checkout path and use it as the explicit working directory for every later
 tool call. `Set-Location` and process environment changes do not persist across separate terminal calls.
-Set `ROC_NONINTERACTIVE=1` again in the grouped setup call if needed; keep invitation credentials in
-existing private configuration or pass their environment to each required command, never into public files.
+Set `ROC_NONINTERACTIVE=1` again in the grouped setup call if needed.
 Read the extracted `AGENTS.md` and `CLAUDE.md`, then execute setup below. Use an existing working server
 configuration when supplied, otherwise use the manifest's `server` URL. Never copy another contributor's
-credentials. Ask only for missing contributor identity or the owner's private native invitation.
+credentials. Ask only for missing contributor identity. Native integration is public; no invitation required.
 If downloads fail, retry and report the actual URL/error; never invent a successful install.
 
 ## Goal
@@ -93,9 +97,9 @@ holding `work/server.db`. Server DB, manifests and compiled server outputs are n
 Keep one contributor checkout per concurrent agent. Preserve unsent edits when updating or syncing.
 
 Configure the contributor name and reachable group-server URL with `roc config --user NAME --server URL`
-if not already configured. Use the supplied server URL, not the owner's `localhost`. Set `ROC_NATIVE_TOKEN`
-to the invitation supplied privately by the owner; never print it. Ask only for missing identity, URL or
-invitation that cannot be read from existing configuration. Leave `ROC_NATIVE_EVIDENCE_ROOT` unset on
+if not already configured. Use the supplied server URL, not the owner's `localhost`. No native invitation,
+`ROC_NATIVE_TOKEN` or owner approval is required. Ask only for missing contributor identity.
+Leave `ROC_NATIVE_EVIDENCE_ROOT` unset on
 another PC; it is an optional same-machine testing override.
 
 On Windows, run these existing commands through `.\roc.cmd` (Linux: `./roc.sh`), in this order:
