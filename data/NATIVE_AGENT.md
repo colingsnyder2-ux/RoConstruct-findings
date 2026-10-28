@@ -168,6 +168,15 @@ is unavailable, report the named missing dependency and download error; do not r
 If doctor cannot find an installed SDK, set `ROC_WINSDK` to this PC's SDK folder containing `Include` and
 `Lib/kernel32.lib`; never copy the owner's absolute paths. Resolve compiler/SDK errors before continuing.
 
+For an optional full local linked diagnostic, fetch the module's standalone library
+sources first. The app build also needs `roc lib-fetch zlib-1.2.3 libpng-1.2.5 boost-1.34.1`
+beyond the native-trial setup above. Then use `roc rebuild 2008-06 module rbxgs-app --no-notify`.
+An overlay anchor error can mean its source file is missing: check the named module's
+`overlay.root` and source path before changing a patch. For example, a missing
+`tools/libs/zlib-1.2.3/deflate.c` reports a `deflate_copyright` anchor failure; fetch the
+real zlib library rather than altering that patch. A local build is diagnostic;
+server acceptance still decides credit.
+
 ## Local trial setup
 
 - `check` edits one source/header. For a header fix, use `--only ADDR` to identify a real caller;
