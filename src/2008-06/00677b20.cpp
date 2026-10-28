@@ -1,11 +1,11 @@
-// from server: 85% by EspClaude
-// from server: 84% by colin
+// from server: 100% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espclaude_438b81b48036a6ae.cpp
+// roc-lib: rbxgs-dll roc_unit_7d2f0ab88aedddfb.cpp
 
 // Candidate translation unit (score above; library headers required).
+#pragma include_alias("util/Rect.h", "roc_native_rect_center_f0523507542fe513.cpp")
 /**
   @file Rect2D.h
  
@@ -358,6 +358,7 @@ public:
 
 #endif
 
+#include "util/Rect.h"
 #include <AppDraw/DrawAdorn.h>
 #include <AppDraw/HitTest.h>
 #include <G3D/Ray.h>
@@ -429,9 +430,11 @@ void DrawAdorn::handles2d(const G3D::Vector3& size, const G3D::CoordinateFrame& 
             G3D::Vector3 point(0, 0, 0);
             point[axis] = (halfSize[axis] + 3.0f) * sign;
             G3D::Vector2 screen = camera.project(frame.pointToWorldSpace(point), adorn->getViewport()).xy();
-            adorn->rect2d(handleRect(screen), color);
+            adorn->rect2d(Rect::fromCenterSize(screen, 6.0f).toRect2D(), color);
         }
     }
 }
 
 }
+
+typedef char native_rect_size[sizeof(RBX::Rect)==16?1:-1];

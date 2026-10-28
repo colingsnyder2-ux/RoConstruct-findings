@@ -1,3 +1,4 @@
+// from server: 99% by EspClaude
 // from server: 95% by king_originala
 // roc 2008-06 004339d0  unit: CObjectBrowser  size: 212 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004339d0
@@ -118,17 +119,17 @@ void CObjectBrowser::func_004339d0(int type, int width, int height)
         Rect rect;
         int minimum;
         GetClientRect(first.handle, &rect);
-        int savedHeight = height;
-        unsigned int rectHeight =
-            (unsigned int)rect.bottom - (unsigned int)rect.top;
-        int difference = (unsigned int)savedHeight - rectHeight;
-        first.move(0, 0, width, savedHeight, 1);
+        int h = rect.bottom - rect.top;
+        int difference = height - h;
+        if (h != h) difference = h;
+        first.move(0, 0, width, height, 1);
 
         if (second.handle)
         {
-            second.getRow(0, &height, &minimum);
-            type = difference + height;
-            width = savedHeight - 150;
+            int cur;
+            second.getRow(0, &cur, &minimum);
+            type = difference + cur;
+            width = height - 150;
             type = *(type < width ? &type : &width);
             width = 50;
             type = *(type > width ? &type : &width);

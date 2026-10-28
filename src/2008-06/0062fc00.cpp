@@ -1,3 +1,4 @@
+// from server: 99% by coldek
 // from server: 98% by colin
 // roc 2008-06 0062fc00  unit: RBX::Rocket  size: 1225 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0062fc00
@@ -548,8 +549,9 @@ void Rocket::computeForce(const float dt, bool throttling)
 
 		G3D::Vector3 targetPos = target.get() ? target->getCoordinateFrame().pointToWorldSpace(targetOffset) : targetOffset;
 		G3D::Vector3 targetDelta = targetPos - body->getCoordinateFrame().translation; // fabricated name, may change
-		G3D::Vector3 targetDir = targetDelta.direction();
-		G3D::Vector3 pAccel = targetDelta * kThrustP;
+		G3D::Vector3 pAccel, targetDir;
+		targetDir = targetDelta.direction();
+		pAccel = targetDelta * kThrustP;
 		Body* root = body->getRoot();
 
 		G3D::Vector3 force = pAccel * root->getBranchMass();
@@ -560,7 +562,7 @@ void Rocket::computeForce(const float dt, bool throttling)
 			float dotProduct = dir.dot(force);
 			if (dotProduct > 0.0f)
 			{
-				force = force - (dir * dotProduct);
+				force -= dir * dotProduct;
 				force -= root->getBranchMass() * (root->getVelocity().linear - maxSpeed * dir) / dt;
 			}
 		}

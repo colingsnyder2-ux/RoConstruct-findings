@@ -1,10 +1,9 @@
-// from server: 90% by colin
-// from server: 86% by colin
+// from server: 100% by EspClaude
 // from server: 81% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net-dll roc_espeon_clientproxysuccessbranche1e4ed20cd49dbfa.cpp
+// roc-lib: rbxgs-net-dll roc_espclaude_04a5f891e6e8a658.cpp
 
 // Candidate translation unit (score above; library headers required).
 #ifndef _CPPUNWIND
@@ -32,7 +31,8 @@ public:
 int ClientProxyRecovery::process(void* source,Packet* packet) {
  SystemAddress* sender=&packet->systemAddress;
  if(*sender==field<SystemAddress>(0x1e0)) return forward(source,packet);
- if(packet->data[0]!=76) return forward(source,packet);
+ switch(packet->data[0]) {
+ case 76:
  try {
   RakNet::BitStream stream(packet->data,packet->length,false);
   stream.IgnoreBits(8);
@@ -41,7 +41,7 @@ int ClientProxyRecovery::process(void* source,Packet* packet) {
   if(*reinterpret_cast<bool*>(reinterpret_cast<char*>(settings())+0x131))
    RBX::StandardOut::singleton()->print(RBX::MESSAGE_INFO,"Received remotePlayer %s from %s",reinterpret_cast<char*>(this)-0x2b74,identifier.readableString(4).c_str(),sender->ToString(true));
   field<boost::shared_ptr<PlayerView> >(0x1f4)=playerReference(source?static_cast<char*>(source)+0xe4:0);
-  if(!field<boost::shared_ptr<PlayerView> >(0x1f4)) {std::string message("remotePlayer is NULL"); throw std::runtime_error(message);}
+  if(!field<boost::shared_ptr<PlayerView> >(0x1f4)) throw std::runtime_error("remotePlayer is NULL");
   field<boost::shared_ptr<PlayerView> >(0x1f4)->activate(true);
   } else {
    throw std::runtime_error(G3D::format("Couldn't resolve remotePlayer %s from %s",identifier.readableString(4).c_str(),sender->ToString(true)));
@@ -49,5 +49,10 @@ int ClientProxyRecovery::process(void* source,Packet* packet) {
  } catch(const std::exception& error) {
   RBX::StandardOut::singleton()->print(RBX::MESSAGE_ERROR,"Replicator::ClientProxy::OnReceive packet %d: %s",packet->data[0],error.what());
  }
+ break;
+ default:
+  return forward(source,packet);
+ }
  return 0;
 }
+

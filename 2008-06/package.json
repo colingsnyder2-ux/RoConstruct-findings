@@ -7893,7 +7893,7 @@
     "tests/zlib_roundtrip.cpp": "2e13794b8941477920550714a8eadae5eb7bb4fb2745629b2877be625a87040d",
     "verification/accepted-integrations.json": "5387ba765262d3705a1ec657258700afd1fcc4a3d6b9477afe27e4b60446e77c",
     "verification/integration-jobs.json": "ac7d09d67ef7e83128f2118a88f47af05646a7140b1595285542a0dc5d03ee9f",
-    "verification/inventory.json": "cb147d96b08bd9a859bf0fc2e6c049d1ffeeb219e26f555541d798ea0ac03481",
+    "verification/inventory.json": "840c4d6821ea2965095fc15183e7e6417a80116cea661721a81be6cc13c07d2f",
     "verification/manifests/abi-evidence.json": "3d8ebf8ea63859c156cce6f28068598ef1df3249565a7e1a717c83ed1310b92a",
     "verification/manifests/functions.json": "51edb353acd4c752c4c3d984a734a966f6ec1e97b96fd7613b9af07eae7855f1",
     "verification/manifests/original-pe.json": "1aa2d645f4359aa03e5e8de875467e8a2399d7997c1f450bca309b7dcb1fcef2",

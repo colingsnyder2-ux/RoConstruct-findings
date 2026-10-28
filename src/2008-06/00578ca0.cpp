@@ -1,120 +1,110 @@
-// from server: 65% by king_originala
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHa /MD
-// roc-lib: g3d-6.09 roc_datamodel_mark_native_0beeb8b2b37b1a32.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: g3d-6.09 roc_espclaude_4e0b061628ffee6c.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <G3D/Array.h>
 #include <G3D/Vector4.h>
 #include <stddef.h>
-#include <intrin.h>
 extern bool enabled;
-extern void __cdecl alignedFree(void*);
-
-typedef G3D::Array<G3D::Vector4> Array;
 
 struct Settings
 {
-    Array values;
+    G3D::Array<G3D::Vector4> values;
     bool first;
     bool second;
 };
 
-// Target constructor005c3f80: section0, frameTick8, wallTime16,
-// TlsGetValue return at4; dtor005c42d0 restores parent and calls CodeProfiler log.
-// 2016 util/Profiling.h corroborates reference/parent/frameTick ownership,
-// but its later Time and extra fields are not transplanted.
+namespace Profiling {
 struct CodeProfiler;
-struct Scope {
- CodeProfiler& section;
- Scope* enclosingMark;
- bool frameTick;
- double startTime;
- Scope(CodeProfiler&,bool);
- ~Scope();
+class Mark {
+    CodeProfiler& section;
+    Mark* enclosingMark;
+    bool frameTick;
+    double startTime;
+public:
+    Mark(CodeProfiler&, bool);
+    ~Mark();
 };
-typedef char mark_size[sizeof(Scope)==24?1:-1];
-typedef char mark_align[__alignof(Scope)==8?1:-1];
-typedef char mark_time[offsetof(Scope,startTime)==16?1:-1];
+}
+template<class T> struct scoped_ptr { T* ptr; T* get() const { return ptr; } T& operator*() const { return *ptr; } T* operator->() const { return ptr; } };
+template<class T> struct shared_ptr { T* px; void* pn; T* operator->() const { return px; } T* get() const { return px; } };
 
-struct World
+struct Workspace
 {
     char padding[0x42c];
-    void* firstScope;
-    void* secondScope;
-    void* thirdScope;
-    void* fourthScope;
-
-    double step(float, Settings*);
-    void update();
+    scoped_ptr<Profiling::CodeProfiler> profileWorkspaceStep;
+    scoped_ptr<Profiling::CodeProfiler> profileWorkspaceIdle;
+    scoped_ptr<Profiling::CodeProfiler> profileRunServiceStepped;
+    scoped_ptr<Profiling::CodeProfiler> profileRunServiceHeartbeat;
+    float step(float, Settings&);
+    void idle();
 };
 
-struct State
+struct RunService
 {
     char padding[0x1b4];
-    int mode;
-
-    void step(float);
-    void update(float);
+    int runState;
+    bool isRunState() const { return runState == 1; }
+    void raiseStepped(float);
+    void raiseHeartbeat(float);
 };
 
-struct S
+struct DataModel
 {
     char padding[0x204];
-    World* world;
-    void* unused;
-    State* state;
+    shared_ptr<Workspace> workspace;
+    shared_ptr<RunService> runService;
 
-    void configure(Settings*);
-    void f(float);
+    void getRenderSettings(Settings&);
+    void step(float);
+    static const Settings& defaultSettings();
 };
 
-extern unsigned int __cdecl classify(S*);
-extern const Settings* __cdecl getSettings();
+extern unsigned int __cdecl getRunMode(DataModel*);
 
-void S::f(float elapsed)
+void DataModel::step(float timeInterval)
 {
-    unsigned int mode = classify(this);
-    bool active = false;
-
+    unsigned int mode = getRunMode(this);
+    bool simulate = false;
     switch (mode)
     {
     case 0:
     case 3:
     case 4:
-        active = state->mode == 1;
+        simulate = runService->isRunState();
         break;
     case 1:
     case 2:
-        active = enabled;
+        simulate = enabled;
         break;
     }
 
-    Settings settings = *getSettings();
-
+    Settings settings = defaultSettings();
     if (enabled)
-        configure(&settings);
+        getRenderSettings(settings);
 
-    if (active)
+    if (simulate)
     {
         {
-            Scope scope(*static_cast<CodeProfiler*>(world->firstScope), true);
-            world->step(elapsed, &settings);
+            Profiling::Mark mark = Profiling::Mark(*workspace->profileWorkspaceStep, true);
+            workspace->step(timeInterval, settings);
         }
         {
-            Scope scope(*static_cast<CodeProfiler*>(world->thirdScope), true);
-            state->step(elapsed);
+            Profiling::Mark mark = Profiling::Mark(*workspace->profileRunServiceStepped, true);
+            runService->raiseStepped(timeInterval);
         }
     }
     else
     {
-        Scope scope(*static_cast<CodeProfiler*>(world->secondScope), true);
-        world->update();
+        Profiling::Mark mark = Profiling::Mark(*workspace->profileWorkspaceIdle, true);
+        workspace->idle();
     }
 
     {
-        Scope scope(*static_cast<CodeProfiler*>(world->fourthScope), true);
-        state->update(elapsed);
+        Profiling::Mark mark = Profiling::Mark(*workspace->profileRunServiceHeartbeat, true);
+        runService->raiseHeartbeat(timeInterval);
     }
 }

@@ -1,4 +1,4 @@
-// from server: 79% by king_originala
+// from server: 85% by coldek
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 #include <set>
@@ -35,6 +35,7 @@ struct SleepStage:public Stage {
  __forceinline int getState(Assembly*a){return a->inPipeline()&&currentAtLeast(readCurrent(a))?a->sleepInfo->state:0;}
  __forceinline bool edgeIsAwake(Edge*e){return currentAtLeast(readCurrent(e));}
  __forceinline bool isAffecting(Edge*e){int state=e->edgeState;return e->getEdgeType()!=1||state==3||state==4;}
+ int getStateOut(Assembly*); // thiscall int helper ABI observed at 0064a5b0
  void changeAssemblyState(Assembly*,int);void wakeEdge(Edge*);
  std::set<Assembly*>*stateToSet(int);
  void wakeNeighbors(Assembly*,std::deque<Assembly*>&,int);
@@ -52,7 +53,7 @@ void SleepStage::wakeNeighbors(Assembly*assembly,std::deque<Assembly*>&pending,i
     if(isAffecting(edge)){
      Assembly*other=assembly->otherAssembly(edge);
      if(depth<maxDepth){
-      if(throttling||getState(other)!=3){
+      if(throttling||getStateOut(other)!=3){
        if(other->visitStamp!=visitStamp){other->visitStamp=visitStamp;other->depth=depth+1;pending.push_back(other);}
       }
      }else if(other->inPipeline()&&currentAtLeast(readCurrent(other))&&other->sleepInfo->state==5){
@@ -61,8 +62,8 @@ void SleepStage::wakeNeighbors(Assembly*assembly,std::deque<Assembly*>&pending,i
       static Velocity zero;
       other->rootClump->rootPrimitive->body->setVelocity(zero);
       if(currentDownstream(readCurrent(other)))static_cast<SimJobStage*>(downstream)->onAssemblyRemoving(other);
-      other->sleepInfo->state=4;
       other->sleepInfo->sleepCount=0;
+      other->sleepInfo->state=4;
      }
     }
    }

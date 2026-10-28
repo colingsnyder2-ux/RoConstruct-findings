@@ -1,4 +1,4 @@
-// from server: 76% by coldek
+// from server: 88% by coldek
 // roc 2008-06 0063e430  unit: RBX::SlingshotTool  size: 652 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0063e430
 //
@@ -227,7 +227,7 @@ struct Frame {
 }
 namespace RBX {
 struct UIEvent;struct HitTestFilter;struct PartInstance;
-struct MouseCommand {PartInstance*getPart(const UIEvent&,const HitTestFilter*,G3D::Vector3&);};
+struct MouseCommand {__declspec(noalias) PartInstance*getPart(const UIEvent&,const HitTestFilter*,G3D::Vector3&);};
 struct Velocity {G3D::Vector3 linear,rotational;Velocity(const G3D::Vector3&l,const G3D::Vector3&r):linear(l),rotational(r){}};
 struct PV {G3D::Frame position;Velocity velocity;PV(const G3D::Frame&,const Velocity&);};
 struct Constants {static const G3D::Vector3&getKmsGravity(){static G3D::Vector3 v(0,-9.8100004f,0);return v;}};
