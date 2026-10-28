@@ -1,9 +1,7 @@
-// from server: 94% by EspClaude
-// from server: 76% by EspClaude
-// from server: 71% by coldek
+// from server: 98% by EspClaude
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-view-dll roc_espclaude_f674da9a4f817fa5.cpp
+// roc-lib: rbxgs-view-dll roc_espclaude_b29d3f45b0c80d0d.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "BrickMesh.cpp"
@@ -170,6 +168,20 @@ static __forceinline void atlasFace(unsigned* corners,const Vector4* rectangles,
     meshTextures[i2]=c;
     meshTextures[i3]=d;
 }
+#define ATLAS(C,S) \
+    border=Vector2(rectangles[atlasIndices[S]].z*6.0f,rectangles[atlasIndices[S]].w*6.0f); \
+    border*=margin; \
+    a=Vector2(rectangles[atlasIndices[S]].x+border.x,rectangles[atlasIndices[S]].y+border.y); \
+    b=Vector2(rectangles[atlasIndices[S]].x+rectangles[atlasIndices[S]].z-border.x,rectangles[atlasIndices[S]].y+border.y); \
+    c=Vector2(rectangles[atlasIndices[S]].x+rectangles[atlasIndices[S]].z-border.x,rectangles[atlasIndices[S]].y+rectangles[atlasIndices[S]].w-border.y); \
+    d=Vector2(rectangles[atlasIndices[S]].x+border.x,rectangles[atlasIndices[S]].y+rectangles[atlasIndices[S]].w-border.y); \
+    if(flags[S]&1) {std::swap(a,b);std::swap(c,d);} \
+    if(flags[S]&2) {std::swap(a,d);std::swap(b,c);} \
+    if(flags[S]&4) {Vector2 t=a;a=b;b=c;c=d;d=t;} \
+    meshTextures[(C)[0]]=a; \
+    meshTextures[(C)[1]]=b; \
+    meshTextures[(C)[2]]=c; \
+    meshTextures[(C)[3]]=d;
 static __forceinline void extendTexture(unsigned destination,unsigned base,unsigned other,float margin) {
     Vector2 direction=meshTextures[base]-meshTextures[other];
     direction.unitize(1e-6f);
@@ -198,18 +210,19 @@ void BrickMeshRecovery::populate(const Vector3& size,RenderSurfaceTypes surfaces
     float palette=static_cast<float>(color.getClosestPaletteIndex());
     unsigned quads[16];
     unsigned face[24];
+    Vector2 border,a,b,c,d;
     recoveredMeshFace<RBX::NORM_X>(half,meshBevel,surfaces,palette,level,face);
-    atlasFace(face,rectangles,atlasIndices,flags,3,margin);
+    ATLAS(face,3)
     recoveredMeshFace<RBX::NORM_Y>(half,meshBevel,surfaces,palette,level,face+4);
-    atlasFace(face+4,rectangles,atlasIndices,flags,4,margin);
+    ATLAS(face+4,4)
     recoveredMeshFace<RBX::NORM_Z>(half,meshBevel,surfaces,palette,level,face+8);
-    atlasFace(face+8,rectangles,atlasIndices,flags,0,margin);
+    ATLAS(face+8,0)
     recoveredMeshFace<RBX::NORM_X_NEG>(half,meshBevel,surfaces,palette,level,face+12);
-    atlasFace(face+12,rectangles,atlasIndices,flags,2,margin);
+    ATLAS(face+12,2)
     recoveredMeshFace<RBX::NORM_Y_NEG>(half,meshBevel,surfaces,palette,level,face+16);
-    atlasFace(face+16,rectangles,atlasIndices,flags,5,margin);
+    ATLAS(face+16,5)
     recoveredMeshFace<RBX::NORM_Z_NEG>(half,meshBevel,surfaces,palette,level,face+20);
-    atlasFace(face+20,rectangles,atlasIndices,flags,1,margin);
+    ATLAS(face+20,1)
     if(meshBevel>0) {
         unsigned copies[24];
         for(int i=0;i<24;++i)
@@ -327,5 +340,6 @@ void BrickMeshRecovery::populate(const Vector3& size,RenderSurfaceTypes surfaces
         for(int i=0;i<24;++i) Mesh::allocVertex(copies[i],static_cast<unsigned>(-1));
     }
 }
+
 
 

@@ -4973,11 +4973,137 @@
         ]
       ]
     },
-    "phase": "building",
-    "receipt": {},
-    "state": "verifying",
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "e41b38e364d0e7d83e4247f0c4cadaee35e287dc572d07fb0ded510b14e7703d",
+      "credits": 1,
+      "distinct_after": 9929,
+      "distinct_before": 9928,
+      "gains": [
+        "00645750"
+      ],
+      "input_hash": "310620c9b20ebb15e0844ddac237d442077c6fbb5e16840c2a1c8a6f361bf868",
+      "losses": [],
+      "new_distinct": [
+        "00645750"
+      ],
+      "overlay_hash": "71cee670ca40ed164092c62b2c74b8a72e78ba249a4143e571a61973b72cbf67",
+      "owned_after": 3263,
+      "owned_before": 3262,
+      "rebased": false,
+      "submitted_revision": "e41b38e364d0e7d83e4247f0c4cadaee35e287dc572d07fb0ded510b14e7703d"
+    },
+    "state": "accepted",
     "unit": "RBX::PartInstance",
-    "updated": 1793226244.2036717,
+    "updated": 1793226766.3940167,
+    "user": "coldek"
+  },
+  {
+    "created": 1793226923.2646801,
+    "id": "1bef0f0fe4be4bb3bdae0375ace125c4",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/humanoid/Humanoid.cpp": [
+        [
+          "\tContactManager* Humanoid::getContactManager()\n\t{\n\t\tWorld* world = Workspace::getWorldIfInWorkspace(this);\n\t\treturn world ? &world->getContactManager() : NULL;\n\t}",
+          "\tContactManager* Humanoid::getContactManager()\n\t{\n\t\treturn world ? &world->getContactManager() : NULL;\n\t}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "f0508896596e5a5d5e98c5efa4939f251b03983b32f6c6658bdb7fd81e785331",
+      "credits": 1,
+      "distinct_after": 9930,
+      "distinct_before": 9929,
+      "gains": [
+        "005d77b0"
+      ],
+      "input_hash": "04a6eb8c70eb40e2b0aaad927487314f5552ca81ff2015384abb3458464917af",
+      "losses": [],
+      "new_distinct": [
+        "005d77b0"
+      ],
+      "overlay_hash": "dd35d1818a6975e5a7515e720f488965dff7ff2fcc0681da2f56a30c69154bba",
+      "owned_after": 3264,
+      "owned_before": 3263,
+      "rebased": false,
+      "submitted_revision": "f0508896596e5a5d5e98c5efa4939f251b03983b32f6c6658bdb7fd81e785331"
+    },
+    "state": "accepted",
+    "unit": "RBX::Humanoid",
+    "updated": 1793227686.1424108,
+    "user": "coldek"
+  },
+  {
+    "created": 1793228296.0173154,
+    "id": "344b2aa8b19b45ab815b96f201154276",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/v8world/World.cpp": [
+        [
+          "\tvoid World::removePrimitive(Primitive* p)\n\t{\n\t\tassertNotInStep();\n\t\tRBXASSERT(p->inPipeline());\n\t\tRBXASSERT(p->getWorld());\n\n\t\tdestroyJoints(p);\n\t\tcontactManager->onPrimitiveRemoved(p);\n\t\tjointStage->onPrimitiveRemoving(p);\n\t\tprimitives.fastRemove(p);\n\t\tp->setWorld(NULL);\n\n\t\tRBXASSERT(!p->getFirstEdge());\n\t\tRBXASSERT(p->getNumJoints2() + p->getNumContacts() == 0);\n\t\tassertNotInStep();\n\t\tRBXASSERT(!p->getClump());\n\t\tRBXASSERT(!p->inPipeline());\n\t\tRBXASSERT(!p->getWorld());\n\t}",
+          "\tvoid World::removePrimitive(Primitive* p)\n\t{\n\t\tdestroyJoints(p);\n\t\tcontactManager->onPrimitiveRemoved(p);\n\t\tjointStage->onPrimitiveRemoving(p);\n\t\tprimitives.fastRemove(p);\n\t\tp->setWorld(NULL);\n\t}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "c66a35f2f207e1e5a403a2f17ebb0a48b9260d0641bd0f2fcc96277d0586dec8",
+      "credits": 1,
+      "distinct_after": 9931,
+      "distinct_before": 9930,
+      "gains": [
+        "005ea8b0"
+      ],
+      "input_hash": "186b8e76e92f4c53830f3ee054cceb93c25575b5cc0b8e7e385dc2d32b4bf18f",
+      "losses": [],
+      "new_distinct": [
+        "005ea8b0"
+      ],
+      "overlay_hash": "221cbeeba762d05ad1d13df89421f75672ceac32ac7a89a1523f97a0576ae50e",
+      "owned_after": 3265,
+      "owned_before": 3264,
+      "rebased": false,
+      "submitted_revision": "c66a35f2f207e1e5a403a2f17ebb0a48b9260d0641bd0f2fcc96277d0586dec8"
+    },
+    "state": "accepted",
+    "unit": "RBX::World",
+    "updated": 1793228542.6221244,
+    "user": "coldek"
+  },
+  {
+    "created": 1793228780.5116806,
+    "id": "f7fd485a099648db9e15067a73a53a99",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/include/gui/GuiEvent.h": [
+        [
+          "\t\tGuiResponse(ResponseType response)\n\t\t\t: response(response),\n\t\t\t  target(NULL)\n\t\t{\n\t\t}",
+          "\t\tGuiResponse(ResponseType response)\n\t\t{\n\t\t\ttarget = NULL;\n\t\t\tthis->response = response;\n\t\t}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false,
+      "baseline_revision": "10d16d1b657a9d7051107e43636fc42c64eb56a62d505788a3f9cadaad1d6d4f",
+      "gains": [
+        "00642210"
+      ],
+      "input_hash": "f9694e3dc1671a02d2090906ad90d534afdd8da4f83bf4baca1e95b3f82a840b",
+      "losses": [
+        "00574980",
+        "00574b10"
+      ],
+      "submitted_revision": "10d16d1b657a9d7051107e43636fc42c64eb56a62d505788a3f9cadaad1d6d4f"
+    },
+    "state": "rejected",
+    "unit": "RBX::PartInstance",
+    "updated": 1793229183.8872244,
     "user": "coldek"
   }
 ]

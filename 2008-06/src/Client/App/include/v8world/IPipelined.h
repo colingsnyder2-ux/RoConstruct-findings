@@ -64,6 +64,20 @@ namespace RBX
 		Kernel* getKernel() const;
 		virtual void putInKernel(Kernel* kernel);
 		virtual void removeFromKernel();
+		World* getWorld2008()
+		{
+			if (!currentStage)
+				return NULL;
+
+			IStage* upstream;
+			if (currentStage->getStageType() != (IStage::StageType)7)
+				upstream = currentStage;
+			else
+				upstream = currentStage->getUpstream();
+
+			return rbx_static_cast<IWorldStage*>(upstream)->getWorld();
+		}
+
 		World* getWorld()
 		{
 			if (!currentStage)

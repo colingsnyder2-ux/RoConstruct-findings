@@ -1645,6 +1645,48 @@
         ]
       },
       "timestamp": 1793225963.59465
+    },
+    {
+      "job": "6126a57c3afd4038b5ea48c67f94c72c",
+      "patches": {
+        "App/include/v8world/IPipelined.h": [
+          [
+            "\t\tWorld* getWorld()\n\t\t{",
+            "\t\tWorld* getWorld2008()\n\t\t{\n\t\t\tif (!currentStage)\n\t\t\t\treturn NULL;\n\n\t\t\tIStage* upstream;\n\t\t\tif (currentStage->getStageType() != (IStage::StageType)7)\n\t\t\t\tupstream = currentStage;\n\t\t\telse\n\t\t\t\tupstream = currentStage->getUpstream();\n\n\t\t\treturn rbx_static_cast<IWorldStage*>(upstream)->getWorld();\n\t\t}\n\n\t\tWorld* getWorld()\n\t\t{"
+          ]
+        ],
+        "App/v8world/Joint.cpp": [
+          [
+            "\t\t\tWorld* world = getWorld();\n\t\t\tif (world)",
+            "\t\t\tWorld* world = getWorld2008();\n\t\t\tif (world)"
+          ]
+        ]
+      },
+      "timestamp": 1793226766.2524686
+    },
+    {
+      "job": "1bef0f0fe4be4bb3bdae0375ace125c4",
+      "patches": {
+        "App/humanoid/Humanoid.cpp": [
+          [
+            "\tContactManager* Humanoid::getContactManager()\n\t{\n\t\tWorld* world = Workspace::getWorldIfInWorkspace(this);\n\t\treturn world ? &world->getContactManager() : NULL;\n\t}",
+            "\tContactManager* Humanoid::getContactManager()\n\t{\n\t\treturn world ? &world->getContactManager() : NULL;\n\t}"
+          ]
+        ]
+      },
+      "timestamp": 1793227686.0107932
+    },
+    {
+      "job": "344b2aa8b19b45ab815b96f201154276",
+      "patches": {
+        "App/v8world/World.cpp": [
+          [
+            "\tvoid World::removePrimitive(Primitive* p)\n\t{\n\t\tassertNotInStep();\n\t\tRBXASSERT(p->inPipeline());\n\t\tRBXASSERT(p->getWorld());\n\n\t\tdestroyJoints(p);\n\t\tcontactManager->onPrimitiveRemoved(p);\n\t\tjointStage->onPrimitiveRemoving(p);\n\t\tprimitives.fastRemove(p);\n\t\tp->setWorld(NULL);\n\n\t\tRBXASSERT(!p->getFirstEdge());\n\t\tRBXASSERT(p->getNumJoints2() + p->getNumContacts() == 0);\n\t\tassertNotInStep();\n\t\tRBXASSERT(!p->getClump());\n\t\tRBXASSERT(!p->inPipeline());\n\t\tRBXASSERT(!p->getWorld());\n\t}",
+            "\tvoid World::removePrimitive(Primitive* p)\n\t{\n\t\tdestroyJoints(p);\n\t\tcontactManager->onPrimitiveRemoved(p);\n\t\tjointStage->onPrimitiveRemoving(p);\n\t\tprimitives.fastRemove(p);\n\t\tp->setWorld(NULL);\n\t}"
+          ]
+        ]
+      },
+      "timestamp": 1793228542.4819212
     }
   ],
   "initial_patches": {}

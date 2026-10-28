@@ -1,5 +1,5 @@
-// from server: 91% by colin
-// Complete 0x51b-byte OnReceive extent.
+// from server: 100% by EspClaude
+// true extent: 0x51b bytes (server extent 0x19d)
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
@@ -170,7 +170,10 @@ struct ItemList {
     void push_back(const ItemPtr&);
 };
 
-class Replicator : public InstanceBase, public Reflection::DescribedBase, public PluginInterface {
+class ReplicatorBase : public PluginInterface {
+public:
+    ReplicatorBase& self() { return *this; }
+public:
     char pad0[0x38];
     ClassDictionarySender classNamesOut;     // +0x3c
     ClassDictionaryReceiver classNamesIn;    // +0x60
@@ -189,6 +192,9 @@ public:
     bool disconnected;                       // +0x1d9
     RakPeerInterface* peer;                  // +0x1dc
     const SystemAddress remotePlayerId;      // +0x1e0
+};
+class Replicator : public InstanceBase, public Reflection::DescribedBase, public ReplicatorBase {
+public:
 
     static Reflection::SignalDesc<Replicator, void(std::string, bool)> event_Disconnection;
 
@@ -211,8 +217,9 @@ private:
 
 PluginReceiveResult Replicator::OnReceive(RakPeerInterface* peer, Packet* packet)
 {
-    const SystemAddress& remote = remotePlayerId;
-    if (packet->systemAddress == remote)
+    ReplicatorBase& base = self();
+    bool same = packet->systemAddress == remotePlayerId;
+    if (same)
     {
         Profiling::Mark mark(*profileDataIn, false);
         try
@@ -224,7 +231,13 @@ PluginReceiveResult Replicator::OnReceive(RakPeerInterface* peer, Packet* packet
 
             case ID_CONNECTION_REQUEST_ACCEPTED_:
             case ID_NEW_INCOMING_CONNECTION_:
-                sendDictionaries(peer);
+                {
+                    RakNet::BitStream bitStream;
+                    bitStream << (unsigned char)ID_DICTIONARIES;
+                    classNamesOut.send(bitStream);
+                    propNamesOut.send(bitStream);
+                    peer->Send(&bitStream, MEDIUM_PRIORITY, RELIABLE_ORDERED, 0, remotePlayerId, false);
+                }
                 break;
 
             case ID_DICTIONARIES:
@@ -286,7 +299,7 @@ PluginReceiveResult Replicator::OnReceive(RakPeerInterface* peer, Packet* packet
         }
         catch (std::exception& e)
         {
-            disconnected = true;
+            base.disconnected = true;
             const char* what = safeWhat(e);
             standardOut()->print(MESSAGE_ERROR, "Replicator::OnReceive packet %d: %s", packet->data[0], what);
             return RR_STOP_PROCESSING_AND_DEALLOCATE;

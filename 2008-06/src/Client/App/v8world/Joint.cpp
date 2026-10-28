@@ -68,7 +68,7 @@ namespace RBX
 			else
 				jointCoord1 = c;
 
-			World* world = getWorld();
+			World* world = getWorld2008();
 			if (world)
 			{
 				world->removeJoint(this);

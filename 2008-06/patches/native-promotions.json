@@ -1468,5 +1468,35 @@
     "\t\t\twhile (count < 3)\n\t\t\t{\n\t\t\t\tG3D::Vector3 cross = m0Column.cross(*vector);\n\t\t\t\tif (sqrtf(cross.z * cross.z + cross.y * cross.y + cross.x * cross.x) < radTolerance)\n\t\t\t\t\tbreak;"
    ]
   ]
+ },
+ {
+  "App/include/v8world/IPipelined.h": [
+   [
+    "\t\tWorld* getWorld()\n\t\t{",
+    "\t\tWorld* getWorld2008()\n\t\t{\n\t\t\tif (!currentStage)\n\t\t\t\treturn NULL;\n\n\t\t\tIStage* upstream;\n\t\t\tif (currentStage->getStageType() != (IStage::StageType)7)\n\t\t\t\tupstream = currentStage;\n\t\t\telse\n\t\t\t\tupstream = currentStage->getUpstream();\n\n\t\t\treturn rbx_static_cast<IWorldStage*>(upstream)->getWorld();\n\t\t}\n\n\t\tWorld* getWorld()\n\t\t{"
+   ]
+  ],
+  "App/v8world/Joint.cpp": [
+   [
+    "\t\t\tWorld* world = getWorld();\n\t\t\tif (world)",
+    "\t\t\tWorld* world = getWorld2008();\n\t\t\tif (world)"
+   ]
+  ]
+ },
+ {
+  "App/humanoid/Humanoid.cpp": [
+   [
+    "\tContactManager* Humanoid::getContactManager()\n\t{\n\t\tWorld* world = Workspace::getWorldIfInWorkspace(this);\n\t\treturn world ? &world->getContactManager() : NULL;\n\t}",
+    "\tContactManager* Humanoid::getContactManager()\n\t{\n\t\treturn world ? &world->getContactManager() : NULL;\n\t}"
+   ]
+  ]
+ },
+ {
+  "App/v8world/World.cpp": [
+   [
+    "\tvoid World::removePrimitive(Primitive* p)\n\t{\n\t\tassertNotInStep();\n\t\tRBXASSERT(p->inPipeline());\n\t\tRBXASSERT(p->getWorld());\n\n\t\tdestroyJoints(p);\n\t\tcontactManager->onPrimitiveRemoved(p);\n\t\tjointStage->onPrimitiveRemoving(p);\n\t\tprimitives.fastRemove(p);\n\t\tp->setWorld(NULL);\n\n\t\tRBXASSERT(!p->getFirstEdge());\n\t\tRBXASSERT(p->getNumJoints2() + p->getNumContacts() == 0);\n\t\tassertNotInStep();\n\t\tRBXASSERT(!p->getClump());\n\t\tRBXASSERT(!p->inPipeline());\n\t\tRBXASSERT(!p->getWorld());\n\t}",
+    "\tvoid World::removePrimitive(Primitive* p)\n\t{\n\t\tdestroyJoints(p);\n\t\tcontactManager->onPrimitiveRemoved(p);\n\t\tjointStage->onPrimitiveRemoving(p);\n\t\tprimitives.fastRemove(p);\n\t\tp->setWorld(NULL);\n\t}"
+   ]
+  ]
  }
 ]

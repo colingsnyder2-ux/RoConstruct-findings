@@ -1,4 +1,4 @@
-// from server: 96% by EspClaude
+// from server: 97% by coldek
 // from server: 81% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
@@ -249,7 +249,7 @@ void RbxEntity::method67daf0(Camera* camera) {
         sample.value[0]=-1.0f;
         for(int k=1;k<5;++k) sample.value[k]=-1.0f;
         history()->append(sample);
-        ShadowHistoryRecord& last=history()->previous(0);
+        ShadowHistoryRecord& last=static_cast<ShadowHistoryView*>(field274)->previous(0);
         last.value[1]=order.size();
         last.value[2]=selected;
     }

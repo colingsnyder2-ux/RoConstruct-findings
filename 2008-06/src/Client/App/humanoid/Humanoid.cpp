@@ -66,7 +66,6 @@ namespace RBX
 
 	ContactManager* Humanoid::getContactManager()
 	{
-		World* world = Workspace::getWorldIfInWorkspace(this);
 		return world ? &world->getContactManager() : NULL;
 	}
 

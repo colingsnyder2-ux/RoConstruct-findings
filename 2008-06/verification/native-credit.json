@@ -1127,6 +1127,13 @@
     "user": "colin"
   },
   {
+    "addr": "005d77b0",
+    "client": "2008-06",
+    "job": "1bef0f0fe4be4bb3bdae0375ace125c4",
+    "model": "deepseek-v4.1-flash",
+    "user": "coldek"
+  },
+  {
     "addr": "005d91a0",
     "client": "2008-06",
     "job": "ae59330ca7914e1caae5836cc55500e4",
@@ -1487,6 +1494,13 @@
     "addr": "005ea880",
     "client": "2008-06",
     "job": "29c85cb76c6d49faa66d060a542d4de5",
+    "model": "deepseek-v4.1-flash",
+    "user": "coldek"
+  },
+  {
+    "addr": "005ea8b0",
+    "client": "2008-06",
+    "job": "344b2aa8b19b45ab815b96f201154276",
     "model": "deepseek-v4.1-flash",
     "user": "coldek"
   },
@@ -1986,6 +2000,13 @@
     "job": "981c606609864414b2c608ce100c68ef",
     "model": "Claude Opus 5.5",
     "user": "colin"
+  },
+  {
+    "addr": "00645750",
+    "client": "2008-06",
+    "job": "6126a57c3afd4038b5ea48c67f94c72c",
+    "model": "deepseek-v4.1-flash",
+    "user": "coldek"
   },
   {
     "addr": "00646af0",

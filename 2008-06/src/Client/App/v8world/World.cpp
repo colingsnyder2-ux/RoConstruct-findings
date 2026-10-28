@@ -299,22 +299,11 @@ namespace RBX
 
 	void World::removePrimitive(Primitive* p)
 	{
-		assertNotInStep();
-		RBXASSERT(p->inPipeline());
-		RBXASSERT(p->getWorld());
-
 		destroyJoints(p);
 		contactManager->onPrimitiveRemoved(p);
 		jointStage->onPrimitiveRemoving(p);
 		primitives.fastRemove(p);
 		p->setWorld(NULL);
-
-		RBXASSERT(!p->getFirstEdge());
-		RBXASSERT(p->getNumJoints2() + p->getNumContacts() == 0);
-		assertNotInStep();
-		RBXASSERT(!p->getClump());
-		RBXASSERT(!p->inPipeline());
-		RBXASSERT(!p->getWorld());
 	}
 
 	void World::insertPrimitive(Primitive* p)

@@ -1,8 +1,8 @@
-// from server: 77% by EspClaude
+// from server: 80% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espclaude_487da884baa21855.cpp
+// roc-lib: rbxgs-dll roc_espclaude_c289767b7efee59d.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <G3D/ReferenceCount.h>
@@ -114,6 +114,12 @@ public:
 class Mesh : public G3D::ReferenceCountedObject {};
 }
 typedef G3D::ReferenceCountedPointer<RenderBase::MaterialBase> PartMaterialRef;
+}
+namespace G3D { template<> __forceinline ReferenceCountedPointer<RBX::RenderBase::MaterialBase>& ReferenceCountedPointer<RBX::RenderBase::MaterialBase>::operator=(RBX::RenderBase::MaterialBase* p) { setPointer(p); return *this; } }
+namespace RBX {
+}
+namespace G3D { template<> __forceinline ReferenceCountedPointer<RBX::RenderBase::MaterialBase>::ReferenceCountedPointer(const ReferenceCountedPointer<RBX::RenderBase::MaterialBase>& p) : m_pointer(NULL) { setPointer(p.m_pointer); } }
+namespace RBX {
 class PartMaterialFactory {
 public:
     struct Attributes {
