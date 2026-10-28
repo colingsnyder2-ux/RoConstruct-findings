@@ -1,345 +1,59 @@
-// from server: 66% by king_originala
+// from server: 100% by king_originala
+// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// Complete732-byte About dialog data-exchange callback, ret4.
-// Minimal transport views name measured roles; this is a codegen analog.
-// Target still differs in CRT call inlining and temporary placement; partial only.
-// MFC90 ordinals verified against pinned intel/mfc90.def; native COM interfaces below.
-// IHTMLStyle/IHTMLElement declarations transcribed from Microsoft Win32 SDK MsHTML.h.
-// https://github.com/microsoft/win32metadata/blob/main/generation/WinSDK/RecompiledIdlHeaders/um/MsHTML.h
-// Reference SHA256: 9c725b535e1111d55592a9e2129c926a5e9fef4fee8025793786708b8cf3dfc5
+// roc-lib: xtp-11.2.2-lib-strlen roc_about_native_dhtml_html_79ce9ad77dc69b53.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <XTToolkitPro.h>
+#include <afxdhtml.h>
+#include <afxpriv.h>
 #include <string>
-typedef long HRESULT;typedef long LONG;typedef unsigned long ULONG;typedef unsigned long LCID;typedef unsigned int UINT;typedef long DISPID;typedef wchar_t*BSTR;typedef short VARIANT_BOOL;
-struct GUID;typedef const GUID&REFIID;struct VARIANT;struct ITypeInfo;struct DISPPARAMS;struct EXCEPINFO;
-struct IUnknown {virtual HRESULT __stdcall QueryInterface(REFIID,void**)=0;virtual ULONG __stdcall AddRef()=0;virtual ULONG __stdcall Release()=0;};
-struct IDispatch:IUnknown {virtual HRESULT __stdcall GetTypeInfoCount(UINT*)=0;virtual HRESULT __stdcall GetTypeInfo(UINT,LCID,ITypeInfo**)=0;virtual HRESULT __stdcall GetIDsOfNames(REFIID,wchar_t**,UINT,LCID,DISPID*)=0;virtual HRESULT __stdcall Invoke(DISPID,REFIID,LCID,unsigned short,DISPPARAMS*,VARIANT*,EXCEPINFO*,UINT*)=0;};
-extern "C" __declspec(dllimport) void __stdcall SysFreeString(BSTR);
-struct IHTMLStyle;struct IHTMLElement;struct IHTMLElementCollection;struct IHTMLFiltersCollection;
-struct IHTMLStyle:IDispatch {
-virtual HRESULT __stdcall put_fontFamily(BSTR v)=0;
-virtual HRESULT __stdcall get_fontFamily(BSTR *p)=0;
-virtual HRESULT __stdcall put_fontStyle(BSTR v)=0;
-virtual HRESULT __stdcall get_fontStyle(BSTR *p)=0;
-virtual HRESULT __stdcall put_fontVariant(BSTR v)=0;
-virtual HRESULT __stdcall get_fontVariant(BSTR *p)=0;
-virtual HRESULT __stdcall put_fontWeight(BSTR v)=0;
-virtual HRESULT __stdcall get_fontWeight(BSTR *p)=0;
-virtual HRESULT __stdcall put_fontSize(VARIANT v)=0;
-virtual HRESULT __stdcall get_fontSize(VARIANT *p)=0;
-virtual HRESULT __stdcall put_font(BSTR v)=0;
-virtual HRESULT __stdcall get_font(BSTR *p)=0;
-virtual HRESULT __stdcall put_color(VARIANT v)=0;
-virtual HRESULT __stdcall get_color(VARIANT *p)=0;
-virtual HRESULT __stdcall put_background(BSTR v)=0;
-virtual HRESULT __stdcall get_background(BSTR *p)=0;
-virtual HRESULT __stdcall put_backgroundColor(VARIANT v)=0;
-virtual HRESULT __stdcall get_backgroundColor(VARIANT *p)=0;
-virtual HRESULT __stdcall put_backgroundImage(BSTR v)=0;
-virtual HRESULT __stdcall get_backgroundImage(BSTR *p)=0;
-virtual HRESULT __stdcall put_backgroundRepeat(BSTR v)=0;
-virtual HRESULT __stdcall get_backgroundRepeat(BSTR *p)=0;
-virtual HRESULT __stdcall put_backgroundAttachment(BSTR v)=0;
-virtual HRESULT __stdcall get_backgroundAttachment(BSTR *p)=0;
-virtual HRESULT __stdcall put_backgroundPosition(BSTR v)=0;
-virtual HRESULT __stdcall get_backgroundPosition(BSTR *p)=0;
-virtual HRESULT __stdcall put_backgroundPositionX(VARIANT v)=0;
-virtual HRESULT __stdcall get_backgroundPositionX(VARIANT *p)=0;
-virtual HRESULT __stdcall put_backgroundPositionY(VARIANT v)=0;
-virtual HRESULT __stdcall get_backgroundPositionY(VARIANT *p)=0;
-virtual HRESULT __stdcall put_wordSpacing(VARIANT v)=0;
-virtual HRESULT __stdcall get_wordSpacing(VARIANT *p)=0;
-virtual HRESULT __stdcall put_letterSpacing(VARIANT v)=0;
-virtual HRESULT __stdcall get_letterSpacing(VARIANT *p)=0;
-virtual HRESULT __stdcall put_textDecoration(BSTR v)=0;
-virtual HRESULT __stdcall get_textDecoration(BSTR *p)=0;
-virtual HRESULT __stdcall put_textDecorationNone(VARIANT_BOOL v)=0;
-virtual HRESULT __stdcall get_textDecorationNone(VARIANT_BOOL *p)=0;
-virtual HRESULT __stdcall put_textDecorationUnderline(VARIANT_BOOL v)=0;
-virtual HRESULT __stdcall get_textDecorationUnderline(VARIANT_BOOL *p)=0;
-virtual HRESULT __stdcall put_textDecorationOverline(VARIANT_BOOL v)=0;
-virtual HRESULT __stdcall get_textDecorationOverline(VARIANT_BOOL *p)=0;
-virtual HRESULT __stdcall put_textDecorationLineThrough(VARIANT_BOOL v)=0;
-virtual HRESULT __stdcall get_textDecorationLineThrough(VARIANT_BOOL *p)=0;
-virtual HRESULT __stdcall put_textDecorationBlink(VARIANT_BOOL v)=0;
-virtual HRESULT __stdcall get_textDecorationBlink(VARIANT_BOOL *p)=0;
-virtual HRESULT __stdcall put_verticalAlign(VARIANT v)=0;
-virtual HRESULT __stdcall get_verticalAlign(VARIANT *p)=0;
-virtual HRESULT __stdcall put_textTransform(BSTR v)=0;
-virtual HRESULT __stdcall get_textTransform(BSTR *p)=0;
-virtual HRESULT __stdcall put_textAlign(BSTR v)=0;
-virtual HRESULT __stdcall get_textAlign(BSTR *p)=0;
-virtual HRESULT __stdcall put_textIndent(VARIANT v)=0;
-virtual HRESULT __stdcall get_textIndent(VARIANT *p)=0;
-virtual HRESULT __stdcall put_lineHeight(VARIANT v)=0;
-virtual HRESULT __stdcall get_lineHeight(VARIANT *p)=0;
-virtual HRESULT __stdcall put_marginTop(VARIANT v)=0;
-virtual HRESULT __stdcall get_marginTop(VARIANT *p)=0;
-virtual HRESULT __stdcall put_marginRight(VARIANT v)=0;
-virtual HRESULT __stdcall get_marginRight(VARIANT *p)=0;
-virtual HRESULT __stdcall put_marginBottom(VARIANT v)=0;
-virtual HRESULT __stdcall get_marginBottom(VARIANT *p)=0;
-virtual HRESULT __stdcall put_marginLeft(VARIANT v)=0;
-virtual HRESULT __stdcall get_marginLeft(VARIANT *p)=0;
-virtual HRESULT __stdcall put_margin(BSTR v)=0;
-virtual HRESULT __stdcall get_margin(BSTR *p)=0;
-virtual HRESULT __stdcall put_paddingTop(VARIANT v)=0;
-virtual HRESULT __stdcall get_paddingTop(VARIANT *p)=0;
-virtual HRESULT __stdcall put_paddingRight(VARIANT v)=0;
-virtual HRESULT __stdcall get_paddingRight(VARIANT *p)=0;
-virtual HRESULT __stdcall put_paddingBottom(VARIANT v)=0;
-virtual HRESULT __stdcall get_paddingBottom(VARIANT *p)=0;
-virtual HRESULT __stdcall put_paddingLeft(VARIANT v)=0;
-virtual HRESULT __stdcall get_paddingLeft(VARIANT *p)=0;
-virtual HRESULT __stdcall put_padding(BSTR v)=0;
-virtual HRESULT __stdcall get_padding(BSTR *p)=0;
-virtual HRESULT __stdcall put_border(BSTR v)=0;
-virtual HRESULT __stdcall get_border(BSTR *p)=0;
-virtual HRESULT __stdcall put_borderTop(BSTR v)=0;
-virtual HRESULT __stdcall get_borderTop(BSTR *p)=0;
-virtual HRESULT __stdcall put_borderRight(BSTR v)=0;
-virtual HRESULT __stdcall get_borderRight(BSTR *p)=0;
-virtual HRESULT __stdcall put_borderBottom(BSTR v)=0;
-virtual HRESULT __stdcall get_borderBottom(BSTR *p)=0;
-virtual HRESULT __stdcall put_borderLeft(BSTR v)=0;
-virtual HRESULT __stdcall get_borderLeft(BSTR *p)=0;
-virtual HRESULT __stdcall put_borderColor(BSTR v)=0;
-virtual HRESULT __stdcall get_borderColor(BSTR *p)=0;
-virtual HRESULT __stdcall put_borderTopColor(VARIANT v)=0;
-virtual HRESULT __stdcall get_borderTopColor(VARIANT *p)=0;
-virtual HRESULT __stdcall put_borderRightColor(VARIANT v)=0;
-virtual HRESULT __stdcall get_borderRightColor(VARIANT *p)=0;
-virtual HRESULT __stdcall put_borderBottomColor(VARIANT v)=0;
-virtual HRESULT __stdcall get_borderBottomColor(VARIANT *p)=0;
-virtual HRESULT __stdcall put_borderLeftColor(VARIANT v)=0;
-virtual HRESULT __stdcall get_borderLeftColor(VARIANT *p)=0;
-virtual HRESULT __stdcall put_borderWidth(BSTR v)=0;
-virtual HRESULT __stdcall get_borderWidth(BSTR *p)=0;
-virtual HRESULT __stdcall put_borderTopWidth(VARIANT v)=0;
-virtual HRESULT __stdcall get_borderTopWidth(VARIANT *p)=0;
-virtual HRESULT __stdcall put_borderRightWidth(VARIANT v)=0;
-virtual HRESULT __stdcall get_borderRightWidth(VARIANT *p)=0;
-virtual HRESULT __stdcall put_borderBottomWidth(VARIANT v)=0;
-virtual HRESULT __stdcall get_borderBottomWidth(VARIANT *p)=0;
-virtual HRESULT __stdcall put_borderLeftWidth(VARIANT v)=0;
-virtual HRESULT __stdcall get_borderLeftWidth(VARIANT *p)=0;
-virtual HRESULT __stdcall put_borderStyle(BSTR v)=0;
-virtual HRESULT __stdcall get_borderStyle(BSTR *p)=0;
-virtual HRESULT __stdcall put_borderTopStyle(BSTR v)=0;
-virtual HRESULT __stdcall get_borderTopStyle(BSTR *p)=0;
-virtual HRESULT __stdcall put_borderRightStyle(BSTR v)=0;
-virtual HRESULT __stdcall get_borderRightStyle(BSTR *p)=0;
-virtual HRESULT __stdcall put_borderBottomStyle(BSTR v)=0;
-virtual HRESULT __stdcall get_borderBottomStyle(BSTR *p)=0;
-virtual HRESULT __stdcall put_borderLeftStyle(BSTR v)=0;
-virtual HRESULT __stdcall get_borderLeftStyle(BSTR *p)=0;
-virtual HRESULT __stdcall put_width(VARIANT v)=0;
-virtual HRESULT __stdcall get_width(VARIANT *p)=0;
-virtual HRESULT __stdcall put_height(VARIANT v)=0;
-virtual HRESULT __stdcall get_height(VARIANT *p)=0;
-virtual HRESULT __stdcall put_styleFloat(BSTR v)=0;
-virtual HRESULT __stdcall get_styleFloat(BSTR *p)=0;
-virtual HRESULT __stdcall put_clear(BSTR v)=0;
-virtual HRESULT __stdcall get_clear(BSTR *p)=0;
-virtual HRESULT __stdcall put_display(BSTR v)=0;
-virtual HRESULT __stdcall get_display(BSTR *p)=0;
-virtual HRESULT __stdcall put_visibility(BSTR v)=0;
-virtual HRESULT __stdcall get_visibility(BSTR *p)=0;
-virtual HRESULT __stdcall put_listStyleType(BSTR v)=0;
-virtual HRESULT __stdcall get_listStyleType(BSTR *p)=0;
-virtual HRESULT __stdcall put_listStylePosition(BSTR v)=0;
-virtual HRESULT __stdcall get_listStylePosition(BSTR *p)=0;
-virtual HRESULT __stdcall put_listStyleImage(BSTR v)=0;
-virtual HRESULT __stdcall get_listStyleImage(BSTR *p)=0;
-virtual HRESULT __stdcall put_listStyle(BSTR v)=0;
-virtual HRESULT __stdcall get_listStyle(BSTR *p)=0;
-virtual HRESULT __stdcall put_whiteSpace(BSTR v)=0;
-virtual HRESULT __stdcall get_whiteSpace(BSTR *p)=0;
-virtual HRESULT __stdcall put_top(VARIANT v)=0;
-virtual HRESULT __stdcall get_top(VARIANT *p)=0;
-virtual HRESULT __stdcall put_left(VARIANT v)=0;
-virtual HRESULT __stdcall get_left(VARIANT *p)=0;
-virtual HRESULT __stdcall get_position(BSTR *p)=0;
-virtual HRESULT __stdcall put_zIndex(VARIANT v)=0;
-virtual HRESULT __stdcall get_zIndex(VARIANT *p)=0;
-virtual HRESULT __stdcall put_overflow(BSTR v)=0;
-virtual HRESULT __stdcall get_overflow(BSTR *p)=0;
-virtual HRESULT __stdcall put_pageBreakBefore(BSTR v)=0;
-virtual HRESULT __stdcall get_pageBreakBefore(BSTR *p)=0;
-virtual HRESULT __stdcall put_pageBreakAfter(BSTR v)=0;
-virtual HRESULT __stdcall get_pageBreakAfter(BSTR *p)=0;
-virtual HRESULT __stdcall put_cssText(BSTR v)=0;
-virtual HRESULT __stdcall get_cssText(BSTR *p)=0;
-virtual HRESULT __stdcall put_pixelTop(long v)=0;
-virtual HRESULT __stdcall get_pixelTop(long *p)=0;
-virtual HRESULT __stdcall put_pixelLeft(long v)=0;
-virtual HRESULT __stdcall get_pixelLeft(long *p)=0;
-virtual HRESULT __stdcall put_pixelWidth(long v)=0;
-virtual HRESULT __stdcall get_pixelWidth(long *p)=0;
-virtual HRESULT __stdcall put_pixelHeight(long v)=0;
-virtual HRESULT __stdcall get_pixelHeight(long *p)=0;
-virtual HRESULT __stdcall put_posTop(float v)=0;
-virtual HRESULT __stdcall get_posTop(float *p)=0;
-virtual HRESULT __stdcall put_posLeft(float v)=0;
-virtual HRESULT __stdcall get_posLeft(float *p)=0;
-virtual HRESULT __stdcall put_posWidth(float v)=0;
-virtual HRESULT __stdcall get_posWidth(float *p)=0;
-virtual HRESULT __stdcall put_posHeight(float v)=0;
-virtual HRESULT __stdcall get_posHeight(float *p)=0;
-virtual HRESULT __stdcall put_cursor(BSTR v)=0;
-virtual HRESULT __stdcall get_cursor(BSTR *p)=0;
-virtual HRESULT __stdcall put_clip(BSTR v)=0;
-virtual HRESULT __stdcall get_clip(BSTR *p)=0;
-virtual HRESULT __stdcall put_filter(BSTR v)=0;
-virtual HRESULT __stdcall get_filter(BSTR *p)=0;
-virtual HRESULT __stdcall setAttribute(BSTR strAttributeName, VARIANT AttributeValue, LONG lFlags = 1)=0;
-virtual HRESULT __stdcall getAttribute(BSTR strAttributeName, LONG lFlags, VARIANT *AttributeValue)=0;
-virtual HRESULT __stdcall removeAttribute(BSTR strAttributeName, LONG lFlags, VARIANT_BOOL *pfSuccess)=0;
-virtual HRESULT __stdcall toString(BSTR *String)=0;
+#include <gl/gl.h>
+// Native exact0046a200 establishes this external file-version object's20B
+// member layout. Its constructor, Create and destructor stay external.
+class FileVersionInfo {
+ WORD language,codePage;LPBYTE versionData;LPVOID translation;UINT translations;VS_FIXEDFILEINFO* fixedInfo;
+ public: FileVersionInfo();~FileVersionInfo();BOOL Create(const CString&);CString productVersion()const;
 };
-struct IHTMLElement:IDispatch {
-virtual HRESULT __stdcall setAttribute(BSTR strAttributeName, VARIANT AttributeValue, LONG lFlags = 1)=0;
-virtual HRESULT __stdcall getAttribute(BSTR strAttributeName, LONG lFlags, VARIANT *AttributeValue)=0;
-virtual HRESULT __stdcall removeAttribute(BSTR strAttributeName, LONG lFlags, VARIANT_BOOL *pfSuccess)=0;
-virtual HRESULT __stdcall put_className(BSTR v)=0;
-virtual HRESULT __stdcall get_className(BSTR *p)=0;
-virtual HRESULT __stdcall put_id(BSTR v)=0;
-virtual HRESULT __stdcall get_id(BSTR *p)=0;
-virtual HRESULT __stdcall get_tagName(BSTR *p)=0;
-virtual HRESULT __stdcall get_parentElement(IHTMLElement **p)=0;
-virtual HRESULT __stdcall get_style(IHTMLStyle **p)=0;
-virtual HRESULT __stdcall put_onhelp(VARIANT v)=0;
-virtual HRESULT __stdcall get_onhelp(VARIANT *p)=0;
-virtual HRESULT __stdcall put_onclick(VARIANT v)=0;
-virtual HRESULT __stdcall get_onclick(VARIANT *p)=0;
-virtual HRESULT __stdcall put_ondblclick(VARIANT v)=0;
-virtual HRESULT __stdcall get_ondblclick(VARIANT *p)=0;
-virtual HRESULT __stdcall put_onkeydown(VARIANT v)=0;
-virtual HRESULT __stdcall get_onkeydown(VARIANT *p)=0;
-virtual HRESULT __stdcall put_onkeyup(VARIANT v)=0;
-virtual HRESULT __stdcall get_onkeyup(VARIANT *p)=0;
-virtual HRESULT __stdcall put_onkeypress(VARIANT v)=0;
-virtual HRESULT __stdcall get_onkeypress(VARIANT *p)=0;
-virtual HRESULT __stdcall put_onmouseout(VARIANT v)=0;
-virtual HRESULT __stdcall get_onmouseout(VARIANT *p)=0;
-virtual HRESULT __stdcall put_onmouseover(VARIANT v)=0;
-virtual HRESULT __stdcall get_onmouseover(VARIANT *p)=0;
-virtual HRESULT __stdcall put_onmousemove(VARIANT v)=0;
-virtual HRESULT __stdcall get_onmousemove(VARIANT *p)=0;
-virtual HRESULT __stdcall put_onmousedown(VARIANT v)=0;
-virtual HRESULT __stdcall get_onmousedown(VARIANT *p)=0;
-virtual HRESULT __stdcall put_onmouseup(VARIANT v)=0;
-virtual HRESULT __stdcall get_onmouseup(VARIANT *p)=0;
-virtual HRESULT __stdcall get_document(IDispatch **p)=0;
-virtual HRESULT __stdcall put_title(BSTR v)=0;
-virtual HRESULT __stdcall get_title(BSTR *p)=0;
-virtual HRESULT __stdcall put_language(BSTR v)=0;
-virtual HRESULT __stdcall get_language(BSTR *p)=0;
-virtual HRESULT __stdcall put_onselectstart(VARIANT v)=0;
-virtual HRESULT __stdcall get_onselectstart(VARIANT *p)=0;
-virtual HRESULT __stdcall scrollIntoView(VARIANT varargStart)=0;
-virtual HRESULT __stdcall contains(IHTMLElement *pChild, VARIANT_BOOL *pfResult)=0;
-virtual HRESULT __stdcall get_sourceIndex(long *p)=0;
-virtual HRESULT __stdcall get_recordNumber(VARIANT *p)=0;
-virtual HRESULT __stdcall put_lang(BSTR v)=0;
-virtual HRESULT __stdcall get_lang(BSTR *p)=0;
-virtual HRESULT __stdcall get_offsetLeft(long *p)=0;
-virtual HRESULT __stdcall get_offsetTop(long *p)=0;
-virtual HRESULT __stdcall get_offsetWidth(long *p)=0;
-virtual HRESULT __stdcall get_offsetHeight(long *p)=0;
-virtual HRESULT __stdcall get_offsetParent(IHTMLElement **p)=0;
-virtual HRESULT __stdcall put_innerHTML(BSTR v)=0;
-virtual HRESULT __stdcall get_innerHTML(BSTR *p)=0;
-virtual HRESULT __stdcall put_innerText(BSTR v)=0;
-virtual HRESULT __stdcall get_innerText(BSTR *p)=0;
-virtual HRESULT __stdcall put_outerHTML(BSTR v)=0;
-virtual HRESULT __stdcall get_outerHTML(BSTR *p)=0;
-virtual HRESULT __stdcall put_outerText(BSTR v)=0;
-virtual HRESULT __stdcall get_outerText(BSTR *p)=0;
-virtual HRESULT __stdcall insertAdjacentHTML(BSTR where, BSTR html)=0;
-virtual HRESULT __stdcall insertAdjacentText(BSTR where, BSTR text)=0;
-virtual HRESULT __stdcall get_parentTextEdit(IHTMLElement **p)=0;
-virtual HRESULT __stdcall get_isTextEdit(VARIANT_BOOL *p)=0;
-virtual HRESULT __stdcall click(void)=0;
-virtual HRESULT __stdcall get_filters(IHTMLFiltersCollection **p)=0;
-virtual HRESULT __stdcall put_ondragstart(VARIANT v)=0;
-virtual HRESULT __stdcall get_ondragstart(VARIANT *p)=0;
-virtual HRESULT __stdcall toString(BSTR *String)=0;
-virtual HRESULT __stdcall put_onbeforeupdate(VARIANT v)=0;
-virtual HRESULT __stdcall get_onbeforeupdate(VARIANT *p)=0;
-virtual HRESULT __stdcall put_onafterupdate(VARIANT v)=0;
-virtual HRESULT __stdcall get_onafterupdate(VARIANT *p)=0;
-virtual HRESULT __stdcall put_onerrorupdate(VARIANT v)=0;
-virtual HRESULT __stdcall get_onerrorupdate(VARIANT *p)=0;
-virtual HRESULT __stdcall put_onrowexit(VARIANT v)=0;
-virtual HRESULT __stdcall get_onrowexit(VARIANT *p)=0;
-virtual HRESULT __stdcall put_onrowenter(VARIANT v)=0;
-virtual HRESULT __stdcall get_onrowenter(VARIANT *p)=0;
-virtual HRESULT __stdcall put_ondatasetchanged(VARIANT v)=0;
-virtual HRESULT __stdcall get_ondatasetchanged(VARIANT *p)=0;
-virtual HRESULT __stdcall put_ondataavailable(VARIANT v)=0;
-virtual HRESULT __stdcall get_ondataavailable(VARIANT *p)=0;
-virtual HRESULT __stdcall put_ondatasetcomplete(VARIANT v)=0;
-virtual HRESULT __stdcall get_ondatasetcomplete(VARIANT *p)=0;
-virtual HRESULT __stdcall put_onfilterchange(VARIANT v)=0;
-virtual HRESULT __stdcall get_onfilterchange(VARIANT *p)=0;
-virtual HRESULT __stdcall get_children(IDispatch **p)=0;
-virtual HRESULT __stdcall get_all(IDispatch **p)=0;
-};
-struct __declspec(dllimport) CString {
- char*data;CString()throw();CString(const char*);~CString()throw();
-};
-// Prefix view: only native CDataExchange::m_bSaveAndValidate is accessed.
-struct CDataExchange {int m_bSaveAndValidate;};
-struct Application {char opaque[0x44];void*m_hInstance;};
-struct ModuleState {char nativeBase[4];Application*m_pCurrentWinApp;};
-ModuleState*__stdcall AfxGetModuleState();
-void __stdcall AfxGetModuleShortFileName(void*,CString&);
-extern "C" __declspec(dllimport) const unsigned char*__stdcall glGetString(unsigned);
-struct FileVersionInfo {
- unsigned short language,codePage;unsigned char*versionData;void*translation;unsigned translations;void*fixedInfo;
- FileVersionInfo();~FileVersionInfo();int Create(const CString&);CString productVersion()const;
-};
+typedef char VersionExtent[(sizeof(FileVersionInfo)==20)?1:-1];
 void __cdecl systemDescription(std::string&);
-const std::string&__cdecl glVersion();
-const std::string&__cdecl driverVersion();
-const std::string&__cdecl vendor();
-const std::string&__cdecl renderer();
-template<class T>struct ComPtr {T*p;ComPtr():p(0){}~ComPtr(){if(p)p->Release();}T**operator&(){return &p;}T*operator->()const{return p;}};
-struct ComBstr {BSTR str;ComBstr(const char*);~ComBstr(){SysFreeString(str);}operator BSTR()const{return str;}};
-struct AboutDialog {
- void DDX_DHtml_ElementText(CDataExchange*,const char*,long,CString&);
- long GetElement(const char*,IHTMLElement**);
- void DoDataExchange(CDataExchange*);
-};
-void AboutDialog::DoDataExchange(CDataExchange*pDX){
- if(!pDX->m_bSaveAndValidate){
+const std::string& __cdecl glVersion();
+const std::string& __cdecl driverVersion();
+const std::string& __cdecl vendor();
+const std::string& __cdecl renderer();
+// Target imports the native CRT member through IAT802464.
+extern const char* (__thiscall* native_c_str)(const std::string*);
+// RTTI confirms CDHtmlDialog primary base at0. This method uses no unknown
+// CRobloxDHtmlDialog fields and does not allocate the complete dialog.
+class AboutDialogEntry:public CDHtmlDialog {public:virtual void DoDataExchange(CDataExchange*);};
+void AboutDialogEntry::DoDataExchange(CDataExchange* pDX) {
+ if(!pDX->m_bSaveAndValidate) {
   FileVersionInfo version;
   CString filename;
-  AfxGetModuleShortFileName(AfxGetModuleState()->m_pCurrentWinApp->m_hInstance,filename);
+  AfxGetModuleShortFileName(AfxGetApp()->m_hInstance,filename);
   version.Create(filename);
   CString product=version.productVersion();
-  DDX_DHtml_ElementText(pDX,"Version",(long)0x80010402,product);
+  DDX_DHtml_ElementText(pDX,"Version",DISPID_IHTMLELEMENT_INNERHTML,product);
   std::string info;
   systemDescription(info);
-  DDX_DHtml_ElementText(pDX,"systemInfo",(long)0x80010402,CString(info.c_str()));
-  if(glGetString(0x1f00)){
-   CString gl=glVersion().c_str();
-   DDX_DHtml_ElementText(pDX,"glVersion",(long)0x80010402,gl);
-   CString driver=driverVersion().c_str();
-   DDX_DHtml_ElementText(pDX,"driverVersion",(long)0x80010402,driver);
-   CString vendorText=vendor().c_str();
-   DDX_DHtml_ElementText(pDX,"vendor",(long)0x80010402,vendorText);
-   CString rendererText=renderer().c_str();
-   DDX_DHtml_ElementText(pDX,"renderer",(long)0x80010402,rendererText);
-  }else{
-   ComPtr<IHTMLElement>element;
-   if(GetElement("glInfo",&element)==0){
-    ComPtr<IHTMLStyle>style;
+  DDX_DHtml_ElementText(pDX,"systemInfo",DISPID_IHTMLELEMENT_INNERHTML,CString(native_c_str(&info)));
+  if(glGetString(GL_VENDOR)) {
+   CString gl=native_c_str(&glVersion());
+   DDX_DHtml_ElementText(pDX,"glVersion",DISPID_IHTMLELEMENT_INNERHTML,gl);
+   CString driver=native_c_str(&driverVersion());
+   DDX_DHtml_ElementText(pDX,"driverVersion",DISPID_IHTMLELEMENT_INNERHTML,driver);
+   CString vendorText=native_c_str(&vendor());
+   DDX_DHtml_ElementText(pDX,"vendor",DISPID_IHTMLELEMENT_INNERHTML,vendorText);
+   CString rendererText=native_c_str(&renderer());
+   DDX_DHtml_ElementText(pDX,"renderer",DISPID_IHTMLELEMENT_INNERHTML,rendererText);
+  }else {
+   CComPtr<IHTMLElement> element;
+   if(GetElement("glInfo",&element)==S_OK) {
+    CComPtr<IHTMLStyle> style;
     element->get_style(&style);
-    style->put_display(ComBstr("none"));
+    style->put_display(CComBSTR("none"));
    }
   }
  }
 }
-typedef char version_extent[sizeof(FileVersionInfo)==20?1:-1];
-typedef char string_extent[sizeof(CString)==4?1:-1];

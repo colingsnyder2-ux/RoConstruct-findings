@@ -1,5 +1,5 @@
-// from server: 85% by coldek
-// roc 2008-06 0040fbf0  unit: VCBrowserViewExternal::?$CComAggObject  size: 234 bytes
+// from server: 100% by EspClaude
+// roc 2008-06 0040fbf0  unit: VCBrowserViewExternal::?$CComAggObject  size: 174 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0040fbf0
 //
 // 0040fbf0  55                   push ebp
@@ -59,31 +59,6 @@
 // 0040fc9a  8be5                 mov esp, ebp
 // 0040fc9c  5d                   pop ebp
 // 0040fc9d  c3                   ret 
-// 0040fc9e  cc                   int3 
-// 0040fc9f  cc                   int3 
-// 0040fca0  56                   push esi
-// 0040fca1  8b74240c             mov esi, dword ptr [esp + 0xc]
-// 0040fca5  85f6                 test esi, esi
-// 0040fca7  7509                 jne 0x40fcb2
-// 0040fca9  b857000780           mov eax, 0x80070057
-// 0040fcae  5e                   pop esi
-// 0040fcaf  c20800               ret 8
-// 0040fcb2  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 0040fcb6  8b5110               mov edx, dword ptr [ecx + 0x10]
-// 0040fcb9  8b410c               mov eax, dword ptr [ecx + 0xc]
-// 0040fcbc  2bc2                 sub eax, edx
-// 0040fcbe  c1f803               sar eax, 3
-// 0040fcc1  3bf0                 cmp esi, eax
-// 0040fcc3  7702                 ja 0x40fcc7
-// 0040fcc5  8bc6                 mov eax, esi
-// 0040fcc7  8d14c2               lea edx, [edx + eax*8]
-// 0040fcca  895110               mov dword ptr [ecx + 0x10], edx
-// 0040fccd  33c9                 xor ecx, ecx
-// 0040fccf  3bf0                 cmp esi, eax
-// 0040fcd1  0f95c1               setne cl
-// 0040fcd4  5e                   pop esi
-// 0040fcd5  8bc1                 mov eax, ecx
-// 0040fcd7  c20800               ret 8
 
 // from server: 100% by colin
 // roc 2008-06 0040fbf0  unit: VCBrowserViewExternal::?$CComAggObject  size: 130 bytes

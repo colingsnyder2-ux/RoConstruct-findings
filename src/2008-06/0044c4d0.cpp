@@ -1,13 +1,14 @@
+// from server: 100% by EspClaude
 // from server: 95% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espclaude_196bcf2f1ef2b6ea.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_f8ab8247c52ec0b7.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <boost/shared_ptr.hpp>
 struct String {
-    unsigned char storage[32];
+    unsigned char storage[28];
     const char* c_str() const;
     ~String();
 };
@@ -35,37 +36,53 @@ struct StreamSource {
 
 extern StreamSource* streamSource;
 
-struct RangeData {
-    unsigned char padding[8];
-    void* map;
-    unsigned char padding2[8];
-    unsigned long first;
-    unsigned long last;
+#include <vector>
+#include <iterator>
+namespace RBX { namespace Reflection {
+class DescribedBase;
+class PropertyDescriptor;
+class Property { public: Property(const PropertyDescriptor*, DescribedBase*); };
+class Descriptor { public: virtual ~Descriptor() {} const void* name; };
+template <class T>
+class MemberDescriptorContainer
+{
+public:
+    typedef std::vector<T*> Collection;
+    class Iterator : public std::iterator<std::forward_iterator_tag, Property, void, Property, Property&>
+    {
+    public:
+        Iterator(DescribedBase* instance, typename Collection::const_iterator iter) : instance(instance), iter(iter) {}
+    private:
+        DescribedBase* instance;
+        typename Collection::const_iterator iter;
+    };
+    Iterator begin(DescribedBase* instance) const { return Iterator(instance, descriptors.begin()); }
+    Iterator end(DescribedBase* instance) const { return Iterator(instance, descriptors.end()); }
+    Collection descriptors;
 };
-
-struct Range {
-    unsigned char padding[8];
-    RangeData* data;
+class ClassDescriptor : public Descriptor, public MemberDescriptorContainer<PropertyDescriptor> {};
+typedef MemberDescriptorContainer<PropertyDescriptor>::Iterator PropertyIterator;
+class DescribedBase {
+public:
+    virtual ~DescribedBase() {}
+    void* signalSource;
+    const ClassDescriptor* descriptor;
+    const ClassDescriptor& getDescriptor() const { return *descriptor; }
+    PropertyIterator properties_begin() { return getDescriptor().MemberDescriptorContainer<PropertyDescriptor>::begin(this); }
+    PropertyIterator properties_end() { return getDescriptor().MemberDescriptorContainer<PropertyDescriptor>::end(this); }
 };
-
+}}
 struct Object {
     unsigned char padding[0x14];
-    Range range;
-    unsigned char padding2[0x110 - 0x14 - sizeof(Range)];
+    RBX::Reflection::DescribedBase range;
+    unsigned char padding2[0x110 - 0x14 - sizeof(RBX::Reflection::DescribedBase)];
     String text;
 };
 
 typedef boost::shared_ptr<Object> Shared;
 
-struct Iterator {
-    Range* owner;
-    void* map;
-    unsigned long offset;
-};
-
-extern "C" void (__cdecl *invalid_parameter_noinfo)();
-void __cdecl visitElement(void*);
-void __cdecl visitRange(Iterator, Iterator, void (__cdecl *)(void*));
+void __cdecl visitElement(RBX::Reflection::Property);
+void __cdecl visitRange(RBX::Reflection::PropertyIterator, RBX::Reflection::PropertyIterator, void (__cdecl *)(RBX::Reflection::Property));
 
 inline void print(int type, const String& message) {
     Stream* stream = streamSource ? streamSource->getStream() : 0;
@@ -73,25 +90,7 @@ inline void print(int type, const String& message) {
 }
 
 void __cdecl process(Shared value) {
-    print(0, formatText(
-            "End GlobalSettings -----------------------------------",
-            value.get()->text.c_str()));
-
-    Range* endOwner = &value.get()->range;
-    RangeData* endData = endOwner->data;
-    unsigned long endOffset = endData->last;
-    if (endData->first > endOffset)
-        invalid_parameter_noinfo();
-    void* endMap = endData->map;
-
-    Range* beginOwner = &value.get()->range;
-    RangeData* beginData = beginOwner->data;
-    unsigned long beginOffset = beginData->first;
-    if (beginOffset > beginData->last)
-        invalid_parameter_noinfo();
-
-    Iterator end = { endOwner, endMap, endOffset };
-    Iterator begin = { beginOwner, beginData->map, beginOffset };
-    visitRange(begin, end, visitElement);
+    print(0, formatText("\t%s",
+            value->text.c_str()));
+    visitRange(value->range.properties_begin(), value->range.properties_end(), visitElement);
 }
-

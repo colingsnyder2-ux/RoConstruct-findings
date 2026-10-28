@@ -1,8 +1,9 @@
+// from server: 96% by EspClaude
 // from server: 86% by nuck16
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: atl-9.0-dll-rtm roc_unit_f0ade9a71a05a644.cpp
+// roc-lib: atl-9.0-dll-rtm roc_espclaude_448d9bca34009ac9.cpp
 
 // Candidate translation unit (score above; library headers required).
 #ifndef _CPPUNWIND
@@ -48,6 +49,7 @@ public:
     ~LuaArgs();
     void push(ATL::CComVariant value);
     template<class T> __forceinline void add(const T& v) { values.push_back(v); }
+    template<class T> __forceinline void addv(T v) { values.push_back(v); }
     std::vector<Value> values;
 };
 
@@ -59,7 +61,7 @@ void LuaArgs::push(ATL::CComVariant value)
         add(value.fltVal);
         break;
     case VT_R8:
-        add((float)value.dblVal);
+        addv((float)value.dblVal);
         break;
     case VT_BSTR:
         add(std::string(BStr(value.bstrVal)));
@@ -68,10 +70,10 @@ void LuaArgs::push(ATL::CComVariant value)
         add(value.boolVal == VARIANT_TRUE);
         break;
     case VT_I2:
-        add((int)value.iVal);
+        addv((int)value.iVal);
         break;
     case VT_I4:
-        add((int)value.lVal);
+        addv((int)value.lVal);
         break;
     case VT_NULL:
         values.push_back(Value());
@@ -80,6 +82,10 @@ void LuaArgs::push(ATL::CComVariant value)
     case VT_ERROR:
         break;
     default:
-        throw std::runtime_error(format("Invalid argument %d VT_TYPE=%d", values.size() + 1, value.vt));
+        {
+            std::string msg = format("Invalid argument %d VT_TYPE=%d", values.size() + 1, value.vt);
+            throw std::runtime_error(msg);
+        }
     }
 }
+

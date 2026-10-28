@@ -789,6 +789,70 @@
         ]
       },
       "timestamp": 1793129907.0861464
+    },
+    {
+      "job": "4a45904e13404ff5a63ec692130c239c",
+      "patches": {
+        "App/v8datamodel/JointInstance.cpp": [
+          [
+            "\t\tRBXASSERT(getParent() == NULL);\n\t\tRBXASSERT(joint->getWorld() == NULL);",
+            ""
+          ]
+        ]
+      },
+      "timestamp": 1793146341.727031
+    },
+    {
+      "job": "1a72f1baf4674d61b420bc3f837adb36",
+      "patches": {
+        "App/v8datamodel/Workspace.cpp": [
+          [
+            "\t\tgetCurrentMouseCommand()->render2d(adorn);",
+            "\t\tcurrentCommand.get()->render2d(adorn);"
+          ],
+          [
+            "\t\tRBXASSERT(newMouseCommand);\n\n\t\tif (newMouseCommand != currentCommand.get())\n\t\t{\n\t\t\tRBXASSERT(!currentCommand.get() || !currentCommand->captured());\n\n\t\t\tcurrentCommand.reset(newMouseCommand);",
+            "\t\tif (newMouseCommand != currentCommand.get())\n\t\t{\n\t\t\tcurrentCommand.reset(newMouseCommand);"
+          ]
+        ]
+      },
+      "timestamp": 1793146691.6477895
+    },
+    {
+      "job": "ee7f739e62b54888bb3a680d738a7be6",
+      "patches": {
+        "App/v8datamodel/ModelInstance.cpp": [
+          [
+            "\tvoid ModelInstance::legacyTraverseState(const G3D::CoordinateFrame& parentState)\n\t{\n\t\tRBXASSERT(legacyOffset);",
+            "\tvoid ModelInstance::legacyTraverseState(const G3D::CoordinateFrame& parentState)\n\t{"
+          ]
+        ],
+        "App/v8datamodel/Selection.cpp": [
+          [
+            "\tvoid Selection::clearSelection()\n\t{\n\t\twhile (!selection->empty())",
+            "\tvoid Selection::clearSelection()\n\t{\n\t\twhile (selection->size() > 0)"
+          ],
+          [
+            "\tvoid Selection::addToSelection(Instance* instance)\n\t{\n\t\tboost::shared_ptr<Instance> shared = shared_from(instance);\n\t\tRBXASSERT(instance);",
+            "\tvoid Selection::addToSelection(Instance* instance)\n\t{\n\t\tboost::shared_ptr<Instance> shared = shared_from(instance);"
+          ],
+          [
+            "\tvoid Selection::removeFromSelection(const Instance* instance)\n\t{\n\t\tRBXASSERT(instance);",
+            "\tvoid Selection::removeFromSelection(const Instance* instance)\n\t{"
+          ]
+        ],
+        "App/v8datamodel/Tool.cpp": [
+          [
+            "\t\tif (backendToolState < EQUIPPED && state >= EQUIPPED)\n\t\t{\n\t\t\tPartInstance* handle = getHandle();\n\t\t\tif (handle)\n\t\t\t\thandle->setCanCollide(false);",
+            "\t\tif (backendToolState < EQUIPPED && state >= EQUIPPED)\n\t\t{"
+          ],
+          [
+            "\t\tif (backendToolState >= EQUIPPED && state < EQUIPPED)\n\t\t{\n\t\t\tPartInstance* handle = getHandle();\n\t\t\tif (handle)\n\t\t\t\thandle->setCanCollide(true);",
+            "\t\tif (backendToolState >= EQUIPPED && state < EQUIPPED)\n\t\t{"
+          ]
+        ]
+      },
+      "timestamp": 1793148512.255917
     }
   ],
   "initial_patches": {}

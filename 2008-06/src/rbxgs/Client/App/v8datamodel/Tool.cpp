@@ -345,9 +345,6 @@ namespace RBX
 
 		if (backendToolState < EQUIPPED && state >= EQUIPPED)
 		{
-			PartInstance* handle = getHandle();
-			if (handle)
-				handle->setCanCollide(false);
 
 			onEquipping();
 			event_Equipped.fire(this, getMouse());
@@ -361,9 +358,6 @@ namespace RBX
 
 		if (backendToolState >= EQUIPPED && state < EQUIPPED)
 		{
-			PartInstance* handle = getHandle();
-			if (handle)
-				handle->setCanCollide(true);
 
 			event_Unequipped.fire(this);
 

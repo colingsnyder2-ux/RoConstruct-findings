@@ -1,8 +1,9 @@
+// from server: 92% by EspClaude
 // from server: 83% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob1 /GS- /EHsc /MD /Oy
-// roc-lib: rbxgs-dll roc_native_app_document_a8e5d016afacdabe.cpp
+// roc-lib: rbxgs-dll roc_espclaude_bcc3910ef0d8fe27.cpp
 
 // Candidate translation unit (score above; library headers required).
 #ifndef _CPPUNWIND
@@ -155,6 +156,8 @@ extern const IID IID_App;
 extern HRESULT __cdecl reportError(REFIID,const char*,HRESULT); //429330, caller cleans12
 extern HRESULT __cdecl reportException(REFIID,const std::exception&); //429360, caller cleans8
 extern HRESULT __cdecl createWorkspace(IUnknown**,void*); //406da0, caller cleans8
+static __forceinline CView* firstView(CDocument* d){POSITION pos=d->GetFirstViewPosition(); if(!pos) return 0; return d->GetNextView(pos);}
+static __forceinline HRESULT makeWorkspace(IUnknown*& w){IUnknown* c; HRESULT r=createWorkspace(&c,0); if(!r) w=c; return r;}
 class AppFacet {public:HRESULT __stdcall create(int,IUnknown**);};
 HRESULT __stdcall AppFacet::create(int windowType,IUnknown** out) {
  AFX_MANAGE_STATE(AfxGetAppModuleState());
@@ -165,24 +168,23 @@ HRESULT __stdcall AppFacet::create(int windowType,IUnknown** out) {
   CRobloxApp* app=static_cast<CRobloxApp*>(AfxGetApp());
   IUnknown* workspace;
   switch(windowType) {
+  case 0: {
+   HRESULT result=makeWorkspace(workspace);
+   if(result)return reportError(IID_App,"Couldn't create workspace",result);
+   break;
+  }
   case 2: {
    document=app->createDocument();
    workspace=*reinterpret_cast<IUnknown**>(reinterpret_cast<char*>(document)+0x94);
-   POSITION pos=document->GetFirstViewPosition();
-   if(pos) {
-    CView* view=document->GetNextView(pos);
-    if(view) {
+   CView* view=firstView(document);
+   if(view) {
+    {
      CRobloxView* robloxView=dynamic_cast<CRobloxView*>(view);
      if(robloxView)robloxView->setEmbedded(false,true);
      view->GetParentFrame()->ShowWindow(SW_SHOW);
      ::SetFocus(view->m_hWnd);
     }
    }
-   break;
-  }
-  case 0: {
-   HRESULT result=createWorkspace(&workspace,0);
-   if(result)return reportError(IID_App,"Couldn't create workspace",result);
    break;
   }
   default:return reportError(IID_App,"requested WindowType is invalid",87);
@@ -196,3 +198,4 @@ HRESULT __stdcall AppFacet::create(int windowType,IUnknown** out) {
   return reportException(IID_App,error);
  }
 }
+

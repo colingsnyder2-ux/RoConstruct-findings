@@ -1,8 +1,9 @@
+// from server: 100% by EspClaude
 // from server: 81% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_native_app_refined_03d5dac61574388a.cpp
+// roc-lib: rbxgs-dll roc_espclaude_9ea1abdd62478bcd.cpp
 
 // Candidate translation unit (score above; library headers required).
 #ifndef _CPPUNWIND
@@ -216,10 +217,14 @@ extern void nativeRegisterNames3(); //41bc40 cdecl.
 extern void nativeSetVersion(const char*); //49ecf0 cdecl.
 extern void nativeInitializeCallbacks(); //44cbb0 cdecl.
 extern void* nativeStartupContext(); //412d50 cdecl, field130 startup mode.
-extern HRESULT __stdcall nativeComRegister(void*,DWORD,DWORD); //449fb0 ret12.
+extern HRESULT __stdcall nativeComRegister(void*,DWORD,DWORD) throw(); //449fb0 ret12.
 extern HRESULT __stdcall nativeComUnregister(void*,BOOL,const CLSID*); //44b740 ret12.
 extern void __stdcall nativeSetRegistrationMode(bool); //44d150 ret4.
 
+class ImpString {
+public:
+    __declspec(dllimport) const char* c_str() const;
+};
 class CRobloxAppNative : public CWinApp {
 public:
     virtual BOOL InitInstance();
@@ -283,7 +288,7 @@ BOOL CRobloxAppNative::InitInstance() {
         static NativeClassRegistration classes;
         nativeRegisterNames1();
         nativeRegisterNames2();
-        nativeSetVersion(field<std::string>(0xf0).c_str());
+        nativeSetVersion(field<ImpString>(0xf0).c_str());
         AfxEnableControlContainer(0);
         initializeSettings();
         nativeInitializeCallbacks();
@@ -293,7 +298,8 @@ BOOL CRobloxAppNative::InitInstance() {
         nativeRegisterNames3();
         if(command.m_bRunEmbedded || command.m_bRunAutomated) {
             m_pDocManager=new CIDEDocManager(command.flag2f);
-            return SUCCEEDED(nativeComRegister(&nativeComModule,4,1));
+            if(FAILED(nativeComRegister(&nativeComModule,4,1))) return FALSE;
+            return TRUE;
         }
         if(command.flag2e) {
             m_pDocManager=new CBrowserDocManager;
@@ -304,8 +310,7 @@ BOOL CRobloxAppNative::InitInstance() {
         if(command.m_nShellCommand==CCommandLineInfo::FileNew) {
             if(command.files.size()) {
                 ProcessShellCommand(command);
-                openFiles(command.files.begin(),command.files.end());
-                return FALSE;
+                return openFiles(command.files.begin(),command.files.end());
             }
             if(!command.flag2f) initializeEmptyDocument();
             return TRUE;
@@ -319,3 +324,4 @@ BOOL CRobloxAppNative::InitInstance() {
         return FALSE;
     }
 }
+

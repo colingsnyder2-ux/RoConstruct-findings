@@ -1,4 +1,4 @@
-// from server: 98% by coldek
+// from server: 100% by king_originala
 // roc 2008-06 0044a450  unit: CRbxPlayDocTemplate  size: 487 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0044a450
 //
@@ -460,8 +460,7 @@ namespace std {
         C fill_character;
 
         basic_streambuf<C, T>* rdbuf() const;
-        void setstate(int);
-        __declspec(dllimport) void _Setstate(int, bool);
+        __declspec(dllimport) void setstate(int, bool = false);
     };
 
     template<class C, class T> struct basic_ostream
@@ -559,7 +558,7 @@ Stream& __cdecl insert(Stream& stream, const char* text)
 
             stream.width(0);
         } catch (...) {
-            stream._Setstate(4, true);
+            stream.setstate(4, true);
         }
     }
 

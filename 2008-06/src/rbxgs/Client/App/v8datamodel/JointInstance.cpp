@@ -41,8 +41,7 @@ namespace RBX
 		setPart(0, NULL);
 		setPart(1, NULL);
 
-		RBXASSERT(getParent() == NULL);
-		RBXASSERT(joint->getWorld() == NULL);
+
 
 		joint->setJointOwner(NULL);
 		delete joint;

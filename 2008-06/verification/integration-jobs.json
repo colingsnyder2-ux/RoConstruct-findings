@@ -2586,11 +2586,32 @@
         ]
       ]
     },
-    "phase": "resuming",
-    "receipt": {},
-    "state": "queued",
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "4e586543d335b3d67664c03c2dffd2c09470c449e4577974ca6c1e86591cc5d5",
+      "credits": 2,
+      "distinct_after": 9757,
+      "distinct_before": 9755,
+      "gains": [
+        "005a0660",
+        "005a1fc0"
+      ],
+      "input_hash": "3e21f5c853709d59678d0c0d55f4a3071102d075602fd724c587a99ffba4d2b5",
+      "losses": [],
+      "new_distinct": [
+        "005a0660",
+        "005a1fc0"
+      ],
+      "overlay_hash": "92da3e5ae5fca73a48559e2d9766564ebde5cf5c4648fa72bf7e557638735e73",
+      "owned_after": 3086,
+      "owned_before": 3084,
+      "rebased": true,
+      "submitted_revision": "fc03481fb4442a8c82708cbdadddb70a0825aa4b0670b840e52fe30d8ab9f941"
+    },
+    "state": "accepted",
     "unit": "RBX::Workspace",
-    "updated": 1793144948.5094242,
+    "updated": 1793146691.7826319,
     "user": "colin"
   },
   {
@@ -2626,11 +2647,121 @@
         ]
       ]
     },
-    "phase": "baseline: building",
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "fc03481fb4442a8c82708cbdadddb70a0825aa4b0670b840e52fe30d8ab9f941",
+      "credits": 1,
+      "distinct_after": 9755,
+      "distinct_before": 9754,
+      "gains": [
+        "005e2e10"
+      ],
+      "input_hash": "61c0bae47e8e8e7881a50f2968f21197b1f33d61567cb182238c94180c75e79c",
+      "losses": [],
+      "new_distinct": [
+        "005e2e10"
+      ],
+      "overlay_hash": "ed0d16c69a3fcf9f99d2cc8a256d218c19b87b0ce567241de121d945ef355205",
+      "owned_after": 3084,
+      "owned_before": 3083,
+      "rebased": false,
+      "submitted_revision": "fc03481fb4442a8c82708cbdadddb70a0825aa4b0670b840e52fe30d8ab9f941"
+    },
+    "state": "accepted",
+    "unit": "RBX::JointInstance",
+    "updated": 1793146342.1191666,
+    "user": "colin"
+  },
+  {
+    "created": 1793147610.2275896,
+    "id": "ee7f739e62b54888bb3a680d738a7be6",
+    "model": "gpt-6",
+    "patches": {
+      "App/v8datamodel/ModelInstance.cpp": [
+        [
+          "\tvoid ModelInstance::legacyTraverseState(const G3D::CoordinateFrame& parentState)\n\t{\n\t\tRBXASSERT(legacyOffset);",
+          "\tvoid ModelInstance::legacyTraverseState(const G3D::CoordinateFrame& parentState)\n\t{"
+        ]
+      ],
+      "App/v8datamodel/Selection.cpp": [
+        [
+          "\tvoid Selection::clearSelection()\n\t{\n\t\twhile (!selection->empty())",
+          "\tvoid Selection::clearSelection()\n\t{\n\t\twhile (selection->size() > 0)"
+        ],
+        [
+          "\tvoid Selection::addToSelection(Instance* instance)\n\t{\n\t\tboost::shared_ptr<Instance> shared = shared_from(instance);\n\t\tRBXASSERT(instance);",
+          "\tvoid Selection::addToSelection(Instance* instance)\n\t{\n\t\tboost::shared_ptr<Instance> shared = shared_from(instance);"
+        ],
+        [
+          "\tvoid Selection::removeFromSelection(const Instance* instance)\n\t{\n\t\tRBXASSERT(instance);",
+          "\tvoid Selection::removeFromSelection(const Instance* instance)\n\t{"
+        ]
+      ],
+      "App/v8datamodel/Tool.cpp": [
+        [
+          "\t\tif (backendToolState < EQUIPPED && state >= EQUIPPED)\n\t\t{\n\t\t\tPartInstance* handle = getHandle();\n\t\t\tif (handle)\n\t\t\t\thandle->setCanCollide(false);",
+          "\t\tif (backendToolState < EQUIPPED && state >= EQUIPPED)\n\t\t{"
+        ],
+        [
+          "\t\tif (backendToolState >= EQUIPPED && state < EQUIPPED)\n\t\t{\n\t\t\tPartInstance* handle = getHandle();\n\t\t\tif (handle)\n\t\t\t\thandle->setCanCollide(true);",
+          "\t\tif (backendToolState >= EQUIPPED && state < EQUIPPED)\n\t\t{"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "1343c13677099f43326efeac1254eb5ef0698e8221628776586e652ad8f08327",
+      "credits": 3,
+      "distinct_after": 9761,
+      "distinct_before": 9758,
+      "gains": [
+        "00567420",
+        "005675d0",
+        "00567c10",
+        "005841e0",
+        "005ff750"
+      ],
+      "input_hash": "7dd5dad5315f139db13d13a5b88df4080da093a1091c5f6db49fd19be236d0f5",
+      "losses": [],
+      "new_distinct": [
+        "00567420",
+        "005675d0",
+        "005ff750"
+      ],
+      "overlay_hash": "d656ae1f30a07da6348ae1548b676080038a586cc31d428172434071d8bcd8a7",
+      "owned_after": 3092,
+      "owned_before": 3087,
+      "rebased": false,
+      "submitted_revision": "1343c13677099f43326efeac1254eb5ef0698e8221628776586e652ad8f08327"
+    },
+    "state": "accepted",
+    "unit": "RBX::Mouse, RBX::Selection, RBX::ModelInstance",
+    "updated": 1793148512.5753915,
+    "user": "colin"
+  },
+  {
+    "created": 1793148909.0053537,
+    "id": "1e2b177dff244c0491e0efee031489c9",
+    "model": "gpt-6",
+    "patches": {
+      "App/tool/GroupDragTool.cpp": [
+        [
+          "\tMouseCommand* GroupDragTool::onKeyDown(const UIEvent& uiEvent)\n\t{\n\t\tif (dragging)\n\t\t{\n\t\t\tswitch (uiEvent.key)\n\t\t\t{\n\t\t\tcase SDLK_r:\n\t\t\t\tmegaDragger->safeRotate(Math::matrixRotateY());\n\t\t\t\tbreak;\n\t\t\tcase SDLK_t:\n\t\t\t\tmegaDragger->safeRotate(Math::matrixTiltZ());\n\t\t\t\tbreak;\n\t\t\t}\n\n\t\t\treturn this;\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(0);\n\t\t\treturn NULL;\n\t\t}\n\t}\n",
+          "\tMouseCommand* GroupDragTool::onKeyDown(const UIEvent& uiEvent)\n\t{\n\t\tif (dragging)\n\t\t{\n\t\t\tswitch (uiEvent.key)\n\t\t\t{\n\t\t\tcase SDLK_r:\n\t\t\t\tmegaDragger->safeRotate(Math::matrixRotateY());\n\t\t\t\tbreak;\n\t\t\tcase SDLK_t:\n\t\t\t\tmegaDragger->safeRotate(Math::matrixTiltZ());\n\t\t\t\tbreak;\n\t\t\t}\n\n\t\t\treturn this;\n\t\t}\n\t\telse\n\t\t{\n\t\t\t\n\t\t\treturn NULL;\n\t\t}\n\t}\n"
+        ],
+        [
+          "\tvoid GroupDragTool::onMouseIdle(const UIEvent& uiEvent)\n\t{\n\t\tRBXASSERT(captured());\n\n\t\tG3D::Vector3 hit;\n\n\t\tif (captured() && dragging && megaDragger->mousePartAlive() &&\n\t\t\tMath::intersectRayPlane(getSearchRay(uiEvent), G3D::Plane(G3D::Vector3::unitY(), G3D::Vector3::zero()), hit))\n\t\t{\n\t\t\thit = megaDragger->hitObjectOrPlane(uiEvent);\n\t\t\tmegaDragger->continueDragging();\n\n\t\t\tG3D::Vector3 hitSnapped = Dragger::toGrid(hit);\n\t\t\tG3D::Vector3 delta = Dragger::toGrid(hitSnapped - lastHit);\n\t\t\tlastHit = hitSnapped;\n\n\t\t\tmegaDragger->safeMoveYDrop(delta);\n\t\t}\n\t}\n",
+          "\tvoid GroupDragTool::onMouseIdle(const UIEvent& uiEvent)\n\t{\n\t\t\n\n\t\tG3D::Vector3 hit;\n\n\t\tif (captured() && dragging && megaDragger->mousePartAlive() &&\n\t\t\tMath::intersectRayPlane(getSearchRay(uiEvent), G3D::Plane(G3D::Vector3::unitY(), G3D::Vector3::zero()), hit))\n\t\t{\n\t\t\thit = megaDragger->hitObjectOrPlane(uiEvent);\n\t\t\tmegaDragger->continueDragging();\n\n\t\t\tG3D::Vector3 hitSnapped = Dragger::toGrid(hit);\n\t\t\tG3D::Vector3 delta = Dragger::toGrid(hitSnapped - lastHit);\n\t\t\tlastHit = hitSnapped;\n\n\t\t\tmegaDragger->safeMoveYDrop(delta);\n\t\t}\n\t}\n"
+        ]
+      ]
+    },
+    "phase": "baseline: checking",
     "receipt": {},
     "state": "verifying",
-    "unit": "RBX::JointInstance",
-    "updated": 1793145391.4281752,
+    "unit": "RBX::GroupDragTool",
+    "updated": 1793149433.3449206,
     "user": "colin"
   }
 ]

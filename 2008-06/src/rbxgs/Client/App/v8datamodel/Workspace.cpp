@@ -94,7 +94,7 @@ namespace RBX
 
 	void Workspace::render2d(Adorn* adorn)
 	{
-		getCurrentMouseCommand()->render2d(adorn);
+		currentCommand.get()->render2d(adorn);
 		render2dItems(adorn);
 	}
 
@@ -244,12 +244,8 @@ namespace RBX
 			}
 		}
 
-		RBXASSERT(newMouseCommand);
-
 		if (newMouseCommand != currentCommand.get())
 		{
-			RBXASSERT(!currentCommand.get() || !currentCommand->captured());
-
 			currentCommand.reset(newMouseCommand);
 
 			MouseCommand* sticky = newMouseCommand->isSticky();

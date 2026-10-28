@@ -1,4 +1,4 @@
-// from server: 98% by tajop
+// from server: 100% by tajop
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
@@ -6,6 +6,8 @@
 #include <set>
 
 struct Value { char bytes[0x38]; };
+// _Myhead at +0x10: comparator carries 4 bytes of state.
+struct Less { int state; bool operator()(const Value&, const Value&) const; };
 
-typedef std::_Tree<std::_Tset_traits<Value, std::less<Value>, std::allocator<Value>, false> > Tree;
+typedef std::_Tree<std::_Tset_traits<Value, Less, std::allocator<Value>, false> > Tree;
 template void Tree::_Lrotate(Tree::_Nodeptr);

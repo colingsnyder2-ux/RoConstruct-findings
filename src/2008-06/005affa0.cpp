@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by coldek
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // Minimal target-backed ABI views; unused native APIs and prefix fields are omitted.
@@ -92,8 +92,8 @@ void ScriptContext::startScript(boost::shared_ptr<Script>script){
  script->association().get<Lua::ThreadRef::NodePtr>()=Lua::ThreadRef::Node::create(thread);
  Lua::ObjectBridge::push(thread,script);lua_setfield(thread,-10002,"script");
  std::string name=std::string("=")+script->getFullName();
- unsigned sourceLength=code->length();
- if(luaL_loadbuffer(thread,code->c_str(),sourceLength,name.c_str())){
+ int result=luaL_loadbuffer(thread,code->c_str(),code->length(),name.c_str());
+ if(result){
   StandardOut::singleton()->print(MESSAGE_ERROR,Lua::errorString(thread,-1));lua_settop(thread,-2);
  }else resume(thread,0);
  lua_settop(thread,0);

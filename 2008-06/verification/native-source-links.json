@@ -468,11 +468,11 @@
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Selection.cpp"
  },
  "005675d0": {
-  "line": 109,
+  "line": 107,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Selection.cpp"
  },
  "00567c10": {
-  "line": 91,
+  "line": 90,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Selection.cpp"
  },
  "00568180": {
@@ -480,11 +480,11 @@
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Selection.cpp"
  },
  "005682e0": {
-  "line": 154,
+  "line": 152,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Selection.cpp"
  },
  "00568330": {
-  "line": 121,
+  "line": 119,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Selection.cpp"
  },
  "005690f0": {
@@ -716,7 +716,7 @@
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00583570": {
-  "line": 354,
+  "line": 353,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00583980": {
@@ -736,11 +736,11 @@
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00583cf0": {
-  "line": 292,
+  "line": 291,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00583da0": {
-  "line": 333,
+  "line": 332,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "005841e0": {
@@ -748,19 +748,19 @@
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00584280": {
-  "line": 303,
+  "line": 302,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00584310": {
-  "line": 319,
+  "line": 318,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00584360": {
-  "line": 324,
+  "line": 323,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "005843c0": {
-  "line": 343,
+  "line": 342,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00584620": {
@@ -776,15 +776,15 @@
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "005849d0": {
-  "line": 354,
+  "line": 353,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00584af0": {
-  "line": 292,
+  "line": 291,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00584b00": {
-  "line": 343,
+  "line": 342,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00584fc0": {
@@ -876,15 +876,15 @@
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/RootInstance.cpp"
  },
  "00590790": {
-  "line": 354,
+  "line": 353,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "005907c0": {
-  "line": 343,
+  "line": 342,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "005907d0": {
-  "line": 292,
+  "line": 291,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "005909e0": {
@@ -1236,35 +1236,35 @@
   "path": "2008-06/src/glue/rbxgs/glue_runtime.cpp"
  },
  "005a2730": {
-  "line": 290,
+  "line": 286,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Workspace.cpp"
  },
  "005a2760": {
-  "line": 296,
+  "line": 292,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Workspace.cpp"
  },
  "005a27c0": {
-  "line": 306,
+  "line": 302,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Workspace.cpp"
  },
  "005a2c90": {
-  "line": 354,
+  "line": 353,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "005a2d10": {
-  "line": 343,
+  "line": 342,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "005a2d50": {
-  "line": 292,
+  "line": 291,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "005a3380": {
-  "line": 311,
+  "line": 307,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Workspace.cpp"
  },
  "005a33d0": {
-  "line": 337,
+  "line": 333,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Workspace.cpp"
  },
  "005a3470": {
@@ -1276,11 +1276,11 @@
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Workspace.cpp"
  },
  "005a59e0": {
-  "line": 495,
+  "line": 491,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Workspace.cpp"
  },
  "005a66b0": {
-  "line": 461,
+  "line": 457,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Workspace.cpp"
  },
  "005a6bc0": {
@@ -1316,7 +1316,7 @@
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Accoutrement.cpp"
  },
  "005b08a0": {
-  "line": 435,
+  "line": 429,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Tool.cpp"
  },
  "005b0940": {
@@ -2004,31 +2004,31 @@
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Lighting.cpp"
  },
  "005e27a0": {
-  "line": 52,
+  "line": 51,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e27b0": {
-  "line": 175,
+  "line": 174,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e27c0": {
-  "line": 186,
+  "line": 185,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e2a10": {
-  "line": 91,
+  "line": 90,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e2a70": {
-  "line": 96,
+  "line": 95,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e2af0": {
-  "line": 57,
+  "line": 56,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e2cd0": {
-  "line": 158,
+  "line": 157,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e2e10": {
@@ -2036,7 +2036,7 @@
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e3790": {
-  "line": 113,
+  "line": 112,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e3870": {
@@ -2044,27 +2044,27 @@
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e3a80": {
-  "line": 119,
+  "line": 118,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e4450": {
-  "line": 101,
+  "line": 100,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e4470": {
-  "line": 107,
+  "line": 106,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e4490": {
-  "line": 180,
+  "line": 179,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e44c0": {
-  "line": 191,
+  "line": 190,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e4fe0": {
-  "line": 296,
+  "line": 295,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e50c0": {
@@ -2352,7 +2352,7 @@
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Tool.cpp"
  },
  "005ff680": {
-  "line": 440,
+  "line": 434,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Tool.cpp"
  },
  "005ff750": {
@@ -2360,7 +2360,7 @@
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Tool.cpp"
  },
  "005ff8d0": {
-  "line": 381,
+  "line": 375,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Tool.cpp"
  },
  "005ffa10": {
@@ -2368,11 +2368,11 @@
   "path": "2008-06/src/glue/rbxgs/glue_equipables.cpp"
  },
  "005ffb70": {
-  "line": 390,
+  "line": 384,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Tool.cpp"
  },
  "005ffc00": {
-  "line": 409,
+  "line": 403,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Tool.cpp"
  },
  "00600240": {
@@ -2380,15 +2380,15 @@
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Tool.cpp"
  },
  "00600420": {
-  "line": 452,
+  "line": 446,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Tool.cpp"
  },
  "006004b0": {
-  "line": 471,
+  "line": 465,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Tool.cpp"
  },
  "006004d0": {
-  "line": 477,
+  "line": 471,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Tool.cpp"
  },
  "00606250": {

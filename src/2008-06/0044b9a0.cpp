@@ -1,8 +1,9 @@
+// from server: 100% by EspClaude
 // from server: 90% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: atl-9.0-dll-rtm roc_espclaude_74cb6657d91d5c8e.cpp
+// roc-lib: atl-9.0-dll-rtm roc_espclaude_43b5b584c2f00b13.cpp
 
 // Candidate translation unit (score above; library headers required).
 #ifndef _CPPUNWIND
@@ -27,7 +28,15 @@ public:
     char* m_pszData;
 };
 struct PendingObject { virtual ~PendingObject(); };
-extern PendingObject* pendingObject;
+template<class T> class scoped_ptr {
+    T* ptr;
+public:
+    explicit scoped_ptr(T* p = 0) : ptr(p) {}
+    ~scoped_ptr() { delete ptr; }
+    void reset(T* p = 0) { scoped_ptr<T>(p).swap(*this); }
+    void swap(scoped_ptr& b) { T* tmp = b.ptr; b.ptr = ptr; ptr = tmp; }
+};
+extern scoped_ptr<PendingObject> pendingObject;
 extern CDocument* activeDocument;
 void finishOpen();
 void notifyDocument(int, CDocument*);
@@ -56,11 +65,7 @@ CDocument* CRobloxModule::getDocument()
 {
     if (document == NULL)
     {
-        {
-            PendingObject* p = pendingObject;
-            pendingObject = NULL;
-            delete p;
-        }
+        pendingObject.reset();
         CDocument* doc = open(NULL, TRUE);
         try
         {
@@ -95,13 +100,10 @@ CDocument* CRobloxModule::getDocument()
         while (pos)
         {
             CView* view = document->GetNextView(pos);
-            {
-                PendingObject* p = pendingObject;
-                pendingObject = NULL;
-                delete p;
-            }
+            pendingObject.reset();
             ::SendMessage(view->m_hWnd, WM_INITIALUPDATE, 0, 0);
         }
         return document;
     }
 }
+

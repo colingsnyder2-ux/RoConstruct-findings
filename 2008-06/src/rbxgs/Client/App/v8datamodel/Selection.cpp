@@ -74,7 +74,6 @@ namespace RBX
 	void Selection::addToSelection(Instance* instance)
 	{
 		boost::shared_ptr<Instance> shared = shared_from(instance);
-		RBXASSERT(instance);
 
 		boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> sel = selection.write();
 
@@ -90,7 +89,6 @@ namespace RBX
 	
 	void Selection::removeFromSelection(const Instance* instance)
 	{
-		RBXASSERT(instance);
 
 		boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> sel = selection.write();
 
@@ -108,7 +106,7 @@ namespace RBX
 
 	void Selection::clearSelection()
 	{
-		while (!selection->empty())
+		while (selection->size() > 0)
 		{
 			boost::shared_ptr<Instance> instance = selection->back();
 			selection.write()->pop_back();

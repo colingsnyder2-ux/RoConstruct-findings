@@ -270,7 +270,6 @@ namespace RBX
 
 	void ModelInstance::legacyTraverseState(const G3D::CoordinateFrame& parentState)
 	{
-		RBXASSERT(legacyOffset);
 
 		if (getChildren())
 		{

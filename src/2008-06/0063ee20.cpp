@@ -1,8 +1,8 @@
-// from server: 99% by Espeon
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast /QIfist
-// roc-lib: rbxgs-dll roc_espeon_resizenormalintfactore277a22fc0c2c2d0.cpp
+// roc-lib: rbxgs-dll roc_claudeM_82dce3e7a2d433c6.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <G3D/g3dmath.h>
@@ -29,7 +29,7 @@ void ResizeToolRecovery::drag(const void* event){
  G3D::Ray axis=makeResizeAxis(start,direction);
  G3D::Ray mouse=getUnitMouseRay(event);
  G3D::Vector3 hit=Math::closestPointOnRay(axis,mouse);
- float delta=(hit-start).dot(axis.direction)-accumulated;
+ float dot=(hit-start).dot(axis.direction);float delta=dot-accumulated;
  if(delta>1.0f){int steps=G3D::iRound((float)std::floor(delta));accumulated+=steps;capturedDrag(steps);}
  if(delta<-1.0f){int steps=-G3D::iRound((float)std::floor(-delta));accumulated+=steps;capturedDrag(steps);}
 }
