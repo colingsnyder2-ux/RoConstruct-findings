@@ -3656,11 +3656,120 @@
         ]
       ]
     },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
+    "unit": "RBX::Soundscape::SoundService",
+    "updated": 1793195308.3346343,
+    "user": "colin"
+  },
+  {
+    "created": 1793194773.5237892,
+    "id": "121908dd57144d04b7f75064dd77cd02",
+    "model": "gpt-6",
+    "patches": {
+      "App/include/util/Events.h": [
+        [
+          "return !listeners.empty();",
+          "return listeners.size() > 0;"
+        ]
+      ],
+      "App/v8tree/Instance.cpp": [
+        [
+          "Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent));",
+          "Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->getParent()));"
+        ]
+      ]
+    },
     "phase": "baseline: building",
     "receipt": {},
     "state": "verifying",
-    "unit": "RBX::Soundscape::SoundService",
-    "updated": 1793194509.0865636,
+    "unit": "RBX::Clump",
+    "updated": 1793196067.8816664,
+    "user": "colin"
+  },
+  {
+    "created": 1793195450.5377917,
+    "id": "668ce3252f364e7091f6e48cf166e027",
+    "model": "gpt-6",
+    "patches": {
+      "App/include/util/boost.hpp": [
+        [
+          "#include <boost/thread/condition.hpp>",
+          "#include <boost/thread/condition.hpp>\n#include <windows.h>"
+        ],
+        [
+          "boost::function0<void> background_function(const boost::function0<void>& threadfunc, const char* name);",
+          "boost::function0<void> background_function(const boost::function0<void>& threadfunc, const char* name, int priority = THREAD_PRIORITY_BELOW_NORMAL);"
+        ]
+      ],
+      "App/include/v8datamodel/Seat.h": [
+        [
+          "\t\tboost::shared_ptr<Weld> weld;\n\t\tdouble sleepTime;",
+          "\t\tdouble sleepTime;\n\t\tboost::shared_ptr<Weld> weld;"
+        ]
+      ],
+      "App/util/boost.cpp": [
+        [
+          "void run_in_background(const boost::function0<void>& threadfunc, std::string name)",
+          "void run_in_background(const boost::function0<void>& threadfunc, std::string name, int priority)"
+        ],
+        [
+          "boost::function0<void> background_function(const boost::function0<void>& threadfunc, const char* name)",
+          "boost::function0<void> background_function(const boost::function0<void>& threadfunc, const char* name, int priority)"
+        ],
+        [
+          "return boost::bind(&run_in_background, threadfunc, std::string(name));",
+          "return boost::bind(&run_in_background, threadfunc, std::string(name), priority);"
+        ]
+      ]
+    },
+    "phase": "merged into 121908dd",
+    "receipt": {},
+    "state": "verifying",
+    "unit": "RBX::Seat",
+    "updated": 1793196004.0271966,
+    "user": "colin"
+  },
+  {
+    "created": 1793195662.4869473,
+    "id": "6a7eb2d7653645a7aed3a1a0ed748c35",
+    "model": "gpt-6",
+    "patches": {
+      "App/include/util/boost.hpp": [
+        [
+          "boost::function0<void> background_function(const boost::function0<void>& threadfunc, const char* name);",
+          "boost::function0<void> background_function(const boost::function0<void>& threadfunc, const char* name, int priority = -1);"
+        ]
+      ],
+      "App/include/v8datamodel/Seat.h": [
+        [
+          "\t\tboost::shared_ptr<Weld> weld;\n\t\tdouble sleepTime;",
+          "\t\tdouble sleepTime;\n\t\tboost::shared_ptr<Weld> weld;"
+        ]
+      ],
+      "App/util/boost.cpp": [
+        [
+          "void run_in_background(const boost::function0<void>& threadfunc, std::string name)",
+          "void run_in_background(const boost::function0<void>& threadfunc, std::string name, int priority)"
+        ],
+        [
+          "boost::function0<void> background_function(const boost::function0<void>& threadfunc, const char* name)",
+          "boost::function0<void> background_function(const boost::function0<void>& threadfunc, const char* name, int priority)"
+        ],
+        [
+          "return boost::bind(&run_in_background, threadfunc, std::string(name));",
+          "return boost::bind(&run_in_background, threadfunc, std::string(name), priority);"
+        ]
+      ]
+    },
+    "phase": "queued",
+    "receipt": {},
+    "state": "queued",
+    "unit": "RBX::DataModel",
+    "updated": 1793195662.4869473,
     "user": "colin"
   }
 ]
