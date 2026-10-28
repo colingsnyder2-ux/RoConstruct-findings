@@ -1,4 +1,6 @@
-// from server: 88% by Espeon
+// from server: 89% by EspClaude
+// roc-cl: 21022
+// from server: 87% by king_originala
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
 #include <string>
@@ -7,7 +9,7 @@
 namespace G3D {
 template<class T>inline T min(const T&x,const T&y){return std::min<T>(x,y);}
 template<class T>inline T max(const T&x,const T&y){return std::max<T>(x,y);}
-class Vector2 {public:float x,y;Vector2():x(0),y(0){}Vector2(float a,float b):x(a),y(b){}Vector2(const Vector2&v):x(v.x),y(v.y){}Vector2&operator=(const Vector2&v){x=v.x;y=v.y;return*this;}Vector2 min(const Vector2&v)const{return Vector2(G3D::min(v.x,x),G3D::min(v.y,y));}Vector2 max(const Vector2&v)const{return Vector2(G3D::max(v.x,x),G3D::max(v.y,y));}};
+class Vector2 {public:float x,y;Vector2():x(0),y(0){}Vector2(float a,float b):x(a),y(b){}Vector2(const Vector2&v):x(v.x),y(v.y){}Vector2&operator=(const Vector2&v){x=v.x;y=v.y;return*this;}Vector2 operator+(const Vector2&v)const{return Vector2(x+v.x,y+v.y);}Vector2 min(const Vector2&v)const{return Vector2(G3D::min(v.x,x),G3D::min(v.y,y));}Vector2 max(const Vector2&v)const{return Vector2(G3D::max(v.x,x),G3D::max(v.y,y));}};
 class Vector3 {public:float x,y,z;Vector3():x(0),y(0),z(0){}Vector3(float a,float b,float c):x(a),y(b),z(c){}Vector3(const Vector3&v):x(v.x),y(v.y),z(v.z){}Vector3 operator-(const Vector3&v)const{return Vector3(x-v.x,y-v.y,z-v.z);}float magnitude()const{return sqrtf(x*x+y*y+z*z);}Vector2 xy()const;static const Vector3&zero();};
 class Matrix3 {public:float elt[3][3];Matrix3(){}Matrix3(const Matrix3&);static const Matrix3&identity();};
 class CoordinateFrame {public:Matrix3 rotation;Vector3 translation;CoordinateFrame():rotation(Matrix3::identity()),translation(Vector3::zero()){}CoordinateFrame(const CoordinateFrame&v):rotation(v.rotation),translation(v.translation){}~CoordinateFrame(){}};
@@ -166,15 +168,13 @@ void Humanoid::renderMultiplayer(Adorn* adorn, const G3D::GCamera& camera)
 
 			float width = (float) (fontSize * 4);
 
-            float barX = projected.x - 0.5f * width;
-            float barHeight = (float)(fontSize / 2);
-            float rightX = barX + width;
-            float topY = projected.y + barHeight;
-            float splitX = barX + (health / maxHealth) * width;
-            Vector2 barLow(barX, projected.y);
-            Vector2 healthHigh(splitX, topY);
-            Vector2 healthLow(splitX, projected.y);
-            Vector2 barHigh(rightX, topY);
+            Vector2 low(projected.x - 0.5f * width, projected.y);
+            Vector2 high = low + Vector2(width, (float)(fontSize / 2));
+            float healthX = low.x + (health / maxHealth) * width;
+            Vector2 barLow(low);
+            Vector2 healthHigh(healthX, high.y);
+            Vector2 healthLow(healthX, low.y);
+            Vector2 barHigh(high);
             {
                 G3D::Color4 color(Color::lightGreen(), 1.0f);
                 G3D::Rect2D rect = G3D::Rect2D::xyxy(barLow, healthHigh);

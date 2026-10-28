@@ -259,6 +259,20 @@
     "user": "colin"
   },
   {
+    "addr": "00572a90",
+    "client": "2008-06",
+    "job": "568ab9a4016d49f38a7d8c192a7974c5",
+    "model": "gpt-6.1-sol",
+    "user": "colin"
+  },
+  {
+    "addr": "00572e40",
+    "client": "2008-06",
+    "job": "568ab9a4016d49f38a7d8c192a7974c5",
+    "model": "gpt-6.1-sol",
+    "user": "colin"
+  },
+  {
     "addr": "00573310",
     "client": "2008-06",
     "job": "6c4c6e4f955944b8b0397c68491501e2",

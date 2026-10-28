@@ -3583,11 +3583,59 @@
         ]
       ]
     },
-    "phase": "fingerprinting inputs",
-    "receipt": {},
-    "state": "verifying",
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "7c7dab19ef4736f9d0dd7c7529f0996213fc083d9d723b3871903e898675d29d",
+      "credits": 2,
+      "distinct_after": 9842,
+      "distinct_before": 9840,
+      "gains": [
+        "00572a90",
+        "00572e40"
+      ],
+      "input_hash": "0af58bce1047a20775e85c3880eb6201058b93ce5ea51b937a232018d383d320",
+      "losses": [],
+      "new_distinct": [
+        "00572a90",
+        "00572e40"
+      ],
+      "overlay_hash": "c4615d9a51433a7e33008dbd3f361019bf3b9483eb519eaeafb03cecb717f759",
+      "owned_after": 3177,
+      "owned_before": 3175,
+      "rebased": false,
+      "submitted_revision": "7c7dab19ef4736f9d0dd7c7529f0996213fc083d9d723b3871903e898675d29d"
+    },
+    "state": "accepted",
     "unit": "RBX::ServiceProvider",
-    "updated": 1793180369.3011854,
+    "updated": 1793184008.737202,
+    "user": "colin"
+  },
+  {
+    "created": 1793191252.614925,
+    "id": "c95275453ade486cbeb2f1948d2a297b",
+    "model": "gpt-6",
+    "patches": {
+      "App/include/util/Events.h": [
+        [
+          "return !listeners.empty();",
+          "return listeners.size() > 0;"
+        ]
+      ],
+      "App/v8tree/Instance.cpp": [
+        [
+          "Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent));",
+          "Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->getParent()));"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
+    "unit": "RBX::PartInstance",
+    "updated": 1793193774.918552,
     "user": "colin"
   }
 ]

@@ -4,27 +4,6 @@ Paste this file into a Codex or Claude Code session opened in a RoConstruct chec
 the DeepSeek native pass (`roc research run native-model-2008`). You write the edits; the tools compile the real
 2008-06 file, check exact bytes and referenced data, minimize your edits, and submit verified batches.
 
-## Run contract: continuous, quantity first
-
-Keep running until the user explicitly stops or pauses the campaign, or an actual external blocker prevents
-all useful work. There is no fixed target count, batch count, time limit, or "one match and done" exit.
-A saved proposal, queued submission, accepted batch, or exhausted shortlist starts the next iteration;
-none completes the campaign. Do not end the session with a final summary while useful work remains.
-Keep the selected client locked and optimize for new independently accepted, unique native matches per hour.
-Quantity means more verified matches; all code, referenced-data, ownership, ABI and regression gates remain.
-
-Keep discovery and server verification separate. After queuing a batch, immediately work on the next files.
-Never wait for a submitted job before continuing discovery. Check receipts with one-shot status commands
-between batches, or at most once per 5–10 minutes while doing useful work; never use a blocking watcher,
-repeated status polling, or sleeps to fill verification time. Report queued/local exacts separately from
-accepted credits. User-visible updates should name new gains, decisions or blockers, not unchanged polls.
-
-Maintain a small checkpoint in `work/native-try/campaign.json`: selected client, baseline revision, pending
-job IDs, saved proof paths, next candidates, and deferred targets with their reason and evidence revision.
-Update it at batch boundaries and before a context/runtime boundary. Resume from that checkpoint on
-continuation without repeating setup, client selection, completed trials or unchanged blocked targets.
-If the host terminates execution, preserve the checkpoint and report that interruption accurately.
-
 ## First response: select the client
 
 Before setup or identity questions, fetch the public server's `/v1/status` using the agent's HTTP tool
@@ -135,7 +114,7 @@ roc lib-fetch rbxgs rbxgs-net rbxgs-appdraw rbxgs-render rbxgs-view openrbx-clie
 roc libs-bundle fetch mfc-9.0-rtm
 roc integrate sync
 roc rebuild 2008-06 doctor
-roc native-try targets --min-score 85 --max-score 99 --limit 40
+roc native-try targets --limit 20
 ```
 
 Skip `analyze` when `work/2008-06/functions.jsonl` already covers the current verified client. `install`
@@ -157,12 +136,6 @@ is unavailable, report the named missing dependency and download error; do not r
 If doctor cannot find an installed SDK, set `ROC_WINSDK` to this PC's SDK folder containing `Include` and
 `Lib/kernel32.lib`; never copy the owner's absolute paths. Resolve compiler/SDK errors before continuing.
 
-Setup is a prerequisite, not a repeated campaign phase. Reuse the same healthy private Worker checkout,
-verified client analysis, compiler/SDK paths and fetched dependencies for every later batch. Do not create
-another Worker, redownload sources, rerun analysis, or rerun smoke checks unless inputs changed, a required
-component is missing, or an actual failure makes the check necessary. Carry required environment overrides
-into later command invocations; shell-local environment changes do not persist between tool calls.
-
 ## Local trial setup
 
 - `check` edits one source/header. For a header fix, use `--only ADDR` to identify a real caller;
@@ -177,26 +150,17 @@ into later command invocations; shell-local environment changes do not persist b
 
 ## Loop
 
-1. Start with `roc native-try targets --min-score 85 --max-score 99 --limit 40`.
-   Rank files by the number of actionable, unintegrated targets a small evidenced change could fix.
-   Prefer shared inline/header/template families, assertion differences, conditions, call order and constants.
-   Read recent research notes and the checkpoint once; skip recorded negatives whose evidence is unchanged.
-   Do not blindly take the largest unfiltered class: missing-symbol rows and duplicate bodies can inflate it.
-2. `roc native-try evidence FILE --context methods --brief --only ADDR,ADDR` prints everything you need
-   (select up to six actionable addresses per evidence request; expand only when needed):
-   - the native source excerpt and compact evidence (`--brief` omits repeated rules and full assembly);
-   - use `--context file` when the fix may sit in an inlined helper elsewhere in the file;
+1. `roc native-try targets --limit 20` lists files with waiting near-miss targets, most first. Take the top file.
+2. `roc native-try evidence FILE --context methods [--only ADDR,ADDR]` prints everything you need
+   (`--only` narrows it to the targets you are still working on):
+   - the rules;
+   - the file excerpt (use `--context file` when the fix may sit in an inlined helper elsewhere in the file);
    - for each target: its address, its `rebuilt_symbol` and `native_score`, the byte-exact mined source, the
      target asm, `standins`, and `current_diff` (target vs current rebuilt instructions).
    - `native_score` is how close the rebuild's own method compiles today. Every target is already 100% mined;
      the job is to close that gap in the real C++.
    - When `current_diff` shows calls where the target has inlined code (or the reverse), the fix usually sits in
-     a helper. Rerun with `--context file` to see it. Omit `--brief` only when full assembly is needed.
-   - If evidence says the body is already TU-exact, globally integrated, or address-ambiguous, defer it immediately.
-     Do not edit or repeatedly compile it to chase credit the ownership gate cannot award.
-   - Triage each new target/family in about 120 seconds of agent reasoning, excluding required tool runtime.
-     Missing native field identities, declarations or ABI evidence are a reason to record the blocker and move on.
-     Do not spend the campaign reconstructing one speculative layout while actionable families remain.
+     a helper. Rerun with `--context file` to see it.
 3. Write SEARCH/REPLACE blocks for FILE into a scratch file (for example `blocks.txt`):
 
    ```text
@@ -236,15 +200,8 @@ into later command invocations; shell-local environment changes do not persist b
    `roc native-try check FILE`. If anchors changed, reconcile the edits before checking again.
    For example, `roc native-try check App/include/util/Events.h blocks.txt --only 0055ae20`
    automatically finds and compiles `Instance.cpp`; it never compiles the header as a standalone TU.
-5. Read the diff and make one evidenced hypothesis per trial. Stop after at most three unsuccessful trials
-   per file/family, sooner when the residue is unchanged or required facts are missing. Record the exact
-   failed hypothesis and evidence revision once, then move on. Revisit only after relevant evidence or the
-   accepted baseline changes. When a shared helper/header wins, check other real callers with the same
-   evidenced pattern to harvest the family; preserve existing matches in every checked translation unit.
-6. Accumulate multiple saved proposals; aim for 10–30 unique targets per batch. Submit a smaller nonempty
-   batch after roughly 10–15 minutes of discovery if no further gains are ready, so long verification can
-   overlap the next discovery pass. Never submit empty, ambiguous, regressing or unproved candidates.
-   At a batch boundary, run `roc integrate sync`, then
+5. Read the diff, make one hypothesis per try, and stop a file after about 3 tries without progress. Move on.
+6. After several saved proposals (aim for 10–30 targets), run `roc integrate sync`, then
    `roc native-try submit --model YOUR_ACTUAL_MODEL`. It claims, stages and queues one batch.
    - When the accepted baseline moves, submit recompiles versioned saved edits against
      the latest clean baseline automatically. Changed anchors, lost gains or regressions
@@ -254,27 +211,11 @@ into later command invocations; shell-local environment changes do not persist b
      A partial batch archives only the submitted proposals; the remaining proposals stay saved.
 
    After submitting:
-   - Record the returned job ID in the checkpoint. `native-try submit` keeps the submitted snapshot and
-     restores the local baseline; immediately return to discovery. Concurrent generator edits are preserved.
-   - Use `roc integrate status --id JOB` once at the next scheduled receipt check. A queued/verifying job
-     stays on the pending list while discovery continues. Do not run `roc integrate watch` in this loop.
-   - After acceptance, record independently credited addresses and sync at the next safe batch boundary;
-     revalidate remaining saved proposals only when their baseline changed, not on every status check.
-   - After rejection, read the receipt once, preserve the submitted proof, and fix the stated cause when
-     evidence supports it. Otherwise defer that family and keep working elsewhere. A missing job is an
-     explicit submission error to investigate; it must never be counted as accepted.
-   - If claims block a class, keep its saved proposal and work on other classes. Retry after the claim or
-     baseline changes, not in a tight loop. Never reset another worker's claim or delete an unsent proposal.
-7. Refresh the shortlist after each batch. When close-score candidates are exhausted, widen to other scored
-   targets below 85, then inspect unscored targets only when native declarations and a real caller are known.
-   Use existing evidence-backed compiler/header/template families and research recipes to cover multiple
-   targets per hypothesis. Do not rerun setup or recycle the same failed shortlist as a new pass.
-   If every eligible target is deferred, summarize the shared missing evidence and check for changed inputs
-   at a bounded interval; do not hot-loop failed compiles. Resume discovery as soon as actionable evidence
-   appears. User stop/pause and actual external inability to continue are the only campaign stopping conditions.
-8. At each batch boundary, checkpoint compact counts: targets triaged, trials, new unique local exacts,
-   accepted credits, regressions, pending jobs, and current blockers. Append a concise research note per
-   meaningful batch/family, not per polling cycle. Then start step 1 again without asking to continue.
+   - `native-try submit` keeps the submitted snapshot and restores the local baseline,
+     so more discovery can run while the server verifies the batch. Concurrent generator edits are preserved.
+   - `roc integrate watch --id JOB` to follow it;
+     rejection or a missing job exits with failure, so dependent shell steps stop;
+   - `roc integrate sync` after acceptance.
 
 ## Fewer commands and smaller evidence
 

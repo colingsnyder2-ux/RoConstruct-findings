@@ -1,9 +1,8 @@
-// from server: 91% by EspClaude
-// from server: unit variant
+// from server: 92% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: openrbx-client-dll roc_espclaude_398a4673fda31fa7.cpp
+// roc-lib: openrbx-client-dll roc_claudesub_a43185cac0fad0e6.cpp
 
 // Candidate translation unit (score above; library headers required).
 // exe-layout OpenRBX headers: Body pv at 0x94 without updatePV, Primitive +0x28 before oldSpatialMin
@@ -1006,156 +1005,6 @@ bool BallBlockContact::stepContact()
 	return false;
 }
 
-// STUB: WEBSERVICE 0x100d2710
-bool BlockBlockContact::getBestPlaneEdge(bool& planeContact, float overlapIgnored)
-{
-	float bestPlaneLength = Math::inf();
-	float bestEdgeLength = Math::inf();
-	float lastPlaneLength = Math::inf();
-
-	int lastFeature[2] = {feature[0], feature[1]};
-
-	bool checkLastFeature = (lastFeature[0] >= 0 && lastFeature[0] < 6) || (lastFeature[1] >= 0 && lastFeature[1] < 6);
-
-	for (int i = separatingBodyId; i < separatingBodyId + 2; i++) {
-
-		int baseId = i % 2;
-		int i1 = (i + 1) % 2;
-
-		const CoordinateFrame& cBase = getBody(baseId)->getCoordinateFrame();
-		const CoordinateFrame& cTest = getBody(i1)->getCoordinateFrame();
-
-		const Vector3& eBase = block(baseId)->getExtent();
-		const Vector3& eTest = block(i1)->getExtent();
-
-		Vector3 pTestInBase = cBase.pointToObjectSpace(cTest.translation);
-
-		for (int testId = separatingAxisId; testId < separatingAxisId + 3; testId++) {
-
-			int j = testId % 3;
-
-			Vector3 eBaseInTest = cBase.rotation.getColumn(j) * cTest.rotation;
-
-			float length = fabsf(eBaseInTest.y * eTest.y) + fabsf(eBaseInTest.x * eTest.x) +
-						   fabsf(eBaseInTest.z * eTest.z) + eBase[j] - fabsf(pTestInBase[j]);
-
-			if (!(length > overlapIgnored)) {
-				separatingBodyId = baseId;
-				separatingAxisId = j;
-
-				return false;
-			}
-
-			if (checkLastFeature) {
-				if (lastFeature[baseId] % 3 == j) {
-					lastPlaneLength = length;
-				}
-			}
-
-			if (length < bestPlaneLength) {
-				bestPlaneLength = length;
-
-				feature[baseId] = pTestInBase[j] > 0 ? j : j + 3;
-				feature[i1] = -1;
-
-				separatingBodyId = baseId;
-				separatingAxisId = j;
-
-				planeContact = true;
-			}
-		}
-	}
-
-	if (checkLastFeature && (feature[0] != lastFeature[0] || feature[1] != lastFeature[1]) &&
-		!(bestPlaneLength * 1.01f < lastPlaneLength)) {
-
-		bestPlaneLength = lastPlaneLength;
-
-		feature[0] = lastFeature[0];
-		feature[1] = lastFeature[1];
-	}
-
-	const CoordinateFrame& c0 = getBody(0)->getCoordinateFrame();
-	const CoordinateFrame& c1 = getBody(1)->getCoordinateFrame();
-
-	const Vector3& extent0 = block(0)->getExtent();
-	const Vector3& extent1 = block(1)->getExtent();
-
-	Vector3 p0p1 = c1.translation - c0.translation;
-
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-
-			Vector3 crossAxis = c0.rotation.getColumn(i).cross(c1.rotation.getColumn(j));
-
-			if (crossAxis.unitize() <= 0.001f) {
-				return planeContact;
-			}
-
-			float p0p1inCrossAxis = p0p1.dot(crossAxis);
-
-			Vector3 crossInBase = crossAxis * c0.rotation;
-			Vector3 crossInTest = crossAxis * c1.rotation;
-
-			float length = fabsf(crossInBase.x * extent0.x) + fabsf(crossInBase.y * extent0.y) +
-						   fabsf(crossInBase.z * extent0.z) + fabsf(crossInTest.x * extent1.x) +
-						   fabsf(crossInTest.y * extent1.y) + fabsf(crossInTest.z * extent1.z) - fabsf(p0p1inCrossAxis);
-
-			if (!(length > overlapIgnored)) {
-				return false;
-			}
-
-			if (length < bestEdgeLength) {
-				bestEdgeLength = length;
-
-				if (length * 10.0f < bestPlaneLength) {
-
-					if (p0p1inCrossAxis > 0) {
-						feature[0] = block(0)->getClosestEdge(c0.rotation, (NormalId) i, crossAxis) + 6;
-						feature[1] = block(1)->getClosestEdge(c1.rotation, (NormalId) j, -crossAxis) + 6;
-					}
-					else {
-						Vector3 negCrossAxis = -crossAxis;
-
-						feature[0] = block(0)->getClosestEdge(c0.rotation, (NormalId) i, negCrossAxis) + 6;
-						feature[1] = block(1)->getClosestEdge(c1.rotation, (NormalId) j, crossAxis) + 6;
-					}
-
-					planeContact = false;
-				}
-			}
-		}
-	}
-
-	return true;
-}
-
-// FUNCTION: WEBSERVICE 0x100d2da0
-void Contact::onPrimitiveContactParametersChanged()
-{
-	Primitive* prim0 = getPrimitive(0);
-	Primitive* prim1 = getPrimitive(1);
-
-	kFriction = std::min(prim0->getFriction(), prim1->getFriction());
-
-	float elasticity = std::min(prim0->getElasticity(), prim1->getElasticity());
-
-	jointK = std::min(prim0->getJointK(), prim1->getJointK());
-
-	elasticJointK = Constants::getElasticMultiplier(elasticity) * jointK;
-}
-
-// FUNCTION: WEBSERVICE 0x100d2ea0
-bool BallBlockContact::computeIsColliding(float overlapIgnored)
-{
-	int onBorder;
-	Vector3int16 clip(0, 0, 0);
-	Vector3 projectionInBlock(0, 0, 0);
-
-	return computeIsColliding(onBorder, clip, projectionInBlock, overlapIgnored);
-}
-
-// FUNCTION: WEBSERVICE 0x100d2ef0
 bool BlockBlockContact::computeIsColliding(float overlapIgnored)
 {
 	if (Primitive::aaBoxCollide(*getPrimitive(0), *getPrimitive(1))) {
@@ -1528,7 +1377,8 @@ bool BlockBlockContact::getBestPlaneEdge(float overlapIgnored)
 			Vector3 eBaseInTest = cBase.rotation.getColumn(j) * cTest.rotation;
 
 			float length = fabsf(eBaseInTest.y * eTest.y) + fabsf(eBaseInTest.x * eTest.x) +
-						   fabsf(eBaseInTest.z * eTest.z) + eBase[j] - fabsf(pTestInBase[j]);
+						   fabsf(eBaseInTest.z * eTest.z);
+			length += eBase[j] - fabsf(pTestInBase[j]);
 
 			if (!(length > overlapIgnored)) {
 				separatingBodyId = baseId;
@@ -1574,6 +1424,7 @@ bool BlockBlockContact::getBestPlaneEdge(float overlapIgnored)
 	const Vector3& extent0 = block(0)->getExtent();
 	const Vector3& extent1 = block(1)->getExtent();
 
+ float roc_p1 = 0; float roc_p2 = 0;
 	Vector3 p0p1 = c1.translation - c0.translation;
 
 	for (int i = 0; i < 3; i++) {

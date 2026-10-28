@@ -1,9 +1,8 @@
-// from server: 99% by EspClaude
-// from server: 98% by Espeon
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espclaude_659fdd046ac1d172.cpp
+// roc-lib: rbxgs-dll roc_claudesub_dbec07a4b021be47.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias("v8kernel/KernelIndex.h", "roc_espeon_kernelindex16f57e5495e5b6c8eb.cpp")
@@ -31,8 +30,13 @@ G3D::Vector3 vecUnkPercent(G3D::Vector3& input)
 }
 
 float precentInline(float fNum)
-{ float pd1 = 0;
+{
 	return 1.0f / fNum;
+}
+
+inline void Quaternion::normalize()
+{
+	*this *= 1.0f / magnitude();
 }
 
 __forceinline void SimBody::unkSimInline(float fNum)
@@ -42,14 +46,14 @@ __forceinline void SimBody::unkSimInline(float fNum)
 }
 
 void SimBody::update()
-{
+{ float roc_dd0 = 0; float roc_dd1 = 0; float roc_dd2 = 0;
 	
 	{
 		const G3D::Vector3 cofmOffset = body->getCofmOffset();
 		pv = body->getPV().pvAtLocalOffset(cofmOffset);
 	}
 	qOrientation = Quaternion::Quaternion(pv.position.rotation);
-	qOrientation *= precentInline(qOrientation.magnitude());
+	qOrientation.normalize();
 	angMomentum = pv.velocity.rotational * body->getBranchIWorld();
 	float _mass = body->getBranchMass();
 	unkSimInline(_mass);
