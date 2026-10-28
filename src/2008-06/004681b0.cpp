@@ -1,3 +1,4 @@
+// from server: 82% by king_originala
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // Complete keyboard handler: Win32 imports, native UIEvent/SDL declarations, and measured DxUserInput ABI.
@@ -356,16 +357,17 @@ void DxUserInput::processKeyboard(){
  }
  RBX::DataModel::Lock dataLock(dataModel);
  for(unsigned i=0;i<count;++i){
-  bool down=(events[i].dwData&0x80)!=0;
   DWORD scan=events[i].dwOfs;
+  bool down=(events[i].dwData&0x80)!=0;
   SDLMod mods=getModifierState(keyboardState);
   SDLKey key=scanCodeToKey(scan);
   if(down&&window){
    static HKL keyboardLayout=GetKeyboardLayout(0);
    UINT virtualKey=MapVirtualKeyExA(scan,1,keyboardLayout);
    if(!virtualKey)virtualKey=keyToVirtualKey(key);
-   if(virtualKey==0x2c){PostMessageA(window->handle,0x111,0x180fc,0);}
-   else if(virtualKey==0x70||virtualKey==0x73||!AfxGetModuleState()->application->mainWindow->acceleratorBypass){
+   if(virtualKey!=0x2c&&virtualKey!=0x70&&virtualKey!=0x73&&AfxGetModuleState()->application->mainWindow->acceleratorBypass){_ReadWriteBarrier();}
+   else if(virtualKey==0x2c){PostMessageA(window->handle,0x111,0x180fc,0);}
+   else{
     UINT ascii=MapVirtualKeyExA(virtualKey,2,keyboardLayout);
     int flags=((mods&0x300)?0x10:0)|((mods&0xc0)?8:0)|((mods&3)?4:0);
     unsigned index;
@@ -386,6 +388,7 @@ void DxUserInput::processKeyboard(){
 nextInputEvent:;
  }
 }
+
 typedef char assert_input_base[sizeof(RBX::UserInputBase)==0x28?1:-1];
 typedef char assert_sync[offsetof(DxUserInput,inputSync)==0x34?1:-1];
 typedef char assert_accel[offsetof(DxUserInput,accelerators)==0x50?1:-1];

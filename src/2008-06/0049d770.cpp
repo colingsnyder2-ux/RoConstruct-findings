@@ -1,8 +1,7 @@
-// from server: 96% by nuck16
-// roc-lang: cpp
+// from server: 100% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net-dll roc_unit_e697bafc3736ff0e.cpp
+// roc-lib: rbxgs-net-dll roc_unit_59a74edd08c96c8d.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define _CPPUNWIND 1
@@ -21,6 +20,8 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/thread/mutex.hpp>
+#include <map>
 #include <RakPeerInterface.h>
 #include <BitStream.h>
 #include <MessageIdentifiers.h>
@@ -30,7 +31,7 @@ namespace RBX { namespace Network { enum { ID_CHAT_ALL = 0x51, ID_REPORT_ABUSE =
 namespace RBX {
 class Name { public: static const Name& lookup(const std::string& sName); };
 struct Instance;struct XmlElement;struct IReferenceBinder;struct ServiceProvider;
-struct Guid:boost::noncopyable {struct Data {const Name*scope;int index;};Data data;};
+struct Guid:boost::noncopyable {struct Data {const Name*scope;int index;bool operator<(const Data&) const;};Data data;static const Name& getLocalScope();};
 template<class T>struct GuidItem {virtual ~GuidItem();bool registeredGuid;Guid guid;static bool lookupByGuid(const Guid::Data&,T*&);};
 struct Object {virtual ~Object();};template<class T>struct Creatable:Object{};
 template<class T>struct AbstractFactoryProduct:Creatable<T> {virtual const Name&getClassName()const=0;};
@@ -63,6 +64,22 @@ public:
 	static boost::shared_ptr<StandardOut> singleton();
 	void print(MessageType type, const char* format, ...);
 };
+
+struct GuidRegistry {std::map<Guid::Data,Instance*> tree;boost::mutex mutex;};
+extern GuidRegistry* globalGuidRegistry;
+extern int guidRegistryInitialized;
+void initializeGuidRegistry();
+void initializeGuidOnce(void (__cdecl*)(),int*);
+template<> bool GuidItem<Instance>::lookupByGuid(const Guid::Data& key,Instance*& result) {
+    const Name* scope=key.scope;
+    if(&Guid::getLocalScope()==scope) {result=0;return true;}
+    initializeGuidOnce(initializeGuidRegistry,&guidRegistryInitialized);
+    GuidRegistry* map=globalGuidRegistry;
+    boost::mutex::scoped_lock guard(map->mutex);
+    std::map<Guid::Data,Instance*>::const_iterator it=map->tree.find(key);
+    if(it!=map->tree.end()) {result=it->second;return true;}
+    result=0;return false;
+}
 
 namespace Network {
 RakNet::BitStream& operator>>(RakNet::BitStream& stream, int& value);

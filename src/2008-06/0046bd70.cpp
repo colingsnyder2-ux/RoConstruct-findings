@@ -1,7 +1,7 @@
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: mfc-9.0-shared-rtm roc_unit_217972e821a9e2e6.cpp
+// roc-lib: mfc-9.0-shared-rtm roc_espclaude_fb8f2fed57ddcec2.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <afxwin.h>
@@ -51,7 +51,7 @@ long __stdcall reconstruct(VCWorkspaceNativeView* view, IXmlStream** result)
             StreamObject* p;
 #line 300
             HRCHECK(StreamObject::CreateInstance(&p));
-            object = static_cast<StreamObject* volatile&>(p);
+            __assume(p != 0); IXmlStream* q = p; __assume(q != 0); object = static_cast<StreamObject*>(q);
         }
 #line 304
         HRCHECK(view->write(view->writeXmlModel().get(), &object->stream));
@@ -67,3 +67,4 @@ long __stdcall reconstruct(VCWorkspaceNativeView* view, IXmlStream** result)
     }
     return 0;
 }
+

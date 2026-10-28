@@ -1,4 +1,4 @@
-// from server: 67% by king_originala
+// from server: 78% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
@@ -172,7 +172,7 @@ namespace G3D{typedef double GameTime;typedef double SimTime;typedef double Real
 namespace G3D{class Vector2;class Vector2int16;class Vector3;class Vector3int16;class Vector4;class Vector4int16;class Color3;class Color3uint8;class Color4;class Color4uint8;enum BinaryFormat{FIRST_BINFMT=1000,BOOL8_BINFMT,UINT8_BINFMT,INT8_BINFMT,UINT16_BINFMT,INT16_BINFMT,UINT32_BINFMT,INT32_BINFMT,UINT64_BINFMT,INT64_BINFMT,UINT128_BINFMT,INT128_BINFMT,FLOAT16_BINFMT,FLOAT32_BINFMT,FLOAT64_BINFMT,VECTOR2_BINFMT,VECTOR2INT16_BINFMT,VECTOR3_BINFMT,VECTOR3INT16_BINFMT,VECTOR4_BINFMT,VECTOR4INT16_BINFMT,COLOR3_BINFMT,COLOR3UINT8_BINFMT,COLOR3INT16_BINFMT,COLOR4_BINFMT,COLOR4UINT8_BINFMT,COLOR4INT16_BINFMT,STRING_BINFMT,STRINGEVEN_BINFMT,STRING8_BINFMT,STRING16_BINFMT,STRING32_BINFMT,CHUNK_BINFMT,CUSTOM_BINFMT,LAST_BINFMT};enum G3DEndian{G3D_BIG_ENDIAN=0,G3D_LITTLE_ENDIAN=1};}
 namespace G3D{std::string demoFindData(bool errorIfNotFound=true);std::string license();uint32 __declspec(deprecated)crc32(const void*bytes,size_t numBytes);class System{public:static void*alignedMalloc(size_t bytes,size_t alignment);typedef bool(*OutOfMemoryCallback)(size_t size,bool recoverable);static OutOfMemoryCallback outOfMemoryCallback;static void*realloc(void*block,size_t bytes);static void alignedFree(void*ptr);static void memcpy(void*dst,const void*src,size_t numBytes);static const std::string&build();static void describeSystem(class TextOutput&t);private:};}
 namespace G3D{const bool DONT_SHRINK_UNDERLYING_ARRAY=false;const int SORT_INCREASING=1;const int SORT_DECREASING=-1;template<class T>class Array{private:T*data;int num;int numAllocated;inline bool inArray(const T*address){return(address>=data)&&(address<data+num);}void realloc(int oldNum){T*oldData=data;data=(T*)System::alignedMalloc(sizeof(T)*numAllocated,16);{const int N=iMin(oldNum,numAllocated);const T*end=data+N;T*oldPtr=oldData;for(T*ptr=data;ptr<end;++ptr,++oldPtr){const T*constructed=new(ptr)T(*oldPtr);(void)constructed;do{}while(0);}}{const T*end=oldData+oldNum;for(T*ptr=oldData;ptr<end;++ptr){ptr->~T();}}System::alignedFree(oldData);}public:typedef T*Iterator;typedef const T*ConstIterator;Iterator begin(){return data;}ConstIterator begin()const{return data;}ConstIterator end()const{return data+num;}Iterator end(){return data+num;}Array();Array(int size);Array(const Array&other);~Array();void clear(){resize(0);}Array&operator=(const Array&other);Array&operator=(const std::vector<T>&other);inline int size()const{return num;}inline int length()const{return size();}void resize(int n){resize(n,true);}void resize(int n,bool shrinkIfNecessary){int oldNum=num;num=n;for(int i=num;i<oldNum;++i){(data+i)->~T();}static const int minSize=iMax(10,32/sizeof(T));if(num>numAllocated){if(numAllocated==0){numAllocated=n;do{}while(0);realloc(oldNum);}else{if(num<minSize){numAllocated=minSize;}else{float growFactor=3.0;size_t oldSizeBytes=numAllocated*sizeof(T);if(oldSizeBytes>400000){growFactor=1.5;}else if(oldSizeBytes>64000){growFactor=2.0;}numAllocated=(num-numAllocated)+(int)(numAllocated*growFactor);if(numAllocated<minSize){numAllocated=minSize;}}realloc(oldNum);}}else if((num<=numAllocated/3)&&shrinkIfNecessary&&(num>minSize)){realloc(iMin(num,oldNum));}for(int i=oldNum;i<num;++i){new(data+i)T;}}inline void append(const T&value){if(num<numAllocated){new(data+num)T(value);++num;}else if(inArray(&value)){T tmp=value;append(tmp);}else{resize(num+1,DONT_SHRINK_UNDERLYING_ARRAY);data[num-1]=value;}}inline void append(const T&v1,const T&v2){if(inArray(&v1)||inArray(&v2)){T t1=v1;T t2=v2;append(t1,t2);}else if(num+1<numAllocated){new(data+num)T(v1);new(data+num+1)T(v2);num+=2;}else{resize(num+2,DONT_SHRINK_UNDERLYING_ARRAY);data[num-2]=v1;data[num-1]=v2;}}inline void append(const T&v1,const T&v2,const T&v3){if(inArray(&v1)||inArray(&v2)||inArray(&v3)){T t1=v1;T t2=v2;T t3=v3;append(t1,t2,t3);}else if(num+2<numAllocated){new(data+num)T(v1);new(data+num+1)T(v2);new(data+num+2)T(v3);num+=3;}else{resize(num+3,DONT_SHRINK_UNDERLYING_ARRAY);data[num-3]=v1;data[num-2]=v2;data[num-1]=v3;}}inline void append(const T&v1,const T&v2,const T&v3,const T&v4){if(inArray(&v1)||inArray(&v2)||inArray(&v3)||inArray(&v4)){T t1=v1;T t2=v2;T t3=v3;T t4=v4;append(t1,t2,t3,t4);}else if(num+3<numAllocated){new(data+num)T(v1);new(data+num+1)T(v2);new(data+num+2)T(v3);new(data+num+3)T(v4);num+=4;}else{resize(num+4,DONT_SHRINK_UNDERLYING_ARRAY);data[num-4]=v1;data[num-3]=v2;data[num-2]=v3;data[num-1]=v4;}}bool contains(const T&e)const;void append(const Array<T>&array){do{}while(0);int oldNum=num;int arrayLength=array.length();resize(num+arrayLength,false);for(int i=0;i<arrayLength;i++){data[oldNum+i]=array.data[i];}}inline T&next(){resize(num+1,false);return last();}inline void push(const T&value){append(value);}inline void push(const Array<T>&array){append(array);}inline void push_back(const T&v){push(v);}void swap(Array<T>&str){Array<T>temp=str;str=*this;*this=temp;}inline T&operator[](int n);inline T&operator[](unsigned int n);inline const T&operator[](int n)const;inline const T&operator[](unsigned int n)const;inline const T&last()const{do{}while(0);do{}while(0);return data[num-1];}inline T&last(){do{}while(0);do{}while(0);return data[num-1];}Iterator find(const T&value);ConstIterator find(const T&value)const;void remove(Iterator element,int count=1);void remove(int index,int count=1);};}
-namespace G3D{class CoordinateFrame{public:Matrix3 rotation;Vector3 translation;static const float zLookDirection;inline bool operator==(const CoordinateFrame&other)const{return(translation==other.translation)&&(rotation==other.rotation);}inline bool operator!=(const CoordinateFrame&other)const{return!(*this==other);}inline CoordinateFrame():rotation(Matrix3::identity()),translation(Vector3::zero()){}CoordinateFrame(const Vector3&_translation):rotation(Matrix3::identity()),translation(_translation){}CoordinateFrame(const Matrix3&rotation,const Vector3&translation):rotation(rotation),translation(translation){}CoordinateFrame(const Matrix3&rotation):rotation(rotation),translation(Vector3::zero()){}CoordinateFrame(class BinaryInput&b);void deserialize(class BinaryInput&b);void serialize(class BinaryOutput&b)const;CoordinateFrame(const CoordinateFrame&other):rotation(other.rotation),translation(other.translation){}inline CoordinateFrame inverse()const{CoordinateFrame out;out.rotation=rotation.transpose();out.translation=-out.rotation*translation;return out;}inline~CoordinateFrame(){}class Matrix4 toMatrix4()const;inline Vector3 pointToWorldSpace(const Vector3&v)const{return Vector3(rotation[0][0]*v[0]+rotation[0][1]*v[1]+rotation[0][2]*v[2]+translation[0],rotation[1][0]*v[0]+rotation[1][1]*v[1]+rotation[1][2]*v[2]+translation[1],rotation[2][0]*v[0]+rotation[2][1]*v[1]+rotation[2][2]*v[2]+translation[2]);}class Ray toObjectSpace(const Ray&r)const;void pointToWorldSpace(const Array<Vector3>&v,Array<Vector3>&vout)const;class Box toWorldSpace(const class AABox&b)const;class Box toWorldSpace(const class Box&b)const;class Cylinder toWorldSpace(const class Cylinder&b)const;class Capsule toWorldSpace(const class Capsule&b)const;class Plane toWorldSpace(const class Plane&p)const;class Sphere toWorldSpace(const class Sphere&b)const;class Triangle toWorldSpace(const class Triangle&t)const;class Box toObjectSpace(const AABox&b)const;class Box toObjectSpace(const Box&b)const;class Plane toObjectSpace(const Plane&p)const;class Sphere toObjectSpace(const Sphere&b)const;CoordinateFrame operator*(const CoordinateFrame&other)const{return CoordinateFrame(rotation*other.rotation,pointToWorldSpace(other.translation));}CoordinateFrame operator+(const Vector3&v)const{return CoordinateFrame(rotation,translation+v);}CoordinateFrame operator-(const Vector3&v)const{return CoordinateFrame(rotation,translation-v);}void lookAt(const Vector3&target);void lookAt(const Vector3&target,Vector3 up);class Ray lookRay()const;};}
+namespace G3D{class CoordinateFrame{public:Matrix3 rotation;Vector3 translation;static const float zLookDirection;inline bool operator==(const CoordinateFrame&other)const{return(translation==other.translation)&&(rotation==other.rotation);}inline bool operator!=(const CoordinateFrame&other)const{return!(*this==other);}inline CoordinateFrame():rotation(Matrix3::identity()),translation(Vector3::zero()){}CoordinateFrame(const Vector3&_translation):rotation(Matrix3::identity()),translation(_translation){}CoordinateFrame(const Matrix3&rotation,const Vector3&translation):rotation(rotation),translation(translation){}CoordinateFrame(const Matrix3&rotation):rotation(rotation),translation(Vector3::zero()){}CoordinateFrame(class BinaryInput&b);void deserialize(class BinaryInput&b);void serialize(class BinaryOutput&b)const;CoordinateFrame(const CoordinateFrame&other):rotation(other.rotation),translation(other.translation){}inline CoordinateFrame inverse()const{CoordinateFrame out;out.rotation=rotation.transpose();out.translation=-out.rotation*translation;return out;}inline~CoordinateFrame(){}inline Vector3 pointToObjectSpace(const Vector3&v)const{float p[3];p[0]=v[0]-translation[0];p[1]=v[1]-translation[1];p[2]=v[2]-translation[2];return Vector3(rotation[0][0]*p[0]+rotation[1][0]*p[1]+rotation[2][0]*p[2],rotation[0][1]*p[0]+rotation[1][1]*p[1]+rotation[2][1]*p[2],rotation[0][2]*p[0]+rotation[1][2]*p[1]+rotation[2][2]*p[2]);}class Matrix4 toMatrix4()const;inline Vector3 pointToWorldSpace(const Vector3&v)const{return Vector3(rotation[0][0]*v[0]+rotation[0][1]*v[1]+rotation[0][2]*v[2]+translation[0],rotation[1][0]*v[0]+rotation[1][1]*v[1]+rotation[1][2]*v[2]+translation[1],rotation[2][0]*v[0]+rotation[2][1]*v[1]+rotation[2][2]*v[2]+translation[2]);}class Ray toObjectSpace(const Ray&r)const;void pointToWorldSpace(const Array<Vector3>&v,Array<Vector3>&vout)const;class Box toWorldSpace(const class AABox&b)const;class Box toWorldSpace(const class Box&b)const;class Cylinder toWorldSpace(const class Cylinder&b)const;class Capsule toWorldSpace(const class Capsule&b)const;class Plane toWorldSpace(const class Plane&p)const;class Sphere toWorldSpace(const class Sphere&b)const;class Triangle toWorldSpace(const class Triangle&t)const;class Box toObjectSpace(const AABox&b)const;class Box toObjectSpace(const Box&b)const;class Plane toObjectSpace(const Plane&p)const;class Sphere toObjectSpace(const Sphere&b)const;CoordinateFrame operator*(const CoordinateFrame&other)const{return CoordinateFrame(rotation*other.rotation,pointToWorldSpace(other.translation));}CoordinateFrame operator+(const Vector3&v)const{return CoordinateFrame(rotation,translation+v);}CoordinateFrame operator-(const Vector3&v)const{return CoordinateFrame(rotation,translation-v);}void lookAt(const Vector3&target);void lookAt(const Vector3&target,Vector3 up);class Ray lookRay()const;};}
 namespace G3D{class Plane{private:Vector3 _normal;float _distance;Plane(const Vector3&n,float d);public:Plane();Plane(const Vector3&point0,const Vector3&point1,const Vector3&point2);Plane(Vector4 point0,Vector4 point1,Vector4 point2);Plane(const Vector3&__normal,const Vector3&point);Plane(class BinaryInput&b);void serialize(class BinaryOutput&b)const;void deserialize(class BinaryInput&b);virtual~Plane();inline const Vector3&normal()const{return _normal;}};}
 namespace G3D{class GCamera{private:float fieldOfView;float imagePlaneDepth;float nearPlane;float farPlane;CoordinateFrame cframe;public:class Frustum{public:class Face{public:int vertexIndex[4];Plane plane;};Array<Vector4>vertexPos;Array<Face>faceArray;};GCamera();virtual~GCamera();CoordinateFrame getCoordinateFrame()const;void getCoordinateFrame(CoordinateFrame&c)const;void setImagePlaneDepth(float depth,const class Rect2D&viewport);inline double getFieldOfView()const{return fieldOfView;}G3D::Vector3 project(const G3D::Vector3&point,const class Rect2D&viewport)const;float worldToScreenSpaceArea(float area,float z,const class Rect2D&viewport)const;void get3DViewportCorners(const class Rect2D&viewport,Vector3&outUR,Vector3&outUL,Vector3&outLL,Vector3&outLR)const;float getImagePlaneDepth(const class Rect2D&viewport)const;Ray worldRay(float x,float y,const class Rect2D&viewport)const;inline float getNearPlaneZ()const{return-nearPlane;}inline float getFarPlaneZ()const{return-farPlane;}float getViewportWidth(const class Rect2D&viewport)const;float getViewportHeight(const class Rect2D&viewport)const;void setPosition(const Vector3&t);void lookAt(const Vector3&position,const Vector3&up=Vector3::unitY());void getClipPlanes(const Rect2D&viewport,Array<Plane>&outClip)const;void serialize(class BinaryOutput&bo)const;void deserialize(class BinaryInput&bi);};}
 namespace G3D{class AtomicInt32{private:volatile long _value;public:inline AtomicInt32(){}explicit inline AtomicInt32(const int32 x){_value=x;}inline AtomicInt32(const AtomicInt32&x){_value=x._value;}inline const AtomicInt32&operator=(const int32 x){_value=x;return*this;}inline const void operator=(const AtomicInt32&x){_value=x._value;}inline int32 add(const int32 x);inline void increment(){InterlockedIncrement(&_value);}inline uint32 decrement(){return InterlockedDecrement(&_value)!=0;}};}
@@ -291,7 +291,8 @@ public:
 class RenderScene {
 public:
     void render(Ogre::VisualEngine*, const G3D::GCamera*);
-    void updateLights(Ogre::VisualEngine*, bool); 
+    struct Flag { bool v; };
+    void updateLights(Ogre::VisualEngine*, Flag); 
 };
 }
 }
@@ -314,44 +315,7 @@ static __forceinline SubMesh* nativeSubMesh(NativeMesh::Level* level) {
         return nativeBaseMesh->getSubMesh((unsigned short)nativeField<int>(level, 0x20));
     return 0;
 }
-static __forceinline void nativeConfigurePass(Pass* pass, NativeLevel* layer,
-        Chunk* chunk, NativeMesh* mesh, NativeMesh::Level* geometry) {
-    const Color3& color = layer->color();
-    pass->setDiffuse(color.r, color.g, color.b, 1.0f - layer->transparent());
-    pass->setAmbient(color.r, color.g, color.b);
-    int type = nativeField<int>(mesh, 0x84);
-    if (type == 1 || type == 2 || type == 3) {
-        pass->setSpecular(layer->specular(), layer->specular(), layer->specular(), 1.0f);
-        pass->setShininess(type == 2 ? 40.0f : 18.0f);
-    } else {
-        pass->setSpecular(0.75f, 0.75f, 0.75f, 1.0f);
-        pass->setShininess(10.0f);
-    }
-    pass->setDepthBias(nativeField<float>(chunk, 0x18) * -16.0f, 0.0f);
-    if (layer->transparent() > 0.0f || nativeField<int>(mesh, 0x84) == 4) {
-        pass->setSceneBlending((SceneBlendFactor)7, (SceneBlendFactor)9);
-        pass->setDepthWriteEnabled(false);
-    }
-    if (layer->baseTexture().notNull()) {
-        TexturePtr texture = nativeField<TexturePtr>(
-            dynamic_cast<RBX::RenderNew::TextureProxy*>(layer->baseTexture().pointer()), 0x54);
-        if (!texture.isNull()) {
-            TextureUnitState* unit = pass->createTextureUnitState();
-            unit->setColourOperation((LayerBlendOperation)2);
-            unit->setTextureFiltering((FilterOptions)2, (FilterOptions)2, (FilterOptions)2);
-            unit->setTextureAddressingMode((TextureUnitState::TextureAddressingMode)0,
-                (TextureUnitState::TextureAddressingMode)0, (TextureUnitState::TextureAddressingMode)0);
-            unit->setTextureBorderColour(ColourValue(layer->color().r, layer->color().g, layer->color().b));
-            unit->setTextureName(texture->getName(), (TextureType)2);
-        }
-        bool loaded = !texture.isNull() && texture->hasAlpha();
-        if (layer->transparent() > 0.0f && loaded && nativeField<int>(geometry, 0x18) == 2) {
-            pass->setSceneBlending((SceneBlendType)4);
-            pass->setDepthWriteEnabled(true);
-            pass->setAlphaRejectSettings((CompareFunction)6, 1);
-        }
-    }
-}
+static __forceinline ColourValue nativeColour(const float& r, const float& g, const float& b) { return ColourValue(r, g, b); }
 static __forceinline void nativeReflectionPass(NativeLevel* level) {
     TexturePtr texture = TextureManager::getSingleton().getByName("skysphmap");
     if (texture.isNull()) {
@@ -369,52 +333,6 @@ static __forceinline void nativeReflectionPass(NativeLevel* level) {
     TextureUnitState* unit = pass->createTextureUnitState();
     unit->setTextureName(texture->getName(), (TextureType)2);
     unit->setEnvironmentMap(true, (TextureUnitState::EnvMapType)1);
-}
-static __forceinline bool nativeBuildMaterial(Chunk* chunk, NativeMesh* mesh,
-        NativeMesh::Level* geometry, NativeLevel* first, VisualEngine* ctx) {
-    if (!first || !nativeField<MaterialPtr>(first, 0x2c).isNull()) return false;
-    char name[8];
-    _snprintf(name, 8, "m%d", nativeMaterialId++);
-    nativeField<MaterialPtr>(first, 0x2c) = MaterialManager::getSingleton().create(name, "General");
-    for (int i = 0; i < chunk->getMaterial()->levelCount(); ++i) {
-        NativeLevel* level = dynamic_cast<NativeLevel*>(&chunk->getMaterial()->getLevel(i));
-        if (level) {
-            level->baseTexture(ctx);
-            Pass* pass = i == 0 ? nativeField<MaterialPtr>(first, 0x2c)->getTechnique(0)->getPass(0)
-                               : nativeField<MaterialPtr>(first, 0x2c)->getTechnique(0)->createPass();
-            nativeConfigurePass(pass, level, chunk, mesh, geometry);
-        }
-    }
-    if (first->reflect() > 0.0f) nativeReflectionPass(first);
-    return true;
-}
-static __forceinline void nativeMergeBounds(RbxSceneNode* root, RbxEntity* entity,
-        Chunk* chunk, NativeMesh::Level* level, SubMesh* selected) {
-    const G3D::Vector3& pos = chunk->cframe().translation;
-    AxisAlignedBox bounds = nativeField<AxisAlignedBox>(entity, 0x27c);
-    if (std::fabs(pos.x) < 10000.0f && std::fabs(pos.y) < 10000.0f && std::fabs(pos.z) < 10000.0f) {
-        if (selected != nativeField<SubMesh*>(level, 0x24)) {
-            const Ogre::Sphere& sphere = root->getSphere((unsigned long)selected);
-            float radius = sphere.getRadius();
-            const G3D::Vector3& position = chunk->cframe().translation;
-            AxisAlignedBox merged = nativeField<AxisAlignedBox>(entity, 0x27c);
-            merged.merge(AxisAlignedBox(
-                Ogre::Vector3(position.x + sphere.getCenter().x - radius,
-                    position.y + sphere.getCenter().y - radius, position.z + sphere.getCenter().z - radius),
-                Ogre::Vector3(position.x + sphere.getCenter().x + radius,
-                    position.y + sphere.getCenter().y + radius, position.z + sphere.getCenter().z + radius)));
-            entity->mergeBounds(merged);
-        } else {
-            SubMesh* sub = nativeField<SubMesh*>(level, 0x24);
-            AxisAlignedBox box(
-                Ogre::Vector3(pos.x + nativeField<float>(sub, 0xcc), pos.y + nativeField<float>(sub, 0xd0),
-                    pos.z + nativeField<float>(sub, 0xd4)),
-                Ogre::Vector3(pos.x + nativeField<float>(sub, 0xd8), pos.y + nativeField<float>(sub, 0xdc),
-                    pos.z + nativeField<float>(sub, 0xe0)));
-            bounds.merge(box);
-            entity->mergeBounds(bounds);
-        }
-    }
 }
 void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose) {
     Camera* camera = nativeField<Camera*>(ctx, 8);
@@ -437,7 +355,7 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
         nativeField<RbxSceneNode*>(this, 0x268) = new RbxSceneNode(nativeField<SceneManager*>(ctx, 4), "rbxroot");
         nativeField<SceneManager*>(ctx, 4)->getRootSceneNode()->addChild(nativeField<RbxSceneNode*>(this, 0x268));
     }
-    updateLights(ctx, nativeField<bool>(this, 0x2f6));
+    { Flag f; f.v = nativeField<bool>(this, 0x2f6); updateLights(ctx, f); }
     bool special = nativeField<bool>(ctx, 0x7f5);
     if (nativeField<MaterialPtr>(this, 0x270).isNull()) nativeField<MaterialPtr>(this, 0x270) = MaterialManager::getSingleton().getByName("BaseWhite");
     if (nativeField<MeshPtr>(this, 0x27c).isNull()) nativeField<MeshPtr>(this, 0x27c) = MeshManager::getSingleton().createOrRetrieve("rbxdummymesh", "General").first;
@@ -446,7 +364,7 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
         nativeField<RbxSceneNode*>(this, 0x268)->attachObject(nativeField<RbxEntity*>(this, 0x26c));
         nativeField<RbxEntity*>(this, 0x26c)->setMesh(nativeField<MeshPtr>(this, 0x27c));
     }
-    for (int i = 0; i < nativeField<int>(this, 0xc); ++i) if (nativeField<Chunk**>(this, 8)[i]) nativeField<Chunk**>(this, 8)[i]->getMesh();
+    for (int i = 0; i < nativeField<int>(this, 0xc); ++i) { Chunk* c = nativeField<Chunk**>(this, 8)[i]; if (c) c->getMesh(); }
     if (nativeDebugRender && nativeField<int>(this, 0xc) != 0 && special) {
         nativeFlushGeometry(ctx);
         nativeField<RbxEntity*>(this, 0x26c)->setMesh(nativeBaseMesh);
@@ -468,9 +386,7 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
         int lod = 0;
         if (nativeField<int>(mesh.pointer(), 0x10) == 2) {
             const G3D::Vector3& p = chunk->cframe().translation;
-            float depth = -((p.x - cameraFrame.translation.x) * cameraFrame.rotation[0][2]
-                + (p.y - cameraFrame.translation.y) * cameraFrame.rotation[1][2]
-                + (p.z - cameraFrame.translation.z) * cameraFrame.rotation[2][2]);
+            float depth = -cameraFrame.pointToObjectSpace(p).z;
             if (!(depth < 80.0f)) lod = 1;
         }
         G3D::ReferenceCountedPointer<NativeMesh::Level> geometry = mesh->detailLevel((float)lod);
@@ -504,7 +420,7 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
         }
         NativeLevel* material = dynamic_cast<NativeLevel*>(&chunk->getMaterial()->getLevel(0));
         bool materialCreated=false;
- {NativeMesh*materialMesh=mesh.pointer();NativeMesh::Level*materialGeometry=geometry.pointer();
+ {
  if(material && nativeField<MaterialPtr>(material,0x2c).isNull()){
     
     char name[8];
@@ -516,7 +432,40 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
             level->baseTexture(ctx);
             Pass* pass = i == 0 ? nativeField<MaterialPtr>(material, 0x2c)->getTechnique(0)->getPass(0)
                                : nativeField<MaterialPtr>(material, 0x2c)->getTechnique(0)->createPass();
-            nativeConfigurePass(pass, level, chunk, materialMesh, materialGeometry);
+            const Color3& color = level->color();
+            pass->setDiffuse(color.r, color.g, color.b, 1.0f - level->transparent());
+            pass->setAmbient(color.r, color.g, color.b);
+            if (nativeField<int>(mesh.pointer(), 0x84) == 1 || nativeField<int>(mesh.pointer(), 0x84) == 2 || nativeField<int>(mesh.pointer(), 0x84) == 3) {
+                pass->setSpecular(level->specular(), level->specular(), level->specular(), 1.0f);
+                pass->setShininess(nativeField<int>(mesh.pointer(), 0x84) == 2 ? 40.0f : 18.0f);
+            } else {
+                pass->setSpecular(0.75f, 0.75f, 0.75f, 1.0f);
+                pass->setShininess(10.0f);
+            }
+            pass->setDepthBias(nativeField<float>(chunk, 0x18) * -16.0f, 0.0f);
+            if (level->transparent() > 0.0f || nativeField<int>(mesh.pointer(), 0x84) == 4) {
+                pass->setSceneBlending((SceneBlendFactor)7, (SceneBlendFactor)9);
+                pass->setDepthWriteEnabled(false);
+            }
+            if (level->baseTexture().notNull()) {
+                TexturePtr texture = nativeField<TexturePtr>(
+                    dynamic_cast<RBX::RenderNew::TextureProxy*>(level->baseTexture().pointer()), 0x54);
+                if (!texture.isNull()) {
+                    TextureUnitState* unit = pass->createTextureUnitState();
+                    unit->setColourOperation((LayerBlendOperation)2);
+                    unit->setTextureFiltering((FilterOptions)2, (FilterOptions)2, (FilterOptions)2);
+                    unit->setTextureAddressingMode((TextureUnitState::TextureAddressingMode)0,
+                        (TextureUnitState::TextureAddressingMode)0, (TextureUnitState::TextureAddressingMode)0);
+                    unit->setTextureBorderColour(nativeColour(level->color().r, level->color().g, level->color().b));
+                    unit->setTextureName(texture->getName(), (TextureType)2);
+                }
+                bool loaded = !texture.isNull() && texture->hasAlpha();
+                if (level->transparent() <= 0.0f && loaded && nativeField<int>(geometry.pointer(), 0x18) == 2) {
+                    pass->setSceneBlending((SceneBlendType)4);
+                    pass->setDepthWriteEnabled(true);
+                    pass->setAlphaRejectSettings((CompareFunction)6, 1);
+                }
+            }
         }
     }
     if (material->reflect() > 0.0f) nativeReflectionPass(material);
@@ -524,18 +473,16 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
 
  }}
         if (!nativeField<RbxSubEntity*>(chunk, 0x10)) {
+            if (!(special ? nativeSubMesh(geometry.pointer()) : nativeField<SubMesh*>(geometry.pointer(), 0x24)))
+                throw std::exception("Please restart ROBLOX, if you changed your settings but have not restarted");
             SubMesh* selected;
             RbxSubEntity* sub;
             if (special) {
-                if (!nativeSubMesh(geometry.pointer()))
-                    throw std::exception("Please restart ROBLOX, if you changed your settings but have not restarted");
                 selected = nativeSubMesh(geometry.pointer());
                 sub = nativeField<RbxEntity*>(this, 0x26c)->addSubEntity(selected, lod);
                 nativeField<bool>(sub, 0x13c) = false;
             } else {
                 selected = nativeField<SubMesh*>(geometry.pointer(), 0x24);
-                if (!selected)
-                    throw std::exception("Please restart ROBLOX, if you changed your settings but have not restarted");
                 sub = nativeField<RbxEntity*>(this, 0x26c)->addSubEntity(selected, lod);
             }
             sub->setFloat138(chunk->getFloat14());
@@ -545,7 +492,33 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
             if (nativeField<int>(mesh.pointer(), 0x84) == 4) nativeField<bool>(sub, 0x13c) = false;
             nativeField<RbxSubEntity*>(chunk, 0x10) = sub;
             nativeField<RbxEntity*>(chunk, 0xc) = nativeField<RbxEntity*>(this, 0x26c);
-            nativeMergeBounds(nativeField<RbxSceneNode*>(this, 0x268), nativeField<RbxEntity*>(this, 0x26c), chunk, geometry.pointer(), selected);
+            {
+            const G3D::Vector3& pos = chunk->cframe().translation;
+            AxisAlignedBox bounds = nativeField<AxisAlignedBox>(nativeField<RbxEntity*>(this, 0x26c), 0x27c);
+            if (std::fabs(pos.x) < 10000.0f && std::fabs(pos.y) < 10000.0f && std::fabs(pos.z) < 10000.0f) {
+                if (selected != nativeField<SubMesh*>(geometry.pointer(), 0x24)) {
+                    const Ogre::Sphere& sphere = nativeField<RbxSceneNode*>(this, 0x268)->getSphere((unsigned long)selected);
+                    float radius = sphere.getRadius();
+                    const G3D::Vector3& position = chunk->cframe().translation;
+                    AxisAlignedBox merged = nativeField<AxisAlignedBox>(nativeField<RbxEntity*>(this, 0x26c), 0x27c);
+                    Ogre::Vector3 p(position.x, position.y, position.z);
+                    Ogre::Vector3 lo = sphere.getCenter() + p - radius;
+                    Ogre::Vector3 hi = p + sphere.getCenter() + radius;
+                    AxisAlignedBox box(lo, hi);
+                    merged.merge(box);
+                    nativeField<RbxEntity*>(this, 0x26c)->mergeBounds(merged);
+                } else {
+                    SubMesh* sub = nativeField<SubMesh*>(geometry.pointer(), 0x24);
+                    AxisAlignedBox box(
+                        Ogre::Vector3(pos.x + nativeField<float>(sub, 0xcc), pos.y + nativeField<float>(sub, 0xd0),
+                            pos.z + nativeField<float>(sub, 0xd4)),
+                        Ogre::Vector3(pos.x + nativeField<float>(sub, 0xd8), pos.y + nativeField<float>(sub, 0xdc),
+                            pos.z + nativeField<float>(sub, 0xe0)));
+                    bounds.merge(box);
+                    nativeField<RbxEntity*>(this, 0x26c)->mergeBounds(bounds);
+                }
+            }
+            }
         } else if (boundsChanged || !nativeField<RbxSubEntity*>(chunk, 0x10)->getLodMesh(lod)) {
             if (special) {
                 if (nativeSubMesh(geometry.pointer()))
@@ -560,8 +533,9 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
             Ogre::Material* mat = nativeField<MaterialPtr>(material, 0x2c).getPointer();
             if (mat) sub->setMaterialName(mat->getName());
         }
+        const G3D::Matrix3& rot = chunk->cframe().rotation;
         Ogre::Quaternion q;
-        q.FromRotationMatrix(*reinterpret_cast<const Ogre::Matrix3*>(&chunk->cframe().rotation));
+        q.FromRotationMatrix(*reinterpret_cast<const Ogre::Matrix3*>(&rot));
         const G3D::Vector3& p = chunk->cframe().translation;
         Ogre::Matrix4 transform;
         transform.makeTransform(Ogre::Vector3(p.x, p.y, p.z), Ogre::Vector3(1, 1, 1), q);

@@ -2,7 +2,7 @@
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espclaude_7996cb7d98b44686.cpp
+// roc-lib: rbxgs-dll roc_espclaude_bba7b523d8580794.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define _CPPUNWIND 1
@@ -83,15 +83,15 @@ void NativeLightingScene::apply(RenderContext* context, bool unused) {
    }
   }
   light->setType(Ogre::Light::LT_POINT);
-  G3D::Color3 diffuse;
-  { G3D::Color3 mainFactor(mainDiffuse); float s=intensity; diffuse=source.color*s*mainFactor; }
-  diffuse+=top*diffuse.length();
+  G3D::Color3 mainFactor(mainDiffuse);
+  G3D::Color3 diffuse=source.color; diffuse=diffuse*intensity*mainFactor;
+  float len=diffuse.length(); diffuse+=top*len;
   light->setDiffuseColour(diffuse.r,diffuse.g,diffuse.b);
   light->setPosition(source.position.x*radius+center.x,source.position.y*radius+center.y,source.position.z*radius+center.z);
   G3D::Color3 specular=source.color;
   if(mainSpecular==G3D::Color3()) {
    float peak=std::max(specular.r,std::max(specular.g,specular.b));
-   if(peak<0.5f) specular*=0.5f/peak;
+   if(peak<0.5f) { float scale=0.5f/peak; specular*=scale; }
   } else { G3D::Color3 specularFactor(mainSpecular); specular=specular*specularFactor; }
   light->setSpecularColour(specular.r,specular.g,specular.b);
  }
@@ -112,19 +112,21 @@ void NativeLightingScene::apply(RenderContext* context, bool unused) {
   Ogre::Light* light;
   if(manager->hasLight(fillName))light=manager->getLight(fillName);
   else {light=manager->createLight(fillName);light->setCastShadows(false);light->setType(Ogre::Light::LT_POINT);}
-  light->setPosition(center*2.0f-position);
+  Ogre::Vector3 fillPos=center*2.0f-position; light->setPosition(fillPos);
   G3D::Color3 diffuse;
-  { G3D::Color3 baseColour=source.color*intensity;
+  { G3D::Color3 baseColour=source.color; baseColour=baseColour*intensity;
   G3D::Color3 scaleFactor(fillScale);
   G3D::Color3 diffuseFactor(fillDiffuse);
   diffuse=baseColour*0.4f*diffuseFactor*scaleFactor; }
-  diffuse+=bottom*diffuse.length();
-  light->setDiffuseColour(convertColour(G3D::Color4(diffuse.r,diffuse.g,diffuse.b,1.0f)));
-  G3D::Color3 specularFactor(fillSpecular);
+  float len=diffuse.length(); diffuse+=bottom*len;
+  light->setDiffuseColour(convertColour(diffuse));
+  { G3D::Color3 specularFactor(fillSpecular);
   G3D::Color3 specular=specularFactor*diffuse;
-  light->setSpecularColour(specular.r,specular.g,specular.b);
+  light->setSpecularColour(specular.r,specular.g,specular.b); }
  }
+ {
  G3D::Color3 average=(lighting->ambientTop+lighting->ambientBottom)/2.0f;
  if(lighting->shadowedLightArray.size()>0)G3D::Vector3 direction=lighting->shadowedLightArray[0].position.xyz();
+ }
 }
 

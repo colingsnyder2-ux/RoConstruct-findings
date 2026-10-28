@@ -1,4 +1,3 @@
-// from server: 98% by king_originala
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 #include <vector>

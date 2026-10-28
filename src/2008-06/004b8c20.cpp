@@ -1,110 +1,297 @@
-// roc-cl: 50727
+// Complete 0x51b-byte OnReceive extent.
+// roc-lang: cpp
+// roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-struct Address {
-    unsigned int ip;
-    unsigned short port;
-    unsigned short padding;
-    bool equals(const Address*);
-};
+#include <string>
+#include <exception>
 
-struct Packet {
-    unsigned int unused;
-    Address address;
-    unsigned int length;
-    unsigned int bitLength;
+namespace RakNet {
+class BitStream {
+    unsigned numberOfBitsUsed, numberOfBitsAllocated, readOffset;
     unsigned char* data;
-};
-
-struct BitStream {
-    unsigned int bitsUsed;
-    unsigned int bitsAllocated;
-    unsigned int readOffset;
-    unsigned char* data;
-    bool ownsData;
-    unsigned char buffer[256];
-
+    bool copyData;
+    unsigned char stackData[256];
+public:
     BitStream();
-    BitStream(unsigned char*, unsigned int, bool);
+    BitStream(unsigned char* data, unsigned lengthInBytes, bool copyData);
     ~BitStream();
-    void ignoreBits(int);
+    void IgnoreBits(int numberOfBits);
+};
+}
+RakNet::BitStream& __cdecl operator<<(RakNet::BitStream&, unsigned char);
+RakNet::BitStream& __cdecl operator>>(RakNet::BitStream&, int&);
+RakNet::BitStream& __cdecl operator>>(RakNet::BitStream&, std::string&);
+
+struct SystemAddress {
+    unsigned binaryAddress;
+    unsigned short port;
+    bool operator==(const SystemAddress&) const;
+    const char* ToString(bool writePort = true) const;
+};
+struct Packet {
+    unsigned short systemIndex;
+    SystemAddress systemAddress;
+    unsigned length;
+    unsigned bitSize;
+    unsigned char* data;
+    bool deleteData;
+};
+enum PacketPriority { SYSTEM_PRIORITY, HIGH_PRIORITY, MEDIUM_PRIORITY, LOW_PRIORITY };
+enum PacketReliability { UNRELIABLE, UNRELIABLE_SEQUENCED, RELIABLE, RELIABLE_ORDERED, RELIABLE_SEQUENCED };
+enum PluginReceiveResult { RR_STOP_PROCESSING_AND_DEALLOCATE = 0, RR_CONTINUE_PROCESSING, RR_STOP_PROCESSING };
+enum {
+    ID_CONNECTION_REQUEST_ACCEPTED_ = 13,
+    ID_NEW_INCOMING_CONNECTION_ = 16,
+    ID_DISCONNECTION_NOTIFICATION_ = 18,
+    ID_CONNECTION_LOST_ = 19,
+    ID_TIMESTAMP_ = 24,
+    ID_SET_GLOBALS = 75,
+    ID_REQUEST_CHARACTER,
+    ID_DICTIONARIES,
+    ID_DATA,
+    ID_REQUEST_MARKER
 };
 
-extern void __cdecl writeByte(BitStream*, unsigned char);
-
-struct Guard {
-    unsigned char storage[40];
-    Guard(void*, int);
-    ~Guard();
+class RakPeerInterface {
+public:
+    virtual ~RakPeerInterface();
+    virtual void v1(); virtual void v2(); virtual void v3(); virtual void v4(); virtual void v5();
+    virtual void v6(); virtual void v7(); virtual void v8(); virtual void v9(); virtual void v10();
+    virtual void v11(); virtual void v12();
+    virtual bool Send(RakNet::BitStream* bitStream, PacketPriority priority, PacketReliability reliability, char orderingChannel, SystemAddress systemAddress, bool broadcast);
 };
 
-struct Channel {
-    void write(BitStream*);
-    void read(BitStream*);
+class PluginInterface {
+public:
+    virtual ~PluginInterface();
+    virtual void OnAttach(RakPeerInterface* peer);
+    virtual void OnDetach(RakPeerInterface* peer);
+    virtual void OnInitialize(RakPeerInterface* peer);
+    virtual void Update(RakPeerInterface* peer);
+    virtual PluginReceiveResult OnReceive(RakPeerInterface* peer, Packet* packet);
 };
 
-struct Handler {
-    int process(Packet*);
+namespace RBX {
+enum MessageType { MESSAGE_OUTPUT, MESSAGE_INFO, MESSAGE_WARNING, MESSAGE_ERROR };
+class StandardOut {
+public:
+    void print(MessageType type, const char* format, ...);
+};
+struct StandardOutPtr {
+    StandardOut* px;
+    void* pn;
+    ~StandardOutPtr();
+    StandardOut* operator->() const { return px; }
+};
+StandardOutPtr __cdecl standardOut();
+
+class Name;
+inline bool operator==(const Name& a, const Name& b) { return &a == &b; }
+const Name& __cdecl lookupName(const std::string&);
+
+class Guid {
+public:
+    struct Data { const Name* scope; unsigned index; };
+    static const Name& getLocalScope();
 };
 
-struct Peer {
-    virtual void slot0();
-    virtual void slot1();
-    virtual void slot2();
-    virtual void slot3();
-    virtual void slot4();
-    virtual void slot5();
-    virtual void slot6();
-    virtual void slot7();
-    virtual void slot8();
-    virtual void slot9();
-    virtual void slot10();
-    virtual void slot11();
-    virtual void slot12();
-    virtual bool send(BitStream*, int, int, char, Address, bool);
+class Instance {
+public:
+    void setGuid(const Guid::Data&);
+};
+struct InstanceIterator {
+    void* cont;
+    Instance** ptr;
+    InstanceIterator();
+    Instance*& operator*() const;
+    InstanceIterator& operator++();
+    bool operator!=(const InstanceIterator&) const;
+};
+struct InstanceVector {
+    void* proxy;
+    Instance** first; Instance** last; Instance** end_;
+    InstanceIterator begin();
+    InstanceIterator end();
+    Instance*& operator[](unsigned);
 };
 
-struct Replicator {
-    unsigned char storage[0x1a8];
-    void* mutex;
-    unsigned char padding[0x34];
-    Address address;
+namespace Profiling {
+class CodeProfiler;
+class Mark {
+    char storage[0x18];
+public:
+    Mark(CodeProfiler& section, bool frameTick);
+    ~Mark();
+};
+}
 
-    int process(Peer*, Packet*);
+namespace Reflection {
+class DescribedBase { public: virtual ~DescribedBase(); char pad[0x2b74 - 0x18]; };
+template<class C, class Sig> class SignalDesc;
+template<class C> class SignalDesc<C, void(std::string, bool)> {
+public:
+    void fire(DescribedBase* source, std::string a, bool b) const;
+};
+}
+
+__forceinline const char* safeWhat(const std::exception& e) { const char* s = e.what(); return s ? s : "empty error string"; }
+class InstanceBase { public: virtual ~InstanceBase(); char pad[0x10]; };
+
+namespace Network {
+struct ClassDictionarySender { char pad[0x24]; void send(RakNet::BitStream&); };
+struct ClassDictionaryReceiver { char pad[0x20]; void receive(RakNet::BitStream&); };
+struct PropDictionarySender { char pad[0x24]; void send(RakNet::BitStream&); };
+struct PropDictionaryReceiver { char pad[0x20]; void receive(RakNet::BitStream&); };
+
+class Replicator;
+class Item {
+protected:
+    Replicator& replicator;
+    Item(Replicator& r) : replicator(r) {}
+public:
+    virtual ~Item() {}
+    virtual void write(RakNet::BitStream&) = 0;
+};
+class MarkerItem : public Item {
+    int id;
+public:
+    MarkerItem(Replicator& r, int id) : Item(r), id(id) {}
+    virtual void write(RakNet::BitStream&);
+};
+struct ItemPtr {
+    Item* px;
+    void* pn;
+    explicit ItemPtr(Item*);
+    ~ItemPtr();
+};
+struct ItemList {
+    void* proxy; void* head; unsigned size;
+    void push_back(const ItemPtr&);
 };
 
-int Replicator::process(Peer* peer, Packet* packet)
+class Replicator : public InstanceBase, public Reflection::DescribedBase, public PluginInterface {
+    char pad0[0x38];
+    ClassDictionarySender classNamesOut;     // +0x3c
+    ClassDictionaryReceiver classNamesIn;    // +0x60
+    PropDictionarySender propNamesOut;       // +0x80
+    PropDictionaryReceiver propNamesIn;      // +0xa4
+    char pad1[0x20];
+protected:
+    InstanceVector replicationContainers;    // +0xe4
+    char pad2[0xc];
+    ItemList pendingItems;                   // +0x100
+    char pad3[0x9c];
+    Profiling::CodeProfiler* profileDataIn;  // +0x1a8
+    char pad4[0x2c];
+    bool receivedGlobals;                    // +0x1d8
+public:
+    bool disconnected;                       // +0x1d9
+    RakPeerInterface* peer;                  // +0x1dc
+    const SystemAddress remotePlayerId;      // +0x1e0
+
+    static Reflection::SignalDesc<Replicator, void(std::string, bool)> event_Disconnection;
+
+    virtual PluginReceiveResult OnReceive(RakPeerInterface*, Packet*);
+private:
+    bool deserializeId(RakNet::BitStream&, Guid::Data&);
+    void addInstance(Instance*, Guid::Data);
+    void readInstances(RakNet::BitStream&, Instance*);
+    void receiveData(Packet* packet);
+    PluginReceiveResult OnReceive_ID_TIMESTAMP(Packet*);
+    __forceinline void sendDictionaries(RakPeerInterface* peer)
+    {
+        RakNet::BitStream bitStream;
+        bitStream << (unsigned char)ID_DICTIONARIES;
+        classNamesOut.send(bitStream);
+        propNamesOut.send(bitStream);
+        peer->Send(&bitStream, MEDIUM_PRIORITY, RELIABLE_ORDERED, 0, remotePlayerId, false);
+    }
+};
+
+PluginReceiveResult Replicator::OnReceive(RakPeerInterface* peer, Packet* packet)
 {
-    if (packet->address.equals(&address)) {
-        Guard guard(mutex, 0);
-        try {
-            switch (*packet->data) {
-            case 13:
-                return reinterpret_cast<Handler*>(
-                    reinterpret_cast<char*>(this) - 0x2b74)->process(packet);
+    const SystemAddress& remote = remotePlayerId;
+    if (packet->systemAddress == remote)
+    {
+        Profiling::Mark mark(*profileDataIn, false);
+        try
+        {
+            switch (packet->data[0])
+            {
+            case ID_TIMESTAMP_:
+                return OnReceive_ID_TIMESTAMP(packet);
 
-            case 77:
-                {
-                    BitStream stream;
-                    writeByte(&stream, 77);
-                    reinterpret_cast<Channel*>(storage + 0x3c)->write(&stream);
-                    reinterpret_cast<Channel*>(storage + 0x80)->write(&stream);
-                    peer->send(&stream, 2, 3, 0, address, false);
-                }
+            case ID_CONNECTION_REQUEST_ACCEPTED_:
+            case ID_NEW_INCOMING_CONNECTION_:
+                sendDictionaries(peer);
                 break;
 
-            case 79:
+            case ID_DICTIONARIES:
                 {
-                    BitStream stream(packet->data, packet->length, false);
-                    stream.ignoreBits(8);
-                    reinterpret_cast<Channel*>(storage + 0x60)->read(&stream);
-                    reinterpret_cast<Channel*>(storage + 0xa4)->read(&stream);
+                    RakNet::BitStream bitStream(packet->data, packet->length, false);
+                    bitStream.IgnoreBits(8);
+                    classNamesIn.receive(bitStream);
+                    propNamesIn.receive(bitStream);
                 }
+                return RR_STOP_PROCESSING_AND_DEALLOCATE;
+
+            case ID_CONNECTION_LOST_:
+                standardOut()->print(MESSAGE_WARNING, "Lost connection to %s\n", packet->systemAddress.ToString());
+                event_Disconnection.fire(this, packet->systemAddress.ToString(), true);
+                disconnected = true;
                 break;
+
+            case ID_DISCONNECTION_NOTIFICATION_:
+                standardOut()->print(MESSAGE_INFO, "Disconnect from %s", packet->systemAddress.ToString());
+                event_Disconnection.fire(this, packet->systemAddress.ToString(), false);
+                disconnected = true;
+                break;
+
+            case ID_DATA:
+                receiveData(packet);
+                return RR_STOP_PROCESSING_AND_DEALLOCATE;
+
+            case ID_REQUEST_MARKER:
+                {
+                    RakNet::BitStream bitStream(packet->data, packet->length, false);
+                    bitStream.IgnoreBits(8);
+                    int id;
+                    bitStream >> id;
+                    pendingItems.push_back(ItemPtr(new MarkerItem(*this, id)));
+                }
+                return RR_STOP_PROCESSING_AND_DEALLOCATE;
+
+            case ID_SET_GLOBALS:
+                {
+                    RakNet::BitStream bitStream(packet->data, packet->length, false);
+                    bitStream.IgnoreBits(8);
+                    std::string scope;
+                    bitStream >> scope;
+                    if (lookupName(scope) == Guid::getLocalScope())
+                        throw std::exception("Remote peer is running in the same process");
+                    InstanceIterator end = replicationContainers.end();
+                    for (InstanceIterator iter = replicationContainers.begin(); iter != end; ++iter)
+                    {
+                        Guid::Data id;
+                        deserializeId(bitStream, id);
+                        (*iter)->setGuid(id);
+                        addInstance(*iter, id);
+                    }
+                    readInstances(bitStream, replicationContainers[0]);
+                }
+                receivedGlobals = true;
+                return RR_STOP_PROCESSING_AND_DEALLOCATE;
             }
         }
-        catch (...) {
-            throw;
+        catch (std::exception& e)
+        {
+            disconnected = true;
+            const char* what = safeWhat(e);
+            standardOut()->print(MESSAGE_ERROR, "Replicator::OnReceive packet %d: %s", packet->data[0], what);
+            return RR_STOP_PROCESSING_AND_DEALLOCATE;
         }
     }
-    return 1;
+    return RR_CONTINUE_PROCESSING;
+}
+}
 }
