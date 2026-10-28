@@ -1,9 +1,8 @@
-// from server: 76% by colin
-// from server: 76% by Espeon
+// from server: 78% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espeon_wininetmutableheadereaf218ba8c8d6bbe.cpp
+// roc-lib: rbxgs-dll roc_espclaude_f64e416ce7b9c6ca.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define NDEBUG 1
@@ -119,14 +118,14 @@ void NativeHttp::request(bool isPost,std::istream& data,bool compressData,const 
     out.push(boost::iostreams::basic_gzip_compressor<>(gzipParams));
    }
    out.push(String_sink(uploadData));boost::iostreams::copy(data,out);
- } catch(boost::iostreams::gzip_error& e) { throw std::runtime_error(G3D::format("Upload GZip error %d, ZLib error %d, \"%s\"",e.error(),e.zlib_error_code(),url.c_str())); }
-  int length=(int)uploadData.size();
+ } catch(boost::iostreams::gzip_error& e) { int error=e.error(); int zlibError=e.zlib_error_code(); throw std::runtime_error(G3D::format("Upload GZip error %d, ZLib error %d, \"%s\"",error,zlibError,url.c_str())); }
+  size_t length=uploadData.size();
   if(length>10000) {
    std::string sizeHeader=G3D::format("Roblox-Content-Size: %d\r\n",length);
    failure(HttpAddRequestHeadersA(request,sizeHeader.c_str(),(int)sizeHeader.size(),HTTP_ADDREQ_FLAG_ADD)==TRUE,"HttpAddRequestHeaders failed");
    std::string firstHeader=G3D::format("Roblox-Content-First: %d\r\n",uploadData[0]);
    failure(HttpAddRequestHeadersA(request,firstHeader.c_str(),(int)firstHeader.size(),HTTP_ADDREQ_FLAG_ADD)==TRUE,"HttpAddRequestHeaders failed");
-   std::string lastHeader=G3D::format("Roblox-Content-Last: %d\r\n",uploadData[length-1]);
+   std::string lastHeader=G3D::format("Roblox-Content-Last: %d\r\n",uploadData.c_str()[length-1]);
    failure(HttpAddRequestHeadersA(request,lastHeader.c_str(),(int)lastHeader.size(),HTTP_ADDREQ_FLAG_ADD)==TRUE,"HttpAddRequestHeaders failed");
    boost::scoped_ptr<MD5Hasher> hasher(MD5Hasher::create());hasher->addData(uploadData);
    std::string hashHeader=G3D::format("Roblox-Content-Hash: %s\r\n",hasher->c_str());
@@ -149,8 +148,8 @@ void NativeHttp::request(bool isPost,std::istream& data,bool compressData,const 
   char buffer[256];DWORD length=sizeof(buffer);
   if(HttpQueryInfoA(request,HTTP_QUERY_CONTENT_ENCODING,buffer,&length,NULL))if(std::string(buffer)=="gzip")in.push(boost::iostreams::basic_gzip_decompressor<>());
   in.push(HttpRequest_source(request));boost::iostreams::copy(in,String_sink(response));
- } catch(boost::iostreams::gzip_error& e) { throw std::runtime_error(G3D::format("GZip error %d, ZLib error %d, \"%s\"",e.error(),e.zlib_error_code(),url.c_str())); }
- catch(boost::iostreams::zlib_error& e) { throw std::runtime_error(G3D::format("ZLib error %d, \"%s\"",e.error(),url.c_str())); }
+ } catch(boost::iostreams::gzip_error& e) { int error=e.error(); int zlibError=e.zlib_error_code(); throw std::runtime_error(G3D::format("GZip error %d, ZLib error %d, \"%s\"",error,zlibError,url.c_str())); }
+ catch(boost::iostreams::zlib_error& e) { int error=e.error(); throw std::runtime_error(G3D::format("ZLib error %d, \"%s\"",error,url.c_str())); }
  if(status!=200) {
   char buffer[512];DWORD length=sizeof(buffer);
   if(HttpQueryInfoA(request,HTTP_QUERY_STATUS_TEXT,buffer,&length,NULL))throw std::runtime_error(std::string(buffer));
@@ -164,3 +163,5 @@ void NativeHttp::request(bool isPost,std::istream& data,bool compressData,const 
 }
 
 namespace RBX { char nativeAcceptEncodingHeader[]="Accept-Encoding: gzip\r\n"; }
+
+

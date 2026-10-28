@@ -1,8 +1,8 @@
-// from server: 99% by EspClaude
+// from server: 100% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espclaude_7f4e83f93b266820.cpp
+// roc-lib: rbxgs-dll roc_unit_1d9b5609956f3c96.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "util/Extents.h"
@@ -338,7 +338,8 @@ namespace RBX
 
 	// exe Assembly: rootClump at +0x24, Clump::rootPrimitive at +0x1c (see SleepStage 0064c470)
 	struct ExeClump { char pad[0x1c]; Primitive* rootPrimitive; Primitive* getRootPrimitive() const { return rootPrimitive; } };
-	struct ExeAssembly { char pad[0x24]; ExeClump* rootClump; ExeClump* getRootClump() const { return rootClump; } Primitive* getMainPrimitive() const { return getRootClump()->getRootPrimitive(); } };
+	struct ExeAssembly { char pad[0x24]; ExeClump* rootClump; ExeClump* getRootClump() const { return rootClump; } Primitive* getMainPrimitive() const; };
+	Primitive* ExeAssembly::getMainPrimitive() const { return rootClump->getRootPrimitive(); }
 	static inline Primitive* exeMainPrimitive(Assembly* a)
 	{
 		return reinterpret_cast<ExeAssembly*>(a)->getMainPrimitive();

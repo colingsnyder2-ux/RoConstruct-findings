@@ -52,6 +52,12 @@ namespace RBX
 			return s;
 		}
 
+		std::map<const Name*, const EnumDescriptor*>& EnumDescriptor::allEnumsByName()
+		{
+			static std::map<const Name*, const EnumDescriptor*> s;
+			return s;
+		}
+
 		EnumDescriptor::EnumDescriptor(const char* typeName, const type_info& type)
 			: Type(typeName, type, "token"),
 			  allItems(),
@@ -59,6 +65,7 @@ namespace RBX
 			  enumCountMSB(0)
 		{
 			allEnums().push_back(this);
+			allEnumsByName()[&name] = this;
 		}
 
 		EnumDescriptor::~EnumDescriptor()

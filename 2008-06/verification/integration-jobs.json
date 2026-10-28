@@ -3425,11 +3425,146 @@
         ]
       ]
     },
-    "phase": "building",
-    "receipt": {},
-    "state": "verifying",
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "b6f07ec6aac9d7f3d3a38b170d7118d22558c7ca24de9fff8474083d11d544fd",
+      "credits": 1,
+      "distinct_after": 9835,
+      "distinct_before": 9834,
+      "gains": [
+        "0056c590"
+      ],
+      "input_hash": "36f25fdc0c70168993e07fec85ed3507ec0aa1dc7ab09c9f38b3d98ecde5f9c5",
+      "losses": [],
+      "new_distinct": [
+        "0056c590"
+      ],
+      "overlay_hash": "e95156d8691ecbb5dc9f31ce65008620bfcbf6743093cf3c9975e1d8e3012134",
+      "owned_after": 3170,
+      "owned_before": 3169,
+      "rebased": false,
+      "submitted_revision": "b6f07ec6aac9d7f3d3a38b170d7118d22558c7ca24de9fff8474083d11d544fd"
+    },
+    "state": "accepted",
     "unit": "RBX::Reflection::EnumDescriptor",
-    "updated": 1793165874.5778694,
+    "updated": 1793167076.6745007,
+    "user": "colin"
+  },
+  {
+    "created": 1793167417.4270368,
+    "id": "3197941ed3a144c79447206de5581e18",
+    "model": "gpt-6.1-sol",
+    "patches": {
+      "App/humanoid/Humanoid.cpp": [
+        [
+          "\tReflection::PropDescriptor<Humanoid, bool> propSit(\"Sit\", \"Control\", &Humanoid::getSit, &Humanoid::setSit, Reflection::PropertyDescriptor::STREAMING);",
+          "\tReflection::PropDescriptor<Humanoid, bool> propSit(\"Sit\", \"Control\", &Humanoid::getSit, &Humanoid::setSit, Reflection::PropertyDescriptor::STREAMING);\n\tReflection::PropDescriptor<Humanoid, bool> propStrafe(\"Strafe\", \"Control\", &Humanoid::getStrafe, &Humanoid::setStrafe, Reflection::PropertyDescriptor::STREAMING);"
+        ],
+        [
+          "\t\t  sit(false),\n",
+          "\t\t  sit(false),\n\t\t  strafe(false),\n"
+        ],
+        [
+          "\tvoid Humanoid::setSit(bool value)\n\t{\n\t\tif (sit != value)\n\t\t{\n\t\t\tsit = value;\n\t\t\traisePropertyChanged(propSit);\n\t\t}\n\t}",
+          "\tvoid Humanoid::setSit(bool value)\n\t{\n\t\tif (sit != value)\n\t\t{\n\t\t\tsit = value;\n\t\t\traisePropertyChanged(propSit);\n\t\t}\n\t}\n\n\tvoid Humanoid::setStrafe(bool value)\n\t{\n\t\tif (strafe != value)\n\t\t{\n\t\t\tstrafe = value;\n\t\t\traisePropertyChanged(propStrafe);\n\t\t}\n\t}"
+        ]
+      ],
+      "App/include/humanoid/Humanoid.h": [
+        [
+          "\t\tbool sit : 1;\n",
+          "\t\tbool sit : 1;\n\t\tbool strafe : 1;\n"
+        ],
+        [
+          "\t\tvoid setSit(bool value);",
+          "\t\tvoid setStrafe(bool value);\n\n\t\tbool getStrafe() const\n\t\t{\n\t\t\treturn strafe;\n\t\t}\n\n\t\tvoid setSit(bool value);"
+        ]
+      ],
+      "App/include/v8tree/Instance.h": [
+        [
+          "\tclass IModelModifier\n",
+          "\tclass __declspec(novtable) IModelModifier\n"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "efa81103fa557f60129bdd04b49095b66a279c856abcae42904d875fb4377acc",
+      "credits": 3,
+      "distinct_after": 9838,
+      "distinct_before": 9835,
+      "gains": [
+        "005d7540",
+        "005db280",
+        "005dc230"
+      ],
+      "input_hash": "204424ffd0e14d7fb4f8a85963c8f7fb34536c840471a617af4b2106aa605d30",
+      "losses": [],
+      "new_distinct": [
+        "005d7540",
+        "005db280",
+        "005dc230"
+      ],
+      "overlay_hash": "78b0b9ded54c38986a36cebd4a319ea5bbd62f416a33d3d3baf7344ecf4ca792",
+      "owned_after": 3173,
+      "owned_before": 3170,
+      "rebased": false,
+      "submitted_revision": "efa81103fa557f60129bdd04b49095b66a279c856abcae42904d875fb4377acc"
+    },
+    "state": "accepted",
+    "unit": "RBX::Humanoid",
+    "updated": 1793170061.8178656,
+    "user": "colin"
+  },
+  {
+    "created": 1793169571.686688,
+    "id": "0dbe70db3a824afea9ed84c0e6b9ecaf",
+    "model": "gpt-6.1-sol",
+    "patches": {
+      "App/v8datamodel/BrickColor.cpp": [
+        [
+          "\t\treturn G3D::Color3(color4());",
+          "\t\tG3D::Color4 color = color4();\n\t\tG3D::Color3 result;\n\t\tresult.r = color.r;\n\t\tresult.g = color.g;\n\t\tresult.b = color.b;\n\t\treturn result;"
+        ]
+      ],
+      "App/v8datamodel/TimerService.cpp": [
+        [
+          "namespace RBX\n{",
+          "namespace RBX\n{\n\ttemplate __declspec(noinline) RunService* ServiceProvider::create<RunService>() const;\n"
+        ],
+        [
+          "\t\tInstance::onServiceProvider(oldProvider, newProvider);\n",
+          ""
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "5648d11af803d19c1f9915cfc34cb121d482659f750e4170c0c0ed8790b702dd",
+      "credits": 2,
+      "distinct_after": 9840,
+      "distinct_before": 9838,
+      "gains": [
+        "005b6270",
+        "005d73a0"
+      ],
+      "input_hash": "1117a5c973e67c93e3e9bc83b3d52a2fe13ec0af228c9f97409279d9e74ca6c7",
+      "losses": [],
+      "new_distinct": [
+        "005b6270",
+        "005d73a0"
+      ],
+      "overlay_hash": "c1b64a62f090c8a8a4a6913535b88405d656a85d4d507433cc410a8e87342c3c",
+      "owned_after": 3175,
+      "owned_before": 3173,
+      "rebased": true,
+      "submitted_revision": "efa81103fa557f60129bdd04b49095b66a279c856abcae42904d875fb4377acc"
+    },
+    "state": "accepted",
+    "unit": "RBX::TimerService",
+    "updated": 1793171316.29867,
     "user": "colin"
   }
 ]

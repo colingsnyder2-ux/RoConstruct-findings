@@ -1,4 +1,4 @@
-// from server: 94% by EspClaude
+// from server: 99% by coldek
 // from server: 87% by coldek
 // roc 2008-06 004b7250  unit: RBX::Network::Replicator::ChangePropertyItem  size: 2006 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004b7250
@@ -770,13 +770,12 @@ void __cdecl reportNullBinding(Guid::Data,const char*,const Name*);
 struct ReplicatorStats {};
 template<class T>inline T&field(void*p,unsigned off){return *reinterpret_cast<T*>(static_cast<char*>(p)+off);}
 RakNet::BitStream&operator>>(RakNet::BitStream&,bool&);
+inline unsigned readClassId(RakNet::BitStream&stream,int bits){unsigned id=0;stream.ReadBits(reinterpret_cast<unsigned char*>(&id),bits,true);return id;}
 void Replicator::readInstanceNew(RakNet::BitStream&stream){
  unsigned startBits=field<unsigned>(&stream,8);
  Guid::Data id;
  deserializeId(stream,id);
- unsigned classId=0;
- stream.ReadBits(reinterpret_cast<unsigned char*>(&classId),field<int>(this,0x2bec),true);
- const Reflection::ClassDescriptor*desc=field<std::vector<const Reflection::ClassDescriptor*> >(this,0x2bd4)[classId];
+ const Reflection::ClassDescriptor*desc=field<std::vector<const Reflection::ClassDescriptor*> >(this,0x2bd4)[readClassId(stream,field<int>(this,0x2bec))];
  if(field<bool>(&Settings::singleton(),0x131))
   StandardOut::singleton()->print(1,"Replication: %s:%s << %s",desc->name->c_str(),id.readableString(4).c_str(),field<SystemAddress>(this,0x2d54).ToString(true));
  boost::shared_ptr<Instance>instance;

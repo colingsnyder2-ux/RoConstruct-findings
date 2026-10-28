@@ -1,8 +1,9 @@
+// from server: 99% by EspClaude
 // from server: 98% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espeon_simbodyprovenbodyc42c1bc17497c9b4.cpp
+// roc-lib: rbxgs-dll roc_espclaude_659fdd046ac1d172.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias("v8kernel/KernelIndex.h", "roc_espeon_kernelindex16f57e5495e5b6c8eb.cpp")
@@ -30,7 +31,7 @@ G3D::Vector3 vecUnkPercent(G3D::Vector3& input)
 }
 
 float precentInline(float fNum)
-{
+{ float pd1 = 0;
 	return 1.0f / fNum;
 }
 
@@ -58,3 +59,4 @@ void SimBody::update()
 
 
 }
+

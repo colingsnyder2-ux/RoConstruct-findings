@@ -72,6 +72,7 @@ namespace RBX
 			}
 		private:
 			static std::vector<const EnumDescriptor*>& allEnums();
+			static std::map<const Name*, const EnumDescriptor*>& allEnumsByName();
 			static bool equalValue(const Item* item, int intValue)
 			{
 				return item->value == intValue;

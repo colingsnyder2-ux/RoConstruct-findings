@@ -19,6 +19,7 @@ namespace RBX
 	Reflection::PropDescriptor<Humanoid, bool> propJump("Jump", "Control", &Humanoid::getJump, &Humanoid::setJump, Reflection::PropertyDescriptor::STREAMING);
 	Reflection::PropDescriptor<Humanoid, G3D::Vector3> propTargetPoint("TargetPoint", "Control", &Humanoid::getTargetPoint, &Humanoid::setTargetPoint, Reflection::PropertyDescriptor::STREAMING);
 	Reflection::PropDescriptor<Humanoid, bool> propSit("Sit", "Control", &Humanoid::getSit, &Humanoid::setSit, Reflection::PropertyDescriptor::STREAMING);
+	Reflection::PropDescriptor<Humanoid, bool> propStrafe("Strafe", "Control", &Humanoid::getStrafe, &Humanoid::setStrafe, Reflection::PropertyDescriptor::STREAMING);
 
 	Reflection::BoundFuncDesc<Humanoid, void(G3D::Vector3, boost::shared_ptr<Instance>), 2> func_MoveTo(&Humanoid::moveTo2, "MoveTo", "location", "part", Reflection::FunctionDescriptor::AnyCaller);
 
@@ -37,6 +38,7 @@ namespace RBX
 		  imDead(false),
 		  hadHeadJoint(false),
 		  sit(false),
+		  strafe(false),
 		  world(NULL)
 	{
 		setName("Humanoid");
@@ -505,6 +507,15 @@ namespace RBX
 		{
 			sit = value;
 			raisePropertyChanged(propSit);
+		}
+	}
+
+	void Humanoid::setStrafe(bool value)
+	{
+		if (strafe != value)
+		{
+			strafe = value;
+			raisePropertyChanged(propStrafe);
 		}
 	}
 

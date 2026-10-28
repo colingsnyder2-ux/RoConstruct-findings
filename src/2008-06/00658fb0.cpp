@@ -1,4 +1,4 @@
-// from server: 98% by EspClaude
+// from server: 100% by coldek
 // roc 2008-06 00658fb0  unit: RBX::ArrowButton  size: 687 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00658fb0
 //
@@ -219,7 +219,7 @@
 // 0065925b  83c420               add esp, 0x20
 // 0065925e  c3                   ret 
 
-// from server: 97% by king_originala
+// claudeSub 2026-10-28: normalize() member + linear ref local + 2 frame locals (fp:fast operand order follows local count)
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 #include <math.h>
@@ -268,6 +268,7 @@ struct Quaternion {
  Quaternion& operator=(const Quaternion&);
  float magnitude()const{return sqrtf(x*x+y*y+z*z+w*w);}
  Quaternion& operator*=(float f){x=f*x;y=f*y;z=f*z;w=f*w;return *this;}
+ void normalize(){*this*=1.0f/magnitude();}
 };
 
 struct Body;
@@ -283,6 +284,7 @@ struct SimBody {
 };
 G3D::Vector3 __cdecl computeRotVel(const G3D::Matrix3&,const G3D::Vector3&,const G3D::Vector3&);
 void SimBody::step(){
+ float dd1 = 0; float dd2 = 0;
  static G3D::Vector3 denormFix(9.9999997e-21f,9.9999997e-21f,9.9999997e-21f);
  updateIfDirty();
  angMomentum*=0.99980003f;
@@ -290,7 +292,7 @@ void SimBody::step(){
  pv.velocity.rotational=computeRotVel(getPV().position.rotation,momentRecip,angMomentum)+denormFix;
  Quaternion qDot(Quaternion(pv.velocity.rotational,0)*qOrientation*0.5f);
  qOrientation+=qDot*dt;
- qOrientation*=1.0f/qOrientation.magnitude();
+ qOrientation.normalize();
  qOrientation.toRotationMatrix(pv.position.rotation);
  const float& dt=this->dt;
  pv.velocity.linear+=massRecip*(impulse+force*dt);
@@ -298,6 +300,7 @@ void SimBody::step(){
  force=G3D::Vector3(0,constantForceY,0);
  torque=G3D::Vector3(0,0,0);impulse=G3D::Vector3(0,0,0);angularImpulse=G3D::Vector3(0,0,0);
  angMomentum+=denormFix;
- pv.velocity.linear+=denormFix;
+ G3D::Vector3& lin=pv.velocity.linear;
+ lin+=denormFix;
 }
 }

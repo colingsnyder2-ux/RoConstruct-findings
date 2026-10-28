@@ -1,195 +1,188 @@
-// from server: 34% by colin
+// from server: 69% by EspClaude
+// roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /GS- /EHsc /MD /O2 /Ob0 /Oy-
-struct OgreImage {
-    void construct();
-    OgreImage& loadDynamicImage(unsigned char*, unsigned int, unsigned int, unsigned int, int, bool, unsigned int, unsigned int);
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: ogre-1.4.5-dll roc_espclaude_66f86a925cdd10d3.cpp
+
+// Candidate translation unit (score above; library headers required).
+#undef OGRE_NONCLIENT_BUILD
+#include <OgreTextureManager.h>
+#include <OgreTexture.h>
+#include <OgreImage.h>
+#include <OgreLogManager.h>
+#include <string>
+#include <vector>
+#include <algorithm>
+
+extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
+extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long*);
+
+namespace G3D {
+typedef unsigned char uint8;
+class AtomicInt32 {
+	volatile long m_value;
+public:
+	void increment() { InterlockedIncrement(&m_value); }
+	long decrement() { return InterlockedDecrement(&m_value); }
 };
-
-struct OgreTexturePtr {
-    void* rep;
-    void* ptr;
-    OgreTexturePtr& operator=(const OgreTexturePtr&);
+class ReferenceCountedObject {
+public:
+	AtomicInt32 ReferenceCountedObject_refCount;
+	void* ReferenceCountedObject_weakPointer;
+	void ReferenceCountedObject_zeroWeakPointers();
+	virtual ~ReferenceCountedObject();
 };
-
-struct OgreTextureManager {
-    static OgreTextureManager& getSingleton();
-    OgreTexturePtr* createManual(const char*, const char*, int, void*);
+template<class T> class ReferenceCountedPointer {
+	T* m_pointer;
+	void zeroPointer() {
+		if (m_pointer != NULL) {
+			if (m_pointer->ReferenceCountedObject_refCount.decrement() == 0) {
+				m_pointer->ReferenceCountedObject_zeroWeakPointers();
+				delete m_pointer;
+			}
+			m_pointer = NULL;
+		}
+	}
+	void setPointer(T* x) {
+		if (x != m_pointer) {
+			zeroPointer();
+			if (x != NULL) {
+				m_pointer = x;
+				m_pointer->ReferenceCountedObject_refCount.increment();
+			}
+		}
+	}
+public:
+	ReferenceCountedPointer() : m_pointer(NULL) {}
+	ReferenceCountedPointer(const ReferenceCountedPointer& r) : m_pointer(NULL) { setPointer(r.m_pointer); }
+	~ReferenceCountedPointer() { zeroPointer(); }
+	ReferenceCountedPointer& operator=(T* p) { setPointer(p); return *this; }
 };
-
-struct OgreMaterialPtr {
-    void* rep;
-    void* ptr;
+class Color3 { public: float r, g, b; };
+class Color3uint8 {
+public:
+	uint8 r, g, b;
+	Color3uint8() : r(0), g(0), b(0) {}
+	Color3uint8(const uint8 _r, const uint8 _g, const uint8 _b) : r(_r), g(_g), b(_b) {}
+	Color3uint8(const Color3& c);
 };
+class GImage {
+public:
+	enum Format { JPEG, BMP, TGA, PCX, ICO, PPM_ASCII, PPM, PNG, AUTODETECT, UNKNOWN };
+	uint8* _byte;
+	int width;
+	int height;
+	int channels;
 
-struct MegaTextureProxy {
-    char pad0[0xc];
-    unsigned int width;
-    unsigned int height;
-    char pad14[0x20];
-    unsigned char flag34;
-    char pad35[0x1f];
-    OgreTexturePtr texture;
-    OgreMaterialPtr material;
-    void* image;
-
-    void func(int a, int b, OgreTexturePtr* out);
+	GImage(const std::string& filename, Format format = AUTODETECT);
+	GImage(int width, int height, int channels = 3);
+	virtual ~GImage();
+	Color3uint8* pixel3() { return (Color3uint8*)_byte; }
+	Color3uint8& pixel3(int x, int y) { return pixel3()[x + y * width]; }
 };
-
-extern "C" {
-    int __stdcall sub_5b5c80();
-    void __stdcall sub_510670(void* dst, void* src, int n);
-    void __stdcall sub_50eea0(void* dst, int a, int b, int c);
-    void __stdcall sub_5b6270(void* dst, void* src);
-    void __stdcall sub_5106a0(void* dst, void* src);
-    void __stdcall sub_7add10(void* dst, void* src);
-    void __stdcall sub_50e230(void* p);
-    void __stdcall sub_45ad90(void* p);
-    void __stdcall sub_802890();
-    void __stdcall sub_802458(void* p, const char* s);
-    void __stdcall sub_802468(void* p);
-    void __stdcall sub_804c44();
-    void __stdcall sub_804c48(void* p);
-    void __stdcall sub_804c5c(void* p);
-    void __stdcall sub_8043cc(void* p, int a, int b, int c, int d, int e, int f, int g, int h);
-    void __stdcall sub_8046f4(void* dst, void* src);
-    void __stdcall sub_8021ac(void* p);
-    void __stdcall sub_8021b0(void* p);
+class Texture : public ReferenceCountedObject {};
+class RenderDevice;
 }
 
-void MegaTextureProxy::func(int a, int b, OgreTexturePtr* out)
+namespace RBX {
+class BrickColor {
+	int number;
+public:
+	G3D::Color3 color3() const;
+	static const std::vector<BrickColor>& colorPalette();
+};
+
+std::string stringify(double);
+
+namespace Render {
+class TextureProxyBase : public G3D::ReferenceCountedObject {
+protected:
+	std::string filename;
+	int pad28;
+	int pad2c;
+};
+class TextureProxy : public TextureProxyBase {
+protected:
+	G3D::ReferenceCountedPointer<G3D::Texture> texture;
+	bool loaded;
+	void* textureManager;
+	bool tiled;
+	G3D::ReferenceCountedPointer<TextureProxy> root;
+	G3D::ReferenceCountedPointer<TextureProxy> shadeTexture;
+	G3D::Color3 shadeColor;
+public:
+	virtual G3D::ReferenceCountedPointer<G3D::Texture> resolve(G3D::RenderDevice* rd);
+	static void shadePixel(const G3D::Color3uint8&, G3D::Color3uint8&);
+};
+}
+
+namespace RenderNew {
+class MegaTextureProxy : public Render::TextureProxy {
+	Ogre::TexturePtr ogreTexture;
+public:
+	static const size_t numStrips = 32;
+	virtual G3D::ReferenceCountedPointer<G3D::Texture> resolve(G3D::RenderDevice* rd);
+};
+
+G3D::ReferenceCountedPointer<G3D::Texture> MegaTextureProxy::resolve(G3D::RenderDevice* rd)
 {
-    if (flag34 != 0) {
-        out->rep = 0;
-        if (texture.rep != 0) {
-            out->rep = texture.rep;
-            sub_8021b0((char*)texture.rep + 4);
-        }
-        return;
-    }
+	if (!loaded) {
+		MegaTextureProxy* self = this;
+		size_t count = std::min(numStrips, BrickColor::colorPalette().size());
 
-    int* vec = (int*)sub_5b5c80();
-    int count = (vec[4] - vec[3]) >> 2;
-    int* pcount = &count;
-    if ((unsigned)count >= 0x20) {
-        pcount = (int*)0x80b350;
-    }
-    int numImages = *pcount;
+		G3D::GImage strip(filename, G3D::GImage::AUTODETECT);
+		G3D::GImage atlas(strip.width * numStrips, strip.height, 3);
 
-    char local34[0x10];
-    sub_510670(local34, &width, 8);
+		for (size_t i = 0; i < count; i++) {
+			G3D::Color3uint8 color(BrickColor::colorPalette()[i].color3());
 
-    char local1c[0x18];
-    sub_50eea0(local1c, height << 5, width, 3);
+			G3D::Color3uint8 colorTable[256];
+			for (size_t j = 0; j < 256; j++) {
+				colorTable[j] = G3D::Color3uint8(j, j, j);
+				shadePixel(color, colorTable[j]);
+			}
 
-    unsigned int i = 0;
-    if (numImages != 0) {
-        do {
-            int* v2 = (int*)sub_5b5c80();
-            int n = (v2[4] - v2[3]) >> 2;
-            if (i >= (unsigned)n) {
-                sub_802890();
-            }
-            char local54[0x10];
-            sub_5b6270(local54, (char*)i + v2[3] * 4);
-            char local48[0x10];
-            sub_5106a0(local48, local54);
+			for (int x = 0; x < strip.width; x++) {
+				for (int y = 0; y < strip.height; y++) {
+					const G3D::Color3uint8& src = strip.pixel3(x, y);
+					G3D::Color3uint8& dst = atlas.pixel3(x + i * strip.width, y);
+					dst = colorTable[src.r];
+				}
+			}
+		}
 
-            unsigned char palette[0x300];
-            for (int k = 0; k < 0x100; ++k) {
-                palette[k * 3 + 0] = 0;
-                palette[k * 3 + 1] = 0;
-                palette[k * 3 + 2] = 0;
-            }
-            for (int k = 0; k < 0x100; ++k) {
-                char entry[3];
-                entry[0] = 0;
-                entry[1] = 0;
-                entry[2] = 0;
-                sub_7add10(entry, local48);
-                palette[k * 3 + 0] = entry[0];
-                palette[k * 3 + 1] = entry[1];
-                palette[k * 3 + 2] = entry[2];
-            }
+		const char* name = "TextureAtlas";
+		ogreTexture = Ogre::TextureManager::getSingleton().getByName(name);
 
-            int y = 0;
-            if (height > 0) {
-                do {
-                    int x = 0;
-                    if (width > 0) {
-                        do {
-                            unsigned int srcIdx = (unsigned int)(y * width + x);
-                            unsigned char* src = (unsigned char*)((char*)local1c + srcIdx * 3);
-                            unsigned int dstIdx = (unsigned int)(i * width * height + y * width + x);
-                            unsigned char* dst = (unsigned char*)((char*)local1c + dstIdx * 3);
-                            unsigned char idx = *src;
-                            unsigned char* pal = palette + idx * 3;
-                            dst[0] = pal[0];
-                            dst[1] = pal[1];
-                            dst[2] = pal[2];
-                            ++x;
-                        } while (x < (int)width);
-                    }
-                    ++y;
-                } while (y < (int)height);
-            }
-            ++i;
-        } while (i < (unsigned)numImages);
-    }
+		if (ogreTexture.isNull()) {
+			Ogre::Image image;
+			image.loadDynamicImage(atlas._byte, atlas.width, atlas.height, 1, Ogre::PF_BYTE_RGB, false, 1, 0);
 
-    char str1[0x10];
-    sub_802458(str1, "TextureAtlas");
-    char str2[0x10];
-    sub_802458(str2, "General");
+			while (true) {
+				try {
+					ogreTexture = Ogre::TextureManager::getSingleton().create(name, "General");
+					ogreTexture->loadImage(image);
+					break;
+				}
+				catch (...) {
+					if (image.getWidth() > 512 || image.getHeight() > 512) {
+						Ogre::TextureManager::getSingleton().remove(ogreTexture->getHandle());
+						image.resize(image.getWidth() / 2, image.getHeight() / 2);
+						Ogre::LogManager::getSingleton().logMessage(std::string("Error loading texture. Reduce size to ") + stringify(atlas.width) + "x" + stringify(atlas.height) + " and try again\n");
+					}
+					else {
+						Ogre::LogManager::getSingleton().logMessage(std::string("Give up on loading texture ") + name);
+						break;
+					}
+				}
+			}
+		}
 
-    OgreTextureManager& tm = OgreTextureManager::getSingleton();
-    OgreTexturePtr* tex = tm.createManual("TextureAtlas", "General", 0, 0);
-    texture = *tex;
+		self->root = NULL;
+		self->loaded = true;
+	}
 
-    if (material.ptr == 0) {
-        char img[0x30];
-        sub_804c48(img);
-        sub_8043cc(img, (int)local1c, width, height, 1, 0xb, 0, 1, 0);
-
-        char s1[0x10];
-        sub_802458(s1, "TextureAtlas");
-        char s2[0x10];
-        sub_802458(s2, "General");
-
-        OgreTextureManager& tm2 = OgreTextureManager::getSingleton();
-        OgreTexturePtr* tex2 = tm2.createManual("TextureAtlas", "General", 0, 0);
-        texture = *tex2;
-
-        sub_802468(s2);
-        sub_802468(s1);
-
-        OgreImage* imgPtr = (OgreImage*)&img;
-        imgPtr->loadDynamicImage((unsigned char*)local1c, width, height, 1, 0, false, 0, 0);
-
-        sub_804c5c(img);
-    }
-
-    if (image != 0) {
-        sub_8021ac((char*)image + 4);
-        if (image != 0) {
-            sub_45ad90(image);
-            if (image != 0) {
-                void** vt = *(void***)image;
-                void (*dtor)(void*, int) = (void (*)(void*, int))vt[0];
-                dtor(image, 1);
-            }
-        }
-        image = 0;
-    }
-
-    sub_50e230(local1c);
-    sub_50e230(local34);
-
-    flag34 = 1;
-
-    out->rep = 0;
-    if (texture.rep != 0) {
-        out->rep = texture.rep;
-        sub_8021b0((char*)texture.rep + 4);
-    }
+	return texture;
+}
+}
 }

@@ -314,6 +314,11 @@ namespace RBX
 
 	G3D::Color3 BrickColor::color3() const
 	{
-		return G3D::Color3(color4());
+		G3D::Color4 color = color4();
+		G3D::Color3 result;
+		result.r = color.r;
+		result.g = color.g;
+		result.b = color.b;
+		return result;
 	}
 }

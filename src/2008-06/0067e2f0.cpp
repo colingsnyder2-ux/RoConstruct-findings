@@ -1,8 +1,8 @@
-// from server: 80% by EspClaude
+// from server: 81% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: ogre-1.4.5-dll roc_espclaude_8340c12af19efc60.cpp
+// roc-lib: ogre-1.4.5-dll roc_espclaude_c530b44d32f9af33.cpp
 
 // Candidate translation unit (score above; library headers required).
 #undef OGRE_NONCLIENT_BUILD
@@ -141,10 +141,9 @@ void RbxEntity::collect(Camera* camera,Light* light,std::vector<ShadowCaster*>& 
         RbxSubEntity* sub=dynamic_cast<RbxSubEntity*>(mSubEntityList[i]);
         if(!sub->getCastShadows()) continue;
         if(sub->getMaterial()->getTechnique(0)->getPass(0)->isTransparent()) continue;
-        if(nativeShadowMode==0) {
-            if(sub->getFloat138()<1.0f) continue;
-        } else if(nativeShadowMode==1) {
-            if(sub->getFloat138()<0.5f) continue;
+        switch(nativeShadowMode) {
+        case 0: if(sub->getFloat138()<1.0f) continue; break;
+        case 1: if(sub->getFloat138()<0.5f) continue; break;
         }
         if(sub->isVisible()) output.push_back(sub);
         else {

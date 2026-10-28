@@ -1,8 +1,9 @@
+// from server: 55% by EspClaude
 // from server: 44% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: ogre-1.4.5-dll roc_twod_native_guarded_group_2c3be5e84e25f563.cpp
+// roc-lib: ogre-1.4.5-dll roc_espclaude_04e15b040614e7f7.cpp
 
 // Candidate translation unit (score above; library headers required).
 // Native 006832b0. Names are behavioral analogues; owner layout is opaque.
@@ -268,6 +269,10 @@ std::list<Batch>::_Iterator<true> std::list<Batch>::_Iterator<true>::operator++(
     return result;
 }
 
+struct CmdIt : std::list<Command>::iterator { __declspec(noinline) Command& get() const { return **this; } };
+struct BatchIt : std::list<Batch>::iterator { __declspec(noinline) Batch& get() const { return **this; } };
+#define O(i) static_cast<const CmdIt&>(i).get()
+#define VERTEXO(X,Y,U,V) *out++=O(i).X; *out++=O(i).Y; *out++=-1.0f; *reinterpret_cast<unsigned*>(out++)=O(i).colour; *out++=O(i).U; *out++=O(i).V;
 class TwoDManager {public: void draw(); void allocate(unsigned); void setup();};
 #define OP (*reinterpret_cast<RenderOperation*>(reinterpret_cast<char*>(this)+0x10))
 #define BUFFER (*reinterpret_cast<HardwareVertexBufferSharedPtr*>(reinterpret_cast<char*>(this)+0x24))
@@ -289,9 +294,9 @@ void TwoDManager::draw() {
  }
  float* out=static_cast<float*>(BUFFER->lock(HardwareBuffer::HBL_DISCARD));
  i=COMMANDS.begin();
+ Batch batch;
+ batch.texture=i->texture; batch.points=i->points; batch.mode=i->mode; batch.count=0;
  while(i!=end) {
-  Batch batch={i->texture,i->points,i->mode,0};
-  while(i!=end) {
    if(batch.points==4) {
     VERTEX(x1,y2,u1,v2) VERTEX(x2,y1,u2,v1) VERTEX(x1,y1,u1,v1)
     VERTEX(x1,y2,u1,v2) VERTEX(x2,y1,u2,v1) VERTEX(x2,y2,u2,v2)
@@ -300,14 +305,15 @@ void TwoDManager::draw() {
     VERTEX(x1,y1,u1,v1)
     if(batch.mode==0) {
      VERTEX(x2,y1,u1,v1) VERTEX(x2,y1,u1,v1) VERTEX(x2,y2,u1,v1)
-     VERTEX(x2,y2,u1,v1) VERTEX(x1,y2,u1,v1) VERTEX(x1,y2,u1,v1) VERTEX(x1,y1,u1,v1)
+     VERTEX(x2,y2,u1,v1) VERTEX(x1,y2,u1,v1) VERTEX(x1,y2,u1,v1) VERTEXO(x1,y1,u1,v1)
      batch.count+=8;
-    } else {VERTEX(x2,y2,u1,v1) batch.count+=2;}
+    } else {VERTEXO(x2,y2,u1,v1) batch.count+=2;}
    }
    ++i;
-   if(i==end || batch.texture!=i->texture || batch.points!=i->points) break;
-  }
-  batches.push_back(batch);
+   if(i==end || batch.texture!=i->texture || batch.points!=O(i).points) {
+    batches.push_back(batch);
+    if(i!=end) {batch.texture=i->texture; batch.points=i->points; batch.mode=i->mode; batch.count=0;}
+   }
  }
  BUFFER->unlock(); setup();
  TexturePtr current;
@@ -316,7 +322,7 @@ void TwoDManager::draw() {
  TexturePtr previous;
  for(std::list<Batch>::iterator b=batches.begin();b!=last;b++) {
   if(b->texture) {
-   current=TextureManager::getSingleton().getByHandle(b->texture);
+   current=TextureManager::getSingleton().getByHandle(static_cast<const BatchIt&>(b).get().texture);
    if(current.get()!=previous.get()) {
     rs->_setTexture(0,true,current); rs->_setTextureMatrix(0,Matrix4::IDENTITY);
     LayerBlendModeEx colour,alpha;
@@ -386,3 +392,4 @@ void TwoDManager::setup() {
  rs->_setSceneBlending(SBF_SOURCE_ALPHA,SBF_ONE_MINUS_SOURCE_ALPHA);
  rs->_setAlphaRejectSettings(CMPF_ALWAYS_PASS,0);
 }
+

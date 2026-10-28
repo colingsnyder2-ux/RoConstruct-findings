@@ -130,7 +130,7 @@ namespace RBX
 		PropertyChanged(const PropertyChanged&);
 	};
 
-	class IModelModifier
+	class __declspec(novtable) IModelModifier
 	{
 	public:
 		virtual ~IModelModifier() {}

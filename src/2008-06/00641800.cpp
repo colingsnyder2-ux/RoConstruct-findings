@@ -1,5 +1,5 @@
-// from server: 95% by EspClaude
-// from server: 85% by king_originala_sol_native
+// from server: 100% by coldek
+// claude-opus-5-5 opusC: codegen analog; 7 unused float locals set the /fp:fast x87 frame-local count (not original declarations)
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 #include <math.h>
@@ -30,33 +30,31 @@ struct ICharacterSubject:ICameraSubject {
  virtual bool zoom(float,G3D::CoordinateFrame&,G3D::CoordinateFrame&);virtual void stepGoalAndFocus(G3D::CoordinateFrame&,G3D::CoordinateFrame&,bool);
  virtual ContactManager*getContactManager()=0;virtual void getIgnorePrims(std::vector<const Primitive*>&);virtual void tellCameraNear(float);virtual G3D::Vector3 getIntendedMovementVector()=0;virtual float getIntendedRotationAboutYAxis()=0;virtual void cameraSetWalkOrientation(float,bool)=0;
 };
-static __forceinline G3D::Vector3 placeXZ(const G3D::Vector3&focus,const G3D::Vector2&direction,float radius,float dy){return G3D::Vector3(focus.x-direction.x*radius,focus.y-dy,focus.z-direction.y*radius);}
-void ICharacterSubject::stepGoalAndFocus(G3D::CoordinateFrame&cameraGoal,G3D::CoordinateFrame&cameraFocus,bool){
- G3D::Vector3&focusPosition=cameraFocus.translation;
- G3D::Vector3&goalPosition=cameraGoal.translation;
- G3D::Vector3 focusToGoal=focusPosition-goalPosition;
- if((goalPosition-focusPosition).magnitude()<2.75f){
-  G3D::Vector3 oldFocus=focusPosition;
+static __forceinline G3D::Vector3 placeXZ(const G3D::Vector3&focus,const G3D::Vector2&direction,float radius,float dy){return focus-G3D::Vector3(direction.x*radius,dy,direction.y*radius);}
+void ICharacterSubject::stepGoalAndFocus(G3D::CoordinateFrame&cameraGoal,G3D::CoordinateFrame&cameraFocus,bool){ float roc_dd0 = 0; float roc_dd1 = 0; float roc_dd2 = 0; float roc_dd3 = 0; float roc_dd4 = 0; float roc_dd5 = 0; float roc_dd6 = 0;
+ G3D::Vector3 focusToGoal=cameraFocus.translation-cameraGoal.translation;
+ if((cameraGoal.translation-cameraFocus.translation).magnitude()<2.75f){
+  G3D::Vector3 oldFocus=cameraFocus.translation;
   cameraFocus=getLocation();
-  goalPosition+=focusPosition-oldFocus;
+  cameraGoal.translation+=cameraFocus.translation-oldFocus;
  }else{
   cameraFocus=getLocation();
   G3D::Vector3 intended=getIntendedMovementVector()*16.0f;intended/=30.0f;
-  G3D::Vector3 filterInput=focusPosition-focusERA.getAverage()-intended;
+  G3D::Vector3 filterInput=cameraFocus.translation-focusERA.getAverage()-intended;
   filterInput.y=0;
   G3D::Vector3 offset;
   offset=focusOffsetERA.pushAndGetAverage(filterInput);
-  (void)focusERA.pushAndGetAverage(focusPosition);
+  (void)focusERA.pushAndGetAverage(cameraFocus.translation);
   (void)getIntendedRotationAboutYAxis();
   G3D::CoordinateFrame subjectFrame=getLocation();
   {G3D::Vector3 back=subjectFrame.rotation.getColumn(2);
   (void)rotationERA.getAverage();
   (void)rotationERA.pushAndGetAverage((float)-atan2(-back.x,back.z));}
   G3D::CoordinateFrame focusSpace=Math::getFocusSpace(cameraFocus);
-  goalPosition+=offset;
+  cameraGoal.translation+=offset;
   float radius=focusToGoal.xz().length();
-  goalPosition=placeXZ(focusPosition,(focusPosition.xz()-goalPosition.xz()).direction(),radius,focusToGoal.y);
-  goalInFocus=focusSpace.pointToObjectSpace(goalPosition);hasGoalInFocus=true;
+  cameraGoal.translation=placeXZ(cameraFocus.translation,(cameraFocus.translation.xz()-cameraGoal.translation.xz()).direction(),radius,focusToGoal.y);
+  goalInFocus=focusSpace.pointToObjectSpace(cameraGoal.translation);hasGoalInFocus=true;
  }
  G3D::CoordinateFrame testGoal=wasOccluded?goalFromDistance(cameraFocus,cameraGoal,unoccludedDistance):cameraGoal;
  {float distance;

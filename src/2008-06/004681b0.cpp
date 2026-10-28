@@ -1,4 +1,4 @@
-// from server: 78% by king_originala
+// from server: 82% by king_originala
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // Complete keyboard handler: Win32 imports, native UIEvent/SDL declarations, and measured DxUserInput ABI.
@@ -352,7 +352,8 @@ void DxUserInput::processKeyboard(){
  DIDEVICEOBJECTDATA events[2048];DWORD count=2048;
  {
   CriticalLock lock(inputSync);
-  if(!readInput(events,&count,keyboardDevice)){keyboardActive=false;return;}
+  Device* device=keyboardDevice;
+  if(!readInput(events,&count,device)){keyboardActive=false;return;}
  }
  RBX::DataModel::Lock dataLock(dataModel);
  for(unsigned i=0;i<count;++i){
@@ -370,12 +371,20 @@ void DxUserInput::processKeyboard(){
     int flags=((mods&0x300)?0x10:0)|((mods&0xc0)?8:0)|((mods&3)?4:0);
     unsigned index;
     for(index=0;index<acceleratorCount;++index){
-     if(accelerators[index].key==((accelerators[index].fVirt&1)?virtualKey:(int)(char)ascii)&&(accelerators[index].fVirt&0x1c)==flags)break;
+     if(accelerators[index].fVirt&1) {
+      if(accelerators[index].key!=virtualKey)continue;
+     } else {
+      if(accelerators[index].key!=(char)ascii)continue;
+     }
+     if(flags!=(accelerators[index].fVirt&0x1c))continue;
+     PostMessageA(window->handle,0x111,accelerators[index].cmd|0x10000,0);
+     goto nextInputEvent;
     }
-    if(index<acceleratorCount){PostMessageA(window->handle,0x111,accelerators[index].cmd|0x10000,0);continue;}
+    
    }
   }
   processEvent(RBX::UIEvent(this,down?RBX::UIEvent::KEY_DOWN:RBX::UIEvent::KEY_UP,key,mods));
+nextInputEvent:;
  }
 }
 typedef char assert_input_base[sizeof(RBX::UserInputBase)==0x28?1:-1];

@@ -83,6 +83,10 @@
   [
    "size_t numChildren() const\n\t\t{\n\t\t\tif (children)\n\t\t\t\treturn children->size();\n\t\t\telse\n\t\t\t\treturn 0;\n\t\t}",
    "size_t numChildren() const\n\t\t{\n\t\t\treturn children ? children->size() : 0;\n\t\t}"
+  ],
+  [
+   "\tclass IModelModifier\n",
+   "\tclass __declspec(novtable) IModelModifier\n"
   ]
  ],
  "App/include/v8datamodel/MouseCommand.h": [
@@ -173,6 +177,10 @@
   [
    "@replace",
    "App/roc_enum_native_owner_header_b9f24b80cd6bff22.cpp"
+  ],
+  [
+   "\t\t\tstatic std::vector<const EnumDescriptor*>& allEnums();",
+   "\t\t\tstatic std::vector<const EnumDescriptor*>& allEnums();\n\t\t\tstatic std::map<const Name*, const EnumDescriptor*>& allEnumsByName();"
   ]
  ],
  "App/include/util/IRenderable.h": [
@@ -339,6 +347,18 @@
   [
    "return testModel ? testModel->findFirstChildOfType<Humanoid>() : NULL;",
    "if (testModel)\n\t\t{\n\t\t\tconst ModelInstance* model = dynamic_cast<const ModelInstance*>(testModel);\n\t\t\tif (model)\n\t\t\t\treturn model->findFirstChildOfType<Humanoid>();\n\t\t}\n\t\treturn NULL;"
+  ],
+  [
+   "\tReflection::PropDescriptor<Humanoid, bool> propSit(\"Sit\", \"Control\", &Humanoid::getSit, &Humanoid::setSit, Reflection::PropertyDescriptor::STREAMING);",
+   "\tReflection::PropDescriptor<Humanoid, bool> propSit(\"Sit\", \"Control\", &Humanoid::getSit, &Humanoid::setSit, Reflection::PropertyDescriptor::STREAMING);\n\tReflection::PropDescriptor<Humanoid, bool> propStrafe(\"Strafe\", \"Control\", &Humanoid::getStrafe, &Humanoid::setStrafe, Reflection::PropertyDescriptor::STREAMING);"
+  ],
+  [
+   "\t\t  sit(false),\n",
+   "\t\t  sit(false),\n\t\t  strafe(false),\n"
+  ],
+  [
+   "\tvoid Humanoid::setSit(bool value)\n\t{\n\t\tif (sit != value)\n\t\t{\n\t\t\tsit = value;\n\t\t\traisePropertyChanged(propSit);\n\t\t}\n\t}",
+   "\tvoid Humanoid::setSit(bool value)\n\t{\n\t\tif (sit != value)\n\t\t{\n\t\t\tsit = value;\n\t\t\traisePropertyChanged(propSit);\n\t\t}\n\t}\n\n\tvoid Humanoid::setStrafe(bool value)\n\t{\n\t\tif (strafe != value)\n\t\t{\n\t\t\tstrafe = value;\n\t\t\traisePropertyChanged(propStrafe);\n\t\t}\n\t}"
   ]
  ],
  "App/include/v8datamodel/CharacterAppearance.h": [
@@ -351,6 +371,14 @@
   [
    "\t\t\t\t\t public ICharacterSubject,\n\t\t\t\t\t public Listener<RunService, Stepped>\n",
    "\t\t\t\t\t public ICharacterSubject,\n\t\t\t\t\t public IModelModifier,\n\t\t\t\t\t public Listener<RunService, Stepped>\n"
+  ],
+  [
+   "\t\tbool sit : 1;\n",
+   "\t\tbool sit : 1;\n\t\tbool strafe : 1;\n"
+  ],
+  [
+   "\t\tvoid setSit(bool value);",
+   "\t\tvoid setStrafe(bool value);\n\n\t\tbool getStrafe() const\n\t\t{\n\t\t\treturn strafe;\n\t\t}\n\n\t\tvoid setSit(bool value);"
   ]
  ],
  "App/include/v8datamodel/ModelInstance.h": [
@@ -1329,6 +1357,32 @@
   [
    "PartDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, Workspace* workspace);",
    "PartDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, Workspace* workspace, boost::shared_ptr<Instance> selectIfNoDrag = boost::shared_ptr<Instance>());"
+  ]
+ ],
+ "App/reflection/reflection_property.cpp": [
+  [
+   "\t\tEnumDescriptor::EnumDescriptor(const char* typeName, const type_info& type)",
+   "\t\tstd::map<const Name*, const EnumDescriptor*>& EnumDescriptor::allEnumsByName()\n\t\t{\n\t\t\tstatic std::map<const Name*, const EnumDescriptor*> s;\n\t\t\treturn s;\n\t\t}\n\n\t\tEnumDescriptor::EnumDescriptor(const char* typeName, const type_info& type)"
+  ],
+  [
+   "\t\t\tallEnums().push_back(this);",
+   "\t\t\tallEnums().push_back(this);\n\t\t\tallEnumsByName()[&name] = this;"
+  ]
+ ],
+ "App/v8datamodel/BrickColor.cpp": [
+  [
+   "\t\treturn G3D::Color3(color4());",
+   "\t\tG3D::Color4 color = color4();\n\t\tG3D::Color3 result;\n\t\tresult.r = color.r;\n\t\tresult.g = color.g;\n\t\tresult.b = color.b;\n\t\treturn result;"
+  ]
+ ],
+ "App/v8datamodel/TimerService.cpp": [
+  [
+   "namespace RBX\n{",
+   "namespace RBX\n{\n\ttemplate __declspec(noinline) RunService* ServiceProvider::create<RunService>() const;\n"
+  ],
+  [
+   "\t\tInstance::onServiceProvider(oldProvider, newProvider);\n",
+   ""
   ]
  ]
 }

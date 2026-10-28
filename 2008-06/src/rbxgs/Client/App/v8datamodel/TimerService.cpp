@@ -3,6 +3,8 @@
 
 namespace RBX
 {
+	template __declspec(noinline) RunService* ServiceProvider::create<RunService>() const;
+
 	TimerService::TimerService() {}
 
 	void TimerService::delay(boost::function0<void> func, double seconds)
@@ -59,7 +61,6 @@ namespace RBX
 	{
 		Notifier<RunService, Heartbeat>::disconnect(runService, this);
 
-		Instance::onServiceProvider(oldProvider, newProvider);
 		runService = shared_from(ServiceProvider::create<RunService>(newProvider));
 
 		Notifier<RunService,Heartbeat>::connect(runService, this);

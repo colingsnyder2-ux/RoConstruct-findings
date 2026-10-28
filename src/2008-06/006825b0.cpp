@@ -1,3 +1,326 @@
+// from server: 100% by EspClaude
+// roc 2008-06 006825b0  unit: Ogre::RbxSceneNode  size: 1007 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 006825b0
+//
+// 006825b0  81ec1c010000         sub esp, 0x11c
+// 006825b6  53                   push ebx
+// 006825b7  55                   push ebp
+// 006825b8  56                   push esi
+// 006825b9  8bd9                 mov ebx, ecx
+// 006825bb  57                   push edi
+// 006825bc  8d4c2474             lea ecx, [esp + 0x74]
+// 006825c0  ff15f0468000         call dword ptr [0x8046f0]
+// 006825c6  8d8c24b0000000       lea ecx, [esp + 0xb0]
+// 006825cd  ff15f0468000         call dword ptr [0x8046f0]
+// 006825d3  ff15e4438000         call dword ptr [0x8043e4]
+// 006825d9  8bc8                 mov ecx, eax
+// 006825db  ff15ac4e8000         call dword ptr [0x804eac]
+// 006825e1  8be8                 mov ebp, eax
+// 006825e3  33c0                 xor eax, eax
+// 006825e5  b901000000           mov ecx, 1
+// 006825ea  89442474             mov dword ptr [esp + 0x74], eax
+// 006825ee  89442478             mov dword ptr [esp + 0x78], eax
+// 006825f2  898424b4000000       mov dword ptr [esp + 0xb4], eax
+// 006825f9  b802000000           mov eax, 2
+// 006825fe  894c247c             mov dword ptr [esp + 0x7c], ecx
+// 00682602  898c24b0000000       mov dword ptr [esp + 0xb0], ecx
+// 00682609  898c24b8000000       mov dword ptr [esp + 0xb8], ecx
+// 00682610  8b0dec468000         mov ecx, dword ptr [0x8046ec]
+// 00682616  8944241c             mov dword ptr [esp + 0x1c], eax
+// 0068261a  89442420             mov dword ptr [esp + 0x20], eax
+// 0068261e  89442424             mov dword ptr [esp + 0x24], eax
+// 00682622  8b4500               mov eax, dword ptr [ebp]
+// 00682625  8b5060               mov edx, dword ptr [eax + 0x60]
+// 00682628  51                   push ecx
+// 00682629  8bcd                 mov ecx, ebp
+// 0068262b  ffd2                 call edx
+// 0068262d  807b0a00             cmp byte ptr [ebx + 0xa], 0
+// 00682631  0f84be000000         je 0x6826f5
+// 00682637  8b35ec468000         mov esi, dword ptr [0x8046ec]
+// 0068263d  d905dc828200         fld dword ptr [0x8282dc]
+// 00682643  8b4500               mov eax, dword ptr [ebp]
+// 00682646  8b5068               mov edx, dword ptr [eax + 0x68]
+// 00682649  b910000000           mov ecx, 0x10
+// 0068264e  8d7c2428             lea edi, [esp + 0x28]
+// 00682652  f3a5                 rep movsd dword ptr es:[edi], dword ptr [esi]
+// 00682654  d9542434             fst dword ptr [esp + 0x34]
+// 00682658  d95c2444             fstp dword ptr [esp + 0x44]
+// 0068265c  d9ee                 fldz 
+// 0068265e  d9542454             fst dword ptr [esp + 0x54]
+// 00682662  d905ac9b8100         fld dword ptr [0x819bac]
+// 00682668  d9542428             fst dword ptr [esp + 0x28]
+// 0068266c  d95c243c             fstp dword ptr [esp + 0x3c]
+// 00682670  d95c2450             fstp dword ptr [esp + 0x50]
+// 00682674  8d4c2428             lea ecx, [esp + 0x28]
+// 00682678  51                   push ecx
+// 00682679  8bcd                 mov ecx, ebp
+// 0068267b  ffd2                 call edx
+// 0068267d  a1e8468000           mov eax, dword ptr [0x8046e8]
+// 00682682  8b4b0c               mov ecx, dword ptr [ebx + 0xc]
+// 00682685  d900                 fld dword ptr [eax]
+// 00682687  8b7500               mov esi, dword ptr [ebp]
+// 0068268a  d80dac9b8100         fmul dword ptr [0x819bac]
+// 00682690  d95c2414             fstp dword ptr [esp + 0x14]
+// 00682694  8b11                 mov edx, dword ptr [ecx]
+// 00682696  8b420c               mov eax, dword ptr [edx + 0xc]
+// 00682699  ffd0                 call eax
+// 0068269b  89442410             mov dword ptr [esp + 0x10], eax
+// 0068269f  db442410             fild dword ptr [esp + 0x10]
+// 006826a3  85c0                 test eax, eax
+// 006826a5  7d06                 jge 0x6826ad
+// 006826a7  d80578978100         fadd dword ptr [0x819778]
+// 006826ad  8b5b0c               mov ebx, dword ptr [ebx + 0xc]
+// 006826b0  d95c2418             fstp dword ptr [esp + 0x18]
+// 006826b4  d9ee                 fldz 
+// 006826b6  8b13                 mov edx, dword ptr [ebx]
+// 006826b8  8b4210               mov eax, dword ptr [edx + 0x10]
+// 006826bb  6a00                 push 0
+// 006826bd  8d8c24f0000000       lea ecx, [esp + 0xf0]
+// 006826c4  51                   push ecx
+// 006826c5  83ec08               sub esp, 8
+// 006826c8  d95c2404             fstp dword ptr [esp + 4]
+// 006826cc  8bcb                 mov ecx, ebx
+// 006826ce  d9e8                 fld1 
+// 006826d0  d91c24               fstp dword ptr [esp]
+// 006826d3  ffd0                 call eax
+// 006826d5  89442420             mov dword ptr [esp + 0x20], eax
+// 006826d9  db442420             fild dword ptr [esp + 0x20]
+// 006826dd  85c0                 test eax, eax
+// 006826df  7d06                 jge 0x6826e7
+// 006826e1  d80578978100         fadd dword ptr [0x819778]
+// 006826e7  d87c2428             fdivr dword ptr [esp + 0x28]
+// 006826eb  51                   push ecx
+// 006826ec  8d4c2428             lea ecx, [esp + 0x28]
+// 006826f0  e91f010000           jmp 0x682814
+// 006826f5  8b4b0c               mov ecx, dword ptr [ebx + 0xc]
+// 006826f8  8b01                 mov eax, dword ptr [ecx]
+// 006826fa  8b5010               mov edx, dword ptr [eax + 0x10]
+// 006826fd  ffd2                 call edx
+// 006826ff  89442410             mov dword ptr [esp + 0x10], eax
+// 00682703  db442410             fild dword ptr [esp + 0x10]
+// 00682707  85c0                 test eax, eax
+// 00682709  7d06                 jge 0x682711
+// 0068270b  d80578978100         fadd dword ptr [0x819778]
+// 00682711  8b4b0c               mov ecx, dword ptr [ebx + 0xc]
+// 00682714  d80dac9b8100         fmul dword ptr [0x819bac]
+// 0068271a  8b01                 mov eax, dword ptr [ecx]
+// 0068271c  8b5010               mov edx, dword ptr [eax + 0x10]
+// 0068271f  d95c2414             fstp dword ptr [esp + 0x14]
+// 00682723  ffd2                 call edx
+// 00682725  8b35ec468000         mov esi, dword ptr [0x8046ec]
+// 0068272b  b910000000           mov ecx, 0x10
+// 00682730  8d7c2428             lea edi, [esp + 0x28]
+// 00682734  f3a5                 rep movsd dword ptr es:[edi], dword ptr [esi]
+// 00682736  8b4b0c               mov ecx, dword ptr [ebx + 0xc]
+// 00682739  8b01                 mov eax, dword ptr [ecx]
+// 0068273b  8b500c               mov edx, dword ptr [eax + 0xc]
+// 0068273e  ffd2                 call edx
+// 00682740  89442410             mov dword ptr [esp + 0x10], eax
+// 00682744  db442410             fild dword ptr [esp + 0x10]
+// 00682748  85c0                 test eax, eax
+// 0068274a  7d06                 jge 0x682752
+// 0068274c  d80578978100         fadd dword ptr [0x819778]
+// 00682752  8b4b0c               mov ecx, dword ptr [ebx + 0xc]
+// 00682755  d80ddc828200         fmul dword ptr [0x8282dc]
+// 0068275b  8b01                 mov eax, dword ptr [ecx]
+// 0068275d  8b5010               mov edx, dword ptr [eax + 0x10]
+// 00682760  d95c2468             fstp dword ptr [esp + 0x68]
+// 00682764  ffd2                 call edx
+// 00682766  89442410             mov dword ptr [esp + 0x10], eax
+// 0068276a  db442410             fild dword ptr [esp + 0x10]
+// 0068276e  85c0                 test eax, eax
+// 00682770  7d06                 jge 0x682778
+// 00682772  d80578978100         fadd dword ptr [0x819778]
+// 00682778  d80ddc828200         fmul dword ptr [0x8282dc]
+// 0068277e  8b4500               mov eax, dword ptr [ebp]
+// 00682781  d9442468             fld dword ptr [esp + 0x68]
+// 00682785  8b5068               mov edx, dword ptr [eax + 0x68]
+// 00682788  d95c2434             fstp dword ptr [esp + 0x34]
+// 0068278c  8d4c2428             lea ecx, [esp + 0x28]
+// 00682790  51                   push ecx
+// 00682791  d95c2448             fstp dword ptr [esp + 0x48]
+// 00682795  8bcd                 mov ecx, ebp
+// 00682797  d9ee                 fldz 
+// 00682799  d95c2458             fstp dword ptr [esp + 0x58]
+// 0068279d  ffd2                 call edx
+// 0068279f  a1e8468000           mov eax, dword ptr [0x8046e8]
+// 006827a4  d900                 fld dword ptr [eax]
+// 006827a6  8b4b0c               mov ecx, dword ptr [ebx + 0xc]
+// 006827a9  d80dac9b8100         fmul dword ptr [0x819bac]
+// 006827af  8b7500               mov esi, dword ptr [ebp]
+// 006827b2  d95c2410             fstp dword ptr [esp + 0x10]
+// 006827b6  8b11                 mov edx, dword ptr [ecx]
+// 006827b8  8b420c               mov eax, dword ptr [edx + 0xc]
+// 006827bb  ffd0                 call eax
+// 006827bd  89442418             mov dword ptr [esp + 0x18], eax
+// 006827c1  db442418             fild dword ptr [esp + 0x18]
+// 006827c5  85c0                 test eax, eax
+// 006827c7  7d06                 jge 0x6827cf
+// 006827c9  d80578978100         fadd dword ptr [0x819778]
+// 006827cf  8b5b0c               mov ebx, dword ptr [ebx + 0xc]
+// 006827d2  d95c2418             fstp dword ptr [esp + 0x18]
+// 006827d6  d9ee                 fldz 
+// 006827d8  8b13                 mov edx, dword ptr [ebx]
+// 006827da  8b4210               mov eax, dword ptr [edx + 0x10]
+// 006827dd  6a00                 push 0
+// 006827df  8d8c24f0000000       lea ecx, [esp + 0xf0]
+// 006827e6  51                   push ecx
+// 006827e7  83ec08               sub esp, 8
+// 006827ea  d95c2404             fstp dword ptr [esp + 4]
+// 006827ee  8bcb                 mov ecx, ebx
+// 006827f0  d9442424             fld dword ptr [esp + 0x24]
+// 006827f4  d91c24               fstp dword ptr [esp]
+// 006827f7  ffd0                 call eax
+// 006827f9  89442424             mov dword ptr [esp + 0x24], eax
+// 006827fd  db442424             fild dword ptr [esp + 0x24]
+// 00682801  85c0                 test eax, eax
+// 00682803  7d06                 jge 0x68280b
+// 00682805  d80578978100         fadd dword ptr [0x819778]
+// 0068280b  d87c2428             fdivr dword ptr [esp + 0x28]
+// 0068280f  51                   push ecx
+// 00682810  8d4c2424             lea ecx, [esp + 0x24]
+// 00682814  8b961c010000         mov edx, dword ptr [esi + 0x11c]
+// 0068281a  d91c24               fstp dword ptr [esp]
+// 0068281d  51                   push ecx
+// 0068281e  8bcd                 mov ecx, ebp
+// 00682820  ffd2                 call edx
+// 00682822  8b4500               mov eax, dword ptr [ebp]
+// 00682825  8b506c               mov edx, dword ptr [eax + 0x6c]
+// 00682828  8d8c24ec000000       lea ecx, [esp + 0xec]
+// 0068282f  51                   push ecx
+// 00682830  8bcd                 mov ecx, ebp
+// 00682832  ffd2                 call edx
+// 00682834  8b0dec468000         mov ecx, dword ptr [0x8046ec]
+// 0068283a  8b4500               mov eax, dword ptr [ebp]
+// 0068283d  8b90b8000000         mov edx, dword ptr [eax + 0xb8]
+// 00682843  51                   push ecx
+// 00682844  6a00                 push 0
+// 00682846  8bcd                 mov ecx, ebp
+// 00682848  ffd2                 call edx
+// 0068284a  8b4500               mov eax, dword ptr [ebp]
+// 0068284d  8b9094000000         mov edx, dword ptr [eax + 0x94]
+// 00682853  6a00                 push 0
+// 00682855  6a00                 push 0
+// 00682857  8bcd                 mov ecx, ebp
+// 00682859  ffd2                 call edx
+// 0068285b  8b4500               mov eax, dword ptr [ebp]
+// 0068285e  8b9098000000         mov edx, dword ptr [eax + 0x98]
+// 00682864  6a00                 push 0
+// 00682866  6a00                 push 0
+// 00682868  6a00                 push 0
+// 0068286a  8bcd                 mov ecx, ebp
+// 0068286c  ffd2                 call edx
+// 0068286e  8b4500               mov eax, dword ptr [ebp]
+// 00682871  8b90a4000000         mov edx, dword ptr [eax + 0xa4]
+// 00682877  6a02                 push 2
+// 00682879  6a02                 push 2
+// 0068287b  6a02                 push 2
+// 0068287d  6a00                 push 0
+// 0068287f  8bcd                 mov ecx, ebp
+// 00682881  ffd2                 call edx
+// 00682883  8b4500               mov eax, dword ptr [ebp]
+// 00682886  8b909c000000         mov edx, dword ptr [eax + 0x9c]
+// 0068288c  8d4c2474             lea ecx, [esp + 0x74]
+// 00682890  51                   push ecx
+// 00682891  6a00                 push 0
+// 00682893  8bcd                 mov ecx, ebp
+// 00682895  ffd2                 call edx
+// 00682897  8b4500               mov eax, dword ptr [ebp]
+// 0068289a  8b909c000000         mov edx, dword ptr [eax + 0x9c]
+// 006828a0  8d8c24b0000000       lea ecx, [esp + 0xb0]
+// 006828a7  51                   push ecx
+// 006828a8  6a00                 push 0
+// 006828aa  8bcd                 mov ecx, ebp
+// 006828ac  ffd2                 call edx
+// 006828ae  8b4500               mov eax, dword ptr [ebp]
+// 006828b1  8b90ac000000         mov edx, dword ptr [eax + 0xac]
+// 006828b7  8d4c241c             lea ecx, [esp + 0x1c]
+// 006828bb  51                   push ecx
+// 006828bc  6a00                 push 0
+// 006828be  8bcd                 mov ecx, ebp
+// 006828c0  ffd2                 call edx
+// 006828c2  8b4500               mov eax, dword ptr [ebp]
+// 006828c5  8b5078               mov edx, dword ptr [eax + 0x78]
+// 006828c8  6a01                 push 1
+// 006828ca  8bcd                 mov ecx, ebp
+// 006828cc  ffd2                 call edx
+// 006828ce  8b4500               mov eax, dword ptr [ebp]
+// 006828d1  8b5030               mov edx, dword ptr [eax + 0x30]
+// 006828d4  6a00                 push 0
+// 006828d6  8bcd                 mov ecx, ebp
+// 006828d8  ffd2                 call edx
+// 006828da  d9e8                 fld1 
+// 006828dc  8b0d0c468000         mov ecx, dword ptr [0x80460c]
+// 006828e2  8b4500               mov eax, dword ptr [ebp]
+// 006828e5  83ec0c               sub esp, 0xc
+// 006828e8  d9542408             fst dword ptr [esp + 8]
+// 006828ec  d9ee                 fldz 
+// 006828ee  d95c2404             fstp dword ptr [esp + 4]
+// 006828f2  d91c24               fstp dword ptr [esp]
+// 006828f5  51                   push ecx
+// 006828f6  6a00                 push 0
+// 006828f8  8bcd                 mov ecx, ebp
+// 006828fa  8b90f4000000         mov edx, dword ptr [eax + 0xf4]
+// 00682900  ffd2                 call edx
+// 00682902  8b4500               mov eax, dword ptr [ebp]
+// 00682905  8b90d4000000         mov edx, dword ptr [eax + 0xd4]
+// 0068290b  6a01                 push 1
+// 0068290d  8bcd                 mov ecx, ebp
+// 0068290f  ffd2                 call edx
+// 00682911  8b4500               mov eax, dword ptr [ebp]
+// 00682914  8b90dc000000         mov edx, dword ptr [eax + 0xdc]
+// 0068291a  6a03                 push 3
+// 0068291c  6a00                 push 0
+// 0068291e  6a00                 push 0
+// 00682920  8bcd                 mov ecx, ebp
+// 00682922  ffd2                 call edx
+// 00682924  8b4500               mov eax, dword ptr [ebp]
+// 00682927  8b90ec000000         mov edx, dword ptr [eax + 0xec]
+// 0068292d  6a00                 push 0
+// 0068292f  6a01                 push 1
+// 00682931  6a01                 push 1
+// 00682933  6a01                 push 1
+// 00682935  8bcd                 mov ecx, ebp
+// 00682937  ffd2                 call edx
+// 00682939  8b4500               mov eax, dword ptr [ebp]
+// 0068293c  8b502c               mov edx, dword ptr [eax + 0x2c]
+// 0068293f  6a01                 push 1
+// 00682941  8bcd                 mov ecx, ebp
+// 00682943  ffd2                 call edx
+// 00682945  8b4500               mov eax, dword ptr [ebp]
+// 00682948  8b9024010000         mov edx, dword ptr [eax + 0x124]
+// 0068294e  6a03                 push 3
+// 00682950  8bcd                 mov ecx, ebp
+// 00682952  ffd2                 call edx
+// 00682954  8b4500               mov eax, dword ptr [ebp]
+// 00682957  8b904c010000         mov edx, dword ptr [eax + 0x14c]
+// 0068295d  6a01                 push 1
+// 0068295f  8bcd                 mov ecx, ebp
+// 00682961  ffd2                 call edx
+// 00682963  8b4500               mov eax, dword ptr [ebp]
+// 00682966  8b904c010000         mov edx, dword ptr [eax + 0x14c]
+// 0068296c  6a00                 push 0
+// 0068296e  8bcd                 mov ecx, ebp
+// 00682970  ffd2                 call edx
+// 00682972  8b4500               mov eax, dword ptr [ebp]
+// 00682975  8b90bc000000         mov edx, dword ptr [eax + 0xbc]
+// 0068297b  6a09                 push 9
+// 0068297d  6a07                 push 7
+// 0068297f  8bcd                 mov ecx, ebp
+// 00682981  ffd2                 call edx
+// 00682983  8b4500               mov eax, dword ptr [ebp]
+// 00682986  8b90c0000000         mov edx, dword ptr [eax + 0xc0]
+// 0068298c  6a00                 push 0
+// 0068298e  6a01                 push 1
+// 00682990  8bcd                 mov ecx, ebp
+// 00682992  ffd2                 call edx
+// 00682994  5f                   pop edi
+// 00682995  5e                   pop esi
+// 00682996  5d                   pop ebp
+// 00682997  5b                   pop ebx
+// 00682998  81c41c010000         add esp, 0x11c
+// 0068299e  c3                   ret 
+
 // from server: 93% by coldek
 // roc 2008-06 006825b0  unit: Ogre::RbxSceneNode  size: 1007 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006825b0
@@ -370,7 +693,7 @@ namespace Ogre{class __declspec(dllimport)HardwareVertexBuffer:public HardwareBu
 namespace Ogre{enum CompareFunction{CMPF_ALWAYS_FAIL,CMPF_ALWAYS_PASS,CMPF_LESS,CMPF_LESS_EQUAL,CMPF_EQUAL,CMPF_NOT_EQUAL,CMPF_GREATER_EQUAL,CMPF_GREATER};enum TextureFilterOptions{TFO_NONE,TFO_BILINEAR,TFO_TRILINEAR,TFO_ANISOTROPIC};enum FilterType{FT_MIN,FT_MAG,FT_MIP};enum FilterOptions{FO_NONE,FO_POINT,FO_LINEAR,FO_ANISOTROPIC};enum ShadeOptions{SO_FLAT,SO_GOURAUD,SO_PHONG};enum FogMode{FOG_NONE,FOG_EXP,FOG_EXP2,FOG_LINEAR};enum CullingMode{CULL_NONE=1,CULL_CLOCKWISE=2,CULL_ANTICLOCKWISE=3};enum ManualCullingMode{MANUAL_CULL_NONE=1,MANUAL_CULL_BACK=2,MANUAL_CULL_FRONT=3};enum WaveformType{WFT_SINE,WFT_TRIANGLE,WFT_SQUARE,WFT_SAWTOOTH,WFT_INVERSE_SAWTOOTH,WFT_PWM};enum PolygonMode{PM_POINTS=1,PM_WIREFRAME=2,PM_SOLID=3};enum ShadowTechnique{SHADOWTYPE_NONE=0x00,SHADOWDETAILTYPE_ADDITIVE=0x01,SHADOWDETAILTYPE_MODULATIVE=0x02,SHADOWDETAILTYPE_INTEGRATED=0x04,SHADOWDETAILTYPE_STENCIL=0x10,SHADOWDETAILTYPE_TEXTURE=0x20,SHADOWTYPE_STENCIL_MODULATIVE=0x12,SHADOWTYPE_STENCIL_ADDITIVE=0x11,SHADOWTYPE_TEXTURE_MODULATIVE=0x22,SHADOWTYPE_TEXTURE_ADDITIVE=0x21,SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED=0x25,SHADOWTYPE_TEXTURE_MODULATIVE_INTEGRATED=0x26};typedef int TrackVertexColourType;enum TrackVertexColourEnum{TVC_NONE=0x0,TVC_AMBIENT=0x1,TVC_DIFFUSE=0x2,TVC_SPECULAR=0x4,TVC_EMISSIVE=0x8};enum SortMode{SM_DIRECTION,SM_DISTANCE};enum FrameBufferType{FBT_COLOUR=0x1,FBT_DEPTH=0x2,FBT_STENCIL=0x4};class Light;typedef std::vector<Light*>LightList;typedef std::map<String,bool>UnaryOptionList;typedef std::map<String,String>BinaryOptionList;typedef std::map<String,String>NameValuePairList;typedef std::map<String,String>AliasTextureNamePairList;template<typename T>struct TRect{T left,top,right,bottom;TRect(){}TRect(T const&l,T const&t,T const&r,T const&b):left(l),top(t),right(r),bottom(b){}TRect(TRect const&o):left(o.left),top(o.top),right(o.right),bottom(o.bottom){}TRect&operator=(TRect const&o){left=o.left;top=o.top;right=o.right;bottom=o.bottom;return*this;}T width()const{return right-left;}T height()const{return bottom-top;}};typedef TRect<float>FloatRect;typedef TRect<long>Rect;struct Box{size_t left,top,right,bottom,front,back;Box(){}Box(size_t l,size_t t,size_t r,size_t b):left(l),top(t),right(r),bottom(b),front(0),back(1){((void)0);}Box(size_t l,size_t t,size_t ff,size_t r,size_t b,size_t bb):left(l),top(t),right(r),bottom(b),front(ff),back(bb){((void)0);}bool contains(const Box&def)const{return(def.left>=left&&def.top>=top&&def.front>=front&&def.right<=right&&def.bottom<=bottom&&def.back<=back);}size_t getWidth()const{return right-left;}size_t getHeight()const{return bottom-top;}size_t getDepth()const{return back-front;}};int __declspec(dllimport)findCommandLineOpts(int numargs,char**argv,UnaryOptionList&unaryOptList,BinaryOptionList&binOptList);}
 namespace Ogre{template<typename T>class Singleton{protected:static T*ms_Singleton;public:Singleton(void){((void)0);ms_Singleton=static_cast<T*>(this);}~Singleton(void){((void)0);ms_Singleton=0;}static T&getSingleton(void){((void)0);return(*ms_Singleton);}static T*getSingletonPtr(void){return ms_Singleton;}};}
 namespace Ogre{class RenderOperation{public:enum OperationType{OT_POINT_LIST=1,OT_LINE_LIST=2,OT_LINE_STRIP=3,OT_TRIANGLE_LIST=4,OT_TRIANGLE_STRIP=5,OT_TRIANGLE_FAN=6};VertexData*vertexData;OperationType operationType;bool useIndexes;IndexData*indexData;const Renderable*srcRenderable;RenderOperation():vertexData(0),operationType(OT_TRIANGLE_LIST),useIndexes(true),indexData(0){}};}
-namespace Ogre{enum LayerBlendType{LBT_COLOUR,LBT_ALPHA};enum LayerBlendOperation{LBO_REPLACE,LBO_ADD,LBO_MODULATE,LBO_ALPHA_BLEND};enum LayerBlendOperationEx{LBX_SOURCE1,LBX_SOURCE2,LBX_MODULATE,LBX_MODULATE_X2,LBX_MODULATE_X4,LBX_ADD,LBX_ADD_SIGNED,LBX_ADD_SMOOTH,LBX_SUBTRACT,LBX_BLEND_DIFFUSE_ALPHA,LBX_BLEND_TEXTURE_ALPHA,LBX_BLEND_CURRENT_ALPHA,LBX_BLEND_MANUAL,LBX_DOTPRODUCT,LBX_BLEND_DIFFUSE_COLOUR};enum LayerBlendSource{LBS_CURRENT,LBS_TEXTURE,LBS_DIFFUSE,LBS_SPECULAR,LBS_MANUAL};class __declspec(dllimport)LayerBlendModeEx{public:LayerBlendModeEx();LayerBlendType blendType;LayerBlendOperationEx operation;LayerBlendSource source1;LayerBlendSource source2;ColourValue colourArg1;ColourValue colourArg2;Real alphaArg1;Real alphaArg2;Real factor;bool operator==(const LayerBlendModeEx&rhs)const{if(blendType!=rhs.blendType)return false;if(blendType==LBT_COLOUR){if(operation==rhs.operation&&source1==rhs.source1&&source2==rhs.source2&&colourArg1==rhs.colourArg1&&colourArg2==rhs.colourArg2&&factor==rhs.factor){return true;}}else{if(operation==rhs.operation&&source1==rhs.source1&&source2==rhs.source2&&alphaArg1==rhs.alphaArg1&&alphaArg2==rhs.alphaArg2&&factor==rhs.factor){return true;}}return false;}bool operator!=(const LayerBlendModeEx&rhs)const{return!(*this==rhs);}};enum SceneBlendType{SBT_TRANSPARENT_ALPHA,SBT_TRANSPARENT_COLOUR,SBT_ADD,SBT_MODULATE,SBT_REPLACE};enum SceneBlendFactor{SBF_ONE,SBF_ZERO,SBF_DEST_COLOUR,SBF_SOURCE_COLOUR,SBF_ONE_MINUS_DEST_COLOUR,SBF_ONE_MINUS_SOURCE_COLOUR,SBF_DEST_ALPHA,SBF_SOURCE_ALPHA,SBF_ONE_MINUS_DEST_ALPHA,SBF_ONE_MINUS_SOURCE_ALPHA};}
+namespace Ogre{enum LayerBlendType{LBT_COLOUR,LBT_ALPHA};enum LayerBlendOperation{LBO_REPLACE,LBO_ADD,LBO_MODULATE,LBO_ALPHA_BLEND};enum LayerBlendOperationEx{LBX_SOURCE1,LBX_SOURCE2,LBX_MODULATE,LBX_MODULATE_X2,LBX_MODULATE_X4,LBX_ADD,LBX_ADD_SIGNED,LBX_ADD_SMOOTH,LBX_SUBTRACT,LBX_BLEND_DIFFUSE_ALPHA,LBX_BLEND_TEXTURE_ALPHA,LBX_BLEND_CURRENT_ALPHA,LBX_BLEND_MANUAL,LBX_DOTPRODUCT,LBX_BLEND_DIFFUSE_COLOUR};enum LayerBlendSource{LBS_CURRENT,LBS_TEXTURE,LBS_DIFFUSE,LBS_SPECULAR,LBS_MANUAL};class __declspec(dllimport)LayerBlendModeEx{public:LayerBlendType blendType;LayerBlendOperationEx operation;LayerBlendSource source1;LayerBlendSource source2;ColourValue colourArg1;ColourValue colourArg2;Real alphaArg1;Real alphaArg2;Real factor;bool operator==(const LayerBlendModeEx&rhs)const{if(blendType!=rhs.blendType)return false;if(blendType==LBT_COLOUR){if(operation==rhs.operation&&source1==rhs.source1&&source2==rhs.source2&&colourArg1==rhs.colourArg1&&colourArg2==rhs.colourArg2&&factor==rhs.factor){return true;}}else{if(operation==rhs.operation&&source1==rhs.source1&&source2==rhs.source2&&alphaArg1==rhs.alphaArg1&&alphaArg2==rhs.alphaArg2&&factor==rhs.factor){return true;}}return false;}bool operator!=(const LayerBlendModeEx&rhs)const{return!(*this==rhs);}};enum SceneBlendType{SBT_TRANSPARENT_ALPHA,SBT_TRANSPARENT_COLOUR,SBT_ADD,SBT_MODULATE,SBT_REPLACE};enum SceneBlendFactor{SBF_ONE,SBF_ZERO,SBF_DEST_COLOUR,SBF_SOURCE_COLOUR,SBF_ONE_MINUS_DEST_COLOUR,SBF_ONE_MINUS_SOURCE_COLOUR,SBF_DEST_ALPHA,SBF_SOURCE_ALPHA,SBF_ONE_MINUS_DEST_ALPHA,SBF_ONE_MINUS_SOURCE_ALPHA};}
 namespace Ogre{enum GpuProgramType{GPT_VERTEX_PROGRAM,GPT_FRAGMENT_PROGRAM};class GpuProgramParameters;typedef SharedPtr<GpuProgramParameters>GpuProgramParametersSharedPtr;}
 namespace Ogre{class __declspec(dllimport)TextureUnitState{public:enum TextureAddressingMode{TAM_WRAP,TAM_MIRROR,TAM_CLAMP,TAM_BORDER};struct UVWAddressingMode{TextureAddressingMode u,v,w;};};}
 namespace Ogre{typedef struct _ConfigOption{String name;String currentValue;StringVector possibleValues;bool immutable;}ConfigOption;typedef std::map<String,ConfigOption>ConfigOptionMap;}

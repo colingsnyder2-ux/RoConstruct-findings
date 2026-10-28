@@ -75,6 +75,7 @@ namespace RBX
 		bool imDead : 1;
 		bool hadHeadJoint : 1;
 		bool sit : 1;
+		bool strafe : 1;
 		mutable boost::shared_ptr<PartInstance> head;
 		mutable boost::shared_ptr<PartInstance> torso;
 		mutable boost::shared_ptr<PartInstance> leftLeg;
@@ -145,6 +146,13 @@ namespace RBX
 		bool getJump() const
 		{
 			return jump;
+		}
+
+		void setStrafe(bool value);
+
+		bool getStrafe() const
+		{
+			return strafe;
 		}
 
 		void setSit(bool value);

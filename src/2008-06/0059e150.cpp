@@ -1,4 +1,4 @@
-// from server: 92% by coldek
+// from server: 93% by coldek
 // from server: 88% by colin
 // roc 2008-06 0059e150  unit: VCRenderSettings::?$EnumPropDescriptor  size: 590 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0059e150
@@ -190,7 +190,8 @@ struct Vector3 {
  Vector3(float a,float b,float c):x(a),y(b),z(c){}
  Vector3(const Vector3&v):x(v.x),y(v.y),z(v.z){}
  Vector3&operator=(const Vector3&v){x=v.x;y=v.y;z=v.z;return *this;}
- Vector3 operator+(const Vector3&v)const{return Vector3(x+v.x,y+v.y,z+v.z);}
+ Vector3& operator+=(const Vector3&v){x+=v.x;y+=v.y;z+=v.z;return *this;}
+ Vector3 operator+(const Vector3&v)const{Vector3 r=*this;r+=v;return r;}
  Vector3 operator-(const Vector3&v)const{return Vector3(x-v.x,y-v.y,z-v.z);}
  Vector3 operator*(float s)const{return Vector3(x*s,y*s,z*s);}
  float&operator[](int i){return (&x)[i];}

@@ -1,8 +1,9 @@
+// from server: 85% by EspClaude
 // from server: 84% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_handles_family_9788f1331849ffe3.cpp
+// roc-lib: rbxgs-dll roc_espclaude_438b81b48036a6ae.cpp
 
 // Candidate translation unit (score above; library headers required).
 /**
@@ -414,6 +415,11 @@ void DrawAdorn::handles3d(const G3D::Vector3& size, const G3D::CoordinateFrame& 
     }
 }
 
+static inline G3D::Rect2D handleRect(const G3D::Vector2& c) {
+    G3D::Vector2 lo = c - G3D::Vector2(3.0f, 3.0f);
+    G3D::Vector2 hi = c + G3D::Vector2(3.0f, 3.0f);
+    return G3D::Rect2D::xyxy(lo, hi);
+}
 void DrawAdorn::handles2d(const G3D::Vector3& size, const G3D::CoordinateFrame& frame,
                          const G3D::GCamera& camera, Adorn* adorn, const G3D::Color3& color) {
     G3D::Vector3 halfSize = size * 0.5f;
@@ -423,9 +429,9 @@ void DrawAdorn::handles2d(const G3D::Vector3& size, const G3D::CoordinateFrame& 
             G3D::Vector3 point(0, 0, 0);
             point[axis] = (halfSize[axis] + 3.0f) * sign;
             G3D::Vector2 screen = camera.project(frame.pointToWorldSpace(point), adorn->getViewport()).xy();
-            adorn->rect2d(G3D::Rect2D::xyxy(screen.x - 3.0f, screen.y - 3.0f,
-                                          screen.x + 3.0f, screen.y + 3.0f), color);
+            adorn->rect2d(handleRect(screen), color);
         }
     }
 }
+
 }
