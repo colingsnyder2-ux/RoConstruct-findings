@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "url": "https://raw.githubusercontent.com/colingsnyder2-ux/RoConstruct-findings/main/data/native-worker.zip",
+  "sha256": "4d95e9e54ca3317939b0a6af70b6e93e6ba9fdd8a93f4b826780ef5431351d68",
+  "size": 2604540,
+  "server": "https://colinpc.tail2879d0.ts.net",
+  "native_clients": [
+    "2008-06"
+  ],
+  "guide": "https://raw.githubusercontent.com/colingsnyder2-ux/RoConstruct-findings/main/data/NATIVE_AGENT.md"
+}
