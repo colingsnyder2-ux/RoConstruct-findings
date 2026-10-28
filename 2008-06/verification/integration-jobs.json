@@ -2590,7 +2590,7 @@
     "receipt": {},
     "state": "queued",
     "unit": "RBX::Workspace",
-    "updated": 1793141575.5056155,
+    "updated": 1793144948.5094242,
     "user": "colin"
   },
   {
@@ -2605,11 +2605,32 @@
         ]
       ]
     },
-    "phase": "fingerprinting inputs",
+    "phase": "complete",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
+    "unit": "RBX::JointInstance",
+    "updated": 1793144730.1033988,
+    "user": "colin"
+  },
+  {
+    "created": 1793145290.2006032,
+    "id": "4a45904e13404ff5a63ec692130c239c",
+    "model": "gpt-6",
+    "patches": {
+      "App/v8datamodel/JointInstance.cpp": [
+        [
+          "\t\tRBXASSERT(getParent() == NULL);\n\t\tRBXASSERT(joint->getWorld() == NULL);",
+          ""
+        ]
+      ]
+    },
+    "phase": "baseline: building",
     "receipt": {},
     "state": "verifying",
     "unit": "RBX::JointInstance",
-    "updated": 1793142592.1645293,
+    "updated": 1793145391.4281752,
     "user": "colin"
   }
 ]

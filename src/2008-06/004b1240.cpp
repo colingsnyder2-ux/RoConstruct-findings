@@ -273,7 +273,7 @@ void Replicator::Update(Peer*peer){
      lastSendTime=t;
     }
     if(settings().printPacketBuffer){
-     unsigned medium=statistics->messageSendBuffer[2];unsigned high=statistics->messageSendBuffer[1];unsigned buffer=medium+high*2;
+     unsigned high=statistics->messageSendBuffer[1];unsigned medium=statistics->messageSendBuffer[2];unsigned buffer=medium+high*2;
      if(buffer>static_cast<unsigned>(settings().maxDataModelSendBuffer))StandardOut::singleton()->print(2,"SendBuffer = %d",buffer);
      else if(buffer>0)StandardOut::singleton()->print(1,"SendBuffer = %d",buffer);
     }

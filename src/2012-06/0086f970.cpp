@@ -1,41 +1,11 @@
-// from server: 44% by Intel
-struct Node {
-    Node* left;
-    Node* right;
-    Node* parent;
-    unsigned char color;
-};
+// from server: 100% by tajop
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#define _SECURE_SCL 0
+#include <map>
 
-struct Tree {
-    Node* header;
-};
-
-void __stdcall Tree_InsertNode(Tree* tree, Node* node) {
-    Node* y = tree->header;
-    Node* x = y->left;
-    node->left = x;
-    y->left = node;
-    x = node->left;
-    if (x->color == 0) {
-        x->parent = node;
-    }
-    x = node->parent;
-    y->parent = x;
-    x = x->parent;
-    if (node == x->parent) {
-        x->parent = y;
-        y->left = node;
-        node->parent = y;
-        return;
-    }
-    x = node->parent;
-    if (node == x->left) {
-        x->left = y;
-        y->left = node;
-        node->parent = y;
-        return;
-    }
-    x->right = y;
-    y->left = node;
-    node->parent = y;
-}
+// pair<const int, Value> is isnil(0x1d) - 0xd bytes.
+struct Value { int words[3]; };
+template class std::_Tree<std::_Tmap_traits<int, Value, std::less<int>,
+    std::allocator<std::pair<const int, Value> >, false> >;

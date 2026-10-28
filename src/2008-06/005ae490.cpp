@@ -1,57 +1,31 @@
-// from server: 99% by EspClaude
+// from server: 100% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs roc_espclaude_4649ad918a7d484d.cpp
+// roc-lib: rbxgs-dll roc_script_default_set_ctor_0d9dc12ea3eae01a.cpp
 
 // Candidate translation unit (score above; library headers required).
-#define _DLL
-#define private public
-#include "util/IRenderable.h"
-#undef private
-#include "util/Object.h"
-#define hasListeners() hasListeners() const { return listeners.size() > 0; } bool hasListenersEmpty()
-#include "util/Events.h"
-#undef hasListeners
-namespace RBX { template<class T> class GuidItem { public: virtual ~GuidItem() {} char guidPad[0xc]; }; }
-#define AbstractFactoryProduct GuidItem<Instance>, public AbstractFactoryProduct
-#include "util/Guid.h"
-namespace RBX { class GuidStub { public: typedef Guid::Data Data; void assign(const Data&) {} operator const Guid&() const { return *(const Guid*)0; } }; }
-#define Guid GuidStub
-#include "v8tree/Instance.h"
-#undef Guid
-#undef AbstractFactoryProduct
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/condition.hpp>
-#define statsItem statsItem; double exeTime0; double exeTime1; boost::shared_ptr<void> exeShared; boost::mutex exeMutex; boost::condition exeCondition
-#include "script/ScriptContext.h"
-#undef statsItem
-#include "script/Script.h"
-#include "script/ScriptEvent.h"
-#include "script/LuaMemory.h"
-#include "script/LuaAtomicClasses.h"
-#include "script/LuaInstanceBridge.h"
-#include "script/LuaSignalBridge.h"
-#include "script/LuaArguments.h"
-#include "lua/lua.hpp"
-#include "lua/LuaBridge.h"
-#include "v8datamodel/Workspace.h"
-#include "v8datamodel/DebugSettings.h"
-#include "v8datamodel/Stats.h"
-#include "util/standardout.h"
-#include "util/Debug.h"
-#include "boost/date_time/posix_time/posix_time.hpp"
+#pragma include_alias("v8tree/Instance.h", "roc_part_instance_guid_decl_2b7e2a3e9ffcb726.cpp")
+#pragma include_alias("script/ScriptContext.h", "roc_script_timeout_volatile_decl_62638bbf965ad4fc.cpp")
+#include <stddef.h>
+#include <roc_script_timeout_volatile_decl_62638bbf965ad4fc.cpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
-using namespace RBX;
-using namespace boost::posix_time;
-
+namespace RBX {
 ScriptContext::ScriptContext()
-    : globalState(NULL),
-      scripts(std::less<Script*>()),
-      nextPendingScripts(second_clock::local_time()),
-      scriptsDisabled(false),
-      exeTime0(0),
-      exeTime1(0)
+ : globalState(NULL),
+   nextPendingScripts(boost::posix_time::second_clock::local_time()),
+   scriptsDisabled(false), timoutSpan(0), timoutTime(0), timedout(0)
 {
-    setName("Script Context");
+ typedef char instanceSize[sizeof(Instance)==0x130?1:-1];
+ typedef char ownerSize[sizeof(ScriptContext)==0x1f8?1:-1];
+ typedef char globalOffset[offsetof(ScriptContext,globalState)==0x138?1:-1];
+ typedef char spanOffset[offsetof(ScriptContext,timoutSpan)==0x1b8?1:-1];
+ typedef char flagOffset[offsetof(ScriptContext,timedout)==0x1c8?1:-1];
+ typedef char threadOffset[offsetof(ScriptContext,timeoutThread)==0x1cc?1:-1];
+ typedef char mutexOffset[offsetof(ScriptContext,timeoutMutex)==0x1d0?1:-1];
+ typedef char conditionOffset[offsetof(ScriptContext,timeoutCondition)==0x1d8?1:-1];
+ typedef char allocatorOffset[offsetof(ScriptContext,allocator)==0x1f0?1:-1];
+ setName("Script Context");
+}
 }

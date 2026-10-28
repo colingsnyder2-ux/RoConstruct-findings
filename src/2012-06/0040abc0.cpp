@@ -1,52 +1,11 @@
-// from server: 66% by atomic.potato
-struct Node {
-    Node* next;
-    Node* prev;
-    Node* parent;
-    char pad[0x45 - 0x0C];
-    char flag45;
-};
+// from server: 100% by tajop
+// roc-lang: cpp
+// roc-cl: 30729
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#define _SECURE_SCL 0
+#include <set>
 
-struct List {
-    Node* head;
-    Node* tail;
-};
+struct Value { char bytes[0x38]; };
 
-struct Holder {
-    char pad0[4];
-    List* list;
-    Node* prev;
-};
-
-struct Creator {
-    void insert(Holder* h);
-};
-
-void Creator::insert(Holder* h) {
-    List* lst = h->list;
-    Node* n = lst->head;
-    lst->head = n->next;
-    Node* m = n->next;
-    if (m->flag45 == 0) {
-        m->prev = (Node*)h;
-    }
-    Node* p = h->prev;
-    n->prev = p;
-    Node* t = lst->tail;
-    if ((Node*)h == t->prev) {
-        t->prev = n;
-        n->next = (Node*)h;
-        h->prev = n;
-        return;
-    }
-    Node* q = h->prev;
-    if ((Node*)h == q->next) {
-        q->next = n;
-        n->next = (Node*)h;
-        h->prev = n;
-        return;
-    }
-    q->parent = n;
-    n->next = (Node*)h;
-    h->prev = n;
-}
+typedef std::_Tree<std::_Tset_traits<Value, std::less<Value>, std::allocator<Value>, false> > Tree;
+template void Tree::_Lrotate(Tree::_Nodeptr);

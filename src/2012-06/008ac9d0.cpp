@@ -1,7 +1,7 @@
-// from server: 70% by colin
+// from server: 79% by tajop
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /arch:SSE2
 // roc-lib: rbxgs tool/NullTool.cpp
 
 // Candidate translation unit (score above; library headers required).
