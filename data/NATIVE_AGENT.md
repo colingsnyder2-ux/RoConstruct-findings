@@ -16,8 +16,9 @@ An existing client selection remains valid; do not ask again just because the ba
 
 ## Automatic Worker download
 
-Do not ask the user to locate or attach a Worker ZIP. If `roc/native_try.py` is missing, the checkout is old,
-or `roc native-try --help` is unavailable, download the current Worker package yourself:
+Do not ask the user to locate or attach a Worker ZIP. If `roc/native_try.py`, `research/native-units.json`,
+or `research/native-source-lock.json` is missing, `roc native-try --help` is unavailable, or a package marker
+reports `native_workflow_version` below 2, download the current Worker package yourself:
 
 - Manifest: https://raw.githubusercontent.com/colingsnyder2-ux/RoConstruct-findings/main/data/native-worker.json
 - Package: https://raw.githubusercontent.com/colingsnyder2-ux/RoConstruct-findings/main/data/native-worker.zip
@@ -28,8 +29,11 @@ On Windows the following grouped PowerShell bootstrap downloads and verifies the
 into a new folder without overwriting the user's existing checkout or edits:
 
 ```powershell
+$ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue'
 $nativeManifest = Invoke-RestMethod ('https://raw.githubusercontent.com/colingsnyder2-ux/RoConstruct-findings/main/data/native-worker.json?t=' + [guid]::NewGuid().ToString('N'))
-if ($nativeManifest.url -ne 'https://raw.githubusercontent.com/colingsnyder2-ux/RoConstruct-findings/main/data/native-worker.zip' -or
+if ($nativeManifest.workflow_version -lt 2 -or
+    $nativeManifest.url -ne 'https://raw.githubusercontent.com/colingsnyder2-ux/RoConstruct-findings/main/data/native-worker.zip' -or
     $nativeManifest.sha256 -notmatch '^[0-9a-fA-F]{64}$') { throw 'Invalid Worker manifest' }
 $nativeFolder = Join-Path (Get-Location) ('RoConstruct-Native-' + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $nativeFolder -ErrorAction Stop | Out-Null
@@ -41,9 +45,14 @@ if ((Get-FileHash -LiteralPath $nativeArchive -Algorithm SHA256).Hash -ne $nativ
 Expand-Archive -LiteralPath $nativeArchive -DestinationPath $nativeFolder
 Set-Location -LiteralPath $nativeFolder
 $env:ROC_NONINTERACTIVE = '1'
+Write-Output ('Native checkout: ' + $nativeFolder)
 ```
 
 On Linux use the same HTTPS manifest/package, verify SHA-256, and extract into a fresh authorized folder.
+Capture the printed absolute checkout path and use it as the explicit working directory for every later
+tool call. `Set-Location` and process environment changes do not persist across separate terminal calls.
+Set `ROC_NONINTERACTIVE=1` again in the grouped setup call if needed; keep invitation credentials in
+existing private configuration or pass their environment to each required command, never into public files.
 Read the extracted `AGENTS.md` and `CLAUDE.md`, then execute setup below. Use an existing working server
 configuration when supplied, otherwise use the manifest's `server` URL. Never copy another contributor's
 credentials. Ask only for missing contributor identity or the owner's private native invitation.
@@ -97,7 +106,7 @@ roc client-fetch 2008-06
 roc analyze 2008-06
 roc rebuild 2008-06 install
 roc pull 2008-06
-roc lib-fetch rbxgs rbxgs-net rbxgs-appdraw rbxgs-render rbxgs-view
+roc lib-fetch rbxgs rbxgs-net rbxgs-appdraw rbxgs-render rbxgs-view openrbx-client
 roc libs-bundle fetch mfc-9.0-rtm
 roc integrate sync
 roc rebuild 2008-06 doctor
@@ -107,7 +116,12 @@ roc native-try targets --limit 20
 Skip `analyze` when `work/2008-06/functions.jsonl` already covers the current verified client. `install`
 installs Python packages and historical compilers; the VCForPython bundle supplies the Windows SDK.
 `lib-fetch` downloads rbxgs and its Git submodules; `pull` downloads mined sources and generated units,
-which `lib-fetch` then installs. The indexed MFC bundle supplies ATL/MFC headers/libraries.
+which `lib-fetch` then installs. The Worker also bundles the accepted adopted native headers in
+`research/native-units.json`; `lib-fetch` installs these even when the remote unit registry lacks them.
+`research/native-source-lock.json` pins source repositories to the server-compatible revisions on fresh installs.
+If an existing vendor checkout has another revision or local edits, preserve it and bootstrap a fresh Worker
+folder rather than resetting or stashing someone else's work.
+The indexed MFC bundle supplies ATL/MFC headers/libraries.
 `rebuild install` obtains trusted build recipes when absent. `integrate sync` installs accepted overlays.
 `rebuild doctor` must compile, link and run its smoke EXE before starting native trials.
 

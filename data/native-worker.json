@@ -1,8 +1,9 @@
 {
   "schema": 1,
+  "workflow_version": 2,
   "url": "https://raw.githubusercontent.com/colingsnyder2-ux/RoConstruct-findings/main/data/native-worker.zip",
-  "sha256": "4d95e9e54ca3317939b0a6af70b6e93e6ba9fdd8a93f4b826780ef5431351d68",
-  "size": 2604540,
+  "sha256": "287270d9bc919077c4d58762f6a024cd169b4f78d1f6c5a4f2e01f9f56b93dfe",
+  "size": 2613619,
   "server": "https://colinpc.tail2879d0.ts.net",
   "native_clients": [
     "2008-06"
