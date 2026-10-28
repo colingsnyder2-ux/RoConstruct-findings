@@ -1,47 +1,43 @@
-// from server: 98% by coldek
-// from server: 90% by king_originala
-struct Vector2 {
-    float x;
-    float y;
+// from server: 100% by EspClaude
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+namespace G3D {
+class Vector2 { public: float x, y; };
+class Vector2int16 {
+public:
+    short x, y;
+    Vector2int16() : x(0), y(0) {}
+    Vector2int16(short _x, short _y) : x(_x), y(_y) {}
+    Vector2int16(const class Vector2& v);
 };
-
-struct Vector2int16 {
-    short x;
-    short y;
-    Vector2int16(const Vector2&);
-    Vector2int16(){}
+}
+namespace RBX {
+class UserInputBase;
+class UIEvent {
+public:
+    enum EventType { NO_EVENT, MOUSE_RIGHT_BUTTON_DOWN, MOUSE_RIGHT_BUTTON_UP, MOUSE_LEFT_BUTTON_DOWN, MOUSE_LEFT_BUTTON_UP, MOUSE_MOVE };
+    EventType eventType;
+    UserInputBase* userInput;
+    G3D::Vector2int16 mousePosition;
+    G3D::Vector2int16 mouseDelta;
+    G3D::Vector2int16 windowSize;
+    UIEvent(UserInputBase* u, EventType t, G3D::Vector2int16 mp, G3D::Vector2int16 ws) : userInput(u), eventType(t), mousePosition(mp), windowSize(ws) {}
 };
-
-struct S;
-
-struct Event {
-    int type;
-    S* source;
-    Vector2int16 value;
-    short zeroX;
-    short zeroY;
-    Vector2int16 position;
-    Event(int t,S* s,const Vector2int16& p,const Vector2int16& v){value=v;position=p;zeroX=0;type=t;source=s;zeroY=0;}
+class UserInputBase { public: char padding[0x59]; bool leftDown; };
+}
+using namespace RBX;
+struct DxUserInput : public UserInputBase {
+    G3D::Vector2int16 getWindowSize();
+    void sendEvent(const UIEvent&);
+    void f(UIEvent::EventType type, const G3D::Vector2& position);
 };
-
-struct S {
-    char padding[89];
-    bool active;
-
-    Vector2int16 getValue();
-    void dispatch(const Event&);
-    void f(int type, const Vector2& position);
-};
-
-void S::f(int type, const Vector2& position)
+void DxUserInput::f(UIEvent::EventType type, const G3D::Vector2& position)
 {
-    if (type == 3)
-        active = true;
-    else if (type == 4)
-        active = false;
-
-    Vector2int16 p(position);
-
-    Event event(type,this,p,getValue());
-    dispatch(event);
+    if (type == UIEvent::MOUSE_LEFT_BUTTON_DOWN)
+        leftDown = true;
+    else if (type == UIEvent::MOUSE_LEFT_BUTTON_UP)
+        leftDown = false;
+    G3D::Vector2int16 p(position);
+    UIEvent event(this, type, p, getWindowSize());
+    sendEvent(event);
 }

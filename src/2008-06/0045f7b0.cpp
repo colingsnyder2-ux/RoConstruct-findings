@@ -1,3 +1,4 @@
+// from server: 84% by EspClaude
 // from server: 77% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
@@ -574,15 +575,16 @@ public:
 // Existing-pointer CRobloxWnd view. No owner objects, vtables, RTTI or complete
 // native owner-size/inheritance claim. IRunView subobject54 is observed in caller
 // and confirmed by the genuine add/removeRunView/AdjustThrottle interfaces.
-class CRobloxWnd {
+struct CRobloxWndPad {virtual ~CRobloxWndPad();char observed04[0x1c];HWND hwnd;char observed24[0x30];};
+class CRobloxWnd:public CRobloxWndPad,public RBX::IRunView {
 public:
  class RenderStatsItem:public RBX::Stats::Item {};
- char observed00[0x20];HWND hwnd;char observed24[0x38];
+ void InvalidateRunView();void AdjustThrottle(double);
+ char observed58[4];
  int graphicsMode;char observed60[4];boost::shared_ptr<RBX::Stats::Item>stats;
  ATL::CComPtr<RBX::NativeDocument>document;boost::shared_ptr<RBX::DataModel>model;boost::shared_ptr<RBX::RunService>run;
  char observed80[4];boost::scoped_ptr<DxUserInput>input;char observed88[0x10];RBX::Profiling::Profiler*profiler;
  bool headless;char observed9d[7];G3D::GWindow*window;char observeda8[8];RBX::ViewBase*render;RBX::Adorn*adorn;
- RBX::IRunView*runView(){return reinterpret_cast<RBX::IRunView*>(reinterpret_cast<char*>(this)+0x54);}
  void setupOgre(); //0045d850
  void setupLegacy(); //0045b3a0
  void setupStatsGui(); //0045c890
@@ -600,7 +602,7 @@ void CRobloxWnd::setDocument(RBX::NativeDocument*doc){
    window->makeCurrent();
    delete render;render=0;
    boost::shared_ptr<RBX::RunService>&currentRun=run;
-   currentRun->removeRunView(runView());
+   currentRun->removeRunView(static_cast<RBX::IRunView*>(this));
    input.reset();
    currentRun.reset();
   }
@@ -613,7 +615,7 @@ void CRobloxWnd::setDocument(RBX::NativeDocument*doc){
    RBX::documentWindowSettings()->apply(false);
    if(graphicsMode==2)setupOgre();else setupLegacy();
    input->init(adorn);
-   RBX::IRunView*view=runView();view->AdjustThrottle(0.0);
+   RBX::IRunView*view=static_cast<RBX::IRunView*>(this);view->AdjustThrottle(0.0);
    setupStatsGui();
    RBX::ControllerService*controller=currentModel?currentModel->createControllerService():0;
    controller->hardwareDevice=input.get();

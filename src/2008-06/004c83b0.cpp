@@ -1,10 +1,13 @@
-// from server: 71% by colin
+// from server: 100% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-net-dll roc_physics_receiver_native_motor_count_snapshotb8c8e2039fe6c79c.cpp
+// roc-lib: rbxgs-net-dll roc_physics_receiver_native_part_147a9c5ba3a2a258.cpp
 
 // Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8tree/Instance.h", "roc_instance_guid_callback_5e8a3f385d045a38.cpp")
+#include <roc_part_primitive_decl_probe_7140c279266668c9.cpp>
+#include <roc_part_grouped_tail_decl_25cfdd3b306c5d60.cpp>
 // Native004c83b0 full1890B, DirectPhysicsReceiver::receivePacket.
 // Typed public SDK values plus binary-backed opaque pointer APIs.
 #include <BitStream.h>
@@ -46,14 +49,7 @@ class NativePhysicsPrimitive {
 public:
     NativePhysicsAssembly* getAssembly() const; //005e7570
 };
-class NativePhysicsPart {
-public:
-    static bool nonNullInWorkspace(boost::shared_ptr<NativePhysicsPart>); //005995f0 cdecl value8
-    void setCoordinateFrame(const G3D::CoordinateFrame&); //005997f0 ret4
-    NativePhysicsPrimitive& primitive() { return physicsField<NativePhysicsPrimitive>(this,0x228); }
-    NativePhysicsClump* clump() { return physicsField<NativePhysicsClump*>(this,0x284); }
-    Association<Instance>& association() { return physicsField<Association<Instance> >(this,0xec); }
-};
+typedef PartInstance NativePhysicsPart;
 // 004c7530: cdecl hidden shared_ptr result, one enable_shared_from_this pointer.
 // Native helper uses static/polymorphic downcast, no runtime dynamic cast.
 boost::shared_ptr<NativePhysicsPart> __cdecl recoverPhysicsPart(boost::enable_shared_from_this<Instance>*);
@@ -86,7 +82,7 @@ void RBX::Network::DirectPhysicsReceiver::receivePacket(RakNet::BitStream& strea
         Guid::Data id;
         if(physicsField<NativePhysicsReplicator*>(this,4)->deserializeInstanceRef(stream,instance,id)) {
             if(!instance) return;
-            part=recoverPhysicsPart(reinterpret_cast<boost::enable_shared_from_this<Instance>*>(reinterpret_cast<char*>(instance)+0xe4));
+            part=recoverPhysicsPart(static_cast<boost::enable_shared_from_this<Instance>*>(instance));
         } else if(NativePhysicsSettings::singleton().printErrors())
             StandardOut::singleton()->print(MESSAGE_WARNING,"Physics-in of unidentified %s",id.readableString(4).c_str());
         if(part) {
@@ -94,11 +90,11 @@ void RBX::Network::DirectPhysicsReceiver::receivePacket(RakNet::BitStream& strea
                 if(NativePhysicsSettings::singleton().printErrors())
                     StandardOut::singleton()->print(MESSAGE_INFO,"Physics-in of part not in workspace %s",id.readableString(4).c_str());
                 part.reset();
-            } else if(!part->primitive().getAssembly()) {
+            } else if(!reinterpret_cast<NativePhysicsPrimitive*>(part->getPrimitive())->getAssembly()) {
                 if(NativePhysicsSettings::singleton().printErrors())
                     StandardOut::singleton()->print(MESSAGE_INFO,"Physics-in of primitive with no assembly %s",id.readableString(4).c_str());
                 part.reset();
-            } else if(part->clump()->getAnchored()) {
+            } else if(reinterpret_cast<NativePhysicsClump*>(part->getPrimitive()->getClump())->getAnchored()) {
                 if(NativePhysicsSettings::singleton().printErrors())
                     StandardOut::singleton()->print(MESSAGE_INFO,"Physics-in of anchored primitive %s",id.readableString(4).c_str());
                 part.reset();
@@ -117,24 +113,29 @@ void RBX::Network::DirectPhysicsReceiver::receivePacket(RakNet::BitStream& strea
         if(!stream.ReadNormQuat(rotation.w,rotation.x,rotation.y,rotation.z))
             throw std::runtime_error("Failed to read Quaternion");
         rotation.toRotationMatrix(frame.rotation);
-        if(part && !part->clump()->getAnchored()) part->setCoordinateFrame(frame);
+        if(part && !reinterpret_cast<NativePhysicsClump*>(part->getPrimitive()->getClump())->getAnchored()) part->setCoordinateFrame(frame);
         unsigned char motorCount;
         stream>>motorCount;
         if(motorCount>50 && NativePhysicsSettings::singleton().printErrors())
             StandardOut::singleton()->print(MESSAGE_WARNING,"Physics-in of %s has %d motors",id.readableString(4).c_str(),motorCount);
-        const int count=motorCount;
+        int count=motorCount;
         NativePhysicsAssembly* assembly;
-        if(part && (assembly=part->primitive().getAssembly()) && assembly->getNumMotors()==count) {
+        if(part && (assembly=reinterpret_cast<NativePhysicsPrimitive*>(part->getPrimitive())->getAssembly()) && assembly->getNumMotors()==count) {
             for(int i=0;i<count;++i) {
                 unsigned char angle;
                 stream>>angle;
                 assembly->getMotor(i)->setCurrentAngle(decodePhysicsAngle(angle));
             }
         } else {
-            for(int remaining=count;remaining>0;--remaining) {
+            if(count>0) do {
                 unsigned char discard;
                 stream>>discard;
-            }
+            } while(--count);
         }
     }
 }
+
+typedef char PartSize[sizeof(RBX::PartInstance)==0x404?1:-1];
+void* proofPrimitive(RBX::PartInstance*x){return x->getPrimitive();}
+void* proofAssociation(RBX::PartInstance*x){return &x->association();}
+void* proofWeakOwner(RBX::Instance*x){return static_cast<boost::enable_shared_from_this<RBX::Instance>*>(x);}

@@ -188,14 +188,16 @@ namespace RBX
 		return dynamic_cast<Class*>(ServiceProvider::create(const_cast<ServiceProvider*>(this), Class::className()));
 	}
 
+	// 2008 emits these two as out-of-line template instantiations (e.g. 0x4651c0 for RunService), so callers
+	// must not inline the walk-and-cast; keep the body here but stop MSVC from folding it into callers.
 	template<typename Class>
-	Class* ServiceProvider::find(const Instance* context)
+	__declspec(noinline) Class* ServiceProvider::find(const Instance* context)
 	{
 		return find<Class>(findServiceProvider(context));
 	}
 
 	template<typename Class>
-	Class* ServiceProvider::create(const Instance* context)
+	__declspec(noinline) Class* ServiceProvider::create(const Instance* context)
 	{
 		return create<Class>(findServiceProvider(context));
 	}

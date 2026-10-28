@@ -1,8 +1,9 @@
+// from server: 100% by EspClaude
 // from server: 91% by king_originala_sol_resume_root
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_resume_medium_selection_foreach_f7a8726852eb563e.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_72d0f35278ad032c.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <algorithm>
@@ -27,21 +28,25 @@ struct Object {
 };
 
 struct DragSelection {
-    virtual void reserved();
-    virtual void destroy(int);
+    virtual void* GetRuntimeClass() const;
+    virtual ~DragSelection();
 };
 
-struct Map {
-    void remove(void*);
-    void clean();
+struct CDllIsolationWrapperBase { virtual ~CDllIsolationWrapperBase(); };
+struct CComCtlWrapper : CDllIsolationWrapperBase {
+    int _ImageList_DragLeave(void* hwndLock);
+    void _ImageList_EndDrag();
 };
 
-struct State {
+struct ModuleState {
     char padding[0x94];
-    Map** map;
+    CDllIsolationWrapperBase** m_pDllIsolationWrappers;
 };
 
-State* __cdecl state();
+ModuleState* __stdcall AfxGetModuleState();
+#define afxComCtlWrapper static_cast<CComCtlWrapper*>(AfxGetModuleState()->m_pDllIsolationWrappers[0])
+inline void __stdcall AfxImageList_EndDrag() { afxComCtlWrapper->_ImageList_EndDrag(); }
+inline int __stdcall AfxImageList_DragLeave(void* hwndLock) { return afxComCtlWrapper->_ImageList_DragLeave(hwndLock); }
 
 struct Item {
     char padding[12];
@@ -56,6 +61,7 @@ struct Selection {
 typedef char iterator_size_check[sizeof(Selection::const_iterator)==8?1:-1];
 typedef char shared_size_check[sizeof(Shared)==8?1:-1];
 
+template<class T> inline void SafeDelete(T*& p) { delete p; p = 0; }
 struct Guard {
     unsigned int storage[3];
     Guard(Shared);
@@ -90,7 +96,12 @@ struct S {
     DragSelection* selection;
 
     void prepare();
-    Item* item(long);
+    unsigned long GetItemData(long) const;
+    void* GetSafeHwnd() const { return this == 0 ? 0 : window; }
+    long GetDropHilightItem() const { return SendMessageA(window, 0x110a, 8, 0); }
+    int SelectDropTarget(long h) { return (int)SendMessageA(window, 0x110b, 8, h); }
+    static int DragLeave(S* pWndLock) { return AfxImageList_DragLeave(pWndLock->GetSafeHwnd()); }
+    static void EndDrag() { AfxImageList_EndDrag(); }
     void finish(unsigned int, unsigned int, long);
 };
 
@@ -101,21 +112,17 @@ void S::finish(unsigned int, unsigned int, long) {
     prepare();
     DragSelection* dragging = selection;
     if (dragging) {
-        (*state()->map)->remove(window);
-        (*state()->map)->clean();
+        DragLeave(this);
+        EndDrag();
         ReleaseCapture();
+        SafeDelete(selection);
 
-        DragSelection* current = selection;
-        if (current)
-            current->destroy(1);
-        selection = 0;
-
-        long handle = SendMessageA(window, 0x110a, 8, 0);
+        long handle = GetDropHilightItem();
         if (handle) {
-            Item* selected = item(handle);
+            Item* selected = (Item*)GetItemData(handle);
             if (selected) {
-                Object* object = selected->value.get();
                 Shared value(selected->value);
+                Object* object = value.get();
                 Guard guard(owner);
 
                 if (object) {
@@ -127,6 +134,6 @@ void S::finish(unsigned int, unsigned int, long) {
             }
         }
 
-        SendMessageA(window, 0x110b, 8, 0);
+        SelectDropTarget(0);
     }
 }

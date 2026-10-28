@@ -1,8 +1,8 @@
-// from server: 72% by king_originala_sol_native
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_sol_doccommands_named_cd5ce3de843a9cb4.cpp
+// roc-lib: rbxgs-dll roc_espclaude_e7269c3a1a8a45ab.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias(<afxwin.h>, <roc_espeon_mfcnativeheader280d8d01456bb571.cpp>)
@@ -120,26 +120,30 @@ public:
     void initializeCommands();
     void bindExisting(unsigned,Verb*); // 00451a10
     void bindOwned(unsigned,Verb*); // 00451a60
+    __forceinline void setCommand(unsigned id,const Name& name) { field<std::map<unsigned,const Name*> >(0x54)[id]=&name; }
     template<class T> T& field(unsigned offset) {
         return *reinterpret_cast<T*>(reinterpret_cast<char*>(this)+offset);
     }
 };
-static __forceinline VerbContainer* nativeVerbContainer(DataModel* dm) {
-    return dm ? reinterpret_cast<VerbContainer*>(reinterpret_cast<char*>(dm)+0x1c8) : 0;
+struct NativeDataModelPad { virtual ~NativeDataModelPad(); char pad[0x1c4]; };
+struct NativeDataModelVerbs : NativeDataModelPad, VerbContainer {};
+typedef char NativeDataModelVerbsOff[sizeof(NativeDataModelPad)==0x1c8?1:-1];
+static __forceinline NativeDataModelVerbs* nativeVerbContainer(DataModel* dm) {
+    return reinterpret_cast<NativeDataModelVerbs*>(dm);
 }
 class ReportAbuseVerb : public Verb {
     CRobloxDocNativeView* doc;
 public:
-    __forceinline ReportAbuseVerb(CRobloxDocNativeView* doc,DataModel* dm)
-        : Verb(nativeVerbContainer(dm),"ReportAbuse"),doc(doc) {}
+    __forceinline ReportAbuseVerb(CRobloxDocNativeView* doc,VerbContainer* container)
+        : Verb(container,"ReportAbuse"),doc(doc) {}
     virtual bool isEnabled() const;
     virtual void doIt(IDataState*);
 };
 class ExitCommand : public Verb {
     CRobloxDocNativeView* doc;
 public:
-    __forceinline ExitCommand(CRobloxDocNativeView* doc,DataModel* dm)
-        : Verb(nativeVerbContainer(dm),"Exit"),doc(doc) {}
+    __forceinline ExitCommand(CRobloxDocNativeView* doc,VerbContainer* container)
+        : Verb(container,"Exit"),doc(doc) {}
     virtual bool isEnabled() const {return true;}
     virtual void doIt(IDataState*);
 };
@@ -276,14 +280,16 @@ typedef char native_doc_InsertTexture_size[(sizeof(InsertTexture)==36)?1:-1];
 typedef char native_doc_InsertObject_size[(sizeof(InsertObject)==28)?1:-1];
 typedef char native_doc_InsertService_size[(sizeof(InsertService)==28)?1:-1];
 void CRobloxDocNativeView::initializeCommands() {
-    if(createNativeWorkspace(&field<WorkspaceNativeView*>(0x94))==S_OK) {
+    HRESULT hr=createNativeWorkspace(&field<WorkspaceNativeView*>(0x94));
+    if(hr==S_OK) {}
+    else throw std::runtime_error("Unable to create CWorkspace");
     reinterpret_cast<IUnknown*>(field<WorkspaceNativeView*>(0x94))->AddRef();
     boost::shared_ptr<DataModel> dm=field<WorkspaceNativeView*>(0x94)->getDataModel();
     DataModel::Lock lock(dm);
     { std::string documentName(field<CStringA>(0x20)); reinterpret_cast<NativeInstanceView*>(dm.get())->setName(documentName); }
     field<boost::scoped_ptr<StandardVerbs> >(0x90).reset(new StandardVerbs(dm.get()));
-    field<std::vector<Verb*> >(0x78).push_back(new ReportAbuseVerb(this,dm.get()));
-    field<std::vector<Verb*> >(0x78).push_back(new ExitCommand(this,dm.get()));
+    field<std::vector<Verb*> >(0x78).push_back(new ReportAbuseVerb(this,nativeVerbContainer(dm.get())));
+    field<std::vector<Verb*> >(0x78).push_back(new ExitCommand(this,nativeVerbContainer(dm.get())));
     field<std::vector<Verb*> >(0x78).push_back(new FixedCameraCommand(field<WorkspaceNativeView*>(0x94)->getWorkspace()));
     field<std::vector<Verb*> >(0x78).push_back(new CameraPanLeftCommand(field<WorkspaceNativeView*>(0x94)->getWorkspace()));
     field<std::vector<Verb*> >(0x78).push_back(new CameraPanRightCommand(field<WorkspaceNativeView*>(0x94)->getWorkspace()));
@@ -302,15 +308,15 @@ void CRobloxDocNativeView::initializeCommands() {
     bindExisting(0x80d8,&field<boost::scoped_ptr<StandardVerbs> >(0x90)->join);
     bindExisting(0x80d4,&field<boost::scoped_ptr<StandardVerbs> >(0x90)->forceAssertion);
     bindExisting(0x80d5,&field<boost::scoped_ptr<StandardVerbs> >(0x90)->engineStats);
-    field<std::map<unsigned,const Name*> >(0x54)[0x8039]=&Name::lookup("Group");
-    field<std::map<unsigned,const Name*> >(0x54)[0x803a]=&Name::lookup("UnGroup");
-    field<std::map<unsigned,const Name*> >(0x54)[0x8061]=&Name::lookup("WeldSelection");
-    field<std::map<unsigned,const Name*> >(0x54)[0x80a5]=&Name::lookup("SnapSelection");
-    field<std::map<unsigned,const Name*> >(0x54)[0x8043]=&Name::lookup("SelectionRotate");
-    field<std::map<unsigned,const Name*> >(0x54)[0x8044]=&Name::lookup("SelectionTilt");
-    field<std::map<unsigned,const Name*> >(0x54)[0x8057]=&Name::lookup("SelectionUpBrick");
-    field<std::map<unsigned,const Name*> >(0x54)[0x8059]=&Name::lookup("SelectionUpPlate");
-    field<std::map<unsigned,const Name*> >(0x54)[0x8058]=&Name::lookup("SelectionDown");
+    setCommand(0x8039,Name::lookup("Group"));
+    setCommand(0x803a,Name::lookup("UnGroup"));
+    setCommand(0x8061,Name::lookup("WeldSelection"));
+    setCommand(0x80a5,Name::lookup("SnapSelection"));
+    setCommand(0x8043,Name::lookup("SelectionRotate"));
+    setCommand(0x8044,Name::lookup("SelectionTilt"));
+    setCommand(0x8057,Name::lookup("SelectionUpBrick"));
+    setCommand(0x8059,Name::lookup("SelectionUpPlate"));
+    setCommand(0x8058,Name::lookup("SelectionDown"));
     bindExisting(0x80aa,&field<boost::scoped_ptr<StandardVerbs> >(0x90)->toolModelSetFront);
     bindExisting(0x80ab,&field<boost::scoped_ptr<StandardVerbs> >(0x90)->toolModelSetPrimaryPart);
     bindOwned(0xe123,new CutVerb(dm.get()));
@@ -323,8 +329,8 @@ void CRobloxDocNativeView::initializeCommands() {
     bindOwned(0x8107,new InsertService(dm.get()));
     bindExisting(0x800d,&field<boost::scoped_ptr<StandardVerbs> >(0x90)->clearStarterpack);
     bindExisting(0x800e,&field<boost::scoped_ptr<StandardVerbs> >(0x90)->clearBackpack);
-    field<std::map<unsigned,const Name*> >(0x54)[0x8040]=&Name::lookup("FillTool");
-    field<std::map<unsigned,const Name*> >(0x54)[0x8041]=&Name::lookup("DropperTool");
+    setCommand(0x8040,Name::lookup("FillTool"));
+    setCommand(0x8041,Name::lookup("DropperTool"));
     bindExisting(0x8063,&field<boost::scoped_ptr<StandardVerbs> >(0x90)->toolArrow);
     bindExisting(0x8065,&field<boost::scoped_ptr<StandardVerbs> >(0x90)->toolResize);
     bindExisting(0x8067,&field<boost::scoped_ptr<StandardVerbs> >(0x90)->toolAxisMove);
@@ -337,7 +343,5 @@ void CRobloxDocNativeView::initializeCommands() {
     bindExisting(0x80a8,&field<boost::scoped_ptr<StandardVerbs> >(0x90)->toolInlet);
     bindExisting(0x807b,&field<boost::scoped_ptr<StandardVerbs> >(0x90)->toolRightMotor);
     bindExisting(0x807c,&field<boost::scoped_ptr<StandardVerbs> >(0x90)->toolHinge);
-    } else {
-        throw std::runtime_error("Unable to create CWorkspace");
-    }
 }
+

@@ -1,7 +1,8 @@
-// from server: 77% by king_originala_sol_native
+// from server: 79% by king_originala
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 #include <set>
+#include <intrin.h>
 #include <deque>
 struct Assembly;
 struct Stage {virtual ~Stage();virtual int getStageType()=0;Stage*upstream;Stage*downstream;};
@@ -25,11 +26,14 @@ struct Assembly:public Pipelined {
  EdgeArray&getExternalEdges();Assembly*otherAssembly(Edge*)const;
 };
 struct SimJobStage:public Stage {void onAssemblyRemoving(Assembly*);};
+static __forceinline Stage* readCurrent(Pipelined*p){_ReadWriteBarrier();return p->currentStage;}
 struct SleepStage:public Stage {
+ __forceinline bool currentAtLeast(Stage*s){return s->getStageType()>=getStageType();}
+ __forceinline bool currentDownstream(Stage*s){return s->getStageType()>getStageType();}
  char prefix[0x140-12];std::set<Assembly*>sleepingChecking;
  char reserved[0x1d8-0x160];int visitStamp;bool throttling;
- __forceinline int getState(Assembly*a){return a->inPipeline()&&a->inOrDownstreamOfStage(this)?a->sleepInfo->state:0;}
- __forceinline bool edgeIsAwake(Edge*e){return e->inOrDownstreamOfStage(this);}
+ __forceinline int getState(Assembly*a){return a->inPipeline()&&currentAtLeast(readCurrent(a))?a->sleepInfo->state:0;}
+ __forceinline bool edgeIsAwake(Edge*e){return currentAtLeast(readCurrent(e));}
  __forceinline bool isAffecting(Edge*e){int state=e->edgeState;return e->getEdgeType()!=1||state==3||state==4;}
  void changeAssemblyState(Assembly*,int);void wakeEdge(Edge*);
  std::set<Assembly*>*stateToSet(int);
@@ -51,12 +55,12 @@ void SleepStage::wakeNeighbors(Assembly*assembly,std::deque<Assembly*>&pending,i
       if(throttling||getState(other)!=3){
        if(other->visitStamp!=visitStamp){other->visitStamp=visitStamp;other->depth=depth+1;pending.push_back(other);}
       }
-     }else if(other->inPipeline()&&other->inOrDownstreamOfStage(this)&&other->sleepInfo->state==5){
+     }else if(other->inPipeline()&&currentAtLeast(readCurrent(other))&&other->sleepInfo->state==5){
       stateToSet(getState(other))->erase(other);
       sleepingChecking.insert(other);
       static Velocity zero;
       other->rootClump->rootPrimitive->body->setVelocity(zero);
-      if(other->downstreamOfStage(this))static_cast<SimJobStage*>(downstream)->onAssemblyRemoving(other);
+      if(currentDownstream(readCurrent(other)))static_cast<SimJobStage*>(downstream)->onAssemblyRemoving(other);
       other->sleepInfo->state=4;
       other->sleepInfo->sleepCount=0;
      }

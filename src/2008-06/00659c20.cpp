@@ -1,8 +1,8 @@
-// from server: 93% by EspClaude
+// from server: 94% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: openrbx-client-dll roc_espclaude_5b00cb9af2999d06.cpp
+// roc-lib: openrbx-client-dll roc_claudeM_b1a8b680a7aede2a.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "v8world/SpatialHash.h"
@@ -27,10 +27,9 @@ static inline float exHashGridSize() { return (float) exHashGrid; }
 
 static inline Extents exHashGridToRealExtents(const Vector3& hashGrid)
 {
-	return Extents(
-		hashGrid * exHashGridSize(),
-		(hashGrid + Vector3(1.0f, 1.0f, 1.0f)) * exHashGridSize()
-	);
+	Vector3 high;
+	high.x = hashGrid.x + 1.0f; high.y = hashGrid.y + 1.0f; high.z = hashGrid.z + 1.0f;
+	return Extents(hashGrid * exHashGridSize(), high * exHashGridSize());
 }
 
 // FUNCTION: WEBSERVICE 0x10123500

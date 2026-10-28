@@ -1,5 +1,4 @@
-// from server: 81% by coldek
-// from server: 78% by king_originala_sol_native
+// from server: 82% by coldek
 // roc 2008-06 0066d710  unit: RBX::GroupDragTool  size: 723 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0066d710
 //
@@ -226,10 +225,10 @@
 // 0066d9dc  81c410010000         add esp, 0x110
 // 0066d9e2  c3                   ret 
 
-// from server: 69% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+template<class T> inline T roc_val(T v) { return v; }
 #include <intrin.h>
 #include <utility>
 namespace boost {
@@ -306,7 +305,7 @@ bool DragSnap::update(){
  Vector3 newPoint=current[0];
  Frame gridFrame(previousPrimitive->getCoordinateFrame().rotation,oldPoint);
  Vector3 snapped=iRoundVector3(gridFrame.pointToObjectSpace(newPoint));
- Vector3 delta=gridFrame.pointToWorldSpace(snapped)-newPoint;
+ Vector3 delta=gridFrame.pointToWorldSpace(roc_val(snapped))-newPoint;
 
  Frame goal=currentPrimitive->getCoordinateFrame();
  goal.translation+=delta;

@@ -1,3 +1,4 @@
+// from server: 76% by EspClaude
 // from server: 70% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
@@ -200,18 +201,24 @@ public:
 extern bool showBevels;
 }
 
+class IRunView;
 class Notifier {
 public:
-    void notify(void* rect);
+    void notify(IRunView* view);
 };
 
 void configurePart(void* part);
 extern bool g_showFrameRate;
 
-class CRobloxWnd {
+class IRunView {
 public:
-    char pad[0x54];
-    int m54;
+    virtual void InvalidateRunView() = 0;
+    virtual void AdjustThrottle(double) = 0;
+};
+struct CRobloxWndPad { virtual ~CRobloxWndPad(); char pad[0x50]; };
+class CRobloxWnd : public CRobloxWndPad, public IRunView {
+public:
+    void InvalidateRunView(); void AdjustThrottle(double);
     int rect[6];
     shared_ptr<RBX::DataModel> dataModel;
     Notifier* notifier;
@@ -249,7 +256,7 @@ void CRobloxWnd::doRender(int unused)
     {
         ScopedLock lock(*view->getScene());
         if (notifier)
-            notifier->notify(&m54);
+            notifier->notify(this);
         if (dataModel.get())
         {
             Players* players = dataModel.get()->findPlayers();

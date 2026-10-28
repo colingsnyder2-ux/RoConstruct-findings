@@ -121,6 +121,10 @@
   [
    "",
    "\n// rebuild overlay: template bodies rbxgs declares but never defines\nnamespace RBX\n{\n\ttemplate<typename Class>\n\tClass* ServiceProvider::find() const\n\t{\n\t\treturn dynamic_cast<Class*>(findServiceByClassName(Class::className()).get());\n\t}\n\n\ttemplate<typename Class>\n\tClass* ServiceProvider::create() const\n\t{\n\t\treturn dynamic_cast<Class*>(ServiceProvider::create(const_cast<ServiceProvider*>(this), Class::className()));\n\t}\n\n\ttemplate<typename Class>\n\tClass* ServiceProvider::find(const Instance* context)\n\t{\n\t\treturn find<Class>(findServiceProvider(context));\n\t}\n\n\ttemplate<typename Class>\n\tClass* ServiceProvider::create(const Instance* context)\n\t{\n\t\treturn create<Class>(findServiceProvider(context));\n\t}\n\n\ttemplate<typename Class>\n\tsize_t ServiceProvider::doGetClassIndex()\n\t{\n\t\tstatic size_t index = newIndex();\n\t\treturn index;\n\t}\n\n\ttemplate<typename Class>\n\tvoid ServiceProvider::callDoGetClassIndex()\n\t{\n\t\tdoGetClassIndex<Class>();\n\t}\n}\n"
+  ],
+  [
+   "\ttemplate<typename Class>\n\tClass* ServiceProvider::find(const Instance* context)\n\t{\n\t\treturn find<Class>(findServiceProvider(context));\n\t}\n\n\ttemplate<typename Class>\n\tClass* ServiceProvider::create(const Instance* context)\n\t{\n\t\treturn create<Class>(findServiceProvider(context));\n\t}",
+   "\t// 2008 emits these two as out-of-line template instantiations (e.g. 0x4651c0 for RunService), so callers\n\t// must not inline the walk-and-cast; keep the body here but stop MSVC from folding it into callers.\n\ttemplate<typename Class>\n\t__declspec(noinline) Class* ServiceProvider::find(const Instance* context)\n\t{\n\t\treturn find<Class>(findServiceProvider(context));\n\t}\n\n\ttemplate<typename Class>\n\t__declspec(noinline) Class* ServiceProvider::create(const Instance* context)\n\t{\n\t\treturn create<Class>(findServiceProvider(context));\n\t}"
   ]
  ],
  "App/include/reflection/type.h": [
@@ -661,6 +665,10 @@
   [
    "\t\tG3D::Color4 clearColor;\n\t\tboost::posix_time::time_duration timeOfDay;\n",
    "\t\tG3D::Color4 clearColor;\n\t\tfloat unknown0x254[4]; // set by the 2008 constructor; names unknown\n\t\tboost::posix_time::time_duration timeOfDay;\n\t\tfloat unknown0x270[25]; // names unknown\n"
+  ],
+  [
+   "\t\tG3D::Color4 clearColor;\n\t\tfloat unknown0x254[4]; // set by the 2008 constructor; names unknown",
+   "\t\tfloat unknown0x244[4]; // 2008 keeps this block ahead of clearColor\n\t\tG3D::Color4 clearColor;"
   ]
  ],
  "App/v8datamodel/DataModel.cpp": [
@@ -747,6 +755,26 @@
   [
    "RootInstance::insertCharacterView(const std::vector<boost::shared_ptr<Instance>>& instances, std::vector<boost::weak_ptr<PartInstance>>& partArray)\n\t{\n\t\tRBXASSERT(instances.size() > 0);\n\n\t\tif (instances.size() == 1)\n\t\t{\n\t\t\tInstance* instance = instances[0].get();\n\t\t\tif (dynamic_cast<HopperBin*>(instance))\n\t\t\t{\n\t\t\t\tNetwork::Player* localPlayer = Network::Players::findLocalPlayer(this);\n\t\t\t\tif (localPlayer)\n\t\t\t\t{\n\t\t\t\t\tinstance->setParent(localPlayer->getPlayerBackpack());\n\t\t\t\t\treturn;\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\n\t\tinsertRaw(instances, this, partArray);\n\t\tmoveToCharacterInsertPoint(partArray);\n\t}",
    "RootInstance::insertCharacterView(const std::vector<boost::shared_ptr<Instance>>& instances, std::vector<boost::weak_ptr<PartInstance>>& partArray)\n\t{\n\t\t                               ;\n\n\t\tif (instances.size() == 1)\n\t\t{\n\t\t\tInstance* instance = instances[0].get();\n\t\t\tif (dynamic_cast<HopperBin*>(instance))\n\t\t\t{\n\t\t\t\tNetwork::Player* localPlayer = Network::Players::findLocalPlayer(this);\n\t\t\t\tif (localPlayer)\n\t\t\t\t{\n\t\t\t\t\tinstance->setParent(localPlayer->getPlayerBackpack());\n\t\t\t\t\treturn;\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\n\t\tinsertRaw(instances, this, partArray);\n\t\tmoveToCharacterInsertPoint(partArray);\n\t}"
+  ],
+  [
+   "RootInstance::moveToPoint(PVInstance* pv, G3D::Vector3 point)\n\t{\n\t\tif (this->contains(pv))\n\t\t{\n\t\t\tRBXASSERT(pv->getPrimaryPart());\n\n\t\t\tstd::vector<PVInstance*> pvInstances;\n\t\t\tpvInstances.push_back(pv);\n\n\t\t\tG3D::Vector3 move = Dragger::toGrid(point - pv->getLocation().translation);\n\n\t\t\tMegaDragger megaDragger(pv->getPrimaryPart(), pvInstances, this);\n\t\t\tmoveSafe(megaDragger, move, MOVE_NO_DROP);\n\t\t}\n\t}",
+   "RootInstance::moveToPoint(PVInstance* pv, G3D::Vector3 point)\n\t{\n\t\tif (this->contains(pv))\n\t\t{\n\t\t\t                               ;\n\n\t\t\tstd::vector<PVInstance*> pvInstances;\n\t\t\tpvInstances.push_back(pv);\n\n\t\t\tG3D::Vector3 move = Dragger::toGrid(point - pv->getLocation().translation);\n\n\t\t\tMegaDragger megaDragger(pv->getPrimaryPart(), pvInstances, this);\n\t\t\tmoveSafe(megaDragger, move, MOVE_NO_DROP);\n\t\t}\n\t}"
+  ],
+  [
+   "RootInstance::insertIdeView(const std::vector<boost::shared_ptr<Instance>>& instances, std::vector<boost::weak_ptr<PartInstance>>& partArray, PromptMode promptMode)\n\t{\n\t\tRBXASSERT(instances.size() > 0);\n\n\t\tif (instances.size() == 1)\n\t\t{\n\t\t\tInstance* instance = instances[0].get();\n\t\t\tif (dynamic_cast<HopperBin*>(instance))\n\t\t\t{\n\t\t\t\tinstance->setParent(ServiceProvider::create<StarterPackService>(this));\n\t\t\t\treturn;\n\t\t\t}\n\t\t\telse if (dynamic_cast<Tool*>(instance))\n\t\t\t{\n\t\t\t\tif (promptMode == ALLOW_PROMPTS && MessageBoxA(NULL, \"Put this tool into the starter pack (otherwise drop into the 3d view)?\", \"Inserting Tool\", MB_YESNO) == IDYES)\n\t\t\t\t{\n\t\t\t\t\tinstance->setParent(ServiceProvider::create<StarterPackService>(this));\n\t\t\t\t\treturn;\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\n\t\tinsertRaw(instances, this, partArray);\n\t\tif (!partArray.empty())\n\t\t{\n\t\t\tmoveToIdeInsertPoint(partArray);\n\t\t\tExtents extents = DragUtilities::computeExtents(partArray);\n\t\t\tgetCamera()->lookAt(extents.center());\n\t\t}\n\t}",
+   "RootInstance::insertIdeView(const std::vector<boost::shared_ptr<Instance>>& instances, std::vector<boost::weak_ptr<PartInstance>>& partArray, PromptMode promptMode)\n\t{\n\t\t                               ;\n\n\t\tif (instances.size() == 1)\n\t\t{\n\t\t\tInstance* instance = instances[0].get();\n\t\t\tif (dynamic_cast<HopperBin*>(instance))\n\t\t\t{\n\t\t\t\tinstance->setParent(ServiceProvider::create<StarterPackService>(this));\n\t\t\t\treturn;\n\t\t\t}\n\t\t\telse if (dynamic_cast<Tool*>(instance))\n\t\t\t{\n\t\t\t\tif (promptMode == ALLOW_PROMPTS && MessageBoxA(NULL, \"Put this tool into the starter pack (otherwise drop into the 3d view)?\", \"Inserting Tool\", MB_YESNO) == IDYES)\n\t\t\t\t{\n\t\t\t\t\tinstance->setParent(ServiceProvider::create<StarterPackService>(this));\n\t\t\t\t\treturn;\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\n\t\tinsertRaw(instances, this, partArray);\n\t\tif (!partArray.empty())\n\t\t{\n\t\t\tmoveToIdeInsertPoint(partArray);\n\t\t\tExtents extents = DragUtilities::computeExtents(partArray);\n\t\t\tgetCamera()->lookAt(extents.center());\n\t\t}\n\t}"
+  ],
+  [
+   "RootInstance::moveToCharacterInsertPoint(std::vector<boost::weak_ptr<PartInstance>>& partArray)\n\t{\n\t\tif (!partArray.empty())\n\t\t{\n\t\t\tExtents extents = DragUtilities::computeExtents(partArray);\n\n\t\t\tG3D::Vector3 characterInsertPoint = computeCharacterInsertPoint(extents);\n\t\t\tG3D::Vector3 moveToInsert = Dragger::toGrid(characterInsertPoint - extents.bottomCenter());\n\n\t\t\tmoveSafe(partArray, moveToInsert, MOVE_DROP);\n\t\t}\n\t}",
+   "RootInstance::moveToCharacterInsertPoint(std::vector<boost::weak_ptr<PartInstance>>& partArray)\n\t{\n\t\tif ((partArray.size() > 0))\n\t\t{\n\t\t\tExtents extents = DragUtilities::computeExtents(partArray);\n\n\t\t\tG3D::Vector3 characterInsertPoint = computeCharacterInsertPoint(extents);\n\t\t\tG3D::Vector3 moveToInsert = Dragger::toGrid(characterInsertPoint - extents.bottomCenter());\n\n\t\t\tmoveSafe(partArray, moveToInsert, MOVE_DROP);\n\t\t}\n\t}"
+  ],
+  [
+   "RootInstance::moveToIdeInsertPoint(std::vector<boost::weak_ptr<PartInstance>>& partArray)\n\t{\n\t\tif (!partArray.empty())\n\t\t{\n\t\t\tExtents extents = DragUtilities::computeExtents(partArray);\n\n\t\t\tG3D::Vector3 insertPoint = computeIdeInsertPoint();\n\t\t\tG3D::Vector3 moveToInsert = Dragger::toGrid(insertPoint - extents.bottomCenter());\n\n\t\t\tmoveSafe(partArray, moveToInsert, MOVE_DROP);\n\t\t}\n\t}",
+   "RootInstance::moveToIdeInsertPoint(std::vector<boost::weak_ptr<PartInstance>>& partArray)\n\t{\n\t\tif ((partArray.size() > 0))\n\t\t{\n\t\t\tExtents extents = DragUtilities::computeExtents(partArray);\n\n\t\t\tG3D::Vector3 insertPoint = computeIdeInsertPoint();\n\t\t\tG3D::Vector3 moveToInsert = Dragger::toGrid(insertPoint - extents.bottomCenter());\n\n\t\t\tmoveSafe(partArray, moveToInsert, MOVE_DROP);\n\t\t}\n\t}"
+  ],
+  [
+   "RootInstance::insert3dView(const std::vector<boost::shared_ptr<Instance>>& instances, PromptMode promptMode)\n\t{\n\t\tRBXASSERT(instances.size() > 0);\n\n\t\tstd::vector<boost::weak_ptr<PartInstance>> partArray;\n\t\tif (Network::Players::findLocalCharacter(this))\n\t\t\tinsertCharacterView(instances, partArray);\n\t\telse\n\t\t\tinsertIdeView(instances, partArray, promptMode);\n\n\t\tif (!partArray.empty())\n\t\t{\n\t\t\tExtents extents = DragUtilities::computeExtents(partArray);\n\t\t\tgetCamera()->zoomExtents(extents, viewPort, Camera::ZOOM_OUT_ONLY);\n\t\t}\n\t}",
+   "RootInstance::insert3dView(const std::vector<boost::shared_ptr<Instance>>& instances, PromptMode promptMode)\n\t{\n\t\t                               ;\n\n\t\tstd::vector<boost::weak_ptr<PartInstance>> partArray;\n\t\tif (Network::Players::findLocalCharacter(this))\n\t\t\tinsertCharacterView(instances, partArray);\n\t\telse\n\t\t\tinsertIdeView(instances, partArray, promptMode);\n\n\t\tif ((partArray.size() > 0))\n\t\t{\n\t\t\tExtents extents = DragUtilities::computeExtents(partArray);\n\t\t\tgetCamera()->zoomExtents(extents, viewPort, Camera::ZOOM_OUT_ONLY);\n\t\t}\n\t}"
   ]
  ],
  "App/include/script/LuaArguments.h": [
@@ -799,6 +827,10 @@
   [
    "#include \"v8datamodel/Accoutrement.h\"\n",
    "#pragma float_control(precise, off)\n#include \"v8datamodel/Accoutrement.h\"\n"
+  ],
+  [
+   "Accoutrement::setAttachmentPoint(const G3D::CoordinateFrame& value)\n\t{\n\t\tif (value != attachmentPoint)\n\t\t{\n\t\t\tattachmentPoint = value;\n\n\t\t\tif (Workspace* workspace = ServiceProvider::find<Workspace>(this))\n\t\t\t\tworkspace->raiseDrawChanged();\n\n\t\t\traisePropertyChanged(prop_AttachmentPoint);\n\n\t\t\tif (weld)\n\t\t\t{\n\t\t\t\tRBXASSERT(Network::Players::backendProcessing(this, true));\n\t\t\t\tweld->setC1(attachmentPoint);\n\t\t\t}\n\t\t}\n\t}",
+   "Accoutrement::setAttachmentPoint(const G3D::CoordinateFrame& value)\n\t{\n\t\tif (value != attachmentPoint)\n\t\t{\n\t\t\tattachmentPoint = value;\n\n\t\t\tif (Workspace* workspace = ServiceProvider::find<Workspace>(this))\n\t\t\t\tworkspace->raiseDrawChanged();\n\n\t\t\traisePropertyChanged(prop_AttachmentPoint);\n\n\t\t\tif (weld)\n\t\t\t{\n\t\t\t\t                                                          ;\n\t\t\t\tweld->setC1(attachmentPoint);\n\t\t\t}\n\t\t}\n\t}"
   ]
  ],
  "App/include/v8world/IPipelined.h": [
@@ -835,6 +867,18 @@
   [
    "\t\tif (backendToolState >= EQUIPPED && state < EQUIPPED)\n\t\t{\n\t\t\tPartInstance* handle = getHandle();\n\t\t\tif (handle)\n\t\t\t\thandle->setCanCollide(true);",
    "\t\tif (backendToolState >= EQUIPPED && state < EQUIPPED)\n\t\t{"
+  ],
+  [
+   "Tool::onEvent_HandleTouched(boost::shared_ptr<Instance> other)\n\t{\n\t\tRBXASSERT(Network::Players::backendProcessing(this, true));\n\n\t\tif (backendToolState == IN_WORKSPACE)\n\t\t{\n\t\t\tInstance* otherParent = other->getParent();\n\t\t\tif (computeDesiredState(otherParent) == EQUIPPED && characterCanUnequipTool(dynamic_cast<ModelInstance*>(otherParent)))\n\t\t\t{\n\t\t\t\tNetwork::Player* player = Network::Players::getPlayerFromCharacter(otherParent);\n\t\t\t\tif (player && canBePickedUpByPlayer(player))\n\t\t\t\t{\n\t\t\t\t\tmoveAllToolsToBackpack(player);\n\t\t\t\t\tsetParent(otherParent);\n\t\t\t\t\tRBXASSERT(backendToolState == EQUIPPED);\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}",
+   "Tool::onEvent_HandleTouched(boost::shared_ptr<Instance> other)\n\t{\n\t\t                                                          ;\n\n\t\tif (backendToolState == IN_WORKSPACE)\n\t\t{\n\t\t\tInstance* otherParent = other->getParent();\n\t\t\tif (computeDesiredState(otherParent) == EQUIPPED && characterCanUnequipTool(dynamic_cast<ModelInstance*>(otherParent)))\n\t\t\t{\n\t\t\t\tNetwork::Player* player = Network::Players::getPlayerFromCharacter(otherParent);\n\t\t\t\tif (player && canBePickedUpByPlayer(player))\n\t\t\t\t{\n\t\t\t\t\tmoveAllToolsToBackpack(player);\n\t\t\t\t\tsetParent(otherParent);\n\t\t\t\t\t                                       ;\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}"
+  ],
+  [
+   "Tool::onEquipping()\n\t{\n\t\tInstance* parent = getParent();\n\t\tif (parent && parent == Network::Players::findLocalCharacter(this))\n\t\t{\n\t\t\tRBXASSERT(Network::Players::frontendProcessing(this, true));\n\n\t\t\tworkspace = ServiceProvider::find<Workspace>(this);\n\t\t\ttoolMouseCommand = new ToolMouseCommand(workspace, this);\n\n\t\t\tworkspace->setMouseCommand(toolMouseCommand);\n\t\t}\n\t}",
+   "Tool::onEquipping()\n\t{\n\t\tInstance* parent = getParent();\n\t\tif (parent && parent == Network::Players::findLocalCharacter(this))\n\t\t{\n\t\t\t                                                           ;\n\n\t\t\tworkspace = ServiceProvider::find<Workspace>(this);\n\t\t\ttoolMouseCommand = new ToolMouseCommand(workspace, this);\n\n\t\t\tworkspace->setMouseCommand(toolMouseCommand);\n\t\t}\n\t}"
+  ],
+  [
+   "Tool::setGrip(const G3D::CoordinateFrame& value)\n\t{\n\t\tif (value != grip)\n\t\t{\n\t\t\tgrip = value;\n\n\t\t\tif (Workspace* workspace = ServiceProvider::find<Workspace>(this))\n\t\t\t\tworkspace->raiseDrawChanged();\n\n\t\t\traisePropertyChanged(prop_Grip);\n\n\t\t\tif (weld)\n\t\t\t{\n\t\t\t\tRBXASSERT(Network::Players::backendProcessing(this, true));\n\t\t\t\tweld->setC1(grip);\n\t\t\t}\n\t\t}\n\t}",
+   "Tool::setGrip(const G3D::CoordinateFrame& value)\n\t{\n\t\tif (value != grip)\n\t\t{\n\t\t\tgrip = value;\n\n\t\t\tif (Workspace* workspace = ServiceProvider::find<Workspace>(this))\n\t\t\t\tworkspace->raiseDrawChanged();\n\n\t\t\traisePropertyChanged(prop_Grip);\n\n\t\t\tif (weld)\n\t\t\t{\n\t\t\t\t                                                          ;\n\t\t\t\tweld->setC1(grip);\n\t\t\t}\n\t\t}\n\t}"
   ]
  ],
  "App/v8datamodel/ModelInstance.cpp": [
@@ -1101,6 +1145,20 @@
   [
    "\tvoid Selection::removeFromSelection(const Instance* instance)\n\t{\n\t\tRBXASSERT(instance);",
    "\tvoid Selection::removeFromSelection(const Instance* instance)\n\t{"
+  ]
+ ],
+ "App/tool/GroupDragTool.cpp": [
+  [
+   "\tMouseCommand* GroupDragTool::onKeyDown(const UIEvent& uiEvent)\n\t{\n\t\tif (dragging)\n\t\t{\n\t\t\tswitch (uiEvent.key)\n\t\t\t{\n\t\t\tcase SDLK_r:\n\t\t\t\tmegaDragger->safeRotate(Math::matrixRotateY());\n\t\t\t\tbreak;\n\t\t\tcase SDLK_t:\n\t\t\t\tmegaDragger->safeRotate(Math::matrixTiltZ());\n\t\t\t\tbreak;\n\t\t\t}\n\n\t\t\treturn this;\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(0);\n\t\t\treturn NULL;\n\t\t}\n\t}\n",
+   "\tMouseCommand* GroupDragTool::onKeyDown(const UIEvent& uiEvent)\n\t{\n\t\tif (dragging)\n\t\t{\n\t\t\tswitch (uiEvent.key)\n\t\t\t{\n\t\t\tcase SDLK_r:\n\t\t\t\tmegaDragger->safeRotate(Math::matrixRotateY());\n\t\t\t\tbreak;\n\t\t\tcase SDLK_t:\n\t\t\t\tmegaDragger->safeRotate(Math::matrixTiltZ());\n\t\t\t\tbreak;\n\t\t\t}\n\n\t\t\treturn this;\n\t\t}\n\t\telse\n\t\t{\n\t\t\t\n\t\t\treturn NULL;\n\t\t}\n\t}\n"
+  ],
+  [
+   "\tvoid GroupDragTool::onMouseIdle(const UIEvent& uiEvent)\n\t{\n\t\tRBXASSERT(captured());\n\n\t\tG3D::Vector3 hit;\n\n\t\tif (captured() && dragging && megaDragger->mousePartAlive() &&\n\t\t\tMath::intersectRayPlane(getSearchRay(uiEvent), G3D::Plane(G3D::Vector3::unitY(), G3D::Vector3::zero()), hit))\n\t\t{\n\t\t\thit = megaDragger->hitObjectOrPlane(uiEvent);\n\t\t\tmegaDragger->continueDragging();\n\n\t\t\tG3D::Vector3 hitSnapped = Dragger::toGrid(hit);\n\t\t\tG3D::Vector3 delta = Dragger::toGrid(hitSnapped - lastHit);\n\t\t\tlastHit = hitSnapped;\n\n\t\t\tmegaDragger->safeMoveYDrop(delta);\n\t\t}\n\t}\n",
+   "\tvoid GroupDragTool::onMouseIdle(const UIEvent& uiEvent)\n\t{\n\t\t\n\n\t\tG3D::Vector3 hit;\n\n\t\tif (captured() && dragging && megaDragger->mousePartAlive() &&\n\t\t\tMath::intersectRayPlane(getSearchRay(uiEvent), G3D::Plane(G3D::Vector3::unitY(), G3D::Vector3::zero()), hit))\n\t\t{\n\t\t\thit = megaDragger->hitObjectOrPlane(uiEvent);\n\t\t\tmegaDragger->continueDragging();\n\n\t\t\tG3D::Vector3 hitSnapped = Dragger::toGrid(hit);\n\t\t\tG3D::Vector3 delta = Dragger::toGrid(hitSnapped - lastHit);\n\t\t\tlastHit = hitSnapped;\n\n\t\t\tmegaDragger->safeMoveYDrop(delta);\n\t\t}\n\t}\n"
+  ],
+  [
+   "GroupDragTool::~GroupDragTool()\n\t{\n\t\tif (dragging)\n\t\t\tRBXASSERT(0);\n\t}",
+   "GroupDragTool::~GroupDragTool()\n\t{\n\t\tif (dragging)\n\t\t\t            ;\n\t}"
   ]
  ]
 }

@@ -223,7 +223,7 @@ namespace RBX
 
 	void Tool::onEvent_HandleTouched(boost::shared_ptr<Instance> other)
 	{
-		RBXASSERT(Network::Players::backendProcessing(this, true));
+		                                                          ;
 
 		if (backendToolState == IN_WORKSPACE)
 		{
@@ -235,7 +235,7 @@ namespace RBX
 				{
 					moveAllToolsToBackpack(player);
 					setParent(otherParent);
-					RBXASSERT(backendToolState == EQUIPPED);
+					                                       ;
 				}
 			}
 		}
@@ -330,7 +330,7 @@ namespace RBX
 		Instance* parent = getParent();
 		if (parent && parent == Network::Players::findLocalCharacter(this))
 		{
-			RBXASSERT(Network::Players::frontendProcessing(this, true));
+			                                                           ;
 
 			workspace = ServiceProvider::find<Workspace>(this);
 			toolMouseCommand = new ToolMouseCommand(workspace, this);
@@ -394,7 +394,7 @@ namespace RBX
 
 			if (weld)
 			{
-				RBXASSERT(Network::Players::backendProcessing(this, true));
+				                                                          ;
 				weld->setC1(grip);
 			}
 		}

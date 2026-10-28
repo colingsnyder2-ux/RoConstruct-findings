@@ -1,8 +1,9 @@
+// from server: 96% by EspClaude
 // from server: 83% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_unit_22712f528d29914e.cpp
+// roc-lib: rbxgs-dll roc_espclaude_1ad6517c49fda77e.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias(<boost/shared_ptr.hpp>, <roc_espeon_boostsharedinlineheader96f7848c627384e8.cpp>)
@@ -151,35 +152,42 @@ boost::shared_ptr<MetadataManager> metadataManager();
 MetadataView* currentMetadata();
 boost::shared_ptr<RBX::Instance> createInstance(const RBX::Name&);
 struct ParentCheckView {bool acceptsParent(RBX::Instance*);};
-class InsertDialogRecovery {
+class InsertDialogRecovery : public CDialog {
 public:
- template<class T>T& field(unsigned o){return *reinterpret_cast<T*>(reinterpret_cast<char*>(this)+o);}
+ boost::shared_ptr<RBX::Instance> parent;
+ std::vector<boost::shared_ptr<RBX::Instance> > instances;
+
+ CString selectedName;
+ char pad98[0x10];
+ CListCtrl list;
  void populate(const RBX::Reflection::ClassDescriptor*);
 };
+
+typedef char checka8[offsetof(InsertDialogRecovery,list)==0xa8?1:-1];
 void InsertDialogRecovery::populate(const RBX::Reflection::ClassDescriptor* descriptor) {
  boost::call_once(initializeMetadata,metadataFlag);
  if(descriptor->name!=excludedName()) {
   MetadataView* metadata=metadataManager()->find(descriptor,false);
   MetadataView* current=currentMetadata();
+  boost::shared_ptr<RBX::Instance> instance;
   if(metadata && (!metadata->field<bool>(0x131)||current->field<bool>(0x130)) && (!metadata->field<bool>(0x132)||current->field<bool>(0x131)) && metadata->field<bool>(0x130)) {
-   boost::shared_ptr<RBX::Instance> instance;
    try {instance=createInstance(descriptor->name);}catch(std::exception&){}
    RBX::Instance* object=instance.get();
    if(object) {
     bool allowed;
-    if(field<boost::shared_ptr<RBX::Instance> >(0x74)) allowed=reinterpret_cast<ParentCheckView*>(object)->acceptsParent(field<boost::shared_ptr<RBX::Instance> >(0x74).get());
+    if(parent) allowed=reinterpret_cast<ParentCheckView*>(object)->acceptsParent(parent.get());
     else allowed=dynamic_cast<RBX::Service*>(object)!=NULL;
     if(allowed) {
-    field<std::vector<boost::shared_ptr<RBX::Instance> > >(0x7c).push_back(instance);
+    instances.push_back(instance);
     int icon=metadata->icon();
     const char* label=descriptor->name.name.c_str();
-    CListCtrl& list=field<CListCtrl>(0xa8);
     int index=list.InsertItem(LVIF_TEXT|LVIF_IMAGE,0,label,0,0,icon,0);
     list.SetItem(index,0,LVIF_PARAM,NULL,0,0,0,reinterpret_cast<LPARAM>(object));
-    if(descriptor->name.name.compare(static_cast<LPCTSTR>(field<CString>(0x94)))==0)list.SetItemState(index,LVIS_SELECTED,LVIS_SELECTED);
+    if(descriptor->name.name.compare(static_cast<LPCTSTR>(selectedName))==0)list.SetItemState(index,LVIS_SELECTED,LVIS_SELECTED);
     }
    }
   }
  }
  std::for_each(descriptor->derivedClasses_begin(),descriptor->derivedClasses_end(),boost::bind(&InsertDialogRecovery::populate,this,_1));
 }
+

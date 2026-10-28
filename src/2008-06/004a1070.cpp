@@ -1,8 +1,9 @@
+// from server: 96% by EspClaude
 // from server: 90% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espclaude_1f8a3c087fc568fb.cpp
+// roc-lib: rbxgs-dll roc_espclaude_cc715395df80acdb.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define _DLL
@@ -197,8 +198,13 @@ PluginReceiveResult Client::OnReceive(RakPeerInterface* peer, Packet* packet)
 	case ID_INVALID_PASSWORD:
 		try
 		{
-			const SystemAddress& address = packet->systemAddress;
-			StandardOut::singleton()->print(MESSAGE_ERROR, "Invalid version from %s", address.ToString());
+			const SystemAddress* paddress;
+			{
+				const boost::shared_ptr<StandardOut>& out = StandardOut::singleton();
+				paddress = &packet->systemAddress;
+				out->print(MESSAGE_ERROR, "Invalid version from %s", paddress->ToString());
+			}
+			const SystemAddress& address = *paddress;
 			event_ConnectionFailed.fire(this, address.ToString(), packet->data[0], Exposer::IDTOString(packet->data[0]));
 			event_ConnectionRejected.fire(this, address.ToString());
 		}
@@ -218,3 +224,4 @@ PluginReceiveResult Client::OnReceive(RakPeerInterface* peer, Packet* packet)
 }
 }
 }
+

@@ -1,8 +1,8 @@
-// from server: 89% by Espeon
+// from server: 95% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espeon_cameranativeextentsacf1c6b49cd9bc8a.cpp
+// roc-lib: rbxgs-dll roc_claudeM_69f58ca87aea7988.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "util/Extents.h"
@@ -14,6 +14,7 @@
 #include <G3D/Vector3.h>
 #include <G3D/Rect2D.h>
 
+template<class T> inline T roc_val(T v) { return v; }
 namespace RBX {
 
 class IDataState { public: virtual void setDirty(bool) = 0; };
@@ -83,6 +84,7 @@ class Verb {
 public:
     virtual ~Verb();
     const Name* name;
+    const Name& getName() const { return *name; }
 };
 class CameraVerb : public Verb {
 public:
@@ -113,16 +115,16 @@ void CameraZoomExtentsCommand::doIt(IDataState* dataState)
             } while (i < selected.size());
 
         workspace->getCamera()->setCameraType(0);
-        workspace->getCamera()->zoomExtents(extents, workspace->viewPort, 0);
+        workspace->getCamera()->zoomExtents(extents, roc_val(workspace)->viewPort, 0);
         findServiceProvider(workspace)->playSound(11);
         dataState->setDirty(true);
-        trackVerb(name->c_str(), workspace);
+        trackVerb(getName().c_str(), workspace);
         dataState->setDirty(true);
     }
     else
     {
         G3D::Vector3::zero();
-        workspace->getCamera()->zoomExtents(workspace->viewPort);
+        workspace->getCamera()->zoomExtents(roc_val(workspace)->viewPort);
         findServiceProvider(workspace)->playSound(11);
         dataState->setDirty(true);
     }

@@ -116,7 +116,7 @@ namespace RBX
 	{
 		if (this->contains(pv))
 		{
-			RBXASSERT(pv->getPrimaryPart());
+			                               ;
 
 			std::vector<PVInstance*> pvInstances;
 			pvInstances.push_back(pv);
@@ -130,7 +130,7 @@ namespace RBX
 
 	void RootInstance::moveToCharacterInsertPoint(std::vector<boost::weak_ptr<PartInstance>>& partArray)
 	{
-		if (!partArray.empty())
+		if ((partArray.size() > 0))
 		{
 			Extents extents = DragUtilities::computeExtents(partArray);
 
@@ -143,7 +143,7 @@ namespace RBX
 
 	void RootInstance::moveToIdeInsertPoint(std::vector<boost::weak_ptr<PartInstance>>& partArray)
 	{
-		if (!partArray.empty())
+		if ((partArray.size() > 0))
 		{
 			Extents extents = DragUtilities::computeExtents(partArray);
 
@@ -199,7 +199,7 @@ namespace RBX
 
 	void RootInstance::insertIdeView(const std::vector<boost::shared_ptr<Instance>>& instances, std::vector<boost::weak_ptr<PartInstance>>& partArray, PromptMode promptMode)
 	{
-		RBXASSERT(instances.size() > 0);
+		                               ;
 
 		if (instances.size() == 1)
 		{
@@ -230,7 +230,7 @@ namespace RBX
 
 	void RootInstance::insert3dView(const std::vector<boost::shared_ptr<Instance>>& instances, PromptMode promptMode)
 	{
-		RBXASSERT(instances.size() > 0);
+		                               ;
 
 		std::vector<boost::weak_ptr<PartInstance>> partArray;
 		if (Network::Players::findLocalCharacter(this))
@@ -238,7 +238,7 @@ namespace RBX
 		else
 			insertIdeView(instances, partArray, promptMode);
 
-		if (!partArray.empty())
+		if ((partArray.size() > 0))
 		{
 			Extents extents = DragUtilities::computeExtents(partArray);
 			getCamera()->zoomExtents(extents, viewPort, Camera::ZOOM_OUT_ONLY);

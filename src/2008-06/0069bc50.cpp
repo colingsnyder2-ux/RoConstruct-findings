@@ -1,6 +1,7 @@
-// from server: 77% by king_originala
+// from server: 83% by coldek
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
+template<class T> inline T roc_val(T v) { return v; }
 #include <algorithm>
 #include <cassert>
 #include <bitset>
@@ -320,7 +321,7 @@ void RbxSceneManager::renderSingleObject(const Renderable* rend, const Pass* pas
 						{
 							localLightList.clear();
 							LightList::const_iterator copyStart = rendLightList.begin();
-							std::advance(copyStart, pass->getStartLight());
+							std::advance(copyStart, roc_val(pass->getStartLight()));
 
 							localLightList.insert(localLightList.begin(), 
 								copyStart, rendLightList.end());

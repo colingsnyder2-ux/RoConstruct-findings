@@ -1,4 +1,4 @@
-// from server: 69% by nuck16
+// from server: 73% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
@@ -29,7 +29,7 @@ public:
 };
 class SpatialHash {
 public:
-    static void __cdecl computeMinMax(int level, const Extents& extents, Vector3int32& min, Vector3int32& max);
+    static __declspec(noalias) void __cdecl computeMinMax(int level, const Extents& extents, Vector3int32& min, Vector3int32& max);
     void changeMinMax(int level, Primitive* p, const ExtentsInt32& change, const ExtentsInt32& oldBox, const ExtentsInt32& newBox);
     void updateContacts(Primitive* p);
     void primitiveExtentsChanged(Primitive* p, const Extents& fuzzyExtents);

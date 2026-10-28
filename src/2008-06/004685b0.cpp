@@ -1,3 +1,4 @@
+// from server: 94% by EspClaude
 // from server: 78% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
@@ -528,7 +529,7 @@ namespace RBX {
 // Native20-byte UIEvent mouse representation, with original four-argument ctor.
 class UIEvent {public:enum EventType {NO_EVENT,MOUSE_RIGHT_BUTTON_DOWN,MOUSE_RIGHT_BUTTON_UP,MOUSE_LEFT_BUTTON_DOWN,MOUSE_LEFT_BUTTON_UP,MOUSE_MOVE,MOUSE_DELTA,MOUSE_IDLE,MOUSE_WHEEL_FORWARD,MOUSE_WHEEL_BACKWARD,KEY_DOWN,KEY_UP};
  EventType eventType;UserInputBase*userInput;G3D::Vector2int16 mousePosition,mouseDelta,windowSize;
- UIEvent(UserInputBase*u,EventType t,G3D::Vector2int16 p,G3D::Vector2int16 d):userInput(u),eventType(t),mousePosition(p),mouseDelta(d){}
+ UIEvent(UserInputBase*u,EventType t,const G3D::Vector2int16&p,G3D::Vector2int16 w):eventType(t),userInput(u),mousePosition(p),mouseDelta(),windowSize(w){}
 };
 class Workspace {public:void onWrapMouse(const G3D::Vector2&);}; //005a0220
 class DataModel {public:
@@ -571,11 +572,11 @@ void DxUserInput::processMouseInput(){
  if(delta!=G3D::Vector2::zero()){
   RBX::DataModel::Lock lock(model);
   model->getWorkspace()->onWrapMouse(delta);
-  {G3D::Vector2int16 position(getCursorPosition());RBX::UIEvent event(this,RBX::UIEvent::MOUSE_DELTA,position,G3D::Vector2int16());event.windowSize=getWindowSize();dispatchEvent(event);}
-  {G3D::Vector2int16 position(getCursorPosition());RBX::UIEvent event(this,RBX::UIEvent::MOUSE_MOVE,position,G3D::Vector2int16());event.windowSize=getWindowSize();dispatchEvent(event);}
+  {G3D::Vector2int16 position(getCursorPosition());RBX::UIEvent event(this,RBX::UIEvent::MOUSE_DELTA,position,getWindowSize());dispatchEvent(event);}
+  {G3D::Vector2int16 position(getCursorPosition());RBX::UIEvent event(this,RBX::UIEvent::MOUSE_MOVE,position,getWindowSize());dispatchEvent(event);}
  }else if(moved){
   RBX::DataModel::Lock lock(model);
-  G3D::Vector2int16 position(getCursorPosition());RBX::UIEvent event(this,RBX::UIEvent::MOUSE_MOVE,position,G3D::Vector2int16());event.windowSize=getWindowSize();dispatchEvent(event);
+  G3D::Vector2int16 position(getCursorPosition());RBX::UIEvent event(this,RBX::UIEvent::MOUSE_MOVE,position,getWindowSize());dispatchEvent(event);
  }
 }
 

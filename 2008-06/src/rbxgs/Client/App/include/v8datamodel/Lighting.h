@@ -16,8 +16,8 @@ namespace RBX
 		G3D::Color3 ambientTop;
 		G3D::Color3 ambientBottom;
 		bool hasSky;
+		float unknown0x244[4]; // 2008 keeps this block ahead of clearColor
 		G3D::Color4 clearColor;
-		float unknown0x254[4]; // set by the 2008 constructor; names unknown
 		boost::posix_time::time_duration timeOfDay;
 		float unknown0x270[25]; // names unknown
 	public:

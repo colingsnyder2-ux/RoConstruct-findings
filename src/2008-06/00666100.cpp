@@ -1,4 +1,4 @@
-// from server: 99% by nuck16
+// from server: 100% by coldek
 // roc 2008-06 00666100  unit: RBX::PartDragTool  size: 313 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00666100
 //
@@ -106,6 +106,7 @@
 // 00666233  83c434               add esp, 0x34
 // 00666236  c20400               ret 4
 
+template<class T> inline T roc_val(T v) { return v; }
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -238,7 +239,7 @@ int S::run(int argument)
         Context context(owner);
         context.get(1)->clear();
         Service* service = context.get(1);
-        service->set(item);
+        service->set(roc_val(item));
     }
 
     finish();

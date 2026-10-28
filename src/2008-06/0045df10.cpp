@@ -1,3 +1,4 @@
+// from server: 100% by EspClaude
 // from server: 90% by Espeon
 // roc 2008-06 0045df10  unit: CRobloxWnd  size: 1244 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0045df10
@@ -653,7 +654,7 @@ class AdornRbxGfx:public Adorn {public:char observed04[0x40];int particleQuota;}
 template<class T>inline T windowMetricField(const void*p,unsigned offset){return *reinterpret_cast<const T*>(static_cast<const char*>(p)+offset);}
 struct NativeWindowFrameSample {float milliseconds,potential,visible;char observed0c[8];};
 class NativeWindowFrameHistory {public:int count;int getCount()const;const NativeWindowFrameSample&sample(int)const;}; //00678630 ret4
-class NativeWindowGraphicsContext;
+class NativeWindowGraphicsContext {public:char observed00[0x18];NativeWindowFrameHistory history;const NativeWindowFrameHistory&frameHistory()const{return history;}};
 class NativeWindowRenderModeDescriptor {public:std::string convertToString(const int&)const;}; //00448360 ret8
 extern boost::once_flag windowRenderModeOnce; //0096db98
 void initializeWindowRenderMode(); //00447e70 void thunk for boost::call_once
@@ -663,6 +664,7 @@ extern bool windowShadowsEnabled; //0096de64
 bool windowBevelsEnabled(); //004d71b0 cdecl0 AL
 unsigned int windowVideoMemory(); //00678510 cdecl0
 template<class T>class StringConverter {public:static std::string convertToString(const T&);};
+struct ShadowCasterList {void**first;void**last;int size()const{return int(last-first);}};
 class WindowMetricView {
 public:
  char observed00[4];int renderMode;char observed08[0x50];ViewBase*view;Adorn*adorn;NativeWindowGraphicsContext*graphics;
@@ -678,14 +680,14 @@ std::string WindowMetricView::getMetric(const std::string&name)const {
   if(!graphics)return "N/A";
   if(!windowOgreRenderer)return "Off";
   
-  if(reinterpret_cast<const NativeWindowFrameHistory*>(reinterpret_cast<const char*>(graphics)+0x18)->getCount()<30)return "Pending";
+  if(graphics->frameHistory().getCount()<30)return "Pending";
   std::string unusedFirst,unusedSecond,unusedThird;
-  const NativeWindowFrameSample&frame=reinterpret_cast<const NativeWindowFrameHistory*>(reinterpret_cast<const char*>(graphics)+0x18)->sample(0);
+  const NativeWindowFrameSample&frame=graphics->frameHistory().sample(0);
   int potential=int(frame.potential);int visible=int(frame.visible);
   int percent=potential>0?int((1.0f-float(visible)/float(potential))*100.0f):0;
+  int total=0;
   Ogre::SceneManager*manager=windowMetricField<Ogre::SceneManager*>(graphics,4);
   Ogre::SceneNode*root=manager->getRootSceneNode();
-  int total=0;
   for(int i=0;i<root->numChildren();++i){
    Ogre::RbxSceneNode*node=dynamic_cast<Ogre::RbxSceneNode*>(root->getChild((unsigned short)i));
    if(node){
@@ -700,8 +702,7 @@ std::string WindowMetricView::getMetric(const std::string&name)const {
   if(!graphics)return "?";
   if(!windowShadowsEnabled)return "Off";
   const void*manager=windowMetricField<void*>(graphics,4);
-  const int*end=windowMetricField<int*>(manager,0x8ad4); const int*begin=windowMetricField<int*>(manager,0x8ad0);
-  return "On  #casters="+Ogre::StringConverter::toString(int(end-begin));
+  return "On  #casters="+Ogre::StringConverter::toString(reinterpret_cast<const ShadowCasterList*>(static_cast<const char*>(manager)+0x8ad0)->size());
  }
  else if(name=="antiAliasing"){
   if(!graphics)return "N/A";
@@ -719,17 +720,18 @@ std::string WindowMetricView::getMetric(const std::string&name)const {
  }
  else if(name=="GfxTime"){
   if(!graphics)return "?";
-  double milliseconds;
+  float milliseconds;
   if(windowOgreRenderer){
    
-   if(!reinterpret_cast<const NativeWindowFrameHistory*>(reinterpret_cast<const char*>(graphics)+0x18)->getCount())return "??";
-   milliseconds=reinterpret_cast<const NativeWindowFrameHistory*>(reinterpret_cast<const char*>(graphics)+0x18)->sample(0).milliseconds;
+   if(!graphics->frameHistory().getCount())return "??";
+   milliseconds=graphics->frameHistory().sample(0).milliseconds;
   }else{
    RenderStats&stats=view->getRenderStats();
-   milliseconds=stats.cpuRenderTotal.elapsedTime()*1000.0f;
+   G3D::Stopwatch&watch=stats.cpuRenderTotal;
+   float elapsed=watch.elapsedTime();
+   milliseconds=elapsed*1000.0f;
   }
-  double fps=1000.0f;
-  if(milliseconds>=1.0f)fps/=milliseconds;
+  float fps=milliseconds>=1.0f?1000.0f/milliseconds:1000.0f;
   char buffer[256];std::sprintf(buffer,"%.1fms (%.1ffps)",milliseconds,fps);return std::string(buffer);
  }
  else if(name=="Particles"){

@@ -15,7 +15,7 @@ namespace RBX
 	GroupDragTool::~GroupDragTool()
 	{
 		if (dragging)
-			RBXASSERT(0);
+			            ;
 	}
 
 	const std::string GroupDragTool::getCursorName() const
@@ -41,7 +41,7 @@ namespace RBX
 		}
 		else
 		{
-			RBXASSERT(0);
+			
 			return NULL;
 		}
 	}
@@ -56,7 +56,7 @@ namespace RBX
 
 	void GroupDragTool::onMouseIdle(const UIEvent& uiEvent)
 	{
-		RBXASSERT(captured());
+		
 
 		G3D::Vector3 hit;
 

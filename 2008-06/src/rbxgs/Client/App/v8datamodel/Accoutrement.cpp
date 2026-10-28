@@ -250,7 +250,7 @@ namespace RBX
 
 			if (weld)
 			{
-				RBXASSERT(Network::Players::backendProcessing(this, true));
+				                                                          ;
 				weld->setC1(attachmentPoint);
 			}
 		}

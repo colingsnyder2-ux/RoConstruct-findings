@@ -1,10 +1,13 @@
+// from server: 100% by EspClaude
 // from server: 97% by king_originala_sol_resume_native
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /Ob1
-// roc-lib: xtp-11.2.2-lib-imports roc_sol_resume_native_queryboth_5015cdfa138a5d5e.cpp
+// roc-lib: xtp-11.2.2-lib-imports roc_espclaude_569602479ecc41f0.cpp
 
 // Candidate translation unit (score above; library headers required).
+#define WINVER 0x0501
+#define _WIN32_WINNT 0x0501
 #include <intrin.h>
 #include <atlbase.h>
 #include <shlwapi.h>
@@ -122,6 +125,7 @@ void CRobloxModuleProbe::loadAppSettings()
     moduleFolder.ReleaseBuffer();
     settings.LoadFromFile(moduleFolder + "\\AppSettings.xml");
 
+    {
     BOOL silentCrashReport = TRUE;
     if (!PX_Bool(&settings, "SilentCrashReport", silentCrashReport) ||
         silentCrashReport)
@@ -140,6 +144,7 @@ void CRobloxModuleProbe::loadAppSettings()
         }
     }
     gSilentCrashReport = silentCrashReport != FALSE;
+    }
 
     PX_String(&settings, "BaseUrl", gBaseUrl);
     if (gBaseUrl.IsEmpty())
@@ -177,4 +182,5 @@ void CRobloxModuleProbe::loadAppSettings()
     getGlobalSettings()->loadState();
     reportGlobalSettings();
 }
+
 

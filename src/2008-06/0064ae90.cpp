@@ -1,4 +1,4 @@
-// from server: 93% by coldek
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
@@ -60,6 +60,7 @@ struct Manager {
 };
 
 struct SleepStage : Stage {
+    __forceinline bool downstream(Stage *s) { return s->level() > level(); }
     char pad[4];
     Manager *manager;
     ArgSet *getSet(int);
@@ -92,9 +93,7 @@ void SleepStage::step(SleepStageArg *arg, int newStage)
     }
 
     if (newStage == 4 || newStage == 5 || newStage == 6) {
-        Stage *other = arg->stage;
-        volatile int mine = level();
-        if (other->level() > mine)
+        if (downstream(arg->stage))
             manager->sleep(arg);
     }
 
