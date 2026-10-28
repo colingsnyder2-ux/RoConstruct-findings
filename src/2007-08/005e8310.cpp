@@ -1,4 +1,4 @@
-// from server: 87% by colin
+// from server: 94% by sophus
 struct type_info {
     bool __thiscall operator==(const type_info&) const;
 };
@@ -6,10 +6,9 @@ struct type_info {
 extern "C" int __cdecl func_005f20f0(int, int, int);
 
 struct S {
-    int f(int a, int b);
 };
 
-int S::f(int a, int b)
+int __cdecl f(int a, int b)
 {
     if (b == 2) {
         int r = a;

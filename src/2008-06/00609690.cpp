@@ -1,8 +1,9 @@
+// from server: 89% by EspClaude
 // from server: 88% by nuck16
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_unit_a20dfdf7051be079.cpp
+// roc-lib: rbxgs-dll roc_espclaude_45b028a23462afbb.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "G3D/ReferenceCount.h"
@@ -78,7 +79,7 @@ namespace RBX
 		{
 			G3D::ReferenceCountedPointer<RBX::Controller> controller = getTypedParent<PVInstance>()->TopPVController;
 
-			if (controller.notNull())
+			if (controller != NULL)
 			{
 				if (controller->getControllerType() != Controller::NO_CONTROLLER && !controller->isUserController())
 					return controller;
@@ -89,3 +90,4 @@ namespace RBX
 		return controllerService ? controllerService->getController(controllerType, this) : NULL;
 	}
 }
+

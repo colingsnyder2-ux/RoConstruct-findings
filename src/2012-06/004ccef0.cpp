@@ -1,11 +1,11 @@
-// from server: 98% by sophus
+// from server: 100% by sophus
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 #define _SECURE_SCL 0
 #include <set>
 
-struct Value { char bytes[0x38]; };
+struct Value { char bytes[0x1c]; };
 // _Myhead at +0x10: comparator carries 4 bytes of state.
 struct Less { int state; bool operator()(const Value&, const Value&) const; };
 

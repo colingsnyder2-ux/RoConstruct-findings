@@ -1,8 +1,8 @@
-// from server: 99% by colin
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_atlas_native_early_fallback_c2d9ef19e33883ea.cpp
+// roc-lib: rbxgs-dll roc_espclaude_e9f9dfe69397faf1.cpp
 
 // Candidate translation unit (score above; library headers required).
 // Binary-derived legacy atlas migration; API/layout from authentic headers.
@@ -16,6 +16,7 @@ extern bool compareFiles(const std::string&,const std::string&);
 // Native cdecl calls have nine and six stack arguments, respectively.
 extern bool rotatedPaste(GImage&,const GImage&,int,int,int,int,int,int,int);
 extern void rotateRegion(GImage&,int,int,int,int,int);
+static inline int box4(const unsigned char* a,const unsigned char* b,int ch){ return a[0]+a[ch]+b[0]+b[ch]; }
 std::string migrateAtlas(std::string filename,const RBX::Name& mime,bool,float scale) {
     GImage original;
     std::string cache=filename+"0xdecafbad";
@@ -216,9 +217,9 @@ std::string migrateAtlas(std::string filename,const RBX::Name& mime,bool,float s
                     unsigned char* dest=half.byte()+(x+y*half.width)*half.channels+c;
                     const unsigned char* src=atlas.byte()+(x+y*atlas.width)*2*atlas.channels+c;
                     int sum;
-                    if(x*2+1<atlas.width && y*2+1<atlas.height)
-                        sum=src[0]+src[atlas.channels]+src[stride]+src[stride+atlas.channels];
-                    else sum=src[0];
+                    if(x*2+1>=atlas.width || y*2+1>=atlas.height)
+                        sum=src[0];
+                    else sum=box4(src,src+stride,atlas.channels);
                     *dest=(sum+2)>>2;
                 }
         half.save(cache,GImage::PNG);
@@ -226,3 +227,4 @@ std::string migrateAtlas(std::string filename,const RBX::Name& mime,bool,float s
     return cache;
 
 }
+

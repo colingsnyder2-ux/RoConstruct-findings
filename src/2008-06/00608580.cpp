@@ -1,8 +1,9 @@
+// from server: 100% by EspClaude
 // from server: 97% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: openrbx-client-dll roc_espclaude_9197038b54b6386a.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_7d30727a4b451db5.cpp
 
 // Candidate translation unit (score above; library headers required).
 // exe-layout OpenRBX headers: Body pv at 0x94 without updatePV, Primitive +0x28 before oldSpatialMin
@@ -1431,29 +1432,16 @@ int BlockBlockContact::computePlaneContact()
 	Block& otherBlock = *block(bOther);
 	Block& planeBlock = *block(bPlane);
 
-	int planeFlip = planeID / 3;
-	int planeAxis = planeID - 3 * planeFlip;
-
-	otherPlaneID = Math::getClosestObjectNormalId(
-		-(Vector3(
-			  planeCoord.rotation[0][planeAxis],
-			  planeCoord.rotation[1][planeAxis],
-			  planeCoord.rotation[2][planeAxis]
-		  ) *
-		  (float) (1 - 2 * planeFlip)),
-		otherCoord.rotation
-	);
+	otherPlaneID = Math::getClosestObjectNormalId(-Math::getWorldNormal(planeID, planeCoord), otherCoord.rotation);
 
 	Vector2 planeRect = planeBlock.getProjectedVertex(*planeBlock.getFaceVertex(planeID, 0), planeID);
 
-	Vector2 otherQuad[4];
+	Vector2 otherQuad[4] = {};
 
 	for (int i = 0; i < 4; i++) {
-		const Vector3& otherVertex = *otherBlock.getFaceVertex(otherPlaneID, i);
-
-		Vector3 otherVertexPlaneCoords = otherToPlane.pointToWorldSpace(otherVertex);
-
-		otherQuad[i] = otherBlock.getProjectedVertex(otherVertexPlaneCoords, planeID);
+		const Vector3* v = otherBlock.getFaceVertex(otherPlaneID, i);
+		const Vector3& world = otherToPlane.pointToWorldSpace(*v);
+		otherQuad[i] = otherBlock.getProjectedVertex(world, planeID);
 	}
 
 	return intersectRectQuad(planeRect, otherQuad);
@@ -1493,4 +1481,5 @@ bool BlockBlockContact::stepContact()
 }
 
 } // namespace RBX
+
 

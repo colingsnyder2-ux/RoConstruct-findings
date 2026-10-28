@@ -1,247 +1,8 @@
-// from server: 85% by 2gx
-// 2gx, 2026
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// from server: 100% by EspClaude
+// from server: 78% by coldek
+// roc 2008-06 005cb530  unit: RBX::PlayerController  size: 748 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 005cb530
+//
 
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
@@ -267,8 +28,8 @@ struct Vector3 {
  Vector3 operator+(const Vector3&r)const{return Vector3(x+r.x,y+r.y,z+r.z);}
  Vector3& operator+=(const Vector3&r){x+=r.x;y+=r.y;z+=r.z;return *this;}
  float squaredLength()const{return x*x+y*y+z*z;}
- __declspec(noalias) float unitize(float);
- static __declspec(noalias) const Vector3& zero();
+ float unitize(float);
+ static const Vector3& zero();
 };
 struct CoordinateFrame {char opaque[48];CoordinateFrame(const CoordinateFrame&);~CoordinateFrame(){}Vector3 lookVector()const;};
 struct ReferenceCountedObject {virtual ~ReferenceCountedObject();long count;void*weakPointers;};
@@ -278,16 +39,16 @@ struct Instance {virtual ~Instance();};
 struct PVInstance:Instance {};
 struct ModelInstance:PVInstance {};
 struct Humanoid {
- static __declspec(noalias) Humanoid* fromInstance(Instance*);
- __declspec(noalias) void setWalkDirection(const G3D::Vector3&);
- __declspec(noalias) void setMovementFlag(bool);
+ static Humanoid* fromInstance(Instance*);
+ void setWalkDirection(const G3D::Vector3&);
+ void setMovementFlag(bool);
  void setSit(bool);void setJump(bool);
 };
 namespace Network {struct Players {static ModelInstance*findLocalCharacter(const Instance*);};}
 struct Camera {
- __declspec(noalias) G3D::CoordinateFrame getCameraCoordinateFrame() const;
- __declspec(noalias) void panRadians(float);
- __declspec(noalias) bool getMovementFlag() const;
+ G3D::CoordinateFrame getCameraCoordinateFrame() const;
+ void panRadians(float);
+ bool getMovementFlag() const;
 };
 struct ICameraOwner {virtual ~ICameraOwner();virtual Camera*getCamera()const=0;};
 struct WorkspacePrimary {virtual ~WorkspacePrimary();char reserved[0x288-4];};
@@ -295,7 +56,8 @@ struct Workspace:WorkspacePrimary,ICameraOwner {static Workspace*findWorkspace(c
 struct NavKeys {
  bool forward_arrow,backward_arrow,left_arrow,right_arrow,forward_asdw,backward_asdw,left_asdw,right_asdw,space;
  NavKeys():forward_arrow(false),backward_arrow(false),left_arrow(false),right_arrow(false),forward_asdw(false),backward_asdw(false),left_asdw(false),right_asdw(false),space(false){}
- __declspec(noalias) bool hasASDW() const;
+ bool hasASDW() const;
+ bool arrowKeyDown()const{return (forward_arrow || backward_arrow || left_arrow || right_arrow);}
  float forwardBackwardASDW()const;float leftRightASDW()const;float leftRightArrow()const;
 };
 struct UserInputBase {void getNavKeys(NavKeys&)const;bool ctrlKeyDown()const;};
@@ -306,8 +68,8 @@ template<class C,class E>struct Listener {virtual void onEvent(const C*,E)=0;vir
 struct SteppingController:Controller,Listener<RunService,Heartbeat> {boost::shared_ptr<RunService>runService;boost::weak_ptr<const PVInstance>controlledInstance;};
 struct PlayerController:SteppingController {
  boost::weak_ptr<ControllerService>controllerService;int stepsRotating;
- __declspec(noalias) const UserInputBase* getHardwareDevice() const;
- virtual __declspec(noalias) void onEvent(const RunService*,Heartbeat);
+ const UserInputBase* getHardwareDevice() const;
+ virtual void onEvent(const RunService*,Heartbeat);
 };
 void PlayerController::onEvent(const RunService*,Heartbeat event){
  const UserInputBase*hardware=getHardwareDevice();
@@ -319,7 +81,7 @@ void PlayerController::onEvent(const RunService*,Heartbeat event){
  if(hardware && humanoid && workspace){
   Camera*camera=workspace->getCamera();
   NavKeys keys;hardware->getNavKeys(keys);
-  if(keys.forward_arrow || keys.backward_arrow || keys.left_arrow || keys.right_arrow){
+  if(keys.arrowKeyDown()){
    if(keys.left_arrow || keys.right_arrow){camera->panRadians(keys.leftRightArrow()*event.step*1.8f);++stepsRotating;}
    else stepsRotating=0;
    float amount=keys.forward_arrow?1.f:(keys.backward_arrow?-1.f:0.f);

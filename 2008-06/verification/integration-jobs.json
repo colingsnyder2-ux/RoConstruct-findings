@@ -3566,5 +3566,28 @@
     "unit": "RBX::TimerService",
     "updated": 1793171316.29867,
     "user": "colin"
+  },
+  {
+    "created": 1793180368.3120608,
+    "id": "568ab9a4016d49f38a7d8c192a7974c5",
+    "model": "gpt-6.1-sol",
+    "patches": {
+      "App/v8tree/Service.cpp": [
+        [
+          "ServiceProvider::createChild(const Name& className)\n\t{\n\t\tRBXASSERT(className!=RBX::Name::getNullName());\n\n\t\tboost::shared_ptr<Instance> instance = findServiceByClassName(className);\n\t\tif (instance)\n\t\t{\n\t\t\treturn instance;\n\t\t}\n\n\t\treturn AbstractFactoryProduct<Instance>::create(className);\n\t}",
+          "ServiceProvider::createChild(const Name& className)\n\t{\n\t\t;\n\n\t\tboost::shared_ptr<Instance> instance = findServiceByClassName(className);\n\t\tif (instance)\n\t\t{\n\t\t\treturn instance;\n\t\t}\n\n\t\treturn AbstractFactoryProduct<Instance>::create(className);\n\t}"
+        ],
+        [
+          "ServiceProvider::findServiceByClassName(const Name& className) const\n\t{\n\t\tRBXASSERT(className!=RBX::Name::getNullName());\n\n\t\tstd::map<const Name*, boost::shared_ptr<Instance>>::const_iterator it = serviceMap.find(&className);\n\t\tif (it != serviceMap.end())\n\t\t\treturn (*it).second;\n\n\t\treturn boost::shared_ptr<Instance>();\n\t}",
+          "ServiceProvider::findServiceByClassName(const Name& className) const\n\t{\n\t\t;\n\n\t\tstd::map<const Name*, boost::shared_ptr<Instance>>::const_iterator it = serviceMap.find(&className);\n\t\tif (it != serviceMap.end())\n\t\t\treturn (*it).second;\n\n\t\treturn boost::shared_ptr<Instance>();\n\t}"
+        ]
+      ]
+    },
+    "phase": "fingerprinting inputs",
+    "receipt": {},
+    "state": "verifying",
+    "unit": "RBX::ServiceProvider",
+    "updated": 1793180369.3011854,
+    "user": "colin"
   }
 ]

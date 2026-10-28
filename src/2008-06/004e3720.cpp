@@ -1,8 +1,8 @@
-// from server: 75% by EspClaude
+// from server: 76% by EspClaude
 // from server: 71% by coldek
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espclaude_f5badf34b1e7a7f6.cpp
+// roc-lib: rbxgs-dll roc_espclaude_e5e249e4b1bba9fa.cpp
 
 // Candidate translation unit (score above; library headers required).
 // Binary-derived level population. This is a codegen analogue, not an original declaration.
@@ -78,6 +78,7 @@ void BrickMeshRecovery::populate(const Vector3& size,RenderSurfaceTypes surfaces
     field<Array<LevelRef> >(0xc).append(level);
     Vector3 half=size*0.5f;
     float palette=static_cast<float>(color.getClosestPaletteIndex());
+    unsigned quad0[4],quad1[4],quad2[4],quad3[4];
     unsigned face[24];
     recoveredMeshFace<RBX::NORM_X>(half,meshBevel,surfaces,palette,level,face);
     atlasFace(face,rectangles[atlasIndices[3]],flags[3],margin);
@@ -93,7 +94,7 @@ void BrickMeshRecovery::populate(const Vector3& size,RenderSurfaceTypes surfaces
     atlasFace(face+20,rectangles[atlasIndices[1]],flags[1],margin);
     if(meshBevel>0) {
         unsigned copies[24];
-        for(unsigned i=0;i<24;++i)
+        for(int i=0;i<24;++i)
             copies[i]=Mesh::allocVertex(meshPositions[face[i]],meshNormals[face[i]],meshTextures[face[i]],true);
         // UV extrapolation and join topology follow the native geometry API trace.
         extendTexture(copies[3],copies[7],copies[6],margin);
@@ -116,7 +117,6 @@ void BrickMeshRecovery::populate(const Vector3& size,RenderSurfaceTypes surfaces
         level->indexArray.append(copies[11],copies[10],copies[7],copies[6]);
         level->indexArray.append(copies[6],copies[5],copies[15],copies[14]);
         level->indexArray.append(copies[5],copies[4],copies[23],copies[22]);
-        unsigned quad0[4],quad1[4],quad2[4],quad3[4];
         cloneMeshQuad(level,face[10],face[9],face[0],face[3],quad0);
         extendTexture(quad0[3],face[10],face[11],margin);
         extendTexture(quad0[2],face[9],face[8],margin);
@@ -206,7 +206,7 @@ void BrickMeshRecovery::populate(const Vector3& size,RenderSurfaceTypes surfaces
         Mesh::allocVertex(copies[20],1);
         Mesh::allocVertex(copies[1],1);
         Mesh::allocVertex(copies[1],1);
-        for(unsigned i=0;i<24;++i) Mesh::allocVertex(copies[i],static_cast<unsigned>(-1));
+        for(int i=0;i<24;++i) Mesh::allocVertex(copies[i],static_cast<unsigned>(-1));
     }
 }
 

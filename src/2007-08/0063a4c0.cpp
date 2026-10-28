@@ -1,4 +1,4 @@
-// from server: 48% by colin
+// from server: 52% by sophus
 extern "C" {
     typedef void* (__stdcall *PFN_0)(void*);
     typedef void* (__stdcall *PFN_1)(void*, void*);
@@ -15,7 +15,7 @@ extern PFN_4 g_pfn_77dccc;
 
 struct CPatchedControlComboBox
 {
-    void* method(void* a, void* b, char c);
+    void* __cdecl method(void* a, void* b, char c);
 };
 
 void* CPatchedControlComboBox::method(void* a, void* b, char c)

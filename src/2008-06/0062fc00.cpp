@@ -1,4 +1,4 @@
-// from server: 99% by coldek
+// from server: 100% by coldek
 // from server: 98% by colin
 // roc 2008-06 0062fc00  unit: RBX::Rocket  size: 1225 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0062fc00
@@ -464,7 +464,7 @@ struct Vector3 {
  const float&operator[](int i)const{return ((const float*)this)[i];}
  float squaredMagnitude()const{return x*x+y*y+z*z;}
  float dot(const Vector3&v)const{double p0=x*v.x;double p1=y*v.y;double p2=z*v.z;return static_cast<float>((p2+p1)+p0);}
- Vector3 direction()const{float n=squaredMagnitude();float inv=1.0f/sqrtf(n);return Vector3(x*inv,y*inv,z*inv);}
+ Vector3 direction()const{float n=squaredMagnitude();float inv=1.0f/sqrtf(n);return (*this)*inv;}
  Vector3 fastDirection()const{float n=x*x+y*y+z*z;float inv=1.0f/sqrtf(n);return Vector3(x*inv,y*inv,z*inv);}
  Vector3 operator*(float f)const{return Vector3(x*f,y*f,z*f);}
  Vector3 operator/(float)const;
@@ -541,6 +541,10 @@ struct Rocket:BodyMover {
 };
 void Rocket::computeForce(const float dt, bool throttling)
 	{
+		float roc_f0 = 0;
+		float roc_f1 = 0;
+		float roc_f2 = 0;
+		float roc_f3 = 0;
 		if (!active)
 			return;
 

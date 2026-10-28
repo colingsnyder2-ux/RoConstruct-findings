@@ -1,18 +1,4 @@
-// from server: 76% by atomic.potato
-struct RotatePJoint
-{
-    void f();
-};
-
-struct Ball
-{
-    int operator()(int);
-};
-
-extern "C" Ball* BallFunction;
-
-void RotatePJoint::f()
-{
-    Ball* ball = *(Ball**)((char*)this + 0xb4);
-    ball->operator()(3);
-}
+// from server: 95% by sophus
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T{void m(int);}; struct S{char pad[0xb4]; void* p; void f();};
+void S::f(){((T*)((char*)p+0xd0))->m(0);}
