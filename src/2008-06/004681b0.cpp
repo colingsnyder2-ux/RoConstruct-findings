@@ -1,3 +1,4 @@
+// from server: 100% by EspClaude
 // from server: 82% by king_originala
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
@@ -31,11 +32,12 @@ extern "C" __declspec(dllimport) void __stdcall LeaveCriticalSection(CRITICAL_SE
 extern "C" __declspec(dllimport) HKL __stdcall GetKeyboardLayout(DWORD);
 extern "C" __declspec(dllimport) UINT __stdcall MapVirtualKeyExA(UINT,UINT,HKL);
 extern "C" __declspec(dllimport) int __stdcall PostMessageA(HWND,UINT,WPARAM,LPARAM);
-struct WindowView {char unused[0x20];HWND handle;};
+struct WindowView {char unused[0x20];HWND handle;int PostMessage(UINT m,WPARAM w=0,LPARAM l=0){return ::PostMessageA(handle,m,w,l);}};
 struct MainWindowView {char unused[0x104];bool acceleratorBypass;};
-struct AppView {char unused[0x20];MainWindowView*mainWindow;};
+struct AppView {char unused[0x20];MainWindowView*mainWindow;MainWindowView*GetMainWnd(){return mainWindow;}};
 struct ModuleStateView {char unused[4];AppView*application;};
 ModuleStateView*__stdcall AfxGetModuleState();
+inline AppView* AfxGetApp(){return AfxGetModuleState()->application;}
 struct CriticalLock {
  CRITICAL_SECTION*mutex;bool active;
  explicit CriticalLock(CRITICAL_SECTION&m):mutex(&m),active(false){EnterCriticalSection(mutex);active=true;}
@@ -365,8 +367,8 @@ void DxUserInput::processKeyboard(){
    static HKL keyboardLayout=GetKeyboardLayout(0);
    UINT virtualKey=MapVirtualKeyExA(scan,1,keyboardLayout);
    if(!virtualKey)virtualKey=keyToVirtualKey(key);
-   if(virtualKey!=0x2c&&virtualKey!=0x70&&virtualKey!=0x73&&AfxGetModuleState()->application->mainWindow->acceleratorBypass){_ReadWriteBarrier();}
-   else if(virtualKey==0x2c){PostMessageA(window->handle,0x111,0x180fc,0);}
+   if(virtualKey!=0x2c&&virtualKey!=0x70&&virtualKey!=0x73&&AfxGetApp()->GetMainWnd()->acceleratorBypass){_ReadWriteBarrier();}
+   else if(virtualKey==0x2c){window->PostMessage(0x111,0x180fc,0);}
    else{
     UINT ascii=MapVirtualKeyExA(virtualKey,2,keyboardLayout);
     int flags=((mods&0x300)?0x10:0)|((mods&0xc0)?8:0)|((mods&3)?4:0);
@@ -378,7 +380,7 @@ void DxUserInput::processKeyboard(){
       if(accelerators[index].key!=(char)ascii)continue;
      }
      if(flags!=(accelerators[index].fVirt&0x1c))continue;
-     PostMessageA(window->handle,0x111,accelerators[index].cmd|0x10000,0);
+     window->PostMessage(0x111,accelerators[index].cmd|0x10000,0);
      goto nextInputEvent;
     }
     

@@ -1,4 +1,5 @@
-// from server: 75% by colin
+// from server: 100% by coldek
+// claude-opus-5-5 claudeL28d: codegen analog; plain for loop, edge and the otherAssembly result named as locals (OpenRBX lesson: a callee-saved permutation means a missing named local)
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
@@ -71,21 +72,20 @@ class SleepStage : public Stage {
 };
 bool SleepStage::shouldSleep(Assembly* assembly)
 {
-    int i = 0;
     if (!computeCanSleep(assembly))
         return false;
     if (!computeShouldSleep(assembly))
         return false;
     G3D::Array<Edge*>& edges = assembly->getExternalEdges();
-    if (i < edges.size()) {
-        do {
-            Edge* edge = edges[i];
-            if (!edgeIsAwake(edge)) { ++i; continue; }
-            if (!isAffecting(edge)) { ++i; continue; }
-            if (preventNeighborSleep(assembly->otherAssembly(edge)))
-                return false;
-            ++i;
-        } while (i < edges.size());
+    for (int i = 0; i < edges.size(); ++i) {
+        Edge* e = edges[i];
+        if (edgeIsAwake(e)) {
+            if (isAffecting(e)) {
+                Assembly* otherAssembly = assembly->otherAssembly(e);
+                if (preventNeighborSleep(otherAssembly))
+                    return false;
+            }
+        }
     }
     return true;
 }

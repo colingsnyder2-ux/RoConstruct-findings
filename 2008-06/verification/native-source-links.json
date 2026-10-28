@@ -24,7 +24,7 @@
   "path": "2008-06/src/Client/boost_1_34_1/src/boost/function/function_base.hpp"
  },
  "0040a290": {
-  "line": 148,
+  "line": 151,
   "path": "2008-06/src/Client/App/include/reflection/property.h"
  },
  "0040a350": {
@@ -180,11 +180,11 @@
   "path": "2008-06/src/Client/App/v8world/Assembly.cpp"
  },
  "00443230": {
-  "line": 148,
+  "line": 151,
   "path": "2008-06/src/Client/App/include/reflection/property.h"
  },
  "004432a0": {
-  "line": 148,
+  "line": 151,
   "path": "2008-06/src/Client/App/include/reflection/property.h"
  },
  "00443590": {
@@ -220,7 +220,7 @@
   "path": "2008-06/src/Client/Network/include/Network/Player.h"
  },
  "00445610": {
-  "line": 148,
+  "line": 151,
   "path": "2008-06/src/Client/App/include/reflection/property.h"
  },
  "00448300": {
@@ -740,11 +740,11 @@
   "path": "2008-06/src/Client/Network/Replicator.cpp"
  },
  "004acb30": {
-  "line": 160,
+  "line": 163,
   "path": "2008-06/src/Client/App/include/reflection/property.h"
  },
  "004ad180": {
-  "line": 232,
+  "line": 235,
   "path": "2008-06/src/Client/App/include/reflection/property.h"
  },
  "004adbe0": {
@@ -1720,7 +1720,7 @@
   "path": "2008-06/src/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00584440": {
-  "line": 148,
+  "line": 151,
   "path": "2008-06/src/Client/App/include/reflection/property.h"
  },
  "00584620": {
@@ -2052,7 +2052,7 @@
   "path": "2008-06/src/Client/App/include/v8datamodel/Decal.h"
  },
  "005978a0": {
-  "line": 148,
+  "line": 151,
   "path": "2008-06/src/Client/App/include/reflection/property.h"
  },
  "00597d80": {
@@ -2208,7 +2208,7 @@
   "path": "2008-06/src/Client/App/include/util/ComputeProp.h"
  },
  "0059a4b0": {
-  "line": 148,
+  "line": 151,
   "path": "2008-06/src/Client/App/include/reflection/property.h"
  },
  "0059aa40": {
@@ -3764,7 +3764,7 @@
   "path": "2008-06/src/Client/App/v8world/MotorJoint.cpp"
  },
  "005e6110": {
-  "line": 89,
+  "line": 96,
   "path": "2008-06/src/Client/App/include/v8world/World.h"
  },
  "005e61b0": {
@@ -5328,7 +5328,7 @@
   "path": "2008-06/src/Client/App/include/script/LuaArguments.h"
  },
  "0061a7b0": {
-  "line": 160,
+  "line": 163,
   "path": "2008-06/src/Client/App/include/reflection/property.h"
  },
  "0061ba10": {
@@ -7796,7 +7796,7 @@
   "path": "2008-06/src/Client/App/include/v8world/Primitive.h"
  },
  "006d4780": {
-  "line": 153,
+  "line": 160,
   "path": "2008-06/src/Client/App/include/v8world/World.h"
  },
  "006fa3f0": {

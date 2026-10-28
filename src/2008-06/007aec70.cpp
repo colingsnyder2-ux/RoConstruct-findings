@@ -1,10 +1,10 @@
-// from server: 76% by EspClaude
+// from server: 100% by EspClaude
 // from server: 74% by EspClaude
 // from server: 72% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espclaude_976141cd3181d045.cpp
+// roc-lib: rbxgs-dll roc_espclaude_98050a82ffd411bb.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define NDEBUG 1
@@ -86,6 +86,8 @@ static __declspec(noinline) void halveImage_ubyte(GLint components, GLuint width
     /* handle case where there is only 1 column/row */
     if (width == 1 || height == 1) {
        assert( !(width == 1 && height == 1) ); /* can't be 1x1 */
+       halve1Dimage_ubyte(*(volatile GLint*)&components,width,height,*(const GLubyte* volatile*)&datain,*(GLubyte* volatile*)&dataout,
+			  *(volatile GLint*)&element_size,*(volatile GLint*)&ysize,*(volatile GLint*)&group_size);
        return;
     }
 
@@ -166,8 +168,7 @@ G3D::TextureRef TextureProxy::resolve(VisualEngine* engine) {
                 Ogre::LogManager::getSingleton().logMessage("RBX Texture " + ogreTexture->getName() + " overwritten");
             char name[1024];
             sprintf(name, "%g%g%gshadeTex", shadeColor.r, shadeColor.g, shadeColor.b);
-            Ogre::TexturePtr& shadeTex = ogreTexture;
-            shadeTex = Ogre::TextureManager::getSingleton().getByName(name);
+            ogreTexture = Ogre::TextureManager::getSingleton().getByName(name);
             if (ogreTexture.isNull()) {
                 static std::string sourceFilename = shadeTexture->filename;
                 static G3D::GImage sourceImage(sourceFilename, G3D::GImage::AUTODETECT);
@@ -176,8 +177,7 @@ G3D::TextureRef TextureProxy::resolve(VisualEngine* engine) {
                 G3D::Color3uint8 lookup[256];
                 for (int i = 0; i < 256; ++i) {
                     lookup[i].r = lookup[i].g = lookup[i].b = i;
-                    G3D::Color3uint8 packedShade(shadeColor);
-                    shadePixel(packedShade, lookup[i]);
+                    shadePixel(shadeColor, lookup[i]);
                 }
                 int count = image.getHeight() * image.getWidth();
                 for (int i = 0; i < count; ++i) {
@@ -210,11 +210,13 @@ G3D::TextureRef TextureProxy::resolve(VisualEngine* engine) {
                     finalImage.loadDynamicImage(&mipData[0], image.getWidth(), image.getHeight(), 1,
                                                  Ogre::PF_B8G8R8, false, 1, mipmaps);
                 } else {
-                    finalImage.loadDynamicImage(image.getData(), image.getWidth(), image.getHeight(), 1,
-                                                 Ogre::PF_B8G8R8, false, 1, 0);
+                    size_t h = image.getHeight();
+                    size_t w = image.getWidth();
+                    unsigned char* d = image.getData();
+                    finalImage.loadDynamicImage(d, w, h, 1, Ogre::PF_B8G8R8, false, 1, 0);
                 }
                 std::string textureName(name);
-                shadeTex = Ogre::TextureManager::getSingleton().create(textureName, shadeResourceGroup, false, 0, 0);
+                ogreTexture = Ogre::TextureManager::getSingleton().create(textureName, shadeResourceGroup, false, 0, 0);
                 ogreTexture->loadImage(finalImage);
                 root = 0;
                 loaded = true;

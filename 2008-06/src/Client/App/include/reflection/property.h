@@ -39,6 +39,7 @@ namespace RBX
 		public:
 			bool isPublic() const;
 			virtual bool isReadOnly() const = 0;
+			virtual bool isWriteOnly() const { return false; }
 			bool canStreamWrite() const
 			{
 				return bCanStreamWrite;
@@ -48,6 +49,8 @@ namespace RBX
 				return this == &other;
 			}
 			virtual bool equalValues(const DescribedBase*, const DescribedBase*) const = 0;
+			virtual void getValue(const DescribedBase*, Value&) const {}
+			virtual void setValue(DescribedBase*, const Value&) const {}
 			virtual bool hasStringValue() const = 0;
 			virtual std::string getStringValue(const DescribedBase*) const = 0;
 			virtual bool setStringValue(DescribedBase*, const std::string&) const = 0;

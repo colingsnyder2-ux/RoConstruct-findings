@@ -19,9 +19,9 @@ namespace RBX
 	#pragma warning (push)
 	#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
 	World::World() : 
+		throttle(100.0f),
 		contactManager(new ContactManager(this)),
 		jointStage(new JointStage(NULL, this)),
-		canThrottle(true),
 		inStepCode(false),
 		inJointNotification(false),
 		worldStepId(0),
@@ -402,7 +402,7 @@ namespace RBX
 			jointStage->stepWorld(worldStepId, numOfSteps, throttling);
 			inStepCode = false;
 
-			if (!World::disableEnvironmentalThrottle && canThrottle)
+			if (!World::disableEnvironmentalThrottle && throttle > 0.0f)
 				throttling = G3D::System::getTick() > (i + 1) * Constants::worldDt() + startTick;
 			else
 				throttling = false;

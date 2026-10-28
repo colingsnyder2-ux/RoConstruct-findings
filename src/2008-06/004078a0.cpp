@@ -1,8 +1,8 @@
-// from server: 83% by king_originala
+// from server: 95% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob1 /GS- /EHsc /MD /Oy
-// roc-lib: rbxgs-dll roc_espclaude_bcc3910ef0d8fe27.cpp
+// roc-lib: rbxgs-dll roc_sol28d_fa2a91c2afe4d09b.cpp
 
 // Candidate translation unit (score above; library headers required).
 #ifndef _CPPUNWIND
@@ -156,7 +156,7 @@ extern HRESULT __cdecl reportError(REFIID,const char*,HRESULT); //429330, caller
 extern HRESULT __cdecl reportException(REFIID,const std::exception&); //429360, caller cleans8
 extern HRESULT __cdecl createWorkspace(IUnknown**,void*); //406da0, caller cleans8
 static __forceinline CView* firstView(CDocument* d){POSITION pos=d->GetFirstViewPosition(); if(!pos) return 0; return d->GetNextView(pos);}
-static __forceinline HRESULT makeWorkspace(IUnknown*& w){IUnknown* c; HRESULT r=createWorkspace(&c,0); if(!r) w=c; return r;}
+static __forceinline bool makeWorkspace(IUnknown*& w,HRESULT& error){IUnknown* c; HRESULT r=createWorkspace(&c,0); if(r){error=reportError(IID_App,"Couldn't create workspace",r);return false;} w=c;return true;}
 class AppFacet {public:HRESULT __stdcall create(int,IUnknown**);};
 HRESULT __stdcall AppFacet::create(int windowType,IUnknown** out) {
  AFX_MANAGE_STATE(AfxGetAppModuleState());
@@ -168,8 +168,8 @@ HRESULT __stdcall AppFacet::create(int windowType,IUnknown** out) {
   IUnknown* workspace;
   switch(windowType) {
   case 0: {
-   HRESULT result=makeWorkspace(workspace);
-   if(result)return reportError(IID_App,"Couldn't create workspace",result);
+   HRESULT error;
+   if(!makeWorkspace(workspace,error))return error;
    break;
   }
   case 2: {

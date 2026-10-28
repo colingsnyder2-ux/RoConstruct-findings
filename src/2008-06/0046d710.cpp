@@ -1,3 +1,5 @@
+// from server: 100% by EspClaude
+// from server: 94% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
@@ -108,9 +110,10 @@ LDraw2RobloxMapRoot::LDraw2RobloxMapRoot(std::string filename):path(filename) {
             int found=0;
             color->findFirstChildByTag(tag_name);
             item=color->findFirstChildByTag(tag_ldraw_code);
-            int roblox=-1,ldraw=-1;
+            int ldraw=-1;
             if(item) { ++found; item->observedValue().getValue(text); ldraw=atoi(nativeCString(text)); }
             item=color->findFirstChildByTag(tag_roblox_code);
+            int roblox=-1;
             if(item) { ++found; item->observedValue().getValue(text); roblox=atoi(nativeCString(text)); }
             if(found==2) {
                 LDraw2RobloxColorMap* entry=new LDraw2RobloxColorMap(ldraw,roblox);

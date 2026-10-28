@@ -1,8 +1,8 @@
-// from server: 76% by colin
+// from server: 77% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_unit_7a0babd7e48c6beb.cpp
+// roc-lib: rbxgs-dll roc_espclaude_487da884baa21855.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <G3D/ReferenceCount.h>
@@ -227,7 +227,7 @@ PartMaterialRef Part::getMaterial() {
                             if ((shirtPart && shirtStatus == 0) || (pantsPart && pantsStatus == 0)) {
                                 if (material != emptyMaterial)
                                     material = emptyMaterial.getPointer();
-                                return material.getPointer();
+                                return material;
                             }
                         }
                     }
@@ -257,4 +257,5 @@ PartMaterialRef Part::getMaterial() {
     return material;
 }
 }}
+
 

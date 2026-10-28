@@ -4684,5 +4684,143 @@
     "unit": "RBX::Soundscape::SoundService",
     "updated": 1793212321.5631838,
     "user": "coldek"
+  },
+  {
+    "created": 1793220316.2959535,
+    "id": "29c85cb76c6d49faa66d060a542d4de5",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/include/v8world/World.h": [
+        [
+          "\tclass ClumpStage;\n\tclass CollisionStage;\n",
+          "\tclass ClumpStage;\n\tclass CollisionStage;\n\tclass AutoA;\n\tclass AutoB;\n"
+        ],
+        [
+          "\tclass World : public Notifier<World, AutoJoin>, public Notifier<World, AutoDestroy>\n",
+          "\tclass World : public Notifier<World, AutoJoin>, public Notifier<World, AutoDestroy>,\n\t\t\t\t  public Notifier<World, AutoA>, public Notifier<World, AutoB>\n"
+        ],
+        [
+          "\tprivate:\n\t\tContactManager* contactManager;\n\t\tJointStage* jointStage;\n\t\tG3D::Array<Primitive*> touch;\n\t\tG3D::Array<Primitive*> touchOther;\n\t\tbool canThrottle;\n\t\tbool inStepCode;\n\t\tbool inJointNotification;\n\t\tint worldStepId;\n\t\tIndexArray<Primitive, &Primitive::worldIndexFunc> primitives;\n\t\tstd::set<Joint*> breakableJoints;\n\t\tint numJoints;\n\t\tint numContacts;\n\t\tint numLinkCalls;\n\t\tG3D::Array<Primitive*> tempPrimitives;\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profilingWorldStep;\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profilingUiStep;\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profilingBroadphase;\n",
+          "\tprivate:\n\t\tfloat throttle;\n\t\tContactManager* contactManager;\n\t\tJointStage* jointStage;\n\t\tG3D::Array<Primitive*> touch;\n\t\tG3D::Array<Primitive*> touchOther;\n\t\tbool inStepCode;\n\t\tbool inJointNotification;\n\t\tint worldStepId;\n\t\tIndexArray<Primitive, &Primitive::worldIndexFunc> primitives;\n\t\tG3D::Array<Primitive*> primitives2;\n\t\tstd::set<Joint*> breakableJoints;\n\t\tint numJoints;\n\t\tint numContacts;\n\t\tint numLinkCalls;\n\t\tG3D::Array<Primitive*> tempPrimitives;\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profilingWorldStep;\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profilingPreStep;\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profilingAssemblyStep;\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profilingUiStep;\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profilingPreStep8Inner;\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profilingBroadphase;\n"
+        ],
+        [
+          "\t\tvoid setCanThrottle(bool value)\n\t\t{\n\t\t\tcanThrottle = value;\n\t\t}\n",
+          "\t\tvoid setCanThrottle(bool value)\n\t\t{\n\t\t\tthrottle = value ? 100.0f : 0.0f;\n\t\t}\n"
+        ]
+      ],
+      "App/v8world/World.cpp": [
+        [
+          "\t\tcontactManager(new ContactManager(this)),\n\t\tjointStage(new JointStage(NULL, this)),\n\t\tcanThrottle(true),\n",
+          "\t\tthrottle(100.0f),\n\t\tcontactManager(new ContactManager(this)),\n\t\tjointStage(new JointStage(NULL, this)),\n"
+        ],
+        [
+          "if (!World::disableEnvironmentalThrottle && canThrottle)",
+          "if (!World::disableEnvironmentalThrottle && throttle > 0.0f)"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "e2c192a093935215b81035abd494d7aca1b0a28d82705ec1343f857058ac384e",
+      "credits": 12,
+      "distinct_after": 9918,
+      "distinct_before": 9906,
+      "gains": [
+        "00574fa0",
+        "00574fc0",
+        "00591580",
+        "005e9150",
+        "005e9160",
+        "005e9260",
+        "005e9280",
+        "005e93e0",
+        "005e98c0",
+        "005ea880",
+        "0060e540",
+        "0060e630",
+        "00615d90",
+        "0066d0d0",
+        "007110c0"
+      ],
+      "input_hash": "198b38c1bcfd74a2ed39cc973d9ed56acc5bb94cde52d4b251455e1145968cfd",
+      "losses": [
+        "005e6110",
+        "006d4780"
+      ],
+      "new_distinct": [
+        "00591580",
+        "005e9150",
+        "005e9160",
+        "005e9260",
+        "005e9280",
+        "005e93e0",
+        "005e98c0",
+        "005ea880",
+        "0060e540",
+        "0060e630",
+        "00615d90",
+        "0066d0d0"
+      ],
+      "overlay_hash": "90d2a763f738ea2ac2f25ad29c9ff1e2ab70afc54d12124ec8380c9eaee148bc",
+      "owned_after": 3252,
+      "owned_before": 3239,
+      "rebased": false,
+      "submitted_revision": "e2c192a093935215b81035abd494d7aca1b0a28d82705ec1343f857058ac384e"
+    },
+    "state": "accepted",
+    "unit": "RBX::World, RBX::RootInstance",
+    "updated": 1793221464.8621342,
+    "user": "coldek"
+  },
+  {
+    "created": 1793220987.3365252,
+    "id": "9ab6b2bc8b6a447981ac7962117d2e09",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/include/reflection/property.h": [
+        [
+          "\t\tpublic:\n\t\t\tbool isPublic() const;\n\t\t\tvirtual bool isReadOnly() const = 0;\n\t\t\tbool canStreamWrite() const\n\t\t\t{\n\t\t\t\treturn bCanStreamWrite;\n\t\t\t}\n\t\t\tbool operator==(const PropertyDescriptor& other) const\n\t\t\t{\n\t\t\t\treturn this == &other;\n\t\t\t}\n\t\t\tvirtual bool equalValues(const DescribedBase*, const DescribedBase*) const = 0;\n\t\t\tvirtual bool hasStringValue() const = 0;\n\t\t\tvirtual std::string getStringValue(const DescribedBase*) const = 0;\n\t\t\tvirtual bool setStringValue(DescribedBase*, const std::string&) const = 0;\n\t\t\tXmlElement* write(const DescribedBase* instance, bool ignoreWriteProtection) const;\n\t\t\tvirtual void read(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const;",
+          "\t\tpublic:\n\t\t\tbool isPublic() const;\n\t\t\tvirtual bool isReadOnly() const = 0;\n\t\t\tvirtual bool isWriteOnly() const { return false; }\n\t\t\tbool canStreamWrite() const\n\t\t\t{\n\t\t\t\treturn bCanStreamWrite;\n\t\t\t}\n\t\t\tbool operator==(const PropertyDescriptor& other) const\n\t\t\t{\n\t\t\t\treturn this == &other;\n\t\t\t}\n\t\t\tvirtual bool equalValues(const DescribedBase*, const DescribedBase*) const = 0;\n\t\t\tvirtual void getValue(const DescribedBase*, Value&) const {}\n\t\t\tvirtual void setValue(DescribedBase*, const Value&) const {}\n\t\t\tvirtual bool hasStringValue() const = 0;\n\t\t\tvirtual std::string getStringValue(const DescribedBase*) const = 0;\n\t\t\tvirtual bool setStringValue(DescribedBase*, const std::string&) const = 0;\n\t\t\tXmlElement* write(const DescribedBase* instance, bool ignoreWriteProtection) const;\n\t\t\tvirtual void read(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const;"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "0df05254ea16f7efa02bc25b59813821839fb9ab47b85d46761de802bc4aab3e",
+      "credits": 7,
+      "distinct_after": 9925,
+      "distinct_before": 9918,
+      "gains": [
+        "00449410",
+        "004a6de0",
+        "004a83e0",
+        "004a8b90",
+        "00559170",
+        "0056be00",
+        "0056bee0"
+      ],
+      "input_hash": "dc3dbc62a9fefe8326944be35558e80105a3b4d0a504018841db888458c05d27",
+      "losses": [],
+      "new_distinct": [
+        "00449410",
+        "004a6de0",
+        "004a83e0",
+        "004a8b90",
+        "00559170",
+        "0056be00",
+        "0056bee0"
+      ],
+      "overlay_hash": "7dc4abbc7008575087d8b52e4cbdeb15936382d9e1772a877c19426dedb7b546",
+      "owned_after": 3259,
+      "owned_before": 3252,
+      "rebased": true,
+      "submitted_revision": "e2c192a093935215b81035abd494d7aca1b0a28d82705ec1343f857058ac384e"
+    },
+    "state": "accepted",
+    "unit": "RBX::PartInstance",
+    "updated": 1793221852.3103812,
+    "user": "coldek"
   }
 ]

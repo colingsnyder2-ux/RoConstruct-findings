@@ -1555,6 +1555,52 @@
         ]
       },
       "timestamp": 1793212321.4077632
+    },
+    {
+      "job": "29c85cb76c6d49faa66d060a542d4de5",
+      "patches": {
+        "App/include/v8world/World.h": [
+          [
+            "\tclass ClumpStage;\n\tclass CollisionStage;\n",
+            "\tclass ClumpStage;\n\tclass CollisionStage;\n\tclass AutoA;\n\tclass AutoB;\n"
+          ],
+          [
+            "\tclass World : public Notifier<World, AutoJoin>, public Notifier<World, AutoDestroy>\n",
+            "\tclass World : public Notifier<World, AutoJoin>, public Notifier<World, AutoDestroy>,\n\t\t\t\t  public Notifier<World, AutoA>, public Notifier<World, AutoB>\n"
+          ],
+          [
+            "\tprivate:\n\t\tContactManager* contactManager;\n\t\tJointStage* jointStage;\n\t\tG3D::Array<Primitive*> touch;\n\t\tG3D::Array<Primitive*> touchOther;\n\t\tbool canThrottle;\n\t\tbool inStepCode;\n\t\tbool inJointNotification;\n\t\tint worldStepId;\n\t\tIndexArray<Primitive, &Primitive::worldIndexFunc> primitives;\n\t\tstd::set<Joint*> breakableJoints;\n\t\tint numJoints;\n\t\tint numContacts;\n\t\tint numLinkCalls;\n\t\tG3D::Array<Primitive*> tempPrimitives;\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profilingWorldStep;\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profilingUiStep;\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profilingBroadphase;\n",
+            "\tprivate:\n\t\tfloat throttle;\n\t\tContactManager* contactManager;\n\t\tJointStage* jointStage;\n\t\tG3D::Array<Primitive*> touch;\n\t\tG3D::Array<Primitive*> touchOther;\n\t\tbool inStepCode;\n\t\tbool inJointNotification;\n\t\tint worldStepId;\n\t\tIndexArray<Primitive, &Primitive::worldIndexFunc> primitives;\n\t\tG3D::Array<Primitive*> primitives2;\n\t\tstd::set<Joint*> breakableJoints;\n\t\tint numJoints;\n\t\tint numContacts;\n\t\tint numLinkCalls;\n\t\tG3D::Array<Primitive*> tempPrimitives;\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profilingWorldStep;\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profilingPreStep;\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profilingAssemblyStep;\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profilingUiStep;\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profilingPreStep8Inner;\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profilingBroadphase;\n"
+          ],
+          [
+            "\t\tvoid setCanThrottle(bool value)\n\t\t{\n\t\t\tcanThrottle = value;\n\t\t}\n",
+            "\t\tvoid setCanThrottle(bool value)\n\t\t{\n\t\t\tthrottle = value ? 100.0f : 0.0f;\n\t\t}\n"
+          ]
+        ],
+        "App/v8world/World.cpp": [
+          [
+            "\t\tcontactManager(new ContactManager(this)),\n\t\tjointStage(new JointStage(NULL, this)),\n\t\tcanThrottle(true),\n",
+            "\t\tthrottle(100.0f),\n\t\tcontactManager(new ContactManager(this)),\n\t\tjointStage(new JointStage(NULL, this)),\n"
+          ],
+          [
+            "if (!World::disableEnvironmentalThrottle && canThrottle)",
+            "if (!World::disableEnvironmentalThrottle && throttle > 0.0f)"
+          ]
+        ]
+      },
+      "timestamp": 1793221464.7447674
+    },
+    {
+      "job": "9ab6b2bc8b6a447981ac7962117d2e09",
+      "patches": {
+        "App/include/reflection/property.h": [
+          [
+            "\t\tpublic:\n\t\t\tbool isPublic() const;\n\t\t\tvirtual bool isReadOnly() const = 0;\n\t\t\tbool canStreamWrite() const\n\t\t\t{\n\t\t\t\treturn bCanStreamWrite;\n\t\t\t}\n\t\t\tbool operator==(const PropertyDescriptor& other) const\n\t\t\t{\n\t\t\t\treturn this == &other;\n\t\t\t}\n\t\t\tvirtual bool equalValues(const DescribedBase*, const DescribedBase*) const = 0;\n\t\t\tvirtual bool hasStringValue() const = 0;\n\t\t\tvirtual std::string getStringValue(const DescribedBase*) const = 0;\n\t\t\tvirtual bool setStringValue(DescribedBase*, const std::string&) const = 0;\n\t\t\tXmlElement* write(const DescribedBase* instance, bool ignoreWriteProtection) const;\n\t\t\tvirtual void read(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const;",
+            "\t\tpublic:\n\t\t\tbool isPublic() const;\n\t\t\tvirtual bool isReadOnly() const = 0;\n\t\t\tvirtual bool isWriteOnly() const { return false; }\n\t\t\tbool canStreamWrite() const\n\t\t\t{\n\t\t\t\treturn bCanStreamWrite;\n\t\t\t}\n\t\t\tbool operator==(const PropertyDescriptor& other) const\n\t\t\t{\n\t\t\t\treturn this == &other;\n\t\t\t}\n\t\t\tvirtual bool equalValues(const DescribedBase*, const DescribedBase*) const = 0;\n\t\t\tvirtual void getValue(const DescribedBase*, Value&) const {}\n\t\t\tvirtual void setValue(DescribedBase*, const Value&) const {}\n\t\t\tvirtual bool hasStringValue() const = 0;\n\t\t\tvirtual std::string getStringValue(const DescribedBase*) const = 0;\n\t\t\tvirtual bool setStringValue(DescribedBase*, const std::string&) const = 0;\n\t\t\tXmlElement* write(const DescribedBase* instance, bool ignoreWriteProtection) const;\n\t\t\tvirtual void read(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const;"
+          ]
+        ]
+      },
+      "timestamp": 1793221852.1608977
     }
   ],
   "initial_patches": {}

@@ -21,6 +21,8 @@ namespace RBX
 	class SimJobStage;
 	class ClumpStage;
 	class CollisionStage;
+	class AutoA;
+	class AutoB;
 
 	// is this the right file for AutoJoin and AutoDestroy?
 	struct AutoJoin
@@ -35,25 +37,30 @@ namespace RBX
 		AutoDestroy(Joint* j) : joint(j) {}
 	};
 
-	class World : public Notifier<World, AutoJoin>, public Notifier<World, AutoDestroy>
+	class World : public Notifier<World, AutoJoin>, public Notifier<World, AutoDestroy>,
+				  public Notifier<World, AutoA>, public Notifier<World, AutoB>
 	{
 	private:
+		float throttle;
 		ContactManager* contactManager;
 		JointStage* jointStage;
 		G3D::Array<Primitive*> touch;
 		G3D::Array<Primitive*> touchOther;
-		bool canThrottle;
 		bool inStepCode;
 		bool inJointNotification;
 		int worldStepId;
 		IndexArray<Primitive, &Primitive::worldIndexFunc> primitives;
+		G3D::Array<Primitive*> primitives2;
 		std::set<Joint*> breakableJoints;
 		int numJoints;
 		int numContacts;
 		int numLinkCalls;
 		G3D::Array<Primitive*> tempPrimitives;
 		boost::scoped_ptr<Profiling::CodeProfiler> profilingWorldStep;
+		boost::scoped_ptr<Profiling::CodeProfiler> profilingPreStep;
+		boost::scoped_ptr<Profiling::CodeProfiler> profilingAssemblyStep;
 		boost::scoped_ptr<Profiling::CodeProfiler> profilingUiStep;
+		boost::scoped_ptr<Profiling::CodeProfiler> profilingPreStep8Inner;
 		boost::scoped_ptr<Profiling::CodeProfiler> profilingBroadphase;
 	public:
 		static bool disableEnvironmentalThrottle;
@@ -84,7 +91,7 @@ namespace RBX
 		void addedBodyForce();
 		void setCanThrottle(bool value)
 		{
-			canThrottle = value;
+			throttle = value ? 100.0f : 0.0f;
 		}
 		ContactManager& getContactManager()
 		{
