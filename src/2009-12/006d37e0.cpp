@@ -1,4 +1,4 @@
-// from server: 27% by atomic.potato
+// from server: 14% by atomic.potato
 extern "C" {
     void __stdcall G1_func_0098b6e8();
     void __stdcall G1_func_0098b6e4();

@@ -15,6 +15,8 @@ namespace RBX
 {
 	const char* category_Part = "Part";
 
+	bool PartInstance::showContactPoints = false;
+
 	static Reflection::BoundFuncDesc<PartInstance, void(void), 0> desc_unjoin(&PartInstance::destroyJoints, "BreakJoints", Reflection::FunctionDescriptor::AnyCaller);
 	static Reflection::BoundFuncDesc<PartInstance, void(void), 0> desc_join(&PartInstance::join, "MakeJoints", Reflection::FunctionDescriptor::AnyCaller);
 	static Reflection::BoundFuncDesc<PartInstance, float(void), 0> desc_getMass(&PartInstance::getMass, "GetMass", Reflection::FunctionDescriptor::AnyCaller);
@@ -320,6 +322,7 @@ namespace RBX
 	{
 		return partType == Part::CYLINDER_PART ||
 			   SurfacesNeedAdorn || 
+			   showContactPoints ||
 			   highlightSleepParts || 
 			   highlightAwakeParts || 
 			   showPartCoord || 

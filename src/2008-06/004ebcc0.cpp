@@ -1,4 +1,3 @@
-// from server: 96% by coldek
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 // roc 2008-06 004ebcc0  unit: RBX::ViewNew::Part  size: 425 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004ebcc0

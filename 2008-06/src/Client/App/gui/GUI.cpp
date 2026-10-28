@@ -98,7 +98,6 @@ namespace RBX
 			loseFocus();
 		}
 
-		RBXASSERT(!focus);
 		return processNonFocus(event);
 	}
 

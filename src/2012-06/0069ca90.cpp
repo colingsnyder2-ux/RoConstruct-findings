@@ -1,4 +1,4 @@
-// from server: 17% by 41k
+// from server: 0% by 41k
 struct W4FriendEventType {
     enum Enum {
         kEvent1 = 1,

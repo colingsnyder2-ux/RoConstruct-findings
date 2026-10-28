@@ -1,4 +1,4 @@
-// from server: 24% by colin
+// from server: 0% by colin
 struct S_func_00552980 {
     char pad0[0x50];
     unsigned int m_flags;

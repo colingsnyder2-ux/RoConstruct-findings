@@ -1,4 +1,3 @@
-// from server: 97% by coldek
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 template<class T> inline T roc_val(T v) { return v; }

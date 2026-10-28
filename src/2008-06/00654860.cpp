@@ -1,8 +1,8 @@
-// from server: 96% by EspClaude
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espclaude_4dca7e948f020301.cpp
+// roc-lib: rbxgs-dll roc_espclaude_931b70be6c9e7dec.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <string>
@@ -31,11 +31,13 @@ public:
   const std::string& getName() const { return name; }
   Instance* findFirstChildByName(const std::string&) const;
 };
-class IntValue : public Instance { public: static Reflection::TypedPropertyDescriptor<int> desc_Value; };
+extern char* sIntValue;
+template<typename ValueType, const char* const* ClassName> class Value : public Instance { public: static Reflection::TypedPropertyDescriptor<ValueType> desc_Value; };
+typedef Value<int, &sIntValue> IntValue;
 class Team : public Instance {};
 namespace Network {
 class Player : public Instance {};
-class Players : public Instance { public: boost::shared_ptr<const Instances> getPlayers(); };
+class Players : public Instance { public: char ppad[0x198-0x128]; boost::shared_ptr<Instances> players; __declspec(noinline) boost::shared_ptr<const Instances> getPlayers() { return players; } };
 }
 class Teams : public Instance { public: boost::shared_ptr<const Instances> getTeams(); Team* getTeamFromPlayer(Network::Player*); };
 class ServiceProvider { public: template<class T> static T* find(const Instance*); };
@@ -94,3 +96,4 @@ void LeaderboardData::CompileData()
   }
 }
 }
+

@@ -1,4 +1,4 @@
-// from server: 37% by TrollStein
+// from server: 0% by TrollStein
 struct ScoreHud {
     char pad0[4];
     void* begin;

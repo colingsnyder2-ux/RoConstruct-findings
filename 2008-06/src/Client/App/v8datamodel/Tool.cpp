@@ -52,7 +52,7 @@ namespace RBX
 		{
 			if (attrib->getValue(name))
 			{
-				if (name->toString() == "BackendToolState" || name->toString() == "ActivationState")
+				if (name->name == "BackendToolState" || name->name == "ActivationState")
 					return;
 			}
 		}

@@ -1,4 +1,4 @@
-// from server: 80% by atomic.potato
+// from server: 100% by atomic.potato
 struct CWrapperView
 {
     void* value;

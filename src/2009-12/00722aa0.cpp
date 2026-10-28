@@ -1,4 +1,4 @@
-// from server: 13% by atomic.potato
+// from server: 25% by atomic.potato
 struct S {
     char pad0[0x3c];
     int flags;

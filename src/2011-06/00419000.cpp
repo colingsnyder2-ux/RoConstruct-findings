@@ -1,4 +1,4 @@
-// from server: 34% by atomic.potato
+// from server: 0% by atomic.potato
 extern "C" void* __cdecl operator_new(unsigned int size);
 extern "C" void __cdecl sub_418BD0(void* dst, void* src);
 

@@ -1,3 +1,4 @@
+#pragma float_control(precise,off)
 #include "v8world/MotorJoint.h"
 #include "v8world/World.h"
 #include "v8world/Primitive.h"
@@ -104,16 +105,13 @@ namespace RBX
 
 	void MotorJoint::stepUi(int uiStepId)
 	{
-		if (fabs(desiredAngle - currentAngle) < fabs(maxVelocity))
-		{
+		double speed = fabs(maxVelocity);
+		double delta = static_cast<double>(desiredAngle) - currentAngle;
+		if (fabs(delta) < speed)
 			setCurrentAngle(desiredAngle);
-		}
+		else if (delta > 0.0)
+			setCurrentAngle(static_cast<float>(currentAngle + speed));
 		else
-		{
-			if (fabs(maxVelocity) > 0.0f)
-				setCurrentAngle(currentAngle + fabs(maxVelocity));
-			else
-				setCurrentAngle(currentAngle - fabs(maxVelocity));
-		}
+			setCurrentAngle(static_cast<float>(currentAngle - speed));
 	}
 }

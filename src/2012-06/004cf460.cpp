@@ -1,4 +1,4 @@
-// from server: 41% by atomic.potato
+// from server: 0% by atomic.potato
 extern "C" void* __stdcall alloc_004cf460(unsigned int, const char*, int, const char*);
 extern "C" void* __stdcall str_ctor_004cf460(void*, const char*);
 extern "C" void __stdcall str_dtor_004cf460(void*);

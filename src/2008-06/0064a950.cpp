@@ -1,4 +1,3 @@
-// from server: 81% by coldek
 // from server: 75% by colin
 // roc-lang: cpp
 // roc-cl: 21022

@@ -1,4 +1,4 @@
-// from server: 22% by atomic.potato
+// from server: 0% by atomic.potato
 struct ErrComp
 {
     char pad0[0xc];

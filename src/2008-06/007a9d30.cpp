@@ -2,7 +2,7 @@
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espeon_lightcenterclamp7f3dfd130d0a4619.cpp
+// roc-lib: rbxgs-dll roc_espclaude_7996cb7d98b44686.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define _CPPUNWIND 1
@@ -27,7 +27,7 @@ struct NativeLightingScene {
  char prefix[0x26c];
  BoundsOwner* owner;
  char toShadows[0x2f4-0x270];
- bool shadows;
+ unsigned char shadows;
  char toLighting[0x30c-0x2f5];
  G3D::LightingRef lighting;
  char toTint[0x338-0x310];
@@ -46,14 +46,17 @@ typedef char checkSceneLighting[offsetof(NativeLightingScene,lighting)==0x30c?1:
 typedef char checkSceneTint[offsetof(NativeLightingScene,mainTint)==0x338?1:-1];
 typedef char checkLightSize[sizeof(G3D::GLight)==80?1:-1];
 
+static inline float maxf(float a,float b){return a>b?a:b;}
 void NativeLightingScene::apply(RenderContext* context, bool unused) {
  float radius=1000.0f;
  Ogre::Vector3 center(0,0,0);
  Ogre::SceneManager* manager=context->manager;
  manager->setAmbientLight(Ogre::ColourValue(ambient.x,ambient.y,ambient.z));
- float fillAverage=(fillTint.z+fillTint.y+fillTint.x)/3.0f;
+ const G3D::Vector3& fillSum=fillTint;
+ float fillAverage=(fillSum.z+fillSum.y+fillSum.x)*0.3333f;
  G3D::Color3 bottom(fillTint.x-fillAverage,fillTint.y-fillAverage,fillTint.z-fillAverage);
- float mainAverage=(mainTint.z+mainTint.y+mainTint.x)/3.0f;
+ const G3D::Vector3& mainSum=mainTint;
+ float mainAverage=(mainSum.z+mainSum.y+mainSum.x)*0.3333f;
  G3D::Color3 top(mainTint.x-mainAverage,mainTint.y-mainAverage,mainTint.z-mainAverage);
  float intensity=brightness;
  if(intensity>5.0f)intensity=5.0f;
@@ -69,24 +72,26 @@ void NativeLightingScene::apply(RenderContext* context, bool unused) {
    else Ogre::LogManager::getSingleton().logMessage(std::string("RbxGfx : FAILED to create light")+name);
   } else light=manager->getLight(name);
   light->setCastShadows(shadows);
-  if(owner && !owner->bounds.isNull()) {
-   Ogre::Vector3 size=owner->bounds.getSize();
-   radius=std::max(std::max(size.x,size.y),size.z)*0.8585f*1.3f;
-   const Ogre::Vector3& boundsCenter=owner->bounds.getCenter();
-   center.x=boundsCenter.x;
-   center.z=boundsCenter.z;
-   center.y=owner->bounds.getMinimum().y;
+  if(owner) {
+   const Ogre::AxisAlignedBox& box=owner->bounds;
+   if(!box.isNull()) {
+    Ogre::Vector3 size=box.getSize();
+    radius=maxf(size.z,maxf(size.x,size.y))*0.8585f;
+    radius*=1.3f;
+    center=box.getCenter();
+    center.y=box.getMinimum().y;
+   }
   }
   light->setType(Ogre::Light::LT_POINT);
   G3D::Color3 diffuse;
-  { G3D::Color3 mainFactor(mainDiffuse); diffuse=source.color*intensity*mainFactor; }
+  { G3D::Color3 mainFactor(mainDiffuse); float s=intensity; diffuse=source.color*s*mainFactor; }
   diffuse+=top*diffuse.length();
   light->setDiffuseColour(diffuse.r,diffuse.g,diffuse.b);
   light->setPosition(source.position.x*radius+center.x,source.position.y*radius+center.y,source.position.z*radius+center.z);
   G3D::Color3 specular=source.color;
   if(mainSpecular==G3D::Color3()) {
-   float peak=std::max(std::max(specular.r,specular.g),specular.b);
-   if(peak>0.5f) specular*=0.5f/peak;
+   float peak=std::max(specular.r,std::max(specular.g,specular.b));
+   if(peak<0.5f) specular*=0.5f/peak;
   } else { G3D::Color3 specularFactor(mainSpecular); specular=specular*specularFactor; }
   light->setSpecularColour(specular.r,specular.g,specular.b);
  }
@@ -122,3 +127,4 @@ void NativeLightingScene::apply(RenderContext* context, bool unused) {
  G3D::Color3 average=(lighting->ambientTop+lighting->ambientBottom)/2.0f;
  if(lighting->shadowedLightArray.size()>0)G3D::Vector3 direction=lighting->shadowedLightArray[0].position.xyz();
 }
+

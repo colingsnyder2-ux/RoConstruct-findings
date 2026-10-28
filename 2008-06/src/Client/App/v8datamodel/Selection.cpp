@@ -120,7 +120,7 @@ namespace RBX
 	{
 		boost::shared_ptr<Instance> inst = shared_from(instance);
 		
-		while (!selection->empty())
+		while (selection->size() > 0)
 		{
 			boost::shared_ptr<Instance> item = selection->back();
 

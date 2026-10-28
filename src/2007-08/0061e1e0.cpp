@@ -1,4 +1,4 @@
-// from server: 44% by colin
+// from server: 0% by colin
 struct ScoreHud
 {
     char pad0[0x10];

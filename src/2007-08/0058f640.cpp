@@ -1,4 +1,4 @@
-// from server: 52% by colin
+// from server: 0% by colin
 struct S {
     void* field0;
     S* construct(void* arg1, void* arg2);

@@ -39,7 +39,7 @@ namespace RBX
 		{
 			if (attrib->getValue(name))
 			{
-				if (name->toString() == "BackendAccoutrementState")
+				if (name->name == "BackendAccoutrementState")
 					return;
 			}
 		}

@@ -1,11 +1,10 @@
-// from server: 95% by coldek
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_claudeM_69f58ca87aea7988.cpp
+// roc-lib: rbxgs-dll roc_espclaude_ebac74e3ccc3e741.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/Extents.h"
 #include "util/Name.h"
 #include <string>
 #include <vector>
@@ -14,7 +13,16 @@
 #include <G3D/Vector3.h>
 #include <G3D/Rect2D.h>
 
-template<class T> inline T roc_val(T v) { return v; }
+namespace RBX {
+class Extents {
+    G3D::Vector3 low;
+    G3D::Vector3 high;
+public:
+    Extents() : low(G3D::Vector3::inf()), high(-G3D::Vector3::inf()) {}
+    
+    __declspec(noalias) void unionWith(const Extents& other);
+};
+}
 namespace RBX {
 
 class IDataState { public: virtual void setDirty(bool) = 0; };
@@ -43,12 +51,13 @@ public:
     virtual void v20();
     virtual Extents getExtents() const;
 };
-class Selection {
+template<class Class>
+class FilteredSelection {
 public:
     char pad[0x13c];
-    std::vector<PVInstance*> selection;
-    size_t size() const { return selection.size(); }
-    PVInstance* operator[](size_t i) const { return selection[i]; }
+    std::vector<Class*> filteredSelection;
+    const std::vector<Class*>& items() const { return filteredSelection; }
+    size_t size() const { return filteredSelection.size(); }
 };
 class Camera {
 public:
@@ -66,6 +75,7 @@ public:
     char pad2[0x2d4 - 0x28c];
     G3D::Rect2D viewPort;
     virtual Camera* getCamera() const;
+    const G3D::Rect2D& getViewPort() { return viewPort; }
 };
 void trackVerb(const char* name, Workspace* workspace);
 
@@ -77,19 +87,20 @@ class ServiceClient
 public:
     ServiceClient(Instance* context) : context(context) {}
     Class* operator->() { return createService(true); }
-    Class* createService(bool create);
+    __declspec(noalias) Class* createService(bool create);
 };
 
 class Verb {
 public:
     virtual ~Verb();
-    const Name* name;
-    const Name& getName() const { return *name; }
+    const Name& name;
+    const Name& getName() const { return name; }
 };
 class CameraVerb : public Verb {
 public:
     void* pad;
     Workspace* workspace;
+    Workspace* getWorkspace()  const { return workspace; }
 };
 class CameraZoomExtentsCommand : public CameraVerb {
 public:
@@ -98,33 +109,28 @@ public:
 
 void CameraZoomExtentsCommand::doIt(IDataState* dataState)
 {
-    ServiceClient<Selection> selection(workspace);
+    ServiceClient<FilteredSelection<PVInstance> > selection(workspace);
     Extents extents;
 
     if (selection->size() >= 1)
     {
-        Selection* s = selection.operator->();
-        const std::vector<PVInstance*>& selected=s->selection;
-        extents = selected[0]->getExtents();
-        size_t i = 1;
-        if (i < selected.size())
-            do
-            {
-                extents.unionWith(selected[i]->getExtents());
-                ++i;
-            } while (i < selected.size());
+        const std::vector<PVInstance*>& items = selection->items();
+        extents = items[0]->getExtents();
+        for (size_t i = 1; i < items.size(); ++i)
+            extents.unionWith(items[i]->getExtents());
 
         workspace->getCamera()->setCameraType(0);
-        workspace->getCamera()->zoomExtents(extents, roc_val(workspace)->viewPort, 0);
+        workspace->getCamera()->zoomExtents(extents, workspace->getViewPort(), 0);
         findServiceProvider(workspace)->playSound(11);
         dataState->setDirty(true);
         trackVerb(getName().c_str(), workspace);
         dataState->setDirty(true);
+        return;
     }
     else
     {
         G3D::Vector3::zero();
-        workspace->getCamera()->zoomExtents(roc_val(workspace)->viewPort);
+        workspace->getCamera()->zoomExtents(workspace->getViewPort());
         findServiceProvider(workspace)->playSound(11);
         dataState->setDirty(true);
     }

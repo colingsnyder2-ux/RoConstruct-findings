@@ -1,4 +1,4 @@
-// from server: 52% by atomic.potato
+// from server: 0% by atomic.potato
 struct PyramidPoly {
     void* field0;
     PyramidPoly(int);

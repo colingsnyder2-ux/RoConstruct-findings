@@ -1,4 +1,4 @@
-// from server: 44% by colin
+// from server: 0% by colin
 extern "C" void* __cdecl func_00718a38(unsigned int size);
 
 struct S {

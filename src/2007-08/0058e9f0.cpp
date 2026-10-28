@@ -1,4 +1,4 @@
-// from server: 52% by colin
+// from server: 0% by colin
 struct Creator {
     void* ptr;
     Creator(int arg0, int arg1);

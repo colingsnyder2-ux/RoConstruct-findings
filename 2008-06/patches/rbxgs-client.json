@@ -341,6 +341,10 @@
   [
    "#include \"v8datamodel/JointInstance.h\"\n",
    "#pragma float_control(precise, off)\n#include \"v8datamodel/JointInstance.h\"\n"
+  ],
+  [
+   "\tvoid JointInstance::render3dAdorn(Adorn* adorn)\n\t{\n\t\tRBXASSERT(shouldRender3dAdorn());\n\n\t\tif (Joint::isAssemblyJoint(joint))\n\t\t{\n\t\t\tG3D::Color3 color3;\n\n\t\t\tPrimitive* prim0 = joint->getPrimitive(0);\n\t\t\tPrimitive* prim1 = joint->getPrimitive(1);\n\n\t\t\tG3D::Vector3 vec0 = prim0\n\t\t\t\t? prim0->getCoordinateFrame().translation\n\t\t\t\t: G3D::Vector3::zero();\n\n\t\t\tG3D::Vector3 vec1 = prim1\n\t\t\t\t? prim1->getCoordinateFrame().translation\n\t\t\t\t: G3D::Vector3::zero();\n\n\t\t\tif (joint->getActive())\n\t\t\t\tcolor3 = G3D::Color3::green();\n\t\t\telse\n\t\t\t\tcolor3 = G3D::Color3::red();\n\n\t\t\tadorn->setObjectToWorldMatrix(G3D::CoordinateFrame());\n\n\t\t\tG3D::Color4 color4(color3);\n\t\t\tadorn->lineSegment(\n\t\t\t\tG3D::LineSegment::fromTwoPoints(vec0, vec1),\n\t\t\t\tcolor4,\n\t\t\t\t20.0);\n\t\t}\n\t}",
+   "\tvoid JointInstance::render3dAdorn(Adorn* adorn)\n\t{\n\n\t\tif (Joint::getJointType(joint) >= Joint::ANCHOR_JOINT)\n\t\t{\n\t\t\tG3D::Color3 color3;\n\n\t\t\tPrimitive* prim0 = getPart0() ? getPart0()->getPrimitive() : NULL;\n\t\t\tPrimitive* prim1 = getPart1() ? getPart1()->getPrimitive() : NULL;\n\n\t\t\tG3D::Vector3 vec0 = prim0\n\t\t\t\t? prim0->getCoordinateFrame().translation\n\t\t\t\t: G3D::Vector3::zero();\n\n\t\t\tG3D::Vector3 vec1 = prim1\n\t\t\t\t? prim1->getCoordinateFrame().translation\n\t\t\t\t: G3D::Vector3::zero();\n\n\t\t\tif (joint->getActive())\n\t\t\t\tcolor3 = G3D::Color3::green();\n\t\t\telse\n\t\t\t\tcolor3 = G3D::Color3::red();\n\n\t\t\tadorn->setObjectToWorldMatrix(G3D::CoordinateFrame());\n\n\t\t\tG3D::Color4 color4(color3);\n\t\t\tadorn->lineSegment(\n\t\t\t\tG3D::LineSegment::fromTwoPoints(vec0, vec1),\n\t\t\t\tcolor4,\n\t\t\t\t20.0);\n\t\t}\n\t}"
   ]
  ],
  "App/humanoid/Humanoid.cpp": [
@@ -627,6 +631,10 @@
   [
    "\t\tvoid setPartLocked(bool value);\n",
    "\t\tvoid setPartLocked(bool value);\n\t\tvirtual void setName(const std::string& value); // 0x598c20\n"
+  ],
+  [
+   "\t\tstatic bool highlightSleepParts;",
+   "\t\tstatic bool showContactPoints;\n\t\tstatic bool highlightSleepParts;"
   ]
  ],
  "App/v8datamodel/PartInstance.cpp": [
@@ -649,6 +657,14 @@
   [
    "#include \"v8datamodel/PartInstance.h\"\n",
    "#pragma float_control(precise, off)\n#include \"v8datamodel/PartInstance.h\"\n"
+  ],
+  [
+   "\t\t\t   SurfacesNeedAdorn || \n\t\t\t   highlightSleepParts || ",
+   "\t\t\t   SurfacesNeedAdorn || \n\t\t\t   showContactPoints ||\n\t\t\t   highlightSleepParts || "
+  ],
+  [
+   "\tconst char* category_Part = \"Part\";",
+   "\tconst char* category_Part = \"Part\";\n\n\tbool PartInstance::showContactPoints = false;"
   ]
  ],
  "App/include/v8kernel/Body.h": [
@@ -1015,6 +1031,10 @@
   [
    "Accoutrement::setAttachmentPoint(const G3D::CoordinateFrame& value)\n\t{\n\t\tif (value != attachmentPoint)\n\t\t{\n\t\t\tattachmentPoint = value;\n\n\t\t\tif (Workspace* workspace = ServiceProvider::find<Workspace>(this))\n\t\t\t\tworkspace->raiseDrawChanged();\n\n\t\t\traisePropertyChanged(prop_AttachmentPoint);\n\n\t\t\tif (weld)\n\t\t\t{\n\t\t\t\tRBXASSERT(Network::Players::backendProcessing(this, true));\n\t\t\t\tweld->setC1(attachmentPoint);\n\t\t\t}\n\t\t}\n\t}",
    "Accoutrement::setAttachmentPoint(const G3D::CoordinateFrame& value)\n\t{\n\t\tif (value != attachmentPoint)\n\t\t{\n\t\t\tattachmentPoint = value;\n\n\t\t\tif (Workspace* workspace = ServiceProvider::find<Workspace>(this))\n\t\t\t\tworkspace->raiseDrawChanged();\n\n\t\t\traisePropertyChanged(prop_AttachmentPoint);\n\n\t\t\tif (weld)\n\t\t\t{\n\t\t\t\t                                                          ;\n\t\t\t\tweld->setC1(attachmentPoint);\n\t\t\t}\n\t\t}\n\t}"
+  ],
+  [
+   "\t\t\t\tif (name->toString() == \"BackendAccoutrementState\")\n\t\t\t\t\treturn;",
+   "\t\t\t\tif (name->name == \"BackendAccoutrementState\")\n\t\t\t\t\treturn;"
   ]
  ],
  "App/include/v8world/IPipelined.h": [
@@ -1063,6 +1083,10 @@
   [
    "Tool::setGrip(const G3D::CoordinateFrame& value)\n\t{\n\t\tif (value != grip)\n\t\t{\n\t\t\tgrip = value;\n\n\t\t\tif (Workspace* workspace = ServiceProvider::find<Workspace>(this))\n\t\t\t\tworkspace->raiseDrawChanged();\n\n\t\t\traisePropertyChanged(prop_Grip);\n\n\t\t\tif (weld)\n\t\t\t{\n\t\t\t\tRBXASSERT(Network::Players::backendProcessing(this, true));\n\t\t\t\tweld->setC1(grip);\n\t\t\t}\n\t\t}\n\t}",
    "Tool::setGrip(const G3D::CoordinateFrame& value)\n\t{\n\t\tif (value != grip)\n\t\t{\n\t\t\tgrip = value;\n\n\t\t\tif (Workspace* workspace = ServiceProvider::find<Workspace>(this))\n\t\t\t\tworkspace->raiseDrawChanged();\n\n\t\t\traisePropertyChanged(prop_Grip);\n\n\t\t\tif (weld)\n\t\t\t{\n\t\t\t\t                                                          ;\n\t\t\t\tweld->setC1(grip);\n\t\t\t}\n\t\t}\n\t}"
+  ],
+  [
+   "\t\t\t\tif (name->toString() == \"BackendToolState\" || name->toString() == \"ActivationState\")\n\t\t\t\t\treturn;",
+   "\t\t\t\tif (name->name == \"BackendToolState\" || name->name == \"ActivationState\")\n\t\t\t\t\treturn;"
   ]
  ],
  "App/v8datamodel/ModelInstance.cpp": [
@@ -1297,6 +1321,10 @@
   [
    "#include \"gui/Gui.h\"\n",
    "#pragma float_control(precise, off)\n#include \"gui/Gui.h\"\n"
+  ],
+  [
+   "\t\tRBXASSERT(!focus);\n\t\treturn processNonFocus(event);",
+   "\t\treturn processNonFocus(event);"
   ]
  ],
  "App/v8kernel/Kernel.cpp": [
@@ -1325,6 +1353,14 @@
   [
    "#include \"v8world/MotorJoint.h\"\n#include \"v8world/World.h\"\n#include \"v8world/Primitive.h\"\n#include \"v8world/Assembly.h\"\n#include \"util/Math.h\"\n\nnamespace RBX\n{\n\t// TODO: check which of these belong in the header file\n\n\tMotorJoint::MotorJoint()\n\t\t: currentAngle(0.0f),\n\t\t  link(new RevoluteLink()),\n\t\t  maxVelocity(0.0f),\n\t\t  desiredAngle(0.0f),\n\t\t  polarity(1.0f)\n\t{\n\t}\n\n\tMotorJoint::~MotorJoint()\n\t{\n\t\tdelete link;\n\t}\n\n\tG3D::CoordinateFrame MotorJoint::getMeInOther(Primitive* me)\n\t{\n\t\tG3D::CoordinateFrame rotatedCoord0 = G3D::CoordinateFrame(\n\t\t\tMath::rotateAboutZ(jointCoord0.rotation, currentAngle),\n\t\t\tjointCoord0.translation);\n\n\t\tG3D::CoordinateFrame p1InP0 = rotatedCoord0 * jointCoord1.inverse();\n\t\tif (me == getPrimitive(1))\n\t\t{\n\t\t\treturn p1InP0;\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(me == getPrimitive(0));\n\t\t\treturn p1InP0.inverse();\n\t\t}\n\t}\n\n\tsize_t MotorJoint::hashCode() const\n\t{\n\t\tconst int magic = 1640531527;\n\t\tsize_t h;\n\n\t\th = (Math::hash(jointCoord0.translation) - magic);\n\t\th = (Math::hash(jointCoord1.translation) - magic + (h >> 2) + (h << 6)) ^ h;\n\t\treturn h;\n\t}\n\n\tvoid MotorJoint::setCurrentAngle(float value)\n\t{\n\t\tif (currentAngle != value)\n\t\t{\n\t\t\tcurrentAngle = value;\n\t\t\tWorld* world = getWorld();\n\t\t\tif (world)\n\t\t\t\tworld->onMotorAngleChanged(this);\n\t\t\tsetJointAngle(value);\n\t\t}\n\t}\n\n\tvoid MotorJoint::setJointAngle(float value)\n\t{\n\t\tRBXASSERT(link);\n\t\tif (polarity == -1)\n\t\t{\n\t\t\tRBXASSERT(0);\n\n\t\t\tPrimitive* p0 = getPrimitive(0);\n\n\t\t\tG3D::CoordinateFrame oldParentCoord = p0->getCoordinateFrame();\n\t\t\tlink->setJointAngle(-value);\n\t\t\tAssembly* assembly = getPrimitive(1)->getAssembly();\n\t\t\tif (!assembly->getAnchored())\n\t\t\t{\n\t\t\t\tPrimitive* mainPrim = assembly->getMainPrimitive();\n\t\t\t\tG3D::CoordinateFrame newParentCoord = p0->getCoordinateFrame();\n\t\t\t\tG3D::CoordinateFrame parentInRoot = mainPrim->getCoordinateFrame().toObjectSpace(newParentCoord);\n\t\t\t\tG3D::CoordinateFrame newRoot = oldParentCoord * parentInRoot.inverse();\n\t\t\t\tmainPrim->getBody()->setCoordinateFrame(newRoot);\n\t\t\t}\n\t\t}\n\t\telse\n\t\t{\n\t\t\tlink->setJointAngle(value);\n\t\t}\n\t}\n\n\tbool MotorJoint::isAligned()\n\t{\n\t\tG3D::CoordinateFrame baseWorld = getPrimitive(0)->getCoordinateFrame() * jointCoord0;\n\t\tG3D::CoordinateFrame otherBaseWorld = getPrimitive(1)->getCoordinateFrame() * jointCoord1;\n\n\t\tif (Math::fuzzyEq(baseWorld.translation, otherBaseWorld.translation, 0.00001f))\n\t\t{\n\t\t\tif (Math::fuzzyEq(baseWorld.rotation.getColumn(2), otherBaseWorld.rotation.getColumn(2), 0.00001f))\n\t\t\t\treturn true;\n\t\t}\n\n\t\treturn false;\n\t}\n\n\tvoid MotorJoint::stepUi(int uiStepId)\n\t{\n\t\tif (fabs(desiredAngle - currentAngle) < fabs(maxVelocity))\n\t\t{\n\t\t\tsetCurrentAngle(desiredAngle);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tif (fabs(maxVelocity) > 0.0f)\n\t\t\t\tsetCurrentAngle(currentAngle + fabs(maxVelocity));\n\t\t\telse\n\t\t\t\tsetCurrentAngle(currentAngle - fabs(maxVelocity));\n\t\t}\n\t}\n}\n",
    "#include \"v8world/MotorJoint.h\"\n#include \"v8world/World.h\"\n#include \"v8world/Primitive.h\"\n#include \"v8world/Assembly.h\"\n#include \"util/Math.h\"\n\nnamespace RBX\n{\n\t// TODO: check which of these belong in the header file\n\n\tMotorJoint::MotorJoint()\n\t\t: currentAngle(0.0f),\n\t\t  link(new RevoluteLink()),\n\t\t  maxVelocity(0.0f),\n\t\t  desiredAngle(0.0f)\n\t{\n\t}\n\n\tMotorJoint::~MotorJoint()\n\t{\n\t\tdelete link;\n\t}\n\n\tG3D::CoordinateFrame MotorJoint::getMeInOther(Primitive* me)\n\t{\n\t\tG3D::CoordinateFrame rotatedCoord0 = G3D::CoordinateFrame(\n\t\t\tMath::rotateAboutZ(jointCoord0.rotation, currentAngle),\n\t\t\tjointCoord0.translation);\n\n\t\tG3D::CoordinateFrame p1InP0 = rotatedCoord0 * jointCoord1.inverse();\n\t\tif (me == getPrimitive(1))\n\t\t{\n\t\t\treturn p1InP0;\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(me == getPrimitive(0));\n\t\t\treturn p1InP0.inverse();\n\t\t}\n\t}\n\n\tsize_t MotorJoint::hashCode() const\n\t{\n\t\tconst int magic = 1640531527;\n\t\tsize_t h;\n\n\t\th = (Math::hash(jointCoord0.translation) - magic);\n\t\th = (Math::hash(jointCoord1.translation) - magic + (h >> 2) + (h << 6)) ^ h;\n\t\treturn h;\n\t}\n\n\tvoid MotorJoint::setCurrentAngle(float value)\n\t{\n\t\tif (currentAngle != value)\n\t\t{\n\t\t\tcurrentAngle = value;\n\t\t\tWorld* world = getWorld();\n\t\t\tif (world)\n\t\t\t\tworld->onMotorAngleChanged(this);\n\t\t\tsetJointAngle(value);\n\t\t}\n\t}\n\n\tvoid MotorJoint::setJointAngle(float value)\n\t{\n\t\tRBXASSERT(link);\n\t\tif ((1.0f) == -1)\n\t\t{\n\t\t\tRBXASSERT(0);\n\n\t\t\tPrimitive* p0 = getPrimitive(0);\n\n\t\t\tG3D::CoordinateFrame oldParentCoord = p0->getCoordinateFrame();\n\t\t\tlink->setJointAngle(-value);\n\t\t\tAssembly* assembly = getPrimitive(1)->getAssembly();\n\t\t\tif (!assembly->getAnchored())\n\t\t\t{\n\t\t\t\tPrimitive* mainPrim = assembly->getMainPrimitive();\n\t\t\t\tG3D::CoordinateFrame newParentCoord = p0->getCoordinateFrame();\n\t\t\t\tG3D::CoordinateFrame parentInRoot = mainPrim->getCoordinateFrame().toObjectSpace(newParentCoord);\n\t\t\t\tG3D::CoordinateFrame newRoot = oldParentCoord * parentInRoot.inverse();\n\t\t\t\tmainPrim->getBody()->setCoordinateFrame(newRoot);\n\t\t\t}\n\t\t}\n\t\telse\n\t\t{\n\t\t\tlink->setJointAngle(value);\n\t\t}\n\t}\n\n\tbool MotorJoint::isAligned()\n\t{\n\t\tG3D::CoordinateFrame baseWorld = getPrimitive(0)->getCoordinateFrame() * jointCoord0;\n\t\tG3D::CoordinateFrame otherBaseWorld = getPrimitive(1)->getCoordinateFrame() * jointCoord1;\n\n\t\tif (Math::fuzzyEq(baseWorld.translation, otherBaseWorld.translation, 0.00001f))\n\t\t{\n\t\t\tif (Math::fuzzyEq(baseWorld.rotation.getColumn(2), otherBaseWorld.rotation.getColumn(2), 0.00001f))\n\t\t\t\treturn true;\n\t\t}\n\n\t\treturn false;\n\t}\n\n\tvoid MotorJoint::stepUi(int uiStepId)\n\t{\n\t\tif (fabs(desiredAngle - currentAngle) < fabs(maxVelocity))\n\t\t{\n\t\t\tsetCurrentAngle(desiredAngle);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tif (fabs(maxVelocity) > 0.0f)\n\t\t\t\tsetCurrentAngle(currentAngle + fabs(maxVelocity));\n\t\t\telse\n\t\t\t\tsetCurrentAngle(currentAngle - fabs(maxVelocity));\n\t\t}\n\t}\n}\n"
+  ],
+  [
+   "#include \"v8world/MotorJoint.h\"",
+   "#pragma float_control(precise,off)\n#include \"v8world/MotorJoint.h\""
+  ],
+  [
+   "\tvoid MotorJoint::stepUi(int uiStepId)\n\t{\n\t\tif (fabs(desiredAngle - currentAngle) < fabs(maxVelocity))\n\t\t{\n\t\t\tsetCurrentAngle(desiredAngle);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tif (fabs(maxVelocity) > 0.0f)\n\t\t\t\tsetCurrentAngle(currentAngle + fabs(maxVelocity));\n\t\t\telse\n\t\t\t\tsetCurrentAngle(currentAngle - fabs(maxVelocity));\n\t\t}\n\t}",
+   "\tvoid MotorJoint::stepUi(int uiStepId)\n\t{\n\t\tdouble speed = fabs(maxVelocity);\n\t\tdouble delta = static_cast<double>(desiredAngle) - currentAngle;\n\t\tif (fabs(delta) < speed)\n\t\t\tsetCurrentAngle(desiredAngle);\n\t\telse if (delta > 0.0)\n\t\t\tsetCurrentAngle(static_cast<float>(currentAngle + speed));\n\t\telse\n\t\t\tsetCurrentAngle(static_cast<float>(currentAngle - speed));\n\t}"
   ]
  ],
  "App/include/v8datamodel/SpawnLocation.h": [
@@ -1373,6 +1409,10 @@
   [
    "\tvoid Selection::removeFromSelection(const Instance* instance)\n\t{\n\t\tRBXASSERT(instance);",
    "\tvoid Selection::removeFromSelection(const Instance* instance)\n\t{"
+  ],
+  [
+   "\tvoid Selection::setSelection(Instance* instance)\n\t{\n\t\tboost::shared_ptr<Instance> inst = shared_from(instance);\n\t\t\n\t\twhile (!selection->empty())\n\t\t{\n\t\t\tboost::shared_ptr<Instance> item = selection->back();\n\n\t\t\tif (item == inst)\n\t\t\t{\n\t\t\t\tif (selection->size() == 1)\n\t\t\t\t\treturn;\n\n\t\t\t\tboost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> sel = selection.write();\n\t\t\t\tsel->back() = sel->front();\n\t\t\t\tsel->front() = item;\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tselection.write()->pop_back();\n\t\t\t\titem->Notifier<Instance, AncestorChanged>::removeListener(this);\n\t\t\t\traiseRemoved(item);\n\t\t\t}\n\t\t}\n\n\t\tif (inst)\n\t\t{\n\t\t\tselection.write()->push_back(inst);\n\t\t\tinstance->Notifier<Instance, AncestorChanged>::addListener(this);\n\t\t\traiseAdded(inst);\n\t\t}\n\t}",
+   "\tvoid Selection::setSelection(Instance* instance)\n\t{\n\t\tboost::shared_ptr<Instance> inst = shared_from(instance);\n\t\t\n\t\twhile (selection->size() > 0)\n\t\t{\n\t\t\tboost::shared_ptr<Instance> item = selection->back();\n\n\t\t\tif (item == inst)\n\t\t\t{\n\t\t\t\tif (selection->size() == 1)\n\t\t\t\t\treturn;\n\n\t\t\t\tboost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> sel = selection.write();\n\t\t\t\tsel->back() = sel->front();\n\t\t\t\tsel->front() = item;\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tselection.write()->pop_back();\n\t\t\t\titem->Notifier<Instance, AncestorChanged>::removeListener(this);\n\t\t\t\traiseRemoved(item);\n\t\t\t}\n\t\t}\n\n\t\tif (inst)\n\t\t{\n\t\t\tselection.write()->push_back(inst);\n\t\t\tinstance->Notifier<Instance, AncestorChanged>::addListener(this);\n\t\t\traiseAdded(inst);\n\t\t}\n\t}"
   ]
  ],
  "App/tool/GroupDragTool.cpp": [
@@ -1597,6 +1637,68 @@
   [
    "\t__declspec(noinline) G3D::Matrix3 Block::getMomentHollow(float mass) const\n\t{\n\t\tG3D::Vector3 grid = gridSize;\n\t\tG3D::Vector3 I;\n\n\t\tfloat area = ((grid.x * grid.z + grid.y * grid.z) + grid.x * grid.y) * 2;\n\n\t\tfor (int i = 0; i < 3; i++)\n\t\t{\n\t\t\tfloat X = grid[(i    ) % 3];\n\t\t\tfloat Y = grid[(i + 1) % 3];\n\t\t\tfloat Z = grid[(i + 2) % 3];\n\n\t\t\tfloat scaling = mass / (2 * area);\n\n\t\t\tfloat temp = (Z*Z*Y)*X + (Y*Y*Y*Z)/3 + (Z*Z*Z*Y)/3 + (Y*Y*Z)*X + (X*Y*Y*Y)/3 + (X*Z*Z*Z)/3;\n\n\t\t\tI[i] = temp * scaling;\n\t\t}\n\n\t\treturn Math::fromDiagonal(I);\n\t}",
    "__declspec(noinline) G3D::Matrix3 Block::getMomentHollow(float mass) const\n{\n\tG3D::Vector3 size = gridSize;\n\n\tfloat area = 2 * (size.x * size.y + size.y * size.z + size.z * size.x);\n\tG3D::Vector3 I;\n\tfor (int i = 0; i < 3; i++) {\n\t\tint j = (i + 1) % 3;\n\t\tint k = (i + 2) % 3;\n\t\tfloat x = size[i];\t\t// main axis;\n\t\tfloat y = size[j];\n\t\tfloat z = size[k];\n\t\t\n\t\tfloat Ix = (mass / (2.0f * area)) * (\t\t(y*y*y*z/3.0f)\n\t\t\t\t\t\t\t\t\t\t\t\t+\t(y*z*z*z/3.0f)\n\t\t\t\t\t\t\t\t\t\t\t\t+\t(x*y*z*z)\n\t\t\t\t\t\t\t\t\t\t\t\t+\t(x*y*y*y/3.0f)\n\t\t\t\t\t\t\t\t\t\t\t\t+\t(x*y*y*z)\n\t\t\t\t\t\t\t\t\t\t\t\t+\t(x*z*z*z/3.0f)\t);\n\t\tI[i] = Ix;\n\t}\n\treturn Math::fromDiagonal(I);\n}"
+  ]
+ ],
+ "App/v8kernel/Point.cpp": [
+  [
+   "#include \"v8kernel/Point.h\"",
+   "#pragma float_control(precise,off)\n#include \"v8kernel/Point.h\""
+  ]
+ ],
+ "Rendering/AppDraw/DrawAdorn.cpp": [
+  [
+   "        G3D::Matrix3 rotation = worldC.rotation*Math::getAxisRotationMatrix(axis);\n        G3D::CoordinateFrame rotatedWorldC(rotation, worldC.translation);",
+   "        const G3D::Matrix3& axisRotation = Math::getAxisRotationMatrix(axis);\n        G3D::CoordinateFrame rotatedWorldC(worldC.rotation*axisRotation, worldC.translation);"
+  ]
+ ],
+ "App/v8datamodel/Camera.cpp": [
+  [
+   "#include \"v8datamodel/Camera.h\"",
+   "#pragma float_control(precise,off)\n#include \"v8datamodel/Camera.h\""
+  ]
+ ],
+ "RbxGraphics/include/RbxGraphics/Adorn.h": [
+  [
+   "\t\tvirtual void cylinderAlongX(float radius, float length, const G3D::Color4& solidColor, const G3D::Color4& wireColor) = 0;",
+   "\t\tvirtual void sparkle() = 0;\n\t\tvirtual void cylinderAlongX(float radius, float length, const G3D::Color4& solidColor, const G3D::Color4& wireColor) = 0;"
+  ]
+ ],
+ "App/v8datamodel/Mouse.cpp": [
+  [
+   "#include \"v8datamodel/Mouse.h\"",
+   "#pragma float_control(precise,off)\n#include \"v8datamodel/Mouse.h\""
+  ]
+ ],
+ "App/v8datamodel/Explosion.cpp": [
+  [
+   "\t\tInstance::onServiceProvider(oldProvider, newProvider);",
+   ""
+  ]
+ ],
+ "App/tool/ToolsArrow.cpp": [
+  [
+   "#include \"tool/ToolsArrow.h\"",
+   "#pragma float_control(precise,off)\n#include \"tool/ToolsArrow.h\""
+  ]
+ ],
+ "App/v8datamodel/ICharacterSubject.cpp": [
+  [
+   "#include \"v8datamodel/ICharacterSubject.h\"",
+   "#pragma float_control(precise,off)\n#include \"v8datamodel/ICharacterSubject.h\""
+  ],
+  [
+   "\tbool ICharacterSubject::zoom(const float in, G3D::CoordinateFrame& cameraGoal, G3D::CoordinateFrame& cameraFocus)\n\t{\n\t\tG3D::Vector3 focusToGoal = cameraGoal.translation - cameraFocus.translation;\n\n\t\tfloat currentDistance = focusToGoal.magnitude();\n\t\tfloat newDistance = Camera::getNewZoomDistance(currentDistance, in);\n\n\t\tnewDistance = G3D::min(400.0f, newDistance);\n\n\t\tif (newDistance == currentDistance)\n\t\t\treturn false;\n\n\t\tfocusToGoal.y = 0.0f;\n\t\tfocusToGoal.unitize();\n\t\tfocusToGoal.y = newDistance * 0.03f;\n\n\t\tcameraGoal.translation = focusToGoal.direction() * newDistance + cameraFocus.translation;\n\n\t\treturn true;\n\t}",
+   "\tbool ICharacterSubject::zoom(const float in, G3D::CoordinateFrame& cameraGoal, G3D::CoordinateFrame& cameraFocus)\n\t{\n\t\tG3D::CoordinateFrame adjustedGoal = wasOccluded ? goalFromDistance(cameraFocus, cameraGoal, unoccludedDistance) : cameraGoal;\n\t\tG3D::Vector3 focusToGoal = adjustedGoal.translation - cameraFocus.translation;\n\n\t\tfloat currentDistance = focusToGoal.magnitude();\n\t\tfloat newDistance = G3D::min(400.0f, Camera::getNewZoomDistance(currentDistance, in));\n\n\t\tif (newDistance == currentDistance)\n\t\t\treturn false;\n\n\t\tfocusToGoal.y = 0.0f;\n\t\tfocusToGoal.unitize();\n\t\tfocusToGoal.y = newDistance * 0.03f;\n\n\t\tadjustedGoal.translation = focusToGoal.direction() * newDistance + cameraFocus.translation;\n\n\t\tif (wasOccluded) unoccludedDistance = (adjustedGoal.translation - cameraFocus.translation).magnitude();\n\t\telse cameraGoal = adjustedGoal;\n\t\treturn true;\n\t}"
+  ]
+ ],
+ "App/v8datamodel/DebrisService.cpp": [
+  [
+   "\t\tInstance::onServiceProvider(oldProvider, newProvider);",
+   ""
+  ],
+  [
+   "\t\ttimer = ServiceProvider::create<TimerService>(newProvider);",
+   "\t\ttimer = ServiceProvider::find<TimerService>(newProvider);"
   ]
  ]
 }

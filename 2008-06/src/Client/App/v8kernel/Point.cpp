@@ -1,3 +1,4 @@
+#pragma float_control(precise,off)
 #include "v8kernel/Point.h"
 #include "v8kernel/Body.h"
 

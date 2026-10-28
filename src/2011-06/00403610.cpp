@@ -1,4 +1,4 @@
-// from server: 26% by atomic.potato
+// from server: 0% by atomic.potato
 extern "C" __declspec(dllimport) void __stdcall InitializeCriticalSection(void*);
 
 struct S {

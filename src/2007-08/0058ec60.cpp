@@ -1,4 +1,4 @@
-// from server: 51% by colin
+// from server: 0% by colin
 struct Creator {
     int* field0;
     Creator(int* a);

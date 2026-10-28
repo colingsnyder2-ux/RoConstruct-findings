@@ -1,4 +1,4 @@
-// from server: 43% by atomic.potato
+// from server: 0% by atomic.potato
 extern "C" void* __cdecl sub_98211a(unsigned int size);
 
 struct VCylinderMesh_FactoryProduct {

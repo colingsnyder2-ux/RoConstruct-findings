@@ -1,4 +1,4 @@
-// from server: 2% by colin
+// from server: 0% by colin
 struct DescribedBase;
 
 struct PropertyDescriptor {

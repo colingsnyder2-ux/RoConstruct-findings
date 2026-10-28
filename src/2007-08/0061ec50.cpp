@@ -1,4 +1,4 @@
-// from server: 43% by colin
+// from server: 0% by colin
 struct Node {
     int a;
     int b;

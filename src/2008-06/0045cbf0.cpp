@@ -1,8 +1,9 @@
+// from server: 100% by EspClaude
 // from server: 91% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob1 /GS- /EHsc /MD /Oy
-// roc-lib: rbxgs-dll roc_native_window_renderer_b474e646cb63664a.cpp
+// roc-lib: rbxgs-dll roc_espclaude_88788c918aed79b9.cpp
 
 // Candidate translation unit (score above; library headers required).
 #ifndef _CPPUNWIND
@@ -208,7 +209,7 @@ void CRobloxWndRenderer::initialize(int width,int height) {
  settings.stencilBits=8;settings.rgbBits=8;settings.depthBits=24;
  settings.alphaBits=member<bool>(this,0x88)?8:0;settings.fsaaSamples=defaultSamples;
  CClientDC dc(this);
- RECT rect;::GetClientRect(m_hWnd,&rect);
+ CRect rect;GetClientRect(&rect);
  int memory=videoMemory();
  member<Ogre::VisualEngine*>(this,0xb8)=new Ogre::VisualEngine;
  std::string card=RBX::DebugSettings::singleton().gfxcard();
@@ -226,7 +227,7 @@ void CRobloxWndRenderer::initialize(int width,int height) {
   else if(memory>ranges[2]) {useShadows=true;shadowQuality=2;}
  } else useShadows=shadowMode!=2;
  if(useShadows!=shadowsEnabled)shadowsEnabled=useShadows;
- if(shadowsEnabled)member<int>(member<Ogre::VisualEngine*>(this,0xb8),0x7f8)=0;
+ if(shadowsEnabled){Ogre::VisualEngine* engine=member<Ogre::VisualEngine*>(this,0xb8);member<int>(engine,0x7f8)=0;}
  try {
   int samples;
   switch(member<int>(graphicsContext(),0x138)) {
@@ -238,7 +239,7 @@ void CRobloxWndRenderer::initialize(int width,int height) {
   case 2:samples=2;break;
   default:RBX::StandardOut::singleton()->print(RBX::MESSAGE_INFO,"Unknown antialiasing mode");samples=2;break;
   }
-  member<Ogre::VisualEngine*>(this,0xb8)->initialize(member<int>(this,0x5c)!=3,m_hWnd,rect.right-rect.left,rect.bottom-rect.top,samples,logManager()->logPath("gfx"));
+  member<Ogre::VisualEngine*>(this,0xb8)->initialize(member<int>(this,0x5c)!=3,m_hWnd,rect.Width(),rect.Height(),samples,logManager()->logPath("gfx"));
  } catch(std::exception& error) {
   if(member<int>(this,0x60)==0 && static_cast<NativeGraphicsMode*>(graphicsContext())->getMode()==1) {
    ++member<int>(this,0x60);
@@ -258,7 +259,9 @@ void CRobloxWndRenderer::initialize(int width,int height) {
  setShaderMode(shaders);
  Ogre::Animation::setDefaultInterpolationMode(Ogre::Animation::IM_LINEAR);
  Ogre::Animation::setDefaultRotationInterpolationMode(Ogre::Animation::RIM_LINEAR);
- member<Ogre::SceneManager*>(member<Ogre::VisualEngine*>(this,0xb8),4)->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));
+ Ogre::SceneManager* sceneManager=member<Ogre::SceneManager*>(member<Ogre::VisualEngine*>(this,0xb8),4);
+ sceneManager->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));
  member<Ogre::Camera*>(member<Ogre::VisualEngine*>(this,0xb8),8)->setPosition(0,50,200);
  member<Ogre::Camera*>(member<Ogre::VisualEngine*>(this,0xb8),8)->lookAt(0,50,0);
 }
+

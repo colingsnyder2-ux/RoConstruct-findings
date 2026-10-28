@@ -1,4 +1,4 @@
-// from server: 52% by colin
+// from server: 0% by colin
 struct G3D_VVector3_Table {
     void* field0;
     G3D_VVector3_Table* construct(void* arg1, void* arg2);

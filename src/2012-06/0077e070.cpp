@@ -1,4 +1,4 @@
-// from server: 24% by 41k
+// from server: 0% by 41k
 struct RBX_VBrickColor_VValue {
     void* f_0;
     void* f_4;

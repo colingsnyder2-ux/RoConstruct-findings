@@ -62,6 +62,7 @@ namespace RBX
 		ContentId contentId0x3c8; // 0x3c8; name and use unknown
 
 	public:
+		static bool showContactPoints;
 		static bool highlightSleepParts;
 		static bool highlightAwakeParts;
 		static bool showAnchoredParts;

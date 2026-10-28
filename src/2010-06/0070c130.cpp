@@ -1,4 +1,4 @@
-// from server: 44% by atomic.potato
+// from server: 0% by atomic.potato
 struct S {
     void* field0;
     void* f(void* a, void* b);

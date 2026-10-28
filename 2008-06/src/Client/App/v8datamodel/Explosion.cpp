@@ -111,7 +111,7 @@ namespace RBX
 	{
 		Notifier<RunService, Stepped>::disconnect(ServiceProvider::find<RunService>(oldProvider), this);
 
-		Instance::onServiceProvider(oldProvider, newProvider);
+
 
 		Notifier<RunService, Stepped>::connect(ServiceProvider::find<RunService>(newProvider), this);
 	}

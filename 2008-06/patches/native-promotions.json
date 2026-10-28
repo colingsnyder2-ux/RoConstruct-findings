@@ -1268,5 +1268,131 @@
     "\tvoid Primitive::setAnchor(bool _anchored)\n\t{\n\t\tbool wasAnchored = dragging || anchored || flag0xaa;\n\t\tif (anchored != _anchored)\n\t\t{\n\t\t\tanchored = _anchored;\n\t\t\tbool isAnchored = dragging || anchored || flag0xaa;\n\t\t\tif (isAnchored != wasAnchored && world)\n\t\t\t{\n\t\t\t\tif (isAnchored)\n\t\t\t\t\tworld->onPrimitiveAddedAnchor(this);\n\t\t\t\telse\n\t\t\t\t\tworld->onPrimitiveRemovingAnchor(this);\n\t\t\t}\n\t\t}\n\t}"
    ]
   ]
+ },
+ {
+  "App/v8world/MotorJoint.cpp": [
+   [
+    "#include \"v8world/MotorJoint.h\"",
+    "#pragma float_control(precise,off)\n#include \"v8world/MotorJoint.h\""
+   ],
+   [
+    "\tvoid MotorJoint::stepUi(int uiStepId)\n\t{\n\t\tif (fabs(desiredAngle - currentAngle) < fabs(maxVelocity))\n\t\t{\n\t\t\tsetCurrentAngle(desiredAngle);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tif (fabs(maxVelocity) > 0.0f)\n\t\t\t\tsetCurrentAngle(currentAngle + fabs(maxVelocity));\n\t\t\telse\n\t\t\t\tsetCurrentAngle(currentAngle - fabs(maxVelocity));\n\t\t}\n\t}",
+    "\tvoid MotorJoint::stepUi(int uiStepId)\n\t{\n\t\tdouble speed = fabs(maxVelocity);\n\t\tdouble delta = static_cast<double>(desiredAngle) - currentAngle;\n\t\tif (fabs(delta) < speed)\n\t\t\tsetCurrentAngle(desiredAngle);\n\t\telse if (delta > 0.0)\n\t\t\tsetCurrentAngle(static_cast<float>(currentAngle + speed));\n\t\telse\n\t\t\tsetCurrentAngle(static_cast<float>(currentAngle - speed));\n\t}"
+   ]
+  ],
+  "App/v8kernel/Point.cpp": [
+   [
+    "#include \"v8kernel/Point.h\"",
+    "#pragma float_control(precise,off)\n#include \"v8kernel/Point.h\""
+   ]
+  ],
+  "App/v8datamodel/JointInstance.cpp": [
+   [
+    "\tvoid JointInstance::render3dAdorn(Adorn* adorn)\n\t{\n\t\tRBXASSERT(shouldRender3dAdorn());\n\n\t\tif (Joint::isAssemblyJoint(joint))\n\t\t{\n\t\t\tG3D::Color3 color3;\n\n\t\t\tPrimitive* prim0 = joint->getPrimitive(0);\n\t\t\tPrimitive* prim1 = joint->getPrimitive(1);\n\n\t\t\tG3D::Vector3 vec0 = prim0\n\t\t\t\t? prim0->getCoordinateFrame().translation\n\t\t\t\t: G3D::Vector3::zero();\n\n\t\t\tG3D::Vector3 vec1 = prim1\n\t\t\t\t? prim1->getCoordinateFrame().translation\n\t\t\t\t: G3D::Vector3::zero();\n\n\t\t\tif (joint->getActive())\n\t\t\t\tcolor3 = G3D::Color3::green();\n\t\t\telse\n\t\t\t\tcolor3 = G3D::Color3::red();\n\n\t\t\tadorn->setObjectToWorldMatrix(G3D::CoordinateFrame());\n\n\t\t\tG3D::Color4 color4(color3);\n\t\t\tadorn->lineSegment(\n\t\t\t\tG3D::LineSegment::fromTwoPoints(vec0, vec1),\n\t\t\t\tcolor4,\n\t\t\t\t20.0);\n\t\t}\n\t}",
+    "\tvoid JointInstance::render3dAdorn(Adorn* adorn)\n\t{\n\n\t\tif (Joint::getJointType(joint) >= Joint::ANCHOR_JOINT)\n\t\t{\n\t\t\tG3D::Color3 color3;\n\n\t\t\tPrimitive* prim0 = getPart0() ? getPart0()->getPrimitive() : NULL;\n\t\t\tPrimitive* prim1 = getPart1() ? getPart1()->getPrimitive() : NULL;\n\n\t\t\tG3D::Vector3 vec0 = prim0\n\t\t\t\t? prim0->getCoordinateFrame().translation\n\t\t\t\t: G3D::Vector3::zero();\n\n\t\t\tG3D::Vector3 vec1 = prim1\n\t\t\t\t? prim1->getCoordinateFrame().translation\n\t\t\t\t: G3D::Vector3::zero();\n\n\t\t\tif (joint->getActive())\n\t\t\t\tcolor3 = G3D::Color3::green();\n\t\t\telse\n\t\t\t\tcolor3 = G3D::Color3::red();\n\n\t\t\tadorn->setObjectToWorldMatrix(G3D::CoordinateFrame());\n\n\t\t\tG3D::Color4 color4(color3);\n\t\t\tadorn->lineSegment(\n\t\t\t\tG3D::LineSegment::fromTwoPoints(vec0, vec1),\n\t\t\t\tcolor4,\n\t\t\t\t20.0);\n\t\t}\n\t}"
+   ]
+  ],
+  "App/v8datamodel/Selection.cpp": [
+   [
+    "\tvoid Selection::setSelection(Instance* instance)\n\t{\n\t\tboost::shared_ptr<Instance> inst = shared_from(instance);\n\t\t\n\t\twhile (!selection->empty())\n\t\t{\n\t\t\tboost::shared_ptr<Instance> item = selection->back();\n\n\t\t\tif (item == inst)\n\t\t\t{\n\t\t\t\tif (selection->size() == 1)\n\t\t\t\t\treturn;\n\n\t\t\t\tboost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> sel = selection.write();\n\t\t\t\tsel->back() = sel->front();\n\t\t\t\tsel->front() = item;\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tselection.write()->pop_back();\n\t\t\t\titem->Notifier<Instance, AncestorChanged>::removeListener(this);\n\t\t\t\traiseRemoved(item);\n\t\t\t}\n\t\t}\n\n\t\tif (inst)\n\t\t{\n\t\t\tselection.write()->push_back(inst);\n\t\t\tinstance->Notifier<Instance, AncestorChanged>::addListener(this);\n\t\t\traiseAdded(inst);\n\t\t}\n\t}",
+    "\tvoid Selection::setSelection(Instance* instance)\n\t{\n\t\tboost::shared_ptr<Instance> inst = shared_from(instance);\n\t\t\n\t\twhile (selection->size() > 0)\n\t\t{\n\t\t\tboost::shared_ptr<Instance> item = selection->back();\n\n\t\t\tif (item == inst)\n\t\t\t{\n\t\t\t\tif (selection->size() == 1)\n\t\t\t\t\treturn;\n\n\t\t\t\tboost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> sel = selection.write();\n\t\t\t\tsel->back() = sel->front();\n\t\t\t\tsel->front() = item;\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tselection.write()->pop_back();\n\t\t\t\titem->Notifier<Instance, AncestorChanged>::removeListener(this);\n\t\t\t\traiseRemoved(item);\n\t\t\t}\n\t\t}\n\n\t\tif (inst)\n\t\t{\n\t\t\tselection.write()->push_back(inst);\n\t\t\tinstance->Notifier<Instance, AncestorChanged>::addListener(this);\n\t\t\traiseAdded(inst);\n\t\t}\n\t}"
+   ]
+  ],
+  "Rendering/AppDraw/DrawAdorn.cpp": [
+   [
+    "        G3D::Matrix3 rotation = worldC.rotation*Math::getAxisRotationMatrix(axis);\n        G3D::CoordinateFrame rotatedWorldC(rotation, worldC.translation);",
+    "        const G3D::Matrix3& axisRotation = Math::getAxisRotationMatrix(axis);\n        G3D::CoordinateFrame rotatedWorldC(worldC.rotation*axisRotation, worldC.translation);"
+   ]
+  ],
+  "App/v8datamodel/Camera.cpp": [
+   [
+    "#include \"v8datamodel/Camera.h\"",
+    "#pragma float_control(precise,off)\n#include \"v8datamodel/Camera.h\""
+   ]
+  ],
+  "RbxGraphics/include/RbxGraphics/Adorn.h": [
+   [
+    "\t\tvirtual void cylinderAlongX(float radius, float length, const G3D::Color4& solidColor, const G3D::Color4& wireColor) = 0;",
+    "\t\tvirtual void sparkle() = 0;\n\t\tvirtual void cylinderAlongX(float radius, float length, const G3D::Color4& solidColor, const G3D::Color4& wireColor) = 0;"
+   ]
+  ]
+ },
+ {
+  "App/v8datamodel/Accoutrement.cpp": [
+   [
+    "\t\t\t\tif (name->toString() == \"BackendAccoutrementState\")\n\t\t\t\t\treturn;",
+    "\t\t\t\tif (name->name == \"BackendAccoutrementState\")\n\t\t\t\t\treturn;"
+   ]
+  ],
+  "App/v8datamodel/Tool.cpp": [
+   [
+    "\t\t\t\tif (name->toString() == \"BackendToolState\" || name->toString() == \"ActivationState\")\n\t\t\t\t\treturn;",
+    "\t\t\t\tif (name->name == \"BackendToolState\" || name->name == \"ActivationState\")\n\t\t\t\t\treturn;"
+   ]
+  ]
+ },
+ {
+  "App/v8datamodel/Mouse.cpp": [
+   [
+    "#include \"v8datamodel/Mouse.h\"",
+    "#pragma float_control(precise,off)\n#include \"v8datamodel/Mouse.h\""
+   ]
+  ],
+  "App/v8datamodel/Explosion.cpp": [
+   [
+    "\t\tInstance::onServiceProvider(oldProvider, newProvider);",
+    ""
+   ]
+  ],
+  "App/gui/GUI.cpp": [
+   [
+    "\t\tRBXASSERT(!focus);\n\t\treturn processNonFocus(event);",
+    "\t\treturn processNonFocus(event);"
+   ]
+  ],
+  "App/tool/ToolsArrow.cpp": [
+   [
+    "#include \"tool/ToolsArrow.h\"",
+    "#pragma float_control(precise,off)\n#include \"tool/ToolsArrow.h\""
+   ]
+  ],
+  "App/v8datamodel/ICharacterSubject.cpp": [
+   [
+    "#include \"v8datamodel/ICharacterSubject.h\"",
+    "#pragma float_control(precise,off)\n#include \"v8datamodel/ICharacterSubject.h\""
+   ],
+   [
+    "\tbool ICharacterSubject::zoom(const float in, G3D::CoordinateFrame& cameraGoal, G3D::CoordinateFrame& cameraFocus)\n\t{\n\t\tG3D::Vector3 focusToGoal = cameraGoal.translation - cameraFocus.translation;\n\n\t\tfloat currentDistance = focusToGoal.magnitude();\n\t\tfloat newDistance = Camera::getNewZoomDistance(currentDistance, in);\n\n\t\tnewDistance = G3D::min(400.0f, newDistance);\n\n\t\tif (newDistance == currentDistance)\n\t\t\treturn false;\n\n\t\tfocusToGoal.y = 0.0f;\n\t\tfocusToGoal.unitize();\n\t\tfocusToGoal.y = newDistance * 0.03f;\n\n\t\tcameraGoal.translation = focusToGoal.direction() * newDistance + cameraFocus.translation;\n\n\t\treturn true;\n\t}",
+    "\tbool ICharacterSubject::zoom(const float in, G3D::CoordinateFrame& cameraGoal, G3D::CoordinateFrame& cameraFocus)\n\t{\n\t\tG3D::CoordinateFrame adjustedGoal = wasOccluded ? goalFromDistance(cameraFocus, cameraGoal, unoccludedDistance) : cameraGoal;\n\t\tG3D::Vector3 focusToGoal = adjustedGoal.translation - cameraFocus.translation;\n\n\t\tfloat currentDistance = focusToGoal.magnitude();\n\t\tfloat newDistance = G3D::min(400.0f, Camera::getNewZoomDistance(currentDistance, in));\n\n\t\tif (newDistance == currentDistance)\n\t\t\treturn false;\n\n\t\tfocusToGoal.y = 0.0f;\n\t\tfocusToGoal.unitize();\n\t\tfocusToGoal.y = newDistance * 0.03f;\n\n\t\tadjustedGoal.translation = focusToGoal.direction() * newDistance + cameraFocus.translation;\n\n\t\tif (wasOccluded) unoccludedDistance = (adjustedGoal.translation - cameraFocus.translation).magnitude();\n\t\telse cameraGoal = adjustedGoal;\n\t\treturn true;\n\t}"
+   ]
+  ],
+  "App/v8datamodel/DebrisService.cpp": [
+   [
+    "\t\tInstance::onServiceProvider(oldProvider, newProvider);",
+    ""
+   ],
+   [
+    "\t\ttimer = ServiceProvider::create<TimerService>(newProvider);",
+    "\t\ttimer = ServiceProvider::find<TimerService>(newProvider);"
+   ]
+  ]
+ },
+ {
+  "App/include/v8datamodel/PartInstance.h": [
+   [
+    "\t\tstatic bool highlightSleepParts;",
+    "\t\tstatic bool showContactPoints;\n\t\tstatic bool highlightSleepParts;"
+   ]
+  ],
+  "App/v8datamodel/PartInstance.cpp": [
+   [
+    "\t\t\t   SurfacesNeedAdorn || \n\t\t\t   highlightSleepParts || ",
+    "\t\t\t   SurfacesNeedAdorn || \n\t\t\t   showContactPoints ||\n\t\t\t   highlightSleepParts || "
+   ],
+   [
+    "\tconst char* category_Part = \"Part\";",
+    "\tconst char* category_Part = \"Part\";\n\n\tbool PartInstance::showContactPoints = false;"
+   ]
+  ]
  }
 ]

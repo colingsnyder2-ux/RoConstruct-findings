@@ -1,4 +1,4 @@
-// from server: 48% by tester
+// from server: 0% by tester
 extern "C" void __stdcall sub_6A2780();
 extern "C" void* __cdecl sub_5709D0(void*, int);
 extern "C" int __cdecl sub_573D60(void*, void*, void*, void*, void*, void*, void*, void*);

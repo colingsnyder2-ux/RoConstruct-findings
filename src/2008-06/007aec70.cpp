@@ -1,9 +1,10 @@
+// from server: 76% by EspClaude
 // from server: 74% by EspClaude
 // from server: 72% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espclaude_0c42a923a2a711bd.cpp
+// roc-lib: rbxgs-dll roc_espclaude_976141cd3181d045.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define NDEBUG 1
@@ -69,6 +70,9 @@ static void halve1Dimage_ubyte(GLint components, GLuint width, GLuint height,
 	  [components * element_size * halfWidth * halfHeight]);
 } /* halve1Dimage_ubyte() */
 
+/* Stand-in for GLU halveImage_ubyte (exe 007ada80, separate TU built with /arch:SSE2; its
+   custom register convention is eax=width, edx=height). The 1D branch is omitted here so this
+   x87 TU derives the same convention at the call site; 007ada80 itself is matched separately. */
 static __declspec(noinline) void halveImage_ubyte(GLint components, GLuint width, GLuint height,
 			const GLubyte *datain, GLubyte *dataout,
 			GLint element_size, GLint ysize, GLint group_size)
@@ -82,8 +86,6 @@ static __declspec(noinline) void halveImage_ubyte(GLint components, GLuint width
     /* handle case where there is only 1 column/row */
     if (width == 1 || height == 1) {
        assert( !(width == 1 && height == 1) ); /* can't be 1x1 */
-       halve1Dimage_ubyte(components,width,height,datain,dataout,
-			  element_size,ysize,group_size);
        return;
     }
 
@@ -164,7 +166,8 @@ G3D::TextureRef TextureProxy::resolve(VisualEngine* engine) {
                 Ogre::LogManager::getSingleton().logMessage("RBX Texture " + ogreTexture->getName() + " overwritten");
             char name[1024];
             sprintf(name, "%g%g%gshadeTex", shadeColor.r, shadeColor.g, shadeColor.b);
-            ogreTexture = Ogre::TextureManager::getSingleton().getByName(name);
+            Ogre::TexturePtr& shadeTex = ogreTexture;
+            shadeTex = Ogre::TextureManager::getSingleton().getByName(name);
             if (ogreTexture.isNull()) {
                 static std::string sourceFilename = shadeTexture->filename;
                 static G3D::GImage sourceImage(sourceFilename, G3D::GImage::AUTODETECT);
@@ -193,7 +196,7 @@ G3D::TextureRef TextureProxy::resolve(VisualEngine* engine) {
                     int previousWidth = -1, previousHeight = -1;
                     for (int level = 0; level <= mipmaps; ++level) {
                         if (level == 0)
-                            memcpy(output, image.getData(), width*height*3);
+                            memcpy(&mipData[0], image.getData(), width*height*3);
                         else
                             halveImage_ubyte(3, previousWidth, previousHeight, previous, output,
                                              1, previousWidth*3, 3);
@@ -211,7 +214,7 @@ G3D::TextureRef TextureProxy::resolve(VisualEngine* engine) {
                                                  Ogre::PF_B8G8R8, false, 1, 0);
                 }
                 std::string textureName(name);
-                ogreTexture = Ogre::TextureManager::getSingleton().create(textureName, shadeResourceGroup, false, 0, 0);
+                shadeTex = Ogre::TextureManager::getSingleton().create(textureName, shadeResourceGroup, false, 0, 0);
                 ogreTexture->loadImage(finalImage);
                 root = 0;
                 loaded = true;
@@ -298,4 +301,5 @@ G3D::TextureRef TextureProxy::resolve(VisualEngine* engine) {
 #undef shadeTexture
 #undef shadeColor
 #undef ogreTexture
+
 

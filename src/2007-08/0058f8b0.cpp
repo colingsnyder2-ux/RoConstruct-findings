@@ -1,4 +1,4 @@
-// from server: 52% by colin
+// from server: 0% by colin
 struct FactoryProduct {
     void* field0;
     void* construct(int a, int b);

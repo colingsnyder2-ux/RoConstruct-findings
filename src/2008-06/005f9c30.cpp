@@ -1,8 +1,8 @@
-// from server: 78% by EspClaude
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espclaude_f64e416ce7b9c6ca.cpp
+// roc-lib: rbxgs-dll roc_espclaude_0f3b7fe0909768d5.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define NDEBUG 1
@@ -92,6 +92,7 @@ struct NativeInternetHandle {
 };
 class NativeHttp:public Http {public:void request(bool,std::istream&,bool,const char*,std::string&);void failure(bool,const char*);};
 void NativeHttp::request(bool isPost,std::istream& data,bool compressData,const char* additionalHeaders,std::string& response) {
+ int status;
  if(url.size()==0)throw std::runtime_error("empty url");
  if(!Http::trustCheck(url.c_str()))throw std::runtime_error(G3D::format("trust check failed for %s",url.c_str()));
  ATL::CUrl crack;crack.CrackUrl(url.c_str());
@@ -131,8 +132,10 @@ void NativeHttp::request(bool isPost,std::istream& data,bool compressData,const 
    std::string hashHeader=G3D::format("Roblox-Content-Hash: %s\r\n",hasher->c_str());
    failure(HttpAddRequestHeadersA(request,hashHeader.c_str(),(int)hashHeader.size(),HTTP_ADDREQ_FLAG_ADD)==TRUE,"HttpAddRequestHeaders failed");
   }
-  INTERNET_BUFFERSA buffers={0};buffers.dwStructSize=sizeof(buffers);buffers.dwBufferTotal=length;
+  {
+  INTERNET_BUFFERSA buffers;memset(&buffers,0,sizeof(buffers));buffers.dwStructSize=sizeof(buffers);buffers.dwBufferTotal=length;
   if(!HttpSendRequestExA(request,&buffers,NULL,0,0))throw std::runtime_error("HttpSendRequestEx failed");
+  }
   try {
   DWORD written;
   failure(InternetWriteFile(request,uploadData.c_str(),length,&written)==TRUE,"InternetWriteFile failed");
@@ -141,8 +144,8 @@ void NativeHttp::request(bool isPost,std::istream& data,bool compressData,const 
   failure(HttpEndRequestA(request,NULL,0,0)==TRUE,"HttpEndRequest failed");
 
  }
- int status;DWORD length=sizeof(status);
- failure(HttpQueryInfoA(request,HTTP_QUERY_STATUS_CODE|HTTP_QUERY_FLAG_NUMBER,&status,&length,NULL)==TRUE,"HttpQueryInfo failed");
+ {DWORD length=sizeof(status);
+ failure(HttpQueryInfoA(request,HTTP_QUERY_STATUS_CODE|HTTP_QUERY_FLAG_NUMBER,&status,&length,NULL)==TRUE,"HttpQueryInfo failed");}
  try {
   boost::iostreams::filtering_stream<boost::iostreams::input> in;
   char buffer[256];DWORD length=sizeof(buffer);
@@ -152,7 +155,7 @@ void NativeHttp::request(bool isPost,std::istream& data,bool compressData,const 
  catch(boost::iostreams::zlib_error& e) { int error=e.error(); throw std::runtime_error(G3D::format("ZLib error %d, \"%s\"",error,url.c_str())); }
  if(status!=200) {
   char buffer[512];DWORD length=sizeof(buffer);
-  if(HttpQueryInfoA(request,HTTP_QUERY_STATUS_TEXT,buffer,&length,NULL))throw std::runtime_error(std::string(buffer));
+  if(HttpQueryInfoA(request,HTTP_QUERY_STATUS_TEXT,buffer,&length,NULL))throw std::runtime_error(buffer);
   else throw std::runtime_error(G3D::format("statusCode = %d",status));
  }
  }

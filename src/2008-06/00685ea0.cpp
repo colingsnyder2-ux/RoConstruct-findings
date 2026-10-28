@@ -1,3 +1,4 @@
+// from server: 93% by EspClaude
 // from server: 91% by colin
 // roc 2008-06 00685ea0  unit: Ogre::RbxSubEntity  size: 6588 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00685ea0
@@ -2326,18 +2327,18 @@ if(colour.r>=0.0f)object->colour(colour);
 		    }
 		    {int count=positions.size();if(positions.size()>=2){if(count%2){object->position(positions[count-1]);object->index(index++);object->normal(normalsCache[count-1]);
 object->position(positions[count-2]);object->index(index++);object->normal(normalsCache[count-2]);
-float x=radiusLow*sinCache[i];float y=radiusLow*cosCache[i];
+float x=radiusLow * sinCache[i];float y=radiusLow * cosCache[i];
 object->position(x+offset.x,y+offset.y,zLow+offset.z);
 object->index(index++);
 object->normal(currentNormal);
-positions.push_back(Ogre::Vector3(x+offset.x,y+offset.y,zLow+offset.z));
+positions.push_back(Ogre::Vector3(radiusLow * sinCache[i] + offset.x,radiusLow * cosCache[i] + offset.y,zLow+offset.z));
 normalsCache.push_back(currentNormal);}else{object->position(positions[count-2]);object->index(index++);object->normal(normalsCache[count-2]);
 object->position(positions[count-1]);object->index(index++);object->normal(normalsCache[count-1]);
-float x=radiusLow*sinCache[i];float y=radiusLow*cosCache[i];
+float x=radiusLow * sinCache[i];float y=radiusLow * cosCache[i];
 object->position(x+offset.x,y+offset.y,zLow+offset.z);
 object->index(index++);
 object->normal(currentNormal);
-positions.push_back(Ogre::Vector3(x+offset.x,y+offset.y,zLow+offset.z));
+positions.push_back(Ogre::Vector3(radiusLow * sinCache[i] + offset.x,radiusLow * cosCache[i] + offset.y,zLow+offset.z));
 normalsCache.push_back(currentNormal);}}
 else{positions.push_back(Ogre::Vector3(radiusLow * sinCache[i] + offset.x, radiusLow * cosCache[i] + offset.y, zLow + offset.z));normalsCache.push_back(currentNormal);}};
 		    if (textureCoords) {
@@ -2346,18 +2347,18 @@ else{positions.push_back(Ogre::Vector3(radiusLow * sinCache[i] + offset.x, radiu
 		    }
 		    {int count=positions.size();if(positions.size()>=2){if(count%2){object->position(positions[count-1]);object->index(index++);object->normal(normalsCache[count-1]);
 object->position(positions[count-2]);object->index(index++);object->normal(normalsCache[count-2]);
-float x=radiusHigh*sinCache[i];float y=radiusHigh*cosCache[i];
+float x=radiusHigh * sinCache[i];float y=radiusHigh * cosCache[i];
 object->position(x+offset.x,y+offset.y,zHigh+offset.z);
 object->index(index++);
 object->normal(currentNormal);
-positions.push_back(Ogre::Vector3(x+offset.x,y+offset.y,zHigh+offset.z));
+positions.push_back(Ogre::Vector3(radiusHigh * sinCache[i] + offset.x,radiusHigh * cosCache[i] + offset.y,zHigh+offset.z));
 normalsCache.push_back(currentNormal);}else{object->position(positions[count-2]);object->index(index++);object->normal(normalsCache[count-2]);
 object->position(positions[count-1]);object->index(index++);object->normal(normalsCache[count-1]);
-float x=radiusHigh*sinCache[i];float y=radiusHigh*cosCache[i];
+float x=radiusHigh * sinCache[i];float y=radiusHigh * cosCache[i];
 object->position(x+offset.x,y+offset.y,zHigh+offset.z);
 object->index(index++);
 object->normal(currentNormal);
-positions.push_back(Ogre::Vector3(x+offset.x,y+offset.y,zHigh+offset.z));
+positions.push_back(Ogre::Vector3(radiusHigh * sinCache[i] + offset.x,radiusHigh * cosCache[i] + offset.y,zHigh+offset.z));
 normalsCache.push_back(currentNormal);}}
 else{positions.push_back(Ogre::Vector3(radiusHigh * sinCache[i] + offset.x, radiusHigh * cosCache[i] + offset.y, zHigh + offset.z));normalsCache.push_back(currentNormal);}};
 		} else {
@@ -2367,18 +2368,18 @@ else{positions.push_back(Ogre::Vector3(radiusHigh * sinCache[i] + offset.x, radi
 		    }
 		    {int count=positions.size();if(positions.size()>=2){if(count%2){object->position(positions[count-1]);object->index(index++);object->normal(normalsCache[count-1]);
 object->position(positions[count-2]);object->index(index++);object->normal(normalsCache[count-2]);
-float x=radiusHigh*sinCache[i];float y=radiusHigh*cosCache[i];
+float x=radiusHigh * sinCache[i];float y=radiusHigh * cosCache[i];
 object->position(x+offset.x,y+offset.y,zHigh+offset.z);
 object->index(index++);
 object->normal(currentNormal);
-positions.push_back(Ogre::Vector3(x+offset.x,y+offset.y,zHigh+offset.z));
+positions.push_back(Ogre::Vector3(radiusHigh * sinCache[i] + offset.x,radiusHigh * cosCache[i] + offset.y,zHigh+offset.z));
 normalsCache.push_back(currentNormal);}else{object->position(positions[count-2]);object->index(index++);object->normal(normalsCache[count-2]);
 object->position(positions[count-1]);object->index(index++);object->normal(normalsCache[count-1]);
-float x=radiusHigh*sinCache[i];float y=radiusHigh*cosCache[i];
+float x=radiusHigh * sinCache[i];float y=radiusHigh * cosCache[i];
 object->position(x+offset.x,y+offset.y,zHigh+offset.z);
 object->index(index++);
 object->normal(currentNormal);
-positions.push_back(Ogre::Vector3(x+offset.x,y+offset.y,zHigh+offset.z));
+positions.push_back(Ogre::Vector3(radiusHigh * sinCache[i] + offset.x,radiusHigh * cosCache[i] + offset.y,zHigh+offset.z));
 normalsCache.push_back(currentNormal);}}
 else{positions.push_back(Ogre::Vector3(radiusHigh * sinCache[i] + offset.x, radiusHigh * cosCache[i] + offset.y, zHigh + offset.z));normalsCache.push_back(currentNormal);}};
 		    if (textureCoords) {
@@ -2387,18 +2388,18 @@ else{positions.push_back(Ogre::Vector3(radiusHigh * sinCache[i] + offset.x, radi
 		    }
 		    {int count=positions.size();if(positions.size()>=2){if(count%2){object->position(positions[count-1]);object->index(index++);object->normal(normalsCache[count-1]);
 object->position(positions[count-2]);object->index(index++);object->normal(normalsCache[count-2]);
-float x=radiusLow*sinCache[i];float y=radiusLow*cosCache[i];
+float x=radiusLow * sinCache[i];float y=radiusLow * cosCache[i];
 object->position(x+offset.x,y+offset.y,zLow+offset.z);
 object->index(index++);
 object->normal(currentNormal);
-positions.push_back(Ogre::Vector3(x+offset.x,y+offset.y,zLow+offset.z));
+positions.push_back(Ogre::Vector3(radiusLow * sinCache[i] + offset.x,radiusLow * cosCache[i] + offset.y,zLow+offset.z));
 normalsCache.push_back(currentNormal);}else{object->position(positions[count-2]);object->index(index++);object->normal(normalsCache[count-2]);
 object->position(positions[count-1]);object->index(index++);object->normal(normalsCache[count-1]);
-float x=radiusLow*sinCache[i];float y=radiusLow*cosCache[i];
+float x=radiusLow * sinCache[i];float y=radiusLow * cosCache[i];
 object->position(x+offset.x,y+offset.y,zLow+offset.z);
 object->index(index++);
 object->normal(currentNormal);
-positions.push_back(Ogre::Vector3(x+offset.x,y+offset.y,zLow+offset.z));
+positions.push_back(Ogre::Vector3(radiusLow * sinCache[i] + offset.x,radiusLow * cosCache[i] + offset.y,zLow+offset.z));
 normalsCache.push_back(currentNormal);}}
 else{positions.push_back(Ogre::Vector3(radiusLow * sinCache[i] + offset.x, radiusLow * cosCache[i] + offset.y, zLow + offset.z));normalsCache.push_back(currentNormal);}};
 		}

@@ -1,4 +1,4 @@
-// from server: 52% by tester
+// from server: 0% by tester
 struct S {
     void* p;
     void* f(void* a, void* b);

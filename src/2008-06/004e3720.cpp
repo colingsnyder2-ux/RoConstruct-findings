@@ -1,20 +1,139 @@
+// from server: 94% by EspClaude
 // from server: 76% by EspClaude
 // from server: 71% by coldek
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espclaude_e5e249e4b1bba9fa.cpp
+// roc-lib: rbxgs-view-dll roc_espclaude_f674da9a4f817fa5.cpp
 
 // Candidate translation unit (score above; library headers required).
-// Binary-derived level population. This is a codegen analogue, not an original declaration.
-#include <RenderLib/Mesh.h>
-#include <util/NormalId.h>
-#include <v8datamodel/BrickColor.h>
-#include <G3D/Vector4.h>
+#include "BrickMesh.cpp"
+#include <vector>
 #include <algorithm>
+#include <stdlib.h>
+#include <math.h>
+extern bool buildingShadowMesh;
+extern const G3D::Vector2 flatTextureOrigin;
+template<RBX::NormalId id>
+static inline G3D::Vector3 faceHalf(const G3D::Vector3& size,float inset){
+    const G3D::Vector3& mapped=RBX::uvwToObject<id>(size);
+    return G3D::Vector3(fabs(mapped.x),fabs(mapped.y),fabs(mapped.z))-G3D::Vector3(inset,inset,0);
+}
+template<RBX::NormalId id>
+void recoveredMeshFace(const G3D::Vector3& size,float inset,RBX::View::RenderSurfaceTypes surfacesT,float color,
+                      G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>& level,unsigned* corners) {
+    using namespace G3D;
+    unsigned surfaces=surfacesT.data;
+    unsigned surface=(surfaces>>(3*id))&7;
+    Vector3 half=faceHalf<id>(size,inset);
+    Vector2 step(0,0),origin(0,0);
+    switch(surface) {
+    case 0: origin=flatTextureOrigin;step=half.xy()*2.0f;break;
+    case 1: step=Vector2(2,4);break;
+    case 2: step=Vector2(2,4);origin.y=1.0f/3.0f;break;
+    case 3: step=Vector2(2,2);origin.y=2.0f/3.0f;break;
+    case 4: step=Vector2(2,2);origin.y=5.0f/6.0f;break;
+    }
+    origin.x+=color*(1.0f/32.0f);
+    static Vector2 first(0,0);
+    static Vector2 last(0,0);
+    Vector2 faceFirst,faceLast;
+    if(!buildingShadowMesh) {
+        faceFirst.x=rand()*(0.1f/32767)-0.05f;
+        faceFirst.y=rand()*(0.1f/32767)-0.05f;
+        faceLast.x=rand()*(1.0f/32767)>0.5f?faceFirst.x:-faceFirst.x;
+        faceLast.y=rand()*(1.0f/32767)>0.5f?faceFirst.y:-faceFirst.y;
+        first=faceFirst;last=faceLast;
+    } else {
+        faceFirst=first;faceLast=last;
+    }
+    if(surface==0) {
+        Vector3 n0(faceFirst.x,faceFirst.y,1),n3(faceFirst.x,faceLast.y,1),n1(faceLast.x,faceFirst.y,1),n2(faceLast.x,faceLast.y,1);
+        unsigned a;
+        {
+            Vector3 tn=RBX::uvwToObject<id>(n0);
+            Vector3 tp=RBX::uvwToObject<id>(Vector3(-half.x,-half.y,half.z));
+            a=RBX::Render::Mesh::allocVertex(tp,tn,origin,true);
+        }
+        unsigned b;
+        {
+            Vector3 tn=RBX::uvwToObject<id>(n1);
+            Vector3 tp=RBX::uvwToObject<id>(Vector3(half.x,-half.y,half.z));
+            b=RBX::Render::Mesh::allocVertex(tp,tn,origin,true);
+        }
+        unsigned c;
+        {
+            Vector3 tn=RBX::uvwToObject<id>(n2);
+            Vector3 tp=RBX::uvwToObject<id>(Vector3(half.x,half.y,half.z));
+            c=RBX::Render::Mesh::allocVertex(tp,tn,origin,true);
+        }
+        unsigned d;
+        {
+            Vector3 tn=RBX::uvwToObject<id>(n3);
+            Vector3 tp=RBX::uvwToObject<id>(Vector3(-half.x,half.y,half.z));
+            d=RBX::Render::Mesh::allocVertex(tp,tn,origin,true);
+        }
+        level->indexArray.append(a,b,c,d);
+        corners[0]=a;corners[1]=b;corners[2]=c;corners[3]=d;
+        return;
+    }
+    Vector2 p;
+    p.x=-half.x;
+    Vector2 delta=(faceLast-faceFirst)*0.5f/half.xy();
+    unsigned rows=0;
+    Vector2 normal;
+    normal.x=faceFirst.x;
+    static std::vector<int> indices;
+    indices.erase(indices.begin(),indices.end());
+    unsigned columns;
+    for(;p.x<half.x;++rows) {
+        Vector2 q;
+        q.x=std::min(p.x+step.x,half.x);
+        columns=0;
+        Vector2 nextNormal;
+        nextNormal.x=normal.x+delta.x;
+        p.y=-half.y;
+        normal.y=faceFirst.y;
+        for(;p.y<half.y;++columns) {
+            q.y=std::min(p.y+step.y,half.y);
+            nextNormal.y=normal.y+delta.y;
+            Vector2 t0(origin.x+1.0f/1024.0f,origin.y+(q.y-p.y)*(1.0f/12.0f));
+            Vector2 t1(origin.x-1.0f/1024.0f+(q.x-p.x)*(1.0f/64.0f),origin.y+(q.y-p.y)*(1.0f/12.0f));
+            Vector2 t2(origin.x-1.0f/1024.0f+(q.x-p.x)*(1.0f/64.0f),origin.y);
+            Vector2 t3(origin.x+1.0f/1024.0f,origin.y);
+            Vector3 tn0=RBX::uvwToObject<id>(Vector3(normal.x,normal.y,1));
+            Vector3 tp0=RBX::uvwToObject<id>(Vector3(p.x,p.y,half.z));
+            unsigned a=RBX::Render::Mesh::allocVertex(tp0,tn0,t0,true);
+            Vector3 tn1=RBX::uvwToObject<id>(Vector3(nextNormal.x,normal.y,1));
+            Vector3 tp1=RBX::uvwToObject<id>(Vector3(q.x,p.y,half.z));
+            unsigned b=RBX::Render::Mesh::allocVertex(tp1,tn1,t1,true);
+            Vector3 tn2=RBX::uvwToObject<id>(Vector3(nextNormal.x,nextNormal.y,1));
+            Vector3 tp2=RBX::uvwToObject<id>(Vector3(q.x,q.y,half.z));
+            unsigned c=RBX::Render::Mesh::allocVertex(tp2,tn2,t2,true);
+            Vector3 tn3=RBX::uvwToObject<id>(Vector3(normal.x,nextNormal.y,1));
+            Vector3 tp3=RBX::uvwToObject<id>(Vector3(p.x,q.y,half.z));
+            unsigned d=RBX::Render::Mesh::allocVertex(tp3,tn3,t3,true);
+            indices.push_back(a);indices.push_back(b);indices.push_back(c);indices.push_back(d);
+            level->indexArray.append(a,b,c,d);
+            p.y=q.y;normal.y=nextNormal.y;
+        }
+        p.x=q.x;normal.x=nextNormal.x;
+    }
+    corners[0]=indices[0];
+    corners[1]=indices[(rows-1)*columns*4+1];
+    corners[2]=indices[rows*columns*4-2];
+    corners[3]=indices[columns*4-1];
+}
+template void recoveredMeshFace<RBX::NORM_X>(const G3D::Vector3&,float,RBX::View::RenderSurfaceTypes,float,G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>&,unsigned*);
+template void recoveredMeshFace<RBX::NORM_Y>(const G3D::Vector3&,float,RBX::View::RenderSurfaceTypes,float,G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>&,unsigned*);
+template void recoveredMeshFace<RBX::NORM_Z>(const G3D::Vector3&,float,RBX::View::RenderSurfaceTypes,float,G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>&,unsigned*);
+template void recoveredMeshFace<RBX::NORM_X_NEG>(const G3D::Vector3&,float,RBX::View::RenderSurfaceTypes,float,G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>&,unsigned*);
+template void recoveredMeshFace<RBX::NORM_Y_NEG>(const G3D::Vector3&,float,RBX::View::RenderSurfaceTypes,float,G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>&,unsigned*);
+template void recoveredMeshFace<RBX::NORM_Z_NEG>(const G3D::Vector3&,float,RBX::View::RenderSurfaceTypes,float,G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>&,unsigned*);
+
+#include <G3D/Vector4.h>
 using namespace G3D;
 typedef RBX::Render::Mesh Mesh;
 typedef ReferenceCountedPointer<Mesh::Level> LevelRef;
-
 // 004dd2e0 initializes the native 40-byte Level. The older authentic header
 // describes its first 28 bytes; byte 1c and words 20/24 are observed extra storage.
 // Their original names/meaning are unknown. Constructor/destructor remain native.
@@ -27,18 +146,43 @@ public:
     virtual ~Level2008();
 };
 typedef char LevelSizeProof[sizeof(Level2008)==0x28?1:-1];
-class RenderSurfaceTypes {
-public:
- size_t data;
- RenderSurfaceTypes():data(0){}
-};
+typedef RBX::View::RenderSurfaceTypes RenderSurfaceTypes;
 extern float meshBevel;
 extern Array<Vector3> meshPositions;
 extern Array<Vector3> meshNormals;
 extern Array<Vector2> meshTextures;
-template<RBX::NormalId id>
-__declspec(noalias) void recoveredMeshFace(const Vector3&,float,RenderSurfaceTypes,float,LevelRef&,unsigned*);
-__declspec(noinline) void __stdcall cloneMeshQuad(LevelRef& level,unsigned a,unsigned b,unsigned c,unsigned d,unsigned* out) {
+static __forceinline void atlasFace(unsigned* corners,const Vector4* rectangles,const unsigned* atlasIndices,const unsigned* flagArray,int side,float margin) {
+    const Vector4& rectangle=rectangles[atlasIndices[side]];
+    const unsigned& flags=flagArray[side];
+    Vector2 border(rectangle.z*6.0f,rectangle.w*6.0f);
+    border*=margin;
+    Vector2 a,b,c,d;
+    a=Vector2(rectangle.x+border.x,rectangle.y+border.y);
+    b=Vector2(rectangle.x+rectangle.z-border.x,rectangle.y+border.y);
+    c=Vector2(rectangle.x+rectangle.z-border.x,rectangle.y+rectangle.w-border.y);
+    d=Vector2(rectangle.x+border.x,rectangle.y+rectangle.w-border.y);
+    if(flags&1) {std::swap(a,b);std::swap(c,d);}
+    if(flags&2) {std::swap(a,d);std::swap(b,c);}
+    if(flags&4) {Vector2 t=a;a=b;b=c;c=d;d=t;}
+    unsigned i0=corners[0],i1=corners[1],i2=corners[2],i3=corners[3];
+    meshTextures[i0]=a;
+    meshTextures[i1]=b;
+    meshTextures[i2]=c;
+    meshTextures[i3]=d;
+}
+static __forceinline void extendTexture(unsigned destination,unsigned base,unsigned other,float margin) {
+    Vector2 direction=meshTextures[base]-meshTextures[other];
+    direction.unitize(1e-6f);
+    float extent=margin*(2.0f/3.0f);
+    meshTextures[destination]=meshTextures[base]+Vector2(direction.x*extent,direction.y*extent);
+}
+class BrickMeshRecovery {
+public:
+    void populate(const Vector3&,RenderSurfaceTypes,RBX::BrickColor,const unsigned*,const Vector4*,const unsigned*,float);
+    template<class T> T& field(unsigned offset) {return *reinterpret_cast<T*>(reinterpret_cast<char*>(this)+offset);}
+    void cloneMeshQuad(LevelRef& level,unsigned a,unsigned b,unsigned c,unsigned d,unsigned* out);
+};
+__declspec(noinline) void BrickMeshRecovery::cloneMeshQuad(LevelRef& level,unsigned a,unsigned b,unsigned c,unsigned d,unsigned* out) {
  out[0]=Mesh::allocVertex(meshPositions[a],meshNormals[a],meshTextures[a],true);
  out[1]=Mesh::allocVertex(meshPositions[b],meshNormals[b],meshTextures[b],true);
  out[2]=Mesh::allocVertex(meshPositions[c],meshNormals[c],meshTextures[c],true);
@@ -46,52 +190,26 @@ __declspec(noinline) void __stdcall cloneMeshQuad(LevelRef& level,unsigned a,uns
  unsigned q0=out[0],q1=out[1],q2=out[2],q3=out[3];
  level->indexArray.append(q0,q1,q2,q3);
 }
-
-static __forceinline void atlasFace(unsigned* corners,const Vector4& rectangle,unsigned flags,float margin) {
-    Vector2 border(rectangle.z*6.0f,rectangle.w*6.0f);
-    border*=margin;
-    Vector2 a(rectangle.x+border.x,rectangle.y+border.y);
-    Vector2 b(rectangle.x+rectangle.z-border.x,rectangle.y+border.y);
-    Vector2 c(rectangle.x+rectangle.z-border.x,rectangle.y+rectangle.w-border.y);
-    Vector2 d(rectangle.x+border.x,rectangle.y+rectangle.w-border.y);
-    if(flags&1) {std::swap(a,b);std::swap(c,d);}
-    if(flags&2) {std::swap(a,d);std::swap(b,c);}
-    if(flags&4) {Vector2 t=a;a=b;b=c;c=d;d=t;}
-    meshTextures[corners[0]]=a;
-    meshTextures[corners[1]]=b;
-    meshTextures[corners[2]]=c;
-    meshTextures[corners[3]]=d;
-}
-static __forceinline void extendTexture(unsigned destination,unsigned base,unsigned other,float margin) {
-    Vector2 direction=meshTextures[base]-meshTextures[other];
-    direction.unitize(1e-6f);
-    meshTextures[destination]=meshTextures[base]+direction*(margin*(2.0f/3.0f));
-}
-class BrickMeshRecovery {
-public:
-    void populate(const Vector3&,RenderSurfaceTypes,RBX::BrickColor,const unsigned*,const Vector4*,const unsigned*,float);
-    template<class T> T& field(unsigned offset) {return *reinterpret_cast<T*>(reinterpret_cast<char*>(this)+offset);}
-};
 void BrickMeshRecovery::populate(const Vector3& size,RenderSurfaceTypes surfaces,RBX::BrickColor color,
                                const unsigned* atlasIndices,const Vector4* rectangles,const unsigned* flags,float margin) {
     LevelRef level=new Level2008(RenderDevice::QUADS);
     field<Array<LevelRef> >(0xc).append(level);
     Vector3 half=size*0.5f;
     float palette=static_cast<float>(color.getClosestPaletteIndex());
-    unsigned quad0[4],quad1[4],quad2[4],quad3[4];
+    unsigned quads[16];
     unsigned face[24];
     recoveredMeshFace<RBX::NORM_X>(half,meshBevel,surfaces,palette,level,face);
-    atlasFace(face,rectangles[atlasIndices[3]],flags[3],margin);
+    atlasFace(face,rectangles,atlasIndices,flags,3,margin);
     recoveredMeshFace<RBX::NORM_Y>(half,meshBevel,surfaces,palette,level,face+4);
-    atlasFace(face+4,rectangles[atlasIndices[4]],flags[4],margin);
+    atlasFace(face+4,rectangles,atlasIndices,flags,4,margin);
     recoveredMeshFace<RBX::NORM_Z>(half,meshBevel,surfaces,palette,level,face+8);
-    atlasFace(face+8,rectangles[atlasIndices[0]],flags[0],margin);
+    atlasFace(face+8,rectangles,atlasIndices,flags,0,margin);
     recoveredMeshFace<RBX::NORM_X_NEG>(half,meshBevel,surfaces,palette,level,face+12);
-    atlasFace(face+12,rectangles[atlasIndices[2]],flags[2],margin);
+    atlasFace(face+12,rectangles,atlasIndices,flags,2,margin);
     recoveredMeshFace<RBX::NORM_Y_NEG>(half,meshBevel,surfaces,palette,level,face+16);
-    atlasFace(face+16,rectangles[atlasIndices[5]],flags[5],margin);
+    atlasFace(face+16,rectangles,atlasIndices,flags,5,margin);
     recoveredMeshFace<RBX::NORM_Z_NEG>(half,meshBevel,surfaces,palette,level,face+20);
-    atlasFace(face+20,rectangles[atlasIndices[1]],flags[1],margin);
+    atlasFace(face+20,rectangles,atlasIndices,flags,1,margin);
     if(meshBevel>0) {
         unsigned copies[24];
         for(int i=0;i<24;++i)
@@ -117,18 +235,18 @@ void BrickMeshRecovery::populate(const Vector3& size,RenderSurfaceTypes surfaces
         level->indexArray.append(copies[11],copies[10],copies[7],copies[6]);
         level->indexArray.append(copies[6],copies[5],copies[15],copies[14]);
         level->indexArray.append(copies[5],copies[4],copies[23],copies[22]);
-        cloneMeshQuad(level,face[10],face[9],face[0],face[3],quad0);
-        extendTexture(quad0[3],face[10],face[11],margin);
-        extendTexture(quad0[2],face[9],face[8],margin);
-        cloneMeshQuad(level,face[2],face[1],face[20],face[23],quad1);
-        extendTexture(quad1[3],face[2],face[3],margin);
-        extendTexture(quad1[2],face[1],face[0],margin);
-        cloneMeshQuad(level,face[22],face[21],face[12],face[15],quad2);
-        extendTexture(quad2[3],face[22],face[23],margin);
-        extendTexture(quad2[2],face[21],face[20],margin);
-        cloneMeshQuad(level,face[14],face[13],face[8],face[11],quad3);
-        extendTexture(quad3[3],face[14],face[15],margin);
-        extendTexture(quad3[2],face[13],face[12],margin);
+        cloneMeshQuad(level,face[10],face[9],face[0],face[3],quads+0);
+        extendTexture(quads[0+3],face[10],face[11],margin);
+        extendTexture(quads[0+2],face[9],face[8],margin);
+        cloneMeshQuad(level,face[2],face[1],face[20],face[23],quads+4);
+        extendTexture(quads[4+3],face[2],face[3],margin);
+        extendTexture(quads[4+2],face[1],face[0],margin);
+        cloneMeshQuad(level,face[22],face[21],face[12],face[15],quads+8);
+        extendTexture(quads[8+3],face[22],face[23],margin);
+        extendTexture(quads[8+2],face[21],face[20],margin);
+        cloneMeshQuad(level,face[14],face[13],face[8],face[11],quads+12);
+        extendTexture(quads[12+3],face[14],face[15],margin);
+        extendTexture(quads[12+2],face[13],face[12],margin);
         level->indexArray.append(copies[17],copies[16],copies[21],copies[20]);
         level->indexArray.append(copies[13],copies[12],copies[16],copies[19]);
         level->indexArray.append(copies[9],copies[8],copies[19],copies[18]);
@@ -209,4 +327,5 @@ void BrickMeshRecovery::populate(const Vector3& size,RenderSurfaceTypes surfaces
         for(int i=0;i<24;++i) Mesh::allocVertex(copies[i],static_cast<unsigned>(-1));
     }
 }
+
 

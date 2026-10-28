@@ -1,4 +1,4 @@
-// from server: 44% by atomic.potato
+// from server: 0% by atomic.potato
 extern "C" void* __cdecl sub_98211A(unsigned int);
 
 struct S {

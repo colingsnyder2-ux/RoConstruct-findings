@@ -1,4 +1,4 @@
-// from server: 40% by atomic.potato
+// from server: 30% by atomic.potato
 struct UTVertexPositionNormalStudsTex_SpecializedMeshGen {
     char pad0[8];
     void* begin;

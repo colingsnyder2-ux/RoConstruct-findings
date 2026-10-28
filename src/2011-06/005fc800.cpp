@@ -1,4 +1,4 @@
-// from server: 44% by atomic.potato
+// from server: 0% by atomic.potato
 struct S {
     char __thiscall sub_5fb5b0(void**);
     void f(void*);

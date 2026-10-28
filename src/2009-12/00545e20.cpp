@@ -1,4 +1,4 @@
-// from server: 21% by atomic.potato
+// from server: 6% by atomic.potato
 struct S
 {
     int field_29b0;

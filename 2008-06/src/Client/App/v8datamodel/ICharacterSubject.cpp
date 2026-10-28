@@ -1,3 +1,4 @@
+#pragma float_control(precise,off)
 #include "v8datamodel/ICharacterSubject.h"
 #include "v8datamodel/Camera.h"
 #include "v8datamodel/UserController.h"
@@ -33,12 +34,11 @@ namespace RBX
 
 	bool ICharacterSubject::zoom(const float in, G3D::CoordinateFrame& cameraGoal, G3D::CoordinateFrame& cameraFocus)
 	{
-		G3D::Vector3 focusToGoal = cameraGoal.translation - cameraFocus.translation;
+		G3D::CoordinateFrame adjustedGoal = wasOccluded ? goalFromDistance(cameraFocus, cameraGoal, unoccludedDistance) : cameraGoal;
+		G3D::Vector3 focusToGoal = adjustedGoal.translation - cameraFocus.translation;
 
 		float currentDistance = focusToGoal.magnitude();
-		float newDistance = Camera::getNewZoomDistance(currentDistance, in);
-
-		newDistance = G3D::min(400.0f, newDistance);
+		float newDistance = G3D::min(400.0f, Camera::getNewZoomDistance(currentDistance, in));
 
 		if (newDistance == currentDistance)
 			return false;
@@ -47,8 +47,10 @@ namespace RBX
 		focusToGoal.unitize();
 		focusToGoal.y = newDistance * 0.03f;
 
-		cameraGoal.translation = focusToGoal.direction() * newDistance + cameraFocus.translation;
+		adjustedGoal.translation = focusToGoal.direction() * newDistance + cameraFocus.translation;
 
+		if (wasOccluded) unoccludedDistance = (adjustedGoal.translation - cameraFocus.translation).magnitude();
+		else cameraGoal = adjustedGoal;
 		return true;
 	}
 

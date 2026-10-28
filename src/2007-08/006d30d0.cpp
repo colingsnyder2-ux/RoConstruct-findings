@@ -1,4 +1,4 @@
-// from server: 23% by colin
+// from server: 0% by colin
 struct CXTPReportRow_Batch {
     char pad0[0x20];
     void* m_pControl;

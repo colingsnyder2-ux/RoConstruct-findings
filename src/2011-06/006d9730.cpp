@@ -1,4 +1,4 @@
-// from server: 4% by atomic.potato
+// from server: 0% by atomic.potato
 extern "C" void __stdcall func_007f90e0(int, const char*, const char*, int, int, int, int);
 extern "C" void __stdcall func_0040ddc0(void*);
 extern "C" void __stdcall func_007736f0(void*);

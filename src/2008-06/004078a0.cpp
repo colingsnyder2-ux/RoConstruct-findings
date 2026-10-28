@@ -1,4 +1,3 @@
-// from server: 92% by EspClaude
 // from server: 83% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022

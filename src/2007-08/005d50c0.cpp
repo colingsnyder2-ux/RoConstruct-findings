@@ -1,4 +1,4 @@
-// from server: 52% by colin
+// from server: 0% by colin
 struct S {
     void* p;
     S* f(int a, int b);

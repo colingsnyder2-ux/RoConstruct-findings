@@ -9,8 +9,8 @@ namespace RBX
     // assignment of operator* result to rotation is screwing up somewhere
     void DrawAdorn::cylinder(Adorn* adorn, const G3D::CoordinateFrame& worldC, int axis, float length, float radius, const G3D::Color3& color)
     {
-        G3D::Matrix3 rotation = worldC.rotation*Math::getAxisRotationMatrix(axis);
-        G3D::CoordinateFrame rotatedWorldC(rotation, worldC.translation);
+        const G3D::Matrix3& axisRotation = Math::getAxisRotationMatrix(axis);
+        G3D::CoordinateFrame rotatedWorldC(worldC.rotation*axisRotation, worldC.translation);
 
         adorn->setObjectToWorldMatrix(rotatedWorldC);
         adorn->cylinderAlongX(radius, length, color, G3D::Color4::clear());

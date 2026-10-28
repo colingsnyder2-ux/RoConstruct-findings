@@ -1,4 +1,3 @@
-// from server: 97% by coldek
 // from server: 94% by Espeon
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast

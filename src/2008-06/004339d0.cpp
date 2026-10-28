@@ -128,7 +128,7 @@ void CObjectBrowser::func_004339d0(int type, int width, int height)
         {
             int cur;
             second.getRow(0, &cur, &minimum);
-            type = difference + cur;
+            type = cur + difference;
             width = height - 150;
             type = *(type < width ? &type : &width);
             width = 50;

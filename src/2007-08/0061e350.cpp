@@ -1,4 +1,4 @@
-// from server: 21% by colin
+// from server: 0% by colin
 struct ScoreHud {
     void f(int* first, int* last, int* dest);
 };

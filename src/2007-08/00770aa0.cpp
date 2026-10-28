@@ -1,454 +1,294 @@
-// from server: 97% by tester
-// roc-lang: cpp
-// roc-cl: 21022
+// from server: 100% by Yeetserama
+// roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8tree/Instance.cpp
+// roc-lang: cpp
+// roc-lib: rbxgs roc_unit_7346858f71d52c3f.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8tree/Instance.h"
-#include "reflection/function.h"
-#include "reflection/property.h"
-#include <algorithm>
+#include "RenderLib/Chunk.h"
+#include "RenderLib/Profiler.h"
+#include "v8datamodel/DebugSettings.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/ModelInstance.h"
+#include "v8datamodel/Workspace.h"
+#include "v8world/Primitive.h"
+#include "v8world/World.h"
+
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, bool> prop_AnchoredParts("ShowAnchors", "Display", &RBX::DebugSettings::getShowAnchoredParts, &RBX::DebugSettings::setShowAnchoredParts, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, bool> prop_HighlightSleepParts("HighlightSleepParts", "Display", &RBX::DebugSettings::getHighlightSleepParts, &RBX::DebugSettings::setHighlightSleepParts, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, bool> prop_HighlightAwakeParts("HighlightAwakeParts", "Display", &RBX::DebugSettings::getHighlightAwakeParts, &RBX::DebugSettings::setHighlightAwakeParts, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, bool> prop_PartCoordinateFrames("ShowPartCoords", "Display", &RBX::DebugSettings::getShowPartCoordinateFrames, &RBX::DebugSettings::setShowPartCoordinateFrames, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, bool> prop_UnalignedParts("ShowUnalignedParts", "Display", &RBX::DebugSettings::getShowUnalignedParts, &RBX::DebugSettings::setShowUnalignedParts, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, bool> prop_ShowAggregation("ShowAggregation", "Display", &RBX::DebugSettings::getShowAggregation, &RBX::DebugSettings::setShowAggregation, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, bool> prop_ModelCoordinateFrames("ShowModelCoords", "Display", &RBX::DebugSettings::getShowModelCoordinateFrames, &RBX::DebugSettings::setShowModelCoordinateFrames, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, bool> prop_WorldCoordinateFrames("ShowWorldCoords", "Display", &RBX::DebugSettings::getShowWorldCoordinateFrames, &RBX::DebugSettings::setShowWorldCoordinateFrames, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, bool> prop_SpanningTree("ShowTree", "Display", &RBX::DebugSettings::getShowSpanningTree, &RBX::DebugSettings::setShowSpanningTree, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, bool> prop_DisableSleep("DisableSleep", "Display", &RBX::DebugSettings::getDisableSleep, &RBX::DebugSettings::setDisableSleep, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, bool> prop_DisableEnvironmentalThrottle("DisableEnvironmentalThrottle", "Display", &RBX::DebugSettings::getDisableEnvironmentalThrottle, &RBX::DebugSettings::setDisableEnvironmentalThrottle, RBX::Reflection::PropertyDescriptor::STANDARD);
+
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, bool> prop_ValidatingDebug("ValidatingDebug", "Errors", &RBX::DebugSettings::getValidatingDebug, &RBX::DebugSettings::setValidatingDebug, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, RBX::Debugable::AssertAction> prop_assertAction("AssertAction", "Errors", &RBX::DebugSettings::getAssertAction, &RBX::DebugSettings::setAssertAction, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, RBX::DebugSettings::ErrorReporting> prop_errorReporting("errorReporting", "Errors", &RBX::DebugSettings::getErrorReporting, &RBX::DebugSettings::setErrorReporting, RBX::Reflection::PropertyDescriptor::STANDARD);
+
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, float> prop_shaderModel("shaderModel", "Profile", &RBX::DebugSettings::shaderModel, NULL, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, int> prop_videoMemory("VideoMemory", "Profile", &RBX::DebugSettings::videoMemory, NULL, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, int> prop_cpuSpeed("CpuSpeed", "Profile", &RBX::DebugSettings::cpuSpeed, NULL, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, int> prop_osPlatformId("OsPlatformId", "Profile", &RBX::DebugSettings::osPlatformId, NULL, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, std::string> prop_osVer("OsVer", "Profile", &RBX::DebugSettings::osVer, NULL, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, std::string> prop_glVendor("GlVendor", "Profile", &RBX::DebugSettings::glVendor, NULL, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, std::string> prop_gfxcard("GfxCard", "Profile", &RBX::DebugSettings::gfxcard, NULL, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, std::string> prop_cpu("CPU", "Profile", &RBX::DebugSettings::cpu, NULL, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, int> prop_ram("RAM", "Profile", &RBX::DebugSettings::ram, NULL, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, std::string> prop_resolution("Resolution", "Profile", &RBX::DebugSettings::resolution, NULL, RBX::Reflection::PropertyDescriptor::STANDARD);
+
+RBX::Reflection::BoundProp<bool, 1> prop_SoundWarnings("SoundWarnings", "Errors", &RBX::DebugSettings::soundWarnings, RBX::Reflection::PropertyDescriptor::STANDARD);
 
 namespace RBX
 {
-	const char* sInstance = "Instance";
-
-	Reflection::BoundProp<bool, 1> Instance::propArchivable("archivable", "Behavior", &Instance::archivable, Reflection::PropertyDescriptor::STANDARD); // L14
-	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(std::string, bool), 2> findFirstChild(&Instance::findFirstChildByName2, "FindFirstChild", "name", "recursive", false, Reflection::FunctionDescriptor::AnyCaller); // L15
-	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(), 0> func_clone(&Instance::clone, "Clone", Reflection::FunctionDescriptor::AnyCaller); // L16
-	static Reflection::BoundFuncDesc<Instance, void(), 0> func_Remove(&Instance::remove, "Remove", Reflection::FunctionDescriptor::AnyCaller); // L17
-	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_childrenOld(&Instance::getChildren2, "children", Reflection::FunctionDescriptor::AnyCaller); // L18
-	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_children(&Instance::getChildren2, "GetChildren", Reflection::FunctionDescriptor::AnyCaller); // L19
-	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isDescendentOf(&Instance::isDescendentOf2, "IsDescendentOf", "ancestor", Reflection::FunctionDescriptor::AnyCaller); // L20
-	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isAncestorOf(&Instance::isAncestorOf2, "IsAncestorOf", "descendent", Reflection::FunctionDescriptor::AnyCaller); // L21
-	static Reflection::PropDescriptor<Instance, std::string> prop_className("className", "Data", &Instance::getClassNameStr, NULL, Reflection::PropertyDescriptor::UI); // L22
-
-	const Reflection::PropDescriptor<Instance, std::string> Instance::desc_Name("Name", "Data", &Instance::getName, &Instance::setName, Reflection::PropertyDescriptor::STANDARD); // L24
-	const Reflection::RefPropDescriptor<Instance, Instance> Instance::propParent("Parent", "Data", &Instance::getParent, &Instance::setParent, Reflection::PropertyDescriptor::UI); // L25
-
-	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childAdded("ChildAdded", "child"); // L27
-	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childRemoved("ChildRemoved", "child"); // L28
-	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentAdded("DescendentAdded", "descendent"); // L29
-	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentRemoving("DescendentRemoving", "descendent"); // L30
-	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_ancestryChanged("AncestryChanged", "child"); // L31
-	Reflection::SignalDesc<Instance, void(const Reflection::PropertyDescriptor*)> Instance::event_propertyChanged("Changed", "property"); // L32 
-
-	Instance::Instance(const char* name)
-		: assoc(),
-		  parent(NULL),
-		  children(),
-		  name(name),
-		  archivable(true),
-		  guid()
+	DebugSettings::DebugSettings()
+		: stackTracingEnabled(true),
+		  ioEnabled(false),
+		  soundWarnings(false),
+		  errorReporting(Prompt)
 	{
+		setName("Diagnostics");
 	}
 
-	Instance::Instance()
-		: assoc(),
-		  parent(NULL),
-		  children(),
-		  name("Instance"),
-		  archivable(true),
-		  guid()
+	bool DebugSettings::getShowAnchoredParts() const
 	{
+		return PartInstance::showAnchoredParts;
 	}
 
-	Instance::~Instance()
+	bool DebugSettings::getShowAggregation() const
 	{
-		RBXASSERT(!parent);
+		return Render::AggregateChunk::randomColors;
 	}
 
-	bool Instance::askAddChild(const Instance* instance) const
+	bool DebugSettings::getShowUnalignedParts() const
 	{
-		return false;
+		return PartInstance::showUnalignedParts;
 	}
 
-	bool Instance::askSetParent(const Instance* instance) const
+	bool DebugSettings::getHighlightSleepParts() const
 	{
-		return false;
+		return PartInstance::highlightSleepParts;
 	}
 
-	void Instance::setName(const std::string& value)
+	bool DebugSettings::getHighlightAwakeParts() const
 	{
-		if (name != value)
+		return PartInstance::highlightAwakeParts;
+	}
+
+	bool DebugSettings::getShowPartCoordinateFrames() const
+	{
+		return PartInstance::showPartCoord;
+	}
+
+	bool DebugSettings::getShowModelCoordinateFrames() const
+	{
+		return ModelInstance::showModelCoord;
+	}
+
+	bool DebugSettings::getShowWorldCoordinateFrames() const
+	{
+		return Workspace::showWorldCoord;
+	}
+
+	bool DebugSettings::getDisableSleep() const
+	{
+		return Primitive::disableSleep;
+	}
+
+	bool DebugSettings::getDisableEnvironmentalThrottle() const
+	{
+		return World::disableEnvironmentalThrottle;
+	}
+
+	bool DebugSettings::getShowSpanningTree() const
+	{
+		return PartInstance::showSpanningTree;
+	}
+
+	void DebugSettings::setShowAnchoredParts(bool value)
+	{
+		if (value != PartInstance::showAnchoredParts)
 		{
-			name = value;
-			raisePropertyChanged(desc_Name);
+			PartInstance::showAnchoredParts = value;
+			raisePropertyChanged(prop_AnchoredParts);
 		}
 	}
 
-	void Instance::onDescendentAdded(Instance* instance)
+	void DebugSettings::setShowAggregation(bool value)
 	{
-		if (Notifier<Instance, DescendentAdded>::hasListeners())
-			Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent));
-
-		event_descendentAdded.fire(this, shared_from(instance));
-	}
-
-	void Instance::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
-	{
-		event_descendentRemoving.fire(this, instance);
-
-		if (Notifier<Instance, DescendentRemoving>::hasListeners())
-			Notifier<Instance, DescendentRemoving>::raise(DescendentRemoving(instance, shared_from(instance->parent)));
-	}
-
-	class RaiseDescendentAdded2
-	{
-	private:
-		const Instance* notifier;
-		Listener<Instance, DescendentAdded>* listener;
-	  
-	public:
-		RaiseDescendentAdded2(const Instance* notifier, Listener<Instance, DescendentAdded>* listener)
-			: notifier(notifier),
-			  listener(listener)
+		if (value != Render::AggregateChunk::randomColors)
 		{
-		}
-	public:
-		void operator()(Instance* instance)
-		{
-			notifier->Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent), listener);
-			instance->for_eachChild(*this);
-		}
-	};
-
-	void Instance::onAddListener(Listener<Instance, DescendentAdded>* listener) const
-	{
-		for_eachChild(RaiseDescendentAdded2(this, listener));
-	}
-
-	void Instance::onAddListener(Listener<Instance, ChildAdded>* listener) const
-	{
-		if (children)
-		{
-			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = children.read();
-			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
-			{
-				Notifier<Instance, ChildAdded>::raise(ChildAdded((*iter).get()), listener);
-			}
+			Render::AggregateChunk::randomColors = value;
+			raisePropertyChanged(prop_PartCoordinateFrames);
 		}
 	}
 
-	void Instance::removeAllChildren()
+	void DebugSettings::setShowUnalignedParts(bool value)
 	{
-		while (children)
+		if (value != PartInstance::showUnalignedParts)
 		{
-			children->back()->setParent(NULL);
+			PartInstance::showUnalignedParts = value;
+			raisePropertyChanged(prop_PartCoordinateFrames);
 		}
 	}
 
-	void Instance::onChildChanged(Instance* instance, const PropertyChanged& event)
+	void DebugSettings::setHighlightSleepParts(bool value)
 	{
-		Instance* p = parent;
-
-		if (p)
-			p->onChildChanged(instance, event);
-	}
-
-	void Instance::readProperties(const XmlElement* container, IReferenceBinder& binder)
-	{
-		for (const XmlElement* i = container->firstChild(); i != NULL; i = i->nextSibling())
-			readProperty(i, binder);
-	}
-
-	void Instance::readChild(const XmlElement* childElement, IReferenceBinder& binder)
-	{
-		const Name* className = NULL;
-		const XmlAttribute* classAttrib = childElement->findAttribute(tag_class);
-
-		if (classAttrib)
+		if (value != PartInstance::highlightSleepParts)
 		{
-			if (classAttrib->getValue(className))
-			{
-				boost::shared_ptr<Instance> childInstance = createChild(*className);
-				if (childInstance)
-				{
-					childInstance->read(childElement, binder);
-					if (childInstance)
-						childInstance->setParent(this);
-				}
-				else
-				{
-					const XmlAttribute* nameRef = childElement->findAttribute(name_referent);
-					if (nameRef)
-						binder.announceID(nameRef, NULL);
-				}
-			}
+			PartInstance::highlightSleepParts = value;
+			raisePropertyChanged(prop_PartCoordinateFrames);
 		}
 	}
 
-	void Instance::readChildren(const XmlElement* element, IReferenceBinder& binder)
+	void DebugSettings::setHighlightAwakeParts(bool value)
 	{
-		if (element)
+		if (value != PartInstance::highlightAwakeParts)
 		{
-			for (const XmlElement* current = element->findFirstChildByTag(tag_Item); current != NULL; current = element->findNextChildWithSameTag(current))
-			{
-				readChild(current, binder);
-			}
+			PartInstance::highlightAwakeParts = value;
+			raisePropertyChanged(prop_PartCoordinateFrames);
 		}
 	}
 
-	void Instance::read(const XmlElement* element, IReferenceBinder& binder)
+	void DebugSettings::setShowPartCoordinateFrames(bool value)
 	{
-		const XmlAttribute* nameRef = element->findAttribute(name_referent);
-		if (nameRef)
+		if (value != PartInstance::showPartCoord)
 		{
-			binder.announceID(nameRef, this);
-		}
-
-		if (element->getTag() == tag_Item)
-		{
-			const XmlElement* properties = element->findFirstChildByTag(tag_Properties);
-			if (properties)
-			{
-				readProperties(properties, binder);
-			}
-			readChildren(element, binder);
-		}
-		else
-			readProperty(element, binder);
-	}
-
-	void Instance::predelete(Instance* instance)
-	{
-		instance->predelete();
-	}
-
-	void Instance::onAncestorChanged(const AncestorChanged& event)
-	{
-		typedef std::vector<boost::shared_ptr<Instance>>::const_iterator Iterator;
-
-		if (children)
-		{
-			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> r = children.read();
-
-			for (Iterator it = r->begin(); it != r->end(); it++)
-			{
-				(*it)->onAncestorChanged(event);
-			}
-		}
-
-		event_ancestryChanged.fire(this, shared_from(event.child));
-		Notifier<Instance, AncestorChanged>::raise(event);
-	}
-
-	void Instance::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
-	{
-		return;
-	}
-
-	bool Instance::contains(const Instance* child) const
-	{
-		for (; child != NULL; child = child->parent)
-		{
-			if (child == this)
-				return true;
-		}
-
-		return false;
-	}
-
-	boost::shared_ptr<Instance> Instance::createChild(const Name& className)
-	{
-		return AbstractFactoryProduct::create(className);
-	}
-
-	int Instance::findChildIndex(const Instance* instance) const
-	{
-		RBXASSERT(children);
-
-		const std::vector<boost::shared_ptr<Instance>>& c = *children;
-
-		std::vector<boost::shared_ptr<Instance>>::const_iterator found = std::find(c.begin(), c.end(), instance->shared_from_this());
-		return (int)std::distance(c.begin(), found);
-	}
-
-	void Instance::writeChildren(XmlElement* container)
-	{
-		if (children)
-		{
-			const std::vector<boost::shared_ptr<Instance>>& c = *children;
-
-			for (std::vector<boost::shared_ptr<Instance>>::const_iterator it = c.begin(); it != c.end(); it++)
-			{
-				XmlElement* element = (*it)->write();
-				if (element)
-					container->pushBackChild(element);
-			}
+			PartInstance::showPartCoord = value;
+			raisePropertyChanged(prop_PartCoordinateFrames);
 		}
 	}
 
-	Instance* Instance::findFirstChildByName(const std::string& findName) const
+	void DebugSettings::setShowModelCoordinateFrames(bool value)
 	{
-		if (!children)
-			return NULL;
-
-		const std::vector<boost::shared_ptr<Instance>>& c = *children;
-
-		for (size_t i = 0; i < c.size(); i++)
+		if (value != ModelInstance::showModelCoord)
 		{
-			if (c[i]->name == findName)
-				return c[i].get();
-		}
-
-		return NULL;
-	}
-
-	Instance* Instance::findFirstChildByNameRecursive(const std::string& findName) const
-	{
-		Instance* foundChild = findFirstChildByName(findName);
-		if (foundChild)
-			return foundChild;
-
-		if (!children)
-			return NULL;
-
-		const std::vector<boost::shared_ptr<Instance>>& c = *children;
-
-		for (size_t i = 0; i < c.size(); i++)
-		{
-			Instance* child = c[i]->findFirstChildByNameRecursive(findName);
-			if (child)
-				return child;
-		}
-
-		return NULL;
-	}
-
-	void Instance::signalDescendentAdded(Instance* instance, Instance* beginParent, Instance* oldParent)
-	{
-		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
-		{
-			if (parent == oldParent || parent->isAncestorOf(oldParent))
-				break;
-
-			parent->onDescendentAdded(instance);
-		}
-
-		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
-
-		if (c)
-		{
-			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
-			{
-				signalDescendentAdded((*iter).get(), beginParent, oldParent);
-			}
+			ModelInstance::showModelCoord = value;
+			raisePropertyChanged(prop_ModelCoordinateFrames);
 		}
 	}
 
-	void Instance::signalDescendentRemoving(const boost::shared_ptr<Instance>& instance, Instance* beginParent, Instance* newParent)
+	void DebugSettings::setShowWorldCoordinateFrames(bool value)
 	{
-		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
+		if (value != Workspace::showWorldCoord)
 		{
-			if (parent == newParent || parent->isAncestorOf(newParent))
-				break;
-
-			parent->onDescendentRemoving(instance);
-		}
-
-		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
-
-		if (c)
-		{
-			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
-			{
-				signalDescendentRemoving((*iter), beginParent, newParent);
-			}
+			Workspace::showWorldCoord = value;
+			raisePropertyChanged(prop_WorldCoordinateFrames);
 		}
 	}
 
-	//96.19% matching.
-	void Instance::readProperty(const XmlElement* propertyElement, IReferenceBinder& binder)
+	void DebugSettings::setDisableSleep(bool value)
 	{
-		const Name* value = NULL;
-
-		if (const XmlAttribute* attribute = propertyElement->findAttribute(name_name))
+		if (value != Primitive::disableSleep)
 		{
-			if (attribute->getValue(value))
-			{
-				Reflection::PropertyIterator iter = findProperty(*value);
-
-				if (iter != properties_end())
-				{
-					(*iter).read(propertyElement, binder);
-				}
-			}
+			Primitive::disableSleep = value;
+			raisePropertyChanged(prop_DisableSleep);
 		}
 	}
 
-	XmlElement* Instance::write()
+	void DebugSettings::setDisableEnvironmentalThrottle(bool value)
 	{
-		if (archivable)
+		if (value != World::disableEnvironmentalThrottle)
 		{
-			if (getClassName() != Name::getNullName())
-			{
-				XmlElement* element = new XmlElement(tag_Item);
-				element->addAttribute(tag_class, &getClassName());
-				element->addAttribute(name_referent, InstanceHandle(this));
-
-				writeProperties(element->addChild(tag_Properties));
-				writeChildren(element);
-
-				return element;
-			}
+			World::disableEnvironmentalThrottle = value;
+			raisePropertyChanged(prop_DisableEnvironmentalThrottle);
 		}
-
-		return new XmlElement(tag_External, InstanceHandle(this));
 	}
-  
-	void Instance::setParent(Instance* newParent)
+
+	void DebugSettings::setShowSpanningTree(bool value)
 	{
-		if (newParent == parent)
-			return;
-
-		boost::shared_ptr<Instance> oldParent = shared_from(parent);
-		boost::shared_ptr<Instance> self = this->shared_from_this();
-
-		if (oldParent)
+		if (value != PartInstance::showSpanningTree)
 		{
-			if (!oldParent->contains(newParent))
-				signalDescendentRemoving(self, oldParent.get(), newParent);
-
-			oldParent->onChildRemoving(this);
-
-			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& c = oldParent->children.write();
-			c->erase(std::find(c->begin(), c->end(), self));
-
-			if (c->empty())
-				oldParent->children.reset();
-
-			parent = NULL;
-
-			event_childRemoved.fire(oldParent.get(), self);
-			oldParent->Notifier<Instance, ChildRemoved>::raise(ChildRemoved(this));
-
-			oldParent->onChildRemoved(this);
-
-			if (oldParent->numChildren() == 0)
-				oldParent->onLastChildRemoved();
+			PartInstance::showSpanningTree = value;
+			raisePropertyChanged(prop_SpanningTree);
 		}
+	}
 
-		if (newParent)
+	void DebugSettings::setValidatingDebug(bool value)
+	{
+		if (value != Debugable::validatingDebug)
 		{
-			newParent->children.write()->push_back(self);
+			Debugable::validatingDebug = value;
+			raisePropertyChanged(prop_ValidatingDebug);
 		}
+	}
 
-		parent = newParent;
-
-		if (newParent)
+	void DebugSettings::setAssertAction(Debugable::AssertAction value)
+	{
+		if (value != Debugable::assertAction)
 		{
-			newParent->onChildAdded(this);
-
-			if (!newParent->contains(oldParent.get()))
-				signalDescendentAdded(this, newParent, oldParent.get());
-
-			newParent->Notifier<Instance, ChildAdded>::raise(ChildAdded(this));
-			event_childAdded.fire(newParent, self);
+			Debugable::assertAction = value;
+			raisePropertyChanged(prop_assertAction);
 		}
+	}
 
-		onAncestorChanged(AncestorChanged(this, oldParent.get(), newParent));
-		raisePropertyChanged(propParent);
+	void DebugSettings::setErrorReporting(ErrorReporting value)
+	{
+		if (value != errorReporting)
+		{
+			errorReporting = value;
+			raisePropertyChanged(prop_errorReporting);
+		}
+	}
+
+	float DebugSettings::shaderModel() const
+	{
+		return Render::SpecData().shaderModel;
+	}
+
+	int DebugSettings::videoMemory() const
+	{
+		return Render::SpecData().videoMemory;
+	}
+
+	int DebugSettings::cpuSpeed() const
+	{
+		return Render::SpecData().CPUSpeed;
+	}
+
+	std::string DebugSettings::glVendor() const
+	{
+		return Render::SpecData().glVendor;
+	}
+
+	std::string DebugSettings::cpu() const
+	{
+		return Render::SpecData().cpu;
+	}
+
+	int DebugSettings::ram() const
+	{
+		return Render::SpecData().ram;
+	}
+
+	std::string DebugSettings::resolution() const
+	{
+		return Render::SpecData().resolution;
+	}
+
+	std::string DebugSettings::osVer() const
+	{
+		OSVERSIONINFOA osvi;
+		ZeroMemory((char*)&osvi + sizeof(DWORD), sizeof(OSVERSIONINFOA) - sizeof(DWORD)); // dwOSVersionInfoSize is the first element
+		osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOA);
+
+		GetVersionExA(&osvi);
+
+		return G3D::format("%d.%d.%d.%d", osvi.dwOSVersionInfoSize, osvi.dwMajorVersion, osvi.dwMinorVersion, osvi.dwBuildNumber);
+	}
+
+	int DebugSettings::osPlatformId() const
+	{
+		OSVERSIONINFOA osvi;
+		ZeroMemory((char*)&osvi + sizeof(DWORD), sizeof(OSVERSIONINFOA) - sizeof(DWORD));
+		osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOA);
+
+		GetVersionExA(&osvi);
+
+		return osvi.dwPlatformId;
 	}
 }

@@ -1,4 +1,4 @@
-// from server: 54% by colin
+// from server: 48% by Yeetserama
 struct FactoryProduct {
     struct Creator {
         int isConstructed;

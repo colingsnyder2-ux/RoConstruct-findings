@@ -56,14 +56,13 @@ namespace RBX
 
 	void JointInstance::render3dAdorn(Adorn* adorn)
 	{
-		RBXASSERT(shouldRender3dAdorn());
 
-		if (Joint::isAssemblyJoint(joint))
+		if (Joint::getJointType(joint) >= Joint::ANCHOR_JOINT)
 		{
 			G3D::Color3 color3;
 
-			Primitive* prim0 = joint->getPrimitive(0);
-			Primitive* prim1 = joint->getPrimitive(1);
+			Primitive* prim0 = getPart0() ? getPart0()->getPrimitive() : NULL;
+			Primitive* prim1 = getPart1() ? getPart1()->getPrimitive() : NULL;
 
 			G3D::Vector3 vec0 = prim0
 				? prim0->getCoordinateFrame().translation

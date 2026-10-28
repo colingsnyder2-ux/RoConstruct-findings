@@ -1,3 +1,4 @@
+// from server: 0% by colin
 // from server: 5% by atomic.potato
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)

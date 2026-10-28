@@ -1,4 +1,4 @@
-// from server: 51% by colin
+// from server: 0% by colin
 struct ICreator {
     void* vftable;
     int refcount1;

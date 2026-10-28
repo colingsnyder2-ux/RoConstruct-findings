@@ -1,4 +1,4 @@
-// from server: 25% by atomic.potato
+// from server: 0% by atomic.potato
 extern "C" void __stdcall helper_004f3180(void*, int, int, int);
 
 void func_004f3180(int* first, int* last, int* dest)

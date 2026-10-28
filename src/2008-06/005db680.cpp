@@ -1,3 +1,4 @@
+// from server: 100% by EspClaude
 // from server: 89% by EspClaude
 // roc-cl: 21022
 // from server: 87% by king_originala
@@ -9,7 +10,7 @@
 namespace G3D {
 template<class T>inline T min(const T&x,const T&y){return std::min<T>(x,y);}
 template<class T>inline T max(const T&x,const T&y){return std::max<T>(x,y);}
-class Vector2 {public:float x,y;Vector2():x(0),y(0){}Vector2(float a,float b):x(a),y(b){}Vector2(const Vector2&v):x(v.x),y(v.y){}Vector2&operator=(const Vector2&v){x=v.x;y=v.y;return*this;}Vector2 operator+(const Vector2&v)const{return Vector2(x+v.x,y+v.y);}Vector2 min(const Vector2&v)const{return Vector2(G3D::min(v.x,x),G3D::min(v.y,y));}Vector2 max(const Vector2&v)const{return Vector2(G3D::max(v.x,x),G3D::max(v.y,y));}};
+class Vector2 {public:float x,y;Vector2():x(0),y(0){}Vector2(float a,float b):x(a),y(b){}Vector2(const Vector2&v):x(v.x),y(v.y){}Vector2&operator=(const Vector2&v){x=v.x;y=v.y;return*this;}Vector2 operator+(const Vector2&v)const{return Vector2(x+v.x,y+v.y);}Vector2 operator-(const Vector2&v)const{return Vector2(x-v.x,y-v.y);}Vector2 min(const Vector2&v)const{return Vector2(G3D::min(v.x,x),G3D::min(v.y,y));}Vector2 max(const Vector2&v)const{return Vector2(G3D::max(v.x,x),G3D::max(v.y,y));}};
 class Vector3 {public:float x,y,z;Vector3():x(0),y(0),z(0){}Vector3(float a,float b,float c):x(a),y(b),z(c){}Vector3(const Vector3&v):x(v.x),y(v.y),z(v.z){}Vector3 operator-(const Vector3&v)const{return Vector3(x-v.x,y-v.y,z-v.z);}float magnitude()const{return sqrtf(x*x+y*y+z*z);}Vector2 xy()const;static const Vector3&zero();};
 class Matrix3 {public:float elt[3][3];Matrix3(){}Matrix3(const Matrix3&);static const Matrix3&identity();};
 class CoordinateFrame {public:Matrix3 rotation;Vector3 translation;CoordinateFrame():rotation(Matrix3::identity()),translation(Vector3::zero()){}CoordinateFrame(const CoordinateFrame&v):rotation(v.rotation),translation(v.translation){}~CoordinateFrame(){}};
@@ -127,11 +128,12 @@ public:
 // Borrowed existing-object prefixes. No construction or full owner-size claim.
 class Instance {unsigned char beforeName[0x110];std::string name;public:const std::string&getName()const{return name;}};
 class PartInstance {unsigned char beforeTransparency[0x1e8];float transparency;public:float getTransparencyXml()const{return transparency;}const G3D::CoordinateFrame&getCoordinateFrame()const;};
-class Humanoid {unsigned char beforeParent[0x104];Instance*parent;unsigned char beforeHealth[0x1a8-0x108];float health,maxHealth;public:float getHealth()const{return health;}float getMaxHealth()const{return maxHealth;}PartInstance*getHead()const;Instance*getParent()const{return parent;}void renderMultiplayer(Adorn*,const G3D::GCamera&);};
+class Humanoid {unsigned char beforeParent[0x104];Instance*parent;unsigned char beforeHealth[0x1a8-0x108];float health,maxHealth;public:float getHealth()const{return health;}float getMaxHealth()const{return maxHealth;}float relativeHealth()const{return health/maxHealth;}PartInstance*getHead()const;Instance*getParent()const{return parent;}void renderMultiplayer(Adorn*,const G3D::GCamera&);};
 class Teams {public:G3D::Color3 getTeamColorForHumanoid(Humanoid*);};
 class ServiceProvider {public:template<class T>static T*find(Instance*);};
 class Color {public:static const G3D::Color3&lightGreen();};
 using G3D::Vector2;using G3D::Vector3;using G3D::CoordinateFrame;
+class Rect {public:Vector2 low,high;Rect(const Vector2&l,const Vector2&h):low(l),high(h){}Rect();G3D::Rect2D toRect2D()const{return G3D::Rect2D::xyxy(low,high);}Vector2 size()const{return high-low;}static Rect fromLowSize(const Vector2&low,const Vector2&size){return Rect(low,low+size);}};
 void Humanoid::renderMultiplayer(Adorn* adorn, const G3D::GCamera& camera)
 {
 	PartInstance* headPart = getHead();
@@ -167,25 +169,13 @@ void Humanoid::renderMultiplayer(Adorn* adorn, const G3D::GCamera& camera)
 			);
 
 			float width = (float) (fontSize * 4);
-
-            Vector2 low(projected.x - 0.5f * width, projected.y);
-            Vector2 high = low + Vector2(width, (float)(fontSize / 2));
-            float healthX = low.x + (health / maxHealth) * width;
-            Vector2 barLow(low);
-            Vector2 healthHigh(healthX, high.y);
-            Vector2 healthLow(healthX, low.y);
-            Vector2 barHigh(high);
-            {
-                G3D::Color4 color(Color::lightGreen(), 1.0f);
-                G3D::Rect2D rect = G3D::Rect2D::xyxy(barLow, healthHigh);
-                adorn->rect2d(rect, color);
-            }
-            {
-                G3D::Color4 color(G3D::Color3::red(), 1.0f);
-                G3D::Rect2D rect = G3D::Rect2D::xyxy(healthLow, barHigh);
-                adorn->rect2d(rect, color);
-            }
-
+			Vector2 low(projected.x - 0.5f * width, projected.y);
+			Vector2 high = low + Vector2(width, (float)(fontSize / 2));
+			float healthX = low.x + relativeHealth() * width;
+			Rect greenBarRect(low, Vector2(healthX, high.y));
+			Rect redBarRect(Vector2(healthX, low.y), high);
+			adorn->rect2d(greenBarRect.toRect2D(), Color::lightGreen());
+			adorn->rect2d(redBarRect.toRect2D(), G3D::Color3::red());
 		}
 	}
 }

@@ -1,4 +1,4 @@
-// from server: 28% by atomic.potato
+// from server: 0% by atomic.potato
 struct E { int v[3]; };
 
 struct Vec {

@@ -1,3 +1,4 @@
+#pragma float_control(precise,off)
 #include "tool/ToolsArrow.h"
 #include "tool/DragTool.h"
 #include "v8datamodel/Camera.h"

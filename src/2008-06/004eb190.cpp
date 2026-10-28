@@ -1,8 +1,8 @@
-// from server: 72% by colin
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
+// from server: 76% by colin
 // roc-lang: cpp
-// roc-lib: rbxgs-dll roc_espclaude_8ff6583ad4ec977f.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_unit_7a0babd7e48c6beb.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <G3D/ReferenceCount.h>
@@ -170,9 +170,9 @@ PartMaterialRef Part::getMaterial() {
                 ModelInstance* model = dynamic_cast<ModelInstance*>(parent);
                 if (model && model->findModifier()) {
                     ContentId shirt, pants;
-                    if (const Instances* children = parent->getChildren()) {
-                        Instances::const_iterator end = children->end();
-                        for (Instances::const_iterator it = children->begin(); it != end; ++it) {
+                    if (parent->getChildren()) {
+                        Instances::const_iterator end = parent->getChildren()->end();
+                        for (Instances::const_iterator it = parent->getChildren()->begin(); it != end; ++it) {
                             Clothing* clothing = dynamic_cast<Clothing*>((*it).get());
                             if (clothing) {
                                 if (shirt.isNull() && !clothing->shirtTemplate.isNull())
@@ -226,8 +226,8 @@ PartMaterialRef Part::getMaterial() {
                                 return material;
                             if ((shirtPart && shirtStatus == 0) || (pantsPart && pantsStatus == 0)) {
                                 if (material != emptyMaterial)
-                                    material = emptyMaterial;
-                                return material;
+                                    material = emptyMaterial.getPointer();
+                                return material.getPointer();
                             }
                         }
                     }
@@ -257,3 +257,4 @@ PartMaterialRef Part::getMaterial() {
     return material;
 }
 }}
+

@@ -4363,11 +4363,326 @@
         ]
       ]
     },
-    "phase": "building",
-    "receipt": {},
-    "state": "verifying",
+    "phase": "complete",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
     "unit": "RBX::Explosion, RBX::GuiItem, RBX::DebrisService, RBX::Mouse, RBX::BoxSelectCommand",
-    "updated": 1793201324.0779366,
+    "updated": 1793202749.8773735,
     "user": "colin"
+  },
+  {
+    "created": 1793202774.065739,
+    "id": "23ba88f68b6f4336a4e355013c7f394c",
+    "model": "gpt-6",
+    "patches": {
+      "App/v8datamodel/Camera.cpp": [
+        [
+          "#include \"v8datamodel/Camera.h\"",
+          "#pragma float_control(precise,off)\n#include \"v8datamodel/Camera.h\""
+        ]
+      ],
+      "App/v8datamodel/JointInstance.cpp": [
+        [
+          "\tvoid JointInstance::render3dAdorn(Adorn* adorn)\n\t{\n\t\tRBXASSERT(shouldRender3dAdorn());\n\n\t\tif (Joint::isAssemblyJoint(joint))\n\t\t{\n\t\t\tG3D::Color3 color3;\n\n\t\t\tPrimitive* prim0 = joint->getPrimitive(0);\n\t\t\tPrimitive* prim1 = joint->getPrimitive(1);\n\n\t\t\tG3D::Vector3 vec0 = prim0\n\t\t\t\t? prim0->getCoordinateFrame().translation\n\t\t\t\t: G3D::Vector3::zero();\n\n\t\t\tG3D::Vector3 vec1 = prim1\n\t\t\t\t? prim1->getCoordinateFrame().translation\n\t\t\t\t: G3D::Vector3::zero();\n\n\t\t\tif (joint->getActive())\n\t\t\t\tcolor3 = G3D::Color3::green();\n\t\t\telse\n\t\t\t\tcolor3 = G3D::Color3::red();\n\n\t\t\tadorn->setObjectToWorldMatrix(G3D::CoordinateFrame());\n\n\t\t\tG3D::Color4 color4(color3);\n\t\t\tadorn->lineSegment(\n\t\t\t\tG3D::LineSegment::fromTwoPoints(vec0, vec1),\n\t\t\t\tcolor4,\n\t\t\t\t20.0);\n\t\t}\n\t}",
+          "\tvoid JointInstance::render3dAdorn(Adorn* adorn)\n\t{\n\n\t\tif (Joint::getJointType(joint) >= Joint::ANCHOR_JOINT)\n\t\t{\n\t\t\tG3D::Color3 color3;\n\n\t\t\tPrimitive* prim0 = getPart0() ? getPart0()->getPrimitive() : NULL;\n\t\t\tPrimitive* prim1 = getPart1() ? getPart1()->getPrimitive() : NULL;\n\n\t\t\tG3D::Vector3 vec0 = prim0\n\t\t\t\t? prim0->getCoordinateFrame().translation\n\t\t\t\t: G3D::Vector3::zero();\n\n\t\t\tG3D::Vector3 vec1 = prim1\n\t\t\t\t? prim1->getCoordinateFrame().translation\n\t\t\t\t: G3D::Vector3::zero();\n\n\t\t\tif (joint->getActive())\n\t\t\t\tcolor3 = G3D::Color3::green();\n\t\t\telse\n\t\t\t\tcolor3 = G3D::Color3::red();\n\n\t\t\tadorn->setObjectToWorldMatrix(G3D::CoordinateFrame());\n\n\t\t\tG3D::Color4 color4(color3);\n\t\t\tadorn->lineSegment(\n\t\t\t\tG3D::LineSegment::fromTwoPoints(vec0, vec1),\n\t\t\t\tcolor4,\n\t\t\t\t20.0);\n\t\t}\n\t}"
+        ]
+      ],
+      "App/v8datamodel/Selection.cpp": [
+        [
+          "\tvoid Selection::setSelection(Instance* instance)\n\t{\n\t\tboost::shared_ptr<Instance> inst = shared_from(instance);\n\t\t\n\t\twhile (!selection->empty())\n\t\t{\n\t\t\tboost::shared_ptr<Instance> item = selection->back();\n\n\t\t\tif (item == inst)\n\t\t\t{\n\t\t\t\tif (selection->size() == 1)\n\t\t\t\t\treturn;\n\n\t\t\t\tboost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> sel = selection.write();\n\t\t\t\tsel->back() = sel->front();\n\t\t\t\tsel->front() = item;\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tselection.write()->pop_back();\n\t\t\t\titem->Notifier<Instance, AncestorChanged>::removeListener(this);\n\t\t\t\traiseRemoved(item);\n\t\t\t}\n\t\t}\n\n\t\tif (inst)\n\t\t{\n\t\t\tselection.write()->push_back(inst);\n\t\t\tinstance->Notifier<Instance, AncestorChanged>::addListener(this);\n\t\t\traiseAdded(inst);\n\t\t}\n\t}",
+          "\tvoid Selection::setSelection(Instance* instance)\n\t{\n\t\tboost::shared_ptr<Instance> inst = shared_from(instance);\n\t\t\n\t\twhile (selection->size() > 0)\n\t\t{\n\t\t\tboost::shared_ptr<Instance> item = selection->back();\n\n\t\t\tif (item == inst)\n\t\t\t{\n\t\t\t\tif (selection->size() == 1)\n\t\t\t\t\treturn;\n\n\t\t\t\tboost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> sel = selection.write();\n\t\t\t\tsel->back() = sel->front();\n\t\t\t\tsel->front() = item;\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tselection.write()->pop_back();\n\t\t\t\titem->Notifier<Instance, AncestorChanged>::removeListener(this);\n\t\t\t\traiseRemoved(item);\n\t\t\t}\n\t\t}\n\n\t\tif (inst)\n\t\t{\n\t\t\tselection.write()->push_back(inst);\n\t\t\tinstance->Notifier<Instance, AncestorChanged>::addListener(this);\n\t\t\traiseAdded(inst);\n\t\t}\n\t}"
+        ]
+      ],
+      "App/v8kernel/Point.cpp": [
+        [
+          "#include \"v8kernel/Point.h\"",
+          "#pragma float_control(precise,off)\n#include \"v8kernel/Point.h\""
+        ]
+      ],
+      "App/v8world/MotorJoint.cpp": [
+        [
+          "#include \"v8world/MotorJoint.h\"",
+          "#pragma float_control(precise,off)\n#include \"v8world/MotorJoint.h\""
+        ],
+        [
+          "\tvoid MotorJoint::stepUi(int uiStepId)\n\t{\n\t\tif (fabs(desiredAngle - currentAngle) < fabs(maxVelocity))\n\t\t{\n\t\t\tsetCurrentAngle(desiredAngle);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tif (fabs(maxVelocity) > 0.0f)\n\t\t\t\tsetCurrentAngle(currentAngle + fabs(maxVelocity));\n\t\t\telse\n\t\t\t\tsetCurrentAngle(currentAngle - fabs(maxVelocity));\n\t\t}\n\t}",
+          "\tvoid MotorJoint::stepUi(int uiStepId)\n\t{\n\t\tdouble speed = fabs(maxVelocity);\n\t\tdouble delta = static_cast<double>(desiredAngle) - currentAngle;\n\t\tif (fabs(delta) < speed)\n\t\t\tsetCurrentAngle(desiredAngle);\n\t\telse if (delta > 0.0)\n\t\t\tsetCurrentAngle(static_cast<float>(currentAngle + speed));\n\t\telse\n\t\t\tsetCurrentAngle(static_cast<float>(currentAngle - speed));\n\t}"
+        ]
+      ],
+      "RbxGraphics/include/RbxGraphics/Adorn.h": [
+        [
+          "\t\tvirtual void cylinderAlongX(float radius, float length, const G3D::Color4& solidColor, const G3D::Color4& wireColor) = 0;",
+          "\t\tvirtual void sparkle() = 0;\n\t\tvirtual void cylinderAlongX(float radius, float length, const G3D::Color4& solidColor, const G3D::Color4& wireColor) = 0;"
+        ]
+      ],
+      "Rendering/AppDraw/DrawAdorn.cpp": [
+        [
+          "        G3D::Matrix3 rotation = worldC.rotation*Math::getAxisRotationMatrix(axis);\n        G3D::CoordinateFrame rotatedWorldC(rotation, worldC.translation);",
+          "        const G3D::Matrix3& axisRotation = Math::getAxisRotationMatrix(axis);\n        G3D::CoordinateFrame rotatedWorldC(worldC.rotation*axisRotation, worldC.translation);"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "40a9caa8e4cfd8b59bc7b994fc890ab9aaa1d4468c44d3df2a9bfc9cb0aa48be",
+      "credits": 10,
+      "distinct_after": 9895,
+      "distinct_before": 9885,
+      "gains": [
+        "00567770",
+        "005cbe70",
+        "005cc690",
+        "005ce480",
+        "005e2af0",
+        "005e5e70",
+        "00608aa0",
+        "00612fb0",
+        "0064dd40",
+        "006773f0"
+      ],
+      "input_hash": "232ae830fd947aadfa731d2add28dcca254150927595ebf3e16183f7b7153e42",
+      "losses": [],
+      "new_distinct": [
+        "00567770",
+        "005cbe70",
+        "005cc690",
+        "005ce480",
+        "005e2af0",
+        "005e5e70",
+        "00608aa0",
+        "00612fb0",
+        "0064dd40",
+        "006773f0"
+      ],
+      "overlay_hash": "50bb759622cc47ca7183563593f9338934eae00ce146fb7056d563597891e988",
+      "owned_after": 3230,
+      "owned_before": 3220,
+      "rebased": false,
+      "submitted_revision": "40a9caa8e4cfd8b59bc7b994fc890ab9aaa1d4468c44d3df2a9bfc9cb0aa48be"
+    },
+    "state": "accepted",
+    "unit": "RBX::Camera, RBX::Selection, RBX::MotorJoint, RBX::JointInstance, RBX::ControllerService",
+    "updated": 1793204865.0081346,
+    "user": "colin"
+  },
+  {
+    "created": 1793205886.7255507,
+    "id": "088aa112a6184269b496e29ebaf36004",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/v8datamodel/Accoutrement.cpp": [
+        [
+          "\t\t\t\tif (name->toString() == \"BackendAccoutrementState\")\n\t\t\t\t\treturn;",
+          "\t\t\t\tif (name->name == \"BackendAccoutrementState\")\n\t\t\t\t\treturn;"
+        ]
+      ],
+      "App/v8datamodel/Tool.cpp": [
+        [
+          "\t\t\t\tif (name->toString() == \"BackendToolState\" || name->toString() == \"ActivationState\")\n\t\t\t\t\treturn;",
+          "\t\t\t\tif (name->name == \"BackendToolState\" || name->name == \"ActivationState\")\n\t\t\t\t\treturn;"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "8098971e9b25c0f0f90a5b24cbcace35540e039404d301663c43ec5200714880",
+      "credits": 2,
+      "distinct_after": 9897,
+      "distinct_before": 9895,
+      "gains": [
+        "005b0840",
+        "005fd3e0"
+      ],
+      "input_hash": "18e4815bead3db558557b899bf2b95be13ea50c31452a5e63dad81d11ea8cf4b",
+      "losses": [],
+      "new_distinct": [
+        "005b0840",
+        "005fd3e0"
+      ],
+      "overlay_hash": "bfc3aa0f8380b7e6e665cb572e7e225cc97f65bf330ef28124d8a1e9163f5cc0",
+      "owned_after": 3232,
+      "owned_before": 3230,
+      "rebased": false,
+      "submitted_revision": "8098971e9b25c0f0f90a5b24cbcace35540e039404d301663c43ec5200714880"
+    },
+    "state": "accepted",
+    "unit": "RBX::Tool",
+    "updated": 1793208929.8381774,
+    "user": "coldek"
+  },
+  {
+    "created": 1793206368.0109906,
+    "id": "33e0cd35801242f49e40b6deb88ae83a",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/v8datamodel/PartInstance.cpp": [
+        [
+          "\t\treturn partType == Part::CYLINDER_PART ||\n\t\t\t   SurfacesNeedAdorn || \n\t\t\t   highlightSleepParts || ",
+          "\t\treturn partType == Part::CYLINDER_PART ||\n\t\t\t   SurfacesNeedAdorn || \n\t\t\t   showContactPoints ||\n\t\t\t   highlightSleepParts || "
+        ],
+        [
+          "\tconst char* category_Part = \"Part\";",
+          "\tconst char* category_Part = \"Part\";\n\n\textern bool showContactPoints;"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
+    "unit": "RBX::Soundscape::SoundService",
+    "updated": 1793209363.9712346,
+    "user": "coldek"
+  },
+  {
+    "created": 1793206904.612622,
+    "id": "17aa606f8bf541a0a3ec6c47ae387959",
+    "model": "gpt-6",
+    "patches": {
+      "App/gui/GUI.cpp": [
+        [
+          "\t\tRBXASSERT(!focus);\n\t\treturn processNonFocus(event);",
+          "\t\treturn processNonFocus(event);"
+        ]
+      ],
+      "App/tool/ToolsArrow.cpp": [
+        [
+          "#include \"tool/ToolsArrow.h\"",
+          "#pragma float_control(precise,off)\n#include \"tool/ToolsArrow.h\""
+        ]
+      ],
+      "App/v8datamodel/DebrisService.cpp": [
+        [
+          "\t\tInstance::onServiceProvider(oldProvider, newProvider);",
+          ""
+        ],
+        [
+          "\t\ttimer = ServiceProvider::create<TimerService>(newProvider);",
+          "\t\ttimer = ServiceProvider::find<TimerService>(newProvider);"
+        ]
+      ],
+      "App/v8datamodel/Explosion.cpp": [
+        [
+          "\t\tInstance::onServiceProvider(oldProvider, newProvider);",
+          ""
+        ]
+      ],
+      "App/v8datamodel/ICharacterSubject.cpp": [
+        [
+          "#include \"v8datamodel/ICharacterSubject.h\"",
+          "#pragma float_control(precise,off)\n#include \"v8datamodel/ICharacterSubject.h\""
+        ],
+        [
+          "\tbool ICharacterSubject::zoom(const float in, G3D::CoordinateFrame& cameraGoal, G3D::CoordinateFrame& cameraFocus)\n\t{\n\t\tG3D::Vector3 focusToGoal = cameraGoal.translation - cameraFocus.translation;\n\n\t\tfloat currentDistance = focusToGoal.magnitude();\n\t\tfloat newDistance = Camera::getNewZoomDistance(currentDistance, in);\n\n\t\tnewDistance = G3D::min(400.0f, newDistance);\n\n\t\tif (newDistance == currentDistance)\n\t\t\treturn false;\n\n\t\tfocusToGoal.y = 0.0f;\n\t\tfocusToGoal.unitize();\n\t\tfocusToGoal.y = newDistance * 0.03f;\n\n\t\tcameraGoal.translation = focusToGoal.direction() * newDistance + cameraFocus.translation;\n\n\t\treturn true;\n\t}",
+          "\tbool ICharacterSubject::zoom(const float in, G3D::CoordinateFrame& cameraGoal, G3D::CoordinateFrame& cameraFocus)\n\t{\n\t\tG3D::CoordinateFrame adjustedGoal = wasOccluded ? goalFromDistance(cameraFocus, cameraGoal, unoccludedDistance) : cameraGoal;\n\t\tG3D::Vector3 focusToGoal = adjustedGoal.translation - cameraFocus.translation;\n\n\t\tfloat currentDistance = focusToGoal.magnitude();\n\t\tfloat newDistance = G3D::min(400.0f, Camera::getNewZoomDistance(currentDistance, in));\n\n\t\tif (newDistance == currentDistance)\n\t\t\treturn false;\n\n\t\tfocusToGoal.y = 0.0f;\n\t\tfocusToGoal.unitize();\n\t\tfocusToGoal.y = newDistance * 0.03f;\n\n\t\tadjustedGoal.translation = focusToGoal.direction() * newDistance + cameraFocus.translation;\n\n\t\tif (wasOccluded) unoccludedDistance = (adjustedGoal.translation - cameraFocus.translation).magnitude();\n\t\telse cameraGoal = adjustedGoal;\n\t\treturn true;\n\t}"
+        ]
+      ],
+      "App/v8datamodel/Mouse.cpp": [
+        [
+          "#include \"v8datamodel/Mouse.h\"",
+          "#pragma float_control(precise,off)\n#include \"v8datamodel/Mouse.h\""
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "d1e51c7964c3611b776f9610b0fa73ac2ed30f03438c4bd2415c27ea6790109e",
+      "credits": 6,
+      "distinct_after": 9905,
+      "distinct_before": 9899,
+      "gains": [
+        "00574b10",
+        "00616f60",
+        "0062b030",
+        "0063c280",
+        "00641390",
+        "0064e050"
+      ],
+      "input_hash": "c2a1280d6b5a4bf4d707d1646b1d629f3c1e37178a6a41aa24d47a4a087607a1",
+      "losses": [],
+      "new_distinct": [
+        "00574b10",
+        "00616f60",
+        "0062b030",
+        "0063c280",
+        "00641390",
+        "0064e050"
+      ],
+      "overlay_hash": "52a3092a6e6232e49fd4339a8a5f605e36ec85f2dbbe715628b1713028bd4c5d",
+      "owned_after": 3238,
+      "owned_before": 3232,
+      "rebased": true,
+      "submitted_revision": "8098971e9b25c0f0f90a5b24cbcace35540e039404d301663c43ec5200714880"
+    },
+    "state": "accepted",
+    "unit": "RBX::Clump",
+    "updated": 1793211393.4424858,
+    "user": "colin"
+  },
+  {
+    "created": 1793209906.0256474,
+    "id": "cd58b3d59e0f4bc7992d798b31e85a05",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/include/v8datamodel/PartInstance.h": [
+        [
+          "\t\tstatic bool highlightSleepParts;",
+          "\t\tstatic bool showContactPoints;\n\t\tstatic bool highlightSleepParts;"
+        ]
+      ],
+      "App/v8datamodel/Accoutrement.cpp": [
+        [
+          "\t\t\t\tif (name->toString() == \"BackendAccoutrementState\")\n\t\t\t\t\treturn;",
+          "\t\t\t\tif (name->name == \"BackendAccoutrementState\")\n\t\t\t\t\treturn;"
+        ]
+      ],
+      "App/v8datamodel/PartInstance.cpp": [
+        [
+          "\t\t\t   SurfacesNeedAdorn || \n\t\t\t   highlightSleepParts || ",
+          "\t\t\t   SurfacesNeedAdorn || \n\t\t\t   showContactPoints ||\n\t\t\t   highlightSleepParts || "
+        ],
+        [
+          "\tconst char* category_Part = \"Part\";",
+          "\tconst char* category_Part = \"Part\";\n\n\tbool PartInstance::showContactPoints = false;"
+        ]
+      ],
+      "App/v8datamodel/Tool.cpp": [
+        [
+          "\t\t\t\tif (name->toString() == \"BackendToolState\" || name->toString() == \"ActivationState\")\n\t\t\t\t\treturn;",
+          "\t\t\t\tif (name->name == \"BackendToolState\" || name->name == \"ActivationState\")\n\t\t\t\t\treturn;"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "92a4c2c1993779faefa30cff9921573dd66e235a8812d7ada40e11d38354fbc7",
+      "credits": 1,
+      "distinct_after": 9906,
+      "distinct_before": 9905,
+      "gains": [
+        "00599fa0"
+      ],
+      "input_hash": "88f393e7870489693a97f0d6eb0be3d134c2942f9c0fb2bce41307a6828ad0c1",
+      "losses": [],
+      "new_distinct": [
+        "00599fa0"
+      ],
+      "overlay_hash": "95c445fc5663654381dc944c7f99131e358c7d451122c08564b942222f4c0560",
+      "owned_after": 3239,
+      "owned_before": 3238,
+      "rebased": true,
+      "submitted_revision": "8098971e9b25c0f0f90a5b24cbcace35540e039404d301663c43ec5200714880"
+    },
+    "state": "accepted",
+    "unit": "RBX::Soundscape::SoundService",
+    "updated": 1793212321.5631838,
+    "user": "coldek"
   }
 ]

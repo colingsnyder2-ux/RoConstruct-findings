@@ -1,4 +1,4 @@
-// from server: 92% by sophus
+// from server: 0% by sophus
 // roc 2010-06 008f6c60  unit: Ogre::UTVertexPositionNormalStudsTex::?$SpecializedMeshGen  size: 251 bytes
 // Make this compile to the exact bytes below, then: roc check 2010-06 008f6c60
 //

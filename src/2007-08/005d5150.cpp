@@ -1,4 +1,4 @@
-// from server: 52% by colin
+// from server: 50% by Yeetserama
 struct S {
     int f(int a, int b);
 };

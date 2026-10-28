@@ -1,4 +1,4 @@
-// from server: 33% by atomic.potato
+// from server: 14% by atomic.potato
 struct CRobloxWnd {
     char pad0[0x20];
     void* field20;

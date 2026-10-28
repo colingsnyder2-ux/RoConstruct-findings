@@ -1,4 +1,4 @@
-// from server: 51% by colin
+// from server: 0% by colin
 struct EnumPropDescriptor {
     void* getset;
     void construct(int arg);

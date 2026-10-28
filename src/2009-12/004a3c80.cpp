@@ -1,4 +1,4 @@
-// from server: 10% by atomic.potato
+// from server: 7% by atomic.potato
 // roc 2009-12 004a3c80  unit: Ogre::UTVertexPositionNormalStudsTex::?$SpecializedMeshGen
 // Make this compile to the exact bytes below, then: roc check 2009-12 004a3c80
 

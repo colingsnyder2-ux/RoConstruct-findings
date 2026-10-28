@@ -1,8 +1,8 @@
-// from server: 93% by coldek
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_codex_scorehud_color_order_21a493d6c6b3d438.cpp
+// roc-lib: rbxgs-dll roc_espclaude_dd40b7be0252a0ac.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "roc_espeon_scorehudportableheader11bfdf7c6129a99c.cpp"
@@ -13,6 +13,7 @@
 #include <util/Color.h>
 #include <G3D/Color3.h>
 #include <G3D/Color4.h>
+#include <boost/lexical_cast.hpp>
 namespace RBX {
 	class BoardData
 	{
@@ -153,7 +154,7 @@ void ScoreHud::renderTeamDeathmatchLeaderboard(Adorn* adorn,BoardType mode) {
             std::string label=((InstanceApi*)team)->getName();
             if(col) {
                 position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
-                label=StringConverter<int>::convertToString(data.teamTotals[team][data.statNamesList[col-1]]);
+                label=boost::lexical_cast<std::string>(data.teamTotals[team][data.statNamesList[col-1]]);
             }
             G3D::Color4 teamColor(team->getTeamColor().color3(),1);
             adorn->drawFont2D(label,position,row,teamColor,G3D::Color4(0,0,0,1),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
@@ -169,7 +170,7 @@ void ScoreHud::renderTeamDeathmatchLeaderboard(Adorn* adorn,BoardType mode) {
                 if(col) {
                     position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
                     int stat=data.statMap[data.playersByTeamList[team][player]][data.statNamesList[col-1]];
-                    label=StringConverter<int>::convertToString(stat);
+                    label=boost::lexical_cast<std::string>(stat);
                 } else { position.x += 5.0f; }
                 adorn->drawFont2D(label,position,row,G3D::Color4(team->getTeamColor().color3(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
                 if(!col) position.x-=5.0f; // Observed native post-draw store.
@@ -286,3 +287,4 @@ void LeaderboardData::CompileData() {
     }
 }
 }
+

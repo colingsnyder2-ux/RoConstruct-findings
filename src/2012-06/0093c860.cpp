@@ -1,4 +1,4 @@
-// from server: 55% by atomic.potato
+// from server: 0% by atomic.potato
 extern "C" void* __cdecl sub_0098211A(unsigned int);
 
 struct ChatLine

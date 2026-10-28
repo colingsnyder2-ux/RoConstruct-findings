@@ -1,4 +1,4 @@
-// from server: 35% by atomic.potato
+// from server: 0% by atomic.potato
 // roc 2010-06 00415300  size: 406 bytes
 // Minimal declarations for the clipboard/stringstream logic.
 

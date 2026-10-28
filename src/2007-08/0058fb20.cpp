@@ -1,4 +1,4 @@
-// from server: 50% by colin
+// from server: 0% by colin
 struct ICreator {
     virtual void f0();
     virtual void f1();

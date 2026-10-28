@@ -1,4 +1,4 @@
-// from server: 52% by colin
+// from server: 0% by colin
 struct Peer {
     void* field0;
     Peer(void* arg);

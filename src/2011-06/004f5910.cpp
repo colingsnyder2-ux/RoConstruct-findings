@@ -1,4 +1,4 @@
-// from server: 52% by atomic.potato
+// from server: 0% by atomic.potato
 extern "C" void* __cdecl func_0080a05e(unsigned int size);
 
 struct S {

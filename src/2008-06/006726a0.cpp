@@ -1,8 +1,9 @@
+// from server: 100% by EspClaude
 // from server: 82% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_adorn_cylinder_native_orientation_scope14263bc31d680a4e.cpp
+// roc-lib: rbxgs-dll roc_espclaude_369ebbc72e42bae0.cpp
 
 // Candidate translation unit (score above; library headers required).
 // Native324B allocation0045b425, ctor674210, dtor673a90.
@@ -54,7 +55,7 @@ public:
     virtual void setTransform(unsigned long, const Matrix4&);
     virtual const Matrix4& getTransform(unsigned long) const;
     virtual bool hasTransform(unsigned long) const;
-    virtual void setSphere(unsigned long, const Sphere&);
+    virtual void setSphere(unsigned long, const Vector4&);
     virtual const Sphere& getSphere(unsigned long) const;
 };
 class RbxEntityEntry; // Native 2a4 member is a vector; element never instantiated here.
@@ -151,11 +152,12 @@ public:
 typedef char NativeAdornSize[sizeof(AdornRbxGfx)==0x144?1:-1];
 typedef char NativeEntitySize[sizeof(Ogre::RbxEntity)==0x2bc?1:-1];
 typedef char NativeSceneNodeSize[sizeof(Ogre::RbxSceneNode)==0x248?1:-1];
+static inline void setSphereParam(Ogre::Vector4& p,float r,const Ogre::Vector3& c){p.x=r;p.y=c.x;p.z=c.y;p.w=c.z;}
 extern Ogre::MeshPtr adornCylinderMesh; //0097dabc.
 extern std::string adornCylinderSuffix; //0097dad4.
 void AdornRbxGfx::cylinderAlongX(float radius,float length,const G3D::Color4& solid,const G3D::Color4&) {
     const Ogre::Vector3& position=*reinterpret_cast<const Ogre::Vector3*>(&coordinateFrame.translation);
-    Ogre::Sphere bounds(Ogre::Vector3(length*0.5f+position.x,position.y,position.z),(radius>length?radius:length)*1.4f);
+    Ogre::Sphere bounds(Ogre::Vector3(length*0.5f+position.x,position.y,position.z),(radius>length?radius*1.4f:length*1.4f));
     if(!engine->camera()->isVisible(bounds,0)) return;
     updateColor(solid,false);
     {
@@ -173,8 +175,9 @@ void AdornRbxGfx::cylinderAlongX(float radius,float length,const G3D::Color4& so
         object->setMaterialName(2,material->getName());
         adornCylinderMesh=object->convertToMesh(sceneManager()->getName()+adornCylinderSuffix,Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
         Ogre::Mesh* mesh=adornCylinderMesh.getPointer();
-        float meshRadius=mesh->getBoundingSphereRadius();
-        Ogre::Sphere parameter(mesh->getBounds().getCenter(),meshRadius);
+        float meshRadius=adornCylinderMesh->getBoundingSphereRadius();
+        Ogre::Vector4 parameter;
+        setSphereParam(parameter,meshRadius,mesh->getBounds().getCenter());
         for(int i=0;i<adornCylinderMesh->getNumSubMeshes();++i) {
             renderNode->setSphere(reinterpret_cast<unsigned long>(adornCylinderMesh->getSubMesh((unsigned short)i)),parameter);
         }
@@ -186,12 +189,14 @@ void AdornRbxGfx::cylinderAlongX(float radius,float length,const G3D::Color4& so
     orientation.FromRotationMatrix(*reinterpret_cast<const Ogre::Matrix3*>(&coordinateFrame.rotation));
     world.makeTransform(position,Ogre::Vector3(1,1,1),orientation);
     }
-    Ogre::Quaternion turn(Ogre::Radian(Ogre::Degree(90)),Ogre::Vector3(0,1,0));
     Ogre::Matrix4 local;
-    local.makeTransform(Ogre::Vector3(length*-0.5f,0,0),Ogre::Vector3(radius,radius,length),turn);
+    local.makeTransform(Ogre::Vector3(length*-0.5f,0,0),Ogre::Vector3(radius,radius,length),Ogre::Quaternion(Ogre::Radian(Ogre::Degree(90)),Ogre::Vector3(0,1,0)));
+    {
     Ogre::Matrix4 transform=world.concatenate(local);
     drawMesh(adornCylinderMesh,transform,textureMaterial);
+    }
 }
 
 
 }
+

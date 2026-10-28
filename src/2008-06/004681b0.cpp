@@ -1,4 +1,3 @@
-// from server: 82% by king_originala
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // Complete keyboard handler: Win32 imports, native UIEvent/SDL declarations, and measured DxUserInput ABI.

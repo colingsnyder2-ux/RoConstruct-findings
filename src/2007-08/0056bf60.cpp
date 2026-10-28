@@ -1,4 +1,4 @@
-// from server: 52% by colin
+// from server: 0% by colin
 struct ArchiveBinder {
     int field0;
     int construct(int arg);

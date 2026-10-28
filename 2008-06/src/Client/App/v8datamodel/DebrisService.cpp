@@ -67,8 +67,8 @@ namespace RBX
 			queue.pop();
 		}
 
-		Instance::onServiceProvider(oldProvider, newProvider);
 
-		timer = ServiceProvider::create<TimerService>(newProvider);
+
+		timer = ServiceProvider::find<TimerService>(newProvider);
 	}
 }

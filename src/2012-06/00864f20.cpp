@@ -1,4 +1,4 @@
-// from server: 20% by atomic.potato
+// from server: 0% by atomic.potato
 extern "C" void* __cdecl sub_58F7B0(unsigned int, int);
 extern "C" void __cdecl sub_6A2780();
 extern "C" void __cdecl sub_982114(void*);

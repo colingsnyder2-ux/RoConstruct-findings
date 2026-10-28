@@ -1,4 +1,4 @@
-// from server: 36% by atomic.potato
+// from server: 33% by atomic.potato
 struct Inner {
     int a;
     int b;
