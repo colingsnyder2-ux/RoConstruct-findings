@@ -1,10 +1,10 @@
 {
   "schema": 1,
-  "workflow_version": 6,
-  "matching_workflow_version": 1,
+  "workflow_version": 7,
+  "matching_workflow_version": 2,
   "url": "https://raw.githubusercontent.com/colingsnyder2-ux/RoConstruct-findings/main/data/native-worker.zip",
-  "sha256": "9ac0004f7a6dc165bea7d94fe09c6e59c11bba9e180deb1acc01d478a8990e69",
-  "size": 2683698,
+  "sha256": "c39f1d3e3542385873aee3744495171e572b05d1bf104d64bfc2872fc843f98b",
+  "size": 2810343,
   "guide": "https://raw.githubusercontent.com/colingsnyder2-ux/RoConstruct-findings/main/data/NATIVE_AGENT.md",
   "matching_guide": "https://raw.githubusercontent.com/colingsnyder2-ux/RoConstruct-findings/main/data/MATCHING_AGENT.md",
   "native_clients": [
@@ -12,5 +12,7 @@
   ],
   "invitation_required": false,
   "server": "https://colinpc.tail2879d0.ts.net",
-  "status_url": "https://colinpc.tail2879d0.ts.net/v1/status"
+  "status_url": "https://colinpc.tail2879d0.ts.net/v1/status",
+  "abi_manifest_sha256": "3d8ebf8ea63859c156cce6f28068598ef1df3249565a7e1a717c83ed1310b92a",
+  "abi_manifest_classes": 2001
 }
