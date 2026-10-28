@@ -1,12 +1,12 @@
 {
-  "accepted_jobs": 31,
+  "accepted_jobs": 36,
   "clients": [
     {
       "client": "2008-06",
-      "exact_sources": 22235,
+      "exact_sources": 22236,
       "stored_sources": 22292
     }
   ],
-  "native_credits": 233,
+  "native_credits": 275,
   "sha256": {}
 }

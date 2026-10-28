@@ -3,10 +3,11 @@
 #include <boost/noncopyable.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/condition.hpp>
+#include <windows.h>
 
 namespace RBX
 {
-	boost::function0<void> background_function(const boost::function0<void>& threadfunc, const char* name);
+	boost::function0<void> background_function(const boost::function0<void>& threadfunc, const char* name, int priority = THREAD_PRIORITY_BELOW_NORMAL);
 
 	class worker_thread : public boost::noncopyable
 	{

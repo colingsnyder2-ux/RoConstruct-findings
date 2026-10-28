@@ -1,3 +1,4 @@
+#pragma float_control(precise, off)
 #include "v8datamodel/PVInstance.h"
 #include "v8datamodel/UserController.h"
 #include "util/Math.h"

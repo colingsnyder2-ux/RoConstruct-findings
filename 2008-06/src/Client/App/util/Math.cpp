@@ -1,3 +1,4 @@
+#pragma float_control(precise, off)
 #include "util/Math.h"
 #include "util/Debug.h"
 #include <boost/functional/hash/hash.hpp>
@@ -30,8 +31,7 @@ namespace RBX
 		return f == std::numeric_limits<float>::infinity()
 			|| f == -std::numeric_limits<float>::infinity()
 			|| f == std::numeric_limits<float>::quiet_NaN()
-			|| f == std::numeric_limits<float>::signaling_NaN()
-			|| Math::isDenormal(f);
+			|| f == std::numeric_limits<float>::signaling_NaN();
 	}
 
 	bool Math::isNanInfDenormVector3(const G3D::Vector3& v)
@@ -474,8 +474,8 @@ namespace RBX
 	{
 		G3D::Matrix3 unkMat;
 		float aBest = 0.0f;
-		int second = -1;
 		int bestV = -1;
+		int second = -1;
 		
 		for (int i = 0; i < 3; i++)
 		{
@@ -531,7 +531,7 @@ namespace RBX
 		int v15 = 3 - v10 - bestV;
 		int calcColmTemp = 3 - v11 - second;
 		G3D::Vector3 myColumn3 = G3D::Matrix3::identity().getColumn(calcColmTemp);
-		if (unkMat[v15][v11] < 0.0f)
+		if (unkMat[v15][calcColmTemp] < 0.0f)
 		{
 			myColumn3 *= -1.0f;
 		}

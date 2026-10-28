@@ -13,8 +13,8 @@ namespace RBX
 	private:
 		boost::signals::scoped_connection seatTouched;
 		boost::signals::scoped_connection humanoidJumped;
-		boost::shared_ptr<Weld> weld;
 		double sleepTime;
+		boost::shared_ptr<Weld> weld;
 
 	private:
 		void onEvent_seatTouched(boost::shared_ptr<Instance> other);

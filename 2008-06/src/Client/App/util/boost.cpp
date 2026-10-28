@@ -80,7 +80,7 @@ namespace RBX
 		}
 	};
 
-	void run_in_background(const boost::function0<void>& threadfunc, std::string name)
+	void run_in_background(const boost::function0<void>& threadfunc, std::string name, int priority)
 	{
 		try
 		{
@@ -98,9 +98,9 @@ namespace RBX
 		}
 	}
 
-	boost::function0<void> background_function(const boost::function0<void>& threadfunc, const char* name)
+	boost::function0<void> background_function(const boost::function0<void>& threadfunc, const char* name, int priority)
 	{
-		return boost::bind(&run_in_background, threadfunc, std::string(name));
+		return boost::bind(&run_in_background, threadfunc, std::string(name), priority);
 	}
 
 	worker_thread::worker_thread(const boost::function0<enum work_result>& work_function, const char* name)

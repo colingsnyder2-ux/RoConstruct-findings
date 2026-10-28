@@ -197,7 +197,7 @@ namespace RBX
 
 	RigidJoint* Primitive::getFirstRigid()
 	{
-		return getFirstRigidAt(getFirstEdge());
+		return getFirstRigidAt(joints.first());
 	}
 
 	RigidJoint* Primitive::getNextRigid(RigidJoint* prev)
@@ -290,48 +290,35 @@ namespace RBX
 
 	void Primitive::setDragging(bool _dragging)
 	{
+		bool wasAnchored = dragging || anchored || flag0xaa;
 		if (dragging != _dragging)
 		{
-			bool oldDrag = !dragging && canCollide;
 			dragging = _dragging;
-
-			setAnchor(anchored);
-			if (world)
+			bool isAnchored = dragging || anchored || flag0xaa;
+			if (isAnchored != wasAnchored && world)
 			{
-				bool newDrag = !dragging && canCollide;
-				if (newDrag != oldDrag)
-					world->onPrimitiveCanCollideChanged(this);
+				if (isAnchored)
+					world->onPrimitiveAddedAnchor(this);
+				else
+					world->onPrimitiveRemovingAnchor(this);
 			}
 		}
 	}
 
 	void Primitive::setAnchor(bool _anchored)
 	{
-		anchored = _anchored;
-
-		bool exists = getAnchor();
-
-		if (_anchored || dragging)
-			_anchored = true;
-
-		if (_anchored == exists)
-			return;
-
-		if (_anchored)
+		bool wasAnchored = dragging || anchored || flag0xaa;
+		if (anchored != _anchored)
 		{
-			RBXASSERT(!getAnchorObject());
-			setAnchorObject(new Anchor(this));
-			if (world)
-				world->onPrimitiveAddedAnchor(this);
-		}
-		else
-		{
-			RBXASSERT(getAnchorObject());
-			if (world)
-				world->onPrimitiveRemovingAnchor(this);
-			
-			delete getAnchorObject();
-			setAnchorObject(NULL);
+			anchored = _anchored;
+			bool isAnchored = dragging || anchored || flag0xaa;
+			if (isAnchored != wasAnchored && world)
+			{
+				if (isAnchored)
+					world->onPrimitiveAddedAnchor(this);
+				else
+					world->onPrimitiveRemovingAnchor(this);
+			}
 		}
 	}
 
@@ -451,7 +438,8 @@ namespace RBX
 
 	Contact* Primitive::getNextContact(Contact* prev)
 	{
-		return rbx_static_cast<Contact*>(contacts.next(prev));
+		int i = prev->getIndex(this) + 1;
+		return i < contacts.edges.size() ? rbx_static_cast<Contact*>(contacts.edges[i]) : NULL;
 	}
 
 	Edge* Primitive::getNextEdge(Edge* e) const
@@ -574,7 +562,7 @@ namespace RBX
 
 	Edge* EdgeList::first() const
 	{
-		return edges.size() ? edges[0] : NULL;
+		return edges.size() > 0 ? edges[0] : NULL;
 	}
 
 	Edge* EdgeList::next(Edge* e) const

@@ -1,3 +1,4 @@
+#pragma float_control(precise, off)
 #include "util/Face.h"
 #include "util/Math.h"
 
@@ -32,14 +33,14 @@ namespace RBX
 			G3D::Plane p0(face.c0, face.c1, face.c3);
 			
 			G3D::Vector3 normal;
-			double distance;
+			float distance;
 			p0.getEquation(normal, distance);
 
 			Face overlapOn1 = otherFace.projectOverlapOnMe(face);
 
 			for (int j = 0; j < 4; ++j)
 			{
-				if (overlapOn1[j].dot(normal) > tolerance)
+				if (fabs(overlapOn1[j].dot(normal) + distance) > tolerance)
 					return false;
 			}
 		}
@@ -127,28 +128,27 @@ namespace RBX
 
 	Face Face::projectOverlapOnMe(const Face& other) const
 	{
-		G3D::Vector3 normal = getU();
-		G3D::Vector3 v2 = getV();
+		const Face& f0 = (*this);
+		const Face& f1 = other;
 
+		//RBXASSERT(Face::hasOverlap(f0, f1, 1e-6f));
+		G3D::Vector3 normal[2];
 		float minL[2];
 		float maxL[2];
-		for (int i = 0; i < 2; ++i)
-		{
-			float f0min, f0max;
-			this->minMax(this->c0, normal, f0min, f0max);
 
-			float f1min, f1max;
-			other.minMax(this->c0, normal, f1min, f1max);
-
-			minL[i] = G3D::min(f0min, f1min);
-			maxL[i] = G3D::max(f0max, f1max);
+		normal[0] = f0.getU();
+		normal[1] = f0.getV();
+		for (int i = 0; i < 2; ++i) {
+			float f0min, f0max, f1min, f1max;
+			f0.minMax(f0.c0, normal[i], f0min, f0max);
+			f1.minMax(f0.c0, normal[i], f1min, f1max);
+			minL[i] = std::max(f0min, f1min);
+			maxL[i] = std::min(f0max, f1max);
 		}
-
-		return Face(
-			(normal * minL[1]) + (v2 * minL[1]) + this->c0,
-			(normal * minL[1]) + (v2 * minL[0]) + this->c0,
-			(normal * maxL[1]) + (v2 * minL[0]) + this->c0,
-			(normal * maxL[1]) + (v2 * minL[1]) + this->c0);
+		return Face(	f0.c0 + (normal[0] * minL[0] + normal[1] * minL[1]),
+						f0.c0 + (normal[0] * minL[0] + normal[1] * maxL[1]),
+						f0.c0 + (normal[0] * maxL[0] + normal[1] * maxL[1]),
+						f0.c0 + (normal[0] * maxL[0] + normal[1] * minL[1])		);
 	}
 
 	Face Face::fromExtentsSide(const Extents& e, NormalId faceId)

@@ -72,7 +72,7 @@ namespace RBX
 	void Instance::onDescendentAdded(Instance* instance)
 	{
 		if (Notifier<Instance, DescendentAdded>::hasListeners())
-			Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent));
+			Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->getParent()));
 
 		event_descendentAdded.fire(this, shared_from(instance));
 	}

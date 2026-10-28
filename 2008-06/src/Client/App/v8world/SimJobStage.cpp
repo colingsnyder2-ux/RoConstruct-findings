@@ -124,24 +124,6 @@ namespace RBX
 
 	void SimJobStage::onEdgeAdded(Edge* e)
 	{
-		RBXASSERT(validateEdge(e));
-
 		e->putInStage(this);
-
-		if (e->getEdgeType() == Edge::JOINT)
-		{
-			Assembly* a0 = e->getPrimitive(0)->getAssembly();
-			Assembly* a1 = e->getPrimitive(1)->getAssembly();
-
-			if (a0->inOrDownstreamOfStage(this) && a1->inOrDownstreamOfStage(this))
-			{
-				RBXASSERT(a0->getDof() > 0);
-				RBXASSERT(a1->getDof() > 0);
-
-				combineMechanisms(e);
-			}
-		}
-
 		e->putInKernel(getKernel());
-	}
-}
+	}}

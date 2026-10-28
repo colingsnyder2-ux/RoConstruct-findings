@@ -12,11 +12,13 @@ namespace RBX
 	RunService::RunService()
 		: framePeriod(1.0f/30.0f),
 		  runState(RS_NORMAL),
+		  unknown0x1b8(0.0),
+		  unknown0x1c8(0.0), unknown0x1d0(0.0), unknown0x1d8(0.0), unknown0x1e0(0.0),
 		  invalidRunViewCount(0),
-		  stopRequested(false),
-		  runDisabled(false)
+		  stopRequested(false)
 	{
 		setName("Run Service");
+		unknownStopwatch0x1e8.tick();
 	}
 
 	RunService::~RunService()

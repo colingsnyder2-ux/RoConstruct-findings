@@ -43,12 +43,9 @@ namespace RBX
 
 	__declspec(noinline) void Contact::deleteConnector(ContactConnector*& c)
 	{
-		if (c)
-		{
-			this->getKernel()->removeConnector(c);
-			delete c;
-			c = NULL;
-		}
+		this->getKernel()->removeConnector(c);
+		delete c;
+		c = NULL;
 	}
 
 	//needed because of header inlining bullshit

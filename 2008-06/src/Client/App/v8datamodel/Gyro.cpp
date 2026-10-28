@@ -52,11 +52,10 @@ namespace RBX
 
 	void BodyMover::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
 	{
-		Notifier<RunService,Stepped>::disconnect(ServiceProvider::create<RunService>(oldProvider), this);
-
-		Instance::onServiceProvider(oldProvider, newProvider);
-
-		updateWorld();
+		if (oldProvider)
+			Notifier<RunService,Stepped>::disconnect(ServiceProvider::find<RunService>(oldProvider), this);
+		if (newProvider)
+			Notifier<RunService,Stepped>::connect(ServiceProvider::find<RunService>(newProvider), this);
 	}
 
 	void BodyMover::onEvent(const RunService* source, Stepped event)

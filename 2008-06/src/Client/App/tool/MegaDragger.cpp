@@ -1,3 +1,4 @@
+#pragma float_control(precise, off)
 #include "tool/MegaDragger.h"
 #include "tool/DragUtilities.h"
 #include "tool/Dragger.h"
@@ -56,7 +57,6 @@ namespace RBX
 
 	void MegaDragger::finishDragging()
 	{
-		RBXASSERT(!joined);
 		rootInstance->clearCameraIgnoreParts();
 		DragUtilities::joinAndStopDragging(dragParts);
 		if (DragUtilities::anyPartAlive(dragParts))

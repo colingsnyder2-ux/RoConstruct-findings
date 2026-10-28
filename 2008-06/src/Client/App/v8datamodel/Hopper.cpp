@@ -194,6 +194,7 @@ namespace RBX
 	//le EPIC TROLL
 	void StarterPackService::render2d(Adorn* adorn)
 	{
+		Adorn* const drawAdorn = adorn;
 		TopMenuBar::render2d(adorn);
 
 		if (findFirstChildOfType<BackpackItem>())
@@ -202,7 +203,7 @@ namespace RBX
 			int fontSize = GuiRoot::normalizedFontSize(12);
 			G3D::Vector2 pos2d = viewPort.x0y1() + G3D::Vector2(4.0f, -4.0f);
 
-			adorn->drawFont2D(
+			drawAdorn->drawFont2D(
 				"StarterPack - these items will be given to each new player", 
 				pos2d, 
 				fontSize, 
@@ -227,12 +228,11 @@ namespace RBX
 
 	void LegacyHopperService::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
 	{
-		Instance::onServiceProvider(oldProvider, newProvider);
 
 		if (newProvider)
 		{
 			StarterPackService* starterPack = newProvider->find<StarterPackService>();
-			RBXASSERT(starterPack);
+
 
 			while (numChildren() > 0)
 			{

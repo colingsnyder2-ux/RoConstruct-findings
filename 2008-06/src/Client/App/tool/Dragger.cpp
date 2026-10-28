@@ -30,7 +30,6 @@ namespace RBX
 
 	Extents Dragger::computeExtents(const G3D::Array<Primitive*>& primitives)
 	{
-		RBXASSERT(primitives.size() > 0);
 
 		Extents e = Extents::negativeInfiniteExtents();
 

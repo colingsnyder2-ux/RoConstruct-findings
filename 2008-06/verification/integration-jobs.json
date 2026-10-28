@@ -3683,11 +3683,56 @@
         ]
       ]
     },
-    "phase": "baseline: building",
-    "receipt": {},
-    "state": "verifying",
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "460dba1fa31ae58505c5bb6e5645682fa400eb7b0bcd5aa24254cb2f1017b8cc",
+      "credits": 14,
+      "distinct_after": 9857,
+      "distinct_before": 9843,
+      "gains": [
+        "0055ae20",
+        "005693a0",
+        "0057bc00",
+        "0057be10",
+        "00596400",
+        "005964f0",
+        "00596700",
+        "005968d0",
+        "00596a50",
+        "00596cd0",
+        "00597110",
+        "005971d0",
+        "0063d390",
+        "0063d640"
+      ],
+      "input_hash": "cd41959754f9bd72b33e5086250ccb3b0151d8c9e886ad29653bb77135a2f083",
+      "losses": [],
+      "new_distinct": [
+        "0055ae20",
+        "005693a0",
+        "0057bc00",
+        "0057be10",
+        "00596400",
+        "005964f0",
+        "00596700",
+        "005968d0",
+        "00596a50",
+        "00596cd0",
+        "00597110",
+        "005971d0",
+        "0063d390",
+        "0063d640"
+      ],
+      "overlay_hash": "95d037405fb087b48704995d03048ecdc91d8ec53ac9ecbd2b43dac65ba4539e",
+      "owned_after": 3192,
+      "owned_before": 3178,
+      "rebased": false,
+      "submitted_revision": "460dba1fa31ae58505c5bb6e5645682fa400eb7b0bcd5aa24254cb2f1017b8cc"
+    },
+    "state": "accepted",
     "unit": "RBX::Clump",
-    "updated": 1793196067.8816664,
+    "updated": 1793197354.0482914,
     "user": "colin"
   },
   {
@@ -3726,11 +3771,56 @@
         ]
       ]
     },
-    "phase": "merged into 121908dd",
-    "receipt": {},
-    "state": "verifying",
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "460dba1fa31ae58505c5bb6e5645682fa400eb7b0bcd5aa24254cb2f1017b8cc",
+      "credits": 14,
+      "distinct_after": 9857,
+      "distinct_before": 9843,
+      "gains": [
+        "0055ae20",
+        "005693a0",
+        "0057bc00",
+        "0057be10",
+        "00596400",
+        "005964f0",
+        "00596700",
+        "005968d0",
+        "00596a50",
+        "00596cd0",
+        "00597110",
+        "005971d0",
+        "0063d390",
+        "0063d640"
+      ],
+      "input_hash": "cd41959754f9bd72b33e5086250ccb3b0151d8c9e886ad29653bb77135a2f083",
+      "losses": [],
+      "new_distinct": [
+        "0055ae20",
+        "005693a0",
+        "0057bc00",
+        "0057be10",
+        "00596400",
+        "005964f0",
+        "00596700",
+        "005968d0",
+        "00596a50",
+        "00596cd0",
+        "00597110",
+        "005971d0",
+        "0063d390",
+        "0063d640"
+      ],
+      "overlay_hash": "95d037405fb087b48704995d03048ecdc91d8ec53ac9ecbd2b43dac65ba4539e",
+      "owned_after": 3192,
+      "owned_before": 3178,
+      "rebased": false,
+      "submitted_revision": "460dba1fa31ae58505c5bb6e5645682fa400eb7b0bcd5aa24254cb2f1017b8cc"
+    },
+    "state": "accepted",
     "unit": "RBX::Seat",
-    "updated": 1793196004.0271966,
+    "updated": 1793197354.0482914,
     "user": "colin"
   },
   {
@@ -3765,11 +3855,519 @@
         ]
       ]
     },
-    "phase": "queued",
-    "receipt": {},
-    "state": "queued",
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "f34f1d29c1fd2ecd17f08b65637c45fb4f6b7bfc6b7e0e80d9e22d5d8148e4f7",
+      "credits": 10,
+      "distinct_after": 9867,
+      "distinct_before": 9857,
+      "gains": [
+        "00574bf0",
+        "005ca430",
+        "005cadc0",
+        "005cfcd0",
+        "005d60f0",
+        "005dd7d0",
+        "005dde50",
+        "00606d10",
+        "0060e780",
+        "0060eb30"
+      ],
+      "input_hash": "c4aa0808e752c6e108216da4ef3e971442ac63097a15c085a43f78ac1d366466",
+      "losses": [],
+      "new_distinct": [
+        "00574bf0",
+        "005ca430",
+        "005cadc0",
+        "005cfcd0",
+        "005d60f0",
+        "005dd7d0",
+        "005dde50",
+        "00606d10",
+        "0060e780",
+        "0060eb30"
+      ],
+      "overlay_hash": "11bb8bb0d4e1995d18088135ba0ec5848b5df1b8e0b2d7cd150c956ec23f539b",
+      "owned_after": 3202,
+      "owned_before": 3192,
+      "rebased": true,
+      "submitted_revision": "460dba1fa31ae58505c5bb6e5645682fa400eb7b0bcd5aa24254cb2f1017b8cc"
+    },
+    "state": "accepted",
     "unit": "RBX::DataModel",
-    "updated": 1793195662.4869473,
+    "updated": 1793198042.974592,
+    "user": "colin"
+  },
+  {
+    "created": 1793197085.9790912,
+    "id": "db00257f2e0241cebb9473d7ab93c527",
+    "model": "gpt-6",
+    "patches": {
+      "App/include/util/UIEvent.h": [
+        [
+          "\t\t\treturn eventType == MOUSE_RIGHT_BUTTON_DOWN \n\t\t\t\t|| eventType == MOUSE_RIGHT_BUTTON_UP \n\t\t\t\t|| eventType == MOUSE_LEFT_BUTTON_DOWN \n\t\t\t\t|| eventType == MOUSE_LEFT_BUTTON_UP \n\t\t\t\t|| eventType == MOUSE_MOVE \n\t\t\t\t|| eventType == MOUSE_DELTA \n\t\t\t\t|| eventType == MOUSE_IDLE; ",
+          "\t\t\treturn eventType >= MOUSE_RIGHT_BUTTON_DOWN && eventType <= MOUSE_IDLE;"
+        ]
+      ],
+      "App/tool/DragUtilities.cpp": [
+        [
+          "\t\tRBXASSERT(primitives.size() == 0);",
+          ""
+        ],
+        [
+          "\t\t\t\tRBXASSERT(world);",
+          ""
+        ]
+      ],
+      "App/tool/MegaDragger.cpp": [
+        [
+          "#include \"tool/MegaDragger.h\"",
+          "#pragma float_control(precise, off)\n#include \"tool/MegaDragger.h\""
+        ],
+        [
+          "\tvoid MegaDragger::finishDragging()\n\t{\n\t\tRBXASSERT(!joined);",
+          "\tvoid MegaDragger::finishDragging()\n\t{"
+        ]
+      ],
+      "App/util/Math.cpp": [
+        [
+          "#include \"util/Math.h\"",
+          "#pragma float_control(precise, off)\n#include \"util/Math.h\""
+        ],
+        [
+          "\t\t\t|| f == std::numeric_limits<float>::signaling_NaN()\n\t\t\t|| Math::isDenormal(f);",
+          "\t\t\t|| f == std::numeric_limits<float>::signaling_NaN();"
+        ],
+        [
+          "\t\tint second = -1;\n\t\tint bestV = -1;",
+          "\t\tint bestV = -1;\n\t\tint second = -1;"
+        ],
+        [
+          "\t\tif (unkMat[v15][v11] < 0.0f)",
+          "\t\tif (unkMat[v15][calcColmTemp] < 0.0f)"
+        ]
+      ],
+      "App/v8datamodel/Hopper.cpp": [
+        [
+          "\tvoid StarterPackService::render2d(Adorn* adorn)\n\t{\n\t\tTopMenuBar::render2d(adorn);",
+          "\tvoid StarterPackService::render2d(Adorn* adorn)\n\t{\n\t\tAdorn* const drawAdorn = adorn;\n\t\tTopMenuBar::render2d(adorn);"
+        ],
+        [
+          "\t\t\tadorn->drawFont2D(\n\t\t\t\t\"StarterPack - these items will be given to each new player\",",
+          "\t\t\tdrawAdorn->drawFont2D(\n\t\t\t\t\"StarterPack - these items will be given to each new player\","
+        ]
+      ],
+      "App/v8datamodel/Teams.cpp": [
+        [
+          "\tint Teams::getNumPlayersInTeam(BrickColor brickColor)\n\t{\n\t\tint numOfPlayers = 0;\n\n\t\tNetwork::Players* players = ServiceProvider::find<Network::Players>(this);\n\t\tRBXASSERT(players);",
+          "\tint Teams::getNumPlayersInTeam(BrickColor brickColor)\n\t{\n\t\tint numOfPlayers = 0;\n\n\t\tNetwork::Players* players = ServiceProvider::find<Network::Players>(this);"
+        ]
+      ],
+      "App/v8datamodel/UserController.cpp": [
+        [
+          "#include \"v8datamodel/PVInstance.h\"",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/PVInstance.h\""
+        ]
+      ],
+      "App/v8world/Contact.cpp": [
+        [
+          "\t__declspec(noinline) void Contact::deleteConnector(ContactConnector*& c)\n\t{\n\t\tif (c)\n\t\t{\n\t\t\tthis->getKernel()->removeConnector(c);\n\t\t\tdelete c;\n\t\t\tc = NULL;\n\t\t}\n\t}",
+          "\t__declspec(noinline) void Contact::deleteConnector(ContactConnector*& c)\n\t{\n\t\tthis->getKernel()->removeConnector(c);\n\t\tdelete c;\n\t\tc = NULL;\n\t}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "f34f1d29c1fd2ecd17f08b65637c45fb4f6b7bfc6b7e0e80d9e22d5d8148e4f7",
+      "credits": 10,
+      "distinct_after": 9867,
+      "distinct_before": 9857,
+      "gains": [
+        "00574bf0",
+        "005ca430",
+        "005cadc0",
+        "005cfcd0",
+        "005d60f0",
+        "005dd7d0",
+        "005dde50",
+        "00606d10",
+        "0060e780",
+        "0060eb30"
+      ],
+      "input_hash": "c4aa0808e752c6e108216da4ef3e971442ac63097a15c085a43f78ac1d366466",
+      "losses": [],
+      "new_distinct": [
+        "00574bf0",
+        "005ca430",
+        "005cadc0",
+        "005cfcd0",
+        "005d60f0",
+        "005dd7d0",
+        "005dde50",
+        "00606d10",
+        "0060e780",
+        "0060eb30"
+      ],
+      "overlay_hash": "11bb8bb0d4e1995d18088135ba0ec5848b5df1b8e0b2d7cd150c956ec23f539b",
+      "owned_after": 3202,
+      "owned_before": 3192,
+      "rebased": true,
+      "submitted_revision": "460dba1fa31ae58505c5bb6e5645682fa400eb7b0bcd5aa24254cb2f1017b8cc"
+    },
+    "state": "accepted",
+    "unit": "RBX::TopMenuBar, RBX::Teams",
+    "updated": 1793198042.974592,
+    "user": "colin"
+  },
+  {
+    "created": 1793197590.0435963,
+    "id": "0ab7277b8f01404faef09a809a3eabb2",
+    "model": "gpt-6.1-sol",
+    "patches": {
+      "App/v8world/Contact.cpp": [
+        [
+          "__declspec(noinline) void Contact::deleteConnector(ContactConnector*& c)\n\t{\n\t\tif (c)\n\t\t{\n\t\t\tthis->getKernel()->removeConnector(c);\n\t\t\tdelete c;\n\t\t\tc = NULL;\n\t\t}\n\t}",
+          "__declspec(noinline) void Contact::deleteConnector(ContactConnector*& c)\n\t{\n\t\tthis->getKernel()->removeConnector(c);\n\t\tdelete c;\n\t\tc = NULL;\n\t}"
+        ]
+      ],
+      "App/v8world/Primitive.cpp": [
+        [
+          "return edges.size() ? edges[0] : NULL;",
+          "return edges.size() > 0 ? edges[0] : NULL;"
+        ],
+        [
+          "return rbx_static_cast<Contact*>(contacts.next(prev));",
+          "int i = prev->getIndex(this) + 1;\n\t\treturn i < contacts.edges.size() ? rbx_static_cast<Contact*>(contacts.edges[i]) : NULL;"
+        ],
+        [
+          "return getFirstRigidAt(getFirstEdge());",
+          "return getFirstRigidAt(joints.first());"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "180e1e202b74f5162095b42478ed446d12c9a0b5733e3dd02b40756d8f38344b",
+      "credits": 8,
+      "distinct_after": 9875,
+      "distinct_before": 9867,
+      "gains": [
+        "00586bf0",
+        "005d0910",
+        "005d3aa0",
+        "005d4b60",
+        "005e7b90",
+        "005e7bd0",
+        "005e7be0",
+        "005e7c80"
+      ],
+      "input_hash": "7d8ed465315e2c464d806ae2c3b7258096892b11264f8afa3657158b81356b85",
+      "losses": [],
+      "new_distinct": [
+        "00586bf0",
+        "005d0910",
+        "005d3aa0",
+        "005d4b60",
+        "005e7b90",
+        "005e7bd0",
+        "005e7be0",
+        "005e7c80"
+      ],
+      "overlay_hash": "a29201003459b326ad0f246f7242d082198bf2d69ba07a98a50f51a247c84dbb",
+      "owned_after": 3210,
+      "owned_before": 3202,
+      "rebased": true,
+      "submitted_revision": "f34f1d29c1fd2ecd17f08b65637c45fb4f6b7bfc6b7e0e80d9e22d5d8148e4f7"
+    },
+    "state": "accepted",
+    "unit": "RBX::Primitive",
+    "updated": 1793198815.3640072,
+    "user": "coldek"
+  },
+  {
+    "created": 1793198039.2440038,
+    "id": "d40b4bf9edb44cafb3778c3259f157e7",
+    "model": "gpt-6.1-sol",
+    "patches": {
+      "App/script/Script.cpp": [
+        [
+          "void Script::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)\n{\n\tif (ScriptContext* sc = ServiceProvider::find<ScriptContext>(oldProvider))\n\t{\n\t\tsc->removeScript(this);\n\t}\n\n\tInstance::onServiceProvider(oldProvider, newProvider);\n}",
+          "void Script::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)\n{\n\tif (oldProvider)\n\t{\n\t\tif (ScriptContext* sc = oldProvider->find<ScriptContext>())\n\t\t\tsc->removeScript(this);\n\t}\n\tif (newProvider)\n\t\trequestCode();\n}"
+        ]
+      ],
+      "App/v8datamodel/CharacterAppearance.cpp": [
+        [
+          "\tvoid Skin::apply(Humanoid* humanoid)\n\t{\n\t\tbool hasShirt = getParent()->findFirstChildOfType<Shirt>() != NULL;\n\n\t\tPartInstance* head = humanoid->getHead();\n\t\tif (head)\n\t\t\thead->setColor(skinColor);\n\n\t\tPartInstance* leftLeg = humanoid->getLeftLeg();\n\t\tif (leftLeg)\n\t\t\tleftLeg->setColor(skinColor);\n\n\t\tPartInstance* rightLeg = humanoid->getRightLeg();\n\t\tif (rightLeg)\n\t\t\trightLeg->setColor(skinColor);\n\n\t\tif (!hasShirt)\n\t\t{\n\t\t\tPartInstance* torso = humanoid->getTorso();\n\t\t\tif (torso)\n\t\t\t\ttorso->setColor(skinColor);\n\n\t\t\tPartInstance* leftArm = humanoid->getLeftArm();\n\t\t\tif (leftArm)\n\t\t\t\tleftArm->setColor(skinColor);\n\n\t\t\tPartInstance* rightArm = humanoid->getRightArm();\n\t\t\tif (rightArm)\n\t\t\t\trightArm->setColor(skinColor);\n\t\t}\n\t}",
+          "\tvoid Skin::apply(Humanoid* humanoid)\n\t{\n\t\tPartInstance* head = humanoid->getHead();\n\t\tif (head)\n\t\t\thead->setColor(skinColor);\n\n\t\tPartInstance* leftLeg = humanoid->getLeftLeg();\n\t\tif (leftLeg)\n\t\t\tleftLeg->setColor(skinColor);\n\n\t\tPartInstance* rightLeg = humanoid->getRightLeg();\n\t\tif (rightLeg)\n\t\t\trightLeg->setColor(skinColor);\n\n\t\t{\n\t\t\tPartInstance* torso = humanoid->getTorso();\n\t\t\tif (torso)\n\t\t\t\ttorso->setColor(skinColor);\n\n\t\t\tPartInstance* leftArm = humanoid->getLeftArm();\n\t\t\tif (leftArm)\n\t\t\t\tleftArm->setColor(skinColor);\n\n\t\t\tPartInstance* rightArm = humanoid->getRightArm();\n\t\t\tif (rightArm)\n\t\t\t\trightArm->setColor(skinColor);\n\t\t}\n\t}"
+        ],
+        [
+          "\tvoid BodyColors::apply(Humanoid* humanoid)\n\t{\n\t\tSkin* skin = getParent()->findFirstChildOfType<Skin>();\n\n\t\tif (!skin)\n\t\t{\n\t\t\tbool hasShirt = getParent()->findFirstChildOfType<Shirt>() != NULL;\n\n\t\t\tPartInstance* head = humanoid->getHead();\n\t\t\tif (head)\n\t\t\t\thead->setColor(headColor);\n\n\t\t\tPartInstance* leftLeg = humanoid->getLeftLeg();\n\t\t\tif (leftLeg)\n\t\t\t\tleftLeg->setColor(leftLegColor);\n\n\t\t\tPartInstance* rightLeg = humanoid->getRightLeg();\n\t\t\tif (rightLeg)\n\t\t\t\trightLeg->setColor(rightLegColor);\n\n\t\t\tif (!hasShirt)\n\t\t\t{\n\t\t\t\tPartInstance* torso = humanoid->getTorso();\n\t\t\t\tif (torso)\n\t\t\t\t\ttorso->setColor(torsoColor);\n\n\t\t\t\tPartInstance* leftArm = humanoid->getLeftArm();\n\t\t\t\tif (leftArm)\n\t\t\t\t\tleftArm->setColor(leftArmColor);\n\n\t\t\t\tPartInstance* rightArm = humanoid->getRightArm();\n\t\t\t\tif (rightArm)\n\t\t\t\t\trightArm->setColor(rightArmColor);\n\t\t\t}\n\t\t}\n\t}",
+          "\tvoid BodyColors::apply(Humanoid* humanoid)\n\t{\n\t\tModelInstance* model = getParent() ? dynamic_cast<ModelInstance*>(getParent()) : NULL;\n\t\tif (model && model->findFirstChildOfType<Skin>())\n\t\t\treturn;\n\t\t{\n\n\t\t\tPartInstance* head = humanoid->getHead();\n\t\t\tif (head)\n\t\t\t\thead->setColor(headColor);\n\n\t\t\tPartInstance* leftLeg = humanoid->getLeftLeg();\n\t\t\tif (leftLeg)\n\t\t\t\tleftLeg->setColor(leftLegColor);\n\n\t\t\tPartInstance* rightLeg = humanoid->getRightLeg();\n\t\t\tif (rightLeg)\n\t\t\t\trightLeg->setColor(rightLegColor);\n\n\t\t\t{\n\t\t\t\tPartInstance* torso = humanoid->getTorso();\n\t\t\t\tif (torso)\n\t\t\t\t\ttorso->setColor(torsoColor);\n\n\t\t\t\tPartInstance* leftArm = humanoid->getLeftArm();\n\t\t\t\tif (leftArm)\n\t\t\t\t\tleftArm->setColor(leftArmColor);\n\n\t\t\t\tPartInstance* rightArm = humanoid->getRightArm();\n\t\t\t\tif (rightArm)\n\t\t\t\t\trightArm->setColor(rightArmColor);\n\t\t\t}\n\t\t}\n\t}"
+        ]
+      ],
+      "App/v8datamodel/Hopper.cpp": [
+        [
+          "void LegacyHopperService::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)\n\t{\n\t\tInstance::onServiceProvider(oldProvider, newProvider);",
+          "void LegacyHopperService::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)\n\t{"
+        ],
+        [
+          "\t\t\tRBXASSERT(starterPack);",
+          ""
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "180e1e202b74f5162095b42478ed446d12c9a0b5733e3dd02b40756d8f38344b",
+      "credits": 8,
+      "distinct_after": 9875,
+      "distinct_before": 9867,
+      "gains": [
+        "00586bf0",
+        "005d0910",
+        "005d3aa0",
+        "005d4b60",
+        "005e7b90",
+        "005e7bd0",
+        "005e7be0",
+        "005e7c80"
+      ],
+      "input_hash": "7d8ed465315e2c464d806ae2c3b7258096892b11264f8afa3657158b81356b85",
+      "losses": [],
+      "new_distinct": [
+        "00586bf0",
+        "005d0910",
+        "005d3aa0",
+        "005d4b60",
+        "005e7b90",
+        "005e7bd0",
+        "005e7be0",
+        "005e7c80"
+      ],
+      "overlay_hash": "a29201003459b326ad0f246f7242d082198bf2d69ba07a98a50f51a247c84dbb",
+      "owned_after": 3210,
+      "owned_before": 3202,
+      "rebased": true,
+      "submitted_revision": "f34f1d29c1fd2ecd17f08b65637c45fb4f6b7bfc6b7e0e80d9e22d5d8148e4f7"
+    },
+    "state": "accepted",
+    "unit": "RBX::LegacyHopperService, RBX::BodyColors, RBX::Script, RBX::Skin",
+    "updated": 1793198815.3640072,
+    "user": "coldek"
+  },
+  {
+    "created": 1793198346.1105301,
+    "id": "16375cb373ee4a6094ff390c19e17bce",
+    "model": "gpt-6.1-sol",
+    "patches": {
+      "App/include/util/RunStateOwner.h": [
+        [
+          "double unknown0x1c8[4]; // names unknown",
+          "double unknown0x1c8;\n\t\tdouble unknown0x1d0;\n\t\tdouble unknown0x1d8;\n\t\tdouble unknown0x1e0;"
+        ]
+      ],
+      "App/util/RunStateOwner.cpp": [
+        [
+          "\tRunService::RunService()\n\t\t: framePeriod(1.0f/30.0f),\n\t\t  runState(RS_NORMAL),\n\t\t  invalidRunViewCount(0),\n\t\t  stopRequested(false),\n\t\t  runDisabled(false)\n\t{\n\t\tsetName(\"Run Service\");\n\t}\n",
+          "\tRunService::RunService()\n\t\t: framePeriod(1.0f/30.0f),\n\t\t  runState(RS_NORMAL),\n\t\t  unknown0x1b8(0.0),\n\t\t  unknown0x1c8(0.0), unknown0x1d0(0.0), unknown0x1d8(0.0), unknown0x1e0(0.0),\n\t\t  invalidRunViewCount(0),\n\t\t  stopRequested(false)\n\t{\n\t\tsetName(\"Run Service\");\n\t\tunknownStopwatch0x1e8.tick();\n\t}\n"
+        ]
+      ],
+      "App/v8world/SimJobStage.cpp": [
+        [
+          "\tvoid SimJobStage::onEdgeAdded(Edge* e)\n\t{\n\t\tRBXASSERT(validateEdge(e));\n\n\t\te->putInStage(this);\n\n\t\tif (e->getEdgeType() == Edge::JOINT)\n\t\t{\n\t\t\tAssembly* a0 = e->getPrimitive(0)->getAssembly();\n\t\t\tAssembly* a1 = e->getPrimitive(1)->getAssembly();\n\n\t\t\tif (a0->inOrDownstreamOfStage(this) && a1->inOrDownstreamOfStage(this))\n\t\t\t{\n\t\t\t\tRBXASSERT(a0->getDof() > 0);\n\t\t\t\tRBXASSERT(a1->getDof() > 0);\n\n\t\t\t\tcombineMechanisms(e);\n\t\t\t}\n\t\t}\n\n\t\te->putInKernel(getKernel());\n\t}\n",
+          "\tvoid SimJobStage::onEdgeAdded(Edge* e)\n\t{\n\t\te->putInStage(this);\n\t\te->putInKernel(getKernel());\n\t}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "cb17948369e81bb570f8be803f1b30c5cf910497817affaacbdbbd98ac75e851",
+      "credits": 2,
+      "distinct_after": 9877,
+      "distinct_before": 9875,
+      "gains": [
+        "00556b00",
+        "0064d060"
+      ],
+      "input_hash": "644a764ffd3827437b1524c0a5f2d3cbb290a0f74b9e5828f07be4344d368498",
+      "losses": [],
+      "new_distinct": [
+        "00556b00",
+        "0064d060"
+      ],
+      "overlay_hash": "216ffa6e0707647d6cab5b16f7d4a7864849f3bf6117c3e325a9fd801b7d3e2c",
+      "owned_after": 3212,
+      "owned_before": 3210,
+      "rebased": true,
+      "submitted_revision": "180e1e202b74f5162095b42478ed446d12c9a0b5733e3dd02b40756d8f38344b"
+    },
+    "state": "accepted",
+    "unit": "RBX::RunService, RBX::SimJobStage",
+    "updated": 1793199915.2821674,
+    "user": "coldek"
+  },
+  {
+    "created": 1793199204.915076,
+    "id": "a76582d4868d40cfb32c15461b097791",
+    "model": "gpt-6",
+    "patches": {
+      "App/tool/Dragger.cpp": [
+        [
+          "\tExtents Dragger::computeExtents(const G3D::Array<Primitive*>& primitives)\n\t{\n\t\tRBXASSERT(primitives.size() > 0);",
+          "\tExtents Dragger::computeExtents(const G3D::Array<Primitive*>& primitives)\n\t{"
+        ]
+      ],
+      "App/util/Face.cpp": [
+        [
+          "#include \"util/Face.h\"",
+          "#pragma float_control(precise, off)\n#include \"util/Face.h\""
+        ],
+        [
+          "\tFace Face::projectOverlapOnMe(const Face& other) const\n\t{\n\t\tG3D::Vector3 normal = getU();\n\t\tG3D::Vector3 v2 = getV();\n\n\t\tfloat minL[2];\n\t\tfloat maxL[2];\n\t\tfor (int i = 0; i < 2; ++i)\n\t\t{\n\t\t\tfloat f0min, f0max;\n\t\t\tthis->minMax(this->c0, normal, f0min, f0max);\n\n\t\t\tfloat f1min, f1max;\n\t\t\tother.minMax(this->c0, normal, f1min, f1max);\n\n\t\t\tminL[i] = G3D::min(f0min, f1min);\n\t\t\tmaxL[i] = G3D::max(f0max, f1max);\n\t\t}\n\n\t\treturn Face(\n\t\t\t(normal * minL[1]) + (v2 * minL[1]) + this->c0,\n\t\t\t(normal * minL[1]) + (v2 * minL[0]) + this->c0,\n\t\t\t(normal * maxL[1]) + (v2 * minL[0]) + this->c0,\n\t\t\t(normal * maxL[1]) + (v2 * minL[1]) + this->c0);\n\t}",
+          "\tFace Face::projectOverlapOnMe(const Face& other) const\n\t{\n\t\tconst Face& f0 = (*this);\n\t\tconst Face& f1 = other;\n\n\t\t//RBXASSERT(Face::hasOverlap(f0, f1, 1e-6f));\n\t\tG3D::Vector3 normal[2];\n\t\tfloat minL[2];\n\t\tfloat maxL[2];\n\n\t\tnormal[0] = f0.getU();\n\t\tnormal[1] = f0.getV();\n\t\tfor (int i = 0; i < 2; ++i) {\n\t\t\tfloat f0min, f0max, f1min, f1max;\n\t\t\tf0.minMax(f0.c0, normal[i], f0min, f0max);\n\t\t\tf1.minMax(f0.c0, normal[i], f1min, f1max);\n\t\t\tminL[i] = std::max(f0min, f1min);\n\t\t\tmaxL[i] = std::min(f0max, f1max);\n\t\t}\n\t\treturn Face(\tf0.c0 + (normal[0] * minL[0] + normal[1] * minL[1]),\n\t\t\t\t\t\tf0.c0 + (normal[0] * minL[0] + normal[1] * maxL[1]),\n\t\t\t\t\t\tf0.c0 + (normal[0] * maxL[0] + normal[1] * maxL[1]),\n\t\t\t\t\t\tf0.c0 + (normal[0] * maxL[0] + normal[1] * minL[1])\t\t);\n\t}"
+        ],
+        [
+          "\t\t\tdouble distance;\n\t\t\tp0.getEquation(normal, distance);",
+          "\t\t\tfloat distance;\n\t\t\tp0.getEquation(normal, distance);"
+        ],
+        [
+          "\t\t\t\tif (overlapOn1[j].dot(normal) > tolerance)",
+          "\t\t\t\tif (fabs(overlapOn1[j].dot(normal) + distance) > tolerance)"
+        ]
+      ],
+      "App/v8datamodel/Gyro.cpp": [
+        [
+          "\tvoid BodyMover::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)\n\t{\n\t\tNotifier<RunService,Stepped>::disconnect(ServiceProvider::create<RunService>(oldProvider), this);\n\n\t\tInstance::onServiceProvider(oldProvider, newProvider);\n\n\t\tupdateWorld();\n\t}",
+          "\tvoid BodyMover::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)\n\t{\n\t\tif (oldProvider)\n\t\t\tNotifier<RunService,Stepped>::disconnect(ServiceProvider::find<RunService>(oldProvider), this);\n\t\tif (newProvider)\n\t\t\tNotifier<RunService,Stepped>::connect(ServiceProvider::find<RunService>(newProvider), this);\n\t}"
+        ]
+      ],
+      "App/v8datamodel/LocakBackpack.cpp": [
+        [
+          "\t\tInstance::onServiceProvider(oldProvider, newProvider);",
+          ""
+        ]
+      ],
+      "App/v8world/Block.cpp": [
+        [
+          "#include \"v8world/Block.h\"",
+          "#pragma float_control(precise,off)\n#include \"v8world/Block.h\""
+        ],
+        [
+          "\t__declspec(noinline) G3D::Matrix3 Block::getMomentHollow(float mass) const\n\t{\n\t\tG3D::Vector3 grid = gridSize;\n\t\tG3D::Vector3 I;\n\n\t\tfloat area = ((grid.x * grid.z + grid.y * grid.z) + grid.x * grid.y) * 2;\n\n\t\tfor (int i = 0; i < 3; i++)\n\t\t{\n\t\t\tfloat X = grid[(i    ) % 3];\n\t\t\tfloat Y = grid[(i + 1) % 3];\n\t\t\tfloat Z = grid[(i + 2) % 3];\n\n\t\t\tfloat scaling = mass / (2 * area);\n\n\t\t\tfloat temp = (Z*Z*Y)*X + (Y*Y*Y*Z)/3 + (Z*Z*Z*Y)/3 + (Y*Y*Z)*X + (X*Y*Y*Y)/3 + (X*Z*Z*Z)/3;\n\n\t\t\tI[i] = temp * scaling;\n\t\t}\n\n\t\treturn Math::fromDiagonal(I);\n\t}",
+          "__declspec(noinline) G3D::Matrix3 Block::getMomentHollow(float mass) const\n{\n\tG3D::Vector3 size = gridSize;\n\n\tfloat area = 2 * (size.x * size.y + size.y * size.z + size.z * size.x);\n\tG3D::Vector3 I;\n\tfor (int i = 0; i < 3; i++) {\n\t\tint j = (i + 1) % 3;\n\t\tint k = (i + 2) % 3;\n\t\tfloat x = size[i];\t\t// main axis;\n\t\tfloat y = size[j];\n\t\tfloat z = size[k];\n\t\t\n\t\tfloat Ix = (mass / (2.0f * area)) * (\t\t(y*y*y*z/3.0f)\n\t\t\t\t\t\t\t\t\t\t\t\t+\t(y*z*z*z/3.0f)\n\t\t\t\t\t\t\t\t\t\t\t\t+\t(x*y*z*z)\n\t\t\t\t\t\t\t\t\t\t\t\t+\t(x*y*y*y/3.0f)\n\t\t\t\t\t\t\t\t\t\t\t\t+\t(x*y*y*z)\n\t\t\t\t\t\t\t\t\t\t\t\t+\t(x*z*z*z/3.0f)\t);\n\t\tI[i] = Ix;\n\t}\n\treturn Math::fromDiagonal(I);\n}"
+        ]
+      ],
+      "App/v8world/Primitive.cpp": [
+        [
+          "\tvoid Primitive::setDragging(bool _dragging)\n\t{\n\t\tif (dragging != _dragging)\n\t\t{\n\t\t\tbool oldDrag = !dragging && canCollide;\n\t\t\tdragging = _dragging;\n\n\t\t\tsetAnchor(anchored);\n\t\t\tif (world)\n\t\t\t{\n\t\t\t\tbool newDrag = !dragging && canCollide;\n\t\t\t\tif (newDrag != oldDrag)\n\t\t\t\t\tworld->onPrimitiveCanCollideChanged(this);\n\t\t\t}\n\t\t}\n\t}",
+          "\tvoid Primitive::setDragging(bool _dragging)\n\t{\n\t\tbool wasAnchored = dragging || anchored || flag0xaa;\n\t\tif (dragging != _dragging)\n\t\t{\n\t\t\tdragging = _dragging;\n\t\t\tbool isAnchored = dragging || anchored || flag0xaa;\n\t\t\tif (isAnchored != wasAnchored && world)\n\t\t\t{\n\t\t\t\tif (isAnchored)\n\t\t\t\t\tworld->onPrimitiveAddedAnchor(this);\n\t\t\t\telse\n\t\t\t\t\tworld->onPrimitiveRemovingAnchor(this);\n\t\t\t}\n\t\t}\n\t}"
+        ],
+        [
+          "\tvoid Primitive::setAnchor(bool _anchored)\n\t{\n\t\tanchored = _anchored;\n\n\t\tbool exists = getAnchor();\n\n\t\tif (_anchored || dragging)\n\t\t\t_anchored = true;\n\n\t\tif (_anchored == exists)\n\t\t\treturn;\n\n\t\tif (_anchored)\n\t\t{\n\t\t\tRBXASSERT(!getAnchorObject());\n\t\t\tsetAnchorObject(new Anchor(this));\n\t\t\tif (world)\n\t\t\t\tworld->onPrimitiveAddedAnchor(this);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(getAnchorObject());\n\t\t\tif (world)\n\t\t\t\tworld->onPrimitiveRemovingAnchor(this);\n\t\t\t\n\t\t\tdelete getAnchorObject();\n\t\t\tsetAnchorObject(NULL);\n\t\t}\n\t}",
+          "\tvoid Primitive::setAnchor(bool _anchored)\n\t{\n\t\tbool wasAnchored = dragging || anchored || flag0xaa;\n\t\tif (anchored != _anchored)\n\t\t{\n\t\t\tanchored = _anchored;\n\t\t\tbool isAnchored = dragging || anchored || flag0xaa;\n\t\t\tif (isAnchored != wasAnchored && world)\n\t\t\t{\n\t\t\t\tif (isAnchored)\n\t\t\t\t\tworld->onPrimitiveAddedAnchor(this);\n\t\t\t\telse\n\t\t\t\t\tworld->onPrimitiveRemovingAnchor(this);\n\t\t\t}\n\t\t}\n\t}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "dddff51cbfdba0d42046358ceeb5c9672217396397564167678e783497102f01",
+      "credits": 8,
+      "distinct_after": 9885,
+      "distinct_before": 9877,
+      "gains": [
+        "005e8050",
+        "005e80d0",
+        "005fcfb0",
+        "00610070",
+        "00632db0",
+        "006477b0",
+        "00649f20",
+        "0064a200"
+      ],
+      "input_hash": "eef2a4891f98ddad6f6eed40952d73626ca72362911848268a263abff64669ce",
+      "losses": [],
+      "new_distinct": [
+        "005e8050",
+        "005e80d0",
+        "005fcfb0",
+        "00610070",
+        "00632db0",
+        "006477b0",
+        "00649f20",
+        "0064a200"
+      ],
+      "overlay_hash": "c97cbf0d8d78f31f4f4fedd370d0492821bc7520d5df43b8c1985adb814e1e59",
+      "owned_after": 3220,
+      "owned_before": 3212,
+      "rebased": true,
+      "submitted_revision": "cb17948369e81bb570f8be803f1b30c5cf910497817affaacbdbbd98ac75e851"
+    },
+    "state": "accepted",
+    "unit": "RBX::LocalBackpack, RBX::BodyMover, RBX::Block, RBX::Primitive",
+    "updated": 1793201182.6516373,
+    "user": "colin"
+  },
+  {
+    "created": 1793200780.726533,
+    "id": "e1d470a394ed4761815dd063807d3fa0",
+    "model": "gpt-6",
+    "patches": {
+      "App/gui/Gui.cpp": [
+        [
+          "\t\tRBXASSERT(!focus);\n\t\treturn processNonFocus(event);",
+          "\t\treturn processNonFocus(event);"
+        ]
+      ],
+      "App/tool/ToolsArrow.cpp": [
+        [
+          "#include \"tool/ToolsArrow.h\"",
+          "#pragma float_control(precise,off)\n#include \"tool/ToolsArrow.h\""
+        ]
+      ],
+      "App/v8datamodel/DebrisService.cpp": [
+        [
+          "\t\tInstance::onServiceProvider(oldProvider, newProvider);",
+          ""
+        ],
+        [
+          "\t\ttimer = ServiceProvider::create<TimerService>(newProvider);",
+          "\t\ttimer = ServiceProvider::find<TimerService>(newProvider);"
+        ]
+      ],
+      "App/v8datamodel/Explosion.cpp": [
+        [
+          "\t\tInstance::onServiceProvider(oldProvider, newProvider);",
+          ""
+        ]
+      ],
+      "App/v8datamodel/ICharacterSubject.cpp": [
+        [
+          "#include \"v8datamodel/ICharacterSubject.h\"",
+          "#pragma float_control(precise,off)\n#include \"v8datamodel/ICharacterSubject.h\""
+        ],
+        [
+          "\tbool ICharacterSubject::zoom(const float in, G3D::CoordinateFrame& cameraGoal, G3D::CoordinateFrame& cameraFocus)\n\t{\n\t\tG3D::Vector3 focusToGoal = cameraGoal.translation - cameraFocus.translation;\n\n\t\tfloat currentDistance = focusToGoal.magnitude();\n\t\tfloat newDistance = Camera::getNewZoomDistance(currentDistance, in);\n\n\t\tnewDistance = G3D::min(400.0f, newDistance);\n\n\t\tif (newDistance == currentDistance)\n\t\t\treturn false;\n\n\t\tfocusToGoal.y = 0.0f;\n\t\tfocusToGoal.unitize();\n\t\tfocusToGoal.y = newDistance * 0.03f;\n\n\t\tcameraGoal.translation = focusToGoal.direction() * newDistance + cameraFocus.translation;\n\n\t\treturn true;\n\t}",
+          "\tbool ICharacterSubject::zoom(const float in, G3D::CoordinateFrame& cameraGoal, G3D::CoordinateFrame& cameraFocus)\n\t{\n\t\tG3D::CoordinateFrame adjustedGoal = wasOccluded ? goalFromDistance(cameraFocus, cameraGoal, unoccludedDistance) : cameraGoal;\n\t\tG3D::Vector3 focusToGoal = adjustedGoal.translation - cameraFocus.translation;\n\n\t\tfloat currentDistance = focusToGoal.magnitude();\n\t\tfloat newDistance = G3D::min(400.0f, Camera::getNewZoomDistance(currentDistance, in));\n\n\t\tif (newDistance == currentDistance)\n\t\t\treturn false;\n\n\t\tfocusToGoal.y = 0.0f;\n\t\tfocusToGoal.unitize();\n\t\tfocusToGoal.y = newDistance * 0.03f;\n\n\t\tadjustedGoal.translation = focusToGoal.direction() * newDistance + cameraFocus.translation;\n\n\t\tif (wasOccluded) unoccludedDistance = (adjustedGoal.translation - cameraFocus.translation).magnitude();\n\t\telse cameraGoal = adjustedGoal;\n\t\treturn true;\n\t}"
+        ]
+      ],
+      "App/v8datamodel/Mouse.cpp": [
+        [
+          "#include \"v8datamodel/Mouse.h\"",
+          "#pragma float_control(precise,off)\n#include \"v8datamodel/Mouse.h\""
+        ]
+      ]
+    },
+    "phase": "building",
+    "receipt": {},
+    "state": "verifying",
+    "unit": "RBX::Explosion, RBX::GuiItem, RBX::DebrisService, RBX::Mouse, RBX::BoxSelectCommand",
+    "updated": 1793201324.0779366,
     "user": "colin"
   }
 ]

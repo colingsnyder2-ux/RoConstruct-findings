@@ -24,7 +24,6 @@ namespace RBX
 		int numOfPlayers = 0;
 
 		Network::Players* players = ServiceProvider::find<Network::Players>(this);
-		RBXASSERT(players);
 
 		for (size_t i = 0; i < players->numChildren(); i++)
 		{

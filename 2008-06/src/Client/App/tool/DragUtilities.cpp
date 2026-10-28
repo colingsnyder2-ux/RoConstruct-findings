@@ -158,7 +158,7 @@ namespace RBX
 
 	World* DragUtilities::partsToPrimitives(const std::vector<boost::weak_ptr<PartInstance>>& parts, G3D::Array<Primitive*>& primitives)
 	{
-		RBXASSERT(primitives.size() == 0);
+
 
 		World* world = NULL;
 
@@ -172,7 +172,7 @@ namespace RBX
 				if (!world)
 					world = Workspace::getMyWorldFast(part.get());
 
-				RBXASSERT(world);
+
 			}
 		}
 

@@ -211,7 +211,7 @@ namespace RBX
 		if (oldProvider)
 			clearAll();
 
-		Instance::onServiceProvider(oldProvider, newProvider);
+
 
 		if (newProvider)
 		{

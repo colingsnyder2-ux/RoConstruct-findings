@@ -279,6 +279,10 @@
   [
    "@all:part->",
    "part.lock()->"
+  ],
+  [
+   "\tvoid BodyMover::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)\n\t{\n\t\tNotifier<RunService,Stepped>::disconnect(ServiceProvider::create<RunService>(oldProvider), this);\n\n\t\tInstance::onServiceProvider(oldProvider, newProvider);\n\n\t\tupdateWorld();\n\t}",
+   "\tvoid BodyMover::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)\n\t{\n\t\tif (oldProvider)\n\t\t\tNotifier<RunService,Stepped>::disconnect(ServiceProvider::find<RunService>(oldProvider), this);\n\t\tif (newProvider)\n\t\t\tNotifier<RunService,Stepped>::connect(ServiceProvider::find<RunService>(newProvider), this);\n\t}"
   ]
  ],
  "App/include/reflection/object.h": [
@@ -295,6 +299,10 @@
   [
    "Instance::findChildIndex(const Instance* instance) const\n\t{\n\t\tRBXASSERT(children);\n\n\t\tconst std::vector<boost::shared_ptr<Instance>>& c = *children;\n\n\t\tstd::vector<boost::shared_ptr<Instance>>::const_iterator found = std::find(c.begin(), c.end(), instance->shared_from_this());\n\t\treturn (int)std::distance(c.begin(), found);\n\t}",
    "Instance::findChildIndex(const Instance* instance) const\n\t{\n\t\t                   ;\n\n\t\tconst std::vector<boost::shared_ptr<Instance>>& c = *children;\n\n\t\tstd::vector<boost::shared_ptr<Instance>>::const_iterator found = std::find(c.begin(), c.end(), instance->shared_from_this());\n\t\treturn (int)std::distance(c.begin(), found);\n\t}"
+  ],
+  [
+   "Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent));",
+   "Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->getParent()));"
   ]
  ],
  "App/v8datamodel/JointInstance.cpp": [
@@ -577,6 +585,26 @@
   [
    "Primitive::setSurfaceData(NormalId id, const SurfaceData& newSurfaceData)\n\t{\n\t\tif (!surfaceData[id] && newSurfaceData.isEmpty())\n\t\t\treturn;\n\n\t\tif (surfaceData[id] && *surfaceData[id] == newSurfaceData)\n\t\t\treturn;\n\n\t\tif (newSurfaceData.isEmpty())\n\t\t{\n\t\t\tRBXASSERT(surfaceData[id]);\n\t\t\tdelete surfaceData[id];\n\t\t\tsurfaceData[id] = NULL;\n\t\t\treturn;\n\t\t}\n\t\telse if (!surfaceData[id])\n\t\t{\n\t\t\tsurfaceData[id] = new SurfaceData;\n\t\t}\n\n\t\t*surfaceData[id] = newSurfaceData;\n\t}",
    "Primitive::setSurfaceData(NormalId id, const SurfaceData& newSurfaceData)\n\t{\n\t\tif (!surfaceData[id] && newSurfaceData.isEmpty())\n\t\t\treturn;\n\n\t\tif (surfaceData[id] && *surfaceData[id] == newSurfaceData)\n\t\t\treturn;\n\n\t\tif (newSurfaceData.isEmpty())\n\t\t{\n\t\t\t                          ;\n\t\t\tdelete surfaceData[id];\n\t\t\tsurfaceData[id] = NULL;\n\t\t\treturn;\n\t\t}\n\t\telse if (!surfaceData[id])\n\t\t{\n\t\t\tsurfaceData[id] = new SurfaceData;\n\t\t}\n\n\t\t*surfaceData[id] = newSurfaceData;\n\t}"
+  ],
+  [
+   "return edges.size() ? edges[0] : NULL;",
+   "return edges.size() > 0 ? edges[0] : NULL;"
+  ],
+  [
+   "return rbx_static_cast<Contact*>(contacts.next(prev));",
+   "int i = prev->getIndex(this) + 1;\n\t\treturn i < contacts.edges.size() ? rbx_static_cast<Contact*>(contacts.edges[i]) : NULL;"
+  ],
+  [
+   "return getFirstRigidAt(getFirstEdge());",
+   "return getFirstRigidAt(joints.first());"
+  ],
+  [
+   "\tvoid Primitive::setDragging(bool _dragging)\n\t{\n\t\tif (dragging != _dragging)\n\t\t{\n\t\t\tbool oldDrag = !dragging && canCollide;\n\t\t\tdragging = _dragging;\n\n\t\t\tsetAnchor(anchored);\n\t\t\tif (world)\n\t\t\t{\n\t\t\t\tbool newDrag = !dragging && canCollide;\n\t\t\t\tif (newDrag != oldDrag)\n\t\t\t\t\tworld->onPrimitiveCanCollideChanged(this);\n\t\t\t}\n\t\t}\n\t}",
+   "\tvoid Primitive::setDragging(bool _dragging)\n\t{\n\t\tbool wasAnchored = dragging || anchored || flag0xaa;\n\t\tif (dragging != _dragging)\n\t\t{\n\t\t\tdragging = _dragging;\n\t\t\tbool isAnchored = dragging || anchored || flag0xaa;\n\t\t\tif (isAnchored != wasAnchored && world)\n\t\t\t{\n\t\t\t\tif (isAnchored)\n\t\t\t\t\tworld->onPrimitiveAddedAnchor(this);\n\t\t\t\telse\n\t\t\t\t\tworld->onPrimitiveRemovingAnchor(this);\n\t\t\t}\n\t\t}\n\t}"
+  ],
+  [
+   "\tvoid Primitive::setAnchor(bool _anchored)\n\t{\n\t\tanchored = _anchored;\n\n\t\tbool exists = getAnchor();\n\n\t\tif (_anchored || dragging)\n\t\t\t_anchored = true;\n\n\t\tif (_anchored == exists)\n\t\t\treturn;\n\n\t\tif (_anchored)\n\t\t{\n\t\t\tRBXASSERT(!getAnchorObject());\n\t\t\tsetAnchorObject(new Anchor(this));\n\t\t\tif (world)\n\t\t\t\tworld->onPrimitiveAddedAnchor(this);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(getAnchorObject());\n\t\t\tif (world)\n\t\t\t\tworld->onPrimitiveRemovingAnchor(this);\n\t\t\t\n\t\t\tdelete getAnchorObject();\n\t\t\tsetAnchorObject(NULL);\n\t\t}\n\t}",
+   "\tvoid Primitive::setAnchor(bool _anchored)\n\t{\n\t\tbool wasAnchored = dragging || anchored || flag0xaa;\n\t\tif (anchored != _anchored)\n\t\t{\n\t\t\tanchored = _anchored;\n\t\t\tbool isAnchored = dragging || anchored || flag0xaa;\n\t\t\tif (isAnchored != wasAnchored && world)\n\t\t\t{\n\t\t\t\tif (isAnchored)\n\t\t\t\t\tworld->onPrimitiveAddedAnchor(this);\n\t\t\t\telse\n\t\t\t\t\tworld->onPrimitiveRemovingAnchor(this);\n\t\t\t}\n\t\t}\n\t}"
   ]
  ],
  "App/include/v8datamodel/PartInstance.h": [
@@ -753,6 +781,10 @@
   [
    "#include <boost/scoped_ptr.hpp>\n",
    "#include <boost/scoped_ptr.hpp>\n#include <G3D/Stopwatch.h>\n#include <deque>\n"
+  ],
+  [
+   "double unknown0x1c8[4]; // names unknown",
+   "double unknown0x1c8;\n\t\tdouble unknown0x1d0;\n\t\tdouble unknown0x1d8;\n\t\tdouble unknown0x1e0;"
   ]
  ],
  "Network/include/Network/Player.h": [
@@ -841,6 +873,10 @@
   [
    "#include \"v8world/Contact.h\"\n",
    "#pragma float_control(precise, off)\n#include \"v8world/Contact.h\"\n"
+  ],
+  [
+   "\t__declspec(noinline) void Contact::deleteConnector(ContactConnector*& c)\n\t{\n\t\tif (c)\n\t\t{\n\t\t\tthis->getKernel()->removeConnector(c);\n\t\t\tdelete c;\n\t\t\tc = NULL;\n\t\t}\n\t}",
+   "\t__declspec(noinline) void Contact::deleteConnector(ContactConnector*& c)\n\t{\n\t\tthis->getKernel()->removeConnector(c);\n\t\tdelete c;\n\t\tc = NULL;\n\t}"
   ]
  ],
  "App/v8datamodel/RootInstance.cpp": [
@@ -1131,6 +1167,10 @@
   [
    "PlayerController::getHardwareDevice() const\n\t{\n\t\tRBXASSERT(!controllerService.expired());\n\t\treturn controllerService.expired() ? NULL : controllerService.lock()->getHardwareDevice();\n\t}",
    "PlayerController::getHardwareDevice() const\n\t{\n\t\t                                       ;\n\t\treturn controllerService.expired() ? NULL : controllerService.lock()->getHardwareDevice();\n\t}"
+  ],
+  [
+   "#include \"v8datamodel/PVInstance.h\"",
+   "#pragma float_control(precise, off)\n#include \"v8datamodel/PVInstance.h\""
   ]
  ],
  "App/tool/Dragger.cpp": [
@@ -1157,6 +1197,10 @@
   [
    "Dragger::safeRotate(const G3D::Array<Primitive*>& primitives, const G3D::Matrix3& rotate, ContactManager& contactManager)\n\t{\n\t\tif (primitives.size() == 0)\n\t\t{\n\t\t\tRBXASSERT(0);\n\t\t\treturn;\n\t\t}\n\n\t\tG3D::Vector3 center = toGrid(computeExtents(primitives).center());\n\t\tG3D::CoordinateFrame centerCoord(center);\n\t\tG3D::CoordinateFrame rotationCoord(rotate, G3D::Vector3::zero());\n\n\t\tfor (int i = 0; i < primitives.size(); i++)\n\t\t{\n\t\t\tPrimitive* prim = primitives[i];\n\n\t\t\tG3D::CoordinateFrame primInCenter = centerCoord.toObjectSpace(prim->getCoordinateFrame());\n\t\t\tG3D::CoordinateFrame newPrimInCenter = rotationCoord * primInCenter;\n\t\t\tG3D::CoordinateFrame primInWorld = centerCoord * newPrimInCenter;\n\n\t\t\tPartInstance* part = PartInstance::fromPrimitive(prim);\n\t\t\tpart->setCoordinateFrame(primInWorld);\n\t\t}\n\t}",
    "Dragger::safeRotate(const G3D::Array<Primitive*>& primitives, const G3D::Matrix3& rotate, ContactManager& contactManager)\n\t{\n\t\tif (primitives.size() == 0)\n\t\t{\n\t\t\t            ;\n\t\t\treturn;\n\t\t}\n\n\t\tG3D::Vector3 center = toGrid(computeExtents(primitives).center());\n\t\tG3D::CoordinateFrame centerCoord(center);\n\t\tG3D::CoordinateFrame rotationCoord(rotate, G3D::Vector3::zero());\n\n\t\tfor (int i = 0; i < primitives.size(); i++)\n\t\t{\n\t\t\tPrimitive* prim = primitives[i];\n\n\t\t\tG3D::CoordinateFrame primInCenter = centerCoord.toObjectSpace(prim->getCoordinateFrame());\n\t\t\tG3D::CoordinateFrame newPrimInCenter = rotationCoord * primInCenter;\n\t\t\tG3D::CoordinateFrame primInWorld = centerCoord * newPrimInCenter;\n\n\t\t\tPartInstance* part = PartInstance::fromPrimitive(prim);\n\t\t\tpart->setCoordinateFrame(primInWorld);\n\t\t}\n\t}"
+  ],
+  [
+   "\tExtents Dragger::computeExtents(const G3D::Array<Primitive*>& primitives)\n\t{\n\t\tRBXASSERT(primitives.size() > 0);",
+   "\tExtents Dragger::computeExtents(const G3D::Array<Primitive*>& primitives)\n\t{"
   ]
  ],
  "App/v8world/ContactManager.cpp": [
@@ -1181,6 +1225,14 @@
   [
    "MegaDragger::safeRotate(const G3D::Matrix3& rotMatrix)\n\t{\n\t\tRBXASSERT(!joined);\n\n\t\tG3D::Array<Primitive*> primitives;\n\t\tDragUtilities::partsToPrimitives(dragParts, primitives);\n\n\t\tRBXASSERT(primitives.size() > 0);\n\n\t\tDragger::safeRotate(primitives, rotMatrix, contactManager);\n\n\t\tRBXASSERT(!contactManager.intersectingOthers(primitives, 0.01f));\n\t}",
    "MegaDragger::safeRotate(const G3D::Matrix3& rotMatrix)\n\t{\n\t\t                  ;\n\n\t\tG3D::Array<Primitive*> primitives;\n\t\tDragUtilities::partsToPrimitives(dragParts, primitives);\n\n\t\t                                ;\n\n\t\tDragger::safeRotate(primitives, rotMatrix, contactManager);\n\n\t\t                                                                ;\n\t}"
+  ],
+  [
+   "#include \"tool/MegaDragger.h\"",
+   "#pragma float_control(precise, off)\n#include \"tool/MegaDragger.h\""
+  ],
+  [
+   "\tvoid MegaDragger::finishDragging()\n\t{\n\t\tRBXASSERT(!joined);",
+   "\tvoid MegaDragger::finishDragging()\n\t{"
   ]
  ],
  "App/v8datamodel/Feature.cpp": [
@@ -1209,6 +1261,10 @@
   [
    "LocalBackpack::onLocalPlayerAdded(Network::Player* added)\n\t{\n\t\tRBXASSERT(numChildren() == 0);\n\t\tRBXASSERT(added);\n\n\t\tlocalPlayer = shared_from(added);\n\n\t\tNotifier<Instance, ChildAdded>::connect(localPlayer, this);\n\t\tNotifier<Instance, ChildRemoved>::connect(localPlayer, this);\n\t\tNotifier<Network::Player, Network::CharacterAdded>::connect(localPlayer, this);\n\t\tNotifier<Network::Player, Network::CharacterRemoving>::connect(localPlayer, this);\n\t}",
    "LocalBackpack::onLocalPlayerAdded(Network::Player* added)\n\t{\n\t\t                             ;\n\t\t                ;\n\n\t\tlocalPlayer = shared_from(added);\n\n\t\tNotifier<Instance, ChildAdded>::connect(localPlayer, this);\n\t\tNotifier<Instance, ChildRemoved>::connect(localPlayer, this);\n\t\tNotifier<Network::Player, Network::CharacterAdded>::connect(localPlayer, this);\n\t\tNotifier<Network::Player, Network::CharacterRemoving>::connect(localPlayer, this);\n\t}"
+  ],
+  [
+   "\t\tInstance::onServiceProvider(oldProvider, newProvider);",
+   ""
   ]
  ],
  "App/v8datamodel/Hopper.cpp": [
@@ -1219,6 +1275,22 @@
   [
    "HopperBin::onLocalClicked()\n\t{\n\t\tRBXASSERT(isEnabled());\n\n\t\tif (!active)\n\t\t{\n\t\t\tactive = true;\n\n\t\t\tif (binType == SCRIPT_BIN)\n\t\t\t{\n\t\t\t\tonSelectScript();\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tonSelectCommand();\n\t\t\t}\n\t\t}\n\t\telse\n\t\t{\n\t\t\tonLocalOtherClicked();\n\t\t}\n\t}",
    "HopperBin::onLocalClicked()\n\t{\n\t\t                      ;\n\n\t\tif (!active)\n\t\t{\n\t\t\tactive = true;\n\n\t\t\tif (binType == SCRIPT_BIN)\n\t\t\t{\n\t\t\t\tonSelectScript();\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tonSelectCommand();\n\t\t\t}\n\t\t}\n\t\telse\n\t\t{\n\t\t\tonLocalOtherClicked();\n\t\t}\n\t}"
+  ],
+  [
+   "\tvoid StarterPackService::render2d(Adorn* adorn)\n\t{\n\t\tTopMenuBar::render2d(adorn);",
+   "\tvoid StarterPackService::render2d(Adorn* adorn)\n\t{\n\t\tAdorn* const drawAdorn = adorn;\n\t\tTopMenuBar::render2d(adorn);"
+  ],
+  [
+   "\t\t\tadorn->drawFont2D(\n\t\t\t\t\"StarterPack - these items will be given to each new player\",",
+   "\t\t\tdrawAdorn->drawFont2D(\n\t\t\t\t\"StarterPack - these items will be given to each new player\","
+  ],
+  [
+   "void LegacyHopperService::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)\n\t{\n\t\tInstance::onServiceProvider(oldProvider, newProvider);",
+   "void LegacyHopperService::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)\n\t{"
+  ],
+  [
+   "\t\t\tRBXASSERT(starterPack);",
+   ""
   ]
  ],
  "App/gui/GUI.cpp": [
@@ -1393,6 +1465,138 @@
   [
    "ServiceProvider::findServiceByClassName(const Name& className) const\n\t{\n\t\tRBXASSERT(className!=RBX::Name::getNullName());\n\n\t\tstd::map<const Name*, boost::shared_ptr<Instance>>::const_iterator it = serviceMap.find(&className);\n\t\tif (it != serviceMap.end())\n\t\t\treturn (*it).second;\n\n\t\treturn boost::shared_ptr<Instance>();\n\t}",
    "ServiceProvider::findServiceByClassName(const Name& className) const\n\t{\n\t\t;\n\n\t\tstd::map<const Name*, boost::shared_ptr<Instance>>::const_iterator it = serviceMap.find(&className);\n\t\tif (it != serviceMap.end())\n\t\t\treturn (*it).second;\n\n\t\treturn boost::shared_ptr<Instance>();\n\t}"
+  ]
+ ],
+ "App/include/util/Events.h": [
+  [
+   "return !listeners.empty();",
+   "return listeners.size() > 0;"
+  ]
+ ],
+ "App/include/util/boost.hpp": [
+  [
+   "#include <boost/thread/condition.hpp>",
+   "#include <boost/thread/condition.hpp>\n#include <windows.h>"
+  ],
+  [
+   "boost::function0<void> background_function(const boost::function0<void>& threadfunc, const char* name);",
+   "boost::function0<void> background_function(const boost::function0<void>& threadfunc, const char* name, int priority = THREAD_PRIORITY_BELOW_NORMAL);"
+  ]
+ ],
+ "App/util/boost.cpp": [
+  [
+   "void run_in_background(const boost::function0<void>& threadfunc, std::string name)",
+   "void run_in_background(const boost::function0<void>& threadfunc, std::string name, int priority)"
+  ],
+  [
+   "boost::function0<void> background_function(const boost::function0<void>& threadfunc, const char* name)",
+   "boost::function0<void> background_function(const boost::function0<void>& threadfunc, const char* name, int priority)"
+  ],
+  [
+   "return boost::bind(&run_in_background, threadfunc, std::string(name));",
+   "return boost::bind(&run_in_background, threadfunc, std::string(name), priority);"
+  ]
+ ],
+ "App/include/v8datamodel/Seat.h": [
+  [
+   "\t\tboost::shared_ptr<Weld> weld;\n\t\tdouble sleepTime;",
+   "\t\tdouble sleepTime;\n\t\tboost::shared_ptr<Weld> weld;"
+  ]
+ ],
+ "App/tool/DragUtilities.cpp": [
+  [
+   "\t\tRBXASSERT(primitives.size() == 0);",
+   ""
+  ],
+  [
+   "\t\t\t\tRBXASSERT(world);",
+   ""
+  ]
+ ],
+ "App/util/Math.cpp": [
+  [
+   "#include \"util/Math.h\"",
+   "#pragma float_control(precise, off)\n#include \"util/Math.h\""
+  ],
+  [
+   "\t\t\t|| f == std::numeric_limits<float>::signaling_NaN()\n\t\t\t|| Math::isDenormal(f);",
+   "\t\t\t|| f == std::numeric_limits<float>::signaling_NaN();"
+  ],
+  [
+   "\t\tint second = -1;\n\t\tint bestV = -1;",
+   "\t\tint bestV = -1;\n\t\tint second = -1;"
+  ],
+  [
+   "\t\tif (unkMat[v15][v11] < 0.0f)",
+   "\t\tif (unkMat[v15][calcColmTemp] < 0.0f)"
+  ]
+ ],
+ "App/v8datamodel/Teams.cpp": [
+  [
+   "\tint Teams::getNumPlayersInTeam(BrickColor brickColor)\n\t{\n\t\tint numOfPlayers = 0;\n\n\t\tNetwork::Players* players = ServiceProvider::find<Network::Players>(this);\n\t\tRBXASSERT(players);",
+   "\tint Teams::getNumPlayersInTeam(BrickColor brickColor)\n\t{\n\t\tint numOfPlayers = 0;\n\n\t\tNetwork::Players* players = ServiceProvider::find<Network::Players>(this);"
+  ]
+ ],
+ "App/include/util/UIEvent.h": [
+  [
+   "\t\t\treturn eventType == MOUSE_RIGHT_BUTTON_DOWN \n\t\t\t\t|| eventType == MOUSE_RIGHT_BUTTON_UP \n\t\t\t\t|| eventType == MOUSE_LEFT_BUTTON_DOWN \n\t\t\t\t|| eventType == MOUSE_LEFT_BUTTON_UP \n\t\t\t\t|| eventType == MOUSE_MOVE \n\t\t\t\t|| eventType == MOUSE_DELTA \n\t\t\t\t|| eventType == MOUSE_IDLE; ",
+   "\t\t\treturn eventType >= MOUSE_RIGHT_BUTTON_DOWN && eventType <= MOUSE_IDLE;"
+  ]
+ ],
+ "App/v8datamodel/CharacterAppearance.cpp": [
+  [
+   "\tvoid Skin::apply(Humanoid* humanoid)\n\t{\n\t\tbool hasShirt = getParent()->findFirstChildOfType<Shirt>() != NULL;\n\n\t\tPartInstance* head = humanoid->getHead();\n\t\tif (head)\n\t\t\thead->setColor(skinColor);\n\n\t\tPartInstance* leftLeg = humanoid->getLeftLeg();\n\t\tif (leftLeg)\n\t\t\tleftLeg->setColor(skinColor);\n\n\t\tPartInstance* rightLeg = humanoid->getRightLeg();\n\t\tif (rightLeg)\n\t\t\trightLeg->setColor(skinColor);\n\n\t\tif (!hasShirt)\n\t\t{\n\t\t\tPartInstance* torso = humanoid->getTorso();\n\t\t\tif (torso)\n\t\t\t\ttorso->setColor(skinColor);\n\n\t\t\tPartInstance* leftArm = humanoid->getLeftArm();\n\t\t\tif (leftArm)\n\t\t\t\tleftArm->setColor(skinColor);\n\n\t\t\tPartInstance* rightArm = humanoid->getRightArm();\n\t\t\tif (rightArm)\n\t\t\t\trightArm->setColor(skinColor);\n\t\t}\n\t}",
+   "\tvoid Skin::apply(Humanoid* humanoid)\n\t{\n\t\tPartInstance* head = humanoid->getHead();\n\t\tif (head)\n\t\t\thead->setColor(skinColor);\n\n\t\tPartInstance* leftLeg = humanoid->getLeftLeg();\n\t\tif (leftLeg)\n\t\t\tleftLeg->setColor(skinColor);\n\n\t\tPartInstance* rightLeg = humanoid->getRightLeg();\n\t\tif (rightLeg)\n\t\t\trightLeg->setColor(skinColor);\n\n\t\t{\n\t\t\tPartInstance* torso = humanoid->getTorso();\n\t\t\tif (torso)\n\t\t\t\ttorso->setColor(skinColor);\n\n\t\t\tPartInstance* leftArm = humanoid->getLeftArm();\n\t\t\tif (leftArm)\n\t\t\t\tleftArm->setColor(skinColor);\n\n\t\t\tPartInstance* rightArm = humanoid->getRightArm();\n\t\t\tif (rightArm)\n\t\t\t\trightArm->setColor(skinColor);\n\t\t}\n\t}"
+  ],
+  [
+   "\tvoid BodyColors::apply(Humanoid* humanoid)\n\t{\n\t\tSkin* skin = getParent()->findFirstChildOfType<Skin>();\n\n\t\tif (!skin)\n\t\t{\n\t\t\tbool hasShirt = getParent()->findFirstChildOfType<Shirt>() != NULL;\n\n\t\t\tPartInstance* head = humanoid->getHead();\n\t\t\tif (head)\n\t\t\t\thead->setColor(headColor);\n\n\t\t\tPartInstance* leftLeg = humanoid->getLeftLeg();\n\t\t\tif (leftLeg)\n\t\t\t\tleftLeg->setColor(leftLegColor);\n\n\t\t\tPartInstance* rightLeg = humanoid->getRightLeg();\n\t\t\tif (rightLeg)\n\t\t\t\trightLeg->setColor(rightLegColor);\n\n\t\t\tif (!hasShirt)\n\t\t\t{\n\t\t\t\tPartInstance* torso = humanoid->getTorso();\n\t\t\t\tif (torso)\n\t\t\t\t\ttorso->setColor(torsoColor);\n\n\t\t\t\tPartInstance* leftArm = humanoid->getLeftArm();\n\t\t\t\tif (leftArm)\n\t\t\t\t\tleftArm->setColor(leftArmColor);\n\n\t\t\t\tPartInstance* rightArm = humanoid->getRightArm();\n\t\t\t\tif (rightArm)\n\t\t\t\t\trightArm->setColor(rightArmColor);\n\t\t\t}\n\t\t}\n\t}",
+   "\tvoid BodyColors::apply(Humanoid* humanoid)\n\t{\n\t\tModelInstance* model = getParent() ? dynamic_cast<ModelInstance*>(getParent()) : NULL;\n\t\tif (model && model->findFirstChildOfType<Skin>())\n\t\t\treturn;\n\t\t{\n\n\t\t\tPartInstance* head = humanoid->getHead();\n\t\t\tif (head)\n\t\t\t\thead->setColor(headColor);\n\n\t\t\tPartInstance* leftLeg = humanoid->getLeftLeg();\n\t\t\tif (leftLeg)\n\t\t\t\tleftLeg->setColor(leftLegColor);\n\n\t\t\tPartInstance* rightLeg = humanoid->getRightLeg();\n\t\t\tif (rightLeg)\n\t\t\t\trightLeg->setColor(rightLegColor);\n\n\t\t\t{\n\t\t\t\tPartInstance* torso = humanoid->getTorso();\n\t\t\t\tif (torso)\n\t\t\t\t\ttorso->setColor(torsoColor);\n\n\t\t\t\tPartInstance* leftArm = humanoid->getLeftArm();\n\t\t\t\tif (leftArm)\n\t\t\t\t\tleftArm->setColor(leftArmColor);\n\n\t\t\t\tPartInstance* rightArm = humanoid->getRightArm();\n\t\t\t\tif (rightArm)\n\t\t\t\t\trightArm->setColor(rightArmColor);\n\t\t\t}\n\t\t}\n\t}"
+  ]
+ ],
+ "App/script/Script.cpp": [
+  [
+   "void Script::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)\n{\n\tif (ScriptContext* sc = ServiceProvider::find<ScriptContext>(oldProvider))\n\t{\n\t\tsc->removeScript(this);\n\t}\n\n\tInstance::onServiceProvider(oldProvider, newProvider);\n}",
+   "void Script::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)\n{\n\tif (oldProvider)\n\t{\n\t\tif (ScriptContext* sc = oldProvider->find<ScriptContext>())\n\t\t\tsc->removeScript(this);\n\t}\n\tif (newProvider)\n\t\trequestCode();\n}"
+  ]
+ ],
+ "App/v8world/SimJobStage.cpp": [
+  [
+   "\tvoid SimJobStage::onEdgeAdded(Edge* e)\n\t{\n\t\tRBXASSERT(validateEdge(e));\n\n\t\te->putInStage(this);\n\n\t\tif (e->getEdgeType() == Edge::JOINT)\n\t\t{\n\t\t\tAssembly* a0 = e->getPrimitive(0)->getAssembly();\n\t\t\tAssembly* a1 = e->getPrimitive(1)->getAssembly();\n\n\t\t\tif (a0->inOrDownstreamOfStage(this) && a1->inOrDownstreamOfStage(this))\n\t\t\t{\n\t\t\t\tRBXASSERT(a0->getDof() > 0);\n\t\t\t\tRBXASSERT(a1->getDof() > 0);\n\n\t\t\t\tcombineMechanisms(e);\n\t\t\t}\n\t\t}\n\n\t\te->putInKernel(getKernel());\n\t}\n",
+   "\tvoid SimJobStage::onEdgeAdded(Edge* e)\n\t{\n\t\te->putInStage(this);\n\t\te->putInKernel(getKernel());\n\t}"
+  ]
+ ],
+ "App/util/RunStateOwner.cpp": [
+  [
+   "\tRunService::RunService()\n\t\t: framePeriod(1.0f/30.0f),\n\t\t  runState(RS_NORMAL),\n\t\t  invalidRunViewCount(0),\n\t\t  stopRequested(false),\n\t\t  runDisabled(false)\n\t{\n\t\tsetName(\"Run Service\");\n\t}\n",
+   "\tRunService::RunService()\n\t\t: framePeriod(1.0f/30.0f),\n\t\t  runState(RS_NORMAL),\n\t\t  unknown0x1b8(0.0),\n\t\t  unknown0x1c8(0.0), unknown0x1d0(0.0), unknown0x1d8(0.0), unknown0x1e0(0.0),\n\t\t  invalidRunViewCount(0),\n\t\t  stopRequested(false)\n\t{\n\t\tsetName(\"Run Service\");\n\t\tunknownStopwatch0x1e8.tick();\n\t}\n"
+  ]
+ ],
+ "App/util/Face.cpp": [
+  [
+   "#include \"util/Face.h\"",
+   "#pragma float_control(precise, off)\n#include \"util/Face.h\""
+  ],
+  [
+   "\tFace Face::projectOverlapOnMe(const Face& other) const\n\t{\n\t\tG3D::Vector3 normal = getU();\n\t\tG3D::Vector3 v2 = getV();\n\n\t\tfloat minL[2];\n\t\tfloat maxL[2];\n\t\tfor (int i = 0; i < 2; ++i)\n\t\t{\n\t\t\tfloat f0min, f0max;\n\t\t\tthis->minMax(this->c0, normal, f0min, f0max);\n\n\t\t\tfloat f1min, f1max;\n\t\t\tother.minMax(this->c0, normal, f1min, f1max);\n\n\t\t\tminL[i] = G3D::min(f0min, f1min);\n\t\t\tmaxL[i] = G3D::max(f0max, f1max);\n\t\t}\n\n\t\treturn Face(\n\t\t\t(normal * minL[1]) + (v2 * minL[1]) + this->c0,\n\t\t\t(normal * minL[1]) + (v2 * minL[0]) + this->c0,\n\t\t\t(normal * maxL[1]) + (v2 * minL[0]) + this->c0,\n\t\t\t(normal * maxL[1]) + (v2 * minL[1]) + this->c0);\n\t}",
+   "\tFace Face::projectOverlapOnMe(const Face& other) const\n\t{\n\t\tconst Face& f0 = (*this);\n\t\tconst Face& f1 = other;\n\n\t\t//RBXASSERT(Face::hasOverlap(f0, f1, 1e-6f));\n\t\tG3D::Vector3 normal[2];\n\t\tfloat minL[2];\n\t\tfloat maxL[2];\n\n\t\tnormal[0] = f0.getU();\n\t\tnormal[1] = f0.getV();\n\t\tfor (int i = 0; i < 2; ++i) {\n\t\t\tfloat f0min, f0max, f1min, f1max;\n\t\t\tf0.minMax(f0.c0, normal[i], f0min, f0max);\n\t\t\tf1.minMax(f0.c0, normal[i], f1min, f1max);\n\t\t\tminL[i] = std::max(f0min, f1min);\n\t\t\tmaxL[i] = std::min(f0max, f1max);\n\t\t}\n\t\treturn Face(\tf0.c0 + (normal[0] * minL[0] + normal[1] * minL[1]),\n\t\t\t\t\t\tf0.c0 + (normal[0] * minL[0] + normal[1] * maxL[1]),\n\t\t\t\t\t\tf0.c0 + (normal[0] * maxL[0] + normal[1] * maxL[1]),\n\t\t\t\t\t\tf0.c0 + (normal[0] * maxL[0] + normal[1] * minL[1])\t\t);\n\t}"
+  ],
+  [
+   "\t\t\tdouble distance;\n\t\t\tp0.getEquation(normal, distance);",
+   "\t\t\tfloat distance;\n\t\t\tp0.getEquation(normal, distance);"
+  ],
+  [
+   "\t\t\t\tif (overlapOn1[j].dot(normal) > tolerance)",
+   "\t\t\t\tif (fabs(overlapOn1[j].dot(normal) + distance) > tolerance)"
+  ]
+ ],
+ "App/v8world/Block.cpp": [
+  [
+   "#include \"v8world/Block.h\"",
+   "#pragma float_control(precise,off)\n#include \"v8world/Block.h\""
+  ],
+  [
+   "\t__declspec(noinline) G3D::Matrix3 Block::getMomentHollow(float mass) const\n\t{\n\t\tG3D::Vector3 grid = gridSize;\n\t\tG3D::Vector3 I;\n\n\t\tfloat area = ((grid.x * grid.z + grid.y * grid.z) + grid.x * grid.y) * 2;\n\n\t\tfor (int i = 0; i < 3; i++)\n\t\t{\n\t\t\tfloat X = grid[(i    ) % 3];\n\t\t\tfloat Y = grid[(i + 1) % 3];\n\t\t\tfloat Z = grid[(i + 2) % 3];\n\n\t\t\tfloat scaling = mass / (2 * area);\n\n\t\t\tfloat temp = (Z*Z*Y)*X + (Y*Y*Y*Z)/3 + (Z*Z*Z*Y)/3 + (Y*Y*Z)*X + (X*Y*Y*Y)/3 + (X*Z*Z*Z)/3;\n\n\t\t\tI[i] = temp * scaling;\n\t\t}\n\n\t\treturn Math::fromDiagonal(I);\n\t}",
+   "__declspec(noinline) G3D::Matrix3 Block::getMomentHollow(float mass) const\n{\n\tG3D::Vector3 size = gridSize;\n\n\tfloat area = 2 * (size.x * size.y + size.y * size.z + size.z * size.x);\n\tG3D::Vector3 I;\n\tfor (int i = 0; i < 3; i++) {\n\t\tint j = (i + 1) % 3;\n\t\tint k = (i + 2) % 3;\n\t\tfloat x = size[i];\t\t// main axis;\n\t\tfloat y = size[j];\n\t\tfloat z = size[k];\n\t\t\n\t\tfloat Ix = (mass / (2.0f * area)) * (\t\t(y*y*y*z/3.0f)\n\t\t\t\t\t\t\t\t\t\t\t\t+\t(y*z*z*z/3.0f)\n\t\t\t\t\t\t\t\t\t\t\t\t+\t(x*y*z*z)\n\t\t\t\t\t\t\t\t\t\t\t\t+\t(x*y*y*y/3.0f)\n\t\t\t\t\t\t\t\t\t\t\t\t+\t(x*y*y*z)\n\t\t\t\t\t\t\t\t\t\t\t\t+\t(x*z*z*z/3.0f)\t);\n\t\tI[i] = Ix;\n\t}\n\treturn Math::fromDiagonal(I);\n}"
   ]
  ]
 }

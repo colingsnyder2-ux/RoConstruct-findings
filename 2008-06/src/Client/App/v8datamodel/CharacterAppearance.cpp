@@ -68,8 +68,6 @@ namespace RBX
 
 	void Skin::apply(Humanoid* humanoid)
 	{
-		bool hasShirt = getParent()->findFirstChildOfType<Shirt>() != NULL;
-
 		PartInstance* head = humanoid->getHead();
 		if (head)
 			head->setColor(skinColor);
@@ -82,7 +80,6 @@ namespace RBX
 		if (rightLeg)
 			rightLeg->setColor(skinColor);
 
-		if (!hasShirt)
 		{
 			PartInstance* torso = humanoid->getTorso();
 			if (torso)
@@ -111,11 +108,10 @@ namespace RBX
 
 	void BodyColors::apply(Humanoid* humanoid)
 	{
-		Skin* skin = getParent()->findFirstChildOfType<Skin>();
-
-		if (!skin)
+		ModelInstance* model = getParent() ? dynamic_cast<ModelInstance*>(getParent()) : NULL;
+		if (model && model->findFirstChildOfType<Skin>())
+			return;
 		{
-			bool hasShirt = getParent()->findFirstChildOfType<Shirt>() != NULL;
 
 			PartInstance* head = humanoid->getHead();
 			if (head)
@@ -129,7 +125,6 @@ namespace RBX
 			if (rightLeg)
 				rightLeg->setColor(rightLegColor);
 
-			if (!hasShirt)
 			{
 				PartInstance* torso = humanoid->getTorso();
 				if (torso)

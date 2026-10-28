@@ -83,7 +83,10 @@ namespace RBX
 		RunState runState;
 		double unknown0x1b8;
 		float framePeriod;
-		double unknown0x1c8[4]; // names unknown
+		double unknown0x1c8;
+		double unknown0x1d0;
+		double unknown0x1d8;
+		double unknown0x1e0;
 		G3D::Stopwatch unknownStopwatch0x1e8;
 		boost::mutex runMutex;
 		bool stopRequested;
