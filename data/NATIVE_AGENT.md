@@ -168,15 +168,6 @@ is unavailable, report the named missing dependency and download error; do not r
 If doctor cannot find an installed SDK, set `ROC_WINSDK` to this PC's SDK folder containing `Include` and
 `Lib/kernel32.lib`; never copy the owner's absolute paths. Resolve compiler/SDK errors before continuing.
 
-For an optional full local linked diagnostic, fetch the module's standalone library
-sources first. The app build also needs `roc lib-fetch zlib-1.2.3 libpng-1.2.5 boost-1.34.1`
-beyond the native-trial setup above. Then use `roc rebuild 2008-06 module rbxgs-app --no-notify`.
-An overlay anchor error can mean its source file is missing: check the named module's
-`overlay.root` and source path before changing a patch. For example, a missing
-`tools/libs/zlib-1.2.3/deflate.c` reports a `deflate_copyright` anchor failure; fetch the
-real zlib library rather than altering that patch. A local build is diagnostic;
-server acceptance still decides credit.
-
 ## Local trial setup
 
 - `check` edits one source/header. For a header fix, use `--only ADDR` to identify a real caller;
@@ -251,25 +242,12 @@ server acceptance still decides credit.
    - If another worker holds a required class, submit reports the blocked class and retains the proposal for a later retry.
      A partial batch archives only the submitted proposals; the remaining proposals stay saved.
 
-   Keep this checkout's build inputs stable while a local module build or submission
-   revalidation is running. Do not run another header/source trial or mutate saved proposals
-   until that command finishes; temporary overlays share the checkout. In particular, a
-   concurrent check of the same submitted file can be mistaken for part of the archived batch.
-   Read-only evidence inspection and work in a separate contributor checkout can continue.
-
    After submitting:
    - `native-try submit` keeps the submitted snapshot and restores the local baseline,
      so more discovery can run while the server verifies the batch. Concurrent generator edits are preserved.
    - Record JOB and continue discovery. Use `roc integrate status --id JOB` for a single status check;
      a rejection is a per-batch repair task, not a reason to end the session;
    - `roc integrate sync` after acceptance.
-
-   If a batch is rejected for module ownership despite local exact gains, preserve its
-   submitted snapshot and inspect the receipt and linked-build diagnostics. Local TU exactness
-   does not guarantee a new distinct body in the linked module. Identify duplicate ownership,
-   missing emitted helpers or lost existing bodies before changing or resubmitting the batch.
-   Use a retry override only for a diagnosed transient/environment failure; it does not repair
-   an ownership rejection. Report local gains as pending until independent acceptance.
 
 ## Fewer commands and smaller evidence
 
