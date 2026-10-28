@@ -74,7 +74,7 @@ namespace RBX
 
 	boost::shared_ptr<Instance> ServiceProvider::createChild(const Name& className)
 	{
-		RBXASSERT(className!=RBX::Name::getNullName());
+		;
 
 		boost::shared_ptr<Instance> instance = findServiceByClassName(className);
 		if (instance)
@@ -87,7 +87,7 @@ namespace RBX
 
 	boost::shared_ptr<Instance> ServiceProvider::findServiceByClassName(const Name& className) const
 	{
-		RBXASSERT(className!=RBX::Name::getNullName());
+		;
 
 		std::map<const Name*, boost::shared_ptr<Instance>>::const_iterator it = serviceMap.find(&className);
 		if (it != serviceMap.end())

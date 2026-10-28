@@ -985,7 +985,7 @@ patch(FACE, "\tclass FaceInstance : public Reflection::Described<FaceInstance, &
       "\tclass FaceInstance : public Reflection::Described<FaceInstance, &sFaceInstance, Instance>, public IRenderable\n")
 # DebrisService: rbxgs pads 8 bytes before queue to stand in for GuidItem's members missing from its Instance; with
 # the adopted 2008 Instance (0x130) the 2008 constructor (0x63be90) has queue at 0x130, maxItems 0x150, timer 0x154.
-patch("App/include/v8datamodel/DebrisService.h", "\t\tchar pad[8];\n", "")
+adopt("App/include/v8datamodel/DebrisService.h", "App/roc_native_debris_header_2c0ad23d27535ab8.cpp")
 # IDataState is a bare interface in 2008: DataModel's RTTI base list has no StateStack, and IDataState spans only
 # 0x1f0..0x1f4 (vptr) between VerbContainer and Evaluator.
 patch("App/include/v8tree/Verb.h", "\tclass __declspec(novtable) IDataState : public StateStack<XmlState> // NOTE: may not be intended for this file\n",

@@ -1018,5 +1018,17 @@
     ""
    ]
   ]
+ },
+ {
+  "App/v8tree/Service.cpp": [
+   [
+    "ServiceProvider::createChild(const Name& className)\n\t{\n\t\tRBXASSERT(className!=RBX::Name::getNullName());\n\n\t\tboost::shared_ptr<Instance> instance = findServiceByClassName(className);\n\t\tif (instance)\n\t\t{\n\t\t\treturn instance;\n\t\t}\n\n\t\treturn AbstractFactoryProduct<Instance>::create(className);\n\t}",
+    "ServiceProvider::createChild(const Name& className)\n\t{\n\t\t;\n\n\t\tboost::shared_ptr<Instance> instance = findServiceByClassName(className);\n\t\tif (instance)\n\t\t{\n\t\t\treturn instance;\n\t\t}\n\n\t\treturn AbstractFactoryProduct<Instance>::create(className);\n\t}"
+   ],
+   [
+    "ServiceProvider::findServiceByClassName(const Name& className) const\n\t{\n\t\tRBXASSERT(className!=RBX::Name::getNullName());\n\n\t\tstd::map<const Name*, boost::shared_ptr<Instance>>::const_iterator it = serviceMap.find(&className);\n\t\tif (it != serviceMap.end())\n\t\t\treturn (*it).second;\n\n\t\treturn boost::shared_ptr<Instance>();\n\t}",
+    "ServiceProvider::findServiceByClassName(const Name& className) const\n\t{\n\t\t;\n\n\t\tstd::map<const Name*, boost::shared_ptr<Instance>>::const_iterator it = serviceMap.find(&className);\n\t\tif (it != serviceMap.end())\n\t\t\treturn (*it).second;\n\n\t\treturn boost::shared_ptr<Instance>();\n\t}"
+   ]
+  ]
  }
 ]
