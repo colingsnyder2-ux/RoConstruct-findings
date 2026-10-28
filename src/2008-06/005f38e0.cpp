@@ -1,3 +1,4 @@
+// roc-cl: 21022
 // from server: 85% by colin
 // roc 2008-06 005f38e0  unit: std::D::V?$allocator::V?$zlib_decompressor_impl::?$symmetric_filter::Uimpl::?$sp_counted_impl_p  size: 87 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005f38e0
@@ -66,32 +67,30 @@
 
 
 
-struct Buffer {
-    __declspec(dllimport) int pubsync();
+#include <iostream>
+
+struct Target {
+    int pad[2];
+    std::ostream os;
 };
 
-struct Stream {
-    int* offsets;
+struct Holder {
+    Target* io;
 };
 
 struct S {
-    Stream* stream;
+    Holder* holder;
     unsigned int flags;
     ~S();
 };
 
 S::~S()
 {
-    unsigned int state = flags;
-    Stream* p = stream;
+    unsigned int f = flags;
+    Target* io = holder->io;
     try {
-        if (state & 2) {
-            void* q = *(void**)p;
-            void* r = *(void**)((char*)q + 8);
-            void* s = *(void**)((char*)r + 4);
-            Buffer* b = *(Buffer**)((char*)s + (int)q + 0x30);
-            b->pubsync();
-        }
+        if (f & 2)
+            io->os.rdbuf()->pubsync();
     }
     catch (...) {
         flags |= 4;
