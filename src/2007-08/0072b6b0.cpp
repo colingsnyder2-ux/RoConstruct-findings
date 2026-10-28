@@ -1,50 +1,67 @@
-// from server: 48% by colin
-extern "C" int __stdcall sub_72D2C0(int, int, int);
-extern "C" int __stdcall sub_72D3D0(int, int, int);
-extern "C" int __stdcall sub_72E9B0(int);
+// roc-lang: c
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /MD
+// roc-lib: zlib-1.2.3-winapi uncompr.c
 
-struct S {
-    int f(int, int, int, int);
-};
+// Candidate translation unit (score above; library headers required).
+/* uncompr.c -- decompress a memory buffer
+ * Copyright (C) 1995-2003 Jean-loup Gailly.
+ * For conditions of distribution and use, see copyright notice in zlib.h
+ */
 
-int S::f(int a1, int a2, int a3, int a4)
+/* @(#) $Id$ */
+
+#define ZLIB_INTERNAL
+#include "zlib.h"
+
+/* ===========================================================================
+     Decompresses the source buffer into the destination buffer.  sourceLen is
+   the byte length of the source buffer. Upon entry, destLen is the total
+   size of the destination buffer, which must be large enough to hold the
+   entire uncompressed data. (The size of the uncompressed data must have
+   been saved previously by the compressor and transmitted to the decompressor
+   by some mechanism outside the scope of this compression library.)
+   Upon exit, destLen is the actual size of the compressed buffer.
+     This function can be used to decompress a whole file at once if the
+   input file is mmap'ed.
+
+     uncompress returns Z_OK if success, Z_MEM_ERROR if there was not
+   enough memory, Z_BUF_ERROR if there was not enough room in the output
+   buffer, or Z_DATA_ERROR if the input data was corrupted.
+*/
+int ZEXPORT uncompress (dest, destLen, source, sourceLen)
+    Bytef *dest;
+    uLongf *destLen;
+    const Bytef *source;
+    uLong sourceLen;
 {
-    int v[14];
-    int r;
-    int t;
+    z_stream stream;
+    int err;
 
-    v[0] = a1;
-    v[1] = a2;
-    v[2] = a3;
-    v[3] = a4;
-    v[4] = 0;
-    v[5] = 0;
-    v[6] = 0;
-    v[7] = 0;
-    v[8] = 0;
-    v[9] = 0;
-    v[10] = 0;
-    v[11] = 0;
-    v[12] = 0;
-    v[13] = 0;
+    stream.next_in = (Bytef*)source;
+    stream.avail_in = (uInt)sourceLen;
+    /* Check for source > 64K on 16-bit machine: */
+    if ((uLong)stream.avail_in != sourceLen) return Z_BUF_ERROR;
 
-    r = sub_72D2C0((int)&v[0], 0x7a2c08, 0x38);
-    if (r != 0)
-        return r;
+    stream.next_out = dest;
+    stream.avail_out = (uInt)*destLen;
+    if ((uLong)stream.avail_out != *destLen) return Z_BUF_ERROR;
 
-    r = sub_72D3D0((int)&v[0], 4, (int)&v[0]);
-    if (r == 1) {
-        v[0] = v[1];
-        sub_72E9B0((int)&v[0]);
-        return 0;
+    stream.zalloc = (alloc_func)0;
+    stream.zfree = (free_func)0;
+
+    err = inflateInit(&stream);
+    if (err != Z_OK) return err;
+
+    err = inflate(&stream, Z_FINISH);
+    if (err != Z_STREAM_END) {
+        inflateEnd(&stream);
+        if (err == Z_NEED_DICT || (err == Z_BUF_ERROR && stream.avail_in == 0))
+            return Z_DATA_ERROR;
+        return err;
     }
+    *destLen = stream.total_out;
 
-    sub_72E9B0((int)&v[0]);
-
-    if (r == 2)
-        return -3;
-    if (r == -5 && v[0] == 0)
-        return -3;
-
-    return r;
+    err = inflateEnd(&stream);
+    return err;
 }

@@ -900,5 +900,25 @@
     "#pragma float_control(precise, off)\n#include \"humanoid/Humanoid.h\"\n"
    ]
   ]
+ },
+ {
+  "App/humanoid/Humanoid.cpp": [
+   [
+    "return testModel ? testModel->findFirstChildOfType<Humanoid>() : NULL;",
+    "if (testModel)\n\t\t{\n\t\t\tconst ModelInstance* model = dynamic_cast<const ModelInstance*>(testModel);\n\t\t\tif (model)\n\t\t\t\treturn model->findFirstChildOfType<Humanoid>();\n\t\t}\n\t\treturn NULL;"
+   ]
+  ],
+  "App/include/v8tree/Instance.h": [
+   [
+    "size_t numChildren() const\n\t\t{\n\t\t\tif (children)\n\t\t\t\treturn children->size();\n\t\t\telse\n\t\t\t\treturn 0;\n\t\t}",
+    "size_t numChildren() const\n\t\t{\n\t\t\treturn children ? children->size() : 0;\n\t\t}"
+   ]
+  ],
+  "App/v8tree/Instance.cpp": [
+   [
+    "Instance::findChildIndex(const Instance* instance) const\n\t{\n\t\tRBXASSERT(children);\n\n\t\tconst std::vector<boost::shared_ptr<Instance>>& c = *children;\n\n\t\tstd::vector<boost::shared_ptr<Instance>>::const_iterator found = std::find(c.begin(), c.end(), instance->shared_from_this());\n\t\treturn (int)std::distance(c.begin(), found);\n\t}",
+    "Instance::findChildIndex(const Instance* instance) const\n\t{\n\t\t                   ;\n\n\t\tconst std::vector<boost::shared_ptr<Instance>>& c = *children;\n\n\t\tstd::vector<boost::shared_ptr<Instance>>::const_iterator found = std::find(c.begin(), c.end(), instance->shared_from_this());\n\t\treturn (int)std::distance(c.begin(), found);\n\t}"
+   ]
+  ]
  }
 ]

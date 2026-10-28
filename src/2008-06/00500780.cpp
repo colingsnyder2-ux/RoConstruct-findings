@@ -1,8 +1,9 @@
+// from server: 99% by EspClaude
 // from server: 80% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espclaude_6b943531a9d0e518.cpp
+// roc-lib: rbxgs-dll roc_espclaude_8ae1f5b421ed2a5b.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <stdio.h>
@@ -117,12 +118,12 @@ namespace RBX
 			}
 
 			fclose(f);
-			return true;
 			}
 			catch (std::exception&)
 			{
 				return false;
 			}
+			return true;
 		}
 	}
 }

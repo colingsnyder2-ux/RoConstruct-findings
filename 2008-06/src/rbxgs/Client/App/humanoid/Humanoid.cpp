@@ -153,7 +153,13 @@ namespace RBX
 
 	Humanoid* Humanoid::modelIsCharacter(const Instance* testModel)
 	{
-		return testModel ? testModel->findFirstChildOfType<Humanoid>() : NULL;
+		if (testModel)
+		{
+			const ModelInstance* model = dynamic_cast<const ModelInstance*>(testModel);
+			if (model)
+				return model->findFirstChildOfType<Humanoid>();
+		}
+		return NULL;
 	}
 
 	Humanoid* Humanoid::getLocalHumanoidFromContext(const Instance* context)

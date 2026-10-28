@@ -1,3 +1,4 @@
+// from server: 95% by EspClaude
 // from server: 85% by king_originala_sol_native
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
@@ -29,6 +30,7 @@ struct ICharacterSubject:ICameraSubject {
  virtual bool zoom(float,G3D::CoordinateFrame&,G3D::CoordinateFrame&);virtual void stepGoalAndFocus(G3D::CoordinateFrame&,G3D::CoordinateFrame&,bool);
  virtual ContactManager*getContactManager()=0;virtual void getIgnorePrims(std::vector<const Primitive*>&);virtual void tellCameraNear(float);virtual G3D::Vector3 getIntendedMovementVector()=0;virtual float getIntendedRotationAboutYAxis()=0;virtual void cameraSetWalkOrientation(float,bool)=0;
 };
+static __forceinline G3D::Vector3 placeXZ(const G3D::Vector3&focus,const G3D::Vector2&direction,float radius,float dy){return G3D::Vector3(focus.x-direction.x*radius,focus.y-dy,focus.z-direction.y*radius);}
 void ICharacterSubject::stepGoalAndFocus(G3D::CoordinateFrame&cameraGoal,G3D::CoordinateFrame&cameraFocus,bool){
  G3D::Vector3&focusPosition=cameraFocus.translation;
  G3D::Vector3&goalPosition=cameraGoal.translation;
@@ -47,22 +49,21 @@ void ICharacterSubject::stepGoalAndFocus(G3D::CoordinateFrame&cameraGoal,G3D::Co
   (void)focusERA.pushAndGetAverage(focusPosition);
   (void)getIntendedRotationAboutYAxis();
   G3D::CoordinateFrame subjectFrame=getLocation();
-  G3D::Vector3 back=subjectFrame.rotation.getColumn(2);
+  {G3D::Vector3 back=subjectFrame.rotation.getColumn(2);
   (void)rotationERA.getAverage();
-  (void)rotationERA.pushAndGetAverage((float)-atan2(-back.x,back.z));
-  G3D::CoordinateFrame focusSpace=Math::getFocusSpace(cameraGoal);
+  (void)rotationERA.pushAndGetAverage((float)-atan2(-back.x,back.z));}
+  G3D::CoordinateFrame focusSpace=Math::getFocusSpace(cameraFocus);
   goalPosition+=offset;
   float radius=focusToGoal.xz().length();
-  G3D::Vector2 direction=(focusPosition.xz()-goalPosition.xz()).direction();
-  goalPosition=G3D::Vector3(focusPosition.x-direction.x*radius,focusPosition.y-focusToGoal.y,focusPosition.z-direction.y*radius);
+  goalPosition=placeXZ(focusPosition,(focusPosition.xz()-goalPosition.xz()).direction(),radius,focusToGoal.y);
   goalInFocus=focusSpace.pointToObjectSpace(goalPosition);hasGoalInFocus=true;
  }
  G3D::CoordinateFrame testGoal=wasOccluded?goalFromDistance(cameraFocus,cameraGoal,unoccludedDistance):cameraGoal;
- float distance;
+ {float distance;
  bool occluded=testOcclusion(cameraFocus,testGoal,distance);
  if(occluded){if(!wasOccluded)unoccludedDistance=focusToGoal.magnitude();cameraGoal=goalFromDistance(cameraFocus,cameraGoal,distance);}
  else if(wasOccluded)cameraGoal=testGoal;
- wasOccluded=occluded;tellCameraNear(distance);
+ wasOccluded=occluded;tellCameraNear(distance);}
 }
 }
 typedef char vector_size[sizeof(G3D::Vector3)==12?1:-1];

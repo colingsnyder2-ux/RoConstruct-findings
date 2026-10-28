@@ -1,8 +1,7 @@
-// from server: 75% by colin
 // roc-lang: c
-// roc-cl: 21022
+// roc-cl: 50727
 // roc-flags: /O2 /GS- /MD
-// roc-lib: zlib-1.2.3 crc32.c
+// roc-lib: zlib-1.2.3-winapi crc32.c
 
 // Candidate translation unit (score above; library headers required).
 /* crc32.c -- compute the CRC-32 of a data stream

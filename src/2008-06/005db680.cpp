@@ -1,4 +1,4 @@
-// from server: 87% by king_originala
+// from server: 88% by Espeon
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
 #include <string>
@@ -166,12 +166,15 @@ void Humanoid::renderMultiplayer(Adorn* adorn, const G3D::GCamera& camera)
 
 			float width = (float) (fontSize * 4);
 
-            projected.x -= 0.5f * width;
-            
-            Vector2 barLow(projected.x, projected.y);
-            Vector2 barHigh(projected.x + width, projected.y + (float)(fontSize / 2));
-            Vector2 healthHigh(projected.x + (health / maxHealth) * width, barHigh.y);
-            Vector2 healthLow(healthHigh.x, barLow.y);
+            float barX = projected.x - 0.5f * width;
+            float barHeight = (float)(fontSize / 2);
+            float rightX = barX + width;
+            float topY = projected.y + barHeight;
+            float splitX = barX + (health / maxHealth) * width;
+            Vector2 barLow(barX, projected.y);
+            Vector2 healthHigh(splitX, topY);
+            Vector2 healthLow(splitX, projected.y);
+            Vector2 barHigh(rightX, topY);
             {
                 G3D::Color4 color(Color::lightGreen(), 1.0f);
                 G3D::Rect2D rect = G3D::Rect2D::xyxy(barLow, healthHigh);

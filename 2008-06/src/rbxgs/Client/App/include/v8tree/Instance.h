@@ -265,10 +265,7 @@ protected:
 		};
 		size_t numChildren() const
 		{
-			if (children)
-				return children->size();
-			else
-				return 0;
+			return children ? children->size() : 0;
 		}
 		int findChildIndex(const Instance* instance) const;
 		const Instance* getChild(size_t i) const

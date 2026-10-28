@@ -248,7 +248,7 @@ namespace RBX
 
 	int Instance::findChildIndex(const Instance* instance) const
 	{
-		RBXASSERT(children);
+		                   ;
 
 		const std::vector<boost::shared_ptr<Instance>>& c = *children;
 

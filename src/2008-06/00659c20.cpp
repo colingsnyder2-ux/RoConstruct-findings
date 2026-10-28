@@ -1,8 +1,9 @@
-// from server: 94% by coldek
+// from server: 100% by EspClaude
+// from server: 93% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: openrbx-client-dll roc_claudeM_b1a8b680a7aede2a.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_616ca69fe8f41437.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "v8world/SpatialHash.h"
@@ -27,8 +28,8 @@ static inline float exHashGridSize() { return (float) exHashGrid; }
 
 static inline Extents exHashGridToRealExtents(const Vector3& hashGrid)
 {
-	Vector3 high;
-	high.x = hashGrid.x + 1.0f; high.y = hashGrid.y + 1.0f; high.z = hashGrid.z + 1.0f;
+	Vector3 high = hashGrid;
+	high += Vector3(1.0f, 1.0f, 1.0f);
 	return Extents(hashGrid * exHashGridSize(), high * exHashGridSize());
 }
 
@@ -85,3 +86,4 @@ bool SpatialHash::getNextGrid(Vector3int32& grid, const G3D::Ray& unitRay, float
 
 
 }
+

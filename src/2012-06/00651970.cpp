@@ -1,8 +1,7 @@
-// from server: 92% by colin
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
-// roc-lib: zlib-1.2.3 deflate.c
+// roc-lib: zlib-1.2.3-winapi deflate.c
 
 // Candidate translation unit (score above; library headers required).
 /* deflate.c -- compress data using the deflation algorithm

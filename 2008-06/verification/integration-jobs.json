@@ -3248,11 +3248,83 @@
         ]
       ]
     },
-    "phase": "building",
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "14d72ad3fedd8f883fca90879450de995b4d92e84dba590b7e67a94d1ca1da38",
+      "credits": 7,
+      "distinct_after": 9826,
+      "distinct_before": 9819,
+      "gains": [
+        "00558ac0",
+        "005843c0",
+        "005b0fa0",
+        "005b1020",
+        "005d9a20",
+        "005db960",
+        "005fdaf0"
+      ],
+      "input_hash": "9a41a779170d7e323a4a3c064ef34e77185b2ac8b626f4f77f2eec15721042f2",
+      "losses": [],
+      "new_distinct": [
+        "00558ac0",
+        "005843c0",
+        "005b0fa0",
+        "005b1020",
+        "005d9a20",
+        "005db960",
+        "005fdaf0"
+      ],
+      "overlay_hash": "113549c96812b2acd5ee085aa3d17298144854167a1fe1cbcdf1f1603eef59d5",
+      "owned_after": 3161,
+      "owned_before": 3154,
+      "rebased": false,
+      "submitted_revision": "14d72ad3fedd8f883fca90879450de995b4d92e84dba590b7e67a94d1ca1da38"
+    },
+    "state": "accepted",
+    "unit": "RBX::Humanoid, RBX::ModelInstance",
+    "updated": 1793158033.2204044,
+    "user": "colin"
+  },
+  {
+    "created": 1793161490.2878723,
+    "id": "c24b46fcc32d42a0aba2cbb62b5cb1ae",
+    "model": "gpt-6.1-sol",
+    "patches": {
+      "App/include/tool/PartDragTool.h": [
+        [
+          "\t\tstd::auto_ptr<MegaDragger> megaDragger;\n",
+          "\t\tstd::auto_ptr<MegaDragger> megaDragger;\n\t\tboost::shared_ptr<Instance> selectIfNoDrag;\n"
+        ],
+        [
+          "PartDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, Workspace* workspace);",
+          "PartDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, Workspace* workspace, boost::shared_ptr<Instance> selectIfNoDrag = boost::shared_ptr<Instance>());"
+        ]
+      ],
+      "App/tool/PartDragTool.cpp": [
+        [
+          "#include \"tool/PartDragTool.h\"",
+          "#pragma float_control(precise, off)\n#include \"tool/PartDragTool.h\""
+        ],
+        [
+          "PartDragTool::PartDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, Workspace* workspace)\n\t\t: Base(workspace),\n\t\t  hitWorld(hitPointWorld),\n\t\t  dragging(false)\n\t{\n\t\tRBXASSERT(mousePart);\n\t\trunDragger.reset(new RunDragger);\n\n\t\tstd::vector<PVInstance*> pvInstances;\n\t\tpvInstances.push_back(mousePart);\n\n\t\tmegaDragger.reset(new MegaDragger(mousePart, pvInstances, (RootInstance*)workspace));\n\t}\n",
+          "PartDragTool::PartDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, Workspace* workspace, boost::shared_ptr<Instance> selectIfNoDrag)\n\t\t: Base(workspace),\n\t\t  selectIfNoDrag(selectIfNoDrag),\n\t\t  hitWorld(hitPointWorld),\n\t\t  dragging(false)\n\t{\n\t\t\n\t\trunDragger.reset(new RunDragger);\n\n\t\tstd::vector<PVInstance*> pvInstances;\n\t\tpvInstances.push_back(mousePart);\n\n\t\tmegaDragger.reset(new MegaDragger(mousePart, pvInstances, (RootInstance*)workspace));\n\t}\n"
+        ],
+        [
+          "void PartDragTool::onMouseIdle(const UIEvent& uiEvent)\n\t{\n\t\tRBXASSERT(captured());\n\n\t\tif (captured() && dragging && megaDragger->mousePartAlive())\n\t\t{\n\t\t\tmegaDragger->continueDragging();\n\t\t\trunDragger->snap(getUnitMouseRay(uiEvent));\n\t\t}\n\t}\n\n\t",
+          "void PartDragTool::onMouseIdle(const UIEvent& uiEvent)\n\t{\n\t\t\n\n\t\tif (captured() && dragging && megaDragger->mousePartAlive())\n\t\t{\n\t\t\tmegaDragger->continueDragging();\n\t\t\trunDragger->snap(getUnitMouseRay(uiEvent));\n\t\t}\n\t}\n\n\t"
+        ],
+        [
+          "void PartDragTool::onMouseDelta(const UIEvent& uiEvent)\n\t{\n\t\tRBXASSERT(captured());\n\n\t\tif (!dragging && megaDragger->mousePartAlive())\n\t\t{\n\t\t\tdragging = true;\n\n\t\t\tmegaDragger->startDragging();\n\t\t\trunDragger->init(workspace, megaDragger->getMousePart(), hitWorld);\n\t\t}\n\n\t\tonMouseIdle(uiEvent);\n\t}\n\n\t",
+          "void PartDragTool::onMouseDelta(const UIEvent& uiEvent)\n\t{\n\t\t\n\n\t\tif (!dragging && megaDragger->mousePartAlive())\n\t\t{\n\t\t\tdragging = true;\n\n\t\t\tmegaDragger->startDragging();\n\t\t\trunDragger->init(workspace, megaDragger->getMousePart(), hitWorld);\n\t\t}\n\n\t\tonMouseIdle(uiEvent);\n\t}\n\n\t"
+        ]
+      ]
+    },
+    "phase": "baseline: building",
     "receipt": {},
     "state": "verifying",
-    "unit": "RBX::Humanoid, RBX::ModelInstance",
-    "updated": 1793157546.9261246,
+    "unit": "RBX::PartDragTool",
+    "updated": 1793161577.5844526,
     "user": "colin"
   }
 ]

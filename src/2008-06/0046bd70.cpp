@@ -1,14 +1,14 @@
-// from server: 76% by EspClaude
-// from server: 67% by king_originala
+// from server: 86% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: mfc-9.0-shared-rtm roc_espclaude_66892316802534b0.cpp
+// roc-lib: mfc-9.0-shared-rtm roc_workspace_native_atl_factory_c9a0ca1e5c572c29.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <afxwin.h>
 #include <afxdisp.h>
 #include <atlbase.h>
+#include <atlcom.h>
 #include <exception>
 #include <memory>
 #include <sstream>
@@ -25,12 +25,15 @@ __declspec(noreturn) void __cdecl raise_error(long, const GUID&);
 struct IPrimary : IUnknown {};
 struct IXmlStream : IUnknown {};
 
-struct StreamObject : IPrimary, IXmlStream
+struct StreamBase : IPrimary, IXmlStream, CComObjectRootEx<CComSingleThreadModel>
 {
-    long refs;
     std::stringstream stream;
-    static HRESULT __stdcall CreateInstance(StreamObject**);
+    HRESULT _InternalQueryInterface(REFIID, void**) throw();
 };
+typedef CComObject<StreamBase> StreamObject;
+typedef char stream_offset_check[offsetof(StreamBase,stream)==0xc?1:-1];
+typedef char stream_size_check[sizeof(std::stringstream)==0x88?1:-1];
+typedef char object_size_check[sizeof(StreamObject)==0x94?1:-1];
 
 struct VCWorkspaceNativeView
 {

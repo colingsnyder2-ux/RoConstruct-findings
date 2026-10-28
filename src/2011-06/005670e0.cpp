@@ -1,2462 +1,1742 @@
-// from server: 18% by colin
-// roc-lang: cpp
+// roc-lang: c
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /arch:SSE2 /fp:fast
-// roc-lib: rbx2016-g3d CollisionDetection.cpp
+// roc-flags: /O2 /GS- /MD
+// roc-lib: zlib-1.2.3-winapi deflate.c
 
 // Candidate translation unit (score above; library headers required).
-/**
-  @file CollisionDetection.cpp
-  
-  @maintainer Morgan McGuire, http://graphics.cs.williams.edu
-
-  @cite Bounce direction based on Paul Nettle's ftp://ftp.3dmaileffects.com/pub/FluidStudios/CollisionDetection/Fluid_Studios_Generic_Collision_Detection_for_Games_Using_Ellipsoids.pdf and comments by Max McGuire.  Ray-sphere code by Eric Haines.
-
-  @created 2001-11-24
-  @edited  2008-12-29
+/* deflate.c -- compress data using the deflation algorithm
+ * Copyright (C) 1995-2005 Jean-loup Gailly.
+ * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#include "G3D/CoordinateFrame.h"
-#include "G3D/platform.h"
-#include "G3D/CollisionDetection.h"
-#include "G3D/debugAssert.h"
-#include "G3D/vectorMath.h"
-#include "G3D/Capsule.h"
-#include "G3D/Plane.h"
-#include "G3D/Line.h"
-#include "G3D/LineSegment.h"
-#include "G3D/Sphere.h"
-#include "G3D/Box.h"
-#include "G3D/Triangle.h"
-#include "G3D/Vector3.h"
-#include "G3D/AABox.h"
+/*
+ *  ALGORITHM
+ *
+ *      The "deflation" process depends on being able to identify portions
+ *      of the input text which are identical to earlier input (within a
+ *      sliding window trailing behind the input currently being processed).
+ *
+ *      The most straightforward technique turns out to be the fastest for
+ *      most input files: try all possible matches and select the longest.
+ *      The key feature of this algorithm is that insertions into the string
+ *      dictionary are very simple and thus fast, and deletions are avoided
+ *      completely. Insertions are performed at each input character, whereas
+ *      string matches are performed only when the previous match ends. So it
+ *      is preferable to spend more time in matches to allow very fast string
+ *      insertions and avoid deletions. The matching algorithm for small
+ *      strings is inspired from that of Rabin & Karp. A brute force approach
+ *      is used to find longer strings when a small match has been found.
+ *      A similar algorithm is used in comic (by Jan-Mark Wams) and freeze
+ *      (by Leonid Broukhis).
+ *         A previous version of this file used a more sophisticated algorithm
+ *      (by Fiala and Greene) which is guaranteed to run in linear amortized
+ *      time, but has a larger average cost, uses more memory and is patented.
+ *      However the F&G algorithm may be faster for some highly redundant
+ *      files if the parameter max_chain_length (described below) is too large.
+ *
+ *  ACKNOWLEDGEMENTS
+ *
+ *      The idea of lazy evaluation of matches is due to Jan-Mark Wams, and
+ *      I found it in 'freeze' written by Leonid Broukhis.
+ *      Thanks to many people for bug reports and testing.
+ *
+ *  REFERENCES
+ *
+ *      Deutsch, L.P.,"DEFLATE Compressed Data Format Specification".
+ *      Available in http://www.ietf.org/rfc/rfc1951.txt
+ *
+ *      A description of the Rabin and Karp algorithm is given in the book
+ *         "Algorithms" by R. Sedgewick, Addison-Wesley, p252.
+ *
+ *      Fiala,E.R., and Greene,D.H.
+ *         Data Compression with Finite Windows, Comm.ACM, 32,4 (1989) 490-595
+ *
+ */
 
-#ifdef _MSC_VER
-// Turn on fast floating-point optimizations
-#pragma float_control( push )
-#pragma fp_contract( on ) 
-#pragma fenv_access( off )
-#pragma float_control( except, off )
-#pragma float_control( precise, off )
+/* @(#) $Id$ */
+
+#include "deflate.h"
+
+const char deflate_copyright[] =
+   " deflate 1.2.3 Copyright 1995-2005 Jean-loup Gailly ";
+/*
+  If you use the zlib library in a product, an acknowledgment is welcome
+  in the documentation of your product. If for some reason you cannot
+  include such an acknowledgment, I would appreciate that you keep this
+  copyright string in the executable of your product.
+ */
+
+/* ===========================================================================
+ *  Function prototypes.
+ */
+typedef enum {
+    need_more,      /* block not completed, need more input or more output */
+    block_done,     /* block flush performed */
+    finish_started, /* finish started, need only more output at next deflate */
+    finish_done     /* finish done, accept no more input or output */
+} block_state;
+
+typedef block_state (*compress_func) OF((deflate_state *s, int flush));
+/* Compression function. Returns the block state after the call. */
+
+local void fill_window    OF((deflate_state *s));
+local block_state deflate_stored OF((deflate_state *s, int flush));
+local block_state deflate_fast   OF((deflate_state *s, int flush));
+#ifndef FASTEST
+local block_state deflate_slow   OF((deflate_state *s, int flush));
+#endif
+local void lm_init        OF((deflate_state *s));
+local void putShortMSB    OF((deflate_state *s, uInt b));
+local void flush_pending  OF((z_streamp strm));
+local int read_buf        OF((z_streamp strm, Bytef *buf, unsigned size));
+#ifndef FASTEST
+#ifdef ASMV
+      void match_init OF((void)); /* asm code initialization */
+      uInt longest_match  OF((deflate_state *s, IPos cur_match));
+#else
+local uInt longest_match  OF((deflate_state *s, IPos cur_match));
+#endif
+#endif
+local uInt longest_match_fast OF((deflate_state *s, IPos cur_match));
+
+#ifdef DEBUG
+local  void check_match OF((deflate_state *s, IPos start, IPos match,
+                            int length));
 #endif
 
+/* ===========================================================================
+ * Local data
+ */
 
-namespace G3D {
+#define NIL 0
+/* Tail of hash chains */
 
-bool CollisionDetection::ignoreBool;
-Vector3	CollisionDetection::ignore;
-Array<Vector3> CollisionDetection::ignoreArray;
+#ifndef TOO_FAR
+#  define TOO_FAR 4096
+#endif
+/* Matches of length 3 are discarded if their distance exceeds TOO_FAR */
 
+#define MIN_LOOKAHEAD (MAX_MATCH+MIN_MATCH+1)
+/* Minimum amount of lookahead, except at the end of the input file.
+ * See deflate.c for comments about the MIN_MATCH+1.
+ */
 
+/* Values for max_lazy_match, good_match and max_chain_length, depending on
+ * the desired pack level (0..9). The values given below have been tuned to
+ * exclude worst case performance for pathological files. Better values may be
+ * found for specific files.
+ */
+typedef struct config_s {
+   ush good_length; /* reduce lazy search above this match length */
+   ush max_lazy;    /* do not perform lazy search above this match length */
+   ush nice_length; /* quit search above this match length */
+   ush max_chain;
+   compress_func func;
+} config;
 
-Vector3 CollisionDetection::separatingAxisForSolidBoxSolidBox(
-        const int separatingAxisIndex,
-        const Box & box1,
-        const Box & box2) {
-    debugAssert(separatingAxisIndex >= 0);
-    debugAssert(separatingAxisIndex < 15);
-    Vector3 axis;
-    if (separatingAxisIndex < 3) {
-        axis = box1.axis(separatingAxisIndex);
-    } else if (separatingAxisIndex < 6) {
-        axis = box2.axis(separatingAxisIndex - 3);
-    } else {
-        int box1Index = (separatingAxisIndex - 6) / 3;
-        int box2Index = (separatingAxisIndex - 6) % 3;
-        axis = cross(box1.axis(box1Index), box2.axis(box2Index));
-    }
-    return axis;
-}
+#ifdef FASTEST
+local const config configuration_table[2] = {
+/*      good lazy nice chain */
+/* 0 */ {0,    0,  0,    0, deflate_stored},  /* store only */
+/* 1 */ {4,    4,  8,    4, deflate_fast}}; /* max speed, no lazy matches */
+#else
+local const config configuration_table[10] = {
+/*      good lazy nice chain */
+/* 0 */ {0,    0,  0,    0, deflate_stored},  /* store only */
+/* 1 */ {4,    4,  8,    4, deflate_fast}, /* max speed, no lazy matches */
+/* 2 */ {4,    5, 16,    8, deflate_fast},
+/* 3 */ {4,    6, 32,   32, deflate_fast},
 
-#ifdef _MSC_VER
-#   pragma warning (push)
-#   pragma warning (disable : 4244)
+/* 4 */ {4,    4, 16,   16, deflate_slow},  /* lazy matches */
+/* 5 */ {8,   16, 32,   32, deflate_slow},
+/* 6 */ {8,   16, 128, 128, deflate_slow},
+/* 7 */ {8,   32, 128, 256, deflate_slow},
+/* 8 */ {32, 128, 258, 1024, deflate_slow},
+/* 9 */ {32, 258, 258, 4096, deflate_slow}}; /* max compression */
 #endif
 
-float CollisionDetection::projectedDistanceForSolidBoxSolidBox(
-    const int           separatingAxisIndex,
-    const Vector3 &     a,
-    const Vector3 &     b,
-    const Vector3 &     D,
-    const double*       c,
-    const double*       ca,
-    const double*       ad,
-    const double*       bd)
+/* Note: the deflate() code requires max_lazy >= MIN_MATCH and max_chain >= 4
+ * For deflate_fast() (levels <= 3) good is ignored and lazy has a different
+ * meaning.
+ */
+
+#define EQUAL 0
+/* result of memcmp for equal strings */
+
+#ifndef NO_DUMMY_DECL
+struct static_tree_desc_s {int dummy;}; /* for buggy compilers */
+#endif
+
+/* ===========================================================================
+ * Update a hash value with the given input byte
+ * IN  assertion: all calls to to UPDATE_HASH are made with consecutive
+ *    input characters, so that a running hash key can be computed from the
+ *    previous key instead of complete recalculation each time.
+ */
+#define UPDATE_HASH(s,h,c) (h = (((h)<<s->hash_shift) ^ (c)) & s->hash_mask)
+
+
+/* ===========================================================================
+ * Insert string str in the dictionary and set match_head to the previous head
+ * of the hash chain (the most recent string with same hash key). Return
+ * the previous length of the hash chain.
+ * If this file is compiled with -DFASTEST, the compression level is forced
+ * to 1, and no hash chains are maintained.
+ * IN  assertion: all calls to to INSERT_STRING are made with consecutive
+ *    input characters and the first MIN_MATCH bytes of str are valid
+ *    (except for the last MIN_MATCH-1 bytes of the input file).
+ */
+#ifdef FASTEST
+#define INSERT_STRING(s, str, match_head) \
+   (UPDATE_HASH(s, s->ins_h, s->window[(str) + (MIN_MATCH-1)]), \
+    match_head = s->head[s->ins_h], \
+    s->head[s->ins_h] = (Pos)(str))
+#else
+#define INSERT_STRING(s, str, match_head) \
+   (UPDATE_HASH(s, s->ins_h, s->window[(str) + (MIN_MATCH-1)]), \
+    match_head = s->prev[(str) & s->w_mask] = s->head[s->ins_h], \
+    s->head[s->ins_h] = (Pos)(str))
+#endif
+
+/* ===========================================================================
+ * Initialize the hash table (avoiding 64K overflow for 16 bit systems).
+ * prev[] will be initialized on the fly.
+ */
+#define CLEAR_HASH(s) \
+    s->head[s->hash_size-1] = NIL; \
+    zmemzero((Bytef *)s->head, (unsigned)(s->hash_size-1)*sizeof(*s->head));
+
+/* ========================================================================= */
+int ZEXPORT deflateInit_(strm, level, version, stream_size)
+    z_streamp strm;
+    int level;
+    const char *version;
+    int stream_size;
 {
-    (void)D;
-
-    float R0 = 0.0f;
-    float R1 = 0.0f;
-    float R = 0.0f;
-    switch (separatingAxisIndex) {
-    case 0:
-        // A0
-        R0 = a[0];
-        R1 = b[0] * ca[0] + b[1] * ca[1] + b[2] * ca[2];
-        R = fabs(ad[0]);
-        break;
-    case 1:
-        // A1
-        R0 = a[1];
-        R1 = b[0] * ca[3] + b[1] * ca[4] + b[2] * ca[5];
-        R = fabs(ad[1]);
-        break;
-    case 2:
-        // A2
-        R0 = a[2];
-        R1 = b[0] * ca[6] + b[1] * ca[7] + b[2] * ca[8];
-        R = fabs(ad[2]);
-        break;
-    case 3:
-        // B0
-        R0 = a[0] * ca[0] + a[1] * ca[3] + a[2] * ca[6];
-        R1 = b[0];
-        R = fabs(bd[0]);
-        break;
-    case 4:
-        // B1
-        R0 = a[0] * ca[1] + a[1] * ca[4] + a[2] * ca[7];
-        R1 = b[1];
-        R = fabs(bd[1]);
-        break;
-    case 5:
-        // B2
-        R0 = a[0] * ca[2] + a[1] * ca[5] + a[2] * ca[8];
-        R1 = b[2];
-        R = fabs(bd[2]);
-        break;
-    case 6:
-        // A0 x B0
-        R0 = a[1] * ca[6] + a[2] * ca[3];
-        R1 = b[1] * ca[2] + b[2] * ca[1];
-        R = fabs(c[3] * ad[2] - c[6] * ad[1]);
-        break;
-    case 7:
-        // A0 x B1
-        R0 = a[1] * ca[7] + a[2] * ca[4];
-        R1 = b[0] * ca[2] + b[2] * ca[0];
-        R = fabs(c[4] * ad[2] - c[7] * ad[1]);
-        break;
-    case 8:
-        // A0 x B2
-        R0 = a[1] * ca[8] + a[2] * ca[5];
-        R1 = b[0] * ca[1] + b[1] * ca[0];
-        R = fabs(c[5] * ad[2] - c[8] * ad[1]);
-        break;
-    case 9:
-        // A1 x B0
-        R0 = a[0] * ca[6] + a[2] * ca[0];
-        R1 = b[1] * ca[5] + b[2] * ca[4];
-        R = fabs(c[6] * ad[0] - c[0] * ad[2]);
-        break;
-    case 10:
-        // A1 x B1
-        R0 = a[0] * ca[7] + a[2] * ca[1];
-        R1 = b[0] * ca[5] + b[2] * ca[3];
-        R = fabs(c[7] * ad[0] - c[1] * ad[2]);
-        break;
-    case 11:
-        // A1 x B2
-        R0 = a[0] * ca[8] + a[2] * ca[2];
-        R1 = b[0] * ca[4] + b[1] * ca[3];
-        R = fabs(c[8] * ad[0] - c[2] * ad[2]);
-        break;
-    case 12:
-        // A2 x B0
-        R0 = a[0] * ca[3] + a[1] * ca[0];
-        R1 = b[1] * ca[8] + b[2] * ca[7];
-        R = fabs(c[0] * ad[1] - c[3] * ad[0]);
-        break;
-    case 13:
-        // A2 x B1
-        R0 = a[0] * ca[4] + a[1] * ca[1];
-        R1 = b[0] * ca[8] + b[2] * ca[6];
-        R = fabs(c[1] * ad[1] - c[4] * ad[0]);
-        break;
-    case 14:
-        // A2 x B2
-        R0 = a[0] * ca[5] + a[1] * ca[2];
-        R1 = b[0] * ca[7] + b[1] * ca[6];
-        R = fabs(c[2] * ad[1] - c[5] * ad[0]);
-        break;
-    default:
-        debugAssertM(false, "fell through switch statement");
-    }
-
-    return (R - (R0 + R1));
+    return deflateInit2_(strm, level, Z_DEFLATED, MAX_WBITS, DEF_MEM_LEVEL,
+                         Z_DEFAULT_STRATEGY, version, stream_size);
+    /* To do: ignore strm->next_in if we use it as window */
 }
 
+/* ========================================================================= */
+int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
+                  version, stream_size)
+    z_streamp strm;
+    int  level;
+    int  method;
+    int  windowBits;
+    int  memLevel;
+    int  strategy;
+    const char *version;
+    int stream_size;
+{
+    deflate_state *s;
+    int wrap = 1;
+    static const char my_version[] = ZLIB_VERSION;
 
-bool CollisionDetection::parallelAxisForSolidBoxSolidBox(
-        const double* ca,
-        const double epsilon,
-        int & axis1,
-        int & axis2) {
-    const double parallelDot = 1.0 - epsilon;
-    for (int i = 0; i < 9; i++) {
-        if (ca[i] >= parallelDot) {
-            axis1 = i / 3;
-            axis2 = i % 3;
-            return true;
-        }
+    ushf *overlay;
+    /* We overlay pending_buf and d_buf+l_buf. This works since the average
+     * output size for (length,distance) codes is <= 24 bits.
+     */
+
+    if (version == Z_NULL || version[0] != my_version[0] ||
+        stream_size != sizeof(z_stream)) {
+        return Z_VERSION_ERROR;
     }
-    return false;
+    if (strm == Z_NULL) return Z_STREAM_ERROR;
+
+    strm->msg = Z_NULL;
+    if (strm->zalloc == (alloc_func)0) {
+        strm->zalloc = zcalloc;
+        strm->opaque = (voidpf)0;
+    }
+    if (strm->zfree == (free_func)0) strm->zfree = zcfree;
+
+#ifdef FASTEST
+    if (level != 0) level = 1;
+#else
+    if (level == Z_DEFAULT_COMPRESSION) level = 6;
+#endif
+
+    if (windowBits < 0) { /* suppress zlib wrapper */
+        wrap = 0;
+        windowBits = -windowBits;
+    }
+#ifdef GZIP
+    else if (windowBits > 15) {
+        wrap = 2;       /* write gzip wrapper instead */
+        windowBits -= 16;
+    }
+#endif
+    if (memLevel < 1 || memLevel > MAX_MEM_LEVEL || method != Z_DEFLATED ||
+        windowBits < 8 || windowBits > 15 || level < 0 || level > 9 ||
+        strategy < 0 || strategy > Z_FIXED) {
+        return Z_STREAM_ERROR;
+    }
+    if (windowBits == 8) windowBits = 9;  /* until 256-byte window bug fixed */
+    s = (deflate_state *) ZALLOC(strm, 1, sizeof(deflate_state));
+    if (s == Z_NULL) return Z_MEM_ERROR;
+    strm->state = (struct internal_state FAR *)s;
+    s->strm = strm;
+
+    s->wrap = wrap;
+    s->gzhead = Z_NULL;
+    s->w_bits = windowBits;
+    s->w_size = 1 << s->w_bits;
+    s->w_mask = s->w_size - 1;
+
+    s->hash_bits = memLevel + 7;
+    s->hash_size = 1 << s->hash_bits;
+    s->hash_mask = s->hash_size - 1;
+    s->hash_shift =  ((s->hash_bits+MIN_MATCH-1)/MIN_MATCH);
+
+    s->window = (Bytef *) ZALLOC(strm, s->w_size, 2*sizeof(Byte));
+    s->prev   = (Posf *)  ZALLOC(strm, s->w_size, sizeof(Pos));
+    s->head   = (Posf *)  ZALLOC(strm, s->hash_size, sizeof(Pos));
+
+    s->lit_bufsize = 1 << (memLevel + 6); /* 16K elements by default */
+
+    overlay = (ushf *) ZALLOC(strm, s->lit_bufsize, sizeof(ush)+2);
+    s->pending_buf = (uchf *) overlay;
+    s->pending_buf_size = (ulg)s->lit_bufsize * (sizeof(ush)+2L);
+
+    if (s->window == Z_NULL || s->prev == Z_NULL || s->head == Z_NULL ||
+        s->pending_buf == Z_NULL) {
+        s->status = FINISH_STATE;
+        strm->msg = (char*)ERR_MSG(Z_MEM_ERROR);
+        deflateEnd (strm);
+        return Z_MEM_ERROR;
+    }
+    s->d_buf = overlay + s->lit_bufsize/sizeof(ush);
+    s->l_buf = s->pending_buf + (1+sizeof(ush))*s->lit_bufsize;
+
+    s->level = level;
+    s->strategy = strategy;
+    s->method = (Byte)method;
+
+    return deflateReset(strm);
 }
 
+/* ========================================================================= */
+int ZEXPORT deflateSetDictionary (strm, dictionary, dictLength)
+    z_streamp strm;
+    const Bytef *dictionary;
+    uInt  dictLength;
+{
+    deflate_state *s;
+    uInt length = dictLength;
+    uInt n;
+    IPos hash_head = 0;
 
+    if (strm == Z_NULL || strm->state == Z_NULL || dictionary == Z_NULL ||
+        strm->state->wrap == 2 ||
+        (strm->state->wrap == 1 && strm->state->status != INIT_STATE))
+        return Z_STREAM_ERROR;
 
+    s = strm->state;
+    if (s->wrap)
+        strm->adler = adler32(strm->adler, dictionary, dictLength);
 
-void CollisionDetection::fillSolidBoxSolidBoxInfo(
-        const Box & box1,
-        const Box & box2,
-        Vector3 & a,
-        Vector3 & b,
-        Vector3 & D,
-        double* c,
-        double* ca,
-        double* ad,
-        double* bd) {
-    // length between center and each side of box1 and box2
-    a = box1.extent() * 0.5;
-    b = box2.extent() * 0.5;
+    if (length < MIN_MATCH) return Z_OK;
+    if (length > MAX_DIST(s)) {
+        length = MAX_DIST(s);
+        dictionary += dictLength - length; /* use the tail of the dictionary */
+    }
+    zmemcpy(s->window, dictionary, length);
+    s->strstart = length;
+    s->block_start = (long)length;
 
-    // difference between centers of box1 and box2
-    D = box2.center() - box1.center();
+    /* Insert all strings in the hash table (except for the last two bytes).
+     * s->lookahead stays null, so s->ins_h will be recomputed at the next
+     * call of fill_window.
+     */
+    s->ins_h = s->window[0];
+    UPDATE_HASH(s, s->ins_h, s->window[1]);
+    for (n = 0; n <= length - MIN_MATCH; n++) {
+        INSERT_STRING(s, n, hash_head);
+    }
+    if (hash_head) hash_head = 0;  /* to make compiler happy */
+    return Z_OK;
+}
 
-    // store the value of all possible dot products between the
-    // axes of box1 and box2, c_{row, col} in the Eberly paper
-    // corresponds to c[row * 3 + col] for this 9 element array.
-    //
-    // c[] holds signed values, ca[] hold absolute values
-    for (int i = 0; i < 9; i++) {
-        c[i] = dot(box1.axis(i / 3), box2.axis(i % 3));
-        ca[i] = fabs(c[i]);
+/* ========================================================================= */
+int ZEXPORT deflateReset (strm)
+    z_streamp strm;
+{
+    deflate_state *s;
+
+    if (strm == Z_NULL || strm->state == Z_NULL ||
+        strm->zalloc == (alloc_func)0 || strm->zfree == (free_func)0) {
+        return Z_STREAM_ERROR;
     }
 
-    // store all possible dot products between the axes of box1 and D,
-    // as well as the axes of box2 and D
-    for (int i = 0; i < 3; i++) {
-        ad[i] = dot(box1.axis(i), D);
-        bd[i] = dot(box2.axis(i), D);
+    strm->total_in = strm->total_out = 0;
+    strm->msg = Z_NULL; /* use zfree if we ever allocate msg dynamically */
+    strm->data_type = Z_UNKNOWN;
+
+    s = (deflate_state *)strm->state;
+    s->pending = 0;
+    s->pending_out = s->pending_buf;
+
+    if (s->wrap < 0) {
+        s->wrap = -s->wrap; /* was made negative by deflate(..., Z_FINISH); */
+    }
+    s->status = s->wrap ? INIT_STATE : BUSY_STATE;
+    strm->adler =
+#ifdef GZIP
+        s->wrap == 2 ? crc32(0L, Z_NULL, 0) :
+#endif
+        adler32(0L, Z_NULL, 0);
+    s->last_flush = Z_NO_FLUSH;
+
+    _tr_init(s);
+    lm_init(s);
+
+    return Z_OK;
+}
+
+/* ========================================================================= */
+int ZEXPORT deflateSetHeader (strm, head)
+    z_streamp strm;
+    gz_headerp head;
+{
+    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
+    if (strm->state->wrap != 2) return Z_STREAM_ERROR;
+    strm->state->gzhead = head;
+    return Z_OK;
+}
+
+/* ========================================================================= */
+int ZEXPORT deflatePrime (strm, bits, value)
+    z_streamp strm;
+    int bits;
+    int value;
+{
+    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
+    strm->state->bi_valid = bits;
+    strm->state->bi_buf = (ush)(value & ((1 << bits) - 1));
+    return Z_OK;
+}
+
+/* ========================================================================= */
+int ZEXPORT deflateParams(strm, level, strategy)
+    z_streamp strm;
+    int level;
+    int strategy;
+{
+    deflate_state *s;
+    compress_func func;
+    int err = Z_OK;
+
+    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
+    s = strm->state;
+
+#ifdef FASTEST
+    if (level != 0) level = 1;
+#else
+    if (level == Z_DEFAULT_COMPRESSION) level = 6;
+#endif
+    if (level < 0 || level > 9 || strategy < 0 || strategy > Z_FIXED) {
+        return Z_STREAM_ERROR;
+    }
+    func = configuration_table[s->level].func;
+
+    if (func != configuration_table[level].func && strm->total_in != 0) {
+        /* Flush the last buffer: */
+        err = deflate(strm, Z_PARTIAL_FLUSH);
+    }
+    if (s->level != level) {
+        s->level = level;
+        s->max_lazy_match   = configuration_table[level].max_lazy;
+        s->good_match       = configuration_table[level].good_length;
+        s->nice_match       = configuration_table[level].nice_length;
+        s->max_chain_length = configuration_table[level].max_chain;
+    }
+    s->strategy = strategy;
+    return err;
+}
+
+/* ========================================================================= */
+int ZEXPORT deflateTune(strm, good_length, max_lazy, nice_length, max_chain)
+    z_streamp strm;
+    int good_length;
+    int max_lazy;
+    int nice_length;
+    int max_chain;
+{
+    deflate_state *s;
+
+    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
+    s = strm->state;
+    s->good_match = good_length;
+    s->max_lazy_match = max_lazy;
+    s->nice_match = nice_length;
+    s->max_chain_length = max_chain;
+    return Z_OK;
+}
+
+/* =========================================================================
+ * For the default windowBits of 15 and memLevel of 8, this function returns
+ * a close to exact, as well as small, upper bound on the compressed size.
+ * They are coded as constants here for a reason--if the #define's are
+ * changed, then this function needs to be changed as well.  The return
+ * value for 15 and 8 only works for those exact settings.
+ *
+ * For any setting other than those defaults for windowBits and memLevel,
+ * the value returned is a conservative worst case for the maximum expansion
+ * resulting from using fixed blocks instead of stored blocks, which deflate
+ * can emit on compressed data for some combinations of the parameters.
+ *
+ * This function could be more sophisticated to provide closer upper bounds
+ * for every combination of windowBits and memLevel, as well as wrap.
+ * But even the conservative upper bound of about 14% expansion does not
+ * seem onerous for output buffer allocation.
+ */
+uLong ZEXPORT deflateBound(strm, sourceLen)
+    z_streamp strm;
+    uLong sourceLen;
+{
+    deflate_state *s;
+    uLong destLen;
+
+    /* conservative upper bound */
+    destLen = sourceLen +
+              ((sourceLen + 7) >> 3) + ((sourceLen + 63) >> 6) + 11;
+
+    /* if can't get parameters, return conservative bound */
+    if (strm == Z_NULL || strm->state == Z_NULL)
+        return destLen;
+
+    /* if not default parameters, return conservative bound */
+    s = strm->state;
+    if (s->w_bits != 15 || s->hash_bits != 8 + 7)
+        return destLen;
+
+    /* default settings: return tight bound for that case */
+    return compressBound(sourceLen);
+}
+
+/* =========================================================================
+ * Put a short in the pending buffer. The 16-bit value is put in MSB order.
+ * IN assertion: the stream state is correct and there is enough room in
+ * pending_buf.
+ */
+local void putShortMSB (s, b)
+    deflate_state *s;
+    uInt b;
+{
+    put_byte(s, (Byte)(b >> 8));
+    put_byte(s, (Byte)(b & 0xff));
+}
+
+/* =========================================================================
+ * Flush as much pending output as possible. All deflate() output goes
+ * through this function so some applications may wish to modify it
+ * to avoid allocating a large strm->next_out buffer and copying into it.
+ * (See also read_buf()).
+ */
+local void flush_pending(strm)
+    z_streamp strm;
+{
+    unsigned len = strm->state->pending;
+
+    if (len > strm->avail_out) len = strm->avail_out;
+    if (len == 0) return;
+
+    zmemcpy(strm->next_out, strm->state->pending_out, len);
+    strm->next_out  += len;
+    strm->state->pending_out  += len;
+    strm->total_out += len;
+    strm->avail_out  -= len;
+    strm->state->pending -= len;
+    if (strm->state->pending == 0) {
+        strm->state->pending_out = strm->state->pending_buf;
     }
 }
 
+/* ========================================================================= */
+int ZEXPORT deflate (strm, flush)
+    z_streamp strm;
+    int flush;
+{
+    int old_flush; /* value of flush param for previous deflate call */
+    deflate_state *s;
 
-
-bool CollisionDetection::conservativeBoxBoxTest(
-        const Vector3 & a, const Vector3 & b, const Vector3 & D) {
-    // do a quick bounding sphere test because it is relatively
-    // cheap, (three dot products, two sqrts, and a few others)
-    double boxRadius1 = a.magnitude();
-    double boxRadius2 = b.magnitude();
-    return (D.squaredMagnitude() < square(boxRadius1 + boxRadius2));
-}
-
-
-
-
-bool CollisionDetection::fixedSolidBoxIntersectsFixedSolidBox(
-    const Box&      box1,
-    const Box&      box2,
-	const int		lastSeparatingAxis) {
-    // for explanations of the variable please refer to the
-    // paper and fillSolidBoxSolidBoxInfo()
-    Vector3 a;
-    Vector3 b;
-    Vector3 D;
-    double c[9];
-    double ca[9];
-    double ad[3];
-    double bd[3];
-
-    fillSolidBoxSolidBoxInfo(box1, box2, a, b, D, c, ca, ad, bd);
-
-    int dummy1, dummy2;
-    bool parallelAxes = parallelAxisForSolidBoxSolidBox(ca, 0.00001,
-            dummy1, dummy2);
-
-    // check the separating axis from the last time step
-    if (lastSeparatingAxis != -1 &&
-            (lastSeparatingAxis < 6 || !parallelAxes)) {
-        double projectedDistance = projectedDistanceForSolidBoxSolidBox(
-                lastSeparatingAxis, a, b, D, c, ca, ad, bd);
-
-        // the separating axis from the last time step is still
-        // valid, the boxes do not intersect
-        if (projectedDistance > 0.0) {
-            return false;
-        }
+    if (strm == Z_NULL || strm->state == Z_NULL ||
+        flush > Z_FINISH || flush < 0) {
+        return Z_STREAM_ERROR;
     }
+    s = strm->state;
 
-    // test if the boxes can be separated by a plane normal to
-    // any of the three axes of box1, any of the three axes of box2,
-    // or any of the 9 possible cross products of axes from box1
-    // and box2
-    for (int i = 0; i < 15; i++) {
-        // do not need to check edge-edge cases if any two of
-        // the axes are parallel
-        if (parallelAxes && i == 6) {
-            return true;
-        }
-
-        double projectedDistance =
-            projectedDistanceForSolidBoxSolidBox(i, a, b, D, c, ca, ad, bd);
-
-        // found a separating axis, the boxes do not intersect
-        if (projectedDistance > 0.0) {
-            return false;
-        }
+    if (strm->next_out == Z_NULL ||
+        (strm->next_in == Z_NULL && strm->avail_in != 0) ||
+        (s->status == FINISH_STATE && flush != Z_FINISH)) {
+        ERR_RETURN(strm, Z_STREAM_ERROR);
     }
+    if (strm->avail_out == 0) ERR_RETURN(strm, Z_BUF_ERROR);
 
-    return true;
-}
+    s->strm = strm; /* just in case */
+    old_flush = s->last_flush;
+    s->last_flush = flush;
 
-
-
-void CollisionDetection::closestPointsBetweenLineAndLine(
-        const Line & line1,
-        const Line & line2,
-        Vector3 & closest1,
-        Vector3 & closest2) {
-    // TODO make accessors for Line that don't make a copy of data
-    Vector3 P0 = line1.point();
-    Vector3 u = line1.direction();
-    Vector3 Q0 = line2.point();
-    Vector3 v = line2.direction();
-    Vector3 w0 = P0 - Q0;
-
-    // a = 1.0, c = 1.0
-    double  b = dot(u, v);
-    double  d = dot(u, w0);
-    double  e = dot(v, w0);
-    double  D = 1.0 - b * b;
-    double  sc, tc;
-
-    static const double epsilon = 0.00001;
-
-    if (D < epsilon) {
-        // lines are parallel, choose P0 as one point, find the point
-        // on line2 that is closest to P0
-        sc = 0.0;
-        tc = (b > 1.0) ? (d / b) : (e / 1.0);
-    } else {
-        // lines are not parallel
-        sc = (b * e - 1.0 * d) / D;
-        tc = (1.0 * e - b * d) / D;
-    }
-
-    closest1 = P0 + (sc * u);
-    closest2 = Q0 + (tc * v);
-}
-
-
-
-float CollisionDetection::penetrationDepthForFixedBoxFixedBox(
-    const Box&      box1,
-    const Box&      box2,
-    Array<Vector3>& contactPoints,
-    Array<Vector3>& contactNormals,
-    const int lastSeparatingAxis) {
-
-    contactPoints.resize(0, DONT_SHRINK_UNDERLYING_ARRAY);
-    contactNormals.resize(0, DONT_SHRINK_UNDERLYING_ARRAY);
-
-    Vector3 a;
-    Vector3 b;
-    Vector3 D;
-    double c[9];
-    double ca[9];
-    double ad[3];
-    double bd[3];
-
-    debugAssert(lastSeparatingAxis >= -1);
-    debugAssert(lastSeparatingAxis < 15);
-
-    fillSolidBoxSolidBoxInfo(box1, box2, a, b, D, c, ca, ad, bd);
-
-    int axis1, axis2;
-    bool parallelAxes = parallelAxisForSolidBoxSolidBox(ca, 0.00001,
-            axis1, axis2);
-
-
-    // check the separating axis from the last time step
-    if (lastSeparatingAxis != -1 &&
-            (lastSeparatingAxis < 6 || !parallelAxes)) {
-        float projectedDistance = projectedDistanceForSolidBoxSolidBox(
-                lastSeparatingAxis, a, b, D, c, ca, ad, bd);
-
-        // the separating axis from the last time step is still
-        // valid, the boxes do not intersect
-        if (projectedDistance > 0.0) {
-            return -projectedDistance;
-        }
-    }
-
-    // test if the boxes can be separated by a plane normal to
-    // any of the three axes of box1, any of the three axes of box2,
-    // (test 9 possible cross products later)
-	float penetration = -finf();
-    int penetrationAxisIndex = -1;
-
-    for (int i = 0; i < 6; i++) {
-        float projectedDistance =
-            projectedDistanceForSolidBoxSolidBox(i, a, b, D, c, ca, ad, bd);
-
-        // found a separating axis, the boxes do not intersect
-        if (projectedDistance > 0.0) {
-            return -projectedDistance;
-        }
-
-        // keep track of the axis that is least violated
-        if (projectedDistance > penetration) {
-            penetration = projectedDistance;
-            penetrationAxisIndex = i;
-        }
-    }
-
-
-    // for each edge-edge case we have to adjust the magnitude of
-    // penetration since we did not include the dot(L, L) denominator
-    // that can be smaller than 1.0 for the edge-edge cases.
-	if (!parallelAxes) {
-	    double edgeDistances[9];
-
-		// run through edge-edge cases to see if we can find a separating axis
-		for (int i = 6; i < 15; i++) {
-			float projectedDistance =
-				projectedDistanceForSolidBoxSolidBox(i, a, b, D, c, ca, ad, bd);
-
-			// found a separating axis, the boxes do not intersect,
-			// correct magnitude and return projected distance
-			if (projectedDistance > 0.0) {
-				Vector3 L = separatingAxisForSolidBoxSolidBox(i, box1, box2);
-				projectedDistance /= dot(L, L);
-				return -projectedDistance;
-			}
-
-			edgeDistances[i - 6] = projectedDistance;
-		}
-
-		// no separating axis found, the boxes do intersect,
-		// correct the magnitudes of the projectedDistance values
-		for (int i = 6; i < 15; i++) {
-			// find the negative penetration value with the smallest magnitude,
-			// the adjustment done for the edge-edge cases only increases
-			// magnitude by dividing by a number smaller than 1 and greater than 0
-			float projectedDistance = (float)edgeDistances[i - 6];
-			if (projectedDistance > penetration) {
-				Vector3 L = separatingAxisForSolidBoxSolidBox(i, box1, box2);
-				projectedDistance /= dot(L, L);
-				if (projectedDistance > penetration) {
-					penetration = projectedDistance;
-					penetrationAxisIndex = i;
-				}
-			}
-		}
-	}
-
-	// get final separating axis vector
-    Vector3 L = separatingAxisForSolidBoxSolidBox(penetrationAxisIndex,
-            box1, box2);
-
-    // set L to be the normal that faces away from box1
-    if (dot(L, D) < 0) {
-        L = -L;
-    }
-
-    Vector3 contactPoint;
-
-    if (penetrationAxisIndex < 6) {
-        // vertex to face collision, find deepest colliding vertex
-        const Box* vertexBox;
-        const Box* faceBox;
-        Vector3 faceNormal = L;
-
-        // L will be the outward facing normal for the faceBox
-        if (penetrationAxisIndex < 3) {
-            faceBox = & box1;
-            vertexBox = & box2;
-            if (dot(L, D) < 0) {
-                faceNormal = -L;
+    /* Write the header */
+    if (s->status == INIT_STATE) {
+#ifdef GZIP
+        if (s->wrap == 2) {
+            strm->adler = crc32(0L, Z_NULL, 0);
+            put_byte(s, 31);
+            put_byte(s, 139);
+            put_byte(s, 8);
+            if (s->gzhead == NULL) {
+                put_byte(s, 0);
+                put_byte(s, 0);
+                put_byte(s, 0);
+                put_byte(s, 0);
+                put_byte(s, 0);
+                put_byte(s, s->level == 9 ? 2 :
+                            (s->strategy >= Z_HUFFMAN_ONLY || s->level < 2 ?
+                             4 : 0));
+                put_byte(s, OS_CODE);
+                s->status = BUSY_STATE;
             }
-        } else {
-            faceBox = & box2;
-            vertexBox = & box1;
-            if (dot(L, D) > 0) {
-                faceNormal = -L;
-            }
-        }
-
-        // find the vertex that is farthest away in the direction
-        // face normal direction
-        int deepestPointIndex = 0;
-        float deepestPointDot = dot(faceNormal, vertexBox->corner(0));
-        for (int i = 1; i < 8; i++) {
-            float dotProduct = dot(faceNormal, vertexBox->corner(i));
-            if (dotProduct < deepestPointDot) {
-                deepestPointDot = dotProduct;
-                deepestPointIndex = i;
-            }
-        }
-        
-        // return the point half way between the deepest point and the
-        // contacting face
-        contactPoint = vertexBox->corner(deepestPointIndex) +
-            (-penetration * 0.5 * faceNormal);
-    } else {
-        // edge-edge case, find the two ege lines
-        int edge1 = (penetrationAxisIndex - 6) / 3;
-        int edge2 = (penetrationAxisIndex - 6) % 3;
-        Vector3 linePoint1 = box1.center();
-        Vector3 linePoint2 = box2.center();
-        Vector3 lineDir1;
-        Vector3 lineDir2;
-
-        // find edge line by finding the edge axis, and the
-        // other two axes that are closest to the other box
-        for (int i = 0; i < 3; i++ ) {
-            if (i == edge1) {
-                lineDir1 = box1.axis(i);
-            } else {
-                Vector3 axis = box1.axis(i);
-                if (dot(axis, L) < 0) {
-                    axis = -axis;
+            else {
+                put_byte(s, (s->gzhead->text ? 1 : 0) +
+                            (s->gzhead->hcrc ? 2 : 0) +
+                            (s->gzhead->extra == Z_NULL ? 0 : 4) +
+                            (s->gzhead->name == Z_NULL ? 0 : 8) +
+                            (s->gzhead->comment == Z_NULL ? 0 : 16)
+                        );
+                put_byte(s, (Byte)(s->gzhead->time & 0xff));
+                put_byte(s, (Byte)((s->gzhead->time >> 8) & 0xff));
+                put_byte(s, (Byte)((s->gzhead->time >> 16) & 0xff));
+                put_byte(s, (Byte)((s->gzhead->time >> 24) & 0xff));
+                put_byte(s, s->level == 9 ? 2 :
+                            (s->strategy >= Z_HUFFMAN_ONLY || s->level < 2 ?
+                             4 : 0));
+                put_byte(s, s->gzhead->os & 0xff);
+                if (s->gzhead->extra != NULL) {
+                    put_byte(s, s->gzhead->extra_len & 0xff);
+                    put_byte(s, (s->gzhead->extra_len >> 8) & 0xff);
                 }
-                linePoint1 += axis * a[i];
-            }
-
-            if (i == edge2) {
-                lineDir2 = box2.axis(i);
-            } else {
-                Vector3 axis = box2.axis(i);
-                if (dot(axis, L) > 0) {
-                    axis = -axis;
-                }
-                linePoint2 += axis * b[i];
+                if (s->gzhead->hcrc)
+                    strm->adler = crc32(strm->adler, s->pending_buf,
+                                        s->pending);
+                s->gzindex = 0;
+                s->status = EXTRA_STATE;
             }
         }
-
-        // make lines from the two closest edges, and find
-        // the points that on each line that are closest to the other
-        Line line1 = Line::fromPointAndDirection(linePoint1, lineDir1);
-        Line line2 = Line::fromPointAndDirection(linePoint2, lineDir2);
-        Vector3 closest1;
-        Vector3 closest2;
-
-        closestPointsBetweenLineAndLine(line1, line2, closest1, closest2);
-        
-        // take the average of the two closest edge points for the final
-        // contact point
-        contactPoint = (closest1 + closest2) * 0.5;
-    }
-
-    contactPoints.push(contactPoint);
-    contactNormals.push(L);
-
-    return -penetration;
-
-}
-
-
-
-
-float CollisionDetection::penetrationDepthForFixedSphereFixedBox(
-    const Sphere&   sphere,
-    const Box&      box,
-    Array<Vector3>& contactPoints,
-    Array<Vector3>& contactNormals) {
-
-    contactPoints.resize(0, DONT_SHRINK_UNDERLYING_ARRAY);
-    contactNormals.resize(0, DONT_SHRINK_UNDERLYING_ARRAY);
-
-    // In its local coordinate frame, the box measures
-    // 2 * halfExtent[a] along dimesion a.
-    Vector3 halfExtent(box.extent(0), box.extent(1), box.extent(2));
-    halfExtent *= 0.5f;
-
-    CoordinateFrame boxFrame;
-    box.getLocalFrame(boxFrame);
-
-    // Transform the sphere to the box's coordinate frame.
-    Vector3 center = boxFrame.pointToObjectSpace(sphere.center);
-
-    // Find the square of the distance from the sphere to the box
-
-
-    // Distance along each axis from the closest side of the box
-    // to the sphere center.  Negative values are *inside* the box.
-    Vector3 distOutsideBox;
-
-    // Divide space up into the 27 regions corresponding
-    // to {+|-|0}X, {+|-|0}Y, {+|-|0}Z and classify the
-    // sphere center into one of them.
-    Vector3 centerRegion;
-
-    // In the edge collision case, the edge is between vertices
-    // (constant + variable) and (constant - variable).
-    Vector3 constant, variable;
-
-    int numNonZero = 0;
-
-    // Iterate over axes
-    for (int a = 0; a < 3; ++a) { 
-        // For each (box side), see which direction the sphere
-        // is outside the box (positive or negative).  Add the
-        // square of that distance to the total distance from 
-        // the box.
-
-        float distanceFromLow  = -halfExtent[a] - center[a];
-        float distanceFromHigh = center[a] - halfExtent[a];
-
-        if (fabsf(distanceFromLow) < fabsf(distanceFromHigh)) {
-            distOutsideBox[a] = distanceFromLow;
-        } else {
-            distOutsideBox[a] = distanceFromHigh;
-        }
-
-        if (distanceFromLow < 0.0) {
-            if (distanceFromHigh < 0.0) {
-                // Inside the box
-                centerRegion[a] = 0.0;
-                variable[a]     = 1.0;
-            } else {
-                // Off the high side
-                centerRegion[a] = 1.0;
-                constant[a]     = halfExtent[a];
-                ++numNonZero;
-            }
-        } else if (distanceFromHigh < 0.0) {
-            // Off the low side
-            centerRegion[a] = -1.0;
-            constant[a]     = -halfExtent[a];
-            ++numNonZero;
-        } else {
-            debugAssertM(false, 
-                "distanceFromLow and distanceFromHigh cannot both be positive");
-        }
-    }
-
-    // Squared distance between the outside of the box and the
-    // sphere center.
-    float d2 = Vector3::zero().max(distOutsideBox).squaredMagnitude();
-
-    if (d2 > square(sphere.radius)) {
-        // There is no penetration because the distance is greater
-        // than the radius of the sphere.  This is the common case
-        // and we quickly exit.
-        return -1;
-    }
-
-    // We know there is some penetration but need to classify it.
-    //
-    // Examine the region that contains the center of the sphere. If
-    // there is exactly one non-zero axis, the collision is with a 
-    // plane.  If there are exactly two non-zero axes, the collision
-    // is with an edge.  If all three axes are non-zero, the collision is
-    // with a vertex.  If there are no non-zero axes, the center is inside
-    // the box.
-
-    double depth = -1;
-    switch (numNonZero) {
-    case 3: // Vertex collision
-        // The collision point is the vertex at constant, the normal
-        // is the vector from there to the sphere center.
-        contactNormals.append(boxFrame.normalToWorldSpace(constant - center));
-        contactPoints.append(boxFrame.pointToWorldSpace(constant));
-        depth = sphere.radius - sqrt(d2);
-        break;
-
-    case 2: // Edge collision
+        else
+#endif
         {
-            // TODO: unwrapping the edge constructor and closest point
-            // code will probably make it faster.
+            uInt header = (Z_DEFLATED + ((s->w_bits-8)<<4)) << 8;
+            uInt level_flags;
 
-            // Determine the edge
-            Line line = Line::fromPointAndDirection(constant, variable);
+            if (s->strategy >= Z_HUFFMAN_ONLY || s->level < 2)
+                level_flags = 0;
+            else if (s->level < 6)
+                level_flags = 1;
+            else if (s->level == 6)
+                level_flags = 2;
+            else
+                level_flags = 3;
+            header |= (level_flags << 6);
+            if (s->strstart != 0) header |= PRESET_DICT;
+            header += 31 - (header % 31);
 
-            // Penetration depth:
-            depth = sphere.radius - sqrt(d2);
+            s->status = BUSY_STATE;
+            putShortMSB(s, header);
 
-            // The contact point is the closes point to the sphere on the line 
-            Vector3 X = line.closestPoint(center);
-            contactNormals.append(boxFrame.normalToWorldSpace(X - center).direction());
-            contactPoints.append(boxFrame.pointToWorldSpace(X));
+            /* Save the adler32 of the preset dictionary: */
+            if (s->strstart != 0) {
+                putShortMSB(s, (uInt)(strm->adler >> 16));
+                putShortMSB(s, (uInt)(strm->adler & 0xffff));
+            }
+            strm->adler = adler32(0L, Z_NULL, 0);
         }
-        break;
+    }
+#ifdef GZIP
+    if (s->status == EXTRA_STATE) {
+        if (s->gzhead->extra != NULL) {
+            uInt beg = s->pending;  /* start of bytes to update crc */
 
-    case 1: // Plane collision
-        {
-            // The plane normal is the centerRegion vector,
-            // so the sphere normal is the negative.  Take
-            // it to world space from box-space.
-
-            // Center region doesn't need to be normalized because
-            // it is known to contain only one non-zero value
-            // and that value is +/- 1.
-            Vector3 N = boxFrame.normalToWorldSpace(-centerRegion);
-            contactNormals.append(N);
-
-            // Penetration depth:
-            depth = sphere.radius - sqrtf(d2);
-
-            // Compute the contact point from the penetration depth
-            contactPoints.append(sphere.center + N * (sphere.radius - depth));
-        }
-        break;
-
-    case 0: // Volume collision
-
-        // The sphere center is inside the box.  This is an easy case
-        // to handle.  Note that all axes of distOutsideBox must
-        // be negative.  
-    
-        // Arbitratily choose the sphere center as a contact point
-        contactPoints.append(sphere.center);
-
-        // Find the least-negative penetration axis.
-        //
-        // We could have computed this during the loop over the axes,
-        // but since volume collisions are rare (they only occur with
-        // large time steps), this case will seldom be executed and
-        // should not be optimized at the expense of the others.
-        if (distOutsideBox.x > distOutsideBox.y) {
-            if (distOutsideBox.x > distOutsideBox.z) {
-                // Smallest penetration on x-axis
-                // Chose normal based on which side we're closest to.
-                // Keep in mind that this is a normal to the sphere,
-                // so it is the inverse of the box normal.
-                if (center.x > 0) {
-                    contactNormals.append(boxFrame.normalToWorldSpace(-Vector3::unitX()));
-                } else {
-                    contactNormals.append(boxFrame.normalToWorldSpace(Vector3::unitX()));
+            while (s->gzindex < (s->gzhead->extra_len & 0xffff)) {
+                if (s->pending == s->pending_buf_size) {
+                    if (s->gzhead->hcrc && s->pending > beg)
+                        strm->adler = crc32(strm->adler, s->pending_buf + beg,
+                                            s->pending - beg);
+                    flush_pending(strm);
+                    beg = s->pending;
+                    if (s->pending == s->pending_buf_size)
+                        break;
                 }
-                depth = -distOutsideBox.x;
-            } else {
-                // Smallest penetration on z-axis
-                goto ZAXIS;
+                put_byte(s, s->gzhead->extra[s->gzindex]);
+                s->gzindex++;
             }
-        } else if (distOutsideBox.y > distOutsideBox.z) {
-            // Smallest penetration on y-axis
-            // Chose normal based on which side we're closest to.
-            // Keep in mind that this is a normal to the sphere,
-            // so it is the inverse of the box normal.
-            if (center.y > 0) {
-                contactNormals.append(boxFrame.normalToWorldSpace(-Vector3::unitY()));
-            } else {
-                contactNormals.append(boxFrame.normalToWorldSpace(Vector3::unitY()));
+            if (s->gzhead->hcrc && s->pending > beg)
+                strm->adler = crc32(strm->adler, s->pending_buf + beg,
+                                    s->pending - beg);
+            if (s->gzindex == s->gzhead->extra_len) {
+                s->gzindex = 0;
+                s->status = NAME_STATE;
             }
-            depth = -distOutsideBox.y;
-        } else {
-            // Smallest on z-axis
-ZAXIS:
-            // Chose normal based on which side we're closest to.
-            // Keep in mind that this is a normal to the sphere,
-            // so it is the inverse of the box normal.
-            if (center.z > 0) {
-                contactNormals.append(boxFrame.normalToWorldSpace(-Vector3::unitZ()));
-            } else {
-                contactNormals.append(boxFrame.normalToWorldSpace(Vector3::unitZ()));
-            }
-            depth = -distOutsideBox.z;
         }
-        break;
-
-    default:
-        debugAssertM(false, "Fell through switch");
-        break;
+        else
+            s->status = NAME_STATE;
     }
+    if (s->status == NAME_STATE) {
+        if (s->gzhead->name != NULL) {
+            uInt beg = s->pending;  /* start of bytes to update crc */
+            int val;
 
-    return depth;
-}
-
-
-float CollisionDetection::penetrationDepthForFixedSphereFixedSphere(
-    const Sphere&           sphereA,
-    const Sphere&           sphereB,
-    Array<Vector3>&         contactPoints,
-    Array<Vector3>&         contactNormals) {
-
-    Vector3 axis = sphereB.center - sphereA.center;
-    double radius = sphereA.radius + sphereB.radius;
-    double mag = axis.magnitude();
-    axis /= mag;
-    double depth = -(mag - radius);
-
-    contactPoints.resize(0, DONT_SHRINK_UNDERLYING_ARRAY);
-    contactNormals.resize(0, DONT_SHRINK_UNDERLYING_ARRAY);
-
-    if (depth >= 0) {
-        contactPoints.append(sphereA.center + axis * (sphereA.radius - depth / 2));
-        contactNormals.append(axis);
+            do {
+                if (s->pending == s->pending_buf_size) {
+                    if (s->gzhead->hcrc && s->pending > beg)
+                        strm->adler = crc32(strm->adler, s->pending_buf + beg,
+                                            s->pending - beg);
+                    flush_pending(strm);
+                    beg = s->pending;
+                    if (s->pending == s->pending_buf_size) {
+                        val = 1;
+                        break;
+                    }
+                }
+                val = s->gzhead->name[s->gzindex++];
+                put_byte(s, val);
+            } while (val != 0);
+            if (s->gzhead->hcrc && s->pending > beg)
+                strm->adler = crc32(strm->adler, s->pending_buf + beg,
+                                    s->pending - beg);
+            if (val == 0) {
+                s->gzindex = 0;
+                s->status = COMMENT_STATE;
+            }
+        }
+        else
+            s->status = COMMENT_STATE;
     }
+    if (s->status == COMMENT_STATE) {
+        if (s->gzhead->comment != NULL) {
+            uInt beg = s->pending;  /* start of bytes to update crc */
+            int val;
 
-    return depth;
-}
-
-
-float CollisionDetection::penetrationDepthForFixedSphereFixedPlane(
-    const Sphere&           sphereA,
-    const Plane&            planeB,
-    Array<Vector3>&         contactPoints,
-    Array<Vector3>&         contactNormals) {
-
-    Vector3 N;
-    double d;
-
-    planeB.getEquation(N, d);
-    
-    double depth = -(sphereA.center.dot(N) + d - sphereA.radius);
-
-    contactPoints.resize(0, DONT_SHRINK_UNDERLYING_ARRAY);
-    contactNormals.resize(0, DONT_SHRINK_UNDERLYING_ARRAY);
-
-    if (depth >= 0) {
-        contactPoints.append(N * (depth - sphereA.radius) + sphereA.center);
-        contactNormals.append(N);
+            do {
+                if (s->pending == s->pending_buf_size) {
+                    if (s->gzhead->hcrc && s->pending > beg)
+                        strm->adler = crc32(strm->adler, s->pending_buf + beg,
+                                            s->pending - beg);
+                    flush_pending(strm);
+                    beg = s->pending;
+                    if (s->pending == s->pending_buf_size) {
+                        val = 1;
+                        break;
+                    }
+                }
+                val = s->gzhead->comment[s->gzindex++];
+                put_byte(s, val);
+            } while (val != 0);
+            if (s->gzhead->hcrc && s->pending > beg)
+                strm->adler = crc32(strm->adler, s->pending_buf + beg,
+                                    s->pending - beg);
+            if (val == 0)
+                s->status = HCRC_STATE;
+        }
+        else
+            s->status = HCRC_STATE;
     }
+    if (s->status == HCRC_STATE) {
+        if (s->gzhead->hcrc) {
+            if (s->pending + 2 > s->pending_buf_size)
+                flush_pending(strm);
+            if (s->pending + 2 <= s->pending_buf_size) {
+                put_byte(s, (Byte)(strm->adler & 0xff));
+                put_byte(s, (Byte)((strm->adler >> 8) & 0xff));
+                strm->adler = crc32(0L, Z_NULL, 0);
+                s->status = BUSY_STATE;
+            }
+        }
+        else
+            s->status = BUSY_STATE;
+    }
+#endif
 
-    return depth;
-}
-
-
-float CollisionDetection::penetrationDepthForFixedBoxFixedPlane(
-    const Box&          box,
-    const Plane&        plane,
-    Array<Vector3>&     contactPoints,
-    Array<Vector3>&     contactNormals) {
-
-    Vector3 N;
-    double d;
-    
-    plane.getEquation(N, d);
-
-    contactPoints.resize(0, DONT_SHRINK_UNDERLYING_ARRAY);
-    contactNormals.resize(0, DONT_SHRINK_UNDERLYING_ARRAY);
-
-    float lowest = finf();
-    for (int i = 0; i < 8; ++i) {
-        const Vector3 vertex = box.corner(i);
-        
-        float x = vertex.dot(N) + (float)d;
-        
-        if (x <= 0) {
-            // All vertices below the plane should be contact points.
-            contactPoints.append(vertex);
-            contactNormals.append(-N);
+    /* Flush as much pending output as possible */
+    if (s->pending != 0) {
+        flush_pending(strm);
+        if (strm->avail_out == 0) {
+            /* Since avail_out is 0, deflate will be called again with
+             * more output space, but possibly with both pending and
+             * avail_in equal to zero. There won't be anything to do,
+             * but this is not an error situation so make sure we
+             * return OK instead of BUF_ERROR at next call of deflate:
+             */
+            s->last_flush = -1;
+            return Z_OK;
         }
 
-        lowest = min(lowest, x);
+    /* Make sure there is something to do and avoid duplicate consecutive
+     * flushes. For repeated and useless calls with Z_FINISH, we keep
+     * returning Z_STREAM_END instead of Z_BUF_ERROR.
+     */
+    } else if (strm->avail_in == 0 && flush <= old_flush &&
+               flush != Z_FINISH) {
+        ERR_RETURN(strm, Z_BUF_ERROR);
     }
 
-    // Depth should be a positive number
-    return -lowest;
-}
-
-
-float CollisionDetection::collisionTimeForMovingPointFixedPlane(
-    const Vector3&  point,
-    const Vector3&  velocity,
-    const Plane&    plane,
-    Vector3&        location,
-    Vector3&        outNormal) {
-
-    // Solve for the time at which normal.dot(point + velocity) + d == 0.
-    double d;
-    Vector3 normal;
-    plane.getEquation(normal, d);
-    
-    float vdotN = velocity.dot(normal);
-    float pdotN = point.dot(normal);
-
-    if (fuzzyEq(pdotN + d, 0)) {
-        // The point is *in* the plane.
-        location = point;
-        outNormal = normal;
-        return 0;
+    /* User must not provide more input after the first FINISH: */
+    if (s->status == FINISH_STATE && strm->avail_in != 0) {
+        ERR_RETURN(strm, Z_BUF_ERROR);
     }
 
-    if (vdotN >= 0) {
-        // no collision will occur
-        location = Vector3::inf();
-        return finf();
+    /* Start a new block or continue the current one.
+     */
+    if (strm->avail_in != 0 || s->lookahead != 0 ||
+        (flush != Z_NO_FLUSH && s->status != FINISH_STATE)) {
+        block_state bstate;
+
+        bstate = (*(configuration_table[s->level].func))(s, flush);
+
+        if (bstate == finish_started || bstate == finish_done) {
+            s->status = FINISH_STATE;
+        }
+        if (bstate == need_more || bstate == finish_started) {
+            if (strm->avail_out == 0) {
+                s->last_flush = -1; /* avoid BUF_ERROR next call, see above */
+            }
+            return Z_OK;
+            /* If flush != Z_NO_FLUSH && avail_out == 0, the next call
+             * of deflate should use the same flush parameter to make sure
+             * that the flush is complete. So we don't have to output an
+             * empty block here, this will be done at next call. This also
+             * ensures that for a very small output buffer, we emit at most
+             * one empty block.
+             */
+        }
+        if (bstate == block_done) {
+            if (flush == Z_PARTIAL_FLUSH) {
+                _tr_align(s);
+            } else { /* FULL_FLUSH or SYNC_FLUSH */
+                _tr_stored_block(s, (char*)0, 0L, 0);
+                /* For a full flush, this empty block will be recognized
+                 * as a special marker by inflate_sync().
+                 */
+                if (flush == Z_FULL_FLUSH) {
+                    CLEAR_HASH(s);             /* forget history */
+                }
+            }
+            flush_pending(strm);
+            if (strm->avail_out == 0) {
+              s->last_flush = -1; /* avoid BUF_ERROR at next call, see above */
+              return Z_OK;
+            }
+        }
     }
+    Assert(strm->avail_out > 0, "bug2");
 
-    float t = -(pdotN + d) / vdotN;
-    if (t < 0) {
-        location = Vector3::inf();
-        return finf();
-    } else {
-        location = point + velocity * t;
-        outNormal = normal;
-        return t;
+    if (flush != Z_FINISH) return Z_OK;
+    if (s->wrap <= 0) return Z_STREAM_END;
+
+    /* Write the trailer */
+#ifdef GZIP
+    if (s->wrap == 2) {
+        put_byte(s, (Byte)(strm->adler & 0xff));
+        put_byte(s, (Byte)((strm->adler >> 8) & 0xff));
+        put_byte(s, (Byte)((strm->adler >> 16) & 0xff));
+        put_byte(s, (Byte)((strm->adler >> 24) & 0xff));
+        put_byte(s, (Byte)(strm->total_in & 0xff));
+        put_byte(s, (Byte)((strm->total_in >> 8) & 0xff));
+        put_byte(s, (Byte)((strm->total_in >> 16) & 0xff));
+        put_byte(s, (Byte)((strm->total_in >> 24) & 0xff));
     }
-}
-
-bool __fastcall CollisionDetection::rayAABox(
-    const Ray&              ray,
-    const Vector3&          invDir,
-    const AABox&            box,
-    const Vector3&          boxCenter,
-    float                   boundingRadiusSquared,
-    Vector3&                location,
-    bool&                   inside) {
-
-    debugAssertM(fabs(ray.direction().squaredLength() - 1.0f) < 0.01f, format("Length = %f", ray.direction().length()));
+    else
+#endif
     {
-        // Pre-emptive partial bounding sphere test
-        const Vector3 L(boxCenter - ray.origin());
-        float d = L.dot(ray.direction());
+        putShortMSB(s, (uInt)(strm->adler >> 16));
+        putShortMSB(s, (uInt)(strm->adler & 0xffff));
+    }
+    flush_pending(strm);
+    /* If avail_out is zero, the application will call deflate again
+     * to flush the rest.
+     */
+    if (s->wrap > 0) s->wrap = -s->wrap; /* write the trailer only once! */
+    return s->pending != 0 ? Z_OK : Z_STREAM_END;
+}
 
-        float L2 = L.dot(L);
-        float D2 = square(d);
-        float M2 = L2 - D2;
+/* ========================================================================= */
+int ZEXPORT deflateEnd (strm)
+    z_streamp strm;
+{
+    int status;
 
-        if (((d < 0) && (L2 > boundingRadiusSquared)) || (M2 > boundingRadiusSquared)) {
-            inside = false;
-            return false;
-        }
-        // Passing here does not mean that the ray hits the bounding sphere;
-        // we would still have to perform more expensive tests to determine
-        // that.
+    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
+
+    status = strm->state->status;
+    if (status != INIT_STATE &&
+        status != EXTRA_STATE &&
+        status != NAME_STATE &&
+        status != COMMENT_STATE &&
+        status != HCRC_STATE &&
+        status != BUSY_STATE &&
+        status != FINISH_STATE) {
+      return Z_STREAM_ERROR;
     }
 
-    inside = true;
-    const Vector3& MinB = box.low();
-    const Vector3& MaxB = box.high();
-    Vector3 MaxT(-1.0f, -1.0f, -1.0f);
+    /* Deallocate in reverse order of allocations: */
+    TRY_FREE(strm, strm->state->pending_buf);
+    TRY_FREE(strm, strm->state->head);
+    TRY_FREE(strm, strm->state->prev);
+    TRY_FREE(strm, strm->state->window);
 
-    // Find candidate planes.
-    for (int i = 0; i < 3; ++i) {
-        if (ray.origin()[i] < MinB[i]) {
-            location[i]	= MinB[i];
-            inside      = false;
-            
-            // Calculate T distances to candidate planes
-            if (ray.direction()[i] != 0) {
-                MaxT[i] = (MinB[i] - ray.origin()[i]) * invDir[i];
+    ZFREE(strm, strm->state);
+    strm->state = Z_NULL;
+
+    return status == BUSY_STATE ? Z_DATA_ERROR : Z_OK;
+}
+
+/* =========================================================================
+ * Copy the source state to the destination state.
+ * To simplify the source, this is not supported for 16-bit MSDOS (which
+ * doesn't have enough memory anyway to duplicate compression states).
+ */
+int ZEXPORT deflateCopy (dest, source)
+    z_streamp dest;
+    z_streamp source;
+{
+#ifdef MAXSEG_64K
+    return Z_STREAM_ERROR;
+#else
+    deflate_state *ds;
+    deflate_state *ss;
+    ushf *overlay;
+
+
+    if (source == Z_NULL || dest == Z_NULL || source->state == Z_NULL) {
+        return Z_STREAM_ERROR;
+    }
+
+    ss = source->state;
+
+    zmemcpy(dest, source, sizeof(z_stream));
+
+    ds = (deflate_state *) ZALLOC(dest, 1, sizeof(deflate_state));
+    if (ds == Z_NULL) return Z_MEM_ERROR;
+    dest->state = (struct internal_state FAR *) ds;
+    zmemcpy(ds, ss, sizeof(deflate_state));
+    ds->strm = dest;
+
+    ds->window = (Bytef *) ZALLOC(dest, ds->w_size, 2*sizeof(Byte));
+    ds->prev   = (Posf *)  ZALLOC(dest, ds->w_size, sizeof(Pos));
+    ds->head   = (Posf *)  ZALLOC(dest, ds->hash_size, sizeof(Pos));
+    overlay = (ushf *) ZALLOC(dest, ds->lit_bufsize, sizeof(ush)+2);
+    ds->pending_buf = (uchf *) overlay;
+
+    if (ds->window == Z_NULL || ds->prev == Z_NULL || ds->head == Z_NULL ||
+        ds->pending_buf == Z_NULL) {
+        deflateEnd (dest);
+        return Z_MEM_ERROR;
+    }
+    /* following zmemcpy do not work for 16-bit MSDOS */
+    zmemcpy(ds->window, ss->window, ds->w_size * 2 * sizeof(Byte));
+    zmemcpy(ds->prev, ss->prev, ds->w_size * sizeof(Pos));
+    zmemcpy(ds->head, ss->head, ds->hash_size * sizeof(Pos));
+    zmemcpy(ds->pending_buf, ss->pending_buf, (uInt)ds->pending_buf_size);
+
+    ds->pending_out = ds->pending_buf + (ss->pending_out - ss->pending_buf);
+    ds->d_buf = overlay + ds->lit_bufsize/sizeof(ush);
+    ds->l_buf = ds->pending_buf + (1+sizeof(ush))*ds->lit_bufsize;
+
+    ds->l_desc.dyn_tree = ds->dyn_ltree;
+    ds->d_desc.dyn_tree = ds->dyn_dtree;
+    ds->bl_desc.dyn_tree = ds->bl_tree;
+
+    return Z_OK;
+#endif /* MAXSEG_64K */
+}
+
+/* ===========================================================================
+ * Read a new buffer from the current input stream, update the adler32
+ * and total number of bytes read.  All deflate() input goes through
+ * this function so some applications may wish to modify it to avoid
+ * allocating a large strm->next_in buffer and copying from it.
+ * (See also flush_pending()).
+ */
+local int read_buf(strm, buf, size)
+    z_streamp strm;
+    Bytef *buf;
+    unsigned size;
+{
+    unsigned len = strm->avail_in;
+
+    if (len > size) len = size;
+    if (len == 0) return 0;
+
+    strm->avail_in  -= len;
+
+    if (strm->state->wrap == 1) {
+        strm->adler = adler32(strm->adler, strm->next_in, len);
+    }
+#ifdef GZIP
+    else if (strm->state->wrap == 2) {
+        strm->adler = crc32(strm->adler, strm->next_in, len);
+    }
+#endif
+    zmemcpy(buf, strm->next_in, len);
+    strm->next_in  += len;
+    strm->total_in += len;
+
+    return (int)len;
+}
+
+/* ===========================================================================
+ * Initialize the "longest match" routines for a new zlib stream
+ */
+local void lm_init (s)
+    deflate_state *s;
+{
+    s->window_size = (ulg)2L*s->w_size;
+
+    CLEAR_HASH(s);
+
+    /* Set the default configuration parameters:
+     */
+    s->max_lazy_match   = configuration_table[s->level].max_lazy;
+    s->good_match       = configuration_table[s->level].good_length;
+    s->nice_match       = configuration_table[s->level].nice_length;
+    s->max_chain_length = configuration_table[s->level].max_chain;
+
+    s->strstart = 0;
+    s->block_start = 0L;
+    s->lookahead = 0;
+    s->match_length = s->prev_length = MIN_MATCH-1;
+    s->match_available = 0;
+    s->ins_h = 0;
+#ifndef FASTEST
+#ifdef ASMV
+    match_init(); /* initialize the asm code */
+#endif
+#endif
+}
+
+#ifndef FASTEST
+/* ===========================================================================
+ * Set match_start to the longest match starting at the given string and
+ * return its length. Matches shorter or equal to prev_length are discarded,
+ * in which case the result is equal to prev_length and match_start is
+ * garbage.
+ * IN assertions: cur_match is the head of the hash chain for the current
+ *   string (strstart) and its distance is <= MAX_DIST, and prev_length >= 1
+ * OUT assertion: the match length is not greater than s->lookahead.
+ */
+#ifndef ASMV
+/* For 80x86 and 680x0, an optimized version will be provided in match.asm or
+ * match.S. The code will be functionally equivalent.
+ */
+local uInt longest_match(s, cur_match)
+    deflate_state *s;
+    IPos cur_match;                             /* current match */
+{
+    unsigned chain_length = s->max_chain_length;/* max hash chain length */
+    register Bytef *scan = s->window + s->strstart; /* current string */
+    register Bytef *match;                       /* matched string */
+    register int len;                           /* length of current match */
+    int best_len = s->prev_length;              /* best match length so far */
+    int nice_match = s->nice_match;             /* stop if match long enough */
+    IPos limit = s->strstart > (IPos)MAX_DIST(s) ?
+        s->strstart - (IPos)MAX_DIST(s) : NIL;
+    /* Stop when cur_match becomes <= limit. To simplify the code,
+     * we prevent matches with the string of window index 0.
+     */
+    Posf *prev = s->prev;
+    uInt wmask = s->w_mask;
+
+#ifdef UNALIGNED_OK
+    /* Compare two bytes at a time. Note: this is not always beneficial.
+     * Try with and without -DUNALIGNED_OK to check.
+     */
+    register Bytef *strend = s->window + s->strstart + MAX_MATCH - 1;
+    register ush scan_start = *(ushf*)scan;
+    register ush scan_end   = *(ushf*)(scan+best_len-1);
+#else
+    register Bytef *strend = s->window + s->strstart + MAX_MATCH;
+    register Byte scan_end1  = scan[best_len-1];
+    register Byte scan_end   = scan[best_len];
+#endif
+
+    /* The code is optimized for HASH_BITS >= 8 and MAX_MATCH-2 multiple of 16.
+     * It is easy to get rid of this optimization if necessary.
+     */
+    Assert(s->hash_bits >= 8 && MAX_MATCH == 258, "Code too clever");
+
+    /* Do not waste too much time if we already have a good match: */
+    if (s->prev_length >= s->good_match) {
+        chain_length >>= 2;
+    }
+    /* Do not look for matches beyond the end of the input. This is necessary
+     * to make deflate deterministic.
+     */
+    if ((uInt)nice_match > s->lookahead) nice_match = s->lookahead;
+
+    Assert((ulg)s->strstart <= s->window_size-MIN_LOOKAHEAD, "need lookahead");
+
+    do {
+        Assert(cur_match < s->strstart, "no future");
+        match = s->window + cur_match;
+
+        /* Skip to next match if the match length cannot increase
+         * or if the match length is less than 2.  Note that the checks below
+         * for insufficient lookahead only occur occasionally for performance
+         * reasons.  Therefore uninitialized memory will be accessed, and
+         * conditional jumps will be made that depend on those values.
+         * However the length of the match is limited to the lookahead, so
+         * the output of deflate is not affected by the uninitialized values.
+         */
+#if (defined(UNALIGNED_OK) && MAX_MATCH == 258)
+        /* This code assumes sizeof(unsigned short) == 2. Do not use
+         * UNALIGNED_OK if your compiler uses a different size.
+         */
+        if (*(ushf*)(match+best_len-1) != scan_end ||
+            *(ushf*)match != scan_start) continue;
+
+        /* It is not necessary to compare scan[2] and match[2] since they are
+         * always equal when the other bytes match, given that the hash keys
+         * are equal and that HASH_BITS >= 8. Compare 2 bytes at a time at
+         * strstart+3, +5, ... up to strstart+257. We check for insufficient
+         * lookahead only every 4th comparison; the 128th check will be made
+         * at strstart+257. If MAX_MATCH-2 is not a multiple of 8, it is
+         * necessary to put more guard bytes at the end of the window, or
+         * to check more often for insufficient lookahead.
+         */
+        Assert(scan[2] == match[2], "scan[2]?");
+        scan++, match++;
+        do {
+        } while (*(ushf*)(scan+=2) == *(ushf*)(match+=2) &&
+                 *(ushf*)(scan+=2) == *(ushf*)(match+=2) &&
+                 *(ushf*)(scan+=2) == *(ushf*)(match+=2) &&
+                 *(ushf*)(scan+=2) == *(ushf*)(match+=2) &&
+                 scan < strend);
+        /* The funny "do {}" generates better code on most compilers */
+
+        /* Here, scan <= window+strstart+257 */
+        Assert(scan <= s->window+(unsigned)(s->window_size-1), "wild scan");
+        if (*scan == *match) scan++;
+
+        len = (MAX_MATCH - 1) - (int)(strend-scan);
+        scan = strend - (MAX_MATCH-1);
+
+#else /* UNALIGNED_OK */
+
+        if (match[best_len]   != scan_end  ||
+            match[best_len-1] != scan_end1 ||
+            *match            != *scan     ||
+            *++match          != scan[1])      continue;
+
+        /* The check at best_len-1 can be removed because it will be made
+         * again later. (This heuristic is not always a win.)
+         * It is not necessary to compare scan[2] and match[2] since they
+         * are always equal when the other bytes match, given that
+         * the hash keys are equal and that HASH_BITS >= 8.
+         */
+        scan += 2, match++;
+        Assert(*scan == *match, "match[2]?");
+
+        /* We check for insufficient lookahead only every 8th comparison;
+         * the 256th check will be made at strstart+258.
+         */
+        do {
+        } while (*++scan == *++match && *++scan == *++match &&
+                 *++scan == *++match && *++scan == *++match &&
+                 *++scan == *++match && *++scan == *++match &&
+                 *++scan == *++match && *++scan == *++match &&
+                 scan < strend);
+
+        Assert(scan <= s->window+(unsigned)(s->window_size-1), "wild scan");
+
+        len = MAX_MATCH - (int)(strend - scan);
+        scan = strend - MAX_MATCH;
+
+#endif /* UNALIGNED_OK */
+
+        if (len > best_len) {
+            s->match_start = cur_match;
+            best_len = len;
+            if (len >= nice_match) break;
+#ifdef UNALIGNED_OK
+            scan_end = *(ushf*)(scan+best_len-1);
+#else
+            scan_end1  = scan[best_len-1];
+            scan_end   = scan[best_len];
+#endif
+        }
+    } while ((cur_match = prev[cur_match & wmask]) > limit
+             && --chain_length != 0);
+
+    if ((uInt)best_len <= s->lookahead) return (uInt)best_len;
+    return s->lookahead;
+}
+#endif /* ASMV */
+#endif /* FASTEST */
+
+/* ---------------------------------------------------------------------------
+ * Optimized version for level == 1 or strategy == Z_RLE only
+ */
+local uInt longest_match_fast(s, cur_match)
+    deflate_state *s;
+    IPos cur_match;                             /* current match */
+{
+    register Bytef *scan = s->window + s->strstart; /* current string */
+    register Bytef *match;                       /* matched string */
+    register int len;                           /* length of current match */
+    register Bytef *strend = s->window + s->strstart + MAX_MATCH;
+
+    /* The code is optimized for HASH_BITS >= 8 and MAX_MATCH-2 multiple of 16.
+     * It is easy to get rid of this optimization if necessary.
+     */
+    Assert(s->hash_bits >= 8 && MAX_MATCH == 258, "Code too clever");
+
+    Assert((ulg)s->strstart <= s->window_size-MIN_LOOKAHEAD, "need lookahead");
+
+    Assert(cur_match < s->strstart, "no future");
+
+    match = s->window + cur_match;
+
+    /* Return failure if the match length is less than 2:
+     */
+    if (match[0] != scan[0] || match[1] != scan[1]) return MIN_MATCH-1;
+
+    /* The check at best_len-1 can be removed because it will be made
+     * again later. (This heuristic is not always a win.)
+     * It is not necessary to compare scan[2] and match[2] since they
+     * are always equal when the other bytes match, given that
+     * the hash keys are equal and that HASH_BITS >= 8.
+     */
+    scan += 2, match += 2;
+    Assert(*scan == *match, "match[2]?");
+
+    /* We check for insufficient lookahead only every 8th comparison;
+     * the 256th check will be made at strstart+258.
+     */
+    do {
+    } while (*++scan == *++match && *++scan == *++match &&
+             *++scan == *++match && *++scan == *++match &&
+             *++scan == *++match && *++scan == *++match &&
+             *++scan == *++match && *++scan == *++match &&
+             scan < strend);
+
+    Assert(scan <= s->window+(unsigned)(s->window_size-1), "wild scan");
+
+    len = MAX_MATCH - (int)(strend - scan);
+
+    if (len < MIN_MATCH) return MIN_MATCH - 1;
+
+    s->match_start = cur_match;
+    return (uInt)len <= s->lookahead ? (uInt)len : s->lookahead;
+}
+
+#ifdef DEBUG
+/* ===========================================================================
+ * Check that the match at match_start is indeed a match.
+ */
+local void check_match(s, start, match, length)
+    deflate_state *s;
+    IPos start, match;
+    int length;
+{
+    /* check that the match is indeed a match */
+    if (zmemcmp(s->window + match,
+                s->window + start, length) != EQUAL) {
+        fprintf(stderr, " start %u, match %u, length %d\n",
+                start, match, length);
+        do {
+            fprintf(stderr, "%c%c", s->window[match++], s->window[start++]);
+        } while (--length != 0);
+        z_error("invalid match");
+    }
+    if (z_verbose > 1) {
+        fprintf(stderr,"\\[%d,%d]", start-match, length);
+        do { putc(s->window[start++], stderr); } while (--length != 0);
+    }
+}
+#else
+#  define check_match(s, start, match, length)
+#endif /* DEBUG */
+
+/* ===========================================================================
+ * Fill the window when the lookahead becomes insufficient.
+ * Updates strstart and lookahead.
+ *
+ * IN assertion: lookahead < MIN_LOOKAHEAD
+ * OUT assertions: strstart <= window_size-MIN_LOOKAHEAD
+ *    At least one byte has been read, or avail_in == 0; reads are
+ *    performed for at least two bytes (required for the zip translate_eol
+ *    option -- not supported here).
+ */
+local void fill_window(s)
+    deflate_state *s;
+{
+    register unsigned n, m;
+    register Posf *p;
+    unsigned more;    /* Amount of free space at the end of the window. */
+    uInt wsize = s->w_size;
+
+    do {
+        more = (unsigned)(s->window_size -(ulg)s->lookahead -(ulg)s->strstart);
+
+        /* Deal with !@#$% 64K limit: */
+        if (sizeof(int) <= 2) {
+            if (more == 0 && s->strstart == 0 && s->lookahead == 0) {
+                more = wsize;
+
+            } else if (more == (unsigned)(-1)) {
+                /* Very unlikely, but possible on 16 bit machine if
+                 * strstart == 0 && lookahead == 1 (input done a byte at time)
+                 */
+                more--;
             }
-        } else if (ray.origin()[i] > MaxB[i]) {
-            location[i]	= MaxB[i];
-            inside      = false;
+        }
 
-            // Calculate T distances to candidate planes
-            if (ray.direction()[i] != 0) {
-                MaxT[i] = (MaxB[i] - ray.origin()[i]) * invDir[i];
+        /* If the window is almost full and there is insufficient lookahead,
+         * move the upper half to the lower one to make room in the upper half.
+         */
+        if (s->strstart >= wsize+MAX_DIST(s)) {
+
+            zmemcpy(s->window, s->window+wsize, (unsigned)wsize);
+            s->match_start -= wsize;
+            s->strstart    -= wsize; /* we now have strstart >= MAX_DIST */
+            s->block_start -= (long) wsize;
+
+            /* Slide the hash table (could be avoided with 32 bit values
+               at the expense of memory usage). We slide even when level == 0
+               to keep the hash table consistent if we switch back to level > 0
+               later. (Using level 0 permanently is not an optimal usage of
+               zlib, so we don't care about this pathological case.)
+             */
+            /* %%% avoid this when Z_RLE */
+            n = s->hash_size;
+            p = &s->head[n];
+            do {
+                m = *--p;
+                *p = (Pos)(m >= wsize ? m-wsize : NIL);
+            } while (--n);
+
+            n = wsize;
+#ifndef FASTEST
+            p = &s->prev[n];
+            do {
+                m = *--p;
+                *p = (Pos)(m >= wsize ? m-wsize : NIL);
+                /* If n is not on any hash chain, prev[n] is garbage but
+                 * its value will never be used.
+                 */
+            } while (--n);
+#endif
+            more += wsize;
+        }
+        if (s->strm->avail_in == 0) return;
+
+        /* If there was no sliding:
+         *    strstart <= WSIZE+MAX_DIST-1 && lookahead <= MIN_LOOKAHEAD - 1 &&
+         *    more == window_size - lookahead - strstart
+         * => more >= window_size - (MIN_LOOKAHEAD-1 + WSIZE + MAX_DIST-1)
+         * => more >= window_size - 2*WSIZE + 2
+         * In the BIG_MEM or MMAP case (not yet supported),
+         *   window_size == input_size + MIN_LOOKAHEAD  &&
+         *   strstart + s->lookahead <= input_size => more >= MIN_LOOKAHEAD.
+         * Otherwise, window_size == 2*WSIZE so more >= 2.
+         * If there was sliding, more >= WSIZE. So in all cases, more >= 2.
+         */
+        Assert(more >= 2, "more < 2");
+
+        n = read_buf(s->strm, s->window + s->strstart + s->lookahead, more);
+        s->lookahead += n;
+
+        /* Initialize the hash value now that we have some input: */
+        if (s->lookahead >= MIN_MATCH) {
+            s->ins_h = s->window[s->strstart];
+            UPDATE_HASH(s, s->ins_h, s->window[s->strstart+1]);
+#if MIN_MATCH != 3
+            Call UPDATE_HASH() MIN_MATCH-3 more times
+#endif
+        }
+        /* If the whole input has less than MIN_MATCH bytes, ins_h is garbage,
+         * but this is not important since only literal bytes will be emitted.
+         */
+
+    } while (s->lookahead < MIN_LOOKAHEAD && s->strm->avail_in != 0);
+}
+
+/* ===========================================================================
+ * Flush the current block, with given end-of-file flag.
+ * IN assertion: strstart is set to the end of the current match.
+ */
+#define FLUSH_BLOCK_ONLY(s, eof) { \
+   _tr_flush_block(s, (s->block_start >= 0L ? \
+                   (charf *)&s->window[(unsigned)s->block_start] : \
+                   (charf *)Z_NULL), \
+                (ulg)((long)s->strstart - s->block_start), \
+                (eof)); \
+   s->block_start = s->strstart; \
+   flush_pending(s->strm); \
+   Tracev((stderr,"[FLUSH]")); \
+}
+
+/* Same but force premature exit if necessary. */
+#define FLUSH_BLOCK(s, eof) { \
+   FLUSH_BLOCK_ONLY(s, eof); \
+   if (s->strm->avail_out == 0) return (eof) ? finish_started : need_more; \
+}
+
+/* ===========================================================================
+ * Copy without compression as much as possible from the input stream, return
+ * the current block state.
+ * This function does not insert new strings in the dictionary since
+ * uncompressible data is probably not useful. This function is used
+ * only for the level=0 compression option.
+ * NOTE: this function should be optimized to avoid extra copying from
+ * window to pending_buf.
+ */
+local block_state deflate_stored(s, flush)
+    deflate_state *s;
+    int flush;
+{
+    /* Stored blocks are limited to 0xffff bytes, pending_buf is limited
+     * to pending_buf_size, and each stored block has a 5 byte header:
+     */
+    ulg max_block_size = 0xffff;
+    ulg max_start;
+
+    if (max_block_size > s->pending_buf_size - 5) {
+        max_block_size = s->pending_buf_size - 5;
+    }
+
+    /* Copy as much as possible from input to output: */
+    for (;;) {
+        /* Fill the window as much as possible: */
+        if (s->lookahead <= 1) {
+
+            Assert(s->strstart < s->w_size+MAX_DIST(s) ||
+                   s->block_start >= (long)s->w_size, "slide too late");
+
+            fill_window(s);
+            if (s->lookahead == 0 && flush == Z_NO_FLUSH) return need_more;
+
+            if (s->lookahead == 0) break; /* flush the current block */
+        }
+        Assert(s->block_start >= 0L, "block gone");
+
+        s->strstart += s->lookahead;
+        s->lookahead = 0;
+
+        /* Emit a stored block if pending_buf will be full: */
+        max_start = s->block_start + max_block_size;
+        if (s->strstart == 0 || (ulg)s->strstart >= max_start) {
+            /* strstart == 0 is possible when wraparound on 16-bit machine */
+            s->lookahead = (uInt)(s->strstart - max_start);
+            s->strstart = (uInt)max_start;
+            FLUSH_BLOCK(s, 0);
+        }
+        /* Flush if we may have to slide, otherwise block_start may become
+         * negative and the data will be gone:
+         */
+        if (s->strstart - (uInt)s->block_start >= MAX_DIST(s)) {
+            FLUSH_BLOCK(s, 0);
+        }
+    }
+    FLUSH_BLOCK(s, flush == Z_FINISH);
+    return flush == Z_FINISH ? finish_done : block_done;
+}
+
+/* ===========================================================================
+ * Compress as much as possible from the input stream, return the current
+ * block state.
+ * This function does not perform lazy evaluation of matches and inserts
+ * new strings in the dictionary only for unmatched strings or for short
+ * matches. It is used only for the fast compression options.
+ */
+local block_state deflate_fast(s, flush)
+    deflate_state *s;
+    int flush;
+{
+    IPos hash_head = NIL; /* head of the hash chain */
+    int bflush;           /* set if current block must be flushed */
+
+    for (;;) {
+        /* Make sure that we always have enough lookahead, except
+         * at the end of the input file. We need MAX_MATCH bytes
+         * for the next match, plus MIN_MATCH bytes to insert the
+         * string following the next match.
+         */
+        if (s->lookahead < MIN_LOOKAHEAD) {
+            fill_window(s);
+            if (s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH) {
+                return need_more;
             }
+            if (s->lookahead == 0) break; /* flush the current block */
         }
-    }
 
-    if (inside) {
-    	// Ray origin inside bounding box
-        location = ray.origin();
-        return true;
-    }
-    
-    // Get largest of the maxT's for final choice of intersection
-    int WhichPlane = 0;
-    if (MaxT[1] > MaxT[WhichPlane]) {
-        WhichPlane = 1;
-    }
+        /* Insert the string window[strstart .. strstart+2] in the
+         * dictionary, and set hash_head to the head of the hash chain:
+         */
+        if (s->lookahead >= MIN_MATCH) {
+            INSERT_STRING(s, s->strstart, hash_head);
+        }
 
-    if (MaxT[2] > MaxT[WhichPlane]) {
-        WhichPlane = 2;
-    }
-
-    // Check final candidate actually inside box
-    if (MaxT[WhichPlane] < 0.0f) {
-        // Miss the box
-        return false;
-    }
-
-    for (int i = 0; i < 3; ++i) {
-        if (i != WhichPlane) {
-            location[i] = ray.origin()[i] + MaxT[WhichPlane] * ray.direction()[i];
-            if ((location[i] < MinB[i]) ||
-                (location[i] > MaxB[i])) {
-                // On this plane we're outside the box extents, so
-                // we miss the box
-                return false;
+        /* Find the longest match, discarding those <= prev_length.
+         * At this point we have always match_length < MIN_MATCH
+         */
+        if (hash_head != NIL && s->strstart - hash_head <= MAX_DIST(s)) {
+            /* To simplify the code, we prevent matches with the string
+             * of window index 0 (in particular we have to avoid a match
+             * of the string with itself at the start of the input file).
+             */
+#ifdef FASTEST
+            if ((s->strategy != Z_HUFFMAN_ONLY && s->strategy != Z_RLE) ||
+                (s->strategy == Z_RLE && s->strstart - hash_head == 1)) {
+                s->match_length = longest_match_fast (s, hash_head);
             }
-        }
-    }
-    
-    return true;
-}
-
-float CollisionDetection::collisionTimeForMovingPointFixedSphere(
-    const Vector3&  point,
-    const Vector3&  velocity,
-    const Sphere&   sphere,
-    Vector3&        location,
-    Vector3&        outNormal,
-    bool            solid) {
-
-    if (solid && sphere.contains(point)) {
-        location = point;
-        outNormal = (point - sphere.center).direction();
-        return 0.0f;
-    }
-
-    float          speed = velocity.magnitude();
-    const Vector3& direction = velocity / speed;
-
-    // length of the axis between the start and the sphere
-    const Vector3& L = sphere.center - point;
-    float          d = L.dot(direction);
-
-    float L2 = L.dot(L);
-    float R2 = square(sphere.radius);
-    float D2 = square(d);
-
-    if ((d < 0.0f) && (L2 > R2)) {
-        location = Vector3::inf();
-        return finf();
-    }
-
-    const float M2 = L2 - D2;
-
-    if (M2 > R2) {
-        location = Vector3::inf();
-        return finf();
-    }
-
-    float q = sqrt(R2 - M2);
-    float time;
-
-    if (L2 > R2) {
-        time = d - q;
-    } else {
-        time = d + q;
-    }
-
-    time /= speed;
-
-    location  = point + velocity * time;
-    outNormal = (location - sphere.center).direction();
-
-    return time;
-}
-
-
-float CollisionDetection::collisionTimeForMovingSphereFixedSphere(
-    const Sphere&   movingSphere,
-    const Vector3&  velocity,
-    const Sphere&   fixedSphere,
-    Vector3&        location,
-    Vector3&        outNormal) {
-
-    const Vector3& sep = (fixedSphere.center - movingSphere.center);
-    float sepLen = sep.squaredLength();
-    if (sepLen < square(movingSphere.radius + fixedSphere.radius)) {
-        // Interpenetrating
-        outNormal   = sep.directionOrZero();
-        location = fixedSphere.center - outNormal * fixedSphere.radius;
-        return 0;
-    }
-
-    float time = collisionTimeForMovingPointFixedSphere
-        (movingSphere.center, velocity, 
-         Sphere(fixedSphere.center, fixedSphere.radius + movingSphere.radius), 
-         location, outNormal);
-
-    if (time < finf()) {
-        // Location is now the center of the moving sphere at the collision time.
-        // Adjust for the size of the moving sphere.  Two spheres always collide
-        // along a line between their centers.
-        location += (location - fixedSphere.center) * movingSphere.radius / fixedSphere.radius;
-    }
-
-    return time;
-}
-
-
-/*
-float CollisionDetection::collisionTimeForMovingPointFixedTriangle(
-    const Vector3&			point,
-    const Vector3&			velocity,
-    const Triangle&       triangle,
-    Vector3&				outLocation,
-    Vector3&                outNormal) {
-
-    double time = collisionTimeForMovingPointFixedPlane(point, velocity, triangle.plane(), outLocation, outNormal);
-
-    if (time == finf()) {
-        // No collision with the plane of the triangle.
-        return finf();
-    }
-
-    if (isPointInsideTriangle(triangle.vertex(0), triangle.vertex(1), triangle.vertex(2), triangle.normal(), outLocation, triangle.primaryAxis())) {
-        // Collision occured inside the triangle
-        return time;
-    } else {
-        // Missed the triangle
-        outLocation = Vector3::inf();
-        return finf();
-    }
-}*/
-
-/*
-float CollisionDetection::collisionTimeForMovingPointFixedTriangle(
-    const Vector3& orig,
-    const Vector3& dir,
-    const Vector3& vert0,
-    const Vector3& vert1,
-    const Vector3& vert2) {
-
-    // Barycenteric coords
-    double u, v;
-    #define EPSILON 0.000001
-    #define CROSS(dest,v1,v2) \
-              dest[0]=v1[1]*v2[2]-v1[2]*v2[1]; \
-              dest[1]=v1[2]*v2[0]-v1[0]*v2[2]; \
-              dest[2]=v1[0]*v2[1]-v1[1]*v2[0];
-
-    #define DOT(v1,v2) (v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2])
-
-    #define SUB(dest,v1,v2) \
-              dest[0]=v1[0]-v2[0]; \
-              dest[1]=v1[1]-v2[1]; \
-              dest[2]=v1[2]-v2[2]; 
-
-    double edge1[3], edge2[3], tvec[3], pvec[3], qvec[3];
-    
-    // find vectors for two edges sharing vert0
-    SUB(edge1, vert1, vert0);
-    SUB(edge2, vert2, vert0);
-    
-    // begin calculating determinant - also used to calculate U parameter
-    CROSS(pvec, dir, edge2);
-    
-    // if determinant is near zero, ray lies in plane of triangle
-    const double det = DOT(edge1, pvec);
-    
-    if (det < EPSILON) {
-        return finf();
-    }
-    
-    // calculate distance from vert0 to ray origin
-    SUB(tvec, orig, vert0);
-    
-    // calculate U parameter and test bounds
-    u = DOT(tvec, pvec);
-    if ((u < 0.0) || (u > det)) {
-        // Hit the plane outside the triangle
-        return finf();
-    }
-    
-    // prepare to test V parameter
-    CROSS(qvec, tvec, edge1);
-    
-    // calculate V parameter and test bounds
-    v = DOT(dir, qvec);
-    if ((v < 0.0) || (u + v > det)) {
-        // Hit the plane outside the triangle
-        return finf();
-    }
-    
-    // calculate t, scale parameters, ray intersects triangle
-    // If we want u,v, we can compute this
-    // double t = DOT(edge2, qvec);
-    //const double inv_det = 1.0 / det;
-    //t *= inv_det;
-    //u *= inv_det;
-    //v *= inv_det;
-    // return t;
-
-    // Case where we don't need correct (u, v):
-
-    const double t = DOT(edge2, qvec);
-    
-    if (t >= 0) {
-        // Note that det must be positive
-        return t / det;
-    } else {
-        // We had to travel backwards in time to intersect
-        return finf();
-    }
-
-    #undef EPSILON
-    #undef CROSS
-    #undef DOT
-    #undef SUB
-}
-*/
-
-float CollisionDetection::collisionTimeForMovingPointFixedBox(
-    const Vector3&          point,
-    const Vector3&          velocity,
-    const Box&              box,
-    Vector3&                location,
-    Vector3&                outNormal) {
-
-    double    bestTime;
-
-    Vector3 normal;
-    Vector3 v[4];
-
-    // Prime the loop
-    int f = 0;
-    box.getFaceCorners(f, v[0], v[1], v[2], v[3]);
-    bestTime = collisionTimeForMovingPointFixedRectangle(point, velocity, v[0], v[1], v[2], v[3], location, normal);
-    outNormal = normal;
-
-    // Check other faces
-    for (f = 1; f < 6; ++f) {
-        Vector3 pos;
-        box.getFaceCorners(f, v[0], v[1], v[2], v[3]);
-        float time = collisionTimeForMovingPointFixedRectangle(point, velocity, v[0], v[1], v[2], v[3], pos, normal);
-        if (time < bestTime) {
-            bestTime = time;
-            outNormal = normal;
-            location = pos;
-        }
-    }
-
-    return bestTime;
-}
-
-
-float CollisionDetection::collisionTimeForMovingPointFixedAABox(
-    const Vector3&          origin,
-    const Vector3&          dir,
-    const AABox&            box,
-    Vector3&                location,
-    bool&                   Inside,
-    Vector3&                normal) {
-
-    if (collisionLocationForMovingPointFixedAABox(origin, dir, box, location, Inside, normal)) {
-        return (location - origin).magnitude();
-    } else {
-        return (float)finf();
-    }
-}
-
-
-bool CollisionDetection::collisionLocationForMovingPointFixedAABox(
-    const Vector3&          origin,
-    const Vector3&          dir,
-    const AABox&            box,
-    Vector3&                location,
-    bool&                   Inside,
-    Vector3&                normal) {
-
-    // Integer representation of a floating-point value.
-    #define IR(x)	((uint32&)x)
-
-    Inside = true;
-	const Vector3& MinB = box.low();
-	const Vector3& MaxB = box.high();
-	Vector3 MaxT(-1.0f, -1.0f, -1.0f);
-
-	// Find candidate planes.
-    for (int i = 0; i < 3; ++i) {
-		if (origin[i] < MinB[i]) {
-			location[i]	= MinB[i];
-			Inside      = false;
-
-			// Calculate T distances to candidate planes
-            if (IR(dir[i])) {
-                MaxT[i] = (MinB[i] - origin[i]) / dir[i];
+#else
+            if (s->strategy != Z_HUFFMAN_ONLY && s->strategy != Z_RLE) {
+                s->match_length = longest_match (s, hash_head);
+            } else if (s->strategy == Z_RLE && s->strstart - hash_head == 1) {
+                s->match_length = longest_match_fast (s, hash_head);
             }
-        } else if (origin[i] > MaxB[i]) {
-			location[i]	= MaxB[i];
-			Inside	    = false;
-
-			// Calculate T distances to candidate planes
-            if (IR(dir[i])) {
-                MaxT[i] = (MaxB[i] - origin[i]) / dir[i];
-            }
-		}
-	}
-
-	if (Inside) {
-    	// Ray origin inside bounding box
-        location = origin;
-		return false;
-	}
-
-	// Get largest of the maxT's for final choice of intersection
-	int WhichPlane = 0;
-    if (MaxT[1] > MaxT[WhichPlane])	{
-        WhichPlane = 1;
-    }
-
-    if (MaxT[2] > MaxT[WhichPlane])	{
-        WhichPlane = 2;
-    }
-
-	// Check final candidate actually inside box
-    if (IR(MaxT[WhichPlane]) & 0x80000000) {
-        // Miss the box
-        return false;
-    }
-
-	for (int i = 0; i < 3; ++i) {
-        if (i != WhichPlane) {
-			location[i] = origin[i] + MaxT[WhichPlane] * dir[i];
-            if ((location[i] < MinB[i]) ||
-                (location[i] > MaxB[i])) {
-                // On this plane we're outside the box extents, so
-                // we miss the box
-                return false;
-            }
-		}
-	}
-
-    // Choose the normal to be the plane normal facing into the ray
-    normal = Vector3::zero();
-    normal[WhichPlane] = (dir[WhichPlane] > 0) ? -1.0 : 1.0;
-
-	return true;
-
-    #undef IR
-}
-
-
-
-float CollisionDetection::collisionTimeForMovingPointFixedRectangle(
-    const Vector3&      point,
-    const Vector3&      velocity,
-    const Vector3&      v0,
-    const Vector3&      v1,
-    const Vector3&      v2,
-    const Vector3&      v3,
-    Vector3&            location,
-    Vector3&            outNormal) {
-
-    Plane plane = Plane(v0, v1, v2);
-
-    float time = collisionTimeForMovingPointFixedPlane(point, velocity, plane, location, outNormal);
-
-    if (time == finf()) {
-        // No collision is ever going to happen
-        return time;
-    }
-
-    if (isPointInsideRectangle(v0, v1, v2, v3, plane.normal(), location)) {
-        // The intersection point is inside the rectangle; that is the location where
-        // the point hits the rectangle.
-        return time;
-    } else {
-        return finf();
-    }
-}
-
-/** Used by findRayCapsuleIntersection.
-    @cite From magic software http://www.magic-software.com/Source/Intersection3D/MgcIntr3DLinCap.cpp */
-static int findRayCapsuleIntersectionAux(
-	const Vector3&		rkOrigin,
-	const Vector3&		rkDirection,
-    const Capsule&		rkCapsule,
-	double   			afT[2]) {
-
-	Vector3 capsuleDirection = rkCapsule.point(1) - rkCapsule.point(0);
-
-    // set up quadratic Q(t) = a*t^2 + 2*b*t + c
-    Vector3 kU, kV, kW = capsuleDirection;
-    float fWLength = kW.unitize();
-    Vector3::generateOrthonormalBasis(kU, kV, kW);
-    Vector3 kD(kU.dot(rkDirection), kV.dot(rkDirection), kW.dot(rkDirection));
-    float fDLength = kD.unitize();
-
-    float fEpsilon = 1e-6f;
-
-    float fInvDLength = 1.0f/fDLength;
-    Vector3 kDiff = rkOrigin - rkCapsule.point(0);
-    Vector3 kP(kU.dot(kDiff),kV.dot(kDiff),kW.dot(kDiff));
-    float fRadiusSqr = square(rkCapsule.radius());
-
-    float fInv, fA, fB, fC, fDiscr, fRoot, fT, fTmp;
-
-    // Is the velocity parallel to the capsule direction? (or zero)
-    if ((abs(kD.z) >= 1.0f - fEpsilon) || (fDLength < fEpsilon)) {
-
-        float fAxisDir = rkDirection.dot(capsuleDirection);
-
-        fDiscr = fRadiusSqr - kP.x*kP.x - kP.y*kP.y;
-        if ((fAxisDir < 0) && (fDiscr >= 0.0f)) {
-            // Velocity anti-parallel to the capsule direction
-            fRoot = sqrt(fDiscr);
-            afT[0] = (kP.z + fRoot)*fInvDLength;
-            afT[1] = -(fWLength - kP.z + fRoot)*fInvDLength;
-            return 2;
-        } else if ((fAxisDir > 0) && (fDiscr >= 0.0f)) {
-            // Velocity parallel to the capsule direction
-            fRoot = sqrt(fDiscr);
-            afT[0] = -(kP.z + fRoot)*fInvDLength;
-            afT[1] = (fWLength - kP.z + fRoot)*fInvDLength;
-            return 2;
-        } else {
-            // sphere heading wrong direction, or no velocity at all
-            return 0;
-        }   
-    }
-
-    // test intersection with infinite cylinder
-    fA = kD.x*kD.x + kD.y*kD.y;
-    fB = kP.x*kD.x + kP.y*kD.y;
-    fC = kP.x*kP.x + kP.y*kP.y - fRadiusSqr;
-    fDiscr = fB*fB - fA*fC;
-    if (fDiscr < 0.0f) {
-        // line does not intersect infinite cylinder
-        return 0;
-    }
-
-    int iQuantity = 0;
-
-    if (fDiscr > 0.0f) {
-        // line intersects infinite cylinder in two places
-        fRoot = sqrt(fDiscr);
-        fInv = 1.0f/fA;
-        fT = (-fB - fRoot)*fInv;
-        fTmp = kP.z + fT*kD.z;
-        if ((0.0f <= fTmp) && (fTmp <= fWLength)) {
-            afT[iQuantity] = fT * fInvDLength;
-            iQuantity++;
-		}
-
-        fT = (-fB + fRoot)*fInv;
-        fTmp = kP.z + fT*kD.z;
-        
-		if ((0.0f <= fTmp) && (fTmp <= fWLength)) {
-            afT[iQuantity++] = fT*fInvDLength;
-		}
-
-        if (iQuantity == 2) {
-            // line intersects capsule wall in two places
-            return 2;
+#endif
+            /* longest_match() or longest_match_fast() sets match_start */
         }
-    } else {
-        // line is tangent to infinite cylinder
-        fT = -fB/fA;
-        fTmp = kP.z + fT*kD.z;
-        if ((0.0f <= fTmp) && (fTmp <= fWLength)) {
-            afT[0] = fT*fInvDLength;
-            return 1;
-        }
-    }
-
-    // test intersection with bottom hemisphere
-    // fA = 1
-    fB += kP.z*kD.z;
-    fC += kP.z*kP.z;
-    fDiscr = fB*fB - fC;
-    if (fDiscr > 0.0f) {
-        fRoot = sqrt(fDiscr);
-        fT = -fB - fRoot;
-        fTmp = kP.z + fT*kD.z;
-        if (fTmp <= 0.0f) {
-            afT[iQuantity++] = fT*fInvDLength;
-            if (iQuantity == 2) {
-                return 2;
-			}
-        }
-
-        fT = -fB + fRoot;
-        fTmp = kP.z + fT*kD.z;
-        if (fTmp <= 0.0f) {
-            afT[iQuantity++] = fT*fInvDLength;
-            if (iQuantity == 2) {
-                return 2;
-			}
-        }
-    } else if (fDiscr == 0.0f) {
-        fT = -fB;
-        fTmp = kP.z + fT*kD.z;
-        if (fTmp <= 0.0f) {
-            afT[iQuantity++] = fT*fInvDLength;
-            if (iQuantity == 2) {
-                return 2;
-			}
-        }
-    }
-
-    // test intersection with top hemisphere
-    // fA = 1
-    fB -= kD.z*fWLength;
-    fC += fWLength*(fWLength - 2.0f*kP.z);
-
-    fDiscr = fB*fB - fC;
-    if (fDiscr > 0.0f) {
-        fRoot = sqrt(fDiscr);
-        fT = -fB - fRoot;
-        fTmp = kP.z + fT*kD.z;
-        if (fTmp >= fWLength) {
-            afT[iQuantity++] = fT*fInvDLength;
-            if (iQuantity == 2) {
-                return 2;
-			}
-        }
-
-        fT = -fB + fRoot;
-        fTmp = kP.z + fT*kD.z;
-        if (fTmp >= fWLength) {
-            afT[iQuantity++] = fT*fInvDLength;
-            if (iQuantity == 2) {
-                return 2;
-			}
-        }
-    } else if (fDiscr == 0.0f) {
-        fT = -fB;
-        fTmp = kP.z + fT*kD.z;
-        if (fTmp >= fWLength) {
-            afT[iQuantity++] = fT*fInvDLength;
-            if (iQuantity == 2) {
-                return 2;
-			}
-        }
-    }
-
-    return iQuantity;
-}
-
-
-/** Used by collisionTimeForMovingPointFixedCapsule.
-    @cite From magic software http://www.magic-software.com/Source/Intersection3D/MgcIntr3DLinCap.cpp
-	
-	@param rkRay      The ray
-	@param rkCapsule  The capsule
-	@param riQuantity The number of intersections found
-	@param akPoint    The intersections found
-	@return           True if there is at least one intersection
-	*/
-static bool findRayCapsuleIntersection(
-	const Ray&			rkRay,
-	const Capsule&		rkCapsule,
-	int&				riQuantity,
-	Vector3				akPoint[2]) {
-
-    double afT[2];
-    riQuantity = findRayCapsuleIntersectionAux(rkRay.origin(), rkRay.direction(), rkCapsule, afT);
-
-    // Only return intersections that occur in the future
-    int iClipQuantity = 0;
-	int i;
-    for (i = 0; i < riQuantity; ++i) {
-        if (afT[i] >= 0.0f) {
-            akPoint[iClipQuantity] = rkRay.origin() + afT[i] * rkRay.direction();
-            ++iClipQuantity;
-        }
-    }
-
-    riQuantity = iClipQuantity;
-    return (riQuantity > 0);
-}
-
-float CollisionDetection::collisionTimeForMovingPointFixedCapsule(
-	const Vector3&		_point,
-	const Vector3&		velocity,
-	const Capsule&		capsule,
-	Vector3&		    location,
-    Vector3&            outNormal) {
-
-	float timeScale = velocity.magnitude();
-
-    if (timeScale == 0.0f) {
-        timeScale = 1;
-    }
-
-	Vector3 direction = velocity / timeScale;
-	int numIntersections;
-	Vector3 intersection[2];
-	findRayCapsuleIntersection(Ray::fromOriginAndDirection(_point, direction), capsule, numIntersections, intersection);
-
-	if (numIntersections == 2) {
-		// A collision can only occur if there are two intersections.  If there is one
-		// intersection, that one is exiting the capsule.  
-
-		// Find the entering intersection (the first one that occurs).
-		float d0 = (intersection[0] - _point).squaredMagnitude();
-		float d1 = (intersection[1] - _point).squaredMagnitude();
-
-        // Compute the surface normal (if we aren't ignoring the result)
-        if (&outNormal != &ignore) {
-            Vector3 p2 = LineSegment::fromTwoPoints(capsule.point(0), capsule.point(1)).closestPoint(_point);
-            outNormal = (_point - p2).direction();
-        }
-
-        if (d0 > d1) {
-			location = intersection[1];
-			return sqrt(d1) / timeScale;
-		} else {
-			location = intersection[0];
-			return sqrt(d0) / timeScale;
-		}
-	} else {
-		// No entering intersection discovered; return no intersection.
-		location = Vector3::inf();
-		return finf();
-	}
-}
-
-
-float CollisionDetection::collisionTimeForMovingSphereFixedPlane(
-    const Sphere&		sphere,
-    const Vector3&		velocity,
-    const Plane&		plane,
-    Vector3&			location,
-    Vector3&            outNormal) {
-
-	if (sphere.radius == 0) {
-		// Optimization for zero radius sphere
-        return collisionTimeForMovingPointFixedPlane(sphere.center, velocity, plane, location, outNormal);
-	}
-
-    // The collision point on the sphere will be the point at
-    // center - (radius * normal).  Collisions only occur when
-    // the sphere is travelling into the plane.
-
-    double d;
-    plane.getEquation(outNormal, d);
-    
-    double vdotN = velocity.dot(outNormal);
-
-    if (fuzzyGt(vdotN, 0)) {
-        // No collision when the sphere is moving towards a backface.
-        location = Vector3::inf();
-        return (float)finf();
-    }
-
-    float cdotN = sphere.center.dot(outNormal);
-
-    // Distance from the center to the plane
-    float distance = cdotN + (float)d;
-
-    // Where is the collision on the sphere?
-    Vector3 point = sphere.center - (sphere.radius * outNormal);
-
-    if (fuzzyLe(G3D::abs(distance), sphere.radius)) {
-        // Already interpenetrating
-        location = sphere.center - distance * outNormal;
-        return 0;
-    } else {
-        return collisionTimeForMovingPointFixedPlane(point, velocity, plane, location, outNormal);
-    }
-
-}
-
-
-float CollisionDetection::collisionTimeForMovingSphereFixedTriangle(
-    const class Sphere&		sphere,
-    const Vector3&              velocity,
-    const Triangle&             triangle,
-    Vector3&                    outLocation,
-    float                       b[3]) {
-
-    Vector3 dummy;
-    float time = collisionTimeForMovingSphereFixedPlane(sphere, velocity, triangle.plane(), 
-                                                        outLocation, dummy);
-
-    if (time == finf()) {
-        // No collision is ever going to happen
-        return time;
-    }
-
-    // We will hit the plane of the triangle at *time*. See if
-    // the intersection point actually is within the triangle.
-
-    if (isPointInsideTriangle(triangle.vertex(0), triangle.vertex(1), triangle.vertex(2), triangle.normal(), 
-        outLocation, b, triangle.primaryAxis())) {
-
-        // The intersection point is inside the triangle; that is the location where
-        // the sphere hits the triangle.
-
-#       ifdef G3D_DEBUG
-        {
-            // Internal consistency checks
-            debugAssertM(b[0] >= 0.0 && b[0] <= 1.0f, "Intersection is outside triangle.");
-            debugAssertM(b[1] >= 0.0 && b[1] <= 1.0f, "Intersection is outside triangle.");
-            debugAssertM(b[2] >= 0.0 && b[2] <= 1.0f, "Intersection is outside triangle.");
-            Vector3 blend = 
-                b[0] * triangle.vertex(0) + 
-                b[1] * triangle.vertex(1) + 
-                b[2] * triangle.vertex(2);
-            debugAssertM(blend.fuzzyEq(outLocation), "Barycentric coords don't match intersection.");
-            // Call again so that we can debug the problem
-            // isPointInsideTriangle(triangle.vertex(0), triangle.vertex(1), triangle.vertex(2), triangle.normal(), 
-            // outLocation, b, triangle.primaryAxis());
-        }
-#       endif
-
-        return time;
-    }
-
-    // The collision (if it exists) is with a point on the triangle perimeter.
-    // Switch over to moving the triangle towards a fixed sphere and see at what time
-    // they will hit.
-
-    // Closest point on the triangle to the sphere intersection with the plane.
-    int edgeIndex;
-    const Vector3& point = closestPointOnTrianglePerimeter(triangle._vertex, triangle.edgeDirection,
-                                                           triangle.edgeMagnitude, outLocation, edgeIndex);
-
-    float t = 0;
-    if (! sphere.contains(point)) {
-        // The point is outside the sphere--see when it will hit
-        t = collisionTimeForMovingPointFixedSphere(point, -velocity, sphere, dummy, dummy);
-    }
-
-    if (t < finf()) {
-        outLocation = point;
-        // Compute Barycentric coords
-
-        // Index of the next vertex
-        static const int next[] = {1, 2, 0};
-
-        // Project along the edge in question.
-        // Avoid sqrt by taking advantage of the existing edgeDirection unit vector.
-        b[next[edgeIndex]] = (outLocation - triangle._vertex[edgeIndex]).dot
-            (triangle.edgeDirection[edgeIndex]) / triangle.edgeMagnitude[edgeIndex];
-
-        b[edgeIndex] = 1.0f - b[next[edgeIndex]];
-
-        b[next[next[edgeIndex]]] = 0.0f;
-
-#       ifdef G3D_DEBUG
-        {
-            // Internal consistency checks
-            for (int i = 0; i < 3; ++i) {
-                debugAssertM(fuzzyGe(b[i], 0.0f) && fuzzyLe(b[i], 1.0f), "Intersection is outside triangle.");
-            }
-            Vector3 blend = 
-                b[0] * triangle.vertex(0) + 
-                b[1] * triangle.vertex(1) + 
-                b[2] * triangle.vertex(2);
-            debugAssertM(blend.fuzzyEq(outLocation), 
-                format("Barycentric coords don't match intersection. %s != %s", 
-                    blend.toString().c_str(), 
-                    outLocation.toString().c_str()));    
-
-            // Call again so that we can debug the problem
-            collisionTimeForMovingPointFixedSphere(point, -velocity, sphere, dummy, dummy);
-        }
-#       endif
-
-        // Due to tiny roundoffs, these values might be slightly out of bounds.
-        // Ensure that they are legal.  Note that the above debugging code
-        // verifies that we are not clamping truly illegal values.
-        for (int i = 0; i < 3; ++i) {
-            b[i] = clamp(b[i], 0.0f, 1.0f);
-        }
-    }
-
-    // The collision occured at the point, if it occured.  The normal
-    // was the plane normal, computed above.
-
-    return t;
-}
-
-
-float CollisionDetection::collisionTimeForMovingSphereFixedRectangle(
-    const Sphere&       sphere,
-    const Vector3&      velocity,
-    const Vector3&      v0,
-    const Vector3&      v1,
-    const Vector3&      v2,
-    const Vector3&      v3,
-    Vector3&            location,
-    Vector3&            outNormal) {
-
-    Plane plane(v0, v1, v2);
-
-    float time = collisionTimeForMovingSphereFixedPlane(sphere, velocity, plane, location, outNormal);
-
-    if (time == finf()) {
-        // No collision is ever going to happen
-        return time;
-    }
-
-    if (isPointInsideRectangle(v0, v1, v2, v3, plane.normal(), location)) {
-        // The intersection point is inside the rectangle; that is the location where
-        // the sphere hits the rectangle.
-        return time;
-    }
-
-    // Switch over to moving the rectangle towards a fixed sphere and see at what time
-    // they will hit.
-
-    Vector3 point = closestPointToRectanglePerimeter(v0, v1, v2, v3, sphere.center);
-
-    Vector3 dummy;
-    double t = collisionTimeForMovingPointFixedSphere(point, -velocity, sphere, location, dummy);
-
-    // Normal is the plane normal, location is the original location of the point.
-    location = point;
-
-    return t;
-}
-
-
-float CollisionDetection::collisionTimeForMovingSphereFixedBox(
-    const Sphere&       sphere,
-    const Vector3&      velocity,
-    const Box&          box,
-    Vector3&            location,
-    Vector3&            outNormal) {
-
-    if (fixedSolidSphereIntersectsFixedSolidBox(sphere, box)) {
-        // TODO: Compute more useful location and normal?
-        location = sphere.center;
-        outNormal = Vector3::zero();
-        return 0;
-    }
-
-    float bestTime;
-
-    Vector3 v[4];
-    int f = 0;
-    box.getFaceCorners(f, v[0], v[1], v[2], v[3]);
-    bestTime = collisionTimeForMovingSphereFixedRectangle(sphere, velocity, v[0], v[1], v[2], v[3], location, outNormal);
-
-    for (f = 1; f < 6; ++f) {
-        Vector3 pos, normal;
-        box.getFaceCorners(f, v[0], v[1], v[2], v[3]);
-        float time = collisionTimeForMovingSphereFixedRectangle(sphere, velocity, v[0], v[1], v[2], v[3], pos, normal);
-        if (time < bestTime) {
-            bestTime  = time;
-            location  = pos;
-            outNormal = normal;
-        }
-    }
-
-    return bestTime;
-}
-
-
-float CollisionDetection::collisionTimeForMovingSphereFixedCapsule(
-	const Sphere&		sphere,
-	const Vector3&		velocity,
-	const Capsule&		capsule,
-	Vector3&		    location,
-    Vector3&            outNormal) {
-
-    (void)outNormal;
-
-	Capsule _capsule(capsule.point(0), capsule.point(1), capsule.radius() + sphere.radius);
-
-    Vector3 normal;
-	double time = collisionTimeForMovingPointFixedCapsule(sphere.center, velocity, _capsule, location, normal);
-    
-    if (time < finf()) {
-        // Location is now the position of the center of the sphere at the time of collision.
-        // We have to adjust the collision location for the size of the sphere.
-        location -= sphere.radius * normal;
-    }
-
-    return time;
-}
-
-
-Vector3 CollisionDetection::bounceDirection(
-    const Sphere&   sphere,
-    const Vector3&  velocity,
-    const float     collisionTime,
-    const Vector3&  collisionLocation,
-    const Vector3&  collisionNormal) {
-
-	// Location when the collision occurs
-    Vector3 sphereLocation  = sphere.center + velocity * collisionTime;
-
-    Vector3 normal          = (sphereLocation - collisionLocation);
-    if (fuzzyEq(normal.squaredMagnitude(), 0)) {
-        normal = collisionNormal;
-    } else {
-        normal.unitize();
-    }
-
-    Vector3 direction       = velocity.direction();
-
-    // Reflect direction about the normal
-    return direction - 2.0 * normal * normal.dot(direction);
-}
-
-
-Vector3 CollisionDetection::slideDirection(
-    const Sphere&   sphere,
-    const Vector3&  velocity,
-    const float     collisionTime,
-    const Vector3&  collisionLocation) {
-
-    Vector3 sphereLocation  = sphere.center + velocity * collisionTime;
-    Vector3 normal          = (sphereLocation - collisionLocation).direction();
-    Vector3 direction       = velocity.direction();
-
-    // subtract off the part in the direction away from the normal.
-    return direction - normal * normal.dot(direction);
-}
-
-
-Vector3 CollisionDetection::closestPointOnLineSegment(
-    const Vector3& v0,
-    const Vector3& v1,
-    const Vector3& point) {
-
-    const Vector3& edge       = (v1 - v0);
-    float          edgeLength = edge.magnitude();
-
-    if (edgeLength == 0) {
-        // The line segment is a point
-        return v0;
-    }
-
-    return closestPointOnLineSegment(v0, v1, edge / edgeLength, edgeLength, point);
-}
-
-
-Vector3 CollisionDetection::closestPointOnLineSegment(
-    const Vector3& v0,
-    const Vector3& v1,
-    const Vector3& edgeDirection,
-    const float    edgeLength,
-    const Vector3& point) {
-
-    debugAssert((v1 - v0).direction().fuzzyEq(edgeDirection));
-    debugAssert(fuzzyEq((v1 - v0).magnitude(), edgeLength));
-
-    // Vector towards the point
-    const Vector3& c = point - v0;
-
-    // Projected onto the edge itself
-    float t = edgeDirection.dot(c);
-
-    if (t <= 0) {
-        // Before the start
-        return v0;
-    } else if (t >= edgeLength) {
-        // After the end
-        return v1;
-    } else {
-        // At distance t along the edge
-        return v0 + edgeDirection * t;
-    }
-}
-
-
-Vector3 CollisionDetection::closestPointOnTrianglePerimeter(
-    const Vector3&			v0, 
-    const Vector3&			v1,
-    const Vector3&			v2,
-    const Vector3&			point) {
-    
-    Vector3 v[3] = {v0, v1, v2};
-    Vector3 edgeDirection[3] = {(v1 - v0), (v2 - v1), (v0 - v2)};
-    float   edgeLength[3];
-    
-    for (int i = 0; i < 3; ++i) {
-        edgeLength[i] = edgeDirection[i].magnitude();
-        edgeDirection[i] /= edgeLength[i];
-    }
-
-    int edgeIndex;
-    return closestPointOnTrianglePerimeter(v, edgeDirection, edgeLength, point, edgeIndex);
-}
-
-
-Vector3 CollisionDetection::closestPointOnTrianglePerimeter(
-    const Vector3   v[3],
-    const Vector3   edgeDirection[3],
-    const float     edgeLength[3],
-    const Vector3&  point,
-    int&            edgeIndex) {
-
-    // Closest point on segment from v[i] to v[i + 1]
-    Vector3 r[3];
-
-    // Distance squared from r[i] to point
-    float d[3];
-
-    // Index of the next point
-    static const int next[] = {1, 2, 0};
-
-    for (int i = 0; i < 3; ++i) {
-        r[i] = closestPointOnLineSegment(v[i], v[next[i]], edgeDirection[i], edgeLength[i], point);
-        d[i] = (r[i] - point).squaredMagnitude();
-    }
-
-    if (d[0] < d[1]) {
-        if (d[0] < d[2]) {
-            // Between v0 and v1
-            edgeIndex = 0;
-        } else {
-            // Between v2 and v0
-            edgeIndex = 2;
-        }
-    } else {
-        if (d[1] < d[2]) {
-            // Between v1 and v2
-            edgeIndex = 1;
-        } else {
-            // Between v2 and v0
-            edgeIndex = 2;
-        }
-    }
-
-#   ifdef G3D_DEBUG
-    {
-        Vector3 diff = r[edgeIndex] - v[edgeIndex];
-        debugAssertM(fuzzyEq(diff.direction().dot(edgeDirection[edgeIndex]), 1.0f) ||
-            diff.fuzzyEq(Vector3::zero()), "Point not on correct triangle edge");
-        float frac = diff.dot(edgeDirection[edgeIndex])/edgeLength[edgeIndex];
-        debugAssertM(frac >= -0.000001, "Point off low side of edge.");
-        debugAssertM(frac <= 1.000001, "Point off high side of edge.");
-    }
-#   endif
-
-    return r[edgeIndex];
-}
-
-
-bool CollisionDetection::isPointInsideTriangle(
-    const Vector3&			v0,
-    const Vector3&			v1,
-    const Vector3&			v2,
-    const Vector3&			normal,
-    const Vector3&			point,
-    float                   b[3],
-    Vector3::Axis           primaryAxis) {
-    
-    if (primaryAxis == Vector3::DETECT_AXIS) {
-        primaryAxis = normal.primaryAxis();
-    }
-
-    // Check that the point is within the triangle using a Barycentric
-    // coordinate test on a two dimensional plane.
-    int i, j;
-
-    switch (primaryAxis) {
-    case Vector3::X_AXIS:
-        i = Vector3::Y_AXIS;
-        j = Vector3::Z_AXIS;
-        break;
-
-    case Vector3::Y_AXIS:
-        i = Vector3::Z_AXIS;
-        j = Vector3::X_AXIS;
-        break;
-
-    case Vector3::Z_AXIS:
-        i = Vector3::X_AXIS;
-        j = Vector3::Y_AXIS;
-        break;
-
-    default:
-        // This case is here to supress a warning on Linux
-        i = j = 0;
-        debugAssertM(false, "Should not get here.");
-        break;
-    }
-
-    // See if all barycentric coordinates are non-negative
-
-    // 2D area via cross product
-#   define AREA2(d, e, f)  (((e)[i] - (d)[i]) * ((f)[j] - (d)[j]) - ((f)[i] - (d)[i]) * ((e)[j] - (d)[j]))
-
-    // Area of the polygon
-    float area = AREA2(v0, v1, v2);
-    if (area == 0) {
-        // This triangle has zero area, so the point must not
-        // be in it unless the triangle point is the test point.
-        return (v0 == point);
-    }
-
-    debugAssert(area != 0);
-
-    float invArea = 1.0f / area;
-
-    // (avoid normalization until absolutely necessary)
-    b[0] = AREA2(point, v1, v2) * invArea;
-
-    if ((b[0] < 0.0f) || (b[0] > 1.0f)) {
-        return false;
-    }
-
-    b[1] = AREA2(v0,  point, v2) * invArea;
-    if ((b[1] < 0.0f) || (b[1] > 1.0f)) {
-        return false;
-    }
-
-    b[2] = 1.0f - b[0] - b[1];
-
-#   undef AREA2
-
-    return (b[2] >= 0.0f) && (b[2] <= 1.0f);
-}
-
-
-bool CollisionDetection::isPointInsideRectangle(
-    const Vector3& v0,
-    const Vector3& v1,
-    const Vector3& v2,
-    const Vector3& v3,
-    const Vector3& normal,
-    const Vector3& point) {
-
-    return isPointInsideTriangle(v0, v1, v2, normal, point) ||
-           isPointInsideTriangle(v2, v3, v0, normal, point);  
-}
-
-
-Vector3 CollisionDetection::closestPointToRectanglePerimeter(
-    const Vector3& v0,
-    const Vector3& v1,
-    const Vector3& v2,
-    const Vector3& v3,
-    const Vector3& point) {
-
-    Vector3 r0 = closestPointOnLineSegment(v0, v1, point);
-    Vector3 r1 = closestPointOnLineSegment(v1, v2, point);
-    Vector3 r2 = closestPointOnLineSegment(v2, v3, point);
-    Vector3 r3 = closestPointOnLineSegment(v3, v0, point);
-
-    double d0 = (r0 - point).squaredMagnitude();
-    double d1 = (r1 - point).squaredMagnitude();
-    double d2 = (r2 - point).squaredMagnitude();
-    double d3 = (r3 - point).squaredMagnitude();
-
-    if (d0 < d1) {
-        if (d0 < d2) {
-            if (d0 < d3) {
-                return r0;
-            } else {
-                return r3;
+        if (s->match_length >= MIN_MATCH) {
+            check_match(s, s->strstart, s->match_start, s->match_length);
+
+            _tr_tally_dist(s, s->strstart - s->match_start,
+                           s->match_length - MIN_MATCH, bflush);
+
+            s->lookahead -= s->match_length;
+
+            /* Insert new strings in the hash table only if the match length
+             * is not too large. This saves time but degrades compression.
+             */
+#ifndef FASTEST
+            if (s->match_length <= s->max_insert_length &&
+                s->lookahead >= MIN_MATCH) {
+                s->match_length--; /* string at strstart already in table */
+                do {
+                    s->strstart++;
+                    INSERT_STRING(s, s->strstart, hash_head);
+                    /* strstart never exceeds WSIZE-MAX_MATCH, so there are
+                     * always MIN_MATCH bytes ahead.
+                     */
+                } while (--s->match_length != 0);
+                s->strstart++;
+            } else
+#endif
+            {
+                s->strstart += s->match_length;
+                s->match_length = 0;
+                s->ins_h = s->window[s->strstart];
+                UPDATE_HASH(s, s->ins_h, s->window[s->strstart+1]);
+#if MIN_MATCH != 3
+                Call UPDATE_HASH() MIN_MATCH-3 more times
+#endif
+                /* If lookahead < MIN_MATCH, ins_h is garbage, but it does not
+                 * matter since it will be recomputed at next deflate call.
+                 */
             }
         } else {
-            if (d2 < d3) {
-                return r2;
-            } else {
-                return r3;
+            /* No match, output a literal byte */
+            Tracevv((stderr,"%c", s->window[s->strstart]));
+            _tr_tally_lit (s, s->window[s->strstart], bflush);
+            s->lookahead--;
+            s->strstart++;
+        }
+        if (bflush) FLUSH_BLOCK(s, 0);
+    }
+    FLUSH_BLOCK(s, flush == Z_FINISH);
+    return flush == Z_FINISH ? finish_done : block_done;
+}
+
+#ifndef FASTEST
+/* ===========================================================================
+ * Same as above, but achieves better compression. We use a lazy
+ * evaluation for matches: a match is finally adopted only if there is
+ * no better match at the next window position.
+ */
+local block_state deflate_slow(s, flush)
+    deflate_state *s;
+    int flush;
+{
+    IPos hash_head = NIL;    /* head of hash chain */
+    int bflush;              /* set if current block must be flushed */
+
+    /* Process the input block. */
+    for (;;) {
+        /* Make sure that we always have enough lookahead, except
+         * at the end of the input file. We need MAX_MATCH bytes
+         * for the next match, plus MIN_MATCH bytes to insert the
+         * string following the next match.
+         */
+        if (s->lookahead < MIN_LOOKAHEAD) {
+            fill_window(s);
+            if (s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH) {
+                return need_more;
+            }
+            if (s->lookahead == 0) break; /* flush the current block */
+        }
+
+        /* Insert the string window[strstart .. strstart+2] in the
+         * dictionary, and set hash_head to the head of the hash chain:
+         */
+        if (s->lookahead >= MIN_MATCH) {
+            INSERT_STRING(s, s->strstart, hash_head);
+        }
+
+        /* Find the longest match, discarding those <= prev_length.
+         */
+        s->prev_length = s->match_length, s->prev_match = s->match_start;
+        s->match_length = MIN_MATCH-1;
+
+        if (hash_head != NIL && s->prev_length < s->max_lazy_match &&
+            s->strstart - hash_head <= MAX_DIST(s)) {
+            /* To simplify the code, we prevent matches with the string
+             * of window index 0 (in particular we have to avoid a match
+             * of the string with itself at the start of the input file).
+             */
+            if (s->strategy != Z_HUFFMAN_ONLY && s->strategy != Z_RLE) {
+                s->match_length = longest_match (s, hash_head);
+            } else if (s->strategy == Z_RLE && s->strstart - hash_head == 1) {
+                s->match_length = longest_match_fast (s, hash_head);
+            }
+            /* longest_match() or longest_match_fast() sets match_start */
+
+            if (s->match_length <= 5 && (s->strategy == Z_FILTERED
+#if TOO_FAR <= 32767
+                || (s->match_length == MIN_MATCH &&
+                    s->strstart - s->match_start > TOO_FAR)
+#endif
+                )) {
+
+                /* If prev_match is also MIN_MATCH, match_start is garbage
+                 * but we will ignore the current match anyway.
+                 */
+                s->match_length = MIN_MATCH-1;
             }
         }
-    } else {
-        if (d1 < d2) {
-            if (d1 < d3) {
-                return r1;
-            } else {
-                return r3;
+        /* If there was a match at the previous step and the current
+         * match is not better, output the previous match:
+         */
+        if (s->prev_length >= MIN_MATCH && s->match_length <= s->prev_length) {
+            uInt max_insert = s->strstart + s->lookahead - MIN_MATCH;
+            /* Do not insert strings in hash table beyond this. */
+
+            check_match(s, s->strstart-1, s->prev_match, s->prev_length);
+
+            _tr_tally_dist(s, s->strstart -1 - s->prev_match,
+                           s->prev_length - MIN_MATCH, bflush);
+
+            /* Insert in hash table all strings up to the end of the match.
+             * strstart-1 and strstart are already inserted. If there is not
+             * enough lookahead, the last two strings are not inserted in
+             * the hash table.
+             */
+            s->lookahead -= s->prev_length-1;
+            s->prev_length -= 2;
+            do {
+                if (++s->strstart <= max_insert) {
+                    INSERT_STRING(s, s->strstart, hash_head);
+                }
+            } while (--s->prev_length != 0);
+            s->match_available = 0;
+            s->match_length = MIN_MATCH-1;
+            s->strstart++;
+
+            if (bflush) FLUSH_BLOCK(s, 0);
+
+        } else if (s->match_available) {
+            /* If there was no match at the previous position, output a
+             * single literal. If there was a match but the current match
+             * is longer, truncate the previous match to a single literal.
+             */
+            Tracevv((stderr,"%c", s->window[s->strstart-1]));
+            _tr_tally_lit(s, s->window[s->strstart-1], bflush);
+            if (bflush) {
+                FLUSH_BLOCK_ONLY(s, 0);
             }
+            s->strstart++;
+            s->lookahead--;
+            if (s->strm->avail_out == 0) return need_more;
         } else {
-            if (d2 < d3) {
-                return r2;
-            } else {
-                return r3;
+            /* There is no previous match to compare with, wait for
+             * the next step to decide.
+             */
+            s->match_available = 1;
+            s->strstart++;
+            s->lookahead--;
+        }
+    }
+    Assert (flush != Z_NO_FLUSH, "no flush?");
+    if (s->match_available) {
+        Tracevv((stderr,"%c", s->window[s->strstart-1]));
+        _tr_tally_lit(s, s->window[s->strstart-1], bflush);
+        s->match_available = 0;
+    }
+    FLUSH_BLOCK(s, flush == Z_FINISH);
+    return flush == Z_FINISH ? finish_done : block_done;
+}
+#endif /* FASTEST */
+
+#if 0
+/* ===========================================================================
+ * For Z_RLE, simply look for runs of bytes, generate matches only of distance
+ * one.  Do not maintain a hash table.  (It will be regenerated if this run of
+ * deflate switches away from Z_RLE.)
+ */
+local block_state deflate_rle(s, flush)
+    deflate_state *s;
+    int flush;
+{
+    int bflush;         /* set if current block must be flushed */
+    uInt run;           /* length of run */
+    uInt max;           /* maximum length of run */
+    uInt prev;          /* byte at distance one to match */
+    Bytef *scan;        /* scan for end of run */
+
+    for (;;) {
+        /* Make sure that we always have enough lookahead, except
+         * at the end of the input file. We need MAX_MATCH bytes
+         * for the longest encodable run.
+         */
+        if (s->lookahead < MAX_MATCH) {
+            fill_window(s);
+            if (s->lookahead < MAX_MATCH && flush == Z_NO_FLUSH) {
+                return need_more;
             }
+            if (s->lookahead == 0) break; /* flush the current block */
         }
-    }
-}
 
-
-Vector3 CollisionDetection::closestPointToRectangle(
-    const Vector3&      v0,
-    const Vector3&      v1,
-    const Vector3&      v2,
-    const Vector3&      v3,
-    const Vector3&      point) {
-
-    Plane plane(v0, v1, v2);
-
-    // Project the point into the plane
-    double a, b, c, d;
-    plane.getEquation(a, b, c, d);
-    
-    double distance = a*point.x + b*point.y + c*point.z + d;
-    Vector3 planePoint = point - distance * plane.normal();
-
-    if (isPointInsideRectangle(v0, v1, v2, v3, plane.normal(), planePoint)) {
-        return planePoint;
-    } else {
-        return closestPointToRectanglePerimeter(v0, v1, v2, v3, planePoint);
-    }
-}
-
-
-bool CollisionDetection::fixedSolidSphereIntersectsFixedSolidSphere(
-    const Sphere&           sphere1,
-    const Sphere&           sphere2) {
-    
-    return (sphere1.center - sphere2.center).squaredMagnitude() < square(sphere1.radius + sphere2.radius);
-}
-
-
-bool CollisionDetection::fixedSolidSphereIntersectsFixedSolidBox(
-    const Sphere&           sphere,
-    const Box&              box) {
-
-    // If the center of the sphere is within the box, the whole
-    // sphere is within the box.
-    if (box.contains(sphere.center)) {
-        return true;
-    }
-
-    float r2 = square(sphere.radius);
-
-    // Find the closest point on the surface of the box to the sphere.  If
-    // this point is within the sphere's radius, they intersect.
-    int f;
-    for (f = 0; f < 6; ++f) {
-        Vector3 v0, v1, v2, v3;
-        box.getFaceCorners(f, v0, v1, v2, v3);
-        if ((closestPointToRectangle(v0, v1, v2, v3, sphere.center) - sphere.center).squaredMagnitude() <= r2) {
-            return true;
+        /* See how many times the previous byte repeats */
+        run = 0;
+        if (s->strstart > 0) {      /* if there is a previous byte, that is */
+            max = s->lookahead < MAX_MATCH ? s->lookahead : MAX_MATCH;
+            scan = s->window + s->strstart - 1;
+            prev = *scan++;
+            do {
+                if (*scan++ != prev)
+                    break;
+            } while (++run < max);
         }
-    }
 
-    return false;
-}
-
-
-bool CollisionDetection::movingSpherePassesThroughFixedBox(
-    const Sphere&           sphere,
-    const Vector3&          velocity,
-    const Box&              box,
-    double                  timeLimit) {
-
-    // If they intersect originally, they definitely pass through each other.
-    if (fixedSolidSphereIntersectsFixedSolidBox(sphere, box)) {
-        return true;
-    }
-
-    // See if the sphere hits the box during the time period.
-    Vector3 dummy1, dummy2;
-
-    return (collisionTimeForMovingSphereFixedBox(sphere, velocity, box, dummy1, dummy2) < timeLimit);
-}
-
-
-bool CollisionDetection::movingSpherePassesThroughFixedSphere(
-    const Sphere&           sphere,
-    const Vector3&          velocity,
-    const Sphere&           fixedSphere,
-    double                  timeLimit) {
-
-    if (fixedSolidSphereIntersectsFixedSolidSphere(sphere, fixedSphere)) {
-        return true;
-    }
-
-    // Extend the fixed sphere by the radius of the moving sphere
-    Sphere bigFixed(fixedSphere.center, fixedSphere.radius + sphere.radius);
-    Vector3 dummy1, dummy2;
-
-    // If the sphere collides with the other sphere during the time limit, it passes through
-    return (collisionTimeForMovingPointFixedSphere(sphere.center, velocity, bigFixed, dummy1, dummy2) < timeLimit);
-}
-
-
-
-bool CollisionDetection::fixedSolidSphereIntersectsFixedTriangle(
-    const Sphere&           sphere,
-    const Triangle&         triangle) {
-
-    // How far is the sphere from the plane of the triangle
-    const Plane& plane = triangle.plane();
-
-    // Does the closest point to the sphere center lie within the triangle?
-    Vector3 v = plane.closestPoint(sphere.center);
-
-    // Is the closest point to the plane within the sphere?
-    if ((v - sphere.center).squaredLength() <= square(sphere.radius)) {
-        // Is it also within the triangle?
-        float b[3];
-        if (isPointInsideTriangle(triangle.vertex(0), triangle.vertex(1), triangle.vertex(2), triangle.normal(), 
-                v, b, triangle.primaryAxis())){
-            // The closest point is inside the triangle
-            return true;
-        }
-    }
-
-    // ignored
-    int edgeIndex;
-
-    v = closestPointOnTrianglePerimeter(triangle._vertex, triangle.edgeDirection, triangle.edgeMagnitude, sphere.center, edgeIndex);
-
-    // Is the closest point within the sphere?
-    return ((v - sphere.center).squaredLength() <= square(sphere.radius));
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// AABB-triangle overlap test code based on Tomas Akenine-M�öller's
-// http://www.cs.lth.se/home/Tomas_Akenine_Moller/code/tribox3.txt
-// Ported 2008-12-28
-
-#define X 0
-#define Y 1
-#define Z 2
-
-#define FINDMINMAX(x0, x1, x2, min, max) \
-    min = max = x0;   \
-    if(x1<min) min=x1;\
-    if(x1>max) max=x1;\
-    if(x2<min) min=x2;\
-    if(x2>max) max=x2;
-
-static bool planeBoxOverlap(const Vector3& normal, const Vector3& vert, const Vector3& maxbox)  {
-    Vector3 vmin, vmax;
-    float v;
-    
-    // for each axis
-    for(int a = 0; a < 3; ++a) {
-        v = vert[a];
-        
-        if (normal[a] > 0.0f) {
-            vmin[a] = -maxbox[a] - v;
-            vmax[a] =  maxbox[a] - v;
+        /* Emit match if have run of MIN_MATCH or longer, else emit literal */
+        if (run >= MIN_MATCH) {
+            check_match(s, s->strstart, s->strstart - 1, run);
+            _tr_tally_dist(s, 1, run - MIN_MATCH, bflush);
+            s->lookahead -= run;
+            s->strstart += run;
         } else {
-            vmin[a] =  maxbox[a] - v;
-            vmax[a] = -maxbox[a] - v;
+            /* No match, output a literal byte */
+            Tracevv((stderr,"%c", s->window[s->strstart]));
+            _tr_tally_lit (s, s->window[s->strstart], bflush);
+            s->lookahead--;
+            s->strstart++;
         }
+        if (bflush) FLUSH_BLOCK(s, 0);
     }
-    
-    if (normal.dot(vmin) > 0.0f) {
-        return false;
-    } else if (normal.dot(vmax) >= 0.0f) {
-        return true;
-    } else {
-        return false;
-    }
+    FLUSH_BLOCK(s, flush == Z_FINISH);
+    return flush == Z_FINISH ? finish_done : block_done;
 }
-
-/*======================== X-tests ========================*/
-
-#define AXISTEST_X01(a, b, fa, fb)   \
-    p0 = a*v0[Y] - b*v0[Z];          \
-    p2 = a*v2[Y] - b*v2[Z];          \
-    if(p0<p2) {min=p0; max=p2;} else {min=p2; max=p0;} \
-    rad = fa * boxhalfsize[Y] + fb * boxhalfsize[Z];   \
-    if(min>rad || max<-rad) return false;
-
-
-#define AXISTEST_X2(a, b, fa, fb)    \
-    p0 = a*v0[Y] - b*v0[Z];          \
-    p1 = a*v1[Y] - b*v1[Z];          \
-    if(p0<p1) {min=p0; max=p1;} else {min=p1; max=p0;} \
-    rad = fa * boxhalfsize[Y] + fb * boxhalfsize[Z];   \
-    if(min>rad || max<-rad) return false;
-
-/*======================== Y-tests ========================*/
-
-#define AXISTEST_Y02(a, b, fa, fb)   \
-    p0 = -a*v0[X] + b*v0[Z];         \
-    p2 = -a*v2[X] + b*v2[Z];         \
-    if(p0<p2) {min=p0; max=p2;} else {min=p2; max=p0;} \
-    rad = fa * boxhalfsize[X] + fb * boxhalfsize[Z];   \
-    if(min>rad || max<-rad) return false;
-
-#define AXISTEST_Y1(a, b, fa, fb)   \
-    p0 = -a*v0[X] + b*v0[Z];        \
-    p1 = -a*v1[X] + b*v1[Z];        \
-    if(p0<p1) {min=p0; max=p1;} else {min=p1; max=p0;} \
-    rad = fa * boxhalfsize[X] + fb * boxhalfsize[Z];   \
-    if(min>rad || max<-rad) return false;
-
-/*======================== Z-tests ========================*/
-
-#define AXISTEST_Z12(a, b, fa, fb)   \
-    p1 = a*v1[X] - b*v1[Y];          \
-    p2 = a*v2[X] - b*v2[Y];          \
-    if(p2<p1) {min=p2; max=p1;} else {min=p1; max=p2;} \
-    rad = fa * boxhalfsize[X] + fb * boxhalfsize[Y];   \
-    if(min>rad || max<-rad) return false;
-
-#define AXISTEST_Z0(a, b, fa, fb)   \
-    p0 = a*v0[X] - b*v0[Y];   \
-    p1 = a*v1[X] - b*v1[Y];           \
-    if(p0<p1) {min=p0; max=p1;} else {min=p1; max=p0;} \
-    rad = fa * boxhalfsize[X] + fb * boxhalfsize[Y];   \
-    if(min>rad || max<-rad) return false;
-
-bool CollisionDetection::fixedSolidBoxIntersectsFixedTriangle(
-   const AABox& box, const Triangle& tri) {
-
-    //    use separating axis theorem to test overlap between triangle and box 
-    //    need to test for overlap in these directions: 
-    //    1) the {x,y,z}-directions (actually, since we use the AABB of the triangle 
-    //       we do not even need to test these) 
-    //    2) normal of the triangle 
-    //    3) crossproduct(edge from tri, {x,y,z}-direction) 
-    //       this gives 3x3=9 more tests 
-
-    // This is the fastest branch (on Sun).
-    // Move the triangle to the object space of the box
-    // Triangle vertices in box object space
-
-    const Vector3& boxcenter = box.center();
-    const Vector3& boxhalfsize = box.extent() * 0.5f;
-
-    const Vector3& v0 = tri.vertex(0) - boxcenter;
-    const Vector3& v1 = tri.vertex(1) - boxcenter;
-    const Vector3& v2 = tri.vertex(2) - boxcenter;
-
-    // Compute triangle edges in object space
-    const Vector3& e0 = v1 - v0;
-    const Vector3& e1 = v2 - v1;
-    const Vector3& e2 = v0 - v2;
-
-    // Bullet 3: 
-    //  test the 9 tests first (this was faster) 
-    float min,max,p0,p1,p2,rad;
-    Vector3 fe;
-
-    fe = abs(e0);
-    AXISTEST_X01(e0[Z], e0[Y], fe[Z], fe[Y]);
-    AXISTEST_Y02(e0[Z], e0[X], fe[Z], fe[X]);
-    AXISTEST_Z12(e0[Y], e0[X], fe[Y], fe[X]);
-    
-    fe = abs(e1);
-    AXISTEST_X01(e1[Z], e1[Y], fe[Z], fe[Y]);
-    AXISTEST_Y02(e1[Z], e1[X], fe[Z], fe[X]);
-    AXISTEST_Z0 (e1[Y], e1[X], fe[Y], fe[X]);
-
-    fe = abs(e2);
-    AXISTEST_X2 (e2[Z], e2[Y], fe[Z], fe[Y]);
-    AXISTEST_Y1 (e2[Z], e2[X], fe[Z], fe[X]);
-    AXISTEST_Z12(e2[Y], e2[X], fe[Y], fe[X]);
-
-    // Bullet 1: 
-    //  first test overlap in the {x,y,z}-directions 
-    //  find min, max of the triangle each direction, and test for overlap in 
-    //  that direction -- this is equivalent to testing a minimal AABB around
-    //  the triangle against the AABB 
-
-    // test in X-direction 
-    FINDMINMAX(v0[X],v1[X],v2[X],min,max);
-    if (min > boxhalfsize[X] || max < -boxhalfsize[X]) {
-        return false;
-    }
-
-    // test in Y-direction
-    FINDMINMAX(v0[Y],v1[Y],v2[Y],min,max);
-    if (min > boxhalfsize[Y] || max < -boxhalfsize[Y]) {
-        return false;
-    }
-
-    // test in Z-direction 
-    FINDMINMAX(v0[Z],v1[Z],v2[Z],min,max);
-    if (min > boxhalfsize[Z] || max < -boxhalfsize[Z]) {
-        return false;
-    }
-
-    // Bullet 2: 
-    //  test if the box intersects the plane of the triangle 
-    //  compute plane equation of triangle: normal*x+d=0 
-
-    if (! planeBoxOverlap(tri.normal(), v0, boxhalfsize)) {
-        return false;
-    }
-
-    // box and triangle overlap
-    return true;
-}
-#undef X
-#undef Y
-#undef Z
-
-////////////////////////////////////////////////////////////////////////////////
-
-
-} // namespace
-
-#ifdef _MSC_VER
-// Turn off fast floating-point optimizations
-#pragma float_control( pop )
-#pragma warning (pop)
 #endif

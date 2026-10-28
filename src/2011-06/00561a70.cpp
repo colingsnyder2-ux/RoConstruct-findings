@@ -1,2682 +1,1374 @@
-// from server: 31% by colin
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
-// roc-lib: libpng-1.2.5 pngwutil.c
+// roc-lib: zlib-1.2.3-winapi inflate.c
 
 // Candidate translation unit (score above; library headers required).
-
-/* pngwutil.c - utilities to write a PNG file
- *
- * libpng 1.2.5 - October 3, 2002
- * For conditions of distribution and use, see copyright notice in png.h
- * Copyright (c) 1998-2002 Glenn Randers-Pehrson
- * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
- * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
+/* inflate.c -- zlib decompression
+ * Copyright (C) 1995-2005 Mark Adler
+ * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#define PNG_INTERNAL
-#include "png.h"
-#ifdef PNG_WRITE_SUPPORTED
-
-/* Place a 32-bit number into a buffer in PNG byte order.  We work
- * with unsigned numbers for convenience, although one supported
- * ancillary chunk uses signed (two's complement) numbers.
- */
-void /* PRIVATE */
-png_save_uint_32(png_bytep buf, png_uint_32 i)
-{
-   buf[0] = (png_byte)((i >> 24) & 0xff);
-   buf[1] = (png_byte)((i >> 16) & 0xff);
-   buf[2] = (png_byte)((i >> 8) & 0xff);
-   buf[3] = (png_byte)(i & 0xff);
-}
-
-#if defined(PNG_WRITE_pCAL_SUPPORTED) || defined(PNG_WRITE_oFFs_SUPPORTED)
-/* The png_save_int_32 function assumes integers are stored in two's
- * complement format.  If this isn't the case, then this routine needs to
- * be modified to write data in two's complement format.
- */
-void /* PRIVATE */
-png_save_int_32(png_bytep buf, png_int_32 i)
-{
-   buf[0] = (png_byte)((i >> 24) & 0xff);
-   buf[1] = (png_byte)((i >> 16) & 0xff);
-   buf[2] = (png_byte)((i >> 8) & 0xff);
-   buf[3] = (png_byte)(i & 0xff);
-}
-#endif
-
-/* Place a 16-bit number into a buffer in PNG byte order.
- * The parameter is declared unsigned int, not png_uint_16,
- * just to avoid potential problems on pre-ANSI C compilers.
- */
-void /* PRIVATE */
-png_save_uint_16(png_bytep buf, unsigned int i)
-{
-   buf[0] = (png_byte)((i >> 8) & 0xff);
-   buf[1] = (png_byte)(i & 0xff);
-}
-
-/* Write a PNG chunk all at once.  The type is an array of ASCII characters
- * representing the chunk name.  The array must be at least 4 bytes in
- * length, and does not need to be null terminated.  To be safe, pass the
- * pre-defined chunk names here, and if you need a new one, define it
- * where the others are defined.  The length is the length of the data.
- * All the data must be present.  If that is not possible, use the
- * png_write_chunk_start(), png_write_chunk_data(), and png_write_chunk_end()
- * functions instead.
- */
-void PNGAPI
-png_write_chunk(png_structp png_ptr, png_bytep chunk_name,
-   png_bytep data, png_size_t length)
-{
-   png_write_chunk_start(png_ptr, chunk_name, (png_uint_32)length);
-   png_write_chunk_data(png_ptr, data, length);
-   png_write_chunk_end(png_ptr);
-}
-
-/* Write the start of a PNG chunk.  The type is the chunk type.
- * The total_length is the sum of the lengths of all the data you will be
- * passing in png_write_chunk_data().
- */
-void PNGAPI
-png_write_chunk_start(png_structp png_ptr, png_bytep chunk_name,
-   png_uint_32 length)
-{
-   png_byte buf[4];
-   png_debug2(0, "Writing %s chunk (%lu bytes)\n", chunk_name, length);
-
-   /* write the length */
-   png_save_uint_32(buf, length);
-   png_write_data(png_ptr, buf, (png_size_t)4);
-
-   /* write the chunk name */
-   png_write_data(png_ptr, chunk_name, (png_size_t)4);
-   /* reset the crc and run it over the chunk name */
-   png_reset_crc(png_ptr);
-   png_calculate_crc(png_ptr, chunk_name, (png_size_t)4);
-}
-
-/* Write the data of a PNG chunk started with png_write_chunk_start().
- * Note that multiple calls to this function are allowed, and that the
- * sum of the lengths from these calls *must* add up to the total_length
- * given to png_write_chunk_start().
- */
-void PNGAPI
-png_write_chunk_data(png_structp png_ptr, png_bytep data, png_size_t length)
-{
-   /* write the data, and run the CRC over it */
-   if (data != NULL && length > 0)
-   {
-      png_calculate_crc(png_ptr, data, length);
-      png_write_data(png_ptr, data, length);
-   }
-}
-
-/* Finish a chunk started with png_write_chunk_start(). */
-void PNGAPI
-png_write_chunk_end(png_structp png_ptr)
-{
-   png_byte buf[4];
-
-   /* write the crc */
-   png_save_uint_32(buf, png_ptr->crc);
-
-   png_write_data(png_ptr, buf, (png_size_t)4);
-}
-
-/* Simple function to write the signature.  If we have already written
- * the magic bytes of the signature, or more likely, the PNG stream is
- * being embedded into another stream and doesn't need its own signature,
- * we should call png_set_sig_bytes() to tell libpng how many of the
- * bytes have already been written.
- */
-void /* PRIVATE */
-png_write_sig(png_structp png_ptr)
-{
-   png_byte png_signature[8] = {137, 80, 78, 71, 13, 10, 26, 10};
-   /* write the rest of the 8 byte signature */
-   png_write_data(png_ptr, &png_signature[png_ptr->sig_bytes],
-      (png_size_t)8 - png_ptr->sig_bytes);
-   if(png_ptr->sig_bytes < 3)
-      png_ptr->mode |= PNG_HAVE_PNG_SIGNATURE;
-}
-
-#if defined(PNG_WRITE_TEXT_SUPPORTED) || defined(PNG_WRITE_iCCP_SUPPORTED)
 /*
- * This pair of functions encapsulates the operation of (a) compressing a
- * text string, and (b) issuing it later as a series of chunk data writes.
- * The compression_state structure is shared context for these functions
- * set up by the caller in order to make the whole mess thread-safe.
- */
-
-typedef struct
-{
-    char *input;   /* the uncompressed input data */
-    int input_len;   /* its length */
-    int num_output_ptr; /* number of output pointers used */
-    int max_output_ptr; /* size of output_ptr */
-    png_charpp output_ptr; /* array of pointers to output */
-} compression_state;
-
-/* compress given text into storage in the png_ptr structure */
-static int /* PRIVATE */
-png_text_compress(png_structp png_ptr,
-        png_charp text, png_size_t text_len, int compression,
-        compression_state *comp)
-{
-   int ret;
-
-   comp->num_output_ptr = comp->max_output_ptr = 0;
-   comp->output_ptr = NULL;
-   comp->input = NULL;
-
-   /* we may just want to pass the text right through */
-   if (compression == PNG_TEXT_COMPRESSION_NONE)
-   {
-       comp->input = text;
-       comp->input_len = text_len;
-       return((int)text_len);
-   }
-
-   if (compression >= PNG_TEXT_COMPRESSION_LAST)
-   {
-#if !defined(PNG_NO_STDIO) && !defined(_WIN32_WCE)
-      char msg[50];
-      sprintf(msg, "Unknown compression type %d", compression);
-      png_warning(png_ptr, msg);
-#else
-      png_warning(png_ptr, "Unknown compression type");
-#endif
-   }
-
-   /* We can't write the chunk until we find out how much data we have,
-    * which means we need to run the compressor first and save the
-    * output.  This shouldn't be a problem, as the vast majority of
-    * comments should be reasonable, but we will set up an array of
-    * malloc'd pointers to be sure.
-    *
-    * If we knew the application was well behaved, we could simplify this
-    * greatly by assuming we can always malloc an output buffer large
-    * enough to hold the compressed text ((1001 * text_len / 1000) + 12)
-    * and malloc this directly.  The only time this would be a bad idea is
-    * if we can't malloc more than 64K and we have 64K of random input
-    * data, or if the input string is incredibly large (although this
-    * wouldn't cause a failure, just a slowdown due to swapping).
-    */
-
-   /* set up the compression buffers */
-   png_ptr->zstream.avail_in = (uInt)text_len;
-   png_ptr->zstream.next_in = (Bytef *)text;
-   png_ptr->zstream.avail_out = (uInt)png_ptr->zbuf_size;
-   png_ptr->zstream.next_out = (Bytef *)png_ptr->zbuf;
-
-   /* this is the same compression loop as in png_write_row() */
-   do
-   {
-      /* compress the data */
-      ret = deflate(&png_ptr->zstream, Z_NO_FLUSH);
-      if (ret != Z_OK)
-      {
-         /* error */
-         if (png_ptr->zstream.msg != NULL)
-            png_error(png_ptr, png_ptr->zstream.msg);
-         else
-            png_error(png_ptr, "zlib error");
-      }
-      /* check to see if we need more room */
-      if (!png_ptr->zstream.avail_out && png_ptr->zstream.avail_in)
-      {
-         /* make sure the output array has room */
-         if (comp->num_output_ptr >= comp->max_output_ptr)
-         {
-            int old_max;
-
-            old_max = comp->max_output_ptr;
-            comp->max_output_ptr = comp->num_output_ptr + 4;
-            if (comp->output_ptr != NULL)
-            {
-               png_charpp old_ptr;
-
-               old_ptr = comp->output_ptr;
-               comp->output_ptr = (png_charpp)png_malloc(png_ptr,
-                  (png_uint_32)(comp->max_output_ptr * sizeof (png_charpp)));
-               png_memcpy(comp->output_ptr, old_ptr, old_max
-                  * sizeof (png_charp));
-               png_free(png_ptr, old_ptr);
-            }
-            else
-               comp->output_ptr = (png_charpp)png_malloc(png_ptr,
-                  (png_uint_32)(comp->max_output_ptr * sizeof (png_charp)));
-         }
-
-         /* save the data */
-         comp->output_ptr[comp->num_output_ptr] = (png_charp)png_malloc(png_ptr,
-            (png_uint_32)png_ptr->zbuf_size);
-         png_memcpy(comp->output_ptr[comp->num_output_ptr], png_ptr->zbuf,
-            png_ptr->zbuf_size);
-         comp->num_output_ptr++;
-
-         /* and reset the buffer */
-         png_ptr->zstream.avail_out = (uInt)png_ptr->zbuf_size;
-         png_ptr->zstream.next_out = png_ptr->zbuf;
-      }
-   /* continue until we don't have any more to compress */
-   } while (png_ptr->zstream.avail_in);
-
-   /* finish the compression */
-   do
-   {
-      /* tell zlib we are finished */
-      ret = deflate(&png_ptr->zstream, Z_FINISH);
-
-      if (ret == Z_OK)
-      {
-         /* check to see if we need more room */
-         if (!(png_ptr->zstream.avail_out))
-         {
-            /* check to make sure our output array has room */
-            if (comp->num_output_ptr >= comp->max_output_ptr)
-            {
-               int old_max;
-
-               old_max = comp->max_output_ptr;
-               comp->max_output_ptr = comp->num_output_ptr + 4;
-               if (comp->output_ptr != NULL)
-               {
-                  png_charpp old_ptr;
-
-                  old_ptr = comp->output_ptr;
-                  /* This could be optimized to realloc() */
-                  comp->output_ptr = (png_charpp)png_malloc(png_ptr,
-                     (png_uint_32)(comp->max_output_ptr * sizeof (png_charpp)));
-                  png_memcpy(comp->output_ptr, old_ptr,
-                     old_max * sizeof (png_charp));
-                  png_free(png_ptr, old_ptr);
-               }
-               else
-                  comp->output_ptr = (png_charpp)png_malloc(png_ptr,
-                     (png_uint_32)(comp->max_output_ptr * sizeof (png_charp)));
-            }
-
-            /* save off the data */
-            comp->output_ptr[comp->num_output_ptr] =
-               (png_charp)png_malloc(png_ptr, (png_uint_32)png_ptr->zbuf_size);
-            png_memcpy(comp->output_ptr[comp->num_output_ptr], png_ptr->zbuf,
-               png_ptr->zbuf_size);
-            comp->num_output_ptr++;
-
-            /* and reset the buffer pointers */
-            png_ptr->zstream.avail_out = (uInt)png_ptr->zbuf_size;
-            png_ptr->zstream.next_out = png_ptr->zbuf;
-         }
-      }
-      else if (ret != Z_STREAM_END)
-      {
-         /* we got an error */
-         if (png_ptr->zstream.msg != NULL)
-            png_error(png_ptr, png_ptr->zstream.msg);
-         else
-            png_error(png_ptr, "zlib error");
-      }
-   } while (ret != Z_STREAM_END);
-
-   /* text length is number of buffers plus last buffer */
-   text_len = png_ptr->zbuf_size * comp->num_output_ptr;
-   if (png_ptr->zstream.avail_out < png_ptr->zbuf_size)
-      text_len += png_ptr->zbuf_size - (png_size_t)png_ptr->zstream.avail_out;
-
-   return((int)text_len);
-}
-
-/* ship the compressed text out via chunk writes */
-static void /* PRIVATE */
-png_write_compressed_data_out(png_structp png_ptr, compression_state *comp)
-{
-   int i;
-
-   /* handle the no-compression case */
-   if (comp->input)
-   {
-       png_write_chunk_data(png_ptr, (png_bytep)comp->input,
-                            (png_size_t)comp->input_len);
-       return;
-   }
-
-   /* write saved output buffers, if any */
-   for (i = 0; i < comp->num_output_ptr; i++)
-   {
-      png_write_chunk_data(png_ptr,(png_bytep)comp->output_ptr[i],
-         png_ptr->zbuf_size);
-      png_free(png_ptr, comp->output_ptr[i]);
-      comp->output_ptr[i]=NULL;
-   }
-   if (comp->max_output_ptr != 0)
-      png_free(png_ptr, comp->output_ptr);
-      comp->output_ptr=NULL;
-   /* write anything left in zbuf */
-   if (png_ptr->zstream.avail_out < (png_uint_32)png_ptr->zbuf_size)
-      png_write_chunk_data(png_ptr, png_ptr->zbuf,
-         png_ptr->zbuf_size - png_ptr->zstream.avail_out);
-
-   /* reset zlib for another zTXt/iTXt or the image data */
-   deflateReset(&png_ptr->zstream);
-
-}
-#endif
-
-/* Write the IHDR chunk, and update the png_struct with the necessary
- * information.  Note that the rest of this code depends upon this
- * information being correct.
- */
-void /* PRIVATE */
-png_write_IHDR(png_structp png_ptr, png_uint_32 width, png_uint_32 height,
-   int bit_depth, int color_type, int compression_type, int filter_type,
-   int interlace_type)
-{
-#ifdef PNG_USE_LOCAL_ARRAYS
-   PNG_IHDR;
-#endif
-   png_byte buf[13]; /* buffer to store the IHDR info */
-
-   png_debug(1, "in png_write_IHDR\n");
-   /* Check that we have valid input data from the application info */
-   switch (color_type)
-   {
-      case PNG_COLOR_TYPE_GRAY:
-         switch (bit_depth)
-         {
-            case 1:
-            case 2:
-            case 4:
-            case 8:
-            case 16: png_ptr->channels = 1; break;
-            default: png_error(png_ptr,"Invalid bit depth for grayscale image");
-         }
-         break;
-      case PNG_COLOR_TYPE_RGB:
-         if (bit_depth != 8 && bit_depth != 16)
-            png_error(png_ptr, "Invalid bit depth for RGB image");
-         png_ptr->channels = 3;
-         break;
-      case PNG_COLOR_TYPE_PALETTE:
-         switch (bit_depth)
-         {
-            case 1:
-            case 2:
-            case 4:
-            case 8: png_ptr->channels = 1; break;
-            default: png_error(png_ptr, "Invalid bit depth for paletted image");
-         }
-         break;
-      case PNG_COLOR_TYPE_GRAY_ALPHA:
-         if (bit_depth != 8 && bit_depth != 16)
-            png_error(png_ptr, "Invalid bit depth for grayscale+alpha image");
-         png_ptr->channels = 2;
-         break;
-      case PNG_COLOR_TYPE_RGB_ALPHA:
-         if (bit_depth != 8 && bit_depth != 16)
-            png_error(png_ptr, "Invalid bit depth for RGBA image");
-         png_ptr->channels = 4;
-         break;
-      default:
-         png_error(png_ptr, "Invalid image color type specified");
-   }
-
-   if (compression_type != PNG_COMPRESSION_TYPE_BASE)
-   {
-      png_warning(png_ptr, "Invalid compression type specified");
-      compression_type = PNG_COMPRESSION_TYPE_BASE;
-   }
-
-   /* Write filter_method 64 (intrapixel differencing) only if
-    * 1. Libpng was compiled with PNG_MNG_FEATURES_SUPPORTED and
-    * 2. Libpng did not write a PNG signature (this filter_method is only
-    *    used in PNG datastreams that are embedded in MNG datastreams) and
-    * 3. The application called png_permit_mng_features with a mask that
-    *    included PNG_FLAG_MNG_FILTER_64 and
-    * 4. The filter_method is 64 and
-    * 5. The color_type is RGB or RGBA
-    */
-   if (
-#if defined(PNG_MNG_FEATURES_SUPPORTED)
-      !((png_ptr->mng_features_permitted & PNG_FLAG_MNG_FILTER_64) &&
-      ((png_ptr->mode&PNG_HAVE_PNG_SIGNATURE) == 0) &&
-      (color_type == PNG_COLOR_TYPE_RGB ||
-       color_type == PNG_COLOR_TYPE_RGB_ALPHA) &&
-      (filter_type == PNG_INTRAPIXEL_DIFFERENCING)) &&
-#endif
-      filter_type != PNG_FILTER_TYPE_BASE)
-   {
-      png_warning(png_ptr, "Invalid filter type specified");
-      filter_type = PNG_FILTER_TYPE_BASE;
-   }
-
-#ifdef PNG_WRITE_INTERLACING_SUPPORTED
-   if (interlace_type != PNG_INTERLACE_NONE &&
-      interlace_type != PNG_INTERLACE_ADAM7)
-   {
-      png_warning(png_ptr, "Invalid interlace type specified");
-      interlace_type = PNG_INTERLACE_ADAM7;
-   }
-#else
-   interlace_type=PNG_INTERLACE_NONE;
-#endif
-
-   /* save off the relevent information */
-   png_ptr->bit_depth = (png_byte)bit_depth;
-   png_ptr->color_type = (png_byte)color_type;
-   png_ptr->interlaced = (png_byte)interlace_type;
-#if defined(PNG_MNG_FEATURES_SUPPORTED)
-   png_ptr->filter_type = (png_byte)filter_type;
-#endif
-   png_ptr->width = width;
-   png_ptr->height = height;
-
-   png_ptr->pixel_depth = (png_byte)(bit_depth * png_ptr->channels);
-   png_ptr->rowbytes = ((width * (png_size_t)png_ptr->pixel_depth + 7) >> 3);
-   /* set the usr info, so any transformations can modify it */
-   png_ptr->usr_width = png_ptr->width;
-   png_ptr->usr_bit_depth = png_ptr->bit_depth;
-   png_ptr->usr_channels = png_ptr->channels;
-
-   /* pack the header information into the buffer */
-   png_save_uint_32(buf, width);
-   png_save_uint_32(buf + 4, height);
-   buf[8] = (png_byte)bit_depth;
-   buf[9] = (png_byte)color_type;
-   buf[10] = (png_byte)compression_type;
-   buf[11] = (png_byte)filter_type;
-   buf[12] = (png_byte)interlace_type;
-
-   /* write the chunk */
-   png_write_chunk(png_ptr, (png_bytep)png_IHDR, buf, (png_size_t)13);
-
-   /* initialize zlib with PNG info */
-   png_ptr->zstream.zalloc = png_zalloc;
-   png_ptr->zstream.zfree = png_zfree;
-   png_ptr->zstream.opaque = (voidpf)png_ptr;
-   if (!(png_ptr->do_filter))
-   {
-      if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE ||
-         png_ptr->bit_depth < 8)
-         png_ptr->do_filter = PNG_FILTER_NONE;
-      else
-         png_ptr->do_filter = PNG_ALL_FILTERS;
-   }
-   if (!(png_ptr->flags & PNG_FLAG_ZLIB_CUSTOM_STRATEGY))
-   {
-      if (png_ptr->do_filter != PNG_FILTER_NONE)
-         png_ptr->zlib_strategy = Z_FILTERED;
-      else
-         png_ptr->zlib_strategy = Z_DEFAULT_STRATEGY;
-   }
-   if (!(png_ptr->flags & PNG_FLAG_ZLIB_CUSTOM_LEVEL))
-      png_ptr->zlib_level = Z_DEFAULT_COMPRESSION;
-   if (!(png_ptr->flags & PNG_FLAG_ZLIB_CUSTOM_MEM_LEVEL))
-      png_ptr->zlib_mem_level = 8;
-   if (!(png_ptr->flags & PNG_FLAG_ZLIB_CUSTOM_WINDOW_BITS))
-      png_ptr->zlib_window_bits = 15;
-   if (!(png_ptr->flags & PNG_FLAG_ZLIB_CUSTOM_METHOD))
-      png_ptr->zlib_method = 8;
-   deflateInit2(&png_ptr->zstream, png_ptr->zlib_level,
-      png_ptr->zlib_method, png_ptr->zlib_window_bits,
-      png_ptr->zlib_mem_level, png_ptr->zlib_strategy);
-   png_ptr->zstream.next_out = png_ptr->zbuf;
-   png_ptr->zstream.avail_out = (uInt)png_ptr->zbuf_size;
-
-   png_ptr->mode = PNG_HAVE_IHDR;
-}
-
-/* write the palette.  We are careful not to trust png_color to be in the
- * correct order for PNG, so people can redefine it to any convenient
- * structure.
- */
-void /* PRIVATE */
-png_write_PLTE(png_structp png_ptr, png_colorp palette, png_uint_32 num_pal)
-{
-#ifdef PNG_USE_LOCAL_ARRAYS
-   PNG_PLTE;
-#endif
-   png_uint_32 i;
-   png_colorp pal_ptr;
-   png_byte buf[3];
-
-   png_debug(1, "in png_write_PLTE\n");
-   if ((
-#if defined(PNG_MNG_FEATURES_SUPPORTED)
-        !(png_ptr->mng_features_permitted & PNG_FLAG_MNG_EMPTY_PLTE) &&
-#endif
-        num_pal == 0) || num_pal > 256)
-   {
-     if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE)
-     {
-        png_error(png_ptr, "Invalid number of colors in palette");
-     }
-     else
-     {
-        png_warning(png_ptr, "Invalid number of colors in palette");
-        return;
-     }
-   }
-
-   if (!(png_ptr->color_type&PNG_COLOR_MASK_COLOR))
-   {
-      png_warning(png_ptr,
-        "Ignoring request to write a PLTE chunk in grayscale PNG");
-      return;
-   }
-
-   png_ptr->num_palette = (png_uint_16)num_pal;
-   png_debug1(3, "num_palette = %d\n", png_ptr->num_palette);
-
-   png_write_chunk_start(png_ptr, (png_bytep)png_PLTE, num_pal * 3);
-#ifndef PNG_NO_POINTER_INDEXING
-   for (i = 0, pal_ptr = palette; i < num_pal; i++, pal_ptr++)
-   {
-      buf[0] = pal_ptr->red;
-      buf[1] = pal_ptr->green;
-      buf[2] = pal_ptr->blue;
-      png_write_chunk_data(png_ptr, buf, (png_size_t)3);
-   }
-#else
-   /* This is a little slower but some buggy compilers need to do this instead */
-   pal_ptr=palette;
-   for (i = 0; i < num_pal; i++)
-   {
-      buf[0] = pal_ptr[i].red;
-      buf[1] = pal_ptr[i].green;
-      buf[2] = pal_ptr[i].blue;
-      png_write_chunk_data(png_ptr, buf, (png_size_t)3);
-   }
-#endif
-   png_write_chunk_end(png_ptr);
-   png_ptr->mode |= PNG_HAVE_PLTE;
-}
-
-/* write an IDAT chunk */
-void /* PRIVATE */
-png_write_IDAT(png_structp png_ptr, png_bytep data, png_size_t length)
-{
-#ifdef PNG_USE_LOCAL_ARRAYS
-   PNG_IDAT;
-#endif
-   png_debug(1, "in png_write_IDAT\n");
-   png_write_chunk(png_ptr, (png_bytep)png_IDAT, data, length);
-   png_ptr->mode |= PNG_HAVE_IDAT;
-}
-
-/* write an IEND chunk */
-void /* PRIVATE */
-png_write_IEND(png_structp png_ptr)
-{
-#ifdef PNG_USE_LOCAL_ARRAYS
-   PNG_IEND;
-#endif
-   png_debug(1, "in png_write_IEND\n");
-   png_write_chunk(png_ptr, (png_bytep)png_IEND, png_bytep_NULL,
-     (png_size_t)0);
-   png_ptr->mode |= PNG_HAVE_IEND;
-}
-
-#if defined(PNG_WRITE_gAMA_SUPPORTED)
-/* write a gAMA chunk */
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-void /* PRIVATE */
-png_write_gAMA(png_structp png_ptr, double file_gamma)
-{
-#ifdef PNG_USE_LOCAL_ARRAYS
-   PNG_gAMA;
-#endif
-   png_uint_32 igamma;
-   png_byte buf[4];
-
-   png_debug(1, "in png_write_gAMA\n");
-   /* file_gamma is saved in 1/100,000ths */
-   igamma = (png_uint_32)(file_gamma * 100000.0 + 0.5);
-   png_save_uint_32(buf, igamma);
-   png_write_chunk(png_ptr, (png_bytep)png_gAMA, buf, (png_size_t)4);
-}
-#endif
-#ifdef PNG_FIXED_POINT_SUPPORTED
-void /* PRIVATE */
-png_write_gAMA_fixed(png_structp png_ptr, png_fixed_point file_gamma)
-{
-#ifdef PNG_USE_LOCAL_ARRAYS
-   PNG_gAMA;
-#endif
-   png_byte buf[4];
-
-   png_debug(1, "in png_write_gAMA\n");
-   /* file_gamma is saved in 1/100,000ths */
-   png_save_uint_32(buf, (png_uint_32)file_gamma);
-   png_write_chunk(png_ptr, (png_bytep)png_gAMA, buf, (png_size_t)4);
-}
-#endif
-#endif
-
-#if defined(PNG_WRITE_sRGB_SUPPORTED)
-/* write a sRGB chunk */
-void /* PRIVATE */
-png_write_sRGB(png_structp png_ptr, int srgb_intent)
-{
-#ifdef PNG_USE_LOCAL_ARRAYS
-   PNG_sRGB;
-#endif
-   png_byte buf[1];
-
-   png_debug(1, "in png_write_sRGB\n");
-   if(srgb_intent >= PNG_sRGB_INTENT_LAST)
-         png_warning(png_ptr,
-            "Invalid sRGB rendering intent specified");
-   buf[0]=(png_byte)srgb_intent;
-   png_write_chunk(png_ptr, (png_bytep)png_sRGB, buf, (png_size_t)1);
-}
-#endif
-
-#if defined(PNG_WRITE_iCCP_SUPPORTED)
-/* write an iCCP chunk */
-void /* PRIVATE */
-png_write_iCCP(png_structp png_ptr, png_charp name, int compression_type,
-   png_charp profile, int profile_len)
-{
-#ifdef PNG_USE_LOCAL_ARRAYS
-   PNG_iCCP;
-#endif
-   png_size_t name_len;
-   png_charp new_name;
-   compression_state comp;
-
-   png_debug(1, "in png_write_iCCP\n");
-   if (name == NULL || (name_len = png_check_keyword(png_ptr, name,
-      &new_name)) == 0)
-   {
-      png_warning(png_ptr, "Empty keyword in iCCP chunk");
-      return;
-   }
-
-   if (compression_type != PNG_COMPRESSION_TYPE_BASE)
-      png_warning(png_ptr, "Unknown compression type in iCCP chunk");
-
-   if (profile == NULL)
-      profile_len = 0;
-
-   if (profile_len)
-       profile_len = png_text_compress(png_ptr, profile, (png_size_t)profile_len,
-          PNG_COMPRESSION_TYPE_BASE, &comp);
-
-   /* make sure we include the NULL after the name and the compression type */
-   png_write_chunk_start(png_ptr, (png_bytep)png_iCCP,
-          (png_uint_32)name_len+profile_len+2);
-   new_name[name_len+1]=0x00;
-   png_write_chunk_data(png_ptr, (png_bytep)new_name, name_len + 2);
-
-   if (profile_len)
-      png_write_compressed_data_out(png_ptr, &comp);
-
-   png_write_chunk_end(png_ptr);
-   png_free(png_ptr, new_name);
-}
-#endif
-
-#if defined(PNG_WRITE_sPLT_SUPPORTED)
-/* write a sPLT chunk */
-void /* PRIVATE */
-png_write_sPLT(png_structp png_ptr, png_sPLT_tp spalette)
-{
-#ifdef PNG_USE_LOCAL_ARRAYS
-   PNG_sPLT;
-#endif
-   png_size_t name_len;
-   png_charp new_name;
-   png_byte entrybuf[10];
-   int entry_size = (spalette->depth == 8 ? 6 : 10);
-   int palette_size = entry_size * spalette->nentries;
-   png_sPLT_entryp ep;
-#ifdef PNG_NO_POINTER_INDEXING
-   int i;
-#endif
-
-   png_debug(1, "in png_write_sPLT\n");
-   if (spalette->name == NULL || (name_len = png_check_keyword(png_ptr,
-      spalette->name, &new_name))==0)
-   {
-      png_warning(png_ptr, "Empty keyword in sPLT chunk");
-      return;
-   }
-
-   /* make sure we include the NULL after the name */
-   png_write_chunk_start(png_ptr, (png_bytep)png_sPLT,
-          (png_uint_32)(name_len + 2 + palette_size));
-   png_write_chunk_data(png_ptr, (png_bytep)new_name, name_len + 1);
-   png_write_chunk_data(png_ptr, (png_bytep)&spalette->depth, 1);
-
-   /* loop through each palette entry, writing appropriately */
-#ifndef PNG_NO_POINTER_INDEXING
-   for (ep = spalette->entries; ep<spalette->entries+spalette->nentries; ep++)
-   {
-       if (spalette->depth == 8)
-       {
-           entrybuf[0] = (png_byte)ep->red;
-           entrybuf[1] = (png_byte)ep->green;
-           entrybuf[2] = (png_byte)ep->blue;
-           entrybuf[3] = (png_byte)ep->alpha;
-           png_save_uint_16(entrybuf + 4, ep->frequency);
-       }
-       else
-       {
-           png_save_uint_16(entrybuf + 0, ep->red);
-           png_save_uint_16(entrybuf + 2, ep->green);
-           png_save_uint_16(entrybuf + 4, ep->blue);
-           png_save_uint_16(entrybuf + 6, ep->alpha);
-           png_save_uint_16(entrybuf + 8, ep->frequency);
-       }
-       png_write_chunk_data(png_ptr, entrybuf, (png_size_t)entry_size);
-   }
-#else
-   ep=spalette->entries;
-   for (i=0; i>spalette->nentries; i++)
-   {
-       if (spalette->depth == 8)
-       {
-           entrybuf[0] = (png_byte)ep[i].red;
-           entrybuf[1] = (png_byte)ep[i].green;
-           entrybuf[2] = (png_byte)ep[i].blue;
-           entrybuf[3] = (png_byte)ep[i].alpha;
-           png_save_uint_16(entrybuf + 4, ep[i].frequency);
-       }
-       else
-       {
-           png_save_uint_16(entrybuf + 0, ep[i].red);
-           png_save_uint_16(entrybuf + 2, ep[i].green);
-           png_save_uint_16(entrybuf + 4, ep[i].blue);
-           png_save_uint_16(entrybuf + 6, ep[i].alpha);
-           png_save_uint_16(entrybuf + 8, ep[i].frequency);
-       }
-       png_write_chunk_data(png_ptr, entrybuf, entry_size);
-   }
-#endif
-
-   png_write_chunk_end(png_ptr);
-   png_free(png_ptr, new_name);
-}
-#endif
-
-#if defined(PNG_WRITE_sBIT_SUPPORTED)
-/* write the sBIT chunk */
-void /* PRIVATE */
-png_write_sBIT(png_structp png_ptr, png_color_8p sbit, int color_type)
-{
-#ifdef PNG_USE_LOCAL_ARRAYS
-   PNG_sBIT;
-#endif
-   png_byte buf[4];
-   png_size_t size;
-
-   png_debug(1, "in png_write_sBIT\n");
-   /* make sure we don't depend upon the order of PNG_COLOR_8 */
-   if (color_type & PNG_COLOR_MASK_COLOR)
-   {
-      png_byte maxbits;
-
-      maxbits = (png_byte)(color_type==PNG_COLOR_TYPE_PALETTE ? 8 :
-                png_ptr->usr_bit_depth);
-      if (sbit->red == 0 || sbit->red > maxbits ||
-          sbit->green == 0 || sbit->green > maxbits ||
-          sbit->blue == 0 || sbit->blue > maxbits)
-      {
-         png_warning(png_ptr, "Invalid sBIT depth specified");
-         return;
-      }
-      buf[0] = sbit->red;
-      buf[1] = sbit->green;
-      buf[2] = sbit->blue;
-      size = 3;
-   }
-   else
-   {
-      if (sbit->gray == 0 || sbit->gray > png_ptr->usr_bit_depth)
-      {
-         png_warning(png_ptr, "Invalid sBIT depth specified");
-         return;
-      }
-      buf[0] = sbit->gray;
-      size = 1;
-   }
-
-   if (color_type & PNG_COLOR_MASK_ALPHA)
-   {
-      if (sbit->alpha == 0 || sbit->alpha > png_ptr->usr_bit_depth)
-      {
-         png_warning(png_ptr, "Invalid sBIT depth specified");
-         return;
-      }
-      buf[size++] = sbit->alpha;
-   }
-
-   png_write_chunk(png_ptr, (png_bytep)png_sBIT, buf, size);
-}
-#endif
-
-#if defined(PNG_WRITE_cHRM_SUPPORTED)
-/* write the cHRM chunk */
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-void /* PRIVATE */
-png_write_cHRM(png_structp png_ptr, double white_x, double white_y,
-   double red_x, double red_y, double green_x, double green_y,
-   double blue_x, double blue_y)
-{
-#ifdef PNG_USE_LOCAL_ARRAYS
-   PNG_cHRM;
-#endif
-   png_byte buf[32];
-   png_uint_32 itemp;
-
-   png_debug(1, "in png_write_cHRM\n");
-   /* each value is saved in 1/100,000ths */
-   if (white_x < 0 || white_x > 0.8 || white_y < 0 || white_y > 0.8 ||
-       white_x + white_y > 1.0)
-   {
-      png_warning(png_ptr, "Invalid cHRM white point specified");
-#if !defined(PNG_NO_CONSOLE_IO)
-      fprintf(stderr,"white_x=%f, white_y=%f\n",white_x, white_y);
-#endif
-      return;
-   }
-   itemp = (png_uint_32)(white_x * 100000.0 + 0.5);
-   png_save_uint_32(buf, itemp);
-   itemp = (png_uint_32)(white_y * 100000.0 + 0.5);
-   png_save_uint_32(buf + 4, itemp);
-
-   if (red_x < 0 || red_x > 0.8 || red_y < 0 || red_y > 0.8 ||
-       red_x + red_y > 1.0)
-   {
-      png_warning(png_ptr, "Invalid cHRM red point specified");
-      return;
-   }
-   itemp = (png_uint_32)(red_x * 100000.0 + 0.5);
-   png_save_uint_32(buf + 8, itemp);
-   itemp = (png_uint_32)(red_y * 100000.0 + 0.5);
-   png_save_uint_32(buf + 12, itemp);
-
-   if (green_x < 0 || green_x > 0.8 || green_y < 0 || green_y > 0.8 ||
-       green_x + green_y > 1.0)
-   {
-      png_warning(png_ptr, "Invalid cHRM green point specified");
-      return;
-   }
-   itemp = (png_uint_32)(green_x * 100000.0 + 0.5);
-   png_save_uint_32(buf + 16, itemp);
-   itemp = (png_uint_32)(green_y * 100000.0 + 0.5);
-   png_save_uint_32(buf + 20, itemp);
-
-   if (blue_x < 0 || blue_x > 0.8 || blue_y < 0 || blue_y > 0.8 ||
-       blue_x + blue_y > 1.0)
-   {
-      png_warning(png_ptr, "Invalid cHRM blue point specified");
-      return;
-   }
-   itemp = (png_uint_32)(blue_x * 100000.0 + 0.5);
-   png_save_uint_32(buf + 24, itemp);
-   itemp = (png_uint_32)(blue_y * 100000.0 + 0.5);
-   png_save_uint_32(buf + 28, itemp);
-
-   png_write_chunk(png_ptr, (png_bytep)png_cHRM, buf, (png_size_t)32);
-}
-#endif
-#ifdef PNG_FIXED_POINT_SUPPORTED
-void /* PRIVATE */
-png_write_cHRM_fixed(png_structp png_ptr, png_fixed_point white_x,
-   png_fixed_point white_y, png_fixed_point red_x, png_fixed_point red_y,
-   png_fixed_point green_x, png_fixed_point green_y, png_fixed_point blue_x,
-   png_fixed_point blue_y)
-{
-#ifdef PNG_USE_LOCAL_ARRAYS
-   PNG_cHRM;
-#endif
-   png_byte buf[32];
-
-   png_debug(1, "in png_write_cHRM\n");
-   /* each value is saved in 1/100,000ths */
-   if (white_x > 80000L || white_y > 80000L || white_x + white_y > 100000L)
-   {
-      png_warning(png_ptr, "Invalid fixed cHRM white point specified");
-#if !defined(PNG_NO_CONSOLE_IO)
-      fprintf(stderr,"white_x=%ld, white_y=%ld\n",white_x, white_y);
-#endif
-      return;
-   }
-   png_save_uint_32(buf, (png_uint_32)white_x);
-   png_save_uint_32(buf + 4, (png_uint_32)white_y);
-
-   if (red_x > 80000L || red_y > 80000L || red_x + red_y > 100000L)
-   {
-      png_warning(png_ptr, "Invalid cHRM fixed red point specified");
-      return;
-   }
-   png_save_uint_32(buf + 8, (png_uint_32)red_x);
-   png_save_uint_32(buf + 12, (png_uint_32)red_y);
-
-   if (green_x > 80000L || green_y > 80000L || green_x + green_y > 100000L)
-   {
-      png_warning(png_ptr, "Invalid fixed cHRM green point specified");
-      return;
-   }
-   png_save_uint_32(buf + 16, (png_uint_32)green_x);
-   png_save_uint_32(buf + 20, (png_uint_32)green_y);
-
-   if (blue_x > 80000L || blue_y > 80000L || blue_x + blue_y > 100000L)
-   {
-      png_warning(png_ptr, "Invalid fixed cHRM blue point specified");
-      return;
-   }
-   png_save_uint_32(buf + 24, (png_uint_32)blue_x);
-   png_save_uint_32(buf + 28, (png_uint_32)blue_y);
-
-   png_write_chunk(png_ptr, (png_bytep)png_cHRM, buf, (png_size_t)32);
-}
-#endif
-#endif
-
-#if defined(PNG_WRITE_tRNS_SUPPORTED)
-/* write the tRNS chunk */
-void /* PRIVATE */
-png_write_tRNS(png_structp png_ptr, png_bytep trans, png_color_16p tran,
-   int num_trans, int color_type)
-{
-#ifdef PNG_USE_LOCAL_ARRAYS
-   PNG_tRNS;
-#endif
-   png_byte buf[6];
-
-   png_debug(1, "in png_write_tRNS\n");
-   if (color_type == PNG_COLOR_TYPE_PALETTE)
-   {
-      if (num_trans <= 0 || num_trans > (int)png_ptr->num_palette)
-      {
-         png_warning(png_ptr,"Invalid number of transparent colors specified");
-         return;
-      }
-      /* write the chunk out as it is */
-      png_write_chunk(png_ptr, (png_bytep)png_tRNS, trans, (png_size_t)num_trans);
-   }
-   else if (color_type == PNG_COLOR_TYPE_GRAY)
-   {
-      /* one 16 bit value */
-      if(tran->gray >= (1 << png_ptr->bit_depth))
-      {
-         png_warning(png_ptr,
-           "Ignoring attempt to write tRNS chunk out-of-range for bit_depth");
-         return;
-      }
-      png_save_uint_16(buf, tran->gray);
-      png_write_chunk(png_ptr, (png_bytep)png_tRNS, buf, (png_size_t)2);
-   }
-   else if (color_type == PNG_COLOR_TYPE_RGB)
-   {
-      /* three 16 bit values */
-      png_save_uint_16(buf, tran->red);
-      png_save_uint_16(buf + 2, tran->green);
-      png_save_uint_16(buf + 4, tran->blue);
-      if(png_ptr->bit_depth == 8 && (buf[0] | buf[2] | buf[4]))
-         {
-            png_warning(png_ptr,
-              "Ignoring attempt to write 16-bit tRNS chunk when bit_depth is 8");
-            return;
-         }
-      png_write_chunk(png_ptr, (png_bytep)png_tRNS, buf, (png_size_t)6);
-   }
-   else
-   {
-      png_warning(png_ptr, "Can't write tRNS with an alpha channel");
-   }
-}
-#endif
-
-#if defined(PNG_WRITE_bKGD_SUPPORTED)
-/* write the background chunk */
-void /* PRIVATE */
-png_write_bKGD(png_structp png_ptr, png_color_16p back, int color_type)
-{
-#ifdef PNG_USE_LOCAL_ARRAYS
-   PNG_bKGD;
-#endif
-   png_byte buf[6];
-
-   png_debug(1, "in png_write_bKGD\n");
-   if (color_type == PNG_COLOR_TYPE_PALETTE)
-   {
-      if (
-#if defined(PNG_MNG_FEATURES_SUPPORTED)
-          (png_ptr->num_palette ||
-          (!(png_ptr->mng_features_permitted & PNG_FLAG_MNG_EMPTY_PLTE))) &&
-#endif
-         back->index > png_ptr->num_palette)
-      {
-         png_warning(png_ptr, "Invalid background palette index");
-         return;
-      }
-      buf[0] = back->index;
-      png_write_chunk(png_ptr, (png_bytep)png_bKGD, buf, (png_size_t)1);
-   }
-   else if (color_type & PNG_COLOR_MASK_COLOR)
-   {
-      png_save_uint_16(buf, back->red);
-      png_save_uint_16(buf + 2, back->green);
-      png_save_uint_16(buf + 4, back->blue);
-      if(png_ptr->bit_depth == 8 && (buf[0] | buf[2] | buf[4]))
-         {
-            png_warning(png_ptr,
-              "Ignoring attempt to write 16-bit bKGD chunk when bit_depth is 8");
-            return;
-         }
-      png_write_chunk(png_ptr, (png_bytep)png_bKGD, buf, (png_size_t)6);
-   }
-   else
-   {
-      if(back->gray >= (1 << png_ptr->bit_depth))
-      {
-         png_warning(png_ptr,
-           "Ignoring attempt to write bKGD chunk out-of-range for bit_depth");
-         return;
-      }
-      png_save_uint_16(buf, back->gray);
-      png_write_chunk(png_ptr, (png_bytep)png_bKGD, buf, (png_size_t)2);
-   }
-}
-#endif
-
-#if defined(PNG_WRITE_hIST_SUPPORTED)
-/* write the histogram */
-void /* PRIVATE */
-png_write_hIST(png_structp png_ptr, png_uint_16p hist, int num_hist)
-{
-#ifdef PNG_USE_LOCAL_ARRAYS
-   PNG_hIST;
-#endif
-   int i;
-   png_byte buf[3];
-
-   png_debug(1, "in png_write_hIST\n");
-   if (num_hist > (int)png_ptr->num_palette)
-   {
-      png_debug2(3, "num_hist = %d, num_palette = %d\n", num_hist,
-         png_ptr->num_palette);
-      png_warning(png_ptr, "Invalid number of histogram entries specified");
-      return;
-   }
-
-   png_write_chunk_start(png_ptr, (png_bytep)png_hIST, (png_uint_32)(num_hist * 2));
-   for (i = 0; i < num_hist; i++)
-   {
-      png_save_uint_16(buf, hist[i]);
-      png_write_chunk_data(png_ptr, buf, (png_size_t)2);
-   }
-   png_write_chunk_end(png_ptr);
-}
-#endif
-
-#if defined(PNG_WRITE_TEXT_SUPPORTED) || defined(PNG_WRITE_pCAL_SUPPORTED) || \
-    defined(PNG_WRITE_iCCP_SUPPORTED) || defined(PNG_WRITE_sPLT_SUPPORTED)
-/* Check that the tEXt or zTXt keyword is valid per PNG 1.0 specification,
- * and if invalid, correct the keyword rather than discarding the entire
- * chunk.  The PNG 1.0 specification requires keywords 1-79 characters in
- * length, forbids leading or trailing whitespace, multiple internal spaces,
- * and the non-break space (0x80) from ISO 8859-1.  Returns keyword length.
+ * Change history:
  *
- * The new_key is allocated to hold the corrected keyword and must be freed
- * by the calling routine.  This avoids problems with trying to write to
- * static keywords without having to have duplicate copies of the strings.
+ * 1.2.beta0    24 Nov 2002
+ * - First version -- complete rewrite of inflate to simplify code, avoid
+ *   creation of window when not needed, minimize use of window when it is
+ *   needed, make inffast.c even faster, implement gzip decoding, and to
+ *   improve code readability and style over the previous zlib inflate code
+ *
+ * 1.2.beta1    25 Nov 2002
+ * - Use pointers for available input and output checking in inffast.c
+ * - Remove input and output counters in inffast.c
+ * - Change inffast.c entry and loop from avail_in >= 7 to >= 6
+ * - Remove unnecessary second byte pull from length extra in inffast.c
+ * - Unroll direct copy to three copies per loop in inffast.c
+ *
+ * 1.2.beta2    4 Dec 2002
+ * - Change external routine names to reduce potential conflicts
+ * - Correct filename to inffixed.h for fixed tables in inflate.c
+ * - Make hbuf[] unsigned char to match parameter type in inflate.c
+ * - Change strm->next_out[-state->offset] to *(strm->next_out - state->offset)
+ *   to avoid negation problem on Alphas (64 bit) in inflate.c
+ *
+ * 1.2.beta3    22 Dec 2002
+ * - Add comments on state->bits assertion in inffast.c
+ * - Add comments on op field in inftrees.h
+ * - Fix bug in reuse of allocated window after inflateReset()
+ * - Remove bit fields--back to byte structure for speed
+ * - Remove distance extra == 0 check in inflate_fast()--only helps for lengths
+ * - Change post-increments to pre-increments in inflate_fast(), PPC biased?
+ * - Add compile time option, POSTINC, to use post-increments instead (Intel?)
+ * - Make MATCH copy in inflate() much faster for when inflate_fast() not used
+ * - Use local copies of stream next and avail values, as well as local bit
+ *   buffer and bit count in inflate()--for speed when inflate_fast() not used
+ *
+ * 1.2.beta4    1 Jan 2003
+ * - Split ptr - 257 statements in inflate_table() to avoid compiler warnings
+ * - Move a comment on output buffer sizes from inffast.c to inflate.c
+ * - Add comments in inffast.c to introduce the inflate_fast() routine
+ * - Rearrange window copies in inflate_fast() for speed and simplification
+ * - Unroll last copy for window match in inflate_fast()
+ * - Use local copies of window variables in inflate_fast() for speed
+ * - Pull out common write == 0 case for speed in inflate_fast()
+ * - Make op and len in inflate_fast() unsigned for consistency
+ * - Add FAR to lcode and dcode declarations in inflate_fast()
+ * - Simplified bad distance check in inflate_fast()
+ * - Added inflateBackInit(), inflateBack(), and inflateBackEnd() in new
+ *   source file infback.c to provide a call-back interface to inflate for
+ *   programs like gzip and unzip -- uses window as output buffer to avoid
+ *   window copying
+ *
+ * 1.2.beta5    1 Jan 2003
+ * - Improved inflateBack() interface to allow the caller to provide initial
+ *   input in strm.
+ * - Fixed stored blocks bug in inflateBack()
+ *
+ * 1.2.beta6    4 Jan 2003
+ * - Added comments in inffast.c on effectiveness of POSTINC
+ * - Typecasting all around to reduce compiler warnings
+ * - Changed loops from while (1) or do {} while (1) to for (;;), again to
+ *   make compilers happy
+ * - Changed type of window in inflateBackInit() to unsigned char *
+ *
+ * 1.2.beta7    27 Jan 2003
+ * - Changed many types to unsigned or unsigned short to avoid warnings
+ * - Added inflateCopy() function
+ *
+ * 1.2.0        9 Mar 2003
+ * - Changed inflateBack() interface to provide separate opaque descriptors
+ *   for the in() and out() functions
+ * - Changed inflateBack() argument and in_func typedef to swap the length
+ *   and buffer address return values for the input function
+ * - Check next_in and next_out for Z_NULL on entry to inflate()
+ *
+ * The history for versions after 1.2.0 are in ChangeLog in zlib distribution.
  */
-png_size_t /* PRIVATE */
-png_check_keyword(png_structp png_ptr, png_charp key, png_charpp new_key)
+
+#include "zutil.h"
+#include "inftrees.h"
+#include "inflate.h"
+#include "inffast.h"
+
+#ifdef MAKEFIXED
+#  ifndef BUILDFIXED
+#    define BUILDFIXED
+#  endif
+#endif
+
+/* function prototypes */
+local void fixedtables OF((struct inflate_state FAR *state));
+local int updatewindow OF((z_streamp strm, unsigned out));
+#ifdef BUILDFIXED
+   void makefixed OF((void));
+#endif
+local unsigned syncsearch OF((unsigned FAR *have, unsigned char FAR *buf,
+                              unsigned len));
+
+int ZEXPORT inflateReset(strm)
+z_streamp strm;
 {
-   png_size_t key_len;
-   png_charp kp, dp;
-   int kflag;
-   int kwarn=0;
+    struct inflate_state FAR *state;
 
-   png_debug(1, "in png_check_keyword\n");
-   *new_key = NULL;
-
-   if (key == NULL || (key_len = png_strlen(key)) == 0)
-   {
-      png_warning(png_ptr, "zero length keyword");
-      return ((png_size_t)0);
-   }
-
-   png_debug1(2, "Keyword to be checked is '%s'\n", key);
-
-   *new_key = (png_charp)png_malloc(png_ptr, (png_uint_32)(key_len + 2));
-
-   /* Replace non-printing characters with a blank and print a warning */
-   for (kp = key, dp = *new_key; *kp != '\0'; kp++, dp++)
-   {
-      if (*kp < 0x20 || (*kp > 0x7E && (png_byte)*kp < 0xA1))
-      {
-#if !defined(PNG_NO_STDIO) && !defined(_WIN32_WCE)
-         char msg[40];
-
-         sprintf(msg, "invalid keyword character 0x%02X", *kp);
-         png_warning(png_ptr, msg);
-#else
-         png_warning(png_ptr, "invalid character in keyword");
-#endif
-         *dp = ' ';
-      }
-      else
-      {
-         *dp = *kp;
-      }
-   }
-   *dp = '\0';
-
-   /* Remove any trailing white space. */
-   kp = *new_key + key_len - 1;
-   if (*kp == ' ')
-   {
-      png_warning(png_ptr, "trailing spaces removed from keyword");
-
-      while (*kp == ' ')
-      {
-        *(kp--) = '\0';
-        key_len--;
-      }
-   }
-
-   /* Remove any leading white space. */
-   kp = *new_key;
-   if (*kp == ' ')
-   {
-      png_warning(png_ptr, "leading spaces removed from keyword");
-
-      while (*kp == ' ')
-      {
-        kp++;
-        key_len--;
-      }
-   }
-
-   png_debug1(2, "Checking for multiple internal spaces in '%s'\n", kp);
-
-   /* Remove multiple internal spaces. */
-   for (kflag = 0, dp = *new_key; *kp != '\0'; kp++)
-   {
-      if (*kp == ' ' && kflag == 0)
-      {
-         *(dp++) = *kp;
-         kflag = 1;
-      }
-      else if (*kp == ' ')
-      {
-         key_len--;
-         kwarn=1;
-      }
-      else
-      {
-         *(dp++) = *kp;
-         kflag = 0;
-      }
-   }
-   *dp = '\0';
-   if(kwarn)
-      png_warning(png_ptr, "extra interior spaces removed from keyword");
-
-   if (key_len == 0)
-   {
-      png_free(png_ptr, *new_key);
-      *new_key=NULL;
-      png_warning(png_ptr, "Zero length keyword");
-   }
-
-   if (key_len > 79)
-   {
-      png_warning(png_ptr, "keyword length must be 1 - 79 characters");
-      new_key[79] = '\0';
-      key_len = 79;
-   }
-
-   return (key_len);
+    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
+    state = (struct inflate_state FAR *)strm->state;
+    strm->total_in = strm->total_out = state->total = 0;
+    strm->msg = Z_NULL;
+    strm->adler = 1;        /* to support ill-conceived Java test suite */
+    state->mode = HEAD;
+    state->last = 0;
+    state->havedict = 0;
+    state->dmax = 32768U;
+    state->head = Z_NULL;
+    state->wsize = 0;
+    state->whave = 0;
+    state->write = 0;
+    state->hold = 0;
+    state->bits = 0;
+    state->lencode = state->distcode = state->next = state->codes;
+    Tracev((stderr, "inflate: reset\n"));
+    return Z_OK;
 }
-#endif
 
-#if defined(PNG_WRITE_tEXt_SUPPORTED)
-/* write a tEXt chunk */
-void /* PRIVATE */
-png_write_tEXt(png_structp png_ptr, png_charp key, png_charp text,
-   png_size_t text_len)
+int ZEXPORT inflatePrime(strm, bits, value)
+z_streamp strm;
+int bits;
+int value;
 {
-#ifdef PNG_USE_LOCAL_ARRAYS
-   PNG_tEXt;
-#endif
-   png_size_t key_len;
-   png_charp new_key;
+    struct inflate_state FAR *state;
 
-   png_debug(1, "in png_write_tEXt\n");
-   if (key == NULL || (key_len = png_check_keyword(png_ptr, key, &new_key))==0)
-   {
-      png_warning(png_ptr, "Empty keyword in tEXt chunk");
-      return;
-   }
-
-   if (text == NULL || *text == '\0')
-      text_len = 0;
-   else
-      text_len = png_strlen(text);
-
-   /* make sure we include the 0 after the key */
-   png_write_chunk_start(png_ptr, (png_bytep)png_tEXt, (png_uint_32)key_len+text_len+1);
-   /*
-    * We leave it to the application to meet PNG-1.0 requirements on the
-    * contents of the text.  PNG-1.0 through PNG-1.2 discourage the use of
-    * any non-Latin-1 characters except for NEWLINE.  ISO PNG will forbid them.
-    * The NUL character is forbidden by PNG-1.0 through PNG-1.2 and ISO PNG.
-    */
-   png_write_chunk_data(png_ptr, (png_bytep)new_key, key_len + 1);
-   if (text_len)
-      png_write_chunk_data(png_ptr, (png_bytep)text, text_len);
-
-   png_write_chunk_end(png_ptr);
-   png_free(png_ptr, new_key);
+    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
+    state = (struct inflate_state FAR *)strm->state;
+    if (bits > 16 || state->bits + bits > 32) return Z_STREAM_ERROR;
+    value &= (1L << bits) - 1;
+    state->hold += value << state->bits;
+    state->bits += bits;
+    return Z_OK;
 }
-#endif
 
-#if defined(PNG_WRITE_zTXt_SUPPORTED)
-/* write a compressed text chunk */
-void /* PRIVATE */
-png_write_zTXt(png_structp png_ptr, png_charp key, png_charp text,
-   png_size_t text_len, int compression)
+int ZEXPORT inflateInit2_(strm, windowBits, version, stream_size)
+z_streamp strm;
+int windowBits;
+const char *version;
+int stream_size;
 {
-#ifdef PNG_USE_LOCAL_ARRAYS
-   PNG_zTXt;
+    struct inflate_state FAR *state;
+
+    if (version == Z_NULL || version[0] != ZLIB_VERSION[0] ||
+        stream_size != (int)(sizeof(z_stream)))
+        return Z_VERSION_ERROR;
+    if (strm == Z_NULL) return Z_STREAM_ERROR;
+    strm->msg = Z_NULL;                 /* in case we return an error */
+    if (strm->zalloc == (alloc_func)0) {
+        strm->zalloc = zcalloc;
+        strm->opaque = (voidpf)0;
+    }
+    if (strm->zfree == (free_func)0) strm->zfree = zcfree;
+    state = (struct inflate_state FAR *)
+            ZALLOC(strm, 1, sizeof(struct inflate_state));
+    if (state == Z_NULL) return Z_MEM_ERROR;
+    Tracev((stderr, "inflate: allocated\n"));
+    strm->state = (struct internal_state FAR *)state;
+    if (windowBits < 0) {
+        state->wrap = 0;
+        windowBits = -windowBits;
+    }
+    else {
+        state->wrap = (windowBits >> 4) + 1;
+#ifdef GUNZIP
+        if (windowBits < 48) windowBits &= 15;
 #endif
-   png_size_t key_len;
-   char buf[1];
-   png_charp new_key;
-   compression_state comp;
-
-   png_debug(1, "in png_write_zTXt\n");
-
-   if (key == NULL || (key_len = png_check_keyword(png_ptr, key, &new_key))==0)
-   {
-      png_warning(png_ptr, "Empty keyword in zTXt chunk");
-      return;
-   }
-
-   if (text == NULL || *text == '\0' || compression==PNG_TEXT_COMPRESSION_NONE)
-   {
-      png_write_tEXt(png_ptr, new_key, text, (png_size_t)0);
-      png_free(png_ptr, new_key);
-      return;
-   }
-
-   text_len = png_strlen(text);
-
-   png_free(png_ptr, new_key);
-
-   /* compute the compressed data; do it now for the length */
-   text_len = png_text_compress(png_ptr, text, text_len, compression,
-       &comp);
-
-   /* write start of chunk */
-   png_write_chunk_start(png_ptr, (png_bytep)png_zTXt, (png_uint_32)
-      (key_len+text_len+2));
-   /* write key */
-   png_write_chunk_data(png_ptr, (png_bytep)key, key_len + 1);
-   buf[0] = (png_byte)compression;
-   /* write compression */
-   png_write_chunk_data(png_ptr, (png_bytep)buf, (png_size_t)1);
-   /* write the compressed data */
-   png_write_compressed_data_out(png_ptr, &comp);
-
-   /* close the chunk */
-   png_write_chunk_end(png_ptr);
+    }
+    if (windowBits < 8 || windowBits > 15) {
+        ZFREE(strm, state);
+        strm->state = Z_NULL;
+        return Z_STREAM_ERROR;
+    }
+    state->wbits = (unsigned)windowBits;
+    state->window = Z_NULL;
+    return inflateReset(strm);
 }
-#endif
 
-#if defined(PNG_WRITE_iTXt_SUPPORTED)
-/* write an iTXt chunk */
-void /* PRIVATE */
-png_write_iTXt(png_structp png_ptr, int compression, png_charp key,
-    png_charp lang, png_charp lang_key, png_charp text)
+int ZEXPORT inflateInit_(strm, version, stream_size)
+z_streamp strm;
+const char *version;
+int stream_size;
 {
-#ifdef PNG_USE_LOCAL_ARRAYS
-   PNG_iTXt;
-#endif
-   png_size_t lang_len, key_len, lang_key_len, text_len;
-   png_charp new_lang, new_key;
-   png_byte cbuf[2];
-   compression_state comp;
-
-   png_debug(1, "in png_write_iTXt\n");
-
-   if (key == NULL || (key_len = png_check_keyword(png_ptr, key, &new_key))==0)
-   {
-      png_warning(png_ptr, "Empty keyword in iTXt chunk");
-      return;
-   }
-   if (lang == NULL || (lang_len = png_check_keyword(png_ptr, lang, &new_lang))==0)
-   {
-      png_warning(png_ptr, "Empty language field in iTXt chunk");
-      new_lang = NULL;
-      lang_len = 0;      
-   }
-
-   if (lang_key == NULL)
-     lang_key_len = 0;
-   else
-     lang_key_len = png_strlen(lang_key);
-
-   if (text == NULL)
-      text_len = 0;
-   else
-     text_len = png_strlen(text);
-
-   /* compute the compressed data; do it now for the length */
-   text_len = png_text_compress(png_ptr, text, text_len, compression-2,
-      &comp);
-
-
-   /* make sure we include the compression flag, the compression byte,
-    * and the NULs after the key, lang, and lang_key parts */
-
-   png_write_chunk_start(png_ptr, (png_bytep)png_iTXt,
-          (png_uint_32)(
-        5 /* comp byte, comp flag, terminators for key, lang and lang_key */
-        + key_len
-        + lang_len
-        + lang_key_len
-        + text_len));
-
-   /*
-    * We leave it to the application to meet PNG-1.0 requirements on the
-    * contents of the text.  PNG-1.0 through PNG-1.2 discourage the use of
-    * any non-Latin-1 characters except for NEWLINE.  ISO PNG will forbid them.
-    * The NUL character is forbidden by PNG-1.0 through PNG-1.2 and ISO PNG.
-    */
-   png_write_chunk_data(png_ptr, (png_bytep)new_key, key_len + 1);
-
-   /* set the compression flag */
-   if (compression == PNG_ITXT_COMPRESSION_NONE || \
-       compression == PNG_TEXT_COMPRESSION_NONE)
-       cbuf[0] = 0;
-   else /* compression == PNG_ITXT_COMPRESSION_zTXt */
-       cbuf[0] = 1;
-   /* set the compression method */
-   cbuf[1] = 0;
-   png_write_chunk_data(png_ptr, cbuf, 2);
-
-   cbuf[0] = 0;
-   png_write_chunk_data(png_ptr, (new_lang ? (png_bytep)new_lang : cbuf), lang_len + 1);
-   png_write_chunk_data(png_ptr, (lang_key ? (png_bytep)lang_key : cbuf), lang_key_len + 1);
-   png_write_compressed_data_out(png_ptr, &comp);
-
-   png_write_chunk_end(png_ptr);
-   png_free(png_ptr, new_key);
-   if (new_lang)
-     png_free(png_ptr, new_lang);
+    return inflateInit2_(strm, DEF_WBITS, version, stream_size);
 }
-#endif
 
-#if defined(PNG_WRITE_oFFs_SUPPORTED)
-/* write the oFFs chunk */
-void /* PRIVATE */
-png_write_oFFs(png_structp png_ptr, png_int_32 x_offset, png_int_32 y_offset,
-   int unit_type)
-{
-#ifdef PNG_USE_LOCAL_ARRAYS
-   PNG_oFFs;
-#endif
-   png_byte buf[9];
-
-   png_debug(1, "in png_write_oFFs\n");
-   if (unit_type >= PNG_OFFSET_LAST)
-      png_warning(png_ptr, "Unrecognized unit type for oFFs chunk");
-
-   png_save_int_32(buf, x_offset);
-   png_save_int_32(buf + 4, y_offset);
-   buf[8] = (png_byte)unit_type;
-
-   png_write_chunk(png_ptr, (png_bytep)png_oFFs, buf, (png_size_t)9);
-}
-#endif
-
-#if defined(PNG_WRITE_pCAL_SUPPORTED)
-/* write the pCAL chunk (described in the PNG extensions document) */
-void /* PRIVATE */
-png_write_pCAL(png_structp png_ptr, png_charp purpose, png_int_32 X0,
-   png_int_32 X1, int type, int nparams, png_charp units, png_charpp params)
-{
-#ifdef PNG_USE_LOCAL_ARRAYS
-   PNG_pCAL;
-#endif
-   png_size_t purpose_len, units_len, total_len;
-   png_uint_32p params_len;
-   png_byte buf[10];
-   png_charp new_purpose;
-   int i;
-
-   png_debug1(1, "in png_write_pCAL (%d parameters)\n", nparams);
-   if (type >= PNG_EQUATION_LAST)
-      png_warning(png_ptr, "Unrecognized equation type for pCAL chunk");
-
-   purpose_len = png_check_keyword(png_ptr, purpose, &new_purpose) + 1;
-   png_debug1(3, "pCAL purpose length = %d\n", (int)purpose_len);
-   units_len = png_strlen(units) + (nparams == 0 ? 0 : 1);
-   png_debug1(3, "pCAL units length = %d\n", (int)units_len);
-   total_len = purpose_len + units_len + 10;
-
-   params_len = (png_uint_32p)png_malloc(png_ptr, (png_uint_32)(nparams
-      *sizeof(png_uint_32)));
-
-   /* Find the length of each parameter, making sure we don't count the
-      null terminator for the last parameter. */
-   for (i = 0; i < nparams; i++)
-   {
-      params_len[i] = png_strlen(params[i]) + (i == nparams - 1 ? 0 : 1);
-      png_debug2(3, "pCAL parameter %d length = %lu\n", i, params_len[i]);
-      total_len += (png_size_t)params_len[i];
-   }
-
-   png_debug1(3, "pCAL total length = %d\n", (int)total_len);
-   png_write_chunk_start(png_ptr, (png_bytep)png_pCAL, (png_uint_32)total_len);
-   png_write_chunk_data(png_ptr, (png_bytep)new_purpose, purpose_len);
-   png_save_int_32(buf, X0);
-   png_save_int_32(buf + 4, X1);
-   buf[8] = (png_byte)type;
-   buf[9] = (png_byte)nparams;
-   png_write_chunk_data(png_ptr, buf, (png_size_t)10);
-   png_write_chunk_data(png_ptr, (png_bytep)units, (png_size_t)units_len);
-
-   png_free(png_ptr, new_purpose);
-
-   for (i = 0; i < nparams; i++)
-   {
-      png_write_chunk_data(png_ptr, (png_bytep)params[i],
-         (png_size_t)params_len[i]);
-   }
-
-   png_free(png_ptr, params_len);
-   png_write_chunk_end(png_ptr);
-}
-#endif
-
-#if defined(PNG_WRITE_sCAL_SUPPORTED)
-/* write the sCAL chunk */
-#if defined(PNG_FLOATING_POINT_SUPPORTED) && !defined(PNG_NO_STDIO)
-void /* PRIVATE */
-png_write_sCAL(png_structp png_ptr, int unit, double width,double height)
-{
-#ifdef PNG_USE_LOCAL_ARRAYS
-   PNG_sCAL;
-#endif
-   png_size_t total_len;
-   char wbuf[32], hbuf[32];
-
-   png_debug(1, "in png_write_sCAL\n");
-
-#if defined(_WIN32_WCE)
-/* sprintf() function is not supported on WindowsCE */
-   {
-      wchar_t wc_buf[32];
-      swprintf(wc_buf, TEXT("%12.12e"), width);
-      WideCharToMultiByte(CP_ACP, 0, wc_buf, -1, wbuf, 32, NULL, NULL);
-      swprintf(wc_buf, TEXT("%12.12e"), height);
-      WideCharToMultiByte(CP_ACP, 0, wc_buf, -1, hbuf, 32, NULL, NULL);
-   }
-#else
-   sprintf(wbuf, "%12.12e", width);
-   sprintf(hbuf, "%12.12e", height);
-#endif
-   total_len = 1 + png_strlen(wbuf)+1 + png_strlen(hbuf);
-
-   png_debug1(3, "sCAL total length = %d\n", (int)total_len);
-   png_write_chunk_start(png_ptr, (png_bytep)png_sCAL, (png_uint_32)total_len);
-   png_write_chunk_data(png_ptr, (png_bytep)&unit, 1);
-   png_write_chunk_data(png_ptr, (png_bytep)wbuf, png_strlen(wbuf)+1);
-   png_write_chunk_data(png_ptr, (png_bytep)hbuf, png_strlen(hbuf));
-
-   png_write_chunk_end(png_ptr);
-}
-#else
-#ifdef PNG_FIXED_POINT_SUPPORTED
-void /* PRIVATE */
-png_write_sCAL_s(png_structp png_ptr, int unit, png_charp width,
-   png_charp height)
-{
-#ifdef PNG_USE_LOCAL_ARRAYS
-   PNG_sCAL;
-#endif
-   png_size_t total_len;
-   char wbuf[32], hbuf[32];
-
-   png_debug(1, "in png_write_sCAL_s\n");
-
-   png_strcpy(wbuf,(const char *)width);
-   png_strcpy(hbuf,(const char *)height);
-   total_len = 1 + png_strlen(wbuf)+1 + png_strlen(hbuf);
-
-   png_debug1(3, "sCAL total length = %d\n", total_len);
-   png_write_chunk_start(png_ptr, (png_bytep)png_sCAL, (png_uint_32)total_len);
-   png_write_chunk_data(png_ptr, (png_bytep)&unit, 1);
-   png_write_chunk_data(png_ptr, (png_bytep)wbuf, png_strlen(wbuf)+1);
-   png_write_chunk_data(png_ptr, (png_bytep)hbuf, png_strlen(hbuf));
-
-   png_write_chunk_end(png_ptr);
-}
-#endif
-#endif
-#endif
-
-#if defined(PNG_WRITE_pHYs_SUPPORTED)
-/* write the pHYs chunk */
-void /* PRIVATE */
-png_write_pHYs(png_structp png_ptr, png_uint_32 x_pixels_per_unit,
-   png_uint_32 y_pixels_per_unit,
-   int unit_type)
-{
-#ifdef PNG_USE_LOCAL_ARRAYS
-   PNG_pHYs;
-#endif
-   png_byte buf[9];
-
-   png_debug(1, "in png_write_pHYs\n");
-   if (unit_type >= PNG_RESOLUTION_LAST)
-      png_warning(png_ptr, "Unrecognized unit type for pHYs chunk");
-
-   png_save_uint_32(buf, x_pixels_per_unit);
-   png_save_uint_32(buf + 4, y_pixels_per_unit);
-   buf[8] = (png_byte)unit_type;
-
-   png_write_chunk(png_ptr, (png_bytep)png_pHYs, buf, (png_size_t)9);
-}
-#endif
-
-#if defined(PNG_WRITE_tIME_SUPPORTED)
-/* Write the tIME chunk.  Use either png_convert_from_struct_tm()
- * or png_convert_from_time_t(), or fill in the structure yourself.
+/*
+   Return state with length and distance decoding tables and index sizes set to
+   fixed code decoding.  Normally this returns fixed tables from inffixed.h.
+   If BUILDFIXED is defined, then instead this routine builds the tables the
+   first time it's called, and returns those tables the first time and
+   thereafter.  This reduces the size of the code by about 2K bytes, in
+   exchange for a little execution time.  However, BUILDFIXED should not be
+   used for threaded applications, since the rewriting of the tables and virgin
+   may not be thread-safe.
  */
-void /* PRIVATE */
-png_write_tIME(png_structp png_ptr, png_timep mod_time)
+local void fixedtables(state)
+struct inflate_state FAR *state;
 {
-#ifdef PNG_USE_LOCAL_ARRAYS
-   PNG_tIME;
-#endif
-   png_byte buf[7];
+#ifdef BUILDFIXED
+    static int virgin = 1;
+    static code *lenfix, *distfix;
+    static code fixed[544];
 
-   png_debug(1, "in png_write_tIME\n");
-   if (mod_time->month  > 12 || mod_time->month  < 1 ||
-       mod_time->day    > 31 || mod_time->day    < 1 ||
-       mod_time->hour   > 23 || mod_time->second > 60)
-   {
-      png_warning(png_ptr, "Invalid time specified for tIME chunk");
-      return;
-   }
+    /* build fixed huffman tables if first call (may not be thread safe) */
+    if (virgin) {
+        unsigned sym, bits;
+        static code *next;
 
-   png_save_uint_16(buf, mod_time->year);
-   buf[2] = mod_time->month;
-   buf[3] = mod_time->day;
-   buf[4] = mod_time->hour;
-   buf[5] = mod_time->minute;
-   buf[6] = mod_time->second;
+        /* literal/length table */
+        sym = 0;
+        while (sym < 144) state->lens[sym++] = 8;
+        while (sym < 256) state->lens[sym++] = 9;
+        while (sym < 280) state->lens[sym++] = 7;
+        while (sym < 288) state->lens[sym++] = 8;
+        next = fixed;
+        lenfix = next;
+        bits = 9;
+        inflate_table(LENS, state->lens, 288, &(next), &(bits), state->work);
 
-   png_write_chunk(png_ptr, (png_bytep)png_tIME, buf, (png_size_t)7);
-}
-#endif
+        /* distance table */
+        sym = 0;
+        while (sym < 32) state->lens[sym++] = 5;
+        distfix = next;
+        bits = 5;
+        inflate_table(DISTS, state->lens, 32, &(next), &(bits), state->work);
 
-/* initializes the row writing capability of libpng */
-void /* PRIVATE */
-png_write_start_row(png_structp png_ptr)
-{
-#ifdef PNG_USE_LOCAL_ARRAYS
-   /* arrays to facilitate easy interlacing - use pass (0 - 6) as index */
-
-   /* start of interlace block */
-   int png_pass_start[7] = {0, 4, 0, 2, 0, 1, 0};
-
-   /* offset to next interlace block */
-   int png_pass_inc[7] = {8, 8, 4, 4, 2, 2, 1};
-
-   /* start of interlace block in the y direction */
-   int png_pass_ystart[7] = {0, 0, 4, 0, 2, 0, 1};
-
-   /* offset to next interlace block in the y direction */
-   int png_pass_yinc[7] = {8, 8, 8, 4, 4, 2, 2};
-#endif
-
-   png_size_t buf_size;
-
-   png_debug(1, "in png_write_start_row\n");
-   buf_size = (png_size_t)(((png_ptr->width * png_ptr->usr_channels *
-                            png_ptr->usr_bit_depth + 7) >> 3) + 1);
-
-   /* set up row buffer */
-   png_ptr->row_buf = (png_bytep)png_malloc(png_ptr, (png_uint_32)buf_size);
-   png_ptr->row_buf[0] = PNG_FILTER_VALUE_NONE;
-
-   /* set up filtering buffer, if using this filter */
-   if (png_ptr->do_filter & PNG_FILTER_SUB)
-   {
-      png_ptr->sub_row = (png_bytep)png_malloc(png_ptr,
-         (png_ptr->rowbytes + 1));
-      png_ptr->sub_row[0] = PNG_FILTER_VALUE_SUB;
-   }
-
-   /* We only need to keep the previous row if we are using one of these. */
-   if (png_ptr->do_filter & (PNG_FILTER_AVG | PNG_FILTER_UP | PNG_FILTER_PAETH))
-   {
-     /* set up previous row buffer */
-      png_ptr->prev_row = (png_bytep)png_malloc(png_ptr, (png_uint_32)buf_size);
-      png_memset(png_ptr->prev_row, 0, buf_size);
-
-      if (png_ptr->do_filter & PNG_FILTER_UP)
-      {
-         png_ptr->up_row = (png_bytep )png_malloc(png_ptr,
-            (png_ptr->rowbytes + 1));
-         png_ptr->up_row[0] = PNG_FILTER_VALUE_UP;
-      }
-
-      if (png_ptr->do_filter & PNG_FILTER_AVG)
-      {
-         png_ptr->avg_row = (png_bytep)png_malloc(png_ptr,
-            (png_ptr->rowbytes + 1));
-         png_ptr->avg_row[0] = PNG_FILTER_VALUE_AVG;
-      }
-
-      if (png_ptr->do_filter & PNG_FILTER_PAETH)
-      {
-         png_ptr->paeth_row = (png_bytep )png_malloc(png_ptr,
-            (png_ptr->rowbytes + 1));
-         png_ptr->paeth_row[0] = PNG_FILTER_VALUE_PAETH;
-      }
-   }
-
-#ifdef PNG_WRITE_INTERLACING_SUPPORTED
-   /* if interlaced, we need to set up width and height of pass */
-   if (png_ptr->interlaced)
-   {
-      if (!(png_ptr->transformations & PNG_INTERLACE))
-      {
-         png_ptr->num_rows = (png_ptr->height + png_pass_yinc[0] - 1 -
-            png_pass_ystart[0]) / png_pass_yinc[0];
-         png_ptr->usr_width = (png_ptr->width + png_pass_inc[0] - 1 -
-            png_pass_start[0]) / png_pass_inc[0];
-      }
-      else
-      {
-         png_ptr->num_rows = png_ptr->height;
-         png_ptr->usr_width = png_ptr->width;
-      }
-   }
-   else
-#endif
-   {
-      png_ptr->num_rows = png_ptr->height;
-      png_ptr->usr_width = png_ptr->width;
-   }
-   png_ptr->zstream.avail_out = (uInt)png_ptr->zbuf_size;
-   png_ptr->zstream.next_out = png_ptr->zbuf;
+        /* do this just once */
+        virgin = 0;
+    }
+#else /* !BUILDFIXED */
+#   include "inffixed.h"
+#endif /* BUILDFIXED */
+    state->lencode = lenfix;
+    state->lenbits = 9;
+    state->distcode = distfix;
+    state->distbits = 5;
 }
 
-/* Internal use only.  Called when finished processing a row of data. */
-void /* PRIVATE */
-png_write_finish_row(png_structp png_ptr)
-{
-#ifdef PNG_USE_LOCAL_ARRAYS
-   /* arrays to facilitate easy interlacing - use pass (0 - 6) as index */
+#ifdef MAKEFIXED
+#include <stdio.h>
 
-   /* start of interlace block */
-   int png_pass_start[7] = {0, 4, 0, 2, 0, 1, 0};
+/*
+   Write out the inffixed.h that is #include'd above.  Defining MAKEFIXED also
+   defines BUILDFIXED, so the tables are built on the fly.  makefixed() writes
+   those tables to stdout, which would be piped to inffixed.h.  A small program
+   can simply call makefixed to do this:
 
-   /* offset to next interlace block */
-   int png_pass_inc[7] = {8, 8, 4, 4, 2, 2, 1};
+    void makefixed(void);
 
-   /* start of interlace block in the y direction */
-   int png_pass_ystart[7] = {0, 0, 4, 0, 2, 0, 1};
+    int main(void)
+    {
+        makefixed();
+        return 0;
+    }
 
-   /* offset to next interlace block in the y direction */
-   int png_pass_yinc[7] = {8, 8, 8, 4, 4, 2, 2};
-#endif
+   Then that can be linked with zlib built with MAKEFIXED defined and run:
 
-   int ret;
-
-   png_debug(1, "in png_write_finish_row\n");
-   /* next row */
-   png_ptr->row_number++;
-
-   /* see if we are done */
-   if (png_ptr->row_number < png_ptr->num_rows)
-      return;
-
-#ifdef PNG_WRITE_INTERLACING_SUPPORTED
-   /* if interlaced, go to next pass */
-   if (png_ptr->interlaced)
-   {
-      png_ptr->row_number = 0;
-      if (png_ptr->transformations & PNG_INTERLACE)
-      {
-         png_ptr->pass++;
-      }
-      else
-      {
-         /* loop until we find a non-zero width or height pass */
-         do
-         {
-            png_ptr->pass++;
-            if (png_ptr->pass >= 7)
-               break;
-            png_ptr->usr_width = (png_ptr->width +
-               png_pass_inc[png_ptr->pass] - 1 -
-               png_pass_start[png_ptr->pass]) /
-               png_pass_inc[png_ptr->pass];
-            png_ptr->num_rows = (png_ptr->height +
-               png_pass_yinc[png_ptr->pass] - 1 -
-               png_pass_ystart[png_ptr->pass]) /
-               png_pass_yinc[png_ptr->pass];
-            if (png_ptr->transformations & PNG_INTERLACE)
-               break;
-         } while (png_ptr->usr_width == 0 || png_ptr->num_rows == 0);
-
-      }
-
-      /* reset the row above the image for the next pass */
-      if (png_ptr->pass < 7)
-      {
-         if (png_ptr->prev_row != NULL)
-            png_memset(png_ptr->prev_row, 0,
-               (png_size_t) (((png_uint_32)png_ptr->usr_channels *
-               (png_uint_32)png_ptr->usr_bit_depth *
-               png_ptr->width + 7) >> 3) + 1);
-         return;
-      }
-   }
-#endif
-
-   /* if we get here, we've just written the last row, so we need
-      to flush the compressor */
-   do
-   {
-      /* tell the compressor we are done */
-      ret = deflate(&png_ptr->zstream, Z_FINISH);
-      /* check for an error */
-      if (ret == Z_OK)
-      {
-         /* check to see if we need more room */
-         if (!(png_ptr->zstream.avail_out))
-         {
-            png_write_IDAT(png_ptr, png_ptr->zbuf, png_ptr->zbuf_size);
-            png_ptr->zstream.next_out = png_ptr->zbuf;
-            png_ptr->zstream.avail_out = (uInt)png_ptr->zbuf_size;
-         }
-      }
-      else if (ret != Z_STREAM_END)
-      {
-         if (png_ptr->zstream.msg != NULL)
-            png_error(png_ptr, png_ptr->zstream.msg);
-         else
-            png_error(png_ptr, "zlib error");
-      }
-   } while (ret != Z_STREAM_END);
-
-   /* write any extra space */
-   if (png_ptr->zstream.avail_out < png_ptr->zbuf_size)
-   {
-      png_write_IDAT(png_ptr, png_ptr->zbuf, png_ptr->zbuf_size -
-         png_ptr->zstream.avail_out);
-   }
-
-   deflateReset(&png_ptr->zstream);
-}
-
-#if defined(PNG_WRITE_INTERLACING_SUPPORTED)
-/* Pick out the correct pixels for the interlace pass.
- * The basic idea here is to go through the row with a source
- * pointer and a destination pointer (sp and dp), and copy the
- * correct pixels for the pass.  As the row gets compacted,
- * sp will always be >= dp, so we should never overwrite anything.
- * See the default: case for the easiest code to understand.
+    a.out > inffixed.h
  */
-void /* PRIVATE */
-png_do_write_interlace(png_row_infop row_info, png_bytep row, int pass)
+void makefixed()
 {
-#ifdef PNG_USE_LOCAL_ARRAYS
-   /* arrays to facilitate easy interlacing - use pass (0 - 6) as index */
+    unsigned low, size;
+    struct inflate_state state;
 
-   /* start of interlace block */
-   int png_pass_start[7] = {0, 4, 0, 2, 0, 1, 0};
-
-   /* offset to next interlace block */
-   int png_pass_inc[7] = {8, 8, 4, 4, 2, 2, 1};
-#endif
-
-   png_debug(1, "in png_do_write_interlace\n");
-   /* we don't have to do anything on the last pass (6) */
-#if defined(PNG_USELESS_TESTS_SUPPORTED)
-   if (row != NULL && row_info != NULL && pass < 6)
-#else
-   if (pass < 6)
-#endif
-   {
-      /* each pixel depth is handled separately */
-      switch (row_info->pixel_depth)
-      {
-         case 1:
-         {
-            png_bytep sp;
-            png_bytep dp;
-            int shift;
-            int d;
-            int value;
-            png_uint_32 i;
-            png_uint_32 row_width = row_info->width;
-
-            dp = row;
-            d = 0;
-            shift = 7;
-            for (i = png_pass_start[pass]; i < row_width;
-               i += png_pass_inc[pass])
-            {
-               sp = row + (png_size_t)(i >> 3);
-               value = (int)(*sp >> (7 - (int)(i & 0x07))) & 0x01;
-               d |= (value << shift);
-
-               if (shift == 0)
-               {
-                  shift = 7;
-                  *dp++ = (png_byte)d;
-                  d = 0;
-               }
-               else
-                  shift--;
-
-            }
-            if (shift != 7)
-               *dp = (png_byte)d;
-            break;
-         }
-         case 2:
-         {
-            png_bytep sp;
-            png_bytep dp;
-            int shift;
-            int d;
-            int value;
-            png_uint_32 i;
-            png_uint_32 row_width = row_info->width;
-
-            dp = row;
-            shift = 6;
-            d = 0;
-            for (i = png_pass_start[pass]; i < row_width;
-               i += png_pass_inc[pass])
-            {
-               sp = row + (png_size_t)(i >> 2);
-               value = (*sp >> ((3 - (int)(i & 0x03)) << 1)) & 0x03;
-               d |= (value << shift);
-
-               if (shift == 0)
-               {
-                  shift = 6;
-                  *dp++ = (png_byte)d;
-                  d = 0;
-               }
-               else
-                  shift -= 2;
-            }
-            if (shift != 6)
-                   *dp = (png_byte)d;
-            break;
-         }
-         case 4:
-         {
-            png_bytep sp;
-            png_bytep dp;
-            int shift;
-            int d;
-            int value;
-            png_uint_32 i;
-            png_uint_32 row_width = row_info->width;
-
-            dp = row;
-            shift = 4;
-            d = 0;
-            for (i = png_pass_start[pass]; i < row_width;
-               i += png_pass_inc[pass])
-            {
-               sp = row + (png_size_t)(i >> 1);
-               value = (*sp >> ((1 - (int)(i & 0x01)) << 2)) & 0x0f;
-               d |= (value << shift);
-
-               if (shift == 0)
-               {
-                  shift = 4;
-                  *dp++ = (png_byte)d;
-                  d = 0;
-               }
-               else
-                  shift -= 4;
-            }
-            if (shift != 4)
-               *dp = (png_byte)d;
-            break;
-         }
-         default:
-         {
-            png_bytep sp;
-            png_bytep dp;
-            png_uint_32 i;
-            png_uint_32 row_width = row_info->width;
-            png_size_t pixel_bytes;
-
-            /* start at the beginning */
-            dp = row;
-            /* find out how many bytes each pixel takes up */
-            pixel_bytes = (row_info->pixel_depth >> 3);
-            /* loop through the row, only looking at the pixels that
-               matter */
-            for (i = png_pass_start[pass]; i < row_width;
-               i += png_pass_inc[pass])
-            {
-               /* find out where the original pixel is */
-               sp = row + (png_size_t)i * pixel_bytes;
-               /* move the pixel */
-               if (dp != sp)
-                  png_memcpy(dp, sp, pixel_bytes);
-               /* next pixel */
-               dp += pixel_bytes;
-            }
-            break;
-         }
-      }
-      /* set new row width */
-      row_info->width = (row_info->width +
-         png_pass_inc[pass] - 1 -
-         png_pass_start[pass]) /
-         png_pass_inc[pass];
-         row_info->rowbytes = ((row_info->width *
-            row_info->pixel_depth + 7) >> 3);
-   }
+    fixedtables(&state);
+    puts("    /* inffixed.h -- table for decoding fixed codes");
+    puts("     * Generated automatically by makefixed().");
+    puts("     */");
+    puts("");
+    puts("    /* WARNING: this file should *not* be used by applications.");
+    puts("       It is part of the implementation of this library and is");
+    puts("       subject to change. Applications should only use zlib.h.");
+    puts("     */");
+    puts("");
+    size = 1U << 9;
+    printf("    static const code lenfix[%u] = {", size);
+    low = 0;
+    for (;;) {
+        if ((low % 7) == 0) printf("\n        ");
+        printf("{%u,%u,%d}", state.lencode[low].op, state.lencode[low].bits,
+               state.lencode[low].val);
+        if (++low == size) break;
+        putchar(',');
+    }
+    puts("\n    };");
+    size = 1U << 5;
+    printf("\n    static const code distfix[%u] = {", size);
+    low = 0;
+    for (;;) {
+        if ((low % 6) == 0) printf("\n        ");
+        printf("{%u,%u,%d}", state.distcode[low].op, state.distcode[low].bits,
+               state.distcode[low].val);
+        if (++low == size) break;
+        putchar(',');
+    }
+    puts("\n    };");
 }
-#endif
+#endif /* MAKEFIXED */
 
-/* This filters the row, chooses which filter to use, if it has not already
- * been specified by the application, and then writes the row out with the
- * chosen filter.
+/*
+   Update the window with the last wsize (normally 32K) bytes written before
+   returning.  If window does not exist yet, create it.  This is only called
+   when a window is already in use, or when output has been written during this
+   inflate call, but the end of the deflate stream has not been reached yet.
+   It is also called to create a window for dictionary data when a dictionary
+   is loaded.
+
+   Providing output buffers larger than 32K to inflate() should provide a speed
+   advantage, since only the last 32K of output is copied to the sliding window
+   upon return from inflate(), and since all distances after the first 32K of
+   output will fall in the output data, making match copies simpler and faster.
+   The advantage may be dependent on the size of the processor's data caches.
  */
-#define PNG_MAXSUM (~((png_uint_32)0) >> 1)
-#define PNG_HISHIFT 10
-#define PNG_LOMASK ((png_uint_32)0xffffL)
-#define PNG_HIMASK ((png_uint_32)(~PNG_LOMASK >> PNG_HISHIFT))
-void /* PRIVATE */
-png_write_find_filter(png_structp png_ptr, png_row_infop row_info)
+local int updatewindow(strm, out)
+z_streamp strm;
+unsigned out;
 {
-   png_bytep prev_row, best_row, row_buf;
-   png_uint_32 mins, bpp;
-   png_byte filter_to_do = png_ptr->do_filter;
-   png_uint_32 row_bytes = row_info->rowbytes;
-#if defined(PNG_WRITE_WEIGHTED_FILTER_SUPPORTED)
-   int num_p_filters = (int)png_ptr->num_prev_filters;
-#endif
-
-   png_debug(1, "in png_write_find_filter\n");
-   /* find out how many bytes offset each pixel is */
-   bpp = (row_info->pixel_depth + 7) / 8;
-
-   prev_row = png_ptr->prev_row;
-   best_row = row_buf = png_ptr->row_buf;
-   mins = PNG_MAXSUM;
-
-   /* The prediction method we use is to find which method provides the
-    * smallest value when summing the absolute values of the distances
-    * from zero, using anything >= 128 as negative numbers.  This is known
-    * as the "minimum sum of absolute differences" heuristic.  Other
-    * heuristics are the "weighted minimum sum of absolute differences"
-    * (experimental and can in theory improve compression), and the "zlib
-    * predictive" method (not implemented yet), which does test compressions
-    * of lines using different filter methods, and then chooses the
-    * (series of) filter(s) that give minimum compressed data size (VERY
-    * computationally expensive).
-    *
-    * GRR 980525:  consider also
-    *   (1) minimum sum of absolute differences from running average (i.e.,
-    *       keep running sum of non-absolute differences & count of bytes)
-    *       [track dispersion, too?  restart average if dispersion too large?]
-    *  (1b) minimum sum of absolute differences from sliding average, probably
-    *       with window size <= deflate window (usually 32K)
-    *   (2) minimum sum of squared differences from zero or running average
-    *       (i.e., ~ root-mean-square approach)
-    */
-
-
-   /* We don't need to test the 'no filter' case if this is the only filter
-    * that has been chosen, as it doesn't actually do anything to the data.
-    */
-   if ((filter_to_do & PNG_FILTER_NONE) &&
-       filter_to_do != PNG_FILTER_NONE)
-   {
-      png_bytep rp;
-      png_uint_32 sum = 0;
-      png_uint_32 i;
-      int v;
-
-      for (i = 0, rp = row_buf + 1; i < row_bytes; i++, rp++)
-      {
-         v = *rp;
-         sum += (v < 128) ? v : 256 - v;
-      }
-
-#if defined(PNG_WRITE_WEIGHTED_FILTER_SUPPORTED)
-      if (png_ptr->heuristic_method == PNG_FILTER_HEURISTIC_WEIGHTED)
-      {
-         png_uint_32 sumhi, sumlo;
-         int j;
-         sumlo = sum & PNG_LOMASK;
-         sumhi = (sum >> PNG_HISHIFT) & PNG_HIMASK; /* Gives us some footroom */
-
-         /* Reduce the sum if we match any of the previous rows */
-         for (j = 0; j < num_p_filters; j++)
-         {
-            if (png_ptr->prev_filters[j] == PNG_FILTER_VALUE_NONE)
-            {
-               sumlo = (sumlo * png_ptr->filter_weights[j]) >>
-                  PNG_WEIGHT_SHIFT;
-               sumhi = (sumhi * png_ptr->filter_weights[j]) >>
-                  PNG_WEIGHT_SHIFT;
-            }
-         }
-
-         /* Factor in the cost of this filter (this is here for completeness,
-          * but it makes no sense to have a "cost" for the NONE filter, as
-          * it has the minimum possible computational cost - none).
-          */
-         sumlo = (sumlo * png_ptr->filter_costs[PNG_FILTER_VALUE_NONE]) >>
-            PNG_COST_SHIFT;
-         sumhi = (sumhi * png_ptr->filter_costs[PNG_FILTER_VALUE_NONE]) >>
-            PNG_COST_SHIFT;
-
-         if (sumhi > PNG_HIMASK)
-            sum = PNG_MAXSUM;
-         else
-            sum = (sumhi << PNG_HISHIFT) + sumlo;
-      }
-#endif
-      mins = sum;
-   }
-
-   /* sub filter */
-   if (filter_to_do == PNG_FILTER_SUB)
-   /* it's the only filter so no testing is needed */
-   {
-      png_bytep rp, lp, dp;
-      png_uint_32 i;
-      for (i = 0, rp = row_buf + 1, dp = png_ptr->sub_row + 1; i < bpp;
-           i++, rp++, dp++)
-      {
-         *dp = *rp;
-      }
-      for (lp = row_buf + 1; i < row_bytes;
-         i++, rp++, lp++, dp++)
-      {
-         *dp = (png_byte)(((int)*rp - (int)*lp) & 0xff);
-      }
-      best_row = png_ptr->sub_row;
-   }
-
-   else if (filter_to_do & PNG_FILTER_SUB)
-   {
-      png_bytep rp, dp, lp;
-      png_uint_32 sum = 0, lmins = mins;
-      png_uint_32 i;
-      int v;
-
-#if defined(PNG_WRITE_WEIGHTED_FILTER_SUPPORTED)
-      /* We temporarily increase the "minimum sum" by the factor we
-       * would reduce the sum of this filter, so that we can do the
-       * early exit comparison without scaling the sum each time.
-       */
-      if (png_ptr->heuristic_method == PNG_FILTER_HEURISTIC_WEIGHTED)
-      {
-         int j;
-         png_uint_32 lmhi, lmlo;
-         lmlo = lmins & PNG_LOMASK;
-         lmhi = (lmins >> PNG_HISHIFT) & PNG_HIMASK;
-
-         for (j = 0; j < num_p_filters; j++)
-         {
-            if (png_ptr->prev_filters[j] == PNG_FILTER_VALUE_SUB)
-            {
-               lmlo = (lmlo * png_ptr->inv_filter_weights[j]) >>
-                  PNG_WEIGHT_SHIFT;
-               lmhi = (lmhi * png_ptr->inv_filter_weights[j]) >>
-                  PNG_WEIGHT_SHIFT;
-            }
-         }
-
-         lmlo = (lmlo * png_ptr->inv_filter_costs[PNG_FILTER_VALUE_SUB]) >>
-            PNG_COST_SHIFT;
-         lmhi = (lmhi * png_ptr->inv_filter_costs[PNG_FILTER_VALUE_SUB]) >>
-            PNG_COST_SHIFT;
-
-         if (lmhi > PNG_HIMASK)
-            lmins = PNG_MAXSUM;
-         else
-            lmins = (lmhi << PNG_HISHIFT) + lmlo;
-      }
-#endif
-
-      for (i = 0, rp = row_buf + 1, dp = png_ptr->sub_row + 1; i < bpp;
-           i++, rp++, dp++)
-      {
-         v = *dp = *rp;
-
-         sum += (v < 128) ? v : 256 - v;
-      }
-      for (lp = row_buf + 1; i < row_info->rowbytes;
-         i++, rp++, lp++, dp++)
-      {
-         v = *dp = (png_byte)(((int)*rp - (int)*lp) & 0xff);
-
-         sum += (v < 128) ? v : 256 - v;
-
-         if (sum > lmins)  /* We are already worse, don't continue. */
-            break;
-      }
-
-#if defined(PNG_WRITE_WEIGHTED_FILTER_SUPPORTED)
-      if (png_ptr->heuristic_method == PNG_FILTER_HEURISTIC_WEIGHTED)
-      {
-         int j;
-         png_uint_32 sumhi, sumlo;
-         sumlo = sum & PNG_LOMASK;
-         sumhi = (sum >> PNG_HISHIFT) & PNG_HIMASK;
-
-         for (j = 0; j < num_p_filters; j++)
-         {
-            if (png_ptr->prev_filters[j] == PNG_FILTER_VALUE_SUB)
-            {
-               sumlo = (sumlo * png_ptr->inv_filter_weights[j]) >>
-                  PNG_WEIGHT_SHIFT;
-               sumhi = (sumhi * png_ptr->inv_filter_weights[j]) >>
-                  PNG_WEIGHT_SHIFT;
-            }
-         }
-
-         sumlo = (sumlo * png_ptr->inv_filter_costs[PNG_FILTER_VALUE_SUB]) >>
-            PNG_COST_SHIFT;
-         sumhi = (sumhi * png_ptr->inv_filter_costs[PNG_FILTER_VALUE_SUB]) >>
-            PNG_COST_SHIFT;
-
-         if (sumhi > PNG_HIMASK)
-            sum = PNG_MAXSUM;
-         else
-            sum = (sumhi << PNG_HISHIFT) + sumlo;
-      }
-#endif
-
-      if (sum < mins)
-      {
-         mins = sum;
-         best_row = png_ptr->sub_row;
-      }
-   }
-
-   /* up filter */
-   if (filter_to_do == PNG_FILTER_UP)
-   {
-      png_bytep rp, dp, pp;
-      png_uint_32 i;
-
-      for (i = 0, rp = row_buf + 1, dp = png_ptr->up_row + 1,
-           pp = prev_row + 1; i < row_bytes;
-           i++, rp++, pp++, dp++)
-      {
-         *dp = (png_byte)(((int)*rp - (int)*pp) & 0xff);
-      }
-      best_row = png_ptr->up_row;
-   }
-
-   else if (filter_to_do & PNG_FILTER_UP)
-   {
-      png_bytep rp, dp, pp;
-      png_uint_32 sum = 0, lmins = mins;
-      png_uint_32 i;
-      int v;
-
-
-#if defined(PNG_WRITE_WEIGHTED_FILTER_SUPPORTED)
-      if (png_ptr->heuristic_method == PNG_FILTER_HEURISTIC_WEIGHTED)
-      {
-         int j;
-         png_uint_32 lmhi, lmlo;
-         lmlo = lmins & PNG_LOMASK;
-         lmhi = (lmins >> PNG_HISHIFT) & PNG_HIMASK;
-
-         for (j = 0; j < num_p_filters; j++)
-         {
-            if (png_ptr->prev_filters[j] == PNG_FILTER_VALUE_UP)
-            {
-               lmlo = (lmlo * png_ptr->inv_filter_weights[j]) >>
-                  PNG_WEIGHT_SHIFT;
-               lmhi = (lmhi * png_ptr->inv_filter_weights[j]) >>
-                  PNG_WEIGHT_SHIFT;
-            }
-         }
-
-         lmlo = (lmlo * png_ptr->inv_filter_costs[PNG_FILTER_VALUE_UP]) >>
-            PNG_COST_SHIFT;
-         lmhi = (lmhi * png_ptr->inv_filter_costs[PNG_FILTER_VALUE_UP]) >>
-            PNG_COST_SHIFT;
-
-         if (lmhi > PNG_HIMASK)
-            lmins = PNG_MAXSUM;
-         else
-            lmins = (lmhi << PNG_HISHIFT) + lmlo;
-      }
-#endif
-
-      for (i = 0, rp = row_buf + 1, dp = png_ptr->up_row + 1,
-           pp = prev_row + 1; i < row_bytes; i++)
-      {
-         v = *dp++ = (png_byte)(((int)*rp++ - (int)*pp++) & 0xff);
-
-         sum += (v < 128) ? v : 256 - v;
-
-         if (sum > lmins)  /* We are already worse, don't continue. */
-            break;
-      }
-
-#if defined(PNG_WRITE_WEIGHTED_FILTER_SUPPORTED)
-      if (png_ptr->heuristic_method == PNG_FILTER_HEURISTIC_WEIGHTED)
-      {
-         int j;
-         png_uint_32 sumhi, sumlo;
-         sumlo = sum & PNG_LOMASK;
-         sumhi = (sum >> PNG_HISHIFT) & PNG_HIMASK;
-
-         for (j = 0; j < num_p_filters; j++)
-         {
-            if (png_ptr->prev_filters[j] == PNG_FILTER_VALUE_UP)
-            {
-               sumlo = (sumlo * png_ptr->filter_weights[j]) >>
-                  PNG_WEIGHT_SHIFT;
-               sumhi = (sumhi * png_ptr->filter_weights[j]) >>
-                  PNG_WEIGHT_SHIFT;
-            }
-         }
-
-         sumlo = (sumlo * png_ptr->filter_costs[PNG_FILTER_VALUE_UP]) >>
-            PNG_COST_SHIFT;
-         sumhi = (sumhi * png_ptr->filter_costs[PNG_FILTER_VALUE_UP]) >>
-            PNG_COST_SHIFT;
-
-         if (sumhi > PNG_HIMASK)
-            sum = PNG_MAXSUM;
-         else
-            sum = (sumhi << PNG_HISHIFT) + sumlo;
-      }
-#endif
-
-      if (sum < mins)
-      {
-         mins = sum;
-         best_row = png_ptr->up_row;
-      }
-   }
-
-   /* avg filter */
-   if (filter_to_do == PNG_FILTER_AVG)
-   {
-      png_bytep rp, dp, pp, lp;
-      png_uint_32 i;
-      for (i = 0, rp = row_buf + 1, dp = png_ptr->avg_row + 1,
-           pp = prev_row + 1; i < bpp; i++)
-      {
-         *dp++ = (png_byte)(((int)*rp++ - ((int)*pp++ / 2)) & 0xff);
-      }
-      for (lp = row_buf + 1; i < row_bytes; i++)
-      {
-         *dp++ = (png_byte)(((int)*rp++ - (((int)*pp++ + (int)*lp++) / 2))
-                 & 0xff);
-      }
-      best_row = png_ptr->avg_row;
-   }
-
-   else if (filter_to_do & PNG_FILTER_AVG)
-   {
-      png_bytep rp, dp, pp, lp;
-      png_uint_32 sum = 0, lmins = mins;
-      png_uint_32 i;
-      int v;
-
-#if defined(PNG_WRITE_WEIGHTED_FILTER_SUPPORTED)
-      if (png_ptr->heuristic_method == PNG_FILTER_HEURISTIC_WEIGHTED)
-      {
-         int j;
-         png_uint_32 lmhi, lmlo;
-         lmlo = lmins & PNG_LOMASK;
-         lmhi = (lmins >> PNG_HISHIFT) & PNG_HIMASK;
-
-         for (j = 0; j < num_p_filters; j++)
-         {
-            if (png_ptr->prev_filters[j] == PNG_FILTER_VALUE_AVG)
-            {
-               lmlo = (lmlo * png_ptr->inv_filter_weights[j]) >>
-                  PNG_WEIGHT_SHIFT;
-               lmhi = (lmhi * png_ptr->inv_filter_weights[j]) >>
-                  PNG_WEIGHT_SHIFT;
-            }
-         }
-
-         lmlo = (lmlo * png_ptr->inv_filter_costs[PNG_FILTER_VALUE_AVG]) >>
-            PNG_COST_SHIFT;
-         lmhi = (lmhi * png_ptr->inv_filter_costs[PNG_FILTER_VALUE_AVG]) >>
-            PNG_COST_SHIFT;
-
-         if (lmhi > PNG_HIMASK)
-            lmins = PNG_MAXSUM;
-         else
-            lmins = (lmhi << PNG_HISHIFT) + lmlo;
-      }
-#endif
-
-      for (i = 0, rp = row_buf + 1, dp = png_ptr->avg_row + 1,
-           pp = prev_row + 1; i < bpp; i++)
-      {
-         v = *dp++ = (png_byte)(((int)*rp++ - ((int)*pp++ / 2)) & 0xff);
-
-         sum += (v < 128) ? v : 256 - v;
-      }
-      for (lp = row_buf + 1; i < row_bytes; i++)
-      {
-         v = *dp++ =
-          (png_byte)(((int)*rp++ - (((int)*pp++ + (int)*lp++) / 2)) & 0xff);
-
-         sum += (v < 128) ? v : 256 - v;
-
-         if (sum > lmins)  /* We are already worse, don't continue. */
-            break;
-      }
-
-#if defined(PNG_WRITE_WEIGHTED_FILTER_SUPPORTED)
-      if (png_ptr->heuristic_method == PNG_FILTER_HEURISTIC_WEIGHTED)
-      {
-         int j;
-         png_uint_32 sumhi, sumlo;
-         sumlo = sum & PNG_LOMASK;
-         sumhi = (sum >> PNG_HISHIFT) & PNG_HIMASK;
-
-         for (j = 0; j < num_p_filters; j++)
-         {
-            if (png_ptr->prev_filters[j] == PNG_FILTER_VALUE_NONE)
-            {
-               sumlo = (sumlo * png_ptr->filter_weights[j]) >>
-                  PNG_WEIGHT_SHIFT;
-               sumhi = (sumhi * png_ptr->filter_weights[j]) >>
-                  PNG_WEIGHT_SHIFT;
-            }
-         }
-
-         sumlo = (sumlo * png_ptr->filter_costs[PNG_FILTER_VALUE_AVG]) >>
-            PNG_COST_SHIFT;
-         sumhi = (sumhi * png_ptr->filter_costs[PNG_FILTER_VALUE_AVG]) >>
-            PNG_COST_SHIFT;
-
-         if (sumhi > PNG_HIMASK)
-            sum = PNG_MAXSUM;
-         else
-            sum = (sumhi << PNG_HISHIFT) + sumlo;
-      }
-#endif
-
-      if (sum < mins)
-      {
-         mins = sum;
-         best_row = png_ptr->avg_row;
-      }
-   }
-
-   /* Paeth filter */
-   if (filter_to_do == PNG_FILTER_PAETH)
-   {
-      png_bytep rp, dp, pp, cp, lp;
-      png_uint_32 i;
-      for (i = 0, rp = row_buf + 1, dp = png_ptr->paeth_row + 1,
-           pp = prev_row + 1; i < bpp; i++)
-      {
-         *dp++ = (png_byte)(((int)*rp++ - (int)*pp++) & 0xff);
-      }
-
-      for (lp = row_buf + 1, cp = prev_row + 1; i < row_bytes; i++)
-      {
-         int a, b, c, pa, pb, pc, p;
-
-         b = *pp++;
-         c = *cp++;
-         a = *lp++;
-
-         p = b - c;
-         pc = a - c;
-
-#ifdef PNG_USE_ABS
-         pa = abs(p);
-         pb = abs(pc);
-         pc = abs(p + pc);
-#else
-         pa = p < 0 ? -p : p;
-         pb = pc < 0 ? -pc : pc;
-         pc = (p + pc) < 0 ? -(p + pc) : p + pc;
-#endif
-
-         p = (pa <= pb && pa <=pc) ? a : (pb <= pc) ? b : c;
-
-         *dp++ = (png_byte)(((int)*rp++ - p) & 0xff);
-      }
-      best_row = png_ptr->paeth_row;
-   }
-
-   else if (filter_to_do & PNG_FILTER_PAETH)
-   {
-      png_bytep rp, dp, pp, cp, lp;
-      png_uint_32 sum = 0, lmins = mins;
-      png_uint_32 i;
-      int v;
-
-#if defined(PNG_WRITE_WEIGHTED_FILTER_SUPPORTED)
-      if (png_ptr->heuristic_method == PNG_FILTER_HEURISTIC_WEIGHTED)
-      {
-         int j;
-         png_uint_32 lmhi, lmlo;
-         lmlo = lmins & PNG_LOMASK;
-         lmhi = (lmins >> PNG_HISHIFT) & PNG_HIMASK;
-
-         for (j = 0; j < num_p_filters; j++)
-         {
-            if (png_ptr->prev_filters[j] == PNG_FILTER_VALUE_PAETH)
-            {
-               lmlo = (lmlo * png_ptr->inv_filter_weights[j]) >>
-                  PNG_WEIGHT_SHIFT;
-               lmhi = (lmhi * png_ptr->inv_filter_weights[j]) >>
-                  PNG_WEIGHT_SHIFT;
-            }
-         }
-
-         lmlo = (lmlo * png_ptr->inv_filter_costs[PNG_FILTER_VALUE_PAETH]) >>
-            PNG_COST_SHIFT;
-         lmhi = (lmhi * png_ptr->inv_filter_costs[PNG_FILTER_VALUE_PAETH]) >>
-            PNG_COST_SHIFT;
-
-         if (lmhi > PNG_HIMASK)
-            lmins = PNG_MAXSUM;
-         else
-            lmins = (lmhi << PNG_HISHIFT) + lmlo;
-      }
-#endif
-
-      for (i = 0, rp = row_buf + 1, dp = png_ptr->paeth_row + 1,
-           pp = prev_row + 1; i < bpp; i++)
-      {
-         v = *dp++ = (png_byte)(((int)*rp++ - (int)*pp++) & 0xff);
-
-         sum += (v < 128) ? v : 256 - v;
-      }
-
-      for (lp = row_buf + 1, cp = prev_row + 1; i < row_bytes; i++)
-      {
-         int a, b, c, pa, pb, pc, p;
-
-         b = *pp++;
-         c = *cp++;
-         a = *lp++;
-
-#ifndef PNG_SLOW_PAETH
-         p = b - c;
-         pc = a - c;
-#ifdef PNG_USE_ABS
-         pa = abs(p);
-         pb = abs(pc);
-         pc = abs(p + pc);
-#else
-         pa = p < 0 ? -p : p;
-         pb = pc < 0 ? -pc : pc;
-         pc = (p + pc) < 0 ? -(p + pc) : p + pc;
-#endif
-         p = (pa <= pb && pa <=pc) ? a : (pb <= pc) ? b : c;
-#else /* PNG_SLOW_PAETH */
-         p = a + b - c;
-         pa = abs(p - a);
-         pb = abs(p - b);
-         pc = abs(p - c);
-         if (pa <= pb && pa <= pc)
-            p = a;
-         else if (pb <= pc)
-            p = b;
-         else
-            p = c;
-#endif /* PNG_SLOW_PAETH */
-
-         v = *dp++ = (png_byte)(((int)*rp++ - p) & 0xff);
-
-         sum += (v < 128) ? v : 256 - v;
-
-         if (sum > lmins)  /* We are already worse, don't continue. */
-            break;
-      }
-
-#if defined(PNG_WRITE_WEIGHTED_FILTER_SUPPORTED)
-      if (png_ptr->heuristic_method == PNG_FILTER_HEURISTIC_WEIGHTED)
-      {
-         int j;
-         png_uint_32 sumhi, sumlo;
-         sumlo = sum & PNG_LOMASK;
-         sumhi = (sum >> PNG_HISHIFT) & PNG_HIMASK;
-
-         for (j = 0; j < num_p_filters; j++)
-         {
-            if (png_ptr->prev_filters[j] == PNG_FILTER_VALUE_PAETH)
-            {
-               sumlo = (sumlo * png_ptr->filter_weights[j]) >>
-                  PNG_WEIGHT_SHIFT;
-               sumhi = (sumhi * png_ptr->filter_weights[j]) >>
-                  PNG_WEIGHT_SHIFT;
-            }
-         }
-
-         sumlo = (sumlo * png_ptr->filter_costs[PNG_FILTER_VALUE_PAETH]) >>
-            PNG_COST_SHIFT;
-         sumhi = (sumhi * png_ptr->filter_costs[PNG_FILTER_VALUE_PAETH]) >>
-            PNG_COST_SHIFT;
-
-         if (sumhi > PNG_HIMASK)
-            sum = PNG_MAXSUM;
-         else
-            sum = (sumhi << PNG_HISHIFT) + sumlo;
-      }
-#endif
-
-      if (sum < mins)
-      {
-         best_row = png_ptr->paeth_row;
-      }
-   }
-
-   /* Do the actual writing of the filtered row data from the chosen filter. */
-
-   png_write_filtered_row(png_ptr, best_row);
-
-#if defined(PNG_WRITE_WEIGHTED_FILTER_SUPPORTED)
-   /* Save the type of filter we picked this time for future calculations */
-   if (png_ptr->num_prev_filters > 0)
-   {
-      int j;
-      for (j = 1; j < num_p_filters; j++)
-      {
-         png_ptr->prev_filters[j] = png_ptr->prev_filters[j - 1];
-      }
-      png_ptr->prev_filters[j] = best_row[0];
-   }
-#endif
+    struct inflate_state FAR *state;
+    unsigned copy, dist;
+
+    state = (struct inflate_state FAR *)strm->state;
+
+    /* if it hasn't been done already, allocate space for the window */
+    if (state->window == Z_NULL) {
+        state->window = (unsigned char FAR *)
+                        ZALLOC(strm, 1U << state->wbits,
+                               sizeof(unsigned char));
+        if (state->window == Z_NULL) return 1;
+    }
+
+    /* if window not in use yet, initialize */
+    if (state->wsize == 0) {
+        state->wsize = 1U << state->wbits;
+        state->write = 0;
+        state->whave = 0;
+    }
+
+    /* copy state->wsize or less output bytes into the circular window */
+    copy = out - strm->avail_out;
+    if (copy >= state->wsize) {
+        zmemcpy(state->window, strm->next_out - state->wsize, state->wsize);
+        state->write = 0;
+        state->whave = state->wsize;
+    }
+    else {
+        dist = state->wsize - state->write;
+        if (dist > copy) dist = copy;
+        zmemcpy(state->window + state->write, strm->next_out - copy, dist);
+        copy -= dist;
+        if (copy) {
+            zmemcpy(state->window, strm->next_out - copy, copy);
+            state->write = copy;
+            state->whave = state->wsize;
+        }
+        else {
+            state->write += dist;
+            if (state->write == state->wsize) state->write = 0;
+            if (state->whave < state->wsize) state->whave += dist;
+        }
+    }
+    return 0;
 }
 
+/* Macros for inflate(): */
 
-/* Do the actual writing of a previously filtered row. */
-void /* PRIVATE */
-png_write_filtered_row(png_structp png_ptr, png_bytep filtered_row)
-{
-   png_debug(1, "in png_write_filtered_row\n");
-   png_debug1(2, "filter = %d\n", filtered_row[0]);
-   /* set up the zlib input buffer */
-
-   png_ptr->zstream.next_in = filtered_row;
-   png_ptr->zstream.avail_in = (uInt)png_ptr->row_info.rowbytes + 1;
-   /* repeat until we have compressed all the data */
-   do
-   {
-      int ret; /* return of zlib */
-
-      /* compress the data */
-      ret = deflate(&png_ptr->zstream, Z_NO_FLUSH);
-      /* check for compression errors */
-      if (ret != Z_OK)
-      {
-         if (png_ptr->zstream.msg != NULL)
-            png_error(png_ptr, png_ptr->zstream.msg);
-         else
-            png_error(png_ptr, "zlib error");
-      }
-
-      /* see if it is time to write another IDAT */
-      if (!(png_ptr->zstream.avail_out))
-      {
-         /* write the IDAT and reset the zlib output buffer */
-         png_write_IDAT(png_ptr, png_ptr->zbuf, png_ptr->zbuf_size);
-         png_ptr->zstream.next_out = png_ptr->zbuf;
-         png_ptr->zstream.avail_out = (uInt)png_ptr->zbuf_size;
-      }
-   /* repeat until all data has been compressed */
-   } while (png_ptr->zstream.avail_in);
-
-   /* swap the current and previous rows */
-   if (png_ptr->prev_row != NULL)
-   {
-      png_bytep tptr;
-
-      tptr = png_ptr->prev_row;
-      png_ptr->prev_row = png_ptr->row_buf;
-      png_ptr->row_buf = tptr;
-   }
-
-   /* finish row - updates counters and flushes zlib if last row */
-   png_write_finish_row(png_ptr);
-
-#if defined(PNG_WRITE_FLUSH_SUPPORTED)
-   png_ptr->flush_rows++;
-
-   if (png_ptr->flush_dist > 0 &&
-       png_ptr->flush_rows >= png_ptr->flush_dist)
-   {
-      png_write_flush(png_ptr);
-   }
+/* check function to use adler32() for zlib or crc32() for gzip */
+#ifdef GUNZIP
+#  define UPDATE(check, buf, len) \
+    (state->flags ? crc32(check, buf, len) : adler32(check, buf, len))
+#else
+#  define UPDATE(check, buf, len) adler32(check, buf, len)
 #endif
+
+/* check macros for header crc */
+#ifdef GUNZIP
+#  define CRC2(check, word) \
+    do { \
+        hbuf[0] = (unsigned char)(word); \
+        hbuf[1] = (unsigned char)((word) >> 8); \
+        check = crc32(check, hbuf, 2); \
+    } while (0)
+
+#  define CRC4(check, word) \
+    do { \
+        hbuf[0] = (unsigned char)(word); \
+        hbuf[1] = (unsigned char)((word) >> 8); \
+        hbuf[2] = (unsigned char)((word) >> 16); \
+        hbuf[3] = (unsigned char)((word) >> 24); \
+        check = crc32(check, hbuf, 4); \
+    } while (0)
+#endif
+
+/* Load registers with state in inflate() for speed */
+#define LOAD() \
+    do { \
+        put = strm->next_out; \
+        left = strm->avail_out; \
+        next = strm->next_in; \
+        have = strm->avail_in; \
+        hold = state->hold; \
+        bits = state->bits; \
+    } while (0)
+
+/* Restore state from registers in inflate() */
+#define RESTORE() \
+    do { \
+        strm->next_out = put; \
+        strm->avail_out = left; \
+        strm->next_in = next; \
+        strm->avail_in = have; \
+        state->hold = hold; \
+        state->bits = bits; \
+    } while (0)
+
+/* Clear the input bit accumulator */
+#define INITBITS() \
+    do { \
+        hold = 0; \
+        bits = 0; \
+    } while (0)
+
+/* Get a byte of input into the bit accumulator, or return from inflate()
+   if there is no input available. */
+#define PULLBYTE() \
+    do { \
+        if (have == 0) goto inf_leave; \
+        have--; \
+        hold += (unsigned long)(*next++) << bits; \
+        bits += 8; \
+    } while (0)
+
+/* Assure that there are at least n bits in the bit accumulator.  If there is
+   not enough available input to do that, then return from inflate(). */
+#define NEEDBITS(n) \
+    do { \
+        while (bits < (unsigned)(n)) \
+            PULLBYTE(); \
+    } while (0)
+
+/* Return the low n bits of the bit accumulator (n < 16) */
+#define BITS(n) \
+    ((unsigned)hold & ((1U << (n)) - 1))
+
+/* Remove n bits from the bit accumulator */
+#define DROPBITS(n) \
+    do { \
+        hold >>= (n); \
+        bits -= (unsigned)(n); \
+    } while (0)
+
+/* Remove zero to seven bits as needed to go to a byte boundary */
+#define BYTEBITS() \
+    do { \
+        hold >>= bits & 7; \
+        bits -= bits & 7; \
+    } while (0)
+
+/* Reverse the bytes in a 32-bit value */
+#define REVERSE(q) \
+    ((((q) >> 24) & 0xff) + (((q) >> 8) & 0xff00) + \
+     (((q) & 0xff00) << 8) + (((q) & 0xff) << 24))
+
+/*
+   inflate() uses a state machine to process as much input data and generate as
+   much output data as possible before returning.  The state machine is
+   structured roughly as follows:
+
+    for (;;) switch (state) {
+    ...
+    case STATEn:
+        if (not enough input data or output space to make progress)
+            return;
+        ... make progress ...
+        state = STATEm;
+        break;
+    ...
+    }
+
+   so when inflate() is called again, the same case is attempted again, and
+   if the appropriate resources are provided, the machine proceeds to the
+   next state.  The NEEDBITS() macro is usually the way the state evaluates
+   whether it can proceed or should return.  NEEDBITS() does the return if
+   the requested bits are not available.  The typical use of the BITS macros
+   is:
+
+        NEEDBITS(n);
+        ... do something with BITS(n) ...
+        DROPBITS(n);
+
+   where NEEDBITS(n) either returns from inflate() if there isn't enough
+   input left to load n bits into the accumulator, or it continues.  BITS(n)
+   gives the low n bits in the accumulator.  When done, DROPBITS(n) drops
+   the low n bits off the accumulator.  INITBITS() clears the accumulator
+   and sets the number of available bits to zero.  BYTEBITS() discards just
+   enough bits to put the accumulator on a byte boundary.  After BYTEBITS()
+   and a NEEDBITS(8), then BITS(8) would return the next byte in the stream.
+
+   NEEDBITS(n) uses PULLBYTE() to get an available byte of input, or to return
+   if there is no input available.  The decoding of variable length codes uses
+   PULLBYTE() directly in order to pull just enough bytes to decode the next
+   code, and no more.
+
+   Some states loop until they get enough input, making sure that enough
+   state information is maintained to continue the loop where it left off
+   if NEEDBITS() returns in the loop.  For example, want, need, and keep
+   would all have to actually be part of the saved state in case NEEDBITS()
+   returns:
+
+    case STATEw:
+        while (want < need) {
+            NEEDBITS(n);
+            keep[want++] = BITS(n);
+            DROPBITS(n);
+        }
+        state = STATEx;
+    case STATEx:
+
+   As shown above, if the next state is also the next case, then the break
+   is omitted.
+
+   A state may also return if there is not enough output space available to
+   complete that state.  Those states are copying stored data, writing a
+   literal byte, and copying a matching string.
+
+   When returning, a "goto inf_leave" is used to update the total counters,
+   update the check value, and determine whether any progress has been made
+   during that inflate() call in order to return the proper return code.
+   Progress is defined as a change in either strm->avail_in or strm->avail_out.
+   When there is a window, goto inf_leave will update the window with the last
+   output written.  If a goto inf_leave occurs in the middle of decompression
+   and there is no window currently, goto inf_leave will create one and copy
+   output to the window for the next call of inflate().
+
+   In this implementation, the flush parameter of inflate() only affects the
+   return code (per zlib.h).  inflate() always writes as much as possible to
+   strm->next_out, given the space available and the provided input--the effect
+   documented in zlib.h of Z_SYNC_FLUSH.  Furthermore, inflate() always defers
+   the allocation of and copying into a sliding window until necessary, which
+   provides the effect documented in zlib.h for Z_FINISH when the entire input
+   stream available.  So the only thing the flush parameter actually does is:
+   when flush is set to Z_FINISH, inflate() cannot return Z_OK.  Instead it
+   will return Z_BUF_ERROR if it has not reached the end of the stream.
+ */
+
+int ZEXPORT inflate(strm, flush)
+z_streamp strm;
+int flush;
+{
+    struct inflate_state FAR *state;
+    unsigned char FAR *next;    /* next input */
+    unsigned char FAR *put;     /* next output */
+    unsigned have, left;        /* available input and output */
+    unsigned long hold;         /* bit buffer */
+    unsigned bits;              /* bits in bit buffer */
+    unsigned in, out;           /* save starting available input and output */
+    unsigned copy;              /* number of stored or match bytes to copy */
+    unsigned char FAR *from;    /* where to copy match bytes from */
+    code this;                  /* current decoding table entry */
+    code last;                  /* parent table entry */
+    unsigned len;               /* length to copy for repeats, bits to drop */
+    int ret;                    /* return code */
+#ifdef GUNZIP
+    unsigned char hbuf[4];      /* buffer for gzip header crc calculation */
+#endif
+    static const unsigned short order[19] = /* permutation of code lengths */
+        {16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
+
+    if (strm == Z_NULL || strm->state == Z_NULL || strm->next_out == Z_NULL ||
+        (strm->next_in == Z_NULL && strm->avail_in != 0))
+        return Z_STREAM_ERROR;
+
+    state = (struct inflate_state FAR *)strm->state;
+    if (state->mode == TYPE) state->mode = TYPEDO;      /* skip check */
+    LOAD();
+    in = have;
+    out = left;
+    ret = Z_OK;
+    for (;;)
+        switch (state->mode) {
+        case HEAD:
+            if (state->wrap == 0) {
+                state->mode = TYPEDO;
+                break;
+            }
+            NEEDBITS(16);
+#ifdef GUNZIP
+            if ((state->wrap & 2) && hold == 0x8b1f) {  /* gzip header */
+                state->check = crc32(0L, Z_NULL, 0);
+                CRC2(state->check, hold);
+                INITBITS();
+                state->mode = FLAGS;
+                break;
+            }
+            state->flags = 0;           /* expect zlib header */
+            if (state->head != Z_NULL)
+                state->head->done = -1;
+            if (!(state->wrap & 1) ||   /* check if zlib header allowed */
+#else
+            if (
+#endif
+                ((BITS(8) << 8) + (hold >> 8)) % 31) {
+                strm->msg = (char *)"incorrect header check";
+                state->mode = BAD;
+                break;
+            }
+            if (BITS(4) != Z_DEFLATED) {
+                strm->msg = (char *)"unknown compression method";
+                state->mode = BAD;
+                break;
+            }
+            DROPBITS(4);
+            len = BITS(4) + 8;
+            if (len > state->wbits) {
+                strm->msg = (char *)"invalid window size";
+                state->mode = BAD;
+                break;
+            }
+            state->dmax = 1U << len;
+            Tracev((stderr, "inflate:   zlib header ok\n"));
+            strm->adler = state->check = adler32(0L, Z_NULL, 0);
+            state->mode = hold & 0x200 ? DICTID : TYPE;
+            INITBITS();
+            break;
+#ifdef GUNZIP
+        case FLAGS:
+            NEEDBITS(16);
+            state->flags = (int)(hold);
+            if ((state->flags & 0xff) != Z_DEFLATED) {
+                strm->msg = (char *)"unknown compression method";
+                state->mode = BAD;
+                break;
+            }
+            if (state->flags & 0xe000) {
+                strm->msg = (char *)"unknown header flags set";
+                state->mode = BAD;
+                break;
+            }
+            if (state->head != Z_NULL)
+                state->head->text = (int)((hold >> 8) & 1);
+            if (state->flags & 0x0200) CRC2(state->check, hold);
+            INITBITS();
+            state->mode = TIME;
+        case TIME:
+            NEEDBITS(32);
+            if (state->head != Z_NULL)
+                state->head->time = hold;
+            if (state->flags & 0x0200) CRC4(state->check, hold);
+            INITBITS();
+            state->mode = OS;
+        case OS:
+            NEEDBITS(16);
+            if (state->head != Z_NULL) {
+                state->head->xflags = (int)(hold & 0xff);
+                state->head->os = (int)(hold >> 8);
+            }
+            if (state->flags & 0x0200) CRC2(state->check, hold);
+            INITBITS();
+            state->mode = EXLEN;
+        case EXLEN:
+            if (state->flags & 0x0400) {
+                NEEDBITS(16);
+                state->length = (unsigned)(hold);
+                if (state->head != Z_NULL)
+                    state->head->extra_len = (unsigned)hold;
+                if (state->flags & 0x0200) CRC2(state->check, hold);
+                INITBITS();
+            }
+            else if (state->head != Z_NULL)
+                state->head->extra = Z_NULL;
+            state->mode = EXTRA;
+        case EXTRA:
+            if (state->flags & 0x0400) {
+                copy = state->length;
+                if (copy > have) copy = have;
+                if (copy) {
+                    if (state->head != Z_NULL &&
+                        state->head->extra != Z_NULL) {
+                        len = state->head->extra_len - state->length;
+                        zmemcpy(state->head->extra + len, next,
+                                len + copy > state->head->extra_max ?
+                                state->head->extra_max - len : copy);
+                    }
+                    if (state->flags & 0x0200)
+                        state->check = crc32(state->check, next, copy);
+                    have -= copy;
+                    next += copy;
+                    state->length -= copy;
+                }
+                if (state->length) goto inf_leave;
+            }
+            state->length = 0;
+            state->mode = NAME;
+        case NAME:
+            if (state->flags & 0x0800) {
+                if (have == 0) goto inf_leave;
+                copy = 0;
+                do {
+                    len = (unsigned)(next[copy++]);
+                    if (state->head != Z_NULL &&
+                            state->head->name != Z_NULL &&
+                            state->length < state->head->name_max)
+                        state->head->name[state->length++] = len;
+                } while (len && copy < have);
+                if (state->flags & 0x0200)
+                    state->check = crc32(state->check, next, copy);
+                have -= copy;
+                next += copy;
+                if (len) goto inf_leave;
+            }
+            else if (state->head != Z_NULL)
+                state->head->name = Z_NULL;
+            state->length = 0;
+            state->mode = COMMENT;
+        case COMMENT:
+            if (state->flags & 0x1000) {
+                if (have == 0) goto inf_leave;
+                copy = 0;
+                do {
+                    len = (unsigned)(next[copy++]);
+                    if (state->head != Z_NULL &&
+                            state->head->comment != Z_NULL &&
+                            state->length < state->head->comm_max)
+                        state->head->comment[state->length++] = len;
+                } while (len && copy < have);
+                if (state->flags & 0x0200)
+                    state->check = crc32(state->check, next, copy);
+                have -= copy;
+                next += copy;
+                if (len) goto inf_leave;
+            }
+            else if (state->head != Z_NULL)
+                state->head->comment = Z_NULL;
+            state->mode = HCRC;
+        case HCRC:
+            if (state->flags & 0x0200) {
+                NEEDBITS(16);
+                if (hold != (state->check & 0xffff)) {
+                    strm->msg = (char *)"header crc mismatch";
+                    state->mode = BAD;
+                    break;
+                }
+                INITBITS();
+            }
+            if (state->head != Z_NULL) {
+                state->head->hcrc = (int)((state->flags >> 9) & 1);
+                state->head->done = 1;
+            }
+            strm->adler = state->check = crc32(0L, Z_NULL, 0);
+            state->mode = TYPE;
+            break;
+#endif
+        case DICTID:
+            NEEDBITS(32);
+            strm->adler = state->check = REVERSE(hold);
+            INITBITS();
+            state->mode = DICT;
+        case DICT:
+            if (state->havedict == 0) {
+                RESTORE();
+                return Z_NEED_DICT;
+            }
+            strm->adler = state->check = adler32(0L, Z_NULL, 0);
+            state->mode = TYPE;
+        case TYPE:
+            if (flush == Z_BLOCK) goto inf_leave;
+        case TYPEDO:
+            if (state->last) {
+                BYTEBITS();
+                state->mode = CHECK;
+                break;
+            }
+            NEEDBITS(3);
+            state->last = BITS(1);
+            DROPBITS(1);
+            switch (BITS(2)) {
+            case 0:                             /* stored block */
+                Tracev((stderr, "inflate:     stored block%s\n",
+                        state->last ? " (last)" : ""));
+                state->mode = STORED;
+                break;
+            case 1:                             /* fixed block */
+                fixedtables(state);
+                Tracev((stderr, "inflate:     fixed codes block%s\n",
+                        state->last ? " (last)" : ""));
+                state->mode = LEN;              /* decode codes */
+                break;
+            case 2:                             /* dynamic block */
+                Tracev((stderr, "inflate:     dynamic codes block%s\n",
+                        state->last ? " (last)" : ""));
+                state->mode = TABLE;
+                break;
+            case 3:
+                strm->msg = (char *)"invalid block type";
+                state->mode = BAD;
+            }
+            DROPBITS(2);
+            break;
+        case STORED:
+            BYTEBITS();                         /* go to byte boundary */
+            NEEDBITS(32);
+            if ((hold & 0xffff) != ((hold >> 16) ^ 0xffff)) {
+                strm->msg = (char *)"invalid stored block lengths";
+                state->mode = BAD;
+                break;
+            }
+            state->length = (unsigned)hold & 0xffff;
+            Tracev((stderr, "inflate:       stored length %u\n",
+                    state->length));
+            INITBITS();
+            state->mode = COPY;
+        case COPY:
+            copy = state->length;
+            if (copy) {
+                if (copy > have) copy = have;
+                if (copy > left) copy = left;
+                if (copy == 0) goto inf_leave;
+                zmemcpy(put, next, copy);
+                have -= copy;
+                next += copy;
+                left -= copy;
+                put += copy;
+                state->length -= copy;
+                break;
+            }
+            Tracev((stderr, "inflate:       stored end\n"));
+            state->mode = TYPE;
+            break;
+        case TABLE:
+            NEEDBITS(14);
+            state->nlen = BITS(5) + 257;
+            DROPBITS(5);
+            state->ndist = BITS(5) + 1;
+            DROPBITS(5);
+            state->ncode = BITS(4) + 4;
+            DROPBITS(4);
+#ifndef PKZIP_BUG_WORKAROUND
+            if (state->nlen > 286 || state->ndist > 30) {
+                strm->msg = (char *)"too many length or distance symbols";
+                state->mode = BAD;
+                break;
+            }
+#endif
+            Tracev((stderr, "inflate:       table sizes ok\n"));
+            state->have = 0;
+            state->mode = LENLENS;
+        case LENLENS:
+            while (state->have < state->ncode) {
+                NEEDBITS(3);
+                state->lens[order[state->have++]] = (unsigned short)BITS(3);
+                DROPBITS(3);
+            }
+            while (state->have < 19)
+                state->lens[order[state->have++]] = 0;
+            state->next = state->codes;
+            state->lencode = (code const FAR *)(state->next);
+            state->lenbits = 7;
+            ret = inflate_table(CODES, state->lens, 19, &(state->next),
+                                &(state->lenbits), state->work);
+            if (ret) {
+                strm->msg = (char *)"invalid code lengths set";
+                state->mode = BAD;
+                break;
+            }
+            Tracev((stderr, "inflate:       code lengths ok\n"));
+            state->have = 0;
+            state->mode = CODELENS;
+        case CODELENS:
+            while (state->have < state->nlen + state->ndist) {
+                for (;;) {
+                    this = state->lencode[BITS(state->lenbits)];
+                    if ((unsigned)(this.bits) <= bits) break;
+                    PULLBYTE();
+                }
+                if (this.val < 16) {
+                    NEEDBITS(this.bits);
+                    DROPBITS(this.bits);
+                    state->lens[state->have++] = this.val;
+                }
+                else {
+                    if (this.val == 16) {
+                        NEEDBITS(this.bits + 2);
+                        DROPBITS(this.bits);
+                        if (state->have == 0) {
+                            strm->msg = (char *)"invalid bit length repeat";
+                            state->mode = BAD;
+                            break;
+                        }
+                        len = state->lens[state->have - 1];
+                        copy = 3 + BITS(2);
+                        DROPBITS(2);
+                    }
+                    else if (this.val == 17) {
+                        NEEDBITS(this.bits + 3);
+                        DROPBITS(this.bits);
+                        len = 0;
+                        copy = 3 + BITS(3);
+                        DROPBITS(3);
+                    }
+                    else {
+                        NEEDBITS(this.bits + 7);
+                        DROPBITS(this.bits);
+                        len = 0;
+                        copy = 11 + BITS(7);
+                        DROPBITS(7);
+                    }
+                    if (state->have + copy > state->nlen + state->ndist) {
+                        strm->msg = (char *)"invalid bit length repeat";
+                        state->mode = BAD;
+                        break;
+                    }
+                    while (copy--)
+                        state->lens[state->have++] = (unsigned short)len;
+                }
+            }
+
+            /* handle error breaks in while */
+            if (state->mode == BAD) break;
+
+            /* build code tables */
+            state->next = state->codes;
+            state->lencode = (code const FAR *)(state->next);
+            state->lenbits = 9;
+            ret = inflate_table(LENS, state->lens, state->nlen, &(state->next),
+                                &(state->lenbits), state->work);
+            if (ret) {
+                strm->msg = (char *)"invalid literal/lengths set";
+                state->mode = BAD;
+                break;
+            }
+            state->distcode = (code const FAR *)(state->next);
+            state->distbits = 6;
+            ret = inflate_table(DISTS, state->lens + state->nlen, state->ndist,
+                            &(state->next), &(state->distbits), state->work);
+            if (ret) {
+                strm->msg = (char *)"invalid distances set";
+                state->mode = BAD;
+                break;
+            }
+            Tracev((stderr, "inflate:       codes ok\n"));
+            state->mode = LEN;
+        case LEN:
+            if (have >= 6 && left >= 258) {
+                RESTORE();
+                inflate_fast(strm, out);
+                LOAD();
+                break;
+            }
+            for (;;) {
+                this = state->lencode[BITS(state->lenbits)];
+                if ((unsigned)(this.bits) <= bits) break;
+                PULLBYTE();
+            }
+            if (this.op && (this.op & 0xf0) == 0) {
+                last = this;
+                for (;;) {
+                    this = state->lencode[last.val +
+                            (BITS(last.bits + last.op) >> last.bits)];
+                    if ((unsigned)(last.bits + this.bits) <= bits) break;
+                    PULLBYTE();
+                }
+                DROPBITS(last.bits);
+            }
+            DROPBITS(this.bits);
+            state->length = (unsigned)this.val;
+            if ((int)(this.op) == 0) {
+                Tracevv((stderr, this.val >= 0x20 && this.val < 0x7f ?
+                        "inflate:         literal '%c'\n" :
+                        "inflate:         literal 0x%02x\n", this.val));
+                state->mode = LIT;
+                break;
+            }
+            if (this.op & 32) {
+                Tracevv((stderr, "inflate:         end of block\n"));
+                state->mode = TYPE;
+                break;
+            }
+            if (this.op & 64) {
+                strm->msg = (char *)"invalid literal/length code";
+                state->mode = BAD;
+                break;
+            }
+            state->extra = (unsigned)(this.op) & 15;
+            state->mode = LENEXT;
+        case LENEXT:
+            if (state->extra) {
+                NEEDBITS(state->extra);
+                state->length += BITS(state->extra);
+                DROPBITS(state->extra);
+            }
+            Tracevv((stderr, "inflate:         length %u\n", state->length));
+            state->mode = DIST;
+        case DIST:
+            for (;;) {
+                this = state->distcode[BITS(state->distbits)];
+                if ((unsigned)(this.bits) <= bits) break;
+                PULLBYTE();
+            }
+            if ((this.op & 0xf0) == 0) {
+                last = this;
+                for (;;) {
+                    this = state->distcode[last.val +
+                            (BITS(last.bits + last.op) >> last.bits)];
+                    if ((unsigned)(last.bits + this.bits) <= bits) break;
+                    PULLBYTE();
+                }
+                DROPBITS(last.bits);
+            }
+            DROPBITS(this.bits);
+            if (this.op & 64) {
+                strm->msg = (char *)"invalid distance code";
+                state->mode = BAD;
+                break;
+            }
+            state->offset = (unsigned)this.val;
+            state->extra = (unsigned)(this.op) & 15;
+            state->mode = DISTEXT;
+        case DISTEXT:
+            if (state->extra) {
+                NEEDBITS(state->extra);
+                state->offset += BITS(state->extra);
+                DROPBITS(state->extra);
+            }
+#ifdef INFLATE_STRICT
+            if (state->offset > state->dmax) {
+                strm->msg = (char *)"invalid distance too far back";
+                state->mode = BAD;
+                break;
+            }
+#endif
+            if (state->offset > state->whave + out - left) {
+                strm->msg = (char *)"invalid distance too far back";
+                state->mode = BAD;
+                break;
+            }
+            Tracevv((stderr, "inflate:         distance %u\n", state->offset));
+            state->mode = MATCH;
+        case MATCH:
+            if (left == 0) goto inf_leave;
+            copy = out - left;
+            if (state->offset > copy) {         /* copy from window */
+                copy = state->offset - copy;
+                if (copy > state->write) {
+                    copy -= state->write;
+                    from = state->window + (state->wsize - copy);
+                }
+                else
+                    from = state->window + (state->write - copy);
+                if (copy > state->length) copy = state->length;
+            }
+            else {                              /* copy from output */
+                from = put - state->offset;
+                copy = state->length;
+            }
+            if (copy > left) copy = left;
+            left -= copy;
+            state->length -= copy;
+            do {
+                *put++ = *from++;
+            } while (--copy);
+            if (state->length == 0) state->mode = LEN;
+            break;
+        case LIT:
+            if (left == 0) goto inf_leave;
+            *put++ = (unsigned char)(state->length);
+            left--;
+            state->mode = LEN;
+            break;
+        case CHECK:
+            if (state->wrap) {
+                NEEDBITS(32);
+                out -= left;
+                strm->total_out += out;
+                state->total += out;
+                if (out)
+                    strm->adler = state->check =
+                        UPDATE(state->check, put - out, out);
+                out = left;
+                if ((
+#ifdef GUNZIP
+                     state->flags ? hold :
+#endif
+                     REVERSE(hold)) != state->check) {
+                    strm->msg = (char *)"incorrect data check";
+                    state->mode = BAD;
+                    break;
+                }
+                INITBITS();
+                Tracev((stderr, "inflate:   check matches trailer\n"));
+            }
+#ifdef GUNZIP
+            state->mode = LENGTH;
+        case LENGTH:
+            if (state->wrap && state->flags) {
+                NEEDBITS(32);
+                if (hold != (state->total & 0xffffffffUL)) {
+                    strm->msg = (char *)"incorrect length check";
+                    state->mode = BAD;
+                    break;
+                }
+                INITBITS();
+                Tracev((stderr, "inflate:   length matches trailer\n"));
+            }
+#endif
+            state->mode = DONE;
+        case DONE:
+            ret = Z_STREAM_END;
+            goto inf_leave;
+        case BAD:
+            ret = Z_DATA_ERROR;
+            goto inf_leave;
+        case MEM:
+            return Z_MEM_ERROR;
+        case SYNC:
+        default:
+            return Z_STREAM_ERROR;
+        }
+
+    /*
+       Return from inflate(), updating the total counts and the check value.
+       If there was no progress during the inflate() call, return a buffer
+       error.  Call updatewindow() to create and/or update the window state.
+       Note: a memory error from inflate() is non-recoverable.
+     */
+  inf_leave:
+    RESTORE();
+    if (state->wsize || (state->mode < CHECK && out != strm->avail_out))
+        if (updatewindow(strm, out)) {
+            state->mode = MEM;
+            return Z_MEM_ERROR;
+        }
+    in -= strm->avail_in;
+    out -= strm->avail_out;
+    strm->total_in += in;
+    strm->total_out += out;
+    state->total += out;
+    if (state->wrap && out)
+        strm->adler = state->check =
+            UPDATE(state->check, strm->next_out - out, out);
+    strm->data_type = state->bits + (state->last ? 64 : 0) +
+                      (state->mode == TYPE ? 128 : 0);
+    if (((in == 0 && out == 0) || flush == Z_FINISH) && ret == Z_OK)
+        ret = Z_BUF_ERROR;
+    return ret;
 }
-#endif /* PNG_WRITE_SUPPORTED */
+
+int ZEXPORT inflateEnd(strm)
+z_streamp strm;
+{
+    struct inflate_state FAR *state;
+    if (strm == Z_NULL || strm->state == Z_NULL || strm->zfree == (free_func)0)
+        return Z_STREAM_ERROR;
+    state = (struct inflate_state FAR *)strm->state;
+    if (state->window != Z_NULL) ZFREE(strm, state->window);
+    ZFREE(strm, strm->state);
+    strm->state = Z_NULL;
+    Tracev((stderr, "inflate: end\n"));
+    return Z_OK;
+}
+
+int ZEXPORT inflateSetDictionary(strm, dictionary, dictLength)
+z_streamp strm;
+const Bytef *dictionary;
+uInt dictLength;
+{
+    struct inflate_state FAR *state;
+    unsigned long id;
+
+    /* check state */
+    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
+    state = (struct inflate_state FAR *)strm->state;
+    if (state->wrap != 0 && state->mode != DICT)
+        return Z_STREAM_ERROR;
+
+    /* check for correct dictionary id */
+    if (state->mode == DICT) {
+        id = adler32(0L, Z_NULL, 0);
+        id = adler32(id, dictionary, dictLength);
+        if (id != state->check)
+            return Z_DATA_ERROR;
+    }
+
+    /* copy dictionary to window */
+    if (updatewindow(strm, strm->avail_out)) {
+        state->mode = MEM;
+        return Z_MEM_ERROR;
+    }
+    if (dictLength > state->wsize) {
+        zmemcpy(state->window, dictionary + dictLength - state->wsize,
+                state->wsize);
+        state->whave = state->wsize;
+    }
+    else {
+        zmemcpy(state->window + state->wsize - dictLength, dictionary,
+                dictLength);
+        state->whave = dictLength;
+    }
+    state->havedict = 1;
+    Tracev((stderr, "inflate:   dictionary set\n"));
+    return Z_OK;
+}
+
+int ZEXPORT inflateGetHeader(strm, head)
+z_streamp strm;
+gz_headerp head;
+{
+    struct inflate_state FAR *state;
+
+    /* check state */
+    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
+    state = (struct inflate_state FAR *)strm->state;
+    if ((state->wrap & 2) == 0) return Z_STREAM_ERROR;
+
+    /* save header structure */
+    state->head = head;
+    head->done = 0;
+    return Z_OK;
+}
+
+/*
+   Search buf[0..len-1] for the pattern: 0, 0, 0xff, 0xff.  Return when found
+   or when out of input.  When called, *have is the number of pattern bytes
+   found in order so far, in 0..3.  On return *have is updated to the new
+   state.  If on return *have equals four, then the pattern was found and the
+   return value is how many bytes were read including the last byte of the
+   pattern.  If *have is less than four, then the pattern has not been found
+   yet and the return value is len.  In the latter case, syncsearch() can be
+   called again with more data and the *have state.  *have is initialized to
+   zero for the first call.
+ */
+local unsigned syncsearch(have, buf, len)
+unsigned FAR *have;
+unsigned char FAR *buf;
+unsigned len;
+{
+    unsigned got;
+    unsigned next;
+
+    got = *have;
+    next = 0;
+    while (next < len && got < 4) {
+        if ((int)(buf[next]) == (got < 2 ? 0 : 0xff))
+            got++;
+        else if (buf[next])
+            got = 0;
+        else
+            got = 4 - got;
+        next++;
+    }
+    *have = got;
+    return next;
+}
+
+int ZEXPORT inflateSync(strm)
+z_streamp strm;
+{
+    unsigned len;               /* number of bytes to look at or looked at */
+    unsigned long in, out;      /* temporary to save total_in and total_out */
+    unsigned char buf[4];       /* to restore bit buffer to byte string */
+    struct inflate_state FAR *state;
+
+    /* check parameters */
+    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
+    state = (struct inflate_state FAR *)strm->state;
+    if (strm->avail_in == 0 && state->bits < 8) return Z_BUF_ERROR;
+
+    /* if first time, start search in bit buffer */
+    if (state->mode != SYNC) {
+        state->mode = SYNC;
+        state->hold <<= state->bits & 7;
+        state->bits -= state->bits & 7;
+        len = 0;
+        while (state->bits >= 8) {
+            buf[len++] = (unsigned char)(state->hold);
+            state->hold >>= 8;
+            state->bits -= 8;
+        }
+        state->have = 0;
+        syncsearch(&(state->have), buf, len);
+    }
+
+    /* search available input */
+    len = syncsearch(&(state->have), strm->next_in, strm->avail_in);
+    strm->avail_in -= len;
+    strm->next_in += len;
+    strm->total_in += len;
+
+    /* return no joy or set up to restart inflate() on a new block */
+    if (state->have != 4) return Z_DATA_ERROR;
+    in = strm->total_in;  out = strm->total_out;
+    inflateReset(strm);
+    strm->total_in = in;  strm->total_out = out;
+    state->mode = TYPE;
+    return Z_OK;
+}
+
+/*
+   Returns true if inflate is currently at the end of a block generated by
+   Z_SYNC_FLUSH or Z_FULL_FLUSH. This function is used by one PPP
+   implementation to provide an additional safety check. PPP uses
+   Z_SYNC_FLUSH but removes the length bytes of the resulting empty stored
+   block. When decompressing, PPP checks that at the end of input packet,
+   inflate is waiting for these length bytes.
+ */
+int ZEXPORT inflateSyncPoint(strm)
+z_streamp strm;
+{
+    struct inflate_state FAR *state;
+
+    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
+    state = (struct inflate_state FAR *)strm->state;
+    return state->mode == STORED && state->bits == 0;
+}
+
+int ZEXPORT inflateCopy(dest, source)
+z_streamp dest;
+z_streamp source;
+{
+    struct inflate_state FAR *state;
+    struct inflate_state FAR *copy;
+    unsigned char FAR *window;
+    unsigned wsize;
+
+    /* check input */
+    if (dest == Z_NULL || source == Z_NULL || source->state == Z_NULL ||
+        source->zalloc == (alloc_func)0 || source->zfree == (free_func)0)
+        return Z_STREAM_ERROR;
+    state = (struct inflate_state FAR *)source->state;
+
+    /* allocate space */
+    copy = (struct inflate_state FAR *)
+           ZALLOC(source, 1, sizeof(struct inflate_state));
+    if (copy == Z_NULL) return Z_MEM_ERROR;
+    window = Z_NULL;
+    if (state->window != Z_NULL) {
+        window = (unsigned char FAR *)
+                 ZALLOC(source, 1U << state->wbits, sizeof(unsigned char));
+        if (window == Z_NULL) {
+            ZFREE(source, copy);
+            return Z_MEM_ERROR;
+        }
+    }
+
+    /* copy state */
+    zmemcpy(dest, source, sizeof(z_stream));
+    zmemcpy(copy, state, sizeof(struct inflate_state));
+    if (state->lencode >= state->codes &&
+        state->lencode <= state->codes + ENOUGH - 1) {
+        copy->lencode = copy->codes + (state->lencode - state->codes);
+        copy->distcode = copy->codes + (state->distcode - state->codes);
+    }
+    copy->next = copy->codes + (state->next - state->codes);
+    if (window != Z_NULL) {
+        wsize = 1U << state->wbits;
+        zmemcpy(window, state->window, wsize);
+    }
+    copy->window = window;
+    dest->state = (struct internal_state FAR *)copy;
+    return Z_OK;
+}

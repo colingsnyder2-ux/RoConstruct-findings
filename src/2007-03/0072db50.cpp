@@ -1,8 +1,7 @@
-// from server: 91% by colin
 // roc-lang: c
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /MD
-// roc-lib: zlib-1.2.3 inflate.c
+// roc-lib: zlib-1.2.3-winapi inflate.c
 
 // Candidate translation unit (score above; library headers required).
 /* inflate.c -- zlib decompression

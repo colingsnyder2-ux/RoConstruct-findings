@@ -1,123 +1,67 @@
-// from server: 46% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/FlagStand.cpp
+// roc-lang: c
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /MD
+// roc-lib: zlib-1.2.3-winapi uncompr.c
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/FlagStand.h"
-#include "v8datamodel/Flag.h"
+/* uncompr.c -- decompress a memory buffer
+ * Copyright (C) 1995-2003 Jean-loup Gailly.
+ * For conditions of distribution and use, see copyright notice in zlib.h
+ */
 
-namespace RBX
+/* @(#) $Id$ */
+
+#define ZLIB_INTERNAL
+#include "zlib.h"
+
+/* ===========================================================================
+     Decompresses the source buffer into the destination buffer.  sourceLen is
+   the byte length of the source buffer. Upon entry, destLen is the total
+   size of the destination buffer, which must be large enough to hold the
+   entire uncompressed data. (The size of the uncompressed data must have
+   been saved previously by the compressor and transmitted to the decompressor
+   by some mechanism outside the scope of this compression library.)
+   Upon exit, destLen is the actual size of the compressed buffer.
+     This function can be used to decompress a whole file at once if the
+   input file is mmap'ed.
+
+     uncompress returns Z_OK if success, Z_MEM_ERROR if there was not
+   enough memory, Z_BUF_ERROR if there was not enough room in the output
+   buffer, or Z_DATA_ERROR if the input data was corrupted.
+*/
+int ZEXPORT uncompress (dest, destLen, source, sourceLen)
+    Bytef *dest;
+    uLongf *destLen;
+    const Bytef *source;
+    uLong sourceLen;
 {
-	static Reflection::PropDescriptor<FlagStand, BrickColor> prop_Color("TeamColor", "Data", &FlagStand::getTeamColor, &FlagStand::setTeamColor, Reflection::PropertyDescriptor::STANDARD);
-	static Reflection::SignalDesc<FlagStand, void(boost::shared_ptr<Instance>)> event_FlagCaptured("FlagCaptured", "Player");
+    z_stream stream;
+    int err;
 
-	FlagStand::FlagStand()
-	{
-		setName("FlagStand");
-	}
+    stream.next_in = (Bytef*)source;
+    stream.avail_in = (uInt)sourceLen;
+    /* Check for source > 64K on 16-bit machine: */
+    if ((uLong)stream.avail_in != sourceLen) return Z_BUF_ERROR;
 
-	BrickColor FlagStand::getTeamColor() const
-	{
-		return teamColor;
-	}
+    stream.next_out = dest;
+    stream.avail_out = (uInt)*destLen;
+    if ((uLong)stream.avail_out != *destLen) return Z_BUF_ERROR;
 
-	void FlagStand::setTeamColor(BrickColor color)
-	{
-		teamColor = color;
-		raisePropertyChanged(PartInstance::prop_Color);
-	}
+    stream.zalloc = (alloc_func)0;
+    stream.zfree = (free_func)0;
 
-	void FlagStand::AffixFlag(Flag* flag)
-	{
-		if (!GetFlag())
-		{
-			flag->setParent(getParent());
+    err = inflateInit(&stream);
+    if (err != Z_OK) return err;
 
-			PartInstance* handle = flag->getHandle();
+    err = inflate(&stream, Z_FINISH);
+    if (err != Z_STREAM_END) {
+        inflateEnd(&stream);
+        if (err == Z_NEED_DICT || (err == Z_BUF_ERROR && stream.avail_in == 0))
+            return Z_DATA_ERROR;
+        return err;
+    }
+    *destLen = stream.total_out;
 
-			handle->setCoordinateFrame(G3D::CoordinateFrame());
-
-			G3D::Vector3 location = getLocation().translation;
-			location.y += 0.5f;
-
-			handle->moveToPoint(location);
-			handle->join();
-		}
-	}
-
-	Flag* FlagStand::GetFlag()
-	{
-		Primitive* primitive = getPrimitive();
-
-		for (RigidJoint* current = primitive->getFirstRigid(); current != NULL; current = primitive->getNextRigid(current))
-		{
-			for (int i = 0; i < 2; i++)
-			{
-				Flag* flag = dynamic_cast<Flag*>(PartInstance::fromPrimitive(current->getPrimitive(i))->getParent());
-				if (flag)
-					return flag;
-			}
-		}
-
-		return NULL;
-	}
-
-	void FlagStand::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
-	{
-		Instance::onServiceProvider(oldProvider, newProvider);
-
-		if (!oldProvider)
-		{
-			FlagStandService* flagStandService = ServiceProvider::create<FlagStandService>(newProvider);
-			RBXASSERT(flagStandService);
-
-			flagStandService->RegisterFlagStand(this);
-
-			standTouched = PartInstance::event_Touched.connect(this, boost::bind(&FlagStand::onEvent_standTouched, this, _1));
-		}
-
-		if (!newProvider)
-		{
-			FlagStandService* flagStandService = ServiceProvider::create<FlagStandService>(oldProvider);
-			RBXASSERT(flagStandService);
-
-			flagStandService->UnregisterFlagStand(this);
-
-			standTouched.disconnect();
-		}
-	}
-
-	FlagStandService::FlagStandService()
-	{
-		setName("FlagStandService");
-		propArchivable.setValue(this, false);
-	}
-
-	FlagStandService::~FlagStandService() {}
-
-	FlagStand* FlagStandService::FindStandWithFlag(Flag* f)
-	{
-		if (flagStands.empty())
-			return NULL;
-
-		for (std::list<FlagStand*>::const_iterator iter = flagStands.begin(); iter != flagStands.end(); iter++)
-		{
-			if ((*iter)->GetFlag() == f)
-				return *iter;
-		}
-
-		return NULL;
-	}
-
-	void FlagStandService::RegisterFlagStand(FlagStand* s)
-	{
-		flagStands.push_back(s);
-	}
-
-	void FlagStandService::UnregisterFlagStand(FlagStand* s)
-	{
-		flagStands.remove(s);
-	}
+    err = inflateEnd(&stream);
+    return err;
 }

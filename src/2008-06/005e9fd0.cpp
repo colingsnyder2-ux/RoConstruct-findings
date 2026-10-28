@@ -1,8 +1,9 @@
+// from server: 100% by EspClaude
 // from server: 97% by king_originala_sol_native
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_sol_worldstep_native_roundfloatrtm_933bb026a8df4bb2.cpp
+// roc-lib: rbxgs-dll roc_espclaude_26d965918fecb544.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <G3D/g3dmath.h>
@@ -17,6 +18,7 @@ namespace RBX {
 struct Primitive;struct World;struct Kernel;struct Edge;
 namespace Profiling {
 struct CodeProfiler;
+template<class T> class scoped_ptr { T* px; public: T& operator*() const { return *px; } T* get() const { return px; } };
 struct Mark {CodeProfiler*section;Mark*enclosing;bool frameTick;double startTime;Mark(CodeProfiler&,bool);~Mark();};
 }
 struct Constants {static int worldStepsPerSec();static int worldStepsPerUiStep();static float worldDt();};
@@ -36,7 +38,7 @@ struct World {
  G3D::Array<Primitive*>touch,touchOther;
  bool inStepCode;char opaqueA5[3];int worldStepId;char opaqueAC[12];G3D::Array<Primitive*>activePrimitives;
  char opaqueC4[0xfc-0xc4];
- Profiling::CodeProfiler*profilingWorldStep,*profilingPrepare,*profilingClump,*profilingUi,*profilingUpdate,*profilingBroadphase;
+ Profiling::scoped_ptr<Profiling::CodeProfiler> profilingWorldStep,profilingPrepare,profilingClump,profilingUi,profilingUpdate,profilingBroadphase;
  ClumpStage*getClumpStage(){return static_cast<ClumpStage*>(jointStage->findStage(IStage::CLUMP_STAGE));}
  SimJobStage&getSimJobStage(){return *static_cast<SimJobStage*>(jointStage->findStage(IStage::SIMJOB_STAGE));}
  void doBreakJoints();void preparePrimitives(unsigned);void gatherActivePrimitives();

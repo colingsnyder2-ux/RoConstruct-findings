@@ -1,8 +1,9 @@
+// from server: 100% by EspClaude
 // from server: 64% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espeon_xmlnativenecompared4290133c775ba22.cpp
+// roc-lib: rbxgs-dll roc_espclaude_3860b455f69b86d3.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias("v8xml/XmlElement.h", "roc_xml_native_value_calls_header8ea484bdc6069352.cpp")
@@ -305,7 +306,10 @@ std::auto_ptr<XmlElement> TextXmlParser::parse()
 				const XmlAttribute* xsiNilAttribute = newElement->findAttribute(name_xsinil);
 				if (!xsiNilAttribute || !xsiNilAttribute->getValue(isXsiNil) || !isXsiNil)
 				{
-					if (!(readText(false) != ""))
+					if (readText(false) != "")
+					{
+					}
+					else
 					{
 						const RBX::Name* mimeType;
 						const XmlAttribute* mimeTypeAttribute = newElement->findAttribute(tag_mimeType);
@@ -320,15 +324,13 @@ std::auto_ptr<XmlElement> TextXmlParser::parse()
 						if (tagName.substr(0, 6) == "binary")
 						{
 							std::stringbuf encoded(readText(false), std::ios_base::in);
+							std::istreambuf_iterator<char> from(&encoded);
+							std::istreambuf_iterator<char> to;
 							std::stringstream decoded;
-
+							std::ostreambuf_iterator<char> out(decoded.rdbuf());
 							int ioStatus = 0;
 							base64<char> decoder;
-							decoder.get(
-								std::istreambuf_iterator<char>(&encoded),
-								std::istreambuf_iterator<char>(),
-								std::ostreambuf_iterator<char>(decoded),
-								ioStatus);
+							decoder.get(from, to, out, ioStatus);
 
 							decoded.flush();
 
@@ -346,8 +348,7 @@ std::auto_ptr<XmlElement> TextXmlParser::parse()
 						}
 						else if (tagName.substr(0, 3) == "url")
 						{
-							std::string url = readText(true);
-							newElement->setValue(RBX::ContentId(url.c_str(), *mimeType));
+							newElement->setValue(RBX::ContentId(readText(true).c_str(), *mimeType));
 						}
 						else if (tag_null == tagName)
 						{
@@ -360,7 +361,7 @@ std::auto_ptr<XmlElement> TextXmlParser::parse()
 
 						std::string closingTag = readTag();
 						if (!isCloseTag(closingTag))
-							throw std::runtime_error(G3D::format("TextXmlParser::parse - '%s' should be a closing tag", tagName.substr(0, 32).c_str()));
+							throw std::runtime_error(G3D::format("TextXmlParser::parse - '%s' should be a closing tag", closingTag.substr(0, 32).c_str()));
 					}
 				}
 			}
@@ -609,3 +610,4 @@ hash:
 		TextXmlWriter::serializeNode(xmlNode, depth);
 	}
 }
+
