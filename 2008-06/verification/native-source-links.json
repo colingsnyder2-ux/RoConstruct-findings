@@ -712,11 +712,11 @@
   "path": "2008-06/src/rbxgs/Client/App/v8tree/Verb.cpp"
  },
  "005834f0": {
-  "line": 104,
+  "line": 105,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00583570": {
-  "line": 353,
+  "line": 354,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00583980": {
@@ -724,67 +724,67 @@
   "path": "2008-06/src/rbxgs/Client/RbxView/Part.cpp"
  },
  "00583a20": {
-  "line": 63,
+  "line": 64,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00583a40": {
-  "line": 115,
+  "line": 116,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00583c90": {
-  "line": 266,
+  "line": 267,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00583cf0": {
-  "line": 291,
+  "line": 292,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00583da0": {
-  "line": 332,
+  "line": 333,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "005841e0": {
-  "line": 271,
+  "line": 272,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00584280": {
-  "line": 302,
+  "line": 303,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00584310": {
-  "line": 318,
+  "line": 319,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00584360": {
-  "line": 323,
+  "line": 324,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "005843c0": {
-  "line": 342,
+  "line": 343,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00584620": {
-  "line": 72,
+  "line": 73,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00584670": {
-  "line": 89,
+  "line": 90,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00584790": {
-  "line": 46,
+  "line": 47,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "005849d0": {
-  "line": 353,
+  "line": 354,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00584af0": {
-  "line": 291,
+  "line": 292,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00584b00": {
-  "line": 342,
+  "line": 343,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00584fc0": {
@@ -796,11 +796,11 @@
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/PVInstance.cpp"
  },
  "00585630": {
-  "line": 29,
+  "line": 30,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "00585b30": {
-  "line": 141,
+  "line": 142,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "0058cab0": {
@@ -876,15 +876,15 @@
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/RootInstance.cpp"
  },
  "00590790": {
-  "line": 353,
+  "line": 354,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "005907c0": {
-  "line": 342,
+  "line": 343,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "005907d0": {
-  "line": 291,
+  "line": 292,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "005909e0": {
@@ -1248,15 +1248,15 @@
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Workspace.cpp"
  },
  "005a2c90": {
-  "line": 353,
+  "line": 354,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "005a2d10": {
-  "line": 342,
+  "line": 343,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "005a2d50": {
-  "line": 291,
+  "line": 292,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ModelInstance.cpp"
  },
  "005a3380": {
@@ -1704,143 +1704,143 @@
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/TimerService.cpp"
  },
  "005d75a0": {
-  "line": 49,
+  "line": 50,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005d7670": {
-  "line": 75,
+  "line": 76,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005d76a0": {
-  "line": 54,
+  "line": 55,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005d7750": {
-  "line": 59,
+  "line": 60,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005d77b0": {
-  "line": 64,
+  "line": 65,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005d7990": {
-  "line": 70,
+  "line": 71,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005d79b0": {
-  "line": 87,
+  "line": 88,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005d7a30": {
-  "line": 100,
+  "line": 101,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005d7a90": {
-  "line": 109,
+  "line": 110,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005d80c0": {
-  "line": 148,
+  "line": 149,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005d8a10": {
-  "line": 177,
+  "line": 178,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005d8b10": {
-  "line": 185,
+  "line": 186,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005d8c10": {
-  "line": 193,
+  "line": 194,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005d8d10": {
-  "line": 201,
+  "line": 202,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005d8e10": {
-  "line": 209,
+  "line": 210,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005d8f10": {
-  "line": 217,
+  "line": 218,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005d9010": {
-  "line": 114,
+  "line": 115,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005d9160": {
-  "line": 249,
+  "line": 250,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005d9180": {
-  "line": 255,
+  "line": 256,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005d9210": {
-  "line": 324,
+  "line": 325,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005d9a20": {
-  "line": 153,
+  "line": 154,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005d9df0": {
-  "line": 606,
+  "line": 607,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005db280": {
-  "line": 29,
+  "line": 30,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005db560": {
-  "line": 126,
+  "line": 127,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005db600": {
-  "line": 540,
+  "line": 541,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005db9e0": {
-  "line": 600,
+  "line": 601,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005dc150": {
-  "line": 474,
+  "line": 475,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005dc270": {
-  "line": 486,
+  "line": 487,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005dc2b0": {
-  "line": 495,
+  "line": 496,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005dc3d0": {
-  "line": 412,
+  "line": 413,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005dc480": {
-  "line": 513,
+  "line": 514,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005dc540": {
-  "line": 522,
+  "line": 523,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005dc600": {
-  "line": 531,
+  "line": 532,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005dc7f0": {
-  "line": 633,
+  "line": 634,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005dca00": {
-  "line": 426,
+  "line": 427,
   "path": "2008-06/src/rbxgs/Client/App/humanoid/Humanoid.cpp"
  },
  "005dcb50": {
@@ -2004,67 +2004,67 @@
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Lighting.cpp"
  },
  "005e27a0": {
-  "line": 51,
+  "line": 52,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e27b0": {
-  "line": 174,
+  "line": 175,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e27c0": {
-  "line": 185,
+  "line": 186,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e2a10": {
-  "line": 90,
+  "line": 91,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e2a70": {
-  "line": 95,
+  "line": 96,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e2af0": {
-  "line": 56,
+  "line": 57,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e2cd0": {
-  "line": 157,
+  "line": 158,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e2e10": {
-  "line": 39,
+  "line": 40,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e3790": {
-  "line": 112,
+  "line": 113,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e3870": {
-  "line": 27,
+  "line": 28,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e3a80": {
-  "line": 118,
+  "line": 119,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e4450": {
-  "line": 100,
+  "line": 101,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e4470": {
-  "line": 106,
+  "line": 107,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e4490": {
-  "line": 179,
+  "line": 180,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e44c0": {
-  "line": 190,
+  "line": 191,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e4fe0": {
-  "line": 295,
+  "line": 296,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e50c0": {
@@ -3096,15 +3096,15 @@
   "path": "2008-06/src/rbxgs/Client/App/v8world/SimJobStage.cpp"
  },
  "0064ddf0": {
-  "line": 42,
+  "line": 43,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ToolMouseCommand.cpp"
  },
  "0064dee0": {
-  "line": 28,
+  "line": 29,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ToolMouseCommand.cpp"
  },
  "0064df30": {
-  "line": 35,
+  "line": 36,
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/ToolMouseCommand.cpp"
  },
  "0064e020": {
@@ -3224,27 +3224,27 @@
   "path": "2008-06/src/rbxgs/Client/App/v8world/WeldJoint.cpp"
  },
  "0066a570": {
-  "line": 49,
+  "line": 50,
   "path": "2008-06/src/rbxgs/Client/App/tool/GroupDragTool.cpp"
  },
  "0066a700": {
-  "line": 21,
+  "line": 22,
   "path": "2008-06/src/rbxgs/Client/App/tool/GroupDragTool.cpp"
  },
  "0066a730": {
-  "line": 77,
+  "line": 78,
   "path": "2008-06/src/rbxgs/Client/App/tool/GroupDragTool.cpp"
  },
  "0066a7c0": {
-  "line": 57,
+  "line": 58,
   "path": "2008-06/src/rbxgs/Client/App/tool/GroupDragTool.cpp"
  },
  "0066a930": {
-  "line": 93,
+  "line": 94,
   "path": "2008-06/src/rbxgs/Client/App/tool/GroupDragTool.cpp"
  },
  "0066a980": {
-  "line": 26,
+  "line": 27,
   "path": "2008-06/src/rbxgs/Client/App/tool/GroupDragTool.cpp"
  },
  "0066c400": {

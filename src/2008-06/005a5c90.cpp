@@ -1,8 +1,9 @@
+// from server: 100% by EspClaude
 // from server: 99% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_claudeS3_de1e2671550b184c.cpp
+// roc-lib: rbxgs-dll roc_espclaude_a0963462eb77d728.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias(<boost/function.hpp>, <roc_espeon_boost135functionheader672dcef995494068.cpp>)
@@ -129,19 +130,19 @@ WorkspaceStatsNative::WorkspaceStatsNative(const StatsWorkspaceView* workspace,c
  createChildItem<double>("Render CPU %",boost::bind(&StatsRunView::renderCPU,runService));
  createChildItem<double>("Ui CPU %",boost::bind(&StatsRunView::uiCPU,runService));
  createChildItem<double>("Idle CPU %",boost::bind(&StatsRunView::idleCPU,runService));
- Stats::Item* pDataModelStep=createBoundChildItem(*statsField<Profiling::Profiler*>(workspace,0x428));
- Stats::Item* pWorkspaceStep=pDataModelStep->createBoundChildItem(*statsField<Profiling::Profiler*>(workspace,0x42c));
- Stats::Item* pWorldStep=pWorkspaceStep->createBoundChildItem(*statsField<Profiling::Profiler*>(world,0xfc));
- pWorldStep->createBoundChildItem(*statsField<Profiling::Profiler*>(world,0x104));
- pWorldStep->createBoundChildItem(*statsField<Profiling::Profiler*>(world,0x108));
- pWorldStep->createBoundChildItem(*statsField<Profiling::Profiler*>(world,0x110));
+ Stats::Item* pDataModelStep=createBoundChildItem(*statsField<statsPtr<Profiling::Profiler> >(workspace,0x428));
+ Stats::Item* pWorkspaceStep=pDataModelStep->createBoundChildItem(*statsField<statsPtr<Profiling::Profiler> >(workspace,0x42c));
+ Stats::Item* pWorldStep=pWorkspaceStep->createBoundChildItem(*statsField<statsPtr<Profiling::Profiler> >(world,0xfc));
+ pWorldStep->createBoundChildItem(*statsField<statsPtr<Profiling::Profiler> >(world,0x104));
+ pWorldStep->createBoundChildItem(*statsField<statsPtr<Profiling::Profiler> >(world,0x108));
+ pWorldStep->createBoundChildItem(*statsField<statsPtr<Profiling::Profiler> >(world,0x110));
  pWorldStep->createBoundChildItem(*world->getSleepStage()->p1e4);
  pWorldStep->createBoundChildItem(*world->getSleepStage()->p1e0);
  pWorldStep->createBoundChildItem(*world->getSleepStage()->p1e8);
  pWorldStep->createBoundChildItem(*world->getKernel().profiler);
- pDataModelStep->createBoundChildItem(*statsField<Profiling::Profiler*>(workspace,0x430));
- pDataModelStep->createBoundChildItem(*statsField<Profiling::Profiler*>(workspace,0x434));
- pDataModelStep->createBoundChildItem(*statsField<Profiling::Profiler*>(workspace,0x438));
+ pDataModelStep->createBoundChildItem(*statsField<statsPtr<Profiling::Profiler> >(workspace,0x430));
+ pDataModelStep->createBoundChildItem(*statsField<statsPtr<Profiling::Profiler> >(workspace,0x434));
+ pDataModelStep->createBoundChildItem(*statsField<statsPtr<Profiling::Profiler> >(workspace,0x438));
  Stats::Item* w=createChildItem("World");
  w->createChildItem<int>("Primitives",boost::bind(&StatsWorldView::numPrimitives,world));
  w->createChildItem<int>("Joints",boost::bind(&StatsWorldView::numJoints,world));
@@ -173,3 +174,4 @@ typedef char stats_function_size[sizeof(boost::function0<double>)==32?1:-1];
 typedef char stats_world_pmf[sizeof(int (StatsWorldView::*)()const)==8?1:-1];
 typedef char stats_workspace_pmf[sizeof(double (StatsWorkspaceView::*)()const)==12?1:-1];
 }
+

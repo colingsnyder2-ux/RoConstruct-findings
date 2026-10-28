@@ -315,6 +315,13 @@
     "user": "colin"
   },
   {
+    "addr": "00583570",
+    "client": "2008-06",
+    "job": "ae59330ca7914e1caae5836cc55500e4",
+    "model": "gpt-6.1-sol",
+    "user": "colin"
+  },
+  {
     "addr": "00583a40",
     "client": "2008-06",
     "job": "9e9dfed56be04a56baf6aafd8cbbbb4d",
@@ -777,6 +784,48 @@
     "user": "colin"
   },
   {
+    "addr": "005d91a0",
+    "client": "2008-06",
+    "job": "ae59330ca7914e1caae5836cc55500e4",
+    "model": "gpt-6.1-sol",
+    "user": "colin"
+  },
+  {
+    "addr": "005dbf80",
+    "client": "2008-06",
+    "job": "ae59330ca7914e1caae5836cc55500e4",
+    "model": "gpt-6.1-sol",
+    "user": "colin"
+  },
+  {
+    "addr": "005dc090",
+    "client": "2008-06",
+    "job": "ae59330ca7914e1caae5836cc55500e4",
+    "model": "gpt-6.1-sol",
+    "user": "colin"
+  },
+  {
+    "addr": "005dc0c0",
+    "client": "2008-06",
+    "job": "ae59330ca7914e1caae5836cc55500e4",
+    "model": "gpt-6.1-sol",
+    "user": "colin"
+  },
+  {
+    "addr": "005dc3d0",
+    "client": "2008-06",
+    "job": "ae59330ca7914e1caae5836cc55500e4",
+    "model": "gpt-6.1-sol",
+    "user": "colin"
+  },
+  {
+    "addr": "005dc7f0",
+    "client": "2008-06",
+    "job": "ae59330ca7914e1caae5836cc55500e4",
+    "model": "gpt-6.1-sol",
+    "user": "colin"
+  },
+  {
     "addr": "005dcb50",
     "client": "2008-06",
     "job": "e1a136efe7084475bb4503e80d0f4af4",
@@ -1120,6 +1169,13 @@
     "user": "colin"
   },
   {
+    "addr": "0060c5c0",
+    "client": "2008-06",
+    "job": "ae59330ca7914e1caae5836cc55500e4",
+    "model": "gpt-6.1-sol",
+    "user": "colin"
+  },
+  {
     "addr": "0060d770",
     "client": "2008-06",
     "job": "9167482492314a8b8a6e73ad3024c76e",
@@ -1309,6 +1365,13 @@
     "user": "colin"
   },
   {
+    "addr": "0064ddf0",
+    "client": "2008-06",
+    "job": "ae59330ca7914e1caae5836cc55500e4",
+    "model": "gpt-6.1-sol",
+    "user": "colin"
+  },
+  {
     "addr": "00665e20",
     "client": "2008-06",
     "job": "981c606609864414b2c608ce100c68ef",
@@ -1316,10 +1379,24 @@
     "user": "colin"
   },
   {
+    "addr": "0066a570",
+    "client": "2008-06",
+    "job": "ae59330ca7914e1caae5836cc55500e4",
+    "model": "gpt-6.1-sol",
+    "user": "colin"
+  },
+  {
     "addr": "0066a700",
     "client": "2008-06",
     "job": "981c606609864414b2c608ce100c68ef",
     "model": "Claude Opus 5.5",
+    "user": "colin"
+  },
+  {
+    "addr": "0066a730",
+    "client": "2008-06",
+    "job": "ae59330ca7914e1caae5836cc55500e4",
+    "model": "gpt-6.1-sol",
     "user": "colin"
   },
   {

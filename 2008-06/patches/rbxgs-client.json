@@ -313,12 +313,20 @@
   [
    "\t\tRBXASSERT(getParent() == NULL);\n\t\tRBXASSERT(joint->getWorld() == NULL);",
    ""
+  ],
+  [
+   "#include \"v8datamodel/JointInstance.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"v8datamodel/JointInstance.h\"\n"
   ]
  ],
  "App/humanoid/Humanoid.cpp": [
   [
    "@all:AutoJoint",
    "JointInstance"
+  ],
+  [
+   "#include \"humanoid/Humanoid.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"humanoid/Humanoid.h\"\n"
   ]
  ],
  "App/include/v8datamodel/CharacterAppearance.h": [
@@ -579,12 +587,64 @@
   [
    "\t\t\tint& getIndex() {return index;};\n\t\t\tBody *root;\n",
    "\t\t\tint& getIndex() {return index;};\n\t\t\tint unknown0x4;    // 0x4 = -1 in the 2008 constructor; name and use unknown\n\t\t\tvoid* unknown0x8;  // 0x8 = 0\n\t\t\tbool unknown0xc;   // 0xc = false\n\t\t\tBody *root;\n"
+  ],
+  [
+   "\t\tvoid step(float, bool);\n",
+   "\t\tvoid step(float dt, bool throttling) { simBody->dt = dt; step(throttling); }\n\t\tvoid step(bool);\n"
   ]
  ],
  "App/v8kernel/Body.cpp": [
   [
    "Body::Body()\n\t:index(-1),\n",
    "Body::Body()\n\t:unknown0x4(-1),\n\tunknown0x8(NULL),\n\tunknown0xc(false),\n\tindex(-1),\n"
+  ],
+  [
+   "#include \"v8kernel/Body.h\"\n#include \"v8kernel/SimBody.h\"\n#include \"util/Debug.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"v8kernel/Body.h\"\n#include \"v8kernel/SimBody.h\"\n#include \"util/Debug.h\"\n"
+  ],
+  [
+   "Body::~Body()\n{\n\tRBXASSERT(numChildren() == 0);\n\tif (parent)\n\t\tsetParent(NULL);\n\tRBXASSERT(!parent);\n\tRBXASSERT(!link);\n\tRBXASSERT(index == -1);\n\tRBXASSERT(simBody);\n\tdelete simBody;\n\tsimBody = NULL;\n\tRBXASSERT(!cofm);\n\tRBXASSERT(root == this);\n}\n",
+   "Body::~Body()\n{\n\tif (parent)\n\t\tsetParent(NULL);\n\tdelete simBody;\n\tsimBody = NULL;\n}\n"
+  ],
+  [
+   "void Body::makeCofmDirty()\n{\n\tif (cofm && cofm->getIsDirty())\n\t{\n\t\t// TODO: this match is super fake, i dont know roblox managed to create this cursed assertion\n\t\t#if defined(_DEBUG) || defined(_RELEASEASSERT)\n\t\tif (Debugable::assertAction == Debugable::CrashOnAssert)\n\t\t{\n\t\t\tif (parent)\n\t\t\t\tparent->validateParentCofmDirty();\n\t\t\tRBXASSERT(getRootSimBody()->getDirty());\n\t\t}\n\t\t#endif\n\t}\n\telse\n\t{\n\t\tif (getParent())\n\t\t{\n\t\t\tRBXASSERT(!simBody);\n\t\t\tgetParent()->makeCofmDirty();\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(root == this);\n\t\t\tif (simBody)\n\t\t\t\tsimBody->makeDirty();\n\t\t}\n\t\tif (cofm)\n\t\t{\n\t\t\tcofm->makeDirty();\n\t\t\tRBXASSERT(numChildren() > 0);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(!numChildren());\n\t\t}\n\t}\n}\n",
+   "void Body::makeCofmDirty()\n{\n\tif (cofm && cofm->getIsDirty())\n\t{\n\t}\n\telse\n\t{\n\t\tif (getParent())\n\t\t\tgetParent()->makeCofmDirty();\n\t\telse if (simBody)\n\t\t\tsimBody->makeDirty();\n\t\tif (cofm)\n\t\t\tcofm->makeDirty();\n\t}\n}\n"
+  ],
+  [
+   "void Body::step(float dt, bool throttling)\n{\n\tRBXASSERT(!getParent());\n\tRBXASSERT(simBody);\n\n\tif (throttling && canThrottle)\n\t{\n\t\tsimBody->resetAccumulators();\n\t}\n\telse\n\t{\n\t\tsimBody->step(dt);\n\n\t\tpv = cofm == NULL ? simBody->pv : simBody->getOwnerPV();\n\t\tadvanceStateIndex();\n\t}\n}\n",
+   "void Body::step(bool throttling)\n{\n\tif (throttling && canThrottle)\n\t{\n\t\tsimBody->resetAccumulators();\n\t}\n\telse\n\t{\n\t\tsimBody->step();\n\t\tpv = cofm == NULL ? simBody->pv : simBody->getOwnerPV();\n\t\tadvanceStateIndex();\n\t}\n}\n"
+  ],
+  [
+   "void Body::setParent(Body* newParent)\n{\n\tRBXASSERT(!newParent || newParent->getParent() != this);\n\tRBXASSERT(newParent != this);\n\n\tif (parent != newParent)\n\t{\n",
+   "void Body::setParent(Body* newParent)\n{\n\tif (parent != newParent)\n\t{\n"
+  ],
+  [
+   "\t\tif (getParent())\n\t\t{\n\t\t\tRBXASSERT(root == getParent()->getRoot());\n\t\t\tRBXASSERT(!simBody);\n\t\t\tparent->onChildRemoved(this);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(root = this);\n\t\t\tRBXASSERT(simBody);\n\t\t\tdelete simBody;\n\t\t\tsimBody = NULL;\n\t\t}\n",
+   "\t\tif (getParent())\n\t\t{\n\t\t\tparent->onChildRemoved(this);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tdelete simBody;\n\t\t\tsimBody = NULL;\n\t\t}\n"
+  ],
+  [
+   "\t\tBody* myRoot = getParent() ? getParent()->calcRoot() : this;\n\t\tmyRoot->advanceStateIndex();\n\t\tresetRoot(myRoot);\n\t}\n}\n",
+   "\t\tBody* myRoot = getParent() ? getParent()->calcRoot() : this;\n\t\tmyRoot->advanceStateIndex();\n\t\troot = myRoot;\n\t\tfor (int i = 0; i < children.size(); i++)\n\t\t\tchildren[i]->resetRoot(myRoot);\n\t}\n}\n"
+  ],
+  [
+   "void Body::setPv(const PV& _pv)\n{\n\tif (parent)\n\t{\n\t\tRBXASSERT(0);\n\t}\n\telse\n\t{\n\t\tpv = _pv;\n\t\tif (simBody)\n\t\t\tsimBody->makeDirty();\n\t\tadvanceStateIndex();\n\t}\n\tRBXASSERT(Math::longestVector3Component(pv.position.translation) < 1000000.0);\n\tRBXASSERT(Math::isOrthonormal(pv.position.rotation));\n\tRBXASSERT(!Math::isNanInfDenormVector3(pv.position.translation));\n\tRBXASSERT(!Math::isNanInfDenormVector3(pv.velocity.linear));\n\tRBXASSERT(!Math::isNanInfDenormVector3(pv.velocity.rotational));\n}\n",
+   "void Body::setPv(const PV& _pv)\n{\n\tif (!parent)\n\t{\n\t\tpv = _pv;\n\t\tif (simBody)\n\t\t\tsimBody->makeDirty();\n\t\tadvanceStateIndex();\n\t}\n}\n"
+  ],
+  [
+   "void Body::resetRoot(RBX::Body* newRoot)\n{\n\tRBXASSERT(newRoot == calcRoot());\n\troot = newRoot;\n",
+   "void Body::resetRoot(RBX::Body* newRoot)\n{\n\troot = newRoot;\n"
+  ],
+  [
+   "void Body::onChildRemoved(RBX::Body* child)\n{\n\tRBXASSERT(cofm);\n\tchildren.fastRemove(child);\n",
+   "void Body::onChildRemoved(RBX::Body* child)\n{\n\tchildren.fastRemove(child);\n"
+  ],
+  [
+   "\tif (getParent())\n\t{\n\t\tmeInParent = _meInParent;\n\t\tmakeCofmDirty();\n\t\troot->advanceStateIndex();\n\t}\n\telse\n\t{\n\t\tRBXASSERT(0);\n\t}\n}\n",
+   "\tif (getParent())\n\t{\n\t\tmeInParent = _meInParent;\n\t\tmakeCofmDirty();\n\t\troot->advanceStateIndex();\n\t}\n\telse\n\t{\n\t\tRBXASSERT(0);\n\t}\n}\n\nvoid Body::setMeInParent(RBX::Link* value)\n{\n\tif (link && link != value)\n\t\tlink->setBody(NULL);\n\tif (getParent())\n\t{\n\t\tlink = value;\n\t\tvalue->setBody(this);\n\t\tmakeCofmDirty();\n\t\troot->advanceStateIndex();\n\t}\n}\n"
+  ],
+  [
+   "Body* Body::getWorldBody()\n{\n\tstatic Body b = Body();\n\treturn &b;\n}\n",
+   "static Body* gWorldBody = NULL;   // 2008: the global Body* at 0x97bec4\n\nstatic void initialize()           // 00614b40 ?initialize@@YAXXZ\n{\n\tgWorldBody = new Body();\n}\n\nBody* Body::getWorldBody()\n{\n\tif (!gWorldBody)\n\t\tinitialize();\n\treturn gWorldBody;\n}\n"
   ]
  ],
  "App/include/v8datamodel/Workspace.h": [
@@ -787,6 +847,54 @@
    "            static bool get(lua_State* L, int luaIndex, Reflection::Value& value, bool nilIsMissing)\n            {\n                // (018310)  S_BPREL32: [FFFFFF80], Type:             0x11DC, n ; const int\n                // (018320)  S_BPREL32: [FFFFFF84], Type:             0x928D, values ; *std::vector<RBX::Reflection::Value> / *ValueCollection\n\n                if (luaIndex > lua_gettop(L))\n                    return false;\n\n                {\n                    switch (lua_type(L, luaIndex))\n                    {\n                    case LUA_TNUMBER:\n                    {\n                        double rhs = lua_tonumber(L, luaIndex);\n                        value = rhs;\n                        return true;\n                    }\n\n                    case LUA_TBOOLEAN:\n                    {\n                        bool rhs = lua_toboolean(L, luaIndex) != 0;\n                        value = rhs;\n                        return true;\n                    }\n\n                    case LUA_TSTRING:\n                    {\n                        const char* str = lua_tostring(L, luaIndex);\n                        value = std::string(str);\n                        return true;\n                    }\n\n                    case LUA_TTABLE:\n                    {\n                        const int n = static_cast<const int>(lua_objlen(L, luaIndex));\n                        value = Reflection::ValueCollection(n);\n                        Reflection::ValueCollection& values = value.cast<Reflection::ValueCollection&>();\n\n                        if (n >= 1)\n                        {\n                            int i = 1;\n                            do\n                            {\n                                Reflection::Value& ival = values[i-1];\n                                lua_rawgeti(L, luaIndex, i);\n                                LuaArguments::get(L, -1, ival, false);\n                                lua_pop(L, 1);\n                                i++;\n                            } while (i <= n);\n                        }\n\n                        return true;\n                    }\n\n                    case LUA_TNIL:\n                        if (nilIsMissing)\n                            return false;\n                        value = Reflection::Value();\n                        break;\n\n                    case LUA_TFUNCTION:\n                        value = lua_tofunction(L, luaIndex);\n                        return true;\n\n                    case LUA_TUSERDATA:\n                        if (CoordinateFrameBridge::getValue(L, luaIndex, value)\n                            || Vector3Bridge::getValue(L, luaIndex, value)\n                            || Color3Bridge::getValue(L, luaIndex, value)\n                            || BrickColorBridge::getValue(L, luaIndex, value)\n                            || ObjectBridge::getPtr(L, luaIndex, value))\n                            return true;\n\n                        value = Reflection::Value();\n                        break;\n\n                    default:\n                        value = Reflection::Value();\n                        break;\n                    }\n                }\n                return true;\n            }\n\n"
   ]
  ],
+ "App/include/v8kernel/KernelIndex.h": [
+  [
+   "\t\t\tKernelIndex::KernelIndex():kernelIndex(-1) {}\n\t\t\tKernelIndex::~KernelIndex() {RBXASSERT(kernelIndex == -1);}\n",
+   "\t\t\tKernelIndex::KernelIndex():kernelIndex(-1) {}\n"
+  ]
+ ],
+ "App/include/util/IndexArray.h": [
+  [
+   "@all:\t\t\tRBXASSERT(indexOf(array[index]) == index);\n",
+   ""
+  ],
+  [
+   "\t\tvoid fastAppend(tInstance* item)\n\t\t{\n\t\t\tRBXASSERT(item);\n\t\t\tRBXASSERT(indexOf(item) == -1);\n\t\t\tindexOf(item) = array.size();\n",
+   "\t\tvoid fastAppend(tInstance* item)\n\t\t{\n\t\t\tindexOf(item) = array.size();\n"
+  ],
+  [
+   "\t\tvoid fastRemove(tInstance* item)\n\t\t{\n\t\t\tRBXASSERT(array.find(item) != array.end());\n\n\t\t\tint removeIndex = indexOf(item);\n\t\t\tRBXASSERT(removeIndex >= 0);\n\t\t\tRBXASSERT(array[removeIndex] == item);\n",
+   "\t\tvoid fastRemove(tInstance* item)\n\t\t{\n\t\t\tint removeIndex = indexOf(item);\n"
+  ]
+ ],
+ "App/include/v8kernel/SimBody.h": [
+  [
+   "\t\t\tBody *body;\n\t\t\tbool dirty;\n",
+   "\t  Body *body;\n\t  float dt;   // 0x4: ctor 00658ae0 stores 0.0f; SimBody::step() (no parameter) reads it\n\t  bool dirty;\n"
+  ],
+  [
+   "\t\tSimBody(RBX::Body* body);\n",
+   "\t\tSimBody(RBX::Body* body) throw();   // 006149c0 has no delete-on-throw funclet\n"
+  ],
+  [
+   "\t\tvoid step(float dt);\n",
+   "\t\tvoid step();\n"
+  ],
+  [
+   "\t\t\tG3D::Vector3 force;\n\t\t\tG3D::Vector3 torque;\n",
+   "\t\tG3D::Vector3 force;\n\t\tG3D::Vector3 torque;\n\t\tG3D::Vector3 unknown0x9c;  // 00658ae0 zero-initializes; name and use unknown\n\t\tG3D::Vector3 unknown0xa8;  // 00658ae0 zero-initializes; name and use unknown\n"
+  ]
+ ],
+ "App/v8kernel/SimBody.cpp": [
+  [
+   "SimBody::SimBody(RBX::Body* _body)\n\t\t\t:body(_body),\n\t\t\tdirty(1),\n\t\t\tforce(G3D::Vector3::zero()),\n\t\t\ttorque(G3D::Vector3::zero()),\n\t\t\tconstantForceY(0.0f)\n{}\n",
+   "SimBody::SimBody(RBX::Body* _body) throw()\n\t\t\t:body(_body),\n\t\t\tdt(0.0f),\n\t\t\tdirty(1),\n\t\t\tforce(G3D::Vector3::zero()),\n\t\t\ttorque(G3D::Vector3::zero()),\n\t\t\tconstantForceY(0.0f),\n\t\t\tunknown0x9c(G3D::Vector3::zero()),\n\t\t\tunknown0xa8(G3D::Vector3::zero())\n{}\n"
+  ],
+  [
+   "void SimBody::step(float dt)\n",
+   "void SimBody::step()\n"
+  ]
+ ],
  "App/v8datamodel/Surface.cpp": [
   [
    "\tController::InputType Surface::getInput() const\n\t{\n\t\tRBXASSERT(partInstance->getPrimitive());\n",
@@ -905,6 +1013,14 @@
   [
    "\tvoid ModelInstance::legacyTraverseState(const G3D::CoordinateFrame& parentState)\n\t{\n\t\tRBXASSERT(legacyOffset);",
    "\tvoid ModelInstance::legacyTraverseState(const G3D::CoordinateFrame& parentState)\n\t{"
+  ],
+  [
+   "Humanoid* humanoid = findFirstChildOfType<Humanoid>();",
+   "Humanoid* humanoid = Humanoid::modelIsCharacter(this);"
+  ],
+  [
+   "#include \"humanoid/Humanoid.h\"",
+   "#include \"humanoid/Humanoid.h\"\nnamespace RBX { template Humanoid* Instance::findFirstChildOfType<Humanoid>() const; }"
   ]
  ],
  "App/v8datamodel/JointsService.cpp": [
@@ -1159,6 +1275,20 @@
   [
    "GroupDragTool::~GroupDragTool()\n\t{\n\t\tif (dragging)\n\t\t\tRBXASSERT(0);\n\t}",
    "GroupDragTool::~GroupDragTool()\n\t{\n\t\tif (dragging)\n\t\t\t            ;\n\t}"
+  ],
+  [
+   "#include \"tool/GroupDragTool.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"tool/GroupDragTool.h\"\n"
+  ],
+  [
+   "GroupDragTool::onMouseMove(const UIEvent& uiEvent)\n\t{\n\t\tRBXASSERT(captured());\n\n\t\tif (!dragging && (G3D::Vector2(uiEvent.mousePosition) - downPoint).length() > 4.0f)\n\t\t{\n\t\t\tdragging = true;\n\n\t\t\tmegaDragger->startDragging();\n\t\t\tmegaDragger->alignAndCleanParts();\n\t\t\tlastHit = megaDragger->hitObjectOrPlane(uiEvent);\n\t\t}\n\n\t\tonMouseIdle(uiEvent);\n\t}",
+   "GroupDragTool::onMouseMove(const UIEvent& uiEvent)\n\t{\n\t\t                     ;\n\n\t\tif (!dragging && (G3D::Vector2(uiEvent.mousePosition) - downPoint).length() > 4.0f)\n\t\t{\n\t\t\tdragging = true;\n\n\t\t\tmegaDragger->startDragging();\n\t\t\tmegaDragger->alignAndCleanParts();\n\t\t\tlastHit = megaDragger->hitObjectOrPlane(uiEvent);\n\t\t}\n\n\t\tonMouseIdle(uiEvent);\n\t}"
+  ]
+ ],
+ "App/v8datamodel/ToolMouseCommand.cpp": [
+  [
+   "#include \"v8datamodel/ToolMouseCommand.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"v8datamodel/ToolMouseCommand.h\"\n"
   ]
  ]
 }

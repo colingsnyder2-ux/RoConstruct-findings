@@ -18,22 +18,25 @@ namespace RBX {
 				update();
 		  }
 		public:
-			Body *body;
-			bool dirty;
+	  Body *body;
+	  float dt;   // 0x4: ctor 00658ae0 stores 0.0f; SimBody::step() (no parameter) reads it
+	  bool dirty;
 			PV pv;
 			Quaternion qOrientation;
 			G3D::Vector3 angMomentum;
 			G3D::Vector3 momentRecip;
 			float massRecip;
 			float constantForceY;
-			G3D::Vector3 force;
-			G3D::Vector3 torque;
+		G3D::Vector3 force;
+		G3D::Vector3 torque;
+		G3D::Vector3 unknown0x9c;  // 00658ae0 zero-initializes; name and use unknown
+		G3D::Vector3 unknown0xa8;  // 00658ae0 zero-initializes; name and use unknown
 			//funcs
 			__forceinline void SimBody::unkSimInline(float fNum);
 			//void SimBody(const RBX::SimBody&);
-			SimBody(RBX::Body* body);
+			SimBody(RBX::Body* body) throw();   // 006149c0 has no delete-on-throw funclet
 			~SimBody();
-			void step(float dt);
+			void step();
 			void makeDirty() {dirty = true;};
 			bool getDirty() const {return dirty;};
 			PV getOwnerPV();

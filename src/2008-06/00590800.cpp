@@ -1,8 +1,8 @@
-// from server: 96% by Espeon
+// from server: 98% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espeon_rootinsertnative9b47d1008b4c192d.cpp
+// roc-lib: rbxgs-dll roc_espeon_root_z_product_f44ef8f6a7714239.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma float_control(precise,off,push)
@@ -17,4 +17,4 @@ Model* getCharacter(const Root*);
 void collect(Model*,std::vector<boost::weak_ptr<Part> >&);
 RBX::Extents bounds(const std::vector<boost::weak_ptr<Part> >&);
 G3D::Vector3 toGrid(const G3D::Vector3&);
-G3D::Vector3 Root::compute(const RBX::Extents&region)const{Model*character=getCharacter(this);if(character){G3D::Vector3 look=camera.getGCamera().getCoordinateFrame().lookVector();look.y=0;look.unitize();G3D::Vector3 half=region.size()*.5f;half.y=0;std::vector<boost::weak_ptr<Part> >parts;collect(character,parts);RBX::Extents box=bounds(parts);G3D::Vector3 position=box.bottomCenter()+look*7.f+half*look;position=toGrid(position);return position;}return fallback();}
+G3D::Vector3 Root::compute(const RBX::Extents&region)const{Model*character=getCharacter(this);if(character){G3D::Vector3 look=camera.getGCamera().getCoordinateFrame().lookVector();look.y=0;look.unitize();G3D::Vector3 half=region.size()*.5f;half.y=0;std::vector<boost::weak_ptr<Part> >parts;collect(character,parts);RBX::Extents box=bounds(parts);G3D::Vector3 position=box.bottomCenter()+look*7.f+G3D::Vector3(half.x*look.x,half.y*look.y,look.z*half.z);position=toGrid(position);return position;}return fallback();}

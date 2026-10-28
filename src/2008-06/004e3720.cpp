@@ -1,7 +1,8 @@
+// from server: 75% by EspClaude
 // from server: 71% by coldek
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_codex_next_93d117709057ec0d.cpp
+// roc-lib: rbxgs-dll roc_espclaude_f5badf34b1e7a7f6.cpp
 
 // Candidate translation unit (score above; library headers required).
 // Binary-derived level population. This is a codegen analogue, not an original declaration.
@@ -26,12 +27,17 @@ public:
     virtual ~Level2008();
 };
 typedef char LevelSizeProof[sizeof(Level2008)==0x28?1:-1];
+class RenderSurfaceTypes {
+public:
+ size_t data;
+ RenderSurfaceTypes():data(0){}
+};
 extern float meshBevel;
 extern Array<Vector3> meshPositions;
 extern Array<Vector3> meshNormals;
 extern Array<Vector2> meshTextures;
 template<RBX::NormalId id>
-__declspec(noalias) void recoveredMeshFace(const Vector3&,float,unsigned,float,LevelRef&,unsigned*);
+__declspec(noalias) void recoveredMeshFace(const Vector3&,float,RenderSurfaceTypes,float,LevelRef&,unsigned*);
 __declspec(noinline) void __stdcall cloneMeshQuad(LevelRef& level,unsigned a,unsigned b,unsigned c,unsigned d,unsigned* out) {
  out[0]=Mesh::allocVertex(meshPositions[a],meshNormals[a],meshTextures[a],true);
  out[1]=Mesh::allocVertex(meshPositions[b],meshNormals[b],meshTextures[b],true);
@@ -63,10 +69,10 @@ static __forceinline void extendTexture(unsigned destination,unsigned base,unsig
 }
 class BrickMeshRecovery {
 public:
-    void populate(const Vector3&,unsigned,RBX::BrickColor,const unsigned*,const Vector4*,const unsigned*,float);
+    void populate(const Vector3&,RenderSurfaceTypes,RBX::BrickColor,const unsigned*,const Vector4*,const unsigned*,float);
     template<class T> T& field(unsigned offset) {return *reinterpret_cast<T*>(reinterpret_cast<char*>(this)+offset);}
 };
-void BrickMeshRecovery::populate(const Vector3& size,unsigned surfaces,RBX::BrickColor color,
+void BrickMeshRecovery::populate(const Vector3& size,RenderSurfaceTypes surfaces,RBX::BrickColor color,
                                const unsigned* atlasIndices,const Vector4* rectangles,const unsigned* flags,float margin) {
     LevelRef level=new Level2008(RenderDevice::QUADS);
     field<Array<LevelRef> >(0xc).append(level);
@@ -203,3 +209,4 @@ void BrickMeshRecovery::populate(const Vector3& size,unsigned surfaces,RBX::Bric
         for(unsigned i=0;i<24;++i) Mesh::allocVertex(copies[i],static_cast<unsigned>(-1));
     }
 }
+

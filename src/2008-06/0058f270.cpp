@@ -1,8 +1,9 @@
+// from server: 100% by EspClaude
 // from server: 81% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_unit_d9210621e39ca540.cpp
+// roc-lib: rbxgs-dll roc_espclaude_a12929c469ffad23.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias("v8xml/XmlElement.h", "roc_unit_3373cfbf6826d597.cpp")
@@ -52,6 +53,11 @@ void TextXmlWriterWithEmbeddedContent::serializeNode(const XmlElement* xmlNode, 
 					try
 					{
 						contentStream = (*reinterpret_cast<RBX::ContentProvider**>(reinterpret_cast<char*>(this) + 0x48))->getContent(contentId);
+					}
+					catch (std::exception&)
+					{
+						goto hash;
+					}
 
 						if (contentId.mimeType() == RBX::Name::getNullName())
 						{
@@ -71,11 +77,6 @@ void TextXmlWriterWithEmbeddedContent::serializeNode(const XmlElement* xmlNode, 
 						encoder.put(_From, _To, _Out, _State, base64<>::crlf());
 
 						stream << "</binary>";
-					}
-					catch (std::exception&)
-					{
-						goto hash;
-					}
 				}
 				else
 				{
@@ -94,4 +95,5 @@ hash:
 		TextXmlWriter::serializeNode(xmlNode, depth);
 	}
 }
+
 

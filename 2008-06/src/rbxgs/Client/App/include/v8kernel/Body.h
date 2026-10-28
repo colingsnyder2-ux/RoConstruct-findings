@@ -54,7 +54,8 @@ namespace RBX {
 			int& getKernelIndex() {return kernelIndex;}
 			Body();
 			~Body();
-			void step(float, bool);
+			void step(float dt, bool throttling) { simBody->dt = dt; step(throttling); }
+		void step(bool);
 			bool cofmIsClean();
 			void makeCofmDirty();
 			void advanceStateIndex();

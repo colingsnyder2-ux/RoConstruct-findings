@@ -3035,11 +3035,224 @@
         ]
       ]
     },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
+    "unit": "RBX::World",
+    "updated": 1793153880.6688926,
+    "user": "colin"
+  },
+  {
+    "created": 1793153820.7901983,
+    "id": "2d843526278b48a28e08b61d94d1fa72",
+    "model": "gpt-6.1-sol",
+    "patches": {
+      "App/v8datamodel/ModelInstance.cpp": [
+        [
+          "Humanoid* humanoid = findFirstChildOfType<Humanoid>();",
+          "Humanoid* humanoid = Humanoid::modelIsCharacter(this);"
+        ],
+        [
+          "#include \"humanoid/Humanoid.h\"",
+          "#include \"humanoid/Humanoid.h\"\nnamespace RBX { template Humanoid* Instance::findFirstChildOfType<Humanoid>() const; }"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
+    "unit": "RBX::ModelInstance",
+    "updated": 1793154686.2222307,
+    "user": "colin"
+  },
+  {
+    "created": 1793154359.4473698,
+    "id": "d7b7e23540dd4583a579580d67d3b9a1",
+    "model": "gpt-6.1-sol",
+    "patches": {
+      "App/humanoid/Humanoid.cpp": [
+        [
+          "#include \"humanoid/Humanoid.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"humanoid/Humanoid.h\"\n"
+        ]
+      ],
+      "App/tool/GroupDragTool.cpp": [
+        [
+          "#include \"tool/GroupDragTool.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"tool/GroupDragTool.h\"\n"
+        ],
+        [
+          "GroupDragTool::onMouseMove(const UIEvent& uiEvent)\n\t{\n\t\tRBXASSERT(captured());\n\n\t\tif (!dragging && (G3D::Vector2(uiEvent.mousePosition) - downPoint).length() > 4.0f)\n\t\t{\n\t\t\tdragging = true;\n\n\t\t\tmegaDragger->startDragging();\n\t\t\tmegaDragger->alignAndCleanParts();\n\t\t\tlastHit = megaDragger->hitObjectOrPlane(uiEvent);\n\t\t}\n\n\t\tonMouseIdle(uiEvent);\n\t}",
+          "GroupDragTool::onMouseMove(const UIEvent& uiEvent)\n\t{\n\t\t                     ;\n\n\t\tif (!dragging && (G3D::Vector2(uiEvent.mousePosition) - downPoint).length() > 4.0f)\n\t\t{\n\t\t\tdragging = true;\n\n\t\t\tmegaDragger->startDragging();\n\t\t\tmegaDragger->alignAndCleanParts();\n\t\t\tlastHit = megaDragger->hitObjectOrPlane(uiEvent);\n\t\t}\n\n\t\tonMouseIdle(uiEvent);\n\t}"
+        ]
+      ],
+      "App/v8datamodel/JointInstance.cpp": [
+        [
+          "#include \"v8datamodel/JointInstance.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/JointInstance.h\"\n"
+        ]
+      ],
+      "App/v8datamodel/ToolMouseCommand.cpp": [
+        [
+          "#include \"v8datamodel/ToolMouseCommand.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/ToolMouseCommand.h\"\n"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
+    "unit": "RBX::ToolMouseCommand, RBX::GroupDragTool, RBX::Humanoid",
+    "updated": 1793155111.012678,
+    "user": "colin"
+  },
+  {
+    "created": 1793155165.2464974,
+    "id": "13a00877010c4cee81a94c9851366e6d",
+    "model": "gpt-6.1-sol",
+    "patches": {
+      "App/humanoid/Humanoid.cpp": [
+        [
+          "return testModel ? testModel->findFirstChildOfType<Humanoid>() : NULL;",
+          "if (testModel)\n\t\t{\n\t\t\tconst ModelInstance* model = dynamic_cast<const ModelInstance*>(testModel);\n\t\t\tif (model)\n\t\t\t\treturn model->findFirstChildOfType<Humanoid>();\n\t\t}\n\t\treturn NULL;"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
+    "unit": "RBX::Humanoid",
+    "updated": 1793155626.7835934,
+    "user": "colin"
+  },
+  {
+    "created": 1793155907.3769526,
+    "id": "ae59330ca7914e1caae5836cc55500e4",
+    "model": "gpt-6.1-sol",
+    "patches": {
+      "App/humanoid/Humanoid.cpp": [
+        [
+          "#include \"humanoid/Humanoid.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"humanoid/Humanoid.h\"\n"
+        ]
+      ],
+      "App/tool/GroupDragTool.cpp": [
+        [
+          "#include \"tool/GroupDragTool.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"tool/GroupDragTool.h\"\n"
+        ],
+        [
+          "GroupDragTool::onMouseMove(const UIEvent& uiEvent)\n\t{\n\t\tRBXASSERT(captured());\n\n\t\tif (!dragging && (G3D::Vector2(uiEvent.mousePosition) - downPoint).length() > 4.0f)\n\t\t{\n\t\t\tdragging = true;\n\n\t\t\tmegaDragger->startDragging();\n\t\t\tmegaDragger->alignAndCleanParts();\n\t\t\tlastHit = megaDragger->hitObjectOrPlane(uiEvent);\n\t\t}\n\n\t\tonMouseIdle(uiEvent);\n\t}",
+          "GroupDragTool::onMouseMove(const UIEvent& uiEvent)\n\t{\n\t\t                     ;\n\n\t\tif (!dragging && (G3D::Vector2(uiEvent.mousePosition) - downPoint).length() > 4.0f)\n\t\t{\n\t\t\tdragging = true;\n\n\t\t\tmegaDragger->startDragging();\n\t\t\tmegaDragger->alignAndCleanParts();\n\t\t\tlastHit = megaDragger->hitObjectOrPlane(uiEvent);\n\t\t}\n\n\t\tonMouseIdle(uiEvent);\n\t}"
+        ]
+      ],
+      "App/v8datamodel/JointInstance.cpp": [
+        [
+          "#include \"v8datamodel/JointInstance.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/JointInstance.h\"\n"
+        ]
+      ],
+      "App/v8datamodel/ModelInstance.cpp": [
+        [
+          "Humanoid* humanoid = findFirstChildOfType<Humanoid>();",
+          "Humanoid* humanoid = Humanoid::modelIsCharacter(this);"
+        ],
+        [
+          "#include \"humanoid/Humanoid.h\"",
+          "#include \"humanoid/Humanoid.h\"\nnamespace RBX { template Humanoid* Instance::findFirstChildOfType<Humanoid>() const; }"
+        ]
+      ],
+      "App/v8datamodel/ToolMouseCommand.cpp": [
+        [
+          "#include \"v8datamodel/ToolMouseCommand.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"v8datamodel/ToolMouseCommand.h\"\n"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "55f3911b075722e73c61e0f9b028dffbcd921e932ae8ad94e0a96e87257193f5",
+      "credits": 11,
+      "distinct_after": 9819,
+      "distinct_before": 9808,
+      "gains": [
+        "00525ed0",
+        "00583570",
+        "005d91a0",
+        "005dbf80",
+        "005dc090",
+        "005dc0c0",
+        "005dc3d0",
+        "005dc7f0",
+        "0060c5c0",
+        "0064ddf0",
+        "0066a570",
+        "0066a730"
+      ],
+      "input_hash": "0a88c68a804ed6f577823080588a96a2cae8ad45dd7c687c32b332ece509796f",
+      "losses": [],
+      "new_distinct": [
+        "00583570",
+        "005d91a0",
+        "005dbf80",
+        "005dc090",
+        "005dc0c0",
+        "005dc3d0",
+        "005dc7f0",
+        "0060c5c0",
+        "0064ddf0",
+        "0066a570",
+        "0066a730"
+      ],
+      "overlay_hash": "f1ef71791bfca5864ae3952620018f6cd9ce993d52fdf416605e81918a8f2f58",
+      "owned_after": 3154,
+      "owned_before": 3142,
+      "rebased": false,
+      "submitted_revision": "55f3911b075722e73c61e0f9b028dffbcd921e932ae8ad94e0a96e87257193f5"
+    },
+    "state": "accepted",
+    "unit": "RBX::ModelInstance, RBX::GroupDragTool, RBX::ToolMouseCommand, RBX::Humanoid",
+    "updated": 1793157055.5574906,
+    "user": "colin"
+  },
+  {
+    "created": 1793157493.7806816,
+    "id": "7c37f4929dd14e71a88d81c790c1262f",
+    "model": "gpt-6.1-sol",
+    "patches": {
+      "App/humanoid/Humanoid.cpp": [
+        [
+          "return testModel ? testModel->findFirstChildOfType<Humanoid>() : NULL;",
+          "if (testModel)\n\t\t{\n\t\t\tconst ModelInstance* model = dynamic_cast<const ModelInstance*>(testModel);\n\t\t\tif (model)\n\t\t\t\treturn model->findFirstChildOfType<Humanoid>();\n\t\t}\n\t\treturn NULL;"
+        ]
+      ],
+      "App/include/v8tree/Instance.h": [
+        [
+          "size_t numChildren() const\n\t\t{\n\t\t\tif (children)\n\t\t\t\treturn children->size();\n\t\t\telse\n\t\t\t\treturn 0;\n\t\t}",
+          "size_t numChildren() const\n\t\t{\n\t\t\treturn children ? children->size() : 0;\n\t\t}"
+        ]
+      ],
+      "App/v8tree/Instance.cpp": [
+        [
+          "Instance::findChildIndex(const Instance* instance) const\n\t{\n\t\tRBXASSERT(children);\n\n\t\tconst std::vector<boost::shared_ptr<Instance>>& c = *children;\n\n\t\tstd::vector<boost::shared_ptr<Instance>>::const_iterator found = std::find(c.begin(), c.end(), instance->shared_from_this());\n\t\treturn (int)std::distance(c.begin(), found);\n\t}",
+          "Instance::findChildIndex(const Instance* instance) const\n\t{\n\t\t                   ;\n\n\t\tconst std::vector<boost::shared_ptr<Instance>>& c = *children;\n\n\t\tstd::vector<boost::shared_ptr<Instance>>::const_iterator found = std::find(c.begin(), c.end(), instance->shared_from_this());\n\t\treturn (int)std::distance(c.begin(), found);\n\t}"
+        ]
+      ]
+    },
     "phase": "building",
     "receipt": {},
     "state": "verifying",
-    "unit": "RBX::World",
-    "updated": 1793153383.4903033,
+    "unit": "RBX::Humanoid, RBX::ModelInstance",
+    "updated": 1793157546.9261246,
     "user": "colin"
   }
 ]

@@ -1,4 +1,4 @@
-// from server: 74% by king_originala
+// from server: 100% by EspClaude
 // roc 2008-06 005d1ec0  unit: RBX::VSpawnerService::?$FactoryProduct  size: 222 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005d1ec0
 //
@@ -71,18 +71,20 @@
 // 005d1f98  83c40c               add esp, 0xc
 // 005d1f9b  c20800               ret 8
 
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-#pragma intrinsic(_InterlockedDecrement)
+// from server: 74% by king_originala
+// roc 2008-06 005d1ec0  unit: RBX::VSpawnerService::?$FactoryProduct  size: 222 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 005d1ec0
+//
+
+#include <intrin.h>
 
 struct Control {
     virtual ~Control();
     virtual void dispose();
     virtual void destroy();
 
-    volatile long strong;
-    volatile long weak;
+    long strong;
+    long weak;
 };
 
 struct Object {
@@ -129,6 +131,7 @@ struct S {
     bool enabled;
 
     void f(Shared object);
+    BrickColor getTeamColor() const { return color; }
 };
 
 void S::f(Shared object)
@@ -140,7 +143,7 @@ void S::f(Shared object)
     if (instance && checkInstance(instance)) {
         Player* player = getPlayer(instance);
         if (player) {
-            player->setTeamColor(color);
+            player->setTeamColor(getTeamColor());
             player->setNeutral(neutral);
         }
     }

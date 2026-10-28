@@ -1,127 +1,83 @@
+// from server: 100% by EspClaude
 // from server: 90% by king_originala_sol_resume_high
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-view roc_resume_high_decal_guard_ac07cee00b306dea.cpp
+// roc-lib: rbxgs-view roc_espclaude_8db6c33f163e0aa1.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "RenderLib/RenderScene.h"
-// RTTI proves Decal -> PartChunk -> Chunk -> ReferenceCountedObject all PMD zero.
-// Keep borrowed owner fields; use genuine native scene callback and G3D self ownership.
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-#pragma intrinsic(_InterlockedDecrement)
+#include <boost/shared_ptr.hpp>
+#include <G3D/ReferenceCount.h>
 
-extern "C" long (__stdcall * const incrementReference)(volatile long*);
-extern "C" long (__stdcall * const decrementReference)(volatile long*);
-
-struct Control
-{
-    virtual void slot0();
-    virtual void dispose();
-    virtual void destroy();
-    volatile long strong;
-    volatile long weak;
-    void release()
-    {
-        if (_InterlockedDecrement(&strong) == 0)
-        {
-            dispose();
-            weak_release();
-        }
-    }
-    void weak_release()
-    {
-        if (_InterlockedDecrement(&weak) == 0)
-            destroy();
-    }
+namespace RBX {
+class Instance {
+public:
+	virtual ~Instance();
+	char pad[0x100];
+	Instance* parent;
+	Instance* getParent() const { return parent; }
+	bool isDescendentOf(const Instance*) const;
 };
-
-struct ControlRef
-{
-    Control* pointer;
-    ControlRef& assign(const ControlRef&);
+class PartInstance : public Instance {
+public:
+	virtual ~PartInstance();
 };
-
-struct Shared
-{
-    void* object;
-    ControlRef control;
-    Shared& operator=(const Shared&);
-    ~Shared();
+class Workspace {
+public:
+	static Workspace* findWorkspace(const Instance*);
 };
+template<class T> boost::shared_ptr<T> shared_from(T*);
 
-struct Node
-{
-    char padding[0x104];
-    Node* parent;
-    bool contains(Node*);
+namespace Render {
+class Chunk : public G3D::ReferenceCountedObject {
+public:
+	char pad[0xb0];
 };
-
-struct S;
-
-typedef G3D::ReferenceCountedPointer<RBX::Render::Chunk> Intrusive;
-
-typedef RBX::Render::SceneManager Callback;
-
-struct Holder
-{
-    void* unused;
-    Callback* callback;
+class SceneManager {
+public:
+	virtual void addModel(const G3D::ReferenceCountedPointer<Chunk>&);
+	virtual void invalidateModel(const G3D::ReferenceCountedPointer<Chunk>&, bool);
+	virtual void removeModel(const G3D::ReferenceCountedPointer<Chunk>&);
 };
-
-struct S
-{
-    virtual ~S();
-    volatile long references;
-    char padding0[0xb4];
-    Shared shared;
-    char padding1[0xc];
-    Holder* holder;
-    void* unused;
-    Node* node;
-
-    void cleanup();
-    void updateFirst();
-    void updateSecond();
-    void f(Shared);
-};
-
-extern char instanceType;
-extern char partType;
-extern "C" void* __cdecl runtimeCast(void*, int, void*, void*, int);
-extern Node* __cdecl findRoot(Node*);
-extern Shared __cdecl makeShared(void*);
-
-__forceinline Shared& Shared::operator=(const Shared& other)
-{
-    object = other.object;
-    control.assign(other.control);
-    return *this;
 }
+namespace View {
+class View {
+public:
+	void* unk;
+	Render::SceneManager* sceneManager;
+};
+class PartChunk : public Render::Chunk {
+protected:
+	boost::shared_ptr<PartInstance> partInstance;
+	int material;
+	bool materialInvalid;
+	int mesh;
+	View* view;
+	void* specialShape;
+	void invalidateMaterial();
+	void invalidateMesh();
+};
+class Decal : public PartChunk {
+	boost::shared_ptr<Instance> decal;
+public:
+	void onDecalAncestorChanged(boost::shared_ptr<Instance>);
+};
 
-__forceinline Shared::~Shared()
+void Decal::onDecalAncestorChanged(boost::shared_ptr<Instance> ancestor)
 {
-    if (control.pointer)
-        control.pointer->release();
+	if (!decal)
+		return;
+	{
+		Workspace* workspace = Workspace::findWorkspace(decal.get());
+		partInstance = shared_from(dynamic_cast<PartInstance*>(decal->getParent()));
+		if (workspace && decal->isDescendentOf((Instance*)workspace))
+		{
+			invalidateMesh();
+			invalidateMaterial();
+		}
+		if (!workspace || !decal->isDescendentOf((Instance*)workspace))
+			view->sceneManager->removeModel(this);
+	}
 }
-
-void S::f(Shared argument)
-{
-    if (node)
-    {
-        Node* root = findRoot(node);
-        shared = makeShared(
-            runtimeCast(node->parent, 0, &instanceType, &partType, 0));
-        if (root && node->contains(root))
-        {
-            updateFirst();
-            updateSecond();
-        }
-        if (!root || !node->contains(root))
-        {
-            holder->callback->removeModel(Intrusive(reinterpret_cast<RBX::Render::Chunk*>(this)));
-        }
-    }
+}
 }

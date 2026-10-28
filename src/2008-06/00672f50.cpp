@@ -1,14 +1,117 @@
-// from server: 94% by colin
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_adorn_quad_native_scene_reloaddcd00740492b2088.cpp
+// roc-lib: rbxgs-dll roc_claudeM_854f25b05ca3c1ba.cpp
 
 // Candidate translation unit (score above; library headers required).
 // Native324B allocation0045b425, ctor674210, dtor673a90.
 #undef OGRE_NONCLIENT_BUILD
 #include "roc_adorn_quad_native_vector_copy_header03c28376dd2c44a8.cpp"
-#include "roc_adorn_quad_native_sphere_inline_header09b8961a0e5aa4f5.cpp"
+/*
+-----------------------------------------------------------------------------
+This source file is part of OGRE
+    (Object-oriented Graphics Rendering Engine)
+For the latest info, see http://www.ogre3d.org/
+
+Copyright (c) 2000-2006 Torus Knot Software Ltd
+Also see acknowledgements in Readme.html
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+http://www.gnu.org/copyleft/lesser.txt.
+
+You may alternatively use this source under the terms of a specific version of
+the OGRE Unrestricted License provided you have obtained such a license from
+Torus Knot Software Ltd.
+-----------------------------------------------------------------------------
+*/
+#ifndef __Sphere_H_
+#define __Sphere_H_
+
+// Precompiler options
+#include "../../../libs/ogre-1.4.5/ogrenew/OgreMain/include/OgrePrerequisites.h"
+
+#include "../../../libs/ogre-1.4.5/ogrenew/OgreMain/include/OgreVector3.h"
+
+namespace Ogre {
+
+
+    /** A sphere primitive, mostly used for bounds checking. 
+    @remarks
+        A sphere in math texts is normally represented by the function
+        x^2 + y^2 + z^2 = r^2 (for sphere's centered on the origin). Ogre stores spheres
+        simply as a center point and a radius.
+    */
+    class _OgreExport Sphere
+    {
+    protected:
+        Real mRadius;
+        Vector3 mCenter;
+    public:
+        /** Standard constructor - creates a unit sphere around the origin.*/
+        Sphere() : mRadius(1.0), mCenter(Vector3::ZERO) {}
+        /** Constructor allowing arbitrary spheres. 
+            @param center The center point of the sphere.
+            @param radius The radius of the sphere.
+        */
+        __forceinline Sphere(const Vector3& center, Real radius)
+            : mRadius(radius), mCenter(center) {}
+        __forceinline Sphere(const Vector3& center, Real radius, int)
+            : mRadius(radius) { mCenter = center; }
+
+        /** Returns the radius of the sphere. */
+        Real getRadius(void) const { return mRadius; }
+
+        /** Sets the radius of the sphere. */
+        void setRadius(Real radius) { mRadius = radius; }
+
+        /** Returns the center point of the sphere. */
+        const Vector3& getCenter(void) const { return mCenter; }
+
+        /** Sets the center point of the sphere. */
+        void setCenter(const Vector3& center) { mCenter = center; }
+
+		/** Returns whether or not this sphere interects another sphere. */
+		bool intersects(const Sphere& s) const
+		{
+            return (s.mCenter - mCenter).squaredLength() <=
+                Math::Sqr(s.mRadius + mRadius);
+		}
+		/** Returns whether or not this sphere interects a box. */
+		bool intersects(const AxisAlignedBox& box) const
+		{
+			return Math::intersects(*this, box);
+		}
+		/** Returns whether or not this sphere interects a plane. */
+		bool intersects(const Plane& plane) const
+		{
+			return Math::intersects(*this, plane);
+		}
+		/** Returns whether or not this sphere interects a point. */
+		bool intersects(const Vector3& v) const
+		{
+            return ((v - mCenter).squaredLength() <= Math::Sqr(mRadius));
+		}
+        
+
+    };
+
+}
+
+#endif
+
+
 #include "roc_adorn_native_novtable_interface91b88275e0007f5c.cpp"
 #include "../../../libs/ogre-1.4.5/ogrenew/OgreMain/include/Ogre.h"
 #include <vector>
@@ -131,7 +234,7 @@ public:
 typedef char NativeAdornSize[sizeof(AdornRbxGfx)==0x144?1:-1];
 typedef char NativeEntitySize[sizeof(Ogre::RbxEntity)==0x2bc?1:-1];
 typedef char NativeSceneNodeSize[sizeof(Ogre::RbxSceneNode)==0x248?1:-1];
-extern Ogre::MeshPtr adornQuadMesh; // native 0097dac8.
+static Ogre::MeshPtr adornQuadMesh;
 extern std::string adornMeshSuffix; // native 0097da68.
 void AdornRbxGfx::quad(const G3D::Vector3& v0,const G3D::Vector3& v1,const G3D::Vector3& v2,const G3D::Vector3& v3,const G3D::Color4& color) {
     float y = v0.y-v2.y;
@@ -162,14 +265,14 @@ void AdornRbxGfx::quad(const G3D::Vector3& v0,const G3D::Vector3& v1,const G3D::
         adornQuadMesh = object->convertToMesh(sceneManager()->getName()+adornMeshSuffix,Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
         Ogre::Mesh* mesh=adornQuadMesh.getPointer();
         float radius=mesh->getBoundingSphereRadius();
-        Ogre::Sphere parameter(mesh->getBounds().getCenter(),radius);
+        Ogre::Sphere parameter(mesh->getBounds().getCenter(),radius,0);
         renderNode->setSphere(reinterpret_cast<unsigned long>(adornQuadMesh->getSubMesh(0)),parameter);
     }
     Ogre::Matrix4 world;
     worldMatrix(world);
     Ogre::Matrix4 local;
     local.makeTransform(center,Ogre::Vector3(1,v2.y-v0.y,v2.z-v0.z),Ogre::Quaternion(1,0,0,0));
-    world = world.concatenate(local);
+    world = world * local;
     drawMesh(adornQuadMesh,world,textureMaterial);
 }
 

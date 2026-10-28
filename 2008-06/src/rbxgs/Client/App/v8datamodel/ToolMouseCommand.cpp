@@ -1,3 +1,4 @@
+#pragma float_control(precise, off)
 #include "v8datamodel/ToolMouseCommand.h"
 #include "v8datamodel/PartInstance.h"
 #include "v8datamodel/Tool.h"

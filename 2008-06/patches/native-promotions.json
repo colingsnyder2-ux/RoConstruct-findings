@@ -860,5 +860,45 @@
     "Tool::setGrip(const G3D::CoordinateFrame& value)\n\t{\n\t\tif (value != grip)\n\t\t{\n\t\t\tgrip = value;\n\n\t\t\tif (Workspace* workspace = ServiceProvider::find<Workspace>(this))\n\t\t\t\tworkspace->raiseDrawChanged();\n\n\t\t\traisePropertyChanged(prop_Grip);\n\n\t\t\tif (weld)\n\t\t\t{\n\t\t\t\t                                                          ;\n\t\t\t\tweld->setC1(grip);\n\t\t\t}\n\t\t}\n\t}"
    ]
   ]
+ },
+ {
+  "App/v8datamodel/JointInstance.cpp": [
+   [
+    "#include \"v8datamodel/JointInstance.h\"\n",
+    "#pragma float_control(precise, off)\n#include \"v8datamodel/JointInstance.h\"\n"
+   ]
+  ],
+  "App/v8datamodel/ToolMouseCommand.cpp": [
+   [
+    "#include \"v8datamodel/ToolMouseCommand.h\"\n",
+    "#pragma float_control(precise, off)\n#include \"v8datamodel/ToolMouseCommand.h\"\n"
+   ]
+  ],
+  "App/tool/GroupDragTool.cpp": [
+   [
+    "#include \"tool/GroupDragTool.h\"\n",
+    "#pragma float_control(precise, off)\n#include \"tool/GroupDragTool.h\"\n"
+   ],
+   [
+    "GroupDragTool::onMouseMove(const UIEvent& uiEvent)\n\t{\n\t\tRBXASSERT(captured());\n\n\t\tif (!dragging && (G3D::Vector2(uiEvent.mousePosition) - downPoint).length() > 4.0f)\n\t\t{\n\t\t\tdragging = true;\n\n\t\t\tmegaDragger->startDragging();\n\t\t\tmegaDragger->alignAndCleanParts();\n\t\t\tlastHit = megaDragger->hitObjectOrPlane(uiEvent);\n\t\t}\n\n\t\tonMouseIdle(uiEvent);\n\t}",
+    "GroupDragTool::onMouseMove(const UIEvent& uiEvent)\n\t{\n\t\t                     ;\n\n\t\tif (!dragging && (G3D::Vector2(uiEvent.mousePosition) - downPoint).length() > 4.0f)\n\t\t{\n\t\t\tdragging = true;\n\n\t\t\tmegaDragger->startDragging();\n\t\t\tmegaDragger->alignAndCleanParts();\n\t\t\tlastHit = megaDragger->hitObjectOrPlane(uiEvent);\n\t\t}\n\n\t\tonMouseIdle(uiEvent);\n\t}"
+   ]
+  ],
+  "App/v8datamodel/ModelInstance.cpp": [
+   [
+    "Humanoid* humanoid = findFirstChildOfType<Humanoid>();",
+    "Humanoid* humanoid = Humanoid::modelIsCharacter(this);"
+   ],
+   [
+    "#include \"humanoid/Humanoid.h\"",
+    "#include \"humanoid/Humanoid.h\"\nnamespace RBX { template Humanoid* Instance::findFirstChildOfType<Humanoid>() const; }"
+   ]
+  ],
+  "App/humanoid/Humanoid.cpp": [
+   [
+    "#include \"humanoid/Humanoid.h\"\n",
+    "#pragma float_control(precise, off)\n#include \"humanoid/Humanoid.h\"\n"
+   ]
+  ]
  }
 ]

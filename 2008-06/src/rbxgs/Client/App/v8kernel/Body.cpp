@@ -1,3 +1,4 @@
+#pragma float_control(precise, off)
 #include "v8kernel/Body.h"
 #include "v8kernel/SimBody.h"
 #include "util/Debug.h"
@@ -24,17 +25,10 @@ Body::Body()
 
 Body::~Body()
 {
-	RBXASSERT(numChildren() == 0);
 	if (parent)
 		setParent(NULL);
-	RBXASSERT(!parent);
-	RBXASSERT(!link);
-	RBXASSERT(index == -1);
-	RBXASSERT(simBody);
 	delete simBody;
 	simBody = NULL;
-	RBXASSERT(!cofm);
-	RBXASSERT(root == this);
 }
 
 void Body::updatePV() const
@@ -53,7 +47,6 @@ void Body::updatePV() const
 
 void Body::resetRoot(RBX::Body* newRoot)
 {
-	RBXASSERT(newRoot == calcRoot());
 	root = newRoot;
 	for (int i = 0; i < children.size(); i++)
 	{
@@ -94,38 +87,15 @@ void Body::makeCofmDirty()
 {
 	if (cofm && cofm->getIsDirty())
 	{
-		// TODO: this match is super fake, i dont know roblox managed to create this cursed assertion
-		#if defined(_DEBUG) || defined(_RELEASEASSERT)
-		if (Debugable::assertAction == Debugable::CrashOnAssert)
-		{
-			if (parent)
-				parent->validateParentCofmDirty();
-			RBXASSERT(getRootSimBody()->getDirty());
-		}
-		#endif
 	}
 	else
 	{
 		if (getParent())
-		{
-			RBXASSERT(!simBody);
 			getParent()->makeCofmDirty();
-		}
-		else
-		{
-			RBXASSERT(root == this);
-			if (simBody)
-				simBody->makeDirty();
-		}
+		else if (simBody)
+			simBody->makeDirty();
 		if (cofm)
-		{
 			cofm->makeDirty();
-			RBXASSERT(numChildren() > 0);
-		}
-		else
-		{
-			RBXASSERT(!numChildren());
-		}
 	}
 }
 
@@ -142,7 +112,6 @@ void Body::onChildAdded(RBX::Body* child)
 
 void Body::onChildRemoved(RBX::Body* child)
 {
-	RBXASSERT(cofm);
 	children.fastRemove(child);
 	if (numChildren() == 0)
 	{
@@ -161,19 +130,15 @@ void Body::setMass(float _mass)
 	}
 }
 
-void Body::step(float dt, bool throttling)
+void Body::step(bool throttling)
 {
-	RBXASSERT(!getParent());
-	RBXASSERT(simBody);
-
 	if (throttling && canThrottle)
 	{
 		simBody->resetAccumulators();
 	}
 	else
 	{
-		simBody->step(dt);
-
+		simBody->step();
 		pv = cofm == NULL ? simBody->pv : simBody->getOwnerPV();
 		advanceStateIndex();
 	}
@@ -192,9 +157,6 @@ void Body::setVelocity(const Velocity& worldVelocity)
 
 void Body::setParent(Body* newParent)
 {
-	RBXASSERT(!newParent || newParent->getParent() != this);
-	RBXASSERT(newParent != this);
-
 	if (parent != newParent)
 	{
 		if (link)
@@ -205,14 +167,10 @@ void Body::setParent(Body* newParent)
 
 		if (getParent())
 		{
-			RBXASSERT(root == getParent()->getRoot());
-			RBXASSERT(!simBody);
 			parent->onChildRemoved(this);
 		}
 		else
 		{
-			RBXASSERT(root = this);
-			RBXASSERT(simBody);
 			delete simBody;
 			simBody = NULL;
 		}
@@ -229,14 +187,24 @@ void Body::setParent(Body* newParent)
 		}
 		Body* myRoot = getParent() ? getParent()->calcRoot() : this;
 		myRoot->advanceStateIndex();
-		resetRoot(myRoot);
+		root = myRoot;
+		for (int i = 0; i < children.size(); i++)
+			children[i]->resetRoot(myRoot);
 	}
+}
+
+static Body* gWorldBody = NULL;   // 2008: the global Body* at 0x97bec4
+
+static void initialize()           // 00614b40 ?initialize@@YAXXZ
+{
+	gWorldBody = new Body();
 }
 
 Body* Body::getWorldBody()
 {
-	static Body b = Body();
-	return &b;
+	if (!gWorldBody)
+		initialize();
+	return gWorldBody;
 }
 
 G3D::CoordinateFrame Body::getMeInDescendant(const Body* descendant) const
@@ -259,22 +227,13 @@ G3D::CoordinateFrame Body::getMeInDescendant(const Body* descendant) const
 
 void Body::setPv(const PV& _pv)
 {
-	if (parent)
-	{
-		RBXASSERT(0);
-	}
-	else
+	if (!parent)
 	{
 		pv = _pv;
 		if (simBody)
 			simBody->makeDirty();
 		advanceStateIndex();
 	}
-	RBXASSERT(Math::longestVector3Component(pv.position.translation) < 1000000.0);
-	RBXASSERT(Math::isOrthonormal(pv.position.rotation));
-	RBXASSERT(!Math::isNanInfDenormVector3(pv.position.translation));
-	RBXASSERT(!Math::isNanInfDenormVector3(pv.velocity.linear));
-	RBXASSERT(!Math::isNanInfDenormVector3(pv.velocity.rotational));
 }
 
 void Body::setCoordinateFrame(const G3D::CoordinateFrame& worldCord)
@@ -303,6 +262,19 @@ void Body::setMeInParent(const G3D::CoordinateFrame& _meInParent)
 	else
 	{
 		RBXASSERT(0);
+	}
+}
+
+void Body::setMeInParent(RBX::Link* value)
+{
+	if (link && link != value)
+		link->setBody(NULL);
+	if (getParent())
+	{
+		link = value;
+		value->setBody(this);
+		makeCofmDirty();
+		root->advanceStateIndex();
 	}
 }
 

@@ -2,6 +2,7 @@
 #include "v8datamodel/ModelInstance.h"
 #include "v8datamodel/PartInstance.h"
 #include "humanoid/Humanoid.h"
+namespace RBX { template Humanoid* Instance::findFirstChildOfType<Humanoid>() const; }
 #include "v8world/Primitive.h"
 #include "tool/DragUtilities.h"
 #include "AppDraw/Draw.h"
@@ -354,7 +355,7 @@ namespace RBX
 	{
 		DragUtilities::getPrimitivesConst(this, primitives);
 
-		Humanoid* humanoid = findFirstChildOfType<Humanoid>();
+		Humanoid* humanoid = Humanoid::modelIsCharacter(this);
 		if (humanoid)
 			humanoid->getIgnorePrims(primitives);
 	}

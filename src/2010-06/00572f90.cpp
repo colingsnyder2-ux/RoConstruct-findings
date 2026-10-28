@@ -1,3236 +1,1742 @@
-// from server: 33% by colin
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
-// roc-lib: libpng-1.2.32 pngrutil.c
+// roc-lib: zlib-1.2.3 deflate.c
 
 // Candidate translation unit (score above; library headers required).
-
-/* pngrutil.c - utilities to read a PNG file
- *
- * Last changed in libpng 1.2.31 [August 19, 2008]
- * For conditions of distribution and use, see copyright notice in png.h
- * Copyright (c) 1998-2008 Glenn Randers-Pehrson
- * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
- * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
- *
- * This file contains routines that are only called from within
- * libpng itself during the course of reading an image.
+/* deflate.c -- compress data using the deflation algorithm
+ * Copyright (C) 1995-2005 Jean-loup Gailly.
+ * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#define PNG_INTERNAL
-#include "png.h"
-#if defined(PNG_READ_SUPPORTED)
-
-#if defined(_WIN32_WCE) && (_WIN32_WCE<0x500)
-#  define WIN32_WCE_OLD
-#endif
-
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-#  if defined(WIN32_WCE_OLD)
-/* strtod() function is not supported on WindowsCE */
-__inline double png_strtod(png_structp png_ptr, PNG_CONST char *nptr, char **endptr)
-{
-   double result = 0;
-   int len;
-   wchar_t *str, *end;
-
-   len = MultiByteToWideChar(CP_ACP, 0, nptr, -1, NULL, 0);
-   str = (wchar_t *)png_malloc(png_ptr, len * png_sizeof(wchar_t));
-   if ( NULL != str )
-   {
-      MultiByteToWideChar(CP_ACP, 0, nptr, -1, str, len);
-      result = wcstod(str, &end);
-      len = WideCharToMultiByte(CP_ACP, 0, end, -1, NULL, 0, NULL, NULL);
-      *endptr = (char *)nptr + (png_strlen(nptr) - len + 1);
-      png_free(png_ptr, str);
-   }
-   return result;
-}
-#  else
-#    define png_strtod(p,a,b) strtod(a,b)
-#  endif
-#endif
-
-png_uint_32 PNGAPI
-png_get_uint_31(png_structp png_ptr, png_bytep buf)
-{
-#ifdef PNG_READ_BIG_ENDIAN_SUPPORTED
-   png_uint_32 i = png_get_uint_32(buf);
-#else
-   /* Avoid an extra function call by inlining the result. */
-   png_uint_32 i = ((png_uint_32)(*buf) << 24) +
-      ((png_uint_32)(*(buf + 1)) << 16) +
-      ((png_uint_32)(*(buf + 2)) << 8) +
-      (png_uint_32)(*(buf + 3));
-#endif
-   if (i > PNG_UINT_31_MAX)
-     png_error(png_ptr, "PNG unsigned integer out of range.");
-   return (i);
-}
-#ifndef PNG_READ_BIG_ENDIAN_SUPPORTED
-/* Grab an unsigned 32-bit integer from a buffer in big-endian format. */
-png_uint_32 PNGAPI
-png_get_uint_32(png_bytep buf)
-{
-   png_uint_32 i = ((png_uint_32)(*buf) << 24) +
-      ((png_uint_32)(*(buf + 1)) << 16) +
-      ((png_uint_32)(*(buf + 2)) << 8) +
-      (png_uint_32)(*(buf + 3));
-
-   return (i);
-}
-
-/* Grab a signed 32-bit integer from a buffer in big-endian format.  The
- * data is stored in the PNG file in two's complement format, and it is
- * assumed that the machine format for signed integers is the same. */
-png_int_32 PNGAPI
-png_get_int_32(png_bytep buf)
-{
-   png_int_32 i = ((png_int_32)(*buf) << 24) +
-      ((png_int_32)(*(buf + 1)) << 16) +
-      ((png_int_32)(*(buf + 2)) << 8) +
-      (png_int_32)(*(buf + 3));
-
-   return (i);
-}
-
-/* Grab an unsigned 16-bit integer from a buffer in big-endian format. */
-png_uint_16 PNGAPI
-png_get_uint_16(png_bytep buf)
-{
-   png_uint_16 i = (png_uint_16)(((png_uint_16)(*buf) << 8) +
-      (png_uint_16)(*(buf + 1)));
-
-   return (i);
-}
-#endif /* PNG_READ_BIG_ENDIAN_SUPPORTED */
-
-/* Read the chunk header (length + type name).
- * Put the type name into png_ptr->chunk_name, and return the length.
- */
-png_uint_32 /* PRIVATE */
-png_read_chunk_header(png_structp png_ptr)
-{
-   png_byte buf[8];
-   png_uint_32 length;
-
-   /* read the length and the chunk name */
-   png_read_data(png_ptr, buf, 8);
-   length = png_get_uint_31(png_ptr, buf);
-
-   /* put the chunk name into png_ptr->chunk_name */
-   png_memcpy(png_ptr->chunk_name, buf + 4, 4);
-
-   png_debug2(0, "Reading %s chunk, length = %lu\n",
-      png_ptr->chunk_name, length);
-
-   /* reset the crc and run it over the chunk name */
-   png_reset_crc(png_ptr);
-   png_calculate_crc(png_ptr, png_ptr->chunk_name, 4);
-
-   /* check to see if chunk name is valid */
-   png_check_chunk_name(png_ptr, png_ptr->chunk_name);
-
-   return length;
-}
-
-/* Read data, and (optionally) run it through the CRC. */
-void /* PRIVATE */
-png_crc_read(png_structp png_ptr, png_bytep buf, png_size_t length)
-{
-   if (png_ptr == NULL) return;
-   png_read_data(png_ptr, buf, length);
-   png_calculate_crc(png_ptr, buf, length);
-}
-
-/* Optionally skip data and then check the CRC.  Depending on whether we
-   are reading a ancillary or critical chunk, and how the program has set
-   things up, we may calculate the CRC on the data and print a message.
-   Returns '1' if there was a CRC error, '0' otherwise. */
-int /* PRIVATE */
-png_crc_finish(png_structp png_ptr, png_uint_32 skip)
-{
-   png_size_t i;
-   png_size_t istop = png_ptr->zbuf_size;
-
-   for (i = (png_size_t)skip; i > istop; i -= istop)
-   {
-      png_crc_read(png_ptr, png_ptr->zbuf, png_ptr->zbuf_size);
-   }
-   if (i)
-   {
-      png_crc_read(png_ptr, png_ptr->zbuf, i);
-   }
-
-   if (png_crc_error(png_ptr))
-   {
-      if (((png_ptr->chunk_name[0] & 0x20) &&                /* Ancillary */
-           !(png_ptr->flags & PNG_FLAG_CRC_ANCILLARY_NOWARN)) ||
-          (!(png_ptr->chunk_name[0] & 0x20) &&             /* Critical  */
-          (png_ptr->flags & PNG_FLAG_CRC_CRITICAL_USE)))
-      {
-         png_chunk_warning(png_ptr, "CRC error");
-      }
-      else
-      {
-         png_chunk_error(png_ptr, "CRC error");
-      }
-      return (1);
-   }
-
-   return (0);
-}
-
-/* Compare the CRC stored in the PNG file with that calculated by libpng from
-   the data it has read thus far. */
-int /* PRIVATE */
-png_crc_error(png_structp png_ptr)
-{
-   png_byte crc_bytes[4];
-   png_uint_32 crc;
-   int need_crc = 1;
-
-   if (png_ptr->chunk_name[0] & 0x20)                     /* ancillary */
-   {
-      if ((png_ptr->flags & PNG_FLAG_CRC_ANCILLARY_MASK) ==
-          (PNG_FLAG_CRC_ANCILLARY_USE | PNG_FLAG_CRC_ANCILLARY_NOWARN))
-         need_crc = 0;
-   }
-   else                                                    /* critical */
-   {
-      if (png_ptr->flags & PNG_FLAG_CRC_CRITICAL_IGNORE)
-         need_crc = 0;
-   }
-
-   png_read_data(png_ptr, crc_bytes, 4);
-
-   if (need_crc)
-   {
-      crc = png_get_uint_32(crc_bytes);
-      return ((int)(crc != png_ptr->crc));
-   }
-   else
-      return (0);
-}
-
-#if defined(PNG_READ_zTXt_SUPPORTED) || defined(PNG_READ_iTXt_SUPPORTED) || \
-    defined(PNG_READ_iCCP_SUPPORTED)
 /*
- * Decompress trailing data in a chunk.  The assumption is that chunkdata
- * points at an allocated area holding the contents of a chunk with a
- * trailing compressed part.  What we get back is an allocated area
- * holding the original prefix part and an uncompressed version of the
- * trailing part (the malloc area passed in is freed).
+ *  ALGORITHM
+ *
+ *      The "deflation" process depends on being able to identify portions
+ *      of the input text which are identical to earlier input (within a
+ *      sliding window trailing behind the input currently being processed).
+ *
+ *      The most straightforward technique turns out to be the fastest for
+ *      most input files: try all possible matches and select the longest.
+ *      The key feature of this algorithm is that insertions into the string
+ *      dictionary are very simple and thus fast, and deletions are avoided
+ *      completely. Insertions are performed at each input character, whereas
+ *      string matches are performed only when the previous match ends. So it
+ *      is preferable to spend more time in matches to allow very fast string
+ *      insertions and avoid deletions. The matching algorithm for small
+ *      strings is inspired from that of Rabin & Karp. A brute force approach
+ *      is used to find longer strings when a small match has been found.
+ *      A similar algorithm is used in comic (by Jan-Mark Wams) and freeze
+ *      (by Leonid Broukhis).
+ *         A previous version of this file used a more sophisticated algorithm
+ *      (by Fiala and Greene) which is guaranteed to run in linear amortized
+ *      time, but has a larger average cost, uses more memory and is patented.
+ *      However the F&G algorithm may be faster for some highly redundant
+ *      files if the parameter max_chain_length (described below) is too large.
+ *
+ *  ACKNOWLEDGEMENTS
+ *
+ *      The idea of lazy evaluation of matches is due to Jan-Mark Wams, and
+ *      I found it in 'freeze' written by Leonid Broukhis.
+ *      Thanks to many people for bug reports and testing.
+ *
+ *  REFERENCES
+ *
+ *      Deutsch, L.P.,"DEFLATE Compressed Data Format Specification".
+ *      Available in http://www.ietf.org/rfc/rfc1951.txt
+ *
+ *      A description of the Rabin and Karp algorithm is given in the book
+ *         "Algorithms" by R. Sedgewick, Addison-Wesley, p252.
+ *
+ *      Fiala,E.R., and Greene,D.H.
+ *         Data Compression with Finite Windows, Comm.ACM, 32,4 (1989) 490-595
+ *
  */
-void /* PRIVATE */
-png_decompress_chunk(png_structp png_ptr, int comp_type,
-                              png_size_t chunklength,
-                              png_size_t prefix_size, png_size_t *newlength)
-{
-   static PNG_CONST char msg[] = "Error decoding compressed text";
-   png_charp text;
-   png_size_t text_size;
 
-   if (comp_type == PNG_COMPRESSION_TYPE_BASE)
-   {
-      int ret = Z_OK;
-      png_ptr->zstream.next_in = (png_bytep)(png_ptr->chunkdata + prefix_size);
-      png_ptr->zstream.avail_in = (uInt)(chunklength - prefix_size);
-      png_ptr->zstream.next_out = png_ptr->zbuf;
-      png_ptr->zstream.avail_out = (uInt)png_ptr->zbuf_size;
+/* @(#) $Id$ */
 
-      text_size = 0;
-      text = NULL;
+#include "deflate.h"
 
-      while (png_ptr->zstream.avail_in)
-      {
-         ret = inflate(&png_ptr->zstream, Z_PARTIAL_FLUSH);
-         if (ret != Z_OK && ret != Z_STREAM_END)
-         {
-            if (png_ptr->zstream.msg != NULL)
-               png_warning(png_ptr, png_ptr->zstream.msg);
-            else
-               png_warning(png_ptr, msg);
-            inflateReset(&png_ptr->zstream);
-            png_ptr->zstream.avail_in = 0;
-
-            if (text ==  NULL)
-            {
-               text_size = prefix_size + png_sizeof(msg) + 1;
-               text = (png_charp)png_malloc_warn(png_ptr, text_size);
-               if (text ==  NULL)
-                 {
-                    png_free(png_ptr, png_ptr->chunkdata);
-                    png_ptr->chunkdata = NULL;
-                    png_error(png_ptr, "Not enough memory to decompress chunk");
-                 }
-               png_memcpy(text, png_ptr->chunkdata, prefix_size);
-            }
-
-            text[text_size - 1] = 0x00;
-
-            /* Copy what we can of the error message into the text chunk */
-            text_size = (png_size_t)(chunklength -
-              (text - png_ptr->chunkdata) - 1);
-            if (text_size > png_sizeof(msg))
-               text_size = png_sizeof(msg);
-            png_memcpy(text + prefix_size, msg, text_size);
-            break;
-         }
-         if (!png_ptr->zstream.avail_out || ret == Z_STREAM_END)
-         {
-            if (text == NULL)
-            {
-               text_size = prefix_size +
-                   png_ptr->zbuf_size - png_ptr->zstream.avail_out;
-               text = (png_charp)png_malloc_warn(png_ptr, text_size + 1);
-               if (text ==  NULL)
-               {
-                  png_free(png_ptr, png_ptr->chunkdata);
-                  png_ptr->chunkdata = NULL;
-                  png_error(png_ptr,
-                    "Not enough memory to decompress chunk.");
-               }
-               png_memcpy(text + prefix_size, png_ptr->zbuf,
-                    text_size - prefix_size);
-               png_memcpy(text, png_ptr->chunkdata, prefix_size);
-               *(text + text_size) = 0x00;
-            }
-            else
-            {
-               png_charp tmp;
-
-               tmp = text;
-               text = (png_charp)png_malloc_warn(png_ptr,
-                  (png_uint_32)(text_size +
-                  png_ptr->zbuf_size - png_ptr->zstream.avail_out + 1));
-               if (text == NULL)
-               {
-                  png_free(png_ptr, tmp);
-                  png_free(png_ptr, png_ptr->chunkdata);
-                  png_ptr->chunkdata = NULL;
-                  png_error(png_ptr,
-                    "Not enough memory to decompress chunk..");
-               }
-               png_memcpy(text, tmp, text_size);
-               png_free(png_ptr, tmp);
-               png_memcpy(text + text_size, png_ptr->zbuf,
-                  (png_ptr->zbuf_size - png_ptr->zstream.avail_out));
-               text_size += png_ptr->zbuf_size - png_ptr->zstream.avail_out;
-               *(text + text_size) = 0x00;
-            }
-            if (ret == Z_STREAM_END)
-               break;
-            else
-            {
-               png_ptr->zstream.next_out = png_ptr->zbuf;
-               png_ptr->zstream.avail_out = (uInt)png_ptr->zbuf_size;
-            }
-         }
-      }
-      if (ret != Z_STREAM_END)
-      {
-#if !defined(PNG_NO_STDIO) && !defined(_WIN32_WCE)
-         char umsg[52];
-
-         if (ret == Z_BUF_ERROR)
-            png_snprintf(umsg, 52,
-                "Buffer error in compressed datastream in %s chunk",
-                png_ptr->chunk_name);
-         else if (ret == Z_DATA_ERROR)
-            png_snprintf(umsg, 52,
-                "Data error in compressed datastream in %s chunk",
-                png_ptr->chunk_name);
-         else
-            png_snprintf(umsg, 52,
-                "Incomplete compressed datastream in %s chunk",
-                png_ptr->chunk_name);
-         png_warning(png_ptr, umsg);
-#else
-         png_warning(png_ptr,
-            "Incomplete compressed datastream in chunk other than IDAT");
-#endif
-         text_size = prefix_size;
-         if (text ==  NULL)
-         {
-            text = (png_charp)png_malloc_warn(png_ptr, text_size+1);
-            if (text == NULL)
-              {
-                png_free(png_ptr, png_ptr->chunkdata);
-                png_ptr->chunkdata = NULL;
-                png_error(png_ptr, "Not enough memory for text.");
-              }
-            png_memcpy(text, png_ptr->chunkdata, prefix_size);
-         }
-         *(text + text_size) = 0x00;
-      }
-
-      inflateReset(&png_ptr->zstream);
-      png_ptr->zstream.avail_in = 0;
-
-      png_free(png_ptr, png_ptr->chunkdata);
-      png_ptr->chunkdata = text;
-      *newlength=text_size;
-   }
-   else /* if (comp_type != PNG_COMPRESSION_TYPE_BASE) */
-   {
-#if !defined(PNG_NO_STDIO) && !defined(_WIN32_WCE)
-      char umsg[50];
-
-      png_snprintf(umsg, 50, "Unknown zTXt compression type %d", comp_type);
-      png_warning(png_ptr, umsg);
-#else
-      png_warning(png_ptr, "Unknown zTXt compression type");
-#endif
-
-      *(png_ptr->chunkdata + prefix_size) = 0x00;
-      *newlength = prefix_size;
-   }
-}
-#endif
-
-/* read and check the IDHR chunk */
-void /* PRIVATE */
-png_handle_IHDR(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_byte buf[13];
-   png_uint_32 width, height;
-   int bit_depth, color_type, compression_type, filter_type;
-   int interlace_type;
-
-   png_debug(1, "in png_handle_IHDR\n");
-
-   if (png_ptr->mode & PNG_HAVE_IHDR)
-      png_error(png_ptr, "Out of place IHDR");
-
-   /* check the length */
-   if (length != 13)
-      png_error(png_ptr, "Invalid IHDR chunk");
-
-   png_ptr->mode |= PNG_HAVE_IHDR;
-
-   png_crc_read(png_ptr, buf, 13);
-   png_crc_finish(png_ptr, 0);
-
-   width = png_get_uint_31(png_ptr, buf);
-   height = png_get_uint_31(png_ptr, buf + 4);
-   bit_depth = buf[8];
-   color_type = buf[9];
-   compression_type = buf[10];
-   filter_type = buf[11];
-   interlace_type = buf[12];
-
-   /* set internal variables */
-   png_ptr->width = width;
-   png_ptr->height = height;
-   png_ptr->bit_depth = (png_byte)bit_depth;
-   png_ptr->interlaced = (png_byte)interlace_type;
-   png_ptr->color_type = (png_byte)color_type;
-#if defined(PNG_MNG_FEATURES_SUPPORTED)
-   png_ptr->filter_type = (png_byte)filter_type;
-#endif
-   png_ptr->compression_type = (png_byte)compression_type;
-
-   /* find number of channels */
-   switch (png_ptr->color_type)
-   {
-      case PNG_COLOR_TYPE_GRAY:
-      case PNG_COLOR_TYPE_PALETTE:
-         png_ptr->channels = 1;
-         break;
-      case PNG_COLOR_TYPE_RGB:
-         png_ptr->channels = 3;
-         break;
-      case PNG_COLOR_TYPE_GRAY_ALPHA:
-         png_ptr->channels = 2;
-         break;
-      case PNG_COLOR_TYPE_RGB_ALPHA:
-         png_ptr->channels = 4;
-         break;
-   }
-
-   /* set up other useful info */
-   png_ptr->pixel_depth = (png_byte)(png_ptr->bit_depth *
-   png_ptr->channels);
-   png_ptr->rowbytes = PNG_ROWBYTES(png_ptr->pixel_depth, png_ptr->width);
-   png_debug1(3, "bit_depth = %d\n", png_ptr->bit_depth);
-   png_debug1(3, "channels = %d\n", png_ptr->channels);
-   png_debug1(3, "rowbytes = %lu\n", png_ptr->rowbytes);
-   png_set_IHDR(png_ptr, info_ptr, width, height, bit_depth,
-      color_type, interlace_type, compression_type, filter_type);
-}
-
-/* read and check the palette */
-void /* PRIVATE */
-png_handle_PLTE(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_color palette[PNG_MAX_PALETTE_LENGTH];
-   int num, i;
-#ifndef PNG_NO_POINTER_INDEXING
-   png_colorp pal_ptr;
-#endif
-
-   png_debug(1, "in png_handle_PLTE\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before PLTE");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid PLTE after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (png_ptr->mode & PNG_HAVE_PLTE)
-      png_error(png_ptr, "Duplicate PLTE chunk");
-
-   png_ptr->mode |= PNG_HAVE_PLTE;
-
-   if (!(png_ptr->color_type&PNG_COLOR_MASK_COLOR))
-   {
-      png_warning(png_ptr,
-        "Ignoring PLTE chunk in grayscale PNG");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-#if !defined(PNG_READ_OPT_PLTE_SUPPORTED)
-   if (png_ptr->color_type != PNG_COLOR_TYPE_PALETTE)
-   {
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-#endif
-
-   if (length > 3*PNG_MAX_PALETTE_LENGTH || length % 3)
-   {
-      if (png_ptr->color_type != PNG_COLOR_TYPE_PALETTE)
-      {
-         png_warning(png_ptr, "Invalid palette chunk");
-         png_crc_finish(png_ptr, length);
-         return;
-      }
-      else
-      {
-         png_error(png_ptr, "Invalid palette chunk");
-      }
-   }
-
-   num = (int)length / 3;
-
-#ifndef PNG_NO_POINTER_INDEXING
-   for (i = 0, pal_ptr = palette; i < num; i++, pal_ptr++)
-   {
-      png_byte buf[3];
-
-      png_crc_read(png_ptr, buf, 3);
-      pal_ptr->red = buf[0];
-      pal_ptr->green = buf[1];
-      pal_ptr->blue = buf[2];
-   }
-#else
-   for (i = 0; i < num; i++)
-   {
-      png_byte buf[3];
-
-      png_crc_read(png_ptr, buf, 3);
-      /* don't depend upon png_color being any order */
-      palette[i].red = buf[0];
-      palette[i].green = buf[1];
-      palette[i].blue = buf[2];
-   }
-#endif
-
-   /* If we actually NEED the PLTE chunk (ie for a paletted image), we do
-      whatever the normal CRC configuration tells us.  However, if we
-      have an RGB image, the PLTE can be considered ancillary, so
-      we will act as though it is. */
-#if !defined(PNG_READ_OPT_PLTE_SUPPORTED)
-   if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE)
-#endif
-   {
-      png_crc_finish(png_ptr, 0);
-   }
-#if !defined(PNG_READ_OPT_PLTE_SUPPORTED)
-   else if (png_crc_error(png_ptr))  /* Only if we have a CRC error */
-   {
-      /* If we don't want to use the data from an ancillary chunk,
-         we have two options: an error abort, or a warning and we
-         ignore the data in this chunk (which should be OK, since
-         it's considered ancillary for a RGB or RGBA image). */
-      if (!(png_ptr->flags & PNG_FLAG_CRC_ANCILLARY_USE))
-      {
-         if (png_ptr->flags & PNG_FLAG_CRC_ANCILLARY_NOWARN)
-         {
-            png_chunk_error(png_ptr, "CRC error");
-         }
-         else
-         {
-            png_chunk_warning(png_ptr, "CRC error");
-            return;
-         }
-      }
-      /* Otherwise, we (optionally) emit a warning and use the chunk. */
-      else if (!(png_ptr->flags & PNG_FLAG_CRC_ANCILLARY_NOWARN))
-      {
-         png_chunk_warning(png_ptr, "CRC error");
-      }
-   }
-#endif
-
-   png_set_PLTE(png_ptr, info_ptr, palette, num);
-
-#if defined(PNG_READ_tRNS_SUPPORTED)
-   if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE)
-   {
-      if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_tRNS))
-      {
-         if (png_ptr->num_trans > (png_uint_16)num)
-         {
-            png_warning(png_ptr, "Truncating incorrect tRNS chunk length");
-            png_ptr->num_trans = (png_uint_16)num;
-         }
-         if (info_ptr->num_trans > (png_uint_16)num)
-         {
-            png_warning(png_ptr, "Truncating incorrect info tRNS chunk length");
-            info_ptr->num_trans = (png_uint_16)num;
-         }
-      }
-   }
-#endif
-
-}
-
-void /* PRIVATE */
-png_handle_IEND(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_debug(1, "in png_handle_IEND\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR) || !(png_ptr->mode & PNG_HAVE_IDAT))
-   {
-      png_error(png_ptr, "No image in file");
-   }
-
-   png_ptr->mode |= (PNG_AFTER_IDAT | PNG_HAVE_IEND);
-
-   if (length != 0)
-   {
-      png_warning(png_ptr, "Incorrect IEND chunk length");
-   }
-   png_crc_finish(png_ptr, length);
-
-   info_ptr = info_ptr; /* quiet compiler warnings about unused info_ptr */
-}
-
-#if defined(PNG_READ_gAMA_SUPPORTED)
-void /* PRIVATE */
-png_handle_gAMA(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_fixed_point igamma;
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-   float file_gamma;
-#endif
-   png_byte buf[4];
-
-   png_debug(1, "in png_handle_gAMA\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before gAMA");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid gAMA after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (png_ptr->mode & PNG_HAVE_PLTE)
-      /* Should be an error, but we can cope with it */
-      png_warning(png_ptr, "Out of place gAMA chunk");
-
-   if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_gAMA)
-#if defined(PNG_READ_sRGB_SUPPORTED)
-      && !(info_ptr->valid & PNG_INFO_sRGB)
-#endif
-      )
-   {
-      png_warning(png_ptr, "Duplicate gAMA chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   if (length != 4)
-   {
-      png_warning(png_ptr, "Incorrect gAMA chunk length");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   png_crc_read(png_ptr, buf, 4);
-   if (png_crc_finish(png_ptr, 0))
-      return;
-
-   igamma = (png_fixed_point)png_get_uint_32(buf);
-   /* check for zero gamma */
-   if (igamma == 0)
-      {
-         png_warning(png_ptr,
-           "Ignoring gAMA chunk with gamma=0");
-         return;
-      }
-
-#if defined(PNG_READ_sRGB_SUPPORTED)
-   if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_sRGB))
-      if (PNG_OUT_OF_RANGE(igamma, 45500L, 500))
-      {
-         png_warning(png_ptr,
-           "Ignoring incorrect gAMA value when sRGB is also present");
-#ifndef PNG_NO_CONSOLE_IO
-         fprintf(stderr, "gamma = (%d/100000)\n", (int)igamma);
-#endif
-         return;
-      }
-#endif /* PNG_READ_sRGB_SUPPORTED */
-
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-   file_gamma = (float)igamma / (float)100000.0;
-#  ifdef PNG_READ_GAMMA_SUPPORTED
-     png_ptr->gamma = file_gamma;
-#  endif
-     png_set_gAMA(png_ptr, info_ptr, file_gamma);
-#endif
-#ifdef PNG_FIXED_POINT_SUPPORTED
-   png_set_gAMA_fixed(png_ptr, info_ptr, igamma);
-#endif
-}
-#endif
-
-#if defined(PNG_READ_sBIT_SUPPORTED)
-void /* PRIVATE */
-png_handle_sBIT(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_size_t truelen;
-   png_byte buf[4];
-
-   png_debug(1, "in png_handle_sBIT\n");
-
-   buf[0] = buf[1] = buf[2] = buf[3] = 0;
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before sBIT");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid sBIT after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (png_ptr->mode & PNG_HAVE_PLTE)
-   {
-      /* Should be an error, but we can cope with it */
-      png_warning(png_ptr, "Out of place sBIT chunk");
-   }
-   if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_sBIT))
-   {
-      png_warning(png_ptr, "Duplicate sBIT chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE)
-      truelen = 3;
-   else
-      truelen = (png_size_t)png_ptr->channels;
-
-   if (length != truelen || length > 4)
-   {
-      png_warning(png_ptr, "Incorrect sBIT chunk length");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   png_crc_read(png_ptr, buf, truelen);
-   if (png_crc_finish(png_ptr, 0))
-      return;
-
-   if (png_ptr->color_type & PNG_COLOR_MASK_COLOR)
-   {
-      png_ptr->sig_bit.red = buf[0];
-      png_ptr->sig_bit.green = buf[1];
-      png_ptr->sig_bit.blue = buf[2];
-      png_ptr->sig_bit.alpha = buf[3];
-   }
-   else
-   {
-      png_ptr->sig_bit.gray = buf[0];
-      png_ptr->sig_bit.red = buf[0];
-      png_ptr->sig_bit.green = buf[0];
-      png_ptr->sig_bit.blue = buf[0];
-      png_ptr->sig_bit.alpha = buf[1];
-   }
-   png_set_sBIT(png_ptr, info_ptr, &(png_ptr->sig_bit));
-}
-#endif
-
-#if defined(PNG_READ_cHRM_SUPPORTED)
-void /* PRIVATE */
-png_handle_cHRM(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_byte buf[32];
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-   float white_x, white_y, red_x, red_y, green_x, green_y, blue_x, blue_y;
-#endif
-   png_fixed_point int_x_white, int_y_white, int_x_red, int_y_red, int_x_green,
-      int_y_green, int_x_blue, int_y_blue;
-
-   png_uint_32 uint_x, uint_y;
-
-   png_debug(1, "in png_handle_cHRM\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before cHRM");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid cHRM after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (png_ptr->mode & PNG_HAVE_PLTE)
-      /* Should be an error, but we can cope with it */
-      png_warning(png_ptr, "Missing PLTE before cHRM");
-
-   if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_cHRM)
-#if defined(PNG_READ_sRGB_SUPPORTED)
-      && !(info_ptr->valid & PNG_INFO_sRGB)
-#endif
-      )
-   {
-      png_warning(png_ptr, "Duplicate cHRM chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   if (length != 32)
-   {
-      png_warning(png_ptr, "Incorrect cHRM chunk length");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   png_crc_read(png_ptr, buf, 32);
-   if (png_crc_finish(png_ptr, 0))
-      return;
-
-   uint_x = png_get_uint_32(buf);
-   uint_y = png_get_uint_32(buf + 4);
-   if (uint_x > 80000L || uint_y > 80000L ||
-      uint_x + uint_y > 100000L)
-   {
-      png_warning(png_ptr, "Invalid cHRM white point");
-      return;
-   }
-   int_x_white = (png_fixed_point)uint_x;
-   int_y_white = (png_fixed_point)uint_y;
-
-   uint_x = png_get_uint_32(buf + 8);
-   uint_y = png_get_uint_32(buf + 12);
-   if (uint_x + uint_y > 100000L)
-   {
-      png_warning(png_ptr, "Invalid cHRM red point");
-      return;
-   }
-   int_x_red = (png_fixed_point)uint_x;
-   int_y_red = (png_fixed_point)uint_y;
-
-   uint_x = png_get_uint_32(buf + 16);
-   uint_y = png_get_uint_32(buf + 20);
-   if (uint_x + uint_y > 100000L)
-   {
-      png_warning(png_ptr, "Invalid cHRM green point");
-      return;
-   }
-   int_x_green = (png_fixed_point)uint_x;
-   int_y_green = (png_fixed_point)uint_y;
-
-   uint_x = png_get_uint_32(buf + 24);
-   uint_y = png_get_uint_32(buf + 28);
-   if (uint_x + uint_y > 100000L)
-   {
-      png_warning(png_ptr, "Invalid cHRM blue point");
-      return;
-   }
-   int_x_blue = (png_fixed_point)uint_x;
-   int_y_blue = (png_fixed_point)uint_y;
-
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-   white_x = (float)int_x_white / (float)100000.0;
-   white_y = (float)int_y_white / (float)100000.0;
-   red_x   = (float)int_x_red   / (float)100000.0;
-   red_y   = (float)int_y_red   / (float)100000.0;
-   green_x = (float)int_x_green / (float)100000.0;
-   green_y = (float)int_y_green / (float)100000.0;
-   blue_x  = (float)int_x_blue  / (float)100000.0;
-   blue_y  = (float)int_y_blue  / (float)100000.0;
-#endif
-
-#if defined(PNG_READ_sRGB_SUPPORTED)
-   if ((info_ptr != NULL) && (info_ptr->valid & PNG_INFO_sRGB))
-      {
-      if (PNG_OUT_OF_RANGE(int_x_white, 31270,  1000) ||
-          PNG_OUT_OF_RANGE(int_y_white, 32900,  1000) ||
-          PNG_OUT_OF_RANGE(int_x_red,   64000L, 1000) ||
-          PNG_OUT_OF_RANGE(int_y_red,   33000,  1000) ||
-          PNG_OUT_OF_RANGE(int_x_green, 30000,  1000) ||
-          PNG_OUT_OF_RANGE(int_y_green, 60000L, 1000) ||
-          PNG_OUT_OF_RANGE(int_x_blue,  15000,  1000) ||
-          PNG_OUT_OF_RANGE(int_y_blue,   6000,  1000))
-         {
-            png_warning(png_ptr,
-              "Ignoring incorrect cHRM value when sRGB is also present");
-#ifndef PNG_NO_CONSOLE_IO
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-            fprintf(stderr, "wx=%f, wy=%f, rx=%f, ry=%f\n",
-               white_x, white_y, red_x, red_y);
-            fprintf(stderr, "gx=%f, gy=%f, bx=%f, by=%f\n",
-               green_x, green_y, blue_x, blue_y);
-#else
-            fprintf(stderr, "wx=%ld, wy=%ld, rx=%ld, ry=%ld\n",
-               int_x_white, int_y_white, int_x_red, int_y_red);
-            fprintf(stderr, "gx=%ld, gy=%ld, bx=%ld, by=%ld\n",
-               int_x_green, int_y_green, int_x_blue, int_y_blue);
-#endif
-#endif /* PNG_NO_CONSOLE_IO */
-         }
-         return;
-      }
-#endif /* PNG_READ_sRGB_SUPPORTED */
-
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-   png_set_cHRM(png_ptr, info_ptr,
-      white_x, white_y, red_x, red_y, green_x, green_y, blue_x, blue_y);
-#endif
-#ifdef PNG_FIXED_POINT_SUPPORTED
-   png_set_cHRM_fixed(png_ptr, info_ptr,
-      int_x_white, int_y_white, int_x_red, int_y_red, int_x_green,
-      int_y_green, int_x_blue, int_y_blue);
-#endif
-}
-#endif
-
-#if defined(PNG_READ_sRGB_SUPPORTED)
-void /* PRIVATE */
-png_handle_sRGB(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   int intent;
-   png_byte buf[1];
-
-   png_debug(1, "in png_handle_sRGB\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before sRGB");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid sRGB after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (png_ptr->mode & PNG_HAVE_PLTE)
-      /* Should be an error, but we can cope with it */
-      png_warning(png_ptr, "Out of place sRGB chunk");
-
-   if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_sRGB))
-   {
-      png_warning(png_ptr, "Duplicate sRGB chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   if (length != 1)
-   {
-      png_warning(png_ptr, "Incorrect sRGB chunk length");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   png_crc_read(png_ptr, buf, 1);
-   if (png_crc_finish(png_ptr, 0))
-      return;
-
-   intent = buf[0];
-   /* check for bad intent */
-   if (intent >= PNG_sRGB_INTENT_LAST)
-   {
-      png_warning(png_ptr, "Unknown sRGB intent");
-      return;
-   }
-
-#if defined(PNG_READ_gAMA_SUPPORTED) && defined(PNG_READ_GAMMA_SUPPORTED)
-   if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_gAMA))
-   {
-   png_fixed_point igamma;
-#ifdef PNG_FIXED_POINT_SUPPORTED
-      igamma=info_ptr->int_gamma;
-#else
-#  ifdef PNG_FLOATING_POINT_SUPPORTED
-      igamma=(png_fixed_point)(info_ptr->gamma * 100000.);
-#  endif
-#endif
-      if (PNG_OUT_OF_RANGE(igamma, 45500L, 500))
-      {
-         png_warning(png_ptr,
-           "Ignoring incorrect gAMA value when sRGB is also present");
-#ifndef PNG_NO_CONSOLE_IO
-#  ifdef PNG_FIXED_POINT_SUPPORTED
-         fprintf(stderr, "incorrect gamma=(%d/100000)\n",
-            (int)png_ptr->int_gamma);
-#  else
-#    ifdef PNG_FLOATING_POINT_SUPPORTED
-         fprintf(stderr, "incorrect gamma=%f\n", png_ptr->gamma);
-#    endif
-#  endif
-#endif
-      }
-   }
-#endif /* PNG_READ_gAMA_SUPPORTED */
-
-#ifdef PNG_READ_cHRM_SUPPORTED
-#ifdef PNG_FIXED_POINT_SUPPORTED
-   if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_cHRM))
-      if (PNG_OUT_OF_RANGE(info_ptr->int_x_white, 31270,  1000) ||
-          PNG_OUT_OF_RANGE(info_ptr->int_y_white, 32900,  1000) ||
-          PNG_OUT_OF_RANGE(info_ptr->int_x_red,   64000L, 1000) ||
-          PNG_OUT_OF_RANGE(info_ptr->int_y_red,   33000,  1000) ||
-          PNG_OUT_OF_RANGE(info_ptr->int_x_green, 30000,  1000) ||
-          PNG_OUT_OF_RANGE(info_ptr->int_y_green, 60000L, 1000) ||
-          PNG_OUT_OF_RANGE(info_ptr->int_x_blue,  15000,  1000) ||
-          PNG_OUT_OF_RANGE(info_ptr->int_y_blue,   6000,  1000))
-         {
-            png_warning(png_ptr,
-              "Ignoring incorrect cHRM value when sRGB is also present");
-         }
-#endif /* PNG_FIXED_POINT_SUPPORTED */
-#endif /* PNG_READ_cHRM_SUPPORTED */
-
-   png_set_sRGB_gAMA_and_cHRM(png_ptr, info_ptr, intent);
-}
-#endif /* PNG_READ_sRGB_SUPPORTED */
-
-#if defined(PNG_READ_iCCP_SUPPORTED)
-void /* PRIVATE */
-png_handle_iCCP(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-/* Note: this does not properly handle chunks that are > 64K under DOS */
-{
-   png_byte compression_type;
-   png_bytep pC;
-   png_charp profile;
-   png_uint_32 skip = 0;
-   png_uint_32 profile_size, profile_length;
-   png_size_t slength, prefix_length, data_length;
-
-   png_debug(1, "in png_handle_iCCP\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before iCCP");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid iCCP after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (png_ptr->mode & PNG_HAVE_PLTE)
-      /* Should be an error, but we can cope with it */
-      png_warning(png_ptr, "Out of place iCCP chunk");
-
-   if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_iCCP))
-   {
-      png_warning(png_ptr, "Duplicate iCCP chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-#ifdef PNG_MAX_MALLOC_64K
-   if (length > (png_uint_32)65535L)
-   {
-      png_warning(png_ptr, "iCCP chunk too large to fit in memory");
-      skip = length - (png_uint_32)65535L;
-      length = (png_uint_32)65535L;
-   }
-#endif
-
-   png_free(png_ptr, png_ptr->chunkdata);
-   png_ptr->chunkdata = (png_charp)png_malloc(png_ptr, length + 1);
-   slength = (png_size_t)length;
-   png_crc_read(png_ptr, (png_bytep)png_ptr->chunkdata, slength);
-
-   if (png_crc_finish(png_ptr, skip))
-   {
-      png_free(png_ptr, png_ptr->chunkdata);
-      png_ptr->chunkdata = NULL;
-      return;
-   }
-
-   png_ptr->chunkdata[slength] = 0x00;
-
-   for (profile = png_ptr->chunkdata; *profile; profile++)
-      /* empty loop to find end of name */ ;
-
-   ++profile;
-
-   /* there should be at least one zero (the compression type byte)
-      following the separator, and we should be on it  */
-   if ( profile >= png_ptr->chunkdata + slength - 1)
-   {
-      png_free(png_ptr, png_ptr->chunkdata);
-      png_ptr->chunkdata = NULL;
-      png_warning(png_ptr, "Malformed iCCP chunk");
-      return;
-   }
-
-   /* compression_type should always be zero */
-   compression_type = *profile++;
-   if (compression_type)
-   {
-      png_warning(png_ptr, "Ignoring nonzero compression type in iCCP chunk");
-      compression_type = 0x00;  /* Reset it to zero (libpng-1.0.6 through 1.0.8
-                                 wrote nonzero) */
-   }
-
-   prefix_length = profile - png_ptr->chunkdata;
-   png_decompress_chunk(png_ptr, compression_type,
-     slength, prefix_length, &data_length);
-
-   profile_length = data_length - prefix_length;
-
-   if ( prefix_length > data_length || profile_length < 4)
-   {
-      png_free(png_ptr, png_ptr->chunkdata);
-      png_ptr->chunkdata = NULL;
-      png_warning(png_ptr, "Profile size field missing from iCCP chunk");
-      return;
-   }
-
-   /* Check the profile_size recorded in the first 32 bits of the ICC profile */
-   pC = (png_bytep)(png_ptr->chunkdata + prefix_length);
-   profile_size = ((*(pC    ))<<24) |
-                  ((*(pC + 1))<<16) |
-                  ((*(pC + 2))<< 8) |
-                  ((*(pC + 3))    );
-
-   if (profile_size < profile_length)
-      profile_length = profile_size;
-
-   if (profile_size > profile_length)
-   {
-      png_free(png_ptr, png_ptr->chunkdata);
-      png_ptr->chunkdata = NULL;
-      png_warning(png_ptr, "Ignoring truncated iCCP profile.");
-      return;
-   }
-
-   png_set_iCCP(png_ptr, info_ptr, png_ptr->chunkdata,
-     compression_type, png_ptr->chunkdata + prefix_length, profile_length);
-   png_free(png_ptr, png_ptr->chunkdata);
-   png_ptr->chunkdata = NULL;
-}
-#endif /* PNG_READ_iCCP_SUPPORTED */
-
-#if defined(PNG_READ_sPLT_SUPPORTED)
-void /* PRIVATE */
-png_handle_sPLT(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-/* Note: this does not properly handle chunks that are > 64K under DOS */
-{
-   png_bytep entry_start;
-   png_sPLT_t new_palette;
-#ifdef PNG_NO_POINTER_INDEXING
-   png_sPLT_entryp pp;
-#endif
-   int data_length, entry_size, i;
-   png_uint_32 skip = 0;
-   png_size_t slength;
-
-   png_debug(1, "in png_handle_sPLT\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before sPLT");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid sPLT after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-#ifdef PNG_MAX_MALLOC_64K
-   if (length > (png_uint_32)65535L)
-   {
-      png_warning(png_ptr, "sPLT chunk too large to fit in memory");
-      skip = length - (png_uint_32)65535L;
-      length = (png_uint_32)65535L;
-   }
-#endif
-
-   png_free(png_ptr, png_ptr->chunkdata);
-   png_ptr->chunkdata = (png_charp)png_malloc(png_ptr, length + 1);
-   slength = (png_size_t)length;
-   png_crc_read(png_ptr, (png_bytep)png_ptr->chunkdata, slength);
-
-   if (png_crc_finish(png_ptr, skip))
-   {
-      png_free(png_ptr, png_ptr->chunkdata);
-      png_ptr->chunkdata = NULL;
-      return;
-   }
-
-   png_ptr->chunkdata[slength] = 0x00;
-
-   for (entry_start = (png_bytep)png_ptr->chunkdata; *entry_start; entry_start++)
-      /* empty loop to find end of name */ ;
-   ++entry_start;
-
-   /* a sample depth should follow the separator, and we should be on it  */
-   if (entry_start > (png_bytep)png_ptr->chunkdata + slength - 2)
-   {
-      png_free(png_ptr, png_ptr->chunkdata);
-      png_ptr->chunkdata = NULL;
-      png_warning(png_ptr, "malformed sPLT chunk");
-      return;
-   }
-
-   new_palette.depth = *entry_start++;
-   entry_size = (new_palette.depth == 8 ? 6 : 10);
-   data_length = (slength - (entry_start - (png_bytep)png_ptr->chunkdata));
-
-   /* integrity-check the data length */
-   if (data_length % entry_size)
-   {
-      png_free(png_ptr, png_ptr->chunkdata);
-      png_ptr->chunkdata = NULL;
-      png_warning(png_ptr, "sPLT chunk has bad length");
-      return;
-   }
-
-   new_palette.nentries = (png_int_32) ( data_length / entry_size);
-   if ((png_uint_32) new_palette.nentries >
-       (png_uint_32) (PNG_SIZE_MAX / png_sizeof(png_sPLT_entry)))
-   {
-       png_warning(png_ptr, "sPLT chunk too long");
-       return;
-   }
-   new_palette.entries = (png_sPLT_entryp)png_malloc_warn(
-       png_ptr, new_palette.nentries * png_sizeof(png_sPLT_entry));
-   if (new_palette.entries == NULL)
-   {
-       png_warning(png_ptr, "sPLT chunk requires too much memory");
-       return;
-   }
-
-#ifndef PNG_NO_POINTER_INDEXING
-   for (i = 0; i < new_palette.nentries; i++)
-   {
-      png_sPLT_entryp pp = new_palette.entries + i;
-
-      if (new_palette.depth == 8)
-      {
-          pp->red = *entry_start++;
-          pp->green = *entry_start++;
-          pp->blue = *entry_start++;
-          pp->alpha = *entry_start++;
-      }
-      else
-      {
-          pp->red   = png_get_uint_16(entry_start); entry_start += 2;
-          pp->green = png_get_uint_16(entry_start); entry_start += 2;
-          pp->blue  = png_get_uint_16(entry_start); entry_start += 2;
-          pp->alpha = png_get_uint_16(entry_start); entry_start += 2;
-      }
-      pp->frequency = png_get_uint_16(entry_start); entry_start += 2;
-   }
-#else
-   pp = new_palette.entries;
-   for (i = 0; i < new_palette.nentries; i++)
-   {
-
-      if (new_palette.depth == 8)
-      {
-          pp[i].red   = *entry_start++;
-          pp[i].green = *entry_start++;
-          pp[i].blue  = *entry_start++;
-          pp[i].alpha = *entry_start++;
-      }
-      else
-      {
-          pp[i].red   = png_get_uint_16(entry_start); entry_start += 2;
-          pp[i].green = png_get_uint_16(entry_start); entry_start += 2;
-          pp[i].blue  = png_get_uint_16(entry_start); entry_start += 2;
-          pp[i].alpha = png_get_uint_16(entry_start); entry_start += 2;
-      }
-      pp->frequency = png_get_uint_16(entry_start); entry_start += 2;
-   }
-#endif
-
-   /* discard all chunk data except the name and stash that */
-   new_palette.name = png_ptr->chunkdata;
-
-   png_set_sPLT(png_ptr, info_ptr, &new_palette, 1);
-
-   png_free(png_ptr, png_ptr->chunkdata);
-   png_ptr->chunkdata = NULL;
-   png_free(png_ptr, new_palette.entries);
-}
-#endif /* PNG_READ_sPLT_SUPPORTED */
-
-#if defined(PNG_READ_tRNS_SUPPORTED)
-void /* PRIVATE */
-png_handle_tRNS(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_byte readbuf[PNG_MAX_PALETTE_LENGTH];
-
-   png_debug(1, "in png_handle_tRNS\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before tRNS");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid tRNS after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_tRNS))
-   {
-      png_warning(png_ptr, "Duplicate tRNS chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   if (png_ptr->color_type == PNG_COLOR_TYPE_GRAY)
-   {
-      png_byte buf[2];
-
-      if (length != 2)
-      {
-         png_warning(png_ptr, "Incorrect tRNS chunk length");
-         png_crc_finish(png_ptr, length);
-         return;
-      }
-
-      png_crc_read(png_ptr, buf, 2);
-      png_ptr->num_trans = 1;
-      png_ptr->trans_values.gray = png_get_uint_16(buf);
-   }
-   else if (png_ptr->color_type == PNG_COLOR_TYPE_RGB)
-   {
-      png_byte buf[6];
-
-      if (length != 6)
-      {
-         png_warning(png_ptr, "Incorrect tRNS chunk length");
-         png_crc_finish(png_ptr, length);
-         return;
-      }
-      png_crc_read(png_ptr, buf, (png_size_t)length);
-      png_ptr->num_trans = 1;
-      png_ptr->trans_values.red = png_get_uint_16(buf);
-      png_ptr->trans_values.green = png_get_uint_16(buf + 2);
-      png_ptr->trans_values.blue = png_get_uint_16(buf + 4);
-   }
-   else if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE)
-   {
-      if (!(png_ptr->mode & PNG_HAVE_PLTE))
-      {
-         /* Should be an error, but we can cope with it. */
-         png_warning(png_ptr, "Missing PLTE before tRNS");
-      }
-      if (length > (png_uint_32)png_ptr->num_palette ||
-          length > PNG_MAX_PALETTE_LENGTH)
-      {
-         png_warning(png_ptr, "Incorrect tRNS chunk length");
-         png_crc_finish(png_ptr, length);
-         return;
-      }
-      if (length == 0)
-      {
-         png_warning(png_ptr, "Zero length tRNS chunk");
-         png_crc_finish(png_ptr, length);
-         return;
-      }
-      png_crc_read(png_ptr, readbuf, (png_size_t)length);
-      png_ptr->num_trans = (png_uint_16)length;
-   }
-   else
-   {
-      png_warning(png_ptr, "tRNS chunk not allowed with alpha channel");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   if (png_crc_finish(png_ptr, 0))
-   {
-      png_ptr->num_trans = 0;
-      return;
-   }
-
-   png_set_tRNS(png_ptr, info_ptr, readbuf, png_ptr->num_trans,
-      &(png_ptr->trans_values));
-}
-#endif
-
-#if defined(PNG_READ_bKGD_SUPPORTED)
-void /* PRIVATE */
-png_handle_bKGD(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_size_t truelen;
-   png_byte buf[6];
-
-   png_debug(1, "in png_handle_bKGD\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before bKGD");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid bKGD after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE &&
-            !(png_ptr->mode & PNG_HAVE_PLTE))
-   {
-      png_warning(png_ptr, "Missing PLTE before bKGD");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_bKGD))
-   {
-      png_warning(png_ptr, "Duplicate bKGD chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE)
-      truelen = 1;
-   else if (png_ptr->color_type & PNG_COLOR_MASK_COLOR)
-      truelen = 6;
-   else
-      truelen = 2;
-
-   if (length != truelen)
-   {
-      png_warning(png_ptr, "Incorrect bKGD chunk length");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   png_crc_read(png_ptr, buf, truelen);
-   if (png_crc_finish(png_ptr, 0))
-      return;
-
-   /* We convert the index value into RGB components so that we can allow
-    * arbitrary RGB values for background when we have transparency, and
-    * so it is easy to determine the RGB values of the background color
-    * from the info_ptr struct. */
-   if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE)
-   {
-      png_ptr->background.index = buf[0];
-      if (info_ptr && info_ptr->num_palette)
-      {
-          if (buf[0] > info_ptr->num_palette)
-          {
-             png_warning(png_ptr, "Incorrect bKGD chunk index value");
-             return;
-          }
-          png_ptr->background.red =
-             (png_uint_16)png_ptr->palette[buf[0]].red;
-          png_ptr->background.green =
-             (png_uint_16)png_ptr->palette[buf[0]].green;
-          png_ptr->background.blue =
-             (png_uint_16)png_ptr->palette[buf[0]].blue;
-      }
-   }
-   else if (!(png_ptr->color_type & PNG_COLOR_MASK_COLOR)) /* GRAY */
-   {
-      png_ptr->background.red =
-      png_ptr->background.green =
-      png_ptr->background.blue =
-      png_ptr->background.gray = png_get_uint_16(buf);
-   }
-   else
-   {
-      png_ptr->background.red = png_get_uint_16(buf);
-      png_ptr->background.green = png_get_uint_16(buf + 2);
-      png_ptr->background.blue = png_get_uint_16(buf + 4);
-   }
-
-   png_set_bKGD(png_ptr, info_ptr, &(png_ptr->background));
-}
-#endif
-
-#if defined(PNG_READ_hIST_SUPPORTED)
-void /* PRIVATE */
-png_handle_hIST(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   unsigned int num, i;
-   png_uint_16 readbuf[PNG_MAX_PALETTE_LENGTH];
-
-   png_debug(1, "in png_handle_hIST\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before hIST");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid hIST after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (!(png_ptr->mode & PNG_HAVE_PLTE))
-   {
-      png_warning(png_ptr, "Missing PLTE before hIST");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_hIST))
-   {
-      png_warning(png_ptr, "Duplicate hIST chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   num = length / 2 ;
-   if (num != (unsigned int) png_ptr->num_palette || num >
-      (unsigned int) PNG_MAX_PALETTE_LENGTH)
-   {
-      png_warning(png_ptr, "Incorrect hIST chunk length");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   for (i = 0; i < num; i++)
-   {
-      png_byte buf[2];
-
-      png_crc_read(png_ptr, buf, 2);
-      readbuf[i] = png_get_uint_16(buf);
-   }
-
-   if (png_crc_finish(png_ptr, 0))
-      return;
-
-   png_set_hIST(png_ptr, info_ptr, readbuf);
-}
-#endif
-
-#if defined(PNG_READ_pHYs_SUPPORTED)
-void /* PRIVATE */
-png_handle_pHYs(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_byte buf[9];
-   png_uint_32 res_x, res_y;
-   int unit_type;
-
-   png_debug(1, "in png_handle_pHYs\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before pHYs");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid pHYs after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_pHYs))
-   {
-      png_warning(png_ptr, "Duplicate pHYs chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   if (length != 9)
-   {
-      png_warning(png_ptr, "Incorrect pHYs chunk length");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   png_crc_read(png_ptr, buf, 9);
-   if (png_crc_finish(png_ptr, 0))
-      return;
-
-   res_x = png_get_uint_32(buf);
-   res_y = png_get_uint_32(buf + 4);
-   unit_type = buf[8];
-   png_set_pHYs(png_ptr, info_ptr, res_x, res_y, unit_type);
-}
-#endif
-
-#if defined(PNG_READ_oFFs_SUPPORTED)
-void /* PRIVATE */
-png_handle_oFFs(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_byte buf[9];
-   png_int_32 offset_x, offset_y;
-   int unit_type;
-
-   png_debug(1, "in png_handle_oFFs\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before oFFs");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid oFFs after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_oFFs))
-   {
-      png_warning(png_ptr, "Duplicate oFFs chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   if (length != 9)
-   {
-      png_warning(png_ptr, "Incorrect oFFs chunk length");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   png_crc_read(png_ptr, buf, 9);
-   if (png_crc_finish(png_ptr, 0))
-      return;
-
-   offset_x = png_get_int_32(buf);
-   offset_y = png_get_int_32(buf + 4);
-   unit_type = buf[8];
-   png_set_oFFs(png_ptr, info_ptr, offset_x, offset_y, unit_type);
-}
-#endif
-
-#if defined(PNG_READ_pCAL_SUPPORTED)
-/* read the pCAL chunk (described in the PNG Extensions document) */
-void /* PRIVATE */
-png_handle_pCAL(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_int_32 X0, X1;
-   png_byte type, nparams;
-   png_charp buf, units, endptr;
-   png_charpp params;
-   png_size_t slength;
-   int i;
-
-   png_debug(1, "in png_handle_pCAL\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before pCAL");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid pCAL after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_pCAL))
-   {
-      png_warning(png_ptr, "Duplicate pCAL chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   png_debug1(2, "Allocating and reading pCAL chunk data (%lu bytes)\n",
-      length + 1);
-   png_free(png_ptr, png_ptr->chunkdata);
-   png_ptr->chunkdata = (png_charp)png_malloc_warn(png_ptr, length + 1);
-   if (png_ptr->chunkdata == NULL)
-     {
-       png_warning(png_ptr, "No memory for pCAL purpose.");
-       return;
-     }
-   slength = (png_size_t)length;
-   png_crc_read(png_ptr, (png_bytep)png_ptr->chunkdata, slength);
-
-   if (png_crc_finish(png_ptr, 0))
-   {
-      png_free(png_ptr, png_ptr->chunkdata);
-      png_ptr->chunkdata = NULL;
-      return;
-   }
-
-   png_ptr->chunkdata[slength] = 0x00; /* null terminate the last string */
-
-   png_debug(3, "Finding end of pCAL purpose string\n");
-   for (buf = png_ptr->chunkdata; *buf; buf++)
-      /* empty loop */ ;
-
-   endptr = png_ptr->chunkdata + slength;
-
-   /* We need to have at least 12 bytes after the purpose string
-      in order to get the parameter information. */
-   if (endptr <= buf + 12)
-   {
-      png_warning(png_ptr, "Invalid pCAL data");
-      png_free(png_ptr, png_ptr->chunkdata);
-      png_ptr->chunkdata = NULL;
-      return;
-   }
-
-   png_debug(3, "Reading pCAL X0, X1, type, nparams, and units\n");
-   X0 = png_get_int_32((png_bytep)buf+1);
-   X1 = png_get_int_32((png_bytep)buf+5);
-   type = buf[9];
-   nparams = buf[10];
-   units = buf + 11;
-
-   png_debug(3, "Checking pCAL equation type and number of parameters\n");
-   /* Check that we have the right number of parameters for known
-      equation types. */
-   if ((type == PNG_EQUATION_LINEAR && nparams != 2) ||
-       (type == PNG_EQUATION_BASE_E && nparams != 3) ||
-       (type == PNG_EQUATION_ARBITRARY && nparams != 3) ||
-       (type == PNG_EQUATION_HYPERBOLIC && nparams != 4))
-   {
-      png_warning(png_ptr, "Invalid pCAL parameters for equation type");
-      png_free(png_ptr, png_ptr->chunkdata);
-      png_ptr->chunkdata = NULL;
-      return;
-   }
-   else if (type >= PNG_EQUATION_LAST)
-   {
-      png_warning(png_ptr, "Unrecognized equation type for pCAL chunk");
-   }
-
-   for (buf = units; *buf; buf++)
-      /* Empty loop to move past the units string. */ ;
-
-   png_debug(3, "Allocating pCAL parameters array\n");
-   params = (png_charpp)png_malloc_warn(png_ptr,
-      (png_uint_32)(nparams * png_sizeof(png_charp))) ;
-   if (params == NULL)
-     {
-       png_free(png_ptr, png_ptr->chunkdata);
-       png_ptr->chunkdata = NULL;
-       png_warning(png_ptr, "No memory for pCAL params.");
-       return;
-     }
-
-   /* Get pointers to the start of each parameter string. */
-   for (i = 0; i < (int)nparams; i++)
-   {
-      buf++; /* Skip the null string terminator from previous parameter. */
-
-      png_debug1(3, "Reading pCAL parameter %d\n", i);
-      for (params[i] = buf; buf <= endptr && *buf != 0x00; buf++)
-         /* Empty loop to move past each parameter string */ ;
-
-      /* Make sure we haven't run out of data yet */
-      if (buf > endptr)
-      {
-         png_warning(png_ptr, "Invalid pCAL data");
-         png_free(png_ptr, png_ptr->chunkdata);
-         png_ptr->chunkdata = NULL;
-         png_free(png_ptr, params);
-         return;
-      }
-   }
-
-   png_set_pCAL(png_ptr, info_ptr, png_ptr->chunkdata, X0, X1, type, nparams,
-      units, params);
-
-   png_free(png_ptr, png_ptr->chunkdata);
-   png_ptr->chunkdata = NULL;
-   png_free(png_ptr, params);
-}
-#endif
-
-#if defined(PNG_READ_sCAL_SUPPORTED)
-/* read the sCAL chunk */
-void /* PRIVATE */
-png_handle_sCAL(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_charp ep;
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-   double width, height;
-   png_charp vp;
-#else
-#ifdef PNG_FIXED_POINT_SUPPORTED
-   png_charp swidth, sheight;
-#endif
-#endif
-   png_size_t slength;
-
-   png_debug(1, "in png_handle_sCAL\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before sCAL");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid sCAL after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_sCAL))
-   {
-      png_warning(png_ptr, "Duplicate sCAL chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   png_debug1(2, "Allocating and reading sCAL chunk data (%lu bytes)\n",
-      length + 1);
-   png_ptr->chunkdata = (png_charp)png_malloc_warn(png_ptr, length + 1);
-   if (png_ptr->chunkdata == NULL)
-   {
-      png_warning(png_ptr, "Out of memory while processing sCAL chunk");
-      return;
-   }
-   slength = (png_size_t)length;
-   png_crc_read(png_ptr, (png_bytep)png_ptr->chunkdata, slength);
-
-   if (png_crc_finish(png_ptr, 0))
-   {
-      png_free(png_ptr, png_ptr->chunkdata);
-      png_ptr->chunkdata = NULL;
-      return;
-   }
-
-   png_ptr->chunkdata[slength] = 0x00; /* null terminate the last string */
-
-   ep = png_ptr->chunkdata + 1;        /* skip unit byte */
-
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-   width = png_strtod(png_ptr, ep, &vp);
-   if (*vp)
-   {
-      png_warning(png_ptr, "malformed width string in sCAL chunk");
-      return;
-   }
-#else
-#ifdef PNG_FIXED_POINT_SUPPORTED
-   swidth = (png_charp)png_malloc_warn(png_ptr, png_strlen(ep) + 1);
-   if (swidth == NULL)
-   {
-      png_warning(png_ptr, "Out of memory while processing sCAL chunk width");
-      return;
-   }
-   png_memcpy(swidth, ep, (png_size_t)png_strlen(ep));
-#endif
-#endif
-
-   for (ep = png_ptr->chunkdata; *ep; ep++)
-      /* empty loop */ ;
-   ep++;
-
-   if (png_ptr->chunkdata + slength < ep)
-   {
-      png_warning(png_ptr, "Truncated sCAL chunk");
-#if defined(PNG_FIXED_POINT_SUPPORTED) && \
-    !defined(PNG_FLOATING_POINT_SUPPORTED)
-      png_free(png_ptr, swidth);
-#endif
-      png_free(png_ptr, png_ptr->chunkdata);
-      png_ptr->chunkdata = NULL;
-      return;
-   }
-
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-   height = png_strtod(png_ptr, ep, &vp);
-   if (*vp)
-   {
-      png_warning(png_ptr, "malformed height string in sCAL chunk");
-      return;
-   }
-#else
-#ifdef PNG_FIXED_POINT_SUPPORTED
-   sheight = (png_charp)png_malloc_warn(png_ptr, png_strlen(ep) + 1);
-   if (sheight == NULL)
-   {
-      png_warning(png_ptr, "Out of memory while processing sCAL chunk height");
-      return;
-   }
-   png_memcpy(sheight, ep, (png_size_t)png_strlen(ep));
-#endif
-#endif
-
-   if (png_ptr->chunkdata + slength < ep
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-      || width <= 0. || height <= 0.
-#endif
-      )
-   {
-      png_warning(png_ptr, "Invalid sCAL data");
-      png_free(png_ptr, png_ptr->chunkdata);
-      png_ptr->chunkdata = NULL;
-#if defined(PNG_FIXED_POINT_SUPPORTED) && !defined(PNG_FLOATING_POINT_SUPPORTED)
-      png_free(png_ptr, swidth);
-      png_free(png_ptr, sheight);
-#endif
-      return;
-   }
-
-
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-   png_set_sCAL(png_ptr, info_ptr, png_ptr->chunkdata[0], width, height);
-#else
-#ifdef PNG_FIXED_POINT_SUPPORTED
-   png_set_sCAL_s(png_ptr, info_ptr, png_ptr->chunkdata[0], swidth, sheight);
-#endif
-#endif
-
-   png_free(png_ptr, png_ptr->chunkdata);
-   png_ptr->chunkdata = NULL;
-#if defined(PNG_FIXED_POINT_SUPPORTED) && !defined(PNG_FLOATING_POINT_SUPPORTED)
-   png_free(png_ptr, swidth);
-   png_free(png_ptr, sheight);
-#endif
-}
-#endif
-
-#if defined(PNG_READ_tIME_SUPPORTED)
-void /* PRIVATE */
-png_handle_tIME(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_byte buf[7];
-   png_time mod_time;
-
-   png_debug(1, "in png_handle_tIME\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Out of place tIME chunk");
-   else if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_tIME))
-   {
-      png_warning(png_ptr, "Duplicate tIME chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   if (png_ptr->mode & PNG_HAVE_IDAT)
-      png_ptr->mode |= PNG_AFTER_IDAT;
-
-   if (length != 7)
-   {
-      png_warning(png_ptr, "Incorrect tIME chunk length");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   png_crc_read(png_ptr, buf, 7);
-   if (png_crc_finish(png_ptr, 0))
-      return;
-
-   mod_time.second = buf[6];
-   mod_time.minute = buf[5];
-   mod_time.hour = buf[4];
-   mod_time.day = buf[3];
-   mod_time.month = buf[2];
-   mod_time.year = png_get_uint_16(buf);
-
-   png_set_tIME(png_ptr, info_ptr, &mod_time);
-}
-#endif
-
-#if defined(PNG_READ_tEXt_SUPPORTED)
-/* Note: this does not properly handle chunks that are > 64K under DOS */
-void /* PRIVATE */
-png_handle_tEXt(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_textp text_ptr;
-   png_charp key;
-   png_charp text;
-   png_uint_32 skip = 0;
-   png_size_t slength;
-   int ret;
-
-   png_debug(1, "in png_handle_tEXt\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before tEXt");
-
-   if (png_ptr->mode & PNG_HAVE_IDAT)
-      png_ptr->mode |= PNG_AFTER_IDAT;
-
-#ifdef PNG_MAX_MALLOC_64K
-   if (length > (png_uint_32)65535L)
-   {
-      png_warning(png_ptr, "tEXt chunk too large to fit in memory");
-      skip = length - (png_uint_32)65535L;
-      length = (png_uint_32)65535L;
-   }
-#endif
-
-   key = (png_charp)png_malloc_warn(png_ptr, length + 1);
-   if (key == NULL)
-   {
-     png_warning(png_ptr, "No memory to process text chunk.");
-     return;
-   }
-   slength = (png_size_t)length;
-   png_crc_read(png_ptr, (png_bytep)key, slength);
-
-   if (png_crc_finish(png_ptr, skip))
-   {
-      png_free(png_ptr, key);
-      return;
-   }
-
-   key[slength] = 0x00;
-
-   for (text = key; *text; text++)
-      /* empty loop to find end of key */ ;
-
-   if (text != key + slength)
-      text++;
-
-   text_ptr = (png_textp)png_malloc_warn(png_ptr,
-      (png_uint_32)png_sizeof(png_text));
-   if (text_ptr == NULL)
-   {
-     png_warning(png_ptr, "Not enough memory to process text chunk.");
-     png_free(png_ptr, key);
-     return;
-   }
-   text_ptr->compression = PNG_TEXT_COMPRESSION_NONE;
-   text_ptr->key = key;
-#ifdef PNG_iTXt_SUPPORTED
-   text_ptr->lang = NULL;
-   text_ptr->lang_key = NULL;
-   text_ptr->itxt_length = 0;
-#endif
-   text_ptr->text = text;
-   text_ptr->text_length = png_strlen(text);
-
-   ret = png_set_text_2(png_ptr, info_ptr, text_ptr, 1);
-
-   png_free(png_ptr, key);
-   png_free(png_ptr, text_ptr);
-   if (ret)
-     png_warning(png_ptr, "Insufficient memory to process text chunk.");
-}
-#endif
-
-#if defined(PNG_READ_zTXt_SUPPORTED)
-/* note: this does not correctly handle chunks that are > 64K under DOS */
-void /* PRIVATE */
-png_handle_zTXt(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_textp text_ptr;
-   png_charp text;
-   int comp_type;
-   int ret;
-   png_size_t slength, prefix_len, data_len;
-
-   png_debug(1, "in png_handle_zTXt\n");
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before zTXt");
-
-   if (png_ptr->mode & PNG_HAVE_IDAT)
-      png_ptr->mode |= PNG_AFTER_IDAT;
-
-#ifdef PNG_MAX_MALLOC_64K
-   /* We will no doubt have problems with chunks even half this size, but
-      there is no hard and fast rule to tell us where to stop. */
-   if (length > (png_uint_32)65535L)
-   {
-     png_warning(png_ptr, "zTXt chunk too large to fit in memory");
-     png_crc_finish(png_ptr, length);
-     return;
-   }
-#endif
-
-   png_free(png_ptr,png_ptr->chunkdata);
-   png_ptr->chunkdata = (png_charp)png_malloc_warn(png_ptr, length + 1);
-   if (png_ptr->chunkdata == NULL)
-   {
-     png_warning(png_ptr, "Out of memory processing zTXt chunk.");
-     return;
-   }
-   slength = (png_size_t)length;
-   png_crc_read(png_ptr, (png_bytep)png_ptr->chunkdata, slength);
-   if (png_crc_finish(png_ptr, 0))
-   {
-      png_free(png_ptr, png_ptr->chunkdata);
-      png_ptr->chunkdata = NULL;
-      return;
-   }
-
-   png_ptr->chunkdata[slength] = 0x00;
-
-   for (text = png_ptr->chunkdata; *text; text++)
-      /* empty loop */ ;
-
-   /* zTXt must have some text after the chunkdataword */
-   if (text >= png_ptr->chunkdata + slength - 2)
-   {
-      png_warning(png_ptr, "Truncated zTXt chunk");
-      png_free(png_ptr, png_ptr->chunkdata);
-      png_ptr->chunkdata = NULL;
-      return;
-   }
-   else
-   {
-       comp_type = *(++text);
-       if (comp_type != PNG_TEXT_COMPRESSION_zTXt)
-       {
-          png_warning(png_ptr, "Unknown compression type in zTXt chunk");
-          comp_type = PNG_TEXT_COMPRESSION_zTXt;
-       }
-       text++;        /* skip the compression_method byte */
-   }
-   prefix_len = text - png_ptr->chunkdata;
-
-   png_decompress_chunk(png_ptr, comp_type,
-     (png_size_t)length, prefix_len, &data_len);
-
-   text_ptr = (png_textp)png_malloc_warn(png_ptr,
-      (png_uint_32)png_sizeof(png_text));
-   if (text_ptr == NULL)
-   {
-     png_warning(png_ptr, "Not enough memory to process zTXt chunk.");
-     png_free(png_ptr, png_ptr->chunkdata);
-     png_ptr->chunkdata = NULL;
-     return;
-   }
-   text_ptr->compression = comp_type;
-   text_ptr->key = png_ptr->chunkdata;
-#ifdef PNG_iTXt_SUPPORTED
-   text_ptr->lang = NULL;
-   text_ptr->lang_key = NULL;
-   text_ptr->itxt_length = 0;
-#endif
-   text_ptr->text = png_ptr->chunkdata + prefix_len;
-   text_ptr->text_length = data_len;
-
-   ret = png_set_text_2(png_ptr, info_ptr, text_ptr, 1);
-
-   png_free(png_ptr, text_ptr);
-   png_free(png_ptr, png_ptr->chunkdata);
-   png_ptr->chunkdata = NULL;
-   if (ret)
-     png_error(png_ptr, "Insufficient memory to store zTXt chunk.");
-}
-#endif
-
-#if defined(PNG_READ_iTXt_SUPPORTED)
-/* note: this does not correctly handle chunks that are > 64K under DOS */
-void /* PRIVATE */
-png_handle_iTXt(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_textp text_ptr;
-   png_charp key, lang, text, lang_key;
-   int comp_flag;
-   int comp_type = 0;
-   int ret;
-   png_size_t slength, prefix_len, data_len;
-
-   png_debug(1, "in png_handle_iTXt\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before iTXt");
-
-   if (png_ptr->mode & PNG_HAVE_IDAT)
-      png_ptr->mode |= PNG_AFTER_IDAT;
-
-#ifdef PNG_MAX_MALLOC_64K
-   /* We will no doubt have problems with chunks even half this size, but
-      there is no hard and fast rule to tell us where to stop. */
-   if (length > (png_uint_32)65535L)
-   {
-     png_warning(png_ptr, "iTXt chunk too large to fit in memory");
-     png_crc_finish(png_ptr, length);
-     return;
-   }
-#endif
-
-   png_free(png_ptr, png_ptr->chunkdata);
-   png_ptr->chunkdata = (png_charp)png_malloc_warn(png_ptr, length + 1);
-   if (png_ptr->chunkdata == NULL)
-   {
-     png_warning(png_ptr, "No memory to process iTXt chunk.");
-     return;
-   }
-   slength = (png_size_t)length;
-   png_crc_read(png_ptr, (png_bytep)png_ptr->chunkdata, slength);
-   if (png_crc_finish(png_ptr, 0))
-   {
-      png_free(png_ptr, png_ptr->chunkdata);
-      png_ptr->chunkdata = NULL;
-      return;
-   }
-
-   png_ptr->chunkdata[slength] = 0x00;
-
-   for (lang = png_ptr->chunkdata; *lang; lang++)
-      /* empty loop */ ;
-   lang++;        /* skip NUL separator */
-
-   /* iTXt must have a language tag (possibly empty), two compression bytes,
-      translated keyword (possibly empty), and possibly some text after the
-      keyword */
-
-   if (lang >= png_ptr->chunkdata + slength - 3)
-   {
-      png_warning(png_ptr, "Truncated iTXt chunk");
-      png_free(png_ptr, png_ptr->chunkdata);
-      png_ptr->chunkdata = NULL;
-      return;
-   }
-   else
-   {
-       comp_flag = *lang++;
-       comp_type = *lang++;
-   }
-
-   for (lang_key = lang; *lang_key; lang_key++)
-      /* empty loop */ ;
-   lang_key++;        /* skip NUL separator */
-
-   if (lang_key >= png_ptr->chunkdata + slength)
-   {
-      png_warning(png_ptr, "Truncated iTXt chunk");
-      png_free(png_ptr, png_ptr->chunkdata);
-      png_ptr->chunkdata = NULL;
-      return;
-   }
-
-   for (text = lang_key; *text; text++)
-      /* empty loop */ ;
-   text++;        /* skip NUL separator */
-   if (text >= png_ptr->chunkdata + slength)
-   {
-      png_warning(png_ptr, "Malformed iTXt chunk");
-      png_free(png_ptr, png_ptr->chunkdata);
-      png_ptr->chunkdata = NULL;
-      return;
-   }
-
-   prefix_len = text - png_ptr->chunkdata;
-
-   key=png_ptr->chunkdata;
-   if (comp_flag)
-       png_decompress_chunk(png_ptr, comp_type,
-         (size_t)length, prefix_len, &data_len);
-   else
-       data_len = png_strlen(png_ptr->chunkdata + prefix_len);
-   text_ptr = (png_textp)png_malloc_warn(png_ptr,
-      (png_uint_32)png_sizeof(png_text));
-   if (text_ptr == NULL)
-   {
-     png_warning(png_ptr, "Not enough memory to process iTXt chunk.");
-     png_free(png_ptr, png_ptr->chunkdata);
-     png_ptr->chunkdata = NULL;
-     return;
-   }
-   text_ptr->compression = (int)comp_flag + 1;
-   text_ptr->lang_key = png_ptr->chunkdata + (lang_key - key);
-   text_ptr->lang = png_ptr->chunkdata + (lang - key);
-   text_ptr->itxt_length = data_len;
-   text_ptr->text_length = 0;
-   text_ptr->key = png_ptr->chunkdata;
-   text_ptr->text = png_ptr->chunkdata + prefix_len;
-
-   ret = png_set_text_2(png_ptr, info_ptr, text_ptr, 1);
-
-   png_free(png_ptr, text_ptr);
-   png_free(png_ptr, png_ptr->chunkdata);
-   png_ptr->chunkdata = NULL;
-   if (ret)
-     png_error(png_ptr, "Insufficient memory to store iTXt chunk.");
-}
-#endif
-
-/* This function is called when we haven't found a handler for a
-   chunk.  If there isn't a problem with the chunk itself (ie bad
-   chunk name, CRC, or a critical chunk), the chunk is silently ignored
-   -- unless the PNG_FLAG_UNKNOWN_CHUNKS_SUPPORTED flag is on in which
-   case it will be saved away to be written out later. */
-void /* PRIVATE */
-png_handle_unknown(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_uint_32 skip = 0;
-
-   png_debug(1, "in png_handle_unknown\n");
-
-   if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-#ifdef PNG_USE_LOCAL_ARRAYS
-      PNG_CONST PNG_IDAT;
-#endif
-      if (png_memcmp(png_ptr->chunk_name, png_IDAT, 4))  /* not an IDAT */
-         png_ptr->mode |= PNG_AFTER_IDAT;
-   }
-
-   if (!(png_ptr->chunk_name[0] & 0x20))
-   {
-#if defined(PNG_READ_UNKNOWN_CHUNKS_SUPPORTED)
-      if (png_handle_as_unknown(png_ptr, png_ptr->chunk_name) !=
-           PNG_HANDLE_CHUNK_ALWAYS
-#if defined(PNG_READ_USER_CHUNKS_SUPPORTED)
-           && png_ptr->read_user_chunk_fn == NULL
-#endif
-        )
-#endif
-          png_chunk_error(png_ptr, "unknown critical chunk");
-   }
-
-#if defined(PNG_READ_UNKNOWN_CHUNKS_SUPPORTED)
-   if ((png_ptr->flags & PNG_FLAG_KEEP_UNKNOWN_CHUNKS) ||
-       (png_ptr->read_user_chunk_fn != NULL))
-   {
-#ifdef PNG_MAX_MALLOC_64K
-       if (length > (png_uint_32)65535L)
-       {
-           png_warning(png_ptr, "unknown chunk too large to fit in memory");
-           skip = length - (png_uint_32)65535L;
-           length = (png_uint_32)65535L;
-       }
-#endif
-       png_memcpy((png_charp)png_ptr->unknown_chunk.name,
-                  (png_charp)png_ptr->chunk_name, 
-                  png_sizeof(png_ptr->unknown_chunk.name));
-       png_ptr->unknown_chunk.name[png_sizeof(png_ptr->unknown_chunk.name)-1] = '\0';
-       png_ptr->unknown_chunk.size = (png_size_t)length;
-       if (length == 0)
-         png_ptr->unknown_chunk.data = NULL;
-       else
-       {
-         png_ptr->unknown_chunk.data = (png_bytep)png_malloc(png_ptr, length);
-         png_crc_read(png_ptr, (png_bytep)png_ptr->unknown_chunk.data, length);
-       }
-#if defined(PNG_READ_USER_CHUNKS_SUPPORTED)
-       if (png_ptr->read_user_chunk_fn != NULL)
-       {
-          /* callback to user unknown chunk handler */
-          int ret;
-          ret = (*(png_ptr->read_user_chunk_fn))
-            (png_ptr, &png_ptr->unknown_chunk);
-          if (ret < 0)
-             png_chunk_error(png_ptr, "error in user chunk");
-          if (ret == 0)
-          {
-             if (!(png_ptr->chunk_name[0] & 0x20))
-                if (png_handle_as_unknown(png_ptr, png_ptr->chunk_name) !=
-                     PNG_HANDLE_CHUNK_ALWAYS)
-                   png_chunk_error(png_ptr, "unknown critical chunk");
-             png_set_unknown_chunks(png_ptr, info_ptr,
-               &png_ptr->unknown_chunk, 1);
-          }
-       }
-       else
-#endif
-       png_set_unknown_chunks(png_ptr, info_ptr, &png_ptr->unknown_chunk, 1);
-       png_free(png_ptr, png_ptr->unknown_chunk.data);
-       png_ptr->unknown_chunk.data = NULL;
-   }
-   else
-#endif
-      skip = length;
-
-   png_crc_finish(png_ptr, skip);
-
-#if !defined(PNG_READ_USER_CHUNKS_SUPPORTED)
-   info_ptr = info_ptr; /* quiet compiler warnings about unused info_ptr */
-#endif
-}
-
-/* This function is called to verify that a chunk name is valid.
-   This function can't have the "critical chunk check" incorporated
-   into it, since in the future we will need to be able to call user
-   functions to handle unknown critical chunks after we check that
-   the chunk name itself is valid. */
-
-#define isnonalpha(c) ((c) < 65 || (c) > 122 || ((c) > 90 && (c) < 97))
-
-void /* PRIVATE */
-png_check_chunk_name(png_structp png_ptr, png_bytep chunk_name)
-{
-   png_debug(1, "in png_check_chunk_name\n");
-   if (isnonalpha(chunk_name[0]) || isnonalpha(chunk_name[1]) ||
-       isnonalpha(chunk_name[2]) || isnonalpha(chunk_name[3]))
-   {
-      png_chunk_error(png_ptr, "invalid chunk type");
-   }
-}
-
-/* Combines the row recently read in with the existing pixels in the
-   row.  This routine takes care of alpha and transparency if requested.
-   This routine also handles the two methods of progressive display
-   of interlaced images, depending on the mask value.
-   The mask value describes which pixels are to be combined with
-   the row.  The pattern always repeats every 8 pixels, so just 8
-   bits are needed.  A one indicates the pixel is to be combined,
-   a zero indicates the pixel is to be skipped.  This is in addition
-   to any alpha or transparency value associated with the pixel.  If
-   you want all pixels to be combined, pass 0xff (255) in mask.  */
-
-void /* PRIVATE */
-png_combine_row(png_structp png_ptr, png_bytep row, int mask)
-{
-   png_debug(1, "in png_combine_row\n");
-   if (mask == 0xff)
-   {
-      png_memcpy(row, png_ptr->row_buf + 1,
-         PNG_ROWBYTES(png_ptr->row_info.pixel_depth, png_ptr->width));
-   }
-   else
-   {
-      switch (png_ptr->row_info.pixel_depth)
-      {
-         case 1:
-         {
-            png_bytep sp = png_ptr->row_buf + 1;
-            png_bytep dp = row;
-            int s_inc, s_start, s_end;
-            int m = 0x80;
-            int shift;
-            png_uint_32 i;
-            png_uint_32 row_width = png_ptr->width;
-
-#if defined(PNG_READ_PACKSWAP_SUPPORTED)
-            if (png_ptr->transformations & PNG_PACKSWAP)
-            {
-                s_start = 0;
-                s_end = 7;
-                s_inc = 1;
-            }
-            else
-#endif
-            {
-                s_start = 7;
-                s_end = 0;
-                s_inc = -1;
-            }
-
-            shift = s_start;
-
-            for (i = 0; i < row_width; i++)
-            {
-               if (m & mask)
-               {
-                  int value;
-
-                  value = (*sp >> shift) & 0x01;
-                  *dp &= (png_byte)((0x7f7f >> (7 - shift)) & 0xff);
-                  *dp |= (png_byte)(value << shift);
-               }
-
-               if (shift == s_end)
-               {
-                  shift = s_start;
-                  sp++;
-                  dp++;
-               }
-               else
-                  shift += s_inc;
-
-               if (m == 1)
-                  m = 0x80;
-               else
-                  m >>= 1;
-            }
-            break;
-         }
-         case 2:
-         {
-            png_bytep sp = png_ptr->row_buf + 1;
-            png_bytep dp = row;
-            int s_start, s_end, s_inc;
-            int m = 0x80;
-            int shift;
-            png_uint_32 i;
-            png_uint_32 row_width = png_ptr->width;
-            int value;
-
-#if defined(PNG_READ_PACKSWAP_SUPPORTED)
-            if (png_ptr->transformations & PNG_PACKSWAP)
-            {
-               s_start = 0;
-               s_end = 6;
-               s_inc = 2;
-            }
-            else
-#endif
-            {
-               s_start = 6;
-               s_end = 0;
-               s_inc = -2;
-            }
-
-            shift = s_start;
-
-            for (i = 0; i < row_width; i++)
-            {
-               if (m & mask)
-               {
-                  value = (*sp >> shift) & 0x03;
-                  *dp &= (png_byte)((0x3f3f >> (6 - shift)) & 0xff);
-                  *dp |= (png_byte)(value << shift);
-               }
-
-               if (shift == s_end)
-               {
-                  shift = s_start;
-                  sp++;
-                  dp++;
-               }
-               else
-                  shift += s_inc;
-               if (m == 1)
-                  m = 0x80;
-               else
-                  m >>= 1;
-            }
-            break;
-         }
-         case 4:
-         {
-            png_bytep sp = png_ptr->row_buf + 1;
-            png_bytep dp = row;
-            int s_start, s_end, s_inc;
-            int m = 0x80;
-            int shift;
-            png_uint_32 i;
-            png_uint_32 row_width = png_ptr->width;
-            int value;
-
-#if defined(PNG_READ_PACKSWAP_SUPPORTED)
-            if (png_ptr->transformations & PNG_PACKSWAP)
-            {
-               s_start = 0;
-               s_end = 4;
-               s_inc = 4;
-            }
-            else
-#endif
-            {
-               s_start = 4;
-               s_end = 0;
-               s_inc = -4;
-            }
-            shift = s_start;
-
-            for (i = 0; i < row_width; i++)
-            {
-               if (m & mask)
-               {
-                  value = (*sp >> shift) & 0xf;
-                  *dp &= (png_byte)((0xf0f >> (4 - shift)) & 0xff);
-                  *dp |= (png_byte)(value << shift);
-               }
-
-               if (shift == s_end)
-               {
-                  shift = s_start;
-                  sp++;
-                  dp++;
-               }
-               else
-                  shift += s_inc;
-               if (m == 1)
-                  m = 0x80;
-               else
-                  m >>= 1;
-            }
-            break;
-         }
-         default:
-         {
-            png_bytep sp = png_ptr->row_buf + 1;
-            png_bytep dp = row;
-            png_size_t pixel_bytes = (png_ptr->row_info.pixel_depth >> 3);
-            png_uint_32 i;
-            png_uint_32 row_width = png_ptr->width;
-            png_byte m = 0x80;
-
-
-            for (i = 0; i < row_width; i++)
-            {
-               if (m & mask)
-               {
-                  png_memcpy(dp, sp, pixel_bytes);
-               }
-
-               sp += pixel_bytes;
-               dp += pixel_bytes;
-
-               if (m == 1)
-                  m = 0x80;
-               else
-                  m >>= 1;
-            }
-            break;
-         }
-      }
-   }
-}
-
-#ifdef PNG_READ_INTERLACING_SUPPORTED
-/* OLD pre-1.0.9 interface:
-void png_do_read_interlace(png_row_infop row_info, png_bytep row, int pass,
-   png_uint_32 transformations)
+const char deflate_copyright[] =
+   " deflate 1.2.3 Copyright 1995-2005 Jean-loup Gailly ";
+/*
+  If you use the zlib library in a product, an acknowledgment is welcome
+  in the documentation of your product. If for some reason you cannot
+  include such an acknowledgment, I would appreciate that you keep this
+  copyright string in the executable of your product.
  */
-void /* PRIVATE */
-png_do_read_interlace(png_structp png_ptr)
-{
-   png_row_infop row_info = &(png_ptr->row_info);
-   png_bytep row = png_ptr->row_buf + 1;
-   int pass = png_ptr->pass;
-   png_uint_32 transformations = png_ptr->transformations;
-#ifdef PNG_USE_LOCAL_ARRAYS
-   /* arrays to facilitate easy interlacing - use pass (0 - 6) as index */
-   /* offset to next interlace block */
-   PNG_CONST int png_pass_inc[7] = {8, 8, 4, 4, 2, 2, 1};
+
+/* ===========================================================================
+ *  Function prototypes.
+ */
+typedef enum {
+    need_more,      /* block not completed, need more input or more output */
+    block_done,     /* block flush performed */
+    finish_started, /* finish started, need only more output at next deflate */
+    finish_done     /* finish done, accept no more input or output */
+} block_state;
+
+typedef block_state (*compress_func) OF((deflate_state *s, int flush));
+/* Compression function. Returns the block state after the call. */
+
+local void fill_window    OF((deflate_state *s));
+local block_state deflate_stored OF((deflate_state *s, int flush));
+local block_state deflate_fast   OF((deflate_state *s, int flush));
+#ifndef FASTEST
+local block_state deflate_slow   OF((deflate_state *s, int flush));
 #endif
-
-   png_debug(1, "in png_do_read_interlace\n");
-   if (row != NULL && row_info != NULL)
-   {
-      png_uint_32 final_width;
-
-      final_width = row_info->width * png_pass_inc[pass];
-
-      switch (row_info->pixel_depth)
-      {
-         case 1:
-         {
-            png_bytep sp = row + (png_size_t)((row_info->width - 1) >> 3);
-            png_bytep dp = row + (png_size_t)((final_width - 1) >> 3);
-            int sshift, dshift;
-            int s_start, s_end, s_inc;
-            int jstop = png_pass_inc[pass];
-            png_byte v;
-            png_uint_32 i;
-            int j;
-
-#if defined(PNG_READ_PACKSWAP_SUPPORTED)
-            if (transformations & PNG_PACKSWAP)
-            {
-                sshift = (int)((row_info->width + 7) & 0x07);
-                dshift = (int)((final_width + 7) & 0x07);
-                s_start = 7;
-                s_end = 0;
-                s_inc = -1;
-            }
-            else
-#endif
-            {
-                sshift = 7 - (int)((row_info->width + 7) & 0x07);
-                dshift = 7 - (int)((final_width + 7) & 0x07);
-                s_start = 0;
-                s_end = 7;
-                s_inc = 1;
-            }
-
-            for (i = 0; i < row_info->width; i++)
-            {
-               v = (png_byte)((*sp >> sshift) & 0x01);
-               for (j = 0; j < jstop; j++)
-               {
-                  *dp &= (png_byte)((0x7f7f >> (7 - dshift)) & 0xff);
-                  *dp |= (png_byte)(v << dshift);
-                  if (dshift == s_end)
-                  {
-                     dshift = s_start;
-                     dp--;
-                  }
-                  else
-                     dshift += s_inc;
-               }
-               if (sshift == s_end)
-               {
-                  sshift = s_start;
-                  sp--;
-               }
-               else
-                  sshift += s_inc;
-            }
-            break;
-         }
-         case 2:
-         {
-            png_bytep sp = row + (png_uint_32)((row_info->width - 1) >> 2);
-            png_bytep dp = row + (png_uint_32)((final_width - 1) >> 2);
-            int sshift, dshift;
-            int s_start, s_end, s_inc;
-            int jstop = png_pass_inc[pass];
-            png_uint_32 i;
-
-#if defined(PNG_READ_PACKSWAP_SUPPORTED)
-            if (transformations & PNG_PACKSWAP)
-            {
-               sshift = (int)(((row_info->width + 3) & 0x03) << 1);
-               dshift = (int)(((final_width + 3) & 0x03) << 1);
-               s_start = 6;
-               s_end = 0;
-               s_inc = -2;
-            }
-            else
-#endif
-            {
-               sshift = (int)((3 - ((row_info->width + 3) & 0x03)) << 1);
-               dshift = (int)((3 - ((final_width + 3) & 0x03)) << 1);
-               s_start = 0;
-               s_end = 6;
-               s_inc = 2;
-            }
-
-            for (i = 0; i < row_info->width; i++)
-            {
-               png_byte v;
-               int j;
-
-               v = (png_byte)((*sp >> sshift) & 0x03);
-               for (j = 0; j < jstop; j++)
-               {
-                  *dp &= (png_byte)((0x3f3f >> (6 - dshift)) & 0xff);
-                  *dp |= (png_byte)(v << dshift);
-                  if (dshift == s_end)
-                  {
-                     dshift = s_start;
-                     dp--;
-                  }
-                  else
-                     dshift += s_inc;
-               }
-               if (sshift == s_end)
-               {
-                  sshift = s_start;
-                  sp--;
-               }
-               else
-                  sshift += s_inc;
-            }
-            break;
-         }
-         case 4:
-         {
-            png_bytep sp = row + (png_size_t)((row_info->width - 1) >> 1);
-            png_bytep dp = row + (png_size_t)((final_width - 1) >> 1);
-            int sshift, dshift;
-            int s_start, s_end, s_inc;
-            png_uint_32 i;
-            int jstop = png_pass_inc[pass];
-
-#if defined(PNG_READ_PACKSWAP_SUPPORTED)
-            if (transformations & PNG_PACKSWAP)
-            {
-               sshift = (int)(((row_info->width + 1) & 0x01) << 2);
-               dshift = (int)(((final_width + 1) & 0x01) << 2);
-               s_start = 4;
-               s_end = 0;
-               s_inc = -4;
-            }
-            else
-#endif
-            {
-               sshift = (int)((1 - ((row_info->width + 1) & 0x01)) << 2);
-               dshift = (int)((1 - ((final_width + 1) & 0x01)) << 2);
-               s_start = 0;
-               s_end = 4;
-               s_inc = 4;
-            }
-
-            for (i = 0; i < row_info->width; i++)
-            {
-               png_byte v = (png_byte)((*sp >> sshift) & 0xf);
-               int j;
-
-               for (j = 0; j < jstop; j++)
-               {
-                  *dp &= (png_byte)((0xf0f >> (4 - dshift)) & 0xff);
-                  *dp |= (png_byte)(v << dshift);
-                  if (dshift == s_end)
-                  {
-                     dshift = s_start;
-                     dp--;
-                  }
-                  else
-                     dshift += s_inc;
-               }
-               if (sshift == s_end)
-               {
-                  sshift = s_start;
-                  sp--;
-               }
-               else
-                  sshift += s_inc;
-            }
-            break;
-         }
-         default:
-         {
-            png_size_t pixel_bytes = (row_info->pixel_depth >> 3);
-            png_bytep sp = row + (png_size_t)(row_info->width - 1) * pixel_bytes;
-            png_bytep dp = row + (png_size_t)(final_width - 1) * pixel_bytes;
-
-            int jstop = png_pass_inc[pass];
-            png_uint_32 i;
-
-            for (i = 0; i < row_info->width; i++)
-            {
-               png_byte v[8];
-               int j;
-
-               png_memcpy(v, sp, pixel_bytes);
-               for (j = 0; j < jstop; j++)
-               {
-                  png_memcpy(dp, v, pixel_bytes);
-                  dp -= pixel_bytes;
-               }
-               sp -= pixel_bytes;
-            }
-            break;
-         }
-      }
-      row_info->width = final_width;
-      row_info->rowbytes = PNG_ROWBYTES(row_info->pixel_depth, final_width);
-   }
-#if !defined(PNG_READ_PACKSWAP_SUPPORTED)
-   transformations = transformations; /* silence compiler warning */
-#endif
-}
-#endif /* PNG_READ_INTERLACING_SUPPORTED */
-
-void /* PRIVATE */
-png_read_filter_row(png_structp png_ptr, png_row_infop row_info, png_bytep row,
-   png_bytep prev_row, int filter)
-{
-   png_debug(1, "in png_read_filter_row\n");
-   png_debug2(2, "row = %lu, filter = %d\n", png_ptr->row_number, filter);
-   switch (filter)
-   {
-      case PNG_FILTER_VALUE_NONE:
-         break;
-      case PNG_FILTER_VALUE_SUB:
-      {
-         png_uint_32 i;
-         png_uint_32 istop = row_info->rowbytes;
-         png_uint_32 bpp = (row_info->pixel_depth + 7) >> 3;
-         png_bytep rp = row + bpp;
-         png_bytep lp = row;
-
-         for (i = bpp; i < istop; i++)
-         {
-            *rp = (png_byte)(((int)(*rp) + (int)(*lp++)) & 0xff);
-            rp++;
-         }
-         break;
-      }
-      case PNG_FILTER_VALUE_UP:
-      {
-         png_uint_32 i;
-         png_uint_32 istop = row_info->rowbytes;
-         png_bytep rp = row;
-         png_bytep pp = prev_row;
-
-         for (i = 0; i < istop; i++)
-         {
-            *rp = (png_byte)(((int)(*rp) + (int)(*pp++)) & 0xff);
-            rp++;
-         }
-         break;
-      }
-      case PNG_FILTER_VALUE_AVG:
-      {
-         png_uint_32 i;
-         png_bytep rp = row;
-         png_bytep pp = prev_row;
-         png_bytep lp = row;
-         png_uint_32 bpp = (row_info->pixel_depth + 7) >> 3;
-         png_uint_32 istop = row_info->rowbytes - bpp;
-
-         for (i = 0; i < bpp; i++)
-         {
-            *rp = (png_byte)(((int)(*rp) +
-               ((int)(*pp++) / 2 )) & 0xff);
-            rp++;
-         }
-
-         for (i = 0; i < istop; i++)
-         {
-            *rp = (png_byte)(((int)(*rp) +
-               (int)(*pp++ + *lp++) / 2 ) & 0xff);
-            rp++;
-         }
-         break;
-      }
-      case PNG_FILTER_VALUE_PAETH:
-      {
-         png_uint_32 i;
-         png_bytep rp = row;
-         png_bytep pp = prev_row;
-         png_bytep lp = row;
-         png_bytep cp = prev_row;
-         png_uint_32 bpp = (row_info->pixel_depth + 7) >> 3;
-         png_uint_32 istop=row_info->rowbytes - bpp;
-
-         for (i = 0; i < bpp; i++)
-         {
-            *rp = (png_byte)(((int)(*rp) + (int)(*pp++)) & 0xff);
-            rp++;
-         }
-
-         for (i = 0; i < istop; i++)   /* use leftover rp,pp */
-         {
-            int a, b, c, pa, pb, pc, p;
-
-            a = *lp++;
-            b = *pp++;
-            c = *cp++;
-
-            p = b - c;
-            pc = a - c;
-
-#ifdef PNG_USE_ABS
-            pa = abs(p);
-            pb = abs(pc);
-            pc = abs(p + pc);
+local void lm_init        OF((deflate_state *s));
+local void putShortMSB    OF((deflate_state *s, uInt b));
+local void flush_pending  OF((z_streamp strm));
+local int read_buf        OF((z_streamp strm, Bytef *buf, unsigned size));
+#ifndef FASTEST
+#ifdef ASMV
+      void match_init OF((void)); /* asm code initialization */
+      uInt longest_match  OF((deflate_state *s, IPos cur_match));
 #else
-            pa = p < 0 ? -p : p;
-            pb = pc < 0 ? -pc : pc;
-            pc = (p + pc) < 0 ? -(p + pc) : p + pc;
+local uInt longest_match  OF((deflate_state *s, IPos cur_match));
+#endif
+#endif
+local uInt longest_match_fast OF((deflate_state *s, IPos cur_match));
+
+#ifdef DEBUG
+local  void check_match OF((deflate_state *s, IPos start, IPos match,
+                            int length));
 #endif
 
-            /*
-               if (pa <= pb && pa <= pc)
-                  p = a;
-               else if (pb <= pc)
-                  p = b;
-               else
-                  p = c;
+/* ===========================================================================
+ * Local data
+ */
+
+#define NIL 0
+/* Tail of hash chains */
+
+#ifndef TOO_FAR
+#  define TOO_FAR 4096
+#endif
+/* Matches of length 3 are discarded if their distance exceeds TOO_FAR */
+
+#define MIN_LOOKAHEAD (MAX_MATCH+MIN_MATCH+1)
+/* Minimum amount of lookahead, except at the end of the input file.
+ * See deflate.c for comments about the MIN_MATCH+1.
+ */
+
+/* Values for max_lazy_match, good_match and max_chain_length, depending on
+ * the desired pack level (0..9). The values given below have been tuned to
+ * exclude worst case performance for pathological files. Better values may be
+ * found for specific files.
+ */
+typedef struct config_s {
+   ush good_length; /* reduce lazy search above this match length */
+   ush max_lazy;    /* do not perform lazy search above this match length */
+   ush nice_length; /* quit search above this match length */
+   ush max_chain;
+   compress_func func;
+} config;
+
+#ifdef FASTEST
+local const config configuration_table[2] = {
+/*      good lazy nice chain */
+/* 0 */ {0,    0,  0,    0, deflate_stored},  /* store only */
+/* 1 */ {4,    4,  8,    4, deflate_fast}}; /* max speed, no lazy matches */
+#else
+local const config configuration_table[10] = {
+/*      good lazy nice chain */
+/* 0 */ {0,    0,  0,    0, deflate_stored},  /* store only */
+/* 1 */ {4,    4,  8,    4, deflate_fast}, /* max speed, no lazy matches */
+/* 2 */ {4,    5, 16,    8, deflate_fast},
+/* 3 */ {4,    6, 32,   32, deflate_fast},
+
+/* 4 */ {4,    4, 16,   16, deflate_slow},  /* lazy matches */
+/* 5 */ {8,   16, 32,   32, deflate_slow},
+/* 6 */ {8,   16, 128, 128, deflate_slow},
+/* 7 */ {8,   32, 128, 256, deflate_slow},
+/* 8 */ {32, 128, 258, 1024, deflate_slow},
+/* 9 */ {32, 258, 258, 4096, deflate_slow}}; /* max compression */
+#endif
+
+/* Note: the deflate() code requires max_lazy >= MIN_MATCH and max_chain >= 4
+ * For deflate_fast() (levels <= 3) good is ignored and lazy has a different
+ * meaning.
+ */
+
+#define EQUAL 0
+/* result of memcmp for equal strings */
+
+#ifndef NO_DUMMY_DECL
+struct static_tree_desc_s {int dummy;}; /* for buggy compilers */
+#endif
+
+/* ===========================================================================
+ * Update a hash value with the given input byte
+ * IN  assertion: all calls to to UPDATE_HASH are made with consecutive
+ *    input characters, so that a running hash key can be computed from the
+ *    previous key instead of complete recalculation each time.
+ */
+#define UPDATE_HASH(s,h,c) (h = (((h)<<s->hash_shift) ^ (c)) & s->hash_mask)
+
+
+/* ===========================================================================
+ * Insert string str in the dictionary and set match_head to the previous head
+ * of the hash chain (the most recent string with same hash key). Return
+ * the previous length of the hash chain.
+ * If this file is compiled with -DFASTEST, the compression level is forced
+ * to 1, and no hash chains are maintained.
+ * IN  assertion: all calls to to INSERT_STRING are made with consecutive
+ *    input characters and the first MIN_MATCH bytes of str are valid
+ *    (except for the last MIN_MATCH-1 bytes of the input file).
+ */
+#ifdef FASTEST
+#define INSERT_STRING(s, str, match_head) \
+   (UPDATE_HASH(s, s->ins_h, s->window[(str) + (MIN_MATCH-1)]), \
+    match_head = s->head[s->ins_h], \
+    s->head[s->ins_h] = (Pos)(str))
+#else
+#define INSERT_STRING(s, str, match_head) \
+   (UPDATE_HASH(s, s->ins_h, s->window[(str) + (MIN_MATCH-1)]), \
+    match_head = s->prev[(str) & s->w_mask] = s->head[s->ins_h], \
+    s->head[s->ins_h] = (Pos)(str))
+#endif
+
+/* ===========================================================================
+ * Initialize the hash table (avoiding 64K overflow for 16 bit systems).
+ * prev[] will be initialized on the fly.
+ */
+#define CLEAR_HASH(s) \
+    s->head[s->hash_size-1] = NIL; \
+    zmemzero((Bytef *)s->head, (unsigned)(s->hash_size-1)*sizeof(*s->head));
+
+/* ========================================================================= */
+int ZEXPORT deflateInit_(strm, level, version, stream_size)
+    z_streamp strm;
+    int level;
+    const char *version;
+    int stream_size;
+{
+    return deflateInit2_(strm, level, Z_DEFLATED, MAX_WBITS, DEF_MEM_LEVEL,
+                         Z_DEFAULT_STRATEGY, version, stream_size);
+    /* To do: ignore strm->next_in if we use it as window */
+}
+
+/* ========================================================================= */
+int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
+                  version, stream_size)
+    z_streamp strm;
+    int  level;
+    int  method;
+    int  windowBits;
+    int  memLevel;
+    int  strategy;
+    const char *version;
+    int stream_size;
+{
+    deflate_state *s;
+    int wrap = 1;
+    static const char my_version[] = ZLIB_VERSION;
+
+    ushf *overlay;
+    /* We overlay pending_buf and d_buf+l_buf. This works since the average
+     * output size for (length,distance) codes is <= 24 bits.
+     */
+
+    if (version == Z_NULL || version[0] != my_version[0] ||
+        stream_size != sizeof(z_stream)) {
+        return Z_VERSION_ERROR;
+    }
+    if (strm == Z_NULL) return Z_STREAM_ERROR;
+
+    strm->msg = Z_NULL;
+    if (strm->zalloc == (alloc_func)0) {
+        strm->zalloc = zcalloc;
+        strm->opaque = (voidpf)0;
+    }
+    if (strm->zfree == (free_func)0) strm->zfree = zcfree;
+
+#ifdef FASTEST
+    if (level != 0) level = 1;
+#else
+    if (level == Z_DEFAULT_COMPRESSION) level = 6;
+#endif
+
+    if (windowBits < 0) { /* suppress zlib wrapper */
+        wrap = 0;
+        windowBits = -windowBits;
+    }
+#ifdef GZIP
+    else if (windowBits > 15) {
+        wrap = 2;       /* write gzip wrapper instead */
+        windowBits -= 16;
+    }
+#endif
+    if (memLevel < 1 || memLevel > MAX_MEM_LEVEL || method != Z_DEFLATED ||
+        windowBits < 8 || windowBits > 15 || level < 0 || level > 9 ||
+        strategy < 0 || strategy > Z_FIXED) {
+        return Z_STREAM_ERROR;
+    }
+    if (windowBits == 8) windowBits = 9;  /* until 256-byte window bug fixed */
+    s = (deflate_state *) ZALLOC(strm, 1, sizeof(deflate_state));
+    if (s == Z_NULL) return Z_MEM_ERROR;
+    strm->state = (struct internal_state FAR *)s;
+    s->strm = strm;
+
+    s->wrap = wrap;
+    s->gzhead = Z_NULL;
+    s->w_bits = windowBits;
+    s->w_size = 1 << s->w_bits;
+    s->w_mask = s->w_size - 1;
+
+    s->hash_bits = memLevel + 7;
+    s->hash_size = 1 << s->hash_bits;
+    s->hash_mask = s->hash_size - 1;
+    s->hash_shift =  ((s->hash_bits+MIN_MATCH-1)/MIN_MATCH);
+
+    s->window = (Bytef *) ZALLOC(strm, s->w_size, 2*sizeof(Byte));
+    s->prev   = (Posf *)  ZALLOC(strm, s->w_size, sizeof(Pos));
+    s->head   = (Posf *)  ZALLOC(strm, s->hash_size, sizeof(Pos));
+
+    s->lit_bufsize = 1 << (memLevel + 6); /* 16K elements by default */
+
+    overlay = (ushf *) ZALLOC(strm, s->lit_bufsize, sizeof(ush)+2);
+    s->pending_buf = (uchf *) overlay;
+    s->pending_buf_size = (ulg)s->lit_bufsize * (sizeof(ush)+2L);
+
+    if (s->window == Z_NULL || s->prev == Z_NULL || s->head == Z_NULL ||
+        s->pending_buf == Z_NULL) {
+        s->status = FINISH_STATE;
+        strm->msg = (char*)ERR_MSG(Z_MEM_ERROR);
+        deflateEnd (strm);
+        return Z_MEM_ERROR;
+    }
+    s->d_buf = overlay + s->lit_bufsize/sizeof(ush);
+    s->l_buf = s->pending_buf + (1+sizeof(ush))*s->lit_bufsize;
+
+    s->level = level;
+    s->strategy = strategy;
+    s->method = (Byte)method;
+
+    return deflateReset(strm);
+}
+
+/* ========================================================================= */
+int ZEXPORT deflateSetDictionary (strm, dictionary, dictLength)
+    z_streamp strm;
+    const Bytef *dictionary;
+    uInt  dictLength;
+{
+    deflate_state *s;
+    uInt length = dictLength;
+    uInt n;
+    IPos hash_head = 0;
+
+    if (strm == Z_NULL || strm->state == Z_NULL || dictionary == Z_NULL ||
+        strm->state->wrap == 2 ||
+        (strm->state->wrap == 1 && strm->state->status != INIT_STATE))
+        return Z_STREAM_ERROR;
+
+    s = strm->state;
+    if (s->wrap)
+        strm->adler = adler32(strm->adler, dictionary, dictLength);
+
+    if (length < MIN_MATCH) return Z_OK;
+    if (length > MAX_DIST(s)) {
+        length = MAX_DIST(s);
+        dictionary += dictLength - length; /* use the tail of the dictionary */
+    }
+    zmemcpy(s->window, dictionary, length);
+    s->strstart = length;
+    s->block_start = (long)length;
+
+    /* Insert all strings in the hash table (except for the last two bytes).
+     * s->lookahead stays null, so s->ins_h will be recomputed at the next
+     * call of fill_window.
+     */
+    s->ins_h = s->window[0];
+    UPDATE_HASH(s, s->ins_h, s->window[1]);
+    for (n = 0; n <= length - MIN_MATCH; n++) {
+        INSERT_STRING(s, n, hash_head);
+    }
+    if (hash_head) hash_head = 0;  /* to make compiler happy */
+    return Z_OK;
+}
+
+/* ========================================================================= */
+int ZEXPORT deflateReset (strm)
+    z_streamp strm;
+{
+    deflate_state *s;
+
+    if (strm == Z_NULL || strm->state == Z_NULL ||
+        strm->zalloc == (alloc_func)0 || strm->zfree == (free_func)0) {
+        return Z_STREAM_ERROR;
+    }
+
+    strm->total_in = strm->total_out = 0;
+    strm->msg = Z_NULL; /* use zfree if we ever allocate msg dynamically */
+    strm->data_type = Z_UNKNOWN;
+
+    s = (deflate_state *)strm->state;
+    s->pending = 0;
+    s->pending_out = s->pending_buf;
+
+    if (s->wrap < 0) {
+        s->wrap = -s->wrap; /* was made negative by deflate(..., Z_FINISH); */
+    }
+    s->status = s->wrap ? INIT_STATE : BUSY_STATE;
+    strm->adler =
+#ifdef GZIP
+        s->wrap == 2 ? crc32(0L, Z_NULL, 0) :
+#endif
+        adler32(0L, Z_NULL, 0);
+    s->last_flush = Z_NO_FLUSH;
+
+    _tr_init(s);
+    lm_init(s);
+
+    return Z_OK;
+}
+
+/* ========================================================================= */
+int ZEXPORT deflateSetHeader (strm, head)
+    z_streamp strm;
+    gz_headerp head;
+{
+    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
+    if (strm->state->wrap != 2) return Z_STREAM_ERROR;
+    strm->state->gzhead = head;
+    return Z_OK;
+}
+
+/* ========================================================================= */
+int ZEXPORT deflatePrime (strm, bits, value)
+    z_streamp strm;
+    int bits;
+    int value;
+{
+    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
+    strm->state->bi_valid = bits;
+    strm->state->bi_buf = (ush)(value & ((1 << bits) - 1));
+    return Z_OK;
+}
+
+/* ========================================================================= */
+int ZEXPORT deflateParams(strm, level, strategy)
+    z_streamp strm;
+    int level;
+    int strategy;
+{
+    deflate_state *s;
+    compress_func func;
+    int err = Z_OK;
+
+    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
+    s = strm->state;
+
+#ifdef FASTEST
+    if (level != 0) level = 1;
+#else
+    if (level == Z_DEFAULT_COMPRESSION) level = 6;
+#endif
+    if (level < 0 || level > 9 || strategy < 0 || strategy > Z_FIXED) {
+        return Z_STREAM_ERROR;
+    }
+    func = configuration_table[s->level].func;
+
+    if (func != configuration_table[level].func && strm->total_in != 0) {
+        /* Flush the last buffer: */
+        err = deflate(strm, Z_PARTIAL_FLUSH);
+    }
+    if (s->level != level) {
+        s->level = level;
+        s->max_lazy_match   = configuration_table[level].max_lazy;
+        s->good_match       = configuration_table[level].good_length;
+        s->nice_match       = configuration_table[level].nice_length;
+        s->max_chain_length = configuration_table[level].max_chain;
+    }
+    s->strategy = strategy;
+    return err;
+}
+
+/* ========================================================================= */
+int ZEXPORT deflateTune(strm, good_length, max_lazy, nice_length, max_chain)
+    z_streamp strm;
+    int good_length;
+    int max_lazy;
+    int nice_length;
+    int max_chain;
+{
+    deflate_state *s;
+
+    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
+    s = strm->state;
+    s->good_match = good_length;
+    s->max_lazy_match = max_lazy;
+    s->nice_match = nice_length;
+    s->max_chain_length = max_chain;
+    return Z_OK;
+}
+
+/* =========================================================================
+ * For the default windowBits of 15 and memLevel of 8, this function returns
+ * a close to exact, as well as small, upper bound on the compressed size.
+ * They are coded as constants here for a reason--if the #define's are
+ * changed, then this function needs to be changed as well.  The return
+ * value for 15 and 8 only works for those exact settings.
+ *
+ * For any setting other than those defaults for windowBits and memLevel,
+ * the value returned is a conservative worst case for the maximum expansion
+ * resulting from using fixed blocks instead of stored blocks, which deflate
+ * can emit on compressed data for some combinations of the parameters.
+ *
+ * This function could be more sophisticated to provide closer upper bounds
+ * for every combination of windowBits and memLevel, as well as wrap.
+ * But even the conservative upper bound of about 14% expansion does not
+ * seem onerous for output buffer allocation.
+ */
+uLong ZEXPORT deflateBound(strm, sourceLen)
+    z_streamp strm;
+    uLong sourceLen;
+{
+    deflate_state *s;
+    uLong destLen;
+
+    /* conservative upper bound */
+    destLen = sourceLen +
+              ((sourceLen + 7) >> 3) + ((sourceLen + 63) >> 6) + 11;
+
+    /* if can't get parameters, return conservative bound */
+    if (strm == Z_NULL || strm->state == Z_NULL)
+        return destLen;
+
+    /* if not default parameters, return conservative bound */
+    s = strm->state;
+    if (s->w_bits != 15 || s->hash_bits != 8 + 7)
+        return destLen;
+
+    /* default settings: return tight bound for that case */
+    return compressBound(sourceLen);
+}
+
+/* =========================================================================
+ * Put a short in the pending buffer. The 16-bit value is put in MSB order.
+ * IN assertion: the stream state is correct and there is enough room in
+ * pending_buf.
+ */
+local void putShortMSB (s, b)
+    deflate_state *s;
+    uInt b;
+{
+    put_byte(s, (Byte)(b >> 8));
+    put_byte(s, (Byte)(b & 0xff));
+}
+
+/* =========================================================================
+ * Flush as much pending output as possible. All deflate() output goes
+ * through this function so some applications may wish to modify it
+ * to avoid allocating a large strm->next_out buffer and copying into it.
+ * (See also read_buf()).
+ */
+local void flush_pending(strm)
+    z_streamp strm;
+{
+    unsigned len = strm->state->pending;
+
+    if (len > strm->avail_out) len = strm->avail_out;
+    if (len == 0) return;
+
+    zmemcpy(strm->next_out, strm->state->pending_out, len);
+    strm->next_out  += len;
+    strm->state->pending_out  += len;
+    strm->total_out += len;
+    strm->avail_out  -= len;
+    strm->state->pending -= len;
+    if (strm->state->pending == 0) {
+        strm->state->pending_out = strm->state->pending_buf;
+    }
+}
+
+/* ========================================================================= */
+int ZEXPORT deflate (strm, flush)
+    z_streamp strm;
+    int flush;
+{
+    int old_flush; /* value of flush param for previous deflate call */
+    deflate_state *s;
+
+    if (strm == Z_NULL || strm->state == Z_NULL ||
+        flush > Z_FINISH || flush < 0) {
+        return Z_STREAM_ERROR;
+    }
+    s = strm->state;
+
+    if (strm->next_out == Z_NULL ||
+        (strm->next_in == Z_NULL && strm->avail_in != 0) ||
+        (s->status == FINISH_STATE && flush != Z_FINISH)) {
+        ERR_RETURN(strm, Z_STREAM_ERROR);
+    }
+    if (strm->avail_out == 0) ERR_RETURN(strm, Z_BUF_ERROR);
+
+    s->strm = strm; /* just in case */
+    old_flush = s->last_flush;
+    s->last_flush = flush;
+
+    /* Write the header */
+    if (s->status == INIT_STATE) {
+#ifdef GZIP
+        if (s->wrap == 2) {
+            strm->adler = crc32(0L, Z_NULL, 0);
+            put_byte(s, 31);
+            put_byte(s, 139);
+            put_byte(s, 8);
+            if (s->gzhead == NULL) {
+                put_byte(s, 0);
+                put_byte(s, 0);
+                put_byte(s, 0);
+                put_byte(s, 0);
+                put_byte(s, 0);
+                put_byte(s, s->level == 9 ? 2 :
+                            (s->strategy >= Z_HUFFMAN_ONLY || s->level < 2 ?
+                             4 : 0));
+                put_byte(s, OS_CODE);
+                s->status = BUSY_STATE;
+            }
+            else {
+                put_byte(s, (s->gzhead->text ? 1 : 0) +
+                            (s->gzhead->hcrc ? 2 : 0) +
+                            (s->gzhead->extra == Z_NULL ? 0 : 4) +
+                            (s->gzhead->name == Z_NULL ? 0 : 8) +
+                            (s->gzhead->comment == Z_NULL ? 0 : 16)
+                        );
+                put_byte(s, (Byte)(s->gzhead->time & 0xff));
+                put_byte(s, (Byte)((s->gzhead->time >> 8) & 0xff));
+                put_byte(s, (Byte)((s->gzhead->time >> 16) & 0xff));
+                put_byte(s, (Byte)((s->gzhead->time >> 24) & 0xff));
+                put_byte(s, s->level == 9 ? 2 :
+                            (s->strategy >= Z_HUFFMAN_ONLY || s->level < 2 ?
+                             4 : 0));
+                put_byte(s, s->gzhead->os & 0xff);
+                if (s->gzhead->extra != NULL) {
+                    put_byte(s, s->gzhead->extra_len & 0xff);
+                    put_byte(s, (s->gzhead->extra_len >> 8) & 0xff);
+                }
+                if (s->gzhead->hcrc)
+                    strm->adler = crc32(strm->adler, s->pending_buf,
+                                        s->pending);
+                s->gzindex = 0;
+                s->status = EXTRA_STATE;
+            }
+        }
+        else
+#endif
+        {
+            uInt header = (Z_DEFLATED + ((s->w_bits-8)<<4)) << 8;
+            uInt level_flags;
+
+            if (s->strategy >= Z_HUFFMAN_ONLY || s->level < 2)
+                level_flags = 0;
+            else if (s->level < 6)
+                level_flags = 1;
+            else if (s->level == 6)
+                level_flags = 2;
+            else
+                level_flags = 3;
+            header |= (level_flags << 6);
+            if (s->strstart != 0) header |= PRESET_DICT;
+            header += 31 - (header % 31);
+
+            s->status = BUSY_STATE;
+            putShortMSB(s, header);
+
+            /* Save the adler32 of the preset dictionary: */
+            if (s->strstart != 0) {
+                putShortMSB(s, (uInt)(strm->adler >> 16));
+                putShortMSB(s, (uInt)(strm->adler & 0xffff));
+            }
+            strm->adler = adler32(0L, Z_NULL, 0);
+        }
+    }
+#ifdef GZIP
+    if (s->status == EXTRA_STATE) {
+        if (s->gzhead->extra != NULL) {
+            uInt beg = s->pending;  /* start of bytes to update crc */
+
+            while (s->gzindex < (s->gzhead->extra_len & 0xffff)) {
+                if (s->pending == s->pending_buf_size) {
+                    if (s->gzhead->hcrc && s->pending > beg)
+                        strm->adler = crc32(strm->adler, s->pending_buf + beg,
+                                            s->pending - beg);
+                    flush_pending(strm);
+                    beg = s->pending;
+                    if (s->pending == s->pending_buf_size)
+                        break;
+                }
+                put_byte(s, s->gzhead->extra[s->gzindex]);
+                s->gzindex++;
+            }
+            if (s->gzhead->hcrc && s->pending > beg)
+                strm->adler = crc32(strm->adler, s->pending_buf + beg,
+                                    s->pending - beg);
+            if (s->gzindex == s->gzhead->extra_len) {
+                s->gzindex = 0;
+                s->status = NAME_STATE;
+            }
+        }
+        else
+            s->status = NAME_STATE;
+    }
+    if (s->status == NAME_STATE) {
+        if (s->gzhead->name != NULL) {
+            uInt beg = s->pending;  /* start of bytes to update crc */
+            int val;
+
+            do {
+                if (s->pending == s->pending_buf_size) {
+                    if (s->gzhead->hcrc && s->pending > beg)
+                        strm->adler = crc32(strm->adler, s->pending_buf + beg,
+                                            s->pending - beg);
+                    flush_pending(strm);
+                    beg = s->pending;
+                    if (s->pending == s->pending_buf_size) {
+                        val = 1;
+                        break;
+                    }
+                }
+                val = s->gzhead->name[s->gzindex++];
+                put_byte(s, val);
+            } while (val != 0);
+            if (s->gzhead->hcrc && s->pending > beg)
+                strm->adler = crc32(strm->adler, s->pending_buf + beg,
+                                    s->pending - beg);
+            if (val == 0) {
+                s->gzindex = 0;
+                s->status = COMMENT_STATE;
+            }
+        }
+        else
+            s->status = COMMENT_STATE;
+    }
+    if (s->status == COMMENT_STATE) {
+        if (s->gzhead->comment != NULL) {
+            uInt beg = s->pending;  /* start of bytes to update crc */
+            int val;
+
+            do {
+                if (s->pending == s->pending_buf_size) {
+                    if (s->gzhead->hcrc && s->pending > beg)
+                        strm->adler = crc32(strm->adler, s->pending_buf + beg,
+                                            s->pending - beg);
+                    flush_pending(strm);
+                    beg = s->pending;
+                    if (s->pending == s->pending_buf_size) {
+                        val = 1;
+                        break;
+                    }
+                }
+                val = s->gzhead->comment[s->gzindex++];
+                put_byte(s, val);
+            } while (val != 0);
+            if (s->gzhead->hcrc && s->pending > beg)
+                strm->adler = crc32(strm->adler, s->pending_buf + beg,
+                                    s->pending - beg);
+            if (val == 0)
+                s->status = HCRC_STATE;
+        }
+        else
+            s->status = HCRC_STATE;
+    }
+    if (s->status == HCRC_STATE) {
+        if (s->gzhead->hcrc) {
+            if (s->pending + 2 > s->pending_buf_size)
+                flush_pending(strm);
+            if (s->pending + 2 <= s->pending_buf_size) {
+                put_byte(s, (Byte)(strm->adler & 0xff));
+                put_byte(s, (Byte)((strm->adler >> 8) & 0xff));
+                strm->adler = crc32(0L, Z_NULL, 0);
+                s->status = BUSY_STATE;
+            }
+        }
+        else
+            s->status = BUSY_STATE;
+    }
+#endif
+
+    /* Flush as much pending output as possible */
+    if (s->pending != 0) {
+        flush_pending(strm);
+        if (strm->avail_out == 0) {
+            /* Since avail_out is 0, deflate will be called again with
+             * more output space, but possibly with both pending and
+             * avail_in equal to zero. There won't be anything to do,
+             * but this is not an error situation so make sure we
+             * return OK instead of BUF_ERROR at next call of deflate:
              */
+            s->last_flush = -1;
+            return Z_OK;
+        }
 
-            p = (pa <= pb && pa <= pc) ? a : (pb <= pc) ? b : c;
+    /* Make sure there is something to do and avoid duplicate consecutive
+     * flushes. For repeated and useless calls with Z_FINISH, we keep
+     * returning Z_STREAM_END instead of Z_BUF_ERROR.
+     */
+    } else if (strm->avail_in == 0 && flush <= old_flush &&
+               flush != Z_FINISH) {
+        ERR_RETURN(strm, Z_BUF_ERROR);
+    }
 
-            *rp = (png_byte)(((int)(*rp) + p) & 0xff);
-            rp++;
-         }
-         break;
-      }
-      default:
-         png_warning(png_ptr, "Ignoring bad adaptive filter type");
-         *row = 0;
-         break;
-   }
-}
+    /* User must not provide more input after the first FINISH: */
+    if (s->status == FINISH_STATE && strm->avail_in != 0) {
+        ERR_RETURN(strm, Z_BUF_ERROR);
+    }
 
-void /* PRIVATE */
-png_read_finish_row(png_structp png_ptr)
-{
-#ifdef PNG_USE_LOCAL_ARRAYS
-#ifdef PNG_READ_INTERLACING_SUPPORTED
-   /* arrays to facilitate easy interlacing - use pass (0 - 6) as index */
+    /* Start a new block or continue the current one.
+     */
+    if (strm->avail_in != 0 || s->lookahead != 0 ||
+        (flush != Z_NO_FLUSH && s->status != FINISH_STATE)) {
+        block_state bstate;
 
-   /* start of interlace block */
-   PNG_CONST int png_pass_start[7] = {0, 4, 0, 2, 0, 1, 0};
+        bstate = (*(configuration_table[s->level].func))(s, flush);
 
-   /* offset to next interlace block */
-   PNG_CONST int png_pass_inc[7] = {8, 8, 4, 4, 2, 2, 1};
-
-   /* start of interlace block in the y direction */
-   PNG_CONST int png_pass_ystart[7] = {0, 0, 4, 0, 2, 0, 1};
-
-   /* offset to next interlace block in the y direction */
-   PNG_CONST int png_pass_yinc[7] = {8, 8, 8, 4, 4, 2, 2};
-#endif /* PNG_READ_INTERLACING_SUPPORTED */
-#endif
-
-   png_debug(1, "in png_read_finish_row\n");
-   png_ptr->row_number++;
-   if (png_ptr->row_number < png_ptr->num_rows)
-      return;
-
-#ifdef PNG_READ_INTERLACING_SUPPORTED
-   if (png_ptr->interlaced)
-   {
-      png_ptr->row_number = 0;
-      png_memset_check(png_ptr, png_ptr->prev_row, 0,
-         png_ptr->rowbytes + 1);
-      do
-      {
-         png_ptr->pass++;
-         if (png_ptr->pass >= 7)
-            break;
-         png_ptr->iwidth = (png_ptr->width +
-            png_pass_inc[png_ptr->pass] - 1 -
-            png_pass_start[png_ptr->pass]) /
-            png_pass_inc[png_ptr->pass];
-
-         png_ptr->irowbytes = PNG_ROWBYTES(png_ptr->pixel_depth,
-            png_ptr->iwidth) + 1;
-
-         if (!(png_ptr->transformations & PNG_INTERLACE))
-         {
-            png_ptr->num_rows = (png_ptr->height +
-               png_pass_yinc[png_ptr->pass] - 1 -
-               png_pass_ystart[png_ptr->pass]) /
-               png_pass_yinc[png_ptr->pass];
-            if (!(png_ptr->num_rows))
-               continue;
-         }
-         else  /* if (png_ptr->transformations & PNG_INTERLACE) */
-            break;
-      } while (png_ptr->iwidth == 0);
-
-      if (png_ptr->pass < 7)
-         return;
-   }
-#endif /* PNG_READ_INTERLACING_SUPPORTED */
-
-   if (!(png_ptr->flags & PNG_FLAG_ZLIB_FINISHED))
-   {
-#ifdef PNG_USE_LOCAL_ARRAYS
-      PNG_CONST PNG_IDAT;
-#endif
-      char extra;
-      int ret;
-
-      png_ptr->zstream.next_out = (Byte *)&extra;
-      png_ptr->zstream.avail_out = (uInt)1;
-      for (;;)
-      {
-         if (!(png_ptr->zstream.avail_in))
-         {
-            while (!png_ptr->idat_size)
-            {
-               png_byte chunk_length[4];
-
-               png_crc_finish(png_ptr, 0);
-
-               png_read_data(png_ptr, chunk_length, 4);
-               png_ptr->idat_size = png_get_uint_31(png_ptr, chunk_length);
-               png_reset_crc(png_ptr);
-               png_crc_read(png_ptr, png_ptr->chunk_name, 4);
-               if (png_memcmp(png_ptr->chunk_name, png_IDAT, 4))
-                  png_error(png_ptr, "Not enough image data");
-
+        if (bstate == finish_started || bstate == finish_done) {
+            s->status = FINISH_STATE;
+        }
+        if (bstate == need_more || bstate == finish_started) {
+            if (strm->avail_out == 0) {
+                s->last_flush = -1; /* avoid BUF_ERROR next call, see above */
             }
-            png_ptr->zstream.avail_in = (uInt)png_ptr->zbuf_size;
-            png_ptr->zstream.next_in = png_ptr->zbuf;
-            if (png_ptr->zbuf_size > png_ptr->idat_size)
-               png_ptr->zstream.avail_in = (uInt)png_ptr->idat_size;
-            png_crc_read(png_ptr, png_ptr->zbuf, png_ptr->zstream.avail_in);
-            png_ptr->idat_size -= png_ptr->zstream.avail_in;
-         }
-         ret = inflate(&png_ptr->zstream, Z_PARTIAL_FLUSH);
-         if (ret == Z_STREAM_END)
-         {
-            if (!(png_ptr->zstream.avail_out) || png_ptr->zstream.avail_in ||
-               png_ptr->idat_size)
-               png_warning(png_ptr, "Extra compressed data");
-            png_ptr->mode |= PNG_AFTER_IDAT;
-            png_ptr->flags |= PNG_FLAG_ZLIB_FINISHED;
-            break;
-         }
-         if (ret != Z_OK)
-            png_error(png_ptr, png_ptr->zstream.msg ? png_ptr->zstream.msg :
-                      "Decompression Error");
+            return Z_OK;
+            /* If flush != Z_NO_FLUSH && avail_out == 0, the next call
+             * of deflate should use the same flush parameter to make sure
+             * that the flush is complete. So we don't have to output an
+             * empty block here, this will be done at next call. This also
+             * ensures that for a very small output buffer, we emit at most
+             * one empty block.
+             */
+        }
+        if (bstate == block_done) {
+            if (flush == Z_PARTIAL_FLUSH) {
+                _tr_align(s);
+            } else { /* FULL_FLUSH or SYNC_FLUSH */
+                _tr_stored_block(s, (char*)0, 0L, 0);
+                /* For a full flush, this empty block will be recognized
+                 * as a special marker by inflate_sync().
+                 */
+                if (flush == Z_FULL_FLUSH) {
+                    CLEAR_HASH(s);             /* forget history */
+                }
+            }
+            flush_pending(strm);
+            if (strm->avail_out == 0) {
+              s->last_flush = -1; /* avoid BUF_ERROR at next call, see above */
+              return Z_OK;
+            }
+        }
+    }
+    Assert(strm->avail_out > 0, "bug2");
 
-         if (!(png_ptr->zstream.avail_out))
-         {
-            png_warning(png_ptr, "Extra compressed data.");
-            png_ptr->mode |= PNG_AFTER_IDAT;
-            png_ptr->flags |= PNG_FLAG_ZLIB_FINISHED;
-            break;
-         }
+    if (flush != Z_FINISH) return Z_OK;
+    if (s->wrap <= 0) return Z_STREAM_END;
 
-      }
-      png_ptr->zstream.avail_out = 0;
-   }
-
-   if (png_ptr->idat_size || png_ptr->zstream.avail_in)
-      png_warning(png_ptr, "Extra compression data");
-
-   inflateReset(&png_ptr->zstream);
-
-   png_ptr->mode |= PNG_AFTER_IDAT;
+    /* Write the trailer */
+#ifdef GZIP
+    if (s->wrap == 2) {
+        put_byte(s, (Byte)(strm->adler & 0xff));
+        put_byte(s, (Byte)((strm->adler >> 8) & 0xff));
+        put_byte(s, (Byte)((strm->adler >> 16) & 0xff));
+        put_byte(s, (Byte)((strm->adler >> 24) & 0xff));
+        put_byte(s, (Byte)(strm->total_in & 0xff));
+        put_byte(s, (Byte)((strm->total_in >> 8) & 0xff));
+        put_byte(s, (Byte)((strm->total_in >> 16) & 0xff));
+        put_byte(s, (Byte)((strm->total_in >> 24) & 0xff));
+    }
+    else
+#endif
+    {
+        putShortMSB(s, (uInt)(strm->adler >> 16));
+        putShortMSB(s, (uInt)(strm->adler & 0xffff));
+    }
+    flush_pending(strm);
+    /* If avail_out is zero, the application will call deflate again
+     * to flush the rest.
+     */
+    if (s->wrap > 0) s->wrap = -s->wrap; /* write the trailer only once! */
+    return s->pending != 0 ? Z_OK : Z_STREAM_END;
 }
 
-void /* PRIVATE */
-png_read_start_row(png_structp png_ptr)
+/* ========================================================================= */
+int ZEXPORT deflateEnd (strm)
+    z_streamp strm;
 {
-#ifdef PNG_USE_LOCAL_ARRAYS
-#ifdef PNG_READ_INTERLACING_SUPPORTED
-   /* arrays to facilitate easy interlacing - use pass (0 - 6) as index */
+    int status;
 
-   /* start of interlace block */
-   PNG_CONST int png_pass_start[7] = {0, 4, 0, 2, 0, 1, 0};
+    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
 
-   /* offset to next interlace block */
-   PNG_CONST int png_pass_inc[7] = {8, 8, 4, 4, 2, 2, 1};
+    status = strm->state->status;
+    if (status != INIT_STATE &&
+        status != EXTRA_STATE &&
+        status != NAME_STATE &&
+        status != COMMENT_STATE &&
+        status != HCRC_STATE &&
+        status != BUSY_STATE &&
+        status != FINISH_STATE) {
+      return Z_STREAM_ERROR;
+    }
 
-   /* start of interlace block in the y direction */
-   PNG_CONST int png_pass_ystart[7] = {0, 0, 4, 0, 2, 0, 1};
+    /* Deallocate in reverse order of allocations: */
+    TRY_FREE(strm, strm->state->pending_buf);
+    TRY_FREE(strm, strm->state->head);
+    TRY_FREE(strm, strm->state->prev);
+    TRY_FREE(strm, strm->state->window);
 
-   /* offset to next interlace block in the y direction */
-   PNG_CONST int png_pass_yinc[7] = {8, 8, 8, 4, 4, 2, 2};
-#endif
-#endif
+    ZFREE(strm, strm->state);
+    strm->state = Z_NULL;
 
-   int max_pixel_depth;
-   png_size_t row_bytes;
-
-   png_debug(1, "in png_read_start_row\n");
-   png_ptr->zstream.avail_in = 0;
-   png_init_read_transformations(png_ptr);
-#ifdef PNG_READ_INTERLACING_SUPPORTED
-   if (png_ptr->interlaced)
-   {
-      if (!(png_ptr->transformations & PNG_INTERLACE))
-         png_ptr->num_rows = (png_ptr->height + png_pass_yinc[0] - 1 -
-            png_pass_ystart[0]) / png_pass_yinc[0];
-      else
-         png_ptr->num_rows = png_ptr->height;
-
-      png_ptr->iwidth = (png_ptr->width +
-         png_pass_inc[png_ptr->pass] - 1 -
-         png_pass_start[png_ptr->pass]) /
-         png_pass_inc[png_ptr->pass];
-
-         png_ptr->irowbytes =
-            PNG_ROWBYTES(png_ptr->pixel_depth, png_ptr->iwidth) + 1;
-   }
-   else
-#endif /* PNG_READ_INTERLACING_SUPPORTED */
-   {
-      png_ptr->num_rows = png_ptr->height;
-      png_ptr->iwidth = png_ptr->width;
-      png_ptr->irowbytes = png_ptr->rowbytes + 1;
-   }
-   max_pixel_depth = png_ptr->pixel_depth;
-
-#if defined(PNG_READ_PACK_SUPPORTED)
-   if ((png_ptr->transformations & PNG_PACK) && png_ptr->bit_depth < 8)
-      max_pixel_depth = 8;
-#endif
-
-#if defined(PNG_READ_EXPAND_SUPPORTED)
-   if (png_ptr->transformations & PNG_EXPAND)
-   {
-      if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE)
-      {
-         if (png_ptr->num_trans)
-            max_pixel_depth = 32;
-         else
-            max_pixel_depth = 24;
-      }
-      else if (png_ptr->color_type == PNG_COLOR_TYPE_GRAY)
-      {
-         if (max_pixel_depth < 8)
-            max_pixel_depth = 8;
-         if (png_ptr->num_trans)
-            max_pixel_depth *= 2;
-      }
-      else if (png_ptr->color_type == PNG_COLOR_TYPE_RGB)
-      {
-         if (png_ptr->num_trans)
-         {
-            max_pixel_depth *= 4;
-            max_pixel_depth /= 3;
-         }
-      }
-   }
-#endif
-
-#if defined(PNG_READ_FILLER_SUPPORTED)
-   if (png_ptr->transformations & (PNG_FILLER))
-   {
-      if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE)
-         max_pixel_depth = 32;
-      else if (png_ptr->color_type == PNG_COLOR_TYPE_GRAY)
-      {
-         if (max_pixel_depth <= 8)
-            max_pixel_depth = 16;
-         else
-            max_pixel_depth = 32;
-      }
-      else if (png_ptr->color_type == PNG_COLOR_TYPE_RGB)
-      {
-         if (max_pixel_depth <= 32)
-            max_pixel_depth = 32;
-         else
-            max_pixel_depth = 64;
-      }
-   }
-#endif
-
-#if defined(PNG_READ_GRAY_TO_RGB_SUPPORTED)
-   if (png_ptr->transformations & PNG_GRAY_TO_RGB)
-   {
-      if (
-#if defined(PNG_READ_EXPAND_SUPPORTED)
-        (png_ptr->num_trans && (png_ptr->transformations & PNG_EXPAND)) ||
-#endif
-#if defined(PNG_READ_FILLER_SUPPORTED)
-        (png_ptr->transformations & (PNG_FILLER)) ||
-#endif
-        png_ptr->color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
-      {
-         if (max_pixel_depth <= 16)
-            max_pixel_depth = 32;
-         else
-            max_pixel_depth = 64;
-      }
-      else
-      {
-         if (max_pixel_depth <= 8)
-           {
-             if (png_ptr->color_type == PNG_COLOR_TYPE_RGB_ALPHA)
-               max_pixel_depth = 32;
-             else
-               max_pixel_depth = 24;
-           }
-         else if (png_ptr->color_type == PNG_COLOR_TYPE_RGB_ALPHA)
-            max_pixel_depth = 64;
-         else
-            max_pixel_depth = 48;
-      }
-   }
-#endif
-
-#if defined(PNG_READ_USER_TRANSFORM_SUPPORTED) && \
-defined(PNG_USER_TRANSFORM_PTR_SUPPORTED)
-   if (png_ptr->transformations & PNG_USER_TRANSFORM)
-     {
-       int user_pixel_depth = png_ptr->user_transform_depth*
-         png_ptr->user_transform_channels;
-       if (user_pixel_depth > max_pixel_depth)
-         max_pixel_depth=user_pixel_depth;
-     }
-#endif
-
-   /* align the width on the next larger 8 pixels.  Mainly used
-      for interlacing */
-   row_bytes = ((png_ptr->width + 7) & ~((png_uint_32)7));
-   /* calculate the maximum bytes needed, adding a byte and a pixel
-      for safety's sake */
-   row_bytes = PNG_ROWBYTES(max_pixel_depth, row_bytes) +
-      1 + ((max_pixel_depth + 7) >> 3);
-#ifdef PNG_MAX_MALLOC_64K
-   if (row_bytes > (png_uint_32)65536L)
-      png_error(png_ptr, "This image requires a row greater than 64KB");
-#endif
-
-   if (row_bytes + 64 > png_ptr->old_big_row_buf_size)
-   {
-     png_free(png_ptr, png_ptr->big_row_buf);
-     png_ptr->big_row_buf = (png_bytep)png_malloc(png_ptr, row_bytes+64);
-     png_ptr->row_buf = png_ptr->big_row_buf+32;
-     png_ptr->old_big_row_buf_size = row_bytes+64;
-   }
-
-#ifdef PNG_MAX_MALLOC_64K
-   if ((png_uint_32)png_ptr->rowbytes + 1 > (png_uint_32)65536L)
-      png_error(png_ptr, "This image requires a row greater than 64KB");
-#endif
-   if ((png_uint_32)png_ptr->rowbytes > (png_uint_32)(PNG_SIZE_MAX - 1))
-      png_error(png_ptr, "Row has too many bytes to allocate in memory.");
-
-   if (png_ptr->rowbytes+1 > png_ptr->old_prev_row_size)
-   {
-     png_free(png_ptr, png_ptr->prev_row);
-     png_ptr->prev_row = (png_bytep)png_malloc(png_ptr, (png_uint_32)(
-        png_ptr->rowbytes + 1));
-     png_ptr->old_prev_row_size = png_ptr->rowbytes+1;
-   }
-
-   png_memset_check(png_ptr, png_ptr->prev_row, 0, png_ptr->rowbytes + 1);
-
-   png_debug1(3, "width = %lu,\n", png_ptr->width);
-   png_debug1(3, "height = %lu,\n", png_ptr->height);
-   png_debug1(3, "iwidth = %lu,\n", png_ptr->iwidth);
-   png_debug1(3, "num_rows = %lu\n", png_ptr->num_rows);
-   png_debug1(3, "rowbytes = %lu,\n", png_ptr->rowbytes);
-   png_debug1(3, "irowbytes = %lu,\n", png_ptr->irowbytes);
-
-   png_ptr->flags |= PNG_FLAG_ROW_INIT;
+    return status == BUSY_STATE ? Z_DATA_ERROR : Z_OK;
 }
-#endif /* PNG_READ_SUPPORTED */
+
+/* =========================================================================
+ * Copy the source state to the destination state.
+ * To simplify the source, this is not supported for 16-bit MSDOS (which
+ * doesn't have enough memory anyway to duplicate compression states).
+ */
+int ZEXPORT deflateCopy (dest, source)
+    z_streamp dest;
+    z_streamp source;
+{
+#ifdef MAXSEG_64K
+    return Z_STREAM_ERROR;
+#else
+    deflate_state *ds;
+    deflate_state *ss;
+    ushf *overlay;
+
+
+    if (source == Z_NULL || dest == Z_NULL || source->state == Z_NULL) {
+        return Z_STREAM_ERROR;
+    }
+
+    ss = source->state;
+
+    zmemcpy(dest, source, sizeof(z_stream));
+
+    ds = (deflate_state *) ZALLOC(dest, 1, sizeof(deflate_state));
+    if (ds == Z_NULL) return Z_MEM_ERROR;
+    dest->state = (struct internal_state FAR *) ds;
+    zmemcpy(ds, ss, sizeof(deflate_state));
+    ds->strm = dest;
+
+    ds->window = (Bytef *) ZALLOC(dest, ds->w_size, 2*sizeof(Byte));
+    ds->prev   = (Posf *)  ZALLOC(dest, ds->w_size, sizeof(Pos));
+    ds->head   = (Posf *)  ZALLOC(dest, ds->hash_size, sizeof(Pos));
+    overlay = (ushf *) ZALLOC(dest, ds->lit_bufsize, sizeof(ush)+2);
+    ds->pending_buf = (uchf *) overlay;
+
+    if (ds->window == Z_NULL || ds->prev == Z_NULL || ds->head == Z_NULL ||
+        ds->pending_buf == Z_NULL) {
+        deflateEnd (dest);
+        return Z_MEM_ERROR;
+    }
+    /* following zmemcpy do not work for 16-bit MSDOS */
+    zmemcpy(ds->window, ss->window, ds->w_size * 2 * sizeof(Byte));
+    zmemcpy(ds->prev, ss->prev, ds->w_size * sizeof(Pos));
+    zmemcpy(ds->head, ss->head, ds->hash_size * sizeof(Pos));
+    zmemcpy(ds->pending_buf, ss->pending_buf, (uInt)ds->pending_buf_size);
+
+    ds->pending_out = ds->pending_buf + (ss->pending_out - ss->pending_buf);
+    ds->d_buf = overlay + ds->lit_bufsize/sizeof(ush);
+    ds->l_buf = ds->pending_buf + (1+sizeof(ush))*ds->lit_bufsize;
+
+    ds->l_desc.dyn_tree = ds->dyn_ltree;
+    ds->d_desc.dyn_tree = ds->dyn_dtree;
+    ds->bl_desc.dyn_tree = ds->bl_tree;
+
+    return Z_OK;
+#endif /* MAXSEG_64K */
+}
+
+/* ===========================================================================
+ * Read a new buffer from the current input stream, update the adler32
+ * and total number of bytes read.  All deflate() input goes through
+ * this function so some applications may wish to modify it to avoid
+ * allocating a large strm->next_in buffer and copying from it.
+ * (See also flush_pending()).
+ */
+local int read_buf(strm, buf, size)
+    z_streamp strm;
+    Bytef *buf;
+    unsigned size;
+{
+    unsigned len = strm->avail_in;
+
+    if (len > size) len = size;
+    if (len == 0) return 0;
+
+    strm->avail_in  -= len;
+
+    if (strm->state->wrap == 1) {
+        strm->adler = adler32(strm->adler, strm->next_in, len);
+    }
+#ifdef GZIP
+    else if (strm->state->wrap == 2) {
+        strm->adler = crc32(strm->adler, strm->next_in, len);
+    }
+#endif
+    zmemcpy(buf, strm->next_in, len);
+    strm->next_in  += len;
+    strm->total_in += len;
+
+    return (int)len;
+}
+
+/* ===========================================================================
+ * Initialize the "longest match" routines for a new zlib stream
+ */
+local void lm_init (s)
+    deflate_state *s;
+{
+    s->window_size = (ulg)2L*s->w_size;
+
+    CLEAR_HASH(s);
+
+    /* Set the default configuration parameters:
+     */
+    s->max_lazy_match   = configuration_table[s->level].max_lazy;
+    s->good_match       = configuration_table[s->level].good_length;
+    s->nice_match       = configuration_table[s->level].nice_length;
+    s->max_chain_length = configuration_table[s->level].max_chain;
+
+    s->strstart = 0;
+    s->block_start = 0L;
+    s->lookahead = 0;
+    s->match_length = s->prev_length = MIN_MATCH-1;
+    s->match_available = 0;
+    s->ins_h = 0;
+#ifndef FASTEST
+#ifdef ASMV
+    match_init(); /* initialize the asm code */
+#endif
+#endif
+}
+
+#ifndef FASTEST
+/* ===========================================================================
+ * Set match_start to the longest match starting at the given string and
+ * return its length. Matches shorter or equal to prev_length are discarded,
+ * in which case the result is equal to prev_length and match_start is
+ * garbage.
+ * IN assertions: cur_match is the head of the hash chain for the current
+ *   string (strstart) and its distance is <= MAX_DIST, and prev_length >= 1
+ * OUT assertion: the match length is not greater than s->lookahead.
+ */
+#ifndef ASMV
+/* For 80x86 and 680x0, an optimized version will be provided in match.asm or
+ * match.S. The code will be functionally equivalent.
+ */
+local uInt longest_match(s, cur_match)
+    deflate_state *s;
+    IPos cur_match;                             /* current match */
+{
+    unsigned chain_length = s->max_chain_length;/* max hash chain length */
+    register Bytef *scan = s->window + s->strstart; /* current string */
+    register Bytef *match;                       /* matched string */
+    register int len;                           /* length of current match */
+    int best_len = s->prev_length;              /* best match length so far */
+    int nice_match = s->nice_match;             /* stop if match long enough */
+    IPos limit = s->strstart > (IPos)MAX_DIST(s) ?
+        s->strstart - (IPos)MAX_DIST(s) : NIL;
+    /* Stop when cur_match becomes <= limit. To simplify the code,
+     * we prevent matches with the string of window index 0.
+     */
+    Posf *prev = s->prev;
+    uInt wmask = s->w_mask;
+
+#ifdef UNALIGNED_OK
+    /* Compare two bytes at a time. Note: this is not always beneficial.
+     * Try with and without -DUNALIGNED_OK to check.
+     */
+    register Bytef *strend = s->window + s->strstart + MAX_MATCH - 1;
+    register ush scan_start = *(ushf*)scan;
+    register ush scan_end   = *(ushf*)(scan+best_len-1);
+#else
+    register Bytef *strend = s->window + s->strstart + MAX_MATCH;
+    register Byte scan_end1  = scan[best_len-1];
+    register Byte scan_end   = scan[best_len];
+#endif
+
+    /* The code is optimized for HASH_BITS >= 8 and MAX_MATCH-2 multiple of 16.
+     * It is easy to get rid of this optimization if necessary.
+     */
+    Assert(s->hash_bits >= 8 && MAX_MATCH == 258, "Code too clever");
+
+    /* Do not waste too much time if we already have a good match: */
+    if (s->prev_length >= s->good_match) {
+        chain_length >>= 2;
+    }
+    /* Do not look for matches beyond the end of the input. This is necessary
+     * to make deflate deterministic.
+     */
+    if ((uInt)nice_match > s->lookahead) nice_match = s->lookahead;
+
+    Assert((ulg)s->strstart <= s->window_size-MIN_LOOKAHEAD, "need lookahead");
+
+    do {
+        Assert(cur_match < s->strstart, "no future");
+        match = s->window + cur_match;
+
+        /* Skip to next match if the match length cannot increase
+         * or if the match length is less than 2.  Note that the checks below
+         * for insufficient lookahead only occur occasionally for performance
+         * reasons.  Therefore uninitialized memory will be accessed, and
+         * conditional jumps will be made that depend on those values.
+         * However the length of the match is limited to the lookahead, so
+         * the output of deflate is not affected by the uninitialized values.
+         */
+#if (defined(UNALIGNED_OK) && MAX_MATCH == 258)
+        /* This code assumes sizeof(unsigned short) == 2. Do not use
+         * UNALIGNED_OK if your compiler uses a different size.
+         */
+        if (*(ushf*)(match+best_len-1) != scan_end ||
+            *(ushf*)match != scan_start) continue;
+
+        /* It is not necessary to compare scan[2] and match[2] since they are
+         * always equal when the other bytes match, given that the hash keys
+         * are equal and that HASH_BITS >= 8. Compare 2 bytes at a time at
+         * strstart+3, +5, ... up to strstart+257. We check for insufficient
+         * lookahead only every 4th comparison; the 128th check will be made
+         * at strstart+257. If MAX_MATCH-2 is not a multiple of 8, it is
+         * necessary to put more guard bytes at the end of the window, or
+         * to check more often for insufficient lookahead.
+         */
+        Assert(scan[2] == match[2], "scan[2]?");
+        scan++, match++;
+        do {
+        } while (*(ushf*)(scan+=2) == *(ushf*)(match+=2) &&
+                 *(ushf*)(scan+=2) == *(ushf*)(match+=2) &&
+                 *(ushf*)(scan+=2) == *(ushf*)(match+=2) &&
+                 *(ushf*)(scan+=2) == *(ushf*)(match+=2) &&
+                 scan < strend);
+        /* The funny "do {}" generates better code on most compilers */
+
+        /* Here, scan <= window+strstart+257 */
+        Assert(scan <= s->window+(unsigned)(s->window_size-1), "wild scan");
+        if (*scan == *match) scan++;
+
+        len = (MAX_MATCH - 1) - (int)(strend-scan);
+        scan = strend - (MAX_MATCH-1);
+
+#else /* UNALIGNED_OK */
+
+        if (match[best_len]   != scan_end  ||
+            match[best_len-1] != scan_end1 ||
+            *match            != *scan     ||
+            *++match          != scan[1])      continue;
+
+        /* The check at best_len-1 can be removed because it will be made
+         * again later. (This heuristic is not always a win.)
+         * It is not necessary to compare scan[2] and match[2] since they
+         * are always equal when the other bytes match, given that
+         * the hash keys are equal and that HASH_BITS >= 8.
+         */
+        scan += 2, match++;
+        Assert(*scan == *match, "match[2]?");
+
+        /* We check for insufficient lookahead only every 8th comparison;
+         * the 256th check will be made at strstart+258.
+         */
+        do {
+        } while (*++scan == *++match && *++scan == *++match &&
+                 *++scan == *++match && *++scan == *++match &&
+                 *++scan == *++match && *++scan == *++match &&
+                 *++scan == *++match && *++scan == *++match &&
+                 scan < strend);
+
+        Assert(scan <= s->window+(unsigned)(s->window_size-1), "wild scan");
+
+        len = MAX_MATCH - (int)(strend - scan);
+        scan = strend - MAX_MATCH;
+
+#endif /* UNALIGNED_OK */
+
+        if (len > best_len) {
+            s->match_start = cur_match;
+            best_len = len;
+            if (len >= nice_match) break;
+#ifdef UNALIGNED_OK
+            scan_end = *(ushf*)(scan+best_len-1);
+#else
+            scan_end1  = scan[best_len-1];
+            scan_end   = scan[best_len];
+#endif
+        }
+    } while ((cur_match = prev[cur_match & wmask]) > limit
+             && --chain_length != 0);
+
+    if ((uInt)best_len <= s->lookahead) return (uInt)best_len;
+    return s->lookahead;
+}
+#endif /* ASMV */
+#endif /* FASTEST */
+
+/* ---------------------------------------------------------------------------
+ * Optimized version for level == 1 or strategy == Z_RLE only
+ */
+local uInt longest_match_fast(s, cur_match)
+    deflate_state *s;
+    IPos cur_match;                             /* current match */
+{
+    register Bytef *scan = s->window + s->strstart; /* current string */
+    register Bytef *match;                       /* matched string */
+    register int len;                           /* length of current match */
+    register Bytef *strend = s->window + s->strstart + MAX_MATCH;
+
+    /* The code is optimized for HASH_BITS >= 8 and MAX_MATCH-2 multiple of 16.
+     * It is easy to get rid of this optimization if necessary.
+     */
+    Assert(s->hash_bits >= 8 && MAX_MATCH == 258, "Code too clever");
+
+    Assert((ulg)s->strstart <= s->window_size-MIN_LOOKAHEAD, "need lookahead");
+
+    Assert(cur_match < s->strstart, "no future");
+
+    match = s->window + cur_match;
+
+    /* Return failure if the match length is less than 2:
+     */
+    if (match[0] != scan[0] || match[1] != scan[1]) return MIN_MATCH-1;
+
+    /* The check at best_len-1 can be removed because it will be made
+     * again later. (This heuristic is not always a win.)
+     * It is not necessary to compare scan[2] and match[2] since they
+     * are always equal when the other bytes match, given that
+     * the hash keys are equal and that HASH_BITS >= 8.
+     */
+    scan += 2, match += 2;
+    Assert(*scan == *match, "match[2]?");
+
+    /* We check for insufficient lookahead only every 8th comparison;
+     * the 256th check will be made at strstart+258.
+     */
+    do {
+    } while (*++scan == *++match && *++scan == *++match &&
+             *++scan == *++match && *++scan == *++match &&
+             *++scan == *++match && *++scan == *++match &&
+             *++scan == *++match && *++scan == *++match &&
+             scan < strend);
+
+    Assert(scan <= s->window+(unsigned)(s->window_size-1), "wild scan");
+
+    len = MAX_MATCH - (int)(strend - scan);
+
+    if (len < MIN_MATCH) return MIN_MATCH - 1;
+
+    s->match_start = cur_match;
+    return (uInt)len <= s->lookahead ? (uInt)len : s->lookahead;
+}
+
+#ifdef DEBUG
+/* ===========================================================================
+ * Check that the match at match_start is indeed a match.
+ */
+local void check_match(s, start, match, length)
+    deflate_state *s;
+    IPos start, match;
+    int length;
+{
+    /* check that the match is indeed a match */
+    if (zmemcmp(s->window + match,
+                s->window + start, length) != EQUAL) {
+        fprintf(stderr, " start %u, match %u, length %d\n",
+                start, match, length);
+        do {
+            fprintf(stderr, "%c%c", s->window[match++], s->window[start++]);
+        } while (--length != 0);
+        z_error("invalid match");
+    }
+    if (z_verbose > 1) {
+        fprintf(stderr,"\\[%d,%d]", start-match, length);
+        do { putc(s->window[start++], stderr); } while (--length != 0);
+    }
+}
+#else
+#  define check_match(s, start, match, length)
+#endif /* DEBUG */
+
+/* ===========================================================================
+ * Fill the window when the lookahead becomes insufficient.
+ * Updates strstart and lookahead.
+ *
+ * IN assertion: lookahead < MIN_LOOKAHEAD
+ * OUT assertions: strstart <= window_size-MIN_LOOKAHEAD
+ *    At least one byte has been read, or avail_in == 0; reads are
+ *    performed for at least two bytes (required for the zip translate_eol
+ *    option -- not supported here).
+ */
+local void fill_window(s)
+    deflate_state *s;
+{
+    register unsigned n, m;
+    register Posf *p;
+    unsigned more;    /* Amount of free space at the end of the window. */
+    uInt wsize = s->w_size;
+
+    do {
+        more = (unsigned)(s->window_size -(ulg)s->lookahead -(ulg)s->strstart);
+
+        /* Deal with !@#$% 64K limit: */
+        if (sizeof(int) <= 2) {
+            if (more == 0 && s->strstart == 0 && s->lookahead == 0) {
+                more = wsize;
+
+            } else if (more == (unsigned)(-1)) {
+                /* Very unlikely, but possible on 16 bit machine if
+                 * strstart == 0 && lookahead == 1 (input done a byte at time)
+                 */
+                more--;
+            }
+        }
+
+        /* If the window is almost full and there is insufficient lookahead,
+         * move the upper half to the lower one to make room in the upper half.
+         */
+        if (s->strstart >= wsize+MAX_DIST(s)) {
+
+            zmemcpy(s->window, s->window+wsize, (unsigned)wsize);
+            s->match_start -= wsize;
+            s->strstart    -= wsize; /* we now have strstart >= MAX_DIST */
+            s->block_start -= (long) wsize;
+
+            /* Slide the hash table (could be avoided with 32 bit values
+               at the expense of memory usage). We slide even when level == 0
+               to keep the hash table consistent if we switch back to level > 0
+               later. (Using level 0 permanently is not an optimal usage of
+               zlib, so we don't care about this pathological case.)
+             */
+            /* %%% avoid this when Z_RLE */
+            n = s->hash_size;
+            p = &s->head[n];
+            do {
+                m = *--p;
+                *p = (Pos)(m >= wsize ? m-wsize : NIL);
+            } while (--n);
+
+            n = wsize;
+#ifndef FASTEST
+            p = &s->prev[n];
+            do {
+                m = *--p;
+                *p = (Pos)(m >= wsize ? m-wsize : NIL);
+                /* If n is not on any hash chain, prev[n] is garbage but
+                 * its value will never be used.
+                 */
+            } while (--n);
+#endif
+            more += wsize;
+        }
+        if (s->strm->avail_in == 0) return;
+
+        /* If there was no sliding:
+         *    strstart <= WSIZE+MAX_DIST-1 && lookahead <= MIN_LOOKAHEAD - 1 &&
+         *    more == window_size - lookahead - strstart
+         * => more >= window_size - (MIN_LOOKAHEAD-1 + WSIZE + MAX_DIST-1)
+         * => more >= window_size - 2*WSIZE + 2
+         * In the BIG_MEM or MMAP case (not yet supported),
+         *   window_size == input_size + MIN_LOOKAHEAD  &&
+         *   strstart + s->lookahead <= input_size => more >= MIN_LOOKAHEAD.
+         * Otherwise, window_size == 2*WSIZE so more >= 2.
+         * If there was sliding, more >= WSIZE. So in all cases, more >= 2.
+         */
+        Assert(more >= 2, "more < 2");
+
+        n = read_buf(s->strm, s->window + s->strstart + s->lookahead, more);
+        s->lookahead += n;
+
+        /* Initialize the hash value now that we have some input: */
+        if (s->lookahead >= MIN_MATCH) {
+            s->ins_h = s->window[s->strstart];
+            UPDATE_HASH(s, s->ins_h, s->window[s->strstart+1]);
+#if MIN_MATCH != 3
+            Call UPDATE_HASH() MIN_MATCH-3 more times
+#endif
+        }
+        /* If the whole input has less than MIN_MATCH bytes, ins_h is garbage,
+         * but this is not important since only literal bytes will be emitted.
+         */
+
+    } while (s->lookahead < MIN_LOOKAHEAD && s->strm->avail_in != 0);
+}
+
+/* ===========================================================================
+ * Flush the current block, with given end-of-file flag.
+ * IN assertion: strstart is set to the end of the current match.
+ */
+#define FLUSH_BLOCK_ONLY(s, eof) { \
+   _tr_flush_block(s, (s->block_start >= 0L ? \
+                   (charf *)&s->window[(unsigned)s->block_start] : \
+                   (charf *)Z_NULL), \
+                (ulg)((long)s->strstart - s->block_start), \
+                (eof)); \
+   s->block_start = s->strstart; \
+   flush_pending(s->strm); \
+   Tracev((stderr,"[FLUSH]")); \
+}
+
+/* Same but force premature exit if necessary. */
+#define FLUSH_BLOCK(s, eof) { \
+   FLUSH_BLOCK_ONLY(s, eof); \
+   if (s->strm->avail_out == 0) return (eof) ? finish_started : need_more; \
+}
+
+/* ===========================================================================
+ * Copy without compression as much as possible from the input stream, return
+ * the current block state.
+ * This function does not insert new strings in the dictionary since
+ * uncompressible data is probably not useful. This function is used
+ * only for the level=0 compression option.
+ * NOTE: this function should be optimized to avoid extra copying from
+ * window to pending_buf.
+ */
+local block_state deflate_stored(s, flush)
+    deflate_state *s;
+    int flush;
+{
+    /* Stored blocks are limited to 0xffff bytes, pending_buf is limited
+     * to pending_buf_size, and each stored block has a 5 byte header:
+     */
+    ulg max_block_size = 0xffff;
+    ulg max_start;
+
+    if (max_block_size > s->pending_buf_size - 5) {
+        max_block_size = s->pending_buf_size - 5;
+    }
+
+    /* Copy as much as possible from input to output: */
+    for (;;) {
+        /* Fill the window as much as possible: */
+        if (s->lookahead <= 1) {
+
+            Assert(s->strstart < s->w_size+MAX_DIST(s) ||
+                   s->block_start >= (long)s->w_size, "slide too late");
+
+            fill_window(s);
+            if (s->lookahead == 0 && flush == Z_NO_FLUSH) return need_more;
+
+            if (s->lookahead == 0) break; /* flush the current block */
+        }
+        Assert(s->block_start >= 0L, "block gone");
+
+        s->strstart += s->lookahead;
+        s->lookahead = 0;
+
+        /* Emit a stored block if pending_buf will be full: */
+        max_start = s->block_start + max_block_size;
+        if (s->strstart == 0 || (ulg)s->strstart >= max_start) {
+            /* strstart == 0 is possible when wraparound on 16-bit machine */
+            s->lookahead = (uInt)(s->strstart - max_start);
+            s->strstart = (uInt)max_start;
+            FLUSH_BLOCK(s, 0);
+        }
+        /* Flush if we may have to slide, otherwise block_start may become
+         * negative and the data will be gone:
+         */
+        if (s->strstart - (uInt)s->block_start >= MAX_DIST(s)) {
+            FLUSH_BLOCK(s, 0);
+        }
+    }
+    FLUSH_BLOCK(s, flush == Z_FINISH);
+    return flush == Z_FINISH ? finish_done : block_done;
+}
+
+/* ===========================================================================
+ * Compress as much as possible from the input stream, return the current
+ * block state.
+ * This function does not perform lazy evaluation of matches and inserts
+ * new strings in the dictionary only for unmatched strings or for short
+ * matches. It is used only for the fast compression options.
+ */
+local block_state deflate_fast(s, flush)
+    deflate_state *s;
+    int flush;
+{
+    IPos hash_head = NIL; /* head of the hash chain */
+    int bflush;           /* set if current block must be flushed */
+
+    for (;;) {
+        /* Make sure that we always have enough lookahead, except
+         * at the end of the input file. We need MAX_MATCH bytes
+         * for the next match, plus MIN_MATCH bytes to insert the
+         * string following the next match.
+         */
+        if (s->lookahead < MIN_LOOKAHEAD) {
+            fill_window(s);
+            if (s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH) {
+                return need_more;
+            }
+            if (s->lookahead == 0) break; /* flush the current block */
+        }
+
+        /* Insert the string window[strstart .. strstart+2] in the
+         * dictionary, and set hash_head to the head of the hash chain:
+         */
+        if (s->lookahead >= MIN_MATCH) {
+            INSERT_STRING(s, s->strstart, hash_head);
+        }
+
+        /* Find the longest match, discarding those <= prev_length.
+         * At this point we have always match_length < MIN_MATCH
+         */
+        if (hash_head != NIL && s->strstart - hash_head <= MAX_DIST(s)) {
+            /* To simplify the code, we prevent matches with the string
+             * of window index 0 (in particular we have to avoid a match
+             * of the string with itself at the start of the input file).
+             */
+#ifdef FASTEST
+            if ((s->strategy != Z_HUFFMAN_ONLY && s->strategy != Z_RLE) ||
+                (s->strategy == Z_RLE && s->strstart - hash_head == 1)) {
+                s->match_length = longest_match_fast (s, hash_head);
+            }
+#else
+            if (s->strategy != Z_HUFFMAN_ONLY && s->strategy != Z_RLE) {
+                s->match_length = longest_match (s, hash_head);
+            } else if (s->strategy == Z_RLE && s->strstart - hash_head == 1) {
+                s->match_length = longest_match_fast (s, hash_head);
+            }
+#endif
+            /* longest_match() or longest_match_fast() sets match_start */
+        }
+        if (s->match_length >= MIN_MATCH) {
+            check_match(s, s->strstart, s->match_start, s->match_length);
+
+            _tr_tally_dist(s, s->strstart - s->match_start,
+                           s->match_length - MIN_MATCH, bflush);
+
+            s->lookahead -= s->match_length;
+
+            /* Insert new strings in the hash table only if the match length
+             * is not too large. This saves time but degrades compression.
+             */
+#ifndef FASTEST
+            if (s->match_length <= s->max_insert_length &&
+                s->lookahead >= MIN_MATCH) {
+                s->match_length--; /* string at strstart already in table */
+                do {
+                    s->strstart++;
+                    INSERT_STRING(s, s->strstart, hash_head);
+                    /* strstart never exceeds WSIZE-MAX_MATCH, so there are
+                     * always MIN_MATCH bytes ahead.
+                     */
+                } while (--s->match_length != 0);
+                s->strstart++;
+            } else
+#endif
+            {
+                s->strstart += s->match_length;
+                s->match_length = 0;
+                s->ins_h = s->window[s->strstart];
+                UPDATE_HASH(s, s->ins_h, s->window[s->strstart+1]);
+#if MIN_MATCH != 3
+                Call UPDATE_HASH() MIN_MATCH-3 more times
+#endif
+                /* If lookahead < MIN_MATCH, ins_h is garbage, but it does not
+                 * matter since it will be recomputed at next deflate call.
+                 */
+            }
+        } else {
+            /* No match, output a literal byte */
+            Tracevv((stderr,"%c", s->window[s->strstart]));
+            _tr_tally_lit (s, s->window[s->strstart], bflush);
+            s->lookahead--;
+            s->strstart++;
+        }
+        if (bflush) FLUSH_BLOCK(s, 0);
+    }
+    FLUSH_BLOCK(s, flush == Z_FINISH);
+    return flush == Z_FINISH ? finish_done : block_done;
+}
+
+#ifndef FASTEST
+/* ===========================================================================
+ * Same as above, but achieves better compression. We use a lazy
+ * evaluation for matches: a match is finally adopted only if there is
+ * no better match at the next window position.
+ */
+local block_state deflate_slow(s, flush)
+    deflate_state *s;
+    int flush;
+{
+    IPos hash_head = NIL;    /* head of hash chain */
+    int bflush;              /* set if current block must be flushed */
+
+    /* Process the input block. */
+    for (;;) {
+        /* Make sure that we always have enough lookahead, except
+         * at the end of the input file. We need MAX_MATCH bytes
+         * for the next match, plus MIN_MATCH bytes to insert the
+         * string following the next match.
+         */
+        if (s->lookahead < MIN_LOOKAHEAD) {
+            fill_window(s);
+            if (s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH) {
+                return need_more;
+            }
+            if (s->lookahead == 0) break; /* flush the current block */
+        }
+
+        /* Insert the string window[strstart .. strstart+2] in the
+         * dictionary, and set hash_head to the head of the hash chain:
+         */
+        if (s->lookahead >= MIN_MATCH) {
+            INSERT_STRING(s, s->strstart, hash_head);
+        }
+
+        /* Find the longest match, discarding those <= prev_length.
+         */
+        s->prev_length = s->match_length, s->prev_match = s->match_start;
+        s->match_length = MIN_MATCH-1;
+
+        if (hash_head != NIL && s->prev_length < s->max_lazy_match &&
+            s->strstart - hash_head <= MAX_DIST(s)) {
+            /* To simplify the code, we prevent matches with the string
+             * of window index 0 (in particular we have to avoid a match
+             * of the string with itself at the start of the input file).
+             */
+            if (s->strategy != Z_HUFFMAN_ONLY && s->strategy != Z_RLE) {
+                s->match_length = longest_match (s, hash_head);
+            } else if (s->strategy == Z_RLE && s->strstart - hash_head == 1) {
+                s->match_length = longest_match_fast (s, hash_head);
+            }
+            /* longest_match() or longest_match_fast() sets match_start */
+
+            if (s->match_length <= 5 && (s->strategy == Z_FILTERED
+#if TOO_FAR <= 32767
+                || (s->match_length == MIN_MATCH &&
+                    s->strstart - s->match_start > TOO_FAR)
+#endif
+                )) {
+
+                /* If prev_match is also MIN_MATCH, match_start is garbage
+                 * but we will ignore the current match anyway.
+                 */
+                s->match_length = MIN_MATCH-1;
+            }
+        }
+        /* If there was a match at the previous step and the current
+         * match is not better, output the previous match:
+         */
+        if (s->prev_length >= MIN_MATCH && s->match_length <= s->prev_length) {
+            uInt max_insert = s->strstart + s->lookahead - MIN_MATCH;
+            /* Do not insert strings in hash table beyond this. */
+
+            check_match(s, s->strstart-1, s->prev_match, s->prev_length);
+
+            _tr_tally_dist(s, s->strstart -1 - s->prev_match,
+                           s->prev_length - MIN_MATCH, bflush);
+
+            /* Insert in hash table all strings up to the end of the match.
+             * strstart-1 and strstart are already inserted. If there is not
+             * enough lookahead, the last two strings are not inserted in
+             * the hash table.
+             */
+            s->lookahead -= s->prev_length-1;
+            s->prev_length -= 2;
+            do {
+                if (++s->strstart <= max_insert) {
+                    INSERT_STRING(s, s->strstart, hash_head);
+                }
+            } while (--s->prev_length != 0);
+            s->match_available = 0;
+            s->match_length = MIN_MATCH-1;
+            s->strstart++;
+
+            if (bflush) FLUSH_BLOCK(s, 0);
+
+        } else if (s->match_available) {
+            /* If there was no match at the previous position, output a
+             * single literal. If there was a match but the current match
+             * is longer, truncate the previous match to a single literal.
+             */
+            Tracevv((stderr,"%c", s->window[s->strstart-1]));
+            _tr_tally_lit(s, s->window[s->strstart-1], bflush);
+            if (bflush) {
+                FLUSH_BLOCK_ONLY(s, 0);
+            }
+            s->strstart++;
+            s->lookahead--;
+            if (s->strm->avail_out == 0) return need_more;
+        } else {
+            /* There is no previous match to compare with, wait for
+             * the next step to decide.
+             */
+            s->match_available = 1;
+            s->strstart++;
+            s->lookahead--;
+        }
+    }
+    Assert (flush != Z_NO_FLUSH, "no flush?");
+    if (s->match_available) {
+        Tracevv((stderr,"%c", s->window[s->strstart-1]));
+        _tr_tally_lit(s, s->window[s->strstart-1], bflush);
+        s->match_available = 0;
+    }
+    FLUSH_BLOCK(s, flush == Z_FINISH);
+    return flush == Z_FINISH ? finish_done : block_done;
+}
+#endif /* FASTEST */
+
+#if 0
+/* ===========================================================================
+ * For Z_RLE, simply look for runs of bytes, generate matches only of distance
+ * one.  Do not maintain a hash table.  (It will be regenerated if this run of
+ * deflate switches away from Z_RLE.)
+ */
+local block_state deflate_rle(s, flush)
+    deflate_state *s;
+    int flush;
+{
+    int bflush;         /* set if current block must be flushed */
+    uInt run;           /* length of run */
+    uInt max;           /* maximum length of run */
+    uInt prev;          /* byte at distance one to match */
+    Bytef *scan;        /* scan for end of run */
+
+    for (;;) {
+        /* Make sure that we always have enough lookahead, except
+         * at the end of the input file. We need MAX_MATCH bytes
+         * for the longest encodable run.
+         */
+        if (s->lookahead < MAX_MATCH) {
+            fill_window(s);
+            if (s->lookahead < MAX_MATCH && flush == Z_NO_FLUSH) {
+                return need_more;
+            }
+            if (s->lookahead == 0) break; /* flush the current block */
+        }
+
+        /* See how many times the previous byte repeats */
+        run = 0;
+        if (s->strstart > 0) {      /* if there is a previous byte, that is */
+            max = s->lookahead < MAX_MATCH ? s->lookahead : MAX_MATCH;
+            scan = s->window + s->strstart - 1;
+            prev = *scan++;
+            do {
+                if (*scan++ != prev)
+                    break;
+            } while (++run < max);
+        }
+
+        /* Emit match if have run of MIN_MATCH or longer, else emit literal */
+        if (run >= MIN_MATCH) {
+            check_match(s, s->strstart, s->strstart - 1, run);
+            _tr_tally_dist(s, 1, run - MIN_MATCH, bflush);
+            s->lookahead -= run;
+            s->strstart += run;
+        } else {
+            /* No match, output a literal byte */
+            Tracevv((stderr,"%c", s->window[s->strstart]));
+            _tr_tally_lit (s, s->window[s->strstart], bflush);
+            s->lookahead--;
+            s->strstart++;
+        }
+        if (bflush) FLUSH_BLOCK(s, 0);
+    }
+    FLUSH_BLOCK(s, flush == Z_FINISH);
+    return flush == Z_FINISH ? finish_done : block_done;
+}
+#endif

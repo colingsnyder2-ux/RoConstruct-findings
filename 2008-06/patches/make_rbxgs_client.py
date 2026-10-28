@@ -1326,7 +1326,7 @@ patch(IA_H,
 # SimBody: 2008 layout (0xb4) and the no-argument step.
 SB_H, SB_CPP = "App/include/v8kernel/SimBody.h", "App/v8kernel/SimBody.cpp"
 patch(SB_H,
-      "\t  Body *body;\n\t  bool dirty;\n",
+      "\t\t\tBody *body;\n\t\t\tbool dirty;\n",
       "\t  Body *body;\n"
       "\t  float dt;   // 0x4: ctor 00658ae0 stores 0.0f; SimBody::step() (no parameter) reads it\n"
       "\t  bool dirty;\n")
@@ -1337,7 +1337,7 @@ patch(SB_H,
       "\t\tvoid step(float dt);\n",
       "\t\tvoid step();\n")
 patch(SB_H,
-      "\t\tG3D::Vector3 force;\n\t\tG3D::Vector3 torque;\n",
+      "\t\t\tG3D::Vector3 force;\n\t\t\tG3D::Vector3 torque;\n",
       "\t\tG3D::Vector3 force;\n"
       "\t\tG3D::Vector3 torque;\n"
       "\t\tG3D::Vector3 unknown0x9c;  // 00658ae0 zero-initializes; name and use unknown\n"
@@ -1363,9 +1363,11 @@ patch(SB_CPP,
 patch(SB_CPP,
       "void SimBody::step(float dt)\n",
       "void SimBody::step()\n")
-# Body: one bool parameter to step (00614200 ret 4).
+# Body: one bool parameter to step (00614200 ret 4). Keep the older Kernel caller's
+# genuine two-argument API: its timestep now belongs in SimBody's cached field.
 patch("App/include/v8kernel/Body.h",
       "\t\tvoid step(float, bool);\n",
+      "\t\tvoid step(float dt, bool throttling) { simBody->dt = dt; step(throttling); }\n"
       "\t\tvoid step(bool);\n")
 BODY_CPP = "App/v8kernel/Body.cpp"
 # 006140b0 compares with fcom: the 2008 TU used the fp:fast profile.
@@ -1460,7 +1462,7 @@ patch(BODY_CPP,
       "\t}\n"
       "\telse\n"
       "\t{\n"
-      "\t\tsimBody->step(dt);\n"
+      "\t\tsimBody->step(dt);\n\n"
       "\t\tpv = cofm == NULL ? simBody->pv : simBody->getOwnerPV();\n"
       "\t\tadvanceStateIndex();\n"
       "\t}\n"
@@ -1625,11 +1627,6 @@ patch(BODY_CPP,
       "\t\tinitialize();\n"
       "\treturn gWorldBody;\n"
       "}\n")
-# Kernel::stepWorld's body loop passes only the throttling flag (00614200 ret 4).
-patch("App/v8kernel/Kernel.cpp",
-      "\t\t\tbodies[j]->step(kernelDt, throttling);\n",
-      "\t\t\tbodies[j]->step(throttling);\n")
-
 # Independently accepted promotions are declarative edits, never uploaded Python.
 # The server verifier validates anchors and all ABI/runtime gates before publishing.
 native_promotions = out.with_name("native-promotions.json")

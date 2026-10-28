@@ -1,3170 +1,1225 @@
-// from server: 23% by colin
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
-// roc-lib: libpng-1.2.22 pngrutil.c
+// roc-lib: zlib-1.2.3 trees.c
 
 // Candidate translation unit (score above; library headers required).
-
-/* pngrutil.c - utilities to read a PNG file
- *
- * Last changed in libpng 1.2.22 [October 13, 2007]
- * For conditions of distribution and use, see copyright notice in png.h
- * Copyright (c) 1998-2007 Glenn Randers-Pehrson
- * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
- * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
- *
- * This file contains routines that are only called from within
- * libpng itself during the course of reading an image.
+/* trees.c -- output deflated data using Huffman coding
+ * Copyright (C) 1995-2005 Jean-loup Gailly
+ * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#define PNG_INTERNAL
-#include "png.h"
-
-#if defined(PNG_READ_SUPPORTED)
-
-#if defined(_WIN32_WCE) && (_WIN32_WCE<0x500)
-#  define WIN32_WCE_OLD
-#endif
-
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-#  if defined(WIN32_WCE_OLD)
-/* strtod() function is not supported on WindowsCE */
-__inline double png_strtod(png_structp png_ptr, PNG_CONST char *nptr, char **endptr)
-{
-   double result = 0;
-   int len;
-   wchar_t *str, *end;
-
-   len = MultiByteToWideChar(CP_ACP, 0, nptr, -1, NULL, 0);
-   str = (wchar_t *)png_malloc(png_ptr, len * sizeof(wchar_t));
-   if ( NULL != str )
-   {
-      MultiByteToWideChar(CP_ACP, 0, nptr, -1, str, len);
-      result = wcstod(str, &end);
-      len = WideCharToMultiByte(CP_ACP, 0, end, -1, NULL, 0, NULL, NULL);
-      *endptr = (char *)nptr + (png_strlen(nptr) - len + 1);
-      png_free(png_ptr, str);
-   }
-   return result;
-}
-#  else
-#    define png_strtod(p,a,b) strtod(a,b)
-#  endif
-#endif
-
-png_uint_32 PNGAPI
-png_get_uint_31(png_structp png_ptr, png_bytep buf)
-{
-   png_uint_32 i = png_get_uint_32(buf);
-   if (i > PNG_UINT_31_MAX)
-     png_error(png_ptr, "PNG unsigned integer out of range.");
-   return (i);
-}
-#ifndef PNG_READ_BIG_ENDIAN_SUPPORTED
-/* Grab an unsigned 32-bit integer from a buffer in big-endian format. */
-png_uint_32 PNGAPI
-png_get_uint_32(png_bytep buf)
-{
-   png_uint_32 i = ((png_uint_32)(*buf) << 24) +
-      ((png_uint_32)(*(buf + 1)) << 16) +
-      ((png_uint_32)(*(buf + 2)) << 8) +
-      (png_uint_32)(*(buf + 3));
-
-   return (i);
-}
-
-/* Grab a signed 32-bit integer from a buffer in big-endian format.  The
- * data is stored in the PNG file in two's complement format, and it is
- * assumed that the machine format for signed integers is the same. */
-png_int_32 PNGAPI
-png_get_int_32(png_bytep buf)
-{
-   png_int_32 i = ((png_int_32)(*buf) << 24) +
-      ((png_int_32)(*(buf + 1)) << 16) +
-      ((png_int_32)(*(buf + 2)) << 8) +
-      (png_int_32)(*(buf + 3));
-
-   return (i);
-}
-
-/* Grab an unsigned 16-bit integer from a buffer in big-endian format. */
-png_uint_16 PNGAPI
-png_get_uint_16(png_bytep buf)
-{
-   png_uint_16 i = (png_uint_16)(((png_uint_16)(*buf) << 8) +
-      (png_uint_16)(*(buf + 1)));
-
-   return (i);
-}
-#endif /* PNG_READ_BIG_ENDIAN_SUPPORTED */
-
-/* Read data, and (optionally) run it through the CRC. */
-void /* PRIVATE */
-png_crc_read(png_structp png_ptr, png_bytep buf, png_size_t length)
-{
-   if(png_ptr == NULL) return;
-   png_read_data(png_ptr, buf, length);
-   png_calculate_crc(png_ptr, buf, length);
-}
-
-/* Optionally skip data and then check the CRC.  Depending on whether we
-   are reading a ancillary or critical chunk, and how the program has set
-   things up, we may calculate the CRC on the data and print a message.
-   Returns '1' if there was a CRC error, '0' otherwise. */
-int /* PRIVATE */
-png_crc_finish(png_structp png_ptr, png_uint_32 skip)
-{
-   png_size_t i;
-   png_size_t istop = png_ptr->zbuf_size;
-
-   for (i = (png_size_t)skip; i > istop; i -= istop)
-   {
-      png_crc_read(png_ptr, png_ptr->zbuf, png_ptr->zbuf_size);
-   }
-   if (i)
-   {
-      png_crc_read(png_ptr, png_ptr->zbuf, i);
-   }
-
-   if (png_crc_error(png_ptr))
-   {
-      if (((png_ptr->chunk_name[0] & 0x20) &&                /* Ancillary */
-           !(png_ptr->flags & PNG_FLAG_CRC_ANCILLARY_NOWARN)) ||
-          (!(png_ptr->chunk_name[0] & 0x20) &&             /* Critical  */
-          (png_ptr->flags & PNG_FLAG_CRC_CRITICAL_USE)))
-      {
-         png_chunk_warning(png_ptr, "CRC error");
-      }
-      else
-      {
-         png_chunk_error(png_ptr, "CRC error");
-      }
-      return (1);
-   }
-
-   return (0);
-}
-
-/* Compare the CRC stored in the PNG file with that calculated by libpng from
-   the data it has read thus far. */
-int /* PRIVATE */
-png_crc_error(png_structp png_ptr)
-{
-   png_byte crc_bytes[4];
-   png_uint_32 crc;
-   int need_crc = 1;
-
-   if (png_ptr->chunk_name[0] & 0x20)                     /* ancillary */
-   {
-      if ((png_ptr->flags & PNG_FLAG_CRC_ANCILLARY_MASK) ==
-          (PNG_FLAG_CRC_ANCILLARY_USE | PNG_FLAG_CRC_ANCILLARY_NOWARN))
-         need_crc = 0;
-   }
-   else                                                    /* critical */
-   {
-      if (png_ptr->flags & PNG_FLAG_CRC_CRITICAL_IGNORE)
-         need_crc = 0;
-   }
-
-   png_read_data(png_ptr, crc_bytes, 4);
-
-   if (need_crc)
-   {
-      crc = png_get_uint_32(crc_bytes);
-      return ((int)(crc != png_ptr->crc));
-   }
-   else
-      return (0);
-}
-
-#if defined(PNG_READ_zTXt_SUPPORTED) || defined(PNG_READ_iTXt_SUPPORTED) || \
-    defined(PNG_READ_iCCP_SUPPORTED)
 /*
- * Decompress trailing data in a chunk.  The assumption is that chunkdata
- * points at an allocated area holding the contents of a chunk with a
- * trailing compressed part.  What we get back is an allocated area
- * holding the original prefix part and an uncompressed version of the
- * trailing part (the malloc area passed in is freed).
+ *  ALGORITHM
+ *
+ *      The "deflation" process uses several Huffman trees. The more
+ *      common source values are represented by shorter bit sequences.
+ *
+ *      Each code tree is stored in a compressed form which is itself
+ * a Huffman encoding of the lengths of all the code strings (in
+ * ascending order by source values).  The actual code strings are
+ * reconstructed from the lengths in the inflate process, as described
+ * in the deflate specification.
+ *
+ *  REFERENCES
+ *
+ *      Deutsch, L.P.,"'Deflate' Compressed Data Format Specification".
+ *      Available in ftp.uu.net:/pub/archiving/zip/doc/deflate-1.1.doc
+ *
+ *      Storer, James A.
+ *          Data Compression:  Methods and Theory, pp. 49-50.
+ *          Computer Science Press, 1988.  ISBN 0-7167-8156-5.
+ *
+ *      Sedgewick, R.
+ *          Algorithms, p290.
+ *          Addison-Wesley, 1983. ISBN 0-201-06672-6.
  */
-png_charp /* PRIVATE */
-png_decompress_chunk(png_structp png_ptr, int comp_type,
-                              png_charp chunkdata, png_size_t chunklength,
-                              png_size_t prefix_size, png_size_t *newlength)
-{
-   static PNG_CONST char msg[] = "Error decoding compressed text";
-   png_charp text;
-   png_size_t text_size;
 
-   if (comp_type == PNG_COMPRESSION_TYPE_BASE)
-   {
-      int ret = Z_OK;
-      png_ptr->zstream.next_in = (png_bytep)(chunkdata + prefix_size);
-      png_ptr->zstream.avail_in = (uInt)(chunklength - prefix_size);
-      png_ptr->zstream.next_out = png_ptr->zbuf;
-      png_ptr->zstream.avail_out = (uInt)png_ptr->zbuf_size;
+/* @(#) $Id$ */
 
-      text_size = 0;
-      text = NULL;
+/* #define GEN_TREES_H */
 
-      while (png_ptr->zstream.avail_in)
-      {
-         ret = inflate(&png_ptr->zstream, Z_PARTIAL_FLUSH);
-         if (ret != Z_OK && ret != Z_STREAM_END)
-         {
-            if (png_ptr->zstream.msg != NULL)
-               png_warning(png_ptr, png_ptr->zstream.msg);
-            else
-               png_warning(png_ptr, msg);
-            inflateReset(&png_ptr->zstream);
-            png_ptr->zstream.avail_in = 0;
+#include "deflate.h"
 
-            if (text ==  NULL)
-            {
-               text_size = prefix_size + png_sizeof(msg) + 1;
-               text = (png_charp)png_malloc_warn(png_ptr, text_size);
-               if (text ==  NULL)
-                 {
-                    png_free(png_ptr,chunkdata);
-                    png_error(png_ptr,"Not enough memory to decompress chunk");
-                 }
-               png_memcpy(text, chunkdata, prefix_size);
-            }
-
-            text[text_size - 1] = 0x00;
-
-            /* Copy what we can of the error message into the text chunk */
-            text_size = (png_size_t)(chunklength - (text - chunkdata) - 1);
-            text_size = png_sizeof(msg) > text_size ? text_size :
-               png_sizeof(msg);
-            png_memcpy(text + prefix_size, msg, text_size + 1);
-            break;
-         }
-         if (!png_ptr->zstream.avail_out || ret == Z_STREAM_END)
-         {
-            if (text == NULL)
-            {
-               text_size = prefix_size +
-                   png_ptr->zbuf_size - png_ptr->zstream.avail_out;
-               text = (png_charp)png_malloc_warn(png_ptr, text_size + 1);
-               if (text ==  NULL)
-                 {
-                    png_free(png_ptr,chunkdata);
-                    png_error(png_ptr,"Not enough memory to decompress chunk.");
-                 }
-               png_memcpy(text + prefix_size, png_ptr->zbuf,
-                    text_size - prefix_size);
-               png_memcpy(text, chunkdata, prefix_size);
-               *(text + text_size) = 0x00;
-            }
-            else
-            {
-               png_charp tmp;
-
-               tmp = text;
-               text = (png_charp)png_malloc_warn(png_ptr,
-                  (png_uint_32)(text_size +
-                  png_ptr->zbuf_size - png_ptr->zstream.avail_out + 1));
-               if (text == NULL)
-               {
-                  png_free(png_ptr, tmp);
-                  png_free(png_ptr, chunkdata);
-                  png_error(png_ptr,"Not enough memory to decompress chunk..");
-               }
-               png_memcpy(text, tmp, text_size);
-               png_free(png_ptr, tmp);
-               png_memcpy(text + text_size, png_ptr->zbuf,
-                  (png_ptr->zbuf_size - png_ptr->zstream.avail_out));
-               text_size += png_ptr->zbuf_size - png_ptr->zstream.avail_out;
-               *(text + text_size) = 0x00;
-            }
-            if (ret == Z_STREAM_END)
-               break;
-            else
-            {
-               png_ptr->zstream.next_out = png_ptr->zbuf;
-               png_ptr->zstream.avail_out = (uInt)png_ptr->zbuf_size;
-            }
-         }
-      }
-      if (ret != Z_STREAM_END)
-      {
-#if !defined(PNG_NO_STDIO) && !defined(_WIN32_WCE)
-         char umsg[52];
-
-         if (ret == Z_BUF_ERROR)
-            png_snprintf(umsg, 52,
-                "Buffer error in compressed datastream in %s chunk",
-                png_ptr->chunk_name);
-         else if (ret == Z_DATA_ERROR)
-            png_snprintf(umsg, 52,
-                "Data error in compressed datastream in %s chunk",
-                png_ptr->chunk_name);
-         else
-            png_snprintf(umsg, 52,
-                "Incomplete compressed datastream in %s chunk",
-                png_ptr->chunk_name);
-         png_warning(png_ptr, umsg);
-#else
-         png_warning(png_ptr,
-            "Incomplete compressed datastream in chunk other than IDAT");
-#endif
-         text_size=prefix_size;
-         if (text ==  NULL)
-         {
-            text = (png_charp)png_malloc_warn(png_ptr, text_size+1);
-            if (text == NULL)
-              {
-                png_free(png_ptr, chunkdata);
-                png_error(png_ptr,"Not enough memory for text.");
-              }
-            png_memcpy(text, chunkdata, prefix_size);
-         }
-         *(text + text_size) = 0x00;
-      }
-
-      inflateReset(&png_ptr->zstream);
-      png_ptr->zstream.avail_in = 0;
-
-      png_free(png_ptr, chunkdata);
-      chunkdata = text;
-      *newlength=text_size;
-   }
-   else /* if (comp_type != PNG_COMPRESSION_TYPE_BASE) */
-   {
-#if !defined(PNG_NO_STDIO) && !defined(_WIN32_WCE)
-      char umsg[50];
-
-      png_snprintf(umsg, 50,
-         "Unknown zTXt compression type %d", comp_type);
-      png_warning(png_ptr, umsg);
-#else
-      png_warning(png_ptr, "Unknown zTXt compression type");
-#endif
-
-      *(chunkdata + prefix_size) = 0x00;
-      *newlength=prefix_size;
-   }
-
-   return chunkdata;
-}
-#endif
-
-/* read and check the IDHR chunk */
-void /* PRIVATE */
-png_handle_IHDR(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_byte buf[13];
-   png_uint_32 width, height;
-   int bit_depth, color_type, compression_type, filter_type;
-   int interlace_type;
-
-   png_debug(1, "in png_handle_IHDR\n");
-
-   if (png_ptr->mode & PNG_HAVE_IHDR)
-      png_error(png_ptr, "Out of place IHDR");
-
-   /* check the length */
-   if (length != 13)
-      png_error(png_ptr, "Invalid IHDR chunk");
-
-   png_ptr->mode |= PNG_HAVE_IHDR;
-
-   png_crc_read(png_ptr, buf, 13);
-   png_crc_finish(png_ptr, 0);
-
-   width = png_get_uint_31(png_ptr, buf);
-   height = png_get_uint_31(png_ptr, buf + 4);
-   bit_depth = buf[8];
-   color_type = buf[9];
-   compression_type = buf[10];
-   filter_type = buf[11];
-   interlace_type = buf[12];
-
-   /* set internal variables */
-   png_ptr->width = width;
-   png_ptr->height = height;
-   png_ptr->bit_depth = (png_byte)bit_depth;
-   png_ptr->interlaced = (png_byte)interlace_type;
-   png_ptr->color_type = (png_byte)color_type;
-#if defined(PNG_MNG_FEATURES_SUPPORTED)
-   png_ptr->filter_type = (png_byte)filter_type;
-#endif
-   png_ptr->compression_type = (png_byte)compression_type;
-
-   /* find number of channels */
-   switch (png_ptr->color_type)
-   {
-      case PNG_COLOR_TYPE_GRAY:
-      case PNG_COLOR_TYPE_PALETTE:
-         png_ptr->channels = 1;
-         break;
-      case PNG_COLOR_TYPE_RGB:
-         png_ptr->channels = 3;
-         break;
-      case PNG_COLOR_TYPE_GRAY_ALPHA:
-         png_ptr->channels = 2;
-         break;
-      case PNG_COLOR_TYPE_RGB_ALPHA:
-         png_ptr->channels = 4;
-         break;
-   }
-
-   /* set up other useful info */
-   png_ptr->pixel_depth = (png_byte)(png_ptr->bit_depth *
-   png_ptr->channels);
-   png_ptr->rowbytes = PNG_ROWBYTES(png_ptr->pixel_depth,png_ptr->width);
-   png_debug1(3,"bit_depth = %d\n", png_ptr->bit_depth);
-   png_debug1(3,"channels = %d\n", png_ptr->channels);
-   png_debug1(3,"rowbytes = %lu\n", png_ptr->rowbytes);
-   png_set_IHDR(png_ptr, info_ptr, width, height, bit_depth,
-      color_type, interlace_type, compression_type, filter_type);
-}
-
-/* read and check the palette */
-void /* PRIVATE */
-png_handle_PLTE(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_color palette[PNG_MAX_PALETTE_LENGTH];
-   int num, i;
-#ifndef PNG_NO_POINTER_INDEXING
-   png_colorp pal_ptr;
-#endif
-
-   png_debug(1, "in png_handle_PLTE\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before PLTE");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid PLTE after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (png_ptr->mode & PNG_HAVE_PLTE)
-      png_error(png_ptr, "Duplicate PLTE chunk");
-
-   png_ptr->mode |= PNG_HAVE_PLTE;
-
-   if (!(png_ptr->color_type&PNG_COLOR_MASK_COLOR))
-   {
-      png_warning(png_ptr,
-        "Ignoring PLTE chunk in grayscale PNG");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-#if !defined(PNG_READ_OPT_PLTE_SUPPORTED)
-   if (png_ptr->color_type != PNG_COLOR_TYPE_PALETTE)
-   {
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-#endif
-
-   if (length > 3*PNG_MAX_PALETTE_LENGTH || length % 3)
-   {
-      if (png_ptr->color_type != PNG_COLOR_TYPE_PALETTE)
-      {
-         png_warning(png_ptr, "Invalid palette chunk");
-         png_crc_finish(png_ptr, length);
-         return;
-      }
-      else
-      {
-         png_error(png_ptr, "Invalid palette chunk");
-      }
-   }
-
-   num = (int)length / 3;
-
-#ifndef PNG_NO_POINTER_INDEXING
-   for (i = 0, pal_ptr = palette; i < num; i++, pal_ptr++)
-   {
-      png_byte buf[3];
-
-      png_crc_read(png_ptr, buf, 3);
-      pal_ptr->red = buf[0];
-      pal_ptr->green = buf[1];
-      pal_ptr->blue = buf[2];
-   }
-#else
-   for (i = 0; i < num; i++)
-   {
-      png_byte buf[3];
-
-      png_crc_read(png_ptr, buf, 3);
-      /* don't depend upon png_color being any order */
-      palette[i].red = buf[0];
-      palette[i].green = buf[1];
-      palette[i].blue = buf[2];
-   }
-#endif
-
-   /* If we actually NEED the PLTE chunk (ie for a paletted image), we do
-      whatever the normal CRC configuration tells us.  However, if we
-      have an RGB image, the PLTE can be considered ancillary, so
-      we will act as though it is. */
-#if !defined(PNG_READ_OPT_PLTE_SUPPORTED)
-   if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE)
-#endif
-   {
-      png_crc_finish(png_ptr, 0);
-   }
-#if !defined(PNG_READ_OPT_PLTE_SUPPORTED)
-   else if (png_crc_error(png_ptr))  /* Only if we have a CRC error */
-   {
-      /* If we don't want to use the data from an ancillary chunk,
-         we have two options: an error abort, or a warning and we
-         ignore the data in this chunk (which should be OK, since
-         it's considered ancillary for a RGB or RGBA image). */
-      if (!(png_ptr->flags & PNG_FLAG_CRC_ANCILLARY_USE))
-      {
-         if (png_ptr->flags & PNG_FLAG_CRC_ANCILLARY_NOWARN)
-         {
-            png_chunk_error(png_ptr, "CRC error");
-         }
-         else
-         {
-            png_chunk_warning(png_ptr, "CRC error");
-            return;
-         }
-      }
-      /* Otherwise, we (optionally) emit a warning and use the chunk. */
-      else if (!(png_ptr->flags & PNG_FLAG_CRC_ANCILLARY_NOWARN))
-      {
-         png_chunk_warning(png_ptr, "CRC error");
-      }
-   }
-#endif
-
-   png_set_PLTE(png_ptr, info_ptr, palette, num);
-
-#if defined(PNG_READ_tRNS_SUPPORTED)
-   if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE)
-   {
-      if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_tRNS))
-      {
-         if (png_ptr->num_trans > (png_uint_16)num)
-         {
-            png_warning(png_ptr, "Truncating incorrect tRNS chunk length");
-            png_ptr->num_trans = (png_uint_16)num;
-         }
-         if (info_ptr->num_trans > (png_uint_16)num)
-         {
-            png_warning(png_ptr, "Truncating incorrect info tRNS chunk length");
-            info_ptr->num_trans = (png_uint_16)num;
-         }
-      }
-   }
-#endif
-
-}
-
-void /* PRIVATE */
-png_handle_IEND(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_debug(1, "in png_handle_IEND\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR) || !(png_ptr->mode & PNG_HAVE_IDAT))
-   {
-      png_error(png_ptr, "No image in file");
-   }
-
-   png_ptr->mode |= (PNG_AFTER_IDAT | PNG_HAVE_IEND);
-
-   if (length != 0)
-   {
-      png_warning(png_ptr, "Incorrect IEND chunk length");
-   }
-   png_crc_finish(png_ptr, length);
-
-   info_ptr =info_ptr; /* quiet compiler warnings about unused info_ptr */
-}
-
-#if defined(PNG_READ_gAMA_SUPPORTED)
-void /* PRIVATE */
-png_handle_gAMA(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_fixed_point igamma;
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-   float file_gamma;
-#endif
-   png_byte buf[4];
-
-   png_debug(1, "in png_handle_gAMA\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before gAMA");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid gAMA after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (png_ptr->mode & PNG_HAVE_PLTE)
-      /* Should be an error, but we can cope with it */
-      png_warning(png_ptr, "Out of place gAMA chunk");
-
-   if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_gAMA)
-#if defined(PNG_READ_sRGB_SUPPORTED)
-      && !(info_ptr->valid & PNG_INFO_sRGB)
-#endif
-      )
-   {
-      png_warning(png_ptr, "Duplicate gAMA chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   if (length != 4)
-   {
-      png_warning(png_ptr, "Incorrect gAMA chunk length");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   png_crc_read(png_ptr, buf, 4);
-   if (png_crc_finish(png_ptr, 0))
-      return;
-
-   igamma = (png_fixed_point)png_get_uint_32(buf);
-   /* check for zero gamma */
-   if (igamma == 0)
-      {
-         png_warning(png_ptr,
-           "Ignoring gAMA chunk with gamma=0");
-         return;
-      }
-
-#if defined(PNG_READ_sRGB_SUPPORTED)
-   if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_sRGB))
-      if (PNG_OUT_OF_RANGE(igamma, 45500L, 500))
-      {
-         png_warning(png_ptr,
-           "Ignoring incorrect gAMA value when sRGB is also present");
-#ifndef PNG_NO_CONSOLE_IO
-         fprintf(stderr, "gamma = (%d/100000)\n", (int)igamma);
-#endif
-         return;
-      }
-#endif /* PNG_READ_sRGB_SUPPORTED */
-
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-   file_gamma = (float)igamma / (float)100000.0;
-#  ifdef PNG_READ_GAMMA_SUPPORTED
-     png_ptr->gamma = file_gamma;
-#  endif
-     png_set_gAMA(png_ptr, info_ptr, file_gamma);
-#endif
-#ifdef PNG_FIXED_POINT_SUPPORTED
-   png_set_gAMA_fixed(png_ptr, info_ptr, igamma);
-#endif
-}
-#endif
-
-#if defined(PNG_READ_sBIT_SUPPORTED)
-void /* PRIVATE */
-png_handle_sBIT(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_size_t truelen;
-   png_byte buf[4];
-
-   png_debug(1, "in png_handle_sBIT\n");
-
-   buf[0] = buf[1] = buf[2] = buf[3] = 0;
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before sBIT");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid sBIT after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (png_ptr->mode & PNG_HAVE_PLTE)
-   {
-      /* Should be an error, but we can cope with it */
-      png_warning(png_ptr, "Out of place sBIT chunk");
-   }
-   if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_sBIT))
-   {
-      png_warning(png_ptr, "Duplicate sBIT chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE)
-      truelen = 3;
-   else
-      truelen = (png_size_t)png_ptr->channels;
-
-   if (length != truelen || length > 4)
-   {
-      png_warning(png_ptr, "Incorrect sBIT chunk length");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   png_crc_read(png_ptr, buf, truelen);
-   if (png_crc_finish(png_ptr, 0))
-      return;
-
-   if (png_ptr->color_type & PNG_COLOR_MASK_COLOR)
-   {
-      png_ptr->sig_bit.red = buf[0];
-      png_ptr->sig_bit.green = buf[1];
-      png_ptr->sig_bit.blue = buf[2];
-      png_ptr->sig_bit.alpha = buf[3];
-   }
-   else
-   {
-      png_ptr->sig_bit.gray = buf[0];
-      png_ptr->sig_bit.red = buf[0];
-      png_ptr->sig_bit.green = buf[0];
-      png_ptr->sig_bit.blue = buf[0];
-      png_ptr->sig_bit.alpha = buf[1];
-   }
-   png_set_sBIT(png_ptr, info_ptr, &(png_ptr->sig_bit));
-}
-#endif
-
-#if defined(PNG_READ_cHRM_SUPPORTED)
-void /* PRIVATE */
-png_handle_cHRM(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_byte buf[4];
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-   float white_x, white_y, red_x, red_y, green_x, green_y, blue_x, blue_y;
-#endif
-   png_fixed_point int_x_white, int_y_white, int_x_red, int_y_red, int_x_green,
-      int_y_green, int_x_blue, int_y_blue;
-
-   png_uint_32 uint_x, uint_y;
-
-   png_debug(1, "in png_handle_cHRM\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before cHRM");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid cHRM after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (png_ptr->mode & PNG_HAVE_PLTE)
-      /* Should be an error, but we can cope with it */
-      png_warning(png_ptr, "Missing PLTE before cHRM");
-
-   if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_cHRM)
-#if defined(PNG_READ_sRGB_SUPPORTED)
-      && !(info_ptr->valid & PNG_INFO_sRGB)
-#endif
-      )
-   {
-      png_warning(png_ptr, "Duplicate cHRM chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   if (length != 32)
-   {
-      png_warning(png_ptr, "Incorrect cHRM chunk length");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   png_crc_read(png_ptr, buf, 4);
-   uint_x = png_get_uint_32(buf);
-
-   png_crc_read(png_ptr, buf, 4);
-   uint_y = png_get_uint_32(buf);
-
-   if (uint_x > 80000L || uint_y > 80000L ||
-      uint_x + uint_y > 100000L)
-   {
-      png_warning(png_ptr, "Invalid cHRM white point");
-      png_crc_finish(png_ptr, 24);
-      return;
-   }
-   int_x_white = (png_fixed_point)uint_x;
-   int_y_white = (png_fixed_point)uint_y;
-
-   png_crc_read(png_ptr, buf, 4);
-   uint_x = png_get_uint_32(buf);
-
-   png_crc_read(png_ptr, buf, 4);
-   uint_y = png_get_uint_32(buf);
-
-   if (uint_x + uint_y > 100000L)
-   {
-      png_warning(png_ptr, "Invalid cHRM red point");
-      png_crc_finish(png_ptr, 16);
-      return;
-   }
-   int_x_red = (png_fixed_point)uint_x;
-   int_y_red = (png_fixed_point)uint_y;
-
-   png_crc_read(png_ptr, buf, 4);
-   uint_x = png_get_uint_32(buf);
-
-   png_crc_read(png_ptr, buf, 4);
-   uint_y = png_get_uint_32(buf);
-
-   if (uint_x + uint_y > 100000L)
-   {
-      png_warning(png_ptr, "Invalid cHRM green point");
-      png_crc_finish(png_ptr, 8);
-      return;
-   }
-   int_x_green = (png_fixed_point)uint_x;
-   int_y_green = (png_fixed_point)uint_y;
-
-   png_crc_read(png_ptr, buf, 4);
-   uint_x = png_get_uint_32(buf);
-
-   png_crc_read(png_ptr, buf, 4);
-   uint_y = png_get_uint_32(buf);
-
-   if (uint_x + uint_y > 100000L)
-   {
-      png_warning(png_ptr, "Invalid cHRM blue point");
-      png_crc_finish(png_ptr, 0);
-      return;
-   }
-   int_x_blue = (png_fixed_point)uint_x;
-   int_y_blue = (png_fixed_point)uint_y;
-
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-   white_x = (float)int_x_white / (float)100000.0;
-   white_y = (float)int_y_white / (float)100000.0;
-   red_x   = (float)int_x_red   / (float)100000.0;
-   red_y   = (float)int_y_red   / (float)100000.0;
-   green_x = (float)int_x_green / (float)100000.0;
-   green_y = (float)int_y_green / (float)100000.0;
-   blue_x  = (float)int_x_blue  / (float)100000.0;
-   blue_y  = (float)int_y_blue  / (float)100000.0;
-#endif
-
-#if defined(PNG_READ_sRGB_SUPPORTED)
-   if ((info_ptr != NULL) && (info_ptr->valid & PNG_INFO_sRGB))
-      {
-      if (PNG_OUT_OF_RANGE(int_x_white, 31270,  1000) ||
-          PNG_OUT_OF_RANGE(int_y_white, 32900,  1000) ||
-          PNG_OUT_OF_RANGE(int_x_red,   64000L, 1000) ||
-          PNG_OUT_OF_RANGE(int_y_red,   33000,  1000) ||
-          PNG_OUT_OF_RANGE(int_x_green, 30000,  1000) ||
-          PNG_OUT_OF_RANGE(int_y_green, 60000L, 1000) ||
-          PNG_OUT_OF_RANGE(int_x_blue,  15000,  1000) ||
-          PNG_OUT_OF_RANGE(int_y_blue,   6000,  1000))
-         {
-            png_warning(png_ptr,
-              "Ignoring incorrect cHRM value when sRGB is also present");
-#ifndef PNG_NO_CONSOLE_IO
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-            fprintf(stderr,"wx=%f, wy=%f, rx=%f, ry=%f\n",
-               white_x, white_y, red_x, red_y);
-            fprintf(stderr,"gx=%f, gy=%f, bx=%f, by=%f\n",
-               green_x, green_y, blue_x, blue_y);
-#else
-            fprintf(stderr,"wx=%ld, wy=%ld, rx=%ld, ry=%ld\n",
-               int_x_white, int_y_white, int_x_red, int_y_red);
-            fprintf(stderr,"gx=%ld, gy=%ld, bx=%ld, by=%ld\n",
-               int_x_green, int_y_green, int_x_blue, int_y_blue);
-#endif
-#endif /* PNG_NO_CONSOLE_IO */
-         }
-         png_crc_finish(png_ptr, 0);
-         return;
-      }
-#endif /* PNG_READ_sRGB_SUPPORTED */
-
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-   png_set_cHRM(png_ptr, info_ptr,
-      white_x, white_y, red_x, red_y, green_x, green_y, blue_x, blue_y);
-#endif
-#ifdef PNG_FIXED_POINT_SUPPORTED
-   png_set_cHRM_fixed(png_ptr, info_ptr,
-      int_x_white, int_y_white, int_x_red, int_y_red, int_x_green,
-      int_y_green, int_x_blue, int_y_blue);
-#endif
-   if (png_crc_finish(png_ptr, 0))
-      return;
-}
-#endif
-
-#if defined(PNG_READ_sRGB_SUPPORTED)
-void /* PRIVATE */
-png_handle_sRGB(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   int intent;
-   png_byte buf[1];
-
-   png_debug(1, "in png_handle_sRGB\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before sRGB");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid sRGB after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (png_ptr->mode & PNG_HAVE_PLTE)
-      /* Should be an error, but we can cope with it */
-      png_warning(png_ptr, "Out of place sRGB chunk");
-
-   if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_sRGB))
-   {
-      png_warning(png_ptr, "Duplicate sRGB chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   if (length != 1)
-   {
-      png_warning(png_ptr, "Incorrect sRGB chunk length");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   png_crc_read(png_ptr, buf, 1);
-   if (png_crc_finish(png_ptr, 0))
-      return;
-
-   intent = buf[0];
-   /* check for bad intent */
-   if (intent >= PNG_sRGB_INTENT_LAST)
-   {
-      png_warning(png_ptr, "Unknown sRGB intent");
-      return;
-   }
-
-#if defined(PNG_READ_gAMA_SUPPORTED) && defined(PNG_READ_GAMMA_SUPPORTED)
-   if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_gAMA))
-   {
-   png_fixed_point igamma;
-#ifdef PNG_FIXED_POINT_SUPPORTED
-      igamma=info_ptr->int_gamma;
-#else
-#  ifdef PNG_FLOATING_POINT_SUPPORTED
-      igamma=(png_fixed_point)(info_ptr->gamma * 100000.);
-#  endif
-#endif
-      if (PNG_OUT_OF_RANGE(igamma, 45500L, 500))
-      {
-         png_warning(png_ptr,
-           "Ignoring incorrect gAMA value when sRGB is also present");
-#ifndef PNG_NO_CONSOLE_IO
-#  ifdef PNG_FIXED_POINT_SUPPORTED
-         fprintf(stderr,"incorrect gamma=(%d/100000)\n",(int)png_ptr->int_gamma);
-#  else
-#    ifdef PNG_FLOATING_POINT_SUPPORTED
-         fprintf(stderr,"incorrect gamma=%f\n",png_ptr->gamma);
-#    endif
-#  endif
-#endif
-      }
-   }
-#endif /* PNG_READ_gAMA_SUPPORTED */
-
-#ifdef PNG_READ_cHRM_SUPPORTED
-#ifdef PNG_FIXED_POINT_SUPPORTED
-   if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_cHRM))
-      if (PNG_OUT_OF_RANGE(info_ptr->int_x_white, 31270,  1000) ||
-          PNG_OUT_OF_RANGE(info_ptr->int_y_white, 32900,  1000) ||
-          PNG_OUT_OF_RANGE(info_ptr->int_x_red,   64000L, 1000) ||
-          PNG_OUT_OF_RANGE(info_ptr->int_y_red,   33000,  1000) ||
-          PNG_OUT_OF_RANGE(info_ptr->int_x_green, 30000,  1000) ||
-          PNG_OUT_OF_RANGE(info_ptr->int_y_green, 60000L, 1000) ||
-          PNG_OUT_OF_RANGE(info_ptr->int_x_blue,  15000,  1000) ||
-          PNG_OUT_OF_RANGE(info_ptr->int_y_blue,   6000,  1000))
-         {
-            png_warning(png_ptr,
-              "Ignoring incorrect cHRM value when sRGB is also present");
-         }
-#endif /* PNG_FIXED_POINT_SUPPORTED */
-#endif /* PNG_READ_cHRM_SUPPORTED */
-
-   png_set_sRGB_gAMA_and_cHRM(png_ptr, info_ptr, intent);
-}
-#endif /* PNG_READ_sRGB_SUPPORTED */
-
-#if defined(PNG_READ_iCCP_SUPPORTED)
-void /* PRIVATE */
-png_handle_iCCP(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-/* Note: this does not properly handle chunks that are > 64K under DOS */
-{
-   png_charp chunkdata;
-   png_byte compression_type;
-   png_bytep pC;
-   png_charp profile;
-   png_uint_32 skip = 0;
-   png_uint_32 profile_size, profile_length;
-   png_size_t slength, prefix_length, data_length;
-
-   png_debug(1, "in png_handle_iCCP\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before iCCP");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid iCCP after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (png_ptr->mode & PNG_HAVE_PLTE)
-      /* Should be an error, but we can cope with it */
-      png_warning(png_ptr, "Out of place iCCP chunk");
-
-   if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_iCCP))
-   {
-      png_warning(png_ptr, "Duplicate iCCP chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-#ifdef PNG_MAX_MALLOC_64K
-   if (length > (png_uint_32)65535L)
-   {
-      png_warning(png_ptr, "iCCP chunk too large to fit in memory");
-      skip = length - (png_uint_32)65535L;
-      length = (png_uint_32)65535L;
-   }
-#endif
-
-   chunkdata = (png_charp)png_malloc(png_ptr, length + 1);
-   slength = (png_size_t)length;
-   png_crc_read(png_ptr, (png_bytep)chunkdata, slength);
-
-   if (png_crc_finish(png_ptr, skip))
-   {
-      png_free(png_ptr, chunkdata);
-      return;
-   }
-
-   chunkdata[slength] = 0x00;
-
-   for (profile = chunkdata; *profile; profile++)
-      /* empty loop to find end of name */ ;
-
-   ++profile;
-
-   /* there should be at least one zero (the compression type byte)
-      following the separator, and we should be on it  */
-   if ( profile >= chunkdata + slength - 1)
-   {
-      png_free(png_ptr, chunkdata);
-      png_warning(png_ptr, "Malformed iCCP chunk");
-      return;
-   }
-
-   /* compression_type should always be zero */
-   compression_type = *profile++;
-   if (compression_type)
-   {
-      png_warning(png_ptr, "Ignoring nonzero compression type in iCCP chunk");
-      compression_type=0x00;  /* Reset it to zero (libpng-1.0.6 through 1.0.8
-                                 wrote nonzero) */
-   }
-
-   prefix_length = profile - chunkdata;
-   chunkdata = png_decompress_chunk(png_ptr, compression_type, chunkdata,
-                                    slength, prefix_length, &data_length);
-
-   profile_length = data_length - prefix_length;
-
-   if ( prefix_length > data_length || profile_length < 4)
-   {
-      png_free(png_ptr, chunkdata);
-      png_warning(png_ptr, "Profile size field missing from iCCP chunk");
-      return;
-   }
-
-   /* Check the profile_size recorded in the first 32 bits of the ICC profile */
-   pC = (png_bytep)(chunkdata+prefix_length);
-   profile_size = ((*(pC  ))<<24) |
-                  ((*(pC+1))<<16) |
-                  ((*(pC+2))<< 8) |
-                  ((*(pC+3))    );
-
-   if(profile_size < profile_length)
-      profile_length = profile_size;
-
-   if(profile_size > profile_length)
-   {
-      png_free(png_ptr, chunkdata);
-      png_warning(png_ptr, "Ignoring truncated iCCP profile.");
-      return;
-   }
-
-   png_set_iCCP(png_ptr, info_ptr, chunkdata, compression_type,
-                chunkdata + prefix_length, profile_length);
-   png_free(png_ptr, chunkdata);
-}
-#endif /* PNG_READ_iCCP_SUPPORTED */
-
-#if defined(PNG_READ_sPLT_SUPPORTED)
-void /* PRIVATE */
-png_handle_sPLT(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-/* Note: this does not properly handle chunks that are > 64K under DOS */
-{
-   png_bytep chunkdata;
-   png_bytep entry_start;
-   png_sPLT_t new_palette;
-#ifdef PNG_NO_POINTER_INDEXING
-   png_sPLT_entryp pp;
-#endif
-   int data_length, entry_size, i;
-   png_uint_32 skip = 0;
-   png_size_t slength;
-
-   png_debug(1, "in png_handle_sPLT\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before sPLT");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid sPLT after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-#ifdef PNG_MAX_MALLOC_64K
-   if (length > (png_uint_32)65535L)
-   {
-      png_warning(png_ptr, "sPLT chunk too large to fit in memory");
-      skip = length - (png_uint_32)65535L;
-      length = (png_uint_32)65535L;
-   }
-#endif
-
-   chunkdata = (png_bytep)png_malloc(png_ptr, length + 1);
-   slength = (png_size_t)length;
-   png_crc_read(png_ptr, (png_bytep)chunkdata, slength);
-
-   if (png_crc_finish(png_ptr, skip))
-   {
-      png_free(png_ptr, chunkdata);
-      return;
-   }
-
-   chunkdata[slength] = 0x00;
-
-   for (entry_start = chunkdata; *entry_start; entry_start++)
-      /* empty loop to find end of name */ ;
-   ++entry_start;
-
-   /* a sample depth should follow the separator, and we should be on it  */
-   if (entry_start > chunkdata + slength - 2)
-   {
-      png_free(png_ptr, chunkdata);
-      png_warning(png_ptr, "malformed sPLT chunk");
-      return;
-   }
-
-   new_palette.depth = *entry_start++;
-   entry_size = (new_palette.depth == 8 ? 6 : 10);
-   data_length = (slength - (entry_start - chunkdata));
-
-   /* integrity-check the data length */
-   if (data_length % entry_size)
-   {
-      png_free(png_ptr, chunkdata);
-      png_warning(png_ptr, "sPLT chunk has bad length");
-      return;
-   }
-
-   new_palette.nentries = (png_int_32) ( data_length / entry_size);
-   if ((png_uint_32) new_palette.nentries > (png_uint_32) (PNG_SIZE_MAX /
-       png_sizeof(png_sPLT_entry)))
-   {
-       png_warning(png_ptr, "sPLT chunk too long");
-       return;
-   }
-   new_palette.entries = (png_sPLT_entryp)png_malloc_warn(
-       png_ptr, new_palette.nentries * png_sizeof(png_sPLT_entry));
-   if (new_palette.entries == NULL)
-   {
-       png_warning(png_ptr, "sPLT chunk requires too much memory");
-       return;
-   }
-
-#ifndef PNG_NO_POINTER_INDEXING
-   for (i = 0; i < new_palette.nentries; i++)
-   {
-      png_sPLT_entryp pp = new_palette.entries + i;
-
-      if (new_palette.depth == 8)
-      {
-          pp->red = *entry_start++;
-          pp->green = *entry_start++;
-          pp->blue = *entry_start++;
-          pp->alpha = *entry_start++;
-      }
-      else
-      {
-          pp->red   = png_get_uint_16(entry_start); entry_start += 2;
-          pp->green = png_get_uint_16(entry_start); entry_start += 2;
-          pp->blue  = png_get_uint_16(entry_start); entry_start += 2;
-          pp->alpha = png_get_uint_16(entry_start); entry_start += 2;
-      }
-      pp->frequency = png_get_uint_16(entry_start); entry_start += 2;
-   }
-#else
-   pp = new_palette.entries;
-   for (i = 0; i < new_palette.nentries; i++)
-   {
-
-      if (new_palette.depth == 8)
-      {
-          pp[i].red   = *entry_start++;
-          pp[i].green = *entry_start++;
-          pp[i].blue  = *entry_start++;
-          pp[i].alpha = *entry_start++;
-      }
-      else
-      {
-          pp[i].red   = png_get_uint_16(entry_start); entry_start += 2;
-          pp[i].green = png_get_uint_16(entry_start); entry_start += 2;
-          pp[i].blue  = png_get_uint_16(entry_start); entry_start += 2;
-          pp[i].alpha = png_get_uint_16(entry_start); entry_start += 2;
-      }
-      pp->frequency = png_get_uint_16(entry_start); entry_start += 2;
-   }
-#endif
-
-   /* discard all chunk data except the name and stash that */
-   new_palette.name = (png_charp)chunkdata;
-
-   png_set_sPLT(png_ptr, info_ptr, &new_palette, 1);
-
-   png_free(png_ptr, chunkdata);
-   png_free(png_ptr, new_palette.entries);
-}
-#endif /* PNG_READ_sPLT_SUPPORTED */
-
-#if defined(PNG_READ_tRNS_SUPPORTED)
-void /* PRIVATE */
-png_handle_tRNS(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_byte readbuf[PNG_MAX_PALETTE_LENGTH];
-   int bit_mask;
-
-   png_debug(1, "in png_handle_tRNS\n");
-
-   /* For non-indexed color, mask off any bits in the tRNS value that
-    * exceed the bit depth.  Some creators were writing extra bits there.
-    * This is not needed for indexed color. */
-   bit_mask = (1 << png_ptr->bit_depth) - 1;
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before tRNS");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid tRNS after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_tRNS))
-   {
-      png_warning(png_ptr, "Duplicate tRNS chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   if (png_ptr->color_type == PNG_COLOR_TYPE_GRAY)
-   {
-      png_byte buf[2];
-
-      if (length != 2)
-      {
-         png_warning(png_ptr, "Incorrect tRNS chunk length");
-         png_crc_finish(png_ptr, length);
-         return;
-      }
-
-      png_crc_read(png_ptr, buf, 2);
-      png_ptr->num_trans = 1;
-      png_ptr->trans_values.gray = png_get_uint_16(buf) & bit_mask;
-   }
-   else if (png_ptr->color_type == PNG_COLOR_TYPE_RGB)
-   {
-      png_byte buf[6];
-
-      if (length != 6)
-      {
-         png_warning(png_ptr, "Incorrect tRNS chunk length");
-         png_crc_finish(png_ptr, length);
-         return;
-      }
-      png_crc_read(png_ptr, buf, (png_size_t)length);
-      png_ptr->num_trans = 1;
-      png_ptr->trans_values.red = png_get_uint_16(buf) & bit_mask;
-      png_ptr->trans_values.green = png_get_uint_16(buf + 2) & bit_mask;
-      png_ptr->trans_values.blue = png_get_uint_16(buf + 4) & bit_mask;
-   }
-   else if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE)
-   {
-      if (!(png_ptr->mode & PNG_HAVE_PLTE))
-      {
-         /* Should be an error, but we can cope with it. */
-         png_warning(png_ptr, "Missing PLTE before tRNS");
-      }
-      if (length > (png_uint_32)png_ptr->num_palette ||
-          length > PNG_MAX_PALETTE_LENGTH)
-      {
-         png_warning(png_ptr, "Incorrect tRNS chunk length");
-         png_crc_finish(png_ptr, length);
-         return;
-      }
-      if (length == 0)
-      {
-         png_warning(png_ptr, "Zero length tRNS chunk");
-         png_crc_finish(png_ptr, length);
-         return;
-      }
-      png_crc_read(png_ptr, readbuf, (png_size_t)length);
-      png_ptr->num_trans = (png_uint_16)length;
-   }
-   else
-   {
-      png_warning(png_ptr, "tRNS chunk not allowed with alpha channel");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   if (png_crc_finish(png_ptr, 0))
-   {
-      png_ptr->num_trans = 0;
-      return;
-   }
-
-   png_set_tRNS(png_ptr, info_ptr, readbuf, png_ptr->num_trans,
-      &(png_ptr->trans_values));
-}
-#endif
-
-#if defined(PNG_READ_bKGD_SUPPORTED)
-void /* PRIVATE */
-png_handle_bKGD(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_size_t truelen;
-   png_byte buf[6];
-
-   png_debug(1, "in png_handle_bKGD\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before bKGD");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid bKGD after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE &&
-            !(png_ptr->mode & PNG_HAVE_PLTE))
-   {
-      png_warning(png_ptr, "Missing PLTE before bKGD");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_bKGD))
-   {
-      png_warning(png_ptr, "Duplicate bKGD chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE)
-      truelen = 1;
-   else if (png_ptr->color_type & PNG_COLOR_MASK_COLOR)
-      truelen = 6;
-   else
-      truelen = 2;
-
-   if (length != truelen)
-   {
-      png_warning(png_ptr, "Incorrect bKGD chunk length");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   png_crc_read(png_ptr, buf, truelen);
-   if (png_crc_finish(png_ptr, 0))
-      return;
-
-   /* We convert the index value into RGB components so that we can allow
-    * arbitrary RGB values for background when we have transparency, and
-    * so it is easy to determine the RGB values of the background color
-    * from the info_ptr struct. */
-   if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE)
-   {
-      png_ptr->background.index = buf[0];
-      if(info_ptr->num_palette)
-      {
-          if(buf[0] > info_ptr->num_palette)
-          {
-             png_warning(png_ptr, "Incorrect bKGD chunk index value");
-             return;
-          }
-          png_ptr->background.red =
-             (png_uint_16)png_ptr->palette[buf[0]].red;
-          png_ptr->background.green =
-             (png_uint_16)png_ptr->palette[buf[0]].green;
-          png_ptr->background.blue =
-             (png_uint_16)png_ptr->palette[buf[0]].blue;
-      }
-   }
-   else if (!(png_ptr->color_type & PNG_COLOR_MASK_COLOR)) /* GRAY */
-   {
-      png_ptr->background.red =
-      png_ptr->background.green =
-      png_ptr->background.blue =
-      png_ptr->background.gray = png_get_uint_16(buf);
-   }
-   else
-   {
-      png_ptr->background.red = png_get_uint_16(buf);
-      png_ptr->background.green = png_get_uint_16(buf + 2);
-      png_ptr->background.blue = png_get_uint_16(buf + 4);
-   }
-
-   png_set_bKGD(png_ptr, info_ptr, &(png_ptr->background));
-}
-#endif
-
-#if defined(PNG_READ_hIST_SUPPORTED)
-void /* PRIVATE */
-png_handle_hIST(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   unsigned int num, i;
-   png_uint_16 readbuf[PNG_MAX_PALETTE_LENGTH];
-
-   png_debug(1, "in png_handle_hIST\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before hIST");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid hIST after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (!(png_ptr->mode & PNG_HAVE_PLTE))
-   {
-      png_warning(png_ptr, "Missing PLTE before hIST");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_hIST))
-   {
-      png_warning(png_ptr, "Duplicate hIST chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   num = length / 2 ;
-   if (num != (unsigned int) png_ptr->num_palette || num >
-      (unsigned int) PNG_MAX_PALETTE_LENGTH)
-   {
-      png_warning(png_ptr, "Incorrect hIST chunk length");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   for (i = 0; i < num; i++)
-   {
-      png_byte buf[2];
-
-      png_crc_read(png_ptr, buf, 2);
-      readbuf[i] = png_get_uint_16(buf);
-   }
-
-   if (png_crc_finish(png_ptr, 0))
-      return;
-
-   png_set_hIST(png_ptr, info_ptr, readbuf);
-}
-#endif
-
-#if defined(PNG_READ_pHYs_SUPPORTED)
-void /* PRIVATE */
-png_handle_pHYs(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_byte buf[9];
-   png_uint_32 res_x, res_y;
-   int unit_type;
-
-   png_debug(1, "in png_handle_pHYs\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before pHYs");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid pHYs after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_pHYs))
-   {
-      png_warning(png_ptr, "Duplicate pHYs chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   if (length != 9)
-   {
-      png_warning(png_ptr, "Incorrect pHYs chunk length");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   png_crc_read(png_ptr, buf, 9);
-   if (png_crc_finish(png_ptr, 0))
-      return;
-
-   res_x = png_get_uint_32(buf);
-   res_y = png_get_uint_32(buf + 4);
-   unit_type = buf[8];
-   png_set_pHYs(png_ptr, info_ptr, res_x, res_y, unit_type);
-}
-#endif
-
-#if defined(PNG_READ_oFFs_SUPPORTED)
-void /* PRIVATE */
-png_handle_oFFs(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_byte buf[9];
-   png_int_32 offset_x, offset_y;
-   int unit_type;
-
-   png_debug(1, "in png_handle_oFFs\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before oFFs");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid oFFs after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_oFFs))
-   {
-      png_warning(png_ptr, "Duplicate oFFs chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   if (length != 9)
-   {
-      png_warning(png_ptr, "Incorrect oFFs chunk length");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   png_crc_read(png_ptr, buf, 9);
-   if (png_crc_finish(png_ptr, 0))
-      return;
-
-   offset_x = png_get_int_32(buf);
-   offset_y = png_get_int_32(buf + 4);
-   unit_type = buf[8];
-   png_set_oFFs(png_ptr, info_ptr, offset_x, offset_y, unit_type);
-}
-#endif
-
-#if defined(PNG_READ_pCAL_SUPPORTED)
-/* read the pCAL chunk (described in the PNG Extensions document) */
-void /* PRIVATE */
-png_handle_pCAL(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_charp purpose;
-   png_int_32 X0, X1;
-   png_byte type, nparams;
-   png_charp buf, units, endptr;
-   png_charpp params;
-   png_size_t slength;
-   int i;
-
-   png_debug(1, "in png_handle_pCAL\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before pCAL");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid pCAL after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_pCAL))
-   {
-      png_warning(png_ptr, "Duplicate pCAL chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   png_debug1(2, "Allocating and reading pCAL chunk data (%lu bytes)\n",
-      length + 1);
-   purpose = (png_charp)png_malloc_warn(png_ptr, length + 1);
-   if (purpose == NULL)
-     {
-       png_warning(png_ptr, "No memory for pCAL purpose.");
-       return;
-     }
-   slength = (png_size_t)length;
-   png_crc_read(png_ptr, (png_bytep)purpose, slength);
-
-   if (png_crc_finish(png_ptr, 0))
-   {
-      png_free(png_ptr, purpose);
-      return;
-   }
-
-   purpose[slength] = 0x00; /* null terminate the last string */
-
-   png_debug(3, "Finding end of pCAL purpose string\n");
-   for (buf = purpose; *buf; buf++)
-      /* empty loop */ ;
-
-   endptr = purpose + slength;
-
-   /* We need to have at least 12 bytes after the purpose string
-      in order to get the parameter information. */
-   if (endptr <= buf + 12)
-   {
-      png_warning(png_ptr, "Invalid pCAL data");
-      png_free(png_ptr, purpose);
-      return;
-   }
-
-   png_debug(3, "Reading pCAL X0, X1, type, nparams, and units\n");
-   X0 = png_get_int_32((png_bytep)buf+1);
-   X1 = png_get_int_32((png_bytep)buf+5);
-   type = buf[9];
-   nparams = buf[10];
-   units = buf + 11;
-
-   png_debug(3, "Checking pCAL equation type and number of parameters\n");
-   /* Check that we have the right number of parameters for known
-      equation types. */
-   if ((type == PNG_EQUATION_LINEAR && nparams != 2) ||
-       (type == PNG_EQUATION_BASE_E && nparams != 3) ||
-       (type == PNG_EQUATION_ARBITRARY && nparams != 3) ||
-       (type == PNG_EQUATION_HYPERBOLIC && nparams != 4))
-   {
-      png_warning(png_ptr, "Invalid pCAL parameters for equation type");
-      png_free(png_ptr, purpose);
-      return;
-   }
-   else if (type >= PNG_EQUATION_LAST)
-   {
-      png_warning(png_ptr, "Unrecognized equation type for pCAL chunk");
-   }
-
-   for (buf = units; *buf; buf++)
-      /* Empty loop to move past the units string. */ ;
-
-   png_debug(3, "Allocating pCAL parameters array\n");
-   params = (png_charpp)png_malloc_warn(png_ptr, (png_uint_32)(nparams
-      *png_sizeof(png_charp))) ;
-   if (params == NULL)
-     {
-       png_free(png_ptr, purpose);
-       png_warning(png_ptr, "No memory for pCAL params.");
-       return;
-     }
-
-   /* Get pointers to the start of each parameter string. */
-   for (i = 0; i < (int)nparams; i++)
-   {
-      buf++; /* Skip the null string terminator from previous parameter. */
-
-      png_debug1(3, "Reading pCAL parameter %d\n", i);
-      for (params[i] = buf; buf <= endptr && *buf != 0x00; buf++)
-         /* Empty loop to move past each parameter string */ ;
-
-      /* Make sure we haven't run out of data yet */
-      if (buf > endptr)
-      {
-         png_warning(png_ptr, "Invalid pCAL data");
-         png_free(png_ptr, purpose);
-         png_free(png_ptr, params);
-         return;
-      }
-   }
-
-   png_set_pCAL(png_ptr, info_ptr, purpose, X0, X1, type, nparams,
-      units, params);
-
-   png_free(png_ptr, purpose);
-   png_free(png_ptr, params);
-}
-#endif
-
-#if defined(PNG_READ_sCAL_SUPPORTED)
-/* read the sCAL chunk */
-void /* PRIVATE */
-png_handle_sCAL(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_charp buffer, ep;
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-   double width, height;
-   png_charp vp;
-#else
-#ifdef PNG_FIXED_POINT_SUPPORTED
-   png_charp swidth, sheight;
-#endif
-#endif
-   png_size_t slength;
-
-   png_debug(1, "in png_handle_sCAL\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before sCAL");
-   else if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-      png_warning(png_ptr, "Invalid sCAL after IDAT");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-   else if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_sCAL))
-   {
-      png_warning(png_ptr, "Duplicate sCAL chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   png_debug1(2, "Allocating and reading sCAL chunk data (%lu bytes)\n",
-      length + 1);
-   buffer = (png_charp)png_malloc_warn(png_ptr, length + 1);
-   if (buffer == NULL)
-     {
-       png_warning(png_ptr, "Out of memory while processing sCAL chunk");
-       return;
-     }
-   slength = (png_size_t)length;
-   png_crc_read(png_ptr, (png_bytep)buffer, slength);
-
-   if (png_crc_finish(png_ptr, 0))
-   {
-      png_free(png_ptr, buffer);
-      return;
-   }
-
-   buffer[slength] = 0x00; /* null terminate the last string */
-
-   ep = buffer + 1;        /* skip unit byte */
-
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-   width = png_strtod(png_ptr, ep, &vp);
-   if (*vp)
-   {
-       png_warning(png_ptr, "malformed width string in sCAL chunk");
-       return;
-   }
-#else
-#ifdef PNG_FIXED_POINT_SUPPORTED
-   swidth = (png_charp)png_malloc_warn(png_ptr, png_strlen(ep) + 1);
-   if (swidth == NULL)
-     {
-       png_warning(png_ptr, "Out of memory while processing sCAL chunk width");
-       return;
-     }
-   png_memcpy(swidth, ep, (png_size_t)png_strlen(ep));
-#endif
-#endif
-
-   for (ep = buffer; *ep; ep++)
-      /* empty loop */ ;
-   ep++;
-
-   if (buffer + slength < ep)
-   {
-       png_warning(png_ptr, "Truncated sCAL chunk");
-#if defined(PNG_FIXED_POINT_SUPPORTED) && \
-    !defined(PNG_FLOATING_POINT_SUPPORTED)
-       png_free(png_ptr, swidth);
-#endif
-      png_free(png_ptr, buffer);
-       return;
-   }
-
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-   height = png_strtod(png_ptr, ep, &vp);
-   if (*vp)
-   {
-       png_warning(png_ptr, "malformed height string in sCAL chunk");
-       return;
-   }
-#else
-#ifdef PNG_FIXED_POINT_SUPPORTED
-   sheight = (png_charp)png_malloc_warn(png_ptr, png_strlen(ep) + 1);
-   if (swidth == NULL)
-     {
-       png_warning(png_ptr, "Out of memory while processing sCAL chunk height");
-       return;
-     }
-   png_memcpy(sheight, ep, (png_size_t)png_strlen(ep));
-#endif
-#endif
-
-   if (buffer + slength < ep
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-      || width <= 0. || height <= 0.
-#endif
-      )
-   {
-      png_warning(png_ptr, "Invalid sCAL data");
-      png_free(png_ptr, buffer);
-#if defined(PNG_FIXED_POINT_SUPPORTED) && !defined(PNG_FLOATING_POINT_SUPPORTED)
-      png_free(png_ptr, swidth);
-      png_free(png_ptr, sheight);
-#endif
-      return;
-   }
-
-
-#ifdef PNG_FLOATING_POINT_SUPPORTED
-   png_set_sCAL(png_ptr, info_ptr, buffer[0], width, height);
-#else
-#ifdef PNG_FIXED_POINT_SUPPORTED
-   png_set_sCAL_s(png_ptr, info_ptr, buffer[0], swidth, sheight);
-#endif
-#endif
-
-   png_free(png_ptr, buffer);
-#if defined(PNG_FIXED_POINT_SUPPORTED) && !defined(PNG_FLOATING_POINT_SUPPORTED)
-   png_free(png_ptr, swidth);
-   png_free(png_ptr, sheight);
-#endif
-}
-#endif
-
-#if defined(PNG_READ_tIME_SUPPORTED)
-void /* PRIVATE */
-png_handle_tIME(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_byte buf[7];
-   png_time mod_time;
-
-   png_debug(1, "in png_handle_tIME\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Out of place tIME chunk");
-   else if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_tIME))
-   {
-      png_warning(png_ptr, "Duplicate tIME chunk");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   if (png_ptr->mode & PNG_HAVE_IDAT)
-      png_ptr->mode |= PNG_AFTER_IDAT;
-
-   if (length != 7)
-   {
-      png_warning(png_ptr, "Incorrect tIME chunk length");
-      png_crc_finish(png_ptr, length);
-      return;
-   }
-
-   png_crc_read(png_ptr, buf, 7);
-   if (png_crc_finish(png_ptr, 0))
-      return;
-
-   mod_time.second = buf[6];
-   mod_time.minute = buf[5];
-   mod_time.hour = buf[4];
-   mod_time.day = buf[3];
-   mod_time.month = buf[2];
-   mod_time.year = png_get_uint_16(buf);
-
-   png_set_tIME(png_ptr, info_ptr, &mod_time);
-}
-#endif
-
-#if defined(PNG_READ_tEXt_SUPPORTED)
-/* Note: this does not properly handle chunks that are > 64K under DOS */
-void /* PRIVATE */
-png_handle_tEXt(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_textp text_ptr;
-   png_charp key;
-   png_charp text;
-   png_uint_32 skip = 0;
-   png_size_t slength;
-   int ret;
-
-   png_debug(1, "in png_handle_tEXt\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before tEXt");
-
-   if (png_ptr->mode & PNG_HAVE_IDAT)
-      png_ptr->mode |= PNG_AFTER_IDAT;
-
-#ifdef PNG_MAX_MALLOC_64K
-   if (length > (png_uint_32)65535L)
-   {
-      png_warning(png_ptr, "tEXt chunk too large to fit in memory");
-      skip = length - (png_uint_32)65535L;
-      length = (png_uint_32)65535L;
-   }
-#endif
-
-   key = (png_charp)png_malloc_warn(png_ptr, length + 1);
-   if (key == NULL)
-   {
-     png_warning(png_ptr, "No memory to process text chunk.");
-     return;
-   }
-   slength = (png_size_t)length;
-   png_crc_read(png_ptr, (png_bytep)key, slength);
-
-   if (png_crc_finish(png_ptr, skip))
-   {
-      png_free(png_ptr, key);
-      return;
-   }
-
-   key[slength] = 0x00;
-
-   for (text = key; *text; text++)
-      /* empty loop to find end of key */ ;
-
-   if (text != key + slength)
-      text++;
-
-   text_ptr = (png_textp)png_malloc_warn(png_ptr,
-      (png_uint_32)png_sizeof(png_text));
-   if (text_ptr == NULL)
-   {
-     png_warning(png_ptr, "Not enough memory to process text chunk.");
-     png_free(png_ptr, key);
-     return;
-   }
-   text_ptr->compression = PNG_TEXT_COMPRESSION_NONE;
-   text_ptr->key = key;
-#ifdef PNG_iTXt_SUPPORTED
-   text_ptr->lang = NULL;
-   text_ptr->lang_key = NULL;
-   text_ptr->itxt_length = 0;
-#endif
-   text_ptr->text = text;
-   text_ptr->text_length = png_strlen(text);
-
-   ret=png_set_text_2(png_ptr, info_ptr, text_ptr, 1);
-
-   png_free(png_ptr, key);
-   png_free(png_ptr, text_ptr);
-   if (ret)
-     png_warning(png_ptr, "Insufficient memory to process text chunk.");
-}
-#endif
-
-#if defined(PNG_READ_zTXt_SUPPORTED)
-/* note: this does not correctly handle chunks that are > 64K under DOS */
-void /* PRIVATE */
-png_handle_zTXt(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_textp text_ptr;
-   png_charp chunkdata;
-   png_charp text;
-   int comp_type;
-   int ret;
-   png_size_t slength, prefix_len, data_len;
-
-   png_debug(1, "in png_handle_zTXt\n");
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before zTXt");
-
-   if (png_ptr->mode & PNG_HAVE_IDAT)
-      png_ptr->mode |= PNG_AFTER_IDAT;
-
-#ifdef PNG_MAX_MALLOC_64K
-   /* We will no doubt have problems with chunks even half this size, but
-      there is no hard and fast rule to tell us where to stop. */
-   if (length > (png_uint_32)65535L)
-   {
-     png_warning(png_ptr,"zTXt chunk too large to fit in memory");
-     png_crc_finish(png_ptr, length);
-     return;
-   }
-#endif
-
-   chunkdata = (png_charp)png_malloc_warn(png_ptr, length + 1);
-   if (chunkdata == NULL)
-   {
-     png_warning(png_ptr,"Out of memory processing zTXt chunk.");
-     return;
-   }
-   slength = (png_size_t)length;
-   png_crc_read(png_ptr, (png_bytep)chunkdata, slength);
-   if (png_crc_finish(png_ptr, 0))
-   {
-      png_free(png_ptr, chunkdata);
-      return;
-   }
-
-   chunkdata[slength] = 0x00;
-
-   for (text = chunkdata; *text; text++)
-      /* empty loop */ ;
-
-   /* zTXt must have some text after the chunkdataword */
-   if (text >= chunkdata + slength - 2)
-   {
-      png_warning(png_ptr, "Truncated zTXt chunk");
-      png_free(png_ptr, chunkdata);
-      return;
-   }
-   else
-   {
-       comp_type = *(++text);
-       if (comp_type != PNG_TEXT_COMPRESSION_zTXt)
-       {
-          png_warning(png_ptr, "Unknown compression type in zTXt chunk");
-          comp_type = PNG_TEXT_COMPRESSION_zTXt;
-       }
-       text++;        /* skip the compression_method byte */
-   }
-   prefix_len = text - chunkdata;
-
-   chunkdata = (png_charp)png_decompress_chunk(png_ptr, comp_type, chunkdata,
-                                    (png_size_t)length, prefix_len, &data_len);
-
-   text_ptr = (png_textp)png_malloc_warn(png_ptr,
-     (png_uint_32)png_sizeof(png_text));
-   if (text_ptr == NULL)
-   {
-     png_warning(png_ptr,"Not enough memory to process zTXt chunk.");
-     png_free(png_ptr, chunkdata);
-     return;
-   }
-   text_ptr->compression = comp_type;
-   text_ptr->key = chunkdata;
-#ifdef PNG_iTXt_SUPPORTED
-   text_ptr->lang = NULL;
-   text_ptr->lang_key = NULL;
-   text_ptr->itxt_length = 0;
-#endif
-   text_ptr->text = chunkdata + prefix_len;
-   text_ptr->text_length = data_len;
-
-   ret=png_set_text_2(png_ptr, info_ptr, text_ptr, 1);
-
-   png_free(png_ptr, text_ptr);
-   png_free(png_ptr, chunkdata);
-   if (ret)
-     png_error(png_ptr, "Insufficient memory to store zTXt chunk.");
-}
-#endif
-
-#if defined(PNG_READ_iTXt_SUPPORTED)
-/* note: this does not correctly handle chunks that are > 64K under DOS */
-void /* PRIVATE */
-png_handle_iTXt(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_textp text_ptr;
-   png_charp chunkdata;
-   png_charp key, lang, text, lang_key;
-   int comp_flag;
-   int comp_type = 0;
-   int ret;
-   png_size_t slength, prefix_len, data_len;
-
-   png_debug(1, "in png_handle_iTXt\n");
-
-   if (!(png_ptr->mode & PNG_HAVE_IHDR))
-      png_error(png_ptr, "Missing IHDR before iTXt");
-
-   if (png_ptr->mode & PNG_HAVE_IDAT)
-      png_ptr->mode |= PNG_AFTER_IDAT;
-
-#ifdef PNG_MAX_MALLOC_64K
-   /* We will no doubt have problems with chunks even half this size, but
-      there is no hard and fast rule to tell us where to stop. */
-   if (length > (png_uint_32)65535L)
-   {
-     png_warning(png_ptr,"iTXt chunk too large to fit in memory");
-     png_crc_finish(png_ptr, length);
-     return;
-   }
-#endif
-
-   chunkdata = (png_charp)png_malloc_warn(png_ptr, length + 1);
-   if (chunkdata == NULL)
-   {
-     png_warning(png_ptr, "No memory to process iTXt chunk.");
-     return;
-   }
-   slength = (png_size_t)length;
-   png_crc_read(png_ptr, (png_bytep)chunkdata, slength);
-   if (png_crc_finish(png_ptr, 0))
-   {
-      png_free(png_ptr, chunkdata);
-      return;
-   }
-
-   chunkdata[slength] = 0x00;
-
-   for (lang = chunkdata; *lang; lang++)
-      /* empty loop */ ;
-   lang++;        /* skip NUL separator */
-
-   /* iTXt must have a language tag (possibly empty), two compression bytes,
-      translated keyword (possibly empty), and possibly some text after the
-      keyword */
-
-   if (lang >= chunkdata + slength - 3)
-   {
-      png_warning(png_ptr, "Truncated iTXt chunk");
-      png_free(png_ptr, chunkdata);
-      return;
-   }
-   else
-   {
-       comp_flag = *lang++;
-       comp_type = *lang++;
-   }
-
-   for (lang_key = lang; *lang_key; lang_key++)
-      /* empty loop */ ;
-   lang_key++;        /* skip NUL separator */
-
-   if (lang_key >= chunkdata + slength)
-   {
-      png_warning(png_ptr, "Truncated iTXt chunk");
-      png_free(png_ptr, chunkdata);
-      return;
-   }
-
-   for (text = lang_key; *text; text++)
-      /* empty loop */ ;
-   text++;        /* skip NUL separator */
-   if (text >= chunkdata + slength)
-   {
-      png_warning(png_ptr, "Malformed iTXt chunk");
-      png_free(png_ptr, chunkdata);
-      return;
-   }
-
-   prefix_len = text - chunkdata;
-
-   key=chunkdata;
-   if (comp_flag)
-       chunkdata = png_decompress_chunk(png_ptr, comp_type, chunkdata,
-          (size_t)length, prefix_len, &data_len);
-   else
-       data_len=png_strlen(chunkdata + prefix_len);
-   text_ptr = (png_textp)png_malloc_warn(png_ptr,
-      (png_uint_32)png_sizeof(png_text));
-   if (text_ptr == NULL)
-   {
-     png_warning(png_ptr,"Not enough memory to process iTXt chunk.");
-     png_free(png_ptr, chunkdata);
-     return;
-   }
-   text_ptr->compression = (int)comp_flag + 1;
-   text_ptr->lang_key = chunkdata+(lang_key-key);
-   text_ptr->lang = chunkdata+(lang-key);
-   text_ptr->itxt_length = data_len;
-   text_ptr->text_length = 0;
-   text_ptr->key = chunkdata;
-   text_ptr->text = chunkdata + prefix_len;
-
-   ret=png_set_text_2(png_ptr, info_ptr, text_ptr, 1);
-
-   png_free(png_ptr, text_ptr);
-   png_free(png_ptr, chunkdata);
-   if (ret)
-     png_error(png_ptr, "Insufficient memory to store iTXt chunk.");
-}
-#endif
-
-/* This function is called when we haven't found a handler for a
-   chunk.  If there isn't a problem with the chunk itself (ie bad
-   chunk name, CRC, or a critical chunk), the chunk is silently ignored
-   -- unless the PNG_FLAG_UNKNOWN_CHUNKS_SUPPORTED flag is on in which
-   case it will be saved away to be written out later. */
-void /* PRIVATE */
-png_handle_unknown(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
-{
-   png_uint_32 skip = 0;
-
-   png_debug(1, "in png_handle_unknown\n");
-
-   if (png_ptr->mode & PNG_HAVE_IDAT)
-   {
-#ifdef PNG_USE_LOCAL_ARRAYS
-      PNG_CONST PNG_IDAT;
-#endif
-      if (png_memcmp(png_ptr->chunk_name, png_IDAT, 4))  /* not an IDAT */
-         png_ptr->mode |= PNG_AFTER_IDAT;
-   }
-
-   png_check_chunk_name(png_ptr, png_ptr->chunk_name);
-
-   if (!(png_ptr->chunk_name[0] & 0x20))
-   {
-#if defined(PNG_READ_UNKNOWN_CHUNKS_SUPPORTED)
-      if(png_handle_as_unknown(png_ptr, png_ptr->chunk_name) !=
-           PNG_HANDLE_CHUNK_ALWAYS
-#if defined(PNG_READ_USER_CHUNKS_SUPPORTED)
-           && png_ptr->read_user_chunk_fn == NULL
-#endif
-        )
-#endif
-          png_chunk_error(png_ptr, "unknown critical chunk");
-   }
-
-#if defined(PNG_READ_UNKNOWN_CHUNKS_SUPPORTED)
-   if ((png_ptr->flags & PNG_FLAG_KEEP_UNKNOWN_CHUNKS) ||
-       (png_ptr->read_user_chunk_fn != NULL))
-   {
-#ifdef PNG_MAX_MALLOC_64K
-       if (length > (png_uint_32)65535L)
-       {
-           png_warning(png_ptr, "unknown chunk too large to fit in memory");
-           skip = length - (png_uint_32)65535L;
-           length = (png_uint_32)65535L;
-       }
-#endif
-       png_strncpy((png_charp)png_ptr->unknown_chunk.name,
-	 (png_charp)png_ptr->chunk_name, 4);
-       png_ptr->unknown_chunk.name[4] = '\0';
-       png_ptr->unknown_chunk.data = (png_bytep)png_malloc(png_ptr, length);
-       png_ptr->unknown_chunk.size = (png_size_t)length;
-       png_crc_read(png_ptr, (png_bytep)png_ptr->unknown_chunk.data, length);
-#if defined(PNG_READ_USER_CHUNKS_SUPPORTED)
-       if(png_ptr->read_user_chunk_fn != NULL)
-       {
-          /* callback to user unknown chunk handler */
-          int ret;
-          ret = (*(png_ptr->read_user_chunk_fn))
-            (png_ptr, &png_ptr->unknown_chunk);
-          if (ret < 0)
-             png_chunk_error(png_ptr, "error in user chunk");
-          if (ret == 0)
-          {
-             if (!(png_ptr->chunk_name[0] & 0x20))
-                if(png_handle_as_unknown(png_ptr, png_ptr->chunk_name) !=
-                     PNG_HANDLE_CHUNK_ALWAYS)
-                   png_chunk_error(png_ptr, "unknown critical chunk");
-             png_set_unknown_chunks(png_ptr, info_ptr,
-               &png_ptr->unknown_chunk, 1);
-          }
-       }
-#else
-       png_set_unknown_chunks(png_ptr, info_ptr, &png_ptr->unknown_chunk, 1);
-#endif
-       png_free(png_ptr, png_ptr->unknown_chunk.data);
-       png_ptr->unknown_chunk.data = NULL;
-   }
-   else
-#endif
-      skip = length;
-
-   png_crc_finish(png_ptr, skip);
-
-#if !defined(PNG_READ_USER_CHUNKS_SUPPORTED)
-   info_ptr = info_ptr; /* quiet compiler warnings about unused info_ptr */
-#endif
-}
-
-/* This function is called to verify that a chunk name is valid.
-   This function can't have the "critical chunk check" incorporated
-   into it, since in the future we will need to be able to call user
-   functions to handle unknown critical chunks after we check that
-   the chunk name itself is valid. */
-
-#define isnonalpha(c) ((c) < 65 || (c) > 122 || ((c) > 90 && (c) < 97))
-
-void /* PRIVATE */
-png_check_chunk_name(png_structp png_ptr, png_bytep chunk_name)
-{
-   png_debug(1, "in png_check_chunk_name\n");
-   if (isnonalpha(chunk_name[0]) || isnonalpha(chunk_name[1]) ||
-       isnonalpha(chunk_name[2]) || isnonalpha(chunk_name[3]))
-   {
-      png_chunk_error(png_ptr, "invalid chunk type");
-   }
-}
-
-/* Combines the row recently read in with the existing pixels in the
-   row.  This routine takes care of alpha and transparency if requested.
-   This routine also handles the two methods of progressive display
-   of interlaced images, depending on the mask value.
-   The mask value describes which pixels are to be combined with
-   the row.  The pattern always repeats every 8 pixels, so just 8
-   bits are needed.  A one indicates the pixel is to be combined,
-   a zero indicates the pixel is to be skipped.  This is in addition
-   to any alpha or transparency value associated with the pixel.  If
-   you want all pixels to be combined, pass 0xff (255) in mask.  */
-
-void /* PRIVATE */
-png_combine_row(png_structp png_ptr, png_bytep row, int mask)
-{
-   png_debug(1,"in png_combine_row\n");
-   if (mask == 0xff)
-   {
-      png_memcpy(row, png_ptr->row_buf + 1,
-         PNG_ROWBYTES(png_ptr->row_info.pixel_depth, png_ptr->width));
-   }
-   else
-   {
-      switch (png_ptr->row_info.pixel_depth)
-      {
-         case 1:
-         {
-            png_bytep sp = png_ptr->row_buf + 1;
-            png_bytep dp = row;
-            int s_inc, s_start, s_end;
-            int m = 0x80;
-            int shift;
-            png_uint_32 i;
-            png_uint_32 row_width = png_ptr->width;
-
-#if defined(PNG_READ_PACKSWAP_SUPPORTED)
-            if (png_ptr->transformations & PNG_PACKSWAP)
-            {
-                s_start = 0;
-                s_end = 7;
-                s_inc = 1;
-            }
-            else
-#endif
-            {
-                s_start = 7;
-                s_end = 0;
-                s_inc = -1;
-            }
-
-            shift = s_start;
-
-            for (i = 0; i < row_width; i++)
-            {
-               if (m & mask)
-               {
-                  int value;
-
-                  value = (*sp >> shift) & 0x01;
-                  *dp &= (png_byte)((0x7f7f >> (7 - shift)) & 0xff);
-                  *dp |= (png_byte)(value << shift);
-               }
-
-               if (shift == s_end)
-               {
-                  shift = s_start;
-                  sp++;
-                  dp++;
-               }
-               else
-                  shift += s_inc;
-
-               if (m == 1)
-                  m = 0x80;
-               else
-                  m >>= 1;
-            }
-            break;
-         }
-         case 2:
-         {
-            png_bytep sp = png_ptr->row_buf + 1;
-            png_bytep dp = row;
-            int s_start, s_end, s_inc;
-            int m = 0x80;
-            int shift;
-            png_uint_32 i;
-            png_uint_32 row_width = png_ptr->width;
-            int value;
-
-#if defined(PNG_READ_PACKSWAP_SUPPORTED)
-            if (png_ptr->transformations & PNG_PACKSWAP)
-            {
-               s_start = 0;
-               s_end = 6;
-               s_inc = 2;
-            }
-            else
+#ifdef DEBUG
+#  include <ctype.h>
 #endif
-            {
-               s_start = 6;
-               s_end = 0;
-               s_inc = -2;
-            }
-
-            shift = s_start;
-
-            for (i = 0; i < row_width; i++)
-            {
-               if (m & mask)
-               {
-                  value = (*sp >> shift) & 0x03;
-                  *dp &= (png_byte)((0x3f3f >> (6 - shift)) & 0xff);
-                  *dp |= (png_byte)(value << shift);
-               }
-
-               if (shift == s_end)
-               {
-                  shift = s_start;
-                  sp++;
-                  dp++;
-               }
-               else
-                  shift += s_inc;
-               if (m == 1)
-                  m = 0x80;
-               else
-                  m >>= 1;
-            }
-            break;
-         }
-         case 4:
-         {
-            png_bytep sp = png_ptr->row_buf + 1;
-            png_bytep dp = row;
-            int s_start, s_end, s_inc;
-            int m = 0x80;
-            int shift;
-            png_uint_32 i;
-            png_uint_32 row_width = png_ptr->width;
-            int value;
-
-#if defined(PNG_READ_PACKSWAP_SUPPORTED)
-            if (png_ptr->transformations & PNG_PACKSWAP)
-            {
-               s_start = 0;
-               s_end = 4;
-               s_inc = 4;
-            }
-            else
-#endif
-            {
-               s_start = 4;
-               s_end = 0;
-               s_inc = -4;
-            }
-            shift = s_start;
-
-            for (i = 0; i < row_width; i++)
-            {
-               if (m & mask)
-               {
-                  value = (*sp >> shift) & 0xf;
-                  *dp &= (png_byte)((0xf0f >> (4 - shift)) & 0xff);
-                  *dp |= (png_byte)(value << shift);
-               }
-
-               if (shift == s_end)
-               {
-                  shift = s_start;
-                  sp++;
-                  dp++;
-               }
-               else
-                  shift += s_inc;
-               if (m == 1)
-                  m = 0x80;
-               else
-                  m >>= 1;
-            }
-            break;
-         }
-         default:
-         {
-            png_bytep sp = png_ptr->row_buf + 1;
-            png_bytep dp = row;
-            png_size_t pixel_bytes = (png_ptr->row_info.pixel_depth >> 3);
-            png_uint_32 i;
-            png_uint_32 row_width = png_ptr->width;
-            png_byte m = 0x80;
-
-
-            for (i = 0; i < row_width; i++)
-            {
-               if (m & mask)
-               {
-                  png_memcpy(dp, sp, pixel_bytes);
-               }
-
-               sp += pixel_bytes;
-               dp += pixel_bytes;
-
-               if (m == 1)
-                  m = 0x80;
-               else
-                  m >>= 1;
-            }
-            break;
-         }
-      }
-   }
-}
 
-#ifdef PNG_READ_INTERLACING_SUPPORTED
-/* OLD pre-1.0.9 interface:
-void png_do_read_interlace(png_row_infop row_info, png_bytep row, int pass,
-   png_uint_32 transformations)
+/* ===========================================================================
+ * Constants
  */
-void /* PRIVATE */
-png_do_read_interlace(png_structp png_ptr)
-{
-   png_row_infop row_info = &(png_ptr->row_info);
-   png_bytep row = png_ptr->row_buf + 1;
-   int pass = png_ptr->pass;
-   png_uint_32 transformations = png_ptr->transformations;
-#ifdef PNG_USE_LOCAL_ARRAYS
-   /* arrays to facilitate easy interlacing - use pass (0 - 6) as index */
-   /* offset to next interlace block */
-   PNG_CONST int png_pass_inc[7] = {8, 8, 4, 4, 2, 2, 1};
-#endif
 
-   png_debug(1,"in png_do_read_interlace\n");
-   if (row != NULL && row_info != NULL)
-   {
-      png_uint_32 final_width;
+#define MAX_BL_BITS 7
+/* Bit length codes must not exceed MAX_BL_BITS bits */
 
-      final_width = row_info->width * png_pass_inc[pass];
+#define END_BLOCK 256
+/* end of block literal code */
 
-      switch (row_info->pixel_depth)
-      {
-         case 1:
-         {
-            png_bytep sp = row + (png_size_t)((row_info->width - 1) >> 3);
-            png_bytep dp = row + (png_size_t)((final_width - 1) >> 3);
-            int sshift, dshift;
-            int s_start, s_end, s_inc;
-            int jstop = png_pass_inc[pass];
-            png_byte v;
-            png_uint_32 i;
-            int j;
+#define REP_3_6      16
+/* repeat previous bit length 3-6 times (2 bits of repeat count) */
 
-#if defined(PNG_READ_PACKSWAP_SUPPORTED)
-            if (transformations & PNG_PACKSWAP)
-            {
-                sshift = (int)((row_info->width + 7) & 0x07);
-                dshift = (int)((final_width + 7) & 0x07);
-                s_start = 7;
-                s_end = 0;
-                s_inc = -1;
-            }
-            else
-#endif
-            {
-                sshift = 7 - (int)((row_info->width + 7) & 0x07);
-                dshift = 7 - (int)((final_width + 7) & 0x07);
-                s_start = 0;
-                s_end = 7;
-                s_inc = 1;
-            }
+#define REPZ_3_10    17
+/* repeat a zero length 3-10 times  (3 bits of repeat count) */
 
-            for (i = 0; i < row_info->width; i++)
-            {
-               v = (png_byte)((*sp >> sshift) & 0x01);
-               for (j = 0; j < jstop; j++)
-               {
-                  *dp &= (png_byte)((0x7f7f >> (7 - dshift)) & 0xff);
-                  *dp |= (png_byte)(v << dshift);
-                  if (dshift == s_end)
-                  {
-                     dshift = s_start;
-                     dp--;
-                  }
-                  else
-                     dshift += s_inc;
-               }
-               if (sshift == s_end)
-               {
-                  sshift = s_start;
-                  sp--;
-               }
-               else
-                  sshift += s_inc;
-            }
-            break;
-         }
-         case 2:
-         {
-            png_bytep sp = row + (png_uint_32)((row_info->width - 1) >> 2);
-            png_bytep dp = row + (png_uint_32)((final_width - 1) >> 2);
-            int sshift, dshift;
-            int s_start, s_end, s_inc;
-            int jstop = png_pass_inc[pass];
-            png_uint_32 i;
+#define REPZ_11_138  18
+/* repeat a zero length 11-138 times  (7 bits of repeat count) */
 
-#if defined(PNG_READ_PACKSWAP_SUPPORTED)
-            if (transformations & PNG_PACKSWAP)
-            {
-               sshift = (int)(((row_info->width + 3) & 0x03) << 1);
-               dshift = (int)(((final_width + 3) & 0x03) << 1);
-               s_start = 6;
-               s_end = 0;
-               s_inc = -2;
-            }
-            else
-#endif
-            {
-               sshift = (int)((3 - ((row_info->width + 3) & 0x03)) << 1);
-               dshift = (int)((3 - ((final_width + 3) & 0x03)) << 1);
-               s_start = 0;
-               s_end = 6;
-               s_inc = 2;
-            }
+local const int extra_lbits[LENGTH_CODES] /* extra bits for each length code */
+   = {0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0};
 
-            for (i = 0; i < row_info->width; i++)
-            {
-               png_byte v;
-               int j;
+local const int extra_dbits[D_CODES] /* extra bits for each distance code */
+   = {0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13};
 
-               v = (png_byte)((*sp >> sshift) & 0x03);
-               for (j = 0; j < jstop; j++)
-               {
-                  *dp &= (png_byte)((0x3f3f >> (6 - dshift)) & 0xff);
-                  *dp |= (png_byte)(v << dshift);
-                  if (dshift == s_end)
-                  {
-                     dshift = s_start;
-                     dp--;
-                  }
-                  else
-                     dshift += s_inc;
-               }
-               if (sshift == s_end)
-               {
-                  sshift = s_start;
-                  sp--;
-               }
-               else
-                  sshift += s_inc;
-            }
-            break;
-         }
-         case 4:
-         {
-            png_bytep sp = row + (png_size_t)((row_info->width - 1) >> 1);
-            png_bytep dp = row + (png_size_t)((final_width - 1) >> 1);
-            int sshift, dshift;
-            int s_start, s_end, s_inc;
-            png_uint_32 i;
-            int jstop = png_pass_inc[pass];
+local const int extra_blbits[BL_CODES]/* extra bits for each bit length code */
+   = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,7};
 
-#if defined(PNG_READ_PACKSWAP_SUPPORTED)
-            if (transformations & PNG_PACKSWAP)
-            {
-               sshift = (int)(((row_info->width + 1) & 0x01) << 2);
-               dshift = (int)(((final_width + 1) & 0x01) << 2);
-               s_start = 4;
-               s_end = 0;
-               s_inc = -4;
-            }
-            else
-#endif
-            {
-               sshift = (int)((1 - ((row_info->width + 1) & 0x01)) << 2);
-               dshift = (int)((1 - ((final_width + 1) & 0x01)) << 2);
-               s_start = 0;
-               s_end = 4;
-               s_inc = 4;
-            }
+local const uch bl_order[BL_CODES]
+   = {16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15};
+/* The lengths of the bit length codes are sent in order of decreasing
+ * probability, to avoid transmitting the lengths for unused bit length codes.
+ */
 
-            for (i = 0; i < row_info->width; i++)
-            {
-               png_byte v = (png_byte)((*sp >> sshift) & 0xf);
-               int j;
+#define Buf_size (8 * 2*sizeof(char))
+/* Number of bits used within bi_buf. (bi_buf might be implemented on
+ * more than 16 bits on some systems.)
+ */
 
-               for (j = 0; j < jstop; j++)
-               {
-                  *dp &= (png_byte)((0xf0f >> (4 - dshift)) & 0xff);
-                  *dp |= (png_byte)(v << dshift);
-                  if (dshift == s_end)
-                  {
-                     dshift = s_start;
-                     dp--;
-                  }
-                  else
-                     dshift += s_inc;
-               }
-               if (sshift == s_end)
-               {
-                  sshift = s_start;
-                  sp--;
-               }
-               else
-                  sshift += s_inc;
-            }
-            break;
-         }
-         default:
-         {
-            png_size_t pixel_bytes = (row_info->pixel_depth >> 3);
-            png_bytep sp = row + (png_size_t)(row_info->width - 1) * pixel_bytes;
-            png_bytep dp = row + (png_size_t)(final_width - 1) * pixel_bytes;
+/* ===========================================================================
+ * Local data. These are initialized only once.
+ */
 
-            int jstop = png_pass_inc[pass];
-            png_uint_32 i;
+#define DIST_CODE_LEN  512 /* see definition of array dist_code below */
 
-            for (i = 0; i < row_info->width; i++)
-            {
-               png_byte v[8];
-               int j;
+#if defined(GEN_TREES_H) || !defined(STDC)
+/* non ANSI compilers may not accept trees.h */
 
-               png_memcpy(v, sp, pixel_bytes);
-               for (j = 0; j < jstop; j++)
-               {
-                  png_memcpy(dp, v, pixel_bytes);
-                  dp -= pixel_bytes;
-               }
-               sp -= pixel_bytes;
-            }
-            break;
-         }
-      }
-      row_info->width = final_width;
-      row_info->rowbytes = PNG_ROWBYTES(row_info->pixel_depth,final_width);
-   }
-#if !defined(PNG_READ_PACKSWAP_SUPPORTED)
-   transformations = transformations; /* silence compiler warning */
-#endif
-}
-#endif /* PNG_READ_INTERLACING_SUPPORTED */
+local ct_data static_ltree[L_CODES+2];
+/* The static literal tree. Since the bit lengths are imposed, there is no
+ * need for the L_CODES extra codes used during heap construction. However
+ * The codes 286 and 287 are needed to build a canonical tree (see _tr_init
+ * below).
+ */
 
-void /* PRIVATE */
-png_read_filter_row(png_structp png_ptr, png_row_infop row_info, png_bytep row,
-   png_bytep prev_row, int filter)
-{
-   png_debug(1, "in png_read_filter_row\n");
-   png_debug2(2,"row = %lu, filter = %d\n", png_ptr->row_number, filter);
-   switch (filter)
-   {
-      case PNG_FILTER_VALUE_NONE:
-         break;
-      case PNG_FILTER_VALUE_SUB:
-      {
-         png_uint_32 i;
-         png_uint_32 istop = row_info->rowbytes;
-         png_uint_32 bpp = (row_info->pixel_depth + 7) >> 3;
-         png_bytep rp = row + bpp;
-         png_bytep lp = row;
+local ct_data static_dtree[D_CODES];
+/* The static distance tree. (Actually a trivial tree since all codes use
+ * 5 bits.)
+ */
 
-         for (i = bpp; i < istop; i++)
-         {
-            *rp = (png_byte)(((int)(*rp) + (int)(*lp++)) & 0xff);
-            rp++;
-         }
-         break;
-      }
-      case PNG_FILTER_VALUE_UP:
-      {
-         png_uint_32 i;
-         png_uint_32 istop = row_info->rowbytes;
-         png_bytep rp = row;
-         png_bytep pp = prev_row;
+uch _dist_code[DIST_CODE_LEN];
+/* Distance codes. The first 256 values correspond to the distances
+ * 3 .. 258, the last 256 values correspond to the top 8 bits of
+ * the 15 bit distances.
+ */
 
-         for (i = 0; i < istop; i++)
-         {
-            *rp = (png_byte)(((int)(*rp) + (int)(*pp++)) & 0xff);
-            rp++;
-         }
-         break;
-      }
-      case PNG_FILTER_VALUE_AVG:
-      {
-         png_uint_32 i;
-         png_bytep rp = row;
-         png_bytep pp = prev_row;
-         png_bytep lp = row;
-         png_uint_32 bpp = (row_info->pixel_depth + 7) >> 3;
-         png_uint_32 istop = row_info->rowbytes - bpp;
+uch _length_code[MAX_MATCH-MIN_MATCH+1];
+/* length code for each normalized match length (0 == MIN_MATCH) */
 
-         for (i = 0; i < bpp; i++)
-         {
-            *rp = (png_byte)(((int)(*rp) +
-               ((int)(*pp++) / 2 )) & 0xff);
-            rp++;
-         }
+local int base_length[LENGTH_CODES];
+/* First normalized length for each code (0 = MIN_MATCH) */
 
-         for (i = 0; i < istop; i++)
-         {
-            *rp = (png_byte)(((int)(*rp) +
-               (int)(*pp++ + *lp++) / 2 ) & 0xff);
-            rp++;
-         }
-         break;
-      }
-      case PNG_FILTER_VALUE_PAETH:
-      {
-         png_uint_32 i;
-         png_bytep rp = row;
-         png_bytep pp = prev_row;
-         png_bytep lp = row;
-         png_bytep cp = prev_row;
-         png_uint_32 bpp = (row_info->pixel_depth + 7) >> 3;
-         png_uint_32 istop=row_info->rowbytes - bpp;
+local int base_dist[D_CODES];
+/* First normalized distance for each code (0 = distance of 1) */
 
-         for (i = 0; i < bpp; i++)
-         {
-            *rp = (png_byte)(((int)(*rp) + (int)(*pp++)) & 0xff);
-            rp++;
-         }
-
-         for (i = 0; i < istop; i++)   /* use leftover rp,pp */
-         {
-            int a, b, c, pa, pb, pc, p;
-
-            a = *lp++;
-            b = *pp++;
-            c = *cp++;
-
-            p = b - c;
-            pc = a - c;
-
-#ifdef PNG_USE_ABS
-            pa = abs(p);
-            pb = abs(pc);
-            pc = abs(p + pc);
 #else
-            pa = p < 0 ? -p : p;
-            pb = pc < 0 ? -pc : pc;
-            pc = (p + pc) < 0 ? -(p + pc) : p + pc;
+#  include "trees.h"
+#endif /* GEN_TREES_H */
+
+struct static_tree_desc_s {
+    const ct_data *static_tree;  /* static tree or NULL */
+    const intf *extra_bits;      /* extra bits for each code or NULL */
+    int     extra_base;          /* base index for extra_bits */
+    int     elems;               /* max number of elements in the tree */
+    int     max_length;          /* max bit length for the codes */
+};
+
+local static_tree_desc  static_l_desc =
+{static_ltree, extra_lbits, LITERALS+1, L_CODES, MAX_BITS};
+
+local static_tree_desc  static_d_desc =
+{static_dtree, extra_dbits, 0,          D_CODES, MAX_BITS};
+
+local static_tree_desc  static_bl_desc =
+{(const ct_data *)0, extra_blbits, 0,   BL_CODES, MAX_BL_BITS};
+
+/* ===========================================================================
+ * Local (static) routines in this file.
+ */
+
+local void tr_static_init OF((void));
+local void init_block     OF((deflate_state *s));
+local void pqdownheap     OF((deflate_state *s, ct_data *tree, int k));
+local void gen_bitlen     OF((deflate_state *s, tree_desc *desc));
+local void gen_codes      OF((ct_data *tree, int max_code, ushf *bl_count));
+local void build_tree     OF((deflate_state *s, tree_desc *desc));
+local void scan_tree      OF((deflate_state *s, ct_data *tree, int max_code));
+local void send_tree      OF((deflate_state *s, ct_data *tree, int max_code));
+local int  build_bl_tree  OF((deflate_state *s));
+local void send_all_trees OF((deflate_state *s, int lcodes, int dcodes,
+                              int blcodes));
+local void compress_block OF((deflate_state *s, ct_data *ltree,
+                              ct_data *dtree));
+local void set_data_type  OF((deflate_state *s));
+local unsigned bi_reverse OF((unsigned value, int length));
+local void bi_windup      OF((deflate_state *s));
+local void bi_flush       OF((deflate_state *s));
+local void copy_block     OF((deflate_state *s, charf *buf, unsigned len,
+                              int header));
+
+#ifdef GEN_TREES_H
+local void gen_trees_header OF((void));
 #endif
 
-            /*
-               if (pa <= pb && pa <= pc)
-                  p = a;
-               else if (pb <= pc)
-                  p = b;
-               else
-                  p = c;
-             */
+#ifndef DEBUG
+#  define send_code(s, c, tree) send_bits(s, tree[c].Code, tree[c].Len)
+   /* Send a code of the given tree. c and tree must not have side effects */
 
-            p = (pa <= pb && pa <=pc) ? a : (pb <= pc) ? b : c;
+#else /* DEBUG */
+#  define send_code(s, c, tree) \
+     { if (z_verbose>2) fprintf(stderr,"\ncd %3d ",(c)); \
+       send_bits(s, tree[c].Code, tree[c].Len); }
+#endif
 
-            *rp = (png_byte)(((int)(*rp) + p) & 0xff);
-            rp++;
-         }
-         break;
-      }
-      default:
-         png_warning(png_ptr, "Ignoring bad adaptive filter type");
-         *row=0;
-         break;
-   }
+/* ===========================================================================
+ * Output a short LSB first on the stream.
+ * IN assertion: there is enough room in pendingBuf.
+ */
+#define put_short(s, w) { \
+    put_byte(s, (uch)((w) & 0xff)); \
+    put_byte(s, (uch)((ush)(w) >> 8)); \
 }
 
-void /* PRIVATE */
-png_read_finish_row(png_structp png_ptr)
+/* ===========================================================================
+ * Send a value on a given number of bits.
+ * IN assertion: length <= 16 and value fits in length bits.
+ */
+#ifdef DEBUG
+local void send_bits      OF((deflate_state *s, int value, int length));
+
+local void send_bits(s, value, length)
+    deflate_state *s;
+    int value;  /* value to send */
+    int length; /* number of bits */
 {
-#ifdef PNG_USE_LOCAL_ARRAYS
-   /* arrays to facilitate easy interlacing - use pass (0 - 6) as index */
+    Tracevv((stderr," l %2d v %4x ", length, value));
+    Assert(length > 0 && length <= 15, "invalid length");
+    s->bits_sent += (ulg)length;
 
-   /* start of interlace block */
-   PNG_CONST int png_pass_start[7] = {0, 4, 0, 2, 0, 1, 0};
+    /* If not enough room in bi_buf, use (valid) bits from bi_buf and
+     * (16 - bi_valid) bits from value, leaving (width - (16-bi_valid))
+     * unused bits in value.
+     */
+    if (s->bi_valid > (int)Buf_size - length) {
+        s->bi_buf |= (value << s->bi_valid);
+        put_short(s, s->bi_buf);
+        s->bi_buf = (ush)value >> (Buf_size - s->bi_valid);
+        s->bi_valid += length - Buf_size;
+    } else {
+        s->bi_buf |= value << s->bi_valid;
+        s->bi_valid += length;
+    }
+}
+#else /* !DEBUG */
 
-   /* offset to next interlace block */
-   PNG_CONST int png_pass_inc[7] = {8, 8, 4, 4, 2, 2, 1};
+#define send_bits(s, value, length) \
+{ int len = length;\
+  if (s->bi_valid > (int)Buf_size - len) {\
+    int val = value;\
+    s->bi_buf |= (val << s->bi_valid);\
+    put_short(s, s->bi_buf);\
+    s->bi_buf = (ush)val >> (Buf_size - s->bi_valid);\
+    s->bi_valid += len - Buf_size;\
+  } else {\
+    s->bi_buf |= (value) << s->bi_valid;\
+    s->bi_valid += len;\
+  }\
+}
+#endif /* DEBUG */
 
-   /* start of interlace block in the y direction */
-   PNG_CONST int png_pass_ystart[7] = {0, 0, 4, 0, 2, 0, 1};
 
-   /* offset to next interlace block in the y direction */
-   PNG_CONST int png_pass_yinc[7] = {8, 8, 8, 4, 4, 2, 2};
+/* the arguments must not have side effects */
+
+/* ===========================================================================
+ * Initialize the various 'constant' tables.
+ */
+local void tr_static_init()
+{
+#if defined(GEN_TREES_H) || !defined(STDC)
+    static int static_init_done = 0;
+    int n;        /* iterates over tree elements */
+    int bits;     /* bit counter */
+    int length;   /* length value */
+    int code;     /* code value */
+    int dist;     /* distance index */
+    ush bl_count[MAX_BITS+1];
+    /* number of codes at each bit length for an optimal tree */
+
+    if (static_init_done) return;
+
+    /* For some embedded targets, global variables are not initialized: */
+    static_l_desc.static_tree = static_ltree;
+    static_l_desc.extra_bits = extra_lbits;
+    static_d_desc.static_tree = static_dtree;
+    static_d_desc.extra_bits = extra_dbits;
+    static_bl_desc.extra_bits = extra_blbits;
+
+    /* Initialize the mapping length (0..255) -> length code (0..28) */
+    length = 0;
+    for (code = 0; code < LENGTH_CODES-1; code++) {
+        base_length[code] = length;
+        for (n = 0; n < (1<<extra_lbits[code]); n++) {
+            _length_code[length++] = (uch)code;
+        }
+    }
+    Assert (length == 256, "tr_static_init: length != 256");
+    /* Note that the length 255 (match length 258) can be represented
+     * in two different ways: code 284 + 5 bits or code 285, so we
+     * overwrite length_code[255] to use the best encoding:
+     */
+    _length_code[length-1] = (uch)code;
+
+    /* Initialize the mapping dist (0..32K) -> dist code (0..29) */
+    dist = 0;
+    for (code = 0 ; code < 16; code++) {
+        base_dist[code] = dist;
+        for (n = 0; n < (1<<extra_dbits[code]); n++) {
+            _dist_code[dist++] = (uch)code;
+        }
+    }
+    Assert (dist == 256, "tr_static_init: dist != 256");
+    dist >>= 7; /* from now on, all distances are divided by 128 */
+    for ( ; code < D_CODES; code++) {
+        base_dist[code] = dist << 7;
+        for (n = 0; n < (1<<(extra_dbits[code]-7)); n++) {
+            _dist_code[256 + dist++] = (uch)code;
+        }
+    }
+    Assert (dist == 256, "tr_static_init: 256+dist != 512");
+
+    /* Construct the codes of the static literal tree */
+    for (bits = 0; bits <= MAX_BITS; bits++) bl_count[bits] = 0;
+    n = 0;
+    while (n <= 143) static_ltree[n++].Len = 8, bl_count[8]++;
+    while (n <= 255) static_ltree[n++].Len = 9, bl_count[9]++;
+    while (n <= 279) static_ltree[n++].Len = 7, bl_count[7]++;
+    while (n <= 287) static_ltree[n++].Len = 8, bl_count[8]++;
+    /* Codes 286 and 287 do not exist, but we must include them in the
+     * tree construction to get a canonical Huffman tree (longest code
+     * all ones)
+     */
+    gen_codes((ct_data *)static_ltree, L_CODES+1, bl_count);
+
+    /* The static distance tree is trivial: */
+    for (n = 0; n < D_CODES; n++) {
+        static_dtree[n].Len = 5;
+        static_dtree[n].Code = bi_reverse((unsigned)n, 5);
+    }
+    static_init_done = 1;
+
+#  ifdef GEN_TREES_H
+    gen_trees_header();
+#  endif
+#endif /* defined(GEN_TREES_H) || !defined(STDC) */
+}
+
+/* ===========================================================================
+ * Genererate the file trees.h describing the static trees.
+ */
+#ifdef GEN_TREES_H
+#  ifndef DEBUG
+#    include <stdio.h>
+#  endif
+
+#  define SEPARATOR(i, last, width) \
+      ((i) == (last)? "\n};\n\n" :    \
+       ((i) % (width) == (width)-1 ? ",\n" : ", "))
+
+void gen_trees_header()
+{
+    FILE *header = fopen("trees.h", "w");
+    int i;
+
+    Assert (header != NULL, "Can't open trees.h");
+    fprintf(header,
+            "/* header created automatically with -DGEN_TREES_H */\n\n");
+
+    fprintf(header, "local const ct_data static_ltree[L_CODES+2] = {\n");
+    for (i = 0; i < L_CODES+2; i++) {
+        fprintf(header, "{{%3u},{%3u}}%s", static_ltree[i].Code,
+                static_ltree[i].Len, SEPARATOR(i, L_CODES+1, 5));
+    }
+
+    fprintf(header, "local const ct_data static_dtree[D_CODES] = {\n");
+    for (i = 0; i < D_CODES; i++) {
+        fprintf(header, "{{%2u},{%2u}}%s", static_dtree[i].Code,
+                static_dtree[i].Len, SEPARATOR(i, D_CODES-1, 5));
+    }
+
+    fprintf(header, "const uch _dist_code[DIST_CODE_LEN] = {\n");
+    for (i = 0; i < DIST_CODE_LEN; i++) {
+        fprintf(header, "%2u%s", _dist_code[i],
+                SEPARATOR(i, DIST_CODE_LEN-1, 20));
+    }
+
+    fprintf(header, "const uch _length_code[MAX_MATCH-MIN_MATCH+1]= {\n");
+    for (i = 0; i < MAX_MATCH-MIN_MATCH+1; i++) {
+        fprintf(header, "%2u%s", _length_code[i],
+                SEPARATOR(i, MAX_MATCH-MIN_MATCH, 20));
+    }
+
+    fprintf(header, "local const int base_length[LENGTH_CODES] = {\n");
+    for (i = 0; i < LENGTH_CODES; i++) {
+        fprintf(header, "%1u%s", base_length[i],
+                SEPARATOR(i, LENGTH_CODES-1, 20));
+    }
+
+    fprintf(header, "local const int base_dist[D_CODES] = {\n");
+    for (i = 0; i < D_CODES; i++) {
+        fprintf(header, "%5u%s", base_dist[i],
+                SEPARATOR(i, D_CODES-1, 10));
+    }
+
+    fclose(header);
+}
+#endif /* GEN_TREES_H */
+
+/* ===========================================================================
+ * Initialize the tree data structures for a new zlib stream.
+ */
+void _tr_init(s)
+    deflate_state *s;
+{
+    tr_static_init();
+
+    s->l_desc.dyn_tree = s->dyn_ltree;
+    s->l_desc.stat_desc = &static_l_desc;
+
+    s->d_desc.dyn_tree = s->dyn_dtree;
+    s->d_desc.stat_desc = &static_d_desc;
+
+    s->bl_desc.dyn_tree = s->bl_tree;
+    s->bl_desc.stat_desc = &static_bl_desc;
+
+    s->bi_buf = 0;
+    s->bi_valid = 0;
+    s->last_eob_len = 8; /* enough lookahead for inflate */
+#ifdef DEBUG
+    s->compressed_len = 0L;
+    s->bits_sent = 0L;
 #endif
 
-   png_debug(1, "in png_read_finish_row\n");
-   png_ptr->row_number++;
-   if (png_ptr->row_number < png_ptr->num_rows)
-      return;
+    /* Initialize the first block of the first file: */
+    init_block(s);
+}
 
-   if (png_ptr->interlaced)
-   {
-      png_ptr->row_number = 0;
-      png_memset_check(png_ptr, png_ptr->prev_row, 0,
-         png_ptr->rowbytes + 1);
-      do
-      {
-         png_ptr->pass++;
-         if (png_ptr->pass >= 7)
-            break;
-         png_ptr->iwidth = (png_ptr->width +
-            png_pass_inc[png_ptr->pass] - 1 -
-            png_pass_start[png_ptr->pass]) /
-            png_pass_inc[png_ptr->pass];
+/* ===========================================================================
+ * Initialize a new block.
+ */
+local void init_block(s)
+    deflate_state *s;
+{
+    int n; /* iterates over tree elements */
 
-         png_ptr->irowbytes = PNG_ROWBYTES(png_ptr->pixel_depth,
-            png_ptr->iwidth) + 1;
+    /* Initialize the trees. */
+    for (n = 0; n < L_CODES;  n++) s->dyn_ltree[n].Freq = 0;
+    for (n = 0; n < D_CODES;  n++) s->dyn_dtree[n].Freq = 0;
+    for (n = 0; n < BL_CODES; n++) s->bl_tree[n].Freq = 0;
 
-         if (!(png_ptr->transformations & PNG_INTERLACE))
-         {
-            png_ptr->num_rows = (png_ptr->height +
-               png_pass_yinc[png_ptr->pass] - 1 -
-               png_pass_ystart[png_ptr->pass]) /
-               png_pass_yinc[png_ptr->pass];
-            if (!(png_ptr->num_rows))
-               continue;
-         }
-         else  /* if (png_ptr->transformations & PNG_INTERLACE) */
-            break;
-      } while (png_ptr->iwidth == 0);
+    s->dyn_ltree[END_BLOCK].Freq = 1;
+    s->opt_len = s->static_len = 0L;
+    s->last_lit = s->matches = 0;
+}
 
-      if (png_ptr->pass < 7)
-         return;
-   }
+#define SMALLEST 1
+/* Index within the heap array of least frequent node in the Huffman tree */
 
-   if (!(png_ptr->flags & PNG_FLAG_ZLIB_FINISHED))
-   {
-#ifdef PNG_USE_LOCAL_ARRAYS
-      PNG_CONST PNG_IDAT;
-#endif
-      char extra;
-      int ret;
 
-      png_ptr->zstream.next_out = (Byte *)&extra;
-      png_ptr->zstream.avail_out = (uInt)1;
-      for(;;)
-      {
-         if (!(png_ptr->zstream.avail_in))
-         {
-            while (!png_ptr->idat_size)
-            {
-               png_byte chunk_length[4];
+/* ===========================================================================
+ * Remove the smallest element from the heap and recreate the heap with
+ * one less element. Updates heap and heap_len.
+ */
+#define pqremove(s, tree, top) \
+{\
+    top = s->heap[SMALLEST]; \
+    s->heap[SMALLEST] = s->heap[s->heap_len--]; \
+    pqdownheap(s, tree, SMALLEST); \
+}
 
-               png_crc_finish(png_ptr, 0);
+/* ===========================================================================
+ * Compares to subtrees, using the tree depth as tie breaker when
+ * the subtrees have equal frequency. This minimizes the worst case length.
+ */
+#define smaller(tree, n, m, depth) \
+   (tree[n].Freq < tree[m].Freq || \
+   (tree[n].Freq == tree[m].Freq && depth[n] <= depth[m]))
 
-               png_read_data(png_ptr, chunk_length, 4);
-               png_ptr->idat_size = png_get_uint_31(png_ptr, chunk_length);
-               png_reset_crc(png_ptr);
-               png_crc_read(png_ptr, png_ptr->chunk_name, 4);
-               if (png_memcmp(png_ptr->chunk_name, png_IDAT, 4))
-                  png_error(png_ptr, "Not enough image data");
+/* ===========================================================================
+ * Restore the heap property by moving down the tree starting at node k,
+ * exchanging a node with the smallest of its two sons if necessary, stopping
+ * when the heap property is re-established (each father smaller than its
+ * two sons).
+ */
+local void pqdownheap(s, tree, k)
+    deflate_state *s;
+    ct_data *tree;  /* the tree to restore */
+    int k;               /* node to move down */
+{
+    int v = s->heap[k];
+    int j = k << 1;  /* left son of k */
+    while (j <= s->heap_len) {
+        /* Set j to the smallest of the two sons: */
+        if (j < s->heap_len &&
+            smaller(tree, s->heap[j+1], s->heap[j], s->depth)) {
+            j++;
+        }
+        /* Exit if v is smaller than both sons */
+        if (smaller(tree, v, s->heap[j], s->depth)) break;
 
+        /* Exchange v with the smallest son */
+        s->heap[k] = s->heap[j];  k = j;
+
+        /* And continue down the tree, setting j to the left son of k */
+        j <<= 1;
+    }
+    s->heap[k] = v;
+}
+
+/* ===========================================================================
+ * Compute the optimal bit lengths for a tree and update the total bit length
+ * for the current block.
+ * IN assertion: the fields freq and dad are set, heap[heap_max] and
+ *    above are the tree nodes sorted by increasing frequency.
+ * OUT assertions: the field len is set to the optimal bit length, the
+ *     array bl_count contains the frequencies for each bit length.
+ *     The length opt_len is updated; static_len is also updated if stree is
+ *     not null.
+ */
+local void gen_bitlen(s, desc)
+    deflate_state *s;
+    tree_desc *desc;    /* the tree descriptor */
+{
+    ct_data *tree        = desc->dyn_tree;
+    int max_code         = desc->max_code;
+    const ct_data *stree = desc->stat_desc->static_tree;
+    const intf *extra    = desc->stat_desc->extra_bits;
+    int base             = desc->stat_desc->extra_base;
+    int max_length       = desc->stat_desc->max_length;
+    int h;              /* heap index */
+    int n, m;           /* iterate over the tree elements */
+    int bits;           /* bit length */
+    int xbits;          /* extra bits */
+    ush f;              /* frequency */
+    int overflow = 0;   /* number of elements with bit length too large */
+
+    for (bits = 0; bits <= MAX_BITS; bits++) s->bl_count[bits] = 0;
+
+    /* In a first pass, compute the optimal bit lengths (which may
+     * overflow in the case of the bit length tree).
+     */
+    tree[s->heap[s->heap_max]].Len = 0; /* root of the heap */
+
+    for (h = s->heap_max+1; h < HEAP_SIZE; h++) {
+        n = s->heap[h];
+        bits = tree[tree[n].Dad].Len + 1;
+        if (bits > max_length) bits = max_length, overflow++;
+        tree[n].Len = (ush)bits;
+        /* We overwrite tree[n].Dad which is no longer needed */
+
+        if (n > max_code) continue; /* not a leaf node */
+
+        s->bl_count[bits]++;
+        xbits = 0;
+        if (n >= base) xbits = extra[n-base];
+        f = tree[n].Freq;
+        s->opt_len += (ulg)f * (bits + xbits);
+        if (stree) s->static_len += (ulg)f * (stree[n].Len + xbits);
+    }
+    if (overflow == 0) return;
+
+    Trace((stderr,"\nbit length overflow\n"));
+    /* This happens for example on obj2 and pic of the Calgary corpus */
+
+    /* Find the first bit length which could increase: */
+    do {
+        bits = max_length-1;
+        while (s->bl_count[bits] == 0) bits--;
+        s->bl_count[bits]--;      /* move one leaf down the tree */
+        s->bl_count[bits+1] += 2; /* move one overflow item as its brother */
+        s->bl_count[max_length]--;
+        /* The brother of the overflow item also moves one step up,
+         * but this does not affect bl_count[max_length]
+         */
+        overflow -= 2;
+    } while (overflow > 0);
+
+    /* Now recompute all bit lengths, scanning in increasing frequency.
+     * h is still equal to HEAP_SIZE. (It is simpler to reconstruct all
+     * lengths instead of fixing only the wrong ones. This idea is taken
+     * from 'ar' written by Haruhiko Okumura.)
+     */
+    for (bits = max_length; bits != 0; bits--) {
+        n = s->bl_count[bits];
+        while (n != 0) {
+            m = s->heap[--h];
+            if (m > max_code) continue;
+            if ((unsigned) tree[m].Len != (unsigned) bits) {
+                Trace((stderr,"code %d bits %d->%d\n", m, tree[m].Len, bits));
+                s->opt_len += ((long)bits - (long)tree[m].Len)
+                              *(long)tree[m].Freq;
+                tree[m].Len = (ush)bits;
             }
-            png_ptr->zstream.avail_in = (uInt)png_ptr->zbuf_size;
-            png_ptr->zstream.next_in = png_ptr->zbuf;
-            if (png_ptr->zbuf_size > png_ptr->idat_size)
-               png_ptr->zstream.avail_in = (uInt)png_ptr->idat_size;
-            png_crc_read(png_ptr, png_ptr->zbuf, png_ptr->zstream.avail_in);
-            png_ptr->idat_size -= png_ptr->zstream.avail_in;
-         }
-         ret = inflate(&png_ptr->zstream, Z_PARTIAL_FLUSH);
-         if (ret == Z_STREAM_END)
-         {
-            if (!(png_ptr->zstream.avail_out) || png_ptr->zstream.avail_in ||
-               png_ptr->idat_size)
-               png_warning(png_ptr, "Extra compressed data");
-            png_ptr->mode |= PNG_AFTER_IDAT;
-            png_ptr->flags |= PNG_FLAG_ZLIB_FINISHED;
-            break;
-         }
-         if (ret != Z_OK)
-            png_error(png_ptr, png_ptr->zstream.msg ? png_ptr->zstream.msg :
-                      "Decompression Error");
-
-         if (!(png_ptr->zstream.avail_out))
-         {
-            png_warning(png_ptr, "Extra compressed data.");
-            png_ptr->mode |= PNG_AFTER_IDAT;
-            png_ptr->flags |= PNG_FLAG_ZLIB_FINISHED;
-            break;
-         }
-
-      }
-      png_ptr->zstream.avail_out = 0;
-   }
-
-   if (png_ptr->idat_size || png_ptr->zstream.avail_in)
-      png_warning(png_ptr, "Extra compression data");
-
-   inflateReset(&png_ptr->zstream);
-
-   png_ptr->mode |= PNG_AFTER_IDAT;
+            n--;
+        }
+    }
 }
 
-void /* PRIVATE */
-png_read_start_row(png_structp png_ptr)
+/* ===========================================================================
+ * Generate the codes for a given tree and bit counts (which need not be
+ * optimal).
+ * IN assertion: the array bl_count contains the bit length statistics for
+ * the given tree and the field len is set for all tree elements.
+ * OUT assertion: the field code is set for all tree elements of non
+ *     zero code length.
+ */
+local void gen_codes (tree, max_code, bl_count)
+    ct_data *tree;             /* the tree to decorate */
+    int max_code;              /* largest code with non zero frequency */
+    ushf *bl_count;            /* number of codes at each bit length */
 {
-#ifdef PNG_USE_LOCAL_ARRAYS
-   /* arrays to facilitate easy interlacing - use pass (0 - 6) as index */
+    ush next_code[MAX_BITS+1]; /* next code value for each bit length */
+    ush code = 0;              /* running code value */
+    int bits;                  /* bit index */
+    int n;                     /* code index */
 
-   /* start of interlace block */
-   PNG_CONST int png_pass_start[7] = {0, 4, 0, 2, 0, 1, 0};
+    /* The distribution counts are first used to generate the code values
+     * without bit reversal.
+     */
+    for (bits = 1; bits <= MAX_BITS; bits++) {
+        next_code[bits] = code = (code + bl_count[bits-1]) << 1;
+    }
+    /* Check that the bit counts in bl_count are consistent. The last code
+     * must be all ones.
+     */
+    Assert (code + bl_count[MAX_BITS]-1 == (1<<MAX_BITS)-1,
+            "inconsistent bit counts");
+    Tracev((stderr,"\ngen_codes: max_code %d ", max_code));
 
-   /* offset to next interlace block */
-   PNG_CONST int png_pass_inc[7] = {8, 8, 4, 4, 2, 2, 1};
+    for (n = 0;  n <= max_code; n++) {
+        int len = tree[n].Len;
+        if (len == 0) continue;
+        /* Now reverse the bits */
+        tree[n].Code = bi_reverse(next_code[len]++, len);
 
-   /* start of interlace block in the y direction */
-   PNG_CONST int png_pass_ystart[7] = {0, 0, 4, 0, 2, 0, 1};
-
-   /* offset to next interlace block in the y direction */
-   PNG_CONST int png_pass_yinc[7] = {8, 8, 8, 4, 4, 2, 2};
-#endif
-
-   int max_pixel_depth;
-   png_uint_32 row_bytes;
-
-   png_debug(1, "in png_read_start_row\n");
-   png_ptr->zstream.avail_in = 0;
-   png_init_read_transformations(png_ptr);
-   if (png_ptr->interlaced)
-   {
-      if (!(png_ptr->transformations & PNG_INTERLACE))
-         png_ptr->num_rows = (png_ptr->height + png_pass_yinc[0] - 1 -
-            png_pass_ystart[0]) / png_pass_yinc[0];
-      else
-         png_ptr->num_rows = png_ptr->height;
-
-      png_ptr->iwidth = (png_ptr->width +
-         png_pass_inc[png_ptr->pass] - 1 -
-         png_pass_start[png_ptr->pass]) /
-         png_pass_inc[png_ptr->pass];
-
-         row_bytes = PNG_ROWBYTES(png_ptr->pixel_depth,png_ptr->iwidth) + 1;
-
-         png_ptr->irowbytes = (png_size_t)row_bytes;
-         if((png_uint_32)png_ptr->irowbytes != row_bytes)
-            png_error(png_ptr, "Rowbytes overflow in png_read_start_row");
-   }
-   else
-   {
-      png_ptr->num_rows = png_ptr->height;
-      png_ptr->iwidth = png_ptr->width;
-      png_ptr->irowbytes = png_ptr->rowbytes + 1;
-   }
-   max_pixel_depth = png_ptr->pixel_depth;
-
-#if defined(PNG_READ_PACK_SUPPORTED)
-   if ((png_ptr->transformations & PNG_PACK) && png_ptr->bit_depth < 8)
-      max_pixel_depth = 8;
-#endif
-
-#if defined(PNG_READ_EXPAND_SUPPORTED)
-   if (png_ptr->transformations & PNG_EXPAND)
-   {
-      if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE)
-      {
-         if (png_ptr->num_trans)
-            max_pixel_depth = 32;
-         else
-            max_pixel_depth = 24;
-      }
-      else if (png_ptr->color_type == PNG_COLOR_TYPE_GRAY)
-      {
-         if (max_pixel_depth < 8)
-            max_pixel_depth = 8;
-         if (png_ptr->num_trans)
-            max_pixel_depth *= 2;
-      }
-      else if (png_ptr->color_type == PNG_COLOR_TYPE_RGB)
-      {
-         if (png_ptr->num_trans)
-         {
-            max_pixel_depth *= 4;
-            max_pixel_depth /= 3;
-         }
-      }
-   }
-#endif
-
-#if defined(PNG_READ_FILLER_SUPPORTED)
-   if (png_ptr->transformations & (PNG_FILLER))
-   {
-      if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE)
-         max_pixel_depth = 32;
-      else if (png_ptr->color_type == PNG_COLOR_TYPE_GRAY)
-      {
-         if (max_pixel_depth <= 8)
-            max_pixel_depth = 16;
-         else
-            max_pixel_depth = 32;
-      }
-      else if (png_ptr->color_type == PNG_COLOR_TYPE_RGB)
-      {
-         if (max_pixel_depth <= 32)
-            max_pixel_depth = 32;
-         else
-            max_pixel_depth = 64;
-      }
-   }
-#endif
-
-#if defined(PNG_READ_GRAY_TO_RGB_SUPPORTED)
-   if (png_ptr->transformations & PNG_GRAY_TO_RGB)
-   {
-      if (
-#if defined(PNG_READ_EXPAND_SUPPORTED)
-        (png_ptr->num_trans && (png_ptr->transformations & PNG_EXPAND)) ||
-#endif
-#if defined(PNG_READ_FILLER_SUPPORTED)
-        (png_ptr->transformations & (PNG_FILLER)) ||
-#endif
-        png_ptr->color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
-      {
-         if (max_pixel_depth <= 16)
-            max_pixel_depth = 32;
-         else
-            max_pixel_depth = 64;
-      }
-      else
-      {
-         if (max_pixel_depth <= 8)
-           {
-             if (png_ptr->color_type == PNG_COLOR_TYPE_RGB_ALPHA)
-               max_pixel_depth = 32;
-             else
-               max_pixel_depth = 24;
-           }
-         else if (png_ptr->color_type == PNG_COLOR_TYPE_RGB_ALPHA)
-            max_pixel_depth = 64;
-         else
-            max_pixel_depth = 48;
-      }
-   }
-#endif
-
-#if defined(PNG_READ_USER_TRANSFORM_SUPPORTED) && \
-defined(PNG_USER_TRANSFORM_PTR_SUPPORTED)
-   if(png_ptr->transformations & PNG_USER_TRANSFORM)
-     {
-       int user_pixel_depth=png_ptr->user_transform_depth*
-         png_ptr->user_transform_channels;
-       if(user_pixel_depth > max_pixel_depth)
-         max_pixel_depth=user_pixel_depth;
-     }
-#endif
-
-   /* align the width on the next larger 8 pixels.  Mainly used
-      for interlacing */
-   row_bytes = ((png_ptr->width + 7) & ~((png_uint_32)7));
-   /* calculate the maximum bytes needed, adding a byte and a pixel
-      for safety's sake */
-   row_bytes = PNG_ROWBYTES(max_pixel_depth,row_bytes) +
-      1 + ((max_pixel_depth + 7) >> 3);
-#ifdef PNG_MAX_MALLOC_64K
-   if (row_bytes > (png_uint_32)65536L)
-      png_error(png_ptr, "This image requires a row greater than 64KB");
-#endif
-   png_ptr->big_row_buf = (png_bytep)png_malloc(png_ptr, row_bytes+64);
-   png_ptr->row_buf = png_ptr->big_row_buf+32;
-
-#ifdef PNG_MAX_MALLOC_64K
-   if ((png_uint_32)png_ptr->rowbytes + 1 > (png_uint_32)65536L)
-      png_error(png_ptr, "This image requires a row greater than 64KB");
-#endif
-   if ((png_uint_32)png_ptr->rowbytes > (png_uint_32)(PNG_SIZE_MAX - 1))
-      png_error(png_ptr, "Row has too many bytes to allocate in memory.");
-   png_ptr->prev_row = (png_bytep)png_malloc(png_ptr, (png_uint_32)(
-      png_ptr->rowbytes + 1));
-
-   png_memset_check(png_ptr, png_ptr->prev_row, 0, png_ptr->rowbytes + 1);
-
-   png_debug1(3, "width = %lu,\n", png_ptr->width);
-   png_debug1(3, "height = %lu,\n", png_ptr->height);
-   png_debug1(3, "iwidth = %lu,\n", png_ptr->iwidth);
-   png_debug1(3, "num_rows = %lu\n", png_ptr->num_rows);
-   png_debug1(3, "rowbytes = %lu,\n", png_ptr->rowbytes);
-   png_debug1(3, "irowbytes = %lu,\n", png_ptr->irowbytes);
-
-   png_ptr->flags |= PNG_FLAG_ROW_INIT;
+        Tracecv(tree != static_ltree, (stderr,"\nn %3d %c l %2d c %4x (%x) ",
+             n, (isgraph(n) ? n : ' '), len, tree[n].Code, next_code[len]-1));
+    }
 }
-#endif /* PNG_READ_SUPPORTED */
+
+/* ===========================================================================
+ * Construct one Huffman tree and assigns the code bit strings and lengths.
+ * Update the total bit length for the current block.
+ * IN assertion: the field freq is set for all tree elements.
+ * OUT assertions: the fields len and code are set to the optimal bit length
+ *     and corresponding code. The length opt_len is updated; static_len is
+ *     also updated if stree is not null. The field max_code is set.
+ */
+local void build_tree(s, desc)
+    deflate_state *s;
+    tree_desc *desc; /* the tree descriptor */
+{
+    ct_data *tree         = desc->dyn_tree;
+    const ct_data *stree  = desc->stat_desc->static_tree;
+    int elems             = desc->stat_desc->elems;
+    int n, m;          /* iterate over heap elements */
+    int max_code = -1; /* largest code with non zero frequency */
+    int node;          /* new node being created */
+
+    /* Construct the initial heap, with least frequent element in
+     * heap[SMALLEST]. The sons of heap[n] are heap[2*n] and heap[2*n+1].
+     * heap[0] is not used.
+     */
+    s->heap_len = 0, s->heap_max = HEAP_SIZE;
+
+    for (n = 0; n < elems; n++) {
+        if (tree[n].Freq != 0) {
+            s->heap[++(s->heap_len)] = max_code = n;
+            s->depth[n] = 0;
+        } else {
+            tree[n].Len = 0;
+        }
+    }
+
+    /* The pkzip format requires that at least one distance code exists,
+     * and that at least one bit should be sent even if there is only one
+     * possible code. So to avoid special checks later on we force at least
+     * two codes of non zero frequency.
+     */
+    while (s->heap_len < 2) {
+        node = s->heap[++(s->heap_len)] = (max_code < 2 ? ++max_code : 0);
+        tree[node].Freq = 1;
+        s->depth[node] = 0;
+        s->opt_len--; if (stree) s->static_len -= stree[node].Len;
+        /* node is 0 or 1 so it does not have extra bits */
+    }
+    desc->max_code = max_code;
+
+    /* The elements heap[heap_len/2+1 .. heap_len] are leaves of the tree,
+     * establish sub-heaps of increasing lengths:
+     */
+    for (n = s->heap_len/2; n >= 1; n--) pqdownheap(s, tree, n);
+
+    /* Construct the Huffman tree by repeatedly combining the least two
+     * frequent nodes.
+     */
+    node = elems;              /* next internal node of the tree */
+    do {
+        pqremove(s, tree, n);  /* n = node of least frequency */
+        m = s->heap[SMALLEST]; /* m = node of next least frequency */
+
+        s->heap[--(s->heap_max)] = n; /* keep the nodes sorted by frequency */
+        s->heap[--(s->heap_max)] = m;
+
+        /* Create a new node father of n and m */
+        tree[node].Freq = tree[n].Freq + tree[m].Freq;
+        s->depth[node] = (uch)((s->depth[n] >= s->depth[m] ?
+                                s->depth[n] : s->depth[m]) + 1);
+        tree[n].Dad = tree[m].Dad = (ush)node;
+#ifdef DUMP_BL_TREE
+        if (tree == s->bl_tree) {
+            fprintf(stderr,"\nnode %d(%d), sons %d(%d) %d(%d)",
+                    node, tree[node].Freq, n, tree[n].Freq, m, tree[m].Freq);
+        }
+#endif
+        /* and insert the new node in the heap */
+        s->heap[SMALLEST] = node++;
+        pqdownheap(s, tree, SMALLEST);
+
+    } while (s->heap_len >= 2);
+
+    s->heap[--(s->heap_max)] = s->heap[SMALLEST];
+
+    /* At this point, the fields freq and dad are set. We can now
+     * generate the bit lengths.
+     */
+    gen_bitlen(s, (tree_desc *)desc);
+
+    /* The field len is now set, we can generate the bit codes */
+    gen_codes ((ct_data *)tree, max_code, s->bl_count);
+}
+
+/* ===========================================================================
+ * Scan a literal or distance tree to determine the frequencies of the codes
+ * in the bit length tree.
+ */
+local void scan_tree (s, tree, max_code)
+    deflate_state *s;
+    ct_data *tree;   /* the tree to be scanned */
+    int max_code;    /* and its largest code of non zero frequency */
+{
+    int n;                     /* iterates over all tree elements */
+    int prevlen = -1;          /* last emitted length */
+    int curlen;                /* length of current code */
+    int nextlen = tree[0].Len; /* length of next code */
+    int count = 0;             /* repeat count of the current code */
+    int max_count = 7;         /* max repeat count */
+    int min_count = 4;         /* min repeat count */
+
+    if (nextlen == 0) max_count = 138, min_count = 3;
+    tree[max_code+1].Len = (ush)0xffff; /* guard */
+
+    for (n = 0; n <= max_code; n++) {
+        curlen = nextlen; nextlen = tree[n+1].Len;
+        if (++count < max_count && curlen == nextlen) {
+            continue;
+        } else if (count < min_count) {
+            s->bl_tree[curlen].Freq += count;
+        } else if (curlen != 0) {
+            if (curlen != prevlen) s->bl_tree[curlen].Freq++;
+            s->bl_tree[REP_3_6].Freq++;
+        } else if (count <= 10) {
+            s->bl_tree[REPZ_3_10].Freq++;
+        } else {
+            s->bl_tree[REPZ_11_138].Freq++;
+        }
+        count = 0; prevlen = curlen;
+        if (nextlen == 0) {
+            max_count = 138, min_count = 3;
+        } else if (curlen == nextlen) {
+            max_count = 6, min_count = 3;
+        } else {
+            max_count = 7, min_count = 4;
+        }
+    }
+}
+
+/* ===========================================================================
+ * Send a literal or distance tree in compressed form, using the codes in
+ * bl_tree.
+ */
+local void send_tree (s, tree, max_code)
+    deflate_state *s;
+    ct_data *tree; /* the tree to be scanned */
+    int max_code;       /* and its largest code of non zero frequency */
+{
+    int n;                     /* iterates over all tree elements */
+    int prevlen = -1;          /* last emitted length */
+    int curlen;                /* length of current code */
+    int nextlen = tree[0].Len; /* length of next code */
+    int count = 0;             /* repeat count of the current code */
+    int max_count = 7;         /* max repeat count */
+    int min_count = 4;         /* min repeat count */
+
+    /* tree[max_code+1].Len = -1; */  /* guard already set */
+    if (nextlen == 0) max_count = 138, min_count = 3;
+
+    for (n = 0; n <= max_code; n++) {
+        curlen = nextlen; nextlen = tree[n+1].Len;
+        if (++count < max_count && curlen == nextlen) {
+            continue;
+        } else if (count < min_count) {
+            do { send_code(s, curlen, s->bl_tree); } while (--count != 0);
+
+        } else if (curlen != 0) {
+            if (curlen != prevlen) {
+                send_code(s, curlen, s->bl_tree); count--;
+            }
+            Assert(count >= 3 && count <= 6, " 3_6?");
+            send_code(s, REP_3_6, s->bl_tree); send_bits(s, count-3, 2);
+
+        } else if (count <= 10) {
+            send_code(s, REPZ_3_10, s->bl_tree); send_bits(s, count-3, 3);
+
+        } else {
+            send_code(s, REPZ_11_138, s->bl_tree); send_bits(s, count-11, 7);
+        }
+        count = 0; prevlen = curlen;
+        if (nextlen == 0) {
+            max_count = 138, min_count = 3;
+        } else if (curlen == nextlen) {
+            max_count = 6, min_count = 3;
+        } else {
+            max_count = 7, min_count = 4;
+        }
+    }
+}
+
+/* ===========================================================================
+ * Construct the Huffman tree for the bit lengths and return the index in
+ * bl_order of the last bit length code to send.
+ */
+local int build_bl_tree(s)
+    deflate_state *s;
+{
+    int max_blindex;  /* index of last bit length code of non zero freq */
+
+    /* Determine the bit length frequencies for literal and distance trees */
+    scan_tree(s, (ct_data *)s->dyn_ltree, s->l_desc.max_code);
+    scan_tree(s, (ct_data *)s->dyn_dtree, s->d_desc.max_code);
+
+    /* Build the bit length tree: */
+    build_tree(s, (tree_desc *)(&(s->bl_desc)));
+    /* opt_len now includes the length of the tree representations, except
+     * the lengths of the bit lengths codes and the 5+5+4 bits for the counts.
+     */
+
+    /* Determine the number of bit length codes to send. The pkzip format
+     * requires that at least 4 bit length codes be sent. (appnote.txt says
+     * 3 but the actual value used is 4.)
+     */
+    for (max_blindex = BL_CODES-1; max_blindex >= 3; max_blindex--) {
+        if (s->bl_tree[bl_order[max_blindex]].Len != 0) break;
+    }
+    /* Update opt_len to include the bit length tree and counts */
+    s->opt_len += 3*(max_blindex+1) + 5+5+4;
+    Tracev((stderr, "\ndyn trees: dyn %ld, stat %ld",
+            s->opt_len, s->static_len));
+
+    return max_blindex;
+}
+
+/* ===========================================================================
+ * Send the header for a block using dynamic Huffman trees: the counts, the
+ * lengths of the bit length codes, the literal tree and the distance tree.
+ * IN assertion: lcodes >= 257, dcodes >= 1, blcodes >= 4.
+ */
+local void send_all_trees(s, lcodes, dcodes, blcodes)
+    deflate_state *s;
+    int lcodes, dcodes, blcodes; /* number of codes for each tree */
+{
+    int rank;                    /* index in bl_order */
+
+    Assert (lcodes >= 257 && dcodes >= 1 && blcodes >= 4, "not enough codes");
+    Assert (lcodes <= L_CODES && dcodes <= D_CODES && blcodes <= BL_CODES,
+            "too many codes");
+    Tracev((stderr, "\nbl counts: "));
+    send_bits(s, lcodes-257, 5); /* not +255 as stated in appnote.txt */
+    send_bits(s, dcodes-1,   5);
+    send_bits(s, blcodes-4,  4); /* not -3 as stated in appnote.txt */
+    for (rank = 0; rank < blcodes; rank++) {
+        Tracev((stderr, "\nbl code %2d ", bl_order[rank]));
+        send_bits(s, s->bl_tree[bl_order[rank]].Len, 3);
+    }
+    Tracev((stderr, "\nbl tree: sent %ld", s->bits_sent));
+
+    send_tree(s, (ct_data *)s->dyn_ltree, lcodes-1); /* literal tree */
+    Tracev((stderr, "\nlit tree: sent %ld", s->bits_sent));
+
+    send_tree(s, (ct_data *)s->dyn_dtree, dcodes-1); /* distance tree */
+    Tracev((stderr, "\ndist tree: sent %ld", s->bits_sent));
+}
+
+/* ===========================================================================
+ * Send a stored block
+ */
+void _tr_stored_block(s, buf, stored_len, eof)
+    deflate_state *s;
+    charf *buf;       /* input block */
+    ulg stored_len;   /* length of input block */
+    int eof;          /* true if this is the last block for a file */
+{
+    send_bits(s, (STORED_BLOCK<<1)+eof, 3);  /* send block type */
+#ifdef DEBUG
+    s->compressed_len = (s->compressed_len + 3 + 7) & (ulg)~7L;
+    s->compressed_len += (stored_len + 4) << 3;
+#endif
+    copy_block(s, buf, (unsigned)stored_len, 1); /* with header */
+}
+
+/* ===========================================================================
+ * Send one empty static block to give enough lookahead for inflate.
+ * This takes 10 bits, of which 7 may remain in the bit buffer.
+ * The current inflate code requires 9 bits of lookahead. If the
+ * last two codes for the previous block (real code plus EOB) were coded
+ * on 5 bits or less, inflate may have only 5+3 bits of lookahead to decode
+ * the last real code. In this case we send two empty static blocks instead
+ * of one. (There are no problems if the previous block is stored or fixed.)
+ * To simplify the code, we assume the worst case of last real code encoded
+ * on one bit only.
+ */
+void _tr_align(s)
+    deflate_state *s;
+{
+    send_bits(s, STATIC_TREES<<1, 3);
+    send_code(s, END_BLOCK, static_ltree);
+#ifdef DEBUG
+    s->compressed_len += 10L; /* 3 for block type, 7 for EOB */
+#endif
+    bi_flush(s);
+    /* Of the 10 bits for the empty block, we have already sent
+     * (10 - bi_valid) bits. The lookahead for the last real code (before
+     * the EOB of the previous block) was thus at least one plus the length
+     * of the EOB plus what we have just sent of the empty static block.
+     */
+    if (1 + s->last_eob_len + 10 - s->bi_valid < 9) {
+        send_bits(s, STATIC_TREES<<1, 3);
+        send_code(s, END_BLOCK, static_ltree);
+#ifdef DEBUG
+        s->compressed_len += 10L;
+#endif
+        bi_flush(s);
+    }
+    s->last_eob_len = 7;
+}
+
+/* ===========================================================================
+ * Determine the best encoding for the current block: dynamic trees, static
+ * trees or store, and output the encoded block to the zip file.
+ */
+void _tr_flush_block(s, buf, stored_len, eof)
+    deflate_state *s;
+    charf *buf;       /* input block, or NULL if too old */
+    ulg stored_len;   /* length of input block */
+    int eof;          /* true if this is the last block for a file */
+{
+    ulg opt_lenb, static_lenb; /* opt_len and static_len in bytes */
+    int max_blindex = 0;  /* index of last bit length code of non zero freq */
+
+    /* Build the Huffman trees unless a stored block is forced */
+    if (s->level > 0) {
+
+        /* Check if the file is binary or text */
+        if (stored_len > 0 && s->strm->data_type == Z_UNKNOWN)
+            set_data_type(s);
+
+        /* Construct the literal and distance trees */
+        build_tree(s, (tree_desc *)(&(s->l_desc)));
+        Tracev((stderr, "\nlit data: dyn %ld, stat %ld", s->opt_len,
+                s->static_len));
+
+        build_tree(s, (tree_desc *)(&(s->d_desc)));
+        Tracev((stderr, "\ndist data: dyn %ld, stat %ld", s->opt_len,
+                s->static_len));
+        /* At this point, opt_len and static_len are the total bit lengths of
+         * the compressed block data, excluding the tree representations.
+         */
+
+        /* Build the bit length tree for the above two trees, and get the index
+         * in bl_order of the last bit length code to send.
+         */
+        max_blindex = build_bl_tree(s);
+
+        /* Determine the best encoding. Compute the block lengths in bytes. */
+        opt_lenb = (s->opt_len+3+7)>>3;
+        static_lenb = (s->static_len+3+7)>>3;
+
+        Tracev((stderr, "\nopt %lu(%lu) stat %lu(%lu) stored %lu lit %u ",
+                opt_lenb, s->opt_len, static_lenb, s->static_len, stored_len,
+                s->last_lit));
+
+        if (static_lenb <= opt_lenb) opt_lenb = static_lenb;
+
+    } else {
+        Assert(buf != (char*)0, "lost buf");
+        opt_lenb = static_lenb = stored_len + 5; /* force a stored block */
+    }
+
+#ifdef FORCE_STORED
+    if (buf != (char*)0) { /* force stored block */
+#else
+    if (stored_len+4 <= opt_lenb && buf != (char*)0) {
+                       /* 4: two words for the lengths */
+#endif
+        /* The test buf != NULL is only necessary if LIT_BUFSIZE > WSIZE.
+         * Otherwise we can't have processed more than WSIZE input bytes since
+         * the last block flush, because compression would have been
+         * successful. If LIT_BUFSIZE <= WSIZE, it is never too late to
+         * transform a block into a stored block.
+         */
+        _tr_stored_block(s, buf, stored_len, eof);
+
+#ifdef FORCE_STATIC
+    } else if (static_lenb >= 0) { /* force static trees */
+#else
+    } else if (s->strategy == Z_FIXED || static_lenb == opt_lenb) {
+#endif
+        send_bits(s, (STATIC_TREES<<1)+eof, 3);
+        compress_block(s, (ct_data *)static_ltree, (ct_data *)static_dtree);
+#ifdef DEBUG
+        s->compressed_len += 3 + s->static_len;
+#endif
+    } else {
+        send_bits(s, (DYN_TREES<<1)+eof, 3);
+        send_all_trees(s, s->l_desc.max_code+1, s->d_desc.max_code+1,
+                       max_blindex+1);
+        compress_block(s, (ct_data *)s->dyn_ltree, (ct_data *)s->dyn_dtree);
+#ifdef DEBUG
+        s->compressed_len += 3 + s->opt_len;
+#endif
+    }
+    Assert (s->compressed_len == s->bits_sent, "bad compressed size");
+    /* The above check is made mod 2^32, for files larger than 512 MB
+     * and uLong implemented on 32 bits.
+     */
+    init_block(s);
+
+    if (eof) {
+        bi_windup(s);
+#ifdef DEBUG
+        s->compressed_len += 7;  /* align on byte boundary */
+#endif
+    }
+    Tracev((stderr,"\ncomprlen %lu(%lu) ", s->compressed_len>>3,
+           s->compressed_len-7*eof));
+}
+
+/* ===========================================================================
+ * Save the match info and tally the frequency counts. Return true if
+ * the current block must be flushed.
+ */
+int _tr_tally (s, dist, lc)
+    deflate_state *s;
+    unsigned dist;  /* distance of matched string */
+    unsigned lc;    /* match length-MIN_MATCH or unmatched char (if dist==0) */
+{
+    s->d_buf[s->last_lit] = (ush)dist;
+    s->l_buf[s->last_lit++] = (uch)lc;
+    if (dist == 0) {
+        /* lc is the unmatched char */
+        s->dyn_ltree[lc].Freq++;
+    } else {
+        s->matches++;
+        /* Here, lc is the match length - MIN_MATCH */
+        dist--;             /* dist = match distance - 1 */
+        Assert((ush)dist < (ush)MAX_DIST(s) &&
+               (ush)lc <= (ush)(MAX_MATCH-MIN_MATCH) &&
+               (ush)d_code(dist) < (ush)D_CODES,  "_tr_tally: bad match");
+
+        s->dyn_ltree[_length_code[lc]+LITERALS+1].Freq++;
+        s->dyn_dtree[d_code(dist)].Freq++;
+    }
+
+#ifdef TRUNCATE_BLOCK
+    /* Try to guess if it is profitable to stop the current block here */
+    if ((s->last_lit & 0x1fff) == 0 && s->level > 2) {
+        /* Compute an upper bound for the compressed length */
+        ulg out_length = (ulg)s->last_lit*8L;
+        ulg in_length = (ulg)((long)s->strstart - s->block_start);
+        int dcode;
+        for (dcode = 0; dcode < D_CODES; dcode++) {
+            out_length += (ulg)s->dyn_dtree[dcode].Freq *
+                (5L+extra_dbits[dcode]);
+        }
+        out_length >>= 3;
+        Tracev((stderr,"\nlast_lit %u, in %ld, out ~%ld(%ld%%) ",
+               s->last_lit, in_length, out_length,
+               100L - out_length*100L/in_length));
+        if (s->matches < s->last_lit/2 && out_length < in_length/2) return 1;
+    }
+#endif
+    return (s->last_lit == s->lit_bufsize-1);
+    /* We avoid equality with lit_bufsize because of wraparound at 64K
+     * on 16 bit machines and because stored blocks are restricted to
+     * 64K-1 bytes.
+     */
+}
+
+/* ===========================================================================
+ * Send the block data compressed using the given Huffman trees
+ */
+local void compress_block(s, ltree, dtree)
+    deflate_state *s;
+    ct_data *ltree; /* literal tree */
+    ct_data *dtree; /* distance tree */
+{
+    unsigned dist;      /* distance of matched string */
+    int lc;             /* match length or unmatched char (if dist == 0) */
+    unsigned lx = 0;    /* running index in l_buf */
+    unsigned code;      /* the code to send */
+    int extra;          /* number of extra bits to send */
+
+    if (s->last_lit != 0) do {
+        dist = s->d_buf[lx];
+        lc = s->l_buf[lx++];
+        if (dist == 0) {
+            send_code(s, lc, ltree); /* send a literal byte */
+            Tracecv(isgraph(lc), (stderr," '%c' ", lc));
+        } else {
+            /* Here, lc is the match length - MIN_MATCH */
+            code = _length_code[lc];
+            send_code(s, code+LITERALS+1, ltree); /* send the length code */
+            extra = extra_lbits[code];
+            if (extra != 0) {
+                lc -= base_length[code];
+                send_bits(s, lc, extra);       /* send the extra length bits */
+            }
+            dist--; /* dist is now the match distance - 1 */
+            code = d_code(dist);
+            Assert (code < D_CODES, "bad d_code");
+
+            send_code(s, code, dtree);       /* send the distance code */
+            extra = extra_dbits[code];
+            if (extra != 0) {
+                dist -= base_dist[code];
+                send_bits(s, dist, extra);   /* send the extra distance bits */
+            }
+        } /* literal or match pair ? */
+
+        /* Check that the overlay between pending_buf and d_buf+l_buf is ok: */
+        Assert((uInt)(s->pending) < s->lit_bufsize + 2*lx,
+               "pendingBuf overflow");
+
+    } while (lx < s->last_lit);
+
+    send_code(s, END_BLOCK, ltree);
+    s->last_eob_len = ltree[END_BLOCK].Len;
+}
+
+/* ===========================================================================
+ * Set the data type to BINARY or TEXT, using a crude approximation:
+ * set it to Z_TEXT if all symbols are either printable characters (33 to 255)
+ * or white spaces (9 to 13, or 32); or set it to Z_BINARY otherwise.
+ * IN assertion: the fields Freq of dyn_ltree are set.
+ */
+local void set_data_type(s)
+    deflate_state *s;
+{
+    int n;
+
+    for (n = 0; n < 9; n++)
+        if (s->dyn_ltree[n].Freq != 0)
+            break;
+    if (n == 9)
+        for (n = 14; n < 32; n++)
+            if (s->dyn_ltree[n].Freq != 0)
+                break;
+    s->strm->data_type = (n == 32) ? Z_TEXT : Z_BINARY;
+}
+
+/* ===========================================================================
+ * Reverse the first len bits of a code, using straightforward code (a faster
+ * method would use a table)
+ * IN assertion: 1 <= len <= 15
+ */
+local unsigned bi_reverse(code, len)
+    unsigned code; /* the value to invert */
+    int len;       /* its bit length */
+{
+    register unsigned res = 0;
+    do {
+        res |= code & 1;
+        code >>= 1, res <<= 1;
+    } while (--len > 0);
+    return res >> 1;
+}
+
+/* ===========================================================================
+ * Flush the bit buffer, keeping at most 7 bits in it.
+ */
+local void bi_flush(s)
+    deflate_state *s;
+{
+    if (s->bi_valid == 16) {
+        put_short(s, s->bi_buf);
+        s->bi_buf = 0;
+        s->bi_valid = 0;
+    } else if (s->bi_valid >= 8) {
+        put_byte(s, (Byte)s->bi_buf);
+        s->bi_buf >>= 8;
+        s->bi_valid -= 8;
+    }
+}
+
+/* ===========================================================================
+ * Flush the bit buffer and align the output on a byte boundary
+ */
+local void bi_windup(s)
+    deflate_state *s;
+{
+    if (s->bi_valid > 8) {
+        put_short(s, s->bi_buf);
+    } else if (s->bi_valid > 0) {
+        put_byte(s, (Byte)s->bi_buf);
+    }
+    s->bi_buf = 0;
+    s->bi_valid = 0;
+#ifdef DEBUG
+    s->bits_sent = (s->bits_sent+7) & ~7;
+#endif
+}
+
+/* ===========================================================================
+ * Copy a stored block, storing first the length and its
+ * one's complement if requested.
+ */
+local void copy_block(s, buf, len, header)
+    deflate_state *s;
+    charf    *buf;    /* the input data */
+    unsigned len;     /* its length */
+    int      header;  /* true if block header must be written */
+{
+    bi_windup(s);        /* align on byte boundary */
+    s->last_eob_len = 8; /* enough lookahead for inflate */
+
+    if (header) {
+        put_short(s, (ush)len);
+        put_short(s, (ush)~len);
+#ifdef DEBUG
+        s->bits_sent += 2*16;
+#endif
+    }
+#ifdef DEBUG
+    s->bits_sent += (ulg)len<<3;
+#endif
+    while (len--) {
+        put_byte(s, *buf++);
+    }
+}

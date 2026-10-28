@@ -1,3 +1,4 @@
+#pragma float_control(precise, off)
 #include "tool/GroupDragTool.h"
 #include "tool/Dragger.h"
 #include "util/Math.h"
@@ -76,7 +77,7 @@ namespace RBX
 
 	void GroupDragTool::onMouseMove(const UIEvent& uiEvent)
 	{
-		RBXASSERT(captured());
+		                     ;
 
 		if (!dragging && (G3D::Vector2(uiEvent.mousePosition) - downPoint).length() > 4.0f)
 		{

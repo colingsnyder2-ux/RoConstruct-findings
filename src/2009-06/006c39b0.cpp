@@ -1,12 +1,11 @@
-// from server: 84% by colin
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
-// roc-lib: lua-5.1.4 lstate.c
+// roc-lib: lua-5.1.2-rbx lstate.c
 
 // Candidate translation unit (score above; library headers required).
 /*
-** $Id: lstate.c,v 2.36.1.2 2008/01/03 15:20:39 roberto Exp $
+** $Id: lstate.c,v 2.36 2006/05/24 14:15:50 roberto Exp $
 ** Global State
 ** See Copyright Notice in lua.h
 */
@@ -100,7 +99,7 @@ static void preinit_state (lua_State *L, global_State *g) {
   resethookcount(L);
   L->openupval = NULL;
   L->size_ci = 0;
-  L->nCcalls = L->baseCcalls = 0;
+  L->nCcalls = 0;
   L->status = 0;
   L->base_ci = L->ci = NULL;
   L->savedpc = NULL;
@@ -212,7 +211,7 @@ LUA_API void lua_close (lua_State *L) {
   do {  /* repeat until no more errors */
     L->ci = L->base_ci;
     L->base = L->top = L->ci->base;
-    L->nCcalls = L->baseCcalls = 0;
+    L->nCcalls = 0;
   } while (luaD_rawrunprotected(L, callallgcTM, NULL) != 0);
   lua_assert(G(L)->tmudata == NULL);
   luai_userstateclose(L);

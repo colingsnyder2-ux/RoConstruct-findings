@@ -5,12 +5,15 @@
 namespace RBX
 {
 
-SimBody::SimBody(RBX::Body* _body)
+SimBody::SimBody(RBX::Body* _body) throw()
 			:body(_body),
+			dt(0.0f),
 			dirty(1),
 			force(G3D::Vector3::zero()),
 			torque(G3D::Vector3::zero()),
-			constantForceY(0.0f)
+			constantForceY(0.0f),
+			unknown0x9c(G3D::Vector3::zero()),
+			unknown0xa8(G3D::Vector3::zero())
 {}
 
 SimBody::~SimBody() {}
@@ -101,7 +104,7 @@ G3D::Vector3& denormFixFunc()
 	return denormFix;
 }
 
-void SimBody::step(float dt)
+void SimBody::step()
 {
 	//line 103
 	//static G3D::Vector3 denormFix = Vector3(9.9999997e-21f, 9.9999997e-21f, 9.9999997e-21f);

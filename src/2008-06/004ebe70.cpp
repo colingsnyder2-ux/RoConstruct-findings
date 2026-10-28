@@ -1,4 +1,4 @@
-// from server: 88% by colin
+// from server: 92% by EspClaude
 // roc 2008-06 004ebe70  unit: RBX::ViewNew::Decal  size: 499 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004ebe70
 //
@@ -150,27 +150,26 @@
 // 004ec05e  8b75e8               mov esi, dword ptr [ebp - 0x18]
 // 004ec061  ebc2                 jmp 0x4ec025
 
+// from server: 88% by colin
+// roc 2008-06 004ebe70  unit: RBX::ViewNew::Decal  size: 499 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 004ebe70
+//
+
 // from server: 87% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-typedef void (__thiscall *StringInit)(void *);
-typedef void (__thiscall *StringFini)(void *);
-typedef long (__stdcall *Decrement)(volatile long *);
+extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long *);
 
-extern StringInit stringInit;
-extern StringFini stringFini;
-extern Decrement decrement;
-
-struct String {
+class String {
+public:
     char data[28];
-    String() { stringInit(this); }
-    ~String() { stringFini(this); }
+    __declspec(dllimport) String();
+    __declspec(dllimport) ~String();
 };
 
 struct Value {
-    char stringData[28];
+    String str;
     unsigned int extra;
-    ~Value() { stringFini(this); }
 };
 
 struct Texture {
@@ -187,44 +186,21 @@ struct Ref {
     Texture *pointer;
     void set(Texture *);
     Ref(Texture *p) : pointer(0) { set(p); }
-    Ref(const Ref &);
+    Ref(const Ref &o) : pointer(0) { set(o.pointer); }
 };
 
-extern float colorRed;
-extern float colorGreen;
-extern float colorBlue;
 extern float adjustment;
-
-struct DrawParameters {
-    float red;
-    float green;
-    float blue;
-    float width;
-    float height;
-    float zero;
-    float opacity;
-
-    __forceinline DrawParameters(const float &, const float &, const float &);
-    DrawParameters(const DrawParameters &);
+struct Color3 {
+    float r, g, b;
+    Color3(const Color3& o) : r(o.r), g(o.g), b(o.b) {}
 };
-
-__forceinline DrawParameters::DrawParameters(
-    const float &w, const float &h, const float &transparency)
-{
-    opacity = 1.0f - transparency;
-    height = h;
-    width = w;
-    zero = 0.0f;
-    red = colorRed;
-    green = colorGreen;
-    blue = colorBlue;
-}
+extern const Color3 white;
 
 struct Renderer {
     virtual void destroy(unsigned int);
     virtual void unused1();
     virtual void unused2();
-    virtual void draw(Ref, DrawParameters);
+    virtual const void* draw(Ref, Color3, float, float, float, float);
 };
 
 struct Block {
@@ -276,16 +252,17 @@ Ref Decal::get()
             if (status == 1) {
                 texture.set(defaultTexture());
                 Texture *created = createTexture(context->object, &name, 0);
+                float t = instance->transparency;
                 Renderer *renderer = reinterpret_cast<Renderer *>(texture.pointer);
                 renderer->draw(
                     Ref(created),
-                    DrawParameters(block->width, block->height,
-                                   instance->transparency));
+                    white, block->width, block->height,
+                                   0.0f, 1.0f - t);
                 created->adjust(adjustment);
                 dirty = 0;
             } else if (status == 2) {
                 if (texture.pointer) {
-                    if (!decrement(&texture.pointer->references)) {
+                    if (!InterlockedDecrement(&texture.pointer->references)) {
                         texture.pointer->cleanup();
                         if (texture.pointer)
                             texture.pointer->destroy(1);
@@ -297,5 +274,5 @@ Ref Decal::get()
         }
     } catch (...) {
     }
-    return Ref(texture.pointer);
+    return texture;
 }

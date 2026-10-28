@@ -957,6 +957,50 @@
         ]
       },
       "timestamp": 1793153344.9407232
+    },
+    {
+      "job": "ae59330ca7914e1caae5836cc55500e4",
+      "patches": {
+        "App/humanoid/Humanoid.cpp": [
+          [
+            "#include \"humanoid/Humanoid.h\"\n",
+            "#pragma float_control(precise, off)\n#include \"humanoid/Humanoid.h\"\n"
+          ]
+        ],
+        "App/tool/GroupDragTool.cpp": [
+          [
+            "#include \"tool/GroupDragTool.h\"\n",
+            "#pragma float_control(precise, off)\n#include \"tool/GroupDragTool.h\"\n"
+          ],
+          [
+            "GroupDragTool::onMouseMove(const UIEvent& uiEvent)\n\t{\n\t\tRBXASSERT(captured());\n\n\t\tif (!dragging && (G3D::Vector2(uiEvent.mousePosition) - downPoint).length() > 4.0f)\n\t\t{\n\t\t\tdragging = true;\n\n\t\t\tmegaDragger->startDragging();\n\t\t\tmegaDragger->alignAndCleanParts();\n\t\t\tlastHit = megaDragger->hitObjectOrPlane(uiEvent);\n\t\t}\n\n\t\tonMouseIdle(uiEvent);\n\t}",
+            "GroupDragTool::onMouseMove(const UIEvent& uiEvent)\n\t{\n\t\t                     ;\n\n\t\tif (!dragging && (G3D::Vector2(uiEvent.mousePosition) - downPoint).length() > 4.0f)\n\t\t{\n\t\t\tdragging = true;\n\n\t\t\tmegaDragger->startDragging();\n\t\t\tmegaDragger->alignAndCleanParts();\n\t\t\tlastHit = megaDragger->hitObjectOrPlane(uiEvent);\n\t\t}\n\n\t\tonMouseIdle(uiEvent);\n\t}"
+          ]
+        ],
+        "App/v8datamodel/JointInstance.cpp": [
+          [
+            "#include \"v8datamodel/JointInstance.h\"\n",
+            "#pragma float_control(precise, off)\n#include \"v8datamodel/JointInstance.h\"\n"
+          ]
+        ],
+        "App/v8datamodel/ModelInstance.cpp": [
+          [
+            "Humanoid* humanoid = findFirstChildOfType<Humanoid>();",
+            "Humanoid* humanoid = Humanoid::modelIsCharacter(this);"
+          ],
+          [
+            "#include \"humanoid/Humanoid.h\"",
+            "#include \"humanoid/Humanoid.h\"\nnamespace RBX { template Humanoid* Instance::findFirstChildOfType<Humanoid>() const; }"
+          ]
+        ],
+        "App/v8datamodel/ToolMouseCommand.cpp": [
+          [
+            "#include \"v8datamodel/ToolMouseCommand.h\"\n",
+            "#pragma float_control(precise, off)\n#include \"v8datamodel/ToolMouseCommand.h\"\n"
+          ]
+        ]
+      },
+      "timestamp": 1793157055.3638458
     }
   ],
   "initial_patches": {}

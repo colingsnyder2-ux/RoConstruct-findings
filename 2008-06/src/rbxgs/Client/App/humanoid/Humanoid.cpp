@@ -1,3 +1,4 @@
+#pragma float_control(precise, off)
 #include "humanoid/Humanoid.h"
 #include "humanoid/Running.h"
 #include "humanoid/FallingDown.h"
