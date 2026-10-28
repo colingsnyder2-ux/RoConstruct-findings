@@ -1,8 +1,10 @@
+// from server: 84% by EspClaude
+// from server: 55% by EspClaude
 // from server: 44% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: ogre-1.4.5-dll roc_espclaude_04e15b040614e7f7.cpp
+// roc-lib: ogre-1.4.5-dll roc_espclaude_3fafc7ff482d6d1b.cpp
 
 // Candidate translation unit (score above; library headers required).
 // Native 006832b0. Names are behavioral analogues; owner layout is opaque.
@@ -271,44 +273,48 @@ std::list<Batch>::_Iterator<true> std::list<Batch>::_Iterator<true>::operator++(
 struct CmdIt : std::list<Command>::iterator { __declspec(noinline) Command& get() const { return **this; } };
 struct BatchIt : std::list<Batch>::iterator { __declspec(noinline) Batch& get() const { return **this; } };
 #define O(i) static_cast<const CmdIt&>(i).get()
-#define VERTEXO(X,Y,U,V) *out++=O(i).X; *out++=O(i).Y; *out++=-1.0f; *reinterpret_cast<unsigned*>(out++)=O(i).colour; *out++=O(i).U; *out++=O(i).V;
+#define VERTEXO(X,Y,U,V) *out++=O(i).X; *out++=O(i).Y; *out++=-1.0f; col=static_cast<RGBA*>(static_cast<void*>(out)); *col++=O(i).colour; out=static_cast<float*>(static_cast<void*>(col)); *out++=O(i).U; *out++=O(i).V;
 class TwoDManager {public: void draw(); void allocate(unsigned); void setup();};
 #define OP (*reinterpret_cast<RenderOperation*>(reinterpret_cast<char*>(this)+0x10))
 #define BUFFER (*reinterpret_cast<HardwareVertexBufferSharedPtr*>(reinterpret_cast<char*>(this)+0x24))
 #define COMMANDS (*reinterpret_cast<std::list<Command>*>(reinterpret_cast<char*>(this)+0x3c))
-#define VERTEX(X,Y,U,V) *out++=i->X; *out++=i->Y; *out++=-1.0f; *reinterpret_cast<unsigned*>(out++)=i->colour; *out++=i->U; *out++=i->V;
+#define VERTEX(X,Y,U,V) *out++=i->X; *out++=i->Y; *out++=-1.0f; col=static_cast<RGBA*>(static_cast<void*>(out)); *col++=i->colour; out=static_cast<float*>(static_cast<void*>(col)); *out++=i->U; *out++=i->V;
 void TwoDManager::draw() {
  RenderSystem* rs=Root::getSingleton().getRenderSystem();
+ std::list<Command>::iterator i,end;
  std::list<Batch> batches;
- if(!COMMANDS.empty()) {
+ if(COMMANDS.empty()) return;
  unsigned need=0;
- std::list<Command>::iterator i=COMMANDS.begin(),end=COMMANDS.end();
- for(;i!=end;++i) {if(i->points==4) need+=6; else if(i->mode==0) need+=8; else need+=2;}
+ end=COMMANDS.end();
+ for(i=COMMANDS.begin();i!=end;i++) {if(i->points==4) need+=6; else if(i->mode==0) need+=8; else need+=2;}
  unsigned capacity=need;
  if(capacity<120)capacity=120;
  if(BUFFER.isNull() || BUFFER->getNumVertices()<capacity) {
   if(!BUFFER.isNull()){delete OP.vertexData; OP.vertexData=0; BUFFER.setNull();}
   allocate(capacity);
-  if(BUFFER.isNull()) {LogManager::getSingleton().logMessage("TwoDManager: failed to create hardware buffer\n",LML_NORMAL,false);goto done;}
+  if(BUFFER.isNull()) {LogManager::getSingleton().logMessage("TwoDManager: failed to create hardware buffer\n",LML_NORMAL,false);return;}
  }
  float* out=static_cast<float*>(BUFFER->lock(HardwareBuffer::HBL_DISCARD));
+ RGBA* col;
  i=COMMANDS.begin();
  Batch batch;
  batch.texture=i->texture; batch.points=i->points; batch.mode=i->mode; batch.count=0;
  while(i!=end) {
+   unsigned n;
    if(batch.points==4) {
     VERTEX(x1,y2,u1,v2) VERTEX(x2,y1,u2,v1) VERTEX(x1,y1,u1,v1)
     VERTEX(x1,y2,u1,v2) VERTEX(x2,y1,u2,v1) VERTEX(x2,y2,u2,v2)
-    batch.count+=6;
+    n=6;
    } else {
     VERTEX(x1,y1,u1,v1)
     if(batch.mode==0) {
      VERTEX(x2,y1,u1,v1) VERTEX(x2,y1,u1,v1) VERTEX(x2,y2,u1,v1)
      VERTEX(x2,y2,u1,v1) VERTEX(x1,y2,u1,v1) VERTEX(x1,y2,u1,v1) VERTEXO(x1,y1,u1,v1)
-     batch.count+=8;
-    } else {VERTEXO(x2,y2,u1,v1) batch.count+=2;}
+     n=8;
+    } else {VERTEXO(x2,y2,u1,v1) n=2;}
    }
-   ++i;
+   batch.count+=n;
+   i++;
    if(i==end || batch.texture!=i->texture || batch.points!=O(i).points) {
     batches.push_back(batch);
     if(i!=end) {batch.texture=i->texture; batch.points=i->points; batch.mode=i->mode; batch.count=0;}
@@ -340,8 +346,6 @@ void TwoDManager::draw() {
   rs->_render(OP);OP.vertexData->vertexStart+=b->count;
  }
  COMMANDS.clear();
- }
- done:;
 }
 // Force actual SDK list helpers into this object for bounded family checks.
 void append(std::list<Batch>* p,const Batch& v){p->push_back(v);}
@@ -391,4 +395,5 @@ void TwoDManager::setup() {
  rs->_setSceneBlending(SBF_SOURCE_ALPHA,SBF_ONE_MINUS_SOURCE_ALPHA);
  rs->_setAlphaRejectSettings(CMPF_ALWAYS_PASS,0);
 }
+
 

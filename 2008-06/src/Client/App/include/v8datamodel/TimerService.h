@@ -20,6 +20,7 @@ namespace RBX
 	public:
 		TimerService();
 		void delay(boost::function0<void> func, double seconds);
+		bool hasPendingTimers();
 	protected:
 		virtual void onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider);
 		virtual void onEvent(const RunService* source, Heartbeat event);

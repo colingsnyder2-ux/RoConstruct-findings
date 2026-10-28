@@ -13,20 +13,24 @@ namespace RBX
 		item.time = G3D::System::getLocalTime() + seconds;
 		item.func = func;
 
-		std::list<Item>::iterator pos = items.end();
-
-		std::list<Item>::reverse_iterator iter = items.rbegin();
-		std::list<Item>::reverse_iterator end = items.rend();
-
-		for (; iter != end; iter++)
+		for (std::list<Item>::iterator iter = items.begin(); iter != items.end(); iter++)
 		{
 			if (iter->time > item.time)
-				pos = iter.base();
-			else
-				break;
+			{
+				items.insert(iter, item);
+				goto finished;
+			}
 		}
 
-		items.insert(pos, item);
+		items.push_back(item);
+	finished:;
+	}
+
+	bool TimerService::hasPendingTimers()
+	{
+		std::list<Item>::reverse_iterator iter = items.rbegin();
+		std::list<Item>::reverse_iterator end = items.rend();
+		return iter != end;
 	}
 
 	void TimerService::onEvent(const RunService* source, Heartbeat event)

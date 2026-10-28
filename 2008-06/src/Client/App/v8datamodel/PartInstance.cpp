@@ -13,6 +13,11 @@
 
 namespace RBX
 {
+	bool __fastcall rocInPipelineAnchor(const IPipelined* p)
+	{
+		return p->inPipeline();
+	}
+
 	const char* category_Part = "Part";
 
 	bool PartInstance::showContactPoints = false;
@@ -99,9 +104,7 @@ namespace RBX
 
 	bool PartInstance::nonNullInWorkspace(boost::shared_ptr<PartInstance> part)
 	{
-		bool null = part.get() && part->myWorld;
-		RBXASSERT(!null || part->primitive.inPipeline());
-		return null;
+		return part && part->myWorld;
 	}
 
 	void PartInstance::destroyJoints()

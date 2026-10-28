@@ -1,3 +1,4 @@
+// from server: 96% by EspClaude
 // from server: 81% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
@@ -206,29 +207,33 @@ void RbxEntity::method67daf0(Camera* camera) {
         float inverse=1.0f/median;
         float change=Math::Abs((median-last.value[0])*inverse);
         if(!(change<=0.2f)) {
-            if(last.value[1]>last.value[2])
-                selected=(int)std::min(static_cast<float>(order.size()),last.value[2]);
+            if(last.value[2]<last.value[1]) {
+                selected=order.size();
+                selected=(int)(last.value[2]<static_cast<float>(selected)?last.value[2]:static_cast<float>(selected));
+            } else selected=order.size();
         } else {
             if(median>nativeLodLowMs) {
                 // Native truncates this fraction before applying its budget math.
                 int minimum=(int)(field29c*0.01f);
                 if(median>nativeLodHighMs) selected=(int)(minimum*last.value[2]);
-                else selected=(int)((1.0f-Math::Sin(
-                    (median-nativeLodLowMs)*Math::HALF_PI/(nativeLodHighMs-nativeLodLowMs),false)
-                    *(1.0f-minimum))*last.value[2]);
+                else {
+                    float budget=last.value[2];
+                    selected=(int)((1.0f-Math::Sin((median-nativeLodLowMs)*Math::HALF_PI/(nativeLodHighMs-nativeLodLowMs),false)*(1.0f-minimum))*budget);
+                }
                 if(selected<static_cast<float>(mSubEntityList.size())*minimum)
                     selected=(int)(static_cast<float>(mSubEntityList.size())*minimum);
                 if(Math::Abs(last.value[2]-selected)<40.0f) selected=(int)last.value[2];
                 if(selected<field2a0) selected=field2a0;
+                if(selected>(int)order.size()) selected=order.size();
             } else {
-                if(last.value[1]>last.value[2]) {
+                if(last.value[2]<last.value[1]) {
                     selected=(int)last.value[2];
                     float growth=(nativeLodLowMs-median)*inverse;
                     int grown=(int)((growth>1.2f?1.2f:growth)*selected);
                     if(grown>=selected+40) selected=grown;
-                }
+                    if(selected>(int)order.size()) selected=order.size();
+                } else selected=order.size();
             }
-            if(selected>(int)order.size()) selected=order.size();
         }
     }
     if(selected<(int)order.size()) {

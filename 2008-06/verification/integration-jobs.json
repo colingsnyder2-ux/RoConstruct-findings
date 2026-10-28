@@ -4822,5 +4822,162 @@
     "unit": "RBX::PartInstance",
     "updated": 1793221852.3103812,
     "user": "coldek"
+  },
+  {
+    "created": 1793224864.1594064,
+    "id": "fc859807d9b04218b0d0797463b776a9",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/v8datamodel/PartInstance.cpp": [
+        [
+          "\tbool PartInstance::nonNullInWorkspace(boost::shared_ptr<PartInstance> part)\n\t{\n\t\tbool null = part.get() && part->myWorld;\n\t\tRBXASSERT(!null || part->primitive.inPipeline());\n\t\treturn null;\n\t}",
+          "\tbool PartInstance::nonNullInWorkspace(boost::shared_ptr<PartInstance> part)\n\t{\n\t\treturn part && part->myWorld;\n\t}"
+        ],
+        [
+          "namespace RBX\n{\n\tconst char* category_Part = \"Part\";",
+          "namespace RBX\n{\n\tbool __fastcall rocInPipelineAnchor(const IPipelined* p)\n\t{\n\t\treturn p->inPipeline();\n\t}\n\n\tconst char* category_Part = \"Part\";"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "bc175b35dc567deeb3ecad5f988d78e3c58045559ea4ba7e337541d6dc1e3c7f",
+      "credits": 1,
+      "distinct_after": 9926,
+      "distinct_before": 9925,
+      "gains": [
+        "005995f0"
+      ],
+      "input_hash": "33f08c38ec98c90528cfd800f397fa317064116ea9293c376c67bf8e40f8643b",
+      "losses": [],
+      "new_distinct": [
+        "005995f0"
+      ],
+      "overlay_hash": "893d47b75b04e8a56bd7229e9b1b36bf68863e028ba8c0c18d3b90fd22b6650a",
+      "owned_after": 3260,
+      "owned_before": 3259,
+      "rebased": false,
+      "submitted_revision": "bc175b35dc567deeb3ecad5f988d78e3c58045559ea4ba7e337541d6dc1e3c7f"
+    },
+    "state": "accepted",
+    "unit": "RBX::PartInstance",
+    "updated": 1793225666.2013412,
+    "user": "coldek"
+  },
+  {
+    "created": 1793224954.6530757,
+    "id": "2c2b7a578d4e4b01be3aaaec1626d88e",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/include/v8datamodel/TimerService.h": [
+        [
+          "\t\tvoid delay(boost::function0<void> func, double seconds);",
+          "\t\tvoid delay(boost::function0<void> func, double seconds);\n\t\tbool hasPendingTimers();"
+        ]
+      ],
+      "App/v8datamodel/TimerService.cpp": [
+        [
+          "\t\tstd::list<Item>::iterator pos = items.end();\n\n\t\tstd::list<Item>::reverse_iterator iter = items.rbegin();\n\t\tstd::list<Item>::reverse_iterator end = items.rend();\n\n\t\tfor (; iter != end; iter++)\n\t\t{\n\t\t\tif (iter->time > item.time)\n\t\t\t\tpos = iter.base();\n\t\t\telse\n\t\t\t\tbreak;\n\t\t}\n\n\t\titems.insert(pos, item);\n\t}",
+          "\t\tfor (std::list<Item>::iterator iter = items.begin(); iter != items.end(); iter++)\n\t\t{\n\t\t\tif (iter->time > item.time)\n\t\t\t{\n\t\t\t\titems.insert(iter, item);\n\t\t\t\tgoto finished;\n\t\t\t}\n\t\t}\n\n\t\titems.push_back(item);\n\tfinished:;\n\t}\n\n\tbool TimerService::hasPendingTimers()\n\t{\n\t\tstd::list<Item>::reverse_iterator iter = items.rbegin();\n\t\tstd::list<Item>::reverse_iterator end = items.rend();\n\t\treturn iter != end;\n\t}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "e0f37e9f6e5710e74e75b9dea497b084201ecef6624a9935177427f787f51d28",
+      "credits": 2,
+      "distinct_after": 9928,
+      "distinct_before": 9926,
+      "gains": [
+        "005d6e10",
+        "005defa0"
+      ],
+      "input_hash": "300c0d248685b3b097bd6de9022cba37ed8f99a084fe61e3463ed36aecd41a46",
+      "losses": [],
+      "new_distinct": [
+        "005d6e10",
+        "005defa0"
+      ],
+      "overlay_hash": "58d15c72e82ad844900f3bb79dfb33755500c32cd779adcf8c6ff28c6736c177",
+      "owned_after": 3262,
+      "owned_before": 3260,
+      "rebased": true,
+      "submitted_revision": "bc175b35dc567deeb3ecad5f988d78e3c58045559ea4ba7e337541d6dc1e3c7f"
+    },
+    "state": "accepted",
+    "unit": "RBX::TimerService",
+    "updated": 1793225963.7309568,
+    "user": "coldek"
+  },
+  {
+    "created": 1793225045.9925067,
+    "id": "5d8b450e40ca4373a01d31fdef4cb523",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/util/Math.cpp": [
+        [
+          "#define LODWORD(x) (*(DWORD*)(&x))\n\nnamespace RBX",
+          "#define LODWORD(x) (*(DWORD*)(&x))\n\nnamespace G3D\n{\n\tfloat __fastcall magnitudeZYXAnchor(const Vector3* v)\n\t{\n\t\treturn sqrtf(v->z * v->z + v->y * v->y + v->x * v->x);\n\t}\n}\n\nnamespace RBX"
+        ],
+        [
+          "\t\t\twhile (count < 3)\n\t\t\t{\n\t\t\t\tif (m0Column.cross(*vector).magnitude() < radTolerance)\n\t\t\t\t\tbreak;",
+          "\t\t\twhile (count < 3)\n\t\t\t{\n\t\t\t\tG3D::Vector3 cross = m0Column.cross(*vector);\n\t\t\t\tif (sqrtf(cross.z * cross.z + cross.y * cross.y + cross.x * cross.x) < radTolerance)\n\t\t\t\t\tbreak;"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "e0f37e9f6e5710e74e75b9dea497b084201ecef6624a9935177427f787f51d28",
+      "credits": 2,
+      "distinct_after": 9928,
+      "distinct_before": 9926,
+      "gains": [
+        "005d6e10",
+        "005defa0"
+      ],
+      "input_hash": "300c0d248685b3b097bd6de9022cba37ed8f99a084fe61e3463ed36aecd41a46",
+      "losses": [],
+      "new_distinct": [
+        "005d6e10",
+        "005defa0"
+      ],
+      "overlay_hash": "58d15c72e82ad844900f3bb79dfb33755500c32cd779adcf8c6ff28c6736c177",
+      "owned_after": 3262,
+      "owned_before": 3260,
+      "rebased": true,
+      "submitted_revision": "bc175b35dc567deeb3ecad5f988d78e3c58045559ea4ba7e337541d6dc1e3c7f"
+    },
+    "state": "accepted",
+    "unit": "RBX::Soundscape::SoundService",
+    "updated": 1793225963.7309568,
+    "user": "coldek"
+  },
+  {
+    "created": 1793226209.2046592,
+    "id": "6126a57c3afd4038b5ea48c67f94c72c",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/include/v8world/IPipelined.h": [
+        [
+          "\t\tWorld* getWorld()\n\t\t{",
+          "\t\tWorld* getWorld2008()\n\t\t{\n\t\t\tif (!currentStage)\n\t\t\t\treturn NULL;\n\n\t\t\tIStage* upstream;\n\t\t\tif (currentStage->getStageType() != (IStage::StageType)7)\n\t\t\t\tupstream = currentStage;\n\t\t\telse\n\t\t\t\tupstream = currentStage->getUpstream();\n\n\t\t\treturn rbx_static_cast<IWorldStage*>(upstream)->getWorld();\n\t\t}\n\n\t\tWorld* getWorld()\n\t\t{"
+        ]
+      ],
+      "App/v8world/Joint.cpp": [
+        [
+          "\t\t\tWorld* world = getWorld();\n\t\t\tif (world)",
+          "\t\t\tWorld* world = getWorld2008();\n\t\t\tif (world)"
+        ]
+      ]
+    },
+    "phase": "building",
+    "receipt": {},
+    "state": "verifying",
+    "unit": "RBX::PartInstance",
+    "updated": 1793226244.2036717,
+    "user": "coldek"
   }
 ]

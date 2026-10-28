@@ -7,6 +7,14 @@
 
 #define LODWORD(x) (*(DWORD*)(&x))
 
+namespace G3D
+{
+	float __fastcall magnitudeZYXAnchor(const Vector3* v)
+	{
+		return sqrtf(v->z * v->z + v->y * v->y + v->x * v->x);
+	}
+}
+
 namespace RBX
 {
 	const G3D::Matrix3& Math::matrixRotateY()
@@ -427,7 +435,8 @@ namespace RBX
 			int count = 0;
 			while (count < 3)
 			{
-				if (m0Column.cross(*vector).magnitude() < radTolerance)
+				G3D::Vector3 cross = m0Column.cross(*vector);
+				if (sqrtf(cross.z * cross.z + cross.y * cross.y + cross.x * cross.x) < radTolerance)
 					break;
 				count++;
 				vector++;

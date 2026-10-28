@@ -1,3 +1,4 @@
+// from server: 100% by EspClaude
 // from server: 93% by colin
 // roc 2008-06 006892d0  unit: Ogre::RbxSubEntity  size: 8940 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006892d0
@@ -2812,6 +2813,7 @@ Vector3 offset;
 ManualObject* sphere(SceneManager*,const String&,ManualObject*,float,int,int);
 };
 ManualObject* AdornQuadric::sphere(SceneManager* manager,const String& name,ManualObject* object,float radius,int slices,int stacks){
+const Ogre::Vector3& off=offset;
 if(!object)object=manager->createManualObject(name);
 unsigned int index=0;
 
@@ -2921,7 +2923,7 @@ unsigned int index=0;
 object->begin("", Ogre::RenderOperation::OT_TRIANGLE_FAN);
 if (colour.r >= 0.0f) object->colour(colour);
 index=0;
-object->position(0.0 + offset.x, 0.0 + offset.y, radius + offset.z);
+object->position(0.0 + off.x, 0.0 + off.y, radius + off.z);
 object->index(index++);
 switch(normals) {
 	      case Flat:
@@ -2943,7 +2945,7 @@ sintemp2 = sinCache1b[1];
 	    
 	    if (orientation == Outside) {
 		for (i = slices; i >= 0; i--) {
-		    object->position(sintemp2 * sinCache1a[i] + offset.x, sintemp2 * cosCache1a[i] + offset.y, zHigh + offset.z);
+		    object->position(sintemp2 * sinCache1a[i] + off.x, sintemp2 * cosCache1a[i] + off.y, zHigh + off.z);
 object->index(index++);
 switch(normals) {
 		      case Smooth:
@@ -2966,7 +2968,7 @@ switch(normals) {
 		}
 	    } else {
 		for (i = 0; i <= slices; i++) {
-		    object->position(sintemp2 * sinCache1a[i] + offset.x, sintemp2 * cosCache1a[i] + offset.y, zHigh + offset.z);
+		    object->position(sintemp2 * sinCache1a[i] + off.x, sintemp2 * cosCache1a[i] + off.y, zHigh + off.z);
 object->index(index++);
 switch(normals) {
 		      case Smooth:
@@ -2992,7 +2994,7 @@ switch(normals) {
 	    object->begin("", Ogre::RenderOperation::OT_TRIANGLE_FAN);
 if (colour.r >= 0.0f) object->colour(colour);
 index=0;
-object->position(0.0 + offset.x, 0.0 + offset.y, -radius + offset.z);
+object->position(0.0 + off.x, 0.0 + off.y, -radius + off.z);
 object->index(index++);
 
 
@@ -3014,7 +3016,7 @@ object->index(index++);
 		break;
 	    }
 		for (i = 0; i <= slices; i++) {
-		    object->position(sintemp2 * sinCache1a[i] + offset.x, sintemp2 * cosCache1a[i] + offset.y, zHigh + offset.z);
+		    object->position(sintemp2 * sinCache1a[i] + off.x, sintemp2 * cosCache1a[i] + off.y, zHigh + off.z);
 object->index(index++);
 switch(normals) {
 		      case Smooth:
@@ -3035,7 +3037,7 @@ switch(normals) {
 		}
 	    } else {
 		for (i = slices; i >= 0; i--) {
-		    object->position(sinCache1b[1] * sinCache1a[i] + offset.x, sinCache1b[1] * cosCache1a[i] + offset.y, cosCache1b[1] + offset.z);
+		    object->position(sinCache1b[1] * sinCache1a[i] + off.x, sinCache1b[1] * cosCache1a[i] + off.y, cosCache1b[1] + off.z);
 object->index(index++);
 switch(normals) {
 		      case Smooth:
@@ -3110,18 +3112,18 @@ if(colour.r >= 0.0f)object->colour(colour);
 if(positions.size()>=2){
 if(count%2){object->position(positions[count-1]);object->index(index++);object->normal(normalsCache[count-1]);
 object->position(positions[count-2]);object->index(index++);object->normal(normalsCache[count-2]);
-object->position(sintemp2 * sinCache1a[i] + offset.x, sintemp2 * cosCache1a[i] + offset.y, zHigh + offset.z);
+object->position(sintemp2 * sinCache1a[i] + off.x, sintemp2 * cosCache1a[i] + off.y, zHigh + off.z);
 object->index(index++);
 object->normal(currentNormal);
-positions.push_back(Ogre::Vector3(sintemp2 * sinCache1a[i] + offset.x, sintemp2 * cosCache1a[i] + offset.y, zHigh + offset.z));
+positions.push_back(Ogre::Vector3(sintemp2 * sinCache1a[i] + off.x, sintemp2 * cosCache1a[i] + off.y, zHigh + off.z));
 normalsCache.push_back(currentNormal);}else{object->position(positions[count-2]);object->index(index++);object->normal(normalsCache[count-2]);
 object->position(positions[count-1]);object->index(index++);object->normal(normalsCache[count-1]);
-object->position(sintemp2 * sinCache1a[i] + offset.x, sintemp2 * cosCache1a[i] + offset.y, zHigh + offset.z);
+object->position(sintemp2 * sinCache1a[i] + off.x, sintemp2 * cosCache1a[i] + off.y, zHigh + off.z);
 object->index(index++);
 object->normal(currentNormal);
-positions.push_back(Ogre::Vector3(sintemp2 * sinCache1a[i] + offset.x, sintemp2 * cosCache1a[i] + offset.y, zHigh + offset.z));
+positions.push_back(Ogre::Vector3(sintemp2 * sinCache1a[i] + off.x, sintemp2 * cosCache1a[i] + off.y, zHigh + off.z));
 normalsCache.push_back(currentNormal);}
-}else{positions.push_back(Ogre::Vector3(sintemp2 * sinCache1a[i] + offset.x, sintemp2 * cosCache1a[i] + offset.y, zHigh + offset.z));normalsCache.push_back(currentNormal);}};
+}else{positions.push_back(Ogre::Vector3(sintemp2 * sinCache1a[i] + off.x, sintemp2 * cosCache1a[i] + off.y, zHigh + off.z));normalsCache.push_back(currentNormal);}};
 		} else {
 		    if (textureCoords) {
 			object->textureCoord(1 - (float) i / slices,
@@ -3131,18 +3133,18 @@ normalsCache.push_back(currentNormal);}
 if(positions.size()>=2){
 if(count%2){object->position(positions[count-1]);object->index(index++);object->normal(normalsCache[count-1]);
 object->position(positions[count-2]);object->index(index++);object->normal(normalsCache[count-2]);
-object->position(sintemp1 * sinCache1a[i] + offset.x, sintemp1 * cosCache1a[i] + offset.y, zLow + offset.z);
+object->position(sintemp1 * sinCache1a[i] + off.x, sintemp1 * cosCache1a[i] + off.y, zLow + off.z);
 object->index(index++);
 object->normal(currentNormal);
-positions.push_back(Ogre::Vector3(sintemp1 * sinCache1a[i] + offset.x, sintemp1 * cosCache1a[i] + offset.y, zLow + offset.z));
+positions.push_back(Ogre::Vector3(sintemp1 * sinCache1a[i] + off.x, sintemp1 * cosCache1a[i] + off.y, zLow + off.z));
 normalsCache.push_back(currentNormal);}else{object->position(positions[count-2]);object->index(index++);object->normal(normalsCache[count-2]);
 object->position(positions[count-1]);object->index(index++);object->normal(normalsCache[count-1]);
-object->position(sintemp1 * sinCache1a[i] + offset.x, sintemp1 * cosCache1a[i] + offset.y, zLow + offset.z);
+object->position(sintemp1 * sinCache1a[i] + off.x, sintemp1 * cosCache1a[i] + off.y, zLow + off.z);
 object->index(index++);
 object->normal(currentNormal);
-positions.push_back(Ogre::Vector3(sintemp1 * sinCache1a[i] + offset.x, sintemp1 * cosCache1a[i] + offset.y, zLow + offset.z));
+positions.push_back(Ogre::Vector3(sintemp1 * sinCache1a[i] + off.x, sintemp1 * cosCache1a[i] + off.y, zLow + off.z));
 normalsCache.push_back(currentNormal);}
-}else{positions.push_back(Ogre::Vector3(sintemp1 * sinCache1a[i] + offset.x, sintemp1 * cosCache1a[i] + offset.y, zLow + offset.z));normalsCache.push_back(currentNormal);}};
+}else{positions.push_back(Ogre::Vector3(sintemp1 * sinCache1a[i] + off.x, sintemp1 * cosCache1a[i] + off.y, zLow + off.z));normalsCache.push_back(currentNormal);}};
 		}
 		switch(normals) {
 		  case Smooth:
@@ -3164,18 +3166,18 @@ normalsCache.push_back(currentNormal);}
 if(positions.size()>=2){
 if(count%2){object->position(positions[count-1]);object->index(index++);object->normal(normalsCache[count-1]);
 object->position(positions[count-2]);object->index(index++);object->normal(normalsCache[count-2]);
-object->position(sintemp1 * sinCache1a[i] + offset.x, sintemp1 * cosCache1a[i] + offset.y, zLow + offset.z);
+object->position(sintemp1 * sinCache1a[i] + off.x, sintemp1 * cosCache1a[i] + off.y, zLow + off.z);
 object->index(index++);
 object->normal(currentNormal);
-positions.push_back(Ogre::Vector3(sintemp1 * sinCache1a[i] + offset.x, sintemp1 * cosCache1a[i] + offset.y, zLow + offset.z));
+positions.push_back(Ogre::Vector3(sintemp1 * sinCache1a[i] + off.x, sintemp1 * cosCache1a[i] + off.y, zLow + off.z));
 normalsCache.push_back(currentNormal);}else{object->position(positions[count-2]);object->index(index++);object->normal(normalsCache[count-2]);
 object->position(positions[count-1]);object->index(index++);object->normal(normalsCache[count-1]);
-object->position(sintemp1 * sinCache1a[i] + offset.x, sintemp1 * cosCache1a[i] + offset.y, zLow + offset.z);
+object->position(sintemp1 * sinCache1a[i] + off.x, sintemp1 * cosCache1a[i] + off.y, zLow + off.z);
 object->index(index++);
 object->normal(currentNormal);
-positions.push_back(Ogre::Vector3(sintemp1 * sinCache1a[i] + offset.x, sintemp1 * cosCache1a[i] + offset.y, zLow + offset.z));
+positions.push_back(Ogre::Vector3(sintemp1 * sinCache1a[i] + off.x, sintemp1 * cosCache1a[i] + off.y, zLow + off.z));
 normalsCache.push_back(currentNormal);}
-}else{positions.push_back(Ogre::Vector3(sintemp1 * sinCache1a[i] + offset.x, sintemp1 * cosCache1a[i] + offset.y, zLow + offset.z));normalsCache.push_back(currentNormal);}};
+}else{positions.push_back(Ogre::Vector3(sintemp1 * sinCache1a[i] + off.x, sintemp1 * cosCache1a[i] + off.y, zLow + off.z));normalsCache.push_back(currentNormal);}};
 		} else {
 		    if (textureCoords) {
 			object->textureCoord(1 - (float) i / slices,
@@ -3185,18 +3187,18 @@ normalsCache.push_back(currentNormal);}
 if(positions.size()>=2){
 if(count%2){object->position(positions[count-1]);object->index(index++);object->normal(normalsCache[count-1]);
 object->position(positions[count-2]);object->index(index++);object->normal(normalsCache[count-2]);
-object->position(sintemp2 * sinCache1a[i] + offset.x, sintemp2 * cosCache1a[i] + offset.y, zHigh + offset.z);
+object->position(sintemp2 * sinCache1a[i] + off.x, sintemp2 * cosCache1a[i] + off.y, zHigh + off.z);
 object->index(index++);
 object->normal(currentNormal);
-positions.push_back(Ogre::Vector3(sintemp2 * sinCache1a[i] + offset.x, sintemp2 * cosCache1a[i] + offset.y, zHigh + offset.z));
+positions.push_back(Ogre::Vector3(sintemp2 * sinCache1a[i] + off.x, sintemp2 * cosCache1a[i] + off.y, zHigh + off.z));
 normalsCache.push_back(currentNormal);}else{object->position(positions[count-2]);object->index(index++);object->normal(normalsCache[count-2]);
 object->position(positions[count-1]);object->index(index++);object->normal(normalsCache[count-1]);
-object->position(sintemp2 * sinCache1a[i] + offset.x, sintemp2 * cosCache1a[i] + offset.y, zHigh + offset.z);
+object->position(sintemp2 * sinCache1a[i] + off.x, sintemp2 * cosCache1a[i] + off.y, zHigh + off.z);
 object->index(index++);
 object->normal(currentNormal);
-positions.push_back(Ogre::Vector3(sintemp2 * sinCache1a[i] + offset.x, sintemp2 * cosCache1a[i] + offset.y, zHigh + offset.z));
+positions.push_back(Ogre::Vector3(sintemp2 * sinCache1a[i] + off.x, sintemp2 * cosCache1a[i] + off.y, zHigh + off.z));
 normalsCache.push_back(currentNormal);}
-}else{positions.push_back(Ogre::Vector3(sintemp2 * sinCache1a[i] + offset.x, sintemp2 * cosCache1a[i] + offset.y, zHigh + offset.z));normalsCache.push_back(currentNormal);}};
+}else{positions.push_back(Ogre::Vector3(sintemp2 * sinCache1a[i] + off.x, sintemp2 * cosCache1a[i] + off.y, zHigh + off.z));normalsCache.push_back(currentNormal);}};
 		}
 	    }
 	    if(j==finish-1)object->end();
@@ -3218,7 +3220,7 @@ if(colour.r >= 0.0f)object->colour(colour);
 		break;
 	    }
 	    for (i = 0; i < slices; i++) {
-		object->position(sintemp1 * sinCache1a[i] + offset.x, sintemp1 * cosCache1a[i] + offset.y, costemp1 + offset.z);
+		object->position(sintemp1 * sinCache1a[i] + off.x, sintemp1 * cosCache1a[i] + off.y, costemp1 + off.z);
 object->index(index++);
 switch(normals) {
 		  case Flat:
@@ -3262,7 +3264,7 @@ switch(normals) {
 index=0;
 if(colour.r >= 0.0f)object->colour(colour);
 	    for (i = 0; i <= slices; i++) {
-		object->position(sintemp1 * sinCache1a[i] + offset.x, sintemp1 * cosCache1a[i] + offset.y, costemp1 + offset.z);
+		object->position(sintemp1 * sinCache1a[i] + off.x, sintemp1 * cosCache1a[i] + off.y, costemp1 + off.z);
 object->index(index++);
 switch(normals) {
 		  case Flat:
@@ -3304,7 +3306,7 @@ switch(normals) {
 index=0;
 if(colour.r >= 0.0f)object->colour(colour);
 	    for (j = 0; j <= stacks; j++) {
-		object->position(sintemp1 * sinCache1b[j] + offset.x, costemp1 * sinCache1b[j] + offset.y, cosCache1b[j] + offset.z);
+		object->position(sintemp1 * sinCache1b[j] + off.x, costemp1 * sinCache1b[j] + off.y, cosCache1b[j] + off.z);
 object->index(index++);
 switch(normals) {
 		  case Flat:

@@ -1,7 +1,9 @@
+// from server: 92% by EspClaude
+// from server: 81% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: ogre-1.4.5-dll roc_espclaude_c530b44d32f9af33.cpp
+// roc-lib: ogre-1.4.5-dll roc_espclaude_016434b16d5d6e19.cpp
 
 // Candidate translation unit (score above; library headers required).
 #undef OGRE_NONCLIENT_BUILD
@@ -106,7 +108,7 @@ void RbxEntity::collect(Camera* camera,Light* light,std::vector<ShadowCaster*>& 
         farDistance=camera->getNearClipDistance()+distance;
     }
     float oldFar;
-    if(distance>0) {
+    if(farDistance>0) {
         oldFar=camera->getFarClipDistance();
         camera->setFarClipDistance(farDistance);
     }
@@ -115,17 +117,22 @@ void RbxEntity::collect(Camera* camera,Light* light,std::vector<ShadowCaster*>& 
     bool lightVisible;
     const PlaneBoundedVolumeList* volumes;
     if(light->getType()==Light::LT_DIRECTIONAL) {
-        AxisAlignedBox swept;
-        const Vector3* frustum=camera->getWorldSpaceCorners();
-        Vector3 shift=light->getDerivedDirection()*-10000.0f;
-        Vector3 low=frustum[0];Vector3 high=low;
-        low.makeFloor(frustum[0]+shift);
-        high.makeCeil(frustum[0]+shift);
-        for(int i=1;i<8;++i) {
-            low.makeFloor(frustum[i]);high.makeCeil(frustum[i]);
-            low.makeFloor(frustum[i]+shift);high.makeCeil(frustum[i]+shift);
+        AxisAlignedBox aabb;
+        const Vector3* corners=camera->getWorldSpaceCorners();
+        Vector3 min,max;
+        const Vector3& dir=light->getDerivedDirection();
+        max.x=0;
+        Vector3 extrude=dir*-10000.0f;
+        min=max=corners[0];
+        min.makeFloor(corners[0]+extrude);
+        max.makeCeil(corners[0]+extrude);
+        for(size_t c=1;c<8;++c) {
+            min.makeFloor(corners[c]);
+            max.makeCeil(corners[c]);
+            min.makeFloor(corners[c]+extrude);
+            max.makeCeil(corners[c]+extrude);
         }
-        swept.setExtents(low,high);
+        aabb.setExtents(min,max);
         lightVisible=false;
         volumes=&light->_getFrustumClipVolumes(camera);
     } else {
@@ -148,7 +155,9 @@ void RbxEntity::collect(Camera* camera,Light* light,std::vector<ShadowCaster*>& 
         else {
             if(field2a4[i]==3) continue;
             if(lightVisible && light->getType()!=Light::LT_DIRECTIONAL) continue;
-            for(PlaneBoundedVolumeList::const_iterator it=volumes->begin();it!=volumes->end();++it) {
+            PlaneBoundedVolumeList::const_iterator it,iend;
+            iend=volumes->end();
+            for(it=volumes->begin();it!=iend;++it) {
                 if(it->intersects(sub->getWorldBoundingBox())) {
                     output.push_back(sub);
                     break;
@@ -168,9 +177,11 @@ void RbxEntity::collect(Camera* camera,Light* light,std::vector<ShadowCaster*>& 
             for(int i=0;i<(int)output.size();++i) {
                 RbxSubEntity* sub=static_cast<RbxSubEntity*>(output[i]);
                 SubMesh* mesh=sub->activeMesh();
+                RankedShadow item;
+                item.sub=sub;
                 float depth=Math::Sqrt(sub->getSquaredViewDepth(camera));
-                RankedShadow item={sub,static_cast<float>(depth-*reinterpret_cast<float*>(reinterpret_cast<char*>(mesh)+0xec)
-                    -(sub->getFloat138()==1.0f)*1000000.0-(sub->getFloat138()==0.5f)*100)};
+                item.priority=static_cast<float>(depth-*reinterpret_cast<float*>(reinterpret_cast<char*>(mesh)+0xec)
+                    -(sub->getFloat138()==1.0f)*1000000.0-(sub->getFloat138()==0.5f)*100);
                 order.push_back(item);
             }
             std::sort(order.begin(),order.end());
@@ -187,5 +198,6 @@ void RbxEntity::collect(Camera* camera,Light* light,std::vector<ShadowCaster*>& 
         }
     }
 }
+
 
 

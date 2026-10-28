@@ -721,6 +721,13 @@
     "user": "colin"
   },
   {
+    "addr": "005995f0",
+    "client": "2008-06",
+    "job": "fc859807d9b04218b0d0797463b776a9",
+    "model": "deepseek-v4.1-flash",
+    "user": "coldek"
+  },
+  {
     "addr": "00599690",
     "client": "2008-06",
     "job": "6c4c6e4f955944b8b0397c68491501e2",
@@ -1099,6 +1106,13 @@
     "user": "colin"
   },
   {
+    "addr": "005d6e10",
+    "client": "2008-06",
+    "job": "2c2b7a578d4e4b01be3aaaec1626d88e",
+    "model": "deepseek-v4.1-flash",
+    "user": "coldek"
+  },
+  {
     "addr": "005d73a0",
     "client": "2008-06",
     "job": "0dbe70db3a824afea9ed84c0e6b9ecaf",
@@ -1202,6 +1216,13 @@
     "job": "6a7eb2d7653645a7aed3a1a0ed748c35",
     "model": "gpt-6",
     "user": "colin"
+  },
+  {
+    "addr": "005defa0",
+    "client": "2008-06",
+    "job": "2c2b7a578d4e4b01be3aaaec1626d88e",
+    "model": "deepseek-v4.1-flash",
+    "user": "coldek"
   },
   {
     "addr": "005df480",

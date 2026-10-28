@@ -1432,5 +1432,41 @@
     "\t\tpublic:\n\t\t\tbool isPublic() const;\n\t\t\tvirtual bool isReadOnly() const = 0;\n\t\t\tvirtual bool isWriteOnly() const { return false; }\n\t\t\tbool canStreamWrite() const\n\t\t\t{\n\t\t\t\treturn bCanStreamWrite;\n\t\t\t}\n\t\t\tbool operator==(const PropertyDescriptor& other) const\n\t\t\t{\n\t\t\t\treturn this == &other;\n\t\t\t}\n\t\t\tvirtual bool equalValues(const DescribedBase*, const DescribedBase*) const = 0;\n\t\t\tvirtual void getValue(const DescribedBase*, Value&) const {}\n\t\t\tvirtual void setValue(DescribedBase*, const Value&) const {}\n\t\t\tvirtual bool hasStringValue() const = 0;\n\t\t\tvirtual std::string getStringValue(const DescribedBase*) const = 0;\n\t\t\tvirtual bool setStringValue(DescribedBase*, const std::string&) const = 0;\n\t\t\tXmlElement* write(const DescribedBase* instance, bool ignoreWriteProtection) const;\n\t\t\tvirtual void read(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const;"
    ]
   ]
+ },
+ {
+  "App/v8datamodel/PartInstance.cpp": [
+   [
+    "\tbool PartInstance::nonNullInWorkspace(boost::shared_ptr<PartInstance> part)\n\t{\n\t\tbool null = part.get() && part->myWorld;\n\t\tRBXASSERT(!null || part->primitive.inPipeline());\n\t\treturn null;\n\t}",
+    "\tbool PartInstance::nonNullInWorkspace(boost::shared_ptr<PartInstance> part)\n\t{\n\t\treturn part && part->myWorld;\n\t}"
+   ],
+   [
+    "namespace RBX\n{\n\tconst char* category_Part = \"Part\";",
+    "namespace RBX\n{\n\tbool __fastcall rocInPipelineAnchor(const IPipelined* p)\n\t{\n\t\treturn p->inPipeline();\n\t}\n\n\tconst char* category_Part = \"Part\";"
+   ]
+  ]
+ },
+ {
+  "App/include/v8datamodel/TimerService.h": [
+   [
+    "\t\tvoid delay(boost::function0<void> func, double seconds);",
+    "\t\tvoid delay(boost::function0<void> func, double seconds);\n\t\tbool hasPendingTimers();"
+   ]
+  ],
+  "App/v8datamodel/TimerService.cpp": [
+   [
+    "\t\tstd::list<Item>::iterator pos = items.end();\n\n\t\tstd::list<Item>::reverse_iterator iter = items.rbegin();\n\t\tstd::list<Item>::reverse_iterator end = items.rend();\n\n\t\tfor (; iter != end; iter++)\n\t\t{\n\t\t\tif (iter->time > item.time)\n\t\t\t\tpos = iter.base();\n\t\t\telse\n\t\t\t\tbreak;\n\t\t}\n\n\t\titems.insert(pos, item);\n\t}",
+    "\t\tfor (std::list<Item>::iterator iter = items.begin(); iter != items.end(); iter++)\n\t\t{\n\t\t\tif (iter->time > item.time)\n\t\t\t{\n\t\t\t\titems.insert(iter, item);\n\t\t\t\tgoto finished;\n\t\t\t}\n\t\t}\n\n\t\titems.push_back(item);\n\tfinished:;\n\t}\n\n\tbool TimerService::hasPendingTimers()\n\t{\n\t\tstd::list<Item>::reverse_iterator iter = items.rbegin();\n\t\tstd::list<Item>::reverse_iterator end = items.rend();\n\t\treturn iter != end;\n\t}"
+   ]
+  ],
+  "App/util/Math.cpp": [
+   [
+    "#define LODWORD(x) (*(DWORD*)(&x))\n\nnamespace RBX",
+    "#define LODWORD(x) (*(DWORD*)(&x))\n\nnamespace G3D\n{\n\tfloat __fastcall magnitudeZYXAnchor(const Vector3* v)\n\t{\n\t\treturn sqrtf(v->z * v->z + v->y * v->y + v->x * v->x);\n\t}\n}\n\nnamespace RBX"
+   ],
+   [
+    "\t\t\twhile (count < 3)\n\t\t\t{\n\t\t\t\tif (m0Column.cross(*vector).magnitude() < radTolerance)\n\t\t\t\t\tbreak;",
+    "\t\t\twhile (count < 3)\n\t\t\t{\n\t\t\t\tG3D::Vector3 cross = m0Column.cross(*vector);\n\t\t\t\tif (sqrtf(cross.z * cross.z + cross.y * cross.y + cross.x * cross.x) < radTolerance)\n\t\t\t\t\tbreak;"
+   ]
+  ]
  }
 ]
