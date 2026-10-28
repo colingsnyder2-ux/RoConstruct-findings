@@ -1,56 +1,15 @@
+// from server: 74% by EspClaude
 // from server: 72% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_texture_namedshade_1dba59cc07f18582.cpp
+// roc-lib: rbxgs-dll roc_espclaude_0c42a923a2a711bd.cpp
 
 // Candidate translation unit (score above; library headers required).
+#define NDEBUG 1
 #include <assert.h>
-typedef int GLint;
-typedef unsigned int GLuint;
-typedef unsigned char GLubyte;
-static void halve1Dimage_ubyte(GLint,GLuint,GLuint,const GLubyte*,GLubyte*,GLint,GLint,GLint);
-static void halveImage_ubyte(GLint components, GLuint width, GLuint height,
-			const GLubyte *datain, GLubyte *dataout,
-			GLint element_size, GLint ysize, GLint group_size)
-{
-    int i, j, k;
-    int newwidth, newheight;
-    // Native 007adaad/7adac0 preserves padded source rows.
-    int padBytes = ysize - width * group_size;
-    GLubyte *s;
-    const char *t;
-
-    /* handle case where there is only 1 column/row */
-    if (width == 1 || height == 1) {
-       assert( !(width == 1 && height == 1) ); /* can't be 1x1 */
-       halve1Dimage_ubyte(components,width,height,datain,dataout,
-			  element_size,ysize,group_size);
-       return;
-    }
-
-    newwidth = width / 2;
-    newheight = height / 2;
-    s = dataout;
-    t = (const char *)datain;
-
-    /* Piece o' cake! */
-    for (i = 0; i < newheight; i++) {
-	for (j = 0; j < newwidth; j++) {
-	    for (k = 0; k < components; k++) {
-		s[0] = (*(const GLubyte*)t +
-			*(const GLubyte*)(t+group_size) +
-			*(const GLubyte*)(t+ysize) +
-			*(const GLubyte*)(t+ysize+group_size) + 2) / 4;
-		s++; t += element_size;
-	    }
-	    t += group_size;
-	}
-	t += ysize + padBytes;
-    }
-}
-
-/* */
+#include <windows.h>
+#include <GL/gl.h>
 static void halve1Dimage_ubyte(GLint components, GLuint width, GLuint height,
 			       const GLubyte *dataIn, GLubyte *dataOut,
 			       GLint element_size, GLint ysize,
@@ -109,6 +68,47 @@ static void halve1Dimage_ubyte(GLint components, GLuint width, GLuint height,
    assert((char *)dest == &((char *)dataOut)
 	  [components * element_size * halfWidth * halfHeight]);
 } /* halve1Dimage_ubyte() */
+
+static __declspec(noinline) void halveImage_ubyte(GLint components, GLuint width, GLuint height,
+			const GLubyte *datain, GLubyte *dataout,
+			GLint element_size, GLint ysize, GLint group_size)
+{
+    int i, j, k;
+    int newwidth, newheight;
+    int padBytes;
+    GLubyte *s;
+    const char *t;
+
+    /* handle case where there is only 1 column/row */
+    if (width == 1 || height == 1) {
+       assert( !(width == 1 && height == 1) ); /* can't be 1x1 */
+       halve1Dimage_ubyte(components,width,height,datain,dataout,
+			  element_size,ysize,group_size);
+       return;
+    }
+
+    newwidth = width / 2;
+    newheight = height / 2;
+    padBytes = ysize - (width*group_size);
+    s = dataout;
+    t = (const char *)datain;
+
+    /* Piece o' cake! */
+    for (i = 0; i < newheight; i++) {
+	for (j = 0; j < newwidth; j++) {
+	    for (k = 0; k < components; k++) {
+		s[0] = (*(const GLubyte*)t +
+			*(const GLubyte*)(t+group_size) +
+			*(const GLubyte*)(t+ysize) +
+			*(const GLubyte*)(t+ysize+group_size) + 2) / 4;
+		s++; t += element_size;
+	    }
+	    t += group_size;
+	}
+	t += padBytes;
+	t += ysize;
+    }
+}
 
 
 #undef OGRE_NONCLIENT_BUILD
@@ -228,7 +228,8 @@ G3D::TextureRef TextureProxy::resolve(VisualEngine* engine) {
                 if (!loadTexture(filename, image)) {
                     ogreTexture.setNull();
                 } else if (image.getFormat() && image.getWidth() > 0 && image.getHeight() > 0) {
-                    if (*reinterpret_cast<int*>(reinterpret_cast<char*>(engine)+0x800) == 1) {
+                    int aaMode = *reinterpret_cast<int*>(reinterpret_cast<char*>(engine)+0x800);
+                    if (aaMode == 1) {
                         int width = nextPowerOfTwo(image.getWidth());
                         int height = nextPowerOfTwo(image.getHeight());
                         if (width != image.getWidth() || height != image.getHeight()) {
@@ -243,7 +244,7 @@ G3D::TextureRef TextureProxy::resolve(VisualEngine* engine) {
                     // Native deliberately calls getWidth twice at 007af654/679.
                     float widthLimit = 512.0f / image.getWidth();
                     float heightLimit = 512.0f / image.getWidth();
-                    float scale = std::min(widthLimit, heightLimit);
+                    float scale = std::min(heightLimit, widthLimit);
                     scale = std::min(scale, *reinterpret_cast<float*>(reinterpret_cast<char*>(this)+0x2c));
                     if (image.getWidth() > 128 && image.getHeight() > 128 && scale < 1.0f) {
                         int width = image.getWidth() * scale;
@@ -297,3 +298,4 @@ G3D::TextureRef TextureProxy::resolve(VisualEngine* engine) {
 #undef shadeTexture
 #undef shadeColor
 #undef ogreTexture
+

@@ -3320,11 +3320,116 @@
         ]
       ]
     },
-    "phase": "baseline: building",
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "d901972fb167c82e37bc19526d4858f064f8ab8ecc31c621f395dd073d0e79d1",
+      "credits": 7,
+      "distinct_after": 9834,
+      "distinct_before": 9827,
+      "gains": [
+        "006659a0",
+        "00665b00",
+        "00665b60",
+        "00665bd0",
+        "00665c90",
+        "00665ce0",
+        "00665f20"
+      ],
+      "input_hash": "c7e3effdb4a198f44b803bcb49d5b19aa8d3916fa2cb6686ed2150c52b39ded8",
+      "losses": [],
+      "new_distinct": [
+        "006659a0",
+        "00665b00",
+        "00665b60",
+        "00665bd0",
+        "00665c90",
+        "00665ce0",
+        "00665f20"
+      ],
+      "overlay_hash": "1159bb79a7d3a76271204bd6ac89d57ea606c567954c3fda21269dceec3d97d5",
+      "owned_after": 3169,
+      "owned_before": 3162,
+      "rebased": false,
+      "submitted_revision": "d901972fb167c82e37bc19526d4858f064f8ab8ecc31c621f395dd073d0e79d1"
+    },
+    "state": "accepted",
+    "unit": "RBX::PartDragTool",
+    "updated": 1793164162.779762,
+    "user": "colin"
+  },
+  {
+    "created": 1793164812.5559921,
+    "id": "46db929234b043c8b81f723948529a95",
+    "model": "gpt-6.1-sol",
+    "patches": {
+      "App/humanoid/Humanoid.cpp": [
+        [
+          "\tReflection::PropDescriptor<Humanoid, bool> propSit(\"Sit\", \"Control\", &Humanoid::getSit, &Humanoid::setSit, Reflection::PropertyDescriptor::STREAMING);",
+          "\tReflection::PropDescriptor<Humanoid, bool> propSit(\"Sit\", \"Control\", &Humanoid::getSit, &Humanoid::setSit, Reflection::PropertyDescriptor::STREAMING);\n\tReflection::PropDescriptor<Humanoid, bool> propStrafe(\"Strafe\", \"Control\", &Humanoid::getStrafe, &Humanoid::setStrafe, Reflection::PropertyDescriptor::STREAMING);"
+        ],
+        [
+          "\t\t  sit(false),\n",
+          "\t\t  sit(false),\n\t\t  strafe(false),\n"
+        ],
+        [
+          "\tvoid Humanoid::setSit(bool value)\n\t{\n\t\tif (sit != value)\n\t\t{\n\t\t\tsit = value;\n\t\t\traisePropertyChanged(propSit);\n\t\t}\n\t}",
+          "\tvoid Humanoid::setSit(bool value)\n\t{\n\t\tif (sit != value)\n\t\t{\n\t\t\tsit = value;\n\t\t\traisePropertyChanged(propSit);\n\t\t}\n\t}\n\n\tvoid Humanoid::setStrafe(bool value)\n\t{\n\t\tif (strafe != value)\n\t\t{\n\t\t\tstrafe = value;\n\t\t\traisePropertyChanged(propStrafe);\n\t\t}\n\t}"
+        ]
+      ],
+      "App/include/humanoid/Humanoid.h": [
+        [
+          "\t\tbool sit : 1;\n",
+          "\t\tbool sit : 1;\n\t\tbool strafe : 1;\n"
+        ],
+        [
+          "\t\tvoid setSit(bool value);",
+          "\t\tvoid setStrafe(bool value);\n\n\t\tbool getStrafe() const\n\t\t{\n\t\t\treturn strafe;\n\t\t}\n\n\t\tvoid setSit(bool value);"
+        ]
+      ],
+      "App/include/v8tree/Instance.h": [
+        [
+          "\tclass IModelModifier\n",
+          "\tclass __declspec(novtable) IModelModifier\n"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
+    "unit": "RBX::Humanoid",
+    "updated": 1793165781.0493798,
+    "user": "colin"
+  },
+  {
+    "created": 1793165738.6601992,
+    "id": "bd03af8358b141a283088e4640735c98",
+    "model": "gpt-6.1-sol",
+    "patches": {
+      "App/include/reflection/enumconverter.h": [
+        [
+          "\t\t\tstatic std::vector<const EnumDescriptor*>& allEnums();",
+          "\t\t\tstatic std::vector<const EnumDescriptor*>& allEnums();\n\t\t\tstatic std::map<const Name*, const EnumDescriptor*>& allEnumsByName();"
+        ]
+      ],
+      "App/reflection/reflection_property.cpp": [
+        [
+          "\t\tEnumDescriptor::EnumDescriptor(const char* typeName, const type_info& type)",
+          "\t\tstd::map<const Name*, const EnumDescriptor*>& EnumDescriptor::allEnumsByName()\n\t\t{\n\t\t\tstatic std::map<const Name*, const EnumDescriptor*> s;\n\t\t\treturn s;\n\t\t}\n\n\t\tEnumDescriptor::EnumDescriptor(const char* typeName, const type_info& type)"
+        ],
+        [
+          "\t\t\tallEnums().push_back(this);",
+          "\t\t\tallEnums().push_back(this);\n\t\t\tallEnumsByName()[&name] = this;"
+        ]
+      ]
+    },
+    "phase": "building",
     "receipt": {},
     "state": "verifying",
-    "unit": "RBX::PartDragTool",
-    "updated": 1793161577.5844526,
+    "unit": "RBX::Reflection::EnumDescriptor",
+    "updated": 1793165874.5778694,
     "user": "colin"
   }
 ]

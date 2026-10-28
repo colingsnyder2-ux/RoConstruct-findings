@@ -1,3 +1,4 @@
+#pragma float_control(precise, off)
 #include "tool/PartDragTool.h"
 #include "tool/RunDragger.h"
 #include "tool/MegaDragger.h"
@@ -6,12 +7,13 @@
 
 namespace RBX
 {
-	PartDragTool::PartDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, Workspace* workspace)
+	PartDragTool::PartDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, Workspace* workspace, boost::shared_ptr<Instance> selectIfNoDrag)
 		: Base(workspace),
+		  selectIfNoDrag(selectIfNoDrag),
 		  hitWorld(hitPointWorld),
 		  dragging(false)
 	{
-		RBXASSERT(mousePart);
+		
 		runDragger.reset(new RunDragger);
 
 		std::vector<PVInstance*> pvInstances;
@@ -32,7 +34,7 @@ namespace RBX
 
 	void PartDragTool::onMouseIdle(const UIEvent& uiEvent)
 	{
-		RBXASSERT(captured());
+		
 
 		if (captured() && dragging && megaDragger->mousePartAlive())
 		{
@@ -43,7 +45,7 @@ namespace RBX
 
 	void PartDragTool::onMouseDelta(const UIEvent& uiEvent)
 	{
-		RBXASSERT(captured());
+		
 
 		if (!dragging && megaDragger->mousePartAlive())
 		{

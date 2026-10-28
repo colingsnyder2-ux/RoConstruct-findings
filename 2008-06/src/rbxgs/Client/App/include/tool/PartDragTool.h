@@ -14,6 +14,7 @@ namespace RBX
 	private:
 		std::auto_ptr<RunDragger> runDragger;
 		std::auto_ptr<MegaDragger> megaDragger;
+		boost::shared_ptr<Instance> selectIfNoDrag;
 		G3D::Vector2 downPoint;
 		bool dragging;
 		G3D::Vector3 hitWorld;
@@ -32,7 +33,7 @@ namespace RBX
 			return dragging ? "GrabRotateCursor" : "DragCursor";
 		}
 
-		PartDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, Workspace* workspace);
+		PartDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, Workspace* workspace, boost::shared_ptr<Instance> selectIfNoDrag = boost::shared_ptr<Instance>());
 		virtual ~PartDragTool();
 	};
 }

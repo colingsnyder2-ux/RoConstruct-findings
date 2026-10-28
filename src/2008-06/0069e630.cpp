@@ -1,14 +1,21 @@
+// from server: 100% by EspClaude
 // from server: 96% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
-// roc-lib: ogre-1.4.5-dll roc_unit_b98e302ff518619d.cpp
+// roc-lib: ogre-1.4.5-dll roc_espclaude_9260ba432ec6e8a6.cpp
 
 // Candidate translation unit (score above; library headers required).
 #undef OGRE_NONCLIENT_BUILD
+#include <OgreVector3.h>
+#pragma float_control(precise, off, push)
+#include <OgreSphere.h>
+#pragma float_control(pop)
 #include <Ogre.h>
 #include <algorithm>
 
+#pragma float_control(precise, off)
+static inline void rocAssign(Ogre::Vector3& d, const Ogre::Vector3& s) { d.x = s.x; d.y = s.y; d.z = s.z; }
 static inline float rocSquaredLength(const Ogre::Vector3& v) { return v.x * v.x + v.y * v.y + v.z * v.z; }
 namespace Ogre {
 
@@ -46,7 +53,7 @@ void RbxSceneManager::findLightsAffectingFrustum(const Camera* camera)
 				if (lightInfo.type == Light::LT_DIRECTIONAL)
 				{
 					// Always visible
-					lightInfo.position = Vector3::ZERO;
+					rocAssign(lightInfo.position, Vector3::ZERO);
 					lightInfo.range = 0;
 					mTestLightInfos.push_back(lightInfo);
 				}
@@ -55,7 +62,7 @@ void RbxSceneManager::findLightsAffectingFrustum(const Camera* camera)
 					// NB treating spotlight as point for simplicity
 					// Just see if the lights attenuation range is within the frustum
 					lightInfo.range = l->getAttenuationRange();
-					lightInfo.position = l->getDerivedPosition();
+					rocAssign(lightInfo.position, l->getDerivedPosition());
 					Sphere sphere(lightInfo.position, lightInfo.range);
 					if (camera->isVisible(sphere))
 					{
@@ -117,3 +124,4 @@ void RbxSceneManager::findLightsAffectingFrustum(const Camera* camera)
 
 }
 }
+

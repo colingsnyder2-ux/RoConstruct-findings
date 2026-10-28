@@ -3168,7 +3168,7 @@
   "path": "2008-06/src/rbxgs/Client/App/v8datamodel/Filters.cpp"
  },
  "006659a0": {
-  "line": 25,
+  "line": 27,
   "path": "2008-06/src/rbxgs/Client/App/tool/PartDragTool.cpp"
  },
  "006659e0": {
@@ -3176,23 +3176,23 @@
   "path": "2008-06/src/glue/rbxgs/glue_link_stubs.cpp"
  },
  "00665b00": {
-  "line": 44,
+  "line": 46,
   "path": "2008-06/src/rbxgs/Client/App/tool/PartDragTool.cpp"
  },
  "00665b60": {
-  "line": 33,
+  "line": 35,
   "path": "2008-06/src/rbxgs/Client/App/tool/PartDragTool.cpp"
  },
  "00665ce0": {
-  "line": 76,
+  "line": 78,
   "path": "2008-06/src/rbxgs/Client/App/tool/PartDragTool.cpp"
  },
  "00665e20": {
-  "line": 101,
+  "line": 103,
   "path": "2008-06/src/rbxgs/Client/App/tool/PartDragTool.cpp"
  },
  "00666100": {
-  "line": 59,
+  "line": 61,
   "path": "2008-06/src/rbxgs/Client/App/tool/PartDragTool.cpp"
  },
  "00666240": {

@@ -1421,10 +1421,59 @@
     "user": "colin"
   },
   {
+    "addr": "006659a0",
+    "client": "2008-06",
+    "job": "c24b46fcc32d42a0aba2cbb62b5cb1ae",
+    "model": "gpt-6.1-sol",
+    "user": "colin"
+  },
+  {
+    "addr": "00665b00",
+    "client": "2008-06",
+    "job": "c24b46fcc32d42a0aba2cbb62b5cb1ae",
+    "model": "gpt-6.1-sol",
+    "user": "colin"
+  },
+  {
+    "addr": "00665b60",
+    "client": "2008-06",
+    "job": "c24b46fcc32d42a0aba2cbb62b5cb1ae",
+    "model": "gpt-6.1-sol",
+    "user": "colin"
+  },
+  {
+    "addr": "00665bd0",
+    "client": "2008-06",
+    "job": "c24b46fcc32d42a0aba2cbb62b5cb1ae",
+    "model": "gpt-6.1-sol",
+    "user": "colin"
+  },
+  {
+    "addr": "00665c90",
+    "client": "2008-06",
+    "job": "c24b46fcc32d42a0aba2cbb62b5cb1ae",
+    "model": "gpt-6.1-sol",
+    "user": "colin"
+  },
+  {
+    "addr": "00665ce0",
+    "client": "2008-06",
+    "job": "c24b46fcc32d42a0aba2cbb62b5cb1ae",
+    "model": "gpt-6.1-sol",
+    "user": "colin"
+  },
+  {
     "addr": "00665e20",
     "client": "2008-06",
     "job": "981c606609864414b2c608ce100c68ef",
     "model": "Claude Opus 5.5",
+    "user": "colin"
+  },
+  {
+    "addr": "00665f20",
+    "client": "2008-06",
+    "job": "c24b46fcc32d42a0aba2cbb62b5cb1ae",
+    "model": "gpt-6.1-sol",
     "user": "colin"
   },
   {

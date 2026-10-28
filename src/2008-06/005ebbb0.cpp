@@ -1,10 +1,12 @@
-// from server: 83% by EspClaude
+// from server: 100% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espclaude_2da35d5432455ee9.cpp
+// roc-lib: rbxgs-dll roc_unit_1d8338cf2f16d51c.cpp
 
 // Candidate translation unit (score above; library headers required).
+#pragma include_alias(<vector>, <roc_native_vector_cleanup_81d2f7b5fd70c773.cpp>)
+#pragma include_alias("vector", "roc_native_vector_cleanup_81d2f7b5fd70c773.cpp")
 #pragma include_alias("GLG3D/Sky.h", "roc_native_sky_stars_affbed361cd74edc.cpp")
 #pragma include_alias(<GLG3D/Sky.h>, <roc_native_sky_stars_affbed361cd74edc.cpp>)
 #pragma include_alias("G3D/GImage.h", "roc_native_gimage_error_c1995d81e1168339.cpp")
@@ -332,7 +334,7 @@ public:
         setPointer(p); 
     }
     
-    inline ~ReferenceCountedPointer() {
+    __forceinline ~ReferenceCountedPointer() {
         zeroPointer();
     }
   

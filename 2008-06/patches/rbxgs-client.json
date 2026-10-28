@@ -1302,5 +1302,33 @@
    "#include \"v8datamodel/ToolMouseCommand.h\"\n",
    "#pragma float_control(precise, off)\n#include \"v8datamodel/ToolMouseCommand.h\"\n"
   ]
+ ],
+ "App/tool/PartDragTool.cpp": [
+  [
+   "#include \"tool/PartDragTool.h\"",
+   "#pragma float_control(precise, off)\n#include \"tool/PartDragTool.h\""
+  ],
+  [
+   "PartDragTool::PartDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, Workspace* workspace)\n\t\t: Base(workspace),\n\t\t  hitWorld(hitPointWorld),\n\t\t  dragging(false)\n\t{\n\t\tRBXASSERT(mousePart);\n\t\trunDragger.reset(new RunDragger);\n\n\t\tstd::vector<PVInstance*> pvInstances;\n\t\tpvInstances.push_back(mousePart);\n\n\t\tmegaDragger.reset(new MegaDragger(mousePart, pvInstances, (RootInstance*)workspace));\n\t}\n",
+   "PartDragTool::PartDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, Workspace* workspace, boost::shared_ptr<Instance> selectIfNoDrag)\n\t\t: Base(workspace),\n\t\t  selectIfNoDrag(selectIfNoDrag),\n\t\t  hitWorld(hitPointWorld),\n\t\t  dragging(false)\n\t{\n\t\t\n\t\trunDragger.reset(new RunDragger);\n\n\t\tstd::vector<PVInstance*> pvInstances;\n\t\tpvInstances.push_back(mousePart);\n\n\t\tmegaDragger.reset(new MegaDragger(mousePart, pvInstances, (RootInstance*)workspace));\n\t}\n"
+  ],
+  [
+   "void PartDragTool::onMouseIdle(const UIEvent& uiEvent)\n\t{\n\t\tRBXASSERT(captured());\n\n\t\tif (captured() && dragging && megaDragger->mousePartAlive())\n\t\t{\n\t\t\tmegaDragger->continueDragging();\n\t\t\trunDragger->snap(getUnitMouseRay(uiEvent));\n\t\t}\n\t}\n\n\t",
+   "void PartDragTool::onMouseIdle(const UIEvent& uiEvent)\n\t{\n\t\t\n\n\t\tif (captured() && dragging && megaDragger->mousePartAlive())\n\t\t{\n\t\t\tmegaDragger->continueDragging();\n\t\t\trunDragger->snap(getUnitMouseRay(uiEvent));\n\t\t}\n\t}\n\n\t"
+  ],
+  [
+   "void PartDragTool::onMouseDelta(const UIEvent& uiEvent)\n\t{\n\t\tRBXASSERT(captured());\n\n\t\tif (!dragging && megaDragger->mousePartAlive())\n\t\t{\n\t\t\tdragging = true;\n\n\t\t\tmegaDragger->startDragging();\n\t\t\trunDragger->init(workspace, megaDragger->getMousePart(), hitWorld);\n\t\t}\n\n\t\tonMouseIdle(uiEvent);\n\t}\n\n\t",
+   "void PartDragTool::onMouseDelta(const UIEvent& uiEvent)\n\t{\n\t\t\n\n\t\tif (!dragging && megaDragger->mousePartAlive())\n\t\t{\n\t\t\tdragging = true;\n\n\t\t\tmegaDragger->startDragging();\n\t\t\trunDragger->init(workspace, megaDragger->getMousePart(), hitWorld);\n\t\t}\n\n\t\tonMouseIdle(uiEvent);\n\t}\n\n\t"
+  ]
+ ],
+ "App/include/tool/PartDragTool.h": [
+  [
+   "\t\tstd::auto_ptr<MegaDragger> megaDragger;\n",
+   "\t\tstd::auto_ptr<MegaDragger> megaDragger;\n\t\tboost::shared_ptr<Instance> selectIfNoDrag;\n"
+  ],
+  [
+   "PartDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, Workspace* workspace);",
+   "PartDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, Workspace* workspace, boost::shared_ptr<Instance> selectIfNoDrag = boost::shared_ptr<Instance>());"
+  ]
  ]
 }

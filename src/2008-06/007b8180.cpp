@@ -1,3 +1,4 @@
+// from server: 85% by EspClaude
 // from server: 83% by coldek
 // roc 2008-06 007b8180  unit: RBX::Render::Material  size: 356 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 007b8180
@@ -128,6 +129,20 @@ struct Image {
     void save(const char*, int);
 };
 
+static inline unsigned char average(const Image* source, int x, int y, int c, int stride)
+{
+    int index = (source->width * y + x) * source->channels;
+    const unsigned char* pixel = source->data + 2 * index + c;
+
+    int sum;
+    if (2 * x + 1 < source->width && 2 * y + 1 < source->height) {
+        sum = pixel[source->channels + stride] + pixel[stride] + pixel[0] + pixel[source->channels];
+    } else {
+        sum = pixel[0] * 4;
+    }
+    return (unsigned char)((sum + 2) >> 2);
+}
+
 void downsample(const Image* source, const char* filename)
 {
     Image result(source->width / 2, source->height / 2, source->channels);
@@ -138,22 +153,10 @@ void downsample(const Image* source, const char* filename)
             for (int c = 0; c < result.channels; ++c) {
                 unsigned char* destination =
                     result.data + (result.width * y + x) * result.channels + c;
-                int index = (source->width * y + x) * source->channels;
-                const unsigned char* pixel = source->data + 2 * index + c;
-
-                int sum;
-                if (2 * x + 1 < source->width && 2 * y + 1 < source->height) {
-                    sum = pixel[source->channels + stride] + pixel[stride] + pixel[0] + pixel[source->channels];
-                } else {
-                    sum = pixel[0] * 4;
-                }
-                *destination = (unsigned char)((sum + 2) >> 2);
+                *destination = average(source, x, y, c, stride);
             }
         }
     }
 
     result.save(filename, 5);
 }
-
-
-
