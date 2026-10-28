@@ -1,10 +1,10 @@
 {
   "schema": 1,
-  "workflow_version": 5,
+  "workflow_version": 6,
   "matching_workflow_version": 1,
   "url": "https://raw.githubusercontent.com/colingsnyder2-ux/RoConstruct-findings/main/data/native-worker.zip",
-  "sha256": "f3a1af1229295669b894a264b44db624af0b4d389fc6ff60359131b372fd4069",
-  "size": 2641933,
+  "sha256": "d4a6ba9e747f52c90872e43d653c02cfc6495c5b1743ff36ad111bdbec67c410",
+  "size": 2683568,
   "guide": "https://raw.githubusercontent.com/colingsnyder2-ux/RoConstruct-findings/main/data/NATIVE_AGENT.md",
   "matching_guide": "https://raw.githubusercontent.com/colingsnyder2-ux/RoConstruct-findings/main/data/MATCHING_AGENT.md",
   "native_clients": [
