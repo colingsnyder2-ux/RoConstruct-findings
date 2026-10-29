@@ -1,4 +1,27 @@
-{"name": "libpng", "description": "libpng 1.2.5 (recipe libpng-1.2.5) over the rebuilt zlib.",
- "depends": ["zlib"],
- "layers": [{"name": "upstream", "mode": "recipe", "recipe": "libpng-1.2.5", "files": "recipe", "flags": "/O2 /GS- /MD"}],
- "test": "png_roundtrip", "test_includes": ["tools/libs/libpng-1.2.5", "tools/libs/zlib-1.2.3"]}
+{
+ "name": "libpng",
+ "description": "libpng 1.2.5 (recipe libpng-1.2.5) over the rebuilt zlib.",
+ "depends": [
+  "zlib",
+  "zlib-winapi"
+ ],
+ "layers": [
+  {
+   "name": "upstream",
+   "mode": "recipe",
+   "recipe": "libpng-1.2.6",
+   "files": "recipe",
+   "flags": "/O2 /GS- /MD",
+   "direct": true
+  }
+ ],
+ "test": "png_roundtrip",
+ "test_includes": [
+  "tools/libs/libpng-1.2.6",
+  "tools/libs/zlib-1.2.3",
+  "rebuild/2008-06/out/libpng/force"
+ ],
+ "verified": true,
+ "force_verified": true,
+ "prefer_module_helpers": true
+}

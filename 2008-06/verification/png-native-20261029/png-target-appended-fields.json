@@ -1,0 +1,17 @@
+[
+ {
+  "address": "0x52d0cb",
+  "mnemonic": "mov",
+  "op_str": "byte ptr [esi + 0x260], bl"
+ },
+ {
+  "address": "0x51ceba",
+  "mnemonic": "cmp",
+  "op_str": "ebp, dword ptr [edi + 0x264]"
+ },
+ {
+  "address": "0x51cec2",
+  "mnemonic": "cmp",
+  "op_str": "ebx, dword ptr [edi + 0x268]"
+ }
+]

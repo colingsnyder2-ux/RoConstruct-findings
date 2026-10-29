@@ -1,0 +1,35 @@
+{
+ "date": "2026-10-29",
+ "module": "libpng",
+ "base_before": "1.2.5",
+ "base_after": "1.2.6",
+ "forced_roots": 43,
+ "all_forced_code_data_and_actual_owner_exact": true,
+ "new_masked_unique_address_candidates": 53,
+ "new_actual_linked_code_data_exact_addresses": 51,
+ "masked_prior_addresses_lost": 0,
+ "baseline_masked_unique_addresses": 109,
+ "final_masked_unique_addresses": 162,
+ "state_sizes": {
+  "1.2.5": 608,
+  "1.2.6": 620
+ },
+ "target_compression_type_offset": 608,
+ "target_user_limits_offsets": [
+  612,
+  616
+ ],
+ "runtime_exit": 0,
+ "runtime_cases": 10,
+ "unresolved": [],
+ "xtp_dependant_roots": 441,
+ "xtp_link_and_runtime_exit": 0,
+ "placed_distinct": 404,
+ "new_server_credits": 0,
+ "limitations": [
+  "Two of53 candidate gains resolve to different nonmatching local helper bodies; only51 actual linked gains claimed.",
+  "Lua force probe exposed missing genuine Roblox state-open hook; no Lua source integration gain or placeholder provider installed.",
+  "Local integration evidence only, not independent server acceptance."
+ ],
+ "focused_rebuild_tests_passed": 26
+}

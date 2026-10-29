@@ -1,0 +1,24 @@
+{
+ "1.2.5": {
+  "compiled": true,
+  "linked": true,
+  "ran": true,
+  "exit": 0,
+  "output": "size=608 big_row_buf=592",
+  "unresolved": [],
+  "duplicates": [],
+  "referencers": [],
+  "map": "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\tests\\png_layout_125\\png_layout_125.map"
+ },
+ "1.2.6": {
+  "compiled": true,
+  "linked": true,
+  "ran": true,
+  "exit": 0,
+  "output": "size=620 big_row_buf=592 compression_type=608 user_width_max=612 user_height_max=616",
+  "unresolved": [],
+  "duplicates": [],
+  "referencers": [],
+  "map": "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\tests\\png_layout_126\\png_layout_126.map"
+ }
+}
