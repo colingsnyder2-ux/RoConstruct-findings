@@ -25,6 +25,15 @@
  "test": "g3d_gl",
  "test_includes": [
   "tree:g3d-6.09-rbx2008/include",
-  "tools/libs/SDL-1.2.11/include"
- ]
+  "tools/libs/SDL-1.2.11/include",
+  "rebuild/2008-06/out/G3D-GL/force"
+ ],
+ "verified": true,
+ "force_verified": true,
+ "prune_unselected_sections": true,
+ "prefer_module_helpers": true,
+ "overlay": {
+  "root": "tree:g3d-6.09-rbx2008/",
+  "patches": "rebuild/2008-06/patches/g3d-sdl-main.json"
+ }
 }

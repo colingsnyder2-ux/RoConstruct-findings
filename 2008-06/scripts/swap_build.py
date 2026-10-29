@@ -24,7 +24,10 @@ RECIPE_PREFIXES = {"XTP": ("xtp-11.2.2",), "G3D": ("g3d-6.09",), "Boost": ("boos
                    "CodegenAnalogs": ("wildmagic-2-core", "templates-")}
 
 
-def of_module(module, recipe):
+def of_module(module, recipe, file=""):
+    if recipe.startswith("g3d-6.09"):
+        owner = "G3D-PNG" if "-png" in recipe else "G3D-GL" if file.startswith(("GLG3Dcpp/", "contrib/")) else "G3D"
+        return module == owner
     return recipe in RECIPES.get(module, ()) or recipe.startswith(RECIPE_PREFIXES.get(module, ()))
 
 
@@ -173,7 +176,7 @@ def main(module, limit=None):
             break
     # Native replays use the same family/header gates and win duplicate symbols.
     for g in native + plan["groups"]:
-        if not of_module(module, g["recipe"]):
+        if not of_module(module, g["recipe"], g["file"]):
             continue
         if compatible(module, g["file"], g["recipe"]):
             groups.append(g)

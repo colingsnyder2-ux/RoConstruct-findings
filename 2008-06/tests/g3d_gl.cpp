@@ -1,3 +1,4 @@
+#include "force_verified.h"
 // G3D GLG3D rebuild test: GL-free pieces (lighting model, camera projection math).
 #include <G3DAll.h>
 #include <cstdio>

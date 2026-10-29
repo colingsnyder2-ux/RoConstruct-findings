@@ -1,3 +1,4 @@
+#include "force_verified.h"
 // G3D core: vector/matrix/quaternion math, containers and binary serialization.
 #include "G3D/Vector3.h"
 #include "G3D/Matrix3.h"
@@ -28,6 +29,12 @@ int main()
     Array<int> values;
     for (int i = 0; i < 100; ++i) values.append(i * i);
     if (values.size() != 100 || values.last() != 9801) ++failures;
+    values.resize(16);
+    values.append(256);
+    if (values.size() != 17 || values[15] != 225 || values.last() != 256) ++failures;
+    Array<int> copied(values);
+    values.clear();
+    if (copied.size() != 17 || copied[15] != 225 || values.size() != 0) ++failures;
     Table<std::string, int> table;
     table.set("a", 1); table.set("b", 2);
     if (!table.containsKey("b") || table["a"] != 1) ++failures;
@@ -36,6 +43,10 @@ int main()
     out.writeInt32(0x12345678); out.writeFloat32(2.5f); out.writeString("roc");
     BinaryInput in(out.getCArray(), out.size(), G3D_LITTLE_ENDIAN, false, true);
     if (in.readInt32() != 0x12345678 || in.readFloat32() != 2.5f || in.readString() != "roc") ++failures;
+
+    out.compress();
+    BinaryInput compressed(out.getCArray(), out.size(), G3D_LITTLE_ENDIAN, true, true);
+    if (compressed.readInt32() != 0x12345678 || compressed.readFloat32() != 2.5f || compressed.readString() != "roc") ++failures;
 
     printf("%s failures=%d\n", format("g3d %d.%02d", G3D_VER / 10000, (G3D_VER / 100) % 100).c_str(), failures);
     return failures;

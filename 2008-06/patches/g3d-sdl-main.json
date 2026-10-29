@@ -1,0 +1,8 @@
+{
+ "GLG3Dcpp/GApp.cpp": [
+  [
+   "namespace G3D {",
+   "// SDL entrypoint macro must not rename GApp::main calls.\n#undef main\n\nnamespace G3D {"
+  ]
+ ]
+}

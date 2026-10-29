@@ -4,7 +4,8 @@
  "depends": [
   "rbx-util",
   "lua",
-  "raknet"
+  "raknet",
+  "g3d-gl"
  ],
  "layers": [
   {
