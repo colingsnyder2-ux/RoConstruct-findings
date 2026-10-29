@@ -1,0 +1,180 @@
+[
+ {
+  "recipe_file": "zlib-1.2.3-winapi-dll roc_unit_cc0da05a02dcd115.cpp",
+  "cl": "21022",
+  "flags": "/O2 /GS- /MD",
+  "addresses": [
+   "0051eb90"
+  ]
+ },
+ {
+  "recipe_file": "zlib-1.2.3-winapi roc_unit_cc0da05a02dcd115.cpp",
+  "cl": "21022",
+  "flags": "/O2 /GS- /MD",
+  "addresses": [
+   "0051f140"
+  ]
+ },
+ {
+  "recipe_file": "zlib-1.2.3 deflate.c",
+  "cl": "21022",
+  "flags": "/O2 /GS- /MD",
+  "addresses": [
+   "0079fb50",
+   "0079fbc0",
+   "0079fd20",
+   "007a6470",
+   "007a64a0"
+  ]
+ },
+ {
+  "recipe_file": "zlib-1.2.3 deflate.c",
+  "cl": "21022",
+  "flags": "/O2 /Ob1 /GS- /MD",
+  "addresses": [
+   "0079fdc0",
+   "0079fea0",
+   "0079ffd0",
+   "007a02f0"
+  ]
+ },
+ {
+  "recipe_file": "zlib-1.2.3-winapi crc32.c",
+  "cl": "21022",
+  "flags": "/O2 /GS- /MD",
+  "addresses": [
+   "007a3e90"
+  ]
+ },
+ {
+  "recipe_file": "zlib-1.2.3 adler32.c",
+  "cl": "21022",
+  "flags": "/O2 /GS- /MD",
+  "addresses": [
+   "007a3c20"
+  ]
+ },
+ {
+  "recipe_file": "zlib-1.2.3 crc32.c",
+  "cl": "21022",
+  "flags": "/O2 /GS- /MD",
+  "addresses": [
+   "007a4170"
+  ]
+ },
+ {
+  "recipe_file": "zlib-1.2.3 trees.c",
+  "cl": "21022",
+  "flags": "/O2 /GS- /MD",
+  "addresses": [
+   "007a4190",
+   "007a4210",
+   "007a42e0",
+   "007a45e0",
+   "007a4af0",
+   "007a4500",
+   "007a5150",
+   "007a52c0",
+   "007a53b0",
+   "007a5320",
+   "007a54a0",
+   "007a5770",
+   "007a5240",
+   "007a5810",
+   "007a5220",
+   "007a5a00"
+  ]
+ },
+ {
+  "recipe_file": "zlib-1.2.3 inftrees.c",
+  "cl": "21022",
+  "flags": "/O2 /GS /MD",
+  "addresses": [
+   "007a3730"
+  ]
+ },
+ {
+  "recipe_file": "zlib-1.2.3-winapi trees.c",
+  "cl": "21022",
+  "flags": "/O2 /GS- /MD",
+  "addresses": [
+   "007a4d50",
+   "007a56a0"
+  ]
+ },
+ {
+  "recipe_file": "zlib-1.2.3 inffast.c",
+  "cl": "21022",
+  "flags": "/O2 /GS- /MD",
+  "addresses": [
+   "007a32d0"
+  ]
+ },
+ {
+  "recipe_file": "zlib-1.2.3-winapi uncompr.c",
+  "cl": "50727",
+  "flags": "/O2 /GS- /MD",
+  "addresses": [
+   "007a63c0"
+  ]
+ },
+ {
+  "recipe_file": "zlib-1.2.3-winapi deflate.c",
+  "cl": "50727",
+  "flags": "/O2 /GS- /MD",
+  "addresses": [
+   "007a64f0",
+   "007a6da0",
+   "007a7080",
+   "007a6cc0",
+   "007a7bb0",
+   "007a7c40"
+  ]
+ },
+ {
+  "recipe_file": "zlib-1.2.3 deflate.c",
+  "cl": "50727",
+  "flags": "/O2 /GS- /MD",
+  "addresses": [
+   "007a6e30",
+   "007a6fb0",
+   "007a71d0",
+   "007a73b0",
+   "007a7720"
+  ]
+ },
+ {
+  "recipe_file": "zlib-1.2.3-winapi crc32.c",
+  "cl": "50727",
+  "flags": "/O2 /GS- /MD",
+  "addresses": [
+   "007a7e70",
+   "007a8110"
+  ]
+ },
+ {
+  "recipe_file": "zlib-1.2.3-winapi inflate.c",
+  "cl": "50727",
+  "flags": "/O2 /GS- /MD",
+  "addresses": [
+   "007a81a0",
+   "007a8380"
+  ]
+ },
+ {
+  "recipe_file": "zlib-1.2.3 inflate.c",
+  "cl": "50727",
+  "flags": "/O2 /GS- /MD",
+  "addresses": [
+   "007a8290"
+  ]
+ },
+ {
+  "recipe_file": "zlib-1.2.3-winapi adler32.c",
+  "cl": "50727",
+  "flags": "/O2 /GS- /MD",
+  "addresses": [
+   "007a99b0"
+  ]
+ }
+]

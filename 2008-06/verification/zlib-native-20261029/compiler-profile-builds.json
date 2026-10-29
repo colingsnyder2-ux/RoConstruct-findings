@@ -1,0 +1,57 @@
+[
+ {
+  "file": "deflate.c",
+  "cl": 21022,
+  "flags": "/O2 /GS- /MD",
+  "result": {
+   "C:\\Users\\colin\\RoConstruct\\tools\\libs\\zlib-1.2.3\\deflate.c": [
+    true,
+    "deflate.c"
+   ]
+  }
+ },
+ {
+  "file": "deflate.c",
+  "cl": 21022,
+  "flags": "/O2 /Ob1 /GS- /MD",
+  "result": {
+   "C:\\Users\\colin\\RoConstruct\\tools\\libs\\zlib-1.2.3\\deflate.c": [
+    true,
+    "deflate.c"
+   ]
+  }
+ },
+ {
+  "file": "deflate.c",
+  "cl": 50727,
+  "flags": "/O2 /GS- /MD",
+  "result": {
+   "C:\\Users\\colin\\RoConstruct\\tools\\libs\\zlib-1.2.3\\deflate.c": [
+    true,
+    "deflate.c"
+   ]
+  }
+ },
+ {
+  "file": "inflate.c",
+  "cl": 50727,
+  "flags": "/O2 /GS- /MD",
+  "result": {
+   "C:\\Users\\colin\\RoConstruct\\tools\\libs\\zlib-1.2.3\\inflate.c": [
+    true,
+    "inflate.c"
+   ]
+  }
+ },
+ {
+  "file": "inftrees.c",
+  "cl": 21022,
+  "flags": "/O2 /GS /MD",
+  "result": {
+   "C:\\Users\\colin\\RoConstruct\\tools\\libs\\zlib-1.2.3\\inftrees.c": [
+    true,
+    "inftrees.c"
+   ]
+  }
+ }
+]

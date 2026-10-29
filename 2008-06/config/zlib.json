@@ -1,14 +1,34 @@
 {
  "name": "zlib",
- "description": "zlib 1.2.3 as linked into the 2008-06 exe (recipe zlib-1.2.3). The rebuild makes deflate_copyright static (overlay) so both copies can link into one program; mining recipes are unchanged.",
+ "description": "zlib 1.2.3 cdecl: accepted deflate /Ob1 and inftrees /GS profiles, other sources unchanged. Static copyright overlay permits both ABI copies.",
  "layers": [
+  {
+   "name": "deflate-ob1",
+   "mode": "recipe",
+   "recipe": "zlib-1.2.3",
+   "files": "deflate.c",
+   "flags": "/O2 /Ob1 /GS- /MD",
+   "direct": true
+  },
+  {
+   "name": "inftrees-gs",
+   "mode": "recipe",
+   "recipe": "zlib-1.2.3",
+   "files": "inftrees.c",
+   "flags": "/O2 /GS /MD",
+   "direct": true
+  },
   {
    "name": "upstream",
    "mode": "recipe",
    "recipe": "zlib-1.2.3",
    "files": "recipe",
    "flags": "/O2 /GS- /MD",
-   "direct": true
+   "direct": true,
+   "exclude": [
+    "deflate.c",
+    "inftrees.c"
+   ]
   }
  ],
  "test": "zlib_roundtrip",

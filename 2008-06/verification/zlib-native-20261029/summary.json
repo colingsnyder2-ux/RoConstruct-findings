@@ -1,0 +1,34 @@
+{
+ "date": "2026-10-29",
+ "module": "zlib",
+ "old_inventory": 29,
+ "new_inventory": 34,
+ "new_module_addresses": [
+  "0079fdc0",
+  "0079fea0",
+  "0079ffd0",
+  "007a02f0",
+  "007a3730"
+ ],
+ "old_exact_symbol_pair_losses": 0,
+ "new_exact_symbol_pairs": 5,
+ "all_gains_code_data_exact_and_actual_library_owned": true,
+ "cdecl_streaming_cases": 36,
+ "winapi_streaming_cases": 36,
+ "winapi_inventory": 26,
+ "baseline_report_correction": "Old cached inventories27/24 become29/26 when refreshed: allocator helpers were already exact; only five flag-profile gains claimed.",
+ "new_server_credits": 0,
+ "old_masked_symbol_address_pairs_including_twins": 1071,
+ "old_unique_address_losses": 0,
+ "focused_tests_passed": 53,
+ "placement": 407,
+ "milestones_passed": [
+  "M2",
+  "M4a",
+  "M5"
+ ],
+ "M4b_unresolved": 36,
+ "M4b_new_blockers": [],
+ "M4b_removed_blockers": [],
+ "libpng_consumer_exit": 0
+}

@@ -1,0 +1,42 @@
+[
+ {
+  "addr": "0079fdc0",
+  "symbol": "_fill_window",
+  "obj": "deflate.obj",
+  "data_exact": true,
+  "bad": [],
+  "map_line": "0001:00002cd0       _fill_window               00403cd0 f   linked:deflate.obj"
+ },
+ {
+  "addr": "0079fea0",
+  "symbol": "_deflate_stored",
+  "obj": "deflate.obj",
+  "data_exact": true,
+  "bad": [],
+  "map_line": "0001:00002db0       _deflate_stored            00403db0 f   linked:deflate.obj"
+ },
+ {
+  "addr": "0079ffd0",
+  "symbol": "_deflate_fast",
+  "obj": "deflate.obj",
+  "data_exact": true,
+  "bad": [],
+  "map_line": "0001:00002ee0       _deflate_fast              00403ee0 f   linked:deflate.obj"
+ },
+ {
+  "addr": "007a02f0",
+  "symbol": "_deflate_slow",
+  "obj": "deflate.obj",
+  "data_exact": true,
+  "bad": [],
+  "map_line": "0001:00003200       _deflate_slow              00404200 f   linked:deflate.obj"
+ },
+ {
+  "addr": "007a3730",
+  "symbol": "_inflate_table",
+  "obj": "inftrees.obj",
+  "data_exact": true,
+  "bad": [],
+  "map_line": "0001:00000410       _inflate_table             00401410 f   linked:inftrees.obj"
+ }
+]

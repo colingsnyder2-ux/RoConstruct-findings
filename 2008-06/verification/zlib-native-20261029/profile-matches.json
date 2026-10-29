@@ -1,0 +1,177 @@
+[
+ {
+  "obj": "work\\zlib-native-20261029\\profile-0\\deflate.obj",
+  "hits": [
+   {
+    "addr": "007a6470",
+    "symbol": "_putShortMSB",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "addr": "007a64a0",
+    "symbol": "_flush_pending",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "addr": "0079fb50",
+    "symbol": "_read_buf",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "addr": "0079fbc0",
+    "symbol": "_longest_match",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "addr": "0079fd20",
+    "symbol": "_longest_match_fast",
+    "data_exact": true,
+    "bad": []
+   }
+  ]
+ },
+ {
+  "obj": "work\\zlib-native-20261029\\profile-1\\deflate.obj",
+  "hits": [
+   {
+    "addr": "007a6470",
+    "symbol": "_putShortMSB",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "addr": "007a64a0",
+    "symbol": "_flush_pending",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "addr": "0079fb50",
+    "symbol": "_read_buf",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "addr": "0079fbc0",
+    "symbol": "_longest_match",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "addr": "0079fd20",
+    "symbol": "_longest_match_fast",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "addr": "0079fdc0",
+    "symbol": "_fill_window",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "addr": "0079fea0",
+    "symbol": "_deflate_stored",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "addr": "0079ffd0",
+    "symbol": "_deflate_fast",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "addr": "007a02f0",
+    "symbol": "_deflate_slow",
+    "data_exact": true,
+    "bad": []
+   }
+  ]
+ },
+ {
+  "obj": "work\\zlib-native-20261029\\profile-2\\deflate.obj",
+  "hits": [
+   {
+    "addr": "007a6470",
+    "symbol": "_putShortMSB",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "addr": "007a64a0",
+    "symbol": "_flush_pending",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "addr": "0079fb50",
+    "symbol": "_read_buf",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "addr": "007a6da0",
+    "symbol": "_lm_init",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "addr": "007a6e30",
+    "symbol": "_longest_match",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "addr": "007a6fb0",
+    "symbol": "_longest_match_fast",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "addr": "007a71d0",
+    "symbol": "_deflate_stored",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "addr": "007a73b0",
+    "symbol": "_deflate_fast",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "addr": "007a7720",
+    "symbol": "_deflate_slow",
+    "data_exact": true,
+    "bad": []
+   }
+  ]
+ },
+ {
+  "obj": "work\\zlib-native-20261029\\profile-3\\inflate.obj",
+  "hits": [
+   {
+    "addr": "007a8290",
+    "symbol": "_updatewindow",
+    "data_exact": true,
+    "bad": []
+   }
+  ]
+ },
+ {
+  "obj": "work\\zlib-native-20261029\\profile-4\\inftrees.obj",
+  "hits": [
+   {
+    "addr": "007a3730",
+    "symbol": "_inflate_table",
+    "data_exact": true,
+    "bad": []
+   }
+  ]
+ }
+]
