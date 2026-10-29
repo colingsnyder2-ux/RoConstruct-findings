@@ -1099,6 +1099,13 @@
     "user": "coldek"
   },
   {
+    "addr": "005d5ea0",
+    "client": "2008-06",
+    "job": "555bc6a61c11460b89091abb484c76f9",
+    "model": "deepseek-v4.1-flash",
+    "user": "coldek"
+  },
+  {
     "addr": "005d60f0",
     "client": "2008-06",
     "job": "6a7eb2d7653645a7aed3a1a0ed748c35",
@@ -1130,6 +1137,13 @@
     "addr": "005d77b0",
     "client": "2008-06",
     "job": "1bef0f0fe4be4bb3bdae0375ace125c4",
+    "model": "deepseek-v4.1-flash",
+    "user": "coldek"
+  },
+  {
+    "addr": "005d80c0",
+    "client": "2008-06",
+    "job": "30c9e718fbfa419b99fa07995f7cc2e8",
     "model": "deepseek-v4.1-flash",
     "user": "coldek"
   },

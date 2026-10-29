@@ -1,7 +1,9 @@
+// from server: 93% by EspClaude
+// from server: 92% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: openrbx-client-dll roc_claudesub_a43185cac0fad0e6.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_b277647b119a3331.cpp
 
 // Candidate translation unit (score above; library headers required).
 // exe-layout OpenRBX headers: Body pv at 0x94 without updatePV, Primitive +0x28 before oldSpatialMin
@@ -1346,6 +1348,22 @@ bool BlockBlockContact::stepContact()
 }
 
 extern unsigned int nativeBlockPlanePassed, nativeBlockPlaneRejected;
+} // namespace RBX
+namespace RBX {
+static inline Vector3 rocMulA(const Vector3& p, const Matrix3& m)
+{
+	float p0 = p[0];
+	float m00 = m[0][0];
+	float m10 = m[1][0];
+	float m20 = m[2][0];
+	float m01 = m[0][1];
+	float m11 = m[1][1];
+	float m21 = m[2][1];
+	float m02 = m[0][2];
+	float m12 = m[1][2];
+	float m22 = m[2][2];
+	return Vector3(p0 * m00 + p[1] * m10 + p[2] * m20, p0 * m01 + p[1] * m11 + p[2] * m21, p0 * m02 + p[1] * m12 + p[2] * m22);
+}
 bool BlockBlockContact::getBestPlaneEdge(float overlapIgnored)
 {
 	float bestPlaneLength = Math::inf();
@@ -1373,11 +1391,10 @@ bool BlockBlockContact::getBestPlaneEdge(float overlapIgnored)
 
 			int j = testId % 3;
 
-			Vector3 eBaseInTest = cBase.rotation.getColumn(j) * cTest.rotation;
+			Vector3 eBaseInTest = rocMulA(cBase.rotation.getColumn(j), cTest.rotation);
 
 			float length = fabsf(eBaseInTest.y * eTest.y) + fabsf(eBaseInTest.x * eTest.x) +
-						   fabsf(eBaseInTest.z * eTest.z);
-			length += eBase[j] - fabsf(pTestInBase[j]);
+						   fabsf(eBaseInTest.z * eTest.z) + eBase[j] - fabsf(pTestInBase[j]);
 
 			if (!(length > overlapIgnored)) {
 				separatingBodyId = baseId;
@@ -1474,5 +1491,6 @@ bool BlockBlockContact::getBestPlaneEdge(float overlapIgnored)
 }
 
 } // namespace RBX
+
 
 

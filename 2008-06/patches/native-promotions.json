@@ -1498,5 +1498,21 @@
     "\tvoid World::removePrimitive(Primitive* p)\n\t{\n\t\tdestroyJoints(p);\n\t\tcontactManager->onPrimitiveRemoved(p);\n\t\tjointStage->onPrimitiveRemoving(p);\n\t\tprimitives.fastRemove(p);\n\t\tp->setWorld(NULL);\n\t}"
    ]
   ]
+ },
+ {
+  "App/include/humanoid/Humanoid.h": [
+   [
+    "\t\t\tvirtual bool canSleep() const = 0;\n\n\t\t\tvirtual float getIntendedRotationAboutYAxis() const",
+    "\t\t\tvirtual bool canSleep() const = 0;\n\t\t\tvirtual bool isAlive() const\n\t\t\t{\n\t\t\t\treturn true;\n\t\t\t}\n\t\t\tvirtual bool isDead() const\n\t\t\t{\n\t\t\t\treturn false;\n\t\t\t}\n\n\t\t\tvirtual float getIntendedRotationAboutYAxis() const"
+   ]
+  ]
+ },
+ {
+  "App/v8datamodel/Teams.cpp": [
+   [
+    "\tTeam* Teams::getTeamFromTeamColor(BrickColor brickColor)\n\t{\n\t\tfor (size_t i = 0; i < numChildren(); i++)\n\t\t{\n\t\t\tTeam* team = dynamic_cast<Team*>(getChild(i));\n\t\t\tif (team && team->getTeamColor() == brickColor)\n\t\t\t\treturn team;\n\t\t}\n\t\t\n\t\treturn NULL;\n\t}",
+    "\tTeam* Teams::getTeamFromTeamColor(BrickColor brickColor)\n\t{\n\t\tfor (size_t i = 0; i < numChildren(); i++)\n\t\t{\n\t\t\tTeam* team = dynamic_cast<Team*>(getChild(i));\n\t\t\tif (team && team->getTeamColor() == brickColor)\n\t\t\t\treturn team;\n\t\t}\n\t\t\n\t\treturn NULL;\n\t}\n\n\tTeam* Teams::getTeamFromPlayer(Network::Player* player)\n\t{\n\t\tif (player->getNeutral())\n\t\t\treturn NULL;\n\n\t\treturn getTeamFromTeamColor(player->getTeamColor());\n\t}"
+   ]
+  ]
  }
 ]

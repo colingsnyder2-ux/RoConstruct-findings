@@ -54,6 +54,14 @@ namespace RBX
 			virtual void onComputeForce(const float) = 0;
 			virtual State* onStep(const float, Controller&) = 0;
 			virtual bool canSleep() const = 0;
+			virtual bool isAlive() const
+			{
+				return true;
+			}
+			virtual bool isDead() const
+			{
+				return false;
+			}
 
 			virtual float getIntendedRotationAboutYAxis() const
 			{

@@ -1,7 +1,7 @@
-// from server: 98% by EspClaude
+// from server: 99% by EspClaude
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-view-dll roc_espclaude_b29d3f45b0c80d0d.cpp
+// roc-lib: rbxgs-view-dll roc_espclaude_40ecc0c530e28631.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "BrickMesh.cpp"
@@ -168,7 +168,7 @@ static __forceinline void atlasFace(unsigned* corners,const Vector4* rectangles,
     meshTextures[i2]=c;
     meshTextures[i3]=d;
 }
-#define ATLAS(C,S) \
+#define ATLAS(C,S) { Vector2 border,a,b,c,d; \
     border=Vector2(rectangles[atlasIndices[S]].z*6.0f,rectangles[atlasIndices[S]].w*6.0f); \
     border*=margin; \
     a=Vector2(rectangles[atlasIndices[S]].x+border.x,rectangles[atlasIndices[S]].y+border.y); \
@@ -181,7 +181,7 @@ static __forceinline void atlasFace(unsigned* corners,const Vector4* rectangles,
     meshTextures[(C)[0]]=a; \
     meshTextures[(C)[1]]=b; \
     meshTextures[(C)[2]]=c; \
-    meshTextures[(C)[3]]=d;
+    meshTextures[(C)[3]]=d; }
 static __forceinline void extendTexture(unsigned destination,unsigned base,unsigned other,float margin) {
     Vector2 direction=meshTextures[base]-meshTextures[other];
     direction.unitize(1e-6f);
@@ -210,19 +210,108 @@ void BrickMeshRecovery::populate(const Vector3& size,RenderSurfaceTypes surfaces
     float palette=static_cast<float>(color.getClosestPaletteIndex());
     unsigned quads[16];
     unsigned face[24];
-    Vector2 border,a,b,c,d;
     recoveredMeshFace<RBX::NORM_X>(half,meshBevel,surfaces,palette,level,face);
-    ATLAS(face,3)
+    {
+    Vector2 border(rectangles[atlasIndices[3]].z*6.0f,rectangles[atlasIndices[3]].w*6.0f);
+    border*=margin;
+    Vector2 a,b,c,d;
+    a=Vector2(rectangles[atlasIndices[3]].x+border.x,rectangles[atlasIndices[3]].y+border.y);
+    b=Vector2(rectangles[atlasIndices[3]].x+rectangles[atlasIndices[3]].z-border.x,rectangles[atlasIndices[3]].y+border.y);
+    c=Vector2(rectangles[atlasIndices[3]].x+rectangles[atlasIndices[3]].z-border.x,rectangles[atlasIndices[3]].y+rectangles[atlasIndices[3]].w-border.y);
+    d=Vector2(rectangles[atlasIndices[3]].x+border.x,rectangles[atlasIndices[3]].y+rectangles[atlasIndices[3]].w-border.y);
+    if(flags[3]&1) {std::swap(a,b);std::swap(c,d);}
+    if(flags[3]&2) {std::swap(a,d);std::swap(b,c);}
+    if(flags[3]&4) {Vector2 t=a;a=b;b=c;c=d;d=t;}
+    meshTextures[(face)[0]]=a;
+    meshTextures[(face)[1]]=b;
+    meshTextures[(face)[2]]=c;
+    meshTextures[(face)[3]]=d;
+    }
     recoveredMeshFace<RBX::NORM_Y>(half,meshBevel,surfaces,palette,level,face+4);
-    ATLAS(face+4,4)
+    {
+    Vector2 border(rectangles[atlasIndices[4]].z*6.0f,rectangles[atlasIndices[4]].w*6.0f);
+    border*=margin;
+    Vector2 a,b,c,d;
+    a=Vector2(rectangles[atlasIndices[4]].x+border.x,rectangles[atlasIndices[4]].y+border.y);
+    b=Vector2(rectangles[atlasIndices[4]].x+rectangles[atlasIndices[4]].z-border.x,rectangles[atlasIndices[4]].y+border.y);
+    c=Vector2(rectangles[atlasIndices[4]].x+rectangles[atlasIndices[4]].z-border.x,rectangles[atlasIndices[4]].y+rectangles[atlasIndices[4]].w-border.y);
+    d=Vector2(rectangles[atlasIndices[4]].x+border.x,rectangles[atlasIndices[4]].y+rectangles[atlasIndices[4]].w-border.y);
+    if(flags[4]&1) {std::swap(a,b);std::swap(c,d);}
+    if(flags[4]&2) {std::swap(a,d);std::swap(b,c);}
+    if(flags[4]&4) {Vector2 t=a;a=b;b=c;c=d;d=t;}
+    meshTextures[(face+4)[0]]=a;
+    meshTextures[(face+4)[1]]=b;
+    meshTextures[(face+4)[2]]=c;
+    meshTextures[(face+4)[3]]=d;
+    }
     recoveredMeshFace<RBX::NORM_Z>(half,meshBevel,surfaces,palette,level,face+8);
-    ATLAS(face+8,0)
+    {
+    Vector2 border(rectangles[atlasIndices[0]].z*6.0f,rectangles[atlasIndices[0]].w*6.0f);
+    border*=margin;
+    Vector2 a,b,c,d;
+    a=Vector2(rectangles[atlasIndices[0]].x+border.x,rectangles[atlasIndices[0]].y+border.y);
+    b=Vector2(rectangles[atlasIndices[0]].x+rectangles[atlasIndices[0]].z-border.x,rectangles[atlasIndices[0]].y+border.y);
+    c=Vector2(rectangles[atlasIndices[0]].x+rectangles[atlasIndices[0]].z-border.x,rectangles[atlasIndices[0]].y+rectangles[atlasIndices[0]].w-border.y);
+    d=Vector2(rectangles[atlasIndices[0]].x+border.x,rectangles[atlasIndices[0]].y+rectangles[atlasIndices[0]].w-border.y);
+    if(flags[0]&1) {std::swap(a,b);std::swap(c,d);}
+    if(flags[0]&2) {std::swap(a,d);std::swap(b,c);}
+    if(flags[0]&4) {Vector2 t=a;a=b;b=c;c=d;d=t;}
+    meshTextures[(face+8)[0]]=a;
+    meshTextures[(face+8)[1]]=b;
+    meshTextures[(face+8)[2]]=c;
+    meshTextures[(face+8)[3]]=d;
+    }
     recoveredMeshFace<RBX::NORM_X_NEG>(half,meshBevel,surfaces,palette,level,face+12);
-    ATLAS(face+12,2)
+    {
+    Vector2 border(rectangles[atlasIndices[2]].z*6.0f,rectangles[atlasIndices[2]].w*6.0f);
+    border*=margin;
+    Vector2 a,b,c,d;
+    a=Vector2(rectangles[atlasIndices[2]].x+border.x,rectangles[atlasIndices[2]].y+border.y);
+    b=Vector2(rectangles[atlasIndices[2]].x+rectangles[atlasIndices[2]].z-border.x,rectangles[atlasIndices[2]].y+border.y);
+    c=Vector2(rectangles[atlasIndices[2]].x+rectangles[atlasIndices[2]].z-border.x,rectangles[atlasIndices[2]].y+rectangles[atlasIndices[2]].w-border.y);
+    d=Vector2(rectangles[atlasIndices[2]].x+border.x,rectangles[atlasIndices[2]].y+rectangles[atlasIndices[2]].w-border.y);
+    if(flags[2]&1) {std::swap(a,b);std::swap(c,d);}
+    if(flags[2]&2) {std::swap(a,d);std::swap(b,c);}
+    if(flags[2]&4) {Vector2 t=a;a=b;b=c;c=d;d=t;}
+    meshTextures[(face+12)[0]]=a;
+    meshTextures[(face+12)[1]]=b;
+    meshTextures[(face+12)[2]]=c;
+    meshTextures[(face+12)[3]]=d;
+    }
     recoveredMeshFace<RBX::NORM_Y_NEG>(half,meshBevel,surfaces,palette,level,face+16);
-    ATLAS(face+16,5)
+    {
+    Vector2 border(rectangles[atlasIndices[5]].z*6.0f,rectangles[atlasIndices[5]].w*6.0f);
+    border*=margin;
+    Vector2 a,b,c,d;
+    a=Vector2(rectangles[atlasIndices[5]].x+border.x,rectangles[atlasIndices[5]].y+border.y);
+    b=Vector2(rectangles[atlasIndices[5]].x+rectangles[atlasIndices[5]].z-border.x,rectangles[atlasIndices[5]].y+border.y);
+    c=Vector2(rectangles[atlasIndices[5]].x+rectangles[atlasIndices[5]].z-border.x,rectangles[atlasIndices[5]].y+rectangles[atlasIndices[5]].w-border.y);
+    d=Vector2(rectangles[atlasIndices[5]].x+border.x,rectangles[atlasIndices[5]].y+rectangles[atlasIndices[5]].w-border.y);
+    if(flags[5]&1) {std::swap(a,b);std::swap(c,d);}
+    if(flags[5]&2) {std::swap(a,d);std::swap(b,c);}
+    if(flags[5]&4) {Vector2 t=a;a=b;b=c;c=d;d=t;}
+    meshTextures[(face+16)[0]]=a;
+    meshTextures[(face+16)[1]]=b;
+    meshTextures[(face+16)[2]]=c;
+    meshTextures[(face+16)[3]]=d;
+    }
     recoveredMeshFace<RBX::NORM_Z_NEG>(half,meshBevel,surfaces,palette,level,face+20);
-    ATLAS(face+20,1)
+    {
+    Vector2 border(rectangles[atlasIndices[1]].z*6.0f,rectangles[atlasIndices[1]].w*6.0f);
+    border*=margin;
+    Vector2 a,b,c,d;
+    a=Vector2(rectangles[atlasIndices[1]].x+border.x,rectangles[atlasIndices[1]].y+border.y);
+    b=Vector2(rectangles[atlasIndices[1]].x+rectangles[atlasIndices[1]].z-border.x,rectangles[atlasIndices[1]].y+border.y);
+    c=Vector2(rectangles[atlasIndices[1]].x+rectangles[atlasIndices[1]].z-border.x,rectangles[atlasIndices[1]].y+rectangles[atlasIndices[1]].w-border.y);
+    d=Vector2(rectangles[atlasIndices[1]].x+border.x,rectangles[atlasIndices[1]].y+rectangles[atlasIndices[1]].w-border.y);
+    if(flags[1]&1) {std::swap(a,b);std::swap(c,d);}
+    if(flags[1]&2) {std::swap(a,d);std::swap(b,c);}
+    if(flags[1]&4) {Vector2 t=a;a=b;b=c;c=d;d=t;}
+    meshTextures[(face+20)[0]]=a;
+    meshTextures[(face+20)[1]]=b;
+    meshTextures[(face+20)[2]]=c;
+    meshTextures[(face+20)[3]]=d;
+    }
     if(meshBevel>0) {
         unsigned copies[24];
         for(int i=0;i<24;++i)

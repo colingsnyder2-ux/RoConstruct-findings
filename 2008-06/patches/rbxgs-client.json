@@ -399,6 +399,10 @@
   [
    "\t\tvoid setSit(bool value);",
    "\t\tvoid setStrafe(bool value);\n\n\t\tbool getStrafe() const\n\t\t{\n\t\t\treturn strafe;\n\t\t}\n\n\t\tvoid setSit(bool value);"
+  ],
+  [
+   "\t\t\tvirtual bool canSleep() const = 0;\n\n\t\t\tvirtual float getIntendedRotationAboutYAxis() const",
+   "\t\t\tvirtual bool canSleep() const = 0;\n\t\t\tvirtual bool isAlive() const\n\t\t\t{\n\t\t\t\treturn true;\n\t\t\t}\n\t\t\tvirtual bool isDead() const\n\t\t\t{\n\t\t\t\treturn false;\n\t\t\t}\n\n\t\t\tvirtual float getIntendedRotationAboutYAxis() const"
   ]
  ],
  "App/include/v8datamodel/ModelInstance.h": [
@@ -1607,6 +1611,10 @@
   [
    "\tint Teams::getNumPlayersInTeam(BrickColor brickColor)\n\t{\n\t\tint numOfPlayers = 0;\n\n\t\tNetwork::Players* players = ServiceProvider::find<Network::Players>(this);\n\t\tRBXASSERT(players);",
    "\tint Teams::getNumPlayersInTeam(BrickColor brickColor)\n\t{\n\t\tint numOfPlayers = 0;\n\n\t\tNetwork::Players* players = ServiceProvider::find<Network::Players>(this);"
+  ],
+  [
+   "\tTeam* Teams::getTeamFromTeamColor(BrickColor brickColor)\n\t{\n\t\tfor (size_t i = 0; i < numChildren(); i++)\n\t\t{\n\t\t\tTeam* team = dynamic_cast<Team*>(getChild(i));\n\t\t\tif (team && team->getTeamColor() == brickColor)\n\t\t\t\treturn team;\n\t\t}\n\t\t\n\t\treturn NULL;\n\t}",
+   "\tTeam* Teams::getTeamFromTeamColor(BrickColor brickColor)\n\t{\n\t\tfor (size_t i = 0; i < numChildren(); i++)\n\t\t{\n\t\t\tTeam* team = dynamic_cast<Team*>(getChild(i));\n\t\t\tif (team && team->getTeamColor() == brickColor)\n\t\t\t\treturn team;\n\t\t}\n\t\t\n\t\treturn NULL;\n\t}\n\n\tTeam* Teams::getTeamFromPlayer(Network::Player* player)\n\t{\n\t\tif (player->getNeutral())\n\t\t\treturn NULL;\n\n\t\treturn getTeamFromTeamColor(player->getTeamColor());\n\t}"
   ]
  ],
  "App/include/util/UIEvent.h": [

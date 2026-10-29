@@ -3188,15 +3188,15 @@
   "path": "2008-06/src/Client/App/v8datamodel/Teams.cpp"
  },
  "005d6250": {
-  "line": 82,
+  "line": 90,
   "path": "2008-06/src/Client/App/v8datamodel/Teams.cpp"
  },
  "005d6340": {
-  "line": 111,
+  "line": 119,
   "path": "2008-06/src/Client/App/v8datamodel/Teams.cpp"
  },
  "005d6400": {
-  "line": 120,
+  "line": 128,
   "path": "2008-06/src/Client/App/v8datamodel/Teams.cpp"
  },
  "005d6850": {
@@ -3228,27 +3228,27 @@
   "path": "2008-06/src/Client/App/v8datamodel/TimerService.cpp"
  },
  "005d74d0": {
-  "line": 118,
+  "line": 126,
   "path": "2008-06/src/Client/App/include/humanoid/Humanoid.h"
  },
  "005d7500": {
-  "line": 125,
+  "line": 133,
   "path": "2008-06/src/Client/App/include/humanoid/Humanoid.h"
  },
  "005d7510": {
-  "line": 132,
+  "line": 140,
   "path": "2008-06/src/Client/App/include/humanoid/Humanoid.h"
  },
  "005d7520": {
-  "line": 146,
+  "line": 154,
   "path": "2008-06/src/Client/App/include/humanoid/Humanoid.h"
  },
  "005d7530": {
-  "line": 160,
+  "line": 168,
   "path": "2008-06/src/Client/App/include/humanoid/Humanoid.h"
  },
  "005d7550": {
-  "line": 172,
+  "line": 180,
   "path": "2008-06/src/Client/App/include/humanoid/Humanoid.h"
  },
  "005d75a0": {
@@ -3272,7 +3272,7 @@
   "path": "2008-06/src/Client/App/humanoid/Humanoid.cpp"
  },
  "005d7980": {
-  "line": 139,
+  "line": 147,
   "path": "2008-06/src/Client/App/include/humanoid/Humanoid.h"
  },
  "005d7990": {
@@ -3300,7 +3300,7 @@
   "path": "2008-06/src/Client/App/include/reflection/reflection.h"
  },
  "005d7fe0": {
-  "line": 228,
+  "line": 236,
   "path": "2008-06/src/Client/App/include/humanoid/Humanoid.h"
  },
  "005d80c0": {

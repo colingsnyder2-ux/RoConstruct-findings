@@ -1687,6 +1687,30 @@
         ]
       },
       "timestamp": 1793228542.4819212
+    },
+    {
+      "job": "30c9e718fbfa419b99fa07995f7cc2e8",
+      "patches": {
+        "App/include/humanoid/Humanoid.h": [
+          [
+            "\t\t\tvirtual bool canSleep() const = 0;\n\n\t\t\tvirtual float getIntendedRotationAboutYAxis() const",
+            "\t\t\tvirtual bool canSleep() const = 0;\n\t\t\tvirtual bool isAlive() const\n\t\t\t{\n\t\t\t\treturn true;\n\t\t\t}\n\t\t\tvirtual bool isDead() const\n\t\t\t{\n\t\t\t\treturn false;\n\t\t\t}\n\n\t\t\tvirtual float getIntendedRotationAboutYAxis() const"
+          ]
+        ]
+      },
+      "timestamp": 1793231111.7255316
+    },
+    {
+      "job": "555bc6a61c11460b89091abb484c76f9",
+      "patches": {
+        "App/v8datamodel/Teams.cpp": [
+          [
+            "\tTeam* Teams::getTeamFromTeamColor(BrickColor brickColor)\n\t{\n\t\tfor (size_t i = 0; i < numChildren(); i++)\n\t\t{\n\t\t\tTeam* team = dynamic_cast<Team*>(getChild(i));\n\t\t\tif (team && team->getTeamColor() == brickColor)\n\t\t\t\treturn team;\n\t\t}\n\t\t\n\t\treturn NULL;\n\t}",
+            "\tTeam* Teams::getTeamFromTeamColor(BrickColor brickColor)\n\t{\n\t\tfor (size_t i = 0; i < numChildren(); i++)\n\t\t{\n\t\t\tTeam* team = dynamic_cast<Team*>(getChild(i));\n\t\t\tif (team && team->getTeamColor() == brickColor)\n\t\t\t\treturn team;\n\t\t}\n\t\t\n\t\treturn NULL;\n\t}\n\n\tTeam* Teams::getTeamFromPlayer(Network::Player* player)\n\t{\n\t\tif (player->getNeutral())\n\t\t\treturn NULL;\n\n\t\treturn getTeamFromTeamColor(player->getTeamColor());\n\t}"
+          ]
+        ]
+      },
+      "timestamp": 1793233161.1138957
     }
   ],
   "initial_patches": {}

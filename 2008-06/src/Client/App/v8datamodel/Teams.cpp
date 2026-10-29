@@ -55,6 +55,14 @@ namespace RBX
 		return NULL;
 	}
 
+	Team* Teams::getTeamFromPlayer(Network::Player* player)
+	{
+		if (player->getNeutral())
+			return NULL;
+
+		return getTeamFromTeamColor(player->getTeamColor());
+	}
+
 	G3D::Color3 Teams::getTeamColorForHumanoid(Humanoid* humanoid)
 	{
 		Network::Players* players = ServiceProvider::find<Network::Players>(this);

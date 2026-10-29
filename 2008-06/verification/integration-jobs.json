@@ -5105,5 +5105,135 @@
     "unit": "RBX::PartInstance",
     "updated": 1793229183.8872244,
     "user": "coldek"
+  },
+  {
+    "created": 1793230707.7128394,
+    "id": "30c9e718fbfa419b99fa07995f7cc2e8",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/include/humanoid/Humanoid.h": [
+        [
+          "\t\t\tvirtual bool canSleep() const = 0;\n\n\t\t\tvirtual float getIntendedRotationAboutYAxis() const",
+          "\t\t\tvirtual bool canSleep() const = 0;\n\t\t\tvirtual bool isAlive() const\n\t\t\t{\n\t\t\t\treturn true;\n\t\t\t}\n\t\t\tvirtual bool isDead() const\n\t\t\t{\n\t\t\t\treturn false;\n\t\t\t}\n\n\t\t\tvirtual float getIntendedRotationAboutYAxis() const"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "10d16d1b657a9d7051107e43636fc42c64eb56a62d505788a3f9cadaad1d6d4f",
+      "credits": 1,
+      "distinct_after": 9932,
+      "distinct_before": 9931,
+      "gains": [
+        "005d80c0"
+      ],
+      "input_hash": "f9694e3dc1671a02d2090906ad90d534afdd8da4f83bf4baca1e95b3f82a840b",
+      "losses": [],
+      "new_distinct": [
+        "005d80c0"
+      ],
+      "overlay_hash": "9d5f5954a618efcc64a92cc8e46e6b1a924c15314b5cc1bfec9d5c9906c535b4",
+      "owned_after": 3266,
+      "owned_before": 3265,
+      "rebased": false,
+      "submitted_revision": "10d16d1b657a9d7051107e43636fc42c64eb56a62d505788a3f9cadaad1d6d4f"
+    },
+    "state": "accepted",
+    "unit": "RBX::Humanoid",
+    "updated": 1793231111.8583088,
+    "user": "coldek"
+  },
+  {
+    "created": 1793232867.5113456,
+    "id": "555bc6a61c11460b89091abb484c76f9",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/v8datamodel/Teams.cpp": [
+        [
+          "\tTeam* Teams::getTeamFromTeamColor(BrickColor brickColor)\n\t{\n\t\tfor (size_t i = 0; i < numChildren(); i++)\n\t\t{\n\t\t\tTeam* team = dynamic_cast<Team*>(getChild(i));\n\t\t\tif (team && team->getTeamColor() == brickColor)\n\t\t\t\treturn team;\n\t\t}\n\t\t\n\t\treturn NULL;\n\t}",
+          "\tTeam* Teams::getTeamFromTeamColor(BrickColor brickColor)\n\t{\n\t\tfor (size_t i = 0; i < numChildren(); i++)\n\t\t{\n\t\t\tTeam* team = dynamic_cast<Team*>(getChild(i));\n\t\t\tif (team && team->getTeamColor() == brickColor)\n\t\t\t\treturn team;\n\t\t}\n\t\t\n\t\treturn NULL;\n\t}\n\n\tTeam* Teams::getTeamFromPlayer(Network::Player* player)\n\t{\n\t\tif (player->getNeutral())\n\t\t\treturn NULL;\n\n\t\treturn getTeamFromTeamColor(player->getTeamColor());\n\t}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "046d6702c8c533bd21262fb6e22133a0f07b97fdf07832c38796f9d8c416c7e0",
+      "credits": 1,
+      "distinct_after": 9933,
+      "distinct_before": 9932,
+      "gains": [
+        "005d5ea0"
+      ],
+      "input_hash": "f155fe39c74c6cff82f493f11b872e825b2bbe263ecb88bd752d6fb55a049250",
+      "losses": [],
+      "new_distinct": [
+        "005d5ea0"
+      ],
+      "overlay_hash": "0f439c5778b27ac9c96d6b6d38acb23e74a3fd96947bb3bc618ca59d802784d7",
+      "owned_after": 3267,
+      "owned_before": 3266,
+      "rebased": false,
+      "submitted_revision": "046d6702c8c533bd21262fb6e22133a0f07b97fdf07832c38796f9d8c416c7e0"
+    },
+    "state": "accepted",
+    "unit": "RBX::Teams",
+    "updated": 1793233161.2919514,
+    "user": "coldek"
+  },
+  {
+    "created": 1793234301.190795,
+    "id": "d9a614b346a44a82abc8fd6923ab5d98",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/v8datamodel/JointInstance.cpp": [
+        [
+          "\t\tWorld* oldWorld = joint->getWorld();\n\t\tWorld* wsWorld;",
+          "\t\tWorld* oldWorld = joint->getWorld2008();\n\t\tWorld* wsWorld;"
+        ],
+        [
+          "\t\t\tif (oldWorld)\n\t\t\t{\n\t\t\t\toldWorld->removeJoint(joint);\n\t\t\t\tRBXASSERT(!joint->getWorld());\n\t\t\t}\n\n\t\t\tif (wsWorld)\n\t\t\t{\n\t\t\t\twsWorld->insertJoint(joint);\n\t\t\t\tRBXASSERT(joint->getWorld());\n\t\t\t}",
+          "\t\t\tif (oldWorld)\n\t\t\t{\n\t\t\t\toldWorld->removeJoint(joint);\n\t\t\t}\n\n\t\t\tif (wsWorld)\n\t\t\t{\n\t\t\t\twsWorld->insertJoint(joint);\n\t\t\t}"
+        ]
+      ]
+    },
+    "phase": "checking",
+    "receipt": {},
+    "state": "verifying",
+    "unit": "RBX::JointInstance",
+    "updated": 1793234577.0793698,
+    "user": "coldek"
+  },
+  {
+    "created": 1793234551.0224562,
+    "id": "a7480fdea7e547a99dac0c2f27fdf944",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/include/v8world/JointStage.h": [
+        [
+          "\t\tbool edgeHasPrimitivesDownstream(Edge* e);\n",
+          "\t\tbool edgeHasPrimitivesDownstream(Edge* e);\n\t\tbool acceptsJoint(Joint* j);\n\t\tvoid addLocally(Joint* j);\n"
+        ]
+      ],
+      "App/util/Guid.cpp": [
+        [
+          "\tvoid Guid::generateGUID(std::string& result)\n\t{\n\t\tresult = \"RBX\";\n\n\t\tGUID guid;\n\t\tCoCreateGuid(&guid);\n\n\t\twchar_t wszGUID[64] = {0};\n\t\tStringFromGUID2(guid, wszGUID, 64);\n\n\t\tchar ansiClsid[64];\n\t\tWideCharToMultiByte(NULL, NULL, wszGUID, 64, ansiClsid, 64, NULL, NULL);\n\t\t\n\t\tresult += ansiClsid;\n\t\tresult.erase(40, 1);",
+          "\tstatic void guidString(std::string& result)\n\t{\n\t\tGUID guid;\n\t\tCoCreateGuid(&guid);\n\n\t\twchar_t wszGUID[64] = {0};\n\t\tStringFromGUID2(guid, wszGUID, 64);\n\n\t\tchar ansiClsid[64];\n\t\tWideCharToMultiByte(NULL, NULL, wszGUID, 64, ansiClsid, 64, NULL, NULL);\n\n\t\tresult = ansiClsid;\n\t}\n\n\tvoid Guid::generateGUID(std::string& result)\n\t{\n\t\tguidString(result);\n\t\tresult = \"RBX\" + result;\n\n\t\tresult.erase(40, 1);"
+        ]
+      ],
+      "App/v8world/JointStage.cpp": [
+        [
+          "\tvoid JointStage::onEdgeAdded(Edge* e)\n\t{\n\t\te->putInPipeline(this);\n\n\t\tif (edgeHasPrimitivesDownstream(e))\n\t\t{\n\t\t\tmoveEdgeToDownstream(e);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(e->getEdgeType() == Edge::JOINT);\n\t\t\tJoint* j = rbx_static_cast<Joint*>(e);\n\t\t\tinsertToList(j);\n\t\t\tinsertToMap(j, j->getPrimitive(0));\n\t\t\tinsertToMap(j, j->getPrimitive(1));\n\t\t}\n\t}\n",
+          "\t__declspec(noinline) bool JointStage::acceptsJoint(Joint* j)\n\t{\n\t\treturn edgeHasPrimitivesDownstream(j);\n\t}\n\n\t__declspec(noinline) void JointStage::addLocally(Joint* j)\n\t{\n\t\tinsertToList(j);\n\t\tinsertToMap(j, j->getPrimitive(0));\n\t\tinsertToMap(j, j->getPrimitive(1));\n\t}\n\n\tvoid JointStage::onEdgeAdded(Edge* e)\n\t{\n\t\te->putInPipeline(this);\n\n\t\tif (acceptsJoint(rbx_static_cast<Joint*>(e)))\n\t\t\tgetDownstreamWS()->onEdgeAdded(e);\n\t\telse\n\t\t\taddLocally(rbx_static_cast<Joint*>(e));\n\t}\n"
+        ]
+      ]
+    },
+    "phase": "queued",
+    "receipt": {},
+    "state": "queued",
+    "unit": "RBX::Log, RBX::JointStage",
+    "updated": 1793234551.0224562,
+    "user": "coldek"
   }
 ]
