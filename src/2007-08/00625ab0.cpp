@@ -1,16 +1,18 @@
-// from server: 73% by colin
-struct PartDragTool {
-    char pad[0x30];
-    bool flag;
-    void* MakeCursor(void* arg);
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_native_c97b9566865eb092.cpp
 
-extern "C" void __stdcall SetCursorString(void* self, const char* name);
-
-void* PartDragTool::MakeCursor(void* arg)
-{
-    const char* name = flag ? "GrabRotateCursor" : "DragCursor";
-    void* result = arg;
-    SetCursorString(arg, name);
-    return result;
-}
+// Candidate translation unit (score above; library headers required).
+// Propagate independently verified August2007 pre-Guid Instance declarations; original native body remains unchanged.
+#ifndef _DLL
+#define _DLL
+#endif
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp"
+#include "tool/PartDragTool.cpp"

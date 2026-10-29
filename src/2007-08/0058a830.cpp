@@ -1,82 +1,17 @@
-// from server: 64% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Seat.cpp
+// roc-lib: rbxgs roc_espeon_aug2007_stack_cd88090dd994c870.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Seat.h"
-#include "v8datamodel/PartInstance.h"
-#include "v8datamodel/JointInstance.h"
-#include "v8datamodel/Workspace.h"
-#include "humanoid/Humanoid.h"
-#include "Network/Players.h"
-
-namespace RBX
-{
-	Seat::Seat()
-		: sleepTime(0.0f)
-	{
-		setName("Seat");
-	}
-
-	void Seat::seatCharacter(Humanoid* h)
-	{
-		weld = Creatable::create<Weld>();
-
-		PartInstance* torso = h->getTorso();
-		RBXASSERT(torso);
-
-		const G3D::CoordinateFrame& unused = torso->getCoordinateFrame();
-
-		weld->setName("SeatWeld");
-		weld->setPart0(this);
-		weld->setPart1(torso);
-
-		G3D::CoordinateFrame C0;
-		C0.lookAt(G3D::Vector3(0.0f, -1.0f, 0.0f), G3D::Vector3(0.0f, 0.0f, -1.0f));
-
-		C0.translation = G3D::Vector3(0.0f, 3.0f, 0.0f);
-
-		G3D::CoordinateFrame C1;
-		C1.lookAt(G3D::Vector3(0.0f, -1.0f, 0.0f), G3D::Vector3(0.0f, 0.0f, -1.0f));
-
-		C1.translation = G3D::Vector3(0.0f, 0.6f, 0.0f);
-
-		weld->setC0(C0);
-		weld->setC1(C1);
-		weld->setParent(this);
-	}
-
-	void Seat::unseatCharacter()
-	{
-		sleepTime = G3D::System::getLocalTime();
-
-		if (weld)
-		{
-			weld->setParent(NULL);
-			weld.reset();
-		}
-	}
-
-	void Seat::onEvent_humanoidJumped(bool active)
-	{
-		unseatCharacter();
-		humanoidJumped.disconnect();
-	}
-
-	void Seat::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
-	{
-		Instance::onServiceProvider(oldProvider, newProvider);
-
-		if (!oldProvider)
-		{
-			seatTouched = PartInstance::event_Touched.connect(this, boost::bind(&Seat::onEvent_seatTouched, this, _1));
-		}
-
-		if (!newProvider)
-		{
-			seatTouched.disconnect();
-		}
-	}
-}
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "v8datamodel/DataModel.cpp"

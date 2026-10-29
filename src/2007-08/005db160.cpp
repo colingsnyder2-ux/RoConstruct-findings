@@ -1,63 +1,19 @@
-// from server: 92% by colin
-// roc 2007-08 005db160  unit: RBX::VVelocityMotor::?$FactoryProduct  size: 81 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005db160
-//
-// 005db160  56                   push esi
-// 005db161  8d442408             lea eax, [esp + 8]
-// 005db165  50                   push eax
-// 005db166  8bf1                 mov esi, ecx
-// 005db168  e863c8eaff           call 0x4879d0
-// 005db16d  83c404               add esp, 4
-// 005db170  84c0                 test al, al
-// 005db172  7539                 jne 0x5db1ad
-// 005db174  6a10                 push 0x10
-// 005db176  c74608f0ae5d00       mov dword ptr [esi + 8], 0x5daef0
-// 005db17d  c706f0ad5d00         mov dword ptr [esi], 0x5dadf0
-// 005db183  e86e4d0500           call 0x62fef6
-// 005db188  83c404               add esp, 4
-// 005db18b  85c0                 test eax, eax
-// 005db18d  741b                 je 0x5db1aa
-// 005db18f  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 005db193  8908                 mov dword ptr [eax], ecx
-// 005db195  8b54240c             mov edx, dword ptr [esp + 0xc]
-// 005db199  895004               mov dword ptr [eax + 4], edx
-// 005db19c  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 005db1a0  894808               mov dword ptr [eax + 8], ecx
-// 005db1a3  8b542414             mov edx, dword ptr [esp + 0x14]
-// 005db1a7  89500c               mov dword ptr [eax + 0xc], edx
-// 005db1aa  894604               mov dword ptr [esi + 4], eax
-// 005db1ad  5e                   pop esi
-// 005db1ae  c21400               ret 0x14
-// library V8DataModel/Feature.cpp (function ??0?$FactoryProduct@VVelocityMotor@@VJointInstance@@...)
-
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_stack_f81213c22a79b220.cpp
 
-
-extern "C" char __cdecl sub_4879D0(void*);
-extern "C" void* __cdecl sub_62FEF6(unsigned int);
-
-struct FactoryProduct {
-    void* vtable;
-    void* field4;
-    void* field8;
-    void construct(void* arg0, void* arg1, void* arg2, void* arg3, void* arg4);
-};
-
-void FactoryProduct::construct(void* arg0, void* arg1, void* arg2, void* arg3, void* arg4)
-{
-    if (sub_4879D0(&arg0)) {
-        return;
-    }
-    field8 = (void*)0x5daef0;
-    vtable = (void*)0x5dadf0;
-    void* p = sub_62FEF6(0x10);
-    if (p) {
-        ((void**)p)[0] = arg0;
-        ((void**)p)[1] = arg1;
-        ((void**)p)[2] = arg2;
-        ((void**)p)[3] = arg3;
-    }
-    field4 = p;
-}
+// Candidate translation unit (score above; library headers required).
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "script/ScriptContext.cpp"

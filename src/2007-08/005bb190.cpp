@@ -1,23 +1,12 @@
-// from server: 76% by colin
-struct PVInstance {
-    char pad[8];
-    int field8;
-    int fieldC;
-    int field10;
-    void SetImpl(int, int);
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_native_81486f4ffa862bc8.cpp
 
-void PVInstance::SetImpl(int a, int b) {
-    char* p = (char*)a;
-    if (p != 0) {
-        p -= 4;
-    } else {
-        p = 0;
-    }
-    int idx = *(int*)(p + 0xec);
-    int off = *(int*)((char*)this + 0x10);
-    int val = *(int*)(idx + off);
-    val += *(int*)((char*)this + 0xc);
-    void (__stdcall *fn)(void*, int) = *(void (__stdcall **)(void*, int))((char*)this + 8);
-    fn((void*)(val + (int)p + 0xec), b);
-}
+// Candidate translation unit (score above; library headers required).
+// Propagate independently verified August2007 pre-Guid Instance declarations; original native body remains unchanged.
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp"
+#include "v8datamodel/PVInstance.cpp"

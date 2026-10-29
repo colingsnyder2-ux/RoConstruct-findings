@@ -1,60 +1,17 @@
-// from server: 39% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_stack_cd88090dd994c870.cpp
 
-struct RefCounted {
-    void* vptr;
-    long refCount;
-};
-
-struct Holder {
-    RefCounted* ptr;
-    void addRef();
-    void release();
-};
-
-struct Creator {
-    void* field0;
-    Holder holder;
-    Creator(void* a, void* b);
-};
-
-void Holder::addRef() {
-    if (ptr) {
-        _InterlockedExchangeAdd(&ptr->refCount, 1);
-    }
-}
-
-void Holder::release() {
-    if (ptr) {
-        if (_InterlockedExchangeAdd(&ptr->refCount, -1) == 1) {
-            void** vt = *(void***)ptr;
-            typedef void (__thiscall *Fn)(void*);
-            ((Fn)vt[2])(ptr);
-        }
-    }
-}
-
-Creator::Creator(void* a, void* b) {
-    field0 = a;
-    holder.ptr = 0;
-    if (a) {
-        RefCounted* p = (RefCounted*)((char*)a + 0xa4);
-        if (p) {
-            p->vptr = a;
-            RefCounted* old = holder.ptr;
-            if (old) {
-                _InterlockedExchangeAdd(&old->refCount, 1);
-            }
-            RefCounted* old2 = *(RefCounted**)((char*)p + 4);
-            if (old2) {
-                if (_InterlockedExchangeAdd(&old2->refCount, -1) == 1) {
-                    void** vt = *(void***)old2;
-                    typedef void (__thiscall *Fn)(void*);
-                    ((Fn)vt[2])(old2);
-                }
-            }
-            *(RefCounted**)((char*)p + 4) = old;
-        }
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "v8datamodel/DataModel.cpp"

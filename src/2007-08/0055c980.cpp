@@ -1,43 +1,17 @@
-// from server: 53% by colin
-struct Base {
-    Base();
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual void v9();
-    virtual void v10();
-    virtual void v11();
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_stack_cd88090dd994c870.cpp
 
-extern "C" void __cdecl sub_55C860();
-extern "C" void* __cdecl sub_55AD40();
-
-struct NonFactoryProduct : Base {
-    int field_0C;
-    NonFactoryProduct();
-};
-
-NonFactoryProduct::NonFactoryProduct()
-{
-    sub_55C860();
-    field_0C = 0;
-    *(void**)this = (void*)0x7A8C9C;
-    *(void**)((char*)this + 4) = (void*)0x7A8C94;
-    *(void**)((char*)this + 0x10) = (void*)0x7A8C8C;
-    *(void**)((char*)this + 0x14) = (void*)0x7A8C7C;
-    *(void**)((char*)this + 0x2C) = (void*)0x7A8C6C;
-    *(void**)((char*)this + 0x44) = (void*)0x7A8C5C;
-    *(void**)((char*)this + 0x5C) = (void*)0x7A8C4C;
-    *(void**)((char*)this + 0x74) = (void*)0x7A8C3C;
-    *(void**)((char*)this + 0x8C) = (void*)0x7A8C2C;
-    *(void**)((char*)this + 0xE8) = (void*)0x7A8C1C;
-    *(void**)((char*)this + 0x100) = (void*)0x7A8C0C;
-    *(void**)((char*)this + 0x118) = (void*)0x7A8BFC;
-    field_0C = (int)sub_55AD40();
-}
+// Candidate translation unit (score above; library headers required).
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "v8datamodel/DataModel.cpp"

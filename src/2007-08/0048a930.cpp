@@ -1,569 +1,465 @@
-// from server: 50% by atomic.potato
+// from server: 100% by Espeon
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/program_options/src/options_description.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_instance_basecall_ad6080b748d5398f.cpp
 
 // Candidate translation unit (score above; library headers required).
-// Copyright Vladimir Prus 2002-2004.
-// Copyright Bertolt Mildner 2004.
-// Distributed under the Boost Software License, Version 1.0.
-// (See accompanying file LICENSE_1_0.txt
-// or copy at http://www.boost.org/LICENSE_1_0.txt)
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#ifndef _DLL
+#define _DLL
+#endif
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp"
+#include "v8tree/Instance.h"
+#include "reflection/function.h"
+#include "reflection/property.h"
+#include <algorithm>
 
+namespace RBX
+{
+	const char* sInstance = "Instance";
 
-#define BOOST_PROGRAM_OPTIONS_SOURCE
-#include <boost/program_options/config.hpp>
-#include <boost/program_options/options_description.hpp>
-// FIXME: this is only to get multiple_occureces class
-// should move that to a separate headers.
-#include <boost/program_options/parsers.hpp>
+	Reflection::BoundProp<bool, 1> Instance::propArchivable("archivable", "Behavior", &Instance::archivable, Reflection::PropertyDescriptor::STANDARD); // L14
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(std::string, bool), 2> findFirstChild(&Instance::findFirstChildByName2, "FindFirstChild", "name", "recursive", false, Reflection::FunctionDescriptor::AnyCaller); // L15
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(), 0> func_clone(&Instance::clone, "Clone", Reflection::FunctionDescriptor::AnyCaller); // L16
+	static Reflection::BoundFuncDesc<Instance, void(), 0> func_Remove(&Instance::remove, "Remove", Reflection::FunctionDescriptor::AnyCaller); // L17
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_childrenOld(&Instance::getChildren2, "children", Reflection::FunctionDescriptor::AnyCaller); // L18
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_children(&Instance::getChildren2, "GetChildren", Reflection::FunctionDescriptor::AnyCaller); // L19
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isDescendentOf(&Instance::isDescendentOf2, "IsDescendentOf", "ancestor", Reflection::FunctionDescriptor::AnyCaller); // L20
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isAncestorOf(&Instance::isAncestorOf2, "IsAncestorOf", "descendent", Reflection::FunctionDescriptor::AnyCaller); // L21
+	static Reflection::PropDescriptor<Instance, std::string> prop_className("className", "Data", &Instance::getClassNameStr, NULL, Reflection::PropertyDescriptor::UI); // L22
 
+	const Reflection::PropDescriptor<Instance, std::string> Instance::desc_Name("Name", "Data", &Instance::getName, &Instance::setName, Reflection::PropertyDescriptor::STANDARD); // L24
+	const Reflection::RefPropDescriptor<Instance, Instance> Instance::propParent("Parent", "Data", &Instance::getParent, &Instance::setParent, Reflection::PropertyDescriptor::UI); // L25
 
-#include <boost/lexical_cast.hpp>
-#include <boost/tokenizer.hpp>
-#include <boost/detail/workaround.hpp>
-#include <boost/throw_exception.hpp>
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childAdded("ChildAdded", "child"); // L27
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childRemoved("ChildRemoved", "child"); // L28
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentAdded("DescendentAdded", "descendent"); // L29
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentRemoving("DescendentRemoving", "descendent"); // L30
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_ancestryChanged("AncestryChanged", "child"); // L31
+	Reflection::SignalDesc<Instance, void(const Reflection::PropertyDescriptor*)> Instance::event_propertyChanged("Changed", "property"); // L32 
 
-#include <cassert>
-#include <climits>
-#include <cstring>
-#include <cstdarg>
-#include <sstream>
-#include <iterator>
-using namespace std;
+	Instance::Instance(const char* name)
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name(name),
+		  archivable(true)
+	{
+	}
 
-namespace boost { namespace program_options {
+	Instance::Instance()
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name("Instance"),
+		  archivable(true)
+	{
+	}
 
-    option_description::option_description()
-    {
-    }
-    
-    option_description::
-    option_description(const char* name,
-                       const value_semantic* s)
-    : m_value_semantic(s)
-    {
-        this->set_name(name);
-    }
-                                           
+	Instance::~Instance()
+	{
+		RBXASSERT(!parent);
+	}
 
-    option_description::
-    option_description(const char* name,
-                       const value_semantic* s,
-                       const char* description)
-    : m_description(description), m_value_semantic(s)
-    {
-        this->set_name(name);
-    }
+	bool Instance::askAddChild(const Instance* instance) const
+	{
+		return false;
+	}
 
-    option_description::~option_description()
-    {
-    }
+	bool Instance::askSetParent(const Instance* instance) const
+	{
+		return false;
+	}
 
-    option_description::match_result
-    option_description::match(const std::string& option, bool approx) const
-    {
-        match_result result = no_match;
-        if (!m_long_name.empty()) {
+	void Instance::setName(const std::string& value)
+	{
+		if (name != value)
+		{
+			name = value;
+			raisePropertyChanged(desc_Name);
+		}
+	}
 
-            if (*m_long_name.rbegin() == '*')
-            {
-                // The name ends with '*'. Any specified name with the given
-                // prefix is OK.
-                if (option.find(m_long_name.substr(0, m_long_name.length()-1))
-                    == 0)
-                    result = approximate_match;
-            }
+	void Instance::onDescendentAdded(Instance* instance)
+	{
+		if (Notifier<Instance, DescendentAdded>::hasListeners())
+			Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent));
 
-            if (approx)
-            {
-                if (m_long_name.find(option) == 0)
-                    if (m_long_name == option)
-                        result = full_match;
-                    else
-                        result = approximate_match;
-            }
-            else
-            {
-                if (m_long_name == option)
-                    result = full_match;
-            }
-        }
-         
-        if (m_short_name == option)
-            result = full_match;
+		event_descendentAdded.fire(this, shared_from(instance));
+	}
 
-        return result;        
-    }
+	void Instance::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
+	{
+		event_descendentRemoving.fire(this, instance);
 
-    const std::string& 
-    option_description::key(const std::string& option) const
-    {        
-        if (!m_long_name.empty()) 
-            if (m_long_name.find('*') != string::npos)
-                // The '*' character means we're long_name
-                // matches only part of the input. So, returning
-                // long name will remove some of the information,
-                // and we have to return the option as specified
-                // in the source.
-                return option;
-            else
-                return m_long_name;
-        else
-            return m_short_name;
-    }
+		if (Notifier<Instance, DescendentRemoving>::hasListeners())
+			Notifier<Instance, DescendentRemoving>::raise(DescendentRemoving(instance, shared_from(instance->parent)));
+	}
 
-    const std::string&
-    option_description::long_name() const
-    {
-        return m_long_name;
-    }
+	class RaiseDescendentAdded2
+	{
+	private:
+		const Instance* notifier;
+		Listener<Instance, DescendentAdded>* listener;
+	  
+	public:
+		RaiseDescendentAdded2(const Instance* notifier, Listener<Instance, DescendentAdded>* listener)
+			: notifier(notifier),
+			  listener(listener)
+		{
+		}
+	public:
+		void operator()(Instance* instance)
+		{
+			notifier->Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent), listener);
+			instance->for_eachChild(*this);
+		}
+	};
 
-    option_description&
-    option_description::set_name(const char* _name)
-    {
-        std::string name(_name);
-        string::size_type n = name.find(',');
-        if (n != string::npos) {
-            assert(n == name.size()-2);
-            m_long_name = name.substr(0, n);
-            m_short_name = '-' + name.substr(n+1,1);
-        } else {
-            m_long_name = name;
-        }
-        return *this;
-    }
+	void Instance::onAddListener(Listener<Instance, DescendentAdded>* listener) const
+	{
+		for_eachChild(RaiseDescendentAdded2(this, listener));
+	}
 
-    const std::string&
-    option_description::description() const
-    {
-        return m_description;
-    }
+	void Instance::onAddListener(Listener<Instance, ChildAdded>* listener) const
+	{
+		if (children)
+		{
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = children.read();
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				Notifier<Instance, ChildAdded>::raise(ChildAdded((*iter).get()), listener);
+			}
+		}
+	}
 
-    shared_ptr<const value_semantic>
-    option_description::semantic() const
-    {
-        return m_value_semantic;
-    }
-    
-    std::string 
-    option_description::format_name() const
-    {
-        if (!m_short_name.empty())
-            return string(m_short_name).append(" [ --").
-            append(m_long_name).append(" ]");
-        else
-            return string("--").append(m_long_name);
-    }
+	void Instance::removeAllChildren()
+	{
+		while (children)
+		{
+			children->back()->setParent(NULL);
+		}
+	}
 
-    std::string 
-    option_description::format_parameter() const
-    {
-        if (m_value_semantic->max_tokens() != 0)
-            return m_value_semantic->name();
-        else
-            return "";
-    }
+	void Instance::onChildChanged(Instance* instance, const PropertyChanged& event)
+	{
+		Instance* p = parent;
 
-    options_description_easy_init::
-    options_description_easy_init(options_description* owner)
-    : owner(owner)
-    {}
+		if (p)
+			p->onChildChanged(instance, event);
+	}
 
-    options_description_easy_init&
-    options_description_easy_init::
-    operator()(const char* name,
-               const char* description)
-    {
-        // Create untypes semantic which accepts zero tokens: i.e. 
-        // no value can be specified on command line.
-        // FIXME: does not look exception-safe
-        shared_ptr<option_description> d(
-            new option_description(name, new untyped_value(true), description));
+	void Instance::readProperties(const XmlElement* container, IReferenceBinder& binder)
+	{
+		for (const XmlElement* i = container->firstChild(); i != NULL; i = i->nextSibling())
+			readProperty(i, binder);
+	}
 
-        owner->add(d);
-        return *this;
-    }
+	void Instance::readChild(const XmlElement* childElement, IReferenceBinder& binder)
+	{
+		const Name* className = NULL;
+		const XmlAttribute* classAttrib = childElement->findAttribute(tag_class);
 
-    options_description_easy_init&
-    options_description_easy_init::
-    operator()(const char* name,
-               const value_semantic* s)
-    {
-        shared_ptr<option_description> d(new option_description(name, s));
-        owner->add(d);
-        return *this;
-    }
+		if (classAttrib)
+		{
+			if (classAttrib->getValue(className))
+			{
+				boost::shared_ptr<Instance> childInstance = createChild(*className);
+				if (childInstance)
+				{
+					childInstance->read(childElement, binder);
+					if (childInstance)
+						childInstance->setParent(this);
+				}
+				else
+				{
+					const XmlAttribute* nameRef = childElement->findAttribute(name_referent);
+					if (nameRef)
+						binder.announceID(nameRef, NULL);
+				}
+			}
+		}
+	}
 
-    options_description_easy_init&
-    options_description_easy_init::
-    operator()(const char* name,
-               const value_semantic* s,
-               const char* description)
-    {
-        shared_ptr<option_description> d(new option_description(name, s, description));
+	void Instance::readChildren(const XmlElement* element, IReferenceBinder& binder)
+	{
+		if (element)
+		{
+			for (const XmlElement* current = element->findFirstChildByTag(tag_Item); current != NULL; current = element->findNextChildWithSameTag(current))
+			{
+				readChild(current, binder);
+			}
+		}
+	}
 
-        owner->add(d);
-        return *this;
-    }
+	void Instance::read(const XmlElement* element, IReferenceBinder& binder)
+	{
+		const XmlAttribute* nameRef = element->findAttribute(name_referent);
+		if (nameRef)
+		{
+			binder.announceID(nameRef, this);
+		}
 
-    options_description::options_description(unsigned line_length)
-    : m_line_length(line_length)
-    {}
+		if (element->getTag() == tag_Item)
+		{
+			const XmlElement* properties = element->findFirstChildByTag(tag_Properties);
+			if (properties)
+			{
+				readProperties(properties, binder);
+			}
+			readChildren(element, binder);
+		}
+		else
+			readProperty(element, binder);
+	}
 
-    options_description::options_description(const string& caption,
-                                             unsigned line_length)
-    : m_caption(caption), m_line_length(line_length)
-    {}
+	void Instance::predelete(Instance* instance)
+	{
+		instance->predelete();
+	}
 
-    void
-    options_description::add(shared_ptr<option_description> desc)
-    {
-        m_options.push_back(desc);
-        belong_to_group.push_back(false);
-    }
+	void Instance::onAncestorChanged(const AncestorChanged& event)
+	{
+		typedef std::vector<boost::shared_ptr<Instance>>::const_iterator Iterator;
 
-    options_description&
-    options_description::add(const options_description& desc)
-    {
-        shared_ptr<options_description> d(new options_description(desc));
-        groups.push_back(d);
+		if (children)
+		{
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> r = children.read();
 
-        for (size_t i = 0; i < desc.m_options.size(); ++i) {
-            add(desc.m_options[i]);
-            belong_to_group.back() = true;
-        }
+			for (Iterator it = r->begin(); it != r->end(); it++)
+			{
+				(*it)->onAncestorChanged(event);
+			}
+		}
 
-        return *this;
-    }
+		event_ancestryChanged.fire(this, shared_from(event.child));
+		Notifier<Instance, AncestorChanged>::raise(event);
+	}
 
-    options_description_easy_init
-    options_description::add_options()
-    {       
-        return options_description_easy_init(this);
-    }
+	void Instance::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
+		return;
+	}
 
-    const option_description&
-    options_description::find(const std::string& name, bool approx) const
-    {
-        const option_description* d = find_nothrow(name, approx);
-        if (!d)
-            boost::throw_exception(unknown_option(name));
-        return *d;
-    }
+	bool Instance::contains(const Instance* child) const
+	{
+		for (; child != NULL; child = child->parent)
+		{
+			if (child == this)
+				return true;
+		}
 
-    const std::vector< shared_ptr<option_description> >& 
-    options_description::options() const
-    {
-        return m_options;
-    }
+		return false;
+	}
 
-    const option_description* 
-    options_description::find_nothrow(const std::string& name, 
-                                      bool approx) const
-    {
-        int found = -1;
-        // We use linear search because matching specified option
-        // name with the declared option name need to take care about
-        // case sensitivity and trailing '*' and so we can't use simple map.
-        for(unsigned i = 0; i < m_options.size(); ++i)
-        {
-            option_description::match_result r = 
-                m_options[i]->match(name, approx);
+	boost::shared_ptr<Instance> Instance::createChild(const Name& className)
+	{
+		return AbstractFactoryProduct::create(className);
+	}
 
-            if (r == option_description::no_match)
-                continue;
+	int Instance::findChildIndex(const Instance* instance) const
+	{
+		RBXASSERT(children);
 
-            // If we have a full patch, and an approximate match,
-            // ignore approximate match instead of reporting error.
-            // Say, if we have options "all" and "all-chroots", then
-            // "--all" on the command line should select the first one,
-            // without ambiguity.
-            //
-            // For now, we don't check the situation when there are 
-            // two full matches. 
-                            
-            if (r == option_description::full_match)
-            {
-                return m_options[i].get();                
-            }
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
 
-            if (found != -1)
-            {
-                vector<string> alts;
-                // FIXME: the use of 'key' here might not
-                // be the best approach.
-                alts.push_back(m_options[found]->key(name));
-                alts.push_back(m_options[i]->key(name));
-                boost::throw_exception(ambiguous_option(name, alts));
-            }
-            else
-            {
-                found = i;
-            }
-        }
-        if (found != -1) {
-            return m_options[found].get();
-        } else {
-            return 0;
-        }
-    }
+		std::vector<boost::shared_ptr<Instance>>::const_iterator found = std::find(c.begin(), c.end(), instance->shared_from_this());
+		return (int)std::distance(c.begin(), found);
+	}
 
-    BOOST_PROGRAM_OPTIONS_DECL
-    std::ostream& operator<<(std::ostream& os, const options_description& desc)
-    {
-        desc.print(os);
-        return os;
-    }
+	void Instance::writeChildren(XmlElement* container)
+	{
+		if (children)
+		{
+			const std::vector<boost::shared_ptr<Instance>>& c = *children;
 
-    namespace {
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator it = c.begin(); it != c.end(); it++)
+			{
+				XmlElement* element = (*it)->write();
+				if (element)
+					container->pushBackChild(element);
+			}
+		}
+	}
 
-        /* Given a string 'par', that contains no newline characters
-           outputs it to 'os' with wordwrapping, that is, as several
-           line.
+	Instance* Instance::findFirstChildByName(const std::string& findName) const
+	{
+		if (!children)
+			return NULL;
 
-           Each output line starts with 'indent' space characters, 
-           following by characters from 'par'. The total length of
-           line is no longer than 'line_length'.
-                                      
-        */
-        void format_paragraph(std::ostream& os,
-                              std::string par,
-                              unsigned indent,
-                              unsigned line_length)
-        {                    
-            // Through reminder of this function, 'line_length' will
-            // be the length available for characters, not including
-            // indent.
-            assert(indent < line_length);
-            line_length -= indent;
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
 
-            // index of tab (if present) is used as additional indent relative
-            // to first_column_width if paragrapth is spanned over multiple
-            // lines if tab is not on first line it is ignored
-            string::size_type par_indent = par.find('\t');
+		for (size_t i = 0; i < c.size(); i++)
+		{
+			if (c[i]->name == findName)
+				return c[i].get();
+		}
 
-            if (par_indent == string::npos)
-            {
-                par_indent = 0;
-            }
-            else
-            {
-                // only one tab per paragraph allowed
-                if (count(par.begin(), par.end(), '\t') > 1)
-                {
-                    boost::throw_exception(program_options::error(
-                        "Only one tab per paragraph is allowed"));
-                }
-          
-                // erase tab from string
-                par.erase(par_indent, 1);
+		return NULL;
+	}
 
-                // this assert may fail due to user error or 
-                // environment conditions!
-                assert(par_indent < line_length);
+	Instance* Instance::findFirstChildByNameRecursive(const std::string& findName) const
+	{
+		Instance* foundChild = findFirstChildByName(findName);
+		if (foundChild)
+			return foundChild;
 
-                // ignore tab if not on first line
-                if (par_indent >= line_length)
-                {
-                    par_indent = 0;
-                }            
-            }
-          
-            if (par.size() < line_length)
-            {
-                os << par;
-            }
-            else
-            {
-                string::const_iterator       line_begin = par.begin();
-                const string::const_iterator par_end = par.end();
+		if (!children)
+			return NULL;
 
-                bool first_line = true; // of current paragraph!        
-            
-                while (line_begin < par_end)  // paragraph lines
-                {
-                    if (!first_line)
-                    {
-                        // If line starts with space, but second character
-                        // is not space, remove the leading space.
-                        // We don't remove double spaces because those
-                        // might be intentianal.
-                        if ((*line_begin == ' ') &&
-                            ((line_begin + 1 < par_end) &&
-                             (*(line_begin + 1) != ' ')))
-                        {
-                            line_begin += 1;  // line_begin != line_end
-                        }
-                    }
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
 
-                    // Take care to never increment the iterator past
-                    // the end, since MSVC 8.0 (brokenly), assumes that
-                    // doing that, even if no access happens, is a bug.
-                    unsigned remaining = distance(line_begin, par_end);
-                    string::const_iterator line_end = line_begin + 
-                        ((remaining < line_length) ? remaining : line_length);
-            
-                    // prevent chopped words
-                    // Is line_end between two non-space characters?
-                    if ((*(line_end - 1) != ' ') &&
-                        ((line_end < par_end) && (*line_end != ' ')))
-                    {
-                        // find last ' ' in the second half of the current paragraph line
-                        string::const_iterator last_space =
-                            find(reverse_iterator<string::const_iterator>(line_end),
-                                 reverse_iterator<string::const_iterator>(line_begin),
-                                 ' ')
-                            .base();
-                
-                        if (last_space != line_begin)
-                        {                 
-                            // is last_space within the second half of the 
-                            // current line
-                            if ((unsigned)std::distance(last_space, line_end) < 
-                                (line_length - indent) / 2)
-                            {
-                                line_end = last_space;
-                            }
-                        }                                                
-                    } // prevent chopped words
-             
-                    // write line to stream
-                    copy(line_begin, line_end, ostream_iterator<char>(os));
-              
-                    if (first_line)
-                    {
-                        indent += par_indent;
-                        first_line = false;
-                    }
+		for (size_t i = 0; i < c.size(); i++)
+		{
+			Instance* child = c[i]->findFirstChildByNameRecursive(findName);
+			if (child)
+				return child;
+		}
 
-                    // more lines to follow?
-                    if (line_end != par_end)
-                    {
-                        os << '\n';
-                
-                        for(unsigned pad = indent; pad > 0; --pad)
-                        {
-                            os.put(' ');
-                        }                                                        
-                    }
-              
-                    // next line starts after of this line
-                    line_begin = line_end;              
-                } // paragraph lines
-            }          
-        }                              
-        
-        void format_description(std::ostream& os,
-                                const std::string& desc, 
-                                unsigned first_column_width,
-                                unsigned line_length)
-        {
-            // we need to use one char less per line to work correctly if actual
-            // console has longer lines
-            assert(line_length > 1);
-            if (line_length > 1)
-            {
-                --line_length;
-            }
+		return NULL;
+	}
 
-            // line_length must be larger than first_column_width
-            // this assert may fail due to user error or environment conditions!
-            assert(line_length > first_column_width);
+	void Instance::signalDescendentAdded(Instance* instance, Instance* beginParent, Instance* oldParent)
+	{
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
+		{
+			if (parent == oldParent || parent->isAncestorOf(oldParent))
+				break;
 
-            // Note: can't use 'tokenizer' as name of typedef -- borland
-            // will consider uses of 'tokenizer' below as uses of
-            // boost::tokenizer, not typedef.
-            typedef boost::tokenizer<boost::char_separator<char> > tok;
-          
-            tok paragraphs(
-                desc,
-                char_separator<char>("\n", "", boost::keep_empty_tokens));
-          
-            tok::const_iterator       par_iter = paragraphs.begin();                
-            const tok::const_iterator par_end = paragraphs.end();
+			parent->onDescendentAdded(instance);
+		}
 
-            while (par_iter != par_end)  // paragraphs
-            {
-                format_paragraph(os, *par_iter, first_column_width, 
-                                 line_length);
-            
-                ++par_iter;
-            
-                // prepair next line if any
-                if (par_iter != par_end)
-                {
-                    os << '\n';
-              
-                    for(unsigned pad = first_column_width; pad > 0; --pad)
-                    {
-                        os.put(' ');
-                    }                    
-                }            
-            }  // paragraphs
-        }
-    
-        void format_one(std::ostream& os, const option_description& opt, 
-                        unsigned first_column_width, unsigned line_length)
-        {
-            stringstream ss;
-            ss << "  " << opt.format_name() << ' ' << opt.format_parameter();
-            
-            // Don't use ss.rdbuf() since g++ 2.96 is buggy on it.
-            os << ss.str();
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
 
-            if (!opt.description().empty())
-            {
-                for(unsigned pad = first_column_width - ss.str().size(); 
-                    pad > 0; 
-                    --pad)
-                {
-                    os.put(' ');
-                }
-            
-                format_description(os, opt.description(),
-                                   first_column_width, line_length);
-            }
-        }
-    }
+		if (c)
+		{
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				signalDescendentAdded((*iter).get(), beginParent, oldParent);
+			}
+		}
+	}
 
-    void 
-    options_description::print(std::ostream& os) const
-    {
-        if (!m_caption.empty())
-            os << m_caption << ":\n";
+	void Instance::signalDescendentRemoving(const boost::shared_ptr<Instance>& instance, Instance* beginParent, Instance* newParent)
+	{
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
+		{
+			if (parent == newParent || parent->isAncestorOf(newParent))
+				break;
 
-        /* Find the maximum width of the option column */
-        unsigned width(23);
-        unsigned i; // vc6 has broken for loop scoping
-        for (i = 0; i < m_options.size(); ++i)
-        {
-            const option_description& opt = *m_options[i];
-            stringstream ss;
-            ss << "  " << opt.format_name() << ' ' << opt.format_parameter();
-            width = (max)(width, static_cast<unsigned>(ss.str().size()));            
-        }
-        
-        /* add an additional space to improve readability */
-        ++width;
-            
-        /* The options formatting style is stolen from Subversion. */
-        for (i = 0; i < m_options.size(); ++i)
-        {
-            if (belong_to_group[i])
-                continue;
+			parent->onDescendentRemoving(instance);
+		}
 
-            const option_description& opt = *m_options[i];
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
 
-            format_one(os, opt, width, m_line_length);
+		if (c)
+		{
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				signalDescendentRemoving((*iter), beginParent, newParent);
+			}
+		}
+	}
 
-            os << "\n";
-        }
+	//96.19% matching.
+	void Instance::readProperty(const XmlElement* propertyElement, IReferenceBinder& binder)
+	{
+		const Name* value = NULL;
 
-        for (unsigned j = 0; j < groups.size(); ++j) {            
-            os << "\n" << *groups[j];
-        }
-    }
+		if (const XmlAttribute* attribute = propertyElement->findAttribute(name_name))
+		{
+			if (attribute->getValue(value))
+			{
+				Reflection::PropertyIterator iter = findProperty(*value);
 
-}}
+				if (iter != properties_end())
+				{
+					(*iter).read(propertyElement, binder);
+				}
+			}
+		}
+	}
+
+	XmlElement* Instance::write()
+	{
+		if (archivable)
+		{
+			if (getClassName() != Name::getNullName())
+			{
+				XmlElement* element = new XmlElement(tag_Item);
+				element->addAttribute(tag_class, &getClassName());
+				element->addAttribute(name_referent, InstanceHandle(this));
+
+				writeProperties(element->addChild(tag_Properties));
+				writeChildren(element);
+
+				return element;
+			}
+		}
+
+		return new XmlElement(tag_External, InstanceHandle(this));
+	}
+  
+	void Instance::setParent(Instance* newParent)
+	{
+		if (newParent == parent)
+			return;
+
+		boost::shared_ptr<Instance> oldParent = shared_from(parent);
+		boost::shared_ptr<Instance> self = this->shared_from_this();
+
+		if (oldParent)
+		{
+			if (!oldParent->contains(newParent))
+				signalDescendentRemoving(self, oldParent.get(), newParent);
+
+			oldParent->onChildRemoving(this);
+
+			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& c = oldParent->children.write();
+			c->erase(std::find(c->begin(), c->end(), self));
+
+			if (c->empty())
+				oldParent->children.reset();
+
+			parent = NULL;
+
+			event_childRemoved.fire(oldParent.get(), self);
+			oldParent->Notifier<Instance, ChildRemoved>::raise(ChildRemoved(this));
+
+			oldParent->onChildRemoved(this);
+
+			if (oldParent->numChildren() == 0)
+				oldParent->onLastChildRemoved();
+		}
+
+		if (newParent)
+		{
+			newParent->children.write()->push_back(self);
+		}
+
+		parent = newParent;
+
+		if (newParent)
+		{
+			newParent->onChildAdded(this);
+
+			if (!newParent->contains(oldParent.get()))
+				signalDescendentAdded(this, newParent, oldParent.get());
+
+			newParent->Notifier<Instance, ChildAdded>::raise(ChildAdded(this));
+			event_childAdded.fire(newParent, self);
+		}
+
+		onAncestorChanged(AncestorChanged(this, oldParent.get(), newParent));
+		raisePropertyChanged(propParent);
+	}
+}

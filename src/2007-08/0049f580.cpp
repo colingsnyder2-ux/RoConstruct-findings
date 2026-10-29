@@ -1,326 +1,465 @@
-// from server: 49% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/BrickColor.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_instance_basecall_ad6080b748d5398f.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/BrickColor.h"
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#ifndef _DLL
+#define _DLL
+#endif
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp"
+#include "v8tree/Instance.h"
+#include "reflection/function.h"
+#include "reflection/property.h"
+#include <algorithm>
 
 namespace RBX
 {
-	void BrickColor::BrickMap::insert(Number number, unsigned char r, unsigned char g, unsigned char b, std::string name)
+	const char* sInstance = "Instance";
+
+	Reflection::BoundProp<bool, 1> Instance::propArchivable("archivable", "Behavior", &Instance::archivable, Reflection::PropertyDescriptor::STANDARD); // L14
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(std::string, bool), 2> findFirstChild(&Instance::findFirstChildByName2, "FindFirstChild", "name", "recursive", false, Reflection::FunctionDescriptor::AnyCaller); // L15
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(), 0> func_clone(&Instance::clone, "Clone", Reflection::FunctionDescriptor::AnyCaller); // L16
+	static Reflection::BoundFuncDesc<Instance, void(), 0> func_Remove(&Instance::remove, "Remove", Reflection::FunctionDescriptor::AnyCaller); // L17
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_childrenOld(&Instance::getChildren2, "children", Reflection::FunctionDescriptor::AnyCaller); // L18
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_children(&Instance::getChildren2, "GetChildren", Reflection::FunctionDescriptor::AnyCaller); // L19
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isDescendentOf(&Instance::isDescendentOf2, "IsDescendentOf", "ancestor", Reflection::FunctionDescriptor::AnyCaller); // L20
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isAncestorOf(&Instance::isAncestorOf2, "IsAncestorOf", "descendent", Reflection::FunctionDescriptor::AnyCaller); // L21
+	static Reflection::PropDescriptor<Instance, std::string> prop_className("className", "Data", &Instance::getClassNameStr, NULL, Reflection::PropertyDescriptor::UI); // L22
+
+	const Reflection::PropDescriptor<Instance, std::string> Instance::desc_Name("Name", "Data", &Instance::getName, &Instance::setName, Reflection::PropertyDescriptor::STANDARD); // L24
+	const Reflection::RefPropDescriptor<Instance, Instance> Instance::propParent("Parent", "Data", &Instance::getParent, &Instance::setParent, Reflection::PropertyDescriptor::UI); // L25
+
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childAdded("ChildAdded", "child"); // L27
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childRemoved("ChildRemoved", "child"); // L28
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentAdded("DescendentAdded", "descendent"); // L29
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentRemoving("DescendentRemoving", "descendent"); // L30
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_ancestryChanged("AncestryChanged", "child"); // L31
+	Reflection::SignalDesc<Instance, void(const Reflection::PropertyDescriptor*)> Instance::event_propertyChanged("Changed", "property"); // L32 
+
+	Instance::Instance(const char* name)
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name(name),
+		  archivable(true)
 	{
-		G3D::Color4uint8 c;
-		c.r = r;
-		c.g = g;
-		c.b = b;
-
-		allColors.push_back(BrickColor(number));
-
-		map1.insert(std::pair<Number, G3D::Color4uint8>(number, c));
-
-		G3D::Color4 color4 = G3D::Color4(c);
-		map2.insert(std::pair<Number, G3D::Color4>(number, color4));
-
-		map3.insert(std::pair<Number, std::string>(number, name));
 	}
 
-	void BrickColor::BrickMap::insertPaletteItem(Number number)
+	Instance::Instance()
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name("Instance"),
+		  archivable(true)
 	{
-		colorPalette.push_back(BrickColor(number));
 	}
 
-	void BrickColor::BrickMap::generatePaletteMap(Number number)
+	Instance::~Instance()
 	{
-		float closestDistance = 10000.0f;
-		int match = 0;
-		G3D::Color4 color = map2[number];
+		RBXASSERT(!parent);
+	}
 
-		std::vector<BrickColor>::iterator iter = colorPalette.begin();
-		std::vector<BrickColor>::iterator end = colorPalette.end();
+	bool Instance::askAddChild(const Instance* instance) const
+	{
+		return false;
+	}
 
-		for (; iter != end; iter++)
+	bool Instance::askSetParent(const Instance* instance) const
+	{
+		return false;
+	}
+
+	void Instance::setName(const std::string& value)
+	{
+		if (name != value)
 		{
-			if (iter->number == number)
-			{
-				match = std::distance(colorPalette.begin(), iter);
-				break;
-			}
-
-			G3D::Color3 paletteColor = map2[iter->number];
-
-			float distance = fabs(color.r - paletteColor.r);
-			distance += fabs(color.g - paletteColor.g);
-			distance += fabs(color.b - paletteColor.b);
-
-			if (distance < closestDistance)
-			{
-				match = std::distance(colorPalette.begin(), iter);
-				if (distance == 0.0f)
-					break;
-				closestDistance = distance;
-			}
-		}
-
-		paletteMap[number] = match;
-	}
-
-	void BrickColor::BrickMap::generatePaletteMap()
-	{
-		std::vector<BrickColor>::iterator iter = allColors.begin();
-		std::vector<BrickColor>::iterator end = allColors.end();
-
-		for (; iter != end; iter++)
-		{
-			generatePaletteMap(iter->number);
+			name = value;
+			raisePropertyChanged(desc_Name);
 		}
 	}
 
-	BrickColor::BrickMap::BrickMap()
+	void Instance::onDescendentAdded(Instance* instance)
 	{
-		insert(lego_1, 242, 243, 242, "White");
-		insert(lego_2, 161, 165, 162, "Grey");
-		insert(lego_3, 249, 233, 153, "Light yellow");
-		insert(lego_5, 215, 197, 153, "Brick yellow");
-		insert(lego_6, 194, 218, 184, "Light green (Mint)");
-		insert(lego_9, 232, 186, 199, "Light reddish violet");
-		insert(lego_11, 128, 187, 219, "Pastel Blue");
-		insert(lego_12, 203, 132, 66, "Light orange brown");
-		insert(lego_18, 204, 142, 104, "Nougat");
-		insert(lego_21, 196, 40, 27, "Bright red");
-		insert(lego_22, 196, 112, 160, "Med. reddish violet");
-		insert(lego_23, 13, 105, 171, "Bright blue");
-		insert(lego_24, 245, 205, 47, "Bright yellow");
-		insert(lego_25, 98, 71, 50, "Earth orange");
-		insert(lego_26, 27, 42, 52, "Black");
-		insert(lego_27, 109, 110, 108, "Dark grey");
-		insert(lego_28, 40, 127, 70, "Dark green");
-		insert(lego_29, 161, 196, 139, "Medium green");
-		insert(lego_36, 243, 207, 155, "Lig. Yellowich orange");
-		insert(lego_37, 75, 151, 74, "Bright green");
-		insert(lego_38, 160, 95, 52, "Dark orange");
-		insert(lego_39, 193, 202, 222, "Light bluish violet");
-		insert(lego_40, 236, 236, 236, "Transparent");
-		insert(lego_41, 205, 84, 75, "Tr. Red");
-		insert(lego_42, 193, 223, 240, "Tr. Lg blue");
-		insert(lego_43, 123, 182, 232, "Tr. Blue");
-		insert(lego_44, 247, 241, 141, "Tr. Yellow");
-		insert(lego_45, 180, 210, 227, "Light blue");
-		insert(lego_47, 217, 133, 108, "Tr. Flu. Reddish orange");
-		insert(lego_48, 132, 182, 141, "Tr. Green");
-		insert(lego_49, 248, 241, 132, "Tr. Flu. Green");
-		insert(lego_50, 236, 232, 222, "Phosph. White");
-		insert(lego_100, 238, 196, 182, "Light red");
-		insert(lego_101, 218, 134, 121, "Medium red");
-		insert(lego_102, 110, 153, 201, "Medium blue");
-		insert(lego_103, 199, 193, 183, "Light grey");
-		insert(lego_104, 107, 50, 123, "Bright violet");
-		insert(lego_105, 226, 155, 63, "Br. yellowish orange");
-		insert(lego_106, 218, 133, 64, "Bright orange");
-		insert(lego_107, 0, 143, 155, "Bright bluish green");
-		insert(lego_108, 104, 92, 67, "Earth yellow");
-		insert(lego_110, 67, 84, 147, "Bright bluish violet");
-		insert(lego_111, 191, 183, 177, "Tr. Brown");
-		insert(lego_112, 104, 116, 172, "Medium bluish violet");
-		insert(lego_113, 228, 173, 200, "Tr. Medi. reddish violet");
-		insert(lego_115, 199, 210, 60, "Med. yellowish green");
-		insert(lego_116, 85, 165, 175, "Med. bluish green");
-		insert(lego_118, 183, 215, 213, "Light bluish green");
-		insert(lego_119, 164, 189, 70, "Br. yellowish green");
-		insert(lego_120, 217, 228, 167, "Lig. yellowish green");
-		insert(lego_121, 231, 172, 88, "Med. yellowish orange");
-		insert(lego_123, 211, 111, 76, "Br. reddish orange");
-		insert(lego_124, 146, 57, 120, "Bright reddish violet");
-		insert(lego_125, 234, 184, 145, "Light orange");
-		insert(lego_126, 165, 165, 203, "Tr. Bright bluish violet");
-		insert(lego_127, 220, 188, 129, "Gold");
-		insert(lego_128, 174, 122, 89, "Dark nougat");
-		insert(lego_131, 156, 163, 168, "Silver");
-		insert(lego_133, 213, 115, 61, "Neon orange");
-		insert(lego_134, 216, 221, 86, "Neon green");
-		insert(lego_135, 116, 134, 156, "Sand blue");
-		insert(lego_136, 135, 124, 144, "Sand violet");
-		insert(lego_137, 224, 152, 100, "Medium orange");
-		insert(lego_138, 149, 138, 115, "Sand yellow");
-		insert(lego_140, 32, 58, 86, "Earth blue");
-		insert(lego_141, 39, 70, 44, "Earth green");
-		insert(lego_143, 207, 226, 247, "Tr. Flu. Blue");
-		insert(lego_145, 121, 136, 161, "Sand blue metallic");
-		insert(lego_146, 149, 142, 163, "Sand violet metallic");
-		insert(lego_147, 147, 135, 103, "Sand yellow metallic");
-		insert(lego_148, 87, 88, 87, "Dark grey metallic");
-		insert(lego_149, 22, 29, 50, "Black metallic");
-		insert(lego_150, 171, 173, 172, "Light grey metallic");
-		insert(lego_151, 120, 144, 129, "Sand green");
-		insert(lego_153, 149, 121, 118, "Sand red");
-		insert(lego_154, 123, 46, 47, "Dark red");
-		insert(lego_157, 255, 246, 123, "Tr. Flu. Yellow");
-		insert(lego_158, 225, 164, 194, "Tr. Flu. Red");
-		insert(lego_168, 117, 108, 98, "Gun metallic");
-		insert(lego_176, 151, 105, 91, "Red flip/flop");
-		insert(lego_178, 180, 132, 85, "Yellow flip/flop");
-		insert(lego_179, 137, 135, 136, "Silver flip/flop");
-		insert(lego_180, 215, 169, 75, "Curry");
-		insert(lego_190, 249, 214, 46, "Fire Yellow");
-		insert(lego_191, 232, 171, 45, "Flame yellowish orange");
-		insert(lego_192, 105, 64, 39, "Reddish brown");
-		insert(lego_193, 207, 96, 36, "Flame reddish orange");
-		insert(lego_194, 163, 162, 164, "Medium stone grey");
-		insert(lego_195, 70, 103, 164, "Royal blue");
-		insert(lego_196, 35, 71, 139, "Dark Royal blue");
-		insert(lego_198, 142, 66, 133, "Bright reddish lilac");
-		insert(lego_199, 99, 95, 97, "Dark stone grey");
-		insert(lego_200, 130, 138, 93, "Lemon metalic");
-		insert(lego_208, 229, 228, 222, "Light stone grey");
-		insert(lego_209, 176, 142, 68, "Dark Curry");
-		insert(lego_210, 112, 149, 120, "Faded green");
-		insert(lego_211, 121, 181, 181, "Turquoise");
-		insert(lego_212, 159, 195, 233, "Light Royal blue");
-		insert(lego_213, 108, 129, 183, "Medium Royal blue");
-		insert(lego_216, 143, 76, 42, "Rust");
-		insert(lego_217, 124, 92, 69, "Brown");
-		insert(lego_218, 150, 112, 159, "Reddish lilac");
-		insert(lego_219, 107, 98, 155, "Lilac");
-		insert(lego_220, 167, 169, 206, "Light lilac");
-		insert(lego_221, 205, 98, 152, "Bright purple");
-		insert(lego_222, 228, 173, 200, "Light purple");
-		insert(lego_223, 220, 144, 149, "Light pink");
-		insert(lego_224, 240, 213, 160, "Light brick yellow");
-		insert(lego_225, 235, 184, 127, "Warm yellowish orange");
-		insert(lego_226, 253, 234, 140, "Cool yellow");
-		insert(lego_232, 125, 187, 221, "Dove blue");
-		insert(lego_268, 52, 43, 117, "Medium lilac");
+		if (Notifier<Instance, DescendentAdded>::hasListeners())
+			Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent));
 
-		insertPaletteItem(lego_1);
-		insertPaletteItem(lego_208);
-		insertPaletteItem(lego_194);
-		insertPaletteItem(lego_199);
-		insertPaletteItem(lego_26);
-		insertPaletteItem(lego_21);
-		insertPaletteItem(lego_24);
-		insertPaletteItem(lego_226);
-		insertPaletteItem(lego_23);
-		insertPaletteItem(lego_107);
-		insertPaletteItem(lego_102);
-		insertPaletteItem(lego_11);
-		insertPaletteItem(lego_45);
-		insertPaletteItem(lego_135);
-		insertPaletteItem(lego_106);
-		insertPaletteItem(lego_105);
-		insertPaletteItem(lego_141);
-		insertPaletteItem(lego_28);
-		insertPaletteItem(lego_37);
-		insertPaletteItem(lego_119);
-		insertPaletteItem(lego_29);
-		insertPaletteItem(lego_151);
-		insertPaletteItem(lego_38);
-		insertPaletteItem(lego_192);
-		insertPaletteItem(lego_104);
-		insertPaletteItem(lego_9);
-		insertPaletteItem(lego_101);
-		insertPaletteItem(lego_5);
-		insertPaletteItem(lego_153);
-		insertPaletteItem(lego_217);
-		insertPaletteItem(lego_18);
-		insertPaletteItem(lego_125);
-
-		generatePaletteMap();
+		event_descendentAdded.fire(this, shared_from(instance));
 	}
 
-	BrickColor::BrickMap& BrickColor::BrickMap::singleton()
+	void Instance::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
 	{
-		static BrickMap s;
-		return s;
+		event_descendentRemoving.fire(this, instance);
+
+		if (Notifier<Instance, DescendentRemoving>::hasListeners())
+			Notifier<Instance, DescendentRemoving>::raise(DescendentRemoving(instance, shared_from(instance->parent)));
 	}
 
-	const std::vector<BrickColor>& BrickColor::colorPalette()
+	class RaiseDescendentAdded2
 	{
-		return BrickMap::singleton().colorPalette;
-	}
-
-	unsigned BrickColor::getClosestPaletteIndex() const
-	{
-		return BrickMap::singleton().paletteMap[number];
-	}
-
-	BrickColor BrickColor::parse(const char* name)
-	{
-		std::map<enum Number, std::string>::const_iterator iter = BrickMap::singleton().map3.begin();
-		std::map<enum Number, std::string>::const_iterator end = BrickMap::singleton().map3.end();
-
-		for (; iter != end; iter++)
+	private:
+		const Instance* notifier;
+		Listener<Instance, DescendentAdded>* listener;
+	  
+	public:
+		RaiseDescendentAdded2(const Instance* notifier, Listener<Instance, DescendentAdded>* listener)
+			: notifier(notifier),
+			  listener(listener)
 		{
-			if (iter->second == name)
-				return BrickColor(iter->first);
 		}
-
-		return BrickColor(lego_194);
-	}
-
-	BrickColor BrickColor::random()
-	{
-		int index = G3D::iRandom(0, (int)BrickMap::singleton().colorPalette.size() - 1);
-		return BrickMap::singleton().colorPalette[index];
-	}
-
-	BrickColor BrickColor::closest(G3D::Color3 color)
-	{
-		G3D::Color4 c4;
-		c4.r = color.r;
-		c4.g = color.g;
-		c4.b = color.b;
-
-		return closest(c4);
-	}
-
-	BrickColor BrickColor::closest(G3D::Color4 color)
-	{
-		float closestDistance = 10000.0f;
-		Number number = lego_194;
-
-		std::map<enum Number, G3D::Color4>::iterator iter = BrickMap::singleton().map2.begin();
-		std::map<enum Number, G3D::Color4>::iterator end = BrickMap::singleton().map2.end();
-
-		for (; iter != end; iter++)
+	public:
+		void operator()(Instance* instance)
 		{
-			float distance = fabs(iter->second.r - color.r);
-			distance += fabs(iter->second.g - color.g);
-			distance += fabs(iter->second.b - color.b);
+			notifier->Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent), listener);
+			instance->for_eachChild(*this);
+		}
+	};
 
-			if (distance < closestDistance)
+	void Instance::onAddListener(Listener<Instance, DescendentAdded>* listener) const
+	{
+		for_eachChild(RaiseDescendentAdded2(this, listener));
+	}
+
+	void Instance::onAddListener(Listener<Instance, ChildAdded>* listener) const
+	{
+		if (children)
+		{
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = children.read();
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
 			{
-				number = iter->first;
-				if (distance == 0.0f)
-					break;
-				closestDistance = distance;
+				Notifier<Instance, ChildAdded>::raise(ChildAdded((*iter).get()), listener);
 			}
 		}
-
-		return BrickColor(number);
 	}
 
-	BrickColor::BrickColor(int number)
+	void Instance::removeAllChildren()
 	{
-		std::map<enum Number, G3D::Color4uint8>::iterator it = BrickMap::singleton().map1.find((Number)number);
-		if (it != BrickMap::singleton().map1.end())
-			this->number = it->first;
+		while (children)
+		{
+			children->back()->setParent(NULL);
+		}
+	}
+
+	void Instance::onChildChanged(Instance* instance, const PropertyChanged& event)
+	{
+		Instance* p = parent;
+
+		if (p)
+			p->onChildChanged(instance, event);
+	}
+
+	void Instance::readProperties(const XmlElement* container, IReferenceBinder& binder)
+	{
+		for (const XmlElement* i = container->firstChild(); i != NULL; i = i->nextSibling())
+			readProperty(i, binder);
+	}
+
+	void Instance::readChild(const XmlElement* childElement, IReferenceBinder& binder)
+	{
+		const Name* className = NULL;
+		const XmlAttribute* classAttrib = childElement->findAttribute(tag_class);
+
+		if (classAttrib)
+		{
+			if (classAttrib->getValue(className))
+			{
+				boost::shared_ptr<Instance> childInstance = createChild(*className);
+				if (childInstance)
+				{
+					childInstance->read(childElement, binder);
+					if (childInstance)
+						childInstance->setParent(this);
+				}
+				else
+				{
+					const XmlAttribute* nameRef = childElement->findAttribute(name_referent);
+					if (nameRef)
+						binder.announceID(nameRef, NULL);
+				}
+			}
+		}
+	}
+
+	void Instance::readChildren(const XmlElement* element, IReferenceBinder& binder)
+	{
+		if (element)
+		{
+			for (const XmlElement* current = element->findFirstChildByTag(tag_Item); current != NULL; current = element->findNextChildWithSameTag(current))
+			{
+				readChild(current, binder);
+			}
+		}
+	}
+
+	void Instance::read(const XmlElement* element, IReferenceBinder& binder)
+	{
+		const XmlAttribute* nameRef = element->findAttribute(name_referent);
+		if (nameRef)
+		{
+			binder.announceID(nameRef, this);
+		}
+
+		if (element->getTag() == tag_Item)
+		{
+			const XmlElement* properties = element->findFirstChildByTag(tag_Properties);
+			if (properties)
+			{
+				readProperties(properties, binder);
+			}
+			readChildren(element, binder);
+		}
 		else
-			this->number = lego_194;
+			readProperty(element, binder);
 	}
 
-	const std::string& BrickColor::name() const
+	void Instance::predelete(Instance* instance)
 	{
-		return BrickMap::singleton().map3.find(number)->second;
+		instance->predelete();
 	}
 
-	G3D::Color4 BrickColor::color4() const
+	void Instance::onAncestorChanged(const AncestorChanged& event)
 	{
-		return BrickMap::singleton().map2.find(number)->second;
+		typedef std::vector<boost::shared_ptr<Instance>>::const_iterator Iterator;
+
+		if (children)
+		{
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> r = children.read();
+
+			for (Iterator it = r->begin(); it != r->end(); it++)
+			{
+				(*it)->onAncestorChanged(event);
+			}
+		}
+
+		event_ancestryChanged.fire(this, shared_from(event.child));
+		Notifier<Instance, AncestorChanged>::raise(event);
 	}
 
-	G3D::Color3 BrickColor::color3() const
+	void Instance::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
 	{
-		return G3D::Color3(color4());
+		return;
+	}
+
+	bool Instance::contains(const Instance* child) const
+	{
+		for (; child != NULL; child = child->parent)
+		{
+			if (child == this)
+				return true;
+		}
+
+		return false;
+	}
+
+	boost::shared_ptr<Instance> Instance::createChild(const Name& className)
+	{
+		return AbstractFactoryProduct::create(className);
+	}
+
+	int Instance::findChildIndex(const Instance* instance) const
+	{
+		RBXASSERT(children);
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		std::vector<boost::shared_ptr<Instance>>::const_iterator found = std::find(c.begin(), c.end(), instance->shared_from_this());
+		return (int)std::distance(c.begin(), found);
+	}
+
+	void Instance::writeChildren(XmlElement* container)
+	{
+		if (children)
+		{
+			const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator it = c.begin(); it != c.end(); it++)
+			{
+				XmlElement* element = (*it)->write();
+				if (element)
+					container->pushBackChild(element);
+			}
+		}
+	}
+
+	Instance* Instance::findFirstChildByName(const std::string& findName) const
+	{
+		if (!children)
+			return NULL;
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		for (size_t i = 0; i < c.size(); i++)
+		{
+			if (c[i]->name == findName)
+				return c[i].get();
+		}
+
+		return NULL;
+	}
+
+	Instance* Instance::findFirstChildByNameRecursive(const std::string& findName) const
+	{
+		Instance* foundChild = findFirstChildByName(findName);
+		if (foundChild)
+			return foundChild;
+
+		if (!children)
+			return NULL;
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		for (size_t i = 0; i < c.size(); i++)
+		{
+			Instance* child = c[i]->findFirstChildByNameRecursive(findName);
+			if (child)
+				return child;
+		}
+
+		return NULL;
+	}
+
+	void Instance::signalDescendentAdded(Instance* instance, Instance* beginParent, Instance* oldParent)
+	{
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
+		{
+			if (parent == oldParent || parent->isAncestorOf(oldParent))
+				break;
+
+			parent->onDescendentAdded(instance);
+		}
+
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
+
+		if (c)
+		{
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				signalDescendentAdded((*iter).get(), beginParent, oldParent);
+			}
+		}
+	}
+
+	void Instance::signalDescendentRemoving(const boost::shared_ptr<Instance>& instance, Instance* beginParent, Instance* newParent)
+	{
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
+		{
+			if (parent == newParent || parent->isAncestorOf(newParent))
+				break;
+
+			parent->onDescendentRemoving(instance);
+		}
+
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
+
+		if (c)
+		{
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				signalDescendentRemoving((*iter), beginParent, newParent);
+			}
+		}
+	}
+
+	//96.19% matching.
+	void Instance::readProperty(const XmlElement* propertyElement, IReferenceBinder& binder)
+	{
+		const Name* value = NULL;
+
+		if (const XmlAttribute* attribute = propertyElement->findAttribute(name_name))
+		{
+			if (attribute->getValue(value))
+			{
+				Reflection::PropertyIterator iter = findProperty(*value);
+
+				if (iter != properties_end())
+				{
+					(*iter).read(propertyElement, binder);
+				}
+			}
+		}
+	}
+
+	XmlElement* Instance::write()
+	{
+		if (archivable)
+		{
+			if (getClassName() != Name::getNullName())
+			{
+				XmlElement* element = new XmlElement(tag_Item);
+				element->addAttribute(tag_class, &getClassName());
+				element->addAttribute(name_referent, InstanceHandle(this));
+
+				writeProperties(element->addChild(tag_Properties));
+				writeChildren(element);
+
+				return element;
+			}
+		}
+
+		return new XmlElement(tag_External, InstanceHandle(this));
+	}
+  
+	void Instance::setParent(Instance* newParent)
+	{
+		if (newParent == parent)
+			return;
+
+		boost::shared_ptr<Instance> oldParent = shared_from(parent);
+		boost::shared_ptr<Instance> self = this->shared_from_this();
+
+		if (oldParent)
+		{
+			if (!oldParent->contains(newParent))
+				signalDescendentRemoving(self, oldParent.get(), newParent);
+
+			oldParent->onChildRemoving(this);
+
+			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& c = oldParent->children.write();
+			c->erase(std::find(c->begin(), c->end(), self));
+
+			if (c->empty())
+				oldParent->children.reset();
+
+			parent = NULL;
+
+			event_childRemoved.fire(oldParent.get(), self);
+			oldParent->Notifier<Instance, ChildRemoved>::raise(ChildRemoved(this));
+
+			oldParent->onChildRemoved(this);
+
+			if (oldParent->numChildren() == 0)
+				oldParent->onLastChildRemoved();
+		}
+
+		if (newParent)
+		{
+			newParent->children.write()->push_back(self);
+		}
+
+		parent = newParent;
+
+		if (newParent)
+		{
+			newParent->onChildAdded(this);
+
+			if (!newParent->contains(oldParent.get()))
+				signalDescendentAdded(this, newParent, oldParent.get());
+
+			newParent->Notifier<Instance, ChildAdded>::raise(ChildAdded(this));
+			event_childAdded.fire(newParent, self);
+		}
+
+		onAncestorChanged(AncestorChanged(this, oldParent.get(), newParent));
+		raisePropertyChanged(propParent);
 	}
 }

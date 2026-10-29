@@ -1,49 +1,12 @@
-// from server: 81% by colin
-struct VBodyPosition {
-    char pad[0x124];
-    VBodyPosition();
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_native_628b6eb1ba34767d.cpp
 
-extern float g_7bf850;
-extern float g_7bf83c;
-extern float g_797988;
-extern void* g_7bf93c;
-extern void* g_7bf934;
-extern void* g_7bf92c;
-extern void* g_7bf91c;
-extern void* g_7bf90c;
-extern void* g_7bf8fc;
-extern void* g_7bf8ec;
-extern void* g_7bf8dc;
-extern void* g_7bf8cc;
-extern void* g_7bf8b4;
-extern void* g_7bf8a8;
-extern void* g_8af3d8;
-
-extern "C" void __stdcall sub_5ee580(void* p);
-
-VBodyPosition::VBodyPosition()
-{
-    sub_5ee580(&g_8af3d8);
-    *(float*)((char*)this + 0xfc) = g_7bf850;
-    *(void**)((char*)this + 0x00) = &g_7bf93c;
-    *(void**)((char*)this + 0x04) = &g_7bf934;
-    *(void**)((char*)this + 0x10) = &g_7bf92c;
-    *(void**)((char*)this + 0x14) = &g_7bf91c;
-    *(void**)((char*)this + 0x2c) = &g_7bf90c;
-    *(void**)((char*)this + 0x44) = &g_7bf8fc;
-    *(void**)((char*)this + 0x5c) = &g_7bf8ec;
-    *(void**)((char*)this + 0x74) = &g_7bf8dc;
-    *(void**)((char*)this + 0x8c) = &g_7bf8cc;
-    *(void**)((char*)this + 0xe8) = &g_7bf8b4;
-    *(void**)((char*)this + 0xf0) = &g_7bf8a8;
-    *(float*)((char*)this + 0x100) = g_7bf83c;
-    *(float*)((char*)this + 0x104) = g_7bf83c;
-    *(float*)((char*)this + 0x108) = g_7bf83c;
-    *(float*)((char*)this + 0x10c) = 0.0f;
-    *(float*)((char*)this + 0x110) = g_797988;
-    *(float*)((char*)this + 0x114) = 0.0f;
-    *(float*)((char*)this + 0x118) = 0.0f;
-    *(float*)((char*)this + 0x11c) = 0.0f;
-    *(float*)((char*)this + 0x120) = 0.0f;
-}
+// Candidate translation unit (score above; library headers required).
+// Propagate independently verified August2007 pre-Guid Instance declarations; original native body remains unchanged.
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp"
+#include "v8datamodel/Gyro.cpp"

@@ -1,58 +1,12 @@
-// from server: 44% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_native_628b6eb1ba34767d.cpp
 
-struct PartInstance;
-
-struct RefCountedBase
-{
-    virtual void unknown0();
-    virtual void unknown1();
-    virtual void unknown2();
-};
-
-struct SharedPtrStorage
-{
-    PartInstance* ptr;
-};
-
-struct Rocket
-{
-    char pad0[0x100];
-    PartInstance* target;
-    SharedPtrStorage targetStorage;
-    char pad1[0x10];
-    bool firedEvent;
-    void setTarget(PartInstance* value);
-};
-
-extern "C" void __cdecl sub_5E49E0(SharedPtrStorage* out, PartInstance* value);
-extern "C" void __cdecl sub_402A60(SharedPtrStorage* dest, SharedPtrStorage* src);
-extern "C" void __cdecl sub_444710(Rocket* self, const char* name);
-
-void Rocket::setTarget(PartInstance* value)
-{
-    if (this->target != value)
-    {
-        SharedPtrStorage tmp;
-        sub_5E49E0(&tmp, value);
-        this->target = tmp.ptr;
-        sub_402A60(&this->targetStorage, &tmp);
-
-        if (tmp.ptr)
-        {
-            RefCountedBase* p = (RefCountedBase*)tmp.ptr;
-            if (_InterlockedExchangeAdd((volatile long*)((char*)p + 4), -1) == 1)
-            {
-                p->unknown1();
-            }
-            if (_InterlockedExchangeAdd((volatile long*)((char*)p + 8), -1) == 1)
-            {
-                p->unknown2();
-            }
-        }
-
-        this->firedEvent = false;
-        sub_444710(this, (const char*)0x8c7768);
-    }
-}
+// Candidate translation unit (score above; library headers required).
+// Propagate independently verified August2007 pre-Guid Instance declarations; original native body remains unchanged.
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp"
+#include "v8datamodel/Gyro.cpp"

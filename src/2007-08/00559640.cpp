@@ -1,40 +1,19 @@
-// from server: 87% by colin
-// roc 2007-08 00559640  unit: RBX::DataModel  size: 37 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00559640
-//
-// 00559640  56                   push esi
-// 00559641  57                   push edi
-// 00559642  8bf1                 mov esi, ecx
-// 00559644  33ff                 xor edi, edi
-// 00559646  397e04               cmp dword ptr [esi + 4], edi
-// 00559649  7411                 je 0x55965c
-// 0055964b  8b4608               mov eax, dword ptr [esi + 8]
-// 0055964e  8b4e04               mov ecx, dword ptr [esi + 4]
-// 00559651  6a01                 push 1
-// 00559653  50                   push eax
-// 00559654  ffd1                 call ecx
-// 00559656  83c408               add esp, 8
-// 00559659  894608               mov dword ptr [esi + 8], eax
-// 0055965c  897e0c               mov dword ptr [esi + 0xc], edi
-// 0055965f  897e04               mov dword ptr [esi + 4], edi
-// 00559662  5f                   pop edi
-// 00559663  5e                   pop esi
-// 00559664  c3                   ret 
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_stack_8e8c9161a3ac75f9.cpp
 
-struct S {
-    void m();
-    int field0;
-    int field4;
-    int field8;
-    int fieldC;
-};
-
-void S::m()
-{
-    if (field4 == 0) {
-        int (*fn)(int, int) = (int (*)(int, int))field4;
-        field8 = fn(field8, 1);
-    }
-    field4 = 0;
-    fieldC = 0;
-}
+// Candidate translation unit (score above; library headers required).
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "v8datamodel/DataModel.cpp"

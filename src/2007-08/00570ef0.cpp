@@ -1,16 +1,19 @@
-// from server: 95% by colin
-// roc 2007-08 00570ef0  unit: RBX::Reflection::ClassDescriptor  size: 11 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00570ef0
-//
-// 00570ef0  8b442408             mov eax, dword ptr [esp + 8]
-// 00570ef4  50                   push eax
-// 00570ef5  ff542408             call dword ptr [esp + 8]
-// 00570ef9  59                   pop ecx
-// 00570efa  c3                   ret 
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_stack_f81213c22a79b220.cpp
 
-typedef int (__stdcall *ThunkFn)(int);
-
-int __cdecl WrapperThunk(ThunkFn fn, int value)
-{
-    return fn(value);
-}
+// Candidate translation unit (score above; library headers required).
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "script/ScriptContext.cpp"

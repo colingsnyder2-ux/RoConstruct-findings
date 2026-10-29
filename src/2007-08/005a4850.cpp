@@ -1,35 +1,18 @@
-// from server: 43% by colin
-struct Instance {
-    static Instance* fastDynamicCast(Instance*);
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_native_6d024d3d8b86b7c2.cpp
 
-struct PartInstance : Instance {
-};
-
-struct IControllable {
-    void* getPart();
-};
-
-struct T_func_005a4850 {
-    void* __cdecl m(Instance*);
-};
-
-extern "C" {
-    void* __stdcall sub_0053e7a0(void*, void*, void*, void*, void*);
-    void* __stdcall sub_00630d36(void*);
-    void* __stdcall sub_0077e698(void*, const char*);
-    void* __stdcall sub_0077e6ac(void*);
-}
-
-void* T_func_005a4850::m(Instance* a)
-{
-    void* result = 0;
-    if (a != 0) {
-        char buf[32];
-        sub_0077e698(buf, "Head");
-        void* v = sub_0053e7a0(a, buf, (void*)0x881f4c, (void*)0x884a28, 0);
-        result = sub_00630d36(v);
-        sub_0077e6ac(buf);
-    }
-    return result;
-}
+// Candidate translation unit (score above; library headers required).
+// Propagate independently verified August2007 pre-Guid Instance declarations; original native body remains unchanged.
+#ifndef _DLL
+#define _DLL
+#endif
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp"
+#include "humanoid/Humanoid.cpp"

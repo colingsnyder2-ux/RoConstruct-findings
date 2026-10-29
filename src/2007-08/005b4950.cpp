@@ -1,10 +1,19 @@
-// from server: 99% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
-// roc-cl: 21022
+// roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/Primitive.cpp
+// roc-lib: rbxgs roc_espeon_aug2007_primitive_a2abbd91e913811c.cpp
 
 // Candidate translation unit (score above; library headers required).
+#define _MT 1
+#define _DLL 1
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_header_e21547007ccb68b8.cpp")
 #include "v8world/Primitive.h"
 #include "v8world/Geometry.h"
 #include "v8world/Assembly.h"
@@ -21,13 +30,11 @@ namespace RBX
 	#pragma warning (push)
 	#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
 	Primitive::Primitive(Geometry::GeometryType geometryType) :
-		guidSetExternally(false),
 		world(NULL),
 		clump(NULL),
 		spatialNodes(NULL),
 		worldIndex(-1),
-		clumpDepth(-1),
-		traverseId(-1),
+		clumpDepth(0),
 		fuzzyExtentsStateId(-2),
 		geometry(newGeometry(geometryType)),
 		body(new Body),
@@ -84,14 +91,7 @@ namespace RBX
 		return Constants::getJointK(geometry->getGridSize(), type == Geometry::GEOMETRY_BALL);
 	}
 
-	void Primitive::setGuid(const Guid& value) 
-	{
-		RBXASSERT(!world);
-		guid.copyDataFrom(value);
-		guidSetExternally = true;
-	}
-
-	void Primitive::setClump(Clump* set)
+void Primitive::setClump(Clump* set)
 	{
 		if (set != clump)
 		{
