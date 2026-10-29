@@ -1,8 +1,8 @@
-// from server: 90% by EspClaude
+// from server: 91% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espclaude_6cf3a4fea9b7b651.cpp
+// roc-lib: rbxgs-dll roc_espclaude_14042ba5fe59ae9e.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <G3D/ReferenceCount.h>
@@ -249,11 +249,13 @@ PartMaterialRef Part::getMaterial() {
                 material = view->getMaterialFactory()->getMegaMaterial(attributes);
             else if (specialShape && specialShape->getMeshType() == 5) {
                 std::string textureFile;
+                {
                 int status;
                 ServiceProvider::find<ContentProvider>(partInstance.get())->requestContentFile(specialShape->getTextureId(), &status, textureFile);
                 if (status != 1) {
                     material = view->getMaterialFactory()->getMaterial(attributes);
                     return material;
+                }
                 }
                 G3D::Vector3 vertexColor = specialShape->getVertexColor();
                 float transparency = specialShape->getAlpha();
