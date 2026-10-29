@@ -1,8 +1,8 @@
-// from server: 98% by coldek
+// from server: 99% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: openrbx-client-dll roc_codex00607280_planeexact_c8895e9fd6d85be6.cpp
+// roc-lib: openrbx-client-dll roc_codex00607280_ordered_628905ad1e6236b2.cpp
 
 // Candidate translation unit (score above; library headers required).
 // exe-layout OpenRBX headers: Body pv at 0x94 without updatePV, Primitive +0x28 before oldSpatialMin
@@ -1349,14 +1349,36 @@ bool BlockBlockContact::stepContact()
 extern unsigned int nativeBlockPlanePassed, nativeBlockPlaneRejected;
 } // namespace RBX
 namespace RBX {
+extern "C" void _ReadBarrier(void);
+#pragma intrinsic(_ReadBarrier)
+static inline float rocOrderedProduct(const float& first, const float& second)
+{
+	float value = first;
+	_ReadBarrier();
+	float product = value * second;
+	_ReadBarrier();
+	return product;
+}
 static inline Vector3 rocH(const Vector3& p, const Matrix3& m)
 {
 	Vector3 out;
 	out[0] = p[0] * m[0][0] + p[2] * m[2][0];
 	out[0] += p[1] * m[1][0];
-	out[1] = p[2] * m[2][1] + p[1] * m[1][1];
-	out[1] += p[0] * m[0][1];
-	out[2] = p[1] * m[1][2];
+	float yFirst = m[2][1];
+	_ReadBarrier();
+	float yFirstProduct = yFirst * p[2];
+	_ReadBarrier();
+	float ySecond = m[1][1];
+	_ReadBarrier();
+	float ySecondProduct = ySecond * p[1];
+	_ReadBarrier();
+	out[1] = yFirstProduct + ySecondProduct;
+	out[1] += rocOrderedProduct(m[0][1], p[0]);
+	float zFirst = p[1];
+	_ReadBarrier();
+	float zFirstProduct = zFirst * m[1][2];
+	_ReadBarrier();
+	out[2] = zFirstProduct;
 	out[2] += p[0] * m[0][2];
 	out[2] += p[2] * m[2][2];
 	return out;
