@@ -1,8 +1,8 @@
-// from server: 97% by coldek
+// from server: 98% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: openrbx-client-dll roc_codex00607280_radii_dc99d30ed29778ca.cpp
+// roc-lib: openrbx-client-dll roc_codex00607280_planeexact_c8895e9fd6d85be6.cpp
 
 // Candidate translation unit (score above; library headers required).
 // exe-layout OpenRBX headers: Body pv at 0x94 without updatePV, Primitive +0x28 before oldSpatialMin
@@ -1349,19 +1349,17 @@ bool BlockBlockContact::stepContact()
 extern unsigned int nativeBlockPlanePassed, nativeBlockPlaneRejected;
 } // namespace RBX
 namespace RBX {
-static inline Vector3 rocMulA(const Vector3& p, const Matrix3& m)
+static inline Vector3 rocH(const Vector3& p, const Matrix3& m)
 {
-	float p0 = p[0];
-	float m00 = m[0][0];
-	float m10 = m[1][0];
-	float m20 = m[2][0];
-	float m01 = m[0][1];
-	float m11 = m[1][1];
-	float m21 = m[2][1];
-	float m02 = m[0][2];
-	float m12 = m[1][2];
-	float m22 = m[2][2];
-	return Vector3(p0 * m00 + p[1] * m10 + p[2] * m20, p0 * m01 + p[1] * m11 + p[2] * m21, p0 * m02 + p[1] * m12 + p[2] * m22);
+	Vector3 out;
+	out[0] = p[0] * m[0][0] + p[2] * m[2][0];
+	out[0] += p[1] * m[1][0];
+	out[1] = p[2] * m[2][1] + p[1] * m[1][1];
+	out[1] += p[0] * m[0][1];
+	out[2] = p[1] * m[1][2];
+	out[2] += p[0] * m[0][2];
+	out[2] += p[2] * m[2][2];
+	return out;
 }
 bool BlockBlockContact::getBestPlaneEdge(float overlapIgnored)
 {
@@ -1370,6 +1368,7 @@ bool BlockBlockContact::getBestPlaneEdge(float overlapIgnored)
 	float lastPlaneLength = Math::inf();
 	int lastFeature[2] = {feature[0], feature[1]};
 	bool checkLastFeature = (lastFeature[0] >= 0 && lastFeature[0] < 6) || (lastFeature[1] >= 0 && lastFeature[1] < 6);
+	Vector3 eBaseInTest;
 	for (int i = separatingBodyId; i < separatingBodyId + 2; i++) {
 		int baseId = i % 2;
 		int i1 = (i + 1) % 2;
@@ -1380,9 +1379,10 @@ bool BlockBlockContact::getBestPlaneEdge(float overlapIgnored)
 		Vector3 pTestInBase = cBase.pointToObjectSpace(cTest.translation);
 		for (int testId = separatingAxisId; testId < separatingAxisId + 3; testId++) {
 			int j = testId % 3;
-			Vector3 eBaseInTest = rocMulA(cBase.rotation.getColumn(j), cTest.rotation);
-			float length = fabsf(eBaseInTest.y * eTest.y) + fabsf(eBaseInTest.x * eTest.x) +
-						   fabsf(eBaseInTest.z * eTest.z) + eBase[j] - fabsf(pTestInBase[j]);
+			eBaseInTest = rocH(cBase.rotation.getColumn(j), cTest.rotation);
+			float length = fabsf(eBaseInTest.y * eTest.y) + fabsf(eBaseInTest.x * eTest.x);
+			length += fabsf(eBaseInTest.z * eTest.z);
+			length = length + eBase[j] - fabsf(pTestInBase[j]);
 			if (!(length > overlapIgnored)) {
 				separatingBodyId = baseId;
 				separatingAxisId = j;
