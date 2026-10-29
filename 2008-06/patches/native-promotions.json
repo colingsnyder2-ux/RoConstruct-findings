@@ -2008,5 +2008,19 @@
     "Block::getPlanePoint(const G3D::Vector3int16& clip, NormalId& normalID) const\n\t{\n\tif (clip.x != 0)\n\t{\n\t\tnormalID = clip.x > 0 ? NORM_X : NORM_X_NEG;\n\t\treturn &vertices[4 * (clip.x <= 0)];\n\t}\n\telse if (clip.y != 0)\n\t{\n\t\tnormalID = clip.y > 0 ? NORM_Y : NORM_Y_NEG;\n\t\treturn &vertices[2 * (clip.y <= 0)];\n\t}\n\telse\n\t{\n\t\tnormalID = clip.z > 0 ? NORM_Z : NORM_Z_NEG;\n\t\treturn &vertices[clip.z <= 0];\n\t}\n}"
    ]
   ]
+ },
+ {
+  "App/include/v8datamodel/ModelInstance.h": [
+   [
+    "\t\tvirtual void onDescendentAdded(Instance* instance);\n",
+    "\t\tvirtual void onChildAdded(Instance* child);\n\t\tvirtual void onDescendentAdded(Instance* instance);\n"
+   ]
+  ],
+  "App/v8datamodel/ModelInstance.cpp": [
+   [
+    "\tvoid ModelInstance::onDescendentAdded(Instance* instance)\n",
+    "\tvoid ModelInstance::onChildAdded(Instance* child)\n\t{\n\t\tIModelModifier* modifier = dynamic_cast<IModelModifier*>(child);\n\t\tif (modifier)\n\t\t\tmodifiers.push_back(modifier);\n\t}\n\n\tvoid ModelInstance::onDescendentAdded(Instance* instance)\n"
+   ]
+  ]
  }
 ]

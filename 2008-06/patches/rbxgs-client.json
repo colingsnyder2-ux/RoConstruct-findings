@@ -473,6 +473,10 @@
   [
    "\t\tboost::shared_ptr<PartInstance> candidatePrimaryPart;\n",
    "\t\tboost::shared_ptr<PartInstance> candidatePrimaryPart;\n\t\tstd::vector<IModelModifier*> modifiers;\n"
+  ],
+  [
+   "\t\tvirtual void onDescendentAdded(Instance* instance);\n",
+   "\t\tvirtual void onChildAdded(Instance* child);\n\t\tvirtual void onDescendentAdded(Instance* instance);\n"
   ]
  ],
  "App/include/v8datamodel/FaceInstance.h": [
@@ -1253,6 +1257,10 @@
   [
    "#include \"humanoid/Humanoid.h\"",
    "#include \"humanoid/Humanoid.h\"\nnamespace RBX { template Humanoid* Instance::findFirstChildOfType<Humanoid>() const; }"
+  ],
+  [
+   "\tvoid ModelInstance::onDescendentAdded(Instance* instance)\n",
+   "\tvoid ModelInstance::onChildAdded(Instance* child)\n\t{\n\t\tIModelModifier* modifier = dynamic_cast<IModelModifier*>(child);\n\t\tif (modifier)\n\t\t\tmodifiers.push_back(modifier);\n\t}\n\n\tvoid ModelInstance::onDescendentAdded(Instance* instance)\n"
   ]
  ],
  "App/v8datamodel/JointsService.cpp": [

@@ -6501,5 +6501,49 @@
     "unit": "RBX::Block, RBX::Primitive",
     "updated": 1793253462.606617,
     "user": "colin"
+  },
+  {
+    "created": 1793254072.7635093,
+    "id": "4db6a147fbf34d138821a4c26d8340c7",
+    "model": "claude-opus-5-5",
+    "patches": {
+      "App/include/v8datamodel/ModelInstance.h": [
+        [
+          "\t\tvirtual void onDescendentAdded(Instance* instance);\n",
+          "\t\tvirtual void onChildAdded(Instance* child);\n\t\tvirtual void onDescendentAdded(Instance* instance);\n"
+        ]
+      ],
+      "App/v8datamodel/ModelInstance.cpp": [
+        [
+          "\tvoid ModelInstance::onDescendentAdded(Instance* instance)\n",
+          "\tvoid ModelInstance::onChildAdded(Instance* child)\n\t{\n\t\tIModelModifier* modifier = dynamic_cast<IModelModifier*>(child);\n\t\tif (modifier)\n\t\t\tmodifiers.push_back(modifier);\n\t}\n\n\tvoid ModelInstance::onDescendentAdded(Instance* instance)\n"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "bd56d86472d8acaa56d7dd983fe949381eb9920d4920d989c1223971198a77eb",
+      "credits": 1,
+      "distinct_after": 10002,
+      "distinct_before": 10001,
+      "gains": [
+        "00585050"
+      ],
+      "input_hash": "80ad00db00fd7d2f1c3c1d51ef72446bf3bb17ea2754885f08ce669bda7c0262",
+      "losses": [],
+      "new_distinct": [
+        "00585050"
+      ],
+      "overlay_hash": "72d4039bb5e678ba4a9204e2a82d28c48453b93f6ac71475d2d845b203abc8d6",
+      "owned_after": 3350,
+      "owned_before": 3349,
+      "rebased": false,
+      "submitted_revision": "bd56d86472d8acaa56d7dd983fe949381eb9920d4920d989c1223971198a77eb"
+    },
+    "state": "accepted",
+    "unit": "RBX::ModelInstance",
+    "updated": 1793254478.7720351,
+    "user": "nuck16"
   }
 ]

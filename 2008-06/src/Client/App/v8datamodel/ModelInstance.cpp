@@ -70,6 +70,13 @@ namespace RBX
 	PVInstance::onExtentsChanged();
 }
 
+	void ModelInstance::onChildAdded(Instance* child)
+	{
+		IModelModifier* modifier = dynamic_cast<IModelModifier*>(child);
+		if (modifier)
+			modifiers.push_back(modifier);
+	}
+
 	void ModelInstance::onDescendentAdded(Instance* instance)
 	{
 	PVInstance::onDescendentAdded(instance);

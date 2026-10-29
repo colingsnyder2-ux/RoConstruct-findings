@@ -1,8 +1,10 @@
+// from server: 100% by EspClaude
+// from server: 98% by EspClaude
 // from server: 75% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espclaude_bba7b523d8580794.cpp
+// roc-lib: rbxgs-dll roc_espclaude_53171ee6428e5165.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define _CPPUNWIND 1
@@ -71,7 +73,7 @@ void NativeLightingScene::apply(RenderContext* context, bool unused) {
    if(light) Ogre::LogManager::getSingleton().logMessage(std::string("RbxGfx: created light")+name);
    else Ogre::LogManager::getSingleton().logMessage(std::string("RbxGfx : FAILED to create light")+name);
   } else light=manager->getLight(name);
-  light->setCastShadows(shadows);
+  if(shadows) light->setCastShadows(true); else light->setCastShadows(false);
   if(owner) {
    const Ogre::AxisAlignedBox& box=owner->bounds;
    if(!box.isNull()) {
@@ -125,8 +127,11 @@ void NativeLightingScene::apply(RenderContext* context, bool unused) {
   light->setSpecularColour(specular.r,specular.g,specular.b); }
  }
  {
- G3D::Color3 average=(lighting->ambientTop+lighting->ambientBottom)/2.0f;
- if(lighting->shadowedLightArray.size()>0)G3D::Vector3 direction=lighting->shadowedLightArray[0].position.xyz();
+ G3D::Color3 average = (lighting->ambientTop + lighting->ambientBottom) / 2.0f;
+ int runningTotal = lighting->shadowedLightArray.size() * 2;
+ if (lighting->shadowedLightArray.size() > 0)
+ {
+  G3D::Vector3 direction = lighting->shadowedLightArray.front().position.xyz();
+ }
  }
 }
-

@@ -623,6 +623,13 @@
     "user": "colin"
   },
   {
+    "addr": "00585050",
+    "client": "2008-06",
+    "job": "4db6a147fbf34d138821a4c26d8340c7",
+    "model": "claude-opus-5-5",
+    "user": "nuck16"
+  },
+  {
     "addr": "00585630",
     "client": "2008-06",
     "job": "9e9dfed56be04a56baf6aafd8cbbbb4d",
