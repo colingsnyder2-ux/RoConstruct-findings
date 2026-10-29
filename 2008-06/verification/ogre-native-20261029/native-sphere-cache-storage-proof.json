@@ -1,0 +1,10 @@
+{
+ "unit": "roc_native_sphere_cache_storage_6d8b5b766c240faa.cpp",
+ "symbol": "?spheres@Ogre@@3PAV?$map@KVSphere@Ogre@@U?$less@K@std@@V?$allocator@U?$pair@$$CBKVSphere@Ogre@@@std@@@4@@std@@A",
+ "target_va": "0097dbc4",
+ "initial_bytes": "00000000",
+ "writer": "006822e0",
+ "native_writer": "compare pointer to zero, allocate 32-byte map, store pointer",
+ "flags": "/O2 /GS- /EHsc /MD",
+ "functions_added": 0
+}

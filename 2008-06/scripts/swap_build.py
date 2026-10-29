@@ -14,7 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-from roc import match  # noqa: E402
+from roc import libs, match, rebuild  # noqa: E402
 
 CLIENT = "2008-06"
 RECIPES = {"RbxgsApp": {"rbxgs", "rbxgs-dll"}, "RbxApp": {"openrbx-client", "openrbx-client-dll"}}
@@ -120,13 +120,21 @@ def build_group(job):
     module, n, item = job
     item = dict(item)
     item["results"] = []
-    text = (ROOT / "src" / CLIENT / (item["addrs"][0] + ".cpp")).read_text(errors="replace")
+    text = libs.source_for(item["recipe"], item["file"], "cpp", int(item["cl"]), item["flags"]) \
+        if item.get("native") else (ROOT / "src" / CLIENT / (item["addrs"][0] + ".cpp")).read_text(errors="replace")
     twin = DLL_TWIN.get(item["recipe"])
     if twin is None and "_DLL" not in libs_recipes().get(item["recipe"], {}).get("defines", "")             and item["recipe"] + "-dll" in libs_recipes():
         twin = item["recipe"] + "-dll"  # e.g. g3d-6.09 -> g3d-6.09-dll
     if twin:
         item = dict(item, recipe=twin)
         text = re.sub(r"(?m)^(// roc-lib: )%s " % re.escape(job[2]["recipe"]), r"\g<1>%s " % twin, text)
+    # /MT also injects LIBCMT into an otherwise _DLL-header object. Replay on
+    # the module's DLL CRT and recheck every retained body below.
+    if "_DLL" in libs_recipes().get(item["recipe"], {}).get("defines", "").split():
+        flags = re.sub(r"/MTd?\b", "/MD", item.get("flags", ""))
+        if flags != item.get("flags", ""):
+            item["flags"] = flags
+            text = re.sub(r"(?m)^// roc-flags:.*$", "// roc-flags: " + flags, text)
     # No fallback to the static-CRT object mining verified: it links under /MD but crashed the M4a/M5 runtime
     # gates (int 3 at startup, 2026-10-27) although every kept body was byte-exact. Only the _DLL twin is safe.
     try:
@@ -144,7 +152,11 @@ def build_group(job):
                                 "dll_twin": twin})
         if value == 100 and symbol:
             keep.setdefault(symbol, addr)
-    return item, [(obj, keep)] if keep else [], None
+    helpers = set(item.get("helper_symbols", []))
+    missing = helpers - {name for name, defined in rebuild.coff_externals(obj).items() if defined} if helpers else set()
+    if missing:
+        return item, [], "Missing declared native helpers: " + ", ".join(sorted(missing))
+    return item, [(obj, keep)] if keep or helpers else [], None
 
 
 def main(module, limit=None):
@@ -153,8 +165,14 @@ def main(module, limit=None):
     # is a header the module adopted with that same replacement (Phase 4 canonical headers)
     # is a header the module adopted with that same replacement (Phase 4 canonical headers); one that disagrees is
     # compiled against the module's overlay headers instead (compile_against_overlay)
-    groups, rejected = [], []
-    for g in plan["groups"]:
+    groups, rejected, native = [], [], []
+    for path in (ROOT / "rebuild" / CLIENT / "modules").glob("*.json"):
+        spec = json.loads(path.read_text())
+        if spec.get("name") == module:
+            native = [dict(unit, native=True) for unit in spec.get("native_units", [])]
+            break
+    # Native replays use the same family/header gates and win duplicate symbols.
+    for g in native + plan["groups"]:
         if not of_module(module, g["recipe"]):
             continue
         if compatible(module, g["file"], g["recipe"]):

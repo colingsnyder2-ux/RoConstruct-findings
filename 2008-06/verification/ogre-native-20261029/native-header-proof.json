@@ -1,0 +1,62 @@
+[
+ {
+  "address": "0068e930",
+  "symbol": "?getShadowTechnique@NativeSceneManager@Ogre@@UBE?AW4ShadowTechnique@2@XZ",
+  "score": 100,
+  "unit": "roc_native_header_accessors_f042f32e3705715a.cpp"
+ },
+ {
+  "address": "0068e960",
+  "symbol": "?getShadowFarDistance@NativeSceneManager@Ogre@@UBEMXZ",
+  "score": 100,
+  "unit": "roc_native_header_accessors_f042f32e3705715a.cpp"
+ },
+ {
+  "address": "0068e970",
+  "symbol": "?getShadowIndexBufferSize@NativeSceneManager@Ogre@@UBEIXZ",
+  "score": 100,
+  "unit": "roc_native_header_accessors_f042f32e3705715a.cpp"
+ },
+ {
+  "address": "0068e990",
+  "symbol": "?getShadowDirLightTextureOffset@NativeSceneManager@Ogre@@UBEMXZ",
+  "score": 100,
+  "unit": "roc_native_header_accessors_f042f32e3705715a.cpp"
+ },
+ {
+  "address": "0068e9c0",
+  "symbol": "?getShadowTextureSelfShadow@NativeSceneManager@Ogre@@UBE_NXZ",
+  "score": 100,
+  "unit": "roc_native_header_accessors_f042f32e3705715a.cpp"
+ },
+ {
+  "address": "0068e9e0",
+  "symbol": "?getShadowCasterRenderBackFaces@NativeSceneManager@Ogre@@UBE_NXZ",
+  "score": 100,
+  "unit": "roc_native_header_accessors_f042f32e3705715a.cpp"
+ },
+ {
+  "address": "0068e920",
+  "symbol": "?getDisplaySceneNodes@NativeSceneManager@Ogre@@UBE_NXZ",
+  "score": 100,
+  "unit": "roc_native_header_accessors_f042f32e3705715a.cpp"
+ },
+ {
+  "address": "0068ea60",
+  "symbol": "?setVisibilityMask@NativeSceneManager@Ogre@@UAEXI@Z",
+  "score": 100,
+  "unit": "roc_native_header_accessors_f042f32e3705715a.cpp"
+ },
+ {
+  "address": "0068ea70",
+  "symbol": "?getVisibilityMask@NativeSceneManager@Ogre@@UAEIXZ",
+  "score": 100,
+  "unit": "roc_native_header_accessors_f042f32e3705715a.cpp"
+ },
+ {
+  "address": "00565ff0",
+  "symbol": "?queryResult@ShadowCasterSceneQueryListener@RbxSceneManager@Ogre@@UAE_NPAUWorldFragment@SceneQuery@3@@Z",
+  "score": 100,
+  "unit": "roc_native_scene_callbacks_9975fd58eb7f0dbb.cpp"
+ }
+]

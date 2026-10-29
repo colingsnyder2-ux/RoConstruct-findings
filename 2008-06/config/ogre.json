@@ -1,6 +1,6 @@
 {
  "name": "Ogre",
- "description": "Ogre code the 2008-06 exe links statically (Roblox's Ogre forks such as RbxSceneManager/RbxEntity, and header templates); OgreMain itself is rgmain.dll. No upstream layer: only exact mined ogre-* sources, swapped in by swap_build.py (verified layer).",
+ "description": "Recovered exe-side Ogre forks/templates with preferred Ogre 1.4.5 native-header replays. OgreMain is provided by rgmain.dll. A full forced link must pass before this module counts as integrated.",
  "layers": [],
  "test": "ogre_link",
  "verified": true,
@@ -10,5 +10,84 @@
  "import_dlls": [
   "rgmain.dll"
  ],
- "force_verified": true
+ "force_verified": true,
+ "prune_unselected_sections": true,
+ "external_helpers": [
+  "??0exception@std@@QAE@ABQBD@Z",
+  "??0exception@std@@QAE@ABV01@@Z",
+  "??0exception@std@@QAE@XZ",
+  "??1exception@std@@UAE@XZ",
+  "?getMovableObjectCollection@SceneManager@Ogre@@IAEPAUMovableObjectCollection@12@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
+  "?getMovableObjectCollection@SceneManager@Ogre@@IBEPBUMovableObjectCollection@12@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
+  "?terminate@@YAXXZ",
+  "?validatePassForRendering@SceneManager@Ogre@@IAE_NPBVPass@2@@Z",
+  "?validateRenderableForRendering@SceneManager@Ogre@@IAE_NPBVPass@2@PBVRenderable@2@@Z",
+  "?what@exception@std@@UBEPBDXZ"
+ ],
+ "native_units": [
+  {
+   "recipe": "ogre-1.4.5-dll",
+   "file": "roc_native_hardware_sharedptr_16493fe4099d30fc.cpp",
+   "cl": "21022",
+   "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+   "addrs": [
+    "004d73c0"
+   ]
+  },
+  {
+   "recipe": "ogre-1.4.5-dll",
+   "file": "roc_native_resource_templates_f9febbef6239dc27.cpp",
+   "cl": "21022",
+   "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+   "addrs": [
+    "004d7380",
+    "004d73e0",
+    "004dc670",
+    "004dca70",
+    "004ddbc0",
+    "0067d600",
+    "0067f170",
+    "0067f1d0",
+    "0067f7c0",
+    "0068d030"
+   ]
+  },
+  {
+   "recipe": "ogre-1.4.5-dll",
+   "file": "roc_native_header_accessors_f042f32e3705715a.cpp",
+   "cl": "21022",
+   "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+   "addrs": [
+    "0068e920",
+    "0068e930",
+    "0068e960",
+    "0068e970",
+    "0068e990",
+    "0068e9c0",
+    "0068e9e0",
+    "0068ea60",
+    "0068ea70"
+   ]
+  },
+  {
+   "recipe": "ogre-1.4.5-dll",
+   "file": "roc_native_scene_callbacks_9975fd58eb7f0dbb.cpp",
+   "cl": "21022",
+   "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+   "addrs": [
+    "00565ff0",
+    "0069c5f0"
+   ]
+  },
+  {
+   "recipe": "ogre-1.4.5-dll",
+   "file": "roc_native_sphere_cache_storage_6d8b5b766c240faa.cpp",
+   "cl": "21022",
+   "flags": "/O2 /GS- /EHsc /MD",
+   "addrs": [],
+   "helper_symbols": [
+    "?spheres@Ogre@@3PAV?$map@KVSphere@Ogre@@U?$less@K@std@@V?$allocator@U?$pair@$$CBKVSphere@Ogre@@@std@@@4@@std@@A"
+   ]
+  }
+ ]
 }

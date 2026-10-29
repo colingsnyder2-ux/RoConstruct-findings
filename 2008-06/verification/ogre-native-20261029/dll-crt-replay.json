@@ -1,0 +1,428 @@
+[
+ {
+  "obj": "0099.obj",
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreAlignedAllocator.cpp",
+  "cl": 21022,
+  "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+  "checks": [
+   {
+    "addr": "004dc670",
+    "score": 100
+   },
+   {
+    "addr": "00670670",
+    "score": 100
+   },
+   {
+    "addr": "0068cf50",
+    "score": 100
+   },
+   {
+    "addr": "0068ddc0",
+    "score": 100
+   }
+  ],
+  "all_exact": true
+ },
+ {
+  "obj": "0100.obj",
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreAutoParamDataSource.cpp",
+  "cl": 21022,
+  "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+  "checks": [
+   {
+    "addr": "0068e940",
+    "score": 100
+   },
+   {
+    "addr": "0068e9f0",
+    "score": 100
+   },
+   {
+    "addr": "0068ea00",
+    "score": 100
+   },
+   {
+    "addr": "0068ea10",
+    "score": 100
+   },
+   {
+    "addr": "0068ea20",
+    "score": 100
+   },
+   {
+    "addr": "0068ea30",
+    "score": 100
+   },
+   {
+    "addr": "0068ea40",
+    "score": 100
+   },
+   {
+    "addr": "0068ea50",
+    "score": 100
+   },
+   {
+    "addr": "0068ea80",
+    "score": 100
+   }
+  ],
+  "all_exact": true
+ },
+ {
+  "obj": "0101.obj",
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreAutoParamDataSource.cpp",
+  "cl": 50727,
+  "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+  "checks": [
+   {
+    "addr": "0068d030",
+    "score": 100
+   },
+   {
+    "addr": "0068e1a0",
+    "score": 100
+   }
+  ],
+  "all_exact": true
+ },
+ {
+  "obj": "0102.obj",
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreMeshSerializerImpl.cpp",
+  "cl": 21022,
+  "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+  "checks": [
+   {
+    "addr": "004dca70",
+    "score": 100
+   },
+   {
+    "addr": "004ddbc0",
+    "score": 100
+   }
+  ],
+  "all_exact": true
+ },
+ {
+  "obj": "0103.obj",
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "cl": 21022,
+  "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+  "checks": [
+   {
+    "addr": "004d73a0",
+    "score": 100
+   },
+   {
+    "addr": "0068c7b0",
+    "score": 100
+   },
+   {
+    "addr": "0068c910",
+    "score": 100
+   },
+   {
+    "addr": "0068c930",
+    "score": 100
+   },
+   {
+    "addr": "0068e980",
+    "score": 100
+   },
+   {
+    "addr": "0068e9a0",
+    "score": 100
+   },
+   {
+    "addr": "0068e9b0",
+    "score": 100
+   },
+   {
+    "addr": "0068e9d0",
+    "score": 100
+   },
+   {
+    "addr": "00690250",
+    "score": 100
+   },
+   {
+    "addr": "006929d0",
+    "score": 100
+   },
+   {
+    "addr": "00698520",
+    "score": 100
+   },
+   {
+    "addr": "00698540",
+    "score": 100
+   },
+   {
+    "addr": "006994b0",
+    "score": 100
+   },
+   {
+    "addr": "0069c5b0",
+    "score": 100
+   },
+   {
+    "addr": "0069d7e0",
+    "score": 100
+   },
+   {
+    "addr": "0069e110",
+    "score": 100
+   },
+   {
+    "addr": "0069e1e0",
+    "score": 100
+   }
+  ],
+  "all_exact": true
+ },
+ {
+  "obj": "0104.obj",
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "cl": 21022,
+  "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+  "checks": [
+   {
+    "addr": "0068c740",
+    "score": 100
+   },
+   {
+    "addr": "0068e5f0",
+    "score": 100
+   },
+   {
+    "addr": "0068e6a0",
+    "score": 100
+   },
+   {
+    "addr": "00692880",
+    "score": 100
+   }
+  ],
+  "all_exact": true
+ },
+ {
+  "obj": "0105.obj",
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "cl": 50727,
+  "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+  "checks": [
+   {
+    "addr": "0068b6d0",
+    "score": 100
+   }
+  ],
+  "all_exact": true
+ },
+ {
+  "obj": "0122.obj",
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "cl": 21022,
+  "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+  "checks": [
+   {
+    "addr": "0068e500",
+    "score": 100
+   },
+   {
+    "addr": "00690460",
+    "score": 100
+   }
+  ],
+  "all_exact": true
+ },
+ {
+  "obj": "0127.obj",
+  "recipe": "ogre-1.6.4-dll",
+  "file": "OgreAlignedAllocator.cpp",
+  "cl": 21022,
+  "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+  "checks": [
+   {
+    "addr": "00588190",
+    "score": 100
+   },
+   {
+    "addr": "00588cf0",
+    "score": 100
+   },
+   {
+    "addr": "00589210",
+    "score": 100
+   }
+  ],
+  "all_exact": true
+ },
+ {
+  "obj": "0128.obj",
+  "recipe": "ogre-1.6.4-dll",
+  "file": "OgreAlignedAllocator.cpp",
+  "cl": 50727,
+  "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+  "checks": [
+   {
+    "addr": "004e5b60",
+    "score": 100
+   }
+  ],
+  "all_exact": true
+ },
+ {
+  "obj": "0129.obj",
+  "recipe": "ogre-1.6.4-dll",
+  "file": "OgreConvexBody.cpp",
+  "cl": 21022,
+  "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+  "checks": [
+   {
+    "addr": "007ef8c0",
+    "score": 100
+   }
+  ],
+  "all_exact": true
+ },
+ {
+  "obj": "0130.obj",
+  "recipe": "ogre-1.6.4-dll",
+  "file": "OgreMovableObject.cpp",
+  "cl": 50727,
+  "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+  "checks": [
+   {
+    "addr": "00685100",
+    "score": 100
+   }
+  ],
+  "all_exact": true
+ },
+ {
+  "obj": "0131.obj",
+  "recipe": "ogre-1.6.4-dll",
+  "file": "OgreRenderQueueSortingGrouping.cpp",
+  "cl": 21022,
+  "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+  "checks": [
+   {
+    "addr": "006902d0",
+    "score": 100
+   },
+   {
+    "addr": "00692550",
+    "score": 100
+   },
+   {
+    "addr": "00694280",
+    "score": 100
+   },
+   {
+    "addr": "00699ee0",
+    "score": 100
+   }
+  ],
+  "all_exact": true
+ },
+ {
+  "obj": "0132.obj",
+  "recipe": "ogre-1.6.4-dll",
+  "file": "OgreResourceGroupManager.cpp",
+  "cl": 50727,
+  "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+  "checks": [
+   {
+    "addr": "00496ed0",
+    "score": 100
+   }
+  ],
+  "all_exact": true
+ },
+ {
+  "obj": "0133.obj",
+  "recipe": "ogre-1.6.4-dll",
+  "file": "OgreSceneManager.cpp",
+  "cl": 21022,
+  "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+  "checks": [
+   {
+    "addr": "0068d580",
+    "score": 100
+   },
+   {
+    "addr": "00692260",
+    "score": 100
+   },
+   {
+    "addr": "00698070",
+    "score": 100
+   },
+   {
+    "addr": "006982a0",
+    "score": 100
+   },
+   {
+    "addr": "0069b140",
+    "score": 100
+   },
+   {
+    "addr": "0069c5d0",
+    "score": 100
+   },
+   {
+    "addr": "0069d660",
+    "score": 100
+   },
+   {
+    "addr": "0069d840",
+    "score": 100
+   }
+  ],
+  "all_exact": true
+ },
+ {
+  "obj": "0134.obj",
+  "recipe": "ogre-1.6.4-dll",
+  "file": "OgreSceneManager.cpp",
+  "cl": 50727,
+  "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+  "checks": [
+   {
+    "addr": "00694020",
+    "score": 100
+   },
+   {
+    "addr": "0069e140",
+    "score": 100
+   }
+  ],
+  "all_exact": true
+ },
+ {
+  "obj": "0135.obj",
+  "recipe": "ogre-1.6.4-dll",
+  "file": "OgreTextureUnitState.cpp",
+  "cl": 21022,
+  "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+  "checks": [
+   {
+    "addr": "004d73c0",
+    "score": 100
+   },
+   {
+    "addr": "008014e0",
+    "score": 100
+   }
+  ],
+  "all_exact": true
+ }
+]

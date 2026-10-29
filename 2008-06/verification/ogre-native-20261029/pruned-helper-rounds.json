@@ -1,0 +1,54 @@
+[
+ {
+  "iteration": 0,
+  "linked": false,
+  "exit": null,
+  "unresolved": [
+   "?clearScene@RbxSceneManager@Ogre@@UAEXXZ",
+   "?deriveShadowCasterPass@RbxSceneManager@Ogre@@QAEPBVPass@2@PBV32@@Z",
+   "?deriveShadowReceiverPass@RbxSceneManager@Ogre@@QAEPBVPass@2@PBV32@@Z",
+   "?dispose@ControlBlock@@QAEXXZ",
+   "?getCastShadows@RbxSubEntity@Ogre@@UBE_NXZ",
+   "?getEdgeList@RbxSubEntity@Ogre@@UAEPAVEdgeData@2@XZ",
+   "?getLightCapBounds@RbxSubEntity@Ogre@@UBEABVAxisAlignedBox@2@XZ",
+   "?getWorldOrientation@RbxSubEntityShadowRenderable@RbxSubEntity@Ogre@@UBEABVQuaternion@3@XZ",
+   "?getWorldPosition@RbxSubEntityShadowRenderable@RbxSubEntity@Ogre@@UBEABVVector3@3@XZ",
+   "?getWorldTransforms@RbxSubEntityShadowRenderable@RbxSubEntity@Ogre@@UBEXPAVMatrix4@3@@Z",
+   "?hasEdgeList@RbxSubEntity@Ogre@@UAE_NXZ",
+   "?release@Control@@QAEXXZ",
+   "?release@Image@@QAEXXZ",
+   "?spheres@Ogre@@3PAV?$map@KVSphere@Ogre@@U?$less@K@std@@V?$allocator@U?$pair@$$CBKVSphere@Ogre@@@std@@@4@@std@@A",
+   "?visit@SceneMgrQueuedRenderableVisitor@@UAEXPBURenderablePass@Ogre@@@Z",
+   "?visit@SceneMgrQueuedRenderableVisitor@@UAEXPBVRenderable@Ogre@@@Z",
+   "?visit@SceneMgrQueuedRenderableVisitor@@UAE_NPBVPass@Ogre@@@Z",
+   "?visit@SceneMgrQueuedRenderableVisitor@RbxSceneManager@Ogre@@UAEXPBURenderablePass@3@@Z",
+   "?visit@SceneMgrQueuedRenderableVisitor@RbxSceneManager@Ogre@@UAEXPBVRenderable@3@@Z",
+   "?visit@SceneMgrQueuedRenderableVisitor@RbxSceneManager@Ogre@@UAE_NPBVPass@3@@Z"
+  ],
+  "added_helpers": 8,
+  "forced": 300,
+  "seconds": 9.093999999997322
+ },
+ {
+  "iteration": 1,
+  "linked": false,
+  "exit": null,
+  "unresolved": [
+   "?dispose@ControlBlock@@QAEXXZ",
+   "?getCastShadows@RbxSubEntity@Ogre@@UBE_NXZ",
+   "?getEdgeList@RbxSubEntity@Ogre@@UAEPAVEdgeData@2@XZ",
+   "?getWorldOrientation@RbxSubEntityShadowRenderable@RbxSubEntity@Ogre@@UBEABVQuaternion@3@XZ",
+   "?getWorldPosition@RbxSubEntityShadowRenderable@RbxSubEntity@Ogre@@UBEABVVector3@3@XZ",
+   "?getWorldTransforms@RbxSubEntityShadowRenderable@RbxSubEntity@Ogre@@UBEXPAVMatrix4@3@@Z",
+   "?hasEdgeList@RbxSubEntity@Ogre@@UAE_NXZ",
+   "?release@Control@@QAEXXZ",
+   "?release@Image@@QAEXXZ",
+   "?visit@SceneMgrQueuedRenderableVisitor@@UAEXPBURenderablePass@Ogre@@@Z",
+   "?visit@SceneMgrQueuedRenderableVisitor@@UAEXPBVRenderable@Ogre@@@Z",
+   "?visit@SceneMgrQueuedRenderableVisitor@@UAE_NPBVPass@Ogre@@@Z"
+  ],
+  "added_helpers": 0,
+  "forced": 300,
+  "seconds": 6.485000000000582
+ }
+]
