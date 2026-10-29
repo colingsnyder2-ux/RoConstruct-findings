@@ -1,4 +1,4 @@
-// from server: 41% by colin
+// from server: 44% by Yeetserama
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -26,7 +26,7 @@ struct Outer {
 
 struct S {
     Holder* field0;
-    void func(Holder* out, const Holder* src);
+    void __cdecl func(Holder* out, const Holder* src);
 };
 
 void S::func(Holder* out, const Holder* src)

@@ -1,8 +1,8 @@
-// from server: 91% by EspClaude
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espclaude_14042ba5fe59ae9e.cpp
+// roc-lib: rbxgs-dll roc_espclaude_8bf60529a275bcc6.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <G3D/ReferenceCount.h>
@@ -216,12 +216,11 @@ PartMaterialRef Part::getMaterial() {
                         if (pantsStatus == 1) {
                             do {
                             std::string migrated = migrateAtlas(filename, pants.mimeType(), false, 1.0f);
-                            if (humanoid->getTorso() == partInstance.get() && material.notNull()) {
-                                do {
+                            if (humanoid->getTorso() == partInstance.get() && material.notNull() && material.notNull()) {
                                 TextureProxyBase* texture = createPartTexture(view->getDevice(), migrated, false);
                                 material->appendLevel(TextureProxyBaseRef(texture), G3D::Color3::WHITE, 0.9f, 50.0f, partInstance->getReflectance(), partInstance->alpha() + 0.002f);
                                 texture->setFloat2c(decalTextureScale);
-                                } while (false);
+do {} while (false);
                             } else {
                                 material = createPartMaterial();
                                 material->appendLevel(TextureProxyBaseRef(), color, 0.9f, 50.0f, partInstance->getReflectance(), partInstance->alpha());
@@ -249,21 +248,25 @@ PartMaterialRef Part::getMaterial() {
                 material = view->getMaterialFactory()->getMegaMaterial(attributes);
             else if (specialShape && specialShape->getMeshType() == 5) {
                 std::string textureFile;
+                bool failed;
                 {
                 int status;
-                ServiceProvider::find<ContentProvider>(partInstance.get())->requestContentFile(specialShape->getTextureId(), &status, textureFile);
-                if (status != 1) {
+                failed = (ServiceProvider::find<ContentProvider>(partInstance.get())->requestContentFile(specialShape->getTextureId(), &status, textureFile), status != 1);
+                }
+                if (failed) {
                     material = view->getMaterialFactory()->getMaterial(attributes);
                     return material;
-                }
                 }
                 G3D::Vector3 vertexColor = specialShape->getVertexColor();
                 float transparency = specialShape->getAlpha();
                 material = createPartMaterial();
                 material->appendLevel(TextureProxyBaseRef(createPartTexture(view->getDevice(), textureFile, false)), G3D::Color3(vertexColor), 0, 0.1f, 0, transparency);
+                materialInvalid = false;
+                goto done;
             } else
                 material = view->getMaterialFactory()->getMaterial(attributes);
             materialInvalid = false;
+            done: ;
         }
     } catch (const std::exception& error) {
         StandardOut::singleton()->print(MESSAGE_WARNING, error);

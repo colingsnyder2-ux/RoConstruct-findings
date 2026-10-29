@@ -1,9 +1,8 @@
-// from server: 93% by EspClaude
-// from server: 92% by coldek
+// from server: 97% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: openrbx-client-dll roc_espclaude_b277647b119a3331.cpp
+// roc-lib: openrbx-client-dll roc_codex00607280_radii_dc99d30ed29778ca.cpp
 
 // Candidate translation unit (score above; library headers required).
 // exe-layout OpenRBX headers: Body pv at 0x94 without updatePV, Primitive +0x28 before oldSpatialMin
@@ -1369,124 +1368,89 @@ bool BlockBlockContact::getBestPlaneEdge(float overlapIgnored)
 	float bestPlaneLength = Math::inf();
 	float bestEdgeLength = Math::inf();
 	float lastPlaneLength = Math::inf();
-
 	int lastFeature[2] = {feature[0], feature[1]};
-
 	bool checkLastFeature = (lastFeature[0] >= 0 && lastFeature[0] < 6) || (lastFeature[1] >= 0 && lastFeature[1] < 6);
-
 	for (int i = separatingBodyId; i < separatingBodyId + 2; i++) {
-
 		int baseId = i % 2;
 		int i1 = (i + 1) % 2;
-
 		const CoordinateFrame& cBase = getBody(baseId)->getCoordinateFrame();
 		const CoordinateFrame& cTest = getBody(i1)->getCoordinateFrame();
-
 		const Vector3& eBase = block(baseId)->getExtent();
 		const Vector3& eTest = block(i1)->getExtent();
-
 		Vector3 pTestInBase = cBase.pointToObjectSpace(cTest.translation);
-
 		for (int testId = separatingAxisId; testId < separatingAxisId + 3; testId++) {
-
 			int j = testId % 3;
-
 			Vector3 eBaseInTest = rocMulA(cBase.rotation.getColumn(j), cTest.rotation);
-
 			float length = fabsf(eBaseInTest.y * eTest.y) + fabsf(eBaseInTest.x * eTest.x) +
 						   fabsf(eBaseInTest.z * eTest.z) + eBase[j] - fabsf(pTestInBase[j]);
-
 			if (!(length > overlapIgnored)) {
 				separatingBodyId = baseId;
 				separatingAxisId = j;
 				++nativeBlockPlaneRejected;
 				return false;
 			}
-
 			if (checkLastFeature) {
 				if (lastFeature[baseId] % 3 == j) {
 					lastPlaneLength = length;
 				}
 			}
-
 			if (length < bestPlaneLength) {
 				bestPlaneLength = length;
-
 				feature[baseId] = pTestInBase[j] > 0 ? j : j + 3;
 				feature[i1] = -1;
-
 				separatingBodyId = baseId;
 				separatingAxisId = j;
-
 				planeContact = true;
 			}
 		}
 	}
-
 	++nativeBlockPlanePassed;
-
 	if (checkLastFeature && (feature[0] != lastFeature[0] || feature[1] != lastFeature[1]) &&
 		!(bestPlaneLength * 1.01f < lastPlaneLength)) {
-
 		bestPlaneLength = lastPlaneLength;
-
 		feature[0] = lastFeature[0];
 		feature[1] = lastFeature[1];
 	}
-
 	const CoordinateFrame& c0 = getBody(0)->getCoordinateFrame();
 	const CoordinateFrame& c1 = getBody(1)->getCoordinateFrame();
-
 	const Vector3& extent0 = block(0)->getExtent();
 	const Vector3& extent1 = block(1)->getExtent();
-
  float roc_p1 = 0; float roc_p2 = 0;
 	Vector3 p0p1 = c1.translation - c0.translation;
-
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
-
 			Vector3 crossAxis = c0.rotation.getColumn(i).cross(c1.rotation.getColumn(j));
-
 			if (crossAxis.unitize() <= 0.001f) {
 				return planeContact;
 			}
-
 			float p0p1inCrossAxis = p0p1.dot(crossAxis);
-
 			Vector3 crossInBase = crossAxis * c0.rotation;
 			Vector3 crossInTest = crossAxis * c1.rotation;
-
-			float length = fabsf(crossInTest.y * extent1.y) + fabsf(crossInTest.x * extent1.x) +
-						   fabsf(crossInTest.z * extent1.z) + fabsf(crossInBase.y * extent0.y) +
-						   fabsf(crossInBase.x * extent0.x) + fabsf(crossInBase.z * extent0.z) - fabsf(p0p1inCrossAxis);
-
+			float testRadius = fabsf(crossInTest.y * extent1.y) + fabsf(crossInTest.x * extent1.x);
+			testRadius += fabsf(crossInTest.z * extent1.z);
+			float baseRadius = fabsf(crossInBase.y * extent0.y) + fabsf(crossInBase.x * extent0.x);
+			baseRadius += fabsf(crossInBase.z * extent0.z);
+			float length = testRadius + baseRadius - fabsf(p0p1inCrossAxis);
 			if (!(length > overlapIgnored)) {
 				return false;
 			}
-
 			if (length < bestEdgeLength) {
 				bestEdgeLength = length;
-
 				if (length * 10.0f < bestPlaneLength) {
-
 					if (p0p1inCrossAxis > 0) {
 						feature[0] = block(0)->getClosestEdge(c0.rotation, (NormalId) i, crossAxis) + 6;
 						feature[1] = block(1)->getClosestEdge(c1.rotation, (NormalId) j, -crossAxis) + 6;
 					}
 					else {
 						Vector3 negCrossAxis = -crossAxis;
-
 						feature[0] = block(0)->getClosestEdge(c0.rotation, (NormalId) i, negCrossAxis) + 6;
 						feature[1] = block(1)->getClosestEdge(c1.rotation, (NormalId) j, crossAxis) + 6;
 					}
-
 					planeContact = false;
 				}
 			}
 		}
 	}
-
 	return true;
 }
 
