@@ -1,0 +1,26 @@
+[
+ {
+  "address": "00476700",
+  "symbol": "??DCoordinateFrame@G3D@@QBE?AV01@ABV01@@Z",
+  "object": "RenderDevice.obj",
+  "map_line": "0001:00009990       ??DCoordinateFrame@G3D@@QBE?AV01@ABV01@@Z 0040a990 f i linked:RenderDevice.obj",
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "address": "00478330",
+  "symbol": "?inverse@CoordinateFrame@G3D@@QBE?AV12@XZ",
+  "object": "shadowVolume.obj",
+  "map_line": "0001:00008a70       ?inverse@CoordinateFrame@G3D@@QBE?AV12@XZ 00409a70 f i linked:shadowVolume.obj",
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "address": "00472bb0",
+  "symbol": "?createTexture@G3D@@YAXIPBEIIHHIHH_N1M@Z",
+  "object": "Texture.obj",
+  "map_line": "0001:000047e0       ?createTexture@G3D@@YAXIPBEIIHHIHH_N1M@Z 004057e0 f   linked:Texture.obj",
+  "data_exact": true,
+  "bad": []
+ }
+]

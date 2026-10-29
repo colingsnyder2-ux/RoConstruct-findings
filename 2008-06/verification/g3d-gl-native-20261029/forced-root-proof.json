@@ -1,0 +1,386 @@
+[
+ {
+  "symbol": "?rect2D@Draw@G3D@@SAXABVRect2D@2@PAVRenderDevice@2@ABVColor4@2@ABVVector2@2@333@Z",
+  "address": "007b04e0",
+  "map_line": "0001:00002fb0       ?rect2D@Draw@G3D@@SAXABVRect2D@2@PAVRenderDevice@2@ABVColor4@2@ABVVector2@2@333@Z 00403fb0 f   linked:verified_0042.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "??_GNode@?$Table@W4AttachmentPoint@Framebuffer@G3D@@VAttachment@23@@G3D@@QAEPAXI@Z",
+  "address": "004b6290",
+  "map_line": "0001:00001300       ??_GNode@?$Table@W4AttachmentPoint@Framebuffer@G3D@@VAttachment@23@@G3D@@QAEPAXI@Z 00402300 f i linked:verified_0043.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?get2DStringBounds@GFont@G3D@@QBE?AVVector2@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@NW4Spacing@12@@Z",
+  "address": "007b6b30",
+  "map_line": "0001:00002c10       ?get2DStringBounds@GFont@G3D@@QBE?AVVector2@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@NW4Spacing@12@@Z 00403c10 f   linked:verified_0044.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?init@GLCaps@G3D@@SAXXZ",
+  "address": "00472850",
+  "map_line": "0001:00002f20       ?init@GLCaps@G3D@@SAXXZ    00403f20 f   linked:verified_0045.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?checkBug_cubeMapBugs@GLCaps@G3D@@CAXXZ",
+  "address": "0046fff0",
+  "map_line": "0001:00001a90       ?checkBug_cubeMapBugs@GLCaps@G3D@@CAXXZ 00402a90 f   linked:verified_0046.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?append@?$Array@V?$ReferenceCountedPointer@VGModule@G3D@@@G3D@@@G3D@@QAEXABV?$ReferenceCountedPointer@VGModule@G3D@@@2@@Z",
+  "address": "00476150",
+  "map_line": "0001:00001450       ?append@?$Array@V?$ReferenceCountedPointer@VGModule@G3D@@@G3D@@@G3D@@QAEXABV?$ReferenceCountedPointer@VGModule@G3D@@@2@@Z 00402450 f i linked:verified_0047.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?resize@?$Array@V?$ReferenceCountedPointer@VGModule@G3D@@@G3D@@@G3D@@QAEXH_N@Z",
+  "address": "00475fb0",
+  "map_line": "0001:00003320       ?resize@?$Array@V?$ReferenceCountedPointer@VGModule@G3D@@@G3D@@@G3D@@QAEXH_N@Z 00404320 f i linked:verified_0048.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?nvBind@BindingTable@GPUProgram@G3D@@QBEXI@Z",
+  "address": "00489100",
+  "map_line": "0001:00002f30       ?nvBind@BindingTable@GPUProgram@G3D@@QBEXI@Z 00403f30 f   linked:verified_0049.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "??$?0VVector2@G3D@@@VAR@G3D@@QAE@ABV?$Array@VVector2@G3D@@@1@V?$ReferenceCountedPointer@VVARArea@G3D@@@1@@Z",
+  "address": "00551400",
+  "map_line": "0001:00000700       ??$?0VVector2@G3D@@@VAR@G3D@@QAE@ABV?$Array@VVector2@G3D@@@1@V?$ReferenceCountedPointer@VVARArea@G3D@@@1@@Z 00401700 f i linked:verified_0052.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?setTime@LightingParameters@G3D@@QAEXN@Z",
+  "address": "007b59b0",
+  "map_line": "0001:000037c0       ?setTime@LightingParameters@G3D@@QAEXN@Z 004047c0 f   linked:verified_0053.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "??$_Median@PAV?$ReferenceCountedPointer@VPosedModel2D@G3D@@@G3D@@P6A_NABV12@0@Z@std@@YAXPAV?$ReferenceCountedPointer@VPosedModel2D@G3D@@@G3D@@00P6A_NABV12@1@Z@Z",
+  "address": "005053b0",
+  "map_line": "0001:000007e0       ??$_Median@PAV?$ReferenceCountedPointer@VPosedModel2D@G3D@@@G3D@@P6A_NABV12@0@Z@std@@YAXPAV?$ReferenceCountedPointer@VPosedModel2D@G3D@@@G3D@@00P6A_NABV12@1@Z@Z 004017e0 f i linked:verified_0054.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "??$_Sort@PAV?$ReferenceCountedPointer@VPosedModel2D@G3D@@@G3D@@HP6A_NABV12@0@Z@std@@YAXPAV?$ReferenceCountedPointer@VPosedModel2D@G3D@@@G3D@@0HP6A_NABV12@1@Z@Z",
+  "address": "00505780",
+  "map_line": "0001:00000890       ??$_Sort@PAV?$ReferenceCountedPointer@VPosedModel2D@G3D@@@G3D@@HP6A_NABV12@0@Z@std@@YAXPAV?$ReferenceCountedPointer@VPosedModel2D@G3D@@@G3D@@0HP6A_NABV12@1@Z@Z 00401890 f i linked:verified_0054.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?sort@PosedModel2D@G3D@@SAXAAV?$Array@V?$ReferenceCountedPointer@VPosedModel2D@G3D@@@G3D@@@2@@Z",
+  "address": "00505860",
+  "map_line": "0001:00000970       ?sort@PosedModel2D@G3D@@SAXAAV?$Array@V?$ReferenceCountedPointer@VPosedModel2D@G3D@@@G3D@@@2@@Z 00401970 f   linked:verified_0054.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?setVertexArray@RenderDevice@G3D@@QAEXABVVAR@2@@Z",
+  "address": "00479820",
+  "map_line": "0001:00004670       ?setVertexArray@RenderDevice@G3D@@QAEXABVVAR@2@@Z 00405670 f   linked:verified_0055.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "??8TextureUnit@RenderState@RenderDevice@G3D@@QBE_NABV0123@@Z",
+  "address": "004783c0",
+  "map_line": "0001:00000ba0       ??8TextureUnit@RenderState@RenderDevice@G3D@@QBE_NABV0123@@Z 00401ba0 f i linked:verified_0056.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?setSpecularCoefficient@RenderDevice@G3D@@QAEXM@Z",
+  "address": "00478650",
+  "map_line": "0001:00000c30       ?setSpecularCoefficient@RenderDevice@G3D@@QAEXM@Z 00401c30 f   linked:verified_0056.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "??0RenderState@RenderDevice@G3D@@QAE@HHH@Z",
+  "address": "00479cf0",
+  "map_line": "0001:00000c70       ??0RenderState@RenderDevice@G3D@@QAE@HHH@Z 00401c70 f   linked:verified_0056.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?resize@?$Array@VRenderState@RenderDevice@G3D@@@G3D@@QAEXH_N@Z",
+  "address": "0047bc40",
+  "map_line": "0001:00001180       ?resize@?$Array@VRenderState@RenderDevice@G3D@@@G3D@@QAEXH_N@Z 00402180 f i linked:verified_0056.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "??0ArgumentError@VertexAndPixelShader@G3D@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
+  "address": "004097a0",
+  "map_line": "0001:0000f6e0       ??0ArgumentError@VertexAndPixelShader@G3D@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z 004106e0 f i linked:verified_0058.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?resize@?$Array@VUniformDeclaration@VertexAndPixelShader@G3D@@@G3D@@QAEXH_N@Z",
+  "address": "00485cf0",
+  "map_line": "0001:00003640       ?resize@?$Array@VUniformDeclaration@VertexAndPixelShader@G3D@@@G3D@@QAEXH_N@Z 00404640 f i linked:verified_0059.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?axes@Shape@G3D@@UAEAAVCoordinateFrame@2@XZ",
+  "address": "006a74a0",
+  "map_line": "0001:00001570       ?axes@Shape@G3D@@UAEAAVCoordinateFrame@2@XZ 00402570 f i linked:verified_0060.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?ray@Shape@G3D@@UAEAAVRay@2@XZ",
+  "address": "006f9bd0",
+  "map_line": "0001:00002f80       ?ray@Shape@G3D@@UAEAAVRay@2@XZ 00403f80 f i linked:verified_0061.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?box@Shape@G3D@@UAEAAVBox@2@XZ",
+  "address": "006e8030",
+  "map_line": "0001:00001a60       ?box@Shape@G3D@@UAEAAVBox@2@XZ 00402a60 f i linked:verified_0062.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?vertex@Sky@G3D@@ABEXPAVRenderDevice@2@MMMMM@Z",
+  "address": "007b2e90",
+  "map_line": "0001:00002930       ?vertex@Sky@G3D@@ABEXPAVRenderDevice@2@MMMMM@Z 00403930 f   linked:verified_0065.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?drawSun@Sky@G3D@@AAEXPAVRenderDevice@2@ABVLightingParameters@2@@Z",
+  "address": "007b3ab0",
+  "map_line": "0001:00002a40       ?drawSun@Sky@G3D@@AAEXPAVRenderDevice@2@ABVLightingParameters@2@@Z 00403a40 f   linked:verified_0065.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?append@?$Array@PBX@G3D@@QAEXABQBX@Z",
+  "address": "00474370",
+  "map_line": "0001:00001350       ?append@?$Array@PBX@G3D@@QAEXABQBX@Z 00402350 f i linked:verified_0066.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?_copy@?$Array@PBX@G3D@@AAEXABV12@@Z",
+  "address": "004743e0",
+  "map_line": "0001:000013f0       ?_copy@?$Array@PBX@G3D@@AAEXABV12@@Z 004023f0 f i linked:verified_0066.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?resize@?$Array@PBX@G3D@@QAEXH@Z",
+  "address": "00479a60",
+  "map_line": "0001:00001340       ?resize@?$Array@PBX@G3D@@QAEXH@Z 00402340 f i linked:verified_0066.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?init@?$Array@PBX@G3D@@AAEXHH@Z",
+  "address": "0047b4e0",
+  "map_line": "0001:000013c0       ?init@?$Array@PBX@G3D@@AAEXHH@Z 004023c0 f i linked:verified_0066.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?hashCode@@YAIABVSettings@Texture@G3D@@@Z",
+  "address": "0048c9c0",
+  "map_line": "0001:00001330       ?hashCode@@YAIABVSettings@Texture@G3D@@@Z 00402330 f   linked:verified_0066.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?resize@?$Array@PBX@G3D@@QAEXH_N@Z",
+  "address": "00473cd0",
+  "map_line": "0001:00003080       ?resize@?$Array@PBX@G3D@@QAEXH_N@Z 00404080 f i linked:verified_0068.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?rect2DBounds@Texture@G3D@@QBE?AVRect2D@2@XZ",
+  "address": "00473f90",
+  "map_line": "0001:00003180       ?rect2DBounds@Texture@G3D@@QBE?AVRect2D@2@XZ 00404180 f   linked:verified_0068.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?resize@?$Array@V?$Array@PBX@G3D@@@G3D@@QAEXH_N@Z",
+  "address": "00474520",
+  "map_line": "0001:000031b0       ?resize@?$Array@V?$Array@PBX@G3D@@@G3D@@QAEXH_N@Z 004041b0 f i linked:verified_0068.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?realloc@?$Array@VTextureArgs@TextureManager@G3D@@@G3D@@AAEXH@Z",
+  "address": "0047d7e0",
+  "map_line": "0001:000009b0       ?realloc@?$Array@VTextureArgs@TextureManager@G3D@@@G3D@@AAEXH@Z 004019b0 f i linked:verified_0069.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?append@?$Array@VTextureArgs@TextureManager@G3D@@@G3D@@QAEXABVTextureArgs@TextureManager@2@@Z",
+  "address": "0047dfd0",
+  "map_line": "0001:00000aa0       ?append@?$Array@VTextureArgs@TextureManager@G3D@@@G3D@@QAEXABVTextureArgs@TextureManager@2@@Z 00401aa0 f i linked:verified_0069.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "??0Hashable@G3D@@QAE@ABV01@@Z",
+  "address": "00660210",
+  "map_line": "0001:000009a0       ??0Hashable@G3D@@QAE@ABV01@@Z 004019a0 f i linked:verified_0069.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?resize@?$Array@VTextureArgs@TextureManager@G3D@@@G3D@@QAEXH_N@Z",
+  "address": "0047db20",
+  "map_line": "0001:000034a0       ?resize@?$Array@VTextureArgs@TextureManager@G3D@@@G3D@@QAEXH_N@Z 004044a0 f i linked:verified_0070.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?getAPIVersion@Win32Window@G3D@@UBE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ",
+  "address": "0047ec50",
+  "map_line": "0001:00002d00       ?getAPIVersion@Win32Window@G3D@@UBE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ 00403d00 f   linked:verified_0071.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?getAPIName@Win32Window@G3D@@UBE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ",
+  "address": "0047ec80",
+  "map_line": "0001:00002d30       ?getAPIName@Win32Window@G3D@@UBE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ 00403d30 f   linked:verified_0071.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?setDimensions@Win32Window@G3D@@UAEXABVRect2D@2@@Z",
+  "address": "0047eb60",
+  "map_line": "0001:00002190       ?setDimensions@Win32Window@G3D@@UAEXABVRect2D@2@@Z 00403190 f   linked:verified_0072.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?resize@?$Array@TSDL_Event@@@G3D@@QAEXH_N@Z",
+  "address": "004804a0",
+  "map_line": "0001:00002250       ?resize@?$Array@TSDL_Event@@@G3D@@QAEXH_N@Z 00403250 f i linked:verified_0072.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?getJoystickState@_DirectInput@_internal@G3D@@QAE_NIAAV?$Array@M@3@AAV?$Array@_N@3@@Z",
+  "address": "004807e0",
+  "map_line": "0001:00002360       ?getJoystickState@_DirectInput@_internal@G3D@@QAE_NIAAV?$Array@M@3@AAV?$Array@_N@3@@Z 00403360 f i linked:verified_0072.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?dimensions@Win32Window@G3D@@UBE?AVRect2D@2@XZ",
+  "address": "004808f0",
+  "map_line": "0001:00002470       ?dimensions@Win32Window@G3D@@UBE?AVRect2D@2@XZ 00403470 f   linked:verified_0072.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?setPosition@Win32Window@G3D@@UAEXHH@Z",
+  "address": "00482990",
+  "map_line": "0001:000024f0       ?setPosition@Win32Window@G3D@@UAEXHH@Z 004034f0 f i linked:verified_0072.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?resize@?$Array@UJoystickInfo@_DirectInput@_internal@G3D@@@G3D@@QAEXH_N@Z",
+  "address": "00482e00",
+  "map_line": "0001:00002540       ?resize@?$Array@UJoystickInfo@_DirectInput@_internal@G3D@@@G3D@@QAEXH_N@Z 00403540 f i linked:verified_0072.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?glToScreen@G3D@@YA?AVVector4@1@ABV21@@Z",
+  "address": "00483550",
+  "map_line": "0001:00002d60       ?glToScreen@G3D@@YA?AVVector4@1@ABV21@@Z 00403d60 f   linked:verified_0073.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?computePackedArray@GFont@G3D@@ABE?AVVector2@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@NNNNW4Spacing@12@PAV32@@Z",
+  "address": "007b68e0",
+  "map_line": "0001:00001f40       ?computePackedArray@GFont@G3D@@ABE?AVVector2@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@NNNNW4Spacing@12@PAV32@@Z 00402f40 f   linked:verified_0096.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ },
+ {
+  "symbol": "?bindArgList@VertexAndPixelShader@G3D@@QBEXPAVRenderDevice@2@ABVArgList@12@@Z",
+  "address": "00486370",
+  "map_line": "0001:000015e0       ?bindArgList@VertexAndPixelShader@G3D@@QBEXPAVRenderDevice@2@ABVArgList@12@@Z 004025e0 f   linked:verified_0097.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": []
+ }
+]

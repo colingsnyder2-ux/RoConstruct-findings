@@ -1,0 +1,590 @@
+[
+ {
+  "file": "GLG3Dcpp/DDSTexture.cpp",
+  "old_pairs": 3,
+  "fast_pairs": 3,
+  "gains": [],
+  "losses": []
+ },
+ {
+  "file": "GLG3Dcpp/Draw.cpp",
+  "old_pairs": 61,
+  "fast_pairs": 77,
+  "gains": [
+   {
+    "address": "004452f0",
+    "symbol": "??$min@M@std@@YAABMABM0@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "0045b310",
+    "symbol": "?magnitude@Vector3@G3D@@QBEMXZ",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "0045b950",
+    "symbol": "?xyxy@Rect2D@G3D@@SA?AV12@MMMM@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "0045b9d0",
+    "symbol": "?xywh@Rect2D@G3D@@SA?AV12@MMMM@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00476580",
+    "symbol": "??DMatrix3@G3D@@QBE?AVVector3@1@ABV21@@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "004766a0",
+    "symbol": "?pointToWorldSpace@CoordinateFrame@G3D@@QBE?AVVector3@2@ABV32@@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00476700",
+    "symbol": "??DCoordinateFrame@G3D@@QBE?AV01@ABV01@@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00478bd0",
+    "symbol": "?resize@?$Array@G@G3D@@QAEXH_N@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00485360",
+    "symbol": "??DVector3@G3D@@QBE?AV01@M@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "004fab70",
+    "symbol": "?direction@Vector3@G3D@@QBE?AV12@XZ",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00501ca0",
+    "symbol": "?pointToObjectSpace@CoordinateFrame@G3D@@QBE?AVVector3@2@ABV32@@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "005025c0",
+    "symbol": "?resize@?$Array@VVector3@G3D@@@G3D@@QAEXH_N@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00510720",
+    "symbol": "?dot@Vector3@G3D@@QBEMABV12@@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00513120",
+    "symbol": "?cross@Vector3@G3D@@QBE?AV12@ABV12@@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00525ed0",
+    "symbol": "?fromTwoPoints@LineSegment@G3D@@SA?AV12@ABVVector3@2@0@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "007b04e0",
+    "symbol": "?rect2D@Draw@G3D@@SAXABVRect2D@2@PAVRenderDevice@2@ABVColor4@2@ABVVector2@2@333@Z",
+    "data_exact": true,
+    "bad": []
+   }
+  ],
+  "losses": []
+ },
+ {
+  "file": "GLG3Dcpp/GFont.cpp",
+  "old_pairs": 41,
+  "fast_pairs": 45,
+  "gains": [
+   {
+    "address": "004766a0",
+    "symbol": "?pointToWorldSpace@CoordinateFrame@G3D@@QBE?AVVector3@2@ABV32@@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00476700",
+    "symbol": "??DCoordinateFrame@G3D@@QBE?AV01@ABV01@@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "007b68e0",
+    "symbol": "?computePackedArray@GFont@G3D@@ABE?AVVector2@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@NNNNW4Spacing@12@PAV32@@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "007b6b30",
+    "symbol": "?get2DStringBounds@GFont@G3D@@QBE?AVVector2@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@NW4Spacing@12@@Z",
+    "data_exact": true,
+    "bad": []
+   }
+  ],
+  "losses": []
+ },
+ {
+  "file": "GLG3Dcpp/GLCaps.cpp",
+  "old_pairs": 25,
+  "fast_pairs": 26,
+  "gains": [
+   {
+    "address": "0046fff0",
+    "symbol": "?checkBug_cubeMapBugs@GLCaps@G3D@@CAXXZ",
+    "data_exact": true,
+    "bad": []
+   }
+  ],
+  "losses": []
+ },
+ {
+  "file": "GLG3Dcpp/GModule.cpp",
+  "old_pairs": 34,
+  "fast_pairs": 34,
+  "gains": [],
+  "losses": []
+ },
+ {
+  "file": "GLG3Dcpp/GWindow.cpp",
+  "old_pairs": 11,
+  "fast_pairs": 12,
+  "gains": [
+   {
+    "address": "004806c0",
+    "symbol": "?resize@?$Array@VLoopBody@GWindow@G3D@@@G3D@@QAEXH_N@Z",
+    "data_exact": true,
+    "bad": []
+   }
+  ],
+  "losses": []
+ },
+ {
+  "file": "GLG3Dcpp/LightingParameters.cpp",
+  "old_pairs": 12,
+  "fast_pairs": 16,
+  "gains": [
+   {
+    "address": "00476580",
+    "symbol": "??DMatrix3@G3D@@QBE?AVVector3@1@ABV21@@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00485360",
+    "symbol": "??DColor3@G3D@@QBE?AV01@M@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00513120",
+    "symbol": "?cross@Vector3@G3D@@QBE?AV12@ABV12@@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "007b59b0",
+    "symbol": "?setTime@LightingParameters@G3D@@QAEXN@Z",
+    "data_exact": true,
+    "bad": []
+   }
+  ],
+  "losses": []
+ },
+ {
+  "file": "GLG3Dcpp/RenderDevice.cpp",
+  "old_pairs": 151,
+  "fast_pairs": 167,
+  "gains": [
+   {
+    "address": "0043afb0",
+    "symbol": "??8Vector3@G3D@@QBE_NABV01@@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "004452f0",
+    "symbol": "??$min@M@std@@YAABMABM0@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "0045b950",
+    "symbol": "?xyxy@Rect2D@G3D@@SA?AV12@MMMM@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "0045b9d0",
+    "symbol": "?xywh@Rect2D@G3D@@SA?AV12@MMMM@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00476580",
+    "symbol": "??DMatrix3@G3D@@QBE?AVVector3@1@ABV21@@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "004765e0",
+    "symbol": "??9CoordinateFrame@G3D@@QBE_NABV01@@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "004766a0",
+    "symbol": "?pointToWorldSpace@CoordinateFrame@G3D@@QBE?AVVector3@2@ABV32@@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00476700",
+    "symbol": "??DCoordinateFrame@G3D@@QBE?AV01@ABV01@@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00478330",
+    "symbol": "?inverse@CoordinateFrame@G3D@@QBE?AV12@XZ",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "004783c0",
+    "symbol": "??8TextureUnit@RenderState@RenderDevice@G3D@@QBE_NABV0123@@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00478650",
+    "symbol": "?setSpecularCoefficient@RenderDevice@G3D@@QAEXM@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00478bd0",
+    "symbol": "?resize@?$Array@G@G3D@@QAEXH_N@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00479cf0",
+    "symbol": "??0RenderState@RenderDevice@G3D@@QAE@HHH@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "0047bc40",
+    "symbol": "?resize@?$Array@VRenderState@RenderDevice@G3D@@@G3D@@QAEXH_N@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00485360",
+    "symbol": "??DColor3@G3D@@QBE?AV01@M@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00598990",
+    "symbol": "??9Color3@G3D@@QBE_NABV01@@Z",
+    "data_exact": true,
+    "bad": []
+   }
+  ],
+  "losses": []
+ },
+ {
+  "file": "GLG3Dcpp/Shader.cpp",
+  "old_pairs": 91,
+  "fast_pairs": 97,
+  "gains": [
+   {
+    "address": "00476580",
+    "symbol": "??DMatrix3@G3D@@QBE?AVVector3@1@ABV21@@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00478330",
+    "symbol": "?inverse@CoordinateFrame@G3D@@QBE?AV12@XZ",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00485360",
+    "symbol": "??DVector3@G3D@@QBE?AV01@M@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00485390",
+    "symbol": "?toWorldSpace@CoordinateFrame@G3D@@QBE?AVVector4@2@ABV32@@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00485cf0",
+    "symbol": "?resize@?$Array@VUniformDeclaration@VertexAndPixelShader@G3D@@@G3D@@QAEXH_N@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00486370",
+    "symbol": "?bindArgList@VertexAndPixelShader@G3D@@QBEXPAVRenderDevice@2@ABVArgList@12@@Z",
+    "data_exact": false,
+    "bad": [
+     "data at 00820f58 differs: exe b'.\\\\glg3dcpp\\\\Shader.cpp\\x00\\x00\\x00Unsupported argu', yours b'C:\\\\Users\\\\colin\\\\RoConstruct-codex-force-l'"
+    ]
+   }
+  ],
+  "losses": []
+ },
+ {
+  "file": "GLG3Dcpp/Sky.cpp",
+  "old_pairs": 43,
+  "fast_pairs": 54,
+  "gains": [
+   {
+    "address": "004452f0",
+    "symbol": "??$min@M@std@@YAABMABM0@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "0045b310",
+    "symbol": "?length@Color3@G3D@@QBEMXZ",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00485360",
+    "symbol": "??DColor3@G3D@@QBE?AV01@M@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00485360",
+    "symbol": "??DVector3@G3D@@QBE?AV01@M@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "004fab70",
+    "symbol": "?direction@Vector3@G3D@@QBE?AV12@XZ",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00510720",
+    "symbol": "?dot@Vector3@G3D@@QBEMABV12@@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00510e50",
+    "symbol": "?resize@?$Array@VVector4@G3D@@@G3D@@QAEXH_N@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00513120",
+    "symbol": "?cross@Vector3@G3D@@QBE?AV12@ABV12@@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "007b2e90",
+    "symbol": "?vertex@Sky@G3D@@ABEXPAVRenderDevice@2@MMMMM@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "007b3ab0",
+    "symbol": "?drawSun@Sky@G3D@@AAEXPAVRenderDevice@2@ABVLightingParameters@2@@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "007b47f0",
+    "symbol": "??0Sky@G3D@@AAE@PAVRenderDevice@1@QAV?$ReferenceCountedPointer@VTexture@G3D@@@1@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_N3N@Z",
+    "data_exact": true,
+    "bad": []
+   }
+  ],
+  "losses": []
+ },
+ {
+  "file": "GLG3Dcpp/Texture.cpp",
+  "old_pairs": 71,
+  "fast_pairs": 78,
+  "gains": [
+   {
+    "address": "004452f0",
+    "symbol": "??$min@M@std@@YAABMABM0@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "0045b950",
+    "symbol": "?xyxy@Rect2D@G3D@@SA?AV12@MMMM@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "0045b9d0",
+    "symbol": "?xywh@Rect2D@G3D@@SA?AV12@MMMM@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00472bb0",
+    "symbol": "?createTexture@G3D@@YAXIPBEIIHHIHH_N1M@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "004739f0",
+    "symbol": "?copyFromScreen@Texture@G3D@@QAEXABVRect2D@2@_N@Z",
+    "data_exact": false,
+    "bad": [
+     "data at 0081e224 differs: exe b'.\\\\glg3dcpp\\\\Texture.cpp\\x00\\x00Illegal interpol', yours b'C:\\\\Users\\\\colin\\\\RoConstruct-codex-force-l'"
+    ]
+   },
+   {
+    "address": "00473f90",
+    "symbol": "?rect2DBounds@Texture@G3D@@QBE?AVRect2D@2@XZ",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00474520",
+    "symbol": "?resize@?$Array@V?$Array@PBX@G3D@@@G3D@@QAEXH_N@Z",
+    "data_exact": true,
+    "bad": []
+   }
+  ],
+  "losses": []
+ },
+ {
+  "file": "GLG3Dcpp/TextureManager.cpp",
+  "old_pairs": 43,
+  "fast_pairs": 44,
+  "gains": [
+   {
+    "address": "0047db20",
+    "symbol": "?resize@?$Array@VTextureArgs@TextureManager@G3D@@@G3D@@QAEXH_N@Z",
+    "data_exact": true,
+    "bad": []
+   }
+  ],
+  "losses": []
+ },
+ {
+  "file": "GLG3Dcpp/Win32Window.cpp",
+  "old_pairs": 119,
+  "fast_pairs": 129,
+  "gains": [
+   {
+    "address": "004452f0",
+    "symbol": "??$min@M@std@@YAABMABM0@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "0045b950",
+    "symbol": "?xyxy@Rect2D@G3D@@SA?AV12@MMMM@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "0045b9d0",
+    "symbol": "?xywh@Rect2D@G3D@@SA?AV12@MMMM@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "0047eb60",
+    "symbol": "?setDimensions@Win32Window@G3D@@UAEXABVRect2D@2@@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "004804a0",
+    "symbol": "?resize@?$Array@TSDL_Event@@@G3D@@QAEXH_N@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "004806c0",
+    "symbol": "?resize@?$Array@VLoopBody@GWindow@G3D@@@G3D@@QAEXH_N@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "004807e0",
+    "symbol": "?getJoystickState@_DirectInput@_internal@G3D@@QAE_NIAAV?$Array@M@3@AAV?$Array@_N@3@@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "004808f0",
+    "symbol": "?dimensions@Win32Window@G3D@@UBE?AVRect2D@2@XZ",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00482990",
+    "symbol": "?setPosition@Win32Window@G3D@@UAEXHH@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00482e00",
+    "symbol": "?resize@?$Array@UJoystickInfo@_DirectInput@_internal@G3D@@@G3D@@QAEXH_N@Z",
+    "data_exact": true,
+    "bad": []
+   }
+  ],
+  "losses": []
+ },
+ {
+  "file": "GLG3Dcpp/glcalls.cpp",
+  "old_pairs": 12,
+  "fast_pairs": 14,
+  "gains": [
+   {
+    "address": "00476580",
+    "symbol": "??DMatrix3@G3D@@QBE?AVVector3@1@ABV21@@Z",
+    "data_exact": true,
+    "bad": []
+   },
+   {
+    "address": "00483550",
+    "symbol": "?glToScreen@G3D@@YA?AVVector4@1@ABV21@@Z",
+    "data_exact": true,
+    "bad": []
+   }
+  ],
+  "losses": []
+ }
+]

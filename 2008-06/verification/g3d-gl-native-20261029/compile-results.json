@@ -1,0 +1,126 @@
+[
+ {
+  "profile": "precise",
+  "flags": "/O2 /GS- /EHsc /MD",
+  "results": {
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\DDSTexture.cpp": [
+    true,
+    "DDSTexture.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\Draw.cpp": [
+    true,
+    "Draw.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\GFont.cpp": [
+    true,
+    "GFont.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\GLCaps.cpp": [
+    true,
+    "GLCaps.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\GModule.cpp": [
+    true,
+    "GModule.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\GWindow.cpp": [
+    true,
+    "GWindow.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\LightingParameters.cpp": [
+    true,
+    "LightingParameters.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\RenderDevice.cpp": [
+    true,
+    "RenderDevice.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\Shader.cpp": [
+    true,
+    "Shader.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\Sky.cpp": [
+    true,
+    "Sky.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\Texture.cpp": [
+    true,
+    "Texture.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\TextureManager.cpp": [
+    true,
+    "TextureManager.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\Win32Window.cpp": [
+    true,
+    "Win32Window.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\glcalls.cpp": [
+    true,
+    "glcalls.cpp"
+   ]
+  }
+ },
+ {
+  "profile": "fast",
+  "flags": "/O2 /GS- /EHsc /MD /fp:fast",
+  "results": {
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\DDSTexture.cpp": [
+    true,
+    "DDSTexture.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\Draw.cpp": [
+    true,
+    "Draw.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\GFont.cpp": [
+    true,
+    "GFont.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\GLCaps.cpp": [
+    true,
+    "GLCaps.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\GModule.cpp": [
+    true,
+    "GModule.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\GWindow.cpp": [
+    true,
+    "GWindow.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\LightingParameters.cpp": [
+    true,
+    "LightingParameters.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\RenderDevice.cpp": [
+    true,
+    "RenderDevice.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\Shader.cpp": [
+    true,
+    "Shader.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\Sky.cpp": [
+    true,
+    "Sky.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\Texture.cpp": [
+    true,
+    "Texture.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\TextureManager.cpp": [
+    true,
+    "TextureManager.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\Win32Window.cpp": [
+    true,
+    "Win32Window.cpp"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\trees\\g3d-6.09-rbx2008-93debc719a6e\\GLG3Dcpp\\glcalls.cpp": [
+    true,
+    "glcalls.cpp"
+   ]
+  }
+ }
+]

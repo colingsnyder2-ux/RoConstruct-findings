@@ -1,0 +1,16 @@
+{
+ "raw_inventory_before": 451,
+ "raw_inventory_after": 486,
+ "actual_linked_code_data_exact_new_addresses": [
+  "00472bb0",
+  "00476700",
+  "00478330"
+ ],
+ "preserved_forced_roots": 48,
+ "shared_provider_files_checked": 13,
+ "shared_provider_strict_pair_losses": 0,
+ "linked": true,
+ "test_exit": 0,
+ "server_credits_claimed": 0,
+ "full_renderer_complete": false
+}

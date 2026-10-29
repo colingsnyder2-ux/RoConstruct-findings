@@ -1,0 +1,4 @@
+57 focused rebuild, dependency, strip, and package tests passed.
+Actual runtime: hidden GL texture result=0 renderer=NVIDIA GeForce RTX 3070 Ti/PCIe/SSE2; failures=0.
+48 prior forced roots: exact code and referenced data; actual selected linked library owners.
+3 new linked exact addresses; 35 new inventory candidates; no new server credit.

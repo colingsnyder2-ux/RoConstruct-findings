@@ -6,12 +6,46 @@
  ],
  "layers": [
   {
+   "name": "native-float",
+   "mode": "recipe",
+   "recipe": "g3d-6.09-rbx2008",
+   "files": "GLG3Dcpp/Draw.cpp GLG3Dcpp/GFont.cpp GLG3Dcpp/GLCaps.cpp GLG3Dcpp/GWindow.cpp GLG3Dcpp/LightingParameters.cpp GLG3Dcpp/RenderDevice.cpp GLG3Dcpp/Shader.cpp GLG3Dcpp/Sky.cpp GLG3Dcpp/Texture.cpp GLG3Dcpp/TextureManager.cpp GLG3Dcpp/Win32Window.cpp GLG3Dcpp/glcalls.cpp GLG3Dcpp/GApp.cpp GLG3Dcpp/IFSModel.cpp GLG3Dcpp/MD2Model.cpp GLG3Dcpp/MD2Model_load.cpp GLG3Dcpp/ManualCameraController.cpp GLG3Dcpp/PosedModel.cpp GLG3Dcpp/SDLWindow.cpp GLG3Dcpp/Shape.cpp GLG3Dcpp/UserInput.cpp GLG3Dcpp/edgeFeatures.cpp GLG3Dcpp/shadowVolume.cpp GLG3Dcpp/tesselate.cpp",
+   "direct": true,
+   "flags": "/O2 /GS- /EHsc /MD /fp:fast"
+  },
+  {
    "name": "upstream",
    "mode": "recipe",
    "recipe": "g3d-6.09-rbx2008",
    "files": "GLG3Dcpp/*.cpp",
    "direct": true,
-   "flags": "/O2 /GS- /EHsc /MD"
+   "flags": "/O2 /GS- /EHsc /MD",
+   "exclude": [
+    "GLG3Dcpp/Draw.cpp",
+    "GLG3Dcpp/GFont.cpp",
+    "GLG3Dcpp/GLCaps.cpp",
+    "GLG3Dcpp/GWindow.cpp",
+    "GLG3Dcpp/LightingParameters.cpp",
+    "GLG3Dcpp/RenderDevice.cpp",
+    "GLG3Dcpp/Shader.cpp",
+    "GLG3Dcpp/Sky.cpp",
+    "GLG3Dcpp/Texture.cpp",
+    "GLG3Dcpp/TextureManager.cpp",
+    "GLG3Dcpp/Win32Window.cpp",
+    "GLG3Dcpp/glcalls.cpp",
+    "GLG3Dcpp/GApp.cpp",
+    "GLG3Dcpp/IFSModel.cpp",
+    "GLG3Dcpp/MD2Model.cpp",
+    "GLG3Dcpp/MD2Model_load.cpp",
+    "GLG3Dcpp/ManualCameraController.cpp",
+    "GLG3Dcpp/PosedModel.cpp",
+    "GLG3Dcpp/SDLWindow.cpp",
+    "GLG3Dcpp/Shape.cpp",
+    "GLG3Dcpp/UserInput.cpp",
+    "GLG3Dcpp/edgeFeatures.cpp",
+    "GLG3Dcpp/shadowVolume.cpp",
+    "GLG3Dcpp/tesselate.cpp"
+   ]
   },
   {
    "name": "tonemap",
@@ -19,7 +53,7 @@
    "recipe": "g3d-6.09-rbx2008",
    "files": "contrib/ArticulatedModel/ToneMap.cpp",
    "direct": true,
-   "flags": "/O2 /GS- /EHsc /MD"
+   "flags": "/O2 /GS- /EHsc /MD /fp:fast"
   }
  ],
  "test": "g3d_gl",
@@ -35,5 +69,6 @@
  "overlay": {
   "root": "tree:g3d-6.09-rbx2008/",
   "patches": "rebuild/2008-06/patches/g3d-sdl-main.json"
- }
+ },
+ "deduplicate_layer_files": true
 }
