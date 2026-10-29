@@ -1,0 +1,419 @@
+[
+ {
+  "file": "lapi.c",
+  "old_pairs": 61,
+  "fast_pairs": 61,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "lauxlib.c",
+  "old_pairs": 30,
+  "fast_pairs": 30,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "lbaselib.c",
+  "old_pairs": 30,
+  "fast_pairs": 30,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "lcode.c",
+  "old_pairs": 44,
+  "fast_pairs": 44,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "ldblib.c",
+  "old_pairs": 0,
+  "fast_pairs": 0,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "ldebug.c",
+  "old_pairs": 21,
+  "fast_pairs": 21,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "ldo.c",
+  "old_pairs": 12,
+  "fast_pairs": 12,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "ldump.c",
+  "old_pairs": 5,
+  "fast_pairs": 5,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "lfunc.c",
+  "old_pairs": 8,
+  "fast_pairs": 8,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "lgc.c",
+  "old_pairs": 24,
+  "fast_pairs": 24,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "linit.c",
+  "old_pairs": 0,
+  "fast_pairs": 0,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "liolib.c",
+  "old_pairs": 30,
+  "fast_pairs": 30,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "llex.c",
+  "old_pairs": 15,
+  "fast_pairs": 15,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "lmathlib.c",
+  "old_pairs": 81,
+  "fast_pairs": 50,
+  "losses": [
+   [
+    "00625b90",
+    "_math_atan"
+   ],
+   [
+    "00625b90",
+    "_math_cos"
+   ],
+   [
+    "00625b90",
+    "_math_exp"
+   ],
+   [
+    "00625b90",
+    "_math_log"
+   ],
+   [
+    "00625b90",
+    "_math_log10"
+   ],
+   [
+    "00625b90",
+    "_math_sin"
+   ],
+   [
+    "00625b90",
+    "_math_sqrt"
+   ],
+   [
+    "00625b90",
+    "_math_tan"
+   ],
+   [
+    "00625bf0",
+    "_math_atan"
+   ],
+   [
+    "00625bf0",
+    "_math_cos"
+   ],
+   [
+    "00625bf0",
+    "_math_exp"
+   ],
+   [
+    "00625bf0",
+    "_math_log"
+   ],
+   [
+    "00625bf0",
+    "_math_log10"
+   ],
+   [
+    "00625bf0",
+    "_math_sin"
+   ],
+   [
+    "00625bf0",
+    "_math_sqrt"
+   ],
+   [
+    "00625bf0",
+    "_math_tan"
+   ],
+   [
+    "00625c50",
+    "_math_atan"
+   ],
+   [
+    "00625c50",
+    "_math_cos"
+   ],
+   [
+    "00625c50",
+    "_math_exp"
+   ],
+   [
+    "00625c50",
+    "_math_log"
+   ],
+   [
+    "00625c50",
+    "_math_log10"
+   ],
+   [
+    "00625c50",
+    "_math_sin"
+   ],
+   [
+    "00625c50",
+    "_math_sqrt"
+   ],
+   [
+    "00625c50",
+    "_math_tan"
+   ],
+   [
+    "00625c80",
+    "_math_atan"
+   ],
+   [
+    "00625c80",
+    "_math_cos"
+   ],
+   [
+    "00625c80",
+    "_math_exp"
+   ],
+   [
+    "00625c80",
+    "_math_log"
+   ],
+   [
+    "00625c80",
+    "_math_log10"
+   ],
+   [
+    "00625c80",
+    "_math_sin"
+   ],
+   [
+    "00625c80",
+    "_math_sqrt"
+   ],
+   [
+    "00625c80",
+    "_math_tan"
+   ],
+   [
+    "00625cb0",
+    "_math_atan"
+   ],
+   [
+    "00625cb0",
+    "_math_cos"
+   ],
+   [
+    "00625cb0",
+    "_math_exp"
+   ],
+   [
+    "00625cb0",
+    "_math_log"
+   ],
+   [
+    "00625cb0",
+    "_math_log10"
+   ],
+   [
+    "00625cb0",
+    "_math_sin"
+   ],
+   [
+    "00625cb0",
+    "_math_sqrt"
+   ],
+   [
+    "00625cb0",
+    "_math_tan"
+   ],
+   [
+    "00625db0",
+    "_math_atan2"
+   ],
+   [
+    "00625e80",
+    "_math_atan2"
+   ]
+  ],
+  "gains": [
+   [
+    "00625b60",
+    "_math_sin"
+   ],
+   [
+    "00625bc0",
+    "_math_cos"
+   ],
+   [
+    "00625c20",
+    "_math_tan"
+   ],
+   [
+    "00625ce0",
+    "_math_atan"
+   ],
+   [
+    "00625d10",
+    "_math_atan2"
+   ],
+   [
+    "00625e50",
+    "_math_sqrt"
+   ],
+   [
+    "00625ed0",
+    "_math_log"
+   ],
+   [
+    "00625f00",
+    "_math_log10"
+   ],
+   [
+    "00625f30",
+    "_math_exp"
+   ],
+   [
+    "00625f70",
+    "_math_deg"
+   ],
+   [
+    "00626150",
+    "_math_random"
+   ]
+  ]
+ },
+ {
+  "file": "lmem.c",
+  "old_pairs": 3,
+  "fast_pairs": 3,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "loadlib.c",
+  "old_pairs": 0,
+  "fast_pairs": 0,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "lobject.c",
+  "old_pairs": 10,
+  "fast_pairs": 10,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "lopcodes.c",
+  "old_pairs": 0,
+  "fast_pairs": 0,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "loslib.c",
+  "old_pairs": 0,
+  "fast_pairs": 0,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "lparser.c",
+  "old_pairs": 43,
+  "fast_pairs": 43,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "lstate.c",
+  "old_pairs": 3,
+  "fast_pairs": 3,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "lstring.c",
+  "old_pairs": 4,
+  "fast_pairs": 4,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "lstrlib.c",
+  "old_pairs": 33,
+  "fast_pairs": 33,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "ltable.c",
+  "old_pairs": 20,
+  "fast_pairs": 20,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "ltablib.c",
+  "old_pairs": 9,
+  "fast_pairs": 9,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "ltm.c",
+  "old_pairs": 3,
+  "fast_pairs": 3,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "lundump.c",
+  "old_pairs": 7,
+  "fast_pairs": 7,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "lvm.c",
+  "old_pairs": 12,
+  "fast_pairs": 12,
+  "losses": [],
+  "gains": []
+ },
+ {
+  "file": "lzio.c",
+  "old_pairs": 5,
+  "fast_pairs": 5,
+  "losses": [],
+  "gains": []
+ }
+]

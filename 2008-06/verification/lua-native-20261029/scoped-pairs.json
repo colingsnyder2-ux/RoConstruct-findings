@@ -1,0 +1,15 @@
+{
+ "losses": [],
+ "gains": [
+  [
+   "00625f70",
+   "_math_deg"
+  ],
+  [
+   "00626150",
+   "_math_random"
+  ]
+ ],
+ "old_pairs": 81,
+ "new_pairs": 83
+}

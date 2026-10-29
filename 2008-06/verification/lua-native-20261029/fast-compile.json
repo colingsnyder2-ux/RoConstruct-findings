@@ -1,0 +1,118 @@
+{
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\lapi.c": [
+  true,
+  "lapi.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\lcode.c": [
+  true,
+  "lcode.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\ldebug.c": [
+  true,
+  "ldebug.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\ldo.c": [
+  true,
+  "ldo.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\ldump.c": [
+  true,
+  "ldump.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\lfunc.c": [
+  true,
+  "lfunc.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\lgc.c": [
+  true,
+  "lgc.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\llex.c": [
+  true,
+  "llex.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\lmem.c": [
+  true,
+  "lmem.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\lobject.c": [
+  true,
+  "lobject.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\lopcodes.c": [
+  true,
+  "lopcodes.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\lparser.c": [
+  true,
+  "lparser.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\lstate.c": [
+  true,
+  "lstate.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\lstring.c": [
+  true,
+  "lstring.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\ltable.c": [
+  true,
+  "ltable.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\ltm.c": [
+  true,
+  "ltm.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\lundump.c": [
+  true,
+  "lundump.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\lvm.c": [
+  true,
+  "lvm.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\lzio.c": [
+  true,
+  "lzio.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\lauxlib.c": [
+  true,
+  "lauxlib.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\lbaselib.c": [
+  true,
+  "lbaselib.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\ldblib.c": [
+  true,
+  "ldblib.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\liolib.c": [
+  true,
+  "liolib.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\lmathlib.c": [
+  true,
+  "lmathlib.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\loslib.c": [
+  true,
+  "loslib.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\ltablib.c": [
+  true,
+  "ltablib.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\lstrlib.c": [
+  true,
+  "lstrlib.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\loadlib.c": [
+  true,
+  "loadlib.c"
+ ],
+ "C:\\Users\\colin\\RoConstruct\\tools\\libs\\lua-5.1.4\\src\\linit.c": [
+  true,
+  "linit.c"
+ ]
+}

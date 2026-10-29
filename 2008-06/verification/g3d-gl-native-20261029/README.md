@@ -8,4 +8,4 @@ All 48 prior forced roots remain strict code/data exact with actual library map 
 
 Real hidden WGL context uploads and reads back patterned RGB8 texture bytes without differences on NVIDIA GeForce RTX 3070 Ti. Lighting and camera checks also pass. The test creates its own WGL context and does not initialize RenderDevice or change desktop gamma.
 
-Reports contain diagnostic private build paths. Reproduce with the packaged config and test using roc rebuild 2008-06 g3d-gl. The audit scripts run from the repository root after restoring their campaign evidence paths.
+Reports contain diagnostic private build paths. Reproduce with the packaged config and test using roc rebuild 2008-06 module g3d-gl. The audit scripts run from the repository root after restoring their campaign evidence paths.

@@ -13,7 +13,13 @@
  ],
  "test": "lua_script",
  "test_includes": [
-  "tools/libs/lua-5.1.4/src"
+  "tools/libs/lua-5.1.4/src",
+  "rebuild/2008-06/out/Lua/force"
  ],
- "verified": true
+ "verified": true,
+ "force_verified": true,
+ "overlay": {
+  "root": "tree:lua-5.1.4/",
+  "patches": "rebuild/2008-06/patches/lua-native-float.json"
+ }
 }
