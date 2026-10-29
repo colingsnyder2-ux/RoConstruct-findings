@@ -16,10 +16,20 @@ namespace RBX
 		G3D::Color3 ambientTop;
 		G3D::Color3 ambientBottom;
 		bool hasSky;
-		float unknown0x244[4]; // 2008 keeps this block ahead of clearColor
+		G3D::Color4 shadowColor;
 		G3D::Color4 clearColor;
 		boost::posix_time::time_duration timeOfDay;
-		float unknown0x270[25]; // names unknown
+		// Names are placeholders from the 100% codegen proof for the 2008 ctor;
+		// the types and stores are what the target bytes prove (0x270..0x2d3).
+		G3D::Vector3 v0;
+		G3D::Vector3 v1;
+		float f0;
+		G3D::Color3 c0;
+		G3D::Color3 c1;
+		G3D::Color3 c2;
+		G3D::Color3 c3;
+		G3D::Vector3 v2;
+		G3D::Vector3 v3;
 	public:
 		boost::shared_ptr<Sky> sky;
 

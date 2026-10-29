@@ -54,20 +54,17 @@ namespace RBX
 
 	void BackpackItem::setTextureId(const TextureId& value)
 	{
-		if (value != textureId)
-		{
-			textureId = value;
+	if (value != textureId)
+	{
+		textureId = value;
 
-			std::string filename;
-			ContentProvider::singleton().requestContentFile(value, filename);
+		Workspace* workspace = ServiceProvider::find<Workspace>(this);
+		if (workspace)
+			workspace->raiseDrawChanged();
 
-			Workspace* workspace = ServiceProvider::find<Workspace>(this);
-			if (workspace)
-				workspace->raiseDrawChanged();
-
-			raisePropertyChanged(desc_TextureId);
-		}
+		raisePropertyChanged(desc_TextureId);
 	}
+}
 
 	G3D::Vector2 BackpackItem::getSize() const
 	{

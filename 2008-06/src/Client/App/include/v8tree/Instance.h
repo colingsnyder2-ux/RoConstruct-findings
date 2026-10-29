@@ -138,17 +138,19 @@ namespace RBX
 
 	extern const char* sInstance;
 	template <class T>
-class GuidItem
+class __declspec(novtable) GuidItem
 {
 public:
-	virtual ~GuidItem() {}
+	virtual ~GuidItem();
+	GuidItem() : registeredGuid(false) {}
 
 protected:
 	bool registeredGuid; // 0x04
 	Guid guid;           // 0x08
 };
 
-    class Instance : public GuidItem<Instance>,
+    class Instance : public boost::enable_shared_from_this<Instance>,
+					 public GuidItem<Instance>,
 					 public AbstractFactoryProduct<Instance>,
 					 public Reflection::Described<Instance, &sInstance, Reflection::DescribedBase>,
 					 public Debugable,
@@ -158,7 +160,6 @@ protected:
 					 public Notifier<Instance, DescendentRemoving>,
 					 public Notifier<Instance, AncestorChanged>,
 					 public Notifier<Instance, PropertyChanged>,
-					 public boost::enable_shared_from_this<Instance>,
                      public boost::noncopyable
 	{
 		friend class RaiseDescendentAdded2;

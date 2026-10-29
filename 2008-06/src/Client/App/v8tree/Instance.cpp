@@ -6,6 +6,36 @@
 namespace RBX
 {
 	const char* sInstance = "Instance";
+	long instanceCount = 0;
+
+	namespace
+	{
+		std::map<Guid::Data, Instance*>& guidRegistry()
+		{
+			static std::map<Guid::Data, Instance*> registry;
+			return registry;
+		}
+
+		boost::mutex& guidRegistryMutex()
+		{
+			static boost::mutex mutex;
+			return mutex;
+		}
+	}
+
+	// the 2008 GuidItem<Instance> destructor unregisters its guid (0x4b3760)
+	template<>
+	__declspec(noinline) GuidItem<Instance>::~GuidItem()
+	{
+		if (registeredGuid)
+		{
+			Guid::Data key;
+			guid.extract(key);
+			boost::mutex::scoped_lock lock(guidRegistryMutex());
+			guidRegistry().erase(key);
+		}
+		registeredGuid = false;
+	}
 
 	Reflection::BoundProp<bool, 1> Instance::propArchivable("archivable", "Behavior", &Instance::archivable, Reflection::PropertyDescriptor::STANDARD); // L14
 	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(std::string, bool), 2> findFirstChild(&Instance::findFirstChildByName2, "FindFirstChild", "name", "recursive", false, Reflection::FunctionDescriptor::AnyCaller); // L15
@@ -34,6 +64,7 @@ namespace RBX
 		  name(name),
 		  archivable(true)
 	{
+		InterlockedIncrement(&instanceCount);
 	}
 
 	Instance::Instance()
@@ -43,11 +74,12 @@ namespace RBX
 		  name("Instance"),
 		  archivable(true)
 	{
+		InterlockedIncrement(&instanceCount);
 	}
 
 	Instance::~Instance()
 	{
-		RBXASSERT(!parent);
+		InterlockedDecrement(&instanceCount);
 	}
 
 	bool Instance::askAddChild(const Instance* instance) const

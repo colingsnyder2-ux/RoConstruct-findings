@@ -24,8 +24,18 @@ namespace RBX
 		  ambientTop(209/255.0f, 208/255.0f, 217/255.0f),
 		  ambientBottom(122/255.0f, 134/255.0f, 120/255.0f),
 		  hasSky(true),
-		  clearColor(G3D::Color3::white()),
-		  timeOfDay(boost::posix_time::duration_from_string("14:00:00"))
+		  shadowColor(G3D::Color3::white()),
+		  clearColor(0.7f, 0.7f, 0.72f),
+		  timeOfDay(boost::posix_time::duration_from_string("14:00:00")),
+		  v0(0.0f, 0.0f, 0.0f),
+		  v1(0.0f, 0.0f, 0.0f),
+		  f0(1.0f),
+		  c0(0.5f, 0.5f, 0.5f),
+		  c1(1.0f, 1.0f, 1.0f),
+		  c2(1.0f, 1.0f, 1.0f),
+		  c3(1.0f, 1.0f, 1.0f),
+		  v2(0.0f, 0.0f, 0.0f),
+		  v3(1.0f, 1.0f, 1.0f)
 	{
 		skyParameters.lightColor = G3D::Color3(152/255.0f, 137/255.0f, 102/255.0f);
 		skyParameters.setTime(timeOfDay.total_seconds());

@@ -33,7 +33,7 @@ namespace RBX
 		}
 		else
 		{
-			return GuiResponse::notUsed();
+			return GuiResponse();
 		}
 	}
 }

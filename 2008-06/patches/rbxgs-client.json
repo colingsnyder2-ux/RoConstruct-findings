@@ -87,6 +87,18 @@
   [
    "\tclass IModelModifier\n",
    "\tclass __declspec(novtable) IModelModifier\n"
+  ],
+  [
+   "template <class T>\nclass GuidItem\n{\npublic:\n\tvirtual ~GuidItem() {}",
+   "template <class T>\nclass __declspec(novtable) GuidItem\n{\npublic:\n\tvirtual ~GuidItem();\n\tGuidItem() : registeredGuid(false) {}"
+  ],
+  [
+   "    class Instance : public GuidItem<Instance>,\n",
+   "    class Instance : public boost::enable_shared_from_this<Instance>,\n\t\t\t\t\t public GuidItem<Instance>,\n"
+  ],
+  [
+   "\t\t\t\t\t public Notifier<Instance, PropertyChanged>,\n\t\t\t\t\t public boost::enable_shared_from_this<Instance>,\n                     public boost::noncopyable\n",
+   "\t\t\t\t\t public Notifier<Instance, PropertyChanged>,\n                     public boost::noncopyable\n"
   ]
  ],
  "App/include/v8datamodel/MouseCommand.h": [
@@ -229,6 +241,10 @@
   [
    "Lua::LuaArguments::get(thread, static_cast<int>(i+1), result.get()->at(i));",
    "Lua::LuaArguments::get(thread, static_cast<int>(i+1), result.get()->at(i), true);"
+  ],
+  [
+   "void ScriptContext::disassociateState(Script* script)\n{\n    Association<Instance>& assoc = script->association();\n\n    if (assoc.contains<Lua::ThreadRef::NodePtr>())\n    {\n        assoc.get<Lua::ThreadRef::NodePtr>()->eraseAllRefs();\n        assoc.remove<Lua::ThreadRef::NodePtr>();\n    }\n}",
+   "#pragma optimize(\"s\", on)\nvoid ScriptContext::disassociateState(Script* script)\n{\n    Association<Instance>& assoc = script->association();\n\n    if (assoc.contains<Lua::ThreadRef::NodePtr>())\n    {\n        assoc.get<Lua::ThreadRef::NodePtr>()->eraseAllRefs();\n        assoc.remove<Lua::ThreadRef::NodePtr>();\n    }\n}\n#pragma optimize(\"\", on)"
   ]
  ],
  "App/include/lua/LuaBridge.h": [
@@ -319,6 +335,22 @@
   [
    "Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent));",
    "Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->getParent()));"
+  ],
+  [
+   "\tconst char* sInstance = \"Instance\";",
+   "\tconst char* sInstance = \"Instance\";\n\tlong instanceCount = 0;\n\n\tnamespace\n\t{\n\t\tstd::map<Guid::Data, Instance*>& guidRegistry()\n\t\t{\n\t\t\tstatic std::map<Guid::Data, Instance*> registry;\n\t\t\treturn registry;\n\t\t}\n\n\t\tboost::mutex& guidRegistryMutex()\n\t\t{\n\t\t\tstatic boost::mutex mutex;\n\t\t\treturn mutex;\n\t\t}\n\t}\n\n\t// the 2008 GuidItem<Instance> destructor unregisters its guid (0x4b3760)\n\ttemplate<>\n\t__declspec(noinline) GuidItem<Instance>::~GuidItem()\n\t{\n\t\tif (registeredGuid)\n\t\t{\n\t\t\tGuid::Data key;\n\t\t\tguid.extract(key);\n\t\t\tboost::mutex::scoped_lock lock(guidRegistryMutex());\n\t\t\tguidRegistry().erase(key);\n\t\t}\n\t\tregisteredGuid = false;\n\t}"
+  ],
+  [
+   "\tInstance::~Instance()\n\t{\n\t\tRBXASSERT(!parent);\n\t}",
+   "\tInstance::~Instance()\n\t{\n\t\tInterlockedDecrement(&instanceCount);\n\t}"
+  ],
+  [
+   "\tInstance::Instance()\n\t\t: assoc(),\n\t\t  parent(NULL),\n\t\t  children(),\n\t\t  name(\"Instance\"),\n\t\t  archivable(true)\n\t{\n\t}",
+   "\tInstance::Instance()\n\t\t: assoc(),\n\t\t  parent(NULL),\n\t\t  children(),\n\t\t  name(\"Instance\"),\n\t\t  archivable(true)\n\t{\n\t\tInterlockedIncrement(&instanceCount);\n\t}"
+  ],
+  [
+   "\tInstance::Instance(const char* name)\n\t\t: assoc(),\n\t\t  parent(NULL),\n\t\t  children(),\n\t\t  name(name),\n\t\t  archivable(true)\n\t{\n\t}",
+   "\tInstance::Instance(const char* name)\n\t\t: assoc(),\n\t\t  parent(NULL),\n\t\t  children(),\n\t\t  name(name),\n\t\t  archivable(true)\n\t{\n\t\tInterlockedIncrement(&instanceCount);\n\t}"
   ]
  ],
  "App/v8datamodel/JointInstance.cpp": [
@@ -885,6 +917,10 @@
   [
    "\t\tG3D::Color4 clearColor;\n\t\tfloat unknown0x254[4]; // set by the 2008 constructor; names unknown",
    "\t\tfloat unknown0x244[4]; // 2008 keeps this block ahead of clearColor\n\t\tG3D::Color4 clearColor;"
+  ],
+  [
+   "\t\tbool hasSky;\n\t\tfloat unknown0x244[4]; // 2008 keeps this block ahead of clearColor\n\t\tG3D::Color4 clearColor;\n\t\tboost::posix_time::time_duration timeOfDay;\n\t\tfloat unknown0x270[25]; // names unknown",
+   "\t\tbool hasSky;\n\t\tG3D::Color4 shadowColor;\n\t\tG3D::Color4 clearColor;\n\t\tboost::posix_time::time_duration timeOfDay;\n\t\t// Names are placeholders from the 100% codegen proof for the 2008 ctor;\n\t\t// the types and stores are what the target bytes prove (0x270..0x2d3).\n\t\tG3D::Vector3 v0;\n\t\tG3D::Vector3 v1;\n\t\tfloat f0;\n\t\tG3D::Color3 c0;\n\t\tG3D::Color3 c1;\n\t\tG3D::Color3 c2;\n\t\tG3D::Color3 c3;\n\t\tG3D::Vector3 v2;\n\t\tG3D::Vector3 v3;"
   ]
  ],
  "App/v8datamodel/DataModel.cpp": [
@@ -1229,6 +1265,10 @@
   [
    "#include \"v8datamodel/Lighting.h\"\n",
    "#pragma float_control(precise, off)\n#include \"v8datamodel/Lighting.h\"\n"
+  ],
+  [
+   "\t\t  hasSky(true),\n\t\t  clearColor(G3D::Color3::white()),\n\t\t  timeOfDay(boost::posix_time::duration_from_string(\"14:00:00\"))",
+   "\t\t  hasSky(true),\n\t\t  shadowColor(G3D::Color3::white()),\n\t\t  clearColor(0.7f, 0.7f, 0.72f),\n\t\t  timeOfDay(boost::posix_time::duration_from_string(\"14:00:00\")),\n\t\t  v0(0.0f, 0.0f, 0.0f),\n\t\t  v1(0.0f, 0.0f, 0.0f),\n\t\t  f0(1.0f),\n\t\t  c0(0.5f, 0.5f, 0.5f),\n\t\t  c1(1.0f, 1.0f, 1.0f),\n\t\t  c2(1.0f, 1.0f, 1.0f),\n\t\t  c3(1.0f, 1.0f, 1.0f),\n\t\t  v2(0.0f, 0.0f, 0.0f),\n\t\t  v3(1.0f, 1.0f, 1.0f)"
   ]
  ],
  "App/tool/RunDragger.cpp": [
@@ -1359,6 +1399,10 @@
   [
    "VelocityMotor::onEvent_HoleAncestorChanged()\n\t{\n\t\tRBXASSERT(hole.get());\n\t\tsetPart(1, hole.get());\n\t}",
    "VelocityMotor::onEvent_HoleAncestorChanged()\n\t{\n\t\t                     ;\n\t\tsetPart(1, hole.get());\n\t}"
+  ],
+  [
+   "\t\t\t// for some reason local is being taken as operator*'s LHS\n\t\t\t// and not part->getCoordinateFrame()\n\t\t\tG3D::CoordinateFrame local = computeLocalCoordinateFrame();\n\t\t\tc = part->getCoordinateFrame()*local;",
+   "\t\t\tc = part->getCoordinateFrame()*computeLocalCoordinateFrame();"
   ]
  ],
  "App/v8datamodel/PVInstance.cpp": [
@@ -1423,6 +1467,10 @@
   [
    "\t\t\tRBXASSERT(starterPack);",
    ""
+  ],
+  [
+   "BackpackItem::setTextureId(const TextureId& value)\n\t{\n\t\tif (value != textureId)\n\t\t{\n\t\t\ttextureId = value;\n\n\t\t\tstd::string filename;\n\t\t\tContentProvider::singleton().requestContentFile(value, filename);\n\n\t\t\tWorkspace* workspace = ServiceProvider::find<Workspace>(this);\n\t\t\tif (workspace)\n\t\t\t\tworkspace->raiseDrawChanged();\n\n\t\t\traisePropertyChanged(desc_TextureId);\n\t\t}\n\t}",
+   "BackpackItem::setTextureId(const TextureId& value)\n\t{\n\tif (value != textureId)\n\t{\n\t\ttextureId = value;\n\n\t\tWorkspace* workspace = ServiceProvider::find<Workspace>(this);\n\t\tif (workspace)\n\t\t\tworkspace->raiseDrawChanged();\n\n\t\traisePropertyChanged(desc_TextureId);\n\t}\n}"
   ]
  ],
  "App/gui/GUI.cpp": [
@@ -1787,6 +1835,10 @@
   [
    "#include \"v8datamodel/Camera.h\"",
    "#pragma float_control(precise,off)\n#include \"v8datamodel/Camera.h\""
+  ],
+  [
+   "\t\tif (Math::legalCameraCoord(coord))\n\t\t{\n\t\t\tgCamera.setCoordinateFrame(coord);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(false);\n\t\t}",
+   "\t\tif (Math::legalCameraCoord(coord))\n\t\t{\n\t\t\tgCamera.setCoordinateFrame(coord);\n\t\t}"
   ]
  ],
  "RbxGraphics/include/RbxGraphics/Adorn.h": [
@@ -1917,6 +1969,24 @@
   [
    "#include \"v8datamodel/custommesh.h\"\n",
    "#pragma float_control(precise, off)\n#include \"v8datamodel/custommesh.h\"\n"
+  ]
+ ],
+ "App/util/PV.cpp": [
+  [
+   "\tPV PV::pvAtLocalCoord(const G3D::CoordinateFrame& localCoord) const\n\t{\n\t\tG3D::CoordinateFrame worldPos = this->position * localCoord;\n\t\tVelocity worldVel = this->velocityAtPoint(worldPos.translation);\n\t\treturn PV(worldPos, worldVel);\n\t}",
+   "\tvoid computePVAtLocalCoord(const PV& pv, const G3D::CoordinateFrame& localCoord, PV& result)\n\t{\n\t\tG3D::CoordinateFrame worldCoord = pv.position * localCoord;\n\t\tPV answer(worldCoord, pv.velocityAtPoint(worldCoord.translation));\n\t\tresult = answer;\n\t}\n\n\tPV PV::pvAtLocalCoord(const G3D::CoordinateFrame& localCoord) const\n\t{\n\t\tPV result;\n\t\tcomputePVAtLocalCoord(*this, localCoord, result);\n\t\treturn result;\n\t}"
+  ]
+ ],
+ "App/include/gui/GuiEvent.h": [
+  [
+   "\tpublic:\n\t\tbool wasUsed()",
+   "\tpublic:\n\t\tGuiResponse()\n\t\t{\n\t\t\tthis->target = NULL;\n\t\t\tthis->response = NOT_USED;\n\t\t}\n\t\tbool wasUsed()"
+  ]
+ ],
+ "App/gui/Widget.cpp": [
+  [
+   "\t\t\treturn GuiResponse::notUsed();\n\t\t}\n\t}\n}",
+   "\t\t\treturn GuiResponse();\n\t\t}\n\t}\n}"
   ]
  ]
 }

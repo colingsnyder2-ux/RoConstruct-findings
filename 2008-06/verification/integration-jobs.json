@@ -5531,5 +5531,355 @@
     "unit": "RBX::SpecialShape, RBX::PartInstance",
     "updated": 1793238289.9957194,
     "user": "colin"
+  },
+  {
+    "created": 1793238869.7869308,
+    "id": "de7b9eae5623429791a439bbab6a29c6",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/util/PV.cpp": [
+        [
+          "\tPV PV::pvAtLocalCoord(const G3D::CoordinateFrame& localCoord) const\n\t{\n\t\tG3D::CoordinateFrame worldPos = this->position * localCoord;\n\t\tVelocity worldVel = this->velocityAtPoint(worldPos.translation);\n\t\treturn PV(worldPos, worldVel);\n\t}",
+          "\tvoid computePVAtLocalCoord(const PV& pv, const G3D::CoordinateFrame& localCoord, PV& result)\n\t{\n\t\tG3D::CoordinateFrame worldCoord = pv.position * localCoord;\n\t\tPV answer(worldCoord, pv.velocityAtPoint(worldCoord.translation));\n\t\tresult = answer;\n\t}\n\n\tPV PV::pvAtLocalCoord(const G3D::CoordinateFrame& localCoord) const\n\t{\n\t\tPV result;\n\t\tcomputePVAtLocalCoord(*this, localCoord, result);\n\t\treturn result;\n\t}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "3af54bcdccf6ddda857332feb6308fc55e2772a345e50bbc6d948a0d19fd488a",
+      "credits": 1,
+      "distinct_after": 9970,
+      "distinct_before": 9969,
+      "gains": [
+        "00658a00"
+      ],
+      "input_hash": "d2c7e42c07bb7a9779754de9b2e9b9986cde1d5b23e8740f49e3c33bee6cd925",
+      "losses": [],
+      "new_distinct": [
+        "00658a00"
+      ],
+      "overlay_hash": "68b28938f7efceca77d4bee4dd7a0d0bec01e5e6b3ce88490b56f845bb528ebd",
+      "owned_after": 3304,
+      "owned_before": 3303,
+      "rebased": false,
+      "submitted_revision": "3af54bcdccf6ddda857332feb6308fc55e2772a345e50bbc6d948a0d19fd488a"
+    },
+    "state": "accepted",
+    "unit": "RBX::ArrowButton",
+    "updated": 1793239167.9570222,
+    "user": "coldek"
+  },
+  {
+    "created": 1793238883.3096948,
+    "id": "19c4875bdfe24187b25b9043b0146448",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/include/v8datamodel/Lighting.h": [
+        [
+          "\t\tbool hasSky;\n\t\tfloat unknown0x244[4]; // 2008 keeps this block ahead of clearColor\n\t\tG3D::Color4 clearColor;\n\t\tboost::posix_time::time_duration timeOfDay;\n\t\tfloat unknown0x270[25]; // names unknown",
+          "\t\tbool hasSky;\n\t\tG3D::Color4 shadowColor;\n\t\tG3D::Color4 clearColor;\n\t\tboost::posix_time::time_duration timeOfDay;\n\t\t// Names are placeholders from the 100% codegen proof for the 2008 ctor;\n\t\t// the types and stores are what the target bytes prove (0x270..0x2d3).\n\t\tG3D::Vector3 v0;\n\t\tG3D::Vector3 v1;\n\t\tfloat f0;\n\t\tG3D::Color3 c0;\n\t\tG3D::Color3 c1;\n\t\tG3D::Color3 c2;\n\t\tG3D::Color3 c3;\n\t\tG3D::Vector3 v2;\n\t\tG3D::Vector3 v3;"
+        ]
+      ],
+      "App/v8datamodel/Lighting.cpp": [
+        [
+          "\t\t  hasSky(true),\n\t\t  clearColor(G3D::Color3::white()),\n\t\t  timeOfDay(boost::posix_time::duration_from_string(\"14:00:00\"))",
+          "\t\t  hasSky(true),\n\t\t  shadowColor(G3D::Color3::white()),\n\t\t  clearColor(0.7f, 0.7f, 0.72f),\n\t\t  timeOfDay(boost::posix_time::duration_from_string(\"14:00:00\")),\n\t\t  v0(0.0f, 0.0f, 0.0f),\n\t\t  v1(0.0f, 0.0f, 0.0f),\n\t\t  f0(1.0f),\n\t\t  c0(0.5f, 0.5f, 0.5f),\n\t\t  c1(1.0f, 1.0f, 1.0f),\n\t\t  c2(1.0f, 1.0f, 1.0f),\n\t\t  c3(1.0f, 1.0f, 1.0f),\n\t\t  v2(0.0f, 0.0f, 0.0f),\n\t\t  v3(1.0f, 1.0f, 1.0f)"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "1a5280d14fd8fac0c06b48b31ebf0f6a4bde4714fc6a71ac9553bc3a8b0bae2b",
+      "credits": 1,
+      "distinct_after": 9971,
+      "distinct_before": 9970,
+      "gains": [
+        "005e1a40"
+      ],
+      "input_hash": "d5af8c4049756f58e1d21aac77e590c5d935f06691b10800c89342dbed0b10a1",
+      "losses": [],
+      "new_distinct": [
+        "005e1a40"
+      ],
+      "overlay_hash": "b558f358df04651bea8f36b193fbfd1f340f99b933e680daba223a781c846ae9",
+      "owned_after": 3305,
+      "owned_before": 3304,
+      "rebased": true,
+      "submitted_revision": "3af54bcdccf6ddda857332feb6308fc55e2772a345e50bbc6d948a0d19fd488a"
+    },
+    "state": "accepted",
+    "unit": "RBX::Lighting",
+    "updated": 1793239505.6177924,
+    "user": "coldek"
+  },
+  {
+    "created": 1793238986.5232482,
+    "id": "a442dca5cbb547d3951f2e3413fff6b6",
+    "model": "gpt-6.1-sol",
+    "patches": {
+      "App/script/ScriptContext.cpp": [
+        [
+          "void ScriptContext::disassociateState(Script* script)\n{\n    Association<Instance>& assoc = script->association();\n\n    if (assoc.contains<Lua::ThreadRef::NodePtr>())\n    {\n        assoc.get<Lua::ThreadRef::NodePtr>()->eraseAllRefs();\n        assoc.remove<Lua::ThreadRef::NodePtr>();\n    }\n}",
+          "#pragma optimize(\"s\", on)\nvoid ScriptContext::disassociateState(Script* script)\n{\n    Association<Instance>& assoc = script->association();\n\n    if (assoc.contains<Lua::ThreadRef::NodePtr>())\n    {\n        assoc.get<Lua::ThreadRef::NodePtr>()->eraseAllRefs();\n        assoc.remove<Lua::ThreadRef::NodePtr>();\n    }\n}\n#pragma optimize(\"\", on)"
+        ]
+      ],
+      "App/v8datamodel/Feature.cpp": [
+        [
+          "\t\t\t// for some reason local is being taken as operator*'s LHS\n\t\t\t// and not part->getCoordinateFrame()\n\t\t\tG3D::CoordinateFrame local = computeLocalCoordinateFrame();\n\t\t\tc = part->getCoordinateFrame()*local;",
+          "\t\t\tc = part->getCoordinateFrame()*computeLocalCoordinateFrame();"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "a0d588d06cdb49e4e353aed3e158f893ea59909cf37b7f189ee13995fa52a953",
+      "credits": 1,
+      "distinct_after": 9972,
+      "distinct_before": 9971,
+      "gains": [
+        "005ad000"
+      ],
+      "input_hash": "13c9ff3d377736ae811a0b1003ed756442b8ffcdda41b03b995221bd0ed6a87e",
+      "losses": [],
+      "new_distinct": [
+        "005ad000"
+      ],
+      "overlay_hash": "6afd5f9fcfba329d1b359ab46cf7cd955e27fe7bf4a58c7d05abb2732de1a8f1",
+      "owned_after": 3306,
+      "owned_before": 3305,
+      "rebased": true,
+      "submitted_revision": "3af54bcdccf6ddda857332feb6308fc55e2772a345e50bbc6d948a0d19fd488a"
+    },
+    "state": "accepted",
+    "unit": "RBX::ScriptContext, RBX::Feature",
+    "updated": 1793239867.829533,
+    "user": "colin"
+  },
+  {
+    "created": 1793240662.2083302,
+    "id": "8b56d5e04a834b98b91b949ac79b3c48",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/include/v8tree/Instance.h": [
+        [
+          "template <class T>\nclass GuidItem\n{\npublic:\n\tvirtual ~GuidItem() {}",
+          "template <class T>\nclass __declspec(novtable) GuidItem\n{\npublic:\n\tvirtual ~GuidItem();\n\tGuidItem() : registeredGuid(false) {}"
+        ],
+        [
+          "    class Instance : public GuidItem<Instance>,\n",
+          "    class Instance : public boost::enable_shared_from_this<Instance>,\n\t\t\t\t\t public GuidItem<Instance>,\n"
+        ],
+        [
+          "\t\t\t\t\t public Notifier<Instance, PropertyChanged>,\n\t\t\t\t\t public boost::enable_shared_from_this<Instance>,\n                     public boost::noncopyable\n",
+          "\t\t\t\t\t public Notifier<Instance, PropertyChanged>,\n                     public boost::noncopyable\n"
+        ]
+      ],
+      "App/v8tree/Instance.cpp": [
+        [
+          "\tconst char* sInstance = \"Instance\";",
+          "\tconst char* sInstance = \"Instance\";\n\tlong instanceCount = 0;\n\n\tnamespace\n\t{\n\t\tstd::map<Guid::Data, Instance*>& guidRegistry()\n\t\t{\n\t\t\tstatic std::map<Guid::Data, Instance*> registry;\n\t\t\treturn registry;\n\t\t}\n\n\t\tboost::mutex& guidRegistryMutex()\n\t\t{\n\t\t\tstatic boost::mutex mutex;\n\t\t\treturn mutex;\n\t\t}\n\t}\n\n\t// the 2008 GuidItem<Instance> destructor unregisters its guid (0x4b3760)\n\ttemplate<>\n\t__declspec(noinline) GuidItem<Instance>::~GuidItem()\n\t{\n\t\tif (registeredGuid)\n\t\t{\n\t\t\tGuid::Data key;\n\t\t\tguid.extract(key);\n\t\t\tboost::mutex::scoped_lock lock(guidRegistryMutex());\n\t\t\tguidRegistry().erase(key);\n\t\t}\n\t\tregisteredGuid = false;\n\t}"
+        ],
+        [
+          "\tInstance::~Instance()\n\t{\n\t\tRBXASSERT(!parent);\n\t}",
+          "\tInstance::~Instance()\n\t{\n\t\tInterlockedDecrement(&instanceCount);\n\t}"
+        ],
+        [
+          "\tInstance::Instance()\n\t\t: assoc(),\n\t\t  parent(NULL),\n\t\t  children(),\n\t\t  name(\"Instance\"),\n\t\t  archivable(true)\n\t{\n\t}",
+          "\tInstance::Instance()\n\t\t: assoc(),\n\t\t  parent(NULL),\n\t\t  children(),\n\t\t  name(\"Instance\"),\n\t\t  archivable(true)\n\t{\n\t\tInterlockedIncrement(&instanceCount);\n\t}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "45453ee5cda36ee3790e9b4af74b1ce5dfb4c9adb7d709a3d1b48ae6cc38b24e",
+      "credits": 2,
+      "distinct_after": 9974,
+      "distinct_before": 9972,
+      "gains": [
+        "0055a540",
+        "0055b7e0"
+      ],
+      "input_hash": "ae25391a0348ebc5d7c6377d4af4897d438d868638f81e7285283c93865caea8",
+      "losses": [],
+      "new_distinct": [
+        "0055a540",
+        "0055b7e0"
+      ],
+      "overlay_hash": "b5cf9cd06a351d0232bc7f899640fa0022156e8c7f4688e33d1346d52d26ac49",
+      "owned_after": 3308,
+      "owned_before": 3306,
+      "rebased": false,
+      "submitted_revision": "45453ee5cda36ee3790e9b4af74b1ce5dfb4c9adb7d709a3d1b48ae6cc38b24e"
+    },
+    "state": "accepted",
+    "unit": "RBX::Soundscape::SoundService",
+    "updated": 1793241126.6224036,
+    "user": "coldek"
+  },
+  {
+    "created": 1793240672.631065,
+    "id": "601b0317223443b7af6f041ed29941d7",
+    "model": "codex:gpt-5.6-sol",
+    "patches": {
+      "App/v8datamodel/Hopper.cpp": [
+        [
+          "BackpackItem::setTextureId(const TextureId& value)\n\t{\n\t\tif (value != textureId)\n\t\t{\n\t\t\ttextureId = value;\n\n\t\t\tstd::string filename;\n\t\t\tContentProvider::singleton().requestContentFile(value, filename);\n\n\t\t\tWorkspace* workspace = ServiceProvider::find<Workspace>(this);\n\t\t\tif (workspace)\n\t\t\t\tworkspace->raiseDrawChanged();\n\n\t\t\traisePropertyChanged(desc_TextureId);\n\t\t}\n\t}",
+          "BackpackItem::setTextureId(const TextureId& value)\n\t{\n\tif (value != textureId)\n\t{\n\t\ttextureId = value;\n\n\t\tWorkspace* workspace = ServiceProvider::find<Workspace>(this);\n\t\tif (workspace)\n\t\t\tworkspace->raiseDrawChanged();\n\n\t\traisePropertyChanged(desc_TextureId);\n\t}\n}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "6a2e67fa766a56363d3ffd0b4f541397d54c0cad2f84ea719918160b2f01fde3",
+      "credits": 1,
+      "distinct_after": 9975,
+      "distinct_before": 9974,
+      "gains": [
+        "005d11e0"
+      ],
+      "input_hash": "cf815b2d0704f495dac65634719d3756f8668b9fc981ac61922a23451155acfd",
+      "losses": [],
+      "new_distinct": [
+        "005d11e0"
+      ],
+      "overlay_hash": "bcc36f996b54bf612f5f72fe32287bc0f446dd118b3776144cb7c322dfd37b45",
+      "owned_after": 3309,
+      "owned_before": 3308,
+      "rebased": true,
+      "submitted_revision": "45453ee5cda36ee3790e9b4af74b1ce5dfb4c9adb7d709a3d1b48ae6cc38b24e"
+    },
+    "state": "accepted",
+    "unit": "RBX::BackpackItem",
+    "updated": 1793241323.4299266,
+    "user": "colin"
+  },
+  {
+    "created": 1793240704.7404125,
+    "id": "3bbb9ca5c79f46ab866f505209421a8b",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/v8datamodel/Camera.cpp": [
+        [
+          "\t\tif (Math::legalCameraCoord(coord))\n\t\t{\n\t\t\tgCamera.setCoordinateFrame(coord);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(false);\n\t\t}",
+          "\t\tif (Math::legalCameraCoord(coord))\n\t\t{\n\t\t\tgCamera.setCoordinateFrame(coord);\n\t\t}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "38685c9969396d4998f4c69962a92c390131d191fa18402c0be5f5cd7f641a24",
+      "credits": 2,
+      "distinct_after": 9977,
+      "distinct_before": 9975,
+      "gains": [
+        "005cdf70",
+        "00642210"
+      ],
+      "input_hash": "b6f37024332a34f97c18ceea427d85164a9db0240d80cb1d2e5e38ac5a454f8a",
+      "losses": [],
+      "new_distinct": [
+        "005cdf70",
+        "00642210"
+      ],
+      "overlay_hash": "f044a67fcef21e077e027344f4969fc343f730ee1d243e55069b6d49472d6ff9",
+      "owned_after": 3311,
+      "owned_before": 3309,
+      "rebased": true,
+      "submitted_revision": "45453ee5cda36ee3790e9b4af74b1ce5dfb4c9adb7d709a3d1b48ae6cc38b24e"
+    },
+    "state": "accepted",
+    "unit": "RBX::Camera",
+    "updated": 1793241674.5067546,
+    "user": "coldek"
+  },
+  {
+    "created": 1793240912.22868,
+    "id": "852cd908e7b947eb870f807b48d17d8f",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/gui/Widget.cpp": [
+        [
+          "\t\t\treturn GuiResponse::notUsed();\n\t\t}\n\t}\n}",
+          "\t\t\treturn GuiResponse();\n\t\t}\n\t}\n}"
+        ]
+      ],
+      "App/include/gui/GuiEvent.h": [
+        [
+          "\tpublic:\n\t\tbool wasUsed()",
+          "\tpublic:\n\t\tGuiResponse()\n\t\t{\n\t\t\tthis->target = NULL;\n\t\t\tthis->response = NOT_USED;\n\t\t}\n\t\tbool wasUsed()"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "38685c9969396d4998f4c69962a92c390131d191fa18402c0be5f5cd7f641a24",
+      "credits": 2,
+      "distinct_after": 9977,
+      "distinct_before": 9975,
+      "gains": [
+        "005cdf70",
+        "00642210"
+      ],
+      "input_hash": "b6f37024332a34f97c18ceea427d85164a9db0240d80cb1d2e5e38ac5a454f8a",
+      "losses": [],
+      "new_distinct": [
+        "005cdf70",
+        "00642210"
+      ],
+      "overlay_hash": "f044a67fcef21e077e027344f4969fc343f730ee1d243e55069b6d49472d6ff9",
+      "owned_after": 3311,
+      "owned_before": 3309,
+      "rebased": true,
+      "submitted_revision": "45453ee5cda36ee3790e9b4af74b1ce5dfb4c9adb7d709a3d1b48ae6cc38b24e"
+    },
+    "state": "accepted",
+    "unit": "RBX::Clump",
+    "updated": 1793241674.5067546,
+    "user": "coldek"
+  },
+  {
+    "created": 1793242094.7528157,
+    "id": "957f8ed5ec114d20943bae0f124beb02",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/v8tree/Instance.cpp": [
+        [
+          "\tInstance::Instance(const char* name)\n\t\t: assoc(),\n\t\t  parent(NULL),\n\t\t  children(),\n\t\t  name(name),\n\t\t  archivable(true)\n\t{\n\t}",
+          "\tInstance::Instance(const char* name)\n\t\t: assoc(),\n\t\t  parent(NULL),\n\t\t  children(),\n\t\t  name(name),\n\t\t  archivable(true)\n\t{\n\t\tInterlockedIncrement(&instanceCount);\n\t}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "db46aa812e24a2500da44c9e8410f1f144a86351ef87850e5f8e5728b1b24081",
+      "credits": 1,
+      "distinct_after": 9978,
+      "distinct_before": 9977,
+      "gains": [
+        "0055b960"
+      ],
+      "input_hash": "24f7c9a251ad88ec510c8639befad9a471400fcd79e15418d1c3c3ada348f499",
+      "losses": [],
+      "new_distinct": [
+        "0055b960"
+      ],
+      "overlay_hash": "5713971f07e536ed78118458e9759a68129bfdf61340082b84d13c35f423a582",
+      "owned_after": 3312,
+      "owned_before": 3311,
+      "rebased": false,
+      "submitted_revision": "db46aa812e24a2500da44c9e8410f1f144a86351ef87850e5f8e5728b1b24081"
+    },
+    "state": "accepted",
+    "unit": "RBX::Soundscape::SoundService",
+    "updated": 1793242281.5957043,
+    "user": "coldek"
   }
 ]

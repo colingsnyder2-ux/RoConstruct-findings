@@ -1,4 +1,4 @@
-// from server: 99% by EspClaude
+// from server: 100% by EspClaude
 // from server: 81% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
@@ -215,10 +215,11 @@ void RbxEntity::method67daf0(Camera* camera) {
             if(median>nativeLodLowMs) {
                 // Native truncates this fraction before applying its budget math.
                 int minimum=(int)(field29c*0.01f);
+                float low=nativeLodLowMs;
                 float high=nativeLodHighMs;
                 if(median>nativeLodHighMs) selected=(int)(minimum*last.value[2]);
                 else {
-                    float factor=1.0f-Math::Sin((median-nativeLodLowMs)*Math::HALF_PI/(high-nativeLodLowMs),false)*(1.0f-minimum);
+                    float factor=1.0f-Math::Sin((median-low)*Math::HALF_PI/(high-low),false)*(1.0f-minimum);
                     selected=(int)(factor*last.value[2]);
                 }
                 if(selected<static_cast<float>(mSubEntityList.size())*minimum)
@@ -250,7 +251,7 @@ void RbxEntity::method67daf0(Camera* camera) {
         sample.value[0]=-1.0f;
         for(int k=1;k<5;++k) sample.value[k]=-1.0f;
         history()->append(sample);
-        ShadowHistoryRecord& last=history()->previous(0);
+        ShadowHistoryRecord& last=static_cast<ShadowHistoryView*>(field274)->previous(0);
         last.value[1]=order.size();
         last.value[2]=selected;
     }

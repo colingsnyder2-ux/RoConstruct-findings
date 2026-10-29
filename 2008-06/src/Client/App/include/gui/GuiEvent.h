@@ -41,6 +41,11 @@ namespace RBX
 		{
 		}
 	public:
+		GuiResponse()
+		{
+			this->target = NULL;
+			this->response = NOT_USED;
+		}
 		bool wasUsed()
 		{
 			return response != NOT_USED; // NOTE: might be incorrect although it does make sense 

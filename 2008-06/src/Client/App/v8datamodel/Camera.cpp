@@ -60,10 +60,6 @@ namespace RBX
 		{
 			gCamera.setCoordinateFrame(coord);
 		}
-		else
-		{
-			RBXASSERT(false);
-		}
 	}
 
 	bool Camera::askSetParent(const Instance* instance) const

@@ -62,10 +62,7 @@ namespace RBX
 
 		if (part)
 		{
-			// for some reason local is being taken as operator*'s LHS
-			// and not part->getCoordinateFrame()
-			G3D::CoordinateFrame local = computeLocalCoordinateFrame();
-			c = part->getCoordinateFrame()*local;
+			c = part->getCoordinateFrame()*computeLocalCoordinateFrame();
 
 			return true;
 		}

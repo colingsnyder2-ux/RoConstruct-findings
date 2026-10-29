@@ -592,6 +592,7 @@ void ScriptContext::addScript(Script* script)
     }
 }
 
+#pragma optimize("s", on)
 void ScriptContext::disassociateState(Script* script)
 {
     Association<Instance>& assoc = script->association();
@@ -602,6 +603,7 @@ void ScriptContext::disassociateState(Script* script)
         assoc.remove<Lua::ThreadRef::NodePtr>();
     }
 }
+#pragma optimize("", on)
 
 void ScriptContext::removeScript(Script* script)
 {
