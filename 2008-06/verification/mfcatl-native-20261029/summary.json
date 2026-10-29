@@ -1,0 +1,40 @@
+{
+ "date": "2026-10-29",
+ "module": "MfcAtl",
+ "replayed_groups": 107,
+ "requested_addresses": 295,
+ "reproduced_addresses": 196,
+ "compile_errors": 0,
+ "initial_default_forced_roots": 5,
+ "initial_default_inventory": 26,
+ "final_forced_roots": 147,
+ "final_code_data_exact_actual_library_owned_roots": 147,
+ "vendor_translation_unit_roots": 109,
+ "generated_unit_roots": 38,
+ "final_inventory": 175,
+ "excluded_external_roots": 44,
+ "pruned_duplicate_definitions": 23,
+ "clean_empty_cache_build_passed": true,
+ "smoke_test_exit": 0,
+ "smoke_test_scope": "MFC initialization and CString construction/concatenation;147 forced bodies are link/dependency checked, not all dynamically called.",
+ "repository_tests_passed": 1092,
+ "repository_tests_skipped": 3,
+ "repository_subtests_passed": 3,
+ "regression_modules_passed": [
+  "Ogre",
+  "Boost",
+  "libpng"
+ ],
+ "placement": 409,
+ "new_placements": {
+  "00410740": "MfcAtl",
+  "00410670": "MfcAtl"
+ },
+ "new_server_credits": 0,
+ "limitations": [
+  "Generated units are reported separately;147 roots are not147 newly discovered or authentic original-source bodies.",
+  "44 external roots still have unresolved dependencies; no stubs added.",
+  "MFC9 static/internal source contexts are not universally compatible with release shared MFC9.",
+  "M4b rendering gaps remain from prior evidence; this module does not complete rendering."
+ ]
+}
