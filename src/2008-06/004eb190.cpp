@@ -1,8 +1,8 @@
-// from server: 80% by EspClaude
+// from server: 90% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espclaude_c289767b7efee59d.cpp
+// roc-lib: rbxgs-dll roc_espclaude_6cf3a4fea9b7b651.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <G3D/ReferenceCount.h>
@@ -115,10 +115,8 @@ class Mesh : public G3D::ReferenceCountedObject {};
 }
 typedef G3D::ReferenceCountedPointer<RenderBase::MaterialBase> PartMaterialRef;
 }
-namespace G3D { template<> __forceinline ReferenceCountedPointer<RBX::RenderBase::MaterialBase>& ReferenceCountedPointer<RBX::RenderBase::MaterialBase>::operator=(RBX::RenderBase::MaterialBase* p) { setPointer(p); return *this; } }
 namespace RBX {
 }
-namespace G3D { template<> __forceinline ReferenceCountedPointer<RBX::RenderBase::MaterialBase>::ReferenceCountedPointer(const ReferenceCountedPointer<RBX::RenderBase::MaterialBase>& p) : m_pointer(NULL) { setPointer(p.m_pointer); } }
 namespace RBX {
 class PartMaterialFactory {
 public:
@@ -147,11 +145,6 @@ protected:
     View* view;
     SpecialShape* specialShape;
 };
-class Part : public PartChunk {
-public:
-    PartMaterialRef getMaterial();
-    bool usesMegaTexture() const;
-};
 }
 }
 extern RBX::RenderBase::MaterialBase* createPartMaterial();
@@ -161,6 +154,14 @@ extern const float decalTextureScale;
 extern RBX::PartMaterialRef emptyMaterial;
 
 namespace RBX { namespace ViewNew {
+class Part : public PartChunk {
+public:
+    PartMaterialRef getMaterial();
+    bool usesMegaTexture() const;
+    
+};
+
+
 PartMaterialRef Part::getMaterial() {
     if (emptyMaterial.isNull()) {
         emptyMaterial = createPartMaterial();
@@ -173,70 +174,75 @@ PartMaterialRef Part::getMaterial() {
             std::string filename;
             Instance* parent = partInstance->getParent();
             {
-                ModelInstance* model = dynamic_cast<ModelInstance*>(parent);
+                ModelInstance* model = NULL;
+                if (parent) model = dynamic_cast<ModelInstance*>(parent);
                 if (model && model->findModifier()) {
-                    ContentId shirt, pants;
-                    if (parent->getChildren()) {
-                        Instances::const_iterator end = parent->getChildren()->end();
-                        for (Instances::const_iterator it = parent->getChildren()->begin(); it != end; ++it) {
-                            Clothing* clothing = dynamic_cast<Clothing*>((*it).get());
-                            if (clothing) {
-                                if (shirt.isNull() && !clothing->shirtTemplate.isNull())
-                                    shirt = clothing->shirtTemplate;
-                                if (pants.isNull() && !clothing->pantsTemplate.isNull())
-                                    pants = clothing->pantsTemplate;
-                            }
+                ContentId shirt, pants;
+                if (parent->getChildren()) {
+                    Instances::const_iterator end = parent->getChildren()->end();
+                    for (Instances::const_iterator it = parent->getChildren()->begin(); it != end; ++it) {
+                        Clothing* clothing = dynamic_cast<Clothing*>((*it).get());
+                        if (clothing) {
+                            if (shirt.isNull() && !clothing->shirtTemplate.isNull())
+                                shirt = clothing->shirtTemplate;
+                            if (pants.isNull() && !clothing->pantsTemplate.isNull())
+                                pants = clothing->pantsTemplate;
                         }
                     }
-                    if (!shirt.isNull() || !pants.isNull()) {
-                        Humanoid* humanoid = Humanoid::modelIsCharacter(parent);
-                        if (humanoid) {
-                            bool shirtPart = !shirt.isNull() && (partInstance.get() == humanoid->getLeftArm() || partInstance.get() == humanoid->getRightArm() || partInstance.get() == humanoid->getTorso());
-                            bool pantsPart = !pants.isNull() && (partInstance.get() == humanoid->getLeftLeg() || partInstance.get() == humanoid->getRightLeg() || partInstance.get() == humanoid->getTorso());
-                            int shirtStatus = 1, pantsStatus = 1;
-                            if (shirtPart || pantsPart) {
-                                material = NULL;
-                                if (shirtPart) {
-                                    ServiceProvider::find<ContentProvider>(partInstance.get())->requestContentFile(shirt, &shirtStatus, filename);
-                                    if (shirtStatus == 1) {
-                                        std::string migrated = migrateAtlas(filename, shirt.mimeType(), false, 1.0f);
-                                        material = createPartMaterial();
-                                        material->appendLevel(TextureProxyBaseRef(NULL), color, 0.9f, 50.0f, partInstance->getReflectance(), partInstance->alpha());
-                                        TextureProxyBase* texture = createPartTexture(view->getDevice(), migrated, false);
-                                        material->appendLevel(TextureProxyBaseRef(texture), G3D::Color3::WHITE, 0.9f, 50.0f, partInstance->getReflectance(), partInstance->alpha() + 0.001f);
-                                        texture->setFloat2c(decalTextureScale);
-                                        if (pants.isNull() || partInstance.get() != humanoid->getTorso())
-                                            materialInvalid = false;
-                                    }
-                                }
-                                if (pantsPart) {
-                                    ServiceProvider::find<ContentProvider>(partInstance.get())->requestContentFile(pants, &pantsStatus, filename);
-                                    if (pantsStatus == 1) {
-                                        std::string migrated = migrateAtlas(filename, pants.mimeType(), false, 1.0f);
-                                        if (humanoid->getTorso() == partInstance.get() && material.notNull()) {
-                                            TextureProxyBase* texture = createPartTexture(view->getDevice(), migrated, false);
-                                            material->appendLevel(TextureProxyBaseRef(texture), G3D::Color3::WHITE, 0.9f, 50.0f, partInstance->getReflectance(), partInstance->alpha() + 0.002f);
-                                            texture->setFloat2c(decalTextureScale);
-                                        } else {
-                                            material = createPartMaterial();
-                                            material->appendLevel(TextureProxyBaseRef(), color, 0.9f, 50.0f, partInstance->getReflectance(), partInstance->alpha());
-                                            TextureProxyBase* texture = createPartTexture(view->getDevice(), migrated, false);
-                                            material->appendLevel(TextureProxyBaseRef(texture), G3D::Color3::WHITE, 0.9f, 50.0f, partInstance->getReflectance(), partInstance->alpha() + 0.001f);
-                                            texture->setFloat2c(decalTextureScale);
-                                        }
-                                        materialInvalid = false;
-                                    }
-                                }
-                            }
-                            if (!materialInvalid)
-                                return material;
-                            if ((shirtPart && shirtStatus == 0) || (pantsPart && pantsStatus == 0)) {
-                                if (material != emptyMaterial)
-                                    material = emptyMaterial.getPointer();
-                                return material;
-                            }
+                }
+                if (!shirt.isNull() || !pants.isNull()) {
+                Humanoid* humanoid = Humanoid::modelIsCharacter(parent);
+                if (humanoid) {
+                bool shirtPart = !shirt.isNull() && (partInstance.get() == humanoid->getLeftArm() || partInstance.get() == humanoid->getRightArm() || partInstance.get() == humanoid->getTorso());
+                bool pantsPart = !pants.isNull() && (partInstance.get() == humanoid->getLeftLeg() || partInstance.get() == humanoid->getRightLeg() || partInstance.get() == humanoid->getTorso());
+                int shirtStatus = 1, pantsStatus = 1;
+                if (shirtPart || pantsPart) {
+                    material = NULL;
+                    if (shirtPart) {
+                        ServiceProvider::find<ContentProvider>(partInstance.get())->requestContentFile(shirt, &shirtStatus, filename);
+                        if (shirtStatus == 1) {
+                            std::string migrated = migrateAtlas(filename, shirt.mimeType(), false, 1.0f);
+                            material = createPartMaterial();
+                            material->appendLevel(TextureProxyBaseRef(NULL), color, 0.9f, 50.0f, partInstance->getReflectance(), partInstance->alpha());
+                            TextureProxyBase* texture = createPartTexture(view->getDevice(), migrated, false);
+                            material->appendLevel(TextureProxyBaseRef(texture), G3D::Color3::WHITE, 0.9f, 50.0f, partInstance->getReflectance(), partInstance->alpha() + 0.001f);
+                            texture->setFloat2c(decalTextureScale);
+                            if (pants.isNull() || partInstance.get() != humanoid->getTorso())
+                                materialInvalid = false;
                         }
                     }
+                    if (pantsPart) {
+                        ServiceProvider::find<ContentProvider>(partInstance.get())->requestContentFile(pants, &pantsStatus, filename);
+                        if (pantsStatus == 1) {
+                            do {
+                            std::string migrated = migrateAtlas(filename, pants.mimeType(), false, 1.0f);
+                            if (humanoid->getTorso() == partInstance.get() && material.notNull()) {
+                                do {
+                                TextureProxyBase* texture = createPartTexture(view->getDevice(), migrated, false);
+                                material->appendLevel(TextureProxyBaseRef(texture), G3D::Color3::WHITE, 0.9f, 50.0f, partInstance->getReflectance(), partInstance->alpha() + 0.002f);
+                                texture->setFloat2c(decalTextureScale);
+                                } while (false);
+                            } else {
+                                material = createPartMaterial();
+                                material->appendLevel(TextureProxyBaseRef(), color, 0.9f, 50.0f, partInstance->getReflectance(), partInstance->alpha());
+                                TextureProxyBase* texture = createPartTexture(view->getDevice(), migrated, false);
+                                material->appendLevel(TextureProxyBaseRef(texture), G3D::Color3::WHITE, 0.9f, 50.0f, partInstance->getReflectance(), partInstance->alpha() + 0.001f);
+                                texture->setFloat2c(decalTextureScale);
+                            }
+                            materialInvalid = false;
+                            } while (false);
+                        }
+                    }
+                }
+                if (!materialInvalid)
+                    return material;
+                if ((shirtPart && shirtStatus == 0) || (pantsPart && pantsStatus == 0)) {
+                    if (material != emptyMaterial)
+                        material = emptyMaterial.getPointer();
+                    return material;
+                }
+                }
+                }
                 }
             }
             if (usesMegaTexture())
@@ -262,6 +268,5 @@ PartMaterialRef Part::getMaterial() {
     }
     return material;
 }
+
 }}
-
-

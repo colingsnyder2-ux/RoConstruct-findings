@@ -204,7 +204,7 @@
   "path": "2008-06/src/Client/App/include/v8xml/SerializerV2.h"
  },
  "004448f0": {
-  "line": 14,
+  "line": 15,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "00444a70": {
@@ -840,11 +840,11 @@
   "path": "2008-06/src/Client/App/include/v8datamodel/Decal.h"
  },
  "004e5f20": {
-  "line": 31,
+  "line": 32,
   "path": "2008-06/src/Client/App/v8datamodel/custommesh.cpp"
  },
  "004e5f50": {
-  "line": 26,
+  "line": 27,
   "path": "2008-06/src/Client/App/v8datamodel/custommesh.cpp"
  },
  "004e6c00": {
@@ -2316,15 +2316,15 @@
   "path": "2008-06/src/Client/App/include/util/Object.h"
  },
  "0059fbb0": {
-  "line": 13,
+  "line": 14,
   "path": "2008-06/src/Client/App/v8datamodel/custommesh.cpp"
  },
  "0059ffd0": {
-  "line": 75,
+  "line": 76,
   "path": "2008-06/src/Client/App/v8datamodel/custommesh.cpp"
  },
  "005a0030": {
-  "line": 85,
+  "line": 86,
   "path": "2008-06/src/Client/App/v8datamodel/custommesh.cpp"
  },
  "005a0140": {
@@ -2520,7 +2520,7 @@
   "path": "2008-06/src/glue/rbxgs/glue_content_provider.cpp"
  },
  "005a8140": {
-  "line": 40,
+  "line": 54,
   "path": "2008-06/src/Client/App/util/Guid.cpp"
  },
  "005a8260": {
@@ -2532,7 +2532,7 @@
   "path": "2008-06/src/Client/App/util/Guid.cpp"
  },
  "005a8440": {
-  "line": 62,
+  "line": 67,
   "path": "2008-06/src/Client/App/util/Guid.cpp"
  },
  "005a8590": {
@@ -3648,11 +3648,11 @@
   "path": "2008-06/src/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e27b0": {
-  "line": 174,
+  "line": 172,
   "path": "2008-06/src/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e27c0": {
-  "line": 185,
+  "line": 183,
   "path": "2008-06/src/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e2a10": {
@@ -3672,7 +3672,7 @@
   "path": "2008-06/src/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e2cd0": {
-  "line": 157,
+  "line": 155,
   "path": "2008-06/src/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e2e10": {
@@ -3728,15 +3728,15 @@
   "path": "2008-06/src/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e4490": {
-  "line": 179,
+  "line": 177,
   "path": "2008-06/src/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e44c0": {
-  "line": 190,
+  "line": 188,
   "path": "2008-06/src/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e4fe0": {
-  "line": 295,
+  "line": 293,
   "path": "2008-06/src/Client/App/v8datamodel/JointInstance.cpp"
  },
  "005e50c0": {
@@ -6180,7 +6180,7 @@
   "path": "2008-06/src/Client/App/include/util/Object.h"
  },
  "0062adb0": {
-  "line": 16,
+  "line": 17,
   "path": "2008-06/src/Client/App/v8datamodel/Explosion.cpp"
  },
  "0062af60": {
@@ -6188,7 +6188,7 @@
   "path": "2008-06/src/Client/App/include/v8datamodel/Explosion.h"
  },
  "0062b030": {
-  "line": 110,
+  "line": 111,
   "path": "2008-06/src/Client/App/v8datamodel/Explosion.cpp"
  },
  "0062b700": {
@@ -6248,19 +6248,19 @@
   "path": "2008-06/src/Client/App/include/v8kernel/Body.h"
  },
  "0062e1c0": {
-  "line": 135,
+  "line": 136,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "0062e290": {
-  "line": 144,
+  "line": 145,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "0062e320": {
-  "line": 24,
+  "line": 25,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "0062e460": {
-  "line": 31,
+  "line": 32,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "0062f4e0": {
@@ -6268,15 +6268,15 @@
   "path": "2008-06/src/Client/App/include/util/Object.h"
  },
  "006308f0": {
-  "line": 69,
+  "line": 70,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "00632070": {
-  "line": 245,
+  "line": 246,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "00632190": {
-  "line": 338,
+  "line": 339,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "00632370": {
@@ -6284,23 +6284,23 @@
   "path": "2008-06/src/Client/App/include/v8datamodel/Gyro.h"
  },
  "006324f0": {
-  "line": 402,
+  "line": 403,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "006325e0": {
-  "line": 420,
+  "line": 421,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "00632b50": {
-  "line": 100,
+  "line": 101,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "00632db0": {
-  "line": 53,
+  "line": 54,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "00632fd0": {
-  "line": 149,
+  "line": 150,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "006334b0": {
@@ -7404,11 +7404,11 @@
   "path": "2008-06/src/Client/App/util/ExponentialRunningAverage.cpp"
  },
  "006683b0": {
-  "line": 180,
+  "line": 192,
   "path": "2008-06/src/Client/App/v8world/JointStage.cpp"
  },
  "006683f0": {
-  "line": 198,
+  "line": 202,
   "path": "2008-06/src/Client/App/v8world/JointStage.cpp"
  },
  "00669d30": {

@@ -85,7 +85,7 @@ namespace RBX
 
 	RunDragger::SnapInfo RunDragger::createSnapSurface(Primitive* snap, G3D::Array<NormalId>* ignore)
 	{
-		RBXASSERT(snap);
+		               ;
 
 		SnapInfo answer;
 		answer.snap = snap;
@@ -221,8 +221,8 @@ namespace RBX
 			temp.push_back(part->getPrimitive());
 
 			G3D::Vector3 moved = Dragger::safeMoveNoDrop(temp, G3D::Vector3::zero(), workspace->getWorld()->getContactManager());
-			RBXASSERT(moved.x == 0.0f);
-			RBXASSERT(moved.y != 0.0f);
+			                          ;
+			                          ;
 
 			G3D::CoordinateFrame newC = drag->getCoordinateFrame();
 			newC.translation += moved;

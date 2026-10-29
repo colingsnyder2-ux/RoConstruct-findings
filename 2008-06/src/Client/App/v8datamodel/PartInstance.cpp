@@ -134,7 +134,7 @@ namespace RBX
 
 	void PartInstance::legacyTraverseState(const G3D::CoordinateFrame& parentState)
 	{
-		RBXASSERT(legacyOffset.get());
+		                             ;
 
 		G3D::CoordinateFrame myState = parentState * *legacyOffset;
 		primitive.setGridCorner(myState);
@@ -308,7 +308,7 @@ namespace RBX
 
 	const RBX::PartInstance* PartInstance::fromPrimitiveConst(const Primitive* p)
 	{
-		RBXASSERT(!p || dynamic_cast<PartInstance*>(p->getOwner()));
+		                                                           ;
 
 		if (p)
 			return rbx_static_cast<PartInstance*>(p->getOwner());
@@ -362,7 +362,7 @@ namespace RBX
 
 	void PartInstance::onCanAggregateChanged(bool canAggregate)
 	{
-		RBXASSERT(canAggregate == getCanAggregate());
+		                                            ;
 		Notifier<PartInstance, CanAggregateChanged>::raise(canAggregate);
 		shouldRenderSetDirty();
 	}
@@ -370,12 +370,12 @@ namespace RBX
 	void PartInstance::onAncestorChanged(const AncestorChanged& event)
 	{
 		Instance::onAncestorChanged(event);
-		RBXASSERT(&primitive);
+		                     ;
 
 		World* world = Workspace::getWorldIfInWorkspace(this);
 		if (world != myWorld)
 		{
-			RBXASSERT(myWorld || !primitive.getClump());
+			                                           ;
 
 			if (myWorld)
 			{
@@ -541,7 +541,7 @@ namespace RBX
 
 	void PartInstance::safeMove()
 	{
-		RBXASSERT(&primitive);
+		                     ;
 
 		if (World* world = Workspace::getWorldIfInWorkspace(this))
 		{
@@ -805,7 +805,7 @@ namespace RBX
 	void PartInstance::setPartTypeUi(Part::PartType _type)
 	{
 		if (partType != Part::BLOCK_PART)
-			RBXASSERT(formFactor == SYMETRIC);
+			                                 ;
 
 		if (getPartType() != _type)
 		{

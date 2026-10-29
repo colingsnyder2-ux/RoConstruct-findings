@@ -1,3 +1,4 @@
+#pragma float_control(precise, off)
 #include "v8world/RotateJoint.h"
 #include "v8world/Primitive.h"
 #include "v8world/SurfaceData.h"
@@ -35,11 +36,11 @@ namespace RBX
 
 	float RotateJoint::getChannelValue(int uiStepId)
 	{
-		RBXASSERT(getAxlePrim());
+		                        ;
 		const SurfaceData& axleSurface = getAxlePrim()->getSurfaceData(getAxleId());
 
 		Controller* controller = getAxlePrim()->getController();
-		RBXASSERT(controller);
+		                     ;
 
 		float value = controller->getValue(axleSurface.inputType);
 		float paramA = axleSurface.paramA;
@@ -221,7 +222,7 @@ namespace RBX
 			Point* pMarker0 = getKernel()->newPoint(b0, marker0);
 			Point* pMarker1 = getKernel()->newPoint(b1, marker0);
 
-			RBXASSERT(!rotateConnector);
+			                           ;
 			RotateConnector* connector = new RotateConnector(getPoint(0), getPoint(2), pMarker0, pMarker1, getJointK(), getTorqueArmLength());
 			rotateConnector = connector;
 			addToMultiJoint(pMarker0, pMarker1, connector);

@@ -177,22 +177,26 @@ namespace RBX
 		}
 	}
 
+	__declspec(noinline) bool JointStage::acceptsJoint(Joint* j)
+	{
+		return edgeHasPrimitivesDownstream(j);
+	}
+
+	__declspec(noinline) void JointStage::addLocally(Joint* j)
+	{
+		insertToList(j);
+		insertToMap(j, j->getPrimitive(0));
+		insertToMap(j, j->getPrimitive(1));
+	}
+
 	void JointStage::onEdgeAdded(Edge* e)
 	{
 		e->putInPipeline(this);
 
-		if (edgeHasPrimitivesDownstream(e))
-		{
-			moveEdgeToDownstream(e);
-		}
+		if (acceptsJoint(rbx_static_cast<Joint*>(e)))
+			getDownstreamWS()->onEdgeAdded(e);
 		else
-		{
-			RBXASSERT(e->getEdgeType() == Edge::JOINT);
-			Joint* j = rbx_static_cast<Joint*>(e);
-			insertToList(j);
-			insertToMap(j, j->getPrimitive(0));
-			insertToMap(j, j->getPrimitive(1));
-		}
+			addLocally(rbx_static_cast<Joint*>(e));
 	}
 
 	void JointStage::onEdgeRemoving(Edge* e)

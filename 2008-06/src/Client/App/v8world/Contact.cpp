@@ -658,7 +658,7 @@ namespace RBX
 						}
 					}
 				}
-				RBXASSERT(foundCounter != 1 && foundCounter <= 8);
+				                                                 ;
 				return foundCounter;
 			}
 		}

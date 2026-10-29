@@ -287,6 +287,18 @@
   [
    "\tvoid BodyMover::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)\n\t{\n\t\tNotifier<RunService,Stepped>::disconnect(ServiceProvider::create<RunService>(oldProvider), this);\n\n\t\tInstance::onServiceProvider(oldProvider, newProvider);\n\n\t\tupdateWorld();\n\t}",
    "\tvoid BodyMover::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)\n\t{\n\t\tif (oldProvider)\n\t\t\tNotifier<RunService,Stepped>::disconnect(ServiceProvider::find<RunService>(oldProvider), this);\n\t\tif (newProvider)\n\t\t\tNotifier<RunService,Stepped>::connect(ServiceProvider::find<RunService>(newProvider), this);\n\t}"
+  ],
+  [
+   "#include \"v8datamodel/Gyro.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"v8datamodel/Gyro.h\"\n"
+  ],
+  [
+   "BodyGyro::computeForce(const float dt, bool throttling)\n\t{\n\t\tBody* body = part.lock()->getPrimitive()->getBody();\n\t\tRBXASSERT(body != NULL);\n\n\t\tcomputeBalance(body);\n\t\tcomputeOrientation(body);\n\t}",
+   "BodyGyro::computeForce(const float dt, bool throttling)\n\t{\n\t\tBody* body = part.lock()->getPrimitive()->getBody();\n\t\t                       ;\n\n\t\tcomputeBalance(body);\n\t\tcomputeOrientation(body);\n\t}"
+  ],
+  [
+   "BodyThrust::computeForce(const float dt, bool throttling)\n\t{\n\t\tBody* body = part.lock()->getPrimitive()->getBody();\n\t\tRBXASSERT(body != NULL);\n\n\t\tG3D::Vector3 worldForce = body->getCoordinateFrame().vectorToWorldSpace(force);\n\t\tG3D::Vector3 worldPos = body->getCoordinateFrame().pointToWorldSpace(location);\n\t\tbody->accumulateForce(worldForce, worldPos);\n\t}",
+   "BodyThrust::computeForce(const float dt, bool throttling)\n\t{\n\t\tBody* body = part.lock()->getPrimitive()->getBody();\n\t\t                       ;\n\n\t\tG3D::Vector3 worldForce = body->getCoordinateFrame().vectorToWorldSpace(force);\n\t\tG3D::Vector3 worldPos = body->getCoordinateFrame().pointToWorldSpace(location);\n\t\tbody->accumulateForce(worldForce, worldPos);\n\t}"
   ]
  ],
  "App/include/reflection/object.h": [
@@ -349,6 +361,14 @@
   [
    "\tvoid JointInstance::render3dAdorn(Adorn* adorn)\n\t{\n\t\tRBXASSERT(shouldRender3dAdorn());\n\n\t\tif (Joint::isAssemblyJoint(joint))\n\t\t{\n\t\t\tG3D::Color3 color3;\n\n\t\t\tPrimitive* prim0 = joint->getPrimitive(0);\n\t\t\tPrimitive* prim1 = joint->getPrimitive(1);\n\n\t\t\tG3D::Vector3 vec0 = prim0\n\t\t\t\t? prim0->getCoordinateFrame().translation\n\t\t\t\t: G3D::Vector3::zero();\n\n\t\t\tG3D::Vector3 vec1 = prim1\n\t\t\t\t? prim1->getCoordinateFrame().translation\n\t\t\t\t: G3D::Vector3::zero();\n\n\t\t\tif (joint->getActive())\n\t\t\t\tcolor3 = G3D::Color3::green();\n\t\t\telse\n\t\t\t\tcolor3 = G3D::Color3::red();\n\n\t\t\tadorn->setObjectToWorldMatrix(G3D::CoordinateFrame());\n\n\t\t\tG3D::Color4 color4(color3);\n\t\t\tadorn->lineSegment(\n\t\t\t\tG3D::LineSegment::fromTwoPoints(vec0, vec1),\n\t\t\t\tcolor4,\n\t\t\t\t20.0);\n\t\t}\n\t}",
    "\tvoid JointInstance::render3dAdorn(Adorn* adorn)\n\t{\n\n\t\tif (Joint::getJointType(joint) >= Joint::ANCHOR_JOINT)\n\t\t{\n\t\t\tG3D::Color3 color3;\n\n\t\t\tPrimitive* prim0 = getPart0() ? getPart0()->getPrimitive() : NULL;\n\t\t\tPrimitive* prim1 = getPart1() ? getPart1()->getPrimitive() : NULL;\n\n\t\t\tG3D::Vector3 vec0 = prim0\n\t\t\t\t? prim0->getCoordinateFrame().translation\n\t\t\t\t: G3D::Vector3::zero();\n\n\t\t\tG3D::Vector3 vec1 = prim1\n\t\t\t\t? prim1->getCoordinateFrame().translation\n\t\t\t\t: G3D::Vector3::zero();\n\n\t\t\tif (joint->getActive())\n\t\t\t\tcolor3 = G3D::Color3::green();\n\t\t\telse\n\t\t\t\tcolor3 = G3D::Color3::red();\n\n\t\t\tadorn->setObjectToWorldMatrix(G3D::CoordinateFrame());\n\n\t\t\tG3D::Color4 color4(color3);\n\t\t\tadorn->lineSegment(\n\t\t\t\tG3D::LineSegment::fromTwoPoints(vec0, vec1),\n\t\t\t\tcolor4,\n\t\t\t\t20.0);\n\t\t}\n\t}"
+  ],
+  [
+   "\t\tWorld* oldWorld = joint->getWorld();\n\t\tWorld* wsWorld;",
+   "\t\tWorld* oldWorld = joint->getWorld2008();\n\t\tWorld* wsWorld;"
+  ],
+  [
+   "\t\t\tif (oldWorld)\n\t\t\t{\n\t\t\t\toldWorld->removeJoint(joint);\n\t\t\t\tRBXASSERT(!joint->getWorld());\n\t\t\t}\n\n\t\t\tif (wsWorld)\n\t\t\t{\n\t\t\t\twsWorld->insertJoint(joint);\n\t\t\t\tRBXASSERT(joint->getWorld());\n\t\t\t}",
+   "\t\t\tif (oldWorld)\n\t\t\t{\n\t\t\t\toldWorld->removeJoint(joint);\n\t\t\t}\n\n\t\t\tif (wsWorld)\n\t\t\t{\n\t\t\t\twsWorld->insertJoint(joint);\n\t\t\t}"
   ]
  ],
  "App/humanoid/Humanoid.cpp": [
@@ -685,6 +705,30 @@
   [
    "namespace RBX\n{\n\tconst char* category_Part = \"Part\";",
    "namespace RBX\n{\n\tbool __fastcall rocInPipelineAnchor(const IPipelined* p)\n\t{\n\t\treturn p->inPipeline();\n\t}\n\n\tconst char* category_Part = \"Part\";"
+  ],
+  [
+   "PartInstance::legacyTraverseState(const G3D::CoordinateFrame& parentState)\n\t{\n\t\tRBXASSERT(legacyOffset.get());\n\n\t\tG3D::CoordinateFrame myState = parentState * *legacyOffset;\n\t\tprimitive.setGridCorner(myState);\n\t}",
+   "PartInstance::legacyTraverseState(const G3D::CoordinateFrame& parentState)\n\t{\n\t\t                             ;\n\n\t\tG3D::CoordinateFrame myState = parentState * *legacyOffset;\n\t\tprimitive.setGridCorner(myState);\n\t}"
+  ],
+  [
+   "PartInstance::fromPrimitiveConst(const Primitive* p)\n\t{\n\t\tRBXASSERT(!p || dynamic_cast<PartInstance*>(p->getOwner()));\n\n\t\tif (p)\n\t\t\treturn rbx_static_cast<PartInstance*>(p->getOwner());\n\t\telse\n\t\t\treturn NULL;\n\t}",
+   "PartInstance::fromPrimitiveConst(const Primitive* p)\n\t{\n\t\t                                                           ;\n\n\t\tif (p)\n\t\t\treturn rbx_static_cast<PartInstance*>(p->getOwner());\n\t\telse\n\t\t\treturn NULL;\n\t}"
+  ],
+  [
+   "PartInstance::onCanAggregateChanged(bool canAggregate)\n\t{\n\t\tRBXASSERT(canAggregate == getCanAggregate());\n\t\tNotifier<PartInstance, CanAggregateChanged>::raise(canAggregate);\n\t\tshouldRenderSetDirty();\n\t}",
+   "PartInstance::onCanAggregateChanged(bool canAggregate)\n\t{\n\t\t                                            ;\n\t\tNotifier<PartInstance, CanAggregateChanged>::raise(canAggregate);\n\t\tshouldRenderSetDirty();\n\t}"
+  ],
+  [
+   "PartInstance::onAncestorChanged(const AncestorChanged& event)\n\t{\n\t\tInstance::onAncestorChanged(event);\n\t\tRBXASSERT(&primitive);\n\n\t\tWorld* world = Workspace::getWorldIfInWorkspace(this);\n\t\tif (world != myWorld)\n\t\t{\n\t\t\tRBXASSERT(myWorld || !primitive.getClump());\n\n\t\t\tif (myWorld)\n\t\t\t{\n\t\t\t\tsetMovingManager(NULL);\n\t\t\t\tmyWorld->removePrimitive(&primitive);\n\t\t\t}\n\n\t\t\tmyWorld = world;\n\n\t\t\tif (world)\n\t\t\t{\n\t\t\t\tworld->insertPrimitive(&primitive);\n\t\t\t\tsetMovingManager(Workspace::getMyWorkspaceFast(this));\n\t\t\t\tprimitive.setController(getTopPVController());\n\t\t\t}\n\t\t}\n\t}",
+   "PartInstance::onAncestorChanged(const AncestorChanged& event)\n\t{\n\t\tInstance::onAncestorChanged(event);\n\t\t                     ;\n\n\t\tWorld* world = Workspace::getWorldIfInWorkspace(this);\n\t\tif (world != myWorld)\n\t\t{\n\t\t\t                                           ;\n\n\t\t\tif (myWorld)\n\t\t\t{\n\t\t\t\tsetMovingManager(NULL);\n\t\t\t\tmyWorld->removePrimitive(&primitive);\n\t\t\t}\n\n\t\t\tmyWorld = world;\n\n\t\t\tif (world)\n\t\t\t{\n\t\t\t\tworld->insertPrimitive(&primitive);\n\t\t\t\tsetMovingManager(Workspace::getMyWorkspaceFast(this));\n\t\t\t\tprimitive.setController(getTopPVController());\n\t\t\t}\n\t\t}\n\t}"
+  ],
+  [
+   "PartInstance::safeMove()\n\t{\n\t\tRBXASSERT(&primitive);\n\n\t\tif (World* world = Workspace::getWorldIfInWorkspace(this))\n\t\t{\n\t\t\tG3D::Array<Primitive*> temp;\n\t\t\ttemp.append(&primitive);\n\t\t\t\n\t\t\tDragger::safeMoveNoDrop(temp, G3D::Vector3::zero(), world->getContactManager());\n\t\t}\n\t}",
+   "PartInstance::safeMove()\n\t{\n\t\t                     ;\n\n\t\tif (World* world = Workspace::getWorldIfInWorkspace(this))\n\t\t{\n\t\t\tG3D::Array<Primitive*> temp;\n\t\t\ttemp.append(&primitive);\n\t\t\t\n\t\t\tDragger::safeMoveNoDrop(temp, G3D::Vector3::zero(), world->getContactManager());\n\t\t}\n\t}"
+  ],
+  [
+   "PartInstance::setPartTypeUi(Part::PartType _type)\n\t{\n\t\tif (partType != Part::BLOCK_PART)\n\t\t\tRBXASSERT(formFactor == SYMETRIC);\n\n\t\tif (getPartType() != _type)\n\t\t{\n\t\t\tdestroyJoints();\n\n\t\t\tsetPartTypeXml(_type);\n\n\t\t\tif (_type != Part::BLOCK_PART)\n\t\t\t{\n\t\t\t\tG3D::Vector3 xmlSize = uiToXmlSize(getPartSizeUi());\n\t\t\t\tsetPartSizeXml(xmlSize);\n\t\t\t\tsafeMove();\n\t\t\t}\n\n\t\t\tsafeMove();\n\t\t\tjoin();\n\t\t}\n\t}",
+   "PartInstance::setPartTypeUi(Part::PartType _type)\n\t{\n\t\tif (partType != Part::BLOCK_PART)\n\t\t\t                                 ;\n\n\t\tif (getPartType() != _type)\n\t\t{\n\t\t\tdestroyJoints();\n\n\t\t\tsetPartTypeXml(_type);\n\n\t\t\tif (_type != Part::BLOCK_PART)\n\t\t\t{\n\t\t\t\tG3D::Vector3 xmlSize = uiToXmlSize(getPartSizeUi());\n\t\t\t\tsetPartSizeXml(xmlSize);\n\t\t\t\tsafeMove();\n\t\t\t}\n\n\t\t\tsafeMove();\n\t\t\tjoin();\n\t\t}\n\t}"
   ]
  ],
  "App/include/v8kernel/Body.h": [
@@ -749,6 +793,10 @@
   [
    "Body* Body::getWorldBody()\n{\n\tstatic Body b = Body();\n\treturn &b;\n}\n",
    "static Body* gWorldBody = NULL;   // 2008: the global Body* at 0x97bec4\n\nstatic void initialize()           // 00614b40 ?initialize@@YAXXZ\n{\n\tgWorldBody = new Body();\n}\n\nBody* Body::getWorldBody()\n{\n\tif (!gWorldBody)\n\t\tinitialize();\n\treturn gWorldBody;\n}\n"
+  ],
+  [
+   "Body::onChildAdded(RBX::Body* child)\n{\n\tmakeCofmDirty();\n\tchildren.fastAppend(child);\n\tif (!cofm)\n\t{\n\t\tRBXASSERT(numChildren() == 1);\n\t\tcofm = new Cofm(this);\n\t}\n}",
+   "Body::onChildAdded(RBX::Body* child)\n{\n\tmakeCofmDirty();\n\tchildren.fastAppend(child);\n\tif (!cofm)\n\t{\n\t\t                             ;\n\t\tcofm = new Cofm(this);\n\t}\n}"
   ]
  ],
  "App/include/v8datamodel/Workspace.h": [
@@ -913,6 +961,10 @@
   [
    "\t__declspec(noinline) void Contact::deleteConnector(ContactConnector*& c)\n\t{\n\t\tif (c)\n\t\t{\n\t\t\tthis->getKernel()->removeConnector(c);\n\t\t\tdelete c;\n\t\t\tc = NULL;\n\t\t}\n\t}",
    "\t__declspec(noinline) void Contact::deleteConnector(ContactConnector*& c)\n\t{\n\t\tthis->getKernel()->removeConnector(c);\n\t\tdelete c;\n\t\tc = NULL;\n\t}"
+  ],
+  [
+   "BlockBlockContact::intersectRectQuad(G3D::Vector2& planeRect, G3D::Vector2 (&otherQuad)[4])\n\t{\n\t\tbool quadCrossRect[4][4];\n\n\t\tbool quadIn[4] = {true, true, true, true};\n\n\t\tint foundCounter = 0;\n\n\t\tfor (int i = 3; i >= 0; i--)\n\t\t{\n\t\t\tif (otherQuad[i].y <= planeRect.y)\n\t\t\t{\n\t\t\t\tquadCrossRect[0][i] = true;\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tquadCrossRect[0][i] = false;\n\t\t\t\tquadIn[i] = false;\n\t\t\t}\n\n\t\t\tif (otherQuad[i].x >= -planeRect.x)\n\t\t\t{\n\t\t\t\tquadCrossRect[1][i] = true;\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tquadCrossRect[1][i] = false;\n\t\t\t\tquadIn[i] = false;\n\t\t\t}\n\n\t\t\tif (otherQuad[i].y >= -planeRect.y)\n\t\t\t{\n\t\t\t\tquadCrossRect[2][i] = true;\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tquadCrossRect[2][i] = false;\n\t\t\t\tquadIn[i] = false;\n\t\t\t}\n\n\t\t\tif (otherQuad[i].x <= planeRect.x)\n\t\t\t{\n\t\t\t\tquadCrossRect[3][i] = true;\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tquadCrossRect[3][i] = false;\n\t\t\t\tquadIn[i] = false;\n\t\t\t}\n\t\t}\n\n\t\tfor (int i = 3; i >= 0; i--)\n\t\t{\n\t\t\tif (quadIn[i])\n\t\t\t{\n\t\t\t\tloadGeoPairPointPlane(bOther, bPlane, i, otherPlaneID, planeID);\n\t\t\t\tfoundCounter++;\n\t\t\t}\n\t\t}\n\n\t\tif (foundCounter == 4)\n\t\t\treturn foundCounter;\n\t\telse\n\t\t{\n\t\t\tbool rectCrossQuad[4][4];\n\t\t\tG3D::Vector2 rect[4];\n\t\t\trect[0] = G3D::Vector2(planeRect.x, planeRect.y);\n\t\t\trect[1] = G3D::Vector2(-planeRect.x, planeRect.y);\n\t\t\trect[2] = G3D::Vector2(-planeRect.x, -planeRect.y);\n\t\t\trect[3] = G3D::Vector2(planeRect.x, -planeRect.y);\n\n\t\t\tbool rectIn[4] = {true, true, true, true};\n\n\t\t\tfor (int i = 3; i >= 0; i--)\n\t\t\t{\n\t\t\t\tG3D::Vector2& current = otherQuad[i];\n\t\t\t\tG3D::Vector2& currentO = otherQuad[(i + 3) % 4];\n\t\t\t\tfor (int j = 0; j < 4; j++)\n\t\t\t\t{\n\t\t\t\t\tG3D::Vector2 math1 = rect[j] - current;\n\t\t\t\t\tG3D::Vector2 math2 = currentO - current;\n\n\t\t\t\t\tif ((math2.x * math1.y) - (math2.y * math1.x) >= 0.0f)\n\t\t\t\t\t{\n\t\t\t\t\t\trectCrossQuad[i][j] = true;\n\t\t\t\t\t}\n\t\t\t\t\telse\n\t\t\t\t\t{\n\t\t\t\t\t\trectCrossQuad[i][j] = false;\n\t\t\t\t\t\trectIn[j] = false;\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\n\t\t\tint wasZero = foundCounter == 0;\n\n\t\t\tfor (int i = 0; i < 4; i++)\n\t\t\t{\n\t\t\t\tif (rectIn[i])\n\t\t\t\t{\n\t\t\t\t\tloadGeoPairPointPlane(bPlane, bOther, i, planeID, otherPlaneID);\n\t\t\t\t\tfoundCounter++;\n\t\t\t\t}\n\t\t\t}\n\n\t\t\tif (wasZero && foundCounter == 4)\n\t\t\t\treturn foundCounter;\n\t\t\telse\n\t\t\t{\n\t\t\t\tfor (int i = 0; i < 4; i++)\n\t\t\t\t{\n\t\t\t\t\tfor (int j = 3; j >= 0; j--)\n\t\t\t\t\t{\n\t\t\t\t\t\tif (quadCrossRect[i][j] != quadCrossRect[i][(j + 3) % 4] && rectCrossQuad[j][i] != rectCrossQuad[j][(i + 1) % 4])\n\t\t\t\t\t\t{\n\n\t\t\t\t\t\t\tloadGeoPairEdgeEdgePlane(bOther, bPlane, block(bOther)->faceVertexToEdge(otherPlaneID, (j+3)%4), block(bPlane)->faceVertexToEdge(planeID, i));\n\t\t\t\t\t\t\tfoundCounter++;\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t\tRBXASSERT(foundCounter != 1 && foundCounter <= 8);\n\t\t\t\treturn foundCounter;\n\t\t\t}\n\t\t}\n\t}",
+   "BlockBlockContact::intersectRectQuad(G3D::Vector2& planeRect, G3D::Vector2 (&otherQuad)[4])\n\t{\n\t\tbool quadCrossRect[4][4];\n\n\t\tbool quadIn[4] = {true, true, true, true};\n\n\t\tint foundCounter = 0;\n\n\t\tfor (int i = 3; i >= 0; i--)\n\t\t{\n\t\t\tif (otherQuad[i].y <= planeRect.y)\n\t\t\t{\n\t\t\t\tquadCrossRect[0][i] = true;\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tquadCrossRect[0][i] = false;\n\t\t\t\tquadIn[i] = false;\n\t\t\t}\n\n\t\t\tif (otherQuad[i].x >= -planeRect.x)\n\t\t\t{\n\t\t\t\tquadCrossRect[1][i] = true;\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tquadCrossRect[1][i] = false;\n\t\t\t\tquadIn[i] = false;\n\t\t\t}\n\n\t\t\tif (otherQuad[i].y >= -planeRect.y)\n\t\t\t{\n\t\t\t\tquadCrossRect[2][i] = true;\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tquadCrossRect[2][i] = false;\n\t\t\t\tquadIn[i] = false;\n\t\t\t}\n\n\t\t\tif (otherQuad[i].x <= planeRect.x)\n\t\t\t{\n\t\t\t\tquadCrossRect[3][i] = true;\n\t\t\t}\n\t\t\telse\n\t\t\t{\n\t\t\t\tquadCrossRect[3][i] = false;\n\t\t\t\tquadIn[i] = false;\n\t\t\t}\n\t\t}\n\n\t\tfor (int i = 3; i >= 0; i--)\n\t\t{\n\t\t\tif (quadIn[i])\n\t\t\t{\n\t\t\t\tloadGeoPairPointPlane(bOther, bPlane, i, otherPlaneID, planeID);\n\t\t\t\tfoundCounter++;\n\t\t\t}\n\t\t}\n\n\t\tif (foundCounter == 4)\n\t\t\treturn foundCounter;\n\t\telse\n\t\t{\n\t\t\tbool rectCrossQuad[4][4];\n\t\t\tG3D::Vector2 rect[4];\n\t\t\trect[0] = G3D::Vector2(planeRect.x, planeRect.y);\n\t\t\trect[1] = G3D::Vector2(-planeRect.x, planeRect.y);\n\t\t\trect[2] = G3D::Vector2(-planeRect.x, -planeRect.y);\n\t\t\trect[3] = G3D::Vector2(planeRect.x, -planeRect.y);\n\n\t\t\tbool rectIn[4] = {true, true, true, true};\n\n\t\t\tfor (int i = 3; i >= 0; i--)\n\t\t\t{\n\t\t\t\tG3D::Vector2& current = otherQuad[i];\n\t\t\t\tG3D::Vector2& currentO = otherQuad[(i + 3) % 4];\n\t\t\t\tfor (int j = 0; j < 4; j++)\n\t\t\t\t{\n\t\t\t\t\tG3D::Vector2 math1 = rect[j] - current;\n\t\t\t\t\tG3D::Vector2 math2 = currentO - current;\n\n\t\t\t\t\tif ((math2.x * math1.y) - (math2.y * math1.x) >= 0.0f)\n\t\t\t\t\t{\n\t\t\t\t\t\trectCrossQuad[i][j] = true;\n\t\t\t\t\t}\n\t\t\t\t\telse\n\t\t\t\t\t{\n\t\t\t\t\t\trectCrossQuad[i][j] = false;\n\t\t\t\t\t\trectIn[j] = false;\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\n\t\t\tint wasZero = foundCounter == 0;\n\n\t\t\tfor (int i = 0; i < 4; i++)\n\t\t\t{\n\t\t\t\tif (rectIn[i])\n\t\t\t\t{\n\t\t\t\t\tloadGeoPairPointPlane(bPlane, bOther, i, planeID, otherPlaneID);\n\t\t\t\t\tfoundCounter++;\n\t\t\t\t}\n\t\t\t}\n\n\t\t\tif (wasZero && foundCounter == 4)\n\t\t\t\treturn foundCounter;\n\t\t\telse\n\t\t\t{\n\t\t\t\tfor (int i = 0; i < 4; i++)\n\t\t\t\t{\n\t\t\t\t\tfor (int j = 3; j >= 0; j--)\n\t\t\t\t\t{\n\t\t\t\t\t\tif (quadCrossRect[i][j] != quadCrossRect[i][(j + 3) % 4] && rectCrossQuad[j][i] != rectCrossQuad[j][(i + 1) % 4])\n\t\t\t\t\t\t{\n\n\t\t\t\t\t\t\tloadGeoPairEdgeEdgePlane(bOther, bPlane, block(bOther)->faceVertexToEdge(otherPlaneID, (j+3)%4), block(bPlane)->faceVertexToEdge(planeID, i));\n\t\t\t\t\t\t\tfoundCounter++;\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t\t                                                 ;\n\t\t\t\treturn foundCounter;\n\t\t\t}\n\t\t}\n\t}"
   ]
  ],
  "App/v8datamodel/RootInstance.cpp": [
@@ -1005,6 +1057,14 @@
   [
    "void SimBody::step(float dt)\n",
    "void SimBody::step()\n"
+  ],
+  [
+   "#include \"v8kernel/SimBody.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"v8kernel/SimBody.h\"\n"
+  ],
+  [
+   "SimBody::getOwnerPV()\n{\n\tRBXASSERT(!dirty);\n\tG3D::Vector3 cofmOffset = body->getCofmOffset();\n\treturn pv.pvAtLocalOffset(G3D::Vector3(-cofmOffset.x, -cofmOffset.y, -cofmOffset.z));\n}",
+   "SimBody::getOwnerPV()\n{\n\t                 ;\n\tG3D::Vector3 cofmOffset = body->getCofmOffset();\n\treturn pv.pvAtLocalOffset(G3D::Vector3(-cofmOffset.x, -cofmOffset.y, -cofmOffset.z));\n}"
   ]
  ],
  "App/v8datamodel/Surface.cpp": [
@@ -1195,6 +1255,14 @@
   [
    "RunDragger::findNoSnapPosition(const G3D::CoordinateFrame& original)\n\t{\n\t\tdragPart.lock()->setCoordinateFrame(original);\n\t\tfindSafeY();\n\n\t\tRBXASSERT(!workspace->getWorld()->getContactManager().intersectingOthers(drag, 0.01f));\n\t}",
    "RunDragger::findNoSnapPosition(const G3D::CoordinateFrame& original)\n\t{\n\t\tdragPart.lock()->setCoordinateFrame(original);\n\t\tfindSafeY();\n\n\t\t                                                                                      ;\n\t}"
+  ],
+  [
+   "RunDragger::createSnapSurface(Primitive* snap, G3D::Array<NormalId>* ignore)\n\t{\n\t\tRBXASSERT(snap);\n\n\t\tSnapInfo answer;\n\t\tanswer.snap = snap;\n\n\t\tExtents snapExtents = snap->getExtentsLocal();\n\t\tconst G3D::CoordinateFrame& cframe = snap->getCoordinateFrame();\n\t\tG3D::Ray rayInSnap = cframe.toObjectSpace(mouseRay);\n\n\t\tfloat bestDistance = 0.0f;\n\t\tbool found = false;\n\n\t\tfor (int i = 0; i < 6; i++)\n\t\t{\n\t\t\tNormalId id = (NormalId)i;\n\n\t\t\tif (!ignore || ignore->find(id) == ignore->end())\n\t\t\t{\n\t\t\t\tG3D::Plane plane = snapExtents.getPlane(id);\n\t\t\t\tif (plane.halfSpaceContainsFinite(rayInSnap.origin))\n\t\t\t\t{\n\t\t\t\t\tG3D::Vector3 hitInSnap;\n\t\t\t\t\tif (Math::intersectRayPlane(rayInSnap, plane, hitInSnap))\n\t\t\t\t\t{\n\t\t\t\t\t\tG3D::Vector3 hitWorld = cframe.pointToWorldSpace(hitInSnap);\n\t\t\t\t\t\tfloat distance = (mouseRay.origin - hitWorld).magnitude();\n\t\t\t\t\t\tif (distance > bestDistance)\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\tbestDistance = distance;\n\t\t\t\t\t\t\tanswer.surface = id;\n\t\t\t\t\t\t\tfound = true;\n\t\t\t\t\t\t\tanswer.hitWorld = hitWorld;\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t\t\n\t\treturn found ? answer : SnapInfo();\n\t}",
+   "RunDragger::createSnapSurface(Primitive* snap, G3D::Array<NormalId>* ignore)\n\t{\n\t\t               ;\n\n\t\tSnapInfo answer;\n\t\tanswer.snap = snap;\n\n\t\tExtents snapExtents = snap->getExtentsLocal();\n\t\tconst G3D::CoordinateFrame& cframe = snap->getCoordinateFrame();\n\t\tG3D::Ray rayInSnap = cframe.toObjectSpace(mouseRay);\n\n\t\tfloat bestDistance = 0.0f;\n\t\tbool found = false;\n\n\t\tfor (int i = 0; i < 6; i++)\n\t\t{\n\t\t\tNormalId id = (NormalId)i;\n\n\t\t\tif (!ignore || ignore->find(id) == ignore->end())\n\t\t\t{\n\t\t\t\tG3D::Plane plane = snapExtents.getPlane(id);\n\t\t\t\tif (plane.halfSpaceContainsFinite(rayInSnap.origin))\n\t\t\t\t{\n\t\t\t\t\tG3D::Vector3 hitInSnap;\n\t\t\t\t\tif (Math::intersectRayPlane(rayInSnap, plane, hitInSnap))\n\t\t\t\t\t{\n\t\t\t\t\t\tG3D::Vector3 hitWorld = cframe.pointToWorldSpace(hitInSnap);\n\t\t\t\t\t\tfloat distance = (mouseRay.origin - hitWorld).magnitude();\n\t\t\t\t\t\tif (distance > bestDistance)\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\tbestDistance = distance;\n\t\t\t\t\t\t\tanswer.surface = id;\n\t\t\t\t\t\t\tfound = true;\n\t\t\t\t\t\t\tanswer.hitWorld = hitWorld;\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t\t\n\t\treturn found ? answer : SnapInfo();\n\t}"
+  ],
+  [
+   "RunDragger::findSafeY()\n\t{\n\t\tif (workspace->getWorld()->getContactManager().intersectingOthers(drag, 0.01f))\n\t\t{\n\t\t\tPartInstance* part = PartInstance::fromPrimitive(drag);\n\t\t\tG3D::Array<Primitive*> temp;\n\t\t\ttemp.push_back(part->getPrimitive());\n\n\t\t\tG3D::Vector3 moved = Dragger::safeMoveNoDrop(temp, G3D::Vector3::zero(), workspace->getWorld()->getContactManager());\n\t\t\tRBXASSERT(moved.x == 0.0f);\n\t\t\tRBXASSERT(moved.y != 0.0f);\n\n\t\t\tG3D::CoordinateFrame newC = drag->getCoordinateFrame();\n\t\t\tnewC.translation += moved;\n\n\t\t\tdragPart.lock()->setCoordinateFrame(newC);\n\t\t}\n\t}",
+   "RunDragger::findSafeY()\n\t{\n\t\tif (workspace->getWorld()->getContactManager().intersectingOthers(drag, 0.01f))\n\t\t{\n\t\t\tPartInstance* part = PartInstance::fromPrimitive(drag);\n\t\t\tG3D::Array<Primitive*> temp;\n\t\t\ttemp.push_back(part->getPrimitive());\n\n\t\t\tG3D::Vector3 moved = Dragger::safeMoveNoDrop(temp, G3D::Vector3::zero(), workspace->getWorld()->getContactManager());\n\t\t\t                          ;\n\t\t\t                          ;\n\n\t\t\tG3D::CoordinateFrame newC = drag->getCoordinateFrame();\n\t\t\tnewC.translation += moved;\n\n\t\t\tdragPart.lock()->setCoordinateFrame(newC);\n\t\t}\n\t}"
   ]
  ],
  "App/v8world/IPipelined.cpp": [
@@ -1249,6 +1317,10 @@
   [
    "\tExtents Dragger::computeExtents(const G3D::Array<Primitive*>& primitives)\n\t{\n\t\tRBXASSERT(primitives.size() > 0);",
    "\tExtents Dragger::computeExtents(const G3D::Array<Primitive*>& primitives)\n\t{"
+  ],
+  [
+   "Dragger::safeMoveNoDrop(const G3D::Array<Primitive*>& primitives, const G3D::Vector3& tryMove, ContactManager& contactManager)\n\t{\n\t\tG3D::Vector3 movedSoFar(0.0f, 0.0f, 0.0f);\n\n\t\tif (primitives.size() == 0)\n\t\t{\n\t\t\tRBXASSERT(0);\n\t\t\treturn G3D::Vector3::zero();\n\t\t}\n\n\t\tif (tryMove != G3D::Vector3::zero())\n\t\t{\n\t\t\tmovePrimitives(primitives, tryMove);\n\t\t\tmovedSoFar += tryMove;\n\t\t}\n\n\t\tif (intersectingWorldOrOthers(primitives, contactManager))\n\t\t\tsearchUpGross(primitives, movedSoFar, contactManager);\n\n\t\treturn movedSoFar;\n\t}",
+   "Dragger::safeMoveNoDrop(const G3D::Array<Primitive*>& primitives, const G3D::Vector3& tryMove, ContactManager& contactManager)\n\t{\n\t\tG3D::Vector3 movedSoFar(0.0f, 0.0f, 0.0f);\n\n\t\tif (primitives.size() == 0)\n\t\t{\n\t\t\t            ;\n\t\t\treturn G3D::Vector3::zero();\n\t\t}\n\n\t\tif (tryMove != G3D::Vector3::zero())\n\t\t{\n\t\t\tmovePrimitives(primitives, tryMove);\n\t\t\tmovedSoFar += tryMove;\n\t\t}\n\n\t\tif (intersectingWorldOrOthers(primitives, contactManager))\n\t\t\tsearchUpGross(primitives, movedSoFar, contactManager);\n\n\t\treturn movedSoFar;\n\t}"
   ]
  ],
  "App/v8world/ContactManager.cpp": [
@@ -1313,6 +1385,18 @@
   [
    "\t\tInstance::onServiceProvider(oldProvider, newProvider);",
    ""
+  ],
+  [
+   "LocalBackpack::onLocalBackpackAdded(Backpack* added)\n\t{\n\t\tRBXASSERT(numChildren() <= 1);\n\t\tRBXASSERT(added->getParent() == localPlayer.get());\n\n\t\tlocalBackpack = shared_from(added);\n\n\t\tNotifier<Instance, ChildAdded>::connect(localBackpack, this);\n\t\tNotifier<Instance, ChildRemoved>::connect(localBackpack, this);\n\t}",
+   "LocalBackpack::onLocalBackpackAdded(Backpack* added)\n\t{\n\t\t                             ;\n\t\t                                                  ;\n\n\t\tlocalBackpack = shared_from(added);\n\n\t\tNotifier<Instance, ChildAdded>::connect(localBackpack, this);\n\t\tNotifier<Instance, ChildRemoved>::connect(localBackpack, this);\n\t}"
+  ],
+  [
+   "LocalBackpack::insertBackpackItem(BackpackItem* item)\n\t{\n\t\tRBXASSERT(localBackpack);\n\n\t\tboost::shared_ptr<LocalBackpackItem> localItem = Creatable::create<LocalBackpackItem>();\n\t\tlocalItem->setParent(this);\n\n\t\tint maxId = (int)numChildren() - 1;\n\t\tint minId = lastRemovedIndex >= 0 ? G3D::min(lastRemovedIndex, maxId) : maxId;\n\n\t\tfor (int i = maxId; i > minId; i--)\n\t\t{\n\t\t\tLocalBackpackItem* aItem = rbx_static_cast<LocalBackpackItem*>(getChild(i - 1));\n\t\t\tLocalBackpackItem* bItem = rbx_static_cast<LocalBackpackItem*>(getChild(i));\n\n\t\t\tbItem->setItem(aItem->getItem());\n\t\t}\n\n\t\tLocalBackpackItem* freeItem = rbx_static_cast<LocalBackpackItem*>(getChild(minId));\n\t\tfreeItem->setItem(item);\n\t\tlastRemovedIndex = -1;\n\t}",
+   "LocalBackpack::insertBackpackItem(BackpackItem* item)\n\t{\n\t\t                        ;\n\n\t\tboost::shared_ptr<LocalBackpackItem> localItem = Creatable::create<LocalBackpackItem>();\n\t\tlocalItem->setParent(this);\n\n\t\tint maxId = (int)numChildren() - 1;\n\t\tint minId = lastRemovedIndex >= 0 ? G3D::min(lastRemovedIndex, maxId) : maxId;\n\n\t\tfor (int i = maxId; i > minId; i--)\n\t\t{\n\t\t\tLocalBackpackItem* aItem = rbx_static_cast<LocalBackpackItem*>(getChild(i - 1));\n\t\t\tLocalBackpackItem* bItem = rbx_static_cast<LocalBackpackItem*>(getChild(i));\n\n\t\t\tbItem->setItem(aItem->getItem());\n\t\t}\n\n\t\tLocalBackpackItem* freeItem = rbx_static_cast<LocalBackpackItem*>(getChild(minId));\n\t\tfreeItem->setItem(item);\n\t\tlastRemovedIndex = -1;\n\t}"
+  ],
+  [
+   "LocalBackpack::onHeartbeat()\n\t{\n\t\tBackpackItem* prevPendingClick = pendingClick.get();\n\t\tif (prevPendingClick)\n\t\t{\n\t\t\tboost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = getChildren().read();\n\t\t\tif (c)\n\t\t\t{\n\t\t\t\tfor (std::vector<boost::shared_ptr<Instance>>::const_iterator it = c->begin(); it != c->end(); it++)\n\t\t\t\t{\n\t\t\t\t\tLocalBackpackItem* current = rbx_static_cast<LocalBackpackItem*>(it->get());\n\t\t\t\t\tif (current->getItem() != pendingClick.get())\n\t\t\t\t\t\tcurrent->getItem()->onLocalOtherClicked();\n\t\t\t\t}\n\t\t\t}\n\n\t\t\tRBXASSERT(prevPendingClick == pendingClick.get());\n\t\t\tpendingClick->onLocalClicked();\n\t\t\tpendingClick.reset();\n\t\t}\n\t}",
+   "LocalBackpack::onHeartbeat()\n\t{\n\t\tBackpackItem* prevPendingClick = pendingClick.get();\n\t\tif (prevPendingClick)\n\t\t{\n\t\t\tboost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = getChildren().read();\n\t\t\tif (c)\n\t\t\t{\n\t\t\t\tfor (std::vector<boost::shared_ptr<Instance>>::const_iterator it = c->begin(); it != c->end(); it++)\n\t\t\t\t{\n\t\t\t\t\tLocalBackpackItem* current = rbx_static_cast<LocalBackpackItem*>(it->get());\n\t\t\t\t\tif (current->getItem() != pendingClick.get())\n\t\t\t\t\t\tcurrent->getItem()->onLocalOtherClicked();\n\t\t\t\t}\n\t\t\t}\n\n\t\t\t                                                 ;\n\t\t\tpendingClick->onLocalClicked();\n\t\t\tpendingClick.reset();\n\t\t}\n\t}"
   ]
  ],
  "App/v8datamodel/Hopper.cpp": [
@@ -1615,6 +1699,10 @@
   [
    "\tTeam* Teams::getTeamFromTeamColor(BrickColor brickColor)\n\t{\n\t\tfor (size_t i = 0; i < numChildren(); i++)\n\t\t{\n\t\t\tTeam* team = dynamic_cast<Team*>(getChild(i));\n\t\t\tif (team && team->getTeamColor() == brickColor)\n\t\t\t\treturn team;\n\t\t}\n\t\t\n\t\treturn NULL;\n\t}",
    "\tTeam* Teams::getTeamFromTeamColor(BrickColor brickColor)\n\t{\n\t\tfor (size_t i = 0; i < numChildren(); i++)\n\t\t{\n\t\t\tTeam* team = dynamic_cast<Team*>(getChild(i));\n\t\t\tif (team && team->getTeamColor() == brickColor)\n\t\t\t\treturn team;\n\t\t}\n\t\t\n\t\treturn NULL;\n\t}\n\n\tTeam* Teams::getTeamFromPlayer(Network::Player* player)\n\t{\n\t\tif (player->getNeutral())\n\t\t\treturn NULL;\n\n\t\treturn getTeamFromTeamColor(player->getTeamColor());\n\t}"
+  ],
+  [
+   "Teams::getTeamColorForHumanoid(Humanoid* humanoid)\n\t{\n\t\tNetwork::Players* players = ServiceProvider::find<Network::Players>(this);\n\t\tRBXASSERT(players);\n\n\t\tfor (size_t i = 0; i < players->numChildren(); i++)\n\t\t{\n\t\t\tNetwork::Player* player = dynamic_cast<Network::Player*>(players->getChild(i));\n\t\t\tif (player)\n\t\t\t{\n\t\t\t\tif (!player->getNeutral() && player->getCharacter())\n\t\t\t\t{\n\t\t\t\t\tModelInstance* character = player->getCharacter();\n\t\t\t\t\tif (character->findFirstChildOfType<Humanoid>() == humanoid)\n\t\t\t\t\t{\n\t\t\t\t\t\treturn player->getTeamColor().color3();\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\n\t\treturn G3D::Color3::white();\n\t}",
+   "Teams::getTeamColorForHumanoid(Humanoid* humanoid)\n\t{\n\t\tNetwork::Players* players = ServiceProvider::find<Network::Players>(this);\n\t\t                  ;\n\n\t\tfor (size_t i = 0; i < players->numChildren(); i++)\n\t\t{\n\t\t\tNetwork::Player* player = dynamic_cast<Network::Player*>(players->getChild(i));\n\t\t\tif (player)\n\t\t\t{\n\t\t\t\tif (!player->getNeutral() && player->getCharacter())\n\t\t\t\t{\n\t\t\t\t\tModelInstance* character = player->getCharacter();\n\t\t\t\t\tif (character->findFirstChildOfType<Humanoid>() == humanoid)\n\t\t\t\t\t{\n\t\t\t\t\t\treturn player->getTeamColor().color3();\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\n\t\treturn G3D::Color3::white();\n\t}"
   ]
  ],
  "App/include/util/UIEvent.h": [
@@ -1649,6 +1737,10 @@
   [
    "\tRunService::RunService()\n\t\t: framePeriod(1.0f/30.0f),\n\t\t  runState(RS_NORMAL),\n\t\t  invalidRunViewCount(0),\n\t\t  stopRequested(false),\n\t\t  runDisabled(false)\n\t{\n\t\tsetName(\"Run Service\");\n\t}\n",
    "\tRunService::RunService()\n\t\t: framePeriod(1.0f/30.0f),\n\t\t  runState(RS_NORMAL),\n\t\t  unknown0x1b8(0.0),\n\t\t  unknown0x1c8(0.0), unknown0x1d0(0.0), unknown0x1d8(0.0), unknown0x1e0(0.0),\n\t\t  invalidRunViewCount(0),\n\t\t  stopRequested(false)\n\t{\n\t\tsetName(\"Run Service\");\n\t\tunknownStopwatch0x1e8.tick();\n\t}\n"
+  ],
+  [
+   "RunService::start()\n\t{\n\t\tRBXASSERT(!runThread);\n\n\t\tboost::shared_ptr<DataModel> dataModel = shared_from(dynamic_cast<DataModel*>(getParent()));\n\t\trunThread.reset(new boost::thread(background_function(boost::bind(&RunService::runProc, shared_from(this), dataModel), \"rbx_runProc\")));\n\t}",
+   "RunService::start()\n\t{\n\t\t                     ;\n\n\t\tboost::shared_ptr<DataModel> dataModel = shared_from(dynamic_cast<DataModel*>(getParent()));\n\t\trunThread.reset(new boost::thread(background_function(boost::bind(&RunService::runProc, shared_from(this), dataModel), \"rbx_runProc\")));\n\t}"
   ]
  ],
  "App/util/Face.cpp": [
@@ -1713,6 +1805,10 @@
   [
    "\t\tInstance::onServiceProvider(oldProvider, newProvider);",
    ""
+  ],
+  [
+   "#include \"v8datamodel/Explosion.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"v8datamodel/Explosion.h\"\n"
   ]
  ],
  "App/tool/ToolsArrow.cpp": [
@@ -1783,6 +1879,44 @@
   [
    "\t\t\tWorld* world = getWorld();\n\t\t\tif (world)",
    "\t\t\tWorld* world = getWorld2008();\n\t\t\tif (world)"
+  ]
+ ],
+ "App/v8world/JointStage.cpp": [
+  [
+   "\tvoid JointStage::onEdgeAdded(Edge* e)\n\t{\n\t\te->putInPipeline(this);\n\n\t\tif (edgeHasPrimitivesDownstream(e))\n\t\t{\n\t\t\tmoveEdgeToDownstream(e);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(e->getEdgeType() == Edge::JOINT);\n\t\t\tJoint* j = rbx_static_cast<Joint*>(e);\n\t\t\tinsertToList(j);\n\t\t\tinsertToMap(j, j->getPrimitive(0));\n\t\t\tinsertToMap(j, j->getPrimitive(1));\n\t\t}\n\t}\n",
+   "\t__declspec(noinline) bool JointStage::acceptsJoint(Joint* j)\n\t{\n\t\treturn edgeHasPrimitivesDownstream(j);\n\t}\n\n\t__declspec(noinline) void JointStage::addLocally(Joint* j)\n\t{\n\t\tinsertToList(j);\n\t\tinsertToMap(j, j->getPrimitive(0));\n\t\tinsertToMap(j, j->getPrimitive(1));\n\t}\n\n\tvoid JointStage::onEdgeAdded(Edge* e)\n\t{\n\t\te->putInPipeline(this);\n\n\t\tif (acceptsJoint(rbx_static_cast<Joint*>(e)))\n\t\t\tgetDownstreamWS()->onEdgeAdded(e);\n\t\telse\n\t\t\taddLocally(rbx_static_cast<Joint*>(e));\n\t}\n"
+  ]
+ ],
+ "App/include/v8world/JointStage.h": [
+  [
+   "\t\tbool edgeHasPrimitivesDownstream(Edge* e);\n",
+   "\t\tbool edgeHasPrimitivesDownstream(Edge* e);\n\t\tbool acceptsJoint(Joint* j);\n\t\tvoid addLocally(Joint* j);\n"
+  ]
+ ],
+ "App/util/Guid.cpp": [
+  [
+   "\tvoid Guid::generateGUID(std::string& result)\n\t{\n\t\tresult = \"RBX\";\n\n\t\tGUID guid;\n\t\tCoCreateGuid(&guid);\n\n\t\twchar_t wszGUID[64] = {0};\n\t\tStringFromGUID2(guid, wszGUID, 64);\n\n\t\tchar ansiClsid[64];\n\t\tWideCharToMultiByte(NULL, NULL, wszGUID, 64, ansiClsid, 64, NULL, NULL);\n\t\t\n\t\tresult += ansiClsid;\n\t\tresult.erase(40, 1);",
+   "\tstatic void guidString(std::string& result)\n\t{\n\t\tGUID guid;\n\t\tCoCreateGuid(&guid);\n\n\t\twchar_t wszGUID[64] = {0};\n\t\tStringFromGUID2(guid, wszGUID, 64);\n\n\t\tchar ansiClsid[64];\n\t\tWideCharToMultiByte(NULL, NULL, wszGUID, 64, ansiClsid, 64, NULL, NULL);\n\n\t\tresult = ansiClsid;\n\t}\n\n\tvoid Guid::generateGUID(std::string& result)\n\t{\n\t\tguidString(result);\n\t\tresult = \"RBX\" + result;\n\n\t\tresult.erase(40, 1);"
+  ]
+ ],
+ "App/v8world/RotateJoint.cpp": [
+  [
+   "#include \"v8world/RotateJoint.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"v8world/RotateJoint.h\"\n"
+  ],
+  [
+   "RotateJoint::getChannelValue(int uiStepId)\n\t{\n\t\tRBXASSERT(getAxlePrim());\n\t\tconst SurfaceData& axleSurface = getAxlePrim()->getSurfaceData(getAxleId());\n\n\t\tController* controller = getAxlePrim()->getController();\n\t\tRBXASSERT(controller);\n\n\t\tfloat value = controller->getValue(axleSurface.inputType);\n\t\tfloat paramA = axleSurface.paramA;\n\t\tfloat paramB = axleSurface.paramB;\n\n\t\tfloat dt = Constants::uiDt() * uiStepId;\n\n\t\tswitch (axleSurface.inputType)\n\t\t{\n\t\tcase Controller::NO_INPUT:\n\t\t\treturn 0.0;\n\t\tcase Controller::CONSTANT_INPUT:\n\t\t\treturn paramB;\n\t\tcase Controller::SIN_INPUT:\n\t\t\treturn sin(dt * paramB) * paramA;\n\t\tcase Controller::LEFT_TRACK_INPUT:\n\t\t\tif (value < -0.1)\n\t\t\t\treturn value * fabs(paramA);\n\t\t\telse if (value > 0.1)\n\t\t\t\treturn value * fabs(paramB);\n\t\t\treturn 0.0;\n\t\tcase Controller::RIGHT_TRACK_INPUT:\n\t\t\tif (value < -0.1)\n\t\t\t\treturn -(value * fabs(paramA));\n\t\t\telse if (value > 0.1)\n\t\t\t\treturn -(value * fabs(paramB));\n\t\t\treturn 0.0;\n\t\tdefault:\n\t\t\tif (value < -0.1)\n\t\t\t\treturn -(value * paramA);\n\t\t\telse if (value > 0.1)\n\t\t\t\treturn value * paramB;\n\t\t\treturn 0.0;\n\t\t}\n\t}",
+   "RotateJoint::getChannelValue(int uiStepId)\n\t{\n\t\t                        ;\n\t\tconst SurfaceData& axleSurface = getAxlePrim()->getSurfaceData(getAxleId());\n\n\t\tController* controller = getAxlePrim()->getController();\n\t\t                     ;\n\n\t\tfloat value = controller->getValue(axleSurface.inputType);\n\t\tfloat paramA = axleSurface.paramA;\n\t\tfloat paramB = axleSurface.paramB;\n\n\t\tfloat dt = Constants::uiDt() * uiStepId;\n\n\t\tswitch (axleSurface.inputType)\n\t\t{\n\t\tcase Controller::NO_INPUT:\n\t\t\treturn 0.0;\n\t\tcase Controller::CONSTANT_INPUT:\n\t\t\treturn paramB;\n\t\tcase Controller::SIN_INPUT:\n\t\t\treturn sin(dt * paramB) * paramA;\n\t\tcase Controller::LEFT_TRACK_INPUT:\n\t\t\tif (value < -0.1)\n\t\t\t\treturn value * fabs(paramA);\n\t\t\telse if (value > 0.1)\n\t\t\t\treturn value * fabs(paramB);\n\t\t\treturn 0.0;\n\t\tcase Controller::RIGHT_TRACK_INPUT:\n\t\t\tif (value < -0.1)\n\t\t\t\treturn -(value * fabs(paramA));\n\t\t\telse if (value > 0.1)\n\t\t\t\treturn -(value * fabs(paramB));\n\t\t\treturn 0.0;\n\t\tdefault:\n\t\t\tif (value < -0.1)\n\t\t\t\treturn -(value * paramA);\n\t\t\telse if (value > 0.1)\n\t\t\t\treturn value * paramB;\n\t\t\treturn 0.0;\n\t\t}\n\t}"
+  ],
+  [
+   "RotateJoint::putInKernel(Kernel* _kernel)\n\t{\n\t\tMultiJoint::putInKernel(_kernel);\n\n\t\tBody* b0 = getAxlePrim()->getBody();\n\t\tBody* b1 = getHolePrim()->getBody();\n\n\t\tG3D::CoordinateFrame cAxleWorld = b0->getCoordinateFrame() * jointCoord0;\n\t\tG3D::CoordinateFrame cHoleWorld = b1->getCoordinateFrame() * jointCoord1;\n\n\t\tG3D::Vector3 vAxleWorld = cAxleWorld.rotation.getColumn(2);\n\t\tG3D::Vector3 vHoleWorld = cHoleWorld.rotation.getColumn(2);\n\n\t\tfor (int i = 0; i < 2; i++)\n\t\t{\n\t\t\tfloat multiplier = i == 0 ? -1.0f : 1.0f;\n\n\t\t\tG3D::Vector3 pAxleWorldPos = vAxleWorld * multiplier + cAxleWorld.translation;\n\t\t\tG3D::Vector3 pHoleWorldPos = vHoleWorld * multiplier + cHoleWorld.translation;\n\n\t\t\tPoint* pAxleWorld = getKernel()->newPoint(b0, pAxleWorldPos);\n\t\t\tPoint* pHoleWorld = getKernel()->newPoint(b1, pHoleWorldPos);\n\n\t\t\tPointToPointBreakConnector* connector = new PointToPointBreakConnector(pAxleWorld, pHoleWorld, getJointK(), Math::inf());\n\t\t\taddToMultiJoint(pAxleWorld, pHoleWorld, connector);\n\t\t}\n\n\t\tif (getJointType() == ROTATE_P_JOINT || getJointType() == ROTATE_V_JOINT)\n\t\t{\n\t\t\tG3D::Vector3 center0 = cAxleWorld.translation;\n\t\t\tG3D::Vector3 perp = cAxleWorld.rotation.getColumn(0);\n\t\t\tG3D::Vector3 marker0 = perp * 10.0f + center0;\n\n\t\t\tPoint* pMarker0 = getKernel()->newPoint(b0, marker0);\n\t\t\tPoint* pMarker1 = getKernel()->newPoint(b1, marker0);\n\n\t\t\tRBXASSERT(!rotateConnector);\n\t\t\tRotateConnector* connector = new RotateConnector(getPoint(0), getPoint(2), pMarker0, pMarker1, getJointK(), getTorqueArmLength());\n\t\t\trotateConnector = connector;\n\t\t\taddToMultiJoint(pMarker0, pMarker1, connector);\n\t\t}\n\t}",
+   "RotateJoint::putInKernel(Kernel* _kernel)\n\t{\n\t\tMultiJoint::putInKernel(_kernel);\n\n\t\tBody* b0 = getAxlePrim()->getBody();\n\t\tBody* b1 = getHolePrim()->getBody();\n\n\t\tG3D::CoordinateFrame cAxleWorld = b0->getCoordinateFrame() * jointCoord0;\n\t\tG3D::CoordinateFrame cHoleWorld = b1->getCoordinateFrame() * jointCoord1;\n\n\t\tG3D::Vector3 vAxleWorld = cAxleWorld.rotation.getColumn(2);\n\t\tG3D::Vector3 vHoleWorld = cHoleWorld.rotation.getColumn(2);\n\n\t\tfor (int i = 0; i < 2; i++)\n\t\t{\n\t\t\tfloat multiplier = i == 0 ? -1.0f : 1.0f;\n\n\t\t\tG3D::Vector3 pAxleWorldPos = vAxleWorld * multiplier + cAxleWorld.translation;\n\t\t\tG3D::Vector3 pHoleWorldPos = vHoleWorld * multiplier + cHoleWorld.translation;\n\n\t\t\tPoint* pAxleWorld = getKernel()->newPoint(b0, pAxleWorldPos);\n\t\t\tPoint* pHoleWorld = getKernel()->newPoint(b1, pHoleWorldPos);\n\n\t\t\tPointToPointBreakConnector* connector = new PointToPointBreakConnector(pAxleWorld, pHoleWorld, getJointK(), Math::inf());\n\t\t\taddToMultiJoint(pAxleWorld, pHoleWorld, connector);\n\t\t}\n\n\t\tif (getJointType() == ROTATE_P_JOINT || getJointType() == ROTATE_V_JOINT)\n\t\t{\n\t\t\tG3D::Vector3 center0 = cAxleWorld.translation;\n\t\t\tG3D::Vector3 perp = cAxleWorld.rotation.getColumn(0);\n\t\t\tG3D::Vector3 marker0 = perp * 10.0f + center0;\n\n\t\t\tPoint* pMarker0 = getKernel()->newPoint(b0, marker0);\n\t\t\tPoint* pMarker1 = getKernel()->newPoint(b1, marker0);\n\n\t\t\t                           ;\n\t\t\tRotateConnector* connector = new RotateConnector(getPoint(0), getPoint(2), pMarker0, pMarker1, getJointK(), getTorqueArmLength());\n\t\t\trotateConnector = connector;\n\t\t\taddToMultiJoint(pMarker0, pMarker1, connector);\n\t\t}\n\t}"
+  ]
+ ],
+ "App/v8datamodel/custommesh.cpp": [
+  [
+   "#include \"v8datamodel/custommesh.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"v8datamodel/custommesh.h\"\n"
   ]
  ]
 }

@@ -105,7 +105,7 @@ void Body::onChildAdded(RBX::Body* child)
 	children.fastAppend(child);
 	if (!cofm)
 	{
-		RBXASSERT(numChildren() == 1);
+		                             ;
 		cofm = new Cofm(this);
 	}
 }

@@ -37,10 +37,8 @@ namespace RBX
 		this->data = data;
 	}
 
-	void Guid::generateGUID(std::string& result)
+	static void guidString(std::string& result)
 	{
-		result = "RBX";
-
 		GUID guid;
 		CoCreateGuid(&guid);
 
@@ -49,8 +47,15 @@ namespace RBX
 
 		char ansiClsid[64];
 		WideCharToMultiByte(NULL, NULL, wszGUID, 64, ansiClsid, 64, NULL, NULL);
-		
-		result += ansiClsid;
+
+		result = ansiClsid;
+	}
+
+	void Guid::generateGUID(std::string& result)
+	{
+		guidString(result);
+		result = "RBX" + result;
+
 		result.erase(40, 1);
 		result.erase(27, 1);
 		result.erase(22, 1);

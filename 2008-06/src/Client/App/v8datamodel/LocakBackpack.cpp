@@ -141,8 +141,8 @@ namespace RBX
 
 	void LocalBackpack::onLocalBackpackAdded(Backpack* added)
 	{
-		RBXASSERT(numChildren() <= 1);
-		RBXASSERT(added->getParent() == localPlayer.get());
+		                             ;
+		                                                  ;
 
 		localBackpack = shared_from(added);
 
@@ -224,7 +224,7 @@ namespace RBX
 
 	void LocalBackpack::insertBackpackItem(BackpackItem* item)
 	{
-		RBXASSERT(localBackpack);
+		                        ;
 
 		boost::shared_ptr<LocalBackpackItem> localItem = Creatable::create<LocalBackpackItem>();
 		localItem->setParent(this);
@@ -281,7 +281,7 @@ namespace RBX
 				}
 			}
 
-			RBXASSERT(prevPendingClick == pendingClick.get());
+			                                                 ;
 			pendingClick->onLocalClicked();
 			pendingClick.reset();
 		}

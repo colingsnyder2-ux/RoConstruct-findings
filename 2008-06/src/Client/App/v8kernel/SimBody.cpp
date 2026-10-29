@@ -1,3 +1,4 @@
+#pragma float_control(precise, off)
 #include "v8kernel/SimBody.h"
 #include "v8kernel/Constants.h"
 #include "v8kernel/Body.h"
@@ -139,7 +140,7 @@ void SimBody::step()
 
 PV SimBody::getOwnerPV()
 {
-	RBXASSERT(!dirty);
+	                 ;
 	G3D::Vector3 cofmOffset = body->getCofmOffset();
 	return pv.pvAtLocalOffset(G3D::Vector3(-cofmOffset.x, -cofmOffset.y, -cofmOffset.z));
 }

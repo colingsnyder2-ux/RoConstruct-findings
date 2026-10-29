@@ -1,9 +1,9 @@
-// from server: 92% by EspClaude
+// from server: 93% by EspClaude
 // from server: 81% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: ogre-1.4.5-dll roc_espclaude_016434b16d5d6e19.cpp
+// roc-lib: ogre-1.4.5-dll roc_espclaude_059f13fc1ccd6458.cpp
 
 // Candidate translation unit (score above; library headers required).
 #undef OGRE_NONCLIENT_BUILD
@@ -95,10 +95,12 @@ void RbxEntity::collect(Camera* camera,Light* light,std::vector<ShadowCaster*>& 
         }
         distance=-1.0f;
         for(int i=0;i<4;++i) {
+            const Ray& ray=rays[i];
             float nearest=1000000000.0f;
             for(int j=0;j<6;++j) {
-                if(planes[j].getSide(rays[i].getOrigin())==Plane::NEGATIVE_SIDE) {
-                    std::pair<bool,Real> hit=Math::intersects(rays[i],planes[j]);
+                if(planes[j].getSide(ray.getOrigin())==Plane::NEGATIVE_SIDE) {
+                    std::pair<bool,Real> hit=ray.intersects(planes[j]);
+
                     if(hit.first) nearest=std::min(nearest,hit.second);
                 }
             }

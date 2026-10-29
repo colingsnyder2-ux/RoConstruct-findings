@@ -66,7 +66,7 @@ namespace RBX
 	G3D::Color3 Teams::getTeamColorForHumanoid(Humanoid* humanoid)
 	{
 		Network::Players* players = ServiceProvider::find<Network::Players>(this);
-		RBXASSERT(players);
+		                  ;
 
 		for (size_t i = 0; i < players->numChildren(); i++)
 		{

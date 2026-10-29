@@ -1,3 +1,4 @@
+#pragma float_control(precise, off)
 #include "v8datamodel/Explosion.h"
 #include "v8datamodel/Workspace.h"
 #include "v8datamodel/PartInstance.h"

@@ -31,6 +31,8 @@ namespace RBX
 		void insertToMap(Joint* j, Primitive* p);
 		void removeFromMap(Joint* j, Primitive* p);
 		bool edgeHasPrimitivesDownstream(Edge* e);
+		bool acceptsJoint(Joint* j);
+		void addLocally(Joint* j);
 	public:
 		//JointStage(const JointStage&);
 		JointStage(IStage* upstream, World* world);

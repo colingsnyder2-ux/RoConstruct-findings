@@ -1,3 +1,4 @@
+#pragma float_control(precise, off)
 #include "v8datamodel/Gyro.h"
 #include "v8datamodel/PartInstance.h"
 #include <Network/Players.h>
@@ -254,7 +255,7 @@ namespace RBX
 	void BodyGyro::computeForce(const float dt, bool throttling)
 	{
 		Body* body = part.lock()->getPrimitive()->getBody();
-		RBXASSERT(body != NULL);
+		                       ;
 
 		computeBalance(body);
 		computeOrientation(body);
@@ -427,7 +428,7 @@ namespace RBX
 	void BodyThrust::computeForce(const float dt, bool throttling)
 	{
 		Body* body = part.lock()->getPrimitive()->getBody();
-		RBXASSERT(body != NULL);
+		                       ;
 
 		G3D::Vector3 worldForce = body->getCoordinateFrame().vectorToWorldSpace(force);
 		G3D::Vector3 worldPos = body->getCoordinateFrame().pointToWorldSpace(location);

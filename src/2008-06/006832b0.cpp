@@ -1,10 +1,10 @@
-// from server: 84% by EspClaude
+// from server: 95% by EspClaude
 // from server: 55% by EspClaude
 // from server: 44% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: ogre-1.4.5-dll roc_espclaude_3fafc7ff482d6d1b.cpp
+// roc-lib: ogre-1.4.5-dll roc_espclaude_f8f8885ee149d608.cpp
 
 // Candidate translation unit (score above; library headers required).
 // Native 006832b0. Names are behavioral analogues; owner layout is opaque.
@@ -284,9 +284,10 @@ void TwoDManager::draw() {
  std::list<Command>::iterator i,end;
  std::list<Batch> batches;
  if(COMMANDS.empty()) return;
- unsigned need=0;
  end=COMMANDS.end();
- for(i=COMMANDS.begin();i!=end;i++) {if(i->points==4) need+=6; else if(i->mode==0) need+=8; else need+=2;}
+ i=COMMANDS.begin();
+ unsigned need=0;
+ for(;i!=end;i++) {if(i->points==4) need+=6; else if(i->mode==0) need+=8; else need+=2;}
  unsigned capacity=need;
  if(capacity<120)capacity=120;
  if(BUFFER.isNull() || BUFFER->getNumVertices()<capacity) {
@@ -294,13 +295,14 @@ void TwoDManager::draw() {
   allocate(capacity);
   if(BUFFER.isNull()) {LogManager::getSingleton().logMessage("TwoDManager: failed to create hardware buffer\n",LML_NORMAL,false);return;}
  }
- float* out=static_cast<float*>(BUFFER->lock(HardwareBuffer::HBL_DISCARD));
+ float* buffer=static_cast<float*>(BUFFER->lock(HardwareBuffer::HBL_DISCARD));
  RGBA* col;
  i=COMMANDS.begin();
  Batch batch;
  batch.texture=i->texture; batch.points=i->points; batch.mode=i->mode; batch.count=0;
  while(i!=end) {
    unsigned n;
+   float* out=buffer;
    if(batch.points==4) {
     VERTEX(x1,y2,u1,v2) VERTEX(x2,y1,u2,v1) VERTEX(x1,y1,u1,v1)
     VERTEX(x1,y2,u1,v2) VERTEX(x2,y1,u2,v1) VERTEX(x2,y2,u2,v2)
@@ -314,6 +316,7 @@ void TwoDManager::draw() {
     } else {VERTEXO(x2,y2,u1,v1) n=2;}
    }
    batch.count+=n;
+   buffer=out;
    i++;
    if(i==end || batch.texture!=i->texture || batch.points!=O(i).points) {
     batches.push_back(batch);
@@ -341,7 +344,7 @@ void TwoDManager::draw() {
     rs->_setTextureBlendMode(0,colour);rs->_setTextureBlendMode(0,alpha);
     rs->_setTextureUnitFiltering(0,FO_LINEAR,FO_LINEAR,FO_LINEAR);
    }
-  }else {rs->_disableTextureUnitsFrom(0);previous.setNull();}
+  }else {rs->_disableTextureUnit(0);previous.setNull();}
   OP.vertexData->vertexCount=b->count;OP.operationType=b->points;
   rs->_render(OP);OP.vertexData->vertexStart+=b->count;
  }

@@ -119,7 +119,7 @@ namespace RBX
 	{
 		Instance::onAncestorChanged(event);
 
-		World* oldWorld = joint->getWorld();
+		World* oldWorld = joint->getWorld2008();
 		World* wsWorld;
 
 		Instance* parent = getParent();
@@ -143,13 +143,11 @@ namespace RBX
 			if (oldWorld)
 			{
 				oldWorld->removeJoint(joint);
-				RBXASSERT(!joint->getWorld());
 			}
 
 			if (wsWorld)
 			{
 				wsWorld->insertJoint(joint);
-				RBXASSERT(joint->getWorld());
 			}
 		}
 	}

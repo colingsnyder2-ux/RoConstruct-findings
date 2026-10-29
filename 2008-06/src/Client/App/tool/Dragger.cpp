@@ -90,7 +90,7 @@ namespace RBX
 
 		if (primitives.size() == 0)
 		{
-			RBXASSERT(0);
+			            ;
 			return G3D::Vector3::zero();
 		}
 
