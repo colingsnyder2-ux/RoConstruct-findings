@@ -1,0 +1,15 @@
+{
+ "compiled": true,
+ "linked": true,
+ "ran": true,
+ "exit": 0,
+ "output": "scintilla ctrl unattached",
+ "unresolved": [],
+ "duplicates": [],
+ "referencers": [],
+ "map": "C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\tests\\scintilla_baseline\\scintilla_baseline.map",
+ "choices": {
+  "ScintillaCtrl.obj": "baseline-objects",
+  "ScintillaDocView.obj": "baseline-objects"
+ }
+}

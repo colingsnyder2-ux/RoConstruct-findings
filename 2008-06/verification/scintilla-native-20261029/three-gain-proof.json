@@ -1,0 +1,26 @@
+[
+ {
+  "symbol": "?FindTextSimple@CScintillaView@@MAEHPBDHHHH@Z",
+  "address": "00462af0",
+  "object": "ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:000028c0       ?FindTextSimple@CScintillaView@@MAEHPBDHHHH@Z 004038c0 f   linked:ScintillaDocView.obj"
+ },
+ {
+  "symbol": "?OnCommand@CScintillaView@@MAEHIJ@Z",
+  "address": "00462e40",
+  "object": "ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00002d00       ?OnCommand@CScintillaView@@MAEHIJ@Z 00403d00 f   linked:ScintillaDocView.obj"
+ },
+ {
+  "symbol": "?OnNotify@CScintillaView@@MAEHIJPAJ@Z",
+  "address": "00462eb0",
+  "object": "ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00002d70       ?OnNotify@CScintillaView@@MAEHIJPAJ@Z 00403d70 f   linked:ScintillaDocView.obj"
+ }
+]

@@ -1,0 +1,758 @@
+[
+ {
+  "symbol": "?AddText@CScintillaCtrl@@QAEXHPBDH@Z",
+  "address": "00460070",
+  "actual_owner": "0001:00000ca0       ?AddText@CScintillaCtrl@@QAEXHPBDH@Z 00401ca0 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?ClearAll@CScintillaCtrl@@QAEXH@Z",
+  "address": "004600c0",
+  "actual_owner": "0001:00000cf0       ?ClearAll@CScintillaCtrl@@QAEXH@Z 00401cf0 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?GetLength@CScintillaCtrl@@QAEHH@Z",
+  "address": "004600f0",
+  "actual_owner": "0001:00000d20       ?GetLength@CScintillaCtrl@@QAEHH@Z 00401d20 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?Redo@CScintillaCtrl@@QAEXH@Z",
+  "address": "00460190",
+  "actual_owner": "0001:00000d50       ?Redo@CScintillaCtrl@@QAEXH@Z 00401d50 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?SetUndoCollection@CScintillaCtrl@@QAEXHH@Z",
+  "address": "004601c0",
+  "actual_owner": "0001:00000d80       ?SetUndoCollection@CScintillaCtrl@@QAEXHH@Z 00401d80 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?SelectAll@CScintillaCtrl@@QAEXH@Z",
+  "address": "00460200",
+  "actual_owner": "0001:00000dc0       ?SelectAll@CScintillaCtrl@@QAEXH@Z 00401dc0 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?SetSavePoint@CScintillaCtrl@@QAEXH@Z",
+  "address": "00460230",
+  "actual_owner": "0001:00000df0       ?SetSavePoint@CScintillaCtrl@@QAEXH@Z 00401df0 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?CanRedo@CScintillaCtrl@@QAEHH@Z",
+  "address": "00460260",
+  "actual_owner": "0001:00000e20       ?CanRedo@CScintillaCtrl@@QAEHH@Z 00401e20 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?GotoPos@CScintillaCtrl@@QAEXJH@Z",
+  "address": "004602d0",
+  "actual_owner": "0001:00000e50       ?GotoPos@CScintillaCtrl@@QAEXJH@Z 00401e50 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?GetSelectionStart@CScintillaCtrl@@QAEJH@Z",
+  "address": "00460990",
+  "actual_owner": "0001:00000ef0       ?GetSelectionStart@CScintillaCtrl@@QAEJH@Z 00401ef0 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?GetSelectionEnd@CScintillaCtrl@@QAEJH@Z",
+  "address": "004609c0",
+  "actual_owner": "0001:00000f20       ?GetSelectionEnd@CScintillaCtrl@@QAEJH@Z 00401f20 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?FindTextA@CScintillaCtrl@@QAEJHPAUTextToFind@@H@Z",
+  "address": "004609f0",
+  "actual_owner": "0001:00000f50       ?FindTextA@CScintillaCtrl@@QAEJHPAUTextToFind@@H@Z 00401f50 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?FormatRange@CScintillaCtrl@@QAEJHPAURangeToFormat@@H@Z",
+  "address": "00460a40",
+  "actual_owner": "0001:00000fa0       ?FormatRange@CScintillaCtrl@@QAEJHPAURangeToFormat@@H@Z 00401fa0 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?SetSel@CScintillaCtrl@@QAEXJJH@Z",
+  "address": "00460ac0",
+  "actual_owner": "0001:00001020       ?SetSel@CScintillaCtrl@@QAEXJJH@Z 00402020 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?GetTextRange@CScintillaCtrl@@QAEHPAUTextRange@@H@Z",
+  "address": "00460b10",
+  "actual_owner": "0001:00001070       ?GetTextRange@CScintillaCtrl@@QAEHPAUTextRange@@H@Z 00402070 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?PointXFromPosition@CScintillaCtrl@@QAEHJH@Z",
+  "address": "00460b90",
+  "actual_owner": "0001:000010b0       ?PointXFromPosition@CScintillaCtrl@@QAEHJH@Z 004020b0 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?PointYFromPosition@CScintillaCtrl@@QAEHJH@Z",
+  "address": "00460bd0",
+  "actual_owner": "0001:000010f0       ?PointYFromPosition@CScintillaCtrl@@QAEHJH@Z 004020f0 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?LineFromPosition@CScintillaCtrl@@QAEHJH@Z",
+  "address": "00460c10",
+  "actual_owner": "0001:00001130       ?LineFromPosition@CScintillaCtrl@@QAEHJH@Z 00402130 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?ReplaceSel@CScintillaCtrl@@QAEXPBDH@Z",
+  "address": "00460c50",
+  "actual_owner": "0001:00001170       ?ReplaceSel@CScintillaCtrl@@QAEXPBDH@Z 00402170 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?SetReadOnly@CScintillaCtrl@@QAEXHH@Z",
+  "address": "00460c90",
+  "actual_owner": "0001:000011b0       ?SetReadOnly@CScintillaCtrl@@QAEXHH@Z 004021b0 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?CanPaste@CScintillaCtrl@@QAEHH@Z",
+  "address": "00460cd0",
+  "actual_owner": "0001:000011f0       ?CanPaste@CScintillaCtrl@@QAEHH@Z 004021f0 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?CanUndo@CScintillaCtrl@@QAEHH@Z",
+  "address": "00460d00",
+  "actual_owner": "0001:00001220       ?CanUndo@CScintillaCtrl@@QAEHH@Z 00402220 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?EmptyUndoBuffer@CScintillaCtrl@@QAEXH@Z",
+  "address": "00460d30",
+  "actual_owner": "0001:00001250       ?EmptyUndoBuffer@CScintillaCtrl@@QAEXH@Z 00402250 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?Undo@CScintillaCtrl@@QAEXH@Z",
+  "address": "00460d60",
+  "actual_owner": "0001:00001280       ?Undo@CScintillaCtrl@@QAEXH@Z 00402280 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?Cut@CScintillaCtrl@@QAEXH@Z",
+  "address": "00460d90",
+  "actual_owner": "0001:000012b0       ?Cut@CScintillaCtrl@@QAEXH@Z 004022b0 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?Copy@CScintillaCtrl@@QAEXH@Z",
+  "address": "00460dc0",
+  "actual_owner": "0001:000012e0       ?Copy@CScintillaCtrl@@QAEXH@Z 004022e0 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?Paste@CScintillaCtrl@@QAEXH@Z",
+  "address": "00460df0",
+  "actual_owner": "0001:00001310       ?Paste@CScintillaCtrl@@QAEXH@Z 00402310 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?Clear@CScintillaCtrl@@QAEXH@Z",
+  "address": "00460e20",
+  "actual_owner": "0001:00001340       ?Clear@CScintillaCtrl@@QAEXH@Z 00402340 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?SetText@CScintillaCtrl@@QAEXPBDH@Z",
+  "address": "00460e50",
+  "actual_owner": "0001:00001370       ?SetText@CScintillaCtrl@@QAEXPBDH@Z 00402370 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?GetText@CScintillaCtrl@@QAEHHPADH@Z",
+  "address": "00460e90",
+  "actual_owner": "0001:000013b0       ?GetText@CScintillaCtrl@@QAEHHPADH@Z 004023b0 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?GetTextLength@CScintillaCtrl@@QAEHH@Z",
+  "address": "00460ee0",
+  "actual_owner": "0001:00001400       ?GetTextLength@CScintillaCtrl@@QAEHH@Z 00402400 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?GetTargetStart@CScintillaCtrl@@QAEJH@Z",
+  "address": "00460f40",
+  "actual_owner": "0001:00001470       ?GetTargetStart@CScintillaCtrl@@QAEJH@Z 00402470 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?GetTargetEnd@CScintillaCtrl@@QAEJH@Z",
+  "address": "00460f70",
+  "actual_owner": "0001:000014e0       ?GetTargetEnd@CScintillaCtrl@@QAEJH@Z 004024e0 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?SearchInTarget@CScintillaCtrl@@QAEHHPBDH@Z",
+  "address": "00460fa0",
+  "actual_owner": "0001:000015b0       ?SearchInTarget@CScintillaCtrl@@QAEHHPBDH@Z 004025b0 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?SetSearchFlags@CScintillaCtrl@@QAEXHH@Z",
+  "address": "00460ff0",
+  "actual_owner": "0001:00001600       ?SetSearchFlags@CScintillaCtrl@@QAEXHH@Z 00402600 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?ToggleFold@CScintillaCtrl@@QAEXHH@Z",
+  "address": "00461120",
+  "actual_owner": "0001:00001640       ?ToggleFold@CScintillaCtrl@@QAEXHH@Z 00402640 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?TargetFromSelection@CScintillaCtrl@@QAEXH@Z",
+  "address": "004611a0",
+  "actual_owner": "0001:00001680       ?TargetFromSelection@CScintillaCtrl@@QAEXH@Z 00402680 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?Cancel@CScintillaCtrl@@QAEXH@Z",
+  "address": "004611d0",
+  "actual_owner": "0001:000016b0       ?Cancel@CScintillaCtrl@@QAEXH@Z 004026b0 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?Create@CScintillaCtrl@@QAEHKABUtagRECT@@PAVCWnd@@IKPAX@Z",
+  "address": "00461350",
+  "actual_owner": "0001:00001780       ?Create@CScintillaCtrl@@QAEHKABUtagRECT@@PAVCWnd@@IKPAX@Z 00402780 f   linked:ScintillaCtrl.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?GetCtrl@CScintillaView@@QAEAAVCScintillaCtrl@@XZ",
+  "address": "004613d0",
+  "actual_owner": "0001:00001c80       ?GetCtrl@CScintillaView@@QAEAAVCScintillaCtrl@@XZ 00402c80 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?DeleteContents@CScintillaView@@MAEXXZ",
+  "address": "004613e0",
+  "actual_owner": "0001:00001ee0       ?DeleteContents@CScintillaView@@MAEXXZ 00402ee0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnDraw@CScintillaView@@MAEXPAVCDC@@@Z",
+  "address": "0070bdf0",
+  "actual_owner": "0001:00002de0       ?OnDraw@CScintillaView@@MAEXPAVCDC@@@Z 00403de0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnPreparePrinting@CScintillaView@@MAEHPAUCPrintInfo@@@Z",
+  "address": "00461400",
+  "actual_owner": "0001:00001f10       ?OnPreparePrinting@CScintillaView@@MAEHPAUCPrintInfo@@@Z 00402f10 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnUpdateNeedText@CScintillaView@@IAEXPAVCCmdUI@@@Z",
+  "address": "00461470",
+  "actual_owner": "0001:000020c0       ?OnUpdateNeedText@CScintillaView@@IAEXPAVCCmdUI@@@Z 004030c0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnUpdateNeedTextAndFollowingText@CScintillaView@@IAEXPAVCCmdUI@@@Z",
+  "address": "004614a0",
+  "actual_owner": "0001:000020f0       ?OnUpdateNeedTextAndFollowingText@CScintillaView@@IAEXPAVCCmdUI@@@Z 004030f0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnUpdateNeedSel@CScintillaView@@IAEXPAVCCmdUI@@@Z",
+  "address": "00461560",
+  "actual_owner": "0001:000021a0       ?OnUpdateNeedSel@CScintillaView@@IAEXPAVCCmdUI@@@Z 004031a0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnEditFind@CScintillaView@@IAEXXZ",
+  "address": "00461610",
+  "actual_owner": "0001:00002250       ?OnEditFind@CScintillaView@@IAEXXZ 00403250 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnEditReplace@CScintillaView@@IAEXXZ",
+  "address": "00461620",
+  "actual_owner": "0001:00002260       ?OnEditReplace@CScintillaView@@IAEXXZ 00403260 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?AdjustFindDialogPosition@CScintillaView@@MAEXXZ",
+  "address": "00462470",
+  "actual_owner": "0001:000022e0       ?AdjustFindDialogPosition@CScintillaView@@MAEXXZ 004032e0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?SameAsSelected@CScintillaView@@MAEHPBDHHH@Z",
+  "address": "004618b0",
+  "actual_owner": "0001:000028b0       ?SameAsSelected@CScintillaView@@MAEHPBDHHH@Z 004038b0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?FindTextSimple@CScintillaView@@MAEHPBDHHHH@Z",
+  "address": "00462af0",
+  "actual_owner": "0001:000029c0       ?FindTextSimple@CScintillaView@@MAEHPBDHHHH@Z 004039c0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?FindAndSelect@CScintillaView@@MAEJKAAUTextToFind@@@Z",
+  "address": "00461970",
+  "actual_owner": "0001:00002ae0       ?FindAndSelect@CScintillaView@@MAEJKAAUTextToFind@@@Z 00403ae0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?TextNotFound@CScintillaView@@MAEXPBDHHHHH@Z",
+  "address": "004619b0",
+  "actual_owner": "0001:00002b20       ?TextNotFound@CScintillaView@@MAEXPBDHHHHH@Z 00403b20 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnSetFocus@CScintillaView@@IAEXPAVCWnd@@@Z",
+  "address": "004619d0",
+  "actual_owner": "0001:00002b40       ?OnSetFocus@CScintillaView@@IAEXPAVCWnd@@@Z 00403b40 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnSize@CScintillaView@@IAEXIHH@Z",
+  "address": "00462c10",
+  "actual_owner": "0001:00002b50       ?OnSize@CScintillaView@@IAEXIHH@Z 00403b50 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnActivateView@CScintillaView@@MAEXHPAVCView@@0@Z",
+  "address": "004619e0",
+  "actual_owner": "0001:00002bb0       ?OnActivateView@CScintillaView@@MAEXHPAVCView@@0@Z 00403bb0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnCreate@CScintillaView@@IAEHPAUtagCREATESTRUCTA@@@Z",
+  "address": "00462c60",
+  "actual_owner": "0001:00002be0       ?OnCreate@CScintillaView@@IAEHPAUtagCREATESTRUCTA@@@Z 00403be0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnStyleNeeded@CScintillaView@@MAEXPAUSCNotification@@@Z",
+  "address": "0070bdf0",
+  "actual_owner": "0001:00002de0       ?OnStyleNeeded@CScintillaView@@MAEXPAUSCNotification@@@Z 00403de0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnCharAdded@CScintillaView@@MAEXPAUSCNotification@@@Z",
+  "address": "0070bdf0",
+  "actual_owner": "0001:00002de0       ?OnCharAdded@CScintillaView@@MAEXPAUSCNotification@@@Z 00403de0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnSavePointReached@CScintillaView@@MAEXPAUSCNotification@@@Z",
+  "address": "0070bdf0",
+  "actual_owner": "0001:00002de0       ?OnSavePointReached@CScintillaView@@MAEXPAUSCNotification@@@Z 00403de0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnSavePointLeft@CScintillaView@@MAEXPAUSCNotification@@@Z",
+  "address": "0070bdf0",
+  "actual_owner": "0001:00002de0       ?OnSavePointLeft@CScintillaView@@MAEXPAUSCNotification@@@Z 00403de0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnModifyAttemptRO@CScintillaView@@MAEXPAUSCNotification@@@Z",
+  "address": "0070bdf0",
+  "actual_owner": "0001:00002de0       ?OnModifyAttemptRO@CScintillaView@@MAEXPAUSCNotification@@@Z 00403de0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnDoubleClick@CScintillaView@@MAEXPAUSCNotification@@@Z",
+  "address": "0070bdf0",
+  "actual_owner": "0001:00002de0       ?OnDoubleClick@CScintillaView@@MAEXPAUSCNotification@@@Z 00403de0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnUpdateUI@CScintillaView@@MAEXPAUSCNotification@@@Z",
+  "address": "0070bdf0",
+  "actual_owner": "0001:00002de0       ?OnUpdateUI@CScintillaView@@MAEXPAUSCNotification@@@Z 00403de0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnModified@CScintillaView@@MAEXPAUSCNotification@@@Z",
+  "address": "0070bdf0",
+  "actual_owner": "0001:00002de0       ?OnModified@CScintillaView@@MAEXPAUSCNotification@@@Z 00403de0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnMacroRecord@CScintillaView@@MAEXPAUSCNotification@@@Z",
+  "address": "0070bdf0",
+  "actual_owner": "0001:00002de0       ?OnMacroRecord@CScintillaView@@MAEXPAUSCNotification@@@Z 00403de0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnMarginClick@CScintillaView@@MAEXPAUSCNotification@@@Z",
+  "address": "00461a10",
+  "actual_owner": "0001:00002db0       ?OnMarginClick@CScintillaView@@MAEXPAUSCNotification@@@Z 00403db0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnNeedShown@CScintillaView@@MAEXPAUSCNotification@@@Z",
+  "address": "0070bdf0",
+  "actual_owner": "0001:00002de0       ?OnNeedShown@CScintillaView@@MAEXPAUSCNotification@@@Z 00403de0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnPainted@CScintillaView@@MAEXPAUSCNotification@@@Z",
+  "address": "0070bdf0",
+  "actual_owner": "0001:00002de0       ?OnPainted@CScintillaView@@MAEXPAUSCNotification@@@Z 00403de0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnUserListSelection@CScintillaView@@MAEXPAUSCNotification@@@Z",
+  "address": "0070bdf0",
+  "actual_owner": "0001:00002de0       ?OnUserListSelection@CScintillaView@@MAEXPAUSCNotification@@@Z 00403de0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnDwellStart@CScintillaView@@MAEXPAUSCNotification@@@Z",
+  "address": "0070bdf0",
+  "actual_owner": "0001:00002de0       ?OnDwellStart@CScintillaView@@MAEXPAUSCNotification@@@Z 00403de0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnDwellEnd@CScintillaView@@MAEXPAUSCNotification@@@Z",
+  "address": "0070bdf0",
+  "actual_owner": "0001:00002de0       ?OnDwellEnd@CScintillaView@@MAEXPAUSCNotification@@@Z 00403de0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnZoom@CScintillaView@@MAEXPAUSCNotification@@@Z",
+  "address": "0070bdf0",
+  "actual_owner": "0001:00002de0       ?OnZoom@CScintillaView@@MAEXPAUSCNotification@@@Z 00403de0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnHotSpotClick@CScintillaView@@MAEXPAUSCNotification@@@Z",
+  "address": "0070bdf0",
+  "actual_owner": "0001:00002de0       ?OnHotSpotClick@CScintillaView@@MAEXPAUSCNotification@@@Z 00403de0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnHotSpotDoubleClick@CScintillaView@@MAEXPAUSCNotification@@@Z",
+  "address": "0070bdf0",
+  "actual_owner": "0001:00002de0       ?OnHotSpotDoubleClick@CScintillaView@@MAEXPAUSCNotification@@@Z 00403de0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnCallTipClick@CScintillaView@@MAEXPAUSCNotification@@@Z",
+  "address": "0070bdf0",
+  "actual_owner": "0001:00002de0       ?OnCallTipClick@CScintillaView@@MAEXPAUSCNotification@@@Z 00403de0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnAutoCSelection@CScintillaView@@MAEXPAUSCNotification@@@Z",
+  "address": "0070bdf0",
+  "actual_owner": "0001:00002de0       ?OnAutoCSelection@CScintillaView@@MAEXPAUSCNotification@@@Z 00403de0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnCommand@CScintillaView@@MAEHIJ@Z",
+  "address": "00462e40",
+  "actual_owner": "0001:00002e00       ?OnCommand@CScintillaView@@MAEHIJ@Z 00403e00 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnNotify@CScintillaView@@MAEHIJPAJ@Z",
+  "address": "00462eb0",
+  "actual_owner": "0001:00002e70       ?OnNotify@CScintillaView@@MAEHIJPAJ@Z 00403e70 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?PaginateTo@CScintillaView@@MAEHPAVCDC@@PAUCPrintInfo@@@Z",
+  "address": "00462190",
+  "actual_owner": "0001:000031d0       ?PaginateTo@CScintillaView@@MAEHPAVCDC@@PAUCPrintInfo@@@Z 004041d0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnPrepareDC@CScintillaView@@MAEXPAVCDC@@PAUCPrintInfo@@@Z",
+  "address": "004622a0",
+  "actual_owner": "0001:000032e0       ?OnPrepareDC@CScintillaView@@MAEXPAVCDC@@PAUCPrintInfo@@@Z 004042e0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnBeginPrinting@CScintillaView@@MAEXPAVCDC@@PAUCPrintInfo@@@Z",
+  "address": "00463580",
+  "actual_owner": "0001:000038b0       ?OnBeginPrinting@CScintillaView@@MAEXPAVCDC@@PAUCPrintInfo@@@Z 004048b0 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnPrint@CScintillaView@@MAEXPAVCDC@@PAUCPrintInfo@@@Z",
+  "address": "00463600",
+  "actual_owner": "0001:00003930       ?OnPrint@CScintillaView@@MAEXPAVCDC@@PAUCPrintInfo@@@Z 00404930 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?OnEndPrinting@CScintillaView@@MAEXPAVCDC@@PAUCPrintInfo@@@Z",
+  "address": "00463380",
+  "actual_owner": "0001:00003a00       ?OnEndPrinting@CScintillaView@@MAEXPAVCDC@@PAUCPrintInfo@@@Z 00404a00 f   linked:ScintillaDocView.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ }
+]

@@ -1,0 +1,22 @@
+{
+ "ScintillaDocView.h": [
+  [
+   "virtual void LoadMarginSettings(",
+   "void LoadMarginSettings("
+  ],
+  [
+   "virtual void SaveMarginSettings(",
+   "void SaveMarginSettings("
+  ],
+  [
+   "virtual void GetReplaceAllTarget(",
+   "void GetReplaceAllTarget("
+  ]
+ ],
+ "ScintillaDocView.cpp": [
+  [
+   "@replace",
+   "ScintillaDocView.cpp"
+  ]
+ ]
+}

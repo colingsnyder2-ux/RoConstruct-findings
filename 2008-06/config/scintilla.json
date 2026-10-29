@@ -6,12 +6,23 @@
   {
    "name": "upstream",
    "mode": "recipe",
-   "recipe": "scintilla-mfc-1.20-shared",
+   "recipe": "scintilla-mfc-1.20-shared-mbcs-rtm",
    "files": "recipe",
-   "flags": "/O2 /GS- /MD"
+   "flags": "/O2 /GS- /MD",
+   "direct": true
   }
  ],
  "test": "scintilla_ctrl",
- "test_includes": ["tools/libs/scintilla-mfc-1.20", "tools/libs/mfc-9.0-rtm/atlmfc/include"],
- "test_defines": "WIN32 NDEBUG _MBCS _AFXDLL"
+ "test_includes": [
+  "tools/libs/scintilla-mfc-1.20",
+  "tools/libs/mfc-9.0-rtm/atlmfc/include"
+ ],
+ "test_defines": "WIN32 NDEBUG _MBCS _AFXDLL",
+ "overlay": {
+  "root": "tools/libs/scintilla-mfc-1.20",
+  "patches": "rebuild/2008-06/patches/scintilla-native-view.json"
+ },
+ "import_dlls": [
+  "SciLexer.dll"
+ ]
 }
