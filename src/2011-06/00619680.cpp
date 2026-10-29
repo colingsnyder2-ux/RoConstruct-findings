@@ -1,42 +1,467 @@
-// roc 2011-06 00619680  unit: RBX::VScriptContext::?$FactoryProduct  size: 48 bytes
-// Make this compile to the exact bytes below, then: roc check 2011-06 00619680
-//
-// 00619680  56                   push esi
-// 00619681  8b742408             mov esi, dword ptr [esp + 8]
-// 00619685  57                   push edi
-// 00619686  6a00                 push 0
-// 00619688  6a02                 push 2
-// 0061968a  56                   push esi
-// 0061968b  e800ab1400           call 0x764190
-// 00619690  8bf8                 mov edi, eax
-// 00619692  a160d5c400           mov eax, dword ptr [0xc4d560]
-// 00619697  50                   push eax
-// 00619698  6a01                 push 1
-// 0061969a  56                   push esi
-// 0061969b  e8e0a91400           call 0x764080
-// 006196a0  56                   push esi
-// 006196a1  57                   push edi
-// 006196a2  50                   push eax
-// 006196a3  e878150100           call 0x62ac20
-// 006196a8  83c424               add esp, 0x24
-// 006196ab  5f                   pop edi
-// 006196ac  33c0                 xor eax, eax
-// 006196ae  5e                   pop esi
-// 006196af  c3                   ret 
-// copied from an identical function in another client (function ?sub_535140@ns_ROCX000008@@YAHH@Z)
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_lua_property_native_family_df72ab273215c092.cpp
 
-namespace ns_ROCX000008 {
-extern "C" int __cdecl sub_5BF350(int, int, int);
-extern "C" int __cdecl sub_5BF240(int, int, int);
-extern "C" int __cdecl sub_56C740(int, int, int);
+// Candidate translation unit (score above; library headers required).
+// Native setter reloads its descriptor across type branches. Getter retains
+// its genuine source alias: removing it reduced the measured similarity.
+#include "script/LuaInstanceBridge.h"
+#include "script/LuaSignalBridge.h"
+#include "script/LuaArguments.h"
+#include "script/LuaAtomicClasses.h"
+#include "script/ThreadRef.h"
+#include "util/Sound.h"
+#include "util/TextureId.h"
+#include "util/standardout.h"
+#include "v8tree/Instance.h"
+#include "G3D/format.h"
+#include "G3D/Vector3.h"
 
-extern int dword_8ABE80;
+// matches generally aren't very good here
 
-int __cdecl sub_535140(int a)
+using namespace RBX;
+using namespace RBX::Lua;
+using namespace RBX::Reflection;
+using namespace RBX::Soundscape;
+
+// Declare the real specialization before explicit registration instantiation.
+// The public registration path below emits the otherwise unused callbacks.
+template<> void ObjectBridge::on_newindex(boost::shared_ptr<DescribedBase>&,const char*,lua_State*);
+
+
+void RBX::Lua::newweaktable(lua_State* L, const char* mode)
 {
-    int v1 = sub_5BF350(a, 2, 0);
-    int v2 = sub_5BF240(a, 1, dword_8ABE80);
-    sub_56C740(v2, v1, a);
-    return 0;
+    lua_newtable(L);
+    lua_pushvalue(L, -1);
+    lua_setmetatable(L, -2);
+    lua_pushliteral(L, "__mode");
+    lua_pushstring(L, mode);
+    lua_settable(L, -3);
 }
+
+const luaL_Reg ObjectBridge::classLibrary[] = 
+{
+    {"new", ObjectBridge::newInstance},
+    {NULL, NULL}
+};
+
+int ObjectBridge::newInstance(lua_State* thread)
+{
+    const Name& name = Name::lookup(lua_tostring(thread, 1));
+    boost::shared_ptr<Instance> instance = AbstractFactoryProduct<Instance>::create(name);
+
+    if (lua_gettop(thread) >= 2)
+    {
+        boost::shared_ptr<Instance> parent = ObjectBridge::getInstance(thread, 2);
+
+        if (parent)
+            instance->setParent(parent.get());
+    }
+
+    ObjectBridge::push(thread, instance);
+
+    return 1;
 }
+
+// TODO: 98.80% (functional match)
+static void pushLuaValue(ConstProperty p, lua_State* L)
+{
+    // (0024BC)  S_BPREL32: [FFFFFF40], Type:             0x3639, objects
+    // (0024D0)  S_BPREL32: [FFFFFF50], Type:             0x36A2, end
+    // (0024E0)  S_BPREL32: [FFFFFF48], Type:             0x36A2, iter
+
+    PropertyDescriptor& descriptor = const_cast<PropertyDescriptor&>(p.getDescriptor());
+
+    if (descriptor.type == Type::singleton<int>())
+    {
+        lua_pushinteger(L, p.getValue<int>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<bool>())
+    {
+        lua_pushboolean(L, p.getValue<bool>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<float>())
+    {
+        lua_pushnumber(L, p.getValue<float>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<double>())
+    {
+        lua_pushnumber(L, p.getValue<double>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<std::string>())
+    {
+        lua_pushstring(L, p.getStringValue().c_str());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<boost::shared_ptr<Instance>>())
+    {
+        ObjectBridge::push(L, p.getValue<boost::shared_ptr<Instance>>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<boost::shared_ptr<DescribedBase>>())
+    {
+        ObjectBridge::push(L, p.getValue<boost::shared_ptr<DescribedBase>>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<G3D::Vector3>())
+    {
+        Vector3Bridge::pushVector3(L, p.getValue<G3D::Vector3>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<G3D::CoordinateFrame>())
+    {
+        CoordinateFrameBridge::pushCoordinateFrame(L, p.getValue<G3D::CoordinateFrame>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<G3D::Color3>())
+    {
+        Color3Bridge::pushColor3(L, p.getValue<G3D::Color3>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<BrickColor>())
+    {
+        BrickColorBridge::pushNewObject(L, p.getValue<BrickColor>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<ContentId>())
+    {
+        lua_pushstring(L, p.getStringValue().c_str());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<FunctionRef>())
+    {
+        lua_pushfunction(L, p.getValue<FunctionRef>());
+        return;
+    }
+
+    if (descriptor.type == Type::singleton<boost::shared_ptr<Instances>>())
+    {
+        boost::shared_ptr<Instances> objects = p.getValue<boost::shared_ptr<Instances>>();
+        if (objects)
+        {
+            Instances::const_iterator iter = objects->begin();
+            Instances::const_iterator end = objects->end();
+
+            // objects->size() doesn't match
+            lua_createtable(L, end-iter, 0);
+
+            for (int i = 1; iter != end; i++)
+            {
+                ObjectBridge::push(L, *iter);
+                lua_rawseti(L, -2, i);
+                ++iter;
+            }
+        }
+        else
+        {
+            lua_newtable(L);
+        }
+        return;
+    }
+
+    EnumPropertyDescriptor* enumDesc = dynamic_cast<EnumPropertyDescriptor*>(&descriptor);
+    if (enumDesc)
+    {
+        lua_pushinteger(L, enumDesc->getEnumValue(p.getInstance()));
+        return;
+    }
+
+    RefPropertyDescriptor* refDesc = dynamic_cast<RefPropertyDescriptor*>(&descriptor);
+    if (refDesc)
+    {
+        DescribedBase* ref = refDesc->getRefValue(p.getInstance());
+
+        // this just seems strange /shrug
+        if (ref)
+            ObjectBridge::push(L, static_cast<Instance*>(ref)->shared_from_this());
+        else
+            ObjectBridge::push(L, boost::shared_ptr<Instance>());
+
+        return;
+    }
+
+    throw std::runtime_error(G3D::format(
+        "Unable to get property %s, type %s",
+        descriptor.name.c_str(),
+        descriptor.type.name.c_str()));
+}
+
+template<>
+int ObjectBridge::on_index(const boost::shared_ptr<DescribedBase>& object, const char* name, lua_State* L)
+{
+    if (!object)
+        throw std::runtime_error("The object has been deleted");
+
+    const Name& name2 = Name::lookup(name);
+
+    // what's with the scopes? they can't be inlines
+
+    {
+        PropertyIterator iter = object->findProperty(name2);
+        if (iter != object->properties_end())
+        {
+            pushLuaValue(*iter, L);
+            return 1;
+        }
+    }
+
+    {
+        FunctionIterator iter = object->findFunction(name2);
+        if (iter != object->functions_end())
+        {
+            const FunctionDescriptor* fd = (*iter).getDescriptor();
+
+            lua_pushlightuserdata(L, (void*)fd);
+            lua_rawget(L, LUA_ENVIRONINDEX);
+
+            if (lua_type(L, -1) == LUA_TNIL)
+            {
+                lua_pop(L, 1);
+                lua_pushlightuserdata(L, (void*)fd);
+                lua_pushcclosure(L, ObjectBridge::callMemberFunction, 1);
+                lua_pushlightuserdata(L, (void*)fd);
+                lua_pushvalue(L, -2);
+                lua_settable(L, LUA_ENVIRONINDEX);
+            }
+
+            RBXASSERT(lua_type(L, -1) == LUA_TFUNCTION);
+
+            return 1;
+        }
+    }
+
+    {
+        SignalIterator iter = object->findSignal(name2);
+        if (iter != object->signals_end())
+        {
+            Signal s = *iter;
+            SignalBridge::push(L, s.getSignalInstance());
+            return 1;
+        }
+    }
+
+    Instance* instance = dynamic_cast<Instance*>(object.get());
+    if (instance)
+    {
+        Instance* child = instance->findFirstChildByName(name);
+        if (child)
+        {
+            ObjectBridge::push(L, shared_from(child));
+            return 1;
+        }
+    }
+
+    if (name2.empty())
+    {
+        std::string pascalName = name;
+        pascalName[0] = toupper(name[0]);
+
+        if (pascalName[0] != name[0] && !Name::lookup(pascalName).empty())
+            return on_index(object, pascalName.c_str(), L);
+    }
+
+    throw std::runtime_error(G3D::format("%s is not a valid member of %s", name, instance->getClassName().c_str()));
+}
+
+// TODO: 94.38% (functional match)
+// Native0061b190 is a separate callee; preserve the observed boundary.
+static __declspec(noinline) void assignLuaValue(Property p, lua_State* L, int index)
+{
+    // (002DA8)  S_BPREL32: [FFFFFF60], Type:             0x238B, value
+
+
+    if (p.getDescriptor().type == Type::singleton<int>())
+    {
+        p.setValue<int>(lua_tointeger(L, index));
+        return;
+    }
+
+    if (p.getDescriptor().type == Type::singleton<bool>())
+    {
+        p.setValue<bool>(lua_toboolean(L, index) != 0);
+        return;
+    }
+
+    if (p.getDescriptor().type == Type::singleton<float>())
+    {
+        p.setValue<float>(lua_tonumber(L, index));
+        return;
+    }
+
+    if (p.getDescriptor().type == Type::singleton<double>())
+    {
+        p.setValue<double>(lua_tonumber(L, index));
+        return;
+    }
+
+    if (p.getDescriptor().type == Type::singleton<std::string>())
+    {
+        p.setValue<std::string>(lua_tostring(L, index));
+        return;
+    }
+
+    if (p.getDescriptor().type == Type::singleton<FunctionRef>())
+    {
+        p.setValue(FunctionRef(L, index));
+        return;
+    }
+
+    if (p.getDescriptor().type == Type::singleton<boost::shared_ptr<Instance>>())
+    {
+        p.setValue(ObjectBridge::getInstance(L, index));
+        return;
+    }
+
+    if (p.getDescriptor().type == Type::singleton<boost::shared_ptr<DescribedBase>>())
+    {
+        p.setValue(ObjectBridge::getPtr(L, index));
+        return;
+    }
+
+    if (p.getDescriptor().type == Type::singleton<G3D::Vector3>())
+    {
+        p.setValue(Vector3Bridge::getObject(L, index));
+        return;
+    }
+
+    if (p.getDescriptor().type == Type::singleton<G3D::CoordinateFrame>())
+    {
+        p.setValue(CoordinateFrameBridge::getObject(L, index));
+        return;
+    }
+
+    if (p.getDescriptor().type == Type::singleton<G3D::Color3>())
+    {
+        p.setValue(Color3Bridge::getObject(L, index));
+        return;
+    }
+
+    if (p.getDescriptor().type == Type::singleton<BrickColor>())
+    {
+        p.setValue(BrickColorBridge::getObject(L, index));
+        return;
+    }
+
+    // the contentid dtors for these two checks should be merged
+    // seems like an inline, but i can't get it to work
+    if (dynamic_cast<TypedPropertyDescriptor<SoundId>*>(const_cast<PropertyDescriptor*>(&p.getDescriptor())))
+    {
+        p.setValue<SoundId>(ContentId(lua_tostring(L, index)));
+        return;
+    }
+
+    if (dynamic_cast<TypedPropertyDescriptor<TextureId>*>(const_cast<PropertyDescriptor*>(&p.getDescriptor())))
+    {
+        p.setValue<TextureId>(ContentId(lua_tostring(L, index)));
+        return;
+    }
+
+    EnumPropertyDescriptor* enumDesc = dynamic_cast<EnumPropertyDescriptor*>(const_cast<PropertyDescriptor*>(&p.getDescriptor()));
+    if (enumDesc)
+    {
+        int value = lua_tointeger(L, index);
+        enumDesc->setEnumValue(p.getInstance(), value);
+        return;
+    }
+
+    RefPropertyDescriptor* refDesc = dynamic_cast<RefPropertyDescriptor*>(const_cast<PropertyDescriptor*>(&p.getDescriptor()));
+    if (refDesc)
+    {
+        boost::shared_ptr<Instance> value = ObjectBridge::getInstance(L, index);
+        refDesc->setRefValue(p.getInstance(), value.get());
+        return;
+    }
+
+    throw std::runtime_error(G3D::format("Unable to set property %s, type %s", p.getDescriptor().name.c_str(), p.getDescriptor().type.name.c_str()));
+}
+
+// TODO: 91.56%
+// a lot of stack space gets wasted for some reason
+template <>
+void ObjectBridge::on_newindex(boost::shared_ptr<DescribedBase>& object, const char* name, lua_State* L)
+{
+    // (0033F8)  S_BPREL32: [FFFFFF68], Type:             0x3058, iter
+    // (00340C)  S_BPREL32: [FFFFFF58], Type:             0x238B, parent (boost::shared_ptr<RBX::Instance>)
+
+    if (!object)
+        throw std::runtime_error("The object has been deleted");
+
+    DescribedBase* objectPtr = object.get();
+    PropertyIterator iter = object->findProperty(Name::lookup(name));
+    if (iter != object->properties_end())
+    {
+        if ((*iter).getDescriptor() == Instance::propParent)
+        {
+            Instance* instance = dynamic_cast<Instance*>(objectPtr);
+
+            if (!instance)
+                throw std::runtime_error(G3D::format("%s is not a valid member of %s", name, object->classDescriptor().name.c_str()));
+
+            boost::shared_ptr<Instance> parent = ObjectBridge::getInstance(L, 3);
+
+            if (instance->getParent() != parent.get())
+            {
+                if (!instance->canSetParent(parent.get()))
+                    StandardOut::singleton()->print(MESSAGE_WARNING, "%s should not be a child of %s", instance->getName().c_str(), parent->getName().c_str());
+
+                instance->setParent2(parent);
+            }
+        }
+        else
+        {
+            assignLuaValue(*iter, L, 3);    
+        }
+
+        return;
+    }
+
+    throw std::runtime_error(G3D::format("%s is not a valid member of %s", name, object->classDescriptor().name.c_str()));
+}
+
+int ObjectBridge::callMemberFunction(lua_State* L)
+{
+    int idx = lua_upvalueindex(1);
+    RBXASSERT(lua_type(L, idx) == LUA_TLIGHTUSERDATA);
+    Reflection::FunctionDescriptor* fd = static_cast<Reflection::FunctionDescriptor*>(lua_touserdata(L, idx));
+
+    if (fd->security == FunctionDescriptor::NeedTrustedCaller)
+        Security::Context::current().requirePermission(Security::Administrator, fd->name.c_str());
+
+    boost::shared_ptr<Reflection::DescribedBase> instance;
+
+    if (!getPtr(L, 1, instance) || !instance)
+        throw std::runtime_error(G3D::format(
+            "Did you forget a semicolon?  The first argument of member function %s must be an Object",
+            fd->name.c_str()));
+
+    if (!fd->isMemberOf(instance.get()))
+        throw std::runtime_error(G3D::format(
+        "The function %s is not a member of \"%s\"",
+        fd->name.c_str(),
+        instance->classDescriptor().name.c_str()));
+
+    LuaArguments args(L, 1);
+    fd->execute(instance.get(), args);
+    return args.pushReturnValue();
+}
+
+// Public native registration path takes the real Lua metamethod callbacks.
+// Explicitly instantiate it so MSVC emits the otherwise unused specialization.
+template void RBX::Lua::SharedPtrBridge<RBX::Reflection::DescribedBase>::registerClass(lua_State*);

@@ -1,71 +1,71 @@
-// from server: 53% by colin
-struct S {
-    char pad[0x100];
-    void* f(void* a, void* b, void* c, void* d, void* e, void* f, void* g);
-};
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_wordlist_plain_native_family_a48f6f07beb1c62f.cpp
 
-extern "C" void __stdcall sub_61C560(void*);
-extern "C" void __stdcall sub_77E4FC(void*);
-extern "C" void __stdcall sub_77E6D8(void);
-extern "C" void __stdcall sub_75CF88(void);
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("util/ContentProvider.h", "../roc_wordlist_static_asset_header_179d09ed9a896b44.cpp")
+#include <set>
+#include <fstream>
+#include <boost/algorithm/string.hpp>
+#include "util/ContentProvider.h"
+namespace RBX {
+	class WordList
+	{
+	private:
+		std::set<std::string> blacklist;
+		void decrypt(std::string& str);
+	public:
+		WordList();
+		~WordList();
 
-void* S::f(void* a, void* b, void* c, void* d, void* e, void* f, void* g)
+		bool ContainsProfanity(std::string str);
+
+	};
+
+
+void WordList::decrypt(std::string& str)
 {
-    char* esi = (char*)a;
-    char* ebp = (char*)b;
-    char* edi;
-    char bl;
-    unsigned short di;
-    char local[8];
-    void* result;
+	for(unsigned i = 0; i<str.size(); ++i){
+		str[i] = 0x55 ^ str[i];
+	}
+}
 
-    for (;;) {
-        if (esi != (char*)-2) {
-            if (esi == 0) {
-                sub_77E6D8();
-            } else if (esi != (char*)c) {
-                sub_77E6D8();
-            }
-        }
-        if (ebp == (char*)d) break;
-        if (esi != (char*)-2) {
-            if (esi == 0) {
-                sub_77E6D8();
-            }
-            if (*(unsigned int*)(esi + 0x18) >= 0x10) {
-                edi = *(char**)(esi + 4);
-            } else {
-                edi = esi + 4;
-            }
-            if (ebp >= edi + *(unsigned int*)(esi + 0x14)) {
-                sub_77E6D8();
-            }
-        }
-        bl = *ebp;
-        di = *(unsigned short*)e;
-        sub_61C560(local);
-        if ((*(unsigned short**)(local + 0x10))[bl] & di) {
-            if (esi != (char*)-2) {
-                if (esi == 0) {
-                    sub_77E6D8();
-                }
-                if (*(unsigned int*)(esi + 0x18) >= 0x10) {
-                    edi = *(char**)(esi + 4);
-                } else {
-                    edi = esi + 4;
-                }
-                if (ebp >= edi + *(unsigned int*)(esi + 0x14)) {
-                    sub_77E6D8();
-                }
-            }
-            ebp++;
-            continue;
-        }
-        break;
-    }
-    result = f;
-    *(char**)result = esi;
-    *(char**)((char*)result + 4) = ebp;
-    sub_77E4FC(local);
-    return result;
+WordList::WordList()
+{
+	/* Load blacklist
+
+	
+	*/
+
+	std::string filename = ContentProvider::getAssetFile("Fonts\\diogenes.fnt");
+	
+	std::ifstream infile(filename.c_str());
+	std::string line;
+	while( std::getline(infile, line, '\n'))
+	{
+		boost::to_lower(line);
+		boost::trim(line);
+		blacklist.insert(line);
+	}
+
+	infile.close();
+}
+WordList::~WordList()
+{
+
+}
+bool WordList::ContainsProfanity(std::string str)
+{
+	/*
+	1. Convert query to lower case
+	2. Check for in black list
+	*/
+
+	boost::to_lower(str);
+
+	return blacklist.find(str) != blacklist.end();
+}
+
+
 }

@@ -1,134 +1,243 @@
-// from server: 34% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-view QuadVolume.cpp
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\Ribbon\XTPRibbonTab.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "QuadVolume.h"
+// XTPRibbonTab.cpp: implementation of the CXTPRibbonTab class.
+//
+// This file is a part of the XTREME RIBBON MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
 
-namespace RBX
+#include "stdafx.h"
+
+#include "Common/XTPPropExchange.h"
+
+
+#include "XTPRibbonTab.h"
+#include "XTPRibbonGroup.h"
+#include "XTPRibbonGroups.h"
+#include "XTPRibbonBar.h"
+#include "XTPRibbonControlTab.h"
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[]=__FILE__;
+#define new DEBUG_NEW
+#endif
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+
+CXTPRibbonTabContextHeader::CXTPRibbonTabContextHeader(CXTPRibbonTab* pFirstTab)
 {
-	namespace View
+	ASSERT(pFirstTab);
+	if (!pFirstTab)
+		return;
+	m_pLastTab = m_pFirstTab = pFirstTab;
+	m_color = pFirstTab->GetContextColor();
+	m_strCpation = pFirstTab->GetContextCaption();
+	m_rcRect.SetRectEmpty();
+	pFirstTab->m_pContextHeader = this;
+}
+
+CXTPRibbonTabContextHeaders::CXTPRibbonTabContextHeaders()
+{
+
+}
+
+CXTPRibbonTabContextHeaders::~CXTPRibbonTabContextHeaders()
+{
+	RemoveAll();
+}
+int CXTPRibbonTabContextHeaders::GetCount() const
+{
+	return (int)m_arrHeaders.GetSize();
+}
+
+CXTPRibbonTabContextHeader* CXTPRibbonTabContextHeaders::GetHeader(int nIndex) const
+{
+	return m_arrHeaders.GetAt(nIndex);
+}
+
+void CXTPRibbonTabContextHeaders::RemoveAll()
+{
+	for (int i = 0; i < GetCount(); i++)
 	{
-		LevelBuilder::LevelBuilder(G3D::ReferenceCountedPointer<Render::Mesh::Level>& level, G3D::Vector3 size, RenderSurfaceTypes surfaceTypes)
-			: halfSize(size * 0.5f),
-			  surfaceTypes(surfaceTypes),
-			  level(level),
-			  textureScale(2.0f, 2.0f)
-		{
-		}
+		delete m_arrHeaders[i];
+	}
+	m_arrHeaders.RemoveAll();
+}
 
-		float LevelBuilder::offset(RenderSurfaceType surfaceType)
-		{
-			switch (surfaceType)
-			{
-			case STUDS:
-				return 0.0f;
-			case INLET:
-				return 0.5f;
-			case WELD:
-				return 1.0f;
-			case GLUE:
-				return 1.5f;
+CXTPRibbonTabContextHeader* CXTPRibbonTabContextHeaders::HitTest(CPoint pt) const
+{
+	for (int i = 0; i < GetCount(); i++)
+	{
+		if (m_arrHeaders[i]->m_rcRect.PtInRect(pt))
+			return m_arrHeaders[i];
+	}
+	return NULL;
+}
 
-			default:
-				return 0.0f;
-			}
-		}
+void CXTPRibbonTabContextHeaders::Add(CXTPRibbonTabContextHeader* pHeader)
+{
+	m_arrHeaders.Add(pHeader);
+}
 
-		void LevelBuilder::build(Purpose purpose)
-		{
-			buildTop(purpose);
-			buildBottom(purpose);
-			buildLeft(purpose);
-			buildRight(purpose);
-			buildFront(purpose);
-			buildBack(purpose);
-		}
+IMPLEMENT_SERIAL(CXTPRibbonTab, CXTPTabManagerItem, VERSIONABLE_SCHEMA | _XTP_SCHEMA_CURRENT)
 
-		void LevelBuilder::buildFace(NormalId normalId, Purpose purpose)
-		{
-			switch (normalId)
-			{
-			case NORM_X:
-				buildRight(purpose);
-				break;
-			case NORM_Y:
-				buildTop(purpose);
-				break;
-			case NORM_Z:
-				buildBack(purpose);
-				break;
-			case NORM_X_NEG:
-				buildLeft(purpose);
-				break;
-			case NORM_Y_NEG:
-				buildBottom(purpose);
-				break;
-			case NORM_Z_NEG:
-				buildFront(purpose);
-				break;
-			}
-		}
 
-		void LevelBuilder::appendQuadFromIndexArray(int a, int b, int c)
-		{
-			appendQuadFromVertexIndices(level->indexArray[a], level->indexArray[b], level->indexArray[c]);
-		}
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
 
-		void LevelBuilder::appendQuadFromIndexArray(int a, int b, int c, int d)
-		{
-			appendQuadFromVertexIndices(level->indexArray[a], level->indexArray[b], level->indexArray[c], level->indexArray[d]);
-		}
+CXTPRibbonTab::CXTPRibbonTab()
+{
+	m_nId = 0;
 
-		void LevelBuilder::appendQuadFromVertexIndices(unsigned a, unsigned b, unsigned c)
-		{
-			switch (level->primitive)
-			{
-			case G3D::RenderDevice::TRIANGLES:
-				level->indexArray.append(
-					Render::Mesh::allocVertex(a, 1),
-					Render::Mesh::allocVertex(b, 1),
-					Render::Mesh::allocVertex(c, 1)
-				);
-				break;
-			case G3D::RenderDevice::QUADS:
-				level->indexArray.append(
-					Render::Mesh::allocVertex(a, 1),
-					Render::Mesh::allocVertex(a, 1),
-					Render::Mesh::allocVertex(b, 1),
-					Render::Mesh::allocVertex(c, 1)
-				);
-				break;
-			}
-		}
+	m_pGroups = new CXTPRibbonGroups;
+	m_pGroups->m_pParentTab = this;
 
-		void LevelBuilder::appendQuadFromVertexIndices(unsigned a, unsigned b, unsigned c, unsigned d)
+	m_nContextColor = xtpRibbonTabContextColorNone;
+
+	m_pContextHeader = NULL;
+	m_pRibbonBar = NULL;
+	m_pParent = NULL;
+}
+
+CXTPRibbonTab::~CXTPRibbonTab()
+{
+	ASSERT(m_pGroups->GetCount() == 0);
+
+	CMDTARGET_RELEASE(m_pGroups);
+}
+
+void CXTPRibbonTab::Copy(CXTPRibbonTab* pRibbonTab)
+{
+	m_strCaption = pRibbonTab->m_strCaption;
+	m_nContextColor = pRibbonTab->m_nContextColor;
+	m_strContextCaption= pRibbonTab->m_strContextCaption;
+	m_nId = pRibbonTab->m_nId;
+	m_bVisible = pRibbonTab->m_bVisible;
+	m_strToolTip = pRibbonTab->m_strToolTip;
+
+	if (m_pTabManager && pRibbonTab->IsSelected())
+	{
+		Select();
+	}
+
+	m_pGroups->Copy(pRibbonTab->m_pGroups);
+}
+
+void CXTPRibbonTab::OnRemoved()
+{
+	m_pGroups->RemoveAll();
+}
+
+CXTPRibbonBar* CXTPRibbonTab::GetRibbonBar() const
+{
+	return m_pRibbonBar;
+}
+
+CXTPRibbonGroup* CXTPRibbonTab::AddGroup(LPCTSTR lpszCaption)
+{
+	return GetGroups()->Add(lpszCaption);
+}
+
+CXTPRibbonGroup* CXTPRibbonTab::AddGroup(int nID)
+{
+	CString strCaption;
+	if (!strCaption.LoadString(nID))
+	{
+	}
+
+	if (strCaption.Find('\n') != -1)
+	{
+		CString strPrompt = strCaption;
+		AfxExtractSubString(strCaption, strPrompt, 1);
+	}
+
+	return GetGroups()->Add(strCaption, nID);
+}
+
+void CXTPRibbonTab::SetVisible(BOOL bVisible)
+{
+	if (bVisible == IsVisible())
+		return;
+
+	CXTPTabManagerItem::SetVisible(bVisible);
+
+	if (!bVisible && IsSelected())
+	{
+		CXTPTabManagerItem* pItem = GetTabManager()->FindNextFocusable(-1, +1);
+		if (pItem)
 		{
-			switch (level->primitive)
-			{
-			case G3D::RenderDevice::TRIANGLES:
-				level->indexArray.append(
-					Render::Mesh::allocVertex(a, 1),
-					Render::Mesh::allocVertex(b, 1),
-					Render::Mesh::allocVertex(c, 1)
-				);
-				level->indexArray.append(
-					Render::Mesh::allocVertex(c, 1),
-					Render::Mesh::allocVertex(d, 1),
-					Render::Mesh::allocVertex(a, 1)
-				);
-				break;
-			case G3D::RenderDevice::QUADS:
-				level->indexArray.append(
-					Render::Mesh::allocVertex(a, 1),
-					Render::Mesh::allocVertex(b, 1),
-					Render::Mesh::allocVertex(c, 1),
-					Render::Mesh::allocVertex(d, 1)
-				);
-				break;
-			}
+			pItem->Select();
 		}
 	}
 }
+
+CXTPRibbonGroup* CXTPRibbonTab::FindGroup(int nID) const
+{
+	for (int i = 0 ; i < m_pGroups->GetCount(); i++)
+	{
+		if (m_pGroups->GetAt(i)->GetID() == nID)
+			return m_pGroups->GetAt(i);
+	}
+	return NULL;
+}
+
+void CXTPRibbonTab::DoPropExchange(CXTPPropExchange* pPX)
+{
+	if (pPX->IsLoading())
+	{
+		CXTPRibbonControlTab* pControlTab = ((CXTPRibbonControlTab*)pPX->m_pOwner);
+		m_pRibbonBar = DYNAMIC_DOWNCAST(CXTPRibbonBar, pControlTab->GetParent());
+		m_pTabManager = pControlTab;
+		m_pParent = m_pRibbonBar;
+	}
+
+	PX_String(pPX, _T("Caption"), m_strCaption, _T(""));
+	PX_String(pPX, _T("ToolTip"), m_strToolTip, _T(""));
+	PX_Enum(pPX, _T("ContextColor"), m_nContextColor, xtpRibbonTabContextColorNone);
+	PX_String(pPX, _T("ContextCaption"), m_strContextCaption, _T(""));
+	PX_Int(pPX, _T("Id"), m_nId, 0);
+	PX_Bool(pPX, _T("Visible"), m_bVisible, TRUE);
+
+	if (pPX->IsStoring())
+	{
+		BOOL bSelected = IsSelected();
+		PX_Bool(pPX, _T("Selected"), bSelected, FALSE);
+	}
+	else
+	{
+		BOOL bSelected = FALSE;
+		PX_Bool(pPX, _T("Selected"), bSelected, 0);
+		if (bSelected)
+		{
+			Select();
+		}
+	}
+
+
+	CXTPPropExchangeSection secGroups(pPX->GetSection(_T("Groups")));
+	m_pGroups->DoPropExchange(&secGroups);
+}
+
+

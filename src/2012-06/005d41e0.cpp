@@ -1,22 +1,22 @@
-// from server: 77% by atomic.potato
-typedef unsigned char Boolean;
+// from server: 100% by tajop
+struct Settings {
+    bool check(void*);
+};
 
-struct S
-{
-    void* value;
+struct S {
     void* field0;
     void* field1;
     void* field2;
+    Settings* settings;
+    void* get();
+    void* Creator();
 };
 
-extern "C" void* __cdecl sub_5d40e0(S*);
-extern "C" Boolean __cdecl sub_6c8100(void*, void*);
-
-void* __cdecl function_005d41e0(S* object)
+void* S::Creator()
 {
-    void* value = object->field2;
-    void* argument = sub_5d40e0(object);
-    if (sub_6c8100(value, argument))
-        return (char*)object - 0x1c;
+    Settings* p = settings;
+    void* q = get();
+    if (p->check(q))
+        return (char*)this - 0x1c;
     return 0;
 }

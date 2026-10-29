@@ -1,15 +1,6 @@
-// from server: 39% by atomic.potato
-extern "C" int __cdecl sub_7F4878(int, int);
-
-struct RBX_MaterialBase_Level {
-    int field_0;
-    int f();
-};
-
-int RBX_MaterialBase_Level::f()
-{
-    int local;
-    local = 0;
-    sub_7F4878((int)&local, 0x9c163c);
-    return 0;
-}
+// roc 2009-12 005df660  unit: RBX::MaterialBase::Level  size: 53 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 005df660
+//
+// 005df660  6aff                 push -1
+// 005df662  68089a9400           push 0x949a08
+// 005df667  64a100000000        

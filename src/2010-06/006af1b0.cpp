@@ -1,34 +1,51 @@
-// from server: 0% by tester
-struct Slot {
-    void* vtable;
-    int refcount1;
-    int refcount2;
-    int value;
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_codex_eh_count16_b260dc2bc31f66e9.cpp
+
+// Candidate translation unit (score above; library headers required).
+
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Object {
+    virtual ~Object();
 };
 
-struct Signal {
-    Slot* slot;
-    Signal* connect(int value);
+struct CountBase {
+    long useCount;
+    long weakCount;
+
+    CountBase() : useCount(1), weakCount(1) {}
+    virtual ~CountBase();
+    virtual void dispose() = 0;
+    virtual void destroy();
+    virtual void* getDeleter(const void*) = 0;
 };
 
-extern "C" void* __cdecl operator_new(unsigned int size);
+struct Count : CountBase {
+    Object* object;
 
-Signal* Signal::connect(int value)
+    explicit Count(Object* p) : object(p) {}
+    virtual ~Count();
+    virtual void dispose();
+    virtual void* getDeleter(const void*);
+};
+
+extern void __cdecl deleteObject(Object*);
+
+struct S {
+    CountBase* count;
+    explicit S(Object*);
+};
+
+S::S(Object* p) : count(0)
 {
-    Slot* s;
-    this->slot = 0;
-    s = (Slot*)operator_new(0x10);
-    if (s != 0)
-    {
-        s->refcount1 = 1;
-        s->refcount2 = 1;
-        s->vtable = (void*)0xa4156c;
-        s->value = value;
+    try {
+        count = new Count(p);
     }
-    else
-    {
-        s = 0;
+    catch (...) {
+        deleteObject(p);
+        throw;
     }
-    this->slot = s;
-    return this;
 }

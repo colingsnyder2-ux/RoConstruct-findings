@@ -1,759 +1,326 @@
-// from server: 63% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-8.0 atlmfc/src/mfc/daoview.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-atl90-dll roc_http_trust_once_c8cab14bd7631575.cpp
 
 // Candidate translation unit (score above; library headers required).
-// This is a part of the Microsoft Foundation Classes C++ library.
-// Copyright (C) Microsoft Corporation
-// All rights reserved.
-//
-// This source code is only intended as a supplement to the
-// Microsoft Foundation Classes Reference and related
-// electronic documentation provided with the library.
-// See these sources for detailed information regarding the
-// Microsoft Foundation Classes product.
+#define _SCL_SECURE_NO_DEPRECATE // required to disable a warning
+#include "util/Http.h"
+#include <boost/thread/once.hpp>
+#include <windows.h>
+#include <atlutil.h>
+#include <wininet.h>
+#include <sstream>
+#include <G3D/format.h>
+#include <boost/scoped_ptr.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
 
-#include "stdafx.h"
-#include "sal.h"
-
-
-
-#define new DEBUG_NEW
-
-/////////////////////////////////////////////////////////////////////////////
-
-IMPLEMENT_DYNAMIC(CDaoRecordView, CFormView)
-
-BEGIN_MESSAGE_MAP(CDaoRecordView, CFormView)
-	//{{AFX_MSG_MAP(CDaoRecordView)
-		// NOTE - the ClassWizard will add and remove mapping macros here.
-	//}}AFX_MSG_MAP
-	ON_COMMAND_EX(ID_RECORD_FIRST, &CDaoRecordView::OnMove)
-	ON_UPDATE_COMMAND_UI(ID_RECORD_FIRST, &CDaoRecordView::OnUpdateRecordFirst)
-	ON_COMMAND_EX(ID_RECORD_PREV, &CDaoRecordView::OnMove)
-	ON_UPDATE_COMMAND_UI(ID_RECORD_PREV, &CDaoRecordView::OnUpdateRecordPrev)
-	ON_COMMAND_EX(ID_RECORD_NEXT, &CDaoRecordView::OnMove)
-	ON_UPDATE_COMMAND_UI(ID_RECORD_NEXT, &CDaoRecordView::OnUpdateRecordNext)
-	ON_COMMAND_EX(ID_RECORD_LAST, &CDaoRecordView::OnMove)
-	ON_UPDATE_COMMAND_UI(ID_RECORD_LAST, &CDaoRecordView::OnUpdateRecordLast)
-END_MESSAGE_MAP()
-
-CDaoRecordView::CDaoRecordView(LPCTSTR lpszTemplateName)
-	: CFormView(lpszTemplateName)
+class HttpRequest_source : public boost::iostreams::device<boost::iostreams::input>
 {
-	m_nStatus = 0;
+private:
+	void* request;
 
-	// Setup dummy bookmarks
-	m_varBookmarkCurrent = 1L;
-	m_varBookmarkFirst = m_varBookmarkLast = 0L;
-}
-
-CDaoRecordView::CDaoRecordView(UINT nIDTemplate)
-	: CFormView(nIDTemplate)
-{
-	m_nStatus = 0;
-
-	// Setup dummy bookmarks
-	m_varBookmarkCurrent = 1L;
-	m_varBookmarkFirst = m_varBookmarkLast = 0L;
-}
-
-CDaoRecordView::~CDaoRecordView()
-{
-}
-
-void CDaoRecordView::OnInitialUpdate()
-{
-	ASSERT_VALID(this);
-
-	CDaoRecordset* pRecordset = OnGetRecordset();
-	// recordset must be allocated already
-	ASSERT(pRecordset != NULL);
-
-	if (!pRecordset->IsOpen())
+public:
+	HttpRequest_source(void* request)
+		: request(request)
 	{
-		CWaitCursor wait;
-		pRecordset->Open();
 	}
-
-	if (!pRecordset->IsEOF())
+public:
+	// does not match
+	int read(char* s, int n)
 	{
-		// Determine recordset properties for move button enabling
-		if (pRecordset->CanBookmark())
+		DWORD numBytes;
+		if (!InternetQueryDataAvailable(request, &numBytes, 0, NULL))
+			return -1;
+		if (numBytes == 0)
+			return -1;
+
+		DWORD bytesRead;
+		if (!InternetReadFile(request, s, n, &bytesRead))
+			throw std::runtime_error("InternetReadFile failed");
+
+		return bytesRead;
+	}
+};
+
+struct String_sink : public boost::iostreams::device<boost::iostreams::output>
+{
+public:
+	std::string& s;
+
+public:
+	String_sink(std::string& s)
+		: s(s)
+	{
+	}
+public:
+	// NOTE: not checked
+	int write(const char* c, int n)
+	{
+		s.append(c, n);
+		return n;
+	}
+};
+
+namespace RBX
+{
+	void ThrowIfFailure(bool success, const char* message)
+	{
+		if (!success)
 		{
-			// Get the bookmark of the first record
-			m_varBookmarkCurrent = pRecordset->GetBookmark();
-			m_varBookmarkFirst = m_varBookmarkCurrent;
-		}
+			DWORD error = GetLastError();
 
-		// Enable forward scrolling buttons
-		m_nStatus |= AFX_DAOVIEW_SCROLL_NEXT;
-
-		// Enable backward scrolling buttons if possible
-		if (pRecordset->CanScroll())
-		{
-			m_nStatus |= AFX_DAOVIEW_SCROLL_LAST;
-			m_nStatus |= AFX_DAOVIEW_SCROLL_BACKWARD;
-		}
-		else
-		{
-			m_nStatus &= ~AFX_DAOVIEW_SCROLL_LAST;
-			m_nStatus &= ~AFX_DAOVIEW_SCROLL_BACKWARD;
-		}
-	}
-	else
-	{
-		// Disable scrolling
-		m_nStatus &= ~AFX_DAOVIEW_SCROLL_NEXT;
-		m_nStatus &= ~AFX_DAOVIEW_SCROLL_LAST;
-		m_nStatus &= ~AFX_DAOVIEW_SCROLL_BACKWARD;
-	}
-
-	CFormView::OnInitialUpdate();
-}
-
-BOOL CDaoRecordView::OnMove(UINT nIDMoveCommand)
-{
-	ASSERT_VALID(this);
-
-	CDaoRecordset* pSet = OnGetRecordset();
-	if (pSet->CanUpdate())
-	{
-		pSet->Edit();
-		if (!UpdateData())
-			return TRUE;
-
-		if (pSet->IsFieldDirty(NULL))
-			pSet->Update();
-		else
-			pSet->CancelUpdate();
-	}
-
-	BOOL bBookmarkable = pSet->CanBookmark();
-	BOOL bScrollable = pSet->CanScroll();
-
-	switch (nIDMoveCommand)
-	{
-		case ID_RECORD_PREV:
-			pSet->MovePrev();
-
-			if (!pSet->IsBOF())
-			{
-				if (bBookmarkable)
-					m_varBookmarkCurrent = pSet->GetBookmark();
-
-				// Enable forward scrolling
-				m_nStatus |= AFX_DAOVIEW_SCROLL_NEXT;
-
-				if (bScrollable)
-				{
-					m_nStatus |= AFX_DAOVIEW_SCROLL_LAST;
-
-					if (IsOnFirstRecord())
-						// Disable backward scrolling
-						m_nStatus &= ~AFX_DAOVIEW_SCROLL_BACKWARD;
-					else
-						m_nStatus |= AFX_DAOVIEW_SCROLL_BACKWARD;
-				}
-				else
-				{
-					m_nStatus &= ~AFX_DAOVIEW_SCROLL_LAST;
-					m_nStatus &= ~AFX_DAOVIEW_SCROLL_BACKWARD;
-				}
-
-
-				break;
-			}
-			// Fall through to reset to first record
-
-		case ID_RECORD_FIRST:
-			pSet->MoveFirst();
-
-			// backward scrolling never allowed after movefirst
-			m_nStatus &= ~AFX_DAOVIEW_SCROLL_BACKWARD;
-
-			if (pSet->IsEOF())
-			{
-				// Empty recordset, disable forward too
-				m_nStatus &= ~AFX_DAOVIEW_SCROLL_NEXT;
-				m_nStatus &= ~AFX_DAOVIEW_SCROLL_LAST;
-			}
+			char buffer[256];
+			if (!FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, error, MAKELANGID(LANG_NEUTRAL, SUBLANG_SYS_DEFAULT), buffer, sizeof(buffer), NULL))
+				throw std::runtime_error(G3D::format("%s, err=0x%X", message, error));
 			else
+				throw std::runtime_error(G3D::format("%s, %s", message, buffer));
+		}
+	}
+
+	template<bool isPost>
+	static void httpGetPost(const std::string& url, std::istream& data, bool compressData, const char* additionalHeaders, std::string& response)
+	{
+		if (url.size() == 0)
+			throw std::runtime_error("empty url");
+
+		if (!Http::trustCheck(url.c_str()))
+			throw std::runtime_error(G3D::format("trust check failed for %s", url.c_str()));
+
+		ATL::CUrl crack;
+		crack.CrackUrl(url.c_str());
+
+		if (crack.GetHostNameLength() == 0)
+			throw std::runtime_error(G3D::format("'%s' is missing a hostName", url.c_str()));
+
+		HINTERNET session = InternetOpenA("Roblox", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
+
+		HINTERNET connection = InternetConnectA(session,
+			crack.GetHostName(),
+			crack.GetPortNumber(),
+			crack.GetUserNameA(),
+			crack.GetPassword(),
+			INTERNET_SERVICE_HTTP,
+			0,
+			TRUE);
+
+		{
+			ATL::CString s = crack.GetUrlPath();
+			s += crack.GetExtraInfo();
+
+			HINTERNET request = HttpOpenRequestA(
+				connection,
+				isPost ? "POST" : "GET",
+				s.GetString(),
+				NULL,
+				NULL,
+				NULL,
+				INTERNET_FLAG_EXISTING_CONNECT | INTERNET_FLAG_KEEP_CONNECTION | INTERNET_FLAG_NEED_FILE,
+				TRUE);
+
+			if (!request)
+				throw std::runtime_error(G3D::format("HttpOpenRequest failed for %s", url.c_str()));
+
+			if (additionalHeaders)
 			{
-				if (bBookmarkable)
+				if (!HttpAddRequestHeadersA(request, additionalHeaders, (int)strlen(additionalHeaders), HTTP_ADDREQ_FLAG_ADD))
+					ThrowIfFailure(false, "HttpAddRequestHeaders failed");
+			}
+
+			if (!HttpAddRequestHeadersA(request, "Accept-Encoding: gzip\r\n", (int)strlen("Accept-Encoding: gzip\r\n"), HTTP_ADDREQ_FLAG_ADD))
+				ThrowIfFailure(false, "HttpAddRequestHeaders failed");
+
+			{
+				boost::iostreams::gzip_params gzipParams(boost::iostreams::zlib::default_compression);
+
+				if (isPost)
 				{
-					m_varBookmarkCurrent = pSet->GetBookmark();
-					m_varBookmarkFirst = m_varBookmarkCurrent;
+					std::string uploadData;
+
+					{
+						boost::iostreams::filtering_stream<boost::iostreams::output> out;
+
+						if (compressData)
+						{
+							std::string contentEncodingHeader = "Content-Encoding: gzip\r\n";
+							if (!HttpAddRequestHeadersA(request, contentEncodingHeader.c_str(), (int)contentEncodingHeader.size(), HTTP_ADDREQ_FLAG_ADD))
+								ThrowIfFailure(false, "HttpAddRequestHeaders failed");
+
+							out.push(boost::iostreams::basic_gzip_compressor<>(gzipParams));
+						}
+
+						out.push(String_sink(uploadData));
+						boost::iostreams::copy(data, out);
+					}
+
+					int headerLength = (int)uploadData.size();
+
+					INTERNET_BUFFERSA buffers = {0};
+					buffers.dwStructSize = sizeof(INTERNET_BUFFERSA);
+					if (!HttpSendRequestExA(request, &buffers, NULL, 0, TRUE))
+						throw std::runtime_error("HttpSendRequestEx failed");
+
+					DWORD bytesWritten;
+					if (!InternetWriteFile(request, uploadData.c_str(), headerLength, &bytesWritten))
+						ThrowIfFailure(false, "InternetWriteFile failed");
+
+					if (bytesWritten != headerLength)
+						throw std::runtime_error("Failed to upload content");
+
+					if (!HttpEndRequestA(request, NULL, 0, TRUE))
+						ThrowIfFailure(false, "HttpEndRequest failed");
 				}
-
-				// Enable forward scrolling
-				m_nStatus |= AFX_DAOVIEW_SCROLL_NEXT;
-
-				if (bScrollable)
-					m_nStatus |= AFX_DAOVIEW_SCROLL_LAST;
 				else
-					m_nStatus &= ~AFX_DAOVIEW_SCROLL_LAST;
-			}
-
-			break;
-
-		case ID_RECORD_NEXT:
-			pSet->MoveNext();
-
-			if (!pSet->IsEOF())
-			{
-				if (bBookmarkable)
-					m_varBookmarkCurrent = pSet->GetBookmark();
-
-				if (IsOnLastRecord())
 				{
-					// Disable forward scrolling
-					m_nStatus &= ~AFX_DAOVIEW_SCROLL_NEXT;
-					m_nStatus &= ~AFX_DAOVIEW_SCROLL_LAST;
-				}
-				else
-				{
-					m_nStatus |= AFX_DAOVIEW_SCROLL_NEXT;
-					m_nStatus |= AFX_DAOVIEW_SCROLL_LAST;
+					if (!HttpSendRequestA(request, NULL, 0, NULL, 0))
+						ThrowIfFailure(false, "HttpSendRequest failed");
 				}
 
-				if (bScrollable)
-					m_nStatus |= AFX_DAOVIEW_SCROLL_BACKWARD;
-				else
+				int statusCode;
 				{
-					m_nStatus &= ~AFX_DAOVIEW_SCROLL_LAST;
-					m_nStatus &= ~AFX_DAOVIEW_SCROLL_BACKWARD;
+					char buffer[80];
+					DWORD length = sizeof(buffer);
+					if (!HttpQueryInfoA(request, HTTP_QUERY_STATUS_CODE, buffer, &length, NULL))
+						ThrowIfFailure(false, "HttpQueryInfo failed");
+					statusCode = atol(buffer);
 				}
 
-				break;
-			}
-
-			// Can't fall through to move last
-			if (!bScrollable)
-			{
-				// At the end of forward only recordset
-				m_nStatus &= ~AFX_DAOVIEW_SCROLL_NEXT;
-				m_nStatus &= ~AFX_DAOVIEW_SCROLL_LAST;
-				m_nStatus &= ~AFX_DAOVIEW_SCROLL_BACKWARD;
-				break;
-			}
-
-			// Fall through to reset to last record
-
-		case ID_RECORD_LAST:
-			pSet->MoveLast();
-
-			// forward scrolling never allowed after movelast
-			m_nStatus &= ~AFX_DAOVIEW_SCROLL_NEXT;
-			m_nStatus &= ~AFX_DAOVIEW_SCROLL_LAST;
-
-			if (pSet->IsBOF())
-			{
-				// Empty recordset, disable backward too
-				m_nStatus &= ~AFX_DAOVIEW_SCROLL_BACKWARD;
-			}
-			else
-			{
-				if (bBookmarkable)
 				{
-					m_varBookmarkCurrent = pSet->GetBookmark();
-					m_varBookmarkLast = m_varBookmarkCurrent;
+					boost::iostreams::filtering_stream<boost::iostreams::input> in;
+
+					char buffer[256];
+					DWORD length = sizeof(buffer);
+					if (HttpQueryInfoA(request, HTTP_QUERY_CONTENT_ENCODING, buffer, &length, NULL))
+					{
+						if (std::string(buffer) == "gzip")
+							in.push(boost::iostreams::basic_gzip_decompressor<>());
+					}
+
+					in.push(HttpRequest_source(request));
+					boost::iostreams::copy(in, String_sink(response));
 				}
 
-				// Enable backward scrolling
-				if (bBookmarkable)
-					m_nStatus |= AFX_DAOVIEW_SCROLL_BACKWARD;
-				else
-					m_nStatus &= ~AFX_DAOVIEW_SCROLL_BACKWARD;
+				if (statusCode != 200)
+					throw std::runtime_error(G3D::format("statusCode = %d", statusCode));
 			}
 
-			break;
+			InternetCloseHandle(request);
+		}
 
+		InternetCloseHandle(connection);
+		InternetCloseHandle(session);
+	}
+
+	bool Http::isScript(const char* url)
+	{
+		ATL::CUrl crack;
+		crack.CrackUrl(url);
+		if (crack.GetScheme() == ATL_URL_SCHEME_FTP || (crack.GetScheme() > ATL_URL_SCHEME_GOPHER && crack.GetScheme() <= ATL_URL_SCHEME_HTTPS))
+			return false;
+
+		ATL::CString sUrl(url);
+		if (sUrl.Find("javascript:") == 0)
+			return true;
+		if (sUrl.Find("jscript:") == 0)
+			return true;
+
+		return false;
+	}
+
+	bool Http::isRobloxSite(const char* url)
+	{
+		ATL::CUrl crack;
+		crack.CrackUrl(url);
+		if (crack.GetScheme() != ATL_URL_SCHEME_FTP && (crack.GetScheme() <= ATL_URL_SCHEME_GOPHER && crack.GetScheme() > ATL_URL_SCHEME_HTTPS))
+			return false;
+
+		ATL::CString hostName = crack.GetHostName();
+		hostName.MakeLower();
+		if (hostName.Right((int)strlen("roblox.com")) == "roblox.com")
+			return true;
+		if (hostName.Right((int)strlen("72.32.62.210")) == "72.32.62.210")
+			return true;
+		if (hostName.Right((int)strlen("robloxopolis.com")) == "robloxopolis.com")
+			return true;
+
+		return false;
+	}
+
+	static bool skipTrustCheck;
+	static boost::once_flag trustCheckOnce = BOOST_ONCE_INIT;
+	static void initializeTrustCheck()
+	{
+		DWORD data = 0;
+		ATL::CRegKey key;
+		if (key.Open(HKEY_CURRENT_USER, "Software\\ROBLOX Corporation\\Roblox", KEY_READ) == ERROR_SUCCESS)
+			key.QueryDWORDValue("SkipTrustCheck", data);
+		if (key.Open(HKEY_LOCAL_MACHINE, "Software\\Roblox", KEY_READ) == ERROR_SUCCESS)
+			key.QueryDWORDValue("SkipTrustCheck", data);
+		skipTrustCheck = data == TRUE;
+	}
+
+	bool Http::trustCheck(const char* url)
+	{
+		boost::call_once(&initializeTrustCheck, trustCheckOnce);
+		if (skipTrustCheck)
+			return true;
+
+		if (ATL::CString("about:blank") == url)
+			return true;
+
+		if (isRobloxSite(url))
+			return true;
+
+		if (isScript(url))
+			return true;
+
+		ATL::CUrl crack;
+		crack.CrackUrl(url);
+		switch (crack.GetScheme())
+		{
+		case ATL_URL_SCHEME_FTP:
+		case ATL_URL_SCHEME_HTTP:
+		case ATL_URL_SCHEME_HTTPS:
+			return false;
 		default:
-			// Unexpected case value
-			ASSERT(FALSE);
+		{
+			ATL::CString sUrl = url;
+			sUrl.Replace("%20", " ");
+			if (sUrl.Find("res://") == 0)
+			{
+				if (sUrl.Find("res://mshtml.dll") == 0) return true;
+				if (sUrl.Find("res://ieframe.dll") == 0) return true;
+				if (sUrl.Find("res://shdoclc.dll") == 0) return true;
+				TCHAR module[_MAX_PATH];
+				if (GetModuleFileName(NULL, module, _MAX_PATH))
+				{
+					ATL::CString strResourceURL;
+					strResourceURL.Format(_T("res://%s"), module);
+					if (sUrl.Find(strResourceURL) == 0) return true;
+				}
+			}
+			return false;
+		}
+		}
 	}
 
-	// Show results of move operation
-	UpdateData(FALSE);
-	return TRUE;
-}
-
-BOOL CDaoRecordView::IsOnFirstRecord()
-{
-	ASSERT_VALID(this);
-	return (m_varBookmarkCurrent == m_varBookmarkFirst);
-}
-
-BOOL CDaoRecordView::IsOnLastRecord()
-{
-	ASSERT_VALID(this);
-	return (m_varBookmarkCurrent == m_varBookmarkLast);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// DDX Cover functions for use with fields of a recordset
-
-/////////////////////////////////////////////////////////////////////////////
-// Simple field formatting to text item
-
-BOOL AFXAPI AfxFieldText(CDataExchange* pDX, int nIDC, void* pv,
-	CDaoRecordset* pRecordset)
-{
-	ASSERT_VALID(pRecordset);
-
-	HWND hWndCtrl = pDX->PrepareEditCtrl(nIDC);
-	TCHAR szT[2];
-	if (pDX->m_bSaveAndValidate)
+	void Http::get(std::string& response)
 	{
-		::GetWindowText(hWndCtrl, szT, _countof(szT));
-		if (szT[0] == '\0')
-		{
-			// If edit buffer not NULL prior to update, set it dirty
-			// to catch case of setting field value from PSEUDO NULL to NULL.
-			if (!pRecordset->IsFieldNull(pv))
-				pRecordset->SetFieldDirty(pv, TRUE);
-			pRecordset->SetFieldNull(pv);
-			return TRUE;
-		}
+		const char* h = NULL;
+		if (!additionalHeaders.empty())
+			h = additionalHeaders.c_str();
+
+		std::istringstream dummy;
+		httpGetPost<false>(url, dummy, false, h, response);
+	}
+
+	void Http::post(std::istream& input, bool compress, std::string& response)
+	{
+		if (additionalHeaders.empty())
+			httpGetPost<true>(url, input, compress, NULL, response);
 		else
-		{
-			// If edit buffer NULL prior to update, set it dirty
-			// to catch case of setting field value to PSEUDO NULL.
-			if (pRecordset->IsFieldNull(pv))
-				pRecordset->SetFieldDirty(pv, TRUE);
-			pRecordset->SetFieldNull(pv, FALSE);
-		}
-	}
-	else
-	{
-		if (!pRecordset->IsOpen() || pRecordset->IsFieldNull(pv))
-		{
-			szT[0] = '\0';
-			AfxSetWindowText(hWndCtrl, szT);
-			return TRUE;
-		}
-	}
-	return FALSE;
-}
-
-void AFXAPI DDX_FieldText(CDataExchange* pDX, int nIDC, BOOL& value,
-	CDaoRecordset* pRecordset)
-{
-	if (!AfxFieldText(pDX, nIDC, &value, pRecordset))
-		DDX_Text(pDX, nIDC, value);
-}
-
-void AFXAPI DDX_FieldText(CDataExchange* pDX, int nIDC, BYTE& value,
-	CDaoRecordset* pRecordset)
-{
-	if (!AfxFieldText(pDX, nIDC, &value, pRecordset))
-		DDX_Text(pDX, nIDC, value);
-}
-
-void AFXAPI DDX_FieldText(CDataExchange* pDX, int nIDC, short& value,
-	CDaoRecordset* pRecordset)
-{
-	if (!AfxFieldText(pDX, nIDC, &value, pRecordset))
-		DDX_Text(pDX, nIDC, value);
-}
-
-void AFXAPI DDX_FieldText(CDataExchange* pDX, int nIDC, long& value,
-	CDaoRecordset* pRecordset)
-{
-	if (!AfxFieldText(pDX, nIDC, &value, pRecordset))
-		DDX_Text(pDX, nIDC, value);
-}
-
-void AFXAPI DDX_FieldText(CDataExchange* pDX, int nIDC, DWORD& value,
-	CDaoRecordset* pRecordset)
-{
-	if (!AfxFieldText(pDX, nIDC, &value, pRecordset))
-		DDX_Text(pDX, nIDC, value);
-}
-
-void AFXAPI DDX_FieldText(CDataExchange* pDX, int nIDC, COleCurrency& value,
-	CDaoRecordset* pRecordset)
-{
-	if (!AfxFieldText(pDX, nIDC, &value, pRecordset))
-		DDX_Text(pDX, nIDC, value);
-}
-
-void AFXAPI DDX_FieldText(CDataExchange* pDX, int nIDC, float& value,
-	CDaoRecordset* pRecordset)
-{
-	if (!AfxFieldText(pDX, nIDC, &value, pRecordset))
-		DDX_Text(pDX, nIDC, value);
-}
-
-void AFXAPI DDX_FieldText(CDataExchange* pDX, int nIDC, double& value,
-	CDaoRecordset* pRecordset)
-{
-	if (!AfxFieldText(pDX, nIDC, &value, pRecordset))
-		DDX_Text(pDX, nIDC, value);
-}
-
-void AFXAPI DDX_FieldText(CDataExchange* pDX, int nIDC, COleDateTime& value,
-	CDaoRecordset* pRecordset)
-{
-	if (!AfxFieldText(pDX, nIDC, &value, pRecordset))
-		DDX_Text(pDX, nIDC, value);
-}
-
-void AFXAPI DDX_FieldText(CDataExchange* pDX, int nIDC, CString &value,
-	CDaoRecordset* pRecordset)
-{
-	if (!AfxFieldText(pDX, nIDC, &value, pRecordset))
-		DDX_Text(pDX, nIDC, value);
-}
-
-void AFXAPI DDX_FieldText(CDataExchange* pDX, int nIDC, __out_ecount(nMaxLen) LPTSTR pstrValue,
-	int nMaxLen, CDaoRecordset* pRecordset)
-{
-	if (!AfxFieldText(pDX, nIDC, &pstrValue, pRecordset))
-		DDX_Text(pDX, nIDC, pstrValue, nMaxLen);
-}
-
-void AFXAPI DDX_FieldLBString(CDataExchange* pDX, int nIDC, CString& value,
-	CDaoRecordset* pRecordset)
-{
-	ASSERT_VALID(pRecordset);
-
-	HWND hWndCtrl = pDX->PrepareCtrl(nIDC);
-	if (pDX->m_bSaveAndValidate)
-	{
-		int nIndex = (int)::SendMessage(hWndCtrl, LB_GETCURSEL, 0, 0L);
-		if (nIndex != -1)
-		{
-			int nLen = (int)::SendMessage(hWndCtrl, LB_GETTEXTLEN, nIndex, 0L);
-			::SendMessage(hWndCtrl, LB_GETTEXT, nIndex,
-					(LPARAM)(LPSTR)value.GetBuffer(nLen));
-			if (nLen == 0)
-			{
-				if (pRecordset->IsFieldNullable(&value))
-					pRecordset->SetFieldNull(&value, TRUE);
-			}
-			else
-			{
-				pRecordset->SetFieldNull(&value, FALSE);
-			}
-			value.ReleaseBuffer();
-		}
-		else
-		{
-			// no selection
-			value.GetBufferSetLength(0);
-			if (pRecordset->IsFieldNullable(&value))
-				pRecordset->SetFieldNull(&value);
-		}
-	}
-	else
-	{
-		if (!pRecordset->IsOpen() || pRecordset->IsFieldNull(&value))
-		{
-			SendMessage(hWndCtrl, LB_SETCURSEL, (WPARAM)-1, 0L);
-		}
-		else
-		{
-			// set current selection based on data string
-			if (::SendMessage(hWndCtrl, LB_SELECTSTRING, (WPARAM)-1,
-			  (LPARAM)(LPCTSTR)value) == LB_ERR)
-			{
-				// no selection match
-				TRACE(traceDatabase, 0, "Warning: no listbox item selected.\n");
-			}
-		}
+			httpGetPost<true>(url, input, compress, additionalHeaders.c_str(), response);
 	}
 }
-
-void AFXAPI DDX_FieldLBStringExact(CDataExchange* pDX, int nIDC, CString& value,
-	CDaoRecordset* pRecordset)
-{
-	ASSERT_VALID(pRecordset);
-
-	HWND hWndCtrl = pDX->PrepareCtrl(nIDC);
-	if (pDX->m_bSaveAndValidate)
-	{
-		DDX_FieldLBString(pDX, nIDC, value, pRecordset);
-	}
-	else
-	{
-		if (!pRecordset->IsOpen() || pRecordset->IsFieldNull(&value))
-		{
-			SendMessage(hWndCtrl, LB_SETCURSEL, (WPARAM)-1, 0L);
-		}
-		else
-		{
-			// set current selection based on data string
-			int i = (int)::SendMessage(hWndCtrl, LB_FINDSTRINGEXACT, (WPARAM)-1,
-			  (LPARAM)(LPCTSTR)value);
-			if (i < 0)
-			{
-				// no selection match
-				TRACE(traceDatabase, 0, "Warning: no listbox item selected.\n");
-			}
-			else
-			{
-				// select it
-				SendMessage(hWndCtrl, LB_SETCURSEL, i, 0L);
-			}
-		}
-	}
-}
-
-void AFXAPI DDX_FieldCBString(CDataExchange* pDX, int nIDC, CString& value,
-	CDaoRecordset* pRecordset)
-{
-	ASSERT_VALID(pRecordset);
-
-	HWND hWndCtrl = pDX->PrepareCtrl(nIDC);
-	if (pDX->m_bSaveAndValidate)
-	{
-		// just get current edit item text (or drop list static)
-		int nLen = ::GetWindowTextLength(hWndCtrl);
-		if (nLen != -1)
-		{
-			// get known length
-			::GetWindowText(hWndCtrl, value.GetBuffer(nLen), nLen+1);
-		}
-		else
-		{
-			// for drop lists GetWindowTextLength does not work - assume
-			//  preallocated length (or 256, whichever is larger)
-			nLen = value.GetAllocLength();
-			if (nLen < 256)
-				nLen = 256;
-			::GetWindowText(hWndCtrl, value.GetBuffer(nLen-1), nLen);
-		}
-		value.ReleaseBuffer();
-		if (value.GetLength() == 0)
-		{
-			if (pRecordset->IsFieldNullable(&value))
-				pRecordset->SetFieldNull(&value, TRUE);
-		}
-		else
-		{
-			pRecordset->SetFieldNull(&value, FALSE);
-		}
-	}
-	else
-	{
-		if (!pRecordset->IsOpen() || pRecordset->IsFieldNull(&value))
-		{
-			SendMessage(hWndCtrl, CB_SETCURSEL, (WPARAM)-1, 0L);
-		}
-		else
-		{
-			// set current selection based on model string
-			if (::SendMessage(hWndCtrl, CB_SELECTSTRING, (WPARAM)-1,
-				(LPARAM)(LPCTSTR)value) == CB_ERR)
-			{
-				// just set the edit text (will be ignored if DROPDOWNLIST)
-				AfxSetWindowText(hWndCtrl, value);
-			}
-		}
-	}
-}
-
-void AFXAPI DDX_FieldCBStringExact(CDataExchange* pDX, int nIDC, CString& value,
-	CDaoRecordset* pRecordset)
-{
-	ASSERT_VALID(pRecordset);
-
-	HWND hWndCtrl = pDX->PrepareCtrl(nIDC);
-	if (pDX->m_bSaveAndValidate)
-	{
-		DDX_FieldCBString(pDX, nIDC, value, pRecordset);
-	}
-	else
-	{
-		if (!pRecordset->IsOpen() || pRecordset->IsFieldNull(&value))
-		{
-			SendMessage(hWndCtrl, CB_SETCURSEL, (WPARAM)-1, 0L);
-		}
-		else
-		{
-			// set current selection based on data string
-			int i = (int)::SendMessage(hWndCtrl, CB_FINDSTRINGEXACT, (WPARAM)-1,
-			  (LPARAM)(LPCTSTR)value);
-			if (i < 0)
-			{
-				// no selection match
-				TRACE(traceDatabase, 0, "Warning: no combobox item selected.\n");
-			}
-			else
-			{
-				// select it
-				SendMessage(hWndCtrl, CB_SETCURSEL, i, 0L);
-			}
-		}
-	}
-}
-
-void AFXAPI DDX_FieldLBIndex(CDataExchange* pDX, int nIDC, int& index,
-	CDaoRecordset* pRecordset)
-{
-	ASSERT_VALID(pRecordset);
-
-	if (!pDX->m_bSaveAndValidate &&
-		(!pRecordset->IsOpen() || pRecordset->IsFieldNull(&index)))
-	{
-		int nIndex = 0;
-		DDX_LBIndex(pDX, nIDC, nIndex);
-	}
-	else
-		DDX_LBIndex(pDX, nIDC, index);
-}
-
-void AFXAPI DDX_FieldCBIndex(CDataExchange* pDX, int nIDC, int& index,
-	CDaoRecordset* pRecordset)
-{
-	ASSERT_VALID(pRecordset);
-
-	if (!pDX->m_bSaveAndValidate &&
-		(!pRecordset->IsOpen() || pRecordset->IsFieldNull(&index)))
-	{
-		int nIndex = 0;
-		DDX_CBIndex(pDX, nIDC, nIndex);
-	}
-	else
-		DDX_CBIndex(pDX, nIDC, index);
-}
-
-void AFXAPI DDX_FieldScroll(CDataExchange* pDX, int nIDC, int& value,
-	CDaoRecordset* pRecordset)
-{
-	ASSERT_VALID(pRecordset);
-
-	if (!pDX->m_bSaveAndValidate &&
-		(!pRecordset->IsOpen() || pRecordset->IsFieldNull(&value)))
-	{
-		int nValue = 0;
-		DDX_Scroll(pDX, nIDC, nValue);
-	}
-	else
-		DDX_Scroll(pDX, nIDC, value);
-}
-
-void AFXAPI DDX_FieldSlider(CDataExchange* pDX, int nIDC, int& value,
-	CDaoRecordset* pRecordset)
-{
-	ASSERT_VALID(pRecordset);
-
-	if (!pDX->m_bSaveAndValidate &&
-		(!pRecordset->IsOpen() || pRecordset->IsFieldNull(&value)))
-	{
-		int nValue = 0;
-		DDX_Slider(pDX, nIDC, nValue);
-	}
-	else
-		DDX_Slider(pDX, nIDC, value);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// Data exchange for special controls
-
-void AFXAPI DDX_FieldCheck(CDataExchange* pDX, int nIDC, int& value, CDaoRecordset* pRecordset)
-{
-	ASSERT_VALID(pRecordset);
-
-	HWND hWndCtrl = pDX->PrepareCtrl(nIDC);
-	if (pDX->m_bSaveAndValidate)
-	{
-		value = (int)::SendMessage(hWndCtrl, BM_GETCHECK, 0, 0L);
-		ASSERT(value >= 0 && value <= 2);
-		if (value == 2)
-		{
-			if (pRecordset->IsFieldNullable(&value))
-				pRecordset->SetFieldNull(&value);
-			else
-			{
-				TRACE(traceDatabase, 0, "Warning: can't set field NULL for checkbox value.\n");
-				// Default to unchecked
-				value = 0;
-			}
-		}
-	}
-	else
-	{
-		if (!pRecordset->IsOpen() || pRecordset->IsFieldNull(&value))
-		{
-			int style = ((int)::GetWindowLong(hWndCtrl, GWL_STYLE) & 0xf);
-			if ((style == BS_3STATE || style == BS_AUTO3STATE))
-				value = 2;
-			else
-			{
-				TRACE(traceDatabase, 0, "Warning: can't set checkbox value for NULL field.\n");
-				// Default to unchecked
-				value = 0;
-			}
-		}
-		if (value < 0 || value > 2)
-		{
-			value = 0;      // default to off
-			TRACE(traceDatabase, 0, "Warning: dialog data checkbox value (%d) out of range.\n",
-				value);
-		}
-		::SendMessage(hWndCtrl, BM_SETCHECK, (WPARAM)value, 0L);
-	}
-}
-
-void AFXAPI DDX_FieldRadio(CDataExchange* pDX, int nIDC, int& value,
-	CDaoRecordset* pRecordset)
-{
-	ASSERT_VALID(pRecordset);
-
-	if (!pDX->m_bSaveAndValidate &&
-		(!pRecordset->IsOpen() || pRecordset->IsFieldNull(&value)))
-		value = -1;
-	DDX_Radio(pDX, nIDC, value);
-	if (pDX->m_bSaveAndValidate)
-	{
-		if (value == -1 && !pRecordset->IsFieldNullable(&value))
-		{
-			AfxFailRadio(pDX);
-		}
-		else
-		{
-			pRecordset->SetFieldNull(&value, (value == -1));
-		}
-	}
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-#ifdef _DEBUG
-void CDaoRecordView::AssertValid() const
-{
-	CFormView::AssertValid();
-}
-
-void CDaoRecordView::Dump(CDumpContext& dc) const
-{
-	ASSERT_VALID(this);
-
-	CFormView::Dump(dc);
-
-	dc << "m_nStatus =" << m_nStatus;
-	dc << "m_varBookmarkCurrent =" << m_varBookmarkCurrent;
-	dc << "m_varBookmarkFirst =" << m_varBookmarkFirst;
-	dc << "m_varBookmarkLast =" << m_varBookmarkLast;
-
-	dc << "\n";
-}
-#endif
-
-//////////////////////////////////////////////////////////////////////////////
-// Inline function declarations expanded out-of-line
-
-#ifndef _AFX_ENABLE_INLINES
-
-#define _AFXDAOVIEW_INLINE
-#include "afxdao.inl"
-
-#endif
-
-
-/////////////////////////////////////////////////////////////////////////////

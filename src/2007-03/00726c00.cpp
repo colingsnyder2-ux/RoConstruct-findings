@@ -1,1113 +1,464 @@
-// from server: 88% by colin
+// roc-cl: 21022
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS /EHsc /MD
-// roc-lib: ogre-1.7.0 OgreCompositorInstance.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_instance_basecall_ad6080b748d5398f.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-    (Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org/
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#ifndef _DLL
+#define _DLL
+#endif
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp"
+#include "v8tree/Instance.h"
+#include "reflection/function.h"
+#include "reflection/property.h"
+#include <algorithm>
 
-Copyright (c) 2000-2009 Torus Knot Software Ltd
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
------------------------------------------------------------------------------
-*/
-#include "OgreStableHeaders.h"
-#include "OgreCompositorInstance.h"
-#include "OgreCompositorChain.h"
-#include "OgreCompositorManager.h"
-#include "OgreCompositionTargetPass.h"
-#include "OgreCompositionPass.h"
-#include "OgreCompositionTechnique.h"
-#include "OgreCustomCompositionPass.h"
-#include "OgreTechnique.h"
-#include "OgrePass.h"
-#include "OgreTexture.h"
-#include "OgreLogManager.h"
-#include "OgreMaterialManager.h"
-#include "OgreTextureManager.h"
-#include "OgreSceneManager.h"
-#include "OgreStringConverter.h"
-#include "OgreException.h"
-#include "OgreHardwarePixelBuffer.h"
-#include "OgreCamera.h"
-#include "OgreRoot.h"
-#include "OgreRenderSystem.h"
-#include "OgreHardwareBufferManager.h"
-#include "OgreCompositorLogic.h"
-
-namespace Ogre {
-CompositorInstance::CompositorInstance(CompositionTechnique *technique,
-    CompositorChain *chain):
-    mCompositor(technique->getParent()), mTechnique(technique), mChain(chain),
-		mEnabled(false)
+namespace RBX
 {
-	const String& logicName = mTechnique->getCompositorLogicName();
-	if (!logicName.empty())
+	const char* sInstance = "Instance";
+
+	Reflection::BoundProp<bool, 1> Instance::propArchivable("archivable", "Behavior", &Instance::archivable, Reflection::PropertyDescriptor::STANDARD); // L14
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(std::string, bool), 2> findFirstChild(&Instance::findFirstChildByName2, "FindFirstChild", "name", "recursive", false, Reflection::FunctionDescriptor::AnyCaller); // L15
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(), 0> func_clone(&Instance::clone, "Clone", Reflection::FunctionDescriptor::AnyCaller); // L16
+	static Reflection::BoundFuncDesc<Instance, void(), 0> func_Remove(&Instance::remove, "Remove", Reflection::FunctionDescriptor::AnyCaller); // L17
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_childrenOld(&Instance::getChildren2, "children", Reflection::FunctionDescriptor::AnyCaller); // L18
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_children(&Instance::getChildren2, "GetChildren", Reflection::FunctionDescriptor::AnyCaller); // L19
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isDescendentOf(&Instance::isDescendentOf2, "IsDescendentOf", "ancestor", Reflection::FunctionDescriptor::AnyCaller); // L20
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isAncestorOf(&Instance::isAncestorOf2, "IsAncestorOf", "descendent", Reflection::FunctionDescriptor::AnyCaller); // L21
+	static Reflection::PropDescriptor<Instance, std::string> prop_className("className", "Data", &Instance::getClassNameStr, NULL, Reflection::PropertyDescriptor::UI); // L22
+
+	const Reflection::PropDescriptor<Instance, std::string> Instance::desc_Name("Name", "Data", &Instance::getName, &Instance::setName, Reflection::PropertyDescriptor::STANDARD); // L24
+	const Reflection::RefPropDescriptor<Instance, Instance> Instance::propParent("Parent", "Data", &Instance::getParent, &Instance::setParent, Reflection::PropertyDescriptor::UI); // L25
+
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childAdded("ChildAdded", "child"); // L27
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childRemoved("ChildRemoved", "child"); // L28
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentAdded("DescendentAdded", "descendent"); // L29
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentRemoving("DescendentRemoving", "descendent"); // L30
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_ancestryChanged("AncestryChanged", "child"); // L31
+	Reflection::SignalDesc<Instance, void(const Reflection::PropertyDescriptor*)> Instance::event_propertyChanged("Changed", "property"); // L32 
+
+	Instance::Instance(const char* name)
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name(name),
+		  archivable(true)
 	{
-		CompositorManager::getSingleton().
-			getCompositorLogic(logicName)->compositorInstanceCreated(this);
-	}
-}
-//-----------------------------------------------------------------------
-CompositorInstance::~CompositorInstance()
-{
-	const String& logicName = mTechnique->getCompositorLogicName();
-	if (!logicName.empty())
-	{
-		CompositorManager::getSingleton().
-			getCompositorLogic(logicName)->compositorInstanceDestroyed(this);
 	}
 
-    freeResources(false, true);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::setEnabled(bool value)
-{
-    if (mEnabled != value)
-    {
-        mEnabled = value;
-
-        // Create of free resource.
-        if (value)
-        {
-            createResources(false);
-        }
-        else
-        {
-            freeResources(false, true);
-        }
-
-		/// Notify chain state needs recompile.
-        mChain->_markDirty();
-    }
-}
-//-----------------------------------------------------------------------
-bool CompositorInstance::getEnabled()
-{
-    return mEnabled;
-}
-//-----------------------------------------------------------------------
-
-/** Clear framebuffer RenderSystem operation
- */
-class RSClearOperation: public CompositorInstance::RenderSystemOperation
-{
-public:
-	RSClearOperation(uint32 buffers, ColourValue colour, Real depth, unsigned short stencil):
-		buffers(buffers), colour(colour), depth(depth), stencil(stencil)
-	{}
-	/// Which buffers to clear (FrameBufferType)
-	uint32 buffers;
-	/// Colour to clear in case FBT_COLOUR is set
-	ColourValue colour;
-	/// Depth to set in case FBT_DEPTH is set
-	Real depth;
-	/// Stencil value to set in case FBT_STENCIL is set
-	unsigned short stencil;
-
-	virtual void execute(SceneManager *sm, RenderSystem *rs)
+	Instance::Instance()
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name("Instance"),
+		  archivable(true)
 	{
-		rs->clearFrameBuffer(buffers, colour, depth, stencil);
 	}
-};
 
-/** "Set stencil state" RenderSystem operation
- */
-class RSStencilOperation: public CompositorInstance::RenderSystemOperation
-{
-public:
-	RSStencilOperation(bool stencilCheck,CompareFunction func,uint32 refValue,uint32 mask,
-		StencilOperation stencilFailOp,StencilOperation depthFailOp,StencilOperation passOp,
-		bool twoSidedOperation):
-		stencilCheck(stencilCheck),func(func),refValue(refValue),mask(mask),
-		stencilFailOp(stencilFailOp),depthFailOp(depthFailOp),passOp(passOp),
-		twoSidedOperation(twoSidedOperation)
-	{}
-	bool stencilCheck;
-	CompareFunction func; 
-    uint32 refValue;
-	uint32 mask;
-    StencilOperation stencilFailOp;
-    StencilOperation depthFailOp;
-    StencilOperation passOp;
-    bool twoSidedOperation;
-
-	virtual void execute(SceneManager *sm, RenderSystem *rs)
+	Instance::~Instance()
 	{
-		rs->setStencilCheckEnabled(stencilCheck);
-		rs->setStencilBufferParams(func, refValue, mask, stencilFailOp, depthFailOp, passOp, twoSidedOperation);
+		RBXASSERT(!parent);
 	}
-};
 
-/** "Render quad" RenderSystem operation
- */
-class RSQuadOperation: public CompositorInstance::RenderSystemOperation
-{
-public:
-	RSQuadOperation(CompositorInstance *instance, uint32 pass_id, MaterialPtr mat):
-	  mat(mat),instance(instance), pass_id(pass_id),
-      mQuadCornerModified(false),
-      mQuadLeft(-1),
-      mQuadTop(1),
-      mQuadRight(1),
-      mQuadBottom(-1)
+	bool Instance::askAddChild(const Instance* instance) const
 	{
-		mat->load();
-		instance->_fireNotifyMaterialSetup(pass_id, mat);
-		technique = mat->getTechnique(0);
-		assert(technique);
+		return false;
 	}
-	MaterialPtr mat;
-	Technique *technique;
-	CompositorInstance *instance;
-	uint32 pass_id;
 
-    bool mQuadCornerModified, mQuadFarCorners, mQuadFarCornersViewSpace;
-    Real mQuadLeft;
-    Real mQuadTop;
-    Real mQuadRight;
-    Real mQuadBottom;
-
-    void setQuadCorners(Real left,Real top,Real right,Real bottom)
-    {
-        mQuadLeft = left;
-        mQuadTop = top;
-        mQuadRight = right;
-        mQuadBottom = bottom;
-        mQuadCornerModified=true;
-    }
-
-	void setQuadFarCorners(bool farCorners, bool farCornersViewSpace)
+	bool Instance::askSetParent(const Instance* instance) const
 	{
-		mQuadFarCorners = farCorners;
-		mQuadFarCornersViewSpace = farCornersViewSpace;
+		return false;
 	}
-   
-	virtual void execute(SceneManager *sm, RenderSystem *rs)
+
+	void Instance::setName(const std::string& value)
 	{
-		// Fire listener
-		instance->_fireNotifyMaterialRender(pass_id, mat);
-
-        Viewport* vp = rs->_getViewport();
-		Rectangle2D *rect = static_cast<Rectangle2D*>(CompositorManager::getSingleton()._getTexturedRectangle2D());
-
-		if (mQuadCornerModified)
+		if (name != value)
 		{
-			// insure positions are using peculiar render system offsets 
-			Real hOffset = rs->getHorizontalTexelOffset() / (0.5f * vp->getActualWidth());
-			Real vOffset = rs->getVerticalTexelOffset() / (0.5f * vp->getActualHeight());
-			rect->setCorners(mQuadLeft + hOffset, mQuadTop - vOffset, mQuadRight + hOffset, mQuadBottom - vOffset);
-		}
-
-		if(mQuadFarCorners)
-		{
-			const Ogre::Vector3 *corners = vp->getCamera()->getWorldSpaceCorners();
-			if(mQuadFarCornersViewSpace)
-			{
-				const Ogre::Matrix4 &viewMat = vp->getCamera()->getViewMatrix(true);
-				rect->setNormals(viewMat*corners[5], viewMat*corners[6], viewMat*corners[4], viewMat*corners[7]);
-			}
-			else
-			{
-				rect->setNormals(corners[5], corners[6], corners[4], corners[7]);
-			}
-		}
-
-		// Queue passes from mat
-		Technique::PassIterator i = technique->getPassIterator();
-		while(i.hasMoreElements())
-		{
-			sm->_injectRenderWithPass(
-				i.getNext(), 
-				rect,
-				false // don't allow replacement of shadow passes
-				);
+			name = value;
+			raisePropertyChanged(desc_Name);
 		}
 	}
-};
 
-/** "Set material scheme" RenderSystem operation
- */
-class RSSetSchemeOperation: public CompositorInstance::RenderSystemOperation
-{
-public:
-	RSSetSchemeOperation(const String& schemeName) : mSchemeName(schemeName) {}
-	
-	String mPreviousScheme;
-	bool mPreviousLateResolving;
-
-	String mSchemeName;
-
-	virtual void execute(SceneManager *sm, RenderSystem *rs)
+	void Instance::onDescendentAdded(Instance* instance)
 	{
-		MaterialManager& matMgr = MaterialManager::getSingleton();
-		mPreviousScheme = matMgr.getActiveScheme();
-		matMgr.setActiveScheme(mSchemeName);
+		if (Notifier<Instance, DescendentAdded>::hasListeners())
+			Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent));
 
-		mPreviousLateResolving = sm->isLateMaterialResolving();
-		sm->setLateMaterialResolving(true);
+		event_descendentAdded.fire(this, shared_from(instance));
 	}
 
-	const String& getPreviousScheme() const { return mPreviousScheme; }
-	bool getPreviousLateResolving() const { return mPreviousLateResolving; }
-};
-
-/** Restore the settings changed by the set scheme operation */
-class RSRestoreSchemeOperation: public CompositorInstance::RenderSystemOperation
-{
-public:
-	RSRestoreSchemeOperation(const RSSetSchemeOperation* setOperation) : 
-	  mSetOperation(setOperation) {}
-	
-	const RSSetSchemeOperation* mSetOperation;
-
-	virtual void execute(SceneManager *sm, RenderSystem *rs)
+	void Instance::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
 	{
-		MaterialManager::getSingleton().setActiveScheme(mSetOperation->getPreviousScheme());
-		sm->setLateMaterialResolving(mSetOperation->getPreviousLateResolving());
-	}
-};
+		event_descendentRemoving.fire(this, instance);
 
-void CompositorInstance::collectPasses(TargetOperation &finalState, CompositionTargetPass *target)
-{
-	/// Here, passes are converted into render target operations
-    Pass *targetpass;
-    Technique *srctech;
-	MaterialPtr mat, srcmat;
-	
-    CompositionTargetPass::PassIterator it = target->getPassIterator();
-    while(it.hasMoreElements())
-    {
-        CompositionPass *pass = it.getNext();
-        switch(pass->getType())
-        {
-        case CompositionPass::PT_CLEAR:
-			queueRenderSystemOp(finalState, OGRE_NEW RSClearOperation(
-				pass->getClearBuffers(),
-				pass->getClearColour(),
-				pass->getClearDepth(),
-				(ushort)pass->getClearStencil()
-				));
-            break;
-		case CompositionPass::PT_STENCIL:
-			queueRenderSystemOp(finalState, OGRE_NEW RSStencilOperation(
-				pass->getStencilCheck(),pass->getStencilFunc(), pass->getStencilRefValue(),
-				pass->getStencilMask(), pass->getStencilFailOp(), pass->getStencilDepthFailOp(),
-				pass->getStencilPassOp(), pass->getStencilTwoSidedOperation()
-				));
-            break;
-		case CompositionPass::PT_RENDERSCENE: 
+		if (Notifier<Instance, DescendentRemoving>::hasListeners())
+			Notifier<Instance, DescendentRemoving>::raise(DescendentRemoving(instance, shared_from(instance->parent)));
+	}
+
+	class RaiseDescendentAdded2
+	{
+	private:
+		const Instance* notifier;
+		Listener<Instance, DescendentAdded>* listener;
+	  
+	public:
+		RaiseDescendentAdded2(const Instance* notifier, Listener<Instance, DescendentAdded>* listener)
+			: notifier(notifier),
+			  listener(listener)
 		{
-			if(pass->getFirstRenderQueue() < finalState.currentQueueGroupID)
-			{
-				/// Mismatch -- warn user
-				/// XXX We could support repeating the last queue, with some effort
-				LogManager::getSingleton().logMessage("Warning in compilation of Compositor "
-					+mCompositor->getName()+": Attempt to render queue "+
-					StringConverter::toString(pass->getFirstRenderQueue())+" before "+
-					StringConverter::toString(finalState.currentQueueGroupID));
-			}
-
-			RSSetSchemeOperation* setSchemeOperation = 0;
-			if (pass->getMaterialScheme() != StringUtil::BLANK)
-			{
-				//Add the triggers that will set the scheme and restore it each frame
-				finalState.currentQueueGroupID = pass->getFirstRenderQueue();
-				setSchemeOperation = OGRE_NEW RSSetSchemeOperation(pass->getMaterialScheme());
-				queueRenderSystemOp(finalState, setSchemeOperation);
-			}
-			
-			/// Add render queues
-			for(int x=pass->getFirstRenderQueue(); x<=pass->getLastRenderQueue(); ++x)
-			{
-				assert(x>=0);
-				finalState.renderQueues.set(x);
-			}
-			finalState.currentQueueGroupID = pass->getLastRenderQueue()+1;
-
-			if (setSchemeOperation != 0)
-			{
-				//Restoring the scheme after the queues have been rendered
-				queueRenderSystemOp(finalState, 
-					OGRE_NEW RSRestoreSchemeOperation(setSchemeOperation));
-			}
-
-			finalState.findVisibleObjects = true;
-			finalState.materialScheme = target->getMaterialScheme();
-			finalState.shadowsEnabled = target->getShadowsEnabled();
-
-            break;
 		}
-		case CompositionPass::PT_RENDERQUAD: {
-            srcmat = pass->getMaterial();
-			if(srcmat.isNull())
-            {
-                /// No material -- warn user
-				LogManager::getSingleton().logMessage("Warning in compilation of Compositor "
-					+mCompositor->getName()+": No material defined for composition pass");
-                break;
-            }
-			srcmat->load();
-			if(srcmat->getNumSupportedTechniques()==0)  
+	public:
+		void operator()(Instance* instance)
+		{
+			notifier->Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent), listener);
+			instance->for_eachChild(*this);
+		}
+	};
+
+	void Instance::onAddListener(Listener<Instance, DescendentAdded>* listener) const
+	{
+		for_eachChild(RaiseDescendentAdded2(this, listener));
+	}
+
+	void Instance::onAddListener(Listener<Instance, ChildAdded>* listener) const
+	{
+		if (children)
+		{
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = children.read();
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
 			{
-				/// No supported techniques -- warn user
-				LogManager::getSingleton().logMessage("Warning in compilation of Compositor "
-					+mCompositor->getName()+": material "+srcmat->getName()+" has no supported techniques");
-                break;
+				Notifier<Instance, ChildAdded>::raise(ChildAdded((*iter).get()), listener);
 			}
-			srctech = srcmat->getBestTechnique(0);
-			/// Create local material
-			MaterialPtr mat = createLocalMaterial(srcmat->getName());
-			/// Copy and adapt passes from source material
-			Technique::PassIterator i = srctech->getPassIterator();
-			while(i.hasMoreElements())
+		}
+	}
+
+	void Instance::removeAllChildren()
+	{
+		while (children)
+		{
+			children->back()->setParent(NULL);
+		}
+	}
+
+	void Instance::onChildChanged(Instance* instance, const PropertyChanged& event)
+	{
+		Instance* p = parent;
+
+		if (p)
+			p->onChildChanged(instance, event);
+	}
+
+	void Instance::readProperties(const XmlElement* container, IReferenceBinder& binder)
+	{
+		for (const XmlElement* i = container->firstChild(); i != NULL; i = i->nextSibling())
+			readProperty(i, binder);
+	}
+
+	void Instance::readChild(const XmlElement* childElement, IReferenceBinder& binder)
+	{
+		const Name* className = NULL;
+		const XmlAttribute* classAttrib = childElement->findAttribute(tag_class);
+
+		if (classAttrib)
+		{
+			if (classAttrib->getValue(className))
 			{
-				Pass *srcpass = i.getNext();
-				/// Create new target pass
-				targetpass = mat->getTechnique(0)->createPass();
-				(*targetpass) = (*srcpass);
-				/// Set up inputs
-				for(size_t x=0; x<pass->getNumInputs(); ++x)
+				boost::shared_ptr<Instance> childInstance = createChild(*className);
+				if (childInstance)
 				{
-					const CompositionPass::InputTex& inp = pass->getInput(x);
-					if(!inp.name.empty())
-					{
-						if(x < targetpass->getNumTextureUnitStates())
-						{
-							targetpass->getTextureUnitState((ushort)x)->setTextureName(getSourceForTex(inp.name, inp.mrtIndex));
-						} 
-						else
-						{
-							/// Texture unit not there
-							LogManager::getSingleton().logMessage("Warning in compilation of Compositor "
-								+mCompositor->getName()+": material "+srcmat->getName()+" texture unit "
-								+StringConverter::toString(x)+" out of bounds");
-						}
-					}
-				}
-			}
-
-            RSQuadOperation * rsQuadOperation = OGRE_NEW RSQuadOperation(this,pass->getIdentifier(),mat);
-            Real left,top,right,bottom;
-            if (pass->getQuadCorners(left,top,right,bottom))
-                rsQuadOperation->setQuadCorners(left,top,right,bottom);
-			rsQuadOperation->setQuadFarCorners(pass->getQuadFarCorners(), pass->getQuadFarCornersViewSpace());
-			
-			queueRenderSystemOp(finalState,rsQuadOperation);
-			}
-            break;
-		case CompositionPass::PT_RENDERCUSTOM:
-			RenderSystemOperation* customOperation = CompositorManager::getSingleton().
-				getCustomCompositionPass(pass->getCustomType())->createOperation(this, pass);
-			queueRenderSystemOp(finalState, customOperation);
-			break;
-        }
-    }
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::_compileTargetOperations(CompiledState &compiledState)
-{
-    /// Collect targets of previous state
-	if(mPreviousInstance)
-	    mPreviousInstance->_compileTargetOperations(compiledState);
-    /// Texture targets
-    CompositionTechnique::TargetPassIterator it = mTechnique->getTargetPassIterator();
-    while(it.hasMoreElements())
-    {
-        CompositionTargetPass *target = it.getNext();
-        
-        TargetOperation ts(getTargetForTex(target->getOutputName()));
-        /// Set "only initial" flag, visibilityMask and lodBias according to CompositionTargetPass.
-        ts.onlyInitial = target->getOnlyInitial();
-        ts.visibilityMask = target->getVisibilityMask();
-        ts.lodBias = target->getLodBias();
-		ts.shadowsEnabled = target->getShadowsEnabled();
-        /// Check for input mode previous
-        if(target->getInputMode() == CompositionTargetPass::IM_PREVIOUS)
-        {
-            /// Collect target state for previous compositor
-            /// The TargetOperation for the final target is collected seperately as it is merged
-            /// with later operations
-            mPreviousInstance->_compileOutputOperation(ts);
-        }
-        /// Collect passes of our own target
-        collectPasses(ts, target);
-        compiledState.push_back(ts);
-    }
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::_compileOutputOperation(TargetOperation &finalState)
-{
-    /// Final target
-    CompositionTargetPass *tpass = mTechnique->getOutputTargetPass();
-    
-    /// Logical-and together the visibilityMask, and multiply the lodBias
-    finalState.visibilityMask &= tpass->getVisibilityMask();
-    finalState.lodBias *= tpass->getLodBias();
-    
-    if(tpass->getInputMode() == CompositionTargetPass::IM_PREVIOUS)
-    {
-        /// Collect target state for previous compositor
-        /// The TargetOperation for the final target is collected seperately as it is merged
-        /// with later operations
-        mPreviousInstance->_compileOutputOperation(finalState);
-    }
-    /// Collect passes
-    collectPasses(finalState, tpass);
-}
-//-----------------------------------------------------------------------
-Compositor *CompositorInstance::getCompositor()
-{
-    return mCompositor;
-}
-//-----------------------------------------------------------------------
-CompositionTechnique *CompositorInstance::getTechnique()
-{
-    return mTechnique;
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::setTechnique(CompositionTechnique* tech, bool reuseTextures)
-{
-	if (mTechnique != tech)
-	{
-		if (reuseTextures)
-		{
-			// make sure we store all (shared) textures in use in our reserve pool
-			// this will ensure they don't get destroyed as unreferenced
-			// so they're ready to use again later
-			CompositionTechnique::TextureDefinitionIterator it = mTechnique->getTextureDefinitionIterator();
-			CompositorManager::UniqueTextureSet assignedTextures;
-			while(it.hasMoreElements())
-			{
-				CompositionTechnique::TextureDefinition *def = it.getNext();
-				if (def->pooled)
-				{
-					LocalTextureMap::iterator i = mLocalTextures.find(def->name);
-					if (i != mLocalTextures.end())
-					{
-						// overwriting duplicates is fine, we only want one entry per def
-						mReserveTextures[def] = i->second;
-					}
-
-				}
-			}
-		}
-		// replace technique
-		mTechnique = tech;
-
-		if (mEnabled)
-		{
-			// free up resources, but keep reserves if reusing
-			freeResources(false, !reuseTextures);
-			createResources(false);
-			/// Notify chain state needs recompile.
-			mChain->_markDirty();
-		}
-
-	}
-}
-//---------------------------------------------------------------------
-void CompositorInstance::setScheme(const String& schemeName, bool reuseTextures)
-{
-	CompositionTechnique* tech = mCompositor->getSupportedTechnique(schemeName);
-	if (tech)
-	{
-		setTechnique(tech, reuseTextures);
-	}
-}
-//-----------------------------------------------------------------------
-CompositorChain *CompositorInstance::getChain()
-{
-	return mChain;
-}
-//-----------------------------------------------------------------------
-const String& CompositorInstance::getTextureInstanceName(const String& name, 
-														 size_t mrtIndex)
-{
-	return getSourceForTex(name, mrtIndex);
-}
-//---------------------------------------------------------------------
-TexturePtr CompositorInstance::getTextureInstance(const String& name, size_t mrtIndex)
-{
-	// try simple textures first
-	LocalTextureMap::iterator i = mLocalTextures.find(name);
-	if(i != mLocalTextures.end())
-	{
-		return i->second;
-	}
-
-	// try MRTs - texture (rather than target)
-	i = mLocalTextures.find(getMRTTexLocalName(name, mrtIndex));
-	if (i != mLocalTextures.end())
-	{
-		return i->second;
-	}
-
-	// not present
-	return TexturePtr();
-
-}
-//-----------------------------------------------------------------------
-MaterialPtr CompositorInstance::createLocalMaterial(const String& srcName)
-{
-static size_t dummyCounter = 0;
-    MaterialPtr mat = 
-        MaterialManager::getSingleton().create(
-            "c" + StringConverter::toString(dummyCounter) + "/" + srcName,
-            ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME
-        );
-    ++dummyCounter;
-    /// This is safe, as we hold a private reference
-    /// XXX does not compile due to ResourcePtr conversion :
-    ///     MaterialManager::getSingleton().remove(mat);
-    MaterialManager::getSingleton().remove(mat->getName());
-    /// Remove all passes from first technique
-    mat->getTechnique(0)->removeAllPasses();
-    return mat;
-}
-//---------------------------------------------------------------------
-void CompositorInstance::notifyResized()
-{
-	freeResources(true, true);
-	createResources(true);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::createResources(bool forResizeOnly)
-{
-	static size_t dummyCounter = 0;
-    /// Create temporary textures
-    /// In principle, temporary textures could be shared between multiple viewports
-    /// (CompositorChains). This will save a lot of memory in case more viewports
-    /// are composited.
-    CompositionTechnique::TextureDefinitionIterator it = mTechnique->getTextureDefinitionIterator();
-	CompositorManager::UniqueTextureSet assignedTextures;
-    while(it.hasMoreElements())
-    {
-        CompositionTechnique::TextureDefinition *def = it.getNext();
-
-		if (!def->refCompName.empty()) {
-			//This is a reference, isn't created in this compositor
-			continue;
-		}
-		if (def->scope == CompositionTechnique::TS_GLOBAL) {
-			//This is a global texture, just link the created resources from the parent
-			Compositor* parentComp = mTechnique->getParent();
-			if (def->formatList.size() > 1) 
-			{
-				size_t atch = 0;
-				for (PixelFormatList::iterator p = def->formatList.begin(); 
-					p != def->formatList.end(); ++p, ++atch)
-				{
-					Ogre::TexturePtr tex = parentComp->getTextureInstance(def->name, atch);
-					mLocalTextures[getMRTTexLocalName(def->name, atch)] = tex;
-				}
-				MultiRenderTarget* mrt = static_cast<MultiRenderTarget*>
-					(parentComp->getRenderTarget(def->name));
-				mLocalMRTs[def->name] = mrt;
-			}
-			else
-			{
-				Ogre::TexturePtr tex = parentComp->getTextureInstance(def->name, 0);
-				mLocalTextures[def->name] = tex;
-			}
-			continue;
-		}
-        /// Determine width and height
-        size_t width = def->width;
-        size_t height = def->height;
-		uint fsaa = 0;
-		String fsaaHint;
-		bool hwGamma = false;
-
-		// Skip this one if we're only (re)creating for a resize & it's not derived
-		// from the target size
-		if (forResizeOnly && width != 0 && height != 0)
-			continue;
-
-		deriveTextureRenderTargetOptions(def->name, &hwGamma, &fsaa, &fsaaHint);
-
-        if(width == 0)
-            width = static_cast<size_t>(
-				static_cast<float>(mChain->getViewport()->getActualWidth()) * def->widthFactor);
-        if(height == 0)
-			height = static_cast<size_t>(
-				static_cast<float>(mChain->getViewport()->getActualHeight()) * def->heightFactor);
-
-		// determine options as a combination of selected options and possible options
-		if (!def->fsaa)
-		{
-			fsaa = 0;
-			fsaaHint = StringUtil::BLANK;
-		}
-		hwGamma = hwGamma || def->hwGammaWrite;
-
-        /// Make the tetxure
-		RenderTarget* rendTarget;
-		if (def->formatList.size() > 1)
-		{
-			String MRTbaseName = "c" + StringConverter::toString(dummyCounter++) + 
-				"/" + def->name + "/" + mChain->getViewport()->getTarget()->getName();
-			MultiRenderTarget* mrt = 
-				Root::getSingleton().getRenderSystem()->createMultiRenderTarget(MRTbaseName);
-			mLocalMRTs[def->name] = mrt;
-
-			// create and bind individual surfaces
-			size_t atch = 0;
-			for (PixelFormatList::iterator p = def->formatList.begin(); 
-				p != def->formatList.end(); ++p, ++atch)
-			{
-
-				String texname = MRTbaseName + "/" + StringConverter::toString(atch);
-				String mrtLocalName = getMRTTexLocalName(def->name, atch);
-				TexturePtr tex;
-				if (def->pooled)
-				{
-					// get / create pooled texture
-					tex = CompositorManager::getSingleton().getPooledTexture(texname,
-						mrtLocalName, 
-						width, height, *p, fsaa, fsaaHint,  
-						hwGamma && !PixelUtil::isFloatingPoint(*p), 
-						assignedTextures, this, def->scope);
+					childInstance->read(childElement, binder);
+					if (childInstance)
+						childInstance->setParent(this);
 				}
 				else
 				{
-					tex = TextureManager::getSingleton().createManual(
-						texname, 
-						ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 
-						(uint)width, (uint)height, 0, *p, TU_RENDERTARGET, 0, 
-						hwGamma && !PixelUtil::isFloatingPoint(*p), fsaa, fsaaHint ); 
+					const XmlAttribute* nameRef = childElement->findAttribute(name_referent);
+					if (nameRef)
+						binder.announceID(nameRef, NULL);
 				}
-				
-				RenderTexture* rt = tex->getBuffer()->getRenderTarget();
-				rt->setAutoUpdated(false);
-				mrt->bindSurface(atch, rt);
-
-				// Also add to local textures so we can look up
-				mLocalTextures[mrtLocalName] = tex;
-				
 			}
+		}
+	}
 
-			rendTarget = mrt;
+	void Instance::readChildren(const XmlElement* element, IReferenceBinder& binder)
+	{
+		if (element)
+		{
+			for (const XmlElement* current = element->findFirstChildByTag(tag_Item); current != NULL; current = element->findNextChildWithSameTag(current))
+			{
+				readChild(current, binder);
+			}
+		}
+	}
+
+	void Instance::read(const XmlElement* element, IReferenceBinder& binder)
+	{
+		const XmlAttribute* nameRef = element->findAttribute(name_referent);
+		if (nameRef)
+		{
+			binder.announceID(nameRef, this);
+		}
+
+		if (element->getTag() == tag_Item)
+		{
+			const XmlElement* properties = element->findFirstChildByTag(tag_Properties);
+			if (properties)
+			{
+				readProperties(properties, binder);
+			}
+			readChildren(element, binder);
 		}
 		else
-		{
-			String texName =  "c" + StringConverter::toString(dummyCounter++) + 
-				"/" + def->name + "/" + mChain->getViewport()->getTarget()->getName();
-			
-			// space in the name mixup the cegui in the compositor demo
-			// this is an auto generated name - so no spaces can't hart us.
-			std::replace( texName.begin(), texName.end(), ' ', '_' ); 
+			readProperty(element, binder);
+	}
 
-			TexturePtr tex;
-			if (def->pooled)
-			{
-				// get / create pooled texture
-				tex = CompositorManager::getSingleton().getPooledTexture(texName, 
-					def->name, width, height, def->formatList[0], fsaa, fsaaHint,
-					hwGamma && !PixelUtil::isFloatingPoint(def->formatList[0]), assignedTextures, 
-					this, def->scope);
-			}
-			else
-			{
-				tex = TextureManager::getSingleton().createManual(
-					texName, 
-					ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 
-					(uint)width, (uint)height, 0, def->formatList[0], TU_RENDERTARGET, 0,
-					hwGamma && !PixelUtil::isFloatingPoint(def->formatList[0]), fsaa, fsaaHint); 
-			}
-
-			rendTarget = tex->getBuffer()->getRenderTarget();
-			mLocalTextures[def->name] = tex;
-		}
-        
-        
-        /// Set up viewport over entire texture
-        rendTarget->setAutoUpdated( false );
-
-		// We may be sharing / reusing this texture, so test before adding viewport
-		if (rendTarget->getNumViewports() == 0)
-		{
-			Camera* camera = mChain->getViewport()->getCamera();
-
-			// Save last viewport and current aspect ratio
-			Viewport* oldViewport = camera->getViewport();
-			Real aspectRatio = camera->getAspectRatio();
-
-			Viewport* v = rendTarget->addViewport( camera );
-			v->setClearEveryFrame( false );
-			v->setOverlaysEnabled( false );
-			v->setBackgroundColour( ColourValue( 0, 0, 0, 0 ) );
-
-			// Should restore aspect ratio, in case of auto aspect ratio
-			// enabled, it'll changed when add new viewport.
-			camera->setAspectRatio(aspectRatio);
-			// Should restore last viewport, i.e. never disturb user code
-			// which might based on that.
-			camera->_notifyViewport(oldViewport);
-		}
-    }
-
-	_fireNotifyResourcesCreated(forResizeOnly);
-}
-//---------------------------------------------------------------------
-void CompositorInstance::deriveTextureRenderTargetOptions(
-	const String& texname, bool *hwGammaWrite, uint *fsaa, String* fsaaHint)
-{
-	// search for passes on this texture def that either include a render_scene
-	// or use input previous
-	bool renderingScene = false;
-
-	CompositionTechnique::TargetPassIterator it = mTechnique->getTargetPassIterator();
-	while (it.hasMoreElements())
+	void Instance::predelete(Instance* instance)
 	{
-		CompositionTargetPass* tp = it.getNext();
-		if (tp->getOutputName() == texname)
-		{
-			if (tp->getInputMode() == CompositionTargetPass::IM_PREVIOUS)
-			{
-				// this may be rendering the scene implicitly
-				// Can't check mPreviousInstance against mChain->_getOriginalSceneCompositor()
-				// at this time, so check the position
-				CompositorChain::InstanceIterator instit = mChain->getCompositors();
-				renderingScene = true;
-				while(instit.hasMoreElements())
-				{
-					CompositorInstance* inst = instit.getNext();
-					if (inst == this)
-						break;
-					else if (inst->getEnabled())
-					{
-						// nope, we have another compositor before us, this will
-						// be doing the AA
-						renderingScene = false;
-					}
-				}
-				if (renderingScene)
-					break;
-			}
-			else
-			{
-				// look for a render_scene pass
-				CompositionTargetPass::PassIterator pit = tp->getPassIterator();
-				while(pit.hasMoreElements())
-				{
-					CompositionPass* pass = pit.getNext();
-					if (pass->getType() == CompositionPass::PT_RENDERSCENE)
-					{
-						renderingScene = true;
-						break;
-					}
-				}
-			}
+		instance->predelete();
+	}
 
+	void Instance::onAncestorChanged(const AncestorChanged& event)
+	{
+		typedef std::vector<boost::shared_ptr<Instance>>::const_iterator Iterator;
+
+		if (children)
+		{
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> r = children.read();
+
+			for (Iterator it = r->begin(); it != r->end(); it++)
+			{
+				(*it)->onAncestorChanged(event);
+			}
+		}
+
+		event_ancestryChanged.fire(this, shared_from(event.child));
+		Notifier<Instance, AncestorChanged>::raise(event);
+	}
+
+	void Instance::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
+		return;
+	}
+
+	bool Instance::contains(const Instance* child) const
+	{
+		for (; child != NULL; child = child->parent)
+		{
+			if (child == this)
+				return true;
+		}
+
+		return false;
+	}
+
+	boost::shared_ptr<Instance> Instance::createChild(const Name& className)
+	{
+		return AbstractFactoryProduct::create(className);
+	}
+
+	int Instance::findChildIndex(const Instance* instance) const
+	{
+		RBXASSERT(children);
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		std::vector<boost::shared_ptr<Instance>>::const_iterator found = std::find(c.begin(), c.end(), instance->shared_from_this());
+		return (int)std::distance(c.begin(), found);
+	}
+
+	void Instance::writeChildren(XmlElement* container)
+	{
+		if (children)
+		{
+			const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator it = c.begin(); it != c.end(); it++)
+			{
+				XmlElement* element = (*it)->write();
+				if (element)
+					container->pushBackChild(element);
+			}
 		}
 	}
 
-	if (renderingScene)
+	Instance* Instance::findFirstChildByName(const std::string& findName) const
 	{
-		// Ok, inherit settings from target
-		RenderTarget* target = mChain->getViewport()->getTarget();
-		*hwGammaWrite = target->isHardwareGammaEnabled();
-		*fsaa = target->getFSAA();
-		*fsaaHint = target->getFSAAHint();
-	}
-	else
-	{
-		*hwGammaWrite = false;
-		*fsaa = 0;
-		*fsaaHint = StringUtil::BLANK;
-	}
+		if (!children)
+			return NULL;
 
-}
-//---------------------------------------------------------------------
-String CompositorInstance::getMRTTexLocalName(const String& baseName, size_t attachment)
-{
-	return baseName + "/" + StringConverter::toString(attachment);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::freeResources(bool forResizeOnly, bool clearReserveTextures)
-{
-    // Remove temporary textures 
-	// We only remove those that are not shared, shared textures are dealt with
-	// based on their reference count.
-	// We can also only free textures which are derived from the target size, if
-	// required (saves some time & memory thrashing / fragmentation on resize)
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
 
-	CompositionTechnique::TextureDefinitionIterator it = mTechnique->getTextureDefinitionIterator();
-	CompositorManager::UniqueTextureSet assignedTextures;
-	while(it.hasMoreElements())
-	{
-		CompositionTechnique::TextureDefinition *def = it.getNext();
-
-		if (!def->refCompName.empty()) 
+		for (size_t i = 0; i < c.size(); i++)
 		{
-			//This is a reference, isn't created here
-			continue;
+			if (c[i]->name == findName)
+				return c[i].get();
 		}
-		
-		// potentially only remove this one if based on size
-		if (!forResizeOnly || def->width == 0 || def->height == 0)
-		{
-			size_t subSurf = def->formatList.size();
 
-			// Potentially many surfaces
-			for (size_t s = 0; s < subSurf; ++s)
-			{
-				String texName = subSurf > 1 ? getMRTTexLocalName(def->name, s)
-					: def->name;
-
-				LocalTextureMap::iterator i = mLocalTextures.find(texName);
-				if (i != mLocalTextures.end())
-				{
-					if (!def->pooled && def->scope != CompositionTechnique::TS_GLOBAL)
-					{
-						// remove myself from central only if not pooled and not global
-						TextureManager::getSingleton().remove(i->second->getName());
-					}
-
-					// remove from local
-					// reserves are potentially cleared later
-					mLocalTextures.erase(i);
-
-				}
-
-			} // subSurf
-
-			if (subSurf > 1)
-			{
-				LocalMRTMap::iterator mrti = mLocalMRTs.find(def->name);
-				if (mrti != mLocalMRTs.end())
-				{
-					if (def->scope != CompositionTechnique::TS_GLOBAL) 
-					{
-						// remove MRT if not global
-						Root::getSingleton().getRenderSystem()->destroyRenderTarget(mrti->second->getName());
-					}
-					
-					mLocalMRTs.erase(mrti);
-				}
-
-			}
-
-		} // not for resize or width/height 0
+		return NULL;
 	}
 
-	if (clearReserveTextures)
+	Instance* Instance::findFirstChildByNameRecursive(const std::string& findName) const
 	{
-		if (forResizeOnly)
+		Instance* foundChild = findFirstChildByName(findName);
+		if (foundChild)
+			return foundChild;
+
+		if (!children)
+			return NULL;
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		for (size_t i = 0; i < c.size(); i++)
 		{
-			// just remove the ones which would be affected by a resize
-			for (ReserveTextureMap::iterator i = mReserveTextures.begin();
-				i != mReserveTextures.end(); )
+			Instance* child = c[i]->findFirstChildByNameRecursive(findName);
+			if (child)
+				return child;
+		}
+
+		return NULL;
+	}
+
+	void Instance::signalDescendentAdded(Instance* instance, Instance* beginParent, Instance* oldParent)
+	{
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
+		{
+			if (parent == oldParent || parent->isAncestorOf(oldParent))
+				break;
+
+			parent->onDescendentAdded(instance);
+		}
+
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
+
+		if (c)
+		{
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
 			{
-				if (i->first->width == 0 || i->first->height == 0)
-				{
-					mReserveTextures.erase(i++);
-				}
-				else
-					++i;
+				signalDescendentAdded((*iter).get(), beginParent, oldParent);
 			}
 		}
-		else
-		{
-			// clear all
-			mReserveTextures.clear();
-		}
 	}
 
-	// Now we tell the central list of textures to check if its unreferenced, 
-	// and to remove if necessary. Anything shared that was left in the reserve textures
-	// will not be released here
-	CompositorManager::getSingleton().freePooledTextures(true);
-}
-//---------------------------------------------------------------------
-RenderTarget* CompositorInstance::getRenderTarget(const String& name)
-{
-	return getTargetForTex(name);
-}
-//-----------------------------------------------------------------------
-RenderTarget *CompositorInstance::getTargetForTex(const String &name)
-{
-	// try simple texture
-	LocalTextureMap::iterator i = mLocalTextures.find(name);
-    if(i != mLocalTextures.end())
-		return i->second->getBuffer()->getRenderTarget();
-
-	// try MRTs
-	LocalMRTMap::iterator mi = mLocalMRTs.find(name);
-	if (mi != mLocalMRTs.end())
-		return mi->second;
-	else
-		OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Non-existent local texture name", 
-			"CompositorInstance::getTargetForTex");
-
-}
-//-----------------------------------------------------------------------
-const String &CompositorInstance::getSourceForTex(const String &name, size_t mrtIndex)
-{
-	CompositionTechnique::TextureDefinition* texDef = mTechnique->getTextureDefinition(name);
-
-	if (!texDef->refCompName.empty()) 
+	void Instance::signalDescendentRemoving(const boost::shared_ptr<Instance>& instance, Instance* beginParent, Instance* newParent)
 	{
-		//This is a reference - find the compositor and referenced texture definition
-		const CompositorPtr& refComp = CompositorManager::getSingleton().getByName(texDef->refCompName);
-		if (refComp.isNull())
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
 		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, "Referencing non-existent compositor",
-				"CompositorInstance::getSourceForTex");
-		}
-		CompositionTechnique::TextureDefinition* refTexDef = refComp->getSupportedTechnique()->getTextureDefinition(texDef->refTexName);
-		if (refTexDef == 0)
-		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, "Referencing non-existent compositor texture",
-				"CompositorInstance::getSourceForTex");
+			if (parent == newParent || parent->isAncestorOf(newParent))
+				break;
+
+			parent->onDescendentRemoving(instance);
 		}
 
-		switch (refTexDef->scope) 
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
+
+		if (c)
 		{
-			case CompositionTechnique::TS_CHAIN: 
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
 			{
-				//Find the instance and check if it is before us
-				CompositorInstance* refCompInst = 0;
-				CompositorChain::InstanceIterator it = mChain->getCompositors();
-				bool beforeMe = true;
-				while (it.hasMoreElements())
-				{
-					CompositorInstance* nextCompInst = it.getNext();
-					if (nextCompInst->getCompositor()->getName() == texDef->refCompName)
-					{
-						refCompInst = nextCompInst;
-						break;
-					}
-					if (nextCompInst == this)
-					{
-						//We encountered ourselves while searching for the compositor -
-						//we are earlier in the chain.
-						beforeMe = false;
-					}
-				}
-				
-				if (refCompInst == 0 || !refCompInst->getEnabled()) 
-				{
-					OGRE_EXCEPT(Exception::ERR_INVALID_STATE, "Referencing inactive compositor texture",
-						"CompositorInstance::getSourceForTex");
-				}
-				if (!beforeMe)
-				{
-					OGRE_EXCEPT(Exception::ERR_INVALID_STATE, "Referencing compositor that is later in the chain",
-						"CompositorInstance::getSourceForTex");
-				}
-				return refCompInst->getTextureInstanceName(texDef->refTexName, mrtIndex);
+				signalDescendentRemoving((*iter), beginParent, newParent);
 			}
-			case CompositionTechnique::TS_GLOBAL:
-				//Chain and global case - the referenced compositor will know how to handle
-				return refComp->getTextureInstanceName(texDef->refTexName, mrtIndex);
-			case CompositionTechnique::TS_LOCAL:
-			default:
-				OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Referencing local compositor texture",
-					"CompositorInstance::getSourceForTex");
-		}
-
-	} // End of handling texture references
-
-	if (texDef->formatList.size() == 1) 
-	{
-		//This is a simple texture
-		LocalTextureMap::iterator i = mLocalTextures.find(name);
-		if(i != mLocalTextures.end())
-		{
-			return i->second->getName();
 		}
 	}
-	else
+
+	//96.19% matching.
+	void Instance::readProperty(const XmlElement* propertyElement, IReferenceBinder& binder)
 	{
-		// try MRTs - texture (rather than target)
-		LocalTextureMap::iterator i = mLocalTextures.find(getMRTTexLocalName(name, mrtIndex));
-		if (i != mLocalTextures.end())
+		const Name* value = NULL;
+
+		if (const XmlAttribute* attribute = propertyElement->findAttribute(name_name))
 		{
-			return i->second->getName();
+			if (attribute->getValue(value))
+			{
+				Reflection::PropertyIterator iter = findProperty(*value);
+
+				if (iter != properties_end())
+				{
+					(*iter).read(propertyElement, binder);
+				}
+			}
 		}
 	}
-	
-	OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Non-existent local texture name", 
-		"CompositorInstance::getSourceForTex");
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::queueRenderSystemOp(TargetOperation &finalState, RenderSystemOperation *op)
-{
-	/// Store operation for current QueueGroup ID
-	finalState.renderSystemOperations.push_back(RenderSystemOpPair(finalState.currentQueueGroupID, op));
-	/// Tell parent for deletion
-	mChain->_queuedOperation(op);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::addListener(Listener *l)
-{
-	mListeners.push_back(l);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::removeListener(Listener *l)
-{
-	mListeners.erase(std::find(mListeners.begin(), mListeners.end(), l));
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::_fireNotifyMaterialSetup(uint32 pass_id, MaterialPtr &mat)
-{
-	Listeners::iterator i, iend=mListeners.end();
-	for(i=mListeners.begin(); i!=iend; ++i)
-		(*i)->notifyMaterialSetup(pass_id, mat);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::_fireNotifyMaterialRender(uint32 pass_id, MaterialPtr &mat)
-{
-	Listeners::iterator i, iend=mListeners.end();
-	for(i=mListeners.begin(); i!=iend; ++i)
-		(*i)->notifyMaterialRender(pass_id, mat);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::_fireNotifyResourcesCreated(bool forResizeOnly)
-{
-	Listeners::iterator i, iend=mListeners.end();
-	for(i=mListeners.begin(); i!=iend; ++i)
-		(*i)->notifyResourcesCreated(forResizeOnly);
-}
-//-----------------------------------------------------------------------
-CompositorInstance::RenderSystemOperation::~RenderSystemOperation()
-{
-}
-//-----------------------------------------------------------------------
-CompositorInstance::Listener::~Listener()
-{
-}
-void CompositorInstance::Listener::notifyMaterialSetup(uint32 pass_id, MaterialPtr &mat)
-{
-}
-void CompositorInstance::Listener::notifyMaterialRender(uint32 pass_id, MaterialPtr &mat)
-{
-}
-void CompositorInstance::Listener::notifyResourcesCreated(bool forResizeOnly)
-{
-}
 
+	XmlElement* Instance::write()
+	{
+		if (archivable)
+		{
+			if (getClassName() != Name::getNullName())
+			{
+				XmlElement* element = new XmlElement(tag_Item);
+				element->addAttribute(tag_class, &getClassName());
+				element->addAttribute(name_referent, InstanceHandle(this));
+
+				writeProperties(element->addChild(tag_Properties));
+				writeChildren(element);
+
+				return element;
+			}
+		}
+
+		return new XmlElement(tag_External, InstanceHandle(this));
+	}
+  
+	void Instance::setParent(Instance* newParent)
+	{
+		if (newParent == parent)
+			return;
+
+		boost::shared_ptr<Instance> oldParent = shared_from(parent);
+		boost::shared_ptr<Instance> self = this->shared_from_this();
+
+		if (oldParent)
+		{
+			if (!oldParent->contains(newParent))
+				signalDescendentRemoving(self, oldParent.get(), newParent);
+
+			oldParent->onChildRemoving(this);
+
+			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& c = oldParent->children.write();
+			c->erase(std::find(c->begin(), c->end(), self));
+
+			if (c->empty())
+				oldParent->children.reset();
+
+			parent = NULL;
+
+			event_childRemoved.fire(oldParent.get(), self);
+			oldParent->Notifier<Instance, ChildRemoved>::raise(ChildRemoved(this));
+
+			oldParent->onChildRemoved(this);
+
+			if (oldParent->numChildren() == 0)
+				oldParent->onLastChildRemoved();
+		}
+
+		if (newParent)
+		{
+			newParent->children.write()->push_back(self);
+		}
+
+		parent = newParent;
+
+		if (newParent)
+		{
+			newParent->onChildAdded(this);
+
+			if (!newParent->contains(oldParent.get()))
+				signalDescendentAdded(this, newParent, oldParent.get());
+
+			newParent->Notifier<Instance, ChildAdded>::raise(ChildAdded(this));
+			event_childAdded.fire(newParent, self);
+		}
+
+		onAncestorChanged(AncestorChanged(this, oldParent.get(), newParent));
+		raisePropertyChanged(propParent);
+	}
 }

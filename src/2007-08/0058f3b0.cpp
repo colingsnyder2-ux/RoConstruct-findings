@@ -1,82 +1,47 @@
-// from server: 48% by Yeetserama
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Seat.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_codex_eh_count20_9b609f40750eb959.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Seat.h"
-#include "v8datamodel/PartInstance.h"
-#include "v8datamodel/JointInstance.h"
-#include "v8datamodel/Workspace.h"
-#include "humanoid/Humanoid.h"
-#include "Network/Players.h"
 
-namespace RBX
+extern void* __cdecl operator new(unsigned int);
+extern const unsigned char control_table[];
+
+struct Object {
+    virtual ~Object();
+};
+
+struct Deleter { void operator()(Object*) const; };
+
+struct Control {
+    const void* table;
+    long strong;
+    long weak;
+    Object* object;
+    Deleter deleter;
+};
+
+struct S {
+    Control* control;
+    S(Object* object, Deleter deleter);
+};
+
+S::S(Object* object, Deleter deleter) : control(0)
 {
-	Seat::Seat()
-		: sleepTime(0.0f)
-	{
-		setName("Seat");
-	}
-
-	void Seat::seatCharacter(Humanoid* h)
-	{
-		weld = Creatable::create<Weld>();
-
-		PartInstance* torso = h->getTorso();
-		RBXASSERT(torso);
-
-		const G3D::CoordinateFrame& unused = torso->getCoordinateFrame();
-
-		weld->setName("SeatWeld");
-		weld->setPart0(this);
-		weld->setPart1(torso);
-
-		G3D::CoordinateFrame C0;
-		C0.lookAt(G3D::Vector3(0.0f, -1.0f, 0.0f), G3D::Vector3(0.0f, 0.0f, -1.0f));
-
-		C0.translation = G3D::Vector3(0.0f, 3.0f, 0.0f);
-
-		G3D::CoordinateFrame C1;
-		C1.lookAt(G3D::Vector3(0.0f, -1.0f, 0.0f), G3D::Vector3(0.0f, 0.0f, -1.0f));
-
-		C1.translation = G3D::Vector3(0.0f, 0.6f, 0.0f);
-
-		weld->setC0(C0);
-		weld->setC1(C1);
-		weld->setParent(this);
-	}
-
-	void Seat::unseatCharacter()
-	{
-		sleepTime = G3D::System::getLocalTime();
-
-		if (weld)
-		{
-			weld->setParent(NULL);
-			weld.reset();
-		}
-	}
-
-	void Seat::onEvent_humanoidJumped(bool active)
-	{
-		unseatCharacter();
-		humanoidJumped.disconnect();
-	}
-
-	void Seat::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
-	{
-		Instance::onServiceProvider(oldProvider, newProvider);
-
-		if (!oldProvider)
-		{
-			seatTouched = PartInstance::event_Touched.connect(this, boost::bind(&Seat::onEvent_seatTouched, this, _1));
-		}
-
-		if (!newProvider)
-		{
-			seatTouched.disconnect();
-		}
-	}
+    try {
+        Control* p = static_cast<Control*>(operator new(sizeof(Control)));
+        if (p) {
+            p->strong = 1;
+            p->weak = 1;
+            p->table = control_table;
+            p->object = object;
+        } else {
+            p = 0;
+        }
+        control = p;
+    } catch (...) {
+        deleter(object);
+        throw;
+    }
 }

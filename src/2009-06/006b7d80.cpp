@@ -1,113 +1,55 @@
-// from server: 31% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs tool/GroupDragTool.cpp
+// roc-lib: rbxgs roc_espclaude_3a2a88493eb183e6.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "tool/GroupDragTool.h"
-#include "tool/Dragger.h"
-#include "util/Math.h"
+#define _DLL
+#define private public
+#include "util/IRenderable.h"
+#undef private
+#include "util/Object.h"
+#define hasListeners() hasListeners() const { return listeners.size() > 0; } bool hasListenersEmpty()
+#include "util/Events.h"
+#undef hasListeners
+namespace RBX { template<class T> class GuidItem { public: virtual ~GuidItem() {} char guidPad[0xc]; }; }
+#define AbstractFactoryProduct GuidItem<Instance>, public AbstractFactoryProduct
+#include "util/Guid.h"
+namespace RBX { class GuidStub { public: typedef Guid::Data Data; void assign(const Data&) {} operator const Guid&() const { return *(const Guid*)0; } }; }
+#define Guid GuidStub
+#include "v8tree/Instance.h"
+#undef Guid
+#undef AbstractFactoryProduct
+#include "v8datamodel/MouseCommand.h"
+#define render3dAdorn(x) render3dAdorn(x); float exeDistance(const G3D::Vector3&); bool exeBlocked()
+#include "tool/NullTool.h"
+#undef render3dAdorn
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/UserController.h"
+#include "Network/Players.h"
 
 namespace RBX
 {
-	GroupDragTool::GroupDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, const std::vector<boost::weak_ptr<PartInstance>>& partArray, Workspace* workspace)
-		: Base(workspace),
-		  dragging(false)
-	{
-		RBXASSERT(mousePart);
-		megaDragger.reset(new MegaDragger(mousePart, partArray, (RootInstance*)workspace));
-	}
+	bool exeTestTarget(PartInstance* part, float distance, bool enabled);
 
-	GroupDragTool::~GroupDragTool()
+	MouseCommand* NewNullTool::onMouseDown(const UIEvent& uiEvent)
 	{
-		if (dragging)
-			RBXASSERT(0);
-	}
+		G3D::Vector3 hitPoint;
 
-	const std::string GroupDragTool::getCursorName() const
-	{
-		return dragging ? "GrabRotateCursor" : "DragCursor";
-	}
-
-	MouseCommand* GroupDragTool::onKeyDown(const UIEvent& uiEvent)
-	{
-		if (dragging)
-		{
-			switch (uiEvent.key)
-			{
-			case SDLK_r:
-				megaDragger->safeRotate(Math::matrixRotateY());
-				break;
-			case SDLK_t:
-				megaDragger->safeRotate(Math::matrixTiltZ());
-				break;
-			}
-
+		PartInstance* part = getPartByLocalCharacter(uiEvent, hitPoint);
+		if (exeTestTarget(part, exeDistance(hitPoint), true))
 			return this;
-		}
-		else
-		{
-			RBXASSERT(0);
-			return NULL;
-		}
-	}
 
-	MouseCommand* GroupDragTool::onMouseDown(const UIEvent& uiEvent)
-	{
-		downPoint = uiEvent.mousePosition;
-		capture();
+		if (part && characterCanReach(hitPoint) && !exeBlocked())
+		{
+			ModelInstance* character = Network::Players::findLocalCharacter(workspace);
+			if (character && !character->contains(part))
+			{
+				if (Humanoid* humanoid = Humanoid::modelIsCharacter(character))
+					humanoid->moveTo(hitPoint, part);
+			}
+		}
 
 		return this;
-	}
-
-	void GroupDragTool::onMouseIdle(const UIEvent& uiEvent)
-	{
-		RBXASSERT(captured());
-
-		G3D::Vector3 hit;
-
-		if (captured() && dragging && megaDragger->mousePartAlive() &&
-			Math::intersectRayPlane(getSearchRay(uiEvent), G3D::Plane(G3D::Vector3::unitY(), G3D::Vector3::zero()), hit))
-		{
-			hit = megaDragger->hitObjectOrPlane(uiEvent);
-			megaDragger->continueDragging();
-
-			G3D::Vector3 hitSnapped = Dragger::toGrid(hit);
-			G3D::Vector3 delta = Dragger::toGrid(hitSnapped - lastHit);
-			lastHit = hitSnapped;
-
-			megaDragger->safeMoveYDrop(delta);
-		}
-	}
-
-	void GroupDragTool::onMouseMove(const UIEvent& uiEvent)
-	{
-		RBXASSERT(captured());
-
-		if (!dragging && (G3D::Vector2(uiEvent.mousePosition) - downPoint).length() > 4.0f)
-		{
-			dragging = true;
-
-			megaDragger->startDragging();
-			megaDragger->alignAndCleanParts();
-			lastHit = megaDragger->hitObjectOrPlane(uiEvent);
-		}
-
-		onMouseIdle(uiEvent);
-	}
-
-	MouseCommand* GroupDragTool::onMouseUp(const UIEvent& uiEvent)
-	{
-		RBXASSERT(captured());
-
-		if (dragging)
-		{
-			megaDragger->finishDragging();
-			dragging = false;
-		}
-
-		releaseCapture();
-		return NULL;
 	}
 }

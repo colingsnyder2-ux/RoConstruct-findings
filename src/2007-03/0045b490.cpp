@@ -1,3404 +1,1704 @@
-// from server: 81% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /arch:SSE2 /fp:fast
-// roc-lib: rbxgs-g3d GLG3Dcpp/RenderDevice.cpp
+// roc-flags: /O2 /GS /EHsc /MD
+// roc-lib: scintilla-mfc-1.20-shared ScintillaDocView.cpp
 
 // Candidate translation unit (score above; library headers required).
-/**
- @file RenderDevice.cpp
- 
- @maintainer Morgan McGuire, morgan@graphics3d.com
- 
- @created 2001-07-08
- @edited  2006-01-30
- */
+/*
+Module : ScintillaDocView.CPP
+Purpose: Defines the implementation for MFC CView and CDocument derived wrapper classes for the Scintilla 
+         edit control (www.scintilla.org).
+Created: PJN / 19-03-2004
+History: PJN / 12-08-2004 1. Made all the remaining non virtual functions related to Find and Replace virtual.
+                          2. TextNotFound function is now passed the parameters used for the search. Thanks 
+                          to Dmitry Naumov for this update.
+                          3. Removed the OnTextNotFound function as all the work for it is achieved using the
+                          TextNotFound function.
+                          4. Creation of the find / replace dialog now takes place in a new virtual function
+                          "CreateFindReplaceDialog". Again thanks to Dmitry Naumov for this update. 
+         PJN / 04-03-2005 1. Fix in CScintillaView::PrintPage which now sorts out the issue of print preview
+                          not working in the MFC doc / view wrappers for scintilla. Thanks to Frank Kiesel
+                          for reporting this fix.
+         PJN / 10-07-2005 1. Addition of a virtual function namely OnAutoCSelection which handles the
+                          SCN_AUTOCSELECTION notification message which was introduced in Scintilla v1.63.
+                          Thanks to Dan Petitt for suggesting this update.
+                          2. A new boolean variable called "m_bUseROFileAttributeDuringLoading" has been added 
+                          to CScintillaView. If this value is set then the code will check the read only file
+                          attribute of the file being loaded and if it is set, then the document is marked as 
+                          read only by Scintilla. By doing this any attempts to modify the document will cause 
+                          the OnModifyAttemptRO virtual function to be called. This allows you to prompt to 
+                          make the file read write or to check out the file from a version control system. 
+                          Thanks to Dan Petitt for suggesting this update.
+                          3. Demo app now demonstrates how to use the SCN_MODIFYATTEMPTRO notification.
+                          4. Fixed a number of warnings when the code is compiled using Visual Studio .NET 2003.
+                          5. SetSavePoint and SetReadOnly calls are now made in CScintillaDoc::OnSaveDocument
+                          instead of CScintillaView::Serialize. This ensures that the control is only reset
+                          upon a successful save.
+         PJN / 03-01-2006 1. Fixed a bug where the separator line in the header was not being drawn due to 
+                          issues in the code which calculates the coordinates. 
+                          2. Added two member variables which decide whether printer headers and footers should
+                          be printed (CScintillaView::m_bPrintHeader and CScintillaView::m_bPrintFooter). You
+                          could of course achieve the same result by deriving a class from CScintillaView and 
+                          implementing empty PrintHeader and PrinterFooter methods!!!. Thanks to Jason Elliott
+                          for suggesting this update.
+                          3. Optimized the construction of member variables in CScintillaView::CScintillaView
+                          and in CScintillaFindReplaceDlg::CScintillaFindReplaceDlg
+                          4. CScintillaView::OnReplaceAll sets the selection to 0,0 before doing text replacement. 
+                          This ensures that all text in a document is replaced. Also this function now does not 
+                          bother calling TextNotFound at the end of the function if replacements took place. 
+                          Thanks to Jason Elliott for this nice update. 
+                          5. A parameter which indicates whether text is being replaced or found is now sent to
+                          CScintillaView::TextNotFound.
+         PJN / 06-01-2006 1. Removed some unnecessary code from CScintillaView::OnEndPrinting. Thanks to 
+                          Greg Smith for spotting this issue.
+         PJN / 08-01-2006 1. Find / Replace dialog and associated state is now maintained outside of CScintillaView.
+                          This means that if you have multiple CScintillaView's in your app, that they share the
+                          one find / replace dialog which is the standard type of UI you would normally expect for 
+                          this. Thanks to Greg Smith for reporting this issue.
+                          2. Find / replace dialog is now closed when the last CScintillaView is destroyed. Thanks
+                          to Greg Smith for reporting this issue.
+         PJN / 16-01-2006 1. Removed an unused "rSetup" variable in CScintillaView::PrintPage
+                          2. Optimized code in CScintillaView::PrintPage and CScintillaView::OnFilePageSetup which
+                          determines if metric or imperial measurements are being used. Now a boolean member variable
+                          of CScintillaView called m_bUsingMetric which by default picks up the control panel
+                          preference is provided. This allows client code to change this value to customize how
+                          measurements are specified. Thanks to Greg Smith for reporting this issue.
+                          3. Fixed a small typo in CScintillaView::PrintHeader and PrintFooter. Also explicitly uses
+                          the TA_TOP flag in combination with TA_LEFT when setting alignment settings for header
+                          and footer text. Again thanks to Greg Smith for reporting this.
+                          4. Scintilla find / replace state is now stored in a standard global variable instead of
+                          using the CProcessLocal template which it was using previously. This is no longer required
+                          since it was used to provide Win32s support for MFC on older versions of MFC. Since Win32s
+                          is no longer supported by MFC, there is no need to use this mechanism any more.
+         PJN / 02-02-2006 1. Minor update to CScintillaView to allow deletion of text when there is nothing selected. 
+                          Thanks to Alexander Kirillov for reporting this bug. 
+         PJN / 14-03-2006 1. Updated the internal function CScintillaView::SameAsSelected to support regular 
+                          expressions. Thanks to Greg Smith for this update.
+         PJN / 22-05-2006 1. Fixed a flicker issue when the view is resized. Thanks to Michael Gunlock for reporting 
+                          this issue.
+         PJN / 29-06-2005 1. Code now uses new C++ style casts rather than old style C casts where necessary. 
+                          2. Code now supports persisting margin settings. Thanks to Krasimir Stoychev for this update
+                          3. Updated the code to clean compile in VC 2005
+         PJN / 17-09-2006 1. Updated OnReplaceSel and OnReplaceAll implementations to use TargetFromSelection and 
+                          ReplaceTargetRE/ReplaceTarget. Thanks to Matt Spear for reporting this issue.
+         PJN / 11-06-2007 1. Addition of a SCINTILLADOCVIEW_EXT_CLASS preprocessor macro to allow the classes to be 
+                          more easily used in an extension DLL.
+         PJN / 19-03-2008 1. Fixed a copy and paste bug in CScintillaView::PrintPage where the incorrect margin value
+                          was being used in the calculation of "rfPrint.rc.left". Thanks to Steve Arnold for reporting
+                          this bug.
 
-#include "G3D/platform.h"
-#include "G3D/Log.h"
-#include "G3D/GCamera.h"
-#include "GLG3D/glcalls.h"
-#include "GLG3D/RenderDevice.h"
-#include "GLG3D/Texture.h"
-#include "GLG3D/getOpenGLState.h"
-#include "GLG3D/VARArea.h"
-#include "GLG3D/VAR.h"
-#include "GLG3D/Framebuffer.h"
-#include "G3D/fileutils.h"
-#include <time.h>
-#ifdef G3D_WIN32
-    #include "GLG3D/Win32Window.h"
-#else
-    #include "GLG3D/SDLWindow.h"    
+Copyright (c) 2004 - 2008 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+
+All rights reserved.
+
+Copyright / Usage Details:
+
+You are allowed to include the source code in any product (commercial, shareware, freeware or otherwise) 
+when your product is released in binary form. You are allowed to modify the source code in any way you want 
+except you cannot modify the copyright details at the top of each module. If you want to distribute source 
+code with your application, then you are only allowed to distribute versions released by the author. This is 
+to maintain a single distribution point for the source code. 
+
+*/
+
+
+/////////////////////////////////  Includes  //////////////////////////////////
+
+#include "stdafx.h"
+#include "ScintillaDocView.h"
+#ifndef __AFXDISP_H__
+#pragma message("To avoid this message, please put afxdisp.h in your pre compiled header (normally stdafx.h)")
+#include <afxdisp.h>
 #endif
-#include "GLG3D/GLCaps.h"
+#include "resource.h"
 
-namespace G3D {
 
-const GWindow* GWindow::m_current = NULL;
 
 
-RenderDevice* RenderDevice::lastRenderDeviceCreated = NULL;
+//////////////////////////////// Statics / Macros /////////////////////////////
 
-
-GLenum BufferToGL[MAX_BUFFER_SIZE] = {GL_NONE,
-                                      GL_FRONT_LEFT,
-                                      GL_FRONT_RIGHT,
-                                      GL_BACK_LEFT,
-                                      GL_BACK_RIGHT,
-                                      GL_FRONT,
-                                      GL_BACK,
-                                      GL_LEFT,
-                                      GL_RIGHT,
-                                      GL_FRONT_AND_BACK,
-                                      0xFFFF,                   //BUFFER_CURRENT
-                                      GL_COLOR_ATTACHMENT0_EXT,
-                                      GL_COLOR_ATTACHMENT1_EXT,
-                                      GL_COLOR_ATTACHMENT2_EXT,
-                                      GL_COLOR_ATTACHMENT3_EXT,
-                                      GL_COLOR_ATTACHMENT4_EXT,
-                                      GL_COLOR_ATTACHMENT5_EXT,
-                                      GL_COLOR_ATTACHMENT6_EXT,
-                                      GL_COLOR_ATTACHMENT7_EXT,
-                                      GL_COLOR_ATTACHMENT8_EXT,
-                                      GL_COLOR_ATTACHMENT9_EXT,
-                                      GL_COLOR_ATTACHMENT10_EXT,
-                                      GL_COLOR_ATTACHMENT11_EXT,
-                                      GL_COLOR_ATTACHMENT12_EXT,
-                                      GL_COLOR_ATTACHMENT13_EXT,
-                                      GL_COLOR_ATTACHMENT14_EXT,
-                                      GL_COLOR_ATTACHMENT15_EXT};
-
-static GLint toGLBlendFunc(RenderDevice::BlendFunc b) {
-    switch (b) {
-    case RenderDevice::BLEND_SRC_ALPHA:
-        return GL_SRC_ALPHA;
-        
-    case RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA:
-        return GL_ONE_MINUS_SRC_ALPHA;
-
-    case RenderDevice::BLEND_ONE:
-        return GL_ONE;
-        
-    case RenderDevice::BLEND_ZERO:
-        return GL_ZERO;
-
-    case RenderDevice::BLEND_SRC_COLOR:
-        return GL_SRC_COLOR;
-
-    case RenderDevice::BLEND_DST_COLOR:
-        return GL_DST_COLOR;
-
-    case RenderDevice::BLEND_ONE_MINUS_SRC_COLOR:
-        return GL_ONE_MINUS_SRC_COLOR;
-
-    default:
-        debugAssertM(false, "Fell through switch");
-        return GL_ZERO;
-    }
-}
-
-static void _glViewport(double a, double b, double c, double d) {
-    glViewport(iRound(a), iRound(b), 
-	       iRound(a + c) - iRound(a), iRound(b + d) - iRound(b));
-}
-
-static GLenum primitiveToGLenum(RenderDevice::Primitive primitive) {
-	switch (primitive) {
-    case RenderDevice::LINES:
-		return GL_LINES;
-
-    case RenderDevice::LINE_STRIP:
-		return GL_LINE_STRIP;
-
-    case RenderDevice::TRIANGLES:
-		return GL_TRIANGLES;
-
-    case RenderDevice::TRIANGLE_STRIP:
-		return GL_TRIANGLE_STRIP;
-
-    case RenderDevice::TRIANGLE_FAN:
-		return GL_TRIANGLE_FAN;
-
-    case RenderDevice::QUADS:
-		return GL_QUADS;
-
-    case RenderDevice::QUAD_STRIP:
-		return GL_QUAD_STRIP;
-
-    case RenderDevice::POINTS:
-        return GL_POINTS;
-
-    default:
-        debugAssertM(false, "Fell through switch");
-        return 0;
-    }
-}
-
-
-std::string RenderDevice::getCardDescription() const {
-    return cardDescription;
-}
-
-
-RenderDevice::RenderDevice() : _window(NULL), deleteWindow(false) {
-
-    _initialized = false;
-    cleanedup = false;
-    inPrimitive = false;
-    inShader = false;
-    _numTextureUnits = 0;
-    _numTextures = 0;
-    _numTextureCoords = 0;
-    emwaFrameRate = 0;
-    lastTime = System::getTick();
-
-    for (int i = 0; i < GLCaps::G3D_MAX_TEXTURE_UNITS; ++i) {
-        currentlyBoundTexture[i] = 0;
-    }
-
-    lastRenderDeviceCreated = this;
-}
-
-
-void RenderDevice::setVARAreaMilestone() {
-    currentVARArea->renderDevice = this;
-
-    if (VARArea::mode == VARArea::VBO_MEMORY) {
-        // We don't need milestones when using VBO; the spec guarantees
-        // correct synchronization.
-        return;
-    }
-
-    MilestoneRef milestone = createMilestone("VAR Milestone");
-    setMilestone(milestone);
-
-    debugAssert(currentVARArea.notNull());
-
-    // Overwrite any preexisting milestone
-    currentVARArea->milestone = milestone;
-}
-
-
-RenderDevice::~RenderDevice() {
-    debugAssertM(cleanedup, "You deleted a RenderDevice without calling RenderDevice::cleanup()");
-}
-
-/**
- Used by RenderDevice::init.
- */
-static const char* isOk(bool x) {
-    return x ? "ok" : "UNSUPPORTED";
-}
-
-/**
- Used by RenderDevice::init.
- */
-static const char* isOk(void* x) {
-    // GCC incorrectly claims this function is not called.
-    return isOk(x != NULL);
-}
-
-
-bool RenderDevice::supportsOpenGLExtension(
-    const std::string& extension) const {
-
-    return GLCaps::supports(extension);
-}
-
-
-bool RenderDevice::init(
-    const GWindowSettings&      _settings,
-    Log*                        log) {
-
-    deleteWindow = true;
-    #ifdef G3D_WIN32
-        return init(Win32Window::create(_settings), log);
-    #else
-        return init(new SDLWindow(_settings), log);
-    #endif
-}
-
-
-GWindow* RenderDevice::window() const {
-    return _window;
-}
-
-
-bool RenderDevice::init(GWindow* window, Log* log) {
-    debugAssert(! initialized());
-    debugAssert(window);
-
-    _swapBuffersAutomatically = true;
-    swapGLBuffersPending = false;
-    _window = window;
-
-    GWindowSettings settings;
-    window->getSettings(settings);
-    
-    // Load the OpenGL extensions if they have not already been loaded.
-    GLCaps::loadExtensions(log);
-
-    debugLog = log;
-
-    beginEndFrame = 0;
-    if (debugLog) {debugLog->section("Initialization");}
-
-    debugAssert((settings.lightSaturation >= 0.5) && 
-                (settings.lightSaturation <= 2.0));
-
-    // Under Windows, reset the last error so that our debug box
-    // gives the correct results
-    #ifdef G3D_WIN32
-        SetLastError(0);
-    #endif
-
-	const int minimumDepthBits    = iMin(16, settings.depthBits);
-	const int desiredDepthBits    = settings.depthBits;
-
-	const int minimumStencilBits  = settings.stencilBits;
-	const int desiredStencilBits  = settings.stencilBits;
-
-    // Don't use more texture units than allowed at compile time.
-    if (GLCaps::supports_GL_ARB_multitexture()) {
-        _numTextureUnits = iMin(GLCaps::G3D_MAX_TEXTURE_UNITS, 
-                                glGetInteger(GL_MAX_TEXTURE_UNITS_ARB));
-    } else {
-        _numTextureUnits = 1;
-    }
-
-    // NVIDIA cards with GL_NV_fragment_program have different 
-    // numbers of texture coords, units, and textures
-    if (GLCaps::supports("GL_NV_fragment_program")) {
-        glGetIntegerv(GL_MAX_TEXTURE_COORDS_NV, &_numTextureCoords);
-        _numTextureCoords = iClamp(_numTextureCoords,
-                                   _numTextureUnits,
-                                   GLCaps::G3D_MAX_TEXTURE_UNITS);
-
-        glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS_NV, &_numTextures);
-        _numTextures = iClamp(_numTextures,
-                              _numTextureUnits, 
-                              GLCaps::G3D_MAX_TEXTURE_UNITS);
-    } else {
-        _numTextureCoords = _numTextureUnits;
-        _numTextures      = _numTextureUnits;
-    }
-
-    if (! GLCaps::supports_GL_ARB_multitexture()) {
-        // No multitexture
-        if (debugLog) {
-            debugLog->println("No GL_ARB_multitexture support: "
-                              "forcing number of texture units "
-                              "to no more than 1");
-        }
-        _numTextureCoords = iMax(1, _numTextureCoords);
-        _numTextures      = iMax(1, _numTextures);
-        _numTextureUnits  = iMax(1, _numTextureUnits);
-    }
-    debugAssertGLOk();
-
-    if (debugLog) {
-		int t = 0;
-       
-        int t0 = 0;
-        if (GLCaps::supports_GL_ARB_multitexture()) {
-            t = t0 = glGetInteger(GL_MAX_TEXTURE_UNITS_ARB);
-        }
-
-		if (GLCaps::supports_GL_ARB_fragment_program()) {
-			t = glGetInteger(GL_MAX_TEXTURE_IMAGE_UNITS_ARB);
-		}
-
-        debugLog->printf("numTextureCoords                      = %d\n"
-                         "numTextures                           = %d\n"
-                         "numTextureUnits                       = %d\n"
-                         "glGet(GL_MAX_TEXTURE_UNITS_ARB)       = %d\n"
-                         "glGet(GL_MAX_TEXTURE_IMAGE_UNITS_ARB) = %d\n",
-                         _numTextureCoords, _numTextures, _numTextureUnits,
-                         t0,
-						 t);
-    }
-
-    if (debugLog) {debugLog->println("Setting video mode");}
-
-    setVideoMode();
-
-    if (!strcmp((char*)glGetString(GL_RENDERER), "GDI Generic") && debugLog) {
-        debugLog->printf(
-         "\n*********************************************************\n"
-           "* WARNING: This computer does not have correctly        *\n"
-           "*          installed graphics drivers and is using      *\n"
-           "*          the default Microsoft OpenGL implementation. *\n"
-           "*          Most graphics capabilities are disabled.  To *\n"
-           "*          correct this problem, download and install   *\n"
-           "*          the latest drivers for the graphics card.    *\n"
-           "*********************************************************\n\n");
-    }
-
-	glViewport(0, 0, getWidth(), getHeight());
-
-    int depthBits, stencilBits, redBits, greenBits, blueBits, alphaBits;
-    depthBits       = glGetInteger(GL_DEPTH_BITS);
-    stencilBits     = glGetInteger(GL_STENCIL_BITS);
-    redBits         = glGetInteger(GL_RED_BITS);
-    greenBits       = glGetInteger(GL_GREEN_BITS);
-    blueBits        = glGetInteger(GL_BLUE_BITS);
-    alphaBits       = glGetInteger(GL_ALPHA_BITS);
-    debugAssertGLOk();
-
-    bool depthOk   = depthBits >= minimumDepthBits;
-    bool stencilOk = stencilBits >= minimumStencilBits;
-
-    if (debugLog) {
-        debugLog->printf("Operating System: %s\n",
-                         System::operatingSystem().c_str());
-
-        debugLog->printf("Processor Architecture: %s\n\n", 
-                         System::cpuArchitecture().c_str());
-
-        debugLog->printf("GL Vendor:      %s\n", GLCaps::vendor().c_str());
-
-        debugLog->printf("GL Renderer:    %s\n", GLCaps::renderer().c_str());
-
-        debugLog->printf("GL Version:     %s\n", GLCaps::glVersion().c_str());
-
-        debugLog->printf("Driver version: %s\n\n", GLCaps::driverVersion().c_str());
-
-		std::string extStringCopy = (char*)glGetString(GL_EXTENSIONS);
-
-        debugLog->printf(
-            "GL extensions: \"%s\"\n\n",
-            extStringCopy.c_str());
-    }
- 
-
-    cardDescription = GLCaps::renderer() + " " + GLCaps::driverVersion();
-
-    if (debugLog) {
-    debugLog->section("Video Status");
-
-    GWindowSettings actualSettings;
-    window->getSettings(actualSettings);
-
-    // This call is here to make GCC realize that isOk is used.
-    (void)isOk(false);
-    (void)isOk((void*)NULL);
-
-    debugLog->printf(
-             "Capability    Minimum   Desired   Received  Ok?\n"
-             "-------------------------------------------------\n"
-             "* RENDER DEVICE \n"
-             "Depth       %4d bits %4d bits %4d bits   %s\n"
-             "Stencil     %4d bits %4d bits %4d bits   %s\n"
-             "Alpha                           %4d bits   %s\n"
-             "Red                             %4d bits   %s\n"
-             "Green                           %4d bits   %s\n"
-             "Blue                            %4d bits   %s\n"
-             "FSAA                      %2d    %2d    %s\n"
-
-             "Width             %8d pixels           %s\n"
-             "Height            %8d pixels           %s\n"
-             "Mode                 %10s             %s\n\n",
-
-             minimumDepthBits, desiredDepthBits, depthBits, isOk(depthOk),
-             minimumStencilBits, desiredStencilBits, stencilBits, isOk(stencilOk),
-
-             alphaBits, "ok",
-             redBits, "ok", 
-             greenBits, "ok", 
-             blueBits, "ok", 
-
-             settings.fsaaSamples, actualSettings.fsaaSamples,
-             isOk(settings.fsaaSamples == actualSettings.fsaaSamples),
-
-             settings.width, "ok",
-             settings.height, "ok",
-             (settings.fullScreen ? "Fullscreen" : "Windowed"), "ok"
-             );
-    }
-
-
-
-	inPrimitive        = false;
-	inIndexedPrimitive = false;
-
-    if (debugLog) debugLog->println("Done initializing RenderDevice.\n");
-
-    _initialized = true;
-
-    if (alphaBits != 0) {
-        enableAlphaWrite();
-    }
-
-    setCaption("3D");
-    
-    _window->m_renderDevice = this;
-
-    return true;
-}
-
-
-bool RenderDevice::initialized() const {
-    return _initialized;
-}
-
-
-#ifdef G3D_WIN32
-
-HDC RenderDevice::getWindowHDC() const {
-    return wglGetCurrentDC();
-}
-
+#ifdef _DEBUG
+#define new DEBUG_NEW
 #endif
 
-void RenderDevice::setGamma(
-    double              brightness,
-    double              gamma) {
-    
-    Array<uint16> gammaRamp(256);
 
-    for (int i = 0; i < 256; ++i) {
-        gammaRamp[i] =
-            (uint16)min(65535, 
-                      max(0, 
-                      (int)(pow((brightness * (i + 1)) / 256.0, gamma) * 65535 + 0.5)));
-	}
-    
-    _window->setGammaRamp(gammaRamp);
-}
-
-
-void RenderDevice::notifyResize(int w, int h) {
-    _window->notifyResize(w, h);
-}
-
-
-void RenderDevice::setVideoMode() {
-
-    debugAssertM(stateStack.size() == 0, 
-                 "Cannot call setVideoMode between pushState and popState");
-    debugAssertM(beginEndFrame == 0, 
-                 "Cannot call setVideoMode between beginFrame and endFrame");
-
-    // Reset all state
-
-    GWindowSettings settings;
-    _window->getSettings(settings);
-
-    // Set the refresh rate
-    #ifdef G3D_WIN32
-        if (wglSwapIntervalEXT != NULL) {
-            if (debugLog) {
-                if (settings.asychronous) {
-                    debugLog->printf("wglSwapIntervalEXT(0);\n");
-                } else {
-                    debugLog->printf("wglSwapIntervalEXT(1);\n");
-                }
-            }
-            wglSwapIntervalEXT(settings.asychronous ? 0 : 1);
-        }
-    #endif
-
-    {
-        if (debugLog) {
-            debugLog->printf("Setting brightness to %g\n", 
-                                        settings.lightSaturation);
-        }
-        // Adjust the gamma so that changing the 
-        // light intensities won't affect the actual screen
-        // brightness.  This method due to John Carmack.
-        lightSaturation = settings.lightSaturation;
-        brightScale = 1.0 / lightSaturation;
-        setGamma(lightSaturation, 1.0);
-        if (debugLog) debugLog->println("Brightness set.");
-    }
-
-    // Enable proper specular lighting
-    if (GLCaps::supports("GL_EXT_separate_specular_color")) {
-        if (debugLog) {
-            debugLog->println("Enabling separate specular lighting.\n");
-        }
-        glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL_EXT, 
-                      GL_SEPARATE_SPECULAR_COLOR_EXT);
-        debugAssertGLOk();
-    } else if (debugLog) {
-        debugLog->println("Cannot enable separate specular lighting, extension not supported.\n");
-    }
-
-
-    // Make sure we use good interpolation.
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-
-    // Smoothing by default on NVIDIA cards.  On ATI cards
-    // there is a bug that causes shaders to generate incorrect
-    // results and run at 0 fps, so we can't enable this.
-    if (! beginsWith(GLCaps::vendor(), "ATI")) {
-        glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-        glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
-        glEnable(GL_LINE_SMOOTH);
-        glEnable(GL_POINT_SMOOTH);
-    }
-    
-
-    // glHint(GL_GENERATE_MIPMAP_HINT_EXT, GL_NICEST);
-    if (GLCaps::supports("GL_ARB_multisample")) {
-        glEnable(GL_MULTISAMPLE_ARB);
-    }
-
-    debugAssertGLOk();
-    if (GLCaps::supports("GL_NV_multisample_filter_hint")) {
-        glHint(GL_MULTISAMPLE_FILTER_HINT_NV, GL_NICEST);
-    }
-
-    resetState();
-
-    if (debugLog) debugLog->printf("Done setting initial state.\n");
-}
-
-
-void RenderDevice::setCaption(const std::string& caption) {
-    _window->setCaption(caption);
-}
-
-
-int RenderDevice::getWidth() const {
-	return width();
-}
-
-
-int RenderDevice::getHeight() const {
-	return height();
-}
-
-
-int RenderDevice::width() const {
-	if (state.framebuffer.isNull()) {
-	    return _window->width();
-	} else {
-		return state.framebuffer->width();
-	}
-}
-
-
-int RenderDevice::height() const {
-	if (state.framebuffer.isNull()) {
-	    return _window->height();
-	} else {
-		return state.framebuffer->height();
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////
-
-
-Vector4 RenderDevice::project(const Vector3& v) const {
-    return project(Vector4(v, 1));
-}
-
-
-Vector4 RenderDevice::project(const Vector4& v) const {
-    return glToScreen(v);
-}
-
-
-void RenderDevice::cleanup() {
-    debugAssert(initialized());
-
-    if (debugLog) {debugLog->println("Shutting down RenderDevice.");}
-
-    if (debugLog) {debugLog->println("Restoring gamma.");}
-    setGamma(1, 1);
-
-    if (debugLog) {debugLog->println("Freeing all VAR memory");}
-
-    if (deleteWindow) {
-        if (debugLog) {debugLog->println("Deleting window.");}
-        VARArea::cleanupAllVARAreas();
-        delete _window;
-    }
-
-    cleanedup = true;
-}
-
-
-void RenderDevice::push2D() {
-    push2D(getViewport());
-}
-
-void RenderDevice::push2D(const Rect2D& viewport) {
-	push2D(NULL, viewport);
-}
-
-void RenderDevice::push2D(const FramebufferRef& fb) {
-	const Rect2D& viewport = fb.notNull() ? fb->rect2DBounds() : Rect2D::xywh(0, 0, _window->width(), _window->height());
-	push2D(fb, viewport);
-}
-
-void RenderDevice::push2D(const FramebufferRef& fb, const Rect2D& viewport) {
-    pushState();
-
-	setFramebuffer(fb);
-    setDepthTest(DEPTH_ALWAYS_PASS);
-    disableLighting();
-    setCullFace(CULL_NONE);
-    disableDepthWrite();
-    setViewport(viewport);
-	setObjectToWorldMatrix(CoordinateFrame());
-
-    // 0.375 is a float-to-int adjustment.  See: http://msdn.microsoft.com/library/default.asp?url=/library/en-us/opengl/apptips_7wqb.asp
-    //setCameraToWorldMatrix(CoordinateFrame(Matrix3::identity(), Vector3(-0.375, -0.375, 0.0)));
-
-    setCameraToWorldMatrix(CoordinateFrame());
-
-    setProjectionMatrix(Matrix4::orthogonalProjection(viewport.x0(), viewport.x0() + viewport.width(), viewport.y0() + viewport.height(), viewport.y0(), -1, 1));
-}
-
-
-void RenderDevice::pop2D() {
-    popState();
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-RenderDevice::RenderState::RenderState(int width, int height, int htutc) :
-
-    // WARNING: this must be kept in sync with the initialization code
-    // in init();
-    viewport(Rect2D::xywh(0, 0, width, height)),
-
-    useClip2D(false),
-
-    depthWrite(true),
-    colorWrite(true),
-    alphaWrite(false),
-
-    depthTest(DEPTH_LEQUAL),
-    alphaTest(ALPHA_ALWAYS_PASS),
-    alphaReference(0.0) {
-
-	framebuffer = NULL;
-
-    lights.twoSidedLighting =    false;
-
-
-    srcBlendFunc                = BLEND_ONE;
-    dstBlendFunc                = BLEND_ZERO;
-    blendEq                     = BLENDEQ_ADD;
-
-    drawBuffer                  = BUFFER_BACK;
-
-    stencil.stencilTest         = STENCIL_ALWAYS_PASS;
-    stencil.stencilReference    = 0;
-    stencil.frontStencilFail    = STENCIL_KEEP;
-    stencil.frontStencilZFail   = STENCIL_KEEP;
-    stencil.frontStencilZPass   = STENCIL_KEEP;
-    stencil.backStencilFail     = STENCIL_KEEP;
-    stencil.backStencilZFail    = STENCIL_KEEP;
-    stencil.backStencilZPass    = STENCIL_KEEP;
-
-    polygonOffset               = 0;
-    lineWidth                   = 1;
-    pointSize                   = 1;
-
-    renderMode                  = RenderDevice::RENDER_SOLID;
-
-    shininess                   = 15;
-    specular                    = Color3::white() * 0.8f;
-
-    lights.ambient              = Color4(0.25f, 0.25f, 0.25f, 1.0f);
-
-    lights.lighting             = false;
-    color                       = Color4(1,1,1,1);
-    normal                      = Vector3(0,0,0);
-
-    // Note: texture units and lights initialize themselves
-
-    matrices.objectToWorldMatrix         = CoordinateFrame();
-    matrices.cameraToWorldMatrix         = CoordinateFrame();
-    matrices.cameraToWorldMatrixInverse  = CoordinateFrame();
-
-    stencil.stencilClear        = 0;
-    depthClear                  = 1;
-    colorClear                  = Color4(0,0,0,1);
-
-    shadeMode                   = SHADE_FLAT;
-
-    vertexAndPixelShader        = NULL;
-	objectShader				= NULL;
-    shader                      = NULL;
-    vertexProgram               = NULL;
-    pixelProgram                = NULL;
-
-    for (int i = 0; i < MAX_LIGHTS; ++i) {
-        lights.lightEnabled[i] = false;
-    }
-
-    // Set projection matrix
-    double aspect;
-    aspect = (double)viewport.width() / viewport.height();
-
-    matrices.projectionMatrix = Matrix4::perspectiveProjection(-aspect, aspect, -1, 1, 0.1f, 100.0f);
-
-    cullFace                    = CULL_BACK;
-
-    lowDepthRange               = 0;
-    highDepthRange              = 1;
-
-
-    highestTextureUnitThatChanged = htutc;
-}
-
-
-RenderDevice::RenderState::TextureUnit::TextureUnit() : texture(NULL), LODBias(0) {
-    texCoord        = Vector4(0,0,0,1);
-    combineMode     = TEX_MODULATE;
-
-    // Identity texture matrix
-    memset(textureMatrix, 0, sizeof(float) * 16);
-    for (int i = 0; i < 4; ++i) {
-        textureMatrix[i + i * 4] = (float)1.0;
-    }
-}
-
-
-void RenderDevice::resetState() {
-    state = RenderState(getWidth(), getHeight());
-
-	glClearDepth(1.0);
-
-    glEnable(GL_NORMALIZE);
-
-    debugAssertGLOk();
-    if (GLCaps::supports_GL_EXT_stencil_two_side()) {
-        glEnable(GL_STENCIL_TEST_TWO_SIDE_EXT);
-    }
-
-    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-    glEnable(GL_COLOR_MATERIAL);
-
-    // Compute specular term correctly
-    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
-    debugAssertGLOk();
-
-    if (debugLog) debugLog->println("Setting initial rendering state.\n");
-    glDisable(GL_LIGHT0);
-    debugAssertGLOk();
-    {
-        // WARNING: this must be kept in sync with the 
-        // RenderState constructor
-        state = RenderState(getWidth(), getHeight(), iMax(_numTextures, _numTextureCoords) - 1);
-
-        _glViewport(state.viewport.x0(), state.viewport.y0(), state.viewport.width(), state.viewport.height());
-        glDepthMask(GL_TRUE);
-        glColorMask(1,1,1,0);
-
-        if (GLCaps::supports_GL_EXT_stencil_two_side()) {
-            glActiveStencilFaceEXT(GL_BACK);
-        }
-        for (int i = 0; i < 2; ++i) {
-            glStencilMask((GLuint)~0);
-            glDisable(GL_STENCIL_TEST);
-            glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-            glStencilFunc(GL_ALWAYS, 0, 0xFFFFFFFF);
-            glDisable(GL_ALPHA_TEST);
-            if (GLCaps::supports_GL_EXT_stencil_two_side()) {
-                glActiveStencilFaceEXT(GL_FRONT);
-            }
-        }
-
-        glDepthFunc(GL_LEQUAL);
-        glEnable(GL_DEPTH_TEST);
-        glDisable(GL_SCISSOR_TEST);
-
-        glDisable(GL_BLEND);
-        glDisable(GL_POLYGON_OFFSET_FILL);
-        glLineWidth(1);
-        glPointSize(1);
-
-        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, state.lights.ambient);
-        glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, state.lights.twoSidedLighting);
-
-        glDisable(GL_LIGHTING);
-
-        glDrawBuffer(GL_BACK);
-
-        for (int i = 0; i < MAX_LIGHTS; ++i) {
-            setLight(i, NULL, true);
-        }
-        glColor4d(1, 1, 1, 1);
-        glNormal3d(0, 0, 0);
-
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-        setShininess(state.shininess);
-        setSpecularCoefficient(state.specular);
-
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-
-        glShadeModel(GL_FLAT);
-
-        glClearStencil(0);
-        glClearDepth(1);
-        glClearColor(0,0,0,1);
-        glMatrixMode(GL_PROJECTION);
-        glLoadMatrix(state.matrices.projectionMatrix);
-        glMatrixMode(GL_MODELVIEW);
-
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
-
-        glDepthRange(0, 1);
-
-        // Set up the texture units.
-        if (glMultiTexCoord4fvARB != NULL) {
-            for (int t = _numTextureCoords - 1; t >= 0; --t) {
-                float f[] = {0,0,0,1};
-                glMultiTexCoord4fvARB(GL_TEXTURE0_ARB + t, f);
-            }
-        } else if (_numTextureCoords > 0) {
-            glTexCoord(Vector4(0,0,0,1));
-        }
-
-        if (glActiveTextureARB != NULL) {
-            glActiveTextureARB(GL_TEXTURE0_ARB);
-        }
-    }
-    debugAssertGLOk();
-
-}
-
-
-bool RenderDevice::RenderState::Lights::operator==(const Lights& other) const {
-    for (int L = 0; L < MAX_LIGHTS; ++L) {
-        if ((lightEnabled[L] != other.lightEnabled[L]) ||
-            (lightEnabled[L] && (light[L] != other.light[L]))) {
-            return false;
-        }
-    }
-
-    debugAssertM(changed == false,
-        "Should never enter lighting comparison "
-        "when lighting has not changed.");
-
-    return 
-        (lighting == other.lighting) && 
-        (ambient == other.ambient) &&
-        (twoSidedLighting == other.twoSidedLighting);
-}
-
-
-bool RenderDevice::RenderState::Stencil::operator==(const Stencil& other) const {
-    return 
-        (stencilTest == other.stencilTest) &&
-        (stencilReference == other.stencilReference) &&
-        (stencilClear == other.stencilClear) &&
-        (frontStencilFail == other.frontStencilFail) &&
-        (frontStencilZFail == other.frontStencilZFail) &&
-        (frontStencilZPass == other.frontStencilZPass) &&
-        (backStencilFail == other.backStencilFail) &&
-        (backStencilZFail == other.backStencilZFail) &&
-        (backStencilZPass == other.backStencilZPass);
-}
-
-
-bool RenderDevice::RenderState::Matrices::operator==(const Matrices& other) const {
-    return
-        (objectToWorldMatrix == other.objectToWorldMatrix) &&
-        (cameraToWorldMatrix == other.cameraToWorldMatrix) &&
-        (projectionMatrix == other.projectionMatrix);
-}
-
-
-void RenderDevice::setState(
-    const RenderState&          newState) {
-
-    // The state change checks inside the individual
-    // methods will (for the most part) minimize
-    // the state changes so we can set all of the
-    // new state explicitly.
-    
-	// Set framebuffer first, since it can affect the viewport
-	if (state.framebuffer != newState.framebuffer) {
-		setFramebuffer(newState.framebuffer);
-
-		// Intentionally corrupt the viewport, forcing renderdevice to reset it
-		state.viewport = Rect2D::xywh(-1,-1,-1,-1);
-	}
-
-    setViewport(newState.viewport);
-    debugAssertGLOk();
-
-    if (newState.useClip2D) {
-        enableClip2D(newState.clip2D);
-    } else {
-        disableClip2D();
-    }
-    
-    if (newState.depthWrite) {
-        enableDepthWrite();
-    } else {
-        disableDepthWrite();
-    }
-
-    if (newState.colorWrite) {
-        enableColorWrite();
-    } else {
-        disableColorWrite();
-    }
-
-    if (newState.alphaWrite) {
-        enableAlphaWrite();
-    } else {
-        disableAlphaWrite();
-    }
-    debugAssertGLOk();
-
-    setDrawBuffer(newState.drawBuffer);
-
-    setShadeMode(newState.shadeMode);
-    setDepthTest(newState.depthTest);
-    debugAssertGLOk();
-
-    if (newState.stencil != state.stencil) {
-        setStencilConstant(newState.stencil.stencilReference);
-
-		debugAssertGLOk();
-        setStencilTest(newState.stencil.stencilTest);
-
-        setStencilOp(
-            newState.stencil.frontStencilFail, newState.stencil.frontStencilZFail, newState.stencil.frontStencilZPass,
-            newState.stencil.backStencilFail, newState.stencil.backStencilZFail, newState.stencil.backStencilZPass);
-
-        setStencilClearValue(newState.stencil.stencilClear);
-    }
-
-    setDepthClearValue(newState.depthClear);
-
-    setColorClearValue(newState.colorClear);
-
-    setAlphaTest(newState.alphaTest, newState.alphaReference);
-
-    setBlendFunc(newState.srcBlendFunc, newState.dstBlendFunc, newState.blendEq);
-
-    setRenderMode(newState.renderMode);
-    setPolygonOffset(newState.polygonOffset);
-    setLineWidth(newState.lineWidth);
-    setPointSize(newState.pointSize);
-
-    setSpecularCoefficient(newState.specular);
-    setShininess(newState.shininess);
-
-    if (state.lights.changed) {//(newState.lights != state.lights) {
-        if (newState.lights.lighting) {
-            enableLighting();
-        } else {
-            disableLighting();
-        }
-
-        if (newState.lights.twoSidedLighting) {
-            enableTwoSidedLighting();
-        } else {
-            disableTwoSidedLighting();
-        }
-
-        setAmbientLightColor(newState.lights.ambient);
-
-        for (int i = 0; i < MAX_LIGHTS; ++i) {
-            if (newState.lights.lightEnabled[i]) {
-                setLight(i, newState.lights.light[i]);
-            } else {
-                setLight(i, NULL);
-            }
-        }
-    }
-
-    setColor(newState.color);
-    setNormal(newState.normal);
-
-    for (int u = state.highestTextureUnitThatChanged; u >= 0; --u) {
-        if (newState.textureUnit[u] != state.textureUnit[u]) {
-
-            if (u < (int)numTextures()) {
-                setTexture(u, newState.textureUnit[u].texture);
-
-                if (u < (int)numTextureUnits()) {
-                    setTextureCombineMode(u, newState.textureUnit[u].combineMode);
-                    setTextureMatrix(u, newState.textureUnit[u].textureMatrix);
-
-                    setTextureLODBias(u, newState.textureUnit[u].LODBias);
-                }
-            }
-            setTexCoord(u, newState.textureUnit[u].texCoord);            
-        }
-    }
-
-    setCullFace(newState.cullFace);
-
-    setDepthRange(newState.lowDepthRange, newState.highDepthRange);
-
-    if (state.matrices.changed) { //(newState.matrices != state.matrices) { 
-        if (newState.matrices.cameraToWorldMatrix != state.matrices.cameraToWorldMatrix) {
-            setCameraToWorldMatrix(newState.matrices.cameraToWorldMatrix);
-        }
-
-        if (newState.matrices.objectToWorldMatrix != state.matrices.objectToWorldMatrix) {
-            setObjectToWorldMatrix(newState.matrices.objectToWorldMatrix);
-        }
-
-        setProjectionMatrix(newState.matrices.projectionMatrix);
-    }
-
-    setVertexAndPixelShader(newState.vertexAndPixelShader);
-	setObjectShader(newState.objectShader);
-    setShader(newState.shader);
-
-    if (supportsVertexProgram()) {
-        setVertexProgram(newState.vertexProgram);
-    }
-
-    if (supportsPixelProgram()) {
-        setPixelProgram(newState.pixelProgram);
-    }
-    
-    // Adopt the popped state's deltas relative the state that it replaced.
-    state.highestTextureUnitThatChanged = newState.highestTextureUnitThatChanged;
-    state.matrices.changed = newState.matrices.changed;
-    state.lights.changed = newState.lights.changed;
-}
-
-
-void RenderDevice::enableTwoSidedLighting() {
-    minStateChange();
-    if (! state.lights.twoSidedLighting) {
-        glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 1);
-        state.lights.twoSidedLighting = true;
-        state.lights.changed = true;
-        minGLStateChange();
-    }
-}
-
-
-void RenderDevice::disableTwoSidedLighting() {
-    minStateChange();
-    if (state.lights.twoSidedLighting) {
-        glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 0);
-        state.lights.twoSidedLighting = false;
-        state.lights.changed = true;
-        minGLStateChange();
-    }
-}
-
-
-void RenderDevice::beforePrimitive() {
-	if (! state.shader.isNull()) {
-        debugAssert(! inShader);
-        inShader = true;
-		state.shader->beforePrimitive(this);
-        inShader = false;
-	}
-
-    // If a Shader was bound, it will force this.  Otherwise we need to do so.
-    forceVertexAndPixelShaderBind();
-}
-
-
-void RenderDevice::afterPrimitive() {
-	if (! state.shader.isNull()) {
-        debugAssert(! inShader);
-		inShader = true;
-        state.shader->afterPrimitive(this);
-        inShader = false;
-	}
-}
-
-
-void RenderDevice::setSpecularCoefficient(const Color3& c) {
-    minStateChange();
-    if (state.specular != c) {
-        state.specular = c;
-
-        static float spec[4];
-        spec[0] = c[0];
-        spec[1] = c[1];
-        spec[2] = c[2];
-        spec[3] = 1.0f;
-
-        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spec);
-        minGLStateChange();
-    }
-}
-
-
-void RenderDevice::setSpecularCoefficient(float s) {
-    setSpecularCoefficient(s * Color3::white());
-}
-
-
-void RenderDevice::setShininess(float s) {
-    minStateChange();
-    if (state.shininess != s) {
-        state.shininess = s;
-        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, s);
-        minGLStateChange();
-    }
-}
-
-
-void RenderDevice::setRenderMode(RenderMode m) {
-    minStateChange();
-
-    if (m == RENDER_CURRENT) {
-        return;
-    }
-
-    if (state.renderMode != m) {
-        minGLStateChange();
-        state.renderMode = m;
-        switch (m) {
-        case RENDER_SOLID:
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            break;
-
-        case RENDER_WIREFRAME:
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            break;
-
-        case RENDER_POINTS:
-            glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-            break;
-
-        case RENDER_CURRENT:
-            return;
-            break;
-        }
-    }
-}
-
-
-RenderDevice::RenderMode RenderDevice::renderMode() const {
-    return state.renderMode;
-}
-
-
-void RenderDevice::setDrawBuffer(Buffer b) {
-    minStateChange();
-
-    if (b == BUFFER_CURRENT) return;
-
-    if (state.framebuffer.isNull()) {
-        alwaysAssertM((b >= BUFFER_NONE) && (b <= BUFFER_CURRENT), 
-                  "Drawing to a color buffer is only supported by application-created framebuffers!");
-    } else {
-        alwaysAssertM((b >= BUFFER_CURRENT) && (b <= BUFFER_COLOR15), 
-                  "Visible buffers cannot be specified for application-created framebuffers!");
-    }
-
-    if (b != state.drawBuffer) {
-        minGLStateChange();
-        state.drawBuffer = b;
-        glDrawBuffer (BufferToGL[state.drawBuffer]);
-    }
-}
+////////////////////////////////// Implementation /////////////////////////////
 
+class _SCINTILLA_EDIT_STATE
+{
+public:
+//Constructors / Destructors
+	_SCINTILLA_EDIT_STATE();
 
-void RenderDevice::setCullFace(CullFace f) {
-    minStateChange();
-    if (f != state.cullFace) {
-        minGLStateChange();
-        switch (f) {
-        case CULL_FRONT:
-            glEnable(GL_CULL_FACE);
-            glCullFace(GL_FRONT);
-            break;
+//Member variables
+	CScintillaFindReplaceDlg* pFindReplaceDlg;    //find or replace dialog
+	BOOL                      bFindOnly;          //Is pFindReplace the find or replace?
+	CString                   strFind;            //last find string
+	CString                   strReplace;         //last replace string
+	BOOL                      bCase;              //TRUE==case sensitive, FALSE==not
+	int                       bNext;              //TRUE==search down, FALSE== search up
+	BOOL                      bWord;              //TRUE==match whole word, FALSE==not
+  BOOL                      bRegularExpression; //TRUE==regular expression search, FALSE==not
+};
 
-        case CULL_BACK:
-            glEnable(GL_CULL_FACE);
-            glCullFace(GL_BACK);
-            break;
-
-        case CULL_NONE:
-            glDisable(GL_CULL_FACE);
-            break;
-
-        default:
-            debugAssertM(false, "Fell through switch");
-        }
-
-        state.cullFace = f;
-    }
-}
-
-
-
-void RenderDevice::pushState() {
-    debugAssert(! inPrimitive);
-
-    stateStack.push(state);
-
-    // Record that that the lights and matrices are unchanged since the previous state.
-    // This allows popState to restore the lighting environment efficiently.
-
-    state.lights.changed = false;
-    state.matrices.changed = false;
-    state.highestTextureUnitThatChanged = -1;
-
-    mDebugPushStateCalls += 1;
-}
-
-
-void RenderDevice::popState() {
-    debugAssert(! inPrimitive);
-    debugAssertM(stateStack.size() > 0, "More calls to RenderDevice::pushState() than RenderDevice::popState().");
-    setState(stateStack.last());
-    stateStack.popDiscard();
-}
-
-
-void RenderDevice::clear(bool clearColor, bool clearDepth, bool clearStencil) {
-    debugAssert(! inPrimitive);
-#   ifdef G3D_DEBUG
-    std::string why;
-    debugAssertM(currentFramebufferComplete(why), why);
-#   endif
-    majStateChange();
-    majGLStateChange();
-
-    GLint mask = 0;
-
-    // TODO: do we need to enable write to clear these buffers?
-    pushState();
-    if (clearColor) {
-        mask |= GL_COLOR_BUFFER_BIT;
-        enableColorWrite();
-    }
-
-    if (clearDepth) {
-        mask |= GL_DEPTH_BUFFER_BIT;
-        enableDepthWrite();
-    }
-
-    int oldMask;
-    glGetIntegerv(GL_STENCIL_WRITEMASK, &oldMask);
-
-    if (clearStencil) {
-        mask |= GL_STENCIL_BUFFER_BIT;
-        glStencilMask((GLuint)~0);
-        minGLStateChange();
-        minStateChange();
-    }
-
-    glClear(mask);
-    glStencilMask(oldMask);
-    minGLStateChange();
-    minStateChange();
-    popState();
-}
-
-
-uint RenderDevice::numTextureUnits() const {
-    return _numTextureUnits;
-}
-
-
-uint RenderDevice::numTextures() const {
-    return _numTextures;
-}
-
-
-uint RenderDevice::numTextureCoords() const {
-    return _numTextureCoords;
-}
-
-
-void RenderDevice::beginFrame() {
-    if (swapGLBuffersPending) {
-        _window->swapGLBuffers();
-        swapGLBuffersPending = false;
-    }
-
-    mDebugNumMajorOpenGLStateChanges = 0;
-    mDebugNumMinorOpenGLStateChanges = 0;
-    mDebugNumMajorStateChanges = 0;
-    mDebugNumMinorStateChanges = 0;
-    mDebugPushStateCalls = 0;
-
-    ++beginEndFrame;
-    triangleCount = 0;
-    debugAssertM(beginEndFrame == 1, "Mismatched calls to beginFrame/endFrame");
-    pushState();
-}
-
-
-void RenderDevice::setSwapBuffersAutomatically(bool b) {
-    if (b == _swapBuffersAutomatically) {
-        // Setting to current state; nothing to do.
-        return;
-    }
-
-    if (swapGLBuffersPending) {
-        // Process the pending swap buffers call
-        _window->swapGLBuffers();
-        swapGLBuffersPending = false;
-    }
-
-    _swapBuffersAutomatically = b;
-}
-
-
-void RenderDevice::endFrame() {
-    --beginEndFrame;
-    debugAssertM(beginEndFrame == 0, "Mismatched calls to beginFrame/endFrame");
-
-    popState();
-
-    // Schedule a swap buffer iff we are handling them automatically.
-    swapGLBuffersPending = _swapBuffersAutomatically;
-
-    debugAssertM(stateStack.size() == 0, "Missing RenderDevice::popState or RenderDevice::pop2D.");
-
-    double now = System::getTick();
-    double dt = now - lastTime;
-    if (dt == 0) {
-        dt = 0.0001;
-    }
-
-    {
-        // high frame rate: A (interpolation parameter) is small
-        // low frame rate: A is big
-        const double A = clamp(dt, .07, 1);
-    
-        emwaFrameRate     = lerp(emwaFrameRate, 1 / dt, A);
-        emwaTriangleRate  = lerp(emwaTriangleRate, triangleCount / dt, A);
-        emwaTriangleCount = lerp(emwaTriangleCount, triangleCount, A);
-    }
-
-    if ((emwaFrameRate == inf()) || (isNaN(emwaFrameRate))) {
-        emwaFrameRate = 1000000;
-    } else if (emwaFrameRate < 0) {
-        emwaFrameRate = 0;
-    }
-
-    if ((emwaTriangleRate == inf()) || isNaN(emwaTriangleRate)) {
-        emwaTriangleRate = 1e20;
-    } else if (emwaTriangleRate < 0) {
-        emwaTriangleRate = 0;
-    }
-
-    if ((emwaTriangleCount == inf()) || isNaN(emwaTriangleCount)) {
-        emwaTriangleRate = 1e20;
-    } else if (emwaTriangleCount < 0) {
-        emwaTriangleCount = 0;
-    }
-
-    lastTime = now;
-}
-
-
-bool RenderDevice::alphaWrite() const {
-    return state.alphaWrite;
-}
-
-
-bool RenderDevice::depthWrite() const {
-    return state.depthWrite;
-}
-
-
-bool RenderDevice::colorWrite() const {
-    return state.colorWrite;
-}
-
-
-void RenderDevice::setStencilClearValue(int s) {
-    debugAssert(! inPrimitive);
-    minStateChange();
-    if (state.stencil.stencilClear != s) {
-        minGLStateChange();
-        glClearStencil(s);
-        state.stencil.stencilClear = s;
-    }
-}
-
-
-void RenderDevice::setDepthClearValue(double d) {
-    minStateChange();
-    debugAssert(! inPrimitive);
-    if (state.depthClear != d) {
-        minGLStateChange();
-        glClearDepth(d);
-        state.depthClear = d;
-    }
-}
-
-
-void RenderDevice::setColorClearValue(const Color4& c) {
-    debugAssert(! inPrimitive);
-    minStateChange();
-    if (state.colorClear != c) {
-        minGLStateChange();
-        glClearColor(c.r, c.g, c.b, c.a);
-        state.colorClear = c;
-    }
-}
-
-
-void RenderDevice::setViewport(const Rect2D& v) {
-    minStateChange();
-    if (state.viewport != v) {
-        // Flip to OpenGL y-axis
-		float h = height();
-        _glViewport(v.x0(), h - v.y1(), v.width(), v.height());
-        state.viewport = v;
-        minGLStateChange();
-    }
-}
-
-
-void RenderDevice::enableClip2D(const Rect2D& clip) {
-    minStateChange();
-    minGLStateChange();
-    state.clip2D = clip;
-
-	int clipX0 = iFloor(clip.x0());
-	int clipY0 = iFloor(clip.y0());
-	int clipX1 = iCeil(clip.x1());
-	int clipY1 = iCeil(clip.y1());
-
-	glScissor(clipX0, getHeight() - clipY1, clipX1 - clipX0, clipY1 - clipY0);
-
-    if (! state.useClip2D) {
-        glEnable(GL_SCISSOR_TEST);
-        minStateChange();
-        minGLStateChange();
-    }
-    state.useClip2D = true;
-}
-
-
-void RenderDevice::disableClip2D() {
-    minStateChange();
-    if (state.useClip2D) {
-        minGLStateChange();
-        glDisable(GL_SCISSOR_TEST);
-    }
-    state.useClip2D = false;
-}
-
-
-void RenderDevice::setProjectionAndCameraMatrix(const GCamera& camera) {
-    double pixelAspect = state.viewport.width() / state.viewport.height();
-
-    // Half extents of viewport
-    double y = -camera.getNearPlaneZ() * tan(camera.getFieldOfView() / 2.0);
-    double x = y * pixelAspect;
-
-    double r, l, t, b, n, f;
-    n = -camera.getNearPlaneZ();
-    f = -camera.getFarPlaneZ();
-    r = x;
-    l = -x;
-    t = y;
-    b = -y;
-
-    setProjectionMatrix(Matrix4::perspectiveProjection(l, r, b, t, n, f));
-	setCameraToWorldMatrix(camera.getCoordinateFrame());
-}
-
-
-Rect2D RenderDevice::getViewport() const {
-    return state.viewport;
-}
-
-
-void RenderDevice::setFramebuffer(const FramebufferRef &fbo) {
-    // Check for extension
-    majStateChange();
-    if (fbo != state.framebuffer) {
-        majGLStateChange();
-        // Set Framebuffer
-        if (fbo.isNull()) {
-            state.drawBuffer = BUFFER_BACK;
-            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-        } else {
-            state.drawBuffer = BUFFER_COLOR0;
-            debugAssertM(GLCaps::supports_GL_EXT_framebuffer_object(), 
-                "Framebuffer Object not supported!");
-            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo->openGLID());
-        }
-        state.framebuffer = fbo;
-    }
-}
-
-
-void RenderDevice::setDepthTest(DepthTest test) {
-    debugAssert(! inPrimitive);
-
-    minStateChange();
-
-	if (test == DEPTH_CURRENT) {
-		return;
-	}
-
-    if (state.depthTest != test) {
-        minGLStateChange();
-        if (test == DEPTH_ALWAYS_PASS) {
-            glDisable(GL_DEPTH_TEST);
-        } else {
-            minStateChange();
-            minGLStateChange();
-            glEnable(GL_DEPTH_TEST);
-            switch (test) {
-            case DEPTH_LESS:
-                glDepthFunc(GL_LESS);
-                break;
-
-            case DEPTH_LEQUAL:
-                glDepthFunc(GL_LEQUAL);
-                break;
-
-            case DEPTH_GREATER:
-                glDepthFunc(GL_GREATER);
-                break;
-
-            case DEPTH_GEQUAL:
-                glDepthFunc(GL_GEQUAL);
-                break;
-
-            case DEPTH_EQUAL:
-                glDepthFunc(GL_EQUAL);
-                break;
-
-            case DEPTH_NOTEQUAL:
-                glDepthFunc(GL_NOTEQUAL);
-                break;
-
-            case DEPTH_NEVER_PASS:
-                glDepthFunc(GL_NEVER);
-                break;
-
-            default:
-                debugAssertM(false, "Fell through switch");
-            }
-        }
-
-        state.depthTest = test;
-
-    }
-}
-
-static GLenum toGLEnum(RenderDevice::StencilTest t) {
-
-    switch (t) {
-    case RenderDevice::STENCIL_CURRENT:
-        return 0;
-
-    case RenderDevice::STENCIL_ALWAYS_PASS:
-        return GL_ALWAYS;
-
-    case RenderDevice::STENCIL_LESS:
-        return GL_LESS;
-
-    case RenderDevice::STENCIL_LEQUAL:
-        return GL_LEQUAL;
-
-    case RenderDevice::STENCIL_GREATER:
-        return GL_GREATER;
-
-    case RenderDevice::STENCIL_GEQUAL:
-        return GL_GEQUAL;
-
-    case RenderDevice::STENCIL_EQUAL:
-        return GL_EQUAL;
-
-    case RenderDevice::STENCIL_NOTEQUAL:
-        return GL_NOTEQUAL;
-
-    case RenderDevice::STENCIL_NEVER_PASS:
-        return GL_NEVER;
-
-    default:
-        debugAssertM(false, "Fell through switch");
-        return GL_NONE;
-    }
-}
-
-
-void RenderDevice::_setStencilTest(RenderDevice::StencilTest test, int reference) {
-
-	if (test == RenderDevice::STENCIL_CURRENT) {
-		return;
-	}
-
-    const GLenum t = toGLEnum(test);
-
-    if (GLCaps::supports_GL_EXT_stencil_two_side()) {
-        // NVIDIA/EXT
-        glActiveStencilFaceEXT(GL_BACK);
-        glStencilFunc(t, reference, 0xFFFFFFFF);
-        glActiveStencilFaceEXT(GL_FRONT);
-        glStencilFunc(t, reference, 0xFFFFFFFF);
-        minGLStateChange(4);
-    } else if (GLCaps::supports_GL_ATI_separate_stencil()) {
-        // ATI
-        glStencilFuncSeparateATI(t, t, reference, 0xFFFFFFFF);
-        minGLStateChange(1);
-    } else {
-        // Default OpenGL
-        glStencilFunc(t, reference, 0xFFFFFFFF);
-        minGLStateChange(1);
-    }
-}
-
-
-void RenderDevice::setStencilConstant(int reference) {
-    minStateChange();
-
-    debugAssert(! inPrimitive);
-    if (state.stencil.stencilReference != reference) {
-
-        state.stencil.stencilReference = reference;
-        _setStencilTest(state.stencil.stencilTest, reference);
-        minStateChange();
-
-    }
-}
-
-
-void RenderDevice::setStencilTest(StencilTest test) {
-    minStateChange();
-
-	if (test == STENCIL_CURRENT) {
-		return;
-	}
-
-    debugAssert(! inPrimitive);
-
-    if (state.stencil.stencilTest != test) {
-        glEnable(GL_STENCIL_TEST);
-
-        if (test == STENCIL_ALWAYS_PASS) {
-
-            // Can't actually disable if the stencil op is using the test as well
-            // due to an OpenGL limitation.
-            if ((state.stencil.frontStencilFail   == STENCIL_KEEP) &&
-                (state.stencil.frontStencilZFail  == STENCIL_KEEP) &&
-                (state.stencil.frontStencilZPass  == STENCIL_KEEP) &&
-                (! GLCaps::supports_GL_EXT_stencil_two_side() ||
-                 ((state.stencil.backStencilFail  == STENCIL_KEEP) &&
-                  (state.stencil.backStencilZFail == STENCIL_KEEP) &&
-                  (state.stencil.backStencilZPass == STENCIL_KEEP)))) {
-                minGLStateChange();
-                glDisable(GL_STENCIL_TEST);
-            }
-
-        } else {
-
-            _setStencilTest(test, state.stencil.stencilReference);
-        }
-
-        state.stencil.stencilTest = test;
-
-    }
-}
-
-
-RenderDevice::AlphaTest RenderDevice::alphaTest() const {
-    return state.alphaTest;
-}
-
-
-double RenderDevice::alphaTestReference() const {
-    return state.alphaReference;
-}
-
-
-void RenderDevice::setAlphaTest(AlphaTest test, double reference) {
-    debugAssert(! inPrimitive);
-
-    minStateChange();
-
-	if (test == ALPHA_CURRENT) {
-		return;
-	}
-
-    if ((state.alphaTest != test) || (state.alphaReference != reference)) {
-        minGLStateChange();
-        if (test == ALPHA_ALWAYS_PASS) {
-            
-            glDisable(GL_ALPHA_TEST);
-
-        } else {
-
-            glEnable(GL_ALPHA_TEST);
-            switch (test) {
-            case ALPHA_LESS:
-                glAlphaFunc(GL_LESS, reference);
-                break;
-
-            case ALPHA_LEQUAL:
-                glAlphaFunc(GL_LEQUAL, reference);
-                break;
-
-            case ALPHA_GREATER:
-                glAlphaFunc(GL_GREATER, reference);
-                break;
-
-            case ALPHA_GEQUAL:
-                glAlphaFunc(GL_GEQUAL, reference);
-                break;
-
-            case ALPHA_EQUAL:
-                glAlphaFunc(GL_EQUAL, reference);
-                break;
-
-            case ALPHA_NOTEQUAL:
-                glAlphaFunc(GL_NOTEQUAL, reference);
-                break;
-
-            case ALPHA_NEVER_PASS:
-                glAlphaFunc(GL_NEVER, reference);
-                break;
-
-            default:
-                debugAssertM(false, "Fell through switch");
-            }
-        }
-
-        state.alphaTest = test;
-        state.alphaReference = reference;
-    }
-}
-
-
-
-
-GLint RenderDevice::toGLStencilOp(RenderDevice::StencilOp op) const {
-
-    switch (op) {
-    case RenderDevice::STENCIL_KEEP:
-        return GL_KEEP;
-
-    case RenderDevice::STENCIL_ZERO:
-        return GL_ZERO;
-
-    case RenderDevice::STENCIL_REPLACE:
-        return GL_REPLACE;
-
-    case RenderDevice::STENCIL_INVERT:
-        return GL_INVERT;
-
-    case RenderDevice::STENCIL_INCR_WRAP:
-        if (GLCaps::supports_GL_EXT_stencil_wrap()) {
-            return GL_INCR_WRAP_EXT;
-        }
-        // Intentionally fall through
-
-    case RenderDevice::STENCIL_INCR:
-        return GL_INCR;
-
-
-    case RenderDevice::STENCIL_DECR_WRAP:
-        if (GLCaps::supports_GL_EXT_stencil_wrap()) {
-            return GL_DECR_WRAP_EXT;
-        }
-        // Intentionally fall through
-
-    case RenderDevice::STENCIL_DECR:
-        return GL_DECR;
-
-    default:
-        debugAssertM(false, "Fell through switch");
-        return GL_KEEP;
-    }
-}
-
-
-void RenderDevice::setShader(const ShaderRef& s) {
-    majStateChange();
-
-	if (s != state.shader) {
-        debugAssertM(! inShader, "Cannot set the Shader from within a Shader!");
-		state.shader = s;
-	}
-}
-
-
-void RenderDevice::setObjectShader(const ObjectShaderRef& s) {
-	if (s != state.objectShader) {
-		state.objectShader = s;
-	}
-}
-
-
-void RenderDevice::forceVertexAndPixelShaderBind() {
-    // Only change the vertex shader if it does not match the one used last time.
-    if (lastVertexAndPixelShader != state.vertexAndPixelShader) {
-
-        majGLStateChange();
-        if (state.vertexAndPixelShader.isNull()) {
-            // Disables the programmable pipeline
-            glUseProgramObjectARB(0);
-        } else {
-            glUseProgramObjectARB(state.vertexAndPixelShader->glProgramObject());
-        }
-        debugAssertGLOk();
-
-        lastVertexAndPixelShader = state.vertexAndPixelShader;
-    }
-}
-
-
-void RenderDevice::setVertexAndPixelShader(const VertexAndPixelShaderRef& s) {
-    majStateChange();
-
-    if (s != state.vertexAndPixelShader) {
-
-        state.vertexAndPixelShader = s;
-
-        if (s.notNull()) {
-            alwaysAssertM(s->ok(), s->messages());
-        }
-
-        // The actual shader will change in beforePrimitive or when the arg list is bound.
-    }
-}
-
-
-void RenderDevice::setVertexAndPixelShader(
-    const VertexAndPixelShaderRef&          s,
-    const VertexAndPixelShader::ArgList&    args) {
-
-    setVertexAndPixelShader(s);
-
-    if (s.notNull()) {
-        s->bindArgList(this, args);
-    }
+_SCINTILLA_EDIT_STATE::_SCINTILLA_EDIT_STATE() : bRegularExpression(FALSE),
+                                                 pFindReplaceDlg(NULL),
+               	                                 bWord(FALSE),
+                                                 bFindOnly(TRUE),
+	                                               bCase(FALSE),
+	                                               bNext(TRUE)
+{
 }
-
 
-void RenderDevice::setVertexProgram(const VertexProgramRef& vp) {
-    majStateChange();
-    if (vp != state.vertexProgram) {
-        if (state.vertexProgram != (VertexProgramRef)NULL) {
-            state.vertexProgram->disable();
-        }
+_SCINTILLA_EDIT_STATE _scintillaEditState;
 
-        majGLStateChange();
-        if (vp != (VertexProgramRef)NULL) {
-            debugAssert(supportsVertexProgram());
-            vp->bind();
-        }
-
-        state.vertexProgram = vp;
-    }
+CScintillaFindReplaceDlg* CScintillaFindReplaceDlg::GetFindReplaceDlg()
+{
+	return _scintillaEditState.pFindReplaceDlg;
 }
-
-
-void RenderDevice::setVertexProgram(
-    const VertexProgramRef& vp,
-    const GPUProgram::ArgList& args) {
 
-    setVertexProgram(vp);
-    
-    vp->setArgs(this, args);
-}
+BEGIN_MESSAGE_MAP(CScintillaFindReplaceDlg, CFindReplaceDialog)
+  ON_BN_CLICKED(IDC_REGULAR_EXPRESSION, OnRegularExpression)
+END_MESSAGE_MAP()
 
 
-void RenderDevice::setPixelProgram(const PixelProgramRef& pp) {
-    majStateChange();
-    if (pp != state.pixelProgram) {
-        if (state.pixelProgram != (PixelProgramRef)NULL) {
-            state.pixelProgram->disable();
-        }
-        if (pp != (PixelProgramRef)NULL) {
-            debugAssert(supportsPixelProgram());
-            pp->bind();
-        }
-        majGLStateChange();
-        state.pixelProgram = pp;
-    }
+CScintillaFindReplaceDlg::CScintillaFindReplaceDlg(): m_bRegularExpression(FALSE)
+{
 }
-
 
-void RenderDevice::setPixelProgram(
-    const PixelProgramRef& pp,
-    const GPUProgram::ArgList& args) {
+BOOL CScintillaFindReplaceDlg::Create(BOOL bFindDialogOnly,	LPCTSTR lpszFindWhat, LPCTSTR lpszReplaceWith, DWORD dwFlags, CWnd* pParentWnd)
+{
+  //Tell Windows to use our dialog instead of the standard one
+  m_fr.hInstance = AfxGetResourceHandle();
+  m_fr.Flags |= FR_ENABLETEMPLATE;
+  if (bFindDialogOnly)
+    m_fr.lpTemplateName = MAKEINTRESOURCE(IDD_SCINTILLA_FINDDLGORD);
+  else
+    m_fr.lpTemplateName = MAKEINTRESOURCE(IDD_SCINTILLA_REPLACEDLGORD);
 
-    setPixelProgram(pp);
-    
-    pp->setArgs(this, args);
+  //Let the base class do its thing
+  return CFindReplaceDialog::Create(bFindDialogOnly,	lpszFindWhat, lpszReplaceWith, dwFlags, pParentWnd);
 }
-
-
-void RenderDevice::setStencilOp(
-    StencilOp                       frontStencilFail,
-    StencilOp                       frontZFail,
-    StencilOp                       frontZPass,
-    StencilOp                       backStencilFail,
-    StencilOp                       backZFail,
-    StencilOp                       backZPass) {
 
-    minStateChange();
+BOOL CScintillaFindReplaceDlg::OnInitDialog() 
+{
+  //let the base class do its thing
+	BOOL bReturn = CFindReplaceDialog::OnInitDialog();
 
-	if (frontStencilFail == STENCILOP_CURRENT) {
-		frontStencilFail = state.stencil.frontStencilFail;
-	}
+  //Should we check the regular expression check box
+  CButton* pCtrl = static_cast<CButton*>(GetDlgItem(IDC_REGULAR_EXPRESSION));
+  AFXASSUME(pCtrl);
+  pCtrl->SetCheck(m_bRegularExpression);
 	
-	if (frontZFail == STENCILOP_CURRENT) {
-		frontZFail = state.stencil.frontStencilZFail;
-	}
-	
-	if (frontZPass == STENCILOP_CURRENT) {
-		frontZPass = state.stencil.frontStencilZPass;
-	}
+	return bReturn;
+}
 
-	if (backStencilFail == STENCILOP_CURRENT) {
-		backStencilFail = state.stencil.backStencilFail;
-	}
-	
-	if (backZFail == STENCILOP_CURRENT) {
-		backZFail = state.stencil.backStencilZFail;
-	}
-	
-	if (backZPass == STENCILOP_CURRENT) {
-		backZPass = state.stencil.backStencilZPass;
-	}
-    
-	if ((frontStencilFail  != state.stencil.frontStencilFail) ||
-        (frontZFail        != state.stencil.frontStencilZFail) ||
-        (frontZPass        != state.stencil.frontStencilZPass) || 
-        (GLCaps::supports_two_sided_stencil() && 
-        ((backStencilFail  != state.stencil.backStencilFail) ||
-         (backZFail        != state.stencil.backStencilZFail) ||
-         (backZPass        != state.stencil.backStencilZPass)))) { 
-
-        if (GLCaps::supports_GL_EXT_stencil_two_side()) {
-            // NVIDIA
-
-            // Set back face operation
-            glActiveStencilFaceEXT(GL_BACK);
-            glStencilOp(
-                toGLStencilOp(backStencilFail),
-                toGLStencilOp(backZFail),
-                toGLStencilOp(backZPass));
-            
-            // Set front face operation
-            glActiveStencilFaceEXT(GL_FRONT);
-            glStencilOp(
-                toGLStencilOp(frontStencilFail),
-                toGLStencilOp(frontZFail),
-                toGLStencilOp(frontZPass));
-
-            minGLStateChange(4);
-
-        } else if (GLCaps::supports_GL_ATI_separate_stencil()) {
-            // ATI
-            minGLStateChange(2);
-            glStencilOpSeparateATI(GL_FRONT, 
-                toGLStencilOp(frontStencilFail),
-                toGLStencilOp(frontZFail),
-                toGLStencilOp(frontZPass));
-
-            glStencilOpSeparateATI(GL_BACK, 
-                toGLStencilOp(backStencilFail),
-                toGLStencilOp(backZFail),
-                toGLStencilOp(backZPass));
-
-        } else {
-            // Generic OpenGL
-
-            // Set front face operation
-            glStencilOp(
-                toGLStencilOp(frontStencilFail),
-                toGLStencilOp(frontZFail),
-                toGLStencilOp(frontZPass));
-
-            minGLStateChange(1);
-        }
-
-
-        // Need to manage the mask as well
-
-        if ((frontStencilFail  == STENCIL_KEEP) &&
-            (frontZPass        == STENCIL_KEEP) && 
-            (frontZFail        == STENCIL_KEEP) &&
-            (! GLCaps::supports_two_sided_stencil() ||
-            ((backStencilFail  == STENCIL_KEEP) &&
-             (backZPass        == STENCIL_KEEP) &&
-             (backZFail        == STENCIL_KEEP)))) {
-
-            // Turn off writing.  May need to turn off the stencil test.
-            if (state.stencil.stencilTest == STENCIL_ALWAYS_PASS) {
-                // Test doesn't need to be on
-                glDisable(GL_STENCIL_TEST);
-            }
-
-        } else {
-
-            debugAssertM(glGetInteger(GL_STENCIL_BITS) > 0,
-                "Allocate stencil bits from RenderDevice::init before using the stencil buffer.");
-
-            // Turn on writing.  We also need to turn on the
-            // stencil test in this case.
-
-            if (state.stencil.stencilTest == STENCIL_ALWAYS_PASS) {
-                // Test is not already on
-                glEnable(GL_STENCIL_TEST);
-                _setStencilTest(state.stencil.stencilTest, state.stencil.stencilReference);
-            }
-        }
-
-        state.stencil.frontStencilFail  = frontStencilFail;
-        state.stencil.frontStencilZFail = frontZFail;
-        state.stencil.frontStencilZPass = frontZPass;
-        state.stencil.backStencilFail   = backStencilFail;
-        state.stencil.backStencilZFail  = backZFail;
-        state.stencil.backStencilZPass  = backZPass;
-    }
+void CScintillaFindReplaceDlg::OnRegularExpression() 
+{
+  //Save the state of the Regular expression checkbox into a member variable
+  CButton* pCtrl = static_cast<CButton*>(GetDlgItem(IDC_REGULAR_EXPRESSION));
+  AFXASSUME(pCtrl);
+	m_bRegularExpression = (pCtrl->GetCheck() == 1);
 }
 
 
-void RenderDevice::setStencilOp(
-    StencilOp           fail,
-    StencilOp           zfail,
-    StencilOp           zpass) {
-    debugAssert(! inPrimitive);
+IMPLEMENT_DYNCREATE(CScintillaView, CView)
 
-    setStencilOp(fail, zfail, zpass, fail, zfail, zpass);
+const UINT _ScintillaMsgFindReplace = ::RegisterWindowMessage(FINDMSGSTRING);
+
+BEGIN_MESSAGE_MAP(CScintillaView, CView)
+	ON_WM_PAINT()
+	ON_UPDATE_COMMAND_UI(ID_EDIT_CUT, OnUpdateNeedSel)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_PASTE, OnUpdateNeedPaste)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_FIND, OnUpdateNeedText)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_REPEAT, OnUpdateNeedFind)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_UNDO, OnUpdateEditUndo)
+  ON_UPDATE_COMMAND_UI(ID_EDIT_REDO, OnUpdateEditRedo)
+	ON_COMMAND(ID_EDIT_CUT, OnEditCut)
+	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
+	ON_COMMAND(ID_EDIT_PASTE, OnEditPaste)
+	ON_COMMAND(ID_EDIT_CLEAR, OnEditClear)
+	ON_COMMAND(ID_EDIT_UNDO, OnEditUndo)
+  ON_COMMAND(ID_EDIT_REDO, OnEditRedo)
+	ON_COMMAND(ID_EDIT_SELECT_ALL, OnEditSelectAll)
+	ON_COMMAND(ID_EDIT_FIND, OnEditFind)
+	ON_COMMAND(ID_EDIT_REPLACE, OnEditReplace)
+	ON_COMMAND(ID_EDIT_REPEAT, OnEditRepeat)
+	ON_WM_SETFOCUS()
+	ON_WM_SIZE()
+	ON_WM_ERASEBKGND()
+	ON_WM_CREATE()
+	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateNeedSel)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_CLEAR, OnUpdateNeedTextAndFollowingText)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_SELECT_ALL, OnUpdateNeedText)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_REPLACE, OnUpdateNeedText)
+	ON_COMMAND(ID_FILE_PAGE_SETUP, OnFilePageSetup)
+	ON_WM_DESTROY()
+	ON_COMMAND(ID_FILE_PRINT, CView::OnFilePrint)
+	ON_COMMAND(ID_FILE_PRINT_DIRECT, CView::OnFilePrint)
+ 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, CView::OnFilePrintPreview)
+	ON_REGISTERED_MESSAGE(_ScintillaMsgFindReplace, OnFindReplaceCmd)
+END_MESSAGE_MAP()
+
+CScintillaView::CScintillaView() : m_rMargin(0, 0, 0, 0), 
+                                   m_bFirstSearch(TRUE),
+                                   m_bUseROFileAttributeDuringLoading(TRUE),
+                                   m_bPrintHeader(TRUE), 
+                                   m_bPrintFooter(TRUE),
+                                   m_bPersistMarginSettings(TRUE),
+                                   m_bUsingMetric(UserWantsMetric())
+{
 }
 
+CScintillaCtrl& CScintillaView::GetCtrl()
+{ 
+  CScintillaCtrl& ctrl = m_Edit;
 
-static GLenum toGLBlendEq(RenderDevice::BlendEq e) {
-    switch (e) {
-    case RenderDevice::BLENDEQ_MIN:
-        debugAssert(GLCaps::supports("GL_EXT_blend_minmax"));
-        return GL_MIN;
-
-    case RenderDevice::BLENDEQ_MAX:
-        debugAssert(GLCaps::supports("GL_EXT_blend_minmax"));
-        return GL_MAX;
-
-    case RenderDevice::BLENDEQ_ADD:
-        return GL_FUNC_ADD;
-
-    case RenderDevice::BLENDEQ_SUBTRACT:
-        debugAssert(GLCaps::supports("GL_EXT_blend_subtract"));
-        return GL_FUNC_SUBTRACT;
-
-    case RenderDevice::BLENDEQ_REVERSE_SUBTRACT:
-        debugAssert(GLCaps::supports("GL_EXT_blend_subtract"));
-        return GL_FUNC_REVERSE_SUBTRACT;
-
-    default:
-        debugAssertM(false, "Fell through switch");
-        return GL_ZERO;
-    }
+  return ctrl; 
 }
 
-
-void RenderDevice::setBlendFunc(
-    BlendFunc src,
-    BlendFunc dst,
-    BlendEq   eq) {
-    debugAssert(! inPrimitive);
-
-    minStateChange();
-	if (src == BLEND_CURRENT) {
-		src = state.srcBlendFunc;
-	}
-
-	if (dst == BLEND_CURRENT) {
-		dst = state.dstBlendFunc;
-	}
-
-    if (eq == BLENDEQ_CURRENT) {
-        eq = state.blendEq;
-    }
-
-    if ((state.dstBlendFunc != dst) ||
-        (state.srcBlendFunc != src) ||
-        (state.blendEq != eq)) {
-
-        minGLStateChange();
-
-        if ((dst == BLEND_ZERO) && (src == BLEND_ONE) && ((eq == BLENDEQ_ADD) || (eq == BLENDEQ_SUBTRACT))) {
-            glDisable(GL_BLEND);
-        } else {
-            glEnable(GL_BLEND);
-            glBlendFunc(toGLBlendFunc(src), toGLBlendFunc(dst));
-
-            debugAssert(eq == BLENDEQ_ADD ||
-                GLCaps::supports("GL_EXT_blend_minmax") ||
-                GLCaps::supports("GL_EXT_blend_subtract"));
-
-            static bool supportsBlendEq = GLCaps::supports("GL_EXT_blend_minmax");
-
-            if (supportsBlendEq && (glBlendEquationEXT != 0)) {
-                glBlendEquationEXT(toGLBlendEq(eq));
-            }
-        }
-        state.dstBlendFunc = dst;
-        state.srcBlendFunc = src;
-        state.blendEq = eq;
-    }
+void CScintillaView::LoadMarginSettings(const CString& sSection)
+{
+  //Get the margin values 
+  CWinApp* pApp = AfxGetApp();
+  AFXASSUME(pApp);
+	m_rMargin.left = pApp->GetProfileInt(sSection, _T("LeftMargin"), m_rMargin.left);
+	m_rMargin.right = pApp->GetProfileInt(sSection, _T("RightMargin"), m_rMargin.right);
+	m_rMargin.top = pApp->GetProfileInt(sSection, _T("TopMargin"), m_rMargin.top);
+	m_rMargin.bottom = pApp->GetProfileInt(sSection, _T("BottomMargin"), m_rMargin.bottom);
 }
 
-
-void RenderDevice::setLineWidth(
-    double               width) {
-    debugAssert(! inPrimitive);
-    minStateChange();
-    if (state.lineWidth != width) {
-        glLineWidth(width);
-        minGLStateChange();
-        state.lineWidth = width;
-    }
+void CScintillaView::SaveMarginSettings(const CString& sSection)
+{
+  //Write out the margin values 
+  CWinApp* pApp = AfxGetApp();
+  AFXASSUME(pApp);
+	pApp->WriteProfileInt(sSection, _T("LeftMargin"), m_rMargin.left);
+	pApp->WriteProfileInt(sSection, _T("RightMargin"), m_rMargin.right);
+	pApp->WriteProfileInt(sSection, _T("TopMargin"), m_rMargin.top);
+	pApp->WriteProfileInt(sSection, _T("BottomMargin"), m_rMargin.bottom);
 }
 
+void CScintillaView::OnDestroy()
+{
+  //Close Find/Replace dialog if this is the last CScintillaView
+	if (_scintillaEditState.pFindReplaceDlg)
+	{
+		CWinApp* pApp = AfxGetApp();
 
-void RenderDevice::setPointSize(
-    double               width) {
-    debugAssert(! inPrimitive);
-    minStateChange();
-    if (state.pointSize != width) {
-        glPointSize(width);
-        minGLStateChange();
-        state.pointSize = width;
-    }
-}
+    //Count up the number of CScintillaView's we have (excluding this one)
+    int nScintillaViews = 0;
 
+		//no doc manager - no templates
+		if (pApp->m_pDocManager)
+		{
+			//walk all templates
+			CDocTemplate* pTemplate;
+			POSITION pos = pApp->m_pDocManager->GetFirstDocTemplatePosition();
+			while (pos && (nScintillaViews == 0))
+			{
+				pTemplate = pApp->m_pDocManager->GetNextDocTemplate(pos);
+				AFXASSUME(pTemplate);
 
-void RenderDevice::setAmbientLightColor(
-    const Color4&        color) {
-    debugAssert(! inPrimitive);
+				//walk all documents in the template
+				POSITION pos2 = pTemplate->GetFirstDocPosition();
+				while (pos2 && (nScintillaViews == 0))
+				{
+					CDocument* pDoc = pTemplate->GetNextDoc(pos2);
+					ASSERT(pDoc);
 
-    minStateChange();
-    if (color != state.lights.ambient) {
-        float c[] =
-            {color.r / lightSaturation,
-             color.g / lightSaturation,
-             color.b / lightSaturation,
-             1.0f};
-    
-        state.lights.changed = true;
-        minGLStateChange();
-        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, c);
-        state.lights.ambient = color;
-    }
-}
-
-
-void RenderDevice::setAmbientLightColor(
-    const Color3&        color) {
-    setAmbientLightColor(Color4(color, 1.0));
-}
-
-
-void RenderDevice::enableLighting() {
-    debugAssert(! inPrimitive);
-    minStateChange();
-    if (! state.lights.lighting) {
-        glEnable(GL_LIGHTING);
-        minGLStateChange();
-        state.lights.lighting = true;
-        state.lights.changed = true;
-    }
-}
-
-
-void RenderDevice::disableLighting() {
-    debugAssert(! inPrimitive);
-    minStateChange();
-    if (state.lights.lighting) {
-        glDisable(GL_LIGHTING);
-        minGLStateChange();
-        state.lights.lighting = false;
-        state.lights.changed = true;
-    }
-}
-
-
-void RenderDevice::setObjectToWorldMatrix(
-    const CoordinateFrame& cFrame) {
-    
-    minStateChange();
-    debugAssert(! inPrimitive);
-
-    // No test to see if it is already equal; this is called frequently and is
-    // usually different.
-    state.matrices.changed = true;
-    state.matrices.objectToWorldMatrix = cFrame;
-    glMatrixMode(GL_MODELVIEW);
-    glLoadMatrix(state.matrices.cameraToWorldMatrixInverse * state.matrices.objectToWorldMatrix);
-    minGLStateChange();
-}
-
-
-const CoordinateFrame& RenderDevice::getObjectToWorldMatrix() const {
-    return state.matrices.objectToWorldMatrix;
-}
-
-
-void RenderDevice::setCameraToWorldMatrix(
-    const CoordinateFrame& cFrame) {
-
-    debugAssert(! inPrimitive);
-    majStateChange();
-    majGLStateChange();
-    
-    state.matrices.changed = true;
-    state.matrices.cameraToWorldMatrix = cFrame;
-    state.matrices.cameraToWorldMatrixInverse = cFrame.inverse();
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadMatrix(state.matrices.cameraToWorldMatrixInverse * state.matrices.objectToWorldMatrix);
-
-    // Reload lights since the camera matrix changed.  We must do this even for lights
-    // that are not enabled since those lights will not be re-set at the GL level if they
-    // are enabled without being otherwise changed.  Of course, we must follow up by disabling
-    // those lights again.
-    for (int i = 0; i < MAX_LIGHTS; ++i) {
-        bool wasEnabled = state.lights.lightEnabled[i];
-        setLight(i, &state.lights.light[i], true);
-        if (! wasEnabled) {
-            setLight(i, NULL);
-        }
-    }
-}
-
-
-const CoordinateFrame& RenderDevice::getCameraToWorldMatrix() const {
-    return state.matrices.cameraToWorldMatrix;
-}
-
-
-Matrix4 RenderDevice::getProjectionMatrix() const {
-    return state.matrices.projectionMatrix;
-}
-
-
-CoordinateFrame RenderDevice::getModelViewMatrix() const {
-    return state.matrices.cameraToWorldMatrixInverse * getObjectToWorldMatrix();
-}
-
-
-Matrix4 RenderDevice::getModelViewProjectionMatrix() const {
-    return getProjectionMatrix() * getModelViewMatrix();
-}
-
-
-void RenderDevice::setProjectionMatrix(const Matrix4& P) {
-    minStateChange();
-    if (state.matrices.projectionMatrix != P) {
-        state.matrices.projectionMatrix = P;
-        state.matrices.changed = true;
-        glMatrixMode(GL_PROJECTION);
-        glLoadMatrix(P);
-        glMatrixMode(GL_MODELVIEW);
-        minGLStateChange();
-    }
-}
-
-
-void RenderDevice::forceSetTextureMatrix(int unit, const double* m) {
-    float f[16];
-    for (int i = 0; i < 16; ++i) {
-        f[i] = m[i];
-    }
-
-    forceSetTextureMatrix(unit, f);
-}
-
-
-void RenderDevice::forceSetTextureMatrix(int unit, const float* m) {
-    minStateChange();
-    minGLStateChange();
-
-    state.touchedTextureUnit(unit);
-    memcpy(state.textureUnit[unit].textureMatrix, m, sizeof(float)*16);
-    if (GLCaps::supports_GL_ARB_multitexture()) {
-        glActiveTextureARB(GL_TEXTURE0_ARB + unit);
-    }
-
-    // Transpose the texture matrix
-    float tt[16];
-    for (int i = 0; i < 4; ++i) {
-        for (int j = 0; j < 4; ++j) {
-            tt[i + j * 4] = m[j + i * 4];
-        }
-    }
-    glMatrixMode(GL_TEXTURE);
-    glLoadMatrixf(tt);
-
-    TextureRef texture = state.textureUnit[unit].texture;
-
-    // invert y
-    if ((texture != NULL) && texture->invertY) {
-
-        float ymax = 1.0;
-    
-        if (texture->getDimension() == Texture::DIM_2D_RECT) {
-            ymax = texture->getTexelHeight();
-        }
-
-        float m[16] = 
-        { 1,  0,  0,  0,
-          0, -1,  0,  0,
-          0,  0,  1,  0,
-          0,  ymax,  0,  1};
-
-        glMultMatrixf(m);
-    }
-
-}
-
-
-Matrix4 RenderDevice::getTextureMatrix(uint unit) {
-    debugAssertM((int)unit < _numTextureUnits,
-        format("Attempted to access texture unit %d on a device with %d units.",
-        unit, _numTextureUnits));
-
-    const float* M = state.textureUnit[unit].textureMatrix;
-
-    return Matrix4(M[0], M[4], M[8],  M[12],
-                   M[1], M[5], M[9],  M[13],
-                   M[2], M[6], M[10], M[14],
-                   M[3], M[7], M[11], M[15]);
-}
-
-
-
-void RenderDevice::setTextureMatrix(
-    uint                 unit,
-	const Matrix4&	     m) {
-
-	float f[16];
-	for (int r = 0; r < 4; ++r) {
-		for (int c = 0; c < 4; ++c) {
-			f[r * 4 + c] = m[r][c];
+					//walk all views in the document
+					POSITION pos3 = pDoc->GetFirstViewPosition();
+					while (pos3 && (nScintillaViews == 0))
+					{
+						CView* pView = pDoc->GetNextView(pos3);
+						ASSERT(pView);
+						
+						//if we find another CScintillaView, skip code that closes find dialog
+						if (pView->IsKindOf(RUNTIME_CLASS(CScintillaView)) && (pView != this) && ::IsWindow(pView->GetSafeHwnd()))
+							++nScintillaViews;
+					}
+				}
+			}
 		}
+
+    //Close down the find/replace dialog if we are the last CScintillaView
+		if (nScintillaViews == 0)
+    {
+      if (::IsWindow(_scintillaEditState.pFindReplaceDlg->m_hWnd))
+			  _scintillaEditState.pFindReplaceDlg->SendMessage(WM_CLOSE);
+		  _scintillaEditState.pFindReplaceDlg = NULL;
+    }
 	}
 
-	setTextureMatrix(unit, f);
+  //Let the base class do its thing
+  CView::OnDestroy();
 }
 
+void CScintillaView::DeleteContents()
+{
+	ASSERT_VALID(this);
+	ASSERT(m_hWnd != NULL);
 
-void RenderDevice::setTextureMatrix(
-    uint                 unit,
-    const double*        m) {
-
-    debugAssert(! inPrimitive);
-    debugAssertM((int)unit < _numTextureUnits,
-        format("Attempted to access texture unit %d on a device with %d units.",
-        unit, _numTextureUnits));
-
-    forceSetTextureMatrix(unit, m);
+  CScintillaCtrl& rCtrl = GetCtrl();
+	rCtrl.ClearAll();
+  rCtrl.EmptyUndoBuffer();
 }
 
-
-void RenderDevice::setTextureMatrix(
-    uint                 unit,
-    const float*        m) {
-
-    debugAssert(! inPrimitive);
-    debugAssertM((int)unit < _numTextureUnits,
-        format("Attempted to access texture unit %d on a device with %d units.",
-        unit, _numTextureUnits));
-
-    if (memcmp(m, state.textureUnit[unit].textureMatrix, sizeof(float)*16)) {
-        forceSetTextureMatrix(unit, m);
-    }
+void CScintillaView::OnDraw(CDC*)
+{
+	ASSERT(FALSE);
 }
 
-
-void RenderDevice::setTextureMatrix(
-    uint                    unit,
-    const CoordinateFrame&  c) {
-
-    float m[16] = 
-    {c.rotation[0][0], c.rotation[0][1], c.rotation[0][2], c.translation.x,
-     c.rotation[1][0], c.rotation[1][1], c.rotation[1][2], c.translation.y,
-     c.rotation[2][0], c.rotation[2][1], c.rotation[2][2], c.translation.z,
-                    0,                0,                0,               1};
-
-    setTextureMatrix(unit, m);
+void CScintillaView::OnPaint()
+{
+	//this is done to avoid CView::OnPaint
+	Default();
 }
 
-
-void RenderDevice::setTextureLODBias(
-    uint                    unit,
-    float                   bias) {
-
-    minStateChange();
-    if (state.textureUnit[unit].LODBias != bias) {
-        state.touchedTextureUnit(unit);
-
-        if (GLCaps::supports_GL_ARB_multitexture()) {
-            glActiveTextureARB(GL_TEXTURE0_ARB + unit);
-        }
-
-        state.textureUnit[unit].LODBias = bias;
-
-        minGLStateChange();
-        glTexEnvf(GL_TEXTURE_FILTER_CONTROL_EXT, GL_TEXTURE_LOD_BIAS_EXT, bias);
-    }
-}
-
-
-void RenderDevice::setTextureCombineMode(
-    uint                    unit,
-    const CombineMode       mode) {
-
-    minStateChange();
-	if (mode == TEX_CURRENT) {
-		return;
-	}
-
-    debugAssertM((int)unit < _numTextureUnits,
-        format("Attempted to access texture unit %d on a device with %d units.",
-        unit, _numTextureUnits));
-
-    if ((state.textureUnit[unit].combineMode != mode)) {
-        minGLStateChange();
-        state.touchedTextureUnit(unit);
-
-        state.textureUnit[unit].combineMode = mode;
-
-        if (GLCaps::supports_GL_ARB_multitexture()) {
-            glActiveTextureARB(GL_TEXTURE0_ARB + unit);
-        }
-
-        static const bool hasAdd = GLCaps::supports("GL_EXT_texture_env_add");
-        static const bool hasCombine = GLCaps::supports("GL_ARB_texture_env_combine");
-        static const bool hasDot3 = GLCaps::supports("GL_ARB_texture_env_dot3");
-
-        switch (mode) {
-        case TEX_REPLACE:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-            break;
-
-        case TEX_BLEND:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);
-            break;
-
-        case TEX_MODULATE:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-            break;
-
-        case TEX_INTERPOLATE:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-            break;
-
-        case TEX_ADD:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, hasCombine ? GL_ADD : GL_BLEND);
-            break;
-
-        case TEX_SUBTRACT:
-            // (add and subtract are in the same extension)
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, hasAdd ? GL_SUBTRACT_ARB : GL_BLEND);
-            break;
-
-        case TEX_ADD_SIGNED:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, hasAdd ? GL_ADD_SIGNED_ARB : GL_BLEND);
-            break;
-            
-        case TEX_DOT3_RGB:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, hasDot3 ? GL_DOT3_RGB_ARB : GL_BLEND);
-            break;
-             
-        case TEX_DOT3_RGBA:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, hasDot3 ? GL_DOT3_RGBA_ARB : GL_BLEND);
-            break;
-
-        default:
-            debugAssertM(false, "Unrecognized texture combine mode");
-        }
-    }
-}
-
-
-void RenderDevice::resetTextureUnit(
-    uint                    unit) {
-    debugAssertM((int)unit < _numTextureUnits,
-        format("Attempted to access texture unit %d on a device with %d units.",
-        unit, _numTextureUnits));
-
-    RenderState newState(state);
-    state.textureUnit[unit] = RenderState::TextureUnit();
-    state.touchedTextureUnit(unit);
-    setState(newState);
-}
-
-
-void RenderDevice::setPolygonOffset(
-    double              offset) {
-    debugAssert(! inPrimitive);
-
-    minStateChange();
-
-    if (state.polygonOffset != offset) {
-        minGLStateChange();
-        if (offset != 0) {
-            glEnable(GL_POLYGON_OFFSET_FILL);
-            glEnable(GL_POLYGON_OFFSET_LINE);
-            glEnable(GL_POLYGON_OFFSET_POINT);
-            glPolygonOffset(offset, sign(offset));
-        } else {
-            glDisable(GL_POLYGON_OFFSET_POINT);
-            glDisable(GL_POLYGON_OFFSET_FILL);
-            glDisable(GL_POLYGON_OFFSET_LINE);
-        }
-        state.polygonOffset = offset;
-    }
-}
-
-
-void RenderDevice::setNormal(const Vector3& normal) {
-    state.normal = normal;
-    glNormal3fv(normal);
-    minStateChange();
-    minGLStateChange();
-}
-
-
-void RenderDevice::setTexCoord(uint unit, const Vector4& texCoord) {
-    debugAssertM((int)unit < _numTextureCoords,
-        format("Attempted to access texture coordinate %d on a device with %d coordinates.",
-        unit, _numTextureCoords));
-
-    state.textureUnit[unit].texCoord = texCoord;
-    if (GLCaps::supports_GL_ARB_multitexture()) {
-        glMultiTexCoord(GL_TEXTURE0_ARB + unit, texCoord);
-    } else {
-        debugAssertM(unit == 0, "This machine has only one texture unit");
-        glTexCoord(texCoord);
-    }
-    state.touchedTextureUnit(unit);
-    minStateChange();
-    minGLStateChange();
-}
-
-
-void RenderDevice::setTexCoord(uint unit, const Vector3& texCoord) {
-    setTexCoord(unit, Vector4(texCoord, 1));
-}
-
-
-void RenderDevice::setTexCoord(uint unit, const Vector3int16& texCoord) {
-    setTexCoord(unit, Vector4(texCoord.x, texCoord.y, texCoord.z, 1));
-}
-
-
-void RenderDevice::setTexCoord(uint unit, const Vector2& texCoord) {
-    setTexCoord(unit, Vector4(texCoord, 0, 1));
-}
-
-
-void RenderDevice::setTexCoord(uint unit, const Vector2int16& texCoord) {
-    setTexCoord(unit, Vector4(texCoord.x, texCoord.y, 0, 1));
-}
-
-
-void RenderDevice::setTexCoord(uint unit, double texCoord) {
-    setTexCoord(unit, Vector4(texCoord, 0, 0, 1));
-}
-
-
-void RenderDevice::sendVertex(const Vector2& vertex) {
-    debugAssertM(inPrimitive, "Can only be called inside beginPrimitive()...endPrimitive()");
-    glVertex2fv(vertex);
-    ++currentPrimitiveVertexCount;
-}
-
-
-void RenderDevice::sendVertex(const Vector3& vertex) {
-    debugAssertM(inPrimitive, "Can only be called inside beginPrimitive()...endPrimitive()");
-    glVertex3fv(vertex);
-    ++currentPrimitiveVertexCount;
-}
-
-
-void RenderDevice::sendVertex(const Vector4& vertex) {
-    debugAssertM(inPrimitive, "Can only be called inside beginPrimitive()...endPrimitive()");
-    glVertex4fv(vertex);
-    ++currentPrimitiveVertexCount;
-}
-
-
-void RenderDevice::beginPrimitive(Primitive p) {
-    debugAssertM(! inPrimitive, "Already inside a primitive");
-    debugAssertM( currentFramebufferComplete(), "Bound Framebuffer Incomplete!");
-
-    beforePrimitive();
-	runObjectShader();
-    
-    inPrimitive = true;
-    currentPrimitiveVertexCount = 0;
-    currentPrimitive = p;
-
-    debugAssertGLOk();
-
-    glBegin(primitiveToGLenum(p));
-}
-
-
-void RenderDevice::endPrimitive() {
-    debugAssertM(inPrimitive, "Call to endPrimitive() without matching beginPrimitive()");
-
-    mDebugNumMinorStateChanges += currentPrimitiveVertexCount;
-    mDebugNumMinorOpenGLStateChanges += currentPrimitiveVertexCount;
-	countTriangles(currentPrimitive, currentPrimitiveVertexCount);
-
-    glEnd();
-    inPrimitive = false;
-
-    afterPrimitive();
-}
-
-
-void RenderDevice::countTriangles(RenderDevice::Primitive primitive, int numVertices) {
-	switch (primitive) {
-    case LINES:
-        triangleCount += (numVertices / 2);
-        break;
-
-    case LINE_STRIP:
-        triangleCount += (numVertices - 1);
-        break;
-
-    case TRIANGLES:
-        triangleCount += (numVertices / 3);
-        break;
-
-    case TRIANGLE_STRIP:
-    case TRIANGLE_FAN:
-        triangleCount += (numVertices - 2);
-        break;
-
-    case QUADS:
-        triangleCount += ((numVertices / 4) * 2);
-        break;
-
-    case QUAD_STRIP:
-        triangleCount += (((numVertices / 2) - 1) * 2);
-        break;
-
-    case POINTS:
-        triangleCount += numVertices;
-        break;
-    }
-}
-
-
-void RenderDevice::setTexture(
-    uint                unit,
-    TextureRef          texture) {
-
-    // NVIDIA cards have more textures than texture units.
-    // "fixedFunction" textures have an associated unit 
-    // and must be glEnabled.  Programmable units *cannot*
-    // be enabled.
-    bool fixedFunction = ((int)unit < _numTextureUnits);
-
-    debugAssertM(! inPrimitive, 
-                 "Can't change textures while rendering a primitive.");
-
-    debugAssertM((int)unit < _numTextures,
-        format("Attempted to access texture %d"
-               " on a device with %d textures.",
-               unit, _numTextures));
-
-    TextureRef oldTexture = state.textureUnit[unit].texture;
-    majStateChange();
-
-    if (oldTexture == texture) {
-        return;
-    }
-
-    majGLStateChange();
-
-    state.textureUnit[unit].texture = texture;
-    state.touchedTextureUnit(unit);
-
-    if (GLCaps::supports_GL_ARB_multitexture()) {
-        glActiveTextureARB(GL_TEXTURE0_ARB + unit);
-    }
-
-    // Turn off whatever was on previously if this is a fixed function unit
-    if (fixedFunction) {
-        glDisableAllTextures();
-    }
-
-    if (texture.notNull()) {
-        GLint id = texture->getOpenGLID();
-        GLint u = texture->getOpenGLTextureTarget();
-
-        if ((GLint)currentlyBoundTexture[unit] != id) {
-            glBindTexture(u, id);
-            currentlyBoundTexture[unit] = id;
-        }
-
-        if (fixedFunction) {
-            glEnable(u);
-        }
-    } else {
-        // Disabled texture unit
-        currentlyBoundTexture[unit] = 0;
-    }
-
-    // Force a reload of the texture matrix if invertY != old invertY.
-    // This will take care of flipping the texture when necessary.
-    if (oldTexture.isNull() ||
-        texture.isNull() ||
-        (oldTexture->invertY != texture->invertY)) {
-
-        if (fixedFunction) {
-            // We can only set the matrix for some units
-            forceSetTextureMatrix(unit, state.textureUnit[unit].textureMatrix);
-        }
-    }
-
-}
-
-
-double RenderDevice::getDepthBufferValue(
-    int                     x,
-    int                     y) const {
-
-    GLfloat depth;
-
-    glReadPixels(x,
-		         (getHeight() - 1) - y,
-                 1, 1,
-                 GL_DEPTH_COMPONENT,
-		         GL_FLOAT,
-		         &depth);
-
-    return depth;
-}
-
-
-/**
- Returns the current date as a string in the form YYYY-MM-DD
- */
-static std::string currentDateString() {
-    time_t t1;
-    time(&t1);
-    tm* t = localtime(&t1);
-    return format("%d-%02d-%02d", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday); 
-}
-
-
-void RenderDevice::screenshotPic(GImage& dest, bool useBackBuffer, bool getAlpha) const {
-    if (useBackBuffer) {
-        glReadBuffer(GL_BACK);
-    } else {
-        glReadBuffer(GL_FRONT);
-    }
-    
-    int ch = getAlpha ? 4 : 3;
-
-    if ((dest.channels != ch) ||
-        (dest.width != getWidth()) ||
-        (dest.height != getHeight())) {
-        // Only resize if the current size is not correct
-        dest.resize(getWidth(), getHeight(), ch);
-    }
-
-    glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
-
-    glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    glReadPixels(0, 0, getWidth(), getHeight(), 
-        getAlpha ? GL_RGBA : GL_RGB,
-        GL_UNSIGNED_BYTE, dest.byte());    
-
-    glPopClientAttrib();
-
-    // Flip right side up
-    if (getAlpha) {
-        flipRGBAVertical(dest.byte(), dest.byte(), getWidth(), getHeight());
-    } else {
-        flipRGBVertical(dest.byte(), dest.byte(), getWidth(), getHeight());
-    }
-
-    // Restore the read buffer to the back
-    glReadBuffer(GL_BACK);
-
-    int i;
-    double s = getLightSaturation();
-
-    if (s != 1.0) {
-        // Adjust the coloring for gamma correction
-        // Lookup table for mapping v -> v * lightSaturation;
-        uint8 L[255];
-        uint8 *data = dest.byte();
-        
-        for (i = 255; i >= 0; --i) {
-            L[i] = iMin(255, iRound((double)i * s));
-        }
-
-        // skip the alpha channel if there is one
-        int sz = dest.width * dest.height * dest.channels;
-        for (i = 0; i < sz; i += ch) {
-            for (int c = 0; c < 3; ++c) {
-                data[i + c] = L[data[i + c]];
-            }
-        }
-    }
-
-}
-
-
-std::string RenderDevice::screenshot(const std::string& filepath) const {
-    GImage screen;
-    int i;
-
-    screenshotPic(screen);
-
-    // Save the file
-    std::string basename = currentDateString();
-    std::string filename;
-    i = 0;
-    do {
-        filename = filepath + basename + "_" + format("%03d", i) + ".jpg";
-        ++i;
-    } while (fileExists(filename));   
-
-    screen.save(filename);
-
-    return filename;
-}
-
-
-bool RenderDevice::supportsTextureFormat(const TextureFormat* fmt) {
-    debugAssertM(! inPrimitive, 
-        "Cannot call supportsTextureFormat between beginPrimitive and endPrimitive.");
-    return GLCaps::supports(fmt);
-}
-
-
-double RenderDevice::getFrameRate() const {
-    return emwaFrameRate;
-}
-
-
-double RenderDevice::getTriangleRate() const {
-    return emwaTriangleRate;
-}
-
-
-double RenderDevice::getTrianglesPerFrame() const {
-    return emwaTriangleCount;
-}
-
-
-void RenderDevice::beginIndexedPrimitives() {
-	debugAssert(! inPrimitive);
-	debugAssert(! inIndexedPrimitive);
-
-    // TODO: can we avoid this push?
-	glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT); 
-
-	inIndexedPrimitive = true;
-}
-
-
-void RenderDevice::endIndexedPrimitives() {
-	debugAssert(! inPrimitive);
-	debugAssert(inIndexedPrimitive);
-
-
-  if (GLCaps::supports_GL_ARB_vertex_buffer_object()) {
-    glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+BOOL CScintillaView::OnPreparePrinting(CPrintInfo* pInfo)
+{
+  //Determine if we should allow selection printing
+  CScintillaCtrl& rCtrl = GetCtrl();
+
+  long nStartChar = rCtrl.GetSelectionStart();
+  long nEndChar = rCtrl.GetSelectionEnd();
+  if (nStartChar != nEndChar)
+  {
+    // Enable the Selection button
+    pInfo->m_pPD->m_pd.Flags &= ~PD_NOSELECTION;
+
+    // Check the Selection button
+    pInfo->m_pPD->m_pd.Flags |= PD_SELECTION;
   }
 
-
-	glPopClientAttrib();
-	inIndexedPrimitive = false;
-    currentVARArea = NULL;
+  //Let the base class do its thing
+  return DoPreparePrinting(pInfo);
 }
 
+void CScintillaView::OnBeginPrinting(CDC* /*pDC*/, CPrintInfo* pInfo)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
 
-void RenderDevice::setVARAreaFromVAR(const class VAR& v) {
-	debugAssert(inIndexedPrimitive);
-	debugAssert(! inPrimitive);
-    alwaysAssertM(currentVARArea.isNull() || (v.area == currentVARArea), 
-        "All vertex arrays used within a single begin/endIndexedPrimitive"
-        " block must share the same VARArea.");
+  CScintillaCtrl& rCtrl = GetCtrl();
 
-    majStateChange();
+	//initialize page start vector
+	ASSERT(m_aPageStart.GetSize() == 0);
+  if (pInfo->m_pPD->PrintSelection())
+    m_aPageStart.Add(rCtrl.GetSelectionStart());
+  else
+	  m_aPageStart.Add(0);
+	ASSERT(m_aPageStart.GetSize() > 0);
 
-    if (v.area != currentVARArea) {
-        currentVARArea = const_cast<VAR&>(v).area;
-
-        if (VARArea::mode == VARArea::VBO_MEMORY) {
-            // Bind the buffer (for MAIN_MEMORY, we need do nothing)
-            glBindBufferARB(GL_ARRAY_BUFFER_ARB, currentVARArea->glbuffer);
-            majGLStateChange();
-        }
-    }
-
+	ASSERT_VALID(this);
 }
 
+BOOL CScintillaView::PaginateTo(CDC* pDC, CPrintInfo* pInfo)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	ASSERT_VALID(pDC);
 
-void RenderDevice::setVertexArray(const class VAR& v) {
-    setVARAreaFromVAR(v);
-	v.vertexPointer();
+  CRect rectSave = pInfo->m_rectDraw;
+	UINT nPageSave = pInfo->m_nCurPage;
+	ASSERT(nPageSave > 1);
+	ASSERT(nPageSave >= static_cast<UINT>(m_aPageStart.GetSize()));
+	VERIFY(pDC->SaveDC() != 0);
+	pDC->IntersectClipRect(0, 0, 0, 0);
+	pInfo->m_nCurPage = m_aPageStart.GetSize();
+	while (pInfo->m_nCurPage < nPageSave)
+	{
+		ASSERT(pInfo->m_nCurPage == static_cast<UINT>(m_aPageStart.GetSize()));
+		OnPrepareDC(pDC, pInfo);
+		ASSERT(pInfo->m_bContinuePrinting);
+		pInfo->m_rectDraw.SetRect(0, 0,	pDC->GetDeviceCaps(HORZRES), pDC->GetDeviceCaps(VERTRES));
+		OnPrint(pDC, pInfo);
+		if (pInfo->m_nCurPage == static_cast<UINT>(m_aPageStart.GetSize()))
+			break;
+		++pInfo->m_nCurPage;
+	}
+	BOOL bResult = pInfo->m_nCurPage == nPageSave;
+	pDC->RestoreDC(-1);
+	pInfo->m_nCurPage = nPageSave;
+  pInfo->m_rectDraw = rectSave;
+	ASSERT_VALID(this);
+	return bResult;
 }
 
+void CScintillaView::OnPrepareDC(CDC* pDC, CPrintInfo* pInfo)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	ASSERT_VALID(pDC);
+	AFXASSUME(pInfo != NULL);
 
-void RenderDevice::setVertexAttribArray(unsigned int attribNum, const class VAR& v, bool normalize) {
-    setVARAreaFromVAR(v);
-	v.vertexAttribPointer(attribNum, normalize);
+  if (pInfo->m_nCurPage <= pInfo->GetMaxPage())
+  {
+	  if ((pInfo->m_nCurPage > static_cast<UINT>(m_aPageStart.GetSize())) &&	!PaginateTo(pDC, pInfo))
+	  {
+		  //can't paginate to that page, thus cannot print it.
+		  pInfo->m_bContinuePrinting = FALSE;
+	  }
+	  ASSERT_VALID(this);
+  }
+  else
+  {
+		//Reached the max page to print
+		pInfo->m_bContinuePrinting = FALSE;
+  }
 }
 
+void CScintillaView::PrintHeader(CDC* pDC, CPrintInfo* /*pInfo*/, RangeToFormat& frPrint)
+{
+  //By Default we print "Document Name - Printed on Date" as well as a line separator below the text
+  //Derived classes are of course free to implement their own version of PrintHeader
+  CString sHeader;
+  AfxFormatString2(sHeader, IDS_SCINTILLA_DEFAULT_PRINT_HEADER, GetDocument()->GetTitle(), COleDateTime::GetCurrentTime().Format());
 
-void RenderDevice::setNormalArray(const class VAR& v) {
-    setVARAreaFromVAR(v);
-	v.normalPointer();
+  //Setup the DC
+  pDC->SetTextColor(RGB(0, 0, 0));
+  UINT nAlign = pDC->SetTextAlign(TA_LEFT | TA_TOP);
+
+  //Draw the header
+  CSize sizeText = pDC->GetTextExtent(sHeader);
+  int nHeaderDepth = 2*sizeText.cy;
+	CRect rLine(frPrint.rcPage.left, frPrint.rcPage.top, frPrint.rcPage.right, frPrint.rcPage.top + nHeaderDepth);
+  pDC->ExtTextOut(frPrint.rcPage.left, frPrint.rcPage.top + nHeaderDepth/3, 0, &rLine, sHeader, NULL);
+
+  //Draw a line underneath the text
+  pDC->MoveTo(frPrint.rcPage.left, frPrint.rcPage.top + nHeaderDepth - 5);
+  pDC->LineTo(frPrint.rcPage.right, frPrint.rcPage.top + nHeaderDepth - 5);
+
+  //Restore the DC
+  pDC->SetTextAlign(nAlign);
+
+  //Adjust the place where scintilla will draw the text
+  if (frPrint.rc.top < (frPrint.rcPage.top + nHeaderDepth))
+    frPrint.rc.top = frPrint.rcPage.top + nHeaderDepth;
 }
 
+void CScintillaView::PrintFooter(CDC* pDC, CPrintInfo* pInfo, RangeToFormat& frPrint)
+{
+  //By Default we print "Page X" as well as a line separator above the text
+  //Derived classes are of course free to implement their own version of PrintFooter
+  CString sPage;
+  sPage.Format(_T("%d"), pInfo->m_nCurPage);
+  CString sFooter;
+  AfxFormatString1(sFooter, IDS_SCINTILLA_DEFAULT_PRINT_FOOTER, sPage);
 
-void RenderDevice::setColorArray(const class VAR& v) {
-    setVARAreaFromVAR(v);
-	v.colorPointer();
+  //Setup the DC
+  pDC->SetTextColor(RGB(0, 0, 0));
+  UINT nAlign = pDC->SetTextAlign(TA_LEFT | TA_TOP);
+  
+  //Draw the header
+  CSize sizeText = pDC->GetTextExtent(sFooter);
+  int nFooterDepth = 2*sizeText.cy;
+  CRect rLine(frPrint.rcPage.left, frPrint.rcPage.bottom - nFooterDepth, frPrint.rcPage.right, frPrint.rcPage.bottom);
+  pDC->ExtTextOut(frPrint.rcPage.left, frPrint.rcPage.bottom - nFooterDepth*2/3, 0, &rLine, sFooter, NULL);
+
+  //Draw a line above the text
+  pDC->MoveTo(frPrint.rcPage.left, frPrint.rcPage.bottom - nFooterDepth + 5);
+  pDC->LineTo(frPrint.rcPage.right, frPrint.rcPage.bottom - nFooterDepth + 5);
+
+  //Restore the DC
+  pDC->SetTextAlign(nAlign);
+
+  //Adjust the place where scintilla will draw the text
+  if (frPrint.rc.bottom > (frPrint.rcPage.bottom - nFooterDepth))
+    frPrint.rc.bottom = frPrint.rcPage.bottom - nFooterDepth;
 }
 
-
-void RenderDevice::setTexCoordArray(unsigned int unit, const class VAR& v) {
-    setVARAreaFromVAR(v);
-	v.texCoordPointer(unit);
+BOOL CScintillaView::UserWantsMetric()
+{
+  TCHAR localeInfo[3];
+  localeInfo[0] = _T('\0');
+  GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_IMEASURE, localeInfo, 3);
+  return (localeInfo[0] == _T('0')) ;
 }
 
+long CScintillaView::PrintPage(CDC* pDC, CPrintInfo* pInfo, long nIndexStart, long nIndexStop)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	ASSERT_VALID(pDC);
 
-MilestoneRef RenderDevice::createMilestone(const std::string& name) {
-    return new Milestone(name);
+	RangeToFormat rfPrint;
+	rfPrint.hdc = pDC->m_hDC;
+	rfPrint.hdcTarget = pDC->m_hAttribDC;
+
+	//Take into account the specified margins
+  CRect rMargins;
+	if ((m_rMargin.left) != 0 || (m_rMargin.right) != 0 || (m_rMargin.top) != 0 || (m_rMargin.bottom != 0)) 
+  {
+    //Get printer resolution
+    CPoint pDpi;
+    pDpi.x = pDC->GetDeviceCaps(LOGPIXELSX);  //DPI in X direction
+    pDpi.y = pDC->GetDeviceCaps(LOGPIXELSY);  //DPI in Y direction
+
+		//Convert the hundredths of millimeters or thousandths of inches margin values
+		//from the Page Setup dialog to device units.
+		int iScale = m_bUsingMetric ? 2540 : 1000;    //scale factor for margin scaling;
+		rMargins.left   = MulDiv(m_rMargin.left, pDpi.x, iScale);
+		rMargins.top    = MulDiv(m_rMargin.top, pDpi.y, iScale);
+		rMargins.right	= MulDiv(m_rMargin.right, pDpi.x, iScale);
+		rMargins.bottom	= MulDiv(m_rMargin.bottom, pDpi.y, iScale);
+	} 
+  else 
+		rMargins = m_rMargin;
+
+  //We take the page size from the pInfo member variable (decrement the right and
+  //bottom values by 1 to suit Scintilla)
+	rfPrint.rcPage.left = pInfo->m_rectDraw.left;
+	rfPrint.rcPage.top = pInfo->m_rectDraw.top;
+	rfPrint.rcPage.right = pInfo->m_rectDraw.right - 1;
+	rfPrint.rcPage.bottom = pInfo->m_rectDraw.bottom - 1;
+
+  //Fill in the area to print
+  rfPrint.rc.left = rfPrint.rcPage.left + rMargins.left;
+  rfPrint.rc.top = rfPrint.rcPage.top + rMargins.top;
+  rfPrint.rc.right = rfPrint.rcPage.right - rMargins.right;
+  rfPrint.rc.bottom = rfPrint.rcPage.bottom - rMargins.bottom;
+
+  //Fill in the text to print
+	rfPrint.chrg.cpMin = nIndexStart;
+	rfPrint.chrg.cpMax = nIndexStop;
+
+  //Print the header (if requested to)
+  if (m_bPrintHeader)
+    PrintHeader(pDC, pInfo, rfPrint);
+
+  //Print the footer (if requested to)
+  if (m_bPrintFooter)
+    PrintFooter(pDC, pInfo, rfPrint);
+
+  //Finally ask the control to print the text
+  return GetCtrl().FormatRange(TRUE, &rfPrint);
 }
 
+void CScintillaView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	ASSERT_VALID(pDC);
+	AFXASSUME(pInfo != NULL);
+	ASSERT(pInfo->m_bContinuePrinting);
 
-void RenderDevice::setMilestone(const MilestoneRef& m) {
-    minStateChange();
-    minGLStateChange();
-    m->set();
-}
+	UINT nPage = pInfo->m_nCurPage;
+	ASSERT(nPage <= (UINT) m_aPageStart.GetSize());
+	int nIndex = m_aPageStart[nPage-1];
 
+  //Determine where we should end the printing
+  int nEndPrint = 0;
+  if (pInfo->m_pPD->PrintSelection())
+    nEndPrint = GetCtrl().GetSelectionEnd();
+  else
+    nEndPrint = GetCtrl().GetTextLength();
 
-void RenderDevice::waitForMilestone(const MilestoneRef& m) {
-    minStateChange();
-    minGLStateChange();
-    m->wait();
-}
-
-
-void RenderDevice::setLight(int i, const GLight& light) {
-    
-    setLight(i, &light, false);
-}
-
-
-void RenderDevice::setLight(int i, void* x) {
-    debugAssert(x == NULL); (void)x;
-    setLight(i, NULL, false);
-}
-
-
-void RenderDevice::setLight(int i, const GLight* _light, bool force) {
-    debugAssert(i >= 0);
-    debugAssert(i < MAX_LIGHTS);
-    int gi = GL_LIGHT0 + i;
-
-    const GLight& light = *_light;
-
-
-    minStateChange();
-
-    if (_light == NULL) {
-
-        if (state.lights.lightEnabled[i] || force) {
-            // Don't bother copying this light over
-            state.lights.lightEnabled[i] = false;
-            state.lights.changed = true;
-            glDisable(gi);
-        }
-
-        minGLStateChange();
-    
-    } else {
-
-        for (int j = 0; j < 3; ++j) {
-            debugAssert(light.attenuation[j] >= 0);
-        }
-
-    
-        if (! state.lights.lightEnabled[i] || force) {
-            glEnable(gi);
-            state.lights.lightEnabled[i] = true;
-            state.lights.changed = true;
-        }
-
-    
-        if ((state.lights.light[i] != light) || force) {
-            state.lights.changed = true;
-            state.lights.light[i] = light;
-
-            minGLStateChange();
-
-            Color4 zero(0, 0, 0, 1);
-            Color4 brightness(light.color / lightSaturation, 1);
-
-            int mm = glGetInteger(GL_MATRIX_MODE);
-            glMatrixMode(GL_MODELVIEW);
-            glPushMatrix();
-                glLoadIdentity();
-                glLoadMatrix(state.matrices.cameraToWorldMatrixInverse);
-                glLightfv(gi, GL_POSITION,              light.position);
-                glLightfv(gi, GL_SPOT_DIRECTION,        light.spotDirection);
-                glLightf (gi, GL_SPOT_CUTOFF,           light.spotCutoff);
-                glLightfv(gi, GL_AMBIENT,               zero);
-                if (light.diffuse) {
-                    glLightfv(gi, GL_DIFFUSE,               brightness);
-                } else {
-                    glLightfv(gi, GL_DIFFUSE,               zero);
-                }
-                if (light.specular) {
-                    glLightfv(gi, GL_SPECULAR,              brightness);
-                } else {
-                    glLightfv(gi, GL_SPECULAR,              zero);
-                }
-                glLightf (gi, GL_CONSTANT_ATTENUATION,  light.attenuation[0]);
-                glLightf (gi, GL_LINEAR_ATTENUATION,    light.attenuation[1]);
-                glLightf (gi, GL_QUADRATIC_ATTENUATION, light.attenuation[2]);
-            glPopMatrix();
-            glMatrixMode(mm);
-        }    
-    }
-    
-}
-
-
-void RenderDevice::configureShadowMap(
-    uint                unit,
-    const Matrix4&      lightMVP,
-    const TextureRef&   shadowMap) {
-
-    minStateChange();
-    minGLStateChange();
-
-    // http://www.nvidia.com/dev_content/nvopenglspecs/GL_ARB_shadow.txt
-
-    debugAssertM(shadowMap->getFormat()->OpenGLBaseFormat == GL_DEPTH_COMPONENT,
-        "Can only configure shadow maps from depth textures");
-
-    debugAssertM(shadowMap->depthReadMode() != Texture::DEPTH_NORMAL,
-        "Shadow maps must be configured for either Texture::DEPTH_LEQUAL"
-        " or Texture::DEPTH_GEQUAL comparisions.");
-
-    debugAssertM(GLCaps::supports_GL_ARB_shadow(),
-        "The device does not support shadow maps");
-
-
-    // Texture coordinate generation will use the current MV matrix
-    // to determine OpenGL "eye" space.  We want OpenGL "eye" space to
-    // be our world space, so set the object to world matrix to be the
-    // identity.
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadMatrix(state.matrices.cameraToWorldMatrixInverse);
-
-    setTexture(unit, shadowMap);
-    
-    if (GLCaps::supports_GL_ARB_multitexture()) {
-        glActiveTextureARB(GL_TEXTURE0_ARB + unit);
-    }
-
-    static const Matrix4 bias(
-        0.5f, 0.0f, 0.0f, 0.5f,
-        0.0f, 0.5f, 0.0f, 0.5f,
-        0.0f, 0.0f, 0.5f, 0.5f - .000001f,
-        0.0f, 0.0f, 0.0f, 1.0f);
-    
-    Matrix4 textureMatrix = glGetMatrix(GL_TEXTURE_MATRIX);
-
-	Matrix4 textureProjectionMatrix2D =
-        textureMatrix * bias * lightMVP;
-
-	// Set up tex coord generation - all 4 coordinates required
-	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-	glTexGenfv(GL_S, GL_EYE_PLANE, textureProjectionMatrix2D[0]);
-	glEnable(GL_TEXTURE_GEN_S);
-	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-	glTexGenfv(GL_T, GL_EYE_PLANE, textureProjectionMatrix2D[1]);
-	glEnable(GL_TEXTURE_GEN_T);
-	glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-	glTexGenfv(GL_R, GL_EYE_PLANE, textureProjectionMatrix2D[2]);
-	glEnable(GL_TEXTURE_GEN_R);
-	glTexGeni(GL_Q, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-	glTexGenfv(GL_Q, GL_EYE_PLANE, textureProjectionMatrix2D[3]);
-	glEnable(GL_TEXTURE_GEN_Q);
-
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-}
-
-
-void RenderDevice::configureReflectionMap(
-    uint                textureUnit,
-    TextureRef          reflectionTexture) {
-
-    debugAssert(reflectionTexture->getDimension() == Texture::DIM_CUBE_MAP);
-
-    // Texture coordinates will be generated in object space.
-    // Set the texture matrix to transform them into camera space.
-    CoordinateFrame cframe = getCameraToWorldMatrix();
-
-    // The environment map assumes we are always in the center,
-    // so zero the translation.
-    cframe.translation = Vector3::zero();
-
-    // The environment map is in world space.  The reflection vector
-    // will automatically be multiplied by the object->camera space 
-    // transformation by hardware (just like any other vector) so we 
-    // take it back from camera space to world space for the correct
-    // vector.
-    setTexture(textureUnit, reflectionTexture);
-
-    setTextureMatrix(textureUnit, cframe);
-
-    minStateChange();
-    minGLStateChange();
-    glActiveTextureARB(GL_TEXTURE0_ARB + textureUnit);
-    glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB);
-    glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB);
-    glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB);
-    glEnable(GL_TEXTURE_GEN_S);
-    glEnable(GL_TEXTURE_GEN_T);
-    glEnable(GL_TEXTURE_GEN_R);
-}
-
-
-void RenderDevice::sendSequentialIndices(RenderDevice::Primitive primitive, int numVertices) {
-
-    beforePrimitive();
-	runObjectShader();
-
-    glDrawArrays(primitiveToGLenum(primitive), 0, numVertices);
-    // Mark all active arrays as busy.
-    setVARAreaMilestone();
-
-	countTriangles(primitive, numVertices);
-    afterPrimitive();
-
-    minStateChange();
-    minGLStateChange();
-}
-
-
-void RenderDevice::internalSendIndices(
-    RenderDevice::Primitive primitive,
-    size_t                  indexSize, 
-    int                     numIndices, 
-    const void*             index) {
-
-    beforePrimitive();
-	runObjectShader();
-
-	GLenum i;
-
-	switch (indexSize) {
-	case sizeof(uint32):
-		i = GL_UNSIGNED_INT;
-		break;
-
-	case sizeof(uint16):
-		i = GL_UNSIGNED_SHORT;
-		break;
-
-	case sizeof(uint8):
-		i = GL_UNSIGNED_BYTE;
-		break;
-
-	default:
-		debugAssertM(false, "Indices must be either 8, 16, or 32-bytes each.");
-        i = 0;
+	//print as much as possible in the current page.
+	nIndex = PrintPage(pDC, pInfo, nIndex, nEndPrint);
+	if (nIndex >= nEndPrint)
+	{
+		TRACE0("End of Document\n");
+		pInfo->SetMaxPage(nPage);
 	}
 
-    GLenum p = primitiveToGLenum(primitive);
-
-	glDrawElements(p, numIndices, i, index);
-
-    afterPrimitive();
+	//update pagination information for page just printed
+	if (nPage == (UINT) m_aPageStart.GetSize())
+	{
+		if (nIndex < nEndPrint)
+			m_aPageStart.Add(nIndex);
+	}
+	else
+	{
+		ASSERT(nPage+1 <= static_cast<UINT>(m_aPageStart.GetSize()));
+		ASSERT(nIndex == m_aPageStart[nPage+1-1]);
+	}
 }
 
-
-bool RenderDevice::supportsTwoSidedStencil() const {
-    return GLCaps::supports_GL_EXT_stencil_two_side();
+void CScintillaView::OnEndPrinting(CDC*, CPrintInfo*)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	m_aPageStart.RemoveAll();
 }
 
-
-bool RenderDevice::supportsTextureRectangle() const {
-    return GLCaps::supports_GL_EXT_texture_rectangle();
+void CScintillaView::OnUpdateNeedPaste(CCmdUI* pCmdUI)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	pCmdUI->Enable(GetCtrl().CanPaste());
 }
 
-
-bool RenderDevice::supportsVertexProgramNV2() const {
-    return GLCaps::supports_GL_NV_vertex_program2();
+void CScintillaView::OnUpdateNeedText(CCmdUI* pCmdUI)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	pCmdUI->Enable(GetCtrl().GetTextLength() != 0);
 }
 
+void CScintillaView::OnUpdateNeedTextAndFollowingText(CCmdUI* pCmdUI)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
 
-bool RenderDevice::supportsVertexBufferObject() const { 
-    return GLCaps::supports_GL_ARB_vertex_buffer_object();
+  CScintillaCtrl& rCtrl = GetCtrl();
+  int nLength = rCtrl.GetTextLength();
+  long nStartChar = rCtrl.GetSelectionStart();
+
+	pCmdUI->Enable(nLength && (nStartChar != nLength));
 }
 
-
-uint32 RenderDevice::debugNumMajorOpenGLStateChanges() const {
-    return mDebugNumMajorOpenGLStateChanges;
+void CScintillaView::OnUpdateNeedFind(CCmdUI* pCmdUI)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	pCmdUI->Enable(GetCtrl().GetLength() != 0 && !_scintillaEditState.strFind.IsEmpty());
 }
 
-
-uint32 RenderDevice::debugNumPushStateCalls() const {
-    return mDebugPushStateCalls;
+void CScintillaView::OnUpdateEditUndo(CCmdUI* pCmdUI)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	pCmdUI->Enable(GetCtrl().CanUndo());
 }
 
-
-uint32 RenderDevice::debugNumMinorOpenGLStateChanges() const {
-    return mDebugNumMinorOpenGLStateChanges;
+void CScintillaView::OnUpdateEditRedo(CCmdUI* pCmdUI)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	pCmdUI->Enable(GetCtrl().CanRedo());
 }
 
-
-uint32 RenderDevice::debugNumMajorStateChanges() const {
-    return mDebugNumMajorStateChanges;
+void CScintillaView::OnUpdateNeedSel(CCmdUI* pCmdUI)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+  CScintillaCtrl& rCtrl = GetCtrl();
+  long nStartChar = rCtrl.GetSelectionStart();
+  long nEndChar = rCtrl.GetSelectionEnd();
+	pCmdUI->Enable(nStartChar != nEndChar);
 }
 
-
-uint32 RenderDevice::debugNumMinorStateChanges() const {
-    return mDebugNumMinorStateChanges;
+void CScintillaView::OnEditCut()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	GetCtrl().Cut();
 }
 
-std::string RenderDevice::dummyString;
-bool RenderDevice::checkFramebuffer(std::string& whyNot) const {
-    GLenum status;
-    status = (GLenum)glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+void CScintillaView::OnEditCopy()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	GetCtrl().Copy();
+}
 
-    switch(status) {
-    case GL_FRAMEBUFFER_COMPLETE_EXT:
-        return true;
+void CScintillaView::OnEditPaste()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	GetCtrl().Paste();
+}
 
-    case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENTS_EXT:
-        whyNot = "Framebuffer Incomplete: Incomplete Attachment.";
-		break;
+void CScintillaView::OnEditClear()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	GetCtrl().Clear();
+}
 
-    case GL_FRAMEBUFFER_UNSUPPORTED_EXT:
-        whyNot = "Unsupported framebuffer format.";
-		break;
+void CScintillaView::OnEditUndo()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	GetCtrl().Undo();
+}
 
-    case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
-        whyNot = "Framebuffer Incomplete: Missing attachment.";
-		break;
+void CScintillaView::OnEditRedo()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	GetCtrl().Redo();
+}
 
-    case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
-        whyNot = "Framebuffer Incomplete: Attached images must have same dimensions.";
-		break;
+void CScintillaView::OnEditSelectAll()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	GetCtrl().SelectAll();
+}
 
-    case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
-        whyNot = "Framebuffer Incomplete: Attached images must have same format.";
-		break;
+void CScintillaView::OnEditFind()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	OnEditFindReplace(TRUE);
+}
 
-    case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:
-        whyNot = "Framebuffer Incomplete: Missing draw buffer.";
-		break;
+void CScintillaView::OnEditReplace()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	OnEditFindReplace(FALSE);
+}
 
-    case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:
-        whyNot = "Framebuffer Incomplete: Missing read buffer.";
-		break;
+void CScintillaView::OnEditRepeat()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	if (!FindText(_scintillaEditState.strFind, _scintillaEditState.bNext, _scintillaEditState.bCase, _scintillaEditState.bWord, _scintillaEditState.bRegularExpression))
+		TextNotFound(_scintillaEditState.strFind, _scintillaEditState.bNext, _scintillaEditState.bCase, _scintillaEditState.bWord, _scintillaEditState.bRegularExpression, FALSE);
+}
 
-    default:
-        whyNot = "Framebuffer Incomplete: Unknown error.";
+void CScintillaView::AdjustFindDialogPosition()
+{
+  //Validate our parameters
+	AFXASSUME(_scintillaEditState.pFindReplaceDlg);
+	
+  CScintillaCtrl& rCtrl = GetCtrl();
+  int nStart = rCtrl.GetSelectionStart();
+	CPoint point;
+  point.x = rCtrl.PointXFromPosition(nStart);
+  point.y = rCtrl.PointYFromPosition(nStart);
+	ClientToScreen(&point);
+	CRect rectDlg;
+	_scintillaEditState.pFindReplaceDlg->GetWindowRect(&rectDlg);
+	if (rectDlg.PtInRect(point))
+	{
+		if (point.y > rectDlg.Height())
+			rectDlg.OffsetRect(0, point.y - rectDlg.bottom - 20);
+		else
+		{
+			int nVertExt = GetSystemMetrics(SM_CYSCREEN);
+			if (point.y + rectDlg.Height() < nVertExt)
+				rectDlg.OffsetRect(0, 40 + point.y - rectDlg.top);
+		}
+		_scintillaEditState.pFindReplaceDlg->MoveWindow(&rectDlg);
+	}
+}
+
+CScintillaFindReplaceDlg* CScintillaView::CreateFindReplaceDialog()
+{
+  return new CScintillaFindReplaceDlg;
+}
+
+void CScintillaView::OnEditFindReplace(BOOL bFindOnly)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+
+	m_bFirstSearch = TRUE;
+	if (_scintillaEditState.pFindReplaceDlg != NULL)
+	{
+		if (_scintillaEditState.bFindOnly == bFindOnly)
+		{
+			_scintillaEditState.pFindReplaceDlg->SetActiveWindow();
+			_scintillaEditState.pFindReplaceDlg->ShowWindow(SW_SHOW);
+			return;
+		}
+		else
+		{
+			ASSERT(_scintillaEditState.bFindOnly != bFindOnly);
+			_scintillaEditState.pFindReplaceDlg->SendMessage(WM_CLOSE);
+			ASSERT(_scintillaEditState.pFindReplaceDlg == NULL);
+			ASSERT_VALID(this);
+		}
+	}
+  CScintillaCtrl& rCtrl = GetCtrl();
+	CString strFind(rCtrl.GetSelText());
+	//if selection is empty or spans multiple lines use old find text
+	if (strFind.IsEmpty() || (strFind.FindOneOf(_T("\n\r")) != -1))
+		strFind = _scintillaEditState.strFind;
+
+	CString strReplace(_scintillaEditState.strReplace);
+	_scintillaEditState.pFindReplaceDlg = CreateFindReplaceDialog();
+	AFXASSUME(_scintillaEditState.pFindReplaceDlg != NULL);
+	DWORD dwFlags = NULL;
+	if (_scintillaEditState.bNext)
+		dwFlags |= FR_DOWN;
+	if (_scintillaEditState.bCase)
+		dwFlags |= FR_MATCHCASE;
+	if (_scintillaEditState.bWord)
+		dwFlags |= FR_WHOLEWORD;
+  if (_scintillaEditState.bRegularExpression)
+    _scintillaEditState.pFindReplaceDlg->SetRegularExpression(TRUE);
+
+	if (!_scintillaEditState.pFindReplaceDlg->Create(bFindOnly, strFind, strReplace, dwFlags, this))
+	{
+		_scintillaEditState.pFindReplaceDlg = NULL;
+		ASSERT_VALID(this);
+		return;
+	}
+	ASSERT(_scintillaEditState.pFindReplaceDlg != NULL);
+	_scintillaEditState.bFindOnly = bFindOnly;
+	_scintillaEditState.pFindReplaceDlg->SetActiveWindow();
+	_scintillaEditState.pFindReplaceDlg->ShowWindow(SW_SHOW);
+	ASSERT_VALID(this);
+}
+
+void CScintillaView::OnFindNext(LPCTSTR lpszFind, BOOL bNext, BOOL bCase, BOOL bWord, BOOL bRegularExpression)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	_scintillaEditState.strFind = lpszFind;
+	_scintillaEditState.bCase = bCase;
+	_scintillaEditState.bWord = bWord;
+	_scintillaEditState.bNext = bNext;
+  _scintillaEditState.bRegularExpression = bRegularExpression;
+
+	if (!FindText(_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression))
+		TextNotFound(_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression, FALSE);
+	else
+		AdjustFindDialogPosition();
+	ASSERT_VALID(this);
+}
+
+void CScintillaView::OnReplaceSel(LPCTSTR lpszFind, BOOL bNext, BOOL bCase,	BOOL bWord, BOOL bRegularExpression, LPCTSTR lpszReplace)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	_scintillaEditState.strFind = lpszFind;
+	_scintillaEditState.strReplace = lpszReplace;
+	_scintillaEditState.bCase = bCase;
+	_scintillaEditState.bWord = bWord;
+	_scintillaEditState.bNext = bNext;
+  _scintillaEditState.bRegularExpression = bRegularExpression;
+
+  CScintillaCtrl& rCtrl = GetCtrl();
+
+	if (!SameAsSelected(_scintillaEditState.strFind, bCase, bWord, bRegularExpression))
+	{
+		if (!FindText(_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression))
+			TextNotFound(_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression, TRUE);
+		else
+			AdjustFindDialogPosition();
+		return;
+	}
+
+  if (bRegularExpression)
+  {
+    rCtrl.TargetFromSelection();
+    rCtrl.ReplaceTargetRE(_scintillaEditState.strReplace.GetLength(), _scintillaEditState.strReplace);    
+  }
+  else
+  	GetCtrl().ReplaceSel(_scintillaEditState.strReplace);
+	if (!FindText(_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression))
+		TextNotFound(_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression, TRUE);
+	else
+		AdjustFindDialogPosition();
+	ASSERT_VALID(this);
+}
+
+void CScintillaView::OnReplaceAll(LPCTSTR lpszFind, LPCTSTR lpszReplace, BOOL bCase, BOOL bWord, BOOL bRegularExpression)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	_scintillaEditState.strFind = lpszFind;
+	_scintillaEditState.strReplace = lpszReplace;
+	_scintillaEditState.bCase = bCase;
+	_scintillaEditState.bWord = bWord;
+	_scintillaEditState.bNext = TRUE;
+  _scintillaEditState.bRegularExpression = bRegularExpression;
+
+	CWaitCursor wait;
+
+  //Set the selection to the begining of the document to ensure all text is replaced in the document
+  long start_pos, end_pos;
+  GetReplaceAllTarget(start_pos,end_pos);
+
+  CScintillaCtrl& c = GetCtrl();
+  bool has_selection = c.GetSelectionStart() != c.GetSelectionEnd();
+
+  int flags = 0;
+
+  if (bCase)
+	  flags |= SCFIND_MATCHCASE;
+
+  if (bRegularExpression)
+	  flags |= SCFIND_REGEXP;
+
+  if (bWord)
+	  flags |= SCFIND_WHOLEWORD;
+
+  c.SetSearchFlags(flags);
+  c.BeginUndoAction();
+
+  c.SetTargetStart(start_pos);
+  c.SetTargetEnd(end_pos);
+
+  long find_pos;
+  bool bFoundSomething = false;
+
+  while ((find_pos = c.SearchInTarget(_scintillaEditState.strFind.GetLength(),_scintillaEditState.strFind)) != -1)
+  {
+	  c.ReplaceTarget(_scintillaEditState.strReplace.GetLength(),_scintillaEditState.strReplace);
+	  c.SetTargetStart(c.GetTargetEnd() + 1);
+	  c.SetTargetEnd(end_pos); // Still end position
+
+	  if (!bFoundSomething)
+		  bFoundSomething = true;
+  }
+
+  c.EndUndoAction();
+
+  if (has_selection) // Was the text previously selected?
+	  c.SetSel(start_pos,c.GetTargetEnd());
+
+  //Inform the user if we could not find anything
+  if (!bFoundSomething)
+    TextNotFound(_scintillaEditState.strFind, _scintillaEditState.bNext, bCase, bWord, bRegularExpression, TRUE);
+
+	ASSERT_VALID(this);
+}
+
+LRESULT CScintillaView::OnFindReplaceCmd(WPARAM /*wParam*/, LPARAM lParam)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+
+	CScintillaFindReplaceDlg* pDialog = static_cast<CScintillaFindReplaceDlg*>(CFindReplaceDialog::GetNotifier(lParam));
+	AFXASSUME(pDialog != NULL);
+	ASSERT(pDialog == _scintillaEditState.pFindReplaceDlg);
+
+	if (pDialog->IsTerminating())
+		_scintillaEditState.pFindReplaceDlg = NULL;
+	else if (pDialog->FindNext())
+		OnFindNext(pDialog->GetFindString(), pDialog->SearchDown(), pDialog->MatchCase(), pDialog->MatchWholeWord(), pDialog->GetRegularExpression());
+	else if (pDialog->ReplaceCurrent())
+	{
+		ASSERT(!_scintillaEditState.bFindOnly);
+		OnReplaceSel(pDialog->GetFindString(), pDialog->SearchDown(), pDialog->MatchCase(), pDialog->MatchWholeWord(), pDialog->GetRegularExpression(), pDialog->GetReplaceString());
+	}
+	else if (pDialog->ReplaceAll())
+	{
+		ASSERT(!_scintillaEditState.bFindOnly);
+		OnReplaceAll(pDialog->GetFindString(), pDialog->GetReplaceString(), pDialog->MatchCase(), pDialog->MatchWholeWord(), pDialog->GetRegularExpression());
+	}
+	ASSERT_VALID(this);
+
+	return 0;
+}
+
+BOOL CScintillaView::SameAsSelected(LPCTSTR lpszCompare, BOOL bCase, BOOL bWord, BOOL bRegularExpression)
+{
+  CScintillaCtrl& rCtrl = GetCtrl();
+
+  //check length first
+	int nStartChar = rCtrl.GetSelectionStart();                           //get the selection size    
+  int nEndChar = rCtrl.GetSelectionEnd();
+  size_t nLen = lstrlen(lpszCompare);                                   //get the #chars to search for
+  if (!bRegularExpression && (nLen != (size_t)(nEndChar - nStartChar))) //if not a regular expression...
+    return FALSE;                                                       //...sizes must match,
+
+  //Now use the advanced search functionality of scintilla to determine the result
+  int iFlags = bCase ? SCFIND_MATCHCASE : 0;
+  iFlags |= bWord ? SCFIND_WHOLEWORD : 0;
+  iFlags |= bRegularExpression ? SCFIND_REGEXP : 0;
+  rCtrl.SetSearchFlags(iFlags);
+  rCtrl.TargetFromSelection();                     //set target
+  if (rCtrl.SearchInTarget(static_cast<int>(nLen), lpszCompare) < 0) //see what we got
+    return FALSE;                                  //no match
+
+  //If we got a match, the target is set to the found text
+  return (rCtrl.GetTargetStart() == nStartChar) && (rCtrl.GetTargetEnd() == nEndChar);
+}
+
+BOOL CScintillaView::FindText(LPCTSTR lpszFind, BOOL bNext, BOOL bCase, BOOL bWord, BOOL bRegularExpression)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	CWaitCursor wait;
+	return FindTextSimple(lpszFind, bNext, bCase, bWord, bRegularExpression);
+}
+
+BOOL CScintillaView::FindTextSimple(LPCTSTR lpszFind, BOOL bNext, BOOL bCase, BOOL bWord, BOOL bRegularExpression)
+{
+  //Validate our parameters
+	ASSERT(lpszFind != NULL);
+
+  CScintillaCtrl& rCtrl = GetCtrl();
+
+	TextToFind ft;
+  ft.chrg.cpMin = rCtrl.GetSelectionStart();
+  ft.chrg.cpMax = rCtrl.GetSelectionEnd();
+	if (m_bFirstSearch)
+		m_bFirstSearch = FALSE;
+
+#ifdef _UNICODE
+	CScintillaCtrl::W2UTF8(lpszFind, -1, ft.lpstrText);
+#else
+	ft.lpstrText = T2A(const_cast<LPTSTR>(lpszFind));
+#endif
+	if (ft.chrg.cpMin != ft.chrg.cpMax) // i.e. there is a selection
+	{
+#ifndef _UNICODE
+		// If byte at beginning of selection is a DBCS lead byte,
+		// increment by one extra byte.
+		TEXTRANGE textRange;
+		TCHAR ch[2];
+		textRange.chrg.cpMin = ft.chrg.cpMin;
+		textRange.chrg.cpMax = ft.chrg.cpMin + 1;
+		textRange.lpstrText = ch;
+		rCtrl.SendMessage(EM_GETTEXTRANGE, 0, (LPARAM)&textRange);
+		if (_istlead(ch[0]))
+		{
+			ASSERT(ft.chrg.cpMax - ft.chrg.cpMin >= 2);
+
+      if (bNext)
+  			ft.chrg.cpMin++;
+      else
+        ft.chrg.cpMax = ft.chrg.cpMin - 1;
+		}
+#endif
+
+    if (bNext)  
+		  ft.chrg.cpMin++;
+    else
+      ft.chrg.cpMax = ft.chrg.cpMin - 1;
+	}
+
+  int nLength = rCtrl.GetLength();
+  if (bNext)
+    ft.chrg.cpMax = nLength;
+	else
+ 	  ft.chrg.cpMin = 0;
+
+	DWORD dwFlags = bCase ? SCFIND_MATCHCASE : 0;
+	dwFlags |= bWord ? SCFIND_WHOLEWORD : 0;
+  dwFlags |= bRegularExpression ? SCFIND_REGEXP : 0;
+
+  if (!bNext)
+  {
+    //Swap the start and end positions which Scintilla uses to flag backward searches
+    int ncpMinTemp = ft.chrg.cpMin;
+    ft.chrg.cpMin = ft.chrg.cpMax;
+    ft.chrg.cpMax = ncpMinTemp;
+  }
+
+	//if we find the text return TRUE
+	BOOL bFound = (FindAndSelect(dwFlags, ft) != -1);
+
+#ifdef _UNICODE
+  //Tidy up the heap memory before we return
+  delete [] ft.lpstrText;
+#endif
+
+  return bFound;
+}
+
+long CScintillaView::FindAndSelect(DWORD dwFlags, TextToFind& ft)
+{
+  CScintillaCtrl& rCtrl = GetCtrl();
+	long index = rCtrl.FindText(dwFlags, &ft);
+	if (index != -1) // i.e. we found something
+    rCtrl.SetSel(ft.chrgText.cpMin, ft.chrgText.cpMax);
+	return index;
+}
+
+void CScintillaView::TextNotFound(LPCTSTR /*lpszFind*/, BOOL /*bNext*/, BOOL /*bCase*/, BOOL /*bWord*/, BOOL /*bRegularExpression*/, BOOL /*bReplaced*/)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	m_bFirstSearch = TRUE;
+  MessageBeep(MB_ICONHAND);
+}
+
+void CScintillaView::OnSetFocus(CWnd* /*pOldWnd*/) 
+{
+  //Give the focus to the child control
+	m_Edit.SetFocus();
+}
+
+void CScintillaView::OnSize(UINT nType, int cx, int cy) 
+{
+  //Let the base class do its thing
+	CView::OnSize(nType, cx, cy);
+
+  //Resize the edit control to be the size of the client area
+  CRect r;
+  GetClientRect(&r);
+  m_Edit.MoveWindow(&r);	
+}
+
+BOOL CScintillaView::OnEraseBkgnd(CDC* /*pDC*/) 
+{
+  //We do nothing here, because the scintilla control takes up the entire 
+  //client area of our view;
+	return TRUE;
+}
+
+void CScintillaView::OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView)
+{
+	//need to set owner of Find/Replace dialog
+	if (_scintillaEditState.pFindReplaceDlg && pActivateView == this)
+		_scintillaEditState.pFindReplaceDlg->m_fr.hwndOwner = m_hWnd;
+
+  //let the base class do its thing
+	CView::OnActivateView(bActivate, pActivateView, pDeactiveView);
+}
+
+int CScintillaView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
+{
+  //let the base class do its thing
+	if (CView::OnCreate(lpCreateStruct) == -1)
+		return -1;
+	
+  //Create the scintilla edit control  
+  CRect r;
+  if (!m_Edit.Create(WS_CHILD|WS_VISIBLE|WS_TABSTOP, r, this, 0))
+    return -1;
+	
+	return 0;
+}
+
+#ifdef _DEBUG
+void CScintillaView::AssertValid() const
+{
+  //Let the base class do its thing
+	CView::AssertValid();
+
+  //Validate our parameters
+	ASSERT_VALID(&m_aPageStart);
+
+	if (_scintillaEditState.pFindReplaceDlg != NULL)
+		ASSERT_VALID(_scintillaEditState.pFindReplaceDlg);
+}
+
+void CScintillaView::Dump(CDumpContext& dc) const
+{
+  //Let the base class do its thing
+	CView::Dump(dc);
+
+	dc << _T("\nm_aPageStart ") << &m_aPageStart;
+  dc << _T("\nbUseROFileAttributeDuringLoading = ") << m_bUseROFileAttributeDuringLoading;
+
+	dc << _T("\n Static Member Data:");
+	if (_scintillaEditState.pFindReplaceDlg != NULL)
+	{
+		dc << _T("\npFindReplaceDlg = ") <<	static_cast<void*>(_scintillaEditState.pFindReplaceDlg);
+		dc << _T("\nbFindOnly = ") << _scintillaEditState.bFindOnly;
+	}
+	dc << _T("\nstrFind = ") << _scintillaEditState.strFind;
+	dc << _T("\nstrReplace = ") << _scintillaEditState.strReplace;
+	dc << _T("\nbCase = ") << _scintillaEditState.bCase;
+	dc << _T("\nbWord = ") << _scintillaEditState.bWord;
+	dc << _T("\nbNext = ") << _scintillaEditState.bNext;
+  dc << _T("\nbRegularExpression = ") << _scintillaEditState.bRegularExpression;
+}
+#endif //_DEBUG
+
+void CScintillaView::Serialize(CArchive& ar)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+  CScintillaCtrl& rCtrl = GetCtrl();
+
+  if (ar.IsLoading())
+  {
+    //Tell the control not to maintain any undo info while we stream the data 
+    rCtrl.Cancel();
+    rCtrl.SetUndoCollection(FALSE);
+
+    //Read the data in from the file in blocks
+    CFile* pFile = ar.GetFile();
+    char Buffer[4096];
+    int nBytesRead = 0;
+    do
+    {
+      nBytesRead = pFile->Read(Buffer, 4096);
+      if (nBytesRead)
+        rCtrl.AddText(nBytesRead, Buffer);
+    }
+    while (nBytesRead);
+
+    //Set the read only state if required
+    if (m_bUseROFileAttributeDuringLoading && ((GetFileAttributes(pFile->GetFilePath()) & FILE_ATTRIBUTE_READONLY) == FILE_ATTRIBUTE_READONLY))
+      rCtrl.SetReadOnly(TRUE);
+    else
+      rCtrl.SetReadOnly(FALSE);
+
+    //Reinitialize the control settings
+    rCtrl.SetUndoCollection(TRUE);
+    rCtrl.EmptyUndoBuffer();
+    rCtrl.SetSavePoint();
+    rCtrl.GotoPos(0);
+  }
+  else
+  {
+    //Get the length of the document
+    int nDocLength = rCtrl.GetLength();
+
+    //Write the data in blocks to disk
+    CFile* pFile = ar.GetFile();
+    for (int i=0; i<nDocLength; i += 4095) //4095 because data will be returned NULL terminated
+    {
+      int nGrabSize = nDocLength - i;
+      if (nGrabSize > 4095)
+        nGrabSize = 4095;
+
+      //Get the data from the control
+	    TextRange tr;
+	    tr.chrg.cpMin = i;
+	    tr.chrg.cpMax = i + nGrabSize;
+      char Buffer[4096];
+	    tr.lpstrText = Buffer;
+	    rCtrl.GetTextRange(&tr);
+
+      //Write it to disk
+      pFile->Write(Buffer, nGrabSize);
+    }
+  }
+}
+
+void CScintillaView::OnFilePageSetup() 
+{
+  //Display a standard page setup dialog
+	CPageSetupDialog dlg;
+
+  //Allow the margin settings to be tweaked
+  dlg.m_psd.Flags |= PSD_MARGINS;
+
+  //Are we using the metric or imperial system	
+  if (m_bUsingMetric)
+    dlg.m_psd.Flags |= PSD_INHUNDREDTHSOFMILLIMETERS;
+  else
+    dlg.m_psd.Flags |= PSD_INTHOUSANDTHSOFINCHES;
+
+  if (m_bPersistMarginSettings)
+    LoadMarginSettings();
+
+  //Set the current margin settings to the current value from m_rectMargin 
+  dlg.m_psd.rtMargin = m_rMargin;
+
+	//get the current device from the app
+	PRINTDLG pd;
+	pd.hDevNames = NULL;
+	pd.hDevMode = NULL;
+  CWinApp* pApp = AfxGetApp();
+	pApp->GetPrinterDeviceDefaults(&pd);
+	dlg.m_psd.hDevNames = pd.hDevNames;
+	dlg.m_psd.hDevMode = pd.hDevMode;
+
+	if (dlg.DoModal() == IDOK)
+	{
+    //Save the new margin value in to the member variable
+    m_rMargin = dlg.m_psd.rtMargin;
+
+    if (m_bPersistMarginSettings)
+      SaveMarginSettings();
+
+    //Update the printer settings
+		pApp->SelectPrinter(dlg.m_psd.hDevNames, dlg.m_psd.hDevMode);
+	}
+}
+
+void CScintillaView::OnStyleNeeded(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnCharAdded(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnSavePointReached(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnSavePointLeft(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnModifyAttemptRO(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnDoubleClick(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnUpdateUI(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnModified(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnMacroRecord(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnMarginClick(SCNotification* pSCNotification)
+{
+  //By default get the line where the click occured and toggle its fold state
+  CScintillaCtrl& rCtrl = GetCtrl();
+  int nLine = rCtrl.LineFromPosition(pSCNotification->position);
+  rCtrl.ToggleFold(nLine);
+}
+
+void CScintillaView::OnNeedShown(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnPainted(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnUserListSelection(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnDwellStart(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnDwellEnd(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnZoom(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnHotSpotClick(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnHotSpotDoubleClick(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnCallTipClick(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnAutoCSelection(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnChange()
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnSetFocus()
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnKillFocus()
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+BOOL CScintillaView::OnCommand(WPARAM wParam, LPARAM lParam)
+{
+  HWND hWndControl = reinterpret_cast<HWND>(lParam);
+  
+  if (hWndControl == GetCtrl().GetSafeHwnd())
+  {
+    WORD wNotification = HIWORD(wParam);
+    switch (wNotification)
+    {
+      case SCEN_CHANGE:
+      {
+        OnChange();
+        break;
+      }
+      case SCEN_SETFOCUS:
+      {
+        OnSetFocus();
+        break;
+      }
+      case SCEN_KILLFOCUS:
+      {
+        OnKillFocus();
+        break;
+      }
+      default:
+      {
+        break;
+      }
     }
 
-    return false;    
+    return TRUE;
+  }
+
+  //let the base class do its thing
+  return CView::OnCommand(wParam, lParam);
 }
 
+BOOL CScintillaView::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+{
+  NMHDR* pNMHdr = reinterpret_cast<NMHDR*>(lParam);
+  AFXASSUME(pNMHdr);
 
-/////////////////////////////////////////////////////////////////////////////////////
-
-
-static void var(TextOutput& t, const std::string& name, const std::string& val) {
-    t.writeSymbols(name,"=");
-    t.writeString(val);
-    t.writeNewline();
+  //Is it a notification from the embedded control
+  CScintillaCtrl& rCtrl = GetCtrl();
+  if (pNMHdr->hwndFrom == rCtrl.GetSafeHwnd())
+  {
+    SCNotification* pSCNotification = reinterpret_cast<SCNotification*>(lParam);
+    switch (pNMHdr->code)
+    {
+      case SCN_STYLENEEDED:
+      {
+        OnStyleNeeded(pSCNotification);
+        break;
+      }
+      case SCN_CHARADDED:
+      {
+        OnCharAdded(pSCNotification);
+        break;
+      }
+      case SCN_SAVEPOINTREACHED:
+      {
+        OnSavePointReached(pSCNotification);
+        break;
+      }
+      case SCN_SAVEPOINTLEFT:
+      {
+        OnSavePointLeft(pSCNotification);
+        break;
+      }
+      case SCN_MODIFYATTEMPTRO:
+      {
+        OnModifyAttemptRO(pSCNotification);
+        break;
+      }
+      case SCN_DOUBLECLICK:
+      {
+        OnDoubleClick(pSCNotification);
+        break;
+      }
+      case SCN_UPDATEUI:
+      {
+        OnUpdateUI(pSCNotification);
+        break;
+      }
+      case SCN_MODIFIED:
+      {
+        OnModified(pSCNotification);
+        break;
+      }
+      case SCN_MACRORECORD:
+      {
+        OnMacroRecord(pSCNotification);
+        break;
+      }
+      case SCN_MARGINCLICK:
+      {
+        OnMarginClick(pSCNotification);
+        break;
+      }
+      case SCN_NEEDSHOWN:
+      {
+        OnNeedShown(pSCNotification);
+        break;
+      }
+      case SCN_PAINTED:
+      {
+        OnPainted(pSCNotification);
+        break;
+      }
+      case SCN_USERLISTSELECTION:
+      {
+        OnUserListSelection(pSCNotification);
+        break;
+      }
+      case SCN_DWELLSTART:
+      {
+        OnDwellStart(pSCNotification);
+        break;
+      }
+      case SCN_DWELLEND:
+      {
+        OnDwellEnd(pSCNotification);
+        break;
+      }
+      case SCN_ZOOM:
+      {
+        OnZoom(pSCNotification);
+        break;
+      }
+      case SCN_HOTSPOTCLICK:
+      {
+        OnHotSpotClick(pSCNotification);
+        break;
+      }
+      case SCN_HOTSPOTDOUBLECLICK:
+      {
+        OnHotSpotDoubleClick(pSCNotification);
+        break;
+      }
+      case SCN_CALLTIPCLICK:
+      {
+        OnCallTipClick(pSCNotification);
+        break;
+      }
+      case SCN_AUTOCSELECTION:
+      {
+        OnAutoCSelection(pSCNotification);
+        break;
+      }
+      default:
+      {
+        break;
+      }
+    }
+    return TRUE; // we processed the message
+  }
+  else
+  {
+    //let the base class do its thing
+    return CView::OnNotify(wParam, lParam, pResult);
+  }
 }
 
-
-static void var(TextOutput& t, const std::string& name, const bool val) {
-    t.writeSymbols(name, "=", val ? "Yes" : "No");
-    t.writeNewline();
+void CScintillaView::GetReplaceAllTarget( long& s, long& e )
+{
+	s = 0; e = GetCtrl().GetLength();
 }
 
+IMPLEMENT_DYNAMIC(CScintillaDoc, CDocument)
 
-static void var(TextOutput& t, const std::string& name, const int val) {
-    t.writeSymbols(name,"=");
-    t.writeNumber(val);
-    t.writeNewline();
+CScintillaDoc::CScintillaDoc()
+{
+	ASSERT_VALID(this);
 }
 
+CScintillaView* CScintillaDoc::GetView() const
+{
+	//find the first view - if there are no views
+	//we must return NULL
+	POSITION pos = GetFirstViewPosition();
+	if (pos == NULL)
+		return NULL;
 
-void RenderDevice::describeSystem(
-    TextOutput& t) {
+	//find the first view that is a CScintillaView
+	CView* pView;
+	while (pos != NULL)
+	{
+		pView = GetNextView(pos);
+		if (pView->IsKindOf(RUNTIME_CLASS(CScintillaView)))
+			return static_cast<CScintillaView*>(pView);
+	}
 
-    t.writeSymbols("GPU", "{");
-    t.writeNewline();
-    t.pushIndent();
-        var(t, "Chipset", GLCaps::renderer());
-        var(t, "Vendor", GLCaps::vendor());
-        var(t, "Driver", GLCaps::driverVersion());
-        var(t, "OpenGL version", GLCaps::glVersion());
-        var(t, "Textures", GLCaps::numTextures());
-        var(t, "Texture coordinates", GLCaps::numTextureCoords());
-        var(t, "Texture units", GLCaps::numTextureUnits());
-    t.popIndent();
-    t.writeSymbols("}");
-    t.writeNewline();
-    t.writeNewline();
-
-    GWindow* w = window();
-    GWindowSettings settings;
-    w->getSettings(settings);
-
-    t.writeSymbols("Window", "{");
-    t.writeNewline();
-    t.pushIndent();
-        var(t, "API", w->getAPIName());
-        var(t, "Version", w->getAPIVersion());
-        t.writeNewline();
-
-        var(t, "In focus", w->hasFocus());
-        var(t, "Centered", settings.center);
-        var(t, "Framed", settings.framed);
-        var(t, "Visible", settings.visible);
-        var(t, "Resizable", settings.resizable);
-        var(t, "Full screen", settings.fullScreen);
-        var(t, "Top", settings.y);
-        var(t, "Left", settings.x);
-        var(t, "Width", settings.width);
-        var(t, "Height", settings.height);
-        var(t, "Refresh rate", settings.refreshRate);
-        t.writeNewline();
-
-        var(t, "Alpha bits", settings.alphaBits);
-        var(t, "Red bits", settings.rgbBits);
-        var(t, "Green bits", settings.rgbBits);
-        var(t, "Blue bits", settings.rgbBits);
-        var(t, "Depth bits", settings.depthBits);
-        var(t, "Stencil bits", settings.stencilBits);
-        var(t, "Asynchronous", settings.asychronous);
-        var(t, "Stereo", settings.stereo);
-        var(t, "FSAA samples", settings.fsaaSamples);
-
-    t.popIndent();
-    t.writeSymbols("}");
-    t.writeNewline();
-    t.writeNewline();
+	//can't find one--return NULL
+	return NULL;
 }
 
-} // namespace
+void CScintillaDoc::SetModifiedFlag(BOOL bModified)
+{
+  CScintillaView* pView = GetView();
+  AFXASSUME(pView);
+
+  if (bModified == FALSE)
+    pView->GetCtrl().SetSavePoint();
+
+  m_bModified = bModified;
+}
+
+BOOL CScintillaDoc::IsModified()
+{
+  CScintillaView* pView = GetView();
+  AFXASSUME(pView);
+
+	return m_bModified || pView->GetCtrl().GetModify();
+}
+
+void CScintillaDoc::DeleteContents()
+{
+  //let the base class do its thing
+	CDocument::DeleteContents();
+
+  //Ask our accompanying view to delete its contents
+	CWaitCursor wait;
+	CScintillaView* pView = GetView();
+  if (pView)
+    pView->DeleteContents();
+}
+
+void CScintillaDoc::Serialize(CArchive& ar)
+{
+	CScintillaView* pView = GetView();
+	AFXASSUME(pView);
+	
+	pView->Serialize(ar);
+}
+
+BOOL CScintillaDoc::OnSaveDocument(LPCTSTR lpszPathName)
+{
+  //Let the base class do its thing
+	BOOL bSuccess = CDocument::OnSaveDocument(lpszPathName);
+  if (bSuccess)
+  {
+		CScintillaView* pView = GetView();
+		AFXASSUME(pView);
+		
+		CScintillaCtrl& rCtrl = pView->GetCtrl();
+
+		//Tell the control that the document has now been saved
+		rCtrl.SetSavePoint();
+		rCtrl.SetReadOnly(FALSE);
+	}
+
+	return bSuccess;
+} 
+
+#ifdef _DEBUG
+void CScintillaDoc::AssertValid() const
+{
+  //Let the base class do its thing
+	CDocument::AssertValid();
+}
+
+void CScintillaDoc::Dump(CDumpContext& dc) const
+{
+  //let the base class do its thing
+	CDocument::Dump(dc);
+}
+#endif //_DEBUG
 

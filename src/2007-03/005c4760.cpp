@@ -1,8 +1,7 @@
-// from server: 93% by colin
-// roc-lang: c
 // roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: lua-5.1.1 lmathlib.c
+// roc-lang: c
+// roc-flags: /O2 /GS- /MD /fp:fast
+// roc-lib: lua-5.1.2-dll lmathlib.c
 
 // Candidate translation unit (score above; library headers required).
 /*

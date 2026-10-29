@@ -1,143 +1,250 @@
-// from server: 70% by colin
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs tool/ToolsArrow.cpp
+// roc-lib: rbxgs-dll v8datamodel/Hopper.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "tool/ToolsArrow.h"
-#include "tool/DragTool.h"
-#include "v8datamodel/Camera.h"
-#include "v8datamodel/PartInstance.h"
-#include "v8datamodel/Selection.h"
+#include "v8datamodel/Hopper.h"
+#include "v8datamodel/Backpack.h"
 #include "v8datamodel/Workspace.h"
-#include <G3D/Rect2D.h>
+#include "v8datamodel/Mouse.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/ScriptMouseCommand.h"
 
 namespace RBX
 {
-	const std::string ArrowToolBase::getCursorName() const
+	static Reflection::PropDescriptor<BackpackItem, TextureId> desc_TextureId("TextureId", "Data", &BackpackItem::getTextureId, &BackpackItem::setTextureId, Reflection::PropertyDescriptor::STANDARD);
+
+	static Reflection::PropDescriptor<HopperBin, std::string> desc_legacyCommand("Command", "Data", NULL, &HopperBin::setLegacyCommand, Reflection::PropertyDescriptor::LEGACY);
+	static Reflection::PropDescriptor<HopperBin, std::string> desc_legacyTextureName("TextureName", "Data", NULL, &HopperBin::setLegacyTextureName, Reflection::PropertyDescriptor::LEGACY);
+	static Reflection::EnumPropDescriptor<HopperBin, HopperBin::BinType> desc_BinType("BinType", "Data", &HopperBin::getBinType, &HopperBin::setBinType, Reflection::PropertyDescriptor::STANDARD);
+
+	static Reflection::SignalDesc<HopperBin, void(void)> desc_Deselected("Deselected");
+	static Reflection::SignalDesc<HopperBin, void(boost::shared_ptr<Instance>)> desc_Selected("Selected", "mouse");
+
+	Hopper::Hopper()
 	{
-		return overInstance ? "DragCursor" : "ArrowCursor";
+		yLocation = Rect::BOTTOM;
 	}
 
-	void ArrowToolBase::onMouseIdle(const UIEvent& uiEvent)
+	bool Hopper::askAddChild(const Instance* instance) const
 	{
-		overInstance = getUnlockedPart(uiEvent) != NULL;
+		return dynamic_cast<const BackpackItem*>(instance) != NULL;
 	}
 
-	void ArrowToolBase::onMouseHover(const UIEvent& uiEvent)
+	bool Hopper::askSetParent(const Instance* instance) const
 	{
-		onMouseIdle(uiEvent);
+		return true;
 	}
 
-	MouseCommand* ArrowToolBase::onMouseDown(const UIEvent& uiEvent)
+	bool BackpackItem::askSetParent(const Instance* instance) const
 	{
-		RBXASSERT(uiEvent.eventType == UIEvent::MOUSE_LEFT_BUTTON_DOWN);
+		return true;
+	}
 
-		G3D::Vector3 hitWorld;
+	bool BackpackItem::askAddChild(const Instance* instance) const
+	{
+		return true;
+	}
 
-		PartInstance* part = getUnlockedPart(uiEvent, hitWorld);
-		if (part)
+	const TextureId BackpackItem::getTextureId() const
+	{
+		return textureId;
+	}
+
+	bool BackpackItem::isEnabled()
+	{
+		return getParent() && dynamic_cast<Backpack*>(getParent()) != NULL;
+	}
+
+	void BackpackItem::setTextureId(const TextureId& value)
+	{
+		if (value != textureId)
 		{
-			Instance* top = getTopSelectable3d(part);
-			UserInputBase* input = uiEvent.userInput;
+			textureId = value;
 
-			ServiceClient<Selection> selection(workspace);
+			std::string filename;
+			ContentProvider::singleton().requestContentFile(value, filename);
 
-			if (!input->keyDown(SDLK_RSHIFT) && !input->keyDown(SDLK_LSHIFT) &&
-				!input->keyDown(SDLK_RCTRL) && !input->keyDown(SDLK_LCTRL))
+			Workspace* workspace = ServiceProvider::find<Workspace>(this);
+			if (workspace)
+				workspace->raiseDrawChanged();
+
+			raisePropertyChanged(desc_TextureId);
+		}
+	}
+
+	G3D::Vector2 BackpackItem::getSize() const
+	{
+		float width = GuiRoot::toPixelSize(G3D::Vector2(10.0f, 10.0f)).x;
+		return G3D::Vector2(width, width);
+	}
+
+	HopperBin::HopperBin()
+		: binType(SCRIPT_BIN),
+		  active(false)
+	{
+		setName("HopperBin");
+	}
+
+	void HopperBin::setBinType(const HopperBin::BinType value)
+	{
+		if (value != binType)
+		{
+			binType = value;
+			raisePropertyChanged(desc_BinType);
+
+			if (binType != SCRIPT_BIN)
 			{
-				if (!selection->isSelected(top))
-				{
-					selection->setSelection(top);
-				}
+				std::string textureName = Reflection::EnumDesc<BinType>::singleton().convertToString(binType);
+				setLegacyTextureName(textureName);
+			}
+		}
+	}
 
-				if (uiEvent.eventType == UIEvent::MOUSE_LEFT_BUTTON_DOWN)
-				{
-					ServiceClient<FilteredSelection<Instance>> instanceSelection(workspace);
-					return DragTool::onMouseDown(part, hitWorld, instanceSelection->items(), uiEvent, workspace);
-				}
+	void HopperBin::setLegacyTextureName(const std::string& value)
+	{
+		TextureId textureId = ContentId::fromAssets("Textures\\" + value + ".png");
+		setTextureId(textureId);
+	}
+
+	void HopperBin::setLegacyCommand(const std::string& text)
+	{
+		BinType newBinType;
+		
+		if (!Reflection::EnumDesc<BinType>::singleton().convertToValue(text, newBinType))
+		{
+			newBinType = SCRIPT_BIN;
+		}
+		
+		setBinType(newBinType);
+	}
+
+	void HopperBin::onLocalClicked()
+	{
+		RBXASSERT(isEnabled());
+
+		if (!active)
+		{
+			active = true;
+
+			if (binType == SCRIPT_BIN)
+			{
+				onSelectScript();
 			}
 			else
 			{
-				if (selection->isSelected(top))
-					selection->removeFromSelection(top);
-				else
-					selection->addToSelection(top);
+				onSelectCommand();
 			}
-
-			return NULL;
 		}
 		else
 		{
-			MouseCommand* newCommand = new BoxSelectCommand(workspace);
-			return newCommand->onMouseDown(uiEvent);
+			onLocalOtherClicked();
 		}
 	}
 
-	BoxSelectCommand::BoxSelectCommand(Workspace* workspace)
-		: Base(workspace),
-		  selection((Instance*)workspace)
+	void HopperBin::onLocalOtherClicked()
 	{
-	}
-
-	MouseCommand* BoxSelectCommand::onMouseDown(const UIEvent& uiEvent)
-	{
-		previousItemsInBox.clear();
-		capture();
-
-		UserInputBase* input = uiEvent.userInput;
-		reverseSelecting = input->keyDown(SDLK_RSHIFT) || input->keyDown(SDLK_LSHIFT);
-
-		if (!reverseSelecting)
-			selection->clearSelection();
-
-		mouseDownView = uiEvent.mousePosition;
-		mouseCurrentView = uiEvent.mousePosition;
-		return this;
-	}
-
-	void BoxSelectCommand::onMouseMove(const UIEvent& uiEvent)
-	{
-		mouseCurrentView = uiEvent.mousePosition;
-
-		std::set<Instance*> instances;
-		getMouseInstances(instances, uiEvent, G3D::Rect2D::xyxy(mouseDownView.x, mouseDownView.y, mouseCurrentView.x, mouseCurrentView.y));
-
-		if (reverseSelecting)
-			selectReverse(instances);
-		else
-			selectAnd(instances);
-	}
-
-	void BoxSelectCommand::render2d(Adorn* adorn)
-	{
-		G3D::Rect2D temp = G3D::Rect2D::xyxy(mouseDownView.x, mouseDownView.y, mouseCurrentView.x, mouseCurrentView.y);
-		adorn->outlineRect2d(temp, 0.5f, G3D::Color3::gray());
-	}
-
-	void BoxSelectCommand::getMouseInstances(std::set<Instance*>& instances, const UIEvent& uiEvent, G3D::Rect2D& selectBox)
-	{
-		Camera* camera = workspace->getCamera();
-		G3D::Rect2D viewport = G3D::Rect2D::xyxy(0.0f, 0.0f, uiEvent.windowSize.x, uiEvent.windowSize.y);
-
-		for (size_t i = 0; i < workspace->numChildren(); i++)
+		if (active)
 		{
-			ILocation* location = workspace->queryTypedChild<ILocation>((int)i);
-			ISelectable3d* selectable3d = workspace->queryTypedChild<ISelectable3d>((int)i);
+			if (binType == SCRIPT_BIN)
+				desc_Deselected.fire(this);
 
-			if (location && selectable3d)
+			active = false;
+
+			Workspace* workspace = ServiceProvider::find<Workspace>(this);
+			if (workspace)
+				workspace->setDefaultMouseCommand();
+		}
+	}
+
+	void HopperBin::onSelectScript()
+	{
+		Workspace* workspace = ServiceProvider::find<Workspace>(this);
+		if (workspace)
+		{
+			ScriptMouseCommand* command = new ScriptMouseCommand(workspace);
+			workspace->setMouseCommand(command);
+			desc_Selected.fire(this, command->getMouse());
+		}
+	}
+
+	void HopperBin::onSelectCommand()
+	{
+		RBXASSERT(binType != SCRIPT_BIN);
+
+		DataModel* root = rbx_static_cast<DataModel*>(getRootAncestor());
+
+		std::string command = Reflection::EnumDesc<BinType>::singleton().convertToString(binType) + "Tool";
+
+		Verb* verb = root->getVerb(command);
+		RBXASSERT(verb);
+
+		if (verb->isEnabled())
+		{
+			Workspace* workspace = ServiceProvider::find<Workspace>(this);
+			if (workspace)
+				verb->doIt(&workspace->getDataState());
+			else
+				RBXASSERT(0);
+		}
+	}
+
+	StarterPackService::StarterPackService()
+	{
+		setName("StarterPack");
+	}
+
+	//97.87% match
+	//le EPIC TROLL
+	void StarterPackService::render2d(Adorn* adorn)
+	{
+		TopMenuBar::render2d(adorn);
+
+		if (findFirstChildOfType<BackpackItem>())
+		{
+			G3D::Rect2D viewPort = adorn->getViewport();
+			int fontSize = GuiRoot::normalizedFontSize(12);
+			G3D::Vector2 pos2d = viewPort.x0y1() + G3D::Vector2(4.0f, -4.0f);
+
+			adorn->drawFont2D(
+				"StarterPack - these items will be given to each new player", 
+				pos2d, 
+				fontSize, 
+				G3D::Color3::white(), 
+				G3D::Color4::clear(), 
+				Adorn::XALIGN_LEFT, 
+				Adorn::YALIGN_BOTTOM,
+				Adorn::PROPORTIONAL_SPACING
+			);
+		}
+	}
+
+	LegacyHopperService::LegacyHopperService()
+	{
+		setName("Hopper");
+	}
+
+	LegacyHopperService::~LegacyHopperService()
+	{
+		RBXASSERT(numChildren() == 0);
+	}
+
+	void LegacyHopperService::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
+		Instance::onServiceProvider(oldProvider, newProvider);
+
+		if (newProvider)
+		{
+			StarterPackService* starterPack = newProvider->find<StarterPackService>();
+			RBXASSERT(starterPack);
+
+			while (numChildren() > 0)
 			{
-				Instance* instance = workspace->getChild(i);
-				if (!PartInstance::getLocked(instance))
-				{
-					G3D::Vector3 gridPos = location->getLocation().translation;
-					G3D::Vector3 projection = camera->getGCamera().project(gridPos, viewport);
-
-					if (selectBox.contains(projection.xy()))
-						instances.insert(instance);
-				}
+				getChild(0)->setParent(starterPack);
 			}
+
+			setParent(NULL);
 		}
 	}
 }

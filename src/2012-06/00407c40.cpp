@@ -1,35 +1,57 @@
-// roc 2012-06 00407c40  unit: VCApp::?$CComContainedObject  size: 17 bytes
-// Make this compile to the exact bytes below, then: roc check 2012-06 00407c40
-//
-// 00407c40  8b442404             mov eax, dword ptr [esp + 4]
-// 00407c44  8b4018               mov eax, dword ptr [eax + 0x18]
-// 00407c47  8b08                 mov ecx, dword ptr [eax]
-// 00407c49  89442404             mov dword ptr [esp + 4], eax
-// 00407c4d  8b01                 mov eax, dword ptr [ecx]
-// 00407c4f  ffe0                 jmp eax
-// copied from an identical function in another client (function ?QueryInterface@CAppContained@@UAGJABUGUID@@PAPAX@Z)
-
+// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-struct GUID { unsigned long Data1; unsigned short Data2, Data3; unsigned char Data4[8]; };
+// roc-lib: atl-9.0-dll-rtm roc_espclaude_13551b6034a59a28.cpp
 
-struct IUnknown {
-    virtual long __stdcall QueryInterface(const GUID& iid, void** ppvObject) = 0;
-    virtual unsigned long __stdcall AddRef() = 0;
-    virtual unsigned long __stdcall Release() = 0;
-};
+// Candidate translation unit (score above; library headers required).
+#ifndef _CPPUNWIND
+#define _CPPUNWIND 1
+#endif
+#ifndef _AFXDLL
+#define _AFXDLL
+#endif
+#include <new>
+#include <afxwin.h>
+#include <atlbase.h>
+#include <atlcom.h>
+#include <atlctl.h>
 
-class CAppContained : public IUnknown {
-public:
-    char pad[0x14];
-    IUnknown* m_pOuterUnknown;
+extern "C" const IID IID_IApp;
+extern "C" const CLSID CLSID_App;
+extern "C" const GUID LIBID_RobloxLib;
 
-    long __stdcall QueryInterface(const GUID& iid, void** ppvObject);
-    unsigned long __stdcall AddRef();
-    unsigned long __stdcall Release();
-};
-
-long __stdcall CAppContained::QueryInterface(const GUID& iid, void** ppvObject)
+MIDL_INTERFACE("00000000-0000-0000-0000-000000000001")
+IApp : public IDispatch
 {
-    return m_pOuterUnknown->QueryInterface(iid, ppvObject);
-}
+public:
+};
+
+template <class T, DWORD dwSupportedSafety>
+class IObjectSafetyRobloxImpl : public IObjectSafety
+{
+public:
+    IObjectSafetyRobloxImpl() : m_dwCurrentSafety(0) {}
+    STDMETHOD(GetInterfaceSafetyOptions)(REFIID riid, DWORD* pdwSupportedOptions, DWORD* pdwEnabledOptions);
+    STDMETHOD(SetInterfaceSafetyOptions)(REFIID riid, DWORD dwOptionSetMask, DWORD dwEnabledOptions);
+    DWORD m_dwCurrentSafety;
+};
+
+class ATL_NO_VTABLE CApp :
+    public CComObjectRootEx<CComSingleThreadModel>,
+    public CComCoClass<CApp, &CLSID_App>,
+    public ISupportErrorInfoImpl<&IID_IApp>,
+    public IObjectSafetyRobloxImpl<CApp, 1>,
+    public IObjectWithSiteImpl<CApp>,
+    public IDispatchImpl<IApp, &IID_IApp, &LIBID_RobloxLib, 1, 2>
+{
+public:
+    BEGIN_COM_MAP(CApp)
+        COM_INTERFACE_ENTRY(IApp)
+        COM_INTERFACE_ENTRY(IDispatch)
+        COM_INTERFACE_ENTRY(ISupportErrorInfo)
+        COM_INTERFACE_ENTRY(IObjectSafety)
+        COM_INTERFACE_ENTRY(IObjectWithSite)
+    END_COM_MAP()
+};
+
+template ATL::CComAggObject<CApp>::CComAggObject(void*);

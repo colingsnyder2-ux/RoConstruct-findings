@@ -1,366 +1,117 @@
-// from server: 38% by colin
-// roc-lang: cpp
 // roc-cl: 50727
+// roc-lang: cpp
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Accoutrement.cpp
+// roc-lib: rbxgs-dll roc_scorehud_family_1346da7936040480.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Accoutrement.h"
-#include "v8datamodel/PartInstance.h"
-#include "v8datamodel/JointInstance.h"
-#include "tool/DragUtilities.h"
-#include "v8xml/SerializerV2.h"
-#include "Network/Players.h"
+#include <gui/ScoreHud.h>
+#include <v8datamodel/Teams.h>
+#include <v8datamodel/Team.h>
+#include <util/Utilities.h>
+#include <util/Color.h>
+#include <G3D/Color3.h>
+#include <G3D/Color4.h>
+namespace RBX {
+// Existing native service specialization; retain the native call boundary.
+template<> Teams* ServiceProvider::create<Teams>(const Instance*);
+// Opaque public API receivers keep older headers' private Instance/Gui/Players
+// layouts out of these calls. Signatures are the genuine public declarations.
+class InstanceApi { public: size_t numChildren() const; Instance* getChild(size_t); const std::string& getName() const; };
+class GuiItemApi { public: void setGuiSize(const G3D::Vector2&); };
+class PlayersApi { public: int numPlayers() const; };
+void ScoreHud::renderTeamDeathmatchLeaderboard(Adorn* adorn,BoardType mode) {
+    LeaderboardData data(this);
+    data.CompileData();
+    Teams* teams=ServiceProvider::create<Teams>(this);
+    if(!teams) return;
+    float scale=adorn->getViewport().width()/1024.0f;
+    float row=14.0f*scale;
+    unsigned teamCount=((InstanceApi*)teams)->numChildren();
+    Network::Players* nativePlayers=*(Network::Players**)((char*)this+0x150);
+    unsigned playerCount=((PlayersApi*)nativePlayers)->numPlayers();
+    unsigned rows=mode==TEAM_DEATHMATCH ? playerCount+3*(teamCount+1) : playerCount+3*teamCount+2;
+    ((GuiItemApi*)this)->setGuiSize(G3D::Vector2(scale*(mode==TEAM_DEATHMATCH?320.0f:240.0f),rows*row));
+    Rect rect=getMyRect();
+    adorn->rect2d(rect.toRect2D(),GuiItem::translucentBackdrop());
+    if(mode==TEAM_DEATHMATCH) {
+        for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
+            G3D::Vector2 position(rect.low.x,rect.low.y);
+            float width=rect.high.x-rect.low.x;
+            std::string label("Team");
+            if(col) {
+                position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
+                label=data.statNamesList[col-1];
+            }
+            adorn->drawFont2D(label,position,row,G3D::Color4(G3D::Color3::white(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+        }
+        rect.low.y+=row;
+    }
+    for(unsigned teamIndex=0;teamIndex<((InstanceApi*)teams)->numChildren();++teamIndex) {
+        Team* team=dynamic_cast<Team*>(((InstanceApi*)teams)->getChild(teamIndex));
+        if(!team) continue;
+        for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
+            G3D::Vector2 position(rect.low.x,rect.low.y);
+            float width=rect.high.x-rect.low.x;
+            std::string label=((InstanceApi*)team)->getName();
+            if(col) {
+                position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
+                label=StringConverter<int>::convertToString(data.teamTotals[team][data.statNamesList[col-1]]);
+            }
+            adorn->drawFont2D(label,position,row,G3D::Color4(team->getTeamColor().color3(),1),G3D::Color4(0,0,0,1),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+        }
+        rect.low.y+=row;
+        adorn->line2d(G3D::Vector2(rect.low.x+2,rect.low.y+7),G3D::Vector2(rect.high.x-2,rect.low.y+7),G3D::Color4(team->getTeamColor().color3(),1));
+        rect.low.y+=row;
+        for(unsigned player=0;player<data.playersByTeamList[team].size();++player) {
+            for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
+                G3D::Vector2 position(rect.low.x,rect.low.y);
+                float width=rect.high.x-rect.low.x;
+                std::string label=data.playersByTeamList[team][player];
+                if(col) {
+                    position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
+                    int stat=data.statMap[data.playersByTeamList[team][player]][data.statNamesList[col-1]];
+                    label=StringConverter<int>::convertToString(stat);
+                }
+                adorn->drawFont2D(label,position,row,G3D::Color4(team->getTeamColor().color3(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+                if(!col) position.x-=5.0f; // Observed native post-draw store.
+            }
+            rect.low.y+=row;
+        }
+        rect.low.y+=row;
+    }
+}
 
-namespace RBX
-{
-	static Reflection::PropDescriptor<Accoutrement, G3D::CoordinateFrame> prop_AttachmentPoint("AttachmentPoint", "Appearance", &Accoutrement::getAttachmentPoint, &Accoutrement::setAttachmentPoint, Reflection::PropertyDescriptor::STREAMING);
-	static Reflection::PropDescriptor<Accoutrement, G3D::Vector3> prop_AttachmentPos("AttachmentPos", "Appearance", &Accoutrement::getAttachmentPos, &Accoutrement::setAttachmentPos, Reflection::PropertyDescriptor::UI);
-	static Reflection::PropDescriptor<Accoutrement, G3D::Vector3> prop_AttachmentForward("AttachmentForward", "Appearance", &Accoutrement::getAttachmentForward, &Accoutrement::setAttachmentForward, Reflection::PropertyDescriptor::UI);
-	static Reflection::PropDescriptor<Accoutrement, G3D::Vector3> prop_AttachmentUp("AttachmentUp", "Appearance", &Accoutrement::getAttachmentUp, &Accoutrement::setAttachmentUp, Reflection::PropertyDescriptor::UI);
-	static Reflection::PropDescriptor<Accoutrement, G3D::Vector3> prop_AttachmentRight("AttachmentRight", "Appearance", &Accoutrement::getAttachmentRight, &Accoutrement::setAttachmentRight, Reflection::PropertyDescriptor::UI);
-	static Reflection::PropDescriptor<Accoutrement, int> prop_BackendAccoutrementState("BackendAccoutrementState", "Appearance", &Accoutrement::getBackendAccoutrementState, &Accoutrement::setBackendAccoutrementState, Reflection::PropertyDescriptor::STREAMING);
-
-	Accoutrement::Accoutrement()
-		: backendAccoutrementState(NOTHING)
-	{
-		setName("Accoutrement");
-	}
-
-	Accoutrement::~Accoutrement()
-	{
-		RBXASSERT(!weld);
-		RBXASSERT(!handleTouched.connected());
-		RBXASSERT(!characterChildAdded.connected());
-		RBXASSERT(!characterChildRemoved.connected());
-	}
-
-	//99.29% match
-	//see Tool::readProperty
-	void Accoutrement::readProperty(const XmlElement* propertyElement, IReferenceBinder& binder)
-	{
-		const Name* name = NULL;
-
-		if (const XmlAttribute* attrib = propertyElement->findAttribute(name_name))
-		{
-			if (attrib->getValue(name))
-			{
-				if (name->toString() == "BackendAccoutrementState")
-					return;
-			}
-		}
-
-		Instance::readProperty(propertyElement, binder);
-	}
-
-	__declspec(noinline) void Accoutrement::downFrom_InCharacter()
-	{
-		characterChildAdded.disconnect();
-		characterChildRemoved.disconnect();
-	}
-
-	const G3D::Vector3 Accoutrement::getAttachmentPos() const
-	{
-		return attachmentPoint.translation;
-	}
-
-	const G3D::Vector3 Accoutrement::getAttachmentForward() const
-	{
-		return attachmentPoint.lookVector();
-	}
-
-	const G3D::Vector3 Accoutrement::getAttachmentUp() const
-	{
-		return attachmentPoint.upVector();
-	}
-
-	const G3D::Vector3 Accoutrement::getAttachmentRight() const
-	{
-		return attachmentPoint.rightVector();
-	}
-
-	PartInstance* Accoutrement::getHandle()
-	{
-		return const_cast<PartInstance*>(getHandleConst());
-	}
-
-	const G3D::CoordinateFrame Accoutrement::getLocation() const
-	{
-		const PartInstance* handle = getHandleConst();
-		return handle ? handle->getCoordinateFrame() : G3D::CoordinateFrame();
-	}
-
-	Accoutrement::AccoutrementState Accoutrement::computeDesiredState()
-	{
-		RBXASSERT(Network::Players::backendProcessing(this, true));
-
-		if (!getHandleConst())
-			return NOTHING;
-
-		if (!Workspace::contextInWorkspace(this))
-			return HAS_HANDLE;
-
-		return computeDesiredState(getParent());
-	}
-
-	Accoutrement::AccoutrementState Accoutrement::computeDesiredState(Instance* testParent)
-	{
-		Humanoid* humanoid = Humanoid::modelIsCharacter(testParent);
-		if (!humanoid)
-			return IN_WORKSPACE;
-
-		if (!humanoid->getTorso())
-			return NOTHING;
-
-		return EQUIPPED;
-	}
-
-	void Accoutrement::onCameraNear(float distance)
-	{
-		for (size_t i = 0; i < numChildren(); i++)
-		{
-			if (ICameraSubject* subject = queryTypedChild<ICameraSubject>((int)i))
-				subject->onCameraNear(distance);
-		}
-	}
-
-	void Accoutrement::render3dSelect(Adorn* adorn, SelectState selectState)
-	{
-		for (size_t i = 0; i < numChildren(); i++)
-		{
-			if (IRenderable* renderable = queryTypedChild<IRenderable>((int)i))
-				renderable->render3dSelect(adorn, selectState);
-		}
-	}
-
-	void Accoutrement::onEvent_AddedBackend(boost::shared_ptr<Instance> child)
-	{
-		if (child.get() != this)
-		{
-			RBXASSERT(ServiceProvider::findServiceProvider(this));
-			RBXASSERT(Network::Players::backendProcessing(this, true));
-
-			AccoutrementState state = computeDesiredState();
-			const ServiceProvider* serviceProvider = ServiceProvider::findServiceProvider(this);
-
-			RBXASSERT(serviceProvider);
-
-			setDesiredState(state, serviceProvider);
-		}
-	}
-
-	void Accoutrement::onEvent_RemovedBackend(boost::shared_ptr<Instance> child)
-	{
-		if (child.get() != this)
-		{
-			RBXASSERT(ServiceProvider::findServiceProvider(this));
-			RBXASSERT(Network::Players::backendProcessing(this, true));
-
-			if (child.get() == (Instance*)this->weld.get())
-			{
-				RBXASSERT(Accoutrement::drawSelected());
-				setDesiredState(NOTHING, ServiceProvider::findServiceProvider(this));
-			}
-
-			AccoutrementState state = computeDesiredState();
-			const ServiceProvider* serviceProvider = ServiceProvider::findServiceProvider(this);
-
-			RBXASSERT(serviceProvider);
-
-			setDesiredState(state, serviceProvider);
-		}
-	}
-
-	void Accoutrement::onEvent_HandleTouched(boost::shared_ptr<Instance> other)
-	{
-		RBXASSERT(Network::Players::backendProcessing(this, true));
-
-		if (backendAccoutrementState == IN_WORKSPACE)
-		{
-			Instance* otherParent = other->getParent();
-			Humanoid* humanoid = Humanoid::modelIsCharacter(otherParent);
-
-			if (humanoid && humanoid->getTorso() && !otherParent->findFirstChildOfType<Accoutrement>())
-			{
-				setParent(otherParent);
-			}
-		}
-	}
-
-	XmlElement* Accoutrement::write()
-	{
-		if (!writeUnlocked)
-			return new XmlElement(tag_External, InstanceHandle(this));
-		else
-			return Instance::write();
-	}
-
-	void Accoutrement::upTo_Equipped()
-	{
-		handleTouched.disconnect();
-
-		std::vector<boost::weak_ptr<PartInstance>> parts;
-		PartInstance::findParts(this, parts);
-		DragUtilities::unJoinFromOutsiders(parts);
-
-		Humanoid* humanoid = Humanoid::modelIsCharacter(getParent());
-		RBXASSERT(humanoid);
-
-		PartInstance* head = humanoid->getHead();
-		RBXASSERT(head);
-
-		PartInstance* handle = getHandle();
-		RBXASSERT(handle);
-
-		buildWeld(head, handle, humanoid->getTopOfHead(), attachmentPoint, "HeadWeld");
-	}
-
-	void Accoutrement::upTo_InCharacter()
-	{
-		RBXASSERT(Humanoid::modelIsCharacter(getParent()));
-
-		characterChildAdded = Instance::event_childAdded.connect(getParent(), boost::bind(&Accoutrement::onEvent_AddedBackend, this, _1));
-		characterChildRemoved = Instance::event_childRemoved.connect(getParent(), boost::bind(&Accoutrement::onEvent_RemovedBackend, this, _1));
-	}
-
-	void Accoutrement::connectTouchEvent()
-	{
-		if (PartInstance* handle = getHandle())
-		{
-			handleTouched = PartInstance::event_Touched.connect(handle, boost::bind(&Accoutrement::onEvent_HandleTouched, this, _1));
-		}
-		else
-		{
-			handleTouched.disconnect();
-		}
-	}
-
-	void Accoutrement::setBackendAccoutrementState(int value)
-	{
-		if (value != backendAccoutrementState)
-		{
-			backendAccoutrementState = (AccoutrementState)value;
-			raisePropertyChanged(prop_BackendAccoutrementState);
-		}
-	}
-
-	void Accoutrement::setAttachmentPoint(const G3D::CoordinateFrame& value)
-	{
-		if (value != attachmentPoint)
-		{
-			attachmentPoint = value;
-
-			if (Workspace* workspace = ServiceProvider::find<Workspace>(this))
-				workspace->raiseDrawChanged();
-
-			raisePropertyChanged(prop_AttachmentPoint);
-
-			if (weld)
-			{
-				RBXASSERT(Network::Players::backendProcessing(this, true));
-				weld->setC1(attachmentPoint);
-			}
-		}
-	}
-
-	void Accoutrement::setAttachmentPos(const G3D::Vector3& v)
-	{
-		setAttachmentPoint(G3D::CoordinateFrame(attachmentPoint.rotation, v));
-	}
-
-	void Accoutrement::setAttachmentForward(const G3D::Vector3& v)
-	{
-		G3D::CoordinateFrame c = attachmentPoint;
-		G3D::Vector3 oldX = c.rotation.getColumn(0);
-		G3D::Vector3 oldY = c.rotation.getColumn(1);
-
-		G3D::Vector3 z = -v.direction();
-
-		G3D::Vector3 x = oldY.cross(z);
-		x.unitize();
-
-		G3D::Vector3 y = z.cross(x);
-		y.unitize();
-		
-		c.rotation.setColumn(0, x);
-		c.rotation.setColumn(1, y);
-		c.rotation.setColumn(2, z);
-
-		setAttachmentPoint(c);
-	}
-
-	const PartInstance* Accoutrement::getHandleConst() const
-	{
-		return dynamic_cast<PartInstance*>(findFirstChildByName("Handle"));
-	}
-
-	void Accoutrement::upTo_InWorkspace()
-	{
-		RBXASSERT(ServiceProvider::findServiceProvider(this));
-		RBXASSERT(Network::Players::backendProcessing(this, true));
-	}
-
-	void Accoutrement::downFrom_HasHandle()
-	{
-		handleTouched.disconnect();
-	}
-
-	void Accoutrement::setDesiredState(AccoutrementState desiredState, const ServiceProvider* serviceProvider)
-	{
-		do
-		{
-			RBXASSERT(Network::Players::backendProcessing(serviceProvider, true));
-
-			if (backendAccoutrementState < desiredState)
-			{
-				switch (backendAccoutrementState)
-				{
-				case IN_CHARACTER:
-					upTo_Equipped();
-					break;
-				case IN_WORKSPACE:
-					upTo_InCharacter();
-					break;
-				case HAS_HANDLE:
-					upTo_InWorkspace();
-					break;
-				case NOTHING:
-					connectTouchEvent();
-					break;
-				default:
-					RBXASSERT(false);
-					break;
-				}
-
-				setBackendAccoutrementState(backendAccoutrementState + HAS_HANDLE);
-			}
-			else if (desiredState < backendAccoutrementState)
-			{
-				switch (backendAccoutrementState)
-				{
-				case EQUIPPED:
-					downFrom_Equipped();
-					break;
-				case IN_CHARACTER:
-					downFrom_InCharacter();
-					break;
-				case IN_WORKSPACE:
-					break;
-				case HAS_HANDLE:
-					downFrom_HasHandle();
-					break;
-				default:
-					RBXASSERT(false);
-					break;
-				}
-
-				setBackendAccoutrementState(backendAccoutrementState - HAS_HANDLE);
-			} 
-		} while (desiredState != backendAccoutrementState);
-	}
-
-	Hat::Hat()
-	{
-		setName("Hat");
-	}
+// Native00669f60 consumes one string reference, returns a32-bit hash; caller
+// retains the lowthree bits for the genuine Color::colorFromIndex8 palette.
+unsigned int playerNameHash(const std::string&);
+void ScoreHud::renderFFALeaderboard(Adorn* adorn) {
+    BoardData data;
+    BuildBoardData(data);
+    if(data.fields.empty()) return;
+    bool hasStats=data.fields.size()!=1;
+    float viewportWidth=adorn->getViewport().width();
+    float row=viewportWidth/1024.0f*14.0f;
+    float width=viewportWidth*0.33f;
+    if(!hasStats) width*=0.5f;
+    ((GuiItemApi*)this)->setGuiSize(G3D::Vector2(width,(data.data.size()+2.5f)*row));
+    Rect rect=getMyRect();
+    adorn->rect2d(rect.toRect2D(),GuiItem::translucentBackdrop());
+    for(unsigned col=0;col<data.fields.size();++col) {
+        G3D::Vector2 position(rect.low.x,rect.low.y);
+        float extent=rect.high.x-rect.low.x;
+        if(col) position.x+=extent*0.5f+extent*0.5f/data.fields.size()*(col-1);
+        adorn->drawFont2D(data.fields[col],position,row,G3D::Color4(G3D::Color3::white(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+    }
+    rect.low.y+=row*2;
+    for(unsigned col=0;col<data.fields.size();++col) {
+        for(unsigned index=0;index<data.data.size();++index) {
+            G3D::Color3 color=G3D::Color3::white();
+            if(!col) color=Color::colorFromIndex8(playerNameHash(data.data[index][0])&7);
+            float extent=rect.high.x-rect.low.x;
+            G3D::Vector2 position(rect.low.x,rect.low.y+index*row);
+            if(col) position.x+=extent*0.5f+extent*0.5f/data.fields.size()*(col-1);
+            adorn->drawFont2D(data.data[index][col],position,row,G3D::Color4(color,1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+        }
+    }
+}
 }

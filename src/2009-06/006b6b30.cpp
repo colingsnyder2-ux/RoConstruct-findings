@@ -1,108 +1,16 @@
-// from server: 17% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_boxselect2008layout1dfd3854114f125f.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/Name.h"
-#include "util/Debug.h"
-#include <boost/thread/once.hpp>
+#include <set>
+#include "v8datamodel/Selection.h"
+#include <algorithm>
+namespace RBX {
+class BoxSelectCommand {char prefix[28];ServiceClient<Selection> selection;char gap[12];std::set<Instance*> previousItemsInBox;public:void selectAnd(const std::set<Instance*>&);void selectReverse(const std::set<Instance*>&);};
+template<int Action> class SelectionOutput:public std::_Outit {Selection* selection;public:SelectionOutput(Selection* s):selection(s){}SelectionOutput& operator*(){return *this;}SelectionOutput operator++(int){return *this;}SelectionOutput& operator++(){return *this;}SelectionOutput& operator=(Instance* i){if(Action==0)selection->addToSelection(i);else if(Action==1)selection->removeFromSelection(i);else selection->toggleSelection(i);return *this;}};
 
-// intentionally outside of the RBX namespace
-boost::once_flag flag = BOOST_ONCE_INIT;
-
-boost::mutex& moo2()
-{
-	static boost::mutex mutex2;
-	return mutex2;
-}
-
-void initMoo()
-{
-	moo2();
-}
-
-namespace RBX
-{
-	// seems to be inlined
-	boost::mutex& Name::mutex()
-	{
-		boost::call_once(initMoo, flag);
-		return moo2();
-	}
-
-	std::map<int, Name*>& Name::dictionary()
-	{
-		static std::map<int, Name*> d;
-		return d;
-	}
-
-	Name::NamMap& Name::namMap()
-	{
-		static NamMap n;
-		return n;
-	}
-
-	const Name& Name::getNullName()
-	{
-		boost::mutex::scoped_lock scoped_lock(mutex());
-		static const Name& nullName = declare("", 0);
-		return nullName;
-	}
-
-	const Name& Name::declare(const char* sName, int dictionaryIndex)
-	{
-		if (!sName)
-		{
-			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
-			return getNullName();
-		}
-
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			if (dictionaryIndex != -1)
-			{
-				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
-				dictionary()[dictionaryIndex] = iter->second;
-			}
-			return *iter->second;
-		}
-		else
-		{
-			Name* name = new Name(sName, dictionaryIndex);
-			namMap()[sName] = name;
-			dictionary()[dictionaryIndex] = name;
-			return *name;
-		}
-	}
-
-	const Name& Name::lookup(const std::string& sName)
-	{
-		RBXASSERT(sName.size() < 50);
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			return *iter->second;
-		}
-		else
-		{
-			return getNullName();
-		}
-	}
-
-	const Name& Name::lookup(const char* sName)
-	{
-		if (!sName)
-		{
-			return getNullName();
-		}
-
-		return lookup(std::string(sName));
-	}
+void BoxSelectCommand::selectAnd(const std::set<Instance*>& n){std::set_difference(n.begin(),n.end(),previousItemsInBox.begin(),previousItemsInBox.end(),SelectionOutput<0>(selection));std::set_difference(previousItemsInBox.begin(),previousItemsInBox.end(),n.begin(),n.end(),SelectionOutput<1>(selection));previousItemsInBox=n;}
+void BoxSelectCommand::selectReverse(const std::set<Instance*>& n){std::set_difference(n.begin(),n.end(),previousItemsInBox.begin(),previousItemsInBox.end(),SelectionOutput<2>(selection));std::set_difference(previousItemsInBox.begin(),previousItemsInBox.end(),n.begin(),n.end(),SelectionOutput<2>(selection));previousItemsInBox=n;}
 }

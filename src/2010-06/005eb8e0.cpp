@@ -1,41 +1,15 @@
-// from server: 65% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net IdManager.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_historygetnative9b52452d98cd5fa6.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "IdManager.h"
-#include <boost/signal.hpp>
-#include <boost/function.hpp>
-#include <boost/bind.hpp>
-
-namespace RBX
-{
-
-	void IdManager::addInstance(Instance* instance)
-	{
-		Guid::Data extractedData;
-		instance->getGuid().extract(extractedData);
-
-		RBXASSERT(getInstance(extractedData) == NULL || getInstance(extractedData) == instance);
-
-		items[extractedData] = instance;
-	}
-
-	void IdManager::removeInstance(boost::shared_ptr<Instance> instance)
-	{
-		Guid::Data extractedData;
-		instance->getGuid().extract(extractedData);
-
-		items.erase(extractedData);
-	}
-
-	void IdManager::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
-	{
-		if (newProvider)
-		{
-			removeInstanceConnection = event_descendentRemoving.connect(getRootAncestor(), boost::bind(&IdManager::removeInstance, this, _1));
-		}
-	}
-}
+#include <map>
+#include <boost/shared_ptr.hpp>
+#include <boost/any.hpp>
+struct Instance{};struct Service{};struct Descriptor{};
+struct Variant{const void*type;boost::any content;};
+struct Record{Service*service;boost::shared_ptr<Instance>object;int kind;boost::shared_ptr<Instance>parent;std::map<const Descriptor*,Variant>values;Record(Service*,boost::shared_ptr<Instance>);Record(const Record&);~Record();};
+Record::Record(Service*s,boost::shared_ptr<Instance>p):service(s),object(p),kind(0){}
+struct Records:std::map<Instance*,Record>{Service*service;Record*get(boost::shared_ptr<Instance>);};
+Record*Records::get(boost::shared_ptr<Instance>p){iterator i=find(p.get());if(i==end())i=insert(std::make_pair(p.get(),Record(service,p))).first;return &i->second;}

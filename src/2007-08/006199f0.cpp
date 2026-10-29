@@ -1,89 +1,189 @@
-// from server: 30% by colin
-// roc 2007-08 006199f0  unit: RBX::ContactConnector  size: 444 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 006199f0
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll v8kernel/Connector.cpp
 
-struct Vector3 {
-    float x, y, z;
-};
+// Candidate translation unit (score above; library headers required).
+#include "v8kernel/Connector.h"
+#include "util/Debug.h"
 
-struct Body {
-    char pad[0x1c];
-    Vector3 pos;
-};
-
-struct ContactConnector {
-    char pad0[0xc];
-    Body* body0;
-    Body* body1;
-    Body* body2;
-    Body* body3;
-    int age;
-    float firstApproach;
-    float threshold;
-    float forceMagLast;
-    Vector3 frictionOffset;
-    void updateContactPoint(Vector3* out, float* a, float* b, int c);
-};
-
-extern float g_79fe50;
-extern double g_7a0b68;
-extern double g_7a0b70;
-extern float g_7b1538;
-
-extern "C" float __stdcall sub_50f3a0(float);
-extern "C" double __cdecl atan2(double, double);
-
-void ContactConnector::updateContactPoint(Vector3* out, float* a, float* b, int c)
+namespace RBX
 {
-    Body* b0 = body0;
-    Body* b1 = body1;
-    Vector3 d1;
-    d1.x = b1->pos.x - b0->pos.x;
-    d1.y = b1->pos.y - b0->pos.y;
-    d1.z = b1->pos.z - b0->pos.z;
-    *out = d1;
-    sub_50f3a0(g_79fe50);
+	void ContactConnector::computeForce(const float dt, bool throttling)
+	{
+		RBXASSERT(!throttling || !this->canThrottle());
 
-    Body* b2 = body2;
-    Body* b3 = body3;
-    Vector3 d2;
-    d2.x = b2->pos.x - b0->pos.x;
-    d2.y = b2->pos.y - b0->pos.y;
-    d2.z = b2->pos.z - b0->pos.z;
-    Vector3 d3;
-    d3.x = b3->pos.x - b0->pos.x;
-    d3.y = b3->pos.y - b0->pos.y;
-    d3.z = b3->pos.z - b0->pos.z;
+		PairParams params;
+		this->geoPair.computeLengthNormalPosition(params);
 
-    float cross1x = d2.y * out->z - d2.z * out->y;
-    float cross1y = d2.z * out->x - d2.x * out->z;
-    float cross1z = d2.x * out->y - d2.y * out->x;
+		if (params.length < 0.f)
+		{
+			float normalVel;
+			G3D::Vector3 perpVel;
+			this->geoPair.computeNormalPerpVel(normalVel, perpVel, params);
+			this->frictionOffset += dt * perpVel;
 
-    float cross2x = d3.y * out->z - d3.z * out->y;
-    float cross2y = d3.z * out->x - d3.x * out->z;
-    float cross2z = d3.x * out->y - d3.y * out->x;
+			float v8 = this->k * 0.2f;
+			float mag = this->frictionOffset.magnitude() * v8;
+			float v10 = this->kFriction * this->forceMagLast;
 
-    float dot1 = cross1x * cross1y + out->x * out->y + cross1z * out->z;
-    float dot2 = cross2x * out->x + cross2y * out->y + cross2z * out->z;
+			if (v10 < mag && mag > 0.00000001)
+				this->frictionOffset *= (v10 / mag); 
 
-    float angle = (float)atan2((double)dot1, (double)dot2);
+			this->frictionOffset -= params.normal * this->frictionOffset.dot(params.normal);
 
-    int oldAge = age;
-    if (firstApproach > (float)g_7a0b68) {
-        if (firstApproach < (float)g_7a0b70) {
-            age = oldAge + 1;
-        }
-    } else {
-        if (firstApproach > (float)g_7a0b70) {
-            if (firstApproach < angle) {
-                age = oldAge - 1;
-            }
-        }
-    }
+			float newThreshold;
+			if (this->threshold != 0)
+			{
+				newThreshold = (this->threshold + 0.01f) * 0.999f - 0.01f;
+			}
+			else
+			{
+				if (this->firstApproach == 0)
+					newThreshold = 0;
+				else
+					newThreshold = params.length;
+			}
+			this->threshold = newThreshold;
 
-    float fage = (float)age;
-    float scaled = fage * g_7b1538;
-    *a = scaled + firstApproach;
-    *b = (float)oldAge * g_7b1538 + firstApproach - scaled;
-    firstApproach = *b;
+			float newFirstApproach;
+			if (this->firstApproach != 0)
+			{
+				newFirstApproach = (this->firstApproach + 0.01f) * 0.999f - 0.01f;
+			}
+			else
+			{
+				newFirstApproach = params.length;
+			}
+			this->firstApproach = newFirstApproach;
+
+			float kApplied = normalVel < 0 ? this->k : this->kNeg;
+			float v27 = (this->firstApproach - params.length) * kApplied;
+			this->forceMagLast = v27;
+			this->forceMagLast = params.length <= this->threshold ? this->forceMagLast : 0.f;
+
+			G3D::Vector3 v31 = this->frictionOffset * v8;
+			G3D::Vector3 force = (this->forceMagLast * params.normal) - v31;
+			this->geoPair.forceToBodies(force, params.position); 
+		}
+		else
+		{
+			this->firstApproach = 0;
+			this->threshold = 0;
+			this->forceMagLast = 0;
+		}
+	}
+
+	bool ContactConnector::canThrottle() const
+	{
+		return this->geoPair.getBody(0)->getCanThrottle() && this->geoPair.getBody(1)->getCanThrottle();
+	}
+
+	void PointToPointBreakConnector::forceToPoints(const G3D::Vector3& force)
+	{
+		this->point0->accumulateForce(-force);
+		this->point1->accumulateForce(force);
+		RBXASSERT(force.magnitude() < Math::inf());
+	}
+
+	void PointToPointBreakConnector::computeForce(const float dt, bool throttling)
+	{
+		if (!this->broken)
+		{
+			G3D::Vector3 force = (this->point1->getWorldPos() - this->point0->getWorldPos()) * -this->k;
+
+			float taxi = Math::taxiCabMagnitude(force);
+			this->broken = taxi > this->breakForce;
+			this->forceToPoints(force);
+		}
+	}
+
+	float PointToPointBreakConnector::potentialEnergy()
+	{
+		G3D::Vector3 diff = this->point1->getWorldPos() - this->point0->getWorldPos();
+		float mag = diff.length();
+		return this->k * mag * mag * 0.5f;
+	}
+
+	RotateConnector::RotateConnector(Point* base0, Point* ray0, Point* ref0, Point* ref1, float kValue, float armLength)
+		: base0(base0),
+		  ray0(ray0),
+		  ref0(ref0),
+		  ref1(ref1),
+  		  k(kValue * armLength * armLength),
+		  lastRotation(0),
+		  windings(0),
+		  kernelInput()
+	{}
+
+	void RotateConnector::computeForce(const float dt, bool throttling)
+	{
+		G3D::Vector3 normal;
+		float rotation;
+		float rotVel;
+		this->computeParams(normal, rotation, rotVel);
+
+		this->kernelInput.setGoal(rotation);
+
+		float lastGoal = 0;
+		float currentGoal;
+		float increment;
+		this->kernelInput.get(lastGoal, currentGoal, increment);
+
+		//float v1 = (currentGoal - rotation) * this->k;
+		G3D::Vector3 v2 = normal * ((currentGoal - rotation) * this->k);
+
+		this->ref0->getBody()->accumulateTorque(-v2);
+		this->ref1->getBody()->accumulateTorque(v2);
+	}
+
+	void RotateConnector::computeParams(G3D::Vector3& normal, float& rotation, float& rotVel)
+	{
+		G3D::Vector3 ray0base0_delta = this->ray0->getWorldPos() - this->base0->getWorldPos();
+		normal = ray0base0_delta;
+		normal.unitize();
+		G3D::Vector3 ref0base0_delta = this->ref0->getWorldPos() - this->base0->getWorldPos();
+		G3D::Vector3 ref1base0_delta = this->ref1->getWorldPos() - this->base0->getWorldPos();
+
+		float funnyCalculation1 = normal.dot(ref0base0_delta);
+		float funnyCalculation2 = normal.dot(ref1base0_delta);
+
+		G3D::Vector3 ref0base0_delta_funny = ref0base0_delta - (normal * funnyCalculation1);
+		G3D::Vector3 ref1base0_delta_funny = ref1base0_delta - (normal * funnyCalculation2);
+
+		int oldWindings = this->windings;
+
+		float tripleProdThing = ref0base0_delta_funny.cross(ref1base0_delta_funny).dot(normal);
+		float dotThing = ref1base0_delta_funny.dot(ref0base0_delta_funny);
+
+		float result = atan2(tripleProdThing, dotThing);
+
+		if (this->lastRotation > G3D::halfPi())
+		{
+			if (result < -G3D::halfPi()) //line numbers show that this is an actual line
+				this->windings = oldWindings + 1; // these could be very likely temp values 
+		}									   //that are later written to actual class variable according to original asm
+		else if (this->lastRotation < -G3D::halfPi())
+		{
+			if (result > G3D::halfPi())
+				this->windings = oldWindings - 1;
+		}
+
+		rotation = this->windings * Math::twoPi() + result;// line 69 and line 70
+		rotVel = rotation - (Math::twoPi() * oldWindings + this->lastRotation);
+		this->lastRotation = result; //line 71
+	}
+
+	void NormalBreakConnector::computeForce(const float dt, bool throttling)
+	{
+		if ( !this->broken )
+		{
+			const G3D::Vector3& worldNormal = Math::getWorldNormal(this->normalIdBody0, this->point0->getBody()->getPV().position);
+			const G3D::Vector3& force = -this->k * (this->point1->getWorldPos() - this->point0->getWorldPos());
+			
+			float forceDot = force.dot(worldNormal);
+			this->broken = -forceDot > this->breakForce;
+			this->forceToPoints(force);
+		}
+	}
 }

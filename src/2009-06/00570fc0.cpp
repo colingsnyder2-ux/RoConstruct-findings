@@ -1,10 +1,10 @@
-// from server: 55% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 G3Dcpp/GImage_jpeg.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-g3d-dll roc_gimage_jpeg_native_visible_lifetime_cdeddbeb26c4f2e5.cpp
 
 // Candidate translation unit (score above; library headers required).
+#include <stdexcept>
 /**
   @file GImage_jpeg.cpp
   @author Morgan McGuire, morgan@graphics3d.com
@@ -21,8 +21,8 @@
 */
 extern "C" {
 #ifdef G3D_WIN32
-	#include "../IJG/jconfig.h"
-	#include "../IJG/cdjpeg.h"
+	#include "IJG/jconfig.h"
+	#include "IJG/cdjpeg.h"
 #else
 	#include <jconfig.h>
 	#include <jpeglib.h>
@@ -30,6 +30,37 @@ extern "C" {
 }
 
 namespace G3D {
+GImage::GImage(
+    const GImage&        other) : _byte(NULL) {
+
+    _copy(other);
+}
+
+
+GImage::~GImage() {
+    clear();
+}
+
+
+void GImage::clear() {
+    width = 0;
+    height = 0;
+    System::free(_byte);
+    _byte = NULL;
+}
+
+
+
+
+static void jpegErrorExit(j_common_ptr cinfo)
+{
+ (*cinfo->err->output_message)(cinfo);
+ jpeg_destroy(cinfo);
+ char message[JMSG_LENGTH_MAX];
+ (*cinfo->err->format_message)(cinfo, message);
+ throw std::runtime_error(message);
+}
+
 
 
 const int jpegQuality = 96;
@@ -273,6 +304,7 @@ void GImage::encodeJPEG(
     jpeg_error_mgr          jerr;
 
 	cinfo.err = jpeg_std_error(&jerr);
+ jerr.error_exit = jpegErrorExit;
 	jpeg_create_compress(&cinfo);
 
     // Specify the destination for the compressed data.
@@ -344,6 +376,7 @@ void GImage::decodeJPEG(
     channels = 3;
     // We have to set up the error handler, in case initialization fails.
 	cinfo.err = jpeg_std_error(&jerr);
+ jerr.error_exit = jpegErrorExit;
 
     // Initialize the JPEG decompression object.
 	jpeg_create_decompress(&cinfo);

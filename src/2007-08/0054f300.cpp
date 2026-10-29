@@ -1,220 +1,156 @@
-// from server: 47% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/thread/src/once.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-atl90-dll roc_http_wininet_catch_19404fecbe27f869.cpp
 
 // Candidate translation unit (score above; library headers required).
-// Copyright (C) 2001-2003
-// William E. Kempf
-//
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
-//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+#define _SCL_SECURE_NO_DEPRECATE // required to disable a warning
+#include "util/Http.h"
+#include <windows.h>
+#include <atlutil.h>
+#include <wininet.h>
+#include <sstream>
+#include <G3D/format.h>
+#include <boost/scoped_ptr.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
 
-#include <boost/thread/detail/config.hpp>
-
-#include <boost/detail/workaround.hpp>
-
-#include <boost/thread/once.hpp>
-#include <cstdio>
-#include <cassert>
-
-
-#if defined(BOOST_HAS_WINTHREADS)
-#   if BOOST_WORKAROUND(__BORLANDC__,<= 0x551)
-      using std::size_t;
-#   endif
-#   include <windows.h>
-#   if defined(BOOST_NO_STRINGSTREAM)
-#       include <strstream>
-
-class unfreezer
+class HttpRequest_source : public boost::iostreams::device<boost::iostreams::input>
 {
-public:
-    unfreezer(std::ostrstream& s) : m_stream(s) {}
-    ~unfreezer() { m_stream.freeze(false); }
 private:
-    std::ostrstream& m_stream;
+	void* request;
+
+public:
+	HttpRequest_source(void* request)
+		: request(request)
+	{
+	}
+public:
+	// does not match
+	int read(char* s, int n)
+	{
+		DWORD numBytes;
+		if (!InternetQueryDataAvailable(request, &numBytes, 0, NULL))
+			return -1;
+		if (numBytes == 0)
+			return -1;
+
+		DWORD bytesRead;
+		if (!InternetReadFile(request, s, n, &bytesRead))
+			throw std::runtime_error("InternetReadFile failed");
+
+		return bytesRead;
+	}
 };
 
-#   else
-#       include <sstream>
-#   endif
-#elif defined(BOOST_HAS_MPTASKS)
-#   include <Multiprocessing.h>
-#endif
-
-#ifdef BOOST_NO_STDC_NAMESPACE
-namespace std { using ::sprintf; }
-#endif
-
-#if defined(BOOST_HAS_PTHREADS)
-namespace {
-pthread_key_t key;
-pthread_once_t once = PTHREAD_ONCE_INIT;
-
-typedef void (*once_callback)();
-}
-
-extern "C" {
-
-    static void key_init()
-    {
-        pthread_key_create(&key, 0);
-    }
-
-    static void do_once()
-    {
-        once_callback* cb = reinterpret_cast<once_callback*>(
-            pthread_getspecific(key));
-        (**cb)();
-    }
-
-}
-#elif defined(BOOST_HAS_MPTASKS)
-namespace {
-void *remote_call_proxy(void *pData)
+struct String_sink : public boost::iostreams::device<boost::iostreams::output>
 {
-    std::pair<void (*)(), boost::once_flag *> &rData(
-        *reinterpret_cast<std::pair<void (*)(), boost::once_flag *> *>(pData));
+public:
+	std::string& s;
 
-    if(*rData.second == false)
-    {
-        rData.first();
-        *rData.second = true;
-    }
+public:
+	String_sink(std::string& s)
+		: s(s)
+	{
+	}
+public:
+	// NOTE: not checked
+	int write(const char* c, int n)
+	{
+		s.append(c, n);
+		return n;
+	}
+};
 
-    return(NULL);
-}
-}
 
-#elif defined(BOOST_HAS_WINTHREADS)
-namespace {
-// The signature for InterlockedCompareExchange has changed with the
-// addition of Win64 support. I can't determine any (consistent and
-// portable) way of using conditional compilation to detect this, so
-// we use these type wrappers.  Unfortunately, the various vendors
-// use different calling conventions and other signature anamolies,
-// and thus have unique types as well.  This is known to work on VC6,
-// VC7, Borland 5.5.2 and gcc 3.2.  Are there other signatures for
-// other platforms?
-inline LONG ice_wrapper(LONG (__stdcall *ice)(LONG*, LONG, LONG),
-    volatile LONG* dest, LONG exch, LONG cmp)
-{
-    return (*ice)(const_cast<LONG*>(dest), exch, cmp);
-}
+namespace RBX {
+	class MD5Hasher
+	{
+	public:
+		virtual void addData(std::istream& data) = 0;
+		virtual void addData(const std::string& data) = 0;
+		virtual void addData(const char* data, size_t nBytes) = 0;
+		
+		virtual std::string toString() = 0;
+		virtual const char* c_str() = 0;
 
-inline LONG ice_wrapper(LONG (__stdcall *ice)(volatile LONG*, LONG, LONG),
-    volatile LONG* dest, LONG exch, LONG cmp)
-{
-    return (*ice)(dest, exch, cmp);
-}
-
-inline LONG ice_wrapper(LPVOID (__stdcall *ice)(LPVOID*, LPVOID, LPVOID),
-    volatile LONG* dest, LONG exch, LONG cmp)
-{
-    return (LONG)(*ice)((LPVOID*)dest, (LPVOID)exch, (LPVOID)cmp);
-}
-
-// The friendly form of InterlockedCompareExchange that defers
-// according to the above function type wrappers.
-inline LONG compare_exchange(volatile LPLONG dest, LONG exch, LONG cmp)
-{
-#ifdef _WIN64
-    // Original patch from Anthony Williams.
-    // I (Roland Schwarz) am trying this for RC_1_34_0, since x64 regressions are
-    // currently not run on x64 platforms for HEAD
-    return InterlockedCompareExchange(dest, exch,cmp);
-#else    
-    return ice_wrapper(&InterlockedCompareExchange, dest, exch, cmp);
-#endif
-}
-}
-#endif
-
-namespace boost {
-
-void call_once(void (*func)(), once_flag& flag)
-{
-#if defined(BOOST_HAS_WINTHREADS)
-    if (compare_exchange(&flag, 1, 1) == 0)
-    {
-#if defined(BOOST_NO_STRINGSTREAM)
-        std::ostrstream strm;
-        strm << "2AC1A572DB6944B0A65C38C4140AF2F4" 
-             << std::hex
-             << GetCurrentProcessId() 
-             << &flag 
-             << std::ends;
-        unfreezer unfreeze(strm);
-#   if defined (BOOST_NO_ANSI_APIS)
-        USES_CONVERSION;
-        HANDLE mutex = CreateMutexW(NULL, FALSE, A2CW(strm.str()));
-#   else
-        HANDLE mutex = CreateMutexA(NULL, FALSE, strm.str());
-#   endif
-#else
-#   if defined (BOOST_NO_ANSI_APIS)
-        std::wostringstream strm;
-        strm << L"2AC1A572DB6944B0A65C38C4140AF2F4" 
-             << std::hex
-             << GetCurrentProcessId() 
-             << &flag;
-        HANDLE mutex = CreateMutexW(NULL, FALSE, strm.str().c_str());
-#   else
-        std::ostringstream strm;
-        strm << "2AC1A572DB6944B0A65C38C4140AF2F4" 
-             << std::hex
-             << GetCurrentProcessId() 
-             << &flag;
-        HANDLE mutex = CreateMutexA(NULL, FALSE, strm.str().c_str());
-#   endif
-#endif
-        assert(mutex != NULL);
-
-        int res = 0;
-        res = WaitForSingleObject(mutex, INFINITE);
-        assert(res == WAIT_OBJECT_0);
-
-        if (compare_exchange(&flag, 1, 1) == 0)
-        {
-            try
-            {
-                func();
-            }
-            catch (...)
-            {
-                res = ReleaseMutex(mutex);
-                assert(res);
-                res = CloseHandle(mutex);
-                assert(res);
-                throw;
-            }
-            InterlockedExchange(&flag, 1);
-        }
-
-        res = ReleaseMutex(mutex);
-        assert(res);
-        res = CloseHandle(mutex);
-        assert(res);
-    }
-#elif defined(BOOST_HAS_PTHREADS)
-    pthread_once(&once, &key_init);
-    pthread_setspecific(key, &func);
-    pthread_once(&flag, do_once);
-#elif defined(BOOST_HAS_MPTASKS)
-    if(flag == false)
-    {
-        // all we do here is make a remote call to blue, as blue is not
-        // reentrant.
-        std::pair<void (*)(), once_flag *> sData(func, &flag);
-        MPRemoteCall(remote_call_proxy, &sData, kMPOwningProcessRemoteContext);
-        assert(flag == true);
-    }
-#endif
-}
+	public:
+		static MD5Hasher* create();
+	};
+struct NativeInternetHandle {
+ HINTERNET value;
+ NativeInternetHandle(HINTERNET v):value(v){}
+ ~NativeInternetHandle(){InternetCloseHandle(value);}
+ operator HINTERNET()const{return value;}
+};
+class NativeHttp:public Http {public:void request(bool,std::istream&,bool,const char*,std::string&);void failure(bool,const char*);};
+void NativeHttp::request(bool isPost,std::istream& data,bool compressData,const char* additionalHeaders,std::string& response) {
+ if(url.empty())throw std::runtime_error("empty url");
+ if(!Http::trustCheck(url.c_str()))throw std::runtime_error(G3D::format("trust check failed for %s",url.c_str()));
+ ATL::CUrl crack;crack.CrackUrl(url.c_str());
+ if(crack.GetHostNameLength()==0)throw std::runtime_error(G3D::format("'%s' is missing a hostName",url.c_str()));
+ HINTERNET session=InternetOpenA("Roblox/WinInet",INTERNET_OPEN_TYPE_PRECONFIG,NULL,NULL,0);
+ try {
+ HINTERNET connection=InternetConnectA(session,crack.GetHostName(),crack.GetPortNumber(),crack.GetUserNameA(),crack.GetPassword(),INTERNET_SERVICE_HTTP,0,TRUE);
+ try {
+ ATL::CStringA path=crack.GetUrlPath();path+=crack.GetExtraInfo();
+ HINTERNET request=HttpOpenRequestA(connection,isPost?"POST":"GET",path.GetString(),NULL,NULL,NULL,INTERNET_FLAG_EXISTING_CONNECT|INTERNET_FLAG_KEEP_CONNECTION|INTERNET_FLAG_NEED_FILE,TRUE);
+ try {
+ if(!request)throw std::runtime_error(G3D::format("HttpOpenRequest failed for %s",url.c_str()));
+ if(additionalHeaders)failure(HttpAddRequestHeadersA(request,additionalHeaders,(int)strlen(additionalHeaders),HTTP_ADDREQ_FLAG_ADD)==TRUE,"HttpAddRequestHeaders failed");
+ failure(HttpAddRequestHeadersA(request,"Accept-Encoding: gzip\r\n",(int)strlen("Accept-Encoding: gzip\r\n"),HTTP_ADDREQ_FLAG_ADD)==TRUE,"HttpAddRequestHeaders failed");
+ boost::iostreams::gzip_params gzipParams(boost::iostreams::zlib::default_compression);
+ if(isPost) {
+  std::string uploadData;
+  {
+   boost::iostreams::filtering_stream<boost::iostreams::output> out;
+   if(compressData) {
+    std::string contentEncodingHeader="Content-Encoding: gzip\r\n";
+    failure(HttpAddRequestHeadersA(request,contentEncodingHeader.c_str(),(int)contentEncodingHeader.size(),HTTP_ADDREQ_FLAG_ADD)==TRUE,"HttpAddRequestHeaders failed");
+    out.push(boost::iostreams::basic_gzip_compressor<>(gzipParams));
+   }
+   out.push(String_sink(uploadData));boost::iostreams::copy(data,out);
+  }
+  int length=(int)uploadData.size();
+  if(length>10000) {
+   std::string sizeHeader=G3D::format("Roblox-Content-Size: %d\r\n",length);
+   failure(HttpAddRequestHeadersA(request,sizeHeader.c_str(),(int)sizeHeader.size(),HTTP_ADDREQ_FLAG_ADD)==TRUE,"HttpAddRequestHeaders failed");
+   std::string firstHeader=G3D::format("Roblox-Content-First: %d\r\n",uploadData[0]);
+   failure(HttpAddRequestHeadersA(request,firstHeader.c_str(),(int)firstHeader.size(),HTTP_ADDREQ_FLAG_ADD)==TRUE,"HttpAddRequestHeaders failed");
+   std::string lastHeader=G3D::format("Roblox-Content-Last: %d\r\n",uploadData[length-1]);
+   failure(HttpAddRequestHeadersA(request,lastHeader.c_str(),(int)lastHeader.size(),HTTP_ADDREQ_FLAG_ADD)==TRUE,"HttpAddRequestHeaders failed");
+   boost::scoped_ptr<MD5Hasher> hasher(MD5Hasher::create());hasher->addData(uploadData);
+   std::string hashHeader=G3D::format("Roblox-Content-Hash: %s\r\n",hasher->c_str());
+   failure(HttpAddRequestHeadersA(request,hashHeader.c_str(),(int)hashHeader.size(),HTTP_ADDREQ_FLAG_ADD)==TRUE,"HttpAddRequestHeaders failed");
+  }
+  INTERNET_BUFFERSA buffers={0};buffers.dwStructSize=sizeof(buffers);buffers.dwBufferTotal=length;
+  if(!HttpSendRequestExA(request,&buffers,NULL,0,0))throw std::runtime_error("HttpSendRequestEx failed");
+  DWORD written;
+  failure(InternetWriteFile(request,uploadData.c_str(),length,&written)==TRUE,"InternetWriteFile failed");
+  if(written!=length)throw std::runtime_error("Failed to upload content");
+  failure(HttpEndRequestA(request,NULL,0,0)==TRUE,"HttpEndRequest failed");
+ }else failure(HttpSendRequestA(request,NULL,0,NULL,0)==TRUE,"HttpSendRequest failed");
+ int status;DWORD length=sizeof(status);
+ failure(HttpQueryInfoA(request,HTTP_QUERY_STATUS_CODE|HTTP_QUERY_FLAG_NUMBER,&status,&length,NULL)==TRUE,"HttpQueryInfo failed");
+ {
+  boost::iostreams::filtering_stream<boost::iostreams::input> in;
+  char buffer[256];DWORD length=sizeof(buffer);
+  if(HttpQueryInfoA(request,HTTP_QUERY_CONTENT_ENCODING,buffer,&length,NULL))if(std::string(buffer)=="gzip")in.push(boost::iostreams::basic_gzip_decompressor<>());
+  in.push(HttpRequest_source(request));boost::iostreams::copy(in,String_sink(response));
+ }
+ if(status!=200) {
+  char buffer[512];DWORD length=sizeof(buffer);
+  if(HttpQueryInfoA(request,HTTP_QUERY_STATUS_TEXT,buffer,&length,NULL))throw std::runtime_error(std::string(buffer));
+  else throw std::runtime_error(G3D::format("statusCode = %d",status));
+ }
+ }catch(...){InternetCloseHandle(request);throw;}
+ InternetCloseHandle(request);
+ }catch(...){InternetCloseHandle(connection);throw;}
+ InternetCloseHandle(connection);
+ }catch(...){InternetCloseHandle(session);throw;}
+ InternetCloseHandle(session);
 
 }
-
-// Change Log:
-//   1 Aug 01  WEKEMPF Initial version.
+}

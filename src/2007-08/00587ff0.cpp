@@ -1,27 +1,9 @@
-// from server: 38% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_sound_cache_map_native_boundary_8de67e25f930852a.cpp
 
-extern "C" void __stdcall sub_77e6ac();
-
-struct SoundChannel
-{
-    void sub_00587ff0();
-};
-
-void SoundChannel::sub_00587ff0()
-{
-    int* p = *(int**)((char*)this + 0x24);
-    if (p)
-    {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)p + 4), -1) == 1)
-        {
-            (*(void(__thiscall**)(int*))(*(int*)p + 4))(p);
-            if (_InterlockedExchangeAdd((volatile long*)((char*)p + 8), -1) == 1)
-            {
-                (*(void(__thiscall**)(int*))(*(int*)p + 8))(p);
-            }
-        }
-    }
-    sub_77e6ac();
-}
+// Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#include "util/Sound.h"
+template class std::map<RBX::Soundscape::SoundId, boost::shared_ptr<RBX::Soundscape::Sound> >;

@@ -1,8 +1,7 @@
-// from server: 96% by colin
-// roc-lang: c
 // roc-cl: 50727
+// roc-lang: c
 // roc-flags: /O2 /GS- /MD
-// roc-lib: libpng-1.2.7 pngset.c
+// roc-lib: g3d-6.09-png-dll pngset.c
 
 // Candidate translation unit (score above; library headers required).
 

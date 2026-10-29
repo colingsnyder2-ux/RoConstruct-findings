@@ -1,108 +1,74 @@
-// from server: 60% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espeon_joinpermissionda0cc9a207d655eb.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/Name.h"
-#include "util/Debug.h"
-#include <boost/thread/once.hpp>
-
-// intentionally outside of the RBX namespace
-boost::once_flag flag = BOOST_ONCE_INIT;
-
-boost::mutex& moo2()
+#include <string>
+#include <exception>
+namespace RBX {
+class Instance;
+bool checkA(Instance* instance, int role);
+bool checkB(Instance* instance, int role);
+class runtime_error : public std::exception
 {
-	static boost::mutex mutex2;
-	return mutex2;
+    std::string message;
+public:
+    runtime_error(const std::string& m);
+};
+static __declspec(noinline) void checkPermissions(Instance* instance)
+{
+    if (checkA(instance, 1) && !checkB(instance, 1))
+    {
+        std::string msg("Insufficinet permissions");
+        throw runtime_error(msg);
+    }
+}
+void verify(Instance* instance)
+{
+    checkPermissions(instance);
+}
 }
 
-void initMoo()
+#include <boost/shared_ptr.hpp>
+typedef boost::shared_ptr<void> Pair;
+struct Collection {
+    unsigned char padding[12];
+    Pair* begin;
+    Pair* end;
+};
+
+struct Node {
+    unsigned char padding[0x154];
+    Collection* collection;
+    Node* resolve();
+    Pair first();
+    Pair second();
+};
+
+void __cdecl combine(void*, void*);
+
+struct JoinCommand {
+    unsigned char padding[12];
+    Node* node;
+    void prepare();
+    void execute(int);
+};
+
+void JoinCommand::execute(int)
 {
-	moo2();
-}
+    RBX::checkPermissions(reinterpret_cast<RBX::Instance*>(node));
+    Node* p;
+    Node* current = node;
+    if (current)
+        p = current->resolve();
+    else
+        p = 0;
 
-namespace RBX
-{
-	// seems to be inlined
-	boost::mutex& Name::mutex()
-	{
-		boost::call_once(initMoo, flag);
-		return moo2();
-	}
-
-	std::map<int, Name*>& Name::dictionary()
-	{
-		static std::map<int, Name*> d;
-		return d;
-	}
-
-	Name::NamMap& Name::namMap()
-	{
-		static NamMap n;
-		return n;
-	}
-
-	const Name& Name::getNullName()
-	{
-		boost::mutex::scoped_lock scoped_lock(mutex());
-		static const Name& nullName = declare("", 0);
-		return nullName;
-	}
-
-	const Name& Name::declare(const char* sName, int dictionaryIndex)
-	{
-		if (!sName)
-		{
-			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
-			return getNullName();
-		}
-
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			if (dictionaryIndex != -1)
-			{
-				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
-				dictionary()[dictionaryIndex] = iter->second;
-			}
-			return *iter->second;
-		}
-		else
-		{
-			Name* name = new Name(sName, dictionaryIndex);
-			namMap()[sName] = name;
-			dictionary()[dictionaryIndex] = name;
-			return *name;
-		}
-	}
-
-	const Name& Name::lookup(const std::string& sName)
-	{
-		RBXASSERT(sName.size() < 50);
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			return *iter->second;
-		}
-		else
-		{
-			return getNullName();
-		}
-	}
-
-	const Name& Name::lookup(const char* sName)
-	{
-		if (!sName)
-		{
-			return getNullName();
-		}
-
-		return lookup(std::string(sName));
-	}
+    if (static_cast<unsigned>(p->collection->end -
+                              p->collection->begin) == 2) {
+        Pair a = p->first();
+        Pair b = p->second();
+        combine(a.get(), b.get());
+    }
 }

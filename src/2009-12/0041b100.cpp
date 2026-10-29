@@ -1,115 +1,87 @@
-// roc 2009-12 0041b100  unit: rbx::signals::connection::slot  size: 159 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 0041b100
-//
-// 0041b100  6aff                 push -1
-// 0041b102  6828799400           push 0x947928
-// 0041b107  64a100000000         mov eax, dword ptr fs:[0]
-// 0041b10d  50                   push eax
-// 0041b10e  64892500000000       mov dword ptr fs:[0], esp
-// 0041b115  51                   push ecx
-// 0041b116  56                   push esi
-// 0041b117  8bd1                 mov edx, ecx
-// 0041b119  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
-// 0041b11d  83ec08               sub esp, 8
-// 0041b120  8bc4                 mov eax, esp
-// 0041b122  8908                 mov dword ptr [eax], ecx
-// 0041b124  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 0041b128  894804               mov dword ptr [eax + 4], ecx
-// 0041b12b  8b442428             mov eax, dword ptr [esp + 0x28]
-// 0041b12f  c744241800000000     mov dword ptr [esp + 0x18], 0
-// 0041b137  8964240c             mov dword ptr [esp + 0xc], esp
-// 0041b13b  85c0                 test eax, eax
-// 0041b13d  740c                 je 0x41b14b
-// 0041b13f  83c004               add eax, 4
-// 0041b142  b901000000           mov ecx, 1
-// 0041b147  f00fc108             lock xadd dword ptr [eax], ecx
-// 0041b14b  8b4c2420             mov ecx, dword ptr [esp + 0x20]
-// 0041b14f  8b12                 mov edx, dword ptr [edx]
-// 0041b151  ffd2                 call edx
-// 0041b153  8b742420             mov esi, dword ptr [esp + 0x20]
-// 0041b157  c7442410ffffffff     mov dword ptr [esp + 0x10], 0xffffffff
-// 0041b15f  85f6                 test esi, esi
-// 0041b161  742a                 je 0x41b18d
-// 0041b163  8d4604               lea eax, [esi + 4]
-// 0041b166  83c9ff               or ecx, 0xffffffff
-// 0041b169  f00fc108             lock xadd dword ptr [eax], ecx
-// 0041b16d  751e                 jne 0x41b18d
-// 0041b16f  8b16                 mov edx, dword ptr [esi]
-// 0041b171  8b4204               mov eax, dword ptr [edx + 4]
-// 0041b174  8bce                 mov ecx, esi
-// 0041b176  ffd0                 call eax
-// 0041b178  8d4e08               lea ecx, [esi + 8]
-// 0041b17b  83caff               or edx, 0xffffffff
-// 0041b17e  f00fc111             lock xadd dword ptr [ecx], edx
-// 0041b182  7509                 jne 0x41b18d
-// 0041b184  8b06                 mov eax, dword ptr [esi]
-// 0041b186  8b5008               mov edx, dword ptr [eax + 8]
-// 0041b189  8bce                 mov ecx, esi
-// 0041b18b  ffd2                 call edx
-// 0041b18d  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 0041b191  64890d00000000       mov dword ptr fs:[0], ecx
-// 0041b198  5e                   pop esi
-// 0041b199  83c410               add esp, 0x10
-// 0041b19c  c20c00               ret 0xc
-// copied from an identical function in another client (function ?f@S@@QAEXPAXUShared@@@Z)
-
+// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-#pragma intrinsic(_InterlockedDecrement)
+// roc-lib: rbxgs-dll roc_espclaude_f740c1278594c036.cpp
 
-struct Control {
-    virtual void unused();
-    virtual void dispose();
-    virtual void destroy();
-    volatile long strong;
-    volatile long weak;
-
-    void release();
+// Candidate translation unit (score above; library headers required).
+#include <boost/shared_ptr.hpp>
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
+#include <boost/signals.hpp>
+#include <G3D/ReferenceCount.h>
+namespace RBX {
+namespace Reflection { class PropertyDescriptor; }
+class SignalSource { public: virtual ~SignalSource(); };
+class InstanceBase0 { public: virtual ~InstanceBase0(); char pad[0x10]; };
+class Instance : public InstanceBase0, public SignalSource {
+public:
+    template<class F> void visitChildren(F f);
 };
-
-inline void Control::release()
-{
-    if (_InterlockedDecrement(&strong) == 0) {
-        dispose();
-        if (_InterlockedDecrement(&weak) == 0)
-            destroy();
-    }
-}
-
-struct Shared {
-    void* pointer;
-    Control* control;
-
-    Shared(const Shared&);
-    ~Shared();
+class PartInstance : public Instance { };
+template<class Sig> class TSignalDesc {
+public:
+    boost::signals::connection connect(SignalSource* source, const boost::slot<boost::function<Sig> >& slot, int pos);
 };
-
-inline Shared::Shared(const Shared& other)
-    : pointer(other.pointer), control(other.control)
-{
-    if (control) {
-        volatile long* count = &control->strong;
-        _InterlockedExchangeAdd(count, 1);
-    }
-}
-
-inline Shared::~Shared()
-{
-    if (control)
-        control->release();
-}
-
-typedef void (__thiscall *Callback)(void*, Shared);
-
-struct S {
-    Callback callback;
-    void f(void*, Shared);
+extern TSignalDesc<void(boost::shared_ptr<Instance>)> event_childAdded;
+extern TSignalDesc<void(boost::shared_ptr<Instance>)> event_childRemoved;
+extern TSignalDesc<void(boost::shared_ptr<Instance>)> event_ancestryChanged;
+extern TSignalDesc<void(const Reflection::PropertyDescriptor*)> event_propertyChanged;
+namespace Render {
+class Chunk : public G3D::ReferenceCountedObject {
+public:
+    Chunk(float polygonOffset);
+    virtual ~Chunk();
+    char pad[0x1c];
 };
-
-void S::f(void* object, Shared value)
+class Material : public G3D::ReferenceCountedObject { };
+class Mesh : public G3D::ReferenceCountedObject { };
+class SceneManager {
+public:
+    virtual void v0();
+    virtual void addModel(const G3D::ReferenceCountedPointer<Chunk>& chunk);
+};
+}
+namespace ViewNew {
+struct CFrame { CFrame(); float m[12]; };
+class View { public: int pad; Render::SceneManager* sceneManager; };
+class SpecialShape;
+class PartChunk : public Render::Chunk {
+private:
+    CFrame coordinateFrame;
+    boost::signals::scoped_connection childAddedConnection;
+    boost::signals::scoped_connection childRemovedConnection;
+    boost::signals::scoped_connection ancestorChangedConnection;
+    boost::signals::scoped_connection propertyChangedConnection;
+    boost::signals::scoped_connection shapePropertyChangedConnection;
+protected:
+    boost::shared_ptr<PartInstance> partInstance;
+    G3D::ReferenceCountedPointer<Render::Material> material;
+    bool materialInvalid;
+    G3D::ReferenceCountedPointer<Render::Mesh> mesh;
+    View* view;
+    SpecialShape* specialShape;
+public:
+    PartChunk(float polygonOffset, const boost::shared_ptr<PartInstance>& partInstance, View* view);
+    virtual ~PartChunk();
+    void onAncestorChanged(boost::shared_ptr<Instance> ancestor);
+    void onChildAdded(boost::shared_ptr<Instance> child);
+    void onChildRemoved(boost::shared_ptr<Instance> child);
+    virtual void onPropertyChanged(const Reflection::PropertyDescriptor* descriptor);
+};
+PartChunk::PartChunk(float polygonOffset, const boost::shared_ptr<PartInstance>& partInstance, View* view)
+    : Render::Chunk(polygonOffset),
+      partInstance(partInstance),
+      view(view),
+      materialInvalid(true),
+      specialShape(NULL)
 {
-    callback(object, value);
+    view->sceneManager->addModel(this);
+    childAddedConnection = event_childAdded.connect(partInstance.get(), boost::bind(&PartChunk::onChildAdded, this, _1), 10);
+    childRemovedConnection = event_childRemoved.connect(partInstance.get(), boost::bind(&PartChunk::onChildRemoved, this, _1), 10);
+    ancestorChangedConnection = event_ancestryChanged.connect(partInstance.get(), boost::bind(&PartChunk::onAncestorChanged, this, _1), 10);
+    propertyChangedConnection = event_propertyChanged.connect(partInstance.get(), boost::bind(&PartChunk::onPropertyChanged, this, _1), 10);
+    if (partInstance)
+        partInstance->visitChildren(boost::bind(&PartChunk::onChildAdded, this, _1));
+}
+}
 }

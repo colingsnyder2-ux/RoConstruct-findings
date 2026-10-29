@@ -1,49 +1,15 @@
-// from server: 52% by colin
-extern "C" {
-    int __stdcall MSVCR80_memcpy_s(void*, unsigned int, const void*, unsigned int);
-    int __stdcall MSVCR80_memmove_s(void*, unsigned int, const void*, unsigned int);
-}
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: atl-8.0-dll roc_boost_atl_f4b0910a5d2d7185.cpp
 
-extern "C" void __stdcall ThrowLastError(const char* message);
-extern "C" void __stdcall sub_545930();
-extern "C" void __stdcall sub_413140();
-
-struct MD5HasherImpl {
-    void* data;
-    void addData(const char* data, unsigned int nBytes);
-};
-
-void MD5HasherImpl::addData(const char* data, unsigned int nBytes)
-{
-    if (data == 0) {
-        sub_545930();
-        return;
-    }
-    if (nBytes == 0) {
-        ThrowLastError((const char*)0x80070057);
-    }
-    char* base = (char*)this->data;
-    int capacity = *(int*)(base - 0xc);
-    int length = *(int*)(base - 8);
-    int remaining = *(int*)(base - 4);
-    int offset = (int)data - (int)base;
-    int need = (int)nBytes - length;
-    int check = 1 - remaining;
-    check |= need;
-    if (check < 0) {
-        sub_413140();
-    }
-    if (offset <= capacity) {
-        MSVCR80_memcpy_s(base + offset, nBytes, data, nBytes);
-    } else {
-        MSVCR80_memmove_s(base + offset, nBytes, data, nBytes);
-    }
-    if ((int)nBytes < 0) {
-        ThrowLastError((const char*)0x80070057);
-    }
-    if ((int)nBytes > *(int*)(base - 8)) {
-        ThrowLastError((const char*)0x80070057);
-    }
-    *(int*)(base - 0xc) = (int)nBytes;
-    base[(int)nBytes] = 0;
-}
+// Candidate translation unit (score above; library headers required).
+#define NDEBUG 1
+#define _MBCS 1
+#include <atlbase.h>
+#include <atlstr.h>
+#include <atlutil.h>
+template class ATL::CSimpleStringT<char,false>;
+template class ATL::CSimpleStringT<char,true>;
+class UrlProbe : public ATL::CUrl { public: BOOL set(const char*); };
+BOOL UrlProbe::set(const char* text) { return SetSchemeName(text); }

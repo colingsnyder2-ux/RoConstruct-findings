@@ -1,35 +1,18 @@
-// from server: 37% by colin
-struct Chunk {
-    int field0;
-    int field4;
-    int field8;
-    int fieldC;
-    int field10;
-    int field14;
-    int field18;
-    Chunk(int a, int b, int c, int d, int e, int f, int g);
-};
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_meshcachetemplatenodeadb12afc2a180987.cpp
 
-extern "C" void* __cdecl sub_500060(int, int);
-extern "C" void __cdecl sub_500580(void*, int, int);
-extern "C" void __cdecl sub_4D20E0(void*);
-extern "C" void __cdecl sub_4D21C0(void*, void*);
+// Candidate translation unit (score above; library headers required).
+#include <G3D/Table.h>
+#include <G3D/Vector3.h>
+#include <G3D/ReferenceCount.h>
+struct Mesh:G3D::ReferenceCountedObject {char storage[28];};
+struct Variations {G3D::ReferenceCountedPointer<Mesh> meshes[4];};
+typedef G3D::Table<G3D::Vector3,Variations> Table;
+struct SurfaceTypes {unsigned value;SurfaceTypes():value(0){}};
+template<class K,class V> struct Entry {K key;V value;};
+template<class K,class V> struct Node {unsigned hash;Entry<K,V> entry;Node* next;
+Node(K k,V v,unsigned h,Node* n){this->entry.key=k;this->entry.value=v;this->hash=h;this->next=n;}};
+template struct Node<SurfaceTypes,Table>;
 
-Chunk::Chunk(int a, int b, int c, int d, int e, int f, int g)
-{
-    field4 = 0;
-    field8 = 0x79f060;
-    field14 = 0xa;
-    fieldC = 0;
-    void* p = sub_500060(0x28, 0x10);
-    field10 = (int)p;
-    sub_500580(p, 0, field14 * 4);
-    field4 = a;
-    if (&field8 != (int*)&a) {
-        sub_4D20E0(&field8);
-        sub_4D21C0(&field8, &a);
-    }
-    field0 = b;
-    field18 = c;
-    sub_4D20E0(&a);
-}

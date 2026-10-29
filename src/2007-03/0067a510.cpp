@@ -1,56 +1,35 @@
-// from server: 55% by colin
+// roc 2007-03 0067a510  unit: seg_00670000  size: 69 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-03 0067a510
+//
+// 0067a510  8b442408             mov eax, dword ptr [esp + 8]
+// 0067a514  56                   push esi
+// 0067a515  8bf1                 mov esi, ecx
+// 0067a517  8b4c2408             mov ecx, dword ptr [esp + 8]
+// 0067a51b  50                   push eax
+// 0067a51c  51                   push ecx
+// 0067a51d  8bce                 mov ecx, esi
+// 0067a51f  e8f40c0c00           call 0x73b218
+// 0067a524  83be0001000000       cmp dword ptr [esi + 0x100], 0
+// 0067a52b  7524                 jne 0x67a551
+// 0067a52d  57                   push edi
+// 0067a52e  6a00                 push 0
+// 0067a530  8dbefc000000         lea edi, [esi + 0xfc]
+// 0067a536  57                   push edi
+// 0067a537  6a00                 push 0
+// 0067a539  6a26                 push 0x26
+// 0067a53b  ff150cef7700         call dword ptr [0x77ef0c]
+// 0067a541  f6860801000002       test byte ptr [esi + 0x108], 2
+// 0067a548  7406                 je 0x67a550
+// 0067a54a  c70700000000         mov dword ptr [edi], 0
+// 0067a550  5f                   pop edi
+// 0067a551  5e                   pop esi
+// 0067a552  c20800               ret 8
+// copied from an identical function in another client (function ?OnSettingChange@CXTSplitterWnd@@IAEXIPBD@Z)
+
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.6.4 OgreCompositorSerializer.cpp
-
-// Candidate translation unit (score above; library headers required).
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-    (Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org/
-
-Copyright (c) 2000-2006 Torus Knot Software Ltd
-Also see acknowledgements in Readme.html
-
-This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the Free Software
-Foundation; either version 2 of the License, or (at your option) any later
-version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License along with
-this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-http://www.gnu.org/copyleft/lesser.txt.
-
-You may alternatively use this source under the terms of a specific version of
-the OGRE Unrestricted License provided you have obtained such a license from
-Torus Knot Software Ltd.
------------------------------------------------------------------------------
-*/
-#include "OgreStableHeaders.h"
-#include "OgreCompositorSerializer.h"
-#include "OgreCompositorScriptCompiler.h"
-
-namespace Ogre {
-//-----------------------------------------------------------------------
-	CompositorSerializer::CompositorSerializer()
-	{
-        mScriptCompiler = OGRE_NEW CompositorScriptCompiler();
-	}
-//-----------------------------------------------------------------------
-	CompositorSerializer::~CompositorSerializer()
-	{
-	    OGRE_DELETE mScriptCompiler;
-	}
-//-----------------------------------------------------------------------
-    void CompositorSerializer::parseScript(DataStreamPtr& stream, const String& groupName)
-    {
-        mScriptCompiler->parseScript(stream,  groupName);
-    }
-}
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc-internals Source/Controls/XTSplitterWnd.cpp
+// MFC 9 afximpl.h: AFX_CX_BORDER = AFX_CY_BORDER = 1.
+#define CX_BORDER 1
+#define CY_BORDER 1

@@ -1,39 +1,35 @@
-// from server: 58% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.40.0 libs/regex/src/instances.cpp
+// roc-lib: openrbx-client-dll roc_espeon_editorvectors_383e9bc19ccb3ee1.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
- *
- * Copyright (c) 1998-2002
- * John Maddock
- *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
- * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
- *
- */
+#include <vector>
+#include <boost/shared_ptr.hpp>
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
 
- /*
-  *   LOCATION:    see http://www.boost.org for most recent version.
-  *   FILE:        instances.cpp
-  *   VERSION:     see <boost/version.hpp>
-  *   DESCRIPTION: regex narrow character template instances.
-  */
+typedef std::vector<boost::shared_ptr<void> > Storage;
 
-#define BOOST_REGEX_SOURCE
+struct Argument
+{
+    unsigned int reserved[3];
+    int value;
+};
 
-#include <boost/regex/config.hpp>
+struct CSelectionPropGrid
+{
+    virtual ~CSelectionPropGrid();
 
-#if !defined(BOOST_REGEX_NO_EXTERNAL_TEMPLATES)
-#define BOOST_REGEX_NARROW_INSTANTIATE
+    Storage storage;
+    unsigned int context;
 
-#ifdef __BORLANDC__
-#pragma hrdstop
-#endif
+    CSelectionPropGrid(Argument*, unsigned int);
+    void initialize(int);
+};
 
-#include <boost/regex.hpp>
-
-#endif
+CSelectionPropGrid::CSelectionPropGrid(Argument* argument, unsigned int value)
+    : storage(), context(value)
+{
+    initialize(argument->value);
+}

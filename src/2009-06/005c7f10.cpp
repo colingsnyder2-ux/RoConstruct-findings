@@ -1,50 +1,11 @@
-// from server: 57% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbx2016-g3d MemoryManager.cpp
+// roc-flags: /Od /Ob0 /GS /EHsc /MD
+// roc-lib: g3d-6.09 roc_g3d_vector_strong_b0beb8bf4f1ef12a.cpp
 
 // Candidate translation unit (score above; library headers required).
-/**
-  @file MemoryManager.cpp
-
-  @maintainer Morgan McGuire, http://graphics.cs.williams.edu
-  @created 2009-04-20
-  @edited  2009-05-29
-
-  Copyright 2000-2009, Morgan McGuire.
-  All rights reserved.
- */
-
-#include "G3D/MemoryManager.h"
-#include "G3D/System.h"
-
-namespace G3D {
-
-MemoryManager::MemoryManager() {}
-
-
-void* MemoryManager::alloc(size_t s) {
-    return System::malloc(s);
-}
-
-
-void MemoryManager::free(void* ptr) {
-    System::free(ptr);
-}
-
-
-bool MemoryManager::isThreadsafe() const {
-    return true;
-}
-
-
-MemoryManager* MemoryManager::create() {
-    static MemoryManager m;
-    return &m;
-}
-
-
-///////////////////////////////////////////////////
-
-}
+#include <G3D/ReferenceCount.h>
+#include <vector>
+typedef G3D::ReferenceCountedPointer<G3D::ReferenceCountedObject> NativeStrongRef;
+typedef char StrongRefSize[sizeof(NativeStrongRef)==4?1:-1];
+template class std::vector<NativeStrongRef>;

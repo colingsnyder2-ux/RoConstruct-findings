@@ -1,14 +1,13 @@
-// from server: 50% by TrollStein
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Controls/XTCaption.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\Controls\XTCaption.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTCaption.cpp : implementation of the CXTCaption class.
 //
 // This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -70,7 +69,6 @@ DWORD CXTCaptionButton::SetXButtonStyle(DWORD /*dwxStyle*/, BOOL bRedraw/*= TRUE
 		// set the button font and colors.
 		SetColorFace(pCaption->m_clrFace);
 		SetColorText(pCaption->m_clrText);
-		SetColorHilite(GetXtremeColor(COLOR_3DHILIGHT));
 		SetColorShadow(GetXtremeColor(COLOR_3DDKSHADOW));
 
 		// set the button font to match caption font.
@@ -234,8 +232,7 @@ BOOL CXTCaption::Create(CWnd* pParentWnd, LPCTSTR lpszWindowName, DWORD dwExStyl
 		m_ilButton.Create (XT_IDB_BTN_OUT, 16, 1, RGB(255, 0, 255));
 
 		// and set the icon for the caption's close button
-		m_btnCaption.SetIcon(CSize(16, 15), m_ilButton.ExtractIcon(
-			(XTPColorManager()->GetCurrentSystemTheme() == xtpSystemThemeAero)? 3: 2));
+		m_btnCaption.SetIcon(CSize(16, 15), m_ilButton.ExtractIcon(2));
 	}
 	else
 	{
@@ -533,14 +530,10 @@ CRect CXTCaption::GetButtonRect() const
 	CXTPClientRect rcClient(this);
 
 	CRect rcButton;
+	rcButton.left = (rcClient.Width() -szIcon.cx)-2;
 	rcButton.top = (rcClient.Height()-szIcon.cy)/2;
-	rcButton.bottom = rcButton.top+szIcon.cy;
-
-	// ensure offset is the same for top and right edge.
-	int x = rcButton.top-rcClient.top;
-
-	rcButton.left = (rcClient.Width()-szIcon.cx)-x;
-	rcButton.right = rcButton.left+szIcon.cx;
+	rcButton.right = rcButton.left + szIcon.cx;
+	rcButton.bottom = rcButton.top + szIcon.cy;
 
 	return rcButton;
 }

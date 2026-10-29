@@ -1,8 +1,7 @@
-// from server: 99% by colin
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/PropertyGrid/XTPPropertyGridInplaceButton.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/PropertyGrid/XTPPropertyGridInplaceButton.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPPropertyGridInplaceButton.cpp : implementation of the CXTPPropertyGridInplaceButton class.

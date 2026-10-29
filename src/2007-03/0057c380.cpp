@@ -1,153 +1,18 @@
-// from server: 60% by colin
 // roc-lang: cpp
-// roc-cl: 21022
+// roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs script/LuaMemory.cpp
+// roc-lib: rbxgs roc_espeon_aug2007_stack_f81213c22a79b220.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "script/LuaMemory.h"
-#include "boost/pool/singleton_pool.hpp"
-#include <algorithm>
-
-LuaAllocator::LuaAllocator()
-    : heapSize(0),
-      heapCount(0),
-      maxHeapSize(0),
-      maxHeapCount(0)
-{
-}
-
-void LuaAllocator::clearHeapMax()
-{
-    maxHeapSize = 0;
-    maxHeapCount = 0;
-}
-
-void LuaAllocator::getHeapStats(size_t& heapSize, size_t& heapCount, size_t& maxHeapSize, size_t& maxHeapCount) const
-{
-    heapSize = this->heapSize;
-    heapCount = this->heapCount;
-    maxHeapSize = this->maxHeapSize;
-    maxHeapCount = this->maxHeapCount;
-}
-
-void* LuaAllocator::alloc(void* ud, void* ptr, size_t osize, size_t nsize)
-{
-    return static_cast<LuaAllocator*>(ud)->alloc(ptr, osize, nsize);
-}
-
-template <int a, int b>
-void* bucketRealloc(void* ptr, size_t osize, size_t nsize)
-{
-    void* result;
-
-    if (nsize > b)
-    {
-        if (osize <= b && osize)
-        {
-            result = malloc(nsize);
-            memcpy(result, ptr, osize);
-
-            if (osize > a)
-                boost::singleton_pool<LuaAllocator, b>::free(ptr);
-            else
-                boost::singleton_pool<LuaAllocator, a>::free(ptr);
-        }
-        else
-        {
-            result = realloc(ptr, nsize);
-        }
-    }
-    else
-    {
-        if (nsize > a)
-        {
-            if (osize > b)
-            {
-                result = boost::singleton_pool<LuaAllocator, b>::malloc();
-                memcpy(result, ptr, nsize);
-                free(ptr);
-            }
-            else
-            {
-                if (osize > a)
-                {
-                    result = ptr;
-                }
-                else
-                {
-                    result = boost::singleton_pool<LuaAllocator, b>::malloc();
-
-                    if (osize > 0)
-                    {
-                        memcpy(result, ptr, osize);
-                        boost::singleton_pool<LuaAllocator, a>::free(ptr);
-                    }
-                }
-            }
-        }
-        else
-        {
-            if (nsize > 0)
-            {
-                if (osize > b)
-                {
-                    result = boost::singleton_pool<LuaAllocator, a>::malloc();
-                    memcpy(result, ptr, nsize);
-                    free(ptr);
-                }
-                else if (osize > a)
-                {
-                    result = boost::singleton_pool<LuaAllocator, a>::malloc();
-                    memcpy(result, ptr, nsize);
-                    boost::singleton_pool<LuaAllocator, b>::free(ptr);
-                }
-                else if (osize > 0)
-                {
-                    result = ptr;
-                }
-                else 
-                {
-                    result = boost::singleton_pool<LuaAllocator, a>::malloc();
-                }
-            }
-            else 
-            {
-                if (osize > b)
-                {
-                    free(ptr);
-                }
-                else if (osize > a)
-                {
-                    boost::singleton_pool<LuaAllocator, b>::free(ptr);
-                }
-                else if (osize > 0)
-                {
-                    boost::singleton_pool<LuaAllocator, a>::free(ptr);
-                }
-
-                result = 0;
-            }
-        }
-    }
-
-    return result;
-}
-
-void* LuaAllocator::alloc(void* ptr, size_t osize, size_t nsize)
-{
-    void* result = bucketRealloc<16, 32>(ptr, osize, nsize);
-
-    heapSize += (nsize-osize);
-
-    if (osize == 0)
-        heapCount++;
-
-    if (nsize == 0)
-        heapCount--;
-
-    maxHeapSize = std::max<size_t>(maxHeapSize, heapSize);
-    maxHeapCount = std::max<size_t>(maxHeapCount, heapCount);
-
-    return result;
-}
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "script/ScriptContext.cpp"

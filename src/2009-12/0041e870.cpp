@@ -1,101 +1,197 @@
-// roc 2009-12 0041e870  unit: CSelectionTreeCtrl  size: 92 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 0041e870
-//
-// 0041e870  51                   push ecx
-// 0041e871  8b442418             mov eax, dword ptr [esp + 0x18]
-// 0041e875  56                   push esi
-// 0041e876  8b742414             mov esi, dword ptr [esp + 0x14]
-// 0041e87a  57                   push edi
-// 0041e87b  8bf8                 mov edi, eax
-// 0041e87d  3bf0                 cmp esi, eax
-// 0041e87f  7436                 je 0x41e8b7
-// 0041e881  8b06                 mov eax, dword ptr [esi]
-// 0041e883  83ec08               sub esp, 8
-// 0041e886  8bcc                 mov ecx, esp
-// 0041e888  8901                 mov dword ptr [ecx], eax
-// 0041e88a  8b4604               mov eax, dword ptr [esi + 4]
-// 0041e88d  89642410             mov dword ptr [esp + 0x10], esp
-// 0041e891  894104               mov dword ptr [ecx + 4], eax
-// 0041e894  85c0                 test eax, eax
-// 0041e896  740c                 je 0x41e8a4
-// 0041e898  83c004               add eax, 4
-// 0041e89b  b901000000           mov ecx, 1
-// 0041e8a0  f00fc108             lock xadd dword ptr [eax], ecx
-// 0041e8a4  8b542430             mov edx, dword ptr [esp + 0x30]
-// 0041e8a8  52                   push edx
-// 0041e8a9  ff542430             call dword ptr [esp + 0x30]
-// 0041e8ad  83c608               add esi, 8
-// 0041e8b0  83c40c               add esp, 0xc
-// 0041e8b3  3bf7                 cmp esi, edi
-// 0041e8b5  75ca                 jne 0x41e881
-// 0041e8b7  8b442410             mov eax, dword ptr [esp + 0x10]
-// 0041e8bb  8b4c2424             mov ecx, dword ptr [esp + 0x24]
-// 0041e8bf  8b542428             mov edx, dword ptr [esp + 0x28]
-// 0041e8c3  5f                   pop edi
-// 0041e8c4  8908                 mov dword ptr [eax], ecx
-// 0041e8c6  895004               mov dword ptr [eax + 4], edx
-// 0041e8c9  5e                   pop esi
-// 0041e8ca  59                   pop ecx
-// 0041e8cb  c3                   ret 
-// copied from an identical function in another client (function ?fn_ROCX000000_00423ba0@@YA?AUFunction@@UIterator@@0U1@@Z)
-
+// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-extern "C" void __cdecl _ReadWriteBarrier();
-#pragma intrinsic(_ReadWriteBarrier)
+// roc-lib: rbxgs-dll roc_espeon_clipboarddirectrange9f920a6de726796c.cpp
 
-struct Control
+// Candidate translation unit (score above; library headers required).
+#include <algorithm>
+#include <vector>
+#include <boost/shared_ptr.hpp>
+#include <boost/bind.hpp>
+// from server: 91% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+
+extern "C" void* (__stdcall* GlobalAlloc)(unsigned int, unsigned long);
+extern "C" void* (__stdcall* GlobalLock)(void*);
+extern "C" int (__stdcall* GlobalUnlock)(void*);
+extern "C" int (__stdcall* OpenClipboard)(void*);
+extern "C" int (__stdcall* EmptyClipboard)();
+extern "C" int (__stdcall* CloseClipboard)();
+extern "C" unsigned int (__stdcall* RegisterClipboardFormatA)(const char*);
+extern "C" void* (__stdcall* SetClipboardData)(unsigned int, void*);
+extern "C" char* __cdecl strcpy(char*, const char*);
+#pragma intrinsic(strcpy)
+
+struct Text
 {
-    long reserved;
-    volatile long references;
+    unsigned char storage[20];
+    unsigned int length;
+    unsigned int capacity;
+    ~Text();
+    const char* c_str() const;
 };
 
-struct Shared
+struct Stream
 {
-    void* object;
-    Control* control;
-
-    Shared(const Shared&);
-    ~Shared();
+    unsigned char storage[128];
+    Stream(int, int = 1);
+    ~Stream();
+    __declspec(dllimport) Text str() const;
 };
 
-inline Shared::Shared(const Shared& other)
-    : object(other.object), control(other.control)
+extern void (__thiscall* constructStream)(Stream*, int, int);
+extern void (__thiscall* destroyStream)(Stream*);
+extern void (__thiscall* extractText)(const Stream*, Text*);
+extern void (__thiscall* destroyText)(Text*);
+extern const char* (__thiscall* textData)(const Text*);
+
+inline Stream::Stream(int mode, int initialize)
 {
-    if (control)
+    constructStream(this, mode, initialize);
+}
+
+inline Stream::~Stream()
+{
+    destroyStream(this);
+}
+
+inline Text::~Text()
+{
+    destroyText(this);
+}
+
+inline const char* Text::c_str() const
+{
+    return textData(this);
+}
+
+struct Resource
+{
+    unsigned char storage[36];
+    ~Resource();
+};
+
+struct SerializerBase {
+ virtual void slot();
+ Resource resource;
+ SerializerBase(Stream*);
+};
+struct Serializer:SerializerBase {
+ Serializer(Stream* s):SerializerBase(s) {}
+ virtual void slot();
+ void write(void*);
+};
+
+typedef std::vector<boost::shared_ptr<void> > Selection;
+typedef Selection::iterator Iterator;
+
+struct Document
+{
+    unsigned char reserved[0x154];
+    Selection* selection;
+};
+
+struct Owner
+{
+    Document* document();
+};
+
+struct Window
+{
+    unsigned char reserved[0x20];
+    void* handle;
+};
+
+struct Application
+{
+    virtual void slot00();
+    virtual void slot01();
+    virtual void slot02();
+    virtual void slot03();
+    virtual void slot04();
+    virtual void slot05();
+    virtual void slot06();
+    virtual void slot07();
+    virtual void slot08();
+    virtual void slot09();
+    virtual void slot10();
+    virtual void slot11();
+    virtual void slot12();
+    virtual void slot13();
+    virtual void slot14();
+    virtual void slot15();
+    virtual void slot16();
+    virtual void slot17();
+    virtual void slot18();
+    virtual void slot19();
+    virtual void slot20();
+    virtual void slot21();
+    virtual void slot22();
+    virtual void slot23();
+    virtual void slot24();
+    virtual void slot25();
+    virtual void slot26();
+    virtual void slot27();
+    virtual void slot28();
+    virtual void slot29();
+    virtual void slot30();
+    virtual Window* window();
+};
+
+struct Context
+{
+    void release();
+};
+
+extern Context* __cdecl getContext();
+extern Application* __cdecl getApplication();
+extern void __cdecl freeContext(void*);
+extern void __cdecl copyItem(Context*,boost::shared_ptr<void>);
+extern void* serializerTable;
+extern unsigned long clipboardInitialized;
+extern unsigned int clipboardFormat;
+extern const char clipboardFormatName[];
+
+struct CopyVerb
+{
+    unsigned char reserved[0x20];
+    Owner* owner;
+    void execute(void*);
+};
+
+void CopyVerb::execute(void*)
+{
+    Context* context = getContext();
+    Document* document = owner ? owner->document() : 0;
+    std::for_each(document->selection->begin(),document->selection->end(),boost::bind(copyItem,context,_1));
+
+    Stream stream(2);
+    Serializer serializer(&stream);
+    serializer.write(context);
+
+    if (context)
     {
-        volatile long* references = &control->references;
-        _ReadWriteBarrier();
-        _InterlockedExchangeAdd(references, 1);
+        context->release();
+        freeContext(context);
     }
-}
 
-struct Iterator
-{
-    void* reserved;
-    Shared* current;
-};
-
-struct Function
-{
-    void (__cdecl *callback)(void*, Shared);
-    void* context;
-
-    Function(const Function&);
-};
-
-inline Function::Function(const Function& other)
-    : callback(other.callback), context(other.context)
-{
-}
-
-Function __cdecl func_00423ba0(Iterator first, Iterator last, Function function)
-{
-    Shared* current = first.current;
-    Shared* end = last.current;
-    for (; current != end; ++current)
-        function.callback(function.context, *current);
-    return function;
+    Application* application = getApplication();
+    Window* window = application ? application->window() : 0;
+    if (OpenClipboard(window->handle))
+    {
+        EmptyClipboard();
+        Text text = stream.str();
+        void* memory = GlobalAlloc(2, text.length + 1);
+        char* destination = static_cast<char*>(GlobalLock(memory));
+        strcpy(destination, text.c_str());
+        GlobalUnlock(memory);
+        if (!(clipboardInitialized & 1))
+        {
+            clipboardInitialized |= 1;
+            clipboardFormat = RegisterClipboardFormatA(clipboardFormatName);
+        }
+        SetClipboardData(clipboardFormat, memory);
+        CloseClipboard();
+    }
 }

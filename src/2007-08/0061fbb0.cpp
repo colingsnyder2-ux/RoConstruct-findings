@@ -1,150 +1,238 @@
-// from server: 24% by colin
-struct Node {
-    Node* parent;
-    Node* left;
-    Node* right;
-    char color;
-    char pad[3];
-    char isNil;
-    char pad2[3];
-};
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
+// roc-lib: ogre-1.4.9-dll OgreCompositionTechnique.cpp
 
-struct Tree {
-    Node* header;
-    int count;
-    int field8;
-};
+// Candidate translation unit (score above; library headers required).
+/*
+-----------------------------------------------------------------------------
+This source file is part of OGRE
+    (Object-oriented Graphics Rendering Engine)
+For the latest info, see http://www.ogre3d.org/
 
-struct ScoreHud {
-    char pad[4];
-    Tree* tree;
-    int field8;
-    void erase(Node* node);
-};
+Copyright (c) 2000-2006 Torus Knot Software Ltd
+Also see acknowledgements in Readme.html
 
-extern "C" {
-    void* __stdcall sub_77e698(const char*);
-    void __stdcall sub_77e6f8(void*);
-    void __stdcall sub_77e69c(void*, void*);
-    void __stdcall sub_77e6d8(void);
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+http://www.gnu.org/copyleft/lesser.txt.
+
+You may alternatively use this source under the terms of a specific version of
+the OGRE Unrestricted License provided you have obtained such a license from
+Torus Knot Software Ltd.
+-----------------------------------------------------------------------------
+*/
+#include "OgreStableHeaders.h"
+#include "OgreCompositionTechnique.h"
+#include "OgreCompositionTargetPass.h"
+#include "OgreCompositorInstance.h"
+#include "OgreCompositorChain.h"
+#include "OgreCompositionPass.h"
+#include "OgreTextureManager.h"
+
+namespace Ogre {
+
+CompositionTechnique::CompositionTechnique(Compositor *parent):
+    mParent(parent)
+{
+    mOutputTarget = new CompositionTargetPass(this);
+}
+//-----------------------------------------------------------------------
+CompositionTechnique::~CompositionTechnique()
+{
+	/// Destroy all instances by removing them from their chain
+	/// CompositorChain::removeInstance also calls destroyInstance
+	Instances copy = mInstances;
+	for(Instances::iterator i=copy.begin(); i!=copy.end(); ++i)
+		(*i)->getChain()->_removeInstance(*i);
+
+    removeAllTextureDefinitions();
+    removeAllTargetPasses();
+    delete mOutputTarget;
+}
+//-----------------------------------------------------------------------
+CompositionTechnique::TextureDefinition *CompositionTechnique::createTextureDefinition(const String &name)
+{
+    TextureDefinition *t = new TextureDefinition();
+    t->name = name;
+    mTextureDefinitions.push_back(t);
+    return t;
+}
+//-----------------------------------------------------------------------
+
+void CompositionTechnique::removeTextureDefinition(size_t index)
+{
+    assert (index < mTextureDefinitions.size() && "Index out of bounds.");
+    TextureDefinitions::iterator i = mTextureDefinitions.begin() + index;
+    delete(*i);
+    mTextureDefinitions.erase(i);
+}
+//-----------------------------------------------------------------------
+
+CompositionTechnique::TextureDefinition *CompositionTechnique::getTextureDefinition(size_t index)
+{
+    assert (index < mTextureDefinitions.size() && "Index out of bounds.");
+    return mTextureDefinitions[index];
+}
+//-----------------------------------------------------------------------
+
+size_t CompositionTechnique::getNumTextureDefinitions()
+{
+    return mTextureDefinitions.size();
+}
+//-----------------------------------------------------------------------
+void CompositionTechnique::removeAllTextureDefinitions()
+{
+    TextureDefinitions::iterator i, iend;
+    iend = mTextureDefinitions.end();
+    for (i = mTextureDefinitions.begin(); i != iend; ++i)
+    {
+        delete(*i);
+    }
+    mTextureDefinitions.clear();
+}
+//-----------------------------------------------------------------------
+CompositionTechnique::TextureDefinitionIterator CompositionTechnique::getTextureDefinitionIterator(void)
+{
+    return TextureDefinitionIterator(mTextureDefinitions.begin(), mTextureDefinitions.end());
 }
 
-void __stdcall sub_630b9e(void*, void*);
-void __stdcall sub_62fc62(void*);
-void __stdcall sub_61e120(void*);
-
-Node* __stdcall sub_587a40(Node*);
-Node* __stdcall sub_4d95d0(Node*);
-void __stdcall sub_587a60(Node*);
-void __stdcall sub_587f60(Node*);
-void __stdcall sub_587ae0(Tree*);
-
-void ScoreHud::erase(Node* node)
+//-----------------------------------------------------------------------
+CompositionTargetPass *CompositionTechnique::createTargetPass()
 {
-    Node* header = tree->header;
-    Node* nil = header;
-    Node* y;
-    Node* x;
+    CompositionTargetPass *t = new CompositionTargetPass(this);
+    mTargetPasses.push_back(t);
+    return t;
+}
+//-----------------------------------------------------------------------
 
-    if (node->left->isNil)
-        y = node->right;
-    else if (node->right->isNil)
-        y = node->left;
-    else {
-        Node* n = node->right;
-        while (!n->left->isNil)
-            n = n->left;
-        y = n;
+void CompositionTechnique::removeTargetPass(size_t index)
+{
+    assert (index < mTargetPasses.size() && "Index out of bounds.");
+    TargetPasses::iterator i = mTargetPasses.begin() + index;
+    delete(*i);
+    mTargetPasses.erase(i);
+}
+//-----------------------------------------------------------------------
+
+CompositionTargetPass *CompositionTechnique::getTargetPass(size_t index)
+{
+    assert (index < mTargetPasses.size() && "Index out of bounds.");
+    return mTargetPasses[index];
+}
+//-----------------------------------------------------------------------
+
+size_t CompositionTechnique::getNumTargetPasses()
+{
+    return mTargetPasses.size();
+}
+//-----------------------------------------------------------------------
+void CompositionTechnique::removeAllTargetPasses()
+{
+    TargetPasses::iterator i, iend;
+    iend = mTargetPasses.end();
+    for (i = mTargetPasses.begin(); i != iend; ++i)
+    {
+        delete(*i);
+    }
+    mTargetPasses.clear();
+}
+//-----------------------------------------------------------------------
+CompositionTechnique::TargetPassIterator CompositionTechnique::getTargetPassIterator(void)
+{
+    return TargetPassIterator(mTargetPasses.begin(), mTargetPasses.end());
+}
+//-----------------------------------------------------------------------
+CompositionTargetPass *CompositionTechnique::getOutputTargetPass()
+{
+    return mOutputTarget;
+}
+//-----------------------------------------------------------------------
+bool CompositionTechnique::isSupported(bool acceptTextureDegradation)
+{
+	// A technique is supported if all materials referenced have a supported
+	// technique, and the intermediate texture formats requested are supported
+	// Material support is a cast-iron requirement, but if no texture formats 
+	// are directly supported we can let the rendersystem create the closest 
+	// match for the least demanding technique
+	
+
+    // Check output target pass is supported
+    if (!mOutputTarget->_isSupported())
+    {
+        return false;
     }
 
-    if (y->left->isNil)
-        x = y->right;
-    else
-        x = y->left;
-
-    if (!x->isNil)
-        x->parent = y->parent;
-
-    if (y->parent == header)
-        header->parent = x;
-    else if (y == y->parent->left)
-        y->parent->left = x;
-    else
-        y->parent->right = x;
-
-    if (y != node) {
-        if (node->parent == header)
-            header->parent = y;
-        else if (node == node->parent->left)
-            node->parent->left = y;
-        else
-            node->parent->right = y;
-
-        y->left = node->left;
-        y->right = node->right;
-        y->parent = node->parent;
-        y->color = node->color;
-        node->color = 0;
-    }
-
-    if (y->color == 0) {
-        while (x != header->parent && x->color == 0) {
-            if (x == x->parent->left) {
-                Node* w = x->parent->right;
-                if (w->color == 1) {
-                    w->color = 0;
-                    x->parent->color = 1;
-                    sub_587f60(x->parent);
-                    w = x->parent->right;
-                }
-                if (w->left->color == 0 && w->right->color == 0) {
-                    w->color = 1;
-                    x = x->parent;
-                } else {
-                    if (w->right->color == 0) {
-                        w->left->color = 1;
-                        w->color = 0;
-                        sub_587a60(w);
-                        w = x->parent->right;
-                    }
-                    w->color = x->parent->color;
-                    x->parent->color = 0;
-                    w->right->color = 0;
-                    sub_587f60(x->parent);
-                    x = header->parent;
-                }
-            } else {
-                Node* w = x->parent->left;
-                if (w->color == 1) {
-                    w->color = 0;
-                    x->parent->color = 1;
-                    sub_587a60(x->parent);
-                    w = x->parent->left;
-                }
-                if (w->right->color == 0 && w->left->color == 0) {
-                    w->color = 1;
-                    x = x->parent;
-                } else {
-                    if (w->left->color == 0) {
-                        w->right->color = 1;
-                        w->color = 0;
-                        sub_587f60(w);
-                        w = x->parent->left;
-                    }
-                    w->color = x->parent->color;
-                    x->parent->color = 0;
-                    w->left->color = 0;
-                    sub_587a60(x->parent);
-                    x = header->parent;
-                }
-            }
+    // Check all target passes is supported
+    TargetPasses::iterator pi, piend;
+    piend = mTargetPasses.end();
+    for (pi = mTargetPasses.begin(); pi != piend; ++pi)
+    {
+        CompositionTargetPass* targetPass = *pi;
+        if (!targetPass->_isSupported())
+        {
+            return false;
         }
-        x->color = 1;
     }
 
-    sub_61e120(&tree->header);
-    sub_62fc62(node);
+    TextureDefinitions::iterator i, iend;
+    iend = mTextureDefinitions.end();
+	TextureManager& texMgr = TextureManager::getSingleton();
+    for (i = mTextureDefinitions.begin(); i != iend; ++i)
+    {
+		TextureDefinition* td = *i;
 
-    if (field8 > 0)
-        field8--;
+		// Check whether equivalent supported
+		if(acceptTextureDegradation)
+		{
+			// Don't care about exact format so long as something is supported
+			if(texMgr.getNativeFormat(TEX_TYPE_2D, td->format, TU_RENDERTARGET) == PF_UNKNOWN)
+			{
+				return false;
+			}
+		}
+		else
+		{
+			// Need a format which is the same number of bits to pass
+			if (!texMgr.isEquivalentFormatSupported(TEX_TYPE_2D, td->format, TU_RENDERTARGET))
+			{
+				return false;
+			}	
+		}
+	}
+	
+	// Must be ok
+	return true;
+}
+//-----------------------------------------------------------------------
+CompositorInstance *CompositionTechnique::createInstance(CompositorChain *chain)
+{
+	CompositorInstance *mew = new CompositorInstance(mParent, this, chain);
+	mInstances.push_back(mew);
+    return mew;
+}
+//-----------------------------------------------------------------------
+void CompositionTechnique::destroyInstance(CompositorInstance *instance)
+{
+    assert(instance->getTechnique() == this);
+	/// Erase from list of instances
+	mInstances.erase(std::find(mInstances.begin(), mInstances.end(), instance));
+    delete instance;
+}
+//-----------------------------------------------------------------------
+Compositor *CompositionTechnique::getParent()
+{
+    return mParent;
+}
+
 }

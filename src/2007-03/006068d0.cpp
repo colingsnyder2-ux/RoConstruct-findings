@@ -1,99 +1,181 @@
-// from server: 90% by colin
-// roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
+// roc-lib: ogre-1.4.9-dll OgreRenderSystemCapabilities.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/RunStateOwner.h"
-#include "v8datamodel/DataModel.h"
+/*
+-----------------------------------------------------------------------------
+This source file is part of OGRE
+    (Object-oriented Graphics Rendering Engine)
+For the latest info, see http://www.ogre3d.org/
 
-namespace RBX
-{
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> runFunction(&RunService::run, "Run", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> pauseFunction(&RunService::pause, "Pause", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> resetFunction(&RunService::reset, "Reset", Reflection::FunctionDescriptor::NeedTrustedCaller);
+Copyright (c) 2000-2006 Torus Knot Software Ltd
+Also see acknowledgements in Readme.html
 
-	static Reflection::SignalDesc<RunService, void(float)> event_Heartbeat("Heartbeat", "interval");
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any later
+version.
 
-	RunService::RunService()
-		: framePeriod(1.0f/30.0f),
-		  runState(RS_NORMAL),
-		  invalidRunViewCount(0),
-		  stopRequested(false),
-		  runDisabled(false)
-	{
-		setName("Run Service");
-	}
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
 
-	RunService::~RunService()
-	{
-		RBXASSERT(views.empty());
-	}
+You should have received a copy of the GNU Lesser General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+http://www.gnu.org/copyleft/lesser.txt.
 
-	void RunService::endRunThread(bool join)
-	{
-		stopRequested = true;
-		stateChangedCondition.notify_all();
+You may alternatively use this source under the terms of a specific version of
+the OGRE Unrestricted License provided you have obtained such a license from
+Torus Knot Software Ltd.
+-----------------------------------------------------------------------------
+*/
+#include "OgreStableHeaders.h"
 
-		if (join)
-			runThread->join();
-	}
+#include "OgreRenderSystemCapabilities.h"
+#include "OgreLogManager.h"
+#include "OgreStringConverter.h"
+#include "OgreException.h"
 
-	void RunService::onAncestorChanged(const AncestorChanged& event)
-	{
-		if (!getParent())
+namespace Ogre {
+
+    //-----------------------------------------------------------------------
+    RenderSystemCapabilities::RenderSystemCapabilities()
+      : mNumWorldMatrices(0), mNumTextureUnits(0), mStencilBufferBitDepth(0),
+        mNumVertexBlendMatrices(0), mCapabilities(0), mNumMultiRenderTargets(1), 
+		mNonPOW2TexturesLimited(false)
+    {
+    }
+    //-----------------------------------------------------------------------
+    RenderSystemCapabilities::~RenderSystemCapabilities()
+    {
+    }
+    //-----------------------------------------------------------------------
+    void RenderSystemCapabilities::log(Log* pLog)
+    {
+        pLog->logMessage("RenderSystem capabilities");
+        pLog->logMessage("-------------------------");
+        pLog->logMessage(
+            " * Hardware generation of mipmaps: "
+            + StringConverter::toString(hasCapability(RSC_AUTOMIPMAP), true));
+        pLog->logMessage(
+            " * Texture blending: "
+            + StringConverter::toString(hasCapability(RSC_BLENDING), true));
+        pLog->logMessage(
+            " * Anisotropic texture filtering: "
+            + StringConverter::toString(hasCapability(RSC_ANISOTROPY), true));
+        pLog->logMessage(
+            " * Dot product texture operation: "
+            + StringConverter::toString(hasCapability(RSC_DOT3), true));
+        pLog->logMessage(
+            " * Cube mapping: "
+            + StringConverter::toString(hasCapability(RSC_CUBEMAPPING), true));
+        pLog->logMessage(
+            " * Hardware stencil buffer: "
+            + StringConverter::toString(hasCapability(RSC_HWSTENCIL), true));
+        if (hasCapability(RSC_HWSTENCIL))
+        {
+            pLog->logMessage(
+                "   - Stencil depth: "
+                + StringConverter::toString(getStencilBufferBitDepth()));
+            pLog->logMessage(
+                "   - Two sided stencil support: "
+                + StringConverter::toString(hasCapability(RSC_TWO_SIDED_STENCIL), true));
+            pLog->logMessage(
+                "   - Wrap stencil values: "
+                + StringConverter::toString(hasCapability(RSC_STENCIL_WRAP), true));
+        }
+        pLog->logMessage(
+            " * Hardware vertex / index buffers: "
+            + StringConverter::toString(hasCapability(RSC_VBO), true));
+        pLog->logMessage(
+            " * Vertex programs: "
+            + StringConverter::toString(hasCapability(RSC_VERTEX_PROGRAM), true));
+        if (hasCapability(RSC_VERTEX_PROGRAM))
+        {
+            pLog->logMessage(
+                "   - Max vertex program version: "
+                + getMaxVertexProgramVersion());
+        }
+        pLog->logMessage(
+            " * Fragment programs: "
+            + StringConverter::toString(hasCapability(RSC_FRAGMENT_PROGRAM), true));
+        if (hasCapability(RSC_FRAGMENT_PROGRAM))
+        {
+            pLog->logMessage(
+                "   - Max fragment program version: "
+                + getMaxFragmentProgramVersion());
+        }
+
+        pLog->logMessage(
+            " * Texture Compression: "
+            + StringConverter::toString(hasCapability(RSC_TEXTURE_COMPRESSION), true));
+        if (hasCapability(RSC_TEXTURE_COMPRESSION))
+        {
+            pLog->logMessage(
+                "   - DXT: "
+                + StringConverter::toString(hasCapability(RSC_TEXTURE_COMPRESSION_DXT), true));
+            pLog->logMessage(
+                "   - VTC: "
+                + StringConverter::toString(hasCapability(RSC_TEXTURE_COMPRESSION_VTC), true));
+        }
+
+        pLog->logMessage(
+            " * Scissor Rectangle: "
+            + StringConverter::toString(hasCapability(RSC_SCISSOR_TEST), true));
+        pLog->logMessage(
+            " * Hardware Occlusion Query: "
+            + StringConverter::toString(hasCapability(RSC_HWOCCLUSION), true));
+        pLog->logMessage(
+            " * User clip planes: "
+            + StringConverter::toString(hasCapability(RSC_USER_CLIP_PLANES), true));
+        pLog->logMessage(
+            " * VET_UBYTE4 vertex element type: "
+            + StringConverter::toString(hasCapability(RSC_VERTEX_FORMAT_UBYTE4), true));
+        pLog->logMessage(
+            " * Infinite far plane projection: "
+            + StringConverter::toString(hasCapability(RSC_INFINITE_FAR_PLANE), true));
+		pLog->logMessage(
+            " * Hardware render-to-texture: "
+            + StringConverter::toString(hasCapability(RSC_HWRENDER_TO_TEXTURE), true));
+        pLog->logMessage(
+            " * Floating point textures: "
+            + StringConverter::toString(hasCapability(RSC_TEXTURE_FLOAT), true));
+        pLog->logMessage(
+            " * Non-power-of-two textures: "
+            + StringConverter::toString(hasCapability(RSC_NON_POWER_OF_2_TEXTURES), true)
+			+ (mNonPOW2TexturesLimited ? " (limited)" : ""));
+		pLog->logMessage(
+            " * Volume textures: "
+            + StringConverter::toString(hasCapability(RSC_TEXTURE_3D), true));
+		pLog->logMessage(
+            " * Multiple Render Targets: "
+            + StringConverter::toString(mNumMultiRenderTargets));
+		pLog->logMessage(
+			" * Point Sprites: "
+			+ StringConverter::toString(hasCapability(RSC_POINT_SPRITES), true));
+		pLog->logMessage(
+			" * Extended point parameters: "
+			+ StringConverter::toString(hasCapability(RSC_POINT_EXTENDED_PARAMETERS), true));
+		pLog->logMessage(
+			" * Max Point Size: "
+			+ StringConverter::toString(mMaxPointSize));
+		pLog->logMessage(
+			" * Vertex texture fetch: "
+			+ StringConverter::toString(hasCapability(RSC_VERTEX_TEXTURE_FETCH), true));
+		if (hasCapability(RSC_VERTEX_TEXTURE_FETCH))
 		{
-			stopRequested = true;
-			stateChangedCondition.notify_all();
+			pLog->logMessage(
+				"   - Max vertex textures: "
+					+ StringConverter::toString(mNumVertexTextureUnits));
+			pLog->logMessage(
+				"   - Vertex textures shared: "
+				+ StringConverter::toString(mVertexTextureUnitsShared, true));
+
 		}
-	}
 
-	void RunService::setRunState(RunState newState)
-	{
-		RunTransition transition(runState, newState);
-		runState = newState;
 
-		Notifier<RunService, RunState>::raise(newState);
-		Notifier<RunService, RunTransition>::raise(transition);
-	}
-
-	void RunService::raiseStepped(float time, float step)
-	{
-		Notifier<RunService, Stepped>::raise(Stepped(time, step));
-		event_Stepped.fire(this, time, step);
-	}
-
-	void RunService::raiseHeartbeat(float time, float step)
-	{
-		Notifier<RunService, Heartbeat>::raise(Heartbeat(time, step));
-		event_Heartbeat.fire(this, step);
-	}
-
-	void RunService::invalidateRunViews()
-	{
-		boost::mutex::scoped_lock lock(viewMutex);
-
-		if (invalidRunViewCount == 0)
-		{
-			invalidRunViewCount = (int)views.size();
-			if (invalidRunViewCount > 0)
-			{
-				for (std::map<IRunView*, bool>::iterator iter = views.begin(); iter != views.end(); iter++)
-				{
-					iter->first->InvalidateRunView();
-					iter->second = false;
-				}
-				runViewsDoneCondition.notify_all();
-			}
-		}
-	}
-
-	void RunService::start()
-	{
-		RBXASSERT(!runThread);
-
-		boost::shared_ptr<DataModel> dataModel = shared_from(dynamic_cast<DataModel*>(getParent()));
-		runThread.reset(new boost::thread(background_function(boost::bind(&RunService::runProc, shared_from(this), dataModel), "rbx_runProc")));
-	}
-}
+    }
+};

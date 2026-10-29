@@ -1,107 +1,189 @@
-// from server: 31% by colin
-// roc 2007-08 007297b0  unit: boost::signals::detail::Ubasic_connection::?$sp_counted_impl_p  size: 493 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 007297b0
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_boost133_signals_core_6e196a12d96bb448.cpp
 
-extern "C" {
-    int __stdcall sub_4024c0(int);
-    int __stdcall sub_630b9e(int, int);
-    int __stdcall sub_727190(int, int);
-    int __stdcall sub_727370(int, int);
-    int __stdcall sub_729710(int, int, int, int, int);
-    void __stdcall sub_77e698(int);
-}
+// Candidate translation unit (score above; library headers required).
+#define _DLL 1
+#define _MT 1
+#define BOOST_SIGNALS_SOURCE
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
+// Boost.Signals library
 
-struct Node {
-    Node* parent;
-    Node* left;
-    Node* right;
-    char color;
-    char pad[3];
-};
+// Copyright Douglas Gregor 2001-2004. Use, modification and
+// distribution is subject to the Boost Software License, Version
+// 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
-struct Tree {
-    Node* header;
-    int count;
-};
+// For more information, see http://www.boost.org
 
-struct Container {
-    char pad0[0x18];
-    Node* header;
-    int count;
-};
+#define BOOST_SIGNALS_SOURCE
 
-struct S {
-    char pad0[0x18];
-    Node* header;
-    int count;
-    int insert_unique(int* a, int* b, int c, int d, int e);
-};
+#include <boost/signals/detail/named_slot_map.hpp>
+#include <cassert>
+#include <map>
+#include <list>
+#include <typeinfo>
 
-int S::insert_unique(int* a, int* b, int c, int d, int e)
+namespace boost { namespace BOOST_SIGNALS_NAMESPACE { namespace detail {
+
+typedef std::list<connection_slot_pair> group_list;
+typedef group_list::iterator slot_pair_iterator;
+typedef std::map<stored_group, group_list, compare_type> slot_container_type;
+typedef slot_container_type::iterator group_iterator;
+typedef slot_container_type::const_iterator const_group_iterator;
+
+named_slot_map_iterator::named_slot_map_iterator() : slot_assigned(false) {}
+
+named_slot_map_iterator::
+named_slot_map_iterator(const named_slot_map_iterator& other)
+  : group(other.group), last_group(other.last_group),
+    slot_assigned(other.slot_assigned)
 {
-    Node* header = this->header;
-    int result = sub_729710((int)header, (int)a, (int)b, c, d);
-    Node* newnode = (Node*)result;
-    this->count++;
-    Node* hdr = this->header;
-    if (a == (int*)hdr) {
-        hdr->right = newnode;
-        hdr->left = newnode;
-        hdr->parent = newnode;
-    } else if (e != 0) {
-        *(Node**)a = newnode;
-        if (a == (int*)hdr->left) {
-            hdr->left = newnode;
-        }
-    } else {
-        ((Node*)a)->right = newnode;
-        if (a == (int*)hdr->right) {
-            hdr->right = newnode;
-        }
-    }
-    Node* parent = newnode->parent;
-    if (parent->color != 0) {
-        return result;
-    }
-    Node* x = newnode;
-    while (1) {
-        Node* p = x->parent;
-        if (p->color != 0) break;
-        Node* gp = p->parent;
-        if (p == gp->left) {
-            Node* uncle = gp->right;
-            if (uncle->color == 0) {
-                p->color = 1;
-                uncle->color = 1;
-                gp->color = 0;
-                x = gp;
-            } else {
-                if (x == p->right) {
-                    x = p;
-                    sub_727370((int)this, (int)x);
-                }
-                x->parent->color = 1;
-                x->parent->parent->color = 0;
-                sub_727190((int)this, (int)x->parent->parent);
-            }
-        } else {
-            Node* uncle = gp->left;
-            if (uncle->color == 0) {
-                p->color = 1;
-                uncle->color = 1;
-                gp->color = 0;
-                x = gp;
-            } else {
-                if (x == p->left) {
-                    x = p;
-                    sub_727190((int)this, (int)x);
-                }
-                x->parent->color = 1;
-                x->parent->parent->color = 0;
-                sub_727370((int)this, (int)x->parent->parent);
-            }
-        }
-    }
-    this->header->parent->color = 1;
-    return result;
+  if (slot_assigned) slot_ = other.slot_;
 }
+
+named_slot_map_iterator&
+named_slot_map_iterator::operator=(const named_slot_map_iterator& other)
+{
+  slot_assigned = other.slot_assigned;
+  group = other.group;
+  last_group = other.last_group;
+  if (slot_assigned) slot_ = other.slot_;
+  return *this;
+}
+
+
+connection_slot_pair& named_slot_map_iterator::dereference() const
+{ return *slot_; }
+
+void named_slot_map_iterator::increment()
+{
+  ++slot_;
+  if (slot_ == group->second.end()) {
+    ++group;
+    init_next_group();
+  }
+}
+
+bool
+named_slot_map_iterator::equal(const named_slot_map_iterator& other) const
+{
+  return (group == other.group
+          && (group == last_group
+              || slot_ == other.slot_));
+}
+
+#if BOOST_WORKAROUND(_MSC_VER, <= 1400)
+void named_slot_map_iterator::decrement() { assert(false); }
+void named_slot_map_iterator::advance(difference_type) { assert(false); }
+#endif
+
+named_slot_map::named_slot_map(const compare_type& compare) : groups(compare)
+{
+  clear();
+}
+
+void named_slot_map::clear()
+{
+  groups.clear();
+  groups[stored_group(stored_group::sk_front)];
+  groups[stored_group(stored_group::sk_back)];
+  back = groups.end();
+  --back;
+}
+
+named_slot_map::iterator named_slot_map::begin()
+{
+  return named_slot_map::iterator(groups.begin(), groups.end());
+}
+
+named_slot_map::iterator named_slot_map::end()
+{
+  return named_slot_map::iterator(groups.end(), groups.end());
+}
+
+named_slot_map::iterator
+named_slot_map::insert(const stored_group& name, const connection& con,
+                       const any& slot, connect_position at)
+{
+  group_iterator group;
+  if (name.empty()) {
+    switch (at) {
+    case at_front: group = groups.begin(); break;
+    case at_back: group = back; break;
+    }
+  } else {
+    group = groups.find(name);
+    if (group == groups.end()) {
+      slot_container_type::value_type v(name, group_list());
+      group = groups.insert(v).first;
+    }
+  }
+  iterator it;
+  it.group = group;
+  it.last_group = groups.end();
+
+  switch (at) {
+  case at_back:
+    group->second.push_back(connection_slot_pair(con, slot));
+    it.slot_ = group->second.end();
+    it.slot_assigned = true;
+    --(it.slot_);
+    break;
+
+  case at_front:
+    group->second.push_front(connection_slot_pair(con, slot));
+    it.slot_ = group->second.begin();
+    it.slot_assigned = true;
+    break;
+  }
+  return it;
+}
+
+void named_slot_map::disconnect(const stored_group& name)
+{
+  group_iterator group = groups.find(name);
+  if (group != groups.end()) {
+    slot_pair_iterator i = group->second.begin();
+    while (i != group->second.end()) {
+      slot_pair_iterator next = i;
+      ++next;
+      i->first.disconnect();
+      i = next;
+    }
+    groups.erase(group);
+  }
+}
+
+void named_slot_map::erase(iterator pos)
+{
+  // Erase the slot
+  pos.slot_->first.disconnect();
+  pos.group->second.erase(pos.slot_);
+}
+
+void named_slot_map::remove_disconnected_slots()
+{
+  // Remove any disconnected slots
+  group_iterator g = groups.begin();
+  while (g != groups.end()) {
+    slot_pair_iterator s = g->second.begin();
+    while (s != g->second.end()) {
+      if (s->first.connected()) ++s;
+      else g->second.erase(s++);
+    }
+
+    // Clear out empty groups
+    if (empty(g)) groups.erase(g++);
+    else ++g;
+  }
+}
+
+
+} } }

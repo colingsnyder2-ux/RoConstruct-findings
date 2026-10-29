@@ -1,529 +1,487 @@
-// from server: 23% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /arch:SSE2 /fp:fast
-// roc-lib: g3d-6.09 G3Dcpp/BinaryInput.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-g3d-dll roc_gimage_jpeg_native_visible_lifetime_cdeddbeb26c4f2e5.cpp
 
 // Candidate translation unit (score above; library headers required).
+#include <stdexcept>
 /**
- @file BinaryInput.cpp
- 
- @author Morgan McGuire, graphics3d.com
- 
- @created 2001-08-09
- @edited  2005-02-24
-
-
-  <PRE>
-    {    
-    BinaryOutput b("c:/tmp/test.b", BinaryOutput::LITTLE_ENDIAN);
-
-    float f = 3.1415926;
-    int i = 1027221;
-    std::string s = "Hello World!";
-
-    b.writeFloat32(f);
-    b.writeInt32(i);
-    b.writeString(s);
-    b.commit();
-    
-
-    BinaryInput in("c:/tmp/test.b", BinaryInput::LITTLE_ENDIAN);
-
-    debugAssert(f == in.readFloat32());
-    int ii = in.readInt32();
-    debugAssert(i == ii);
-    debugAssert(s == in.readString());
-    }
-  </PRE>
+  @file GImage_jpeg.cpp
+  @author Morgan McGuire, morgan@graphics3d.com
+  @created 2002-05-27
+  @edited  2006-05-10
  */
-
 #include "G3D/platform.h"
+#include "G3D/GImage.h"
 #include "G3D/BinaryInput.h"
-#include "G3D/Array.h"
-#include "G3D/fileutils.h"
+#include "G3D/BinaryOutput.h"
+ 
+ /**
+ Pick up libjpeg headers locally on Windows, but from the system on all other platforms.
+*/
+extern "C" {
 #ifdef G3D_WIN32
-  #include "../zlib/zlib.h"
+	#include "IJG/jconfig.h"
+	#include "IJG/cdjpeg.h"
 #else
-  #include <zlib.h>
+	#include <jconfig.h>
+	#include <jpeglib.h>
 #endif
+}
 
 namespace G3D {
+GImage::GImage(
+    const GImage&        other) : _byte(NULL) {
 
-void BinaryInput::readBool8(std::vector<bool>& out, int n) {
-    out.resize(n);
-    // std::vector optimizes bool in a way that prevents fast reading
-    for (int i = 0; i < n ; ++i) {
-        out[i] = readBool8();
-    }
+    _copy(other);
 }
 
 
-void BinaryInput::readBool8(Array<bool>& out, int n) {
-    out.resize(n);
-    readBool8(out.begin(), n);
+GImage::~GImage() {
+    clear();
 }
 
 
-#define IMPLEMENT_READER(ucase, lcase)\
-void BinaryInput::read##ucase(std::vector<lcase>& out, int n) {\
-    out.resize(n);\
-    read##ucase(&out[0], n);\
-}\
-\
-\
-void BinaryInput::read##ucase(Array<lcase>& out, int n) {\
-    out.resize(n);\
-    read##ucase(out.begin(), n);\
-}
-
-
-IMPLEMENT_READER(UInt8,   uint8)
-IMPLEMENT_READER(Int8,    int8)
-IMPLEMENT_READER(UInt16,  uint16)
-IMPLEMENT_READER(Int16,   int16)
-IMPLEMENT_READER(UInt32,  uint32)
-IMPLEMENT_READER(Int32,   int32)
-IMPLEMENT_READER(UInt64,  uint64)
-IMPLEMENT_READER(Int64,   int64)
-IMPLEMENT_READER(Float32, float32)
-IMPLEMENT_READER(Float64, float64)    
-
-#undef IMPLEMENT_READER
-
-// Data structures that are one byte per element can be 
-// directly copied, regardles of endian-ness.
-#define IMPLEMENT_READER(ucase, lcase)\
-void BinaryInput::read##ucase(lcase* out, int n) {\
-    if (sizeof(lcase) == 1) {\
-        readBytes(out, n);\
-    } else {\
-        for (int i = 0; i < n ; ++i) {\
-            out[i] = read##ucase();\
-        }\
-    }\
-}
-
-IMPLEMENT_READER(Bool8,   bool)
-IMPLEMENT_READER(UInt8,   uint8)
-IMPLEMENT_READER(Int8,    int8)
-
-#undef IMPLEMENT_READER
-
-
-#define IMPLEMENT_READER(ucase, lcase)\
-void BinaryInput::read##ucase(lcase* out, int n) {\
-    if (swapBytes) {\
-        for (int i = 0; i < n; ++i) {\
-            out[i] = read##ucase();\
-        }\
-    } else {\
-        readBytes(out, sizeof(lcase) * n);\
-    }\
-}
-
-
-IMPLEMENT_READER(UInt16,  uint16)
-IMPLEMENT_READER(Int16,   int16)
-IMPLEMENT_READER(UInt32,  uint32)
-IMPLEMENT_READER(Int32,   int32)
-IMPLEMENT_READER(UInt64,  uint64)
-IMPLEMENT_READER(Int64,   int64)
-IMPLEMENT_READER(Float32, float32)
-IMPLEMENT_READER(Float64, float64)    
-
-#undef IMPLEMENT_READER
-
-void BinaryInput::loadIntoMemory(int startPosition, int minLength) {
-    // Load the next section of the file
-    debugAssertM(filename != "<memory>", "Read past end of file.");
-
-    int absPos = alreadyRead + pos;
-
-    if (bufferLength < minLength) {
-        // The current buffer isn't big enough to hold the chunk we want to read.
-        // This happens if there was little memory available during the initial constructor
-        // read but more memory has since been freed.
-        bufferLength = minLength;
-		debugAssert(freeBuffer);
-        buffer = (uint8*)System::realloc(buffer, bufferLength);
-        if (buffer == NULL) {
-            throw "Tried to read a larger memory chunk than could fit in memory. (2)";
-        }
-    }
-
-    alreadyRead = startPosition;
-
-    FILE* file = fopen(filename.c_str(), "rb");
-    debugAssert(file);
-
-    int ret = fseek(file, alreadyRead, SEEK_SET);
-    debugAssert(ret == 0);
-
-    int toRead = iMin(bufferLength, length - alreadyRead);
-    ret = fread(buffer, 1, toRead, file);
-    debugAssert(ret == toRead);
-    fclose(file);
-    file = NULL;
-
-    pos = absPos - alreadyRead;
-    debugAssert(pos >= 0);
+void GImage::clear() {
+    width = 0;
+    height = 0;
+    System::free(_byte);
+    _byte = NULL;
 }
 
 
 
-const bool BinaryInput::NO_COPY = false;
+
+static void jpegErrorExit(j_common_ptr cinfo)
+{
+ (*cinfo->err->output_message)(cinfo);
+ jpeg_destroy(cinfo);
+ char message[JMSG_LENGTH_MAX];
+ (*cinfo->err->format_message)(cinfo, message);
+ throw std::runtime_error(message);
+}
+
+
+
+const int jpegQuality = 96;
+
+/**
+ The IJG library needs special setup for compress/decompressing
+ from memory.  These classes provide them.  
+ 
+ The format of this class is defined by the IJG library; do not
+ change it.
+ */ 
+class memory_destination_mgr {
+public:
+	struct jpeg_destination_mgr pub;
+	JOCTET*                     buffer;
+	int                         size;
+	int                         count;
+};
+
+typedef memory_destination_mgr* mem_dest_ptr;
+
+/**
+ Signature dictated by IJG.
+ */
+static void init_destination (
+    j_compress_ptr              cinfo) {
+
+	mem_dest_ptr dest = (mem_dest_ptr) cinfo->dest;
+
+	dest->pub.next_output_byte = dest->buffer;
+	dest->pub.free_in_buffer = dest->size;
+	dest->count=0;
+}
+
+/**
+ Signature dictated by IJG.
+ */
+static boolean empty_output_buffer (
+    j_compress_ptr              cinfo) {
+
+	mem_dest_ptr dest = (mem_dest_ptr) cinfo->dest;
+
+	dest->pub.next_output_byte = dest->buffer;
+	dest->pub.free_in_buffer = dest->size;
+
+	return TRUE;
+}
+
+/**
+ Signature dictated by IJG.
+ */
+static void term_destination (
+    j_compress_ptr              cinfo) {
+
+	mem_dest_ptr dest = (mem_dest_ptr) cinfo->dest;
+	dest->count = dest->size - dest->pub.free_in_buffer;
+}
+
+/**
+ Signature dictated by IJG.
+ */
+static void jpeg_memory_dest (
+    j_compress_ptr              cinfo,
+    JOCTET*                     buffer,
+    int                         size) {
+
+	mem_dest_ptr dest;
+
+	if (cinfo->dest == NULL) {
+        // First time for this JPEG object; call the
+        // IJG allocator to get space.
+		cinfo->dest = (struct jpeg_destination_mgr*)
+			(*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, 
+                                        JPOOL_PERMANENT,
+                       				    sizeof(memory_destination_mgr));
+	}
+
+	dest                            = (mem_dest_ptr) cinfo->dest;
+	dest->size                      = size;
+	dest->buffer                    = buffer;
+	dest->pub.init_destination      = init_destination;
+	dest->pub.empty_output_buffer   = empty_output_buffer;
+	dest->pub.term_destination      = term_destination;
+}
+  
+////////////////////////////////////////////////////////////////////////////////////////
+
+#define INPUT_BUF_SIZE  4096
+
+/**
+ Structure dictated by IJG.
+ */
+class memory_source_mgr {
+public:
+    struct jpeg_source_mgr  pub;
+	int                     source_size;
+	unsigned char*          source_data;
+	boolean                 start_of_data;
+	JOCTET*                 buffer;
+};
+
+
+typedef memory_source_mgr* mem_src_ptr;
+
+
+/**
+ Signature dictated by IJG.
+ */
+static void init_source(
+    j_decompress_ptr        cinfo) {
+
+    mem_src_ptr src = (mem_src_ptr) cinfo->src;
+
+    src->start_of_data = TRUE;
+}
+
+
+/**
+ Signature dictated by IJG.
+ */
+static boolean fill_input_buffer(
+    j_decompress_ptr        cinfo) {
+
+	mem_src_ptr src = (mem_src_ptr) cinfo->src;
+
+	size_t bytes_read = 0;
+
+	if (src->source_size > INPUT_BUF_SIZE)
+		bytes_read = INPUT_BUF_SIZE;
+	else
+		bytes_read = src->source_size;
+
+	memcpy (src->buffer, src->source_data, bytes_read);
+
+	src->source_data += bytes_read;
+	src->source_size -= bytes_read;
+
+	src->pub.next_input_byte = src->buffer;
+	src->pub.bytes_in_buffer = bytes_read;
+	src->start_of_data = FALSE;
+
+
+	return TRUE;
+}
+
+
+/**
+ Signature dictated by IJG.
+ */
+static void skip_input_data(
+    j_decompress_ptr        cinfo,
+    long                    num_bytes) {
+
+	mem_src_ptr src = (mem_src_ptr)cinfo->src;
+
+	if (num_bytes > 0) {
+		while (num_bytes > (long) src->pub.bytes_in_buffer) {
+			num_bytes -= (long) src->pub.bytes_in_buffer;
+			boolean s = fill_input_buffer(cinfo);
+            debugAssert(s); (void)s;
+		}
+
+		src->pub.next_input_byte += (size_t) num_bytes;
+		src->pub.bytes_in_buffer -= (size_t) num_bytes;
+	}
+}
+
+
+/**
+ Signature dictated by IJG.
+ */
+static void term_source (
+    j_decompress_ptr        cinfo) {
+    (void)cinfo;
+	// Intentionally empty
+}
+
+
+/**
+ Signature dictated by IJG.
+ */
+static void jpeg_memory_src (
+    j_decompress_ptr        cinfo,
+    JOCTET*                 buffer,
+    int                     size) {
+
+	mem_src_ptr src;
+
+	if (cinfo->src == NULL) {
+        // First time for this JPEG object
+		cinfo->src = (struct jpeg_source_mgr*)
+			(*cinfo->mem->alloc_small)(
+                (j_common_ptr) cinfo,
+                JPOOL_PERMANENT,
+				sizeof(memory_source_mgr));
+		
+        src = (mem_src_ptr)cinfo->src;
+		
+        src->buffer = (JOCTET*)
+			(*cinfo->mem->alloc_small)(
+                (j_common_ptr) cinfo,
+                JPOOL_PERMANENT,
+				INPUT_BUF_SIZE * sizeof(JOCTET));
+	}
+
+	src = (mem_src_ptr)cinfo->src;
+	src->pub.init_source        = init_source;
+	src->pub.fill_input_buffer  = fill_input_buffer;
+	src->pub.skip_input_data    = skip_input_data;
+
+    // use default method
+	src->pub.resync_to_restart  = jpeg_resync_to_restart;
+	src->pub.term_source        = term_source;
+	src->source_data            = buffer;
+	src->source_size            = size;
+
+    // forces fill_input_buffer on first read
+	src->pub.bytes_in_buffer    = 0;
     
-static bool needSwapBytes(G3DEndian fileEndian) {
-    return (fileEndian != System::machineEndian());
+    // until buffer loaded
+    src->pub.next_input_byte = NULL; 
 }
 
 
-/** Helper used by the constructors for decompression */
-static uint32 readUInt32(const uint8* data, bool swapBytes) {
-    if (swapBytes) {
-        uint8 out[4];
-        out[0] = data[3];
-        out[1] = data[2];
-        out[2] = data[1];
-        out[3] = data[0];
-        return *((uint32*)out);
-    } else {
-        return *((uint32*)data);
-    }
-}
+void GImage::encodeJPEG(
+    BinaryOutput&           out) const {
 
-BinaryInput::BinaryInput(
-    const uint8*        data,
-    int                 dataLen,
-    G3DEndian           dataEndian,
-    bool                compressed,
-    bool                copyMemory) {
-
-    debugAssert(! (compressed && !copyMemory));
-    beginEndBits = 0;
-    bitPos = 0;
-    alreadyRead = 0;
-    bufferLength = 0;
-
-    freeBuffer = copyMemory || compressed;
-
-    this->fileEndian = dataEndian;
-    this->filename = "<memory>";
-	pos = 0;
-    swapBytes = needSwapBytes(fileEndian);
-
-    if (compressed) {
-        // Read the decompressed size from the first 4 bytes
-        length = G3D::readUInt32(data, swapBytes);
-
-		debugAssert(freeBuffer);
-        buffer = (uint8*)System::malloc(length);
-
-        uint32 L = length;
-        // Decompress with zlib
-        int result = uncompress(buffer, (unsigned long*)&L, data + 4, dataLen - 4);
-        length = L;
-        bufferLength = L;
-        debugAssert(result == Z_OK); (void)result;
-
-    } else {
-	    length = dataLen;
-        bufferLength = length;
-        if (! copyMemory) {
- 			debugAssert(!freeBuffer);
-            buffer = const_cast<uint8*>(data);
-        } else {
-			debugAssert(freeBuffer);
-            buffer = (uint8*)System::malloc(length);
-            memcpy(buffer, data, dataLen);
-        }
-    }
-}
-
-
-BinaryInput::BinaryInput(
-    const std::string&  filename,
-    G3DEndian           fileEndian,
-    bool                compressed) {
-
-    alreadyRead = 0;
-    freeBuffer = true;
-    this->fileEndian = fileEndian;
-    this->filename = filename;
-	buffer = NULL;
-    bufferLength = 0;
-	length = 0;
-	pos = 0;
-    beginEndBits = 0;
-    bitPos = 0;
-
-    // Update global file tracker
-    _internal::currentFilesUsed.append(filename);
-    
-    swapBytes = needSwapBytes(fileEndian);
-
-    // Figure out how big the file is and verify that it exists.
-    length = fileLength(filename);
-
-    // Read the file into memory
-    FILE* file = fopen(filename.c_str(), "rb");
-
-	if (! file || (length == -1)) {
-        throw format("File not found: \"%s\"", filename.c_str());
+	if (channels != 3) {
+		// Convert to three channel
+		GImage tmp = *this;
+		tmp.convertToRGB();
+		tmp.encodeJPEG(out);
 		return;
 	}
 
-    if (! compressed && (length > INITIAL_BUFFER_LENGTH)) {
-        // Read only a subset of the file so we don't consume
-        // all available memory.
-        bufferLength = INITIAL_BUFFER_LENGTH;
-    } else {
-        // Either the length is fine or the file is compressed
-        // and requires us to read the whole thing for zlib.
-        bufferLength = length;
-    }
+    debugAssert(channels == 3);
+    out.setEndian(G3D_LITTLE_ENDIAN);
 
-	debugAssert(freeBuffer);
-    buffer = (uint8*)System::malloc(bufferLength);
-    if (buffer == NULL) {
-        if (compressed) {
-            throw "Not enough memory to load compressed file. (1)";
-        }
+    // Allocate and initialize a compression object
+    jpeg_compress_struct    cinfo;
+    jpeg_error_mgr          jerr;
 
-        // Try to allocate a small array; not much memory is available.
-        // Give up if we can't allocate even 1k.
-        while ((buffer == NULL) && (bufferLength > 1024)) {
-            bufferLength /= 2;
-            buffer = (uint8*)System::malloc(bufferLength);
-        }
-    }
-    debugAssert(buffer);
+	cinfo.err = jpeg_std_error(&jerr);
+ jerr.error_exit = jpegErrorExit;
+	jpeg_create_compress(&cinfo);
+
+    // Specify the destination for the compressed data.
+    // (Overestimate the size)
+    int buffer_size = width * height * 3 + 200;
+    JOCTET* compressed_data = (JOCTET*)System::malloc(buffer_size);
+	jpeg_memory_dest(&cinfo, compressed_data, buffer_size);
+
+
+    cinfo.image_width       = width;
+    cinfo.image_height      = height;
+
+	// # of color components per pixel
+    cinfo.input_components  = 3;
+
+    // colorspace of input image
+    cinfo.in_color_space    = JCS_RGB; 
+    cinfo.input_gamma       = 1.0;
     
-    fread(buffer, bufferLength, sizeof(int8), file);
-    fclose(file);
-    file = NULL;
+    // Set parameters for compression, including image size & colorspace
+    jpeg_set_defaults(&cinfo);
+    jpeg_set_quality(&cinfo, jpegQuality, false);
+    cinfo.smoothing_factor = 0;
+    cinfo.optimize_coding = TRUE;
+//    cinfo.dct_method = JDCT_FLOAT;
+    cinfo.dct_method = JDCT_ISLOW;
+    cinfo.jpeg_color_space = JCS_YCbCr;
 
-    pos = 0;
+    // Initialize the compressor
+    jpeg_start_compress(&cinfo, TRUE);
 
-    if (compressed) {
-        if (bufferLength != length) {
-            throw "Not enough memory to load compressed file. (2)";
-        }
-
-        // Decompress
-        // Use the existing buffer as the source, allocate
-        // a new buffer to use as the destination.
-
-        int tempLength = length;
-        length = G3D::readUInt32(buffer, swapBytes);
-
-        uint8* tempBuffer = buffer;
-        buffer = (uint8*)System::malloc(length);
-
-        debugAssert(buffer);
-        debugAssert(isValidHeapPointer(tempBuffer));
-        debugAssert(isValidHeapPointer(buffer));
-
-        unsigned long L = length;
-        int result = uncompress(buffer, &L, tempBuffer + 4, tempLength - 4);
-        length = L;
-        bufferLength = length;
-
-        debugAssert(result == Z_OK); (void)result;
-
-        System::free(tempBuffer);
-    }
-}
-
-
-BinaryInput::~BinaryInput() {
-
-    if (freeBuffer) {
-        System::free(buffer);
-    }
-    buffer = NULL;
-}
-
-
-void BinaryInput::readBytes(int n, void* bytes) {
-    prepareToRead(n);
-    debugAssert(isValidPointer(bytes));
-
-    memcpy(bytes, buffer + pos, n);
-    pos += n;
-}
-
-
-uint64 BinaryInput::readUInt64() {
-    prepareToRead(8);
-    uint8 out[8];
-
-    if (swapBytes) {
-        out[0] = buffer[pos + 7];
-        out[1] = buffer[pos + 6];
-        out[2] = buffer[pos + 5];
-        out[3] = buffer[pos + 4];
-        out[4] = buffer[pos + 3];
-        out[5] = buffer[pos + 2];
-        out[6] = buffer[pos + 1];
-        out[7] = buffer[pos + 0];
-    } else {
-        *(uint64*)out = *(uint64*)(buffer + pos);
-    }
-
-    pos += 8;
-    return *(uint64*)out;
-}
-
-
-std::string BinaryInput::readString(int n) {
-    prepareToRead(n);
-    debugAssertM((pos + n) <= length, "Read past end of file");
+    // Iterate over all scanlines from top to bottom
+	// pointer to a single row
+    JSAMPROW row_pointer[1];
     
-    char *s = (char*)System::malloc(n + 1);
-    assert(s != NULL);
-
-    memcpy(s, buffer + pos, n);
-    // There may not be a null, so make sure
-    // we add one.
-    s[n] = '\0';
-
-    std::string out = s;
-    System::free(s);
-    s = NULL;
-
-    pos += n;
-
-    return out;
-
-}
-
-
-std::string BinaryInput::readString() {
-    int n = 0;
-
-    if ((int)pos + (int)alreadyRead + n < (int)length - 1) {
-        prepareToRead(1);
+    // JSAMPLEs per row in image_buffer
+    int row_stride = cinfo.image_width * 3;
+    while (cinfo.next_scanline < cinfo.image_height) {
+	    row_pointer[0] = &(_byte[cinfo.next_scanline * row_stride]);
+	    jpeg_write_scanlines(&cinfo, row_pointer, 1);
     }
 
-    if (((int)pos + (int)alreadyRead + (int)n < length - 1) && (buffer[pos + n] != '\0')) {
-        ++n;
-        while (((int)pos + (int)alreadyRead + n < (int)length - 1) && (buffer[pos + n] != '\0')) {
-            prepareToRead(1);
-            ++n;
-        }
-    }
+    // Shut down the compressor
+    jpeg_finish_compress(&cinfo);
+    
+    // Figure out how big the result was.
+    int outLength = ((mem_dest_ptr)cinfo.dest)->count;
 
-    // Consume NULL
-    ++n;
+    //	Release the JPEG compression object
+    jpeg_destroy_compress(&cinfo);
 
-    return readString(n);
+    // Copy into an appropriately sized output buffer.
+    out.writeBytes(compressed_data, outLength);
+
+    // Free the conservative buffer.
+    System::free(compressed_data);
+    compressed_data = NULL;
 }
 
 
-std::string BinaryInput::readStringEven() {
-    std::string x = readString();
-    if (hasMore() && (G3D::isOdd(x.length() + 1))) {
-        skip(1);
-    }
-    return x;
+
+void GImage::decodeJPEG(
+    BinaryInput&                input) {
+
+	struct jpeg_decompress_struct   cinfo;
+	struct jpeg_error_mgr           jerr;
+    int                             loc = 0;
+
+    channels = 3;
+    // We have to set up the error handler, in case initialization fails.
+	cinfo.err = jpeg_std_error(&jerr);
+ jerr.error_exit = jpegErrorExit;
+
+    // Initialize the JPEG decompression object.
+	jpeg_create_decompress(&cinfo);
+
+	// Specify data source (eg, a file, for us, memory)
+	jpeg_memory_src(&cinfo, const_cast<uint8*>(input.getCArray()), input.size());
+
+	// Read the parameters with jpeg_read_header()
+	jpeg_read_header(&cinfo, TRUE);
+
+	// Set parameters for decompression
+	// (We do nothing here since the defaults are fine)
+
+	// Start decompressor
+	jpeg_start_decompress(&cinfo);
+
+	// Get and set the values of interest to this object
+	this->width     = cinfo.output_width;
+	this->height    = cinfo.output_height;
+
+	// Prepare the pointer object for the pixel data
+    _byte = (uint8*)System::malloc(width * height * 3);
+
+ 	// JSAMPLEs per row in output buffer
+    int bpp         = cinfo.output_components;
+    int row_stride  = cinfo.output_width * bpp;
+
+	// Make a one-row-high sample array that will go away when done with image
+    JSAMPARRAY temp = (*cinfo.mem->alloc_sarray)
+		((j_common_ptr) &cinfo, JPOOL_IMAGE, row_stride, 1);
+
+    // Read data on a scanline by scanline basis
+	while (cinfo.output_scanline < cinfo.output_height) {
+
+        // We may need to adjust the output based on the
+        // number of channels it has.
+        switch (bpp) {
+	    case 1:
+            // Grayscale; decompress to temp.
+    		jpeg_read_scanlines(&cinfo, temp, 1);
+
+            // Expand to three channels
+            {
+                uint8* scan     = &(_byte[loc * 3]);
+                uint8* endScan  = scan + (width * 3);
+                uint8* t        = *temp;
+
+                while (scan < endScan) {
+                    uint8 value = t[0];
+
+                    // Spread the value 3x.
+                    scan[0] = value;
+                    scan[1] = value;
+                    scan[2] = value;
+
+                    scan    += 3;
+                    t       += 1;
+                }
+            }
+		    break;
+
+	    case 3:
+            // Read directly into the array
+            {
+                // Need one extra level of indirection.
+                uint8*     scan = _byte + loc;
+                JSAMPARRAY ptr  = &scan;
+    		    jpeg_read_scanlines(&cinfo, ptr, 1);
+            }
+		    break;
+
+	    case 4:
+            // RGBA; decompress to temp.
+    		jpeg_read_scanlines(&cinfo, temp, 1);
+
+            // Drop the 3rd channel
+            {
+                uint8* scan     = &(_byte[loc * 3]);
+                uint8* endScan  = scan + width * 3;
+                uint8* t        = *temp;
+
+                while (scan < endScan) {
+                    scan[0] = t[0];
+                    scan[1] = t[1];
+                    scan[2] = t[2];
+                    
+                    scan    += 3;
+                    t       += 4;
+                }
+            }
+		    break;
+
+	    default:
+		    throw Error("Unexpected number6 of channels.", input.getFilename());
+	    }
+
+		loc += row_stride;
+	}
+
+	// Finish decompression
+	jpeg_finish_decompress(&cinfo);
+
+	// Release JPEG decompression object
+	jpeg_destroy_decompress(&cinfo);
 }
 
-
-std::string BinaryInput::readString32() {
-    int len = readUInt32();
-    return readString(len);
-}
-
-
-Vector4 BinaryInput::readVector4() {
-    double x = readFloat32();
-    double y = readFloat32();
-    double z = readFloat32();
-    double w = readFloat32();
-    return Vector4(x, y, z, w);
-}
-
-
-Vector3 BinaryInput::readVector3() {
-    double x = readFloat32();
-    double y = readFloat32();
-    double z = readFloat32();
-    return Vector3(x, y, z);
-}
-
-
-Vector2 BinaryInput::readVector2() {
-    double x = readFloat32();
-    double y = readFloat32();
-    return Vector2(x, y);
-}
-
-
-Color4 BinaryInput::readColor4() {
-    double r = readFloat32();
-    double g = readFloat32();
-    double b = readFloat32();
-    double a = readFloat32();
-    return Color4(r, g, b, a);
-}
-
-
-Color3 BinaryInput::readColor3() {
-    double r = readFloat32();
-    double g = readFloat32();
-    double b = readFloat32();
-    return Color3(r, g, b);
-}
-
-
-void BinaryInput::beginBits() {
-    debugAssert(beginEndBits == 0);
-    beginEndBits = 1;
-    bitPos = 0;
-
-    debugAssertM(hasMore(), "Can't call beginBits when at the end of a file");
-    bitString = readUInt8();
-}
-
-
-uint32 BinaryInput::readBits(int numBits) {
-    debugAssert(beginEndBits == 1);
-
-    uint32 out = 0;
-
-    const int total = numBits;
-    while (numBits > 0) {
-        if (bitPos > 7) {
-            // Consume a new byte for reading.  We do this at the beginning
-            // of the loop so that we don't try to read past the end of the file.
-            bitPos = 0;
-            bitString = readUInt8();
-        }
-
-        // Slide the lowest bit of the bitString into
-        // the correct position.
-        out |= (bitString & 1) << (total - numBits);
-
-        // Shift over to the next bit
-        bitString = bitString >> 1;
-        ++bitPos;
-        --numBits;
-    }
-
-    return out;
-}
-
-
-void BinaryInput::endBits() {
-    debugAssert(beginEndBits == 1);
-    if (bitPos == 0) {
-        // Put back the last byte we read
-        --pos;
-    }
-    beginEndBits = 0;
-    bitPos = 0;
-}
 
 }

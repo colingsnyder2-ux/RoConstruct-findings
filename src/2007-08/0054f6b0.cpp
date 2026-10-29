@@ -1,63 +1,16 @@
-// from server: 23% by colin
-struct S {
-    char pad0[0x14];
-    char* begin;
-    char* cur;
-    char* end;
-    char pad1[4];
-    unsigned int flags;
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-boost-1_34_1-dll roc_boost_resume_916365a4f87a380b.cpp
 
-    int f(char* a, int b, int c);
-};
-
-extern "C" int __stdcall memmove_s(void*, unsigned int, const void*, unsigned int);
-extern "C" int __stdcall sputn(void*, const char*, int);
-
-int S::f(char* a, int b, int c)
-{
-    char* p;
-    char* q;
-    int n;
-    int m;
-    int r;
-    char* base;
-    char* src;
-    int len;
-    int i;
-    int j;
-
-    if ((flags & 2) == 0) {
-        flags |= 2;
-        cur = begin;
-        end = begin + (int)pad0;
-    }
-
-    p = a;
-    q = a + b;
-    base = begin;
-    if (p == q)
-        return (int)(p - q);
-
-    while (p != q) {
-        if (cur == end) {
-            len = (int)(cur - begin);
-            r = sputn(this, begin, len);
-            if (r < len && r > 0) {
-                memmove_s(begin, len - r, begin + r, len - r);
-            }
-            cur = begin + (len - r);
-            end = begin + (int)pad0;
-            if (r == 0)
-                break;
-        }
-        n = (int)(end - cur);
-        m = (int)(q - p);
-        if (m < n)
-            n = m;
-        memmove_s(cur, n, p, n);
-        cur += n;
-        p += n;
-    }
-
-    return (int)(p - a);
-}
+// Candidate translation unit (score above; library headers required).
+#define NDEBUG 1
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::stream_buffer<boost::iostreams::basic_gzip_compressor<std::allocator<char> >,std::char_traits<char>,std::allocator<char>,boost::iostreams::output>;

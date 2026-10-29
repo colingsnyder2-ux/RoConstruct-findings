@@ -1,55 +1,15 @@
-// from server: 64% by colin
-extern "C" void* __stdcall memmove_s(void*, unsigned int, const void*, unsigned int);
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_fc27c84cd7b01590.cpp
 
-struct S {
-    char pad0[0x40];
-    unsigned int field40;
-    unsigned int field44;
-    unsigned int f(unsigned int a, unsigned int b, unsigned int c);
-};
-
-unsigned int S::f(unsigned int a, unsigned int b, unsigned int c)
-{
-    unsigned int v = *(unsigned int*)(b + 0x14) - field40;
-    unsigned int* p;
-    if ((int)a < (int)v)
-        p = &a;
-    else
-        p = &v;
-    unsigned int edi = *p;
-
-    unsigned int ecx = *(unsigned int*)(b + 0x18);
-    char* eax = (char*)(b + 4);
-    char* edx;
-    if (ecx < 0x10)
-        edx = eax;
-    else
-        edx = *(char**)eax;
-
-    char* ecx2;
-    if (ecx < 0x10)
-        ecx2 = eax;
-    else
-        ecx2 = *(char**)eax;
-
-    unsigned int eax2 = field40;
-    ecx2 = (char*)((unsigned int)ecx2 + eax2);
-    eax2 = eax2 - (unsigned int)ecx2;
-    eax2 = eax2 + (unsigned int)edx;
-    eax2 = eax2 + edi;
-
-    if ((int)eax2 > 0)
-    {
-        memmove_s((void*)c, eax2, ecx2, eax2);
-    }
-
-    field40 += edi;
-
-    unsigned int eax3 = field44;
-    if ((eax3 & 1) == 0 && field40 == *(unsigned int*)(b + 0x14))
-    {
-        field44 = eax3 | 1;
-    }
-
-    return edi;
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::basic_gzip_compressor<std::allocator<char> >;

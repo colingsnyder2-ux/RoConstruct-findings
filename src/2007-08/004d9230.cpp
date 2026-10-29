@@ -1,8 +1,7 @@
-// from server: 50% by colin
-// roc-lang: cpp
 // roc-cl: 50727
+// roc-lang: cpp
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-view MaterialFactory.cpp
+// roc-lib: rbxgs-view-dll MaterialFactory.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "MaterialFactory.h"

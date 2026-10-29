@@ -1,70 +1,25 @@
-// from server: 89% by colin
-// roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Camera.cpp
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_camera_fly_native_family_5dba1c85aa68a635.cpp
 
 // Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8datamodel/Camera.h", "../roc_camera_fly_native_header_f804c210c099df00.cpp")
+#undef _RELEASEASSERT
 #include "v8datamodel/Camera.h"
-#include "v8datamodel/Workspace.h"
-#include "v8datamodel/ICharacterSubject.h"
 #include "util/Math.h"
+#include "v8datamodel/ICameraOwner.h"
+namespace RBX {
+void Camera::tellCameraMoved() {
+ if (ICameraOwner* owner = getCameraOwner()) owner->cameraMoved();
+}
 
-namespace RBX
-{
-	const char* sCamera = "Camera";
-
-	static Reflection::EnumPropDescriptor<Camera, Camera::CameraType> desc_cameraType("CameraType", "Camera", &Camera::getCameraType, &Camera::setCameraType, Reflection::PropertyDescriptor::STANDARD); 
-	static Reflection::PropDescriptor<Camera, G3D::CoordinateFrame> desc_CoordFrame("CoordinateFrame", "Data", &Camera::getCameraCoordinateFrame, &Camera::setCameraCoordinateFrameNoLerp, Reflection::PropertyDescriptor::STREAMING);
-	static Reflection::PropDescriptor<Camera, G3D::CoordinateFrame> desc_Focus("Focus", "Data", &Camera::getCameraFocus, &Camera::setCameraFocus, Reflection::PropertyDescriptor::STREAMING);
-	static Reflection::RefPropDescriptor<Camera, Instance> cameraSubjectProp("CameraSubject", "Camera", &Camera::getCameraSubjectInstance, &Camera::setCameraSubject, Reflection::PropertyDescriptor::STANDARD);
-	
-	Reflection::EnumDesc<Camera::CameraType>::EnumDesc()
-		: EnumDescriptor("CameraType", typeid(Camera::CameraType))
-	{
-		addPair(Camera::FIXED_CAMERA, "Fixed");
-		addPair(Camera::WATCH_CAMERA, "Watch");
-		addPair(Camera::ATTACH_CAMERA, "Attach");
-		addPair(Camera::TRACK_CAMERA, "Track");
-		addPair(Camera::FOLLOW_CAMERA, "Follow");
-		addPair(Camera::CUSTOM_CAMERA, "Custom");
-	}
-
-	Camera::Camera()
-		: Base(),
-		  cameraFocus(G3D::Vector3(0, 0, -5)),
-		  cameraType(FIXED_CAMERA),
-		  animationType(AUTO),
-		  cameraExternallyAdjusted(false)
-	{
-		setName("Camera");
-		gCamera.setNearPlaneZ(1.25);
-		gCamera.setFarPlaneZ(5000);
-		gCamera.setFieldOfView(G3D::toRadians(60));
-
-		G3D::CoordinateFrame cameraCoord(G3D::Vector3(0, 5, 5));
-		cameraCoord.lookAt(G3D::Vector3::zero());
-
-		setGCameraCoordinateFrame(cameraCoord);
-	}
-
-	Camera::~Camera()
-	{
-	}
-
-	void Camera::tellCameraMoved()
-	{
-		if (ICameraOwner* owner = getCameraOwner())
-		{
-			owner->cameraMoved();
-		}
-	}
 
 	void Camera::setGCameraCoordinateFrame(const G3D::CoordinateFrame& coord)
 	{
 		if (Math::legalCameraCoord(coord))
 		{
-			gCamera.setCoordinateFrame(coord);
+			(*(G3D::GCamera*)((char*)this+0x130)).setCoordinateFrame(coord);
 		}
 		else
 		{
@@ -72,38 +27,21 @@ namespace RBX
 		}
 	}
 
-	bool Camera::askSetParent(const Instance* instance) const
-	{
-		return dynamic_cast<const Workspace*>(instance) != NULL;
-	}
-
-	ICameraOwner* Camera::getCameraOwner()
-	{
-		for (Instance* instance = getParent(); instance != NULL; instance = instance->getParent())
-		{
-			ICameraOwner* cameraOwner = dynamic_cast<ICameraOwner*>(instance);
-			if (cameraOwner)
-				return cameraOwner;
-		}
-
-		return NULL;
-	}
-
 	void Camera::lookAt(const G3D::Vector3& point)
 	{
-		cameraFocus.translation = point;
-		cameraGoal.lookAt(point);
+		(*(G3D::CoordinateFrame*)((char*)this+0x1a4)).translation = point;
+		(*(G3D::CoordinateFrame*)((char*)this+0x174)).lookAt(point);
 	}
 
 	void Camera::getHeadingElevationDistance(float& heading, float& elevation, float& distance)
 	{
-		Math::getHeadingElevation(cameraGoal, heading, elevation);
+		Math::getHeadingElevation((*(G3D::CoordinateFrame*)((char*)this+0x174)), heading, elevation);
 		distance = goalToFocusDistance();
 	}
 
 	bool Camera::setDistanceFromTarget(float newDistance)
 	{
-		G3D::Vector3 lookVector = cameraFocus.translation - cameraGoal.translation;
+		G3D::Vector3 lookVector = (*(G3D::CoordinateFrame*)((char*)this+0x1a4)).translation - (*(G3D::CoordinateFrame*)((char*)this+0x174)).translation;
 		float currentDistance = lookVector.magnitude();
 
 		const float min = distanceMin();
@@ -118,21 +56,16 @@ namespace RBX
 		newDistance = G3D::min(max, G3D::max(min, newDistance));
 		
 		lookVector *= newDistance;
-		cameraGoal.translation = cameraFocus.translation - (lookVector / currentDistance);
+		(*(G3D::CoordinateFrame*)((char*)this+0x174)).translation = (*(G3D::CoordinateFrame*)((char*)this+0x1a4)).translation - (lookVector / currentDistance);
 
 		tellCameraMoved();
 
 		return true;
 	}
 
-	void Camera::alwaysMode()
-	{
-		animationType = ALWAYS;
-	}
-
 	bool Camera::nonCharacterZoom(float in)
 	{
-		G3D::Vector3 lookVector = cameraFocus.translation - cameraGoal.translation;
+		G3D::Vector3 lookVector = (*(G3D::CoordinateFrame*)((char*)this+0x1a4)).translation - (*(G3D::CoordinateFrame*)((char*)this+0x174)).translation;
 
 		float currentDistance = lookVector.magnitude();
 		float newZoomDistance = getNewZoomDistance(currentDistance, in);
@@ -140,7 +73,7 @@ namespace RBX
 		if (newZoomDistance == currentDistance)
 			return false;
 
-		cameraGoal.translation -= lookVector * (newZoomDistance / currentDistance - 1.0f);
+		(*(G3D::CoordinateFrame*)((char*)this+0x174)).translation -= lookVector * (newZoomDistance / currentDistance - 1.0f);
 
 		tellCameraMoved();
 
@@ -149,7 +82,7 @@ namespace RBX
 
 	bool Camera::characterZoom(float in)
 	{
-		G3D::Vector3 focusToGoal = cameraGoal.translation - cameraFocus.translation;
+		G3D::Vector3 focusToGoal = (*(G3D::CoordinateFrame*)((char*)this+0x174)).translation - (*(G3D::CoordinateFrame*)((char*)this+0x1a4)).translation;
 
 		float currentDistance = focusToGoal.magnitude();
 
@@ -164,18 +97,9 @@ namespace RBX
 		focusToGoal.unitize();
 		focusToGoal.y = newDistance * 0.03f;
 
-		cameraGoal.translation = focusToGoal.direction() * newDistance + cameraFocus.translation;
+		(*(G3D::CoordinateFrame*)((char*)this+0x174)).translation = focusToGoal.direction() * newDistance + (*(G3D::CoordinateFrame*)((char*)this+0x1a4)).translation;
 
 		return true;
-	}
-
-	void Camera::setHeadingElevationDistance(float heading, float elevation, float distance)
-	{
-		Math::setHeadingElevation(cameraGoal, heading, elevation);
-		cameraFocus.rotation = cameraGoal.rotation;
-
-		cameraGoal.translation = cameraFocus.translation - cameraGoal.lookVector() * distance;
-		cameraExternallyAdjusted = true;
 	}
 
 	void Camera::panRadians(float angle)
@@ -216,191 +140,6 @@ namespace RBX
 		return false;
 	}
 
-	void Camera::updateFocus()
-	{
-		Instance* instance = getCameraSubjectInstance();
-		if (instance)
-		{
-			ICameraSubject* subject = dynamic_cast<ICameraSubject*>(instance);
-			RBXASSERT(subject);
-			cameraFocus = subject->getLocation();
-		}
-	}
-
-	//96.11% matching.
-	void Camera::updateGoal()
-	{
-		switch (cameraType)
-		{
-			case WATCH_CAMERA:
-			{
-				updateFocus();
-				break;
-			}
-			case ATTACH_CAMERA: 
-			{
-				G3D::Vector3 delta = cameraGoal.translation - cameraFocus.translation;
-				float distance = delta.xz().length();
-
-				updateFocus();
-
-				G3D::Vector2 direction = -cameraFocus.lookVector().xz().direction();
-				cameraGoal.translation = cameraFocus.translation + G3D::Vector3(direction.x * distance, delta.y, direction.y * distance);
-
-				break;
-			}
-			case TRACK_CAMERA:
-			{
-				G3D::Vector3 oldFocusPt = cameraFocus.translation;
-				updateFocus();
-
-				cameraGoal.translation += cameraFocus.translation - oldFocusPt;
-				break;
-			}
-			case FOLLOW_CAMERA:
-			{
-				G3D::Vector3 delta = cameraFocus.translation - cameraGoal.translation;
-				float distance = delta.xz().length();
-
-				updateFocus();
-			
-				G3D::Vector2 direction = (cameraFocus.translation.xz() - cameraGoal.translation.xz()).direction();
-				cameraGoal.translation = cameraFocus.translation - G3D::Vector3(direction.x * distance, delta.y, direction.y * distance);
-
-				break;
-			}
-			case CUSTOM_CAMERA:
-			{
-				if (ICameraSubject* cameraSubject = getCameraSubject())
-					cameraSubject->stepGoalAndFocus(cameraGoal, cameraFocus, cameraExternallyAdjusted);
-
-				cameraExternallyAdjusted = false;
-				break;
-			}
-		}
-
-		cameraGoal.lookAt(cameraFocus.translation);
-	}
-
-	bool Camera::zoom(float in)
-	{
-		if (cameraType == CUSTOM_CAMERA)
-		{
-			ICameraSubject* cameraSubject = getCameraSubject();
-			if (cameraSubject)
-				return cameraSubject->zoom(in, cameraGoal, cameraFocus);
-		}
-		else if (getCameraSubjectInstance() && 
-				 (cameraType == FOLLOW_CAMERA || 
-				  cameraType == ATTACH_CAMERA || 
-				  cameraType == TRACK_CAMERA))
-		{
-			return characterZoom(in);
-		}
-		else
-		{
-			return nonCharacterZoom(in);
-		}
-
-		return false;
-	}
-
-	void Camera::onHeartbeat()
-	{
-		updateGoal();
-		G3D::CoordinateFrame adjustedGoal = cameraGoal;
-		ICameraSubject* cameraSubject = getCameraSubject();
-		ICharacterSubject* characterSubject = dynamic_cast<ICharacterSubject*>(cameraSubject);
-
-		if (characterSubject)
-			characterSubject->onHeartBeat(cameraGoal, cameraFocus);
-
-		G3D::CoordinateFrame cameraCoord = gCamera.getCoordinateFrame();
-		G3D::CoordinateFrame LerpFrame = cameraCoord.lerp(adjustedGoal, 0.9f);
-
-		setGCameraCoordinateFrame(LerpFrame);
-
-		if (animationType == ALWAYS || !Math::fuzzyEq(LerpFrame, cameraCoord, 0.01f, 0.01f))
-		{
-			tellCameraMoved();
-		}
-	}
-
-	Instance* Camera::getCameraSubjectInstance() const
-	{
-		return cameraSubject.get();
-	}
-
-	ICameraSubject* Camera::getCameraSubject() const
-	{
-		Instance* instance = getCameraSubjectInstance();
-		if (instance)
-		{
-			ICameraSubject* subject = dynamic_cast<ICameraSubject*>(instance);
-			RBXASSERT(subject);
-			return subject;
-		}
-		return NULL;
-	}
-
-	void Camera::autoMode()
-	{
-		if (animationType != AUTO)
-		{
-			animationType = AUTO;
-
-			tellCameraMoved();
-		}
-	}
-
-	void Camera::setCameraType(CameraType type)
-	{
-		if (cameraType != type)
-		{
-			cameraType = type;
-			raisePropertyChanged(desc_cameraType);
-
-			tellCameraMoved();
-		}
-	}
-
-	void Camera::setCameraSubject(Instance* newSubject)
-	{
-		if (newSubject != getCameraSubjectInstance())
-		{
-			if (dynamic_cast<ICameraSubject*>(newSubject))
-			{
-				cameraSubject = shared_from((ModelInstance*) newSubject);
-				raisePropertyChanged(cameraSubjectProp);
-
-				tellCameraMoved();
-			}
-		}
-	}
-
-	void Camera::setCameraFocus(const G3D::CoordinateFrame& value)
-	{
-		if (value != cameraFocus)
-		{
-			cameraFocus = value;
-			raisePropertyChanged(desc_Focus);
-
-			tellCameraMoved();
-		}
-	}
-
-	void Camera::goalToCamera()
-	{
-		if (gCamera.getCoordinateFrame() != cameraGoal)
-		{
-			cameraExternallyAdjusted = true;
-			setGCameraCoordinateFrame(cameraGoal);
-			raisePropertyChanged(desc_CoordFrame);
-
-			tellCameraMoved();
-		}
-	}
-
 	void Camera::tryZoomExtents(float low, float current, float high, const Extents& extents, const G3D::Rect2D& viewPort)
 	{
 		RBXASSERT(current >= low);
@@ -413,7 +152,7 @@ namespace RBX
 		updateGoal();
 		goalToCamera();
 
-		if (extents.containedByFrustum(gCamera.frustum(viewPort)))
+		if (extents.containedByFrustum((*(G3D::GCamera*)((char*)this+0x130)).frustum(viewPort)))
 		{
 			tryZoomExtents(low, (low + current) * 0.5, current, extents, viewPort);
 		}
@@ -425,17 +164,17 @@ namespace RBX
 
 	void Camera::zoomExtents(Extents extents, const G3D::Rect2D& viewPort, Camera::ZoomType zoomType)
 	{
-		G3D::CoordinateFrame currentCoord = gCamera.getCoordinateFrame();
+		G3D::CoordinateFrame currentCoord = (*(G3D::GCamera*)((char*)this+0x130)).getCoordinateFrame();
 		extents.expand(0.1f);
 
-		if (zoomType != ZOOM_CHAR_PART_DRAG || cameraType == CUSTOM_CAMERA)
+		if (zoomType != ZOOM_CHAR_PART_DRAG || (*(CameraType*)((char*)this+0x1d4)) == CUSTOM_CAMERA)
 		{
-			if (cameraType == FIXED_CAMERA)
+			if ((*(CameraType*)((char*)this+0x1d4)) == FIXED_CAMERA)
 			{
-				G3D::Vector3 scaler = extents.center() - cameraFocus.translation;
+				G3D::Vector3 scaler = extents.center() - (*(G3D::CoordinateFrame*)((char*)this+0x1a4)).translation;
 
-				cameraFocus.translation += scaler;
-				cameraGoal.translation += scaler;
+				(*(G3D::CoordinateFrame*)((char*)this+0x1a4)).translation += scaler;
+				(*(G3D::CoordinateFrame*)((char*)this+0x174)).translation += scaler;
 			}
 
 			float low;
@@ -455,25 +194,18 @@ namespace RBX
 			if (G3D::isFinite(low) && G3D::isFinite(current) && G3D::isFinite(distanceMax()))
 				tryZoomExtents(low, current, distanceMax(), extents, viewPort);
 
-			cameraGoal = gCamera.getCoordinateFrame();
+			(*(G3D::CoordinateFrame*)((char*)this+0x174)) = (*(G3D::GCamera*)((char*)this+0x130)).getCoordinateFrame();
 			setGCameraCoordinateFrame(currentCoord);
 			tellCameraMoved();
 		}
 	}
+}
 
-	bool Camera::zoomExtents(const G3D::Rect2D& viewPort)
-	{
-		if (ICameraOwner* owner = getCameraOwner())
-		{
-			zoomExtents(owner->computeCameraOwnerExtents(), viewPort, ZOOM_IN_OR_OUT);
-			return true;
-		}
-		return false;
-	}
+namespace RBX {
 
 	void Camera::setCameraCoordinateFrameNoLerp(const G3D::CoordinateFrame& value)
 	{
-		cameraGoal = value;
+		(*(G3D::CoordinateFrame*)((char*)this+0x174)) = value;
 		goalToCamera();
 	}
 
@@ -524,4 +256,79 @@ namespace RBX
 
 		return currentDistance;
 	}
+	bool Camera::zoomExtents(const G3D::Rect2D& viewPort)
+	{
+		if (ICameraOwner* owner = getCameraOwner())
+		{
+			zoomExtents(owner->computeCameraOwnerExtents(), viewPort, ZOOM_IN_OR_OUT);
+			return true;
+		}
+		return false;
+	}
+}
+
+namespace RBX {
+class NavKeys
+{
+public:
+	bool forward_arrow;  // 0x00
+	bool backward_arrow; // 0x01
+	bool left_arrow;     // 0x02
+	bool right_arrow;    // 0x03
+	bool forward_asdw;   // 0x04
+	bool backward_asdw;  // 0x05
+	bool left_asdw;      // 0x06
+	bool right_asdw;     // 0x07
+	bool space;          // 0x08
+		bool forward() const		{return (forward_arrow || forward_asdw);}
+
+		bool backward() const		{return (backward_arrow || backward_asdw);}
+
+		bool left() const			{return (left_arrow || left_asdw);}
+		
+		bool right() const			{return (right_arrow || right_asdw);}
+
+		bool arrowKeyDown() const	{return (forward_arrow || backward_arrow || left_arrow || right_arrow);}
+
+		bool asdwKeyDown() const	{return (forward_asdw || backward_asdw || left_asdw || right_asdw);}
+
+
+ bool navKeyDown() const {return arrowKeyDown() || asdwKeyDown() || space;}
+};
+
+
+	static Reflection::EnumPropDescriptor<Camera, Camera::CameraType> desc_cameraType("CameraType", "Camera", &Camera::getCameraType, &Camera::setCameraType, Reflection::PropertyDescriptor::STANDARD); 
+
+	void Camera::setCameraType(CameraType type)
+	{
+		if ((*(CameraType*)((char*)this+0x1d4)) != type)
+		{
+			(*(CameraType*)((char*)this+0x1d4)) = type;
+			raisePropertyChanged(desc_cameraType);
+
+			tellCameraMoved();
+		}
+	}
+
+void Camera::doFly(const NavKeys& nav, int steps)
+{
+ if (nav.navKeyDown()) {
+  float accelerationMultiplier = 2.0f;
+  if (steps > 120) accelerationMultiplier = 8.0f;
+  else if (steps > 60) accelerationMultiplier = 4.0f;
+  G3D::CoordinateFrame current = getCameraCoordinateFrame();
+  G3D::Vector3 look = current.lookVector();
+  G3D::Vector3 right = current.rightVector();
+  G3D::Vector3 delta;
+  if (nav.forward()) delta += look * accelerationMultiplier;
+  if (nav.backward()) delta -= look * accelerationMultiplier;
+  if (nav.right()) delta += right * accelerationMultiplier;
+  if (nav.left()) delta -= right * accelerationMultiplier;
+  current.translation += delta;
+  setCameraType(Camera::FIXED_CAMERA);
+  setCameraCoordinateFrameNoLerp(current);
+  setCameraFocus(current.translation + 20.0f * look);
+ }
+}
+
 }

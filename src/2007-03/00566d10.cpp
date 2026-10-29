@@ -1,8 +1,7 @@
-// from server: 86% by colin
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8xml/XmlSerializer.cpp
+// roc-lib: rbxgs-dll v8xml/XmlSerializer.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "v8xml/XmlSerializer.h"

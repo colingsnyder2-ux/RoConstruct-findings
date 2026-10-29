@@ -1,32 +1,59 @@
-// from server: 56% by colin
+// roc-cl: 30729
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8datamodel/FlagStand.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_publishideliteral21970d0d89d3ee76.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/FlagStand.h"
 
-#include "v8datamodel/PartInstance.h"
 
-namespace RBX {
 
-const char sFlagStandService[] = "FlagStandService";
+struct Text;
+typedef void (__thiscall *TextDestructor)(Text *);
+typedef int (__thiscall *TextValue)(const Text *);
 
-char sFlagStand[] = "FlagStand";
+extern TextDestructor destroy_text;
+extern TextValue text_value;
 
-// FUNCTION: WEBSERVICE 0x100e8fa0
-void FlagStand::setTeamColor(BrickColor color)
+struct Text
 {
-	teamColor = color;
-	raisePropertyChanged(PartInstance::prop_Color);
+    void *data;
+    __declspec(dllimport) ~Text() throw();
+    int value() const;
+};
+
+inline int Text::value() const
+{
+    return text_value(this);
 }
 
-} // namespace RBX
+struct BaseText { void* data; __declspec(dllimport) ~BaseText() throw(); };
+extern BaseText __cdecl make_text();
+extern Text __cdecl append_text(const BaseText &, const char *);
 
-template class RBX::FactoryProduct<RBX::FlagStandService, RBX::Instance, RBX::sFlagStandService>;
-template class RBX::Reflection::Described<
-	RBX::FlagStandService,
-	RBX::sFlagStandService,
-	RBX::FactoryProduct<RBX::FlagStandService, RBX::Instance, RBX::sFlagStandService> >;
-template class RBX::DescribedCreatable<RBX::FlagStandService, RBX::Instance, RBX::sFlagStandService>;
+struct Primary
+{
+    virtual void primary();
+    char padding[112];
+};
+
+struct Secondary
+{
+    virtual void secondary();
+};
+
+struct Base : Primary, Secondary
+{
+    Base(int, int, int);
+};
+
+struct CPublishAsPlaceDialog : Base
+{
+    CPublishAsPlaceDialog(int, int);
+    virtual void primary();
+    virtual void secondary();
+};
+
+CPublishAsPlaceDialog::CPublishAsPlaceDialog(int first, int second)
+    : Base(first, append_text(make_text(), "/IDE/Upload.aspx").value(), second)
+{
+}

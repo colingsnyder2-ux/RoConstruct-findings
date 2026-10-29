@@ -1,62 +1,70 @@
-// roc 2012-06 0056e290  unit: RBX::Network::IdSerializer  size: 65 bytes
-// Make this compile to the exact bytes below, then: roc check 2012-06 0056e290
-//
-// 0056e290  56                   push esi
-// 0056e291  8b74240c             mov esi, dword ptr [esp + 0xc]
-// 0056e295  85f6                 test esi, esi
-// 0056e297  7636                 jbe 0x56e2cf
-// 0056e299  8b542410             mov edx, dword ptr [esp + 0x10]
-// 0056e29d  8b442408             mov eax, dword ptr [esp + 8]
-// 0056e2a1  57                   push edi
-// 0056e2a2  85c0                 test eax, eax
-// 0056e2a4  7420                 je 0x56e2c6
-// 0056e2a6  8b0a                 mov ecx, dword ptr [edx]
-// 0056e2a8  8908                 mov dword ptr [eax], ecx
-// 0056e2aa  8b4a04               mov ecx, dword ptr [edx + 4]
-// 0056e2ad  894804               mov dword ptr [eax + 4], ecx
-// 0056e2b0  8b4a08               mov ecx, dword ptr [edx + 8]
-// 0056e2b3  894808               mov dword ptr [eax + 8], ecx
-// 0056e2b6  85c9                 test ecx, ecx
-// 0056e2b8  740c                 je 0x56e2c6
-// 0056e2ba  83c104               add ecx, 4
-// 0056e2bd  bf01000000           mov edi, 1
-// 0056e2c2  f00fc139             lock xadd dword ptr [ecx], edi
-// 0056e2c6  4e                   dec esi
-// 0056e2c7  83c00c               add eax, 0xc
-// 0056e2ca  85f6                 test esi, esi
-// 0056e2cc  77d4                 ja 0x56e2a2
-// 0056e2ce  5f                   pop edi
-// 0056e2cf  5e                   pop esi
-// 0056e2d0  c3                   ret 
-// copied from an identical function in another client (function ?fill@@YAXPAUValue@@IPBU1@@Z)
-
+// roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-extern "C" long __cdecl _InterlockedIncrement(volatile long*);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_deserializerefslot41acaf6a50338696.cpp
 
-struct Control {
-    long unused;
-    volatile long references;
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("reflection/function.h", "roc_espeon_machineheader2f6c7dcf10adead1.cpp")
+#pragma include_alias("reflection/signal.h", "roc_espeon_machineheader16e657153fe9fb6e.cpp")
+#pragma include_alias("reflection/type.h", "roc_espeon_machineheader4aaa2bdeb1c2b6c3.cpp")
+#pragma include_alias("reflection/reflection.h", "roc_espeon_machineheadera6fefc64bf3a6f9e.cpp")
+#pragma include_alias("reflection/Reflection.h", "roc_espeon_machineheadera6fefc64bf3a6f9e.cpp")
+#pragma include_alias("reflection/enumconverter.h", "roc_espeon_machineheader297ae1c3351d4ab6.cpp")
+#pragma include_alias("util/Http.h", "roc_espeon_machineheader5b78b946a11cad23.cpp")
+#pragma include_alias("reflection/object.h", "roc_espeon_machineheadercadaaebe20af2047.cpp")
+#pragma include_alias("reflection/member.h", "roc_espeon_machineheader459d66d9acfae4ab.cpp")
+#pragma include_alias("reflection/descriptor.h", "roc_espeon_machineheader0acd23dba6f04ff5.cpp")
+#pragma include_alias("reflection/property.h", "roc_espeon_machineheadercfb6c68c9dd60df6.cpp")
+#pragma include_alias(<v8tree/Verb.h>, <roc_espeon_insertnativeheader1a746c4cc8c6ae06.cpp>)
+#pragma include_alias("v8tree/Verb.h", "roc_espeon_insertnativeheader1a746c4cc8c6ae06.cpp")
+#pragma include_alias(<util/Name.h>, <roc_espeon_insertnativeheader115b7bccd0a9061e.cpp>)
+#pragma include_alias("util/Name.h", "roc_espeon_insertnativeheader115b7bccd0a9061e.cpp")
+#pragma include_alias(<util/Debug.h>, <roc_espeon_insertnativeheader5fe96130a83d2e88.cpp>)
+#pragma include_alias("util/Debug.h", "roc_espeon_insertnativeheader5fe96130a83d2e88.cpp")
+#pragma include_alias("v8tree/Instance.h", "roc_espeon_nativeinstanceguidportablea1682bda32c99cd2.cpp")
+#define _CPPUNWIND 1
+#include "v8tree/Instance.h"
+#include <map>
+#include <vector>
+namespace RakNet {class BitStream;}
+// Native Streaming.h WaitItem; target map is at +0x2b54.
+struct WaitItem {const RBX::Reflection::RefPropertyDescriptor* desc; boost::shared_ptr<RBX::Instance> instance;};
+bool resolveId(const RBX::Guid::Data&,RBX::Instance*&);
+boost::shared_ptr<RBX::Instance> acquireInstance(RBX::Instance*);
+// Borrowed descriptor view: target calls setter at vtable +0x34. Other slots unidentified.
+struct RefSetterView {
+virtual void slot0()=0;
+virtual void slot1()=0;
+virtual void slot2()=0;
+virtual void slot3()=0;
+virtual void slot4()=0;
+virtual void slot5()=0;
+virtual void slot6()=0;
+virtual void slot7()=0;
+virtual void slot8()=0;
+virtual void slot9()=0;
+virtual void slot10()=0;
+virtual void slot11()=0;
+virtual void slot12()=0;
+virtual void setRefValue(RBX::Reflection::DescribedBase*,RBX::Reflection::DescribedBase*) const=0;
 };
-
-struct Value {
-    unsigned long first;
-    unsigned long second;
-    Control* control;
+class IdSerializerRecovery {
+public:
+ void deserializeId(RakNet::BitStream&,RBX::Guid::Data&);
+ void deserializeRef(RBX::Reflection::Property&,RakNet::BitStream&);
 };
-
-void __cdecl fill(Value* destination, unsigned int count, const Value* source)
-{
-    while (count > 0) {
-        if (destination) {
-            destination->first = source->first;
-            destination->second = source->second;
-            destination->control = source->control;
-            if (destination->control)
-                _InterlockedIncrement(&destination->control->references);
-        }
-        --count;
-        ++destination;
-    }
+void IdSerializerRecovery::deserializeRef(RBX::Reflection::Property& property,RakNet::BitStream& stream) {
+ RBX::Guid::Data id;
+ deserializeId(stream,id);
+ RBX::Instance* owner=static_cast<RBX::Instance*>(property.getInstance());
+ if(owner) {
+  const RBX::Reflection::RefPropertyDescriptor& desc=static_cast<const RBX::Reflection::RefPropertyDescriptor&>(property.getDescriptor());
+  RBX::Instance* value;
+  if(resolveId(id,value)) reinterpret_cast<const RefSetterView*>(&desc)->setRefValue(owner,value);
+  else {
+   WaitItem wi={&desc,acquireInstance(owner)};
+   typedef std::map<RBX::Guid::Data,std::vector<WaitItem> > WaitMap;
+   (*reinterpret_cast<WaitMap*>(reinterpret_cast<char*>(this)+0x2b54))[id].push_back(wi);
+  }
+ }
 }

@@ -1,62 +1,178 @@
-// from server: 90% by colin
-// roc 2007-08 005245e0  unit: G3D::Line  size: 83 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005245e0
-//
-// 005245e0  56                   push esi
-// 005245e1  e89a9dffff           call 0x51e380
-// 005245e6  85c0                 test eax, eax
-// 005245e8  8b74240c             mov esi, dword ptr [esp + 0xc]
-// 005245ec  89460c               mov dword ptr [esi + 0xc], eax
-// 005245ef  752c                 jne 0x52461d
-// 005245f1  57                   push edi
-// 005245f2  8b7c240c             mov edi, dword ptr [esp + 0xc]
-// 005245f6  8b07                 mov eax, dword ptr [edi]
-// 005245f8  c740143f000000       mov dword ptr [eax + 0x14], 0x3f
-// 005245ff  8b0f                 mov ecx, dword ptr [edi]
-// 00524601  6a50                 push 0x50
-// 00524603  83c118               add ecx, 0x18
-// 00524606  6854597800           push 0x785954
-// 0052460b  51                   push ecx
-// 0052460c  ff1578e97700         call dword ptr [0x77e978]
-// 00524612  8b17                 mov edx, dword ptr [edi]
-// 00524614  8b02                 mov eax, dword ptr [edx]
-// 00524616  57                   push edi
-// 00524617  ffd0                 call eax
-// 00524619  83c410               add esp, 0x10
-// 0052461c  5f                   pop edi
-// 0052461d  c706f0445200         mov dword ptr [esi], 0x5244f0
-// 00524623  c7460460455200       mov dword ptr [esi + 4], 0x524560
-// 0052462a  c74608d0455200       mov dword ptr [esi + 8], 0x5245d0
-// 00524631  5e                   pop esi
-// 00524632  c3                   ret 
+// roc-cl: 50727
+// roc-lang: c
+// roc-flags: /O2 /GS- /MD
+// roc-lib: g3d-6.09-ijg-dll jmemansi.c
 
-struct Line {
-    void* field0;
-    void* field4;
-    void* field8;
-    int fieldC;
-};
+// Candidate translation unit (score above; library headers required).
+#ifdef _MSC_VER
+#   pragma warning( disable : 4100 )
+#   pragma warning( disable : 4127 )
+#   pragma warning( disable : 4244 )
+#endif
+/*
+ * jmemansi.c
+ *
+ * Copyright (C) 1992-1996, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file provides a simple generic implementation of the system-
+ * dependent portion of the JPEG memory manager.  This implementation
+ * assumes that you have the ANSI-standard library routine tmpfile().
+ * Also, the problem of determining the amount of memory available
+ * is shoved onto the user.
+ */
 
-extern "C" void* __cdecl sub_51E380();
-extern "C" void* __cdecl sub_5244F0();
-extern "C" void* __cdecl sub_524560();
-extern "C" void* __cdecl sub_5245D0();
-extern "C" char* __cdecl strncpy(char*, const char*, unsigned int);
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
+#include "jmemsys.h"		/* import the system-dependent declarations */
 
-void construct(Line* self, void* from, void* to)
+#ifndef HAVE_STDLIB_H		/* <stdlib.h> should declare malloc(),free() */
+extern void * malloc JPP((size_t size));
+extern void free JPP((void *ptr));
+#endif
+
+#ifndef SEEK_SET		/* pre-ANSI systems may not define this; */
+#define SEEK_SET  0		/* if not, assume 0 is correct */
+#endif
+
+
+/*
+ * Memory allocation and freeing are controlled by the regular library
+ * routines malloc() and free().
+ */
+
+GLOBAL(void *)
+jpeg_get_small (j_common_ptr cinfo, size_t sizeofobject)
 {
-    void* p = sub_51E380();
-    self->fieldC = (int)p;
-    if (p == 0) {
-        void* q = *(void**)from;
-        *(int*)((char*)q + 0x14) = 0x3f;
-        void* r = *(void**)from;
-        strncpy((char*)r + 0x18, (const char*)0x785954, 0x50);
-        void* s = *(void**)from;
-        void (*fn)(void*) = *(void (**)(void*))s;
-        fn(from);
-    }
-    self->field0 = (void*)0x5244F0;
-    self->field4 = (void*)0x524560;
-    self->field8 = (void*)0x5245D0;
+  return (void *) malloc(sizeofobject);
+}
+
+GLOBAL(void)
+jpeg_free_small (j_common_ptr cinfo, void * object, size_t sizeofobject)
+{
+  free(object);
+}
+
+
+/*
+ * "Large" objects are treated the same as "small" ones.
+ * NB: although we include FAR keywords in the routine declarations,
+ * this file won't actually work in 80x86 small/medium model; at least,
+ * you probably won't be able to process useful-size images in only 64KB.
+ */
+
+GLOBAL(void FAR *)
+jpeg_get_large (j_common_ptr cinfo, size_t sizeofobject)
+{
+  return (void FAR *) malloc(sizeofobject);
+}
+
+GLOBAL(void)
+jpeg_free_large (j_common_ptr cinfo, void FAR * object, size_t sizeofobject)
+{
+  free(object);
+}
+
+
+/*
+ * This routine computes the total memory space available for allocation.
+ * It's impossible to do this in a portable way; our current solution is
+ * to make the user tell us (with a default value set at compile time).
+ * If you can actually get the available space, it's a good idea to subtract
+ * a slop factor of 5% or so.
+ */
+
+#ifndef DEFAULT_MAX_MEM		/* so can override from makefile */
+#define DEFAULT_MAX_MEM		6000000L /* 6 MB */
+#endif
+
+GLOBAL(long)
+jpeg_mem_available (j_common_ptr cinfo, long min_bytes_needed,
+		    long max_bytes_needed, long already_allocated)
+{
+  return cinfo->mem->max_memory_to_use - already_allocated;
+}
+
+
+/*
+ * Backing store (temporary file) management.
+ * Backing store objects are only used when the value returned by
+ * jpeg_mem_available is less than the total space needed.  You can dispense
+ * with these routines if you have plenty of virtual memory; see jmemnobs.c.
+ */
+
+
+METHODDEF(void)
+read_backing_store (j_common_ptr cinfo, backing_store_ptr info,
+		    void FAR * buffer_address,
+		    long file_offset, long byte_count)
+{
+  if (fseek(info->temp_file, file_offset, SEEK_SET))
+    ERREXIT(cinfo, JERR_TFILE_SEEK);
+  if (JFREAD(info->temp_file, buffer_address, byte_count)
+      != (size_t) byte_count)
+    ERREXIT(cinfo, JERR_TFILE_READ);
+}
+
+
+METHODDEF(void)
+write_backing_store (j_common_ptr cinfo, backing_store_ptr info,
+		     void FAR * buffer_address,
+		     long file_offset, long byte_count)
+{
+  if (fseek(info->temp_file, file_offset, SEEK_SET))
+    ERREXIT(cinfo, JERR_TFILE_SEEK);
+  if (JFWRITE(info->temp_file, buffer_address, byte_count)
+      != (size_t) byte_count)
+    ERREXIT(cinfo, JERR_TFILE_WRITE);
+}
+
+
+METHODDEF(void)
+close_backing_store (j_common_ptr cinfo, backing_store_ptr info)
+{
+  fclose(info->temp_file);
+  /* Since this implementation uses tmpfile() to create the file,
+   * no explicit file deletion is needed.
+   */
+}
+
+
+/*
+ * Initial opening of a backing-store object.
+ *
+ * This version uses tmpfile(), which constructs a suitable file name
+ * behind the scenes.  We don't have to use info->temp_name[] at all;
+ * indeed, we can't even find out the actual name of the temp file.
+ */
+
+GLOBAL(void)
+jpeg_open_backing_store (j_common_ptr cinfo, backing_store_ptr info,
+			 long total_bytes_needed)
+{
+  if ((info->temp_file = _robustTmpfile()) == NULL)
+    ERREXITS(cinfo, JERR_TFILE_CREATE, "");
+  info->read_backing_store = read_backing_store;
+  info->write_backing_store = write_backing_store;
+  info->close_backing_store = close_backing_store;
+}
+
+
+/*
+ * These routines take care of any system-dependent initialization and
+ * cleanup required.
+ */
+
+GLOBAL(long)
+jpeg_mem_init (j_common_ptr cinfo)
+{
+  return DEFAULT_MAX_MEM;	/* default for max_memory_to_use */
+}
+
+GLOBAL(void)
+jpeg_mem_term (j_common_ptr cinfo)
+{
+  /* no work */
 }

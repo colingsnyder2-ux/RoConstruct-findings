@@ -1,8 +1,7 @@
-// from server: 82% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.4.9 OgreFileSystem.cpp
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
+// roc-lib: ogre-1.4.9-dll OgreFileSystem.cpp
 
 // Candidate translation unit (score above; library headers required).
 /*

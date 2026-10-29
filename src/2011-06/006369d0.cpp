@@ -1,127 +1,140 @@
-// from server: 29% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/afxacceleratorkey.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-atl90-dll roc_filesystem_nested_78e80a56ef829311.cpp
 
 // Candidate translation unit (score above; library headers required).
-// This is a part of the Microsoft Foundation Classes C++ library.
-// Copyright (C) Microsoft Corporation
-// All rights reserved.
-//
-// This source code is only intended as a supplement to the
-// Microsoft Foundation Classes Reference and related
-// electronic documentation provided with the library.
-// See these sources for detailed information regarding the
-// Microsoft Foundation Classes product.
+#include <atlpath.h>
+#include "util/FileSystem.h"
 
-#include "stdafx.h"
-#include "afxacceleratorkey.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
-
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-CMFCAcceleratorKey::CMFCAcceleratorKey(LPACCEL lpAccel) : m_lpAccel(lpAccel)
+namespace RBX
 {
-}
-
-CMFCAcceleratorKey::CMFCAcceleratorKey() : m_lpAccel(NULL)
-{
-}
-
-CMFCAcceleratorKey::~CMFCAcceleratorKey()
-{
-}
-
-void CMFCAcceleratorKey::Format(CString& str) const
-{
-	str.Empty();
-
-	if (m_lpAccel == NULL)
+	VistaAPIs::~VistaAPIs()
 	{
-		ASSERT(FALSE);
-		return;
+		if (gShell32DLLInst)
+			FreeLibrary(gShell32DLLInst);
 	}
 
-	if (m_lpAccel->fVirt & FCONTROL)
+	HRESULT VistaAPIs::GetIntegrity(PUCHAR pVal)
 	{
-		AddVirtKeyStr(str, VK_CONTROL);
-	}
+		*pVal = 0;
 
-	if (m_lpAccel->fVirt & FSHIFT)
-	{
-		AddVirtKeyStr(str, VK_SHIFT);
-	}
+		OSVERSIONINFOA osvi;
+		ZeroMemory((char*)&osvi + sizeof(DWORD), sizeof(OSVERSIONINFOA) - sizeof(DWORD));
+		osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOA);
 
-	if (m_lpAccel->fVirt & FALT)
-	{
-		AddVirtKeyStr(str, VK_MENU);
-	}
+		GetVersionExA(&osvi);
+		
+		if (osvi.dwMajorVersion < 6) // anything earlier than Windows Vista
+			return S_OK;
 
-	if (m_lpAccel->fVirt & FVIRTKEY)
-	{
-		AddVirtKeyStr(str, m_lpAccel->key, TRUE);
-	}
-	else if (m_lpAccel->key != 27) // Don't print esc
-	{
-		str += (char) m_lpAccel->key;
-	}
-}
+		HANDLE hToken;
+		HANDLE hProcess = GetCurrentProcess();
+		if (!OpenProcessToken(hProcess, TOKEN_QUERY | TOKEN_QUERY_SOURCE, &hToken))
+			return S_OK;
 
-void CMFCAcceleratorKey::AddVirtKeyStr(CString& str, UINT uiVirtKey, BOOL bLast) const
-{
-	CString strKey;
-
-	if (uiVirtKey == VK_PAUSE)
-	{
-		strKey = _T("Pause");
-	}
-	else
-	{
-#define AFX_BUFFER_LEN 50
-		TCHAR szBuffer [AFX_BUFFER_LEN + 1];
-
-		ZeroMemory(szBuffer, sizeof(szBuffer));
-
-		UINT nScanCode = ::MapVirtualKeyEx(uiVirtKey, 0, ::GetKeyboardLayout(0)) <<16 | 0x1;
-
-		if (uiVirtKey >= VK_PRIOR && uiVirtKey <= VK_HELP)
+		DWORD dwLengthNeeded;
+		if (!GetTokenInformation(hToken, TokenIntegrityLevel, NULL, 0L, &dwLengthNeeded))
 		{
-			nScanCode |= 0x01000000;
+			if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+			{
+				PTOKEN_MANDATORY_LABEL pTIL;
+				pTIL = (PTOKEN_MANDATORY_LABEL)LocalAlloc(LMEM_FIXED, dwLengthNeeded);
+
+				if (pTIL)
+				{
+					if (GetTokenInformation(hToken, TokenIntegrityLevel, pTIL, dwLengthNeeded, &dwLengthNeeded))
+					{
+						DWORD dwIntegrityLevel = *GetSidSubAuthority(pTIL->Label.Sid, (DWORD)(UCHAR)(*GetSidSubAuthorityCount(pTIL->Label.Sid) - 1));
+
+						if (dwIntegrityLevel < SECURITY_MANDATORY_MEDIUM_RID)
+							*pVal = 1;
+						else if (dwIntegrityLevel < SECURITY_MANDATORY_HIGH_RID)
+							*pVal = 2;
+						else
+							*pVal = 3;
+					}
+
+					LocalFree(pTIL);
+				}
+			}
 		}
 
-		::GetKeyNameText(nScanCode, szBuffer, AFX_BUFFER_LEN);
-
-		strKey = szBuffer;
-	}
-
-	strKey.MakeLower();
-
-	//--------------------------------------
-	// The first letter should be uppercase:
-	//--------------------------------------
-	for (int nCount = 0; nCount < strKey.GetLength(); nCount++)
-	{
-		TCHAR c = strKey[nCount];
-		if (IsCharLower(c))
-		{
-			c = (TCHAR) toupper(c); // Convert single character JY 4-Dec-99
-			strKey.SetAt(nCount, c);
-			break;
-		}
-	}
-
-	str += strKey;
-
-	if (!bLast)
-	{
-		str += '+';
+		CloseHandle(hToken);
+		return S_OK;
 	}
 }
 
 
+namespace RBX {
+VistaAPIs::VistaAPIs() : getKnownFolderPath(NULL) {
+ gShell32DLLInst = LoadLibraryA("Shell32.dll");
+ if(gShell32DLLInst) getKnownFolderPath = (GetKnownFolderPathPtr)GetProcAddress(gShell32DLLInst,"SHGetKnownFolderPath");
+}
+HRESULT VistaAPIs::SHGetKnownFolderPath(REFKNOWNFOLDERID folder, DWORD flags, HANDLE token, PWSTR* path) {
+ if(getKnownFolderPath==NULL) return E_NOTIMPL;
+ return getKnownFolderPath(folder,flags,token,path);
+}
+std::string FileSystem::getCacheDirectory(bool create) {
+ VistaAPIs apis;
+ UCHAR integrity;
+ apis.GetIntegrity(&integrity);
+ if(integrity == 1) {
+  GUID internetCache;
+  CLSIDFromString(L"{352481E8-33BE-4251-BA85-6007CAEDCF9D",&internetCache);
+  PWSTR knownPath = NULL;
+  if(apis.SHGetKnownFolderPath(internetCache,0x8000,NULL,&knownPath)!=E_NOTIMPL) {
+   ATL::CStringA path(knownPath);
+   CoTaskMemFree(knownPath);
+   path += "\\Roblox\\";
+   if(create && !CreateDirectoryA(path,NULL) && GetLastError()!=ERROR_ALREADY_EXISTS) return "";
+   ATL::CPath cache(path);
+   cache.AddBackslash();
+   return (LPCSTR)cache;
+  }
+ }
+ char path[MAX_PATH];
+ HRESULT result=SHGetFolderPathAndSubDirA(NULL,CSIDL_COMMON_APPDATA | (create ? CSIDL_FLAG_CREATE : 0),NULL,SHGFP_TYPE_CURRENT,"Roblox\\Cache",path);
+ if(result==S_OK) return path;
+ else return "";
+}
+}
+
+namespace RBX {
+std::string FileSystem::getUserAppDataDirectory(bool create, const char* subDirectory) {
+ VistaAPIs apis;
+ UCHAR integrity;
+ apis.GetIntegrity(&integrity);
+ if(integrity>0) {
+  GUID folder;
+  if(integrity==1) CLSIDFromString(L"{A520A1A4-1780-4FF6-BD18-167343C5AF16}",&folder);
+  else CLSIDFromString(L"{F1B32785-6FBA-4FCF-9D55-7B8E7F157091}",&folder);
+  PWSTR knownPath=NULL;
+  if(apis.SHGetKnownFolderPath(folder,create?0x8000:0,NULL,&knownPath)!=E_NOTIMPL) {
+   ATL::CStringA path(knownPath);
+   CoTaskMemFree(knownPath);
+   path += "\\Roblox\\";
+   if(create) { if(!CreateDirectoryA(path,NULL)) { if(GetLastError()!=ERROR_ALREADY_EXISTS) return ""; } }
+   if(subDirectory) {
+    path += subDirectory;
+    if(create) { if(!CreateDirectoryA(path,NULL)) { if(GetLastError()!=ERROR_ALREADY_EXISTS) return ""; } }
+   }
+   ATL::CPath directory(path);
+   directory.AddBackslash();
+   return (LPCSTR)directory;
+  }
+ }
+ int flags=create?CSIDL_FLAG_CREATE:0;
+ std::string subPath("Roblox\\");
+ if(subDirectory) subPath += subDirectory;
+ ATL::CPath path;
+ HRESULT result=SHGetFolderPathAndSubDirA(NULL,CSIDL_APPDATA|flags,NULL,SHGFP_TYPE_CURRENT,subPath.c_str(),path.m_strPath.GetBuffer(MAX_PATH));
+ if(result!=S_OK) result=SHGetFolderPathAndSubDirA(NULL,CSIDL_COMMON_APPDATA|flags,NULL,SHGFP_TYPE_CURRENT,subPath.c_str(),path.m_strPath.GetBuffer(MAX_PATH));
+ if(result==S_OK) {
+  path.m_strPath.ReleaseBuffer();
+  path.AddBackslash();
+  return (LPCSTR)path;
+ }
+ else return "";
+}
+}

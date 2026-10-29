@@ -1,41 +1,38 @@
-// from server: 43% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net IdManager.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espeon_historymap_7ba897e3a40a4f16.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "IdManager.h"
-#include <boost/signal.hpp>
-#include <boost/function.hpp>
-#include <boost/bind.hpp>
+#include <map>
 
-namespace RBX
+struct Ref {
+    void* value;
+    Ref& operator=(const Ref&);
+};
+
+typedef std::map<int,int> Tree;
+struct S {
+    unsigned int a;
+    unsigned int b;
+    Ref c;
+    unsigned int d;
+    unsigned int e;
+    Ref f;
+    Tree tree;
+
+    S& operator=(const S&);
+};
+
+S& S::operator=(const S& other)
 {
+    a = other.a;
+    b = other.b;
+    c = other.c;
+    d = other.d;
+    e = other.e;
+    f = other.f;
 
-	void IdManager::addInstance(Instance* instance)
-	{
-		Guid::Data extractedData;
-		instance->getGuid().extract(extractedData);
-
-		RBXASSERT(getInstance(extractedData) == NULL || getInstance(extractedData) == instance);
-
-		items[extractedData] = instance;
-	}
-
-	void IdManager::removeInstance(boost::shared_ptr<Instance> instance)
-	{
-		Guid::Data extractedData;
-		instance->getGuid().extract(extractedData);
-
-		items.erase(extractedData);
-	}
-
-	void IdManager::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
-	{
-		if (newProvider)
-		{
-			removeInstanceConnection = event_descendentRemoving.connect(getRootAncestor(), boost::bind(&IdManager::removeInstance, this, _1));
-		}
-	}
+    tree=other.tree;
+    return *this;
 }

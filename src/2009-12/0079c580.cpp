@@ -1,14 +1,7 @@
-// from server: 67% by atomic.potato
-extern "C" void __cdecl sub_788d60(void *, double);
-extern "C" double __cdecl sub_78a830(void *, int);
-extern "C" double __cdecl sin(double);
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Oi /fp:fast /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_lua_math_959f967534d7e1e5.cpp
 
-struct S
-{
-};
-
-int __cdecl f(void *value)
-{
-    sub_788d60(value, sin(sub_78a830(value, 1)));
-    return 1;
-}
+// Candidate translation unit (score above; library headers required).
+#include "lua-5.1.1/src/lmathlib.c"

@@ -1,14 +1,13 @@
-// from server: 55% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/GraphicLibrary/XTPGraphicBitmapPng.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib Source\GraphicLibrary\XTPGraphicBitmapPng.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPGraphicBitmapPng.cpp : implementation of the CXTPGraphicBitmapPng class.
 //
 // This file is a part of the XTREME TOOLKITPRO MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -40,44 +39,24 @@ CXTPGraphicBitmapPng::CXTPGraphicBitmapPng()
 	m_bAlpha = FALSE;
 }
 
-struct CXTPGraphicBitmapPng::CCallback
+static void PNGAPI png_read_data(png_structp png_ptr, png_bytep data, png_size_t length)
 {
-	static void PNGAPI png_read_data(png_structp png_ptr, png_bytep data, png_size_t length)
+	CFile* pFile = (CFile*)png_ptr->io_ptr;
+
+	png_size_t sizeRead = (png_size_t)pFile->Read(data, (UINT)length);
+
+	if (sizeRead != length)
 	{
-		CFile* pFile = (CFile*)png_ptr->io_ptr;
-
-		png_size_t sizeRead = (png_size_t)pFile->Read(data, (UINT)length);
-
-		if (sizeRead != length)
-		{
-			AfxThrowFileException(CFileException::endOfFile);
-		}
+		AfxThrowFileException(CFileException::endOfFile);
 	}
+}
 
-	static void PNGAPI png_write_data(png_structp png_ptr, png_bytep data, png_size_t length)
-	{
-		CFile* pFile = (CFile*)png_ptr->io_ptr;
+static void png_cexcept_error(png_structp /*png_ptr*/, png_const_charp /*msg*/)
+{
+	AfxThrowFileException(CFileException::badSeek);
+}
 
-		pFile->Write(data, (UINT)length);
-
-	}
-
-	static void PNGAPI png_flush(png_structp png_ptr)
-	{
-		CFile* pFile = (CFile*)png_ptr->io_ptr;
-		pFile->Flush();
-	}
-
-	static void PNGAPI png_cexcept_error(png_structp /*png_ptr*/, png_const_charp /*msg*/)
-	{
-		AfxThrowFileException(CFileException::badSeek);
-	}
-
-	static BOOL PNGAPI PngLoadImage(CFile* pFile, png_byte **ppbImageData,
-		png_uint_32 *piWidth, png_uint_32 *piHeight, int *piChannels, png_color *pBkgColor);
-};
-
-BOOL CXTPGraphicBitmapPng::CCallback::PngLoadImage(CFile* pFile, png_byte **ppbImageData,
+BOOL PngLoadImage(CFile* pFile, png_byte **ppbImageData,
 	png_uint_32 *piWidth, png_uint_32 *piHeight, int *piChannels, png_color *pBkgColor)
 {
 	png_byte            pbSig[8];
@@ -365,7 +344,7 @@ BOOL CXTPGraphicBitmapPng::LoadFromFile(CFile* pFile)
 	if (!pFile)
 		return FALSE;
 
-	if (!CCallback::PngLoadImage(pFile, &pbImage, &cxImgSize, &cyImgSize, &cImgChannels, &bkgColor))
+	if (!PngLoadImage(pFile, &pbImage, &cxImgSize, &cyImgSize, &cImgChannels, &bkgColor))
 	{
 		if (pbImage)
 		{
@@ -388,19 +367,4 @@ BOOL CXTPGraphicBitmapPng::LoadFromFile(CFile* pFile)
 	Attach(hBitmap);
 
 	return TRUE;
-}
-
-_XTP_EXT_CLASS int ZLibCompress( BYTE* dest, ULONG* destLen, const BYTE *source, ULONG sourceLen)
-{
-	return compress( dest, destLen, source, sourceLen);
-}
-
-_XTP_EXT_CLASS ULONG ZLibCompressBound(ULONG sourceLen)
-{
-	return compressBound ( sourceLen );
-}
-
-_XTP_EXT_CLASS int ZLibUncompress (BYTE* dest, ULONG* destLen, const BYTE* source, ULONG sourceLen)
-{
-	return uncompress ( dest, destLen, source, sourceLen );
 }

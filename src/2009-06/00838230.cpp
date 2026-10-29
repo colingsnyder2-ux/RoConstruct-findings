@@ -1,51 +1,37 @@
-// from server: 22% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-render TextureProxy.cpp
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
+// roc-lib: g3d-6.09-dll roc_vrbxfont_from_file_7e346c652dd2a177.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "RenderLib/TextureProxy.h"
+#include "../../ogre-1.4.5/ogrenew/OgreMain/include/OgreTexture.h"
+#include "G3D/BinaryInput.h"
+#include "G3D/fileutils.h"
 
-namespace RBX
+namespace Ogre
 {
-	namespace Render
-	{
-		G3D::ReferenceCountedPointer<G3D::Texture> TextureProxy::getIfResolved() const
-		{
-			return texture;
-		}
+    class VRbxFont
+    {
+        int subWidth[128];
+        int charWidth;
+        int charHeight;
+        int baseline;
+        TexturePtr texture;
 
-		G3D::ReferenceCountedPointer<TextureProxy> TextureProxy::alphaOnlyVersion()
-		{
-			return new TextureProxy(this);
-		}
+        VRbxFont(const String& filename, G3D::BinaryInput& input);
 
-		G3D::Vector2 TextureProxy::getSize()
-		{
-			G3D::ReferenceCountedPointer<G3D::Texture> t = getIfResolved();
-			G3D::Vector2 out;
-			if (t.notNull())
-			{
-				out.x = t->texelWidth();
-				out.y = t->texelHeight();
-			}
-			else
-			{
-				out.y = 0.0f;
-				out.x = 0.0f;
-			}
-			return out;
-		}
+    public:
+        static SharedPtr<VRbxFont> fromFile(const String& filename);
+    };
 
-		G3D::ReferenceCountedPointer<TextureProxy> TextureProxy::shade(const G3D::Color3& baseColor, const G3D::ReferenceCountedPointer<TextureProxy>& baseTex)
-		{
-			TextureProxy* newTex = new TextureProxy(baseTex);
-			newTex->textureManager = textureManager;
-			newTex->root = baseTex;
-			newTex->shadeColor = baseColor;
-			newTex->shadeTexture = this;
-			return newTex;
-		}
-	}
+    typedef char VRbxFont_size_is_0x218[sizeof(VRbxFont) == 0x218 ? 1 : -1];
+
+    SharedPtr<VRbxFont> VRbxFont::fromFile(const String& filename)
+    {
+        if (!G3D::fileExists(filename))
+            return SharedPtr<VRbxFont>();
+
+        G3D::BinaryInput input(filename, G3D::G3D_LITTLE_ENDIAN, true);
+        return SharedPtr<VRbxFont>(new VRbxFont(filename, input));
+    }
 }

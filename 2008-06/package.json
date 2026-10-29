@@ -7901,7 +7901,7 @@
     "tests/xtp_colors.cpp": "aed5ba7f465682b3fe6288d13ec24c4350ab0f05284e20556a9d1a600e14a493",
     "tests/zlib_roundtrip.cpp": "2e13794b8941477920550714a8eadae5eb7bb4fb2745629b2877be625a87040d",
     "verification/accepted-integrations.json": "cfbe81ff8ac5eecd8753db6f3f631af8ec2e90634f6b069d36cf1ccdf2f9b883",
-    "verification/integration-jobs.json": "68b42b95746f11d907f1cb4539c4f7fc652f4765581402ed8f9bc067e89200d4",
+    "verification/integration-jobs.json": "4c2e90101caf8170b5444b3f7d1dd9f0aae119909d6be9b6766b6f2b36dc63ec",
     "verification/inventory.json": "5e337e4500ebb2a3d38a140ea2e2d68a4d8e53b67488cd99479884d1d499d13c",
     "verification/manifests/abi-evidence.json": "3d8ebf8ea63859c156cce6f28068598ef1df3249565a7e1a717c83ed1310b92a",
     "verification/manifests/functions.json": "51edb353acd4c752c4c3d984a734a966f6ec1e97b96fd7613b9af07eae7855f1",

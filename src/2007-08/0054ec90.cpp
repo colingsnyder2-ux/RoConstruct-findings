@@ -1,24 +1,15 @@
-// from server: 36% by colin
-extern "C" void* __cdecl sub_62FEF6(unsigned int);
-extern "C" void __cdecl sub_40CC20(void*, void*, void*);
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_5f426dfd96d21d45.cpp
 
-struct S {
-    void* field0;
-    void* field4;
-    void* method(void* a, void* b);
-};
-
-void* sub_54B9F0(void* self, void* a, void* b);
-void sub_54C8A0(void* self, void* p);
-
-void* S::method(void* a, void* b) {
-    void* mem = sub_62FEF6(0x28);
-    void* result = 0;
-    if (mem != 0) {
-        result = sub_54B9F0(mem, a, b);
-    }
-    this->field0 = result;
-    sub_54C8A0(&this->field4, result);
-    sub_40CC20(&this->field4, result, result);
-    return this;
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::basic_gzip_decompressor<std::allocator<char> >;

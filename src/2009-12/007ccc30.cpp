@@ -1,39 +1,81 @@
-// roc 2009-12 007ccc30  unit: RBX::VPartDragTool::?$Named  size: 45 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 007ccc30
-//
-// 007ccc30  51                   push ecx
-// 007ccc31  80793400             cmp byte ptr [ecx + 0x34], 0
-// 007ccc35  c7042400000000       mov dword ptr [esp], 0
-// 007ccc3c  b860ea9e00           mov eax, 0x9eea60
-// 007ccc41  7505                 jne 0x7ccc48
-// 007ccc43  b8989a9e00           mov eax, 0x9e9a98
-// 007ccc48  56                   push esi
-// 007ccc49  8b74240c             mov esi, dword ptr [esp + 0xc]
-// 007ccc4d  50                   push eax
-// 007ccc4e  8bce                 mov ecx, esi
-// 007ccc50  ff15f4b69800         call dword ptr [0x98b6f4]
-// 007ccc56  8bc6                 mov eax, esi
-// 007ccc58  5e                   pop esi
-// 007ccc59  59                   pop ecx
-// 007ccc5a  c20400               ret 4
-// copied from an identical function in another client (function ?f@S@ns_ROCX00001f@@QAEPAUString@2@PAU32@@Z)
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_74d006487e31440b.cpp
 
-namespace ns_ROCX00001f {
-struct String;
+// Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#undef _DEBUG
+#define _DLL
+#define private public
+#include "util/IRenderable.h"
+#undef private
+#include "util/Object.h"
+#define hasListeners() hasListeners() const { return listeners.size() > 0; } bool hasListenersEmpty()
+#include "util/Events.h"
+#undef hasListeners
+namespace RBX { template<class T> class GuidItem { public: virtual ~GuidItem() {} char guidPad[0xc]; }; }
+namespace RBX { template<class T> class GuidAFP : public AbstractFactoryProduct<T> { protected: virtual void onGuidChanged() {} }; }
+#define AbstractFactoryProduct GuidItem<Instance>, public GuidAFP
+#include "util/Guid.h"
+namespace RBX { class GuidStub { public: typedef Guid::Data Data; void assign(const Data&) {} operator const Guid&() const { return *(const Guid*)0; } }; }
+#define Guid GuidStub
+#include "v8tree/Instance.h"
+#undef Guid
+#undef AbstractFactoryProduct
+#define undoState undoState()
+#include "v8datamodel/MouseCommand.h"
+#undef undoState
+#include "util/Name.h"
+#include "tool/RunDragger.h"
+#include "tool/MegaDragger.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/Workspace.h"
 
-extern void (__thiscall *constructString)(String *, const char *);
-
-struct S {
-    char padding[0x34];
-    unsigned char rotate;
-    String *f(String *result);
-};
-
-String *S::f(String *result)
+namespace RBX
 {
-    volatile int state = 0;
-    const char *cursor = rotate ? "GrabRotateCursor" : "DragCursor";
-    constructString(result, cursor);
-    return result;
-}
+	extern const char* sPartDragTool;
+
+	class PartDragTool : public Named<MouseCommand, &sPartDragTool>
+	{
+	private:
+		std::auto_ptr<RunDragger> runDragger;
+		std::auto_ptr<MegaDragger> megaDragger;
+		boost::shared_ptr<Instance> exeShared;
+		G3D::Vector2 downPoint;
+		bool dragging;
+		G3D::Vector3 hitWorld;
+
+	public:
+		virtual MouseCommand* onMouseDown(const UIEvent& uiEvent);
+		virtual void onMouseIdle(const UIEvent& uiEvent);
+		virtual void onMouseMove(const UIEvent&);
+		virtual void onMouseDelta(const UIEvent& uiEvent);
+		virtual MouseCommand* onMouseUp(const UIEvent& uiEvent);
+		virtual MouseCommand* onKeyDown(const UIEvent& uiEvent);
+		virtual void render3dAdorn(Adorn* adorn);
+
+		virtual const std::string getCursorName() const
+		{
+			return dragging ? "GrabRotateCursor" : "DragCursor";
+		}
+
+		PartDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, Workspace* workspace, boost::shared_ptr<Instance> exeArg);
+		virtual ~PartDragTool();
+	};
+
+	PartDragTool::PartDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, Workspace* workspace, boost::shared_ptr<Instance> exeArg)
+		: Base(workspace),
+		  exeShared(exeArg),
+		  hitWorld(hitPointWorld),
+		  dragging(false)
+	{
+		RBXASSERT(mousePart);
+		runDragger.reset(new RunDragger);
+
+		std::vector<PVInstance*> pvInstances;
+		pvInstances.push_back(mousePart);
+
+		megaDragger.reset(new MegaDragger(mousePart, pvInstances, (RootInstance*)workspace));
+	}
 }

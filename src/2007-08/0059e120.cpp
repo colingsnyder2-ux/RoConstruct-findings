@@ -1,251 +1,334 @@
-// from server: 66% by colin
-// roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Hopper.cpp
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_camera_fly_native_family_5dba1c85aa68a635.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Hopper.h"
-#include "v8datamodel/Backpack.h"
-#include "v8datamodel/Workspace.h"
-#include "v8datamodel/Mouse.h"
-#include "v8datamodel/DataModel.h"
-#include "v8datamodel/ScriptMouseCommand.h"
+#pragma include_alias("v8datamodel/Camera.h", "../roc_camera_fly_native_header_f804c210c099df00.cpp")
+#undef _RELEASEASSERT
+#include "v8datamodel/Camera.h"
+#include "util/Math.h"
+#include "v8datamodel/ICameraOwner.h"
+namespace RBX {
+void Camera::tellCameraMoved() {
+ if (ICameraOwner* owner = getCameraOwner()) owner->cameraMoved();
+}
 
-namespace RBX
-{
-	static Reflection::PropDescriptor<BackpackItem, TextureId> desc_TextureId("TextureId", "Data", &BackpackItem::getTextureId, &BackpackItem::setTextureId, Reflection::PropertyDescriptor::STANDARD);
 
-	static Reflection::PropDescriptor<HopperBin, std::string> desc_legacyCommand("Command", "Data", NULL, &HopperBin::setLegacyCommand, Reflection::PropertyDescriptor::LEGACY);
-	static Reflection::PropDescriptor<HopperBin, std::string> desc_legacyTextureName("TextureName", "Data", NULL, &HopperBin::setLegacyTextureName, Reflection::PropertyDescriptor::LEGACY);
-	static Reflection::EnumPropDescriptor<HopperBin, HopperBin::BinType> desc_BinType("BinType", "Data", &HopperBin::getBinType, &HopperBin::setBinType, Reflection::PropertyDescriptor::STANDARD);
-
-	static Reflection::SignalDesc<HopperBin, void(void)> desc_Deselected("Deselected");
-	static Reflection::SignalDesc<HopperBin, void(boost::shared_ptr<Instance>)> desc_Selected("Selected", "mouse");
-
-	Hopper::Hopper()
+	void Camera::setGCameraCoordinateFrame(const G3D::CoordinateFrame& coord)
 	{
-		yLocation = Rect::BOTTOM;
-	}
-
-	bool Hopper::askAddChild(const Instance* instance) const
-	{
-		return dynamic_cast<const BackpackItem*>(instance) != NULL;
-	}
-
-	bool Hopper::askSetParent(const Instance* instance) const
-	{
-		return true;
-	}
-
-	bool BackpackItem::askSetParent(const Instance* instance) const
-	{
-		return true;
-	}
-
-	bool BackpackItem::askAddChild(const Instance* instance) const
-	{
-		return true;
-	}
-
-	const TextureId BackpackItem::getTextureId() const
-	{
-		return textureId;
-	}
-
-	bool BackpackItem::isEnabled()
-	{
-		return getParent() && dynamic_cast<Backpack*>(getParent()) != NULL;
-	}
-
-	void BackpackItem::setTextureId(const TextureId& value)
-	{
-		if (value != textureId)
+		if (Math::legalCameraCoord(coord))
 		{
-			textureId = value;
-
-			std::string filename;
-			ContentProvider::singleton().requestContentFile(value, filename);
-
-			Workspace* workspace = ServiceProvider::find<Workspace>(this);
-			if (workspace)
-				workspace->raiseDrawChanged();
-
-			raisePropertyChanged(desc_TextureId);
-		}
-	}
-
-	G3D::Vector2 BackpackItem::getSize() const
-	{
-		float width = GuiRoot::toPixelSize(G3D::Vector2(10.0f, 10.0f)).x;
-		return G3D::Vector2(width, width);
-	}
-
-	HopperBin::HopperBin()
-		: binType(SCRIPT_BIN),
-		  active(false)
-	{
-		setName("HopperBin");
-	}
-
-	void HopperBin::setBinType(const HopperBin::BinType value)
-	{
-		if (value != binType)
-		{
-			binType = value;
-			raisePropertyChanged(desc_BinType);
-
-			if (binType != SCRIPT_BIN)
-			{
-				std::string textureName = Reflection::EnumDesc<BinType>::singleton().convertToString(binType);
-				setLegacyTextureName(textureName);
-			}
-		}
-	}
-
-	void HopperBin::setLegacyTextureName(const std::string& value)
-	{
-		TextureId textureId = ContentId::fromAssets("Textures\\" + value + ".png");
-		setTextureId(textureId);
-	}
-
-	void HopperBin::setLegacyCommand(const std::string& text)
-	{
-		BinType newBinType;
-		
-		if (!Reflection::EnumDesc<BinType>::singleton().convertToValue(text, newBinType))
-		{
-			newBinType = SCRIPT_BIN;
-		}
-		
-		setBinType(newBinType);
-	}
-
-	void HopperBin::onLocalClicked()
-	{
-		RBXASSERT(isEnabled());
-
-		if (!active)
-		{
-			active = true;
-
-			if (binType == SCRIPT_BIN)
-			{
-				onSelectScript();
-			}
-			else
-			{
-				onSelectCommand();
-			}
+			(*(G3D::GCamera*)((char*)this+0x130)).setCoordinateFrame(coord);
 		}
 		else
 		{
-			onLocalOtherClicked();
+			RBXASSERT(false);
 		}
 	}
 
-	void HopperBin::onLocalOtherClicked()
+	void Camera::lookAt(const G3D::Vector3& point)
 	{
-		if (active)
+		(*(G3D::CoordinateFrame*)((char*)this+0x1a4)).translation = point;
+		(*(G3D::CoordinateFrame*)((char*)this+0x174)).lookAt(point);
+	}
+
+	void Camera::getHeadingElevationDistance(float& heading, float& elevation, float& distance)
+	{
+		Math::getHeadingElevation((*(G3D::CoordinateFrame*)((char*)this+0x174)), heading, elevation);
+		distance = goalToFocusDistance();
+	}
+
+	bool Camera::setDistanceFromTarget(float newDistance)
+	{
+		G3D::Vector3 lookVector = (*(G3D::CoordinateFrame*)((char*)this+0x1a4)).translation - (*(G3D::CoordinateFrame*)((char*)this+0x174)).translation;
+		float currentDistance = lookVector.magnitude();
+
+		const float min = distanceMin();
+		const float max = distanceMax();
+
+		if (newDistance < min && currentDistance == min)
+			return false;
+		
+		if (newDistance > max && currentDistance == max)
+			return false;
+
+		newDistance = G3D::min(max, G3D::max(min, newDistance));
+		
+		lookVector *= newDistance;
+		(*(G3D::CoordinateFrame*)((char*)this+0x174)).translation = (*(G3D::CoordinateFrame*)((char*)this+0x1a4)).translation - (lookVector / currentDistance);
+
+		tellCameraMoved();
+
+		return true;
+	}
+
+	bool Camera::nonCharacterZoom(float in)
+	{
+		G3D::Vector3 lookVector = (*(G3D::CoordinateFrame*)((char*)this+0x1a4)).translation - (*(G3D::CoordinateFrame*)((char*)this+0x174)).translation;
+
+		float currentDistance = lookVector.magnitude();
+		float newZoomDistance = getNewZoomDistance(currentDistance, in);
+
+		if (newZoomDistance == currentDistance)
+			return false;
+
+		(*(G3D::CoordinateFrame*)((char*)this+0x174)).translation -= lookVector * (newZoomDistance / currentDistance - 1.0f);
+
+		tellCameraMoved();
+
+		return true;
+	}
+
+	bool Camera::characterZoom(float in)
+	{
+		G3D::Vector3 focusToGoal = (*(G3D::CoordinateFrame*)((char*)this+0x174)).translation - (*(G3D::CoordinateFrame*)((char*)this+0x1a4)).translation;
+
+		float currentDistance = focusToGoal.magnitude();
+
+		float maxDistance = distanceMaxCharacter();
+		float newDistance = getNewZoomDistance(currentDistance, in);
+		newDistance = G3D::min(newDistance, maxDistance);
+
+		if (newDistance == currentDistance)
+			return false;
+
+		focusToGoal.y = 0.0;
+		focusToGoal.unitize();
+		focusToGoal.y = newDistance * 0.03f;
+
+		(*(G3D::CoordinateFrame*)((char*)this+0x174)).translation = focusToGoal.direction() * newDistance + (*(G3D::CoordinateFrame*)((char*)this+0x1a4)).translation;
+
+		return true;
+	}
+
+	void Camera::panRadians(float angle)
+	{
+		RBXASSERT(angle > -100);
+		RBXASSERT(angle < 100);
+
+		if (angle != 0)
 		{
-			if (binType == SCRIPT_BIN)
-				desc_Deselected.fire(this);
+			float heading, elevation, distance;
 
-			active = false;
+			getHeadingElevationDistance(heading, elevation, distance);
+			heading = Math::radWrap(heading + angle);
+			setHeadingElevationDistance(heading, elevation, distance);
 
-			Workspace* workspace = ServiceProvider::find<Workspace>(this);
-			if (workspace)
-				workspace->setDefaultMouseCommand();
+			tellCameraMoved();
 		}
 	}
 
-	void HopperBin::onSelectScript()
+	bool Camera::tiltRadians(float angle)
 	{
-		Workspace* workspace = ServiceProvider::find<Workspace>(this);
-		if (workspace)
+		if (angle != 0)
 		{
-			ScriptMouseCommand* command = new ScriptMouseCommand(workspace);
-			workspace->setMouseCommand(command);
-			desc_Selected.fire(this, command->getMouse());
-		}
-	}
+			float heading, elevation, distance;
+			getHeadingElevationDistance(heading, elevation, distance);
 
-	void HopperBin::onSelectCommand()
-	{
-		RBXASSERT(binType != SCRIPT_BIN);
+			static float rad = G3D::toRadians(81);
+			float newElevation = G3D::clamp(elevation + angle, -rad, rad);
 
-		DataModel* root = rbx_static_cast<DataModel*>(getRootAncestor());
-
-		std::string command = Reflection::EnumDesc<BinType>::singleton().convertToString(binType) + "Tool";
-
-		Verb* verb = root->getVerb(command);
-		RBXASSERT(verb);
-
-		if (verb->isEnabled())
-		{
-			Workspace* workspace = ServiceProvider::find<Workspace>(this);
-			if (workspace)
-				verb->doIt(&workspace->getDataState());
-			else
-				RBXASSERT(0);
-		}
-	}
-
-	StarterPackService::StarterPackService()
-	{
-		setName("StarterPack");
-	}
-
-	//97.87% match
-	//le EPIC TROLL
-	void StarterPackService::render2d(Adorn* adorn)
-	{
-		TopMenuBar::render2d(adorn);
-
-		if (findFirstChildOfType<BackpackItem>())
-		{
-			G3D::Rect2D viewPort = adorn->getViewport();
-			int fontSize = GuiRoot::normalizedFontSize(12);
-			G3D::Vector2 pos2d = viewPort.x0y1() + G3D::Vector2(4.0f, -4.0f);
-
-			adorn->drawFont2D(
-				"StarterPack - these items will be given to each new player", 
-				pos2d, 
-				fontSize, 
-				G3D::Color3::white(), 
-				G3D::Color4::clear(), 
-				Adorn::XALIGN_LEFT, 
-				Adorn::YALIGN_BOTTOM,
-				Adorn::PROPORTIONAL_SPACING
-			);
-		}
-	}
-
-	LegacyHopperService::LegacyHopperService()
-	{
-		setName("Hopper");
-	}
-
-	LegacyHopperService::~LegacyHopperService()
-	{
-		RBXASSERT(numChildren() == 0);
-	}
-
-	void LegacyHopperService::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
-	{
-		Instance::onServiceProvider(oldProvider, newProvider);
-
-		if (newProvider)
-		{
-			StarterPackService* starterPack = newProvider->find<StarterPackService>();
-			RBXASSERT(starterPack);
-
-			while (numChildren() > 0)
+			if (elevation != newElevation)
 			{
-				getChild(0)->setParent(starterPack);
+				setHeadingElevationDistance(heading, newElevation, distance);
+				tellCameraMoved();
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	void Camera::tryZoomExtents(float low, float current, float high, const Extents& extents, const G3D::Rect2D& viewPort)
+	{
+		RBXASSERT(current >= low);
+		RBXASSERT(current <= high);
+
+		if (high - low < 0.1)
+			return;
+
+		setDistanceFromTarget(current);
+		updateGoal();
+		goalToCamera();
+
+		if (extents.containedByFrustum((*(G3D::GCamera*)((char*)this+0x130)).frustum(viewPort)))
+		{
+			tryZoomExtents(low, (low + current) * 0.5, current, extents, viewPort);
+		}
+		else
+		{
+			tryZoomExtents(current, (current + high) * 0.5, high, extents, viewPort);
+		}
+	}
+
+	void Camera::zoomExtents(Extents extents, const G3D::Rect2D& viewPort, Camera::ZoomType zoomType)
+	{
+		G3D::CoordinateFrame currentCoord = (*(G3D::GCamera*)((char*)this+0x130)).getCoordinateFrame();
+		extents.expand(0.1f);
+
+		if (zoomType != ZOOM_CHAR_PART_DRAG || (*(CameraType*)((char*)this+0x1d4)) == CUSTOM_CAMERA)
+		{
+			if ((*(CameraType*)((char*)this+0x1d4)) == FIXED_CAMERA)
+			{
+				G3D::Vector3 scaler = extents.center() - (*(G3D::CoordinateFrame*)((char*)this+0x1a4)).translation;
+
+				(*(G3D::CoordinateFrame*)((char*)this+0x1a4)).translation += scaler;
+				(*(G3D::CoordinateFrame*)((char*)this+0x174)).translation += scaler;
 			}
 
-			setParent(NULL);
+			float low;
+
+			if (zoomType == ZOOM_OUT_ONLY || zoomType == ZOOM_CHAR_PART_DRAG)
+				low = goalToFocusDistance();
+			else
+				low = distanceMin();
+
+			float current = goalToFocusDistance();
+
+			RBXASSERT(G3D::isFinite(current));
+
+			if (zoomType == ZOOM_CHAR_PART_DRAG)
+				extents.scale(1.1f);
+
+			if (G3D::isFinite(low) && G3D::isFinite(current) && G3D::isFinite(distanceMax()))
+				tryZoomExtents(low, current, distanceMax(), extents, viewPort);
+
+			(*(G3D::CoordinateFrame*)((char*)this+0x174)) = (*(G3D::GCamera*)((char*)this+0x130)).getCoordinateFrame();
+			setGCameraCoordinateFrame(currentCoord);
+			tellCameraMoved();
 		}
 	}
+}
+
+namespace RBX {
+
+	void Camera::setCameraCoordinateFrameNoLerp(const G3D::CoordinateFrame& value)
+	{
+		(*(G3D::CoordinateFrame*)((char*)this+0x174)) = value;
+		goalToCamera();
+	}
+
+	void Camera::setImageServerViewNoLerp(const G3D::CoordinateFrame& modelCoord, const G3D::Rect2D& viewPort)
+	{
+		G3D::Vector3 look = modelCoord.lookVector();
+
+		bool noTilt = (fabs(look.y) > 0.95);
+		if (noTilt)
+		{
+			look = -G3D::Vector3::unitZ();
+		}
+		else
+		{
+			look.y = 0;
+			look = look.direction();
+		}
+
+		G3D::CoordinateFrame lookCoord;
+
+		lookCoord.lookAt(look);
+		lookCoord.rotation *= G3D::Matrix3::fromEulerAnglesZXY(G3D::toRadians(45), G3D::toRadians(35), 0.0f);
+
+		look = lookCoord.lookVector();
+		lookCoord.translation = (look * 10.0f) + modelCoord.translation;
+
+		lookCoord.lookAt(modelCoord.translation);
+
+		setCameraType(FIXED_CAMERA);
+		setCameraFocus(modelCoord.translation);
+		setCameraCoordinateFrameNoLerp(lookCoord);
+		zoomExtents(viewPort);
+		goalToCamera();
+	}
+
+	float Camera::getNewZoomDistance(float currentDistance, float in)
+	{
+		float const ZOOM_FACTOR = 0.25f;
+
+		if (in > 0.0f)
+		{
+			currentDistance = G3D::max<float>(currentDistance / (1.0 + in * ZOOM_FACTOR), distanceMin());
+		} 	
+		else if (in < 0.0f)
+		{
+			return G3D::min<float>(currentDistance * (1.0 - in * ZOOM_FACTOR), distanceMax());
+		}
+
+		return currentDistance;
+	}
+	bool Camera::zoomExtents(const G3D::Rect2D& viewPort)
+	{
+		if (ICameraOwner* owner = getCameraOwner())
+		{
+			zoomExtents(owner->computeCameraOwnerExtents(), viewPort, ZOOM_IN_OR_OUT);
+			return true;
+		}
+		return false;
+	}
+}
+
+namespace RBX {
+class NavKeys
+{
+public:
+	bool forward_arrow;  // 0x00
+	bool backward_arrow; // 0x01
+	bool left_arrow;     // 0x02
+	bool right_arrow;    // 0x03
+	bool forward_asdw;   // 0x04
+	bool backward_asdw;  // 0x05
+	bool left_asdw;      // 0x06
+	bool right_asdw;     // 0x07
+	bool space;          // 0x08
+		bool forward() const		{return (forward_arrow || forward_asdw);}
+
+		bool backward() const		{return (backward_arrow || backward_asdw);}
+
+		bool left() const			{return (left_arrow || left_asdw);}
+		
+		bool right() const			{return (right_arrow || right_asdw);}
+
+		bool arrowKeyDown() const	{return (forward_arrow || backward_arrow || left_arrow || right_arrow);}
+
+		bool asdwKeyDown() const	{return (forward_asdw || backward_asdw || left_asdw || right_asdw);}
+
+
+ bool navKeyDown() const {return arrowKeyDown() || asdwKeyDown() || space;}
+};
+
+
+	static Reflection::EnumPropDescriptor<Camera, Camera::CameraType> desc_cameraType("CameraType", "Camera", &Camera::getCameraType, &Camera::setCameraType, Reflection::PropertyDescriptor::STANDARD); 
+
+	void Camera::setCameraType(CameraType type)
+	{
+		if ((*(CameraType*)((char*)this+0x1d4)) != type)
+		{
+			(*(CameraType*)((char*)this+0x1d4)) = type;
+			raisePropertyChanged(desc_cameraType);
+
+			tellCameraMoved();
+		}
+	}
+
+void Camera::doFly(const NavKeys& nav, int steps)
+{
+ if (nav.navKeyDown()) {
+  float accelerationMultiplier = 2.0f;
+  if (steps > 120) accelerationMultiplier = 8.0f;
+  else if (steps > 60) accelerationMultiplier = 4.0f;
+  G3D::CoordinateFrame current = getCameraCoordinateFrame();
+  G3D::Vector3 look = current.lookVector();
+  G3D::Vector3 right = current.rightVector();
+  G3D::Vector3 delta;
+  if (nav.forward()) delta += look * accelerationMultiplier;
+  if (nav.backward()) delta -= look * accelerationMultiplier;
+  if (nav.right()) delta += right * accelerationMultiplier;
+  if (nav.left()) delta -= right * accelerationMultiplier;
+  current.translation += delta;
+  setCameraType(Camera::FIXED_CAMERA);
+  setCameraCoordinateFrameNoLerp(current);
+  setCameraFocus(current.translation + 20.0f * look);
+ }
+}
+
 }

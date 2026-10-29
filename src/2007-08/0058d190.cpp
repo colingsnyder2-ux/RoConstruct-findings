@@ -1,197 +1,285 @@
-// from server: 39% by colin
+// roc-cl: 50727
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/LuaInstanceBridge.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_color_kernel_native_family_d08788802cbb1f87.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "script/LuaInstanceBridge.h"
+#undef _RELEASEASSERT
+#include "v8tree/Property.cpp"
+bool (*roc_color_parser)(const std::string&, G3D::Color3&) = &RBX::StringConverter<G3D::Color3>::convertToValue;
+bool (*roc_vector_parser)(const std::string&, G3D::Vector3&) = &RBX::StringConverter<G3D::Vector3>::convertToValue;
 
-#include "lua/LuaBridge.h"
-#include "lua/lua.h"
-#include "reflection/object.h"
-#include "reflection/property.h"
-#include "script/ThreadRef.h"
-#include "util/Name.h"
-#include "util/Sound.h"
-#include "util/TextureId.h"
-#include "util/object.h"
-#include "v8datamodel/BrickColor.h"
-#include "v8datamodel/Decal.h"
-#include "v8tree/Instance.h"
-
-#include <G3D/Color3.h>
-#include <G3D/CoordinateFrame.h>
-#include <G3D/Vector3.h>
-#include <G3D/format.h>
-#include <lua.h>
-#include <stdexcept>
-
+#undef _RELEASEASSERT
+#include <v8world/Contact.h>
+#include <util/Math.h>
 namespace RBX {
-namespace Lua {
+	Block* BlockBlockContact::block(int i)
+	{
+		return rbx_static_cast<Block*>(this->getPrimitive(i)->getGeometry());
+	}
 
-// FUNCTION: WEBSERVICE 0x100aaf70
-void newweaktable(lua_State* L, const char* mode)
-{
-	lua_newtable(L);
-	lua_pushvalue(L, -1);
-	lua_setmetatable(L, -2);
-	lua_pushliteral(L, "__mode");
-	lua_pushstring(L, mode);
-	lua_settable(L, -3);
-}
+	int BlockBlockContact::intersectRectQuad(G3D::Vector2& planeRect, G3D::Vector2 (&otherQuad)[4])
+	{
+		bool quadCrossRect[4][4];
 
-// STUB: WEBSERVICE 0x100ac300
-boost::shared_ptr<Instance> ObjectBridge::getInstance(lua_State* L, unsigned int index)
-{
-	boost::shared_ptr<Reflection::DescribedBase> object = SharedPtrBridge<Reflection::DescribedBase>::getPtr(L, index);
+		bool quadIn[4] = {true, true, true, true};
 
-	Instance* instance;
+		int foundCounter = 0;
 
-	if (object.get() != NULL) {
-		instance = dynamic_cast<Instance*>(object.get());
+		for (int i = 3; i >= 0; i--)
+		{
+			if (otherQuad[i].y <= planeRect.y)
+			{
+				quadCrossRect[0][i] = true;
+			}
+			else
+			{
+				quadCrossRect[0][i] = false;
+				quadIn[i] = false;
+			}
 
-		if (instance == NULL) {
-			throw std::runtime_error(
-				G3D::format(
-					"Object %s is not an Instance",
-					Reflection::ClassDescriptor::rootDescriptor().name.name.c_str()
-				)
-			);
+			if (otherQuad[i].x >= -planeRect.x)
+			{
+				quadCrossRect[1][i] = true;
+			}
+			else
+			{
+				quadCrossRect[1][i] = false;
+				quadIn[i] = false;
+			}
+
+			if (otherQuad[i].y >= -planeRect.y)
+			{
+				quadCrossRect[2][i] = true;
+			}
+			else
+			{
+				quadCrossRect[2][i] = false;
+				quadIn[i] = false;
+			}
+
+			if (otherQuad[i].x <= planeRect.x)
+			{
+				quadCrossRect[3][i] = true;
+			}
+			else
+			{
+				quadCrossRect[3][i] = false;
+				quadIn[i] = false;
+			}
+		}
+
+		for (int i = 3; i >= 0; i--)
+		{
+			if (quadIn[i])
+			{
+				loadGeoPairPointPlane((*(int*)((char*)this+0x70)), (*(int*)((char*)this+0x6c)), i, (*(NormalId*)((char*)this+0x78)), (*(NormalId*)((char*)this+0x74)));
+				foundCounter++;
+			}
+		}
+
+		if (foundCounter == 4)
+			return foundCounter;
+		else
+		{
+			bool rectCrossQuad[4][4];
+			G3D::Vector2 rect[4];
+			rect[0] = G3D::Vector2(planeRect.x, planeRect.y);
+			rect[1] = G3D::Vector2(-planeRect.x, planeRect.y);
+			rect[2] = G3D::Vector2(-planeRect.x, -planeRect.y);
+			rect[3] = G3D::Vector2(planeRect.x, -planeRect.y);
+
+			bool rectIn[4] = {true, true, true, true};
+
+			for (int i = 3; i >= 0; i--)
+			{
+				G3D::Vector2& current = otherQuad[i];
+				G3D::Vector2& currentO = otherQuad[(i + 3) % 4];
+				for (int j = 0; j < 4; j++)
+				{
+					G3D::Vector2 math1 = rect[j] - current;
+					G3D::Vector2 math2 = currentO - current;
+
+					if ((math2.x * math1.y) - (math2.y * math1.x) >= 0.0f)
+					{
+						rectCrossQuad[i][j] = true;
+					}
+					else
+					{
+						rectCrossQuad[i][j] = false;
+						rectIn[j] = false;
+					}
+				}
+			}
+
+			int wasZero = foundCounter == 0;
+
+			for (int i = 0; i < 4; i++)
+			{
+				if (rectIn[i])
+				{
+					loadGeoPairPointPlane((*(int*)((char*)this+0x6c)), (*(int*)((char*)this+0x70)), i, (*(NormalId*)((char*)this+0x74)), (*(NormalId*)((char*)this+0x78)));
+					foundCounter++;
+				}
+			}
+
+			if (wasZero && foundCounter == 4)
+				return foundCounter;
+			else
+			{
+				for (int i = 0; i < 4; i++)
+				{
+					for (int j = 3; j >= 0; j--)
+					{
+						if (quadCrossRect[i][j] != quadCrossRect[i][(j + 3) % 4] && rectCrossQuad[j][i] != rectCrossQuad[j][(i + 1) % 4])
+						{
+
+							loadGeoPairEdgeEdgePlane((*(int*)((char*)this+0x70)), (*(int*)((char*)this+0x6c)), block((*(int*)((char*)this+0x70)))->faceVertexToEdge((*(NormalId*)((char*)this+0x78)), (j+3)%4), block((*(int*)((char*)this+0x6c)))->faceVertexToEdge((*(NormalId*)((char*)this+0x74)), i));
+							foundCounter++;
+						}
+					}
+				}
+				RBXASSERT(foundCounter != 1 && foundCounter <= 8);
+				return foundCounter;
+			}
 		}
 	}
-	else {
-		instance = NULL;
-	}
 
-	return shared_from(instance);
+
 }
 
-static void assignLuaValue(Reflection::Property p, lua_State* L, int index)
+#include <script/ScriptContext.h>
+#include <util/standardout.h>
+#include <lua/lua.hpp>
+#include <lauxlib.h>
+#include <cstring>
+namespace RBX { namespace Lua { const char* safe_lua_tostring(lua_State*, int); } }
+using namespace RBX;
+void ScriptContext::executeInNewThread(Security::Identities identity, const char* script, const char* name, PushArgumentsClosure pushArguments, ReadResultsClosure readResults)
 {
-	const Reflection::PropertyDescriptor& descriptor = p.getDescriptor();
+    openState();
 
-	if (&descriptor.type == &Reflection::Type::singleton<int>()) {
-		p.setValue<int>(lua_tointeger(L, index));
-		return;
-	}
+    lua_State* L;
+    lua_State* newThread;
 
-	if (&descriptor.type == &Reflection::Type::singleton<bool>()) {
-		p.setValue<bool>(lua_toboolean(L, index) != 0);
-		return;
-	}
+    if (identity == Security::CmdLine)
+    {
+        if ((*(Lua::ThreadRef*)((char*)this+0x13c)).empty())
+        {
+            {
+                Lua::ThreadRef threadRef(lua_newthread((*(lua_State**)((char*)this+0x138))));
+                (*(Lua::ThreadRef*)((char*)this+0x13c)) = threadRef;
+            }
 
-	if (&descriptor.type == &Reflection::Type::singleton<float>()) {
-		p.setValue<float>(lua_tofloat(L, index));
-		return;
-	}
+            if ((*(Lua::ThreadRef*)((char*)this+0x13c)).empty())
+                throw std::runtime_error("Unable to create trusted sandbox thread");
 
-	if (&descriptor.type == &Reflection::Type::singleton<std::string>()) {
-		p.setValue<std::string>(lua_tostring(L, index));
-		return;
-	}
+            sandboxThread((*(Lua::ThreadRef*)((char*)this+0x13c)).thread());
+            setThreadIdentity((*(Lua::ThreadRef*)((char*)this+0x13c)).thread(), Security::CmdLine);
+            lua_pop((*(lua_State**)((char*)this+0x138)), 1);
+        }
 
-	if (&descriptor.type == &Reflection::Type::singleton<FunctionRef>()) {
-		p.setValue<FunctionRef>(FunctionRef(L, index));
-		return;
-	}
+        L = (*(Lua::ThreadRef*)((char*)this+0x13c)).thread();
+        newThread = lua_newthread(L);
+    }
+    else
+    {
+        L = (*(lua_State**)((char*)this+0x138));
+        newThread = lua_newthread(L);
+        sandboxThread(newThread);
+        setThreadIdentity(newThread, identity);
+    }
 
-	if (&descriptor.type == &Reflection::Type::singleton<boost::shared_ptr<Instance> >()) {
-		p.setValue<boost::shared_ptr<Instance> >(ObjectBridge::getInstance(L, index));
-		return;
-	}
+    if (!newThread)
+    {
+        StandardOut::singleton()->print(MESSAGE_ERROR, "ScriptContext::execute: Unable to create a new thread");
+        throw std::runtime_error("Unable to create a new thread");
+    }
 
-	if (&descriptor.type == &Reflection::Type::singleton<boost::shared_ptr<Reflection::DescribedBase> >()) {
-		p.setValue<boost::shared_ptr<Reflection::DescribedBase> >(
-			SharedPtrBridge<Reflection::DescribedBase>::getPtr(L, index)
-		);
-		return;
-	}
+    Lua::ScopedPopper popper(L, 1);
 
-	if (&descriptor.type == &Reflection::Type::singleton<G3D::Vector3>()) {
-		p.setValue<G3D::Vector3>(Bridge<G3D::Vector3, 1>::getObject(L, index));
-		return;
-	}
+    std::string sName("=");
 
-	if (&descriptor.type == &Reflection::Type::singleton<G3D::CoordinateFrame>()) {
-		p.setValue<G3D::CoordinateFrame>(Bridge<G3D::CoordinateFrame, 1>::getObject(L, index));
-		return;
-	}
+    if (name)
+        sName += name;
+    else
+        sName += "Script";
 
-	if (&descriptor.type == &Reflection::Type::singleton<G3D::Color3>()) {
-		p.setValue<G3D::Color3>(Bridge<G3D::Color3, 1>::getObject(L, index));
-		return;
-	}
+    if (luaL_loadbuffer(newThread, script, strlen(script), sName.c_str()))
+    {
+        std::string err = Lua::safe_lua_tostring(newThread, -1);
+        lua_pop(newThread, 1);
 
-	if (&descriptor.type == &Reflection::Type::singleton<BrickColor>()) {
-		p.setValue<BrickColor>(Bridge<BrickColor, 1>::getObject(L, index));
-		return;
-	}
+        StandardOut::singleton()->print(MESSAGE_ERROR, err.c_str());
+        throw std::runtime_error(err);
+    }
 
-	if (dynamic_cast<const Reflection::TypedPropertyDescriptor<Soundscape::SoundId>*>(&descriptor) != NULL) {
-		p.setValue<Soundscape::SoundId>(Soundscape::SoundId(ContentId(lua_tostring(L, index))));
-		return;
-	}
-
-	if (dynamic_cast<const Reflection::TypedPropertyDescriptor<TextureId>*>(&descriptor) != NULL) {
-		p.setValue<TextureId>(TextureId(ContentId(lua_tostring(L, index))));
-		return;
-	}
-
-	if (dynamic_cast<const Reflection::EnumPropertyDescriptor*>(&descriptor) != NULL) {
-		p.setValue<int>(lua_tointeger(L, index));
-		return;
-	}
-
-	if (dynamic_cast<const Reflection::RefPropertyDescriptor*>(&descriptor) != NULL) {
-		p.setValue<boost::shared_ptr<Instance> >(ObjectBridge::getInstance(L, index));
-		return;
-	}
-
-	throw std::runtime_error(
-		G3D::format(
-			"Unable to set property %s, type %s",
-			descriptor.name.name.c_str(),
-			descriptor.type.name.name.c_str()
-		)
-	);
+    resume(newThread, pushArguments, readResults);
 }
 
-} // namespace Lua
-} // namespace RBX
 
-template bool RBX::Lua::Bridge<boost::shared_ptr<RBX::Reflection::DescribedBase>, 0>::getValue<
-	boost::shared_ptr<RBX::Reflection::DescribedBase> >(
-	lua_State* L,
-	unsigned int index,
-	boost::shared_ptr<RBX::Reflection::DescribedBase>& value
-);
+#undef _RELEASEASSERT
+#include <v8world/RotateJoint.h>
+#include <v8world/Primitive.h>
+#include <v8world/World.h>
+#include <v8kernel/Body.h>
+#include <util/Math.h>
+namespace RBX {
+class RotatePrimitiveApi {
+public:
+    Body* getBody() { return *(Body**)((char*)this+0xa0); }
+};
+class RotateBodyApi {
+private:
+    void updatePV() const;
+public:
+    const G3D::CoordinateFrame& getCoordinateFrame() const {
+        updatePV();
+        return *(const G3D::CoordinateFrame*)((const char*)this+0x94);
+    }
+};
+	void RotateJoint::putInKernel(Kernel* _kernel)
+	{
+		MultiJoint::putInKernel(_kernel);
 
-template boost::shared_ptr<RBX::Reflection::DescribedBase> RBX::Lua::SharedPtrBridge<
-	RBX::Reflection::DescribedBase>::getPtr(lua_State* L, unsigned int index);
+		Body* b0 = ((RotatePrimitiveApi*)getAxlePrim())->getBody();
+		Body* b1 = ((RotatePrimitiveApi*)getHolePrim())->getBody();
 
-template const RBX::Name& RBX::Name::doDeclare<RBX::sDecal>();
-template const RBX::Name& RBX::Name::doDeclare<RBX::sTexture>();
-template void RBX::Name::callDoDeclare<RBX::sDecal>();
-template void RBX::Name::callDoDeclare<RBX::sTexture>();
+		G3D::CoordinateFrame cAxleWorld = ((RotateBodyApi*)b0)->getCoordinateFrame() * jointCoord0;
+		G3D::CoordinateFrame cHoleWorld = ((RotateBodyApi*)b1)->getCoordinateFrame() * jointCoord1;
 
-template bool RBX::Reflection::ConstProperty::getValue<bool>() const;
-template float RBX::Reflection::ConstProperty::getValue<float>() const;
-template int RBX::Reflection::ConstProperty::getValue<int>() const;
-template double RBX::Reflection::ConstProperty::getValue<double>() const;
-template G3D::Vector3 RBX::Reflection::ConstProperty::getValue<G3D::Vector3>() const;
-template G3D::CoordinateFrame RBX::Reflection::ConstProperty::getValue<G3D::CoordinateFrame>() const;
-template G3D::Color3 RBX::Reflection::ConstProperty::getValue<G3D::Color3>() const;
-template RBX::BrickColor RBX::Reflection::ConstProperty::getValue<RBX::BrickColor>() const;
+		G3D::Vector3 vAxleWorld = cAxleWorld.rotation.getColumn(2);
+		G3D::Vector3 vHoleWorld = cHoleWorld.rotation.getColumn(2);
 
-template void RBX::Reflection::Property::setValue<bool>(const bool& value);
-template void RBX::Reflection::Property::setValue<float>(const float& value);
-template void RBX::Reflection::Property::setValue<int>(const int& value);
-template void RBX::Reflection::Property::setValue<G3D::Vector3>(const G3D::Vector3& value);
-template void RBX::Reflection::Property::setValue<G3D::CoordinateFrame>(const G3D::CoordinateFrame& value);
-template void RBX::Reflection::Property::setValue<G3D::Color3>(const G3D::Color3& value);
-template void RBX::Reflection::Property::setValue<RBX::BrickColor>(const RBX::BrickColor& value);
+		for (int i = 0; i < 2; i++)
+		{
+			float multiplier = i == 0 ? -1.0f : 1.0f;
 
-template void RBX::Reflection::Property::setValue<RBX::TextureId>(const RBX::TextureId& value);
+			G3D::Vector3 pAxleWorldPos = vAxleWorld * multiplier + cAxleWorld.translation;
+			G3D::Vector3 pHoleWorldPos = vHoleWorld * multiplier + cHoleWorld.translation;
 
-template void RBX::Reflection::Property::setValue<RBX::Soundscape::SoundId>(const RBX::Soundscape::SoundId& value);
+			Point* pAxleWorld = getKernel()->newPoint(b0, pAxleWorldPos);
+			Point* pHoleWorld = getKernel()->newPoint(b1, pHoleWorldPos);
+
+			PointToPointBreakConnector* connector = new PointToPointBreakConnector(pAxleWorld, pHoleWorld, getJointK(), Math::inf());
+			addToMultiJoint(pAxleWorld, pHoleWorld, connector);
+		}
+
+		if (getJointType() == ROTATE_P_JOINT || getJointType() == ROTATE_V_JOINT)
+		{
+			G3D::Vector3 center0 = cAxleWorld.translation;
+			G3D::Vector3 perp = cAxleWorld.rotation.getColumn(0);
+			G3D::Vector3 marker0 = perp * 10.0f + center0;
+
+			Point* pMarker0 = getKernel()->newPoint(b0, marker0);
+			Point* pMarker1 = getKernel()->newPoint(b1, marker0);
+
+			RBXASSERT(!rotateConnector);
+			RotateConnector* connector = new RotateConnector(getPoint(0), getPoint(2), pMarker0, pMarker1, getJointK(), getTorqueArmLength());
+			rotateConnector = connector;
+			addToMultiJoint(pMarker0, pMarker1, connector);
+		}
+	}
+
+
+}

@@ -1,8 +1,7 @@
-// from server: 95% by colin
+// roc-cl: 21022
 // roc-lang: c
-// roc-cl: 50727
 // roc-flags: /O2 /GS- /MD
-// roc-lib: jpeg-6b jerror.c
+// roc-lib: g3d-6.09-ijg-dll jerror.c
 
 // Candidate translation unit (score above; library headers required).
 /*

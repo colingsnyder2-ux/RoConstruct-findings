@@ -1,14 +1,13 @@
-// from server: 25% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Controls/XTBrowseEdit.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen-rtm Source/PropertyGrid/XTPPropertyGridInplaceEdit.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTBrowseEdit.cpp : implementation of the CXTBrowseEdit class.
+// PropertyGripInplaceEdit.cpp : implementation of the CPropertyGripInplaceEdit class.
 //
-// This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME PROPERTYGRID MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,24 +25,16 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "Resource.h"
-
-#include "Common/XTPVC80Helpers.h"  // Visual Studio 2005 helper functions
-#include "Common/XTPResourceManager.h"
+#include "Common/XTPVC80Helpers.h"
 #include "Common/XTPDrawHelpers.h"
-#include "Common/XTPWinThemeWrapper.h"
-#include "Common/XTPSystemHelpers.h"
 
-#include "XTFunctions.h"
-#include "XTDefines.h"
-#include "XTUtil.h"
-#include "XTGlobal.h"
-#include "XTPButton.h"
-
-#include "XTFlatComboBox.h"
-#include "XTBrowseEdit.h"
-#include "XTBrowseDialog.h"
-
+#include "XTPPropertyGridInplaceEdit.h"
+#include "XTPPropertyGridInplaceButton.h"
+#include "XTPPropertyGridInplaceList.h"
+#include "XTPPropertyGridItem.h"
+#include "XTPPropertyGridInplaceEdit.h"
+#include "XTPPropertyGrid.h"
+#include "XTPPropertyGridDefines.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -51,603 +42,746 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-const int CX_BUTTON = (::GetSystemMetrics(SM_CXHTHUMB) +
-	(::GetSystemMetrics(SM_CXEDGE) * 2));
-
-int CXTBrowseEdit::m_nDefaultGap = -2;
-
-
 /////////////////////////////////////////////////////////////////////////////
-// CXTBrowseButton class
-/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridInplaceEdit
 
-CXTBrowseButton::CXTBrowseButton()
+CXTPPropertyGridInplaceEdit::CXTPPropertyGridInplaceEdit()
+: m_pItem(0)
+, m_pGrid(0)
 {
-	m_nBorderGap = 0;
-	m_nImageGap = 0;
-	m_dwBStyle = 0;
-	m_pEditWnd = NULL;
-	m_nID = 0;
-	m_nMenu = 0;
-	m_nSubMenuIndx = 0;
+	m_clrBack = 0;
+	m_bDelayCreate = FALSE;
+	m_bCreated = FALSE;
+	m_bCancel = FALSE;
+	m_bEditMode = FALSE;
+	m_bCheckAutoComplete = FALSE;
+	m_bIgnoreEditChanged = FALSE;
 }
 
-CXTBrowseButton::~CXTBrowseButton()
-{
-}
-
-IMPLEMENT_DYNAMIC(CXTBrowseButton, CXTPButton)
-
-BEGIN_MESSAGE_MAP(CXTBrowseButton, CXTPButton)
-	//{{AFX_MSG_MAP(CXTBrowseButton)
-	ON_WM_ENABLE()
-	ON_CONTROL_REFLECT(BN_CLICKED, OnBtnClicked)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-BOOL CXTBrowseButton::Create(CXTBrowseEdit* pEditWnd, DWORD dwBStyle, UINT nID, UINT nMenu/*= -1*/, UINT nSubMenuIndx/*= -1*/)
-{
-	ASSERT_VALID(pEditWnd);              // Must be valid
-	ASSERT_VALID(pEditWnd->GetParent());
-
-	// Set the pointers to the edit and edit parent windows.
-	m_pEditWnd = pEditWnd;
-
-	// Set the browse style and menu resource
-	// ID information (if any).
-	m_dwBStyle = dwBStyle;
-	m_nMenu = nMenu;
-	m_nSubMenuIndx = nSubMenuIndx;
-
-	CString strButtonText;
-
-	DWORD dwStyle = (m_pEditWnd->GetStyle() & WS_VISIBLE) |
-		WS_CHILD | WS_TABSTOP | BS_CENTER | BS_VCENTER;
-
-	HICON hPopupIcon = NULL;
-
-	if ((m_dwBStyle & BES_XT_POPUPMENU) == 0)
-	{
-		CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&strButtonText, XT_IDS_DOT));
-	}
-	else
-	{
-		CImageList imageList;
-		imageList.Create(11, 11, ILC_COLOR8 | ILC_MASK, 0, 1);
-
-		CBitmap bmp;
-		CXTPResourceManager::AssertValid(XTPResourceManager()->LoadBitmap(&bmp, XT_IDB_SCROLL_ARW));
-		imageList.Add(&bmp, RGB(0xff, 0x00, 0xff));
-
-		if (imageList.GetImageCount() == 8)
-		{
-			// extract the right arrow icon from the image list.
-			hPopupIcon = imageList.ExtractIcon(4);
-			ASSERT(hPopupIcon != NULL);
-
-			// add the BS_ICON style to create flags.
-			dwStyle |= BS_ICON;
-		}
-	}
-
-	if (!CXTPButton::Create(strButtonText, dwStyle, CRect(0, 0, 0, 0),
-		m_pEditWnd->GetParent(), nID))
-	{
-		TRACE0("Failed to create browse edit button.\n");
-		return FALSE;
-	}
-
-	// Set the font for this control.
-	if (!strButtonText.IsEmpty())
-		SetFont(&XTAuxData().font);
-
-	// set the arrow icon that is displayed on the button.
-	if (NULL != (HICON)hPopupIcon)
-	{
-		SetIcon(CSize(10, 10), hPopupIcon);
-		DestroyIcon(hPopupIcon);
-	}
-
-
-
-	// Enable the button using the parent's enabled state.
-	EnableWindow(m_pEditWnd->IsWindowEnabled());
-
-	return TRUE;
-}
-
-void CXTBrowseButton::SetBrowseStyle(DWORD dwxStyle)
-{
-	m_dwBStyle = dwxStyle;
-
-	if ((m_dwBStyle & BES_XT_POPUPMENU) == 0)
-	{
-		CString strButtonText;
-		CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&strButtonText, XT_IDS_DOT));
-		SetWindowText(strButtonText);
-	}
-	else
-	{
-		CImageList imageList;
-		imageList.Create(11, 11, ILC_COLOR8 | ILC_MASK, 0, 1);
-
-		CBitmap bmp;
-		CXTPResourceManager::AssertValid(XTPResourceManager()->LoadBitmap(&bmp, XT_IDB_SCROLL_ARW));
-		imageList.Add(&bmp, RGB(0xff, 0x00, 0xff));
-
-		if (imageList.GetImageCount() == 8)
-		{
-			// extract the right arrow icon from the image list.
-			HICON hPopupIcon = imageList.ExtractIcon(4);
-			ASSERT(hPopupIcon != NULL);
-
-			// add the BS_ICON style to create flags.
-			ModifyStyle(0, BS_ICON);
-
-			// set the arrow icon that is displayed on the button.
-			if (NULL != (HICON)hPopupIcon)
-			{
-				SetIcon(CSize(10, 10), hPopupIcon);
-
-				DestroyIcon(hPopupIcon);
-			}
-		}
-	}
-}
-
-BOOL CXTBrowseButton::PreTranslateMessage(MSG* pMsg)
-{
-	// activate if space or enter key pressed...
-	if (pMsg->message == WM_KEYDOWN &&
-		(pMsg->wParam == VK_RETURN || pMsg->wParam == VK_SPACE))
-	{
-		OnClicked();
-		return TRUE; // eat message...
-	}
-
-	return CXTPButton::PreTranslateMessage(pMsg);
-}
-
-void CXTBrowseButton::OnBtnClicked()
-{
-	OnClicked();
-}
-
-void CXTBrowseButton::OnClicked()
-{
-	if (m_pEditWnd)
-	{
-		m_pEditWnd->OnBrowse();
-	}
-}
-
-void CXTBrowseButton::OnEnable(BOOL bEnable)
-{
-	CXTPButton::OnEnable(bEnable);
-	Invalidate();
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTBrowseEdit class
-/////////////////////////////////////////////////////////////////////////////
-
-CXTBrowseEdit::CXTBrowseEdit()
-{
-	m_nGap = m_nDefaultGap;
-	m_dwBStyle = BES_XT_CHOOSEDIR;
-	m_nMenu = 0;
-	m_nSubMenuIndx = 0;
-	m_strFileName = _T("");
-	m_dwFlags = OFN_HIDEREADONLY | OFN_FILEMUSTEXIST | OFN_EXPLORER;
-	m_pFileDialog = NULL;
-	m_bOpenFileDialog = TRUE;
-	m_bBrowsing = false;
-
-	CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&m_strDefExt, XT_IDS_DEFEXT));
-	CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&m_strFilter, XT_IDS_DEFFILT));
-	CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&m_strTitle, XT_IDS_DEFTITLE));
-}
-
-CXTBrowseEdit::~CXTBrowseEdit()
+CXTPPropertyGridInplaceEdit::~CXTPPropertyGridInplaceEdit()
 {
 }
 
-IMPLEMENT_DYNAMIC(CXTBrowseEdit, CXTEdit)
-
-BEGIN_MESSAGE_MAP(CXTBrowseEdit, CXTEdit)
-	//{{AFX_MSG_MAP(CXTBrowseEdit)
-	ON_WM_ENABLE()
-	ON_WM_SHOWWINDOW()
-	ON_WM_WINDOWPOSCHANGED()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-void CXTBrowseEdit::OnEnable(BOOL bEnable)
-{
-	CXTEdit::OnEnable(bEnable);
-
-	if (::IsWindow(m_btnBrowse.GetSafeHwnd()))
-		m_btnBrowse.EnableWindow(bEnable);
-
-	Invalidate();
-}
-
-void CXTBrowseEdit::OnShowWindow(BOOL bShow, UINT nStatus)
-{
-	CXTEdit::OnShowWindow(bShow, nStatus);
-
-	if (::IsWindow(m_btnBrowse.GetSafeHwnd()))
-		m_btnBrowse.ShowWindow(bShow ? SW_SHOW : SW_HIDE);
-}
-
-bool CXTBrowseEdit::Initialize(CWnd* pParentWnd, DWORD dwBStyle, UINT nMenu/*= 0*/, int nSubMenuIndx/*= 0*/)
-{
-	if (!CXTEdit::Initialize(pParentWnd))
-		return false;
-
-	m_dwBStyle = dwBStyle;
-
-	// only create a browse button if one was specified.
-	if (m_dwBStyle & (BES_XT_CHOOSEDIR | BES_XT_CHOOSEFILE | BES_XT_POPUPMENU | BES_XT_BROWSE))
-	{
-		// set browse edit style and menu indexes.
-		m_nMenu = nMenu;
-		m_nSubMenuIndx = nSubMenuIndx;
-
-		// Create the browse button associated with the browse edit control.
-		if (!m_btnBrowse.Create(this, m_dwBStyle, XT_IDC_BTN_BROWSE,
-			m_nMenu, m_nSubMenuIndx))
-		{
-			TRACE1("Error creating browse button for ID %d.\n", GetDlgCtrlID());
-			return false;
-		}
-
-		CXTPWindowRect rcWindow(this);
-
-		pParentWnd = GetParent();
-		ASSERT_VALID(pParentWnd); // must be valid.
-		pParentWnd->ScreenToClient(&rcWindow);
-
-		if (m_nGap > 0)
-		{
-			rcWindow.right -= CX_BUTTON + m_nGap;
-
-			// set the window position to accommodate for the browse button.
-			::SetWindowPos(m_hWnd, NULL, rcWindow.left, rcWindow.top,
-				rcWindow.Width(), rcWindow.Height(), SWP_FRAMECHANGED | SWP_NOZORDER);
-		}
-		else
-		{
-			rcWindow.left = rcWindow.right - CX_BUTTON;
-
-			// set the window position to accommodate for the browse button.
-			::SetWindowPos(m_btnBrowse, NULL, rcWindow.left, rcWindow.top,
-				rcWindow.Width(), rcWindow.Height(), SWP_FRAMECHANGED | SWP_NOZORDER);
-
-			m_btnBrowse.SetBuddy(this);
-		}
-
-		// position browse button.
-		PositionBrowseButton();
-	}
-
-	return true;
-}
-
-void CXTBrowseEdit::PositionBrowseButton()
-{
-
-	if (::IsWindow(m_btnBrowse.GetSafeHwnd()))
-	{
-		CXTPWindowRect rcWindow(this);
-
-		// construct the size of the browse button.
-		CRect rcButton;
-		rcButton.left = rcWindow.right + m_nGap;
-		rcButton.right = rcButton.left + CX_BUTTON;
-		rcButton.top = rcWindow.top;
-		rcButton.bottom = rcWindow.top + rcWindow.Height();
-
-		CWnd* pParentWnd = GetParent();
-		ASSERT_VALID(pParentWnd); // must be valid.
-		pParentWnd->ScreenToClient(&rcButton);
-
-		// set the window position and make sure tab order is correct.
-		::SetWindowPos(m_btnBrowse.m_hWnd, m_hWnd,
-			rcButton.left, rcButton.top, rcButton.Width(), rcButton.Height(), SWP_FRAMECHANGED);
-
-		// construct the area to be updated on the parent.
-		CRect rcRedraw = rcWindow;
-		rcRedraw.right = rcButton.right;
-
-		// refresh parent window.
-		pParentWnd->InvalidateRect(&rcRedraw);
-		m_btnBrowse.Invalidate(FALSE);
-	}
-}
-
-void CXTBrowseEdit::OnWindowPosChanged(WINDOWPOS FAR* lpwndpos)
-{
-	CXTEdit::OnWindowPosChanged(lpwndpos);
-
-	// position browse button.
-	PositionBrowseButton();
-}
-
-void CXTBrowseEdit::ChooseDirectory()
-{
-	m_bBrowsing = true;
-
-	// Get the current (if any) text that is displayed in
-	// the edit control, this will be the initial path for the
-	// browse dialog to start from.
-	CString strPath;
-	GetWindowText(strPath);
-
-	if (!DIRECTORYEXISTS_S(strPath) && !m_strInitialDir.IsEmpty())
-		strPath = m_strInitialDir;
-
-	// Instantiate a browse for folder dialog object
-	CXTBrowseDialog browseDlg;
-	browseDlg.SetOwner(GetParent()->GetSafeHwnd());
-	browseDlg.SetTitle((TCHAR*)(LPCTSTR)m_strTitle);
-	browseDlg.SetSelPath((TCHAR*)(LPCTSTR)strPath);
-
-	if (browseDlg.DoModal() == IDOK)
-	{
-		SetWindowText(browseDlg.GetSelPath());
-	}
-
-	m_bBrowsing = false;
-}
-
-void CXTBrowseEdit::ChooseFile()
-{
-	m_bBrowsing = true;
-
-	if (m_pFileDialog)
-	{
-		if (m_pFileDialog->DoModal() == IDOK)
-			SetWindowText(m_pFileDialog->GetPathName());
-	}
-	else
-	{
-		CFileDialog dlg(m_bOpenFileDialog, m_strDefExt, m_strFileName,
-			m_dwFlags, m_strFilter, GetParent());
-
-		if (!m_strInitialDir.IsEmpty())
-		{
-			dlg.m_ofn.lpstrInitialDir = (LPCTSTR)m_strInitialDir;
-		}
-
-		// Check to see if this is Windows 2000 or later, if so use the
-		// Windows 2000 version of OPENFILENAME.
-
-		if (sizeof(OPENFILENAME) < 88) if (XTOSVersionInfo()->IsWin2KOrGreater() && dlg.m_ofn.lStructSize < 88)
-		{
-			// Windows 2000 version of OPENFILENAME has three extra members,
-			// this was copied from newer version of commdlg.h...
-
-			struct OPENFILENAMEEX
-			{
-				void*  pvReserved; // 4 bytes
-				DWORD  dwReserved; // 4 bytes
-				DWORD  FlagsEx;    // 4 bytes
-			};
-
-			dlg.m_ofn.lStructSize += sizeof(OPENFILENAMEEX); // should equal an additional 12 bytes;
-		}
-
-		if (dlg.DoModal() == IDOK)
-		{
-			SetWindowText(dlg.GetPathName());
-		}
-	}
-
-	m_bBrowsing = false;
-}
-
-void CXTBrowseEdit::PopupMenu()
-{
-	if (m_bBrowsing)
-		return;
-
-	m_bBrowsing = true;
-
-	ASSERT(m_nMenu != 0);
-	if (::IsWindow(m_btnBrowse.GetSafeHwnd()))
-		m_btnBrowse.SetState(TRUE);
-
-	CRect rect;
-	m_btnBrowse.GetWindowRect(&rect);
-
-	// loading a user resource.
-	CMenu menu;
-	CXTPResourceManager::AssertValid(XTPResourceManager()->LoadMenu(&menu, m_nMenu));
-
-	CMenu* pPopup = menu.GetSubMenu(m_nSubMenuIndx);
-	ASSERT(pPopup != NULL);
-
-	CWnd* pWndPopupOwner = this;
-	while (pWndPopupOwner->GetStyle() & WS_CHILD)
-	{
-		pWndPopupOwner = pWndPopupOwner->GetParent();
-	}
-
-	XTFuncContextMenu(pPopup, TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_VERTICAL,
-		rect.right, rect.top, pWndPopupOwner, 0);
-
-	// Return the button state to normal.
-	if (::IsWindow(m_btnBrowse.GetSafeHwnd()))
-		m_btnBrowse.SetState(FALSE);
-
-	m_bBrowsing = false;
-}
-
-void CXTBrowseEdit::OnBrowse()
-{
-	// If this is a browse directory control.
-	switch (m_dwBStyle & (BES_XT_CHOOSEDIR | BES_XT_CHOOSEFILE | BES_XT_POPUPMENU | BES_XT_BROWSE))
-	{
-	case BES_XT_CHOOSEDIR:
-		ChooseDirectory();
-		break;
-	case BES_XT_CHOOSEFILE:
-		ChooseFile();
-		break;
-	case BES_XT_POPUPMENU:
-		PopupMenu();
-		break;
-	case BES_XT_BROWSE:
-		GetParent()->SendMessage( WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(), LBN_XT_ONBROWSE), (LPARAM)m_hWnd );
-		break;
-	}
-
-	if (::GetFocus() != m_hWnd)
-	{
-		SetSel(0, -1);
-		SetFocus();
-	}
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTItemEdit class
-/////////////////////////////////////////////////////////////////////////////
-
-CXTItemEdit::CXTItemEdit()
-{
-	// Initialize defaults
-	m_bClosePosted = false;
-	m_bModified = false;
-	m_bEscapeKey = false;
-	m_bAutoDelete = false;
-	m_dwBStyle = 0;
-}
-
-BOOL CXTItemEdit::Create(CWnd* pParent, const CRect& rect, CString& strWindowText, DWORD dwBStyle/*= BES_XT_CHOOSEDIR*/, bool bAutoDelete/*= true*/)
-{
-	m_bAutoDelete = bAutoDelete;
-	m_dwBStyle = dwBStyle;
-	m_strWindowText = strWindowText;
-
-	// Create the edit control.
-	if (!CXTBrowseEdit::CreateEx(WS_EX_CLIENTEDGE, _T("EDIT"), 0, WS_BORDER | WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL,
-		rect, pParent, XT_IDC_LBOX_EDIT))
-		return FALSE;
-
-	// Initialize the edit control.
-	if (!Initialize(pParent, dwBStyle))
-		return FALSE;
-
-	// Set the window text and select it.
-	SetWindowText(m_strWindowText);
-	SetSel(0, -1);
-	SetFocus();
-
-	return TRUE;
-}
-
-CXTItemEdit::~CXTItemEdit()
-{
-}
-
-IMPLEMENT_DYNAMIC(CXTItemEdit, CXTBrowseEdit)
-
-BEGIN_MESSAGE_MAP(CXTItemEdit, CXTBrowseEdit)
-	//{{AFX_MSG_MAP(CXTItemEdit)
-	ON_WM_KILLFOCUS()
+IMPLEMENT_DYNAMIC(CXTPPropertyGridInplaceEdit, CEdit)
+
+BEGIN_MESSAGE_MAP(CXTPPropertyGridInplaceEdit, CXTMaskEditT<CEdit>)
+	ON_MASKEDIT_REFLECT()
+	//{{AFX_MSG_MAP(CXTPPropertyGridInplaceEdit)
+	ON_WM_CTLCOLOR_REFLECT()
+	ON_CONTROL_REFLECT(EN_KILLFOCUS, OnEnKillfocus)
+	ON_CONTROL_REFLECT(EN_SETFOCUS, OnEnSetfocus)
+	ON_CONTROL_REFLECT(EN_CHANGE, OnEnChange)
+	ON_WM_LBUTTONDBLCLK()
+	ON_WM_KEYDOWN()
+	ON_WM_GETDLGCODE()
 	ON_WM_CHAR()
+	ON_WM_SYSKEYDOWN()
+	ON_WM_STYLECHANGED()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
-void CXTItemEdit::OnKillFocus(CWnd* pNewWnd)
-{
-	CXTBrowseEdit::OnKillFocus(pNewWnd);
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridInplaceEdit message handlers
 
-	if (!::IsWindow(m_btnBrowse.GetSafeHwnd()) || pNewWnd != &m_btnBrowse)
+void CXTPPropertyGridInplaceEdit::SetValue(LPCTSTR strValue)
+{
+	m_strValue = strValue;
+}
+
+void CXTPPropertyGridInplaceEdit::HideWindow()
+{
+	if (m_hWnd)
 	{
-		ASSERT_VALID(this);
-		EndLabelEdit();
+		ShowWindow(SW_HIDE);
 	}
 }
 
-void CXTItemEdit::PostNcDestroy()
+void CXTPPropertyGridInplaceEdit::OnStyleChanged(int nStyleType, LPSTYLESTRUCT lpStyleStruct)
 {
-	if (m_bAutoDelete)
+	if (nStyleType == GWL_EXSTYLE && lpStyleStruct->styleNew & WS_EX_LAYOUTRTL)
 	{
-		delete this;
+		HideWindow();
+		m_bDelayCreate = TRUE;
 	}
+
+	CEdit::OnStyleChanged(nStyleType, lpStyleStruct);
 }
 
-BOOL CXTItemEdit::PreTranslateMessage(MSG* pMsg)
+void CXTPPropertyGridInplaceEdit::Create(CXTPPropertyGridItem* pItem, CRect rect)
 {
-	if (pMsg->message == WM_KEYDOWN || pMsg->message == WM_KEYUP)
+	ASSERT(pItem && pItem->GetGrid());
+	if (!pItem || !pItem->GetGrid())
+		return;
+
+	m_pGrid = pItem->GetGrid();
+	m_pItem = pItem;
+	m_bCreated = FALSE;
+	m_bEditMode = FALSE;
+	m_bCancel = FALSE;
+	m_bCheckAutoComplete = FALSE;
+
+	DWORD dwEditStyle = m_pItem->GetEditStyle();
+
+	if (m_hWnd)
 	{
-		if ((pMsg->wParam == VK_RETURN) ||
-			(pMsg->wParam == VK_ESCAPE))
+		DWORD dwStyle = (WS_CHILD | WS_VISIBLE | ES_READONLY) | (m_pGrid->GetExStyle() & WS_EX_LAYOUTRTL ? ES_RIGHT : 0);
+
+		if ((GetStyle() | dwStyle) != (dwEditStyle | dwStyle))
+			m_bDelayCreate = TRUE;
+
+		if (GetExStyle() & WS_EX_LAYOUTRTL)
+			m_bDelayCreate = TRUE;
+
+		if (m_bDelayCreate)
+			DestroyWindow();
+	}
+
+	if (!m_hWnd)
+	{
+		CEdit::Create(dwEditStyle, rect, m_pGrid, 0);
+	}
+
+	m_bDelayCreate = FALSE;
+
+	if (m_pItem->m_bPassword)
+		CEdit::SetPasswordChar(pItem->m_chPrompt);
+
+	if (m_pItem->GetMetrics(TRUE, FALSE))
+	{
+		CEdit::SetLimitText(m_pItem->GetMetrics(TRUE, FALSE)->m_nMaxLength);
+	}
+	else
+	{
+		CEdit::SetLimitText(0);
+	}
+
+	SetFont(m_pGrid->GetPaintManager()->GetItemFont(pItem, TRUE));
+	SetWindowText(m_strValue);
+	SetWindowPos(0, rect.left, rect.top, rect.Width(), rect.Height(), SWP_NOZORDER | SWP_SHOWWINDOW);
+
+	SetMargins(3, 3);
+
+	SetUseMask(m_pItem->m_bUseMask);
+	if (m_pItem->m_bUseMask)
+	{
+		SetEditMask(m_pItem->m_strMask, m_pItem->m_strLiteral, m_pItem->m_strValue);
+		SetPromptChar(m_pItem->m_chPrompt);
+	}
+
+	m_bCreated = TRUE;
+}
+
+HBRUSH CXTPPropertyGridInplaceEdit::CtlColor(CDC* pDC, UINT /*nCtlColor*/)
+{
+	CXTPPropertyGridPaintManager* pPaintManager = m_pGrid ? m_pGrid->GetPaintManager() : 0;
+
+	if (!m_pItem || !pPaintManager)
+		return 0;
+
+	pDC->SetTextColor(pPaintManager->GetItemTextColor(m_pItem, TRUE));
+
+	COLORREF clr = pPaintManager->GetItemBackColor(m_pItem, TRUE);
+
+	if (clr != m_clrBack || !m_brBack.GetSafeHandle())
+	{
+		m_brBack.DeleteObject();
+		m_brBack.CreateSolidBrush(clr);
+		m_clrBack = clr;
+
+	}
+
+	pDC->SetBkColor(m_clrBack);
+
+
+	return m_brBack;
+}
+
+void CXTPPropertyGridInplaceEdit::OnEnSetfocus()
+{
+	if (!m_pGrid)
+		return;
+
+	m_pGrid->Invalidate(FALSE);
+
+
+	if (m_pItem && !m_pItem->OnRequestEdit())
+		m_pGrid->SetFocus();
+
+	m_bEditMode = TRUE;
+}
+
+void CXTPPropertyGridInplaceEdit::OnEnKillfocus()
+{
+	if (!m_pGrid)
+		return;
+
+	if (m_pItem)
+	{
+		m_pItem->OnValidateEdit();
+		if (m_pGrid) m_pGrid->Invalidate(FALSE);
+	}
+
+}
+
+void CXTPPropertyGridInplaceEdit::OnEnChange()
+{
+	if (!m_bCreated || m_bIgnoreEditChanged)
+		return;
+
+	if (m_pItem && m_pGrid && !m_pItem->GetReadOnly() && m_pItem->m_bAutoComplete
+		&& !m_pItem->GetConstraintEdit() && m_bCheckAutoComplete)
+	{
+		m_bCheckAutoComplete = FALSE;
+
+		CXTPPropertyGridItemConstraints* pList = m_pItem->GetConstraints();
+		if (!pList->IsEmpty())
 		{
-			if (pMsg->wParam == VK_ESCAPE)
+			CString strWindowText;
+			GetWindowText(strWindowText);
+			int nLength = strWindowText.GetLength();
+
+
+			// Currently selected range
+			int nStart = 0, nEnd = 0;
+			GetSel(nStart, nEnd);
+			if (nStart == nEnd && nLength == nEnd && nLength > 0)
 			{
-				m_bEscapeKey = true;
+				for (int nIndex = 0; nIndex < pList->GetCount(); nIndex += 1)
+				{
+					CString strWindowTextNew = pList->GetAt(nIndex);
+
+					if (strWindowTextNew.GetLength() > nLength &&
+						strWindowText.CompareNoCase(strWindowTextNew.Left(nLength)) == 0)
+					{
+						m_bIgnoreEditChanged = TRUE;
+						SetWindowText(strWindowTextNew);
+						SetSel(strWindowTextNew.GetLength(), nLength);
+						m_bIgnoreEditChanged = FALSE;
+						break;
+					}
+				}
 			}
-
-			EndLabelEdit();
-			return TRUE;
 		}
 	}
 
-	return CXTBrowseEdit::PreTranslateMessage(pMsg);
-}
-
-void CXTItemEdit::EndLabelEdit()
-{
-	if (m_bClosePosted) return;
-
-	if (::IsWindow(m_btnBrowse.GetSafeHwnd()))
-		m_btnBrowse.PostMessage(WM_CLOSE);
-
-	if (::IsWindow(GetSafeHwnd()))
-		PostMessage(WM_CLOSE);
-
-	m_bClosePosted = true;
-
-	if (m_bModified == false)
+	if (m_pItem && m_pGrid)
 	{
-		CWnd* pOwner = GetOwner();
-		ASSERT_VALID(pOwner);
-
-		if (m_bEscapeKey == false)
-		{
-			m_bModified = true;
-
-			// get the window text and pass it on to the
-			// notification window...
-			GetWindowText(m_strWindowText);
-
-			// Notify of label edit.
-			pOwner->SendMessage(WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(),
-				BEN_XT_LABELEDITEND), (LPARAM)GetSafeHwnd());
-		}
-		else
-		{
-			// Notify of label edit.
-			pOwner->SendMessage(WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(),
-				BEN_XT_LABELEDITCANCEL), (LPARAM)GetSafeHwnd());
-		}
+		ASSERT(m_pItem);
+		m_pGrid->SendNotifyMessage(XTP_PGN_EDIT_CHANGED, (LPARAM)this);
 	}
 }
 
-void CXTItemEdit::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+UINT CXTPPropertyGridInplaceEdit::OnGetDlgCode()
 {
-	if ((nChar == VK_RETURN) ||
-		(nChar == VK_ESCAPE))
-	{
-		if (nChar == VK_ESCAPE)
-			m_bEscapeKey = TRUE;
+	return DLGC_WANTALLKEYS;
+}
 
-		EndLabelEdit();
+void CXTPPropertyGridInplaceEdit::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if (nChar == VK_TAB) return;
+
+	if ((nChar == VK_RETURN) && (GetStyle() & ES_WANTRETURN))
+	{
+		CXTMaskEditT<CEdit>::OnChar(nChar, nRepCnt, nFlags);
 		return;
 	}
 
-	CXTBrowseEdit::OnChar(nChar, nRepCnt, nFlags);
+	if (nChar == VK_ESCAPE || nChar == VK_RETURN)
+	{
+		m_pGrid->SetFocus();
+		return;
+	}
+
+	if (m_pItem && !m_pItem->GetReadOnly() && m_pItem->GetConstraintEdit())
+	{
+		CXTPPropertyGridItemConstraints* pList = m_pItem->GetConstraints();
+		if (!pList->IsEmpty())
+		{
+
+			CString strWindowText;
+			GetWindowText(strWindowText);
+			int nIndex = pList->FindConstraint(strWindowText);
+			int nIndexStart = nIndex == -1 ? pList->GetCount() - 1 : nIndex;
+
+			CString strSeach ((TCHAR)nChar);
+
+			do
+			{
+
+				nIndex = nIndex < pList->GetCount() - 1 ? nIndex + 1 : 0;
+				CString str = pList->GetAt(nIndex);
+
+				if (strSeach.CompareNoCase(str.Left(1)) == 0)
+				{
+					SetWindowText(str);
+					pList->SetCurrent(nIndex);
+					SetSel(0, -1);
+					return;
+				}
+
+			}
+			while (nIndex != nIndexStart);
+
+			return;
+		}
+	}
+
+	m_bCheckAutoComplete = (nChar != VK_DELETE) && (nChar != VK_BACK);
+
+	CXTMaskEditT<CEdit>::OnChar(nChar, nRepCnt, nFlags);
 }
+
+void CXTPPropertyGridInplaceEdit::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if (!m_pItem)
+		return;
+
+	if (nChar == VK_TAB && m_pGrid)
+	{
+		((CXTPPropertyGrid*)m_pGrid->GetParent())->OnNavigate(
+			xtpGridUIInplaceEdit, GetKeyState(VK_SHIFT) >= 0, m_pItem);
+		return;
+	}
+	else if (nChar == VK_ESCAPE)
+	{
+		m_bCancel = TRUE;
+		m_bCheckAutoComplete = FALSE;
+		SetWindowText(m_strValue);
+		return ;
+	}
+	else if (nChar == VK_RETURN)
+	{
+		return ;
+	}
+	else if (nChar == VK_F4)
+	{
+		CXTPPropertyGridInplaceButton* pButton = m_pItem->GetInplaceButtons()->Find(XTP_ID_PROPERTYGRID_COMBOBUTTON);
+		if (pButton)
+			m_pItem->OnInplaceButtonDown(pButton);
+	}
+	else if (nChar == VK_DOWN || nChar == VK_UP)
+	{
+		if (m_pItem != NULL && !m_pItem->GetReadOnly())
+		{
+			if (SelectConstraint(nChar == VK_DOWN ? +1 : -1, FALSE))
+			{
+				SetSel(0, -1);
+				return ;
+			}
+		}
+	}
+	m_bCheckAutoComplete = (nChar != VK_DELETE) && (nChar != VK_BACK);
+
+	CXTMaskEditT<CEdit>::OnKeyDown(nChar, nRepCnt, nFlags);
+}
+
+void CXTPPropertyGridInplaceEdit::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if ((nChar == VK_DOWN || nChar == VK_UP) && m_pItem)
+	{
+		CXTPPropertyGridInplaceButton* pButton = m_pItem->GetInplaceButtons()->Find(XTP_ID_PROPERTYGRID_COMBOBUTTON);
+		if (pButton)
+			m_pItem->OnInplaceButtonDown(pButton);
+	}
+
+	CXTMaskEditT<CEdit>::OnSysKeyDown(nChar, nRepCnt, nFlags);
+}
+
+BOOL CXTPPropertyGridInplaceEdit::SelectConstraint(int nDirection, BOOL bCircle)
+{
+	CXTPPropertyGridItemConstraints* pList = m_pItem->GetConstraints();
+	if (pList->IsEmpty())
+		return FALSE;
+
+	CString str;
+	GetWindowText(str);
+	int nIndex = pList->FindConstraint(str);
+
+	if (nIndex == -1)
+		return FALSE;
+
+	nIndex += nDirection;
+	if (nIndex >= pList->GetCount()) nIndex = bCircle ? 0 : (ULONG)pList->GetCount() - 1;
+	if (nIndex < 0) nIndex = bCircle ? (ULONG)pList->GetCount() - 1 : 0;
+
+	m_bCheckAutoComplete = FALSE;
+	SetWindowText(pList->GetAt(nIndex));
+	pList->SetCurrent(nIndex);
+
+	return TRUE;
+}
+
+void CXTPPropertyGridInplaceEdit::OnLButtonDblClk(UINT nFlags, CPoint point)
+{
+	if (m_pGrid && m_pItem != NULL && !m_pItem->GetReadOnly() && SelectConstraint(+1, TRUE))
+	{
+		m_pGrid->SetFocus();
+		return;
+	}
+	CXTMaskEditT<CEdit>::OnLButtonDblClk(nFlags, point);
+}
+
+void CXTPPropertyGridInplaceEdit::DestroyItem()
+{
+	// reset variables to defaults.
+	m_pItem = NULL;
+	m_pGrid = NULL;
+	m_strValue.Empty();
+	m_brBack.DeleteObject();
+
+	// destroy the window.
+	//DestroyWindow();
+	if (::IsWindow(m_hWnd)) ShowWindow(SW_HIDE);
+}
+
+
+BOOL CXTPPropertyGridInplaceEdit::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->message == WM_KEYDOWN && IsDialogMessage(pMsg))
+		return TRUE;
+
+	return CXTMaskEditT<CEdit>::PreTranslateMessage(pMsg);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridInplaceControl
+
+CXTPPropertyGridInplaceControl::CXTPPropertyGridInplaceControl(CXTPPropertyGridItem* pItem)
+{
+	m_pItem = pItem;
+	m_nWidth = 0;
+}
+
+void CXTPPropertyGridInplaceControl::OnFinalRelease()
+{
+	if (m_hWnd != NULL)
+		DestroyWindow();
+
+	CCmdTarget::OnFinalRelease();
+}
+
+void CXTPPropertyGridInplaceControl::OnDestroyWindow()
+{
+	DestroyWindow();
+}
+
+void CXTPPropertyGridInplaceControl::OnValueChanged()
+{
+
+}
+
+BEGIN_MESSAGE_MAP(CXTPPropertyGridInplaceControl, CWnd)
+	ON_WM_CHAR()
+	ON_WM_KEYDOWN()
+	ON_WM_GETDLGCODE()
+END_MESSAGE_MAP()
+
+
+UINT CXTPPropertyGridInplaceControl::OnGetDlgCode()
+{
+	return CWnd::OnGetDlgCode() | DLGC_WANTTAB;
+}
+
+void CXTPPropertyGridInplaceControl::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if (nChar == VK_TAB) return;
+
+	CWnd::OnChar(nChar, nRepCnt, nFlags);
+}
+
+void CXTPPropertyGridInplaceControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if (nChar == VK_TAB && m_pItem)
+	{
+		((CXTPPropertyGrid*)m_pItem->GetGrid()->GetParent())->OnNavigate(
+			xtpGridUIInplaceControl, GetKeyState(VK_SHIFT) >= 0, m_pItem);
+		return;
+	}
+
+	CWnd::OnKeyDown(nChar, nRepCnt, nFlags);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridInplaceSlider
+
+CXTPPropertyGridInplaceSlider::CXTPPropertyGridInplaceSlider(CXTPPropertyGridItem* pItem)
+	: CXTPPropertyGridInplaceControl(pItem)
+{
+	m_nMin = 0;
+	m_nMax = 100;
+
+	m_nValue = 0;
+
+	m_clrBack = COLORREF_NULL;
+
+
+}
+
+BEGIN_MESSAGE_MAP(CXTPPropertyGridInplaceSlider, CXTPPropertyGridInplaceControl)
+	ON_WM_CTLCOLOR_REFLECT()
+	ON_NOTIFY_REFLECT(NM_CUSTOMDRAW, OnCustomDraw)
+END_MESSAGE_MAP()
+
+int CXTPPropertyGridInplaceSlider::CalcualteEditWidth()
+{
+	if (m_nWidth != 0)
+		return m_nWidth;
+
+	CWindowDC dc(m_pItem->GetGrid());
+	CXTPFontDC font (&dc, m_pItem->GetGrid()->GetFont());
+
+	CString strMax;
+	strMax.Format(_T("%i"), m_nMax);
+
+	CString strMin;
+	strMin.Format(_T("%i"), m_nMin);
+
+	int nWidth = max(dc.GetTextExtent(strMax).cx, dc.GetTextExtent(strMin).cx) + 6;
+
+	return nWidth;
+}
+
+void CXTPPropertyGridInplaceSlider::OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	LPNMCUSTOMDRAW lpCustDraw = (LPNMCUSTOMDRAW)pNMHDR;
+
+	if(lpCustDraw->dwDrawStage == CDDS_PREPAINT)
+	{
+		int nValue = GetSliderCtrl()->GetPos();
+		if (nValue != m_nValue)
+		{
+			m_nValue = nValue;
+			CString strValue;
+			strValue.Format(_T("%i"), nValue);
+
+			m_pItem->SetValue(strValue);
+			m_pItem->OnValueChanged(strValue);
+
+			m_pItem->GetGrid()->Invalidate(FALSE);
+		}
+	}
+
+	*pResult = CDRF_DODEFAULT;
+}
+
+void CXTPPropertyGridInplaceSlider::OnCreateWindow(CRect& rcValue)
+{
+	CRect rcSlider(rcValue);
+
+	if (m_nWidth > 0)
+	{
+		rcSlider.left = rcSlider.right - m_nWidth;
+
+		if (rcSlider.left < rcValue.left)
+			return;
+
+		rcValue.right -= m_nWidth;
+	}
+	else
+	{
+		int nWidth = CalcualteEditWidth();
+		rcSlider.left += nWidth;
+
+		if (rcSlider.right < rcSlider.left)
+			return;
+
+		rcValue.right = rcValue.left + nWidth;
+	}
+
+	if (!m_hWnd)
+	{
+		VERIFY(AfxDeferRegisterClass(AFX_WNDCOMMCTL_BAR_REG));
+
+		Create(TRACKBAR_CLASS, NULL, WS_CHILD | TBS_HORZ | WS_TABSTOP, rcSlider, (CWnd*)m_pItem->GetGrid(), 0);
+	}
+
+	m_nValue = _ttol(m_pItem->GetValue());
+	GetSliderCtrl()->SetRange(m_nMin, m_nMax, TRUE);
+	GetSliderCtrl()->SetPos(m_nValue);
+	GetSliderCtrl()->EnableWindow(!m_pItem->GetReadOnly());
+
+	MoveWindow(rcSlider);
+	ShowWindow(SW_SHOW);
+}
+
+HBRUSH CXTPPropertyGridInplaceSlider::CtlColor(CDC* pDC, UINT /*nCtlColor*/)
+{
+	CXTPPropertyGridView* pGrid = m_pItem ? m_pItem->GetGrid() : 0;
+	CXTPPropertyGridPaintManager* pPaintManager = pGrid ? pGrid->GetPaintManager() : 0;
+
+	if (!m_pItem || !pPaintManager)
+		return 0;
+
+	pDC->SetTextColor(pPaintManager->GetItemTextColor(m_pItem, TRUE));
+
+	COLORREF clr = pPaintManager->GetItemBackColor(m_pItem, TRUE);
+
+	if (clr != m_clrBack || !m_brBack.GetSafeHandle())
+	{
+		m_brBack.DeleteObject();
+		m_brBack.CreateSolidBrush(clr);
+		m_clrBack = clr;
+	}
+
+	pDC->SetBkColor(m_clrBack);
+
+
+	return m_brBack;
+}
+
+void CXTPPropertyGridInplaceSlider::OnAdjustValueRect(CRect& rcValue)
+{
+	if (!m_hWnd)
+		return;
+
+	if (m_nWidth > 0)
+	{
+		rcValue.right -= m_nWidth;
+		return;
+	}
+
+	int nWidth = CalcualteEditWidth();
+
+	if (rcValue.left + nWidth > rcValue.right)
+		return;
+
+	rcValue.right = rcValue.left + nWidth;
+}
+
+void CXTPPropertyGridInplaceSlider::OnValueChanged()
+{
+	int nValue = _ttol(m_pItem->GetValue());
+	int nValueRange = max(m_nMin, min(m_nMax, nValue));
+
+	if (nValueRange != m_nValue || nValueRange != nValue)
+	{
+		m_nValue = nValueRange;
+
+		CString str;
+		str.Format(_T("%i"), nValueRange);
+		m_pItem->SetValue(str);
+
+		if (m_hWnd) GetSliderCtrl()->SetPos(m_nValue);
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridInplaceSpinButton
+
+CXTPPropertyGridInplaceSpinButton::CXTPPropertyGridInplaceSpinButton(CXTPPropertyGridItem* pItem)
+	: CXTPPropertyGridInplaceControl(pItem)
+{
+	m_nMin = 0;
+	m_nMax = 100;
+	m_nWidth = GetSystemMetrics(SM_CXVSCROLL);
+
+
+}
+
+BEGIN_MESSAGE_MAP(CXTPPropertyGridInplaceSpinButton, CXTPPropertyGridInplaceControl)
+	ON_NOTIFY_REFLECT(UDN_DELTAPOS, OnDeltapos)
+END_MESSAGE_MAP()
+
+#define AFX_WNDCOMMCTL_UPDOWN_REG 0x00040
+
+void CXTPPropertyGridInplaceSpinButton::OnCreateWindow(CRect& rcValue)
+{
+	CRect rcButton(rcValue);
+
+	rcButton.left = rcButton.right - m_nWidth;
+	rcValue.right -= m_nWidth;
+
+	if (!m_hWnd)
+	{
+		VERIFY(AfxDeferRegisterClass(AFX_WNDCOMMCTL_UPDOWN_REG));
+
+		Create(UPDOWN_CLASS, NULL, WS_CHILD | UDS_ARROWKEYS, rcButton, (CWnd*)m_pItem->GetGrid(), 0);
+	}
+
+	int nValue = _ttol(m_pItem->GetValue());
+	GetSpinButtonCtrl()->SetPos(nValue);
+	GetSpinButtonCtrl()->SendMessage(UDM_SETRANGE32, (WPARAM)m_nMin, (LPARAM)m_nMax);
+	GetSpinButtonCtrl()->EnableWindow(!m_pItem->GetReadOnly());
+
+	MoveWindow(rcButton);
+	ShowWindow(SW_SHOW);
+}
+
+void CXTPPropertyGridInplaceSpinButton::OnDeltapos(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
+
+	m_pItem->OnValidateEdit();
+	long nValue = _ttol(m_pItem->GetValue()) + pNMUpDown->iDelta;
+
+	nValue = max(m_nMin, min(m_nMax, nValue));
+
+	CString str;
+	str.Format(_T("%i"), nValue);
+	m_pItem->OnValueChanged(str);
+
+	*pResult = 1;
+}
+
+
+void CXTPPropertyGridInplaceSpinButton::OnAdjustValueRect(CRect& rcValue)
+{
+	if (m_hWnd)
+	{
+		rcValue.right -= m_nWidth;
+	}
+}
+
+void CXTPPropertyGridInplaceSpinButton::OnValueChanged()
+{
+	int nValue = _ttol(m_pItem->GetValue());
+	int nValueRange = max(m_nMin, min(m_nMax, nValue));
+
+	if (nValue != nValueRange)
+	{
+		CString str;
+		str.Format(_T("%i"), nValueRange);
+
+		m_pItem->SetValue(str);
+	}
+}
+//////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridInplaceControls
+
+
+CXTPPropertyGridInplaceControls::CXTPPropertyGridInplaceControls()
+{
+
+}
+
+CXTPPropertyGridInplaceControls::~CXTPPropertyGridInplaceControls()
+{
+	RemoveAll();
+}
+
+void CXTPPropertyGridInplaceControls::RemoveAll()
+{
+	for (int i = 0; i < (int)m_arrControls.GetSize(); i++)
+	{
+		m_arrControls[i]->InternalRelease();
+	}
+	m_arrControls.RemoveAll();
+}
+
+int CXTPPropertyGridInplaceControls::GetCount() const
+{
+	return (int)m_arrControls.GetSize();
+}
+
+void CXTPPropertyGridInplaceControls::Add(CXTPPropertyGridInplaceControl* pWindow)
+{
+	m_arrControls.Add(pWindow);
+}
+
+CXTPPropertyGridInplaceControl* CXTPPropertyGridInplaceControls::GetAt(int nIndex)
+{
+	return m_arrControls[nIndex];
+}
+
+

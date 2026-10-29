@@ -1,7 +1,6 @@
-// from server: 82% by colin
-// roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 // roc-lib: g3d-6.09 GLG3Dcpp/Win32Window.cpp
 
 // Candidate translation unit (score above; library headers required).

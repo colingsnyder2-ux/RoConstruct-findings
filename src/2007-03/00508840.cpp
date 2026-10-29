@@ -1,8 +1,7 @@
-// from server: 91% by colin
+// roc-cl: 50727
 // roc-lang: c
-// roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
-// roc-lib: libpng-1.2.7 pngwrite.c
+// roc-lib: g3d-6.09-png pngwrite.c
 
 // Candidate translation unit (score above; library headers required).
 

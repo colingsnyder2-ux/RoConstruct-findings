@@ -1,15 +1,13 @@
 // roc-lang: cpp
-// roc-cl: 21022
+// roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: templates-2008-06-dll roc_rtti_01f403e5b5979552.cpp
+// roc-lib: templates-boost-1_34_1-dll roc_boost_resume_389d0bd197ae56e1.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include <string>
-#include <vector>
-#include <boost/any.hpp>
-#include <boost/function.hpp>
-#include <boost/signal.hpp>
-#include <boost/iostreams/filter/gzip.hpp>
-#include <boost/iostreams/device/null.hpp>
+#define NDEBUG 1
+#include <istream>
+#include <ostream>
+#include <boost/ref.hpp>
 #include <boost/iostreams/stream_buffer.hpp>
-template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_gzip_decompressor<std::allocator<char> >,std::char_traits<char>,std::allocator<char>,boost::iostreams::input>;
+template class boost::iostreams::stream_buffer<boost::reference_wrapper<std::istream> >;
+template class boost::iostreams::stream_buffer<boost::reference_wrapper<std::ostream> >;

@@ -1,18 +1,11 @@
-// from server: 81% by colin
-void __cdecl sub_5DE130(int* first, int len, int value)
-{
-    int hole = (len - 1) / 2;
-    if (hole < len) {
-        do {
-            int parent = first[hole];
-            if ((unsigned)parent >= (unsigned)value)
-                break;
-            first[len] = parent;
-            len = hole;
-            hole = (hole - 1) / 2;
-        } while (hole < len);
-        first[len] = value;
-    } else {
-        first[len] = value;
-    }
-}
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /MD
+// roc-lib: rbxgs-render roc_g3d_array_debug_89494c2c4f78369c.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <GLG3D/Texture.h>
+#include <G3D/ReferenceCount.h>
+#include <G3D/Array.h>
+template class G3D::Array<G3D::Texture*>;
+void use_array(G3D::Array<G3D::ReferenceCountedPointer<G3D::Texture> >& a,const G3D::ReferenceCountedPointer<G3D::Texture>& v,int size) { a.append(v); a.resize(size); a.clear(); }

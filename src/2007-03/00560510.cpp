@@ -1,37 +1,47 @@
-// from server: 59% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs reflection/type.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_codex_eh_count20_9b609f40750eb959.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "reflection/type.h"
 
-namespace RBX
+extern void* __cdecl operator new(unsigned int);
+extern const unsigned char control_table[];
+
+struct Object {
+    virtual ~Object();
+};
+
+struct Deleter { void operator()(Object*) const; };
+
+struct Control {
+    const void* table;
+    long strong;
+    long weak;
+    Object* object;
+    Deleter deleter;
+};
+
+struct S {
+    Control* control;
+    S(Object* object, Deleter deleter);
+};
+
+S::S(Object* object, Deleter deleter) : control(0)
 {
-	namespace Reflection
-	{
-		template<>
-		const Type& Type::singleton<void>()
-		{
-			static Type type("void", typeid(void));
-			return type;
-		}
-
-		Value::Value()
-			: _type(&Type::singleton<void>())
-		{
-		}
-
-		SignatureDescriptor::SignatureDescriptor()
-			: resultType(&Type::singleton<void>())
-		{
-		}
-
-		void SignatureDescriptor::addArgument(const Name& name, const Type& type, const Value& defaultValue)
-		{
-			Item i = {&name, &type, defaultValue};
-			arguments.push_back(i);
-		}
-	}
+    try {
+        Control* p = static_cast<Control*>(operator new(sizeof(Control)));
+        if (p) {
+            p->strong = 1;
+            p->weak = 1;
+            p->table = control_table;
+            p->object = object;
+        } else {
+            p = 0;
+        }
+        control = p;
+    } catch (...) {
+        deleter(object);
+        throw;
+    }
 }

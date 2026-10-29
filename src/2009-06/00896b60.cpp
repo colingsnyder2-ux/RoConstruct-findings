@@ -1,180 +1,214 @@
-// from server: 82% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/date_time/src/gregorian/greg_month.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /Od /Ob0 /GS
+// roc-lib: rbxgs v8datamodel/UserController.cpp
 
 // Candidate translation unit (score above; library headers required).
-/* Copyright (c) 2002-2005 CrystalClear Software, Inc.
- * Use, modification and distribution is subject to the 
- * Boost Software License, Version 1.0. (See accompanying
- * file LICENSE-1.0 or http://www.boost.org/LICENSE-1.0)
- * Author: Jeff Garland, Bart Garst
- * $Date: 2005/06/21 03:34:50 $
- */
+#include "v8datamodel/PVInstance.h"
+#include "v8datamodel/UserController.h"
+#include "util/Math.h"
+#include <G3D/Vector3.h>
 
+namespace RBX
+{
 
+#pragma warning (push)
+#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
 
-#ifndef BOOST_DATE_TIME_SOURCE
-#define BOOST_DATE_TIME_SOURCE
-#endif
-#include "boost/date_time/gregorian/greg_month.hpp"
-#include "boost/date_time/gregorian/greg_facet.hpp"
-#include "boost/date_time/date_format_simple.hpp"
-#include "boost/date_time/compiler_config.hpp"
-#if defined(BOOST_DATE_TIME_INCLUDE_LIMITED_HEADERS)
-#include "boost/date_time/gregorian/formatters_limited.hpp"
-#else
-#include "boost/date_time/gregorian/formatters.hpp"
-#endif
-#include "boost/date_time/date_parsing.hpp"
-#include "boost/date_time/gregorian/parsers.hpp"
+	ControllerService::ControllerService()
+		: playerController(NULL),
+		  hardwareDevice(NULL),
+		  keyboardPrimaryController(new KeyboardPrimaryController(this)),
+		  keyboardSecondaryController(new KeyboardSecondaryController(this)),
+		  nullController(new NullController)
+	{
+	}
 
-#include "greg_names.hpp"
-namespace boost {
-namespace gregorian {
+#pragma warning (pop)
 
-  /*! Returns a shared pointer to a map of Month strings & numbers.
-   * Strings are both full names and abbreviations.
-   * Ex. ("jan",1), ("february",2), etc...
-   * Note: All characters are lowercase - for case insensitivity
-   */
-  greg_month::month_map_ptr_type greg_month::get_month_map_ptr()
-  {
-    static month_map_ptr_type month_map_ptr(new greg_month::month_map_type());
+	G3D::ReferenceCountedPointer<Controller> ControllerService::getController(Controller::ControllerType type, const PVInstance* controlledInstance)
+	{
+		switch (type)
+		{
+		case Controller::PLAYER_CONTROLLER:
+			return new PlayerController(this, controlledInstance);
 
-    if(month_map_ptr->empty()) {
-      std::string s("");
-      for(unsigned short i = 1; i <= 12; ++i) {
-        greg_month m(static_cast<month_enum>(i));
-        s = m.as_long_string();
-        s = date_time::convert_to_lower(s);
-        month_map_ptr->insert(std::make_pair(s, i));
-        s = m.as_short_string();
-        s = date_time::convert_to_lower(s);
-        month_map_ptr->insert(std::make_pair(s, i));
-      }
-    }
-    return month_map_ptr;
-  }
+		case Controller::PRIMARY_CONTROLLER:
+			return keyboardPrimaryController;
 
+		case Controller::SECONDARY_CONTROLLER:
+			return keyboardSecondaryController;
 
-  //! Returns 3 char english string for the month ex: Jan, Feb, Mar, Apr
-  const char*
-  greg_month::as_short_string() const 
-  {
-    return short_month_names[value_-1];
-  }
-  
-  //! Returns full name of month as string in english ex: January, February
-  const char*
-  greg_month::as_long_string()  const 
-  {
-    return long_month_names[value_-1];
-  }
- 
-  //! Return special_value from string argument
-  /*! Return special_value from string argument. If argument is 
-   * not one of the special value names (defined in names.hpp), 
-   * return 'not_special' */
-  special_values special_value_from_string(const std::string& s) {
-    short i = date_time::find_match(special_value_names,
-                                    special_value_names,
-                                    date_time::NumSpecialValues,
-                                    s);
-    if(i > date_time::NumSpecialValues) { // match not found
-      return not_special;
-    }
-    else {
-      return static_cast<special_values>(i);
-    }
-  }
+		case Controller::AI_CHASE_CONTROLLER:
+			return new AIChaseController(controlledInstance);
 
+		case Controller::AI_FLEE_CONTROLLER:
+			return new AIFleeController(controlledInstance);
 
-#ifndef BOOST_NO_STD_WSTRING
-  //! Returns 3 wchar_t english string for the month ex: Jan, Feb, Mar, Apr
-  const wchar_t*
-  greg_month::as_short_wstring() const 
-  {
-    return w_short_month_names[value_-1];
-  }
-  
-  //! Returns full name of month as wchar_t string in english ex: January, February
-  const wchar_t*
-  greg_month::as_long_wstring()  const 
-  {
-    return w_long_month_names[value_-1];
-  }
-#endif // BOOST_NO_STD_WSTRING
-  
-#ifndef BOOST_DATE_TIME_NO_LOCALE
-  /*! creates an all_date_names_put object with the correct set of names.
-   * This function is only called in the event of an exception where
-   * the imbued locale containing the needed facet is for some reason 
-   * unreachable.
-   */
-  BOOST_DATE_TIME_DECL 
-  boost::date_time::all_date_names_put<greg_facet_config, char>* 
-  create_facet_def(char type)
-  {
-    typedef 
-      boost::date_time::all_date_names_put<greg_facet_config, char> facet_def;
-    
-    return new facet_def(short_month_names,
-                         long_month_names,
-                         special_value_names,
-                         short_weekday_names,
-                         long_weekday_names);
-  }
-  
-  //! generates a locale with the set of gregorian name-strings of type char*
-  BOOST_DATE_TIME_DECL std::locale generate_locale(std::locale& loc, char type){
-    typedef boost::date_time::all_date_names_put<greg_facet_config, char> facet_def;
-    return std::locale(loc, new facet_def(short_month_names,
-                                          long_month_names,
-                                          special_value_names,
-                                          short_weekday_names,
-                                          long_weekday_names)
-        );
-  }
-  
-#ifndef BOOST_NO_STD_WSTRING
-  /*! creates an all_date_names_put object with the correct set of names.
-   * This function is only called in the event of an exception where
-   * the imbued locale containing the needed facet is for some reason 
-   * unreachable.
-   */
-  BOOST_DATE_TIME_DECL 
-  boost::date_time::all_date_names_put<greg_facet_config, wchar_t>* 
-  create_facet_def(wchar_t type)
-  {
-    typedef 
-      boost::date_time::all_date_names_put<greg_facet_config,wchar_t> facet_def;
-    
-    return new facet_def(w_short_month_names,
-                         w_long_month_names,
-                         w_special_value_names,
-                         w_short_weekday_names,
-                         w_long_weekday_names);
-  }
+		default:
+			return nullController;
+		}
+	}
 
-  //! generates a locale with the set of gregorian name-strings of type wchar_t*
-  BOOST_DATE_TIME_DECL std::locale generate_locale(std::locale& loc, wchar_t type){
-    typedef boost::date_time::all_date_names_put<greg_facet_config, wchar_t> facet_def;
-    return std::locale(loc, new facet_def(w_short_month_names,
-                                          w_long_month_names,
-                                          w_special_value_names,
-                                          w_short_weekday_names,
-                                          w_long_weekday_names)
-        );
-  }
-#endif // BOOST_NO_STD_WSTRING
-#endif // BOOST_DATE_TIME_NO_LOCALE
+	AIController::AIController(const PVInstance* controlledInstance)
+		: SteppingController(controlledInstance),
+		  retargetTime(0.0f)
+	{
+		for (int i = 0; i < Controller::NUM_INPUT_TYPES; i++)
+		{
+			buffer[i] = 0.0f;
+		}
 
-} } //namespace gregorian
+		buffer[Controller::CONSTANT_INPUT] = 1.0f;
+	}
 
+	AIController::~AIController() {}
 
+	float AIController::getValue(Controller::InputType inputType) const
+	{
+		return buffer[inputType];
+	}
 
+	void AIController::chaseTarget(const G3D::Vector3& localChasePoint)
+	{
+		float chaseAngle = atan2f(-localChasePoint.x, -localChasePoint.z);
+		float leftInput, rightInput;
 
+		if (chaseAngle > Math::pi() * 144.0f/360.0f)
+		{
+			leftInput = -0.9f;
+			rightInput = 0.9f;
+		}
+		else if (chaseAngle < Math::pi() * -144.0f/360.0f)
+		{
+			leftInput = 0.9f;
+			rightInput = -0.9f;
+		}
+		else if (chaseAngle > Math::pi() * 54.0/360.0)
+		{
+			leftInput = 0.0f;
+			rightInput = 0.9f;
+		}
+		else if (chaseAngle < Math::pi() * -54.0/360.0)
+		{
+			leftInput = 0.9f;
+			rightInput = 0.0f;
+		}
+		else
+		{
+			leftInput = 0.9f;
+			rightInput = 0.9f;
+		}
 
+		buffer[Controller::LEFT_TRACK_INPUT] = leftInput;
+		buffer[Controller::RIGHT_TRACK_INPUT] = rightInput;
+		buffer[Controller::RIGHT_LEFT_INPUT] = chaseAngle * (1.0f/Math::pi());
+		buffer[Controller::BACK_FORWARD_INPUT] = localChasePoint.z < 0.0f ? 0.9f : 0.0f;
+	}
 
+	G3D::Vector3 AIController::getLocalTargetPosition() const
+	{
+		G3D::Vector3 result;
+
+		boost::shared_ptr<const PVInstance> lockPV = controlledInstance.lock();
+		boost::shared_ptr<const PVInstance> lockTarget = target.lock();
+
+		RBXASSERT(lockPV);
+
+		if (lockPV && lockTarget)
+		{
+			G3D::CoordinateFrame controlledCoord = lockPV->getLocation();
+			G3D::Vector3 targetLoc = lockTarget->getLocation().translation;
+
+			result = controlledCoord.pointToObjectSpace(targetLoc);
+		}
+		
+		return result;
+	}
+
+	void AIController::updateTarget(Controller::ControllerType excludeType, float time)
+	{
+		if (time < retargetTime)
+			return;
+
+		retargetTime = time + G3D::uniformRandom(1.0f, 3.0f);
+
+		boost::shared_ptr<const PVInstance> pvLock = controlledInstance.lock();
+		if (!pvLock)
+			return;
+
+		const PVInstance* pvRoot = pvLock->getTypedRoot<PVInstance>();
+		if (!pvRoot)
+			return;
+
+		float bestDistance = 1e+20f;
+		G3D::CoordinateFrame controlledCoord = pvLock->getLocation();
+
+		for (size_t i = 0; i < pvRoot->numChildren(); i++)
+		{
+			const PVInstance* current = pvRoot->queryTypedChild<PVInstance>((int)i);
+
+			if (current && current != pvLock.get() && current->isChaseable() &&
+				current->getTopPVController()->getControllerType() != excludeType)
+			{
+				float distance = (current->getLocation().translation - controlledCoord.translation).magnitude();
+				if (distance < bestDistance)
+				{
+					bestDistance = distance;
+					target = shared_from(current);
+				}
+			}
+		}
+	}
+
+	void AIChaseController::updateBuffer(float time)
+	{
+		updateTarget(Controller::AI_CHASE_CONTROLLER, time);
+
+		if (!target.expired())
+		{
+			chaseTarget(getLocalTargetPosition());
+		}
+		else
+		{
+			buffer[Controller::LEFT_TRACK_INPUT] = -1.0f;
+			buffer[Controller::RIGHT_TRACK_INPUT] = 1.0f;
+			buffer[Controller::RIGHT_LEFT_INPUT] = 1.0f;
+		}
+	}
+
+	void AIFleeController::updateBuffer(float time)
+	{
+		updateTarget(Controller::AI_FLEE_CONTROLLER, time);
+
+		if (!target.expired())
+		{
+			chaseTarget(-getLocalTargetPosition());
+		}
+	}
+
+	SteppingController::SteppingController(const PVInstance* _controlledInstance)
+		: runService(shared_from(ServiceProvider::create<RunService>(_controlledInstance))),
+		  controlledInstance(shared_from(_controlledInstance))
+	{
+		Notifier<RunService, Heartbeat>::connect(runService, this);
+	}
+
+	SteppingController::~SteppingController()
+	{
+		Notifier<RunService, Heartbeat>::disconnect(runService, this);
+	}
+
+	PlayerController::PlayerController(ControllerService* _controllerService, const PVInstance* _controlledInstance)
+		: SteppingController(_controlledInstance),
+		  controllerService(shared_from(_controllerService)),
+		  stepsRotating(0)
+	{
+	}
+
+	const UserInputBase* PlayerController::getHardwareDevice() const
+	{
+		RBXASSERT(!controllerService.expired());
+		return controllerService.expired() ? NULL : controllerService.lock()->getHardwareDevice();
+	}
+}

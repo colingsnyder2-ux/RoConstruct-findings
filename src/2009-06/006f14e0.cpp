@@ -1,12 +1,11 @@
-// from server: 78% by colin
-// roc-lang: c
+// roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /MD
-// roc-lib: lua-5.1.4 llex.c
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_lualexauthentic8be5ca7b195cf324.cpp
 
 // Candidate translation unit (score above; library headers required).
 /*
-** $Id: llex.c,v 2.20.1.1 2007/12/27 13:02:25 roberto Exp $
+** $Id: llex.c,v 2.20 2006/03/09 18:14:31 roberto Exp $
 ** Lexical Analyzer
 ** See Copyright Notice in lua.h
 */

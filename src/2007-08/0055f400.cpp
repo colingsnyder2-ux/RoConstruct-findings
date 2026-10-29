@@ -1,39 +1,20 @@
-// from server: 70% by TrollStein
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espeon_backpacknativevisitor_10f23ffd264a3efb.cpp
 
-struct RefCounted {
-    void* vptr;
-    volatile long refcount;
-};
-
-struct Iter {
-    RefCounted* ptr;
-    void* extra;
-};
-
-struct Result {
-    void* a;
-    void* b;
-};
-
-struct ClearBackpack {
-    Result __cdecl clear(Iter* first, Iter* last, void (__cdecl *fn)(Iter*));
-};
-
-Result ClearBackpack::clear(Iter* first, Iter* last, void (__cdecl *fn)(Iter*)) {
-    Iter tmp;
-    while (first != last) {
-        tmp.ptr = first->ptr;
-        tmp.extra = first->extra;
-        if (tmp.extra) {
-            _InterlockedExchangeAdd((volatile long*)((char*)tmp.extra + 4), 1);
-        }
-        fn(&tmp);
-        first++;
-    }
-    Result r;
-    r.a = (void*)fn;
-    r.b = *(void**)((char*)&last + 4);
-    return r;
+// Candidate translation unit (score above; library headers required).
+#include <vector>
+#include <algorithm>
+#include <boost/shared_ptr.hpp>
+#include <boost/bind.hpp>
+namespace RBX {
+class Instance;
+typedef boost::shared_ptr<Instance> Shared;
+typedef std::vector<Shared> Children;
+class Instance {public:virtual void unused()=0;char padding[0x104];Children* children;};
+struct Face {int getSurfaceType()const;void set(int);};
+struct Surfaces {Face* face(int);};
+class PartInstance:public Instance {public:Surfaces* surfaces();};
+void __cdecl clearBackpack(Shared value){PartInstance* part=dynamic_cast<PartInstance*>(value.get());if(part){Surfaces* surfaces=part->surfaces();for(int i=0;i<6;++i){if(surfaces->face(i)->getSurfaceType()==2) surfaces->face(i)->set(3);}}if(value->children) std::for_each(value->children->begin(),value->children->end(),boost::bind(clearBackpack,_1));}
 }

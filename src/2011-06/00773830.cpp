@@ -1,43 +1,117 @@
-// roc 2011-06 00773830  unit: RBX::Lua::VWaitScriptSlot::?$TGenericSlotWrapper  size: 70 bytes
-// Make this compile to the exact bytes below, then: roc check 2011-06 00773830
-//
-// 00773830  8b4104               mov eax, dword ptr [ecx + 4]
-// 00773833  56                   push esi
-// 00773834  8b7004               mov esi, dword ptr [eax + 4]
-// 00773837  807e3500             cmp byte ptr [esi + 0x35], 0
-// 0077383b  57                   push edi
-// 0077383c  8bf8                 mov edi, eax
-// 0077383e  7531                 jne 0x773871
-// 00773840  53                   push ebx
-// 00773841  8b5c2410             mov ebx, dword ptr [esp + 0x10]
-// 00773845  55                   push ebp
-// 00773846  8b2d3405a400         mov ebp, dword ptr [0xa40534]
-// 0077384c  8d642400             lea esp, [esp]
-// 00773850  8d460c               lea eax, [esi + 0xc]
-// 00773853  53                   push ebx
-// 00773854  50                   push eax
-// 00773855  ffd5                 call ebp
-// 00773857  83c408               add esp, 8
-// 0077385a  84c0                 test al, al
-// 0077385c  7405                 je 0x773863
-// 0077385e  8b7608               mov esi, dword ptr [esi + 8]
-// 00773861  eb04                 jmp 0x773867
-// 00773863  8bfe                 mov edi, esi
-// 00773865  8b36                 mov esi, dword ptr [esi]
-// 00773867  807e3500             cmp byte ptr [esi + 0x35], 0
-// 0077386b  74e3                 je 0x773850
-// 0077386d  5d                   pop ebp
-// 0077386e  8bc7                 mov eax, edi
-// 00773870  5b                   pop ebx
-// 00773871  5f                   pop edi
-// 00773872  5e                   pop esi
-// 00773873  c20400               ret 4
-// copied from an identical function in another client (function ?_Lbound@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@UE@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@UE@@@std@@@2@$0A@@std@@@std@@IBEPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@UE@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@UE@@@std@@@2@$0A@@std@@@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@@Z)
-
 // roc-cl: 50727
-// roc-flags: /O2 /GS /EHsc /MD
-// stl: map_str<pod12>
-struct E { int v[3]; };
-#include <map>
-#include <string>
-template class std::map<std::string, E>;
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_scorehud_family_1346da7936040480.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <gui/ScoreHud.h>
+#include <v8datamodel/Teams.h>
+#include <v8datamodel/Team.h>
+#include <util/Utilities.h>
+#include <util/Color.h>
+#include <G3D/Color3.h>
+#include <G3D/Color4.h>
+namespace RBX {
+// Existing native service specialization; retain the native call boundary.
+template<> Teams* ServiceProvider::create<Teams>(const Instance*);
+// Opaque public API receivers keep older headers' private Instance/Gui/Players
+// layouts out of these calls. Signatures are the genuine public declarations.
+class InstanceApi { public: size_t numChildren() const; Instance* getChild(size_t); const std::string& getName() const; };
+class GuiItemApi { public: void setGuiSize(const G3D::Vector2&); };
+class PlayersApi { public: int numPlayers() const; };
+void ScoreHud::renderTeamDeathmatchLeaderboard(Adorn* adorn,BoardType mode) {
+    LeaderboardData data(this);
+    data.CompileData();
+    Teams* teams=ServiceProvider::create<Teams>(this);
+    if(!teams) return;
+    float scale=adorn->getViewport().width()/1024.0f;
+    float row=14.0f*scale;
+    unsigned teamCount=((InstanceApi*)teams)->numChildren();
+    Network::Players* nativePlayers=*(Network::Players**)((char*)this+0x150);
+    unsigned playerCount=((PlayersApi*)nativePlayers)->numPlayers();
+    unsigned rows=mode==TEAM_DEATHMATCH ? playerCount+3*(teamCount+1) : playerCount+3*teamCount+2;
+    ((GuiItemApi*)this)->setGuiSize(G3D::Vector2(scale*(mode==TEAM_DEATHMATCH?320.0f:240.0f),rows*row));
+    Rect rect=getMyRect();
+    adorn->rect2d(rect.toRect2D(),GuiItem::translucentBackdrop());
+    if(mode==TEAM_DEATHMATCH) {
+        for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
+            G3D::Vector2 position(rect.low.x,rect.low.y);
+            float width=rect.high.x-rect.low.x;
+            std::string label("Team");
+            if(col) {
+                position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
+                label=data.statNamesList[col-1];
+            }
+            adorn->drawFont2D(label,position,row,G3D::Color4(G3D::Color3::white(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+        }
+        rect.low.y+=row;
+    }
+    for(unsigned teamIndex=0;teamIndex<((InstanceApi*)teams)->numChildren();++teamIndex) {
+        Team* team=dynamic_cast<Team*>(((InstanceApi*)teams)->getChild(teamIndex));
+        if(!team) continue;
+        for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
+            G3D::Vector2 position(rect.low.x,rect.low.y);
+            float width=rect.high.x-rect.low.x;
+            std::string label=((InstanceApi*)team)->getName();
+            if(col) {
+                position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
+                label=StringConverter<int>::convertToString(data.teamTotals[team][data.statNamesList[col-1]]);
+            }
+            adorn->drawFont2D(label,position,row,G3D::Color4(team->getTeamColor().color3(),1),G3D::Color4(0,0,0,1),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+        }
+        rect.low.y+=row;
+        adorn->line2d(G3D::Vector2(rect.low.x+2,rect.low.y+7),G3D::Vector2(rect.high.x-2,rect.low.y+7),G3D::Color4(team->getTeamColor().color3(),1));
+        rect.low.y+=row;
+        for(unsigned player=0;player<data.playersByTeamList[team].size();++player) {
+            for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
+                G3D::Vector2 position(rect.low.x,rect.low.y);
+                float width=rect.high.x-rect.low.x;
+                std::string label=data.playersByTeamList[team][player];
+                if(col) {
+                    position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
+                    int stat=data.statMap[data.playersByTeamList[team][player]][data.statNamesList[col-1]];
+                    label=StringConverter<int>::convertToString(stat);
+                }
+                adorn->drawFont2D(label,position,row,G3D::Color4(team->getTeamColor().color3(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+                if(!col) position.x-=5.0f; // Observed native post-draw store.
+            }
+            rect.low.y+=row;
+        }
+        rect.low.y+=row;
+    }
+}
+
+// Native00669f60 consumes one string reference, returns a32-bit hash; caller
+// retains the lowthree bits for the genuine Color::colorFromIndex8 palette.
+unsigned int playerNameHash(const std::string&);
+void ScoreHud::renderFFALeaderboard(Adorn* adorn) {
+    BoardData data;
+    BuildBoardData(data);
+    if(data.fields.empty()) return;
+    bool hasStats=data.fields.size()!=1;
+    float viewportWidth=adorn->getViewport().width();
+    float row=viewportWidth/1024.0f*14.0f;
+    float width=viewportWidth*0.33f;
+    if(!hasStats) width*=0.5f;
+    ((GuiItemApi*)this)->setGuiSize(G3D::Vector2(width,(data.data.size()+2.5f)*row));
+    Rect rect=getMyRect();
+    adorn->rect2d(rect.toRect2D(),GuiItem::translucentBackdrop());
+    for(unsigned col=0;col<data.fields.size();++col) {
+        G3D::Vector2 position(rect.low.x,rect.low.y);
+        float extent=rect.high.x-rect.low.x;
+        if(col) position.x+=extent*0.5f+extent*0.5f/data.fields.size()*(col-1);
+        adorn->drawFont2D(data.fields[col],position,row,G3D::Color4(G3D::Color3::white(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+    }
+    rect.low.y+=row*2;
+    for(unsigned col=0;col<data.fields.size();++col) {
+        for(unsigned index=0;index<data.data.size();++index) {
+            G3D::Color3 color=G3D::Color3::white();
+            if(!col) color=Color::colorFromIndex8(playerNameHash(data.data[index][0])&7);
+            float extent=rect.high.x-rect.low.x;
+            G3D::Vector2 position(rect.low.x,rect.low.y+index*row);
+            if(col) position.x+=extent*0.5f+extent*0.5f/data.fields.size()*(col-1);
+            adorn->drawFont2D(data.data[index][col],position,row,G3D::Color4(color,1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+        }
+    }
+}
+}

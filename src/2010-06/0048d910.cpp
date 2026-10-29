@@ -1,10 +1,10 @@
-// from server: 99% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 GLG3Dcpp/GLCaps.cpp
+// roc-lib: g3d-6.09 GLG3Dcpp/roc_line_c1ec18302c3703eb.cpp
 
 // Candidate translation unit (score above; library headers required).
+#line 1 ".\\glg3dcpp\\GLCaps.cpp"
 /**
   @file GLCaps.cpp
 
@@ -548,7 +548,9 @@ void GLCaps::checkAllBugs() {
         _checkedForBugs = true;
     }
 
+#line 540
     alwaysAssertM(_loadedExtensions, "Cannot check for OpenGL bugs before extensions are loaded.");
+#line 545
 
     checkBug_cubeMapBugs();
     checkBug_redBlueMipmapSwap();

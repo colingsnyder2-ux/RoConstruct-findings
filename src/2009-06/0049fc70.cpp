@@ -1,10 +1,10 @@
-// from server: 99% by colin
+// roc-cl: 30729
 // roc-lang: cpp
-// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /arch:SSE2 /fp:fast
-// roc-lib: rbxgs-g3d GLG3Dcpp/RenderDevice.cpp
+// roc-lib: rbxgs-g3d GLG3Dcpp/roc_header_2f776e3d0eaa8242.cpp
 
 // Candidate translation unit (score above; library headers required).
+#line 1 ".\\glg3dcpp\\RenderDevice.cpp"
 /**
  @file RenderDevice.cpp
  
@@ -1186,11 +1186,15 @@ void RenderDevice::setDrawBuffer(Buffer b) {
     if (b == BUFFER_CURRENT) return;
 
     if (state.framebuffer.isNull()) {
+#line 1184
         alwaysAssertM((b >= BUFFER_NONE) && (b <= BUFFER_CURRENT), 
                   "Drawing to a color buffer is only supported by application-created framebuffers!");
+#line 1184
     } else {
+#line 1187
         alwaysAssertM((b >= BUFFER_CURRENT) && (b <= BUFFER_COLOR15), 
                   "Visible buffers cannot be specified for application-created framebuffers!");
+#line 1187
     }
 
     if (b != state.drawBuffer) {

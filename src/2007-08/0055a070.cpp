@@ -1,38 +1,47 @@
-// from server: 0% by colin
-struct ICreator {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_codex_eh_count20_9b609f40750eb959.cpp
+
+// Candidate translation unit (score above; library headers required).
+
+extern void* __cdecl operator new(unsigned int);
+extern const unsigned char control_table[];
+
+struct Object {
+    virtual ~Object();
 };
 
-struct CreatorImpl {
-    int* field0;
-};
+struct Deleter { void operator()(Object*) const; };
 
-struct FactoryProductCreator {
-    int* field0;
-    int field4;
-    int field8;
-    int fieldC;
+struct Control {
+    const void* table;
+    long strong;
+    long weak;
+    Object* object;
+    Deleter deleter;
 };
-
-extern "C" void* __cdecl operator_new(unsigned int size);
 
 struct S {
-    int* field0;
-    S(int* a, int* b);
+    Control* control;
+    S(Object* object, Deleter deleter);
 };
 
-S::S(int* a, int* b) {
-    field0 = 0;
-    FactoryProductCreator* p = (FactoryProductCreator*)operator_new(0x14);
-    if (p) {
-        p->field4 = 1;
-        p->field8 = 1;
-        p->field0 = (int*)0x7a8a40;
-        p->fieldC = (int)b;
-    } else {
-        p = 0;
+S::S(Object* object, Deleter deleter) : control(0)
+{
+    try {
+        Control* p = static_cast<Control*>(operator new(sizeof(Control)));
+        if (p) {
+            p->strong = 1;
+            p->weak = 1;
+            p->table = control_table;
+            p->object = object;
+        } else {
+            p = 0;
+        }
+        control = p;
+    } catch (...) {
+        deleter(object);
+        throw;
     }
-    field0 = (int*)p;
 }

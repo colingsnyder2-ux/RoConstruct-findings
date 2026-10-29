@@ -1,121 +1,89 @@
-// from server: 58% by colin
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client RbxView/PBBMesh.cpp
+// roc-lib: rbxgs-view roc_espclaude_ccb4c01f44e452a8.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "PBBMesh.h"
+#define _DLL
+#include "BrickMesh.h"
+#include "ViewBase.h"
 
-#include "QuadVolume.h"
+static std::map<Lookup, Variations> cache;
 
-#include <G3D/Vector3int16.h>
-
-// SIZE 0x28
-class PBBBuilder : public RBX::View::LevelBuilder
+static __declspec(noinline) int __fastcall orderedCompare(const G3D::Vector3& a, const G3D::Vector3& b)
 {
-private:
-	G3D::Vector3int16 strips; // 0x20
+	if (a.x < b.x)
+		return -1;
+	if (a.x > b.x)
+		return 1;
+	
+	if (a.y < b.y)
+		return -1;
+	if (a.y > b.y)
+		return 1;
 
-public:
-	PBBBuilder(
-		G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>& level,
-		G3D::Vector3 size,
-		RBX::View::RenderSurfaceTypes surfaceTypes
-	);
+	if (a.z < b.z)
+		return -1;
+	if (a.z > b.z)
+		return 1;
 
-protected:
-	virtual void buildTop(Purpose purpose);    // vtable+0x04
-	virtual void buildBottom(Purpose purpose); // vtable+0x08
-	virtual void buildLeft(Purpose purpose);   // vtable+0x0c
-	virtual void buildRight(Purpose purpose);  // vtable+0x10
-	virtual void buildFront(Purpose purpose);  // vtable+0x14
-	virtual void buildBack(Purpose purpose);   // vtable+0x18
-};
-
-DECOMP_SIZE_ASSERT(PBBBuilder, 0x28)
-
-// STUB: WEBSERVICE 0x1017abc0
-PBBBuilder::PBBBuilder(
-	G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>& level,
-	G3D::Vector3 size,
-	RBX::View::RenderSurfaceTypes surfaceTypes
-)
-	: RBX::View::LevelBuilder(level, size, surfaceTypes), strips(0, 0, 0)
-{
-	strips.x = G3D::max(1, (int) (size.x / 6.0));
-	strips.y = G3D::max(1, (int) (size.y / 6.0));
-	strips.z = G3D::max(1, (int) (size.z / 6.0));
-
-	strips.x = G3D::min(4, (int) strips.x);
-	strips.y = G3D::min(4, (int) strips.y);
-	strips.z = G3D::min(4, (int) strips.z);
+	return 0;
 }
 
-// STUB: WEBSERVICE 0x1017d7c0
-void PBBBuilder::buildTop(Purpose)
+inline Variations::Variations()
+	: count(0)
 {
-	STUB(0x1017d7c0);
 }
 
-// STUB: WEBSERVICE 0x1017d820
-void PBBBuilder::buildBottom(Purpose)
+inline bool Lookup::operator<(const Lookup& other) const
 {
-	STUB(0x1017d820);
+	int c = orderedCompare(size, other.size);
+	if (c < 0)
+		return true;
+	if (c > 0)
+		return false;
+	if (surfaceTypes.data < other.surfaceTypes.data)
+		return true;
+	if (surfaceTypes.data > other.surfaceTypes.data)
+		return false;
+	if (color.number < other.color.number)
+		return true;
+	return false;
 }
 
-// STUB: WEBSERVICE 0x1017d880
-void PBBBuilder::buildLeft(Purpose)
+static void appendTriangles(G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>& level, int a, int b, int c, int d);
+
+namespace RBX
 {
-	STUB(0x1017d880);
+	namespace View
+	{
+		const float BrickMesh::widthInset = 0.0f;
+		const float BrickMesh::normalPerturbation = 0.05f;
+		const float BrickMesh::bevel = 0.0f;
+
+		void BrickMesh::flushCache()
+		{
+			cache.clear();
+		}
+
+		G3D::ReferenceCountedPointer<Render::Mesh> BrickMesh::create(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes, BrickColor color)
+		{
+			Lookup lookup = {size, surfaceTypes, color};
+
+			Variations& variation = cache[lookup];
+			
+			size_t mesh = variation.count == 4 ? G3D::iRandom(0, 3) : G3D::min(3, G3D::iRandom(0, 8));
+
+			G3D::ReferenceCountedPointer<Render::Mesh> thisMesh = variation.meshes[mesh];
+
+			if (thisMesh.isNull())
+			{
+				thisMesh = new BrickMesh(size, surfaceTypes, color);
+				variation.meshes[mesh] = thisMesh;
+				variation.count++;
+			}
+
+			return thisMesh;
+		}
+	}
 }
-
-// STUB: WEBSERVICE 0x1017d8e0
-void PBBBuilder::buildRight(Purpose)
-{
-	STUB(0x1017d8e0);
-}
-
-// STUB: WEBSERVICE 0x1017d940
-void PBBBuilder::buildFront(Purpose)
-{
-	STUB(0x1017d940);
-}
-
-// STUB: WEBSERVICE 0x1017d9a0
-void PBBBuilder::buildBack(Purpose)
-{
-	STUB(0x1017d9a0);
-}
-
-namespace RBX {
-namespace View {
-
-// STUB: WEBSERVICE 0x1017da00
-PBBMesh::PBBMesh(const G3D::Vector3& size, NormalId decalFace)
-{
-	Render::Mesh::LevelRef level = new Render::Mesh::Level(G3D::RenderDevice::QUADS);
-
-	levels.append(level);
-
-	PBBBuilder builder(level, size, RenderSurfaceTypes());
-
-	builder.buildFace(decalFace, LevelBuilder::Decal);
-}
-
-// STUB: WEBSERVICE 0x1017db60
-PBBMesh::PBBMesh(const G3D::Vector3& size, NormalId, const G3D::Vector2&)
-{
-	Render::Mesh::LevelRef level = new Render::Mesh::Level(G3D::RenderDevice::QUADS);
-
-	levels.append(level);
-
-	PBBBuilder builder(level, size, RenderSurfaceTypes());
-}
-
-template PBBMesh* MeshFactory<PBBMesh, 4>::createDecal(const G3D::Vector3&, NormalId);
-
-template PBBMesh* MeshFactory<PBBMesh, 4>::createTexture(const G3D::Vector3&, NormalId, const G3D::Vector2&);
-
-} // namespace View
-} // namespace RBX

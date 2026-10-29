@@ -1,10 +1,10 @@
-// from server: 99% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 G3Dcpp/GImage.cpp
+// roc-lib: g3d-6.09 G3Dcpp/roc_line_56d6bcabad32e06e.cpp
 
 // Candidate translation unit (score above; library headers required).
+#line 1 ".\\G3Dcpp\\GImage.cpp"
 /**
   @file GImage.cpp
   @author Morgan McGuire, morgan@graphics3d.com
@@ -156,7 +156,9 @@ void GImage::flipRGBAVertical(
     // Allocate a temp row so the operation
     // is still safe if in == out
     uint8* temp = (uint8*)System::malloc(width * 4);
+#line 393
     alwaysAssertM(temp != NULL, "Out of memory");
+#line 153
 
     int oneRow = width * 4;
 

@@ -1,14 +1,13 @@
-// from server: 55% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/ReportControl/XTPReportRows.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib Source\ReportControl\XTPReportRows.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPReportRows.cpp : implementation of the CXTPReportRows class.
 //
 // This file is a part of the XTREME REPORTCONTROL MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -61,13 +60,14 @@ CXTPReportRows::~CXTPReportRows()
 	Clear();
 }
 
+
 //////////////////////////////////////////////////////////////////////////
 // CXTPReportRows member functions
 
 void CXTPReportRows::Clear(BOOL bResetRow)
 {
 	// array cleanup
-	for (int nRow = (int) m_arrRows.GetSize() - 1; nRow >= 0; nRow--)
+	for (int nRow = (int)m_arrRows.GetSize() - 1; nRow >= 0; nRow--)
 	{
 		CXTPReportRow* pRow = m_arrRows.GetAt(nRow);
 		if (bResetRow)
@@ -85,6 +85,7 @@ void CXTPReportRows::Clear(BOOL bResetRow)
 		m_pVirtualRow->InternalRelease();
 		m_pVirtualRow = 0;
 	}
+
 }
 
 CXTPReportRow* CXTPReportRows::GetNext(CXTPReportRow* pRow, BOOL bSkipGroupFocus)
@@ -122,6 +123,7 @@ CXTPReportRow* CXTPReportRows::GetPrev(CXTPReportRow* pRow, BOOL bSkipGroupFocus
 
 			if (!bSkipGroupFocus || !pRow->IsGroupRow() || !pRow->IsExpanded())
 				return pRow;
+
 		}
 	}
 	else if (GetCount() > 0)
@@ -154,7 +156,7 @@ void CXTPReportRows::RemoveAt(int nIndex)
 
 int CXTPReportRows::RemoveRow(CXTPReportRow* pRow)
 {
-	for (int i = 0; i < (int) m_arrRows.GetSize(); i++)
+	for (int i = 0; i < (int)m_arrRows.GetSize(); i++)
 	{
 		if (m_arrRows.GetAt(i) == pRow)
 		{
@@ -172,6 +174,7 @@ void CXTPReportRows::SetVirtualMode(CXTPReportRow* pRow, int nCount)
 	m_pVirtualRow = pRow;
 	m_nVirtualRowsCount = nCount;
 }
+
 
 int _cdecl CXTPReportRows::CompareRows(const CXTPReportRow** ppRow1, const CXTPReportRow** ppRow2)
 {
@@ -308,11 +311,12 @@ int _cdecl CXTPReportRows::CompareRows2(const CXTPReportRow** ppRow1, const CXTP
 
 		if (nCompareResult != 0)
 		{
-			if (nGroupOrder > 0)
+			if(nGroupOrder > 0)
 				nCompareResult = bIncreasing ? -1 : 1;
 			return nCompareResult * (bIncreasing ? 1 : -1);
 		}
 	}
+
 
 	for (int nSortOrder = 0; nSortOrder < pColumns->GetSortOrder()->GetCount(); nSortOrder++)
 	{
@@ -331,19 +335,14 @@ int _cdecl CXTPReportRows::CompareRows2(const CXTPReportRow** ppRow1, const CXTP
 			return nCompareResult * (bIncreasing ? 1 : -1);
 	}
 
-	if (pRecord1->GetIndex() == pRecord2->GetIndex())
-	{
-		ASSERT(FALSE);
-		return 0;
-	}
-	return pRecord1->GetIndex() < pRecord2->GetIndex() ? -1 : 1;
+	return 0;
 }
 
 void CXTPReportRows::SortEx(T_CompareFunc pCompareFunc)
 {
 	typedef int (_cdecl *GENERICCOMPAREFUNC)(const void *, const void*);
 
-	qsort(m_arrRows.GetData(), (size_t) m_arrRows.GetSize(), sizeof(CXTPReportRow*), (GENERICCOMPAREFUNC)pCompareFunc);
+	qsort(m_arrRows.GetData(), (size_t)m_arrRows.GetSize(), sizeof(CXTPReportRow*), (GENERICCOMPAREFUNC)pCompareFunc);
 }
 
 void CXTPReportRows::Sort()
@@ -356,7 +355,7 @@ int CXTPReportRows::GetCount() const
 	if (m_pVirtualRow)
 		return m_nVirtualRowsCount;
 
-	return (int) m_arrRows.GetSize();
+	return (int)m_arrRows.GetSize();
 }
 
 CXTPReportRow* CXTPReportRows::GetAt(int nIndex) const
@@ -372,7 +371,7 @@ CXTPReportRow* CXTPReportRows::GetAt(int nIndex) const
 
 CXTPReportRow* CXTPReportRows::Find(CXTPReportRecord* pRecord)
 {
-	for (int i = 0; i < (int) m_arrRows.GetSize(); i++)
+	for (int i = 0; i < (int)m_arrRows.GetSize(); i++)
 	{
 		if (m_arrRows.GetAt(i)->GetRecord() == pRecord)
 			return m_arrRows.GetAt(i);
@@ -382,7 +381,7 @@ CXTPReportRow* CXTPReportRows::Find(CXTPReportRecord* pRecord)
 
 CXTPReportRow* CXTPReportRows::FindInTree(CXTPReportRecord* pRecord)
 {
-	for (int i = 0; i < (int) m_arrRows.GetSize(); i++)
+	for (int i = 0; i < (int)m_arrRows.GetSize(); i++)
 	{
 		if (m_arrRows.GetAt(i)->GetRecord() == pRecord)
 			return m_arrRows.GetAt(i);
@@ -402,15 +401,15 @@ CXTPReportRow* CXTPReportRows::FindInsertionPos(CXTPReportRow* pRow, BOOL& bInse
 	CXTPReportRow* pInsertionRowPos = NULL;
 	bInsertAfter = FALSE;
 
-	for (int i = 0; i < (int) m_arrRows.GetSize(); i++)
+	for(int i = 0; i < (int)m_arrRows.GetSize(); i++)
 	{
 		CXTPReportRow* pCurRow = m_arrRows.GetAt(i);
-		if (pCurRow->IsGroupRow())
+		if(pCurRow->IsGroupRow())
 		{
 			// compare group caption
 			CXTPReportRecord* pRecord = pRow->GetRecord();
 			CXTPReportColumns* pColumns = pRow->GetControl()->GetColumns();
-			if (!(pRecord && pColumns))
+			if(!(pRecord && pColumns))
 				continue;
 			CXTPReportColumn* pColumn = pColumns->GetGroupsOrder()->GetAt(pCurRow->GetGroupLevel());
 			CXTPReportRecordItem* pItem = pRecord->GetItem(pColumn);
@@ -423,16 +422,16 @@ CXTPReportRow* CXTPReportRows::FindInsertionPos(CXTPReportRow* pRow, BOOL& bInse
 				lcidnSortLocale = CXTPReportControlLocale::GetActiveLCID();
 			}
 			int nCompareResult = VARCMP_S(varGroup, varGroupRowCaption, lcidnSortLocale, dwFlags) - VARCMP_EQ;
-			if (pColumn->m_bSortIncreasing && nCompareResult > 0 || !pColumn->m_bSortIncreasing && nCompareResult < 0)
+			if(pColumn->m_bSortIncreasing && nCompareResult > 0 || !pColumn->m_bSortIncreasing && nCompareResult < 0)
 				continue;
 			// find in children
-			if (!pCurRow->GetChilds())
+			if(!pCurRow->GetChilds())
 				continue;
-			if (nCompareResult == 0)
+			if(nCompareResult == 0)
 				pInsertionRowPos = pCurRow->GetChilds()->FindInsertionPos(pRow, bInsertAfter);
-			if (!pInsertionRowPos)
+			if(!pInsertionRowPos)
 			{
-				if (nCompareResult != 0)
+				if(nCompareResult != 0)
 					pInsertionRowPos = pCurRow;
 				else
 				{
@@ -442,7 +441,7 @@ CXTPReportRow* CXTPReportRows::FindInsertionPos(CXTPReportRow* pRow, BOOL& bInse
 			}
 			break;
 		}
-		if (CompareRows2((const CXTPReportRow**)&pRow, (const CXTPReportRow**)&pCurRow) <= 0)
+		if(CompareRows2((const CXTPReportRow**)&pRow, (const CXTPReportRow**)&pCurRow) <= 0)
 		{
 			pInsertionRowPos = pCurRow;
 			break;
@@ -454,12 +453,12 @@ CXTPReportRow* CXTPReportRows::FindInsertionPos(CXTPReportRow* pRow, BOOL& bInse
 
 void CXTPReportRows::RefreshChildIndices(BOOL bRunInChildren)
 {
-	for (int nIndex = 0; nIndex < GetCount(); nIndex++)
+	for(int nIndex = 0; nIndex < GetCount(); nIndex++)
 	{
 		CXTPReportRow* pRow = GetAt(nIndex);
 		pRow->m_nChildIndex = nIndex;
 		ASSERT(pRow->m_pParentRows == this);
-		if (bRunInChildren && pRow->HasChildren() && pRow->GetChilds())
+		if(bRunInChildren && pRow->HasChildren() && pRow->GetChilds())
 			pRow->GetChilds()->RefreshChildIndices(bRunInChildren);
 	}
 }
@@ -485,6 +484,7 @@ void CXTPReportRows::ReserveSize(INT_PTR nNewSize, INT_PTR nGrowBy)
 	m_arrRows.ReserveSize(nNewSize, nGrowBy);
 }
 
+
 void CXTPReportRows::SetAt(INT_PTR nIndex, CXTPReportRow* pRow)
 {
 	ASSERT(pRow);
@@ -501,114 +501,6 @@ void CXTPReportRows::SetAt(INT_PTR nIndex, CXTPReportRow* pRow)
 	pRow->m_pParentRows = this;
 
 	m_arrRows.SetAt(nIndex, pRow);
-}
-
-CXTPReportRecordItem* CXTPReportRows::FindRecordItemByRows(int nStartIndex, int nEndIndex,
-												int nStartColumn, int nEndColumn,
-												int nRecordIndex, int nItem,
-												LPCTSTR pcszText, int nFlags)
-{
-	CString sFind(pcszText);
-	BOOL bExactStart = (nFlags & xtpReportTextSearchExactStart) > 0;
-	if (bExactStart)
-		nFlags -= xtpReportTextSearchExactStart;
-	// NO xtpReportTextSearchBackward case
-	if ((nFlags & xtpReportTextSearchBackward) > 0)
-		nFlags -= xtpReportTextSearchBackward;
-	// validate parameters
-	int N = GetCount();
-	if (N < 1)
-		return NULL;
-	nStartIndex = max(nStartIndex, 0);
-	nStartIndex = min(nStartIndex, N - 1);
-
-	nEndIndex = max(nStartIndex, nEndIndex);
-	nEndIndex = min(nEndIndex, N - 1);
-
-	nStartColumn = max(nStartColumn, 0);
-	nEndColumn = max(nEndColumn, 0);
-
-	nEndColumn = max(nStartColumn, nEndColumn);
-
-	nRecordIndex = max(nRecordIndex, 0);
-	nRecordIndex = min(nRecordIndex, N - 1);
-
-	nItem = max(nItem, nStartColumn);
-	nItem = min(nEndColumn, nItem);
-
-	for (int i = nStartIndex; i <= nEndIndex; i++)
-	{
-		if (i < nRecordIndex) continue;
-
-		CXTPReportRow* pTryRow = GetAt(i);
-		CXTPReportRecord* pTryRecord = pTryRow->GetRecord();
-		if (pTryRecord)
-		{
-			for (int j = nStartColumn; j <= nEndColumn; j++)
-			{
-				if (i == nRecordIndex && j < nItem) continue;
-
-				CXTPReportRecordItem* pTryItem = pTryRecord->GetItem(j);
-				if (pTryItem)
-				{
-					CString strCaption = pTryItem->GetCaption(NULL);
-					if (strCaption.IsEmpty()) continue;
-					int k = strCaption.Find(sFind);
-					//if (k > -1)
-					if ((bExactStart && k == 0) || (!bExactStart && k > -1))
-					{
-						if (nFlags == (xtpReportTextSearchExactPhrase |
-							xtpReportTextSearchMatchCase))
-						{
-							if (strCaption == sFind)
-								return pTryItem;
-						}
-						else if (nFlags == xtpReportTextSearchExactPhrase)
-						{
-							CString sCAP(strCaption);
-							sCAP.MakeUpper();
-							CString sFIND(sFind);
-							sFIND.MakeUpper();
-							if (sCAP == sFIND)
-								return pTryItem;
-						}
-						else if (nFlags == xtpReportTextSearchMatchCase)
-						{
-							if (strCaption.Mid(k) == sFind)
-								return pTryItem;
-						}
-						else if (nFlags == 0)
-						{
-							return pTryItem;
-						}
-					}
-					else if (!bExactStart)
-					{
-						CString sCAP(strCaption);
-						sCAP.MakeUpper();
-						CString sFIND(sFind);
-						sFIND.MakeUpper();
-
-						k = sCAP.Find(sFIND);
-						if (k > -1)
-						{
-							if (nFlags == xtpReportTextSearchExactPhrase)
-							{
-								if (sCAP == sFIND)
-									return pTryItem;
-							}
-							else if (nFlags == 0)
-							{
-								return pTryItem;
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	return NULL;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -632,32 +524,28 @@ void CXTPReportSelectedRows::Clear()
 		m_bChanged = TRUE;
 
 		_NotifySelChanging(xtpReportSelectionClear);
-//TRACE(_T("Clear blocks = size=%d\n"), m_arrSelectedBlocks.GetSize());
 	}
 
 	m_arrSelectedBlocks.RemoveAll();
 	m_nRowBlockBegin = -1;
-	//m_pControl->m_nSelectionStartingRow = -1;
 	m_nRowType = xtpRowTypeBody;
-
 	m_pControl->RedrawControl();
 }
 
 void CXTPReportSelectedRows::_InsertBlock(int nIndexInsert, int nIndexBegin, int nIndexEnd)
 {
-	SwapIfNeed(nIndexBegin, nIndexEnd);
-
 	SELECTED_BLOCK block;
 	block.nIndexBegin = nIndexBegin;
 	block.nIndexEnd = nIndexEnd;
 	m_arrSelectedBlocks.InsertAt(nIndexInsert, block);
 }
 
+
 void CXTPReportSelectedRows::_OnCollapsed(int nIndex, int nCount)
 {
 	ASSERT(nCount > 0);
 
-	for (int i = (int) m_arrSelectedBlocks.GetSize() - 1; i >= 0 ; i--)
+	for (int i = (int)m_arrSelectedBlocks.GetSize() - 1; i >= 0 ; i--)
 	{
 		int& nIndexBegin = m_arrSelectedBlocks[i].nIndexBegin;
 		int& nIndexEnd = m_arrSelectedBlocks[i].nIndexEnd;
@@ -686,7 +574,7 @@ void CXTPReportSelectedRows::_OnExpanded(int nIndex, int nCount)
 {
 	ASSERT(nCount > 0);
 
-	for (int i = (int) m_arrSelectedBlocks.GetSize() - 1; i >= 0 ; i--)
+	for (int i = (int)m_arrSelectedBlocks.GetSize() - 1; i >= 0 ; i--)
 	{
 		int& nIndexBegin = m_arrSelectedBlocks[i].nIndexBegin;
 		int& nIndexEnd = m_arrSelectedBlocks[i].nIndexEnd;
@@ -704,15 +592,14 @@ void CXTPReportSelectedRows::_OnExpanded(int nIndex, int nCount)
 		}
 		else if (nIndexEnd < nIndex)
 			break;
+
 	}
 }
 
 void CXTPReportSelectedRows::AddBlock(int ib, int ie)
 {
-	SwapIfNeed(ib, ie);
-
 	int i = 0;
-	int nCount = (int) m_arrSelectedBlocks.GetSize();
+	int nCount = (int)m_arrSelectedBlocks.GetSize();
 
 	if (nCount > 0)
 	{
@@ -792,7 +679,7 @@ void CXTPReportSelectedRows::Remove(CXTPReportRow* pRow)
 
 	int nIndex = pRow->GetIndex();
 
-	for (int i = 0; i < (int) m_arrSelectedBlocks.GetSize(); i++)
+	for (int i = 0; i < (int)m_arrSelectedBlocks.GetSize(); i++)
 	{
 		int nIndexBegin = m_arrSelectedBlocks[i].nIndexBegin;
 		int nIndexEnd = m_arrSelectedBlocks[i].nIndexEnd;
@@ -815,6 +702,7 @@ void CXTPReportSelectedRows::Remove(CXTPReportRow* pRow)
 			return;
 		}
 	}
+
 }
 
 void CXTPReportSelectedRows::Select(CXTPReportRow* pRow)
@@ -826,11 +714,10 @@ void CXTPReportSelectedRows::Select(CXTPReportRow* pRow)
 	if (m_nRowType != pRow->GetType())
 		Clear();
 
-	if (m_arrSelectedBlocks.GetSize() == 1
-		&& m_arrSelectedBlocks[0].nIndexBegin == m_arrSelectedBlocks[0].nIndexEnd - 1
-		&& m_arrSelectedBlocks[0].nIndexBegin == pRow->GetIndex())
+	if (m_arrSelectedBlocks.GetSize() == 1 && m_arrSelectedBlocks[0].nIndexBegin ==
+		m_arrSelectedBlocks[0].nIndexEnd - 1 && m_arrSelectedBlocks[0].nIndexBegin == pRow->GetIndex())
 	{
-//TRACE(_T("Select(CXTPReportRow* pRow) - skip\n"));
+
 	}
 	else
 	{
@@ -841,7 +728,7 @@ void CXTPReportSelectedRows::Select(CXTPReportRow* pRow)
 	}
 }
 
-void CXTPReportSelectedRows::SelectBlock(int nBlockBegin, int nEnd, BOOL bControlKey)
+void CXTPReportSelectedRows::SelectBlock(int nBlockBegin, int nEnd)
 {
 	CXTPReportRows* pRows;
 	switch(m_nRowType)
@@ -850,197 +737,54 @@ void CXTPReportSelectedRows::SelectBlock(int nBlockBegin, int nEnd, BOOL bContro
 		case xtpRowTypeFooter : pRows = m_pControl->GetFooterRows(); break;
 		default : pRows = m_pControl->GetRows(); break;
 	}
-	int nRowsCount(0);
-	if (pRows)
-		nRowsCount = pRows->GetCount();
-	BOOL bGo = (nBlockBegin >= 0 && nBlockBegin < nRowsCount && nEnd < nRowsCount);
-	if (!bGo)
+	ASSERT(nBlockBegin >= 0 && nBlockBegin < pRows->GetCount() && nEnd < pRows->GetCount() );
+
+	nBlockBegin = m_nRowBlockBegin != -1 ? m_nRowBlockBegin : nBlockBegin;
+
+	int nBegin = nBlockBegin;
+
+	if (nBegin == -1 || nEnd == -1)
+		return;
+
+	if (nBegin > nEnd)
 	{
-		Clear();
+		nBegin = nEnd;
+		nEnd = nBlockBegin;
+	}
+
+	if (m_arrSelectedBlocks.GetSize() == 1 && m_arrSelectedBlocks[0].nIndexBegin == nBegin &&
+		m_arrSelectedBlocks[0].nIndexEnd == nEnd + 1)
+	{
 		return;
 	}
 
-	if (bControlKey == FALSE)
+	XTPReportRowType nRowType = m_nRowType;
+	Clear();
+	m_nRowType = nRowType;
+	if (m_nRowBlockBegin == -1) m_nRowBlockBegin = nBlockBegin;
+
+
+	BOOL bSkipGroupFocus = m_pControl->IsSkipGroupsFocusEnabled();
+	BOOL bHasGroups = m_pControl->GetColumns()->GetGroupsOrder()->GetCount() != 0;
+
+	if (!bHasGroups || !bSkipGroupFocus)
 	{
-		nBlockBegin = m_nRowBlockBegin != -1 ? m_nRowBlockBegin : nBlockBegin;
-
-		int nBegin = nBlockBegin;
-
-		if (nBegin == -1 || nEnd == -1)
-			return;
-
-		if (nBegin > nEnd)
-		{
-			nBegin = nEnd;
-			nEnd = nBlockBegin;
-		}
-
-		if (m_arrSelectedBlocks.GetSize() == 1 && m_arrSelectedBlocks[0].nIndexBegin == nBegin &&
-			m_arrSelectedBlocks[0].nIndexEnd == nEnd + 1)
-		{
-			return;
-		}
-
-		XTPReportRowType nRowType = m_nRowType;
-		Clear();
-		m_nRowType = nRowType;
-		if (m_nRowBlockBegin == -1) m_nRowBlockBegin = nBlockBegin;
-
-
-		BOOL bSkipGroupFocus = m_pControl->IsSkipGroupsFocusEnabled();
-		BOOL bHasGroups = m_pControl->GetColumns()->GetGroupsOrder()->GetCount() != 0;
-
-		if (!bHasGroups || !bSkipGroupFocus)
-		{
-			_InsertBlock(0, nBegin, nEnd + 1);
-		}
-		else
-		{
-			for (int i = nBegin; i <= nEnd; i++)
-			{
-				CXTPReportRow* pRow = pRows->GetAt(i);
-				if (!pRow)
-					continue;
-
-				if (!bSkipGroupFocus || !pRow->IsGroupRow() || !pRow->IsExpanded() || (i == nBegin) || (i == nEnd))
-				{
-					Add(pRow);
-				}
-			}
-		}
+		_InsertBlock(0, nBegin, nEnd + 1);
 	}
 	else
 	{
-		int kSB = (int) m_arrSelectedBlocks.GetSize();
-		if (kSB > 0)
+		for (int i = nBegin; i <= nEnd; i++)
 		{
-			int iMin = m_arrSelectedBlocks[0].nIndexBegin;
-			int iMax = m_arrSelectedBlocks[kSB - 1].nIndexEnd;
-			if (nEnd >= iMin && nEnd < iMax)
+			CXTPReportRow* pRow = pRows->GetAt(i);
+			if (!pRow)
+				continue;
+
+			if (!bSkipGroupFocus || !pRow->IsGroupRow() || !pRow->IsExpanded() || (i == nBegin) || (i == nEnd))
 			{
-				return;
-			}
-		}
-		BOOL bSkipGroupFocus = FALSE;//m_pControl->IsSkipGroupsFocusEnabled();
-		BOOL bHasGroups = m_pControl->GetColumns()->GetGroupsOrder()->GetCount() != 0;
-		BOOL bWasShiftKey = m_pControl->m_bWasShiftKey;
-
-		if (m_nRowBlockBegin != -1)
-			nBlockBegin = m_nRowBlockBegin;
-		int nBegin(nBlockBegin), iB, iE;
-		if (nBegin == -1 || nEnd == -1)
-		{
-			return;
-		}
-		BOOL bSwap = SwapIfNeed(nBegin, nEnd);
-		int nArSz = (int) m_arrSelectedBlocks.GetSize();
-
-		CUIntArray ar;
-		if (nArSz > 0)
-		{
-			for (int k = 0; k < nArSz; k++)
-			{
-				int iB = m_arrSelectedBlocks[nArSz - 1 - k].nIndexBegin;
-				int iE = m_arrSelectedBlocks[nArSz - 1 - k].nIndexEnd;
-				if (iE == iB + 1 && iB == 0)
-					k++; //this fix a case of initial selection from any row to any row with SHIFT+CONTROL pressed
-				if (k < nArSz)
-				{
-					ar.Add(m_arrSelectedBlocks[k].nIndexBegin);
-					ar.Add(m_arrSelectedBlocks[k].nIndexEnd);
-				}
-			}
-		}
-
-		XTPReportRowType nRowType = m_nRowType;
-		Clear();
-		m_nRowType = nRowType;
-
-		if (m_nRowBlockBegin == -1)
-			m_nRowBlockBegin = nBlockBegin;
-
-		if (!bHasGroups || !bSkipGroupFocus) //<<>>
-		{
-			int k = 0;
-			int N = (int) ar.GetSize();
-			if (N > 0 && bControlKey && !bWasShiftKey)
-			{
-				for (k = 0; k < N / 2; k++)
-				{
-					iB = ar.GetAt(2 * k);
-					iE = ar.GetAt(2 * k + 1);
-					if (iE < nBegin || iB > nEnd)
-					{
-						_InsertBlock(k, iB, iE);
-					}
-					else if (iB >= nBegin && iE <= nEnd) //skip [iB:iE] segment - totally covered
-					{
-					}
-					else if (iB <= nBegin && iE <= nEnd) //skip [iB:iE] segment amd modify new segment
-					{
-						nBegin = iB;
-					}
-					else if (iB <= nBegin && iE > nEnd) //skip [iB:iE] segment amd modify new segment
-					{
-						nBegin = iB;
-						nEnd = iE;
-					}
-					else if (iB >= nBegin && iE > nEnd) //skip [iB:iE] segment amd modify new segment
-					{
-						nEnd = iE;
-					}
-					else
-					{
-					}
-				}
-
-				if (bSwap)
-				{
-					_InsertBlock(0, nBegin, nEnd);
-				}
-				else
-				{
-					_InsertBlock(k, nEnd + 1, nBegin);
-				}
-			}
-			else
-			{
-				_InsertBlock(0, nBegin, nEnd + 1);
-			}
-
-			CUIntArray aDel;
-			for (int l = 0; l < m_arrSelectedBlocks.GetSize(); l++)
-			{
-				if (m_arrSelectedBlocks[l].nIndexBegin == m_arrSelectedBlocks[l].nIndexEnd)
-					aDel.Add(l);
-
-			}
-			for (int ll = 0; ll < aDel.GetSize(); ll++)
-				m_arrSelectedBlocks.RemoveAt(aDel.GetAt(ll));
-		}
-		else
-		{
-			for (int i = nBegin; i <= nEnd; i++)
-			{
-				CXTPReportRow* pRow = pRows->GetAt(i);
-				if (!pRow)
-					continue;
-
-				if (!pRow->IsGroupRow()
-					|| !bSkipGroupFocus
-					|| !pRow->IsExpanded()
-					|| i == nBegin
-					|| i == nEnd)
-					Add(pRow);
+				Add(pRow);
 			}
 		}
 	}
-	
-	if (m_pControl->m_bSelectionExcludeGroupRows)
-		m_pControl->UnselectGroupRows();
-	//to show only selected childs under group rows
-	//flag - m_bSelectionExcludeGroupRows default = TRUE - this is 12.1 way to show selection
-TRACE(_T("return from SelectBlock with Count=%d\n"), GetCount());
 }
 
 BOOL CXTPReportSelectedRows::Contains(const CXTPReportRow* pRow)
@@ -1053,7 +797,7 @@ BOOL CXTPReportSelectedRows::Contains(const CXTPReportRow* pRow)
 
 	int nIndex = pRow->GetIndex();
 
-	int nCount = (int) m_arrSelectedBlocks.GetSize();
+	int nCount = (int)m_arrSelectedBlocks.GetSize();
 	if (nCount == 0)
 		return FALSE;
 
@@ -1067,44 +811,47 @@ BOOL CXTPReportSelectedRows::Contains(const CXTPReportRow* pRow)
 	{
 		if ((m_arrSelectedBlocks[i].nIndexBegin <= nIndex) &&
 			(m_arrSelectedBlocks[i].nIndexEnd > nIndex))
+		{
 			return TRUE;
+		}
 	}
 	return FALSE;
 }
 
 void CXTPReportSelectedRows::Invert(CXTPReportRow* pRow)
 {
-	if (pRow->GetType() != m_nRowType)
+	if(pRow->GetType() != m_nRowType)
 		return;
 
 	if (Contains(pRow))
 		Remove (pRow);
-	else
-		Add(pRow);
+	else Add(pRow);
 
 	m_nRowBlockBegin = -1;
 	m_bChanged = TRUE;
 }
 
+
 int CXTPReportSelectedRows::GetCount()
 {
 	int nCount = 0;
-	for (int i = 0; i < (int) m_arrSelectedBlocks.GetSize(); i++)
+	for (int i = 0; i < (int)m_arrSelectedBlocks.GetSize(); i++)
+	{
 		nCount += m_arrSelectedBlocks[i].nIndexEnd - m_arrSelectedBlocks[i].nIndexBegin;
-
+	}
 	return nCount;
 }
+
 
 POSITION CXTPReportSelectedRows::GetFirstSelectedRowPosition()
 {
 	if (m_arrSelectedBlocks.GetSize() == 0)
-		return NULL;
+		return 0;
 
 	m_nPosSelected = 0;
 
-//  int nLast = (int) m_arrSelectedBlocks.GetSize() - 1;
-	POSITION pos = (POSITION)(DWORD_PTR) (m_arrSelectedBlocks[m_nPosSelected].nIndexBegin + 1);
-//TRACE(_T("m_nPosSelected=%d Blocks=%d GetFirstSelectedRowPosition=%d\n"), m_nPosSelected, nLast, (int) pos);
+	POSITION pos = 0;
+	pos = (POSITION)(DWORD_PTR)(m_arrSelectedBlocks[0].nIndexBegin + 1);
 	return pos;
 }
 
@@ -1112,35 +859,40 @@ CXTPReportRow* CXTPReportSelectedRows::GetNextSelectedRow(POSITION& pos)
 {
 	ASSERT(m_nPosSelected < m_arrSelectedBlocks.GetSize());
 
-	int nIndex = (int)(DWORD_PTR) pos - 1;
+	int nIndex = (int)(DWORD_PTR)pos - 1;
 	CXTPReportRow* pRow;
-	switch (m_nRowType)
+	switch(m_nRowType)
 	{
 		case xtpRowTypeHeader : pRow = m_pControl->GetHeaderRows()->GetAt(nIndex); break;
 		case xtpRowTypeFooter : pRow = m_pControl->GetFooterRows()->GetAt(nIndex); break;
 		default : pRow = m_pControl->GetRows()->GetAt(nIndex); break;
 	}
 
-	int nLast = (int) m_arrSelectedBlocks.GetSize() - 1;
 	if (nIndex < m_arrSelectedBlocks[m_nPosSelected].nIndexEnd - 1)
-		pos++;
+	{
+		(int)(DWORD_PTR)pos++;
+	}
 	else
 	{
-		if (m_nPosSelected >= nLast)
+		if (m_nPosSelected >= m_arrSelectedBlocks.GetSize() - 1)
 		{
-//TRACE(_T("m_nPosSelected=%d Blocks=%d GetNextSelectedRow=%d nIndex=%d\n"), m_nPosSelected, nLast, (int) pos, nIndex);
 			pos = NULL;
 		}
 		else
-			pos = (POSITION)(DWORD_PTR) (m_arrSelectedBlocks[++m_nPosSelected].nIndexBegin + 1);
+		{
+			m_nPosSelected++;
+			pos = (POSITION)(DWORD_PTR)(m_arrSelectedBlocks[m_nPosSelected].nIndexBegin + 1);
+		}
 	}
 
 	return pRow;
 }
 
-CXTPReportRow* CXTPReportSelectedRows::GetAt(int nIndex)
+
+
+CXTPReportRow* CXTPReportSelectedRows::GetAt (int nIndex)
 {
-	for (int i = 0; i < (int) m_arrSelectedBlocks.GetSize(); i++)
+	for (int i = 0; i < (int)m_arrSelectedBlocks.GetSize(); i++)
 	{
 		int nCount = m_arrSelectedBlocks[i].nIndexEnd - m_arrSelectedBlocks[i].nIndexBegin;
 		if (nCount <= nIndex)
@@ -1150,7 +902,7 @@ CXTPReportRow* CXTPReportSelectedRows::GetAt(int nIndex)
 		}
 
 		CXTPReportRow* pRow;
-		switch (m_nRowType)
+		switch(m_nRowType)
 		{
 			case xtpRowTypeHeader : pRow = m_pControl->GetHeaderRows()->GetAt(m_arrSelectedBlocks[i].nIndexBegin + nIndex); break;
 			case xtpRowTypeFooter : pRow = m_pControl->GetFooterRows()->GetAt(m_arrSelectedBlocks[i].nIndexBegin + nIndex); break;
@@ -1159,7 +911,7 @@ CXTPReportRow* CXTPReportSelectedRows::GetAt(int nIndex)
 		return pRow;
 	}
 
-	return NULL;
+	return 0;
 }
 
 void CXTPReportSelectedRows::_NotifySelChanging(XTPReportSelectionChangeType nType, CXTPReportRow* pRow)
@@ -1176,17 +928,4 @@ void CXTPReportSelectedRows::_NotifySelChanging(XTPReportSelectionChangeType nTy
 
 	m_pControl->SendNotifyMessage(XTP_NM_REPORT_SELCHANGING,(NMHDR*)&nm);
 }
-
-BOOL CXTPReportSelectedRows::SwapIfNeed(int& indexB, int& indexE)
-{
-	if (indexB > indexE)
-	{
-		int indexT = indexB;
-		indexB = indexE;
-		indexE = indexT;
-		return TRUE;
-	}
-	return FALSE;
-}
-
 

@@ -1,53 +1,99 @@
-// roc 2010-06 004159b0  unit: PasteVerb  size: 64 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 004159b0
-//
-// 004159b0  56                   push esi
-// 004159b1  8b742408             mov esi, dword ptr [esp + 8]
-// 004159b5  57                   push edi
-// 004159b6  8b7c2410             mov edi, dword ptr [esp + 0x10]
-// 004159ba  57                   push edi
-// 004159bb  56                   push esi
-// 004159bc  ff155caa9e00         call dword ptr [0x9eaa5c]
-// 004159c2  85c0                 test eax, eax
-// 004159c4  7c27                 jl 0x4159ed
-// 004159c6  85ff                 test edi, edi
-// 004159c8  7423                 je 0x4159ed
-// 004159ca  66833f0d             cmp word ptr [edi], 0xd
-// 004159ce  751d                 jne 0x4159ed
-// 004159d0  85f6                 test esi, esi
-// 004159d2  7419                 je 0x4159ed
-// 004159d4  0fb74e02             movzx ecx, word ptr [esi + 2]
-// 004159d8  f6c140               test cl, 0x40
-// 004159db  7410                 je 0x4159ed
-// 004159dd  f7c100040000         test ecx, 0x400
-// 004159e3  7408                 je 0x4159ed
-// 004159e5  b909000000           mov ecx, 9
-// 004159ea  66890f               mov word ptr [edi], cx
-// 004159ed  5f                   pop edi
-// 004159ee  5e                   pop esi
-// 004159ef  c3                   ret 
-// copied from an identical function in another client (function ?f@@YAJPAUSafeArray@@PAG@Z)
-
+// roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-struct SafeArray {
-    unsigned short dimensions;
-    unsigned short flags;
-};
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: atl-9.0-dll-rtm roc_espeon_varianttypeaccessor21691409a28158c7.cpp
 
-extern "C" {
-    long (__stdcall *SafeArrayGetVartype)(SafeArray*, unsigned short*);
+// Candidate translation unit (score above; library headers required).
+#ifndef _CPPUNWIND
+#define _CPPUNWIND 1
+#endif
+#include <new>
+#include <typeinfo>
+#include <string>
+#include <vector>
+#include <atlbase.h>
+namespace boost {
+class any { public: void* content; };
+template<class T> T any_cast(const any& operand);
+template<class T> class shared_ptr { public: T* px; void* pn; };
 }
-
-long __cdecl f(SafeArray* array, unsigned short* type)
+class StdString {
+public:
+    __declspec(dllimport) ~StdString();
+    __declspec(dllimport) const char* c_str() const;
+    char storage[0x20];
+};
+namespace RBX {
+class Instance;
+typedef std::vector<boost::shared_ptr<Instance> > Instances;
+namespace Reflection {
+class Type {
+public:
+    char pad[8];
+    const std::type_info& type;
+};
+class Value {
+public:
+    const Type* type;
+    boost::any value;
+    const Type& getType() const { return *type; }
+    template<class T> bool isType() const { return typeid(T) == getType().type; }
+    bool isVoid() const { return isType<void>(); }
+    bool isString() const;
+    bool isContent() const;
+    bool isInstances() const;
+    template<class T> T cast() const { return boost::any_cast<T>(value); }
+    StdString castString() const;
+    StdString castContent() const;
+};
+}
+}
+SAFEARRAY* createSafeArray(const RBX::Instances* instances);
+const RBX::Instances* getInstances(const boost::any* a);
+class CopyVerb {
+public:
+    static void toVariant(const RBX::Reflection::Value& value, VARIANT* result);
+};
+void CopyVerb::toVariant(const RBX::Reflection::Value& value, VARIANT* result)
 {
-    long result = SafeArrayGetVartype(array, type);
-    if (result < 0)
-        return result;
-    if (type != 0 && *type == 13 && array != 0) {
-        unsigned short flags = array->flags;
-        if ((flags & 0x40) != 0 && (flags & 0x400) != 0)
-            *type = 9;
+    if (value.isVoid()) {
+        result->vt = VT_NULL;
+        return;
     }
-    return result;
+    if (value.isType<int>()) {
+        CComVariant v(boost::any_cast<int>(value.value));
+        v.Detach(result);
+        return;
+    }
+    if (value.isType<bool>()) {
+        CComVariant v(boost::any_cast<bool>(value.value));
+        v.Detach(result);
+        return;
+    }
+    if (value.isType<float>()) {
+        CComVariant v(boost::any_cast<float>(value.value));
+        v.Detach(result);
+        return;
+    }
+    if (value.isType<double>()) {
+        CComVariant v(boost::any_cast<double>(value.value));
+        v.Detach(result);
+        return;
+    }
+    if (value.isString()) {
+        CComVariant v(value.castString().c_str());
+        v.Detach(result);
+        return;
+    }
+    if (value.isContent()) {
+        CComVariant v(value.castContent().c_str());
+        v.Detach(result);
+        return;
+    }
+    if (value.isInstances()) {
+        CComVariant v(createSafeArray(getInstances(&value.value)));
+        v.Detach(result);
+        return;
+    }
+    result->vt = VT_EMPTY;
 }

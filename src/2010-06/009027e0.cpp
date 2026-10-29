@@ -1,309 +1,290 @@
-// from server: 0% by colin
+// roc-cl: 30729
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: ogre-1.7.0 OgreScriptLexer.cpp
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
+// roc-lib: ogre-1.4.9-dll OgreFileSystem.cpp
 
 // Candidate translation unit (score above; library headers required).
 /*
 -----------------------------------------------------------------------------
 This source file is part of OGRE
 (Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org
+For the latest info, see http://www.ogre3d.org/
 
-Copyright (c) 2000-2009 Torus Knot Software Ltd
+Copyright (c) 2000-2006 Torus Knot Software Ltd
+Also see acknowledgements in Readme.html
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any later
+version.
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+You should have received a copy of the GNU Lesser General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+http://www.gnu.org/copyleft/lesser.txt.
+
+You may alternatively use this source under the terms of a specific version of
+the OGRE Unrestricted License provided you have obtained such a license from
+Torus Knot Software Ltd.
 -----------------------------------------------------------------------------
 */
 #include "OgreStableHeaders.h"
+#include "OgreFileSystem.h"
+#include "OgreLogManager.h"
 #include "OgreException.h"
-#include "OgreScriptLexer.h"
+#include "OgreStringVector.h"
+#include "OgreRoot.h"
 
-namespace Ogre{
+#include <sys/types.h>
+#include <sys/stat.h>
 
-	ScriptLexer::ScriptLexer()
-	{
-	}
-
-	ScriptTokenListPtr ScriptLexer::tokenize(const String &str, const String &source)
-	{
-		// State enums
-		enum{ READY = 0, COMMENT, MULTICOMMENT, WORD, QUOTE, VAR, POSSIBLECOMMENT };
-
-		// Set up some constant characters of interest
-#if OGRE_WCHAR_T_STRINGS
-		const wchar_t varopener = L'$', quote = L'\"', slash = L'/', backslash = L'\\', openbrace = L'{', closebrace = L'}', colon = L':', star = L'*';
-		wchar_t c = 0, lastc = 0;
-#else
-		const wchar_t varopener = '$', quote = '\"', slash = '/', backslash = '\\', openbrace = '{', closebrace = '}', colon = ':', star = '*';
-		char c = 0, lastc = 0;
+#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX || OGRE_PLATFORM == OGRE_PLATFORM_APPLE
+#   include "OgreSearchOps.h"
+#   include <sys/param.h>
+#   define MAX_PATH MAXPATHLEN
 #endif
 
-		String lexeme;
-		uint32 line = 1, state = READY, lastQuote = 0;
-		ScriptTokenListPtr tokens(OGRE_NEW_T(ScriptTokenList, MEMCATEGORY_GENERAL)(), SPFM_DELETE_T);
-
-		// Iterate over the input
-		String::const_iterator i = str.begin(), end = str.end();
-		while(i != end)
-		{
-			lastc = c;
-			c = *i;
-
-			if(c == quote)
-				lastQuote = line;
-
-			switch(state)
-			{
-			case READY:
-				if(c == slash && lastc == slash)
-				{
-					// Comment start, clear out the lexeme
-					lexeme = "";
-					state = COMMENT;
-				}
-				else if(c == star && lastc == slash)
-				{
-					lexeme = "";
-					state = MULTICOMMENT;
-				}
-				else if(c == quote)
-				{
-					// Clear out the lexeme ready to be filled with quotes!
-					lexeme = c;
-					state = QUOTE;
-				}
-				else if(c == varopener)
-				{
-					// Set up to read in a variable
-					lexeme = c;
-					state = VAR;
-				}
-				else if(isNewline(c))
-				{
-					lexeme = c;
-					setToken(lexeme, line, source, tokens.get());
-				}
-				else if(!isWhitespace(c))
-				{
-					lexeme = c;
-					if(c == slash)
-						state = POSSIBLECOMMENT;
-					else
-						state = WORD;
-				}
-				break;
-			case COMMENT:
-				// This newline happens to be ignored automatically
-				if(isNewline(c))
-					state = READY;
-				break;
-			case MULTICOMMENT:
-				if(c == slash && lastc == star)
-					state = READY;
-				break;
-			case POSSIBLECOMMENT:
-				if(c == slash && lastc == slash)
-				{
-					lexeme = "";
-					state = COMMENT;
-					break;	
-				}
-				else if(c == star && lastc == slash)
-				{
-					lexeme = "";
-					state = MULTICOMMENT;
-					break;
-				}
-				else
-				{
-					state = WORD;
-				}
-			case WORD:
-				if(isNewline(c))
-				{
-					setToken(lexeme, line, source, tokens.get());
-					lexeme = c;
-					setToken(lexeme, line, source, tokens.get());
-					state = READY;
-				}
-				else if(isWhitespace(c))
-				{
-					setToken(lexeme, line, source, tokens.get());
-					state = READY;
-				}
-				else if(c == openbrace || c == closebrace || c == colon)
-				{
-					setToken(lexeme, line, source, tokens.get());
-					lexeme = c;
-					setToken(lexeme, line, source, tokens.get());
-					state = READY;
-				}
-				else
-				{
-					lexeme += c;
-				}
-				break;
-			case QUOTE:
-				if(c != backslash)
-				{
-					// Allow embedded quotes with escaping
-					if(c == quote && lastc == backslash)
-					{
-						lexeme += c;
-					}
-					else if(c == quote)
-					{
-						lexeme += c;
-						setToken(lexeme, line, source, tokens.get());
-						state = READY;
-					}
-					else
-					{
-						// Backtrack here and allow a backslash normally within the quote
-						if(lastc == backslash)
-							lexeme = lexeme + "\\" + c;
-						else
-							lexeme += c;
-					}
-				}
-				break;
-			case VAR:
-				if(isNewline(c))
-				{
-					setToken(lexeme, line, source, tokens.get());
-					lexeme = c;
-					setToken(lexeme, line, source, tokens.get());
-					state = READY;
-				}
-				else if(isWhitespace(c))
-				{
-					setToken(lexeme, line, source, tokens.get());
-					state = READY;
-				}
-				else if(c == openbrace || c == closebrace || c == colon)
-				{
-					setToken(lexeme, line, source, tokens.get());
-					lexeme = c;
-					setToken(lexeme, line, source, tokens.get());
-					state = READY;
-				}
-				else
-				{
-					lexeme += c;
-				}
-				break;
-			}
-
-			// Separate check for newlines just to track line numbers
-			if(isNewline(c))
-				line++;
-			
-			i++;
-		}
-
-		// Check for valid exit states
-		if(state == WORD || state == VAR)
-		{
-			if(!lexeme.empty())
-				setToken(lexeme, line, source, tokens.get());
-		}
-		else
-		{
-			if(state == QUOTE)
-			{
-				OGRE_EXCEPT(Exception::ERR_INVALID_STATE, 
-					Ogre::String("no matching \" found for \" at line ") + 
-						Ogre::StringConverter::toString(lastQuote),
-					"ScriptLexer::tokenize");
-			}
-		}
-
-		return tokens;
-	}
-
-	void ScriptLexer::setToken(const Ogre::String &lexeme, Ogre::uint32 line, const String &source, Ogre::ScriptTokenList *tokens)
-	{
-#if OGRE_WCHAR_T_STRINGS
-		const wchar_t newline = L'\n', openBracket = L'{', closeBracket = L'}', colon = L':', 
-			quote = L'\"', var = L'$';
-#else
-		const char newline = '\n', openBracket = '{', closeBracket = '}', colon = ':', 
-			quote = '\"', var = '$';
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+#   include <windows.h>
+#   include <direct.h>
+#   include <io.h>
 #endif
 
-		ScriptTokenPtr token(OGRE_NEW_T(ScriptToken, MEMCATEGORY_GENERAL)(), SPFM_DELETE_T);
-		token->lexeme = lexeme;
-		token->line = line;
-		token->file = source;
-		bool ignore = false;
+namespace Ogre {
 
-		// Check the user token map first
-		if(lexeme.size() == 1 && lexeme[0] == newline)
-		{
-			token->type = TID_NEWLINE;
-			if(!tokens->empty() && tokens->back()->type == TID_NEWLINE)
-				ignore = true;
-		}
-		else if(lexeme.size() == 1 && lexeme[0] == openBracket)
-			token->type = TID_LBRACKET;
-		else if(lexeme.size() == 1 && lexeme[0] == closeBracket)
-			token->type = TID_RBRACKET;
-		else if(lexeme.size() == 1 && lexeme[0] == colon)
-			token->type = TID_COLON;
-		else if(lexeme[0] == var)
-			token->type = TID_VARIABLE;
-		else
-		{
-			// This is either a non-zero length phrase or quoted phrase
-			if(lexeme.size() >= 2 && lexeme[0] == quote && lexeme[lexeme.size() - 1] == quote)
-			{
-				token->type = TID_QUOTE;
-			}
-			else
-			{
-				token->type = TID_WORD;
-			}
-		}
+    //-----------------------------------------------------------------------
+    FileSystemArchive::FileSystemArchive(const String& name, const String& archType )
+        : Archive(name, archType)
+    {
+    }
+    //-----------------------------------------------------------------------
+    bool FileSystemArchive::isCaseSensitive(void) const
+    {
+        #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+            return false;
+        #else
+            return true;
+        #endif
 
-		if(!ignore)
-			tokens->push_back(token);
-	}
-
-	bool ScriptLexer::isWhitespace(Ogre::String::value_type c) const
-	{
-#ifdef OGRE_WCHAR_T_STRINGS
-		return c == L' ' || c == L'\r' || c == L'\t';
-#else
-		return c == ' ' || c == '\r' || c == '\t';
+    }
+    //-----------------------------------------------------------------------
+    static bool is_reserved_dir (const char *fn)
+    {
+        return (fn [0] == '.' && (fn [1] == 0 || (fn [1] == '.' && fn [2] == 0)));
+    }
+    //-----------------------------------------------------------------------
+    static bool is_absolute_path(const char* path)
+    {
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+        if (isalpha(uchar(path[0])) && path[1] == ':')
+            return true;
 #endif
-	}
+        return path[0] == '/' || path[0] == '\\';
+    }
+    //-----------------------------------------------------------------------
+    static String concatenate_path(const String& base, const String& name)
+    {
+        if (base.empty() || is_absolute_path(name.c_str()))
+            return name;
+        else
+            return base + '/' + name;
+    }
+    //-----------------------------------------------------------------------
+    void FileSystemArchive::findFiles(const String& pattern, bool recursive, 
+        bool dirs, StringVector* simpleList, FileInfoList* detailList)
+    {
+        long lHandle, res;
+        struct _finddata_t tagData;
 
-	bool ScriptLexer::isNewline(Ogre::String::value_type c) const
+        // pattern can contain a directory name, separate it from mask
+        size_t pos1 = pattern.rfind ('/');
+        size_t pos2 = pattern.rfind ('\\');
+        if (pos1 == pattern.npos || ((pos2 != pattern.npos) && (pos1 < pos2)))
+            pos1 = pos2;
+        String directory;
+        if (pos1 != pattern.npos)
+            directory = pattern.substr (0, pos1 + 1);
+
+        String full_pattern = concatenate_path(mName, pattern);
+
+        lHandle = _findfirst(full_pattern.c_str(), &tagData);
+        res = 0;
+        while (lHandle != -1 && res != -1)
+        {
+            if ((dirs == ((tagData.attrib & _A_SUBDIR) != 0)) &&
+                (!dirs || !is_reserved_dir (tagData.name)))
+            {
+                if (simpleList)
+                {
+                    simpleList->push_back(directory + tagData.name);
+                }
+                else if (detailList)
+                {
+                    FileInfo fi;
+                    fi.archive = this;
+                    fi.filename = directory + tagData.name;
+                    fi.basename = tagData.name;
+                    fi.path = directory;
+                    fi.compressedSize = tagData.size;
+                    fi.uncompressedSize = tagData.size;
+                    detailList->push_back(fi);
+                }
+            }
+            res = _findnext( lHandle, &tagData );
+        }
+        // Close if we found any files
+        if(lHandle != -1)
+            _findclose(lHandle);
+
+        // Now find directories
+        if (recursive)
+        {
+            String base_dir = mName;
+            if (!directory.empty ())
+            {
+                base_dir = concatenate_path(mName, directory);
+                // Remove the last '/'
+                base_dir.erase (base_dir.length () - 1);
+            }
+            base_dir.append ("/*");
+
+            // Remove directory name from pattern
+            String mask ("/");
+            if (pos1 != pattern.npos)
+                mask.append (pattern.substr (pos1 + 1));
+            else
+                mask.append (pattern);
+
+            lHandle = _findfirst(base_dir.c_str (), &tagData);
+            res = 0;
+            while (lHandle != -1 && res != -1)
+            {
+                if ((tagData.attrib & _A_SUBDIR) &&
+                    !is_reserved_dir (tagData.name))
+                {
+                    // recurse
+                    base_dir = directory;
+                    base_dir.append (tagData.name).append (mask);
+                    findFiles(base_dir, recursive, dirs, simpleList, detailList);
+                }
+                res = _findnext( lHandle, &tagData );
+            }
+            // Close if we found any files
+            if(lHandle != -1)
+                _findclose(lHandle);
+        }
+    }
+    //-----------------------------------------------------------------------
+    FileSystemArchive::~FileSystemArchive()
+    {
+        unload();
+    }
+    //-----------------------------------------------------------------------
+    void FileSystemArchive::load()
+    {
+        // do nothing here, what has to be said will be said later
+    }
+    //-----------------------------------------------------------------------
+    void FileSystemArchive::unload()
+    {
+        // nothing to see here, move along
+    }
+    //-----------------------------------------------------------------------
+    DataStreamPtr FileSystemArchive::open(const String& filename) const
+    {
+        String full_path = concatenate_path(mName, filename);
+
+        // Use filesystem to determine size 
+        // (quicker than streaming to the end and back)
+        struct stat tagStat;
+	int ret = stat(full_path.c_str(), &tagStat);
+        assert(ret == 0 && "Problem getting file size" );
+
+        // Always open in binary mode
+        std::ifstream *origStream = new std::ifstream();
+        origStream->open(full_path.c_str(), std::ios::in | std::ios::binary);
+
+        // Should check ensure open succeeded, in case fail for some reason.
+        if (origStream->fail())
+        {
+            delete origStream;
+            OGRE_EXCEPT(Exception::ERR_FILE_NOT_FOUND,
+                "Cannot open file: " + filename,
+                "FileSystemArchive::open");
+        }
+
+        /// Construct return stream, tell it to delete on destroy
+        FileStreamDataStream* stream = new FileStreamDataStream(filename,
+            origStream, tagStat.st_size, true);
+        return DataStreamPtr(stream);
+    }
+    //-----------------------------------------------------------------------
+    StringVectorPtr FileSystemArchive::list(bool recursive, bool dirs)
+    {
+		// directory change requires locking due to saved returns
+        StringVectorPtr ret(new StringVector());
+
+        findFiles("*", recursive, dirs, ret.getPointer(), 0);
+
+        return ret;
+    }
+    //-----------------------------------------------------------------------
+    FileInfoListPtr FileSystemArchive::listFileInfo(bool recursive, bool dirs)
+    {
+        FileInfoListPtr ret(new FileInfoList());
+
+        findFiles("*", recursive, dirs, 0, ret.getPointer());
+
+        return ret;
+    }
+    //-----------------------------------------------------------------------
+    StringVectorPtr FileSystemArchive::find(const String& pattern,
+                                            bool recursive, bool dirs)
+    {
+        StringVectorPtr ret(new StringVector());
+
+        findFiles(pattern, recursive, dirs, ret.getPointer(), 0);
+
+        return ret;
+
+    }
+    //-----------------------------------------------------------------------
+    FileInfoListPtr FileSystemArchive::findFileInfo(const String& pattern, 
+        bool recursive, bool dirs)
+    {
+        FileInfoListPtr ret(new FileInfoList());
+
+        findFiles(pattern, recursive, dirs, 0, ret.getPointer());
+
+        return ret;
+    }
+    //-----------------------------------------------------------------------
+	bool FileSystemArchive::exists(const String& filename)
 	{
-#ifdef OGRE_WCHAR_T_STRINGS
-		return c == L'\n';
-#else
-		return c == '\n';
-#endif
+        String full_path = concatenate_path(mName, filename);
+
+        struct stat tagStat;
+        bool ret = (stat(full_path.c_str(), &tagStat) == 0);
+
+		// stat will return true if the filename is absolute, but we need to check
+		// the file is actually in this archive
+        if (ret && is_absolute_path(filename.c_str()))
+		{
+			// only valid if full path starts with our base
+			ret = Ogre::StringUtil::startsWith(full_path, mName);
+		}
+
+		return ret;
 	}
+    //-----------------------------------------------------------------------
+    const String& FileSystemArchiveFactory::getType(void) const
+    {
+        static String name = "FileSystem";
+        return name;
+    }
 
 }
-

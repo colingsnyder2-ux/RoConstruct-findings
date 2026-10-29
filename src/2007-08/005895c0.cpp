@@ -1,108 +1,238 @@
-// from server: 62% by colin
+// roc-cl: 50727
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
+// roc-lib: ogre-1.4.9-dll OgreCompositionTechnique.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/Name.h"
-#include "util/Debug.h"
-#include <boost/thread/once.hpp>
+/*
+-----------------------------------------------------------------------------
+This source file is part of OGRE
+    (Object-oriented Graphics Rendering Engine)
+For the latest info, see http://www.ogre3d.org/
 
-// intentionally outside of the RBX namespace
-boost::once_flag flag = BOOST_ONCE_INIT;
+Copyright (c) 2000-2006 Torus Knot Software Ltd
+Also see acknowledgements in Readme.html
 
-boost::mutex& moo2()
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+http://www.gnu.org/copyleft/lesser.txt.
+
+You may alternatively use this source under the terms of a specific version of
+the OGRE Unrestricted License provided you have obtained such a license from
+Torus Knot Software Ltd.
+-----------------------------------------------------------------------------
+*/
+#include "OgreStableHeaders.h"
+#include "OgreCompositionTechnique.h"
+#include "OgreCompositionTargetPass.h"
+#include "OgreCompositorInstance.h"
+#include "OgreCompositorChain.h"
+#include "OgreCompositionPass.h"
+#include "OgreTextureManager.h"
+
+namespace Ogre {
+
+CompositionTechnique::CompositionTechnique(Compositor *parent):
+    mParent(parent)
 {
-	static boost::mutex mutex2;
-	return mutex2;
+    mOutputTarget = new CompositionTargetPass(this);
+}
+//-----------------------------------------------------------------------
+CompositionTechnique::~CompositionTechnique()
+{
+	/// Destroy all instances by removing them from their chain
+	/// CompositorChain::removeInstance also calls destroyInstance
+	Instances copy = mInstances;
+	for(Instances::iterator i=copy.begin(); i!=copy.end(); ++i)
+		(*i)->getChain()->_removeInstance(*i);
+
+    removeAllTextureDefinitions();
+    removeAllTargetPasses();
+    delete mOutputTarget;
+}
+//-----------------------------------------------------------------------
+CompositionTechnique::TextureDefinition *CompositionTechnique::createTextureDefinition(const String &name)
+{
+    TextureDefinition *t = new TextureDefinition();
+    t->name = name;
+    mTextureDefinitions.push_back(t);
+    return t;
+}
+//-----------------------------------------------------------------------
+
+void CompositionTechnique::removeTextureDefinition(size_t index)
+{
+    assert (index < mTextureDefinitions.size() && "Index out of bounds.");
+    TextureDefinitions::iterator i = mTextureDefinitions.begin() + index;
+    delete(*i);
+    mTextureDefinitions.erase(i);
+}
+//-----------------------------------------------------------------------
+
+CompositionTechnique::TextureDefinition *CompositionTechnique::getTextureDefinition(size_t index)
+{
+    assert (index < mTextureDefinitions.size() && "Index out of bounds.");
+    return mTextureDefinitions[index];
+}
+//-----------------------------------------------------------------------
+
+size_t CompositionTechnique::getNumTextureDefinitions()
+{
+    return mTextureDefinitions.size();
+}
+//-----------------------------------------------------------------------
+void CompositionTechnique::removeAllTextureDefinitions()
+{
+    TextureDefinitions::iterator i, iend;
+    iend = mTextureDefinitions.end();
+    for (i = mTextureDefinitions.begin(); i != iend; ++i)
+    {
+        delete(*i);
+    }
+    mTextureDefinitions.clear();
+}
+//-----------------------------------------------------------------------
+CompositionTechnique::TextureDefinitionIterator CompositionTechnique::getTextureDefinitionIterator(void)
+{
+    return TextureDefinitionIterator(mTextureDefinitions.begin(), mTextureDefinitions.end());
 }
 
-void initMoo()
+//-----------------------------------------------------------------------
+CompositionTargetPass *CompositionTechnique::createTargetPass()
 {
-	moo2();
+    CompositionTargetPass *t = new CompositionTargetPass(this);
+    mTargetPasses.push_back(t);
+    return t;
 }
+//-----------------------------------------------------------------------
 
-namespace RBX
+void CompositionTechnique::removeTargetPass(size_t index)
 {
-	// seems to be inlined
-	boost::mutex& Name::mutex()
-	{
-		boost::call_once(initMoo, flag);
-		return moo2();
-	}
+    assert (index < mTargetPasses.size() && "Index out of bounds.");
+    TargetPasses::iterator i = mTargetPasses.begin() + index;
+    delete(*i);
+    mTargetPasses.erase(i);
+}
+//-----------------------------------------------------------------------
 
-	std::map<int, Name*>& Name::dictionary()
-	{
-		static std::map<int, Name*> d;
-		return d;
-	}
+CompositionTargetPass *CompositionTechnique::getTargetPass(size_t index)
+{
+    assert (index < mTargetPasses.size() && "Index out of bounds.");
+    return mTargetPasses[index];
+}
+//-----------------------------------------------------------------------
 
-	Name::NamMap& Name::namMap()
-	{
-		static NamMap n;
-		return n;
-	}
+size_t CompositionTechnique::getNumTargetPasses()
+{
+    return mTargetPasses.size();
+}
+//-----------------------------------------------------------------------
+void CompositionTechnique::removeAllTargetPasses()
+{
+    TargetPasses::iterator i, iend;
+    iend = mTargetPasses.end();
+    for (i = mTargetPasses.begin(); i != iend; ++i)
+    {
+        delete(*i);
+    }
+    mTargetPasses.clear();
+}
+//-----------------------------------------------------------------------
+CompositionTechnique::TargetPassIterator CompositionTechnique::getTargetPassIterator(void)
+{
+    return TargetPassIterator(mTargetPasses.begin(), mTargetPasses.end());
+}
+//-----------------------------------------------------------------------
+CompositionTargetPass *CompositionTechnique::getOutputTargetPass()
+{
+    return mOutputTarget;
+}
+//-----------------------------------------------------------------------
+bool CompositionTechnique::isSupported(bool acceptTextureDegradation)
+{
+	// A technique is supported if all materials referenced have a supported
+	// technique, and the intermediate texture formats requested are supported
+	// Material support is a cast-iron requirement, but if no texture formats 
+	// are directly supported we can let the rendersystem create the closest 
+	// match for the least demanding technique
+	
 
-	const Name& Name::getNullName()
-	{
-		boost::mutex::scoped_lock scoped_lock(mutex());
-		static const Name& nullName = declare("", 0);
-		return nullName;
-	}
+    // Check output target pass is supported
+    if (!mOutputTarget->_isSupported())
+    {
+        return false;
+    }
 
-	const Name& Name::declare(const char* sName, int dictionaryIndex)
-	{
-		if (!sName)
+    // Check all target passes is supported
+    TargetPasses::iterator pi, piend;
+    piend = mTargetPasses.end();
+    for (pi = mTargetPasses.begin(); pi != piend; ++pi)
+    {
+        CompositionTargetPass* targetPass = *pi;
+        if (!targetPass->_isSupported())
+        {
+            return false;
+        }
+    }
+
+    TextureDefinitions::iterator i, iend;
+    iend = mTextureDefinitions.end();
+	TextureManager& texMgr = TextureManager::getSingleton();
+    for (i = mTextureDefinitions.begin(); i != iend; ++i)
+    {
+		TextureDefinition* td = *i;
+
+		// Check whether equivalent supported
+		if(acceptTextureDegradation)
 		{
-			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
-			return getNullName();
-		}
-
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			if (dictionaryIndex != -1)
+			// Don't care about exact format so long as something is supported
+			if(texMgr.getNativeFormat(TEX_TYPE_2D, td->format, TU_RENDERTARGET) == PF_UNKNOWN)
 			{
-				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
-				dictionary()[dictionaryIndex] = iter->second;
+				return false;
 			}
-			return *iter->second;
 		}
 		else
 		{
-			Name* name = new Name(sName, dictionaryIndex);
-			namMap()[sName] = name;
-			dictionary()[dictionaryIndex] = name;
-			return *name;
+			// Need a format which is the same number of bits to pass
+			if (!texMgr.isEquivalentFormatSupported(TEX_TYPE_2D, td->format, TU_RENDERTARGET))
+			{
+				return false;
+			}	
 		}
 	}
+	
+	// Must be ok
+	return true;
+}
+//-----------------------------------------------------------------------
+CompositorInstance *CompositionTechnique::createInstance(CompositorChain *chain)
+{
+	CompositorInstance *mew = new CompositorInstance(mParent, this, chain);
+	mInstances.push_back(mew);
+    return mew;
+}
+//-----------------------------------------------------------------------
+void CompositionTechnique::destroyInstance(CompositorInstance *instance)
+{
+    assert(instance->getTechnique() == this);
+	/// Erase from list of instances
+	mInstances.erase(std::find(mInstances.begin(), mInstances.end(), instance));
+    delete instance;
+}
+//-----------------------------------------------------------------------
+Compositor *CompositionTechnique::getParent()
+{
+    return mParent;
+}
 
-	const Name& Name::lookup(const std::string& sName)
-	{
-		RBXASSERT(sName.size() < 50);
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			return *iter->second;
-		}
-		else
-		{
-			return getNullName();
-		}
-	}
-
-	const Name& Name::lookup(const char* sName)
-	{
-		if (!sName)
-		{
-			return getNullName();
-		}
-
-		return lookup(std::string(sName));
-	}
 }

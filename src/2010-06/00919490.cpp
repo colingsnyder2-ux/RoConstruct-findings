@@ -1,371 +1,161 @@
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GF /GS- /EHsc /MD /Ob1 /Oy-
-// roc-lib: rbxgs v8datamodel/ModelInstance.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /Od /Ob0 /GS
+// roc-lib: rbxgs-render AggregatingSceneManager.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/ModelInstance.h"
-#include "v8datamodel/PartInstance.h"
-#include "humanoid/Humanoid.h"
-#include "v8world/Primitive.h"
-#include "tool/DragUtilities.h"
-#include "AppDraw/Draw.h"
-
-static bool physicalCharacterHacked = false;
+#include "RenderLib/AggregatingSceneManager.h"
 
 namespace RBX
 {
-	const char* sModel = "Model";
-
-	static const Name& partName = Name::declare(sModel, 2000);
-
-	static Reflection::PropDescriptor<ModelInstance, G3D::CoordinateFrame> desc_ModelInPrimary("ModelInPrimary", "Data", &ModelInstance::getModelInPrimary, &ModelInstance::setModelInPrimary, Reflection::PropertyDescriptor::STREAMING); // L25
-	static Reflection::RefPropDescriptor<ModelInstance, PartInstance> primaryPartProp("PrimaryPart", "Data", &ModelInstance::getPrimaryPartInternal, &ModelInstance::setPrimaryPart, Reflection::PropertyDescriptor::STANDARD); // L26
-	static Reflection::BoundFuncDesc<ModelInstance, void(), 0> desc_breakJoints(&ModelInstance::breakJoints, "BreakJoints", Reflection::FunctionDescriptor::AnyCaller); // L27
-	static Reflection::BoundFuncDesc<ModelInstance, void(), 0> desc_makeJoints(&ModelInstance::makeJoints, "MakeJoints", Reflection::FunctionDescriptor::AnyCaller); // L28
-
-	static Reflection::BoundFuncDesc<ModelInstance, void(G3D::Vector3), 1> model_moveFunctionOld(&PVInstance::moveToPoint, "move", "location", Reflection::FunctionDescriptor::AnyCaller); // L30
-	static Reflection::BoundFuncDesc<ModelInstance, void(G3D::Vector3), 1> model_moveFunction(&PVInstance::moveToPoint, "MoveTo", "location", Reflection::FunctionDescriptor::AnyCaller); // L31
-
-	bool ModelInstance::showModelCoord = false;
-
-#pragma warning (push)
-#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
-	ModelInstance::ModelInstance()
-		: Base("Model"),
-		  modelInPrimary(),
-		  primaryPart(NULL),
-		  FlagHeight(this, &ModelInstance::computeFlagHeight),
-		  LocalGridExtents(this, &ModelInstance::computeLocalGridExtents),
-		  WorldGridExtents(this, &ModelInstance::computeWorldGridExtents)
+	namespace Render
 	{
-		if (!physicalCharacterHacked)
+		AggregatingSceneManager::AggregatingSceneManager(RenderScene* renderScene)
+			: SceneManager(renderScene)
 		{
-			const Name& name = Name::declare("PhysicalCharacter", -1);
-			AbstractFactoryProduct<Instance>::getCreators()[&name] = &getCreator();
-			physicalCharacterHacked = true;
-		}
-	}
-#pragma warning (pop)
-
-	ModelInstance::~ModelInstance()
-	{
-		RBXASSERT(!primaryPart);
-	}
-
-	void ModelInstance::dirtyAll() const
-	{
-		LocalGridExtents.setDirty();
-		WorldGridExtents.setDirty();
-		FlagHeight.setDirty();
-	}
-
-	bool ModelInstance::askSetParent(const Instance* instance) const
-	{
-		return dynamic_cast<const ModelInstance*>(instance) != NULL;
-	}
-
-	void ModelInstance::onExtentsChanged() const
-	{
-		dirtyAll();
-		PVInstance::onExtentsChanged();
-	}
-
-	void ModelInstance::onDescendentAdded(Instance* instance)
-	{
-		PVInstance::onDescendentAdded(instance);
-		dirtyAll();
-
-		if (instance == candidatePrimaryPart.get())
-		{
-			RBXASSERT(primaryPart != candidatePrimaryPart.get());
-			candidatePrimaryPart.reset();
-
-			updatePrimaryPart(rbx_static_cast<PartInstance*>(instance));
 		}
 
-		shouldRenderSetDirty();
-	}
+		AggregatingSceneManager::~AggregatingSceneManager() {}
 
-	void ModelInstance::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
-	{
-		if (primaryPart == instance.get())
-			primaryPart = NULL;
-
-		if (candidatePrimaryPart == instance)
+		void AggregatingSceneManager::addModel(const G3D::ReferenceCountedPointer<Chunk>& chunk)
 		{
-			RBXASSERT(0);
-			candidatePrimaryPart.reset();
+			addToScene(chunk);
 		}
 
-		dirtyAll();
-		shouldRenderSetDirty();
-		PVInstance::onDescendentRemoving(instance);
-	}
-
-	const Primitive* ModelInstance::getBiggestPrimitive() const
-	{
-		const PartInstance* primaryPart = getPrimaryPartConst();
-		if (primaryPart)
-			return primaryPart->getPrimitive();
-
-		return NULL;
-	}
-
-	void ModelInstance::updatePrimaryPart(PartInstance* set) const
-	{
-		if (primaryPart == set)
+		void AggregatingSceneManager::removeModel(const G3D::ReferenceCountedPointer<Chunk>& chunk)
 		{
-			RBXASSERT(!set || primaryPart->isDescendentOf(this));
+			invalidSleepingModels.erase(chunk);
+			invalidMovingModels.erase(chunk);
+
+			G3D::ReferenceCountedPointer<AggregateChunk> aggregate = chunk->aggregate.createStrongPtr();
+			if (aggregate.notNull())
+				deconstructAggregate(aggregate);
+
+			removeFromScene(chunk);
+			dequeueSleepingChunk(chunk);
 		}
-		else if (set)
+
+		void AggregatingSceneManager::setSleeping(const G3D::ReferenceCountedPointer<Chunk>& chunk, bool sleeping)
 		{
-			RBXASSERT(!set->getParent() || set->isDescendentOf(this));
-			if (primaryPart)
+			if (sleeping)
 			{
-				RBXASSERT(primaryPart->isDescendentOf(this));
-				G3D::Matrix3 oldMe = getLocation().rotation;
-				modelInPrimary = G3D::CoordinateFrame(primaryPart->getCoordinateFrame().rotation.transpose() * oldMe, G3D::Vector3::zero());
-				primaryPart = set;
+				bool erased = invalidMovingModels.erase(chunk) == 1;
+
+				if (erased)
+					invalidSleepingModels.insert(chunk);
+
+				queueSleepingChunk(chunk);
 			}
 			else
 			{
-				modelInPrimary = G3D::CoordinateFrame();
-				primaryPart = set;
-			}
-		}
-		else
-		{
-			modelInPrimary = G3D::CoordinateFrame();
-			primaryPart = NULL;
-		}
-	}
+				bool erased = invalidSleepingModels.erase(chunk) == 1;
 
-	void ModelInstance::setPrimaryPart(PartInstance* set)
-	{
-		if (!set || set->isDescendentOf(this))
-		{
-			candidatePrimaryPart.reset();
-			updatePrimaryPart(set);
-		}
-		else
-		{
-			candidatePrimaryPart = shared_from(set);
+				if (erased)
+					invalidMovingModels.insert(chunk);
 
-			if (primaryPart)
-			{
-				modelInPrimary = G3D::CoordinateFrame();
-				primaryPart = NULL;
+				G3D::ReferenceCountedPointer<AggregateChunk> aggregate = chunk->aggregate.createStrongPtr();
+				if (aggregate.notNull())
+					deconstructAggregate(aggregate);
+
+				dequeueSleepingChunk(chunk);
 			}
 		}
 
-		raisePropertyChanged(primaryPartProp);
-	}
-
-	static void makeJ(Instance* instance)
-	{
-		PartInstance* partInstance = dynamic_cast<PartInstance*>(instance);
-		if (partInstance)
+		void AggregatingSceneManager::invalidateModel(const G3D::ReferenceCountedPointer<Chunk>& chunk, bool isSleeping)
 		{
-			partInstance->join();
-		}
-		else
-		{
-			ModelInstance* modelInstance = dynamic_cast<ModelInstance*>(instance);
-			if (modelInstance)
-				modelInstance->for_eachChild(makeJ);
-		}
-	}
-
-	void ModelInstance::makeJoints()
-	{
-		for_eachChild(makeJ);
-	}
-
-	static void breakJ(Instance* instance)
-	{
-		PartInstance* partInstance = dynamic_cast<PartInstance*>(instance);
-		if (partInstance)
-		{
-			partInstance->destroyJoints();
-		}
-		else
-		{
-			ModelInstance* modelInstance = dynamic_cast<ModelInstance*>(instance);
-			if (modelInstance)
-				modelInstance->for_eachChild(breakJ);
-		}
-	}
-
-	void ModelInstance::breakJoints()
-	{
-		for_eachChild(breakJ);
-	}
-
-	float ModelInstance::computeFlagHeight() const
-	{
-		float answer = 6.0f;
-
-		if (primaryPart)
-		{
-			RBXASSERT(primaryPart->isDescendentOf(this));
-			float primaryPartY = primaryPart->getExtentsWorld().max().y;
-			answer = (getExtentsWorld().max().y - primaryPartY) + 6.0f;
+			if (isSleeping)
+				invalidSleepingModels.insert(chunk);
+			else
+				invalidMovingModels.insert(chunk);
 		}
 
-		return answer;
-	}
+		void AggregatingSceneManager::dequeueSleepingChunk(const G3D::ReferenceCountedPointer<Chunk>& chunk)
+		{
+			std::map<BucketKey, G3D::ReferenceCountedPointer<Bucket>>::iterator iter = buckets.begin();
+			std::map<BucketKey, G3D::ReferenceCountedPointer<Bucket>>::iterator end = buckets.end();
 
-	PartInstance* ModelInstance::getPrimaryPartInternal() const
-	{
-		if (primaryPart)
-		{
-			RBXASSERT(primaryPart->isDescendentOf(this));
-			return primaryPart;
-		}
-		else
-		{
-			float biggest = -1.0f;
-			PartInstance* biggestPart = NULL;
-			for (size_t i = 0; i < numChildren(); ++i)
+			for (; iter != end; iter++)
 			{
-				const Instance* child = getChild(i);
-				const PVInstance* pvChild = dynamic_cast<const PVInstance*>(child);
-				if (pvChild)
+				if (iter->second->dequeueSleepingChunk(chunk))
+					break;
+			}
+		}
+
+		void AggregatingSceneManager::clear()
+		{
+			invalidSleepingModels.clear();
+			invalidMovingModels.clear();
+
+			std::map<BucketKey, G3D::ReferenceCountedPointer<Bucket>>::iterator iter = buckets.begin();
+			std::map<BucketKey, G3D::ReferenceCountedPointer<Bucket>>::iterator end = buckets.end();
+
+			for (; iter != end; iter++)
+			{
+				iter->second->clear();
+			}
+
+			clearScene();
+		}
+
+		bool AggregatingSceneManager::Bucket::dequeueSleepingChunk(const G3D::ReferenceCountedPointer<Chunk>& chunk)
+		{
+			std::vector<G3D::ReferenceCountedPointer<Chunk>>::iterator found = std::find(queue.begin(), queue.end(), chunk);
+
+			if (found != queue.end())
+			{
+				queue.erase(found);
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		void AggregatingSceneManager::queueSleepingChunk(const G3D::ReferenceCountedPointer<Chunk>& chunk)
+		{
+			G3D::ReferenceCountedPointer<Bucket> queue;
+
+			{
+				BucketKey key(chunk);
+
+				std::map<BucketKey, G3D::ReferenceCountedPointer<Bucket>>::iterator iter = buckets.find(key);
+
+				if (iter == buckets.end())
 				{
-					const Primitive* primitive = pvChild->getBiggestPrimitive();
-					if (primitive)
-					{
-						PartInstance* part = PartInstance::fromPrimitive(const_cast<Primitive*>(primitive));
-						RBXASSERT(!part || part->isDescendentOf(this));
-
-						float area = part->getExtentsWorld().areaXZ();
-						if (area > biggest)
-						{
-							biggest = area;
-							biggestPart = part;
-						}
-					}
+					queue = new Bucket;
+					buckets[key] = queue;
+				}
+				else
+				{
+					queue = iter->second;
 				}
 			}
 
-			updatePrimaryPart(biggestPart);
-			return biggestPart;
+			queue->addToQueue(chunk);
 		}
-	}
 
-	Extents ModelInstance::computeLocalGridExtents() const
-	{
-		std::vector<const Primitive*> primitives;
-		DragUtilities::getPrimitivesConst(this, primitives);
-
-		Extents answer = Extents::negativeInfiniteExtents();
-
-		for (size_t i = 0; i < primitives.size(); i++)
+		bool AggregatingSceneManager::BucketKey::operator<(const AggregatingSceneManager::BucketKey& that) const
 		{
-			const Primitive* primitive = primitives[i];
-			Extents localExtents = primitive->getExtentsLocal();
-			Extents childExtentsInMe = localExtents.express(primitive->getCoordinateFrame(), getLocation());
-			answer.unionWith(childExtentsInMe);
+			if (this->material < that.material)
+				return true;
+			if (this->material > that.material)
+				return false;
+
+			if (this->castsShadows < that.castsShadows)
+				return true;
+			if (this->castsShadows > that.castsShadows)
+				return false;
+
+			if (this->polygonOffset < that.polygonOffset)
+				return true;
+			if (this->polygonOffset > that.polygonOffset)
+				return false;
+
+			if (this->cullable < that.cullable)
+				return true;
+			else
+				return false;
 		}
-
-		return primitives.size() != 0 ? answer : Extents::zero();
-	}
-
-	Extents ModelInstance::computeWorldGridExtents() const
-	{
-		return LocalGridExtents.getValue().express(getLocation(), G3D::CoordinateFrame());
-	}
-
-	void ModelInstance::legacyTraverseState(const G3D::CoordinateFrame& parentState)
-	{
-		RBXASSERT(legacyOffset);
-
-		if (getChildren())
-		{
-			int count = (int)getChildren()->size();
-			if (count > 0)
-			{
-				G3D::CoordinateFrame myState = parentState * (*legacyOffset);
-				for (int i = 0; i < count; ++i)
-				{
-					Instance* child = getChild(i);
-					PVInstance* pvChild = dynamic_cast<PVInstance*>(child);
-					if (pvChild)
-						pvChild->legacyTraverseState(myState);
-				}
-			}
-		}
-	}
-
-	const G3D::CoordinateFrame ModelInstance::getLocation() const
-	{
-		if (getPrimaryPartConst())
-		{
-			G3D::CoordinateFrame cf = primaryPart->getCoordinateFrame();
-			return G3D::CoordinateFrame(cf.rotation * modelInPrimary.rotation, cf.translation);
-		}
-
-		return G3D::CoordinateFrame();
-	}
-
-	bool ModelInstance::hitTest(const G3D::Ray& worldRay, G3D::Vector3& worldHitPoint)
-	{
-		for (size_t i = 0; i < numChildren(); ++i)
-		{
-			Instance* child = getChild(i);
-			PVInstance* pvChild = dynamic_cast<PVInstance*>(child);
-			if (pvChild)
-			{
-				if (pvChild->hitTest(worldRay, worldHitPoint))
-					return true;
-			}
-		}
-
-		return false;
-	}
-
-	bool ModelInstance::shouldRender3dAdorn() const
-	{
-		return isTopLevelPVInstance() && showModelCoord;
-	}
-
-	void ModelInstance::render3dAdorn(Adorn* adorn)
-	{
-		if (isTopLevelPVInstance())
-		{
-			if (showModelCoord)
-				renderCoordinateFrame(adorn);
-		}
-	}
-
-	void ModelInstance::render3dSelect(Adorn* adorn, SelectState selectState)
-	{
-		Extents localExtents = getExtentsLocal();
-		G3D::CoordinateFrame location = getLocation();
-		location.translation = location.pointToWorldSpace(localExtents.center());
-
-		Part part(Part::BLOCK_PART, localExtents.size(), G3D::Color3::white(), location);
-		Draw::selectionBox(part, adorn, selectState);
-	}
-
-	void ModelInstance::onCameraNear(float distance)
-	{
-		for (size_t i = 0; i < numChildren(); ++i)
-		{
-			Instance* child = getChild(i);
-			ICameraSubject* cameraSubject = dynamic_cast<ICameraSubject*>(child);
-			if (cameraSubject)
-				cameraSubject->onCameraNear(distance);
-		}
-	}
-
-	void ModelInstance::getCameraIgnorePrimitives(std::vector<const Primitive*>& primitives)
-	{
-		DragUtilities::getPrimitivesConst(this, primitives);
-
-		Humanoid* humanoid = findFirstChildOfType<Humanoid>();
-		if (humanoid)
-			humanoid->getIgnorePrims(primitives);
 	}
 }

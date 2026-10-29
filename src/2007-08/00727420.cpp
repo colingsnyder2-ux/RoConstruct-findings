@@ -1,650 +1,203 @@
-// from server: 32% by TrollStein
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/cregex.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_boost133_signals_core_08220a988bab2e0c.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
- *
- * Copyright (c) 1998-2002
- * John Maddock
- *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
- * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
- *
- */
+#define _MT 1
+#define BOOST_SIGNALS_SOURCE
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
+// Boost.Signals library
 
- /*
-  *   LOCATION:    see http://www.boost.org for most recent version.
-  *   FILE:        cregex.cpp
-  *   VERSION:     see <boost/version.hpp>
-  *   DESCRIPTION: Implements high level class boost::RexEx
-  */
+// Copyright Douglas Gregor 2001-2004. Use, modification and
+// distribution is subject to the Boost Software License, Version
+// 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
+// For more information, see http://www.boost.org
 
-#define BOOST_REGEX_SOURCE
+#define BOOST_SIGNALS_SOURCE
 
-#include <boost/cregex.hpp>
-#include <boost/regex.hpp>
-#if !defined(BOOST_NO_STD_STRING)
-#include <map>
-#include <list>
-#include <boost/regex/v4/fileiter.hpp>
-typedef boost::match_flag_type match_flag_type;
-#include <cstdio>
+#include <boost/signals/detail/signal_base.hpp>
+#include <cassert>
 
-namespace boost{
-
-#ifdef __BORLANDC__
-#if __BORLANDC__ < 0x530
-//
-// we need to instantiate the vector classes we use
-// since declaring a reference to type doesn't seem to
-// do the job...
-std::vector<std::size_t> inst1;
-std::vector<std::string> inst2;
-#endif
-#endif
-
-namespace{
-
-template <class iterator>
-std::string to_string(iterator i, iterator j)
-{
-   std::string s;
-   while(i != j)
-   {
-      s.append(1, *i);
-      ++i;
-   }
-   return s;
-}
-
-inline std::string to_string(const char* i, const char* j)
-{
-   return std::string(i, j);
-}
-
-}
-namespace re_detail{
-
-class RegExData
-{
-public:
-   enum type
-   {
-      type_pc,
-      type_pf,
-      type_copy
-   };
-   regex e;
-   cmatch m;
-#ifndef BOOST_REGEX_NO_FILEITER
-   match_results<mapfile::iterator> fm;
-#endif
-   type t;
-   const char* pbase;
-#ifndef BOOST_REGEX_NO_FILEITER
-   mapfile::iterator fbase;
-#endif
-   std::map<int, std::string, std::less<int> > strings;
-   std::map<int, std::ptrdiff_t, std::less<int> > positions;
-   void update();
-   void clean();
-   RegExData() : e(), m(),
-#ifndef BOOST_REGEX_NO_FILEITER
-   fm(),
-#endif
-   t(type_copy), pbase(0),
-#ifndef BOOST_REGEX_NO_FILEITER
-   fbase(),
-#endif
-   strings(), positions() {}
-};
-
-void RegExData::update()
-{
-   strings.erase(strings.begin(), strings.end());
-   positions.erase(positions.begin(), positions.end());
-   if(t == type_pc)
-   {
-      for(unsigned int i = 0; i < m.size(); ++i)
+namespace boost {
+  namespace BOOST_SIGNALS_NAMESPACE {
+    namespace detail {
+      signal_base_impl::signal_base_impl(const compare_type& comp,
+                                         const any& combiner)
+        : call_depth(0),
+          slots_(comp),
+          combiner_(combiner)
       {
-         if(m[i].matched) strings[i] = std::string(m[i].first, m[i].second);
-         positions[i] = m[i].matched ? m[i].first - pbase : -1;
+        flags.delayed_disconnect = false;
+        flags.clearing = false;
       }
-   }
-#ifndef BOOST_REGEX_NO_FILEITER
-   else
-   {
-      for(unsigned int i = 0; i < fm.size(); ++i)
+
+      signal_base_impl::~signal_base_impl()
       {
-         if(fm[i].matched) strings[i] = to_string(fm[i].first, fm[i].second);
-         positions[i] = fm[i].matched ? fm[i].first - fbase : -1;
+        // Set the "clearing" flag to ignore extraneous disconnect requests,
+        // because all slots will be disconnected on destruction anyway.
+        flags.clearing = true;
       }
-   }
-#endif
-   t = type_copy;
-}
 
-void RegExData::clean()
-{
-#ifndef BOOST_REGEX_NO_FILEITER
-   fbase = mapfile::iterator();
-   fm = match_results<mapfile::iterator>();
-#endif
-}
-
-} // namespace
-
-RegEx::RegEx()
-{
-   pdata = new re_detail::RegExData();
-}
-
-RegEx::RegEx(const RegEx& o)
-{
-   pdata = new re_detail::RegExData(*(o.pdata));
-}
-
-RegEx::~RegEx()
-{
-   delete pdata;
-}
-
-RegEx::RegEx(const char* c, bool icase)
-{
-   pdata = new re_detail::RegExData();
-   SetExpression(c, icase);
-}
-
-RegEx::RegEx(const std::string& s, bool icase)
-{
-   pdata = new re_detail::RegExData();
-   SetExpression(s.c_str(), icase);
-}
-
-RegEx& RegEx::operator=(const RegEx& o)
-{
-   *pdata = *(o.pdata);
-   return *this;
-}
-
-RegEx& RegEx::operator=(const char* p)
-{
-   SetExpression(p, false);
-   return *this;
-}
-
-unsigned int RegEx::SetExpression(const char* p, bool icase)
-{
-   boost::uint_fast32_t f = icase ? regex::normal | regex::icase : regex::normal;
-   return pdata->e.set_expression(p, f);
-}
-
-unsigned int RegEx::error_code()const
-{
-   return pdata->e.error_code();
-}
-
-
-std::string RegEx::Expression()const
-{
-   return pdata->e.expression();
-}
-
-//
-// now matching operators:
-//
-bool RegEx::Match(const char* p, match_flag_type flags)
-{
-   pdata->t = re_detail::RegExData::type_pc;
-   pdata->pbase = p;
-   const char* end = p;
-   while(*end)++end;
-
-   if(regex_match(p, end, pdata->m, pdata->e, flags))
-   {
-      pdata->update();
-      return true;
-   }
-   return false;
-}
-
-bool RegEx::Search(const char* p, match_flag_type flags)
-{
-   pdata->t = re_detail::RegExData::type_pc;
-   pdata->pbase = p;
-   const char* end = p;
-   while(*end)++end;
-
-   if(regex_search(p, end, pdata->m, pdata->e, flags))
-   {
-      pdata->update();
-      return true;
-   }
-   return false;
-}
-namespace re_detail{
-struct pred1
-{
-   GrepCallback cb;
-   RegEx* pe;
-   pred1(GrepCallback c, RegEx* i) : cb(c), pe(i) {}
-   bool operator()(const cmatch& m)
-   {
-      pe->pdata->m = m;
-      return cb(*pe);
-   }
-};
-}
-unsigned int RegEx::Grep(GrepCallback cb, const char* p, match_flag_type flags)
-{
-   pdata->t = re_detail::RegExData::type_pc;
-   pdata->pbase = p;
-   const char* end = p;
-   while(*end)++end;
-
-   unsigned int result = regex_grep(re_detail::pred1(cb, this), p, end, pdata->e, flags);
-   if(result)
-      pdata->update();
-   return result;
-}
-namespace re_detail{
-struct pred2
-{
-   std::vector<std::string>& v;
-   RegEx* pe;
-   pred2(std::vector<std::string>& o, RegEx* e) : v(o), pe(e) {}
-   bool operator()(const cmatch& m)
-   {
-      pe->pdata->m = m;
-      v.push_back(std::string(m[0].first, m[0].second));
-      return true;
-   }
-private:
-   pred2& operator=(const pred2&);
-};
-}
-
-unsigned int RegEx::Grep(std::vector<std::string>& v, const char* p, match_flag_type flags)
-{
-   pdata->t = re_detail::RegExData::type_pc;
-   pdata->pbase = p;
-   const char* end = p;
-   while(*end)++end;
-
-   unsigned int result = regex_grep(re_detail::pred2(v, this), p, end, pdata->e, flags);
-   if(result)
-      pdata->update();
-   return result;
-}
-namespace re_detail{
-struct pred3
-{
-   std::vector<std::size_t>& v;
-   const char* base;
-   RegEx* pe;
-   pred3(std::vector<std::size_t>& o, const char* pb, RegEx* p) : v(o), base(pb), pe(p) {}
-   bool operator()(const cmatch& m)
-   {
-      pe->pdata->m = m;
-      v.push_back(static_cast<std::size_t>(m[0].first - base));
-      return true;
-   }
-private:
-   pred3& operator=(const pred3&);
-};
-}
-unsigned int RegEx::Grep(std::vector<std::size_t>& v, const char* p, match_flag_type flags)
-{
-   pdata->t = re_detail::RegExData::type_pc;
-   pdata->pbase = p;
-   const char* end = p;
-   while(*end)++end;
-
-   unsigned int result = regex_grep(re_detail::pred3(v, p, this), p, end, pdata->e, flags);
-   if(result)
-      pdata->update();
-   return result;
-}
-#ifndef BOOST_REGEX_NO_FILEITER
-namespace re_detail{
-struct pred4
-{
-   GrepFileCallback cb;
-   RegEx* pe;
-   const char* file;
-   bool ok;
-   pred4(GrepFileCallback c, RegEx* i, const char* f) : cb(c), pe(i), file(f), ok(true) {}
-   bool operator()(const match_results<mapfile::iterator>& m)
-   {
-      pe->pdata->t = RegExData::type_pf;
-      pe->pdata->fm = m;
-      pe->pdata->update();
-      ok = cb(file, *pe);
-      return ok;
-   }
-};
-}
-namespace{
-void BuildFileList(std::list<std::string>* pl, const char* files, bool recurse)
-{
-   file_iterator start(files);
-   file_iterator end;
-   if(recurse)
-   {
-      // go through sub directories:
-      char buf[MAX_PATH];
-      re_detail::overflow_error_if_not_zero(re_detail::strcpy_s(buf, MAX_PATH, start.root()));
-      if(*buf == 0)
+      void signal_base_impl::disconnect_all_slots()
       {
-         re_detail::overflow_error_if_not_zero(re_detail::strcpy_s(buf, MAX_PATH, "."));
-         re_detail::overflow_error_if_not_zero(re_detail::strcat_s(buf, MAX_PATH, directory_iterator::separator()));
-         re_detail::overflow_error_if_not_zero(re_detail::strcat_s(buf, MAX_PATH, "*"));
+        // Do nothing if we're already clearing the slot list
+        if (flags.clearing)
+          return;
+
+        if (call_depth == 0) {
+          // Clearing the slot list will disconnect all slots automatically
+          temporarily_set_clearing set_clearing(this);
+          slots_.clear();
+        }
+        else {
+          // We can't actually remove elements from the slot list because there
+          // are still iterators into the slot list that must not be
+          // invalidated by this operation. So just disconnect each slot
+          // without removing it from the slot list. When the call depth does
+          // reach zero, the call list will be cleared.
+          flags.delayed_disconnect = true;
+          temporarily_set_clearing set_clearing(this);
+          for (iterator i = slots_.begin(); i != slots_.end(); ++i) {
+            i->first.disconnect();
+          }
+        }
       }
-      else
+
+      connection
+      signal_base_impl::
+        connect_slot(const any& slot_,
+                     const stored_group& name,
+                     shared_ptr<slot_base::data_t> data,
+                     connect_position at)
       {
-         re_detail::overflow_error_if_not_zero(re_detail::strcat_s(buf, MAX_PATH, directory_iterator::separator()));
-         re_detail::overflow_error_if_not_zero(re_detail::strcat_s(buf, MAX_PATH, "*"));
+        // Transfer the burden of ownership to a local, scoped
+        // connection.
+        data->watch_bound_objects.set_controlling(false);
+        scoped_connection safe_connection(data->watch_bound_objects);
+
+        // Allocate storage for an iterator that will hold the point of
+        // insertion of the slot into the list. This is used to later remove
+        // the slot when it is disconnected.
+        std::auto_ptr<iterator> saved_iter(new iterator);
+
+        // Add the slot to the list.
+        iterator pos =
+          slots_.insert(name, data->watch_bound_objects, slot_, at);
+
+        // The assignment operation here absolutely must not throw, which
+        // intuitively makes sense (because any container's insert method
+        // becomes impossible to use in an exception-safe manner without this
+        // assumption), but doesn't appear to be mentioned in the standard.
+        *saved_iter = pos;
+
+        // Fill out the connection object appropriately. None of these
+        // operations can throw
+        data->watch_bound_objects.get_connection()->signal = this;
+        data->watch_bound_objects.get_connection()->signal_data =
+          saved_iter.release();
+        data->watch_bound_objects.get_connection()->signal_disconnect =
+          &signal_base_impl::slot_disconnected;
+
+        // Make the copy of the connection in the list disconnect when it is
+        // destroyed. The local, scoped connection is then released
+        // because ownership has been transferred.
+        pos->first.set_controlling();
+        return safe_connection.release();
       }
-      directory_iterator dstart(buf);
-      directory_iterator dend;
 
-      // now get the file mask bit of "files":
-      const char* ptr = files;
-      while(*ptr) ++ptr;
-      while((ptr != files) && (*ptr != *directory_iterator::separator()) && (*ptr != '/'))--ptr;
-      if(ptr != files) ++ptr;
-
-      while(dstart != dend)
+      bool signal_base_impl::empty() const
       {
-#if BOOST_WORKAROUND(BOOST_MSVC, >= 1400)
-         (::sprintf_s)(buf, sizeof(buf), "%s%s%s", dstart.path(), directory_iterator::separator(), ptr);
-#else
-         (std::sprintf)(buf, "%s%s%s", dstart.path(), directory_iterator::separator(), ptr);
-#endif
-         BuildFileList(pl, buf, recurse);
-         ++dstart;
+        // Disconnected slots may still be in the list of slots if
+        //   a) this is called while slots are being invoked (call_depth > 0)
+        //   b) an exception was thrown in remove_disconnected_slots
+        for (iterator i = slots_.begin(); i != slots_.end(); ++i) {
+          if (i->first.connected())
+            return false;
+        }
+
+        return true;
       }
-   }
-   while(start != end)
-   {
-      pl->push_back(*start);
-      ++start;
-   }
-}
-}
 
-unsigned int RegEx::GrepFiles(GrepFileCallback cb, const char* files, bool recurse, match_flag_type flags)
-{
-   unsigned int result = 0;
-   std::list<std::string> file_list;
-   BuildFileList(&file_list, files, recurse);
-   std::list<std::string>::iterator start, end;
-   start = file_list.begin();
-   end = file_list.end();
-
-   while(start != end)
-   {
-      mapfile map((*start).c_str());
-      pdata->t = re_detail::RegExData::type_pf;
-      pdata->fbase = map.begin();
-      re_detail::pred4 pred(cb, this, (*start).c_str());
-      int r = regex_grep(pred, map.begin(), map.end(), pdata->e, flags);
-      result += r;
-      ++start;
-      pdata->clean();
-      if(pred.ok == false)
-         return result;
-   }
-
-   return result;
-}
-
-
-unsigned int RegEx::FindFiles(FindFilesCallback cb, const char* files, bool recurse, match_flag_type flags)
-{
-   unsigned int result = 0;
-   std::list<std::string> file_list;
-   BuildFileList(&file_list, files, recurse);
-   std::list<std::string>::iterator start, end;
-   start = file_list.begin();
-   end = file_list.end();
-
-   while(start != end)
-   {
-      mapfile map((*start).c_str());
-      pdata->t = re_detail::RegExData::type_pf;
-      pdata->fbase = map.begin();
-
-      if(regex_search(map.begin(), map.end(), pdata->fm, pdata->e, flags))
+      std::size_t signal_base_impl::num_slots() const
       {
-         ++result;
-         if(false == cb((*start).c_str()))
-            return result;
+        // Disconnected slots may still be in the list of slots if
+        //   a) this is called while slots are being invoked (call_depth > 0)
+        //   b) an exception was thrown in remove_disconnected_slots
+        std::size_t count = 0;
+        for (iterator i = slots_.begin(); i != slots_.end(); ++i) {
+          if (i->first.connected())
+            ++count;
+        }
+        return count;
       }
-      //pdata->update();
-      ++start;
-      //pdata->clean();
-   }
 
-   return result;
-}
-#endif
+      void signal_base_impl::disconnect(const stored_group& group)
+      { slots_.disconnect(group); }
 
-#ifdef BOOST_REGEX_V3
-#define regex_replace regex_merge
-#endif
-
-std::string RegEx::Merge(const std::string& in, const std::string& fmt,
-                    bool copy, match_flag_type flags)
-{
-   std::string result;
-   re_detail::string_out_iterator<std::string> i(result);
-   if(!copy) flags |= format_no_copy;
-   regex_replace(i, in.begin(), in.end(), pdata->e, fmt.c_str(), flags);
-   return result;
-}
-
-std::string RegEx::Merge(const char* in, const char* fmt,
-                    bool copy, match_flag_type flags)
-{
-   std::string result;
-   if(!copy) flags |= format_no_copy;
-   re_detail::string_out_iterator<std::string> i(result);
-   regex_replace(i, in, in + std::strlen(in), pdata->e, fmt, flags);
-   return result;
-}
-
-std::size_t RegEx::Split(std::vector<std::string>& v, 
-                      std::string& s,
-                      match_flag_type flags,
-                      unsigned max_count)
-{
-   return regex_split(std::back_inserter(v), s, pdata->e, flags, max_count);
-}
-
-
-
-//
-// now operators for returning what matched in more detail:
-//
-std::size_t RegEx::Position(int i)const
-{
-   switch(pdata->t)
-   {
-   case re_detail::RegExData::type_pc:
-      return pdata->m[i].matched ? pdata->m[i].first - pdata->pbase : RegEx::npos;
-#ifndef BOOST_REGEX_NO_FILEITER
-   case re_detail::RegExData::type_pf:
-      return pdata->fm[i].matched ? pdata->fm[i].first - pdata->fbase : RegEx::npos;
-#endif
-   case re_detail::RegExData::type_copy:
+      void signal_base_impl::slot_disconnected(void* obj, void* data)
       {
-      std::map<int, std::ptrdiff_t, std::less<int> >::iterator pos = pdata->positions.find(i);
-      if(pos == pdata->positions.end())
-         return RegEx::npos;
-      return (*pos).second;
+        signal_base_impl* self = reinterpret_cast<signal_base_impl*>(obj);
+
+        // We won't need the slot iterator after this
+        std::auto_ptr<iterator> slot(reinterpret_cast<iterator*>(data));
+
+        // If we're flags.clearing, we don't bother updating the list of slots
+        if (!self->flags.clearing) {
+          // If we're in a call, note the fact that a slot has been deleted so
+          // we can come back later to remove the iterator
+          if (self->call_depth > 0) {
+            self->flags.delayed_disconnect = true;
+          }
+          else {
+            // Just remove the slot now, it's safe
+            self->slots_.erase(*slot);
+          }
+        }
       }
-   }
-   return RegEx::npos;
-}
 
-std::size_t RegEx::Marks()const
-{
-   return pdata->e.mark_count();
-}
+      void signal_base_impl::remove_disconnected_slots() const
+      { slots_.remove_disconnected_slots(); }
 
-
-std::size_t RegEx::Length(int i)const
-{
-   switch(pdata->t)
-   {
-   case re_detail::RegExData::type_pc:
-      return pdata->m[i].matched ? pdata->m[i].second - pdata->m[i].first : RegEx::npos;
-#ifndef BOOST_REGEX_NO_FILEITER
-   case re_detail::RegExData::type_pf:
-      return pdata->fm[i].matched ? pdata->fm[i].second - pdata->fm[i].first : RegEx::npos;
-#endif
-   case re_detail::RegExData::type_copy:
+      call_notification::
+        call_notification(const shared_ptr<signal_base_impl>& b) :
+          impl(b)
       {
-      std::map<int, std::string, std::less<int> >::iterator pos = pdata->strings.find(i);
-      if(pos == pdata->strings.end())
-         return RegEx::npos;
-      return (*pos).second.size();
+        // A call will be made, so increment the call depth as a notification
+        impl->call_depth++;
       }
-   }
-   return RegEx::npos;
-}
 
-bool RegEx::Matched(int i)const
-{
-   switch(pdata->t)
-   {
-   case re_detail::RegExData::type_pc:
-      return pdata->m[i].matched;
-#ifndef BOOST_REGEX_NO_FILEITER
-   case re_detail::RegExData::type_pf:
-      return pdata->fm[i].matched;
-#endif      
-   case re_detail::RegExData::type_copy:
+      call_notification::~call_notification()
       {
-      std::map<int, std::string, std::less<int> >::iterator pos = pdata->strings.find(i);
-      if(pos == pdata->strings.end())
-         return false;
-      return true;
+        impl->call_depth--;
+
+        // If the call depth is zero and we have some slots that have been
+        // disconnected during the calls, remove those slots from the list
+        if (impl->call_depth == 0 &&
+            impl->flags.delayed_disconnect) {
+          impl->remove_disconnected_slots();
+          impl->flags.delayed_disconnect = false;
+        }
       }
-   }
-   return false;
-}
 
+    signal_base::signal_base(const compare_type& comp, const any& combiner)
+      : impl()
+    {
+      impl.reset(new signal_base_impl(comp, combiner));
+    }
 
-std::string RegEx::What(int i)const
-{
-   std::string result;
-   switch(pdata->t)
-   {
-   case re_detail::RegExData::type_pc:
-      if(pdata->m[i].matched) 
-         result.assign(pdata->m[i].first, pdata->m[i].second);
-      break;
-   case re_detail::RegExData::type_pf:
-      if(pdata->m[i].matched) 
-         result.assign(to_string(pdata->m[i].first, pdata->m[i].second));
-      break;
-   case re_detail::RegExData::type_copy:
-      {
-      std::map<int, std::string, std::less<int> >::iterator pos = pdata->strings.find(i);
-      if(pos != pdata->strings.end())
-         result = (*pos).second;
-      break;
-      }
-   }
-   return result;
-}
+    signal_base::~signal_base()
+    {
+    }
 
-#ifdef BOOST_HAS_LONG_LONG
-const std::size_t RegEx::npos = static_cast<std::size_t>(~0ULL);
-#else
-const std::size_t RegEx::npos = static_cast<std::size_t>(~0UL);
-#endif
-
+    } // namespace detail
+  } // namespace BOOST_SIGNALS_NAMESPACE
 } // namespace boost
-
-#if defined(__BORLANDC__) && (__BORLANDC__ >= 0x550) && (__BORLANDC__ <= 0x551) && !defined(_RWSTD_COMPILE_INSTANTIATE)
-//
-// this is an ugly hack to work around an ugly problem:
-// by default this file will produce unresolved externals during
-// linking unless _RWSTD_COMPILE_INSTANTIATE is defined (Borland bug).
-// However if _RWSTD_COMPILE_INSTANTIATE is defined then we get separate
-// copies of basic_string's static data in the RTL and this DLL, this messes
-// with basic_string's memory management and results in run-time crashes,
-// Oh sweet joy of Catch 22....
-//
-namespace std{
-template<> template<>
-basic_string<char>& BOOST_REGEX_DECL
-basic_string<char>::replace<const char*>(char* f1, char* f2, const char* i1, const char* i2)
-{
-   unsigned insert_pos = f1 - begin();
-   unsigned remove_len = f2 - f1;
-   unsigned insert_len = i2 - i1;
-   unsigned org_size = size();
-   if(insert_len > remove_len)
-   {
-      append(insert_len-remove_len, ' ');
-      std::copy_backward(begin() + insert_pos + remove_len, begin() + org_size, end());
-      std::copy(i1, i2, begin() + insert_pos);
-   }
-   else
-   {
-      std::copy(begin() + insert_pos + remove_len, begin() + org_size, begin() + insert_pos + insert_len);
-      std::copy(i1, i2, begin() + insert_pos);
-      erase(size() + insert_len - remove_len);
-   }
-   return *this;
-}
-template<> template<>
-basic_string<wchar_t>& BOOST_REGEX_DECL
-basic_string<wchar_t>::replace<const wchar_t*>(wchar_t* f1, wchar_t* f2, const wchar_t* i1, const wchar_t* i2)
-{
-   unsigned insert_pos = f1 - begin();
-   unsigned remove_len = f2 - f1;
-   unsigned insert_len = i2 - i1;
-   unsigned org_size = size();
-   if(insert_len > remove_len)
-   {
-      append(insert_len-remove_len, ' ');
-      std::copy_backward(begin() + insert_pos + remove_len, begin() + org_size, end());
-      std::copy(i1, i2, begin() + insert_pos);
-   }
-   else
-   {
-      std::copy(begin() + insert_pos + remove_len, begin() + org_size, begin() + insert_pos + insert_len);
-      std::copy(i1, i2, begin() + insert_pos);
-      erase(size() + insert_len - remove_len);
-   }
-   return *this;
-}
-} // namespace std
-#endif
-
-#endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

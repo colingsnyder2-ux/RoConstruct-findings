@@ -1,37 +1,80 @@
-// roc 2010-06 0040e290  unit: VCBrowserViewExternal::?$CComObjectNoLock  size: 33 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 0040e290
-//
-// 0040e290  8b4c2404             mov ecx, dword ptr [esp + 4]
-// 0040e294  834118ff             add dword ptr [ecx + 0x18], -1
-// 0040e298  56                   push esi
-// 0040e299  8b7118               mov esi, dword ptr [ecx + 0x18]
-// 0040e29c  750d                 jne 0x40e2ab
-// 0040e29e  85c9                 test ecx, ecx
-// 0040e2a0  7409                 je 0x40e2ab
-// 0040e2a2  8b01                 mov eax, dword ptr [ecx]
-// 0040e2a4  8b5010               mov edx, dword ptr [eax + 0x10]
-// 0040e2a7  6a01                 push 1
-// 0040e2a9  ffd2                 call edx
-// 0040e2ab  8bc6                 mov eax, esi
-// 0040e2ad  5e                   pop esi
-// 0040e2ae  c20400               ret 4
-// copied from an identical function in another client (function ?release@@YGKPAUS@@@Z)
-
+// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-struct S {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual ~S();
-};
+// roc-lib: atl-9.0-dll-rtm roc_king_originala_browser_dispatch_4935761f6beb402b.cpp
 
-unsigned long __stdcall release(S* object)
-{
-    unsigned long* refs = reinterpret_cast<unsigned long*>(reinterpret_cast<char*>(object) + 0x18);
-    unsigned long remaining = --*refs;
-    if (remaining == 0)
-        delete object;
-    return remaining;
+// Candidate translation unit (score above; library headers required).
+#ifndef _CPPUNWIND
+#define _CPPUNWIND 1
+#endif
+#ifndef _AFXDLL
+#define _AFXDLL
+#endif
+#include <afxwin.h>
+#include <atlbase.h>
+#include <atlcom.h>
+MIDL_INTERFACE("E2ECE10D-9997-414B-B40B-0928B8F3CADB") IBrowserViewExternal:IDispatch {
+ STDMETHOD(get_IsRobloxIDE)(VARIANT_BOOL*)=0;
+ STDMETHOD(GetApp)(IDispatch**)=0;
+};
+struct __declspec(uuid("DD754D30-321A-45A2-A40C-75783AFABFAB")) _IBrowserViewExternalEvents;
+extern const CLSID CLSID_BrowserViewExternal;
+extern const IID IID_IBrowserViewExternal;
+extern const GUID LIBID_RobloxLib;
+template<class T>class CProxy_IBrowserViewExternalEvents:
+ public ATL::IConnectionPointImpl<T,&__uuidof(_IBrowserViewExternalEvents),ATL::CComDynamicUnkArray> {};
+class ATL_NO_VTABLE CBrowserViewExternal:
+ public ATL::CComObjectRootEx<ATL::CComSingleThreadModel>,
+ public ATL::CComCoClass<CBrowserViewExternal,&CLSID_BrowserViewExternal>,
+ public ATL::ISupportErrorInfoImpl<&IID_IBrowserViewExternal>,
+ public ATL::IConnectionPointContainerImpl<CBrowserViewExternal>,
+ public CProxy_IBrowserViewExternalEvents<CBrowserViewExternal>,
+ public ATL::IDispatchImpl<IBrowserViewExternal,&IID_IBrowserViewExternal,&LIBID_RobloxLib,1,0> {
+public:
+ VARIANT_BOOL isIDE;
+ CBrowserViewExternal():isIDE(VARIANT_FALSE){}
+ STDMETHOD(get_IsRobloxIDE)(VARIANT_BOOL*);
+ STDMETHOD(GetApp)(IDispatch**);
+ BEGIN_COM_MAP(CBrowserViewExternal)
+  COM_INTERFACE_ENTRY(IBrowserViewExternal)
+  COM_INTERFACE_ENTRY(ISupportErrorInfo)
+  COM_INTERFACE_ENTRY(IConnectionPointContainer)
+ END_COM_MAP()
+ BEGIN_CONNECTION_POINT_MAP(CBrowserViewExternal)
+  CONNECTION_POINT_ENTRY(__uuidof(_IBrowserViewExternalEvents))
+ END_CONNECTION_POINT_MAP()
+};
+extern char CBrowserView_typeDescriptor[];
+extern char CIDEBrowserView_typeDescriptor[];
+// Native helper second word is unused; preserve its observed cdecl ABI.
+HRESULT __cdecl nativeCreateBrowserExternal(CBrowserViewExternal** result,BOOL) {
+ HRESULT status=E_OUTOFMEMORY;
+ ATL::CComObjectNoLock<CBrowserViewExternal>* object=0;
+ try {object=new ATL::CComObjectNoLock<CBrowserViewExternal>();}
+ catch(CException* exception){exception->Delete();}
+ if(object) {
+  object->SetVoid(NULL);
+  object->InternalFinalConstructAddRef();
+  status=object->_AtlInitialConstruct();
+  if(SUCCEEDED(status))status=object->FinalConstruct();
+  object->InternalFinalConstructRelease();
+  if(status!=S_OK){delete object;object=0;}
+ }
+ *result=object;
+ return status;
+}
+struct BrowserDispatchView {
+ char prefix[0x2c4];
+ ATL::CComPtr<IDispatch> browser;
+ HRESULT getExternal(IDispatch**);
+};
+HRESULT BrowserDispatchView::getExternal(IDispatch** result) {
+ if(!browser) {
+  CBrowserViewExternal* object;
+  HRESULT status=nativeCreateBrowserExternal(&object,FALSE);
+  if(status)return status;
+  object->isIDE=__RTDynamicCast(this,0,CBrowserView_typeDescriptor,CIDEBrowserView_typeDescriptor,0)?VARIANT_TRUE:VARIANT_FALSE;
+  browser=static_cast<IBrowserViewExternal*>(object);
+ }
+ return browser.CopyTo(result);
 }

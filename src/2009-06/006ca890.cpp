@@ -1,108 +1,35 @@
-// from server: 35% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espclaude_ecf56b79f3744b71.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/Name.h"
-#include "util/Debug.h"
-#include <boost/thread/once.hpp>
-
-// intentionally outside of the RBX namespace
-boost::once_flag flag = BOOST_ONCE_INIT;
-
-boost::mutex& moo2()
-{
-	static boost::mutex mutex2;
-	return mutex2;
+#include "util/PV.h"
+#include "util/Units.h"
+#include "v8kernel/Constants.h"
+namespace RBX {
+struct UIEvent;struct HitTestFilter;struct PartInstance;
+struct MouseCommand {PartInstance*getPart(const UIEvent&,const HitTestFilter*,G3D::Vector3&);};
+float __cdecl ballisticAngle(float,float,float,float);
+struct SlingshotTool:MouseCommand {PV launch(const UIEvent&,const G3D::CoordinateFrame&);};
+PV SlingshotTool::launch(const UIEvent&event,const G3D::CoordinateFrame&frame){ float roc_dd1 = 0; float roc_dd2 = 0;
+ G3D::Vector3 hit;
+ PartInstance*part=getPart(event,0,hit);
+ G3D::Vector3 direction=part?(hit-frame.translation).direction():frame.lookVector();
+ G3D::Vector3 position=frame.translation+direction*3.0f;
+ if(!part){
+  G3D::CoordinateFrame launchFrame(position);
+  return PV(launchFrame,Velocity(direction*85.0f,G3D::Vector3::zero()));
+ } else {
+  G3D::Vector3 delta=hit;delta-=position;
+  float height=delta.y;delta.y=0;
+  float distance=delta.unitize(0.000001f);
+  float angle=ballisticAngle(85.0f,distance,height,Units::kmsAccelerationToRbx(Constants::getKmsGravity()).y);
+  delta.y=sinf(angle);
+  float c=cosf(angle);
+  delta.x*=c;delta.z*=c;
+  G3D::CoordinateFrame launchFrame(position);
+  return PV(launchFrame,Velocity(delta*85.0f,G3D::Vector3::zero()));
+ }
 }
-
-void initMoo()
-{
-	moo2();
-}
-
-namespace RBX
-{
-	// seems to be inlined
-	boost::mutex& Name::mutex()
-	{
-		boost::call_once(initMoo, flag);
-		return moo2();
-	}
-
-	std::map<int, Name*>& Name::dictionary()
-	{
-		static std::map<int, Name*> d;
-		return d;
-	}
-
-	Name::NamMap& Name::namMap()
-	{
-		static NamMap n;
-		return n;
-	}
-
-	const Name& Name::getNullName()
-	{
-		boost::mutex::scoped_lock scoped_lock(mutex());
-		static const Name& nullName = declare("", 0);
-		return nullName;
-	}
-
-	const Name& Name::declare(const char* sName, int dictionaryIndex)
-	{
-		if (!sName)
-		{
-			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
-			return getNullName();
-		}
-
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			if (dictionaryIndex != -1)
-			{
-				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
-				dictionary()[dictionaryIndex] = iter->second;
-			}
-			return *iter->second;
-		}
-		else
-		{
-			Name* name = new Name(sName, dictionaryIndex);
-			namMap()[sName] = name;
-			dictionary()[dictionaryIndex] = name;
-			return *name;
-		}
-	}
-
-	const Name& Name::lookup(const std::string& sName)
-	{
-		RBXASSERT(sName.size() < 50);
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			return *iter->second;
-		}
-		else
-		{
-			return getNullName();
-		}
-	}
-
-	const Name& Name::lookup(const char* sName)
-	{
-		if (!sName)
-		{
-			return getNullName();
-		}
-
-		return lookup(std::string(sName));
-	}
 }

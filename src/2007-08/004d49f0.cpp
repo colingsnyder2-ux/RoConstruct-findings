@@ -1,120 +1,73 @@
-// from server: 47% by colin
-struct Texture {
-    void* field0;
-    void* field4;
-    void* field8;
-    void* insert(void* a, void* b, void* c, void* d);
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_4f8d4db74da0eac9.cpp
+
+// Candidate translation unit (score above; library headers required).
+#define _DLL
+#include <G3D/ReferenceCount.h>
+#include <map>
+
+namespace G3D {
+class Vector3 {
+public:
+    float x, y, z;
+    Vector3() {}
+    Vector3(const Vector3& V) : x(V.x), y(V.y), z(V.z) {}
+    operator float*() { return (float*)this; }
+    operator const float*() const { return (const float*)this; }
 };
-
-extern "C" void __stdcall _invalid_parameter_noinfo();
-extern "C" int __cdecl sub_4D0670(void*, void*);
-extern "C" void __cdecl sub_4D07E0(void*);
-extern "C" void __cdecl sub_4D08E0(void*);
-extern "C" void __cdecl sub_4D2A30(void*, void*, int, void*);
-extern "C" void* __cdecl sub_4D3700(void*, void*);
-extern "C" int __cdecl sub_466AB0(void*, void*);
-
-void* Texture::insert(void* a, void* b, void* c, void* d)
+class Vector2 {
+public:
+    float x, y;
+    Vector2() {}
+    Vector2(const Vector2& v) { x = v.x; y = v.y; }
+    operator float*() { return (float*)this; }
+    operator const float*() const { return (const float*)this; }
+};
+}
+namespace RBX {
+enum NormalId { NORM_X };
+namespace Render { class Mesh : public G3D::ReferenceCountedObject {}; }
+namespace View {
+class PBBMesh;
+template <class T, int N>
+class MeshFactory
 {
-    if (this->field8 == 0) {
-        sub_4D2A30(this, a, 1, d);
-        return a;
-    }
-
-    void* edi = *(void**)this->field4;
-    void* ebp = b;
-
-    if (ebp != 0 && ebp != this) {
-        _invalid_parameter_noinfo();
-    }
-
-    void* ebx = c;
-
-    if (ebx == edi) {
-        if (sub_4D0670(this, (char*)ebx + 0xc) == 0) {
-            goto fail;
-        }
-        sub_4D2A30(this, a, 1, d);
-        return a;
-    }
-
-    if (ebp != 0 && ebp != this) {
-        _invalid_parameter_noinfo();
-    }
-
-    edi = *(void**)this->field4;
-
-    if (ebx == edi) {
-        void* tmp = *(void**)((char*)edi + 8);
-        if (sub_4D0670(this, (char*)tmp + 0xc) == 0) {
-            goto fail;
-        }
-        sub_4D2A30(this, a, 0, d);
-        return a;
-    }
-
-    if (sub_4D0670(this, (char*)ebx + 0xc) != 0) {
-        void* local[2];
-        local[0] = ebp;
-        local[1] = ebx;
-        sub_4D07E0(local);
-
-        void* p = local[1];
-        if (sub_4D0670(this, (char*)p + 0xc) != 0) {
-            void* q = local[1];
-            void* r = *(void**)((char*)q + 8);
-            if (*(char*)((char*)r + 0x29) != 0) {
-                sub_4D2A30(this, a, 0, d);
-                return a;
-            } else {
-                sub_4D2A30(this, a, 1, d);
-                return a;
-            }
-        }
-    }
-
-    if (sub_4D0670(this, (char*)ebx + 0xc) != 0) {
-        void* local[2];
-        local[0] = ebp;
-        local[1] = ebx;
-        void* local2[2];
-        local2[0] = this;
-        local2[1] = *(void**)this->field4;
-        sub_4D08E0(local);
-
-        if (sub_466AB0(local2, local) != 0) {
-            void* q = local[1];
-            void* r = *(void**)((char*)q + 8);
-            if (*(char*)((char*)r + 0x29) != 0) {
-                sub_4D2A30(this, a, 0, d);
-                return a;
-            } else {
-                sub_4D2A30(this, a, 1, d);
-                return a;
-            }
-        } else {
-            void* p = local[1];
-            if (sub_4D0670(this, (char*)p + 0xc) == 0) {
-                goto fail;
-            }
-            void* q = local[1];
-            void* r = *(void**)((char*)q + 8);
-            if (*(char*)((char*)r + 0x29) != 0) {
-                sub_4D2A30(this, a, 0, d);
-                return a;
-            } else {
-                sub_4D2A30(this, a, 1, d);
-                return a;
-            }
-        }
-    }
-
-fail:
+public:
+    class DecalKey
     {
-        void* local[2];
-        void* result = sub_4D3700(this, local);
-        *(void**)a = *(void**)result;
-        *(void**)((char*)a + 4) = *(void**)((char*)result + 4);
-        return a;
-    }
+    private:
+        G3D::Vector3 size; // 0x00
+        NormalId face;     // 0x0c
+    public:
+        bool operator<(const DecalKey& other) const
+        {
+            if (face < other.face)
+                return true;
+            if (face > other.face)
+                return false;
+            return size < other.size;
+        }
+    };
+    class TextureKey : protected DecalKey
+    {
+    private:
+        G3D::Vector2 studsPerTile; // 0x10
+    public:
+        bool operator<(const TextureKey& other) const
+        {
+            if (studsPerTile < other.studsPerTile)
+                return true;
+            if (studsPerTile > other.studsPerTile)
+                return false;
+            return DecalKey::operator<(other);
+        }
+    };
+    typedef std::map<TextureKey, G3D::ReferenceCountedPointer<Render::Mesh> > TextureCache;
+    static TextureCache textureCache;
+    static G3D::ReferenceCountedPointer<Render::Mesh>& get(const TextureKey& key) { return textureCache[key]; }
+};
+template class MeshFactory<PBBMesh, 4>;
+}
 }

@@ -1,14 +1,7 @@
-// from server: 90% by atomic.potato
-struct LuaState
-{
-    int top;
-};
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Oi /fp:fast /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_lua_math_959f967534d7e1e5.cpp
 
-extern "C" double __cdecl getNumber(LuaState *, int);
-extern "C" void __cdecl pushNumber(LuaState *, double);
-
-int function0079c870(LuaState *state)
-{
-    pushNumber(state, getNumber(state, 1));
-    return 1;
-}
+// Candidate translation unit (score above; library headers required).
+#include "lua-5.1.1/src/lmathlib.c"

@@ -1,93 +1,51 @@
-// from server: 0% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/IRenderable.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_codex_eh_count16_b260dc2bc31f66e9.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/IRenderable.h"
 
-namespace RBX 
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Object {
+    virtual ~Object();
+};
+
+struct CountBase {
+    long useCount;
+    long weakCount;
+
+    CountBase() : useCount(1), weakCount(1) {}
+    virtual ~CountBase();
+    virtual void dispose() = 0;
+    virtual void destroy();
+    virtual void* getDeleter(const void*) = 0;
+};
+
+struct Count : CountBase {
+    Object* object;
+
+    explicit Count(Object* p) : object(p) {}
+    virtual ~Count();
+    virtual void dispose();
+    virtual void* getDeleter(const void*);
+};
+
+extern void __cdecl deleteObject(Object*);
+
+struct S {
+    CountBase* count;
+    explicit S(Object*);
+};
+
+S::S(Object* p) : count(0)
 {
-	IRenderable::~IRenderable()
-	{
-		RBXASSERT(index2d == -1);
-		RBXASSERT(index3d == -1);
-		RBXASSERT(bucket == NULL);
-	}
-
-	void IRenderable::shouldRenderSetDirty()
-	{
-		if (bucket)
-			bucket->recomputeShouldRender(this);
-	}
-
-	IRenderableBucket::~IRenderableBucket()
-	{
-		RBXASSERT(renderable2ds.size() == 0);
-		RBXASSERT(renderable3ds.size() == 0);
-	}
-
-	void IRenderableBucket::onAdded(IRenderable* iR)
-	{
-		RBXASSERT(iR->index2d == -1);
-		RBXASSERT(iR->index3d == -1);
-		RBXASSERT(iR->bucket == NULL);
-
-		iR->bucket = this;
-		recomputeShouldRender(iR);
-	}
-
-	void IRenderableBucket::onRemoving(IRenderable* iR)
-	{
-		RBXASSERT(iR->bucket == this);
-
-		if (iR->index2d >= 0)
-			renderable2ds.fastRemove(iR);
-
-		if (iR->index3d >= 0)
-			renderable3ds.fastRemove(iR);
-
-		iR->bucket = NULL;
-
-		RBXASSERT(iR->index2d == -1);
-		RBXASSERT(iR->index3d == -1);
-	}
-
-	void IRenderableBucket::recomputeShouldRender(IRenderable* iR)
-	{
-		RBXASSERT(iR->bucket == this);
-
-		if (iR->shouldRender2d())
-		{
-			if (iR->index2d < 0)
-				renderable2ds.fastAppend(iR);
-		}
-		else if (iR->index2d >= 0)
-		{
-			renderable2ds.fastRemove(iR);
-		}
-
-		if (iR->shouldRender3dAdorn())
-		{
-			if (iR->index3d < 0)
-				renderable3ds.fastAppend(iR);
-		}
-		else if (iR->index3d >= 0)
-		{
-			renderable3ds.fastRemove(iR);
-		}
-	}
-
-	void IRenderableBucket::render2dItems(Adorn* adorn)
-	{
-		for (int i = 0; i < renderable2ds.size(); ++i)
-			renderable2ds[i]->render2d(adorn);
-	}
-
-	void IRenderableBucket::render3dAdornItems(Adorn* adorn)
-	{
-		for (int i = 0; i < renderable3ds.size(); ++i)
-			renderable3ds[i]->render3dAdorn(adorn);
-	}
+    try {
+        count = new Count(p);
+    }
+    catch (...) {
+        deleteObject(p);
+        throw;
+    }
 }

@@ -1,123 +1,130 @@
-// from server: 49% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/FlagStand.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll util/Quaternion.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/FlagStand.h"
-#include "v8datamodel/Flag.h"
+#include "util/Quaternion.h"
 
 namespace RBX
 {
-	static Reflection::PropDescriptor<FlagStand, BrickColor> prop_Color("TeamColor", "Data", &FlagStand::getTeamColor, &FlagStand::setTeamColor, Reflection::PropertyDescriptor::STANDARD);
-	static Reflection::SignalDesc<FlagStand, void(boost::shared_ptr<Instance>)> event_FlagCaptured("FlagCaptured", "Player");
+	// see: https://web.archive.org/web/20041019044742/http://www.wild-magic.com:80/Source/Math/WmlQuaternion.inl
 
-	FlagStand::FlagStand()
+	Quaternion::Quaternion(const G3D::Matrix3& rot)
 	{
-		setName("FlagStand");
-	}
+		float fTrace = rot[0][0] + rot[1][1] + rot[2][2];
+		float fRoot;
 
-	BrickColor FlagStand::getTeamColor() const
-	{
-		return teamColor;
-	}
-
-	void FlagStand::setTeamColor(BrickColor color)
-	{
-		teamColor = color;
-		raisePropertyChanged(PartInstance::prop_Color);
-	}
-
-	void FlagStand::AffixFlag(Flag* flag)
-	{
-		if (!GetFlag())
+		if (fTrace > 0.0f)
 		{
-			flag->setParent(getParent());
-
-			PartInstance* handle = flag->getHandle();
-
-			handle->setCoordinateFrame(G3D::CoordinateFrame());
-
-			G3D::Vector3 location = getLocation().translation;
-			location.y += 0.5f;
-
-			handle->moveToPoint(location);
-			handle->join();
+			fRoot = sqrt(fTrace + 1);
+			this->w = 0.5f * fRoot;
+			fRoot = 0.5f / fRoot;
+			this->x = (rot[2][1] - rot[1][2]) * fRoot;
+			this->y = (rot[0][2] - rot[2][0]) * fRoot;
+			this->z = (rot[1][0] - rot[0][1]) * fRoot;
 		}
-	}
-
-	Flag* FlagStand::GetFlag()
-	{
-		Primitive* primitive = getPrimitive();
-
-		for (RigidJoint* current = primitive->getFirstRigid(); current != NULL; current = primitive->getNextRigid(current))
+		else
 		{
-			for (int i = 0; i < 2; i++)
+			if (rot[0][0] > rot[1][1] && rot[0][0] > rot[2][2])
 			{
-				Flag* flag = dynamic_cast<Flag*>(PartInstance::fromPrimitive(current->getPrimitive(i))->getParent());
-				if (flag)
-					return flag;
+				fRoot = -sqrt(1.0f + rot[0][0] - rot[1][1] - rot[2][2]);
+				this->x = 0.5f * fRoot;
+				fRoot = 0.5f / fRoot;
+				this->y = (rot[1][0] + rot[0][1]) * fRoot;
+				this->z = (rot[2][0] + rot[0][2]) * fRoot;
+				this->w = (rot[2][1] - rot[1][2]) * fRoot;
+			}
+			else
+			{
+				if (rot[1][1] > rot[2][2])
+				{
+					fRoot = -sqrt(1.0f + rot[1][1] - rot[0][0] - rot[2][2]);
+					this->y = 0.5f * fRoot;
+					fRoot = 0.5f / fRoot;
+					this->x = (rot[1][0] + rot[0][1]) * fRoot;
+					this->z = (rot[2][1] + rot[1][2]) * fRoot;
+					this->w = (rot[0][2] - rot[2][0]) * fRoot;
+				}
+				else
+				{
+					fRoot = -sqrt(1.0f + rot[2][2] - rot[0][0] - rot[1][1]);
+					this->z = 0.5f * fRoot;
+					fRoot = 0.5f / fRoot;
+					this->x = (rot[2][0] + rot[0][2]) * fRoot;
+					this->y = (rot[2][1] + rot[1][2]) * fRoot;
+					this->w = (rot[1][0] - rot[0][1]) * fRoot;
+				}
 			}
 		}
-
-		return NULL;
 	}
 
-	void FlagStand::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	Quaternion& Quaternion::operator=(const Quaternion& other)
 	{
-		Instance::onServiceProvider(oldProvider, newProvider);
-
-		if (!oldProvider)
-		{
-			FlagStandService* flagStandService = ServiceProvider::create<FlagStandService>(newProvider);
-			RBXASSERT(flagStandService);
-
-			flagStandService->RegisterFlagStand(this);
-
-			standTouched = PartInstance::event_Touched.connect(this, boost::bind(&FlagStand::onEvent_standTouched, this, _1));
-		}
-
-		if (!newProvider)
-		{
-			FlagStandService* flagStandService = ServiceProvider::create<FlagStandService>(oldProvider);
-			RBXASSERT(flagStandService);
-
-			flagStandService->UnregisterFlagStand(this);
-
-			standTouched.disconnect();
-		}
+		this->w = other.w;
+		this->x = other.x;
+		this->y = other.y;
+		this->z = other.z;
+		return *this;
 	}
 
-	FlagStandService::FlagStandService()
+	//needs to be moved to the header
+	Quaternion Quaternion::operator*(const Quaternion& other) const
 	{
-		setName("FlagStandService");
-		propArchivable.setValue(this, false);
+		G3D::Vector3& thisConvert = *(G3D::Vector3*)this;
+		G3D::Vector3& otherConvert = *(G3D::Vector3*)&other;
+		float thisW = this->w;
+		float otherW = other.w;
+
+		return Quaternion(otherConvert * thisW + thisConvert * otherW + thisConvert.cross(otherConvert), thisW * otherW - thisConvert.dot(otherConvert));
 	}
 
-	FlagStandService::~FlagStandService() {}
-
-	FlagStand* FlagStandService::FindStandWithFlag(Flag* f)
+	float& Quaternion::operator[](int i) const
 	{
-		if (flagStands.empty())
-			return NULL;
-
-		for (std::list<FlagStand*>::const_iterator iter = flagStands.begin(); iter != flagStands.end(); iter++)
-		{
-			if ((*iter)->GetFlag() == f)
-				return *iter;
-		}
-
-		return NULL;
+		return ((float*)this)[i];
 	}
 
-	void FlagStandService::RegisterFlagStand(FlagStand* s)
+	void Quaternion::normalize()
 	{
-		flagStands.push_back(s);
+		float sqY = G3D::square(this->y);
+		float v1 = sqY + G3D::square(this->x) + G3D::square(this->z) + G3D::square(this->w);
+		float v3 = G3D::rsqrt(v1);
+		this->x = this->x * v3;
+		this->y = this->y * v3;
+		this->z = this->z * v3;
+		this->w = this->w * v3;
 	}
 
-	void FlagStandService::UnregisterFlagStand(FlagStand* s)
+	void Quaternion::toRotationMatrix(G3D::Matrix3& rot) const
 	{
-		flagStands.remove(s);
+		float fTx  = 2.0f * this->x;
+		float fTy  = 2.0f * this->y;
+		float fTz  = 2.0f * this->z;
+		float fTxx = fTx * this->x;
+		float fTxy = fTy * this->x;
+		float fTxz = fTz * this->x;
+		float fTwx = fTx * this->w;
+		float fTwy = fTy * this->w;
+		float fTwz = fTz * this->w;
+		float fTyy = fTy * this->y;
+		float fTyz = fTz * this->y;
+		float fTzz = fTz * this->z;
+
+		rot[0][0] = 1.0 - (fTyy + fTzz);
+		rot[0][1] = fTxy - fTwz;
+		rot[0][2] = fTxz + fTwy;
+		rot[1][0] = fTxy + fTwz;
+		rot[1][1] = 1.0 - (fTxx + fTzz);
+		rot[1][2] = fTyz - fTwx;
+		rot[2][0] = fTxz - fTwy;
+		rot[2][1] = fTyz + fTwx;
+		rot[2][2] = 1.0 - (fTxx + fTyy);
+	}
+
+	//needs to be moved to the header
+	float Quaternion::maxComponent() const
+	{
+		Quaternion qAbs = Quaternion(fabs(w), fabs(z), fabs(y), fabs(x));
+		return std::max(std::max(qAbs.w, qAbs.z), std::max(qAbs.y, qAbs.x));
 	}
 }

@@ -1,24 +1,47 @@
-// from server: 0% by atomic.potato
-struct S {
-    int* field0;
-    int f(int a, int b);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_codex_eh_count20_9b609f40750eb959.cpp
+
+// Candidate translation unit (score above; library headers required).
+
+extern void* __cdecl operator new(unsigned int);
+extern const unsigned char control_table[];
+
+struct Object {
+    virtual ~Object();
 };
 
-extern "C" void* __cdecl sub_98211a(unsigned int size);
+struct Deleter { void operator()(Object*) const; };
 
-int S::f(int a, int b)
+struct Control {
+    const void* table;
+    long strong;
+    long weak;
+    Object* object;
+    Deleter deleter;
+};
+
+struct S {
+    Control* control;
+    S(Object* object, Deleter deleter);
+};
+
+S::S(Object* object, Deleter deleter) : control(0)
 {
-    int* p;
-    this->field0 = 0;
-    p = (int*)sub_98211a(0x14);
-    if (p) {
-        p[1] = 1;
-        p[2] = 1;
-        p[0] = 0xb73fe0;
-        p[3] = a;
-    } else {
-        p = 0;
+    try {
+        Control* p = static_cast<Control*>(operator new(sizeof(Control)));
+        if (p) {
+            p->strong = 1;
+            p->weak = 1;
+            p->table = control_table;
+            p->object = object;
+        } else {
+            p = 0;
+        }
+        control = p;
+    } catch (...) {
+        deleter(object);
+        throw;
     }
-    this->field0 = p;
-    return (int)this;
 }

@@ -1,26 +1,102 @@
-// from server: 44% by tester
-struct S {
-    void f(char *a, char *b);
-};
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_sol_resume_native_guidraw_portable_54c5ec61f66fe480.cpp
 
-extern "C" {
-    void __stdcall sub_5450B0(void *dst, const char *src, const char *ext);
-    void __stdcall sub_600BD0(void *self, char *a, char *b);
-}
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("gui/GuiDraw.h", "roc_sol_resume_native_guidraw_authheader_001a245a00442d6d.cpp")
+#include "gui/GuiDraw.h"
+#include "AppDraw/Textures.h"
+extern RBX::ContentProvider* context;
 
-void S::f(char *a, char *b) {
-    char buf1[32];
-    char buf2[32];
-    char buf3[32];
-    char buf4[32];
-    char buf5[32];
-    char buf6[32];
+namespace RBX
+{
+	static G3D::ReferenceCountedPointer<TextureProxyBase> silentGetTextureProxyBase(Adorn* adorn, const ContentId& id)
+	{
+		if (context->hasContent(id))
+			return Textures::getTextureProxy(adorn, id);
+		else
+			return NULL;
+	}
 
-    sub_5450B0(buf1, "Textures\\", a);
-    sub_5450B0(buf2, buf1, ".png");
-    sub_5450B0(buf3, buf2, b);
-    sub_5450B0(buf4, buf3, ".png");
-    sub_5450B0(buf5, buf4, a);
-    sub_5450B0(buf6, buf5, b);
-    sub_600BD0(this, buf6, buf5);
+	void GuiDrawImage::render2d(Adorn* adorn, bool enabled, Rect& rect, Widget::WidgetState state)
+	{
+		if (!enabled)
+		{
+			draw(adorn, disable, rect, G3D::Color4::clear(), G3D::Color4(1.0f, 1.0f, 1.0f, 0.5f));
+		}
+		else if (state == Widget::NOTHING)
+		{
+			draw(adorn, normal, rect, G3D::Color4::clear(), G3D::Color4::clear());
+		}
+		else if (state != Widget::HOVER && state != Widget::DOWN_AWAY)
+		{
+			draw(adorn, down, rect, G3D::Color3::blue(), G3D::Color4::clear());
+		}
+		else
+		{
+			draw(adorn, hover, rect, G3D::Color3::yellow(), G3D::Color4::clear());
+		}
+	}
+
+	void GuiDrawImage::draw(Adorn* adorn, G3D::ReferenceCountedPointer<TextureProxyBase> texture, const Rect& rect, const G3D::Color4& behind, const G3D::Color4& inFront)
+	{
+		G3D::Rect2D rect2D = rect.toRect2D();
+
+		if (texture.notNull())
+		{
+			adorn->setTexture(0, texture);
+			adorn->rect2d(rect2D, G3D::Color4(1.0f, 1.0f, 1.0f, 1.0f));
+			adorn->setTexture(0, NULL);
+		}
+		else if (normal.notNull())
+		{
+			adorn->rect2d(rect2D, behind);
+			draw(adorn, normal, rect, G3D::Color4::clear(), G3D::Color4::clear());
+			adorn->rect2d(rect2D, inFront);
+		}
+	}
+
+	G3D::Vector2 GuiDrawImage::getImageSize() const
+	{
+		if (size.isZero() && normal.notNull())
+			size = normal->getSize();
+
+		return size;
+	}
+
+	void GuiDrawImage::setImageFromName(Adorn* adorn, const std::string& name)
+	{
+		ContentId id = ContentId::fromAssets("Textures\\" + name + ".png");
+		setImage(adorn, id);
+	}
+
+	bool GuiDrawImage::setImage(Adorn* adorn, const TextureId& textureId)
+	{
+		if (textureId != currentTexture)
+		{
+			currentTexture = textureId;
+
+			normal = NULL;
+			hover = NULL;
+			down = NULL;
+			disable = NULL;
+
+			size = G3D::Vector2(0.0f, 0.0f);
+
+			normal = silentGetTextureProxyBase(adorn, currentTexture);
+
+			if (normal.notNull())
+			{
+				std::string id = textureId.toString();
+				std::string base = id.substr(0, id.size() - 4);
+
+				hover = silentGetTextureProxyBase(adorn, ContentId(base + "_ovr.png"));
+				down = silentGetTextureProxyBase(adorn, ContentId(base + "_dn.png"));
+				disable = silentGetTextureProxyBase(adorn, ContentId(base + "_ds.png"));
+			}
+		}
+
+		return normal.notNull();
+	}
 }

@@ -1,750 +1,600 @@
-// from server: 50% by colin
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8datamodel/PartInstance.cpp
+// roc-lib: rbxgs-dll v8xml/XmlSerializer.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/PartInstance.h"
+#include "v8xml/XmlSerializer.h"
+#include "util/Debug.h"
+#include "util/base64.hpp"
+#include "reflection/type.h"
+#include <G3D/format.h>
+#include <sstream>
 
-#include "tool/Dragger.h"
-#include "util/standardout.h"
-#include "v8datamodel/ModelInstance.h"
-#include "v8datamodel/Workspace.h"
-#include "v8kernel/Body.h"
-#include "v8world/Geometry.h"
-#include "v8world/World.h"
-
-namespace RBX {
-
-// GLOBAL: WEBSERVICE 0x102d4568
-const char* const category_Part = "Part";
-
-char sPart[] = "Part";
-
-bool PartInstance::highlightSleepParts;
-bool PartInstance::highlightAwakeParts;
-bool PartInstance::showAnchoredParts;
-bool PartInstance::showPartCoord;
-bool PartInstance::showUnalignedParts;
-bool PartInstance::showSpanningTree;
-
-const Reflection::PropDescriptor<PartInstance, float> PartInstance::prop_RenderImportance(
-	"RenderImportance",
-	"Behavior",
-	&RBX::PartInstance::getRenderImportance,
-	&RBX::PartInstance::setRenderImportance,
-	Reflection::PropertyDescriptor::LEGACY
-);
-
-const Reflection::PropDescriptor<PartInstance, float> PartInstance::prop_Transparency(
-	"Transparency",
-	"Appearance",
-	&RBX::PartInstance::getTransparencyXml,
-	&RBX::PartInstance::setTransparency
-);
-
-const Reflection::PropDescriptor<PartInstance, float> PartInstance::prop_Reflectance(
-	"Reflectance",
-	"Appearance",
-	&RBX::PartInstance::getReflectance,
-	&RBX::PartInstance::setReflectance
-);
-
-const Reflection::PropDescriptor<PartInstance, bool> PartInstance::prop_Locked(
-	"Locked",
-	"Behavior",
-	&RBX::PartInstance::getPartLocked,
-	&RBX::PartInstance::setPartLocked
-);
-
-const Reflection::PropDescriptor<PartInstance, G3D::Color3> PartInstance::prop_Color(
-	"Color",
-	"Appearance",
-	&RBX::PartInstance::getColor3,
-	&RBX::PartInstance::setColor3
-);
-
-const Reflection::PropDescriptor<PartInstance, BrickColor> PartInstance::prop_BrickColor(
-	"BrickColor",
-	"Appearance",
-	&RBX::PartInstance::getColor,
-	&RBX::PartInstance::setColor
-);
-
-const Reflection::PropDescriptor<PartInstance, bool> PartInstance::prop_CanCollide(
-	"CanCollide",
-	"Behavior",
-	&RBX::PartInstance::getCanCollide,
-	&RBX::PartInstance::setCanCollide
-);
-
-const Reflection::PropDescriptor<PartInstance, bool> PartInstance::prop_Anchored(
-	"Anchored",
-	"Behavior",
-	&RBX::PartInstance::getAnchored,
-	&RBX::PartInstance::setAnchored
-);
-
-const Reflection::EnumPropDescriptor<PartInstance, Part::PartType> PartInstance::prop_shapeXml(
-	"shape",
-	category_Part,
-	&RBX::PartInstance::getPartType,
-	&RBX::PartInstance::setPartTypeXml,
-	Reflection::PropertyDescriptor::STREAMING
-);
-
-static Reflection::EnumPropDescriptor<PartInstance, Part::PartType> prop_shapeUi(
-	"Shape",
-	category_Part,
-	&RBX::PartInstance::getPartType,
-	&RBX::PartInstance::setPartTypeUi,
-	Reflection::PropertyDescriptor::UI
-);
-
-static Reflection::PropDescriptor<PartInstance, G3D::Vector3> prop_SizeUi(
-	"Size",
-	category_Part,
-	&RBX::PartInstance::getPartSizeUi,
-	&RBX::PartInstance::setPartSizeUi,
-	Reflection::PropertyDescriptor::UI
-);
-
-const Reflection::PropDescriptor<PartInstance, G3D::Vector3> PartInstance::prop_Size(
-	"size",
-	category_Part,
-	&RBX::PartInstance::getPartSizeXml,
-	&RBX::PartInstance::setPartSizeXml,
-	Reflection::PropertyDescriptor::STREAMING
-);
-
-static Reflection::EnumPropDescriptor<PartInstance, PartInstance::FormFactor> prop_formFactor(
-	"FormFactor",
-	category_Part,
-	&RBX::PartInstance::getFormFactor,
-	&RBX::PartInstance::setFormFactorXml,
-	Reflection::PropertyDescriptor::STREAMING
-);
-
-static Reflection::PropDescriptor<PartInstance, bool> prop_Dragging(
-	"DraggingV1",
-	"Behavior",
-	&RBX::PartInstance::getDragging,
-	&RBX::PartInstance::setDragging,
-	Reflection::PropertyDescriptor::STREAMING
-);
-
-// FUNCTION: WEBSERVICE 0x10059c10
-bool PartInstance::askSetParent(const Instance* instance) const
+class Whitespaces
 {
-	return dynamic_cast<const ModelInstance*>(instance) != NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x1009a8d0
-void PartInstance::onChildAdded(Instance* child)
-{
-	PVInstance::onChildAdded(child);
-}
-
-// FUNCTION: WEBSERVICE 0x1009a8e0 FOLDED
-Surfaces& PartInstance::getSurfaces()
-{
-	return surfaces;
-}
-
-// FUNCTION: WEBSERVICE 0x1009a8e0 FOLDED
-const Surfaces& PartInstance::getSurfaces() const
-{
-	return surfaces;
-}
-
-// FUNCTION: WEBSERVICE 0x1009ae00
-void PartInstance::setName(const std::string& value)
-{
-	Instance::setName(value);
-
-	if (value == "Torso") {
-		getPrimitive()->setSizeMultiplier(5);
+public:
+	char data[256];
+  
+public:
+	Whitespaces()
+	{
+		data[9] = true;
+		data[10] = true;
+		data[12] = true;
+		data[13] = true;
+		data[32] = true;
 	}
-	else {
-		getPrimitive()->setSizeMultiplier(1);
+};
+
+static Whitespaces whitespaces;
+
+XmlParser::XmlParser(std::streambuf* buffer)
+	: buffer(buffer)
+{
+	
+}
+
+void TextXmlParser::skipWhitespace()
+{
+	while (whitespaces.data[(char)buffer->sgetc()])
+		buffer->sbumpc();
+}
+
+std::string TextXmlParser::readTag()
+{
+	skipWhitespace();
+
+	if ((char)buffer->sbumpc() != '<')
+		throw std::runtime_error("tag expected");
+
+	std::string tag;
+	tag += '<';
+
+	char lastChar;
+	do
+	{
+		lastChar = buffer->sbumpc();
+		tag += lastChar;
 	}
+	while (lastChar != '>');
+
+	return tag;
 }
 
-// FUNCTION: WEBSERVICE 0x1009ae40
-bool PartInstance::nonNullInWorkspace(shared_ptr<PartInstance> part)
+std::string TextXmlParser::readFirstTag()
 {
-	return part.get() != NULL && part->myWorld != NULL;
-}
+	skipWhitespace();
 
-// FUNCTION: WEBSERVICE 0x1009ae90 FOLDED
-PartInstance* PartInstance::fromPrimitive(Primitive* primitive)
-{
-	if (primitive != NULL) {
-		IMoving* owner = primitive->getOwner();
+	std::string s;
+	char c = buffer->sbumpc();
+	if (c != '<')
+	{
+		s += c;
+		c = buffer->sbumpc();
+		s += c;
+		c = buffer->sbumpc();
+		s += c;
+		c = buffer->sbumpc();
+		s += c;
+		if (c != '<')
+		{
+			for (int i = 0; i != 50; i++)
+			{
+				if (buffer->sgetc() == -1)
+					continue;
+				s += buffer->sbumpc();
+			}
 
-		if (owner != NULL) {
-			return static_cast<PartInstance*>(owner);
+			std::string message = "tag expected after Byte-Order-Mark:";
+			message += s;
+			throw std::runtime_error(message);
 		}
 	}
 
-	return NULL;
+	std::string tag;
+	tag += c;
+
+	char lastChar;
+	do
+	{
+		lastChar = buffer->sbumpc();
+		tag += lastChar;
+	}
+	while (lastChar != '>');
+
+	return tag;
 }
 
-// FUNCTION: WEBSERVICE 0x1009ae90 FOLDED
-const PartInstance* PartInstance::fromPrimitiveConst(const Primitive* primitive)
+std::string decodeString(std::string source)
 {
-	if (primitive != NULL) {
-		IMoving* owner = primitive->getOwner();
+	std::string result;
 
-		if (owner != NULL) {
-			return static_cast<const PartInstance*>(owner);
+	size_t i = 0;
+	while (i < source.size())
+	{
+		char c = source[i++];
+		if (c == '&')
+		{
+			std::string entity;
+			while (i < source.size())
+			{
+				c = source[i++];
+				if (c == ';')
+					break;
+				entity += c;
+			}
+
+			if (entity == "lt")
+				result += '<';
+			else if (entity == "gt")
+				result += '>';
+			else if (entity == "amp")
+				result += '&';
+			else if (entity == "quot")
+				result += '"';
+			else if (entity == "apos")
+				result += '\'';
+			else if (entity[0] == '#')
+				result += atoi(entity.substr(1).c_str());
+			else
+				RBXASSERT(0);
+		}
+		else
+		{
+			result += c;
 		}
 	}
 
-	return NULL;
+	return result;
 }
 
-// FUNCTION: WEBSERVICE 0x1009aef0
-bool PartInstance::computeSurfacesNeedAdorn() const
+std::string TextXmlParser::readText(bool decode)
 {
-	for (int i = 0; i < 6; i++) {
-		const Surface& surface = surfaces[(NormalId) i];
+	skipWhitespace();
 
-		if (surface.getSurfaceType() == ROTATE || surface.getSurfaceType() == ROTATE_P ||
-			surface.getSurfaceType() == ROTATE_V) {
-			return true;
+	std::string text;
+	while ((char)buffer->sgetc() != '<')
+		text += buffer->sgetc();
+
+	if (decode)
+		text = decodeString(text);
+
+	return text;
+}
+
+std::string TextXmlParser::removeTag(const std::string& contents, int& index)
+{
+	size_t i = 0;
+	while (whitespaces.data[contents[i]] && i < contents.size())
+		i++;
+
+	size_t j = i;
+	while (!whitespaces.data[contents[j]] && j < contents.size())
+		j++;
+
+	std::string contentsNoTag = contents.substr(i, j - i);
+	index = (int)j + 1;
+
+	return contentsNoTag;
+}
+
+std::string TextXmlParser::findNextToken(const std::string& contents, int& index)
+{
+	size_t i;
+	for (i = index; i < contents.size(); i++)
+	{
+		if (!whitespaces.data[contents[i]])
+			break;
+	}
+
+	bool inQuotes = false;
+	size_t j = i;
+
+	for (; j < contents.size(); j++)
+	{
+		if (contents[j] == '"')
+		{
+			inQuotes = !inQuotes;
+		}
+		else if (!inQuotes && whitespaces.data[contents[j]])
+		{
+			break;
 		}
 	}
+
+	if (j != i)
+	{
+		std::string answer = contents.substr(i, j - i);
+		index = (int)j + 1;
+		return answer;
+	}
+
+	index = (int)contents.size();
+	return "";
+}
+
+XmlElement* TextXmlParser::parseAttributes(const std::string& currentTag)
+{
+	std::string tagGuts = currentTag.substr(1, currentTag.size() - 2);
+
+	int index = 0;
+	std::string tagName = removeTag(tagGuts, index);
+
+	XmlElement* element = new XmlElement(RBX::Name::lookup(tagName));
+
+	std::string attribute = findNextToken(tagGuts, index);
+	while (attribute.size() > 0)
+	{
+		size_t equalsSignIndex = attribute.find("=", 0, 1);
+		std::string attributeName = attribute.substr(0, equalsSignIndex);
+
+		size_t startQuoteMarkIndex = attribute.find('\"');
+		size_t endQuoteMarkIndex = attribute.rfind('\"');
+		std::string text = decodeString(attribute.substr(startQuoteMarkIndex + 1, endQuoteMarkIndex - startQuoteMarkIndex - 1));
+
+		element->addAttribute(RBX::Name::lookup(attributeName), text);
+
+		attribute = findNextToken(tagGuts, index);
+	}
+
+	return element;
+}
+
+bool isCloseTag(const std::string& test)
+{
+	if (test.size() >= 2)
+		return test.substr(0, 2) == "</";
 
 	return false;
 }
 
-// FUNCTION: WEBSERVICE 0x1009af50
-void PartInstance::legacyTraverseState(const CoordinateFrame& parentState)
+bool endsWithClose(const std::string& test)
 {
-	CoordinateFrame gridCorner = parentState * *legacyOffset;
-
-	primitive->setGridCorner(gridCorner);
-}
-
-// FUNCTION: WEBSERVICE 0x1009af90
-bool PartInstance::isControllable() const
-{
-	for (int i = 0; i < 6; i++) {
-		const Surface& surface = surfaces[(NormalId) i];
-
-		if ((surface.getSurfaceType() == ROTATE_P || surface.getSurfaceType() == ROTATE_V) &&
-			surface.isControllable()) {
-			return true;
-		}
-	}
+	if (test.size() >= 2)
+		return test.substr(test.size() - 2, 2) == "/>";
 
 	return false;
 }
 
-// FUNCTION: WEBSERVICE 0x1009aff0
-void PartInstance::onSurfaceChanged(NormalId normalId)
+std::auto_ptr<XmlElement> TextXmlParser::parse()
 {
-	PersistentPart.setDirty();
-	IsControllable.setDirty();
-	SurfacesNeedAdorn.setDirty();
-	shouldRenderSetDirty();
-}
+	if (buffer->sgetc() == -1)
+		throw std::runtime_error("TextXmlParser::parse empty file");
 
-// FUNCTION: WEBSERVICE 0x1009b080
-const CoordinateFrame& PartInstance::getCoordinateFrame() const
-{
-	return primitive->getCoordinateFrame();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b0b0
-float PartInstance::getMass()
-{
-	return primitive->getBody()->getMass();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b100
-const Vector3& PartInstance::getPartSizeXml() const
-{
-	return primitive->getGeometry()->getGridSize();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b110
-Vector3 PartInstance::getPartSizeUi() const
-{
-	return primitive->getGeometry()->getGridSize();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b140
-bool PartInstance::getDragging() const
-{
-	return primitive->getDragging();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b150
-bool PartInstance::getCanCollide() const
-{
-	if (!primitive->getDragging() && primitive->getCanCollide()) {
-		return true;
-	}
-
-	return false;
-}
-
-// FUNCTION: WEBSERVICE 0x1009b170
-bool PartInstance::getAnchored() const
-{
-	return primitive->getAnchorObject() != NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x1009b190
-float PartInstance::getFriction() const
-{
-	return primitive->getFriction();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b1a0
-float PartInstance::getElasticity() const
-{
-	return primitive->getElasticity();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b1b0
-Extents PartInstance::getExtentsWorld() const
-{
-	return primitive->getExtentsWorld();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b1d0
-Extents PartInstance::getExtentsLocal() const
-{
-	const Vector3 corner = primitive->getGeometry()->getGridSize() * 0.5f;
-
-	return Extents(-corner, corner);
-}
-
-Vector3 PartInstance::xmlToUiSize(const Vector3& size) const
-{
-	Vector3 uiSize = size;
-
-	switch (formFactor) {
-	case BRICK:
-		uiSize.y = size.y / 1.2f;
-		break;
-	case PLATE:
-		uiSize.y = size.y / 0.4f;
-		break;
-	}
-
-	return uiSize;
-}
-
-// FUNCTION: WEBSERVICE 0x1009b610
-Vector3 PartInstance::uiToXmlSize(const Vector3& uiSize) const
-{
-	Vector3 gridUiSize = Math::iRoundVector3(uiSize.max(Vector3(1, 1, 1)));
-
-	Vector3 xmlSize = gridUiSize;
-
-	switch (formFactor) {
-	case BRICK:
-		xmlSize.y *= 1.2f;
-		break;
-	case PLATE:
-		xmlSize.y *= 0.4f;
-		break;
-	}
-
-	return xmlSize;
-}
-
-// STUB: WEBSERVICE 0x1009b6e0
-Part PartInstance::computePersistentPart() const
-{
-	return Part(
-		partType,
-		getPartSizeXml(),
-		G3D::Color4(getColor3(), 1.0f - (1.0f - (1.0f - transparency) * alphaModifier)),
-		surfaces.surf6(),
-		getCoordinateFrame()
-	);
-}
-
-// FUNCTION: WEBSERVICE 0x1009b780
-bool PartInstance::shouldRender3dAdorn() const
-{
-	return partType == Part::CYLINDER_PART || SurfacesNeedAdorn || highlightSleepParts || highlightAwakeParts ||
-		   showPartCoord || showAnchoredParts || showUnalignedParts || showSpanningTree;
-}
-
-// STUB: WEBSERVICE 0x1009bf50
-bool PartInstance::reportTouches() const
-{
-	STUB(0x1009bf50);
-	return false;
-}
-
-// FUNCTION: WEBSERVICE 0x1009bfa0
-const Part& PartInstance::getPart()
-{
-	Part& part = PersistentPart.getValueRef();
-
-	part.coordinateFrame = getPrimitive()->getCoordinateFrame();
-
-	return part;
-}
-
-// FUNCTION: WEBSERVICE 0x1009bff0
-void PartInstance::onAncestorChanged(const AncestorChanged& event)
-{
-	Instance::onAncestorChanged(event);
-
-	World* world = Workspace::getWorldIfInWorkspace(this);
-
-	if (world != myWorld) {
-		if (myWorld != NULL) {
-			setMovingManager(NULL);
-
-			myWorld->removePrimitive(getPrimitive());
+	bool firstTag = true;
+	while (true)
+	{
+		std::string currentTag;
+		if (firstTag)
+		{
+			firstTag = false;
+			currentTag = readFirstTag();
+			if (currentTag.substr(0, 2) == "<?")
+				continue;
+		}
+		else
+		{
+			currentTag = readTag();
 		}
 
-		myWorld = world;
+		XmlElement* currentElement = elements.empty() ? NULL : elements.top();
+		if (isCloseTag(currentTag))
+		{
+			if (!currentElement)
+				throw std::runtime_error(G3D::format("TextXmlParser::parse - Got close tag %s without open tag.", currentTag.c_str()));
 
-		if (world != NULL) {
-			world->insertPrimitive(getPrimitive());
+			elements.pop();
+			if (elements.empty())
+				return std::auto_ptr<XmlElement>(currentElement);
+		}
+		else
+		{
+			XmlElement* newElement = parseAttributes(currentTag);
+			elements.push(newElement);
 
-			setMovingManager(Workspace::getMyWorkspaceFast(this));
+			if (newElement->getTag() == RBX::Reflection::Type::singleton<RBX::ContentId>().tag)
+			{
+				bool isXsiNil;
+				const XmlAttribute* xsiNilAttribute = newElement->findAttribute(name_xsinil);
+				if (xsiNilAttribute && xsiNilAttribute->getValue(isXsiNil) && !isXsiNil)
+				{
+					if (readText(false) == "")
+					{
+						const RBX::Name* mimeType;
+						const XmlAttribute* mimeTypeAttribute = newElement->findAttribute(tag_mimeType);
+						if (mimeTypeAttribute)
+							mimeTypeAttribute->getValue(mimeType);
+						else
+							mimeType = &RBX::Name::getNullName();
 
-			getPrimitive()->setController(getTopPVController());
+						std::string contentChild = readTag();
+						std::string tagName = contentChild.substr(1, contentChild.size() - 2);
+
+						if (tagName.substr(0, 6) == "binary")
+						{
+							std::stringbuf encoded(readText(false), std::ios_base::in);
+							std::stringstream decoded;
+
+							int ioStatus = 0;
+							base64<char> decoder;
+							decoder.get(
+								std::istreambuf_iterator<char>(&encoded),
+								std::istreambuf_iterator<char>(),
+								std::ostreambuf_iterator<char>(decoded),
+								ioStatus);
+
+							decoded.flush();
+
+							RBX::ContentId contentId = RBX::ContentProvider::singleton().registerContent(decoded, *mimeType);
+							newElement->setValue(contentId);
+						}
+						else if (tag_hash == tagName)
+						{
+							std::string name = readText(false);
+							newElement->setValue(RBX::ContentId(name.c_str(), *mimeType));
+						}
+						else if (tagName.substr(0, 3) == "url")
+						{
+							std::string url = readText(true);
+							newElement->setValue(RBX::ContentId(url.c_str(), *mimeType));
+						}
+						else if (tag_null == tagName)
+						{
+							newElement->setValue(RBX::ContentId());
+						}
+						else
+						{
+							throw std::runtime_error(G3D::format("TextXmlParser::parse - Unknown tag '%s'.", tagName.substr(0, 32).c_str()));
+						}
+
+						std::string closingTag = readTag();
+						if (!isCloseTag(closingTag))
+							throw std::runtime_error(G3D::format("TextXmlParser::parse - '%s' should be a closing tag", tagName.substr(0, 32).c_str()));
+					}
+				}
+			}
+			else
+			{
+				newElement->setValue(readText(true));
+			}
+
+			currentElement->pushBackChild(newElement);
+
+			if (endsWithClose(currentTag))
+				elements.pop();
 		}
 	}
 }
 
-// FUNCTION: WEBSERVICE 0x1009c090
-void PartInstance::onParentControllerChanged()
+XmlWriter::XmlWriter(std::ostream& stream)
+	: stream(stream)
 {
-	PVInstance::onParentControllerChanged();
-
-	PersistentPart.setDirty();
-
-	primitive->setController(getTopPVController());
 }
 
-// STUB: WEBSERVICE 0x1009c0c0
-void PartInstance::render3dSelect(Adorn* adorn, SelectState selectState)
+int XmlWriter::getHandleIndex(RBX::InstanceHandle h)
 {
-	STUB(0x1009c0c0);
-}
-
-// STUB: WEBSERVICE 0x1009c0f0
-bool PartInstance::hitTest(const G3D::Ray& worldRay, G3D::Vector3& worldHitPoint)
-{
-	STUB(0x1009c0f0);
-	return false;
-}
-
-// FUNCTION: WEBSERVICE 0x1009cc10
-void PartInstance::onCanAggregateChanged(bool canAggregate)
-{
-	Notifier<PartInstance, CanAggregateChanged>::raise(canAggregate);
-
-	shouldRenderSetDirty();
-}
-
-// FUNCTION: WEBSERVICE 0x1009cc30
-void PartInstance::safeMove()
-{
-	if (World* world = Workspace::getWorldIfInWorkspace(this)) {
-		G3D::Array<Primitive*> temp;
-
-		temp.append(primitive.get());
-
-		Dragger::safeMoveNoDrop(temp, Vector3::zero(), *world->getContactManager());
+	std::map<RBX::InstanceHandle, int>::iterator iter = handles.find(h);
+	if (iter == handles.end())
+	{
+		int index = (int)handles.size();
+		handles[h] = index;
+		return index;
+	}
+	else
+	{
+		return iter->second;
 	}
 }
 
-// FUNCTION: WEBSERVICE 0x1009d150
-PartInstance::~PartInstance()
+void TextXmlWriter::writeOpenTag(const XmlElement* element, int depth, const XmlAttribute* extraAttribute)
 {
+	for (int i = 0; i < depth; i++)
+		stream << '\t';
+
+	stream << '<' << element->getTag().name;
+
+	for (const XmlAttribute* attribute = element->getFirstAttribute(); attribute != NULL; attribute = attribute->nextSibling())
+	{
+		stream << ' ' << attribute->getTag().name << "=\"";
+		encodedWrite(stream, attribute->toString(this));
+		stream << '\"';
+	}
+
+	if (extraAttribute)
+	{
+		stream << ' ' << extraAttribute->getTag().name << "=\"";
+		encodedWrite(stream, extraAttribute->toString(this));
+		stream << '\"';
+	}
+
+	stream << '>';
 }
 
-// FUNCTION: WEBSERVICE 0x1009d2e0
-PartInstance* PartInstance::getPrimaryPart()
+void TextXmlWriter::writeCloseTag(const XmlElement* element, int depth)
 {
-	return this;
+	for (int i = 0; i < depth; i++)
+		stream << '\t';
+
+	stream << "</" << element->getTag().name << '>';
 }
 
-const PartInstance* PartInstance::getPrimaryPartConst() const
+void TextXmlWriter::serializeNode(const XmlElement* xmlNode, int depth)
 {
-	STUB(0x1009d2e1);
-	return NULL;
-}
+	if (xmlNode->isValueType<RBX::ContentId>())
+	{
+		writeOpenTag(xmlNode, depth, NULL);
 
-// FUNCTION: WEBSERVICE 0x1009d3b0
-const Primitive* PartInstance::getBiggestPrimitive() const
-{
-	return primitive.get();
-}
-
-// FUNCTION: WEBSERVICE 0x1009d3c0
-const CoordinateFrame PartInstance::getLocation() const
-{
-	return primitive->getCoordinateFrame();
-}
-
-// FUNCTION: WEBSERVICE 0x1009d7d0
-void PartInstance::getCameraIgnorePrimitives(std::vector<const Primitive*>& primitives)
-{
-	primitives.push_back(getPrimitive());
-}
-
-namespace Reflection {
-
-// FUNCTION: WEBSERVICE 0x1009daf0
-template <>
-EnumDesc<PartInstance::FormFactor>::EnumDesc() : EnumDescriptor("FormFactor", typeid(PartInstance::FormFactor))
-{
-	addPair(PartInstance::SYMETRIC, "Symmetric");
-	addPair(PartInstance::BRICK, "Brick");
-	addPair(PartInstance::PLATE, "Plate");
-
-	addLegacyName("Block", PartInstance::BRICK);
-}
-
-} // namespace Reflection
-
-// STUB: WEBSERVICE 0x1009f220
-PartInstance::PartInstance()
-	: DescribedCreatable<PartInstance, PVInstance, sPart>("Part"), surfaces(this),
-	  PersistentPart(this, &PartInstance::computePersistentPart),
-	  SurfacesNeedAdorn(this, &PartInstance::computeSurfacesNeedAdorn)
-{
-	STUB(0x1009f220);
-}
-
-// FUNCTION: WEBSERVICE 0x1009f910
-void PartInstance::setPartSizeXml(const Vector3& rbxSize)
-{
-	if (rbxSize != getPartSizeXml()) {
-		Vector3 newRbxSize = partType == Part::BLOCK_PART ? rbxSize : rbxSize.xxx();
-
-		if (legacyOffset) {
-			CoordinateFrame oldCorner = primitive->getGridCorner();
-
-			primitive->setGridSize(newRbxSize);
-			primitive->setGridCorner(oldCorner);
+		RBX::ContentId contentId;
+		xmlNode->getValue(contentId);
+		if (contentId.isNull())
+		{
+			stream << "<null></null>";
 		}
-		else {
-			primitive->setGridSize(newRbxSize);
-		}
-
-		raisePropertyChanged(prop_Size);
-		raisePropertyChanged(prop_SizeUi);
-
-		PersistentPart.setDirty();
-
-		onExtentsChanged();
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009f9f0
-void PartInstance::setPartSizeUi(const Vector3& uiSize)
-{
-	World* world = Workspace::getWorldIfInWorkspace(this);
-
-	if (world != NULL) {
-		world->destroyJoints(primitive.get());
-	}
-
-	setPartSizeXml(uiToXmlSize(xmlToUiSize(uiSize)));
-
-	safeMove();
-
-	world = Workspace::getWorldIfInWorkspace(this);
-
-	if (world != NULL) {
-		world->createJoints(primitive.get());
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009faa0
-void PartInstance::setDragging(bool value)
-{
-	if (value != primitive->getDragging()) {
-		primitive->setDragging(value);
-		raisePropertyChanged(prop_Dragging);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fad0
-void PartInstance::setRenderImportance(float value)
-{
-	if (value != renderImportance) {
-		renderImportance = value;
-		raisePropertyChanged(prop_RenderImportance);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fb00
-void PartInstance::setCanCollide(bool value)
-{
-	if (value != getCanCollide()) {
-		primitive->setCanCollide(value);
-		raisePropertyChanged(prop_CanCollide);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fb40
-void PartInstance::setAnchored(bool value)
-{
-	if (value != getAnchored()) {
-		primitive->setAnchor(value);
-		raisePropertyChanged(prop_Anchored);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fb80
-void PartInstance::setPartLocked(bool value)
-{
-	if (value != locked) {
-		locked = value;
-		raisePropertyChanged(prop_Locked);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fbb0
-void PartInstance::setTransparency(float value)
-{
-	if (value != transparency) {
-		transparency = value;
-		raisePropertyChanged(prop_Transparency);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fbe0
-void PartInstance::setAlphaModifier(float value)
-{
-	if (value != alphaModifier) {
-		alphaModifier = value;
-		raisePropertyChanged(prop_Transparency);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fc10
-void PartInstance::setReflectance(float value)
-{
-	if (value != reflectance) {
-		reflectance = value;
-		raisePropertyChanged(prop_Reflectance);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fc40
-void PartInstance::setColor(BrickColor value)
-{
-	if (value.number != color.number) {
-		color = value;
-		raisePropertyChanged(prop_BrickColor);
-		raisePropertyChanged(prop_Color);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fc70
-void PartInstance::setFormFactorXml(FormFactor value)
-{
-	if (value != formFactor) {
-		formFactor = value;
-		raisePropertyChanged(prop_formFactor);
-	}
-}
-// STUB: WEBSERVICE 0x1009fe60
-void PartInstance::setColor3(const G3D::Color3& value)
-{
-	BrickColor closest = BrickColor::closest(value);
-
-	if (closest != color) {
-		color = closest;
-
-		raisePropertyChanged(prop_Color);
-		raisePropertyChanged(prop_BrickColor);
-	}
-}
-
-// STUB: WEBSERVICE 0x1009fec0
-void PartInstance::onCameraNear(float distance)
-{
-	if (distance > 3.0f) {
-		if (distance > 6.0f) {
-			setAlphaModifier(1.0f);
-		}
-		else {
-			setAlphaModifier(0.5f);
+		else
+		{
+			stream << "<hash>";
+			stream << xmlNode->toString(this);
+			stream << "</hash>";
 		}
 	}
-	else {
-		setAlphaModifier(0.0f);
+	else
+	{
+		writeOpenTag(xmlNode, depth, NULL);
+		encodedWrite(stream, xmlNode->toString(this));
 	}
 }
 
-// STUB: WEBSERVICE 0x1009ff60
-void PartInstance::render3dAdorn(Adorn* adorn)
+void TextXmlWriter::serialize(const XmlElement* xmlNode)
 {
-	STUB(0x1009ff60);
+	serialize(xmlNode, 0);
 }
 
-// FUNCTION: WEBSERVICE 0x100a0450
-void PartInstance::setPartTypeXml(Part::PartType _type)
+void TextXmlWriter::serialize(const XmlElement* xmlNode, int depth)
 {
-	if (partType != _type) {
-		partType = _type;
-		primitive->setPrimitiveType(partType == Part::BLOCK_PART ? Geometry::GEOMETRY_BLOCK : Geometry::GEOMETRY_BALL);
+	if (xmlNode)
+	{
+		serializeNode(xmlNode, depth);
+		if (xmlNode->firstChild())
+		{
+			for (const XmlElement* child = xmlNode->firstChild(); child != NULL; child = child->nextSibling())
+			{
+				stream << '\n';
+				serialize(child, depth + 1);
+			}
+			stream << '\n';
+			writeCloseTag(xmlNode, depth);
+		}
+		else
+		{
+			writeCloseTag(xmlNode, 0);
+		}
+	}
+}
 
-		if (partType != Part::BLOCK_PART) {
-			if (formFactor != SYMETRIC) {
-				formFactor = SYMETRIC;
+void TextXmlWriter::encodedWrite(std::ostream& stream, const std::string& text)
+{
+	encodedWrite(stream, text.c_str());
+}
 
-				raisePropertyChanged(prop_formFactor);
+void TextXmlWriter::encodedWrite(std::ostream& stream, const char* text)
+{
+	size_t len = strlen(text);
+	for (size_t i = 0; i != len; ++i)
+	{
+		unsigned char c = *text++;
+		if (c == '<')
+		{
+			stream << "&lt;";
+		}
+		else if (c == '>')
+		{
+			stream << "&gt;";
+		}
+		else if (c == '&')
+		{
+			stream << "&amp;";
+		}
+		else if (c == '"')
+		{
+			stream << "&quot;";
+		}
+		else if (c == '\'')
+		{
+			stream << "&apos";
+		}
+		else if (c >= ' ' && c <= '~') // every other printable character
+		{
+			stream << c;
+		}
+		else
+		{
+			char buffer[8];
+			sprintf(buffer, "&#%d;", c);
+			stream << buffer;
+		}
+	}
+}
+
+void TextXmlWriterWithEmbeddedContent::serializeNode(const XmlElement* xmlNode, int depth)
+{
+	if (xmlNode->isValueType<RBX::ContentId>())
+	{
+		RBX::ContentId contentId;
+		xmlNode->getValue(contentId);
+
+		if (contentId.mimeType() == RBX::Name::getNullName())
+		{
+			writeOpenTag(xmlNode, depth, NULL);
+		}
+		else
+		{
+			XmlAttribute mimeTypeAttribute(tag_mimeType, contentId.mimeType().c_str());
+			writeOpenTag(xmlNode, depth, &mimeTypeAttribute);
+		}
+
+		if (!xmlNode->findAttribute(name_xsinil))
+		{
+			if (contentId.isNull())
+			{
+				stream << "<null></null>";
+			}
+			else
+			{
+				if (contentId.isAsset() || contentId.isHttp())
+				{
+					stream << "<url>";
+					TextXmlWriter::encodedWrite(stream, contentId.toString());
+					stream << "</url>";
+				}
+				else if (embeddedContent.find(contentId) == embeddedContent.end())
+				{
+					embeddedContent.insert(contentId);
+
+					std::auto_ptr<std::istream> contentStream;
+
+					try
+					{
+						contentStream = RBX::ContentProvider::singleton().getContent(contentId);
+
+						if (contentId.mimeType() == RBX::Name::getNullName())
+						{
+							stream << "<binary>";
+						}
+						else
+						{
+							stream << "<binary xmime:contentType=\"" << contentId.mimeType().c_str() << "\">";
+						}
+
+						std::istreambuf_iterator<char> _From(contentStream->rdbuf());
+						std::istreambuf_iterator<char> _To;
+						std::ostreambuf_iterator<char> _Out(stream.rdbuf());
+						int _State;
+
+						base64<char> encoder;
+						encoder.put(_From, _To, _Out, _State, base64<>::crlf());
+
+						stream << "</binary>";
+					}
+					catch (std::exception&)
+					{
+						goto hash;
+					}
+				}
+				else
+				{
+hash:
+					embeddedContent.insert(contentId);
+
+					stream << "<hash>";
+					stream << xmlNode->toString(this);
+					stream << "</hash>";
+				}
 			}
 		}
-
-		raisePropertyChanged(prop_shapeXml);
-		raisePropertyChanged(prop_shapeUi);
-
-		PersistentPart.setDirty();
-		shouldRenderSetDirty();
-
-		onExtentsChanged();
+	}
+	else
+	{
+		TextXmlWriter::serializeNode(xmlNode, depth);
 	}
 }
-
-// FUNCTION: WEBSERVICE 0x100a04e0
-void PartInstance::setPartTypeUi(Part::PartType _type)
-{
-	if (partType != _type) {
-		World* world = Workspace::getWorldIfInWorkspace(this);
-
-		if (world != NULL) {
-			world->destroyJoints(primitive.get());
-		}
-
-		setPartTypeXml(_type);
-
-		if (_type != Part::BLOCK_PART) {
-			Vector3 xmlSize = uiToXmlSize(getPartSizeUi());
-
-			setPartSizeXml(xmlSize);
-			safeMove();
-		}
-
-		safeMove();
-
-		world = Workspace::getWorldIfInWorkspace(this);
-
-		if (world != NULL) {
-			world->createJoints(primitive.get());
-		}
-	}
-}
-
-} // namespace RBX

@@ -1,14 +1,13 @@
-// from server: 58% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Controls/XTColorSelectorCtrl.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib Source\Controls\XTColorSelectorCtrl.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTColorSelectorCtrl.cpp : implementation file
 //
 // This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -34,13 +33,12 @@
 #include "Common/XTPResourceManager.h"
 #include "Common/XTPColorManager.h"
 #include "Common/XTPDrawHelpers.h"
-#include "Common/XTPOffice2007Image.h"
 
 #include "XTDefines.h"
 #include "XTGlobal.h"
 #include "XTColorDialog.h"
 #include "XTColorSelectorCtrl.h"
-#include "XTFunctions.h"
+#include "XTColorSelectorCtrlTheme.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -174,48 +172,6 @@ static XTP_PICK_BUTTON extendedColors[] =
 /////////////////////////////////////////////////////////////////////////////
 // CXTColorSelectorCtrl message handlers
 
-CSize CXTColorSelectorCtrl::CalcSize()
-{
-	CSize sz;
-
-	sz.cx = (m_sizeButton.cx * m_nCols + m_rcBorders.left + m_rcBorders.right);
-	sz.cy = m_rcBorders.top + m_rcBorders.bottom;
-
-	if ((m_dwPopup & CPS_XT_NOAUTOMATIC) == 0)
-	{
-		sz.cy += 27;
-	}
-
-	if (m_pExtendedColors)
-	{
-		m_dwPopup |= CPS_XT_EXTENDED;
-		ASSERT(m_nExtendedColors > 0);
-	}
-
-	if (m_dwPopup & CPS_XT_EXTENDED)
-	{
-		int nColors = m_pExtendedColors == NULL ? _countof(extendedColors) : m_nExtendedColors;
-		sz.cy += ((nColors + m_nCols - 1) / m_nCols) * m_sizeButton.cy;
-	}
-	else
-	{
-		sz.cy += 22 + 2 * m_sizeButton.cy;
-	}
-
-
-	if ((m_dwPopup & CPS_XT_MORECOLORS) != 0)
-	{
-		sz.cy += 27;
-
-		if (m_arUserDefColors.GetSize() > 0)
-		{
-			sz.cy += 4 + m_sizeButton.cy;
-		}
-	}
-	return sz;
-}
-
-
 BOOL CXTColorSelectorCtrl::Create(CRect rect, CWnd* pParentWnd, DWORD dwPopup, COLORREF clrColor,
 	COLORREF clrDefault/*= CLR_DEFAULT*/)
 {
@@ -230,33 +186,45 @@ BOOL CXTColorSelectorCtrl::Create(CRect rect, CWnd* pParentWnd, DWORD dwPopup, C
 	m_clrColor = clrColor;
 	m_clrDefault = clrDefault;
 
-	m_rcWnd = rect;
+	m_rcWnd.CopyRect(rect);
 
-	CSize sz = CalcSize();
+	m_rcWnd.right = m_rcWnd.left + m_sizeButton.cx * m_nCols + m_rcBorders.left + m_rcBorders.right;
+	m_rcWnd.top = m_rcWnd.bottom;
+	m_rcWnd.bottom = m_rcWnd.top + m_rcBorders.top + m_rcBorders.bottom;
 
-	if (dwPopup & WS_POPUP)
+	if ((m_dwPopup & CPS_XT_NOAUTOMATIC) == 0)
 	{
-		if (m_dwPopup & CPS_XT_RIGHTALIGN)
-		{
-			m_rcWnd.left = m_rcWnd.right - sz.cx;
-		}
-		else
-		{
-			m_rcWnd.right = m_rcWnd.left + sz.cx;
-		}
+		m_rcWnd.bottom += 27;
+	}
 
-		m_rcWnd.top = rect.bottom;
-		m_rcWnd.bottom = m_rcWnd.top + sz.cy;
+	if (m_pExtendedColors)
+	{
+		m_dwPopup |= CPS_XT_EXTENDED;
+		ASSERT(m_nExtendedColors > 0);
+	}
+
+	if (m_dwPopup & CPS_XT_EXTENDED)
+	{
+		int nColors = m_pExtendedColors == NULL ? _countof(extendedColors) : m_nExtendedColors;
+		m_rcWnd.bottom += ((nColors + m_nCols - 1) / m_nCols) * m_sizeButton.cy;
 	}
 	else
 	{
-		rect.right = rect.left + sz.cx;
-		rect.bottom = rect.top + sz.cy;
+		m_rcWnd.bottom += 22 + 2 * m_sizeButton.cy;
 	}
-
 
 	// register the wnd class.
 	CString wndClass = ::AfxRegisterWndClass(0, AfxGetApp()->LoadStandardCursor(IDC_ARROW));
+
+	if ((m_dwPopup & CPS_XT_MORECOLORS) != 0)
+	{
+		m_rcWnd.bottom += 27;
+
+		if (m_arUserDefColors.GetSize() > 0)
+		{
+			m_rcWnd.bottom += 4 + m_sizeButton.cy;
+		}
+	}
 
 	// call the base class for creation.
 	if (!CWnd::CreateEx(NULL, wndClass, _T(""), WS_CHILD,
@@ -266,14 +234,23 @@ BOOL CXTColorSelectorCtrl::Create(CRect rect, CWnd* pParentWnd, DWORD dwPopup, C
 		return FALSE;
 	}
 
-	// Set the font and control ID.
-	SetFont(&XTAuxData().font);
+	if (dwPopup & WS_POPUP)
+	{
+		SetFocus();
 
-	if ((dwPopup & WS_VISIBLE) && ((m_dwPopup & WS_POPUP) == 0))
+		SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, 0);
+		ModifyStyle(WS_CHILD, WS_POPUP);
+		SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, (LONG_PTR)m_pParentWnd->m_hWnd);
+
+		SetWindowPos(&CWnd::wndTop, m_rcWnd.left, m_rcWnd.top, m_rcWnd.Width(), m_rcWnd.Height(), SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+	}
+	else
 	{
 		ShowWindow(SW_SHOWNA);
 	}
 
+	// Set the font and control ID.
+	SetFont(&XTAuxData().font);
 
 	return TRUE;
 }
@@ -302,7 +279,7 @@ int CXTColorSelectorCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	{
 		nResID = m_dwPopup & CPS_XT_NOFILL ? XTP_IDS_CLR_NOFILL : XTP_IDS_CLR_AUTOMATIC;
 
-		CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&strText, nResID));
+		VERIFY(XTPResourceManager()->LoadString(&strText, nResID));
 		int nTipIndex = FIND_S(strText, _T('\n'), 0);
 		if (nTipIndex > 0)
 		{
@@ -380,7 +357,7 @@ int CXTColorSelectorCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 		m_arCells.AddTail(pColorCell);
 
-		CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&strColorToolTip, nResID));
+		VERIFY(XTPResourceManager()->LoadString(&strColorToolTip, nResID));
 
 		m_tooltip.AddTool(this, strColorToolTip, pColorCell->rect, nResID);
 
@@ -439,7 +416,7 @@ int CXTColorSelectorCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 		nTop += 4;
 
-		CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&strText, XTP_IDS_CLR_MORE));
+		VERIFY(XTPResourceManager()->LoadString(&strText, XTP_IDS_CLR_MORE));
 
 		nIndex++;
 		pColorCell = new COLOR_CELL;
@@ -514,7 +491,7 @@ void CXTColorSelectorCtrl::DrawColorSelector(CDC* pDC)
 	if ((m_dwPopup & CPS_XT_EXTENDED) == 0)
 	{
 		CString strText;
-		CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&strText, XT_IDS_STD_COLORS));
+		VERIFY(XTPResourceManager()->LoadString(&strText, XT_IDS_STD_COLORS));
 
 		int nTop = ((m_dwPopup & CPS_XT_NOAUTOMATIC) == 0) ? 27 : 0;
 		pDC->TextOut(6, nTop + 4, strText);
@@ -647,15 +624,13 @@ void CXTColorSelectorCtrl::OnLButtonUp(UINT nFlags, CPoint point)
 	{
 		CWnd::OnLButtonUp(nFlags, point);
 
-		int nCurSel = m_nPressed == m_nCurSel ? m_nCurSel : -1;
+		if (m_nPressed == m_nCurSel && m_nCurSel != -1)
+		{
+			EndSelection(m_nCurSel);
+		}
 
 		m_nCurSel = m_nPressed = -1;
 		Invalidate(FALSE);
-
-		if (nCurSel != -1)
-		{
-			EndSelection(nCurSel);
-		}
 	}
 }
 
@@ -918,7 +893,7 @@ void CXTColorSelectorCtrl::OnEndSelection(int nCurSel, LPARAM callerParam)
 		SAFE_DELETE(m_pColorDlg);
 	}
 
-	else if (nCurSel == 0 && ((m_dwPopup & CPS_XT_NOAUTOMATIC) == 0))
+	else if (nCurSel == 0)
 	{
 		if (m_dwPopup & CPS_XT_NOFILL)
 		{
@@ -1027,186 +1002,4 @@ void CXTColorSelectorCtrl::SetUserColors(const CUIntArray& arUserDefColors)
 CUIntArray& CXTColorSelectorCtrl::GetUserColors()
 {
 	return m_arUserDefColors;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CXTColorSelectorCtrlTheme
-
-
-//////////////////////////////////////////////////////////////////////
-// CXTColorSelectorCtrlTheme
-
-IMPLEMENT_THEME_FACTORY(CXTColorSelectorCtrlTheme)
-
-CXTColorSelectorCtrlTheme::CXTColorSelectorCtrlTheme()
-: m_crBorderHilight(COLORREF_NULL)
-, m_crBorderShadow(COLORREF_NULL)
-, m_crBack(COLORREF_NULL)
-, m_crPressed(COLORREF_NULL)
-, m_crHilight(COLORREF_NULL)
-, m_crChecked(COLORREF_NULL)
-{
-	m_bFlatTheme = FALSE;
-}
-
-void CXTColorSelectorCtrlTheme::RefreshMetrics()
-{
-	CXTThemeManagerStyle::RefreshMetrics();
-
-	m_crBack = GetXtremeColor(COLOR_3DFACE);
-	m_crBorderHilight = GetXtremeColor(COLOR_3DHILIGHT);
-	m_crBorderShadow = GetXtremeColor(COLOR_3DSHADOW);
-	m_crText = GetXtremeColor(COLOR_BTNTEXT);
-
-	m_crPopupBorder = GetXtremeColor(XPCOLOR_MENUBAR_BORDER);
-}
-
-void CXTColorSelectorCtrlTheme::FillBackground(CDC* pDC, const CRect& rect, CXTColorSelectorCtrl* /*pOwner*/)
-{
-	pDC->FillSolidRect(&rect, m_crBack);
-}
-
-void CXTColorSelectorCtrlTheme::DrawColorCell(CXTColorSelectorCtrl::COLOR_CELL* pColorCell, CDC* pDC, BOOL bHilite, BOOL bPressed)
-{
-	pDC->SetBkMode(TRANSPARENT);
-	CFont* pOldFont = pDC->SelectObject(&XTAuxData().font);
-
-	CRect rcItem = pColorCell->rect;
-
-	bool bChecked = pColorCell->bChecked;
-
-	if (bChecked || bHilite || bPressed)
-	{
-		if (bPressed)
-		{
-			if (m_crPressed != COLORREF_NULL)
-			{
-				pDC->FillSolidRect(&rcItem, m_crPressed);
-			}
-		}
-		else if (bHilite)
-		{
-			if (m_crHilight != COLORREF_NULL)
-			{
-				pDC->FillSolidRect(&rcItem, m_crHilight);
-			}
-		}
-		else if (bChecked)
-		{
-			if (m_crChecked != COLORREF_NULL)
-			{
-				pDC->FillSolidRect(&rcItem, m_crChecked);
-			}
-			else
-			{
-				XTFuncDrawShadedRect(pDC, rcItem);
-			}
-		}
-
-		pDC->Draw3dRect(rcItem, (bPressed || bChecked) ? m_crBorderShadow : m_crBorderHilight,
-			(bPressed || bChecked) ? m_crBorderHilight : m_crBorderShadow);
-	}
-
-	int nLen = (int)_tcslen(pColorCell->szText);
-	if (nLen)
-	{
-		pDC->SetTextColor(m_crText);
-		pDC->DrawText(pColorCell->szText, nLen, rcItem, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
-	}
-
-	if (pColorCell->dwStyle != CPS_XT_MORECOLORS)
-	{
-		rcItem.DeflateRect(3, 3);
-
-		if ((pColorCell->dwStyle & CPS_XT_PICKBOX) == 0)
-		{
-			if ((pColorCell->dwStyle & CPS_XT_NOFILL) == 0)
-			{
-				rcItem.DeflateRect(3, 3);
-				rcItem.right = rcItem.left + 12;
-				rcItem.bottom = rcItem.top + 11;
-				rcItem.OffsetRect(1, 0);
-				pDC->Draw3dRect(rcItem, m_crBorderShadow, m_crBorderShadow);
-				rcItem.DeflateRect(1, 1);
-				pDC->FillSolidRect(rcItem, pColorCell->clr);
-			}
-		}
-		else
-		{
-			pDC->Draw3dRect(rcItem, m_crBorderShadow, m_crBorderShadow);
-			rcItem.DeflateRect(1, 1);
-			pDC->FillSolidRect(rcItem, pColorCell->clr);
-		}
-	}
-	else
-	{
-		if (pColorCell->bChecked)
-		{
-			rcItem = pColorCell->rect;
-			rcItem.DeflateRect(5, 6);
-			rcItem.left = rcItem.right - 12;
-			pDC->Draw3dRect(rcItem, m_crBorderShadow, m_crBorderShadow);
-			rcItem.DeflateRect(1, 1);
-			pDC->FillSolidRect(rcItem, pColorCell->clr);
-		}
-	}
-
-	pDC->SelectObject(pOldFont);
-}
-
-//////////////////////////////////////////////////////////////////////
-// CXTColorSelectorCtrlThemeOfficeXP
-
-CXTColorSelectorCtrlThemeOfficeXP::CXTColorSelectorCtrlThemeOfficeXP()
-{
-	m_bFlatTheme = TRUE;
-}
-
-void CXTColorSelectorCtrlThemeOfficeXP::RefreshMetrics()
-{
-	CXTColorSelectorCtrlTheme::RefreshMetrics();
-
-	m_crBorderHilight = GetXtremeColor(XPCOLOR_HIGHLIGHT_BORDER);
-	m_crBorderShadow = GetXtremeColor(XPCOLOR_HIGHLIGHT_BORDER);
-	m_crBack = GetXtremeColor(XPCOLOR_MENUBAR_FACE);
-	m_crPressed = GetXtremeColor(XPCOLOR_HIGHLIGHT_PUSHED);
-	m_crHilight = GetXtremeColor(XPCOLOR_HIGHLIGHT);
-	m_crChecked = GetXtremeColor(XPCOLOR_HIGHLIGHT_CHECKED);
-}
-
-//////////////////////////////////////////////////////////////////////
-// CXTColorSelectorCtrlThemeOffice2003
-
-CXTColorSelectorCtrlThemeOffice2003::CXTColorSelectorCtrlThemeOffice2003()
-{
-}
-
-void CXTColorSelectorCtrlThemeOffice2003::RefreshMetrics()
-{
-	CXTColorSelectorCtrlThemeOfficeXP::RefreshMetrics();
-
-	m_crBorderHilight = GetMSO2003Color(XPCOLOR_HIGHLIGHT_BORDER);
-	m_crBorderShadow = GetMSO2003Color(XPCOLOR_HIGHLIGHT_BORDER);
-	m_crBack = GetMSO2003Color(XPCOLOR_MENUBAR_FACE);
-	m_crPressed = GetMSO2003Color(XPCOLOR_HIGHLIGHT_PUSHED);
-	m_crHilight = GetMSO2003Color(XPCOLOR_HIGHLIGHT);
-	m_crChecked = GetMSO2003Color(XPCOLOR_HIGHLIGHT_CHECKED);
-}
-
-CXTColorSelectorCtrlThemeOffice2007::CXTColorSelectorCtrlThemeOffice2007()
-{
-}
-
-void CXTColorSelectorCtrlThemeOffice2007::RefreshMetrics()
-{
-	CXTColorSelectorCtrlThemeOfficeXP::RefreshMetrics();
-
-	m_crBack = RGB(250, 250, 250);
-	m_crPressed = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("HighlightPressed"));
-	m_crHilight = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("HighlightSelected"));
-	m_crChecked = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("HighlightChecked"));
-	m_crText = 0;
-	m_crPopupBorder = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("WindowFrame"));
-
-	m_crBorderShadow = m_crBorderHilight = m_crPopupBorder;
 }

@@ -1,159 +1,285 @@
-// roc 2011-06 00650c10  unit: std::D::DU?$char_traits::DV?$basic_streambuf::?$lexical_stream_limited_src  size: 265 bytes
-// Make this compile to the exact bytes below, then: roc check 2011-06 00650c10
-//
-// 00650c10  83ec1c               sub esp, 0x1c
-// 00650c13  56                   push esi
-// 00650c14  57                   push edi
-// 00650c15  8b7c2428             mov edi, dword ptr [esp + 0x28]
-// 00650c19  6a02                 push 2
-// 00650c1b  6a00                 push 0
-// 00650c1d  685ca2a900           push 0xa9a25c
-// 00650c22  8bcf                 mov ecx, edi
-// 00650c24  ff15dc06a400         call dword ptr [0xa406dc]
-// 00650c2a  8bf0                 mov esi, eax
-// 00650c2c  85f6                 test esi, esi
-// 00650c2e  7d08                 jge 0x650c38
-// 00650c30  5f                   pop edi
-// 00650c31  32c0                 xor al, al
-// 00650c33  5e                   pop esi
-// 00650c34  83c41c               add esp, 0x1c
-// 00650c37  c3                   ret 
-// 00650c38  56                   push esi
-// 00650c39  6a00                 push 0
-// 00650c3b  8d442410             lea eax, [esp + 0x10]
-// 00650c3f  50                   push eax
-// 00650c40  8bcf                 mov ecx, edi
-// 00650c42  ff153004a400         call dword ptr [0xa40430]
-// 00650c48  83781810             cmp dword ptr [eax + 0x18], 0x10
-// 00650c4c  7205                 jb 0x650c53
-// 00650c4e  8b4004               mov eax, dword ptr [eax + 4]
-// 00650c51  eb03                 jmp 0x650c56
-// 00650c53  83c004               add eax, 4
-// 00650c56  53                   push ebx
-// 00650c57  55                   push ebp
-// 00650c58  50                   push eax
-// 00650c59  ff155408a400         call dword ptr [0xa40854]
-// 00650c5f  8b6c2438             mov ebp, dword ptr [esp + 0x38]
-// 00650c63  83c404               add esp, 4
-// 00650c66  d95d00               fstp dword ptr [ebp]
-// 00650c69  8d4c2410             lea ecx, [esp + 0x10]
-// 00650c6d  ff15d004a400         call dword ptr [0xa404d0]
-// 00650c73  6a02                 push 2
-// 00650c75  46                   inc esi
-// 00650c76  56                   push esi
-// 00650c77  685ca2a900           push 0xa9a25c
-// 00650c7c  8bcf                 mov ecx, edi
-// 00650c7e  ff15dc06a400         call dword ptr [0xa406dc]
-// 00650c84  8bd8                 mov ebx, eax
-// 00650c86  3bde                 cmp ebx, esi
-// 00650c88  7c46                 jl 0x650cd0
-// 00650c8a  8bcb                 mov ecx, ebx
-// 00650c8c  2bce                 sub ecx, esi
-// 00650c8e  51                   push ecx
-// 00650c8f  56                   push esi
-// 00650c90  8d542418             lea edx, [esp + 0x18]
-// 00650c94  52                   push edx
-// 00650c95  8bcf                 mov ecx, edi
-// 00650c97  ff153004a400         call dword ptr [0xa40430]
-// 00650c9d  be10000000           mov esi, 0x10
-// 00650ca2  397018               cmp dword ptr [eax + 0x18], esi
-// 00650ca5  7205                 jb 0x650cac
-// 00650ca7  8b4004               mov eax, dword ptr [eax + 4]
-// 00650caa  eb03                 jmp 0x650caf
-// 00650cac  83c004               add eax, 4
-// 00650caf  50                   push eax
-// 00650cb0  ff155408a400         call dword ptr [0xa40854]
-// 00650cb6  d95d04               fstp dword ptr [ebp + 4]
-// 00650cb9  83c404               add esp, 4
-// 00650cbc  8d4c2410             lea ecx, [esp + 0x10]
-// 00650cc0  ff15d004a400         call dword ptr [0xa404d0]
-// 00650cc6  8b4714               mov eax, dword ptr [edi + 0x14]
-// 00650cc9  8d4b01               lea ecx, [ebx + 1]
-// 00650ccc  3bc1                 cmp eax, ecx
-// 00650cce  7d0a                 jge 0x650cda
-// 00650cd0  5d                   pop ebp
-// 00650cd1  5b                   pop ebx
-// 00650cd2  5f                   pop edi
-// 00650cd3  32c0                 xor al, al
-// 00650cd5  5e                   pop esi
-// 00650cd6  83c41c               add esp, 0x1c
-// 00650cd9  c3                   ret 
-// 00650cda  2bc1                 sub eax, ecx
-// 00650cdc  50                   push eax
-// 00650cdd  51                   push ecx
-// 00650cde  8d442418             lea eax, [esp + 0x18]
-// 00650ce2  50                   push eax
-// 00650ce3  8bcf                 mov ecx, edi
-// 00650ce5  ff153004a400         call dword ptr [0xa40430]
-// 00650ceb  397018               cmp dword ptr [eax + 0x18], esi
-// 00650cee  7205                 jb 0x650cf5
-// 00650cf0  8b4004               mov eax, dword ptr [eax + 4]
-// 00650cf3  eb03                 jmp 0x650cf8
-// 00650cf5  83c004               add eax, 4
-// 00650cf8  50                   push eax
-// 00650cf9  ff155408a400         call dword ptr [0xa40854]
-// 00650cff  d95d08               fstp dword ptr [ebp + 8]
-// 00650d02  83c404               add esp, 4
-// 00650d05  8d4c2410             lea ecx, [esp + 0x10]
-// 00650d09  ff15d004a400         call dword ptr [0xa404d0]
-// 00650d0f  5d                   pop ebp
-// 00650d10  5b                   pop ebx
-// 00650d11  5f                   pop edi
-// 00650d12  b001                 mov al, 1
-// 00650d14  5e                   pop esi
-// 00650d15  83c41c               add esp, 0x1c
-// 00650d18  c3                   ret 
-// copied from an identical function in another client (function ?parse_vector@@YA_NABUString@@PAM@Z)
-
+// roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-struct String {
-    char reserved[4];
-    union {
-        char buffer[16];
-        char* pointer;
-    } data;
-    unsigned int length;
-    unsigned int capacity;
-};
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_color_kernel_native_family_d08788802cbb1f87.cpp
 
-extern unsigned int (__thiscall* find_first_of)(
-    const String*, const char*, unsigned int, unsigned int);
-extern String* (__thiscall* substring)(
-    const String*, String*, unsigned int, unsigned int);
-extern void (__thiscall* destroy_string)(String*);
-extern double (__cdecl* parse_number)(const char*);
+// Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#include "v8tree/Property.cpp"
+bool (*roc_color_parser)(const std::string&, G3D::Color3&) = &RBX::StringConverter<G3D::Color3>::convertToValue;
+bool (*roc_vector_parser)(const std::string&, G3D::Vector3&) = &RBX::StringConverter<G3D::Vector3>::convertToValue;
 
-bool parse_vector(const String& text, float* result)
+#undef _RELEASEASSERT
+#include <v8world/Contact.h>
+#include <util/Math.h>
+namespace RBX {
+	Block* BlockBlockContact::block(int i)
+	{
+		return rbx_static_cast<Block*>(this->getPrimitive(i)->getGeometry());
+	}
+
+	int BlockBlockContact::intersectRectQuad(G3D::Vector2& planeRect, G3D::Vector2 (&otherQuad)[4])
+	{
+		bool quadCrossRect[4][4];
+
+		bool quadIn[4] = {true, true, true, true};
+
+		int foundCounter = 0;
+
+		for (int i = 3; i >= 0; i--)
+		{
+			if (otherQuad[i].y <= planeRect.y)
+			{
+				quadCrossRect[0][i] = true;
+			}
+			else
+			{
+				quadCrossRect[0][i] = false;
+				quadIn[i] = false;
+			}
+
+			if (otherQuad[i].x >= -planeRect.x)
+			{
+				quadCrossRect[1][i] = true;
+			}
+			else
+			{
+				quadCrossRect[1][i] = false;
+				quadIn[i] = false;
+			}
+
+			if (otherQuad[i].y >= -planeRect.y)
+			{
+				quadCrossRect[2][i] = true;
+			}
+			else
+			{
+				quadCrossRect[2][i] = false;
+				quadIn[i] = false;
+			}
+
+			if (otherQuad[i].x <= planeRect.x)
+			{
+				quadCrossRect[3][i] = true;
+			}
+			else
+			{
+				quadCrossRect[3][i] = false;
+				quadIn[i] = false;
+			}
+		}
+
+		for (int i = 3; i >= 0; i--)
+		{
+			if (quadIn[i])
+			{
+				loadGeoPairPointPlane((*(int*)((char*)this+0x70)), (*(int*)((char*)this+0x6c)), i, (*(NormalId*)((char*)this+0x78)), (*(NormalId*)((char*)this+0x74)));
+				foundCounter++;
+			}
+		}
+
+		if (foundCounter == 4)
+			return foundCounter;
+		else
+		{
+			bool rectCrossQuad[4][4];
+			G3D::Vector2 rect[4];
+			rect[0] = G3D::Vector2(planeRect.x, planeRect.y);
+			rect[1] = G3D::Vector2(-planeRect.x, planeRect.y);
+			rect[2] = G3D::Vector2(-planeRect.x, -planeRect.y);
+			rect[3] = G3D::Vector2(planeRect.x, -planeRect.y);
+
+			bool rectIn[4] = {true, true, true, true};
+
+			for (int i = 3; i >= 0; i--)
+			{
+				G3D::Vector2& current = otherQuad[i];
+				G3D::Vector2& currentO = otherQuad[(i + 3) % 4];
+				for (int j = 0; j < 4; j++)
+				{
+					G3D::Vector2 math1 = rect[j] - current;
+					G3D::Vector2 math2 = currentO - current;
+
+					if ((math2.x * math1.y) - (math2.y * math1.x) >= 0.0f)
+					{
+						rectCrossQuad[i][j] = true;
+					}
+					else
+					{
+						rectCrossQuad[i][j] = false;
+						rectIn[j] = false;
+					}
+				}
+			}
+
+			int wasZero = foundCounter == 0;
+
+			for (int i = 0; i < 4; i++)
+			{
+				if (rectIn[i])
+				{
+					loadGeoPairPointPlane((*(int*)((char*)this+0x6c)), (*(int*)((char*)this+0x70)), i, (*(NormalId*)((char*)this+0x74)), (*(NormalId*)((char*)this+0x78)));
+					foundCounter++;
+				}
+			}
+
+			if (wasZero && foundCounter == 4)
+				return foundCounter;
+			else
+			{
+				for (int i = 0; i < 4; i++)
+				{
+					for (int j = 3; j >= 0; j--)
+					{
+						if (quadCrossRect[i][j] != quadCrossRect[i][(j + 3) % 4] && rectCrossQuad[j][i] != rectCrossQuad[j][(i + 1) % 4])
+						{
+
+							loadGeoPairEdgeEdgePlane((*(int*)((char*)this+0x70)), (*(int*)((char*)this+0x6c)), block((*(int*)((char*)this+0x70)))->faceVertexToEdge((*(NormalId*)((char*)this+0x78)), (j+3)%4), block((*(int*)((char*)this+0x6c)))->faceVertexToEdge((*(NormalId*)((char*)this+0x74)), i));
+							foundCounter++;
+						}
+					}
+				}
+				RBXASSERT(foundCounter != 1 && foundCounter <= 8);
+				return foundCounter;
+			}
+		}
+	}
+
+
+}
+
+#include <script/ScriptContext.h>
+#include <util/standardout.h>
+#include <lua/lua.hpp>
+#include <lauxlib.h>
+#include <cstring>
+namespace RBX { namespace Lua { const char* safe_lua_tostring(lua_State*, int); } }
+using namespace RBX;
+void ScriptContext::executeInNewThread(Security::Identities identity, const char* script, const char* name, PushArgumentsClosure pushArguments, ReadResultsClosure readResults)
 {
-    int first = (int)find_first_of(&text, ",;", 0, 2);
-    if (first < 0)
-        return false;
+    openState();
 
-    String temporary;
-    String* part = substring(&text, &temporary, 0, first);
-    result[0] = (float)parse_number(
-        part->capacity >= 16 ? part->data.pointer : part->data.buffer);
-    destroy_string(&temporary);
+    lua_State* L;
+    lua_State* newThread;
 
-    ++first;
-    int second = (int)find_first_of(&text, ",;", first, 2);
-    if (second < first)
-        return false;
+    if (identity == Security::CmdLine)
+    {
+        if ((*(Lua::ThreadRef*)((char*)this+0x13c)).empty())
+        {
+            {
+                Lua::ThreadRef threadRef(lua_newthread((*(lua_State**)((char*)this+0x138))));
+                (*(Lua::ThreadRef*)((char*)this+0x13c)) = threadRef;
+            }
 
-    part = substring(&text, &temporary, first, second - first);
-    result[1] = (float)parse_number(
-        part->capacity >= 16 ? part->data.pointer : part->data.buffer);
-    destroy_string(&temporary);
+            if ((*(Lua::ThreadRef*)((char*)this+0x13c)).empty())
+                throw std::runtime_error("Unable to create trusted sandbox thread");
 
-    int start = second + 1;
-    int length = (int)text.length;
-    if (length < start)
-        return false;
+            sandboxThread((*(Lua::ThreadRef*)((char*)this+0x13c)).thread());
+            setThreadIdentity((*(Lua::ThreadRef*)((char*)this+0x13c)).thread(), Security::CmdLine);
+            lua_pop((*(lua_State**)((char*)this+0x138)), 1);
+        }
 
-    part = substring(&text, &temporary, start, length - start);
-    result[2] = (float)parse_number(
-        part->capacity >= 16 ? part->data.pointer : part->data.buffer);
-    destroy_string(&temporary);
-    return true;
+        L = (*(Lua::ThreadRef*)((char*)this+0x13c)).thread();
+        newThread = lua_newthread(L);
+    }
+    else
+    {
+        L = (*(lua_State**)((char*)this+0x138));
+        newThread = lua_newthread(L);
+        sandboxThread(newThread);
+        setThreadIdentity(newThread, identity);
+    }
+
+    if (!newThread)
+    {
+        StandardOut::singleton()->print(MESSAGE_ERROR, "ScriptContext::execute: Unable to create a new thread");
+        throw std::runtime_error("Unable to create a new thread");
+    }
+
+    Lua::ScopedPopper popper(L, 1);
+
+    std::string sName("=");
+
+    if (name)
+        sName += name;
+    else
+        sName += "Script";
+
+    if (luaL_loadbuffer(newThread, script, strlen(script), sName.c_str()))
+    {
+        std::string err = Lua::safe_lua_tostring(newThread, -1);
+        lua_pop(newThread, 1);
+
+        StandardOut::singleton()->print(MESSAGE_ERROR, err.c_str());
+        throw std::runtime_error(err);
+    }
+
+    resume(newThread, pushArguments, readResults);
+}
+
+
+#undef _RELEASEASSERT
+#include <v8world/RotateJoint.h>
+#include <v8world/Primitive.h>
+#include <v8world/World.h>
+#include <v8kernel/Body.h>
+#include <util/Math.h>
+namespace RBX {
+class RotatePrimitiveApi {
+public:
+    Body* getBody() { return *(Body**)((char*)this+0xa0); }
+};
+class RotateBodyApi {
+private:
+    void updatePV() const;
+public:
+    const G3D::CoordinateFrame& getCoordinateFrame() const {
+        updatePV();
+        return *(const G3D::CoordinateFrame*)((const char*)this+0x94);
+    }
+};
+	void RotateJoint::putInKernel(Kernel* _kernel)
+	{
+		MultiJoint::putInKernel(_kernel);
+
+		Body* b0 = ((RotatePrimitiveApi*)getAxlePrim())->getBody();
+		Body* b1 = ((RotatePrimitiveApi*)getHolePrim())->getBody();
+
+		G3D::CoordinateFrame cAxleWorld = ((RotateBodyApi*)b0)->getCoordinateFrame() * jointCoord0;
+		G3D::CoordinateFrame cHoleWorld = ((RotateBodyApi*)b1)->getCoordinateFrame() * jointCoord1;
+
+		G3D::Vector3 vAxleWorld = cAxleWorld.rotation.getColumn(2);
+		G3D::Vector3 vHoleWorld = cHoleWorld.rotation.getColumn(2);
+
+		for (int i = 0; i < 2; i++)
+		{
+			float multiplier = i == 0 ? -1.0f : 1.0f;
+
+			G3D::Vector3 pAxleWorldPos = vAxleWorld * multiplier + cAxleWorld.translation;
+			G3D::Vector3 pHoleWorldPos = vHoleWorld * multiplier + cHoleWorld.translation;
+
+			Point* pAxleWorld = getKernel()->newPoint(b0, pAxleWorldPos);
+			Point* pHoleWorld = getKernel()->newPoint(b1, pHoleWorldPos);
+
+			PointToPointBreakConnector* connector = new PointToPointBreakConnector(pAxleWorld, pHoleWorld, getJointK(), Math::inf());
+			addToMultiJoint(pAxleWorld, pHoleWorld, connector);
+		}
+
+		if (getJointType() == ROTATE_P_JOINT || getJointType() == ROTATE_V_JOINT)
+		{
+			G3D::Vector3 center0 = cAxleWorld.translation;
+			G3D::Vector3 perp = cAxleWorld.rotation.getColumn(0);
+			G3D::Vector3 marker0 = perp * 10.0f + center0;
+
+			Point* pMarker0 = getKernel()->newPoint(b0, marker0);
+			Point* pMarker1 = getKernel()->newPoint(b1, marker0);
+
+			RBXASSERT(!rotateConnector);
+			RotateConnector* connector = new RotateConnector(getPoint(0), getPoint(2), pMarker0, pMarker1, getJointK(), getTorqueArmLength());
+			rotateConnector = connector;
+			addToMultiJoint(pMarker0, pMarker1, connector);
+		}
+	}
+
+
 }

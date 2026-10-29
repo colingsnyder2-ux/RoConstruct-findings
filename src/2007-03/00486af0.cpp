@@ -1,359 +1,151 @@
-// from server: 59% by colin
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net Players.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_boost133_signal_de5c8dd16a4762cb.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include <RakPeer.h>
-#include <BitStream.h>
-#include "Client.h"
-#include "Server.h"
-#include "Players.h"
-#include "Streaming.h"
-#include "PacketIds.h"
-#include "v8datamodel/GameSettings.h"
-#include "v8datamodel/Teams.h"
-#include "util/standardout.h"
+// Boost.Function library
 
-template<class Class>
-class PluginInterfaceAdapter : public PluginInterface
-{
-private:
-	Class* c;
-protected:
-	PluginInterfaceAdapter(Class* c)
-		: PluginInterface(),
-		  c(c)
-	{
-	}
-public:
-	virtual PluginReceiveResult OnReceive(RakPeerInterface* peer, Packet* packet);
-};
+//  Copyright Douglas Gregor 2001-2004. Use, modification and
+//  distribution is subject to the Boost Software License, Version
+//  1.0. (See accompanying file LICENSE_1_0.txt or copy at
+//  http://www.boost.org/LICENSE_1_0.txt)
 
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, void(boost::shared_ptr<RBX::Instance>, std::string), 2> funcReportAbuse(&RBX::Network::Players::reportAbuse, "ReportAbuse", "player", "message", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<const std::vector<boost::shared_ptr<RBX::Instance>>>(void), 0> func_players(&RBX::Network::Players::getPlayers, "players", RBX::Reflection::FunctionDescriptor::AnyCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<const std::vector<boost::shared_ptr<RBX::Instance>>>(void), 0> func_GetPlayers(&RBX::Network::Players::getPlayers, "GetPlayers", RBX::Reflection::FunctionDescriptor::AnyCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<RBX::Instance>(int), 1> func_createLocalPlayer(&RBX::Network::Players::createLocalPlayer, "CreateLocalPlayer", "userId", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, void(std::string), 1> func_setAbuseReportUrl(&RBX::Network::Players::setAbuseReportUrl, "SetAbuseReportUrl", "url", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<RBX::Instance>(boost::shared_ptr<RBX::Instance>), 1> func_playerFromCharacterOld(&RBX::Network::Players::playerFromCharacter, "playerFromCharacter", "character", RBX::Reflection::FunctionDescriptor::AnyCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<RBX::Instance>(boost::shared_ptr<RBX::Instance>), 1> func_playerFromCharacter(&RBX::Network::Players::playerFromCharacter, "GetPlayerFromCharacter", "character", RBX::Reflection::FunctionDescriptor::AnyCaller);
+// For more information, see http://www.boost.org
 
-static RBX::Reflection::SignalDesc<RBX::Network::Players, void(boost::shared_ptr<RBX::Instance>)> event_PlayerAdded("PlayerAdded", "player");
-static RBX::Reflection::SignalDesc<RBX::Network::Players, void(boost::shared_ptr<RBX::Instance>)> event_PlayerRemoving("PlayerRemoving", "player");
 
-static RBX::Reflection::PropDescriptor<RBX::Network::Players, int> propPlayerCount("NumPlayers", "Data", &RBX::Network::Players::numPlayers, NULL, RBX::Reflection::PropertyDescriptor::UI);
-static RBX::Reflection::PropDescriptor<RBX::Network::Players, int> propPlayerMaxCount("MaxPlayers", "Data", &RBX::Network::Players::getMaxPlayers, &RBX::Network::Players::setMaxPlayers, RBX::Reflection::PropertyDescriptor::STANDARD);
+// Authentic Boost 1.33.1 manager, isolated to coexist with newer native headers.
+// Source: https://raw.githubusercontent.com/boostorg/function/boost-1.33.1/include/boost/function/function_base.hpp
+#ifndef _DLL
+#define _DLL
+#endif
+#include "reflection/signal.h"
+#define BOOST_FUNCTION_COMPARE_TYPE_ID(X,Y) ((X)==(Y))
+namespace recovered_boost133 {
+using namespace boost::detail::function;
+      union any_pointer
+      {
+        void* obj_ptr;
+        const void* const_obj_ptr;
+        void (*func_ptr)();
+        char data[1];
+      };
 
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<RBX::Instance>(int), 1> func_GetPlayerByID(&RBX::Network::Players::getPlayerByID, "GetPlayerByID", "userID", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, void(std::string), 1> funcChat(&RBX::Network::Players::chat, "Chat", "message", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+      inline any_pointer make_any_pointer(void* o)
+      {
+        any_pointer p;
+        p.obj_ptr = o;
+        return p;
+      }
 
-namespace RBX
-{
-	namespace Network
-	{
-		class Players::Plugin : public PluginInterfaceAdapter<Players>
-		{
-		public:
-			Plugin(Players* players)
-				: PluginInterfaceAdapter<Players>(players)
-			{
-			}
-		};
-		
-		Players::Players()
-			: players(std::vector<boost::shared_ptr<Instance>>()),
-			  peer(NULL),
-			  maxPlayers(12)
-		{
-			setName("Players");
-			plugin.reset(new Plugin(this));
-		}
+      inline any_pointer make_any_pointer(const void* o)
+      {
+        any_pointer p;
+        p.const_obj_ptr = o;
+        return p;
+      }
 
-		Players::~Players()
-		{
-			if (peer)
-				peer->DetachPlugin(plugin.get());
+      inline any_pointer make_any_pointer(void (*f)())
+      {
+        any_pointer p;
+        p.func_ptr = f;
+        return p;
+      }
 
-			peer = NULL;
-		}
+      template<typename Functor, typename Allocator>
+      struct functor_manager
+      {
+      private:
+        typedef Functor functor_type;
 
-		bool Players::clientIsPresent(const Instance* context, bool testInDatamodel)
-		{
-			return Client::clientIsPresent(context, testInDatamodel);
-		}
+        // For function pointers, the manager is trivial
+        static inline any_pointer
+        manager(any_pointer function_ptr,
+                functor_manager_operation_type op,
+                function_ptr_tag)
+        {
+          if (op == clone_functor_tag)
+            return function_ptr;
+          else
+            return make_any_pointer(static_cast<void (*)()>(0));
+        }
 
-		bool Players::askAddChild(const Instance* instance) const
-		{
-			return dynamic_cast<const Player*>(instance) != NULL;
-		}
+        // For function object pointers, we clone the pointer to each
+        // function has its own version.
+        static inline any_pointer
+        manager(any_pointer function_obj_ptr,
+                functor_manager_operation_type op,
+                function_obj_tag)
+        {
+#ifndef BOOST_NO_STD_ALLOCATOR
+        typedef typename Allocator::template rebind<functor_type>::other
+          allocator_type;
+        typedef typename allocator_type::pointer pointer_type;
+#else
+        typedef functor_type* pointer_type;
+#endif // BOOST_NO_STD_ALLOCATOR
 
-		void Players::setConnection(RakPeerInterface* peer)
-		{
-			if (this->peer)
-				this->peer->DetachPlugin(plugin.get());
+#  ifndef BOOST_NO_STD_ALLOCATOR
+          allocator_type allocator;
+#  endif // BOOST_NO_STD_ALLOCATOR
 
-			this->peer = peer;
+          if (op == clone_functor_tag) {
+            functor_type* f =
+              static_cast<functor_type*>(function_obj_ptr.obj_ptr);
 
-			if (peer)
-				peer->AttachPlugin(plugin.get());
-		}
+            // Clone the functor
+#  ifndef BOOST_NO_STD_ALLOCATOR
+            pointer_type copy = allocator.allocate(1);
+            allocator.construct(copy, *f);
 
-		Player* Players::findLocalPlayer(const Instance* context)
-		{
-			Players* players = ServiceProvider::find<Players>(context);
-			return players ? players->getLocalPlayer() : NULL;
-		}
+            // Get back to the original pointer type
+            functor_type* new_f = static_cast<functor_type*>(copy);
+#  else
+            functor_type* new_f = new functor_type(*f);
+#  endif // BOOST_NO_STD_ALLOCATOR
+            return make_any_pointer(static_cast<void*>(new_f));
+          }
+          else {
+            /* Cast from the void pointer to the functor pointer type */
+            functor_type* f =
+              reinterpret_cast<functor_type*>(function_obj_ptr.obj_ptr);
 
-		ModelInstance* Players::findLocalCharacter(const Instance* context)
-		{
-			Player* player = Players::findLocalPlayer(context);
-			return player ? player->getCharacter() : NULL;
-		}
+#  ifndef BOOST_NO_STD_ALLOCATOR
+            /* Cast from the functor pointer type to the allocator's pointer
+               type */
+            pointer_type victim = static_cast<pointer_type>(f);
 
-		void Players::setAbuseReportUrl(std::string value)
-		{
-			if (value.empty())
-				abuseReporter.reset(NULL);
-			else
-				abuseReporter.reset(new AbuseReporter(value));
-		}
+            // Destroy and deallocate the functor
+            allocator.destroy(victim);
+            allocator.deallocate(victim, 1);
+#  else
+            delete f;
+#  endif // BOOST_NO_STD_ALLOCATOR
 
-		void Players::setMaxPlayers(int value)
-		{
-			if (value != maxPlayers)
-			{
-				maxPlayers = value;
-				raisePropertyChanged(propPlayerMaxCount);
-			}
-		}
+            return make_any_pointer(static_cast<void*>(0));
+          }
+        }
+      public:
+        /* Dispatch to an appropriate manager based on whether we have a
+           function pointer or a function object pointer. */
+        static any_pointer
+        manage(any_pointer functor_ptr, functor_manager_operation_type op)
+        {
+          if (op == check_functor_type_tag) {
+            std::type_info* type =
+              static_cast<std::type_info*>(functor_ptr.obj_ptr);
+            return (BOOST_FUNCTION_COMPARE_TYPE_ID(typeid(Functor), *type)?
+                    functor_ptr
+                    : make_any_pointer(reinterpret_cast<void*>(0)));
+          }
+          else {
+            typedef typename get_function_tag<functor_type>::type tag_type;
+            return manager(functor_ptr, op, tag_type());
+          }
+        }
+      };
 
-		void Players::reportAbuse(boost::shared_ptr<Instance> player, std::string comment)
-		{
-			reportAbuse(dynamic_cast<Player*>(player.get()), comment);
-		}
 
-		void Players::reportAbuse(Player* player, std::string comment)
-		{
-			if (abuseReporter)
-			{
-				StandardOut::singleton()->print(MESSAGE_INFO, "Submitting abuse report from %s", player ? player->getName().c_str() : "[[[anonymous]]]");
-				
-				AbuseReport r;
-				r.submitterID = localPlayer ? localPlayer->getUserID() : 0;
-				r.allegedAbuserID = player ? player->getUserID() : 0;
-				r.comment = comment;
-
-				abuseReporter->add(r, chatHistory);
-			}
-			else
-			{
-				StandardOut::singleton()->print(MESSAGE_INFO, "Sending abuse report to game server via Raknet");
-				if (!peer)
-					throw std::runtime_error("Can\'t report abuse: Not in a networked game");
-
-				RakNet::BitStream bitStream;
-				bitStream << (unsigned char)ID_REPORT_ABUSE;
-				bitStream << (localPlayer ? localPlayer->getUserID() : 0);
-				bitStream << (player ? player->getUserID() : 0);
-				bitStream << comment;
-
-				peer->Send(&bitStream, HIGH_PRIORITY, RELIABLE, 2, UNASSIGNED_SYSTEM_ADDRESS, true);
-			}
-		}
-
-		Player* Players::getPlayerFromCharacter(Instance* character)
-		{
-			Players* players = ServiceProvider::find<Players>(character);
-			if (players)
-			{
-				boost::shared_ptr<Instance> found = players->playerFromCharacter(shared_from(character));
-				return static_cast<Player*>(found.get());
-			}
-			else
-			{
-				return NULL;
-			}
-		}
-
-		void Players::chat(std::string message)
-		{
-			if (!localPlayer)
-				throw std::runtime_error("No local Player to chat from");
-
-			RakNet::BitStream bitStream;
-			bitStream << (unsigned char)ID_CHAT_ALL;
-
-			Guid::Data data;
-			localPlayer->getGuid().extract(data);
-
-			bitStream << data.scope->name;
-			bitStream << data.index;
-			bitStream << message;
-
-			peer->Send(&bitStream, MEDIUM_PRIORITY, RELIABLE, 2, UNASSIGNED_SYSTEM_ADDRESS, true);
-
-			ChatMessage event = {message, localPlayer, boost::shared_ptr<Player>()};
-			Notifier<Players, ChatMessage>::raise(event);
-		}
-
-		bool Players::backendProcessing(const Instance* context, bool testInDatamodel)
-		{
-			const ServiceProvider* sp = ServiceProvider::findServiceProvider(context);
-			RBXASSERT(!testInDatamodel || sp);
-
-			return sp && !Client::clientIsPresent(context, testInDatamodel);
-		}
-
-		bool Players::frontendProcessing(const Instance* context, bool testInDatamodel)
-		{
-			const ServiceProvider* sp = ServiceProvider::findServiceProvider(context);
-			RBXASSERT(!testInDatamodel || sp);
-
-			return sp && !Server::serverIsPresent(context, testInDatamodel);
-		}
-
-		boost::shared_ptr<Instance> Players::playerFromCharacter(boost::shared_ptr<Instance> character)
-		{
-			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> myPlayers = getPlayers();
-
-			std::vector<boost::shared_ptr<Instance>>::const_iterator iter = myPlayers->begin();
-			std::vector<boost::shared_ptr<Instance>>::const_iterator end = myPlayers->end();
-
-			for (; iter != end; iter++)
-			{
-				if (static_cast<Player*>(iter->get())->getCharacter() == static_cast<ModelInstance*>(character.get()))
-					return *iter;
-			}
-
-			return boost::shared_ptr<Instance>();
-		}
-
-		boost::shared_ptr<Instance> Players::getPlayerByID(int userID)
-		{
-			std::vector<boost::shared_ptr<Instance>>::const_iterator iter = players->begin();
-			std::vector<boost::shared_ptr<Instance>>::const_iterator end = players->end();
-
-			for (; iter != end; iter++)
-			{
-				if (static_cast<Player*>(iter->get())->getUserID() == userID)
-					return *iter;
-			}
-
-			return boost::shared_ptr<Instance>();
-		}
-
-		void Players::onEvent(const Player* source, CharacterAdded event)
-		{
-			RBXASSERT(backendProcessing(this, true));
-			const_cast<Player*>(source)->rebuildBackpack();
-		}
-
-		void Players::addChatMessage(const ChatMessage& message)
-		{
-			chatHistory.push_front(message);
-
-			while (chatHistory.size() > (size_t)GameSettings::singleton().chatHistory)
-			{
-				chatHistory.pop_back();
-			}
-
-			Notifier<Players, ChatMessage>::raise(message);
-			Player::event_Chatted.fire(message.source.get(), message.message, message.destination);
-		}
-
-		void Players::onChildAdded(Instance* child)
-		{
-			Player* player = dynamic_cast<Player*>(child);
-			if (!player)
-				return;
-
-			if (player->getUserID() > 0)
-			{
-				boost::shared_ptr<Instance> otherPlayer = getPlayerByID(player->getUserID());
-				if (otherPlayer)
-					otherPlayer->setParent(NULL);
-			}
-
-			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& myPlayers = players.write();
-			myPlayers->push_back(shared_from(child));
-
-			if (backendProcessing(this, true))
-			{
-				player->Notifier<Player, CharacterAdded>::addListener(this);
-				player->rebuildBackpack();
-
-				if (Teams* teams = ServiceProvider::find<Teams>(this))
-					teams->assignNewPlayerToTeam(player);
-
-				event_PlayerAdded.fire(this, shared_from(player));
-			}
-		}
-		
-		void Players::onChildRemoving(Instance* child)
-		{
-			Player* player = dynamic_cast<Player*>(child);
-			if (!player)
-				return;
-
-			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& myPlayers = players.write();
-			myPlayers->erase(std::find(myPlayers->begin(), myPlayers->end(), shared_from(child)));
-
-			if (backendProcessing(this, false))
-				event_PlayerRemoving.fire(this, shared_from(player));
-
-			Notifier<Player, CharacterAdded>::disconnect(player, this);
-		}
-
-		void Players::onChildChanged(Instance* instance, const PropertyChanged& event)
-		{
-			if (instance == localPlayer.get() && &event.getProperty().getDescriptor() == &Player::prop_SuperSafeChat)
-			{
-				bool s = localPlayer ? Player::prop_SuperSafeChat.getValue(localPlayer.get()) : false;
-				Notifier<Players, SuperSafeChanged>::raise(SuperSafeChanged(s));
-			}
-		}
-
-		// 98% match
-		boost::shared_ptr<Instance> Players::createLocalPlayer(int userId)
-		{
-			if (localPlayer)
-				throw std::runtime_error("Local player already exists");
-
-			localPlayer = Creatable::create<Player>();
-			Player::prop_userId.setValue(localPlayer.get(), userId);
-			localPlayer->setParent(this);
-			raisePropertyChanged(propLocalPlayer);
-
-			bool s = localPlayer ? Player::prop_SuperSafeChat.getValue(localPlayer.get()) : false;
-			Notifier<Players, SuperSafeChanged>::raise(SuperSafeChanged(s));
-
-			return localPlayer;
-		}
-
-		void AbuseReport::addMessage(const ChatMessage& cm)
-		{
-			int userId = cm.source ? Player::prop_userId.getValue(cm.source.get()) : 0;
-			AbuseReport::Message m = {userId, cm.message};
-			messages.push_back(m);
-		}
-
-		AbuseReporter::AbuseReporter(std::string abuseUrl)
-			: _data(new AbuseReporter::data)
-		{
-			requestProcessor.reset(new worker_thread(boost::bind(&AbuseReporter::processRequests, _data, abuseUrl), "rbx_abusereporter"));
-		}
-
-		void AbuseReporter::add(AbuseReport& r, const std::list<ChatMessage>& chatHistory)
-		{
-			std::for_each(chatHistory.begin(), chatHistory.end(), boost::bind(&AbuseReport::addMessage, boost::ref(r), _1));
-
-			{
-				boost::mutex::scoped_lock lock(_data->requestSync);
-				_data->queue.push(r);
-			}
-
-			requestProcessor->wake();
-		}
-	}
 }
+typedef RBX::Reflection::SignalDescImpl<1,void(std::string)>::GenericSlotAdapter NativeAdapter;
+template struct recovered_boost133::functor_manager<NativeAdapter,std::allocator<void> >;

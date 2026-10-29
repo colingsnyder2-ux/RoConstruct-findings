@@ -1,88 +1,83 @@
-// roc 2010-06 006034b0  unit: RBX::ArrowTool  size: 116 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 006034b0
-//
-// 006034b0  51                   push ecx
-// 006034b1  8b442418             mov eax, dword ptr [esp + 0x18]
-// 006034b5  56                   push esi
-// 006034b6  8b742414             mov esi, dword ptr [esp + 0x14]
-// 006034ba  57                   push edi
-// 006034bb  8bf8                 mov edi, eax
-// 006034bd  3bf0                 cmp esi, eax
-// 006034bf  7440                 je 0x603501
-// 006034c1  8b442430             mov eax, dword ptr [esp + 0x30]
-// 006034c5  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 006034c9  8b542428             mov edx, dword ptr [esp + 0x28]
-// 006034cd  50                   push eax
-// 006034ce  8b06                 mov eax, dword ptr [esi]
-// 006034d0  51                   push ecx
-// 006034d1  52                   push edx
-// 006034d2  83ec08               sub esp, 8
-// 006034d5  8bcc                 mov ecx, esp
-// 006034d7  8901                 mov dword ptr [ecx], eax
-// 006034d9  8b4604               mov eax, dword ptr [esi + 4]
-// 006034dc  8964241c             mov dword ptr [esp + 0x1c], esp
-// 006034e0  894104               mov dword ptr [ecx + 4], eax
-// 006034e3  85c0                 test eax, eax
-// 006034e5  740c                 je 0x6034f3
-// 006034e7  83c004               add eax, 4
-// 006034ea  b901000000           mov ecx, 1
-// 006034ef  f00fc108             lock xadd dword ptr [eax], ecx
-// 006034f3  ff542438             call dword ptr [esp + 0x38]
-// 006034f7  83c608               add esi, 8
-// 006034fa  83c414               add esp, 0x14
-// 006034fd  3bf7                 cmp esi, edi
-// 006034ff  75c0                 jne 0x6034c1
-// 00603501  8b442410             mov eax, dword ptr [esp + 0x10]
-// 00603505  8b542424             mov edx, dword ptr [esp + 0x24]
-// 00603509  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 0060350d  8910                 mov dword ptr [eax], edx
-// 0060350f  8b54242c             mov edx, dword ptr [esp + 0x2c]
-// 00603513  894804               mov dword ptr [eax + 4], ecx
-// 00603516  8b4c2430             mov ecx, dword ptr [esp + 0x30]
-// 0060351a  5f                   pop edi
-// 0060351b  895008               mov dword ptr [eax + 8], edx
-// 0060351e  89480c               mov dword ptr [eax + 0xc], ecx
-// 00603521  5e                   pop esi
-// 00603522  59                   pop ecx
-// 00603523  c3                   ret 
-// copied from an identical function in another client (function ?fn_ROCX000000_005a1890@@YA?AUFunction@@UIterator@@0U1@@Z)
-
+// roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-extern "C" long __cdecl _InterlockedIncrement(volatile long*);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espclaude_2f907b0c71fe1b5c.cpp
 
-struct Value {
-    void* pointer;
-    volatile long* control;
-    Value(const Value&);
-    ~Value();
-};
+// Candidate translation unit (score above; library headers required).
+#define _DLL
+#define lineSegment(a, b, c) lineSegment(a, b, c) = 0; virtual void exeAdornExtra()
+#include "RbxGraphics/Adorn.h"
+#undef lineSegment
+#define private public
+#include "util/IRenderable.h"
+#undef private
+#include "util/Object.h"
+#define hasListeners() hasListeners() const { return listeners.size() > 0; } bool hasListenersEmpty()
+#include "util/Events.h"
+#undef hasListeners
+namespace RBX { template<class T> class GuidItem { public: virtual ~GuidItem() {} char guidPad[0xc]; }; }
+#define AbstractFactoryProduct GuidItem<Instance>, public AbstractFactoryProduct
+#include "util/Guid.h"
+namespace RBX { class GuidStub { public: typedef Guid::Data Data; void assign(const Data&) {} operator const Guid&() const { return *(const Guid*)0; } }; }
+#define Guid GuidStub
+#include "v8tree/Instance.h"
+#undef Guid
+#undef AbstractFactoryProduct
+#include "v8datamodel/PVInstance.h"
+#define candidatePrimaryPart candidatePrimaryPart; std::vector<boost::shared_ptr<PartInstance> > exeModelVector
+#include "v8datamodel/ModelInstance.h"
+#undef candidatePrimaryPart
+#include "v8datamodel/RootInstance.h"
+#include "v8datamodel/Stats.h"
+#include "v8tree/Verb.h"
+#include "script/Script.h"
+#include "v8world/IMoving.h"
+#include "gui/GuiEvent.h"
+#include "util/RunStateOwner.h"
+#include "util/ContentProvider.h"
+#include "util/Profiling.h"
+#include "util/UIEvent.h"
+#define render3dSelect(a, b) render3dSelect(a, b) { return; } void exeCheckCamera(); void exeUnusedSelect(a, b)
+#include "v8datamodel/Workspace.h"
+#undef render3dSelect
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/MouseCommand.h"
+#include "v8datamodel/Camera.h"
+#include "v8datamodel/Selection.h"
 
-inline Value::Value(const Value& other)
-    : pointer(other.pointer), control(other.control)
+namespace RBX
 {
-    if (control)
-        _InterlockedIncrement(control + 1);
-}
+	static void DrawAdorn(boost::shared_ptr<Instance> wsi, Adorn* adorn, SelectState selectState, Workspace* workspace)
+	{
+		if (IRenderable* ir = dynamic_cast<IRenderable*>(wsi.get()))
+		{
+			if (workspace->contains(wsi.get()))
+			{
+				ir->render3dSelect(adorn, selectState);
+			}
+		}
+	}
 
-struct Iterator {
-    void* unused;
-    Value* pointer;
-};
+	void Workspace::render3dAdorn(Adorn* adorn)
+	{
+		exeCheckCamera();
+		viewPort = adorn->getViewport();
+		ServiceClient<Selection> sel(this);
 
-struct Function {
-    void (__cdecl *callback)(Value, int, int, int);
-    int a;
-    int b;
-    int c;
-};
+		if (sel)
+			std::for_each(sel->getSelection()->begin(), sel->getSelection()->end(), boost::bind(&DrawAdorn, _1, adorn, SELECT_NORMAL, this));
 
-Function __cdecl func_005a1890(Iterator first, Iterator last, Function function)
-{
-    Value* current = first.pointer;
-    Value* end = last.pointer;
-    for (; current != end; ++current)
-        function.callback(*current, function.a, function.b, function.c);
-    return function;
+		render3dAdornItems(adorn);
+		if (showWorldCoord)
+		{
+			adorn->setObjectToWorldMatrix(G3D::CoordinateFrame());
+			adorn->axes(G3D::Color3::red(), G3D::Color3::green(), G3D::Color3::blue(), 50.0f);
+		}
+
+		if (showHashGrid)
+		{
+			adorn->setObjectToWorldMatrix(G3D::CoordinateFrame());
+			adorn->box(G3D::AABox(G3D::Vector3(28, 4, 12), G3D::Vector3(32, 8, 16)), G3D::Color4(1.0, 0.2, 0.2, 0.5), G3D::Color4::clear());
+		}
+	}
 }

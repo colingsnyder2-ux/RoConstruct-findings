@@ -1,348 +1,296 @@
-// from server: 43% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/JointInstance.cpp
+// roc-lang: c
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /MD
+// roc-lib: g3d-6.09-ijg-dll jutils.c
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/JointInstance.h"
-#include "v8datamodel/Workspace.h"
-#include "v8datamodel/Feature.h"
-#include "v8world/Joint.h"
-#include "v8world/SnapJoint.h"
-#include "v8world/WeldJoint.h"
-#include "v8world/GlueJoint.h"
-#include "v8world/RotateJoint.h"
-#include "v8world/MotorJoint.h"
-#include "util/Debug.h"
+/*
+ * jutils.c
+ *
+ * Copyright (C) 1991-1996, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains tables and miscellaneous utility routines needed
+ * for both compression and decompression.
+ * Note we prefix all global names with "j" to minimize conflicts with
+ * a surrounding application.
+ */
 
-static RBX::Reflection::PropDescriptor<RBX::AutoJoint, RBX::PartInstance*> prop_Part0("Part0", "Data", &RBX::AutoJoint::getPart0, &RBX::AutoJoint::setPart0, RBX::Reflection::PropertyDescriptor::LEGACY); 
-static RBX::Reflection::PropDescriptor<RBX::AutoJoint, RBX::PartInstance*> prop_Part1("Part1", "Data", &RBX::AutoJoint::getPart1, &RBX::AutoJoint::setPart1, RBX::Reflection::PropertyDescriptor::LEGACY); 
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
 
-static RBX::Reflection::PropDescriptor<RBX::AutoJoint, G3D::CoordinateFrame> prop_C1("C1", "Data", &RBX::AutoJoint::getC1, &RBX::AutoJoint::setC1, RBX::Reflection::PropertyDescriptor::LEGACY);
-static RBX::Reflection::PropDescriptor<RBX::AutoJoint, G3D::CoordinateFrame> prop_C0("C0", "Data", &RBX::AutoJoint::getC0, &RBX::AutoJoint::setC0, RBX::Reflection::PropertyDescriptor::LEGACY);
 
-// TODO: check that Motor::getMaxVelocity gets linked as VelocityMotor::getMaxVelocity
-static RBX::Reflection::PropDescriptor<RBX::Motor, float> prop_MaxVelocity("MaxVelocity", "Data", &RBX::Motor::getMaxVelocity, &RBX::Motor::setMaxVelocity, RBX::Reflection::PropertyDescriptor::LEGACY);
-static RBX::Reflection::PropDescriptor<RBX::Motor, float> prop_DesiredAngle("DesiredAngle", "Data", &RBX::Motor::getDesiredAngle, &RBX::Motor::setDesiredAngle, RBX::Reflection::PropertyDescriptor::LEGACY);
-static RBX::Reflection::PropDescriptor<RBX::Motor, float> prop_CurrentAngle("CurrentAngle", "Data", &RBX::Motor::getCurrentAngle, &RBX::Motor::setCurrentAngle, RBX::Reflection::PropertyDescriptor::LEGACY);
+/*
+ * jpeg_zigzag_order[i] is the zigzag-order position of the i'th element
+ * of a DCT block read in natural order (left to right, top to bottom).
+ */
 
-namespace RBX
+#if 0				/* This table is not actually needed in v6a */
+
+const int jpeg_zigzag_order[DCTSIZE2] = {
+   0,  1,  5,  6, 14, 15, 27, 28,
+   2,  4,  7, 13, 16, 26, 29, 42,
+   3,  8, 12, 17, 25, 30, 41, 43,
+   9, 11, 18, 24, 31, 40, 44, 53,
+  10, 19, 23, 32, 39, 45, 52, 54,
+  20, 22, 33, 38, 46, 51, 55, 60,
+  21, 34, 37, 47, 50, 56, 59, 61,
+  35, 36, 48, 49, 57, 58, 62, 63
+};
+
+#endif
+
+/*
+ * jpeg_natural_order[i] is the natural-order position of the i'th element
+ * of zigzag order.
+ *
+ * When reading corrupted data, the Huffman decoders could attempt
+ * to reference an entry beyond the end of this array (if the decoded
+ * zero run length reaches past the end of the block).  To prevent
+ * wild stores without adding an inner-loop test, we put some extra
+ * "63"s after the real entries.  This will cause the extra coefficient
+ * to be stored in location 63 of the block, not somewhere random.
+ * The worst case would be a run-length of 15, which means we need 16
+ * fake entries.
+ */
+
+const int jpeg_natural_order[DCTSIZE2+16] = {
+  0,  1,  8, 16,  9,  2,  3, 10,
+ 17, 24, 32, 25, 18, 11,  4,  5,
+ 12, 19, 26, 33, 40, 48, 41, 34,
+ 27, 20, 13,  6,  7, 14, 21, 28,
+ 35, 42, 49, 56, 57, 50, 43, 36,
+ 29, 22, 15, 23, 30, 37, 44, 51,
+ 58, 59, 52, 45, 38, 31, 39, 46,
+ 53, 60, 61, 54, 47, 55, 62, 63,
+ 63, 63, 63, 63, 63, 63, 63, 63, /* extra entries for safety in decoder */
+ 63, 63, 63, 63, 63, 63, 63, 63
+};
+
+
+/*
+ * Arithmetic utilities
+ */
+
+GLOBAL(long)
+jdiv_round_up (long a, long b)
+/* Compute a/b rounded up to next integer, ie, ceil(a/b) */
+/* Assumes a >= 0, b > 0 */
 {
-	const char* sJointInstance = "JointInstance";
-
-	JointInstance::JointInstance(Joint* joint)
-		: joint(joint)
-	{
-		joint->setJointOwner(this);
-	}
-
-	JointInstance::~JointInstance()
-	{
-		RBXASSERT(getParent() == NULL);
-		RBXASSERT(joint->getWorld() == NULL);
-
-		joint->setJointOwner(NULL);
-		delete joint;
-		joint = NULL;
-	}
-
-	bool JointInstance::shouldRender3dAdorn() const
-	{
-		return PartInstance::showSpanningTree;
-	}
-
-	void JointInstance::render3dAdorn(Adorn* adorn)
-	{
-		RBXASSERT(shouldRender3dAdorn());
-
-		if (Joint::isAssemblyJoint(joint))
-		{
-			G3D::Color3 color3;
-
-			Primitive* prim0 = joint->getPrimitive(0);
-			Primitive* prim1 = joint->getPrimitive(1);
-
-			G3D::Vector3 vec0 = prim0
-				? prim0->getCoordinateFrame().translation
-				: G3D::Vector3::zero();
-
-			G3D::Vector3 vec1 = prim1
-				? prim1->getCoordinateFrame().translation
-				: G3D::Vector3::zero();
-
-			if (joint->getActive())
-				color3 = G3D::Color3::green();
-			else
-				color3 = G3D::Color3::red();
-
-			adorn->setObjectToWorldMatrix(G3D::CoordinateFrame());
-
-			G3D::Color4 color4(color3);
-			adorn->lineSegment(
-				G3D::LineSegment::fromTwoPoints(vec0, vec1),
-				color4,
-				20.0);
-		}
-	}
-
-	const char* sAutoJoint = "AutoJoint";
-
-	AutoJoint::AutoJoint(Joint* _joint)
-		: DescribedNonCreatable(_joint)
-	{
-		PartInstance* part0 = PartInstance::fromPrimitive(joint->getPrimitive(0));
-		PartInstance* part1 = PartInstance::fromPrimitive(joint->getPrimitive(1));
-
-		part[0] = shared_from(part0);
-		part[1] = shared_from(part1);
-	}
-
-	AutoJoint::~AutoJoint()
-	{
-		setPart(0, NULL);
-		setPart(1, NULL);
-	}
-
-	PartInstance* AutoJoint::getPart0() const
-	{
-		return part[0].get();
-	}
-
-	PartInstance* AutoJoint::getPart1() const
-	{
-		return part[1].get();
-	}
-
-	void AutoJoint::setPart0(PartInstance* value)
-	{
-		setPart(0, value);
-		raisePropertyChanged(prop_Part0);
-	}
-
-	void AutoJoint::setPart1(PartInstance* value)
-	{
-		setPart(1, value);
-		raisePropertyChanged(prop_Part1);
-	}
-
-	bool AutoJoint::askSetParent(const Instance* instance) const
-	{
-		return instance->getDescriptor() == Instance::classDescriptor()
-				|| instance->getDescriptor() == PartInstance::classDescriptor();
-	}
-
-	void AutoJoint::onAncestorChanged(const AncestorChanged& event)
-	{
-		Instance::onAncestorChanged(event);
-
-		World* oldWorld = joint->getWorld();
-		World* wsWorld;
-
-		Instance* parent = getParent();
-
-		if (parent && parent->getDescriptor() == Instance::classDescriptor())
-		{
-			Workspace* workspace = ServiceProvider::find<Workspace>(this);
-
-			if (workspace)
-				wsWorld = workspace->getWorld();
-			else
-				wsWorld = NULL;
-		}
-		else
-		{
-			wsWorld = Workspace::getWorldIfInWorkspace(this);
-		}
-
-		if (oldWorld != wsWorld)
-		{
-			if (oldWorld)
-			{
-				oldWorld->removeJoint(joint);
-				RBXASSERT(!joint->getWorld());
-			}
-
-			if (wsWorld)
-			{
-				wsWorld->insertJoint(joint);
-				RBXASSERT(joint->getWorld());
-			}
-		}
-	}
-
-	void AutoJoint::setPart(int i, PartInstance* value)
-	{
-		if (part[i].get() != value)
-		{
-			RBX::Primitive* ptr;
-
-			part[i] = RBX::shared_from(value);
-
-			if (value)
-				ptr = value->getPrimitive();
-			else
-				ptr = NULL;
-
-			joint->setPrimitive(i, ptr);
-		}
-	}
-
-	const G3D::CoordinateFrame& AutoJoint::getC0() const
-	{
-		return joint->getJointCoord(0);
-	}
-
-	void AutoJoint::setC0(const G3D::CoordinateFrame& value)
-	{
-		joint->setJointCoord(0, value);
-		raisePropertyChanged(prop_C0);
-	}
-
-	const G3D::CoordinateFrame& AutoJoint::getC1() const
-	{
-		return joint->getJointCoord(1);
-	}
-
-	void AutoJoint::setC1(const G3D::CoordinateFrame& value)
-	{
-		joint->setJointCoord(1, value);
-		raisePropertyChanged(prop_C1);
-	}
-
-	const char* sSnap = "Snap";
-
-	Snap::Snap(Joint* joint)
-		: DescribedCreatable(joint)
-	{
-		RBXASSERT(joint->getJointType() == Joint::SNAP_JOINT);
-		setName("Snap");
-	}
-
-	Snap::Snap()
-		: DescribedCreatable(new SnapJoint())
-	{
-		setName("Snap");
-	}
-
-	const char* sWeld = "Weld";
-
-	Weld::Weld(Joint* joint)
-		: DescribedCreatable(joint)
-	{
-		RBXASSERT(joint->getJointType() == Joint::WELD_JOINT);
-	}
-
-	Weld::Weld()
-		: DescribedCreatable(new WeldJoint())
-	{
-	}
-
-	const char* sGlue = "Glue";
-
-	Glue::Glue(Joint* joint)
-		: DescribedCreatable(joint)
-	{
-		RBXASSERT(joint->getJointType() == Joint::GLUE_JOINT);
-	}
-
-	Glue::Glue()
-		: DescribedCreatable(new GlueJoint())
-	{
-	}
-
-	const char* sRotate = "Rotate";
-
-	Rotate::Rotate(Joint* joint)
-		: DescribedCreatable(joint)
-	{
-		RBXASSERT(joint->getJointType() == Joint::ROTATE_JOINT);
-	}
-
-	Rotate::Rotate()
-		: DescribedCreatable(new RotateJoint())
-	{
-	}
-
-	const char* sRotateP = "RotateP";
-
-	RotateP::RotateP(Joint* joint)
-		: DescribedCreatable(joint)
-	{
-		RBXASSERT(joint->getJointType() == Joint::ROTATE_P_JOINT);
-	}
-
-	RotateP::RotateP()
-		: DescribedCreatable(new RotatePJoint())
-	{
-	}
-
-	const char* sRotateV = "RotateV";
-
-	RotateV::RotateV(Joint* joint)
-		: DescribedCreatable(joint)
-	{
-		RBXASSERT(joint->getJointType() == Joint::ROTATE_V_JOINT);
-	}
-
-	RotateV::RotateV()
-		: DescribedCreatable(new RotateVJoint())
-	{
-	}
-
-	const char* sMotor = "Motor";
-
-	Motor::Motor(Joint* joint)
-		: DescribedCreatable(joint)
-	{
-		RBXASSERT(joint->getJointType() == Joint::MOTOR_JOINT);
-	}
-
-	Motor::Motor()
-		: DescribedCreatable(new MotorJoint())
-	{
-		setName("Motor");
-	}
-
-	float Motor::getMaxVelocity() const
-	{
-		return rbx_static_cast<MotorJoint*>(joint)->maxVelocity;
-	}
-
-	void Motor::setMaxVelocity(float value)
-	{
-		if (value != getMaxVelocity())
-		{
-			rbx_static_cast<MotorJoint*>(joint)->maxVelocity = value;
-			raisePropertyChanged(prop_MaxVelocity);
-		}
-	}
-
-	float Motor::getDesiredAngle() const
-	{
-		return rbx_static_cast<MotorJoint*>(joint)->desiredAngle;
-	}
-
-	void Motor::setDesiredAngle(float value)
-	{
-		if (value != getDesiredAngle())
-		{
-			rbx_static_cast<MotorJoint*>(joint)->desiredAngle = value;
-			raisePropertyChanged(prop_DesiredAngle);
-		}
-	}
-
-	float Motor::getCurrentAngle() const
-	{
-		return rbx_static_cast<MotorJoint*>(joint)->getCurrentAngle();
-	}
-
-	void Motor::setCurrentAngle(float value)
-	{
-		if (value != getCurrentAngle())
-		{
-			rbx_static_cast<MotorJoint*>(joint)->setCurrentAngle(value);
-			raisePropertyChanged(prop_CurrentAngle);
-		}
-	}
+  return (a + b - 1L) / b;
 }
+
+
+GLOBAL(long)
+jround_up (long a, long b)
+/* Compute a rounded up to next multiple of b, ie, ceil(a/b)*b */
+/* Assumes a >= 0, b > 0 */
+{
+  a += b - 1L;
+  return a - (a % b);
+}
+
+
+/* On normal machines we can apply MEMCOPY() and MEMZERO() to sample arrays
+ * and coefficient-block arrays.  This won't work on 80x86 because the arrays
+ * are FAR and we're assuming a small-pointer memory model.  However, some
+ * DOS compilers provide far-pointer versions of memcpy() and memset() even
+ * in the small-model libraries.  These will be used if USE_FMEM is defined.
+ * Otherwise, the routines below do it the hard way.  (The performance cost
+ * is not all that great, because these routines aren't very heavily used.)
+ */
+
+#ifndef NEED_FAR_POINTERS	/* normal case, same as regular macros */
+#define FMEMCOPY(dest,src,size)	MEMCOPY(dest,src,size)
+#define FMEMZERO(target,size)	MEMZERO(target,size)
+#else				/* 80x86 case, define if we can */
+#ifdef USE_FMEM
+#define FMEMCOPY(dest,src,size)	_fmemcpy((void FAR *)(dest), (const void FAR *)(src), (size_t)(size))
+#define FMEMZERO(target,size)	_fmemset((void FAR *)(target), 0, (size_t)(size))
+#endif
+#endif
+
+
+GLOBAL(void)
+jcopy_sample_rows (JSAMPARRAY input_array, int source_row,
+		   JSAMPARRAY output_array, int dest_row,
+		   int num_rows, JDIMENSION num_cols)
+/* Copy some rows of samples from one place to another.
+ * num_rows rows are copied from input_array[source_row++]
+ * to output_array[dest_row++]; these areas may overlap for duplication.
+ * The source and destination arrays must be at least as wide as num_cols.
+ */
+{
+  register JSAMPROW inptr, outptr;
+#ifdef FMEMCOPY
+  register size_t count = (size_t) (num_cols * SIZEOF(JSAMPLE));
+#else
+  register JDIMENSION count;
+#endif
+  register int row;
+
+  input_array += source_row;
+  output_array += dest_row;
+
+  for (row = num_rows; row > 0; row--) {
+    inptr = *input_array++;
+    outptr = *output_array++;
+#ifdef FMEMCOPY
+    FMEMCOPY(outptr, inptr, count);
+#else
+    for (count = num_cols; count > 0; count--)
+      *outptr++ = *inptr++;	/* needn't bother with GETJSAMPLE() here */
+#endif
+  }
+}
+
+
+GLOBAL(void)
+jcopy_block_row (JBLOCKROW input_row, JBLOCKROW output_row,
+		 JDIMENSION num_blocks)
+/* Copy a row of coefficient blocks from one place to another. */
+{
+#ifdef FMEMCOPY
+  FMEMCOPY(output_row, input_row, num_blocks * (DCTSIZE2 * SIZEOF(JCOEF)));
+#else
+  register JCOEFPTR inptr, outptr;
+  register long count;
+
+  inptr = (JCOEFPTR) input_row;
+  outptr = (JCOEFPTR) output_row;
+  for (count = (long) num_blocks * DCTSIZE2; count > 0; count--) {
+    *outptr++ = *inptr++;
+  }
+#endif
+}
+
+
+GLOBAL(void)
+jzero_far (void FAR * target, size_t bytestozero)
+/* Zero out a chunk of FAR memory. */
+/* This might be sample-array data, block-array data, or alloc_large data. */
+{
+#ifdef FMEMZERO
+  FMEMZERO(target, bytestozero);
+#else
+  register char FAR * ptr = (char FAR *) target;
+  register size_t count;
+
+  for (count = bytestozero; count > 0; count--) {
+    *ptr++ = 0;
+  }
+#endif
+}
+
+
+/** Used by robustTmpfile.  Returns nonzero if fread, fwrite, and fseek all
+succeed on the file.
+  @author Morgan McGuire, morgan@graphics3d.com  */
+static int isFileGood(FILE* f) {
+
+	int x, n, result;
+
+	/* Must be a valid file handle */
+	if (f == NULL) {
+		return 0;
+	}
+
+	/* Try to write */
+	x = 1234;
+	n = fwrite(&x, sizeof(int), 1, f);
+
+	if (n != 1) {
+		return 0;
+	}
+
+	/* Seek back to the beginning */
+	result = fseek(f, 0, SEEK_SET);
+	if (result != 0) {
+		return 0;
+	}
+
+	/* Read */
+	n =	fread(&x, sizeof(int), 1, f);
+	if (n != 1) {
+		return 0;
+	}
+
+	/* Seek back to the beginning again */
+	fseek(f, 0, SEEK_SET);
+
+	return 1;
+}
+
+
+FILE* _robustTmpfile() {
+    FILE* t = tmpfile();
+#ifdef _WIN32
+	char* n = NULL;
+#endif
+	char name[256];
+
+    if (isFileGood(t)) {
+		return t;
+	}
+
+    /* tmpfile failed; try the tmpnam routine */
+    t = fopen(tmpnam(NULL), "w+");
+    if (isFileGood(t)) {
+		return t;
+	}
+
+    #ifdef _WIN32
+		n = _tempnam("c:/tmp/", "t");
+        /* Try to create something in C:\tmp */
+        t = fopen(n, "w+");
+		if (isFileGood(t)) {
+			return t;
+		}
+
+        /* Try c:\temp */
+		n = _tempnam("c:/temp/", "t");
+        t = fopen(n, "w+");
+	    if (isFileGood(t)) {
+			return t;
+		}
+
+        /* try the current directory */
+		n = _tempnam("./", "t");
+        t = fopen(n, "w+");
+		if (isFileGood(t)) {
+			return t;
+		}
+    #endif
+
+    /* Try some hardcoded paths */
+    sprintf(name, "%s/tmp%d", "c:/tmp", rand());
+    t = fopen(name, "w+");
+    if (isFileGood(t)) {
+		return t;
+	}
+
+    sprintf(name, "%s/tmp%d", "/tmp", rand());
+    t = fopen(name, "w+");
+    if (isFileGood(t)) {
+		return t;
+	}
+
+    sprintf(name, "%s/tmp%d", "c:/temp", rand());
+    t = fopen(name, "w+");
+    if (isFileGood(t)) {
+		return t;
+	}
+
+    sprintf(name, "tmp%d", rand());
+    t = fopen(name, "w+");
+    if (isFileGood(t)) {
+		return t;
+	}
+
+    fprintf(stderr, "Unable to create a temporary file; robustTmpfile returning NULL\n");
+
+    return NULL;
+}
+

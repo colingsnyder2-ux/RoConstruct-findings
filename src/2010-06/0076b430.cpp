@@ -1,21 +1,51 @@
-// from server: 0% by atomic.potato
-extern "C" void* __cdecl sub_7A79A0(unsigned int);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_codex_eh_count16_b260dc2bc31f66e9.cpp
 
-struct ImageButton {
-    void* field0;
-    void* construct(void* arg);
+// Candidate translation unit (score above; library headers required).
+
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Object {
+    virtual ~Object();
 };
 
-void* ImageButton::construct(void* arg) {
-    void* p = sub_7A79A0(0x10);
-    if (p) {
-        *(int*)((char*)p + 4) = 1;
-        *(int*)((char*)p + 8) = 1;
-        *(void**)p = (void*)0xA52700;
-        *(void**)((char*)p + 0xC) = arg;
-    } else {
-        p = 0;
+struct CountBase {
+    long useCount;
+    long weakCount;
+
+    CountBase() : useCount(1), weakCount(1) {}
+    virtual ~CountBase();
+    virtual void dispose() = 0;
+    virtual void destroy();
+    virtual void* getDeleter(const void*) = 0;
+};
+
+struct Count : CountBase {
+    Object* object;
+
+    explicit Count(Object* p) : object(p) {}
+    virtual ~Count();
+    virtual void dispose();
+    virtual void* getDeleter(const void*);
+};
+
+extern void __cdecl deleteObject(Object*);
+
+struct S {
+    CountBase* count;
+    explicit S(Object*);
+};
+
+S::S(Object* p) : count(0)
+{
+    try {
+        count = new Count(p);
     }
-    this->field0 = p;
-    return this;
+    catch (...) {
+        deleteObject(p);
+        throw;
+    }
 }

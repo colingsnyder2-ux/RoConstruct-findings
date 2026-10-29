@@ -1,9 +1,7 @@
-// from server: 60% by atomic.potato
-extern "C" double __cdecl universal_log(double);
-extern "C" void __cdecl lua_pushnumber(void *, double);
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Oi /fp:fast /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_lua_math_959f967534d7e1e5.cpp
 
-int Function(void *state)
-{
-    lua_pushnumber(state, universal_log(1.0));
-    return 1;
-}
+// Candidate translation unit (score above; library headers required).
+#include "lua-5.1.1/src/lmathlib.c"

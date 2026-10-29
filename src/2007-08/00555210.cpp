@@ -1,8 +1,7 @@
-// from server: 83% by colin
+// roc-cl: 50727
 // roc-lang: cpp
-// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8tree/Service.cpp
+// roc-lib: rbxgs-dll v8tree/Service.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "v8tree/Service.h"

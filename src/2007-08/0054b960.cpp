@@ -1,32 +1,15 @@
-// from server: 28% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_a8b429b397bb580b.cpp
 
-struct UString_sink
-{
-    void (__stdcall *vptr)(void);
-    char pad1[4];
-    void* field_8;
-    char pad2[0x18];
-    void* field_24;
-    void dtor();
-};
-
-void UString_sink::dtor()
-{
-    void (__stdcall *fn)(void*) = *(void (__stdcall **)(void*))0x77e6ac;
-    fn((char*)this + 0x24);
-    fn((char*)this + 8);
-    void* p = *(void**)((char*)this + 4);
-    if (p)
-    {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)p + 4), -1) == 1)
-        {
-            (*(void (__stdcall **)(void*))p)(p);
-            if (_InterlockedExchangeAdd((volatile long*)((char*)p + 8), -1) == 1)
-            {
-                (*(void (__stdcall **)(void*))((*(void***)p)[2]))(p);
-            }
-        }
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_gzip_compressor<std::allocator<char> >,std::char_traits<char>,std::allocator<char>,boost::iostreams::output>;

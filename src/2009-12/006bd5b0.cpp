@@ -1,67 +1,120 @@
-// roc 2009-12 006bd5b0  unit: CPropGrid::UpdateItemsJob  size: 90 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 006bd5b0
-//
-// 006bd5b0  6aff                 push -1
-// 006bd5b2  6891939200           push 0x929391
-// 006bd5b7  64a100000000         mov eax, dword ptr fs:[0]
-// 006bd5bd  50                   push eax
-// 006bd5be  64892500000000       mov dword ptr fs:[0], esp
-// 006bd5c5  51                   push ecx
-// 006bd5c6  56                   push esi
-// 006bd5c7  8b742418             mov esi, dword ptr [esp + 0x18]
-// 006bd5cb  89742418             mov dword ptr [esp + 0x18], esi
-// 006bd5cf  89742404             mov dword ptr [esp + 4], esi
-// 006bd5d3  c744241000000000     mov dword ptr [esp + 0x10], 0
-// 006bd5db  85f6                 test esi, esi
-// 006bd5dd  741b                 je 0x6bd5fa
-// 006bd5df  57                   push edi
-// 006bd5e0  8b7c2420             mov edi, dword ptr [esp + 0x20]
-// 006bd5e4  57                   push edi
-// 006bd5e5  8bce                 mov ecx, esi
-// 006bd5e7  ff15f0b69800         call dword ptr [0x98b6f0]
-// 006bd5ed  8b4720               mov eax, dword ptr [edi + 0x20]
-// 006bd5f0  894620               mov dword ptr [esi + 0x20], eax
-// 006bd5f3  8b4f24               mov ecx, dword ptr [edi + 0x24]
-// 006bd5f6  894e24               mov dword ptr [esi + 0x24], ecx
-// 006bd5f9  5f                   pop edi
-// 006bd5fa  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 006bd5fe  5e                   pop esi
-// 006bd5ff  64890d00000000       mov dword ptr fs:[0], ecx
-// 006bd606  83c410               add esp, 0x10
-// 006bd609  c3                   ret 
-// copied from an identical function in another client (function ?construct@@YAXRAUValue@@ABU1@@Z)
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_native_content_load_08181d6e956245b9.cpp
 
-typedef unsigned int size_t;
+// Candidate translation unit (score above; library headers required).
+#define _DLL
+#include "util/ContentProvider.h"
+#include "util/Http.h"
+#include "util/StandardOut.h"
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
+#include <algorithm>
+#include <vector>
+#include <list>
+#include <map>
 
-inline void* operator new(size_t, void* p) { return p; }
-inline void operator delete(void*, void*) {}
+namespace RBX {
+// Status values are independently visible in the 2008 caller (1/2).
+// The 2016 AsyncHttpQueue names corroborate their meaning.
+enum RequestResult { Waiting, Succeeded, Failed };
+typedef boost::function<void(RequestResult, std::istream&)> RequestCallback;
+struct ContentRequest {
+    ContentId id;
+    std::vector<RequestCallback> callbacks;
+    bool operator==(const ContentId& other) const {return id.toString()==other.toString();}
+};
+void readContent(RequestCallback, RequestResult, boost::shared_ptr<const std::string>);
 
-struct String {
-    char storage[32];
-    String(const String&);
+// Native 2007 cache/failed-URL records. Only the owning class revision differs.
+struct CachedContentRecord {
+    boost::shared_ptr<const std::string> data;
+    boost::shared_ptr<const std::string> filename;
+};
+struct FailedUrlRecord {
+    std::string url;
+    boost::posix_time::ptime expiration;
+    FailedUrlRecord(const char*);
 };
 
-typedef void (__thiscall *StringCopy)(String*, const String&);
-extern StringCopy copyString;
-
-inline String::String(const String& source)
-{
-    copyString(this, source);
+std::string nativeFindAsset(ContentId); // 00560460 cdecl string return/byvalue32B
+std::string nativeFindHashFile(ContentId); // 0055fdc0 sameABI
+class RequestProcessorView {
+    template<class T> T& at(unsigned offset) {
+        return *reinterpret_cast<T*>(reinterpret_cast<char*>(this) + offset);
+    }
+    boost::mutex& requestSync() { return at<boost::mutex>(0x130); }
+    std::list<ContentRequest>& requestQueue() { return at<std::list<ContentRequest> >(0x138); }
+    std::list<FailedUrlRecord>& failedUrls() { return at<std::list<FailedUrlRecord> >(0x154); }
+    boost::mutex& contentCacheMutex() { return at<boost::mutex>(0x170); }
+    std::map<ContentId, CachedContentRecord>& contentCache() {
+        return at<std::map<ContentId, CachedContentRecord> >(0x178);
+    }
+public:
+    bool isUrlBad(const char*);
+    CachedContentRecord* loadContent(ContentId, int mode, const RequestCallback* callback);
+};
+CachedContentRecord* RequestProcessorView::loadContent(ContentId id, int mode, const RequestCallback* callback) {
+    if (id.isNull()) return NULL;
+    {
+        boost::mutex::scoped_lock lock(contentCacheMutex());
+        std::map<ContentId,CachedContentRecord>::iterator found = contentCache().find(id);
+        if (found != contentCache().end()) return &found->second;
+    }
+    if (id.isAsset()) {
+        boost::shared_ptr<const std::string> filename(new std::string(nativeFindAsset(id)));
+        if (filename->empty()) return NULL;
+        boost::mutex::scoped_lock lock(contentCacheMutex());
+        CachedContentRecord& content = contentCache()[id];
+        content.filename = filename;
+        return &content;
+    } else {
+        boost::shared_ptr<const std::string> filename(new std::string(nativeFindHashFile(id)));
+        if (!filename->empty()) {
+            boost::mutex::scoped_lock lock(contentCacheMutex());
+            CachedContentRecord& content = contentCache()[id];
+            content.filename = filename;
+            return &content;
+        }
+    }
+    if (id.isHttp()) {
+        switch(mode) {
+        case 1: {
+            boost::mutex::scoped_lock lock(requestSync());
+            if (!isUrlBad(id.c_str())) {
+                std::list<ContentRequest>::iterator found = std::find(requestQueue().begin(),requestQueue().end(),id);
+                if (found == requestQueue().end()) {
+                    requestQueue().push_back(ContentRequest());
+                    ContentRequest& request = requestQueue().back();
+                    request.id = id;
+                    if (callback) request.callbacks.push_back(*callback);
+                } else if (callback) {
+                    found->callbacks.push_back(*callback);
+                }
+            }
+            at<worker_thread*>(0x198)->wake();
+            break;
+        }
+        case 2: {
+            boost::shared_ptr<std::string> text(new std::string);
+            try {
+                Http(id.toString()).get(*text);
+            } catch (std::exception&) {
+                boost::mutex::scoped_lock lock(requestSync());
+                {
+                    FailedUrlRecord failed(id.c_str());
+                    failedUrls().push_front(failed);
+                }
+                throw;
+            }
+            boost::mutex::scoped_lock lock(contentCacheMutex());
+            CachedContentRecord& content = contentCache()[id];
+            content.data = text;
+            return &content;
+        }
+        }
+    }
+    return NULL;
 }
-
-struct Value {
-    String text;
-    unsigned int first;
-    unsigned int second;
-
-    Value(const Value&);
-};
-
-inline Value::Value(const Value& source)
-    : text(source.text), first(source.first), second(source.second) {}
-
-void __cdecl construct(Value* volatile destination, const Value& source)
-{
-    Value* p = destination;
-    ::new (static_cast<void*>(p)) Value(source);
 }

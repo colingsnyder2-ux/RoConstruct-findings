@@ -1,7 +1,7 @@
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
-// roc-lib: xtp-11.2.2-lib Source\Controls\XTTreeBase.cpp
+// roc-lib: xtp-11.2.2-lib-strlen Source\Controls\XTTreeBase.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTTreeBase.cpp : implementation file

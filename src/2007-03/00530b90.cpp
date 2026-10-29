@@ -1,8 +1,7 @@
-// from server: 83% by colin
-// roc-lang: cpp
 // roc-cl: 50727
+// roc-lang: cpp
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// roc-lib: rbxgs-dll util/RunStateOwner.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "util/RunStateOwner.h"

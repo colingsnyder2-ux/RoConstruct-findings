@@ -1,42 +1,71 @@
-// from server: 23% by colin
-struct String {
-    char pad[0x1c];
-};
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_wordlist_plain_native_family_a48f6f07beb1c62f.cpp
 
-struct Locale {
-    void* p;
-};
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("util/ContentProvider.h", "../roc_wordlist_static_asset_header_179d09ed9a896b44.cpp")
+#include <set>
+#include <fstream>
+#include <boost/algorithm/string.hpp>
+#include "util/ContentProvider.h"
+namespace RBX {
+	class WordList
+	{
+	private:
+		std::set<std::string> blacklist;
+		void decrypt(std::string& str);
+	public:
+		WordList();
+		~WordList();
 
-extern "C" {
-    void __stdcall sub_77E5E4(void*);
-    void __stdcall sub_77E460(void*, int, int, int, int);
-    void __stdcall sub_77E5E0(void*, void*);
-    void __stdcall sub_77E434(void*, void*, int, int);
-    void __stdcall sub_77E4FC(void*);
+		bool ContainsProfanity(std::string str);
+
+	};
+
+
+void WordList::decrypt(std::string& str)
+{
+	for(unsigned i = 0; i<str.size(); ++i){
+		str[i] = 0x55 ^ str[i];
+	}
 }
 
-void* __fastcall sub_6244F0(void*, int, int, int, int, int);
-
-struct ArrowButton {
-    void func(int a, int b, int c);
-};
-
-void ArrowButton::func(int a, int b, int c)
+WordList::WordList()
 {
-    char buf[0x2c];
-    String s;
-    Locale loc;
-    void* it1;
-    void* it2;
-    void* it3;
-    void* it4;
-    void* res;
+	/* Load blacklist
 
-    sub_77E5E4(&loc);
-    sub_77E460(&s, 0, 0, 0, 0);
-    sub_77E5E4(&loc);
-    sub_77E5E0(&s, &it1);
-    res = sub_6244F0(&s, 0, 0, 0, 0, 0);
-    sub_77E434(&s, res, 0, 0);
-    sub_77E4FC(&s);
+	
+	*/
+
+	std::string filename = ContentProvider::getAssetFile("Fonts\\diogenes.fnt");
+	
+	std::ifstream infile(filename.c_str());
+	std::string line;
+	while( std::getline(infile, line, '\n'))
+	{
+		boost::to_lower(line);
+		boost::trim(line);
+		blacklist.insert(line);
+	}
+
+	infile.close();
+}
+WordList::~WordList()
+{
+
+}
+bool WordList::ContainsProfanity(std::string str)
+{
+	/*
+	1. Convert query to lower case
+	2. Check for in black list
+	*/
+
+	boost::to_lower(str);
+
+	return blacklist.find(str) != blacklist.end();
+}
+
+
 }

@@ -1,44 +1,51 @@
-// from server: 0% by TrollStein
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8datamodel/CharacterAppearance.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_codex_eh_count16_b260dc2bc31f66e9.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/CharacterAppearance.h"
 
-namespace RBX {
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
 
-const char sSkin[] = "Skin";
+struct Object {
+    virtual ~Object();
+};
 
-const char sBodyColors[] = "BodyColors";
+struct CountBase {
+    long useCount;
+    long weakCount;
 
-const char sShirt[] = "Shirt";
+    CountBase() : useCount(1), weakCount(1) {}
+    virtual ~CountBase();
+    virtual void dispose() = 0;
+    virtual void destroy();
+    virtual void* getDeleter(const void*) = 0;
+};
 
-const char sShirtGraphic[] = "ShirtGraphic";
+struct Count : CountBase {
+    Object* object;
 
-} // namespace RBX
+    explicit Count(Object* p) : object(p) {}
+    virtual ~Count();
+    virtual void dispose();
+    virtual void* getDeleter(const void*);
+};
 
-template class RBX::FactoryProduct<RBX::BodyColors, RBX::CharacterAppearance, RBX::sBodyColors>;
-template class RBX::Reflection::Described<
-	RBX::BodyColors,
-	RBX::sBodyColors,
-	RBX::FactoryProduct<RBX::BodyColors, RBX::CharacterAppearance, RBX::sBodyColors> >;
-template class RBX::DescribedCreatable<RBX::BodyColors, RBX::CharacterAppearance, RBX::sBodyColors>;
+extern void __cdecl deleteObject(Object*);
 
-template class RBX::FactoryProduct<RBX::ShirtGraphic, RBX::CharacterAppearance, RBX::sShirtGraphic>;
-template class RBX::Reflection::Described<
-	RBX::ShirtGraphic,
-	RBX::sShirtGraphic,
-	RBX::FactoryProduct<RBX::ShirtGraphic, RBX::CharacterAppearance, RBX::sShirtGraphic> >;
-template class RBX::DescribedCreatable<RBX::ShirtGraphic, RBX::CharacterAppearance, RBX::sShirtGraphic>;
+struct S {
+    CountBase* count;
+    explicit S(Object*);
+};
 
-template class RBX::FactoryProduct<RBX::Skin, RBX::CharacterAppearance, RBX::sSkin>;
-template class RBX::Reflection::
-	Described<RBX::Skin, RBX::sSkin, RBX::FactoryProduct<RBX::Skin, RBX::CharacterAppearance, RBX::sSkin> >;
-template class RBX::DescribedCreatable<RBX::Skin, RBX::CharacterAppearance, RBX::sSkin>;
-
-template class RBX::FactoryProduct<RBX::Shirt, RBX::ShirtGraphic, RBX::sShirt>;
-template class RBX::Reflection::
-	Described<RBX::Shirt, RBX::sShirt, RBX::FactoryProduct<RBX::Shirt, RBX::ShirtGraphic, RBX::sShirt> >;
-template class RBX::DescribedCreatable<RBX::Shirt, RBX::ShirtGraphic, RBX::sShirt>;
+S::S(Object* p) : count(0)
+{
+    try {
+        count = new Count(p);
+    }
+    catch (...) {
+        deleteObject(p);
+        throw;
+    }
+}

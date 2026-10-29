@@ -1,38 +1,14 @@
-// from server: 79% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_instanceintegersignale3e82c00b3c2f566.cpp
 
-struct RefCounted {
-    void **vptr;
-    long refcount;
-    long weakcount;
-};
-
-struct Holder {
-    void *ptr;
-    RefCounted *ref;
-    void *extra;
-    Holder(void *p, RefCounted *r, void *e);
-};
-
-Holder::Holder(void *p, RefCounted *r, void *e)
-{
-    ptr = p;
-    ref = r;
-    if (r != 0) {
-        _InterlockedExchangeAdd(&r->refcount, 1);
-    }
-    extra = e;
-    if (r != 0) {
-        if (_InterlockedExchangeAdd(&r->refcount, -1) == 1) {
-            void **vtbl = (void **)r->vptr;
-            void (__thiscall *fn)(RefCounted *) = (void (__thiscall *)(RefCounted *))vtbl[1];
-            fn(r);
-            if (_InterlockedExchangeAdd(&r->weakcount, -1) == 1) {
-                void **vtbl2 = (void **)r->vptr;
-                void (__thiscall *fn2)(RefCounted *) = (void (__thiscall *)(RefCounted *))vtbl2[2];
-                fn2(r);
-            }
-        }
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#include "reflection/object.h"
+#include "reflection/signal.h"
+namespace RBX { class Instance; }
+template void RBX::Reflection::SignalDescImpl<2,void(boost::shared_ptr<RBX::Instance>,int)>::fire(RBX::Reflection::SignalSource*,boost::shared_ptr<RBX::Instance>,int);
+template void RBX::Reflection::SignalDescImpl<1,void(boost::shared_ptr<RBX::Instance>)>::fire(RBX::Reflection::SignalSource*,const boost::shared_ptr<RBX::Instance>);
+template void RBX::Reflection::SignalDescImpl<1,void(int)>::fire(RBX::Reflection::SignalSource*,const int);
+template void RBX::Reflection::SignalDescImpl<0,void(void)>::fire(RBX::Reflection::SignalSource*);

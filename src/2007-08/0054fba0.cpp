@@ -1,39 +1,15 @@
-// from server: 61% by colin
-struct StreamBuffer {
-    void* vtable;
-    char pad[0x38];
-    char flag3c;
-    char pad2[0x53];
-    int field90;
-    char pad3[8];
-    int field9c;
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_a8b429b397bb580b.cpp
 
-    void Init(int a, int b, int c);
-};
-
-extern "C" void __stdcall sub_54AEB0(int* p, int value);
-extern "C" void __stdcall sub_54D2B0(void* p, int value);
-extern "C" void __stdcall sub_54E730(void* p, void* value);
-extern "C" void __stdcall sub_54B960(void* p);
-
-void StreamBuffer::Init(int a, int b, int c)
-{
-    int local;
-    int* p;
-
-    if (a == -1)
-        a = 0x80;
-    else if (a != 0)
-        sub_54AEB0(&this->field90, a);
-
-    (*(void (__thiscall**)(StreamBuffer*))(*(int*)this + 0x58))(this);
-
-    sub_54D2B0(&local, b);
-    sub_54E730((char*)this + 0x40, &local);
-    sub_54B960(&local);
-
-    this->field9c |= 1;
-    this->flag3c = 0;
-    if (a > 1)
-        this->field9c |= 8;
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_gzip_compressor<std::allocator<char> >,std::char_traits<char>,std::allocator<char>,boost::iostreams::output>;

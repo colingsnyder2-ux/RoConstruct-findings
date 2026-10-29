@@ -1,21 +1,47 @@
-// from server: 0% by atomic.potato
-extern "C" void* __cdecl sub_718A38(unsigned int);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_codex_eh_count20_9b609f40750eb959.cpp
 
-struct S {
-    void* field0;
-    void* f(unsigned int, unsigned int);
+// Candidate translation unit (score above; library headers required).
+
+extern void* __cdecl operator new(unsigned int);
+extern const unsigned char control_table[];
+
+struct Object {
+    virtual ~Object();
 };
 
-void* S::f(unsigned int a, unsigned int b) {
-    void* p = sub_718A38(0x14);
-    if (p) {
-        *(unsigned int*)((char*)p + 4) = 1;
-        *(unsigned int*)((char*)p + 8) = 1;
-        *(void**)p = (void*)0x8c493c;
-        *(unsigned int*)((char*)p + 0xc) = a;
-    } else {
-        p = 0;
+struct Deleter { void operator()(Object*) const; };
+
+struct Control {
+    const void* table;
+    long strong;
+    long weak;
+    Object* object;
+    Deleter deleter;
+};
+
+struct S {
+    Control* control;
+    S(Object* object, Deleter deleter);
+};
+
+S::S(Object* object, Deleter deleter) : control(0)
+{
+    try {
+        Control* p = static_cast<Control*>(operator new(sizeof(Control)));
+        if (p) {
+            p->strong = 1;
+            p->weak = 1;
+            p->table = control_table;
+            p->object = object;
+        } else {
+            p = 0;
+        }
+        control = p;
+    } catch (...) {
+        deleter(object);
+        throw;
     }
-    field0 = p;
-    return this;
 }

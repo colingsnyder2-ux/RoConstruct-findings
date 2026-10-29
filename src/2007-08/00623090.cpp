@@ -1,39 +1,54 @@
-// from server: 35% by colin
-// roc 2007-08 00623090  unit: RBX::EquationDisplay  size: 80 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00623090
-//
-// 00623090  6aff                 push -1
-// 00623092  6868cd7500           push 0x75cd68
-// 00623097  64a100000000         mov eax, dword ptr fs:[0]
-// 0062309d  50                   push eax
-// 0062309e  64892500000000       mov dword ptr fs:[0], esp
-// 006230a5  51                   push ecx
-// 006230a6  56                   push esi
-// 006230a7  8bf1                 mov esi, ecx
-// 006230a9  89742404             mov dword ptr [esp + 4], esi
-// 006230ad  8d8e44010000         lea ecx, [esi + 0x144]
-// 006230b3  c744241000000000     mov dword ptr [esp + 0x10], 0
-// 006230bb  ff15ace67700         call dword ptr [0x77e6ac]
-// 006230c1  8bce                 mov ecx, esi
-// 006230c3  c7442410ffffffff     mov dword ptr [esp + 0x10], 0xffffffff
-// 006230cb  e8c037f3ff           call 0x556890
-// 006230d0  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 006230d4  5e                   pop esi
-// 006230d5  64890d00000000       mov dword ptr fs:[0], ecx
-// 006230dc  83c410               add esp, 0x10
-// 006230df  c3                   ret 
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espclaude_8a8912a8f8ce25f9.cpp
 
-struct EquationDisplay {
-    char pad[0x144];
-    void* field_144;
-    void destruct();
-};
-
-extern "C" void __stdcall sub_77E6AC(void*);
-extern void sub_556890(void*);
-
-void EquationDisplay::destruct()
+// Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#undef _DEBUG
+#define _DLL
+#define private public
+#include "util/IRenderable.h"
+#undef private
+#include "util/Object.h"
+#define hasListeners() hasListeners() const { return listeners.size() > 0; } bool hasListenersEmpty()
+#include "util/Events.h"
+#undef hasListeners
+namespace RBX { template<class T> class GuidItem { public: virtual ~GuidItem() {} char guidPad[0xc]; }; }
+namespace RBX { template<class T> class GuidAFP : public AbstractFactoryProduct<T> { protected: virtual void onGuidChanged() {} }; }
+#define AbstractFactoryProduct GuidItem<Instance>, public GuidAFP
+#include "util/Guid.h"
+namespace RBX { class GuidStub { public: typedef Guid::Data Data; void assign(const Data&) {} operator const Guid&() const { return *(const Guid*)0; } }; }
+#define Guid GuidStub
+#include "v8tree/Instance.h"
+#undef Guid
+#undef AbstractFactoryProduct
+#include "reflection/reflection.h"
+#include "util/NormalId.h"
+#define FaceInstance FaceInstanceOrig
+#include "v8datamodel/FaceInstance.h"
+#undef FaceInstance
+namespace RBX
 {
-    sub_77E6AC(&field_144);
-    sub_556890(this);
+	class FaceInstance : public Reflection::Described<FaceInstance, &sFaceInstance, Instance>, public IRenderable
+	{
+	private:
+		NormalId face;
+	public:
+		static const Reflection::EnumPropDescriptor<FaceInstance,NormalId> prop_Face;
+		FaceInstance();
+		NormalId getFace() const;
+		void setFace(NormalId);
+	protected:
+		virtual bool askSetParent(const Instance*) const;
+	};
+}
+#include "v8datamodel/Decal.h"
+namespace RBX
+{
+	Texture::Texture()
+		: studsPerTile(2.0f, 2.0f)
+	{
+		setName("Texture");
+	}
 }

@@ -1,25 +1,47 @@
-// from server: 0% by 41k
-struct RBX_VBrickColor_VValue {
-    void* f_0;
-    void* f_4;
-    char pad_8[16];
-    void* f_18;
-    void* f_1c;
-    RBX_VBrickColor_VValue* base();
-    RBX_VBrickColor_VValue* factoryProduct() {
-        f_0 = (void*)0xac4140;
-        f_4 = (void*)0xbb0e18;
-        f_18 = (void*)0xbb0e0c;
-        f_1c = (void*)0xbb0e00;
-        return base();
-    }
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_codex_eh_count20_9b609f40750eb959.cpp
+
+// Candidate translation unit (score above; library headers required).
+
+extern void* __cdecl operator new(unsigned int);
+extern const unsigned char control_table[];
+
+struct Object {
+    virtual ~Object();
 };
-extern "C" void sym(RBX_VBrickColor_VValue*);
-RBX_VBrickColor_VValue* __stdcall func_0077e070(RBX_VBrickColor_VValue* x) {
-    sym(x);
-    x->f_0 = (void*)0xac4140;
-    x->f_4 = (void*)0xbb0e18;
-    x->f_18 = (void*)0xbb0e0c;
-    x->f_1c = (void*)0xbb0e00;
-    return x;
+
+struct Deleter { void operator()(Object*) const; };
+
+struct Control {
+    const void* table;
+    long strong;
+    long weak;
+    Object* object;
+    Deleter deleter;
+};
+
+struct S {
+    Control* control;
+    S(Object* object, Deleter deleter);
+};
+
+S::S(Object* object, Deleter deleter) : control(0)
+{
+    try {
+        Control* p = static_cast<Control*>(operator new(sizeof(Control)));
+        if (p) {
+            p->strong = 1;
+            p->weak = 1;
+            p->table = control_table;
+            p->object = object;
+        } else {
+            p = 0;
+        }
+        control = p;
+    } catch (...) {
+        deleter(object);
+        throw;
+    }
 }

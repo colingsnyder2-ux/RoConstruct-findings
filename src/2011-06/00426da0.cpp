@@ -1,11 +1,18 @@
-// from server: 48% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: templates-boost-1_34_1 set_sp.cpp
+// roc-lib: xtp-11.2.2-lib-imports roc_selection_tree_do_action_5729c0d2b29d1b06.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include <boost/shared_ptr.hpp>
-struct T; typedef boost::shared_ptr<T> E;
-#include <set>
-template class std::set<E>;
+#include "Controls/XTTreeBase.h"
+
+class CSelectionTreeCtrl : public CXTTreeBase
+{
+protected:
+    virtual void DoAction(HTREEITEM hItem, BOOL bLeft, UINT nFlags, CPoint point);
+};
+
+void CSelectionTreeCtrl::DoAction(HTREEITEM hItem, BOOL bLeft, UINT nFlags, CPoint point)
+{
+    CXTTreeBase::DoAction(hItem, bLeft, nFlags, point);
+}

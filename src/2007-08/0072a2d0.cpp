@@ -1,101 +1,189 @@
-// from server: 30% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_boost133_signals_core_6e196a12d96bb448.cpp
 
-extern "C" void __stdcall _invalid_parameter_noinfo();
+// Candidate translation unit (score above; library headers required).
+#define _DLL 1
+#define _MT 1
+#define BOOST_SIGNALS_SOURCE
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
+// Boost.Signals library
 
-struct Conn {
-    char pad0[0xc];
-    int f0c;
-    int f10;
-    int* f14;
-};
+// Copyright Douglas Gregor 2001-2004. Use, modification and
+// distribution is subject to the Boost Software License, Version
+// 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
-struct Slot {
-    char pad0[0x18];
-    int f18;
-};
+// For more information, see http://www.boost.org
 
-struct Map {
-    char pad0[0x18];
-    Slot* f18;
-};
+#define BOOST_SIGNALS_SOURCE
 
-struct Iter {
-    char pad0[0x18];
-};
+#include <boost/signals/detail/named_slot_map.hpp>
+#include <cassert>
+#include <map>
+#include <list>
+#include <typeinfo>
 
-struct Obj {
-    char pad0[0x18];
-    Map* f18;
-};
+namespace boost { namespace BOOST_SIGNALS_NAMESPACE { namespace detail {
 
-struct Tmp {
-    char pad0[0x1c];
-    int f1c;
-    int f20;
-    int f24;
-    int f28;
-};
+typedef std::list<connection_slot_pair> group_list;
+typedef group_list::iterator slot_pair_iterator;
+typedef std::map<stored_group, group_list, compare_type> slot_container_type;
+typedef slot_container_type::iterator group_iterator;
+typedef slot_container_type::const_iterator const_group_iterator;
 
-extern "C" {
-    void* __cdecl sub_729030(void*);
-    void __cdecl sub_728c40(void*);
-    void __cdecl sub_729690(void*, void*, void*);
-    void __cdecl sub_729b30(void*, void*, void*, void*, void*);
-    void __cdecl sub_727770(void*);
-    void __cdecl sub_7276b0(void*);
-    void __cdecl sub_62fc62(void*);
-    int __cdecl sub_728dc0(void*, void*, void*);
-}
+named_slot_map_iterator::named_slot_map_iterator() : slot_assigned(false) {}
 
-void __stdcall sub_72a2d0(Obj* self, Conn* a2)
+named_slot_map_iterator::
+named_slot_map_iterator(const named_slot_map_iterator& other)
+  : group(other.group), last_group(other.last_group),
+    slot_assigned(other.slot_assigned)
 {
-    void* p = sub_729030(a2);
-    Iter* it = (Iter*)p;
-    if (self == 0) {
-        _invalid_parameter_noinfo();
-    }
-    if (it != (Iter*)self->f18) {
-        Conn* c = (Conn*)((char*)it + 0xc);
-        int v0 = c->f0c;
-        int v1 = c->f10;
-        int* v2 = c->f14;
-        if (v2 != 0) {
-            _InterlockedExchangeAdd((volatile long*)(v2 + 1), 1);
-        }
-        int w0 = a2->f0c;
-        int w1 = a2->f10;
-        int* w2 = a2->f14;
-        if (w2 != 0) {
-            _InterlockedExchangeAdd((volatile long*)(w2 + 1), 1);
-        }
-        if (sub_728dc0(self, &v0, &w0) == 0) {
-            goto done;
-        }
-    }
-    {
-        Tmp t;
-        sub_728c40(&t);
-        t.f20 = t.f1c;
-        t.f24 = 0;
-        sub_729690(&t, a2, &t.f1c);
-        sub_729b30(self, &t, it, a2, &t.f1c);
-        void* r = (void*)t.f1c;
-        int r2 = t.f20;
-        sub_727770(&t.f24);
-        t.f28 = -1;
-        sub_7276b0(&t.f1c);
-        sub_62fc62((void*)t.f20);
-        t.f20 = 0;
-        (void)r;
-        (void)r2;
-    }
-done:
-    if (it == 0) {
-        _invalid_parameter_noinfo();
-    }
-    if (it == (Iter*)self->f18) {
-        _invalid_parameter_noinfo();
-    }
+  if (slot_assigned) slot_ = other.slot_;
 }
+
+named_slot_map_iterator&
+named_slot_map_iterator::operator=(const named_slot_map_iterator& other)
+{
+  slot_assigned = other.slot_assigned;
+  group = other.group;
+  last_group = other.last_group;
+  if (slot_assigned) slot_ = other.slot_;
+  return *this;
+}
+
+
+connection_slot_pair& named_slot_map_iterator::dereference() const
+{ return *slot_; }
+
+void named_slot_map_iterator::increment()
+{
+  ++slot_;
+  if (slot_ == group->second.end()) {
+    ++group;
+    init_next_group();
+  }
+}
+
+bool
+named_slot_map_iterator::equal(const named_slot_map_iterator& other) const
+{
+  return (group == other.group
+          && (group == last_group
+              || slot_ == other.slot_));
+}
+
+#if BOOST_WORKAROUND(_MSC_VER, <= 1400)
+void named_slot_map_iterator::decrement() { assert(false); }
+void named_slot_map_iterator::advance(difference_type) { assert(false); }
+#endif
+
+named_slot_map::named_slot_map(const compare_type& compare) : groups(compare)
+{
+  clear();
+}
+
+void named_slot_map::clear()
+{
+  groups.clear();
+  groups[stored_group(stored_group::sk_front)];
+  groups[stored_group(stored_group::sk_back)];
+  back = groups.end();
+  --back;
+}
+
+named_slot_map::iterator named_slot_map::begin()
+{
+  return named_slot_map::iterator(groups.begin(), groups.end());
+}
+
+named_slot_map::iterator named_slot_map::end()
+{
+  return named_slot_map::iterator(groups.end(), groups.end());
+}
+
+named_slot_map::iterator
+named_slot_map::insert(const stored_group& name, const connection& con,
+                       const any& slot, connect_position at)
+{
+  group_iterator group;
+  if (name.empty()) {
+    switch (at) {
+    case at_front: group = groups.begin(); break;
+    case at_back: group = back; break;
+    }
+  } else {
+    group = groups.find(name);
+    if (group == groups.end()) {
+      slot_container_type::value_type v(name, group_list());
+      group = groups.insert(v).first;
+    }
+  }
+  iterator it;
+  it.group = group;
+  it.last_group = groups.end();
+
+  switch (at) {
+  case at_back:
+    group->second.push_back(connection_slot_pair(con, slot));
+    it.slot_ = group->second.end();
+    it.slot_assigned = true;
+    --(it.slot_);
+    break;
+
+  case at_front:
+    group->second.push_front(connection_slot_pair(con, slot));
+    it.slot_ = group->second.begin();
+    it.slot_assigned = true;
+    break;
+  }
+  return it;
+}
+
+void named_slot_map::disconnect(const stored_group& name)
+{
+  group_iterator group = groups.find(name);
+  if (group != groups.end()) {
+    slot_pair_iterator i = group->second.begin();
+    while (i != group->second.end()) {
+      slot_pair_iterator next = i;
+      ++next;
+      i->first.disconnect();
+      i = next;
+    }
+    groups.erase(group);
+  }
+}
+
+void named_slot_map::erase(iterator pos)
+{
+  // Erase the slot
+  pos.slot_->first.disconnect();
+  pos.group->second.erase(pos.slot_);
+}
+
+void named_slot_map::remove_disconnected_slots()
+{
+  // Remove any disconnected slots
+  group_iterator g = groups.begin();
+  while (g != groups.end()) {
+    slot_pair_iterator s = g->second.begin();
+    while (s != g->second.end()) {
+      if (s->first.connected()) ++s;
+      else g->second.erase(s++);
+    }
+
+    // Clear out empty groups
+    if (empty(g)) groups.erase(g++);
+    else ++g;
+  }
+}
+
+
+} } }

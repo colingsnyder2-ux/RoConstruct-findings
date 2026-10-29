@@ -1,14 +1,13 @@
-// from server: 31% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/PropertyGrid/XTPPropertyGridView.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\PropertyGrid\XTPPropertyGridView.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPPropertyGridView.cpp : implementation of the CXTPPropertyGridView class.
 //
 // This file is a part of the XTREME PROPERTYGRID MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -187,7 +186,6 @@ BEGIN_MESSAGE_MAP(CXTPPropertyGridView, CListBox)
 	ON_WM_NCCALCSIZE()
 	ON_WM_LBUTTONDOWN()
 	ON_WM_RBUTTONDOWN()
-	ON_WM_RBUTTONUP()
 	ON_WM_LBUTTONDBLCLK()
 	ON_CONTROL_REFLECT(LBN_SELCHANGE, OnSelectionChanged)
 	ON_WM_SETCURSOR()
@@ -341,10 +339,7 @@ void CXTPPropertyGridView::OnPaint()
 	ASSERT(m_pGrid);
 	GetPaintManager()->FillPropertyGridView(&buffer);
 
-	if (GetCount())
-	{
-		CWnd::DefWindowProc(WM_PAINT, (WPARAM)buffer.m_hDC, 0);
-	}
+	CWnd::DefWindowProc(WM_PAINT, (WPARAM)buffer.m_hDC, 0);
 }
 
 void CXTPPropertyGridView::OnNcPaint()
@@ -385,8 +380,6 @@ CXTPPropertyGridItem* CXTPPropertyGridView::InsertCategory(int nIndex, LPCTSTR s
 
 
 	m_pCategories->InsertAt(nIndex, pCategory);
-
-	pCategory->OnCaptionChanged();
 
 	if (m_hWnd)
 	{
@@ -677,7 +670,6 @@ void CXTPPropertyGridView::SwitchExpandState(int nItem)
 
 void CXTPPropertyGridView::OnLButtonDown(UINT nFlags, CPoint point)
 {
-
 	if (HitTest(point) == PGV_HIT_SPLITTER)
 	{
 		SetFocus();
@@ -702,7 +694,6 @@ void CXTPPropertyGridView::OnLButtonDown(UINT nFlags, CPoint point)
 	}
 
 	CListBox::OnLButtonDown(nFlags, point);
-
 }
 
 CXTPPropertyGridItem* CXTPPropertyGridView::ItemFromPoint(CPoint point) const
@@ -711,19 +702,7 @@ CXTPPropertyGridItem* CXTPPropertyGridView::ItemFromPoint(CPoint point) const
 	int nIndex = CListBox::ItemFromPoint(point, bOutside);
 	if (nIndex != -1 && !bOutside)
 	{
-		CXTPPropertyGridItem* pItem  = GetItem(nIndex);
-		if (!pItem)
-			return NULL;
-
-		if (GetStyle() & LBS_OWNERDRAWVARIABLE)
-		{
-			CRect rc;
-			GetItemRect(nIndex, rc);
-			if (!rc.PtInRect(point))
-				return NULL;
-		}
-
-		return pItem;
+		return GetItem(nIndex);
 	}
 	return NULL;
 }
@@ -736,13 +715,6 @@ void CXTPPropertyGridView::FocusInplaceButton(CXTPPropertyGridInplaceButton* pBu
 		m_pFocusedButton = pButton;
 		Invalidate(FALSE);
 	}
-}
-
-CPoint CXTPPropertyGridView::ViewToGrid(CPoint point)
-{
-	::MapWindowPoints(m_hWnd, GetPropertyGrid()->GetSafeHwnd(), &point, 1);
-
-	return point;
 }
 
 void CXTPPropertyGridView::OnMouseMove(UINT nFlags, CPoint point)
@@ -776,7 +748,6 @@ void CXTPPropertyGridView::OnMouseMove(UINT nFlags, CPoint point)
 	ShowToolTip(point);
 
 	CListBox::OnMouseMove(nFlags, point);
-
 }
 
 void CXTPPropertyGridView::OnLButtonUp(UINT nFlags, CPoint point)
@@ -785,8 +756,6 @@ void CXTPPropertyGridView::OnLButtonUp(UINT nFlags, CPoint point)
 	{
 		ReleaseCapture();
 		m_bTracking = FALSE;
-		if (m_pSelected) m_pSelected->OnSelect();
-		return;
 	}
 
 	CXTPPropertyGridItem* pItem = ItemFromPoint(point);
@@ -797,7 +766,6 @@ void CXTPPropertyGridView::OnLButtonUp(UINT nFlags, CPoint point)
 	}
 
 	CListBox::OnLButtonUp(nFlags, point);
-
 }
 
 void CXTPPropertyGridView::OnCaptureChanged(CWnd* pWnd)
@@ -829,7 +797,6 @@ void CXTPPropertyGridView::OnRButtonDown(UINT nFlags, CPoint point)
 {
 	CListBox::OnRButtonDown(nFlags, point);
 
-
 	CXTPPropertyGridItem* pItem = ItemFromPoint(point);
 
 	if (pItem)
@@ -842,13 +809,6 @@ void CXTPPropertyGridView::OnRButtonDown(UINT nFlags, CPoint point)
 			SendNotifyMessage(XTP_PGN_RCLICK, (LPARAM)pItem);
 		}
 	}
-
-}
-
-void CXTPPropertyGridView::OnRButtonUp(UINT nFlags, CPoint point)
-{
-	CListBox::OnRButtonUp(nFlags, point);
-
 }
 
 LRESULT CXTPPropertyGridView::SendNotifyMessage(WPARAM wParam, LPARAM lParam)
@@ -976,11 +936,6 @@ void CXTPPropertyGridView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		return;
 	}
 
-	if (m_pSelected && m_pSelected->OnKeyDown(nChar))
-	{
-		return;
-	}
-
 	if ((GetKeyState(VK_CONTROL) < 0) && (nChar == VK_RIGHT || nChar == VK_LEFT))
 	{
 		CXTPDrawHelpers::KeyToLayout(this, nChar);
@@ -1009,18 +964,21 @@ void CXTPPropertyGridView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			return;
 		}
 	}
-
 	if (nChar == VK_RETURN)
 	{
 		SwitchExpandState(GetCurSel());
 		return ;
 	}
-
 	if (nChar == VK_F4 && m_pSelected)
 	{
 		CXTPPropertyGridInplaceButton* pButton = m_pSelected->GetInplaceButtons()->Find(XTP_ID_PROPERTYGRID_COMBOBUTTON);
 		if (pButton)
 			m_pSelected->OnInplaceButtonDown(pButton);
+	}
+
+	if (m_pSelected && m_pSelected->OnKeyDown(nChar))
+	{
+		return;
 	}
 
 
@@ -1104,11 +1062,6 @@ BOOL CXTPPropertyGridView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 			SetCursor(m_hCursor);
 			return TRUE;
 		}
-		if (m_pHotButton && m_pHotButton->IsHyperlink() && m_pHotButton->GetEnabled())
-		{
-			SetCursor(m_pGrid->m_hCursorHand);
-			return TRUE;
-		}
 	}
 
 	return CListBox::OnSetCursor(pWnd, nHitTest, message);
@@ -1182,9 +1135,6 @@ void CXTPPropertyGridView::ShowToolTip(CPoint pt)
 		if (m_strTipText == pItem->GetCaption())
 			return;
 
-		if (pItem->GetMarkupCaption())
-			return;
-
 		m_strTipText = pItem->GetCaption();
 
 		ClientToScreen(&rcCaption);
@@ -1222,10 +1172,6 @@ void CXTPPropertyGridView::ShowToolTip(CPoint pt)
 			if (((CXTPPropertyGridInplaceEdit*)(GetFocus()))->GetItem() == pItem)
 				return;
 		}
-
-		if (pItem->IsSelected() && pItem->GetInplaceEdit().GetItem() == pItem &&
-			pItem->GetInplaceEdit().GetSafeHwnd() && pItem->GetInplaceEdit().IsWindowVisible())
-			return;
 
 		CRect rcValue(rc.left + nDividerPos, rc.top, rc.right, rc.bottom);
 		ClientToScreen(&rcValue);
@@ -1295,18 +1241,12 @@ void CXTPPropertyGridView::OnSetFocus(CWnd* pOldWnd)
 
 	CListBox::OnSetFocus(pOldWnd);
 
-	if (GetStyle() & LBS_MULTIPLESEL)
-		Invalidate(FALSE);
-
 }
 void CXTPPropertyGridView::OnKillFocus (CWnd* pNewWnd)
 {
 	m_pFocusedButton = NULL;
 
 	CListBox::OnKillFocus(pNewWnd);
-
-	if (GetStyle() & LBS_MULTIPLESEL)
-		Invalidate(FALSE);
 
 }
 

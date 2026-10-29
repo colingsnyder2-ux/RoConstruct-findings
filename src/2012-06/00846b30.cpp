@@ -1,89 +1,117 @@
-// roc 2012-06 00846b30  unit: seg_00840000  size: 100 bytes
-// Make this compile to the exact bytes below, then: roc check 2012-06 00846b30
-//
-// 00846b30  6aff                 push -1
-// 00846b32  6898dea900           push 0xa9de98
-// 00846b37  64a100000000         mov eax, dword ptr fs:[0]
-// 00846b3d  50                   push eax
-// 00846b3e  64892500000000       mov dword ptr fs:[0], esp
-// 00846b45  51                   push ecx
-// 00846b46  56                   push esi
-// 00846b47  8bf1                 mov esi, ecx
-// 00846b49  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 00846b4d  8b01                 mov eax, dword ptr [ecx]
-// 00846b4f  8906                 mov dword ptr [esi], eax
-// 00846b51  8b4104               mov eax, dword ptr [ecx + 4]
-// 00846b54  89742404             mov dword ptr [esp + 4], esi
-// 00846b58  894604               mov dword ptr [esi + 4], eax
-// 00846b5b  85c0                 test eax, eax
-// 00846b5d  740c                 je 0x846b6b
-// 00846b5f  83c004               add eax, 4
-// 00846b62  ba01000000           mov edx, 1
-// 00846b67  f00fc110             lock xadd dword ptr [eax], edx
-// 00846b6b  83c108               add ecx, 8
-// 00846b6e  51                   push ecx
-// 00846b6f  8d4e08               lea ecx, [esi + 8]
-// 00846b72  c744241400000000     mov dword ptr [esp + 0x14], 0
-// 00846b7a  ff154426b200         call dword ptr [0xb22644]
-// 00846b80  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 00846b84  8bc6                 mov eax, esi
-// 00846b86  5e                   pop esi
-// 00846b87  64890d00000000       mov dword ptr fs:[0], ecx
-// 00846b8e  83c410               add esp, 0x10
-// 00846b91  c20400               ret 4
-// copied from an identical function in another client (function ??0Holder@@QAE@ABU0@@Z)
-
+// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// roc-lib: boost-1.34.1-dll roc_bind_factories_17fe4b0ff94f7e66.cpp
 
-inline void add_reference(volatile long* references)
-{
-    _InterlockedExchangeAdd(references, 1);
-}
+// Candidate translation unit (score above; library headers required).
+// Declaration excerpt from RBLXDecomp/RBXGSdecomp at
+// 3c9c0c32ac5e7ba320767bfcd2bd3c54f86ef461, ThreadRef.h.
+// Out-of-line copy/destructor are the already-exact 005944e0/00594470.
+#define NDEBUG
+#include <boost/shared_ptr.hpp>
+#include <boost/mem_fn.hpp>
 
-struct ControlBlock {
-    unsigned long reserved;
-    volatile long references;
+struct lua_State;
+namespace boost { class mutex; }
+namespace RBX { namespace Lua {
+class ThreadRef {
+public:
+    class Node;
+private:
+    const boost::shared_ptr<boost::mutex> sync;
+    Node* node;
+    ThreadRef* previous;
+    ThreadRef* next;
+    lua_State* L;
+    int threadId;
+protected:
+    virtual void removeRef();
+public:
+    ThreadRef(const ThreadRef&);
+    ~ThreadRef();
 };
-
-struct Shared {
-    void* object;
-    ControlBlock* control;
-
-    Shared(const Shared&);
-    ~Shared();
+class FunctionRef : public ThreadRef {
+public:
+    int functionId;
+    FunctionRef(const FunctionRef&);
+    ~FunctionRef();
+    FunctionRef& operator=(const FunctionRef&);
+    bool operator==(const FunctionRef&) const;
+    bool operator!=(const FunctionRef&) const;
+protected:
+    virtual void removeRef();
 };
+}}
 
-struct String {
-    unsigned long storage[7];
+// Target stores an eight-byte member-function pointer (entry + this adjustment).
+class __multiple_inheritance DHTMLWindow;
+typedef RBX::Lua::FunctionRef FunctionRef;
+typedef boost::_mfi::mf1<void, DHTMLWindow, FunctionRef> Callback;
+template void Callback::operator()<boost::shared_ptr<DHTMLWindow> >(
+    boost::shared_ptr<DHTMLWindow> const&, FunctionRef) const;
 
-    String(const String&);
-};
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
+typedef boost::_bi::value<boost::shared_ptr<DHTMLWindow> > WindowValue;
+typedef boost::_bi::value<FunctionRef> FunctionValue;
+typedef boost::_bi::list2<WindowValue, FunctionValue> Arguments;
+typedef boost::_bi::bind_t<void, Callback, Arguments> Bound;
+// Full observed RTTI bind_t type: genuine list/storage constructors and manager.
+template class boost::_bi::value<FunctionRef>;
+template class boost::_bi::storage2<WindowValue, FunctionValue>;
+template class boost::_bi::list2<WindowValue, FunctionValue>;
+template class boost::_bi::bind_t<void, Callback, Arguments>;
+void invoke_bound(Bound& bound) { bound(); }
+void assign_bound(boost::function<void()>& function, Bound const& bound) { function = bound; }
 
-extern String* (__thiscall *string_copy)(String*, const String&);
+#include <string>
+namespace RBX { class Instance; namespace Reflection { class PropertyDescriptor; } }
+typedef boost::_mfi::mf0<void, DHTMLWindow> CloseCallback;
+typedef boost::_bi::list1<WindowValue> CloseArguments;
+typedef boost::_bi::bind_t<void, CloseCallback, CloseArguments> CloseBound;
+template class boost::_mfi::mf0<void, DHTMLWindow>;
+template class boost::_bi::list1<WindowValue>;
+template class boost::_bi::bind_t<void, CloseCallback, CloseArguments>;
+void assign_close(boost::function<void()>& f, CloseBound const& b) { f = b; }
 
-inline Shared::Shared(const Shared& other)
-    : object(other.object), control(other.control)
-{
-    if (control)
-        add_reference(&control->references);
-}
+typedef boost::_mfi::mf1<void, DHTMLWindow, std::string> StringCallback;
+typedef boost::_bi::value<std::string> StringValue;
+typedef boost::_bi::list2<WindowValue, StringValue> StringArguments;
+typedef boost::_bi::bind_t<void, StringCallback, StringArguments> StringBound;
+template void StringCallback::operator()<boost::shared_ptr<DHTMLWindow> >(boost::shared_ptr<DHTMLWindow> const&, std::string) const;
+template class boost::_bi::storage2<WindowValue, StringValue>;
+template class boost::_bi::list2<WindowValue, StringValue>;
+template class boost::_bi::bind_t<void, StringCallback, StringArguments>;
+void assign_string(boost::function<void()>& f, StringBound const& b) { f = b; }
 
-inline String::String(const String& other)
-{
-    string_copy(this, other);
-}
+typedef boost::_mfi::mf2<void, DHTMLWindow, int, int> ResizeCallback;
+typedef boost::_bi::value<int> IntValue;
+typedef boost::_bi::list3<WindowValue, IntValue, IntValue> ResizeArguments;
+typedef boost::_bi::bind_t<void, ResizeCallback, ResizeArguments> ResizeBound;
+template class boost::_mfi::mf2<void, DHTMLWindow, int, int>;
+template class boost::_bi::list3<WindowValue, IntValue, IntValue>;
+template class boost::_bi::bind_t<void, ResizeCallback, ResizeArguments>;
+void assign_resize(boost::function<void()>& f, ResizeBound const& b) { f = b; }
 
-struct Holder {
-    Shared shared;
-    String text;
+typedef boost::shared_ptr<RBX::Instance> InstancePtr;
+typedef RBX::Reflection::PropertyDescriptor const& PropertyRef;
+typedef boost::_mfi::mf3<void, DHTMLWindow, InstancePtr, PropertyRef, std::string> PropertyCallback;
+typedef boost::_bi::list4<WindowValue, boost::_bi::value<InstancePtr>, boost::reference_wrapper<RBX::Reflection::PropertyDescriptor const>, StringValue> PropertyArguments;
+typedef boost::_bi::bind_t<void, PropertyCallback, PropertyArguments> PropertyBound;
+template class boost::_mfi::mf3<void, DHTMLWindow, InstancePtr, PropertyRef, std::string>;
+template class boost::_bi::list4<WindowValue, boost::_bi::value<InstancePtr>, boost::reference_wrapper<RBX::Reflection::PropertyDescriptor const>, StringValue>;
+template class boost::_bi::bind_t<void, PropertyCallback, PropertyArguments>;
+void assign_property(boost::function<void()>& f, PropertyBound const& b) { f = b; }
 
-    Holder(const Holder&);
-};
-
-Holder::Holder(const Holder& other)
-    : shared(other.shared), text(other.text)
-{
-}
+typedef boost::shared_ptr<DHTMLWindow> WindowPtr;
+typedef void (DHTMLWindow::*CloseMethod)();
+typedef void (DHTMLWindow::*FunctionMethod)(FunctionRef);
+typedef void (DHTMLWindow::*StringMethod)(std::string);
+typedef void (DHTMLWindow::*ResizeMethod)(int, int);
+typedef void (DHTMLWindow::*PropertyMethod)(InstancePtr, PropertyRef, std::string);
+typedef boost::reference_wrapper<RBX::Reflection::PropertyDescriptor const> PropertyWrapper;
+template CloseBound boost::bind<void, DHTMLWindow, WindowPtr>(CloseMethod, WindowPtr);
+template Bound boost::bind<void, DHTMLWindow, FunctionRef, WindowPtr, FunctionRef>(FunctionMethod, WindowPtr, FunctionRef);
+template StringBound boost::bind<void, DHTMLWindow, std::string, WindowPtr, std::string>(StringMethod, WindowPtr, std::string);
+template ResizeBound boost::bind<void, DHTMLWindow, int, int, WindowPtr, int, int>(ResizeMethod, WindowPtr, int, int);
+template PropertyBound boost::bind<void, DHTMLWindow, InstancePtr, PropertyRef, std::string, WindowPtr, InstancePtr, PropertyWrapper, std::string>(PropertyMethod, WindowPtr, InstancePtr, PropertyWrapper, std::string);

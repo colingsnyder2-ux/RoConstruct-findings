@@ -1,8 +1,7 @@
-// from server: 99% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client Rendering/RenderLib/Profiler.cpp
+// roc-lib: openrbx-client roc_espeon_profilercpufallbackdef803ef72a1c369.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "decomp.h"
@@ -70,35 +69,8 @@ static float getShaderModel()
 }
 
 // FUNCTION: WEBSERVICE 0x10169c60
-static __int64 GetCyclesDifference(DelayFunction DelayFunction, unsigned int uiParameter)
-{
-	unsigned int t0Lo, t0Hi;
-	unsigned int t1Lo, t1Hi;
-
-	__try {
-		__asm {
-			rdtsc
-			mov esi, eax
-			mov edi, edx
-
-			push uiParameter
-			call DelayFunction
-			pop ebx
-
-			rdtsc
-			mov t1Hi, edx
-			mov t1Lo, eax
-
-			mov t0Hi, edi
-			mov t0Lo, esi
-		}
-	}
-	__except (1) {
-		return 0;
-	}
-
-	return (__int64) t1Hi * 0x100000000 - ((__int64) t0Hi << 32) - t0Lo + t1Lo;
-}
+__int64 GetCyclesDifference(DelayFunction DelayFunction, unsigned int uiParameter)
+;
 
 // FUNCTION: WEBSERVICE 0x10169d20
 static void Delay(unsigned int time)
@@ -144,7 +116,7 @@ static std::string getCPUMake()
 		return cpu_name;
 	}
 
-	return "Could not determine CPU name";
+	return "?";
 }
 
 // FUNCTION: WEBSERVICE 0x10169ee0

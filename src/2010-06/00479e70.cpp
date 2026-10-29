@@ -1,259 +1,246 @@
-// roc 2010-06 00479e70  unit: DxUserInput  size: 1145 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 00479e70
-//
-// 00479e70  803d9025c00000       cmp byte ptr [0xc02590], 0
-// 00479e77  0f8560040000         jne 0x47a2dd
-// 00479e7d  57                   push edi
-// 00479e7e  33c0                 xor eax, eax
-// 00479e80  b900010000           mov ecx, 0x100
-// 00479e85  bf9021c000           mov edi, 0xc02190
-// 00479e8a  f3ab                 rep stosd dword ptr es:[edi], eax
-// 00479e8c  b85c000000           mov eax, 0x5c
-// 00479e91  c7059421c0001b000000 mov dword ptr [0xc02194], 0x1b
-// 00479e9b  c7059821c00031000000 mov dword ptr [0xc02198], 0x31
-// 00479ea5  c7059c21c00032000000 mov dword ptr [0xc0219c], 0x32
-// 00479eaf  c705a021c00033000000 mov dword ptr [0xc021a0], 0x33
-// 00479eb9  c705a421c00034000000 mov dword ptr [0xc021a4], 0x34
-// 00479ec3  c705a821c00035000000 mov dword ptr [0xc021a8], 0x35
-// 00479ecd  c705ac21c00036000000 mov dword ptr [0xc021ac], 0x36
-// 00479ed7  c705b021c00037000000 mov dword ptr [0xc021b0], 0x37
-// 00479ee1  c705b421c00038000000 mov dword ptr [0xc021b4], 0x38
-// 00479eeb  c705b821c00039000000 mov dword ptr [0xc021b8], 0x39
-// 00479ef5  c705bc21c00030000000 mov dword ptr [0xc021bc], 0x30
-// 00479eff  c705c021c0002d000000 mov dword ptr [0xc021c0], 0x2d
-// 00479f09  c705c421c0003d000000 mov dword ptr [0xc021c4], 0x3d
-// 00479f13  c705c821c00008000000 mov dword ptr [0xc021c8], 8
-// 00479f1d  c705cc21c00009000000 mov dword ptr [0xc021cc], 9
-// 00479f27  c705d021c00071000000 mov dword ptr [0xc021d0], 0x71
-// 00479f31  c705d421c00077000000 mov dword ptr [0xc021d4], 0x77
-// 00479f3b  c705d821c00065000000 mov dword ptr [0xc021d8], 0x65
-// 00479f45  c705dc21c00072000000 mov dword ptr [0xc021dc], 0x72
-// 00479f4f  c705e021c00074000000 mov dword ptr [0xc021e0], 0x74
-// 00479f59  c705e421c00079000000 mov dword ptr [0xc021e4], 0x79
-// 00479f63  c705e821c00075000000 mov dword ptr [0xc021e8], 0x75
-// 00479f6d  c705ec21c00069000000 mov dword ptr [0xc021ec], 0x69
-// 00479f77  c705f021c0006f000000 mov dword ptr [0xc021f0], 0x6f
-// 00479f81  c705f421c00070000000 mov dword ptr [0xc021f4], 0x70
-// 00479f8b  c705f821c0005b000000 mov dword ptr [0xc021f8], 0x5b
-// 00479f95  c705fc21c0005d000000 mov dword ptr [0xc021fc], 0x5d
-// 00479f9f  c7050022c0000d000000 mov dword ptr [0xc02200], 0xd
-// 00479fa9  c7050422c00032010000 mov dword ptr [0xc02204], 0x132
-// 00479fb3  c7050822c00061000000 mov dword ptr [0xc02208], 0x61
-// 00479fbd  c7050c22c00073000000 mov dword ptr [0xc0220c], 0x73
-// 00479fc7  c7051022c00064000000 mov dword ptr [0xc02210], 0x64
-// 00479fd1  c7051422c00066000000 mov dword ptr [0xc02214], 0x66
-// 00479fdb  c7051822c00067000000 mov dword ptr [0xc02218], 0x67
-// 00479fe5  c7051c22c00068000000 mov dword ptr [0xc0221c], 0x68
-// 00479fef  c7052022c0006a000000 mov dword ptr [0xc02220], 0x6a
-// 00479ff9  c7052422c0006b000000 mov dword ptr [0xc02224], 0x6b
-// 0047a003  c7052822c0006c000000 mov dword ptr [0xc02228], 0x6c
-// 0047a00d  c7052c22c0003b000000 mov dword ptr [0xc0222c], 0x3b
-// 0047a017  c7053022c00027000000 mov dword ptr [0xc02230], 0x27
-// 0047a021  c7053422c00060000000 mov dword ptr [0xc02234], 0x60
-// 0047a02b  c7053822c00030010000 mov dword ptr [0xc02238], 0x130
-// 0047a035  a33c22c000           mov dword ptr [0xc0223c], eax
-// 0047a03a  a3e822c000           mov dword ptr [0xc022e8], eax
-// 0047a03f  c7054022c0007a000000 mov dword ptr [0xc02240], 0x7a
-// 0047a049  c7054422c00078000000 mov dword ptr [0xc02244], 0x78
-// 0047a053  c7054822c00063000000 mov dword ptr [0xc02248], 0x63
-// 0047a05d  c7054c22c00076000000 mov dword ptr [0xc0224c], 0x76
-// 0047a067  c7055022c00062000000 mov dword ptr [0xc02250], 0x62
-// 0047a071  c7055422c0006e000000 mov dword ptr [0xc02254], 0x6e
-// 0047a07b  c7055822c0006d000000 mov dword ptr [0xc02258], 0x6d
-// 0047a085  c7055c22c0002c000000 mov dword ptr [0xc0225c], 0x2c
-// 0047a08f  c7056022c0002e000000 mov dword ptr [0xc02260], 0x2e
-// 0047a099  c7056422c0002f000000 mov dword ptr [0xc02264], 0x2f
-// 0047a0a3  c7056822c0002f010000 mov dword ptr [0xc02268], 0x12f
-// 0047a0ad  c7056c22c0000c010000 mov dword ptr [0xc0226c], 0x10c
-// 0047a0b7  c7057022c00034010000 mov dword ptr [0xc02270], 0x134
-// 0047a0c1  c7057422c00020000000 mov dword ptr [0xc02274], 0x20
-// 0047a0cb  c7057822c0002d010000 mov dword ptr [0xc02278], 0x12d
-// 0047a0d5  c7057c22c0001a010000 mov dword ptr [0xc0227c], 0x11a
-// 0047a0df  c7058022c0001b010000 mov dword ptr [0xc02280], 0x11b
-// 0047a0e9  c7058422c0001c010000 mov dword ptr [0xc02284], 0x11c
-// 0047a0f3  c7058822c0001d010000 mov dword ptr [0xc02288], 0x11d
-// 0047a0fd  c7058c22c0001e010000 mov dword ptr [0xc0228c], 0x11e
-// 0047a107  c7059022c0001f010000 mov dword ptr [0xc02290], 0x11f
-// 0047a111  c7059422c00020010000 mov dword ptr [0xc02294], 0x120
-// 0047a11b  c7059822c00021010000 mov dword ptr [0xc02298], 0x121
-// 0047a125  c7059c22c00022010000 mov dword ptr [0xc0229c], 0x122
-// 0047a12f  c705a022c00023010000 mov dword ptr [0xc022a0], 0x123
-// 0047a139  c705a422c0002c010000 mov dword ptr [0xc022a4], 0x12c
-// 0047a143  c705a822c0002e010000 mov dword ptr [0xc022a8], 0x12e
-// 0047a14d  c705ac22c00007010000 mov dword ptr [0xc022ac], 0x107
-// 0047a157  c705b022c00008010000 mov dword ptr [0xc022b0], 0x108
-// 0047a161  c705b422c00009010000 mov dword ptr [0xc022b4], 0x109
-// 0047a16b  c705b822c0000d010000 mov dword ptr [0xc022b8], 0x10d
-// 0047a175  8b442408             mov eax, dword ptr [esp + 8]
-// 0047a179  c705bc22c00004010000 mov dword ptr [0xc022bc], 0x104
-// 0047a183  c705c022c00005010000 mov dword ptr [0xc022c0], 0x105
-// 0047a18d  c705c422c00006010000 mov dword ptr [0xc022c4], 0x106
-// 0047a197  c705c822c0000e010000 mov dword ptr [0xc022c8], 0x10e
-// 0047a1a1  c705cc22c00001010000 mov dword ptr [0xc022cc], 0x101
-// 0047a1ab  c705d022c00002010000 mov dword ptr [0xc022d0], 0x102
-// 0047a1b5  c705d422c00003010000 mov dword ptr [0xc022d4], 0x103
-// 0047a1bf  c705d822c00000010000 mov dword ptr [0xc022d8], 0x100
-// 0047a1c9  c705dc22c0000a010000 mov dword ptr [0xc022dc], 0x10a
-// 0047a1d3  c705ec22c00024010000 mov dword ptr [0xc022ec], 0x124
-// 0047a1dd  c705f022c00025010000 mov dword ptr [0xc022f0], 0x125
-// 0047a1e7  c7052023c00026010000 mov dword ptr [0xc02320], 0x126
-// 0047a1f1  c7052423c00027010000 mov dword ptr [0xc02324], 0x127
-// 0047a1fb  c7052823c00028010000 mov dword ptr [0xc02328], 0x128
-// 0047a205  c705c423c00010010000 mov dword ptr [0xc023c4], 0x110
-// 0047a20f  c7050024c0000f010000 mov dword ptr [0xc02400], 0x10f
-// 0047a219  c7050424c00031010000 mov dword ptr [0xc02404], 0x131
-// 0047a223  c7056424c0000b010000 mov dword ptr [0xc02464], 0x10b
-// 0047a22d  c7056c24c0003d010000 mov dword ptr [0xc0246c], 0x13d
-// 0047a237  c7057024c00033010000 mov dword ptr [0xc02470], 0x133
-// 0047a241  c705a424c00013000000 mov dword ptr [0xc024a4], 0x13
-// 0047a24b  c705ac24c00016010000 mov dword ptr [0xc024ac], 0x116
-// 0047a255  c705b024c00011010000 mov dword ptr [0xc024b0], 0x111
-// 0047a25f  c705b424c00018010000 mov dword ptr [0xc024b4], 0x118
-// 0047a269  c705bc24c00014010000 mov dword ptr [0xc024bc], 0x114
-// 0047a273  c705c424c00013010000 mov dword ptr [0xc024c4], 0x113
-// 0047a27d  c705cc24c00017010000 mov dword ptr [0xc024cc], 0x117
-// 0047a287  c705d024c00012010000 mov dword ptr [0xc024d0], 0x112
-// 0047a291  c705d424c00019010000 mov dword ptr [0xc024d4], 0x119
-// 0047a29b  c705d824c00015010000 mov dword ptr [0xc024d8], 0x115
-// 0047a2a5  c705dc24c0007f000000 mov dword ptr [0xc024dc], 0x7f
-// 0047a2af  c705fc24c00036010000 mov dword ptr [0xc024fc], 0x136
-// 0047a2b9  c7050025c00035010000 mov dword ptr [0xc02500], 0x135
-// 0047a2c3  c7050425c0003f010000 mov dword ptr [0xc02504], 0x13f
-// 0047a2cd  8b04859021c000       mov eax, dword ptr [eax*4 + 0xc02190]
-// 0047a2d4  c6059025c00001       mov byte ptr [0xc02590], 1
-// 0047a2db  5f                   pop edi
-// 0047a2dc  c3                   ret 
-// 0047a2dd  8b4c2404             mov ecx, dword ptr [esp + 4]
-// 0047a2e1  8b048d9021c000       mov eax, dword ptr [ecx*4 + 0xc02190]
-// 0047a2e8  c3                   ret 
-// copied from an identical function in another client (function ?getKeyCode@DxUserInput@ns_ROCX00000e@@SAHH@Z)
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_input_map_alias_9c2f97ba1d40f5a8.cpp
 
-namespace ns_ROCX00000e {
-// from server: 100% by tester
-struct DxUserInput {
-    static int getKeyCode(int index);
-};
-
-static unsigned char g_initialized = 0;
-static int g_keyMap[256];
-
-int DxUserInput::getKeyCode(int index) {
-    if (g_initialized == 0) {
-        int i;
-        for (i = 0; i < 256; ++i) {
-            g_keyMap[i] = 0;
-        }
-        g_keyMap[1] = 0x1b;
-        g_keyMap[2] = 0x31;
-        g_keyMap[3] = 0x32;
-        g_keyMap[4] = 0x33;
-        g_keyMap[5] = 0x34;
-        g_keyMap[6] = 0x35;
-        g_keyMap[7] = 0x36;
-        g_keyMap[8] = 0x37;
-        g_keyMap[9] = 0x38;
-        g_keyMap[10] = 0x39;
-        g_keyMap[11] = 0x30;
-        g_keyMap[12] = 0x2d;
-        g_keyMap[13] = 0x3d;
-        g_keyMap[14] = 8;
-        g_keyMap[15] = 9;
-        g_keyMap[16] = 0x71;
-        g_keyMap[17] = 0x77;
-        g_keyMap[18] = 0x65;
-        g_keyMap[19] = 0x72;
-        g_keyMap[20] = 0x74;
-        g_keyMap[21] = 0x79;
-        g_keyMap[22] = 0x75;
-        g_keyMap[23] = 0x69;
-        g_keyMap[24] = 0x6f;
-        g_keyMap[25] = 0x70;
-        g_keyMap[26] = 0x5b;
-        g_keyMap[27] = 0x5d;
-        g_keyMap[28] = 0xd;
-        g_keyMap[29] = 0x132;
-        g_keyMap[30] = 0x61;
-        g_keyMap[31] = 0x73;
-        g_keyMap[32] = 0x64;
-        g_keyMap[33] = 0x66;
-        g_keyMap[34] = 0x67;
-        g_keyMap[35] = 0x68;
-        g_keyMap[36] = 0x6a;
-        g_keyMap[37] = 0x6b;
-        g_keyMap[38] = 0x6c;
-        g_keyMap[39] = 0x3b;
-        g_keyMap[40] = 0x27;
-        g_keyMap[41] = 0x60;
-        g_keyMap[42] = 0x130;
-        g_keyMap[43] = 0x5c;
-        g_keyMap[86] = 0x5c;
-        g_keyMap[44] = 0x7a;
-        g_keyMap[45] = 0x78;
-        g_keyMap[46] = 0x63;
-        g_keyMap[47] = 0x76;
-        g_keyMap[48] = 0x62;
-        g_keyMap[49] = 0x6e;
-        g_keyMap[50] = 0x6d;
-        g_keyMap[51] = 0x2c;
-        g_keyMap[52] = 0x2e;
-        g_keyMap[53] = 0x2f;
-        g_keyMap[54] = 0x12f;
-        g_keyMap[55] = 0x10c;
-        g_keyMap[56] = 0x134;
-        g_keyMap[57] = 0x20;
-        g_keyMap[58] = 0x12d;
-        g_keyMap[59] = 0x11a;
-        g_keyMap[60] = 0x11b;
-        g_keyMap[61] = 0x11c;
-        g_keyMap[62] = 0x11d;
-        g_keyMap[63] = 0x11e;
-        g_keyMap[64] = 0x11f;
-        g_keyMap[65] = 0x120;
-        g_keyMap[66] = 0x121;
-        g_keyMap[67] = 0x122;
-        g_keyMap[68] = 0x123;
-        g_keyMap[69] = 0x12c;
-        g_keyMap[70] = 0x12e;
-        g_keyMap[71] = 0x107;
-        g_keyMap[72] = 0x108;
-        g_keyMap[73] = 0x109;
-        g_keyMap[74] = 0x10d;
-        g_keyMap[75] = 0x104;
-        g_keyMap[76] = 0x105;
-        g_keyMap[77] = 0x106;
-        g_keyMap[78] = 0x10e;
-        g_keyMap[79] = 0x101;
-        g_keyMap[80] = 0x102;
-        g_keyMap[81] = 0x103;
-        g_keyMap[82] = 0x100;
-        g_keyMap[83] = 0x10a;
-        g_keyMap[87] = 0x124;
-        g_keyMap[88] = 0x125;
-        g_keyMap[100] = 0x126;
-        g_keyMap[101] = 0x127;
-        g_keyMap[102] = 0x128;
-        g_keyMap[141] = 0x110;
-        g_keyMap[156] = 0x10f;
-        g_keyMap[157] = 0x131;
-        g_keyMap[181] = 0x10b;
-        g_keyMap[183] = 0x13d;
-        g_keyMap[184] = 0x133;
-        g_keyMap[197] = 0x13;
-        g_keyMap[199] = 0x116;
-        g_keyMap[200] = 0x111;
-        g_keyMap[201] = 0x118;
-        g_keyMap[203] = 0x114;
-        g_keyMap[205] = 0x113;
-        g_keyMap[207] = 0x117;
-        g_keyMap[208] = 0x112;
-        g_keyMap[209] = 0x119;
-        g_keyMap[210] = 0x115;
-        g_keyMap[211] = 0x7f;
-        g_keyMap[219] = 0x136;
-        g_keyMap[220] = 0x135;
-        g_keyMap[221] = 0x13f;
-        g_initialized = 1;
-    }
-    return g_keyMap[index];
+// Candidate translation unit (score above; library headers required).
+// Native DirectInput scan-code/SDL key conversion; mapping values use actual SDL enums.
+#include <SDL_keysym.h>
+#include <cstring>
+SDLKey scanToSDL(unsigned key) {
+ static bool initialized=false;
+ static SDLKey table[256];
+ if(!initialized) {
+  for(unsigned i=0;i<sizeof(table)/sizeof(table[0]);++i)table[i]=static_cast<SDLKey>(0);
+  table[0x01]=SDLK_ESCAPE;
+  table[0x02]=SDLK_1;
+  table[0x03]=SDLK_2;
+  table[0x04]=SDLK_3;
+  table[0x05]=SDLK_4;
+  table[0x06]=SDLK_5;
+  table[0x07]=SDLK_6;
+  table[0x08]=SDLK_7;
+  table[0x09]=SDLK_8;
+  table[0x0a]=SDLK_9;
+  table[0x0b]=SDLK_0;
+  table[0x0c]=SDLK_MINUS;
+  table[0x0d]=SDLK_EQUALS;
+  table[0x0e]=SDLK_BACKSPACE;
+  table[0x0f]=SDLK_TAB;
+  table[0x10]=SDLK_q;
+  table[0x11]=SDLK_w;
+  table[0x12]=SDLK_e;
+  table[0x13]=SDLK_r;
+  table[0x14]=SDLK_t;
+  table[0x15]=SDLK_y;
+  table[0x16]=SDLK_u;
+  table[0x17]=SDLK_i;
+  table[0x18]=SDLK_o;
+  table[0x19]=SDLK_p;
+  table[0x1a]=SDLK_LEFTBRACKET;
+  table[0x1b]=SDLK_RIGHTBRACKET;
+  table[0x1c]=SDLK_RETURN;
+  table[0x1d]=SDLK_LCTRL;
+  table[0x1e]=SDLK_a;
+  table[0x1f]=SDLK_s;
+  table[0x20]=SDLK_d;
+  table[0x21]=SDLK_f;
+  table[0x22]=SDLK_g;
+  table[0x23]=SDLK_h;
+  table[0x24]=SDLK_j;
+  table[0x25]=SDLK_k;
+  table[0x26]=SDLK_l;
+  table[0x27]=SDLK_SEMICOLON;
+  table[0x28]=SDLK_QUOTE;
+  table[0x29]=SDLK_BACKQUOTE;
+  table[0x2a]=SDLK_LSHIFT;
+  // US and ISO backslash scan codes share one SDL key.
+  table[0x2b]=SDLK_BACKSLASH;
+  table[0x56]=SDLK_BACKSLASH;
+  table[0x2c]=SDLK_z;
+  table[0x2d]=SDLK_x;
+  table[0x2e]=SDLK_c;
+  table[0x2f]=SDLK_v;
+  table[0x30]=SDLK_b;
+  table[0x31]=SDLK_n;
+  table[0x32]=SDLK_m;
+  table[0x33]=SDLK_COMMA;
+  table[0x34]=SDLK_PERIOD;
+  table[0x35]=SDLK_SLASH;
+  table[0x36]=SDLK_RSHIFT;
+  table[0x37]=SDLK_KP_MULTIPLY;
+  table[0x38]=SDLK_LALT;
+  table[0x39]=SDLK_SPACE;
+  table[0x3a]=SDLK_CAPSLOCK;
+  table[0x3b]=SDLK_F1;
+  table[0x3c]=SDLK_F2;
+  table[0x3d]=SDLK_F3;
+  table[0x3e]=SDLK_F4;
+  table[0x3f]=SDLK_F5;
+  table[0x40]=SDLK_F6;
+  table[0x41]=SDLK_F7;
+  table[0x42]=SDLK_F8;
+  table[0x43]=SDLK_F9;
+  table[0x44]=SDLK_F10;
+  table[0x45]=SDLK_NUMLOCK;
+  table[0x46]=SDLK_SCROLLOCK;
+  table[0x47]=SDLK_KP7;
+  table[0x48]=SDLK_KP8;
+  table[0x49]=SDLK_KP9;
+  table[0x4a]=SDLK_KP_MINUS;
+  table[0x4b]=SDLK_KP4;
+  table[0x4c]=SDLK_KP5;
+  table[0x4d]=SDLK_KP6;
+  table[0x4e]=SDLK_KP_PLUS;
+  table[0x4f]=SDLK_KP1;
+  table[0x50]=SDLK_KP2;
+  table[0x51]=SDLK_KP3;
+  table[0x52]=SDLK_KP0;
+  table[0x53]=SDLK_KP_PERIOD;
+  table[0x57]=SDLK_F11;
+  table[0x58]=SDLK_F12;
+  table[0x64]=SDLK_F13;
+  table[0x65]=SDLK_F14;
+  table[0x66]=SDLK_F15;
+  table[0x8d]=SDLK_KP_EQUALS;
+  table[0x9c]=SDLK_KP_ENTER;
+  table[0x9d]=SDLK_RCTRL;
+  table[0xb5]=SDLK_KP_DIVIDE;
+  table[0xb7]=SDLK_SYSREQ;
+  table[0xb8]=SDLK_RALT;
+  table[0xc5]=SDLK_PAUSE;
+  table[0xc7]=SDLK_HOME;
+  table[0xc8]=SDLK_UP;
+  table[0xc9]=SDLK_PAGEUP;
+  table[0xcb]=SDLK_LEFT;
+  table[0xcd]=SDLK_RIGHT;
+  table[0xcf]=SDLK_END;
+  table[0xd0]=SDLK_DOWN;
+  table[0xd1]=SDLK_PAGEDOWN;
+  table[0xd2]=SDLK_INSERT;
+  table[0xd3]=SDLK_DELETE;
+  table[0xdb]=SDLK_LMETA;
+  table[0xdc]=SDLK_RMETA;
+  table[0xdd]=SDLK_MENU;
+  initialized=true;
+ }
+ return table[key];
 }
+unsigned sdlToScan(SDLKey key) {
+ static bool initialized=false;
+ static unsigned table[SDLK_LAST];
+ if(!initialized) {
+  for(unsigned i=0;i<sizeof(table)/sizeof(table[0]);++i)table[i]=0;
+  table[SDLK_ESCAPE]=0x01;
+  table[SDLK_1]=0x02;
+  table[SDLK_2]=0x03;
+  table[SDLK_3]=0x04;
+  table[SDLK_4]=0x05;
+  table[SDLK_5]=0x06;
+  table[SDLK_6]=0x07;
+  table[SDLK_7]=0x08;
+  table[SDLK_8]=0x09;
+  table[SDLK_9]=0x0a;
+  table[SDLK_0]=0x0b;
+  table[SDLK_MINUS]=0x0c;
+  table[SDLK_EQUALS]=0x0d;
+  table[SDLK_BACKSPACE]=0x0e;
+  table[SDLK_TAB]=0x0f;
+  table[SDLK_q]=0x10;
+  table[SDLK_w]=0x11;
+  table[SDLK_e]=0x12;
+  table[SDLK_r]=0x13;
+  table[SDLK_t]=0x14;
+  table[SDLK_y]=0x15;
+  table[SDLK_u]=0x16;
+  table[SDLK_i]=0x17;
+  table[SDLK_o]=0x18;
+  table[SDLK_p]=0x19;
+  table[SDLK_LEFTBRACKET]=0x1a;
+  table[SDLK_RIGHTBRACKET]=0x1b;
+  table[SDLK_RETURN]=0x1c;
+  table[SDLK_LCTRL]=0x1d;
+  table[SDLK_a]=0x1e;
+  table[SDLK_s]=0x1f;
+  table[SDLK_d]=0x20;
+  table[SDLK_f]=0x21;
+  table[SDLK_g]=0x22;
+  table[SDLK_h]=0x23;
+  table[SDLK_j]=0x24;
+  table[SDLK_k]=0x25;
+  table[SDLK_l]=0x26;
+  table[SDLK_SEMICOLON]=0x27;
+  table[SDLK_QUOTE]=0x28;
+  table[SDLK_BACKQUOTE]=0x29;
+  table[SDLK_LSHIFT]=0x2a;
+  table[SDLK_BACKSLASH]=0x2b;
+  table[SDLK_BACKSLASH]=0x56;
+  table[SDLK_z]=0x2c;
+  table[SDLK_x]=0x2d;
+  table[SDLK_c]=0x2e;
+  table[SDLK_v]=0x2f;
+  table[SDLK_b]=0x30;
+  table[SDLK_n]=0x31;
+  table[SDLK_m]=0x32;
+  table[SDLK_COMMA]=0x33;
+  table[SDLK_PERIOD]=0x34;
+  table[SDLK_SLASH]=0x35;
+  table[SDLK_RSHIFT]=0x36;
+  table[SDLK_KP_MULTIPLY]=0x37;
+  table[SDLK_LALT]=0x38;
+  table[SDLK_SPACE]=0x39;
+  table[SDLK_CAPSLOCK]=0x3a;
+  table[SDLK_F1]=0x3b;
+  table[SDLK_F2]=0x3c;
+  table[SDLK_F3]=0x3d;
+  table[SDLK_F4]=0x3e;
+  table[SDLK_F5]=0x3f;
+  table[SDLK_F6]=0x40;
+  table[SDLK_F7]=0x41;
+  table[SDLK_F8]=0x42;
+  table[SDLK_F9]=0x43;
+  table[SDLK_F10]=0x44;
+  table[SDLK_NUMLOCK]=0x45;
+  table[SDLK_SCROLLOCK]=0x46;
+  table[SDLK_KP7]=0x47;
+  table[SDLK_KP8]=0x48;
+  table[SDLK_KP9]=0x49;
+  table[SDLK_KP_MINUS]=0x4a;
+  table[SDLK_KP4]=0x4b;
+  table[SDLK_KP5]=0x4c;
+  table[SDLK_KP6]=0x4d;
+  table[SDLK_KP_PLUS]=0x4e;
+  table[SDLK_KP1]=0x4f;
+  table[SDLK_KP2]=0x50;
+  table[SDLK_KP3]=0x51;
+  table[SDLK_KP0]=0x52;
+  table[SDLK_KP_PERIOD]=0x53;
+  table[SDLK_F11]=0x57;
+  table[SDLK_F12]=0x58;
+  table[SDLK_F13]=0x64;
+  table[SDLK_F14]=0x65;
+  table[SDLK_F15]=0x66;
+  table[SDLK_KP_EQUALS]=0x8d;
+  table[SDLK_KP_ENTER]=0x9c;
+  table[SDLK_RCTRL]=0x9d;
+  table[SDLK_KP_DIVIDE]=0xb5;
+  table[SDLK_SYSREQ]=0xb7;
+  table[SDLK_RALT]=0xb8;
+  table[SDLK_PAUSE]=0xc5;
+  table[SDLK_HOME]=0xc7;
+  table[SDLK_UP]=0xc8;
+  table[SDLK_PAGEUP]=0xc9;
+  table[SDLK_LEFT]=0xcb;
+  table[SDLK_RIGHT]=0xcd;
+  table[SDLK_END]=0xcf;
+  table[SDLK_DOWN]=0xd0;
+  table[SDLK_PAGEDOWN]=0xd1;
+  table[SDLK_INSERT]=0xd2;
+  table[SDLK_DELETE]=0xd3;
+  table[SDLK_LMETA]=0xdb;
+  table[SDLK_RMETA]=0xdc;
+  table[SDLK_MENU]=0xdd;
+  initialized=true;
+ }
+ return table[key];
 }

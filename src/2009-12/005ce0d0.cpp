@@ -1,78 +1,109 @@
-// roc 2009-12 005ce0d0  unit: RBX::PartChunk  size: 91 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 005ce0d0
-//
-// 005ce0d0  8b442404             mov eax, dword ptr [esp + 4]
-// 005ce0d4  8b11                 mov edx, dword ptr [ecx]
-// 005ce0d6  8910                 mov dword ptr [eax], edx
-// 005ce0d8  8b5104               mov edx, dword ptr [ecx + 4]
-// 005ce0db  895004               mov dword ptr [eax + 4], edx
-// 005ce0de  8b5108               mov edx, dword ptr [ecx + 8]
-// 005ce0e1  895008               mov dword ptr [eax + 8], edx
-// 005ce0e4  8b510c               mov edx, dword ptr [ecx + 0xc]
-// 005ce0e7  89500c               mov dword ptr [eax + 0xc], edx
-// 005ce0ea  8b5110               mov edx, dword ptr [ecx + 0x10]
-// 005ce0ed  895010               mov dword ptr [eax + 0x10], edx
-// 005ce0f0  8b5114               mov edx, dword ptr [ecx + 0x14]
-// 005ce0f3  895014               mov dword ptr [eax + 0x14], edx
-// 005ce0f6  8b5104               mov edx, dword ptr [ecx + 4]
-// 005ce0f9  8b5218               mov edx, dword ptr [edx + 0x18]
-// 005ce0fc  895104               mov dword ptr [ecx + 4], edx
-// 005ce0ff  85d2                 test edx, edx
-// 005ce101  7525                 jne 0x5ce128
-// 005ce103  56                   push esi
-// 005ce104  8b710c               mov esi, dword ptr [ecx + 0xc]
-// 005ce107  57                   push edi
-// 005ce108  ff01                 inc dword ptr [ecx]
-// 005ce10a  8b11                 mov edx, dword ptr [ecx]
-// 005ce10c  3bd6                 cmp edx, esi
-// 005ce10e  7d12                 jge 0x5ce122
-// 005ce110  8b7910               mov edi, dword ptr [ecx + 0x10]
-// 005ce113  8b1497               mov edx, dword ptr [edi + edx*4]
-// 005ce116  895104               mov dword ptr [ecx + 4], edx
-// 005ce119  85d2                 test edx, edx
-// 005ce11b  74eb                 je 0x5ce108
-// 005ce11d  5f                   pop edi
-// 005ce11e  5e                   pop esi
-// 005ce11f  c20800               ret 8
-// 005ce122  5f                   pop edi
-// 005ce123  c6411401             mov byte ptr [ecx + 0x14], 1
-// 005ce127  5e                   pop esi
-// 005ce128  c20800               ret 8
-// copied from an identical function in another client (function ??ES@@QAE?AU0@H@Z)
-
+// roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-struct Node {
-    char padding[24];
-    Node* next;
-};
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_ad093b80fd4773c5.cpp
 
-struct S {
-    int index;
-    Node* current;
-    int unknown;
-    int count;
-    Node** buckets;
-    bool ended;
+// Candidate translation unit (score above; library headers required).
+#include <RenderLib/Mesh.h>
+#include <util/NormalId.h>
 
-    S operator++(int);
-};
-
-S S::operator++(int)
+namespace RBX { namespace View {
+class RenderSurfaceTypes
 {
-    S previous = *this;
-    current = current->next;
-    if (current)
-        return previous;
+public:
+    size_t data;
+    RenderSurfaceTypes() : data(0) {}
+    unsigned int hashCode() const { return data; }
+    bool operator==(const RenderSurfaceTypes& other) const { return data == other.data; }
+};
+}}
+inline unsigned int hashCode(const RBX::View::RenderSurfaceTypes& t) { return t.hashCode(); }
 
-    int limit = count;
-next_bucket:
-    if (++index < limit) {
-        current = buckets[index];
-        if (!current)
-            goto next_bucket;
-        return previous;
+#include <G3D/Table.h>
+#include <boost/thread/recursive_mutex.hpp>
+#include <boost/thread/once.hpp>
+#include <map>
+
+void flushUnusedMeshCache();
+namespace RBX {
+namespace View {
+
+class SphereMesh : public Render::Mesh
+{
+public:
+    SphereMesh(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes);
+};
+
+template<class Mesh, size_t numMeshes>
+class MeshFactory
+{
+public:
+    class DecalKey
+    {
+    private:
+        G3D::Vector3 size;
+        NormalId face;
+    public:
+        bool operator<(const DecalKey&) const;
+    };
+    class TextureKey : protected DecalKey
+    {
+    private:
+        G3D::Vector2 studsPerTile;
+    public:
+        bool operator<(const TextureKey&) const;
+    };
+    struct Variations
+    {
+        G3D::ReferenceCountedPointer<Render::Mesh> meshes[numMeshes];
+    };
+    struct Cache
+    {
+        G3D::Table<RenderSurfaceTypes, G3D::Table<G3D::Vector3, Variations> > cache1;
+        boost::recursive_mutex mutex;
+        std::map<DecalKey, G3D::ReferenceCountedPointer<Render::Mesh> > decalCache;
+        std::map<TextureKey, G3D::ReferenceCountedPointer<Render::Mesh> > textureCache;
+        int count;
+    };
+    static Cache* cache;
+    static boost::once_flag cacheOnce;
+    static void initCache();
+    static void flushUnused();
+};
+
+template<class Mesh, size_t numMeshes>
+void MeshFactory<Mesh, numMeshes>::flushUnused()
+{
+    boost::call_once(initCache, cacheOnce);
+    Cache* c = cache;
+    boost::recursive_mutex::scoped_lock lock(c->mutex);
+
+    for (typename G3D::Table<RenderSurfaceTypes, G3D::Table<G3D::Vector3, Variations> >::Iterator it = c->cache1.begin(); it != c->cache1.end(); it++)
+    {
+        G3D::Table<G3D::Vector3, Variations>& sizeCache = it->value;
+        for (typename G3D::Table<G3D::Vector3, Variations>::Iterator it2 = sizeCache.begin(); it2 != sizeCache.end(); it2++)
+        {
+            for (size_t i = 0; i < numMeshes; ++i)
+            {
+                if (it2->value.meshes[i].notNull() && it2->value.meshes[i].isLastReference())
+                    it2->value.meshes[i] = NULL;
+            }
+        }
     }
-    ended = true;
-    return previous;
+
+    for (typename std::map<DecalKey, G3D::ReferenceCountedPointer<Render::Mesh> >::iterator it = c->decalCache.begin(); it != c->decalCache.end(); ++it)
+    {
+        if (it->second.notNull() && it->second.isLastReference())
+            it->second = NULL;
+    }
+
+    for (typename std::map<TextureKey, G3D::ReferenceCountedPointer<Render::Mesh> >::iterator it = c->textureCache.begin(); it != c->textureCache.end(); ++it)
+    {
+        if (it->second.notNull() && it->second.isLastReference())
+            it->second = NULL;
+    }
+}
+
+template class MeshFactory<SphereMesh, 4>;
+}
 }

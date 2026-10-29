@@ -1,13 +1,18 @@
-// from server: 75% by atomic.potato
-extern "C" void __stdcall RobloxTreeOperation(
-    int, int, int, int, int);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: xtp-11.2.2-lib-imports roc_selection_tree_do_action_5729c0d2b29d1b06.cpp
 
-struct CSelectionTreeCtrl
+// Candidate translation unit (score above; library headers required).
+#include "Controls/XTTreeBase.h"
+
+class CSelectionTreeCtrl : public CXTTreeBase
 {
-    void __stdcall f(int, int, int, int, int);
+protected:
+    virtual void DoAction(HTREEITEM hItem, BOOL bLeft, UINT nFlags, CPoint point);
 };
 
-void __stdcall CSelectionTreeCtrl::f(int a, int b, int c, int d, int e)
+void CSelectionTreeCtrl::DoAction(HTREEITEM hItem, BOOL bLeft, UINT nFlags, CPoint point)
 {
-    RobloxTreeOperation(a, b, c, d, e);
+    CXTTreeBase::DoAction(hItem, bLeft, nFlags, point);
 }

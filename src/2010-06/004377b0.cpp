@@ -1,61 +1,120 @@
-// roc 2010-06 004377b0  unit: MVCXTPPropertyGridItem::?$XItem  size: 98 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 004377b0
-//
-// 004377b0  56                   push esi
-// 004377b1  8b742410             mov esi, dword ptr [esp + 0x10]
-// 004377b5  57                   push edi
-// 004377b6  8b7c241c             mov edi, dword ptr [esp + 0x1c]
-// 004377ba  3bf7                 cmp esi, edi
-// 004377bc  7424                 je 0x4377e2
-// 004377be  8bff                 mov edi, edi
-// 004377c0  8bce                 mov ecx, esi
-// 004377c2  ff54242c             call dword ptr [esp + 0x2c]
-// 004377c6  8b542424             mov edx, dword ptr [esp + 0x24]
-// 004377ca  8d4c2434             lea ecx, [esp + 0x34]
-// 004377ce  51                   push ecx
-// 004377cf  50                   push eax
-// 004377d0  8b442430             mov eax, dword ptr [esp + 0x30]
-// 004377d4  8d0c10               lea ecx, [eax + edx]
-// 004377d7  ff542428             call dword ptr [esp + 0x28]
-// 004377db  83c608               add esi, 8
-// 004377de  3bf7                 cmp esi, edi
-// 004377e0  75de                 jne 0x4377c0
-// 004377e2  8b44240c             mov eax, dword ptr [esp + 0xc]
-// 004377e6  8b4c2420             mov ecx, dword ptr [esp + 0x20]
-// 004377ea  8b542424             mov edx, dword ptr [esp + 0x24]
-// 004377ee  8908                 mov dword ptr [eax], ecx
-// 004377f0  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 004377f4  895004               mov dword ptr [eax + 4], edx
-// 004377f7  8b54242c             mov edx, dword ptr [esp + 0x2c]
-// 004377fb  894808               mov dword ptr [eax + 8], ecx
-// 004377fe  8b4c2430             mov ecx, dword ptr [esp + 0x30]
-// 00437802  89500c               mov dword ptr [eax + 0xc], edx
-// 00437805  8b542434             mov edx, dword ptr [esp + 0x34]
-// 00437809  5f                   pop edi
-// 0043780a  894810               mov dword ptr [eax + 0x10], ecx
-// 0043780d  895014               mov dword ptr [eax + 0x14], edx
-// 00437810  5e                   pop esi
-// 00437811  c3                   ret 
-// copied from an identical function in another client (function ?f@@YA?AUOperation@@HPADH0U1@@Z)
-
+// roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-struct Operation {
-    void (__thiscall *apply)(void *, void *, int *);
-    char *object;
-    int displacement;
-    void *(__thiscall *get)(void *);
-    int unused;
-    int value;
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_claudeA_valueitemb5d48fac1928085d.cpp
+
+// Candidate translation unit (score above; library headers required).
+#define _CPPUNWIND 1
+#include <exception>
+#include <vector>
+#include <map>
+#include <string>
+#include <algorithm>
+#include <boost/shared_ptr.hpp>
+#include <boost/bind.hpp>
+#include "G3D/Vector3.h"
+// 2008-06 0043ee40 (float), 0043fc00 / 004402d0 siblings: Studio property-grid item applies a
+// value to every instance selected under its keys (same key/map walk as 0043e140), then takes
+// the DataModel lock, records a waypoint named after the property and marks the data dirty.
+namespace RBX {
+class Instance;
+template<class E> struct ImpStr : std::basic_string<E> { __declspec(noinline) const E* c_str() const { return std::basic_string<E>::c_str(); } };
+extern template struct __declspec(dllimport) ImpStr<char>;
+class Name { int dictionaryIndex; public: const std::string name; const char* c_str() const { return static_cast<const ImpStr<char>&>(name).c_str(); } };
+namespace Reflection { class PropertyDescriptor { public: virtual ~PropertyDescriptor(); const Name& name; }; }
+class IDataState { public: virtual void setDirty(bool); };
+class DataModel { char prefix[0x1f0]; public: IDataState state; void setDirty(bool dirty) { state.setDirty(dirty); }
+	class Lock {
+		boost::shared_ptr<void> mutex;
+		void* lock;
+		void doLock(const DataModel* dataModel);
+	public:
+		Lock(const DataModel* dataModel) : lock(0) { doLock(dataModel); }
+		~Lock();
+	};
+};
+struct ChangeHistoryService { static void __cdecl requestWaypoint(const char* name, DataModel* dataModel); };
+}
+
+int __stdcall AfxMessageBox(const char* text, unsigned int type = 0, unsigned int helpId = 0);
+
+struct KeyBase { int x; };
+struct KeyDerived : KeyBase {};
+typedef std::vector<boost::shared_ptr<RBX::Instance> > Instances;
+typedef std::map<KeyBase*, Instances> InstanceMap;
+
+struct OwnerPrefix {
+    char pad[0x198];
+    RBX::DataModel* dataModel;
+    char pad19c[0x218 - 0x19c];
+};
+// claudeA 2026-10-26: find goes through a by-value KeyBase* wrapper of a map-owning base at +0x218
+// (owner->findB(*it)): yields owner in ecx, add ecx,0x218 as base adjust, and the target's arg scheduling.
+struct MapHolder {
+    InstanceMap instances;
+    InstanceMap::iterator findB(KeyBase* key) { return instances.find(key); }
+};
+struct Owner : OwnerPrefix, MapHolder {};
+
+#define V(N) virtual void slot##N();
+#define V10(N) V(N##0) V(N##1) V(N##2) V(N##3) V(N##4) V(N##5) V(N##6) V(N##7) V(N##8) V(N##9)
+// Primary bases: 60 virtuals before apply() (float/string items, apply at vtable +0xf0) and
+// 64 virtuals with 8 more bytes of data (enum item, apply at +0x100, keys at 0x118).
+class GridItemBase { public: V10(0) V10(1) V10(2) V10(3) V10(4) V10(5) char data[0x108]; };
+class EnumGridItemBase { public: V10(0) V10(1) V10(2) V10(3) V10(4) V10(5) V(60) V(61) V(62) V(63) char data[0x110]; };
+// Bases sized from the key-vector offsets in 0043f890 (keys 0x11c) and 0043ead0 (keys 0x124).
+class IntGridItemBase { public: V10(0) V10(1) V10(2) V10(3) V10(4) V10(5) V(60) V(61) V(62) char data[0x114]; };
+class BoolGridItemBase { public: V10(0) V10(1) V10(2) V10(3) V10(4) V10(5) V(60) V(61) V(62) char data[0x11c]; };
+class GridItemSink { public: virtual void sink(); };
+#undef V10
+#undef V
+
+template<class Base, class T>
+class ValueItem : public Base, public GridItemSink {
+public:
+    std::vector<KeyDerived*> keys;
+    Owner* owner;
+    const RBX::Reflection::PropertyDescriptor* descriptor;
+    virtual void apply(RBX::Instance* instance, const T& value);
+    void setValue(const T& value);
 };
 
-Operation __cdecl f(int, char *first, int, char *last, Operation operation)
+template<class Base, class T>
+void ValueItem<Base, T>::setValue(const T& value)
 {
-    while (first != last) {
-        void *value = operation.get(first);
-        operation.apply(operation.displacement + operation.object,
-                        value, &operation.value);
-        first += 8;
+    try {
+        Instances instances;
+        InstanceMap::iterator mapEnd = owner->instances.end();
+        std::vector<KeyDerived*>::const_iterator end = keys.end();
+        for (std::vector<KeyDerived*>::const_iterator it = keys.begin(); it != end; ++it) {
+            InstanceMap::iterator found = owner->findB(*it);
+            if (found != mapEnd) {
+                for (Instances::iterator j = found->second.begin(), jEnd = found->second.end(); j != jEnd; j++)
+                    instances.push_back(*j);
+            }
+        }
+        std::for_each(instances.begin(), instances.end(),
+            boost::bind(&ValueItem::apply, this, boost::bind(&boost::shared_ptr<RBX::Instance>::get, _1), value));
+        if (owner->dataModel) {
+            RBX::DataModel::Lock lock(owner->dataModel);
+            RBX::ChangeHistoryService::requestWaypoint(descriptor->name.c_str(), owner->dataModel);
+            owner->dataModel->setDirty(true);
+        }
+    } catch (std::exception& e) {
+        AfxMessageBox(e.what());
     }
-    return operation;
 }
+
+// agE 2026-10-26: one unit for the 2008-06 ValueItem::setValue family; the target T is read from how the
+// bound value is copied (float fld, 4-byte int mov, bool byte mov, 3-float x87 copy, string/ContentId ctor),
+// the base from keys offset (0x110/0x118/0x11c/0x124). /fp:fast drops the 3-float temp copy (0043ff70).
+namespace RBX { class ContentId { std::string id; const Name* mimeTypePtr; }; }
+template class ValueItem<GridItemBase, float>;
+template class ValueItem<GridItemBase, std::string>;
+template class ValueItem<GridItemBase, RBX::ContentId>;
+template class ValueItem<GridItemBase, G3D::Vector3>;
+template class ValueItem<EnumGridItemBase, int>;
+template class ValueItem<IntGridItemBase, int>;
+template class ValueItem<BoolGridItemBase, bool>;
+template class ValueItem<GridItemBase, int>;
+template class ValueItem<IntGridItemBase, G3D::Vector3>;

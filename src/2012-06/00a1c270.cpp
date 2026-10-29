@@ -1,11 +1,10 @@
-// from server: 46% by intel
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2-vc8 Source/CommandBars/XTPDockBar.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib Source\CommandBars\XTPReBar.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPDockBar.cpp : implementation of the CXTPDockBar class.
+// XTPReBar.cpp : implementation file
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
 // (c)1998-2007 Codejock Software, All Rights Reserved.
@@ -26,14 +25,17 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include <afxpriv.h>
+#include "Common/XTPVC80Helpers.h"
 #include "Common/XTPDrawHelpers.h"
 
-#include "XTPDockBar.h"
+#include "XTPReBar.h"
 #include "XTPToolBar.h"
-#include "XTPCommandBars.h"
-#include "XTPDockContext.h"
-#include "XTPPaintManager.h"
+#include "XTPDockBar.h"
+
+
+#ifndef VERSION_IE401
+#define VERSION_IE401   MAKELONG(72, 4)
+#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -41,730 +43,561 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-// CXTPDockBar
+const LPCTSTR CXTPReBar::m_lpszStateInfoEntry = _T("RebarStateInfo");
+const LPCTSTR CXTPReBar::m_lpszStateInfoFormat = _T("wID=%04X, cx=%d, fStyle=%08X");
 
-IMPLEMENT_DYNCREATE(CXTPDockBar, CWnd)
+//////////////////////////////////////////////////////////////////////////
+//
 
-CXTPDockBar::CXTPDockBar()
-{
-	m_arrBars.Add(NULL);
-	m_dwStyle = 0;
-	m_pCommandBars = NULL;
+#if _MSC_VER < 1200 // MFC 6.0
 
-	CXTPDrawHelpers::RegisterWndClass(0, _T("XTPDockBar"), 0);
-}
-
-CXTPDockBar::~CXTPDockBar()
-{
-}
+/////////////////////////////////////////////////////////////////////////////
+// CXTPReBarBase
 
 
-BEGIN_MESSAGE_MAP(CXTPDockBar, CWnd)
-	ON_MESSAGE(WM_SIZEPARENT, OnSizeParent)
-	ON_WM_PAINT()
-	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
-	ON_WM_ERASEBKGND()
-	ON_WM_RBUTTONDOWN()
-	ON_WM_NCHITTEST_EX()
+IMPLEMENT_DYNAMIC(CXTPReBarBase, CControlBar)
+
+
+BEGIN_MESSAGE_MAP(CXTPReBarBase, CControlBar)
+	//{{AFX_MSG_MAP(CXTPReBarBase)
+	ON_WM_NCCREATE()
+	ON_WM_NCCALCSIZE()
+	ON_WM_NCPAINT()
+	ON_NOTIFY_REFLECT(RBN_HEIGHTCHANGE, OnHeightChange)
+	ON_NOTIFY_REFLECT(RBN_ENDDRAG, OnHeightChange)
+	ON_MESSAGE(RB_SHOWBAND, OnShowBand)
+	ON_MESSAGE_VOID(WM_RECALCPARENT, OnRecalcParent)
+	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
-
-
-// CXTPDockBar message handlers
-
-LRESULT CXTPDockBar::OnNcHitTest(CPoint point)
+CXTPReBarBase::CXTPReBarBase()
 {
-	if (GetPosition() == xtpBarTop && m_pCommandBars->GetMenuBar() != NULL && m_pCommandBars->GetMenuBar()->IsRibbonBar() &&
-		FindBar(m_pCommandBars->GetMenuBar()) != -1)
-	{
-		return HTTRANSPARENT;
-	}
-
-	return (LRESULT)CWnd::OnNcHitTest(point);
+	m_cxLeftBorder = m_cxRightBorder = m_cyTopBorder = m_cyBottomBorder = 0;
+	m_iComCtlVersion = XTPSystemVersion()->GetComCtlVersion();
 }
 
-BOOL CXTPDockBar::Create(CWnd* pParentWnd, DWORD dwStyle, UINT nID)
+void CXTPReBarBase::OnRecalcParent()
 {
-	ASSERT(pParentWnd != NULL);
-
-	// save the xtp
-	m_dwStyle = (dwStyle & CBRS_ALL);
-
-	XTPBarPosition barPosition = GetPosition();
-	CString strWindowName = barPosition == xtpBarTop ? _T("xtpBarTop") :
-		barPosition == xtpBarLeft ? _T("xtpBarLeft") :
-		barPosition == xtpBarBottom ? _T("xtpBarBottom") : _T("xtpBarRight");
-
-	return CWnd::Create(_T("XTPDockBar"), strWindowName, dwStyle, CXTPEmptyRect(), pParentWnd, nID);
+	CFrameWnd* pFrameWnd = GetParentFrame();
+	ASSERT(pFrameWnd != NULL);
+	pFrameWnd->RecalcLayout();
 }
 
-BOOL CXTPDockBar::PreCreateWindow(CREATESTRUCT& cs)
+void CXTPReBarBase::OnHeightChange(NMHDR* /*pNMHDR*/, LRESULT* pResult)
 {
-	if (!CWnd::PreCreateWindow(cs))
-		return FALSE;
-
-	// force clipsliblings (otherwise will cause repaint problems)
-	cs.style |= WS_CLIPSIBLINGS;
-	return TRUE;
-}
-
-
-
-CSize CXTPDockBar::CalcFixedLayout(BOOL /*bStretch*/, BOOL /*bHorz*/, AFX_SIZEPARENTPARAMS* /*lpLayout*/)
-{
-	return 0;
-}
-
-
-struct CXTPDockBar::DOCK_INFO
-{
-	DOCK_INFO(CXTPToolBar* p = 0, CRect rc = 0, int n = 0)
+	// gives us access to protected member m_bInRecalcLayout.
+	class CFriendFrameWnd : public CFrameWnd
 	{
-		pBar = p;
-		rcMRUPos = rcBar = rc;
-		nIndex = n;
-		nMinWidth = 0;
-		nTotlaMinWidth = 0;
-	}
+		friend class CXTPReBarBase;
+	};
 
-	CXTPToolBar* pBar;
-	CRect rcBar;
-	CRect rcMRUPos;
-	int nIndex;
-	int nMinWidth;
-	int nTotlaMinWidth;
-};
-
-class CXTPDockBar::CDockInfoArray : public CArray<DOCK_INFO, DOCK_INFO&>
-{
-public:
-	void Sort()
+	// does the CXTPReBarBase have a frame ?
+	CFriendFrameWnd* pFrameWnd = (CFriendFrameWnd*)GetParentFrame();
+	if (pFrameWnd != NULL)
 	{
-		qsort(GetData(), GetSize(), sizeof(DOCK_INFO), CompareFunc);
-	}
-	static int _cdecl CompareFunc(const void* elem1, const void* elem2)
-	{
-		return ((DOCK_INFO*)elem1)->rcBar.left < ((DOCK_INFO*)elem2)->rcBar.left ? -1 : 1;
-	}
-	void _swap(LONG& A, LONG& B)
-	{
-		int C = B;
-		B = A;
-		A = C;
-	}
-	void InvertRects()
-	{
-		for (int nPos = 0; nPos < GetSize(); nPos++)
-		{
-			CRect& rect = ElementAt(nPos).rcBar;
-			_swap(rect.left, rect.top);
-			_swap(rect.right, rect.bottom);
-		}
-	}
-};
-
-int CXTPDockBar::_GetMode(BOOL bHorz, CXTPToolBar* pBar)
-{
-	DWORD dwMode = bHorz ? LM_HORZ | LM_HORZDOCK : LM_VERTDOCK;
-
-	if (pBar->GetFlags() & xtpFlagStretched) dwMode |= LM_STRETCH;
-	if ((!m_pCommandBars->IsCustomizeMode() || m_pCommandBars->IsQuickCustomizeMode()) && pBar->GetFlags() & xtpFlagHideWrap)
-		return dwMode | LM_HIDEWRAP;
-
-	return dwMode;
-}
-
-int CXTPDockBar::_AdjustRow(CToolBarArray& arrRow, CPoint pt, int nLength, BOOL bHorz, AFX_SIZEPARENTPARAMS* lpLayout, int& nRemove)
-{
-	CDockInfoArray arrInfo;
-
-	int nPos;
-
-	// Step 1. Getting maximum available size;
-	for (nPos = 0; nPos < arrRow.GetSize(); nPos++)
-	{
-		CXTPToolBar* pBar = arrRow[nPos];
-		CSize sizeBar = pBar->CalcDockingLayout(nLength, _GetMode(bHorz, pBar));
-
-		CPoint p = bHorz ? CPoint(pBar->m_pDockContext->m_rectMRUDockPos.left, pt.y) :
-			CPoint(pt.x, pBar->m_pDockContext->m_rectMRUDockPos.top);
-
-		DOCK_INFO dockInfo(pBar, CRect(p, sizeBar), nPos);
-		arrInfo.Add(dockInfo);
-	}
-
-	ASSERT(arrInfo.GetSize() == arrRow.GetSize());
-
-	if (!bHorz) arrInfo.InvertRects();
-	arrInfo.Sort();
-
-	// Step 2. if Total length is more than available, fill empty area.
-	int nIndex = -1;
-	int nLen = 0;
-	BOOL bMove = TRUE;
-
-	for (nPos = 0; nPos < arrInfo.GetSize(); nPos++)
-	{
-		CRect& rect = arrInfo[nPos].rcBar;
-
-		bMove = (rect.left < nLen && (nIndex < arrInfo[nPos].nIndex || bMove));
-		if (bMove) rect.OffsetRect(nLen - rect.left, 0);
-		nLen = rect.right;
-
-		nIndex = arrInfo[nPos].nIndex;
-	}
-
-	nLen = nLength;
-	nIndex = -1;
-	bMove = TRUE;
-
-	for (nPos = (int)arrInfo.GetSize() - 1; nPos >= 0; nPos--)
-	{
-		CRect& rect = arrInfo[nPos].rcBar;
-		bMove = (rect.right - nLen > 0 && (nIndex < arrInfo[nPos].nIndex || bMove));
-		if (bMove) rect.OffsetRect(nLen - rect.right, 0);
-
-		nLen = rect.left;
-		nIndex = arrInfo[nPos].nIndex;
-	}
-
-	nLen = 0;
-	for (nPos = 0; nPos < arrInfo.GetSize(); nPos++)
-	{
-		CRect& rect = arrInfo[nPos].rcBar;
-		if (rect.left < nLen)
-			rect.OffsetRect(nLen - rect.left, 0);
-
-		nLen = rect.left + rect.Width();
-	}
-
-	// Step 3. if Total length is more than available, make it expandable.
-	if (nLen > nLength)
-	{
-		int nSum = 0;
-		for (nPos = 0; nPos < arrInfo.GetSize(); nPos++)
-		{
-			CXTPToolBar* pBar = arrInfo[nPos].pBar;
-
-			if (!(_GetMode(bHorz, pBar) & LM_HIDEWRAP))
-				arrInfo[nPos].nMinWidth = nLength;
-			else
-			{
-				CSize sz = pBar->CalcDockingLayout(1, _GetMode(bHorz, pBar));
-				arrInfo[nPos].nMinWidth = bHorz ? sz.cx : sz.cy;
-			}
-
-			arrInfo[nPos].nTotlaMinWidth = nSum;
-			nSum += arrInfo[nPos].nMinWidth;
-		}
-
-		nLen = nLength;
-		for (nPos = (int)arrInfo.GetSize() - 1; nPos >= 0; nPos--)
-		{
-			CRect& rect = arrInfo[nPos].rcBar;
-			int nLeft = bHorz ? arrInfo[nPos].rcMRUPos.left : arrInfo[nPos].rcMRUPos.top;
-
-			if (nLeft > rect.left) nLeft = rect.left;
-			if (nLeft < nLen - rect.Width()) nLeft = nLen - rect.Width();
-
-			if (nLeft < arrInfo[nPos].nTotlaMinWidth) nLeft = arrInfo[nPos].nTotlaMinWidth;
-			if (nLen - nLeft < arrInfo[nPos].nMinWidth) nLeft = nLen - arrInfo[nPos].nMinWidth;
-
-			if ((nLen - nLeft < arrInfo[nPos].nMinWidth || nLeft < arrInfo[nPos].nTotlaMinWidth)
-				&& arrInfo.GetSize() != 1)
-			{
-				nRemove = arrInfo[arrInfo.GetSize() - 1].nIndex;
-				return -1;
-			}
-
-			rect.right = nLen;
-			nLen = rect.left = max(0, nLeft);
-		}
-	}
-
-	if (!bHorz) arrInfo.InvertRects();
-
-
-	int nWidth = 0;
-	// Calculate total width
-	for (nPos = 0; nPos < arrInfo.GetSize(); nPos++)
-	{
-		CXTPToolBar* pBar = arrInfo[nPos].pBar;
-		CRect& rect = arrInfo[nPos].rcBar;
-		CSize sizeBar = pBar->CalcDockingLayout(bHorz ? rect.Width() : rect.Height(), _GetMode(bHorz, pBar));
-		nWidth = max(nWidth, bHorz ? sizeBar.cy : sizeBar.cx);
-	}
-
-	if (lpLayout->hDWP == 0)
-		return nWidth;
-
-	// Step 4. Move it.
-	for (nPos = 0; nPos < arrInfo.GetSize(); nPos++)
-	{
-		CXTPToolBar* pBar = arrInfo[nPos].pBar;
-		CRect& rect = arrInfo[nPos].rcBar;
-		int nMode = _GetMode(bHorz, pBar) | LM_COMMIT;
-
-		if (pBar->GetFlags() & xtpFlagStretchedShared)
-		{
-			if (bHorz)
-			{
-				rect.right = nPos == arrInfo.GetSize() - 1 ? nLength : arrInfo[nPos + 1].rcBar.left;
-				rect.left = nPos == 0 ? 0 : min(arrInfo[nPos - 1].rcBar.right, rect.left);
-			}
-			else
-			{
-				rect.bottom = nPos == arrInfo.GetSize() - 1 ? nLength : arrInfo[nPos + 1].rcBar.top;
-				rect.top = nPos == 0 ? 0 : min(arrInfo[nPos - 1].rcBar.bottom, rect.top);
-			}
-
-			nMode |= LM_STRETCH;
-		}
-
-		CSize sz = pBar->CalcDockingLayout(bHorz ? rect.Width() : rect.Height(), nMode, nWidth);
-		rect = CRect(rect.TopLeft(), sz);
-
-		pBar->m_pDockContext->m_uMRUDockPosition = GetPosition();
-
-		CXTPWindowRect rectOld(pBar);
-		ScreenToClient(&rectOld);
-
-		if (!::EqualRect(rectOld, rect))
-		{
-			AfxRepositionWindow(lpLayout, pBar->m_hWnd, &rect);
-			pBar->Redraw();
-		}
-	}
-	return nWidth;
-}
-
-int CXTPDockBar::AdjustRow(CToolBarArray& arrRow, CPoint pt, int nLength, BOOL bHorz, AFX_SIZEPARENTPARAMS* lpLayout)
-{
-	int nTotalWidth = 0;
-	CToolBarArray arrNext;
-
-	for (;;)
-	{
-		int nRemove = -1;
-		ASSERT(arrRow.GetSize() > 0);
-		int nWidth = _AdjustRow(arrRow, pt, nLength, bHorz, lpLayout, nRemove);
-
-		if (nWidth == -1)
-		{
-			ASSERT(nRemove != -1);
-			arrNext.Add(arrRow[nRemove]);
-			arrRow.RemoveAt(nRemove);
-		}
+		// it does -- tell it to recalc its layout
+		if (!pFrameWnd->m_bInRecalcLayout)
+			pFrameWnd->RecalcLayout();
 		else
-		{
-			nTotalWidth += nWidth;
-
-			if (bHorz)
-				pt.y += nWidth;
-			else
-				pt.x += nWidth;
-
-			if (arrNext.GetSize() > 0)
-			{
-				arrRow.Copy(arrNext);
-				arrNext.RemoveAll();
-				continue;
-			}
-			break;
-		}
+			PostMessage(WM_RECALCPARENT);
 	}
-	return nTotalWidth;
+	*pResult = 0;
 }
 
-
-CSize CXTPDockBar::CalcDynamicLayout(int nLength, DWORD nMode, AFX_SIZEPARENTPARAMS* lpLayout)
+LRESULT CXTPReBarBase::OnShowBand(WPARAM wParam, LPARAM)
 {
-	BOOL bHorz = nMode & LM_HORZ;
-	BOOL bStretch = nMode & LM_STRETCH;
-
-	CSize sizeFixed (bStretch && bHorz ? 32767 : 0, bStretch && !bHorz ? 32767 : 0);
-
-	BOOL bLayoutQuery = (lpLayout->hDWP == NULL);
-
-	// prepare for layout
-	AFX_SIZEPARENTPARAMS layout;
-	layout.hDWP = bLayoutQuery ? 0 : ::BeginDeferWindowPos((int)m_arrBars.GetSize());
-
-	CPoint pt(0, 0);
-	// layout all the control bars
-	for (int nPos = 0; nPos < m_arrBars.GetSize(); nPos++)
+	LRESULT lResult = Default();
+	if (lResult)
 	{
-		CToolBarArray lst;
-		CXTPToolBar* pBar = GetDockedCommandBar(nPos);
-
-		while (pBar)
-		{
-			if (pBar->IsVisible()) lst.Add(pBar);
-			pBar = GetDockedCommandBar(++nPos);
-		}
-
-		int nWidth = 0;
-
-		if (lst.GetSize() != 0)
-		{
-			nWidth = AdjustRow(lst, pt, nLength, bHorz, &layout);
-			lst.RemoveAll();
-		}
-		if (pBar == NULL && nWidth != 0)
-		{
-			// end of row because pBar == NULL
-			if (bHorz)
-			{
-				pt.y += nWidth;
-				sizeFixed.cy = max(sizeFixed.cy, pt.y);
-			}
-			else
-			{
-				pt.x += nWidth;
-				sizeFixed.cx = max(sizeFixed.cx, pt.x);
-			}
-		}
-	}
-	if (!bLayoutQuery)
-	{
-		// move and resize all the windows at once!
-		if (layout.hDWP == NULL || !::EndDeferWindowPos(layout.hDWP))
-			TRACE0("Warning: DeferWindowPos failed - low system resources.\n");
-	}
-
-	return sizeFixed;
-}
-
-
-
-LRESULT CXTPDockBar::OnSizeParent(WPARAM, LPARAM lParam)
-{
-	AFX_SIZEPARENTPARAMS* lpLayout = (AFX_SIZEPARENTPARAMS*)lParam;
-
-	DWORD dwStyle = GetStyle();
-	if (dwStyle & WS_VISIBLE)
-	{
-		// align the control bar
-		CRect rect;
-		rect.CopyRect(&lpLayout->rect);
-
-		CSize sizeAvail = rect.Size();  // maximum size available
-
-		// get maximum requested size
-		DWORD dwMode = lpLayout->bStretch ? LM_STRETCH : 0;
-		if ((m_dwStyle & CBRS_SIZE_DYNAMIC) && m_dwStyle & CBRS_FLOATING)
-			dwMode |= LM_HORZ | LM_MRUWIDTH;
-		else if (dwStyle & CBRS_ORIENT_HORZ)
-			dwMode |= LM_HORZ | LM_HORZDOCK;
+		// keep window visible state in sync with band visible state
+		REBARBANDINFO rbBand;
+		rbBand.cbSize = sizeof(rbBand);
+		rbBand.fMask = RBBIM_CHILD | RBBIM_STYLE;
+		VERIFY(DefWindowProc(RB_GETBANDINFO, wParam, (LPARAM)&rbBand));
+		CControlBar* pBar = DYNAMIC_DOWNCAST(CControlBar, CWnd::FromHandlePermanent(rbBand.hwndChild));
+		BOOL bWindowVisible;
+		if (pBar != NULL)
+			bWindowVisible = pBar->IsVisible();
 		else
-			dwMode |= LM_VERTDOCK;
-
-
-		int nLength = (dwStyle & CBRS_ORIENT_HORZ ? sizeAvail.cx : sizeAvail.cy) /*- 2 * GetSystemMetrics(SM_CXBORDER)*/;
-
-		CSize size = CalcDynamicLayout(nLength, dwMode, lpLayout);
-
-		size.cx = min(size.cx, sizeAvail.cx);
-		size.cy = min(size.cy, sizeAvail.cy);
-
-		if (dwStyle & CBRS_ORIENT_HORZ)
-		{
-			lpLayout->sizeTotal.cy += size.cy;
-			lpLayout->sizeTotal.cx = max(lpLayout->sizeTotal.cx, size.cx);
-			if (dwStyle & CBRS_ALIGN_TOP)
-				lpLayout->rect.top += size.cy;
-			else if (dwStyle & CBRS_ALIGN_BOTTOM)
-			{
-				rect.top = rect.bottom - size.cy;
-				lpLayout->rect.bottom -= size.cy;
-			}
-		}
-		else
-		{
-			lpLayout->sizeTotal.cx += size.cx;
-			lpLayout->sizeTotal.cy = max(lpLayout->sizeTotal.cy, size.cy);
-			if (dwStyle & CBRS_ALIGN_LEFT)
-				lpLayout->rect.left += size.cx;
-			else if (dwStyle & CBRS_ALIGN_RIGHT)
-			{
-				rect.left = rect.right - size.cx;
-				lpLayout->rect.right -= size.cx;
-			}
-		}
-
-		rect.right = rect.left + size.cx;
-		rect.bottom = rect.top + size.cy;
-
-		// only resize the window if doing layout and not just rect query
-		if (lpLayout->hDWP != NULL)
-			AfxRepositionWindow(lpLayout, m_hWnd, &rect);
-		Invalidate(FALSE);
+			bWindowVisible = (::GetWindowLong(rbBand.hwndChild, GWL_STYLE) & WS_VISIBLE) != 0;
+		BOOL bBandVisible = (rbBand.fStyle & RBBS_HIDDEN) == 0;
+		if (bWindowVisible != bBandVisible)
+			VERIFY(::ShowWindow(rbBand.hwndChild, bBandVisible ? SW_SHOW : SW_HIDE));
 	}
-	return 0;
+	return lResult;
 }
 
-
-
-
-void CXTPDockBar::OnPaint()
-{
-	CPaintDC dc(this);
-	m_pCommandBars->GetPaintManager()->FillDockBar(&dc, this);
-}
-
-LRESULT CXTPDockBar::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
-{
-	CDC* pDC = CDC::FromHandle((HDC)wParam);
-	if (pDC)
-	{
-		m_pCommandBars->GetPaintManager()->FillDockBar(pDC, this);
-	}
-
-	return TRUE;
-}
-
-
-BOOL CXTPDockBar::OnEraseBkgnd(CDC* /*pDC*/)
-{
-	return TRUE;
-}
-
-void CXTPDockBar::AdjustStretchBars()
-{
-	for (int nPos = 0; nPos < m_arrBars.GetSize(); nPos++)
-	{
-		CXTPToolBar* pBar = GetDockedCommandBar(nPos);
-		if (pBar && pBar->GetFlags() & xtpFlagStretched)
-		{
-			if (nPos > 0 && GetDockedCommandBar(nPos - 1) != NULL)
-			{
-				m_arrBars.InsertAt(nPos, (CXTPToolBar*)NULL);
-				nPos++;
-			}
-			if (nPos < m_arrBars.GetSize() -1 && GetDockedCommandBar(nPos + 1) != NULL)
-			{
-				m_arrBars.InsertAt(nPos + 1, (CXTPToolBar*)NULL);
-				nPos++;
-			}
-		}
-	}
-}
-
-void CXTPDockBar::DockCommandBar(CXTPToolBar* pBar, LPCRECT lpRect)
+BOOL CXTPReBarBase::_AddBar(CWnd* pBar, REBARBANDINFO* pRBBI)
 {
 	ASSERT_VALID(this);
-	ASSERT_VALID(pBar);
-	ASSERT_KINDOF(CXTPToolBar, pBar);
+	ASSERT(::IsWindow(m_hWnd));
+	ASSERT(pBar != NULL);
+	ASSERT(::IsWindow(pBar->m_hWnd));
 
-	CRect rectBar;
-	pBar->GetWindowRect(&rectBar);
-	if (pBar->m_pDockBar == this && (lpRect == NULL || rectBar == *lpRect))
+	pRBBI->cbSize = sizeof(REBARBANDINFO);
+	pRBBI->fMask |= RBBIM_CHILD | RBBIM_CHILDSIZE;
+	pRBBI->hwndChild = pBar->m_hWnd;
+
+	CSize size;
+	CControlBar* pTemp = DYNAMIC_DOWNCAST(CControlBar, pBar);
+	if (pTemp != NULL)
 	{
-		// already docked and no change in position
-		return;
-	}
-
-	int nPos = -1;
-	if (lpRect != NULL)
-	{
-		// insert into appropriate row
-		CRect rect(lpRect);
-		ScreenToClient(&rect);
-		CPoint ptMid(rect.left + rect.Width()/2, rect.top + rect.Height()/2);
-		nPos = Insert(pBar, rect, ptMid);
-
-		pBar->m_pDockContext->m_rectMRUDockPos = rect;
+		size = pTemp->CalcFixedLayout(FALSE, m_dwStyle & CBRS_ORIENT_HORZ);
 	}
 	else
 	{
-		// always add on current row, then create new one
-		m_arrBars.Add(pBar);
-		m_arrBars.Add(NULL);
-
-		pBar->m_pDockContext->m_rectMRUDockPos.SetRectEmpty();
+		CRect rect;
+		pBar->GetWindowRect(&rect);
+		size = rect.Size();
 	}
+	//WINBUG: COMCTL32.DLL is off by 4 pixels in its sizing logic.  Whatever
+	//  is specified as the minimum size, the system rebar will allow that band
+	//  to be 4 actual pixels smaller!  That's why we add 4 to the size here.
+	ASSERT(m_iComCtlVersion != -1);
+	pRBBI->cxMinChild = size.cx + (m_iComCtlVersion < VERSION_IE401 ? 4 : 0);
+	pRBBI->cyMinChild = size.cy;
+	BOOL bResult = (BOOL)DefWindowProc(RB_INSERTBAND, (WPARAM)-1, (LPARAM)pRBBI);
 
-	// attach it to the docking site
-	if (pBar->GetParent() != this)
-		pBar->SetParent(this);
-	if (pBar->m_pDockBar == this)
-		pBar->m_pDockBar->RemoveCommandBar(pBar, nPos);
-	else if (pBar->m_pDockBar != NULL)
-		pBar->m_pDockBar->RemoveCommandBar(pBar, -1);
-	pBar->m_pDockBar = this;
+	CFrameWnd* pFrameWnd = GetParentFrame();
+	if (pFrameWnd != NULL)
+		pFrameWnd->RecalcLayout();
 
-	AdjustStretchBars();
-
-	// get parent frame for recalc layout
-	m_pCommandBars->RecalcFrameLayout(TRUE);
+	return bResult;
 }
 
-BOOL CXTPDockBar::RemoveCommandBar(CXTPToolBar* pBar, int nPosExclude)
+BOOL CXTPReBarBase::AddBar(CWnd* pBar, LPCTSTR pszText, CBitmap* pbmp, DWORD dwStyle)
+{
+	REBARBANDINFO rbBand;
+	rbBand.fMask = RBBIM_STYLE;
+	rbBand.fStyle = dwStyle;
+	if (pszText != NULL)
+	{
+		rbBand.fMask |= RBBIM_TEXT;
+		rbBand.lpText = const_cast<LPTSTR>(pszText);
+	}
+	if (pbmp != NULL)
+	{
+		rbBand.fMask |= RBBIM_BACKGROUND;
+		rbBand.hbmBack = (HBITMAP)*pbmp;
+	}
+	return _AddBar(pBar, &rbBand);
+}
+
+BOOL CXTPReBarBase::AddBar(CWnd* pBar, COLORREF clrFore, COLORREF clrBack, LPCTSTR pszText, DWORD dwStyle)
+{
+	REBARBANDINFO rbBand;
+	rbBand.fMask = RBBIM_STYLE | RBBIM_COLORS;
+	rbBand.fStyle = dwStyle;
+	rbBand.clrFore = clrFore;
+	rbBand.clrBack = clrBack;
+	if (pszText != NULL)
+	{
+		rbBand.fMask |= RBBIM_TEXT;
+		rbBand.lpText = const_cast<LPTSTR>(pszText);
+	}
+	return _AddBar(pBar, &rbBand);
+}
+
+CSize CXTPReBarBase::CalcFixedLayout(BOOL bStretch, BOOL bHorz)
 {
 	ASSERT_VALID(this);
-	ASSERT(pBar != NULL);
-	if (!pBar)
+	ASSERT(::IsWindow(m_hWnd));
+
+	// the union of the band rectangles is the total bounding rect
+	int nCount = DefWindowProc(RB_GETBANDCOUNT, 0, 0);
+	REBARBANDINFO rbBand;
+	rbBand.cbSize = sizeof(rbBand);
+	int nTemp;
+
+	// sync up hidden state of the bands
+	for (nTemp = nCount; nTemp--;)
+	{
+		rbBand.fMask = RBBIM_CHILD | RBBIM_STYLE;
+		VERIFY(DefWindowProc(RB_GETBANDINFO, nTemp, (LPARAM)&rbBand));
+		CControlBar* pBar = DYNAMIC_DOWNCAST(CControlBar, CWnd::FromHandlePermanent(rbBand.hwndChild));
+		BOOL bWindowVisible;
+		if (pBar != NULL)
+			bWindowVisible = pBar->IsVisible();
+		else
+			bWindowVisible = (::GetWindowLong(rbBand.hwndChild, GWL_STYLE) & WS_VISIBLE) != 0;
+		BOOL bBandVisible = (rbBand.fStyle & RBBS_HIDDEN) == 0;
+		if (bWindowVisible != bBandVisible)
+			VERIFY(DefWindowProc(RB_SHOWBAND, nTemp, bWindowVisible));
+	}
+
+	// determine bounding rect of all visible bands
+	CRect rectBound;
+	rectBound.SetRectEmpty();
+
+	for (nTemp = nCount; nTemp--;)
+	{
+		rbBand.fMask = RBBIM_STYLE;
+		VERIFY(DefWindowProc(RB_GETBANDINFO, nTemp, (LPARAM)&rbBand));
+		if ((rbBand.fStyle & RBBS_HIDDEN) == 0)
+		{
+			CRect rect;
+			VERIFY(DefWindowProc(RB_GETRECT, nTemp, (LPARAM)&rect));
+			rectBound |= rect;
+		}
+	}
+
+	// add borders as part of bounding rect
+	if (!rectBound.IsRectEmpty())
+	{
+		CRect rect;
+		rect.SetRectEmpty();
+		CalcInsideRect(rect, bHorz);
+		rectBound.right -= rect.Width();
+		rectBound.bottom -= rect.Height();
+	}
+
+	return CSize((bHorz && bStretch) ? 32767 : rectBound.Width(),
+		(!bHorz && bStretch) ? 32767 : rectBound.Height());
+}
+
+CSize CXTPReBarBase::CalcDynamicLayout(int /*nLength*/, DWORD dwMode)
+{
+	if (dwMode & LM_HORZDOCK)
+		ASSERT(dwMode & LM_HORZ);
+	return CalcFixedLayout(dwMode & LM_STRETCH, dwMode & LM_HORZ);
+}
+
+BOOL CXTPReBarBase::Create(CWnd* pParentWnd, DWORD dwCtrlStyle, DWORD dwStyle, UINT nID)
+{
+	ASSERT_VALID(pParentWnd);   // must have a parent
+	ASSERT (!((dwStyle & CBRS_SIZE_FIXED) && (dwStyle & CBRS_SIZE_DYNAMIC)));
+
+	// save the style
+	m_dwStyle = (dwStyle & CBRS_ALL);
+	if (nID == AFX_IDW_REBAR)
+		m_dwStyle |= CBRS_HIDE_INPLACE;
+
+	dwStyle &= ~CBRS_ALL;
+	dwStyle |= CCS_NOPARENTALIGN | CCS_NOMOVEY | CCS_NODIVIDER | CCS_NORESIZE | RBS_VARHEIGHT;
+	dwStyle |= dwCtrlStyle;
+
+	// initialize common controls
+	INITCOMMONCONTROLSEX icex;
+	icex.dwSize = sizeof(icex);
+	icex.dwICC = ICC_COOL_CLASSES;
+	VERIFY(InitCommonControlsEx(&icex));
+
+	// create the HWND
+	CRect rect;
+	rect.SetRectEmpty();
+	if (!CWnd::Create(REBARCLASSNAME, NULL, dwStyle, rect, pParentWnd, nID))
 		return FALSE;
 
-	int nPos = FindBar(pBar, nPosExclude);
-	ASSERT(nPos > 0);
-	if (nPos <= 0)
+	// Note: Parent must resize itself for control bar to be resized
+
+	return TRUE;
+}
+
+void CXTPReBarBase::OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHandler)
+{
+	UpdateDialogControls(pTarget, bDisableIfNoHandler);
+}
+
+BOOL CXTPReBarBase::OnNcCreate(LPCREATESTRUCT lpCreateStruct)
+{
+	if (!CControlBar::OnNcCreate(lpCreateStruct))
 		return FALSE;
 
-	m_arrBars.RemoveAt(nPos);
-	if (m_arrBars[nPos-1] == NULL && m_arrBars[nPos] == NULL)
-		m_arrBars.RemoveAt(nPos);
-
-	pBar->m_pDockBar = NULL;
-
-	// get parent frame for recalc layout/frame destroy
-	m_pCommandBars->RecalcFrameLayout(TRUE);
+	// if the owner was set before the rebar was created, set it now
+	if (m_hWndOwner != NULL)
+		DefWindowProc(RB_SETPARENT, (WPARAM)m_hWndOwner, 0);
 
 	return TRUE;
 }
 
 
+void CXTPReBarBase::OnNcCalcSize(BOOL /*bCalcValidRects*/, NCCALCSIZE_PARAMS* lpncsp)
+{
+	// calculate border space (will add to top/bottom, subtract from right/bottom)
+	CRect rect;
+	rect.SetRectEmpty();
+	BOOL bHorz = (m_dwStyle & CBRS_ORIENT_HORZ) != 0;
+	CControlBar::CalcInsideRect(rect, bHorz);
 
-CXTPToolBar* CXTPDockBar::GetDockedCommandBar(int nPos) const
-{
-	CXTPToolBar* pResult = (CXTPToolBar*)m_arrBars[nPos];
-	ASSERT(pResult == 0 || HIWORD(pResult) != 0); // XTPLibrary don't use placeholder
-	return pResult;
+	// adjust non-client area for border space
+	lpncsp->rgrc[0].left += rect.left;
+	lpncsp->rgrc[0].top += rect.top;
+	lpncsp->rgrc[0].right += rect.right;
+	lpncsp->rgrc[0].bottom += rect.bottom;
 }
-int CXTPDockBar::GetDockedCount() const
+
+void CXTPReBarBase::OnNcPaint()
 {
-	int nCount = 0;
-	for (int i = 0; i < m_arrBars.GetSize(); i++)
+	EraseNonClient();
+}
+
+static HWND _xtpAfxChildWindowFromPoint(HWND hWnd, POINT pt)
+{
+	ASSERT(hWnd != NULL);
+
+	// check child windows
+	::ClientToScreen(hWnd, &pt);
+	HWND hWndChild = ::GetWindow(hWnd, GW_CHILD);
+	for (; hWndChild != NULL; hWndChild = ::GetWindow(hWndChild, GW_HWNDNEXT))
 	{
-		if (GetDockedCommandBar(i) != NULL)
-			nCount++;
+		if ((UINT)(WORD)::GetDlgCtrlID(hWndChild) != (WORD)-1 &&
+			(::GetWindowLong(hWndChild, GWL_STYLE) & WS_VISIBLE))
+		{
+			// see if point hits the child window
+			CRect rect;
+			::GetWindowRect(hWndChild, rect);
+			if (rect.PtInRect(pt))
+				return hWndChild;
+		}
 	}
-	return nCount;
+
+	return NULL;    // not found
 }
 
-int CXTPDockBar::GetDockedVisibleCount() const
-{
-	int nCount = 0;
-	for (int i = 0; i < m_arrBars.GetSize(); i++)
-	{
-		CXTPToolBar* pBar = GetDockedCommandBar(i);
-		if (pBar != NULL && pBar->IsVisible())
-			nCount++;
-	}
-	return nCount;
-}
-
-int CXTPDockBar::FindBar(CXTPToolBar* pBar, int nPosExclude)
-{
-	for (int nPos = 0; nPos < m_arrBars.GetSize(); nPos++)
-	{
-		if (nPos != nPosExclude && m_arrBars[nPos] == pBar)
-			return nPos;
-	}
-	return -1;
-}
-
-int CXTPDockBar::Insert(CXTPToolBar* pBarIns, CRect /*rect*/, CPoint ptMid)
+INT_PTR CXTPReBarBase::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
 {
 	ASSERT_VALID(this);
-	ASSERT(pBarIns != NULL);
+	ASSERT(::IsWindow(m_hWnd));
 
-	int nPos = 0;
-	int nPosInsAfter = 0;
-	int nWidth = 0;
-	int nTotalWidth = 0;
-	//int nPosInsBefore = 0;
-	BOOL bHorz = m_dwStyle & CBRS_ORIENT_HORZ;
-	BOOL bAllowTopMost = m_pCommandBars->GetMenuBar() == NULL ||
-		!m_pCommandBars->GetMenuBar()->IsRibbonBar() || FindBar(m_pCommandBars->GetMenuBar()) == -1;
+	HWND hWndChild = _xtpAfxChildWindowFromPoint(m_hWnd, point);
+	CWnd* pWnd = CWnd::FromHandlePermanent(hWndChild);
+	if (pWnd == NULL)
+		return CControlBar::OnToolHitTest(point, pTI);
 
-	for (nPos = 0; nPos < m_arrBars.GetSize(); nPos++)
+	ASSERT(pWnd->m_hWnd == hWndChild);
+	return pWnd->OnToolHitTest(point, pTI);
+}
+
+LRESULT CXTPReBarBase::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+{
+	// special handling for certain messages (forwarding to owner/parent)
+	switch (message)
 	{
-		CXTPToolBar* pBar = GetDockedCommandBar(nPos);
-		if (pBar && !pBar->IsVisible())
-			continue;
+	case WM_POPMESSAGESTRING:
+	case WM_SETMESSAGESTRING:
+		return GetOwner()->SendMessage(message, wParam, lParam);
+	}
+	return CControlBar::WindowProc(message, wParam, lParam);
+}
 
-		if (pBar != NULL)
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPReBar
+
+CXTPReBar::CXTPReBar()
+{
+}
+
+CXTPReBar::~CXTPReBar()
+{
+}
+
+IMPLEMENT_DYNAMIC(CXTPReBar, CXTPReBarBase)
+
+BOOL CXTPReBar::AddToolBar(CXTPToolBar* pToolBar, DWORD dwStyle)
+{
+	CSize sz = pToolBar->CalcDockingLayout(32000, LM_HORZDOCK | LM_HORZ | LM_COMMIT);
+	pToolBar->MoveWindow(0, 0, sz.cx, sz.cy);
+
+	if (pToolBar->GetDockBar())
+	{
+		pToolBar->GetDockBar()->RemoveCommandBar(pToolBar, -1);
+		pToolBar->SetFlags(0, xtpFlagAlignAny | xtpFlagFloating);
+		pToolBar->ModifyBarStyle(CBRS_GRIPPER, 0);
+	}
+
+
+	if (!AddBar(pToolBar, 0, 0, dwStyle))
+		return FALSE;
+
+	UINT nID = (UINT)pToolBar->GetBarID();
+
+	int nCount = (int)DefWindowProc(RB_GETBANDCOUNT, 0, 0);
+	REBARBANDINFO rbBand;
+	rbBand.cbSize = sizeof(rbBand);
+
+	rbBand.fMask = RBBIM_ID;
+	rbBand.wID = nID;
+
+	VERIFY(DefWindowProc(RB_SETBANDINFO, nCount - 1, (LPARAM)&rbBand));
+
+
+	return TRUE;
+}
+
+void CXTPReBar::DeleteToolBar(CXTPToolBar* pToolBar)
+{
+	int nBand = FindBand(pToolBar);
+
+	if (nBand != -1)
+	{
+		DefWindowProc(RB_DELETEBAND, nBand, 0);
+	}
+}
+
+CXTPToolBar* CXTPReBar::GetToolBar(int nBand)
+{
+	REBARBANDINFO rbBand;
+	rbBand.cbSize = sizeof(rbBand);
+	rbBand.fMask = RBBIM_CHILD | RBBIM_STYLE | RBBIM_SIZE;
+
+	VERIFY(DefWindowProc(RB_GETBANDINFO, nBand, (LPARAM)&rbBand));
+
+	return DYNAMIC_DOWNCAST(CXTPToolBar, CWnd::FromHandlePermanent(rbBand.hwndChild));
+}
+
+int CXTPReBar::FindBand(CXTPToolBar* pToolBar)
+{
+	int nCount = (int)DefWindowProc(RB_GETBANDCOUNT, 0, 0);
+
+	// sync up hidden state of the bands
+	for (int nTemp = nCount; nTemp--;)
+	{
+		if (GetToolBar(nTemp) == pToolBar)
+			return nTemp;
+	}
+	return -1;
+
+
+}
+
+BEGIN_MESSAGE_MAP(CXTPReBar, CXTPReBarBase)
+	//{{AFX_MSG_MAP(CXTPReBar)
+		// NOTE - the ClassWizard will add and remove mapping macros here.
+	//}}AFX_MSG_MAP
+	ON_NOTIFY_REFLECT(RBN_CHILDSIZE, OnChildSize)
+	ON_WM_PAINT()
+	ON_WM_ERASEBKGND()
+END_MESSAGE_MAP()
+
+void CXTPReBar::OnPaint()
+{
+	// background is already filled in gray
+	CPaintDC dc(this);
+
+	// Get the client rect.
+	CXTPClientRect rectClient(this);
+
+	// Paint to a memory device context to help
+	// eliminate screen flicker.
+	CXTPBufferDC memDC(dc, rectClient);
+	memDC.FillSolidRect(rectClient, GetSysColor(COLOR_3DFACE));
+
+	// Now let the window do its default painting...
+	CWnd::DefWindowProc(WM_ERASEBKGND, (WPARAM)memDC.m_hDC, 0);
+	CWnd::DefWindowProc(WM_PAINT, (WPARAM)memDC.m_hDC, 0);
+}
+
+BOOL CXTPReBar::OnEraseBkgnd(CDC* /*pDC*/)
+{
+	return TRUE;
+}
+
+CSize CXTPReBar::CalcFixedLayout(BOOL bStretch, BOOL bHorz)
+{
+	CSize szResult = CXTPReBarBase::CalcFixedLayout(bStretch, bHorz);
+	Invalidate(FALSE);
+
+	int nCount = (int)DefWindowProc(RB_GETBANDCOUNT, 0, 0);
+
+	// sync up hidden state of the bands
+	for (int nTemp = nCount; nTemp--;)
+	{
+		CXTPToolBar* pToolBar = GetToolBar(nTemp);
+
+		if (pToolBar)
 		{
-			CRect rectBar;
-			pBar->GetWindowRect(&rectBar);
-			ScreenToClient(&rectBar);
-			nWidth = max(nWidth,
-				bHorz ? rectBar.bottom : rectBar.right);
+			CXTPWindowRect rc(pToolBar);
+
+			CSize szMin = pToolBar->CalcDockingLayout(32000, LM_HORZDOCK | LM_HORZ);
+			CSize sz = pToolBar->CalcDockingLayout(rc.Width(), LM_HORZDOCK | LM_HORZ | LM_COMMIT | (pToolBar->GetFlags() & xtpFlagStretched ? LM_STRETCH : LM_HIDEWRAP));
+
+			REBARBANDINFO rbbi;
+			rbbi.cbSize = sizeof(rbbi);
+			rbbi.fMask = RBBIM_CHILDSIZE | RBBIM_IDEALSIZE;
+			rbbi.cxIdeal = sz.cx;
+			rbbi.cxMinChild = szMin.cx;
+			rbbi.cyMinChild = sz.cy;
+			VERIFY(DefWindowProc(RB_SETBANDINFO, nTemp, (LPARAM)&rbbi));
+
+			pToolBar->Redraw();
 		}
-		else // end of row because pBar == NULL
+
+	}
+
+	return szResult;
+}
+
+
+void CXTPReBar::OnChildSize(NMHDR* pNotifyStruct, LRESULT* result)
+{
+	OnHeightChange(pNotifyStruct, result);
+}
+
+
+void CXTPReBar::LoadState(LPCTSTR lpszProfileName)
+{
+	// This function restores index, width and style from the registry for
+	// each band in the rebar.
+
+	CString strValue = AfxGetApp()->GetProfileString(lpszProfileName,
+		m_lpszStateInfoEntry);
+	if (!strValue.IsEmpty())
+	{
+		REBARBANDINFO rbbi;
+		rbbi.cbSize = sizeof(rbbi);
+		rbbi.fMask = RBBIM_STYLE | RBBIM_SIZE | RBBIM_ID;
+
+		int nCount = (int)DefWindowProc(RB_GETBANDCOUNT, 0, 0);
+		for (int nBand = 0; nBand < nCount; nBand++)
 		{
-			if ((bHorz ? ptMid.y : ptMid.x) < nWidth && (bAllowTopMost || nPosInsAfter > 1))
+			CString strBandState;
+			VERIFY(AfxExtractSubString(strBandState, strValue, nBand, _T('\n')));
+
+			UINT nID, cx, nStyle;
+			int nResult = SCANF_S(strBandState, m_lpszStateInfoFormat, &nID, &cx, &nStyle);
+			ASSERT(nResult == 3);
+
+			DefWindowProc(RB_MOVEBAND, DefWindowProc(RB_IDTOINDEX, nID, 0), nBand);
+			VERIFY(DefWindowProc(RB_GETBANDINFO, nBand, (LPARAM)&rbbi));
+			rbbi.cx = cx;
+			rbbi.fStyle = (rbbi.fStyle & ~(RBBS_HIDDEN | RBBS_BREAK)) | nStyle;
+			VERIFY(DefWindowProc(RB_SETBANDINFO, nBand, (LPARAM)&rbbi));
+
+			CXTPToolBar* pToolBar = GetToolBar(nBand);
+
+			if (pToolBar && (nStyle & RBBS_HIDDEN))
 			{
-				if (nPos == 0 || ((bHorz ? ptMid.y : ptMid.x) == nTotalWidth)) // first section
-					m_arrBars.InsertAt(nPosInsAfter + 1, (CXTPToolBar*)NULL);
-				m_arrBars.InsertAt(nPosInsAfter + 1, pBarIns);
-
-				return nPosInsAfter + 1;
+				pToolBar->SetVisible(FALSE);
 			}
-			nTotalWidth = nWidth;
-			nWidth = 0;
-			nPosInsAfter = nPos;
+
 		}
 	}
-
-	// create a new row
-	m_arrBars.InsertAt(nPosInsAfter + 1, (CXTPToolBar*)NULL);
-	m_arrBars.InsertAt(nPosInsAfter + 1, pBarIns);
-
-	return nPosInsAfter + 1;
 }
 
-
-XTPBarPosition CXTPDockBar::GetPosition() const
+void CXTPReBar::SaveState(LPCTSTR lpszProfileName)
 {
-	if (m_dwStyle & CBRS_TOP) return xtpBarTop;
-	if (m_dwStyle & CBRS_BOTTOM) return xtpBarBottom;
-	if (m_dwStyle & CBRS_LEFT) return xtpBarLeft;
-	return xtpBarRight;
-}
+	// This function saves index, width and style in the registry for each
+	// band in the rebar, so that it could be possible to restore all these
+	// settings when the user runs the program next time.
 
-BOOL CXTPDockBar::IsVerticalPosition() const
-{
-	return !(m_dwStyle & CBRS_ORIENT_HORZ);
-}
+	CString strValue;
 
-void CXTPDockBar::OnRButtonDown(UINT /*nFlags*/, CPoint point)
-{
-	ClientToScreen(&point);
-	m_pCommandBars->ContextMenu(NULL, point);
-}
+	REBARBANDINFO rbbi;
+	rbbi.cbSize = sizeof(rbbi);
+	rbbi.fMask = RBBIM_STYLE | RBBIM_SIZE | RBBIM_ID;
 
-
-void CXTPDockBar::GetVisibleToolbars(int nPos, CToolBarArray& arrBars)
-{
-	ASSERT(nPos != -1);
-	ASSERT(m_arrBars[nPos]);
-
-	while (m_arrBars[nPos] != NULL && nPos > 0)
+	int nCount = (int)DefWindowProc(RB_GETBANDCOUNT, 0, 0);
+	for (int nBand = 0; nBand < nCount; nBand++)
 	{
-		nPos--;
-	}
-	nPos++;
+		VERIFY(DefWindowProc(RB_GETBANDINFO, nBand, (LPARAM)&rbbi));
 
-	CDockInfoArray arrInfo;
-
-	while (m_arrBars[nPos] != NULL)
-	{
-		CXTPToolBar* pBar = m_arrBars[nPos++];
-		if (pBar->IsVisible())
-		{
-			DOCK_INFO dockInfo(pBar, CXTPWindowRect(pBar), nPos);
-			arrInfo.Add(dockInfo);
-		}
+		CString strBandState;
+		strBandState.Format(m_lpszStateInfoFormat, rbbi.wID, rbbi.cx, rbbi.fStyle);
+		strValue += (strValue.IsEmpty() ? _T("") : _T("\n")) + strBandState;
 	}
 
-	if (m_dwStyle & CBRS_LEFT || m_dwStyle & CBRS_RIGHT) arrInfo.InvertRects();
-	arrInfo.Sort();
-
-	for (int i = 0; i < arrInfo.GetSize(); i++)
-	{
-		arrBars.Add(arrInfo[i].pBar);
-	}
-
+	VERIFY(AfxGetApp()->WriteProfileString(lpszProfileName,
+		m_lpszStateInfoEntry, strValue));
 }

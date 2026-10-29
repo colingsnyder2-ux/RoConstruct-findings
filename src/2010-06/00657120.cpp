@@ -1,108 +1,57 @@
-// from server: 54% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// roc-lib: rbxgs-dll roc_arrowpanel_native_attachment_b778e4bd41285e74.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/Name.h"
-#include "util/Debug.h"
-#include <boost/thread/once.hpp>
-
-// intentionally outside of the RBX namespace
-boost::once_flag flag = BOOST_ONCE_INIT;
-
-boost::mutex& moo2()
-{
-	static boost::mutex mutex2;
-	return mutex2;
+#include <gui/ArrowPanel.h>
+namespace RBX {
+// Native factory call boundaries601fd0/657000/656f60/657190/6026e0.
+// Genuine public constructor types plus native argument copies/cleanup prove
+// these prototypes. External factories retain their native allocations/owners;
+// no synthetic object sizes, padding, deleters or virtual slots are modeled.
+boost::shared_ptr<TopMenuBar> nativeArrowColumn(const char*,Layout::Style);
+boost::shared_ptr<TopMenuBar> nativeNamedArrowColumn(std::string,Layout::Style);
+boost::shared_ptr<ImageWidget> nativeArrowImage(Adorn*,std::string);
+boost::shared_ptr<ArrowButton> nativeArrowButton(Adorn*,std::string,SDLKey,Controller::ControllerType,DataModel*);
+boost::shared_ptr<MenuSpacer> nativeArrowSpacer(float,float);
+void ArrowPanel::init(Adorn* adorn,const std::string& title,const std::string& up,const std::string& down,const std::string& left,const std::string& right,SDLKey upKey,SDLKey downKey,SDLKey leftKey,SDLKey rightKey) {
+    boost::shared_ptr<TopMenuBar> leftPanel=nativeArrowColumn("LeftPanel",Layout::VERTICAL);
+    leftPanel->addGuiItem(nativeArrowImage(adorn,title));
+    leftPanel->addGuiItem(nativeArrowButton(adorn,left,leftKey,*(Controller::ControllerType*)((char*)this+0x160),*(DataModel**)((char*)this+0x15c)));
+    boost::shared_ptr<TopMenuBar> forwardBackPanel=nativeArrowColumn("ForwardBackPanel",Layout::VERTICAL);
+    forwardBackPanel->addGuiItem(nativeArrowButton(adorn,up,upKey,*(Controller::ControllerType*)((char*)this+0x160),*(DataModel**)((char*)this+0x15c)));
+    forwardBackPanel->addGuiItem(nativeArrowButton(adorn,down,downKey,*(Controller::ControllerType*)((char*)this+0x160),*(DataModel**)((char*)this+0x15c)));
+    boost::shared_ptr<TopMenuBar> rightPanel=nativeNamedArrowColumn(right,Layout::VERTICAL);
+    rightPanel->addGuiItem(nativeArrowSpacer(32.0f,32.0f));
+    rightPanel->addGuiItem(nativeArrowButton(adorn,right,rightKey,*(Controller::ControllerType*)((char*)this+0x160),*(DataModel**)((char*)this+0x15c)));
+    addGuiItem(leftPanel);
+    addGuiItem(forwardBackPanel);
+    addGuiItem(rightPanel);
+}
+ArrowPanel::ArrowPanel(Adorn* adorn,DataModel* model,Controller::ControllerType type)
+    :TopMenuBar("ArrowPanel",Layout::HORIZONTAL,false) {
+    // Native own members15c/160, later than the older SDK's inherited layout.
+    *(DataModel**)((char*)this+0x15c)=model;
+    *(Controller::ControllerType*)((char*)this+0x160)=type;
+    switch(type) {
+    case Controller::PLAYER_CONTROLLER:
+        init(adorn,"Character","W_key","S_key","A_key","D_key",SDLK_w,SDLK_s,SDLK_a,SDLK_d);
+        break;
+    case Controller::SECONDARY_CONTROLLER:
+        init(adorn,"Controller2","W_key","S_key","A_key","D_key",SDLK_w,SDLK_s,SDLK_a,SDLK_d);
+        break;
+    case Controller::PRIMARY_CONTROLLER:
+        init(adorn,"Controller1","U_key","J_key","H_key","K_key",SDLK_u,SDLK_j,SDLK_h,SDLK_k);
+        break;
+    }
+}
 }
 
-void initMoo()
-{
-	moo2();
+namespace RBX {
+// Genuine public API, native600f10: attach child to this, release passed owner.
+// Keep observed out-of-line boundary used by all native panel builders.
+__declspec(noinline) void GuiItem::addGuiItem(boost::shared_ptr<GuiItem> item) {
+    item->setParent(this);
 }
-
-namespace RBX
-{
-	// seems to be inlined
-	boost::mutex& Name::mutex()
-	{
-		boost::call_once(initMoo, flag);
-		return moo2();
-	}
-
-	std::map<int, Name*>& Name::dictionary()
-	{
-		static std::map<int, Name*> d;
-		return d;
-	}
-
-	Name::NamMap& Name::namMap()
-	{
-		static NamMap n;
-		return n;
-	}
-
-	const Name& Name::getNullName()
-	{
-		boost::mutex::scoped_lock scoped_lock(mutex());
-		static const Name& nullName = declare("", 0);
-		return nullName;
-	}
-
-	const Name& Name::declare(const char* sName, int dictionaryIndex)
-	{
-		if (!sName)
-		{
-			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
-			return getNullName();
-		}
-
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			if (dictionaryIndex != -1)
-			{
-				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
-				dictionary()[dictionaryIndex] = iter->second;
-			}
-			return *iter->second;
-		}
-		else
-		{
-			Name* name = new Name(sName, dictionaryIndex);
-			namMap()[sName] = name;
-			dictionary()[dictionaryIndex] = name;
-			return *name;
-		}
-	}
-
-	const Name& Name::lookup(const std::string& sName)
-	{
-		RBXASSERT(sName.size() < 50);
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			return *iter->second;
-		}
-		else
-		{
-			return getNullName();
-		}
-	}
-
-	const Name& Name::lookup(const char* sName)
-	{
-		if (!sName)
-		{
-			return getNullName();
-		}
-
-		return lookup(std::string(sName));
-	}
 }

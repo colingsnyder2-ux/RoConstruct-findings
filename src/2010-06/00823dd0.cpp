@@ -1,14 +1,13 @@
-// from server: 77% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/CommandBars/XTPCustomizeTools.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc-string-calls Source\CommandBars\XTPCustomizeTools.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPCustomizeTools.cpp.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -337,8 +336,6 @@ BOOL CXTPNewToolbarDlg::OnInitDialog()
 		SetSuggestedName();
 	}
 
-	((CEdit*)GetDlgItem(XTP_IDC_EDIT_TOOLBARNAME))->SetLimitText(255);
-
 
 	return TRUE;
 }
@@ -418,12 +415,9 @@ void CXTPNewToolbarDlg::OnOK()
 		// been used, if so, alert the user and return.
 		if (pBar && m_pCommandBar != pBar && m_strToolbar.Compare(pBar->GetTitle()) == 0)
 		{
-			CString strName, strError;
-
-			CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&strError, XTP_IDS_ERROR_EXISTS));
-			strName.Format(strError, (LPCTSTR)m_strToolbar);
-
-			XTPResourceManager()->ShowMessageBox(strName, MB_ICONSTOP);
+			CString strName;
+			strName.Format(XTP_IDS_ERROR_EXISTS, (LPCTSTR)m_strToolbar);
+			AfxMessageBox(strName, MB_ICONSTOP);
 			return;
 		}
 

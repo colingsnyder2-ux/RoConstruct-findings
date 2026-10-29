@@ -1,444 +1,361 @@
-// from server: 42% by colin
-// roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Gyro.cpp
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: openrbx-client App/v8world/ContactManager.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Gyro.h"
-#include "v8datamodel/PartInstance.h"
-#include <Network/Players.h>
+#include "decomp.h"
+#include "util/HitTestFilter.h"
+#include "v8world/Contact.h"
+#include "v8world/SpatialHash.h"
+#include "v8world/World.h"
 
-namespace RBX
+#include <algorithm>
+#include <set>
+
+namespace RBX {
+
+bool ContactManager::ignoreBool;
+
+// FUNCTION: WEBSERVICE 0x101080d0
+ContactManager::ContactManager(World* world) : spatialHash(new SpatialHash(world, this)), world(world)
 {
-	const char* sBodyPosition = "BodyPosition";
-	const char* sBodyVelocity = "BodyVelocity";
-	const char* sBodyGyro = "BodyGyro";
-	const char* sBodyForce = "BodyForce";
-	const char* sBodyThrust = "BodyThrust";
-	const char* sRocket = "Rocket";
+}
 
-	void registerBodyMovers()
-	{
-		BodyGyro::classDescriptor();
-		BodyPosition::classDescriptor();
-		BodyVelocity::classDescriptor();
-		BodyForce::classDescriptor();
-		BodyThrust::classDescriptor();
-		Rocket::classDescriptor();
-	}
+// FUNCTION: WEBSERVICE 0x10108130
+void ContactManager::getPrimitivesTouchingExtents(
+	const Extents& extents,
+	const Primitive* ignore,
+	G3D::Array<Primitive*>& found
+)
+{
+	spatialHash->getPrimitivesTouchingExtents(extents, ignore, found);
+}
 
-	BodyMover::BodyMover(const char* name)
-		: Instance(name),
-		  world(NULL),
-		  part(NULL)
-	{
-	}
+// FUNCTION: WEBSERVICE 0x10108140
+void ContactManager::onReleasePair(Primitive* p0, Primitive* p1)
+{
+	Contact* contact = Primitive::getContact(p0, p1);
 
-	BodyMover::~BodyMover()
-	{
-		RBXASSERT(world == NULL);
-		RBXASSERT(part == NULL);
-	}
+	world->destroyContact(contact);
+}
 
-	void BodyMover::updateWorld()
-	{
-		World* worldIfInWorkspace = (part != NULL) ? Workspace::getWorldIfInWorkspace(this) : NULL;
-		if (world != worldIfInWorkspace)
-		{
-			if (world)
-				world->getKernel().removeConnector2ndPass(this);
-			world = worldIfInWorkspace;
-			if (worldIfInWorkspace)
-			{
-				worldIfInWorkspace->getKernel().insertConnector2ndPass(this);
-				Notifier<RunService,Stepped>::connect(ServiceProvider::create<RunService>(this), this);
+// FUNCTION: WEBSERVICE 0x10108170
+void ContactManager::onPrimitiveAdded(Primitive* p)
+{
+	spatialHash->onPrimitiveAdded(p);
+}
+
+// FUNCTION: WEBSERVICE 0x10108180
+void ContactManager::onPrimitiveRemoved(Primitive* p)
+{
+	spatialHash->onPrimitiveRemoved(p);
+}
+
+// FUNCTION: WEBSERVICE 0x10108190
+void ContactManager::onPrimitiveExtentsChanged(Primitive* p)
+{
+	spatialHash->onPrimitiveExtentsChanged(p);
+}
+
+// FUNCTION: WEBSERVICE 0x101081a0
+void ContactManager::stepWorld()
+{
+	spatialHash->onAllPrimitivesMoved();
+}
+
+// FUNCTION: WEBSERVICE 0x101081b0
+ContactManager::~ContactManager()
+{
+	delete spatialHash;
+}
+
+// FUNCTION: WEBSERVICE 0x101081d0
+Primitive* ContactManager::getSlowHit(
+	const G3D::Array<Primitive*>& primitives,
+	const G3D::Ray& unitRay,
+	const G3D::Array<const Primitive*>* ignore,
+	const HitTestFilter* filter,
+	Vector3& hitPoint,
+	float maxDistance,
+	bool& hitSurface,
+	bool& blocked
+) const
+{
+	float closestHit = maxDistance;
+	float closestBlock = maxDistance;
+	Primitive* answer = NULL;
+
+	blocked = false;
+	hitSurface = false;
+
+	for (int i = 0; i < primitives.size(); ++i) {
+		Primitive* primitive = primitives[i];
+
+		bool notIgnored;
+
+		if (ignore != NULL) {
+			notIgnored = ignore->find(primitive) == ignore->end();
+		}
+		else {
+			notIgnored = true;
+		}
+
+		HitTestFilter::Result result;
+
+		if (filter != NULL) {
+			result = filter->filterResult(primitive);
+		}
+		else {
+			result = HitTestFilter::INCLUDE_PRIM;
+		}
+
+		if (notIgnored && result != HitTestFilter::IGNORE_PRIM) {
+			Vector3 center = primitive->getCoordinateFrame().translation;
+			float radius = primitive->getRadius();
+
+			float along = (center - unitRay.origin).dot(unitRay.direction);
+
+			if ((center - (unitRay.origin + unitRay.direction * along)).magnitude() <= radius) {
+				Vector3 surface(0.0f, 0.0f, 0.0f);
+				bool inside;
+
+				if (primitive->hitTest(unitRay, surface, inside)) {
+					float distance = (surface - unitRay.origin).dot(unitRay.direction);
+
+					if (distance > 0.0f) {
+						switch (result) {
+						case HitTestFilter::STOP_TEST:
+							if (distance < closestBlock) {
+								blocked = true;
+								closestBlock = distance;
+							}
+							break;
+
+						case HitTestFilter::INCLUDE_PRIM:
+							if (distance < closestHit) {
+								hitSurface = inside;
+								closestHit = distance;
+								hitPoint = surface;
+								answer = primitive;
+							}
+							break;
+						}
+					}
+				}
 			}
 		}
 	}
 
-	void BodyMover::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
-	{
-		Notifier<RunService,Stepped>::disconnect(ServiceProvider::create<RunService>(oldProvider), this);
-
-		Instance::onServiceProvider(oldProvider, newProvider);
-
-		updateWorld();
+	if (blocked && answer != NULL && closestHit < closestBlock) {
+		blocked = false;
 	}
 
-	void BodyMover::onEvent(const RunService* source, Stepped event)
-	{
-		if (preventBodySleep())
-		{
-			world->ticklePrimitive(part->getPrimitive());
+	return answer;
+}
+
+// FUNCTION: WEBSERVICE 0x10108620
+bool ContactManager::intersectingOthers(Primitive* check, const std::set<Primitive*>& checkSet, float overlapIgnored)
+{
+	Contact* c = check->getFirstContact();
+
+	while (c != NULL) {
+		Primitive* other = c->otherPrimitive(check);
+
+		if (checkSet.find(other) == checkSet.end() && c->computeIsColliding(overlapIgnored)) {
+			return true;
 		}
+
+		c = check->getNextContact(c);
 	}
 
-	void BodyMover::onAncestorChanged(const AncestorChanged& event)
-	{
-		Instance::onAncestorChanged(event);
+	return false;
+}
 
-		if (event.child == this)
-			part = dynamic_cast<PartInstance*>(event.newParent);
-		updateWorld();
-	}
+// FUNCTION: WEBSERVICE 0x101086c0
+Primitive* ContactManager::getFastHit(
+	const G3D::Ray& ray,
+	const G3D::Array<const Primitive*>* ignore,
+	const HitTestFilter* filter,
+	Vector3& hitPoint,
+	bool& hitSurface,
+	bool& blocked
+) const
+{
+	G3D::Array<Primitive*> found;
 
-	bool BodyMover::askSetParent(const Instance* instance) const
-	{
-		return dynamic_cast<const PartInstance*>(instance) != NULL;
-	}
+	Vector3int32 grid = SpatialHash::realToHashGrid(ray.origin);
 
-	Reflection::RefPropDescriptor<Rocket, PartInstance> Rocket::prop_Target("Target", "Goals", &Rocket::getTarget, &Rocket::setTarget, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<G3D::Vector3, 1> Rocket::prop_targetOffset("TargetOffset", "Goals", &Rocket::targetOffset, &Rocket::onGoalChanged, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<float, 1> Rocket::prop_targetRadius("TargetRadius", "Goals", &Rocket::targetRadius, &Rocket::onGoalChanged, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<float, 1> Rocket::prop_MaxSpeed("MaxSpeed", "Thrust", &Rocket::maxSpeed, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<float, 1> Rocket::prop_MaxThrust("MaxThrust", "Thrust", &Rocket::maxThrust, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<float, 1> Rocket::prop_ThrustP("ThrustP", "Thrust", &Rocket::kThrustP, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<float, 1> Rocket::prop_ThrustD("ThrustD", "Thrust", &Rocket::kThrustD, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<float, 1> Rocket::prop_TurnP("TurnP", "Turn", &Rocket::kTurnP, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<float, 1> Rocket::prop_TurnD("TurnD", "Turn", &Rocket::kTurnD, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<G3D::Vector3, 1> Rocket::prop_MaxTorque("MaxTorque", "Turn", &Rocket::maxTorque, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<float, 1> Rocket::prop_CartoonFactor("CartoonFactor", "Goals", &Rocket::cartoonFactor, Reflection::PropertyDescriptor::STANDARD);
+	float length = ray.direction.magnitude();
+	float maxDistance = std::min(5000.0f, length);
 
-	Reflection::BoundFuncDesc<Rocket, void(void), 0> Rocket::func_Fire(&Rocket::fire, "Fire", Reflection::FunctionDescriptor::AnyCaller);
-	Reflection::BoundFuncDesc<Rocket, void(void), 0> Rocket::func_Abort(&Rocket::abort, "Abort", Reflection::FunctionDescriptor::AnyCaller);
+	G3D::Ray unitRay = ray.unit();
 
-	Reflection::SignalDesc<Rocket, void(void)> Rocket::event_ReachedTarget("ReachedTarget");
+	do {
+		found.resize(0, false);
+		spatialHash->getPrimitivesInGrid(grid, found);
 
-	Rocket::Rocket()
-		: Base("Rocket"),
-		  active(false),
-		  targetOffset(),
-		  target(),
-		  firedEvent(false),
-		  targetRadius(4.0f),
-		  maxThrust(4000.0f),
-		  kThrustP(5.0f),
-		  kThrustD(0.001f),
-		  maxSpeed(30.0f),
-		  kTurnP(3000.0f),
-		  kTurnD(500.0f),
-		  maxTorque(G3D::Vector3(400000.0f, 400000.0f, 0.0f)),
-		  cartoonFactor(0.7f)
-	{
-	}
+		Primitive* hit = getSlowHit(found, unitRay, ignore, filter, hitPoint, maxDistance, hitSurface, blocked);
 
-	void Rocket::onEvent(const RunService* source, Stepped event)
-	{
-		if (preventBodySleep()) world->ticklePrimitive(part->getPrimitive());
+		if (hit != NULL) {
+			Vector3 gridCenter((float) grid.x, (float) grid.y, (float) grid.z);
+			Extents extents = SpatialHash::hashGridToRealExtents(gridCenter);
 
-		if (active && !firedEvent && part)
-		{
-			G3D::Vector3 pos = part->getCoordinateFrame().translation;
-			G3D::Vector3 targetWorld = target.get() ? target->getCoordinateFrame().pointToWorldSpace(targetOffset) : targetOffset;
-			pos = pos - targetWorld;
-			if (pos.squaredMagnitude() <= targetRadius * targetRadius)
-			{
-				Rocket::event_ReachedTarget.fire(this);
-				firedEvent = true;
+			if (extents.fuzzyContains(hitPoint, 0.001f)) {
+				return hit;
 			}
 		}
+	} while (spatialHash->getNextGrid(grid, unitRay, maxDistance));
+
+	return NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x10108890
+Primitive* ContactManager::getHit(
+	const G3D::Ray& ray,
+	const G3D::Array<const Primitive*>* ignore,
+	const HitTestFilter* filter,
+	Vector3& hitPoint,
+	bool& hitSurface
+) const
+{
+	world->update();
+
+	bool blocked;
+	Primitive* hit = getFastHit(ray, ignore, filter, hitPoint, hitSurface, blocked);
+
+	if (blocked) {
+		hit = NULL;
+	}
+	else if (hit != NULL) {
+		return hit;
 	}
 
-	void Rocket::fire()
-	{
-		if (!Workspace::findWorkspace(this))
-			throw std::runtime_error("Rocket:Fire may only be called when the Rocket is in the Workspace");
-		if (Network::Players::clientIsPresent(this, true))
-			throw std::runtime_error("Rocket:Fire may not be called from a client");
-		active = true;
+	hitPoint = Vector3::zero();
+	hitSurface = false;
+
+	return hit;
+}
+
+// FUNCTION: WEBSERVICE 0x10108920
+Primitive* ContactManager::getHitLegacy(
+	const G3D::Ray& ray,
+	const Primitive* ignore,
+	const HitTestFilter* filter,
+	Vector3& hitPoint,
+	float& distance,
+	const float& maxDistance
+) const
+{
+	G3D::Ray scaled = G3D::Ray::fromOriginAndDirection(ray.origin, ray.direction * maxDistance);
+
+	G3D::Array<const Primitive*> ignored;
+
+	if (ignore != NULL) {
+		ignored.append(ignore);
 	}
 
-	void Rocket::abort()
-	{
-		active = false;
+	Primitive* hit = getHit(scaled, &ignored, filter, hitPoint, ignoreBool);
+
+	distance = hit != NULL ? (hitPoint - scaled.origin).magnitude() : 0.0f;
+
+	return hit;
+}
+
+// FUNCTION: WEBSERVICE 0x10108aa0
+Primitive* ContactManager::getHit(
+	const G3D::Ray& ray,
+	const std::vector<const Primitive*>* ignore,
+	const HitTestFilter* filter,
+	Vector3& hitPoint,
+	bool& hitSurface
+) const
+{
+	G3D::Array<const Primitive*> ignored;
+
+	ignored = *ignore;
+
+	return getHit(ray, &ignored, filter, hitPoint, hitSurface);
+}
+
+// FUNCTION: WEBSERVICE 0x10108b30
+Contact* ContactManager::createContact(Primitive* p0, Primitive* p1)
+{
+	if (p0->getPrimitiveType() > p1->getPrimitiveType()) {
+		std::swap(p0, p1);
 	}
 
-	void Rocket::setTarget(PartInstance* value)
-	{
-		if (target.get() != value)
-		{
-			target = shared_from<PartInstance>(value);
-			firedEvent = false;
-			raisePropertyChanged(Rocket::prop_Target);
+	Geometry::GeometryType type0 = p0->getPrimitiveType();
+	Geometry::GeometryType type1 = p1->getPrimitiveType();
+
+	switch (type0) {
+
+	case Geometry::GEOMETRY_BALL:
+
+		switch (type1) {
+
+		case Geometry::GEOMETRY_BALL:
+			return new BallBallContact(p0, p1);
+
+		case Geometry::GEOMETRY_BLOCK:
+			return new BallBlockContact(p0, p1);
 		}
-	}
-	
 
-
-	void Rocket::computeForce(const float dt, bool throttling)
-	{
-		if (!active)
-			return;
-
-		Body* body = part->getPrimitive()->getBody();
-		RBXASSERT(body != NULL);
-
-		G3D::Vector3 targetPos = target.get() ? target->getCoordinateFrame().pointToWorldSpace(targetOffset) : targetOffset;
-		G3D::Vector3 targetDelta = targetPos - body->getCoordinateFrame().translation; // fabricated name, may change
-		G3D::Vector3 targetDir = targetDelta.direction();
-		G3D::Vector3 pAccel = targetDelta * kThrustP;
-		Body* root = body->getRoot();
-
-		G3D::Vector3 force = pAccel * root->getBranchMass();
-
-		if (root->getVelocity().linear.squaredMagnitude() > maxSpeed * maxSpeed)
-		{
-			G3D::Vector3 dir = root->getVelocity().linear.direction();
-			float dotProduct = dir.dot(force);
-			if (dotProduct > 0.0f)
-			{
-				force -= dir * dotProduct;
-				pAccel = dir * maxSpeed;
-				G3D::Vector3 low = root->getVelocity().linear - pAccel;
-				force -= (low * root->getBranchMass()) / dt;
-			}
-		}
-
-		G3D::Vector3 adjustedVelocity = (root->getBranchMass() * kThrustD) * root->getVelocity().linear; // fabricated name, may change
-		force -= adjustedVelocity;
-
-		force -= body->getBranchForce();
-
-		Math::fixDenorm(force);
-
-		force = force.clamp(G3D::Vector3(-maxThrust, -maxThrust, -maxThrust), G3D::Vector3(maxThrust, maxThrust, maxThrust));
-
-		root->accumulateForceAtBranchCofm(force);
-
-		G3D::Vector3 unitForce = force.squaredMagnitude() > 0.000001f ? force.fastDirection() : G3D::Vector3::zero(); // fabricated name, may change
-		G3D::Vector3 forceCartoon = unitForce * (1.0f - cartoonFactor); // fabricated name, may change
-		G3D::Vector3 newDirection = forceCartoon + (targetDir * cartoonFactor); // fabricated name, may change
-		turn(body, newDirection.direction());
+	case Geometry::GEOMETRY_BLOCK:
+		return new BlockBlockContact(p0, p1);
 	}
 
-	G3D::Vector3 Rocket::turn(Body* body, const G3D::Vector3& targetDir)
-	{
-		G3D::Vector3 targetObjectSpace = body->getCoordinateFrame().vectorToObjectSpace(targetDir);
+	return NULL;
+}
 
-		Body* root = body->getRoot();
-		G3D::Vector3 oldTorqueWorld = root->getBranchTorque();
+// FUNCTION: WEBSERVICE 0x10108c60
+void ContactManager::onNewPair(Primitive* p0, Primitive* p1)
+{
+	Contact* contact = createContact(p0, p1);
 
-		float desiredTorqueX = targetObjectSpace.y * root->getBranchIBodyV3().x * kTurnP;
-		float desiredTorqueY = -(targetObjectSpace.x * root->getBranchIBodyV3().y * kTurnP);
+	world->insertContact(contact);
+}
 
-		G3D::Vector3 torqueBody = body->getCoordinateFrame().vectorToObjectSpace(oldTorqueWorld);
-		
-		if (fabs(desiredTorqueX - torqueBody.x) < root->getBranchIBodyV3().x * maxTorque.x)
-			torqueBody.x = desiredTorqueX;
-		else
-			torqueBody.x += desiredTorqueX;
-		
-		if (fabs(desiredTorqueY - torqueBody.y) < root->getBranchIBodyV3().y * maxTorque.y)
-			torqueBody.y = desiredTorqueY;
-		else
-			torqueBody.y += desiredTorqueY;
+// FUNCTION: WEBSERVICE 0x10108c90
+void ContactManager::onPrimitiveGeometryTypeChanged(Primitive* p)
+{
+	G3D::Array<Contact*> newContacts;
 
-		G3D::Vector3 angVelBody = body->getCoordinateFrame().vectorToObjectSpace(body->getVelocity().rotational);
-		torqueBody.x -= (root->getBranchIBodyV3().x * angVelBody.x) * kTurnD;
-		torqueBody.y -= (root->getBranchIBodyV3().y * angVelBody.y) * kTurnD;
+	Contact* c;
 
-		G3D::Vector3 addedTorque = body->getCoordinateFrame().vectorToWorldSpace(torqueBody) - oldTorqueWorld;
-		root->accumulateTorque(addedTorque);
+	while ((c = p->getFirstContact()) != NULL) {
+		newContacts.append(createContact(c->getPrimitive(0), c->getPrimitive(1)));
 
-		return targetObjectSpace;
+		world->destroyContact(c);
 	}
 
-
-	Reflection::BoundProp<float, 1> BodyGyro::prop_kP("P", "Goals", &BodyGyro::kP, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<float, 1> BodyGyro::prop_kD("D", "Goals", &BodyGyro::kD, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<G3D::Vector3, 1> BodyGyro::prop_maxTorque("maxTorque", "Goals", &BodyGyro::maxTorque, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<G3D::CoordinateFrame, 1> BodyGyro::prop_cframe("cframe", "Goals", &BodyGyro::cframe, Reflection::PropertyDescriptor::STANDARD);
-
-	BodyGyro::BodyGyro()
-		: Base("BodyGyro"),
-		  kP(3000.0f),
-		  kD(500.0f),
-		  maxTorque(G3D::Vector3(400000.0f, 0.0f, 400000.0f)),
-		  cframe()
-	{
-	}
-
-	void BodyGyro::computeForce(const float dt, bool throttling)
-	{
-		Body* body = part->getPrimitive()->getBody();
-		RBXASSERT(body != NULL);
-
-		computeBalance(body);
-		computeOrientation(body);
-	}
-
-	void BodyGyro::computeOrientation(Body* body)
-	{
-		if (G3D::fuzzyEq(maxTorque.y, 0.0f))
-			return;
-
-		Body* root = body->getRoot();
-
-		G3D::Vector3 oldTorqueWorld = root->getBranchTorque();
-
-
-		G3D::Vector3 localZNegAxis = body->getCoordinateFrame().vectorToObjectSpace(cframe.lookVector());
-
-
-		float desiredTorqueY = -(root->getBranchIBodyV3().y * localZNegAxis.x * kP);
-
-		G3D::Vector3 torqueBody = body->getCoordinateFrame().vectorToObjectSpace(oldTorqueWorld);
-
-		if (fabs(desiredTorqueY - torqueBody.y) < root->getBranchIBodyV3().y * maxTorque.y)
-			torqueBody.y = desiredTorqueY;
-		else
-			torqueBody.y = torqueBody.y + desiredTorqueY;
-
-
-		G3D::Vector3 angVelBody = body->getCoordinateFrame().vectorToObjectSpace(body->getVelocity().rotational);
-		torqueBody.y = torqueBody.y - kD * root->getBranchIBodyV3().y * angVelBody.y;
-
-		G3D::Vector3 addedTorque = body->getCoordinateFrame().vectorToWorldSpace(torqueBody) - oldTorqueWorld;
-
-		root->accumulateTorque(addedTorque);
-	}
-
-
-
-	void BodyGyro::computeBalance(Body* body)
-	{
-		if (G3D::fuzzyEq(maxTorque.x, 0.0f) && G3D::fuzzyEq(maxTorque.z, 0.0f))
-			return;
-
-		Body* root = body->getRoot();
-		G3D::Vector3 oldTorqueWorld = root->getBranchTorque();
-		G3D::Vector3 localYAxis = body->getCoordinateFrame().vectorToObjectSpace(cframe.upVector());
-		float desiredTorqueX = root->getBranchIBodyV3().x * localYAxis.z * kP;
-		float desiredTorqueZ = -(root->getBranchIBodyV3().z * localYAxis.x * kP);
-
-		G3D::Vector3 torqueBody = body->getCoordinateFrame().vectorToObjectSpace(oldTorqueWorld);
-
-		if (fabs(desiredTorqueX - torqueBody.x) < root->getBranchIBodyV3().x * maxTorque.x)
-			torqueBody.x = desiredTorqueX;
-		else
-			torqueBody.x += desiredTorqueX;
-
-		if (fabs(desiredTorqueZ - torqueBody.z) < root->getBranchIBodyV3().z * maxTorque.z)
-			torqueBody.z = desiredTorqueZ;
-		else
-			torqueBody.z += desiredTorqueZ;
-
-		G3D::Vector3 angVelBody = body->getCoordinateFrame().vectorToObjectSpace(body->getVelocity().rotational);
-		torqueBody.x -= (root->getBranchIBodyV3().x * angVelBody.x) * kD;
-		torqueBody.z -= (root->getBranchIBodyV3().z * angVelBody.z) * kD;
-
-		G3D::Vector3 addedTorque = body->getCoordinateFrame().vectorToWorldSpace(torqueBody) - oldTorqueWorld;
-
-		root->accumulateTorque(addedTorque);
-	}
-
-	Reflection::BoundProp<float, 1> BodyPosition::prop_kP("P", "Goals", &BodyPosition::kP, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<float, 1> BodyPosition::prop_kD("D", "Goals", &BodyPosition::kD, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<G3D::Vector3, 1> BodyPosition::prop_maxForce("maxForce", "Goals", &BodyPosition::maxForce, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<G3D::Vector3, 1> BodyPosition::prop_position("position", "Goals", &BodyPosition::position, Reflection::PropertyDescriptor::STANDARD);
-
-
-
-	static Reflection::BoundFuncDesc<BodyPosition, G3D::Vector3(void), 0> func_getLastForceOld(&BodyPosition::getLastForce, "lastForce", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<BodyPosition, G3D::Vector3(void), 0> func_getLastForce(&BodyPosition::getLastForce, "GetLastForce", Reflection::FunctionDescriptor::AnyCaller);
-
-	BodyPosition::BodyPosition()
-		: Base("BodyPosition"),
-		  kP(10000.0f),
-		  kD(1250.0f),
-		  maxForce(G3D::Vector3(4000.0f, 4000.0f, 4000.0f)),
-		  position(G3D::Vector3(0.0f, 50.0f, 0.0f)),
-		  lastForce()
-	{
-	}
-
-
-
-	void BodyPosition::computeForce(const float dt, bool throttling)
-	{
-		RBXASSERT(part->getPrimitive()->getBody() != NULL);
-		Body* body = part->getPrimitive()->getBody();
-		
-		G3D::Vector3 pAccel = (position - body->getCoordinateFrame().translation) * kP;
-		pAccel = pAccel + (body->getVelocity().linear * -kD);
-		//Body* root = body->getRoot();
-		lastForce = pAccel * body->getRoot()->getBranchMass();
-		lastForce = lastForce.clamp(-maxForce, maxForce);
-		
-		body->getRoot()->accumulateForce(lastForce, body->getRoot()->getCoordinateFrame().translation);
-	}
-
-	Reflection::BoundProp<float, 1> BodyVelocity::prop_kP("P", "Goals", &BodyVelocity::kP, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<G3D::Vector3, 1> BodyVelocity::prop_maxForce("maxForce", "Goals", &BodyVelocity::maxForce, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<G3D::Vector3, 1> BodyVelocity::prop_velocity("velocity", "Goals", &BodyVelocity::velocity, Reflection::PropertyDescriptor::STANDARD);
-
-
-
-	static Reflection::BoundFuncDesc<BodyVelocity, G3D::Vector3(void), 0> func_getLastForceVOld(&BodyVelocity::getLastForce, "lastForce", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<BodyVelocity, G3D::Vector3(void), 0> func_getLastForceV(&BodyVelocity::getLastForce, "GetLastForce", Reflection::FunctionDescriptor::AnyCaller);
-
-	BodyVelocity::BodyVelocity()
-		: Base("BodyVelocity"),
-		  kP(1250.0f),
-		  maxForce(G3D::Vector3(4000.0f, 4000.0f, 4000.0f)),
-		  velocity(G3D::Vector3(0.0f, 2.0f, 0.0f)),
-		  lastForce()
-	{
-	}
-
-
-	void BodyVelocity::computeForce(const float dt, bool throttling)
-	{
-		RBXASSERT(part->getPrimitive()->getBody() != NULL);
-		Body* body = part->getPrimitive()->getBody();
-		//Body* root = part->getPrimitive()->getBody()->getRoot();
-
-		G3D::Vector3 pAccel = (velocity - body->getVelocity().linear) * kP;
-
-		lastForce = pAccel * body->getRoot()->getBranchMass();
-		lastForce = lastForce.clamp(-maxForce, maxForce);
-
-		body->getRoot()->accumulateForce(lastForce, body->getRoot()->getCoordinateFrame().translation);
-	}
-
-
-
-	Reflection::BoundProp<G3D::Vector3, 1> BodyForce::prop_Force("force", "Goals", &BodyForce::force, Reflection::PropertyDescriptor::STANDARD);
-
-
-	BodyForce::BodyForce()
-		: Base("BodyForce"),
-		  force(G3D::Vector3::unitY())
-	{
-	}
-
-	void BodyForce::computeForce(const float dt, bool throttling)
-	{
-		RBXASSERT(part->getPrimitive()->getBody() != NULL);
-		Body* root = part->getPrimitive()->getBody()->getRoot();
-
-		root->accumulateForce(force, root->getCoordinateFrame().translation);
-	}
-
-	Reflection::BoundProp<G3D::Vector3, 1> BodyThrust::prop_force("force", "Goals", &BodyThrust::force, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<G3D::Vector3, 1> BodyThrust::prop_location("location", "Goals", &BodyThrust::location, Reflection::PropertyDescriptor::STANDARD);
-
-
-	BodyThrust::BodyThrust()
-		: Base("BodyThrust"),
-		  force(G3D::Vector3::unitY()),
-		  location(G3D::Vector3::zero())
-	{
-	}
-
-	void BodyThrust::computeForce(const float dt, bool throttling)
-	{
-		Body* body = part->getPrimitive()->getBody();
-		RBXASSERT(body != NULL);
-
-		G3D::Vector3 worldForce = body->getCoordinateFrame().vectorToWorldSpace(force);
-		G3D::Vector3 worldPos = body->getCoordinateFrame().pointToWorldSpace(location);
-		body->accumulateForce(worldForce, worldPos);
+	for (int i = 0; i < newContacts.size(); i++) {
+		world->insertContact(newContacts[i]);
 	}
 }
+
+// FUNCTION: WEBSERVICE 0x10108ea0
+bool ContactManager::intersectingOthers(const G3D::Array<Primitive*>& check, float overlapIgnored)
+{
+	std::set<Primitive*> checkSet(check.begin(), check.end());
+
+	for (int i = 0; i < check.size(); i++) {
+		if (intersectingOthers(check[i], checkSet, overlapIgnored)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x10108fa0
+bool ContactManager::intersectingOthers(Primitive* check, float overlapIgnored)
+{
+	std::set<Primitive*> checkSet;
+
+	checkSet.insert(check);
+
+	return intersectingOthers(check, checkSet, overlapIgnored);
+}
+
+} // namespace RBX

@@ -1,750 +1,432 @@
-// from server: 63% by colin
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8datamodel/PartInstance.cpp
+// roc-lib: rbxgs-dll v8tree/EnumProperty.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/PartInstance.h"
+#include "reflection/type.h"
+#include <g3d/color3.h>
+#include <g3d/vector3.h>
+#include <boost/shared_ptr.hpp>
+#include "v8tree/Instance.h"
+#include "v8datamodel/BrickColor.h"
 
-#include "tool/Dragger.h"
-#include "util/standardout.h"
-#include "v8datamodel/ModelInstance.h"
-#include "v8datamodel/Workspace.h"
-#include "v8kernel/Body.h"
-#include "v8world/Geometry.h"
-#include "v8world/World.h"
-
-namespace RBX {
-
-// GLOBAL: WEBSERVICE 0x102d4568
-const char* const category_Part = "Part";
-
-char sPart[] = "Part";
-
-bool PartInstance::highlightSleepParts;
-bool PartInstance::highlightAwakeParts;
-bool PartInstance::showAnchoredParts;
-bool PartInstance::showPartCoord;
-bool PartInstance::showUnalignedParts;
-bool PartInstance::showSpanningTree;
-
-const Reflection::PropDescriptor<PartInstance, float> PartInstance::prop_RenderImportance(
-	"RenderImportance",
-	"Behavior",
-	&RBX::PartInstance::getRenderImportance,
-	&RBX::PartInstance::setRenderImportance,
-	Reflection::PropertyDescriptor::LEGACY
-);
-
-const Reflection::PropDescriptor<PartInstance, float> PartInstance::prop_Transparency(
-	"Transparency",
-	"Appearance",
-	&RBX::PartInstance::getTransparencyXml,
-	&RBX::PartInstance::setTransparency
-);
-
-const Reflection::PropDescriptor<PartInstance, float> PartInstance::prop_Reflectance(
-	"Reflectance",
-	"Appearance",
-	&RBX::PartInstance::getReflectance,
-	&RBX::PartInstance::setReflectance
-);
-
-const Reflection::PropDescriptor<PartInstance, bool> PartInstance::prop_Locked(
-	"Locked",
-	"Behavior",
-	&RBX::PartInstance::getPartLocked,
-	&RBX::PartInstance::setPartLocked
-);
-
-const Reflection::PropDescriptor<PartInstance, G3D::Color3> PartInstance::prop_Color(
-	"Color",
-	"Appearance",
-	&RBX::PartInstance::getColor3,
-	&RBX::PartInstance::setColor3
-);
-
-const Reflection::PropDescriptor<PartInstance, BrickColor> PartInstance::prop_BrickColor(
-	"BrickColor",
-	"Appearance",
-	&RBX::PartInstance::getColor,
-	&RBX::PartInstance::setColor
-);
-
-const Reflection::PropDescriptor<PartInstance, bool> PartInstance::prop_CanCollide(
-	"CanCollide",
-	"Behavior",
-	&RBX::PartInstance::getCanCollide,
-	&RBX::PartInstance::setCanCollide
-);
-
-const Reflection::PropDescriptor<PartInstance, bool> PartInstance::prop_Anchored(
-	"Anchored",
-	"Behavior",
-	&RBX::PartInstance::getAnchored,
-	&RBX::PartInstance::setAnchored
-);
-
-const Reflection::EnumPropDescriptor<PartInstance, Part::PartType> PartInstance::prop_shapeXml(
-	"shape",
-	category_Part,
-	&RBX::PartInstance::getPartType,
-	&RBX::PartInstance::setPartTypeXml,
-	Reflection::PropertyDescriptor::STREAMING
-);
-
-static Reflection::EnumPropDescriptor<PartInstance, Part::PartType> prop_shapeUi(
-	"Shape",
-	category_Part,
-	&RBX::PartInstance::getPartType,
-	&RBX::PartInstance::setPartTypeUi,
-	Reflection::PropertyDescriptor::UI
-);
-
-static Reflection::PropDescriptor<PartInstance, G3D::Vector3> prop_SizeUi(
-	"Size",
-	category_Part,
-	&RBX::PartInstance::getPartSizeUi,
-	&RBX::PartInstance::setPartSizeUi,
-	Reflection::PropertyDescriptor::UI
-);
-
-const Reflection::PropDescriptor<PartInstance, G3D::Vector3> PartInstance::prop_Size(
-	"size",
-	category_Part,
-	&RBX::PartInstance::getPartSizeXml,
-	&RBX::PartInstance::setPartSizeXml,
-	Reflection::PropertyDescriptor::STREAMING
-);
-
-static Reflection::EnumPropDescriptor<PartInstance, PartInstance::FormFactor> prop_formFactor(
-	"FormFactor",
-	category_Part,
-	&RBX::PartInstance::getFormFactor,
-	&RBX::PartInstance::setFormFactorXml,
-	Reflection::PropertyDescriptor::STREAMING
-);
-
-static Reflection::PropDescriptor<PartInstance, bool> prop_Dragging(
-	"DraggingV1",
-	"Behavior",
-	&RBX::PartInstance::getDragging,
-	&RBX::PartInstance::setDragging,
-	Reflection::PropertyDescriptor::STREAMING
-);
-
-// FUNCTION: WEBSERVICE 0x10059c10
-bool PartInstance::askSetParent(const Instance* instance) const
+namespace RBX
 {
-	return dynamic_cast<const ModelInstance*>(instance) != NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x1009a8d0
-void PartInstance::onChildAdded(Instance* child)
-{
-	PVInstance::onChildAdded(child);
-}
-
-// FUNCTION: WEBSERVICE 0x1009a8e0 FOLDED
-Surfaces& PartInstance::getSurfaces()
-{
-	return surfaces;
-}
-
-// FUNCTION: WEBSERVICE 0x1009a8e0 FOLDED
-const Surfaces& PartInstance::getSurfaces() const
-{
-	return surfaces;
-}
-
-// FUNCTION: WEBSERVICE 0x1009ae00
-void PartInstance::setName(const std::string& value)
-{
-	Instance::setName(value);
-
-	if (value == "Torso") {
-		getPrimitive()->setSizeMultiplier(5);
-	}
-	else {
-		getPrimitive()->setSizeMultiplier(1);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009ae40
-bool PartInstance::nonNullInWorkspace(shared_ptr<PartInstance> part)
-{
-	return part.get() != NULL && part->myWorld != NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x1009ae90 FOLDED
-PartInstance* PartInstance::fromPrimitive(Primitive* primitive)
-{
-	if (primitive != NULL) {
-		IMoving* owner = primitive->getOwner();
-
-		if (owner != NULL) {
-			return static_cast<PartInstance*>(owner);
+	namespace Reflection
+	{
+		// TODO: check if type singletons are matching
+		template<>
+		const Type& Type::singleton<boost::shared_ptr<RBX::Reflection::DescribedBase>>()
+		{
+			static Type type("Object", typeid(boost::shared_ptr<RBX::Reflection::DescribedBase>));
+			return type;
 		}
-	}
 
-	return NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x1009ae90 FOLDED
-const PartInstance* PartInstance::fromPrimitiveConst(const Primitive* primitive)
-{
-	if (primitive != NULL) {
-		IMoving* owner = primitive->getOwner();
-
-		if (owner != NULL) {
-			return static_cast<const PartInstance*>(owner);
+		template<>
+		const Type& Type::singleton<boost::shared_ptr<Instance>>()
+		{
+			static Type type("Instance", typeid(boost::shared_ptr<Instance>));
+			return type;
 		}
-	}
 
-	return NULL;
-}
+		template<>
+		const Type& Type::singleton<boost::shared_ptr<Instances>>()
+		{
+			static Type type("Objects", typeid(boost::shared_ptr<Instances>));
+			return type;
+		}
 
-// FUNCTION: WEBSERVICE 0x1009aef0
-bool PartInstance::computeSurfacesNeedAdorn() const
-{
-	for (int i = 0; i < 6; i++) {
-		const Surface& surface = surfaces[(NormalId) i];
+		template<>
+		const Type& Type::singleton<int>()
+		{
+			static Type type("int", typeid(int));
+			return type;
+		}
 
-		if (surface.getSurfaceType() == ROTATE || surface.getSurfaceType() == ROTATE_P ||
-			surface.getSurfaceType() == ROTATE_V) {
+		template<>
+		const Type& Type::singleton<bool>()
+		{
+			static Type type("bool", typeid(bool));
+			return type;
+		}
+
+		template<>
+		const Type& Type::singleton<float>()
+		{
+			static Type type("float", typeid(float));
+			return type;
+		}
+
+		template<>
+		const Type& Type::singleton<double>()
+		{
+			static Type type("double", typeid(double));
+			return type;
+		}
+
+		template<>
+		const Type& Type::singleton<ContentId>()
+		{
+			static Type type("ContentId", typeid(ContentId));
+			return type;
+		}
+
+		template<>
+		const Type& Type::singleton<std::string>()
+		{
+			static Type type("string", typeid(std::string));
+			return type;
+		}
+
+		template<>
+		const Type& Type::singleton<G3D::Vector3>()
+		{
+			static Type type("Vector3", typeid(G3D::Vector3));
+			return type;
+		}
+
+		template<>
+		const Type& Type::singleton<G3D::Color3>()
+		{
+			static Type type("Color3", typeid(G3D::Color3));
+			return type;
+		}
+
+		template<>
+		const Type& Type::singleton<std::vector<Value>>()
+		{
+			static Type type("Table", typeid(std::vector<Value>));
+			return type;
+		}
+
+		template<>
+		const Type& Type::singleton<BrickColor>()
+		{
+			static Type type("BrickColor", typeid(BrickColor));
+			return type;
+		}
+
+		template<>
+		std::string TypedPropertyDescriptor<std::string>::getStringValue(const DescribedBase* instance) const
+		{
+			return getValue(instance);
+		}
+
+		template<>
+		std::string TypedPropertyDescriptor<bool>::getStringValue(const DescribedBase* instance) const
+		{
+			return StringConverter<bool>::convertToString(getValue(instance));
+		}
+
+		template<>
+		std::string TypedPropertyDescriptor<float>::getStringValue(const DescribedBase* instance) const
+		{
+			return StringConverter<float>::convertToString(getValue(instance));
+		}
+
+		template<>
+		std::string TypedPropertyDescriptor<int>::getStringValue(const DescribedBase* instance) const
+		{
+			return StringConverter<int>::convertToString(getValue(instance));
+		}
+
+		template<>
+		std::string TypedPropertyDescriptor<G3D::Vector3>::getStringValue(const DescribedBase* instance) const
+		{
+			return StringConverter<G3D::Vector3>::convertToString(getValue(instance));
+		}
+
+		template<>
+		std::string TypedPropertyDescriptor<G3D::Color3>::getStringValue(const DescribedBase* instance) const
+		{
+			return StringConverter<G3D::Color3>::convertToString(getValue(instance));
+		}
+
+		template<>
+		std::string TypedPropertyDescriptor<ContentId>::getStringValue(const DescribedBase* instance) const
+		{
+			return StringConverter<ContentId>::convertToString(getValue(instance));
+		}
+
+		template<>
+		bool TypedPropertyDescriptor<std::string>::setStringValue(DescribedBase* instance, const std::string& text) const
+		{
+			setValue(instance, text);
 			return true;
 		}
-	}
 
-	return false;
-}
+		template<>
+		bool TypedPropertyDescriptor<bool>::setStringValue(DescribedBase* instance, const std::string& text) const
+		{
+			bool value;
+			if (StringConverter<bool>::convertToValue(text, value))
+			{
+				setValue(instance, value);
+				return true;
+			}
 
-// FUNCTION: WEBSERVICE 0x1009af50
-void PartInstance::legacyTraverseState(const CoordinateFrame& parentState)
-{
-	CoordinateFrame gridCorner = parentState * *legacyOffset;
-
-	primitive->setGridCorner(gridCorner);
-}
-
-// FUNCTION: WEBSERVICE 0x1009af90
-bool PartInstance::isControllable() const
-{
-	for (int i = 0; i < 6; i++) {
-		const Surface& surface = surfaces[(NormalId) i];
-
-		if ((surface.getSurfaceType() == ROTATE_P || surface.getSurfaceType() == ROTATE_V) &&
-			surface.isControllable()) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
-// FUNCTION: WEBSERVICE 0x1009aff0
-void PartInstance::onSurfaceChanged(NormalId normalId)
-{
-	PersistentPart.setDirty();
-	IsControllable.setDirty();
-	SurfacesNeedAdorn.setDirty();
-	shouldRenderSetDirty();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b080
-const CoordinateFrame& PartInstance::getCoordinateFrame() const
-{
-	return primitive->getCoordinateFrame();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b0b0
-float PartInstance::getMass()
-{
-	return primitive->getBody()->getMass();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b100
-const Vector3& PartInstance::getPartSizeXml() const
-{
-	return primitive->getGeometry()->getGridSize();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b110
-Vector3 PartInstance::getPartSizeUi() const
-{
-	return primitive->getGeometry()->getGridSize();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b140
-bool PartInstance::getDragging() const
-{
-	return primitive->getDragging();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b150
-bool PartInstance::getCanCollide() const
-{
-	if (!primitive->getDragging() && primitive->getCanCollide()) {
-		return true;
-	}
-
-	return false;
-}
-
-// FUNCTION: WEBSERVICE 0x1009b170
-bool PartInstance::getAnchored() const
-{
-	return primitive->getAnchorObject() != NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x1009b190
-float PartInstance::getFriction() const
-{
-	return primitive->getFriction();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b1a0
-float PartInstance::getElasticity() const
-{
-	return primitive->getElasticity();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b1b0
-Extents PartInstance::getExtentsWorld() const
-{
-	return primitive->getExtentsWorld();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b1d0
-Extents PartInstance::getExtentsLocal() const
-{
-	const Vector3 corner = primitive->getGeometry()->getGridSize() * 0.5f;
-
-	return Extents(-corner, corner);
-}
-
-Vector3 PartInstance::xmlToUiSize(const Vector3& size) const
-{
-	Vector3 uiSize = size;
-
-	switch (formFactor) {
-	case BRICK:
-		uiSize.y = size.y / 1.2f;
-		break;
-	case PLATE:
-		uiSize.y = size.y / 0.4f;
-		break;
-	}
-
-	return uiSize;
-}
-
-// FUNCTION: WEBSERVICE 0x1009b610
-Vector3 PartInstance::uiToXmlSize(const Vector3& uiSize) const
-{
-	Vector3 gridUiSize = Math::iRoundVector3(uiSize.max(Vector3(1, 1, 1)));
-
-	Vector3 xmlSize = gridUiSize;
-
-	switch (formFactor) {
-	case BRICK:
-		xmlSize.y *= 1.2f;
-		break;
-	case PLATE:
-		xmlSize.y *= 0.4f;
-		break;
-	}
-
-	return xmlSize;
-}
-
-// STUB: WEBSERVICE 0x1009b6e0
-Part PartInstance::computePersistentPart() const
-{
-	return Part(
-		partType,
-		getPartSizeXml(),
-		G3D::Color4(getColor3(), 1.0f - (1.0f - (1.0f - transparency) * alphaModifier)),
-		surfaces.surf6(),
-		getCoordinateFrame()
-	);
-}
-
-// FUNCTION: WEBSERVICE 0x1009b780
-bool PartInstance::shouldRender3dAdorn() const
-{
-	return partType == Part::CYLINDER_PART || SurfacesNeedAdorn || highlightSleepParts || highlightAwakeParts ||
-		   showPartCoord || showAnchoredParts || showUnalignedParts || showSpanningTree;
-}
-
-// STUB: WEBSERVICE 0x1009bf50
-bool PartInstance::reportTouches() const
-{
-	STUB(0x1009bf50);
-	return false;
-}
-
-// FUNCTION: WEBSERVICE 0x1009bfa0
-const Part& PartInstance::getPart()
-{
-	Part& part = PersistentPart.getValueRef();
-
-	part.coordinateFrame = getPrimitive()->getCoordinateFrame();
-
-	return part;
-}
-
-// FUNCTION: WEBSERVICE 0x1009bff0
-void PartInstance::onAncestorChanged(const AncestorChanged& event)
-{
-	Instance::onAncestorChanged(event);
-
-	World* world = Workspace::getWorldIfInWorkspace(this);
-
-	if (world != myWorld) {
-		if (myWorld != NULL) {
-			setMovingManager(NULL);
-
-			myWorld->removePrimitive(getPrimitive());
+			return false;
 		}
 
-		myWorld = world;
+		template<>
+		bool TypedPropertyDescriptor<float>::setStringValue(DescribedBase* instance, const std::string& text) const
+		{
+			float value;
+			if (StringConverter<float>::convertToValue(text, value))
+			{
+				setValue(instance, value);
+				return true;
+			}
 
-		if (world != NULL) {
-			world->insertPrimitive(getPrimitive());
-
-			setMovingManager(Workspace::getMyWorkspaceFast(this));
-
-			getPrimitive()->setController(getTopPVController());
-		}
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009c090
-void PartInstance::onParentControllerChanged()
-{
-	PVInstance::onParentControllerChanged();
-
-	PersistentPart.setDirty();
-
-	primitive->setController(getTopPVController());
-}
-
-// STUB: WEBSERVICE 0x1009c0c0
-void PartInstance::render3dSelect(Adorn* adorn, SelectState selectState)
-{
-	STUB(0x1009c0c0);
-}
-
-// STUB: WEBSERVICE 0x1009c0f0
-bool PartInstance::hitTest(const G3D::Ray& worldRay, G3D::Vector3& worldHitPoint)
-{
-	STUB(0x1009c0f0);
-	return false;
-}
-
-// FUNCTION: WEBSERVICE 0x1009cc10
-void PartInstance::onCanAggregateChanged(bool canAggregate)
-{
-	Notifier<PartInstance, CanAggregateChanged>::raise(canAggregate);
-
-	shouldRenderSetDirty();
-}
-
-// FUNCTION: WEBSERVICE 0x1009cc30
-void PartInstance::safeMove()
-{
-	if (World* world = Workspace::getWorldIfInWorkspace(this)) {
-		G3D::Array<Primitive*> temp;
-
-		temp.append(primitive.get());
-
-		Dragger::safeMoveNoDrop(temp, Vector3::zero(), *world->getContactManager());
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009d150
-PartInstance::~PartInstance()
-{
-}
-
-// FUNCTION: WEBSERVICE 0x1009d2e0
-PartInstance* PartInstance::getPrimaryPart()
-{
-	return this;
-}
-
-const PartInstance* PartInstance::getPrimaryPartConst() const
-{
-	STUB(0x1009d2e1);
-	return NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x1009d3b0
-const Primitive* PartInstance::getBiggestPrimitive() const
-{
-	return primitive.get();
-}
-
-// FUNCTION: WEBSERVICE 0x1009d3c0
-const CoordinateFrame PartInstance::getLocation() const
-{
-	return primitive->getCoordinateFrame();
-}
-
-// FUNCTION: WEBSERVICE 0x1009d7d0
-void PartInstance::getCameraIgnorePrimitives(std::vector<const Primitive*>& primitives)
-{
-	primitives.push_back(getPrimitive());
-}
-
-namespace Reflection {
-
-// FUNCTION: WEBSERVICE 0x1009daf0
-template <>
-EnumDesc<PartInstance::FormFactor>::EnumDesc() : EnumDescriptor("FormFactor", typeid(PartInstance::FormFactor))
-{
-	addPair(PartInstance::SYMETRIC, "Symmetric");
-	addPair(PartInstance::BRICK, "Brick");
-	addPair(PartInstance::PLATE, "Plate");
-
-	addLegacyName("Block", PartInstance::BRICK);
-}
-
-} // namespace Reflection
-
-// STUB: WEBSERVICE 0x1009f220
-PartInstance::PartInstance()
-	: DescribedCreatable<PartInstance, PVInstance, sPart>("Part"), surfaces(this),
-	  PersistentPart(this, &PartInstance::computePersistentPart),
-	  SurfacesNeedAdorn(this, &PartInstance::computeSurfacesNeedAdorn)
-{
-	STUB(0x1009f220);
-}
-
-// FUNCTION: WEBSERVICE 0x1009f910
-void PartInstance::setPartSizeXml(const Vector3& rbxSize)
-{
-	if (rbxSize != getPartSizeXml()) {
-		Vector3 newRbxSize = partType == Part::BLOCK_PART ? rbxSize : rbxSize.xxx();
-
-		if (legacyOffset) {
-			CoordinateFrame oldCorner = primitive->getGridCorner();
-
-			primitive->setGridSize(newRbxSize);
-			primitive->setGridCorner(oldCorner);
-		}
-		else {
-			primitive->setGridSize(newRbxSize);
+			return false;
 		}
 
-		raisePropertyChanged(prop_Size);
-		raisePropertyChanged(prop_SizeUi);
+		template<>
+		bool TypedPropertyDescriptor<int>::setStringValue(DescribedBase* instance, const std::string& text) const
+		{
+			int value;
+			if (StringConverter<int>::convertToValue(text, value))
+			{
+				setValue(instance, value);
+				return true;
+			}
 
-		PersistentPart.setDirty();
-
-		onExtentsChanged();
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009f9f0
-void PartInstance::setPartSizeUi(const Vector3& uiSize)
-{
-	World* world = Workspace::getWorldIfInWorkspace(this);
-
-	if (world != NULL) {
-		world->destroyJoints(primitive.get());
-	}
-
-	setPartSizeXml(uiToXmlSize(xmlToUiSize(uiSize)));
-
-	safeMove();
-
-	world = Workspace::getWorldIfInWorkspace(this);
-
-	if (world != NULL) {
-		world->createJoints(primitive.get());
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009faa0
-void PartInstance::setDragging(bool value)
-{
-	if (value != primitive->getDragging()) {
-		primitive->setDragging(value);
-		raisePropertyChanged(prop_Dragging);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fad0
-void PartInstance::setRenderImportance(float value)
-{
-	if (value != renderImportance) {
-		renderImportance = value;
-		raisePropertyChanged(prop_RenderImportance);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fb00
-void PartInstance::setCanCollide(bool value)
-{
-	if (value != getCanCollide()) {
-		primitive->setCanCollide(value);
-		raisePropertyChanged(prop_CanCollide);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fb40
-void PartInstance::setAnchored(bool value)
-{
-	if (value != getAnchored()) {
-		primitive->setAnchor(value);
-		raisePropertyChanged(prop_Anchored);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fb80
-void PartInstance::setPartLocked(bool value)
-{
-	if (value != locked) {
-		locked = value;
-		raisePropertyChanged(prop_Locked);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fbb0
-void PartInstance::setTransparency(float value)
-{
-	if (value != transparency) {
-		transparency = value;
-		raisePropertyChanged(prop_Transparency);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fbe0
-void PartInstance::setAlphaModifier(float value)
-{
-	if (value != alphaModifier) {
-		alphaModifier = value;
-		raisePropertyChanged(prop_Transparency);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fc10
-void PartInstance::setReflectance(float value)
-{
-	if (value != reflectance) {
-		reflectance = value;
-		raisePropertyChanged(prop_Reflectance);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fc40
-void PartInstance::setColor(BrickColor value)
-{
-	if (value.number != color.number) {
-		color = value;
-		raisePropertyChanged(prop_BrickColor);
-		raisePropertyChanged(prop_Color);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fc70
-void PartInstance::setFormFactorXml(FormFactor value)
-{
-	if (value != formFactor) {
-		formFactor = value;
-		raisePropertyChanged(prop_formFactor);
-	}
-}
-// STUB: WEBSERVICE 0x1009fe60
-void PartInstance::setColor3(const G3D::Color3& value)
-{
-	BrickColor closest = BrickColor::closest(value);
-
-	if (closest != color) {
-		color = closest;
-
-		raisePropertyChanged(prop_Color);
-		raisePropertyChanged(prop_BrickColor);
-	}
-}
-
-// STUB: WEBSERVICE 0x1009fec0
-void PartInstance::onCameraNear(float distance)
-{
-	if (distance > 3.0f) {
-		if (distance > 6.0f) {
-			setAlphaModifier(1.0f);
+			return false;
 		}
-		else {
-			setAlphaModifier(0.5f);
+
+		template<>
+		bool TypedPropertyDescriptor<G3D::Vector3>::setStringValue(DescribedBase* instance, const std::string& text) const
+		{
+			G3D::Vector3 value;
+			if (StringConverter<G3D::Vector3>::convertToValue(text, value))
+			{
+				setValue(instance, value);
+				return true;
+			}
+
+			return false;
 		}
-	}
-	else {
-		setAlphaModifier(0.0f);
-	}
-}
 
-// STUB: WEBSERVICE 0x1009ff60
-void PartInstance::render3dAdorn(Adorn* adorn)
-{
-	STUB(0x1009ff60);
-}
+		template<>
+		bool TypedPropertyDescriptor<G3D::Color3>::setStringValue(DescribedBase* instance, const std::string& text) const
+		{
+			G3D::Color3 value;
+			if (StringConverter<G3D::Color3>::convertToValue(text, value))
+			{
+				setValue(instance, value);
+				return true;
+			}
 
-// FUNCTION: WEBSERVICE 0x100a0450
-void PartInstance::setPartTypeXml(Part::PartType _type)
-{
-	if (partType != _type) {
-		partType = _type;
-		primitive->setPrimitiveType(partType == Part::BLOCK_PART ? Geometry::GEOMETRY_BLOCK : Geometry::GEOMETRY_BALL);
+			return false;
+		}
 
-		if (partType != Part::BLOCK_PART) {
-			if (formFactor != SYMETRIC) {
-				formFactor = SYMETRIC;
+		template<>
+		bool TypedPropertyDescriptor<ContentId>::setStringValue(DescribedBase* instance, const std::string& text) const
+		{
+			ContentId value;
+			if (StringConverter<ContentId>::convertToValue(text, value))
+			{
+				setValue(instance, value);
+				return true;
+			}
 
-				raisePropertyChanged(prop_formFactor);
+			return false;
+		}
+
+		template<>
+		void TypedPropertyDescriptor<float>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		{
+			if (!element->isXsiNil())
+			{
+				float value;
+				if (element->getValue(value))
+				{
+					setValue(instance, value);
+				}
 			}
 		}
 
-		raisePropertyChanged(prop_shapeXml);
-		raisePropertyChanged(prop_shapeUi);
+		template<>
+		void TypedPropertyDescriptor<float>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		{
+			float value = getValue(instance);
+			element->setValue(value);
+		}
 
-		PersistentPart.setDirty();
-		shouldRenderSetDirty();
+		template<>
+		void TypedPropertyDescriptor<bool>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		{
+			if (!element->isXsiNil())
+			{
+				bool value;
+				if (element->getValue(value))
+				{
+					setValue(instance, value);
+				}
+			}
+		}
 
-		onExtentsChanged();
+		template<>
+		void TypedPropertyDescriptor<bool>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		{
+			bool value = getValue(instance);
+			element->setValue(value);
+		}
+
+		template<>
+		void TypedPropertyDescriptor<BrickColor>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		{
+			if (!element->isXsiNil())
+			{
+				int value;
+				if (element->getValue(value))
+				{
+					setValue(instance, BrickColor(value));
+				}
+			}
+		}
+
+		template<>
+		void TypedPropertyDescriptor<BrickColor>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		{
+			element->setValue(getValue(instance).asInt());
+		}
+
+		template<>
+		void TypedPropertyDescriptor<int>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		{
+			if (!element->isXsiNil())
+			{
+				int value;
+				if (element->getValue(value))
+				{
+					setValue(instance, value);
+				}
+			}
+		}
+		
+		template<>
+		void TypedPropertyDescriptor<int>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		{
+			int value = getValue(instance);
+			element->setValue(value);
+		}
+
+		template<>
+		void TypedPropertyDescriptor<ContentId>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		{
+			if (!element->isXsiNil())
+			{
+				ContentId value;
+				if (element->getValue(value))
+				{
+					setValue(instance, value);
+				}
+			}
+		}
+
+		template<>
+		void TypedPropertyDescriptor<ContentId>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		{
+			element->setValue(ContentId(getValue(instance)));
+		}
+
+		template<>
+		void TypedPropertyDescriptor<std::string>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		{
+			if (!element->isXsiNil())
+			{
+				std::string value;
+				if (element->getValue(value))
+				{
+					setValue(instance, value);
+				}
+			}
+		}
+
+		template<>
+		void TypedPropertyDescriptor<std::string>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		{
+			element->setValue(getValue(instance));
+		}
+
+		template<>
+		void TypedPropertyDescriptor<G3D::Vector3>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		{
+			if (!element->isXsiNil())
+			{
+				if (const XmlElement* X = element->findFirstChildByTag(tag_X))
+				{
+					const XmlElement* Y = element->findFirstChildByTag(tag_Y);
+					const XmlElement* Z = element->findFirstChildByTag(tag_Z);
+
+					G3D::Vector3 value;
+
+					X->getValue(value.x);
+					Y->getValue(value.y);
+					Z->getValue(value.z);
+
+					setValue(instance, value);
+				}
+			}
+		}
+
+		template<>
+		void TypedPropertyDescriptor<G3D::Vector3>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		{
+			const Name* xName = &tag_X;
+			XmlElement* xElement = new XmlElement(*xName);
+			element->pushBackChild(xElement);
+
+			const Name* yName = &tag_Y;
+			XmlElement* yElement = new XmlElement(*yName);
+			element->pushBackChild(yElement);
+
+			const Name* zName = &tag_Z;
+			XmlElement* zElement = new XmlElement(*zName);
+			element->pushBackChild(zElement);
+
+			G3D::Vector3 value = getValue(instance);
+
+			xElement->setValue(value.x);
+			yElement->setValue(value.y);
+			zElement->setValue(value.z);
+		}
+
+		template<>
+		void TypedPropertyDescriptor<G3D::Color3>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		{
+			if (!element->isXsiNil())
+			{
+				unsigned int colorValue;
+				if (element->getValue(colorValue))
+				{
+					G3D::Color3 color = G3D::Color3(G3D::Color3uint8::fromARGB(colorValue));
+					setValue(instance, color);	
+				}
+				else
+				{
+					const XmlElement* R = element->findFirstChildByTag(tag_R);
+					const XmlElement* G = element->findFirstChildByTag(tag_G);
+					const XmlElement* B = element->findFirstChildByTag(tag_B);
+
+					G3D::Color3 value;
+
+					R->getValue(value.r);
+					G->getValue(value.g);
+					B->getValue(value.b);
+
+					setValue(instance, value);
+				}
+			}
+		}
+
+		template<>
+		void TypedPropertyDescriptor<G3D::Color3>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		{
+			G3D::Color3uint8 value = G3D::Color3uint8(getValue(instance));
+			element->setValue(value.asUInt32());
+		}
 	}
 }
-
-// FUNCTION: WEBSERVICE 0x100a04e0
-void PartInstance::setPartTypeUi(Part::PartType _type)
-{
-	if (partType != _type) {
-		World* world = Workspace::getWorldIfInWorkspace(this);
-
-		if (world != NULL) {
-			world->destroyJoints(primitive.get());
-		}
-
-		setPartTypeXml(_type);
-
-		if (_type != Part::BLOCK_PART) {
-			Vector3 xmlSize = uiToXmlSize(getPartSizeUi());
-
-			setPartSizeXml(xmlSize);
-			safeMove();
-		}
-
-		safeMove();
-
-		world = Workspace::getWorldIfInWorkspace(this);
-
-		if (world != NULL) {
-			world->createJoints(primitive.get());
-		}
-	}
-}
-
-} // namespace RBX

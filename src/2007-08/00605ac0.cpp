@@ -1,25 +1,40 @@
-// from server: 51% by colin
-struct SleepStage {
-    void stepSleepStage(int);
-};
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-net-dll IdManager.cpp
 
-extern "C" void __stdcall _invalid_parameter_noinfo();
+// Candidate translation unit (score above; library headers required).
+#include "IdManager.h"
+#include <boost/signal.hpp>
+#include <boost/function.hpp>
+#include <boost/bind.hpp>
 
-extern "C" int __cdecl sub_604BE0(void*, int);
-extern "C" int __cdecl sub_604B80(void*, int);
-extern "C" void __cdecl sub_433230(int, int, int, int, int, int);
-extern "C" void __cdecl sub_5B7430(int, int, int, int, int, int);
-
-void SleepStage::stepSleepStage(int a)
+namespace RBX
 {
-    int b = sub_604BE0(this, a);
-    if (this == 0)
-        _invalid_parameter_noinfo();
-    int c = sub_604B80(this, a);
-    if (this == 0)
-        _invalid_parameter_noinfo();
 
-    int d = 0;
-    sub_433230(c, (int)this, b, (int)this, (int)&d, d);
-    sub_5B7430((int)this, (int)&d, c, (int)this, b, (int)this);
+	void IdManager::addInstance(Instance* instance)
+	{
+		Guid::Data extractedData;
+		instance->getGuid().extract(extractedData);
+
+		RBXASSERT(getInstance(extractedData) == NULL || getInstance(extractedData) == instance);
+
+		items[extractedData] = instance;
+	}
+
+	void IdManager::removeInstance(boost::shared_ptr<Instance> instance)
+	{
+		Guid::Data extractedData;
+		instance->getGuid().extract(extractedData);
+
+		items.erase(extractedData);
+	}
+
+	void IdManager::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
+		if (newProvider)
+		{
+			removeInstanceConnection = event_descendentRemoving.connect(getRootAncestor(), boost::bind(&IdManager::removeInstance, this, _1));
+		}
+	}
 }

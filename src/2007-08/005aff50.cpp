@@ -1,63 +1,8 @@
-// from server: 73% by colin
-struct GetSetImpl {
-    int* begin;
-    int* end;
-    void clear();
-};
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espeon_slotclear_1daf5782a29bf221.cpp
 
-extern "C" void __stdcall _invalid_parameter_noinfo();
-
-extern int dword_8C5DC0;
-extern int dword_8C5DC4;
-extern int dword_8C5DC8;
-
-void GetSetImpl::clear()
-{
-    int count;
-    if (begin == 0) {
-        count = 0;
-    } else {
-        count = (int)(((char*)end - (char*)begin) >> 2);
-    }
-
-    if ((dword_8C5DC8 & 1) == 0) {
-        int v = dword_8C5DC0;
-        dword_8C5DC8 |= 1;
-        dword_8C5DC4 = v;
-        dword_8C5DC0 = v + 1;
-    }
-
-    if ((unsigned)count > (unsigned)dword_8C5DC4) {
-        if ((dword_8C5DC8 & 1) == 0) {
-            int v = dword_8C5DC0;
-            dword_8C5DC8 |= 1;
-            dword_8C5DC4 = v;
-            dword_8C5DC0 = v + 1;
-        }
-
-        int idx = dword_8C5DC4;
-        if (begin == 0 || (unsigned)idx >= (unsigned)(((char*)end - (char*)begin) >> 2)) {
-            _invalid_parameter_noinfo();
-            idx = dword_8C5DC4;
-        }
-
-        int* p = begin + idx;
-        if (*p != 0) {
-            (*(void (__thiscall**)(int*, int))*(int*)*p)(p, 1);
-        }
-
-        if ((dword_8C5DC8 & 1) == 0) {
-            int v = dword_8C5DC0;
-            dword_8C5DC8 |= 1;
-            dword_8C5DC4 = v;
-            dword_8C5DC0 = v + 1;
-        }
-
-        int idx2 = dword_8C5DC4;
-        if (begin == 0 || (unsigned)idx2 >= (unsigned)(((char*)end - (char*)begin) >> 2)) {
-            _invalid_parameter_noinfo();
-        }
-
-        begin[idx2] = 0;
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#include <vector>
+extern unsigned int counter;struct Object{virtual ~Object();};inline unsigned int slot(){static unsigned int value=counter++;return value;}struct Context{std::vector<Object*> entries;void clear();};void Context::clear(){if(entries.size()>slot()){delete entries[slot()];entries[slot()]=0;}}

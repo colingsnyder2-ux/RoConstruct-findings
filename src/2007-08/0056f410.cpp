@@ -1,80 +1,38 @@
-// from server: 17% by colin
-struct PropertyDescriptor {
-    void* m_value;
-    void* m_getter;
-    void* m_setter;
-    unsigned m_attributes;
-    unsigned m_seenAttributes;
-};
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_value_string_const_boundary_81d88175af0c3fe9.cpp
 
-struct TypedPropertyDescriptor : PropertyDescriptor {
-    void* getset;
-    void checkFlags();
-    void construct();
-};
-
-extern "C" {
-    int __stdcall G1_func_0077e708(void*, void*);
-    void __stdcall G1_func_0077e698(void*, const char*);
-    void __stdcall G1_func_0077e6ac(void*);
+// Candidate translation unit (score above; library headers required).
+#include "reflection/type.h"
+#include "util/Utilities.h"
+#include <G3D/Vector3.h>
+#include <stdexcept>
+namespace boost { template<> G3D::Vector3 any_cast<G3D::Vector3>(const any&); }
+namespace RBX { namespace Reflection {
+template<> std::string& Value::convert<std::string>() {
+ if (isType<bool>()) {
+  value = StringConverter<bool>::convertToString(cast<bool>());
+  _type = &Type::singleton<bool>();
+ }
+ if (isType<int>()) {
+  value = StringConverter<int>::convertToString(cast<int>());
+  _type = &Type::singleton<int>();
+ }
+ if (isType<float>()) {
+  value = StringConverter<float>::convertToString(cast<float>());
+  _type = &Type::singleton<float>();
+ }
+ if (isType<double>()) {
+  value = StringConverter<double>::convertToString(cast<double>());
+  _type = &Type::singleton<double>();
+ }
+ if (isType<G3D::Vector3>()) {
+  value = StringConverter<G3D::Vector3>::convertToString(boost::any_cast<G3D::Vector3>(static_cast<const boost::any&>(value)));
+  _type = &Type::singleton<G3D::Vector3>();
+ }
+ std::string* result = boost::any_cast<std::string>(&value);
+ if (!result) throw std::runtime_error("Unable to cast value to std::string");
+ return *result;
 }
-
-extern void G1_func_0056de80();
-extern void G1_func_0056e030();
-extern void G1_func_0056ddf0();
-extern void G1_func_00537000();
-extern void G1_func_0056e690();
-extern void G1_func_005803f0();
-extern void G1_func_005804b0();
-extern void G1_func_00580600();
-extern void G1_func_00580530();
-extern void G1_func_0058cff0();
-extern void G1_func_004141a0();
-extern void G1_func_00412dc0();
-extern void G1_func_00630b9e();
-extern void G1_func_0056d840();
-extern void G1_func_0056d7d0();
-extern void G1_func_0056d8b0();
-extern void G1_func_0056d920();
-extern void G1_func_0056da70();
-
-void TypedPropertyDescriptor::construct()
-{
-    void** vtbl = *(void***)this;
-    void* type = vtbl[2];
-    if (G1_func_0077e708((void*)0x8827e0, type)) {
-        G1_func_0056de80();
-        G1_func_005803f0();
-        G1_func_004141a0();
-        G1_func_0056d840();
-    }
-    if (G1_func_0077e708((void*)0x8827d4, type)) {
-        G1_func_0056e030();
-        G1_func_005804b0();
-        G1_func_004141a0();
-        G1_func_0056d7d0();
-    }
-    if (G1_func_0077e708((void*)0x8827ec, type)) {
-        G1_func_0056ddf0();
-        G1_func_00580600();
-        G1_func_004141a0();
-        G1_func_0056d8b0();
-    }
-    if (G1_func_0077e708((void*)0x8999a8, type)) {
-        G1_func_00537000();
-        G1_func_00580530();
-        G1_func_004141a0();
-        G1_func_0056d920();
-    }
-    if (G1_func_0077e708((void*)0x8999b4, type)) {
-        G1_func_0056e690();
-        G1_func_0058cff0();
-        G1_func_004141a0();
-        G1_func_0056da70();
-    }
-    if (G1_func_0077e708((void*)0x8827f8, (void*)0x8827c8)) {
-        G1_func_0077e698((void*)0x7aa054, "Unable to cast value to std::string");
-        G1_func_00412dc0();
-        G1_func_00630b9e();
-    }
-}
+} }

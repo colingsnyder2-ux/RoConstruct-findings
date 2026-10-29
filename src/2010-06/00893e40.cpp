@@ -1,14 +1,13 @@
-// from server: 68% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Common/XTPRichRender.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\Common\XTPRichRender.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPRichRender.cpp: implementation of the CXTPRichRender class.
 //
 // This file is a part of the XTREME TOOLKIT PRO MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -57,7 +56,7 @@ CXTPRichRender::CXTPRichRender()
 	m_charformat.yHeight = -MulDiv(ncm.lfMessageFont.lfHeight, 1440, ::GetDeviceCaps(hDC, LOGPIXELSY));
 	m_charformat.crTextColor = ::GetSysColor(COLOR_BTNTEXT);
 	m_charformat.bPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
-	WCSNCPY_S(m_charformat.szFaceName, LF_FACESIZE, XTP_CT2CW(ncm.lfMessageFont.lfFaceName), LF_FACESIZE);
+	WCSNCPY_S(m_charformat.szFaceName, XTP_CT2CW(ncm.lfMessageFont.lfFaceName), LF_FACESIZE);
 
 	::ReleaseDC(NULL,hDC);
 
@@ -119,44 +118,36 @@ LRESULT CXTPRichRender::SetText(LPCTSTR lpszText)
 	if (!m_pTextService)
 		return 0;
 
-	if (lpszText == 0 || lpszText[0] == 0)
+	UINT nBufferSize = lpszText ? (UINT)_tcslen(lpszText) : 0;
+	if (nBufferSize == 0)
 	{
 		m_pTextService->TxSetText(L"");
 		return 0;
 	}
-
-	LRESULT nResult = 0;
+#ifdef _UNICODE
+	CXTPResourceManager::CXTPW2A _lpa(lpszText);
+	LPSTR lpBuffer = (LPSTR)(LPCSTR)_lpa;
+#else
+	LPSTR lpBuffer = (LPSTR)lpszText;
+#endif
+	CMemFile cFile((BYTE*)lpBuffer, nBufferSize);
 
 	EDITSTREAM es;
+	es.dwCookie = (DWORD_PTR)&cFile;
 	es.pfnCallback = &CXTPRichRender::RichTextCtrlCallbackIn;
 
-	if (lpszText[0] == _T('{'))
+	LRESULT nResult = 0;
+	m_pTextService->TxSendMessage(EM_STREAMIN, SF_RTF, (LPARAM)&es, &nResult);
+	if (nResult > 0)
 	{
-	#ifdef _UNICODE
-		CXTPResourceManager::CXTPW2A _lpa(lpszText);
-		LPSTR lpBuffer = (LPSTR)(LPCSTR)_lpa;
-	#else
-		LPSTR lpBuffer = (LPSTR)lpszText;
-	#endif
-
-		CMemFile cFile((BYTE*)lpBuffer, (UINT)strlen(lpBuffer));
-		es.dwCookie = (DWORD_PTR)&cFile;
-
-		m_pTextService->TxSendMessage(EM_STREAMIN, SF_RTF, (LPARAM)&es, &nResult);
-		if (nResult > 0)
-		{
-			return nResult;
-		}
+		return nResult;
 	}
 
-	CMemFile cFile((BYTE*)lpszText, (UINT)_tcslen(lpszText) * sizeof(TCHAR));
-	es.dwCookie = (DWORD_PTR)&cFile;
-
-	m_pTextService->TxSendMessage(EM_STREAMIN, SF_TEXT | (sizeof(TCHAR) > 1 ? SF_UNICODE : 0), (LPARAM)&es, &nResult);
+	cFile.SeekToBegin();
+	m_pTextService->TxSendMessage(EM_STREAMIN, SF_TEXT, (LPARAM)&es, &nResult);
 
 	return nResult;
 }
-
 
 CSize CXTPRichRender::GetTextExtent(CDC* pDC, int nMaxWidth)
 {

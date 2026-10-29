@@ -1,33 +1,28 @@
-// from server: 36% by atomic.potato
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espeon_scripterror_1ca97978f1e1d7fa.cpp
 
-extern "C" void* __cdecl sub_5E1CC0(void*);
-extern "C" void __cdecl sub_5E1A60(void*, int, void*, void*);
-extern "C" void* __cdecl sub_6B9180(void*, int, int);
+// Candidate translation unit (score above; library headers required).
 
-struct T4_00635740 {
-    void f_00635740();
+#include <boost/shared_ptr.hpp>
+
+struct Logger {
+    void __cdecl reportError(int, const char*, const char*);
 };
 
-void T4_00635740::f_00635740()
+typedef boost::shared_ptr<Logger> Handle;
+
+extern Handle __cdecl getHandle();
+extern const char* __cdecl getText(void*, int, unsigned int*);
+extern const char errorFormat[];
+
+int __cdecl callback(void* state)
 {
-    void* p;
-    void* q;
-    sub_5E1CC0(&p);
-    void* esi = *(void**)&p;
-    void* r = sub_6B9180(*(void**)((char*)&p + 0x20), -1, 0);
-    sub_5E1A60(esi, 3, (void*)0x8DB480, r);
-    void* s = *(void**)((char*)&p + 0x28);
-    if (s != 0) {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)s + 4), -1) == 1) {
-            void** vt = *(void***)s;
-            ((void (__thiscall*)(void*))vt[1])(s);
-            if (_InterlockedExchangeAdd((volatile long*)((char*)s + 8), -1) == 1) {
-                void** vt2 = *(void***)s;
-                ((void (__thiscall*)(void*))vt2[2])(s);
-            }
-        }
+    {
+        getHandle()->reportError(3, errorFormat, getText(state, -1, 0));
     }
-    *(int*)0 = *(int*)4;
+    int* p = 0;
+    p[0] = p[1];
+    return 0;
 }

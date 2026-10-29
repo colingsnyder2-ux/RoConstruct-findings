@@ -1,113 +1,16 @@
-// from server: 30% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs tool/GroupDragTool.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_boxselect2008layout1dfd3854114f125f.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "tool/GroupDragTool.h"
-#include "tool/Dragger.h"
-#include "util/Math.h"
+#include <set>
+#include "v8datamodel/Selection.h"
+#include <algorithm>
+namespace RBX {
+class BoxSelectCommand {char prefix[28];ServiceClient<Selection> selection;char gap[12];std::set<Instance*> previousItemsInBox;public:void selectAnd(const std::set<Instance*>&);void selectReverse(const std::set<Instance*>&);};
+template<int Action> class SelectionOutput:public std::_Outit {Selection* selection;public:SelectionOutput(Selection* s):selection(s){}SelectionOutput& operator*(){return *this;}SelectionOutput operator++(int){return *this;}SelectionOutput& operator++(){return *this;}SelectionOutput& operator=(Instance* i){if(Action==0)selection->addToSelection(i);else if(Action==1)selection->removeFromSelection(i);else selection->toggleSelection(i);return *this;}};
 
-namespace RBX
-{
-	GroupDragTool::GroupDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, const std::vector<boost::weak_ptr<PartInstance>>& partArray, Workspace* workspace)
-		: Base(workspace),
-		  dragging(false)
-	{
-		RBXASSERT(mousePart);
-		megaDragger.reset(new MegaDragger(mousePart, partArray, (RootInstance*)workspace));
-	}
-
-	GroupDragTool::~GroupDragTool()
-	{
-		if (dragging)
-			RBXASSERT(0);
-	}
-
-	const std::string GroupDragTool::getCursorName() const
-	{
-		return dragging ? "GrabRotateCursor" : "DragCursor";
-	}
-
-	MouseCommand* GroupDragTool::onKeyDown(const UIEvent& uiEvent)
-	{
-		if (dragging)
-		{
-			switch (uiEvent.key)
-			{
-			case SDLK_r:
-				megaDragger->safeRotate(Math::matrixRotateY());
-				break;
-			case SDLK_t:
-				megaDragger->safeRotate(Math::matrixTiltZ());
-				break;
-			}
-
-			return this;
-		}
-		else
-		{
-			RBXASSERT(0);
-			return NULL;
-		}
-	}
-
-	MouseCommand* GroupDragTool::onMouseDown(const UIEvent& uiEvent)
-	{
-		downPoint = uiEvent.mousePosition;
-		capture();
-
-		return this;
-	}
-
-	void GroupDragTool::onMouseIdle(const UIEvent& uiEvent)
-	{
-		RBXASSERT(captured());
-
-		G3D::Vector3 hit;
-
-		if (captured() && dragging && megaDragger->mousePartAlive() &&
-			Math::intersectRayPlane(getSearchRay(uiEvent), G3D::Plane(G3D::Vector3::unitY(), G3D::Vector3::zero()), hit))
-		{
-			hit = megaDragger->hitObjectOrPlane(uiEvent);
-			megaDragger->continueDragging();
-
-			G3D::Vector3 hitSnapped = Dragger::toGrid(hit);
-			G3D::Vector3 delta = Dragger::toGrid(hitSnapped - lastHit);
-			lastHit = hitSnapped;
-
-			megaDragger->safeMoveYDrop(delta);
-		}
-	}
-
-	void GroupDragTool::onMouseMove(const UIEvent& uiEvent)
-	{
-		RBXASSERT(captured());
-
-		if (!dragging && (G3D::Vector2(uiEvent.mousePosition) - downPoint).length() > 4.0f)
-		{
-			dragging = true;
-
-			megaDragger->startDragging();
-			megaDragger->alignAndCleanParts();
-			lastHit = megaDragger->hitObjectOrPlane(uiEvent);
-		}
-
-		onMouseIdle(uiEvent);
-	}
-
-	MouseCommand* GroupDragTool::onMouseUp(const UIEvent& uiEvent)
-	{
-		RBXASSERT(captured());
-
-		if (dragging)
-		{
-			megaDragger->finishDragging();
-			dragging = false;
-		}
-
-		releaseCapture();
-		return NULL;
-	}
+void BoxSelectCommand::selectAnd(const std::set<Instance*>& n){std::set_difference(n.begin(),n.end(),previousItemsInBox.begin(),previousItemsInBox.end(),SelectionOutput<0>(selection));std::set_difference(previousItemsInBox.begin(),previousItemsInBox.end(),n.begin(),n.end(),SelectionOutput<1>(selection));previousItemsInBox=n;}
+void BoxSelectCommand::selectReverse(const std::set<Instance*>& n){std::set_difference(n.begin(),n.end(),previousItemsInBox.begin(),previousItemsInBox.end(),SelectionOutput<2>(selection));std::set_difference(previousItemsInBox.begin(),previousItemsInBox.end(),n.begin(),n.end(),SelectionOutput<2>(selection));previousItemsInBox=n;}
 }

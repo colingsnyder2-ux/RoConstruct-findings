@@ -1,68 +1,43 @@
-// from server: 48% by colin
-extern "C" void __stdcall _invalid_parameter_noinfo();
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_serializer_loadinstances_native_890d0f4bc41911b9.cpp
 
-struct IDREFItem {
-    const void* idref;
-    void* propertyOwner;
-    int value;
-};
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8xml/XmlElement.h", "../roc_serializer_xmlelement_double_header_e504401e7c2c46c3.cpp")
+#include "v8xml/SerializerV2.h"
+#include "util/standardout.h"
+#include <G3D/Log.h>
 
-struct MergeBinder {
-    char pad[4];
-    IDREFItem* begin;
-    IDREFItem* end;
-    IDREFItem* capacity;
-
-    bool processIDREFs();
-};
-
-extern "C" void __stdcall sub_442EE0(IDREFItem* first, IDREFItem* last, IDREFItem* dest, int a, int b, int c);
-extern "C" void __stdcall sub_443450(IDREFItem* first, IDREFItem* last, IDREFItem* dest, int a);
-
-bool MergeBinder::processIDREFs()
+void SerializerV2::loadInstances(XmlElement* root, std::vector<boost::shared_ptr<RBX::Instance> >& result)
 {
-    IDREFItem* first = begin;
-    IDREFItem* last = end;
+	if (root->getTag() == tag_roblox)
+	{
+		XmlAttribute* versionAttribute = root->findAttribute(tag_version);
+		if (versionAttribute && versionAttribute->getValue(schemaVersionLoading) && schemaVersionLoading >= 4)
+		{
+			ArchiveBinder binder;
+			const XmlElement* item = root->findFirstChildByTag(tag_Item);
+			while (item != NULL)
+			{
+				const RBX::Name* className = NULL;
+				if (item->findAttributeValue(tag_class, className))
+				{
+					boost::shared_ptr<RBX::Instance> instance = RBX::AbstractFactoryProduct<RBX::Instance>::create(*className);
+					if (instance != NULL)
+					{
+						instance->read(item, binder);
+						result.push_back(instance);
+					}
+					else
+						RBX::StandardOut::singleton()->print(RBX::MESSAGE_WARNING, "Unknown object class \"%s\" while reading XML", className ? className->c_str() : "");
+				}
+				item = root->findNextChildWithSameTag(item);
+			}
+			binder.resolveRefs();
+			return;
+		}
+	}
 
-    if (first > last)
-        _invalid_parameter_noinfo();
-    if (begin > end)
-        _invalid_parameter_noinfo();
-    if (this != this)
-        _invalid_parameter_noinfo();
-
-    while (first != last) {
-        if (first >= end)
-            _invalid_parameter_noinfo();
-        if (first >= end)
-            _invalid_parameter_noinfo();
-        if (first >= end)
-            _invalid_parameter_noinfo();
-
-        const void* p = first->idref;
-        void (__stdcall *fn)(void*, void*) = *(void (__stdcall **)(void*, void*))p;
-        fn(first + 1, first->propertyOwner);
-        if (first >= end)
-            _invalid_parameter_noinfo();
-        first++;
-    }
-
-    IDREFItem* e = end;
-    if (begin > e)
-        _invalid_parameter_noinfo();
-    IDREFItem* b = begin;
-    if (b > end)
-        _invalid_parameter_noinfo();
-
-    if (b != e) {
-        IDREFItem* d = end;
-        char zero = 0;
-        sub_442EE0(b, e, d, zero, zero, zero);
-        IDREFItem* newEnd = end;
-        int count = (int)((d - e) >> 4);
-        sub_443450(b, b + (count << 4), newEnd, 0);
-        end = b + (count << 4);
-    }
-
-    return true;
+	G3D::Log::common()->println("Version 1.0 - 3.0 model files not supported - all future version will be supported");
 }

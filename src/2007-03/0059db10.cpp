@@ -1,89 +1,250 @@
-// from server: 77% by colin
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.6.4 OgreAlignedAllocator.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll v8datamodel/Hopper.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-    (Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org/
+#include "v8datamodel/Hopper.h"
+#include "v8datamodel/Backpack.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/Mouse.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/ScriptMouseCommand.h"
 
-Copyright (c) 2000-2006 Torus Knot Software Ltd
-Also see acknowledgements in Readme.html
+namespace RBX
+{
+	static Reflection::PropDescriptor<BackpackItem, TextureId> desc_TextureId("TextureId", "Data", &BackpackItem::getTextureId, &BackpackItem::setTextureId, Reflection::PropertyDescriptor::STANDARD);
 
-This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the Free Software
-Foundation; either version 2 of the License, or (at your option) any later
-version.
+	static Reflection::PropDescriptor<HopperBin, std::string> desc_legacyCommand("Command", "Data", NULL, &HopperBin::setLegacyCommand, Reflection::PropertyDescriptor::LEGACY);
+	static Reflection::PropDescriptor<HopperBin, std::string> desc_legacyTextureName("TextureName", "Data", NULL, &HopperBin::setLegacyTextureName, Reflection::PropertyDescriptor::LEGACY);
+	static Reflection::EnumPropDescriptor<HopperBin, HopperBin::BinType> desc_BinType("BinType", "Data", &HopperBin::getBinType, &HopperBin::setBinType, Reflection::PropertyDescriptor::STANDARD);
 
-This program is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+	static Reflection::SignalDesc<HopperBin, void(void)> desc_Deselected("Deselected");
+	static Reflection::SignalDesc<HopperBin, void(boost::shared_ptr<Instance>)> desc_Selected("Selected", "mouse");
 
-You should have received a copy of the GNU Lesser General Public License along with
-this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-http://www.gnu.org/copyleft/lesser.txt.
+	Hopper::Hopper()
+	{
+		yLocation = Rect::BOTTOM;
+	}
 
-You may alternatively use this source under the terms of a specific version of
-the OGRE Unrestricted License provided you have obtained such a license from
-Torus Knot Software Ltd.
------------------------------------------------------------------------------
-*/
-#include "OgreStableHeaders.h"
+	bool Hopper::askAddChild(const Instance* instance) const
+	{
+		return dynamic_cast<const BackpackItem*>(instance) != NULL;
+	}
 
-#include "OgrePrerequisites.h"
-#include "OgreAlignedAllocator.h"
+	bool Hopper::askSetParent(const Instance* instance) const
+	{
+		return true;
+	}
 
-#include "OgrePlatformInformation.h"
-#include "OgreBitwise.h"
+	bool BackpackItem::askSetParent(const Instance* instance) const
+	{
+		return true;
+	}
 
-/**
-*
-* |___2___|3|_________5__________|__6__|
-* ^         ^
-* 1         4
-*
-* 1 -> Pointer to start of the block allocated by new.
-* 2 -> Gap used to get 4 aligned on given alignment
-* 3 -> Byte offset between 1 and 4
-* 4 -> Pointer to the start of data block.
-* 5 -> Data block.
-* 6 -> Wasted memory at rear of data block.
-*/
+	bool BackpackItem::askAddChild(const Instance* instance) const
+	{
+		return true;
+	}
 
-namespace Ogre {
+	const TextureId BackpackItem::getTextureId() const
+	{
+		return textureId;
+	}
 
-    //---------------------------------------------------------------------
-    void* AlignedMemory::allocate(size_t size, size_t alignment)
-    {
-        assert(0 < alignment && alignment <= 128 && Bitwise::isPO2(alignment));
+	bool BackpackItem::isEnabled()
+	{
+		return getParent() && dynamic_cast<Backpack*>(getParent()) != NULL;
+	}
 
-        unsigned char* p = new unsigned char[size + alignment];
-        size_t offset = alignment - (size_t(p) & (alignment-1));
+	void BackpackItem::setTextureId(const TextureId& value)
+	{
+		if (value != textureId)
+		{
+			textureId = value;
 
-        unsigned char* result = p + offset;
-        result[-1] = (unsigned char)offset;
+			std::string filename;
+			ContentProvider::singleton().requestContentFile(value, filename);
 
-        return result;
-    }
-    //---------------------------------------------------------------------
-    void* AlignedMemory::allocate(size_t size)
-    {
-        return allocate(size, OGRE_SIMD_ALIGNMENT);
-    }
-    //---------------------------------------------------------------------
-    void AlignedMemory::deallocate(void* p)
-    {
-        if (p)
-        {
-            unsigned char* mem = (unsigned char*)p;
-            mem = mem - mem[-1];
-            delete [] mem;
-        }
-    }
+			Workspace* workspace = ServiceProvider::find<Workspace>(this);
+			if (workspace)
+				workspace->raiseDrawChanged();
 
+			raisePropertyChanged(desc_TextureId);
+		}
+	}
+
+	G3D::Vector2 BackpackItem::getSize() const
+	{
+		float width = GuiRoot::toPixelSize(G3D::Vector2(10.0f, 10.0f)).x;
+		return G3D::Vector2(width, width);
+	}
+
+	HopperBin::HopperBin()
+		: binType(SCRIPT_BIN),
+		  active(false)
+	{
+		setName("HopperBin");
+	}
+
+	void HopperBin::setBinType(const HopperBin::BinType value)
+	{
+		if (value != binType)
+		{
+			binType = value;
+			raisePropertyChanged(desc_BinType);
+
+			if (binType != SCRIPT_BIN)
+			{
+				std::string textureName = Reflection::EnumDesc<BinType>::singleton().convertToString(binType);
+				setLegacyTextureName(textureName);
+			}
+		}
+	}
+
+	void HopperBin::setLegacyTextureName(const std::string& value)
+	{
+		TextureId textureId = ContentId::fromAssets("Textures\\" + value + ".png");
+		setTextureId(textureId);
+	}
+
+	void HopperBin::setLegacyCommand(const std::string& text)
+	{
+		BinType newBinType;
+		
+		if (!Reflection::EnumDesc<BinType>::singleton().convertToValue(text, newBinType))
+		{
+			newBinType = SCRIPT_BIN;
+		}
+		
+		setBinType(newBinType);
+	}
+
+	void HopperBin::onLocalClicked()
+	{
+		RBXASSERT(isEnabled());
+
+		if (!active)
+		{
+			active = true;
+
+			if (binType == SCRIPT_BIN)
+			{
+				onSelectScript();
+			}
+			else
+			{
+				onSelectCommand();
+			}
+		}
+		else
+		{
+			onLocalOtherClicked();
+		}
+	}
+
+	void HopperBin::onLocalOtherClicked()
+	{
+		if (active)
+		{
+			if (binType == SCRIPT_BIN)
+				desc_Deselected.fire(this);
+
+			active = false;
+
+			Workspace* workspace = ServiceProvider::find<Workspace>(this);
+			if (workspace)
+				workspace->setDefaultMouseCommand();
+		}
+	}
+
+	void HopperBin::onSelectScript()
+	{
+		Workspace* workspace = ServiceProvider::find<Workspace>(this);
+		if (workspace)
+		{
+			ScriptMouseCommand* command = new ScriptMouseCommand(workspace);
+			workspace->setMouseCommand(command);
+			desc_Selected.fire(this, command->getMouse());
+		}
+	}
+
+	void HopperBin::onSelectCommand()
+	{
+		RBXASSERT(binType != SCRIPT_BIN);
+
+		DataModel* root = rbx_static_cast<DataModel*>(getRootAncestor());
+
+		std::string command = Reflection::EnumDesc<BinType>::singleton().convertToString(binType) + "Tool";
+
+		Verb* verb = root->getVerb(command);
+		RBXASSERT(verb);
+
+		if (verb->isEnabled())
+		{
+			Workspace* workspace = ServiceProvider::find<Workspace>(this);
+			if (workspace)
+				verb->doIt(&workspace->getDataState());
+			else
+				RBXASSERT(0);
+		}
+	}
+
+	StarterPackService::StarterPackService()
+	{
+		setName("StarterPack");
+	}
+
+	//97.87% match
+	//le EPIC TROLL
+	void StarterPackService::render2d(Adorn* adorn)
+	{
+		TopMenuBar::render2d(adorn);
+
+		if (findFirstChildOfType<BackpackItem>())
+		{
+			G3D::Rect2D viewPort = adorn->getViewport();
+			int fontSize = GuiRoot::normalizedFontSize(12);
+			G3D::Vector2 pos2d = viewPort.x0y1() + G3D::Vector2(4.0f, -4.0f);
+
+			adorn->drawFont2D(
+				"StarterPack - these items will be given to each new player", 
+				pos2d, 
+				fontSize, 
+				G3D::Color3::white(), 
+				G3D::Color4::clear(), 
+				Adorn::XALIGN_LEFT, 
+				Adorn::YALIGN_BOTTOM,
+				Adorn::PROPORTIONAL_SPACING
+			);
+		}
+	}
+
+	LegacyHopperService::LegacyHopperService()
+	{
+		setName("Hopper");
+	}
+
+	LegacyHopperService::~LegacyHopperService()
+	{
+		RBXASSERT(numChildren() == 0);
+	}
+
+	void LegacyHopperService::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
+		Instance::onServiceProvider(oldProvider, newProvider);
+
+		if (newProvider)
+		{
+			StarterPackService* starterPack = newProvider->find<StarterPackService>();
+			RBXASSERT(starterPack);
+
+			while (numChildren() > 0)
+			{
+				getChild(0)->setParent(starterPack);
+			}
+
+			setParent(NULL);
+		}
+	}
 }

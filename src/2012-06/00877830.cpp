@@ -1,11 +1,10 @@
-// from server: 98% by sophus
+// from server: 100% by tajop
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 #define _SECURE_SCL 0
-#include <map>
+#include <set>
 
-// value_type is 0xe bytes: node color at +0x877848, isnil at +0x877863, max_size 0x877877.
-struct Value16 { int words[4]; };
-template class std::_Tree<std::_Tmap_traits<int, Value16, std::less<int>,
-    std::allocator<std::pair<const int, Value16> >, false> >;
+// isnil at +0xe (target cmp byte ptr [esi+0xe]): 1-byte value_type.
+template class std::_Tree<std::_Tset_traits<char, std::less<char>,
+    std::allocator<char>, false> >;

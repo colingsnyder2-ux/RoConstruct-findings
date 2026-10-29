@@ -1,15 +1,11 @@
-// from server: 71% by TrollStein
-struct RBX_VMotorFeature_FactoryProduct {
-};
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /MD
+// roc-lib: rbxgs-render roc_g3d_array_debug_89494c2c4f78369c.cpp
 
-extern "C" void __stdcall sub_005DE510(int* begin, int index, int count, int* value);
-
-void __cdecl construct(int* begin, int* end)
-{
-    int count = (int)(end - begin);
-    int half = count / 2;
-    while (half > 0) {
-        half = half - 1;
-        sub_005DE510(begin, half, count, begin + half);
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#include <GLG3D/Texture.h>
+#include <G3D/ReferenceCount.h>
+#include <G3D/Array.h>
+template class G3D::Array<G3D::Texture*>;
+void use_array(G3D::Array<G3D::ReferenceCountedPointer<G3D::Texture> >& a,const G3D::ReferenceCountedPointer<G3D::Texture>& v,int size) { a.append(v); a.resize(size); a.clear(); }

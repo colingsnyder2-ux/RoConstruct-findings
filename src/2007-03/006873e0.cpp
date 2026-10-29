@@ -1,1126 +1,1426 @@
-// from server: 32% by colin
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.6.4 OgreAutoParamDataSource.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\PropertyGrid\XTPPropertyGridView.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-    (Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org
+// XTPPropertyGridView.cpp : implementation of the CXTPPropertyGridView class.
+//
+// This file is a part of the XTREME PROPERTYGRID MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
 
-Copyright (c) 2000-2006 Torus Knot Software Ltd
-Also see acknowledgements in Readme.html
+#include "stdafx.h"
+#include "Common/Resource.h"
 
-This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the Free Software
-Foundation; either version 2 of the License, or (at your option) any later
-version.
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPResourceManager.h"
+#include "Common/XTPToolTipContext.h"
 
-This program is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+#include "XTPPropertyGridInplaceEdit.h"
+#include "XTPPropertyGridInplaceButton.h"
+#include "XTPPropertyGridInplaceList.h"
+#include "XTPPropertyGridItem.h"
+#include "XTPPropertyGrid.h"
+#include "XTPPropertyGridDefines.h"
+#include "XTPPropertyGridPaintManager.h"
 
-You should have received a copy of the GNU Lesser General Public License along with
-this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-http://www.gnu.org/copyleft/lesser.txt.
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
 
-You may alternatively use this source under the terms of a specific version of
-the OGRE Unrestricted License provided you have obtained such a license from
-Torus Knot Software Ltd.
------------------------------------------------------------------------------
-*/
-#include "OgreStableHeaders.h"
 
-#include "OgreAutoParamDataSource.h"
-#include "OgreRenderable.h"
-#include "OgreCamera.h"
-#include "OgreRenderTarget.h"
-#include "OgreControllerManager.h"
-#include "OgreMath.h"
-#include "OgreRoot.h"
-#include "OgreRenderSystem.h"
+const UINT PGV_HIT_SPLITTER = 0x100;
 
-namespace Ogre {
-    const Matrix4 PROJECTIONCLIPSPACE2DTOIMAGESPACE_PERSPECTIVE(
-        0.5,    0,    0,  0.5, 
-        0,   -0.5,    0,  0.5, 
-        0,      0,    1,    0,
-        0,      0,    0,    1);
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridToolTip
 
-    //-----------------------------------------------------------------------------
-    AutoParamDataSource::AutoParamDataSource()
-        : mWorldMatrixDirty(true),
-         mViewMatrixDirty(true),
-         mProjMatrixDirty(true),
-         mWorldViewMatrixDirty(true),
-         mViewProjMatrixDirty(true),
-         mWorldViewProjMatrixDirty(true),
-         mInverseWorldMatrixDirty(true),
-         mInverseWorldViewMatrixDirty(true),
-         mInverseViewMatrixDirty(true),
-         mInverseTransposeWorldMatrixDirty(true),
-         mInverseTransposeWorldViewMatrixDirty(true),
-		 mCameraPositionDirty(true),
-         mCameraPositionObjectSpaceDirty(true),
-		 mSceneDepthRangeDirty(true),
-		 mLodCameraPositionDirty(true),
-		 mLodCameraPositionObjectSpaceDirty(true),
-         mCurrentRenderable(0),
-         mCurrentCamera(0), 
-		 mCameraRelativeRendering(false),
-         mCurrentRenderTarget(0),
-         mCurrentViewport(0), 
-		 mCurrentSceneManager(0),
-		 mMainCamBoundsInfo(0),
-         mCurrentPass(0)
-    {
-        mBlankLight.setDiffuseColour(ColourValue::Black);
-        mBlankLight.setSpecularColour(ColourValue::Black);
-        mBlankLight.setAttenuation(0,1,0,0);
-		for(size_t i = 0; i < OGRE_MAX_SIMULTANEOUS_LIGHTS; ++i)
+CXTPPropertyGridToolTip::CXTPPropertyGridToolTip()
+{
+	m_pGrid = NULL;
+}
+
+BEGIN_MESSAGE_MAP(CXTPPropertyGridToolTip, CWnd)
+	//{{AFX_MSG_MAP(CXTPPropertyGridView)
+	ON_WM_ERASEBKGND()
+	ON_WM_PAINT()
+	ON_WM_NCHITTEST_EX()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+LRESULT CXTPPropertyGridToolTip::OnNcHitTest(CPoint /*point*/)
+{
+	return (LRESULT)HTTRANSPARENT;
+}
+void CXTPPropertyGridToolTip::Create(CXTPPropertyGridView* pParentWnd)
+{
+	CWnd::CreateEx(0, AfxRegisterWndClass(0, AfxGetApp()->LoadStandardCursor(IDC_ARROW)), _T(""), WS_POPUP, CXTPEmptyRect(), pParentWnd, 0);
+	m_pGrid = pParentWnd;
+
+}
+
+void CXTPPropertyGridToolTip::Activate(BOOL bActive, CXTPPropertyGridItem* pItem, BOOL bValuePart)
+{
+	if (bActive)
+	{
+		ASSERT(pItem);
+		m_fnt.DeleteObject();
+		LOGFONT lf;
+		m_pGrid->GetPaintManager()->GetItemFont(pItem, bValuePart)->GetLogFont(&lf);
+
+		m_fnt.CreateFontIndirect(&lf);
+
+		CString strText;
+		GetWindowText(strText);
+		CWindowDC dc(this);
+		CXTPFontDC font(&dc, &m_fnt);
+		CXTPWindowRect rc (this);
+		rc.right = rc.left + dc.GetTextExtent(strText).cx + 8;
+
+		CRect rcWork = XTPMultiMonitor()->GetWorkArea();
+
+		if (rc.right > rcWork.right)
+			rc.OffsetRect(rcWork.right - rc.right, 0);
+
+		if (rc.left < rcWork.left)
+			rc.OffsetRect(rcWork.left - rc.left, 0);
+
+		MoveWindow(rc);
+		ShowWindow(SW_SHOWNOACTIVATE);
+	}
+	else
+	{
+		DestroyWindow();
+	}
+}
+
+BOOL CXTPPropertyGridToolTip::OnEraseBkgnd(CDC*)
+{
+	return TRUE;
+}
+
+void CXTPPropertyGridToolTip::OnPaint()
+{
+	CPaintDC dc(this);
+	CXTPClientRect rc(this);
+
+	COLORREF clrText = GetXtremeColor(COLOR_INFOTEXT);
+	dc.FillSolidRect(rc, GetXtremeColor(COLOR_INFOBK));
+	dc.Draw3dRect(rc, clrText, clrText);
+
+	CString strText;
+	GetWindowText(strText);
+	dc.SetTextColor(clrText);
+	dc.SetBkMode(TRANSPARENT);
+
+	CXTPFontDC font(&dc, &m_fnt);
+	CRect rcText(rc);
+	rcText.left += 4;
+
+	dc.DrawText(strText, rcText, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
+
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridView
+
+CXTPPropertyGridView::CXTPPropertyGridView()
+{
+	m_properetySort = xtpGridSortCategorized;
+
+	m_dDivider = .5;
+	m_bAutoDivider = TRUE;
+
+	m_bTracking = FALSE;
+
+	m_bVariableSplitterPos = TRUE;
+
+	m_pSelected = NULL;
+	m_pCategories = new CXTPPropertyGridItems();
+
+	m_hCursor = XTPResourceManager()->LoadCursor(XTP_IDC_HSPLITBAR);
+	m_nLockUpdate = 0;
+	m_pGrid = NULL;
+	m_nItemHeight = 0;
+
+	m_pFocusedButton = NULL;
+	m_pHotButton = NULL;
+
+	EnableAutomation();
+}
+
+CXTPPropertyGridView::~CXTPPropertyGridView()
+{
+	m_wndTip.DestroyWindow();
+	DestroyWindow();
+
+	m_pCategories->Clear();
+	m_pCategories->InternalRelease();
+
+}
+
+IMPLEMENT_DYNAMIC(CXTPPropertyGridView, CListBox)
+
+BEGIN_MESSAGE_MAP(CXTPPropertyGridView, CListBox)
+	//{{AFX_MSG_MAP(CXTPPropertyGridView)
+	ON_WM_ERASEBKGND()
+	ON_WM_PAINT()
+	ON_WM_NCPAINT()
+	ON_WM_NCCALCSIZE()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_RBUTTONDOWN()
+	ON_WM_LBUTTONDBLCLK()
+	ON_CONTROL_REFLECT(LBN_SELCHANGE, OnSelectionChanged)
+	ON_WM_SETCURSOR()
+	ON_WM_LBUTTONUP()
+	ON_WM_CAPTURECHANGED()
+	ON_WM_MOUSEMOVE()
+	ON_WM_SIZE()
+	ON_WM_KEYDOWN()
+	ON_WM_SYSKEYDOWN()
+
+	ON_WM_KEYUP()
+	ON_WM_SYSKEYUP()
+
+	ON_WM_CHAR()
+	ON_WM_GETDLGCODE()
+
+	ON_WM_VSCROLL()
+	ON_WM_MOUSEWHEEL()
+
+	ON_WM_SETFOCUS()
+	ON_WM_KILLFOCUS()
+
+	ON_MESSAGE(WM_GETOBJECT, OnGetObject)
+
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridView message handlers
+void CXTPPropertyGridView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+{
+	if (GetScrollBarCtrl(SB_VERT) == pScrollBar)
+	{
+		OnScrollControl();
+	}
+	else
+	{
+		CListBox::OnVScroll(nSBCode, nPos, pScrollBar);
+	}
+}
+
+struct CXTPPropertyGridView::WNDRECT
+{
+	HWND hWnd;
+	RECT rc;
+};
+
+LRESULT CXTPPropertyGridView::OnScrollControl()
+{
+	if (GetCount() == 0)
+		return 0;
+
+	CArray<WNDRECT, WNDRECT&> arrRects;
+
+	SetRedraw(FALSE);
+
+	RECT rcTopOrig = {0, 0, 0, 0};
+	GetItemRect(0, &rcTopOrig);
+
+	HWND hWnd = ::GetWindow(m_hWnd, GW_CHILD);
+	while (hWnd)
+	{
+		if (GetWindowLong(hWnd, GWL_STYLE) & WS_VISIBLE)
 		{
-			mTextureViewProjMatrixDirty[i] = true;
-			mTextureWorldViewProjMatrixDirty[i] = true;
-			mSpotlightViewProjMatrixDirty[i] = true;
-			mSpotlightWorldViewProjMatrixDirty[i] = true;
-			mCurrentTextureProjector[i] = 0;
-			mShadowCamDepthRangesDirty[i] = false;
+			RECT rc;
+			::GetWindowRect(hWnd, &rc);
+
+			WNDRECT wndRect;
+			wndRect.hWnd = hWnd;
+			wndRect.rc = rc;
+			arrRects.Add(wndRect);
 		}
 
-    }
-    //-----------------------------------------------------------------------------
-    AutoParamDataSource::~AutoParamDataSource()
-    {
-    }
-	//-----------------------------------------------------------------------------
-    const Light& AutoParamDataSource::getLight(size_t index) const
-    {
-        // If outside light range, return a blank light to ensure zeroised for program
-		if (index < mCurrentLightList->size())
+		hWnd = ::GetWindow(hWnd, GW_HWNDNEXT);
+	}
+
+	LRESULT lResult = Default();
+
+	SetRedraw(TRUE);
+
+	RECT rcTopDest = {0, 0, 0, 0};
+	GetItemRect(0, &rcTopDest);
+	int nOffset = rcTopDest.top - rcTopOrig.top;
+
+	for (int i = 0; i < (int)arrRects.GetSize(); i++)
+	{
+		WNDRECT& wndRect = arrRects[i];
+		RECT rc = wndRect.rc;
+		ScreenToClient(&rc);
+
+		::OffsetRect(&rc, 0, nOffset);
+		::SetWindowPos(wndRect.hWnd, NULL, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top,
+			SWP_NOACTIVATE | SWP_NOZORDER);
+	}
+
+	RedrawWindow(0, 0, RDW_INVALIDATE | RDW_UPDATENOW | RDW_FRAME | RDW_ALLCHILDREN);
+
+	return lResult;
+}
+
+BOOL CXTPPropertyGridView::OnMouseWheel(UINT /*nFlags*/, short /*zDelta*/, CPoint /*pt*/)
+{
+	return (BOOL)OnScrollControl();
+}
+
+
+void CXTPPropertyGridView::MeasureItem(LPMEASUREITEMSTRUCT lpMeasureItemStruct)
+{
+	lpMeasureItemStruct->itemHeight = m_nItemHeight;
+
+	GetPaintManager()->MeasureItem(lpMeasureItemStruct);
+}
+
+
+void CXTPPropertyGridView::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	ASSERT(lpDrawItemStruct->CtlType == ODT_LISTBOX);
+
+	CXTPPropertyGridItem* pItem = (CXTPPropertyGridItem*)lpDrawItemStruct->itemData;
+	CXTPPropertyGridPaintManager* pPaintManager = GetPaintManager();
+
+	if (pItem == NULL)
+		return;
+
+	if ((int)lpDrawItemStruct->itemID == GetCount() - 1)
+	{
+		CDC* pDC = CDC::FromHandle(lpDrawItemStruct->hDC);
+		CXTPClientRect rc(this);
+		rc.top = lpDrawItemStruct->rcItem.bottom;
+		pDC->FillSolidRect(rc, pPaintManager->GetItemMetrics()->m_clrBack);
+	}
+
+	if (!((m_pGrid->GetStyle() & XTP_PGS_OWNERDRAW) &&
+		(SendNotifyMessage(XTP_PGN_DRAWITEM, (LPARAM)lpDrawItemStruct) == TRUE)))
+	{
+		pPaintManager->DrawItem(lpDrawItemStruct);
+	}
+}
+
+BOOL CXTPPropertyGridView::OnEraseBkgnd(CDC*)
+{
+	return TRUE;
+}
+
+void CXTPPropertyGridView::OnPaint()
+{
+	CPaintDC dc(this);
+	CXTPClientRect rc(this);
+	CXTPBufferDC buffer(dc, rc);
+
+	ASSERT(m_pGrid);
+	GetPaintManager()->FillPropertyGridView(&buffer);
+
+	CWnd::DefWindowProc(WM_PAINT, (WPARAM)buffer.m_hDC, 0);
+}
+
+void CXTPPropertyGridView::OnNcPaint()
+{
+	Default();
+
+	CWindowDC dc(this);
+
+	CXTPWindowRect rc(this);
+	rc.OffsetRect(-rc.TopLeft());
+
+	ASSERT(m_pGrid);
+	GetPaintManager()->DrawPropertyGridBorder(&dc, rc, FALSE);
+}
+
+void CXTPPropertyGridView::OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS* lpncsp)
+{
+	GetPaintManager()->DrawPropertyGridBorder(NULL, lpncsp->rgrc[0], TRUE);
+
+	CWnd::OnNcCalcSize(bCalcValidRects, lpncsp);
+}
+
+CXTPPropertyGridItem* CXTPPropertyGridView::InsertCategory(int nIndex, LPCTSTR strCaption, CXTPPropertyGridItem* pCategory)
+{
+	ASSERT(nIndex >= 0 && nIndex <= m_pCategories->GetCount());
+
+	if (nIndex < 0 || nIndex > m_pCategories->GetCount())
+		nIndex = m_pCategories->GetCount();
+
+	if (pCategory == NULL)
+		pCategory = new CXTPPropertyGridItem(strCaption);
+
+	SetPropertySort(xtpGridSortCategorized);
+
+	pCategory->m_pGrid = this;
+	pCategory->m_bCategory = TRUE;
+	pCategory->m_nFlags = 0;
+
+
+	m_pCategories->InsertAt(nIndex, pCategory);
+
+	if (m_hWnd)
+	{
+		int nInsertAt = (nIndex >= m_pCategories->GetCount() - 1) ? GetCount() : m_pCategories->GetAt(nIndex + 1)->m_nIndex;
+		InsertItem(pCategory, nInsertAt);
+	}
+	_RefreshIndexes();
+
+
+	return pCategory;
+
+}
+
+CXTPPropertyGridItem* CXTPPropertyGridView::AddCategory(LPCTSTR strCaption, CXTPPropertyGridItem* pCategory)
+{
+	return InsertCategory(m_pCategories->GetCount(), strCaption, pCategory);
+}
+
+void CXTPPropertyGridView::Refresh()
+{
+	_RefreshIndexes();
+	SetPropertySort(m_properetySort, TRUE);
+
+	SAFE_INVALIDATE(m_pGrid);
+}
+
+void CXTPPropertyGridView::ResetContent()
+{
+	if (m_pSelected)
+	{
+		m_pSelected->OnDeselect();
+		m_pSelected = NULL;
+		m_pGrid->OnSelectionChanged(NULL);
+	}
+
+	if (m_hWnd)
+	{
+		for (int i = 0; i < GetCount(); i++)
 		{
-			return *((*mCurrentLightList)[index]);
+			CXTPPropertyGridItem* pItem = (CXTPPropertyGridItem*)GetItemDataPtr(i);
+			ASSERT(pItem);
+			if (!pItem)
+				continue;
+			pItem->SetVisible(FALSE);
+		}
+
+		CListBox::ResetContent();
+
+		CFont* pFont = &GetPaintManager()->GetItemMetrics()->m_fontNormal;
+
+		SetFont(pFont, FALSE);
+
+		CWindowDC dc(this);
+		CXTPFontDC font(&dc, pFont);
+		m_nItemHeight = dc.GetTextExtent(_T(" "), 1).cy + 4;
+
+		SetItemHeight(0, m_nItemHeight);
+	}
+}
+
+void CXTPPropertyGridView::SetPropertySort(XTPPropertyGridSortOrder sort, BOOL bRrefresh, BOOL bSetRedraw)
+{
+	if (m_nLockUpdate > 0)
+	{
+		m_properetySort = sort;
+		return;
+	}
+
+	if (sort == m_properetySort && !bRrefresh)
+		return;
+
+	if (!m_hWnd)
+		return;
+
+	if (bSetRedraw) SetRedraw(FALSE);
+
+	CXTPPropertyGridItem* pTopItem = bRrefresh ? GetItem(GetTopIndex()) : NULL;
+	CXTPPropertyGridItem* pSelected = GetSelectedItem();
+
+	ResetContent();
+
+	if (sort == xtpGridSortCategorized)
+	{
+		for (int i = 0; i < m_pCategories->GetCount(); i++)
+		{
+			CXTPPropertyGridItem* pCategory = m_pCategories->GetAt(i);
+			InsertItem(pCategory, GetCount());
+		}
+	}
+	else if (sort == xtpGridSortAlphabetical || sort == xtpGridSortNoSort)
+	{
+		CXTPPropertyGridItems lstItems;
+		int i;
+		for (i = 0; i < m_pCategories->GetCount(); i++)
+		{
+			CXTPPropertyGridItem* pCategory = m_pCategories->GetAt(i);
+			if (!pCategory->IsHidden())
+				lstItems.AddTail(pCategory->m_pChilds);
+		}
+
+		if (sort != xtpGridSortNoSort)
+			lstItems.Sort();
+
+		for (i = 0; i < lstItems.GetCount(); i++)
+		{
+			CXTPPropertyGridItem* pItem = lstItems.GetAt(i);
+			InsertItem(pItem, GetCount());
+		}
+	}
+	else
+	{
+		ASSERT(FALSE);
+	}
+
+	_RefreshIndexes();
+
+	if (pTopItem && pTopItem->IsVisible())
+	{
+		SetTopIndex(pTopItem->m_nIndex);
+	}
+
+	if (pSelected)
+	{
+		pSelected->Select();
+	}
+	OnSelectionChanged();
+
+	if (bSetRedraw) SetRedraw(TRUE);
+
+	if (sort != m_properetySort)
+	{
+		m_properetySort = sort;
+		m_pGrid->OnSortChanged();
+	}
+}
+
+void CXTPPropertyGridView::SetDividerPos(int nDivider)
+{
+	double dWidth = (double)CXTPWindowRect(this).Width();
+
+	if (!m_bAutoDivider)
+	{
+		m_dDivider = nDivider;
+		m_dDivider = __max(m_dDivider, 1.0);
+
+		if (dWidth != 0)
+		{
+			m_dDivider = __min(m_dDivider, dWidth);
+		}
+	}
+	else
+	{
+		m_dDivider = dWidth == 0 ? .5 : (double)nDivider / dWidth;
+
+		m_dDivider = __max(m_dDivider, .1);
+		m_dDivider = __min(m_dDivider, .85);
+	}
+}
+
+int CXTPPropertyGridView::GetDividerPos() const
+{
+	return int(m_dDivider * (m_bAutoDivider ? CXTPWindowRect(this).Width() : 1));
+}
+
+void CXTPPropertyGridView::LockDivider()
+{
+	m_dDivider = GetDividerPos();
+	m_bAutoDivider = FALSE;
+}
+
+int  CXTPPropertyGridView::InsertItem(CXTPPropertyGridItem* pItem, int nIndex)
+{
+	if (m_nLockUpdate > 0) return 0;
+	if (!m_hWnd) return 0;
+
+	if (pItem->IsHidden())
+		return 0;
+
+	pItem->OnBeforeInsert();
+	nIndex = (int)::SendMessage(m_hWnd, LB_INSERTSTRING, nIndex, (LPARAM)pItem);
+
+	ASSERT(nIndex != -1);
+	SetItemDataPtr(nIndex, pItem);
+
+	if (GetStyle() & LBS_OWNERDRAWVARIABLE)
+	{
+		MEASUREITEMSTRUCT measureItemStruct =
+		{
+			ODT_LISTBOX, 0, nIndex, 0, m_nItemHeight, (ULONG_PTR)pItem
+		};
+		MeasureItem(&measureItemStruct);
+		SetItemHeight(nIndex, measureItemStruct.itemHeight);
+	}
+
+	pItem->SetVisible(TRUE);
+
+	int nItemsInserted = 1;
+
+	if (pItem->m_bExpanded)
+	{
+		nItemsInserted += _DoExpand(pItem, nIndex);
+	}
+
+	return nItemsInserted;
+}
+
+int CXTPPropertyGridView::_DoExpand(CXTPPropertyGridItem* pItem, int nIndex)
+{
+	int nStart = nIndex;
+
+	for (int i = 0; i < pItem->GetChilds()->GetCount(); i++)
+	{
+		CXTPPropertyGridItem* pChild = pItem->GetChilds()->GetAt(i);
+
+		nIndex += InsertItem(pChild, nIndex + 1);
+
+	}
+	return nIndex - nStart;
+}
+
+void CXTPPropertyGridView::_RefreshIndexes()
+{
+	if (m_hWnd)
+	{
+		for (int i = 0; i < GetCount(); i++)
+		{
+			CXTPPropertyGridItem* pItem = (CXTPPropertyGridItem*)GetItemDataPtr(i);
+			ASSERT(pItem);
+			if (!pItem)
+				continue;
+
+			if (pItem->m_nIndex != i)
+			{
+				pItem->m_nIndex = i;
+				pItem->OnIndexChanged();
+			}
+		}
+	}
+}
+
+void CXTPPropertyGridView::_DoCollapse(CXTPPropertyGridItem* pItem)
+{
+	ASSERT(pItem);
+	if (!pItem)
+		return;
+	ASSERT(pItem->m_bExpanded);
+	int nIndex = pItem->m_nIndex + 1;
+
+	while (nIndex < GetCount())
+	{
+		CXTPPropertyGridItem* pChild = (CXTPPropertyGridItem*)GetItemDataPtr(nIndex);
+		ASSERT(pChild);
+		if (!pChild || !pChild->HasParent(pItem))
+			break;
+
+		pChild->SetVisible(FALSE);
+		DeleteString(nIndex);
+	}
+	_RefreshIndexes();
+}
+
+CXTPPropertyGridItem* CXTPPropertyGridView::GetItem(int nIndex) const
+{
+	if (nIndex < 0 || nIndex >= GetCount())
+		return 0;
+
+	CXTPPropertyGridItem* pItem = (CXTPPropertyGridItem*)GetItemDataPtr(nIndex);
+
+	if ((ULONG_PTR)pItem == (ULONG_PTR)(-1))
+		return NULL;
+
+	ASSERT(pItem);
+
+	return pItem;
+}
+
+void CXTPPropertyGridView::SwitchExpandState(int nItem)
+{
+	CXTPPropertyGridItem* pItem = GetItem(nItem);
+	if (!pItem || !pItem->IsExpandable())
+		return;
+
+	if (pItem->m_bExpanded)
+		pItem->Collapse();
+	else
+		pItem->Expand();
+}
+
+void CXTPPropertyGridView::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	if (HitTest(point) == PGV_HIT_SPLITTER)
+	{
+		SetFocus();
+		SetCapture();
+		if (m_pSelected) m_pSelected->OnValidateEdit();
+
+		m_bTracking = TRUE;
+		return;
+	}
+
+
+	CXTPPropertyGridItem* pItem = ItemFromPoint(point);
+	if (pItem)
+	{
+		SetFocus();
+
+		if (GetFocus() != this)
+			return;
+
+		if ((ItemFromPoint(point) == pItem) && pItem->OnLButtonDown(nFlags, point))
+			return;
+	}
+
+	CListBox::OnLButtonDown(nFlags, point);
+}
+
+CXTPPropertyGridItem* CXTPPropertyGridView::ItemFromPoint(CPoint point) const
+{
+	BOOL bOutside = FALSE;
+	int nIndex = CListBox::ItemFromPoint(point, bOutside);
+	if (nIndex != -1 && !bOutside)
+	{
+		return GetItem(nIndex);
+	}
+	return NULL;
+}
+
+void CXTPPropertyGridView::FocusInplaceButton(CXTPPropertyGridInplaceButton* pButton)
+{
+	if (pButton != m_pFocusedButton)
+	{
+		if (pButton) SetFocus();
+		m_pFocusedButton = pButton;
+		Invalidate(FALSE);
+	}
+}
+
+void CXTPPropertyGridView::OnMouseMove(UINT nFlags, CPoint point)
+{
+	if (m_bTracking)
+	{
+		SetDividerPos(point.x);
+
+		if (m_pSelected) m_pSelected->OnSelect();
+		Invalidate(FALSE);
+		return;
+	}
+
+	CXTPPropertyGridItem* pItem = ItemFromPoint(point);
+	CXTPPropertyGridInplaceButton* pButton = NULL;
+
+	if (pItem)
+		pButton = pItem->GetInplaceButtons()->HitTest(point);
+
+	if (pButton != m_pHotButton)
+	{
+		m_pHotButton = pButton;
+		Invalidate(FALSE);
+		TRACKMOUSEEVENT tme =
+		{
+			sizeof(TRACKMOUSEEVENT), TME_LEAVE, m_hWnd, 0
+		};
+		_TrackMouseEvent (&tme);
+	}
+
+	ShowToolTip(point);
+
+	CListBox::OnMouseMove(nFlags, point);
+}
+
+void CXTPPropertyGridView::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	if (m_bTracking)
+	{
+		ReleaseCapture();
+		m_bTracking = FALSE;
+	}
+
+	CXTPPropertyGridItem* pItem = ItemFromPoint(point);
+
+	if (pItem)
+	{
+		pItem->OnLButtonUp(nFlags, point);
+	}
+
+	CListBox::OnLButtonUp(nFlags, point);
+}
+
+void CXTPPropertyGridView::OnCaptureChanged(CWnd* pWnd)
+{
+	m_bTracking = FALSE;
+
+	CListBox::OnCaptureChanged(pWnd);
+}
+
+void CXTPPropertyGridView::OnLButtonDblClk(UINT nFlags, CPoint point)
+{
+	CListBox::OnLButtonDblClk(nFlags, point);
+
+	CXTPPropertyGridItem* pItem = ItemFromPoint(point);
+
+	if (pItem)
+	{
+		pItem->OnLButtonDblClk(nFlags, point);
+
+
+		if (pItem == ItemFromPoint(point))
+		{
+			SendNotifyMessage(XTP_PGN_DBLCLICK, (LPARAM)pItem);
+		}
+	}
+}
+
+void CXTPPropertyGridView::OnRButtonDown(UINT nFlags, CPoint point)
+{
+	CListBox::OnRButtonDown(nFlags, point);
+
+	CXTPPropertyGridItem* pItem = ItemFromPoint(point);
+
+	if (pItem)
+	{
+		pItem->OnRButtonDown(nFlags, point);
+
+
+		if (pItem == ItemFromPoint(point))
+		{
+			SendNotifyMessage(XTP_PGN_RCLICK, (LPARAM)pItem);
+		}
+	}
+}
+
+LRESULT CXTPPropertyGridView::SendNotifyMessage(WPARAM wParam, LPARAM lParam)
+{
+	ASSERT(m_pGrid);
+	if (!m_pGrid)
+		return 0;
+
+	return m_pGrid->SendNotifyMessage(wParam, lParam);
+}
+
+CXTPPropertyGridItem* CXTPPropertyGridView::GetSelectedItem()
+{
+	return m_hWnd ? GetItem(GetCurSel()) : 0;
+}
+
+void CXTPPropertyGridView::OnChar(UINT nChar, UINT nRepCntr, UINT nFlags)
+{
+	if (m_bTracking) return;
+
+	if (m_pFocusedButton && nChar != VK_TAB)
+		return;
+
+	if (::GetFocus() != m_hWnd)
+		return;
+
+	CXTPPropertyGridItem* pItem = GetSelectedItem();
+
+	if (nChar == '+' && pItem && pItem->HasChilds() && pItem->IsExpandable() && !pItem->m_bExpanded)
+	{
+		pItem->Expand();
+		return;
+	}
+	if (nChar == '-' && pItem && pItem->HasChilds() && pItem->IsExpandable() && pItem->m_bExpanded)
+	{
+		pItem->Collapse();
+		return;
+	}
+	if (nChar == VK_TAB)
+	{
+		if (m_pFocusedButton)
+		{
+			BOOL bForward = GetKeyState(VK_SHIFT) >= 0;
+			m_pGrid->OnNavigate(bForward ? xtpGridUIInplaceEdit : xtpGridUIViewNext, bForward, pItem);
 		}
 		else
-        {
-            return mBlankLight;
-        }        
-    }
-    //-----------------------------------------------------------------------------
-    void AutoParamDataSource::setCurrentRenderable(const Renderable* rend)
-    {
-		mCurrentRenderable = rend;
-		mWorldMatrixDirty = true;
-        mViewMatrixDirty = true;
-        mProjMatrixDirty = true;
-		mWorldViewMatrixDirty = true;
-        mViewProjMatrixDirty = true;
-		mWorldViewProjMatrixDirty = true;
-		mInverseWorldMatrixDirty = true;
-        mInverseViewMatrixDirty = true;
-		mInverseWorldViewMatrixDirty = true;
-		mInverseTransposeWorldMatrixDirty = true;
-		mInverseTransposeWorldViewMatrixDirty = true;
-		mCameraPositionObjectSpaceDirty = true;
-		mLodCameraPositionObjectSpaceDirty = true;
-		for(size_t i = 0; i < OGRE_MAX_SIMULTANEOUS_LIGHTS; ++i)
 		{
-			mTextureWorldViewProjMatrixDirty[i] = true;
-			mSpotlightWorldViewProjMatrixDirty[i] = true;
+			m_pGrid->OnNavigate(xtpGridUIView, GetKeyState(VK_SHIFT) >= 0, pItem);
 		}
+		return;
+	}
+	if (pItem && (nChar != VK_RETURN || !pItem->HasChilds()))
+	{
+		if (pItem->OnChar(nChar))
+			return;
+	}
 
-    }
-    //-----------------------------------------------------------------------------
-    void AutoParamDataSource::setCurrentCamera(const Camera* cam, bool useCameraRelative)
-    {
-        mCurrentCamera = cam;
-		mCameraRelativeRendering = useCameraRelative;
-		mCameraRelativePosition = cam->getDerivedPosition();
-        mViewMatrixDirty = true;
-        mProjMatrixDirty = true;
-        mWorldViewMatrixDirty = true;
-        mViewProjMatrixDirty = true;
-        mWorldViewProjMatrixDirty = true;
-        mInverseViewMatrixDirty = true;
-        mInverseWorldViewMatrixDirty = true;
-        mInverseTransposeWorldViewMatrixDirty = true;
-        mCameraPositionObjectSpaceDirty = true;
-        mCameraPositionDirty = true;
-		mLodCameraPositionObjectSpaceDirty = true;
-		mLodCameraPositionDirty = true;
-    }
-    //-----------------------------------------------------------------------------
-    void AutoParamDataSource::setCurrentLightList(const LightList* ll)
-    {
-        mCurrentLightList = ll;
-		for(size_t i = 0; i < ll->size() && i < OGRE_MAX_SIMULTANEOUS_LIGHTS; ++i)
-		{
-			mSpotlightViewProjMatrixDirty[i] = true;
-			mSpotlightWorldViewProjMatrixDirty[i] = true;
-		}
+	CWnd::OnChar(nChar, nRepCntr, nFlags);
+}
 
-    }
-	//---------------------------------------------------------------------
-	float AutoParamDataSource::getLightNumber(size_t index) const
+UINT CXTPPropertyGridView::OnGetDlgCode()
+{
+	return DLGC_WANTARROWS | DLGC_WANTTAB | DLGC_WANTCHARS;
+}
+
+INT_PTR CXTPPropertyGridView::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
+{
+
+	ASSERT_VALID(this);
+	ASSERT(::IsWindow(m_hWnd));
+
+	// check child windows first by calling CControlBar
+	INT_PTR nHit = CWnd::OnToolHitTest(point, pTI);
+	if (nHit != -1)
+		return nHit;
+
+	if (m_pHotButton)
 	{
-		return static_cast<float>(getLight(index)._getIndexInFrame());
+		CString strTip = m_pHotButton->GetTooltip();
+		if (strTip.GetLength() == 0)
+			return -1;
+
+		CXTPToolTipContext::FillInToolInfo(pTI, m_hWnd, m_pHotButton->GetRect(),
+			m_pHotButton->GetID(), strTip);
+
+		return m_pHotButton->GetID();
 	}
-	//-----------------------------------------------------------------------------
-	const ColourValue& AutoParamDataSource::getLightDiffuseColour(size_t index) const
+
+	CXTPPropertyGridItem* pItem = ItemFromPoint(point);
+	if (pItem)
 	{
-		return getLight(index).getDiffuseColour();
+		nHit = pItem->GetID();
+
+		CString strTip = pItem->GetTooltip();
+		if (strTip.GetLength() == 0)
+			return -1;
+
+		CXTPToolTipContext::FillInToolInfo(pTI, m_hWnd, pItem->GetItemRect(),
+			nHit, strTip, strTip, pItem->GetDescription(), GetImageManager());
+
+		return nHit;
 	}
-	//-----------------------------------------------------------------------------
-	const ColourValue& AutoParamDataSource::getLightSpecularColour(size_t index) const
+	return -1;
+}
+
+
+void CXTPPropertyGridView::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	CListBox::OnKeyUp(nChar, nRepCnt, nFlags);
+}
+
+void CXTPPropertyGridView::OnSysKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	CListBox::OnSysKeyUp(nChar, nRepCnt, nFlags);
+}
+
+void CXTPPropertyGridView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+
+	CXTPPropertyGridItem* pItem = GetSelectedItem();
+
+	if (m_pFocusedButton && m_pFocusedButton->GetItem() == pItem)
 	{
-		return getLight(index).getSpecularColour();
+		m_pFocusedButton->OnKeyDown(nChar);
+		return;
 	}
-	//-----------------------------------------------------------------------------
-	const ColourValue AutoParamDataSource::getLightDiffuseColourWithPower(size_t index) const
+
+	if ((GetKeyState(VK_CONTROL) < 0) && (nChar == VK_RIGHT || nChar == VK_LEFT))
 	{
-		const Light& l = getLight(index);
-		ColourValue scaled(l.getDiffuseColour());
-		Real power = l.getPowerScale();
-		// scale, but not alpha
-		scaled.r *= power;
-		scaled.g *= power;
-		scaled.b *= power;
-		return scaled;
+		CXTPDrawHelpers::KeyToLayout(this, nChar);
+
+		SetDividerPos(GetDividerPos() + (nChar == VK_RIGHT ? 3 : -3));
+
+		if (m_pSelected) m_pSelected->OnSelect();
+		Invalidate(FALSE);
+
+		return;
 	}
-	//-----------------------------------------------------------------------------
-	const ColourValue AutoParamDataSource::getLightSpecularColourWithPower(size_t index) const
+
+	if (nChar == VK_RIGHT)
 	{
-		const Light& l = getLight(index);
-		ColourValue scaled(l.getSpecularColour());
-		Real power = l.getPowerScale();
-		// scale, but not alpha
-		scaled.r *= power;
-		scaled.g *= power;
-		scaled.b *= power;
-		return scaled;
-	}
-	//-----------------------------------------------------------------------------
-	const Vector3& AutoParamDataSource::getLightPosition(size_t index) const
-	{
-		return getLight(index).getDerivedPosition(true);
-	}
-	//-----------------------------------------------------------------------------
-	Vector4 AutoParamDataSource::getLightAs4DVector(size_t index) const
-	{
-		return getLight(index).getAs4DVector(true);
-	}
-	//-----------------------------------------------------------------------------
-	const Vector3& AutoParamDataSource::getLightDirection(size_t index) const
-	{
-		return getLight(index).getDerivedDirection();
-	}
-	//-----------------------------------------------------------------------------
-	Real AutoParamDataSource::getLightPowerScale(size_t index) const
-	{
-		return getLight(index).getPowerScale();
-	}
-	//-----------------------------------------------------------------------------
-	Vector4 AutoParamDataSource::getLightAttenuation(size_t index) const
-	{
-		// range, const, linear, quad
-        const Light& l = getLight(index);
-		return Vector4(l.getAttenuationRange(),
-				       l.getAttenuationConstant(),
-					   l.getAttenuationLinear(),
-					   l.getAttenuationQuadric());
-	}
-	//-----------------------------------------------------------------------------
-	Vector4 AutoParamDataSource::getSpotlightParams(size_t index) const
-	{
-		// inner, outer, fallof, isSpot
-		const Light& l = getLight(index);
-		if (l.getType() == Light::LT_SPOTLIGHT)
+		if (pItem && pItem->HasChilds() && !pItem->m_bExpanded && pItem->IsExpandable())
 		{
-			return Vector4(Math::Cos(l.getSpotlightInnerAngle().valueRadians() * 0.5),
-						   Math::Cos(l.getSpotlightOuterAngle().valueRadians() * 0.5),
-						   l.getSpotlightFalloff(),
-						   1.0);
-		}
-		else
-		{
-			// Use safe values which result in no change to point & dir light calcs
-			// The spot factor applied to the usual lighting calc is 
-			// pow((dot(spotDir, lightDir) - y) / (x - y), z)
-			// Therefore if we set z to 0.0f then the factor will always be 1
-			// since pow(anything, 0) == 1
-			// However we also need to ensure we don't overflow because of the division
-			// therefore set x = 1 and y = 0 so divisor doesn't change scale
-			return Vector4(1.0, 0.0, 0.0, 1.0); // since the main op is pow(.., vec4.z), this will result in 1.0
+			pItem->Expand();
+			return;
 		}
 	}
-	//-----------------------------------------------------------------------------
-	void AutoParamDataSource::setMainCamBoundsInfo(VisibleObjectsBoundsInfo* info)
+	else if (nChar == VK_LEFT)
 	{
-		mMainCamBoundsInfo = info;
-		mSceneDepthRangeDirty = true;
+		if (pItem && pItem->HasChilds() && pItem->m_bExpanded && pItem->IsExpandable())
+		{
+			pItem->Collapse();
+			return;
+		}
 	}
-	//-----------------------------------------------------------------------------
-	void AutoParamDataSource::setCurrentSceneManager(const SceneManager* sm)
+	if (nChar == VK_RETURN)
 	{
-		mCurrentSceneManager = sm;
+		SwitchExpandState(GetCurSel());
+		return ;
 	}
-    //-----------------------------------------------------------------------------
-    void AutoParamDataSource::setWorldMatrices(const Matrix4* m, size_t count)
-    {
-        mWorldMatrixArray = m;
-        mWorldMatrixCount = count;
-        mWorldMatrixDirty = false;
-    }
-    //-----------------------------------------------------------------------------
-    const Matrix4& AutoParamDataSource::getWorldMatrix(void) const
-    {
-        if (mWorldMatrixDirty)
-        {
-            mWorldMatrixArray = mWorldMatrix;
-            mCurrentRenderable->getWorldTransforms(mWorldMatrix);
-            mWorldMatrixCount = mCurrentRenderable->getNumWorldTransforms();
-			if (mCameraRelativeRendering)
+	if (nChar == VK_F4 && m_pSelected)
+	{
+		CXTPPropertyGridInplaceButton* pButton = m_pSelected->GetInplaceButtons()->Find(XTP_ID_PROPERTYGRID_COMBOBUTTON);
+		if (pButton)
+			m_pSelected->OnInplaceButtonDown(pButton);
+	}
+
+	if (m_pSelected && m_pSelected->OnKeyDown(nChar))
+	{
+		return;
+	}
+
+
+	CListBox::OnKeyDown(nChar, nRepCnt, nFlags);
+}
+
+void CXTPPropertyGridView::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+
+	if ((nChar == VK_DOWN || nChar == VK_UP) && m_pSelected)
+	{
+		CXTPPropertyGridInplaceButton* pButton = m_pSelected->GetInplaceButtons()->Find(XTP_ID_PROPERTYGRID_COMBOBUTTON);
+		if (pButton)
+			m_pSelected->OnInplaceButtonDown(pButton);
+	}
+
+	CListBox::OnSysKeyDown(nChar, nRepCnt, nFlags);
+}
+
+BOOL CXTPPropertyGridView::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+{
+	static BOOL bRelay = FALSE;
+	if (m_wndTip.GetSafeHwnd() && m_wndTip.IsWindowVisible() && !bRelay)
+	{
+		bRelay = TRUE;
+		RelayToolTipEvent(message);
+		bRelay = FALSE;
+	}
+
+	if (message == WM_MOUSELEAVE && m_pHotButton)
+	{
+		m_pHotButton = NULL;
+		Invalidate(FALSE);
+	}
+
+	if (m_pGrid->GetToolTipContext())
+	{
+		m_pGrid->GetToolTipContext()->FilterToolTipMessage(this, message, wParam, lParam);
+	}
+
+	return CWnd::OnWndMsg(message, wParam, lParam, pResult);
+}
+
+
+void CXTPPropertyGridView::OnSelectionChanged()
+{
+	CXTPPropertyGridItem* pItem = GetSelectedItem();
+
+	if (m_pSelected) m_pSelected->OnDeselect();
+	if (pItem) pItem->OnSelect();
+
+	m_pSelected = pItem;
+
+	if (m_pSelected) m_pGrid->OnSelectionChanged(m_pSelected);
+}
+
+int CXTPPropertyGridView::HitTest(CPoint point) const
+{
+	if (!m_bVariableSplitterPos)
+		return -1;
+
+	int nDivider = GetDividerPos();
+
+	if ((point.x > nDivider - 4 && point.x <= nDivider + 2) && (GetCount() > 0))
+		return PGV_HIT_SPLITTER;
+
+	return -1;
+}
+
+BOOL CXTPPropertyGridView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
+{
+	if (nHitTest == HTCLIENT)
+	{
+		CPoint point;
+
+		GetCursorPos(&point);
+		ScreenToClient(&point);
+
+		if (HitTest(point) == PGV_HIT_SPLITTER)
+		{
+			SetCursor(m_hCursor);
+			return TRUE;
+		}
+	}
+
+	return CListBox::OnSetCursor(pWnd, nHitTest, message);
+}
+
+void CXTPPropertyGridView::OnSize(UINT nType, int cx, int cy)
+{
+	CListBox::OnSize(nType, cx, cy);
+
+	OnSelectionChanged();
+
+	Invalidate(FALSE);
+}
+
+
+// ToolTips routings
+
+void CXTPPropertyGridView::_ShowToolTip(CRect rcBound, CRect rcText, CXTPPropertyGridItem* pItem, BOOL bValuePart)
+{
+	if (!m_wndTip.GetSafeHwnd())
+		return;
+
+	m_wndTip.SetWindowText(m_strTipText);
+	m_wndTip.MoveWindow(rcText);
+	m_wndTip.Activate(TRUE, pItem, bValuePart);
+
+	m_rcToolTip = rcBound;
+
+	TRACKMOUSEEVENT tme =
+	{
+		sizeof(TRACKMOUSEEVENT), TME_LEAVE, m_hWnd, 0
+	};
+	_TrackMouseEvent (&tme);
+}
+
+CSize CXTPPropertyGridView::_GetTextExtent(const CString& str, CXTPPropertyGridItem* pItem, BOOL bValuePart)
+{
+	CWindowDC dc(this);
+	CXTPFontDC font(&dc, GetPaintManager()->GetItemFont(pItem, bValuePart));
+	return dc.GetTextExtent(str);
+}
+
+void CXTPPropertyGridView::ShowToolTip(CPoint pt)
+{
+	if (CXTPMouseMonitor::IsMouseHooked())
+		return;
+
+	if (!m_pGrid->m_bEnableTooltips)
+		return;
+
+	if (!m_wndTip.GetSafeHwnd())
+	{
+		m_wndTip.Create(this);
+	}
+
+	if (m_pHotButton)
+		return;
+
+	CXTPPropertyGridItem* pItem = ItemFromPoint(pt);
+
+	if (!pItem || pItem->IsCategory() || !pItem->GetTooltip().IsEmpty())
+		return;
+
+	int nDividerPos = GetDividerPos();
+
+	CRect rc = pItem->GetItemRect();
+	CRect rcCaption(rc.left, rc.top, rc.left + nDividerPos, rc.bottom);
+
+	if (rcCaption.PtInRect(pt))
+	{
+		if (m_strTipText == pItem->GetCaption())
+			return;
+
+		m_strTipText = pItem->GetCaption();
+
+		ClientToScreen(&rcCaption);
+
+		CRect rcCaptionText(rcCaption);
+		rcCaptionText.left += pItem->m_nIndent * XTP_PGI_EXPAND_BORDER + 3 - 3 -1;
+		rcCaptionText.top--;
+		GetPaintManager()->AdjustItemCaptionRect(pItem, rcCaptionText);
+
+		int nTextExtent = _GetTextExtent(m_strTipText, pItem, FALSE).cx;
+
+		if (nTextExtent + 3 > rcCaptionText.Width())
+		{
+			if (GetExStyle() & WS_EX_LAYOUTRTL)
 			{
-				for (size_t i = 0; i < mWorldMatrixCount; ++i)
-				{
-					mWorldMatrix[i].setTrans(mWorldMatrix[i].getTrans() - mCameraRelativePosition);
-				}
+				rcCaptionText.left = rcCaption.right - nTextExtent - 7 - (pItem->m_nIndent * XTP_PGI_EXPAND_BORDER);
+
 			}
-            mWorldMatrixDirty = false;
-        }
-        return mWorldMatrixArray[0];
-    }
-    //-----------------------------------------------------------------------------
-    size_t AutoParamDataSource::getWorldMatrixCount(void) const
-    {
-		// trigger derivation
-		getWorldMatrix();
-        return mWorldMatrixCount;
-    }
-    //-----------------------------------------------------------------------------
-    const Matrix4* AutoParamDataSource::getWorldMatrixArray(void) const
-    {
-		// trigger derivation
-		getWorldMatrix();
-        return mWorldMatrixArray;
-    }
-    //-----------------------------------------------------------------------------
-    const Matrix4& AutoParamDataSource::getViewMatrix(void) const
-    {
-        if (mViewMatrixDirty)
-        {
-            if (mCurrentRenderable && mCurrentRenderable->getUseIdentityView())
-                mViewMatrix = Matrix4::IDENTITY;
-            else
-			{
-                mViewMatrix = mCurrentCamera->getViewMatrix(true);
-				if (mCameraRelativeRendering)
-				{
-					mViewMatrix.setTrans(Vector3::ZERO);
-				}
 
-			}
-            mViewMatrixDirty = false;
-        }
-        return mViewMatrix;
-    }
-    //-----------------------------------------------------------------------------
-    const Matrix4& AutoParamDataSource::getViewProjectionMatrix(void) const
-    {
-        if (mViewProjMatrixDirty)
-        {
-            mViewProjMatrix = getProjectionMatrix() * getViewMatrix();
-            mViewProjMatrixDirty = false;
-        }
-        return mViewProjMatrix;
-    }
-    //-----------------------------------------------------------------------------
-    const Matrix4& AutoParamDataSource::getProjectionMatrix(void) const
-    {
-        if (mProjMatrixDirty)
-        {
-            // NB use API-independent projection matrix since GPU programs
-            // bypass the API-specific handedness and use right-handed coords
-            if (mCurrentRenderable && mCurrentRenderable->getUseIdentityProjection())
-            {
-                // Use identity projection matrix, still need to take RS depth into account.
-                RenderSystem* rs = Root::getSingleton().getRenderSystem();
-                rs->_convertProjectionMatrix(Matrix4::IDENTITY, mProjectionMatrix, true);
-            }
-            else
-            {
-                mProjectionMatrix = mCurrentCamera->getProjectionMatrixWithRSDepth();
-            }
-            if (mCurrentRenderTarget && mCurrentRenderTarget->requiresTextureFlipping())
-            {
-                // Because we're not using setProjectionMatrix, this needs to be done here
-                // Invert transformed y
-                mProjectionMatrix[1][0] = -mProjectionMatrix[1][0];
-                mProjectionMatrix[1][1] = -mProjectionMatrix[1][1];
-                mProjectionMatrix[1][2] = -mProjectionMatrix[1][2];
-                mProjectionMatrix[1][3] = -mProjectionMatrix[1][3];
-            }
-            mProjMatrixDirty = false;
-        }
-        return mProjectionMatrix;
-    }
-    //-----------------------------------------------------------------------------
-    const Matrix4& AutoParamDataSource::getWorldViewMatrix(void) const
-    {
-        if (mWorldViewMatrixDirty)
-        {
-            mWorldViewMatrix = getViewMatrix().concatenateAffine(getWorldMatrix());
-            mWorldViewMatrixDirty = false;
-        }
-        return mWorldViewMatrix;
-    }
-    //-----------------------------------------------------------------------------
-    const Matrix4& AutoParamDataSource::getWorldViewProjMatrix(void) const
-    {
-        if (mWorldViewProjMatrixDirty)
-        {
-            mWorldViewProjMatrix = getProjectionMatrix() * getWorldViewMatrix();
-            mWorldViewProjMatrixDirty = false;
-        }
-        return mWorldViewProjMatrix;
-    }
-    //-----------------------------------------------------------------------------
-    const Matrix4& AutoParamDataSource::getInverseWorldMatrix(void) const
-    {
-        if (mInverseWorldMatrixDirty)
-        {
-            mInverseWorldMatrix = getWorldMatrix().inverseAffine();
-            mInverseWorldMatrixDirty = false;
-        }
-        return mInverseWorldMatrix;
-    }
-    //-----------------------------------------------------------------------------
-    const Matrix4& AutoParamDataSource::getInverseWorldViewMatrix(void) const
-    {
-        if (mInverseWorldViewMatrixDirty)
-        {
-            mInverseWorldViewMatrix = getWorldViewMatrix().inverseAffine();
-            mInverseWorldViewMatrixDirty = false;
-        }
-        return mInverseWorldViewMatrix;
-    }
-    //-----------------------------------------------------------------------------
-    const Matrix4& AutoParamDataSource::getInverseViewMatrix(void) const
-    {
-        if (mInverseViewMatrixDirty)
-        {
-            mInverseViewMatrix = getViewMatrix().inverseAffine();
-            mInverseViewMatrixDirty = false;
-        }
-        return mInverseViewMatrix;
-    }
-    //-----------------------------------------------------------------------------
-    const Matrix4& AutoParamDataSource::getInverseTransposeWorldMatrix(void) const
-    {
-        if (mInverseTransposeWorldMatrixDirty)
-        {
-            mInverseTransposeWorldMatrix = getInverseWorldMatrix().transpose();
-            mInverseTransposeWorldMatrixDirty = false;
-        }
-        return mInverseTransposeWorldMatrix;
-    }
-    //-----------------------------------------------------------------------------
-    const Matrix4& AutoParamDataSource::getInverseTransposeWorldViewMatrix(void) const
-    {
-        if (mInverseTransposeWorldViewMatrixDirty)
-        {
-            mInverseTransposeWorldViewMatrix = getInverseWorldViewMatrix().transpose();
-            mInverseTransposeWorldViewMatrixDirty = false;
-        }
-        return mInverseTransposeWorldViewMatrix;
-    }
-    //-----------------------------------------------------------------------------
-    const Vector4& AutoParamDataSource::getCameraPosition(void) const
-    {
-		if(mCameraPositionDirty)
-		{
-			Vector3 vec3 = mCurrentCamera->getDerivedPosition();
-			if (mCameraRelativeRendering)
-			{
-				vec3 -= mCameraRelativePosition;
-			}
-			mCameraPosition[0] = vec3[0];
-			mCameraPosition[1] = vec3[1];
-			mCameraPosition[2] = vec3[2];
-			mCameraPosition[3] = 1.0;
-			mCameraPositionDirty = false;
-		}
-		return mCameraPosition;
-    }    
-    //-----------------------------------------------------------------------------
-    const Vector4& AutoParamDataSource::getCameraPositionObjectSpace(void) const
-    {
-        if (mCameraPositionObjectSpaceDirty)
-        {
-			if (mCameraRelativeRendering)
-			{
-				mCameraPositionObjectSpace = 
-					getInverseWorldMatrix().transformAffine(Vector3::ZERO);
-			}
-			else
-			{
-				mCameraPositionObjectSpace = 
-					getInverseWorldMatrix().transformAffine(mCurrentCamera->getDerivedPosition());
-			}
-            mCameraPositionObjectSpaceDirty = false;
-        }
-        return mCameraPositionObjectSpace;
-    }
-	//-----------------------------------------------------------------------------
-	const Vector4& AutoParamDataSource::getLodCameraPosition(void) const
-	{
-		if(mLodCameraPositionDirty)
-		{
-			Vector3 vec3 = mCurrentCamera->getLodCamera()->getDerivedPosition();
-            if (mCameraRelativeRendering)
-            {
-                vec3 -= mCameraRelativePosition;
-            }
-			mLodCameraPosition[0] = vec3[0];
-			mLodCameraPosition[1] = vec3[1];
-			mLodCameraPosition[2] = vec3[2];
-			mLodCameraPosition[3] = 1.0;
-			mLodCameraPositionDirty = false;
-		}
-		return mLodCameraPosition;
-	}
-	//-----------------------------------------------------------------------------
-	const Vector4& AutoParamDataSource::getLodCameraPositionObjectSpace(void) const
-	{
-		if (mLodCameraPositionObjectSpaceDirty)
-		{
-            if (mCameraRelativeRendering)
-			{
-				mLodCameraPositionObjectSpace = 
-					getInverseWorldMatrix().transformAffine(mCurrentCamera->getLodCamera()->getDerivedPosition()
-						- mCameraRelativePosition);
-			}
-			else
-			{
-			    mLodCameraPositionObjectSpace = 
-				    getInverseWorldMatrix().transformAffine(mCurrentCamera->getLodCamera()->getDerivedPosition());
-            }
-            mLodCameraPositionObjectSpaceDirty = false;
-		}
-		return mLodCameraPositionObjectSpace;
-	}
-    //-----------------------------------------------------------------------------
-	void AutoParamDataSource::setAmbientLightColour(const ColourValue& ambient)
-	{
-		mAmbientLight = ambient;
-	}
-	//---------------------------------------------------------------------
-	float AutoParamDataSource::getLightCount() const
-	{
-		return static_cast<float>(mCurrentLightList->size());
-	}
-	//---------------------------------------------------------------------
-	float AutoParamDataSource::getLightCastsShadows(size_t index) const
-	{
-		return getLight(index).getCastShadows() ? 1.0f : 0.0f;
-	}
-    //-----------------------------------------------------------------------------
-	const ColourValue& AutoParamDataSource::getAmbientLightColour(void) const
-	{
-		return mAmbientLight;
-		
-	}
-    //-----------------------------------------------------------------------------
-    void AutoParamDataSource::setCurrentPass(const Pass* pass)
-    {
-        mCurrentPass = pass;
-    }
-    //-----------------------------------------------------------------------------
-    const Pass* AutoParamDataSource::getCurrentPass(void) const
-    {
-        return mCurrentPass;
-    }
-    //-----------------------------------------------------------------------------
-    Vector4 AutoParamDataSource::getTextureSize(size_t index) const
-    {
-        Vector4 size = Vector4(1,1,1,1);
-
-        if (index < mCurrentPass->getNumTextureUnitStates())
-        {
-            const TexturePtr& tex = mCurrentPass->getTextureUnitState(
-				static_cast<unsigned short>(index))->_getTexturePtr();
-            if (!tex.isNull())
-            {
-                size.x = tex->getWidth();
-                size.y = tex->getHeight();
-                size.z = tex->getDepth();
-            }
-        }
-
-        return size;
-    }
-    //-----------------------------------------------------------------------------
-    Vector4 AutoParamDataSource::getInverseTextureSize(size_t index) const
-    {
-        Vector4 size = getTextureSize(index);
-        return 1 / size;
-    }
-    //-----------------------------------------------------------------------------
-    Vector4 AutoParamDataSource::getPackedTextureSize(size_t index) const
-    {
-        Vector4 size = getTextureSize(index);
-        return Vector4(size.x, size.y, 1 / size.x, 1 / size.y);
-    }
-    //-----------------------------------------------------------------------------
-    const ColourValue& AutoParamDataSource::getSurfaceAmbientColour(void) const
-    {
-        return mCurrentPass->getAmbient();
-    }
-    //-----------------------------------------------------------------------------
-    const ColourValue& AutoParamDataSource::getSurfaceDiffuseColour(void) const
-    {
-        return mCurrentPass->getDiffuse();
-    }
-    //-----------------------------------------------------------------------------
-    const ColourValue& AutoParamDataSource::getSurfaceSpecularColour(void) const
-    {
-        return mCurrentPass->getSpecular();
-    }
-    //-----------------------------------------------------------------------------
-    const ColourValue& AutoParamDataSource::getSurfaceEmissiveColour(void) const
-    {
-        return mCurrentPass->getSelfIllumination();
-    }
-    //-----------------------------------------------------------------------------
-    Real AutoParamDataSource::getSurfaceShininess(void) const
-    {
-        return mCurrentPass->getShininess();
-    }
-    //-----------------------------------------------------------------------------
-    ColourValue AutoParamDataSource::getDerivedAmbientLightColour(void) const
-    {
-        return getAmbientLightColour() * getSurfaceAmbientColour();
-    }
-    //-----------------------------------------------------------------------------
-    ColourValue AutoParamDataSource::getDerivedSceneColour(void) const
-    {
-        ColourValue result = getDerivedAmbientLightColour() + getSurfaceEmissiveColour();
-        result.a = getSurfaceDiffuseColour().a;
-        return result;
-    }
-    //-----------------------------------------------------------------------------
-    void AutoParamDataSource::setFog(FogMode mode, const ColourValue& colour,
-        Real expDensity, Real linearStart, Real linearEnd)
-    {
-        (void)mode; // ignored
-        mFogColour = colour;
-        mFogParams.x = expDensity;
-        mFogParams.y = linearStart;
-        mFogParams.z = linearEnd;
-        mFogParams.w = linearEnd != linearStart ? 1 / (linearEnd - linearStart) : 0;
-    }
-    //-----------------------------------------------------------------------------
-    const ColourValue& AutoParamDataSource::getFogColour(void) const
-    {
-        return mFogColour;
-    }
-    //-----------------------------------------------------------------------------
-    const Vector4& AutoParamDataSource::getFogParams(void) const
-    {
-        return mFogParams;
-    }
-    //-----------------------------------------------------------------------------
-    void AutoParamDataSource::setTextureProjector(const Frustum* frust, size_t index = 0)
-    {
-		if (index < OGRE_MAX_SIMULTANEOUS_LIGHTS)
-		{
-			mCurrentTextureProjector[index] = frust;
-			mTextureViewProjMatrixDirty[index] = true;
-			mTextureWorldViewProjMatrixDirty[index] = true;
-			mShadowCamDepthRangesDirty[index] = true;
-		}
-
-    }
-    //-----------------------------------------------------------------------------
-    const Matrix4& AutoParamDataSource::getTextureViewProjMatrix(size_t index) const
-    {
-		if (index < OGRE_MAX_SIMULTANEOUS_LIGHTS)
-		{
-			if (mTextureViewProjMatrixDirty[index] && mCurrentTextureProjector[index])
-			{
-				if (mCameraRelativeRendering)
-				{
-					// World positions are now going to be relative to the camera position
-					// so we need to alter the projector view matrix to compensate
-					Matrix4 viewMatrix;
-					mCurrentTextureProjector[index]->calcViewMatrixRelative(
-						mCurrentCamera->getDerivedPosition(), viewMatrix);
-					mTextureViewProjMatrix[index] = 
-						PROJECTIONCLIPSPACE2DTOIMAGESPACE_PERSPECTIVE * 
-						mCurrentTextureProjector[index]->getProjectionMatrixWithRSDepth() * 
-						viewMatrix;
-				}
-				else
-				{
-					mTextureViewProjMatrix[index] = 
-						PROJECTIONCLIPSPACE2DTOIMAGESPACE_PERSPECTIVE * 
-						mCurrentTextureProjector[index]->getProjectionMatrixWithRSDepth() * 
-						mCurrentTextureProjector[index]->getViewMatrix();
-				}
-				mTextureViewProjMatrixDirty[index] = false;
-			}
-			return mTextureViewProjMatrix[index];
-		}
-		else
-			return Matrix4::IDENTITY;
-    }
-	//-----------------------------------------------------------------------------
-	const Matrix4& AutoParamDataSource::getTextureWorldViewProjMatrix(size_t index) const
-	{
-		if (index < OGRE_MAX_SIMULTANEOUS_LIGHTS)
-		{
-			if (mTextureWorldViewProjMatrixDirty[index] && mCurrentTextureProjector[index])
-			{
-				mTextureWorldViewProjMatrix[index] = 
-					getTextureViewProjMatrix(index)	* getWorldMatrix();
-				mTextureWorldViewProjMatrixDirty[index] = false;
-			}
-			return mTextureWorldViewProjMatrix[index];
-		}
-		else
-			return Matrix4::IDENTITY;
-	}
-	//-----------------------------------------------------------------------------
-	const Matrix4& AutoParamDataSource::getSpotlightViewProjMatrix(size_t index) const
-	{
-		if (index < OGRE_MAX_SIMULTANEOUS_LIGHTS)
-		{
-			const Light& l = getLight(index);
-
-			if (&l != &mBlankLight && 
-				l.getType() == Light::LT_SPOTLIGHT &&
-				mSpotlightViewProjMatrixDirty[index])
-			{
-				Frustum frust;
-				SceneNode dummyNode(0);
-				dummyNode.attachObject(&frust);
-
-				frust.setProjectionType(PT_PERSPECTIVE);
-				frust.setFOVy(l.getSpotlightOuterAngle());
-				frust.setAspectRatio(1.0f);
-				// set near clip the same as main camera, since they are likely
-				// to both reflect the nature of the scene
-				frust.setNearClipDistance(mCurrentCamera->getNearClipDistance());
-				// Calculate position, which same as spotlight position, in camera-relative coords if required
-				dummyNode.setPosition(l.getDerivedPosition(true));
-				// Calculate direction, which same as spotlight direction
-				Vector3 dir = - l.getDerivedDirection(); // backwards since point down -z
-				dir.normalise();
-				Vector3 up = Vector3::UNIT_Y;
-				// Check it's not coincident with dir
-				if (Math::Abs(up.dotProduct(dir)) >= 1.0f)
-				{
-					// Use camera up
-					up = Vector3::UNIT_Z;
-				}
-				// cross twice to rederive, only direction is unaltered
-				Vector3 left = dir.crossProduct(up);
-				left.normalise();
-				up = dir.crossProduct(left);
-				up.normalise();
-				// Derive quaternion from axes
-				Quaternion q;
-				q.FromAxes(left, up, dir);
-				dummyNode.setOrientation(q);
-
-				// The view matrix here already includes camera-relative changes if necessary
-				// since they are built into the frustum position
-				mSpotlightViewProjMatrix[index] = 
-					PROJECTIONCLIPSPACE2DTOIMAGESPACE_PERSPECTIVE * 
-					frust.getProjectionMatrixWithRSDepth() * 
-					frust.getViewMatrix();
-
-				mSpotlightViewProjMatrixDirty[index] = false;
-			}
-			return mSpotlightViewProjMatrix[index];
-		}
-		else
-			return Matrix4::IDENTITY;
-	}
-	//-----------------------------------------------------------------------------
-	const Matrix4& AutoParamDataSource::getSpotlightWorldViewProjMatrix(size_t index) const
-	{
-		if (index < OGRE_MAX_SIMULTANEOUS_LIGHTS)
-		{
-			const Light& l = getLight(index);
-
-			if (&l != &mBlankLight && 
-				l.getType() == Light::LT_SPOTLIGHT &&
-				mSpotlightWorldViewProjMatrixDirty[index])
-			{
-				mSpotlightWorldViewProjMatrix[index] = 
-					getSpotlightViewProjMatrix(index) * getWorldMatrix();
-				mSpotlightWorldViewProjMatrixDirty[index] = false;
-			}
-			return mSpotlightWorldViewProjMatrix[index];
-		}
-		else
-			return Matrix4::IDENTITY;
-	}
-//-----------------------------------------------------------------------------
-  const Matrix4& AutoParamDataSource::getTextureTransformMatrix(size_t index) const
-  {
-    // make sure the current pass is set
-    assert(mCurrentPass && "current pass is NULL!");
-    // check if there is a texture unit with the given index in the current pass
-    if(index < mCurrentPass->getNumTextureUnitStates())
-    {
-      // texture unit existent, return its currently set transform
-      return mCurrentPass->getTextureUnitState(static_cast<unsigned short>(index))->getTextureTransform();
-    }
-    else
-    {
-      // no such texture unit, return unity
-      return Matrix4::IDENTITY;
-    }
-  }
-    //-----------------------------------------------------------------------------
-    void AutoParamDataSource::setCurrentRenderTarget(const RenderTarget* target)
-    {
-        mCurrentRenderTarget = target;
-    }
-    //-----------------------------------------------------------------------------
-    const RenderTarget* AutoParamDataSource::getCurrentRenderTarget(void) const
-    {
-        return mCurrentRenderTarget;
-    }
-    //-----------------------------------------------------------------------------
-    void AutoParamDataSource::setCurrentViewport(const Viewport* viewport)
-    {
-        mCurrentViewport = viewport;
-    }
-    //-----------------------------------------------------------------------------
-	void AutoParamDataSource::setShadowDirLightExtrusionDistance(Real dist)
-	{
-		mDirLightExtrusionDistance = dist;
-	}
-    //-----------------------------------------------------------------------------
-	Real AutoParamDataSource::getShadowExtrusionDistance(void) const
-	{
-		const Light& l = getLight(0); // only ever applies to one light at once
-		if (l.getType() == Light::LT_DIRECTIONAL)
-		{
-			// use constant
-			return mDirLightExtrusionDistance;
-		}
-		else
-		{
-			// Calculate based on object space light distance
-			// compared to light attenuation range
-			Vector3 objPos = getInverseWorldMatrix().transformAffine(l.getDerivedPosition(true));
-			return l.getAttenuationRange() - objPos.length();
+			_ShowToolTip(rcCaption, rcCaptionText, pItem, FALSE);
 		}
 	}
-    //-----------------------------------------------------------------------------
-    const Renderable* AutoParamDataSource::getCurrentRenderable(void) const
-    {
-        return mCurrentRenderable;
-    }
-	//-----------------------------------------------------------------------------
-	Matrix4 AutoParamDataSource::getInverseViewProjMatrix(void) const
+	else
 	{
-		return this->getViewProjectionMatrix().inverse();
-	}
-	//-----------------------------------------------------------------------------
-	Matrix4 AutoParamDataSource::getInverseTransposeViewProjMatrix(void) const
-	{
-		return this->getInverseViewProjMatrix().transpose();
-	}
-	//-----------------------------------------------------------------------------
-	Matrix4 AutoParamDataSource::getTransposeViewProjMatrix(void) const
-	{
-		return this->getViewProjectionMatrix().transpose();
-	}
-	//-----------------------------------------------------------------------------
-	Matrix4 AutoParamDataSource::getTransposeViewMatrix(void) const
-	{
-		return this->getViewMatrix().transpose();
-	}
-	//-----------------------------------------------------------------------------
-	Matrix4 AutoParamDataSource::getInverseTransposeViewMatrix(void) const
-	{
-		return this->getInverseViewMatrix().transpose();
-	}
-	//-----------------------------------------------------------------------------
-	Matrix4 AutoParamDataSource::getTransposeProjectionMatrix(void) const
-	{
-		return this->getProjectionMatrix().transpose();
-	}
-	//-----------------------------------------------------------------------------
-	Matrix4 AutoParamDataSource::getInverseProjectionMatrix(void) const 
-	{
-		return this->getProjectionMatrix().inverse();
-	}
-	//-----------------------------------------------------------------------------
-	Matrix4 AutoParamDataSource::getInverseTransposeProjectionMatrix(void) const
-	{
-		return this->getInverseProjectionMatrix().transpose();
-	}
-	//-----------------------------------------------------------------------------
-	Matrix4 AutoParamDataSource::getTransposeWorldViewProjMatrix(void) const
-	{
-		return this->getWorldViewProjMatrix().transpose();
-	}
-	//-----------------------------------------------------------------------------
-	Matrix4 AutoParamDataSource::getInverseWorldViewProjMatrix(void) const
-	{
-		return this->getWorldViewProjMatrix().inverse();
-	}
-	//-----------------------------------------------------------------------------
-	Matrix4 AutoParamDataSource::getInverseTransposeWorldViewProjMatrix(void) const
-	{
-		return this->getInverseWorldViewProjMatrix().transpose();
-	}
-	//-----------------------------------------------------------------------------
-	Matrix4 AutoParamDataSource::getTransposeWorldViewMatrix(void) const
-	{
-		return this->getWorldViewMatrix().transpose();
-	}
-	//-----------------------------------------------------------------------------
-	Matrix4 AutoParamDataSource::getTransposeWorldMatrix(void) const
-	{
-		return this->getWorldMatrix().transpose();
-	}
-    //-----------------------------------------------------------------------------
-    Real AutoParamDataSource::getTime(void) const
-    {
-        return ControllerManager::getSingleton().getElapsedTime();
-    }
-	//-----------------------------------------------------------------------------
-	Real AutoParamDataSource::getTime_0_X(Real x) const
-	{
-		return fmod(this->getTime(), x);
-	}
-	//-----------------------------------------------------------------------------
-	Real AutoParamDataSource::getCosTime_0_X(Real x) const
-	{ 
-		return cos(this->getTime_0_X(x)); 
-	}
-	//-----------------------------------------------------------------------------
-	Real AutoParamDataSource::getSinTime_0_X(Real x) const
-	{ 
-		return sin(this->getTime_0_X(x)); 
-	}
-	//-----------------------------------------------------------------------------
-	Real AutoParamDataSource::getTanTime_0_X(Real x) const
-	{ 
-		return tan(this->getTime_0_X(x)); 
-	}
-	//-----------------------------------------------------------------------------
-	Vector4 AutoParamDataSource::getTime_0_X_packed(Real x) const
-	{
-		Real t = this->getTime_0_X(x);
-		return Vector4(t, sin(t), cos(t), tan(t));
-	}
-	//-----------------------------------------------------------------------------
-	Real AutoParamDataSource::getTime_0_1(Real x) const
-	{ 
-		return this->getTime_0_X(x)/x; 
-	}
-	//-----------------------------------------------------------------------------
-	Real AutoParamDataSource::getCosTime_0_1(Real x) const
-	{ 
-		return cos(this->getTime_0_1(x)); 
-	}
-	//-----------------------------------------------------------------------------
-	Real AutoParamDataSource::getSinTime_0_1(Real x) const
-	{ 
-		return sin(this->getTime_0_1(x)); 
-	}
-	//-----------------------------------------------------------------------------
-	Real AutoParamDataSource::getTanTime_0_1(Real x) const
-	{ 
-		return tan(this->getTime_0_1(x)); 
-	}
-	//-----------------------------------------------------------------------------
-	Vector4 AutoParamDataSource::getTime_0_1_packed(Real x) const
-	{
-		Real t = this->getTime_0_1(x);
-		return Vector4(t, sin(t), cos(t), tan(t));
-	}
-	//-----------------------------------------------------------------------------
-	Real AutoParamDataSource::getTime_0_2Pi(Real x) const
-	{ 
-		return this->getTime_0_X(x)/x*2*Math::PI; 
-	}
-	//-----------------------------------------------------------------------------
-	Real AutoParamDataSource::getCosTime_0_2Pi(Real x) const
-	{ 
-		return cos(this->getTime_0_2Pi(x)); 
-	}
-	//-----------------------------------------------------------------------------
-	Real AutoParamDataSource::getSinTime_0_2Pi(Real x) const
-	{ 
-		return sin(this->getTime_0_2Pi(x)); 
-	}
-	//-----------------------------------------------------------------------------
-	Real AutoParamDataSource::getTanTime_0_2Pi(Real x) const
-	{ 
-		return tan(this->getTime_0_2Pi(x)); 
-	}
-	//-----------------------------------------------------------------------------
-	Vector4 AutoParamDataSource::getTime_0_2Pi_packed(Real x) const
-	{
-		Real t = this->getTime_0_2Pi(x);
-		return Vector4(t, sin(t), cos(t), tan(t));
-	}
-	//-----------------------------------------------------------------------------
-	Real AutoParamDataSource::getFrameTime(void) const
-	{
-		return ControllerManager::getSingleton().getFrameTimeSource()->getValue();
-	}
-	//-----------------------------------------------------------------------------
-	Real AutoParamDataSource::getFPS() const
-	{
-		return mCurrentRenderTarget->getLastFPS();
-	}
-	//-----------------------------------------------------------------------------
-	Real AutoParamDataSource::getViewportWidth() const
-	{ 
-		return mCurrentViewport->getActualWidth(); 
-	}
-	//-----------------------------------------------------------------------------
-	Real AutoParamDataSource::getViewportHeight() const
-	{ 
-		return mCurrentViewport->getActualHeight(); 
-	}
-	//-----------------------------------------------------------------------------
-	Real AutoParamDataSource::getInverseViewportWidth() const
-	{ 
-		return 1.0f/mCurrentViewport->getActualWidth(); 
-	}
-	//-----------------------------------------------------------------------------
-	Real AutoParamDataSource::getInverseViewportHeight() const
-	{ 
-		return 1.0f/mCurrentViewport->getActualHeight(); 
-	}
-	//-----------------------------------------------------------------------------
-	Vector3 AutoParamDataSource::getViewDirection() const
-	{
-		return mCurrentCamera->getDerivedDirection();
-	}
-	//-----------------------------------------------------------------------------
-	Vector3 AutoParamDataSource::getViewSideVector() const
-	{ 
-		return mCurrentCamera->getDerivedRight();
-	}
-	//-----------------------------------------------------------------------------
-	Vector3 AutoParamDataSource::getViewUpVector() const
-	{ 
-		return mCurrentCamera->getDerivedUp();
-	}
-	//-----------------------------------------------------------------------------
-	Real AutoParamDataSource::getFOV() const
-	{ 
-		return mCurrentCamera->getFOVy().valueRadians(); 
-	}
-	//-----------------------------------------------------------------------------
-	Real AutoParamDataSource::getNearClipDistance() const
-	{ 
-		return mCurrentCamera->getNearClipDistance(); 
-	}
-	//-----------------------------------------------------------------------------
-	Real AutoParamDataSource::getFarClipDistance() const
-	{ 
-		return mCurrentCamera->getFarClipDistance(); 
-	}
-	//-----------------------------------------------------------------------------
-    int AutoParamDataSource::getPassNumber(void) const
-    {
-        return mPassNumber;
-    }
-	//-----------------------------------------------------------------------------
-    void AutoParamDataSource::setPassNumber(const int passNumber)
-    {
-        mPassNumber = passNumber;
-    }
-	//-----------------------------------------------------------------------------
-    void AutoParamDataSource::incPassNumber(void)
-    {
-        ++mPassNumber;
-    }
-	//-----------------------------------------------------------------------------
-	const Vector4& AutoParamDataSource::getSceneDepthRange() const
-	{
-		static Vector4 dummy(0, 100000, 100000, 1/100000);
+		if (m_strTipText == pItem->GetViewValue())
+			return;
 
-		if (mSceneDepthRangeDirty)
+		if (pItem->IsMultiLine())
+			return;
+
+		m_strTipText = pItem->GetViewValue();
+
+		if (GetFocus() && GetFocus()->IsKindOf(RUNTIME_CLASS(CXTPPropertyGridInplaceEdit)))
 		{
-			// calculate depth information
-			Real depthRange = mMainCamBoundsInfo->maxDistanceInFrustum - mMainCamBoundsInfo->minDistanceInFrustum;
-			if (depthRange > std::numeric_limits<Real>::epsilon())
-			{
-				mSceneDepthRange = Vector4(
-					mMainCamBoundsInfo->minDistanceInFrustum,
-					mMainCamBoundsInfo->maxDistanceInFrustum,
-					depthRange,
-					1.0f / depthRange);
-			}
-			else
-			{
-				mSceneDepthRange = dummy;
-			}
-			mSceneDepthRangeDirty = false;
+			if (((CXTPPropertyGridInplaceEdit*)(GetFocus()))->GetItem() == pItem)
+				return;
 		}
 
-		return mSceneDepthRange;
+		CRect rcValue(rc.left + nDividerPos, rc.top, rc.right, rc.bottom);
+		ClientToScreen(&rcValue);
 
-	}
-	//-----------------------------------------------------------------------------
-	const Vector4& AutoParamDataSource::getShadowSceneDepthRange(size_t index) const
-	{
-		static Vector4 dummy(0, 100000, 100000, 1/100000);
+		CRect rcValueText = pItem->GetValueRect();
+		rcValueText.InflateRect(1, 2, 0, 1);
+		ClientToScreen(&rcValueText);
 
-		if (!mCurrentSceneManager->isShadowTechniqueTextureBased())
-			return dummy;
+		int nTextExtent = _GetTextExtent(m_strTipText, pItem, TRUE).cx;
 
-		if (index < OGRE_MAX_SIMULTANEOUS_LIGHTS)
+		if (nTextExtent + 3 > rcValueText.Width())
 		{
-			if (mShadowCamDepthRangesDirty[index] && mCurrentTextureProjector[index])
+			if (GetExStyle() & WS_EX_LAYOUTRTL)
 			{
-				const VisibleObjectsBoundsInfo& info = 
-					mCurrentSceneManager->getVisibleObjectsBoundsInfo(
-						(Camera*)mCurrentTextureProjector[index]);
+				rcValueText.left = rcValueText.right - 8 - nTextExtent;
 
-				Real depthRange = info.maxDistanceInFrustum - info.minDistanceInFrustum;
-				if (depthRange > std::numeric_limits<Real>::epsilon())
-				{
-					mShadowCamDepthRanges[index] = Vector4(
-						info.minDistanceInFrustum,
-						info.maxDistanceInFrustum,
-						depthRange,
-						1.0f / depthRange);
-				}
-				else
-				{
-					mShadowCamDepthRanges[index] = dummy;
-				}
-
-				mShadowCamDepthRangesDirty[index] = false;
 			}
-			return mShadowCamDepthRanges[index];
+			_ShowToolTip(rcValue, rcValueText, pItem, TRUE);
 		}
-		else
-			return dummy;
 	}
-	//---------------------------------------------------------------------
-	const ColourValue& AutoParamDataSource::getShadowColour() const
+}
+
+
+void CXTPPropertyGridView::RelayToolTipEvent(UINT message)
+{
+	if (m_wndTip.GetSafeHwnd() && m_wndTip.IsWindowVisible())
 	{
-		return mCurrentSceneManager->getShadowColour();
+		CRect rc;
+		m_wndTip.GetWindowRect(rc);
+
+		CPoint pt;
+		GetCursorPos(&pt);
+
+		if (!m_rcToolTip.PtInRect(pt) || m_pHotButton)
+		{
+			m_strTipText = "";
+			m_wndTip.Activate(FALSE, 0, 0);
+		}
+
+		switch (message)
+		{
+			case WM_MOUSEWHEEL:
+				m_strTipText = "";
+				m_wndTip.Activate(FALSE, 0, 0);
+				break;
+
+			case WM_KEYDOWN:
+			case WM_SYSKEYDOWN:
+			case WM_LBUTTONDOWN:
+			case WM_RBUTTONDOWN:
+			case WM_MBUTTONDOWN:
+			case WM_LBUTTONUP:
+			case WM_RBUTTONUP:
+			case WM_MBUTTONUP:
+			case WM_MOUSELEAVE:
+				m_wndTip.Activate(FALSE, 0, 0);
+				break;
+		}
 	}
 
 }
 
+
+void CXTPPropertyGridView::OnSetFocus(CWnd* pOldWnd)
+{
+	m_pFocusedButton = NULL;
+
+	CListBox::OnSetFocus(pOldWnd);
+
+}
+void CXTPPropertyGridView::OnKillFocus (CWnd* pNewWnd)
+{
+	m_pFocusedButton = NULL;
+
+	CListBox::OnKillFocus(pNewWnd);
+
+}
+
+
+CXTPPropertyGridPaintManager* CXTPPropertyGridView::GetPaintManager() const
+{
+	return m_pGrid->GetPaintManager();
+}
+
+CXTPImageManager* CXTPPropertyGridView::GetImageManager() const
+{
+	return m_pGrid->GetImageManager();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Accessible
+
+LRESULT CXTPPropertyGridView::OnGetObject(WPARAM wParam, LPARAM lParam)
+{
+	if (lParam != OBJID_CLIENT)
+		return (LRESULT)Default();
+
+	LPUNKNOWN lpUnknown = GetInterface(&IID_IAccessible);
+	if (!lpUnknown)
+		return E_FAIL;
+
+	return LresultFromObject(IID_IAccessible, wParam, lpUnknown);
+}
+
+BEGIN_INTERFACE_MAP(CXTPPropertyGridView, CCmdTarget)
+	INTERFACE_PART(CXTPPropertyGridView, IID_IAccessible, ExternalAccessible)
+END_INTERFACE_MAP()
+
+CCmdTarget* CXTPPropertyGridView::GetAccessible()
+{
+	return this;
+}
+
+HRESULT CXTPPropertyGridView::GetAccessibleParent(IDispatch* FAR* ppdispParent)
+{
+	*ppdispParent = NULL;
+
+	if (GetSafeHwnd())
+	{
+		return AccessibleObjectFromWindow(GetSafeHwnd(), OBJID_WINDOW, IID_IDispatch, (void**)ppdispParent);
+	}
+	return E_FAIL;
+}
+
+HRESULT CXTPPropertyGridView::GetAccessibleChildCount(long FAR* pChildCount)
+{
+	if (pChildCount == 0)
+	{
+		return E_INVALIDARG;
+	}
+
+	*pChildCount = CListBox::GetCount();
+	return S_OK;
+}
+
+HRESULT CXTPPropertyGridView::GetAccessibleChild(VARIANT varChild, IDispatch* FAR* ppdispChild)
+{
+	*ppdispChild = NULL;
+	int nChild = GetChildIndex(&varChild);
+
+	if (nChild <= 0)
+	{
+		return E_INVALIDARG;
+	}
+
+	CXTPPropertyGridItem* pItem = GetItem(nChild - 1);
+	if (!pItem)
+	{
+		return E_INVALIDARG;
+	}
+
+	*ppdispChild = pItem->GetIDispatch(TRUE);
+	return S_OK;
+}
+
+HRESULT CXTPPropertyGridView::GetAccessibleName(VARIANT varChild, BSTR* pszName)
+{
+	int nChild = GetChildIndex(&varChild);
+
+	if (nChild == CHILDID_SELF || nChild == -1)
+	{
+		*pszName = SysAllocString(L"Properties Window");
+		return S_OK;
+	}
+
+	return E_INVALIDARG;
+}
+
+HRESULT CXTPPropertyGridView::GetAccessibleRole(VARIANT varChild, VARIANT* pvarRole)
+{
+	pvarRole->vt = VT_EMPTY;
+	int nChild = GetChildIndex(&varChild);
+
+	if (nChild == CHILDID_SELF)
+	{
+		pvarRole->vt = VT_I4;
+		pvarRole->lVal = ROLE_SYSTEM_TABLE;
+		return S_OK;
+	}
+
+	return E_INVALIDARG;
+}
+
+HRESULT CXTPPropertyGridView::GetAccessibleState(VARIANT varChild, VARIANT* pvarState)
+{
+	pvarState->vt = VT_I4;
+	pvarState->lVal = 0;
+	int nChild = GetChildIndex(&varChild);
+
+	if (nChild == CHILDID_SELF)
+	{
+		pvarState->lVal = STATE_SYSTEM_FOCUSABLE;
+	}
+
+	return S_OK;
+}
+
+
+HRESULT CXTPPropertyGridView::AccessibleLocation(long* pxLeft, long* pyTop, long* pcxWidth, long* pcyHeight, VARIANT varChild)
+{
+	*pxLeft = *pyTop = *pcxWidth = *pcyHeight = 0;
+
+	if (!GetSafeHwnd())
+		return S_OK;
+
+	CRect rc;
+	GetWindowRect(&rc);
+
+	int nChild = GetChildIndex(&varChild);
+
+	if (nChild != CHILDID_SELF)
+	{
+		return E_INVALIDARG;
+	}
+
+	*pxLeft = rc.left;
+	*pyTop = rc.top;
+	*pcxWidth = rc.Width();
+	*pcyHeight = rc.Height();
+
+	return S_OK;
+}
+
+HRESULT CXTPPropertyGridView::AccessibleHitTest(long xLeft, long yTop, VARIANT* pvarID)
+{
+	if (pvarID == NULL)
+		return E_INVALIDARG;
+
+	pvarID->vt = VT_EMPTY;
+
+	if (!GetSafeHwnd())
+		return S_FALSE;
+
+	if (!CXTPWindowRect(this).PtInRect(CPoint(xLeft, yTop)))
+		return S_FALSE;
+
+	pvarID->vt = VT_I4;
+	pvarID->lVal = CHILDID_SELF;
+
+	CPoint pt(xLeft, yTop);
+	ScreenToClient(&pt);
+
+	CXTPPropertyGridItem* pItem = ItemFromPoint(pt);
+
+	if (pItem)
+	{
+		pvarID->vt = VT_DISPATCH;
+		pvarID->pdispVal = pItem->GetIDispatch(TRUE);
+	}
+
+	return S_OK;
+}

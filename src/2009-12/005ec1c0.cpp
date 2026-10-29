@@ -1,54 +1,163 @@
-// roc 2009-12 005ec1c0  unit: G3D::Shader  size: 55 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 005ec1c0
-//
-// 005ec1c0  56                   push esi
-// 005ec1c1  8bf1                 mov esi, ecx
-// 005ec1c3  837e0400             cmp dword ptr [esi + 4], 0
-// 005ec1c7  742a                 je 0x5ec1f3
-// 005ec1c9  e862feffff           call 0x5ec030
-// 005ec1ce  8b442408             mov eax, dword ptr [esp + 8]
-// 005ec1d2  83781810             cmp dword ptr [eax + 0x18], 0x10
-// 005ec1d6  7205                 jb 0x5ec1dd
-// 005ec1d8  8b4004               mov eax, dword ptr [eax + 4]
-// 005ec1db  eb03                 jmp 0x5ec1e0
-// 005ec1dd  83c004               add eax, 4
-// 005ec1e0  50                   push eax
-// 005ec1e1  8b4604               mov eax, dword ptr [esi + 4]
-// 005ec1e4  6810389a00           push 0x9a3810
-// 005ec1e9  50                   push eax
-// 005ec1ea  ff1500b89800         call dword ptr [0x98b800]
-// 005ec1f0  83c40c               add esp, 0xc
-// 005ec1f3  5e                   pop esi
-// 005ec1f4  c20400               ret 4
-// copied from an identical function in another client (function ?write@S@@QAEXABUText@@@Z)
-
+// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-extern int (__cdecl *printCall)(void *, const char *, ...);
-extern const char format[];
+// roc-lib: g3d-6.09 roc_g3d_log_guard_18744d5ad0bb680e.cpp
 
-struct Text {
-    unsigned int allocator;
-    union {
-        char buffer[16];
-        char *pointer;
-    };
-    unsigned int length;
-    unsigned int capacity;
-};
+// Candidate translation unit (score above; library headers required).
+/**
+  @file Log.cpp
 
-struct S {
-    unsigned int reserved;
-    void *stream;
-    void prepare();
-    void write(const Text &text);
-};
+  @maintainer Morgan McGuire, morgan@graphics3d.com
+  @created 2001-08-04
+  @edited  2005-07-01
+ */
 
-void S::write(const Text &text)
-{
-    if (stream) {
-        prepare();
-        const char *data = text.capacity >= 16 ? text.pointer : text.buffer;
-        printCall(stream, format, data);
+#include "G3D/platform.h"
+#include "G3D/Log.h"
+#include "G3D/format.h"
+#include "G3D/Array.h"
+#include "G3D/fileutils.h"
+#include <time.h>
+
+#ifdef G3D_WIN32
+    #include <imagehlp.h>
+#else
+    #include <stdarg.h>
+#endif
+
+namespace G3D {
+
+Log* Log::commonLog = NULL;
+
+Log::Log(const std::string& filename, int stripFromStackBottom) : 
+    stripFromStackBottom(stripFromStackBottom) {
+
+    this->filename = filename;
+
+    logFile = fopen(filename.c_str(), "w");
+
+    if (logFile == NULL) {
+        std::string drive, base, ext;
+        Array<std::string> path;
+        parseFilename(filename, drive, path, base, ext);
+        std::string logName = base + ((ext != "") ? ("." + ext) : ""); 
+
+        // Write time is greater than 1ms.  This may be a network drive.... try another file.
+        #ifdef G3D_WIN32
+            if (fileExists("c:/tmp")) {
+                logName = std::string("c:/tmp/") + logName;
+            } else if (fileExists("c:/temp")) { 
+                logName = std::string("c:/temp/") + logName;
+            } else {
+                logName = std::string("c:/") + logName;
+            }
+        #else
+            logName = std::string("/tmp/") + logName;
+        #endif
+
+        logFile = fopen(logName.c_str(), "w");
     }
+
+    // Turn off buffering.
+    setvbuf(logFile, NULL, _IONBF, 0);
+
+    fprintf(logFile, "Application Log\n");
+    time_t t;
+    time(&t);
+    fprintf(logFile, "Start: %s\n", ctime(&t));
+    fflush(logFile);
+
+    if (commonLog == NULL) {
+        commonLog = this;
+    }
+}
+
+
+Log::~Log() {
+    section("Shutdown");
+    println("Closing log file");
+    
+    // Make sure we don't leave a dangling pointer
+    if (Log::commonLog == this) {
+        Log::commonLog = NULL;
+    }
+
+    fclose(logFile);
+}
+
+
+FILE* Log::getFile() const {
+    return logFile;
+}
+
+Log* Log::common() {
+    if (commonLog == NULL) {
+        commonLog = new Log();
+    }
+    return commonLog;
+}
+
+
+std::string Log::getCommonLogFilename() {
+    return common()->filename;
+}
+
+
+void Log::section(const std::string& s) {
+    fprintf(logFile, "_____________________________________________________\n");
+    fprintf(logFile, "\n    ###    %s    ###\n\n", s.c_str());
+}
+
+
+void __cdecl Log::printf(const char* fmt, ...) {
+    printHeader();
+
+	va_list arg_list;
+	va_start(arg_list, fmt);
+    print(vformat(fmt, arg_list));
+    va_end(arg_list);
+}
+
+
+void __cdecl Log::vprintf(const char* fmt, va_list argPtr) {
+    vfprintf(logFile, fmt, argPtr);
+}
+
+
+void Log::print(const std::string& s) {
+    if (logFile != NULL) {
+        printHeader();
+        fprintf(logFile, "%s", s.c_str());
+    }
+}
+
+
+void Log::println(const std::string& s) {
+    printHeader();
+    fprintf(logFile, "%s\n", s.c_str());
+}
+
+
+void Log::printHeader() {
+    time_t t;
+    if (time(&t) != ((time_t)-1)) {
+        /*
+        char buf[32];
+        strftime(buf, 32, "[%H:%M:%S]", localtime(&t));
+    
+         Removed because this doesn't work on SDL threads.
+
+        #ifdef _DEBUG
+            std::string bt = getBacktrace(15, 2, stripFromStackBottom);
+            fprintf(logFile, "\n %s %s\n\n", buf, bt.c_str());
+        #endif
+
+        fprintf(logFile, "\n %s \n", buf);
+        */
+
+    } else {
+        println("[Error getting time]");
+    }
+}
+
 }

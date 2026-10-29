@@ -1,26 +1,11 @@
-// from server: 81% by colin
-// roc 2007-08 005de510  unit: RBX::VMotorFeature  size: 92 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005de510
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /MD
+// roc-lib: rbxgs-render roc_g3d_array_debug_89494c2c4f78369c.cpp
 
-extern "C" void __cdecl sub_5de130(int* a, int b, int c, int d);
-
-void __cdecl sub_5de510(int* arr, int start, int end, int extra)
-{
-    int i = start;
-    int child = i + i + 2;
-    if (child < end) {
-        do {
-            int v = arr[child];
-            if (v < arr[child - 1])
-                child = child - 1;
-            arr[i] = arr[child];
-            i = child;
-            child = child + child + 2;
-        } while (child < end);
-    }
-    if (child == end) {
-        arr[i] = arr[end - 1];
-        i = end - 1;
-    }
-    sub_5de130(arr, i, start, extra);
-}
+// Candidate translation unit (score above; library headers required).
+#include <GLG3D/Texture.h>
+#include <G3D/ReferenceCount.h>
+#include <G3D/Array.h>
+template class G3D::Array<G3D::Texture*>;
+void use_array(G3D::Array<G3D::ReferenceCountedPointer<G3D::Texture> >& a,const G3D::ReferenceCountedPointer<G3D::Texture>& v,int size) { a.append(v); a.resize(size); a.clear(); }

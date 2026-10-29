@@ -1,14 +1,13 @@
-// from server: 34% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Controls/Button/XTPButton.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\Controls\XTCaptionTheme.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTButton.cpp : implementation of the CXTPButton class.
+// XTCaptionTheme.cpp: implementation of the CXTCaptionTheme class.
 //
 // This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,21 +25,15 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-
 #include "Common/XTPDrawHelpers.h"
-#include "Common/XTPImageManager.h"
-#include "Common/XTPMarkupRender.h"
-#include "Common/XTPToolTipContext.h"
-#include "Common/XTPMaskEditT.h"
 #include "Common/XTPWinThemeWrapper.h"
-#include "Common/XTPColorManager.h"
 
-#include "../Util/XTPControlTheme.h"
-
-#include "../Defines.h"
-#include "XTPButton.h"
-#include "XTPButtonTheme.h"
-#include "../Edit/XTPEdit.h"
+#include "XTThemeManager.h"
+#include "XTButtonTheme.h"
+#include "XTDefines.h"
+#include "XTButton.h"
+#include "XTCaption.h"
+#include "XTCaptionTheme.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -48,831 +41,403 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#ifndef WM_UPDATEUISTATE
-#define WM_UPDATEUISTATE    0x0128
-#endif
+IMPLEMENT_THEME_FACTORY(CXTCaptionTheme)
 
 /////////////////////////////////////////////////////////////////////////////
-// CXTPButton
-/////////////////////////////////////////////////////////////////////////////
+// CXTCaptionTheme
 
-#ifndef _XTP_ACTIVEX_BUTTON
-IMPLEMENT_DYNAMIC(CXTPButton, CXTPButtonBase)
-#endif
-
-CXTPButton::CXTPButton()
-: m_pTheme(NULL)
+CXTCaptionTheme::CXTCaptionTheme()
 {
-	m_bHot = FALSE;
-	m_bPushed = FALSE;
-
-	m_bChecked = FALSE;
-
-	m_bFlatStyle = FALSE;
-	m_bUseVisualStyle = TRUE;
-
-	m_bEnableMarkup = FALSE;
-	m_pMarkupContext = NULL;
-	m_pUIElement = NULL;
-
-	m_nPushButtonStyle = 0;
-
-	m_nBorderGap = 4;
-	m_nImageGap = 3;
-
-	m_pIcon = 0;
-
-	m_nImageAlignment = BS_VCENTER | BS_CENTER;
-	m_nTextImageRelation = xtpButtonImageBeforeText;
-
-	m_nBorderStyle = 0;
-	m_bShowFocus = TRUE;
-
-	m_hWndBuddy = 0;
-
-	m_pToolTipContext = new CXTPToolTipContext();
-
-	VERIFY(SetTheme(xtpControlThemeDefault));
 }
 
-CXTPButton::~CXTPButton()
+void CXTCaptionTheme::RefreshMetrics()
 {
-	CMDTARGET_RELEASE(m_pTheme);
+	CXTThemeManagerStyle ::RefreshMetrics();
 
-	XTPMarkupReleaseElement(m_pUIElement);
-	XTPMarkupReleaseContext(m_pMarkupContext);
-
-	CMDTARGET_RELEASE(m_pIcon);
-	CMDTARGET_RELEASE(m_pToolTipContext);
+	m_clrEdgeShadow.SetStandardValue(GetXtremeColor(COLOR_3DSHADOW));
+	m_clrEdgeLight.SetStandardValue(GetXtremeColor(COLOR_3DHILIGHT));
 }
 
-BEGIN_MESSAGE_MAP(CXTPButton, CXTPButtonBase)
-	//{{AFX_MSG_MAP(CXTPButton)
-	ON_WM_ERASEBKGND()
-	ON_WM_MOUSEMOVE()
-	ON_WM_SETFOCUS()
-	ON_WM_KILLFOCUS()
-	ON_WM_LBUTTONDOWN()
-	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
-	ON_WM_CHAR()
-	ON_WM_KEYDOWN()
-	ON_MESSAGE(WM_GETDLGCODE, OnGetDlgCode)
-	//}}AFX_MSG_MAP
-#ifndef _XTP_ACTIVEX_BUTTON
-	ON_WM_PAINT()
-#endif
-	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
-	ON_MESSAGE(BM_SETSTYLE, OnDefaultAndInvalidate)
-	ON_MESSAGE(BM_SETCHECK, OnDefaultAndInvalidate)
-	ON_MESSAGE(WM_CAPTURECHANGED, OnDefaultAndInvalidate)
-	ON_MESSAGE_VOID(WM_ENABLE, OnInvalidate)
-	ON_MESSAGE(WM_UPDATEUISTATE, OnUpdateUIState)
-	ON_MESSAGE(BM_SETSTATE, OnSetState)
-	ON_MESSAGE(WM_SETTEXT, OnSetText)
-	ON_MESSAGE(WM_XTP_SETCONTROLTHEME, OnSetTheme)
-END_MESSAGE_MAP()
-
-void CXTPButton::OnMouseMove(UINT nFlags, CPoint point)
+void CXTCaptionTheme::DrawCaptionBack(CDC* pDC, CXTCaption* pCaption, CRect& rcItem)
 {
-	if (GetButtonStyle() == BS_GROUPBOX)
-		return;
+	CRect rc = rcItem;
 
-	CXTPButtonBase::OnMouseMove(nFlags, point);
+	// Set the background mode to transparent.
+	pDC->SetBkMode(TRANSPARENT);
 
-	CRect rc = GetButtonRect();
+	// repaint the background.
+	pDC->FillSolidRect(rc, pCaption->m_clrBorder);
 
-	BOOL bHot = rc.PtInRect(point);
-	if (bHot != m_bHot)
+	// draw the caption border.
+	if (pCaption->m_dwExStyle & CPWS_EX_GROOVE_EDGE)
 	{
-		m_bHot = bHot;
-		RedrawButton();
+		pDC->Draw3dRect(rc, m_clrEdgeShadow, m_clrEdgeLight);
+		rc.DeflateRect(1, 1);
+		pDC->Draw3dRect(rc, m_clrEdgeLight, m_clrEdgeShadow);
 
-		if (m_bHot)
+		if (pCaption->m_nBorder == 0)
 		{
-			TRACKMOUSEEVENT tme = {sizeof(TRACKMOUSEEVENT), TME_LEAVE, m_hWnd, HOVER_DEFAULT};
-			_TrackMouseEvent(&tme);
-		}
-	}
-}
-
-void CXTPButton::OnMouseLeave()
-{
-	OnMouseMove(0, CPoint(-1, -1));
-}
-
-
-void CXTPButton::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	if (m_nPushButtonStyle == xtpButtonSplitDropDown)
-	{
-		CRect rcDropDown(GetButtonRect());
-		rcDropDown.left = rcDropDown.right - 16 - GetBorderGap();
-
-		if (rcDropDown.PtInRect(point))
-		{
-			DoDropDown();
-			return;
+			rc.DeflateRect(1, 1);
 		}
 	}
 
-	CXTPButtonBase::OnLButtonDown(nFlags, point);
-}
-
-LRESULT CXTPButton::OnSetState(WPARAM wParam, LPARAM /*lParam*/)
-{
-	BOOL bVisible = GetStyle() & WS_VISIBLE;
-	if (bVisible) ModifyStyle(WS_VISIBLE, 0);
-	Default();
-	if (bVisible) ModifyStyle(0, WS_VISIBLE);
-
-	if (m_bPushed == 2)
-		return 0;
-
-	m_bPushed = (wParam != 0);
-	RedrawButton();
-
-	if (m_bPushed && IsDropDownStyle() && IsPushButton() && (m_nPushButtonStyle != xtpButtonSplitDropDown))
+	else
+	if (pCaption->m_dwExStyle & CPWS_EX_RAISED_EDGE)
 	{
-		DoDropDown();
+		pDC->Draw3dRect(rc, m_clrEdgeLight, m_clrEdgeShadow);
+
+		if (pCaption->m_nBorder == 0)
+		{
+			rc.DeflateRect(1, 1);
+		}
 	}
 
-	return 0;
+	// draw the caption banner border.
+	rc.DeflateRect(pCaption->m_nBorder, pCaption->m_nBorder);
+	pDC->FillSolidRect(rc, pCaption->m_clrFace);
 }
 
-CRect CXTPButton::GetButtonRect()
+void CXTCaptionTheme::DrawCaptionText(CDC* pDC, CXTCaption* pCaption)
 {
-	CXTPClientRect rc(this);
-
-	if (m_hWndBuddy)
-	{
-		CXTPEdit* pEditBuddy = DYNAMIC_DOWNCAST(CXTPEdit, CWnd::FromHandlePermanent(m_hWndBuddy));
-		if (pEditBuddy) pEditBuddy->AdjustBuddyRect(this, rc, UDS_ALIGNRIGHT);
-	}
-
-	return rc;
-}
-
-void CXTPButton::DoDropDown()
-{
-	m_bPushed = 2;
-	RedrawButton();
-
-	OnDropDown();
-
-	m_bPushed = 0;
-	RedrawButton();
-}
-
-void CXTPButton::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	if (IsDropDownStyle() && (nChar == VK_SPACE))
-	{
-		DoDropDown();
-		return;
-	}
-
-	if ((m_nPushButtonStyle == xtpButtonDropDown || m_nPushButtonStyle == xtpButtonDropDownRight) && (nChar == VK_RETURN))
-	{
-		DoDropDown();
-		return;
-	}
-
-	CXTPButtonBase::OnChar(nChar, nRepCnt, nFlags);
-}
-
-LRESULT CXTPButton::OnGetDlgCode(WPARAM wParam, LPARAM lParam)
-{
-	LRESULT lCode = CXTPButtonBase::OnGetDlgCode();
-
-	if (IsDropDownStyle() && lParam && ((LPMSG)lParam)->message == WM_CHAR && wParam == VK_SPACE)
-	{
-		lCode |= DLGC_WANTCHARS;
-	}
-
-	if ((m_nPushButtonStyle == xtpButtonDropDown || m_nPushButtonStyle == xtpButtonDropDownRight)
-		&& lParam && (((LPMSG)lParam)->message == WM_KEYDOWN || ((LPMSG)lParam)->message == WM_CHAR) && wParam == VK_RETURN)
-	{
-		lCode |= DLGC_WANTALLKEYS;
-	}
-
-	return lCode;
-}
-
-void CXTPButton::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	if (nChar == VK_SPACE && IsDropDownStyle())
-		return;
-
-	if (nChar == VK_RETURN && (m_nPushButtonStyle == xtpButtonDropDown || m_nPushButtonStyle == xtpButtonDropDownNoGlyph || m_nPushButtonStyle == xtpButtonDropDownRight))
+		// if the caption text is empty, return.
+	if (pCaption->GetCaptionText().IsEmpty())
 	{
 		return;
 	}
 
-	CXTPButtonBase::OnKeyDown(nChar, nRepCnt, nFlags);
+	// Get the display area for the text.
+	CRect rcText(pCaption->GetTextRect());
+
+	// Set the text color and select the caption font.
+	CXTPFontDC fontDC(pDC, pCaption->GetFont());
+	pDC->SetTextColor(pCaption->m_clrText);
+
+	// draw the text, and select the original font.
+	pDC->DrawText(pCaption->GetCaptionText(), rcText,
+		DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER | DT_CENTER | DT_NOPREFIX);
 }
 
-void CXTPButton::OnDropDown()
+void CXTCaptionTheme::DrawCaptionIcon(CDC* pDC, CXTCaption* pCaption, CRect& rcItem)
 {
-	GetParent()->SendMessage(WM_COMMAND,
-		(WPARAM)MAKELONG(::GetDlgCtrlID(GetSafeHwnd()), CBN_DROPDOWN),
-		(LPARAM)GetSafeHwnd());
-}
+	// If no icon was defined, just return.
+	if (pCaption->m_hIcon == NULL)
+		return;
 
-void CXTPButton::OnSetFocus(CWnd* pOldWnd)
-{
-	CXTPButtonBase::OnSetFocus(pOldWnd);
-	RedrawButton(TRUE);
-}
+	CRect rc = rcItem;
+	rc.left = (rc.right - pCaption->m_sizeIcon.cx)-(pCaption->m_nBorder + 2);
 
-void CXTPButton::OnKillFocus(CWnd* pNewWnd)
-{
-	CXTPButtonBase::OnKillFocus(pNewWnd);
-	RedrawButton(TRUE);
-}
-
-LRESULT CXTPButton::OnDefaultAndInvalidate(WPARAM, LPARAM)
-{
-	LRESULT lResult = Default();
-	RedrawButton(TRUE);
-
-	return lResult;
-}
-
-void CXTPButton::OnInvalidate()
-{
-	RedrawButton(TRUE);
-}
-
-LRESULT CXTPButton::OnPrintClient(WPARAM wParam, LPARAM lParam)
-{
-	if ((lParam & PRF_CLIENT) == 0)
-		return Default();
-
-	CDC* pDC = CDC::FromHandle((HDC)wParam);
-	if (pDC) OnDraw(pDC);
-	return 1;
-}
-
-void CXTPButton::OnPaint()
-{
-	CPaintDC dcPaint(this);
-	OnDraw(&dcPaint);
-}
-
-void CXTPButton::OnDraw(CDC* pDC)
-{
-	if ((GetButtonStyle() == BS_GROUPBOX))
+	// stop the icon at the left hand border
+	if (rc.left < pCaption->m_nBorder)
 	{
-		CFont* pOldFont = pDC->SelectObject(CWnd::GetFont());
-		pDC->SetBkColor(GetSysColor(COLOR_3DFACE));
-		pDC->SetBkMode(TRANSPARENT);
+		rc.left = pCaption->m_nBorder;
+	}
 
-		DoDraw(pDC);
+	rc.top = (rcItem.Height() - pCaption->m_sizeIcon.cy)/2;
+	rc.right = rc.left + pCaption->m_sizeIcon.cx;
+	rc.bottom = rc.top + pCaption->m_sizeIcon.cy;
 
-		pDC->SelectObject(pOldFont);
+	// Only draw the icon if it will fit into the space between the borders
+	if (rc.right < rcItem.right - pCaption->m_nBorder)
+	{
+		// draw the icon associated with the caption.
+		::DrawIconEx(pDC->GetSafeHdc(), rc.left, rc.top, pCaption->m_hIcon,
+			rc.Width(), rc.Height(), NULL, (HBRUSH)NULL, DI_NORMAL);
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTCaptionThemeOfficeXP
+
+void CXTCaptionThemeOfficeXP::DrawCaptionBack(CDC* pDC, CXTCaption* pCaption, CRect& rcItem)
+{
+	CRect rc = rcItem;
+
+	pDC->SetBkMode(TRANSPARENT);
+
+	// repaint the background.
+	pDC->FillSolidRect(rc, pCaption->m_clrBorder);
+
+	if (!pCaption->IsAppCaption())
+	{
+		pDC->Draw3dRect(rc, GetXtremeColor(COLOR_3DHILIGHT), GetXtremeColor(COLOR_3DSHADOW));
 	}
 	else
 	{
-		CXTPClientRect rc(this);
-		CXTPBufferDC memDC(*pDC, rc);
-
-		HBRUSH hBrush = (HBRUSH)GetParent()->SendMessage(WM_CTLCOLORBTN, (WPARAM)memDC.GetSafeHdc(), (LPARAM)GetSafeHwnd());
-		if (hBrush)
-		{
-			::FillRect(memDC.GetSafeHdc(), rc, hBrush);
-		}
-		else
-		{
-			memDC.FillSolidRect(rc, GetSysColor(COLOR_3DFACE));
-		}
-
-		CFont* pOldFont = memDC.SelectObject(CWnd::GetFont());
-		memDC.SetBkMode(TRANSPARENT);
-
-		DoDraw(&memDC);
-
-		memDC.SelectObject(pOldFont);
+		// draw the caption banner border.
+		rc.DeflateRect(pCaption->m_nBorder, pCaption->m_nBorder);
+		pDC->FillSolidRect(rc, pCaption->m_clrFace);
 	}
 }
 
-void CXTPButtonTheme::DrawButton(CDC* pDC, CXTPButton* pButton)
+/////////////////////////////////////////////////////////////////////////////
+// CXTCaptionThemeOffice2003
+
+CXTCaptionThemeOffice2003::CXTCaptionThemeOffice2003()
 {
-	if (pButton->IsPushButton())
+
+}
+
+CXTCaptionThemeOffice2003::CXTCaptionThemeOffice2003(BOOL /*bPrimaryCaption*/)
+{
+	XT_ERROR_MSG("CXTCaptionThemeOffice2003::CXTCaptionThemeOffice2003(BOOL bPrimaryCaption) has been deprecated.\n\n"
+		"Use CXTCaption::SetAppCaption(bool bAppCaption) to set the application's primary caption.");
+}
+
+void CXTCaptionThemeOffice2003::DrawCaptionBack(CDC* pDC, CXTCaption* pCaption, CRect& rcItem)
+{
+	pDC->SetBkMode(TRANSPARENT);
+
+	if (pCaption->IsAppCaption())
 	{
-		DrawButtonBackground(pDC, pButton);
+		XTPDrawHelpers()->GradientFill(pDC, rcItem, XTPColorManager()->grcCaption, FALSE);
+		pDC->Draw3dRect(rcItem, GetXtremeColor(XPCOLOR_FRAME), GetXtremeColor(XPCOLOR_FRAME));
+	}
+	else
+	{
+		XTPDrawHelpers()->GradientFill(pDC, rcItem, XTPColorManager()->grcToolBar, FALSE);
+		pDC->FillSolidRect(rcItem.left, rcItem.bottom - 1, rcItem.Width(), 1, GetXtremeColor(XPCOLOR_FRAME));
+	}
+}
 
-		DrawPushButtonText(pDC, pButton);
-		DrawPushButtonIcon(pDC, pButton);
+IMPLEMENT_THEME_FACTORY(CXTCaptionButtonTheme)
 
-		if (pButton->IsDropDownStyle() && pButton->GetPushButtonStyle() != xtpButtonDropDownNoGlyph)
+/////////////////////////////////////////////////////////////////////////////
+// CXTCaptionButtonTheme
+
+CXTCaptionButtonTheme::CXTCaptionButtonTheme()
+{
+	m_bOffsetHiliteText = FALSE;
+}
+
+BOOL CXTCaptionButtonTheme::DrawButtonThemeBackground(LPDRAWITEMSTRUCT lpDIS, CXTButton* pButton)
+{
+	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
+	if (::IsWindow(pCaption->GetSafeHwnd()))
+	{
+		SetColorFace(pCaption->m_clrFace);
+	}
+
+	return CXTButtonTheme::DrawButtonThemeBackground(lpDIS, pButton);
+}
+
+COLORREF CXTCaptionButtonTheme::GetTextColor(UINT /*nState*/, CXTButton* pButton)
+{
+	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
+	if (::IsWindow(pCaption->GetSafeHwnd()))
+	{
+		return pCaption->m_clrText;
+	}
+
+	return m_crText;
+}
+
+void CXTCaptionButtonTheme::DrawButtonText(CDC* pDC, UINT nState, CRect& rcItem, CXTButton* pButton)
+{
+	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
+	if (::IsWindow(pCaption->GetSafeHwnd()))
+	{
+		if (pCaption->IsAppCaption() && !pCaption->GetCaptionText().IsEmpty())
 		{
-			DrawPushButtonDropDown(pDC, pButton);
+			// select font into device context.
+			CXTPFontDC fontDC(pDC, GetThemeFont(pButton));
+			pDC->SetTextColor(GetTextColor(nState, pButton));
+
+			if (nState & ODS_SELECTED && m_bOffsetHiliteText)
+				rcItem.OffsetRect(1, 1);
+
+			// draw the text, and select the original font.
+			pDC->DrawText(pCaption->GetCaptionText(), rcItem,
+				DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER | DT_CENTER | DT_NOPREFIX);
+		}
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTCaptionButtonThemeOfficeXP
+
+CXTCaptionButtonThemeOfficeXP::CXTCaptionButtonThemeOfficeXP()
+{
+	m_bAnimateIcon = FALSE;
+	m_bFadedIcon = FALSE;
+	m_bOffsetHiliteText = FALSE;
+}
+
+COLORREF CXTCaptionButtonThemeOfficeXP::GetTextColor(UINT nState, CXTButton* pButton)
+{
+	if (nState & ODS_DISABLED)
+		return GetXtremeColor(COLOR_GRAYTEXT);
+
+	if (pButton->GetHilite() || (nState & ODS_SELECTED))
+		return m_crTextHilite;
+
+	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
+	if (::IsWindow(pCaption->GetSafeHwnd()))
+	{
+		return pCaption->m_clrText;
+	}
+
+	return m_crText;
+}
+
+BOOL CXTCaptionButtonThemeOfficeXP::DrawButtonThemeBackground(LPDRAWITEMSTRUCT lpDIS, CXTButton* pButton)
+{
+	// define some temporary variables.
+	CDC*  pDC = CDC::FromHandle(lpDIS->hDC);
+	CRect rcItem = lpDIS->rcItem;
+	int   nState = lpDIS->itemState;
+
+	// Paint the background.
+	if (pButton->GetHilite() || (nState & ODS_SELECTED))
+	{
+		pDC->FillSolidRect(rcItem, (nState & ODS_SELECTED) ?
+			GetXtremeColor(XPCOLOR_HIGHLIGHT_PUSHED) : GetXtremeColor(XPCOLOR_HIGHLIGHT));
+
+		pDC->Draw3dRect(rcItem, GetXtremeColor(XPCOLOR_HIGHLIGHT_BORDER),
+			GetXtremeColor(XPCOLOR_HIGHLIGHT_BORDER));
+	}
+	else
+	{
+		CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
+		if (::IsWindow(pCaption->GetSafeHwnd()))
+		{
+			m_crBack = pCaption->m_clrFace;
 		}
 
-		if (::GetFocus() == pButton->m_hWnd && pButton->GetShowFocus())
+		pDC->FillSolidRect(rcItem, m_crBack);
+
+		if (m_bWordTheme)
 		{
-			DrawFocusRect(pDC, pButton);
+			pDC->Draw3dRect(rcItem,
+				m_crBorderShadow, m_crBorderShadow);
+
 		}
-		return;
 	}
 
-	switch (pButton->GetButtonStyle())
-	{
-		case BS_RADIOBUTTON:
-		case BS_AUTORADIOBUTTON:
-			DrawRadioButtonMark(pDC, pButton);
-			DrawButtonText(pDC, pButton);
-			break;
-
-		case BS_3STATE:
-		case BS_AUTO3STATE:
-		case BS_CHECKBOX:
-		case BS_AUTOCHECKBOX:
-			DrawCheckBoxMark(pDC, pButton);
-			DrawButtonText(pDC, pButton);
-			break;
-
-		case BS_GROUPBOX:
-			if (pButton->GetBorderStyle() != 2)
-			{
-				DrawGroupBox(pDC, pButton);
-				DrawButtonText(pDC, pButton);
-			}
-			break;
-
-		default:
-			TRACE(_T("Warning: unkown style"));
-	}
-}
-
-void CXTPButton::DoDraw(CDC* pDC)
-{
-	if (m_hWndBuddy)
-	{
-		CXTPEdit* pEditBuddy = DYNAMIC_DOWNCAST(CXTPEdit, CWnd::FromHandlePermanent(m_hWndBuddy));
-		if (pEditBuddy) pEditBuddy->DrawBuddyBorders(this, pDC, CXTPClientRect(this), UDS_ALIGNRIGHT);
-	}
-
-	m_pTheme->DrawButton(pDC, this);
-}
-
-LRESULT CXTPButton::OnUpdateUIState(WPARAM wParam, LPARAM lParam)
-{
-	LRESULT lResult = ::DefWindowProc(m_hWnd, WM_UPDATEUISTATE, wParam, lParam);
-	RedrawButton();
-
-	return lResult;
-}
-
-LRESULT CXTPButton::OnSetText(WPARAM wParam, LPARAM lParam)
-{
-	BOOL bVisible = GetStyle() & WS_VISIBLE;
-	if (bVisible) ModifyStyle(WS_VISIBLE, 0);
-
-	LRESULT lResult = DefWindowProc(WM_SETTEXT, wParam, lParam);
-
-	if (bVisible) ModifyStyle(0, WS_VISIBLE);
-
-
-	InternalTextChanged();
-	RedrawButton();
-
-	return lResult;
-}
-
-BOOL CXTPButton::OnEraseBkgnd(CDC* /*pDC*/)
-{
 	return TRUE;
 }
 
-//////////////////////////////////////////////////////////////////////////
-
-COLORREF CXTPButton::GetButtonTextColor()
+void CXTCaptionButtonThemeOfficeXP::DrawButtonText(CDC* pDC, UINT nState, CRect& rcItem, CXTButton* pButton)
 {
-	return GetSysColor(COLOR_BTNTEXT);
-}
-
-COLORREF CXTPButton::GetButtonBackColor()
-{
-	return GetSysColor(COLOR_BTNFACE);
-}
-
-BYTE CXTPButton::GetButtonStyle() const
-{
-	BYTE bStyle = BYTE(GetStyle() & 0xF);
-	return bStyle;
-}
-
-
-CSize CXTPButton::GetImageSize()
-{
-	if (m_pIcon)
-		return CSize(m_pIcon->GetWidth(), m_pIcon->GetHeight());
-
-	return CSize(0, 0);
-}
-
-void CXTPButton::DrawImage(CDC* pDC, CRect rc)
-{
-	CXTPImageManagerIcon* pIcon = GetIcon();
-	if (pIcon)
+	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
+	if (::IsWindow(pCaption->GetSafeHwnd()))
 	{
-		BOOL  bSelected = GetChecked() || IsPushed();
+		if (pCaption->IsAppCaption() && !pCaption->GetCaptionText().IsEmpty())
+		{
+			// select font into device context.
+			CXTPFontDC fontDC(pDC, GetThemeFont(pButton));
+			pDC->SetTextColor(GetTextColor(nState, pButton));
 
-		if (!IsWindowEnabled())
-		{
-			pIcon->Draw(pDC, rc.TopLeft(), pIcon->GetDisabledIcon(), rc.Size());
-		}
-		else if (IsHighlighted() || bSelected)
-		{
-			pIcon->Draw(pDC, rc.TopLeft(), GetChecked() ? pIcon->GetCheckedIcon() :
-				IsPushed() ? pIcon->GetPressedIcon() : pIcon->GetHotIcon(), rc.Size());
-		}
-		else
-		{
-			pIcon->Draw(pDC, rc.TopLeft(), pIcon->GetIcon(), rc.Size());
+			if (nState & ODS_SELECTED && m_bOffsetHiliteText)
+				rcItem.OffsetRect(1, 1);
+
+			// draw the text, and select the original font.
+			pDC->DrawText(pCaption->GetCaptionText(), rcItem,
+				DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER | DT_CENTER | DT_NOPREFIX);
 		}
 	}
 }
 
-BOOL CXTPButton::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+/////////////////////////////////////////////////////////////////////////////
+// CXTCaptionButtonThemeOffice2003
+
+BOOL CXTCaptionButtonThemeOffice2003::GetGradientValues(CRect& rButton, CXTCaption* pCaption, CXTPPaintManagerColorGradient& clr)
 {
-	if (message == WM_SETTINGCHANGE || message == WM_SYSCOLORCHANGE)
+	if (!::IsWindow(pCaption->GetSafeHwnd()))
+		return FALSE;
+
+	// get caption and button coordinates.
+	CXTPClientRect rCaption(pCaption);
+	pCaption->ScreenToClient(&rButton);
+
+	// get the caption's device context.
+	CClientDC dc(pCaption);
+
+	// create a memory device context to simulate caption background.
+	CDC memDC;
+	if (memDC.CreateCompatibleDC(&dc))
 	{
-		RefreshMetrics();
-	}
+		CBitmap bitmap;
+		bitmap.CreateCompatibleBitmap(&dc, rCaption.Width(), rCaption.Height());
+		CBitmap* pBmp = memDC.SelectObject(&bitmap);
 
-	if (m_pUIElement)
-	{
-		if (XTPMarkupRelayMessage(m_pUIElement, message, wParam, lParam, pResult))
-			return TRUE;
-	}
+		// draw a gradient to the memory device context that matches what should be drawn
+		// on the caption background.
+		XTPDrawHelpers()->GradientFill(&memDC, rCaption, pCaption->IsAppCaption() ?
+			XTPColorManager()->grcCaption: XTPColorManager()->grcToolBar, FALSE);
 
-	if (m_pToolTipContext)
-	{
-		m_pToolTipContext->FilterToolTipMessage(this, message, wParam, lParam);
-	}
+		// determine the light color gradient.
+		COLORREF crLight = memDC.GetPixel(rButton.TopLeft());
 
-	return CXTPButtonBase::OnWndMsg(message, wParam, lParam, pResult);
-}
+		// determine the dark color gradient.
+		COLORREF crDark = memDC.GetPixel(rButton.BottomRight());
 
-int CXTPButton::GetTextAlignment() const
-{
-	DWORD bHorz;
-	DWORD bVert;
+		// set the gradient to and from values.
+		clr.SetStandardValue(crLight, crDark);
 
-	DWORD dwStyle = GetStyle();
+		// cleanup GDI
+		memDC.SelectObject(pBmp);
+		memDC.DeleteDC();
+		bitmap.DeleteObject();
 
-	bHorz = dwStyle & (BS_LEFT | BS_RIGHT | BS_CENTER);
-	bVert = dwStyle & (BS_TOP | BS_BOTTOM | BS_VCENTER);
-
-	if (!bHorz || !bVert)
-	{
-		if (IsPushButton())
-		{
-			if (!bHorz)
-				bHorz = BS_CENTER;
-		}
-		else
-		{
-			if (!bHorz)
-				bHorz = BS_LEFT;
-		}
-
-		if (!bVert)
-			bVert = BS_VCENTER;
-	}
-
-	return bHorz | bVert;
-}
-
-CSize CXTPButton::GetGlyphSize(BOOL bCheckBox)
-{
-	CRect rcButton = GetButtonRect();
-	CSize sz(13, 13);
-
-	if (m_bUseVisualStyle && m_pTheme->m_themeButton->IsAppThemed())
-	{
-		m_pTheme->m_themeButton->GetThemePartSize(NULL,
-			bCheckBox ? BP_CHECKBOX : BP_RADIOBUTTON,
-			1, rcButton, TS_TRUE, &sz);
-	}
-
-	return sz;
-}
-
-void CXTPButton::InternalTextChanged()
-{
-	if (m_pMarkupContext)
-	{
-		XTPMarkupReleaseElement(m_pUIElement);
-		m_pUIElement = XTPMarkupParseText(m_pMarkupContext, GetButtonText());
-	}
-}
-
-CString CXTPButton::GetButtonText()
-{
-	CString str;
-	if (m_hWnd) GetWindowText(str);
-	return str;
-}
-
-void CXTPButton::EnableMarkup(BOOL bEnableMarkup)
-{
-	m_bEnableMarkup = bEnableMarkup;
-
-	XTPMarkupReleaseElement(m_pUIElement);
-	XTPMarkupReleaseContext(m_pMarkupContext);
-
-	if (m_bEnableMarkup)
-	{
-		m_pMarkupContext = XTPMarkupCreateContext(m_hWnd);
-	}
-
-	InternalTextChanged();
-}
-
-BOOL CXTPButton::IsPushButton() const
-{
-	DWORD dwStyle = GetStyle();
-
-	switch (GetButtonStyle())
-	{
-		case LOBYTE(BS_PUSHBUTTON):
-		case LOBYTE(BS_DEFPUSHBUTTON):
-		case LOBYTE(BS_OWNERDRAW):
-			return TRUE;
-
-		default:
-			if ((dwStyle & BS_PUSHLIKE) == BS_PUSHLIKE)
-				return TRUE;
-			break;
+		return TRUE;
 	}
 
 	return FALSE;
 }
 
-void CXTPButton::SetTheme(CXTPButtonTheme* pPaintManager)
+BOOL CXTCaptionButtonThemeOffice2003::DrawButtonThemeBackground(LPDRAWITEMSTRUCT lpDIS, CXTButton* pButton)
 {
-	CMDTARGET_RELEASE(m_pTheme);
-	m_pTheme = pPaintManager;
-
-	m_bUseVisualStyle = pPaintManager->GetThemeStyle() == xtpControlThemeDefault;
-
-	if (m_pTheme)
-	{
-		m_pTheme->RefreshMetrics(this);
-	}
-
-	if (::IsWindow(m_hWnd))
-	{
-		RedrawButton();
-	}
-}
-
-LRESULT CXTPButton::OnSetTheme(WPARAM wParam, LPARAM /*lParam*/)
-{
-	XTPControlTheme eTheme = (XTPControlTheme)wParam;
-
-	SetTheme(eTheme);
-
-	return 0;
-}
-
-void CXTPButton::RefreshMetrics()
-{
-	if (m_pTheme)
-		m_pTheme->RefreshMetrics(this);
-
-	if (::IsWindow(m_hWnd))
-		RedrawButton();
-}
-
-BOOL CXTPButton::SetTheme(XTPControlTheme eTheme)
-{
-	CMDTARGET_RELEASE(m_pTheme);
-
-	switch (eTheme)
-	{
-	case xtpControlThemeFlat:
-		m_pTheme = new CXTPButtonFlatTheme();
-		break;
-	case xtpControlThemeUltraFlat:
-		m_pTheme = new CXTPButtonUltraFlatTheme();
-		break;
-	case xtpControlThemeOffice2000:
-		m_pTheme = new CXTPButtonOffice2000Theme();
-		break;
-	case xtpControlThemeOfficeXP:
-		m_pTheme = new CXTPButtonOfficeXPTheme();
-		break;
-	case xtpControlThemeOffice2003:
-		m_pTheme = new CXTPButtonOffice2003Theme();
-		break;
-	case xtpControlThemeResource:
-		m_pTheme = new CXTPButtonResourceTheme();
-		break;
-	default:
-		m_pTheme = new CXTPButtonTheme();
-	}
-
-	m_bUseVisualStyle = (eTheme == xtpControlThemeDefault);
-
-	RefreshMetrics();
-
-	return (m_pTheme != NULL);
-}
-
-void CXTPButton::SetUseVisualStyle(BOOL bUseVisualStyle/* = TRUE*/)
-{
-	m_bUseVisualStyle = bUseVisualStyle;
-	m_pTheme->RefreshMetrics(this);
-	RedrawButton();
-}
-
-
-BOOL CXTPButton::GetChecked()
-{
-	if (IsPushButton() || !m_hWnd)
-	{
-		return m_bChecked;
-	}
-
-	return (BOOL)::SendMessage(m_hWnd, BM_GETCHECK, 0, 0);
-}
-
-void CXTPButton::SetChecked(BOOL bChecked)
-{
-	if (IsPushButton() || !m_hWnd)
-	{
-		m_bChecked = bChecked;
-		RedrawButton();
-	}
-	else
-	{
-		::SendMessage(m_hWnd, BM_SETCHECK, bChecked, 0);
-	}
-}
-
-BOOL CXTPButton::SetIcon(CSize size, UINT nID, UINT nHotID/*= 0*/, BOOL bRedraw/*= TRUE*/)
-{
-	return CXTPButton::SetIcon(
-		size, MAKEINTRESOURCE(nID), MAKEINTRESOURCE(nHotID), bRedraw);
-}
-
-BOOL CXTPButton::SetIcon(CSize size, LPCTSTR lpszID, LPCTSTR lpszHotID/*= NULL*/, BOOL bRedraw/*= TRUE*/)
-{
-	CXTPImageManagerIconHandle hIcon;
-	CXTPImageManagerIconHandle hIconHot;
-
-	hIcon.CreateIconFromResource(lpszID, size);
-
-	// Return false if the icon handle is NULL.
-	if (hIcon.IsEmpty())
-	{
-		TRACE0("Failed to load Icon resource.\n");
+	if (!::IsWindow(pButton->GetSafeHwnd()))
 		return FALSE;
-	}
 
-	// If we are using a pushed image as well...
-	if (lpszHotID)
+	CDC* pDC = CDC::FromHandle(lpDIS->hDC);
+	CRect rc = lpDIS->rcItem;
+	int nState = lpDIS->itemState;
+
+	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
+	if (::IsWindow(pCaption->GetSafeHwnd()))
 	{
-		hIconHot.CreateIconFromResource(lpszHotID, size);
+		BOOL bHilite = pButton->GetHilite();
+		BOOL bSelected = (nState & ODS_SELECTED) != 0;
 
-		// Return false if the icon handle is NULL.
-		if (hIconHot.IsEmpty())
+		// Paint the background.
+		if (bSelected || bHilite)
 		{
-			TRACE0("Failed to load Icon resource.\n");
-			return FALSE;
+			XTPDrawHelpers()->GradientFill(pDC, rc, bSelected ?
+				XTPColorManager()->grcLunaPushed: XTPColorManager()->grcLunaSelected, FALSE);
+
+			pDC->Draw3dRect(&rc, GetMSO2003Color(XPCOLOR_HIGHLIGHT_BORDER),
+				GetMSO2003Color(XPCOLOR_HIGHLIGHT_BORDER));
 		}
+		else
+		{
+			CXTPWindowRect rButton(pButton);
+
+			CXTPPaintManagerColorGradient clr;
+			GetGradientValues(rButton, pCaption, clr);
+
+			XTPDrawHelpers()->GradientFill(pDC, rc, clr, FALSE);
+		}
+
+		return TRUE;
 	}
 
-	return CXTPButton::SetIcon(size, hIcon, hIconHot, bRedraw);
+	return CXTButtonThemeOffice2003::DrawButtonThemeBackground(lpDIS, pButton);
 }
 
-BOOL CXTPButton::SetIcon(CSize /*size*/, CXTPImageManagerIcon* pIcon, BOOL bRedraw/*= TRUE*/)
+COLORREF CXTCaptionButtonThemeOffice2003::GetTextColor(UINT nState, CXTButton* pButton)
 {
-	// Construct the icon manager.
-	CMDTARGET_RELEASE(m_pIcon);
+	if (nState & ODS_DISABLED)
+		return GetXtremeColor(COLOR_GRAYTEXT);
 
-	m_pIcon = pIcon;
+	if (pButton->GetHilite() || (nState & ODS_SELECTED))
+		return m_crTextHilite;
 
-	// Redraw the button.
-	if (bRedraw)
-		RedrawButton();
-
-	return TRUE;
-}
-
-BOOL CXTPButton::SetIcon(CSize size, const CXTPImageManagerIconHandle& hIcon, const CXTPImageManagerIconHandle& hIconHot, BOOL bRedraw/*= TRUE*/)
-{
-	ASSERT(!hIcon.IsEmpty());
-
-	// Save the image size and set the icon
-	// handles to NULL.
-	size = size != CSize(0) ? size : hIcon.GetExtent();
-
-	CXTPImageManagerIcon* pIcon = new CXTPImageManagerIcon(0, size.cx, size.cy);
-	pIcon->SetIcon(hIcon);
-
-	if (!hIconHot.IsEmpty())
-		pIcon->SetHotIcon(hIconHot);
-
-	return SetIcon(size, pIcon, bRedraw);
-}
-
-
-BOOL CXTPButton::SetIcon(CSize size, HICON hIcon, HICON hIconHot/*= NULL*/, BOOL bRedraw/*= TRUE*/)
-{
-	return SetIcon(size, CXTPImageManagerIconHandle(hIcon), CXTPImageManagerIconHandle(hIconHot), bRedraw);
-}
-
-BOOL CXTPButton::SetBitmap(CSize size, UINT nID, BOOL bRedraw/*= TRUE*/)
-{
-	// Free previous resources (if any).
-
-	CXTPImageManagerIconHandle hIconHandle;
-
-	BOOL bAlphaBitmap = FALSE;
-	HBITMAP hBitmap = CXTPImageManagerIcon::LoadBitmapFromResource(MAKEINTRESOURCE(nID), &bAlphaBitmap);
-
-	if (!hBitmap)
-		return FALSE;
-
-	if (bAlphaBitmap)
+	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
+	if (::IsWindow(pCaption->GetSafeHwnd()))
 	{
-		hIconHandle = hBitmap; // Will call DeleteObject;
-	}
-	else
-	{
-		CBitmap bmpIcon;
-		bmpIcon.Attach(hBitmap);
-
-		// convert the bitmap to a transparent icon.
-		HICON hIcon = CXTPTransparentBitmap(bmpIcon).ConvertToIcon();
-
-		hIconHandle = hIcon; // Will call DestoyIcon;
+		return pCaption->m_clrText;
 	}
 
-	if (hIconHandle.IsEmpty())
-		return FALSE;
-
-	return CXTPButton::SetIcon(size, hIconHandle, CXTPImageManagerIconHandle(), bRedraw);
-}
-
-void CXTPButton::SetBuddy(CWnd* pWndBuddy, BOOL bMoveButton)
-{
-	m_hWndBuddy = pWndBuddy->GetSafeHwnd();
-	if (!m_hWndBuddy)
-		return;
-
-	CRect rcBuddy;
-	::GetWindowRect(m_hWndBuddy, &rcBuddy);
-
-	GetParent()->ScreenToClient(rcBuddy);
-
-	CXTPWindowRect rc(this);
-	int nWidth = rc.Width();
-
-	if (bMoveButton)
-	{
-		::MoveWindow(m_hWndBuddy, rcBuddy.left, rcBuddy.top, rcBuddy.Width() - nWidth + 2, rcBuddy.Height(), TRUE);
-	}
-	else
-	{
-		GetParent()->ScreenToClient(rc);
-		::MoveWindow(m_hWndBuddy, rcBuddy.left, rcBuddy.top, (rc.left + 2) - rcBuddy.left, rcBuddy.Height(), TRUE);
-		rcBuddy.right = rc.left + nWidth;
-	}
-
-	CRect rcButton = rcBuddy;
-	rcButton.left = rcButton.right - nWidth;
-
-	::MoveWindow(m_hWnd, rcButton.left, rcButton.top, rcButton.Width(), rcButton.Height(), TRUE);
-
-}
-
-
-INT_PTR CXTPButton::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
-{
-
-	ASSERT_VALID(this);
-	ASSERT(::IsWindow(m_hWnd));
-
-	CString strTip = GetTooltip();
-	if (strTip.GetLength() == 0)
-		return -1;
-
-	CXTPButton* pButton = (CXTPButton*)this;
-
-	CXTPClientRect rc(pButton);
-	rc.DeflateRect(2, 2);
-
-	if (rc.PtInRect(point))
-	{
-		CXTPToolTipContext::FillInToolInfo(pTI, m_hWnd, rc, 1, strTip, pButton->GetButtonText(), strTip);
-		return 1;
-	}
-
-	return -1;
+	return m_crText;
 }

@@ -1,453 +1,767 @@
-// from server: 87% by colin
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/humanoid/Humanoid.cpp
+// roc-lib: rbxgs-dll script/ScriptContext.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "humanoid/Humanoid.h"
-
-#include "network/Players.h"
-#include "rbxgraphics/Adorn.h"
-#include "reflection/property.h"
-#include "util/Color.h"
-#include "v8datamodel/ModelInstance.h"
-#include "v8datamodel/Teams.h"
+#include "script/ScriptContext.h"
+#include "script/Script.h"
+#include "script/ScriptEvent.h"
+#include "script/LuaMemory.h"
+#include "script/LuaAtomicClasses.h"
+#include "script/LuaInstanceBridge.h"
+#include "script/LuaSignalBridge.h"
+#include "script/LuaArguments.h"
+#include "lua/lua.hpp"
+#include "lua/LuaBridge.h"
 #include "v8datamodel/Workspace.h"
-#include "v8kernel/Body.h"
-#include "v8tree/Service.h"
-#include "v8world/World.h"
+#include "v8datamodel/DebugSettings.h"
+#include "v8datamodel/Stats.h"
+#include "util/standardout.h"
+#include "util/Debug.h"
+#include "boost/date_time/posix_time/posix_time.hpp"
+#include "lua.h"
+#include "lualib.h"
+#include "lstate.h"
 
-namespace RBX {
+static int contextCount = 0;
+bool vvvvv;
 
-char sHumanoid[] = "Humanoid";
+using namespace RBX;
+using namespace boost::posix_time;
 
-using namespace Reflection;
+// unidentified inlines
 
-static PropDescriptor<Humanoid, float> propMaxHealth(
-	"MaxHealth",
-	"Game",
-	&RBX::Humanoid::getMaxHealth,
-	&RBX::Humanoid::setMaxHealth
-);
-
-static PropDescriptor<Humanoid, float> propWalkRotationalVelocity(
-	"WalkRotationalVelocity",
-	"Control",
-	&RBX::Humanoid::getWalkRotationalVelocity,
-	&RBX::Humanoid::setWalkRotationalVelocity,
-	Reflection::PropertyDescriptor::STREAMING
-);
-
-static PropDescriptor<Humanoid, bool> propJump(
-	"Jump",
-	"Control",
-	&RBX::Humanoid::getJump,
-	&RBX::Humanoid::setJump,
-	Reflection::PropertyDescriptor::STREAMING
-);
-
-static PropDescriptor<Humanoid, bool> propSit(
-	"Sit",
-	"Control",
-	&RBX::Humanoid::getSit,
-	&RBX::Humanoid::setSit,
-	Reflection::PropertyDescriptor::STREAMING
-);
-
-SignalDesc<Humanoid, void()> Humanoid::event_Died("Died");
-SignalDesc<Humanoid, void(float)> Humanoid::event_Running("Running", "speed");
-SignalDesc<Humanoid, void(float)> Humanoid::event_Climbing("Climbing", "speed");
-SignalDesc<Humanoid, void(bool)> Humanoid::event_Jumping("Jumping", "active");
-SignalDesc<Humanoid, void(bool)> Humanoid::event_FreeFalling("FreeFalling", "active");
-SignalDesc<Humanoid, void(bool)> Humanoid::event_GettingUp("GettingUp", "active");
-SignalDesc<Humanoid, void(bool)> Humanoid::event_FallingDown("FallingDown", "active");
-SignalDesc<Humanoid, void(bool)> Humanoid::event_Seated("Seated", "active");
-
-// FUNCTION: WEBSERVICE 0x100a0990
-ContactManager* Humanoid::getContactManager()
+static inline void _openLibInline(lua_State* L, lua_CFunction f, const char* name)
 {
-	World* world = Workspace::getWorldIfInWorkspace(this);
-
-	if (world != NULL) {
-		return world->getContactManager();
-	}
-
-	return NULL;
+    lua_pushcfunction(L, f);
+    lua_pushstring(L, name);
+    lua_call(L, 1, 0);
 }
 
-// FUNCTION: WEBSERVICE 0x100a0bd0
-bool Humanoid::hasWalkToPoint(G3D::Vector3& worldPosition) const
+// end unidentified inlines
+
+Reflection::BoundProp<bool, true> ScriptContext::propScriptsDisabled("ScriptsDisabled", "State", &ScriptContext::scriptsDisabled, &ScriptContext::onChangedScriptEnabled, Reflection::PropertyDescriptor::LEGACY); 
+
+static int panic(lua_State* L)
 {
-	if (walkToPart != NULL && Workspace::findWorkspace(this) != NULL &&
-		Workspace::contextInWorkspace(walkToPart.get())) {
-		worldPosition = walkToPart->getCoordinateFrame().pointToWorldSpace(walkToPoint);
-
-		return true;
-	}
-
-	return false;
+    std::string message = lua_tostring(L, -1);
+    StandardOut::singleton()->print(MESSAGE_ERROR, "Unprotected error in call to Lua API (%s)\n", message.c_str());
+    RBXCRASH();
+    return 0;
 }
 
-// FUNCTION: WEBSERVICE 0x100a0d40
-void Humanoid::computeForce(float dt, bool throttling)
+const char* RBX::sScriptContext = "ScriptContext";
+
+void ScriptContext::openState()
 {
-	if (currentState.get() != NULL) {
-		currentState->onComputeForce(dt);
-	}
+    if (!globalState)
+    {
+        // ???
+        if (vvvvv)
+        {
+            lua_getstack(NULL, NULL, NULL);
+            lua_getinfo(NULL, NULL, NULL);
+            lua_getlocal(NULL, NULL, NULL);
+            lua_setlocal(NULL, NULL, NULL);
+            lua_getupvalue(NULL, NULL, NULL);
+            lua_setupvalue(NULL, NULL, NULL);
+            lua_sethook(NULL, NULL, NULL, NULL);
+            lua_gethook(NULL);
+            lua_gethookmask(NULL);
+            lua_gethookcount(NULL);
+        }
+
+        allocator.reset(new LuaAllocator());
+        lua_State* L = lua_newstate(LuaAllocator::alloc, allocator.get());
+        globalState = L;
+
+        if (!globalState)
+            throw std::runtime_error("Failed to create Lua state");
+
+        contextCount++;
+
+        lua_atpanic(L, panic);
+
+        lua_pushlightuserdata(globalState, RBX_LUA_GLOBAL_SCRIPTCONTEXT);
+        lua_pushlightuserdata(globalState, this);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pop(globalState, luaopen_base(globalState));
+
+        _openLibInline(globalState, luaopen_string, LUA_STRLIBNAME);
+        _openLibInline(globalState, luaopen_math, LUA_MATHLIBNAME);
+        _openLibInline(globalState, luaopen_table, LUA_TABLIBNAME);
+
+        Lua::ObjectBridge::registerClass(globalState);
+        Lua::SignalBridge::registerClass(globalState);
+        Lua::SignalConnectionBridge::registerClass(globalState);
+        Lua::CoordinateFrameBridge::registerClass(globalState);
+        Lua::Vector3Bridge::registerClass(globalState);
+        Lua::Color3Bridge::registerClass(globalState);
+        Lua::BrickColorBridge::registerClass(globalState);
+        Lua::ThreadRef::NodeBridge::registerClass(globalState);
+
+        Lua::CoordinateFrameBridge::registerClassLibrary(globalState);
+        Lua::Vector3Bridge::registerClassLibrary(globalState);
+        Lua::Color3Bridge::registerClassLibrary(globalState);
+        Lua::BrickColorBridge::registerClassLibrary(globalState);
+        Lua::ObjectBridge::registerClassLibrary(globalState);
+        Lua::ObjectBridge::registerInstanceClassLibrary(globalState);
+        Lua::SignalBridge::registerClassLibrary(globalState);
+
+        Lua::ThreadRef::Node::create(globalState);
+
+        lua_pushstring(globalState, "game");
+        Lua::ObjectBridge::push(globalState, getRootAncestor()->shared_from_this());
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "workspace");
+        Lua::ObjectBridge::push(globalState, ServiceProvider::find<Workspace>(this)->shared_from_this());
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "shared");
+        lua_newtable(globalState);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "print");
+        lua_pushcfunction(globalState, ScriptContext::print);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "tick");
+        lua_pushcfunction(globalState, ScriptContext::tick);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "wait");
+        lua_pushcfunction(globalState, ScriptContext::wait);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "delay");
+        lua_pushcfunction(globalState, ScriptContext::delay);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "trustedThread");
+        lua_pushcfunction(globalState, ScriptContext::trustedThread);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "dofile");
+        lua_pushcfunction(globalState, ScriptContext::dofile);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "loadfile");
+        lua_pushcfunction(globalState, ScriptContext::loadfile);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "stats");
+        lua_pushcfunction(globalState, ScriptContext::stats);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        yieldEvent.reset(new Lua::YieldingThreads(this));
+    }
 }
 
-// FUNCTION: WEBSERVICE 0x100a1100
-Humanoid::~Humanoid()
+// TODO: 99.79% (functional match)
+// stack offsets not the same
+void ScriptContext::closeState()
+{
+    if (globalState)
+    {
+        commandLineSandbox.reset();
+
+        try
+        {
+            Lua::ThreadRef::Node::get(globalState)->eraseAllRefs();
+
+            std::set<Script*> copy = scripts;
+            std::for_each(copy.begin(), copy.end(), boost::bind(&ScriptContext::disassociateState, this, _1));
+
+            yieldEvent.reset(NULL);
+        }
+        catch (std::exception& e)
+        {
+            StandardOut::singleton()->print(MESSAGE_ERROR, "Exception thrown while cleaning up Lua: %s", e.what()); 
+        }
+
+        lua_close(globalState);
+        contextCount--;
+
+        size_t heapSize, heapCount, maxHeapSize, maxHeapCount;
+        allocator->getHeapStats(heapSize, heapCount, maxHeapSize, maxHeapCount);
+        StandardOut::singleton()->print(MESSAGE_INFO, "Script Heap Stats: Max Size = %d bytes, Max Count = %d blocks", maxHeapSize, maxHeapCount);
+
+        allocator->clearHeapMax();
+
+        if (contextCount == 0 && (heapSize > 0 || heapCount > 0))
+            StandardOut::singleton()->print(MESSAGE_ERROR, "Script memory leaks: %d bytes, %d blocks", heapSize, heapCount);
+
+        globalState = NULL;
+    }
+}
+
+ScriptContext::ScriptContext()
+    : globalState(NULL),
+      nextPendingScripts(second_clock::local_time()),
+      scriptsDisabled(false)
+{
+    setName("Script Context");
+}
+
+ScriptContext::~ScriptContext()
+{
+    RBXASSERT(globalState == NULL);
+}
+
+void ScriptContext::sandboxThread(lua_State* thread)
+{
+    lua_newtable(thread);
+    lua_newtable(thread);
+    lua_pushliteral(thread, "__index");
+    lua_pushvalue(thread, LUA_GLOBALSINDEX);
+    lua_settable(thread, -3);
+    lua_setmetatable(thread, -2);
+    lua_replace(thread, LUA_GLOBALSINDEX);
+}
+
+void ScriptContext::setThreadIdentity(lua_State* thread, Security::Identities identity)
+{
+    lua_pushlightuserdata(thread, RBX_LUA_GLOBAL_IDENTITY);
+    lua_pushinteger(thread, identity);
+    lua_settable(thread, LUA_GLOBALSINDEX);
+
+    if (DebugSettings::singleton().getioEnabled())
+        _openLibInline(thread, luaopen_io, LUA_IOLIBNAME);
+
+    lua_pushstring(thread, "settings");
+    lua_pushcfunction(thread, ScriptContext::settings);
+    lua_settable(thread, LUA_GLOBALSINDEX);
+}
+
+size_t ScriptContext::getThreadCount() const
+{
+    if (globalState)
+        return RobloxExtraSpace::get(globalState)->getThreadCount();
+    else
+        return 0;
+}
+
+ScriptContext& ScriptContext::getContext(lua_State* thread)
+{
+    lua_pushlightuserdata(thread, RBX_LUA_GLOBAL_SCRIPTCONTEXT);
+    lua_gettable(thread, LUA_GLOBALSINDEX);
+
+    RBXASSERT(lua_type(thread, -1) == LUA_TLIGHTUSERDATA);
+    ScriptContext* sc = static_cast<ScriptContext*>(lua_touserdata(thread, -1));
+    lua_pop(thread, 1);
+
+    return *sc;
+}
+
+static size_t pushArguments(const Reflection::ValueCollection& arguments, lua_State* thread)
+{
+    size_t result = 0;
+
+    Reflection::ValueCollection::const_iterator it = arguments.begin();
+    Reflection::ValueCollection::const_iterator end = arguments.end();
+
+    for (; it != end; it++)
+        result += Lua::LuaArguments::push(*it, thread);
+
+    return result;
+}
+
+static void readResults(std::auto_ptr<Reflection::ValueCollection>& result, lua_State *thread, size_t returnCount)
+{
+    result.reset(new Reflection::ValueCollection(returnCount));
+
+    if (returnCount)
+    {
+        for (size_t i = 0; i < returnCount; i++)
+            Lua::LuaArguments::get(thread, static_cast<int>(i+1), result.get()->at(i));
+    }
+}
+
+std::auto_ptr<Reflection::ValueCollection> ScriptContext::executeInNewThread(Security::Identities identity, const char* script, const char* name, const Reflection::ValueCollection& arguments)
+{
+    std::auto_ptr<Reflection::ValueCollection> result;
+    executeInNewThread(
+        identity,
+        script,
+        name,
+        boost::bind(&pushArguments, boost::cref(arguments), _1),
+        boost::bind(&readResults, boost::ref(result), _1, _2)
+    );
+    return result;
+}
+
+void ScriptContext::executeInNewThread(Security::Identities identity, const char* script, const char* name, PushArgumentsClosure pushArguments, ReadResultsClosure readResults)
+{
+    openState();
+
+    lua_State* L;
+    lua_State* newThread;
+
+    if (identity == Security::CmdLine)
+    {
+        if (commandLineSandbox.empty())
+        {
+            {
+                Lua::ThreadRef threadRef(lua_newthread(globalState));
+                commandLineSandbox = threadRef;
+            }
+
+            if (commandLineSandbox.empty())
+                throw std::runtime_error("Unable to create trusted sandbox thread");
+
+            sandboxThread(commandLineSandbox.thread());
+            setThreadIdentity(commandLineSandbox.thread(), Security::CmdLine);
+            lua_pop(globalState, 1);
+        }
+
+        L = commandLineSandbox.thread();
+        newThread = lua_newthread(L);
+    }
+    else
+    {
+        L = globalState;
+        newThread = lua_newthread(L);
+        sandboxThread(newThread);
+        setThreadIdentity(newThread, identity);
+    }
+
+    if (!newThread)
+    {
+        StandardOut::singleton()->print(MESSAGE_ERROR, "ScriptContext::execute: Unable to create a new thread");
+        throw std::runtime_error("Unable to create a new thread");
+    }
+
+    Lua::ScopedPopper popper(L, 1);
+
+    std::string sName("=");
+
+    if (name)
+        sName += name;
+    else
+        sName += "Script";
+
+    if (luaL_loadbuffer(newThread, script, strlen(script), sName.c_str()))
+    {
+        std::string err = lua_tostring(newThread, -1);
+        lua_pop(newThread, 1);
+
+        StandardOut::singleton()->print(MESSAGE_ERROR, err.c_str());
+        throw std::runtime_error(err);
+    }
+
+    resume(newThread, pushArguments, readResults);
+}
+
+void ScriptContext::resume(lua_State* thread, PushArgumentsClosure pushArguments, ReadResultsClosure readResults)
+{
+    int nStack = lua_gettop(thread);
+    size_t nArgs = pushArguments(thread);
+
+    if (resume(thread, static_cast<int>(nArgs)) != Error)
+    {
+        int returnCount = lua_gettop(thread) - nStack + 1;
+
+        try
+        {
+            readResults(thread, returnCount);
+        }
+        catch (std::exception)
+        {
+            lua_pop(thread, returnCount);
+            throw;
+        }
+
+        lua_pop(thread, returnCount);
+    }
+    else
+    {
+        std::string err = lua_tostring(thread, -1);
+        lua_settop(thread, 0);
+        throw std::runtime_error(err);
+    }
+}
+
+int ScriptContext::delay(lua_State* thread)
+{
+    // yes that's spelled correctly
+    float timout = static_cast<float>(lua_tonumber(thread, 1));
+
+    lua_State* newThread = lua_newthread(thread);
+    Lua::ThreadRef functor(newThread);
+
+    lua_pushvalue(thread, 2);
+    lua_xmove(thread, functor.thread(), 1);
+
+    getContext(thread).yieldEvent->queueWaiter(functor.thread(), timout);
+
+    lua_pop(thread, 1);
+    return 0;
+}
+
+int ScriptContext::wait(lua_State* thread)
+{
+    // this too
+    float timout = static_cast<float>(lua_tonumber(thread, 1));
+    getContext(thread).yieldEvent->queueWaiter(thread, timout);
+    return lua_yield(thread, 0);
+}
+
+int ScriptContext::settings(lua_State* thread)
+{
+    Security::Context::current().requirePermission(Security::Administrator, NULL);
+    Lua::ObjectBridge::push(thread, GlobalSettings::singleton());
+    return 1;
+}
+
+int ScriptContext::trustedThread(lua_State* thread)
+{
+    bool trusted = Security::Context::current().hasPermission(Security::Administrator);
+    lua_pushboolean(thread, trusted != false);
+    return 1;
+}
+
+int ScriptContext::loadfile(lua_State* L)
+{
+    Security::Context::current().requirePermission(Security::Administrator, "loadfile");
+
+    RBX::ContentId contentId = lua_tostring(L, -1);
+    const std::string& file = ContentProvider::singleton().getFile(contentId);
+
+    int n;
+
+    if (luaL_loadfile(L, file.c_str()) == 0)
+    {
+        n = 1;
+    }
+    else
+    {
+        lua_pushnil(L);
+        lua_insert(L, -2);
+        n = 2;
+    }
+
+    return n;
+}
+
+int ScriptContext::stats(lua_State* L)
+{
+    Security::Context::current().requirePermission(Security::Administrator, "Stats");
+    Lua::ObjectBridge::push(L, shared_from(ServiceProvider::create<Stats::StatsService>(&getContext(L))));
+    return 1;
+}
+
+int ScriptContext::dofile(lua_State* L)
+{
+    Security::Context::current().requirePermission(Security::Administrator, "dofile");
+
+    const char* path = luaL_optstring(L, 1, 0);
+    int n = lua_gettop(L);
+
+    RBX::ContentId contentId = path;
+    const std::string& file = ContentProvider::singleton().getFile(contentId);
+
+    if (luaL_loadfile(L, file.c_str()) != 0)
+        lua_error(L);
+
+    lua_call(L, 0, -1);
+    return lua_gettop(L) - n;
+}
+
+int ScriptContext::tick(lua_State* L)
+{
+    lua_pushnumber(L, G3D::System::getTick());
+    return 1;
+}
+
+int ScriptContext::print(lua_State* L)
+{
+    std::string msg;
+    int top = lua_gettop(L);
+
+    lua_getglobal(L, "tostring");
+
+    for (int i = 1; i <= top; i++)
+    {
+        if (i > 1)
+            msg += ' ';
+
+        lua_pushvalue(L, -1);
+        lua_pushvalue(L, i);
+        lua_call(L, 1, 1);
+
+        const char* str = lua_tostring(L, -1);
+
+        if (!str)
+            throw std::runtime_error("'tostring' must return a string to 'print'");
+
+        msg += str;
+
+        if (i > 1)
+            fputs("\t", stdout);
+
+        lua_pop(L, 1);
+    }
+
+    StandardOut::singleton()->print(MESSAGE_OUTPUT, msg.c_str());
+
+    return 0;
+}
+
+void ScriptContext::onEvent(const RunService* source, Heartbeat event)
+{
+    ptime t(second_clock::local_time());
+
+    if (t >= nextPendingScripts)
+    {
+        startPendingScripts();
+        nextPendingScripts = second_clock::local_time() + seconds(1);
+    }
+
+    if (yieldEvent)
+        yieldEvent->resume(event);
+
+    if (globalState)
+        lua_gc(globalState, LUA_GCSTEP, 1);
+}
+
+void ScriptContext::startPendingScripts()
+{
+    if (!scriptsDisabled)
+    {
+        std::vector<boost::shared_ptr<Script>> copy(pendingScripts);
+        pendingScripts.erase(pendingScripts.begin(), pendingScripts.end());
+        std::for_each(copy.begin(), copy.end(), boost::bind(&ScriptContext::startScript, this, _1));
+    }
+}
+
+void ScriptContext::onEvent(const RunService* source, RunTransition event)
+{
+    gc();
+}
+
+void ScriptContext::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+{
+	Notifier<RunService, RunTransition>::disconnect(runService, this);
+    Notifier<RunService, Heartbeat>::disconnect(runService, this);
+
+    if (oldProvider && !newProvider)
+        closeState();
+
+    if (statsItem)
+    {
+        statsItem->setParent(NULL);
+        statsItem.reset();
+    }
+
+    Instance::onServiceProvider(oldProvider, newProvider);
+
+    RunService* newRunService;
+
+    if (newProvider)
+    {
+        Stats::StatsService* statsService = newProvider->create<Stats::StatsService>();
+        if (statsService)
+        {
+            statsItem = Creatable<Instance>::create<Stats::Item>("Lua");
+            statsItem->setParent(statsService);
+            statsItem->createBoundChildItem("disabled", scriptsDisabled);
+            statsItem->createChildItem<int>("threads", boost::bind(&ScriptContext::getThreadCount, this));
+        }
+
+        newRunService = newProvider->create<RunService>();
+    }
+    else
+    {
+        newRunService = NULL;
+    }
+
+    runService = shared_from(newRunService);
+    Notifier<RunService, RunTransition>::connect(runService, this);
+    Notifier<RunService, Heartbeat>::connect(runService, this);
+}
+
+void ScriptContext::onChangedScriptEnabled(const Reflection::PropertyDescriptor&)
+{
+    if (scriptsDisabled)
+        startPendingScripts();
+}
+
+void ScriptContext::addScript(Script* script)
+{
+    if (scripts.insert(script).second == true)
+    {
+        if (!script->isDisabled())
+            startScript(shared_from(script));
+    }
+}
+
+void ScriptContext::disassociateState(Script* script)
+{
+    Association<Instance>& assoc = script->association();
+
+    if (assoc.contains<Lua::ThreadRef::NodePtr>())
+    {
+        assoc.get<Lua::ThreadRef::NodePtr>()->eraseAllRefs();
+        assoc.remove<Lua::ThreadRef::NodePtr>();
+    }
+}
+
+void ScriptContext::removeScript(Script* script)
+{
+    if (scripts.erase(script))
+    {
+        disassociateState(script);
+
+        std::vector<boost::shared_ptr<Script>>::iterator it = std::find(pendingScripts.begin(), pendingScripts.end(), shared_from(script));
+        if (it != pendingScripts.end())
+            pendingScripts.erase(it);
+    }
+}
+
+void ScriptContext::reportError(lua_State* thread)
+{
+    lua_Debug ar;
+    int level = 0;
+
+    if (lua_getstack(thread, level++, &ar))
+    {
+        StandardOut::singleton()->print(MESSAGE_ERROR, lua_tostring(thread, -1));
+
+        if (!DebugSettings::singleton().getStackTracingEnabled())
+            return;
+
+        bool hasStack = false;
+        while (lua_getstack(thread, level++, &ar))
+        {
+            hasStack = true;
+            lua_getinfo(thread, "nSlu", &ar);
+
+            StandardOut::singleton()->print(
+                MESSAGE_INFO,
+                "   stack %s, line %d: %s %s",
+                ar.source,
+                ar.currentline,
+                ar.namewhat,
+                ar.name);
+        }
+
+        if (hasStack)
+            StandardOut::singleton()->print(MESSAGE_INFO, "   stack end");
+    }
+    else
+    {
+        StandardOut::singleton()->print(MESSAGE_ERROR, lua_tostring(thread, -1));
+    }
+}
+
+ScriptContext::ScriptImpersonator::ScriptImpersonator(lua_State* thread)
+    : Security::Impersonator(getThreadIdentity(thread))
 {
 }
 
-// FUNCTION: WEBSERVICE 0x100a1480
-float Humanoid::getIntendedRotationAboutYAxis()
+ScriptContext::Result ScriptContext::resume(lua_State* thread, int narg)
 {
-	if (currentState.get() != NULL) {
-		return currentState->getIntendedRotationAboutYAxis();
-	}
+    int n;
+    {
+        ScriptImpersonator impersonate(thread);
+        n = lua_resume(thread, narg);
+    }
+    
+    switch (n)
+    {
+        case 0:
+            return Success;
 
-	return 0;
+        case 1:
+            if (!RobloxExtraSpace::get(thread)->yieldCaptured)
+                yieldEvent->queueWaiter(thread);
+
+            return Yield;
+
+        default:
+            reportError(thread);
+            return Error;
+    }
 }
 
-// STUB: WEBSERVICE 0x100a1b00
-void Humanoid::render3dAdorn(Adorn* adorn)
+static std::string getFullName(Instance* instance)
 {
-	STUB(0x100a1b00);
+    Instance* parent = instance->getParent();
+
+    if (parent)
+    {
+        if (parent->getParent())
+            return getFullName(parent) + "." + instance->getName();
+        else
+            return instance->getName();
+    }
+    else 
+    {
+        return NULL; 
+    }
 }
 
-// FUNCTION: WEBSERVICE 0x100a2010
-PartInstance* Humanoid::getHead() const
+// TODO: 99.78% (functional match)
+// use of registers swapped in codegen
+void ScriptContext::startScript(boost::shared_ptr<Script> script)
 {
-	if (head == NULL && getParent() != NULL) {
-		head = shared_from_dynamic_cast<PartInstance>(getParent()->findFirstChildByName("Head"));
-	}
+    if (scriptsDisabled)
+    {
+        pendingScripts.push_back(script);
+        return;
+    }
 
-	return head.get();
+    boost::shared_ptr<const std::string> code = script->requestCode();
+
+    if (!code)
+    {
+        pendingScripts.push_back(script);
+        return;
+    }
+
+    openState();
+    lua_State* thread = lua_newthread(globalState);
+
+    if (!thread)
+    {
+        StandardOut::singleton()->print(MESSAGE_ERROR, "Unable to create a new thread for %s. It did not execute", script->getName().c_str());
+        return;
+    }
+
+    Lua::ScopedPopper popper(globalState, 1);
+
+    // interestingly this is just ScriptContext::sandboxThread
+    lua_newtable(thread);
+    lua_newtable(thread);
+    lua_pushliteral(thread, "__index");
+    lua_pushvalue(thread, LUA_GLOBALSINDEX);
+    lua_settable(thread, -3);
+    lua_setmetatable(thread, -2);
+    lua_replace(thread, LUA_GLOBALSINDEX);
+
+    setThreadIdentity(thread, Security::GameScript);
+
+    RBXASSERT(!script->association().contains<Lua::ThreadRef::NodePtr>());
+    script->association().get<Lua::ThreadRef::NodePtr>() = Lua::ThreadRef::Node::create(thread);
+
+    RBXASSERT(lua_gettop(thread) == 0);
+    Lua::ObjectBridge::push(thread, script);
+    lua_setfield(thread, LUA_GLOBALSINDEX, "script");
+
+    std::string name = std::string("=") + getFullName(script.get());
+
+    if (luaL_loadbuffer(thread, code->c_str(), code->length(), name.c_str()))
+    {
+        StandardOut::singleton()->print(MESSAGE_ERROR, lua_tostring(thread, -1));
+        lua_pop(thread, 1);
+    }
+    else
+    {
+        resume(thread, 0);
+    }
+
+    lua_settop(thread, 0);
 }
-
-// FUNCTION: WEBSERVICE 0x100a2110
-PartInstance* Humanoid::getTorso() const
-{
-	if (torso == NULL && getParent() != NULL) {
-		torso = shared_from_dynamic_cast<PartInstance>(getParent()->findFirstChildByName("Torso"));
-	}
-
-	return torso.get();
-}
-
-// FUNCTION: WEBSERVICE 0x100a2210
-PartInstance* Humanoid::getLeftLeg() const
-{
-	if (leftLeg == NULL && getParent() != NULL) {
-		leftLeg = shared_from_dynamic_cast<PartInstance>(getParent()->findFirstChildByName("Left Leg"));
-	}
-
-	return leftLeg.get();
-}
-
-// FUNCTION: WEBSERVICE 0x100a2310
-PartInstance* Humanoid::getRightLeg() const
-{
-	if (rightLeg == NULL && getParent() != NULL) {
-		rightLeg = shared_from_dynamic_cast<PartInstance>(getParent()->findFirstChildByName("Right Leg"));
-	}
-
-	return rightLeg.get();
-}
-
-// FUNCTION: WEBSERVICE 0x100a2410
-PartInstance* Humanoid::getLeftArm() const
-{
-	if (leftArm == NULL && getParent() != NULL) {
-		leftArm = shared_from_dynamic_cast<PartInstance>(getParent()->findFirstChildByName("Left Arm"));
-	}
-
-	return leftArm.get();
-}
-
-// FUNCTION: WEBSERVICE 0x100a2510
-PartInstance* Humanoid::getRightArm() const
-{
-	if (rightArm == NULL && getParent() != NULL) {
-		rightArm = shared_from_dynamic_cast<PartInstance>(getParent()->findFirstChildByName("Right Arm"));
-	}
-
-	return rightArm.get();
-}
-
-// FUNCTION: WEBSERVICE 0x100a26a0
-Primitive* Humanoid::getTorsoPrimitive() const
-{
-	PartInstance* part = getTorso();
-
-	return part != NULL ? part->getPrimitive() : NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x100a26c0
-Primitive* Humanoid::getLeftLegPrimitive()
-{
-	PartInstance* part = getLeftLeg();
-
-	return part != NULL ? part->getPrimitive() : NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x100a26e0
-Primitive* Humanoid::getRightLegPrimitive()
-{
-	PartInstance* part = getRightLeg();
-
-	return part != NULL ? part->getPrimitive() : NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x100a2700
-Body* Humanoid::getTorsoBody()
-{
-	PartInstance* part = getTorso();
-
-	return part != NULL ? part->getPrimitive()->getBody() : NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x100a2720
-Body* Humanoid::getRootBody()
-{
-	Body* body = getTorsoBody();
-
-	return body != NULL ? body->getRoot() : NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x100a27c0
-const CoordinateFrame Humanoid::getLocation() const
-{
-	return getHead() != NULL ? getHead()->getCoordinateFrame() : CoordinateFrame();
-}
-
-// FUNCTION: WEBSERVICE 0x100a2f70
-G3D::Vector3 Humanoid::getIntendedMovementVector(bool setWalkMode)
-{
-	G3D::Vector3 result = G3D::Vector3::zero();
-
-	if (walkMode == DIRECTION_MOVE) {
-		result = walkDirection;
-	}
-	else if (walkMode == CLICK_TO_MOVE) {
-		PartInstance* torso = getTorso();
-		G3D::Vector3 worldPosition;
-
-		if (torso != NULL && hasWalkToPoint(worldPosition)) {
-			const G3D::Vector3& translation = torso->getCoordinateFrame().translation;
-
-			G3D::Vector3 delta = worldPosition - translation;
-
-			worldPosition.x = delta.x;
-			worldPosition.y = delta.y + 3.0f;
-			worldPosition.z = delta.z;
-
-			float distance = (worldPosition.z * worldPosition.z + worldPosition.x * worldPosition.x) +
-							 worldPosition.y * worldPosition.y;
-
-			worldPosition.y = 0;
-
-			if (sqrtf(distance) < 2.0f) {
-				if (setWalkMode) {
-					walkMode = DIRECTION_MOVE;
-				}
-
-				result = G3D::Vector3::zero();
-			}
-			else {
-				result = worldPosition.unit();
-			}
-		}
-	}
-
-	return result;
-}
-
-// FUNCTION: WEBSERVICE 0x100a30d0
-G3D::Vector3 Humanoid::getIntendedMovementVector()
-{
-	return getIntendedMovementVector(false);
-}
-
-// STUB: WEBSERVICE 0x100a30f0
-G3D::Vector3 Humanoid::updateWalkDirection()
-{
-	STUB(0x100a30f0);
-	return G3D::Vector3::zero();
-}
-
-// STUB: WEBSERVICE 0x100a31b0
-void Humanoid::tellCameraNear(float distance)
-{
-	STUB(0x100a31b0);
-}
-
-// FUNCTION: WEBSERVICE 0x100a4290
-Humanoid::Humanoid()
-	: health(100), maxHealth(100), walkRotationalVelocity(0), walkTimer(0), walkMode(DIRECTION_MOVE), jump(false),
-	  imDead(false), hadHeadJoint(false), sit(false), world(NULL)
-{
-	setName("Humanoid");
-}
-
-// STUB: WEBSERVICE 0x100a4690
-void Humanoid::renderMultiplayer(Adorn* adorn, const G3D::GCamera& camera)
-{
-	if (getHead() != NULL) {
-		const CoordinateFrame& headCoord = head->getCoordinateFrame();
-
-		Vector3 headPosition(headCoord.translation.x, headCoord.translation.y + 1.5f, headCoord.translation.z);
-
-		Vector3 projected = camera.project(headPosition, adorn->getViewport());
-
-		float distance = (camera.getCoordinateFrame().translation - headPosition).magnitude();
-
-		if (distance < 100.0f) {
-			int fontSize = 8;
-
-			if (20.0f <= distance) {
-				if (distance < 50.0f) {
-					fontSize = 10;
-				}
-			}
-			else {
-				fontSize = 12;
-			}
-
-			Teams* teams = ServiceProvider::find<Teams>(this);
-
-			G3D::Color3 nameColor = teams == NULL ? G3D::Color3::white() : teams->getTeamColorForHumanoid(this);
-
-			adorn->drawFont2D(
-				getName(),
-				projected.xy(),
-				fontSize,
-				G3D::Color4(nameColor, 1.0f),
-				G3D::Color4(G3D::Color3::black(), 1.0f),
-				Adorn::XALIGN_CENTER,
-				Adorn::YALIGN_CENTER,
-				Adorn::PROPORTIONAL_SPACING
-			);
-
-			float width = (float) (fontSize * 4);
-
-			headPosition.x -= 0.5f * width;
-
-			Vector2 barLow(headPosition.x, headPosition.y);
-			Vector2 barHigh(headPosition.x + width, headPosition.y + (float) (fontSize / 2));
-
-			Vector2 healthHigh(headPosition.x + (health / maxHealth) * width, headPosition.y);
-
-			adorn->rect2d(G3D::Rect2D::xyxy(barLow, healthHigh), G3D::Color4(Color::lightGreen(), 1.0f));
-			adorn->rect2d(G3D::Rect2D::xyxy(healthHigh, barHigh), G3D::Color4(G3D::Color3::red(), 1.0f));
-		}
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x100a4960
-void Humanoid::render2d(Adorn* adorn)
-{
-	Humanoid* self = this;
-	ModelInstance* character = Network::Players::findLocalCharacter(self);
-	Humanoid* localHumanoid = character != NULL ? character->findFirstChildOfType<Humanoid>() : NULL;
-
-	if (this == localHumanoid) {
-		return;
-	}
-
-	Workspace* workspace = Workspace::findWorkspace(self);
-
-	if (workspace != NULL) {
-		renderMultiplayer(adorn, workspace->getGCamera());
-	}
-}
-
-// STUB: WEBSERVICE 0x100a4bf0
-void Humanoid::getIgnorePrims(std::vector<const Primitive*>& ignore)
-{
-	STUB(0x100a4bf0);
-}
-
-// FUNCTION: WEBSERVICE 0x100a4e80
-void Humanoid::setMaxHealth(float value)
-{
-	if (maxHealth != value) {
-		maxHealth = value;
-		raisePropertyChanged(propMaxHealth);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x100a5000
-void Humanoid::setWalkRotationalVelocity(const float& value)
-{
-	if (walkRotationalVelocity != value) {
-		walkRotationalVelocity = value;
-		raisePropertyChanged(propWalkRotationalVelocity);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x100a51b0
-void Humanoid::setJump(bool value)
-{
-	if (jump != value) {
-		jump = value;
-		raisePropertyChanged(propJump);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x100a51f0
-void Humanoid::setSit(bool value)
-{
-	if (sit != value) {
-		sit = value;
-		raisePropertyChanged(propSit);
-	}
-}
-
-// STUB: WEBSERVICE 0x100a56c0
-void Humanoid::onEvent(const RunService* source, Stepped event)
-{
-	State* state = currentState.get();
-
-	if (state != NULL && getParent() != NULL) {
-		State* next = state->onStep(event.step, *static_cast<PVInstance*>(getParent())->getTopPVController());
-
-		if (next != state) {
-			currentState.reset(next);
-		}
-	}
-}
-
-// STUB: WEBSERVICE 0x100a5770
-void Humanoid::cameraSetWalkOrientation(float rad, bool noAdjust)
-{
-	STUB(0x100a5770);
-}
-
-bool Humanoid::isControllable() const
-{
-	STUB(0x100e6150);
-	return false;
-}
-
-bool Humanoid::shouldRender2d() const
-{
-	STUB(0x100e6151);
-	return false;
-}
-
-bool Humanoid::shouldRender3dAdorn() const
-{
-	STUB(0x100e6152);
-	return false;
-}
-
-} // namespace RBX
-
-template class RBX::FactoryProduct<RBX::Humanoid, RBX::Instance, RBX::sHumanoid>;
-template class RBX::Reflection::
-	Described<RBX::Humanoid, RBX::sHumanoid, RBX::FactoryProduct<RBX::Humanoid, RBX::Instance, RBX::sHumanoid> >;
-template class RBX::DescribedCreatable<RBX::Humanoid, RBX::Instance, RBX::sHumanoid>;

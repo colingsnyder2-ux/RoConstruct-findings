@@ -1,28 +1,9 @@
-// from server: 0% by colin
-struct ScoreHud {
-    void f(int* first, int* last, int* dest);
-};
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espeon_nestedstringresize_321354d37176baf1.cpp
 
-extern "C" void __stdcall sub_429A50(void* out, void* self);
-
-void ScoreHud::f(int* first, int* last, int* dest)
-{
-    int* cur = first;
-    while (cur != last) {
-        if (dest) {
-            sub_429A50(&dest, dest);
-        }
-        int tmp;
-        tmp = cur[1];
-        dest[1] = tmp;
-        cur[1] = tmp;
-        tmp = cur[2];
-        dest[2] = tmp;
-        cur[2] = tmp;
-        tmp = cur[3];
-        dest[3] = tmp;
-        cur[3] = tmp;
-        cur += 4;
-        dest += 4;
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+template void std::vector<std::vector<std::string> >::resize(size_type,std::vector<std::string>);

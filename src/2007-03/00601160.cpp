@@ -1,8 +1,7 @@
-// from server: 92% by colin
-// roc-lang: c
 // roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: lua-5.1.1 llex.c
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_lualexauthentic8be5ca7b195cf324.cpp
 
 // Candidate translation unit (score above; library headers required).
 /*

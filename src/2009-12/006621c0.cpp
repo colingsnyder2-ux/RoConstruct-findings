@@ -1,50 +1,43 @@
-// roc 2009-12 006621c0  unit: RBX::Reflection::_N::?$TypedPropertyDescriptor  size: 37 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 006621c0
-//
-// 006621c0  56                   push esi
-// 006621c1  57                   push edi
-// 006621c2  e899ffffff           call 0x662160
-// 006621c7  8bf0                 mov esi, eax
-// 006621c9  8b7e0c               mov edi, dword ptr [esi + 0xc]
-// 006621cc  3b7e10               cmp edi, dword ptr [esi + 0x10]
-// 006621cf  7606                 jbe 0x6621d7
-// 006621d1  ff1560b79800         call dword ptr [0x98b760]
-// 006621d7  8b44240c             mov eax, dword ptr [esp + 0xc]
-// 006621db  8b36                 mov esi, dword ptr [esi]
-// 006621dd  897804               mov dword ptr [eax + 4], edi
-// 006621e0  5f                   pop edi
-// 006621e1  8930                 mov dword ptr [eax], esi
-// 006621e3  5e                   pop esi
-// 006621e4  c3                   ret 
-// copied from an identical function in another client (function ?f@@YAPAUResult@@RAU1@@Z)
-
+// roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-struct State {
-    unsigned first;
-    unsigned reserved[2];
-    unsigned current;
-    unsigned limit;
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_descriptor_receiver_native_name_order_7d5f8e8ab29991a4.cpp
+
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("reflection/object.h", "../roc_descriptor_receiver_class_header_268a149c290eb686.cpp")
+#undef _RELEASEASSERT
+#include "reflection/object.h"
+#include <boost/algorithm/string.hpp>
+#include <boost/cstdint.hpp>
+
+namespace RakNet { class BitStream; }
+namespace RBX { namespace Network {
+template<class T> class DescriptorReceiver {
+ std::vector<const T*> idToDesc;
+ int idBits;
+ void learnName(std::string s, int i);
+public:
+ void getValue(unsigned int id, const T*& value) const { value = idToDesc.at(id); }
+ void learn(RakNet::BitStream& stream, bool exchangeChecksum, bool useRakString);
+ unsigned int receive(RakNet::BitStream& stream, const T*& value, bool versionCheck) const;
+ bool verifyChecksum(const T* value, boost::uint32_t remoteChecksum);
 };
-
-struct Result {
-    unsigned first;
-    unsigned current;
-};
-
-extern State* __cdecl getState();
-extern "C" void (__cdecl* _invalid_parameter_noinfo)();
-
-Result* __cdecl f(Result* volatile result)
-{
-    State* state = getState();
-    unsigned current = state->current;
-    if (current > state->limit)
-        _invalid_parameter_noinfo();
-
-    Result* output = result;
-    unsigned first = state->first;
-    output->current = current;
-    output->first = first;
-    return output;
+using namespace Reflection;
+template<> void DescriptorReceiver<PropertyDescriptor>::learnName(std::string s, int i) {
+ std::vector<std::string> words;
+ boost::split(words,s,boost::is_any_of(":"));
+ const Name& n = Name::lookup(words[0]);
+ ClassDescriptor::ClassDescriptors::const_iterator iter = ClassDescriptor::all_begin();
+ while(iter != ClassDescriptor::all_end()) {
+  const ClassDescriptor* c = *iter;
+  if(c->name == n) {
+   const Name& propertyName = Name::lookup(words[1]);
+   PropertyContainer::CollectionType::const_iterator desc = c->PropertyContainer::findDescriptor(propertyName);
+   if(desc != c->PropertyContainer::descriptors_end()) { idToDesc[i] = *desc; return; }
+   else break;
+  }
+  ++iter;
+ }
+ idToDesc[i] = NULL;
 }
+} }

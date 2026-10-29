@@ -1,453 +1,371 @@
-// from server: 50% by colin
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/humanoid/Humanoid.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll v8datamodel/ModelInstance.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "humanoid/Humanoid.h"
-
-#include "network/Players.h"
-#include "rbxgraphics/Adorn.h"
-#include "reflection/property.h"
-#include "util/Color.h"
 #include "v8datamodel/ModelInstance.h"
-#include "v8datamodel/Teams.h"
-#include "v8datamodel/Workspace.h"
-#include "v8kernel/Body.h"
-#include "v8tree/Service.h"
-#include "v8world/World.h"
+#include "v8datamodel/PartInstance.h"
+#include "humanoid/Humanoid.h"
+#include "v8world/Primitive.h"
+#include "tool/DragUtilities.h"
+#include "AppDraw/Draw.h"
 
-namespace RBX {
+static bool physicalCharacterHacked = false;
 
-char sHumanoid[] = "Humanoid";
-
-using namespace Reflection;
-
-static PropDescriptor<Humanoid, float> propMaxHealth(
-	"MaxHealth",
-	"Game",
-	&RBX::Humanoid::getMaxHealth,
-	&RBX::Humanoid::setMaxHealth
-);
-
-static PropDescriptor<Humanoid, float> propWalkRotationalVelocity(
-	"WalkRotationalVelocity",
-	"Control",
-	&RBX::Humanoid::getWalkRotationalVelocity,
-	&RBX::Humanoid::setWalkRotationalVelocity,
-	Reflection::PropertyDescriptor::STREAMING
-);
-
-static PropDescriptor<Humanoid, bool> propJump(
-	"Jump",
-	"Control",
-	&RBX::Humanoid::getJump,
-	&RBX::Humanoid::setJump,
-	Reflection::PropertyDescriptor::STREAMING
-);
-
-static PropDescriptor<Humanoid, bool> propSit(
-	"Sit",
-	"Control",
-	&RBX::Humanoid::getSit,
-	&RBX::Humanoid::setSit,
-	Reflection::PropertyDescriptor::STREAMING
-);
-
-SignalDesc<Humanoid, void()> Humanoid::event_Died("Died");
-SignalDesc<Humanoid, void(float)> Humanoid::event_Running("Running", "speed");
-SignalDesc<Humanoid, void(float)> Humanoid::event_Climbing("Climbing", "speed");
-SignalDesc<Humanoid, void(bool)> Humanoid::event_Jumping("Jumping", "active");
-SignalDesc<Humanoid, void(bool)> Humanoid::event_FreeFalling("FreeFalling", "active");
-SignalDesc<Humanoid, void(bool)> Humanoid::event_GettingUp("GettingUp", "active");
-SignalDesc<Humanoid, void(bool)> Humanoid::event_FallingDown("FallingDown", "active");
-SignalDesc<Humanoid, void(bool)> Humanoid::event_Seated("Seated", "active");
-
-// FUNCTION: WEBSERVICE 0x100a0990
-ContactManager* Humanoid::getContactManager()
+namespace RBX
 {
-	World* world = Workspace::getWorldIfInWorkspace(this);
+	const char* sModel = "Model";
 
-	if (world != NULL) {
-		return world->getContactManager();
+	static const Name& partName = Name::declare(sModel, 2000);
+
+	static Reflection::PropDescriptor<ModelInstance, G3D::CoordinateFrame> desc_ModelInPrimary("ModelInPrimary", "Data", &ModelInstance::getModelInPrimary, &ModelInstance::setModelInPrimary, Reflection::PropertyDescriptor::STREAMING); // L25
+	static Reflection::RefPropDescriptor<ModelInstance, PartInstance> primaryPartProp("PrimaryPart", "Data", &ModelInstance::getPrimaryPartInternal, &ModelInstance::setPrimaryPart, Reflection::PropertyDescriptor::STANDARD); // L26
+	static Reflection::BoundFuncDesc<ModelInstance, void(), 0> desc_breakJoints(&ModelInstance::breakJoints, "BreakJoints", Reflection::FunctionDescriptor::AnyCaller); // L27
+	static Reflection::BoundFuncDesc<ModelInstance, void(), 0> desc_makeJoints(&ModelInstance::makeJoints, "MakeJoints", Reflection::FunctionDescriptor::AnyCaller); // L28
+
+	static Reflection::BoundFuncDesc<ModelInstance, void(G3D::Vector3), 1> model_moveFunctionOld(&PVInstance::moveToPoint, "move", "location", Reflection::FunctionDescriptor::AnyCaller); // L30
+	static Reflection::BoundFuncDesc<ModelInstance, void(G3D::Vector3), 1> model_moveFunction(&PVInstance::moveToPoint, "MoveTo", "location", Reflection::FunctionDescriptor::AnyCaller); // L31
+
+	bool ModelInstance::showModelCoord = false;
+
+#pragma warning (push)
+#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
+	ModelInstance::ModelInstance()
+		: Base("Model"),
+		  modelInPrimary(),
+		  primaryPart(NULL),
+		  FlagHeight(this, &ModelInstance::computeFlagHeight),
+		  LocalGridExtents(this, &ModelInstance::computeLocalGridExtents),
+		  WorldGridExtents(this, &ModelInstance::computeWorldGridExtents)
+	{
+		if (!physicalCharacterHacked)
+		{
+			const Name& name = Name::declare("PhysicalCharacter", -1);
+			AbstractFactoryProduct<Instance>::getCreators()[&name] = &getCreator();
+			physicalCharacterHacked = true;
+		}
+	}
+#pragma warning (pop)
+
+	ModelInstance::~ModelInstance()
+	{
+		RBXASSERT(!primaryPart);
 	}
 
-	return NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x100a0bd0
-bool Humanoid::hasWalkToPoint(G3D::Vector3& worldPosition) const
-{
-	if (walkToPart != NULL && Workspace::findWorkspace(this) != NULL &&
-		Workspace::contextInWorkspace(walkToPart.get())) {
-		worldPosition = walkToPart->getCoordinateFrame().pointToWorldSpace(walkToPoint);
-
-		return true;
+	void ModelInstance::dirtyAll() const
+	{
+		LocalGridExtents.setDirty();
+		WorldGridExtents.setDirty();
+		FlagHeight.setDirty();
 	}
 
-	return false;
-}
-
-// FUNCTION: WEBSERVICE 0x100a0d40
-void Humanoid::computeForce(float dt, bool throttling)
-{
-	if (currentState.get() != NULL) {
-		currentState->onComputeForce(dt);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x100a1100
-Humanoid::~Humanoid()
-{
-}
-
-// FUNCTION: WEBSERVICE 0x100a1480
-float Humanoid::getIntendedRotationAboutYAxis()
-{
-	if (currentState.get() != NULL) {
-		return currentState->getIntendedRotationAboutYAxis();
+	bool ModelInstance::askSetParent(const Instance* instance) const
+	{
+		return dynamic_cast<const ModelInstance*>(instance) != NULL;
 	}
 
-	return 0;
-}
-
-// STUB: WEBSERVICE 0x100a1b00
-void Humanoid::render3dAdorn(Adorn* adorn)
-{
-	STUB(0x100a1b00);
-}
-
-// FUNCTION: WEBSERVICE 0x100a2010
-PartInstance* Humanoid::getHead() const
-{
-	if (head == NULL && getParent() != NULL) {
-		head = shared_from_dynamic_cast<PartInstance>(getParent()->findFirstChildByName("Head"));
+	void ModelInstance::onExtentsChanged() const
+	{
+		dirtyAll();
+		PVInstance::onExtentsChanged();
 	}
 
-	return head.get();
-}
+	void ModelInstance::onDescendentAdded(Instance* instance)
+	{
+		PVInstance::onDescendentAdded(instance);
+		dirtyAll();
 
-// FUNCTION: WEBSERVICE 0x100a2110
-PartInstance* Humanoid::getTorso() const
-{
-	if (torso == NULL && getParent() != NULL) {
-		torso = shared_from_dynamic_cast<PartInstance>(getParent()->findFirstChildByName("Torso"));
+		if (instance == candidatePrimaryPart.get())
+		{
+			RBXASSERT(primaryPart != candidatePrimaryPart.get());
+			candidatePrimaryPart.reset();
+
+			updatePrimaryPart(rbx_static_cast<PartInstance*>(instance));
+		}
+
+		shouldRenderSetDirty();
 	}
 
-	return torso.get();
-}
+	void ModelInstance::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
+	{
+		if (primaryPart == instance.get())
+			primaryPart = NULL;
 
-// FUNCTION: WEBSERVICE 0x100a2210
-PartInstance* Humanoid::getLeftLeg() const
-{
-	if (leftLeg == NULL && getParent() != NULL) {
-		leftLeg = shared_from_dynamic_cast<PartInstance>(getParent()->findFirstChildByName("Left Leg"));
+		if (candidatePrimaryPart == instance)
+		{
+			RBXASSERT(0);
+			candidatePrimaryPart.reset();
+		}
+
+		dirtyAll();
+		shouldRenderSetDirty();
+		PVInstance::onDescendentRemoving(instance);
 	}
 
-	return leftLeg.get();
-}
+	const Primitive* ModelInstance::getBiggestPrimitive() const
+	{
+		const PartInstance* primaryPart = getPrimaryPartConst();
+		if (primaryPart)
+			return primaryPart->getPrimitive();
 
-// FUNCTION: WEBSERVICE 0x100a2310
-PartInstance* Humanoid::getRightLeg() const
-{
-	if (rightLeg == NULL && getParent() != NULL) {
-		rightLeg = shared_from_dynamic_cast<PartInstance>(getParent()->findFirstChildByName("Right Leg"));
+		return NULL;
 	}
 
-	return rightLeg.get();
-}
-
-// FUNCTION: WEBSERVICE 0x100a2410
-PartInstance* Humanoid::getLeftArm() const
-{
-	if (leftArm == NULL && getParent() != NULL) {
-		leftArm = shared_from_dynamic_cast<PartInstance>(getParent()->findFirstChildByName("Left Arm"));
-	}
-
-	return leftArm.get();
-}
-
-// FUNCTION: WEBSERVICE 0x100a2510
-PartInstance* Humanoid::getRightArm() const
-{
-	if (rightArm == NULL && getParent() != NULL) {
-		rightArm = shared_from_dynamic_cast<PartInstance>(getParent()->findFirstChildByName("Right Arm"));
-	}
-
-	return rightArm.get();
-}
-
-// FUNCTION: WEBSERVICE 0x100a26a0
-Primitive* Humanoid::getTorsoPrimitive() const
-{
-	PartInstance* part = getTorso();
-
-	return part != NULL ? part->getPrimitive() : NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x100a26c0
-Primitive* Humanoid::getLeftLegPrimitive()
-{
-	PartInstance* part = getLeftLeg();
-
-	return part != NULL ? part->getPrimitive() : NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x100a26e0
-Primitive* Humanoid::getRightLegPrimitive()
-{
-	PartInstance* part = getRightLeg();
-
-	return part != NULL ? part->getPrimitive() : NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x100a2700
-Body* Humanoid::getTorsoBody()
-{
-	PartInstance* part = getTorso();
-
-	return part != NULL ? part->getPrimitive()->getBody() : NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x100a2720
-Body* Humanoid::getRootBody()
-{
-	Body* body = getTorsoBody();
-
-	return body != NULL ? body->getRoot() : NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x100a27c0
-const CoordinateFrame Humanoid::getLocation() const
-{
-	return getHead() != NULL ? getHead()->getCoordinateFrame() : CoordinateFrame();
-}
-
-// FUNCTION: WEBSERVICE 0x100a2f70
-G3D::Vector3 Humanoid::getIntendedMovementVector(bool setWalkMode)
-{
-	G3D::Vector3 result = G3D::Vector3::zero();
-
-	if (walkMode == DIRECTION_MOVE) {
-		result = walkDirection;
-	}
-	else if (walkMode == CLICK_TO_MOVE) {
-		PartInstance* torso = getTorso();
-		G3D::Vector3 worldPosition;
-
-		if (torso != NULL && hasWalkToPoint(worldPosition)) {
-			const G3D::Vector3& translation = torso->getCoordinateFrame().translation;
-
-			G3D::Vector3 delta = worldPosition - translation;
-
-			worldPosition.x = delta.x;
-			worldPosition.y = delta.y + 3.0f;
-			worldPosition.z = delta.z;
-
-			float distance = (worldPosition.z * worldPosition.z + worldPosition.x * worldPosition.x) +
-							 worldPosition.y * worldPosition.y;
-
-			worldPosition.y = 0;
-
-			if (sqrtf(distance) < 2.0f) {
-				if (setWalkMode) {
-					walkMode = DIRECTION_MOVE;
-				}
-
-				result = G3D::Vector3::zero();
+	void ModelInstance::updatePrimaryPart(PartInstance* set) const
+	{
+		if (primaryPart == set)
+		{
+			RBXASSERT(!set || primaryPart->isDescendentOf(this));
+		}
+		else if (set)
+		{
+			RBXASSERT(!set->getParent() || set->isDescendentOf(this));
+			if (primaryPart)
+			{
+				RBXASSERT(primaryPart->isDescendentOf(this));
+				G3D::Matrix3 oldMe = getLocation().rotation;
+				modelInPrimary = G3D::CoordinateFrame(primaryPart->getCoordinateFrame().rotation.transpose() * oldMe, G3D::Vector3::zero());
+				primaryPart = set;
 			}
-			else {
-				result = worldPosition.unit();
+			else
+			{
+				modelInPrimary = G3D::CoordinateFrame();
+				primaryPart = set;
 			}
+		}
+		else
+		{
+			modelInPrimary = G3D::CoordinateFrame();
+			primaryPart = NULL;
 		}
 	}
 
-	return result;
-}
+	void ModelInstance::setPrimaryPart(PartInstance* set)
+	{
+		if (!set || set->isDescendentOf(this))
+		{
+			candidatePrimaryPart.reset();
+			updatePrimaryPart(set);
+		}
+		else
+		{
+			candidatePrimaryPart = shared_from(set);
 
-// FUNCTION: WEBSERVICE 0x100a30d0
-G3D::Vector3 Humanoid::getIntendedMovementVector()
-{
-	return getIntendedMovementVector(false);
-}
+			if (primaryPart)
+			{
+				modelInPrimary = G3D::CoordinateFrame();
+				primaryPart = NULL;
+			}
+		}
 
-// STUB: WEBSERVICE 0x100a30f0
-G3D::Vector3 Humanoid::updateWalkDirection()
-{
-	STUB(0x100a30f0);
-	return G3D::Vector3::zero();
-}
+		raisePropertyChanged(primaryPartProp);
+	}
 
-// STUB: WEBSERVICE 0x100a31b0
-void Humanoid::tellCameraNear(float distance)
-{
-	STUB(0x100a31b0);
-}
+	static void makeJ(Instance* instance)
+	{
+		PartInstance* partInstance = dynamic_cast<PartInstance*>(instance);
+		if (partInstance)
+		{
+			partInstance->join();
+		}
+		else
+		{
+			ModelInstance* modelInstance = dynamic_cast<ModelInstance*>(instance);
+			if (modelInstance)
+				modelInstance->for_eachChild(makeJ);
+		}
+	}
 
-// FUNCTION: WEBSERVICE 0x100a4290
-Humanoid::Humanoid()
-	: health(100), maxHealth(100), walkRotationalVelocity(0), walkTimer(0), walkMode(DIRECTION_MOVE), jump(false),
-	  imDead(false), hadHeadJoint(false), sit(false), world(NULL)
-{
-	setName("Humanoid");
-}
+	void ModelInstance::makeJoints()
+	{
+		for_eachChild(makeJ);
+	}
 
-// STUB: WEBSERVICE 0x100a4690
-void Humanoid::renderMultiplayer(Adorn* adorn, const G3D::GCamera& camera)
-{
-	if (getHead() != NULL) {
-		const CoordinateFrame& headCoord = head->getCoordinateFrame();
+	static void breakJ(Instance* instance)
+	{
+		PartInstance* partInstance = dynamic_cast<PartInstance*>(instance);
+		if (partInstance)
+		{
+			partInstance->destroyJoints();
+		}
+		else
+		{
+			ModelInstance* modelInstance = dynamic_cast<ModelInstance*>(instance);
+			if (modelInstance)
+				modelInstance->for_eachChild(breakJ);
+		}
+	}
 
-		Vector3 headPosition(headCoord.translation.x, headCoord.translation.y + 1.5f, headCoord.translation.z);
+	void ModelInstance::breakJoints()
+	{
+		for_eachChild(breakJ);
+	}
 
-		Vector3 projected = camera.project(headPosition, adorn->getViewport());
+	float ModelInstance::computeFlagHeight() const
+	{
+		float answer = 6.0f;
 
-		float distance = (camera.getCoordinateFrame().translation - headPosition).magnitude();
+		if (primaryPart)
+		{
+			RBXASSERT(primaryPart->isDescendentOf(this));
+			float primaryPartY = primaryPart->getExtentsWorld().max().y;
+			answer = (getExtentsWorld().max().y - primaryPartY) + 6.0f;
+		}
 
-		if (distance < 100.0f) {
-			int fontSize = 8;
+		return answer;
+	}
 
-			if (20.0f <= distance) {
-				if (distance < 50.0f) {
-					fontSize = 10;
+	PartInstance* ModelInstance::getPrimaryPartInternal() const
+	{
+		if (primaryPart)
+		{
+			RBXASSERT(primaryPart->isDescendentOf(this));
+			return primaryPart;
+		}
+		else
+		{
+			float biggest = -1.0f;
+			PartInstance* biggestPart = NULL;
+			for (size_t i = 0; i < numChildren(); ++i)
+			{
+				const Instance* child = getChild(i);
+				const PVInstance* pvChild = dynamic_cast<const PVInstance*>(child);
+				if (pvChild)
+				{
+					const Primitive* primitive = pvChild->getBiggestPrimitive();
+					if (primitive)
+					{
+						PartInstance* part = PartInstance::fromPrimitive(const_cast<Primitive*>(primitive));
+						RBXASSERT(!part || part->isDescendentOf(this));
+
+						float area = part->getExtentsWorld().areaXZ();
+						if (area > biggest)
+						{
+							biggest = area;
+							biggestPart = part;
+						}
+					}
 				}
 			}
-			else {
-				fontSize = 12;
+
+			updatePrimaryPart(biggestPart);
+			return biggestPart;
+		}
+	}
+
+	Extents ModelInstance::computeLocalGridExtents() const
+	{
+		std::vector<const Primitive*> primitives;
+		DragUtilities::getPrimitivesConst(this, primitives);
+
+		Extents answer = Extents::negativeInfiniteExtents();
+
+		for (size_t i = 0; i < primitives.size(); i++)
+		{
+			const Primitive* primitive = primitives[i];
+			Extents localExtents = primitive->getExtentsLocal();
+			Extents childExtentsInMe = localExtents.express(primitive->getCoordinateFrame(), getLocation());
+			answer.unionWith(childExtentsInMe);
+		}
+
+		return primitives.size() != 0 ? answer : Extents::zero();
+	}
+
+	Extents ModelInstance::computeWorldGridExtents() const
+	{
+		return LocalGridExtents.getValue().express(getLocation(), G3D::CoordinateFrame());
+	}
+
+	void ModelInstance::legacyTraverseState(const G3D::CoordinateFrame& parentState)
+	{
+		RBXASSERT(legacyOffset);
+
+		if (getChildren())
+		{
+			int count = (int)getChildren()->size();
+			if (count > 0)
+			{
+				G3D::CoordinateFrame myState = parentState * (*legacyOffset);
+				for (int i = 0; i < count; ++i)
+				{
+					Instance* child = getChild(i);
+					PVInstance* pvChild = dynamic_cast<PVInstance*>(child);
+					if (pvChild)
+						pvChild->legacyTraverseState(myState);
+				}
 			}
-
-			Teams* teams = ServiceProvider::find<Teams>(this);
-
-			G3D::Color3 nameColor = teams == NULL ? G3D::Color3::white() : teams->getTeamColorForHumanoid(this);
-
-			adorn->drawFont2D(
-				getName(),
-				projected.xy(),
-				fontSize,
-				G3D::Color4(nameColor, 1.0f),
-				G3D::Color4(G3D::Color3::black(), 1.0f),
-				Adorn::XALIGN_CENTER,
-				Adorn::YALIGN_CENTER,
-				Adorn::PROPORTIONAL_SPACING
-			);
-
-			float width = (float) (fontSize * 4);
-
-			headPosition.x -= 0.5f * width;
-
-			Vector2 barLow(headPosition.x, headPosition.y);
-			Vector2 barHigh(headPosition.x + width, headPosition.y + (float) (fontSize / 2));
-
-			Vector2 healthHigh(headPosition.x + (health / maxHealth) * width, headPosition.y);
-
-			adorn->rect2d(G3D::Rect2D::xyxy(barLow, healthHigh), G3D::Color4(Color::lightGreen(), 1.0f));
-			adorn->rect2d(G3D::Rect2D::xyxy(healthHigh, barHigh), G3D::Color4(G3D::Color3::red(), 1.0f));
 		}
 	}
-}
 
-// FUNCTION: WEBSERVICE 0x100a4960
-void Humanoid::render2d(Adorn* adorn)
-{
-	Humanoid* self = this;
-	ModelInstance* character = Network::Players::findLocalCharacter(self);
-	Humanoid* localHumanoid = character != NULL ? character->findFirstChildOfType<Humanoid>() : NULL;
+	const G3D::CoordinateFrame ModelInstance::getLocation() const
+	{
+		if (getPrimaryPartConst())
+		{
+			G3D::CoordinateFrame cf = primaryPart->getCoordinateFrame();
+			return G3D::CoordinateFrame(cf.rotation * modelInPrimary.rotation, cf.translation);
+		}
 
-	if (this == localHumanoid) {
-		return;
+		return G3D::CoordinateFrame();
 	}
 
-	Workspace* workspace = Workspace::findWorkspace(self);
+	bool ModelInstance::hitTest(const G3D::Ray& worldRay, G3D::Vector3& worldHitPoint)
+	{
+		for (size_t i = 0; i < numChildren(); ++i)
+		{
+			Instance* child = getChild(i);
+			PVInstance* pvChild = dynamic_cast<PVInstance*>(child);
+			if (pvChild)
+			{
+				if (pvChild->hitTest(worldRay, worldHitPoint))
+					return true;
+			}
+		}
 
-	if (workspace != NULL) {
-		renderMultiplayer(adorn, workspace->getGCamera());
+		return false;
 	}
-}
 
-// STUB: WEBSERVICE 0x100a4bf0
-void Humanoid::getIgnorePrims(std::vector<const Primitive*>& ignore)
-{
-	STUB(0x100a4bf0);
-}
-
-// FUNCTION: WEBSERVICE 0x100a4e80
-void Humanoid::setMaxHealth(float value)
-{
-	if (maxHealth != value) {
-		maxHealth = value;
-		raisePropertyChanged(propMaxHealth);
+	bool ModelInstance::shouldRender3dAdorn() const
+	{
+		return isTopLevelPVInstance() && showModelCoord;
 	}
-}
 
-// FUNCTION: WEBSERVICE 0x100a5000
-void Humanoid::setWalkRotationalVelocity(const float& value)
-{
-	if (walkRotationalVelocity != value) {
-		walkRotationalVelocity = value;
-		raisePropertyChanged(propWalkRotationalVelocity);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x100a51b0
-void Humanoid::setJump(bool value)
-{
-	if (jump != value) {
-		jump = value;
-		raisePropertyChanged(propJump);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x100a51f0
-void Humanoid::setSit(bool value)
-{
-	if (sit != value) {
-		sit = value;
-		raisePropertyChanged(propSit);
-	}
-}
-
-// STUB: WEBSERVICE 0x100a56c0
-void Humanoid::onEvent(const RunService* source, Stepped event)
-{
-	State* state = currentState.get();
-
-	if (state != NULL && getParent() != NULL) {
-		State* next = state->onStep(event.step, *static_cast<PVInstance*>(getParent())->getTopPVController());
-
-		if (next != state) {
-			currentState.reset(next);
+	void ModelInstance::render3dAdorn(Adorn* adorn)
+	{
+		if (isTopLevelPVInstance())
+		{
+			if (showModelCoord)
+				renderCoordinateFrame(adorn);
 		}
 	}
+
+	void ModelInstance::render3dSelect(Adorn* adorn, SelectState selectState)
+	{
+		Extents localExtents = getExtentsLocal();
+		G3D::CoordinateFrame location = getLocation();
+		location.translation = location.pointToWorldSpace(localExtents.center());
+
+		Part part(Part::BLOCK_PART, localExtents.size(), G3D::Color3::white(), location);
+		Draw::selectionBox(part, adorn, selectState);
+	}
+
+	void ModelInstance::onCameraNear(float distance)
+	{
+		for (size_t i = 0; i < numChildren(); ++i)
+		{
+			Instance* child = getChild(i);
+			ICameraSubject* cameraSubject = dynamic_cast<ICameraSubject*>(child);
+			if (cameraSubject)
+				cameraSubject->onCameraNear(distance);
+		}
+	}
+
+	void ModelInstance::getCameraIgnorePrimitives(std::vector<const Primitive*>& primitives)
+	{
+		DragUtilities::getPrimitivesConst(this, primitives);
+
+		Humanoid* humanoid = findFirstChildOfType<Humanoid>();
+		if (humanoid)
+			humanoid->getIgnorePrims(primitives);
+	}
 }
-
-// STUB: WEBSERVICE 0x100a5770
-void Humanoid::cameraSetWalkOrientation(float rad, bool noAdjust)
-{
-	STUB(0x100a5770);
-}
-
-bool Humanoid::isControllable() const
-{
-	STUB(0x100e6150);
-	return false;
-}
-
-bool Humanoid::shouldRender2d() const
-{
-	STUB(0x100e6151);
-	return false;
-}
-
-bool Humanoid::shouldRender3dAdorn() const
-{
-	STUB(0x100e6152);
-	return false;
-}
-
-} // namespace RBX
-
-template class RBX::FactoryProduct<RBX::Humanoid, RBX::Instance, RBX::sHumanoid>;
-template class RBX::Reflection::
-	Described<RBX::Humanoid, RBX::sHumanoid, RBX::FactoryProduct<RBX::Humanoid, RBX::Instance, RBX::sHumanoid> >;
-template class RBX::DescribedCreatable<RBX::Humanoid, RBX::Instance, RBX::sHumanoid>;

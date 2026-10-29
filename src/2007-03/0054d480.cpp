@@ -1,69 +1,16 @@
-// from server: 27% by colin
+// roc-cl: 50727
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs reflection/signal.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-boost-1_34_1-dll roc_boost_resume_916365a4f87a380b.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "reflection/signal.h"
-#include "reflection/object.h"
-
-namespace RBX
-{
-	namespace Reflection
-	{
-		SignalDescriptor::SignalDescriptor(ClassDescriptor& classDescriptor, const char* name)
-			: MemberDescriptor(classDescriptor, name, "Signals"),
-			  signalCreatedHook(NULL),
-			  signature()
-		{
-			classDescriptor.SignalContainer::declare(this);
-		}
-
-		SignalInstance* SignalDescriptor::findSignalInstance(const SignalSource* source) const
-		{
-			if (!source)
-				return NULL;
-
-			if (!source->signals)
-				return NULL;
-
-			std::map<const SignalDescriptor*, boost::shared_ptr<SignalInstance>>::const_iterator iter = source->signals->find(this);
-			if (iter == source->signals->end())
-				return NULL;
-
-			return iter->second.get();
-		}
-
-		boost::shared_ptr<SignalInstance> SignalDescriptor::getSignalInstance(SignalSource& source) const
-		{
-			if (!source.signals)
-			{
-				source.signals.reset(new std::map<const SignalDescriptor*, boost::shared_ptr<SignalInstance>>);
-			}
-			else
-			{
-				std::map<const SignalDescriptor*, boost::shared_ptr<SignalInstance>>::iterator iter = source.signals->find(this);
-				if (iter != source.signals->end())
-					return iter->second;
-			}
-
-			boost::shared_ptr<SignalInstance> signalInstance(newSignalInstance(source));
-			(*source.signals)[this] = signalInstance;
-
-			if (signalCreatedHook)
-				signalCreatedHook(&source);
-
-			return signalInstance;
-		}
-
-		SignalInstance::~SignalInstance() {}
-
-		SignalSource::~SignalSource() {}
-
-		void SignalSource::disconnect_all_slots()
-		{
-			signals.reset();
-		}
-	}
-}
+#define NDEBUG 1
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::stream_buffer<boost::iostreams::basic_gzip_compressor<std::allocator<char> >,std::char_traits<char>,std::allocator<char>,boost::iostreams::output>;

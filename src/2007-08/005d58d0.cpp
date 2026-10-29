@@ -1,11 +1,53 @@
-// from server: 63% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: templates-boost-1_34_1 vector_sp.cpp
+// roc-lib: openrbx-client-dll roc_espeon_textvariantmember_47dbf4d9ffd6ae44.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include <boost/shared_ptr.hpp>
-struct T; typedef boost::shared_ptr<T> E;
-#include <vector>
-template class std::vector<E>;
+#include <string>
+#include <intrin.h>
+typedef std::string String;
+struct Name;
+extern const Name& __cdecl getLocalScope();
+struct Scope
+{
+    String text;
+    const Name* value;
+    Scope();
+    ~Scope();
+};
+
+inline Scope::Scope() : value(&getLocalScope())
+{
+}
+
+struct Slot
+{
+    unsigned int value;
+    Slot();
+    ~Slot();
+};
+
+inline Slot::Slot() : value(0)
+{
+}
+
+struct S
+{
+    Scope scope;
+    Slot a;
+    Slot b;
+    Slot c;
+    Slot d;
+    float x;
+    float y;
+
+    S(const char*, unsigned int);
+    void setString(const char*, unsigned int);
+};
+
+S::S(const char* data, unsigned int length)
+    : x(0.0f), y(0.0f)
+{
+    setString(data, length);
+}
