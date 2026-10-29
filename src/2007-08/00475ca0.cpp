@@ -1,10 +1,11 @@
-// from server: 99% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /arch:SSE2 /fp:fast
-// roc-lib: rbxgs-g3d GLG3Dcpp/RenderDevice.cpp
+// roc-lib: rbxgs-g3d roc_espeon_aug2007_renderdevice_b30c9353bc7832b3.cpp
 
 // Candidate translation unit (score above; library headers required).
+#line 1 ".\\glg3dcpp\\RenderDevice.cpp"
 /**
  @file RenderDevice.cpp
  
@@ -1856,7 +1857,9 @@ void RenderDevice::setVertexAndPixelShader(const VertexAndPixelShaderRef& s) {
         state.vertexAndPixelShader = s;
 
         if (s.notNull()) {
+#line 1854 ".\\glg3dcpp\\RenderDevice.cpp"
             alwaysAssertM(s->ok(), s->messages());
+#line 1853 ".\\glg3dcpp\\RenderDevice.cpp"
         }
 
         // The actual shader will change in beforePrimitive or when the arg list is bound.

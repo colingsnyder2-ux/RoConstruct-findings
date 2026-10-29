@@ -1,4 +1,4 @@
-// from server: 0% by colin
+// from server: 50% by Yeetserama
 struct S {
     void* field_0;
     void* init(int value);

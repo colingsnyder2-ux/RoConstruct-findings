@@ -1,8 +1,8 @@
-// from server: 99% by coldek
+// from server: 100% by nuck16
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: openrbx-client-dll roc_codex00607280_ordered_628905ad1e6236b2.cpp
+// roc-lib: openrbx-client-dll roc_unit_dee6fd6a2f626bde.cpp
 
 // Candidate translation unit (score above; library headers required).
 // exe-layout OpenRBX headers: Body pv at 0x94 without updatePV, Primitive +0x28 before oldSpatialMin
@@ -1351,37 +1351,70 @@ extern unsigned int nativeBlockPlanePassed, nativeBlockPlaneRejected;
 namespace RBX {
 extern "C" void _ReadBarrier(void);
 #pragma intrinsic(_ReadBarrier)
-static inline float rocOrderedProduct(const float& first, const float& second)
-{
-	float value = first;
-	_ReadBarrier();
-	float product = value * second;
-	_ReadBarrier();
-	return product;
-}
 static inline Vector3 rocH(const Vector3& p, const Matrix3& m)
 {
 	Vector3 out;
-	out[0] = p[0] * m[0][0] + p[2] * m[2][0];
-	out[0] += p[1] * m[1][0];
-	float yFirst = m[2][1];
-	_ReadBarrier();
-	float yFirstProduct = yFirst * p[2];
-	_ReadBarrier();
-	float ySecond = m[1][1];
-	_ReadBarrier();
-	float ySecondProduct = ySecond * p[1];
-	_ReadBarrier();
-	out[1] = yFirstProduct + ySecondProduct;
-	out[1] += rocOrderedProduct(m[0][1], p[0]);
-	float zFirst = p[1];
-	_ReadBarrier();
-	float zFirstProduct = zFirst * m[1][2];
-	_ReadBarrier();
-	out[2] = zFirstProduct;
-	out[2] += p[0] * m[0][2];
-	out[2] += p[2] * m[2][2];
+	Vector3 t;
+	out[0] = p[0];
+	out[0] *= m[0][0];
+	t[0] = p[2];
+	t[0] *= m[2][0];
+	out[0] += t[0];
+	t[0] = m[1][0];
+	t[0] *= p[1];
+	out[0] += t[0];
+	out[1] = m[2][1];
+	out[1] *= p[2];
+	t[1] = m[1][1];
+	t[1] *= p[1];
+	out[1] += t[1];
+	t[1] = m[0][1];
+	t[1] *= p[0];
+	out[1] += t[1];
+	out[2] = p[1];
+	out[2] *= m[1][2];
+	t[2] = p[0];
+	t[2] *= m[0][2];
+	out[2] += t[2];
+	t[2] = p[2];
+	t[2] *= m[2][2];
+	out[2] += t[2];
 	return out;
+}
+static inline Vector3 rocMulK(const Vector3& k, const Matrix3& m)
+{
+	Vector3 out;
+	out[0] = k[2] * m[2][0];
+	out[0] += k[1] * m[1][0];
+	out[0] += k[0] * m[0][0];
+	out[1] = k[2] * m[2][1];
+	out[1] += k[1] * m[1][1];
+	out[1] += k[0] * m[0][1];
+	out[2] = k[2] * m[2][2];
+	out[2] += k[1] * m[1][2];
+	out[2] += k[0] * m[0][2];
+	return out;
+}
+static inline Vector3 rocCrossF(const Vector3& a, const Vector3& b)
+{
+	Vector3 u;
+	Vector3 t;
+	u[1] = a.z;
+	u[1] *= b.x;
+	t[1] = a.x;
+	t[1] *= b.z;
+	u[1] -= t[1];
+	u[2] = a.x;
+	u[2] *= b.y;
+	t[2] = a.y;
+	t[2] *= b.x;
+	u[2] -= t[2];
+	u[0] = a.y;
+	u[0] *= b.z;
+	t[0] = b.y;
+	t[0] *= a.z;
+	u[0] -= t[0];
+	return Vector3(u[0], u[1], u[2]);
 }
 bool BlockBlockContact::getBestPlaneEdge(float overlapIgnored)
 {
@@ -1437,17 +1470,18 @@ bool BlockBlockContact::getBestPlaneEdge(float overlapIgnored)
 	const CoordinateFrame& c1 = getBody(1)->getCoordinateFrame();
 	const Vector3& extent0 = block(0)->getExtent();
 	const Vector3& extent1 = block(1)->getExtent();
- float roc_p1 = 0; float roc_p2 = 0;
+ float rocM0 = 0;
+ float rocM1 = 0;
 	Vector3 p0p1 = c1.translation - c0.translation;
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
-			Vector3 crossAxis = c0.rotation.getColumn(i).cross(c1.rotation.getColumn(j));
+			Vector3 crossAxis = rocCrossF(c0.rotation.getColumn(i), c1.rotation.getColumn(j));
 			if (crossAxis.unitize() <= 0.001f) {
 				return planeContact;
 			}
 			float p0p1inCrossAxis = p0p1.dot(crossAxis);
-			Vector3 crossInBase = crossAxis * c0.rotation;
-			Vector3 crossInTest = crossAxis * c1.rotation;
+			Vector3 crossInBase = rocMulK(crossAxis, c0.rotation);
+			Vector3 crossInTest = rocMulK(crossAxis, c1.rotation);
 			float testRadius = fabsf(crossInTest.y * extent1.y) + fabsf(crossInTest.x * extent1.x);
 			testRadius += fabsf(crossInTest.z * extent1.z);
 			float baseRadius = fabsf(crossInBase.y * extent0.y) + fabsf(crossInBase.x * extent0.x);
