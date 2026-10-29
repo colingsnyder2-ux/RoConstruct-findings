@@ -66,7 +66,7 @@
   },
   {
    "recipe": "ogre-1.4.5-dll",
-   "file": "roc_native_subentity_accessors_bdcd7bf36dc8a930.cpp",
+   "file": "roc_native_subentity_shadow_ef04b164e068272c.cpp",
    "cl": "21022",
    "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
    "addrs": [
@@ -79,7 +79,13 @@
     "006850f0",
     "00685820",
     "00685830",
-    "00685110"
+    "00685110",
+    "00685450",
+    "00685460",
+    "00685470",
+    "006851d0",
+    "006853a0",
+    "00685480"
    ],
    "symbols": {
     "00685660": "??0RbxSubEntity@Ogre@@QAE@PAVEntity@1@@Z",
@@ -91,31 +97,17 @@
     "006850f0": "?setLodIndex@RbxSubEntity@Ogre@@QAEXI@Z",
     "00685820": "?setShadowExtrusionDistance@RbxSubEntity@Ogre@@QAEXM@Z",
     "00685830": "?getShadowExtrusionDistance@RbxSubEntity@Ogre@@QBEMXZ",
-    "00685110": "?getPointExtrusionDistance@RbxSubEntity@Ogre@@UBEMPBVLight@2@@Z"
-   },
-   "helper_symbols": [
-    "_native_subentity_accessors_smoke"
-   ]
-  },
-  {
-   "recipe": "ogre-1.4.5-dll",
-   "file": "roc_native_shadow_delegation_5a9fe7bdf9d3d332.cpp",
-   "cl": "21022",
-   "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
-   "addrs": [
-    "00685450",
-    "00685460",
-    "00685470",
-    "006851d0",
-    "006853a0"
-   ],
-   "symbols": {
+    "00685110": "?getPointExtrusionDistance@RbxSubEntity@Ogre@@UBEMPBVLight@2@@Z",
     "00685450": "?getWorldTransforms@RbxSubEntityShadowRenderable@RbxSubEntity@Ogre@@UBEXPAVMatrix4@3@@Z",
     "00685460": "?getWorldOrientation@RbxSubEntityShadowRenderable@RbxSubEntity@Ogre@@UBEABVQuaternion@3@XZ",
     "00685470": "?getWorldPosition@RbxSubEntityShadowRenderable@RbxSubEntity@Ogre@@UBEABVVector3@3@XZ",
     "006851d0": "??0RbxSubEntityShadowRenderable@RbxSubEntity@Ogre@@QAE@PAVEntity@2@PAVHardwareIndexBufferSharedPtr@2@PBVVertexData@2@_NPAVSubEntity@2@3@Z",
-    "006853a0": "??1RbxSubEntityShadowRenderable@RbxSubEntity@Ogre@@UAE@XZ"
-   }
+    "006853a0": "??1RbxSubEntityShadowRenderable@RbxSubEntity@Ogre@@UAE@XZ",
+    "00685480": "?isVisible@RbxSubEntityShadowRenderable@RbxSubEntity@Ogre@@UBE_NXZ"
+   },
+   "helper_symbols": [
+    "_native_subentity_accessors_smoke"
+   ]
   },
   {
    "recipe": "ogre-1.4.5-dll",

@@ -1,0 +1,3 @@
+Full repository suite:1097 passed,3 skipped,3 subtests passed in81.76s. One preexisting Python msilib deprecation warning.
+81 focused rebuild/atomic-swap tests pass, including4 new failure-state cases.
+Native Ogre runtime exit0; all312 forced roots exact code/data and actual map owners. All311 old roots preserved. Three real CPU shadow-buffer modes pass; fresh placed410.

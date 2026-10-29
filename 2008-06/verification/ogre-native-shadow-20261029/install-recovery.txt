@@ -1,0 +1,1 @@
+Replay42/42 exact; install moved old340-address layer to verified.old, then Windows denied final directory rename. Both manifests intact, old340 subset of new341. After validating absolute output paths and absent live destination, moved verified.building to verified; old backup retained. No recompilation or source change needed.

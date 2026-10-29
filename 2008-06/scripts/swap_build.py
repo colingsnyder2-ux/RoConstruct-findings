@@ -9,6 +9,7 @@ import json
 import re
 import shutil
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -245,6 +246,16 @@ def kept_addresses(folder):
     return {a for s in json.loads(path.read_text())["swaps"] for a in s["keep"].values()} if path.exists() else set()
 
 
+def rename_layer(source, destination):
+    """Retry transient access-denied errors without discarding either layer."""
+    for delay in (0.05, 0.1, 0.2, 0.4):
+        try:
+            return source.rename(destination)
+        except PermissionError:
+            time.sleep(delay)
+    return source.rename(destination)
+
+
 def install(live, built, refresh_native=False):
     """Preserve every exact address; require gains unless a complete native replay requests a context refresh.
     Addresses omitted by the new plan retain their verified objects from the live layer."""
@@ -268,8 +279,16 @@ def install(live, built, refresh_native=False):
     if old.exists():
         shutil.rmtree(old)
     if live.exists():
-        live.rename(old)
-    built.rename(live)
+        rename_layer(live, old)
+    try:
+        rename_layer(built, live)
+    except OSError:
+        if old.exists() and not live.exists():
+            try:
+                rename_layer(old, live)
+            except OSError as rollback:
+                raise RuntimeError("Swap restore blocked: backup %s; staged layer %s" % (old, built)) from rollback
+        raise
     if old.exists():
         shutil.rmtree(old)
     return "installed new layer: %d -> %d addresses" % (len(before), len(after))
