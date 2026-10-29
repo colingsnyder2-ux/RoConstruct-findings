@@ -1,0 +1,5 @@
+{
+ "recipe": "boost-1.35.0-dll-eh",
+ "file": "roc_native_gregorian_2117cf3c060684de.cpp",
+ "source": "#include <boost/date_time/gregorian/gregorian_types.hpp>\nextern \"C\" __declspec(dllexport) void roc_boost_extra_validate_date(unsigned short year, unsigned short month, unsigned short day)\n{\n    boost::gregorian::date value(year, month, day);\n}\n"
+}

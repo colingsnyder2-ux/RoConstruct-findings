@@ -1,0 +1,27 @@
+{
+ "module": "BoostExtra",
+ "linked": true,
+ "test_exit": 3,
+ "test_output": "This application has requested the Runtime to terminate it in an unusual way.\nPlease contact the application's support team for more information.",
+ "unresolved": [],
+ "object_functions": 61,
+ "owned_2008": 10,
+ "owned_2008_16b": 9,
+ "choices": {
+  "verified_0000.obj": "layer-verified",
+  "verified_live-0004.obj": "layer-verified",
+  "verified_live-0007.obj": "layer-verified"
+ },
+ "owned_addrs": [
+  "00417850",
+  "004178a0",
+  "004184e0",
+  "0041a080",
+  "0055c1f0",
+  "0055c290",
+  "0055c2d0",
+  "0055c500",
+  "0055d000",
+  "005aaa00"
+ ]
+}

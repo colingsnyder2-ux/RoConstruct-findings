@@ -1,11 +1,34 @@
 {
  "name": "BoostExtra",
- "description": "Exact mined Boost 1.35/1.36/1.40 sources (header templates the 2008-06 exe matches with a newer Boost than the 1.34.1 it links). No upstream layer: verified layer only, force-linked by the test.",
+ "description": "Separate alternate-version Boost exacts: vendor-header bodies and generated app analogs. Template matches do not establish the original client Boost version.",
  "layers": [],
  "test": "boostextra_link",
  "test_includes": [
   "rebuild/2008-06/out/BoostExtra/force"
  ],
  "verified": true,
- "force_verified": true
+ "force_verified": true,
+ "prune_unselected_sections": true,
+ "resolve_passes": 32,
+ "native_units": [
+  {
+   "recipe": "boost-1.35.0-dll-eh",
+   "file": "roc_native_gregorian_dff6dc93480d66da.cpp",
+   "cl": "21022",
+   "flags": "/O2 /GS- /EHsc /MD",
+   "addrs": [
+    "0055bbc0",
+    "0055bc30",
+    "0055bca0",
+    "0055c020"
+   ],
+   "symbols": {
+    "0055bbc0": "??0bad_day_of_month@gregorian@boost@@QAE@XZ",
+    "0055bc30": "??0bad_year@gregorian@boost@@QAE@XZ",
+    "0055bca0": "??0bad_month@gregorian@boost@@QAE@XZ",
+    "0055c020": "?on_error@?$simple_exception_policy@G$00$0BP@Ubad_day_of_month@gregorian@boost@@@CV@boost@@SAXGGW4violation_enum@23@@Z"
+   },
+   "provenance": "Unmodified Boost1.35 Gregorian headers with real exception support; no private layouts, fake throw hook or app classes in this unit."
+  }
+ ]
 }

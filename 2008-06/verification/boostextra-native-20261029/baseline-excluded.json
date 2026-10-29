@@ -1,0 +1,14 @@
+[
+ "??$?0V?$bind_t@XV?$mf1@XUState@@V?$shared_ptr@UInstance@@@boost@@@_mfi@boost@@V?$list2@V?$value@PAUState@@@_bi@boost@@U?$arg@$00@3@@_bi@3@@_bi@boost@@@?$slot@V?$function@$$A6AXV?$shared_ptr@UInstance@@@boost@@@ZV?$allocator@X@std@@@boost@@@boost@@QAE@ABV?$bind_t@XV?$mf1@XUState@@V?$shared_ptr@UInstance@@@boost@@@_mfi@boost@@V?$list2@V?$value@PAUState@@@_bi@boost@@U?$arg@$00@3@@_bi@3@@_bi@1@@Z",
+ "??0?$basic_regex_implementation@DU?$regex_traits@DV?$w32_regex_traits@D@boost@@@boost@@@re_detail@boost@@QAE@XZ",
+ "??0bad_day_of_month@gregorian@boost@@QAE@XZ",
+ "??0bad_month@gregorian@boost@@QAE@XZ",
+ "??0bad_year@gregorian@boost@@QAE@XZ",
+ "?append@DHTMLWindowService@@QAEXXZ",
+ "?execute@ScriptContext@@QAE?AV?$auto_ptr@UValues@@@std@@HPBD0ABUValues@@@Z",
+ "?execute@ScriptContext@@QAE?AV?$auto_ptr@UValues@@@std@@PAUlua_State@@ABUValues@@@Z",
+ "?execute@ScriptContext@@QAEXHPBD0@Z",
+ "?invoke@?$void_function_obj_invoker0@V?$bind_t@XV?$mf1@XVDHTMLWindowService@@V?$function@$$A6AXPAVCLuaHtmlView@@@ZV?$allocator@X@std@@@boost@@@_mfi@boost@@V?$list2@V?$value@V?$shared_ptr@VDHTMLWindowService@@@boost@@@_bi@boost@@V?$value@P8CLuaHtmlView@@AEXXZ@23@@_bi@3@@_bi@boost@@X@function@detail@boost@@SAXAATfunction_buffer@234@@Z",
+ "?on_error@?$simple_exception_policy@G$00$0BP@Ubad_day_of_month@gregorian@boost@@@CV@boost@@SAXGGW4violation_enum@23@@Z",
+ "?system_failure@detail@iostreams@boost@@YA?AVfailure@ios_base@std@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@6@@Z"
+]

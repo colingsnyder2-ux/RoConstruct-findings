@@ -1,0 +1,20 @@
+{
+ "module": "BoostExtra",
+ "linked": true,
+ "test_exit": 0,
+ "test_output": "",
+ "unresolved": [],
+ "object_functions": 7,
+ "owned_2008": 5,
+ "owned_2008_16b": 4,
+ "choices": {
+  "verified_0004.obj": "layer-verified"
+ },
+ "owned_addrs": [
+  "00417850",
+  "004178a0",
+  "004184e0",
+  "0041a080",
+  "005aaa00"
+ ]
+}
