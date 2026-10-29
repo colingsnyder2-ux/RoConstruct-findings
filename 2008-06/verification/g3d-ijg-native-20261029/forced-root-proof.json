@@ -1,0 +1,618 @@
+[
+ {
+  "symbol": "??$_Transform@PADV?$_String_iterator@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@P6AHH@Z@std@@YA?AV?$_String_iterator@DU?$char_traits@D@std@@V?$allocator@D@2@@0@PAD0V10@P6AHH@ZUrandom_access_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+  "address": "0046cfa0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00001b00       ??$_Transform@PADV?$_String_iterator@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@P6AHH@Z@std@@YA?AV?$_String_iterator@DU?$char_traits@D@std@@V?$allocator@D@2@@0@PAD0V10@P6AHH@ZUrandom_access_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z 00402b00 f i linked:verified_0040.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0Color3@G3D@@QAE@ABVColor3uint8@1@@Z",
+  "address": "00514c00",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00001b70       ??0Color3@G3D@@QAE@ABVColor3uint8@1@@Z 00402b70 f   linked:verified_0005.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0Color3uint8@G3D@@QAE@ABVColor3@1@@Z",
+  "address": "005106a0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00001d00       ??0Color3uint8@G3D@@QAE@ABVColor3@1@@Z 00402d00 f   linked:verified_0006.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0GCamera@G3D@@QAE@XZ",
+  "address": "00510ac0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00001da0       ??0GCamera@G3D@@QAE@XZ     00402da0 f   linked:verified_0010.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0GMutex@G3D@@QAE@XZ",
+  "address": "004d3f80",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00002210       ??0GMutex@G3D@@QAE@XZ      00403210 f   linked:verified_0015.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0Matrix3@G3D@@QAE@ABVQuat@1@@Z",
+  "address": "00513aa0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00002220       ??0Matrix3@G3D@@QAE@ABVQuat@1@@Z 00403220 f   linked:verified_0094.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0Plane@G3D@@QAE@ABVVector3@1@00@Z",
+  "address": "00525940",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:000022f0       ??0Plane@G3D@@QAE@ABVVector3@1@00@Z 004032f0 f   linked:verified_0027.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0Plane@G3D@@QAE@ABVVector3@1@0@Z",
+  "address": "005259e0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00002390       ??0Plane@G3D@@QAE@ABVVector3@1@0@Z 00403390 f   linked:verified_0027.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0Quat@G3D@@QAE@ABVMatrix3@1@@Z",
+  "address": "00526050",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00002480       ??0Quat@G3D@@QAE@ABVMatrix3@1@@Z 00403480 f   linked:verified_0028.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0Vector2int16@G3D@@QAE@ABVVector2@1@@Z",
+  "address": "005122d0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00002620       ??0Vector2int16@G3D@@QAE@ABVVector2@1@@Z 00403620 f   linked:verified_0034.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0Vector3int16@G3D@@QAE@ABVVector3@1@@Z",
+  "address": "007bbdc0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00002670       ??0Vector3int16@G3D@@QAE@ABVVector3@1@@Z 00403670 f   linked:verified_0037.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0Welder@_internal@G3D@@QAE@ABV?$Array@VVector3@G3D@@@2@AAV32@AAV?$Array@H@2@2N@Z",
+  "address": "007ba5e0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:000027d0       ??0Welder@_internal@G3D@@QAE@ABV?$Array@VVector3@G3D@@@2@AAV32@AAV?$Array@H@2@2N@Z 004037d0 f   linked:verified_0025.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0_Iterator_base_secure@std@@QAE@XZ",
+  "address": "0049ed30",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00002eb0       ??0_Iterator_base_secure@std@@QAE@XZ 00403eb0 f i linked:verified_0007.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??1?$Set@PAV?$Array@H@G3D@@@G3D@@UAE@XZ",
+  "address": "00472860",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00002ed0       ??1?$Set@PAV?$Array@H@G3D@@@G3D@@UAE@XZ 00403ed0 f i linked:verified_0024.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??8GLight@G3D@@QBE_NABV01@@Z",
+  "address": "00514400",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00002f20       ??8GLight@G3D@@QBE_NABV01@@Z 00403f20 f   linked:verified_0014.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??8Matrix3@G3D@@QBE_NABV01@@Z",
+  "address": "00513280",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00003150       ??8Matrix3@G3D@@QBE_NABV01@@Z 00404150 f   linked:verified_0018.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??8Matrix4@G3D@@QBE_NABV01@@Z",
+  "address": "00514670",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:000039f0       ??8Matrix4@G3D@@QBE_NABV01@@Z 004049f0 f   linked:verified_0019.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??9GLight@G3D@@QBE_NABV01@@Z",
+  "address": "005132d0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00003bc0       ??9GLight@G3D@@QBE_NABV01@@Z 00404bc0 f   linked:verified_0013.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??DMatrix3@G3D@@QBE?AV01@ABV01@@Z",
+  "address": "00513350",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:000031a0       ??DMatrix3@G3D@@QBE?AV01@ABV01@@Z 004041a0 f   linked:verified_0018.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??KColor3@G3D@@QBE?AV01@M@Z",
+  "address": "00514c40",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00001bb0       ??KColor3@G3D@@QBE?AV01@M@Z 00402bb0 f   linked:verified_0005.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??KVector2@G3D@@QBE?AV01@M@Z",
+  "address": "00509c30",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00003c40       ??KVector2@G3D@@QBE?AV01@M@Z 00404c40 f   linked:verified_0033.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??KVector3@G3D@@QBE?AV01@M@Z",
+  "address": "00518740",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00003df0       ??KVector3@G3D@@QBE?AV01@M@Z 00404df0 f   linked:verified_0036.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??XMatrix3@G3D@@QAEAAV01@ABV01@@Z",
+  "address": "005133c0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00003210       ??XMatrix3@G3D@@QAEAAV01@ABV01@@Z 00404210 f   linked:verified_0018.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??_0Color3@G3D@@QAEAAV01@M@Z",
+  "address": "005183c0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00001c50       ??_0Color3@G3D@@QAEAAV01@M@Z 00402c50 f   linked:verified_0005.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??_G?$Set@PAV?$Array@H@G3D@@@G3D@@UAEPAXI@Z",
+  "address": "00472880",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00002ef0       ??_G?$Set@PAV?$Array@H@G3D@@@G3D@@UAEPAXI@Z 00403ef0 f i linked:verified_0024.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?_mul@Matrix3@G3D@@CAXABV12@0AAV12@@Z",
+  "address": "005137f0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00003540       ?_mul@Matrix3@G3D@@CAXABV12@0AAV12@@Z 00404540 f   linked:verified_0018.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?append@?$Array@D@G3D@@QAEXABD@Z",
+  "address": "00512790",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00003e50       ?append@?$Array@D@G3D@@QAEXABD@Z 00404e50 f i linked:verified_0032.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?append@?$Array@VVector3@G3D@@@G3D@@QAEXABVVector3@2@00@Z",
+  "address": "0054b070",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00003ec0       ?append@?$Array@VVector3@G3D@@@G3D@@QAEXABVVector3@2@00@Z 00404ec0 f i linked:verified_0026.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?assertionHook@G3D@@YAP6A_NPBDABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0HAA_N_N@ZXZ",
+  "address": "00427b60",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00004100       ?assertionHook@G3D@@YAP6A_NPBDABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0HAA_N_N@ZXZ 00405100 f   linked:verified_0038.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?closestPoint@LineSegment@G3D@@QBE?AVVector3@2@ABV32@@Z",
+  "address": "00530590",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00004110       ?closestPoint@LineSegment@G3D@@QBE?AVVector3@2@ABV32@@Z 00405110 f   linked:verified_0017.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?collisionLocationForMovingPointFixedAABox@CollisionDetection@G3D@@SA_NABVVector3@2@0ABVAABox@2@AAV32@AA_N2@Z",
+  "address": "007bb770",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:000047c0       ?collisionLocationForMovingPointFixedAABox@CollisionDetection@G3D@@SA_NABVVector3@2@0ABVAABox@2@AAV32@AA_N2@Z 004057c0 f   linked:verified_0003.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?collisionTimeForMovingPointFixedCapsule@CollisionDetection@G3D@@SAMABVVector3@2@0ABVCapsule@2@AAV32@2@Z",
+  "address": "007bba50",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00004aa0       ?collisionTimeForMovingPointFixedCapsule@CollisionDetection@G3D@@SAMABVVector3@2@0ABVCapsule@2@AAV32@2@Z 00405aa0 f   linked:verified_0003.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?collisionTimeForMovingPointFixedSphere@CollisionDetection@G3D@@SAMABVVector3@2@0ABVSphere@2@AAV32@2@Z",
+  "address": "007bb5a0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00004d30       ?collisionTimeForMovingPointFixedSphere@CollisionDetection@G3D@@SAMABVVector3@2@0ABVSphere@2@AAV32@2@Z 00405d30 f   linked:verified_0092.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?computeAdjacency@MeshAlg@G3D@@SAXABV?$Array@VVector3@G3D@@@2@ABV?$Array@H@2@AAV?$Array@VFace@MeshAlg@G3D@@@2@AAV?$Array@VEdge@MeshAlg@G3D@@@2@AAV?$Array@VVertex@MeshAlg@G3D@@@2@@Z",
+  "address": "007b9940",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00004f00       ?computeAdjacency@MeshAlg@G3D@@SAXABV?$Array@VVector3@G3D@@@2@ABV?$Array@H@2@AAV?$Array@VFace@MeshAlg@G3D@@@2@AAV?$Array@VEdge@MeshAlg@G3D@@@2@AAV?$Array@VVertex@MeshAlg@G3D@@@2@@Z 00405f00 f   linked:verified_0074.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?construct@?$allocator@VToken@G3D@@@std@@QAEXPAVToken@G3D@@ABV34@@Z",
+  "address": "0043ca60",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00005a40       ?construct@?$allocator@VToken@G3D@@@std@@QAEXPAVToken@G3D@@ABV34@@Z 00406a40 f i linked:verified_0031.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?cpuVendor@System@G3D@@SAABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ",
+  "address": "00508810",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00005a60       ?cpuVendor@System@G3D@@SAABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ 00406a60 f   linked:verified_0030.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?directional@GLight@G3D@@SA?AV12@ABVVector3@2@ABVColor3@2@_N2@Z",
+  "address": "00514510",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00003010       ?directional@GLight@G3D@@SA?AV12@ABVVector3@2@ABVColor3@2@_N2@Z 00404010 f   linked:verified_0014.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?endPoint@LineSegment@G3D@@QBE?AVVector3@2@H@Z",
+  "address": "005306e0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00004260       ?endPoint@LineSegment@G3D@@QBE?AVVector3@2@H@Z 00405260 f   linked:verified_0017.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?fromAxisAngle@Matrix3@G3D@@SA?AV12@ABVVector3@2@M@Z",
+  "address": "00513680",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:000033d0       ?fromAxisAngle@Matrix3@G3D@@SA?AV12@ABVVector3@2@M@Z 004043d0 f   linked:verified_0018.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?fromEquation@Plane@G3D@@SA?AV12@MMMM@Z",
+  "address": "00525a50",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00002400       ?fromEquation@Plane@G3D@@SA?AV12@MMMM@Z 00403400 f   linked:verified_0027.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?fromEulerAnglesXYZ@Matrix3@G3D@@SA?AV12@MMM@Z",
+  "address": "00513bc0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:000037f0       ?fromEulerAnglesXYZ@Matrix3@G3D@@SA?AV12@MMM@Z 004047f0 f   linked:verified_0018.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?fromEulerAnglesZXY@Matrix3@G3D@@SA?AV12@MMM@Z",
+  "address": "00513cc0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:000038f0       ?fromEulerAnglesZXY@Matrix3@G3D@@SA?AV12@MMM@Z 004048f0 f   linked:verified_0018.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?fromPointAndDirection@Line@G3D@@SA?AV12@ABVVector3@2@0@Z",
+  "address": "00594650",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00005b40       ?fromPointAndDirection@Line@G3D@@SA?AV12@ABVVector3@2@0@Z 00406b40 f i linked:verified_0002.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?generateOrthonormalBasis@Vector3@G3D@@SAXAAV12@00_N@Z",
+  "address": "005184c0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00003ce0       ?generateOrthonormalBasis@Vector3@G3D@@SAXAAV12@00_N@Z 00404ce0 f   linked:verified_0036.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?getFrustum@GCamera@G3D@@QBEXABVRect2D@2@AAVFrustum@12@@Z",
+  "address": "00511510",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00005b70       ?getFrustum@GCamera@G3D@@QBEXABVRect2D@2@AAVFrustum@12@@Z 00406b70 f   linked:verified_0093.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?getIndex@Welder@_internal@G3D@@QAEHABVVector3@3@@Z",
+  "address": "007ba900",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00002af0       ?getIndex@Welder@_internal@G3D@@QAEHABVVector3@3@@Z 00403af0 f   linked:verified_0025.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?iRandom@G3D@@YAHHH@Z",
+  "address": "00515780",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:000062e0       ?iRandom@G3D@@YAHHH@Z      004072e0 f   linked:verified_0039.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?inf@Vector2@G3D@@SAABV12@XZ",
+  "address": "00509bd0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00003be0       ?inf@Vector2@G3D@@SAABV12@XZ 00404be0 f   linked:verified_0033.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?intersection@Line@G3D@@QBE?AVVector3@2@ABVPlane@2@@Z",
+  "address": "007bbce0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00006330       ?intersection@Line@G3D@@QBE?AVVector3@2@ABVPlane@2@@Z 00407330 f   linked:verified_0016.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?isOrthonormal@Matrix3@G3D@@QBE_NXZ",
+  "address": "005138e0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00003630       ?isOrthonormal@Matrix3@G3D@@QBE_NXZ 00404630 f   linked:verified_0018.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?lerp@CoordinateFrame@G3D@@QBE?AV12@ABV12@M@Z",
+  "address": "00518a50",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00006530       ?lerp@CoordinateFrame@G3D@@QBE?AV12@ABV12@M@Z 00407530 f   linked:verified_0009.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?lookAt@CoordinateFrame@G3D@@QAEXABVVector3@2@V32@@Z",
+  "address": "00518b90",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00006660       ?lookAt@CoordinateFrame@G3D@@QAEXABVVector3@2@V32@@Z 00407660 f   linked:verified_0009.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?lookVector@CoordinateFrame@G3D@@QBE?AVVector3@2@XZ",
+  "address": "005187f0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00006410       ?lookVector@CoordinateFrame@G3D@@QBE?AVVector3@2@XZ 00407410 f i linked:verified_0009.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?nlerp@Quat@G3D@@QBE?AV12@ABV12@M@Z",
+  "address": "00526160",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00002590       ?nlerp@Quat@G3D@@QBE?AV12@ABV12@M@Z 00403590 f   linked:verified_0028.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?operatingSystem@System@G3D@@SAABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ",
+  "address": "00508890",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00005ad0       ?operatingSystem@System@G3D@@SAABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ 00406ad0 f   linked:verified_0030.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?orthogonalProjection@Matrix4@G3D@@SA?AV12@MMMMMM@Z",
+  "address": "005146c0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00003a40       ?orthogonalProjection@Matrix4@G3D@@SA?AV12@MMMMMM@Z 00404a40 f   linked:verified_0019.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?orthonormalize@Matrix3@G3D@@QAEXXZ",
+  "address": "00513550",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:000032a0       ?orthonormalize@Matrix3@G3D@@QAEXXZ 004042a0 f   linked:verified_0018.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?perspectiveProjection@Matrix4@G3D@@SA?AV12@MMMMMM@Z",
+  "address": "00514750",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00003ad0       ?perspectiveProjection@Matrix4@G3D@@SA?AV12@MMMMMM@Z 00404ad0 f   linked:verified_0019.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?project@GCamera@G3D@@QBE?AVVector3@2@ABV32@ABVRect2D@2@@Z",
+  "address": "00510d00",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00001f90       ?project@GCamera@G3D@@QBE?AVVector3@2@ABV32@ABVRect2D@2@@Z 00402f90 f   linked:verified_0010.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?pubsetbuf@?$basic_streambuf@DU?$char_traits@D@std@@@std@@QAEPAV12@PADH@Z",
+  "address": "0056be00",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00002ec0       ?pubsetbuf@?$basic_streambuf@DU?$char_traits@D@std@@@std@@QAEPAV12@PADH@Z 00403ec0 f i linked:verified_0007.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?realloc@?$Array@VVector2@G3D@@@G3D@@AAEXH@Z",
+  "address": "0054ebc0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00006b20       ?realloc@?$Array@VVector2@G3D@@@G3D@@AAEXH@Z 00407b20 f i linked:verified_0008.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?resize@?$Array@VColor4uint8@G3D@@@G3D@@QAEXH_N@Z",
+  "address": "0050e7a0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00006c50       ?resize@?$Array@VColor4uint8@G3D@@@G3D@@QAEXH_N@Z 00407c50 f i linked:verified_0011.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?resize@?$Array@VFace@Frustum@GCamera@G3D@@@G3D@@QAEXH_N@Z",
+  "address": "00511240",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00002090       ?resize@?$Array@VFace@Frustum@GCamera@G3D@@@G3D@@QAEXH_N@Z 00403090 f i linked:verified_0010.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?resize@?$Array@VVector2@G3D@@@G3D@@QAEXH_N@Z",
+  "address": "0054d160",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:000068f0       ?resize@?$Array@VVector2@G3D@@@G3D@@QAEXH_N@Z 004078f0 f i linked:verified_0008.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?setAssertionHook@G3D@@YAXP6A_NPBDABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0HAA_N_N@Z@Z",
+  "address": "0050aa10",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:000040f0       ?setAssertionHook@G3D@@YAXP6A_NPBDABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0HAA_N_N@Z@Z 004050f0 f   linked:verified_0038.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?setFieldOfView@GCamera@G3D@@QAEXM@Z",
+  "address": "00510810",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00001d80       ?setFieldOfView@GCamera@G3D@@QAEXM@Z 00402d80 f   linked:verified_0010.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?slerp@Quat@G3D@@QBE?AV12@ABV12@MM@Z",
+  "address": "00526230",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00006d50       ?slerp@Quat@G3D@@QBE?AV12@ABV12@MM@Z 00407d50 f   linked:verified_0095.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?toEulerAnglesXYZ@Matrix3@G3D@@QBE_NAAM00@Z",
+  "address": "00513720",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00003470       ?toEulerAnglesXYZ@Matrix3@G3D@@QBE_NAAM00@Z 00404470 f   linked:verified_0018.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?toGridCoords@Welder@_internal@G3D@@QBEXVVector3@3@AAH11@Z",
+  "address": "007ba480",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:000026e0       ?toGridCoords@Welder@_internal@G3D@@QBEXVVector3@3@AAH11@Z 004036e0 f   linked:verified_0025.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?toWorldSpace@CoordinateFrame@G3D@@QBE?AVRay@2@ABV32@@Z",
+  "address": "00518890",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00006450       ?toWorldSpace@CoordinateFrame@G3D@@QBE?AVRay@2@ABV32@@Z 00407450 f   linked:verified_0009.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?tock@Stopwatch@G3D@@QAEXXZ",
+  "address": "00511df0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00006f10       ?tock@Stopwatch@G3D@@QAEXXZ 00407f10 f   linked:verified_0029.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?unitize@Quat@G3D@@QBE?AV12@XZ",
+  "address": "00513160",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00003090       ?unitize@Quat@G3D@@QBE?AV12@XZ 00404090 f i linked:verified_0018.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?unitize@Vector3@G3D@@QAEMM@Z",
+  "address": "00518470",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00003c90       ?unitize@Vector3@G3D@@QAEMM@Z 00404c90 f   linked:verified_0036.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?white@Color3@G3D@@SAABV12@XZ",
+  "address": "00514a60",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00007180       ?white@Color3@G3D@@SAABV12@XZ 00408180 f   linked:verified_0004.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?worldRay@GCamera@G3D@@QBE?AVRay@2@MMABVRect2D@2@@Z",
+  "address": "00510b80",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00001e10       ?worldRay@GCamera@G3D@@QBE?AVRay@2@MMABVRect2D@2@@Z 00402e10 f   linked:verified_0010.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "_jpeg_fdct_float",
+  "address": "0053e0e0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:000071b0       _jpeg_fdct_float           004081b0 f   linked:verified_0076.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "_jpeg_idct_float",
+  "address": "0053cba0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:000081a0       _jpeg_idct_float           004091a0 f   linked:verified_0077.obj",
+  "verified_owner": true
+ }
+]

@@ -1,0 +1,37 @@
+{
+ "date": "2026-10-29",
+ "module": "G3D",
+ "old_inventory": 739,
+ "new_inventory": 741,
+ "new_module_addresses": [
+  "00539360",
+  "005399c0"
+ ],
+ "old_inventory_losses": 0,
+ "global_new_addresses_beyond_previous_jpeg_batch": 0,
+ "forced_roots_before": 77,
+ "forced_roots_after": 77,
+ "all_roots_code_data_exact_and_verified_library_owned": true,
+ "new_private_callbacks_code_data_exact_and_native_library_owned": true,
+ "runtime_exit": 0,
+ "image_memory_roundtrip_worst": 4,
+ "float_jpeg_roundtrip_worst": 4,
+ "float_vs_GImage_decode_worst": 3,
+ "image_copy_passed": true,
+ "milestones_passed": [
+  "M2",
+  "M4a",
+  "M5"
+ ],
+ "M4b_unresolved": 36,
+ "M4b_new_blockers": [],
+ "M4b_removed_blockers": [],
+ "focused_tests_passed": 48,
+ "placement": 407,
+ "new_server_credits": 0,
+ "limitations": [
+  "Two new G3D-owned callback addresses were already recovered in standalone JPEG; do not sum as globally new targets.",
+  "GImage uses its existing default integer codec path; direct IJG float tests exercise new callbacks and GImage consumes that output.",
+  "Existing36 rendering blockers persist unchanged; whole rendering not complete."
+ ]
+}

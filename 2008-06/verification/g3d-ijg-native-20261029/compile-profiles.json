@@ -1,0 +1,36 @@
+[
+ {
+  "profile": "precise",
+  "result": {
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\tools\\libs\\g3d-6.09\\source\\IJG\\jfdctflt.c": [
+    true,
+    "jfdctflt.c"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\tools\\libs\\g3d-6.09\\source\\IJG\\jidctflt.c": [
+    true,
+    "jidctflt.c"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\tools\\libs\\g3d-6.09\\source\\IJG\\jcdctmgr.c": [
+    true,
+    "jcdctmgr.c"
+   ]
+  }
+ },
+ {
+  "profile": "fast",
+  "result": {
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\tools\\libs\\g3d-6.09\\source\\IJG\\jfdctflt.c": [
+    true,
+    "jfdctflt.c"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\tools\\libs\\g3d-6.09\\source\\IJG\\jidctflt.c": [
+    true,
+    "jidctflt.c"
+   ],
+   "C:\\Users\\colin\\RoConstruct-codex-force-links\\tools\\libs\\g3d-6.09\\source\\IJG\\jcdctmgr.c": [
+    true,
+    "jcdctmgr.c"
+   ]
+  }
+ }
+]

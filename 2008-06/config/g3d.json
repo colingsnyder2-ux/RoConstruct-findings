@@ -7,6 +7,14 @@
  ],
  "layers": [
   {
+   "name": "ijg-float",
+   "mode": "direct",
+   "dir": "tools/libs/g3d-6.09/source/IJG",
+   "files": "jfdctflt.c jidctflt.c jcdctmgr.c",
+   "flags": "/O2 /GS- /MD /fp:fast",
+   "defines": "WIN32 NDEBUG"
+  },
+  {
    "name": "upstream",
    "mode": "recipe",
    "recipe": "g3d-6.09-rbx2008",
@@ -20,13 +28,19 @@
    "dir": "tools/libs/g3d-6.09/source/IJG",
    "files": "*.c",
    "flags": "/O2 /GS- /MD",
-   "defines": "WIN32 NDEBUG"
+   "defines": "WIN32 NDEBUG",
+   "exclude": [
+    "jfdctflt.c",
+    "jidctflt.c",
+    "jcdctmgr.c"
+   ]
   }
  ],
  "test": "g3d_core",
  "test_includes": [
   "tree:g3d-6.09-rbx2008/include",
-  "rebuild/2008-06/out/G3D/force"
+  "rebuild/2008-06/out/G3D/force",
+  "tools/libs/g3d-6.09/source/IJG"
  ],
  "verified": true,
  "force_verified": true,
@@ -37,5 +51,6 @@
   "?_failureHook@_internal@G3D@@3P6A_NPBDABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0HAA_N_N@ZA",
   "?outOfMemoryCallback@System@G3D@@2P6A_NI_N@ZA",
   "?zLookDirection@CoordinateFrame@G3D@@2MB"
- ]
+ ],
+ "deduplicate_layer_files": true
 }

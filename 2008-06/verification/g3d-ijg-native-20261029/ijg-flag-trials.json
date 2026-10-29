@@ -1,0 +1,76 @@
+[
+ {
+  "file": "jfdctflt.c",
+  "profile": "precise",
+  "matches": []
+ },
+ {
+  "file": "jfdctflt.c",
+  "profile": "fast",
+  "matches": [
+   {
+    "symbol": "_jpeg_fdct_float",
+    "address": "0053e0e0",
+    "size": 4074
+   }
+  ]
+ },
+ {
+  "file": "jidctflt.c",
+  "profile": "precise",
+  "matches": []
+ },
+ {
+  "file": "jidctflt.c",
+  "profile": "fast",
+  "matches": [
+   {
+    "symbol": "_jpeg_idct_float",
+    "address": "0053cba0",
+    "size": 901
+   }
+  ]
+ },
+ {
+  "file": "jcdctmgr.c",
+  "profile": "precise",
+  "matches": [
+   {
+    "symbol": "_forward_DCT",
+    "address": "00539640",
+    "size": 883
+   },
+   {
+    "symbol": "_jinit_forward_dct",
+    "address": "0053a010",
+    "size": 146
+   }
+  ]
+ },
+ {
+  "file": "jcdctmgr.c",
+  "profile": "fast",
+  "matches": [
+   {
+    "symbol": "_start_pass_fdctmgr",
+    "address": "00539360",
+    "size": 722
+   },
+   {
+    "symbol": "_forward_DCT",
+    "address": "00539640",
+    "size": 883
+   },
+   {
+    "symbol": "_forward_DCT_float",
+    "address": "005399c0",
+    "size": 1613
+   },
+   {
+    "symbol": "_jinit_forward_dct",
+    "address": "0053a010",
+    "size": 146
+   }
+  ]
+ }
+]
