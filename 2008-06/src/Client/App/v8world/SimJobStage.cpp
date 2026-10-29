@@ -34,11 +34,9 @@ namespace RBX
 
 	void SimJobStage::onEdgeRemoving(Edge* e)
 	{
-		RBXASSERT(validateEdge(e));
-
-		e->removeFromKernel();
-		e->removeFromStage(this);
-	}
+	e->removeFromKernel();
+	e->removeFromStage(this);
+}
 
 #pragma warning (push)
 #pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list

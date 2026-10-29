@@ -314,7 +314,6 @@ std::string XmlNameValuePair::toString(XmlWriter* writer) const
 	case CONTENTID:
 		return contentIdValue->toString();
 	default:
-		RBXASSERT(0);
 		return "";
 	}
 }

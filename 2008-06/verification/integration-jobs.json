@@ -6261,5 +6261,245 @@
     "unit": "RBX::Soundscape::SoundService",
     "updated": 1793249124.656776,
     "user": "coldek"
+  },
+  {
+    "created": 1793250572.5639832,
+    "id": "2fc8f46effa54677a28ecf9ec8c29d17",
+    "model": "codex:gpt-5.6-sol",
+    "patches": {
+      "App/script/ScriptContext.cpp": [
+        [
+          "ScriptContext::getContext(lua_State* thread)\n{\n    lua_pushlightuserdata(thread, RBX_LUA_GLOBAL_SCRIPTCONTEXT);\n    lua_gettable(thread, LUA_GLOBALSINDEX);\n\n    RBXASSERT(lua_type(thread, -1) == LUA_TLIGHTUSERDATA);\n    ScriptContext* sc = static_cast<ScriptContext*>(lua_touserdata(thread, -1));\n    lua_pop(thread, 1);\n\n    return *sc;\n}",
+          "ScriptContext::getContext(lua_State* thread)\n{\n    lua_pushlightuserdata(thread, RBX_LUA_GLOBAL_SCRIPTCONTEXT);\n    lua_gettable(thread, LUA_GLOBALSINDEX);\n\n    ScriptContext* sc = static_cast<ScriptContext*>(lua_touserdata(thread, -1));\n    lua_pop(thread, 1);\n\n    return *sc;\n}"
+        ]
+      ],
+      "App/tool/MegaDragger.cpp": [
+        [
+          "MegaDragger::safeMoveNoDrop(const G3D::Vector3& tryDrag)\n\t{\n\t\tRBXASSERT(!joined);\n\t\tRBXASSERT(tryDrag == Math::toGrid(tryDrag, 0.1f));\n\n\t\tG3D::Array<Primitive*> primitives;\n\t\tDragUtilities::partsToPrimitives(dragParts, primitives);\n\n\t\tRBXASSERT(primitives.size() > 0);\n\n\t\tG3D::Vector3 result = Dragger::safeMoveNoDrop(primitives, tryDrag, contactManager);\n\n\t\tRBXASSERT(!contactManager.intersectingOthers(primitives, 0.01f));\n\t\treturn result;\n\t}",
+          "MegaDragger::safeMoveNoDrop(const G3D::Vector3& tryDrag)\n\t{\n\tG3D::Array<Primitive*> primitives;\n\tDragUtilities::partsToPrimitives(dragParts, primitives);\n\treturn Dragger::safeMoveNoDrop(primitives, tryDrag, contactManager);\n}"
+        ]
+      ],
+      "App/util/Guid.cpp": [
+        [
+          "\t\t\tint size = std::min<int>(3, (int)scopeName.size());\n\t\t\tscopeName = scopeName.substr(size);",
+          "\t\t\tscopeName = scopeName.substr(std::min<size_t>(3, scopeName.size()), std::min<int>(scopeLength, 32));"
+        ]
+      ],
+      "App/util/IRenderable.cpp": [
+        [
+          "IRenderableBucket::onAdded(IRenderable* iR)\n\t{\n\t\tRBXASSERT(iR->index2d == -1);\n\t\tRBXASSERT(iR->index3d == -1);\n\t\tRBXASSERT(iR->bucket == NULL);\n\n\t\tiR->bucket = this;\n\t\trecomputeShouldRender(iR);\n\t}",
+          "IRenderableBucket::onAdded(IRenderable* iR)\n\t{\n\tiR->bucket = this;\n\trecomputeShouldRender(iR);\n}"
+        ],
+        [
+          "IRenderableBucket::recomputeShouldRender(IRenderable* iR)\n\t{\n\t\tRBXASSERT(iR->bucket == this);\n\n\t\tif (iR->shouldRender2d())\n\t\t{\n\t\t\tif (iR->index2d < 0)\n\t\t\t\trenderable2ds.fastAppend(iR);\n\t\t}\n\t\telse if (iR->index2d >= 0)\n\t\t{\n\t\t\trenderable2ds.fastRemove(iR);\n\t\t}\n\n\t\tif (iR->shouldRender3dAdorn())\n\t\t{\n\t\t\tif (iR->index3d < 0)\n\t\t\t\trenderable3ds.fastAppend(iR);\n\t\t}\n\t\telse if (iR->index3d >= 0)\n\t\t{\n\t\t\trenderable3ds.fastRemove(iR);\n\t\t}\n\t}",
+          "IRenderableBucket::recomputeShouldRender(IRenderable* iR)\n\t{\n\tif (iR->shouldRender2d())\n\t{\n\t\tif (iR->index2d < 0)\n\t\t\trenderable2ds.fastAppend(iR);\n\t}\n\telse if (iR->index2d >= 0)\n\t{\n\t\trenderable2ds.fastRemove(iR);\n\t}\n\n\tif (iR->shouldRender3dAdorn())\n\t{\n\t\tif (iR->index3d < 0)\n\t\t\trenderable3ds.fastAppend(iR);\n\t}\n\telse if (iR->index3d >= 0)\n\t{\n\t\trenderable3ds.fastRemove(iR);\n\t}\n}"
+        ],
+        [
+          "IRenderableBucket::onRemoving(IRenderable* iR)\n\t{\n\t\tRBXASSERT(iR->bucket == this);\n\n\t\tif (iR->index2d >= 0)\n\t\t\trenderable2ds.fastRemove(iR);\n\n\t\tif (iR->index3d >= 0)\n\t\t\trenderable3ds.fastRemove(iR);\n\n\t\tiR->bucket = NULL;\n\n\t\tRBXASSERT(iR->index2d == -1);\n\t\tRBXASSERT(iR->index3d == -1);\n\t}",
+          "IRenderableBucket::onRemoving(IRenderable* iR)\n\t{\n\tif (iR->index2d >= 0)\n\t\trenderable2ds.fastRemove(iR);\n\n\tif (iR->index3d >= 0)\n\t\trenderable3ds.fastRemove(iR);\n\n\tiR->bucket = NULL;\n}"
+        ]
+      ],
+      "App/v8datamodel/PVInstance.cpp": [
+        [
+          "PVInstance::readProperty(const XmlElement* propertyElement, IReferenceBinder& binder)\n\t{\n\t\tif (propertyElement->getTag() == \"Feature\")\n\t\t{\n\t\t\tconst Name* name = NULL;\n\n\t\t\tbool foundNameAttribute = propertyElement->findAttributeValue(name_name, name);\n\t\t\tRBXASSERT(foundNameAttribute);\n\n\t\t\tif (*name == \"Part\")\n\t\t\t{\n\t\t\t\treadProperties(propertyElement, binder);\n\t\t\t\treturn;\n\t\t\t}\n\t\t\tif (*name == \"Item\")\n\t\t\t{\n\t\t\t\treadProperties(propertyElement, binder);\n\t\t\t\treturn;\n\t\t\t}\n\t\t}\n\n\t\treturn Instance::readProperty(propertyElement, binder);\n\t}",
+          "PVInstance::readProperty(const XmlElement* propertyElement, IReferenceBinder& binder)\n\t{\n\tif (propertyElement->getTag() == \"Feature\")\n\t{\n\t\tconst Name* name = NULL;\n\t\tconst XmlAttribute* nameAttribute = propertyElement->findAttribute(name_name);\n\n\t\tif (nameAttribute)\n\t\t\tnameAttribute->getValue(name);\n\n\t\tif (*name == \"Part\")\n\t\t{\n\t\t\treadProperties(propertyElement, binder);\n\t\t\treturn;\n\t\t}\n\t\tif (*name == \"Item\")\n\t\t{\n\t\t\treadProperties(propertyElement, binder);\n\t\t\treturn;\n\t\t}\n\t}\n\n\treturn Instance::readProperty(propertyElement, binder);\n}"
+        ]
+      ],
+      "App/v8tree/Service.cpp": [
+        [
+          "\t\tRBXASSERT(dynamic_cast<ServiceProvider*>(instance)==NULL);\n",
+          ""
+        ],
+        [
+          "\t\t\t\tRBXASSERT(!findServiceByClassName(instance->getClassName()));",
+          ""
+        ]
+      ],
+      "App/v8world/Block.cpp": [
+        [
+          "Block::hitTest(const G3D::Ray& rayInMe, G3D::Vector3& localHitPoint, bool& inside)\n\t{\n\t\tG3D::Vector3 gridSizeMul = gridSize * 0.5f;\n\t\tinside = false;\n\n\t\tbool result = G3D::CollisionDetection::collisionLocationForMovingPointFixedAABox(\n\t\t\trayInMe.origin,\n\t\t\trayInMe.direction,\n\t\t\tG3D::AABox(-gridSizeMul, gridSizeMul),\n\t\t\tlocalHitPoint,\n\t\t\tinside);\n\n\t\tif (inside)\n\t\t{\n\t\t\tinside = false;\n\t\t\tG3D::Vector3 originMul = rayInMe.origin - (rayInMe.direction * 1000.0f);\n\t\t\tG3D::Ray rayResult = G3D::Ray::fromOriginAndDirection(originMul, rayInMe.direction);\n\n\t\t\tG3D::CollisionDetection::collisionLocationForMovingPointFixedAABox(\n\t\t\t\trayResult.origin,\n\t\t\t\trayResult.direction,\n\t\t\t\tG3D::AABox(-gridSizeMul, gridSizeMul),\n\t\t\t\tlocalHitPoint,\n\t\t\t\tinside);\n\n\t\t\tRBXASSERT(!inside);\n\t\t\treturn true;\n\t\t}\n\t\treturn result;\n\t}",
+          "Block::hitTest(const G3D::Ray& rayInMe, G3D::Vector3& localHitPoint, bool& inside)\n\t{\n\tG3D::Vector3 gridSizeMul = gridSize * 0.5f;\n\tinside = false;\n\n\tbool result = G3D::CollisionDetection::collisionLocationForMovingPointFixedAABox(\n\t\trayInMe.origin,\n\t\trayInMe.direction,\n\t\tG3D::AABox(-gridSizeMul, gridSizeMul),\n\t\tlocalHitPoint,\n\t\tinside);\n\n\tif (inside)\n\t{\n\t\tinside = false;\n\t\tG3D::Vector3 originMul = rayInMe.origin - (rayInMe.direction * 1000.0f);\n\t\tG3D::Ray rayResult = G3D::Ray::fromOriginAndDirection(originMul, rayInMe.direction);\n\n\t\tG3D::CollisionDetection::collisionLocationForMovingPointFixedAABox(\n\t\t\trayResult.origin,\n\t\t\trayResult.direction,\n\t\t\tG3D::AABox(-gridSizeMul, gridSizeMul),\n\t\t\tlocalHitPoint,\n\t\t\tinside);\n\n\t\treturn true;\n\t}\n\treturn result;\n}"
+        ]
+      ],
+      "App/v8world/Joint.cpp": [
+        [
+          "Joint::~Joint()\n\t{\n\t\tRBXASSERT(!jointOwner);\n\t}",
+          "Joint::~Joint()\n\t{\n}"
+        ]
+      ],
+      "App/v8world/SimJobStage.cpp": [
+        [
+          "SimJobStage::onEdgeRemoving(Edge* e)\n\t{\n\t\tRBXASSERT(validateEdge(e));\n\n\t\te->removeFromKernel();\n\t\te->removeFromStage(this);\n\t}",
+          "SimJobStage::onEdgeRemoving(Edge* e)\n\t{\n\te->removeFromKernel();\n\te->removeFromStage(this);\n}"
+        ]
+      ],
+      "App/v8world/World.cpp": [
+        [
+          "World::destroyJointsToWorld(const G3D::Array<Primitive*>& primitives)\n\t{\n\t\tassertNotInStep();\n\n\t\tstd::set<Primitive*> ignore;\n\t\tfor (int i = 0; i < primitives.size(); i++)\n\t\t\tignore.insert(primitives[i]);\n\n\t\tfor (int i = 0; i < primitives.size(); i++)\n\t\t\tdestroyJoints(primitives[i], &ignore);\n\t}",
+          "World::destroyJointsToWorld(const G3D::Array<Primitive*>& primitives)\n\t{\n\tstd::set<Primitive*> ignore;\n\tfor (int i = 0; i < primitives.size(); i++)\n\t\tignore.insert(primitives[i]);\n\n\tfor (int i = 0; i < primitives.size(); i++)\n\t\tdestroyJoints(primitives[i], &ignore);\n}"
+        ],
+        [
+          "World::createJointsToWorld(const G3D::Array<Primitive*>& primitives)\n\t{\n\t\tassertNotInStep();\n\n\t\tstd::set<Primitive*> ignore;\n\t\tfor (int i = 0; i < primitives.size(); i++)\n\t\t\tignore.insert(primitives[i]);\n\n\t\tfor (int i = 0; i < primitives.size(); i++)\n\t\t\tcreateJoints(primitives[i], &ignore);\n\t}",
+          "World::createJointsToWorld(const G3D::Array<Primitive*>& primitives)\n\t{\n\tstd::set<Primitive*> ignore;\n\tfor (int i = 0; i < primitives.size(); i++)\n\t\tignore.insert(primitives[i]);\n\n\tfor (int i = 0; i < primitives.size(); i++)\n\t\tcreateJoints(primitives[i], &ignore);\n}"
+        ]
+      ],
+      "App/v8xml/XmlElement.cpp": [
+        [
+          "\tdefault:\n\t\tRBXASSERT(0);\n\t\treturn \"\";",
+          "\tdefault:\n\t\treturn \"\";"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "9b854f5fbcc0f4a4c79a3d9c04c7869b53316ebcb7d3fac4edd22b77f01397f9",
+      "credits": 0,
+      "distinct_after": 9991,
+      "distinct_before": 9991,
+      "gains": [
+        "00572ca0",
+        "0057d050",
+        "005a8440",
+        "005a86e0",
+        "005dd400",
+        "005dd4c0",
+        "005dd4d0",
+        "006089a0",
+        "00647f40",
+        "0064d090"
+      ],
+      "input_hash": "36f8fe8dba9907f7c314c7a2eb6012c72d3055258299a50fab46da02935b1de2",
+      "losses": [],
+      "new_distinct": [],
+      "overlay_hash": "dad94dc99c762794a95368fa8c96e7e2e094ae2e767d4a509b1f02b16c00d1fc",
+      "owned_after": 3335,
+      "owned_before": 3325,
+      "rebased": false,
+      "submitted_revision": "9b854f5fbcc0f4a4c79a3d9c04c7869b53316ebcb7d3fac4edd22b77f01397f9"
+    },
+    "state": "accepted",
+    "unit": "RBX::Block, RBX::ServiceProvider, RBX::SimJobStage, RBX::Log, RBX::Message",
+    "updated": 1793250787.2406003,
+    "user": "colin"
+  },
+  {
+    "created": 1793251519.3522193,
+    "id": "5786ceb57ace420ba860c55d28d15255",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "RbxGraphics/include/RbxGraphics/TextureProxyBase.h": [
+        [
+          "#include <G3D/Vector2.h>\n\nnamespace RBX\n{\n\ttypedef G3D::ReferenceCountedPointer<class TextureProxyBase> TextureProxyBaseRef;",
+          "#include <G3D/Vector2.h>\n#include <G3D/Color3.h>\n\nnamespace G3D\n{\n\tclass RenderDevice;\n\tclass Texture;\n}\n\nnamespace RBX\n{\n\tnamespace Render\n\t{\n\t\tclass TextureProxy;\n\t}\n\n\ttypedef G3D::ReferenceCountedPointer<class TextureProxyBase> TextureProxyBaseRef;"
+        ],
+        [
+          "\t\tstd::string filename;\n\t  \n\tpublic:\n\t\tTextureProxyBase()\n\t\t{\n\t\t}",
+          "\t\tstd::string filename;   // 0x0c\n\t\tunsigned value28;       // 0x28: native ctor 00551bf0 initializes it to 1\n\t\tfloat scale;            // 0x2c: native ctor initializes it to 1.0f\n\n\tpublic:\n\t\tTextureProxyBase()\n\t\t\t: value28(1),\n\t\t\t  scale(1.0f)\n\t\t{\n\t\t}"
+        ],
+        [
+          "\tpublic:\n\t\tvirtual G3D::Vector2 getSize() = 0;",
+          "\tpublic:\n\t\t// Native 00551c70 / 00551c90 / 00551cb0 / 00551cd0 fill vtable slots 1-4.\n\t\t// value28 is named for its proven native offset; no original spelling evidence exists.\n\t\tvirtual void setValue28(unsigned value) { value28 = value; }\n\t\tvirtual unsigned getValue28() const { return value28; }\n\t\tvirtual void setScale(float value) { scale = value; }\n\t\tvirtual float getScale() const { return scale; }\n\n\t\tvirtual G3D::Vector2 getSize() = 0;\n\t\tvirtual G3D::ReferenceCountedPointer<G3D::Texture> resolve(G3D::RenderDevice* rd) = 0;\n\t\tvirtual G3D::ReferenceCountedPointer<Render::TextureProxy> shade(const G3D::Color3& baseColor,\n\t\t\tconst G3D::ReferenceCountedPointer<Render::TextureProxy>& baseTex) = 0;"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "2965b5d610dce80caf030b7f65a1164f01687a5c65ff7218ac567a1dce8ab57b",
+      "credits": 10,
+      "distinct_after": 10001,
+      "distinct_before": 9991,
+      "gains": [
+        "004f0a20",
+        "00676750",
+        "00676890",
+        "00676aa0",
+        "007ad160",
+        "007b8450",
+        "007b85e0",
+        "007b8eb0",
+        "007b8f40",
+        "007b8fb0"
+      ],
+      "input_hash": "7af95f041b148da73a521164b9203f78bf982cc0cd57c9e6d676655c9935e98b",
+      "losses": [],
+      "new_distinct": [
+        "004f0a20",
+        "00676750",
+        "00676890",
+        "00676aa0",
+        "007ad160",
+        "007b8450",
+        "007b85e0",
+        "007b8eb0",
+        "007b8f40",
+        "007b8fb0"
+      ],
+      "overlay_hash": "42aecd85c977efd12abf5850faf176aeb9611ea7d3880e4d7a48d049c30c580f",
+      "owned_after": 3345,
+      "owned_before": 3335,
+      "rebased": false,
+      "submitted_revision": "2965b5d610dce80caf030b7f65a1164f01687a5c65ff7218ac567a1dce8ab57b"
+    },
+    "state": "accepted",
+    "unit": "RBX::Soundscape::SoundService",
+    "updated": 1793251966.8118074,
+    "user": "coldek"
+  },
+  {
+    "created": 1793253281.929318,
+    "id": "801453a2e5a344d2965b9bcdf73282a0",
+    "model": "codex:gpt-5.6-sol",
+    "patches": {
+      "App/v8world/Block.cpp": [
+        [
+          "Block::getEdgePoint(const G3D::Vector3int16& clip, NormalId& normalID) const\n\t{\n\t\tif (clip.x == 0)\n\t\t{\n\t\t\tnormalID = NORM_X;\n\t\t\treturn &this->vertices[2 * (clip.y <= 0) + 4 + (clip.z <= 0)];\n\t\t}\n\t\telse if (clip.y == 0)\n\t\t{\n\t\t\tnormalID = NORM_Y;\n\t\t\treturn &this->vertices[4 * (clip.x <= 0) + 2 + (clip.z <= 0)];\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(clip.z == 0);\n\t\t\tnormalID = NORM_Z;\n\t\t\treturn &this->vertices[4 * (clip.x <= 0) + 1 + 2 * (clip.y <= 0)];\n\t\t}\n\t}",
+          "Block::getEdgePoint(const G3D::Vector3int16& clip, NormalId& normalID) const\n\t{\n\tif (clip.x == 0)\n\t{\n\t\tnormalID = NORM_X;\n\t\treturn &this->vertices[2 * (clip.y <= 0) + 4 + (clip.z <= 0)];\n\t}\n\telse if (clip.y == 0)\n\t{\n\t\tnormalID = NORM_Y;\n\t\treturn &this->vertices[4 * (clip.x <= 0) + 2 + (clip.z <= 0)];\n\t}\n\telse\n\t{\n\t\tnormalID = NORM_Z;\n\t\treturn &this->vertices[4 * (clip.x <= 0) + 1 + 2 * (clip.y <= 0)];\n\t}\n}"
+        ],
+        [
+          "Block::getPlanePoint(const G3D::Vector3int16& clip, NormalId& normalID) const\n\t{\n\t\tif (clip.x != 0)\n\t\t{\n\t\t\tnormalID = clip.x > 0 ? NORM_X : NORM_X_NEG;\n\t\t\treturn &this->vertices[4 * (clip.x <= 0)];\n\t\t}\n\t\telse if (clip.y != 0)\n\t\t{\n\t\t\tnormalID = clip.y > 0 ? NORM_Y : NORM_Y_NEG;\n\t\t\treturn &this->vertices[2 * (clip.y <= 0)];\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(clip.z != 0);\n\t\t\tnormalID = clip.z > 0 ? NORM_Z : NORM_Z_NEG;\n\t\t\treturn &this->vertices[(clip.z <= 0)];\n\t\t}\n\t}",
+          "Block::getPlanePoint(const G3D::Vector3int16& clip, NormalId& normalID) const\n\t{\n\tif (clip.x != 0)\n\t{\n\t\tnormalID = clip.x > 0 ? NORM_X : NORM_X_NEG;\n\t\treturn &vertices[4 * (clip.x <= 0)];\n\t}\n\telse if (clip.y != 0)\n\t{\n\t\tnormalID = clip.y > 0 ? NORM_Y : NORM_Y_NEG;\n\t\treturn &vertices[2 * (clip.y <= 0)];\n\t}\n\telse\n\t{\n\t\tnormalID = clip.z > 0 ? NORM_Z : NORM_Z_NEG;\n\t\treturn &vertices[clip.z <= 0];\n\t}\n}"
+        ]
+      ],
+      "App/v8world/IPipelined.cpp": [
+        [
+          "IPipelined::removeFromKernel()\n\t{\n\t\tRBXASSERT(currentStage);\n\t\tRBXASSERT(currentStage->getStageType() == IStage::KERNEL_STAGE);\n\n\t\tthis->removeFromStage(currentStage);\n\t}",
+          "IPipelined::removeFromKernel()\n\t{\n\tthis->removeFromStage(currentStage);\n}"
+        ]
+      ],
+      "App/v8world/Joint.cpp": [
+        [
+          "\tJoint::Joint()\n\t\t: Edge(NULL, NULL),\n\t\t  jointOwner(NULL),\n\t\t  active(false),\n\t\t  jointCoord0(),\n\t\t  jointCoord1()\n\t{\n\t\tRBXASSERT(jointCoord0 == G3D::CoordinateFrame());\n\t\tRBXASSERT(jointCoord1 == G3D::CoordinateFrame());\n\t}",
+          "\tJoint::Joint()\n\t\t: Edge(NULL, NULL),\n\t\t  jointOwner(NULL),\n\t\t  active(false),\n\t\t  jointCoord0(),\n\t\t  jointCoord1()\n\t{\n\t}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "8f4af2fbd3518634062da4452539943059648619850beae601dd854312b31860",
+      "credits": 0,
+      "distinct_after": 10001,
+      "distinct_before": 10001,
+      "gains": [
+        "006456a0",
+        "00645860",
+        "00647900",
+        "00647990"
+      ],
+      "input_hash": "e3359a86789f9f6769abca1e9264f2a3a3646c800d2a847c182a127bb51682ba",
+      "losses": [],
+      "new_distinct": [],
+      "overlay_hash": "a72370e5fca3dc340d38d0c2f91f3b9847ea27994d1f609d67d4c8e16803d8c4",
+      "owned_after": 3349,
+      "owned_before": 3345,
+      "rebased": false,
+      "submitted_revision": "8f4af2fbd3518634062da4452539943059648619850beae601dd854312b31860"
+    },
+    "state": "accepted",
+    "unit": "RBX::Block, RBX::Primitive",
+    "updated": 1793253462.606617,
+    "user": "colin"
   }
 ]

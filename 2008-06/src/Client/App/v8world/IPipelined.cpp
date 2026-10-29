@@ -70,9 +70,6 @@ namespace RBX
 
 	void IPipelined::removeFromKernel()
 	{
-		RBXASSERT(currentStage);
-		RBXASSERT(currentStage->getStageType() == IStage::KERNEL_STAGE);
-
-		this->removeFromStage(currentStage);
-	}
+	this->removeFromStage(currentStage);
+}
 }

@@ -1,3 +1,4 @@
+// from server: 97% by EspClaude
 // from server: 78% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
@@ -180,6 +181,7 @@ namespace G3D{class _WeakPtr{public:inline virtual~_WeakPtr(){}protected:friend 
 namespace G3D{class Color3{private:bool operator<(const Color3&)const;bool operator>(const Color3&)const;bool operator<=(const Color3&)const;bool operator>=(const Color3&)const;public:Color3();Color3(class BinaryInput&bi);Color3(float r,float g,float b);Color3(const class Vector3&v);Color3(const float value[3]);Color3(const Color3&other);Color3(const class Color3uint8&other);float r,g,b;void serialize(class BinaryOutput&bo)const;void deserialize(class BinaryInput&bi);const float&operator[](int i)const;float&operator[](int i);Color3&operator=(const Color3&rkVector);bool operator==(const Color3&rkVector)const;bool operator!=(const Color3&rkVector)const;Color3 operator+(const Color3&rkVector)const;Color3 operator-(const Color3&rkVector)const;Color3 operator*(float fScalar)const;Color3 operator*(const Color3&rkVector)const;Color3 operator/(float fScalar)const;Color3 operator-()const;Color3&operator+=(const Color3&rkVector);Color3&operator-=(const Color3&rkVector);Color3&operator*=(const Color3&rkVector);Color3&operator*=(float fScalar);Color3&operator/=(float fScalar);inline operator float*();operator const float*()const;float length()const;float squaredLength()const;static const Color3 RED;static const Color3 GREEN;static const Color3 BLUE;static const Color3 PURPLE;static const Color3 CYAN;static const Color3 YELLOW;static const Color3 BROWN;static const Color3 ORANGE;static const Color3 BLACK;static const Color3 GRAY;static const Color3 WHITE;};inline G3D::Color3 operator*(float s,const G3D::Color3&c){return c*s;}}
 namespace G3D{class Texture:public ReferenceCountedObject{public:virtual~Texture();};}
 namespace G3D { class RenderDevice; class GLight; }
+#define NF(T, p, off) (*reinterpret_cast<T*>(reinterpret_cast<char*>(p) + (off)))
 template<class T> inline T& nativeField(void* p, unsigned offset) {
     return *reinterpret_cast<T*>(static_cast<char*>(p) + offset);
 }
@@ -222,6 +224,9 @@ public:
     void setContext18(void*);              
     RbxSubEntity* addSubEntity(SubMesh*, unsigned int); 
     void mergeBounds(AxisAlignedBox);      
+    void set279(bool v) { field279 = v; }
+    void set29c(float v) { field29c = v; }
+    void set2a0(int v) { field2a0 = v; }
 };
 }
 namespace RBX {
@@ -251,7 +256,7 @@ public:
     virtual const Level& appendEmptyLevel();
     virtual const Level& appendLevel(G3D::Color3, float, float, float, float);
     virtual const Level& appendLevel(TextureProxyBaseRef, G3D::Color3, float, float, float, float);
-    virtual size_t levelCount() const;
+    virtual int levelCount() const;
     virtual Level& getLevel(int);
     virtual const Level* detailLevel(float) const;
     virtual bool veryTransparent() const;
@@ -315,7 +320,7 @@ static __forceinline SubMesh* nativeSubMesh(NativeMesh::Level* level) {
         return nativeBaseMesh->getSubMesh((unsigned short)nativeField<int>(level, 0x20));
     return 0;
 }
-static __forceinline ColourValue nativeColour(const float& r, const float& g, const float& b) { return ColourValue(r, g, b); }
+static __forceinline ColourValue nativeColour(const Color3& a, const Color3& b, const Color3& c) { return ColourValue(a.r, b.g, c.b); }
 static __forceinline void nativeReflectionPass(NativeLevel* level) {
     TexturePtr texture = TextureManager::getSingleton().getByName("skysphmap");
     if (texture.isNull()) {
@@ -334,10 +339,15 @@ static __forceinline void nativeReflectionPass(NativeLevel* level) {
     unit->setTextureName(texture->getName(), (TextureType)2);
     unit->setEnvironmentMap(true, (TextureUnitState::EnvMapType)1);
 }
+static inline G3D::Vector3 nativeObjectPoint(const CoordinateFrame& c, const CoordinateFrame& o) {
+    float p[3]; p[0] = o.translation.x - c.translation[0]; p[1] = o.translation.y - c.translation[1]; p[2] = o.translation.z - c.translation[2];
+    return G3D::Vector3(c.rotation[0][0]*p[0]+c.rotation[1][0]*p[1]+c.rotation[2][0]*p[2],c.rotation[0][1]*p[0]+c.rotation[1][1]*p[1]+c.rotation[2][1]*p[2],c.rotation[0][2]*p[0]+c.rotation[1][2]*p[1]+c.rotation[2][2]*p[2]);
+}
 void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose) {
     Camera* camera = nativeField<Camera*>(ctx, 8);
     CoordinateFrame frame = pose->getCoordinateFrame();
-    if (nativeField<bool>(this, 0x2f4)) {
+    bool shadows = nativeField<bool>(this, 0x2f4);
+    if (shadows) {
         nativeField<SceneManager*>(ctx, 4)->setShadowTechnique(SHADOWTYPE_STENCIL_MODULATIVE);
         nativeField<SceneManager*>(ctx, 4)->setShadowColour(ColourValue(nativeField<float>(this, 0x328),
             nativeField<float>(this, 0x32c), nativeField<float>(this, 0x330)));
@@ -351,9 +361,9 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
     nativeField<Camera*>(ctx, 8)->setFOVy(Radian((float)pose->getFieldOfView()));
     Timer timer;
     timer.reset();
-    if (!nativeField<RbxSceneNode*>(this, 0x268)) {
-        nativeField<RbxSceneNode*>(this, 0x268) = new RbxSceneNode(nativeField<SceneManager*>(ctx, 4), "rbxroot");
-        nativeField<SceneManager*>(ctx, 4)->getRootSceneNode()->addChild(nativeField<RbxSceneNode*>(this, 0x268));
+    if (!NF(RbxSceneNode*, this, 0x268)) {
+        NF(RbxSceneNode*, this, 0x268) = new RbxSceneNode(nativeField<SceneManager*>(ctx, 4), "rbxroot");
+        nativeField<SceneManager*>(ctx, 4)->getRootSceneNode()->addChild(NF(RbxSceneNode*, this, 0x268));
     }
     { Flag f; f.v = nativeField<bool>(this, 0x2f6); updateLights(ctx, f); }
     bool special = nativeField<bool>(ctx, 0x7f5);
@@ -361,7 +371,7 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
     if (nativeField<MeshPtr>(this, 0x27c).isNull()) nativeField<MeshPtr>(this, 0x27c) = MeshManager::getSingleton().createOrRetrieve("rbxdummymesh", "General").first;
     if (!nativeField<RbxEntity*>(this, 0x26c) && nativeField<int>(this, 0xc) != 0) {
         nativeField<RbxEntity*>(this, 0x26c) = new RbxEntity;
-        nativeField<RbxSceneNode*>(this, 0x268)->attachObject(nativeField<RbxEntity*>(this, 0x26c));
+        NF(RbxSceneNode*, this, 0x268)->attachObject(nativeField<RbxEntity*>(this, 0x26c));
         nativeField<RbxEntity*>(this, 0x26c)->setMesh(nativeField<MeshPtr>(this, 0x27c));
     }
     for (int i = 0; i < nativeField<int>(this, 0xc); ++i) { Chunk* c = nativeField<Chunk**>(this, 8)[i]; if (c) c->getMesh(); }
@@ -385,9 +395,8 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
         if (nativeField<bool>(this, 0x2f4) && nativeField<int>(mesh.pointer(), 0x80) == 0) mesh->updateShadowGeometry(ctx);
         int lod = 0;
         if (nativeField<int>(mesh.pointer(), 0x10) == 2) {
-            const G3D::Vector3& p = chunk->cframe().translation;
-            float depth = -cameraFrame.pointToObjectSpace(p).z;
-            if (!(depth < 80.0f)) lod = 1;
+            float depth = -nativeObjectPoint(cameraFrame, chunk->cframe()).z;
+            lod = depth < 80.0f ? 0 : 1;
         }
         G3D::ReferenceCountedPointer<NativeMesh::Level> geometry = mesh->detailLevel((float)lod);
         bool boundsChanged = false;
@@ -398,7 +407,8 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
                 unsigned* indices = nativeField<unsigned*>(base.pointer(), 0xc);
                 const G3D::Vector3& normal = mesh->normal(indices[0]);
                 for (int j = 0; j < 4; ++j) {
-                    G3D::Vector3& p = mesh->position(nativeField<unsigned*>(base.pointer(), 0xc)[j]);
+                    unsigned* idx = &nativeField<unsigned*>(base.pointer(), 0xc)[j];
+                    G3D::Vector3& p = mesh->position(*idx);
                     p += normal * 0.06f;
                 }
             }
@@ -408,18 +418,18 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
                 AxisAlignedBox box;
                 geometry->updateGeometry(ctx, &box);
                 float radius = box.getHalfSize().length();
-                nativeField<RbxSceneNode*>(this, 0x268)->setSphere((unsigned long)nativeField<SubMesh*>(geometry.pointer(), 0x24), Ogre::Sphere(box.getCenter(), radius));
+                NF(RbxSceneNode*, this, 0x268)->setSphere((unsigned long)nativeField<SubMesh*>(geometry.pointer(), 0x24), Ogre::Sphere(box.getCenter(), radius));
                 boundsChanged = true;
             }
         } else if (nativeField<bool>(geometry.pointer(), 0x1c)) {
             AxisAlignedBox box;
             geometry->updateSpecialGeometry(ctx, &box);
             float radius = box.getHalfSize().length();
-            nativeField<RbxSceneNode*>(this, 0x268)->setSphere((unsigned long)nativeSubMesh(geometry.pointer()), Ogre::Sphere(box.getCenter(), radius));
+            NF(RbxSceneNode*, this, 0x268)->setSphere((unsigned long)nativeSubMesh(geometry.pointer()), Ogre::Sphere(box.getCenter(), radius));
             boundsChanged = true;
         }
-        NativeLevel* material = dynamic_cast<NativeLevel*>(&chunk->getMaterial()->getLevel(0));
         bool materialCreated=false;
+        NativeLevel* material = dynamic_cast<NativeLevel*>(&chunk->getMaterial()->getLevel(0));
  {
  if(material && nativeField<MaterialPtr>(material,0x2c).isNull()){
     
@@ -456,7 +466,7 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
                     unit->setTextureFiltering((FilterOptions)2, (FilterOptions)2, (FilterOptions)2);
                     unit->setTextureAddressingMode((TextureUnitState::TextureAddressingMode)0,
                         (TextureUnitState::TextureAddressingMode)0, (TextureUnitState::TextureAddressingMode)0);
-                    unit->setTextureBorderColour(nativeColour(level->color().r, level->color().g, level->color().b));
+                    unit->setTextureBorderColour(nativeColour(level->color(), level->color(), level->color()));
                     unit->setTextureName(texture->getName(), (TextureType)2);
                 }
                 bool loaded = !texture.isNull() && texture->hasAlpha();
@@ -473,16 +483,21 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
 
  }}
         if (!nativeField<RbxSubEntity*>(chunk, 0x10)) {
-            if (!(special ? nativeSubMesh(geometry.pointer()) : nativeField<SubMesh*>(geometry.pointer(), 0x24)))
-                throw std::exception("Please restart ROBLOX, if you changed your settings but have not restarted");
             SubMesh* selected;
             RbxSubEntity* sub;
             if (special) {
+                if (!nativeSubMesh(geometry.pointer()))
+                    goto fail;
                 selected = nativeSubMesh(geometry.pointer());
                 sub = nativeField<RbxEntity*>(this, 0x26c)->addSubEntity(selected, lod);
                 nativeField<bool>(sub, 0x13c) = false;
             } else {
-                selected = nativeField<SubMesh*>(geometry.pointer(), 0x24);
+                SubMesh* sm = nativeField<SubMesh*>(geometry.pointer(), 0x24);
+                if (!sm) {
+                fail:
+                    throw std::exception("Please restart ROBLOX, if you changed your settings but have not restarted");
+                }
+                selected = sm;
                 sub = nativeField<RbxEntity*>(this, 0x26c)->addSubEntity(selected, lod);
             }
             sub->setFloat138(chunk->getFloat14());
@@ -497,11 +512,11 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
             AxisAlignedBox bounds = nativeField<AxisAlignedBox>(nativeField<RbxEntity*>(this, 0x26c), 0x27c);
             if (std::fabs(pos.x) < 10000.0f && std::fabs(pos.y) < 10000.0f && std::fabs(pos.z) < 10000.0f) {
                 if (selected != nativeField<SubMesh*>(geometry.pointer(), 0x24)) {
-                    const Ogre::Sphere& sphere = nativeField<RbxSceneNode*>(this, 0x268)->getSphere((unsigned long)selected);
+                    const Ogre::Sphere& sphere = NF(RbxSceneNode*, this, 0x268)->getSphere((unsigned long)selected);
                     float radius = sphere.getRadius();
                     const G3D::Vector3& position = chunk->cframe().translation;
                     AxisAlignedBox merged = nativeField<AxisAlignedBox>(nativeField<RbxEntity*>(this, 0x26c), 0x27c);
-                    Ogre::Vector3 p(position.x, position.y, position.z);
+                    const Ogre::Vector3& p = *reinterpret_cast<const Ogre::Vector3*>(&position);
                     Ogre::Vector3 lo = sphere.getCenter() + p - radius;
                     Ogre::Vector3 hi = p + sphere.getCenter() + radius;
                     AxisAlignedBox box(lo, hi);
@@ -520,11 +535,19 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
             }
             }
         } else if (boundsChanged || !nativeField<RbxSubEntity*>(chunk, 0x10)->getLodMesh(lod)) {
+            SubMesh* lodMesh;
             if (special) {
-                if (nativeSubMesh(geometry.pointer()))
-                    nativeField<RbxSubEntity*>(chunk, 0x10)->setLodMesh(lod, nativeSubMesh(geometry.pointer()));
-            } else if (nativeField<SubMesh*>(geometry.pointer(), 0x24))
-                nativeField<RbxSubEntity*>(chunk, 0x10)->setLodMesh(lod, nativeField<SubMesh*>(geometry.pointer(), 0x24));
+                if (nativeSubMesh(geometry.pointer())) {
+                    lodMesh = nativeSubMesh(geometry.pointer());
+                    goto setLodMesh;
+                }
+            } else {
+                lodMesh = nativeField<SubMesh*>(geometry.pointer(), 0x24);
+                if (lodMesh) {
+                setLodMesh:
+                    nativeField<RbxSubEntity*>(chunk, 0x10)->setLodMesh(lod, lodMesh);
+                }
+            }
         }
         nativeField<RbxSubEntity*>(chunk, 0x10)->setLod(lod);
         nativeField<RbxSubEntity*>(chunk, 0x10)->setFloat138(chunk->getFloat14());
@@ -549,14 +572,14 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
     timer.reset();
     if (nativeField<RbxEntity*>(this, 0x26c)) {
         nativeField<RbxEntity*>(this, 0x26c)->setContext18(&nativeField<char>(ctx, 0x18));
-        nativeField<bool>(nativeField<RbxEntity*>(this, 0x26c), 0x279) = false;
+        nativeField<RbxEntity*>(this, 0x26c)->set279(false);
         nativeField<RbxEntity*>(this, 0x26c)->setSubEntitiesVisible(true);
         if (nativeField<bool>(this, 0x2f4)) {
-            nativeField<float>(nativeField<RbxEntity*>(this, 0x26c), 0x29c) = 15.0f;
-            nativeField<int>(nativeField<RbxEntity*>(this, 0x26c), 0x2a0) = 0x258;
+            nativeField<RbxEntity*>(this, 0x26c)->set29c(15.0f);
+            nativeField<RbxEntity*>(this, 0x26c)->set2a0(0x258);
         } else {
-            nativeField<float>(nativeField<RbxEntity*>(this, 0x26c), 0x29c) = 20.0f;
-            nativeField<int>(nativeField<RbxEntity*>(this, 0x26c), 0x2a0) = 0x28a;
+            nativeField<RbxEntity*>(this, 0x26c)->set29c(20.0f);
+            nativeField<RbxEntity*>(this, 0x26c)->set2a0(0x28a);
         }
     }
     if (nativeRoot->_fireFrameStarted()) {

@@ -1432,23 +1432,23 @@
   "path": "2008-06/src/Client/App/include/reflection/member.h"
  },
  "005726a0": {
-  "line": 39,
+  "line": 38,
   "path": "2008-06/src/Client/App/v8tree/Service.cpp"
  },
  "005726c0": {
-  "line": 45,
+  "line": 44,
   "path": "2008-06/src/Client/App/v8tree/Service.cpp"
  },
  "005729c0": {
-  "line": 99,
+  "line": 98,
   "path": "2008-06/src/Client/App/v8tree/Service.cpp"
  },
  "00572b40": {
-  "line": 32,
+  "line": 31,
   "path": "2008-06/src/Client/App/v8tree/Service.cpp"
  },
  "00572bc0": {
-  "line": 51,
+  "line": 50,
   "path": "2008-06/src/Client/App/v8tree/Service.cpp"
  },
  "00572ca0": {
@@ -1456,7 +1456,7 @@
   "path": "2008-06/src/Client/App/v8tree/Service.cpp"
  },
  "00572e40": {
-  "line": 75,
+  "line": 74,
   "path": "2008-06/src/Client/App/v8tree/Service.cpp"
  },
  "00573190": {
@@ -1624,11 +1624,11 @@
   "path": "2008-06/src/Client/App/v8xml/XmlElement.cpp"
  },
  "0057c230": {
-  "line": 361,
+  "line": 360,
   "path": "2008-06/src/Client/App/v8xml/XmlElement.cpp"
  },
  "0057c250": {
-  "line": 373,
+  "line": 372,
   "path": "2008-06/src/Client/App/v8xml/XmlElement.cpp"
  },
  "0057c2d0": {
@@ -1760,11 +1760,11 @@
   "path": "2008-06/src/Client/App/include/util/Object.h"
  },
  "00584fc0": {
-  "line": 158,
+  "line": 159,
   "path": "2008-06/src/Client/App/v8datamodel/PVInstance.cpp"
  },
  "00585050": {
-  "line": 148,
+  "line": 149,
   "path": "2008-06/src/Client/App/v8datamodel/PVInstance.cpp"
  },
  "00585630": {
@@ -1908,7 +1908,7 @@
   "path": "2008-06/src/Client/App/v8datamodel/RootInstance.cpp"
  },
  "00591c60": {
-  "line": 322,
+  "line": 321,
   "path": "2008-06/src/Client/App/v8xml/XmlElement.cpp"
  },
  "00591d30": {
@@ -2572,7 +2572,7 @@
   "path": "2008-06/src/Client/App/include/lua/LuaBridge.h"
  },
  "005abf90": {
-  "line": 253,
+  "line": 252,
   "path": "2008-06/src/Client/App/script/ScriptContext.cpp"
  },
  "005ac030": {
@@ -3448,7 +3448,7 @@
   "path": "2008-06/src/Client/App/v8datamodel/Message.cpp"
  },
  "005dd400": {
-  "line": 50,
+  "line": 41,
   "path": "2008-06/src/Client/App/util/IRenderable.cpp"
  },
  "005dd4c0": {
@@ -3456,7 +3456,7 @@
   "path": "2008-06/src/Client/App/util/IRenderable.cpp"
  },
  "005dd4d0": {
-  "line": 34,
+  "line": 30,
   "path": "2008-06/src/Client/App/util/IRenderable.cpp"
  },
  "005dd540": {
@@ -3928,7 +3928,7 @@
   "path": "2008-06/src/Client/App/v8world/World.cpp"
  },
  "005ead30": {
-  "line": 231,
+  "line": 229,
   "path": "2008-06/src/Client/App/v8world/World.cpp"
  },
  "005eae10": {
@@ -4540,19 +4540,19 @@
   "path": "2008-06/src/Client/App/v8datamodel/PVInstance.cpp"
  },
  "00608b60": {
-  "line": 74,
+  "line": 75,
   "path": "2008-06/src/Client/App/v8datamodel/PVInstance.cpp"
  },
  "00608ba0": {
-  "line": 102,
+  "line": 103,
   "path": "2008-06/src/Client/App/v8datamodel/PVInstance.cpp"
  },
  "00608bd0": {
-  "line": 109,
+  "line": 110,
   "path": "2008-06/src/Client/App/v8datamodel/PVInstance.cpp"
  },
  "00608bf0": {
-  "line": 196,
+  "line": 197,
   "path": "2008-06/src/Client/App/v8datamodel/PVInstance.cpp"
  },
  "00608c90": {
@@ -4560,11 +4560,11 @@
   "path": "2008-06/src/Client/App/include/reflection/reflection.h"
  },
  "00608d10": {
-  "line": 83,
+  "line": 84,
   "path": "2008-06/src/Client/App/v8datamodel/PVInstance.cpp"
  },
  "00608da0": {
-  "line": 116,
+  "line": 117,
   "path": "2008-06/src/Client/App/v8datamodel/PVInstance.cpp"
  },
  "00608fa0": {
@@ -4572,7 +4572,7 @@
   "path": "2008-06/src/Client/App/v8datamodel/PVInstance.cpp"
  },
  "00609020": {
-  "line": 70,
+  "line": 71,
   "path": "2008-06/src/Client/App/v8datamodel/PVInstance.cpp"
  },
  "00609410": {
@@ -4584,11 +4584,11 @@
   "path": "2008-06/src/Client/App/v8datamodel/PVInstance.cpp"
  },
  "006099c0": {
-  "line": 203,
+  "line": 204,
   "path": "2008-06/src/Client/App/v8datamodel/PVInstance.cpp"
  },
  "00609a00": {
-  "line": 214,
+  "line": 215,
   "path": "2008-06/src/Client/App/v8datamodel/PVInstance.cpp"
  },
  "00609af0": {
@@ -4676,7 +4676,7 @@
   "path": "2008-06/src/Client/App/v8world/ContactManager.cpp"
  },
  "0060dde0": {
-  "line": 141,
+  "line": 132,
   "path": "2008-06/src/Client/App/tool/MegaDragger.cpp"
  },
  "0060de00": {
@@ -6436,7 +6436,7 @@
   "path": "2008-06/src/Client/App/v8datamodel/ScriptMouseCommand.cpp"
  },
  "00645490": {
-  "line": 33,
+  "line": 31,
   "path": "2008-06/src/Client/App/v8world/Joint.cpp"
  },
  "006454a0": {
@@ -6444,19 +6444,19 @@
   "path": "2008-06/src/Client/App/include/v8world/Clump.h"
  },
  "006454b0": {
-  "line": 80,
+  "line": 77,
   "path": "2008-06/src/Client/App/v8world/Joint.cpp"
  },
  "00645560": {
-  "line": 101,
+  "line": 98,
   "path": "2008-06/src/Client/App/v8world/Joint.cpp"
  },
  "00645590": {
-  "line": 96,
+  "line": 93,
   "path": "2008-06/src/Client/App/v8world/Joint.cpp"
  },
  "00645750": {
-  "line": 62,
+  "line": 59,
   "path": "2008-06/src/Client/App/v8world/Joint.cpp"
  },
  "00645830": {
@@ -6504,15 +6504,15 @@
   "path": "2008-06/src/Client/App/v8world/Block.cpp"
  },
  "00647990": {
-  "line": 183,
+  "line": 182,
   "path": "2008-06/src/Client/App/v8world/Block.cpp"
  },
  "00647a20": {
-  "line": 208,
+  "line": 206,
   "path": "2008-06/src/Client/App/v8world/Block.cpp"
  },
  "00647c70": {
-  "line": 328,
+  "line": 326,
   "path": "2008-06/src/Client/App/v8world/Block.cpp"
  },
  "00647e70": {
@@ -6520,11 +6520,11 @@
   "path": "2008-06/src/Client/App/v8world/Block.cpp"
  },
  "00647f40": {
-  "line": 390,
+  "line": 388,
   "path": "2008-06/src/Client/App/v8world/Block.cpp"
  },
  "00648270": {
-  "line": 421,
+  "line": 418,
   "path": "2008-06/src/Client/App/v8world/Block.cpp"
  },
  "00648f30": {
@@ -6532,7 +6532,7 @@
   "path": "2008-06/src/Client/App/v8world/Block.cpp"
  },
  "00648fd0": {
-  "line": 382,
+  "line": 380,
   "path": "2008-06/src/Client/App/v8world/Block.cpp"
  },
  "00649130": {
@@ -6608,7 +6608,7 @@
   "path": "2008-06/src/Client/App/v8world/ClumpStage.cpp"
  },
  "0064d060": {
-  "line": 125,
+  "line": 123,
   "path": "2008-06/src/Client/App/v8world/SimJobStage.cpp"
  },
  "0064d090": {

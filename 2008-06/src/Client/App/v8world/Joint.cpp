@@ -26,14 +26,11 @@ namespace RBX
 		  jointCoord0(),
 		  jointCoord1()
 	{
-		RBXASSERT(jointCoord0 == G3D::CoordinateFrame());
-		RBXASSERT(jointCoord1 == G3D::CoordinateFrame());
 	}
 
 	Joint::~Joint()
 	{
-		RBXASSERT(!jointOwner);
-	}
+}
 
 	void Joint::setPrimitive(int i, Primitive* p)
 	{

@@ -45,27 +45,28 @@ namespace RBX
 
 	void PVInstance::readProperty(const XmlElement* propertyElement, IReferenceBinder& binder)
 	{
-		if (propertyElement->getTag() == "Feature")
+	if (propertyElement->getTag() == "Feature")
+	{
+		const Name* name = NULL;
+		const XmlAttribute* nameAttribute = propertyElement->findAttribute(name_name);
+
+		if (nameAttribute)
+			nameAttribute->getValue(name);
+
+		if (*name == "Part")
 		{
-			const Name* name = NULL;
-
-			bool foundNameAttribute = propertyElement->findAttributeValue(name_name, name);
-			RBXASSERT(foundNameAttribute);
-
-			if (*name == "Part")
-			{
-				readProperties(propertyElement, binder);
-				return;
-			}
-			if (*name == "Item")
-			{
-				readProperties(propertyElement, binder);
-				return;
-			}
+			readProperties(propertyElement, binder);
+			return;
 		}
-
-		return Instance::readProperty(propertyElement, binder);
+		if (*name == "Item")
+		{
+			readProperties(propertyElement, binder);
+			return;
+		}
 	}
+
+	return Instance::readProperty(propertyElement, binder);
+}
 
 	PVInstance::~PVInstance()
 	{

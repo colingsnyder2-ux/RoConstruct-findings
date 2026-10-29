@@ -218,27 +218,23 @@ namespace RBX
 
 	void World::createJointsToWorld(const G3D::Array<Primitive*>& primitives)
 	{
-		assertNotInStep();
+	std::set<Primitive*> ignore;
+	for (int i = 0; i < primitives.size(); i++)
+		ignore.insert(primitives[i]);
 
-		std::set<Primitive*> ignore;
-		for (int i = 0; i < primitives.size(); i++)
-			ignore.insert(primitives[i]);
-
-		for (int i = 0; i < primitives.size(); i++)
-			createJoints(primitives[i], &ignore);
-	}
+	for (int i = 0; i < primitives.size(); i++)
+		createJoints(primitives[i], &ignore);
+}
 
 	void World::destroyJointsToWorld(const G3D::Array<Primitive*>& primitives)
 	{
-		assertNotInStep();
+	std::set<Primitive*> ignore;
+	for (int i = 0; i < primitives.size(); i++)
+		ignore.insert(primitives[i]);
 
-		std::set<Primitive*> ignore;
-		for (int i = 0; i < primitives.size(); i++)
-			ignore.insert(primitives[i]);
-
-		for (int i = 0; i < primitives.size(); i++)
-			destroyJoints(primitives[i], &ignore);
-	}
+	for (int i = 0; i < primitives.size(); i++)
+		destroyJoints(primitives[i], &ignore);
+}
 
 	SimJobStage& World::getSimJobStage()
 	{

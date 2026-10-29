@@ -71,8 +71,7 @@ namespace RBX
 		if (scopeLength > 0)
 		{
 			std::string scopeName = this->scope->name;
-			int size = std::min<int>(3, (int)scopeName.size());
-			scopeName = scopeName.substr(size);
+			scopeName = scopeName.substr(std::min<size_t>(3, scopeName.size()), std::min<int>(scopeLength, 32));
 			sprintf(result, "%s_%d", scopeName.c_str(), this->index);
 		}
 		else

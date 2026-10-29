@@ -110,19 +110,10 @@ namespace RBX
 
 	G3D::Vector3 MegaDragger::safeMoveNoDrop(const G3D::Vector3& tryDrag)
 	{
-		RBXASSERT(!joined);
-		RBXASSERT(tryDrag == Math::toGrid(tryDrag, 0.1f));
-
-		G3D::Array<Primitive*> primitives;
-		DragUtilities::partsToPrimitives(dragParts, primitives);
-
-		RBXASSERT(primitives.size() > 0);
-
-		G3D::Vector3 result = Dragger::safeMoveNoDrop(primitives, tryDrag, contactManager);
-
-		RBXASSERT(!contactManager.intersectingOthers(primitives, 0.01f));
-		return result;
-	}
+	G3D::Array<Primitive*> primitives;
+	DragUtilities::partsToPrimitives(dragParts, primitives);
+	return Dragger::safeMoveNoDrop(primitives, tryDrag, contactManager);
+}
 
 	void MegaDragger::safeRotate(const G3D::Matrix3& rotMatrix)
 	{

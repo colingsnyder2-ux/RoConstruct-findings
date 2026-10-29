@@ -162,43 +162,41 @@ __declspec(noinline) G3D::Matrix3 Block::getMomentHollow(float mass) const
 
 	const G3D::Vector3* Block::getEdgePoint(const G3D::Vector3int16& clip, NormalId& normalID) const
 	{
-		if (clip.x == 0)
-		{
-			normalID = NORM_X;
-			return &this->vertices[2 * (clip.y <= 0) + 4 + (clip.z <= 0)];
-		}
-		else if (clip.y == 0)
-		{
-			normalID = NORM_Y;
-			return &this->vertices[4 * (clip.x <= 0) + 2 + (clip.z <= 0)];
-		}
-		else
-		{
-			RBXASSERT(clip.z == 0);
-			normalID = NORM_Z;
-			return &this->vertices[4 * (clip.x <= 0) + 1 + 2 * (clip.y <= 0)];
-		}
+	if (clip.x == 0)
+	{
+		normalID = NORM_X;
+		return &this->vertices[2 * (clip.y <= 0) + 4 + (clip.z <= 0)];
 	}
+	else if (clip.y == 0)
+	{
+		normalID = NORM_Y;
+		return &this->vertices[4 * (clip.x <= 0) + 2 + (clip.z <= 0)];
+	}
+	else
+	{
+		normalID = NORM_Z;
+		return &this->vertices[4 * (clip.x <= 0) + 1 + 2 * (clip.y <= 0)];
+	}
+}
 
 	const G3D::Vector3* Block::getPlanePoint(const G3D::Vector3int16& clip, NormalId& normalID) const
 	{
-		if (clip.x != 0)
-		{
-			normalID = clip.x > 0 ? NORM_X : NORM_X_NEG;
-			return &this->vertices[4 * (clip.x <= 0)];
-		}
-		else if (clip.y != 0)
-		{
-			normalID = clip.y > 0 ? NORM_Y : NORM_Y_NEG;
-			return &this->vertices[2 * (clip.y <= 0)];
-		}
-		else
-		{
-			RBXASSERT(clip.z != 0);
-			normalID = clip.z > 0 ? NORM_Z : NORM_Z_NEG;
-			return &this->vertices[(clip.z <= 0)];
-		}
+	if (clip.x != 0)
+	{
+		normalID = clip.x > 0 ? NORM_X : NORM_X_NEG;
+		return &vertices[4 * (clip.x <= 0)];
 	}
+	else if (clip.y != 0)
+	{
+		normalID = clip.y > 0 ? NORM_Y : NORM_Y_NEG;
+		return &vertices[2 * (clip.y <= 0)];
+	}
+	else
+	{
+		normalID = clip.z > 0 ? NORM_Z : NORM_Z_NEG;
+		return &vertices[clip.z <= 0];
+	}
+}
 
 	const G3D::Vector3* Block::getCornerPoint(const G3D::Vector3int16& clip) const
 	{
@@ -389,34 +387,33 @@ __declspec(noinline) G3D::Matrix3 Block::getMomentHollow(float mass) const
 
 	bool Block::hitTest(const G3D::Ray& rayInMe, G3D::Vector3& localHitPoint, bool& inside)
 	{
-		G3D::Vector3 gridSizeMul = gridSize * 0.5f;
-		inside = false;
+	G3D::Vector3 gridSizeMul = gridSize * 0.5f;
+	inside = false;
 
-		bool result = G3D::CollisionDetection::collisionLocationForMovingPointFixedAABox(
-			rayInMe.origin,
-			rayInMe.direction,
+	bool result = G3D::CollisionDetection::collisionLocationForMovingPointFixedAABox(
+		rayInMe.origin,
+		rayInMe.direction,
+		G3D::AABox(-gridSizeMul, gridSizeMul),
+		localHitPoint,
+		inside);
+
+	if (inside)
+	{
+		inside = false;
+		G3D::Vector3 originMul = rayInMe.origin - (rayInMe.direction * 1000.0f);
+		G3D::Ray rayResult = G3D::Ray::fromOriginAndDirection(originMul, rayInMe.direction);
+
+		G3D::CollisionDetection::collisionLocationForMovingPointFixedAABox(
+			rayResult.origin,
+			rayResult.direction,
 			G3D::AABox(-gridSizeMul, gridSizeMul),
 			localHitPoint,
 			inside);
 
-		if (inside)
-		{
-			inside = false;
-			G3D::Vector3 originMul = rayInMe.origin - (rayInMe.direction * 1000.0f);
-			G3D::Ray rayResult = G3D::Ray::fromOriginAndDirection(originMul, rayInMe.direction);
-
-			G3D::CollisionDetection::collisionLocationForMovingPointFixedAABox(
-				rayResult.origin,
-				rayResult.direction,
-				G3D::AABox(-gridSizeMul, gridSizeMul),
-				localHitPoint,
-				inside);
-
-			RBXASSERT(!inside);
-			return true;
-		}
-		return result;
+		return true;
 	}
+	return result;
+}
 
 	G3D::Vector3 Block::getCenterToCorner(const G3D::Matrix3& rotation) const
 	{

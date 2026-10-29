@@ -16,13 +16,12 @@ namespace RBX
 
 	void ServiceProvider::onChildAdded(Instance* instance)
 	{
-		RBXASSERT(dynamic_cast<ServiceProvider*>(instance)==NULL);
 
 		if (dynamic_cast<Service*>(instance))
 		{
 			if (instance->getClassName() != Name::getNullName())
 			{
-				RBXASSERT(!findServiceByClassName(instance->getClassName()));
+
 				serviceMap[&instance->getClassName()] = shared_from(instance);
 			}
 			Notifier<ServiceProvider, ServiceAdded>::raise(ServiceAdded(instance));

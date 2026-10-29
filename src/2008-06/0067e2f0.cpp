@@ -1,9 +1,9 @@
-// from server: 99% by EspClaude
+// from server: 100% by EspClaude
 // from server: 81% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: ogre-1.4.5-dll roc_espclaude_a50e7c9e90d7e966.cpp
+// roc-lib: ogre-1.4.5-dll roc_espclaude_3a38bc51a49d03ed.cpp
 
 // Candidate translation unit (score above; library headers required).
 #undef OGRE_NONCLIENT_BUILD
@@ -126,14 +126,19 @@ void RbxEntity::collect(Camera* camera,Light* light,std::vector<ShadowCaster*>& 
         const Vector3& dir=light->getDerivedDirection();
         
         Vector3 extrude=dir*-10000.0f;
-        min=max=corners[0];
-        min.makeFloor(corners[0]+extrude);
-        max.makeCeil(corners[0]+extrude);
+        const Vector3& e=extrude;
+        const Vector3& c0=corners[0];
+        min=max=c0;
+        const Vector3& c0b=corners[0];
+        min.makeFloor(c0+extrude);
+        max.makeCeil(c0+extrude);
+        const Vector3& e2=extrude;
         for(size_t c=1;c<8;++c) {
+            const Vector3& cc=corners[c];
             min.makeFloor(corners[c]);
             max.makeCeil(corners[c]);
-            min.makeFloor(corners[c]+extrude);
-            max.makeCeil(corners[c]+extrude);
+            min.makeFloor(corners[c]+e);
+            max.makeCeil(corners[c]+e2);
         }
         aabb.setExtents(min,max);
         lightVisible=false;

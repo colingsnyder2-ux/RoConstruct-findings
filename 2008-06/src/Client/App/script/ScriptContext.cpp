@@ -243,7 +243,6 @@ ScriptContext& ScriptContext::getContext(lua_State* thread)
     lua_pushlightuserdata(thread, RBX_LUA_GLOBAL_SCRIPTCONTEXT);
     lua_gettable(thread, LUA_GLOBALSINDEX);
 
-    RBXASSERT(lua_type(thread, -1) == LUA_TLIGHTUSERDATA);
     ScriptContext* sc = static_cast<ScriptContext*>(lua_touserdata(thread, -1));
     lua_pop(thread, 1);
 

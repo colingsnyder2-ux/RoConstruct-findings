@@ -1,4 +1,4 @@
-// from server: 86% by EspClaude
+// from server: 100% by EspClaude
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 #include <set>
@@ -29,6 +29,7 @@ public:
     virtual ~IPipelined() {}
     IStage* readStage() const { _ReadWriteBarrier(); return currentStage; }
     bool inPipeline() const { return currentStage != 0; }
+    IStage* stageNB() const { return currentStage; }
     bool downstreamOfStage(IStage* stage) const;
     bool inOrDownstreamOfStage(IStage* stage) const;
     virtual void putInKernel(void*);
@@ -38,7 +39,7 @@ private:
 };
 inline bool IPipelined::downstreamOfStage(IStage* iStage) const
 {
-    return currentStage->getStageType() > iStage->getStageType();
+    IStage* s = readStage(); return s->getStageType() > iStage->getStageType();
 }
 inline bool IPipelined::inOrDownstreamOfStage(IStage* stage) const
 {
@@ -79,6 +80,7 @@ public:
     Assembly* otherAssembly(Edge*) const;
 };
 
+inline Assembly* idc(Assembly* x) { return x ? x : 0; }
 class SimJobStage : public IStage { public: void onAssemblyAdded(Assembly*); void onAssemblyRemoving(Assembly*); };
 typedef std::set<Assembly*> AssemblySet;
 class SleepStage : public IStage {
@@ -164,7 +166,7 @@ void SleepStage::wakeNeighbors(Assembly* assembly, std::deque<Assembly*>& pendin
             if (edgeIsAwake(edge)) {
                 wakeEdge(edge);
                 if (isAffecting(edge)) {
-                    Assembly* other = assembly->otherAssembly(edge);
+                    Assembly* other = idc(idc(idc(idc(idc(idc(idc(assembly->otherAssembly(edge))))))));
                     if (depth < maxDepth) {
                         bool wake = throttling ? true : getState(other) != Sim::AWAKE;
                         if (wake) {
@@ -175,7 +177,7 @@ void SleepStage::wakeNeighbors(Assembly* assembly, std::deque<Assembly*>& pendin
                             }
                         }
                     }
-                    else if (other->inPipeline() && other->inOrDownstreamOfStage(this) && other->getSleepInfo()->state == Sim::SLEEPING_DEEPLY) {
+                    else if (other->inPipeline() && atLeast(other->readStage()) && other->getSleepInfo()->state == Sim::SLEEPING_DEEPLY) {
                         changeAssemblyState(other, Sim::SLEEPING_CHECKING);
                     }
                 }
