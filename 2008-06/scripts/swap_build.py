@@ -145,8 +145,20 @@ def build_group(job):
     except Exception as error:  # noqa: BLE001 - report and continue with the other groups
         return item, [], str(error)[:300]
     keep = {}
+    bindings = item.get("symbols", {})
+    functions = {s: (b, r) for s, b, r in match.coff_functions(obj)} if bindings else {}
+    externals = rebuild.coff_externals(obj) if bindings else {}
     for addr in item["addrs"]:
-        value, symbol, reason, _ = match.check_text(CLIENT, addr, text, obj=obj, minimum=99)
+        if addr in bindings:
+            symbol, value, reason = bindings[addr], 0, "bound symbol is absent or not code-exact"
+            if externals.get(symbol) and symbol in functions:
+                body, relocs = functions[symbol]
+                target, target_relocs, _ = match.target(CLIENT, addr)
+                if len(body) == len(target) and match.exact_match(target, target_relocs, body, relocs):
+                    _, bad = match.data_check(CLIENT, addr, target, match.coff_data_refs(obj, symbol))
+                    value, reason = (99, str(bad)) if bad else (100, "exact")
+        else:
+            value, symbol, reason, _ = match.check_text(CLIENT, addr, text, obj=obj, minimum=99)
         item["results"].append({"address": addr, "score": value, "symbol": symbol,
                                 "reason": str(reason)[:3000] if value != 100 else "exact",
                                 "cause": "exact" if value == 100 else
@@ -193,6 +205,7 @@ def main(module, limit=None):
         shutil.rmtree(folder)
     folder.mkdir(parents=True)
     swaps, failed, results, wanted, found = [], [], [], 0, 0
+    registry_owned = set()
     with ThreadPoolExecutor(8) as pool:
         for n, (item, objs, error) in enumerate(pool.map(build_group, [(module, i, g) for i, g in enumerate(groups)])):
             wanted += len(item["addrs"])
@@ -201,10 +214,22 @@ def main(module, limit=None):
                 failed.append(dict(item, error=error))
                 continue
             for k, (obj, keep) in enumerate(objs):
+                if item.get("native"):
+                    registry_owned.update(keep.values())
+                else:
+                    covered = set(keep.values()) & registry_owned
+                    if covered:
+                        item["covered_by_registry"] = sorted(covered)
+                        keep = {symbol: addr for symbol, addr in keep.items() if addr not in registry_owned}
+                if not keep and not item.get("helper_symbols"):
+                    continue
                 found += len(set(keep.values()))
                 name = "%04d.obj" % n if not k else "%04d-mined.obj" % n
                 (folder / name).write_bytes(obj)
-                swaps.append({"obj": name, "recipe": item["recipe"], "file": item["file"], "keep": keep})
+                entry = {"obj": name, "recipe": item["recipe"], "file": item["file"], "keep": keep}
+                if item.get("provenance"):
+                    entry["provenance"] = item["provenance"]
+                swaps.append(entry)
     (folder / "swaps.json").write_text(json.dumps({"swaps": swaps, "failed": failed}, indent=1))
     # Keep diagnostics even when install preserves the stronger live layer.
     (live.parent / "swap-results.json").write_text(json.dumps({"groups": results, "rejected": rejected,
