@@ -1,4 +1,4 @@
-// from server: 0% by colin
+// from server: 46% by Yeetserama
 struct EnumPropDescriptor {
     void* getset;
     void construct(int arg);
