@@ -115,5 +115,6 @@
   "patches": "rebuild/2008-06/patches/rbxgs-client.json"
  },
  "verified": true,
- "force_verified": true
+ "force_verified": true,
+ "prefer_module_helpers": true
 }

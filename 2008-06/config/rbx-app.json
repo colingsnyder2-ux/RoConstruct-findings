@@ -36,6 +36,9 @@
    "mode": "direct",
    "dir": "rebuild/2008-06/glue/openrbx",
    "files": "*.cpp",
+   "includes_from_recipe": "openrbx-client",
+   "defines_from_recipe": "openrbx-client",
+   "extra_defines": "BOOST_ALL_NO_LIB",
    "flags": "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
   }
  ],
