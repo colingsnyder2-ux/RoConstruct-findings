@@ -236,7 +236,8 @@ def main(module, limit=None):
                                                               "failed": failed}, indent=1))
     print("%s: %d groups, %d/%d addresses found exact, %d groups failed to compile"
           % (module, len(groups), found, wanted, len(failed)))
-    print(install(live, folder))
+    requested_native = {a for g in groups if g.get("native") for a in g["addrs"]}
+    print(install(live, folder, refresh_native=bool(requested_native) and requested_native <= registry_owned))
 
 
 def kept_addresses(folder):
@@ -244,11 +245,11 @@ def kept_addresses(folder):
     return {a for s in json.loads(path.read_text())["swaps"] for a in s["keep"].values()} if path.exists() else set()
 
 
-def install(live, built):
-    """Replace the live layer only when the new one loses no exact address and gains at least one. Addresses the new
-    plan no longer lists (now owned elsewhere, or a regrouped compile) keep their verified objects from the live layer."""
+def install(live, built, refresh_native=False):
+    """Preserve every exact address; require gains unless a complete native replay requests a context refresh.
+    Addresses omitted by the new plan retain their verified objects from the live layer."""
     before, after = kept_addresses(live), kept_addresses(built)
-    if before - after and after - before:
+    if before - after and (after - before or refresh_native):
         lost, data = before - after, json.loads((built / "swaps.json").read_text())
         for item in json.loads((live / "swaps.json").read_text())["swaps"]:
             keep = {s: a for s, a in item["keep"].items() if a in lost}
@@ -259,7 +260,7 @@ def install(live, built):
                 lost -= set(keep.values())
         (built / "swaps.json").write_text(json.dumps(data, indent=1))
         after = kept_addresses(built)
-    if before - after or not after - before:
+    if before - after or (not after - before and not refresh_native):
         shutil.rmtree(built)
         return "kept existing layer (%d addresses; new layer lost %d, gained %d)" % (
             len(before), len(before - after), len(after - before))

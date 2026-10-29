@@ -1,0 +1,36 @@
+{
+ "module": "Boost",
+ "date": "2026-10-29",
+ "forced_symbols": 31,
+ "forced_source_kind_symbols": 30,
+ "forced_generic_helpers": 1,
+ "generic_helper_target": "00572690",
+ "all_forced_code_data_exact_and_actual_verified_owned": true,
+ "new_actual_linked_source_code_data_exact": 43,
+ "new_masked_address_candidates": 90,
+ "masked_prior_addresses_lost": 0,
+ "baseline_masked_unique": 346,
+ "final_masked_unique": 436,
+ "swap_address_representatives_before": 34,
+ "swap_address_representatives_after": 36,
+ "new_tss_representatives": [
+  "005a6ff0",
+  "005a7570"
+ ],
+ "unresolved": [],
+ "runtime_exit": 0,
+ "thread_cleanups": 3,
+ "thread_isolation_checks": 2,
+ "program_options_cli_config_invalid_value_tested": true,
+ "placed_distinct": 404,
+ "python_tests_passed": 1088,
+ "skipped": 3,
+ "focused_tests_passed": 73,
+ "new_server_credits": 0,
+ "limitations": [
+  "Of90 masked candidate addresses,25 fail actual linked code/data exactness and22 are supplied only by test-harness header instantiations; only43 library-owned gains credited.",
+  "One forced symbol is a generic compiler helper, not a source-function attribution.",
+  "BoostExtra newer-version generated analogs untouched; no blanket shared-symbol substitution."
+ ],
+ "additional_harness_only_exact_bodies": 22
+}

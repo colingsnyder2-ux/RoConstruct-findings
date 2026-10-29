@@ -1,0 +1,30 @@
+[
+ {
+  "symbol": "?cleanup@tss@detail@boost@@QAEXPAX@Z",
+  "address": "005a6ff0",
+  "already_selected": false,
+  "size": 137,
+  "twins": 1
+ },
+ {
+  "symbol": "?get@tss@detail@boost@@QBEPAXXZ",
+  "address": "005a7570",
+  "already_selected": false,
+  "size": 94,
+  "twins": 1
+ },
+ {
+  "symbol": "?init@tss@detail@boost@@AAEXPAV?$function1@XPAXV?$allocator@Vfunction_base@boost@@@std@@@3@@Z",
+  "address": "005a75d0",
+  "already_selected": true,
+  "size": 212,
+  "twins": 1
+ },
+ {
+  "symbol": "?set@tss@detail@boost@@QAEXPAX@Z",
+  "address": "005a76b0",
+  "already_selected": true,
+  "size": 177,
+  "twins": 1
+ }
+]

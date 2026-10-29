@@ -1,0 +1,312 @@
+[
+ {
+  "symbol": "??$?0V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@GU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@G@std@@@2@@std@@@?$shared_ptr@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@GU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@G@std@@@2@@std@@@boost@@QAE@PAV?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@GU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@G@std@@@2@@std@@@Z",
+  "address": "004acdf0",
+  "actual_object": "verified_0001.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "??$?4V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@any@boost@@QAEAAV01@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
+  "address": "0056d220",
+  "actual_object": "verified_0005.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "??$_Copy_backward_opt@PAV?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@PAV12@@std@@YAPAV?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@PAV12@00Urandom_access_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+  "address": "0055f4b0",
+  "actual_object": "verified_0003.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "??$_Copy_backward_opt@PAV?$shared_ptr@Voption_description@program_options@boost@@@boost@@PAV12@@std@@YAPAV?$shared_ptr@Voption_description@program_options@boost@@@boost@@PAV12@00Urandom_access_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+  "address": "004120b0",
+  "actual_object": "verified_0004.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "??$_Destroy_range@V?$allocator@V?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@@std@@@std@@YAXPAV?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@0AAV?$allocator@V?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@@0@U_Nonscalar_ptr_iterator_tag@0@@Z",
+  "address": "0055f5b0",
+  "actual_object": "verified_0003.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "??$_Fill@PAV?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@V12@@std@@YAXPAV?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@0ABV12@@Z",
+  "address": "0055ebf0",
+  "actual_object": "verified_0003.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "??$_Uninit_copy@PAV?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@PAV12@V?$allocator@V?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@@std@@@std@@YAPAV?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@PAV12@00AAV?$allocator@V?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+  "address": "0055ed20",
+  "actual_object": "verified_0003.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "??$_Uninit_fill_n@PAV?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@IV12@V?$allocator@V?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@@std@@@std@@YAXPAV?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@IABV12@AAV?$allocator@V?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+  "address": "0055f5f0",
+  "actual_object": "verified_0003.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "??$checked_delete@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@GU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@G@std@@@2@@std@@@boost@@YAXPAV?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@GU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@G@std@@@2@@std@@@Z",
+  "address": "0041ae10",
+  "actual_object": "verified_0001.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "??0?$_Tree@V?$_Tmap_traits@HV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$less@H@2@V?$allocator@U?$pair@$$CBHV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@@2@$0A@@std@@@std@@QAE@ABV01@@Z",
+  "address": "006515e0",
+  "actual_object": "verified_live-live-0006.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "??0abstract_variables_map@program_options@boost@@QAE@XZ",
+  "address": "0071c2a0",
+  "actual_object": "verified_0006.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "??0data@?$object_cache@KV?$w32_regex_traits_implementation@G@re_detail@boost@@@boost@@QAE@XZ",
+  "address": "0054feb0",
+  "actual_object": "verified_live-live-live-0010.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "??0positional_options_description@program_options@boost@@QAE@XZ",
+  "address": "00658100",
+  "actual_object": "verified_0017.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "??1?$vector@V?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@V?$allocator@V?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@@std@@@std@@QAE@XZ",
+  "address": "00443cf0",
+  "actual_object": "verified_0003.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "??1RegEx@boost@@QAE@XZ",
+  "address": "0042d960",
+  "actual_object": "verified_0007.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "??9?$basic_regex@DU?$regex_traits@DV?$w32_regex_traits@D@boost@@@boost@@@boost@@QBI_NABV01@@Z",
+  "address": "0041f9a0",
+  "actual_object": "verified_0008.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?_Buynode@?$_Tree@V?$_Tmap_traits@Vstored_group@detail@signals@boost@@V?$list@Uconnection_slot_pair@detail@signals@boost@@V?$allocator@Uconnection_slot_pair@detail@signals@boost@@@std@@@std@@V?$function2@_NVstored_group@detail@signals@boost@@V1234@V?$allocator@Vfunction_base@boost@@@std@@@4@V?$allocator@U?$pair@$$CBVstored_group@detail@signals@boost@@V?$list@Uconnection_slot_pair@detail@signals@boost@@V?$allocator@Uconnection_slot_pair@detail@signals@boost@@@std@@@std@@@std@@@6@$0A@@std@@@std@@IAEPAU_Node@?$_Tree_nod@V?$_Tmap_traits@Vstored_group@detail@signals@boost@@V?$list@Uconnection_slot_pair@detail@signals@boost@@V?$allocator@Uconnection_slot_pair@detail@signals@boost@@@std@@@std@@V?$function2@_NVstored_group@detail@signals@boost@@V1234@V?$allocator@Vfunction_base@boost@@@std@@@4@V?$allocator@U?$pair@$$CBVstored_group@detail@signals@boost@@V?$list@Uconnection_slot_pair@detail@signals@boost@@V?$allocator@Uconnection_slot_pair@detail@signals@boost@@@std@@@std@@@std@@@6@$0A@@std@@@2@PAU342@00ABU?$pair@$$CBVstored_group@detail@signals@boost@@V?$list@Uconnection_slot_pair@detail@signals@boost@@V?$allocator@Uconnection_slot_pair@detail@signals@boost@@@std@@@std@@@2@D@Z",
+  "address": "005717d0",
+  "actual_object": "verified_0011.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?_Copy@?$_Tree@V?$_Tmap_traits@HV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$less@H@2@V?$allocator@U?$pair@$$CBHV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@@2@$0A@@std@@@std@@IAEPAU_Node@?$_Tree_nod@V?$_Tmap_traits@HV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$less@H@2@V?$allocator@U?$pair@$$CBHV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@@2@$0A@@std@@@2@PAU342@0@Z",
+  "address": "00651420",
+  "actual_object": "verified_live-live-0006.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?_Destroy@?$vector@V?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@V?$allocator@V?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@@std@@@std@@IAEXPAV?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@0@Z",
+  "address": "00443c40",
+  "actual_object": "verified_0003.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?_Insert_n@?$vector@V?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@V?$allocator@V?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@@std@@@std@@IAEXV?$_Vector_const_iterator@V?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@V?$allocator@V?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@@std@@@2@IABV?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@@Z",
+  "address": "00560c20",
+  "actual_object": "verified_0003.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?_Tidy@?$vector@V?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@V?$allocator@V?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@@std@@@std@@IAEXXZ",
+  "address": "004a7da0",
+  "actual_object": "verified_0003.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?cleanup@tss@detail@boost@@QAEXPAX@Z",
+  "address": "005a6ff0",
+  "actual_object": "verified_0000.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?clear@?$list@Vconnection@signals@boost@@V?$allocator@Vconnection@signals@boost@@@std@@@std@@QAEXXZ",
+  "address": "0041ab00",
+  "actual_object": "verified_0012.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?dispose@?$sp_counted_impl_p@Um_imp@?$basic_filesystem_error@V?$basic_path@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@Upath_traits@filesystem@boost@@@filesystem@boost@@@filesystem@boost@@@detail@boost@@UAEXXZ",
+  "address": "0042a890",
+  "actual_object": "verified_live-live-live-0001.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?dispose@?$sp_counted_impl_p@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@GU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@G@std@@@2@@std@@@detail@boost@@UAEXXZ",
+  "address": "0041aec0",
+  "actual_object": "verified_0001.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?erase@?$_Tree@V?$_Tmap_traits@KV?$_Iterator@$00@?$list@U?$pair@V?$shared_ptr@$$CBV?$w32_regex_traits_implementation@D@re_detail@boost@@@boost@@PBK@std@@V?$allocator@U?$pair@V?$shared_ptr@$$CBV?$w32_regex_traits_implementation@D@re_detail@boost@@@boost@@PBK@std@@@2@@std@@U?$less@K@3@V?$allocator@U?$pair@$$CBKV?$_Iterator@$00@?$list@U?$pair@V?$shared_ptr@$$CBV?$w32_regex_traits_implementation@D@re_detail@boost@@@boost@@PBK@std@@V?$allocator@U?$pair@V?$shared_ptr@$$CBV?$w32_regex_traits_implementation@D@re_detail@boost@@@boost@@PBK@std@@@2@@std@@@std@@@3@$0A@@std@@@std@@QAEIABK@Z",
+  "address": "00405ce0",
+  "actual_object": "verified_0008.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?get@tss@detail@boost@@QBEPAXXZ",
+  "address": "005a7570",
+  "actual_object": "verified_0000.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?init@tss@detail@boost@@AAEXPAV?$function1@XPAXV?$allocator@Vfunction_base@boost@@@std@@@3@@Z",
+  "address": "005a75d0",
+  "actual_object": "verified_0000.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?init_threadmon_mutex@?A0xe7593b88@@YAXXZ",
+  "address": "00572690",
+  "actual_object": "verified_0016.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "gen"
+ },
+ {
+  "symbol": "?new_critical_section@?A0x87256379@@YAPAXXZ",
+  "address": "00594c10",
+  "actual_object": "verified_0014.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ },
+ {
+  "symbol": "?set@tss@detail@boost@@QAEXPAX@Z",
+  "address": "005a76b0",
+  "actual_object": "verified_0000.obj",
+  "verified_owner": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "target_kind": "code"
+ }
+]
