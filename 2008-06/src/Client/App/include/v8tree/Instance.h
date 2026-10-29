@@ -473,6 +473,25 @@ protected:
 			return NULL;
 		}
 
+		template<typename Type>
+		Type* findFirstDescendentOfType() const
+		{
+			if (children)
+			{
+				std::vector<boost::shared_ptr<Instance>>::const_iterator end = children->end();
+				std::vector<boost::shared_ptr<Instance>>::const_iterator iter = children->begin();
+				for (; iter != end; iter++)
+				{
+					Instance* child = (*iter).get();
+					if (Type* result = dynamic_cast<Type*>(child))
+						return result;
+					if (Type* result = child->findFirstDescendentOfType<Type>())
+						return result;
+				}
+			}
+			return NULL;
+		}
+
 		template<typename Function>
 		void visitChildren(Function func) const;
 

@@ -26,6 +26,7 @@ namespace RBX
 		: VerbContainer(NULL),
 		  dataState(dataState),
 		  unknown0x3cc(NULL),
+		  cameraTemplate(Creatable::create<Camera>()),
 		  profileWorkspaceStep(new Profiling::CodeProfiler("DataModel Step")),
 		  profileWorkspaceStepInner(new Profiling::CodeProfiler("Workspace Step")),
 		  profileWorkspaceAssemble(new Profiling::CodeProfiler("Workspace Assemble")),
@@ -345,9 +346,6 @@ namespace RBX
 	{
 		if (value != currentCamera.get())
 		{
-			if (currentCamera)
-				currentCamera->setParent(NULL);
-
 			currentCamera = shared_from(value);
 			raisePropertyChanged(currentCameraProxyProp);
 		}
@@ -488,8 +486,23 @@ namespace RBX
 		}
 	}
 
+	void Workspace::checkCamera()
+	{
+		if (currentCamera && isAncestorOf(currentCamera.get()))
+			return;
+
+		boost::shared_ptr<Camera> camera = shared_from(findFirstDescendentOfType<Camera>());
+		if (!camera.get())
+		{
+			camera = boost::shared_polymorphic_downcast<Camera>(cameraTemplate->clone());
+			camera->setParent(this);
+		}
+		setCamera(camera.get());
+	}
+
 	void Workspace::render3dAdorn(Adorn* adorn)
 	{
+		checkCamera();
 		viewPort = adorn->getViewport();
 		ServiceClient<Selection> sel(this);
 

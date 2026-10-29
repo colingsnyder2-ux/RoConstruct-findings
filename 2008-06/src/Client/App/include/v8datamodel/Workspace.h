@@ -47,8 +47,8 @@ namespace RBX
 		std::set<Script*> pendingScripts;
 		ScriptContext* scriptContext;
 		bool inMouselookMode;
-		boost::shared_ptr<void> unknown0x3fc; // 0x3fc; pointee type unknown
 		mutable boost::shared_ptr<Camera> currentCamera;
+		boost::shared_ptr<Camera> cameraTemplate;
 		double unknown0x410[3]; // 0x410..0x428, zeroed by the constructor; names unknown
 	public:
 		boost::scoped_ptr<Profiling::CodeProfiler> profileWorkspaceStep; // "DataModel Step"
@@ -123,6 +123,9 @@ namespace RBX
 		virtual const G3D::GCamera& getGCamera() const;
 		virtual Camera* getCamera() const;
 		void setCamera(Camera* value);
+	private:
+		void checkCamera();
+	public:
 		void setImageServerView(const G3D::Rect2D& viewPortRect);
 		void zoomToExtents();
 		void onWrapMouse(const G3D::Vector2&);

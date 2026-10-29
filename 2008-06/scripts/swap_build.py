@@ -19,7 +19,7 @@ from roc import match  # noqa: E402
 CLIENT = "2008-06"
 RECIPES = {"RbxgsApp": {"rbxgs", "rbxgs-dll"}, "RbxApp": {"openrbx-client", "openrbx-client-dll"}}
 RECIPE_PREFIXES = {"XTP": ("xtp-11.2.2",), "G3D": ("g3d-6.09",), "Boost": ("boost-1.34.1",), "libpng": ("libpng-1.2",),
-                   "Lua": ("lua-5.1",)}
+                   "Lua": ("lua-5.1",), "Ogre": ("ogre-",)}
 
 
 def of_module(module, recipe):

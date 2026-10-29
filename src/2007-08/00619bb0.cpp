@@ -1,4 +1,4 @@
-// from server: 61% by colin
+// from server: 62% by Yeetserama
 struct Body {
     char pad0[4];
     char flag4;
@@ -36,8 +36,7 @@ void RotateConnector::computeForce(bool throttling)
 
     float angle = 0.0f;
 
-    // call computeJointAngle-like helper at 0x6199f0
-    extern float computeJointAngleHelper(RotateConnector* self, float* out, float* a, float* b);
+    extern void computeJointAngleHelper(RotateConnector* self, float* out, float* a, float* b);
     computeJointAngleHelper(this, normal, &angle, &angle);
 
     if (zeroVelocity) {

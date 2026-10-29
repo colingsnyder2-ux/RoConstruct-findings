@@ -1106,6 +1106,27 @@
     "user": "colin"
   },
   {
+    "addr": "005a5200",
+    "client": "2008-06",
+    "job": "c13640743d614ab99833830c9b3f3078",
+    "model": "gpt-6.1-sol",
+    "user": "colin"
+  },
+  {
+    "addr": "005a5710",
+    "client": "2008-06",
+    "job": "c13640743d614ab99833830c9b3f3078",
+    "model": "gpt-6.1-sol",
+    "user": "colin"
+  },
+  {
+    "addr": "005a59e0",
+    "client": "2008-06",
+    "job": "c13640743d614ab99833830c9b3f3078",
+    "model": "gpt-6.1-sol",
+    "user": "colin"
+  },
+  {
     "addr": "005a80d0",
     "client": "2008-06",
     "job": "a7480fdea7e547a99dac0c2f27fdf944",

@@ -2036,5 +2036,37 @@
     "\t\t\tmodifiers.push_back(modifier);\n\t}\n\n\tvoid ModelInstance::onChildRemoving(Instance* child)\n\t{\n\t\tIModelModifier* modifier = dynamic_cast<IModelModifier*>(child);\n\t\tif (modifier)\n\t\t\tmodifiers.erase(std::find(modifiers.begin(), modifiers.end(), modifier));\n\t}\n"
    ]
   ]
+ },
+ {
+  "App/include/v8tree/Instance.h": [
+   [
+    "\t\ttemplate<typename Function>\n\t\tvoid visitChildren(Function func) const;",
+    "\t\ttemplate<typename Type>\n\t\tType* findFirstDescendentOfType() const\n\t\t{\n\t\t\tif (children)\n\t\t\t{\n\t\t\t\tstd::vector<boost::shared_ptr<Instance>>::const_iterator end = children->end();\n\t\t\t\tstd::vector<boost::shared_ptr<Instance>>::const_iterator iter = children->begin();\n\t\t\t\tfor (; iter != end; iter++)\n\t\t\t\t{\n\t\t\t\t\tInstance* child = (*iter).get();\n\t\t\t\t\tif (Type* result = dynamic_cast<Type*>(child))\n\t\t\t\t\t\treturn result;\n\t\t\t\t\tif (Type* result = child->findFirstDescendentOfType<Type>())\n\t\t\t\t\t\treturn result;\n\t\t\t\t}\n\t\t\t}\n\t\t\treturn NULL;\n\t\t}\n\n\t\ttemplate<typename Function>\n\t\tvoid visitChildren(Function func) const;"
+   ]
+  ],
+  "App/v8datamodel/Workspace.cpp": [
+   [
+    "\t\t\tif (currentCamera)\n\t\t\t\tcurrentCamera->setParent(NULL);\n\n",
+    ""
+   ],
+   [
+    "\tvoid Workspace::render3dAdorn(Adorn* adorn)\n\t{",
+    "\tvoid Workspace::checkCamera()\n\t{\n\t\tif (currentCamera && isAncestorOf(currentCamera.get()))\n\t\t\treturn;\n\n\t\tboost::shared_ptr<Camera> camera = shared_from(findFirstDescendentOfType<Camera>());\n\t\tif (!camera.get())\n\t\t{\n\t\t\tcamera = boost::shared_polymorphic_downcast<Camera>(cameraTemplate->clone());\n\t\t\tcamera->setParent(this);\n\t\t}\n\t\tsetCamera(camera.get());\n\t}\n\n\tvoid Workspace::render3dAdorn(Adorn* adorn)\n\t{\n\t\tcheckCamera();"
+   ],
+   [
+    "\t\t  unknown0x3cc(NULL),",
+    "\t\t  unknown0x3cc(NULL),\n\t\t  cameraTemplate(Creatable::create<Camera>()),"
+   ]
+  ],
+  "App/include/v8datamodel/Workspace.h": [
+   [
+    "\t\tboost::shared_ptr<void> unknown0x3fc; // 0x3fc; pointee type unknown\n\t\tmutable boost::shared_ptr<Camera> currentCamera;",
+    "\t\tmutable boost::shared_ptr<Camera> currentCamera;\n\t\tboost::shared_ptr<Camera> cameraTemplate;"
+   ],
+   [
+    "\t\tvoid setCamera(Camera* value);",
+    "\t\tvoid setCamera(Camera* value);\n\tprivate:\n\t\tvoid checkCamera();\n\tpublic:"
+   ]
+  ]
  }
 ]

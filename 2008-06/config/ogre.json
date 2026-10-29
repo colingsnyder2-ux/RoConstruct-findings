@@ -1,0 +1,7 @@
+{
+ "name": "Ogre",
+ "description": "Ogre code the 2008-06 exe links statically (Roblox's Ogre forks such as RbxSceneManager/RbxEntity, and header templates); OgreMain itself is rgmain.dll. No upstream layer: only exact mined ogre-* sources, swapped in by swap_build.py (verified layer).",
+ "layers": [],
+ "test": "empty_main",
+ "verified": true
+}

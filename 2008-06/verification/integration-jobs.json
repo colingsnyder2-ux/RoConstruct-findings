@@ -6589,5 +6589,134 @@
     "unit": "RBX::ModelInstance",
     "updated": 1793261477.1322255,
     "user": "nuck16"
+  },
+  {
+    "created": 1793263438.5391984,
+    "id": "c13640743d614ab99833830c9b3f3078",
+    "model": "gpt-6.1-sol",
+    "patches": {
+      "App/include/v8datamodel/Workspace.h": [
+        [
+          "\t\tboost::shared_ptr<void> unknown0x3fc; // 0x3fc; pointee type unknown\n\t\tmutable boost::shared_ptr<Camera> currentCamera;",
+          "\t\tmutable boost::shared_ptr<Camera> currentCamera;\n\t\tboost::shared_ptr<Camera> cameraTemplate;"
+        ],
+        [
+          "\t\tvoid setCamera(Camera* value);",
+          "\t\tvoid setCamera(Camera* value);\n\tprivate:\n\t\tvoid checkCamera();\n\tpublic:"
+        ]
+      ],
+      "App/include/v8tree/Instance.h": [
+        [
+          "\t\ttemplate<typename Function>\n\t\tvoid visitChildren(Function func) const;",
+          "\t\ttemplate<typename Type>\n\t\tType* findFirstDescendentOfType() const\n\t\t{\n\t\t\tif (children)\n\t\t\t{\n\t\t\t\tstd::vector<boost::shared_ptr<Instance>>::const_iterator end = children->end();\n\t\t\t\tstd::vector<boost::shared_ptr<Instance>>::const_iterator iter = children->begin();\n\t\t\t\tfor (; iter != end; iter++)\n\t\t\t\t{\n\t\t\t\t\tInstance* child = (*iter).get();\n\t\t\t\t\tif (Type* result = dynamic_cast<Type*>(child))\n\t\t\t\t\t\treturn result;\n\t\t\t\t\tif (Type* result = child->findFirstDescendentOfType<Type>())\n\t\t\t\t\t\treturn result;\n\t\t\t\t}\n\t\t\t}\n\t\t\treturn NULL;\n\t\t}\n\n\t\ttemplate<typename Function>\n\t\tvoid visitChildren(Function func) const;"
+        ]
+      ],
+      "App/v8datamodel/Workspace.cpp": [
+        [
+          "\t\t\tif (currentCamera)\n\t\t\t\tcurrentCamera->setParent(NULL);\n\n",
+          ""
+        ],
+        [
+          "\tvoid Workspace::render3dAdorn(Adorn* adorn)\n\t{",
+          "\tvoid Workspace::checkCamera()\n\t{\n\t\tif (currentCamera && isAncestorOf(currentCamera.get()))\n\t\t\treturn;\n\n\t\tboost::shared_ptr<Camera> camera = shared_from(findFirstDescendentOfType<Camera>());\n\t\tif (!camera.get())\n\t\t{\n\t\t\tcamera = boost::shared_polymorphic_downcast<Camera>(cameraTemplate->clone());\n\t\t\tcamera->setParent(this);\n\t\t}\n\t\tsetCamera(camera.get());\n\t}\n\n\tvoid Workspace::render3dAdorn(Adorn* adorn)\n\t{\n\t\tcheckCamera();"
+        ],
+        [
+          "\t\t  unknown0x3cc(NULL),",
+          "\t\t  unknown0x3cc(NULL),\n\t\t  cameraTemplate(Creatable::create<Camera>()),"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "05640b8ccb6389f516d2d3c5fea5665d6a724158b4a26eab88a8806db5073ff6",
+      "credits": 3,
+      "distinct_after": 10006,
+      "distinct_before": 10003,
+      "gains": [
+        "005a5200",
+        "005a5710",
+        "005a59e0"
+      ],
+      "input_hash": "6c46b3d114b6c6079fde7f21df267a1187812d5b11869421203cbe11ed9e6b1d",
+      "losses": [],
+      "new_distinct": [
+        "005a5200",
+        "005a5710",
+        "005a59e0"
+      ],
+      "overlay_hash": "17014d48cd6117f88cb533ce017e67b0633f28d0d7836b0682b15052c8c0e160",
+      "owned_after": 3354,
+      "owned_before": 3351,
+      "rebased": false,
+      "submitted_revision": "05640b8ccb6389f516d2d3c5fea5665d6a724158b4a26eab88a8806db5073ff6"
+    },
+    "state": "accepted",
+    "unit": "RBX::Soundscape::SoundService",
+    "updated": 1793264460.7588413,
+    "user": "colin"
+  },
+  {
+    "created": 1793265920.6243162,
+    "id": "c56c7dbe1b29497fab60da63ed13ef16",
+    "model": "claude-opus-5-5",
+    "patches": {
+      "App/v8world/Joint.cpp": [
+        [
+          "\t\t\tWorld* world = getWorld();\n\t\t\tif (world && getPrimitive(i))",
+          "\t\t\tWorld* world = getWorld2008();\n\t\t\tif (world && getPrimitive(i))"
+        ]
+      ],
+      "App/v8world/MotorJoint.cpp": [
+        [
+          "\t\t\tcurrentAngle = value;\n\t\t\tWorld* world = getWorld();\n\t\t\tif (world)\n\t\t\t\tworld->onMotorAngleChanged(this);\n\t\t\tsetJointAngle(value);",
+          "\t\t\tcurrentAngle = value;\n\t\t\tif (getWorld2008())\n\t\t\t\tlink->setJointAngle(value);"
+        ]
+      ]
+    },
+    "phase": "baseline: building",
+    "receipt": {},
+    "state": "verifying",
+    "unit": "RBX::RigidJoint, RBX::MotorJoint",
+    "updated": 1793265957.8669496,
+    "user": "nuck16"
+  },
+  {
+    "created": 1793266096.561354,
+    "id": "90f39970ace4420c8682e0e1a27e1b10",
+    "model": "claude-opus-5-5",
+    "patches": {
+      "App/util/Math.cpp": [
+        [
+          "\tfloat Math::angleToE0(const G3D::Vector2& v)",
+          "\tfloat Math::elevationAngle(const G3D::Vector3& v)\n\t{\n\t\tif (v.y >= 1.0f)\n\t\t\treturn piHalf();\n\t\tif (v.y <= -1.0f)\n\t\t\treturn -piHalf();\n\t\treturn asin(v.y);\n\t}\n\n\tfloat Math::angleToE0(const G3D::Vector2& v)"
+        ]
+      ]
+    },
+    "phase": "queued",
+    "receipt": {},
+    "state": "queued",
+    "unit": "RBX::Message",
+    "updated": 1793266096.561354,
+    "user": "nuck16"
+  },
+  {
+    "created": 1793266451.8868377,
+    "id": "3b1c84505df04ad0ab701d726bc59ff6",
+    "model": "claude-opus-5-5",
+    "patches": {
+      "App/util/Math.cpp": [
+        [
+          "\t\tstatic G3D::Matrix3 tiltZ(0, 1, 0, -1, 0, 0, 0, 0, 1);\n\t\treturn tiltZ;\n\t}",
+          "\t\tstatic G3D::Matrix3 tiltZ(0, 1, 0, -1, 0, 0, 0, 0, 1);\n\t\treturn tiltZ;\n\t}\n\n\tconst G3D::Matrix3& Math::matrixTiltNegativeZ()\n\t{\n\t\tstatic G3D::Matrix3 tiltNegativeZ(0, -1, 0, 1, 0, 0, 0, 0, 1);\n\t\treturn tiltNegativeZ;\n\t}"
+        ]
+      ]
+    },
+    "phase": "queued",
+    "receipt": {},
+    "state": "queued",
+    "unit": "RBX::Soundscape::SoundService",
+    "updated": 1793266451.8868377,
+    "user": "nuck16"
   }
 ]

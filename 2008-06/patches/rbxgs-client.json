@@ -99,6 +99,10 @@
   [
    "\t\t\t\t\t public Notifier<Instance, PropertyChanged>,\n\t\t\t\t\t public boost::enable_shared_from_this<Instance>,\n                     public boost::noncopyable\n",
    "\t\t\t\t\t public Notifier<Instance, PropertyChanged>,\n                     public boost::noncopyable\n"
+  ],
+  [
+   "\t\ttemplate<typename Function>\n\t\tvoid visitChildren(Function func) const;",
+   "\t\ttemplate<typename Type>\n\t\tType* findFirstDescendentOfType() const\n\t\t{\n\t\t\tif (children)\n\t\t\t{\n\t\t\t\tstd::vector<boost::shared_ptr<Instance>>::const_iterator end = children->end();\n\t\t\t\tstd::vector<boost::shared_ptr<Instance>>::const_iterator iter = children->begin();\n\t\t\t\tfor (; iter != end; iter++)\n\t\t\t\t{\n\t\t\t\t\tInstance* child = (*iter).get();\n\t\t\t\t\tif (Type* result = dynamic_cast<Type*>(child))\n\t\t\t\t\t\treturn result;\n\t\t\t\t\tif (Type* result = child->findFirstDescendentOfType<Type>())\n\t\t\t\t\t\treturn result;\n\t\t\t\t}\n\t\t\t}\n\t\t\treturn NULL;\n\t\t}\n\n\t\ttemplate<typename Function>\n\t\tvoid visitChildren(Function func) const;"
   ]
  ],
  "App/include/v8datamodel/MouseCommand.h": [
@@ -855,6 +859,14 @@
   [
    "\t\tUIEvent idleMouseEvent;\n\t\tmutable boost::shared_ptr<Camera> currentCamera;\n\t\tbool isSimulating;\n\t\tstd::set<Script*> pendingScripts;\n\t\tScriptContext* scriptContext;\n\t\tbool inMouselookMode;\n\tpublic:\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profileWorkspaceStep;\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profileRunServiceStepped;\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profileRunServiceHeartbeat;\n\t\tboost::scoped_ptr<Profiling::ThreadProfiler> profileRun;\n",
    "\t\tUIEvent idleMouseEvent;\n\t\tvoid* unknown0x3cc; // 0x3cc = 0; name and type unknown\n\t\tbool isSimulating;\n\t\tstd::set<Script*> pendingScripts;\n\t\tScriptContext* scriptContext;\n\t\tbool inMouselookMode;\n\t\tboost::shared_ptr<void> unknown0x3fc; // 0x3fc; pointee type unknown\n\t\tmutable boost::shared_ptr<Camera> currentCamera;\n\t\tdouble unknown0x410[3]; // 0x410..0x428, zeroed by the constructor; names unknown\n\tpublic:\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profileWorkspaceStep; // \"DataModel Step\"\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profileWorkspaceStepInner; // \"Workspace Step\"\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profileWorkspaceAssemble; // \"Workspace Assemble\"\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profileRunServiceStepped;\n\t\tboost::scoped_ptr<Profiling::CodeProfiler> profileRunServiceHeartbeat;\n"
+  ],
+  [
+   "\t\tboost::shared_ptr<void> unknown0x3fc; // 0x3fc; pointee type unknown\n\t\tmutable boost::shared_ptr<Camera> currentCamera;",
+   "\t\tmutable boost::shared_ptr<Camera> currentCamera;\n\t\tboost::shared_ptr<Camera> cameraTemplate;"
+  ],
+  [
+   "\t\tvoid setCamera(Camera* value);",
+   "\t\tvoid setCamera(Camera* value);\n\tprivate:\n\t\tvoid checkCamera();\n\tpublic:"
   ]
  ],
  "App/v8datamodel/Workspace.cpp": [
@@ -897,6 +909,18 @@
   [
    "\t\tRBXASSERT(newMouseCommand);\n\n\t\tif (newMouseCommand != currentCommand.get())\n\t\t{\n\t\t\tRBXASSERT(!currentCommand.get() || !currentCommand->captured());\n\n\t\t\tcurrentCommand.reset(newMouseCommand);",
    "\t\tif (newMouseCommand != currentCommand.get())\n\t\t{\n\t\t\tcurrentCommand.reset(newMouseCommand);"
+  ],
+  [
+   "\t\t\tif (currentCamera)\n\t\t\t\tcurrentCamera->setParent(NULL);\n\n",
+   ""
+  ],
+  [
+   "\tvoid Workspace::render3dAdorn(Adorn* adorn)\n\t{",
+   "\tvoid Workspace::checkCamera()\n\t{\n\t\tif (currentCamera && isAncestorOf(currentCamera.get()))\n\t\t\treturn;\n\n\t\tboost::shared_ptr<Camera> camera = shared_from(findFirstDescendentOfType<Camera>());\n\t\tif (!camera.get())\n\t\t{\n\t\t\tcamera = boost::shared_polymorphic_downcast<Camera>(cameraTemplate->clone());\n\t\t\tcamera->setParent(this);\n\t\t}\n\t\tsetCamera(camera.get());\n\t}\n\n\tvoid Workspace::render3dAdorn(Adorn* adorn)\n\t{\n\t\tcheckCamera();"
+  ],
+  [
+   "\t\t  unknown0x3cc(NULL),",
+   "\t\t  unknown0x3cc(NULL),\n\t\t  cameraTemplate(Creatable::create<Camera>()),"
   ]
  ],
  "App/include/script/ScriptContext.h": [
