@@ -1,13 +1,25 @@
-// from server: 72% by atomic.potato
+// roc 2010-06 00433580  unit: _NVCXTPPropertyGridItemBool::?$XItem  size: 21 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 00433580
+//
+// 00433580  8b542404             mov edx, dword ptr [esp + 4]
+// 00433584  0fb612               movzx edx, byte ptr [edx]
+// 00433587  8b01                 mov eax, dword ptr [ecx]
+// 00433589  8b80e4000000         mov eax, dword ptr [eax + 0xe4]
+// 0043358f  89542404             mov dword ptr [esp + 4], edx
+// 00433593  ffe0                 jmp eax
+// copied from an identical function in another client (function ?XItem@S@@QAEXPAE@Z)
+
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 struct S
 {
-    typedef void (__thiscall *Fn)(S *, int, unsigned char);
+    int (**vtable)();
 
-    Fn *vtable;
-    void f(unsigned char *value);
+    void XItem(unsigned char *value);
 };
 
-void S::f(unsigned char *value)
+void S::XItem(unsigned char *value)
 {
-    ((Fn)vtable[0x39])(this, 0, *value);
+    value = (unsigned char *)(*value);
+    ((void (__thiscall *)(S *, unsigned char *))vtable[0x39])(this, value);
 }

@@ -1,39 +1,61 @@
-// from server: 53% by colin
-// roc-lang: cpp
-// roc-cl: 50727
+// roc 2012-06 00477d20  unit: CRobloxControlColorSelector  size: 66 bytes
+// Make this compile to the exact bytes below, then: roc check 2012-06 00477d20
+//
+// 00477d20  53                   push ebx
+// 00477d21  8b5c2408             mov ebx, dword ptr [esp + 8]
+// 00477d25  56                   push esi
+// 00477d26  8b742410             mov esi, dword ptr [esp + 0x10]
+// 00477d2a  3bde                 cmp ebx, esi
+// 00477d2c  742d                 je 0x477d5b
+// 00477d2e  57                   push edi
+// 00477d2f  8b7c2418             mov edi, dword ptr [esp + 0x18]
+// 00477d33  8b46f4               mov eax, dword ptr [esi - 0xc]
+// 00477d36  83ee0c               sub esi, 0xc
+// 00477d39  83ef0c               sub edi, 0xc
+// 00477d3c  8907                 mov dword ptr [edi], eax
+// 00477d3e  8b4e04               mov ecx, dword ptr [esi + 4]
+// 00477d41  8d5608               lea edx, [esi + 8]
+// 00477d44  894f04               mov dword ptr [edi + 4], ecx
+// 00477d47  52                   push edx
+// 00477d48  8d4f08               lea ecx, [edi + 8]
+// 00477d4b  ff152045b200         call dword ptr [0xb24520]
+// 00477d51  3bf3                 cmp esi, ebx
+// 00477d53  75de                 jne 0x477d33
+// 00477d55  8bc7                 mov eax, edi
+// 00477d57  5f                   pop edi
+// 00477d58  5e                   pop esi
+// 00477d59  5b                   pop ebx
+// 00477d5a  c3                   ret 
+// 00477d5b  8b442414             mov eax, dword ptr [esp + 0x14]
+// 00477d5f  5e                   pop esi
+// 00477d60  5b                   pop ebx
+// 00477d61  c3                   ret 
+// copied from an identical function in another client (function ?copyBackward@@YAPAUItem@@PAU1@00@Z)
+
+// roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/instances.cpp
+struct Tail {
+    unsigned int value;
+};
 
-// Candidate translation unit (score above; library headers required).
-/*
- *
- * Copyright (c) 1998-2002
- * John Maddock
- *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
- * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
- *
- */
+struct Item {
+    unsigned int first;
+    unsigned int second;
+    Tail tail;
+};
 
- /*
-  *   LOCATION:    see http://www.boost.org for most recent version.
-  *   FILE:        instances.cpp
-  *   VERSION:     see <boost/version.hpp>
-  *   DESCRIPTION: regex narrow character template instances.
-  */
+extern Tail& (__thiscall *assignTail)(Tail*, const Tail*);
 
-#define BOOST_REGEX_SOURCE
-
-#include <boost/regex/config.hpp>
-
-#if !defined(BOOST_REGEX_NO_EXTERNAL_TEMPLATES)
-#define BOOST_REGEX_NARROW_INSTANTIATE
-
-#ifdef __BORLANDC__
-#pragma hrdstop
-#endif
-
-#include <boost/regex.hpp>
-
-#endif
+Item* __cdecl copyBackward(Item* first, Item* last, Item* result)
+{
+    if (first != last) {
+        do {
+            --last;
+            --result;
+            result->first = last->first;
+            result->second = last->second;
+            assignTail(&result->tail, &last->tail);
+        } while (last != first);
+    }
+    return result;
+}

@@ -1,32 +1,16 @@
-// from server: 49% by atomic.potato
-struct S {
-    void __cdecl f(unsigned int value);
-};
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_fc27c84cd7b01590.cpp
 
-extern "C" {
-    void* __stdcall end_impl(void*);
-    void __stdcall insert_impl(void*, void*, const char*, const char*);
-}
-
-void S::f(unsigned int value)
-{
-    char* p = (char*)this;
-    char buf[8];
-    char c;
-
-    c = (char)value;
-    end_impl(*(void**)p);
-    insert_impl(*(void**)p, buf, &c, &c + 1);
-
-    c = (char)(value >> 8);
-    end_impl(*(void**)p);
-    insert_impl(*(void**)p, buf, &c, &c + 1);
-
-    c = (char)(value >> 16);
-    end_impl(*(void**)p);
-    insert_impl(*(void**)p, buf, &c, &c + 1);
-
-    c = (char)(value >> 24);
-    end_impl(*(void**)p);
-    insert_impl(*(void**)p, buf, &c, &c + 1);
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::basic_gzip_compressor<std::allocator<char> >;

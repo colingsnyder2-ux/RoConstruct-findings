@@ -1,14 +1,13 @@
-// from server: 27% by TrollStein
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Calendar/XTPCalendarDayViewEvent.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\CommandBars\XTPStatusBar.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPCalendarViewEvent.cpp: implementation of the CXTPCalendarDayViewEvent class.
+// XTPStatusBar.cpp : implementation of the CXTPStatusBar class.
 //
-// This file is a part of the XTREME CALENDAR MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,598 +25,1834 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-
+#include "Common/XTPDrawHelpers.h"
 #include "Common/XTPColorManager.h"
-#include "Common/XTPSmartPtrInternalT.h"
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPImageManager.h"
+#include "Common/XTPToolTipContext.h"
 
-#include "XTPCalendarUtils.h"
-#include "XTPCalendarDefines.h"
-#include "XTPCalendarPtrCollectionT.h"
-
-#include "XTPCalendarView.h"
-#include "XTPCalendarViewDay.h"
-#include "XTPCalendarViewEvent.h"
-#include "XTPCalendarViewPart.h"
-
-#include "XTPCalendarDayViewDay.h"
-#include "XTPCalendarDayViewEvent.h"
-#include "XTPCalendarDayView.h"
-
-#include "XTPCalendarControl.h"
-#include "XTPCalendarEvent.h"
-
-#include "XTPCalendarPaintManager.h"
-#include "XTPCalendarTheme.h"
+#include "XTPStatusBar.h"
+#include "XTPPaintManager.h"
+#include "XTPToolBar.h"
+#include "XTPCommandBars.h"
 
 
 #ifdef _DEBUG
+#define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
-#define new DEBUG_NEW
 #endif
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-IMPLEMENT_DYNAMIC(CXTPCalendarDayViewEvent, CXTPCalendarViewEvent)
+#define SBPF_UPDATE 0x0001  // pending update of text
+#define CX_PANE_BORDER 6    // 3 pixels on each side of each pane
 
-CXTPCalendarDayViewEvent::CXTPCalendarDayViewEvent(CXTPCalendarEvent* pEvent, CXTPCalendarDayViewGroup* pViewGroup)
-	: TBase(pEvent, pViewGroup)
+#define WM_GETTHEMED_STATUSBAR (WM_USER + 9300)
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPStatusBarPane
+
+IMPLEMENT_DYNAMIC(CXTPStatusBarPane, CCmdTarget)
+
+CXTPStatusBarPane::CXTPStatusBarPane()
 {
-	ASSERT(pViewGroup);
+	m_nID = 0;
+	m_cxText = 0;
+	m_nStyle = 0;
+	m_nFlags = 0;
 
-	m_bHideEventTime = TRUE;
-	m_bShowArrow = FALSE;
-	m_rcTimeframe.SetRectEmpty();
+	m_nIndex = -1;
+	m_nStatusIndex = -1;
+	m_pStatusBar = NULL;
+
+	m_hWndPane = NULL;
+	m_bAutoDeleteWnd = FALSE;
+	m_bVisible = TRUE;
+
+	m_clrText = (COLORREF)-1;
+	m_clrBackground = (COLORREF)-1;
+
+	m_nIconIndex = -1;
+	m_nAlignment = DT_LEFT;
+
+	m_rcMargins.SetRect(2, 1, 2, 1);
+	m_bButton = FALSE;
+	m_bPressed = FALSE;
+
 }
 
-CXTPCalendarDayViewEvent::~CXTPCalendarDayViewEvent()
+CXTPStatusBarPane::~CXTPStatusBarPane()
 {
-}
+	CWnd* pWnd = CWnd::FromHandlePermanent(m_hWndPane);
 
-BOOL CXTPCalendarDayViewEvent::IsMultidayEvent() const
-{
-	if (!m_ptrEvent)
+	if (pWnd && ::IsWindow(pWnd->GetSafeHwnd()))
 	{
-		ASSERT(FALSE);
-		return FALSE;
+		pWnd->DestroyWindow();
+
+		if (m_bAutoDeleteWnd)
+		{
+			delete pWnd;
+		}
+	}
+}
+
+CRect CXTPStatusBarPane::GetRect() const
+{
+	RECT rc;
+
+	if (!m_pStatusBar->DefWindowProc(SB_GETRECT, m_nStatusIndex, (LPARAM)&rc))
+		::SetRectEmpty(&rc);
+
+	// WINBUG: CStatusBar::GetItemRect(...) does not return the correct size
+	// of the last item in the status bar in most cases, so we need to calculate
+	// the width ourself...
+
+	if (m_nStatusIndex == m_pStatusBar->GetVisiblePaneCount() - 1)
+	{
+		if ((m_nStyle & SBPS_STRETCH) == 0)
+		{
+			rc.right = rc.left + m_cxText + (::GetSystemMetrics(SM_CXEDGE)* 3);
+		}
+		else
+		{
+			rc.right = CXTPClientRect(m_pStatusBar).right;
+
+			if ((GetStyle() & SBARS_SIZEGRIP) == SBARS_SIZEGRIP)
+			{
+				rc.right -= (::GetSystemMetrics(SM_CXSMICON) + ::GetSystemMetrics(SM_CXEDGE));
+			}
+		}
 	}
 
-	if (m_ptrEvent->IsAllDayEvent())
-		return TRUE;
-
-	int nHours = m_ptrEvent->GetDurationMinutes()/60;
-	return nHours >= 24;
+	return rc;
 }
 
-void CXTPCalendarDayViewEvent::AdjustSubjectEditor()
+void CXTPStatusBarPane::Redraw() const
 {
-	AdjustSubjectEditorEx(TRUE);
-}
-
-void CXTPCalendarDayViewEvent::AdjustSubjectEditorEx(BOOL bUpdateView)
-{
-	if (IsEditingSubject() && m_pSubjectEditor)
+	if (this && m_pStatusBar && m_pStatusBar->GetSafeHwnd() && m_bVisible)
 	{
-		if (!GetView())
+		m_pStatusBar->InvalidateRect(GetRect());
+	}
+}
+
+CRect CXTPStatusBarPane::GetMargins() const
+{
+	return m_rcMargins;
+}
+
+void CXTPStatusBarPane::SetMargins(int nLeft, int nTop, int nRight, int nBottom)
+{
+	m_rcMargins.SetRect(nLeft, nTop, nRight, nBottom);
+}
+
+void CXTPStatusBarPane::SetText(LPCTSTR lpszText)
+{
+	ASSERT(m_pStatusBar);
+	if (m_pStatusBar) m_pStatusBar->SetPaneText(m_nIndex, lpszText);
+}
+
+CString CXTPStatusBarPane::GetText() const
+{
+	return m_strText;
+}
+
+void CXTPStatusBarPane::SetWidth(int nWidth)
+{
+	m_pStatusBar->SetPaneWidth(m_nIndex, nWidth);
+}
+
+int CXTPStatusBarPane::GetWidth() const
+{
+	return m_cxText;
+}
+
+void CXTPStatusBarPane::SetStyle(int nStyle)
+{
+	m_pStatusBar->SetPaneStyle(m_nIndex, nStyle);
+
+}
+int CXTPStatusBarPane::GetStyle() const
+{
+	return m_nStyle;
+}
+
+UINT CXTPStatusBarPane::GetID() const
+{
+	return m_nID;
+}
+
+int CXTPStatusBarPane::GetIndex() const
+{
+	return m_nIndex;
+}
+
+CXTPStatusBar* CXTPStatusBarPane::GetStatusBar() const
+{
+	return m_pStatusBar;
+}
+
+void CXTPStatusBarPane::Remove()
+{
+	m_pStatusBar->RemoveAt(m_nIndex);
+}
+
+void CXTPStatusBarPane::SetVisible(BOOL bVisible)
+{
+	if (m_bVisible != bVisible)
+	{
+		m_bVisible = bVisible;
+
+		if (m_hWndPane)
+			::ShowWindow(m_hWndPane, m_bVisible ? SW_SHOW : SW_HIDE);
+
+		m_pStatusBar->UpdateAllPanes(TRUE, FALSE);
+	}
+}
+
+BOOL CXTPStatusBarPane::IsVisible() const
+{
+	return m_bVisible;
+}
+
+void CXTPStatusBarPane::OnDraw(CDC* pDC, CRect rcItem)
+{
+	CXTPPaintManager* pPaintManager = m_pStatusBar->GetPaintManager();
+
+	if (pPaintManager)
+	{
+		pPaintManager->DrawStatusBarPaneEntry(pDC, rcItem, this);
+	}
+}
+
+void CXTPStatusBarPane::BestFit()
+{
+	CClientDC dc(m_pStatusBar);
+	CXTPFontDC font(&dc, GetTextFont());
+
+	m_cxText = dc.GetTextExtent(m_strText).cx + m_rcMargins.left + m_rcMargins.right;
+
+	CXTPImageManagerIcon* pIcon = GetImage();
+	if (pIcon) m_cxText += pIcon->GetWidth() + (!m_strText.IsEmpty() ? 2 : 0);
+}
+
+void CXTPStatusBarPane::SetTextColor(COLORREF clrText)
+{
+	m_clrText = clrText;
+	Redraw();
+}
+
+COLORREF CXTPStatusBarPane::GetTextColor() const
+{
+	return m_clrText;
+}
+
+void CXTPStatusBarPane::SetBackgroundColor(COLORREF clrBackground)
+{
+	m_clrBackground = clrBackground;
+	Redraw();
+}
+
+COLORREF CXTPStatusBarPane::GetBackgroundColor() const
+{
+	return m_clrBackground;
+}
+
+CFont* CXTPStatusBarPane::GetTextFont()
+{
+	ASSERT(m_pStatusBar);
+	return (m_pStatusBar && m_fntText.m_hObject == NULL) ?
+		&m_pStatusBar->m_fontStatus : &m_fntText;
+}
+
+void CXTPStatusBarPane::SetTextFont(CFont* pFntText)
+{
+	ASSERT(pFntText);
+	if (!pFntText)
+		return;
+
+	LOGFONT lf;
+	pFntText->GetLogFont(&lf);
+
+	SetTextFont(&lf);
+}
+
+void CXTPStatusBarPane::SetTextFont(PLOGFONT pLogfText)
+{
+	ASSERT(pLogfText);
+
+	m_fntText.DeleteObject();
+	m_fntText.CreateFontIndirect(pLogfText);
+
+	Redraw();
+}
+
+CXTPImageManagerIcon* CXTPStatusBarPane::GetImage() const
+{
+	if (m_nIconIndex != -1)
+		return m_pStatusBar->GetImageManager()->GetImage(m_nIconIndex, 0);
+
+	return NULL;
+}
+
+int CXTPStatusBarPane::GetIconIndex() const
+{
+	return m_nIconIndex;
+}
+
+void CXTPStatusBarPane::SetIconIndex(int nIconIndex)
+{
+	m_nIconIndex = nIconIndex;
+	m_pStatusBar->UpdateAllPanes(TRUE, FALSE);
+}
+
+void CXTPStatusBarPane::SetTextAlignment(int nAlign)
+{
+	m_nAlignment = nAlign;
+	Redraw();
+}
+
+int CXTPStatusBarPane::GetTextAlignment() const
+{
+	return m_nAlignment;
+}
+
+void CXTPStatusBarPane::SetTooltip(LPCTSTR lpszTooltip)
+{
+	m_strToolTip = lpszTooltip;
+}
+
+CString CXTPStatusBarPane::GetTooltip() const
+{
+	return m_strToolTip;
+}
+
+void CXTPStatusBarPane::SetEnabled(BOOL bEnabled)
+{
+	UINT nNewStyle = GetStyle() & ~SBPS_DISABLED;
+	if (!bEnabled)
+		nNewStyle |= SBPS_DISABLED;
+
+	SetStyle(nNewStyle);
+}
+
+void CXTPStatusBarPane::OnLButtonDown(CPoint point)
+{
+	if (!m_bButton)
+		return;
+
+	m_bPressed = TRUE;
+	Redraw();
+
+	m_pStatusBar->SetCapture();
+	CRect rcButton = GetRect();
+
+	BOOL  bClick = FALSE;
+
+	while (::GetCapture() == m_pStatusBar->GetSafeHwnd())
+	{
+		BOOL bPressed = rcButton.PtInRect(point);
+
+		if (bPressed != m_bPressed)
 		{
-			ASSERT(FALSE);
-			return;
+			m_bPressed = bPressed;
+			Redraw();
 		}
+		MSG msg;
 
-		CRect rcEvents = GetViewGroup()->m_LayoutX.m_rcDayDetails;
+		if (!::PeekMessage(&msg, NULL, NULL, NULL, PM_NOREMOVE))
+			continue;
 
-		m_pSubjectEditor->MoveWindow(&m_rcSubjectEditor, FALSE);
+		VERIFY(::GetMessage(&msg, NULL, 0, 0));
 
-		if (!IsMultidayEvent())
+		switch (msg.message)
 		{
-			if (m_rcSubjectEditor.top >= rcEvents.top && m_rcSubjectEditor.top < rcEvents.bottom)
+			case WM_MOUSEMOVE:
+				point = CPoint((short signed)LOWORD(msg.lParam), (short signed)HIWORD(msg.lParam));
+				break;
+
+			case WM_LBUTTONUP:
+				bClick = m_bPressed;
+				goto ExitLoop;
+
+			case WM_KEYDOWN:
+				if (msg.wParam != VK_ESCAPE)
+					break;
+
+			case WM_CANCELMODE:
+			case WM_RBUTTONDOWN:
+				goto ExitLoop;
+
+			default:
+				DispatchMessage (&msg);
+				break;
+		}
+	}
+
+ExitLoop:
+	ReleaseCapture();
+
+	m_bPressed = FALSE;
+	Redraw();
+
+	if (bClick)
+	{
+		m_pStatusBar->OnPaneClick(this);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPStatusBar
+
+IMPLEMENT_DYNAMIC(CXTPStatusBar, CControlBar)
+
+CXTPStatusBar::CXTPStatusBar()
+{
+	// setup default border/margin depending on type of system
+	m_cyTopBorder = 2;
+	if (IsWin4())
+	{
+		m_cxLeftBorder = 0;
+		m_cxRightBorder = 0;
+		m_cyBottomBorder = 0;
+	}
+	else
+	{
+		m_cxLeftBorder = 2;
+		m_cxRightBorder = 2;
+		m_cyBottomBorder = 1;
+	}
+	// minimum height set with SB_SETMINHEIGHT is cached
+	m_nMinHeight = 0;
+
+	m_pCommandBars = 0;
+	m_bCommandBarsTheme = TRUE;
+	m_bDrawDisabledText = TRUE;
+	m_pToolTipContext = new CXTPToolTipContext;
+
+	CXTPPaintManager::CNonClientMetrics ncm;
+	m_fontStatus.CreateFontIndirect(&ncm.lfStatusFont);
+
+
+	m_pHighlightedPane = NULL;
+
+	m_bShowSizeGripper = TRUE;
+	m_nRibbonDividerIndex = 0;
+
+}
+
+BOOL CXTPStatusBar::IsWin4()
+{
+#if (_MSC_VER >= 1300)
+	return TRUE;
+#else
+	DWORD dwVersion = ::GetVersion();
+	return (BYTE)dwVersion >= 4;
+#endif
+}
+
+
+CXTPStatusBar::~CXTPStatusBar()
+{
+	RemoveAll();
+
+	CMDTARGET_RELEASE(m_pToolTipContext);
+
+}
+
+CXTPImageManager* CXTPStatusBar::GetImageManager() const
+{
+	if (m_pCommandBars)
+		return m_pCommandBars->GetImageManager();
+
+	return XTPImageManager();
+}
+
+CXTPStatusBarPane* CXTPStatusBar::HitTest(CPoint pt, CRect* lpRect) const
+{
+	for (int i = 0; i < GetPaneCount(); i++)
+	{
+		CXTPStatusBarPane* pPane = GetPane(i);
+		if (!pPane->IsVisible())
+			continue;
+
+		CRect rc(0, 0, 0, 0);
+		GetItemRect(i, &rc);
+
+		if (rc.PtInRect(pt))
+		{
+			if (lpRect)
+				*lpRect = rc;
+
+			return pPane;
+		}
+	}
+
+	return NULL;
+}
+
+void CXTPStatusBar::RemoveAll()
+{
+	for (int i = 0; i < (int)m_arrPanes.GetSize(); i++)
+	{
+		m_arrPanes[i]->InternalRelease();
+	}
+	m_arrPanes.RemoveAll();
+
+	m_pHighlightedPane = NULL;
+
+	UpdateAllPanes(TRUE, TRUE);
+}
+
+CXTPStatusBarPane* CXTPStatusBar::GetPane(int nIndex) const
+{
+	ASSERT(nIndex >= 0 && nIndex < GetPaneCount());
+
+	return nIndex >= 0 && nIndex < GetPaneCount() ? m_arrPanes[nIndex]: NULL;
+}
+
+CXTPStatusBarPane* CXTPStatusBar::FindPane(UINT nID) const
+{
+	for (int i = 0; i < GetPaneCount(); i++)
+	{
+		if (GetPane(i)->m_nID == nID)
+			return GetPane(i);
+	}
+	return NULL;
+}
+
+int CXTPStatusBar::GetVisiblePaneCount() const
+{
+	int nCount = 0;
+
+	for (int i = 0; i < GetPaneCount(); i++)
+	{
+		if (m_arrPanes[i]->IsVisible()) nCount++;
+	}
+
+	return nCount;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPStatusBar creation, etc
+
+
+
+BOOL CXTPStatusBar::Create(CWnd* pParentWnd, DWORD dwStyle, UINT nID)
+{
+	return CreateEx(pParentWnd, 0, dwStyle, nID);
+}
+
+void CXTPStatusBar::SetFont(CFont* pFont, BOOL bRedraw /* = TRUE */)
+{
+	LOGFONT lf;
+	pFont->GetLogFont(&lf);
+
+	m_fontStatus.DeleteObject();
+	m_fontStatus.CreateFontIndirect(&lf);
+
+	CWnd::SetFont(&m_fontStatus, bRedraw);
+}
+
+BOOL CXTPStatusBar::CreateEx(CWnd* pParentWnd, DWORD dwCtrlStyle, DWORD dwStyle, UINT nID)
+{
+	ASSERT_VALID(pParentWnd);   // must have a parent
+
+	// save the style (some of these style bits are MFC specific)
+	m_dwStyle = (dwStyle & CBRS_ALL);
+
+	// translate MFC style bits to windows style bits
+	dwStyle &= ~CBRS_ALL;
+	dwStyle |= CCS_NOPARENTALIGN | CCS_NOMOVEY | CCS_NODIVIDER | CCS_NORESIZE;
+	if ((pParentWnd->GetStyle() & WS_THICKFRAME) && m_bShowSizeGripper)
+		dwStyle |= SBARS_SIZEGRIP;
+	dwStyle |= dwCtrlStyle;
+
+#if _MSC_VER <= 1100
+	VERIFY(AfxDeferRegisterClass(AFX_WNDCOMMCTLS_REG));
+#else
+	VERIFY(AfxDeferRegisterClass(AFX_WNDCOMMCTL_BAR_REG));
+#endif
+
+	// create the HWND
+	CRect rect;
+	rect.SetRectEmpty();
+	return CWnd::Create(STATUSCLASSNAME, NULL, dwStyle, rect, pParentWnd, nID);
+}
+
+BOOL CXTPStatusBar::PreCreateWindow(CREATESTRUCT& cs)
+{
+	// in Win4, status bars do not have a border at all, since it is
+	//  provided by the client area.
+	if (IsWin4() &&
+		(m_dwStyle & (CBRS_ALIGN_ANY | CBRS_BORDER_ANY)) == CBRS_BOTTOM)
+	{
+		m_dwStyle &= ~(CBRS_BORDER_ANY | CBRS_BORDER_3D);
+	}
+	return CControlBar::PreCreateWindow(cs);
+}
+
+BOOL CXTPStatusBar::SetIndicators(const UINT* lpIDArray, int nIDCount)
+{
+	ASSERT_VALID(this);
+	ASSERT(nIDCount >= 1);  // must be at least one of them
+	ASSERT(lpIDArray == NULL ||
+		AfxIsValidAddress(lpIDArray, sizeof(UINT) * nIDCount, FALSE));
+	ASSERT(::IsWindow(m_hWnd));
+
+	RemoveAll();
+
+	// copy initial data from indicator array
+	BOOL bResult = TRUE;
+
+	if (lpIDArray != NULL)
+	{
+		for (int i = 0; i < nIDCount; i++)
+		{
+			CXTPStatusBarPane* pPane = new CXTPStatusBarPane();
+			m_arrPanes.Add(pPane);
+
+			pPane->m_pStatusBar = this;
+			pPane->m_nID = *lpIDArray++;
+			pPane->m_nFlags |= SBPF_UPDATE;
+
+			if (pPane->m_nID != 0)
 			{
-				m_pSubjectEditor->ShowWindow(SW_SHOW);
-				m_pSubjectEditor->SetFocus();
-			}
-			else
-			{
-				if (bUpdateView && GetViewGroup()->GetViewDay()->GetView()->IsEditingSubject())
+				if (!pPane->m_strText.LoadString(pPane->m_nID))
 				{
-					GetViewGroup()->GetViewDay()->GetView()->OnUpdateEditingSubject(GetEditingSubjectFromEditor());
+					TRACE1("Warning: failed to load indicator string 0x%04X.\n",
+						pPane->m_nID);
+					bResult = FALSE;
+					break;
 				}
 
-				XTP_SAFE_CALL1(GetCalendarControl(), SetFocus());
-				XTP_SAFE_CALL1(m_pSubjectEditor, ShowWindow(SW_HIDE));
-			}
-		}
-	}
-}
-
-void CXTPCalendarDayViewEvent::AdjustLayout(CDC* pDC, const CRect& rcEventMax, int nEventPlaceNumber)
-{
-	TBase::AdjustLayout(pDC, rcEventMax, nEventPlaceNumber);
-
-	m_nMultiDayEventFlags = 0;
-	m_bHideEventTime = TRUE;
-
-	CXTPCalendarEvent* pEvent = GetEvent();
-	if (!pEvent  || !pDC || !GetView())
-	{
-		ASSERT(FALSE);
-		return;
-	}
-
-	// all-day event
-	if (IsMultidayEvent())
-	{
-		//calculate icons rect
-
-		CString strLoc = GetItemTextLocation();
-		CString strEventText = GetItemTextSubject();
-		if (strLoc.GetLength() > 0)
-		{
-			strEventText += _T(" (") + strLoc + _T(")");
-		}
-
-		CSize szText = XTP_SAFE_GET3(GetView(), GetPaintManager(), GetDayViewEventPart(), GetTextExtent(pDC, strEventText), CSize(0));
-		m_szText.cx = szText.cx;
-		m_szText.cy = szText.cy;
-
-		AdjustMultidayEvent(rcEventMax, nEventPlaceNumber);
-
-		if (!pEvent->IsAllDayEvent() &&
-				m_nMultiDayEventFlags & xtpCalendarMultiDayLast)
-		{
-			COleDateTimeSpan spDay(1, 0, 0, 0);
-			COleDateTime dtDay = XTP_SAFE_GET2(GetViewGroup_(), GetViewDay_(), GetDayDate(), (DATE)0);
-			if (dtDay != pEvent->GetEndTime() - spDay)
-			{
-				CSize szClock = XTP_SAFE_GET2(GetView(), GetPaintManager(), GetClockSize(), CSize(0));
-				m_rcLastClock.CopyRect(m_rcEvent);
-				m_rcLastClock.top -= 1;
-				m_rcLastClock.bottom -= 1;
-				m_rcLastClock.left = m_rcLastClock.right - szClock.cx;
-				m_rcText.right = m_rcLastClock.left;
-			}
-		}
-
-		return;
-	}
-
-	m_nMultiDayEventFlags |= xtpCalendarMultiDayNoMultiDay;
-
-	// non all-day event
-	int nPace = GetEventPlacePos();
-	int nPaceCount = max(1, GetEventPlaceCount());
-
-	ASSERT(GetEventPlaceCount() >= 1);
-	ASSERT(nPace >= 0 && nPace < nPaceCount);
-
-	m_rcEvent.CopyRect(GetViewGroup()->m_LayoutX.m_rcDayDetails);
-	int nEventWidth = m_rcEvent.Width() / nPaceCount;
-
-	// skip event views if they are not fit even by 5 pixel bar width
-	// and correct some first event views heights
-	if (nEventWidth <= 5)
-	{
-		while (nPaceCount > 1 && nEventWidth <= 5)
-		{
-			nPaceCount--;
-			nEventWidth = m_rcEvent.Width() / nPaceCount;
-		}
-		if (nPace > nPaceCount)
-		{
-			m_rcEvent.SetRectEmpty();
-			return;
-		}
-	}
-
-	// calc other rect coordinates
-	m_rcEvent.left += nEventWidth * nPace;
-	m_rcEvent.right = m_rcEvent.left + nEventWidth;
-
-	COleDateTime dtStartTime(pEvent->GetStartTime());
-	COleDateTime dtEndTime(pEvent->GetEndTime());
-	COleDateTimeSpan spEnd(0.0);
-	if (CXTPCalendarUtils::IsZeroTime(dtEndTime) &&
-		!CXTPCalendarUtils::IsEqual(dtStartTime, dtEndTime))
-	{
-		spEnd.SetDateTimeSpan(0, 0, 0, 1);
-	}
-	int nTopCell = XTP_SAFE_GET1(GetViewGroup(), GetDateTimeCell(dtStartTime, FALSE), 0);
-	int nBottomCell = XTP_SAFE_GET1(GetViewGroup(), GetDateTimeCell(dtEndTime - spEnd, TRUE), 0);
-
-	// is event's Begin/End on cells borders
-	COleDateTime dtStartCellTime = GetViewGroup()->GetViewDay()->GetView()->GetCellTime(nTopCell);
-	COleDateTime dtEndCellTime = GetViewGroup()->GetViewDay()->GetView()->GetCellTime(nBottomCell);
-	dtEndCellTime += GetViewGroup()->GetViewDay()->GetView()->GetCellDuration();
-
-	COleDateTime dtStart_TimeOnly = CXTPCalendarUtils::ResetDate(dtStartTime);
-	COleDateTime dtEnd_TimeOnly = CXTPCalendarUtils::ResetDate(dtEndTime - spEnd);
-	dtEnd_TimeOnly += spEnd;
-
-	m_bHideEventTime = CXTPCalendarUtils::IsEqual(dtStartCellTime, dtStart_TimeOnly) &&
-						(CXTPCalendarUtils::IsEqual(dtEndCellTime, dtEnd_TimeOnly, TRUE) ||
-						CXTPCalendarUtils::IsEqual(dtStartCellTime, dtEnd_TimeOnly) );
-
-	CXTPCalendarEventPtr ptrDragEventOrig(GetView()->GetDraggingEventOrig(), TRUE);
-
-	if (ptrDragEventOrig && ptrDragEventOrig->IsEqualIDs(GetEvent()) &&
-		!ptrDragEventOrig->IsEqualStartEnd(GetEvent()))
-	{
-		m_bHideEventTime = TRUE;
-	}
-	//---------------------------------------------------------------------------
-
-	if (nBottomCell < nTopCell)
-	{
-		if (pEvent->GetEventPeriodDays() <= 1)
-		{
-			nBottomCell = nTopCell;
-		}
-		else
-			if (pEvent->GetEndTime().GetDay() != GetViewGroup()->GetCellDateTime(0).GetDay())
-			{
-				nBottomCell = GetViewGroup()->GetRowCount() - 1;
+				pPane->BestFit();
 			}
 			else
 			{
-				nTopCell = 0;
+				// no indicator (must access via index)
+				// default to 1/4 the screen width (first pane is stretchy)
+				pPane->m_cxText = ::GetSystemMetrics(SM_CXSCREEN)/4;
+				if (i == 0)
+					pPane->m_nStyle |= (SBPS_STRETCH | SBPS_NOBORDERS);
 			}
+		}
 	}
-	ASSERT(nBottomCell >= nTopCell);
+	UpdateAllPanes(TRUE, TRUE);
 
-	CRect rcTopCell = GetViewGroup()->GetCellRect(nTopCell);
-	CRect rcBottomCell = GetViewGroup()->GetCellRect(nBottomCell);
-
-	m_rcEvent.top = rcTopCell.top-1;
-	m_rcEvent.bottom = rcBottomCell.bottom-2;
-	m_rcEvent.right -= 5;
-
-	m_rcEventMax.top = max(m_rcEvent.top-5, GetViewGroup()->m_LayoutX.m_rcDayDetails.top);
-	m_rcEventMax.bottom = min(m_rcEvent.bottom + 5, GetViewGroup()->m_LayoutX.m_rcDayDetails.bottom);
-
-	// adjust subject area
-	m_rcText.CopyRect(m_rcEvent);
-	m_rcText.left += 10; // correct to busy area
-	m_rcText.left += CalcIconsRect(m_rcText);
-	m_rcText.left += 4;
-
-	m_rcSubjectEditor.CopyRect(&m_rcEvent);
-	m_rcSubjectEditor.top += 1;
-	m_rcSubjectEditor.left += 8;
-	m_rcSubjectEditor.right -= 1;
-
-	// Calculate Real time frame rect
-	double dSecondsPerPixel = GetViewGroup()->GetViewDay()->GetView()->GetCellDuration().GetTotalSeconds()
-			/ max(1, GetViewGroup()->GetRowHeight());
-	COleDateTime dtTopTime = GetViewGroup()->GetCellDateTime(nTopCell);
-	COleDateTime dtBottomTime = GetViewGroup()->GetCellDateTime(nBottomCell)
-			+ GetViewGroup()->GetViewDay()->GetView()->GetCellDuration();
-
-	if (CXTPCalendarUtils::IsEqual(dtStartTime, dtEndTime))
-	{
-		m_rcTimeframe.top = m_rcTimeframe.bottom = LONG_MAX;
-	}
-	else
-	{
-		double dShift = max(0, (dtStartTime - dtTopTime).GetTotalSeconds());
-		dShift /= dSecondsPerPixel;
-		m_rcTimeframe.top = m_rcEvent.top + (LONG)dShift;
-
-		dShift = max(0, (dtBottomTime - dtEndTime).GetTotalSeconds());
-		dShift = min(m_rcEvent.Height(), dShift/dSecondsPerPixel);
-		m_rcTimeframe.bottom = m_rcEvent.bottom - (LONG)dShift;
-	}
-
-	m_rcTimeframe.left = m_rcEvent.left + 1;
-	m_rcTimeframe.right = m_rcTimeframe.left + 4;
-
-	// set expanded signs for day view
-	CRect rcEvents = GetViewGroup()->m_LayoutX.m_rcDayDetails;
-
-	if (m_rcEvent.top >= rcEvents.bottom-10)
-		GetViewGroup()->SetExpandDown();
-	if (m_rcEvent.bottom <= rcEvents.top + 10)
-		GetViewGroup()->SetExpandUp();
+	return bResult;
 }
 
-void CXTPCalendarDayViewEvent::AdjustLayout2(CDC* pDC, const CRect& rcEventMax, int nEventPlaceNumber)
+void CXTPStatusBar::CalcInsideRect(CRect& rect, BOOL bHorz) const
 {
-	TBase::AdjustLayout(pDC, rcEventMax, nEventPlaceNumber);
+	ASSERT_VALID(this);
+	ASSERT(::IsWindow(m_hWnd));
+	ASSERT(bHorz);  // vertical status bar not supported
 
-	m_nMultiDayEventFlags = 0;
-	m_bHideEventTime = TRUE;
+	// subtract standard CControlBar borders
+	CControlBar::CalcInsideRect(rect, bHorz);
 
-	CXTPCalendarView* pView = GetView();
-	CXTPCalendarEvent* pEvent = GetEvent();
-
-	if (!pEvent  || !pDC || !pView || !XTP_SAFE_GET1(pView, GetTheme(), NULL) )
+	// subtract size grip if present
+	if ((GetStyle() & SBARS_SIZEGRIP) && !::IsZoomed(::GetParent(m_hWnd)))
 	{
-		ASSERT(FALSE);
-		return;
+		// get border metrics from common control
+		int rgBorders[3];
+		CXTPStatusBar* pBar = (CXTPStatusBar*)this;
+		pBar->DefWindowProc(SB_GETBORDERS, 0, (LPARAM)&rgBorders);
+
+		// size grip uses a border + size of scrollbar + cx border
+		rect.right -= rgBorders[0] + ::GetSystemMetrics(SM_CXVSCROLL) +
+			::GetSystemMetrics(SM_CXBORDER) * 2;
 	}
-
-	CXTPCalendarTheme* pTheme = pView->GetTheme();
-
-	// all-day event
-	if (IsMultidayEvent())
-	{
-		// to calculate multiday-flags
-		AdjustMultidayEvent(rcEventMax, nEventPlaceNumber);
-
-		pTheme->GetDayViewPart()->GetDayPart()->GetGroupPart()->GetMultiDayEventPart()->AdjustLayout(this, pDC, rcEventMax, nEventPlaceNumber);
-		return;
-
-	}
-
-	pTheme->GetDayViewPart()->GetDayPart()->GetGroupPart()->GetSingleDayEventPart()->AdjustLayout(this, pDC, rcEventMax, nEventPlaceNumber);
-
 }
 
-void CXTPCalendarDayViewEvent::OnPostAdjustLayout()
+void CXTPStatusBar::UpdateAllPanes(BOOL bUpdateRects, BOOL bUpdateText)
 {
-	CXTPCalendarViewEvent::OnPostAdjustLayout();
+	if (!GetSafeHwnd())
+		return;
 
-	CRect rcEvents = GetEventsRect();
+	ASSERT_VALID(this);
+	ASSERT(::IsWindow(m_hWnd));
 
-	if (m_rcToolTip.top < rcEvents.top)
+	// update the status pane locations
+	if (bUpdateRects)
 	{
-		m_rcToolTip.top = rcEvents.top;
+		// get border information and client work area
+		CRect rect;
+		GetWindowRect(rect);
+		rect.OffsetRect(-rect.left, -rect.top);
+		CalcInsideRect(rect, TRUE);
+		int rgBorders[3];
+		VERIFY((BOOL)DefWindowProc(SB_GETBORDERS, 0, (LPARAM)&rgBorders));
 
-		if (m_rcToolTip.top >= m_rcToolTip.bottom)
+		// determine extra space for stretchy pane
+		int cxExtra = rect.Width() + rgBorders[2];
+		int nStretchyCount = 0, i, nVisibleCount = 0;
+
+		for (i = 0; i < GetPaneCount(); i++)
 		{
-			m_rcToolTip.bottom = m_rcToolTip.top + 10;
+			CXTPStatusBarPane* pPane = GetPane(i);
+			pPane->m_nIndex = i;
+
+			if (!pPane->IsVisible())
+				continue;
+
+			pPane->m_nStatusIndex = nVisibleCount;
+			nVisibleCount++;
+
+			if (pPane->m_nStyle & SBPS_STRETCH)
+				++nStretchyCount;
+			cxExtra -= (pPane->m_cxText + CX_PANE_BORDER + rgBorders[2]);
+		}
+
+		// determine right edge of each pane
+		CArray<int, int&> rgRights;
+		rgRights.SetSize(nVisibleCount);
+
+		int right = rgBorders[0], j = 0;
+
+		for (i = 0; i < GetPaneCount(); i++)
+		{
+			CXTPStatusBarPane* pPane = GetPane(i);
+			if (!pPane->IsVisible())
+				continue;
+
+			// determine size of the pane
+			ASSERT(pPane->m_cxText >= 0);
+			right += pPane->m_cxText + CX_PANE_BORDER;
+			if ((pPane->m_nStyle & SBPS_STRETCH) && cxExtra > 0)
+			{
+				ASSERT(nStretchyCount != 0);
+				int cxAddExtra = cxExtra / nStretchyCount;
+				right += cxAddExtra;
+				--nStretchyCount;
+				cxExtra -= cxAddExtra;
+			}
+			rgRights[j] = right;
+			j++;
+
+			// next pane
+			right += rgBorders[2];
+		}
+
+		// set new right edges for all panes
+		DefWindowProc(SB_SETPARTS, nVisibleCount, (LPARAM)rgRights.GetData());
+
+		PositionControls();
+	}
+
+	// update text in the status panes if specified
+	if (bUpdateText)
+	{
+		for (int i = 0; i < GetPaneCount(); i++)
+		{
+			CXTPStatusBarPane* pPane = GetPane(i);
+			if (!pPane->IsVisible())
+				continue;
+
+			if (pPane->m_nFlags & SBPF_UPDATE)
+				SetPaneText(i, pPane->m_strText);
 		}
 	}
 }
 
-CRect CXTPCalendarDayViewEvent::GetEventsRect() const
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPStatusBar attribute access
+
+int CXTPStatusBar::CommandToIndex(UINT nIDFind) const
 {
-	if (!GetViewGroup() || !GetViewGroup()->GetViewDay())
+	ASSERT_VALID(this);
+
+	if (GetPaneCount() <= 0)
+		return -1;
+
+	for (int i = 0; i < GetPaneCount(); i++)
 	{
-		ASSERT(FALSE);
-		return CRect(0, 0, 0, 0);
+		if (GetPane(i)->m_nID == nIDFind)
+			return i;
 	}
 
-	if (IsMultidayEvent())
+	return -1;
+}
+
+UINT CXTPStatusBar::GetItemID(int nIndex) const
+{
+	ASSERT_VALID(this);
+
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+	ASSERT(pPane);
+
+	if (!pPane)
+		return 0;
+
+	return pPane->m_nID;
+}
+
+void CXTPStatusBar::GetItemRect(int nIndex, LPRECT lpRect) const
+{
+	ASSERT_VALID(this);
+	ASSERT(::IsWindow(m_hWnd));
+
+	if (!lpRect)
+		return;
+
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+	if (!pPane)
 	{
-		return GetViewGroup()->m_LayoutX.m_rcAllDayEvents;
+		::SetRectEmpty(lpRect);
+		return;
 	}
-	return GetViewGroup()->m_LayoutX.m_rcDayDetails;
+
+	*lpRect = pPane->GetRect();
 }
 
-BOOL CXTPCalendarDayViewEvent::IsVisible() const
+UINT CXTPStatusBar::GetPaneStyle(int nIndex) const
 {
-//<<EventVisible>>
-//  if (GetEvent() && !GetEvent()->IsEventVisible())
-//      return FALSE;
-//<<EventVisible>>
-	return IsVisibleEx(TRUE, TRUE, FALSE);
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+	ASSERT(pPane);
+
+	if (!pPane)
+		return 0;
+
+	return pPane->m_nStyle;
 }
 
-BOOL CXTPCalendarDayViewEvent::IsVisibleEx(BOOL bCheckTop, BOOL bCheckBottom, BOOL bTopAndBottom) const
+void CXTPStatusBar::SetPaneStyle(int nIndex, UINT nStyle)
 {
-	// at least one of bCheckTop or bCheckBottom must be TRUE (or both)
-	ASSERT((!bCheckTop && !bCheckBottom) == FALSE);
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+	ASSERT(pPane);
 
-	if (!GetViewGroup() || !GetViewGroup()->GetViewDay())
+	if (pPane && pPane->m_nStyle != nStyle)
 	{
-		ASSERT(FALSE);
+		// if the pane is changing SBPS_STRETCH, then...
+		if ((pPane->m_nStyle ^ nStyle) & SBPS_STRETCH)
+		{
+			// ... we need to re-layout the panes
+			pPane->m_nStyle = nStyle;
+			UpdateAllPanes(TRUE, FALSE);
+		}
+
+		// use SetPaneText, since it updates the style and text
+		pPane->m_nStyle = nStyle;
+		pPane->m_nFlags |= SBPF_UPDATE;
+		SetPaneText(nIndex, pPane->m_strText);
+	}
+}
+
+void CXTPStatusBar::GetPaneInfo(int nIndex, UINT& nID, UINT& nStyle,
+	int& cxWidth) const
+{
+	ASSERT_VALID(this);
+
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+	nID = pPane->m_nID;
+	nStyle = pPane->m_nStyle;
+	cxWidth = pPane->m_cxText;
+}
+
+void CXTPStatusBar::SetPaneInfo(int nIndex, UINT nID, UINT nStyle, int cxWidth)
+{
+	ASSERT_VALID(this);
+
+	BOOL bChanged = FALSE;
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+	pPane->m_nID = nID;
+	if (pPane->m_nStyle != nStyle)
+	{
+		if ((pPane->m_nStyle ^ nStyle) & SBPS_STRETCH)
+			bChanged = TRUE;
+		else
+		{
+			pPane->m_nStyle = nStyle;
+			pPane->m_nFlags |= SBPF_UPDATE;
+			SetPaneText(nIndex, pPane->m_strText);
+		}
+		pPane->m_nStyle = nStyle;
+	}
+	if (cxWidth != pPane->m_cxText)
+	{
+		// change width of one pane -> invalidate the entire status bar
+		pPane->m_cxText = cxWidth;
+		bChanged = TRUE;
+	}
+	if (bChanged)
+		UpdateAllPanes(TRUE, FALSE);
+}
+
+void CXTPStatusBar::GetPaneText(int nIndex, CString& s) const
+{
+	ASSERT_VALID(this);
+
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+	ASSERT(pPane);
+	if (!pPane)
+		return;
+
+	s = pPane->m_strText;
+}
+
+CString CXTPStatusBar::GetPaneText(int nIndex) const
+{
+	ASSERT_VALID(this);
+
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+	ASSERT(pPane);
+	if (!pPane)
+		return _T("");
+
+	return pPane->m_strText;
+}
+
+void CXTPStatusBar::SetPaneWidth(int nIndex, int cxText)
+{
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+	ASSERT(pPane);
+	if (!pPane)
+		return;
+
+	if (cxText <= 0)
+	{
+		pPane->BestFit();
+		UpdateAllPanes(TRUE, FALSE);
+	}
+	else if (pPane->m_cxText != cxText)
+	{
+		pPane->m_cxText = cxText;
+		UpdateAllPanes(TRUE, FALSE);
+	}
+}
+
+BOOL CXTPStatusBar::SetPaneText(int nIndex, const CString& lpszNewText, BOOL bUpdate)
+{
+	ASSERT_VALID(this);
+	ASSERT(::IsWindow(m_hWnd));
+
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+	ASSERT(pPane);
+	if (!pPane)
+		return FALSE;
+
+	if (!(pPane->m_nFlags & SBPF_UPDATE) && (lpszNewText == pPane->m_strText))
+	{
+		// nothing to change
+		return TRUE;
+	}
+
+	pPane->m_strText = lpszNewText;
+
+	if (!pPane->IsVisible())
+		return FALSE;
+
+	if (!bUpdate)
+	{
+		// can't update now, wait until later
+		pPane->m_nFlags |= SBPF_UPDATE;
+		return TRUE;
+	}
+
+	pPane->m_nFlags &= ~SBPF_UPDATE;
+	DefWindowProc(SB_SETTEXT, ((WORD)pPane->m_nStyle) | pPane->m_nStatusIndex,
+		(pPane->m_nStyle & SBPS_DISABLED) ? NULL :
+		(LPARAM)(LPCTSTR)pPane->m_strText);
+
+	Invalidate(FALSE);
+
+	return TRUE;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPStatusBar implementation
+
+CSize CXTPStatusBar::CalcFixedLayout(BOOL, BOOL bHorz)
+{
+	ASSERT_VALID(this);
+	ASSERT(::IsWindow(m_hWnd));
+
+	// determine size of font being used by the status bar
+	TEXTMETRIC tm;
+	{
+		CClientDC dc(NULL);
+		CXTPFontDC font(&dc, &m_fontStatus);
+		VERIFY(dc.GetTextMetrics(&tm));
+	}
+
+	// get border information
+	CRect rect;
+	rect.SetRectEmpty();
+	CalcInsideRect(rect, bHorz);
+	int rgBorders[3];
+	DefWindowProc(SB_GETBORDERS, 0, (LPARAM)&rgBorders);
+
+	// determine size, including borders
+	CSize size;
+	size.cx = 32767;
+	size.cy = tm.tmHeight - tm.tmInternalLeading - 1
+		+ rgBorders[1] * 2 + ::GetSystemMetrics(SM_CYBORDER) * 2
+		- rect.Height();
+
+	if (size.cy < m_nMinHeight)
+		size.cy = m_nMinHeight;
+
+	CXTPPaintManager* pPaintManager = GetPaintManager();
+	if (pPaintManager && size.cy < pPaintManager->m_nStatusBarMinHeight)
+		size.cy = pPaintManager->m_nStatusBarMinHeight;
+
+	return size;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPStatusBar message handlers
+
+BEGIN_MESSAGE_MAP(CXTPStatusBar, CControlBar)
+	//{{AFX_MSG_MAP(CXTPStatusBar)
+	ON_WM_NCHITTEST_EX()
+	ON_WM_NCPAINT()
+	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
+	ON_WM_PAINT()
+	ON_WM_CREATE()
+	ON_WM_ERASEBKGND()
+	ON_WM_NCCALCSIZE()
+	ON_WM_SIZE()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_MOUSEMOVE()
+	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
+	ON_WM_WINDOWPOSCHANGING()
+	ON_MESSAGE(WM_SETTEXT, OnSetText)
+	ON_MESSAGE(WM_GETTEXT, OnGetText)
+	ON_MESSAGE(WM_GETTEXTLENGTH, OnGetTextLength)
+	ON_MESSAGE(SB_SETMINHEIGHT, OnSetMinHeight)
+	ON_MESSAGE(WM_IDLEUPDATECMDUI, OnIdleUpdateCmdUI)
+
+	ON_MESSAGE(WM_GETTHEMED_STATUSBAR, OnGetThemedStatusBar)
+	ON_WM_WINDOWPOSCHANGED()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+int CXTPStatusBar::OnCreate(LPCREATESTRUCT lpcs)
+{
+	if (CControlBar::OnCreate(lpcs) == -1)
+		return -1;
+
+	SetFont(&m_fontStatus, FALSE);
+	SendMessage (SB_SETMINHEIGHT, 20);
+
+	return 0;
+}
+
+LRESULT CXTPStatusBar::OnNcHitTest(CPoint)
+{
+	LRESULT nResult = (LRESULT)Default();
+	if (nResult == HTBOTTOMRIGHT)
+		return (LRESULT)HTBOTTOMRIGHT;
+
+	return (LRESULT)HTCLIENT;
+}
+
+void CXTPStatusBar::OnMouseLeave()
+{
+	OnMouseMove(0, CPoint(-1, -1));
+}
+
+void CXTPStatusBar::OnMouseMove(UINT nFlags, CPoint point)
+{
+	CXTPStatusBarPane* pPane = HitTest(point);
+	if (pPane && (!pPane->IsButton() || !pPane->IsEnabled()))
+		pPane = NULL;
+
+	if (pPane != m_pHighlightedPane)
+	{
+		CXTPStatusBarPane* pHighlightedPane = m_pHighlightedPane;
+		m_pHighlightedPane = pPane;
+
+		if (pHighlightedPane) pHighlightedPane->Redraw();
+		if (m_pHighlightedPane) m_pHighlightedPane->Redraw();
+
+		if (m_pHighlightedPane)
+		{
+			TRACKMOUSEEVENT tme =
+			{
+				sizeof(TRACKMOUSEEVENT), TME_LEAVE, m_hWnd
+			};
+			_TrackMouseEvent(&tme);
+		}
+	}
+
+
+	CControlBar::OnMouseMove(nFlags, point);
+}
+
+void CXTPStatusBar::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	CControlBar::OnLButtonDown(nFlags, point);
+
+	if (m_pHighlightedPane)
+	{
+		m_pHighlightedPane->OnLButtonDown(point);
+	}
+}
+
+LRESULT CXTPStatusBar::OnGetThemedStatusBar(WPARAM, LPARAM)
+{
+	CXTPPaintManager* pPaintManager = GetPaintManager();
+	if (!pPaintManager)
+		return FALSE;
+
+	return pPaintManager->m_bThemedStatusBar;
+}
+
+void CXTPStatusBar::OnNcCalcSize(BOOL /*bCalcValidRects*/, NCCALCSIZE_PARAMS* lpncsp)
+{
+	// calculate border space (will add to top/bottom, subtract from right/bottom)
+	CRect rect;
+	rect.SetRectEmpty();
+	CControlBar::CalcInsideRect(rect, TRUE);
+	ASSERT(rect.top >= 2);
+
+	// adjust non-client area for border space
+	lpncsp->rgrc[0].left += rect.left;
+	lpncsp->rgrc[0].top += rect.top - 2;
+	lpncsp->rgrc[0].right += rect.right;
+	lpncsp->rgrc[0].bottom += rect.bottom;
+}
+
+void CXTPStatusBar::OnBarStyleChange(DWORD dwOldStyle, DWORD dwNewStyle)
+{
+	if (m_hWnd != NULL &&
+		((dwOldStyle & CBRS_BORDER_ANY) != (dwNewStyle & CBRS_BORDER_ANY)))
+	{
+		// recalc non-client area when border styles change
+		SetWindowPos(NULL, 0, 0, 0, 0,
+			SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_DRAWFRAME);
+	}
+}
+
+void CXTPStatusBar::OnNcPaint()
+{
+	EraseNonClient();
+}
+
+void CXTPStatusBar::OnSize(UINT nType, int cx, int cy)
+{
+	ASSERT_VALID(this);
+	ASSERT(::IsWindow(m_hWnd));
+
+	CControlBar::OnSize(nType, cx, cy);
+
+	// need to adjust pane right edges (because of stretchy pane)
+	UpdateAllPanes(TRUE, FALSE);
+	Invalidate(FALSE);
+}
+
+void CXTPStatusBar::OnWindowPosChanging(LPWINDOWPOS lpWndPos)
+{
+	// not necessary to invalidate the borders
+	DWORD dwStyle = m_dwStyle;
+	m_dwStyle &= ~(CBRS_BORDER_ANY);
+	CControlBar::OnWindowPosChanging(lpWndPos);
+	m_dwStyle = dwStyle;
+}
+
+LRESULT CXTPStatusBar::OnSetText(WPARAM, LPARAM lParam)
+{
+	ASSERT_VALID(this);
+	ASSERT(::IsWindow(m_hWnd));
+
+	int nIndex = CommandToIndex(0);
+	if (nIndex < 0)
+		return -1;
+	return SetPaneText(nIndex, (LPCTSTR)lParam) ? 0 : -1;
+}
+
+LRESULT CXTPStatusBar::OnGetText(WPARAM wParam, LPARAM lParam)
+{
+	ASSERT_VALID(this);
+	ASSERT(::IsWindow(m_hWnd));
+
+	int nMaxLen = (int)wParam;
+	if (nMaxLen == 0)
+		return 0;       // nothing copied
+	LPTSTR lpszDest = (LPTSTR)lParam;
+
+	int nLen = 0;
+	int nIndex = CommandToIndex(0); // use pane with ID zero
+	if (nIndex >= 0)
+	{
+		CXTPStatusBarPane* pPane = GetPane(nIndex);
+		nLen = pPane->m_strText.GetLength();
+		if (nLen > nMaxLen)
+			nLen = nMaxLen - 1; // number of characters to copy (less term.)
+		MEMCPY_S(lpszDest, (LPCTSTR)pPane->m_strText, nLen*sizeof(TCHAR));
+	}
+	lpszDest[nLen] = '\0';
+	return nLen + 1;      // number of bytes copied
+}
+
+LRESULT CXTPStatusBar::OnGetTextLength(WPARAM, LPARAM)
+{
+	ASSERT_VALID(this);
+	ASSERT(::IsWindow(m_hWnd));
+
+	int nLen = 0;
+	int nIndex = CommandToIndex(0); // use pane with ID zero
+	if (nIndex >= 0)
+	{
+		CXTPStatusBarPane* pPane = GetPane(nIndex);
+		nLen = pPane->m_strText.GetLength();
+	}
+	return nLen;
+}
+
+LRESULT CXTPStatusBar::OnSetMinHeight(WPARAM wParam, LPARAM)
+{
+	LRESULT lResult = Default();
+	m_nMinHeight = (int)wParam;
+	return lResult;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPStatusBar idle update through CStatusCmdUI class
+
+class CXTPStatusBar::CStatusCmdUI : public CCmdUI      // class private to this file!
+{
+public: // re-implementations only
+	virtual void Enable(BOOL bOn);
+	virtual void SetCheck(int nCheck);
+	virtual void SetText(LPCTSTR lpszText);
+};
+
+void CXTPStatusBar::CStatusCmdUI::Enable(BOOL bOn)
+{
+	m_bEnableChanged = TRUE;
+	CXTPStatusBar* pStatusBar = (CXTPStatusBar*)m_pOther;
+	ASSERT(pStatusBar != NULL);
+	if (!pStatusBar)
+		return;
+	ASSERT_KINDOF(CXTPStatusBar, pStatusBar);
+	ASSERT(m_nIndex < m_nIndexMax);
+
+	CXTPStatusBarPane* pPane = pStatusBar->GetPane(m_nIndex);
+	if (pPane) pPane->SetEnabled(bOn);
+}
+
+void CXTPStatusBar::CStatusCmdUI::SetCheck(int nCheck) // "checking" will pop out the text
+{
+	CXTPStatusBar* pStatusBar = (CXTPStatusBar*)m_pOther;
+	ASSERT(pStatusBar != NULL);
+	if (!pStatusBar)
+		return;
+	ASSERT_KINDOF(CXTPStatusBar, pStatusBar);
+	ASSERT(m_nIndex < m_nIndexMax);
+
+	UINT nNewStyle = pStatusBar->GetPaneStyle(m_nIndex) & ~SBPS_POPOUT;
+	if (nCheck != 0)
+		nNewStyle |= SBPS_POPOUT;
+	pStatusBar->SetPaneStyle(m_nIndex, nNewStyle);
+}
+
+void CXTPStatusBar::CStatusCmdUI::SetText(LPCTSTR lpszText)
+{
+	CXTPStatusBar* pStatusBar = (CXTPStatusBar*)m_pOther;
+	ASSERT(pStatusBar != NULL);
+	if (!pStatusBar)
+		return;
+	ASSERT_KINDOF(CXTPStatusBar, pStatusBar);
+	ASSERT(m_nIndex < m_nIndexMax);
+
+	pStatusBar->SetPaneText(m_nIndex, lpszText);
+}
+
+void CXTPStatusBar::OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHndler)
+{
+	CStatusCmdUI state;
+	state.m_pOther = this;
+	state.m_nIndexMax = (UINT)GetPaneCount();
+	for (state.m_nIndex = 0; state.m_nIndex < state.m_nIndexMax;
+		state.m_nIndex++)
+	{
+		state.m_nID = GetPane(state.m_nIndex)->m_nID;
+
+		// allow the statusbar itself to have update handlers
+		if (CWnd::OnCmdMsg(state.m_nID, CN_UPDATE_COMMAND_UI, &state, NULL))
+			continue;
+
+		// allow target (owner) to handle the remaining updates
+		state.DoUpdate(pTarget, FALSE);
+	}
+
+	// update the dialog controls added to the status bar
+	UpdateDialogControls(pTarget, bDisableIfNoHndler);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPStatusBar diagnostics
+
+#ifdef _DEBUG
+void CXTPStatusBar::AssertValid() const
+{
+	CControlBar::AssertValid();
+}
+
+void CXTPStatusBar::Dump(CDumpContext& dc) const
+{
+	CControlBar::Dump(dc);
+
+	if (dc.GetDepth() > 0)
+	{
+		for (int i = 0; i < GetPaneCount(); i++)
+		{
+			dc << "\nstatus pane[" << i << "] = {";
+			dc << "\n\tnID = " << GetPane(i)->m_nID;
+			dc << "\n\tnStyle = " << GetPane(i)->m_nStyle;
+			dc << "\n\tcxText = " << GetPane(i)->m_cxText;
+			dc << "\n\tstrText = " << GetPane(i)->m_strText;
+			dc << "\n\t}";
+		}
+	}
+	dc << "\n";
+}
+#endif //_DEBUG
+
+
+CXTPPaintManager* CXTPStatusBar::GetPaintManager() const
+{
+	if (!m_bCommandBarsTheme)
+		return NULL;
+
+	if (m_pCommandBars)
+		return m_pCommandBars->GetPaintManager();
+	return XTPPaintManager();
+}
+
+void CXTPStatusBar::DrawPaneEntry(CDC* pDC, int nIndex, CRect rcItem)
+{
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+
+	if (pPane)
+	{
+		pPane->OnDraw(pDC, rcItem);
+	}
+}
+
+void CXTPStatusBar::OnPaint()
+{
+	UpdateAllPanes(FALSE, TRUE);
+
+	if (GetPaintManager() == NULL)
+	{
+		Default();
+		return;
+	}
+
+	CPaintDC dcPaint (this);
+	CXTPBufferDC dc(dcPaint);
+
+	OnDraw(&dc);
+}
+
+LRESULT CXTPStatusBar::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
+{
+	if (GetPaintManager() == NULL)
+	{
+		return Default();
+	}
+
+	CDC* pDC = CDC::FromHandle((HDC)wParam);
+	if (pDC)
+	{
+		OnDraw(pDC);
+	}
+
+	return TRUE;
+}
+
+void CXTPStatusBar::OnDraw(CDC* pDC)
+{
+	CXTPClientRect rcClient(this);
+
+	CXTPPaintManager* pPaintManager = GetPaintManager();
+	pPaintManager->FillStatusBar(pDC, this);
+
+	int nVisibleCount = GetVisiblePaneCount();
+
+	for (int i = 0; i < GetPaneCount(); i++)
+	{
+		CXTPStatusBarPane* pPane = GetPane(i);
+		if (!pPane->IsVisible())
+			continue;
+
+		CRect rcItem;
+		GetItemRect (i, rcItem);
+
+		BOOL bGripperPane = (pPane->m_nStatusIndex == nVisibleCount - 1);
+
+		if (pPane->HasBorders())
+			pPaintManager->DrawStatusBarPaneBorder(pDC, rcItem, pPane, bGripperPane);
+
+		DrawPaneEntry(pDC, i, rcItem);
+	}
+
+	if (((GetParent()->GetStyle() & WS_THICKFRAME) != 0) &&
+		(GetStyle() & SBARS_SIZEGRIP) && !::IsZoomed(::GetParent(m_hWnd)))
+		DrawStretch(pDC, rcClient);
+}
+
+BOOL CXTPStatusBar::OnEraseBkgnd(CDC* /*pDC*/)
+{
+	CXTPPaintManager* pPaintManager = GetPaintManager();
+
+	if (pPaintManager == NULL)
+	{
+		return (BOOL)Default();
+	}
+
+	return TRUE;
+}
+
+void CXTPStatusBar::DrawStretch(CDC* pDC, CRect& rcClient)
+{
+	GetPaintManager()->DrawStatusBarGripper(pDC, rcClient);
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPStatusBar message handlers
+
+BOOL CXTPStatusBar::RemoveIndicator(UINT nID)
+{
+	int nIndex = CommandToIndex(nID);
+	if (nIndex == -1)
+	{
+		TRACE1("WARNING: Pane ID %d was not found in the status bar.\n", nID);
 		return FALSE;
 	}
 
-	BOOL bVisible = FALSE;
+	return RemoveAt(nIndex);
+}
 
-	if (IsMultidayEvent())
+BOOL CXTPStatusBar::RemoveAt(int nIndex)
+{
+
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+	if (!pPane)
+		return FALSE;
+
+	if (m_pHighlightedPane == pPane)
 	{
-		CRect rcEvents = GetViewGroup()->m_LayoutX.m_rcAllDayEvents;
-		bVisible = m_rcEvent.bottom <= rcEvents.bottom && m_rcEvent.top >= rcEvents.top;
+		m_pHighlightedPane = NULL;
+	}
+
+	m_arrPanes.RemoveAt(nIndex);
+
+	pPane->InternalRelease();
+
+	UpdateAllPanes(TRUE, TRUE);
+
+	return TRUE;
+}
+
+CXTPStatusBarPane* CXTPStatusBar::AddIndicator(CXTPStatusBarPane* pPane, UINT nID, int nIndex)
+{
+	if (nIndex < 0 || nIndex > GetPaneCount())
+	{
+		TRACE0("WARNING: Pane index out of range.\n");
+		nIndex = GetPaneCount();
+	}
+
+	if (CommandToIndex(nID) != -1)
+	{
+		TRACE1("WARNING: Pane ID %d already exists in the status bar.\n", nID);
+	}
+
+	m_arrPanes.InsertAt(nIndex, pPane);
+	pPane->m_nID = nID;
+	pPane->m_pStatusBar = this;
+
+	if (nID != 0)
+	{
+		CString strText;
+		if (strText.LoadString(nID))
+		{
+			pPane->m_strText = strText;
+		}
+		pPane->BestFit();
 	}
 	else
 	{
-		CRect rcEvents = GetViewGroup()->m_LayoutX.m_rcDayDetails;
-		BOOL bETopVisible = m_rcEvent.top <= rcEvents.bottom &&
-			m_rcEvent.top >= rcEvents.top-2;
+		// no indicator (must access via index)
+		// default to 1/4 the screen width (first pane is stretchy)
+		pPane->m_cxText = ::GetSystemMetrics(SM_CXSCREEN)/4;
+		if (nIndex == 0)
+			pPane->m_nStyle |= (SBPS_STRETCH | SBPS_NOBORDERS);
+	}
 
-		BOOL bEBottomVisible = m_rcEvent.bottom <= rcEvents.bottom &&
-			m_rcEvent.bottom >= rcEvents.top-2;
+	UpdateAllPanes(TRUE, TRUE);
 
-		BOOL bEBodyVisible = !(m_rcEvent.top < rcEvents.top-2 &&
-			m_rcEvent.bottom < rcEvents.top-2
-			||
-			m_rcEvent.top > rcEvents.bottom &&
-			m_rcEvent.bottom > rcEvents.bottom);
+	return pPane;
+}
 
-		if (bTopAndBottom)
+CXTPStatusBarPane* CXTPStatusBar::AddIndicator(UINT nID, int nIndex)
+{
+	if (nIndex < 0 || nIndex > GetPaneCount())
+	{
+		TRACE0("WARNING: Pane index out of range.\n");
+		return NULL;
+	}
+
+	if (CommandToIndex(nID) != -1)
+	{
+		TRACE1("WARNING: Pane ID %d already exists in the status bar.\n", nID);
+		return NULL;
+	}
+
+	return AddIndicator(new CXTPStatusBarPane(), nID, nIndex);
+}
+
+void CXTPStatusBar::PositionControls()
+{
+	CXTPClientRect rcClient(this);
+
+	int cx = ::GetSystemMetrics(SM_CXEDGE);
+
+	for (int i = 0; i < GetPaneCount(); i++)
+	{
+		CXTPStatusBarPane* pPane = GetPane(i);
+		if (pPane->m_hWndPane == NULL || !IsWindow(pPane->m_hWndPane))
+			continue;
+
+		CRect rcPane;
+		GetItemRect(i, &rcPane);
+
+		if (pPane->HasBorders())
 		{
-			bETopVisible |= !bCheckTop;
-			bEBottomVisible |= !bCheckBottom;
+			rcPane.DeflateRect(cx, cx);
+		}
 
-			bVisible = bETopVisible && bEBottomVisible;
+		::MoveWindow(pPane->m_hWndPane, rcPane.left, rcPane.top, rcPane.Width(), rcPane.Height(), TRUE);
+	}
+}
+
+BOOL CXTPStatusBar::AddControl(CWnd* pWnd, UINT nID, BOOL bAutoDelete)
+{
+	int nIndex = CommandToIndex (nID);
+
+	if (nIndex == -1)
+		return FALSE;
+
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+	if (!pPane)
+		return FALSE;
+
+	pPane->m_hWndPane = pWnd->GetSafeHwnd();
+	pPane->m_bAutoDeleteWnd = bAutoDelete;
+
+	PositionControls();
+	return TRUE;
+}
+
+void CXTPStatusBar::OnWindowPosChanged(WINDOWPOS* lpwndpos)
+{
+	CControlBar::OnWindowPosChanged(lpwndpos);
+
+	CXTPPaintManager* pPaintManager = GetPaintManager();
+	if (pPaintManager && pPaintManager->BaseTheme() == xtpThemeRibbon)
+	{
+		if ((lpwndpos->flags & (SWP_SHOWWINDOW | SWP_HIDEWINDOW)) != 0)
+		{
+			GetParentFrame()->SetWindowPos(0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
+		}
+	}
+}
+
+LRESULT CXTPStatusBar::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM)
+{
+	// handle delay hide/show
+	BOOL bVis = GetStyle() & WS_VISIBLE;
+	UINT swpFlags = 0;
+	if ((m_nStateFlags & delayHide) && bVis)
+		swpFlags = SWP_HIDEWINDOW;
+	else if ((m_nStateFlags & delayShow) && !bVis)
+		swpFlags = SWP_SHOWWINDOW;
+	m_nStateFlags &= ~(delayShow | delayHide);
+	if (swpFlags != 0)
+	{
+		SetWindowPos(NULL, 0, 0, 0, 0, swpFlags |
+			SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+	}
+
+	// the style must be visible and if it is docked
+	// the dockbar style must also be visible
+	if ((GetStyle() & WS_VISIBLE) &&
+		(m_pDockBar == NULL || (m_pDockBar->GetStyle() & WS_VISIBLE)))
+	{
+		// MFCBUG: removed check for IsFrameWnd so we can update statusbar
+		// for dialog based applications as well as doc/view apps.
+		CFrameWnd* pTarget = (CFrameWnd*)GetOwner();
+		if (pTarget == NULL)
+			pTarget = (CFrameWnd*)GetParent();
+		if (pTarget != NULL)
+			OnUpdateCmdUI(pTarget, (BOOL)wParam);
+	}
+	return 0L;
+}
+
+INT_PTR CXTPStatusBar::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
+{
+	ASSERT_VALID(this);
+	ASSERT(::IsWindow(m_hWnd));
+
+	// check child windows first by calling CControlBar
+	INT_PTR nHit = CControlBar::OnToolHitTest(point, pTI);
+	if (nHit != -1)
+		return nHit;
+
+	CRect rcPane;
+	CXTPStatusBarPane* pPane = HitTest(point, &rcPane);
+	if (pPane)
+	{
+		nHit = pPane->GetID();
+
+		CString strTip = pPane->GetTooltip();
+		if (strTip.IsEmpty())
+			return -1;
+
+		CXTPToolTipContext::FillInToolInfo(pTI, m_hWnd, rcPane, nHit, strTip);
+
+		return nHit;
+	}
+	return -1;
+}
+
+void CXTPStatusBar::OnPaneClick(CXTPStatusBarPane* pPane)
+{
+	GetParentFrame()->SendMessage(WM_COMMAND, pPane->GetID());
+}
+
+
+BOOL CXTPStatusBar::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+{
+
+
+	if (m_pToolTipContext)
+	{
+		m_pToolTipContext->FilterToolTipMessage(this, message, wParam, lParam);
+	}
+
+	return CControlBar::OnWndMsg(message, wParam, lParam, pResult);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPStatusBarPaneWnd
+/////////////////////////////////////////////////////////////////////////////
+CXTPStatusBarPaneWnd::CXTPStatusBarPaneWnd()
+{
+}
+
+CXTPStatusBarPaneWnd::~CXTPStatusBarPaneWnd()
+{
+}
+
+IMPLEMENT_DYNCREATE(CXTPStatusBarPaneWnd, CWnd)
+
+BEGIN_MESSAGE_MAP(CXTPStatusBarPaneWnd, CWnd)
+	//{{AFX_MSG_MAP(CXTPStatusBarPaneWnd)
+	ON_WM_PAINT()
+	ON_WM_ERASEBKGND()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+void CXTPStatusBarPaneWnd::OnPaint()
+{
+	// background is already filled in gray
+	CPaintDC dc(this);
+
+	// Get the client rect.
+	CXTPClientRect rcClient(this);
+
+	CXTPBufferDC memDC(dc, rcClient);
+	memDC.FillSolidRect(rcClient, GetXtremeColor(COLOR_3DFACE));
+
+	// Draw the logo text
+	DoPaint(&memDC, rcClient);
+}
+
+BOOL CXTPStatusBarPaneWnd::OnEraseBkgnd(CDC* /*pDC*/)
+{
+	return TRUE;
+}
+
+BOOL CXTPStatusBarPaneWnd::Create(LPCTSTR lpszWindowName, CWnd* pParentWnd, DWORD dwStyle/*= WS_CHILD | WS_VISIBLE*/, UINT m_nID/*= 0xffff*/)
+{
+	CString wndClass = ::AfxRegisterWndClass(CS_HREDRAW | CS_DBLCLKS);
+
+	if (!CWnd::Create(wndClass, lpszWindowName, dwStyle,
+		CRect(0, 0, 0, 0), pParentWnd, m_nID))
+	{
+		return FALSE;
+	}
+
+	m_strWindowText = lpszWindowName;
+
+	return TRUE;
+}
+
+void CXTPStatusBarPaneWnd::DoPaint(CDC* /*pDC*/, CRect& /*rcClient*/)
+{
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPStatusBarLogoPane
+/////////////////////////////////////////////////////////////////////////////
+CXTPStatusBarLogoPane::CXTPStatusBarLogoPane()
+{
+	CXTPPaintManager::CNonClientMetrics ncm;
+	ncm.lfMenuFont.lfWeight = FW_BOLD;
+
+	SetLogoFont(ncm.lfMenuFont);
+}
+
+CXTPStatusBarLogoPane::~CXTPStatusBarLogoPane()
+{
+	m_Font.DeleteObject();
+}
+
+BEGIN_MESSAGE_MAP(CXTPStatusBarLogoPane, CXTPStatusBarPaneWnd)
+	//{{AFX_MSG_MAP(CXTPStatusBarLogoPane)
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+void CXTPStatusBarLogoPane::SetLogoFont(LPCTSTR lpszFontName, int nHeight/*= 24*/,
+	int nWeight/*= FW_BOLD*/, BOOL bItalic/*= TRUE*/, BOOL bUnderline/*= FALSE*/)
+{
+	if (m_Font.m_hObject)
+	{
+		m_Font.DeleteObject();
+	}
+
+	m_Font.CreateFont(nHeight, 0, 0, 0, nWeight, (BYTE)bItalic,
+		(BYTE)bUnderline, 0, 0, 0, 0, 0, 0, lpszFontName);
+	SetTextSize();
+}
+
+void CXTPStatusBarLogoPane::SetLogoFont(LOGFONT& logFont)
+{
+	if (m_Font.m_hObject)
+	{
+		m_Font.DeleteObject();
+	}
+
+	m_Font.CreateFontIndirect(&logFont);
+	SetTextSize();
+}
+
+void CXTPStatusBarLogoPane::SetTextSize()
+{
+	CWindowDC dc(NULL);
+	CFont* pOldFont = dc.SelectObject(&m_Font);
+	m_sizeText = dc.GetTextExtent(m_strWindowText);
+	dc.SelectObject(pOldFont);
+}
+
+void CXTPStatusBarLogoPane::DoPaint(CDC* pDC, CRect& rcClient)
+{
+	// Determine the size of the logo text.
+	CSize sizeText = pDC->GetTextExtent(m_strWindowText);
+
+	// Calculate the top "y" location.
+	int y = (rcClient.Height()-sizeText.cy)/2;
+
+	// Resize the rect to reflect the actual text size.
+	rcClient.top = y;
+	rcClient.bottom = rcClient.top + sizeText.cy;
+
+	// Set the text color.
+	pDC->SetTextColor(GetXtremeColor(COLOR_3DSHADOW));
+
+	// Draw text
+	pDC->SetBkMode(TRANSPARENT);
+
+	CXTPFontDC fnt(pDC, &m_Font);
+	pDC->DrawText(m_strWindowText, &rcClient,
+		DT_VCENTER | DT_CENTER | DT_END_ELLIPSIS | DT_SINGLELINE);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPStatusBarIconPane
+/////////////////////////////////////////////////////////////////////////////
+
+CXTPStatusBarIconPane::CXTPStatusBarIconPane()
+{
+	m_hIcon = NULL;
+	m_sizeIcon.cx = ::GetSystemMetrics(SM_CXSMICON);
+	m_sizeIcon.cy = ::GetSystemMetrics(SM_CYSMICON);
+}
+
+CXTPStatusBarIconPane::~CXTPStatusBarIconPane()
+{
+	if (m_hIcon)
+	{
+		DestroyIcon(m_hIcon);
+	}
+}
+
+BEGIN_MESSAGE_MAP(CXTPStatusBarIconPane, CXTPStatusBarPaneWnd)
+	//{{AFX_MSG_MAP(CXTPStatusBarIconPane)
+	ON_WM_ENABLE()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+void CXTPStatusBarIconPane::DoPaint(CDC* pDC, CRect& rcClient)
+{
+	if (m_hIcon)
+	{
+		// determine the x-y location of the icon
+		CPoint point;
+		point.x = (rcClient.Width() -m_sizeIcon.cx)/2;
+		point.y = (rcClient.Height()-m_sizeIcon.cy)/2;
+
+		// draw the icon associated with this pane.
+		if (IsWindowEnabled())
+		{
+			pDC->DrawState(point, m_sizeIcon, m_hIcon,
+				DST_ICON | DSS_NORMAL, (HBRUSH)NULL);
 		}
 		else
 		{
-			bVisible = bETopVisible || bEBottomVisible || bEBodyVisible;
+			CBrush brush(GetXtremeColor(COLOR_3DSHADOW));
+			pDC->DrawState(point, m_sizeIcon, m_hIcon,
+				DST_ICON | DSS_MONO, (HBRUSH)brush);
 		}
-
 	}
-	return bVisible;
 }
 
-void CXTPCalendarDayViewEvent::ChangeEventPlace(int nNewPlace)
+void CXTPStatusBarIconPane::SetPaneIcon(LPCTSTR lpszIconID)
 {
-	CXTPCalendarTheme* pTheme = XTP_SAFE_GET3(GetViewGroup_(), GetViewDay_(), GetView_(), GetTheme(), NULL);
+	// Locate the resource handle for the icon id.
+	HINSTANCE hInstance = AfxFindResourceHandle(lpszIconID, RT_GROUP_ICON);
 
-	if (pTheme)
+	if (m_hIcon)
 	{
-		CRect rcEventNew = m_rcEvent;
-		pTheme->GetDayViewPart()->GetDayPart()->GetGroupPart()->GetMultiDayEventPart()->CalcEventYs(rcEventNew, nNewPlace);
-
-		int nY0 = m_rcEvent.top;
-		int nY1 = rcEventNew.top;
-
-		_ChangeEventPlace(nNewPlace, nY0, nY1);
+		DestroyIcon(m_hIcon);
 	}
-	else
-	{
-		TBase::ChangeEventPlace(nNewPlace);
-	}
+
+	// Load the image for the icon pane.
+	m_hIcon = (HICON)::LoadImage(hInstance, lpszIconID, IMAGE_ICON,
+		::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
 }
 
-void CXTPCalendarDayViewEvent::Draw(CDC* pDC)
+void CXTPStatusBarIconPane::SetPaneIcon(int nIconID)
 {
-	BOOL bNoVisibleMDEvent = IsMultidayEvent() && !IsVisible();
-
-	if (m_nMultiDayEventFlags & xtpCalendarMultiDaySlave || bNoVisibleMDEvent)
-		return;// was drawn in the Master (or out of events rect)
-
-	//ASSERT((m_nMultiDayEventFlags & xtpCalendarMultiDayMaster) || m_nMultiDayEventFlags == xtpCalendarMultiDayNoMultiDay);
-
-	XTP_SAFE_CALL3(GetView(), GetPaintManager(), GetDayViewEventPart(), OnDraw(pDC, this) );
+	SetPaneIcon(MAKEINTRESOURCE(nIconID));
 }
 
-BOOL CXTPCalendarDayViewEvent::HitTestEx(CPoint point, XTP_CALENDAR_HITTESTINFO* pInfo) const
+void CXTPStatusBarIconPane::OnEnable(BOOL bEnable)
 {
-	if (!pInfo || !GetViewGroup() || !GetViewGroup()->GetViewDay())
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
+	CXTPStatusBarPaneWnd::OnEnable(bEnable);
 
-	CRect rcEvents = GetEventsRect();
-
-	CRect rcEventMax2(m_rcEventMax);
-
-	if (IsSelected() && !IsMultidayEvent())
-	{
-		rcEventMax2.top = rcEventMax2.top - 5;
-		rcEventMax2.bottom = rcEventMax2.bottom + 5;
-	}
-
-	BOOL bVisible = IsVisibleEx(TRUE, TRUE, FALSE);
-	if (!rcEventMax2.PtInRect(point) || !rcEvents.PtInRect(point) || !bVisible)
-	{
-		return FALSE;
-	}
-	//-----------------------------------------
-	XTP_CALENDAR_HITTESTINFO tmpInfo, tmpInfo2;
-	tmpInfo.pt = tmpInfo2.pt = point;
-
-	tmpInfo.pViewDay = GetViewGroup()->GetViewDay();
-	tmpInfo.pViewGroup = GetViewGroup();
-	tmpInfo.pViewEvent = (CXTPCalendarViewEvent*)this;
-	tmpInfo.uHitCode = xtpCalendarHitTestUnknown;
-
-	if (GetViewGroup()->HitTestDateTime(&tmpInfo2))
-	{
-		tmpInfo.dt = tmpInfo2.dt;
-		tmpInfo.bTimePartValid = tmpInfo2.bTimePartValid;
-		tmpInfo.uHitCode |= (tmpInfo2.uHitCode & xtpCalendarHitTestDayView_Mask);
-	}
-	else
-	{
-		tmpInfo.dt = GetViewGroup()->GetViewDay()->GetDayDate();
-		tmpInfo.bTimePartValid = FALSE;
-	}
-	//-----------------------------------------
-
-	if (IsMultidayEvent())
-	{
-		BOOL bIsFirst = (m_nMultiDayEventFlags & xtpCalendarMultiDayFirst);
-		BOOL bIsLast = (m_nMultiDayEventFlags & xtpCalendarMultiDayLast);
-		//BOOL bIsMiddle = (m_nMultiDayEventFlags & xtpCalendarMultiDayMiddle);
-
-		CRect rcBegin = m_rcEventMax;
-		rcBegin.right = min(m_rcEvent.left + 5, m_rcEvent.right);
-
-		CRect rcEnd = m_rcEventMax;
-		rcEnd.left = max(m_rcEvent.right - 5, m_rcEvent.left);
-
-		if (bIsFirst && rcBegin.PtInRect(point))
-		{
-			tmpInfo.uHitCode = xtpCalendarHitTestEventResizeHArea | xtpCalendarHitTestEventResizeBegin;
-			*pInfo = tmpInfo;
-			return TRUE;
-		}
-
-		if (bIsLast && rcEnd.PtInRect(point))
-		{
-			tmpInfo.uHitCode = xtpCalendarHitTestEventResizeHArea | xtpCalendarHitTestEventResizeEnd;
-			*pInfo = tmpInfo;
-			return TRUE;
-		}
-
-		if (m_rcEvent.PtInRect(point))
-		{
-			tmpInfo.uHitCode = xtpCalendarHitTestEventTextArea;
-			*pInfo = tmpInfo;
-			return TRUE;
-		}
-		return FALSE;
-	}
-
-	CRect rcTime = m_rcEvent;
-	rcTime.right = m_rcTimeframe.right + 1;
-
-	CRect rcText = m_rcEvent;
-	rcText.left = rcTime.right;
-
-	CRect rcBegin = m_rcEvent;
-	rcBegin.bottom = min(m_rcEvent.top + 5, m_rcEvent.bottom);
-
-	CRect rcEnd = m_rcEvent;
-	rcEnd.top = max(m_rcEvent.bottom - 5, m_rcEvent.top);
-
-	if (IsSelected())
-	{
-		rcBegin.top = m_rcEvent.top - 5;
-		rcEnd.bottom = m_rcEvent.bottom + 5;
-	}
-
-	if (rcTime.PtInRect(point))
-	{
-		tmpInfo.uHitCode = xtpCalendarHitTestEventDragArea;
-		*pInfo = tmpInfo;
-		return TRUE;
-	}
-
-	if (rcBegin.PtInRect(point))
-	{
-		tmpInfo.uHitCode = xtpCalendarHitTestEventResizeVArea | xtpCalendarHitTestEventResizeBegin;
-		*pInfo = tmpInfo;
-		return TRUE;
-	}
-
-	if (rcEnd.PtInRect(point))
-	{
-		tmpInfo.uHitCode = xtpCalendarHitTestEventResizeVArea | xtpCalendarHitTestEventResizeEnd;
-		*pInfo = tmpInfo;
-		return TRUE;
-	}
-
-	if (rcText.PtInRect(point))
-	{
-		tmpInfo.uHitCode = xtpCalendarHitTestEventTextArea;
-		*pInfo = tmpInfo;
-		return TRUE;
-	}
-
-	//-----------------------------------------
-	return FALSE;
+	// Refresh the icon to indicate state.
+	Invalidate();
+	UpdateWindow();
 }
 
-CFont* CXTPCalendarDayViewEvent::GetSubjectEditorFont() const
-{
-	CFont* pFont = &XTP_SAFE_GET3(GetView(), GetPaintManager(), GetDayViewEventPart(), GetTextFont(), *((CFont*)(NULL)));
-	ASSERT(pFont);
-	return pFont;
-}
 
-CXTPCalendarViewEvent* CXTPCalendarDayViewEvent::StartEditSubject()
-{
-	XTP_SAFE_CALL3(GetViewGroup(), GetViewDay(), GetView(), EnsureVisibleH(this));
 
-	CXTPCalendarViewEvent* pEV = TBase::StartEditSubject();
-
-	AdjustSubjectEditorEx(FALSE);
-
-	return pEV;
-}

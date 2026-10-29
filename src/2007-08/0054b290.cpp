@@ -1,19 +1,16 @@
-// from server: 48% by colin
-struct S_func_0054b290
-{
-    void f();
-};
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_a8b429b397bb580b.cpp
 
-extern "C" void __stdcall sub_77E698(void*, const char*);
-extern "C" void __stdcall sub_77E6AC(void*);
-extern "C" void __stdcall sub_412DC0(void*, void*);
-
-void S_func_0054b290::f()
-{
-    char buf[32];
-    *(void**)buf = 0;
-    sub_77E698(buf, "no random access");
-    sub_412DC0(this, buf);
-    *(void**)this = (void*)0x7A783C;
-    sub_77E6AC(buf);
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_gzip_compressor<std::allocator<char> >,std::char_traits<char>,std::allocator<char>,boost::iostreams::output>;

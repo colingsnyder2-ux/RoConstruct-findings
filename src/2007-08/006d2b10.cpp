@@ -1,385 +1,465 @@
-// from server: 87% by colin
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-8.0 atlmfc/src/mfc/array_d.cpp
+// roc-lib: xtp-11.2.2-vc8 Source/Calendar/XTPCalendarEventLabel.cpp
 
 // Candidate translation unit (score above; library headers required).
-
-// This is a part of the Microsoft Foundation Classes C++ library.
-// Copyright (C) Microsoft Corporation
-// All rights reserved.
+// XTPCalendarEventLabel.cpp: implementation of the CXTPCalendarEventLabel and
+// CXTPCalendarEventLabels classes.
 //
-// This source code is only intended as a supplement to the
-// Microsoft Foundation Classes Reference and related
-// electronic documentation provided with the library.
-// See these sources for detailed information regarding the
-// Microsoft Foundation Classes product.
-
+// This file is a part of the XTREME CALENDAR MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
 /////////////////////////////////////////////////////////////////////////////
-//
-// Implementation of parameterized Array
-//
-/////////////////////////////////////////////////////////////////////////////
-// NOTE: we allocate an array of 'm_nMaxSize' elements, but only
-//  the current size 'm_nSize' contains properly constructed
-//  objects.
 
 #include "stdafx.h"
-#include <wchar.h>
-
-
-
-#define new DEBUG_NEW
-
-/////////////////////////////////////////////////////////////////////////////
-
-CDWordArray::CDWordArray()
-{
-	m_pData = NULL;
-	m_nSize = m_nMaxSize = m_nGrowBy = 0;
-}
-
-CDWordArray::~CDWordArray()
-{
-	ASSERT_VALID(this);
-
-	delete[] (BYTE*)m_pData;
-}
-
-void CDWordArray::SetSize(INT_PTR nNewSize, INT_PTR nGrowBy)
-{
-	ASSERT_VALID(this);
-	ASSERT(nNewSize >= 0);
-
-	if(nNewSize < 0 )
-		AfxThrowInvalidArgException();
-
-	if (nGrowBy >= 0)
-		m_nGrowBy = nGrowBy;  // set new size
-
-	if (nNewSize == 0)
-	{
-		// shrink to nothing
-		delete[] (BYTE*)m_pData;
-		m_pData = NULL;
-		m_nSize = m_nMaxSize = 0;
-	}
-	else if (m_pData == NULL)
-	{
-		// create one with exact size
-#ifdef SIZE_T_MAX
-		ASSERT(nNewSize <= SIZE_T_MAX/sizeof(DWORD));    // no overflow
-#endif
-		m_pData = (DWORD*) new BYTE[nNewSize * sizeof(DWORD)];
-
-		memset(m_pData, 0, nNewSize * sizeof(DWORD));  // zero fill
-
-		m_nSize = m_nMaxSize = nNewSize;
-	}
-	else if (nNewSize <= m_nMaxSize)
-	{
-		// it fits
-		if (nNewSize > m_nSize)
-		{
-			// initialize the new elements
-
-			memset(&m_pData[m_nSize], 0, (nNewSize-m_nSize) * sizeof(DWORD));
-
-		}
-
-		m_nSize = nNewSize;
-	}
-	else
-	{
-		// otherwise, grow array
-		INT_PTR nGrowArrayBy = m_nGrowBy;
-		if (nGrowArrayBy == 0)
-		{
-			// heuristically determine growth when nGrowArrayBy == 0
-			//  (this avoids heap fragmentation in many situations)
-			nGrowArrayBy = min(1024, max(4, m_nSize / 8));
-		}
-		INT_PTR nNewMax;
-		if (nNewSize < m_nMaxSize + nGrowArrayBy)
-			nNewMax = m_nMaxSize + nGrowArrayBy;  // granularity
-		else
-			nNewMax = nNewSize;  // no slush
-
-		ASSERT(nNewMax >= m_nMaxSize);  // no wrap around
-		
-		if(nNewMax  < m_nMaxSize)
-			AfxThrowInvalidArgException();
-
-#ifdef SIZE_T_MAX
-		ASSERT(nNewMax <= SIZE_T_MAX/sizeof(DWORD)); // no overflow
-#endif
-		DWORD* pNewData = (DWORD*) new BYTE[nNewMax * sizeof(DWORD)];
-
-		// copy new data from old
-		Checked::memcpy_s(pNewData, nNewMax * sizeof(DWORD), 
-			m_pData, m_nSize * sizeof(DWORD));
-
-		// construct remaining elements
-		ASSERT(nNewSize > m_nSize);
-
-		memset(&pNewData[m_nSize], 0, (nNewSize-m_nSize) * sizeof(DWORD));
-
-
-		// get rid of old stuff (note: no destructors called)
-		delete[] (BYTE*)m_pData;
-		m_pData = pNewData;
-		m_nSize = nNewSize;
-		m_nMaxSize = nNewMax;
-	}
-}
-
-INT_PTR CDWordArray::Append(const CDWordArray& src)
-{
-	ASSERT_VALID(this);
-	ASSERT(this != &src);   // cannot append to itself
-
-	if(this == &src)
-		AfxThrowInvalidArgException();
-
-	INT_PTR nOldSize = m_nSize;
-	SetSize(m_nSize + src.m_nSize);
-
-	Checked::memcpy_s(m_pData + nOldSize, src.m_nSize * sizeof(DWORD), 
-		src.m_pData, src.m_nSize * sizeof(DWORD));
-
-	return nOldSize;
-}
-
-void CDWordArray::Copy(const CDWordArray& src)
-{
-	ASSERT_VALID(this);
-	ASSERT(this != &src);   // cannot append to itself
-
-	if(this != &src)
-	{
-		SetSize(src.m_nSize);
-
-		Checked::memcpy_s(m_pData, src.m_nSize * sizeof(DWORD), 
-			src.m_pData, src.m_nSize * sizeof(DWORD));
-	}	
-
-}
-
-void CDWordArray::FreeExtra()
-{
-	ASSERT_VALID(this);
-
-	if (m_nSize != m_nMaxSize)
-	{
-		// shrink to desired size
-#ifdef SIZE_T_MAX
-		ASSERT(m_nSize <= SIZE_T_MAX/sizeof(DWORD)); // no overflow
-#endif
-		DWORD* pNewData = NULL;
-		if (m_nSize != 0)
-		{
-			pNewData = (DWORD*) new BYTE[m_nSize * sizeof(DWORD)];
-
-			// copy new data from old
-			Checked::memcpy_s(pNewData, m_nSize * sizeof(DWORD), 
-				m_pData, m_nSize * sizeof(DWORD));
-		}
-
-		// get rid of old stuff (note: no destructors called)
-		delete[] (BYTE*)m_pData;
-		m_pData = pNewData;
-		m_nMaxSize = m_nSize;
-	}
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-void CDWordArray::SetAtGrow(INT_PTR nIndex, DWORD newElement)
-{
-	ASSERT_VALID(this);
-	ASSERT(nIndex >= 0);
-
-	if(nIndex < 0)
-		AfxThrowInvalidArgException();
-
-	if (nIndex >= m_nSize)
-		SetSize(nIndex+1);
-	m_pData[nIndex] = newElement;
-}
-
-
-
-
-
-void CDWordArray::InsertAt(INT_PTR nIndex, DWORD newElement, INT_PTR nCount)
-{
-
-	ASSERT_VALID(this);
-	ASSERT(nIndex >= 0);    // will expand to meet need
-	ASSERT(nCount > 0);     // zero or negative size not allowed
-
-	if(nIndex < 0 || nCount <= 0)
-		AfxThrowInvalidArgException();
-		
-	if (nIndex >= m_nSize)
-	{
-		// adding after the end of the array
-		SetSize(nIndex + nCount);  // grow so nIndex is valid
-	}
-	else
-	{
-		// inserting in the middle of the array
-		INT_PTR nOldSize = m_nSize;
-		SetSize(m_nSize + nCount);  // grow it to new size
-
-		// shift old data up to fill gap 
-		Checked::memmove_s(&m_pData[nIndex+nCount],(m_nSize-(nIndex+nCount)) * sizeof(DWORD),
-			&m_pData[nIndex], (nOldSize-nIndex) * sizeof(DWORD));
-
-		// re-init slots we copied from
-		memset(&m_pData[nIndex], 0, nCount * sizeof(DWORD));
-	}
-
-	// insert new value in the gap
-	ASSERT(nIndex + nCount <= m_nSize);
-
-
-
-	// copy elements into the empty space
-	while (nCount--)
-		m_pData[nIndex++] = newElement;
-}
-
-
-
-void CDWordArray::RemoveAt(INT_PTR nIndex, INT_PTR nCount)
-{
-	ASSERT_VALID(this);
-	ASSERT(nIndex >= 0);
-	ASSERT(nCount >= 0);
-	INT_PTR nUpperBound = nIndex + nCount;
-	ASSERT(nUpperBound <= m_nSize && nUpperBound >= nIndex && nUpperBound >= nCount);
-
-	if(nIndex < 0 || nCount < 0 || (nUpperBound > m_nSize) || (nUpperBound < nIndex) || (nUpperBound < nCount))
-		AfxThrowInvalidArgException();
-		
-	// just remove a range
-	INT_PTR nMoveCount = m_nSize - (nUpperBound);
-
-	if (nMoveCount)
-	{
-		Checked::memmove_s(&m_pData[nIndex], nMoveCount * sizeof(DWORD), 
-			&m_pData[nUpperBound], nMoveCount * sizeof(DWORD));
-	}
-
-	m_nSize -= nCount;
-}
-
-void CDWordArray::InsertAt(INT_PTR nStartIndex, CDWordArray* pNewArray)
-{
-	ASSERT_VALID(this);
-	ASSERT(pNewArray != NULL);
-	ASSERT_KINDOF(CDWordArray, pNewArray);
-	ASSERT_VALID(pNewArray);
-	ASSERT(nStartIndex >= 0);
-
-	if(pNewArray == NULL || nStartIndex < 0)
-		AfxThrowInvalidArgException();
-
-	if (pNewArray->GetSize() > 0)
-	{
-		InsertAt(nStartIndex, pNewArray->GetAt(0), pNewArray->GetSize());
-		for (INT_PTR i = 0; i < pNewArray->GetSize(); i++)
-			SetAt(nStartIndex + i, pNewArray->GetAt(i));
-	}
-}
-
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-// Serialization
-
-void CDWordArray::Serialize(CArchive& ar)
-{
-	UINT_PTR nDWORDsLeft;
-	UINT nDWORDsToWrite;
-	UINT nDWORDsToRead;
-	DWORD* pdwData;
-
-	ASSERT_VALID(this);
-
-	CObject::Serialize(ar);
-
-	if (ar.IsStoring())
-	{
-		ar.WriteCount(m_nSize);
-		nDWORDsLeft = m_nSize;
-		pdwData = m_pData;
-		while(nDWORDsLeft > 0)
-		{
-			nDWORDsToWrite = UINT(min(nDWORDsLeft, INT_MAX/sizeof(DWORD)));
-			ar.Write(pdwData, nDWORDsToWrite*sizeof(DWORD));
-			nDWORDsLeft -= nDWORDsToWrite;
-			pdwData += nDWORDsToWrite;
-		}
-	}
-	else
-	{
-		DWORD_PTR nOldSize = ar.ReadCount();
-		SetSize(nOldSize);
-		nDWORDsLeft = m_nSize;
-		pdwData = m_pData;
-		while(nDWORDsLeft > 0)
-		{
-			nDWORDsToRead = UINT(min(nDWORDsLeft, INT_MAX/sizeof(DWORD)));
-			ar.EnsureRead(pdwData, nDWORDsToRead*sizeof(DWORD));
-			nDWORDsLeft -= nDWORDsToRead;
-			pdwData += nDWORDsToRead;
-		}
-	}
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// Diagnostics
+#include "resource.h"
+
+#include "Common/XTPPropExchange.h"
+#include "Common/XTPVC50Helpers.h"
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPDrawHelpers.h"
+
+#include "XTPCalendarEventLabel.h"
+#include "XTPCalendarUtils.h"
+#include "XTPCalendarDefines.h"
 
 #ifdef _DEBUG
-void CDWordArray::Dump(CDumpContext& dc) const
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+IMPLEMENT_DYNAMIC(CXTPCalendarEventLabel, CCmdTarget)
+IMPLEMENT_DYNAMIC(CXTPCalendarEventLabels, CCmdTarget)
+
+IMPLEMENT_DYNCREATE(CXTPCalendarEventCategory, CCmdTarget)
+IMPLEMENT_DYNCREATE(CXTPCalendarEventCategories, CCmdTarget)
+
+IMPLEMENT_DYNAMIC(CXTPCalendarUIntArray,    CCmdTarget)
+IMPLEMENT_DYNAMIC(CXTPCalendarIconIDs,          CXTPCalendarUIntArray)
+IMPLEMENT_DYNAMIC(CXTPCalendarEventCategoryIDs, CXTPCalendarUIntArray)
+
+////////////////////////////////////////////////////////////////////////////
+CXTPCalendarEventLabel::CXTPCalendarEventLabel(int nID, COLORREF clrColor, LPCTSTR pcszName)
 {
-	CObject::Dump(dc);
+	m_nLabelID = nID;
+	m_clrColor = clrColor;
+	m_strName = pcszName;
 
-	dc << "with " << m_nSize << " elements";
-	if (dc.GetDepth() > 0)
-	{
-		for (INT_PTR i = 0; i < m_nSize; i++)
-			dc << "\n\t[" << i << "] = " << m_pData[i];
-	}
-
-	dc << "\n";
 }
 
-void CDWordArray::AssertValid() const
+////////////////////////////////////////////////////////////////////////////
+CXTPCalendarEventLabels::CXTPCalendarEventLabels()
 {
-	CObject::AssertValid();
 
-	if (m_pData == NULL)
+}
+
+CXTPCalendarEventLabels::~CXTPCalendarEventLabels()
+{
+	RemoveAll();
+}
+
+CXTPCalendarEventLabel* CXTPCalendarEventLabels::Find(int nLabelID) const
+{
+	int nFIdx = FindIndex(nLabelID);
+	if (nFIdx >= 0)
 	{
-		ASSERT(m_nSize == 0);
-		ASSERT(m_nMaxSize == 0);
+		return GetAt(nFIdx);
+	}
+	return NULL;
+}
+
+int CXTPCalendarEventLabels::FindIndex(int nLabelID) const
+{
+	int nCount = GetCount();
+
+	if (nLabelID >= 0 && nLabelID < nCount)
+	{
+		CXTPCalendarEventLabel* pLabel = GetAt(nLabelID);
+
+		if (pLabel && pLabel->m_nLabelID == nLabelID)
+		{
+			return nLabelID;
+		}
+	}
+
+	for (int i = 0; i < nCount; i++)
+	{
+		CXTPCalendarEventLabel* pLabel = GetAt(i);
+
+		if (pLabel && pLabel->m_nLabelID == nLabelID)
+		{
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+void CXTPCalendarEventLabels::InitDefaultValues()
+{
+	RemoveAll();
+
+	//XTP_CALENDAR_NONE_LABEL_ID = 0
+	CXTPCalendarEventLabel* pLabel;
+	pLabel = new CXTPCalendarEventLabel(0, RGB(255, 255, 255), _T("None"));
+	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_NONE);
+	InsertAt(0, pLabel);
+
+	pLabel = new CXTPCalendarEventLabel(1, RGB(255, 148, 132), _T("Important"));
+	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_IMPORTANT);
+	InsertAt(1, pLabel);
+
+	pLabel = new CXTPCalendarEventLabel(2, RGB(132, 156, 231), _T("Business"));
+	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_BUSINESS);
+	InsertAt(2, pLabel);
+
+	pLabel = new CXTPCalendarEventLabel(3, RGB(165, 222, 99), _T("Personal"));
+	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_PERSONAL);
+	InsertAt(3, pLabel);
+
+	pLabel = new CXTPCalendarEventLabel(4, RGB(231, 231, 214), _T("Vacation"));
+	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_VACATION);
+	InsertAt(4, pLabel);
+
+	pLabel = new CXTPCalendarEventLabel(5, RGB(255, 181, 115), _T("Must Attend"));
+	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_MUSTATTEND);
+	InsertAt(5, pLabel);
+
+	pLabel = new CXTPCalendarEventLabel(6, RGB(132, 239, 247), _T("Travel Required"));
+	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_TRAVELREQUIRED);
+	InsertAt(6, pLabel);
+
+	pLabel = new CXTPCalendarEventLabel(7, RGB(214, 206, 132), _T("Needs Preparation"));
+	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_NEEDSPREPARATION);
+	InsertAt(7, pLabel);
+
+	pLabel = new CXTPCalendarEventLabel(8, RGB(198, 165, 247), _T("Birthday"));
+	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_BIRTHDAY);
+	InsertAt(8, pLabel);
+
+	pLabel = new CXTPCalendarEventLabel(9, RGB(165, 206, 198), _T("Anniversary"));
+	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_ANNIVERSARY);
+	InsertAt(9, pLabel);
+
+	pLabel = new CXTPCalendarEventLabel(10, RGB(255, 231, 115), _T("Phone Call"));
+	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_PHONECALL);
+	InsertAt(10, pLabel);
+}
+
+//===========================================================================
+// CXTPCalendarEventCategory
+CXTPCalendarEventCategory::CXTPCalendarEventCategory(UINT nID, LPCTSTR pcszName,
+							COLORREF clrBorder, COLORREF clrBkBase)
+{
+	m_nID = nID;
+	m_strName = pcszName;
+
+	m_clrBorder = clrBorder;
+	m_clrBkBase = clrBkBase;
+
+}
+
+CXTPCalendarEventCategory::~CXTPCalendarEventCategory()
+{
+}
+
+CXTPPaintManagerColorGradient& CXTPCalendarEventCategory::GetBackgroundColor()
+{
+	if (m_grclrBackground.IsNull())
+	{
+		m_grclrBackground.clrLight.SetStandardValue(XTPDrawHelpers()->LightenColor(156, m_clrBkBase));// 156 - 242, 178, 179;
+		m_grclrBackground.clrDark.SetStandardValue(XTPDrawHelpers()->LightenColor(56, m_clrBkBase));  // 56  - 229,100, 107
+	}
+
+	return m_grclrBackground;
+}
+
+COLORREF CXTPCalendarEventCategory::GetBkColorAllDayEvents()
+{
+	return m_clrBkBase;
+}
+
+COLORREF CXTPCalendarEventCategory::GetBkColorWorkCell()
+{
+	return XTPDrawHelpers()->LightenColor(185, m_clrBkBase); // 185 - 245, 201, 203
+}
+
+COLORREF CXTPCalendarEventCategory::GetBkColorNonWorkCell()
+{
+	return XTPDrawHelpers()->LightenColor(115, m_clrBkBase); // 115 - 237, 146, 150
+}
+
+COLORREF CXTPCalendarEventCategory::GetColorCellBorder()
+{
+	return XTPDrawHelpers()->LightenColor(45, m_clrBkBase); // 45 - 227, 91, 98
+}
+
+//===========================================================================
+//CXTPCalendarEventCategories::CXTPCalendarEventCategories(BOOL bDefaultColorsSet)
+//{
+//  if (bDefaultColorsSet)
+//  {
+////        m_pDefaultColorsSet = NULL;
+////        InitDefaultColorsSet();
+//  }
+//  else
+//  {
+////        m_pDefaultColorsSet = new CXTPCalendarEventCategories(TRUE);
+//      InitDefaultValues();
+//  }
+//
+//#ifdef _XTP_ACTIVEX
+//  EnableAutomation();
+//  EnableTypeLib();
+//#endif
+//}
+
+CXTPCalendarEventCategories::CXTPCalendarEventCategories()
+{
+//  m_pDefaultColorsSet = new CXTPCalendarEventCategories(TRUE);
+	InitDefaultValues();
+
+}
+
+CXTPCalendarEventCategories::~CXTPCalendarEventCategories()
+{
+	//CMDTARGET_RELEASE(m_pDefaultColorsSet);
+}
+
+CXTPCalendarEventCategory* CXTPCalendarEventCategories::Find(UINT nID) const
+{
+	int nFIdx = FindIndex(nID);
+	if (nFIdx >= 0)
+	{
+		return GetAt(nFIdx);
+	}
+	return NULL;
+}
+
+int CXTPCalendarEventCategories::FindIndex(UINT nID) const
+{
+	int nCount = GetCount();
+
+	//---------------------------------------------------------
+	int nDirectIdx = (int)(nID - 1);
+
+	if (nDirectIdx >= 0 && nDirectIdx < nCount)
+	{
+		CXTPCalendarEventCategory* pEvCat = GetAt(nDirectIdx);
+
+		if (pEvCat && pEvCat->GetID() == nID)
+		{
+			return nDirectIdx;
+		}
+	}
+
+	//---------------------------------------------------------
+	for (int i = 0; i < nCount; i++)
+	{
+		CXTPCalendarEventCategory* pEvCat = GetAt(i);
+
+		if (pEvCat && pEvCat->GetID() == nID)
+		{
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+void CXTPCalendarEventCategories::InitDefaultValues()
+{
+	RemoveAll();
+
+	CXTPCalendarEventCategory* pEvCat;
+
+	//---------------------------------------
+	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryYellow, _T("Yellow category"),
+		RGB(154, 149, 25), RGB(255, 251, 155));//RGB(255, 252, 179), RGB(255,249, 91));
+	Add(pEvCat);
+	//---------------------------------------
+	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryGreen, _T("Green category"),
+		RGB(55, 126, 45), RGB(96, 194, 82)); //RGB(196, 232, 190), RGB(136, 210, 127));
+	Add(pEvCat);
+	//---------------------------------------
+	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryRed, _T("Red category"),
+		RGB(167, 29, 35), RGB(220, 56, 65)); //RGB(242, 178, 179), RGB(229,100, 107));
+	Add(pEvCat);
+	//---------------------------------------
+	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryPink, _T("Pink category"),
+		RGB(77, 49, 141), RGB(184, 164, 224)); //RGB(202, 187, 232), RGB(150, 125, 210));
+	Add(pEvCat);
+	//---------------------------------------
+	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryOrange, _T("Orange category"),
+		RGB(173, 77, 13), RGB(247, 187, 137)); //RGB(249, 204, 167), RGB(244, 152, 90));
+	Add(pEvCat);
+	//---------------------------------------
+	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryBlue, _T("Blue category"),
+		RGB(40, 81, 142), RGB(159, 183, 232)); // RGB(183, 201, 238), RGB(119, 158, 218));
+	Add(pEvCat);
+
+
+	//---------------------------------------
+	//pEvCat = new CXTPCalendarEventCategory(1, _T(" category"),
+	//  RGB(, , ), RGB(, , ), RGB(, , ));
+	//Add(pEvCat);
+}
+
+//void CXTPCalendarEventCategories::InitDefaultColorsSet()
+//{
+	// TODO:
+//}
+
+//===========================================================================
+int CXTPCalendarUIntArray::Find(UINT uID) const
+{
+	return TBase::FindElement(uID);
+}
+
+BOOL CXTPCalendarUIntArray::RemoveID(UINT uID)
+{
+	return TBase::RemoveElement(uID);
+}
+
+CString CXTPCalendarUIntArray::SaveToString() const
+{
+	CString strData;
+
+	TCHAR szNumber[34];
+
+	int nCount = GetSize();
+	for (int i = 0; i < nCount; i++)
+	{
+		UINT uElement = GetAt(i);
+
+		ITOT_S((int)uElement, szNumber, _countof(szNumber));
+		szNumber[33] = 0;
+
+		if (!strData.IsEmpty())
+		{
+			strData += _T(",");
+		}
+
+		strData += szNumber;
+	}
+
+	return strData;
+}
+
+void CXTPCalendarUIntArray::LoadFromString(LPCTSTR pcszData)
+{
+	RemoveAll();
+
+	CString strData = pcszData;
+
+	while (!strData.IsEmpty())
+	{
+		CString strNumber = strData.SpanExcluding(_T(","));
+
+		UINT uElement = (UINT)_ttoi(strNumber);
+		Add(uElement);
+
+		int nDelCount = strNumber.GetLength() + 1;
+		nDelCount = min(nDelCount, strData.GetLength());
+		DELETE_S(strData, 0, nDelCount);
+	}
+}
+
+void CXTPCalendarUIntArray::DoPropExchange(CXTPPropExchange* pPX, LPCTSTR pcszSection, LPCTSTR pcszElement)
+{
+	if (!pPX || !pcszSection || !pcszElement)
+	{
+		ASSERT(FALSE);
+		return;
+	}
+
+	long nVersion = 1;
+
+	if (pPX->IsStoring())
+	{
+		CXTPPropExchangeSection secArray(pPX->GetSection(pcszSection));
+		secArray->EmptySection();
+
+		PX_Long(&secArray, _T("Version"), nVersion, 1);
+
+		int nCount = GetSize();
+		CXTPPropExchangeEnumeratorPtr pEnumerator(secArray->GetEnumerator(pcszElement));
+		POSITION posStorage = pEnumerator->GetPosition(nCount);
+
+		for (int i = 0; i < nCount; i++)
+		{
+			ULONG ulElement = (ULONG)GetAt(i);
+
+			CXTPPropExchangeSection secElement(pEnumerator->GetNext(posStorage));
+			PX_ULong(&secElement, _T("Value"), ulElement);
+		}
+	}
+	else if (pPX->IsLoading())
+	{
+		RemoveAll();
+
+		CXTPPropExchangeSection secArray(pPX->GetSection(pcszSection));
+
+		PX_Long(&secArray, _T("Version"), nVersion, 1);
+
+		if (nVersion != 1)
+		{
+			TRACE(_T("ERROR! CXTPCalendarIconIDs::DoPropExchange: Unsupported data version: %d \n"), nVersion);
+			return;
+		}
+
+		CXTPPropExchangeEnumeratorPtr pEnumerator(secArray->GetEnumerator(pcszElement));
+		POSITION posStorage = pEnumerator->GetPosition();
+
+		while (posStorage)
+		{
+			ULONG ulElement = 0;
+
+			CXTPPropExchangeSection secElement(pEnumerator->GetNext(posStorage));
+			PX_ULong(&secElement, _T("Value"), ulElement, 0);
+
+			Add((ULONG)ulElement);
+		}
 	}
 	else
 	{
-		ASSERT(m_nSize >= 0);
-		ASSERT(m_nMaxSize >= 0);
-		ASSERT(m_nSize <= m_nMaxSize);
-		ASSERT(AfxIsValidAddress(m_pData, m_nMaxSize * sizeof(DWORD)));
+		ASSERT(FALSE);
 	}
 }
-#endif //_DEBUG
 
+//===========================================================================
+CXTPCalendarIconIDs::CXTPCalendarIconIDs()
+{
 
+}
 
-IMPLEMENT_SERIAL(CDWordArray, CObject, 0)
+CXTPCalendarIconIDs::~CXTPCalendarIconIDs()
+{
+}
+
+//===========================================================================
+CXTPCalendarEventCategoryIDs::CXTPCalendarEventCategoryIDs()
+{
+}
+
+CXTPCalendarEventCategoryIDs::~CXTPCalendarEventCategoryIDs()
+{
+}
+
 
 /////////////////////////////////////////////////////////////////////////////

@@ -1,752 +1,167 @@
-// from server: 24% by colin
+// roc 2011-06 0073a640  unit: RBX::VInstance::?$NonFactoryProduct  size: 354 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 0073a640
+//
+// 0073a640  83ec08               sub esp, 8
+// 0073a643  56                   push esi
+// 0073a644  57                   push edi
+// 0073a645  8bf9                 mov edi, ecx
+// 0073a647  837f0800             cmp dword ptr [edi + 8], 0
+// 0073a64b  7521                 jne 0x73a66e
+// 0073a64d  8b44241c             mov eax, dword ptr [esp + 0x1c]
+// 0073a651  8b4f04               mov ecx, dword ptr [edi + 4]
+// 0073a654  8b742414             mov esi, dword ptr [esp + 0x14]
+// 0073a658  50                   push eax
+// 0073a659  51                   push ecx
+// 0073a65a  6a01                 push 1
+// 0073a65c  56                   push esi
+// 0073a65d  8bcf                 mov ecx, edi
+// 0073a65f  e84cf2ffff           call 0x7398b0
+// 0073a664  5f                   pop edi
+// 0073a665  8bc6                 mov eax, esi
+// 0073a667  5e                   pop esi
+// 0073a668  83c408               add esp, 8
+// 0073a66b  c20c00               ret 0xc
+// 0073a66e  8b4704               mov eax, dword ptr [edi + 4]
+// 0073a671  8b74241c             mov esi, dword ptr [esp + 0x1c]
+// 0073a675  53                   push ebx
+// 0073a676  8b5c241c             mov ebx, dword ptr [esp + 0x1c]
+// 0073a67a  55                   push ebp
+// 0073a67b  3b18                 cmp ebx, dword ptr [eax]
+// 0073a67d  7525                 jne 0x73a6a4
+// 0073a67f  8b16                 mov edx, dword ptr [esi]
+// 0073a681  3b530c               cmp edx, dword ptr [ebx + 0xc]
+// 0073a684  0f8df9000000         jge 0x73a783
+// 0073a68a  56                   push esi
+// 0073a68b  8b742420             mov esi, dword ptr [esp + 0x20]
+// 0073a68f  53                   push ebx
+// 0073a690  6a01                 push 1
+// 0073a692  56                   push esi
+// 0073a693  e818f2ffff           call 0x7398b0
+// 0073a698  5d                   pop ebp
+// 0073a699  5b                   pop ebx
+// 0073a69a  5f                   pop edi
+// 0073a69b  8bc6                 mov eax, esi
+// 0073a69d  5e                   pop esi
+// 0073a69e  83c408               add esp, 8
+// 0073a6a1  c20c00               ret 0xc
+// 0073a6a4  3bd8                 cmp ebx, eax
+// 0073a6a6  752a                 jne 0x73a6d2
+// 0073a6a8  8b4008               mov eax, dword ptr [eax + 8]
+// 0073a6ab  8b480c               mov ecx, dword ptr [eax + 0xc]
+// 0073a6ae  3b0e                 cmp ecx, dword ptr [esi]
+// 0073a6b0  0f8dcd000000         jge 0x73a783
+// 0073a6b6  56                   push esi
+// 0073a6b7  8b742420             mov esi, dword ptr [esp + 0x20]
+// 0073a6bb  50                   push eax
+// 0073a6bc  6a00                 push 0
+// 0073a6be  56                   push esi
+// 0073a6bf  8bcf                 mov ecx, edi
+// 0073a6c1  e8eaf1ffff           call 0x7398b0
+// 0073a6c6  5d                   pop ebp
+// 0073a6c7  5b                   pop ebx
+// 0073a6c8  5f                   pop edi
+// 0073a6c9  8bc6                 mov eax, esi
+// 0073a6cb  5e                   pop esi
+// 0073a6cc  83c408               add esp, 8
+// 0073a6cf  c20c00               ret 0xc
+// 0073a6d2  8b2e                 mov ebp, dword ptr [esi]
+// 0073a6d4  396b0c               cmp dword ptr [ebx + 0xc], ebp
+// 0073a6d7  7e53                 jle 0x73a72c
+// 0073a6d9  8d4c2424             lea ecx, [esp + 0x24]
+// 0073a6dd  895c2424             mov dword ptr [esp + 0x24], ebx
+// 0073a6e1  e8eaef0600           call 0x7a96d0
+// 0073a6e6  8b442424             mov eax, dword ptr [esp + 0x24]
+// 0073a6ea  39680c               cmp dword ptr [eax + 0xc], ebp
+// 0073a6ed  7d3a                 jge 0x73a729
+// 0073a6ef  8b5008               mov edx, dword ptr [eax + 8]
+// 0073a6f2  807a1d00             cmp byte ptr [edx + 0x1d], 0
+// 0073a6f6  56                   push esi
+// 0073a6f7  8b742420             mov esi, dword ptr [esp + 0x20]
+// 0073a6fb  8bcf                 mov ecx, edi
+// 0073a6fd  7415                 je 0x73a714
+// 0073a6ff  50                   push eax
+// 0073a700  6a00                 push 0
+// 0073a702  56                   push esi
+// 0073a703  e8a8f1ffff           call 0x7398b0
+// 0073a708  5d                   pop ebp
+// 0073a709  5b                   pop ebx
+// 0073a70a  5f                   pop edi
+// 0073a70b  8bc6                 mov eax, esi
+// 0073a70d  5e                   pop esi
+// 0073a70e  83c408               add esp, 8
+// 0073a711  c20c00               ret 0xc
+// 0073a714  53                   push ebx
+// 0073a715  6a01                 push 1
+// 0073a717  56                   push esi
+// 0073a718  e893f1ffff           call 0x7398b0
+// 0073a71d  5d                   pop ebp
+// 0073a71e  5b                   pop ebx
+// 0073a71f  5f                   pop edi
+// 0073a720  8bc6                 mov eax, esi
+// 0073a722  5e                   pop esi
+// 0073a723  83c408               add esp, 8
+// 0073a726  c20c00               ret 0xc
+// 0073a729  396b0c               cmp dword ptr [ebx + 0xc], ebp
+// 0073a72c  7d55                 jge 0x73a783
+// 0073a72e  8d4c2424             lea ecx, [esp + 0x24]
+// 0073a732  895c2424             mov dword ptr [esp + 0x24], ebx
+// 0073a736  e8057d1e00           call 0x922440
+// 0073a73b  8b442424             mov eax, dword ptr [esp + 0x24]
+// 0073a73f  3b4704               cmp eax, dword ptr [edi + 4]
+// 0073a742  7405                 je 0x73a749
+// 0073a744  3b680c               cmp ebp, dword ptr [eax + 0xc]
+// 0073a747  7d3a                 jge 0x73a783
+// 0073a749  8b4b08               mov ecx, dword ptr [ebx + 8]
+// 0073a74c  80791d00             cmp byte ptr [ecx + 0x1d], 0
+// 0073a750  56                   push esi
+// 0073a751  8b742420             mov esi, dword ptr [esp + 0x20]
+// 0073a755  8bcf                 mov ecx, edi
+// 0073a757  7415                 je 0x73a76e
+// 0073a759  53                   push ebx
+// 0073a75a  6a00                 push 0
+// 0073a75c  56                   push esi
+// 0073a75d  e84ef1ffff           call 0x7398b0
+// 0073a762  5d                   pop ebp
+// 0073a763  5b                   pop ebx
+// 0073a764  5f                   pop edi
+// 0073a765  8bc6                 mov eax, esi
+// 0073a767  5e                   pop esi
+// 0073a768  83c408               add esp, 8
+// 0073a76b  c20c00               ret 0xc
+// 0073a76e  50                   push eax
+// 0073a76f  6a01                 push 1
+// 0073a771  56                   push esi
+// 0073a772  e839f1ffff           call 0x7398b0
+// 0073a777  5d                   pop ebp
+// 0073a778  5b                   pop ebx
+// 0073a779  5f                   pop edi
+// 0073a77a  8bc6                 mov eax, esi
+// 0073a77c  5e                   pop esi
+// 0073a77d  83c408               add esp, 8
+// 0073a780  c20c00               ret 0xc
+// 0073a783  56                   push esi
+// 0073a784  8d542414             lea edx, [esp + 0x14]
+// 0073a788  52                   push edx
+// 0073a789  8bcf                 mov ecx, edi
+// 0073a78b  e870f4ffff           call 0x739c00
+// 0073a790  8b08                 mov ecx, dword ptr [eax]
+// 0073a792  8b44241c             mov eax, dword ptr [esp + 0x1c]
+// 0073a796  5d                   pop ebp
+// 0073a797  5b                   pop ebx
+// 0073a798  5f                   pop edi
+// 0073a799  8908                 mov dword ptr [eax], ecx
+// 0073a79b  5e                   pop esi
+// 0073a79c  83c408               add esp, 8
+// 0073a79f  c20c00               ret 0xc
+// copied from an identical function in another client (function ?insert@?$_Tree@V?$_Tmap_traits@HUValue@@U?$less@H@std@@V?$allocator@U?$pair@$$CBHUValue@@@std@@@3@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@ABU?$pair@$$CBHUValue@@@2@@Z)
+
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/Contact.cpp
-
-// Candidate translation unit (score above; library headers required).
-#include "v8world/Contact.h"
-#include "util/PV.h"
-#include "util/Math.h"
-#include "util/StlExtra.h"
-
-namespace RBX
-{
-	int Contact::contactPairMatches = 0;
-	int Contact::contactPairMisses = 0;
-
-	__declspec(noinline) Contact::Contact(Primitive* prim0, Primitive* prim1)
-		: Edge(prim0, prim1),
-		jointK(0),
-		elasticJointK(0),
-		lastContactStep(-1),
-		steppingIndex(-1),
-		kFriction(0)
-	{
-	}
-
-	void Contact::putInKernel(Kernel* _kernel)
-	{
-		IPipelined::putInKernel(_kernel);
-		onPrimitiveContactParametersChanged();
-	}
-
-	void Contact::removeFromKernel()
-	{
-		RBXASSERT(IPipelined::getKernel());
-
-		deleteAllConnectors();
-		IPipelined::removeFromKernel();
-	}
-
-	ContactConnector* Contact::createConnector()
-	{
-		ContactConnector* contact = new ContactConnector(this->jointK, this->elasticJointK, this->kFriction);
-		this->getKernel()->insertConnector(contact);
-
-		return contact;
-	}
-
-	__declspec(noinline) void Contact::deleteConnector(ContactConnector*& c)
-	{
-		if (c)
-		{
-			this->getKernel()->removeConnector(c);
-			delete c;
-			c = NULL;
-		}
-	}
-
-	//needed because of header inlining bullshit
-	void Contact::deleteConnectorInline(ContactConnector*& c)
-	{
-		if (c)
-		{
-			this->getKernel()->removeConnector(c);
-			delete c;
-			c = NULL;
-		}
-	}
-
-	bool Contact::computeIsAdjacent(float spaceAllowed)
-	{
-		if (this->computeIsColliding(spaceAllowed))
-			return false;
-		else
-			return this->computeIsColliding(-spaceAllowed);
-	}
-
-	bool Contact::step(int uiStepId)
-	{
-		RBXASSERT(uiStepId >= 0);
-		
-		bool result = this->stepContact();
-		
-		if (result)
-		{
-			if (this->lastContactStep == -1 ) 
-				Primitive::onNewTouch(Edge::getPrimitive(0), Edge::getPrimitive(1));
-
-			this->lastContactStep = uiStepId;
-		}
-		else if (this->lastContactStep < uiStepId)
-		{
-			this->lastContactStep = -1;
-		}
-
-		return result;
-	}
-
-	void Contact::onPrimitiveContactParametersChanged()
-	{
-		Primitive* prim0 = Edge::getPrimitive(0);
-		Primitive* prim1 = Edge::getPrimitive(1);
-		
-		this->kFriction = std::min(prim0->getFriction(), prim1->getFriction());
-		float elasticity = std::min(prim0->getElasticity(), prim1->getElasticity());
-
-		this->jointK = std::min(prim0->getJointK(), prim1->getJointK());
-		this->elasticJointK = Constants::getElasticMultiplier(elasticity) * this->jointK;
-	}
-
-	BallBallContact::BallBallContact(Primitive* p0, Primitive* p1)
-		:Contact(p0, p1),
-		ballBallConnector(NULL) {}
-
-	BallBallContact::~BallBallContact()
-	{
-		RBXASSERT(!this->ballBallConnector);
-	}
-
-	Ball* BallBallContact::ball(int i)
-	{
-		return rbx_static_cast<Ball*>(this->getPrimitive(i)->getGeometry());
-	}
-
-	void BallBallContact::deleteAllConnectors()
-	{
-		this->deleteConnector(this->ballBallConnector);
-	}
-
-	bool BallBallContact::computeIsColliding(float overlapIgnored)
-	{
-		float b0Radius = this->ball(0)->getRadius();
-		float b1Radius = this->ball(1)->getRadius();
-
-		G3D::Vector3 delta = this->getPrimitive(1)->getBody()->getPV().position.translation - this->getPrimitive(0)->getBody()->getPV().position.translation;
-		float b0b1RadiusSum = b0Radius + b1Radius;
-
-		if (b0b1RadiusSum > Math::longestVector3Component(delta))
-			return delta.magnitude() < (b0b1RadiusSum - overlapIgnored);
-		else
-			return false;
-	}
-
-	bool BallBallContact::stepContact()
-	{
-		if (BallBallContact::computeIsColliding(0.0f))
-		{
-			if (this->inStage(IStage::KERNEL_STAGE))
-			{
-				if (!this->ballBallConnector)
-					this->ballBallConnector = this->createConnector();
-
-				this->ballBallConnector->setBallBall(
-					this->getPrimitive(0)->getBody(), 
-					this->getPrimitive(1)->getBody(), 
-					this->ball(0)->getRadius(), 
-					this->ball(1)->getRadius()
-					);
-			}
-			return true;
-		}
-		else
-		{
-			this->deleteAllConnectors();
-		}
-
-		return false;
-	}
-
-	BallBlockContact::BallBlockContact(Primitive* p0, Primitive* p1)
-		:Contact(p0, p1),
-		ballBlockConnector(NULL) {}
-
-	BallBlockContact::~BallBlockContact()
-	{
-		RBXASSERT(!this->ballBlockConnector);
-	}
-
-	Primitive* BallBlockContact::ballPrim()
-	{	
-		return this->getPrimitive(0);
-	}
-
-	Primitive* BallBlockContact::blockPrim()
-	{
-		return this->getPrimitive(1);
-	}
-
-	Ball* BallBlockContact::ball()
-	{
-		return rbx_static_cast<Ball*>(this->ballPrim()->getGeometry());
-	}
-
-	Block* BallBlockContact::block()
-	{
-		return rbx_static_cast<Block*>(this->blockPrim()->getGeometry());
-	}
-
-	bool BallBlockContact::computeIsColliding(int& onBoarder, G3D::Vector3int16& clip, G3D::Vector3& projectionInBlock, float overlapIgnored)
-	{
-		if (Primitive::aaBoxCollide(*this->ballPrim(), *this->blockPrim()))
-		{
-			Body* b0 = this->ballPrim()->getBody();
-			Body* b1 = this->blockPrim()->getBody();
-			const PV& prim0Coord = b0->getPV();
-			const PV& prim1Coord = b1->getPV();
-
-			G3D::Vector3 blockToBall = prim0Coord.position.translation - prim1Coord.position.translation;
-			projectionInBlock = prim1Coord.position.rotation.transpose() * blockToBall;
-			
-			this->block()->projectToFace(projectionInBlock, clip, onBoarder);
-			G3D::Vector3 unkVec = prim1Coord.position.pointToWorldSpace(projectionInBlock);
-			G3D::Vector3 unkVec2 = unkVec - prim0Coord.position.translation;
-
-			return unkVec2.magnitude() < (this->ball()->getRadius() - overlapIgnored);
-		}
-		return false;
-	}
-
-	bool BallBlockContact::computeIsColliding(float overlapIgnored)
-	{
-		G3D::Vector3int16 clip;
-		G3D::Vector3 projectionInBlock;
-		return this->computeIsColliding(*(int*)&overlapIgnored, clip, projectionInBlock, overlapIgnored);
-	}
-
-	bool BallBlockContact::stepContact()
-	{
-		G3D::Vector3int16 clip;
-		G3D::Vector3 projectionInBlock;
-		int onBoarder;
-
-		if (BallBlockContact::computeIsColliding(onBoarder, clip, projectionInBlock, 0.0f))
-		{
-			if (this->inStage(IStage::KERNEL_STAGE))
-			{
-				if (!this->ballBlockConnector)
-					this->ballBlockConnector = this->createConnector();
-
-				const G3D::Vector3* offset;
-				NormalId normId;
-				GeoPairType ballInsideType;
-
-				if (onBoarder)
-					ballInsideType = this->block()->getBallBlockInfo(onBoarder, clip, offset, normId);
-				else
-					ballInsideType = this->block()->getBallInsideInfo(projectionInBlock, offset, normId);
-
-				this->ballBlockConnector->setBallBlock(
-					this->ballPrim()->getBody(),
-					this->blockPrim()->getBody(),
-					this->ball()->getRadius(),
-					offset,
-					normId,
-					ballInsideType
-					);
-			}
-			return true;
-		}
-		else
-		{
-			this->deleteAllConnectors();
-		}
-
-		return false;
-	}
-
-	void BallBlockContact::deleteAllConnectors()
-	{
-		this->deleteConnector(this->ballBlockConnector);
-	}
-
-	BlockBlockContact::BlockBlockContact(Primitive* p0, Primitive* p1)
-		:Contact(p0, p1),
-		separatingAxisId(0),
-		separatingBodyId(0)
-	{
-		this->feature[0] = -1;
-		this->feature[1] = -1;
-	}
-	
-	BlockBlockContact::~BlockBlockContact() {}
-
-	Block* BlockBlockContact::block(int i)
-	{
-		return rbx_static_cast<Block*>(this->getPrimitive(i)->getGeometry());
-	}
-
-	float BlockBlockContact::contactPairHitRatio()
-	{
-		int sum = Contact::contactPairMatches + Contact::contactPairMisses;
-
-		if (sum == 0)
-			return -1.0f;
-		else
-			return (float)Contact::contactPairMatches / sum;
-	}
-
-	void BlockBlockContact::deleteAllConnectors()
-	{
-		for (size_t i = 0; i < this->connectors.size(); i++)
-		{
-			this->deleteConnectorInline(this->connectors[i]);
-		}
-
-		this->connectors.resize(0);
-		this->matched.resize(0);
-	}
-
-	void BlockBlockContact::deleteUnmatchedConnectors()
-	{
-		RBXASSERT(this->matched.size() == this->connectors.size());
-
-		for (int i = (int)this->connectors.size()-1; i >= 0; i--)
-		{
-			bool match = this->matched[i];
-			if (match == false)
-			{
-				ContactConnector* connector = this->connectors[i];
-				fastRemoveIndex<ContactConnector*>(this->connectors, i);
-				fastRemoveIndex<bool>(this->matched, i);
-				this->deleteConnectorInline(connector);
-			}
-		}
-	}
-
-	ContactConnector* BlockBlockContact::matchContactConnector(Body* b0, Body* b1, GeoPairType _pairType, int param0, int param1)
-	{
-		RBXASSERT(this->matched.size() == this->connectors.size());
-
-		for (size_t i = 0; i < this->matched.size(); i++)
-		{
-			if (this->matched[i] == false)
-			{
-				if (this->connectors[i]->match(b0, b1, _pairType, param0, param1))
-				{
-					this->matched[i] = true;
-					Contact::contactPairMatches++;
-					return this->connectors[i];
-				}
-			}
-		}
-
-		Contact::contactPairMisses++;
-		ContactConnector* connector = this->createConnector();
-		this->connectors.push_back(connector);
-		this->matched.push_back(true);
-		return connector;
-	}
-
-	void BlockBlockContact::loadGeoPairEdgeEdge(int b0, int b1, int edge0, int edge1)
-	{
-		NormalId edgeNormal0 = this->block(b0)->getEdgeNormal(edge0);
-		NormalId edgeNormal1 = this->block(b1)->getEdgeNormal(edge1);
-		
-		ContactConnector* matched = this->matchContactConnector(
-											this->getPrimitive(b0)->getBody(), 
-											this->getPrimitive(b1)->getBody(), 
-											EDGE_EDGE_PAIR, 
-											edgeNormal0, 
-											edgeNormal1
-											);
-
-		matched->setEdgeEdge(
-			this->getPrimitive(b0)->getBody(), 
-			this->getPrimitive(b1)->getBody(), 
-			this->block(b0)->getEdgeVertex(edge0), 
-			this->block(b1)->getEdgeVertex(edge1), 
-			edgeNormal0, 
-			edgeNormal1
-			);
-	}
-
-	void BlockBlockContact::loadGeoPairPointPlane(int pointBody, int planeBody, int pointID, NormalId pointFaceID, NormalId planeFaceID)
-	{
-		ContactConnector* matched = this->matchContactConnector(
-											this->getPrimitive(pointBody)->getBody(), 
-											this->getPrimitive(planeBody)->getBody(), 
-											POINT_PLANE_PAIR, 
-											pointID, 
-											planeFaceID
-											);
-
-		matched->setPointPlane(
-			this->getPrimitive(pointBody)->getBody(),
-			this->getPrimitive(planeBody)->getBody(),
-			this->block(pointBody)->getFaceVertex(pointFaceID, pointID),
-			this->block(planeBody)->getFaceVertex(planeFaceID, 0),
-			pointID,
-			planeFaceID
-			);
-	}
-
-	void BlockBlockContact::loadGeoPairEdgeEdgePlane(int edgeBody, int planeBody, int edge0, int edge1)
-	{
-		NormalId edgeNormal0 = this->block(edgeBody)->getEdgeNormal(edge0);
-		NormalId edgeNormal1 = this->block(planeBody)->getEdgeNormal(edge1);
-
-		ContactConnector* matched = this->matchContactConnector(
-											this->getPrimitive(edgeBody)->getBody(), 
-											this->getPrimitive(planeBody)->getBody(), 
-											EDGE_EDGE_PLANE_PAIR, 
-											edgeNormal0, 
-											edgeNormal1
-											);
-
-		const G3D::Vector3& gridSize = this->getPrimitive(edgeBody)->getGeometry()->getGridSize();
-
-		matched->setEdgeEdgePlane(
-			this->getPrimitive(edgeBody)->getBody(),
-			this->getPrimitive(planeBody)->getBody(),
-			this->block(edgeBody)->getEdgeVertex(edge0),
-			this->block(planeBody)->getEdgeVertex(edge1),
-			edgeNormal0,
-			edgeNormal1,
-			this->planeID,
-			gridSize[edgeNormal0 % 3]
-			);
-	}
-
-	//92.55% match
-	//PLEASE NOTE THAT MOST VARIABLE NAMES ARE MOST LIKELY NOT ACCURATE OF THEIR FUNCTIONALITY
-	bool BlockBlockContact::getBestPlaneEdge(bool& planeContact, float overlapIgnored)
-	{
-		float bestPlaneLength = Math::inf();
-		float bestEdgeLength = Math::inf();
-		float lastPlaneLength = Math::inf();
-		int lastFeature[2] = {this->feature[0], this->feature[1]};
-		bool checkLastFeature = (lastFeature[0] >= 0 && lastFeature[0] < 6) || (lastFeature[1] >= 0 && lastFeature[1] < 6);
-
-		bool belowOverlap = false;
-
-		for (int i = this->separatingBodyId; i < this->separatingBodyId + 2; i++)
-		{
-			int baseId = i % 2;
-			int testId = (i + 1) % 2;
-
-			const G3D::CoordinateFrame& primPV0 = this->getPrimitive(baseId)->getBody()->getPV().position;
-			const G3D::CoordinateFrame& primPV1 = this->getPrimitive(testId)->getBody()->getPV().position;
-			const G3D::Vector3* eBase = (const G3D::Vector3*)this->block(baseId)->getVertices();
-			const G3D::Vector3* eTest = (const G3D::Vector3*)this->block(testId)->getVertices();
-
-			G3D::Vector3 delta = primPV1.translation - primPV0.translation;
-
-			G3D::Vector3 rotTransMul = delta * primPV0.rotation;
-
-			for (int j = this->separatingAxisId; j < this->separatingAxisId + 3; j++)
-			{
-				int axisId = j % 3;
-
-				float what = Math::taxiCabMagnitude(primPV0.rotation.getColumn(axisId) * primPV1.rotation * *eTest) + (*eBase)[axisId] - fabs(rotTransMul[axisId]);
-
-				if (what > overlapIgnored)
-				{
-					if (checkLastFeature && lastFeature[baseId] % 3 == axisId )
-						lastPlaneLength = what;
-
-					if (what < bestPlaneLength)
-					{
-						bestPlaneLength = what;
-						this->feature[baseId] = rotTransMul[axisId] > 0.0f ? axisId : axisId + 3;
-						this->feature[testId] = -1;
-						this->separatingBodyId = baseId;
-						this->separatingAxisId = axisId;
-						planeContact = true;
-					}
-				}
-				else
-				{
-					this->separatingBodyId = baseId;
-					this->separatingAxisId = axisId;
-					belowOverlap = true;
-				}
-
-				if (belowOverlap)
-					return false;
-			}
-		}
-
-		if (checkLastFeature) 
-		{
-			if (this->feature[0] != lastFeature[0] || this->feature[1] != lastFeature[1]) 
-			{
-				if (!(bestPlaneLength * 1.01f < lastPlaneLength))
-				{
-					bestPlaneLength = lastPlaneLength;
-					this->feature[0] = lastFeature[0];
-					this->feature[1] = lastFeature[1];
-				}
-			}
-		}
-		const G3D::CoordinateFrame& primPV0 = this->getPrimitive(0)->getBody()->getPV().position;
-		const G3D::CoordinateFrame& primPV1 = this->getPrimitive(1)->getBody()->getPV().position;
-		const G3D::Vector3* e0 = (const G3D::Vector3*)this->block(0)->getVertices();
-		const G3D::Vector3* e1 = (const G3D::Vector3*)this->block(1)->getVertices();
-
-		G3D::Vector3 p0p1 = primPV1.translation - primPV0.translation;
-
-		for (int i = 0; i < 3; i++)
-		{
-			for (int j = 0; j < 3; j++)
-			{
-				G3D::Vector3 crossAxis = primPV0.rotation.getColumn(i).cross(primPV1.rotation.getColumn(j));
-				if (crossAxis.unitize() <= 0.001f)
-					return planeContact;
-
-				float p0p1inCrossAxis = crossAxis.dot(p0p1);
-
-				G3D::Vector3 crossAxisMulPV0rot = crossAxis * primPV0.rotation;
-				G3D::Vector3 crossAxisMulPV1rot = crossAxis * primPV1.rotation;
-
-				float what = Math::taxiCabMagnitude(crossAxisMulPV0rot * *e0) + Math::taxiCabMagnitude(crossAxisMulPV1rot * *e1) - fabs(p0p1inCrossAxis);
-				if (what > overlapIgnored)
-				{
-					if (what < bestEdgeLength)
-					{
-						bestEdgeLength = what;
-
-						if ( what * 10.0 < bestPlaneLength )
-						{
-							if ( p0p1inCrossAxis > 0.0 )
-							{
-								this->feature[0] = this->block(0)->getClosestEdge(primPV0.rotation, (NormalId)i, crossAxis) + 6;
-								this->feature[1] = this->block(1)->getClosestEdge(primPV1.rotation, (NormalId)j, -crossAxis) + 6;
-							}
-							else
-							{
-								this->feature[0] = this->block(0)->getClosestEdge(primPV0.rotation, (NormalId)i, -crossAxis) + 6;
-								this->feature[1] = this->block(1)->getClosestEdge(primPV1.rotation, (NormalId)j, crossAxis) + 6;
-							}
-							planeContact = false;
-						}
-					}
-				}
-				else
-				{
-					 return false;
-				}
-			}
-		}
-		return true;
-	}
-
-	int BlockBlockContact::intersectRectQuad(G3D::Vector2& planeRect, G3D::Vector2 (&otherQuad)[4])
-	{
-		bool quadCrossRect[4][4];
-
-		bool quadIn[4] = {true, true, true, true};
-
-		int foundCounter = 0;
-
-		for (int i = 3; i >= 0; i--)
-		{
-			if (otherQuad[i].y <= planeRect.y)
-			{
-				quadCrossRect[0][i] = true;
-			}
-			else
-			{
-				quadCrossRect[0][i] = false;
-				quadIn[i] = false;
-			}
-
-			if (otherQuad[i].x >= -planeRect.x)
-			{
-				quadCrossRect[1][i] = true;
-			}
-			else
-			{
-				quadCrossRect[1][i] = false;
-				quadIn[i] = false;
-			}
-
-			if (otherQuad[i].y >= -planeRect.y)
-			{
-				quadCrossRect[2][i] = true;
-			}
-			else
-			{
-				quadCrossRect[2][i] = false;
-				quadIn[i] = false;
-			}
-
-			if (otherQuad[i].x <= planeRect.x)
-			{
-				quadCrossRect[3][i] = true;
-			}
-			else
-			{
-				quadCrossRect[3][i] = false;
-				quadIn[i] = false;
-			}
-		}
-
-		for (int i = 3; i >= 0; i--)
-		{
-			if (quadIn[i])
-			{
-				loadGeoPairPointPlane(bOther, bPlane, i, otherPlaneID, planeID);
-				foundCounter++;
-			}
-		}
-
-		if (foundCounter == 4)
-			return foundCounter;
-		else
-		{
-			bool rectCrossQuad[4][4];
-			G3D::Vector2 rect[4];
-			rect[0] = G3D::Vector2(planeRect.x, planeRect.y);
-			rect[1] = G3D::Vector2(-planeRect.x, planeRect.y);
-			rect[2] = G3D::Vector2(-planeRect.x, -planeRect.y);
-			rect[3] = G3D::Vector2(planeRect.x, -planeRect.y);
-
-			bool rectIn[4] = {true, true, true, true};
-
-			for (int i = 3; i >= 0; i--)
-			{
-				G3D::Vector2& current = otherQuad[i];
-				G3D::Vector2& currentO = otherQuad[(i + 3) % 4];
-				for (int j = 0; j < 4; j++)
-				{
-					G3D::Vector2 math1 = rect[j] - current;
-					G3D::Vector2 math2 = currentO - current;
-
-					if ((math2.x * math1.y) - (math2.y * math1.x) >= 0.0f)
-					{
-						rectCrossQuad[i][j] = true;
-					}
-					else
-					{
-						rectCrossQuad[i][j] = false;
-						rectIn[j] = false;
-					}
-				}
-			}
-
-			int wasZero = foundCounter == 0;
-
-			for (int i = 0; i < 4; i++)
-			{
-				if (rectIn[i])
-				{
-					loadGeoPairPointPlane(bPlane, bOther, i, planeID, otherPlaneID);
-					foundCounter++;
-				}
-			}
-
-			if (wasZero && foundCounter == 4)
-				return foundCounter;
-			else
-			{
-				for (int i = 0; i < 4; i++)
-				{
-					for (int j = 3; j >= 0; j--)
-					{
-						if (quadCrossRect[i][j] != quadCrossRect[i][(j + 3) % 4] && rectCrossQuad[j][i] != rectCrossQuad[j][(i + 1) % 4])
-						{
-
-							loadGeoPairEdgeEdgePlane(bOther, bPlane, block(bOther)->faceVertexToEdge(otherPlaneID, (j+3)%4), block(bPlane)->faceVertexToEdge(planeID, i));
-							foundCounter++;
-						}
-					}
-				}
-				RBXASSERT(foundCounter != 1 && foundCounter <= 8);
-				return foundCounter;
-			}
-		}
-	}
-
-	bool BlockBlockContact::computeIsColliding(bool& planeContact, float overlapIgnored)
-	{
-		if (Primitive::aaBoxCollide(*getPrimitive(0), *getPrimitive(1)))
-			return getBestPlaneEdge(planeContact, overlapIgnored);
-		else
-			return false;
-	}
-
-	bool BlockBlockContact::computeIsColliding(float overlapIgnored)
-	{
-		bool scratch;
-		return computeIsColliding(scratch, overlapIgnored);
-	}
-
-	bool BlockBlockContact::stepContact()
-	{
-		bool planeContact;
-		if (computeIsColliding(planeContact, 0.0f))
-		{
-			if (inStage(IStage::KERNEL_STAGE))
-			{
-				matched.resize(0);
-				matched.resize(connectors.size());
-				if (planeContact)
-				{
-					computePlaneContact();
-					deleteUnmatchedConnectors();
-					return true;
-				}
-				loadGeoPairEdgeEdge(0, 1, feature[0] - 6, feature[1] - 6);
-				deleteUnmatchedConnectors();
-			}
-			return true;
-		}
-		else
-		{
-			deleteAllConnectors();
-			feature[0] = -1;
-			feature[1] = -1;
-			return false;
-		}
-	}
-
-	int BlockBlockContact::computePlaneContact()
-	{
-		if (feature[0] >= 0)
-		{
-			planeID = (NormalId)feature[0];
-			bPlane = 0;
-			bOther = 1;
-		}
-		else
-		{
-			planeID = (NormalId)feature[1];
-			bPlane = 1;
-			bOther = 0;
-		}
-
-		const G3D::CoordinateFrame& otherFrame = getPrimitive(bOther)->getBody()->getPV().position;
-		const G3D::CoordinateFrame& planeFrame = getPrimitive(bPlane)->getBody()->getPV().position;
-
-		G3D::CoordinateFrame otherToPlane = planeFrame.inverse() * otherFrame;
-
-		Block* otherBlock = block(bOther);
-		Block* planeBlock = block(bPlane);
-
-		G3D::Vector3 otherVertexPlaneCoords = Math::getWorldNormal(planeID, planeFrame);
-		otherPlaneID = Math::getClosestObjectNormalId(-otherVertexPlaneCoords, otherFrame.rotation);
-
-		G3D::Vector2 planeRect = planeBlock->getProjectedVertex(*(planeBlock->getFaceVertex(planeID, 0)),planeID);
-
-		G3D::Vector2 otherQuad[4] = {};
-
-		for (int i = 0; i < 4; i++)
-		{
-			G3D::Vector3 world = otherToPlane.pointToWorldSpace(*(otherBlock->getFaceVertex(otherPlaneID, i)));
-			otherQuad[i] = otherBlock->getProjectedVertex(world, planeID);
-		}
-		return intersectRectQuad(planeRect, otherQuad);
-	}
-}
+#define _SECURE_SCL 0
+#include <map>
+
+// pair<const int, Value> is isnil(0x1d) - 0xd bytes.
+struct Value { int words[3]; };
+template class std::_Tree<std::_Tmap_traits<int, Value, std::less<int>,
+    std::allocator<std::pair<const int, Value> >, false> >;

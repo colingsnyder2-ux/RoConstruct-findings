@@ -1,634 +1,157 @@
-// from server: 70% by colin
-// roc-lang: cpp
+// from server: 100% by colin
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.6.4 OgreResourceBackgroundQueue.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lang: cpp
+// roc-lib: rbxgs-atl90-dll roc_http_wininet_catch_19404fecbe27f869.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-    (Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org/
+#define _SCL_SECURE_NO_DEPRECATE // required to disable a warning
+#include "util/Http.h"
+#include <windows.h>
+#include <atlutil.h>
+#include <wininet.h>
+#include <sstream>
+#include <G3D/format.h>
+#include <boost/scoped_ptr.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
 
-Copyright (c) 2000-2006 Torus Knot Software Ltd
-Also see acknowledgements in Readme.html
+class HttpRequest_source : public boost::iostreams::device<boost::iostreams::input>
+{
+private:
+	void* request;
 
-This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the Free Software
-Foundation; either version 2 of the License, or (at your option) any later
-version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License along with
-this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-http://www.gnu.org/copyleft/lesser.txt.
-
-You may alternatively use this source under the terms of a specific version of
-the OGRE Unrestricted License provided you have obtained such a license from
-Torus Knot Software Ltd.
------------------------------------------------------------------------------
-*/
-#include "OgreStableHeaders.h"
-#include "OgreResourceBackgroundQueue.h"
-#include "OgreLogManager.h"
-#include "OgreException.h"
-#include "OgreResourceGroupManager.h"
-#include "OgreResourceManager.h"
-#include "OgreRoot.h"
-#include "OgreRenderSystem.h"
-
-namespace Ogre {
-
-	//------------------------------------------------------------------------
-    //-----------------------------------------------------------------------
-    template<> ResourceBackgroundQueue* Singleton<ResourceBackgroundQueue>::ms_Singleton = 0;
-    ResourceBackgroundQueue* ResourceBackgroundQueue::getSingletonPtr(void)
-    {
-        return ms_Singleton;
-    }
-    ResourceBackgroundQueue& ResourceBackgroundQueue::getSingleton(void)
-    {  
-        assert( ms_Singleton );  return ( *ms_Singleton );  
-    }
-    //-----------------------------------------------------------------------	
-	//------------------------------------------------------------------------
-	ResourceBackgroundQueue::ResourceBackgroundQueue()
-		:mNextTicketID(0), mStartThread(true), mThread(0)
-#if OGRE_THREAD_SUPPORT
-        , mShuttingDown(false)
-#endif
+public:
+	HttpRequest_source(void* request)
+		: request(request)
 	{
 	}
-	//------------------------------------------------------------------------
-	ResourceBackgroundQueue::~ResourceBackgroundQueue()
+public:
+	// does not match
+	int read(char* s, int n)
 	{
-		shutdown();
+		DWORD numBytes;
+		if (!InternetQueryDataAvailable(request, &numBytes, 0, NULL))
+			return -1;
+		if (numBytes == 0)
+			return -1;
+
+		DWORD bytesRead;
+		if (!InternetReadFile(request, s, n, &bytesRead))
+			throw std::runtime_error("InternetReadFile failed");
+
+		return bytesRead;
 	}
-	//------------------------------------------------------------------------
-	void ResourceBackgroundQueue::initialise(void)
+};
+
+struct String_sink : public boost::iostreams::device<boost::iostreams::output>
+{
+public:
+	std::string& s;
+
+public:
+	String_sink(std::string& s)
+		: s(s)
 	{
-#if OGRE_THREAD_SUPPORT
-		if (mStartThread)
-		{
-			{
-				OGRE_LOCK_AUTO_MUTEX
-				mShuttingDown = false;
-			}
-
-#if OGRE_THREAD_SUPPORT == 1
-			RenderSystem* rs = Root::getSingleton().getRenderSystem();
-#endif
-
-			LogManager::getSingleton().logMessage(
-				"ResourceBackgroundQueue - threading enabled, starting own thread");
-			{
-				OGRE_LOCK_MUTEX_NAMED(initMutex, initLock)
-
-#if OGRE_THREAD_SUPPORT == 1
-				// Call thread creation pre-hook
-				rs->preExtraThreadsStarted();
-#endif
-
-				mThread = OGRE_NEW_T(boost::thread, MEMCATEGORY_RESOURCE)(
-					boost::function0<void>(&ResourceBackgroundQueue::threadFunc));
-				// Wait for init to finish before allowing main thread to continue
-				// this releases the initMutex until notified
-				OGRE_THREAD_WAIT(initSync, initLock)
-
-#if OGRE_THREAD_SUPPORT == 1
-				// Call thread creation post-hook
-				rs->postExtraThreadsStarted();
-#endif
-			}
-
-		}
-		else
-		{
-			LogManager::getSingleton().logMessage(
-				"ResourceBackgroundQueue - threading enabled, user thread");
-		}
-#else
-		LogManager::getSingleton().logMessage(
-			"ResourceBackgroundQueue - threading disabled");	
-#endif
 	}
-	//------------------------------------------------------------------------
-	void ResourceBackgroundQueue::shutdown(void)
+public:
+	// NOTE: not checked
+	int write(const char* c, int n)
 	{
-#if OGRE_THREAD_SUPPORT
-		if (mThread)
-		{
-			// Put a shutdown request on the queue
-			Request req;
-			req.type = RT_SHUTDOWN;
-			addRequest(req);
-			// Wait for thread to finish
-			mThread->join();
-			OGRE_DELETE_T(mThread, thread, MEMCATEGORY_RESOURCE);
-			mThread = 0;
-			mRequestQueue.clear();
-			mRequestTicketMap.clear();
-		}
-#endif
+		s.append(c, n);
+		return n;
 	}
-	//------------------------------------------------------------------------
-	BackgroundProcessTicket ResourceBackgroundQueue::initialiseResourceGroup(
-		const String& name, ResourceBackgroundQueue::Listener* listener)
+};
+
+
+namespace RBX {
+	class MD5Hasher
 	{
-#if OGRE_THREAD_SUPPORT
-		if (!mThread && mStartThread)
-		{
-			OGRE_EXCEPT(Exception::ERR_INTERNAL_ERROR, 
-				"Thread not initialised",
-				"ResourceBackgroundQueue::initialiseResourceGroup");
-		}
-		// queue a request
-		Request req;
-		req.type = RT_INITIALISE_GROUP;
-		req.groupName = name;
-		req.listener = listener;
-		return addRequest(req);
-#else
-		// synchronous
-		ResourceGroupManager::getSingleton().initialiseResourceGroup(name);
-		return 0; 
-#endif
-	}
-	//------------------------------------------------------------------------
-	BackgroundProcessTicket 
-	ResourceBackgroundQueue::initialiseAllResourceGroups( 
-		ResourceBackgroundQueue::Listener* listener)
-	{
-#if OGRE_THREAD_SUPPORT
-		if (!mThread && mStartThread)
-		{
-			OGRE_EXCEPT(Exception::ERR_INTERNAL_ERROR, 
-				"Thread not initialised",
-				"ResourceBackgroundQueue::initialiseAllResourceGroups");
-		}
-		// queue a request
-		Request req;
-		req.type = RT_INITIALISE_ALL_GROUPS;
-		req.listener = listener;
-		return addRequest(req);
-#else
-		// synchronous
-		ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
-		return 0; 
-#endif
-	}
-	//------------------------------------------------------------------------
-	BackgroundProcessTicket ResourceBackgroundQueue::prepareResourceGroup(
-		const String& name, ResourceBackgroundQueue::Listener* listener)
-	{
-#if OGRE_THREAD_SUPPORT
-		if (!mThread && mStartThread)
-		{
-			OGRE_EXCEPT(Exception::ERR_INTERNAL_ERROR, 
-				"Thread not initialised",
-				"ResourceBackgroundQueue::prepareResourceGroup");
-		}
-		// queue a request
-		Request req;
-		req.type = RT_PREPARE_GROUP;
-		req.groupName = name;
-		req.listener = listener;
-		return addRequest(req);
-#else
-		// synchronous
-		ResourceGroupManager::getSingleton().prepareResourceGroup(name);
-		return 0; 
-#endif
-	}
-	//------------------------------------------------------------------------
-	BackgroundProcessTicket ResourceBackgroundQueue::loadResourceGroup(
-		const String& name, ResourceBackgroundQueue::Listener* listener)
-	{
-#if OGRE_THREAD_SUPPORT
-		if (!mThread && mStartThread)
-		{
-			OGRE_EXCEPT(Exception::ERR_INTERNAL_ERROR, 
-				"Thread not initialised",
-				"ResourceBackgroundQueue::loadResourceGroup");
-		}
-		// queue a request
-		Request req;
-		req.type = RT_LOAD_GROUP;
-		req.groupName = name;
-		req.listener = listener;
-		return addRequest(req);
-#else
-		// synchronous
-		ResourceGroupManager::getSingleton().loadResourceGroup(name);
-		return 0; 
-#endif
-	}
-	//------------------------------------------------------------------------
-	BackgroundProcessTicket ResourceBackgroundQueue::prepare(
-		const String& resType, const String& name, 
-		const String& group, bool isManual, 
-		ManualResourceLoader* loader, 
-		const NameValuePairList* loadParams, 
-		ResourceBackgroundQueue::Listener* listener)
-	{
-#if OGRE_THREAD_SUPPORT
-		if (!mThread && mStartThread)
-		{
-			OGRE_EXCEPT(Exception::ERR_INTERNAL_ERROR, 
-				"Thread not initialised",
-				"ResourceBackgroundQueue::prepare");
-		}
-		// queue a request
-		Request req;
-		req.type = RT_PREPARE_RESOURCE;
-		req.resourceType = resType;
-		req.resourceName = name;
-		req.groupName = group;
-		req.isManual = isManual;
-		req.loader = loader;
-		req.loadParams = loadParams;
-		req.listener = listener;
-		return addRequest(req);
-#else
-		// synchronous
-		ResourceManager* rm = 
-			ResourceGroupManager::getSingleton()._getResourceManager(resType);
-		rm->prepare(name, group, isManual, loader, loadParams);
-		return 0; 
-#endif
-	}
-	//------------------------------------------------------------------------
-	BackgroundProcessTicket ResourceBackgroundQueue::load(
-		const String& resType, const String& name, 
-		const String& group, bool isManual, 
-		ManualResourceLoader* loader, 
-		const NameValuePairList* loadParams, 
-		ResourceBackgroundQueue::Listener* listener)
-	{
-#if OGRE_THREAD_SUPPORT
-		if (!mThread && mStartThread)
-		{
-			OGRE_EXCEPT(Exception::ERR_INTERNAL_ERROR, 
-				"Thread not initialised",
-				"ResourceBackgroundQueue::load");
-		}
-		// queue a request
-		Request req;
-		req.type = RT_LOAD_RESOURCE;
-		req.resourceType = resType;
-		req.resourceName = name;
-		req.groupName = group;
-		req.isManual = isManual;
-		req.loader = loader;
-		req.loadParams = loadParams;
-		req.listener = listener;
-		return addRequest(req);
-#else
-		// synchronous
-		ResourceManager* rm = 
-			ResourceGroupManager::getSingleton()._getResourceManager(resType);
-		rm->load(name, group, isManual, loader, loadParams);
-		return 0; 
-#endif
-	}
-	//---------------------------------------------------------------------
-	BackgroundProcessTicket ResourceBackgroundQueue::unload(
-		const String& resType, const String& name, Listener* listener)
-	{
-#if OGRE_THREAD_SUPPORT
-		if (!mThread && mStartThread)
-		{
-			OGRE_EXCEPT(Exception::ERR_INTERNAL_ERROR, 
-				"Thread not initialised",
-				"ResourceBackgroundQueue::unload");
-		}
-		// queue a request
-		Request req;
-		req.type = RT_UNLOAD_RESOURCE;
-		req.resourceType = resType;
-		req.resourceName = name;
-		req.listener = listener;
-		return addRequest(req);
-#else
-		// synchronous
-		ResourceManager* rm = 
-			ResourceGroupManager::getSingleton()._getResourceManager(resType);
-		rm->unload(name);
-		return 0; 
-#endif
-
-	}
-	//---------------------------------------------------------------------
-	BackgroundProcessTicket ResourceBackgroundQueue::unload(
-		const String& resType, ResourceHandle handle, Listener* listener)
-	{
-#if OGRE_THREAD_SUPPORT
-		if (!mThread && mStartThread)
-		{
-			OGRE_EXCEPT(Exception::ERR_INTERNAL_ERROR, 
-				"Thread not initialised",
-				"ResourceBackgroundQueue::unload");
-		}
-		// queue a request
-		Request req;
-		req.type = RT_UNLOAD_RESOURCE;
-		req.resourceType = resType;
-		req.resourceHandle = handle;
-		req.listener = listener;
-		return addRequest(req);
-#else
-		// synchronous
-		ResourceManager* rm = 
-			ResourceGroupManager::getSingleton()._getResourceManager(resType);
-		rm->unload(handle);
-		return 0; 
-#endif
-
-	}
-	//---------------------------------------------------------------------
-	BackgroundProcessTicket ResourceBackgroundQueue::unloadResourceGroup(
-		const String& name, Listener* listener)
-	{
-#if OGRE_THREAD_SUPPORT
-		if (!mThread && mStartThread)
-		{
-			OGRE_EXCEPT(Exception::ERR_INTERNAL_ERROR, 
-				"Thread not initialised",
-				"ResourceBackgroundQueue::unloadResourceGroup");
-		}
-		// queue a request
-		Request req;
-		req.type = RT_UNLOAD_GROUP;
-		req.groupName = name;
-		req.listener = listener;
-		return addRequest(req);
-#else
-		// synchronous
-		ResourceGroupManager::getSingleton().unloadResourceGroup(name);
-		return 0; 
-#endif
-
-	}
-	//------------------------------------------------------------------------
-	bool ResourceBackgroundQueue::isProcessComplete(
-			BackgroundProcessTicket ticket)
-	{
-		// Lock
-		OGRE_LOCK_AUTO_MUTEX
-
-		return mRequestTicketMap.find(ticket) == mRequestTicketMap.end();
-	}
-	//------------------------------------------------------------------------
-#if OGRE_THREAD_SUPPORT
-	BackgroundProcessTicket ResourceBackgroundQueue::addRequest(Request& req)
-	{
-		// Lock
-		OGRE_LOCK_AUTO_MUTEX
-
-		req.ticketID = ++mNextTicketID;
-		mRequestQueue.push_back(req);
-		Request* requestInList = &(mRequestQueue.back());
-		mRequestTicketMap[req.ticketID] = requestInList;
-
-		// Notify to wake up loading thread
-		OGRE_THREAD_NOTIFY_ONE(mCondition)
-
-		return req.ticketID;
-	}
-	//------------------------------------------------------------------------
-	void ResourceBackgroundQueue::threadFunc(void)
-	{
-		// Background thread implementation 
-		// Static (since no params allowed), so get instance
-		ResourceBackgroundQueue& queueInstance = 
-			ResourceBackgroundQueue::getSingleton();
-
-		LogManager::getSingleton().logMessage("ResourceBackgroundQueue - thread starting.");
-
-		// Initialise the thread
-		queueInstance._initThread();
-
-		// Spin forever until we're told to shut down
-		while (!queueInstance.mShuttingDown)
-		{
-			// Our thread will just wait when there is nothing on the queue
-			// _doNextQueuedBackgroundProcess won't do this since the thread
-			// may be shared
-
-            // Manual scope block just to define scope of lock
-            {
-                // Lock; note that 'mCondition.wait()' will free the lock
-                boost::recursive_mutex::scoped_lock queueLock(
-                    queueInstance.OGRE_AUTO_MUTEX_NAME);
-                if (queueInstance.mRequestQueue.empty())
-                {
-                    // frees lock and suspends the thread
-                    queueInstance.mCondition.wait(queueLock);
-                }
-                // When we get back here, it's because we've been notified 
-                // and thus the thread as been woken up. Lock has also been
-                // re-acquired.
-            } // release lock so queueing can be done while we process one request
-
-			queueInstance._doNextQueuedBackgroundProcess();
-
-
-		}
-
-		LogManager::getSingleton().logMessage("ResourceBackgroundQueue - thread stopped.");
-
-	
+	public:
+		virtual void addData(std::istream& data) = 0;
+		virtual void addData(const std::string& data) = 0;
+		virtual void addData(const char* data, size_t nBytes) = 0;
 		
-	}
-#endif
-	//-----------------------------------------------------------------------
-	void ResourceBackgroundQueue::_initThread()
-	{
-		// Register the calling thread with RenderSystem
-		// Note how we assume only one thread is processing the queue
-#if OGRE_THREAD_SUPPORT == 1
-		Root::getSingleton().getRenderSystem()->registerThread();
-#endif
-		{
-			// notify waiting thread(s)
-			OGRE_LOCK_MUTEX(initMutex)
-			OGRE_THREAD_NOTIFY_ALL(initSync)
-		}
+		virtual std::string toString() = 0;
+		virtual const char* c_str() = 0;
 
-	}
-	//-----------------------------------------------------------------------
-	bool ResourceBackgroundQueue::_doNextQueuedBackgroundProcess()
-	{
-
-		Request* req;
-
-		// Manual scope block just to define scope of lock
-		{
-			OGRE_LOCK_AUTO_MUTEX
-			// return false if nothing in the queue
-			if (mRequestQueue.empty())
-				return false;
-
-			// Process one request
-			req = &(mRequestQueue.front());
-		} // release lock so queueing can be done while we process one request
-		// use of std::list means that references guarateed to remain valid
-		// we only allow one background thread
-
-		ResourceManager* rm = 0;
-		try
-		{
-
-			switch (req->type)
-			{
-			case RT_INITIALISE_GROUP:
-				ResourceGroupManager::getSingleton().initialiseResourceGroup(
-					req->groupName);
-				break;
-			case RT_INITIALISE_ALL_GROUPS:
-				ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
-				break;
-			case RT_PREPARE_GROUP:
-				ResourceGroupManager::getSingleton().prepareResourceGroup(
-					req->groupName);
-				break;
-			case RT_LOAD_GROUP:
-	#if OGRE_THREAD_SUPPORT == 2
-				ResourceGroupManager::getSingleton().prepareResourceGroup(
-					req->groupName);
-	#else
-				ResourceGroupManager::getSingleton().loadResourceGroup(
-					req->groupName);
-	#endif
-				break;
-			case RT_UNLOAD_GROUP:
-				ResourceGroupManager::getSingleton().unloadResourceGroup(
-					req->groupName);
-				break;
-			case RT_PREPARE_RESOURCE:
-				rm = ResourceGroupManager::getSingleton()._getResourceManager(
-					req->resourceType);
-				rm->prepare(req->resourceName, req->groupName, req->isManual, 
-					req->loader, req->loadParams);
-				break;
-			case RT_LOAD_RESOURCE:
-				rm = ResourceGroupManager::getSingleton()._getResourceManager(
-					req->resourceType);
-	#if OGRE_THREAD_SUPPORT == 2
-				rm->prepare(req->resourceName, req->groupName, req->isManual, 
-					req->loader, req->loadParams);
-	#else
-				rm->load(req->resourceName, req->groupName, req->isManual, 
-					req->loader, req->loadParams);
-	#endif
-				break;
-			case RT_UNLOAD_RESOURCE:
-				rm = ResourceGroupManager::getSingleton()._getResourceManager(
-					req->resourceType);
-				if (req->resourceName.empty())
-					rm->unload(req->resourceHandle);
-				else
-					rm->unload(req->resourceName);
-				break;
-			case RT_SHUTDOWN:
-				// That's all folks
-	#if OGRE_THREAD_SUPPORT
-				mShuttingDown = true;
-	#if OGRE_THREAD_SUPPORT == 1
-				Root::getSingleton().getRenderSystem()->unregisterThread();
-	#endif
-	#endif
-				break;
-			};
-		}
-		catch (Exception& e)
-		{
-			req->result.error = true;
-			req->result.message = e.getFullDescription();
-		}
-
-		// Queue notification (don't do shutdown since not needed & listeners 
-		// might be being destroyed too
-		if (req->listener && req->type != RT_SHUTDOWN)
-		{
-			// Fire in-thread notification first
-			req->listener->operationCompletedInThread(req->ticketID, req->result);
-			// Then queue main thread notification
-			queueFireBackgroundOperationComplete(req);
-		}
-
-
-		{
-			// re-lock to consume completed request
-			OGRE_LOCK_AUTO_MUTEX
-
-			// Consume the ticket
-			mRequestTicketMap.erase(req->ticketID);
-			mRequestQueue.pop_front();
-		}
-
-		return true;
-
-	}
-	//-----------------------------------------------------------------------
-	void ResourceBackgroundQueue::_queueFireBackgroundLoadingComplete(Resource* res)
-	{
-		OGRE_LOCK_MUTEX(mNotificationQueueMutex);
-		mNotificationQueue.push_back(QueuedNotification(res,true));
-
-	}
-	//-----------------------------------------------------------------------
-	void ResourceBackgroundQueue::_queueFireBackgroundPreparingComplete(Resource* res)
-	{
-		OGRE_LOCK_MUTEX(mNotificationQueueMutex);
-		mNotificationQueue.push_back(QueuedNotification(res,false));
-
-	}
-	//-----------------------------------------------------------------------
-	void ResourceBackgroundQueue::queueFireBackgroundOperationComplete(
-		ResourceBackgroundQueue::Request* req)
-	{
-		OGRE_LOCK_MUTEX(mNotificationQueueMutex);
-		mNotificationQueue.push_back(QueuedNotification(*req));
-	}
-	//------------------------------------------------------------------------
-	void ResourceBackgroundQueue::_fireOnFrameCallbacks()
-	{
-		OGRE_LOCK_MUTEX(mNotificationQueueMutex);
-		for (NotificationQueue::iterator i = mNotificationQueue.begin();
-			i != mNotificationQueue.end(); ++i)
-		{
-			if (i->resource) {
-                if (i->load) {
-                    i->resource->_fireBackgroundLoadingComplete();
-                } else {
-                    i->resource->_fireBackgroundPreparingComplete();
-                }
-			} else {
-                const ResourceBackgroundQueue::Request &r = i->req;
-#if OGRE_THREAD_SUPPORT == 2
-                if (r.type==RT_LOAD_RESOURCE) {
-                    ResourceManager *rm = ResourceGroupManager::getSingleton()
-                                            ._getResourceManager(r.resourceType);
-                    rm->load(r.resourceName, r.groupName, r.isManual, r.loader, r.loadParams);
-                } else if (r.type==RT_LOAD_GROUP) {
-                    ResourceGroupManager::getSingleton().loadResourceGroup(r.groupName);
-                }
-#endif
-                r.listener->operationCompleted(r.ticketID, r.result);
-            }
-		}
-		mNotificationQueue.clear();
-
-	}
-	//------------------------------------------------------------------------
+	public:
+		static MD5Hasher* create();
+	};
+struct NativeInternetHandle {
+ HINTERNET value;
+ NativeInternetHandle(HINTERNET v):value(v){}
+ ~NativeInternetHandle(){InternetCloseHandle(value);}
+ operator HINTERNET()const{return value;}
+};
+class NativeHttp:public Http {public:void request(bool,std::istream&,bool,const char*,std::string&);void failure(bool,const char*);};
+void NativeHttp::request(bool isPost,std::istream& data,bool compressData,const char* additionalHeaders,std::string& response) {
+ if(url.empty())throw std::runtime_error("empty url");
+ if(!Http::trustCheck(url.c_str()))throw std::runtime_error(G3D::format("trust check failed for %s",url.c_str()));
+ ATL::CUrl crack;crack.CrackUrl(url.c_str());
+ if(crack.GetHostNameLength()==0)throw std::runtime_error(G3D::format("'%s' is missing a hostName",url.c_str()));
+ HINTERNET session=InternetOpenA("Roblox/WinInet",INTERNET_OPEN_TYPE_PRECONFIG,NULL,NULL,0);
+ try {
+ HINTERNET connection=InternetConnectA(session,crack.GetHostName(),crack.GetPortNumber(),crack.GetUserNameA(),crack.GetPassword(),INTERNET_SERVICE_HTTP,0,TRUE);
+ try {
+ ATL::CStringA path=crack.GetUrlPath();path+=crack.GetExtraInfo();
+ HINTERNET request=HttpOpenRequestA(connection,isPost?"POST":"GET",path.GetString(),NULL,NULL,NULL,INTERNET_FLAG_EXISTING_CONNECT|INTERNET_FLAG_KEEP_CONNECTION|INTERNET_FLAG_NEED_FILE,TRUE);
+ try {
+ if(!request)throw std::runtime_error(G3D::format("HttpOpenRequest failed for %s",url.c_str()));
+ if(additionalHeaders)failure(HttpAddRequestHeadersA(request,additionalHeaders,(int)strlen(additionalHeaders),HTTP_ADDREQ_FLAG_ADD)==TRUE,"HttpAddRequestHeaders failed");
+ failure(HttpAddRequestHeadersA(request,"Accept-Encoding: gzip\r\n",(int)strlen("Accept-Encoding: gzip\r\n"),HTTP_ADDREQ_FLAG_ADD)==TRUE,"HttpAddRequestHeaders failed");
+ boost::iostreams::gzip_params gzipParams(boost::iostreams::zlib::default_compression);
+ if(isPost) {
+  std::string uploadData;
+  {
+   boost::iostreams::filtering_stream<boost::iostreams::output> out;
+   if(compressData) {
+    std::string contentEncodingHeader="Content-Encoding: gzip\r\n";
+    failure(HttpAddRequestHeadersA(request,contentEncodingHeader.c_str(),(int)contentEncodingHeader.size(),HTTP_ADDREQ_FLAG_ADD)==TRUE,"HttpAddRequestHeaders failed");
+    out.push(boost::iostreams::basic_gzip_compressor<>(gzipParams));
+   }
+   out.push(String_sink(uploadData));boost::iostreams::copy(data,out);
+  }
+  int length=(int)uploadData.size();
+  if(length>10000) {
+   std::string sizeHeader=G3D::format("Roblox-Content-Size: %d\r\n",length);
+   failure(HttpAddRequestHeadersA(request,sizeHeader.c_str(),(int)sizeHeader.size(),HTTP_ADDREQ_FLAG_ADD)==TRUE,"HttpAddRequestHeaders failed");
+   std::string firstHeader=G3D::format("Roblox-Content-First: %d\r\n",uploadData[0]);
+   failure(HttpAddRequestHeadersA(request,firstHeader.c_str(),(int)firstHeader.size(),HTTP_ADDREQ_FLAG_ADD)==TRUE,"HttpAddRequestHeaders failed");
+   std::string lastHeader=G3D::format("Roblox-Content-Last: %d\r\n",uploadData[length-1]);
+   failure(HttpAddRequestHeadersA(request,lastHeader.c_str(),(int)lastHeader.size(),HTTP_ADDREQ_FLAG_ADD)==TRUE,"HttpAddRequestHeaders failed");
+   boost::scoped_ptr<MD5Hasher> hasher(MD5Hasher::create());hasher->addData(uploadData);
+   std::string hashHeader=G3D::format("Roblox-Content-Hash: %s\r\n",hasher->c_str());
+   failure(HttpAddRequestHeadersA(request,hashHeader.c_str(),(int)hashHeader.size(),HTTP_ADDREQ_FLAG_ADD)==TRUE,"HttpAddRequestHeaders failed");
+  }
+  INTERNET_BUFFERSA buffers={0};buffers.dwStructSize=sizeof(buffers);buffers.dwBufferTotal=length;
+  if(!HttpSendRequestExA(request,&buffers,NULL,0,0))throw std::runtime_error("HttpSendRequestEx failed");
+  DWORD written;
+  failure(InternetWriteFile(request,uploadData.c_str(),length,&written)==TRUE,"InternetWriteFile failed");
+  if(written!=length)throw std::runtime_error("Failed to upload content");
+  failure(HttpEndRequestA(request,NULL,0,0)==TRUE,"HttpEndRequest failed");
+ }else failure(HttpSendRequestA(request,NULL,0,NULL,0)==TRUE,"HttpSendRequest failed");
+ int status;DWORD length=sizeof(status);
+ failure(HttpQueryInfoA(request,HTTP_QUERY_STATUS_CODE|HTTP_QUERY_FLAG_NUMBER,&status,&length,NULL)==TRUE,"HttpQueryInfo failed");
+ {
+  boost::iostreams::filtering_stream<boost::iostreams::input> in;
+  char buffer[256];DWORD length=sizeof(buffer);
+  if(HttpQueryInfoA(request,HTTP_QUERY_CONTENT_ENCODING,buffer,&length,NULL))if(std::string(buffer)=="gzip")in.push(boost::iostreams::basic_gzip_decompressor<>());
+  in.push(HttpRequest_source(request));boost::iostreams::copy(in,String_sink(response));
+ }
+ if(status!=200) {
+  char buffer[512];DWORD length=sizeof(buffer);
+  if(HttpQueryInfoA(request,HTTP_QUERY_STATUS_TEXT,buffer,&length,NULL))throw std::runtime_error(std::string(buffer));
+  else throw std::runtime_error(G3D::format("statusCode = %d",status));
+ }
+ }catch(...){InternetCloseHandle(request);throw;}
+ InternetCloseHandle(request);
+ }catch(...){InternetCloseHandle(connection);throw;}
+ InternetCloseHandle(connection);
+ }catch(...){InternetCloseHandle(session);throw;}
+ InternetCloseHandle(session);
 
 }
-
-
-
+}

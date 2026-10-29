@@ -1,14 +1,13 @@
-// from server: 23% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Chart/XTPChartSeriesPoint.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc-string-calls Source\ReportControl\XTPReportRecords.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPChartSeriesPoint.cpp
+// XTPReportRecords.cpp : implementation of the CXTPReportRecords class.
 //
-// This file is a part of the XTREME TOOLKIT PRO MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME REPORTCONTROL MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,336 +25,324 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "Resource.h"
 
-#include "Common/XTPResourceManager.h"
 #include "Common/XTPPropExchange.h"
-#include "Common/XTPCustomHeap.h"
 
-#include "Types/XTPChartTypes.h"
+#include "XTPReportRecordItem.h"
+#include "XTPReportRecord.h"
+#include "XTPReportRecords.h"
+#include "XTPReportInplaceControls.h"
 
-#include "XTPChartDefines.h"
-#include "XTPChartElement.h"
-#include "XTPChartSeriesPoint.h"
-#include "XTPChartSeries.h"
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
 
+IMPLEMENT_DYNAMIC(CXTPReportRecords, CCmdTarget)
 
-//////////////////////////////////////////////////////////////////////////
-// CXTPChartSeries
-
-IMPLEMENT_DYNAMIC(CXTPChartSeriesPoint, CXTPChartElement);
-
-CXTPChartSeriesPoint::CXTPChartSeriesPoint()
+CXTPReportRecords::CXTPReportRecords(BOOL bArray /*= FALSE*/)
 {
-	ZeroMemory(m_dValues, sizeof(m_dValues));
-	m_nLength = 1;
+	m_pOwnerRecord = NULL;
 
-	CommonConstruct();
+	m_pVirtualRecord = NULL;
+	m_nVirtualRecordsCount = 0;
+	m_bArray = bArray;
+
+	m_bCaseSensitive = TRUE;
+
+
 }
 
-CXTPChartSeriesPoint::~CXTPChartSeriesPoint()
+CXTPReportRecords::CXTPReportRecords(CXTPReportRecord* pOwnerRecord)
 {
+	m_pOwnerRecord = pOwnerRecord;
+
+	m_pVirtualRecord = NULL;
+	m_nVirtualRecordsCount = 0;
+	m_bArray = FALSE;
+
+	m_bCaseSensitive = TRUE;
+
 }
 
-
-CXTPChartSeriesPoint::CXTPChartSeriesPoint(const CXTPChartString& strArgument, double dValue)
+void CXTPReportRecords::SetVirtualMode(CXTPReportRecord* pVirtualRecord, int nCount)
 {
-	m_strArgument = strArgument;
-
-	ZeroMemory(m_dValues, sizeof(m_dValues));
-	m_dValues[0] = dValue;
-	m_nLength = 1;
-
-	CommonConstruct();
-}
-
-CXTPChartSeriesPoint::CXTPChartSeriesPoint(double dArgument, double dValue)
-{
-	m_dArgument = dArgument;
-
-	ZeroMemory(m_dValues, sizeof(m_dValues));
-	m_dValues[0] = dValue;
-	m_nLength = 1;
-	m_dInternalArgument = dArgument;
-
-	CommonConstruct();
-}
-
-CXTPChartSeriesPoint::CXTPChartSeriesPoint(double dArgument, double dValue1, double dValue2)
-{
-	m_dArgument = dArgument;
-
-	ZeroMemory(m_dValues, sizeof(m_dValues));
-	m_dValues[0] = dValue1;
-	m_dValues[1] = dValue2;
-	m_nLength = 2;
-	m_dInternalArgument = dArgument;
-
-	CommonConstruct();
-}
-
-CXTPChartSeriesPoint::CXTPChartSeriesPoint(const CXTPChartString& strArgument, double dValue1, double dValue2)
-{
-	m_strArgument = strArgument;
-
-	ZeroMemory(m_dValues, sizeof(m_dValues));
-	m_dValues[0] = dValue1;
-	m_dValues[1] = dValue2;
-	m_nLength = 2;
-
-	CommonConstruct();
-}
-
-CXTPChartSeriesPoint::CXTPChartSeriesPoint(const CXTPChartString& strArgument, double dValue1, double dValue2, double dValue3, double dValue4)
-{
-	m_strArgument = strArgument;
-
-	ZeroMemory(m_dValues, sizeof(m_dValues));
-	m_dValues[0] = dValue1;
-	m_dValues[1] = dValue2;
-	m_dValues[2] = dValue3;
-	m_dValues[3] = dValue4;
-	m_nLength = 4;
-
-	CommonConstruct();
-}
-
-CXTPChartSeriesPoint::CXTPChartSeriesPoint(double dArgument, double dValue1, double dValue2, double dValue3, double dValue4)
-{
-	m_dArgument = dArgument;
-
-	ZeroMemory(m_dValues, sizeof(m_dValues));
-	m_dValues[0] = dValue1;
-	m_dValues[1] = dValue2;
-	m_dValues[2] = dValue3;
-	m_dValues[3] = dValue4;
-	m_nLength = 4;
-
-	CommonConstruct();
-}
-
-void CXTPChartSeriesPoint::CommonConstruct()
-{
-	m_nPaletteIndex = 0;
-	m_bSpecial= 0;
-
-	if (m_strArgument.IsEmpty())
+	// release old virtual record
+	if (m_pVirtualRecord)
 	{
-		CString str;
-		str.Format(_T("%g"), m_dArgument);
-		m_strArgument = str;
+		m_pVirtualRecord->InternalRelease();
+	}
+
+	// reset virtual mode
+	if (!pVirtualRecord || nCount <= 0)
+	{
+		if (pVirtualRecord)
+		{
+			pVirtualRecord->InternalRelease();
+		}
+		m_pVirtualRecord = NULL;
+		m_nVirtualRecordsCount = 0;
+	}
+	else // set new virtual record
+	{
+		m_pVirtualRecord = pVirtualRecord;
+		m_nVirtualRecordsCount = nCount;
+		if (m_pVirtualRecord)
+		{
+			m_pVirtualRecord->m_pRecords = this;
+		}
+	}
+}
+
+CXTPReportRecords::~CXTPReportRecords()
+{
+	RemoveAll();
+
+	if (m_pVirtualRecord)
+	{
+		m_pVirtualRecord->InternalRelease();
+	}
+}
+
+void CXTPReportRecords::RemoveAll()
+{
+	if (!m_bArray)
+	{
+		// array cleanup
+		for (int nRecord = (int)m_arrRecords.GetSize() - 1; nRecord >= 0; nRecord--)
+		{
+			CXTPReportRecord* pRecord = m_arrRecords.GetAt(nRecord);
+			pRecord->InternalRelease();
+		}
+	}
+	m_arrRecords.RemoveAll();
+}
+
+void CXTPReportRecords::UpdateIndexes(int nStart /*= 0*/)
+{
+	for (int i = nStart; i < GetCount(); i++)
+		GetAt(i)->m_nIndex = i;
+}
+
+CXTPReportRecord* CXTPReportRecords::Add(CXTPReportRecord* pRecord)
+{
+	int nIndex = (int)m_arrRecords.Add(pRecord);
+
+	if (m_bArray)
+	{
+		ASSERT(pRecord->m_pRecords);
 	}
 	else
 	{
-		m_dArgument = atof(XTP_CT2CA(m_strArgument));
-		m_dInternalArgument = m_dArgument;
-
+		pRecord->m_nIndex = nIndex;
+		pRecord->m_pRecords = this;
 	}
-	m_nIndex = -1;
 
-	m_clrPoint = CXTPChartColor::Empty;
-
-
+	return pRecord;
 }
 
-double CXTPChartSeriesPoint::GetValue(int nIndex) const
+void CXTPReportRecords::RemoveAt(int nIndex)
 {
-	if (nIndex >= m_nLength)
-		return 0;
+	ASSERT(!m_bArray);
 
-	return m_dValues[nIndex];
-}
-
-void CXTPChartSeriesPoint::SetValue(int nIndex, double dValue)
-{
-	if (nIndex >= m_nLength)
-		return;
-
-	m_dValues[nIndex] = dValue;
-}
-
-CXTPChartSeriesPoint* CXTPChartSeriesPoint::GetPreviousPoint() const
-{
-	if (!m_pOwner)
-		return NULL;
-
-	CXTPChartSeriesPointCollection* pOwner = (CXTPChartSeriesPointCollection*)m_pOwner;
-
-	return pOwner->GetAt(m_nIndex - 1);
-}
-
-CXTPChartSeriesPoint* CXTPChartSeriesPoint::GetNextPoint() const
-{
-	if (!m_pOwner)
-		return NULL;
-
-	CXTPChartSeriesPointCollection* pOwner = (CXTPChartSeriesPointCollection*)m_pOwner;
-
-	return pOwner->GetAt(m_nIndex + 1);
-}
-
-void CXTPChartSeriesPoint::DoPropExchange(CXTPPropExchange* pPX)
-{
-	PX_String(pPX, _T("Argument"), m_strArgument, _T(""));
-	PX_Double(pPX, _T("ArgumentValue"), m_dArgument, 0);
-
-	PX_Int(pPX, _T("Length"), m_nLength, 1);
-	PX_Bool(pPX, _T("Special"), m_bSpecial, FALSE);
-
-	for (int i = 0; i < m_nLength; i++)
+	if (nIndex < (int)m_arrRecords.GetSize())
 	{
-		CString strValue;
-		strValue.Format(_T("Value%d"), i);
-		PX_Double(pPX, strValue, m_dValues[i]);
-	}
+		m_arrRecords[nIndex]->InternalRelease();
+		m_arrRecords.RemoveAt(nIndex);
 
-	if (pPX->IsLoading())
+		UpdateIndexes(nIndex);
+	}
+}
+
+int CXTPReportRecords::RemoveRecord(CXTPReportRecord* pRecord)
+{
+	ASSERT(!m_bArray);
+
+	for (int i = 0; i < (int)m_arrRecords.GetSize(); i++)
 	{
-		m_dInternalArgument = m_dArgument;
+		CXTPReportRecord* pRec = m_arrRecords.GetAt(i);
+		if (pRec == pRecord)
+		{
+			pRecord->InternalRelease();
+			m_arrRecords.RemoveAt(i);
+
+			UpdateIndexes(i);
+
+			return i;
+		}
 	}
+
+	return - 1;
 }
 
-CXTPChartSeries* CXTPChartSeriesPoint::GetSeries() const
+void CXTPReportRecords::InsertAt(int nIndex, CXTPReportRecord* pRecord)
 {
-	CXTPChartSeriesPointCollection* pCollection = DYNAMIC_DOWNCAST(CXTPChartSeriesPointCollection, m_pOwner);
-	if (!pCollection)
-		return NULL;
+	ASSERT(!m_bArray);
 
-	CXTPChartSeries* pSeries = DYNAMIC_DOWNCAST(CXTPChartSeries, pCollection->GetOwner());
-
-	return pSeries;
+	m_arrRecords.InsertAt(nIndex, pRecord);
+	pRecord->m_pRecords = this;
+	UpdateIndexes(nIndex);
 }
 
-void CXTPChartSeriesPoint::SetInternalArgument(double dInternalArgument)
+int CXTPReportRecords::GetCount() const
 {
-	m_dInternalArgument = dInternalArgument;
+	if (m_pVirtualRecord != NULL)
+		return m_nVirtualRecordsCount;
+
+	return (int)m_arrRecords.GetSize();
+}
+CXTPReportRecord* CXTPReportRecords::GetAt(int nIndex) const
+{
+	if (m_pVirtualRecord)
+	{
+		m_pVirtualRecord->m_nIndex = nIndex;
+		return m_pVirtualRecord;
+	}
+
+	return nIndex >= 0 && nIndex < GetCount() ? m_arrRecords.GetAt(nIndex) : NULL;
 }
 
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPChartSeriesPointCollection
-
-IMPLEMENT_DYNAMIC(CXTPChartSeriesPointCollection, CXTPChartElementCollection)
-
-CXTPChartSeriesPointCollection::CXTPChartSeriesPointCollection()
+void CXTPReportRecords::DoPropExchange(CXTPPropExchange* pPX)
 {
+	pPX->ExchangeSchemaSafe();
+
+	_DoPropExchange(pPX);
 }
 
-CXTPChartSeriesPointCollection::~CXTPChartSeriesPointCollection()
+void CXTPReportRecords::_DoPropExchange(CXTPPropExchange* pPX)
 {
-}
+	CXTPPropExchangeEnumeratorPtr pEnumRecords(pPX->GetEnumerator(_T("Record")));
 
+	if (pPX->IsStoring())
+	{
+		int nCount = (int)GetCount();
+		POSITION pos = pEnumRecords->GetPosition((DWORD)nCount);
 
-CXTPChartSeriesPoint* CXTPChartSeriesPointCollection::Add(CXTPChartSeriesPoint* pPoint)
-{
-	pPoint->m_nIndex = GetCount();
+		for (int i = 0; i < nCount; i++)
+		{
+			CXTPReportRecord* pRecord = GetAt(i);
+			ASSERT(pRecord);
 
-	InsertAt(GetCount(), pPoint);
-
-	return pPoint;
-}
-
-void CXTPChartSeriesPointCollection::DoPropExchange(CXTPPropExchange* pPX)
-{
-	if (pPX->IsLoading())
+			CXTPPropExchangeSection sec(pEnumRecords->GetNext(pos));
+			PX_Object(&sec, pRecord, RUNTIME_CLASS(CXTPReportRecord));
+		}
+	}
+	else
 	{
 		RemoveAll();
 
-		CXTPPropExchangeEnumeratorPtr pEnumerator(pPX->GetEnumerator(_T("Point")));
-		POSITION pos = pEnumerator->GetPosition(0);
+		POSITION pos = pEnumRecords->GetPosition();
 
 		while (pos)
 		{
-			CXTPPropExchangeSection pxItem(pEnumerator->GetNext(pos));
+			CXTPReportRecord* pRecord = NULL;
 
+			CXTPPropExchangeSection sec(pEnumRecords->GetNext(pos));
+			PX_Object(&sec, pRecord, RUNTIME_CLASS(CXTPReportRecord));
 
-			CXTPChartSeriesPoint* pPoint = new CXTPChartSeriesPoint();
-			Add(pPoint);
+			if (!pRecord)
+				AfxThrowArchiveException(CArchiveException::badClass);
 
-			pPoint->DoPropExchange(&pxItem);
+			Add(pRecord);
 		}
 	}
-	else
-	{
-		CXTPPropExchangeEnumeratorPtr pEnumerator(pPX->GetEnumerator(_T("Point")));
-		POSITION pos = pEnumerator->GetPosition((int)m_arrElements.GetSize());
+}
 
-		for (int i = 0; i < GetCount(); i++)
+void CXTPReportRecords::Move(int nIndex, CXTPReportRecords* pRecords)
+{
+	ASSERT(pRecords->m_bArray == TRUE);
+
+	if (nIndex > GetCount())
+		nIndex = GetCount();
+
+	int nRecordsCount = (int)pRecords->GetCount(), i;
+
+	for (i = 0; i < nRecordsCount; i++)
+	{
+		CXTPReportRecord* pRecord = pRecords->GetAt(i);
+		int nRecordIndex = pRecord->GetIndex();
+
+		if (pRecord->m_pRecords != this)
+			continue;
+
+		ASSERT(pRecord && GetAt(nRecordIndex) == pRecord);
+
+		m_arrRecords.RemoveAt(nRecordIndex);
+
+		if (nRecordIndex < nIndex)
 		{
-			CXTPPropExchangeSection pxItem(pEnumerator->GetNext(pos));
-
-			m_arrElements[i]->DoPropExchange(&pxItem);
+			nIndex--;
 		}
 
+		for (int j = i + 1; j < nRecordsCount; j++)
+		{
+			pRecord = pRecords->GetAt(j);
+			if (pRecord->m_pRecords != this)
+				continue;
+
+			if (pRecord->GetIndex() > nRecordIndex)
+			{
+				pRecord->m_nIndex--;
+			}
+		}
 	}
-}
 
-
-XTP_DECLARE_HEAP_ALLOCATOR_(CXTPChartSeriesPointAllocator, XTP_EXPORT_PARAMS_NO)
-XTP_IMPLEMENT_HEAP_ALLOCATOR(CXTPChartSeriesPointAllocator, FALSE)
-
-
-XTP_DECLARE_BATCH_ALLOC_OBJ_DATA_(CXTPChartSeriesBatchPointData, XTP_EXPORT_PARAMS_NO);
-
-class CXTPChartSeriesBatchPoint : public CXTPBatchAllocObjT<CXTPHeapObjectT<CXTPChartSeriesPoint, CXTPChartSeriesPointAllocator>,
-	 CXTPChartSeriesBatchPointData>
-{
-
-};
-
-XTP_IMPLEMENT_BATCH_ALLOC_OBJ_DATA(CXTPChartSeriesBatchPointData, CXTPChartSeriesBatchPoint, TRUE)
-
-
-void CXTPChartSeriesPointCollection::AddPoints(int nCount)
-{
-
-	CXTPChartSeriesBatchPointData::m_nBlockSize = nCount;
-
-	for (int i = 0; i < nCount; i++)
+	for (i = 0; i < nRecordsCount; i++)
 	{
-		CXTPChartSeriesBatchPoint* pPoint = new CXTPChartSeriesBatchPoint();
+		CXTPReportRecord* pRecord = pRecords->GetAt(i);
+		if (pRecord->m_pRecords != this)
+			continue;
 
-		Add(pPoint);
+		m_arrRecords.InsertAt(nIndex, pRecord);
+		nIndex++;
 	}
+
+	UpdateIndexes();
 }
 
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPChartSeriesVirtualPointCollection
-
-CXTPChartSeriesVirtualPointCollection::CXTPChartSeriesVirtualPointCollection(double dMinRange, double dMaxRange, double dStep, GETPOINTVALUEPTR pCallbackPtr)
+int CXTPReportRecords::Compare(const CString& str1, const CString& str2) const
 {
-	m_dMinRange = dMinRange;
-	m_dMaxRange = dMaxRange;
-	m_dStep = dStep;
+	if (!IsCaseSensitive())
+		return str1.CompareNoCase(str2);
 
-	if (dStep == 0)
-		dStep = 1;
-
-	m_nCount = int((m_dMaxRange - m_dMinRange) / dStep);
-
-	m_pVirtualPoint = new CXTPChartSeriesPoint();
-	m_pVirtualPoint->m_pOwner = this;
-	m_pCallbackPtr = pCallbackPtr;
+	return str1.Compare(str2);
 }
 
-CXTPChartSeriesVirtualPointCollection::~CXTPChartSeriesVirtualPointCollection()
+void CXTPReportRecords::SetSize(INT_PTR nNewSize, INT_PTR nGrowBy)
 {
-	SAFE_RELEASE(m_pVirtualPoint);
+	int nSize = GetCount();
+	if (!m_bArray && nNewSize < nSize)
+	{
+		for (int i = (int)nNewSize; i < nSize; i++)
+		{
+			CXTPReportRecord* pRecord = GetAt(i);
+			if (pRecord)
+				pRecord->InternalRelease();
+		}
+	}
+	m_arrRecords.SetSize(nNewSize, nGrowBy);
 }
 
-int CXTPChartSeriesVirtualPointCollection::GetCount() const
+void CXTPReportRecords::SetAt(INT_PTR nIndex, CXTPReportRecord* pRecord)
 {
-	return m_nCount;
-}
+	ASSERT(pRecord);
+	ASSERT(nIndex >= 0 && nIndex < GetCount());
 
-CXTPChartSeriesPoint* CXTPChartSeriesVirtualPointCollection::GetAt(int nIndex) const
-{
-	double x = m_dMinRange + nIndex * m_dStep;
+	if (!pRecord || nIndex < 0 || nIndex >= GetCount())
+		return;
 
-	m_pVirtualPoint->m_dArgument = m_pVirtualPoint->m_dInternalArgument = x;
-	m_pVirtualPoint->m_nLength = 1;
-	m_pVirtualPoint->m_dValues[0] = m_pCallbackPtr((CXTPChartSeries*)m_pOwner, x);
+	if (!m_bArray)
+	{
+		CXTPReportRecord* pRecord_prev = GetAt((int)nIndex);
+		if (pRecord_prev)
+			pRecord_prev->InternalRelease();
 
-	return m_pVirtualPoint;
+		pRecord->m_nIndex = (int)nIndex;
+		pRecord->m_pRecords = this;
+	}
+
+	m_arrRecords.SetAt(nIndex, pRecord);
 }
 

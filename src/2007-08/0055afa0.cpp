@@ -1,68 +1,22 @@
-// from server: 30% by colin
-struct S {
-    char pad[0x34];
-    int f(int, int, int, int, int, int, int, int, int);
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_stack_5dfe974239e88070.cpp
 
-extern "C" {
-    void __stdcall sub_5572B0(int);
-    void __stdcall sub_558C00(int, int);
-    void __stdcall sub_5596C0(int, int);
-    void __stdcall sub_559CD0(int);
-    void __stdcall sub_55ADB0(int);
-    void __stdcall sub_572390(int, int, int);
-    void __stdcall sub_7266D0(int, int);
-    void __stdcall sub_726440(int);
-    void __stdcall sub_77E69C(int);
-    void __stdcall sub_77E698(int, int);
-    void __stdcall sub_77E6AC(int);
-}
-
-int S::f(int a, int b, int c, int d, int e, int g, int h, int i, int j)
-{
-    int v = 0;
-    int result = 0;
-    char buf[0x34];
-    int* p = (int*)buf;
-    p[0] = 0;
-    p[1] = 0;
-    p[2] = 0;
-    p[3] = 0;
-    p[4] = 0;
-    p[5] = 0;
-    p[6] = 0;
-    p[7] = 0;
-    p[8] = 0;
-    p[9] = 0;
-    p[10] = 0;
-    p[11] = 0;
-    p[12] = 0;
-
-    if (*(char*)&a != 0) {
-        sub_77E69C((int)&a);
-        sub_5572B0(b);
-    } else {
-        if (c > 0) {
-            sub_77E69C((int)&a);
-            sub_558C00((int)&a, b);
-            sub_559CD0((int)&buf[0]);
-            sub_5596C0((int)&buf[0], 0x56C480);
-            sub_55ADB0((int)&buf[0]);
-            sub_572390((int)&buf[0], 0x7A8A50, (int)&buf[0]);
-            sub_7266D0((int)&buf[0], (int)&buf[0]);
-            sub_726440((int)&buf[0]);
-            if (p[0] != 0) {
-                ((void(__stdcall*)(int, int))p[0])(p[1], 1);
-            }
-            if (p[2] != 0) {
-                ((void(__stdcall*)(int, int))p[2])(p[3], 1);
-            }
-            if (p[4] != 0) {
-                ((void(__stdcall*)(int, int))p[4])(p[5], 1);
-            }
-        }
-        sub_77E698((int)&buf[0], 0x785954);
-    }
-    sub_77E6AC((int)&buf[0]);
-    return result;
-}
+// Candidate translation unit (score above; library headers required).
+#ifndef _MT
+#define _MT
+#endif
+#ifndef _DLL
+#define _DLL
+#endif
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "v8datamodel/DataModel.cpp"

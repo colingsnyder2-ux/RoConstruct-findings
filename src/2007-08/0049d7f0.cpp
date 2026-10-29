@@ -1,89 +1,21 @@
-// from server: 38% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_espeon_aug2007_fullstack_kernel_0e9bc95e1ce15358.cpp
 
-struct RefCounted {
-    void* vptr;
-    long refcount;
-    long weakcount;
-};
-
-struct S_0049d7f0 {
-    void* m0;
-    void* m4;
-};
-
-extern "C" void* __cdecl func_0041e0f0(void*);
-extern "C" void __cdecl func_0049cf30(void*, void*);
-
-void __cdecl func_0049d7f0(S_0049d7f0* out, void* src)
-{
-    void* local10 = 0;
-    void* local14 = 0;
-    void* local18 = 0;
-    void* local1c = 0;
-    void* local20 = 0;
-    int state = 0;
-    int flags = 0;
-
-    if (src != 0) {
-        void* p = func_0041e0f0(&local20);
-        func_0049cf30(&local18, p);
-        local14 = local18;
-        state = 2;
-        flags = 3;
-    } else {
-        local10 = 0;
-        local14 = 0;
-        state = 4;
-    }
-
-    void* a = (flags & 4) ? &local14 : &local10;
-    out->m0 = *(void**)a;
-    void* b = *(void**)((char*)a + 4);
-    out->m4 = b;
-    if (b != 0) {
-        _InterlockedExchangeAdd((volatile long*)((char*)b + 4), 1);
-    }
-
-    flags |= 8;
-
-    if (flags & 4) {
-        flags &= ~4;
-        if (local14 != 0) {
-            RefCounted* r = (RefCounted*)local14;
-            if (_InterlockedExchangeAdd(&r->refcount, -1) == 1) {
-                ((void (__thiscall*)(RefCounted*))r->vptr)(r);
-                if (_InterlockedExchangeAdd(&r->weakcount, -1) == 1) {
-                    ((void (__thiscall*)(RefCounted*))r->vptr)(r);
-                }
-            }
-        }
-    }
-
-    if (flags & 2) {
-        flags &= ~2;
-        if (local18 != 0) {
-            RefCounted* r = (RefCounted*)local18;
-            if (_InterlockedExchangeAdd(&r->refcount, -1) == 1) {
-                ((void (__thiscall*)(RefCounted*))r->vptr)(r);
-                if (_InterlockedExchangeAdd(&r->weakcount, -1) == 1) {
-                    ((void (__thiscall*)(RefCounted*))r->vptr)(r);
-                }
-            }
-        }
-    }
-
-    if (flags & 1) {
-        flags &= ~1;
-        if (local1c != 0) {
-            RefCounted* r = (RefCounted*)local1c;
-            if (_InterlockedExchangeAdd(&r->refcount, -1) == 1) {
-                ((void (__thiscall*)(RefCounted*))r->vptr)(r);
-                if (_InterlockedExchangeAdd(&r->weakcount, -1) == 1) {
-                    ((void (__thiscall*)(RefCounted*))r->vptr)(r);
-                }
-            }
-        }
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#define _MT 1
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "humanoid/Humanoid.cpp"

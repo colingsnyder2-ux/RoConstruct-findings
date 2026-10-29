@@ -18,21 +18,25 @@
 // 00464ba2  e8c9c4ffff           call 0x461070
 // 00464ba7  5e                   pop esi
 // 00464ba8  c3                   ret 
-// copied from an identical function in another client (function ?func@CScriptEditor@ns_ROCX000006@@QAEXXZ)
+// copied from an identical function in another client (function ?fn_ROCX000000_00463f10@CScriptEditor@@QAEXXZ)
 
-namespace ns_ROCX000006 {
-struct CScriptEditor {
-    void* method_45d230();
-    void* method_45bf60(int);
-    void* method_45ca50(void*, int);
-    void* method_45c240(void*, int, int);
-    void func();
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+struct Control {
+    int func_00460120(int direct);
+    int func_00460c10(int position, int direct);
+    void func_00460400(int position, int anchor, int direct);
 };
 
-void CScriptEditor::func() {
-    CScriptEditor* p = (CScriptEditor*)method_45d230();
-    void* a = p->method_45bf60(1);
-    void* b = p->method_45ca50(a, 1);
-    p->method_45c240(b, 0, 1);
-}
+struct CScriptEditor {
+    int* func_004613d0();
+    void func_00463f10();
+};
+
+void CScriptEditor::func_00463f10()
+{
+    Control* control = reinterpret_cast<Control*>(func_004613d0());
+    int position = control->func_00460120(1);
+    position = control->func_00460c10(position, 1);
+    control->func_00460400(position, 0, 1);
 }

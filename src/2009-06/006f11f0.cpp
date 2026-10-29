@@ -1,12 +1,11 @@
-// from server: 90% by colin
-// roc-lang: c
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /MD
-// roc-lib: lua-5.1.4 llex.c
+// roc-lang: c
+// roc-flags: /O2 /Ob1 /GS- /MD
+// roc-lib: lua-5.1-dll llex.c
 
 // Candidate translation unit (score above; library headers required).
 /*
-** $Id: llex.c,v 2.20.1.1 2007/12/27 13:02:25 roberto Exp $
+** $Id: llex.c,v 2.19 2006/02/06 18:28:16 roberto Exp $
 ** Lexical Analyzer
 ** See Copyright Notice in lua.h
 */
@@ -27,7 +26,6 @@
 #include "lparser.h"
 #include "lstate.h"
 #include "lstring.h"
-#include "ltable.h"
 #include "lzio.h"
 
 

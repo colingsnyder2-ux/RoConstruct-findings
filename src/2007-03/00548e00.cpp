@@ -1,497 +1,253 @@
-// from server: 51% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-8.0 atlmfc/src/mfc/afxstate.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-net roc_espeon_aug2007_boost133_complete_6f0c53d55c3fae31.cpp
 
 // Candidate translation unit (score above; library headers required).
-// This is a part of the Microsoft Foundation Classes C++ library.
-// Copyright (C) Microsoft Corporation
-// All rights reserved.
-//
-// This source code is only intended as a supplement to the
-// Microsoft Foundation Classes Reference and related
-// electronic documentation provided with the library.
-// See these sources for detailed information regarding the
-// Microsoft Foundation Classes product.
+#define _MT 1
+// Boost.Function library
 
-#include "stdafx.h"
-#include <stddef.h>
+//  Copyright Douglas Gregor 2001-2004. Use, modification and
+//  distribution is subject to the Boost Software License, Version
+//  1.0. (See accompanying file LICENSE_1_0.txt or copy at
+//  http://www.boost.org/LICENSE_1_0.txt)
+
+// For more information, see http://www.boost.org
 
 
-
-#pragma warning(disable: 4074)
-#pragma init_seg(compiler)
-
-/////////////////////////////////////////////////////////////////////////////
-// AFX_MODULE_STATE push/pop implementation
-
-#ifdef _AFXDLL
-AFX_MODULE_STATE* AFXAPI AfxSetModuleState(AFX_MODULE_STATE* pNewState)
-{
-	_AFX_THREAD_STATE* pState = _afxThreadState;
-	ASSERT(pState);
-	if(pState)
-	{
-	AFX_MODULE_STATE* pPrevState = pState->m_pModuleState;
-	pState->m_pModuleState = pNewState;
-	return pPrevState;
-}
-	else
-	{
-		return NULL;
-	}
-}
-
-AFX_MAINTAIN_STATE::~AFX_MAINTAIN_STATE()
-{
-	_AFX_THREAD_STATE* pState = _afxThreadState;
-	ASSERT(pState);
-	if(pState)
-	{
-	pState->m_pModuleState = m_pPrevModuleState;
-}
-}
-#endif //_AFXDLL
-
-AFX_MAINTAIN_STATE2::AFX_MAINTAIN_STATE2(AFX_MODULE_STATE* pNewState) throw()
-{
-#ifdef _AFXDLL
-	m_pThreadState = _afxThreadState;
-	ASSERT(m_pThreadState);
-	if(m_pThreadState)
-	{
-	m_pPrevModuleState = m_pThreadState->m_pModuleState;
-	m_pThreadState->m_pModuleState = pNewState;
-	}
-	else
-	{
-		// This is a very bad state; we have no good way to report the error at this moment
-		// since exceptions from here are not expected
-		m_pPrevModuleState=NULL;
-		m_pThreadState=NULL;
-	}
+// Authentic Boost 1.33.1 manager, isolated to coexist with newer native headers.
+// Source: https://raw.githubusercontent.com/boostorg/function/boost-1.33.1/include/boost/function/function_base.hpp
+#ifndef _DLL
+#define _DLL
 #endif
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "script/ScriptContext.h"
+#include "util/RunStateOwner.h"
+#include "util/ContentProvider.h"
+#include "v8datamodel/Feature.h"
+#include "v8world/World.h"
+#include "Replicator.h"
+#include "util/boost.hpp"
+class ThreadLogManager;
+class DHTMLWindow;
+// 00415d00 clones a four-byte boost::_mfi::mf0<void,CLuaHtmlView>.
+// This proves the single-inheritance member-pointer representation; no object layout is modeled.
+class __single_inheritance CLuaHtmlView { public: class Binder; };
+namespace G3D { class Stopwatch; }
+namespace RBX { namespace View { class View; class PartChunk; class Decal; class Texture; }
+namespace Network { class Server; } }
 
-	if (AfxGetAmbientActCtx() && 
-		pNewState->m_hActCtx != INVALID_HANDLE_VALUE)
-	{
-		m_bValidActCtxCookie = AfxActivateActCtx(pNewState->m_hActCtx, &m_ulActCtxCookie);
-	}
-	else
-	{
-		m_bValidActCtxCookie = FALSE;
-	}
-}
+#include "reflection/signal.h"
+#define BOOST_FUNCTION_COMPARE_TYPE_ID(X,Y) ((X)==(Y))
+namespace recovered_boost133 {
+using namespace boost::detail::function;
+      union any_pointer
+      {
+        void* obj_ptr;
+        const void* const_obj_ptr;
+        void (*func_ptr)();
+        char data[1];
+      };
 
-/////////////////////////////////////////////////////////////////////////////
-// _AFX_THREAD_STATE implementation
+      inline any_pointer make_any_pointer(void* o)
+      {
+        any_pointer p;
+        p.obj_ptr = o;
+        return p;
+      }
 
-_AFX_THREAD_STATE::_AFX_THREAD_STATE()
-{
-#ifdef _DEBUG
-	m_nDisablePumpCount = 0;
-#endif
-	m_msgCur.message = WM_NULL;
-	m_nMsgLast = WM_NULL;
-	//::GetCursorPos(&(m_ptCursorLast));
-	m_ptCursorLast = CPoint(0,0);
-}
+      inline any_pointer make_any_pointer(const void* o)
+      {
+        any_pointer p;
+        p.const_obj_ptr = o;
+        return p;
+      }
 
-_AFX_THREAD_STATE::~_AFX_THREAD_STATE()
-{
-	// unhook windows hooks
-	if (m_hHookOldMsgFilter != NULL)
-		::UnhookWindowsHookEx(m_hHookOldMsgFilter);
-	if (m_hHookOldCbtFilter != NULL)
-		::UnhookWindowsHookEx(m_hHookOldCbtFilter);
+      inline any_pointer make_any_pointer(void (*f)())
+      {
+        any_pointer p;
+        p.func_ptr = f;
+        return p;
+      }
 
-	// free safety pool buffer
-	if (m_pSafetyPoolBuffer != NULL)
-		free(m_pSafetyPoolBuffer);
+      template<typename Functor, typename Allocator>
+      struct functor_manager
+      {
+      private:
+        typedef Functor functor_type;
 
-	// parking window must have already been cleaned up by now!
-	ASSERT(m_pWndPark == NULL);
-}
+        // For function pointers, the manager is trivial
+        static inline any_pointer
+        manager(any_pointer function_ptr,
+                functor_manager_operation_type op,
+                function_ptr_tag)
+        {
+          if (op == clone_functor_tag)
+            return function_ptr;
+          else
+            return make_any_pointer(static_cast<void (*)()>(0));
+        }
 
-_AFX_THREAD_STATE* AFXAPI AfxGetThreadState()
-{
-	_AFX_THREAD_STATE *pState =_afxThreadState.GetData();
-	ENSURE(pState != NULL); 
-	return pState;
-}
-
-THREAD_LOCAL(_AFX_THREAD_STATE, _afxThreadState)
-
-/////////////////////////////////////////////////////////////////////////////
-// AFX_MODULE_STATE implementation
-
-#ifdef _AFXDLL
-AFX_MODULE_STATE::AFX_MODULE_STATE(BOOL bDLL, WNDPROC pfnAfxWndProc,
-	DWORD dwVersion, BOOL bSystem)
+        // For function object pointers, we clone the pointer to each
+        // function has its own version.
+        static inline any_pointer
+        manager(any_pointer function_obj_ptr,
+                functor_manager_operation_type op,
+                function_obj_tag)
+        {
+#ifndef BOOST_NO_STD_ALLOCATOR
+        typedef typename Allocator::template rebind<functor_type>::other
+          allocator_type;
+        typedef typename allocator_type::pointer pointer_type;
 #else
-AFX_MODULE_STATE::AFX_MODULE_STATE(BOOL bDLL)
-#endif
-{
-#ifndef _AFX_NO_OLE_SUPPORT
-	m_factoryList.Construct(offsetof(COleObjectFactory, m_pNextFactory));
-#endif
-	m_classList.Construct(offsetof(CRuntimeClass, m_pNextClass));
+        typedef functor_type* pointer_type;
+#endif // BOOST_NO_STD_ALLOCATOR
 
-	m_fRegisteredClasses = 0;
-	m_bDLL = (BYTE)bDLL;
-#ifdef _AFXDLL
-	m_pfnAfxWndProc = pfnAfxWndProc;
-	m_dwVersion = dwVersion;
-	m_bSystem = (BYTE)bSystem;
-#endif
-	BOOL bEnable = TRUE;
-	TRY
-	{
-		//Preallocate the registered classes string, but CRT memory leak report is
-		//called before the string frees memory, so need to disable tracking.
-		bEnable = AfxEnableMemoryTracking(FALSE);
-		m_strUnregisterList.Preallocate(4096);
-		AfxEnableMemoryTracking(bEnable);	
-	}		
-	CATCH(CMemoryException, e)
-	{
-		AfxEnableMemoryTracking(bEnable);	
-		DELETE_EXCEPTION(e);
-	}
-	END_CATCH
-	// app starts out in "user control"
-	m_bUserCtrl = TRUE;
+#  ifndef BOOST_NO_STD_ALLOCATOR
+          allocator_type allocator;
+#  endif // BOOST_NO_STD_ALLOCATOR
 
-#ifndef _AFX_NO_OCC_SUPPORT
-	m_lockList.Construct(offsetof(COleControlLock, m_pNextLock));
-#endif
-#ifdef _AFXDLL
-	m_libraryList.Construct(offsetof(CDynLinkLibrary, m_pNextDLL));
-#endif
-	
+          if (op == clone_functor_tag) {
+            functor_type* f =
+              static_cast<functor_type*>(function_obj_ptr.obj_ptr);
 
-	bEnable = AfxEnableMemoryTracking(FALSE);		
-	//Fusion: allocate dll wrappers array.
-	m_pDllIsolationWrappers = new CDllIsolationWrapperBase*[2];
-#ifndef _AFX_NO_AFXCMN_SUPPORT
-	m_pDllIsolationWrappers[_AFX_COMCTL32_ISOLATION_WRAPPER_INDEX] = new CComCtlWrapper;
-#endif
-	m_pDllIsolationWrappers[_AFX_COMMDLG_ISOLATION_WRAPPER_INDEX] = new CCommDlgWrapper;
-	AfxEnableMemoryTracking(bEnable);
-	m_bSetAmbientActCtx = TRUE;
-	m_hActCtx = NULL;
+            // Clone the functor
+#  ifndef BOOST_NO_STD_ALLOCATOR
+            pointer_type copy = allocator.allocate(1);
+            allocator.construct(copy, *f);
+
+            // Get back to the original pointer type
+            functor_type* new_f = static_cast<functor_type*>(copy);
+#  else
+            functor_type* new_f = new functor_type(*f);
+#  endif // BOOST_NO_STD_ALLOCATOR
+            return make_any_pointer(static_cast<void*>(new_f));
+          }
+          else {
+            /* Cast from the void pointer to the functor pointer type */
+            functor_type* f =
+              reinterpret_cast<functor_type*>(function_obj_ptr.obj_ptr);
+
+#  ifndef BOOST_NO_STD_ALLOCATOR
+            /* Cast from the functor pointer type to the allocator's pointer
+               type */
+            pointer_type victim = static_cast<pointer_type>(f);
+
+            // Destroy and deallocate the functor
+            allocator.destroy(victim);
+            allocator.deallocate(victim, 1);
+#  else
+            delete f;
+#  endif // BOOST_NO_STD_ALLOCATOR
+
+            return make_any_pointer(static_cast<void*>(0));
+          }
+        }
+      public:
+        /* Dispatch to an appropriate manager based on whether we have a
+           function pointer or a function object pointer. */
+        static any_pointer
+        manage(any_pointer functor_ptr, functor_manager_operation_type op)
+        {
+          if (op == check_functor_type_tag) {
+            std::type_info* type =
+              static_cast<std::type_info*>(functor_ptr.obj_ptr);
+            return (BOOST_FUNCTION_COMPARE_TYPE_ID(typeid(Functor), *type)?
+                    functor_ptr
+                    : make_any_pointer(reinterpret_cast<void*>(0)));
+          }
+          else {
+            typedef typename get_function_tag<functor_type>::type tag_type;
+            return manager(functor_ptr, op, tag_type());
+          }
+        }
+      };
+
+
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// Activation Context API wrappers
+// 00415d00 target RTTI
+template struct recovered_boost133::functor_manager< boost::_mfi::mf0<void,CLuaHtmlView>, std::allocator<void> >;
+// 00416ae0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,DHTMLWindow,RBX::Lua::FunctionRef>,boost::_bi::list2<boost::_bi::value<boost::shared_ptr<DHTMLWindow> >,boost::_bi::value<RBX::Lua::FunctionRef> > >, std::allocator<void> >;
+// 00416b70 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,DHTMLWindow,std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,boost::_bi::list2<boost::_bi::value<boost::shared_ptr<DHTMLWindow> >,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 00417570 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf3<void,DHTMLWindow,boost::shared_ptr<RBX::Instance>,RBX::Reflection::PropertyDescriptor const &,std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,boost::_bi::list4<boost::_bi::value<boost::shared_ptr<DHTMLWindow> >,boost::_bi::value<boost::shared_ptr<RBX::Instance> >,boost::reference_wrapper<RBX::Reflection::PropertyDescriptor const >,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 00427ed0 target RTTI
+template struct recovered_boost133::functor_manager< void (__cdecl*)(ThreadLogManager *), std::allocator<void> >;
+// 0042b3a0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<bool,boost::_mfi::mf0<bool,CLuaHtmlView::Binder>,boost::_bi::list1<boost::_bi::value<CLuaHtmlView::Binder *> > >, std::allocator<void> >;
+// 0042b460 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,void (__cdecl*)(RBX::Reflection::PropertyDescriptor const *,RBX::Reflection::PropertyDescriptor const &,CLuaHtmlView::Binder *),boost::_bi::list3<boost::arg<1>,boost::reference_wrapper<RBX::Reflection::PropertyDescriptor const >,boost::_bi::value<CLuaHtmlView::Binder *> > >, std::allocator<void> >;
+// 0042c6f0 target RTTI
+template struct recovered_boost133::functor_manager< bool (__cdecl*)(void), std::allocator<void> >;
+// 004489e0 target RTTI
+template struct recovered_boost133::functor_manager< void (__cdecl*)(RBX::Security::Context *), std::allocator<void> >;
+// 00459600 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<G3D::Stopwatch const &,G3D::Stopwatch const & (__cdecl*)(G3D::Stopwatch const *),boost::_bi::list1<boost::_bi::value<G3D::Stopwatch const *> > >, std::allocator<void> >;
+// 00459660 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<int const &,int const & (__cdecl*)(int const *),boost::_bi::list1<boost::_bi::value<int const *> > >, std::allocator<void> >;
+// 00493b10 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<RBX::worker_thread::work_result,RBX::worker_thread::work_result (__cdecl*)(boost::shared_ptr<RBX::Network::AbuseReporter::data>,std::basic_string<char,std::char_traits<char>,std::allocator<char> >),boost::_bi::list2<boost::_bi::value<boost::shared_ptr<RBX::Network::AbuseReporter::data> >,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 0049dbe0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<RBX::worker_thread::work_result,RBX::worker_thread::work_result (__cdecl*)(boost::weak_ptr<RBX::Network::Server>,std::basic_string<char,std::char_traits<char>,std::allocator<char> >,int,std::basic_string<char,std::char_traits<char>,std::allocator<char> >),boost::_bi::list4<boost::_bi::value<boost::weak_ptr<RBX::Network::Server> >,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,boost::_bi::value<int>,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 004a9140 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::Network::Replicator,boost::shared_ptr<RBX::Instance> >,boost::_bi::list2<boost::_bi::value<RBX::Network::Replicator *>,boost::arg<1> > >, std::allocator<void> >;
+// 004a91a0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<bool const &,bool const & (__cdecl*)(bool const *),boost::_bi::list1<boost::_bi::value<bool const *> > >, std::allocator<void> >;
+// 004cdae0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::View,bool>,boost::_bi::list2<boost::_bi::value<RBX::View::View *>,boost::arg<1> > >, std::allocator<void> >;
+// 004cdb40 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::View,boost::shared_ptr<RBX::Instance> >,boost::_bi::list2<boost::_bi::value<RBX::View::View *>,boost::arg<1> > >, std::allocator<void> >;
+// 004d2350 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::PartChunk,boost::shared_ptr<RBX::Instance> >,boost::_bi::list2<boost::_bi::value<RBX::View::PartChunk *>,boost::arg<1> > >, std::allocator<void> >;
+// 004d23b0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::PartChunk,RBX::Reflection::PropertyDescriptor const *>,boost::_bi::list2<boost::_bi::value<RBX::View::PartChunk *>,boost::arg<1> > >, std::allocator<void> >;
+// 004d2410 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf0<void,RBX::View::PartChunk>,boost::_bi::list1<boost::_bi::value<RBX::View::PartChunk *> > >, std::allocator<void> >;
+// 004d2470 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::Decal,boost::shared_ptr<RBX::Instance> >,boost::_bi::list2<boost::_bi::value<RBX::View::Decal *>,boost::arg<1> > >, std::allocator<void> >;
+// 004d24d0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::Decal,RBX::Reflection::PropertyDescriptor const *>,boost::_bi::list2<boost::_bi::value<RBX::View::Decal *>,boost::arg<1> > >, std::allocator<void> >;
+// 004d2530 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::Texture,boost::shared_ptr<RBX::Instance> >,boost::_bi::list2<boost::_bi::value<RBX::View::Texture *>,boost::arg<1> > >, std::allocator<void> >;
+// 004d2590 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::Texture,RBX::Reflection::PropertyDescriptor const *>,boost::_bi::list2<boost::_bi::value<RBX::View::Texture *>,boost::arg<1> > >, std::allocator<void> >;
+// 0052e4a0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::RunService,boost::shared_ptr<RBX::DataModel> >,boost::_bi::list2<boost::_bi::value<boost::shared_ptr<RBX::RunService> >,boost::_bi::value<boost::shared_ptr<RBX::DataModel> > > >, std::allocator<void> >;
+// 00537cc0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<unsigned int,boost::_mfi::cmf0<unsigned int,RBX::ScriptContext>,boost::_bi::list1<boost::_bi::value<RBX::ScriptContext *> > >, std::allocator<void> >;
+// 00537d40 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<unsigned int,unsigned int (__cdecl*)(lua_State *),boost::_bi::list1<boost::arg<1> > >, std::allocator<void> >;
+// 00537dc0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,void (__cdecl*)(lua_State *,unsigned int),boost::_bi::list2<boost::arg<1>,boost::arg<2> > >, std::allocator<void> >;
+// 00537e20 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<unsigned int,unsigned int (__cdecl*)(std::vector<RBX::Reflection::Value,std::allocator<RBX::Reflection::Value> > const &,lua_State *),boost::_bi::list2<boost::reference_wrapper<std::vector<RBX::Reflection::Value,std::allocator<RBX::Reflection::Value> > const >,boost::arg<1> > >, std::allocator<void> >;
+// 00537e80 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,void (__cdecl*)(std::auto_ptr<std::vector<RBX::Reflection::Value,std::allocator<RBX::Reflection::Value> > > &,lua_State *,unsigned int),boost::_bi::list3<boost::reference_wrapper<std::auto_ptr<std::vector<RBX::Reflection::Value,std::allocator<RBX::Reflection::Value> > > >,boost::arg<1>,boost::arg<2> > >, std::allocator<void> >;
+// 005463c0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<RBX::worker_thread::work_result,boost::_mfi::mf0<RBX::worker_thread::work_result,RBX::ContentProvider>,boost::_bi::list1<boost::_bi::value<RBX::ContentProvider *> > >, std::allocator<void> >;
+// 00559840 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<std::basic_string<char,std::char_traits<char>,std::allocator<char> >,std::basic_string<char,std::char_traits<char>,std::allocator<char> > (__cdecl*)(std::basic_string<char,std::char_traits<char>,std::allocator<char> >,std::basic_string<char,std::char_traits<char>,std::allocator<char> >),boost::_bi::list2<boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 00559990 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<std::basic_string<char,std::char_traits<char>,std::allocator<char> >,std::basic_string<char,std::char_traits<char>,std::allocator<char> > (__cdecl*)(std::basic_string<char,std::char_traits<char>,std::allocator<char> >),boost::_bi::list1<boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 00570f20 target RTTI
+template struct recovered_boost133::functor_manager< void (__cdecl*)(std::basic_string<char,std::char_traits<char>,std::allocator<char> > *), std::allocator<void> >;
+// 00571c60 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,void (__cdecl*)(boost::function0<void,std::allocator<boost::function_base> > const &,std::basic_string<char,std::char_traits<char>,std::allocator<char> >),boost::_bi::list2<boost::_bi::value<boost::function0<void,std::allocator<boost::function_base> > >,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 0057bb90 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<double,double (__cdecl*)(RBX::Profiling::CodeProfiler *),boost::_bi::list1<boost::_bi::value<RBX::Profiling::CodeProfiler *> > >, std::allocator<void> >;
+// 0057bbf0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<int,boost::_mfi::cmf0<int,RBX::World>,boost::_bi::list1<boost::_bi::value<RBX::World const *> > >, std::allocator<void> >;
+// 00588e30 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<unsigned int const &,unsigned int const & (__cdecl*)(unsigned int const *),boost::_bi::list1<boost::_bi::value<unsigned int const *> > >, std::allocator<void> >;
+// 00592540 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<RBX::worker_thread::work_result,RBX::worker_thread::work_result (__cdecl*)(std::basic_string<char,std::char_traits<char>,std::allocator<char> >,int),boost::_bi::list2<boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,boost::_bi::value<int> > >, std::allocator<void> >;
+// 005dadf0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf0<void,RBX::VelocityMotor>,boost::_bi::list1<boost::_bi::value<RBX::VelocityMotor *> > >, std::allocator<void> >;
 
-#define AFX_ACTCTX_API_INIT_PROCPTR(hKernel,name) \
-	pfn##name = (PFN_##name) GetProcAddress(hKernel, #name)\
-	
-
-/////////////////////////////////////////////////////////////////////////////
-// Global function pointers for Context (WinSxS/Manifest) API, to be init during MFC global init.
-#define AFX_ACTCTX_API_PTR_DEFINE(name, type, params) \
-	typedef type (WINAPI* PFN_##name)params; \
-	PFN_##name pfn##name = NULL;
-
-AFX_ACTCTX_API_PTR_DEFINE(CreateActCtxW, HANDLE, (PCACTCTXW));
-AFX_ACTCTX_API_PTR_DEFINE(ReleaseActCtx, void, (HANDLE));
-AFX_ACTCTX_API_PTR_DEFINE(ActivateActCtx, BOOL, (HANDLE, ULONG_PTR*));
-AFX_ACTCTX_API_PTR_DEFINE(DeactivateActCtx, BOOL, (DWORD, ULONG_PTR));
-
-AFX_STATIC void AFXAPI _AfxInitContextAPI()
-{
-	static HMODULE hKernel = NULL;
-	if (hKernel == NULL)
-	{
-		hKernel = GetModuleHandle(_T("KERNEL32"));
-		ENSURE(hKernel != NULL);
-		AFX_ACTCTX_API_INIT_PROCPTR(hKernel,CreateActCtxW);
-		AFX_ACTCTX_API_INIT_PROCPTR(hKernel,ReleaseActCtx);
-		AFX_ACTCTX_API_INIT_PROCPTR(hKernel,ActivateActCtx);
-		AFX_ACTCTX_API_INIT_PROCPTR(hKernel,DeactivateActCtx);	
-	}
-}
-
-#if (_WIN32_WINNT >= 0x0500) || (_WIN32_FUSION >= 0x0100)
-HANDLE AFXAPI AfxCreateActCtxW(PCACTCTXW pActCtx)
-{	
-	HANDLE hCtx = pfnCreateActCtxW != 0 ? pfnCreateActCtxW(pActCtx) : INVALID_HANDLE_VALUE;
-	return hCtx;
-}
-#else
-HANDLE AFXAPI AfxCreateActCtxW(void *pActCtx)
-{	
-	HANDLE hCtx = pfnCreateActCtxW != 0 ? pfnCreateActCtxW(pActCtx) : INVALID_HANDLE_VALUE;
-	return hCtx;
-}
-#endif
-
-void AFXAPI AfxReleaseActCtx(HANDLE hActCtx)
-{	
-	if (pfnReleaseActCtx != 0)
-	{
-		pfnReleaseActCtx(hActCtx);
-	}
-}
-
-BOOL AFXAPI AfxActivateActCtx(HANDLE hActCtx, ULONG_PTR *lpCookie) 
-{	
-	BOOL rc = pfnActivateActCtx != 0 ? pfnActivateActCtx(hActCtx, lpCookie) : FALSE;	
-	return rc;
-}
-
-BOOL AFXAPI AfxDeactivateActCtx(DWORD dwFlags, ULONG_PTR ulCookie)
-{	
-	BOOL rc = pfnDeactivateActCtx != 0 ? pfnDeactivateActCtx(dwFlags, ulCookie) : FALSE;
-	return rc;
-}
-
-eActCtxResult AFXAPI AfxActivateActCtxWrapper(HANDLE hActCtx, ULONG_PTR *lpCookie)
-{
-	ENSURE_ARG(lpCookie!=NULL);
-	eActCtxResult eResult=ActCtxFailed;
-	if (pfnActivateActCtx != 0)
-	{ 
-		eResult=AfxActivateActCtx(hActCtx, lpCookie) ? ActCtxSucceeded : ActCtxFailed;
-	} else
-	{		
-		eResult=ActCtxNoFusion;
-	}
-		
-	return eResult;	
-}
-
-void AFX_MODULE_STATE::CreateActivationContext()
-{
-	_AfxInitContextAPI();
-	HMODULE hModule = m_hCurrentInstanceHandle;
-
-	WCHAR rgchFullModulePath[MAX_PATH + 2];
-	rgchFullModulePath[_countof(rgchFullModulePath) - 1] = 0;
-	rgchFullModulePath[_countof(rgchFullModulePath) - 2] = 0;
-	DWORD dw = GetModuleFileNameW(hModule, rgchFullModulePath, _countof(rgchFullModulePath)-1);
-	if (dw == 0)
-	{
-		return;
-	}
-	if (rgchFullModulePath[_countof(rgchFullModulePath) - 2] != 0)
-	{
-		SetLastError(ERROR_BUFFER_OVERFLOW);
-		return;
-	}
-	//First try ID 2 and then ID 1 - this is to consider also a.dll.manifest file
-	//for dlls, which ID 2 ignores.
-	ACTCTXW actCtx;
-	actCtx.cbSize = sizeof(actCtx);
-	actCtx.dwFlags = ACTCTX_FLAG_RESOURCE_NAME_VALID | ACTCTX_FLAG_HMODULE_VALID;
-	actCtx.lpSource = rgchFullModulePath;
-	actCtx.lpResourceName =  MAKEINTRESOURCEW(ISOLATIONAWARE_MANIFEST_RESOURCE_ID);
-	actCtx.hModule = hModule;
-	m_hActCtx = AfxCreateActCtxW(&actCtx);
-	if (m_hActCtx == INVALID_HANDLE_VALUE)
-	{		
-		actCtx.lpResourceName =  MAKEINTRESOURCEW(ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID);
-		m_hActCtx = AfxCreateActCtxW(&actCtx);
-	}
-	if (m_hActCtx == INVALID_HANDLE_VALUE)
-	{		
-		actCtx.lpResourceName =  MAKEINTRESOURCEW(CREATEPROCESS_MANIFEST_RESOURCE_ID);
-		m_hActCtx = AfxCreateActCtxW(&actCtx);
-	}
-	if (m_hActCtx == INVALID_HANDLE_VALUE)
-	{
-		m_hActCtx = NULL;
-	}		
-}
-
-AFX_MODULE_STATE::~AFX_MODULE_STATE()
-{
-#ifndef _AFX_NO_DAO_SUPPORT
-	delete m_pDaoState;
-#endif
-
-	// clean up type lib cache map, if any
-	if (m_pTypeLibCacheMap != NULL)
-	{
-		m_pTypeLibCacheMap->RemoveAll(&m_typeLibCache);
-		delete m_pTypeLibCacheMap;
-	}
-	//Fusion: delete each member of the array and the array itself
-#ifndef _AFX_NO_AFXCMN_SUPPORT
-	delete m_pDllIsolationWrappers[_AFX_COMCTL32_ISOLATION_WRAPPER_INDEX];
-#endif
-	delete m_pDllIsolationWrappers[_AFX_COMMDLG_ISOLATION_WRAPPER_INDEX];
-	delete [] m_pDllIsolationWrappers;
-	if (m_hActCtx != NULL && m_hActCtx != INVALID_HANDLE_VALUE)
-	{
-		AfxReleaseActCtx(m_hActCtx);
-		m_hActCtx = INVALID_HANDLE_VALUE;
-	}
-}
-
-void CTypeLibCacheMap::RemoveAll(void* pExcept)
-{
-	POSITION pos = GetStartPosition();
-	void* pTypeLibID;
-	CTypeLibCache* pCache;
-	while (pos != NULL)
-	{
-		GetNextAssoc(pos, pTypeLibID, (void*&)pCache);
-		if (pCache != pExcept)
-			delete pCache;
-	}
-}
-
-AFX_MODULE_THREAD_STATE::AFX_MODULE_THREAD_STATE()
-{
-	m_nLastHit = static_cast<INT_PTR>(-1);
-	m_nLastStatus = static_cast<INT_PTR>(-1);
-	m_pLastInfo = NULL;
-
-	m_frameList.Construct(offsetof(CFrameWnd, m_pNextFrameWnd));
-
-	// Note: it is only necessary to initialize non-zero data
-	m_pfnNewHandler = &AfxNewHandler;
-}
-
-AFX_MODULE_THREAD_STATE::~AFX_MODULE_THREAD_STATE()
-{
-	// cleanup thread local tooltip window
-	if (m_pToolTip != NULL)
-		m_pToolTip->DestroyToolTipCtrl();
-
-	delete m_pLastInfo;
-
-	// cleanup temp/permanent maps (just the maps themselves)
-	delete m_pmapHWND;
-	delete m_pmapHMENU;
-	delete m_pmapHDC;
-	delete m_pmapHGDIOBJ;
-	delete m_pmapHIMAGELIST;
-
-#ifndef _AFX_NO_SOCKET_SUPPORT
-	// cleanup socket notification list
-	if (m_plistSocketNotifications != NULL)
-		while (!m_plistSocketNotifications->IsEmpty())
-			delete m_plistSocketNotifications->RemoveHead();
-#ifndef _AFXDLL
-	// cleanup dynamically allocated socket maps
-	delete m_pmapSocketHandle;
-	delete m_pmapDeadSockets;
-	delete m_plistSocketNotifications;
-#endif
-#endif //!_AFX_NO_SOCKET_SUPPORT
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// AFX_MODULE_STATE for base application
-
-LRESULT CALLBACK AfxWndProcBase(HWND, UINT, WPARAM, LPARAM);
-
-class _AFX_BASE_MODULE_STATE : public AFX_MODULE_STATE
-{
-public:
-#ifdef _AFXDLL
-	_AFX_BASE_MODULE_STATE() : AFX_MODULE_STATE(TRUE, AfxWndProcBase, _MFC_VER)
-#else
-	_AFX_BASE_MODULE_STATE() : AFX_MODULE_STATE(TRUE)
-#endif
-		{ }
-};
-
-PROCESS_LOCAL(_AFX_BASE_MODULE_STATE, _afxBaseModuleState)
-
-#ifdef _AFXDLL
-
-#undef AfxWndProc
-LRESULT CALLBACK
-AfxWndProcBase(HWND hWnd, UINT nMsg, WPARAM wParam, LPARAM lParam)
-{
-	AFX_MANAGE_STATE(_afxBaseModuleState.GetData());
-	return AfxWndProc(hWnd, nMsg, wParam, lParam);
-}
-
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
-// helper functions for module state
-
-AFX_MODULE_STATE* AFXAPI AfxGetAppModuleState()
-{
-	return _afxBaseModuleState.GetData();
-}
-
-AFX_MODULE_STATE* AFXAPI AfxGetModuleState()
-{
-	_AFX_THREAD_STATE* pState = _afxThreadState;
-	ENSURE(pState);
-	AFX_MODULE_STATE* pResult;
-	if (pState->m_pModuleState != NULL)
-	{
-		// thread state's module state serves as override
-		pResult = pState->m_pModuleState;
-	}
-	else
-	{
-		// otherwise, use global app state
-		pResult = _afxBaseModuleState.GetData();
-	}
-	ENSURE(pResult != NULL);
-	return pResult;
-}
-
-HINSTANCE AFXAPI AfxGetInstanceHandleHelper()
-{
-	return AfxGetModuleState()->m_hCurrentInstanceHandle;
-}
-
-BOOL AFXAPI AfxIsModuleDll()
-{
-	return AfxGetModuleState()->m_bDLL;
-}
-
-BOOL AFXAPI AfxInitCurrentStateApp()
-{
-	CWinApp* pApp = AfxGetModuleState()->m_pCurrentWinApp;
-	if (pApp != NULL && !pApp->InitInstance())
-	{
-		// Init Failed
-		pApp->ExitInstance();
-		AfxWinTerm();
-		return FALSE;
-	}
-	return TRUE;
-}
-
-AFX_MODULE_THREAD_STATE* AFXAPI AfxGetModuleThreadState()
-{
-	AFX_MODULE_THREAD_STATE* pResult=AfxGetModuleState()->m_thread.GetData();
-	ENSURE(pResult != NULL);
-	return pResult;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CTypeLibCache::Unlock
-// (Note: the rest of CTypeLibCache is implemented in oletyplb.cpp)
-
-void CTypeLibCache::Unlock()
-{
-	ASSERT(m_cRef > 0);
-
-	if (InterlockedDecrement(&m_cRef) == 0)
-	{
-		if (m_ptinfo != NULL)
-		{
-			m_ptinfo->Release();
-			m_ptinfo = NULL;
-		}
-		if (m_ptlib != NULL)
-		{
-			m_ptlib->Release();
-			m_ptlib = NULL;
-		}
-	}
-}
+// Explicit instantiation may name the native private worker_thread::data type.
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,void (__cdecl*)(boost::shared_ptr<RBX::worker_thread::data>,boost::function0<RBX::worker_thread::work_result,std::allocator<boost::function_base> > const &),boost::_bi::list2<boost::_bi::value<boost::shared_ptr<RBX::worker_thread::data> >,boost::_bi::value<boost::function0<RBX::worker_thread::work_result,std::allocator<boost::function_base> > > > >, std::allocator<void> >;

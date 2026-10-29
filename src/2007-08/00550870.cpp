@@ -1,51 +1,16 @@
-// from server: 65% by tester
-struct S {
-    char pad0[8];
-    int field8;
-    char pad1[0x18];
-    int field24;
-    char pad2[0x1c];
-    unsigned char field44;
-    int f(int a, int b, int c);
-};
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_a8b429b397bb580b.cpp
 
-extern "C" int __cdecl helper1(void*, int, int);
-extern "C" int __cdecl helper2(S*, int, int, int);
-extern "C" void __cdecl helper3(S*);
-
-int S::f(int a, int b, int c) {
-    int total = 0;
-    if (!(field44 & 1)) {
-        total = helper1(&field8, a, b);
-    }
-    if (!(field44 & 2)) {
-        int r = helper2(this, c, total + a, b - total);
-        if (r == -1) {
-            helper3(this);
-        } else {
-            total += r;
-            int remaining = b - total;
-            if (r < remaining) {
-                r = helper2(this, c, total + a, remaining);
-                if (r == -1) {
-                    helper3(this);
-                } else {
-                    total += r;
-                }
-            }
-        }
-        if (field44 & 2) {
-            if (total < b) {
-                total += helper1(&field24, total + a, b - total);
-            }
-        }
-    } else {
-        if (total < b) {
-            total += helper1(&field24, total + a, b - total);
-        }
-    }
-    if (total != 0) {
-        return total;
-    }
-    return -1;
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_gzip_compressor<std::allocator<char> >,std::char_traits<char>,std::allocator<char>,boost::iostreams::output>;

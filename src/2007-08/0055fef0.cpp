@@ -1,4 +1,3 @@
-// from server: 60% by colin
 // roc 2007-08 0055fef0  unit: RBX::VModelInstance::?$FilteredSelection  size: 47 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0055fef0
 //
@@ -17,20 +16,12 @@
 // 0055ff19  8bc6                 mov eax, esi
 // 0055ff1b  5e                   pop esi
 // 0055ff1c  c20400               ret 4
+// copied from an identical function in another client (function ??0CutVerb@@QAE@H@Z)
 
-struct FilteredSelection {
-    void construct(char*);
-    FilteredSelection* init(char*);
-};
-
-extern "C" void __stdcall G1_func_0077e698(void*, const char*);
-extern void G2_func_0055fc40();
-
-FilteredSelection* FilteredSelection::init(char* name)
-{
-    char buf[0x1c];
-    G1_func_0077e698(buf, "WatchCamera");
-    G2_func_0055fc40();
-    *(int*)this = 0x7a9490;
-    return this;
-}
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
+struct B{virtual ~B(){}; B(std::string,int);};
+struct CutVerb:B{CutVerb(int);};
+CutVerb::CutVerb(int p):B("WatchCamera",p){}

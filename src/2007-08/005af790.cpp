@@ -1,47 +1,21 @@
-// from server: 59% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_espeon_aug2007_fullstack_kernel_3d6a3979aa5022c0.cpp
 
-struct RefCounted {
-    void** vptr;
-    volatile long refCount;
-    volatile long weakRefCount;
-};
-
-struct Lighting {
-    char pad[0x218];
-    int field218;
-    RefCounted* field21c;
-    void replaceSky(int);
-};
-
-extern "C" int __cdecl sub_570270(int, int);
-extern "C" int __cdecl sub_461680(int);
-extern "C" void __cdecl sub_52db00(int);
-extern "C" void __cdecl sub_5ae960(int, int, int);
-
-void Lighting::replaceSky(int newSky)
-{
-    if (field218 != newSky) {
-        return;
-    }
-    field218 = 0;
-    RefCounted* old = field21c;
-    field21c = 0;
-    if (old) {
-        if (_InterlockedExchangeAdd(&old->refCount, -1) == 1) {
-            ((void (__thiscall*)(RefCounted*))old->vptr[1])(old);
-            if (_InterlockedExchangeAdd(&old->weakRefCount, -1) == 1) {
-                ((void (__thiscall*)(RefCounted*))old->vptr[2])(old);
-            }
-        }
-    }
-    int r = sub_570270(0x8c5bec, (int)(this + 1));
-    if (r) {
-        sub_5ae960(r + 0x10, (int)&newSky, 1);
-    }
-    int r2 = sub_461680((int)this);
-    if (r2) {
-        sub_52db00(r2);
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#define _MT 1
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "v8datamodel/Lighting.cpp"

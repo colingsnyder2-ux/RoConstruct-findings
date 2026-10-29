@@ -1,22 +1,14 @@
-// from server: 39% by colin
-struct S_func_0054b310
-{
-    void f();
-};
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-boost-1_34_1-dll roc_boost_resume_389d0bd197ae56e1.cpp
 
-struct S_string
-{
-    char data[0x1c];
-    S_string(const char*);
-    ~S_string();
-};
-
-extern "C" void __stdcall sub_00412dc0(void*, const S_string*);
-
-void S_func_0054b310::f()
-{
-    S_string s("putback buffer full");
-    sub_00412dc0(this, &s);
-    *(void**)this = (void*)0x7a783c;
-    s.~S_string();
-}
+// Candidate translation unit (score above; library headers required).
+#define NDEBUG 1
+#include <istream>
+#include <ostream>
+#include <boost/ref.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::stream_buffer<boost::reference_wrapper<std::istream> >;
+template class boost::iostreams::stream_buffer<boost::reference_wrapper<std::ostream> >;

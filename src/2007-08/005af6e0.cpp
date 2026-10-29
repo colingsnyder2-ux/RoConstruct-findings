@@ -1,52 +1,21 @@
-// from server: 78% by tester
-struct RBX_Instance {
-    char pad[0xbc];
-    RBX_Instance* m_child;
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_espeon_aug2007_fullstack_kernel_3d6a3979aa5022c0.cpp
 
-extern "C" void* __cdecl sub_630D36(RBX_Instance* self, int, void*, void*, int);
-extern "C" void* __fastcall sub_450D00(void* self);
-
-RBX_Instance* __cdecl sub_461680(RBX_Instance* inst)
-{
-    while (inst != 0) {
-        void* result = sub_630D36(inst, 0, (void*)0x881f4c, (void*)0x884e04, 0);
-        if (result != 0) {
-            return (RBX_Instance*)sub_450D00(result);
-        }
-        inst = inst->m_child;
-    }
-    return 0;
-}
-
-struct Lighting {
-    char pad[0x1ec];
-    float m_a;
-    float m_b;
-    float m_c;
-    void sub_5af6e0(float, float, float);
-};
-
-extern "C" void __cdecl sub_444710(const char*);
-extern "C" void* __fastcall sub_570270(void*, int);
-extern "C" void __fastcall sub_5ae960(void*, int, void*);
-extern "C" void __fastcall sub_52db00(void*);
-
-void Lighting::sub_5af6e0(float a, float b, float c)
-{
-    if (m_a == a && m_b == b && m_c == c) {
-        return;
-    }
-    m_a = a;
-    m_b = b;
-    m_c = c;
-    sub_444710((const char*)0x8c5c40);
-    void* p = sub_570270((void*)0x8c5bec, (int)(this ? (char*)this + 4 : 0));
-    if (p != 0) {
-        sub_5ae960((char*)p + 0x10, 0, 0);
-    }
-    RBX_Instance* inst = sub_461680((RBX_Instance*)this);
-    if (inst != 0) {
-        sub_52db00(inst);
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#define _MT 1
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "v8datamodel/Lighting.cpp"

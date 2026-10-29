@@ -1,145 +1,82 @@
-// from server: 25% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-appdraw DrawPrimitives.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: openrbx-client Rendering/AppDraw/DrawAdorn.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "AppDraw/DrawPrimitives.h"
-#include "util/IndexBox.h"
-#include "GLG3D/Draw.h"
-#include <GL/GLU.h>
+#include "appdraw/DrawAdorn.h"
 
-namespace RBX
+#include "appdraw/Part.h"
+#include "decomp.h"
+#include "util/Math.h"
+
+namespace RBX {
+
+// FUNCTION: WEBSERVICE 0x101ed030
+void DrawAdorn::cylinder(
+	Adorn* adorn,
+	const G3D::CoordinateFrame& worldC,
+	int axis,
+	float length,
+	float radius,
+	const G3D::Color3& color
+)
 {
-    void DrawPrimitives::rawSphere(float radius, G3D::RenderDevice* rd)
-    {
-        glPushMatrix();
+	const G3D::Matrix3& axisRotation = Math::getAxisRotationMatrix(axis);
+	G3D::CoordinateFrame rotatedWorldC(worldC.rotation * axisRotation, worldC.translation);
 
-        GLUquadric* quadric = gluNewQuadric();
-        gluQuadricDrawStyle(quadric, GLU_FILL);
-        gluSphere(quadric, radius, 15, 15);
-        gluDeleteQuadric(quadric);
+	adorn->setObjectToWorldMatrix(rotatedWorldC);
 
-        glPopMatrix();
-    }
-
-    void DrawPrimitives::rawCylinderAlongX(float radius, float axis, G3D::RenderDevice *rd)
-    {
-        GLUquadric* quadric;
-
-        glPushMatrix();
-
-        glRotatef(90.0, 0.0, 1.0, 0.0);
-        glTranslatef(0.0, 0.0, -axis*0.5);
-
-        quadric = gluNewQuadric();
-        gluQuadricDrawStyle(quadric, GLU_FILL);
-        gluCylinder(quadric, radius, radius, axis, 12, 1);
-        gluDeleteQuadric(quadric);
-
-        glTranslatef(0.0, 0.0, axis);
-
-        quadric = gluNewQuadric();
-        gluQuadricDrawStyle(quadric, GLU_FILL);
-        gluDisk(quadric, 0.0, radius, 12, 1);
-        gluDeleteQuadric(quadric);
-        glRotatef(180.0, 0.0, 1.0, 0.0);
-
-        glTranslatef(0.0, 0.0, axis);
-
-        quadric = gluNewQuadric();
-        gluQuadricDrawStyle(quadric, GLU_FILL);
-        gluDisk(quadric, 0.0, radius, 12, 1);
-        gluDeleteQuadric(quadric);
-
-        glPopMatrix();
-    }
-
-    // TODO: 85.62% match
-    // this is a tough one because there's an extra stack variable that's semi-optimised out
-    // otherwise this is a logical match
-    // TODO: check what cmp value gets changed to after linking
-    void DrawPrimitives::rawBox(const G3D::AABox& box, G3D::RenderDevice* rd)
-    {
-        int f = 0;
-
-        IndexBox indexBox(box.low(), box.high());
-
-        G3D::Vector3 v0, v1, v2, v3;
-
-        rd->beginPrimitive(G3D::RenderDevice::QUADS);
-
-        do
-        {
-            indexBox.getFaceCorners(f, v0, v1, v2, v3);
-
-            rd->setNormal(indexBox.getFaceNormal(f));
-            rd->sendVertex(v0);
-            rd->sendVertex(v1);
-            rd->sendVertex(v2);
-            rd->sendVertex(v3);
-
-            f++;
-        }
-        while (f < 6);
-
-        rd->endPrimitive();
-    }
-
-    void DrawPrimitives::outlineRect2d(const Rect& rect, float thick, G3D::RenderDevice* rd, const G3D::Color4& color)
-    {
-        float t = rect.low.x;
-        float b = rect.low.y;
-
-        float r = rect.high.x;
-        float l = rect.high.y;
-
-        rd->setColor(color);
-        rd->setLineWidth(thick);
-        rd->setNormal(G3D::Vector3(0.0f, 0.0f, 1.0f));
-
-        rd->beginPrimitive(G3D::RenderDevice::LINES);
-        rd->sendVertex(G3D::Vector2(t, b));
-
-        rd->sendVertex(G3D::Vector2(r, b));
-        rd->sendVertex(G3D::Vector2(r, b));
-
-        rd->sendVertex(G3D::Vector2(r, l));
-        rd->sendVertex(G3D::Vector2(r, l));
-
-        rd->sendVertex(G3D::Vector2(t, l));
-        rd->sendVertex(G3D::Vector2(t, l));
-
-        rd->sendVertex(G3D::Vector2(t, b));
-        rd->endPrimitive();
-    }
-
-    void DrawPrimitives::rect2d(const Rect& rect, G3D::RenderDevice* rd, const G3D::Color4& color)
-    {
-        rd->setBlendFunc(G3D::RenderDevice::BLEND_SRC_ALPHA, G3D::RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA, G3D::RenderDevice::BLENDEQ_ADD);
-
-        G3D::Draw::rect2D(
-            G3D::Rect2D::xyxy(rect.low, rect.high),
-            rd,
-            color,
-            G3D::Vector2(1.0f, 1.0f),
-            G3D::Vector2(1.0f, 1.0f),
-            G3D::Vector2(1.0f, 1.0f),
-            G3D::Vector2(1.0f, 1.0f)
-        );
-
-        rd->setBlendFunc(G3D::RenderDevice::BLEND_ONE, G3D::RenderDevice::BLEND_ZERO, G3D::RenderDevice::BLENDEQ_ADD);
-    }
-
-    void DrawPrimitives::line2d(const G3D::Vector2& p0, const G3D::Vector2& p1, G3D::RenderDevice* rd, const G3D::Color4& color)
-    {
-        rd->setColor(color);
-        rd->setLineWidth(1.0);
-        rd->beginPrimitive(G3D::RenderDevice::LINES);
-        rd->setNormal(G3D::Vector3(0.0f, 0.0f, 1.0f));
-        rd->sendVertex(p0);
-        rd->sendVertex(p1);
-        rd->endPrimitive();
-    }
+	adorn->cylinderAlongX(radius, length, color, G3D::Color4::clear());
 }
+
+// FUNCTION: WEBSERVICE 0x101ed0e0
+void DrawAdorn::surfaceBorder(
+	Adorn* adorn,
+	const G3D::Vector3& halfRealSize,
+	float highlight,
+	int surfaceId,
+	const G3D::Color4& color
+)
+{
+	int axis = surfaceId % 3;
+	int polarity = surfaceId < 3 ? 1 : -1;
+
+	float cZ = polarity * halfRealSize[axis];
+
+	int cY = (axis + 1) % 3;
+
+	G3D::Vector3 p0;
+	G3D::Vector3 p1;
+
+	p0[axis] = cZ - highlight;
+	p1[axis] = cZ + highlight;
+
+	int cX = (axis + 2) % 3;
+
+	for (int direction = 0; direction < 2; ++direction) {
+		int c2 = direction != 0 ? cY : cX;
+		int c3 = direction != 0 ? cX : cY;
+
+		for (int c = -1; c <= 1; c += 2) {
+			p0[c2] = c * halfRealSize[c2] - highlight;
+			p1[c2] = c * halfRealSize[c2] + highlight;
+			p0[c3] = -halfRealSize[c3] - highlight;
+			p1[c3] = halfRealSize[c3] + highlight;
+
+			adorn->box(G3D::AABox(p0, p1), color, G3D::Color4::clear());
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x101ed270
+void DrawAdorn::partSurface(const Part& part, int surfaceId, Adorn* adorn, const G3D::Color4& color)
+{
+	adorn->setObjectToWorldMatrix(part.coordinateFrame);
+
+	G3D::Vector3 halfRealSize = part.gridSize * 0.5f;
+
+	surfaceBorder(adorn, halfRealSize, 0.2f, surfaceId, color);
+}
+
+} // namespace RBX

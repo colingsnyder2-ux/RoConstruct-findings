@@ -1,11 +1,20 @@
-// from server: 80% by atomic.potato
-struct S_func_006f4760 {
-    char pad0[160];
-    int m_value;
-    void f(int* out);
+// roc 2009-12 006f4760  unit: RBX::Backpack  size: 15 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 006f4760
+//
+// 006f4760  8b89a0000000         mov ecx, dword ptr [ecx + 0xa0]
+// 006f4766  8b442404             mov eax, dword ptr [esp + 4]
+// 006f476a  8908                 mov dword ptr [eax], ecx
+// 006f476c  c20400               ret 4
+// copied from an identical function in another client (function ?get_0x238@RBX_Backpack@ns_ROCX00000d@@QAEHPAH@Z)
+
+namespace ns_ROCX00000d {
+// from server: 100% by tester
+struct RBX_Backpack {
+    int get_0x238(int* out);
 };
 
-void S_func_006f4760::f(int* out)
-{
-    *out = m_value;
+int RBX_Backpack::get_0x238(int* out) {
+    *out = *(int*)((char*)this + 0xa0);
+    return (int)out;
+}
 }

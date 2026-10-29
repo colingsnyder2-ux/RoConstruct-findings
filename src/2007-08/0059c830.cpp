@@ -1,46 +1,44 @@
-// from server: 51% by colin
-struct UserInputBase {
-    float unk0;
-    float unk4;
-    float unk8;
-    float unkC;
-    void getSteerThrottle(float* out, const float* in, int steerMode, int throttleMode);
-};
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll util/Rect.cpp
 
-void UserInputBase::getSteerThrottle(float* out, const float* in, int steerMode, int throttleMode)
+// Candidate translation unit (score above; library headers required).
+#include "util/Rect.h"
+
+namespace RBX
 {
-    float steer = 0.0f;
-    float throttle = 0.0f;
-    float dx = in[2] - in[0];
-    float dy = in[3] - in[1];
-    float scale = *(float*)0x797e9c;
+	Rect Rect::positionChild(const RBX::Rect& child, Location xLocation, Location yLocation) const
+	{
+		G3D::Vector2 newLow;
+		G3D::Vector2 childSize = child.size();
 
-    switch (steerMode) {
-    case 2:
-        steer = this->unk0;
-        break;
-    case 3:
-        steer = this->unk8 - dx;
-        break;
-    case 4:
-        steer = (this->unk8 - dx) * scale;
-        break;
-    }
+		switch (xLocation)
+		{
+		case LEFT:
+			newLow.x = low.x;
+			break;
+		case RIGHT:
+			newLow.x = high.x - childSize.x;
+			break;
+		case CENTER:
+			newLow.x = (high.x - childSize.x) * 0.5f;
+			break;
+		}
 
-    switch (throttleMode) {
-    case 0:
-        throttle = this->unk4;
-        break;
-    case 1:
-        throttle = this->unkC - dy;
-        break;
-    case 4:
-        throttle = (this->unkC - dy) * scale;
-        break;
-    }
+		switch (yLocation)
+		{
+		case TOP:
+			newLow.y = low.y;
+			break;
+		case BOTTOM:
+			newLow.y = high.y - childSize.y;
+			break;
+		case CENTER:
+			newLow.y = (high.y - childSize.y) * 0.5f;
+			break;
+		}
 
-    out[0] = in[0] + steer;
-    out[1] = in[1] + throttle;
-    out[2] = dx;
-    out[3] = dy;
+		return fromLowSize(newLow, childSize);
+	}
 }

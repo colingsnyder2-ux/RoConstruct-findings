@@ -1,280 +1,304 @@
-// from server: 46% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Extents.cpp
+// roc-cl: 30729
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/Controls/XTColorPopup.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/Extents.h"
-#include "util/Math.h"
-#include "util/Debug.h"
-#include "util/NormalId.h"
+// XTColorPopup.cpp : implementation file
+//
+// This file is a part of the XTREME CONTROLS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
 
-namespace RBX
+#include "stdafx.h"
+
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPWinThemeWrapper.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPSystemHelpers.h"
+
+#include "Resource.h"
+#include "XTDefines.h"
+#include "XTGlobal.h"
+#include "XTColorSelectorCtrl.h"
+#include "XTWndShadow.h"
+#include "XTColorPopup.h"
+#include "XTColorSelectorCtrlTheme.h"
+
+#ifdef _XTP_INCLUDE_CONTROLBARS
+#include "ControlBars/XTOptionsManager.h"
+#include "ControlBars/XTDelegate.h"
+#include "ControlBars/XTControlbar.h"
+#include "ControlBars/XTToolBar.h"
+#include "ControlBars/XTCoolMenu.h"
+#endif
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTColorPopup
+
+CXTColorPopup::CXTColorPopup(BOOL bAutoDelete/*= FALSE*/, LPARAM callerParam /*= 0*/)
+: m_callerParam(callerParam)
 {
-	float Extents::areaXZ() const
+	m_bAutoDelete = bAutoDelete;
+	m_bDisplayShadow = TRUE;
+}
+
+CXTColorPopup::~CXTColorPopup()
+{
+
+}
+
+BEGIN_MESSAGE_MAP(CXTColorPopup, CXTColorSelectorCtrl)
+	//{{AFX_MSG_MAP(CXTColorPopup)
+	ON_WM_ACTIVATE()
+	ON_WM_DESTROY()
+	ON_WM_CREATE()
+	ON_WM_KILLFOCUS()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_NCPAINT()
+	ON_WM_NCCALCSIZE()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTColorPopup message handlers
+
+BOOL CXTColorPopup::Create(CRect& rect, CWnd* pParentWnd, DWORD dwPopup, COLORREF clrColor,
+	COLORREF clrDefault/*= CLR_DEFAULT*/)
+{
+	BOOL bOfficeTheme = GetTheme()->GetTheme() != xtThemeDefault;
+
+	if (bOfficeTheme)
 	{
-		G3D::Vector3 delta = this->high - this->low;
-		return delta.x * delta.z;
+		SetBorders(4, 4, 6, 6);
+	}
+	else
+	{
+		SetBorders(4, 4, 10, 10);
 	}
 
-	NormalId Extents::closestFace(const G3D::Vector3& point)
+	m_rcExclude = rect;
+
+#ifdef _XTP_INCLUDE_CONTROLBARS
+	if (bOfficeTheme && DYNAMIC_DOWNCAST(CXTToolBar, pParentWnd)) rect.bottom--;
+#endif
+
+	return CXTColorSelectorCtrl::Create(rect, pParentWnd, dwPopup | WS_POPUP, clrColor, clrDefault);
+}
+
+void CXTColorPopup::PostNcDestroy()
+{
+	CXTPMouseMonitor::SetupHook(NULL);
+
+	if (m_bAutoDelete)
 	{
-		NormalId faceId = NORM_X;
+		delete this;
+	}
+}
 
-		// bruh
-		float hy = fabs(point.y - this->high.y);
-		float hz = fabs(point.z - this->high.z);
-		float lx = fabs(point.x - this->low.x);
-		float ly = fabs(point.y - this->low.y);
-		float lz = fabs(point.z - this->low.z);
+void CXTColorPopup::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
+{
+	CWnd::OnActivate(nState, pWndOther, bMinimized);
 
-		float hx = fabs(point.x - this->high.x); 
-		if (hx > hy)
-		{
-			faceId = NORM_Y;
-		}
-		else
-		{
-			hy = hx;
-		}
+	// If we lose activation (other than to the color dialog) post
+	// a close message...
 
-		if (hz < hy)
-		{
-			hy = hz;
-			faceId = NORM_Z;
-		}
+	if (nState == WA_INACTIVE && !IsColorDlgVisible())
+	{
+		PostMessage(WM_CLOSE);
+	}
+}
 
-		if (lx < hy)
-		{
-			hy = lx;
-			faceId = NORM_X_NEG;
-		}
+void CXTColorPopup::OnDestroy()
+{
+	CWnd::OnDestroy();
 
-		if (ly < hy)
-		{
-			hy = ly;
-			faceId = NORM_Y_NEG;
-		}
+	// Inform the parent that we are closing up.
+	m_pParentWnd->SendMessage(CPN_XT_CLOSEUP,
+		(WPARAM)m_clrColor, m_callerParam);
 
-		if (lz < hy)
-		{
-			faceId = NORM_Z_NEG;
-		}
+#ifdef _XTP_INCLUDE_CONTROLBARS
+	CXTCoolMenu::m_iMenuBarAlign = 0;
+	if (DYNAMIC_DOWNCAST(CXTToolBar, m_pParentWnd))
+	{
+		int iIndex = ((CXTToolBar*)m_pParentWnd)->CommandToIndex((UINT)m_callerParam);
+		((CXTToolBar*)m_pParentWnd)->SetDroppedItem(iIndex, false);
+		m_pParentWnd->Invalidate(FALSE);
+	}
+#endif
+}
 
-		return faceId;
+
+int CXTColorPopup::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+	if (CXTColorSelectorCtrl::OnCreate(lpCreateStruct) == -1)
+		return -1;
+
+	BOOL bOfficeTheme = GetTheme()->GetTheme() != xtThemeDefault;
+
+	if (bOfficeTheme)
+	{
+		ModifyStyle(WS_DLGFRAME | WS_THICKFRAME | WS_BORDER, 0, SWP_FRAMECHANGED);
+		ModifyStyleEx(WS_EX_STATICEDGE | WS_EX_WINDOWEDGE | WS_EX_DLGMODALFRAME, 0, SWP_FRAMECHANGED);
+	}
+	else
+	{
+		ModifyStyle(0, WS_DLGFRAME, SWP_FRAMECHANGED);
 	}
 
-	G3D::Vector3 Extents::getCorner(int i) const
+	if (bOfficeTheme && XTAuxData().bMenuShadows && m_bDisplayShadow)
 	{
-		RBXASSERT(i >= 0);
-		RBXASSERT(i <= 7);
+		XTShadowsManager()->SetShadow(m_hWnd, m_rcExclude);
 
-		return G3D::Vector3(
-			this->low[0 + 3 * (i / 4)],
-			this->low[1 + 3 * (i / 2 % 2)],
-			this->low[2 + 3 * (i % 2)]
-		);
+#ifdef _XTP_INCLUDE_CONTROLBARS
+		if (CXTCoolMenu::m_iMenuBarAlign && !m_rcExclude.IsRectEmpty())
+			XTShadowsManager()->SetShadow(m_rcExclude, m_hWnd);
+#endif
 	}
 
-	void Extents::getFaceCorners(NormalId faceId, G3D::Vector3& v0, G3D::Vector3& v1, G3D::Vector3& v2, G3D::Vector3& v3) const
+	CXTPWindowRect rcWindow(this);
+	CRect rcWork = XTPMultiMonitor()->GetWorkArea(rcWindow);
+
+	bool bMoveWindow = false;
+	CSize size = rcWindow.Size();
+
+	// move right
+	if (rcWindow.left < rcWork.left)
 	{
-		switch (faceId)
-		{
-		case NORM_X:
-			v0 = G3D::Vector3(this->high.x, this->low.y, this->low.z);
-			v1 = G3D::Vector3(this->high.x, this->high.y, this->low.z);
-			v2 = G3D::Vector3(this->high.x, this->high.y, this->high.z);
-			v3 = G3D::Vector3(this->high.x, this->low.y, this->high.z);
-			break;
-		case NORM_Y:
-			v0 = G3D::Vector3(this->low.x, this->high.y, this->low.z);
-			v1 = G3D::Vector3(this->low.x, this->high.y, this->high.z);
-			v2 = G3D::Vector3(this->high.x, this->high.y, this->high.z);
-			v3 = G3D::Vector3(this->high.x, this->high.y, this->low.z);
-			break;
-		case NORM_Z:
-			v0 = G3D::Vector3(this->low.x, this->low.y, this->high.z);
-			v1 = G3D::Vector3(this->high.x, this->low.y, this->high.z);
-			v2 = G3D::Vector3(this->high.x, this->high.y, this->high.z);
-			v3 = G3D::Vector3(this->low.x, this->high.y, this->high.z);
-			break;
-		case NORM_X_NEG:
-			v0 = G3D::Vector3(this->low.x, this->low.y, this->low.z);
-			v1 = G3D::Vector3(this->low.x, this->low.y, this->high.z);
-			v2 = G3D::Vector3(this->low.x, this->high.y, this->high.z);
-			v3 = G3D::Vector3(this->low.x, this->high.y, this->low.z);
-			break;
-		case NORM_Y_NEG:
-			v0 = G3D::Vector3(this->low.x, this->low.y, this->low.z);
-			v1 = G3D::Vector3(this->high.x, this->low.y, this->low.z);
-			v2 = G3D::Vector3(this->high.x, this->low.y, this->high.z);
-			v3 = G3D::Vector3(this->low.x, this->low.y, this->high.z);
-			break;
-		case NORM_Z_NEG:
-			v0 = G3D::Vector3(this->low.x, this->low.y, this->low.z);
-			v1 = G3D::Vector3(this->low.x, this->high.y, this->low.z);
-			v2 = G3D::Vector3(this->high.x, this->high.y, this->low.z);
-			v3 = G3D::Vector3(this->high.x, this->low.y, this->low.z);
-			break;
-		default:
-			RBXASSERT(0);
-		}
+		rcWindow.left = rcWork.left;
+		rcWindow.right = rcWindow.left + size.cx;
+		bMoveWindow = true;
 	}
 
-	G3D::Vector3 Extents::faceCenter(NormalId faceId) const
+	// move left
+	else if (rcWindow.right > rcWork.right)
 	{
-		G3D::Vector3 v = this->center();
-
-		int i = faceId % 3;
-		if (faceId < NORM_X_NEG)
-		{
-			v[i] = this->high[i];
-		}
-		else
-		{
-			v[i] = this->low[i];
-		}
-
-		return v;
+		rcWindow.right = rcWork.right;
+		rcWindow.left = rcWindow.right - size.cx;
+		bMoveWindow = true;
 	}
 
-	bool Extents::containedByFrustum(const G3D::GCamera::Frustum& frustum) const
+	// move up
+	if (rcWindow.bottom > rcWork.bottom)
 	{
-		if (frustum.faceArray.size() > 0)
-		{
-			for (int i = 0; i < frustum.faceArray.size(); i++)
-			{
-				const G3D::Plane* plane = &frustum.faceArray[i].plane;
-				for (int j = 0; j < 8; j++)
-				{
-					G3D::Vector3 corner = getCorner(j);
-					if (!plane->halfSpaceContains(corner))
-					{
-						return false;
-					}
-				}
-			}
-		}
-
-		return true;
+		rcWindow.bottom = rcWork.bottom;
+		rcWindow.top = rcWindow.bottom - size.cy;
+		bMoveWindow = true;
 	}
 
-	bool Extents::contains(const G3D::Vector3& point) const
+	if (bMoveWindow)
 	{
-		return
-			point.x >= this->low.x &&
-			point.y >= this->low.y &&
-			point.z >= this->low.z &&
-			point.x <= this->high.x &&
-			point.y <= this->high.y &&
-			point.z <= this->high.z;
+		MoveWindow(&rcWindow);
 	}
 
-	bool Extents::fuzzyContains(const G3D::Vector3& point, float slop) const
+	CXTPMouseMonitor::SetupHook(this);
+
+	m_pParentWnd->SendMessage(CPN_XT_DROPDOWN,
+		(WPARAM)m_clrColor, m_callerParam);
+
+	return 0;
+}
+
+// Adds a window to send color picker notifications to.
+void CXTColorPopup::AddListener(HWND hwndListener)
+{
+	m_listeners.Add(hwndListener);
+}
+
+void CXTColorPopup::EndSelection(int nCurSel)
+{
+	CXTPMouseMonitor::SetupHook(NULL);
+
+	OnEndSelection(nCurSel, m_callerParam);
+
+	PostMessage(WM_CLOSE);
+
+}
+
+void CXTColorPopup::OnKillFocus(CWnd* pNewWnd)
+{
+	CWnd::OnKillFocus(pNewWnd);
+
+	if (!m_pColorDlg)
 	{
-		return
-			point.x >= this->low.x - slop &&
-			point.y >= this->low.y - slop &&
-			point.z >= this->low.z - slop &&
-			point.x <= this->high.x + slop &&
-			point.y <= this->high.y + slop &&
-			point.z <= this->high.z + slop;
+		EndSelection(-1);
 	}
+}
 
-	bool Extents::overlapsOrTouches(const Extents& other) const
+void CXTColorPopup::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	CRect rc;
+	GetClientRect(&rc);
+
+	if (!rc.PtInRect(point) && !IsColorDlgVisible())
 	{
-		return
-			!(this->low.x > other.high.x) &&
-			!(this->low.y > other.high.y) &&
-			!(this->low.z > other.high.z) &&
-			!(this->high.y < other.low.y) &&
-			!(this->high.x < other.low.x) &&
-			!(this->high.z < other.low.z);
+		EndSelection(-1);
+		return;
 	}
+	CXTColorSelectorCtrl::OnLButtonDown(nFlags, point);
+}
 
-	bool Extents::separatedByMoreThan(const Extents& other, float distance) const
+void CXTColorPopup::OnNcPaint()
+{
+	BOOL bOfficeTheme = GetTheme()->GetTheme() != xtThemeDefault;
+
+	if (bOfficeTheme)
 	{
-		RBXASSERT(distance > 0.0);
+		CWindowDC dc(this);
+		const COLORREF clrFrame = GetXtremeColor(XPCOLOR_MENUBAR_BORDER);
+		CRect rc;
+		GetWindowRect(&rc);
+		int cx = rc.Width(); // for right border is exclusive
+		int cy = rc.Height() ; // see above
+		dc.Draw3dRect(0, 0, cx, cy, clrFrame, clrFrame);
 
-		G3D::Vector3 dv(distance, distance, distance);
+	#ifdef _XTP_INCLUDE_CONTROLBARS
+		if (!m_rcExclude.IsRectEmpty())
+			::DrawAdjacentBorder(&dc, GetXtremeColor(XPCOLOR_TOOLBAR_FACE), m_rcExclude, rc);
+	#endif
 
-		Extents thisExpanded(*this);
-		thisExpanded.low -= dv;
-		thisExpanded.high += dv;
-
-		return !thisExpanded.overlapsOrTouches(other);
 	}
-
-	G3D::Plane Extents::getPlane(NormalId normalId) const
+	else
 	{
-		G3D::Vector3 point = faceCenter(normalId);
-		G3D::Vector3 normal = normalIdToVector3(normalId);
-
-		return G3D::Plane(normal, point);
+		Default();
 	}
+}
 
-	void Extents::unionWith(const Extents& other)
+void CXTColorPopup::OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS FAR* lpncsp)
+{
+	BOOL bOfficeTheme = GetTheme()->GetTheme() != xtThemeDefault;
+
+	if (bOfficeTheme)
 	{
-		this->low = this->low.min(other.low);
-		this->high = this->high.max(other.high);
+		// adjust non-client area for border space
+		lpncsp->rgrc[0].left += 1;
+		lpncsp->rgrc[0].top += 1;
+		lpncsp->rgrc[0].right += -1;
+		lpncsp->rgrc[0].bottom += -1;
 	}
-
-	Extents Extents::toWorldSpace(const G3D::CoordinateFrame& localCoord)
+	else
 	{
-		G3D::Vector3 minC(Math::inf(), Math::inf(), Math::inf());
-		G3D::Vector3 maxC(-Math::inf(), -Math::inf(), -Math::inf());
-
-		for (int i = 0; i < 8; i++)
-		{
-			G3D::Vector3 corner = getCorner(i);
-			G3D::Vector3 world = localCoord.pointToWorldSpace(corner);
-
-			minC = minC.min(world);
-			maxC = maxC.max(world);
-		}
-
-		return vv(minC, maxC);
-	}
-
-	Extents Extents::express(const G3D::CoordinateFrame& myFrame, const G3D::CoordinateFrame& expressInFrame)
-	{
-		G3D::Vector3 minC(Math::inf(), Math::inf(), Math::inf());
-		G3D::Vector3 maxC(-Math::inf(), -Math::inf(), -Math::inf());
-
-		for (int i = 0; i < 8; i++)
-		{
-			G3D::Vector3 corner = getCorner(i);
-			G3D::Vector3 v1 = myFrame.pointToWorldSpace(corner) - expressInFrame.translation;
-			G3D::Vector3 inOther = v1 * expressInFrame.rotation;
-
-			minC = minC.min(inOther);
-			maxC = maxC.max(inOther);
-		}
-
-		return vv(minC, maxC);
-	}
-
-	Extents Extents::vv(const G3D::Vector3& v0, const G3D::Vector3& v1)
-	{
-		Extents result;
-
-		result.low = v0.min(v1);
-		result.high = v0.max(v1);
-
-		return result;
-	}
-
-	const Extents& Extents::zero()
-	{
-		static Extents e(G3D::Vector3::zero(), G3D::Vector3::zero());
-		return e;
-	}
-
-	const Extents& Extents::negativeInfiniteExtents()
-	{
-		// Extents default constructor sets high and low to inf
-		static Extents e;
-		return e;
+		CWnd::OnNcCalcSize(bCalcValidRects, lpncsp);
 	}
 }

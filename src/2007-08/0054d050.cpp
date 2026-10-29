@@ -1,5 +1,4 @@
-// from server: 84% by colin
-// roc 2007-08 0054d050  unit: seg_00540000  size: 42 bytes
+// roc 2007-08 0054d050  unit: UString_sink::?$stream_buffer  size: 42 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0054d050
 //
 // 0054d050  f6415801             test byte ptr [ecx + 0x58], 1
@@ -15,30 +14,26 @@
 // 0054d06d  8d4c2404             lea ecx, [esp + 4]
 // 0054d071  ff15fce47700         call dword ptr [0x77e4fc]
 // 0054d077  c20400               ret 4
+// copied from an identical function in another client (function ?imbue@S@@QAEXPBX@Z)
 
-struct locale {
-    char data[4];
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+extern void (__thiscall *pubimbue)(void*, void*, const void*);
+extern void (__thiscall *locale_destructor)(void*);
+
+struct S {
+    char padding0[0x48];
+    void* buffer;
+    char padding1[0x0C];
+    unsigned char flags;
+
+    void imbue(const void* locale);
 };
 
-struct streambuf {
-    char pad[0x48];
-    streambuf* field_48;
-    char pad2[0x58 - 0x4c];
-    unsigned char flags_58;
-    locale pubimbue(const locale& loc);
-
-    void imbue(const locale& loc);
-};
-
-extern "C" void __stdcall locale_dtor(locale* self);
-
-void streambuf::imbue(const locale& loc)
+void S::imbue(const void* locale)
 {
-    if ((flags_58 & 1) != 0) {
-        streambuf* inner = field_48;
-        if (inner != 0) {
-            locale tmp = inner->pubimbue(loc);
-            locale_dtor(&tmp);
-        }
+    if ((flags & 1) && buffer) {
+        pubimbue(buffer, &locale, locale);
+        locale_destructor(&locale);
     }
 }

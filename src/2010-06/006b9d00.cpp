@@ -1,138 +1,55 @@
-// from server: 58% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-view Part.cpp
+// roc 2010-06 006b9d00  unit: RBX::VTextureId::?$TypedPropertyDescriptor  size: 57 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 006b9d00
+//
+// 006b9d00  56                   push esi
+// 006b9d01  8b742408             mov esi, dword ptr [esp + 8]
+// 006b9d05  85f6                 test esi, esi
+// 006b9d07  742c                 je 0x6b9d35
+// 006b9d09  8b0e                 mov ecx, dword ptr [esi]
+// 006b9d0b  85c9                 test ecx, ecx
+// 006b9d0d  7409                 je 0x6b9d18
+// 006b9d0f  8b01                 mov eax, dword ptr [ecx]
+// 006b9d11  8b5004               mov edx, dword ptr [eax + 4]
+// 006b9d14  ffd2                 call edx
+// 006b9d16  eb05                 jmp 0x6b9d1d
+// 006b9d18  b80c93b700           mov eax, 0xb7930c
+// 006b9d1d  68f45dbb00           push 0xbb5df4
+// 006b9d22  8bc8                 mov ecx, eax
+// 006b9d24  ff15d8a89e00         call dword ptr [0x9ea8d8]
+// 006b9d2a  84c0                 test al, al
+// 006b9d2c  7407                 je 0x6b9d35
+// 006b9d2e  8b06                 mov eax, dword ptr [esi]
+// 006b9d30  83c004               add eax, 4
+// 006b9d33  5e                   pop esi
+// 006b9d34  c3                   ret 
+// 006b9d35  33c0                 xor eax, eax
+// 006b9d37  5e                   pop esi
+// 006b9d38  c3                   ret 
+// copied from an identical function in another client (function ?fn_ROCX000000_00642c10@@YAPAXPAUAny@@@Z)
 
-// Candidate translation unit (score above; library headers required).
-#include "Part.h"
-#include "RbxView/View.h"
-#include "v8datamodel/custommesh.h"
-#include "v8datamodel/Workspace.h"
-#include "v8datamodel/Surfaces.h"
+#include <typeinfo>
 
-namespace RBX
+// boost::any_cast<T>(any *) shape: 0xb0030c = typeid(void), 0xb1316c = typeid(T)
+extern const type_info type_descriptor_b0030c;
+extern const type_info type_descriptor_b1316c;
+
+struct Placeholder
 {
-	namespace View
-	{
-		PartChunk::PartChunk(float polygonOffset, const boost::shared_ptr<PartInstance>& partInstance, View* view)
-			: Render::Chunk(polygonOffset),
-			  partInstance(partInstance),
-			  view(view),
-			  materialInvalid(true),
-			  specialShape(NULL)
-		{
-			view->sceneManager->addModel(this);
+    virtual ~Placeholder();
+    virtual const type_info &type() const;
+};
 
-			childAddedConnection = Instance::event_childAdded.connect(partInstance.get(), boost::bind(&PartChunk::onChildAdded, this, _1));
-			childRemovedConnection = Instance::event_childRemoved.connect(partInstance.get(), boost::bind(&PartChunk::onChildRemoved, this, _1));
-			ancestorChangedConnection = Instance::event_ancestryChanged.connect(partInstance.get(), boost::bind(&PartChunk::onAncestorChanged, this, _1));
-			propertyChangedConnection = Instance::event_propertyChanged.connect(partInstance.get(), boost::bind(&PartChunk::onPropertyChanged, this, _1));
+struct Any
+{
+    Placeholder *content;
+    const type_info &type() const { return content ? content->type() : type_descriptor_b0030c; }
+};
 
-			partInstance->visitChildren(boost::bind(&PartChunk::onChildAdded, this, _1));
-		}
+struct Holder : Placeholder { int held; };
 
-		PartChunk::~PartChunk() {}
-
-		G3D::ReferenceCountedPointer<Render::Mesh> PartChunk::getMesh()
-		{
-			if (mesh.isNull())
-				updateMesh();
-
-			return mesh;
-		}
-
-		const G3D::CoordinateFrame& PartChunk::cframe()
-		{
-			coordinateFrame = partInstance->getCoordinateFrame();
-			return coordinateFrame;
-		}
-
-		void PartChunk::invalidateMaterial()
-		{
-			material = NULL;
-			materialInvalid = true;
-			view->sceneManager->invalidateModel(this, partInstance->getCanAggregate());
-		}
-
-		void PartChunk::invalidateMesh()
-		{
-			mesh = NULL;
-			view->sceneManager->invalidateModel(this, partInstance->getCanAggregate());
-		}
-
-		void PartChunk::onChildAdded(boost::shared_ptr<Instance> child)
-		{
-			SpecialShape* mesh = dynamic_cast<SpecialShape*>(child.get());
-			if (mesh)
-			{
-				specialShape = mesh;
-				shapePropertyChangedConnection = Instance::event_propertyChanged.connect(mesh, boost::bind(&PartChunk::onSpecialShapeChanged, this));
-				invalidateMesh();
-			}
-		}
-
-		void PartChunk::onChildRemoved(boost::shared_ptr<Instance> child)
-		{
-			if (child.get() == specialShape)
-			{
-				shapePropertyChangedConnection.disconnect();
-				specialShape = NULL;
-				invalidateMesh();
-			}
-		}
-
-		void PartChunk::onAncestorChanged(boost::shared_ptr<Instance> ancestor)
-		{
-			Workspace* workspace = Workspace::findWorkspace(partInstance.get());
-			if (!workspace || !partInstance->isDescendentOf(workspace))
-			{
-				view->sceneManager->removeModel(this);
-			}
-		}
-
-		void PartChunk::onPropertyChanged(const Reflection::PropertyDescriptor* descriptor)
-		{
-			if (*descriptor == PartInstance::prop_Size)
-			{
-				invalidateMesh();
-				invalidateMaterial();
-			}
-			else if (*descriptor == PartInstance::prop_shapeXml)
-			{
-				invalidateMesh();
-			}
-			else if (Surfaces::isSurfaceDescriptor(*descriptor))
-			{
-				invalidateMesh();
-			}
-		}
-
-		void PartChunk::onSpecialShapeChanged()
-		{
-			invalidateMesh();
-			invalidateMaterial();
-		}
-
-		Part::Part(const boost::shared_ptr<PartInstance>& partInstance, View* view)
-			: PartChunk(0.0f, partInstance, view)
-		{
-			if (partInstance->getCanAggregate())
-				view->sceneManager->setSleeping(this, true);
-
-			Notifier<PartInstance, CanAggregateChanged>::connect(partInstance, this);
-			invalidateMesh();
-			invalidateMaterial();
-		}
-
-		Part::~Part()
-		{
-			Notifier<PartInstance, CanAggregateChanged>::disconnect(partInstance, this);
-		}
-
-		void Part::onEvent(const PartInstance* source, CanAggregateChanged event)
-		{
-			view->sceneManager->setSleeping(this, event.canClump);
-		}
-	}
+void *func_00642c10(Any *operand)
+{
+    if (operand && operand->type() == type_descriptor_b1316c)
+        return &static_cast<Holder *>(operand->content)->held;
+    return 0;
 }

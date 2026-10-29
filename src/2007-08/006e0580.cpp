@@ -1,72 +1,236 @@
-// from server: 67% by colin
-// roc 2007-08 006e0580  unit: CXTPDockingPane  size: 95 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 006e0580
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /MD
+// roc-lib: xtp-11.2.2-vc8 Source/DockingPane/XTPDockingPaneBase.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPDockingPaneBase.cpp : implementation of the CXTPDockingPaneBase class.
 //
-// 006e0580  51                   push ecx
-// 006e0581  53                   push ebx
-// 006e0582  55                   push ebp
-// 006e0583  56                   push esi
-// 006e0584  57                   push edi
-// 006e0585  8bf9                 mov edi, ecx
-// 006e0587  8b4708               mov eax, dword ptr [edi + 8]
-// 006e058a  33f6                 xor esi, esi
-// 006e058c  3bc6                 cmp eax, esi
-// 006e058e  89742410             mov dword ptr [esp + 0x10], esi
-// 006e0592  7e3a                 jle 0x6e05ce
-// 006e0594  8b5c241c             mov ebx, dword ptr [esp + 0x1c]
-// 006e0598  8b6c2418             mov ebp, dword ptr [esp + 0x18]
-// 006e059c  8d642400             lea esp, [esp]
-// 006e05a0  85f6                 test esi, esi
-// 006e05a2  7c36                 jl 0x6e05da
-// 006e05a4  3bf0                 cmp esi, eax
-// 006e05a6  7d32                 jge 0x6e05da
-// 006e05a8  8b4704               mov eax, dword ptr [edi + 4]
-// 006e05ab  8b0cb0               mov ecx, dword ptr [eax + esi*4]
-// 006e05ae  8d04b0               lea eax, [eax + esi*4]
-// 006e05b1  53                   push ebx
-// 006e05b2  55                   push ebp
-// 006e05b3  e8d89f0000           call 0x6ea590
-// 006e05b8  85c0                 test eax, eax
-// 006e05ba  7408                 je 0x6e05c4
-// 006e05bc  c744241001000000     mov dword ptr [esp + 0x10], 1
-// 006e05c4  8b4708               mov eax, dword ptr [edi + 8]
-// 006e05c7  83c601               add esi, 1
-// 006e05ca  3bf0                 cmp esi, eax
-// 006e05cc  7cd2                 jl 0x6e05a0
-// 006e05ce  8b442410             mov eax, dword ptr [esp + 0x10]
-// 006e05d2  5f                   pop edi
-// 006e05d3  5e                   pop esi
-// 006e05d4  5d                   pop ebp
-// 006e05d5  5b                   pop ebx
-// 006e05d6  59                   pop ecx
-// 006e05d7  c20800               ret 8
-// 006e05da  e841f9f4ff           call 0x62ff20
+// This file is a part of the XTREME DOCKINGPANE MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
 
-struct CXTPDockingPane {
-    char pad0[4];
-    int* m_pData;
-    int m_nCount;
-    int Find(int a, int b);
-};
+#include "stdafx.h"
 
-extern "C" int __stdcall sub_006ea590(int* p, int a, int b);
-extern "C" void __stdcall sub_0062ff20();
+#include "XTPDockingPaneBase.h"
+#include "XTPDockingPaneManager.h"
+#include "XTPDockingPaneLayout.h"
+#include "XTPDockingPanePaintManager.h"
 
-int CXTPDockingPane::Find(int a, int b)
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPDockingPaneCaptionButtons
+
+BOOL CXTPDockingPaneCaptionButtons::CheckForMouseOver(CPoint pt)
 {
-    int found = 0;
-    int i = 0;
-    if (m_nCount > 0) {
-        do {
-            if (i < 0 || i >= m_nCount) {
-                sub_0062ff20();
-            }
-            int* p = &m_pData[i];
-            if (sub_006ea590(p, a, b)) {
-                found = 1;
-            }
-            i++;
-        } while (i < m_nCount);
-    }
-    return found;
+	BOOL bResult = FALSE;
+	for (int i = 0; i < GetSize(); i++)
+	{
+		if (GetAt(i)->CheckForMouseOver(pt))
+			bResult = TRUE;
+	}
+	return bResult;
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPDockingPaneBase
+
+
+CXTPDockingPaneBase::CXTPDockingPaneBase(XTPDockingPaneType type, CXTPDockingPaneLayout* pLayout)
+	: m_type(type), m_pLayout(pLayout)
+{
+	m_pParentContainer = 0;
+	m_pDockingSite = GetDockingPaneManager()->GetSite();
+	m_szDocking = 0;
+	m_rcWindow.SetRectEmpty();
+
+	m_nIndex = 0;
+	m_nLength = 0;
+
+	pLayout->Push(this);
+
+	m_pCaptionButtons = NULL;
+
+}
+
+CXTPDockingPaneBase::~CXTPDockingPaneBase()
+{
+	if (m_pCaptionButtons)
+	{
+		for (int i = 0; i < m_pCaptionButtons->GetSize(); i++)
+			delete m_pCaptionButtons->GetAt(i);
+
+		delete m_pCaptionButtons;
+		m_pCaptionButtons = NULL;
+	}
+}
+
+CXTPDockingPaneCaptionButton* CXTPDockingPaneBase::FindCaptionButton(int nID) const
+{
+	if (!m_pCaptionButtons)
+		return NULL;
+
+	for (int i = 0; i < m_pCaptionButtons->GetSize(); i++)
+	{
+		if (m_pCaptionButtons->GetAt(i)->GetID() == nID)
+			return m_pCaptionButtons->GetAt(i);
+	}
+
+	ASSERT(FALSE);
+	return NULL;
+}
+
+void CXTPDockingPaneBase::OnSizeParent(CWnd* /*pParent*/, CRect rect, LPVOID lParam)
+{
+	AFX_SIZEPARENTPARAMS* lpLayout = (AFX_SIZEPARENTPARAMS*)lParam;
+	lpLayout->rect = m_rcWindow = rect;
+}
+
+void CXTPDockingPaneBase::RedrawPane()
+{
+	if (GetPaneHwnd())
+		::InvalidateRect(GetPaneHwnd(), 0, FALSE);
+}
+
+void CXTPDockingPaneBase::OnFocusChanged()
+{
+}
+
+BOOL CXTPDockingPaneBase::IsHidden() const
+{
+	return FALSE;
+}
+
+void CXTPDockingPaneBase::GetMinMaxInfo(LPMINMAXINFO pMinMaxInfo) const
+{
+	ZeroMemory(pMinMaxInfo, sizeof(MINMAXINFO));
+
+	if (m_type == xtpPaneTypeClient && !GetDockingPaneManager()->IsClientHidden())
+	{
+		pMinMaxInfo->ptMinTrackSize = GetDockingPaneManager()->m_ptMinClientSize;
+	}
+
+	pMinMaxInfo->ptMaxTrackSize = CPoint(32000, 32000);
+}
+
+POSITION CXTPDockingPaneBase::ContainPane(CXTPDockingPaneBase* pPane) const
+{
+	return pPane == this ? (POSITION)TRUE : NULL;
+}
+
+CRect CXTPDockingPaneBase::GetPaneWindowRect() const
+{
+	ASSERT(m_pDockingSite);
+
+	if (!m_pDockingSite)
+		return m_rcWindow;
+
+	CRect rc(m_rcWindow);
+	m_pDockingSite->ClientToScreen(&rc);
+	return rc;
+}
+
+void CXTPDockingPaneBase::OnChildContainerChanged(CXTPDockingPaneBase* /*pContainer*/)
+{
+}
+
+void CXTPDockingPaneBase::OnParentContainerChanged(CXTPDockingPaneBase* /*pContainer*/)
+{
+}
+
+void CXTPDockingPaneBase::InvalidatePane(BOOL bSelectionChanged)
+{
+	if (m_pParentContainer)
+	{
+		m_pParentContainer->InvalidatePane(bSelectionChanged);
+	}
+}
+
+
+void CXTPDockingPaneBase::RemovePane(CXTPDockingPaneBase* /*pPane*/)
+{
+}
+
+void CXTPDockingPaneBase::FindPane(XTPDockingPaneType type, CXTPDockingPaneBaseList* pList) const
+{
+	if (GetType() == type)
+	{
+		pList->AddTail((CXTPDockingPaneBase*)this);
+	}
+}
+
+BOOL CXTPDockingPaneBase::IsEmpty() const
+{
+	return GetType() == xtpPaneTypeClient && GetDockingPaneManager()->m_bHideClient;
+}
+
+CXTPDockingPaneBase* CXTPDockingPaneBase::Clone(CXTPDockingPaneLayout* pLayout, CXTPPaneToPaneMap* pMap, DWORD /*dwIgnoredOptions*/)
+{
+	ASSERT(pMap);
+
+	CXTPDockingPaneBase* pPane = (CXTPDockingPaneBase*)GetDockingPaneManager()->OnCreatePane(GetType(), pLayout);
+
+	SAFE_CALLPTR(pMap, SetAt(this, pPane));
+
+	return pPane;
+}
+
+CXTPDockingPaneManager* CXTPDockingPaneBase::GetDockingPaneManager() const
+{
+	ASSERT(m_pLayout);
+	if (!m_pLayout)
+		return NULL;
+
+	ASSERT(m_pLayout->m_pManager);
+	return m_pLayout->m_pManager;
+}
+
+CXTPDockingPanePaintManager* CXTPDockingPaneBase::GetPaintManager() const
+{
+	CXTPDockingPaneManager* pManager = GetDockingPaneManager();
+	ASSERT(pManager);
+	if (!pManager)
+		return NULL;
+
+	ASSERT(pManager->m_pPaintManager);
+	return pManager->m_pPaintManager;
+}
+
+void CXTPDockingPaneBase::CreateContainer()
+{
+	SAFE_CALLPTR(m_pParentContainer, CreateContainer());
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+CXTPDockingPaneClientContainer::CXTPDockingPaneClientContainer(CXTPDockingPaneLayout* pLayout)
+	: CXTPDockingPaneBase(xtpPaneTypeClient, pLayout)
+{
+}
+
+void CXTPDockingPaneClientContainer::DeletePane()
+{
+	InternalRelease();
+}
+

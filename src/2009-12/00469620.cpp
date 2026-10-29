@@ -1,16 +1,69 @@
-// from server: 85% by atomic.potato
-extern "C" volatile unsigned char g_flag = 0;
-extern "C" volatile int g_value1 = 0;
-extern "C" volatile int g_value2 = 0;
-extern "C" int g_result = 0;
+// roc 2009-12 00469620  unit: CPublishAsPlaceDialog  size: 40 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 00469620
+//
+// 00469620  b801000000           mov eax, 1
+// 00469625  840518bbb700         test byte ptr [0xb7bb18], al
+// 0046962b  7515                 jne 0x469642
+// 0046962d  090518bbb700         or dword ptr [0xb7bb18], eax
+// 00469633  33c0                 xor eax, eax
+// 00469635  33c9                 xor ecx, ecx
+// 00469637  a3f8b4b000           mov dword ptr [0xb0b4f8], eax
+// 0046963c  890dfcb4b000         mov dword ptr [0xb0b4fc], ecx
+// 00469642  b8ecb4b000           mov eax, 0xb0b4ec
+// 00469647  c3                   ret 
+// copied from an identical function in another client (function ?GetDHtmlEventMap@EmptyDHtmlEventMap@@MAEPBUDHtmlEventMapEntry@@XZ)
 
-int func_00469620()
-{
-    if ((g_flag & 1) == 0)
-    {
-        g_flag |= 1;
-        g_value1 = 0;
-        g_value2 = 0;
-    }
-    return (int)&g_result;
+// from server: 100% by king_originala
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /Zp4
+// roc-lang: cpp
+// afxver_.h sets _AFX_PACKING=4; afxdhtml.h applies that SDK ABI. The fixed
+// packing option preserves its genuine declarations without source pragmas.
+// Consumed WinSDK declarations; all COM payloads are passed by pointer/ref.
+typedef long HRESULT;typedef unsigned long ULONG;typedef unsigned int UINT;
+typedef ULONG LCID;typedef long DISPID;typedef wchar_t OLECHAR;
+typedef unsigned short WORD;typedef const char*LPCTSTR;
+struct _GUID;typedef const _GUID&REFIID;
+struct ITypeInfo;struct tagDISPPARAMS;typedef tagDISPPARAMS DISPPARAMS;
+struct tagVARIANT;typedef tagVARIANT VARIANT;
+struct tagEXCEPINFO;typedef tagEXCEPINFO EXCEPINFO;
+#define NULL 0
+// Genuine consumed MFC90 RTM afxdhtml.h declarations. Both empty bases are
+// explicitly present in that SDK to give the event member-pointer its real
+// multiple-inheritance representation; no placeholder virtual methods.
+enum DHtmlEventMapEntryType {DHTMLEVENTMAPENTRY_NAME,DHTMLEVENTMAPENTRY_CLASS,
+ DHTMLEVENTMAPENTRY_TAG,DHTMLEVENTMAPENTRY_ELEMENT,DHTMLEVENTMAPENTRY_CONTROL,DHTMLEVENTMAPENTRY_END};
+struct DHtmlEventMapEntry;
+class CDHtmlSinkHandlerBase1 {};
+class CDHtmlSinkHandlerBase2 {};
+class CDHtmlSinkHandler:public CDHtmlSinkHandlerBase1,public CDHtmlSinkHandlerBase2 {
+public:
+ virtual __declspec(nothrow) HRESULT __stdcall CDHtmlSinkHandlerQueryInterface(REFIID riid,void**ppvObject)=0;
+ virtual ULONG __stdcall AddRef(void)=0;
+ virtual ULONG __stdcall Release(void)=0;
+ virtual __declspec(nothrow) HRESULT __stdcall GetTypeInfoCount(UINT*pctinfo)=0;
+ virtual __declspec(nothrow) HRESULT __stdcall GetTypeInfo(UINT iTInfo,LCID lcid,ITypeInfo**ppTInfo)=0;
+ virtual __declspec(nothrow) HRESULT __stdcall GetIDsOfNames(REFIID riid,OLECHAR**rgszNames,UINT cNames,LCID lcid,DISPID*rgDispId)=0;
+ virtual __declspec(nothrow) HRESULT __stdcall Invoke(DISPID dispIdMember,REFIID riid,LCID lcid,WORD wFlags,DISPPARAMS*pDispParams,VARIANT*pVarResult,EXCEPINFO*pExcepInfo,UINT*puArgErr)=0;
+ virtual const DHtmlEventMapEntry*GetDHtmlEventMap()=0;
+};
+struct DHtmlEventMapEntry {
+ DHtmlEventMapEntryType nType;
+ DISPID dispId;
+ LPCTSTR szName;
+ void(__stdcall CDHtmlSinkHandler::*pfnEventFunc)();
+};
+typedef void(__stdcall CDHtmlSinkHandler::*DHEVTFUNCCONTROL)();
+// Only the borrowed event-sink interface is needed by this stateless getter.
+// The complete containing dialog is neither allocated nor represented.
+class EmptyDHtmlEventMap:public CDHtmlSinkHandler {
+protected:virtual const DHtmlEventMapEntry*GetDHtmlEventMap();
+};
+const DHtmlEventMapEntry*EmptyDHtmlEventMap::GetDHtmlEventMap() {
+ static const DHtmlEventMapEntry _dhtmlEventEntries[]={
+  {DHTMLEVENTMAPENTRY_END,0,NULL,(DHEVTFUNCCONTROL)NULL}
+ };
+ return _dhtmlEventEntries;
 }
+typedef char NativeEventEntrySize[sizeof(DHtmlEventMapEntry)==20?1:-1];
+typedef char NativeEventMemberSize[sizeof(DHEVTFUNCCONTROL)==8?1:-1];

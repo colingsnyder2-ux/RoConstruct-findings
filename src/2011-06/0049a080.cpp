@@ -1,89 +1,76 @@
-// from server: 74% by TrollStein
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.6.4 OgreAlignedAllocator.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: atl-9.0-dll-rtm roc_espclaude_819913a7344f1e19.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-    (Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org/
+#ifndef _CPPUNWIND
+#define _CPPUNWIND 1
+#endif
+#ifndef _AFXDLL
+#define _AFXDLL
+#endif
+#include <new>
+#include <afxwin.h>
 
-Copyright (c) 2000-2006 Torus Knot Software Ltd
-Also see acknowledgements in Readme.html
+class CFileVersionInfo
+{
+public:
+    WORD m_wLang;
+    WORD m_wCodePage;
+    LPBYTE m_lpVersionData;
+    LPVOID m_lpTranslation;
+    UINT m_nTranslations;
+    VS_FIXEDFILEINFO* m_pFixedInfo;
 
-This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the Free Software
-Foundation; either version 2 of the License, or (at your option) any later
-version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License along with
-this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-http://www.gnu.org/copyleft/lesser.txt.
-
-You may alternatively use this source under the terms of a specific version of
-the OGRE Unrestricted License provided you have obtained such a license from
-Torus Knot Software Ltd.
------------------------------------------------------------------------------
-*/
-#include "OgreStableHeaders.h"
-
-#include "OgrePrerequisites.h"
-#include "OgreAlignedAllocator.h"
-
-#include "OgrePlatformInformation.h"
-#include "OgreBitwise.h"
-
-/**
-*
-* |___2___|3|_________5__________|__6__|
-* ^         ^
-* 1         4
-*
-* 1 -> Pointer to start of the block allocated by new.
-* 2 -> Gap used to get 4 aligned on given alignment
-* 3 -> Byte offset between 1 and 4
-* 4 -> Pointer to the start of data block.
-* 5 -> Data block.
-* 6 -> Wasted memory at rear of data block.
-*/
-
-namespace Ogre {
-
-    //---------------------------------------------------------------------
-    void* AlignedMemory::allocate(size_t size, size_t alignment)
+    CFileVersionInfo() : m_wLang(0), m_lpVersionData(NULL) { Reset(); }
+    ~CFileVersionInfo() { Reset(); }
+    void Reset()
     {
-        assert(0 < alignment && alignment <= 128 && Bitwise::isPO2(alignment));
-
-        unsigned char* p = new unsigned char[size + alignment];
-        size_t offset = alignment - (size_t(p) & (alignment-1));
-
-        unsigned char* result = p + offset;
-        result[-1] = (unsigned char)offset;
-
-        return result;
-    }
-    //---------------------------------------------------------------------
-    void* AlignedMemory::allocate(size_t size)
-    {
-        return allocate(size, OGRE_SIMD_ALIGNMENT);
-    }
-    //---------------------------------------------------------------------
-    void AlignedMemory::deallocate(void* p)
-    {
-        if (p)
+        m_pFixedInfo = NULL;
+        if (m_lpVersionData)
         {
-            unsigned char* mem = (unsigned char*)p;
-            mem = mem - mem[-1];
-            delete [] mem;
+            delete[] m_lpVersionData;
+            m_lpVersionData = NULL;
+        }
+        m_wLang = 0;
+        m_wCodePage = 1252;
+        m_lpTranslation = NULL;
+        m_nTranslations = 0;
+    }
+    BOOL Create(const CString& strFileName);
+};
+
+BOOL CFileVersionInfo::Create(const CString& strFileName)
+{
+    Reset();
+    CString strPath(strFileName);
+    BOOL bRet = FALSE;
+    DWORD dwHandle = 0;
+    DWORD dwSize = GetFileVersionInfoSize(strPath.GetBuffer(), &dwHandle);
+    if (dwSize)
+    {
+        m_lpVersionData = new BYTE[dwSize];
+        if (GetFileVersionInfo(strPath.GetBuffer(), dwHandle, dwSize, m_lpVersionData))
+        {
+        UINT uLen = 0;
+        if (VerQueryValue(m_lpVersionData, "\\", (LPVOID*)&m_pFixedInfo, &uLen))
+        {
+            if (VerQueryValue(m_lpVersionData, "\\VarFileInfo\\Translation", &m_lpTranslation, &uLen) && uLen >= 4)
+            {
+                m_nTranslations = uLen / 4;
+                m_wLang = ((WORD*)m_lpTranslation)[0];
+                m_wCodePage = ((WORD*)m_lpTranslation)[1];
+            }
+            bRet = TRUE;
+        }
         }
     }
-
+    if (!bRet && m_lpVersionData)
+    {
+        delete[] m_lpVersionData;
+        m_lpVersionData = NULL;
+    }
+    return bRet;
 }
+CFileVersionInfo* makeInfo(void* p) { return new (p) CFileVersionInfo; }

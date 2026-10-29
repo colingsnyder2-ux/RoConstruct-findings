@@ -1,4 +1,3 @@
-// from server: 72% by colin
 // roc 2007-08 00596c70  unit: RBX::LaserTool  size: 37 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00596c70
 //
@@ -14,13 +13,17 @@
 // 00596c8a  e851feffff           call 0x596ae0
 // 00596c8f  83c418               add esp, 0x18
 // 00596c92  c20400               ret 4
+// copied from an identical function in another client (function ?setValue@LaserTool@@QAEXABN@Z)
+
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+extern void __cdecl formatValue(void *, double, const char *, ...);
 
 struct LaserTool {
-    void method(double*);
+    void setValue(const double &value);
 };
 
-extern "C" void __cdecl sub_596ae0(double, double, const char*, int);
-
-void LaserTool::method(double* arg) {
-    sub_596ae0(arg[0], arg[0], (const char*)0x78d398, (int)this);
+void LaserTool::setValue(const double &value)
+{
+    formatValue(this, value, "%.3g", value);
 }

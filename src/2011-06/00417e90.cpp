@@ -1,4 +1,3 @@
-// from server: 71% by atomic.potato
 // roc 2011-06 00417e90  unit: VCBrowserViewExternal::?$CComObjectNoLock  size: 33 bytes
 // Make this compile to the exact bytes below, then: roc check 2011-06 00417e90
 //
@@ -16,15 +15,69 @@
 // 00417eab  8bc6                 mov eax, esi
 // 00417ead  5e                   pop esi
 // 00417eae  c20400               ret 4
+// copied from an identical function in another client (function ?Release@?$CComObject@VCContent@ATL@@@ATL@@UAGKXZ)
 
-struct VCBrowserViewExternal_CComObjectNoLock {
-    long __stdcall Release();
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+struct GUID;
+
+struct IUnknown
+{
+    virtual long __stdcall QueryInterface(const GUID& riid, void** ppvObject) = 0;
+    virtual unsigned long __stdcall AddRef() = 0;
+    virtual unsigned long __stdcall Release() = 0;
 };
 
-long __stdcall VCBrowserViewExternal_CComObjectNoLock::Release() {
-    long result = --*(long*)((char*)this + 8);
-    if (result == 0 && this != 0) {
-        (*(void (__stdcall **)(long))(*(void***)this)[4])(1);
+struct IServiceProvider : public IUnknown
+{
+    virtual long __stdcall QueryService(const GUID& guidService, const GUID& riid, void** ppvObject) = 0;
+};
+
+struct IContentSink : public IUnknown
+{
+};
+
+namespace ATL {
+class CComSingleThreadModel
+{
+public:
+    static unsigned long Increment(long* p) throw() { return ++(*p); }
+    static unsigned long Decrement(long* p) throw() { return --(*p); }
+};
+
+class CComObjectRootBase
+{
+public:
+    long m_dwRef;
+};
+
+template<class ThreadModel>
+class CComObjectRootEx : public CComObjectRootBase
+{
+public:
+    unsigned long InternalRelease()
+    {
+        return ThreadModel::Decrement(&m_dwRef);
     }
-    return result;
+};
+
+class CContent : public IServiceProvider, public IContentSink, public CComObjectRootEx<CComSingleThreadModel>
+{
+};
+
+template<class Base>
+class CComObject : public Base
+{
+public:
+    virtual ~CComObject();
+    virtual unsigned long __stdcall Release()
+    {
+        unsigned long l = this->InternalRelease();
+        if (l == 0)
+            delete this;
+        return l;
+    }
+};
+
+template class CComObject<CContent>;
 }

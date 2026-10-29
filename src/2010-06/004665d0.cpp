@@ -1,162 +1,58 @@
-// from server: 35% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/afxcolorpropertysheet.cpp
-
-// Candidate translation unit (score above; library headers required).
-// This is a part of the Microsoft Foundation Classes C++ library.
-// Copyright (C) Microsoft Corporation
-// All rights reserved.
+// roc 2010-06 004665d0  unit: CRobloxView  size: 66 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 004665d0
 //
-// This source code is only intended as a supplement to the
-// Microsoft Foundation Classes Reference and related
-// electronic documentation provided with the library.
-// See these sources for detailed information regarding the
-// Microsoft Foundation Classes product.
+// 004665d0  51                   push ecx
+// 004665d1  56                   push esi
+// 004665d2  c744240400000000     mov dword ptr [esp + 4], 0
+// 004665da  e8315ffbff           call 0x41c510
+// 004665df  8b4c2410             mov ecx, dword ptr [esp + 0x10]
+// 004665e3  8b74240c             mov esi, dword ptr [esp + 0xc]
+// 004665e7  83ec10               sub esp, 0x10
+// 004665ea  8bd4                 mov edx, esp
+// 004665ec  890a                 mov dword ptr [edx], ecx
+// 004665ee  8b4c2424             mov ecx, dword ptr [esp + 0x24]
+// 004665f2  894a04               mov dword ptr [edx + 4], ecx
+// 004665f5  8b4c2428             mov ecx, dword ptr [esp + 0x28]
+// 004665f9  894a08               mov dword ptr [edx + 8], ecx
+// 004665fc  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
+// 00466600  894a0c               mov dword ptr [edx + 0xc], ecx
+// 00466603  56                   push esi
+// 00466604  8bc8                 mov ecx, eax
+// 00466606  e855fbffff           call 0x466160
+// 0046660b  8bc6                 mov eax, esi
+// 0046660d  5e                   pop esi
+// 0046660e  59                   pop ecx
+// 0046660f  c21400               ret 0x14
+// copied from an identical function in another client (function ?f@S@ns_ROCX000000@@QAE?AURet@2@UArg@2@@Z)
 
-#include "stdafx.h"
-#include "afxcontrolbarutil.h"
-#include "afxcolorpropertysheet.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
-// CMFCColorPropertySheet
-
-IMPLEMENT_DYNAMIC(CMFCColorPropertySheet, CPropertySheet)
-
-CMFCColorPropertySheet::CMFCColorPropertySheet(UINT nIDCaption, CWnd* pParentWnd, UINT iSelectPage)
-	: CPropertySheet(nIDCaption, pParentWnd, iSelectPage)
+namespace ns_ROCX000000 {
+struct Ret
 {
-	m_hAccel = NULL;
-}
+    Ret(const Ret &);
+    ~Ret();
+    void *p;
+};
 
-CMFCColorPropertySheet::CMFCColorPropertySheet(LPCTSTR pszCaption, CWnd* pParentWnd, UINT iSelectPage)
-	: CPropertySheet(pszCaption, pParentWnd, iSelectPage)
+struct Arg
 {
-	m_hAccel = NULL;
-}
+    int f0, f1, f2, f3;
+};
 
-CMFCColorPropertySheet::~CMFCColorPropertySheet()
+struct Impl
 {
-}
+    Ret g(Arg arg);
+};
 
-BEGIN_MESSAGE_MAP(CMFCColorPropertySheet, CPropertySheet)
-	//{{AFX_MSG_MAP(CMFCColorPropertySheet)
-	ON_WM_SIZE()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+struct Getter { static Impl *get(); };
 
-/////////////////////////////////////////////////////////////////////////////
-// CMFCColorPropertySheet message handlers
-
-void CMFCColorPropertySheet::PostNcDestroy()
+struct S
 {
-	// Call the base class routine first
-	CPropertySheet::PostNcDestroy();
+    Ret f(Arg arg);
+};
 
-	if (m_bModeless)
-	{
-		delete this;
-	}
-}
-
-BOOL CMFCColorPropertySheet::OnInitDialog()
+Ret S::f(Arg arg)
 {
-	ASSERT_VALID(this);
-
-	// Call the base class routine
-	BOOL bRtnValue = CPropertySheet::OnInitDialog();
-
-	ModifyStyleEx(0, WS_EX_CONTROLPARENT);
-
-	ResizeControl();
-	return bRtnValue;
+    Impl *impl = Getter::get();
+    return impl->g(arg);
 }
-
-BOOL CMFCColorPropertySheet::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
-{
-	NMHDR* pNMHDR = (NMHDR*) lParam;
-	ENSURE(pNMHDR != NULL);
-
-	if (pNMHDR->code == TCN_SELCHANGE)
-	{
-		ResizeControl();
-	}
-
-	return CPropertySheet::OnNotify(wParam, lParam, pResult);
 }
-
-//////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////
-void CMFCColorPropertySheet::LoadAcceleratorTable(UINT nAccelTableID /*=0*/)
-{
-	if (nAccelTableID)
-	{
-		m_hAccel = ::LoadAccelerators(AfxGetInstanceHandle(), MAKEINTRESOURCE(nAccelTableID));
-		ASSERT(m_hAccel);
-	}
-}
-
-//////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////
-BOOL CMFCColorPropertySheet::PreTranslateMessage(MSG* pMsg)
-{
-	//TRACE("[%s - %d] - CMFCColorPropertySheet::PreTranslateMessage().....\n", __FILE__,__LINE__);
-	////////
-	// Check to see if the property sheet has an accelerator table
-	// attached to it. If there is one call it. Return TRUE if it has
-	// been processed. Otherwise, past it to the base class function.
-	////////
-	if (m_hAccel && ::TranslateAccelerator(m_hWnd, m_hAccel, pMsg))
-	{
-		return TRUE;
-	}
-
-	return CPropertySheet::PreTranslateMessage(pMsg);
-}
-
-void CMFCColorPropertySheet::OnSize(UINT nType, int cx, int cy)
-{
-	CPropertySheet::OnSize(nType, cx, cy);
-	ResizeControl();
-}
-
-void CMFCColorPropertySheet::ResizeControl()
-{
-	CTabCtrl* pTabCtrl = GetTabControl();
-	if (pTabCtrl == NULL)
-	{
-		return;
-	}
-
-	CRect rectClient;
-	GetClientRect(rectClient);
-
-	pTabCtrl->SetWindowPos(NULL, 0, 0, rectClient.Width(), rectClient.Height(), SWP_NOZORDER | SWP_NOACTIVATE);
-
-	int nPageCount = CPropertySheet::GetPageCount();
-
-	int nXBorder = ::GetSystemMetrics(SM_CXEDGE);
-	int nYBorder = ::GetSystemMetrics(SM_CYEDGE);
-
-	for (int nPage = 0; nPage <= nPageCount - 1; nPage++)
-	{
-		CPropertyPage* pPage = GetPage(nPage);
-
-		if ((pPage != NULL) &&(pPage->m_hWnd != NULL))
-		{
-			CRect rcTabCtrl;
-			pPage->GetWindowRect(&rcTabCtrl);
-			pTabCtrl->ScreenToClient(rcTabCtrl);
-
-			pPage->SetWindowPos(NULL, rcTabCtrl.left, rcTabCtrl.top, rectClient.Width() -(nXBorder * 3),
-				rectClient.Height() -(rcTabCtrl.top + nYBorder), SWP_NOZORDER | SWP_NOACTIVATE);
-		}
-	}
-}
-
-

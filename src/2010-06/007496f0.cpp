@@ -1,108 +1,38 @@
-// from server: 59% by colin
-// roc-lang: cpp
+// roc 2010-06 007496f0  unit: RBX::HammerTool  size: 45 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 007496f0
+//
+// 007496f0  51                   push ecx
+// 007496f1  83791c00             cmp dword ptr [ecx + 0x1c], 0
+// 007496f5  c7042400000000       mov dword ptr [esp], 0
+// 007496fc  b8d813a500           mov eax, 0xa513d8
+// 00749701  7505                 jne 0x749708
+// 00749703  b8c813a500           mov eax, 0xa513c8
+// 00749708  56                   push esi
+// 00749709  8b74240c             mov esi, dword ptr [esp + 0xc]
+// 0074970d  50                   push eax
+// 0074970e  8bce                 mov ecx, esi
+// 00749710  ff1510a49e00         call dword ptr [0x9ea410]
+// 00749716  8bc6                 mov eax, esi
+// 00749718  5e                   pop esi
+// 00749719  59                   pop ecx
+// 0074971a  c20400               ret 4
+// copied from an identical function in another client (function ?cursor@HammerTool@@QAEPAXPAX@Z)
+
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+typedef void (__thiscall *StringConstructor)(void *, const char *);
+extern StringConstructor constructString;
 
-// Candidate translation unit (score above; library headers required).
-#include "util/Name.h"
-#include "util/Debug.h"
-#include <boost/thread/once.hpp>
+struct HammerTool {
+    char padding[0x1c];
+    int over;
+    void *cursor(void *result);
+};
 
-// intentionally outside of the RBX namespace
-boost::once_flag flag = BOOST_ONCE_INIT;
-
-boost::mutex& moo2()
+void *HammerTool::cursor(void *result)
 {
-	static boost::mutex mutex2;
-	return mutex2;
-}
-
-void initMoo()
-{
-	moo2();
-}
-
-namespace RBX
-{
-	// seems to be inlined
-	boost::mutex& Name::mutex()
-	{
-		boost::call_once(initMoo, flag);
-		return moo2();
-	}
-
-	std::map<int, Name*>& Name::dictionary()
-	{
-		static std::map<int, Name*> d;
-		return d;
-	}
-
-	Name::NamMap& Name::namMap()
-	{
-		static NamMap n;
-		return n;
-	}
-
-	const Name& Name::getNullName()
-	{
-		boost::mutex::scoped_lock scoped_lock(mutex());
-		static const Name& nullName = declare("", 0);
-		return nullName;
-	}
-
-	const Name& Name::declare(const char* sName, int dictionaryIndex)
-	{
-		if (!sName)
-		{
-			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
-			return getNullName();
-		}
-
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			if (dictionaryIndex != -1)
-			{
-				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
-				dictionary()[dictionaryIndex] = iter->second;
-			}
-			return *iter->second;
-		}
-		else
-		{
-			Name* name = new Name(sName, dictionaryIndex);
-			namMap()[sName] = name;
-			dictionary()[dictionaryIndex] = name;
-			return *name;
-		}
-	}
-
-	const Name& Name::lookup(const std::string& sName)
-	{
-		RBXASSERT(sName.size() < 50);
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			return *iter->second;
-		}
-		else
-		{
-			return getNullName();
-		}
-	}
-
-	const Name& Name::lookup(const char* sName)
-	{
-		if (!sName)
-		{
-			return getNullName();
-		}
-
-		return lookup(std::string(sName));
-	}
+    volatile int state = 0;
+    const char *text = over ? "HammerOverCursor" : "HammerCursor";
+    constructString(result, text);
+    return result;
 }

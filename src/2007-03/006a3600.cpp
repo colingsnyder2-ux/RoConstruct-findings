@@ -1,752 +1,1498 @@
-// from server: 49% by colin
+// from server: 98% by colin
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/Contact.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-vc8-shared-mfc Source/CommandBars/XTPToolBar.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8world/Contact.h"
-#include "util/PV.h"
-#include "util/Math.h"
-#include "util/StlExtra.h"
+// XTPToolBar.cpp : implementation of the CXTPToolBar class.
+//
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
 
-namespace RBX
+#include "stdafx.h"
+#include "Resource.h"
+
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPVC50Helpers.h"
+#include "Common/XTPResourceManager.h"
+#include "Common/XTPImageManager.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPToolTipContext.h"
+
+#include "XTPToolBar.h"
+#include "XTPCommandBars.h"
+#include "XTPDockBar.h"
+#include "XTPControls.h"
+#include "XTPControl.h"
+#include "XTPPaintManager.h"
+#include "XTPMouseManager.h"
+#include "XTPControlPopup.h"
+#include "XTPPopupBar.h"
+#include "XTPControlButton.h"
+#include "XTPDockContext.h"
+#include "XTPShortcutManager.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+#define _XTP_CBRS_ALL            0x0040FFFFL
+
+IMPLEMENT_XTP_COMMANDBAR(CXTPToolBar, CXTPCommandBar)
+
+class CXTPToolBar::CControlButtonHide: public CXTPControlButton
 {
-	int Contact::contactPairMatches = 0;
-	int Contact::contactPairMisses = 0;
-
-	__declspec(noinline) Contact::Contact(Primitive* prim0, Primitive* prim1)
-		: Edge(prim0, prim1),
-		jointK(0),
-		elasticJointK(0),
-		lastContactStep(-1),
-		steppingIndex(-1),
-		kFriction(0)
+public:
+	CControlButtonHide()
+	{
+		m_dwFlags = xtpFlagManualUpdate | xtpFlagSkipFocus | xtpFlagNoMovable;
+	}
+	void Draw(CDC* pDC);
+	void SetBeginGroup(BOOL /*bBeginGroup*/)
 	{
 	}
-
-	void Contact::putInKernel(Kernel* _kernel)
+	void OnExecute()
 	{
-		IPipelined::putInKernel(_kernel);
-		onPrimitiveContactParametersChanged();
+		ASSERT(m_pParent);
+		if (m_pParent) ((CXTPToolBar*)m_pParent)->SetVisible(FALSE);
 	}
-
-	void Contact::removeFromKernel()
+	virtual BOOL IsCustomizeMovable() const
 	{
-		RBXASSERT(IPipelined::getKernel());
-
-		deleteAllConnectors();
-		IPipelined::removeFromKernel();
+		return FALSE;
 	}
+};
 
-	ContactConnector* Contact::createConnector()
+void CXTPToolBar::CControlButtonHide::Draw(CDC* pDC)
+{
+	GetPaintManager()->DrawSpecialControl(pDC, xtpButtonHideFloating, this, m_pParent, TRUE, NULL);
+}
+
+class CXTPToolBar::CControlButtonCustomize: public CXTPControlButton
+{
+public:
+	CControlButtonCustomize()
 	{
-		ContactConnector* contact = new ContactConnector(this->jointK, this->elasticJointK, this->kFriction);
-		this->getKernel()->insertConnector(contact);
-
-		return contact;
+		m_pControl = NULL;
+		m_pToolBar = NULL;
 	}
-
-	__declspec(noinline) void Contact::deleteConnector(ContactConnector*& c)
+	virtual void OnExecute()
 	{
-		if (c)
+		ASSERT(m_pParent);
+		if (!m_pParent)
+			return;
+		CXTPCommandBars* pCommandBars = m_pParent->GetCommandBars();
+		ASSERT(pCommandBars);
+		if (!pCommandBars)
+			return;
+		pCommandBars->GetCommandBarsOptions()->bDirtyState = TRUE;
+
+		if (m_pControl)
 		{
-			this->getKernel()->removeConnector(c);
-			delete c;
-			c = NULL;
+			if (m_pControl->GetHideFlags() & xtpHideCustomize)
+				m_pControl->SetHideFlag(xtpHideCustomize, FALSE);
+			else m_pControl->SetHideFlag(xtpHideCustomize, TRUE);
+
+			SetChecked((m_pControl->GetHideFlags() & xtpHideCustomize) == 0);
+			m_pControl->GetParent()->OnRecalcLayout();
+			m_pParent->InvalidateParents();
+		}
+		if (m_pToolBar)
+		{
+			pCommandBars->ClosePopups();
+			m_pToolBar->Reset(TRUE);
 		}
 	}
 
-	//needed because of header inlining bullshit
-	void Contact::deleteConnectorInline(ContactConnector*& c)
+	CXTPControl* m_pControl;
+	CXTPToolBar* m_pToolBar;
+};
+
+
+class CXTPToolBar::CControlButtonExpand: public CXTPControlPopup
+{
+public:
+	CControlButtonExpand()
 	{
-		if (c)
+		m_controlType = xtpControlButtonPopup;
+		m_bHiddenExists = FALSE;
+		m_dwFlags = xtpFlagLeftPopup | xtpFlagManualUpdate | xtpFlagNoMovable;
+		m_pCommandBar = CXTPPopupBar::CreatePopupBar(0);
+	}
+	void Draw(CDC* pDC);
+	BOOL OnSetPopup(BOOL bPopup);
+	void SetRect(CRect rcControl)
+	{
+		m_rcControl = rcControl;
+		m_bHiddenExists = IsHiddenExists();
+	};
+	void SetBeginGroup(BOOL /*bBeginGroup*/)
+	{
+	}
+	BOOL IsHiddenExists();
+	virtual BOOL IsCaptionVisible() const
+	{
+		return FALSE;
+	}
+	virtual BOOL IsCustomizeMovable() const
+	{
+		return FALSE;
+	}
+private:
+	BOOL m_bHiddenExists;
+};
+
+BOOL CXTPToolBar::CControlButtonExpand::IsHiddenExists()
+{
+	for (int i = 0; i < m_pParent->GetControlCount(); i++)
+	{
+		if (m_pParent->GetControl(i)->GetHideFlags() == xtpHideWrap)
+			return TRUE;
+	}
+	return FALSE;
+}
+
+void CXTPToolBar::CControlButtonExpand::Draw(CDC* pDC)
+{
+	GetPaintManager()->DrawSpecialControl(pDC, m_pParent->GetPosition() == xtpBarFloating ?
+		xtpButtonExpandFloating: xtpButtonExpandToolbar, this, m_pParent, TRUE, &m_bHiddenExists);
+}
+
+BOOL CXTPToolBar::CControlButtonExpand::OnSetPopup(BOOL bPopup)
+{
+	m_bPopup = bPopup;
+	if (bPopup)
+	{
+		if (m_pCommandBar)
+			m_pCommandBar->InternalRelease();
+
+		m_pCommandBar = NULL;
+		CWnd* pSite = m_pParent->GetSite();
+		if (pSite)
 		{
-			this->getKernel()->removeConnector(c);
-			delete c;
-			c = NULL;
-		}
-	}
+			XTP_COMMANDBARS_CREATEBAR cs;
+			ZeroMemory(&cs, sizeof(cs));
+			cs.bExpandBar = TRUE;
 
-	bool Contact::computeIsAdjacent(float spaceAllowed)
-	{
-		if (this->computeIsColliding(spaceAllowed))
-			return false;
-		else
-			return this->computeIsColliding(-spaceAllowed);
-	}
-
-	bool Contact::step(int uiStepId)
-	{
-		RBXASSERT(uiStepId >= 0);
-		
-		bool result = this->stepContact();
-		
-		if (result)
-		{
-			if (this->lastContactStep == -1 ) 
-				Primitive::onNewTouch(Edge::getPrimitive(0), Edge::getPrimitive(1));
-
-			this->lastContactStep = uiStepId;
-		}
-		else if (this->lastContactStep < uiStepId)
-		{
-			this->lastContactStep = -1;
-		}
-
-		return result;
-	}
-
-	void Contact::onPrimitiveContactParametersChanged()
-	{
-		Primitive* prim0 = Edge::getPrimitive(0);
-		Primitive* prim1 = Edge::getPrimitive(1);
-		
-		this->kFriction = std::min(prim0->getFriction(), prim1->getFriction());
-		float elasticity = std::min(prim0->getElasticity(), prim1->getElasticity());
-
-		this->jointK = std::min(prim0->getJointK(), prim1->getJointK());
-		this->elasticJointK = Constants::getElasticMultiplier(elasticity) * this->jointK;
-	}
-
-	BallBallContact::BallBallContact(Primitive* p0, Primitive* p1)
-		:Contact(p0, p1),
-		ballBallConnector(NULL) {}
-
-	BallBallContact::~BallBallContact()
-	{
-		RBXASSERT(!this->ballBallConnector);
-	}
-
-	Ball* BallBallContact::ball(int i)
-	{
-		return rbx_static_cast<Ball*>(this->getPrimitive(i)->getGeometry());
-	}
-
-	void BallBallContact::deleteAllConnectors()
-	{
-		this->deleteConnector(this->ballBallConnector);
-	}
-
-	bool BallBallContact::computeIsColliding(float overlapIgnored)
-	{
-		float b0Radius = this->ball(0)->getRadius();
-		float b1Radius = this->ball(1)->getRadius();
-
-		G3D::Vector3 delta = this->getPrimitive(1)->getBody()->getPV().position.translation - this->getPrimitive(0)->getBody()->getPV().position.translation;
-		float b0b1RadiusSum = b0Radius + b1Radius;
-
-		if (b0b1RadiusSum > Math::longestVector3Component(delta))
-			return delta.magnitude() < (b0b1RadiusSum - overlapIgnored);
-		else
-			return false;
-	}
-
-	bool BallBallContact::stepContact()
-	{
-		if (BallBallContact::computeIsColliding(0.0f))
-		{
-			if (this->inStage(IStage::KERNEL_STAGE))
+			if (pSite->SendMessage(WM_XTP_CREATECOMMANDBAR, 0, (LPARAM)&cs) != 0)
 			{
-				if (!this->ballBallConnector)
-					this->ballBallConnector = this->createConnector();
-
-				this->ballBallConnector->setBallBall(
-					this->getPrimitive(0)->getBody(), 
-					this->getPrimitive(1)->getBody(), 
-					this->ball(0)->getRadius(), 
-					this->ball(1)->getRadius()
-					);
+				m_pCommandBar = DYNAMIC_DOWNCAST(CXTPPopupBar, cs.pCommandBar);
 			}
-			return true;
+		}
+		if (m_pCommandBar == NULL) m_pCommandBar = CXTPPopupToolBar::CreatePopupToolBar(m_pParent->GetCommandBars());
+		m_pCommandBar->EnableCustomization(FALSE);
+
+		CXTPCommandBars* pCommandBars = m_pParent->GetCommandBars();
+		if (pCommandBars)
+		{
+			pCommandBars->GetHiddenControls((CXTPToolBar*)m_pParent, m_pCommandBar);
+
+			if (pCommandBars->GetCommandBarsOptions()->bShowExpandButtonAlways || pCommandBars->IsCustomizeAvail())
+			{
+				CXTPControlPopup* pControl = (CXTPControlPopup*)m_pCommandBar->GetControls()->Add(xtpControlPopup, XTP_ID_CUSTOMIZE_ADDORREMOVE);
+				pControl->SetFlags(xtpFlagManualUpdate);
+
+				pControl->SetBeginGroup(m_pCommandBar->GetControlCount() > 1);
+				pCommandBars->GetAddOrRemovePopup((CXTPToolBar*)m_pParent, pControl->GetCommandBar());
+			}
 		}
 		else
 		{
-			this->deleteAllConnectors();
+			((CXTPToolBar*)m_pParent)->_GetHiddenControls(m_pCommandBar);
 		}
 
-		return false;
+		m_pCommandBar->Popup(this, IsKeyboardSelected(GetSelected()));
+
 	}
-
-	BallBlockContact::BallBlockContact(Primitive* p0, Primitive* p1)
-		:Contact(p0, p1),
-		ballBlockConnector(NULL) {}
-
-	BallBlockContact::~BallBlockContact()
+	else
 	{
-		RBXASSERT(!this->ballBlockConnector);
-	}
+		ASSERT(m_pCommandBar);
+		if (m_pCommandBar) m_pCommandBar->SetTrackingMode(FALSE);
 
-	Primitive* BallBlockContact::ballPrim()
-	{	
-		return this->getPrimitive(0);
 	}
+	RedrawParent();
+	return TRUE;
+}
 
-	Primitive* BallBlockContact::blockPrim()
+
+CXTPToolBar::CXTPToolBar()
+{
+	m_pDockBar = 0;
+	m_pDockContext = 0;
+	m_bBuiltIn = TRUE;
+	m_bTearOff = FALSE;
+
+	m_bCloseable = TRUE;
+	m_bTemporary = FALSE;
+	m_bShowExpandButton = TRUE;
+
+	m_bPreviewMode = m_bPreviewVisible = FALSE;
+
+	m_bContextMenuPresent = TRUE;
+	m_bInRecalcLayout = FALSE;
+
+	m_pDockContext = new CXTPDockContext(this);
+	m_dwFlags = xtpFlagAlignAny | xtpFlagFloating | xtpFlagHideWrap;
+
+
+	CXTPDrawHelpers::RegisterWndClass(0, _T("XTPToolBar"), CS_DBLCLKS);
+}
+
+BOOL CXTPToolBar::CreateToolBar(DWORD dwStyle, CWnd* pParentWnd, UINT nID)
+{
+	m_dwStyle = dwStyle & _XTP_CBRS_ALL;
+	dwStyle = dwStyle & ~_XTP_CBRS_ALL;
+
+	dwStyle = dwStyle | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+
+	if (!CWnd::CreateEx(0, _T("XTPToolBar"), NULL, dwStyle, CRect(0, 0, 0, 0), pParentWnd, nID))
+		return FALSE;
+
+	m_barPosition = xtpBarTop;
+
+	SAFE_DELETE(m_pDockContext);
+	m_dwFlags &= ~ (xtpFlagAlignAny | xtpFlagFloating | xtpFlagHideWrap);
+
+	if ((m_dwStyle & CBRS_TOOLTIPS) && m_pCommandBars == 0)
+		EnableToolTips();
+
+	return TRUE;
+
+}
+
+void CXTPToolBar::EnableDocking(DWORD dwFlags)
+{
+	ASSERT(m_pCommandBars);
+	m_dwFlags = dwFlags;
+}
+
+CXTPToolBar::~CXTPToolBar()
+{
+	SAFE_DELETE(m_pDockContext)
+}
+
+
+
+BOOL CXTPCommandBar::SetButtons(UINT* pButtons, int nCount)
+{
+	m_pControls->RemoveAll();
+
+	BOOL bSeparator = FALSE;
+
+	CWnd* pSite = GetSite();
+
+	for (int i = 0; i < nCount; i++)
 	{
-		return this->getPrimitive(1);
-	}
-
-	Ball* BallBlockContact::ball()
-	{
-		return rbx_static_cast<Ball*>(this->ballPrim()->getGeometry());
-	}
-
-	Block* BallBlockContact::block()
-	{
-		return rbx_static_cast<Block*>(this->blockPrim()->getGeometry());
-	}
-
-	bool BallBlockContact::computeIsColliding(int& onBoarder, G3D::Vector3int16& clip, G3D::Vector3& projectionInBlock, float overlapIgnored)
-	{
-		if (Primitive::aaBoxCollide(*this->ballPrim(), *this->blockPrim()))
+		if (pButtons[i] == 0)
+			bSeparator = TRUE;
+		else
 		{
-			Body* b0 = this->ballPrim()->getBody();
-			Body* b1 = this->blockPrim()->getBody();
-			const PV& prim0Coord = b0->getPV();
-			const PV& prim1Coord = b1->getPV();
+			XTPControlType controlType = xtpControlButton;
+			XTPButtonStyle buttonStyle = xtpButtonAutomatic;
+			CXTPControl* pControl = NULL;
+			UINT nID = pButtons[i];
 
-			G3D::Vector3 blockToBall = prim0Coord.position.translation - prim1Coord.position.translation;
-			projectionInBlock = prim1Coord.position.rotation.transpose() * blockToBall;
-			
-			this->block()->projectToFace(projectionInBlock, clip, onBoarder);
-			G3D::Vector3 unkVec = prim1Coord.position.pointToWorldSpace(projectionInBlock);
-			G3D::Vector3 unkVec2 = unkVec - prim0Coord.position.translation;
+			XTP_COMMANDBARS_CREATECONTROL cs;
 
-			return unkVec2.magnitude() < (this->ball()->getRadius() - overlapIgnored);
-		}
-		return false;
-	}
-
-	bool BallBlockContact::computeIsColliding(float overlapIgnored)
-	{
-		G3D::Vector3int16 clip;
-		G3D::Vector3 projectionInBlock;
-		return this->computeIsColliding(*(int*)&overlapIgnored, clip, projectionInBlock, overlapIgnored);
-	}
-
-	bool BallBlockContact::stepContact()
-	{
-		G3D::Vector3int16 clip;
-		G3D::Vector3 projectionInBlock;
-		int onBoarder;
-
-		if (BallBlockContact::computeIsColliding(onBoarder, clip, projectionInBlock, 0.0f))
-		{
-			if (this->inStage(IStage::KERNEL_STAGE))
+			if (pSite)
 			{
-				if (!this->ballBlockConnector)
-					this->ballBlockConnector = this->createConnector();
+				cs.nID = nID;
+				cs.pControl = NULL;
+				cs.bToolBar = TRUE;
+				cs.pMenu = NULL;
+				cs.nIndex = i;
+				cs.strCaption = GetTitle();
+				cs.controlType = controlType;
+				cs.pCommandBar = this;
+				cs.buttonStyle = buttonStyle;
 
-				const G3D::Vector3* offset;
-				NormalId normId;
-				GeoPairType ballInsideType;
+				if (pSite->SendMessage(WM_XTP_BEFORECREATECONTROL, 0, (LPARAM)&cs) != 0)
+				{
+					pControl = cs.pControl;
+					controlType = cs.controlType;
+					buttonStyle = cs.buttonStyle;
+					nID = cs.nID;
+				}
+			}
 
-				if (onBoarder)
-					ballInsideType = this->block()->getBallBlockInfo(onBoarder, clip, offset, normId);
+			if (pControl == NULL)
+			{
+				pControl = m_pControls->Add(controlType, nID);
+				if (pControl)
+				{
+					pControl->SetStyle(buttonStyle);
+					if (controlType == xtpControlPopup) pControl->SetIconId(nID);
+				}
+			}
+			else m_pControls->Add(pControl, nID);
+
+			if (bSeparator)
+			{
+				pControl->SetBeginGroup(TRUE);
+				bSeparator = FALSE;
+			}
+
+			if (pSite)
+			{
+				cs.pControl = pControl;
+				pSite->SendMessage(WM_XTP_AFTERCREATECONTROL, 0, (LPARAM)&cs);
+			}
+		}
+	}
+	return TRUE;
+}
+
+BOOL CXTPToolBar::LoadToolBar(UINT nIDResource, BOOL bLoadIcons)
+{
+	m_nBarID = nIDResource;
+
+	if (!CXTPCommandBar::LoadToolBar(nIDResource, bLoadIcons))
+		return FALSE;
+
+	m_pControls->CreateOriginalControls();
+
+	return TRUE;
+}
+
+BOOL CXTPCommandBar::LoadToolBar(UINT nIDResource, BOOL bLoadIcons)
+{
+	LPCTSTR lpszResourceName = MAKEINTRESOURCE(nIDResource);
+
+	struct CToolBarData
+	{
+		WORD wVersion;
+		WORD wWidth;
+		WORD wHeight;
+		WORD wItemCount;
+		WORD* items()
+		{ return (WORD*)(this + 1); }
+	};
+
+	m_pControls->RemoveAll();
+	ASSERT(GetControlCount() == 0);
+
+	ASSERT_VALID(this);
+	ASSERT(lpszResourceName != NULL);
+	if (!lpszResourceName)
+		return FALSE;
+
+	// determine location of the bitmap in resource fork
+	HINSTANCE hInst = AfxFindResourceHandle(lpszResourceName, RT_TOOLBAR);
+	if (!hInst)
+		return FALSE;
+	HRSRC hRsrc = ::FindResource(hInst, lpszResourceName, RT_TOOLBAR);
+	if (hRsrc == NULL)
+		return FALSE;
+
+	HGLOBAL hGlobal = LoadResource(hInst, hRsrc);
+	if (hGlobal == NULL)
+		return FALSE;
+
+	CToolBarData* pData = (CToolBarData*)LockResource(hGlobal);
+	if (pData == NULL)
+		return FALSE;
+
+	ASSERT(pData->wVersion == 1);
+
+	int i;
+	UINT* pItems = new UINT[pData->wItemCount];
+
+	for (i = 0; i < pData->wItemCount; i++)
+		pItems[i] = pData->items()[i];
+
+	BOOL bResult = SetButtons(pItems, pData->wItemCount);
+
+	if (bLoadIcons)
+	{
+		CXTPImageManager* pImageManager = GetImageManager();
+
+		if (!pImageManager->SetIcons(nIDResource, pItems,
+			pData->wItemCount, CSize(pData->wWidth, pData->wHeight)))
+			bResult = FALSE;
+
+		if (pData->wWidth != 16)
+		{
+			SetIconSize(CSize(pData->wWidth, pData->wHeight));
+		}
+	}
+
+	delete[] pItems;
+
+	UnlockResource(hGlobal);
+	FreeResource(hGlobal);
+
+
+	return bResult;
+}
+
+
+BOOL CXTPToolBar::SetPosition(XTPBarPosition barPosition)
+{
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (!pCommandBars)
+		return FALSE;
+
+	if (IsDockingPosition(barPosition))
+	{
+		if (!pCommandBars->DockCommandBar(this, barPosition))
+			return FALSE;
+
+	}
+	else if (barPosition == xtpBarFloating)
+	{
+		if (!pCommandBars->FloatCommandBar(this))
+			return FALSE;
+
+	}
+	else
+		return FALSE;
+
+	ASSERT(m_barPosition == barPosition);
+
+	return TRUE;
+}
+
+
+BEGIN_MESSAGE_MAP(CXTPToolBar, CXTPCommandBar)
+	ON_WM_SETCURSOR()
+	ON_WM_RBUTTONDOWN()
+
+	ON_WM_NCCREATE()
+	ON_WM_NCACTIVATE()
+	ON_MESSAGE(WM_FLOATSTATUS, OnFloatStatus)
+	ON_WM_MOUSEACTIVATE()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_NCHITTEST_EX()
+	ON_WM_NCLBUTTONDOWN()
+	ON_WM_SETFOCUS()
+	ON_WM_CLOSE()
+	ON_MESSAGE(WM_SIZEPARENT, OnSizeParent)
+	ON_WM_LBUTTONDBLCLK()
+END_MESSAGE_MAP()
+
+
+
+BOOL CXTPToolBar::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
+{
+	if (GetShowGripper() && (IsDockingPosition(GetPosition())) &&
+		m_pDockContext && ((m_dwFlags & (xtpFlagAlignAny | xtpFlagFloating)) != 0))
+	{
+		CXTPClientRect rcGripper(this);
+		CRect rcBorder = GetPaintManager()->GetCommandBarBorders(this);
+		CSize szGripper = GetPaintManager()->DrawCommandBarGripper(NULL, this, FALSE);
+
+		if (IsDialogBar())
+		{
+			rcGripper.right = rcGripper.left + rcBorder.left + szGripper.cx;
+			rcGripper.left += 3;
+			rcGripper.bottom = rcGripper.top + rcBorder.top + szGripper.cy;
+		}
+		else if (IsVerticalPosition(GetPosition()))
+		{
+			rcGripper.bottom = rcGripper.top + rcBorder.top + szGripper.cy;
+		}
+		else
+		{
+			rcGripper.right = rcGripper.left + rcBorder.left + szGripper.cx;
+		}
+
+		POINT pt;
+		GetCursorPos(&pt);
+		ScreenToClient(&pt);
+
+		if (rcGripper.PtInRect(pt))
+		{
+			SetCursor(AfxGetApp()->LoadStandardCursor(IDC_SIZEALL));
+			return TRUE;
+		}
+	}
+
+	return CXTPCommandBar::OnSetCursor(pWnd, nHitTest, message);
+}
+
+INT_PTR CXTPCommandBar::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
+{
+
+	ASSERT_VALID(this);
+	ASSERT(::IsWindow(m_hWnd));
+
+	if (IsTrackingMode() == TRUE_POPUP && GetPosition() != xtpBarPopup)
+		return -1;
+
+	if (m_nPopuped != -1)
+		return -1;
+
+	BOOL bToolBarAccelTips = FALSE;
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	CXTPMouseManager* pMouseManager = pCommandBars->GetMouseManager();
+
+	if (pMouseManager->IsMouseLocked() || pMouseManager->IsTrackedLock(this))
+		return -1;
+
+	if (pCommandBars)
+	{
+		if (!pCommandBars->GetCommandBarsOptions()->bToolBarScreenTips)
+			return -1;
+
+		bToolBarAccelTips = pCommandBars->GetCommandBarsOptions()->bToolBarAccelTips;
+	}
+
+	CXTPControl* pControl = m_pControls->HitTest(point);
+	if (!pControl)
+		return -1;
+
+	if (m_barType == xtpBarTypePopup && (!pCommandBars || (!pCommandBars->GetCommandBarsOptions()->bShowPopupBarToolTips &&
+		((pControl->GetFlags() & xtpFlagShowPopupBarTip) == 0))))
+	{
+		return -1;
+	}
+
+
+	INT_PTR nHit = pControl->OnToolHitTest(point, pTI);
+	if (nHit != -1)
+	{
+		if (pTI->hwnd != m_hWnd)
+			return -1;
+
+		if (pTI != NULL && pTI->cbSize == sizeof(XTP_TOOLTIP_TOOLINFO_EX))
+		{
+			if (((XTP_TOOLTIP_TOOLINFO_EX*)pTI)->pToolInfo != NULL) ((XTP_TOOLTIP_TOOLINFO_EX*)pTI)->pToolInfo->pObject = pControl;
+		}
+
+		return nHit;
+	}
+
+	nHit = pControl->GetIconId();
+	CRect rect = pControl->GetRect();
+
+	CString strTip = pControl->GetTooltip();
+	if (strTip.GetLength() == 0)
+		return -1;
+
+
+	CString strShortcut = pControl->m_strShortcutText;
+	if (pCommandBars && bToolBarAccelTips && (!strShortcut.IsEmpty() || pCommandBars->GetShortcutManager()->FindDefaultAccelerator((UINT)pControl->GetID(), strShortcut)))
+	{
+		if (strShortcut.GetLength() > 0)
+		{
+			strTip += _T(" (") + strShortcut +_T(")");
+		}
+	}
+
+	CXTPToolTipContext::FillInToolInfo(pTI, m_hWnd, rect, nHit,
+		strTip, strTip, pControl->GetDescription(), GetImageManager());
+
+	if (pTI != NULL && pTI->cbSize == sizeof(XTP_TOOLTIP_TOOLINFO_EX))
+	{
+		if (((XTP_TOOLTIP_TOOLINFO_EX*)pTI)->pToolInfo != NULL) ((XTP_TOOLTIP_TOOLINFO_EX*)pTI)->pToolInfo->pObject = pControl;
+	}
+
+	// found matching rect, return the ID of the button
+	return nHit != 0 ? nHit : -1;
+}
+
+
+
+void CXTPToolBar::OnRButtonDown(UINT nFlags, CPoint point)
+{
+	CXTPControl* pControl = m_pControls->HitTest(point);
+	if (pControl && pControl->OnRButtonDown(point))
+		return;
+
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (!pCommandBars) return;
+
+	if (IsCustomizeMode())
+	{
+		CXTPCommandBar::OnRButtonDown(nFlags, point);
+		return;
+	}
+
+	SetTrackingMode(FALSE);
+	SetSelected(-1);
+	Redraw();
+
+	ClientToScreen(&point);
+
+	pCommandBars->ContextMenu(this, point);
+}
+
+
+BOOL CXTPToolBar::Create(CWnd* pParentWnd, BOOL bFloat)
+{
+	if (!IsWindow(m_hWnd))
+	{
+		DWORD dwStyle = (bFloat ? WS_POPUP : WS_CHILD) | MFS_SYNCACTIVE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+
+		CPoint pt = m_pDockContext ? m_pDockContext->m_ptMRUFloatPos : CPoint(100, 100);
+
+		CXTPCommandBars* pCommandBars = GetCommandBars();
+		int nLayoutRTL = pCommandBars && pCommandBars->IsLayoutRTL() ? WS_EX_LAYOUTRTL : 0;
+
+		if (!CWnd::CreateEx(nLayoutRTL, _T("XTPToolBar"), m_strTitle, dwStyle, CRect(pt, CSize(0, 0)), pParentWnd, 0))
+			return FALSE;
+
+		ShowWindow(SW_SHOWNA);
+	}
+
+	if (!bFloat)
+	{
+		ModifyStyle(WS_POPUP, WS_CHILD);
+	}
+	else
+	{
+		SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, (LONG_PTR)0);
+		ModifyStyle(WS_CHILD, WS_POPUP | MFS_SYNCACTIVE);
+		SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, (LONG_PTR)pParentWnd->m_hWnd);
+	}
+
+	return TRUE;
+}
+
+CRect CXTPToolBar::GetBorders()
+{
+	if (GetPosition() == xtpBarFloating)
+	{
+		return CRect(3, 3, 3, 3);
+	}
+
+	CRect rcBorder = GetPaintManager()->GetCommandBarBorders(this);
+
+	if (GetShowGripper())
+		rcBorder.TopLeft() += GetPaintManager()->DrawCommandBarGripper(NULL, this, FALSE);
+
+	return rcBorder;
+}
+
+CSize CXTPToolBar::CalcDockingLayout(int nLength, DWORD dwMode, int nWidth)
+{
+	CClientDC dc(this);
+	CXTPFontDC font(&dc, GetPaintManager()->GetCommandBarFont(this));
+	CXTPControlPopup* pPopupExp = NULL;
+
+	CRect rcBorder(GetBorders());
+
+	CXTPControl* pHide = m_pControls->FindControl(XTP_ID_TOOLBAR_HIDE);
+	if (pHide)
+	{
+		pHide->SetHideFlags(xtpHideGeneric);
+	}
+
+	BOOL bShowExpandButtonAlways = FALSE;
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (pCommandBars) bShowExpandButtonAlways = pCommandBars->GetCommandBarsOptions()->bShowExpandButtonAlways;
+
+	BOOL bCommit = TRUE;
+	CSize sz = 0;
+
+	if (m_bShowExpandButton)
+	{
+
+		pPopupExp = (CXTPControlPopup*)m_pControls->FindControl(XTP_ID_TOOLBAR_EXPAND);
+		if (!pPopupExp)
+		{
+			pPopupExp = (CXTPControlPopup*)m_pControls->Add(new CControlButtonExpand(), XTP_ID_TOOLBAR_EXPAND, _T(""), -1, TRUE);
+		}
+		pPopupExp->SetHideFlags(xtpHideGeneric);
+
+		if (bShowExpandButtonAlways)
+		{
+			if (dwMode & LM_HORZDOCK)
+				rcBorder.right += 11;
+			else
+				rcBorder.bottom += 11;
+		}
+		else
+		{
+			if (dwMode & LM_COMMIT)
+			{
+				sz = m_pControls->CalcDynamicSize(&dc, nLength, dwMode, rcBorder, nWidth);
+				if (((CControlButtonExpand*)pPopupExp)->IsHiddenExists())
+				{
+					if (dwMode & LM_HORZDOCK)
+						rcBorder.right += 11; else rcBorder.bottom += 11;
+
+				}
 				else
-					ballInsideType = this->block()->getBallInsideInfo(projectionInBlock, offset, normId);
-
-				this->ballBlockConnector->setBallBlock(
-					this->ballPrim()->getBody(),
-					this->blockPrim()->getBody(),
-					this->ball()->getRadius(),
-					offset,
-					normId,
-					ballInsideType
-					);
-			}
-			return true;
-		}
-		else
-		{
-			this->deleteAllConnectors();
-		}
-
-		return false;
-	}
-
-	void BallBlockContact::deleteAllConnectors()
-	{
-		this->deleteConnector(this->ballBlockConnector);
-	}
-
-	BlockBlockContact::BlockBlockContact(Primitive* p0, Primitive* p1)
-		:Contact(p0, p1),
-		separatingAxisId(0),
-		separatingBodyId(0)
-	{
-		this->feature[0] = -1;
-		this->feature[1] = -1;
-	}
-	
-	BlockBlockContact::~BlockBlockContact() {}
-
-	Block* BlockBlockContact::block(int i)
-	{
-		return rbx_static_cast<Block*>(this->getPrimitive(i)->getGeometry());
-	}
-
-	float BlockBlockContact::contactPairHitRatio()
-	{
-		int sum = Contact::contactPairMatches + Contact::contactPairMisses;
-
-		if (sum == 0)
-			return -1.0f;
-		else
-			return (float)Contact::contactPairMatches / sum;
-	}
-
-	void BlockBlockContact::deleteAllConnectors()
-	{
-		for (size_t i = 0; i < this->connectors.size(); i++)
-		{
-			this->deleteConnectorInline(this->connectors[i]);
-		}
-
-		this->connectors.resize(0);
-		this->matched.resize(0);
-	}
-
-	void BlockBlockContact::deleteUnmatchedConnectors()
-	{
-		RBXASSERT(this->matched.size() == this->connectors.size());
-
-		for (int i = (int)this->connectors.size()-1; i >= 0; i--)
-		{
-			bool match = this->matched[i];
-			if (match == false)
-			{
-				ContactConnector* connector = this->connectors[i];
-				fastRemoveIndex<ContactConnector*>(this->connectors, i);
-				fastRemoveIndex<bool>(this->matched, i);
-				this->deleteConnectorInline(connector);
-			}
-		}
-	}
-
-	ContactConnector* BlockBlockContact::matchContactConnector(Body* b0, Body* b1, GeoPairType _pairType, int param0, int param1)
-	{
-		RBXASSERT(this->matched.size() == this->connectors.size());
-
-		for (size_t i = 0; i < this->matched.size(); i++)
-		{
-			if (this->matched[i] == false)
-			{
-				if (this->connectors[i]->match(b0, b1, _pairType, param0, param1))
 				{
-					this->matched[i] = true;
-					Contact::contactPairMatches++;
-					return this->connectors[i];
+					bCommit = FALSE;
+					pPopupExp = NULL;
 				}
-			}
-		}
-
-		Contact::contactPairMisses++;
-		ContactConnector* connector = this->createConnector();
-		this->connectors.push_back(connector);
-		this->matched.push_back(true);
-		return connector;
-	}
-
-	void BlockBlockContact::loadGeoPairEdgeEdge(int b0, int b1, int edge0, int edge1)
-	{
-		NormalId edgeNormal0 = this->block(b0)->getEdgeNormal(edge0);
-		NormalId edgeNormal1 = this->block(b1)->getEdgeNormal(edge1);
-		
-		ContactConnector* matched = this->matchContactConnector(
-											this->getPrimitive(b0)->getBody(), 
-											this->getPrimitive(b1)->getBody(), 
-											EDGE_EDGE_PAIR, 
-											edgeNormal0, 
-											edgeNormal1
-											);
-
-		matched->setEdgeEdge(
-			this->getPrimitive(b0)->getBody(), 
-			this->getPrimitive(b1)->getBody(), 
-			this->block(b0)->getEdgeVertex(edge0), 
-			this->block(b1)->getEdgeVertex(edge1), 
-			edgeNormal0, 
-			edgeNormal1
-			);
-	}
-
-	void BlockBlockContact::loadGeoPairPointPlane(int pointBody, int planeBody, int pointID, NormalId pointFaceID, NormalId planeFaceID)
-	{
-		ContactConnector* matched = this->matchContactConnector(
-											this->getPrimitive(pointBody)->getBody(), 
-											this->getPrimitive(planeBody)->getBody(), 
-											POINT_PLANE_PAIR, 
-											pointID, 
-											planeFaceID
-											);
-
-		matched->setPointPlane(
-			this->getPrimitive(pointBody)->getBody(),
-			this->getPrimitive(planeBody)->getBody(),
-			this->block(pointBody)->getFaceVertex(pointFaceID, pointID),
-			this->block(planeBody)->getFaceVertex(planeFaceID, 0),
-			pointID,
-			planeFaceID
-			);
-	}
-
-	void BlockBlockContact::loadGeoPairEdgeEdgePlane(int edgeBody, int planeBody, int edge0, int edge1)
-	{
-		NormalId edgeNormal0 = this->block(edgeBody)->getEdgeNormal(edge0);
-		NormalId edgeNormal1 = this->block(planeBody)->getEdgeNormal(edge1);
-
-		ContactConnector* matched = this->matchContactConnector(
-											this->getPrimitive(edgeBody)->getBody(), 
-											this->getPrimitive(planeBody)->getBody(), 
-											EDGE_EDGE_PLANE_PAIR, 
-											edgeNormal0, 
-											edgeNormal1
-											);
-
-		const G3D::Vector3& gridSize = this->getPrimitive(edgeBody)->getGeometry()->getGridSize();
-
-		matched->setEdgeEdgePlane(
-			this->getPrimitive(edgeBody)->getBody(),
-			this->getPrimitive(planeBody)->getBody(),
-			this->block(edgeBody)->getEdgeVertex(edge0),
-			this->block(planeBody)->getEdgeVertex(edge1),
-			edgeNormal0,
-			edgeNormal1,
-			this->planeID,
-			gridSize[edgeNormal0 % 3]
-			);
-	}
-
-	//92.55% match
-	//PLEASE NOTE THAT MOST VARIABLE NAMES ARE MOST LIKELY NOT ACCURATE OF THEIR FUNCTIONALITY
-	bool BlockBlockContact::getBestPlaneEdge(bool& planeContact, float overlapIgnored)
-	{
-		float bestPlaneLength = Math::inf();
-		float bestEdgeLength = Math::inf();
-		float lastPlaneLength = Math::inf();
-		int lastFeature[2] = {this->feature[0], this->feature[1]};
-		bool checkLastFeature = (lastFeature[0] >= 0 && lastFeature[0] < 6) || (lastFeature[1] >= 0 && lastFeature[1] < 6);
-
-		bool belowOverlap = false;
-
-		for (int i = this->separatingBodyId; i < this->separatingBodyId + 2; i++)
-		{
-			int baseId = i % 2;
-			int testId = (i + 1) % 2;
-
-			const G3D::CoordinateFrame& primPV0 = this->getPrimitive(baseId)->getBody()->getPV().position;
-			const G3D::CoordinateFrame& primPV1 = this->getPrimitive(testId)->getBody()->getPV().position;
-			const G3D::Vector3* eBase = (const G3D::Vector3*)this->block(baseId)->getVertices();
-			const G3D::Vector3* eTest = (const G3D::Vector3*)this->block(testId)->getVertices();
-
-			G3D::Vector3 delta = primPV1.translation - primPV0.translation;
-
-			G3D::Vector3 rotTransMul = delta * primPV0.rotation;
-
-			for (int j = this->separatingAxisId; j < this->separatingAxisId + 3; j++)
-			{
-				int axisId = j % 3;
-
-				float what = Math::taxiCabMagnitude(primPV0.rotation.getColumn(axisId) * primPV1.rotation * *eTest) + (*eBase)[axisId] - fabs(rotTransMul[axisId]);
-
-				if (what > overlapIgnored)
-				{
-					if (checkLastFeature && lastFeature[baseId] % 3 == axisId )
-						lastPlaneLength = what;
-
-					if (what < bestPlaneLength)
-					{
-						bestPlaneLength = what;
-						this->feature[baseId] = rotTransMul[axisId] > 0.0f ? axisId : axisId + 3;
-						this->feature[testId] = -1;
-						this->separatingBodyId = baseId;
-						this->separatingAxisId = axisId;
-						planeContact = true;
-					}
-				}
-				else
-				{
-					this->separatingBodyId = baseId;
-					this->separatingAxisId = axisId;
-					belowOverlap = true;
-				}
-
-				if (belowOverlap)
-					return false;
-			}
-		}
-
-		if (checkLastFeature) 
-		{
-			if (this->feature[0] != lastFeature[0] || this->feature[1] != lastFeature[1]) 
-			{
-				if (!(bestPlaneLength * 1.01f < lastPlaneLength))
-				{
-					bestPlaneLength = lastPlaneLength;
-					this->feature[0] = lastFeature[0];
-					this->feature[1] = lastFeature[1];
-				}
-			}
-		}
-		const G3D::CoordinateFrame& primPV0 = this->getPrimitive(0)->getBody()->getPV().position;
-		const G3D::CoordinateFrame& primPV1 = this->getPrimitive(1)->getBody()->getPV().position;
-		const G3D::Vector3* e0 = (const G3D::Vector3*)this->block(0)->getVertices();
-		const G3D::Vector3* e1 = (const G3D::Vector3*)this->block(1)->getVertices();
-
-		G3D::Vector3 p0p1 = primPV1.translation - primPV0.translation;
-
-		for (int i = 0; i < 3; i++)
-		{
-			for (int j = 0; j < 3; j++)
-			{
-				G3D::Vector3 crossAxis = primPV0.rotation.getColumn(i).cross(primPV1.rotation.getColumn(j));
-				if (crossAxis.unitize() <= 0.001f)
-					return planeContact;
-
-				float p0p1inCrossAxis = crossAxis.dot(p0p1);
-
-				G3D::Vector3 crossAxisMulPV0rot = crossAxis * primPV0.rotation;
-				G3D::Vector3 crossAxisMulPV1rot = crossAxis * primPV1.rotation;
-
-				float what = Math::taxiCabMagnitude(crossAxisMulPV0rot * *e0) + Math::taxiCabMagnitude(crossAxisMulPV1rot * *e1) - fabs(p0p1inCrossAxis);
-				if (what > overlapIgnored)
-				{
-					if (what < bestEdgeLength)
-					{
-						bestEdgeLength = what;
-
-						if ( what * 10.0 < bestPlaneLength )
-						{
-							if ( p0p1inCrossAxis > 0.0 )
-							{
-								this->feature[0] = this->block(0)->getClosestEdge(primPV0.rotation, (NormalId)i, crossAxis) + 6;
-								this->feature[1] = this->block(1)->getClosestEdge(primPV1.rotation, (NormalId)j, -crossAxis) + 6;
-							}
-							else
-							{
-								this->feature[0] = this->block(0)->getClosestEdge(primPV0.rotation, (NormalId)i, -crossAxis) + 6;
-								this->feature[1] = this->block(1)->getClosestEdge(primPV1.rotation, (NormalId)j, crossAxis) + 6;
-							}
-							planeContact = false;
-						}
-					}
-				}
-				else
-				{
-					 return false;
-				}
-			}
-		}
-		return true;
-	}
-
-	int BlockBlockContact::intersectRectQuad(G3D::Vector2& planeRect, G3D::Vector2 (&otherQuad)[4])
-	{
-		bool quadCrossRect[4][4];
-
-		bool quadIn[4] = {true, true, true, true};
-
-		int foundCounter = 0;
-
-		for (int i = 3; i >= 0; i--)
-		{
-			if (otherQuad[i].y <= planeRect.y)
-			{
-				quadCrossRect[0][i] = true;
 			}
 			else
 			{
-				quadCrossRect[0][i] = false;
-				quadIn[i] = false;
-			}
+				sz = m_pControls->CalcDynamicSize(&dc, nLength, dwMode, rcBorder, nWidth);
+				CSize szMin = m_pControls->CalcDynamicSize(&dc, 1, dwMode, rcBorder, nWidth);
 
-			if (otherQuad[i].x >= -planeRect.x)
-			{
-				quadCrossRect[1][i] = true;
-			}
-			else
-			{
-				quadCrossRect[1][i] = false;
-				quadIn[i] = false;
-			}
-
-			if (otherQuad[i].y >= -planeRect.y)
-			{
-				quadCrossRect[2][i] = true;
-			}
-			else
-			{
-				quadCrossRect[2][i] = false;
-				quadIn[i] = false;
-			}
-
-			if (otherQuad[i].x <= planeRect.x)
-			{
-				quadCrossRect[3][i] = true;
-			}
-			else
-			{
-				quadCrossRect[3][i] = false;
-				quadIn[i] = false;
-			}
-		}
-
-		for (int i = 3; i >= 0; i--)
-		{
-			if (quadIn[i])
-			{
-				loadGeoPairPointPlane(bOther, bPlane, i, otherPlaneID, planeID);
-				foundCounter++;
-			}
-		}
-
-		if (foundCounter == 4)
-			return foundCounter;
-		else
-		{
-			bool rectCrossQuad[4][4];
-			G3D::Vector2 rect[4];
-			rect[0] = G3D::Vector2(planeRect.x, planeRect.y);
-			rect[1] = G3D::Vector2(-planeRect.x, planeRect.y);
-			rect[2] = G3D::Vector2(-planeRect.x, -planeRect.y);
-			rect[3] = G3D::Vector2(planeRect.x, -planeRect.y);
-
-			bool rectIn[4] = {true, true, true, true};
-
-			for (int i = 3; i >= 0; i--)
-			{
-				G3D::Vector2& current = otherQuad[i];
-				G3D::Vector2& currentO = otherQuad[(i + 3) % 4];
-				for (int j = 0; j < 4; j++)
+				if (m_pControls->GetVisibleCount() > 1)
 				{
-					G3D::Vector2 math1 = rect[j] - current;
-					G3D::Vector2 math2 = currentO - current;
-
-					if ((math2.x * math1.y) - (math2.y * math1.x) >= 0.0f)
-					{
-						rectCrossQuad[i][j] = true;
-					}
-					else
-					{
-						rectCrossQuad[i][j] = false;
-						rectIn[j] = false;
-					}
+					if (dwMode & LM_HORZDOCK)
+						sz.cx = max(sz.cx, szMin.cx + 11); else
+						sz.cy = max(sz.cy, szMin.cy + 11);
 				}
+
+
+				pPopupExp = NULL;
+				bCommit = FALSE;
 			}
 
-			int wasZero = foundCounter == 0;
-
-			for (int i = 0; i < 4; i++)
-			{
-				if (rectIn[i])
-				{
-					loadGeoPairPointPlane(bPlane, bOther, i, planeID, otherPlaneID);
-					foundCounter++;
-				}
-			}
-
-			if (wasZero && foundCounter == 4)
-				return foundCounter;
-			else
-			{
-				for (int i = 0; i < 4; i++)
-				{
-					for (int j = 3; j >= 0; j--)
-					{
-						if (quadCrossRect[i][j] != quadCrossRect[i][(j + 3) % 4] && rectCrossQuad[j][i] != rectCrossQuad[j][(i + 1) % 4])
-						{
-
-							loadGeoPairEdgeEdgePlane(bOther, bPlane, block(bOther)->faceVertexToEdge(otherPlaneID, (j+3)%4), block(bPlane)->faceVertexToEdge(planeID, i));
-							foundCounter++;
-						}
-					}
-				}
-				RBXASSERT(foundCounter != 1 && foundCounter <= 8);
-				return foundCounter;
-			}
 		}
 	}
 
-	bool BlockBlockContact::computeIsColliding(bool& planeContact, float overlapIgnored)
+	if (bCommit)
+		sz = m_pControls->CalcDynamicSize(&dc, nLength, dwMode, rcBorder, nWidth);
+
+	if (pPopupExp)
 	{
-		if (Primitive::aaBoxCollide(*getPrimitive(0), *getPrimitive(1)))
-			return getBestPlaneEdge(planeContact, overlapIgnored);
-		else
-			return false;
+		pPopupExp->SetHideFlags(xtpNoHide);
+		GetPaintManager()->DrawSpecialControl(0, xtpButtonExpandToolbar, pPopupExp, this, FALSE, &sz);
 	}
 
-	bool BlockBlockContact::computeIsColliding(float overlapIgnored)
+	if ((m_nIdleFlags & xtpIdleLayout) && (dwMode & LM_COMMIT))
 	{
-		bool scratch;
-		return computeIsColliding(scratch, overlapIgnored);
+		m_nIdleFlags &= ~xtpIdleLayout;
+		Redraw();
 	}
 
-	bool BlockBlockContact::stepContact()
+	return sz;
+}
+
+CSize CXTPToolBar::CalcDynamicLayout(int nLength, DWORD nMode)
+{
+	ASSERT(!(nMode & LM_HORZDOCK || nMode & LM_VERTDOCK));
+
+	CClientDC dc(this);
+	CXTPFontDC font(&dc, GetPaintManager()->GetCommandBarFont(this));
+
+	int nTitleSize = GetPaintManager()->DrawCommandBarGripper(&dc, this, FALSE).cy;
+
+	CRect rcBorder(GetBorders());
+	rcBorder.top += nTitleSize + 1;
+
+	CXTPControlPopup* pPopupExp = NULL;
+
+	CXTPControl* pHide = NULL;
+
+	if (IsCloseable())
 	{
-		bool planeContact;
-		if (computeIsColliding(planeContact, 0.0f))
+		pHide = m_pControls->FindControl(XTP_ID_TOOLBAR_HIDE);
+		if (!pHide)
 		{
-			if (inStage(IStage::KERNEL_STAGE))
-			{
-				matched.resize(0);
-				matched.resize(connectors.size());
-				if (planeContact)
-				{
-					computePlaneContact();
-					deleteUnmatchedConnectors();
-					return true;
-				}
-				loadGeoPairEdgeEdge(0, 1, feature[0] - 6, feature[1] - 6);
-				deleteUnmatchedConnectors();
-			}
-			return true;
+			pHide = (CXTPControlPopup*)m_pControls->Add(new CControlButtonHide(), XTP_ID_TOOLBAR_HIDE, _T(""), -1, TRUE);
+		}
+
+		pHide->SetHideFlags(xtpHideGeneric);
+	}
+
+	if (m_bShowExpandButton && m_pCommandBars)
+	{
+		pPopupExp = (CXTPControlPopup*)m_pControls->FindControl(XTP_ID_TOOLBAR_EXPAND);
+		if (!pPopupExp)
+		{
+			pPopupExp = (CXTPControlPopup*)m_pControls->Add(new CControlButtonExpand(), XTP_ID_TOOLBAR_EXPAND, _T(""), -1, TRUE);
+		}
+		pPopupExp->SetHideFlags(xtpHideGeneric);
+	}
+
+	CSize sz;
+	if (m_barType == xtpBarTypePopup)
+	{
+		UpdateShortcuts();
+		sz = m_pControls->CalcPopupSize(&dc, 0, rcBorder);
+	}
+	else
+		sz = m_pControls->CalcDynamicSize(&dc, nLength, nMode, rcBorder);
+
+	int nLeft = sz.cx - 3;
+	if (pHide)
+	{
+		pHide->SetHideFlags(xtpNoHide);
+		pHide->SetRect(CRect(nLeft - nTitleSize, 3, nLeft, 3 + nTitleSize));
+		nLeft -= nTitleSize;
+
+		if (pPopupExp) pPopupExp->SetWrap(TRUE);
+	}
+
+	BOOL bShowExpandButtonAlways = TRUE;
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (pCommandBars) bShowExpandButtonAlways = pCommandBars->GetCommandBarsOptions()->bShowExpandButtonAlways;
+
+	if (pPopupExp && nLeft - nTitleSize > 0 && bShowExpandButtonAlways)
+	{
+		pPopupExp->SetWrap(TRUE);
+		pPopupExp->SetHideFlags(xtpNoHide);
+		pPopupExp->SetRect(CRect(nLeft - nTitleSize, 3, nLeft, 3 + nTitleSize));
+	}
+
+	if ((m_nIdleFlags & xtpIdleLayout) && (nMode & LM_COMMIT))
+	{
+		m_nIdleFlags &= ~xtpIdleLayout;
+		Redraw();
+	}
+
+	return sz;
+}
+
+void CXTPToolBar::OnRecalcLayout()
+{
+	if (!GetSafeHwnd())
+		return;
+
+	if (!IsVisible())
+		return;
+
+	if (m_bInRecalcLayout)
+		return;
+
+	m_bInRecalcLayout = TRUE;
+
+	if (m_barPosition != xtpBarFloating)
+	{
+		CXTPCommandBars* pCommandBars = GetCommandBars();
+		if (pCommandBars)
+		{
+			pCommandBars->RecalcFrameLayout();
 		}
 		else
 		{
-			deleteAllConnectors();
-			feature[0] = -1;
-			feature[1] = -1;
-			return false;
+			CWnd* pSite = GetSite();
+			CXTPClientRect rc(pSite);
+			if (pSite) pSite->SendMessage(WM_SIZE, 0, MAKELPARAM(rc.Width(), rc.Height()));
+		}
+	}
+	else if (IsVisible())
+	{
+		CSize sz = CalcDynamicLayout(-1, LM_MRUWIDTH | LM_HORZ | LM_COMMIT);
+		CRect rc;
+		GetWindowRect(&rc);
+		MoveWindow(rc.left, rc.top, sz.cx, sz.cy, TRUE);
+	}
+
+	Redraw();
+
+	m_bInRecalcLayout = FALSE;
+}
+
+BOOL CXTPToolBar::OnNcCreate(LPCREATESTRUCT lpCreateStruct)
+{
+	if (!CXTPCommandBar::OnNcCreate(lpCreateStruct))
+		return FALSE;
+
+	if (GetStyle() & MFS_SYNCACTIVE)
+	{
+		// syncronize activation state with top level parent
+		CWnd* pParentWnd = GetTopLevelParent();
+		ASSERT(pParentWnd != NULL);
+		if (!pParentWnd)
+			return FALSE;
+
+		CWnd* pActiveWnd = GetForegroundWindow();
+		BOOL bActive = (pParentWnd == pActiveWnd) ||
+			(pParentWnd->GetLastActivePopup() == pActiveWnd &&
+			pActiveWnd->SendMessage(WM_FLOATSTATUS, FS_SYNCACTIVE) != 0);
+
+		// the WM_FLOATSTATUS does the actual work
+		SendMessage(WM_FLOATSTATUS, bActive ? FS_ACTIVATE : FS_DEACTIVATE);
+	}
+
+
+	return TRUE;
+}
+
+
+LRESULT CXTPToolBar::OnFloatStatus(WPARAM wParam, LPARAM)
+{
+	// FS_SYNCACTIVE is used to detect MFS_SYNCACTIVE windows
+	LRESULT lResult = ((GetStyle() & MFS_SYNCACTIVE) && (wParam & FS_SYNCACTIVE));
+
+	if (m_barPosition != xtpBarFloating || !m_bVisible)
+		return lResult;
+
+	BOOL bSyncActivate = TRUE;
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (pCommandBars) bSyncActivate = pCommandBars->GetCommandBarsOptions()->bSyncFloatingBars;
+
+	if (bSyncActivate)
+	{
+		if ((wParam & FS_DEACTIVATE) && !IsTopParentActive())
+		{
+			SetWindowPos(NULL, 0, 0, 0, 0, SWP_HIDEWINDOW | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+		}
+		if ((wParam & FS_ACTIVATE) && !IsWindowVisible() && IsTopParentActive())
+		{
+			// check if parent invisible or minimized window
+			DWORD dwStyle = ::GetWindowLong(::GetForegroundWindow(), GWL_STYLE);
+			if ((dwStyle & WS_VISIBLE) && !(dwStyle & WS_MINIMIZE))
+				SetWindowPos(NULL, 0, 0, 0, 0, SWP_SHOWWINDOW | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+
 		}
 	}
 
-	int BlockBlockContact::computePlaneContact()
+	if (wParam & (FS_SHOW | FS_HIDE))
 	{
-		if (feature[0] >= 0)
+		SetWindowPos(NULL, 0, 0, 0, 0,
+			((wParam & FS_SHOW) ? SWP_SHOWWINDOW : SWP_HIDEWINDOW) | SWP_NOZORDER |
+			SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+	}
+	if (wParam & (FS_ENABLE | FS_DISABLE))
+		EnableWindow((wParam & FS_ENABLE) != 0);
+
+	return lResult;
+}
+
+BOOL CXTPToolBar::IsFloatingFrameFocused() const
+{
+	if (!IsTopParentActive())
+		return FALSE;
+
+	CWnd* pWnd = CWnd::GetFocus();
+
+	while (pWnd && IsWindow(pWnd->GetSafeHwnd()))
+	{
+		pWnd = pWnd->GetParentFrame();
+
+		if (DYNAMIC_DOWNCAST(CMiniFrameWnd, pWnd))
+			return TRUE;
+	}
+	return FALSE;
+}
+
+int CXTPToolBar::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message)
+{
+	if (m_barPosition == xtpBarFloating || IsFloatingFrameFocused() || IsCustomizeMode())
+		return MA_NOACTIVATE;
+
+	return CWnd::OnMouseActivate(pDesktopWnd, nHitTest, message);
+}
+
+BOOL CXTPToolBar::OnNcActivate(BOOL bActive)
+{
+	return bActive ? FALSE : CWnd::OnNcActivate(bActive);
+}
+
+void CXTPToolBar::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	if (m_barPosition == xtpBarFloating)
+		SetWindowPos(&CWnd::wndTop, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+
+
+	if (m_pControls->HitTest(point) == NULL)
+	{
+		m_pCommandBars->ClosePopups();
+
+		if (m_pDockContext && ((m_dwFlags & (xtpFlagAlignAny | xtpFlagFloating)) != 0))
 		{
-			planeID = (NormalId)feature[0];
-			bPlane = 0;
-			bOther = 1;
+			ClientToScreen(&point);
+			m_pDockContext->StartDrag(point);
 		}
-		else
-		{
-			planeID = (NormalId)feature[1];
-			bPlane = 1;
-			bOther = 0;
-		}
-
-		const G3D::CoordinateFrame& otherFrame = getPrimitive(bOther)->getBody()->getPV().position;
-		const G3D::CoordinateFrame& planeFrame = getPrimitive(bPlane)->getBody()->getPV().position;
-
-		G3D::CoordinateFrame otherToPlane = planeFrame.inverse() * otherFrame;
-
-		Block* otherBlock = block(bOther);
-		Block* planeBlock = block(bPlane);
-
-		G3D::Vector3 otherVertexPlaneCoords = Math::getWorldNormal(planeID, planeFrame);
-		otherPlaneID = Math::getClosestObjectNormalId(-otherVertexPlaneCoords, otherFrame.rotation);
-
-		G3D::Vector2 planeRect = planeBlock->getProjectedVertex(*(planeBlock->getFaceVertex(planeID, 0)),planeID);
-
-		G3D::Vector2 otherQuad[4] = {};
-
-		for (int i = 0; i < 4; i++)
-		{
-			G3D::Vector3 world = otherToPlane.pointToWorldSpace(*(otherBlock->getFaceVertex(otherPlaneID, i)));
-			otherQuad[i] = otherBlock->getProjectedVertex(world, planeID);
-		}
-		return intersectRectQuad(planeRect, otherQuad);
+	}
+	else
+	{
+		CXTPCommandBar::OnLButtonDown(nFlags, point);
 	}
 }
+
+void CXTPToolBar::OnLButtonDblClk(UINT nFlags, CPoint point)
+{
+	if (m_pControls->HitTest(point) == NULL)
+	{
+		if (m_pDockContext)
+		{
+			m_pDockContext->ToggleDocking();
+			return;
+		}
+	}
+
+	CXTPCommandBar::OnLButtonDblClk(nFlags, point);
+}
+
+LRESULT CXTPToolBar::OnNcHitTest(CPoint point)
+{
+	if (m_barPosition != xtpBarFloating)
+		return CXTPCommandBar::OnNcHitTest(point);
+
+	if (m_barType == xtpBarTypePopup)
+		return CXTPCommandBar::OnNcHitTest(point);
+
+	CRect rectWindow;
+	GetWindowRect(&rectWindow);
+	rectWindow.InflateRect(-3, -3);
+
+	if (point.y < rectWindow.top) return HTTOP;
+	if (point.y >= rectWindow.bottom) return HTBOTTOM;
+	if (point.x < rectWindow.left) return HTLEFT;
+	if (point.x >= rectWindow.right) return HTRIGHT;
+
+	return CXTPCommandBar::OnNcHitTest(point);
+}
+
+void CXTPToolBar::OnNcLButtonDown(UINT nHitTest, CPoint point)
+{
+	if (!m_pDockContext)
+		return;
+
+	if (nHitTest >= HTSIZEFIRST && nHitTest <= HTSIZELAST)
+	{
+		ActivateTopParent();
+		SetWindowPos(&CWnd::wndTop, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+
+		m_pCommandBars->ClosePopups();
+		m_pDockContext->StartResize(nHitTest, point);
+		return;
+	}
+
+	CXTPCommandBar::OnNcLButtonDown(nHitTest, point);
+}
+
+
+
+void CXTPToolBar::OnClose()
+{
+}
+
+BOOL CXTPToolBar::IsWindowVisible() const
+{
+	return GetSafeHwnd() && IsVisible() && CWnd::IsWindowVisible() && !CXTPWindowRect(this).IsRectEmpty();
+}
+
+void CXTPToolBar::SetVisible(BOOL bVisible)
+{
+	if (m_bVisible == bVisible)
+		return;
+
+	m_bVisible = bVisible;
+
+	if (!bVisible)
+	{
+		SetTrackingMode(FALSE);
+	}
+
+	ShowWindow(bVisible ? SW_SHOWNA : SW_HIDE);
+
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+
+	if (bVisible)
+	{
+		OnRecalcLayout();
+	}
+	else if (IsDockingPosition(m_barPosition))
+	{
+		if (pCommandBars)
+		{
+			pCommandBars->RecalcFrameLayout();
+		}
+		else
+		{
+			CWnd* pSite = GetSite();
+			CXTPClientRect rc(pSite);
+			if (pSite) pSite->SendMessage(WM_SIZE, 0, MAKELPARAM(rc.Width(), rc.Height()));
+		}
+	}
+
+
+	if (pCommandBars)
+	{
+		BOOL bRemove = m_bTearOff && !bVisible;
+
+		pCommandBars->GetSite()->SendMessage(WM_XTP_TOOLBARVISIBLECHANGED, (WPARAM)this, (LPARAM)m_bVisible);
+
+		if (bRemove)
+			pCommandBars->Remove(this);
+
+		pCommandBars->GetCommandBarsOptions()->bDirtyState = TRUE;
+	}
+}
+
+
+
+
+LRESULT CXTPToolBar::OnSizeParent(WPARAM, LPARAM lParam)
+{
+	AFX_SIZEPARENTPARAMS* lpLayout = (AFX_SIZEPARENTPARAMS*)lParam;
+
+	if (GetStyle() & WS_VISIBLE)
+	{
+		// align the control bar
+		CRect rect;
+		rect.CopyRect(&lpLayout->rect);
+
+		CSize sizeAvail = rect.Size();  // maximum size available
+
+		// get maximum requested size
+		DWORD dwMode = LM_HORZDOCK | LM_HORZ | LM_COMMIT;
+		if (GetFlags() & xtpFlagStretched) dwMode |= LM_STRETCH;
+		if (GetFlags() & xtpFlagHideWrap) dwMode |= LM_HIDEWRAP;
+
+
+
+		if (lpLayout->hDWP == NULL) dwMode &= ~LM_COMMIT;
+
+		CSize size = CalcDockingLayout(sizeAvail.cx, dwMode);
+
+		size.cx = min(size.cx, sizeAvail.cx);
+		size.cy = min(size.cy, sizeAvail.cy);
+
+		lpLayout->sizeTotal.cy += size.cy;
+		lpLayout->sizeTotal.cx = max(lpLayout->sizeTotal.cx, size.cx);
+		lpLayout->rect.top += size.cy;
+
+		rect.right = rect.left + size.cx;
+		rect.bottom = rect.top + size.cy;
+
+		// only resize the window if doing layout and not just rect query
+		if (lpLayout->hDWP != NULL)
+			AfxRepositionWindow(lpLayout, m_hWnd, &rect);
+
+		Redraw();
+	}
+	return 0;
+}
+
+CSize CXTPCommandBar::GetAutoIconSize(BOOL bLarge) const
+{
+	return GetPaintManager()->GetAutoIconSize(bLarge);
+}
+
+
+CSize CXTPCommandBar::GetIconSize() const
+{
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+
+	if (!pCommandBars)
+		return m_szIcons != CSize(0) ? m_szIcons : CSize(16, 16);
+
+	if (GetType() == xtpBarTypePopup)
+	{
+		return m_szIcons != CSize(0) ? m_szIcons : pCommandBars->m_pOptions->szPopupIcons != CSize(0) ? pCommandBars->m_pOptions->szPopupIcons : GetAutoIconSize(FALSE);
+	}
+
+	CSize sz = m_szIcons != CSize(0) ? m_szIcons: (pCommandBars->m_pOptions->szIcons != CSize(0) ? pCommandBars->m_pOptions->szIcons : GetAutoIconSize(FALSE));
+
+	if (pCommandBars->m_pOptions->bLargeIcons && m_szButtons == CSize(0))
+	{
+		sz = pCommandBars->m_pOptions->szLargeIcons != CSize(0) ? pCommandBars->m_pOptions->szLargeIcons : GetAutoIconSize(TRUE);
+	}
+
+	return sz;
+}
+
+CSize CXTPCommandBar::GetLargeIconSize(BOOL bAutoSize) const
+{
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+
+	if (!pCommandBars)
+		return m_szIcons != CSize(0) ? CSize(2 * m_szIcons.cx, 2 * m_szIcons.cy) : CSize(32, 32);
+
+	CSize sz = m_szIcons != CSize(0) ? m_szIcons: (pCommandBars->m_pOptions->szIcons != CSize(0) ?
+		pCommandBars->m_pOptions->szIcons : CSize(16, 16));
+
+	if (m_szButtons == CSize(0))
+	{
+		sz = pCommandBars->m_pOptions->szLargeIcons != CSize(0) ?
+			pCommandBars->m_pOptions->szLargeIcons : (bAutoSize ? GetAutoIconSize(TRUE) : CSize(sz.cx * 2, sz.cy * 2));
+	}
+
+	return sz;
+}
+
+
+CSize CXTPCommandBar::GetButtonSize() const
+{
+	if (m_szButtons != CSize(0)) return m_szButtons;
+
+	CSize szIcon = GetIconSize();
+	return CSize(szIcon.cx + 6, szIcon.cy + 6);
+}
+
+void CXTPCommandBar::ShowTextBelowIcons(BOOL bTextBelow)
+ {
+	m_bTextBelow = bTextBelow;
+	DelayLayout();
+}
+
+BOOL CXTPCommandBar::IsTextBelowIcons() const
+{
+	if (m_bTextBelow != XTP_BOOL_DEFAULT)
+		return m_bTextBelow;
+
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (pCommandBars)
+	{
+		return pCommandBars->m_pOptions->bShowTextBelowIcons;
+	}
+	return FALSE;
+}
+
+
+int CXTPToolBar::_FindNearest(CXTPControls* pControls, CXTPControl* pFind, int nPos, BOOL /*bVisible*/) const
+{
+	if (pFind == NULL)
+		return -1;
+
+	int nResult = -1;
+
+	for (int i = nPos; i < pControls->GetCount(); i++)
+	{
+		CXTPControl* pControl = pControls->GetAt(i);
+
+		if (pControl->GetID() == pFind->GetID() && pControl->GetType() == pFind->GetType())
+		{
+			return i;
+		}
+	}
+	return nResult;
+}
+
+
+void CXTPToolBar::Reset(BOOL bShowWarningMessage)
+{
+	if (m_bBuiltIn && m_nBarID != 0 && IsCustomizable())
+	{
+		if (bShowWarningMessage)
+		{
+			CString strMessage, strTitle = GetTitle(), strReset;
+
+			VERIFY(XTPResourceManager()->LoadString(&strReset, XTP_IDS_CONFIRM_RESET));
+			strMessage.Format(strReset, (LPCTSTR)strTitle);
+
+			CXTPPushRoutingFrame push(GetFrameSite());
+
+			if (AfxMessageBox(strMessage, MB_ICONWARNING | MB_OKCANCEL) != IDOK)
+				return;
+		}
+
+		if (m_pControls->m_pOriginalControls != NULL)
+		{
+			m_pControls->RemoveAll();
+
+			CXTPControls* pControls = m_pControls->m_pOriginalControls;
+			for (int i = 0; i < pControls->GetCount(); i++)
+			{
+				CXTPControl* pControl = pControls->GetAt(i);
+				if (!pControl->m_bTemporary)
+					m_pControls->AddClone(pControl, -1, TRUE);
+			}
+
+		}
+		else
+		{
+			LoadToolBar(m_nBarID, FALSE);
+		}
+
+		CWnd* pWnd = GetSite();
+		if (pWnd && ::IsWindow(pWnd->m_hWnd)) pWnd->SendMessage(WM_XTP_CUSTOMIZATION_RESETTOOLBAR, 0, (LPARAM)this);
+
+		OnInitialUpdate();
+		OnRecalcLayout();
+	}
+}
+
+void CXTPToolBar::BuildCustomizePopup(CXTPCommandBar* pExpandBar)
+{
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (!pCommandBars)
+		return;
+
+	CXTPControls* pOriginalControls = m_pControls->m_pOriginalControls ? m_pControls->m_pOriginalControls->Duplicate(FALSE) : new CXTPControls();
+	ASSERT(pOriginalControls);
+
+	int nOriginal = 0;
+	int nToolBar = 0;
+
+	while (nToolBar < GetControlCount())
+	{
+		if ((GetControl(nToolBar)->GetHideFlags() & xtpHideCustomize) != 0)
+		{
+			int nSelected = m_nSelected;
+			int nPopuped = m_nPopuped;
+			GetControls()->Remove(nToolBar);
+			if (nPopuped != -1) m_nPopuped = nPopuped + (nToolBar < nPopuped ? - 1 : 0);
+			if (nSelected != -1) m_nSelected = nSelected + (nToolBar < nSelected ? - 1 : 0);
+		}
+		else
+			nToolBar++;
+
+	}
+
+	nToolBar = 0;
+
+	while (nOriginal < pOriginalControls->GetCount() || nToolBar < GetControlCount())
+	{
+		CXTPControl* pOriginal = nOriginal < pOriginalControls->GetCount() ? pOriginalControls->GetAt(nOriginal) : NULL;
+		CXTPControl* pControl = nToolBar < GetControlCount() ? m_pControls->GetAt(nToolBar) : NULL;
+
+
+		int nNearest = _FindNearest(m_pControls, pOriginal, nToolBar, TRUE);
+		int nNearestOriginal = _FindNearest(pOriginalControls, pControl, nOriginal);
+
+		if (nNearest == -1 && pOriginal)
+		{
+			int nSelected = m_nSelected;
+			int nPopuped = m_nPopuped;
+			pControl = m_pControls->AddClone(pOriginal, nToolBar);
+			if (nPopuped != -1) m_nPopuped = nPopuped + (nToolBar <= nPopuped ? 1 : 0);
+			if (nSelected != -1) m_nSelected = nSelected + (nToolBar <= nSelected ? 1 : 0);
+			nNearestOriginal = nToolBar;
+
+			pControl->SetHideFlag(xtpHideCustomize, TRUE);
+			nOriginal++;
+			nToolBar++;
+		}
+		else
+		{
+			if (nNearest == nToolBar) nOriginal++;
+			else if (nNearestOriginal != -1) pOriginalControls->Remove(nNearestOriginal);
+			nToolBar++;
+		}
+		ASSERT(pControl);
+
+		if (!pControl)
+		{
+			continue;
+		}
+		if (pControl->GetID() == XTP_ID_TOOLBAR_HIDE || pControl->GetID() == XTP_ID_TOOLBAR_EXPAND)
+		{
+			continue;
+		}
+		if (pControl->GetAction() && !pControl->GetAction()->IsVisible())
+			continue;
+
+		if ((pControl->GetHideFlags() & (xtpHideGeneric | xtpHideDocTemplate | xtpHideRibbonTab)) != 0)
+		{
+			continue;
+		}
+		if (!pControl->IsCustomizeMovable())
+		{
+			continue;
+		}
+
+
+		CControlButtonCustomize* pButton = (CControlButtonCustomize*)pExpandBar->GetControls()->Add(new CControlButtonCustomize(), 0);
+		pButton->SetCaption(pControl->GetCaption());
+
+		XTPControlType controlType = pControl->GetType();
+		if ((controlType == xtpControlPopup) || (controlType == xtpControlButtonPopup) || (controlType == xtpControlSplitButtonPopup) || (controlType == xtpControlButton))
+			pButton->SetIconId(pControl->GetIconId());
+
+		CString strShortcut = pControl->m_strShortcutText;
+		if (strShortcut.IsEmpty())
+			pCommandBars->GetShortcutManager()->FindDefaultAccelerator(pControl->GetID(), strShortcut);
+		pButton->SetShortcutText(strShortcut);
+		pButton->SetEnabled(nNearestOriginal != -1);
+		pButton->SetChecked((pControl->GetHideFlags() & xtpHideCustomize) == 0);
+		pButton->m_pControl = pControl;
+	}
+
+	pOriginalControls->InternalRelease();
+
+	if (m_pControls->m_pOriginalControls && !m_bTearOff && m_bBuiltIn)
+	{
+		CControlButtonCustomize* pButton = (CControlButtonCustomize*)pExpandBar->GetControls()->Add(new CControlButtonCustomize(), XTP_ID_CUSTOMIZE_RESET);
+		pButton->SetFlags(xtpFlagManualUpdate);
+
+		pButton->SetBeginGroup(TRUE);
+		pButton->m_pToolBar = this;
+	}
+}
+
+
+void CXTPToolBar::OnSetPreviewMode(BOOL bPreview)
+{
+	if (m_bPreviewMode == bPreview)
+		return;
+
+	m_bPreviewMode = bPreview;
+
+	if (bPreview)
+	{
+		m_bPreviewVisible = m_bVisible;
+		if (m_bVisible)
+		{
+			m_bVisible = FALSE;
+			ShowWindow(SW_HIDE);
+		}
+	}
+	else if (m_bPreviewVisible)
+	{
+		m_bVisible = TRUE;
+		ShowWindow(SW_SHOWNA);
+
+		if (GetType() == xtpBarTypeMenuBar)
+		{
+			CFrameWnd* pFrameWnd = GetFrameSite();
+			if (pFrameWnd && pFrameWnd->GetSafeHwnd()) pFrameWnd->OnUpdateFrameMenu(0);
+		}
+
+	}
+}
+
+void CXTPToolBar::Copy(CXTPCommandBar* pCommandBar, BOOL bRecursive)
+{
+	CXTPCommandBar::Copy(pCommandBar, bRecursive);
+
+	m_bBuiltIn = ((CXTPToolBar*)pCommandBar)->m_bBuiltIn;
+	m_bTearOff = ((CXTPToolBar*)pCommandBar)->m_bTearOff;
+	m_bCloseable = ((CXTPToolBar*)pCommandBar)->m_bCloseable;
+
+}
+
+BOOL CXTPToolBar::OnHookKeyDown(UINT nChar, LPARAM lParam)
+{
+	if (m_pDockContext == NULL && nChar == VK_TAB && GetParent())
+	{
+		CWnd* pWndNext = GetParent()->GetNextDlgTabItem(this,
+			(GetKeyState(VK_SHIFT) < 0));
+
+		if (pWndNext != NULL && pWndNext != this)
+		{
+			pWndNext->SetFocus();
+			SetTrackingMode(FALSE);
+
+			return TRUE;
+		}
+	}
+	return CXTPCommandBar::OnHookKeyDown(nChar, lParam);
+}
+
+void CXTPToolBar::OnSetFocus(CWnd* pOldWnd)
+{
+	if (!m_hwndFocus && pOldWnd) m_hwndFocus = pOldWnd->GetSafeHwnd();
+	CXTPCommandBar::OnSetFocus(pOldWnd);
+
+	if (m_pDockContext == NULL)
+	{
+		SetTrackingMode(TRUE, TRUE);
+	}
+
+}
+
+BOOL CXTPToolBar::ShouldSerializeBar()
+{
+	if (!IsCustomizable())
+		return FALSE;
+
+	if (GetControls()->GetOriginalControls() && !GetControls()->IsChanged())
+		return FALSE;
+
+	return TRUE;
+
+}
+

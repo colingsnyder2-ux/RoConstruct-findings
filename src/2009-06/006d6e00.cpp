@@ -1,127 +1,49 @@
-// from server: 31% by colin
-// roc-lang: cpp
+// roc 2009-06 006d6e00  unit: RBX::MotorJoint  size: 79 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 006d6e00
+//
+// 006d6e00  56                   push esi
+// 006d6e01  8b742410             mov esi, dword ptr [esp + 0x10]
+// 006d6e05  33c9                 xor ecx, ecx
+// 006d6e07  b8c9f80000           mov eax, 0xf8c9
+// 006d6e0c  85f6                 test esi, esi
+// 006d6e0e  7633                 jbe 0x6d6e43
+// 006d6e10  8b542408             mov edx, dword ptr [esp + 8]
+// 006d6e14  53                   push ebx
+// 006d6e15  55                   push ebp
+// 006d6e16  57                   push edi
+// 006d6e17  8b7c2418             mov edi, dword ptr [esp + 0x18]
+// 006d6e1b  eb03                 jmp 0x6d6e20
+// 006d6e1d  8d4900               lea ecx, [ecx]
+// 006d6e20  8b2a                 mov ebp, dword ptr [edx]
+// 006d6e22  0fb61c39             movzx ebx, byte ptr [ecx + edi]
+// 006d6e26  0fafe8               imul ebp, eax
+// 006d6e29  69c0b7c60500         imul eax, eax, 0x5c6b7
+// 006d6e2f  03dd                 add ebx, ebp
+// 006d6e31  41                   inc ecx
+// 006d6e32  891a                 mov dword ptr [edx], ebx
+// 006d6e34  3bce                 cmp ecx, esi
+// 006d6e36  72e8                 jb 0x6d6e20
+// 006d6e38  8122ffffff7f         and dword ptr [edx], 0x7fffffff
+// 006d6e3e  5f                   pop edi
+// 006d6e3f  5d                   pop ebp
+// 006d6e40  5b                   pop ebx
+// 006d6e41  5e                   pop esi
+// 006d6e42  c3                   ret 
+// 006d6e43  8b442408             mov eax, dword ptr [esp + 8]
+// 006d6e47  8120ffffff7f         and dword ptr [eax], 0x7fffffff
+// 006d6e4d  5e                   pop esi
+// 006d6e4e  c3                   ret 
+// copied from an identical function in another client (function ?fn_ROCX000000@@YAXPAIPBEI@Z)
+
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/MotorJoint.cpp
-
-// Candidate translation unit (score above; library headers required).
-#include "v8world/MotorJoint.h"
-#include "v8world/World.h"
-#include "v8world/Primitive.h"
-#include "v8world/Assembly.h"
-#include "util/Math.h"
-
-namespace RBX
+// roc-flags: /O2 /GS- /EHsc /MD
+void func_00669f10(unsigned int* hash, const unsigned char* data, unsigned int length)
 {
-	// TODO: check which of these belong in the header file
-
-	MotorJoint::MotorJoint()
-		: currentAngle(0.0f),
-		  link(new RevoluteLink()),
-		  maxVelocity(0.0f),
-		  desiredAngle(0.0f),
-		  polarity(1.0f)
-	{
-	}
-
-	MotorJoint::~MotorJoint()
-	{
-		delete link;
-	}
-
-	G3D::CoordinateFrame MotorJoint::getMeInOther(Primitive* me)
-	{
-		G3D::CoordinateFrame rotatedCoord0 = G3D::CoordinateFrame(
-			Math::rotateAboutZ(jointCoord0.rotation, currentAngle),
-			jointCoord0.translation);
-
-		G3D::CoordinateFrame p1InP0 = rotatedCoord0 * jointCoord1.inverse();
-		if (me == getPrimitive(1))
-		{
-			return p1InP0;
-		}
-		else
-		{
-			RBXASSERT(me == getPrimitive(0));
-			return p1InP0.inverse();
-		}
-	}
-
-	size_t MotorJoint::hashCode() const
-	{
-		const int magic = 1640531527;
-		size_t h;
-
-		h = (Math::hash(jointCoord0.translation) - magic);
-		h = (Math::hash(jointCoord1.translation) - magic + (h >> 2) + (h << 6)) ^ h;
-		return h;
-	}
-
-	void MotorJoint::setCurrentAngle(float value)
-	{
-		if (currentAngle != value)
-		{
-			currentAngle = value;
-			World* world = getWorld();
-			if (world)
-				world->onMotorAngleChanged(this);
-			setJointAngle(value);
-		}
-	}
-
-	void MotorJoint::setJointAngle(float value)
-	{
-		RBXASSERT(link);
-		if (polarity == -1)
-		{
-			RBXASSERT(0);
-
-			Primitive* p0 = getPrimitive(0);
-
-			G3D::CoordinateFrame oldParentCoord = p0->getCoordinateFrame();
-			link->setJointAngle(-value);
-			Assembly* assembly = getPrimitive(1)->getAssembly();
-			if (!assembly->getAnchored())
-			{
-				Primitive* mainPrim = assembly->getMainPrimitive();
-				G3D::CoordinateFrame newParentCoord = p0->getCoordinateFrame();
-				G3D::CoordinateFrame parentInRoot = mainPrim->getCoordinateFrame().toObjectSpace(newParentCoord);
-				G3D::CoordinateFrame newRoot = oldParentCoord * parentInRoot.inverse();
-				mainPrim->getBody()->setCoordinateFrame(newRoot);
-			}
-		}
-		else
-		{
-			link->setJointAngle(value);
-		}
-	}
-
-	bool MotorJoint::isAligned()
-	{
-		G3D::CoordinateFrame baseWorld = getPrimitive(0)->getCoordinateFrame() * jointCoord0;
-		G3D::CoordinateFrame otherBaseWorld = getPrimitive(1)->getCoordinateFrame() * jointCoord1;
-
-		if (Math::fuzzyEq(baseWorld.translation, otherBaseWorld.translation, 0.00001f))
-		{
-			if (Math::fuzzyEq(baseWorld.rotation.getColumn(2), otherBaseWorld.rotation.getColumn(2), 0.00001f))
-				return true;
-		}
-
-		return false;
-	}
-
-	void MotorJoint::stepUi(int uiStepId)
-	{
-		if (fabs(desiredAngle - currentAngle) < fabs(maxVelocity))
-		{
-			setCurrentAngle(desiredAngle);
-		}
-		else
-		{
-			if (fabs(maxVelocity) > 0.0f)
-				setCurrentAngle(currentAngle + fabs(maxVelocity));
-			else
-				setCurrentAngle(currentAngle - fabs(maxVelocity));
-		}
-	}
+    unsigned int a = 63689;
+    for (unsigned int i = 0; i < length; ++i)
+    {
+        *hash = *hash * a + data[i];
+        a *= 378551;
+    }
+    *hash &= 0x7fffffff;
 }

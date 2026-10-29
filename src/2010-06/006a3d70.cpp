@@ -1,9 +1,15 @@
-// from server: 33% by atomic.potato
-extern "C" void __cdecl func_006a11a0(
-    int, int, int, int, int, int, int, int);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_01f403e5b5979552.cpp
 
-void func_006a3d70(int a, int b, int c, int d, int e, int f, int g, int h)
-{
-    volatile int x = a;
-    func_006a11a0(x, b, c, d, e, f, g, h);
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_gzip_decompressor<std::allocator<char> >,std::char_traits<char>,std::allocator<char>,boost::iostreams::input>;

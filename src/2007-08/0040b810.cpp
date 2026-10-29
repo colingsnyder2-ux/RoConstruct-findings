@@ -1,4 +1,3 @@
-// from server: 79% by colin
 // roc 2007-08 0040b810  unit: VCBrowserViewExternal::?$CComObject  size: 33 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0040b810
 //
@@ -16,18 +15,23 @@
 // 0040b82b  8bc6                 mov eax, esi
 // 0040b82d  5e                   pop esi
 // 0040b82e  c20400               ret 4
+// copied from an identical function in another client (function ?release@@YGKPAUS@@@Z)
 
-struct VCBrowserViewExternal_CComObject {
-    int Release(int);
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+struct S {
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual ~S();
 };
 
-int VCBrowserViewExternal_CComObject::Release(int)
+unsigned long __stdcall release(S* object)
 {
-    int count = --*(int*)((char*)this + 0x18);
-    if (count == 0 && this != 0) {
-        void** vtbl = *(void***)this;
-        void (__stdcall *fn)(int) = (void (__stdcall *)(int))vtbl[4];
-        fn(1);
-    }
-    return count;
+    unsigned long* refs = reinterpret_cast<unsigned long*>(reinterpret_cast<char*>(object) + 0x18);
+    unsigned long remaining = --*refs;
+    if (remaining == 0)
+        delete object;
+    return remaining;
 }

@@ -1,8 +1,7 @@
-// from server: 45% by colin
-// roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/CommandBars/XTPShortcutManager.cpp
+// roc-lang: cpp
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc-string-calls Source\CommandBars\XTPShortcutManager.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPShortcutManager.cpp : implementation of the CXTPShortcutManager class.

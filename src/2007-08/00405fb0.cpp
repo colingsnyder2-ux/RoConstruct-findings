@@ -1,46 +1,12 @@
-// from server: 68% by colin
-// roc 2007-08 00405fb0  unit: UIEnumConnections::V?$CComEnum::?$CComObject  size: 58 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00405fb0
-//
-// 00405fb0  56                   push esi
-// 00405fb1  8b74240c             mov esi, dword ptr [esp + 0xc]
-// 00405fb5  85f6                 test esi, esi
-// 00405fb7  7509                 jne 0x405fc2
-// 00405fb9  b857000780           mov eax, 0x80070057
-// 00405fbe  5e                   pop esi
-// 00405fbf  c20800               ret 8
-// 00405fc2  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 00405fc6  8b5110               mov edx, dword ptr [ecx + 0x10]
-// 00405fc9  8b410c               mov eax, dword ptr [ecx + 0xc]
-// 00405fcc  2bc2                 sub eax, edx
-// 00405fce  c1f803               sar eax, 3
-// 00405fd1  3bf0                 cmp esi, eax
-// 00405fd3  7702                 ja 0x405fd7
-// 00405fd5  8bc6                 mov eax, esi
-// 00405fd7  8d14c2               lea edx, [edx + eax*8]
-// 00405fda  895110               mov dword ptr [ecx + 0x10], edx
-// 00405fdd  33c9                 xor ecx, ecx
-// 00405fdf  3bf0                 cmp esi, eax
-// 00405fe1  0f95c1               setne cl
-// 00405fe4  5e                   pop esi
-// 00405fe5  8bc1                 mov eax, ecx
-// 00405fe7  c20800               ret 8
+// from server: 100% by coldek
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /MD
+// roc-lib: atl-9.0-rtm roc-lane-d-probe/connections.cpp
 
-struct UIEnumConnections {
-    char pad[0xc];
-    int field_c;
-    int field_10;
-    int method(int, int);
-};
-
-int UIEnumConnections::method(int a, int b)
-{
-    if (b == 0)
-        return 0x80070057;
-    int start = field_c;
-    int end = field_10;
-    int count = (end - start) >> 3;
-    int idx = (unsigned)b <= (unsigned)count ? b : count;
-    field_10 = start + idx * 8;
-    return b != idx;
-}
+// Candidate translation unit (score above; library headers required).
+#include <atlbase.h>
+#include <atlcom.h>
+template class ATL::CComEnum<IEnumConnections, &__uuidof(IEnumConnections), CONNECTDATA, ATL::_Copy<CONNECTDATA> >;
+template class ATL::CComObject<ATL::CComEnum<IEnumConnections, &__uuidof(IEnumConnections), CONNECTDATA, ATL::_Copy<CONNECTDATA> > >;

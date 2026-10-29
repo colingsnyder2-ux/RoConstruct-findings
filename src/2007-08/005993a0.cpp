@@ -1,57 +1,22 @@
-// from server: 66% by colin
-// roc 2007-08 005993a0  unit: RBX::ControllerService  size: 66 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005993a0
-//
-// 005993a0  d94104               fld dword ptr [ecx + 4]
-// 005993a3  d901                 fld dword ptr [ecx]
-// 005993a5  dcc8                 fmul st(0), st(0)
-// 005993a7  d9c1                 fld st(1)
-// 005993a9  deca                 fmulp st(2)
-// 005993ab  dec1                 faddp st(1)
-// 005993ad  d9e8                 fld1 
-// 005993af  dde9                 fucomp st(1)
-// 005993b1  dfe0                 fnstsw ax
-// 005993b3  f6c444               test ah, 0x44
-// 005993b6  7b17                 jnp 0x5993cf
-// 005993b8  d9fa                 fsqrt 
-// 005993ba  56                   push esi
-// 005993bb  8b742408             mov esi, dword ptr [esp + 8]
-// 005993bf  51                   push ecx
-// 005993c0  d91c24               fstp dword ptr [esp]
-// 005993c3  56                   push esi
-// 005993c4  e84782f6ff           call 0x501610
-// 005993c9  8bc6                 mov eax, esi
-// 005993cb  5e                   pop esi
-// 005993cc  c20400               ret 4
-// 005993cf  8b442404             mov eax, dword ptr [esp + 4]
-// 005993d3  ddd8                 fstp st(0)
-// 005993d5  d901                 fld dword ptr [ecx]
-// 005993d7  d918                 fstp dword ptr [eax]
-// 005993d9  d94104               fld dword ptr [ecx + 4]
-// 005993dc  d95804               fstp dword ptr [eax + 4]
-// 005993df  c20400               ret 4
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_espeon_aug2007_fullstack_kernel_7e0b25970815fef5.cpp
 
-struct ControllerService {
-    float x;
-    float y;
-    float* normalize(float* out);
-};
-
-extern "C" float* __stdcall func_00501610(float value, float* out);
-
-float* ControllerService::normalize(float* out)
-{
-    float len2 = x * x + y * y;
-    if (len2 != 1.0f) {
-        float len = len2;
-        float root = len;
-        float result = root;
-        func_00501610(result, &result);
-        out[0] = result;
-        out[1] = result;
-    } else {
-        out[0] = x;
-        out[1] = y;
-    }
-    return out;
-}
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#define _MT 1
+#define _DLL 1
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "v8datamodel/Camera.cpp"

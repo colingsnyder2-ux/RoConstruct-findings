@@ -24,9 +24,10 @@
 // 00615cd9  5e                   pop esi
 // 00615cda  59                   pop ecx
 // 00615cdb  c3                   ret 
-// copied from an identical function in another client (function ?f@S@ns_ROCX000007@@QAEXXZ)
+// copied from an identical function in another client (function ?f@S@ns_ROCX000005@ns_ROCX000000@@QAEXXZ)
 
-namespace ns_ROCX000007 {
+namespace ns_ROCX000000 {
+namespace ns_ROCX000005 {
 struct S {
     void* vtable;
     char pad[0x20];
@@ -45,5 +46,6 @@ void S::f() {
     helper(*(void**)((char*)vtable + 12), &p);
     field44 |= 2;
     *(int*)((char*)this + 0x40) = 0;
+}
 }
 }

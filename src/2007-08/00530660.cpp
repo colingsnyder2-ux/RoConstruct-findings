@@ -1,71 +1,21 @@
-// from server: 83% by colin
-// roc 2007-08 00530660  unit: RBX::ModelInstance  size: 92 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00530660
-//
-// 00530660  56                   push esi
-// 00530661  8bf1                 mov esi, ecx
-// 00530663  e87839fcff           call 0x4f3fe0
-// 00530668  d900                 fld dword ptr [eax]
-// 0053066a  d91e                 fstp dword ptr [esi]
-// 0053066c  d94004               fld dword ptr [eax + 4]
-// 0053066f  d95e04               fstp dword ptr [esi + 4]
-// 00530672  d94008               fld dword ptr [eax + 8]
-// 00530675  d95e08               fstp dword ptr [esi + 8]
-// 00530678  e86339fcff           call 0x4f3fe0
-// 0053067d  d94004               fld dword ptr [eax + 4]
-// 00530680  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 00530684  8b542410             mov edx, dword ptr [esp + 0x10]
-// 00530688  d9e0                 fchs 
-// 0053068a  d94008               fld dword ptr [eax + 8]
-// 0053068d  d9e0                 fchs 
-// 0053068f  d900                 fld dword ptr [eax]
-// 00530691  8b442408             mov eax, dword ptr [esp + 8]
-// 00530695  d9e0                 fchs 
-// 00530697  d95e0c               fstp dword ptr [esi + 0xc]
-// 0053069a  d9c9                 fxch st(1)
-// 0053069c  d95e10               fstp dword ptr [esi + 0x10]
-// 0053069f  d95e14               fstp dword ptr [esi + 0x14]
-// 005306a2  89461c               mov dword ptr [esi + 0x1c], eax
-// 005306a5  8b442414             mov eax, dword ptr [esp + 0x14]
-// 005306a9  894e20               mov dword ptr [esi + 0x20], ecx
-// 005306ac  895624               mov dword ptr [esi + 0x24], edx
-// 005306af  894628               mov dword ptr [esi + 0x28], eax
-// 005306b2  c6461801             mov byte ptr [esi + 0x18], 1
-// 005306b6  8bc6                 mov eax, esi
-// 005306b8  5e                   pop esi
-// 005306b9  c21000               ret 0x10
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_espeon_aug2007_fullstack_kernel_60f56010981b05b5.cpp
 
-struct ModelInstance {
-    float m0;
-    float m4;
-    float m8;
-    float mC;
-    float m10;
-    float m14;
-    unsigned char m18;
-    char pad19[3];
-    int m1C;
-    int m20;
-    int m24;
-    int m28;
-    ModelInstance* init(int a, int b, int c, int d);
-};
-
-extern "C" float* __cdecl sub_4F3FE0();
-
-ModelInstance* ModelInstance::init(int a, int b, int c, int d) {
-    float* p = sub_4F3FE0();
-    m0 = p[0];
-    m4 = p[1];
-    m8 = p[2];
-    p = sub_4F3FE0();
-    mC = -p[1];
-    m10 = -p[2];
-    m14 = -p[0];
-    m1C = a;
-    m20 = b;
-    m24 = c;
-    m28 = d;
-    m18 = 1;
-    return this;
-}
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#define _MT 1
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "v8datamodel/ModelInstance.cpp"

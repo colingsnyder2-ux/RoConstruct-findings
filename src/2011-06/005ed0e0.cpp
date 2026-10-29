@@ -1,180 +1,70 @@
-// from server: 28% by colin
-// roc-lang: cpp
-// roc-cl: 50727
+// roc 2011-06 005ed0e0  unit: boost::io::Vtoo_many_args::U?$error_info_injector::?$clone_impl  size: 70 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 005ed0e0
+//
+// 005ed0e0  8b442404             mov eax, dword ptr [esp + 4]
+// 005ed0e4  56                   push esi
+// 005ed0e5  8b30                 mov esi, dword ptr [eax]
+// 005ed0e7  83ec20               sub esp, 0x20
+// 005ed0ea  8bc4                 mov eax, esp
+// 005ed0ec  c70000000000         mov dword ptr [eax], 0
+// 005ed0f2  8b4e08               mov ecx, dword ptr [esi + 8]
+// 005ed0f5  89642428             mov dword ptr [esp + 0x28], esp
+// 005ed0f9  85c9                 test ecx, ecx
+// 005ed0fb  7416                 je 0x5ed113
+// 005ed0fd  8908                 mov dword ptr [eax], ecx
+// 005ed0ff  8b4e08               mov ecx, dword ptr [esi + 8]
+// 005ed102  83c008               add eax, 8
+// 005ed105  6a00                 push 0
+// 005ed107  50                   push eax
+// 005ed108  8b01                 mov eax, dword ptr [ecx]
+// 005ed10a  8d5610               lea edx, [esi + 0x10]
+// 005ed10d  52                   push edx
+// 005ed10e  ffd0                 call eax
+// 005ed110  83c40c               add esp, 0xc
+// 005ed113  8b4c2430             mov ecx, dword ptr [esp + 0x30]
+// 005ed117  8b54242c             mov edx, dword ptr [esp + 0x2c]
+// 005ed11b  8b06                 mov eax, dword ptr [esi]
+// 005ed11d  51                   push ecx
+// 005ed11e  52                   push edx
+// 005ed11f  ffd0                 call eax
+// 005ed121  83c428               add esp, 0x28
+// 005ed124  5e                   pop esi
+// 005ed125  c3                   ret 
+// copied from an identical function in another client (function ?reconstruct@@YAXPAPAUObject@@PAX1@Z)
+
+// roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/date_time/src/gregorian/greg_month.cpp
+typedef void (__cdecl *Manager)(const void *, void *, int);
 
-// Candidate translation unit (score above; library headers required).
-/* Copyright (c) 2002-2005 CrystalClear Software, Inc.
- * Use, modification and distribution is subject to the 
- * Boost Software License, Version 1.0. (See accompanying
- * file LICENSE-1.0 or http://www.boost.org/LICENSE-1.0)
- * Author: Jeff Garland, Bart Garst
- * $Date: 2005/06/21 03:34:50 $
- */
+struct Function {
+    Manager *manager;
+    union Storage {
+        double alignment[3];
+        char bytes[24];
+    } storage;
 
+    Function(const Function &);
+    ~Function();
+};
 
-
-#ifndef BOOST_DATE_TIME_SOURCE
-#define BOOST_DATE_TIME_SOURCE
-#endif
-#include "boost/date_time/gregorian/greg_month.hpp"
-#include "boost/date_time/gregorian/greg_facet.hpp"
-#include "boost/date_time/date_format_simple.hpp"
-#include "boost/date_time/compiler_config.hpp"
-#if defined(BOOST_DATE_TIME_INCLUDE_LIMITED_HEADERS)
-#include "boost/date_time/gregorian/formatters_limited.hpp"
-#else
-#include "boost/date_time/gregorian/formatters.hpp"
-#endif
-#include "boost/date_time/date_parsing.hpp"
-#include "boost/date_time/gregorian/parsers.hpp"
-
-#include "greg_names.hpp"
-namespace boost {
-namespace gregorian {
-
-  /*! Returns a shared pointer to a map of Month strings & numbers.
-   * Strings are both full names and abbreviations.
-   * Ex. ("jan",1), ("february",2), etc...
-   * Note: All characters are lowercase - for case insensitivity
-   */
-  greg_month::month_map_ptr_type greg_month::get_month_map_ptr()
-  {
-    static month_map_ptr_type month_map_ptr(new greg_month::month_map_type());
-
-    if(month_map_ptr->empty()) {
-      std::string s("");
-      for(unsigned short i = 1; i <= 12; ++i) {
-        greg_month m(static_cast<month_enum>(i));
-        s = m.as_long_string();
-        s = date_time::convert_to_lower(s);
-        month_map_ptr->insert(std::make_pair(s, i));
-        s = m.as_short_string();
-        s = date_time::convert_to_lower(s);
-        month_map_ptr->insert(std::make_pair(s, i));
-      }
+inline Function::Function(const Function &other) : manager(0)
+{
+    if (other.manager) {
+        manager = other.manager;
+        (*other.manager)(&other.storage, &storage, 0);
     }
-    return month_map_ptr;
-  }
+}
 
+typedef void (__cdecl *Invoke)(void *, void *, Function);
 
-  //! Returns 3 char english string for the month ex: Jan, Feb, Mar, Apr
-  const char*
-  greg_month::as_short_string() const 
-  {
-    return short_month_names[value_-1];
-  }
-  
-  //! Returns full name of month as string in english ex: January, February
-  const char*
-  greg_month::as_long_string()  const 
-  {
-    return long_month_names[value_-1];
-  }
- 
-  //! Return special_value from string argument
-  /*! Return special_value from string argument. If argument is 
-   * not one of the special value names (defined in names.hpp), 
-   * return 'not_special' */
-  special_values special_value_from_string(const std::string& s) {
-    short i = date_time::find_match(special_value_names,
-                                    special_value_names,
-                                    date_time::NumSpecialValues,
-                                    s);
-    if(i > date_time::NumSpecialValues) { // match not found
-      return not_special;
-    }
-    else {
-      return static_cast<special_values>(i);
-    }
-  }
+struct Object {
+    Invoke invoke;
+    unsigned int padding;
+    Function function;
+};
 
-
-#ifndef BOOST_NO_STD_WSTRING
-  //! Returns 3 wchar_t english string for the month ex: Jan, Feb, Mar, Apr
-  const wchar_t*
-  greg_month::as_short_wstring() const 
-  {
-    return w_short_month_names[value_-1];
-  }
-  
-  //! Returns full name of month as wchar_t string in english ex: January, February
-  const wchar_t*
-  greg_month::as_long_wstring()  const 
-  {
-    return w_long_month_names[value_-1];
-  }
-#endif // BOOST_NO_STD_WSTRING
-  
-#ifndef BOOST_DATE_TIME_NO_LOCALE
-  /*! creates an all_date_names_put object with the correct set of names.
-   * This function is only called in the event of an exception where
-   * the imbued locale containing the needed facet is for some reason 
-   * unreachable.
-   */
-  BOOST_DATE_TIME_DECL 
-  boost::date_time::all_date_names_put<greg_facet_config, char>* 
-  create_facet_def(char type)
-  {
-    typedef 
-      boost::date_time::all_date_names_put<greg_facet_config, char> facet_def;
-    
-    return new facet_def(short_month_names,
-                         long_month_names,
-                         special_value_names,
-                         short_weekday_names,
-                         long_weekday_names);
-  }
-  
-  //! generates a locale with the set of gregorian name-strings of type char*
-  BOOST_DATE_TIME_DECL std::locale generate_locale(std::locale& loc, char type){
-    typedef boost::date_time::all_date_names_put<greg_facet_config, char> facet_def;
-    return std::locale(loc, new facet_def(short_month_names,
-                                          long_month_names,
-                                          special_value_names,
-                                          short_weekday_names,
-                                          long_weekday_names)
-        );
-  }
-  
-#ifndef BOOST_NO_STD_WSTRING
-  /*! creates an all_date_names_put object with the correct set of names.
-   * This function is only called in the event of an exception where
-   * the imbued locale containing the needed facet is for some reason 
-   * unreachable.
-   */
-  BOOST_DATE_TIME_DECL 
-  boost::date_time::all_date_names_put<greg_facet_config, wchar_t>* 
-  create_facet_def(wchar_t type)
-  {
-    typedef 
-      boost::date_time::all_date_names_put<greg_facet_config,wchar_t> facet_def;
-    
-    return new facet_def(w_short_month_names,
-                         w_long_month_names,
-                         w_special_value_names,
-                         w_short_weekday_names,
-                         w_long_weekday_names);
-  }
-
-  //! generates a locale with the set of gregorian name-strings of type wchar_t*
-  BOOST_DATE_TIME_DECL std::locale generate_locale(std::locale& loc, wchar_t type){
-    typedef boost::date_time::all_date_names_put<greg_facet_config, wchar_t> facet_def;
-    return std::locale(loc, new facet_def(w_short_month_names,
-                                          w_long_month_names,
-                                          w_special_value_names,
-                                          w_short_weekday_names,
-                                          w_long_weekday_names)
-        );
-  }
-#endif // BOOST_NO_STD_WSTRING
-#endif // BOOST_DATE_TIME_NO_LOCALE
-
-} } //namespace gregorian
-
-
-
-
-
-
+void __cdecl reconstruct(Object **object, void *a, void *b)
+{
+    Object *p = *object;
+    p->invoke(a, b, p->function);
+}

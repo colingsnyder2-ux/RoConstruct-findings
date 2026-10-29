@@ -1,236 +1,43 @@
-// from server: 97% by colin
+// roc 2011-06 00922fa0  unit: Ogre::VDataStream::?$SharedPtr  size: 78 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 00922fa0
+//
+// 00922fa0  8b542404             mov edx, dword ptr [esp + 4]
+// 00922fa4  8b4208               mov eax, dword ptr [edx + 8]
+// 00922fa7  56                   push esi
+// 00922fa8  8b30                 mov esi, dword ptr [eax]
+// 00922faa  897208               mov dword ptr [edx + 8], esi
+// 00922fad  8b30                 mov esi, dword ptr [eax]
+// 00922faf  807e3900             cmp byte ptr [esi + 0x39], 0
+// 00922fb3  7503                 jne 0x922fb8
+// 00922fb5  895604               mov dword ptr [esi + 4], edx
+// 00922fb8  8b7204               mov esi, dword ptr [edx + 4]
+// 00922fbb  897004               mov dword ptr [eax + 4], esi
+// 00922fbe  8b4904               mov ecx, dword ptr [ecx + 4]
+// 00922fc1  5e                   pop esi
+// 00922fc2  3b5104               cmp edx, dword ptr [ecx + 4]
+// 00922fc5  750b                 jne 0x922fd2
+// 00922fc7  894104               mov dword ptr [ecx + 4], eax
+// 00922fca  8910                 mov dword ptr [eax], edx
+// 00922fcc  894204               mov dword ptr [edx + 4], eax
+// 00922fcf  c20400               ret 4
+// 00922fd2  8b4a04               mov ecx, dword ptr [edx + 4]
+// 00922fd5  3b11                 cmp edx, dword ptr [ecx]
+// 00922fd7  750a                 jne 0x922fe3
+// 00922fd9  8901                 mov dword ptr [ecx], eax
+// 00922fdb  8910                 mov dword ptr [eax], edx
+// 00922fdd  894204               mov dword ptr [edx + 4], eax
+// 00922fe0  c20400               ret 4
+// 00922fe3  894108               mov dword ptr [ecx + 8], eax
+// 00922fe6  8910                 mov dword ptr [eax], edx
+// 00922fe8  894204               mov dword ptr [edx + 4], eax
+// 00922feb  c20400               ret 4
+// copied from an identical function in another client (function ?_Lrotate@?$_Tree@V?$_Tmap_traits@HUValue@@U?$less@H@std@@V?$allocator@U?$pair@$$CBHUValue@@@std@@@3@$0A@@std@@@std@@IAEXPAU_Node@?$_Tree_nod@V?$_Tmap_traits@HUValue@@U?$less@H@std@@V?$allocator@U?$pair@$$CBHUValue@@@std@@@3@$0A@@std@@@2@@Z)
+
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: ogre-1.7.0 OgreConfigFile.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /D_SECURE_SCL=0
+#include <map>
 
-// Candidate translation unit (score above; library headers required).
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-    (Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org/
+struct Value { int data[10]; };
 
-Copyright (c) 2000-2009 Torus Knot Software Ltd
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
------------------------------------------------------------------------------
-*/
-#include "OgreStableHeaders.h"
-#include "OgreConfigFile.h"
-#include "OgreResourceGroupManager.h"
-
-#include "OgreException.h"
-
-#include <iostream>
-
-namespace Ogre {
-
-    //-----------------------------------------------------------------------
-    ConfigFile::ConfigFile()
-    {
-    }
-    //-----------------------------------------------------------------------
-    ConfigFile::~ConfigFile()
-    {
-        SettingsBySection::iterator seci, secend;
-        secend = mSettings.end();
-        for (seci = mSettings.begin(); seci != secend; ++seci)
-        {
-            OGRE_DELETE_T(seci->second, SettingsMultiMap, MEMCATEGORY_GENERAL);
-        }
-    }
-    //-----------------------------------------------------------------------
-    void ConfigFile::clear(void)
-    {
-        for (SettingsBySection::iterator seci = mSettings.begin(); 
-            seci != mSettings.end(); ++seci)
-        {
-             OGRE_DELETE_T(seci->second, SettingsMultiMap, MEMCATEGORY_GENERAL);
-        }
-        mSettings.clear();
-    }
-    //-----------------------------------------------------------------------
-    void ConfigFile::load(const String& filename, const String& separators, bool trimWhitespace)
-    {
-        loadDirect(filename, separators, trimWhitespace);
-    }
-    //-----------------------------------------------------------------------
-    void ConfigFile::load(const String& filename, const String& resourceGroup, 
-        const String& separators, bool trimWhitespace)
-    {
-		loadFromResourceSystem(filename, resourceGroup, separators, trimWhitespace);
-    }
-	//-----------------------------------------------------------------------
-	void ConfigFile::loadDirect(const String& filename, const String& separators, 
-		bool trimWhitespace)
-	{
-		/* Open the configuration file */
-		std::ifstream fp;
-        // Always open in binary mode
-		fp.open(filename.c_str(), std::ios::in | std::ios::binary);
-		if(!fp)
-			OGRE_EXCEPT(
-			Exception::ERR_FILE_NOT_FOUND, "'" + filename + "' file not found!", "ConfigFile::load" );
-
-		// Wrap as a stream
-		DataStreamPtr stream(OGRE_NEW FileStreamDataStream(filename, &fp, false));
-
-#if OGRE_PLATFORM == OGRE_PLATFORM_SYMBIAN
-		// seems readLine doesn't work correctly in SYMBIAN with files
-		DataStreamPtr memoryStream(OGRE_NEW MemoryDataStream(stream));
-		stream = memoryStream;
-#endif
-
-		load(stream, separators, trimWhitespace);
-
-	}
-	//-----------------------------------------------------------------------
-	void ConfigFile::loadFromResourceSystem(const String& filename, 
-		const String& resourceGroup, const String& separators, bool trimWhitespace)
-	{
-		DataStreamPtr stream = 
-			ResourceGroupManager::getSingleton().openResource(filename, resourceGroup);
-		load(stream, separators, trimWhitespace);
-	}
-    //-----------------------------------------------------------------------
-    void ConfigFile::load(const DataStreamPtr& stream, const String& separators, 
-        bool trimWhitespace)
-    {
-        /* Clear current settings map */
-        clear();
-
-        String currentSection = StringUtil::BLANK;
-        SettingsMultiMap* currentSettings = OGRE_NEW_T(SettingsMultiMap, MEMCATEGORY_GENERAL)();
-        mSettings[currentSection] = currentSettings;
-
-
-        /* Process the file line for line */
-        String line, optName, optVal;
-        while (!stream->eof())
-        {
-            line = stream->getLine();
-            /* Ignore comments & blanks */
-            if (line.length() > 0 && line.at(0) != '#' && line.at(0) != '@')
-            {
-                if (line.at(0) == '[' && line.at(line.length()-1) == ']')
-                {
-                    // Section
-                    currentSection = line.substr(1, line.length() - 2);
-					SettingsBySection::const_iterator seci = mSettings.find(currentSection);
-					if (seci == mSettings.end())
-					{
-						currentSettings = OGRE_NEW_T(SettingsMultiMap, MEMCATEGORY_GENERAL)();
-						mSettings[currentSection] = currentSettings;
-					}
-					else
-					{
-						currentSettings = seci->second;
-					} 
-                }
-                else
-                {
-                    /* Find the first seperator character and split the string there */
-					Ogre::String::size_type separator_pos = line.find_first_of(separators, 0);
-                    if (separator_pos != Ogre::String::npos)
-                    {
-                        optName = line.substr(0, separator_pos);
-                        /* Find the first non-seperator character following the name */
-                        Ogre::String::size_type nonseparator_pos = line.find_first_not_of(separators, separator_pos);
-                        /* ... and extract the value */
-                        /* Make sure we don't crash on an empty setting (it might be a valid value) */
-                        optVal = (nonseparator_pos == Ogre::String::npos) ? "" : line.substr(nonseparator_pos);
-                        if (trimWhitespace)
-                        {
-                            StringUtil::trim(optVal);
-                            StringUtil::trim(optName);
-                        }
-                        currentSettings->insert(SettingsMultiMap::value_type(optName, optVal));
-                    }
-                }
-            }
-        }
-    }
-    //-----------------------------------------------------------------------
-    String ConfigFile::getSetting(const String& key, const String& section, const String& defaultValue) const
-    {
-        
-        SettingsBySection::const_iterator seci = mSettings.find(section);
-        if (seci == mSettings.end())
-        {
-            return defaultValue;
-        }
-        else
-        {
-            SettingsMultiMap::const_iterator i = seci->second->find(key);
-            if (i == seci->second->end())
-            {
-                return defaultValue;
-            }
-            else
-            {
-                return i->second;
-            }
-        }
-    }
-    //-----------------------------------------------------------------------
-    StringVector ConfigFile::getMultiSetting(const String& key, const String& section) const
-    {
-        StringVector ret;
-
-
-        SettingsBySection::const_iterator seci = mSettings.find(section);
-        if (seci != mSettings.end())
-        {
-            SettingsMultiMap::const_iterator i;
-
-            i = seci->second->find(key);
-            // Iterate over matches
-            while (i != seci->second->end() && i->first == key)
-            {
-                ret.push_back(i->second);
-                ++i;
-            }
-        }
-        return ret;
-
-
-    }
-    //-----------------------------------------------------------------------
-    ConfigFile::SettingsIterator ConfigFile::getSettingsIterator(const String& section)
-    {
-        SettingsBySection::const_iterator seci = mSettings.find(section);
-        if (seci == mSettings.end())
-        {
-            OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, 
-                "Cannot find section " + section, 
-                "ConfigFile::getSettingsIterator");
-        }
-        else
-        {
-            return SettingsIterator(seci->second->begin(), seci->second->end());
-        }
-    }
-    //-----------------------------------------------------------------------
-    ConfigFile::SectionIterator ConfigFile::getSectionIterator(void)
-    {
-        return SectionIterator(mSettings.begin(), mSettings.end());
-    }
-
-}
+template class std::_Tree<std::_Tmap_traits<int, Value, std::less<int>, std::allocator<std::pair<const int, Value> >, false> >;

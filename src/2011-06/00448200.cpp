@@ -1,162 +1,88 @@
-// from server: 55% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-render AggregatingSceneManager.cpp
+// roc 2011-06 00448200  unit: HVCXTPPropertyGridItemEnum::?$XItem  size: 115 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 00448200
+//
+// 00448200  64a100000000         mov eax, dword ptr fs:[0]
+// 00448206  6aff                 push -1
+// 00448208  6808159d00           push 0x9d1508
+// 0044820d  50                   push eax
+// 0044820e  64892500000000       mov dword ptr fs:[0], esp
+// 00448215  56                   push esi
+// 00448216  57                   push edi
+// 00448217  8bf1                 mov esi, ecx
+// 00448219  8b442418             mov eax, dword ptr [esp + 0x18]
+// 0044821d  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 00448221  8b542420             mov edx, dword ptr [esp + 0x20]
+// 00448225  8906                 mov dword ptr [esi], eax
+// 00448227  8d442424             lea eax, [esp + 0x24]
+// 0044822b  894e04               mov dword ptr [esi + 4], ecx
+// 0044822e  8d7e0c               lea edi, [esi + 0xc]
+// 00448231  50                   push eax
+// 00448232  8bcf                 mov ecx, edi
+// 00448234  c744241400000000     mov dword ptr [esp + 0x14], 0
+// 0044823c  895608               mov dword ptr [esi + 8], edx
+// 0044823f  ff15c804a400         call dword ptr [0xa404c8]
+// 00448245  8b4c2440             mov ecx, dword ptr [esp + 0x40]
+// 00448249  894f1c               mov dword ptr [edi + 0x1c], ecx
+// 0044824c  8d4c2424             lea ecx, [esp + 0x24]
+// 00448250  c7442410ffffffff     mov dword ptr [esp + 0x10], 0xffffffff
+// 00448258  ff15d004a400         call dword ptr [0xa404d0]
+// 0044825e  8b4c2408             mov ecx, dword ptr [esp + 8]
+// 00448262  5f                   pop edi
+// 00448263  8bc6                 mov eax, esi
+// 00448265  64890d00000000       mov dword ptr fs:[0], ecx
+// 0044826c  5e                   pop esi
+// 0044826d  83c40c               add esp, 0xc
+// 00448270  c22c00               ret 0x2c
+// copied from an identical function in another client (function ??0XItem@ns_ROCX00001f@@QAE@IIIUString@1@I@Z)
 
-// Candidate translation unit (score above; library headers required).
-#include "RenderLib/AggregatingSceneManager.h"
-
-namespace RBX
+namespace ns_ROCX00001f {
+struct String
 {
-	namespace Render
-	{
-		AggregatingSceneManager::AggregatingSceneManager(RenderScene* renderScene)
-			: SceneManager(renderScene)
-		{
-		}
+    unsigned int storage[7];
 
-		AggregatingSceneManager::~AggregatingSceneManager() {}
+    String(const String&);
+    ~String();
+};
 
-		void AggregatingSceneManager::addModel(const G3D::ReferenceCountedPointer<Chunk>& chunk)
-		{
-			addToScene(chunk);
-		}
+extern String* (__thiscall *string_copy)(String*, const String&);
+extern void (__thiscall *string_destroy)(String*);
 
-		void AggregatingSceneManager::removeModel(const G3D::ReferenceCountedPointer<Chunk>& chunk)
-		{
-			invalidSleepingModels.erase(chunk);
-			invalidMovingModels.erase(chunk);
+inline String::String(const String& other)
+{
+    string_copy(this, other);
+}
 
-			G3D::ReferenceCountedPointer<AggregateChunk> aggregate = chunk->aggregate.createStrongPtr();
-			if (aggregate.notNull())
-				deconstructAggregate(aggregate);
+inline String::~String()
+{
+    string_destroy(this);
+}
 
-			removeFromScene(chunk);
-			dequeueSleepingChunk(chunk);
-		}
+struct Value
+{
+    String text;
+    unsigned int last;
 
-		void AggregatingSceneManager::setSleeping(const G3D::ReferenceCountedPointer<Chunk>& chunk, bool sleeping)
-		{
-			if (sleeping)
-			{
-				bool erased = invalidMovingModels.erase(chunk) == 1;
+    Value(const String&, unsigned int);
+};
 
-				if (erased)
-					invalidSleepingModels.insert(chunk);
+inline Value::Value(const String& value, unsigned int d)
+    : text(value), last(d)
+{
+}
 
-				queueSleepingChunk(chunk);
-			}
-			else
-			{
-				bool erased = invalidSleepingModels.erase(chunk) == 1;
+struct XItem
+{
+    unsigned int first;
+    unsigned int second;
+    unsigned int third;
+    Value value;
 
-				if (erased)
-					invalidMovingModels.insert(chunk);
+    XItem(unsigned int, unsigned int, unsigned int, String, unsigned int);
+};
 
-				G3D::ReferenceCountedPointer<AggregateChunk> aggregate = chunk->aggregate.createStrongPtr();
-				if (aggregate.notNull())
-					deconstructAggregate(aggregate);
-
-				dequeueSleepingChunk(chunk);
-			}
-		}
-
-		void AggregatingSceneManager::invalidateModel(const G3D::ReferenceCountedPointer<Chunk>& chunk, bool isSleeping)
-		{
-			if (isSleeping)
-				invalidSleepingModels.insert(chunk);
-			else
-				invalidMovingModels.insert(chunk);
-		}
-
-		void AggregatingSceneManager::dequeueSleepingChunk(const G3D::ReferenceCountedPointer<Chunk>& chunk)
-		{
-			std::map<BucketKey, G3D::ReferenceCountedPointer<Bucket>>::iterator iter = buckets.begin();
-			std::map<BucketKey, G3D::ReferenceCountedPointer<Bucket>>::iterator end = buckets.end();
-
-			for (; iter != end; iter++)
-			{
-				if (iter->second->dequeueSleepingChunk(chunk))
-					break;
-			}
-		}
-
-		void AggregatingSceneManager::clear()
-		{
-			invalidSleepingModels.clear();
-			invalidMovingModels.clear();
-
-			std::map<BucketKey, G3D::ReferenceCountedPointer<Bucket>>::iterator iter = buckets.begin();
-			std::map<BucketKey, G3D::ReferenceCountedPointer<Bucket>>::iterator end = buckets.end();
-
-			for (; iter != end; iter++)
-			{
-				iter->second->clear();
-			}
-
-			clearScene();
-		}
-
-		bool AggregatingSceneManager::Bucket::dequeueSleepingChunk(const G3D::ReferenceCountedPointer<Chunk>& chunk)
-		{
-			std::vector<G3D::ReferenceCountedPointer<Chunk>>::iterator found = std::find(queue.begin(), queue.end(), chunk);
-
-			if (found != queue.end())
-			{
-				queue.erase(found);
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-
-		void AggregatingSceneManager::queueSleepingChunk(const G3D::ReferenceCountedPointer<Chunk>& chunk)
-		{
-			G3D::ReferenceCountedPointer<Bucket> queue;
-
-			{
-				BucketKey key(chunk);
-
-				std::map<BucketKey, G3D::ReferenceCountedPointer<Bucket>>::iterator iter = buckets.find(key);
-
-				if (iter == buckets.end())
-				{
-					queue = new Bucket;
-					buckets[key] = queue;
-				}
-				else
-				{
-					queue = iter->second;
-				}
-			}
-
-			queue->addToQueue(chunk);
-		}
-
-		bool AggregatingSceneManager::BucketKey::operator<(const AggregatingSceneManager::BucketKey& that) const
-		{
-			if (this->material < that.material)
-				return true;
-			if (this->material > that.material)
-				return false;
-
-			if (this->castsShadows < that.castsShadows)
-				return true;
-			if (this->castsShadows > that.castsShadows)
-				return false;
-
-			if (this->polygonOffset < that.polygonOffset)
-				return true;
-			if (this->polygonOffset > that.polygonOffset)
-				return false;
-
-			if (this->cullable < that.cullable)
-				return true;
-			else
-				return false;
-		}
-	}
+XItem::XItem(unsigned int a, unsigned int b, unsigned int c,
+             String text, unsigned int d)
+    : first(a), second(b), third(c), value(text, d)
+{
+}
 }

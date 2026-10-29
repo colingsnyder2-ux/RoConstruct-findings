@@ -4,27 +4,28 @@
 // 0045d960  8b4958               mov ecx, dword ptr [ecx + 0x58]
 // 0045d963  8b4924               mov ecx, dword ptr [ecx + 0x24]
 // 0045d966  e9a5fdffff           jmp 0x45d710
-// copied from an identical function in another client (function ?get@CRobloxModule@ns_ROCX00001b@@QAEHXZ)
+// copied from an identical function in another client (function ?f@CRobloxModule@@QAEXXZ)
 
-namespace ns_ROCX00001b {
-struct Inner {
-    int method();
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
+// from server: 81% by king_originala
+struct Target {
+    void f();
 };
 
-struct Mid {
-    char pad0[0x24];
-    Inner* inner;
+struct Link {
+    char padding[0x24];
+    Target* volatile target;
 };
 
 struct CRobloxModule {
-    char pad0[0x58];
-    Mid* mid;
-    int get();
+    char padding[0x58];
+    Link* volatile link;
+    void f();
 };
 
-int CRobloxModule::get()
+void CRobloxModule::f()
 {
-    Mid* m = this->mid;
-    return m->inner->method();
-}
+    Link* lnk = link;
+    lnk->target->f();
 }

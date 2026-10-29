@@ -1,32 +1,14 @@
-// from server: 43% by colin
-extern "C" void* __stdcall func_77e518();
-extern "C" void __stdcall func_54c190();
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-boost-1_34_1-dll roc_boost_resume_389d0bd197ae56e1.cpp
 
-struct S {
-    char pad0[0x3c];
-    char field_3c;
-    char pad3d[7];
-    char field_44;
-    char pad45[3];
-    int field_48;
-    int field_4c;
-    int field_50;
-    int field_54;
-    int field_58;
-    void init(int a, int b, int c);
-};
-
-void S::init(int a, int b, int c)
-{
-    func_77e518();
-    field_3c = 0;
-    field_44 = 0;
-    field_48 = 0;
-    field_4c = 0;
-    field_50 = 0;
-    field_54 = 0;
-    field_58 = 0x10;
-    *(int*)this = 0x7a7a5c;
-    int tmp = *(int*)a;
-    func_54c190();
-}
+// Candidate translation unit (score above; library headers required).
+#define NDEBUG 1
+#include <istream>
+#include <ostream>
+#include <boost/ref.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::stream_buffer<boost::reference_wrapper<std::istream> >;
+template class boost::iostreams::stream_buffer<boost::reference_wrapper<std::ostream> >;

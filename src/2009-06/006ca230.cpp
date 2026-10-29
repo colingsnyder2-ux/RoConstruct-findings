@@ -1,108 +1,57 @@
-// from server: 54% by colin
-// roc-lang: cpp
+// roc 2009-06 006ca230  unit: RBX::AnchorTool  size: 66 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 006ca230
+//
+// 006ca230  51                   push ecx
+// 006ca231  83791c00             cmp dword ptr [ecx + 0x1c], 0
+// 006ca235  56                   push esi
+// 006ca236  8b74240c             mov esi, dword ptr [esp + 0xc]
+// 006ca23a  c744240400000000     mov dword ptr [esp + 4], 0
+// 006ca242  741a                 je 0x6ca25e
+// 006ca244  80792400             cmp byte ptr [ecx + 0x24], 0
+// 006ca248  8bce                 mov ecx, esi
+// 006ca24a  7414                 je 0x6ca260
+// 006ca24c  6800c58e00           push 0x8ec500
+// 006ca251  ff15b4e48900         call dword ptr [0x89e4b4]
+// 006ca257  8bc6                 mov eax, esi
+// 006ca259  5e                   pop esi
+// 006ca25a  59                   pop ecx
+// 006ca25b  c20400               ret 4
+// 006ca25e  8bce                 mov ecx, esi
+// 006ca260  68f0c48e00           push 0x8ec4f0
+// 006ca265  ff15b4e48900         call dword ptr [0x89e4b4]
+// 006ca26b  8bc6                 mov eax, esi
+// 006ca26d  5e                   pop esi
+// 006ca26e  59                   pop ecx
+// 006ca26f  c20400               ret 4
+// copied from an identical function in another client (function ?f@S@@QAEPAUString@@PAU2@@Z)
+
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+struct String;
 
-// Candidate translation unit (score above; library headers required).
-#include "util/Name.h"
-#include "util/Debug.h"
-#include <boost/thread/once.hpp>
+typedef String* (__thiscall *StringConstructor)(String*, const char*);
+extern StringConstructor constructString;
 
-// intentionally outside of the RBX namespace
-boost::once_flag flag = BOOST_ONCE_INIT;
+struct S {
+    char padding0[0x1c];
+    int active;
+    char padding1[4];
+    unsigned char anchored;
 
-boost::mutex& moo2()
+    String* f(String* result);
+};
+
+String* S::f(String* result)
 {
-	static boost::mutex mutex2;
-	return mutex2;
-}
-
-void initMoo()
-{
-	moo2();
-}
-
-namespace RBX
-{
-	// seems to be inlined
-	boost::mutex& Name::mutex()
-	{
-		boost::call_once(initMoo, flag);
-		return moo2();
-	}
-
-	std::map<int, Name*>& Name::dictionary()
-	{
-		static std::map<int, Name*> d;
-		return d;
-	}
-
-	Name::NamMap& Name::namMap()
-	{
-		static NamMap n;
-		return n;
-	}
-
-	const Name& Name::getNullName()
-	{
-		boost::mutex::scoped_lock scoped_lock(mutex());
-		static const Name& nullName = declare("", 0);
-		return nullName;
-	}
-
-	const Name& Name::declare(const char* sName, int dictionaryIndex)
-	{
-		if (!sName)
-		{
-			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
-			return getNullName();
-		}
-
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			if (dictionaryIndex != -1)
-			{
-				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
-				dictionary()[dictionaryIndex] = iter->second;
-			}
-			return *iter->second;
-		}
-		else
-		{
-			Name* name = new Name(sName, dictionaryIndex);
-			namMap()[sName] = name;
-			dictionary()[dictionaryIndex] = name;
-			return *name;
-		}
-	}
-
-	const Name& Name::lookup(const std::string& sName)
-	{
-		RBXASSERT(sName.size() < 50);
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			return *iter->second;
-		}
-		else
-		{
-			return getNullName();
-		}
-	}
-
-	const Name& Name::lookup(const char* sName)
-	{
-		if (!sName)
-		{
-			return getNullName();
-		}
-
-		return lookup(std::string(sName));
-	}
+    volatile int temporary = 0;
+    if (active) {
+        if (anchored) {
+            constructString(result, "UnAnchorCursor");
+            return result;
+        }
+        constructString(result, "AnchorCursor");
+        return result;
+    }
+    constructString(result, "AnchorCursor");
+    return result;
 }

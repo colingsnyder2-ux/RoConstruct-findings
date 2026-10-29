@@ -1,821 +1,566 @@
-// from server: 80% by colin
-// roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/afxglobalutils.cpp
+// roc-lang: cpp
+// roc-flags: /O2 /Ob1 /GS- /MT
+// roc-lib: wildmagic-2-core Containment/WmlConvexHull2.cpp
 
 // Candidate translation unit (score above; library headers required).
-// This is a part of the Microsoft Foundation Classes C++ library.
-// Copyright (C) Microsoft Corporation
-// All rights reserved.
+// Magic Software, Inc.
+// http://www.magic-software.com
+// http://www.wild-magic.com
+// Copyright (c) 2003.  All Rights Reserved
 //
-// This source code is only intended as a supplement to the
-// Microsoft Foundation Classes Reference and related
-// electronic documentation provided with the library.
-// See these sources for detailed information regarding the
-// Microsoft Foundation Classes product.
+// The Wild Magic Library (WML) source code is supplied under the terms of
+// the license agreement http://www.magic-software.com/License/WildMagic.pdf
+// and may not be copied or disclosed except in accordance with the terms of
+// that agreement.
 
-#include "stdafx.h"
-#include "afxglobalutils.h"
-#include "afxdockingmanager.h"
-#include "afxpanecontainermanager.h"
-#include "afxdockablepane.h"
-#include "afxpaneframewnd.h"
-#include "afxmultipaneframewnd.h"
-#include "afxbasetabbedpane.h"
+#include "WmlConvexHull2.h"
+using namespace Wml;
 
-#include "afxframewndex.h"
-#include "afxmdiframewndex.h"
-#include "afxoleipframewndex.h"
-#include "afxoledocipframewndex.h"
-#include "afxmdichildwndex.h"
-#include "afxolecntrframewndex.h"
-#include "afxlinkctrl.h"
-#include "afxribbonres.h"
+#include <algorithm>
+#include <set>
+using namespace std;
 
-#pragma warning(disable : 4706)
-#include "multimon.h"
-#pragma warning(default : 4706)
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
-
-CGlobalUtils afxGlobalUtils;
-
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-CGlobalUtils::CGlobalUtils()
+//----------------------------------------------------------------------------
+template <class Real>
+ConvexHull2<Real>::ConvexHull2 (int iVQuantity, const Vector2<Real>* akVertex,
+    bool bIncremental)
 {
-	m_bDialogApp = FALSE;
-	m_bIsDragging = FALSE;
-}
+    m_iVQuantity = iVQuantity;
+    m_akVertex = akVertex;
 
-CGlobalUtils::~CGlobalUtils()
+    if ( bIncremental )
+        ByIncremental();
+    else
+        ByDivideAndConquer();
+
+    if ( m_iHQuantity >= 3 )
+        RemoveCollinear();
+}
+//----------------------------------------------------------------------------
+template <class Real>
+ConvexHull2<Real>::~ConvexHull2 ()
 {
+    delete[] m_aiHIndex;
 }
-
-BOOL CGlobalUtils::CheckAlignment(CPoint point, CBasePane* pBar, int nSensitivity, const CDockingManager* pDockManager,
-	BOOL bOuterEdge, DWORD& dwAlignment, DWORD dwEnabledDockBars, LPCRECT lpRectBounds) const
+//----------------------------------------------------------------------------
+template <class Real>
+int ConvexHull2<Real>::GetQuantity () const
 {
-	BOOL bSmartDocking = FALSE;
-	CSmartDockingStandaloneGuide::SDMarkerPlace nHilitedSide = CSmartDockingStandaloneGuide::sdNONE;
-
-	if (pDockManager == NULL && pBar != NULL)
-	{
-		pDockManager = afxGlobalUtils.GetDockingManager(pBar->GetParent());
-	}
-
-	if (pDockManager != NULL)
-	{
-		CSmartDockingManager* pSDManager = pDockManager->GetSmartDockingManagerPermanent();
-		if (pSDManager != NULL && pSDManager->IsStarted())
-		{
-			bSmartDocking = TRUE;
-			nHilitedSide = pSDManager->GetHighlightedGuideNo();
-		}
-	}
-
-	CRect rectBounds;
-	if (pBar != NULL)
-	{
-		pBar->GetWindowRect(rectBounds);
-	}
-	else if (lpRectBounds != NULL)
-	{
-		rectBounds = *lpRectBounds;
-	}
-	else
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-
-	int nCaptionHeight = 0;
-	int nTabAreaTopHeight = 0;
-	int nTabAreaBottomHeight = 0;
-
-	CDockablePane* pDockingBar = DYNAMIC_DOWNCAST(CDockablePane, pBar);
-
-	if (pDockingBar != NULL)
-	{
-		nCaptionHeight = pDockingBar->GetCaptionHeight();
-
-		CRect rectTabAreaTop;
-		CRect rectTabAreaBottom;
-		pDockingBar->GetTabArea(rectTabAreaTop, rectTabAreaBottom);
-		nTabAreaTopHeight = rectTabAreaTop.Height();
-		nTabAreaBottomHeight = rectTabAreaBottom.Height();
-	}
-
-	// build rect for top area
-	if (bOuterEdge)
-	{
-		if (bSmartDocking)
-		{
-			switch(nHilitedSide)
-			{
-			case CSmartDockingStandaloneGuide::sdLEFT:
-				dwAlignment = CBRS_ALIGN_LEFT;
-				return TRUE;
-			case CSmartDockingStandaloneGuide::sdRIGHT:
-				dwAlignment = CBRS_ALIGN_RIGHT;
-				return TRUE;
-			case CSmartDockingStandaloneGuide::sdTOP:
-				dwAlignment = CBRS_ALIGN_TOP;
-				return TRUE;
-			case CSmartDockingStandaloneGuide::sdBOTTOM:
-				dwAlignment = CBRS_ALIGN_BOTTOM;
-				return TRUE;
-			}
-		}
-		else
-		{
-			CRect rectToCheck(rectBounds.left - nSensitivity, rectBounds.top - nSensitivity, rectBounds.right + nSensitivity, rectBounds.top);
-			if (rectToCheck.PtInRect(point) && dwEnabledDockBars & CBRS_ALIGN_TOP)
-			{
-				dwAlignment = CBRS_ALIGN_TOP;
-				return TRUE;
-			}
-
-			// build rect for left area
-			rectToCheck.right = rectBounds.left;
-			rectToCheck.bottom = rectBounds.bottom + nSensitivity;
-
-			if (rectToCheck.PtInRect(point) && dwEnabledDockBars & CBRS_ALIGN_LEFT)
-			{
-				dwAlignment = CBRS_ALIGN_LEFT;
-				return TRUE;
-			}
-
-			// build rect for bottom area
-			rectToCheck.left = rectBounds.left - nSensitivity;
-			rectToCheck.top = rectBounds.bottom;
-			rectToCheck.right = rectBounds.right + nSensitivity;
-			rectToCheck.bottom = rectBounds.bottom + nSensitivity;
-
-			if (rectToCheck.PtInRect(point) && dwEnabledDockBars & CBRS_ALIGN_BOTTOM)
-			{
-				dwAlignment = CBRS_ALIGN_BOTTOM;
-				return TRUE;
-			}
-
-			// build rect for right area
-			rectToCheck.left = rectBounds.right;
-			rectToCheck.top = rectBounds.top - nSensitivity;
-
-			if (rectToCheck.PtInRect(point) && dwEnabledDockBars & CBRS_ALIGN_RIGHT)
-			{
-				dwAlignment = CBRS_ALIGN_RIGHT;
-				return TRUE;
-			}
-		}
-	}
-	else
-	{
-		if (bSmartDocking)
-		{
-			switch(nHilitedSide)
-			{
-			case CSmartDockingStandaloneGuide::sdCLEFT:
-				dwAlignment = CBRS_ALIGN_LEFT;
-				return TRUE;
-			case CSmartDockingStandaloneGuide::sdCRIGHT:
-				dwAlignment = CBRS_ALIGN_RIGHT;
-				return TRUE;
-			case CSmartDockingStandaloneGuide::sdCTOP:
-				dwAlignment = CBRS_ALIGN_TOP;
-				return TRUE;
-			case CSmartDockingStandaloneGuide::sdCBOTTOM:
-				dwAlignment = CBRS_ALIGN_BOTTOM;
-				return TRUE;
-			}
-		}
-		else
-		{
-#ifdef __BOUNDS_FIX__
-			CRect rectToCheck(rectBounds.left, rectBounds.top, rectBounds.right, rectBounds.top + nSensitivity + nCaptionHeight);
-			if (rectToCheck.PtInRect(point) && dwEnabledDockBars & CBRS_ALIGN_TOP)
-			{
-				dwAlignment = CBRS_ALIGN_TOP;
-				return TRUE;
-			}
-
-			// build rect for left area
-			rectToCheck.right = rectBounds.left + nSensitivity;
-			rectToCheck.bottom = rectBounds.bottom + nSensitivity;
-
-			if (rectToCheck.PtInRect(point) && dwEnabledDockBars & CBRS_ALIGN_LEFT)
-			{
-				dwAlignment = CBRS_ALIGN_LEFT;
-				return TRUE;
-			}
-
-			// build rect for bottom area
-			rectToCheck.left = rectBounds.left;
-			rectToCheck.top = rectBounds.bottom - nSensitivity - nTabAreaBottomHeight;
-			rectToCheck.right = rectBounds.right;
-			rectToCheck.bottom = rectBounds.bottom;
-
-			if (rectToCheck.PtInRect(point) && dwEnabledDockBars & CBRS_ALIGN_BOTTOM)
-			{
-				dwAlignment = CBRS_ALIGN_BOTTOM;
-				return TRUE;
-			}
-
-			// build rect for right area
-			rectToCheck.left = rectBounds.right - nSensitivity;
-			rectToCheck.top = rectBounds.top - nSensitivity;
-
-			if (rectToCheck.PtInRect(point) && dwEnabledDockBars & CBRS_ALIGN_RIGHT)
-			{
-				dwAlignment = CBRS_ALIGN_RIGHT;
-				return TRUE;
-			}
-#else
-
-			// build rect for top area
-			CRect rectToCheck(rectBounds.left - nSensitivity, rectBounds.top - nSensitivity, rectBounds.right + nSensitivity, rectBounds.top + nSensitivity + nCaptionHeight);
-			if (rectToCheck.PtInRect(point) && dwEnabledDockBars & CBRS_ALIGN_TOP)
-			{
-				dwAlignment = CBRS_ALIGN_TOP;
-				return TRUE;
-			}
-
-			// build rect for left area
-			rectToCheck.right = rectBounds.left + nSensitivity;
-			rectToCheck.bottom = rectBounds.bottom + nSensitivity;
-
-			if (rectToCheck.PtInRect(point) && dwEnabledDockBars & CBRS_ALIGN_LEFT)
-			{
-				dwAlignment = CBRS_ALIGN_LEFT;
-				return TRUE;
-			}
-
-			// build rect for bottom area
-			rectToCheck.left = rectBounds.left - nSensitivity;
-			rectToCheck.top = rectBounds.bottom - nSensitivity - nTabAreaBottomHeight;
-			rectToCheck.right = rectBounds.right + nSensitivity;
-			rectToCheck.bottom = rectBounds.bottom + nSensitivity;
-
-			if (rectToCheck.PtInRect(point) && dwEnabledDockBars & CBRS_ALIGN_BOTTOM)
-			{
-				dwAlignment = CBRS_ALIGN_BOTTOM;
-				return TRUE;
-			}
-
-			// build rect for right area
-			rectToCheck.left = rectBounds.right - nSensitivity;
-			rectToCheck.top = rectBounds.top - nSensitivity;
-
-			if (rectToCheck.PtInRect(point) && dwEnabledDockBars & CBRS_ALIGN_RIGHT)
-			{
-				dwAlignment = CBRS_ALIGN_RIGHT;
-				return TRUE;
-			}
-#endif
-		}
-	}
-
-	return FALSE;
+    return m_iHQuantity;
 }
-
-CDockingManager* CGlobalUtils::GetDockingManager(CWnd* pWnd)
+//----------------------------------------------------------------------------
+template <class Real>
+const int* ConvexHull2<Real>::GetIndices () const
 {
-	if (pWnd == NULL)
-	{
-		return NULL;
-	}
-
-	ASSERT_VALID(pWnd);
-
-	if (pWnd->IsKindOf(RUNTIME_CLASS(CFrameWndEx)))
-	{
-		return((CFrameWndEx*) pWnd)->GetDockingManager();
-	}
-	else if (pWnd->IsKindOf(RUNTIME_CLASS(CMDIFrameWndEx)))
-	{
-		return((CMDIFrameWndEx*) pWnd)->GetDockingManager();
-	}
-	else if (pWnd->IsKindOf(RUNTIME_CLASS(COleIPFrameWndEx)))
-	{
-		return((COleIPFrameWndEx*) pWnd)->GetDockingManager();
-	}
-	else if (pWnd->IsKindOf(RUNTIME_CLASS(COleDocIPFrameWndEx)))
-	{
-		return((COleDocIPFrameWndEx*) pWnd)->GetDockingManager();
-	}
-	else if (pWnd->IsKindOf(RUNTIME_CLASS(CMDIChildWndEx)))
-	{
-		return((CMDIChildWndEx*) pWnd)->GetDockingManager();
-	}
-	else if (pWnd->IsKindOf(RUNTIME_CLASS(CDialog)) || pWnd->IsKindOf(RUNTIME_CLASS(CPropertySheet)))
-	{
-		m_bDialogApp = TRUE;
-	}
-	else if (pWnd->IsKindOf(RUNTIME_CLASS(COleCntrFrameWndEx)))
-	{
-		return((COleCntrFrameWndEx*) pWnd)->GetDockingManager();
-	}
-	else if (pWnd->IsKindOf(RUNTIME_CLASS(CPaneFrameWnd)))
-	{
-		CPaneFrameWnd* pMiniFrameWnd = DYNAMIC_DOWNCAST(CPaneFrameWnd, pWnd);
-		ASSERT_VALID(pMiniFrameWnd);
-
-		CDockingManager* pManager = pMiniFrameWnd->GetDockingManager();
-		return pManager != NULL ? pManager : GetDockingManager(pWnd->GetParent());
-	}
-
-	return NULL;
+    return m_aiHIndex;
 }
-
-void CGlobalUtils::FlipRect(CRect& rect, int nDegrees)
+//----------------------------------------------------------------------------
+template <class Real>
+bool ConvexHull2<Real>::ContainsPoint (const Vector2<Real>& rkP) const
 {
-	CRect rectTmp = rect;
-	switch(nDegrees)
-	{
-	case 90:
-		rect.top = rectTmp.left;
-		rect.right = rectTmp.top;
-		rect.bottom = rectTmp.right;
-		rect.left = rectTmp.bottom;
-		break;
-	case 180:
-		rect.top = rectTmp.bottom;
-		rect.bottom = rectTmp.top;
-		break;
-	case 270:
-	case -90:
-		rect.left = rectTmp.top;
-		rect.top = rectTmp.right;
-		rect.right = rectTmp.bottom;
-		rect.bottom = rectTmp.left;
-		break;
-	}
-}
+    for (int i1 = 0, i0 = m_iHQuantity-1; i1 < m_iHQuantity; i0 = i1++)
+    {
+        const Vector2<Real>& rkV0 = m_akVertex[m_aiHIndex[i0]];
+        const Vector2<Real>& rkV1 = m_akVertex[m_aiHIndex[i1]];
+        Vector2<Real> kDir = rkV1 - rkV0;
+        Vector2<Real> kNormal = kDir.Perp();  // outer normal
+        if ( kNormal.Dot(rkP-rkV0) > (Real)0.0 )
+            return false;
+    }
 
-DWORD CGlobalUtils::GetOppositeAlignment(DWORD dwAlign)
+    return true;
+}
+//----------------------------------------------------------------------------
+template <class Real>
+int ConvexHull2<Real>::CollinearTest (const Vector2<Real>& rkP,
+    const Vector2<Real>& rkQ0, const Vector2<Real>& rkQ1) const
 {
-	switch(dwAlign & CBRS_ALIGN_ANY)
-	{
-	case CBRS_ALIGN_LEFT:
-		return CBRS_ALIGN_RIGHT;
-	case CBRS_ALIGN_RIGHT:
-		return CBRS_ALIGN_LEFT;
-	case CBRS_ALIGN_TOP:
-		return CBRS_ALIGN_BOTTOM;
-	case CBRS_ALIGN_BOTTOM:
-		return CBRS_ALIGN_TOP;
-	}
-	return 0;
-}
+    Vector2<Real> kD = rkQ1 - rkQ0;
+    Vector2<Real> kA = rkP - rkQ0;
+    Real fDdD = kD.Dot(kD);
+    Real fAdA = kA.Dot(kA);
+    Real fDet = kD.Kross(kA);
+    Real fRelative = fDet*fDet - COLLINEAR_EPSILON*fDdD*fAdA;
 
-void CGlobalUtils::SetNewParent(CObList& lstControlBars, CWnd* pNewParent, BOOL bCheckVisibility)
+    if ( fRelative > (Real)0.0 )
+    {
+        if ( fDet > (Real)0.0 )
+        {
+            // points form counterclockwise triangle <P,Q0,Q1>
+            return ORDER_POSITIVE;
+        }
+        else if ( fDet < (Real)0.0 )
+        {
+            // points form clockwise triangle <P,Q1,Q0>
+            return ORDER_NEGATIVE;
+        }
+    }
+
+    // P is on line of <Q0,Q1>
+    Real fDdA = kD.Dot(kA);
+    if ( fDdA < (Real)0.0 )
+    {
+        // order is <P,Q0,Q1>
+        return ORDER_COLLINEAR_LEFT;
+    }
+
+    if ( fDdA > fDdD )
+    {
+        // order is <Q0,Q1,P>
+        return ORDER_COLLINEAR_RIGHT;
+    }
+
+    // order is <Q0,P,Q1>
+    return ORDER_COLLINEAR_CONTAIN;
+}
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexHull2<Real>::RemoveCollinear ()
 {
-	ASSERT_VALID(pNewParent);
-	for (POSITION pos = lstControlBars.GetHeadPosition(); pos != NULL;)
-	{
-		CBasePane* pBar = (CBasePane*) lstControlBars.GetNext(pos);
+    if ( m_iHQuantity <= 2 )
+        return;
 
-		if (bCheckVisibility && !pBar->IsPaneVisible())
-		{
-			continue;
-		}
-		if (!pBar->IsKindOf(RUNTIME_CLASS(CPaneDivider)))
-		{
-			pBar->ShowWindow(SW_HIDE);
-			pBar->SetParent(pNewParent);
-			CRect rectWnd;
-			pBar->GetWindowRect(rectWnd);
-			pNewParent->ScreenToClient(rectWnd);
+    vector<int> kHull;
+    kHull.reserve(m_iHQuantity);
+    for (int i0 = m_iHQuantity-1, i1 = 0, i2 = 1; i1 < m_iHQuantity; /**/)
+    {
+        int iCT = CollinearTest(m_akVertex[m_aiHIndex[i0]],
+            m_akVertex[m_aiHIndex[i1]],m_akVertex[m_aiHIndex[i2]]);
 
-			pBar->SetWindowPos(NULL, -rectWnd.Width(), -rectWnd.Height(), 100, 100, SWP_NOZORDER | SWP_NOSIZE  | SWP_NOACTIVATE);
-			pBar->ShowWindow(SW_SHOW);
-		}
-		else
-		{
-			pBar->SetParent(pNewParent);
-		}
-	}
+        if ( iCT == ORDER_POSITIVE || iCT == ORDER_NEGATIVE )
+        {
+            // points are not collinear
+            kHull.push_back(m_aiHIndex[i1]);
+        }
+
+        i0 = i1++;
+        if ( ++i2 == m_iHQuantity )
+            i2 = 0;
+    }
+
+    // construct index array for ordered vertices of convex hull
+    m_iHQuantity = (int)kHull.size();
+    delete[] m_aiHIndex;
+    m_aiHIndex = new int[m_iHQuantity];
+    memcpy(m_aiHIndex,&kHull.front(),m_iHQuantity*sizeof(int));
 }
+//----------------------------------------------------------------------------
 
-void CGlobalUtils::CalcExpectedDockedRect(CPaneContainerManager& barContainerManager,
-	CWnd* pWndToDock, CPoint ptMouse, CRect& rectResult, BOOL& bDrawTab, CDockablePane** ppTargetBar)
+//----------------------------------------------------------------------------
+// divide-and-conquer hull
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexHull2<Real>::ByDivideAndConquer ()
 {
-	ENSURE(ppTargetBar != NULL);
+    // Sort by x-component and store in contiguous array.  The sort is
+    // O(N log N).
+    SVArray kSVArray(m_iVQuantity);
+    int i;
+    for (i = 0; i < m_iVQuantity; i++)
+    {
+        kSVArray[i].m_kV = m_akVertex[i];
+        kSVArray[i].m_iIndex = i;
+    }
+    sort(kSVArray.begin(),kSVArray.end());
 
-	DWORD dwAlignment = CBRS_ALIGN_LEFT;
-	BOOL bTabArea = FALSE;
-	BOOL bCaption = FALSE;
-	bDrawTab = FALSE;
-	*ppTargetBar = NULL;
+    // remove duplicate points
+    typename SVArray::iterator pkEnd =
+        unique(kSVArray.begin(),kSVArray.end());
+    kSVArray.erase(pkEnd,kSVArray.end());
 
-	rectResult.SetRectEmpty();
+    // compute convex hull using divide-and-conquer
+    SVArray kHull;
+    kHull.reserve(kSVArray.size());
+    m_iHullType = HULL_POINT;
+    GetHull(0,(int)kSVArray.size()-1,kSVArray,kHull);
 
-	if (GetKeyState(VK_CONTROL) < 0)
-	{
-		return;
-	}
-
-	if (!GetPaneAndAlignFromPoint(barContainerManager, ptMouse, ppTargetBar, dwAlignment, bTabArea, bCaption) || *ppTargetBar == NULL)
-	{
-		return;
-	}
-
-	CPane* pBar = NULL;
-
-	if (pWndToDock->IsKindOf(RUNTIME_CLASS(CPaneFrameWnd)))
-	{
-		CPaneFrameWnd* pMiniFrame = DYNAMIC_DOWNCAST(CPaneFrameWnd, pWndToDock);
-		ASSERT_VALID(pMiniFrame);
-		pBar = DYNAMIC_DOWNCAST(CPane, pMiniFrame->GetFirstVisiblePane());
-	}
-	else
-	{
-		pBar = DYNAMIC_DOWNCAST(CPane, pWndToDock);
-	}
-
-	if (*ppTargetBar != NULL)
-	{
-		DWORD dwTargetEnabledAlign = (*ppTargetBar)->GetEnabledAlignment();
-		DWORD dwTargetCurrentAlign = (*ppTargetBar)->GetCurrentAlignment();
-		BOOL bTargetBarIsFloating = ((*ppTargetBar)->GetParentMiniFrame() != NULL);
-
-		if (pBar != NULL)
-		{
-			if (pBar->GetEnabledAlignment() != dwTargetEnabledAlign && bTargetBarIsFloating ||
-				(pBar->GetEnabledAlignment() & dwTargetCurrentAlign) == 0 && !bTargetBarIsFloating)
-			{
-				return;
-			}
-		}
-	}
-
-	if (bTabArea || bCaption)
-	{
-		// can't make tab on miniframe
-		bDrawTab = ((*ppTargetBar) != NULL);
-
-		if (bDrawTab)
-		{
-			bDrawTab = (*ppTargetBar)->CanBeAttached() && CanBeAttached(pWndToDock) &&
-				pBar != NULL &&((*ppTargetBar)->GetEnabledAlignment() == pBar->GetEnabledAlignment());
-		}
-
-		if (!bDrawTab)
-		{
-			return;
-		}
-	}
-
-	if ((*ppTargetBar) != NULL &&(*ppTargetBar)->GetParentMiniFrame() != NULL && !CanPaneBeInFloatingMultiPaneFrameWnd(pWndToDock))
-	{
-		bDrawTab = FALSE;
-		return;
-	}
-
-	if ((*ppTargetBar) != NULL && pWndToDock->IsKindOf(RUNTIME_CLASS(CBasePane)) && !(*ppTargetBar)->CanAcceptPane((CBasePane*) pWndToDock))
-	{
-		bDrawTab = FALSE;
-		return;
-	}
-
-	CRect rectOriginal;
-	(*ppTargetBar)->GetWindowRect(rectOriginal);
-
-	if ((*ppTargetBar) == pWndToDock || pWndToDock->IsKindOf(RUNTIME_CLASS(CPaneFrameWnd)) &&(*ppTargetBar)->GetParentMiniFrame() == pWndToDock)
-	{
-		bDrawTab = FALSE;
-		return;
-	}
-
-	CRect rectInserted;
-	CRect rectSlider;
-	DWORD dwSliderStyle;
-	CSize sizeMinOriginal(0, 0);
-	CSize sizeMinInserted(0, 0);
-
-	pWndToDock->GetWindowRect(rectInserted);
-
-	if (pBar == NULL)
-	{
-		return;
-	}
-
-	if ((dwAlignment & pBar->GetEnabledAlignment()) != 0 ||
-		CDockingManager::m_bIgnoreEnabledAlignment)
-	{
-		barContainerManager.CalcRects(rectOriginal, rectInserted, rectSlider, dwSliderStyle, dwAlignment, sizeMinOriginal, sizeMinInserted);
-		rectResult = rectInserted;
-	}
+    // construct index array for ordered vertices of convex hull
+    m_iHQuantity = (int)kHull.size();
+    m_aiHIndex = new int[m_iHQuantity];
+    for (i = 0; i < m_iHQuantity; i++)
+        m_aiHIndex[i] = kHull[i].m_iIndex;
 }
-
-BOOL CGlobalUtils::CanBeAttached(CWnd* pWnd) const
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexHull2<Real>::GetHull (int i0, int i1, const SVArray& rkSVArray,
+    SVArray& rkHull)
 {
-	ASSERT_VALID(pWnd);
+    int iQuantity = i1 - i0 + 1;
+    if ( iQuantity > 1 )
+    {
+        // middle index of input range
+        int iMid = (i0+i1)/2;
 
-	if (pWnd->IsKindOf(RUNTIME_CLASS(CPaneFrameWnd)))
-	{
-		return((CPaneFrameWnd*) pWnd)->CanBeAttached();
-	}
+        // find hull of subsets (iMid-i0+1 >= i1-iMid)
+        SVArray kLHull, kRHull;
+        kLHull.reserve(iMid-i0+1);
+        kRHull.reserve(i1-iMid);
 
-	if (pWnd->IsKindOf(RUNTIME_CLASS(CPane)))
-	{
-		return((CPane*) pWnd)->CanBeAttached();
-	}
+        GetHull(i0,iMid,rkSVArray,kLHull);
+        GetHull(iMid+1,i1,rkSVArray,kRHull);
 
-	return FALSE;
+        // merge the convex hulls into a single convex hull
+        Merge(kLHull,kRHull,rkHull);
+    }
+    else
+    {
+        // convex hull is a single point
+        rkHull.push_back(rkSVArray[i0]);
+    }
 }
-
-BOOL CGlobalUtils::CanPaneBeInFloatingMultiPaneFrameWnd(CWnd* pWnd) const
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexHull2<Real>::Merge (SVArray& rkLHull, SVArray& rkRHull,
+    SVArray& rkHull)
 {
-	CPane* pBar = NULL;
+    // merge small sets, handle cases when sets are collinear
+    int iLSize = (int)rkLHull.size(), iRSize = (int)rkRHull.size();
+    if ( iLSize == 1 )
+    {
+        if ( iRSize == 1 )
+        {
+            rkHull.push_back(rkLHull[0]);
+            rkHull.push_back(rkRHull[0]);
+            if ( m_iHullType != HULL_PLANAR )
+                m_iHullType = HULL_LINEAR;
+            return;
+        }
+        else if ( iRSize == 2 )
+        {
+            MergeLinear(rkLHull[0],rkRHull);
+            rkHull = rkRHull;
+            return;
+        }
+    }
+    else if ( iLSize == 2 )
+    {
+        if ( iRSize == 1 )
+        {
+            MergeLinear(rkRHull[0],rkLHull);
+            rkHull = rkLHull;
+            return;
+        }
+        else if ( iRSize == 2 )
+        {
+            MergeLinear(rkRHull[1],rkLHull);
 
-	CPaneFrameWnd* pMiniFrame = DYNAMIC_DOWNCAST(CPaneFrameWnd, pWnd);
+            if ( rkLHull.size() == 2 )
+            {
+                MergeLinear(rkRHull[0],rkLHull);
+                rkHull = rkLHull;
+                return;
+            }
 
-	if (pMiniFrame != NULL)
-	{
-		pBar = DYNAMIC_DOWNCAST(CPane, pMiniFrame->GetPane());
-	}
-	else
-	{
-		pBar = DYNAMIC_DOWNCAST(CPane, pWnd);
-	}
+            // fall-through, LHull is a triangle, RHull is a point
+            iLSize = 3;
+            iRSize = 1;
+            rkRHull.pop_back();
+        }
+    }
 
-	if (pBar == NULL)
-	{
-		return FALSE;
-	}
+    // find rightmost point of left hull
+    Real fMax = rkLHull[0].m_kV.X();
+    int i, iLMax = 0;
+    for (i = 1; i < iLSize; i++)
+    {
+        if ( rkLHull[i].m_kV.X() > fMax )
+        {
+            fMax = rkLHull[i].m_kV.X();
+            iLMax = i;
+        }
+    }
 
-	if (pBar->IsTabbed())
-	{
-		CWnd* pParentMiniFrame = pBar->GetParentMiniFrame();
-		// tabbed bar that is floating in multi miniframe
-		if (pParentMiniFrame != NULL && pParentMiniFrame->IsKindOf(RUNTIME_CLASS(CMultiPaneFrameWnd)))
-		{
-			return TRUE;
-		}
-	}
+    // find leftmost point of right hull
+    Real fMin = rkRHull[0].m_kV.X();
+    int iRMin = 0;
+    for (i = 1; i < iRSize; i++)
+    {
+        if ( rkRHull[i].m_kV.X() < fMin )
+        {
+            fMin = rkRHull[i].m_kV.X();
+            iRMin = i;
+        }
+    }
 
-	return((pBar->GetPaneStyle() & CBRS_FLOAT_MULTI) != 0);
+    // get lower tangent to hulls (LL = lower left, LR = lower right)
+    int iLLIndex = iLMax, iLRIndex = iRMin;
+    GetTangent(rkLHull,rkRHull,iLLIndex,iLRIndex);
+
+    // get upper tangent to hulls (UL = upper left, UR = upper right)
+    int iULIndex = iLMax, iURIndex = iRMin;
+    GetTangent(rkRHull,rkLHull,iURIndex,iULIndex);
+
+    // Construct the counterclockwise-ordered merged-hull vertices.
+    // TO DO.  If the hull is stored using linked lists, this block can be
+    // improved by an O(1) detach, attach, and delete of the appropriate
+    // sublists.
+    i = iLRIndex;
+    while ( true )
+    {
+        rkHull.push_back(rkRHull[i]);
+        if ( i == iURIndex )
+            break;
+
+        if ( ++i == iRSize )
+            i = 0;
+    }
+
+    i = iULIndex;
+    while ( true )
+    {
+        rkHull.push_back(rkLHull[i]);
+        if ( i == iLLIndex )
+            break;
+
+        if ( ++i == iLSize )
+            i = 0;
+    }
 }
-
-BOOL CGlobalUtils::GetPaneAndAlignFromPoint(CPaneContainerManager& barContainerManager, CPoint pt,
-	CDockablePane** ppTargetControlBar, DWORD& dwAlignment, BOOL& bTabArea, BOOL& bCaption)
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexHull2<Real>::MergeLinear (const SortedVertex& rkP, SVArray& rkHull)
 {
-	ENSURE(ppTargetControlBar != NULL);
-	*ppTargetControlBar = NULL;
+    // hull = <Q0,Q1>
 
-	BOOL bOuterEdge = FALSE;
-
-	// if the mouse is over a miniframe's caption and this miniframe has only one
-	// visible docking control bar, we need to draw a tab
-	bCaption = barContainerManager.CheckForMiniFrameAndCaption(pt, ppTargetControlBar);
-	if (bCaption)
-	{
-		return TRUE;
-	}
-
-	*ppTargetControlBar = barContainerManager.PaneFromPoint(pt, CDockingManager::m_nDockSensitivity, TRUE, bTabArea, bCaption);
-
-	if ((bCaption || bTabArea) && *ppTargetControlBar != NULL)
-	{
-		return TRUE;
-	}
-
-	if (*ppTargetControlBar == NULL)
-	{
-		barContainerManager.PaneFromPoint(pt, CDockingManager::m_nDockSensitivity, FALSE, bTabArea, bCaption);
-		// the exact bar was not found - it means the docked frame at the outer edge
-		bOuterEdge = TRUE;
-		return TRUE;
-	}
-
-	if (*ppTargetControlBar != NULL)
-	{
-		if (!afxGlobalUtils.CheckAlignment(pt, *ppTargetControlBar, CDockingManager::m_nDockSensitivity, NULL, bOuterEdge, dwAlignment))
-		{
-			// unable for some reason to determine alignment
-			*ppTargetControlBar = NULL;
-		}
-	}
-
-	return TRUE;
+    switch ( CollinearTest(rkP.m_kV,rkHull[0].m_kV,rkHull[1].m_kV) )
+    {
+    case ORDER_POSITIVE:
+        // merged hull is triangle <Q0,Q1,P>
+        m_iHullType = HULL_PLANAR;
+        rkHull.push_back(rkP);
+        break;
+    case ORDER_NEGATIVE:
+    {
+        // merged hull is triangle <Q1,Q0,P>
+        m_iHullType = HULL_PLANAR;
+        SortedVertex kSave = rkHull[0];
+        rkHull[0] = rkHull[1];
+        rkHull[1] = kSave;
+        rkHull.push_back(rkP);
+        break;
+    }
+    case ORDER_COLLINEAR_LEFT:
+        // collinear order is <P,Q0,Q1>, merged hull is <P,Q1>
+        rkHull[0] = rkP;
+        break;
+    case ORDER_COLLINEAR_RIGHT:
+        // collinear order is <Q0,Q1,P>, merged hull is <Q0,P>
+        rkHull[1] = rkP;
+        break;
+    //case ORDER_COLLINEAR_CONTAIN:
+        // collinear order is <Q0,P,Q1>, merged hull is <Q0,Q1> (no change)
+    }
 }
-
-void CGlobalUtils::AdjustRectToWorkArea(CRect& rect, CRect* pRectDelta)
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexHull2<Real>::GetTangent (const SVArray& rkLHull,
+    const SVArray& rkRHull, int& riL, int& riR)
 {
-	CPoint ptStart;
+    // In theory the loop terminates in a finite number of steps, but the
+    // upper bound for the loop variable is used to trap problems caused by
+    // floating point round-off errors that might lead to an infinite loop.
 
-	if (m_bIsDragging)
-	{
-		::GetCursorPos(&ptStart);
-	}
-	else
-	{
-		ptStart = rect.TopLeft();
-	}
+    int iLSize = (int)rkLHull.size(), iRSize = (int)rkRHull.size();
+    int iLSizeM1 = iLSize-1, iRSizeM1 = iRSize-1;
+    int i;
+    for (i = 0; i < iLSize+iRSize; i++)
+    {
+        // end points of potential tangent
+        const Vector2<Real>& rkL1 = rkLHull[riL].m_kV;
+        const Vector2<Real>& rkR0 = rkRHull[riR].m_kV;
 
-	CRect rectScreen;
-	MONITORINFO mi;
-	mi.cbSize = sizeof(MONITORINFO);
-	if (GetMonitorInfo(MonitorFromPoint(ptStart, MONITOR_DEFAULTTONEAREST), &mi))
-	{
-		rectScreen = mi.rcWork;
-	}
-	else
-	{
-		::SystemParametersInfo(SPI_GETWORKAREA, 0, &rectScreen, 0);
-	}
+        // walk along left hull to find tangency
+        int iLm1 = ( riL > 0 ? riL-1 : iLSizeM1 );
+        const Vector2<Real>& rkL0 = rkLHull[iLm1].m_kV;
+        int iCT = CollinearTest(rkR0,rkL0,rkL1);
+        if ( iCT == ORDER_NEGATIVE || iCT == ORDER_COLLINEAR_LEFT )
+        {
+            riL = iLm1;
+            continue;
+        }
 
-	int nDelta = pRectDelta != NULL ? pRectDelta->left : 0;
+        // walk along right hull to find tangency
+        int iRp1 = ( riR < iRSizeM1 ? riR+1 : 0 );
+        const Vector2<Real>& rkR1 = rkRHull[iRp1].m_kV;
+        iCT = CollinearTest(rkL1,rkR0,rkR1);
+        if ( iCT == ORDER_NEGATIVE || iCT == ORDER_COLLINEAR_RIGHT )
+        {
+            riR = iRp1;
+            continue;
+        }
 
-	if (rect.right <= rectScreen.left + nDelta)
-	{
-		rect.OffsetRect(rectScreen.left - rect.right + nDelta, 0);
-	}
+        // tangent segment has been found
+        break;
+    }
 
-	nDelta = pRectDelta != NULL ? pRectDelta->right : 0;
-	if (rect.left >= rectScreen.right - nDelta)
-	{
-		rect.OffsetRect(rectScreen.right - rect.left - nDelta, 0);
-	}
-
-	nDelta = pRectDelta != NULL ? pRectDelta->bottom : 0;
-	if (rect.top >= rectScreen.bottom - nDelta)
-	{
-		rect.OffsetRect(0, rectScreen.bottom - rect.top - nDelta);
-	}
-
-	nDelta = pRectDelta != NULL ? pRectDelta->top : 0;
-	if (rect.bottom < rectScreen.top + nDelta)
-	{
-		rect.OffsetRect(0, rectScreen.top - rect.bottom + nDelta);
-	}
+    // detect "infinite loop" caused by floating point round-off errors
+    assert( i < iLSize+iRSize );
 }
+//----------------------------------------------------------------------------
 
-void CGlobalUtils::ForceAdjustLayout(CDockingManager* pDockManager, BOOL bForce, BOOL bForceInvisible)
+//----------------------------------------------------------------------------
+// incremental hull
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexHull2<Real>::ByIncremental ()
 {
-	if (pDockManager != NULL &&(CPane::m_bHandleMinSize || bForce))
-	{
-		CWnd* pDockSite = pDockManager->GetDockSiteFrameWnd();
+    // Sort by x-component and store in contiguous array.  The sort is
+    // O(N log N).
+    SVArray kSVArray(m_iVQuantity);
+    int i;
+    for (i = 0; i < m_iVQuantity; i++)
+    {
+        kSVArray[i].m_kV = m_akVertex[i];
+        kSVArray[i].m_iIndex = i;
+    }
+    sort(kSVArray.begin(),kSVArray.end());
 
-		if (pDockSite == NULL)
-		{
-			return;
-		}
+    // remove duplicate points
+    typename SVArray::iterator pkEnd =
+        unique(kSVArray.begin(),kSVArray.end());
+    kSVArray.erase(pkEnd,kSVArray.end());
 
-		if (!pDockSite->IsWindowVisible() && !bForceInvisible)
-		{
-			return;
-		}
+    // Compute convex hull incrementally.  The first and second vertices in
+    // the hull are managed separately until at least one triangle is formed.
+    // At that time an array is used to store the hull in counterclockwise
+    // order.
+    m_iHullType = HULL_POINT;
+    m_kHull.push_back(kSVArray[0]);
+    for (i = 1; i < (int)kSVArray.size(); i++)
+    {
+        switch ( m_iHullType )
+        {
+        case HULL_POINT:
+            m_iHullType = HULL_LINEAR;
+            m_kHull.push_back(kSVArray[i]);
+            break;
+        case HULL_LINEAR:
+            MergeLinear(kSVArray[i]);
+            break;
+        case HULL_PLANAR:
+            MergePlanar(kSVArray[i]);
+            break;
+        }
+    }
 
-		CRect rectWnd;
-		pDockManager->GetDockSiteFrameWnd()->SetRedraw(FALSE);
-		pDockManager->GetDockSiteFrameWnd()->GetWindowRect(rectWnd);
-		pDockManager->GetDockSiteFrameWnd()->SetWindowPos(NULL, -1, -1, rectWnd.Width() + 1, rectWnd.Height() + 1, SWP_NOZORDER |  SWP_NOMOVE | SWP_NOACTIVATE);
-		pDockManager->GetDockSiteFrameWnd()->SetWindowPos(NULL, -1, -1, rectWnd.Width(), rectWnd.Height(), SWP_NOZORDER |  SWP_NOMOVE  | SWP_NOACTIVATE);
-		pDockManager->GetDockSiteFrameWnd()->SetRedraw(TRUE);
-		pDockManager->GetDockSiteFrameWnd()->RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_ALLCHILDREN);
-	}
+    // construct index array for ordered vertices of convex hull
+    m_iHQuantity = (int)m_kHull.size();
+    m_aiHIndex = new int[m_iHQuantity];
+    for (i = 0; i < m_iHQuantity; i++)
+        m_aiHIndex[i] = m_kHull[i].m_iIndex;
 }
-
-BOOL CGlobalUtils::StringFromCy(CString& str, CY& cy)
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexHull2<Real>::MergeLinear (const SortedVertex& rkP)
 {
-	VARIANTARG varCy;
-	VARIANTARG varBstr;
-	AfxVariantInit(&varCy);
-	AfxVariantInit(&varBstr);
-	V_VT(&varCy) = VT_CY;
-	V_CY(&varCy) = cy;
-	if (FAILED(VariantChangeType(&varBstr, &varCy, 0, VT_BSTR)))
-	{
-		VariantClear(&varCy);
-		VariantClear(&varBstr);
-		return FALSE;
-	}
-	str = V_BSTR(&varBstr);
-	VariantClear(&varCy);
-	VariantClear(&varBstr);
-	return TRUE;
+    switch ( CollinearTest(rkP.m_kV,m_kHull[0].m_kV,m_kHull[1].m_kV) )
+    {
+    case ORDER_POSITIVE:
+    {
+        // merged hull is <P,Q0,Q1>
+        m_iHullType = HULL_PLANAR;
+        SortedVertex kCopy = m_kHull[1];
+        m_kHull.push_back(kCopy);
+        m_kHull[1] = m_kHull[0];
+        m_kHull[0] = rkP;
+        break;
+    }
+    case ORDER_NEGATIVE:
+    {
+        // merged hull is <P,Q1,Q0>
+        m_iHullType = HULL_PLANAR;
+        SortedVertex kCopy = m_kHull[0];
+        m_kHull.push_back(kCopy);
+        m_kHull[0] = rkP;
+        break;
+    }
+    case ORDER_COLLINEAR_LEFT:
+        // linear order is <P,Q0,Q1>, merged hull is <P,Q1>
+        m_kHull[0] = rkP;
+        break;
+    case ORDER_COLLINEAR_RIGHT:
+        // linear order is <Q0,Q1,P>, merged hull is <Q0,P>
+        m_kHull[1] = rkP;
+        break;
+    // case ORDER_COLLINEAR_CONTAIN:  linear order is <Q0,P,Q1>, no change
+    }
 }
-
-BOOL CGlobalUtils::CyFromString(CY& cy, LPCTSTR psz)
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexHull2<Real>::MergePlanar (const SortedVertex& rkP)
 {
-	USES_CONVERSION;
+    int iSize = (int)m_kHull.size();
+    int i, iU, iL, iCT;
 
-	if (psz == NULL || _tcslen(psz) == 0)
-	{
-		psz = _T("0");
-	}
+    // search counterclockwise for last visible vertex
+    for (iU = 0, i = 1; iU < iSize; iU = i++)
+    {
+        if ( i == iSize )
+            i = 0;
 
-	VARIANTARG varBstr;
-	VARIANTARG varCy;
-	AfxVariantInit(&varBstr);
-	AfxVariantInit(&varCy);
-	V_VT(&varBstr) = VT_BSTR;
-	V_BSTR(&varBstr) = SysAllocString(T2COLE(psz));
-	if (FAILED(VariantChangeType(&varCy, &varBstr, 0, VT_CY)))
-	{
-		VariantClear(&varBstr);
-		VariantClear(&varCy);
-		return FALSE;
-	}
-	cy = V_CY(&varCy);
-	VariantClear(&varBstr);
-	VariantClear(&varCy);
-	return TRUE;
+        iCT = CollinearTest(rkP.m_kV,m_kHull[iU].m_kV,m_kHull[i].m_kV);
+        if ( iCT == ORDER_NEGATIVE )
+            continue;
+        if ( iCT == ORDER_POSITIVE || iCT == ORDER_COLLINEAR_LEFT )
+            break;
+
+        // iCT == ORDER_COLLINEAR_CONTAIN || iCT == ORDER_COLLINEAR_RIGHT
+        return;
+    }
+    assert( iU < iSize );
+
+    // search clockwise for last visible vertex
+    for (iL = 0, i = iSize-1; i >= 0; iL = i--)
+    {
+        iCT = CollinearTest(rkP.m_kV,m_kHull[i].m_kV,m_kHull[iL].m_kV);
+        if ( iCT == ORDER_NEGATIVE )
+            continue;
+        if ( iCT == ORDER_POSITIVE || iCT == ORDER_COLLINEAR_RIGHT )
+            break;
+
+        // iCT == ORDER_COLLINEAR_CONTAIN || iCT == ORDER_COLLINEAR_LEFT
+        return;
+    }
+    assert( i >= 0 );
+
+    if ( iU == iL )
+    {
+        // This probably occurs when CollinearTest should report collinearity,
+        // but does not.  If it does occur, and you care about this code
+        // block not occurring, try increasing the size of the collinear
+        // epsilon.  When this block does occur, the conclusion is that the
+        // input point is collinear with an edge of the hull, so just return.
+        return;
+    }
+
+    // construct the counterclockwise-ordered merged-hull vertices
+    SVArray kTmpHull;
+    kTmpHull.push_back(rkP);
+    while ( true )
+    {
+        kTmpHull.push_back(m_kHull[iU]);
+        if ( iU == iL )
+            break;
+
+        if ( ++iU == iSize )
+            iU = 0;
+    }
+    assert( kTmpHull.size() > 2 );
+
+    m_kHull = kTmpHull;
 }
+//----------------------------------------------------------------------------
 
-BOOL CGlobalUtils::StringFromDecimal(CString& str, DECIMAL& decimal)
+//----------------------------------------------------------------------------
+// explicit instantiation
+//----------------------------------------------------------------------------
+namespace Wml
 {
-	VARIANTARG varDecimal;
-	VARIANTARG varBstr;
-	AfxVariantInit(&varDecimal);
-	AfxVariantInit(&varBstr);
-	V_VT(&varDecimal) = VT_DECIMAL;
-	V_DECIMAL(&varDecimal) = decimal;
-	if (FAILED(VariantChangeType(&varBstr, &varDecimal, 0, VT_BSTR)))
-	{
-		VariantClear(&varDecimal);
-		VariantClear(&varBstr);
-		return FALSE;
-	}
-	str = V_BSTR(&varBstr);
-	VariantClear(&varDecimal);
-	VariantClear(&varBstr);
-	return TRUE;
+template class WML_ITEM ConvexHull2<float>;
+float ConvexHull2f::COLLINEAR_EPSILON = 1e-06f;
+
+template class WML_ITEM ConvexHull2<double>;
+double ConvexHull2d::COLLINEAR_EPSILON = 1e-06;
 }
-
-BOOL CGlobalUtils::DecimalFromString(DECIMAL& decimal, LPCTSTR psz)
-{
-	USES_CONVERSION;
-
-	if (psz == NULL || _tcslen(psz) == 0)
-	{
-		psz = _T("0");
-	}
-
-	VARIANTARG varBstr;
-	VARIANTARG varDecimal;
-	AfxVariantInit(&varBstr);
-	AfxVariantInit(&varDecimal);
-	V_VT(&varBstr) = VT_BSTR;
-	V_BSTR(&varBstr) = SysAllocString(T2COLE(psz));
-	if (FAILED(VariantChangeType(&varDecimal, &varBstr, 0, VT_DECIMAL)))
-	{
-		VariantClear(&varBstr);
-		VariantClear(&varDecimal);
-		return FALSE;
-	}
-	decimal = V_DECIMAL(&varDecimal);
-	VariantClear(&varBstr);
-	VariantClear(&varDecimal);
-	return TRUE;
-}
-
-HICON CGlobalUtils::GetWndIcon(CWnd* pWnd)
-{
-	ASSERT_VALID(pWnd);
-
-	if (pWnd->GetSafeHwnd() == NULL)
-	{
-		return NULL;
-	}
-
-	HICON hIcon = pWnd->GetIcon(FALSE);
-
-	if (hIcon == NULL)
-	{
-		hIcon = pWnd->GetIcon(TRUE);
-
-		if (hIcon != NULL)
-		{
-			CImageList il;
-			il.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 1);
-			il.Add(hIcon);
-
-			if (il.GetImageCount() == 1)
-			{
-				hIcon = il.ExtractIcon(0);
-			}
-		}
-	}
-
-	if (hIcon == NULL)
-	{
-		hIcon = (HICON)(LONG_PTR)::GetClassLongPtr(pWnd->GetSafeHwnd(), GCLP_HICONSM);
-	}
-
-	if (hIcon == NULL)
-	{
-		hIcon = (HICON)(LONG_PTR)::GetClassLongPtr(pWnd->GetSafeHwnd(), GCLP_HICON);
-	}
-
-	return hIcon;
-}
-
-
-
+//----------------------------------------------------------------------------

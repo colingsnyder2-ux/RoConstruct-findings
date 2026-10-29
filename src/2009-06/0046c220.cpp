@@ -1,486 +1,74 @@
-// from server: 58% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8datamodel/Surfaces.cpp
+// roc 2009-06 0046c220  unit: DxUserInput  size: 115 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 0046c220
+//
+// 0046c220  8b442404             mov eax, dword ptr [esp + 4]
+// 0046c224  d94004               fld dword ptr [eax + 4]
+// 0046c227  53                   push ebx
+// 0046c228  8b5c240c             mov ebx, dword ptr [esp + 0xc]
+// 0046c22c  56                   push esi
+// 0046c22d  8b742414             mov esi, dword ptr [esp + 0x14]
+// 0046c231  d84604               fadd dword ptr [esi + 4]
+// 0046c234  57                   push edi
+// 0046c235  8b7c241c             mov edi, dword ptr [esp + 0x1c]
+// 0046c239  51                   push ecx
+// 0046c23a  d95c241c             fstp dword ptr [esp + 0x1c]
+// 0046c23e  d9ee                 fldz 
+// 0046c240  d91c24               fstp dword ptr [esp]
+// 0046c243  6a06                 push 6
+// 0046c245  57                   push edi
+// 0046c246  56                   push esi
+// 0046c247  53                   push ebx
+// 0046c248  50                   push eax
+// 0046c249  e8b2feffff           call 0x46c100
+// 0046c24e  d9ee                 fldz 
+// 0046c250  d95b04               fstp dword ptr [ebx + 4]
+// 0046c253  83c418               add esp, 0x18
+// 0046c256  d9442418             fld dword ptr [esp + 0x18]
+// 0046c25a  d95e04               fstp dword ptr [esi + 4]
+// 0046c25d  d94704               fld dword ptr [edi + 4]
+// 0046c260  d80d4cad8b00         fmul dword ptr [0x8bad4c]
+// 0046c266  d82544d08b00         fsub dword ptr [0x8bd044]
+// 0046c26c  d9e0                 fchs 
+// 0046c26e  d9542418             fst dword ptr [esp + 0x18]
+// 0046c272  d85e04               fcomp dword ptr [esi + 4]
+// 0046c275  dfe0                 fnstsw ax
+// 0046c277  f6c405               test ah, 5
+// 0046c27a  7a0a                 jp 0x46c286
+// 0046c27c  d94604               fld dword ptr [esi + 4]
+// 0046c27f  5f                   pop edi
+// 0046c280  d95e04               fstp dword ptr [esi + 4]
+// 0046c283  5e                   pop esi
+// 0046c284  5b                   pop ebx
+// 0046c285  c3                   ret 
+// 0046c286  8d442418             lea eax, [esp + 0x18]
+// 0046c28a  d900                 fld dword ptr [eax]
+// 0046c28c  5f                   pop edi
+// 0046c28d  d95e04               fstp dword ptr [esi + 4]
+// 0046c290  5e                   pop esi
+// 0046c291  5b                   pop ebx
+// 0046c292  c3                   ret 
+// copied from an identical function in another client (function ?fn_ROCX000000@@YAXPAUVector2@@000@Z)
 
-// Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Surfaces.h"
-
-#include "reflection/property.h"
-#include "v8datamodel/PartInstance.h"
-#include "v8world/Controller.h"
-
-#include <memory>
-
-namespace RBX {
-
-// SIZE 0x20
-template <int normalId, class T>
-class SurfaceEnumPropDescriptor : public Reflection::EnumPropertyDescriptor
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+struct Vector2
 {
-public:
-	// SIZE 0x0c
-	template <class Getter, class Setter>
-	class GetSetImpl : public Reflection::TypedPropertyDescriptor<T>::GetSet
-	{
-	public:
-		GetSetImpl(Getter getter, Setter setter) : getter(getter), setter(setter) {}
-
-		virtual bool isReadOnly() const { return false; }
-
-		virtual T getValue(const Reflection::DescribedBase* instance) const
-		{
-			const Surfaces& surfaces = static_cast<const PartInstance*>(instance)->getSurfaces();
-
-			return (surfaces[static_cast<NormalId>(normalId)].*getter)();
-		}
-
-		virtual void setValue(Reflection::DescribedBase* instance, const T& value) const
-		{
-			Surfaces& surfaces = static_cast<PartInstance*>(instance)->getSurfaces();
-
-			(surfaces[static_cast<NormalId>(normalId)].*setter)(value);
-		}
-
-	private:
-		Getter getter; // 0x04
-		Setter setter; // 0x08
-	};
-
-	template <class Getter, class Setter>
-	SurfaceEnumPropDescriptor(
-		const char* name,
-		const char* category,
-		Getter getter,
-		Setter setter,
-		Reflection::PropertyDescriptor::Functionality functionality = Reflection::PropertyDescriptor::STANDARD
-	)
-		: Reflection::EnumPropertyDescriptor(
-			  PartInstance::classDescriptor(),
-			  Reflection::EnumDesc<T>::singleton(),
-			  name,
-			  category,
-			  functionality
-		  ),
-		  getset(new GetSetImpl<Getter, Setter>(getter, setter))
-	{
-	}
-
-	virtual bool isReadOnly() const { return getset->isReadOnly(); }
-
-	T getValue(const Reflection::DescribedBase* instance) const { return getset->getValue(instance); }
-
-	void setValue(Reflection::DescribedBase* instance, const T& value) const { getset->setValue(instance, value); }
-
-	virtual bool equalValues(const Reflection::DescribedBase* a, const Reflection::DescribedBase* b) const
-	{
-		return getValue(a) == getValue(b);
-	}
-
-	virtual bool hasStringValue() const { return true; }
-
-	virtual std::string getStringValue(const Reflection::DescribedBase* instance) const
-	{
-		STUB(0x10102460);
-		return std::string();
-	}
-
-	virtual bool setStringValue(Reflection::DescribedBase* instance, const std::string& value) const
-	{
-		STUB(0x10102610);
-		return false;
-	}
-
-	virtual void readValue(
-		Reflection::DescribedBase* instance,
-		const XmlElement* element,
-		IReferenceBinder& binder
-	) const
-	{
-		STUB(0x101022f0);
-	}
-
-	virtual void writeValue(const Reflection::DescribedBase* instance, XmlElement* element) const { STUB(0x10102130); }
-
-private:
-	std::auto_ptr<typename Reflection::TypedPropertyDescriptor<T>::GetSet> getset; // 0x1c
+    float x;
+    float y;
 };
 
-// SIZE 0x1c
-template <int normalId, class T>
-class SurfacePropDescriptor : public Reflection::TypedPropertyDescriptor<T>
+extern float scale;
+extern float offset;
+
+extern void __cdecl transform(Vector2*, Vector2*, Vector2*, Vector2*, int, float);
+
+void __cdecl func_0046a130(Vector2* a, Vector2* b, Vector2* c, Vector2* d)
 {
-public:
-	// SIZE 0x0c
-	template <class Getter, class Setter>
-	class GetSetImpl : public Reflection::TypedPropertyDescriptor<T>::GetSet
-	{
-	public:
-		GetSetImpl(Getter getter, Setter setter) : getter(getter), setter(setter) {}
-
-		virtual bool isReadOnly() const { return false; }
-
-		virtual T getValue(const Reflection::DescribedBase* instance) const
-		{
-			const Surfaces& surfaces = static_cast<const PartInstance*>(instance)->getSurfaces();
-
-			return (surfaces[static_cast<NormalId>(normalId)].*getter)();
-		}
-
-		virtual void setValue(Reflection::DescribedBase* instance, const T& value) const
-		{
-			Surfaces& surfaces = static_cast<PartInstance*>(instance)->getSurfaces();
-
-			(surfaces[static_cast<NormalId>(normalId)].*setter)(value);
-		}
-
-	private:
-		Getter getter; // 0x04
-		Setter setter; // 0x08
-	};
-
-	template <class Getter, class Setter>
-	SurfacePropDescriptor(
-		const char* name,
-		const char* category,
-		Getter getter,
-		Setter setter,
-		Reflection::PropertyDescriptor::Functionality functionality = Reflection::PropertyDescriptor::STANDARD
-	)
-		: Reflection::TypedPropertyDescriptor<T>(
-			  PartInstance::classDescriptor(),
-			  name,
-			  category,
-			  std::auto_ptr<typename Reflection::TypedPropertyDescriptor<T>::GetSet>(
-				  new GetSetImpl<Getter, Setter>(getter, setter)
-			  ),
-			  functionality
-		  )
-	{
-	}
-};
-
-static SurfaceEnumPropDescriptor<NORM_Y, SurfaceType> desc_TopType(
-	"TopSurface",
-	"Surface",
-	&Surface::getSurfaceType,
-	&Surface::setSurfaceType
-);
-
-static SurfaceEnumPropDescriptor<NORM_Y, Controller::InputType> desc_TopSurfaceInput(
-	"TopSurfaceInput",
-	"Surface Inputs",
-	&Surface::getInput,
-	&Surface::setSurfaceInput
-);
-
-static SurfacePropDescriptor<NORM_Y, float> desc_TopParamA(
-	"TopParamA",
-	"Surface Inputs",
-	&Surface::getParamA,
-	&Surface::setParamA
-);
-
-static SurfacePropDescriptor<NORM_Y, float> desc_TopParamB(
-	"TopParamB",
-	"Surface Inputs",
-	&Surface::getParamB,
-	&Surface::setParamB
-);
-
-static SurfaceEnumPropDescriptor<NORM_Y_NEG, SurfaceType> desc_BottomType(
-	"BottomSurface",
-	"Surface",
-	&Surface::getSurfaceType,
-	&Surface::setSurfaceType
-);
-
-static SurfaceEnumPropDescriptor<NORM_Y_NEG, Controller::InputType> desc_BottomSurfaceInput(
-	"BottomSurfaceInput",
-	"Surface Inputs",
-	&Surface::getInput,
-	&Surface::setSurfaceInput
-);
-
-static SurfacePropDescriptor<NORM_Y_NEG, float> desc_BottomParamA(
-	"BottomParamA",
-	"Surface Inputs",
-	&Surface::getParamA,
-	&Surface::setParamA
-);
-
-static SurfacePropDescriptor<NORM_Y_NEG, float> desc_BottomParamB(
-	"BottomParamB",
-	"Surface Inputs",
-	&Surface::getParamB,
-	&Surface::setParamB
-);
-
-static SurfaceEnumPropDescriptor<NORM_X_NEG, SurfaceType> desc_LeftType(
-	"LeftSurface",
-	"Surface",
-	&Surface::getSurfaceType,
-	&Surface::setSurfaceType
-);
-
-static SurfaceEnumPropDescriptor<NORM_X_NEG, Controller::InputType> desc_LeftSurfaceInput(
-	"LeftSurfaceInput",
-	"Surface Inputs",
-	&Surface::getInput,
-	&Surface::setSurfaceInput
-);
-
-static SurfacePropDescriptor<NORM_X_NEG, float> desc_LeftParamA(
-	"LeftParamA",
-	"Surface Inputs",
-	&Surface::getParamA,
-	&Surface::setParamA
-);
-
-static SurfacePropDescriptor<NORM_X_NEG, float> desc_LeftParamB(
-	"LeftParamB",
-	"Surface Inputs",
-	&Surface::getParamB,
-	&Surface::setParamB
-);
-
-static SurfaceEnumPropDescriptor<NORM_X, SurfaceType> desc_RightType(
-	"RightSurface",
-	"Surface",
-	&Surface::getSurfaceType,
-	&Surface::setSurfaceType
-);
-
-static SurfaceEnumPropDescriptor<NORM_X, Controller::InputType> desc_RightSurfaceInput(
-	"RightSurfaceInput",
-	"Surface Inputs",
-	&Surface::getInput,
-	&Surface::setSurfaceInput
-);
-
-static SurfacePropDescriptor<NORM_X, float> desc_RightParamA(
-	"RightParamA",
-	"Surface Inputs",
-	&Surface::getParamA,
-	&Surface::setParamA
-);
-
-static SurfacePropDescriptor<NORM_X, float> desc_RightParamB(
-	"RightParamB",
-	"Surface Inputs",
-	&Surface::getParamB,
-	&Surface::setParamB
-);
-
-static SurfaceEnumPropDescriptor<NORM_Z_NEG, SurfaceType> desc_FrontType(
-	"FrontSurface",
-	"Surface",
-	&Surface::getSurfaceType,
-	&Surface::setSurfaceType
-);
-
-static SurfaceEnumPropDescriptor<NORM_Z_NEG, Controller::InputType> desc_FrontSurfaceInput(
-	"FrontSurfaceInput",
-	"Surface Inputs",
-	&Surface::getInput,
-	&Surface::setSurfaceInput
-);
-
-static SurfacePropDescriptor<NORM_Z_NEG, float> desc_FrontParamA(
-	"FrontParamA",
-	"Surface Inputs",
-	&Surface::getParamA,
-	&Surface::setParamA
-);
-
-static SurfacePropDescriptor<NORM_Z_NEG, float> desc_FrontParamB(
-	"FrontParamB",
-	"Surface Inputs",
-	&Surface::getParamB,
-	&Surface::setParamB
-);
-
-static SurfaceEnumPropDescriptor<NORM_Z, SurfaceType> desc_BackType(
-	"BackSurface",
-	"Surface",
-	&Surface::getSurfaceType,
-	&Surface::setSurfaceType
-);
-
-static SurfaceEnumPropDescriptor<NORM_Z, Controller::InputType> desc_BackSurfaceInput(
-	"BackSurfaceInput",
-	"Surface Inputs",
-	&Surface::getInput,
-	&Surface::setSurfaceInput
-);
-
-static SurfacePropDescriptor<NORM_Z, float> desc_BackParamA(
-	"BackParamA",
-	"Surface Inputs",
-	&Surface::getParamA,
-	&Surface::setParamA
-);
-
-static SurfacePropDescriptor<NORM_Z, float> desc_BackParamB(
-	"BackParamB",
-	"Surface Inputs",
-	&Surface::getParamB,
-	&Surface::setParamB
-);
-
-// FUNCTION: WEBSERVICE 0x10100bd0
-const bool Surfaces::isSurfaceDescriptor(const Reflection::PropertyDescriptor& desc)
-{
-	if (&desc == &desc_TopType) {
-		return true;
-	}
-
-	if (&desc == &desc_BottomType) {
-		return true;
-	}
-
-	if (&desc == &desc_LeftType) {
-		return true;
-	}
-
-	if (&desc == &desc_RightType) {
-		return true;
-	}
-
-	if (&desc == &desc_FrontType) {
-		return true;
-	}
-
-	return &desc == &desc_BackType;
+    float value = a->y + c->y;
+    transform(a, b, c, d, 6, 0.0f);
+    b->y = 0.0f;
+    c->y = value;
+    value = -(d->y * scale - offset);
+    float& result = c->y > value ? c->y : value;
+    c->y = result;
 }
-
-// FUNCTION: WEBSERVICE 0x10100c10
-const Reflection::PropertyDescriptor& Surfaces::getSurfaceType(NormalId normalId) const
-{
-	switch (normalId) {
-	default:
-		return desc_TopType;
-	case NORM_Y_NEG:
-		return desc_BottomType;
-	case NORM_Z:
-		return desc_BackType;
-	case NORM_Z_NEG:
-		return desc_FrontType;
-	case NORM_X:
-		return desc_RightType;
-	case NORM_X_NEG:
-		return desc_LeftType;
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x10100c70
-const Reflection::PropertyDescriptor& Surfaces::getSurfaceInput(NormalId normalId) const
-{
-	switch (normalId) {
-	default:
-		return desc_TopSurfaceInput;
-	case NORM_Y_NEG:
-		return desc_BottomSurfaceInput;
-	case NORM_Z:
-		return desc_BackSurfaceInput;
-	case NORM_Z_NEG:
-		return desc_FrontSurfaceInput;
-	case NORM_X:
-		return desc_RightSurfaceInput;
-	case NORM_X_NEG:
-		return desc_LeftSurfaceInput;
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x10100cd0
-const Reflection::PropertyDescriptor& Surfaces::getParamA(NormalId normalId) const
-{
-	switch (normalId) {
-	default:
-		return desc_TopParamA;
-	case NORM_Y_NEG:
-		return desc_BottomParamA;
-	case NORM_Z:
-		return desc_BackParamA;
-	case NORM_Z_NEG:
-		return desc_FrontParamA;
-	case NORM_X:
-		return desc_RightParamA;
-	case NORM_X_NEG:
-		return desc_LeftParamA;
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x10100d30
-const Reflection::PropertyDescriptor& Surfaces::getParamB(NormalId normalId) const
-{
-	switch (normalId) {
-	default:
-		return desc_TopParamB;
-	case NORM_Y_NEG:
-		return desc_BottomParamB;
-	case NORM_Z:
-		return desc_BackParamB;
-	case NORM_Z_NEG:
-		return desc_FrontParamB;
-	case NORM_X:
-		return desc_RightParamB;
-	case NORM_X_NEG:
-		return desc_LeftParamB;
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x10100d90
-Surfaces::Surfaces(PartInstance* partInstance)
-	: Top(partInstance, NORM_Y), Bottom(partInstance, NORM_Y_NEG), Left(partInstance, NORM_X_NEG),
-	  Right(partInstance, NORM_X), Front(partInstance, NORM_Z_NEG), Back(partInstance, NORM_Z)
-{
-}
-
-// FUNCTION: WEBSERVICE 0x10100de0
-const Surface& Surfaces::operator[](NormalId normalId) const
-{
-	switch (normalId) {
-	case NORM_Y_NEG:
-		return Bottom;
-	case NORM_Z:
-		return Back;
-	case NORM_Z_NEG:
-		return Front;
-	case NORM_X:
-		return Right;
-	case NORM_X_NEG:
-		return Left;
-	default:
-		return Top;
-	}
-}
-
-Surface& Surfaces::operator[](NormalId normalId)
-{
-	switch (normalId) {
-	case NORM_Y_NEG:
-		return Bottom;
-	case NORM_Z:
-		return Back;
-	case NORM_Z_NEG:
-		return Front;
-	case NORM_X:
-		return Right;
-	case NORM_X_NEG:
-		return Left;
-	default:
-		return Top;
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x10100e30
-const bool Surfaces::isStandardPart() const
-{
-	return Bottom.getSurfaceType() == INLET && Front.getSurfaceType() == NO_SURFACE &&
-		   Back.getSurfaceType() == NO_SURFACE && Left.getSurfaceType() == NO_SURFACE &&
-		   Right.getSurfaceType() == NO_SURFACE;
-}
-
-} // namespace RBX

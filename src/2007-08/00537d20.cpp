@@ -1,4 +1,3 @@
-// from server: 90% by colin
 // roc 2007-08 00537d20  unit: RBX::Lua::ThreadRef::VNode::V?$shared_ptr::?$TItem  size: 17 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00537d20
 //
@@ -9,12 +8,13 @@
 // 00537d2b  ffd2                 call edx
 // 00537d2d  83c404               add esp, 4
 // 00537d30  c3                   ret 
+// copied from an identical function in another client (function ?invoke@@YAHPAUS@@H@Z)
 
-struct S {
-    void (__stdcall *m)(int);
-};
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+struct S { int (__cdecl *f)(int); };
 
-void f(S* p, int a)
+int invoke(S* s, int x)
 {
-    p->m(a);
+    return s->f(x);
 }

@@ -1,546 +1,98 @@
-// from server: 45% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O1 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/SyntaxEdit/XTPSyntaxEditFindReplaceDlg.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPSyntaxEditFindReplaceDlg.cpp : implementation file
+// roc 2010-06 00464b50  unit: CRobloxView  size: 116 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 00464b50
 //
-// This file is a part of the XTREME TOOLKIT PRO MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
+// 00464b50  8b44240c             mov eax, dword ptr [esp + 0xc]
+// 00464b54  33c9                 xor ecx, ecx
+// 00464b56  3bc1                 cmp eax, ecx
+// 00464b58  7441                 je 0x464b9b
+// 00464b5a  83f801               cmp eax, 1
+// 00464b5d  743c                 je 0x464b9b
+// 00464b5f  83f802               cmp eax, 2
+// 00464b62  745f                 je 0x464bc3
+// 00464b64  83f803               cmp eax, 3
+// 00464b67  7521                 jne 0x464b8a
+// 00464b69  56                   push esi
+// 00464b6a  8b74240c             mov esi, dword ptr [esp + 0xc]
+// 00464b6e  8b0e                 mov ecx, dword ptr [esi]
+// 00464b70  68f83eb800           push 0xb83ef8
+// 00464b75  ff15d8a89e00         call dword ptr [0x9ea8d8]
+// 00464b7b  0fb6c0               movzx eax, al
+// 00464b7e  f7d8                 neg eax
+// 00464b80  1bc0                 sbb eax, eax
+// 00464b82  23442408             and eax, dword ptr [esp + 8]
+// 00464b86  8906                 mov dword ptr [esi], eax
+// 00464b88  5e                   pop esi
+// 00464b89  c3                   ret 
+// 00464b8a  8b442408             mov eax, dword ptr [esp + 8]
+// 00464b8e  c700f83eb800         mov dword ptr [eax], 0xb83ef8
+// 00464b94  884804               mov byte ptr [eax + 4], cl
+// 00464b97  884805               mov byte ptr [eax + 5], cl
+// 00464b9a  c3                   ret 
+// 00464b9b  8b442408             mov eax, dword ptr [esp + 8]
+// 00464b9f  3bc1                 cmp eax, ecx
+// 00464ba1  7420                 je 0x464bc3
+// 00464ba3  8b4c2404             mov ecx, dword ptr [esp + 4]
+// 00464ba7  8b11                 mov edx, dword ptr [ecx]
+// 00464ba9  8910                 mov dword ptr [eax], edx
+// 00464bab  8b5104               mov edx, dword ptr [ecx + 4]
+// 00464bae  895004               mov dword ptr [eax + 4], edx
+// 00464bb1  8b5108               mov edx, dword ptr [ecx + 8]
+// 00464bb4  895008               mov dword ptr [eax + 8], edx
+// 00464bb7  8b510c               mov edx, dword ptr [ecx + 0xc]
+// 00464bba  89500c               mov dword ptr [eax + 0xc], edx
+// 00464bbd  8b4910               mov ecx, dword ptr [ecx + 0x10]
+// 00464bc0  894810               mov dword ptr [eax + 0x10], ecx
+// 00464bc3  c3                   ret 
+// copied from an identical function in another client (function ?manage@@YAXABTfunction_buffer@@AAT1@W4functor_manager_operation_type@@@Z)
 
-#include "stdafx.h"
-#include "Resource.h"
+#include <typeinfo>
+#include <new>
 
-// common includes
-#include "Common/XTPDrawHelpers.h"
-#include "Common/XTPNotifyConnection.h"
-#include "Common/XTPSmartPtrInternalT.h"
-#include "Common/XTPVc50Helpers.h"
-#include "Common/XTPResourceManager.h"
+// boost::detail::function::functor_manager<F>::manage for a small, trivially copyable functor
+// stored in place; 0xb04cc8 is typeid(F)
+extern const type_info type_descriptor_b04cc8;
 
-// syntax editor includes
-#include "XTPSyntaxEditDefines.h"
-#include "XTPSyntaxEditStruct.h"
-#include "XTPSyntaxEditLexPtrs.h"
-#include "XTPSyntaxEditLexClassSubObjT.h"
-#include "XTPSyntaxEditTextIterator.h"
-#include "XTPSyntaxEditSectionManager.h"
-#include "XTPSyntaxEditLexCfgFileReader.h"
-#include "XTPSyntaxEditLexClassSubObjDef.h"
-#include "XTPSyntaxEditLexClass.h"
-#include "XTPSyntaxEditLexParser.h"
-#include "XTPSyntaxEditFindReplaceDlg.h"
-#include "XTPSyntaxEditCtrl.h"
-#include "XTPSyntaxEditDoc.h"
-#include "XTPSyntaxEditView.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-const TCHAR XTP_EDIT_FINDDLG_MATCHWHOLEWORD[]      = _T("MatchWholeWord");
-const TCHAR XTP_EDIT_FINDDLG_MATCHCASE[]           = _T("MatchCase");
-const TCHAR XTP_EDIT_FINDDLG_SEARCHDIRECTION[]     = _T("SearchDirection");
-const TCHAR XTP_EDIT_FINDDLG_FINDHISTORYCOUNT[]    = _T("FindHistoryCount");
-const TCHAR XTP_EDIT_FINDDLG_FINDHISTORYITEM[]     = _T("FindHistory_%d");
-const TCHAR XTP_EDIT_FINDDLG_REPLACEHISTORYCOUNT[] = _T("ReplaceHistoryCount");
-const TCHAR XTP_EDIT_FINDDLG_REPLACEHISTORYITEM[]  = _T("ReplaceHistory_%d");
-
-//===========================================================================
-// CXTPSyntaxEditFindReplaceDlg
-//===========================================================================
-IMPLEMENT_DYNAMIC(CXTPSyntaxEditFindReplaceDlg, CDialog)
-
-CXTPSyntaxEditFindReplaceDlg::CXTPSyntaxEditFindReplaceDlg(CWnd* pParentWnd)
-: //CDialog(CXTPSyntaxEditFindReplaceDlg::IDD, pParentWnd),
-m_ptWndPos(CPoint(-1,-1))
-, m_pEditCtrl(NULL)
-, m_bReplaceDlg(FALSE)
+struct Functor
 {
-	InitModalIndirect(XTPResourceManager()->LoadDialogTemplate(IDD), pParentWnd);
+    int f0, f1, f2, f3, f4;
+};
 
-	m_csFindText = _T("");
-	m_csReplaceText = _T("");
-	m_bMatchWholeWord = FALSE;
-	m_bMatchCase = FALSE;
-	m_nSearchDirection = 1;
-}
-
-void CXTPSyntaxEditFindReplaceDlg::DoDataExchange(CDataExchange* pDX)
+union function_buffer
 {
-	CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CXTPSyntaxEditFindReplaceDlg)
-	DDX_Text(pDX, XTP_IDC_EDIT_COMBO_FIND, m_csFindText);
-	DDX_Check(pDX, XTP_IDC_EDIT_CHK_MATCH_CASE, m_bMatchCase);
-	DDX_Check(pDX, XTP_IDC_EDIT_CHK_MATCH_WHOLE_WORD, m_bMatchWholeWord);
-	DDX_Control(pDX, XTP_IDC_EDIT_COMBO_FIND, m_wndFindCombo);
-	DDX_Control(pDX, XTP_IDC_EDIT_BTN_FIND_NEXT, m_btnFindNext);
-	DDX_Control(pDX, XTP_IDC_EDIT_RADIO_UP, m_btnRadioUp);
-	DDX_Control(pDX, XTP_IDC_EDIT_RADIO_DOWN, m_btnRadioDown);
-	//}}AFX_DATA_MAP
+    void *obj_ptr;
+    struct
+    {
+        const type_info *type;
+        bool const_qualified;
+        bool volatile_qualified;
+    } type;
+    char data[20];
+};
 
-	if (m_bReplaceDlg)
-	{
-		DDX_Text(pDX, XTP_IDC_EDIT_COMBO_REPLACE, m_csReplaceText);
-		DDX_Control(pDX, XTP_IDC_EDIT_BTN_REPLACE, m_btnReplace);
-		DDX_Control(pDX, XTP_IDC_EDIT_BTN_REPLACE_ALL, m_btnReplaceAll);
-		DDX_Control(pDX, XTP_IDC_EDIT_COMBO_REPLACE, m_wndReplaceCombo);
-	}
-}
-
-BEGIN_MESSAGE_MAP(CXTPSyntaxEditFindReplaceDlg, CDialog)
-	//{{AFX_MSG_MAP(CXTPSyntaxEditFindReplaceDlg)
-	ON_CBN_EDITCHANGE(XTP_IDC_EDIT_COMBO_FIND, OnEditChangeComboFind)
-	ON_CBN_EDITCHANGE(XTP_IDC_EDIT_COMBO_REPLACE, OnEditChangeComboReplace)
-	ON_CBN_SELENDOK(XTP_IDC_EDIT_COMBO_REPLACE, OnSelendOkComboReplace)
-	ON_CBN_SELENDOK(XTP_IDC_EDIT_COMBO_FIND, OnSelendOkComboFind)
-	ON_BN_CLICKED(XTP_IDC_EDIT_BTN_FIND_NEXT, OnBtnFindNext)
-	ON_BN_CLICKED(XTP_IDC_EDIT_BTN_REPLACE, OnBtnReplace)
-	ON_BN_CLICKED(XTP_IDC_EDIT_BTN_REPLACE_ALL, OnBtnReplaceAll)
-	ON_BN_CLICKED(XTP_IDC_EDIT_CHK_MATCH_WHOLE_WORD, OnChkMatchWholeWord)
-	ON_BN_CLICKED(XTP_IDC_EDIT_CHK_MATCH_CASE, OnChkMatchCase)
-	ON_BN_CLICKED(XTP_IDC_EDIT_RADIO_UP, OnRadioUp)
-	ON_BN_CLICKED(XTP_IDC_EDIT_RADIO_DOWN, OnRadioDown)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPSyntaxEditFindReplaceDlg message handlers
-
-BOOL CXTPSyntaxEditFindReplaceDlg::OnInitDialog ()
+enum functor_manager_operation_type
 {
-	CDialog::OnInitDialog();
+    clone_functor_tag,
+    move_functor_tag,
+    destroy_functor_tag,
+    check_functor_type_tag,
+    get_functor_type_tag
+};
 
-	SetDefID(m_bReplaceDlg ? XTP_IDC_EDIT_BTN_REPLACE : XTP_IDC_EDIT_BTN_FIND_NEXT);
-
-	return TRUE;
-}
-
-void CXTPSyntaxEditFindReplaceDlg::OnFinalRelease()
+void manage(const function_buffer &in_buffer, function_buffer &out_buffer, functor_manager_operation_type op)
 {
-	DestroyWindow();
-	delete this;
-}
-
-void CXTPSyntaxEditFindReplaceDlg::UpdateHistoryCombo(const CString& csText, CStringArray& arHistory)
-{
-	if (csText.IsEmpty())
-	{
-		return;
-	}
-
-	int nCount = (int)arHistory.GetSize();
-	for (int i = nCount-1; i >= 0; i--)
-	{
-		if (arHistory[i] == csText)
-		{
-			arHistory.RemoveAt(i);
-		}
-	}
-	arHistory.InsertAt(0, csText);
-}
-
-void CXTPSyntaxEditFindReplaceDlg::UpdateHistoryCombo(const CString& csText, CStringArray& arHistory, CComboBox& wndCombo)
-{
-	UpdateHistoryCombo(csText, arHistory);
-
-	if (::IsWindow(wndCombo.m_hWnd))
-	{
-		CString strLBText;
-		int nCount = wndCombo.GetCount();
-		for (int i = nCount-1; i >= 0; i--)
-		{
-			wndCombo.GetLBText(i, strLBText);
-			if (strLBText == csText)
-			{
-				wndCombo.DeleteString(i);
-			}
-		}
-		wndCombo.InsertString(0, csText);
-		wndCombo.SetWindowText(csText);
-	}
-}
-
-void CXTPSyntaxEditFindReplaceDlg::InitHistoryCombo(CStringArray& arHistory, CComboBox& wndCombo)
-{
-	wndCombo.ResetContent();
-
-	int nCount = (int)arHistory.GetSize();
-	for (int i = 0; i < nCount; i++)
-	{
-		wndCombo.AddString(arHistory[i]);
-	}
-}
-
-BOOL CXTPSyntaxEditFindReplaceDlg::ShowDialog(CXTPSyntaxEditCtrl* pEditCtrl, BOOL bReplaceDlg)
-{
-	ASSERT_VALID(pEditCtrl);
-
-	m_pEditCtrl = pEditCtrl;
-	m_bReplaceDlg = bReplaceDlg;
-
-	if (!::IsWindow(m_pEditCtrl->GetSafeHwnd()))
-		return FALSE;
-
-	// already created, bring to foreground.
-	if (::IsWindow(m_hWnd))
-	{
-		::ShowWindow(m_hWnd, SW_RESTORE);
-		::BringWindowToTop(m_hWnd);
-		::SetForegroundWindow(m_hWnd);
-	}
-	else
-	{
-		CWnd* pParent = m_pEditCtrl->GetParentFrame();
-		UINT uID = bReplaceDlg? XTP_IDD_EDIT_SEARCH_REPLACE: XTP_IDD_EDIT_SEARCH_FIND;
-		if (!CreateIndirect(XTPResourceManager()->LoadDialogTemplate(uID), pParent))
-		{
-			TRACE0("Error creating find replace dialog.\n");
-			return FALSE;
-		}
-
-		LoadHistory();
-		UpdateData(FALSE);
-		EnableControls();
-
-		m_btnRadioUp.SetCheck(m_nSearchDirection == 0);
-		m_btnRadioDown.SetCheck(m_nSearchDirection == 1);
-
-		CXTPWindowRect rc(this);
-		::MoveWindow(m_hWnd, m_ptWndPos.x, m_ptWndPos.y, rc.Width(), rc.Height(), FALSE);
-		::ShowWindow(m_hWnd, SW_SHOW);
-	}
-
-	m_wndFindCombo.SetFocus();
-	m_wndFindCombo.SetEditSel(0,-1);
-
-	return TRUE;
-}
-
-void CXTPSyntaxEditFindReplaceDlg::EnableControls()
-{
-	m_btnFindNext.EnableWindow(!m_csFindText.IsEmpty());
-
-	if (m_bReplaceDlg)
-	{
-		m_btnReplace.EnableWindow(TRUE);
-		m_btnReplaceAll.EnableWindow(TRUE);
-	}
-}
-
-void CXTPSyntaxEditFindReplaceDlg::OnCancel()
-{
-	SaveHistory();
-
-	CDialog::OnCancel();
-
-	if (::IsWindow(m_hWnd))
-		::DestroyWindow(m_hWnd);
-}
-
-BOOL CXTPSyntaxEditFindReplaceDlg::LoadHistory()
-{
-	CWinApp* pWinApp = AfxGetApp();
-	if (!pWinApp)
-		return FALSE;
-
-	m_bMatchWholeWord = pWinApp->GetProfileInt(
-		XTP_EDIT_REG_SETTINGS, XTP_EDIT_FINDDLG_MATCHWHOLEWORD, m_bMatchWholeWord);
-
-	m_bMatchCase = pWinApp->GetProfileInt(
-		XTP_EDIT_REG_SETTINGS, XTP_EDIT_FINDDLG_MATCHCASE, m_bMatchCase);
-
-	m_nSearchDirection = pWinApp->GetProfileInt(
-		XTP_EDIT_REG_SETTINGS, XTP_EDIT_FINDDLG_SEARCHDIRECTION, m_nSearchDirection);
-
-	if (::IsWindow(m_wndFindCombo.m_hWnd))
-	{
-		int nCount = pWinApp->GetProfileInt(
-			XTP_EDIT_REG_SETTINGS, XTP_EDIT_FINDDLG_FINDHISTORYCOUNT, 0);
-
-		for (int i = 0; i < nCount; i++)
-		{
-			CString csEntry;
-			csEntry.Format(XTP_EDIT_FINDDLG_FINDHISTORYITEM, i);
-
-			CString csValue;
-			csValue = pWinApp->GetProfileString(XTP_EDIT_REG_SETTINGS, csEntry);
-
-			if (!csValue.IsEmpty())
-			{
-				if (m_wndFindCombo.FindStringExact(-1, csValue) == CB_ERR)
-				{
-					m_wndFindCombo.AddString(csValue);
-				}
-			}
-		}
-	}
-
-	if (::IsWindow(m_wndReplaceCombo.m_hWnd))
-	{
-		int nCount = pWinApp->GetProfileInt(
-			XTP_EDIT_REG_SETTINGS, XTP_EDIT_FINDDLG_REPLACEHISTORYCOUNT, 0);
-
-		for (int i = 0; i < nCount; i++)
-		{
-			CString csEntry;
-			csEntry.Format(XTP_EDIT_FINDDLG_REPLACEHISTORYITEM, i);
-
-			CString csValue;
-			csValue = pWinApp->GetProfileString(XTP_EDIT_REG_SETTINGS, csEntry);
-
-			if (!csValue.IsEmpty())
-			{
-				if (m_wndReplaceCombo.FindStringExact(-1, csValue) == CB_ERR)
-				{
-					m_wndReplaceCombo.AddString(csValue);
-				}
-			}
-		}
-	}
-
-	if (::IsWindow(m_hWnd))
-	{
-		if ((m_ptWndPos.x == -1 || m_ptWndPos.y == -1))
-		{
-			CXTPWindowRect r1(this);
-			CXTPWindowRect r2(m_pEditCtrl);
-
-			m_ptWndPos.x = r2.left + ((r2.Width()-r1.Width())/2);
-			m_ptWndPos.y = r2.top + ((r2.Height()-r1.Height())/2);
-		}
-	}
-
-	return TRUE;
-}
-
-BOOL CXTPSyntaxEditFindReplaceDlg::SaveHistory()
-{
-	CWinApp* pWinApp = AfxGetApp();
-	if (!pWinApp)
-		return FALSE;
-
-	pWinApp->WriteProfileInt(XTP_EDIT_REG_SETTINGS,
-		XTP_EDIT_FINDDLG_MATCHWHOLEWORD, m_bMatchWholeWord);
-
-	pWinApp->WriteProfileInt(XTP_EDIT_REG_SETTINGS,
-		XTP_EDIT_FINDDLG_MATCHCASE, m_bMatchCase);
-
-	pWinApp->WriteProfileInt(XTP_EDIT_REG_SETTINGS,
-		XTP_EDIT_FINDDLG_SEARCHDIRECTION, m_nSearchDirection);
-
-	if (::IsWindow(m_wndFindCombo.m_hWnd))
-	{
-		int nCount = m_wndFindCombo.GetCount();
-		pWinApp->WriteProfileInt(XTP_EDIT_REG_SETTINGS,
-			XTP_EDIT_FINDDLG_FINDHISTORYCOUNT, nCount);
-
-		for (int i = 0; i < nCount; i++)
-		{
-			CString csEntry;
-			csEntry.Format(XTP_EDIT_FINDDLG_FINDHISTORYITEM, i);
-
-			CString csValue;
-			m_wndFindCombo.GetLBText(i, csValue);
-
-			pWinApp->WriteProfileString(XTP_EDIT_REG_SETTINGS,
-				csEntry, csValue);
-		}
-	}
-
-	if (::IsWindow(m_wndReplaceCombo.m_hWnd))
-	{
-		int nCount = m_wndReplaceCombo.GetCount();
-		pWinApp->WriteProfileInt(XTP_EDIT_REG_SETTINGS,
-			XTP_EDIT_FINDDLG_REPLACEHISTORYCOUNT, nCount);
-
-		for (int i = 0; i < nCount; i++)
-		{
-			CString csEntry;
-			csEntry.Format(XTP_EDIT_FINDDLG_REPLACEHISTORYITEM, i);
-
-			CString csValue;
-			m_wndReplaceCombo.GetLBText(i, csValue);
-
-			pWinApp->WriteProfileString(XTP_EDIT_REG_SETTINGS,
-				csEntry, csValue);
-		}
-	}
-
-	if (::IsWindow(m_hWnd))
-	{
-		CXTPWindowRect rc(this);
-		m_ptWndPos = rc.TopLeft();
-	}
-
-	return TRUE;
-}
-
-void CXTPSyntaxEditFindReplaceDlg::OnEditChangeComboFind()
-{
-	UpdateData();
-	EnableControls();
-}
-
-void CXTPSyntaxEditFindReplaceDlg::OnSelendOkComboFind()
-{
-	m_wndFindCombo.GetLBText(m_wndFindCombo.GetCurSel(), m_csFindText);
-
-	EnableControls();
-}
-
-void CXTPSyntaxEditFindReplaceDlg::OnEditChangeComboReplace()
-{
-	UpdateData();
-	EnableControls();
-}
-
-void CXTPSyntaxEditFindReplaceDlg::OnSelendOkComboReplace()
-{
-	m_wndReplaceCombo.GetLBText(
-		m_wndReplaceCombo.GetCurSel(), m_csReplaceText);
-
-	EnableControls();
-}
-
-void CXTPSyntaxEditFindReplaceDlg::OnChkMatchWholeWord()
-{
-	m_bMatchWholeWord = !m_bMatchWholeWord;
-}
-
-void CXTPSyntaxEditFindReplaceDlg::OnChkMatchCase()
-{
-	m_bMatchCase = !m_bMatchCase;
-}
-
-void CXTPSyntaxEditFindReplaceDlg::OnRadioUp()
-{
-	m_nSearchDirection = 0;
-}
-
-void CXTPSyntaxEditFindReplaceDlg::OnRadioDown()
-{
-	m_nSearchDirection = 1;
-}
-
-void CXTPSyntaxEditFindReplaceDlg::OnBtnFindNext()
-{
-	if (::IsWindow(m_pEditCtrl->GetSafeHwnd()) && !m_csFindText.IsEmpty())
-	{
-		BOOL bFound = m_pEditCtrl->Find(m_csFindText,
-			m_bMatchWholeWord, m_bMatchCase, m_nSearchDirection);
-
-		if (bFound)
-		{
-			m_pEditCtrl->Invalidate(FALSE);
-		}
-		else
-		{
-			AfxMessageBox(XTPResourceManager()->LoadString(XTP_IDS_EDIT_MSG_FSEARCH));
-		}
-
-		if (m_wndFindCombo.FindStringExact(-1, m_csFindText) == CB_ERR)
-		{
-			m_wndFindCombo.AddString(m_csFindText);
-		}
-	}
-}
-
-void CXTPSyntaxEditFindReplaceDlg::OnBtnReplace()
-{
-	CWaitCursor wait;
-
-	if (::IsWindow(m_pEditCtrl->GetSafeHwnd()) && m_bReplaceDlg)
-	{
-		CString csSelectedText;
-		m_pEditCtrl->GetSelectionText(csSelectedText);
-
-		csSelectedText = csSelectedText.SpanExcluding(_T("\r\n"));
-		REPLACE_S(csSelectedText, _T("\t"), _T("    "));
-
-		BOOL bFoundText = FALSE;
-		if (m_bMatchCase)
-		{
-			bFoundText = (csSelectedText.Compare(m_csFindText) == 0);
-		}
-		else
-		{
-			bFoundText = (csSelectedText.CompareNoCase(m_csFindText) == 0);
-		}
-
-		BOOL bFoundTextPrior = bFoundText;
-		if (!bFoundText)
-		{
-			bFoundText = m_pEditCtrl->Find(m_csFindText, m_bMatchWholeWord,
-											m_bMatchCase, m_nSearchDirection);
-		}
-
-		if (!bFoundText)
-		{
-			AfxMessageBox(XTPResourceManager()->LoadString(XTP_IDS_EDIT_MSG_FSEARCH));
-		}
-		else
-		{
-			if (bFoundTextPrior)
-			{
-				m_pEditCtrl->ReplaceSel(m_csReplaceText);
-
-				bFoundText = m_pEditCtrl->Find(m_csFindText, m_bMatchWholeWord,
-											   m_bMatchCase, m_nSearchDirection);
-
-				if (!bFoundText)
-				{
-					AfxMessageBox(XTPResourceManager()->LoadString(XTP_IDS_EDIT_MSG_FSEARCH));
-				}
-			}
-			m_pEditCtrl->Invalidate(FALSE);
-		}
-
-		if (m_wndReplaceCombo.FindStringExact(-1, m_csReplaceText) == CB_ERR)
-		{
-			m_wndReplaceCombo.AddString(m_csReplaceText);
-		}
-	}
-}
-
-void CXTPSyntaxEditFindReplaceDlg::OnBtnReplaceAll()
-{
-	CWaitCursor wait;
-
-	if (::IsWindow(m_pEditCtrl->GetSafeHwnd()))
-	{
-		int nMatchFound = m_pEditCtrl->ReplaceAll(m_csFindText, m_csReplaceText,
-							m_bMatchWholeWord, m_bMatchCase);
-
-		m_pEditCtrl->Invalidate(FALSE);
-
-		CString csMatchFound;
-		csMatchFound.Format(XTPResourceManager()->LoadString(XTP_IDS_EDIT_MSG_FREPLACED), nMatchFound);
-
-		AfxMessageBox(csMatchFound);
-
-		if (m_wndReplaceCombo.FindStringExact(-1, m_csReplaceText) == CB_ERR)
-		{
-			m_wndReplaceCombo.AddString(m_csReplaceText);
-		}
-	}
+    if (op == clone_functor_tag || op == move_functor_tag) {
+        const Functor *in_functor = reinterpret_cast<const Functor *>(&in_buffer.data);
+        new ((void *)&out_buffer.data) Functor(*in_functor);
+    } else if (op == destroy_functor_tag) {
+    } else if (op == check_functor_type_tag) {
+        const type_info &check_type = *out_buffer.type.type;
+        if (check_type == type_descriptor_b04cc8)
+            out_buffer.obj_ptr = (void *)&in_buffer.data;
+        else
+            out_buffer.obj_ptr = 0;
+    } else {
+        out_buffer.type.type = &type_descriptor_b04cc8;
+        out_buffer.type.const_qualified = false;
+        out_buffer.type.volatile_qualified = false;
+    }
 }

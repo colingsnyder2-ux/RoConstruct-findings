@@ -1,140 +1,78 @@
-// from server: 45% by colin
-// roc-lang: cpp
+// roc 2009-06 006b5160  unit: RBX::BlockBlockContact  size: 87 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 006b5160
+//
+// 006b5160  d9ee                 fldz 
+// 006b5162  83ec08               sub esp, 8
+// 006b5165  56                   push esi
+// 006b5166  8bf1                 mov esi, ecx
+// 006b5168  d85630               fcom dword ptr [esi + 0x30]
+// 006b516b  dfe0                 fnstsw ax
+// 006b516d  f6c444               test ah, 0x44
+// 006b5170  7a2d                 jp 0x6b519f
+// 006b5172  d85e34               fcomp dword ptr [esi + 0x34]
+// 006b5175  dfe0                 fnstsw ax
+// 006b5177  f6c444               test ah, 0x44
+// 006b517a  7a25                 jp 0x6b51a1
+// 006b517c  8b4e20               mov ecx, dword ptr [esi + 0x20]
+// 006b517f  85c9                 test ecx, ecx
+// 006b5181  741e                 je 0x6b51a1
+// 006b5183  8b01                 mov eax, dword ptr [ecx]
+// 006b5185  8b4014               mov eax, dword ptr [eax + 0x14]
+// 006b5188  8d542404             lea edx, [esp + 4]
+// 006b518c  52                   push edx
+// 006b518d  ffd0                 call eax
+// 006b518f  d9442404             fld dword ptr [esp + 4]
+// 006b5193  d95e30               fstp dword ptr [esi + 0x30]
+// 006b5196  d9442408             fld dword ptr [esp + 8]
+// 006b519a  d95e34               fstp dword ptr [esi + 0x34]
+// 006b519d  eb02                 jmp 0x6b51a1
+// 006b519f  ddd8                 fstp st(0)
+// 006b51a1  d94630               fld dword ptr [esi + 0x30]
+// 006b51a4  8b442410             mov eax, dword ptr [esp + 0x10]
+// 006b51a8  d918                 fstp dword ptr [eax]
+// 006b51aa  d94634               fld dword ptr [esi + 0x34]
+// 006b51ad  5e                   pop esi
+// 006b51ae  d95804               fstp dword ptr [eax + 4]
+// 006b51b1  83c408               add esp, 8
+// 006b51b4  c20400               ret 4
+// copied from an identical function in another client (function ?f@S@@QAE?AUVec2@@XZ)
+
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs tool/Dragger.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+struct Vec2 {
+    float x;
+    float y;
+};
 
-// Candidate translation unit (score above; library headers required).
-#include "tool/Dragger.h"
-#include "tool/DragUtilities.h"
-#include "v8datamodel/PartInstance.h"
-#include "v8world/ContactManager.h"
-#include "util/Math.h"
+struct Source {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void slot3();
+    virtual void slot4();
+    virtual Vec2 get();
+};
 
-namespace RBX
+struct S {
+    char padding0[0x20];
+    Source* source;
+    char padding1[0x0C];
+    float x;
+    float y;
+
+    Vec2 f();
+};
+
+Vec2 S::f()
 {
-	G3D::Vector3 Dragger::toGrid(const G3D::Vector3& v)
-	{
-		return Math::toGrid(v, dragSnap());
-	}
+    if (x == 0.0f && y == 0.0f && source) {
+        Vec2 value = source->get();
+        x = value.x;
+        y = value.y;
+    }
 
-	void Dragger::movePrimitives(const G3D::Array<Primitive*>& primitives, const G3D::Vector3& delta)
-	{
-		RBXASSERT(primitives.size() > 0);
-
-		if (delta != G3D::Vector3::zero())
-		{
-			for (int i = 0; i < primitives.size(); i++)
-			{
-				Primitive* prim = primitives[i];
-				PartInstance* part = PartInstance::fromPrimitive(prim);
-
-				DragUtilities::moveAndClean(part, delta);
-			}
-		}
-	}
-
-	Extents Dragger::computeExtents(const G3D::Array<Primitive*>& primitives)
-	{
-		RBXASSERT(primitives.size() > 0);
-
-		Extents e = Extents::negativeInfiniteExtents();
-
-		for (int i = 0; i < primitives.size(); i++)
-		{
-			Primitive* prim = primitives[i];
-
-			Extents worldExtents = prim->getExtentsLocal().toWorldSpace(prim->getCoordinateFrame());
-			e.unionWith(worldExtents);
-		}
-
-		return e;
-	}
-
-	bool Dragger::intersectingWorldOrOthers(const G3D::Array<Primitive*>& primitives, ContactManager& contactManager)
-	{
-		RBXASSERT(primitives.size() > 0);
-
-		Extents group = computeExtents(primitives);
-		return group.min().y < -0.01f || contactManager.intersectingOthers(primitives, 0.01f);
-	}
-
-	void Dragger::movePrimitivesDelta(const G3D::Array<Primitive*>& primitives, const G3D::Vector3& delta, G3D::Vector3& movedSoFar)
-	{
-		RBXASSERT(delta == toGrid(delta));
-		RBXASSERT(delta != G3D::Vector3::zero());
-
-		movePrimitives(primitives, delta);
-		movedSoFar = toGrid(movedSoFar + delta);
-	}
-
-	G3D::Vector3 Dragger::safeMoveYDrop(const G3D::Array<Primitive*>& primitives, const G3D::Vector3& tryMove, ContactManager& contactManager)
-	{
-		if (primitives.size() == 0)
-		{
-			RBXASSERT(0);
-			return G3D::Vector3::zero();
-		}
-
-		G3D::Vector3 moved = tryMove - G3D::Vector3(0.0f, 1.2f, 0.0f);
-		moved = Math::toGrid(moved, 0.1f);
-
-		movePrimitives(primitives, moved);
-
-		if (intersectingWorldOrOthers(primitives, contactManager))
-			searchUpGross(primitives, moved, contactManager);
-		else
-			searchDownGross(primitives, moved, contactManager);
-
-		RBXASSERT(moved == Math::toGrid(moved, 0.1f));
-
-		return moved;
-	}
-
-	G3D::Vector3 Dragger::safeMoveNoDrop(const G3D::Array<Primitive*>& primitives, const G3D::Vector3& tryMove, ContactManager& contactManager)
-	{
-		G3D::Vector3 movedSoFar(0.0f, 0.0f, 0.0f);
-
-		if (primitives.size() == 0)
-		{
-			RBXASSERT(0);
-			return G3D::Vector3::zero();
-		}
-
-		if (tryMove != G3D::Vector3::zero())
-		{
-			movePrimitives(primitives, tryMove);
-			movedSoFar += tryMove;
-		}
-
-		if (intersectingWorldOrOthers(primitives, contactManager))
-			searchUpGross(primitives, movedSoFar, contactManager);
-
-		return movedSoFar;
-	}
-
-	void Dragger::safeRotate(const G3D::Array<Primitive*>& primitives, const G3D::Matrix3& rotate, ContactManager& contactManager)
-	{
-		if (primitives.size() == 0)
-		{
-			RBXASSERT(0);
-			return;
-		}
-
-		G3D::Vector3 center = toGrid(computeExtents(primitives).center());
-		G3D::CoordinateFrame centerCoord(center);
-		G3D::CoordinateFrame rotationCoord(rotate, G3D::Vector3::zero());
-
-		for (int i = 0; i < primitives.size(); i++)
-		{
-			Primitive* prim = primitives[i];
-
-			G3D::CoordinateFrame primInCenter = centerCoord.toObjectSpace(prim->getCoordinateFrame());
-			G3D::CoordinateFrame newPrimInCenter = rotationCoord * primInCenter;
-			G3D::CoordinateFrame primInWorld = centerCoord * newPrimInCenter;
-
-			PartInstance* part = PartInstance::fromPrimitive(prim);
-			part->setCoordinateFrame(primInWorld);
-		}
-	}
+    Vec2 result;
+    result.x = x;
+    result.y = y;
+    return result;
 }

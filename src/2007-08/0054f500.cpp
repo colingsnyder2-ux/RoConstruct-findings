@@ -1,10 +1,16 @@
-// from server: 81% by colin
-// roc 2007-08 0054f500  size: 45 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 0054f500
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_a8b429b397bb580b.cpp
 
-extern "C" void __cdecl helper_54f490(int, int, int, int, int, int, int, int, int);
-
-void func_0054f500(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
-{
-    helper_54f490(a1, a2, a3, a4, a5, a6, a7, a8, 0);
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_gzip_compressor<std::allocator<char> >,std::char_traits<char>,std::allocator<char>,boost::iostreams::output>;

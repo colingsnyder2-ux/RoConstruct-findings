@@ -1,69 +1,27 @@
-// from server: 40% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-render Material.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espeon_materialappend65af826264b10af9.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "RenderLib/Material.h"
+#pragma float_control(precise,off)
+#include <G3D/Array.h>
+#include "RenderLib/TextureProxy.h"
+#include "G3D/Color3.h"
+struct LevelBase {virtual ~LevelBase();};
+struct Level:LevelBase {
+ Level();
+ virtual ~Level();
+ bool enabled;
+ G3D::ReferenceCountedPointer<RBX::TextureProxyBase> texture,proxy;
+ G3D::Color3 color;
+ float d,e,f,g;
+ Level(G3D::ReferenceCountedPointer<RBX::TextureProxyBase>,G3D::Color3,float,float,float,float);
+};
 
-namespace RBX
-{
-	namespace Render
-	{
-		Material::Level::Level(G3D::ReferenceCountedPointer<TextureProxy> baseTexture, G3D::Color3 color, float specular, float shiny, float reflect, float transparent)
-			: emptyLevel(false),
-			  mBaseTexture(baseTexture),
-			  mColor(color),
-			  mSpecular(specular),
-			  mShiny(shiny),
-			  mReflect(reflect),
-			  mTransparent(transparent)
-		{
-			if (baseTexture.notNull())
-				mMatte = baseTexture->alphaOnlyVersion();
-
-			if (mTransparent > 0.0f)
-				mReflect = 0.0f;
-		}
-
-		Material::Level::Level()
-			: emptyLevel(true),
-			  mColor(G3D::Color3::white()),
-			  mSpecular(0.0f),
-			  mShiny(0.0f),
-			  mReflect(0.0f),
-			  mTransparent(0.0f)
-		{
-		}
-
-		Material::Level::~Level() {}
-
-		void Material::Level::configureRenderDevice(G3D::RenderDevice* renderDevice) const
-		{
-			renderDevice->setColor(mColor);
-			renderDevice->setSpecularCoefficient(mSpecular);
-			renderDevice->setShininess(mShiny);
-			renderDevice->setTexture(0, baseTexture(renderDevice));
-		}
-
-		Material::Material() {}
-		Material::~Material() {}
-
-		const Material::Level& Material::appendEmptyLevel()
-		{
-			return levels.next();
-		}
-
-		const Material::Level& Material::appendLevel(G3D::ReferenceCountedPointer<TextureProxy> baseTexture, G3D::Color3 color, float specular, float shiny, float reflect, float transparent)
-		{
-			levels.push_back(Material::Level(baseTexture, color, specular, shiny, reflect, transparent));
-			return levels.last();
-		}
-
-		bool Material::veryTransparent() const
-		{
-			return levels.size() > 0 && levels.front().mTransparent > 0.25f;
-		}
-	}
+struct Material{char pad[12];G3D::Array<Level> levels;Level* addPass(G3D::Color3,float,float,float,float);};
+Level* Material::addPass(G3D::Color3 color,float a,float b,float c,float d){
+ levels.append(Level(G3D::ReferenceCountedPointer<RBX::TextureProxyBase>(),color,a,b,c,d));
+ return &levels.last();
 }

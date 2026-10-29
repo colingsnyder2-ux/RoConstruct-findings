@@ -1,156 +1,258 @@
-// from server: 51% by colin
-// roc-lang: cpp
+// roc-lang: c
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 G3Dcpp/Plane.cpp
+// roc-flags: /O2 /GS- /MD
+// roc-lib: g3d-6.09-ijg-dll jerror.c
 
 // Candidate translation unit (score above; library headers required).
-/**
- @file Plane.cpp
- 
- @maintainer Morgan McGuire, matrix@graphics3d.com
- 
- @created 2003-02-06
- @edited  2006-01-29
+/*
+ * jerror.c
+ *
+ * Copyright (C) 1991-1998, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains simple error-reporting and trace-message routines.
+ * These are suitable for Unix-like systems and others where writing to
+ * stderr is the right thing to do.  Many applications will want to replace
+ * some or all of these routines.
+ *
+ * If you define USE_WINDOWS_MESSAGEBOX in jconfig.h or in the makefile,
+ * you get a Windows-specific hack to display error messages in a dialog box.
+ * It ain't much, but it beats dropping error messages into the bit bucket,
+ * which is what happens to output to stderr under most Windows C compilers.
+ *
+ * These routines are used by both the compression and decompression code.
  */
 
-#include "G3D/platform.h"
-#include "G3D/Plane.h"
-#include "G3D/BinaryOutput.h"
-#include "G3D/BinaryInput.h"
-#include "G3D/stringutils.h"
+/* this is not a core library module, so it doesn't define JPEG_INTERNALS */
+#include "jinclude.h"
+#include "jpeglib.h"
+#include "jversion.h"
+#include "jerror.h"
 
-namespace G3D {
+#ifdef USE_WINDOWS_MESSAGEBOX
+#include <windows.h>
+#endif
 
-Plane::Plane(class BinaryInput& b) {
-	deserialize(b);
+#ifndef EXIT_FAILURE		/* define exit() codes if not provided */
+#define EXIT_FAILURE  1
+#endif
+
+
+/*
+ * Create the message string table.
+ * We do this from the master message list in jerror.h by re-reading
+ * jerror.h with a suitable definition for macro JMESSAGE.
+ * The message table is made an external symbol just in case any applications
+ * want to refer to it directly.
+ */
+
+#ifdef NEED_SHORT_EXTERNAL_NAMES
+#define jpeg_std_message_table	jMsgTable
+#endif
+
+#define JMESSAGE(code,string)	string ,
+
+const char * const jpeg_std_message_table[] = {
+#include "jerror.h"
+  NULL
+};
+
+
+/*
+ * Error exit handler: must not return to caller.
+ *
+ * Applications may override this if they want to get control back after
+ * an error.  Typically one would longjmp somewhere instead of exiting.
+ * The setjmp buffer can be made a private field within an expanded error
+ * handler object.  Note that the info needed to generate an error message
+ * is stored in the error object, so you can generate the message now or
+ * later, at your convenience.
+ * You should make sure that the JPEG object is cleaned up (with jpeg_abort
+ * or jpeg_destroy) at some point.
+ */
+
+METHODDEF(void)
+error_exit (j_common_ptr cinfo)
+{
+  /* Always display the message */
+  (*cinfo->err->output_message) (cinfo);
+
+  /* Let the memory manager delete any temp files before we die */
+  jpeg_destroy(cinfo);
+
+  exit(EXIT_FAILURE);
 }
 
 
-void Plane::serialize(class BinaryOutput& b) const {
-	_normal.serialize(b);
-	b.writeFloat64(_distance);
+/*
+ * Actual output of an error or trace message.
+ * Applications may override this method to send JPEG messages somewhere
+ * other than stderr.
+ *
+ * On Windows, printing to stderr is generally completely useless,
+ * so we provide optional code to produce an error-dialog popup.
+ * Most Windows applications will still prefer to override this routine,
+ * but if they don't, it'll do something at least marginally useful.
+ *
+ * NOTE: to use the library in an environment that doesn't support the
+ * C stdio library, you may have to delete the call to fprintf() entirely,
+ * not just not use this routine.
+ */
+
+METHODDEF(void)
+output_message (j_common_ptr cinfo)
+{
+  char buffer[JMSG_LENGTH_MAX];
+
+  /* Create the message */
+  (*cinfo->err->format_message) (cinfo, buffer);
+
+#ifdef USE_WINDOWS_MESSAGEBOX
+  /* Display it in a message dialog box */
+  MessageBox(GetActiveWindow(), buffer, "JPEG Library Error",
+	     MB_OK | MB_ICONERROR);
+#else
+  /* Send it to stderr, adding a newline */
+  fprintf(stderr, "%s\n", buffer);
+#endif
 }
 
 
-void Plane::deserialize(class BinaryInput& b) {
-	_normal.deserialize(b);
-	_distance = (float)b.readFloat64();
+/*
+ * Decide whether to emit a trace or warning message.
+ * msg_level is one of:
+ *   -1: recoverable corrupt-data warning, may want to abort.
+ *    0: important advisory messages (always display to user).
+ *    1: first level of tracing detail.
+ *    2,3,...: successively more detailed tracing messages.
+ * An application might override this method if it wanted to abort on warnings
+ * or change the policy about which messages to display.
+ */
+
+METHODDEF(void)
+emit_message (j_common_ptr cinfo, int msg_level)
+{
+  struct jpeg_error_mgr * err = cinfo->err;
+
+  if (msg_level < 0) {
+    /* It's a warning message.  Since corrupt files may generate many warnings,
+     * the policy implemented here is to show only the first warning,
+     * unless trace_level >= 3.
+     */
+    if (err->num_warnings == 0 || err->trace_level >= 3)
+      (*err->output_message) (cinfo);
+    /* Always count warnings in num_warnings. */
+    err->num_warnings++;
+  } else {
+    /* It's a trace message.  Show it if trace_level >= msg_level. */
+    if (err->trace_level >= msg_level)
+      (*err->output_message) (cinfo);
+  }
 }
 
 
-Plane::Plane(
-    Vector4      point0,
-    Vector4      point1,
-    Vector4      point2) {
+/*
+ * Format a message string for the most recent JPEG error or message.
+ * The message is stored into buffer, which should be at least JMSG_LENGTH_MAX
+ * characters.  Note that no '\n' character is added to the string.
+ * Few applications should need to override this method.
+ */
 
-    debugAssertM(
-        point0.w != 0 || 
-        point1.w != 0 || 
-        point2.w != 0,
-        "At least one point must be finite.");
+METHODDEF(void)
+format_message (j_common_ptr cinfo, char * buffer)
+{
+  struct jpeg_error_mgr * err = cinfo->err;
+  int msg_code = err->msg_code;
+  const char * msgtext = NULL;
+  const char * msgptr;
+  char ch;
+  boolean isstring;
 
-    // Rotate the points around so that the finite points come first.
+  /* Look up message string in proper table */
+  if (msg_code > 0 && msg_code <= err->last_jpeg_message) {
+    msgtext = err->jpeg_message_table[msg_code];
+  } else if (err->addon_message_table != NULL &&
+	     msg_code >= err->first_addon_message &&
+	     msg_code <= err->last_addon_message) {
+    msgtext = err->addon_message_table[msg_code - err->first_addon_message];
+  }
 
-    while ((point0.w == 0) && 
-           ((point1.w == 0) || (point2.w != 0))) {
-        Vector4 temp = point0;
-        point0 = point1;
-        point1 = point2;
-        point2 = temp;
+  /* Defend against bogus message number */
+  if (msgtext == NULL) {
+    err->msg_parm.i[0] = msg_code;
+    msgtext = err->jpeg_message_table[0];
+  }
+
+  /* Check for string parameter, as indicated by %s in the message text */
+  isstring = FALSE;
+  msgptr = msgtext;
+  while ((ch = *msgptr++) != '\0') {
+    if (ch == '%') {
+      if (*msgptr == 's') isstring = TRUE;
+      break;
     }
+  }
 
-    Vector3 dir1;
-    Vector3 dir2;
-
-    if (point1.w == 0) {
-        // 1 finite, 2 infinite points; the plane must contain
-        // the direction of the two direcitons
-        dir1 = point1.xyz();
-        dir2 = point2.xyz();
-    } else if (point2.w != 0) {
-        // 3 finite points, the plane must contain the directions
-        // betwseen the points.
-        dir1 = point1.xyz() - point0.xyz();
-        dir2 = point2.xyz() - point0.xyz();
-    } else {
-        // 2 finite, 1 infinite point; the plane must contain
-        // the direction between the first two points and the
-        // direction of the third point.
-        dir1 = point1.xyz() - point0.xyz();
-        dir2 = point2.xyz();
-    }
-
-    _normal   = dir1.cross(dir2).direction();
-    _distance = _normal.dot(point0.xyz());
+  /* Format the message into the passed buffer */
+  if (isstring)
+    sprintf(buffer, msgtext, err->msg_parm.s);
+  else
+    sprintf(buffer, msgtext,
+	    err->msg_parm.i[0], err->msg_parm.i[1],
+	    err->msg_parm.i[2], err->msg_parm.i[3],
+	    err->msg_parm.i[4], err->msg_parm.i[5],
+	    err->msg_parm.i[6], err->msg_parm.i[7]);
 }
 
 
-Plane::Plane(
-    const Vector3&      point0,
-    const Vector3&      point1,
-    const Vector3&      point2) {
+/*
+ * Reset error state variables at start of a new image.
+ * This is called during compression startup to reset trace/error
+ * processing to default state, without losing any application-specific
+ * method pointers.  An application might possibly want to override
+ * this method if it has additional error processing state.
+ */
 
-    _normal   = (point1 - point0).cross(point2 - point0).direction();
-    _distance = _normal.dot(point0);
+METHODDEF(void)
+reset_error_mgr (j_common_ptr cinfo)
+{
+  cinfo->err->num_warnings = 0;
+  /* trace_level is not reset since it is an application-supplied parameter */
+  cinfo->err->msg_code = 0;	/* may be useful as a flag for "no error" */
 }
 
 
-Plane::Plane(
-    const Vector3&      __normal,
-    const Vector3&      point) {
+/*
+ * Fill in the standard error-handling methods in a jpeg_error_mgr object.
+ * Typical call is:
+ *	struct jpeg_compress_struct cinfo;
+ *	struct jpeg_error_mgr err;
+ *
+ *	cinfo.err = jpeg_std_error(&err);
+ * after which the application may override some of the methods.
+ */
 
-    _normal   = __normal.direction();
-    _distance  = _normal.dot(point);
-}
+GLOBAL(struct jpeg_error_mgr *)
+jpeg_std_error (struct jpeg_error_mgr * err)
+{
+  err->error_exit = error_exit;
+  err->emit_message = emit_message;
+  err->output_message = output_message;
+  err->format_message = format_message;
+  err->reset_error_mgr = reset_error_mgr;
 
+  err->trace_level = 0;		/* default = no tracing */
+  err->num_warnings = 0;	/* no warnings emitted yet */
+  err->msg_code = 0;		/* may be useful as a flag for "no error" */
 
-Plane Plane::fromEquation(float a, float b, float c, float d) {
-    Vector3 n(a, b, c);
-    float magnitude = n.magnitude();
-    d /= magnitude;
-    n /= magnitude;
-    return Plane(n, -d);
-}
+  /* Initialize message table pointers */
+  err->jpeg_message_table = jpeg_std_message_table;
+  err->last_jpeg_message = (int) JMSG_LASTMSGCODE - 1;
 
+  err->addon_message_table = NULL;
+  err->first_addon_message = 0;	/* for safety */
+  err->last_addon_message = 0;
 
-void Plane::flip() {
-    _normal   = -_normal;
-    _distance  = -_distance;
-}
-
-
-void Plane::getEquation(Vector3& n, float& d) const {
-    double _d;
-    getEquation(n, _d);
-    d = (float)_d;
-}
-
-void Plane::getEquation(Vector3& n, double& d) const {
-    n = _normal;
-    d = -_distance;
-}
-
-
-void Plane::getEquation(float& a, float& b, float& c, float& d) const {
-    double _a, _b, _c, _d;
-    getEquation(_a, _b, _c, _d);
-    a = (float)_a;
-    b = (float)_b;
-    c = (float)_c;
-    d = (float)_d;
-}
-
-void Plane::getEquation(double& a, double& b, double& c, double& d) const {
-    a = _normal.x;
-    b = _normal.y;
-    c = _normal.z;
-    d = -_distance;
-}
-
-
-std::string Plane::toString() const {
-    return format("Plane(%g, %g, %g, %g)", _normal.x, _normal.y, _normal.z, _distance);
-}
-
+  return err;
 }

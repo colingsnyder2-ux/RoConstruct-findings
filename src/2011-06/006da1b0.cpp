@@ -1,24 +1,57 @@
-// from server: 15% by atomic.potato
-struct type_info {
-    bool operator==(const type_info&) const;
+// roc 2011-06 006da1b0  unit: RBX::VChatService::?$EventDesc  size: 57 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 006da1b0
+//
+// 006da1b0  56                   push esi
+// 006da1b1  8b742408             mov esi, dword ptr [esp + 8]
+// 006da1b5  85f6                 test esi, esi
+// 006da1b7  742c                 je 0x6da1e5
+// 006da1b9  8b0e                 mov ecx, dword ptr [esi]
+// 006da1bb  85c9                 test ecx, ecx
+// 006da1bd  7409                 je 0x6da1c8
+// 006da1bf  8b01                 mov eax, dword ptr [ecx]
+// 006da1c1  8b5004               mov edx, dword ptr [eax + 4]
+// 006da1c4  ffd2                 call edx
+// 006da1c6  eb05                 jmp 0x6da1cd
+// 006da1c8  b8447ac000           mov eax, 0xc07a44
+// 006da1cd  6890a7c200           push 0xc2a790
+// 006da1d2  8bc8                 mov ecx, eax
+// 006da1d4  ff15500aa400         call dword ptr [0xa40a50]
+// 006da1da  84c0                 test al, al
+// 006da1dc  7407                 je 0x6da1e5
+// 006da1de  8b06                 mov eax, dword ptr [esi]
+// 006da1e0  83c004               add eax, 4
+// 006da1e3  5e                   pop esi
+// 006da1e4  c3                   ret 
+// 006da1e5  33c0                 xor eax, eax
+// 006da1e7  5e                   pop esi
+// 006da1e8  c3                   ret 
+// copied from an identical function in another client (function ?fn_ROCX000000_00642c10@@YAPAXPAUAny@@@Z)
+
+// roc-cl: 30729
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <typeinfo>
+
+// boost::any_cast<T>(any *) shape: 0xb0030c = typeid(void), 0xb1316c = typeid(T)
+extern const type_info type_descriptor_b0030c;
+extern const type_info type_descriptor_b1316c;
+
+struct Placeholder
+{
+    virtual ~Placeholder();
+    virtual const type_info &type() const;
 };
 
-extern "C" {
-    bool __stdcall MSVCR90_type_info_equal(const type_info*, const type_info*);
-}
-
-struct VChatService_EventDesc {
-    void* field0;
-    void* get();
+struct Any
+{
+    Placeholder *content;
+    const type_info &type() const { return content ? content->type() : type_descriptor_b0030c; }
 };
 
-void* VChatService_EventDesc::get() {
-    void* p = this->field0;
-    if (p == 0) {
-        return 0;
-    }
-    void** vtbl = *(void***)p;
-    void* (*fn)(void*) = (void* (*)(void*))vtbl[1];
-    void* result = fn(p);
-    return result;
+struct Holder : Placeholder { int held; };
+
+void *func_00642c10(Any *operand)
+{
+    if (operand && operand->type() == type_descriptor_b1316c)
+        return &static_cast<Holder *>(operand->content)->held;
+    return 0;
 }

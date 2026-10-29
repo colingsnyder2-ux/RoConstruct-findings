@@ -1,28 +1,9 @@
-// from server: 60% by atomic.potato
-struct S_func_008edb20
-{
-    void* p0;
-    int z0;
-    int z1;
-    int z2;
-    int z3;
-    S_func_008edb20();
-};
-
-extern "C" void Call_00926442(void*);
-extern int Global_00A0DA6C;
-
-struct S
-{
-    int f();
-};
-
-int S::f()
-{
-    Call_00926442(this);
-    *(int*)this = (int)&Global_00A0DA6C;
-    S_func_008edb20();
-    *(int*)((char*)this + 0x34) = 0;
-    *(int*)((char*)this + 0x38) = 0;
-    return (int)this;
-}
+// roc 2009-12 008edc30  unit: PAVCXTPRibbonGroup::?$CArray  size: 34 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 008edc30
+//
+// 008edc30  56                   push esi
+// 008edc31  8bf1                 mov esi, ecx
+// 008edc33  e80a880300           call 0x926442
+// 008edc38  8d4e20               lea ecx, [esi + 0x20]
+// 008edc3b  c7066cdaa000         mov dword ptr [esi], 0xa0da6c
+// 008edc41  e8dafeffff           call 0x8edb20

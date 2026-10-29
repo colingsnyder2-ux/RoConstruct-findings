@@ -1,25 +1,15 @@
-// from server: 54% by atomic.potato
-struct S {
-    char pad0[0x18];
-    char s18[0x1c];
-    char s34[0x1c];
-    int f50;
-    int f54;
-    S(const S&);
-};
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_5f426dfd96d21d45.cpp
 
-extern "C" void* __stdcall string_copy(void*, const void*);
-
-S::S(const S& other)
-{
-    *(int*)((char*)this + 0x00) = *(int*)((char*)&other + 0x00);
-    *(int*)((char*)this + 0x04) = *(int*)((char*)&other + 0x04);
-    *(int*)((char*)this + 0x08) = *(int*)((char*)&other + 0x08);
-    *(int*)((char*)this + 0x0c) = *(int*)((char*)&other + 0x0c);
-    *(int*)((char*)this + 0x10) = *(int*)((char*)&other + 0x10);
-    *(int*)((char*)this + 0x14) = *(int*)((char*)&other + 0x14);
-    string_copy((char*)this + 0x18, (char*)&other + 0x18);
-    string_copy((char*)this + 0x34, (char*)&other + 0x34);
-    *(int*)((char*)this + 0x50) = *(int*)((char*)&other + 0x50);
-    *(int*)((char*)this + 0x54) = *(int*)((char*)&other + 0x54);
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::basic_gzip_decompressor<std::allocator<char> >;

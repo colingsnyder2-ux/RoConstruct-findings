@@ -1,14 +1,11 @@
-// from server: 53% by colin
-// roc 2007-08 0054f9d0  size: 27 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 0054f9d0
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-boost-1_34_1 roc_string_sink_401c42386b16c308.cpp
 
-extern "C" int __cdecl sub_54f8a0(int, int, int, int, int);
-
-struct S {
-    int f(int, int, int, int, int);
-};
-
-int S::f(int a, int b, int c, int d, int e)
-{
-    return sub_54f8a0(a, b, c, d, e);
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <boost/iostreams/device/back_inserter.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::stream_buffer<boost::iostreams::back_insert_device<std::string> >;

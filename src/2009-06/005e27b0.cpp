@@ -1,569 +1,433 @@
-// from server: 36% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/program_options/src/options_description.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-atl90-dll util/ContentProvider.cpp
 
 // Candidate translation unit (score above; library headers required).
-// Copyright Vladimir Prus 2002-2004.
-// Copyright Bertolt Mildner 2004.
-// Distributed under the Boost Software License, Version 1.0.
-// (See accompanying file LICENSE_1_0.txt
-// or copy at http://www.boost.org/LICENSE_1_0.txt)
+#include "util/ContentProvider.h"
+#include "util/standardout.h"
+#include "util/Http.h"
+#include "util/FileSystem.h"
+#include "v8xml/SerializerV2.h"
+#include <atlutil.h>
+#include <G3D/format.h>
+#include <boost/shared_ptr.hpp>
+#include <boost/iostreams/copy.hpp>
 
+namespace RBX
+{
+	// TODO: check match
+	bool operator<(const ContentId& a, const ContentId& b)
+	{
+		return a.toString() < b.toString();
+	}
 
-#define BOOST_PROGRAM_OPTIONS_SOURCE
-#include <boost/program_options/config.hpp>
-#include <boost/program_options/options_description.hpp>
-// FIXME: this is only to get multiple_occureces class
-// should move that to a separate headers.
-#include <boost/program_options/parsers.hpp>
+	bool operator!=(const ContentId& a, const ContentId& b)
+	{
+		return a.toString() != b.toString();
+	}
 
+	ContentId ContentId::fromAssets(const std::string& filePath)
+	{
+		std::string header = "rbxasset://";
+		return ContentId(header + filePath);
+	}
 
-#include <boost/lexical_cast.hpp>
-#include <boost/tokenizer.hpp>
-#include <boost/detail/workaround.hpp>
-#include <boost/throw_exception.hpp>
+	ContentProvider::ContentProvider()
+	{
+		char path[MAX_PATH];
+		if (SHGetFolderPathAndSubDirA(NULL, CSIDL_COMMON_APPDATA, NULL, SHGFP_TYPE_CURRENT, "Roblox\\content\\", (LPSTR)&path) == S_OK)
+		{
+			this->singleton().setAssetFolder(path);
+		}
+		else
+		{
+			StandardOut::singleton()->print(MESSAGE_WARNING, "Failed to get asset folder");
+		}
 
-#include <cassert>
-#include <climits>
-#include <cstring>
-#include <cstdarg>
-#include <sstream>
-#include <iterator>
-using namespace std;
+		requestProcessor.reset(new worker_thread(boost::bind(&ContentProvider::processRequests, this), "rbx_content"));
+	}
 
-namespace boost { namespace program_options {
+	ContentProvider::~ContentProvider()
+	{
+		requestProcessor->join();
+	}
 
-    option_description::option_description()
-    {
-    }
-    
-    option_description::
-    option_description(const char* name,
-                       const value_semantic* s)
-    : m_value_semantic(s)
-    {
-        this->set_name(name);
-    }
-                                           
+	bool ContentProvider::isHttpUrl(const std::string& s)
+	{
+		if (s.find("http://") == 0)
+			return true;
 
-    option_description::
-    option_description(const char* name,
-                       const value_semantic* s,
-                       const char* description)
-    : m_description(description), m_value_semantic(s)
-    {
-        this->set_name(name);
-    }
+		if (s.find("https://") == 0)
+			return true;
 
-    option_description::~option_description()
-    {
-    }
+		return false;
+	}
 
-    option_description::match_result
-    option_description::match(const std::string& option, bool approx) const
-    {
-        match_result result = no_match;
-        if (!m_long_name.empty()) {
+	std::string ContentProvider::assetFolder() const
+	{
+		return assetFolderPath;
+	}
 
-            if (*m_long_name.rbegin() == '*')
-            {
-                // The name ends with '*'. Any specified name with the given
-                // prefix is OK.
-                if (option.find(m_long_name.substr(0, m_long_name.length()-1))
-                    == 0)
-                    result = approximate_match;
-            }
+	bool ContentProvider::isRequestQueueEmpty()
+	{
+		boost::mutex::scoped_lock lock(requestSync);
+		return requestQueue.empty();
+	}
 
-            if (approx)
-            {
-                if (m_long_name.find(option) == 0)
-                    if (m_long_name == option)
-                        result = full_match;
-                    else
-                        result = approximate_match;
-            }
-            else
-            {
-                if (m_long_name == option)
-                    result = full_match;
-            }
-        }
-         
-        if (m_short_name == option)
-            result = full_match;
+	bool ContentProvider::isUrlBad(const char* url)
+	{
+		boost::mutex::scoped_lock lock(requestSync);
 
-        return result;        
-    }
+		std::list<FailedUrl>::iterator iter = failedUrls.begin();
+		std::list<FailedUrl>::iterator end = failedUrls.end();
 
-    const std::string& 
-    option_description::key(const std::string& option) const
-    {        
-        if (!m_long_name.empty()) 
-            if (m_long_name.find('*') != string::npos)
-                // The '*' character means we're long_name
-                // matches only part of the input. So, returning
-                // long name will remove some of the information,
-                // and we have to return the option as specified
-                // in the source.
-                return option;
-            else
-                return m_long_name;
-        else
-            return m_short_name;
-    }
+		for (; iter != end; iter++)
+		{
+			if (boost::posix_time::second_clock::local_time() >= iter->expiration)
+			{
+				failedUrls.erase(iter, end);
+				return false;
+			}
+			else if (iter->url == url)
+			{
+				return true;
+			}
+		}
 
-    const std::string&
-    option_description::long_name() const
-    {
-        return m_long_name;
-    }
+		return false;
+	}
 
-    option_description&
-    option_description::set_name(const char* _name)
-    {
-        std::string name(_name);
-        string::size_type n = name.find(',');
-        if (n != string::npos) {
-            assert(n == name.size()-2);
-            m_long_name = name.substr(0, n);
-            m_short_name = '-' + name.substr(n+1,1);
-        } else {
-            m_long_name = name;
-        }
-        return *this;
-    }
+	void ContentProvider::clearContentCache()
+	{
+		boost::mutex::scoped_lock lock(contentCacheMutex);
+		contentCache.clear();
+	}
 
-    const std::string&
-    option_description::description() const
-    {
-        return m_description;
-    }
+	void ContentProvider::load(ContentId id, std::vector<boost::shared_ptr<Instance>>& instances)
+	{
+		boost::scoped_ptr<std::istream> stream(getContent(id));
+		
+		TextXmlParser machine(stream->rdbuf());
+		boost::scoped_ptr<XmlElement> root(machine.parse());
 
-    shared_ptr<const value_semantic>
-    option_description::semantic() const
-    {
-        return m_value_semantic;
-    }
-    
-    std::string 
-    option_description::format_name() const
-    {
-        if (!m_short_name.empty())
-            return string(m_short_name).append(" [ --").
-            append(m_long_name).append(" ]");
-        else
-            return string("--").append(m_long_name);
-    }
+		SerializerV2().loadInstances(root.get(), instances);
+	}
 
-    std::string 
-    option_description::format_parameter() const
-    {
-        if (m_value_semantic->max_tokens() != 0)
-            return m_value_semantic->name();
-        else
-            return "";
-    }
+	bool ContentProvider::hasContent(ContentId id)
+	{
+		return loadContent(id, NoHttpRequest) != NULL;
+	}
 
-    options_description_easy_init::
-    options_description_easy_init(options_description* owner)
-    : owner(owner)
-    {}
+	std::string ContentProvider::getAssetFile(const std::string& filePath)
+	{
+		return getFile(ContentId::fromAssets(filePath));
+	}
 
-    options_description_easy_init&
-    options_description_easy_init::
-    operator()(const char* name,
-               const char* description)
-    {
-        // Create untypes semantic which accepts zero tokens: i.e. 
-        // no value can be specified on command line.
-        // FIXME: does not look exception-safe
-        shared_ptr<option_description> d(
-            new option_description(name, new untyped_value(true), description));
+	std::string ContentProvider::getFile(ContentId ticket)
+	{
+		CachedContent* content = loadContent(ticket, SyncHttpRequest);
+		if (content && registerFile(content))
+		{
+			return *content->filename;
+		}
 
-        owner->add(d);
-        return *this;
-    }
+		throw std::runtime_error(G3D::format("Unable to load %s", ticket.c_str()));
+	}
 
-    options_description_easy_init&
-    options_description_easy_init::
-    operator()(const char* name,
-               const value_semantic* s)
-    {
-        shared_ptr<option_description> d(new option_description(name, s));
-        owner->add(d);
-        return *this;
-    }
+	bool ContentProvider::requestContentFile(ContentId id, std::string& filename)
+	{
+		CachedContent* content = loadContent(id, AsyncHttpRequest);
+		if (!content)
+			return false;
 
-    options_description_easy_init&
-    options_description_easy_init::
-    operator()(const char* name,
-               const value_semantic* s,
-               const char* description)
-    {
-        shared_ptr<option_description> d(new option_description(name, s, description));
+		if (!registerFile(content))
+			return false;
 
-        owner->add(d);
-        return *this;
-    }
+		filename = *content->filename;
+		return true;
+	}
 
-    options_description::options_description(unsigned line_length)
-    : m_line_length(line_length)
-    {}
+	boost::shared_ptr<const std::string> ContentProvider::requestContentString(ContentId id)
+	{
+		CachedContent* content = loadContent(id, AsyncHttpRequest);
+		if (!content)
+			return boost::shared_ptr<const std::string>();
 
-    options_description::options_description(const string& caption,
-                                             unsigned line_length)
-    : m_caption(caption), m_line_length(line_length)
-    {}
+		boost::mutex::scoped_lock lock(contentCacheMutex);
 
-    void
-    options_description::add(shared_ptr<option_description> desc)
-    {
-        m_options.push_back(desc);
-        belong_to_group.push_back(false);
-    }
+		if (!content->data)
+		{
+			std::ifstream stream(content->filename->c_str(), std::ios::binary | std::ios::in);
+			std::ostringstream data;
 
-    options_description&
-    options_description::add(const options_description& desc)
-    {
-        shared_ptr<options_description> d(new options_description(desc));
-        groups.push_back(d);
+			boost::iostreams::copy(stream, data);
 
-        for (size_t i = 0; i < desc.m_options.size(); ++i) {
-            add(desc.m_options[i]);
-            belong_to_group.back() = true;
-        }
+			content->data.reset(new std::string(data.str()));
+		}
 
-        return *this;
-    }
+		return content->data;
+	}
 
-    options_description_easy_init
-    options_description::add_options()
-    {       
-        return options_description_easy_init(this);
-    }
+	std::string ContentProvider::findAsset(ContentId contentId)
+	{
+		RBXASSERT(contentId.isAsset());
 
-    const option_description&
-    options_description::find(const std::string& name, bool approx) const
-    {
-        const option_description* d = find_nothrow(name, approx);
-        if (!d)
-            boost::throw_exception(unknown_option(name));
-        return *d;
-    }
+		ATL::CPath filePath((assetFolderPath + (contentId.c_str() + 11)).c_str());
+		if (!filePath.FileExists())
+			return "";
 
-    const std::vector< shared_ptr<option_description> >& 
-    options_description::options() const
-    {
-        return m_options;
-    }
+		return std::string(filePath);
+	}
 
-    const option_description* 
-    options_description::find_nothrow(const std::string& name, 
-                                      bool approx) const
-    {
-        int found = -1;
-        // We use linear search because matching specified option
-        // name with the declared option name need to take care about
-        // case sensitivity and trailing '*' and so we can't use simple map.
-        for(unsigned i = 0; i < m_options.size(); ++i)
-        {
-            option_description::match_result r = 
-                m_options[i]->match(name, approx);
+	std::string ContentProvider::findFile(ContentId contentId)
+	{
+		RBXASSERT(contentId.isFile());
 
-            if (r == option_description::no_match)
-                continue;
+		const char* file = contentId.c_str();
+		file += 7;
 
-            // If we have a full patch, and an approximate match,
-            // ignore approximate match instead of reporting error.
-            // Say, if we have options "all" and "all-chroots", then
-            // "--all" on the command line should select the first one,
-            // without ambiguity.
-            //
-            // For now, we don't check the situation when there are 
-            // two full matches. 
-                            
-            if (r == option_description::full_match)
-            {
-                return m_options[i].get();                
-            }
+		ATL::CPath filePath(file);
+		if (!filePath.FileExists())
+			return "";
 
-            if (found != -1)
-            {
-                vector<string> alts;
-                // FIXME: the use of 'key' here might not
-                // be the best approach.
-                alts.push_back(m_options[found]->key(name));
-                alts.push_back(m_options[i]->key(name));
-                boost::throw_exception(ambiguous_option(name, alts));
-            }
-            else
-            {
-                found = i;
-            }
-        }
-        if (found != -1) {
-            return m_options[found].get();
-        } else {
-            return 0;
-        }
-    }
+		return std::string(filePath);
+	}
 
-    BOOST_PROGRAM_OPTIONS_DECL
-    std::ostream& operator<<(std::ostream& os, const options_description& desc)
-    {
-        desc.print(os);
-        return os;
-    }
+	static ATL::CPath getLocalCachePath(bool createPath)
+	{
+		ATL::CPath path;
 
-    namespace {
+		if (createPath)
+		{
+			static std::string s = FileSystem::getCacheDirectory(true);
+			path.m_strPath.SetString(s.c_str());
+		}
+		else
+		{
+			static std::string s = FileSystem::getCacheDirectory(false);
+			path.m_strPath.SetString(s.c_str());
+		}
 
-        /* Given a string 'par', that contains no newline characters
-           outputs it to 'os' with wordwrapping, that is, as several
-           line.
+		return path;
+	}
 
-           Each output line starts with 'indent' space characters, 
-           following by characters from 'par'. The total length of
-           line is no longer than 'line_length'.
-                                      
-        */
-        void format_paragraph(std::ostream& os,
-                              std::string par,
-                              unsigned indent,
-                              unsigned line_length)
-        {                    
-            // Through reminder of this function, 'line_length' will
-            // be the length available for characters, not including
-            // indent.
-            assert(indent < line_length);
-            line_length -= indent;
+	std::string ContentProvider::findHashFile(ContentId contentId)
+	{
+		ATL::CPath cachePath = getLocalCachePath(true);
 
-            // index of tab (if present) is used as additional indent relative
-            // to first_column_width if paragrapth is spanned over multiple
-            // lines if tab is not on first line it is ignored
-            string::size_type par_indent = par.find('\t');
+		ATL::CPath filePath = cachePath;
+		filePath.Append(contentId.c_str());
 
-            if (par_indent == string::npos)
-            {
-                par_indent = 0;
-            }
-            else
-            {
-                // only one tab per paragraph allowed
-                if (count(par.begin(), par.end(), '\t') > 1)
-                {
-                    boost::throw_exception(program_options::error(
-                        "Only one tab per paragraph is allowed"));
-                }
-          
-                // erase tab from string
-                par.erase(par_indent, 1);
+		if (!filePath.FileExists())
+			return "";
 
-                // this assert may fail due to user error or 
-                // environment conditions!
-                assert(par_indent < line_length);
+		return std::string(filePath);
+	}
 
-                // ignore tab if not on first line
-                if (par_indent >= line_length)
-                {
-                    par_indent = 0;
-                }            
-            }
-          
-            if (par.size() < line_length)
-            {
-                os << par;
-            }
-            else
-            {
-                string::const_iterator       line_begin = par.begin();
-                const string::const_iterator par_end = par.end();
+	void ContentProvider::setAssetFolder(const char* sPath)
+	{
+		StandardOut::singleton()->print(MESSAGE_INFO, "setAssetFolder %s", sPath);
 
-                bool first_line = true; // of current paragraph!        
-            
-                while (line_begin < par_end)  // paragraph lines
-                {
-                    if (!first_line)
-                    {
-                        // If line starts with space, but second character
-                        // is not space, remove the leading space.
-                        // We don't remove double spaces because those
-                        // might be intentianal.
-                        if ((*line_begin == ' ') &&
-                            ((line_begin + 1 < par_end) &&
-                             (*(line_begin + 1) != ' ')))
-                        {
-                            line_begin += 1;  // line_begin != line_end
-                        }
-                    }
+		ATL::CPath path(sPath);
 
-                    // Take care to never increment the iterator past
-                    // the end, since MSVC 8.0 (brokenly), assumes that
-                    // doing that, even if no access happens, is a bug.
-                    unsigned remaining = distance(line_begin, par_end);
-                    string::const_iterator line_end = line_begin + 
-                        ((remaining < line_length) ? remaining : line_length);
-            
-                    // prevent chopped words
-                    // Is line_end between two non-space characters?
-                    if ((*(line_end - 1) != ' ') &&
-                        ((line_end < par_end) && (*line_end != ' ')))
-                    {
-                        // find last ' ' in the second half of the current paragraph line
-                        string::const_iterator last_space =
-                            find(reverse_iterator<string::const_iterator>(line_end),
-                                 reverse_iterator<string::const_iterator>(line_begin),
-                                 ' ')
-                            .base();
-                
-                        if (last_space != line_begin)
-                        {                 
-                            // is last_space within the second half of the 
-                            // current line
-                            if ((unsigned)std::distance(last_space, line_end) < 
-                                (line_length - indent) / 2)
-                            {
-                                line_end = last_space;
-                            }
-                        }                                                
-                    } // prevent chopped words
-             
-                    // write line to stream
-                    copy(line_begin, line_end, ostream_iterator<char>(os));
-              
-                    if (first_line)
-                    {
-                        indent += par_indent;
-                        first_line = false;
-                    }
+		if (path.IsRelative())
+			throw std::runtime_error(G3D::format("The path \'%s\' is a relative path", path));
 
-                    // more lines to follow?
-                    if (line_end != par_end)
-                    {
-                        os << '\n';
-                
-                        for(unsigned pad = indent; pad > 0; --pad)
-                        {
-                            os.put(' ');
-                        }                                                        
-                    }
-              
-                    // next line starts after of this line
-                    line_begin = line_end;              
-                } // paragraph lines
-            }          
-        }                              
-        
-        void format_description(std::ostream& os,
-                                const std::string& desc, 
-                                unsigned first_column_width,
-                                unsigned line_length)
-        {
-            // we need to use one char less per line to work correctly if actual
-            // console has longer lines
-            assert(line_length > 1);
-            if (line_length > 1)
-            {
-                --line_length;
-            }
+		if (!path.IsDirectory())
+			throw std::runtime_error(G3D::format("The path \'%s\' does not exist", path));
 
-            // line_length must be larger than first_column_width
-            // this assert may fail due to user error or environment conditions!
-            assert(line_length > first_column_width);
+		path.AddBackslash();
+		assetFolderPath = path;
+	}
 
-            // Note: can't use 'tokenizer' as name of typedef -- borland
-            // will consider uses of 'tokenizer' below as uses of
-            // boost::tokenizer, not typedef.
-            typedef boost::tokenizer<boost::char_separator<char> > tok;
-          
-            tok paragraphs(
-                desc,
-                char_separator<char>("\n", "", boost::keep_empty_tokens));
-          
-            tok::const_iterator       par_iter = paragraphs.begin();                
-            const tok::const_iterator par_end = paragraphs.end();
+	ContentId ContentProvider::registerContent(std::istream& content, const Name& mimeType)
+	{
+		ContentId id;
 
-            while (par_iter != par_end)  // paragraphs
-            {
-                format_paragraph(os, *par_iter, first_column_width, 
-                                 line_length);
-            
-                ++par_iter;
-            
-                // prepair next line if any
-                if (par_iter != par_end)
-                {
-                    os << '\n';
-              
-                    for(unsigned pad = first_column_width; pad > 0; --pad)
-                    {
-                        os.put(' ');
-                    }                    
-                }            
-            }  // paragraphs
-        }
-    
-        void format_one(std::ostream& os, const option_description& opt, 
-                        unsigned first_column_width, unsigned line_length)
-        {
-            stringstream ss;
-            ss << "  " << opt.format_name() << ' ' << opt.format_parameter();
-            
-            // Don't use ss.rdbuf() since g++ 2.96 is buggy on it.
-            os << ss.str();
+		{
+			boost::scoped_ptr<MD5Hasher> hasher(MD5Hasher::create());
+			hasher->addData(content);
+			id = ContentId(hasher->toString(), mimeType);
+		}
 
-            if (!opt.description().empty())
-            {
-                for(unsigned pad = first_column_width - ss.str().size(); 
-                    pad > 0; 
-                    --pad)
-                {
-                    os.put(' ');
-                }
-            
-                format_description(os, opt.description(),
-                                   first_column_width, line_length);
-            }
-        }
-    }
+		ATL::CPath filePath = getLocalCachePath(true);
+		filePath.Append(id.c_str());
 
-    void 
-    options_description::print(std::ostream& os) const
-    {
-        if (!m_caption.empty())
-            os << m_caption << ":\n";
+		if (!filePath.FileExists())
+		{
+			std::ofstream outStream(filePath, std::ios::binary | std::ios::out);
+			content.clear();
+			content.seekg(0, std::ios::beg);
 
-        /* Find the maximum width of the option column */
-        unsigned width(23);
-        unsigned i; // vc6 has broken for loop scoping
-        for (i = 0; i < m_options.size(); ++i)
-        {
-            const option_description& opt = *m_options[i];
-            stringstream ss;
-            ss << "  " << opt.format_name() << ' ' << opt.format_parameter();
-            width = (max)(width, static_cast<unsigned>(ss.str().size()));            
-        }
-        
-        /* add an additional space to improve readability */
-        ++width;
-            
-        /* The options formatting style is stolen from Subversion. */
-        for (i = 0; i < m_options.size(); ++i)
-        {
-            if (belong_to_group[i])
-                continue;
+			do
+			{
+				char buffer[1024];
+				content.read(buffer, sizeof(buffer));
+				outStream.write(buffer, content.gcount());
+			}
+			while (content.gcount() > 0);
+		}
 
-            const option_description& opt = *m_options[i];
+		return id;
+	}
 
-            format_one(os, opt, width, m_line_length);
+	bool ContentProvider::registerFile(CachedContent* item)
+	{
+		CachedContent temp;
 
-            os << "\n";
-        }
+		{
+			boost::mutex::scoped_lock lock(contentCacheMutex);
+			temp = *item;
+		}
 
-        for (unsigned j = 0; j < groups.size(); ++j) {            
-            os << "\n" << *groups[j];
-        }
-    }
+		if (!temp.filename)
+		{
+			std::istringstream ss(*temp.data);
+			ContentId hash = registerContent(ss, Name::getNullName());
 
-}}
+			std::string filename = findHashFile(hash);
+			if (filename.empty())
+				return false;
+
+			temp.filename.reset(new std::string(filename));
+
+			boost::mutex::scoped_lock lock(contentCacheMutex);
+			*item = temp;
+		}
+
+		return true;
+	}
+
+	ContentId ContentProvider::readContent(const char* id, std::istream& stream, unsigned long dataLength)
+	{
+		ContentId contentId(id);
+
+		if (hasContent(contentId))
+		{
+			stream.clear();
+			stream.seekg(dataLength, std::ios::cur);
+		}
+		else
+		{
+			ATL::CPath filePath = getLocalCachePath(true);
+			filePath.Append(contentId.c_str());
+
+			std::ofstream content;
+			content.open(filePath, std::ios::binary | std::ios::out);
+
+			char data;
+
+			for (unsigned long i = 0; i < dataLength; i++)
+			{
+				RBXASSERT(content.good());
+				stream.get(data);
+				content << data;
+			}
+		}
+
+		return contentId;
+	}
+
+	ContentProvider::FailedUrl::FailedUrl(const char* url)
+		: url(url),
+		  expiration(boost::posix_time::second_clock::local_time() + boost::posix_time::minutes(5))
+	{
+	}
+
+	class MD5HasherImpl : public MD5Hasher
+	{
+	private:
+		HCRYPTPROV hProv;
+		HCRYPTHASH hHash;
+		std::string result;
+
+	public:
+		MD5HasherImpl()
+			: hProv(NULL),
+			  hHash(NULL),
+			  result()
+		{
+			if (!CryptAcquireContextA(&hProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT))
+			{
+				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptAcquireContext. GetLastError = %d", GetLastError());
+			}
+
+			if (!CryptCreateHash(hProv, CALG_MD5, NULL, NULL, &hHash))
+			{
+				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptCreateHash. GetLastError = %d", GetLastError());
+			}
+		}
+		~MD5HasherImpl()
+		{
+		}
+
+	public:
+		virtual void addData(const char* data, size_t nBytes)
+		{
+			if (!CryptHashData(hHash, (const BYTE*)data, (DWORD)nBytes, 0))
+			{
+				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptHashData. GetLastError = %d", GetLastError());
+			}
+		}
+		virtual void addData(const std::string& data)
+		{
+			if (!CryptHashData(hHash, (const BYTE*)data.c_str(), (DWORD)data.length(), 0))
+			{
+				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptHashData. GetLastError = %d", GetLastError());
+			}
+		}
+		virtual void addData(std::istream& data)
+		{
+			data.clear();
+			data.seekg(0, std::ios_base::beg);
+
+			char buffer[1024];
+			do
+			{
+				data.read(buffer, sizeof(buffer));
+				addData(buffer, data.gcount());
+			}
+			while (data.gcount() > 0);
+		}
+		virtual std::string toString()
+		{
+			c_str();
+			return result;
+		}
+		virtual const char* c_str()
+		{
+			if (result.empty())
+			{
+				DWORD hashSize;
+				DWORD hashSizeLen = sizeof(DWORD);
+				if (!CryptGetHashParam(hHash, HP_HASHSIZE, (BYTE*)&hashSize, &hashSizeLen, 0))
+				{
+					StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptGetHashParam. GetLastError = %d", GetLastError());
+				}
+
+				char* hashValue = new char[hashSize];
+				if (!CryptGetHashParam(hHash, HP_HASHVAL, (BYTE*)&hashValue, &hashSize, 0))
+				{
+					StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptGetHashParam. GetLastError = %d", GetLastError());
+				}
+
+				for (int i = 0; i < (int)hashSize; ++i)
+				{
+					ATL::CString temp;
+					temp.Format("%x", hashValue[i]);
+					result += temp.GetString();
+				}
+
+				delete[] hashValue;
+			}
+
+			return result.c_str();
+		}
+	};
+
+	MD5Hasher* MD5Hasher::create()
+	{
+		return new MD5HasherImpl();
+	}
+}

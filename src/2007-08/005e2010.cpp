@@ -1,303 +1,348 @@
-// from server: 95% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8kernel/Body.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_espeon_aug2007_body_trivial_5449b42182b29fed.cpp
 
 // Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#define _MT 1
+#define _DLL 1
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
 #include "v8kernel/Body.h"
-
-#include "decomp.h"
-#include "util/Math.h"
-#include "v8kernel/Link.h"
 #include "v8kernel/SimBody.h"
+#include "util/Debug.h"
+using namespace RBX;
 
-#include <cstddef>
+Body::Body()
+	:index(-1),
+	canThrottle(true),
+	cofm(NULL),
+	root(NULL),
+	parent(NULL),
+	simBody(NULL),
+	stateIndex(getNextStateIndex()),
+	moment(G3D::Matrix3::identity()),
+	mass(0.0f)
+{
+	root = this;
+	simBody = new SimBody(this);
+}
 
-namespace RBX {
+Body::~Body()
+{
+	RBXASSERT(numChildren() == 0);
+	if (parent)
+		setParent(NULL);
+	RBXASSERT(!parent);
+	RBXASSERT(index == -1);
+	RBXASSERT(simBody);
+	delete simBody;
+	simBody = NULL;
+	RBXASSERT(!cofm);
+	RBXASSERT(root == this);
+}
 
-// FUNCTION: WEBSERVICE 0x1009ad20
 void Body::updatePV() const
 {
-	if (parent != NULL && stateIndex != root->getStateIndex()) {
-		const PV& parentPv = parent->getPV();
+	RBXASSERT((parent != NULL) || (getRootConst() == this));
 
-		pv = parentPv.pvAtLocalCoord(link != NULL ? link->getChildInParent() : meInParent);
-
-		stateIndex = root->getStateIndex();
+	if (parent && this->stateIndex != getRootConst()->getStateIndex())
+	{
+		Body* tempParent = getParent();
+		tempParent->updatePV();
+		PV& tempPV = tempParent->pv;
+		this->pv = tempPV.pvAtLocalCoord(getMeInParent());
+		this->stateIndex = root->getStateIndex();
 	}
 }
 
-// FUNCTION: WEBSERVICE 0x101049f0
+void Body::resetRoot(RBX::Body* newRoot)
+{
+	RBXASSERT(newRoot == calcRoot());
+	root = newRoot;
+	for (int i = 0; i < children.size(); i++)
+	{
+		children[i]->resetRoot(newRoot);
+	}
+}
+
+float Body::kineticEnergy() const
+{
+	float calc = (pv.velocity.rotational.dot(getIWorld() * pv.velocity.rotational) + pv.velocity.linear.dot(pv.velocity.linear) * mass) / 2;
+	return calc;
+
+}
+
 int Body::getNextStateIndex()
 {
-	static int p = 1;
-
-	p = p + 1;
-
-	if (p == 0x7fffffff) {
+	static int p;
+	if (++p == INT_MAX)
 		p = 1;
-	}
-
 	return p;
 }
 
-// FUNCTION: WEBSERVICE 0x10104a10
 void Body::advanceStateIndex()
 {
 	stateIndex = getNextStateIndex();
 }
 
-// FUNCTION: WEBSERVICE 0x10104a40
+bool Body::validateParentCofmDirty()
+{
+	RBXASSERT(cofm);
+	RBXASSERT(cofm->getIsDirty());
+	if (getParent())
+		getParent()->validateParentCofmDirty();
+	return true;
+}
+
 void Body::makeCofmDirty()
 {
-	if (cofm == NULL || !cofm->getIsDirty()) {
-
-		if (parent != NULL) {
-
-			parent->makeCofmDirty();
+	if (cofm && cofm->getIsDirty())
+	{
+		// TODO: this match is super fake, i dont know roblox managed to create this cursed assertion
+		#if defined(_DEBUG) || defined(_RELEASEASSERT)
+		if (Debugable::assertAction == Debugable::CrashOnAssert)
+		{
+			if (parent)
+				parent->validateParentCofmDirty();
+			RBXASSERT(getRootSimBody()->getDirty());
 		}
-		else {
-
-			if (simBody != NULL) {
+		#endif
+	}
+	else
+	{
+		if (getParent())
+		{
+			RBXASSERT(!simBody);
+			getParent()->makeCofmDirty();
+		}
+		else
+		{
+			RBXASSERT(root == this);
+			if (simBody)
 				simBody->makeDirty();
-			}
 		}
-
-		if (cofm != NULL) {
+		if (cofm)
+		{
 			cofm->makeDirty();
+			RBXASSERT(numChildren() > 0);
+		}
+		else
+		{
+			RBXASSERT(!numChildren());
 		}
 	}
 }
 
-// FUNCTION: WEBSERVICE 0x10104a80
-void Body::step(float dt, bool throttling)
-{
-	if (throttling && canThrottle) {
-		simBody->resetAccumulators();
-		return;
-	}
-
-	simBody->step(dt);
-
-	pv = cofm == NULL ? simBody->getPV() : simBody->getOwnerPV();
-
-	stateIndex = getNextStateIndex();
-}
-
-// FUNCTION: WEBSERVICE 0x10104b50
-void Body::setPv(const PV& _pv)
-{
-	if (parent == NULL) {
-
-		pv = _pv;
-
-		if (simBody != NULL) {
-			simBody->makeDirty();
-		}
-
-		advanceStateIndex();
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x10104be0
-void Body::setVelocity(const Velocity& worldVelocity)
-{
-	if (parent == NULL) {
-		pv.velocity = worldVelocity;
-		advanceStateIndex();
-
-		if (simBody != NULL) {
-			simBody->makeDirty();
-		}
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x10104c60
-void Body::setMass(float _mass)
-{
-	if (mass != _mass) {
-		makeCofmDirty();
-
-		mass = _mass;
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x10104cc0
-void Body::setMoment(const Matrix3& _momentInBody)
-{
-	if (moment != _momentInBody) {
-		makeCofmDirty();
-
-		moment = _momentInBody;
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x10104db0
-void Body::setMeInParent(const CoordinateFrame& _meInParent)
-{
-	if (link != NULL) {
-
-		link->setBody(NULL);
-		link = NULL;
-	}
-
-	if (parent != NULL) {
-		meInParent = _meInParent;
-		makeCofmDirty();
-		root->advanceStateIndex();
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x10104e60
-void Body::setMeInParent(Link* _link)
-{
-	if (link != NULL && link != _link) {
-		link->setBody(NULL);
-	}
-
-	if (parent != NULL) {
-		link = _link;
-		_link->setBody(this);
-		makeCofmDirty();
-		root->advanceStateIndex();
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x10104ee0
-void Body::setCoordinateFrame(const CoordinateFrame& worldCoord)
-{
-	setPv(PV(worldCoord, getPV().velocity));
-}
-
-// FUNCTION: WEBSERVICE 0x10104f60
-Vector3 Body::getBranchCofmPos() const
-{
-	return cofm != NULL ? getPV().position.pointToWorldSpace(cofm->getCofmInBody()) : getPV().position.translation;
-}
-
-// FUNCTION: WEBSERVICE 0x10104fc0
-CoordinateFrame Body::getBranchCofmCoordinateFrame() const
-{
-	return CoordinateFrame(getCoordinateFrame().rotation, getBranchCofmPos());
-}
-
-// FUNCTION: WEBSERVICE 0x10105010
-void Body::resetRoot(Body* newRoot)
-{
-	root = newRoot;
-
-	for (int i = 0; i < numChildren(); ++i) {
-		getChild(i)->resetRoot(newRoot);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x10105040
-Matrix3 Body::getIWorldAtPoint(const Vector3& point) const
-{
-	return Math::getIWorldAtPoint(getPV().position.translation, point, getIWorld(), getMass());
-}
-
-// FUNCTION: WEBSERVICE 0x101050c0
-Matrix3 Body::getBranchIWorldAtPoint(const Vector3& point) const
-{
-	return Math::getIWorldAtPoint(getBranchCofmPos(), point, getBranchIWorld(), getBranchMass());
-}
-
-// FUNCTION: WEBSERVICE 0x10105150
-float Body::kineticEnergy() const
-{
-	return ((getIWorld() * pv.velocity.rotational).dot(pv.velocity.rotational) +
-			pv.velocity.linear.dot(pv.velocity.linear) * mass) *
-		   0.5f;
-}
-
-// FUNCTION: WEBSERVICE 0x10105240
-void Body::onChildRemoved(Body* child)
-{
-	children.fastRemove(child);
-
-	if (numChildren() == 0) {
-		delete cofm;
-		cofm = NULL;
-	}
-
-	makeCofmDirty();
-}
-
-// FUNCTION: WEBSERVICE 0x101052d0
-void Body::onChildAdded(Body* child)
+void Body::onChildAdded(RBX::Body* child)
 {
 	makeCofmDirty();
-
 	children.fastAppend(child);
-
-	if (cofm == NULL) {
+	if (!cofm)
+	{
+		RBXASSERT(numChildren() == 1);
 		cofm = new Cofm(this);
 	}
 }
 
-// FUNCTION: WEBSERVICE 0x10105390
+void Body::onChildRemoved(RBX::Body* child)
+{
+	RBXASSERT(cofm);
+	children.fastRemove(child);
+	if (numChildren() == 0)
+	{
+		delete cofm;
+		cofm = NULL;
+	}
+	makeCofmDirty();
+}
+
+void Body::setMass(float _mass)
+{
+	if (mass != _mass)
+	{
+		makeCofmDirty();
+		mass = _mass;
+	}
+}
+
+void Body::step(float dt, bool throttling)
+{
+	RBXASSERT(!getParent());
+	RBXASSERT(simBody);
+
+	if (throttling && canThrottle)
+	{
+		simBody->resetAccumulators();
+	}
+	else
+	{
+		simBody->step(dt);
+
+		pv = cofm == NULL ? simBody->pv : simBody->getOwnerPV();
+		advanceStateIndex();
+	}
+}
+
+void Body::setVelocity(const Velocity& worldVelocity)
+{
+	if (!getParent())
+	{
+		pv.velocity = worldVelocity;
+		advanceStateIndex();
+		if (simBody)
+			simBody->makeDirty();
+	}
+}
+
 void Body::setParent(Body* newParent)
 {
-	if (parent != newParent) {
+	RBXASSERT(!newParent || newParent->getParent() != this);
+	RBXASSERT(newParent != this);
 
-		if (link != NULL) {
-			link->setBody(NULL);
-			link = NULL;
-		}
+	if (parent != newParent)
+	{
 
-		if (parent != NULL) {
+		if (getParent())
+		{
+			RBXASSERT(root == getParent()->getRoot());
+			RBXASSERT(!simBody);
 			parent->onChildRemoved(this);
 		}
-		else {
+		else
+		{
+			RBXASSERT(root = this);
+			RBXASSERT(simBody);
 			delete simBody;
 			simBody = NULL;
 		}
 
 		parent = newParent;
 
-		if (newParent != NULL) {
+		if (newParent)
+		{
 			newParent->onChildAdded(this);
 		}
-		else {
+		else
+		{
 			simBody = new SimBody(this);
 		}
-
-		Body* newRoot = calcRoot();
-
-		newRoot->advanceStateIndex();
-
-		resetRoot(newRoot);
+		Body* myRoot = getParent() ? getParent()->calcRoot() : this;
+		myRoot->advanceStateIndex();
+		resetRoot(myRoot);
 	}
 }
 
-// FUNCTION: WEBSERVICE 0x101054a0
-Body::Body()
-	: root(NULL), parent(NULL), index(-1), cofm(NULL), simBody(NULL), canThrottle(true), link(NULL),
-	  moment(Matrix3::identity()), mass(0.0f), stateIndex(getNextStateIndex())
-{
-	root = this;
-	simBody = new SimBody(this);
-}
-
-// FUNCTION: WEBSERVICE 0x101055a0
-Body::~Body()
-{
-	if (parent != NULL) {
-		setParent(NULL);
-	}
-
-	delete simBody;
-	simBody = NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x10105620
 Body* Body::getWorldBody()
 {
-	static Body b;
-
+	static Body b = Body();
 	return &b;
 }
 
-} // namespace RBX
+G3D::CoordinateFrame Body::getMeInDescendant(const Body* descendant) const
+{
+	if (descendant == this)
+	{
+		return G3D::CoordinateFrame();
+	}
+	else if (descendant == parent)
+	{
+		RBXASSERT(parent);
+		return meInParent;
+	}
+	else
+	{
+		RBXASSERT(parent);
+		return parent->getMeInDescendant(descendant) * meInParent;
+	}
+}
+
+void Body::setPv(const PV& _pv)
+{
+	if (parent)
+	{
+		RBXASSERT(0);
+	}
+	else
+	{
+		pv = _pv;
+		if (simBody)
+			simBody->makeDirty();
+		advanceStateIndex();
+	}
+	RBXASSERT(Math::longestVector3Component(pv.position.translation) < 1000000.0);
+	RBXASSERT(Math::isOrthonormal(pv.position.rotation));
+	RBXASSERT(!Math::isNanInfDenormVector3(pv.position.translation));
+	RBXASSERT(!Math::isNanInfDenormVector3(pv.velocity.linear));
+	RBXASSERT(!Math::isNanInfDenormVector3(pv.velocity.rotational));
+}
+
+void Body::setCoordinateFrame(const G3D::CoordinateFrame& worldCord)
+{
+	updatePV();
+	setPv(PV::PV(worldCord, pv.velocity));
+}
+
+void Body::setMeInParent(const G3D::CoordinateFrame& _meInParent)
+{
+	RBXASSERT(Math::longestVector3Component(_meInParent.translation) < 1000000.0);
+
+
+	if (getParent())
+	{
+		meInParent = _meInParent;
+		makeCofmDirty();
+		root->advanceStateIndex();
+	}
+	else
+	{
+		RBXASSERT(0);
+	}
+}
+
+G3D::Vector3 Body::getBranchCofmPos() const
+{
+	return cofm ? pv.position.pointToWorldSpace(getPos()) : getCoordinateFrame().translation;
+}
+
+G3D::CoordinateFrame Body::getBranchCofmCoordinateFrame() const
+{
+	return G3D::CoordinateFrame(getPV().position.rotation, getBranchCofmPos());
+}
+
+G3D::Matrix3 Body::getIWorldAtPoint(const G3D::Vector3& point) const
+{
+	float _mass = mass;
+	updatePV(); //supposed to be inlined probably
+	G3D::Matrix3 iBody = moment;
+	G3D::Matrix3& iWorldAtCofm = Math::momentToWorldSpace(iBody, pv.position.rotation);
+	return Math::getIWorldAtPoint(getPV().position.translation, point, iWorldAtCofm, _mass);
+}
+
+G3D::Matrix3 Body::getBranchIWorldAtPoint(const G3D::Vector3& point) const
+{
+	float _mass = getBranchMass();
+	updatePV(); //more probably inlined updatePV calls
+	G3D::Matrix3 _moment = cofm ? cofm->getMoment() : moment;
+	G3D::Matrix3& iWorldAtCofm = Math::momentToWorldSpace(_moment, pv.position.rotation);
+	return Math::getIWorldAtPoint(getBranchCofmPos(), point, iWorldAtCofm, _mass);
+}
+
+void Body::matchDummy()
+{
+	accumulateForceAtBranchCofm(G3D::Vector3(1.3f,1.2f,1.7f));
+	accumulateTorque(G3D::Vector3(6.3f,4.2f,9.7f));
+	setMoment(G3D::Matrix3());
+	resetAccumulators();
+	mass = getBranchMass();
+	index = getBranchForce().z + getBranchTorque().y + getBranchIBodyV3().x;
+}

@@ -1,14 +1,13 @@
-// from server: 99% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/CommandBars/XTPMouseManager.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\CommandBars\XTPMouseManager.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPMouseManager.cpp : implementation of the CXTPMouseManager class.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -97,71 +96,6 @@ void CXTPMouseManager::DeliverMessage(CXTPCommandBar* pCapture, WPARAM wParam, P
 }
 
 
-CXTPCommandBar* CXTPMouseManager::HitTest(POINT point) const
-{
-	HWND hWndMouse = ::WindowFromPoint(point);
-	const CTrackArray& arrTracked = m_arrTracked;
-	int i;
-
-	for (i = (int)arrTracked.GetSize() - 1; i >= 0; i--)
-	{
-		CXTPCommandBar* pCommandBar = arrTracked[i];
-
-		if (!pCommandBar->GetSafeHwnd())
-			continue;
-
-		int nHtCode = pCommandBar->OnMouseHitTest(point);
-
-		if ((nHtCode != HTERROR) && ((nHtCode == HTCLIENT) || ::IsChild(pCommandBar->GetSafeHwnd(), hWndMouse)))
-		{
-			return pCommandBar;
-		}
-	}
-
-	return NULL;
-}
-
-BOOL CXTPMouseManager::PreviewTackLost(CXTPCommandBar* pContextMenu, MSG* msg) const
-{
-	if (!(msg->message == WM_LBUTTONDOWN || msg->message == WM_RBUTTONDOWN || msg->message == WM_MBUTTONDOWN ||
-		msg->message == WM_NCLBUTTONDOWN || msg->message == WM_NCRBUTTONDOWN))
-	{
-		return FALSE;
-	}
-
-	CPoint point;
-	GetCursorPos(&point);
-
-	CXTPCommandBar* pCommandBar = HitTest(point);
-	if (pCommandBar)
-	{
-		if (pCommandBar->m_nLockRecurse == 0 || pContextMenu->m_nLockRecurse != 0)
-			return FALSE;
-	}
-
-	HWND hWndMouse = ::WindowFromPoint(point);
-
-	if (m_arrTracked.GetSize() > 0)
-	{
-		const CTrustedArray& arrTrusted = m_arrTrusted;
-		for (int i = 0; i < arrTrusted.GetSize(); i++)
-		{
-			HWND hWnd = arrTrusted[i];
-			if (IsWindow(hWnd) && IsWindowVisible(hWnd) && CXTPWindowRect(hWnd).PtInRect(point))
-			{
-				return FALSE;
-			}
-		}
-
-		if (hWndMouse)
-		{
-			if (GetClassLong(hWndMouse, GCL_STYLE) & CS_IME)
-				return FALSE;
-		}
-	}
-
-	return TRUE;
-}
 
 BOOL CXTPMouseManager::PreTranslateMouseEvents(WPARAM wParam, POINT point)
 {

@@ -1,2015 +1,2325 @@
-// from server: 35% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/viewhtml.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\CommandBars\XTPCommandBars.cpp
 
 // Candidate translation unit (score above; library headers required).
-// This is a part of the Microsoft Foundation Classes C++ library.
-// Copyright (C) Microsoft Corporation
-// All rights reserved.
+// XTPCommandBars.cpp : implementation of the CXTPCommandBars class.
 //
-// This source code is only intended as a supplement to the
-// Microsoft Foundation Classes Reference and related
-// electronic documentation provided with the library.
-// See these sources for detailed information regarding the
-// Microsoft Foundation Classes product.
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "Resource.h"
 
-#include <exdispid.h>
-#include <mshtmcid.h>	// CMDSETID_Forms3 definition
-#include <mshtmhst.h>	// IDM_menu item definitions
-#include <mshtml.h>
+#include "Common/XTPResourceManager.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPImageManager.h"
+#include "Common/XTPIntel80Helpers.h"
+#include "Common/XTPVc50Helpers.h"
+#include "Common/XTPPropExchange.h"
+#include "Common/XTPToolTipContext.h"
+#include "TabManager/XTPTabManager.h"
+
+#include "XTPDockBar.h"
+#include "XTPMenuBar.h"
+#include "XTPShortcutManager.h"
+#include "XTPPaintManager.h"
+#include "XTPHookManager.h"
+#include "XTPMouseManager.h"
+#include "XTPControls.h"
+#include "XTPControlComboBox.h"
+#include "XTPCustomizeTools.h"
+#include "XTPCommandBars.h"
+#include "XTPSoundManager.h"
+#include "XTPControlExt.h"
+#include "XTPTabClientWnd.h"
+#include "XTPReBar.h"
+
+#ifdef _XTP_INCLUDE_RIBBON
+#include "Ribbon/XTPRibbonBar.h"
+#endif
+
 
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-
-
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
-/////////////////////////////////////////////////////////////////////////////
-// CHtmlView
+CRuntimeClass* CXTPCommandBars::m_pToolBarClass = RUNTIME_CLASS(CXTPToolBar);
+CRuntimeClass* CXTPCommandBars::m_pMenuBarClass = RUNTIME_CLASS(CXTPMenuBar);
+CRuntimeClass* CXTPCommandBars::m_pPopupBarClass = RUNTIME_CLASS(CXTPPopupBar);
+CRuntimeClass* CXTPCommandBars::m_pPopupToolBarClass = RUNTIME_CLASS(CXTPPopupToolBar);
+CRuntimeClass* CXTPCommandBars::m_pDockBarClass = RUNTIME_CLASS(CXTPDockBar);
 
-BEGIN_MESSAGE_MAP(CHtmlView, CFormView)
-	//{{AFX_MSG_MAP(CHtmlView)
-	ON_WM_SIZE()
-	ON_WM_PAINT()
-	ON_WM_DESTROY()
-	ON_COMMAND(ID_EDIT_COPY, &CHtmlView::OnEditCopy)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, &CHtmlView::OnUpdateEditCopy)
-	ON_COMMAND(ID_EDIT_CUT, &CHtmlView::OnEditCut)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_CUT, &CHtmlView::OnUpdateEditCut)
-	ON_COMMAND(ID_EDIT_PASTE, &CHtmlView::OnEditPaste)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_PASTE, &CHtmlView::OnUpdateEditPaste)
-	//}}AFX_MSG_MAP
-	// Standard printing commands
-	ON_COMMAND(ID_FILE_PRINT, &CHtmlView::OnFilePrint)
-END_MESSAGE_MAP()
 
-BEGIN_EVENTSINK_MAP(CHtmlView, CFormView)
-	ON_EVENT(CHtmlView, AFX_IDW_PANE_FIRST, DISPID_STATUSTEXTCHANGE, OnStatusTextChange, VTS_BSTR)
-	ON_EVENT(CHtmlView, AFX_IDW_PANE_FIRST, DISPID_PROGRESSCHANGE, OnProgressChange, VTS_I4 VTS_I4)
-	ON_EVENT(CHtmlView, AFX_IDW_PANE_FIRST, DISPID_COMMANDSTATECHANGE, OnCommandStateChange, VTS_I4 VTS_BOOL)
-	ON_EVENT(CHtmlView, AFX_IDW_PANE_FIRST, DISPID_DOWNLOADBEGIN, OnDownloadBegin, VTS_NONE)
-	ON_EVENT(CHtmlView, AFX_IDW_PANE_FIRST, DISPID_DOWNLOADCOMPLETE, OnDownloadComplete, VTS_NONE)
-	ON_EVENT(CHtmlView, AFX_IDW_PANE_FIRST, DISPID_TITLECHANGE, OnTitleChange, VTS_BSTR)
-	ON_EVENT(CHtmlView, AFX_IDW_PANE_FIRST, DISPID_NAVIGATECOMPLETE2, NavigateComplete2, VTS_DISPATCH VTS_PVARIANT)
-	ON_EVENT(CHtmlView, AFX_IDW_PANE_FIRST, DISPID_BEFORENAVIGATE2, BeforeNavigate2, VTS_DISPATCH VTS_PVARIANT VTS_PVARIANT VTS_PVARIANT VTS_PVARIANT VTS_PVARIANT VTS_PBOOL)
-	ON_EVENT(CHtmlView, AFX_IDW_PANE_FIRST, DISPID_PROPERTYCHANGE, OnPropertyChange, VTS_BSTR)
-	ON_EVENT(CHtmlView, AFX_IDW_PANE_FIRST, DISPID_NEWWINDOW2, OnNewWindow2, VTS_PDISPATCH VTS_PBOOL)
-	ON_EVENT(CHtmlView, AFX_IDW_PANE_FIRST, DISPID_DOCUMENTCOMPLETE, DocumentComplete, VTS_DISPATCH VTS_PVARIANT)
-	ON_EVENT(CHtmlView, AFX_IDW_PANE_FIRST, DISPID_NAVIGATEERROR, NavigateError, VTS_DISPATCH VTS_PVARIANT VTS_PVARIANT VTS_PVARIANT VTS_PBOOL)
-	ON_EVENT(CHtmlView, AFX_IDW_PANE_FIRST, DISPID_ONQUIT, OnQuit, VTS_NONE)
-	ON_EVENT(CHtmlView, AFX_IDW_PANE_FIRST, DISPID_ONVISIBLE, OnVisible, VTS_BOOL)
-	ON_EVENT(CHtmlView, AFX_IDW_PANE_FIRST, DISPID_ONTOOLBAR, OnToolBar, VTS_BOOL)
-	ON_EVENT(CHtmlView, AFX_IDW_PANE_FIRST, DISPID_ONMENUBAR, OnMenuBar, VTS_BOOL)
-	ON_EVENT(CHtmlView, AFX_IDW_PANE_FIRST, DISPID_ONSTATUSBAR, OnStatusBar, VTS_BOOL)
-	ON_EVENT(CHtmlView, AFX_IDW_PANE_FIRST, DISPID_ONFULLSCREEN, OnFullScreen, VTS_BOOL)
-	ON_EVENT(CHtmlView, AFX_IDW_PANE_FIRST, DISPID_ONTHEATERMODE, OnTheaterMode, VTS_BOOL)
-END_EVENTSINK_MAP()
+//////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////////////
-// CHtmlView construction/destruction
-
-CHtmlView::CHtmlView()
-	: CFormView((LPCTSTR) NULL)
+CXTPCommandBarsContextMenus::CXTPCommandBarsContextMenus(CXTPCommandBars* pCommandBars)
+	: CXTPCommandBarList(pCommandBars)
 {
 }
 
-CHtmlView::~CHtmlView()
+CXTPCommandBar* CXTPCommandBarsContextMenus::Add(CXTPCommandBar* pPopupBar)
 {
+	ASSERT_KINDOF(CXTPPopupBar, pPopupBar);
+	m_arrBars.Add(pPopupBar);
+	((CXTPPopupBar*)pPopupBar)->m_bContextMenu = TRUE;
+	return pPopupBar;
 }
 
-BOOL CHtmlView::PreCreateWindow(CREATESTRUCT& cs)
+CXTPCommandBar* CXTPCommandBarsContextMenus::Add(UINT nIDBar, LPCTSTR strCaption, CMenu* pSubMenu)
 {
-	cs.style |= WS_CLIPCHILDREN;
+	CXTPPopupBar* pPopupBar = CXTPPopupBar::CreatePopupBar(m_pCommandBars);
+	m_arrBars.Add(pPopupBar);
 
-	return CFormView::PreCreateWindow(cs);
+	pPopupBar->LoadMenu(pSubMenu);
+	pPopupBar->SetBarID(nIDBar);
+
+	pPopupBar->SetTitle(strCaption);
+
+	pPopupBar->GetControls()->CreateOriginalControls();
+	pPopupBar->m_bContextMenu = TRUE;
+
+	return pPopupBar;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// CHtmlView drawing
-
-void CHtmlView::OnDraw(CDC* /* pDC */)
+CXTPCommandBar* CXTPCommandBarsContextMenus::Add(UINT nIDBar)
 {
-	// this class should never do its own drawing;
-	// the browser control should handle everything
+	CXTPPopupBar* pPopupBar = CXTPPopupBar::CreatePopupBar(m_pCommandBars);
+	m_arrBars.Add(pPopupBar);
 
-	ASSERT(FALSE);
+	CMenu menu;
+	if (!menu.LoadMenu(nIDBar))
+		return pPopupBar;
+
+	CMenu* pSubMenu = menu.GetSubMenu(0);
+	if (!pSubMenu)
+		return pPopupBar;
+
+	pPopupBar->LoadMenu(pSubMenu);
+	pPopupBar->SetBarID(nIDBar);
+
+	CString strCaption;
+	XTPResourceManager()->GetMenuLocaleString(&menu, 0, strCaption, MF_BYPOSITION);
+	CXTPDrawHelpers::StripMnemonics(strCaption);
+
+	pPopupBar->SetTitle(strCaption);
+
+	pPopupBar->GetControls()->CreateOriginalControls();
+	pPopupBar->m_bContextMenu = TRUE;
+
+	return pPopupBar;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// CHtmlView printing
 
-void CHtmlView::OnFilePrint()
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPCommandBarsOptions
+
+CXTPCommandBarsOptions::CXTPCommandBarsOptions()
 {
-	// get the HTMLDocument
+	bAlwaysShowFullMenus = TRUE;
+	bShowFullAfterDelay = TRUE;
+	bToolBarScreenTips = TRUE;
+	bToolBarAccelTips = FALSE;
+	bLargeIcons = FALSE;
+	bShowExpandButtonAlways = TRUE;
 
-	if (m_pBrowserApp != NULL)
-	{		
-		CComPtr<IDispatch> spDisp;
-		m_pBrowserApp->get_Document(&spDisp);
-		if (spDisp != NULL)
+	szIcons = szLargeIcons = CSize(0);
+	szPopupIcons = CSize(0, 0);
+
+	bSyncFloatingBars = TRUE;
+	bDblClickFloat = FALSE;
+	bShowTextBelowIcons = FALSE;
+
+	animationType = xtpAnimateWindowsDefault;
+	bAltDragCustomization = TRUE;
+
+	bAutoHideUnusedPopups = TRUE;
+
+	bDirtyState = FALSE;
+	bShowPopupBarToolTips = FALSE;
+	bAutoUpdateShortcuts = TRUE;
+
+	keyboardCuesUse = xtpKeyboardCuesUseAll;
+	keyboardCuesShow = xtpKeyboardCuesShowAlways;
+	bFlyByStatus = TRUE;
+
+	bUseAltNumPadKeys = FALSE;
+	bUseSystemSaveBitsStyle = TRUE;
+
+	bDisableCommandIfNoHandler = TRUE;
+
+	bWrapLargePopups = FALSE;
+
+	bShowKeyboardTips = FALSE;
+	m_pCommandBars = 0;
+
+	EnableAutomation();
+
+}
+
+#ifndef SPI_GETMENUUNDERLINES
+#define SPI_GETMENUUNDERLINES 0x100A
+#endif
+
+void CXTPCommandBarsOptions::ShowKeyboardCues(XTPKeyboardCuesShow keyboardCues)
+{
+	keyboardCuesShow = keyboardCues;
+
+	m_pCommandBars->m_bUseKeyboardCues = FALSE;
+	m_pCommandBars->m_bKeyboardCuesVisible = keyboardCues != xtpKeyboardCuesShowNever;
+
+	if (keyboardCues == xtpKeyboardCuesShowWindowsDefault)
+	{
+		BOOL bRetVal = TRUE;
+		if (::SystemParametersInfo(SPI_GETMENUUNDERLINES, 0, &bRetVal, 0))
 		{
-			// the control will handle all printing UI
-
-			CComQIPtr<IOleCommandTarget> spTarget = spDisp;
-			if (spTarget != NULL)
-				spTarget->Exec(NULL, OLECMDID_PRINT, 0, NULL, NULL);
+			if (!bRetVal)
+			{
+				m_pCommandBars->m_bUseKeyboardCues = TRUE;
+				m_pCommandBars->m_bKeyboardCuesVisible = FALSE;
+			}
 		}
 	}
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// CHtmlView diagnostics
-
-#ifdef _DEBUG
-void CHtmlView::AssertValid() const
+XTPKeyboardCuesShow CXTPCommandBarsOptions::GetShowKeyboardCues() const
 {
-	CFormView::AssertValid();
+	return keyboardCuesShow;
 }
 
-void CHtmlView::Dump(CDumpContext& dc) const
-{
-	CFormView::Dump(dc);
-}
-#endif //_DEBUG
 
-/////////////////////////////////////////////////////////////////////////////
-// CHtmlView message handlers
 
-void CHtmlView::OnDestroy()
+CXTPCommandBars* CXTPCommandBars::CreateCommandBars()
 {
+	CXTPCommandBars* pCommandBars = (CXTPCommandBars*)CXTPCommandBars::CreateObject();
+	return pCommandBars;
 }
 
-void CHtmlView::OnSize(UINT nType, int cx, int cy)
-{
-	CFormView::OnSize(nType, cx, cy);
 
-	if (::IsWindow(m_wndBrowser.m_hWnd))
+// CXTPCommandBars
+
+IMPLEMENT_DYNCREATE(CXTPCommandBars, CCmdTarget)
+
+CXTPCommandBars::CXTPCommandBars()
+	: m_pFrame (0)
+	, m_nDefaultMenuID(0)
+{
+	ZeroMemory(m_pDocks, 4 * sizeof(CXTPDockBar*));
+	m_pDragSelected = NULL;
+
+	m_bQuickCustomizeMode = m_bCustomizeMode = FALSE;
+	m_bCustomizeAvail = FALSE;
+	m_pDropSource = new CXTPCustomizeDropSource(this);
+
+	m_pPaintManager = NULL;
+	m_pImageManager = NULL;
+	m_pMouseManager = NULL;
+	m_pKeyboardManager = NULL;
+
+	m_pOptions = new CXTPCommandBarsOptions;
+	m_pOptions->m_pCommandBars = this;
+
+	m_pDesignerControls = NULL;
+
+	m_bIgnoreShiftMenuKey = FALSE;
+
+	EnableAutomation();
+
+	m_bRecalcLayout = FALSE;
+	m_bRightToLeft = FALSE;
+
+	m_pToolTipContext = new CXTPToolTipContext;
+	m_pToolTipContext->ModifyToolTipStyle(TTS_NOPREFIX, 0);
+	m_bUseKeyboardCues = FALSE;
+	m_bKeyboardCuesVisible = TRUE;
+
+	m_pShortcutManager = new CXTPShortcutManager(this);
+
+	m_nIDHelpTracking = 0;
+
+	m_bDesignerMode = FALSE;
+
+	m_keyboardTips.pBar = NULL;
+	m_keyboardTips.nLevel = 0;
+	m_keyboardTips.nKey = 0;
+
+
+	m_pActions = new CXTPControlActions(this);
+	m_bEnableActions = FALSE;
+
+	m_pContextMenus = new CXTPCommandBarsContextMenus(this);
+
+}
+
+CXTPCommandBars::~CXTPCommandBars()
+{
+	CMDTARGET_RELEASE(m_pDragSelected);
+	CMDTARGET_RELEASE(m_pDesignerControls);
+
+	m_pContextMenus->RemoveAll();
+	CMDTARGET_RELEASE(m_pContextMenus);
+
+	RemoveAll();
+
+	for (int i = 0; i < 4; i++)
 	{
-		// need to push non-client borders out of the client area
-		CRect rect;
-		GetClientRect(rect);
-		::AdjustWindowRectEx(rect,
-			m_wndBrowser.GetStyle(), FALSE, WS_EX_CLIENTEDGE);
-		m_wndBrowser.SetWindowPos(NULL, rect.left, rect.top,
-			rect.Width(), rect.Height(), SWP_NOACTIVATE | SWP_NOZORDER);
+		if (m_pDocks[i])
+		{
+			m_pDocks[i]->DestroyWindow();
+			delete m_pDocks[i];
+		}
+	}
+
+	delete m_pDropSource;
+
+	CMDTARGET_RELEASE(m_pPaintManager);
+	CMDTARGET_RELEASE(m_pImageManager);
+	CMDTARGET_RELEASE(m_pToolTipContext);
+	CMDTARGET_RELEASE(m_pShortcutManager);
+
+	CMDTARGET_RELEASE(m_pOptions);
+
+	XTPSoundManager()->StopThread();
+
+	if (m_pActions)
+	{
+		m_pActions->RemoveAll();
+		CMDTARGET_RELEASE(m_pActions);
 	}
 }
 
-void CHtmlView::OnPaint()
+BOOL IsToolBarVisible(CXTPToolBar* pCommandBar)
 {
-	Default();
+	return pCommandBar&& pCommandBar->IsWindowVisible();
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// CHtmlView operations
 
-#pragma warning(disable:4100)
-
-class CHtmlControlSite : public COleControlSite
+void CXTPCommandBars::EnableActions()
 {
-public:
-	CHtmlControlSite(COleControlContainer* pParentWnd);
-	~CHtmlControlSite();
-
-	CHtmlView* GetView() const;
-
-	BEGIN_INTERFACE_PART(DocHostUIHandler, IDocHostUIHandler)
-		STDMETHOD(ShowContextMenu)(DWORD, LPPOINT, LPUNKNOWN, LPDISPATCH);
-		STDMETHOD(GetHostInfo)(DOCHOSTUIINFO*);
-		STDMETHOD(ShowUI)(DWORD, LPOLEINPLACEACTIVEOBJECT,
-			LPOLECOMMANDTARGET, LPOLEINPLACEFRAME, LPOLEINPLACEUIWINDOW);
-		STDMETHOD(HideUI)(void);
-		STDMETHOD(UpdateUI)(void);
-		STDMETHOD(EnableModeless)(BOOL);
-		STDMETHOD(OnDocWindowActivate)(BOOL);
-		STDMETHOD(OnFrameWindowActivate)(BOOL);
-		STDMETHOD(ResizeBorder)(LPCRECT, LPOLEINPLACEUIWINDOW, BOOL);
-		STDMETHOD(TranslateAccelerator)(LPMSG, const GUID*, DWORD);
-		STDMETHOD(GetOptionKeyPath)(OLECHAR **, DWORD);
-		STDMETHOD(GetDropTarget)(LPDROPTARGET, LPDROPTARGET*);
-		STDMETHOD(GetExternal)(LPDISPATCH*);
-		STDMETHOD(TranslateUrl)(DWORD, OLECHAR*, OLECHAR **);
-		STDMETHOD(FilterDataObject)(LPDATAOBJECT , LPDATAOBJECT*);
-	END_INTERFACE_PART(DocHostUIHandler)
-
-	DECLARE_INTERFACE_MAP()
-};
-
-BEGIN_INTERFACE_MAP(CHtmlControlSite, COleControlSite)
-	INTERFACE_PART(CHtmlControlSite, IID_IDocHostUIHandler, DocHostUIHandler)
-END_INTERFACE_MAP()
-
-CHtmlControlSite::CHtmlControlSite(COleControlContainer* pContainer)
-: COleControlSite(pContainer)
-{
+	ASSERT(!m_bEnableActions);
+	ASSERT(m_pActions->GetCount() == 0);
+	m_bEnableActions = TRUE;
 }
 
-CHtmlControlSite::~CHtmlControlSite()
+CXTPControlAction* CXTPCommandBars::CreateAction(int nId)
 {
+	return m_pActions->Add(nId);
 }
 
-inline CHtmlView* CHtmlControlSite::GetView() const
+CXTPControlAction* CXTPCommandBars::FindAction(int nId) const
 {
-	return STATIC_DOWNCAST(CHtmlView, m_pCtrlCont->m_pWnd);
+	return this == NULL ? NULL : m_pActions->FindAction(nId);
 }
 
-STDMETHODIMP CHtmlControlSite::XDocHostUIHandler::GetExternal(LPDISPATCH *lppDispatch)
-{
-	METHOD_PROLOGUE_EX_(CHtmlControlSite, DocHostUIHandler)
 
-	CHtmlView* pView = pThis->GetView();
-	ASSERT_VALID(pView);
-	if (pView == NULL)
+CXTPMenuBar* CXTPCommandBars::GetMenuBar() const
+{
+	return DYNAMIC_DOWNCAST(CXTPMenuBar, GetToolBar(XTP_IDR_MENUBAR));
+}
+
+CXTPMenuBar* CXTPCommandBars::SetMenu(LPCTSTR strName, UINT nID)
+{
+	CXTPMenuBar* pMenuBar = (CXTPMenuBar*) m_pMenuBarClass->CreateObject();
+	ASSERT(pMenuBar);
+	if (!pMenuBar)
+		return NULL;
+
+	pMenuBar->m_pCommandBars = this;
+
+	pMenuBar->SetTitle(strName);
+	pMenuBar->m_nBarID = XTP_IDR_MENUBAR;
+
+	if (!pMenuBar->SetPosition(xtpBarTop) ||
+		!pMenuBar->LoadMenuBar(nID))
 	{
-		return E_FAIL;
+		delete pMenuBar;
+		return NULL;
 	}
-	return pView->OnGetExternal(lppDispatch);
-}
 
-HRESULT CHtmlView::OnGetExternal(LPDISPATCH*)
-{
-	// default tells control we don't have an external
-	return S_FALSE;
-}
-
-STDMETHODIMP CHtmlControlSite::XDocHostUIHandler::ShowContextMenu(
-	DWORD dwID, LPPOINT ppt, LPUNKNOWN pcmdtReserved, LPDISPATCH pdispReserved)
-{
-	METHOD_PROLOGUE_EX_(CHtmlControlSite, DocHostUIHandler)
-
-	CHtmlView* pView = pThis->GetView();
-	ASSERT_VALID(pView);
-	if (pView == NULL)
+	if (nID > 0)
 	{
-		return E_FAIL;
+		pMenuBar->m_pControls->CreateOriginalControls();
+		m_nDefaultMenuID = nID;
 	}
-	return pView->OnShowContextMenu(dwID, ppt, pcmdtReserved, pdispReserved);
+
+	m_arrBars.Add(pMenuBar);
+
+	return pMenuBar;
 }
 
-HRESULT CHtmlView::OnShowContextMenu(DWORD, LPPOINT, LPUNKNOWN, LPDISPATCH)
+void CXTPCommandBars::RecalcFrameLayout(BOOL bDelay)
 {
-	// default tells control that we didn't show a menu,
-	// and the control should show the menu
+	if (m_bRecalcLayout)
+		return;
 
-	return S_FALSE;
-}
+	if (!m_pFrame->GetSafeHwnd())
+		return;
 
-STDMETHODIMP CHtmlControlSite::XDocHostUIHandler::GetHostInfo(
-	DOCHOSTUIINFO *pInfo)
-{
-	METHOD_PROLOGUE_EX_(CHtmlControlSite, DocHostUIHandler)
-	CHtmlView* pView = pThis->GetView();
-	ASSERT_VALID(pView);
-	if (pView == NULL)
+	CFrameWnd* pFrame = m_pFrame->IsFrameWnd() ? (CFrameWnd*)m_pFrame : NULL;
+	if (pFrame)
 	{
-		return E_FAIL;
+		if (bDelay)
+			pFrame->DelayRecalcLayout(FALSE);
+		else
+			pFrame->RecalcLayout(FALSE);
 	}
-	return pView->OnGetHostInfo(pInfo);
-}
-
-HRESULT CHtmlView::OnGetHostInfo(DOCHOSTUIINFO*)
-{
-	// default indicates we don't have info
-	return S_OK;
-}
-
-STDMETHODIMP CHtmlControlSite::XDocHostUIHandler::ShowUI(
-	DWORD dwID, LPOLEINPLACEACTIVEOBJECT pActiveObject,
-	LPOLECOMMANDTARGET pCommandTarget, LPOLEINPLACEFRAME pFrame,
-	LPOLEINPLACEUIWINDOW pDoc)
-{
-	METHOD_PROLOGUE_EX_(CHtmlControlSite, DocHostUIHandler)
-
-	CHtmlView* pView = pThis->GetView();
-	ASSERT_VALID(pView);
-	if (pView == NULL)
+	else
 	{
-		return E_FAIL;
+		CXTPClientRect rc(m_pFrame);
+		m_pFrame->SendMessage(WM_SIZE, 0, MAKELPARAM(rc.Width(), rc.Height()));
 	}
-	return pView->OnShowUI(dwID, pActiveObject, pCommandTarget, pFrame, pDoc);
 }
 
-HRESULT CHtmlView::OnShowUI(DWORD, LPOLEINPLACEACTIVEOBJECT,
-	LPOLECOMMANDTARGET, LPOLEINPLACEFRAME, LPOLEINPLACEUIWINDOW)
+void CXTPCommandBars::IdleRecalcLayout()
 {
-	// default means we don't have any UI, and control should show its UI
-
-	return S_FALSE;
-}
-
-STDMETHODIMP CHtmlControlSite::XDocHostUIHandler::HideUI(void)
-{
-	METHOD_PROLOGUE_EX_(CHtmlControlSite, DocHostUIHandler)
-
-	CHtmlView* pView = pThis->GetView();
-	ASSERT_VALID(pView);
-	if (pView == NULL)
+	CFrameWnd* pFrame = DYNAMIC_DOWNCAST(CFrameWnd, GetSite());
+	if (pFrame)
 	{
-		return E_FAIL;
+		if (pFrame->m_nIdleFlags & CFrameWnd::idleLayout)
+		{
+			pFrame->RecalcLayout(FALSE);
+			pFrame->m_nIdleFlags &= ~CFrameWnd::idleLayout;
+		}
 	}
-	return pView->OnHideUI();
 }
 
-HRESULT CHtmlView::OnHideUI()
+void CXTPCommandBars::OnToolBarAdded(CXTPToolBar* pToolBar)
 {
-	// we don't have UI by default, so just pretend we hid it
-	return S_OK;
-}
+	ASSERT(pToolBar);
 
-STDMETHODIMP CHtmlControlSite::XDocHostUIHandler::UpdateUI(void)
-{
-	METHOD_PROLOGUE_EX_(CHtmlControlSite, DocHostUIHandler)
-
-	CHtmlView* pView = pThis->GetView();
-	ASSERT_VALID(pView);
-	if (pView == NULL)
+	CXTPReBar* pReBar = GetFrameReBar();
+	if (pReBar)
 	{
-		return E_FAIL;
+		pReBar->AddToolBar(pToolBar, RBBS_GRIPPERALWAYS | RBBS_BREAK);
 	}
-	return pView->OnUpdateUI();
 }
 
-HRESULT CHtmlView::OnUpdateUI()
+void CXTPCommandBars::OnToolBarRemoved(CXTPToolBar* pToolBar)
 {
-	// we don't have UI by default, so just pretend we updated it
-	return S_OK;
-}
+	ASSERT(pToolBar);
 
-STDMETHODIMP CHtmlControlSite::XDocHostUIHandler::EnableModeless(BOOL fEnable)
-{
-	METHOD_PROLOGUE_EX_(CHtmlControlSite, DocHostUIHandler)
-	CHtmlView* pView = pThis->GetView();
-	ASSERT_VALID(pView);
-	if (pView == NULL)
+	CXTPReBar* pReBar = GetFrameReBar();
+	if (pReBar)
 	{
-		return E_FAIL;
+		pReBar->DeleteToolBar(pToolBar);
 	}
-	return pView->OnEnableModeless(fEnable);
 }
 
-HRESULT CHtmlView::OnEnableModeless(BOOL)
+CXTPReBar* CXTPCommandBars::GetFrameReBar() const
 {
-	// we don't have any UI by default, so pretend we updated it
-	return S_OK;
+	if (!m_pFrame->GetSafeHwnd())
+		return NULL;
+
+	return DYNAMIC_DOWNCAST(CXTPReBar, m_pFrame->GetDlgItem(AFX_IDW_REBAR));
 }
 
-STDMETHODIMP CHtmlControlSite::XDocHostUIHandler::OnDocWindowActivate(BOOL fActivate)
+CXTPToolBar* CXTPCommandBars::AddCustomBar(LPCTSTR lpcstrCaption, UINT nID, BOOL bTearOffBar)
 {
-	METHOD_PROLOGUE_EX_(CHtmlControlSite, DocHostUIHandler)
-	CHtmlView* pView = pThis->GetView();
-	ASSERT_VALID(pView);
-	if (pView == NULL)
+	ASSERT(nID != 0);
+
+	CXTPToolBar* pCommandBar = (CXTPToolBar*) m_pToolBarClass->CreateObject();
+	pCommandBar->m_pCommandBars = this;
+
+	XTP_COMMANDBARS_CREATEBAR cs;
+	ZeroMemory(&cs, sizeof(cs));
+	cs.bCustomBar = TRUE;
+	cs.bTearOffBar = bTearOffBar;
+	cs.lpcstrCaption = lpcstrCaption;
+	cs.pCommandBar = pCommandBar;
+	cs.nID = nID;
+
+	m_pFrame->SendMessage(WM_XTP_CREATECOMMANDBAR, 0, (LPARAM)&cs);
+
+	ASSERT(pCommandBar == cs.pCommandBar);
+
+	ASSERT(pCommandBar);
+	pCommandBar->m_strTitle = lpcstrCaption;
+
+	if (!pCommandBar->SetPosition(bTearOffBar ? xtpBarFloating : xtpBarTop))
 	{
-		return E_FAIL;
+		delete pCommandBar;
+		return NULL;
 	}
-	return pView->OnDocWindowActivate(fActivate);
+
+	m_arrBars.Add(pCommandBar);
+
+	pCommandBar->SetBarID(nID);
+	pCommandBar->m_bBuiltIn = FALSE;
+	pCommandBar->m_bTearOff = bTearOffBar;
+
+	if (!bTearOffBar) RecalcFrameLayout();
+
+	OnToolBarAdded(pCommandBar);
+
+	return pCommandBar;
 }
 
-HRESULT CHtmlView::OnDocWindowActivate(BOOL)
+CXTPShortcutManager* CXTPCommandBars::GetShortcutManager() const
 {
-	// we don't have any UI by default, so pretend we updated it
-	return S_OK;
+	return m_pShortcutManager;
 }
 
-STDMETHODIMP CHtmlControlSite::XDocHostUIHandler::OnFrameWindowActivate(
-	BOOL fActivate)
+void CXTPCommandBars::SetShortcutManager(CXTPShortcutManager* pShortcutManager)
 {
-	METHOD_PROLOGUE_EX_(CHtmlControlSite, DocHostUIHandler)
-	CHtmlView* pView = pThis->GetView();
-	ASSERT_VALID(pView);
-	if (pView == NULL)
+	CMDTARGET_RELEASE(m_pShortcutManager);
+	m_pShortcutManager = pShortcutManager;
+}
+
+
+CXTPToolBar* CXTPCommandBars::Add(LPCTSTR strName, XTPBarPosition xtpPosition, CRuntimeClass* pToolbarClass)
+{
+	if (!pToolbarClass)
+		pToolbarClass = m_pToolBarClass;
+
+	ASSERT(pToolbarClass && pToolbarClass->IsDerivedFrom(RUNTIME_CLASS(CXTPToolBar)));
+	ASSERT(IsDockingPosition(xtpPosition) || xtpPosition == xtpBarFloating);
+	if (!pToolbarClass)
+		return NULL;
+
+	CXTPToolBar* pCommandBar = (CXTPToolBar*) pToolbarClass->CreateObject();
+	ASSERT(pCommandBar);
+	if (!pCommandBar)
+		return NULL;
+
+	pCommandBar->m_pCommandBars = this;
+	pCommandBar->m_strTitle = strName;
+
+	if (!pCommandBar->SetPosition(xtpPosition))
 	{
-		return E_FAIL;
+		delete pCommandBar;
+		return NULL;
 	}
-	return pView->OnFrameWindowActivate(fActivate);
+
+	m_arrBars.Add(pCommandBar);
+
+	return pCommandBar;
 }
 
-HRESULT CHtmlView::OnFrameWindowActivate(BOOL)
+void CXTPCommandBars::EnableDocking()
 {
-	// we don't have any UI by default, so pretend we updated it
-	return S_OK;
-}
-
-STDMETHODIMP CHtmlControlSite::XDocHostUIHandler::ResizeBorder(
-	LPCRECT prcBorder, LPOLEINPLACEUIWINDOW pUIWindow, BOOL fFrameWindow)
-{
-	METHOD_PROLOGUE_EX_(CHtmlControlSite, DocHostUIHandler)
-	CHtmlView* pView = pThis->GetView();
-	ASSERT_VALID(pView);
-	if (pView == NULL)
+	const DWORD dwDockBarMap[4][2] =
 	{
-		return E_FAIL;
+		{ AFX_IDW_DOCKBAR_TOP, CBRS_TOP   },
+		{ AFX_IDW_DOCKBAR_BOTTOM, CBRS_BOTTOM },
+		{ AFX_IDW_DOCKBAR_LEFT, CBRS_LEFT   },
+		{ AFX_IDW_DOCKBAR_RIGHT, CBRS_RIGHT  },
+	};
+
+	CWnd* pParentFrame = GetSite();
+	ASSERT(pParentFrame);
+
+	for (int i = 0; i < 4; i++)
+	{
+		ASSERT(!m_pDocks[i]);
+
+		CXTPDockBar* pDockBar = (CXTPDockBar*)m_pDockBarClass->CreateObject();
+		pDockBar->m_pCommandBars = this;
+
+		if (!pDockBar->Create(pParentFrame,
+			WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_CHILD | WS_VISIBLE |
+			dwDockBarMap[i][1], dwDockBarMap[i][0]))
+		{
+			AfxThrowResourceException();
+		}
+		m_pDocks[i] = pDockBar;
 	}
-	return pView->OnResizeBorder(prcBorder, pUIWindow, fFrameWindow);
 }
 
-HRESULT CHtmlView::OnResizeBorder(LPCRECT, LPOLEINPLACEUIWINDOW, BOOL)
+CXTPDockBar* CXTPCommandBars::CanDock(CPoint pt, CXTPDockBar* pMainDock) const
 {
-	// we don't have any UI by default, so pretend we updated it
-	return S_OK;
-}
-
-STDMETHODIMP CHtmlControlSite::XDocHostUIHandler::TranslateAccelerator(
-	LPMSG lpMsg, const GUID* pguidCmdGroup, DWORD nCmdID)
-{
-	METHOD_PROLOGUE_EX_(CHtmlControlSite, DocHostUIHandler)
-	CHtmlView* pView = pThis->GetView();
-	ASSERT_VALID(pView);
-	if (pView == NULL)
+	CRect rc;
+	if (pMainDock)
 	{
-		return E_FAIL;
+		pMainDock->GetWindowRect(&rc);
+		if (pMainDock->m_dwStyle & CBRS_ORIENT_HORZ &&
+			rc.top - 20 < pt.y && rc.bottom + 20 > pt.y && rc.left - 20 < pt.x && rc.right + 20 > pt.x)
+			return pMainDock;
+		if (pMainDock->m_dwStyle & CBRS_ORIENT_VERT &&
+			rc.left - 20 < pt.x && rc.right + 20 > pt.x && rc.top - 20 < pt.y && rc.bottom + 20 > pt.y)
+			return pMainDock;
 	}
-	return pView->OnTranslateAccelerator(lpMsg, pguidCmdGroup, nCmdID);
-}
-
-HRESULT CHtmlView::OnTranslateAccelerator(LPMSG, const GUID*, DWORD)
-{
-	// no translation here
-	return S_FALSE;
-}
-
-STDMETHODIMP CHtmlControlSite::XDocHostUIHandler::GetOptionKeyPath(
-	LPOLESTR* pchKey, DWORD dwReserved)
-{
-	METHOD_PROLOGUE_EX_(CHtmlControlSite, DocHostUIHandler)
-	CHtmlView* pView = pThis->GetView();
-	ASSERT_VALID(pView);
-	if (pView == NULL)
+	for (int i = 0; i < 4; i++)
 	{
-		return E_FAIL;
+		m_pDocks[i]->GetWindowRect(&rc);
+		if (m_pDocks[i]->m_dwStyle & CBRS_ORIENT_HORZ &&
+			rc.top - 20 < pt.y && rc.bottom + 20 > pt.y && rc.left - 20 < pt.x && rc.right + 20 > pt.x)
+			return m_pDocks[i];
+		if (m_pDocks[i]->m_dwStyle & CBRS_ORIENT_VERT &&
+			rc.left - 20 < pt.x && rc.right + 20 > pt.x && rc.top - 20 < pt.y && rc.bottom + 20 > pt.y)
+			return m_pDocks[i];
 	}
-	return pView->OnGetOptionKeyPath(pchKey, dwReserved);
+	return NULL;
 }
 
-HRESULT CHtmlView::OnGetOptionKeyPath(LPOLESTR*, DWORD)	
+BOOL CXTPCommandBars::DockCommandBar(CXTPToolBar* pBar, LPRECT lpRect, CXTPDockBar* pDockBar)
 {
-	// no replacement option key
-	return S_FALSE;
-}
-
-STDMETHODIMP CHtmlControlSite::XDocHostUIHandler::GetDropTarget(
-	LPDROPTARGET pDropTarget, LPDROPTARGET* ppDropTarget)
-{
-	METHOD_PROLOGUE_EX_(CHtmlControlSite, DocHostUIHandler)
-	CHtmlView* pView = pThis->GetView();
-	ASSERT_VALID(pView);
-	if (pView == NULL)
-	{
-		return E_FAIL;
-	}
-	return pView->OnGetDropTarget(pDropTarget, ppDropTarget);
-}
-
-HRESULT CHtmlView::OnGetDropTarget(LPDROPTARGET, LPDROPTARGET*)
-{
-	// no additional drop target
-	return S_FALSE;
-}
-
-STDMETHODIMP CHtmlControlSite::XDocHostUIHandler::TranslateUrl(
-	DWORD dwTranslate, OLECHAR* pchURLIn, OLECHAR** ppchURLOut)
-{
-	METHOD_PROLOGUE_EX_(CHtmlControlSite, DocHostUIHandler)
-	CHtmlView* pView = pThis->GetView();
-	ASSERT_VALID(pView);
-	if (pView == NULL)
-	{
-		return E_FAIL;
-	}
-	return pView->OnTranslateUrl(dwTranslate, pchURLIn, ppchURLOut);
-}
-
-HRESULT CHtmlView::OnTranslateUrl(DWORD, OLECHAR*, OLECHAR**)
-{
-	// no translation happens by default
-	return S_FALSE;
-}
-
-STDMETHODIMP CHtmlControlSite::XDocHostUIHandler::FilterDataObject(
-	LPDATAOBJECT pDataObject, LPDATAOBJECT* ppDataObject)
-{
-	METHOD_PROLOGUE_EX_(CHtmlControlSite, DocHostUIHandler)
-	CHtmlView* pView = pThis->GetView();
-	ASSERT_VALID(pView);
-	if (pView == NULL)
-	{
-		return E_FAIL;
-	}
-	return pView->OnFilterDataObject(pDataObject, ppDataObject);
-}
-
-HRESULT CHtmlView::OnFilterDataObject(LPDATAOBJECT pDataObject,
-									LPDATAOBJECT* ppDataObject)
-{
-	// no data objects by default
-	return S_FALSE;
-}
-
-STDMETHODIMP_(ULONG) CHtmlControlSite::XDocHostUIHandler::AddRef()
-{
-	METHOD_PROLOGUE_EX_(CHtmlControlSite, DocHostUIHandler)
-	return pThis->ExternalAddRef();
-}
-
-STDMETHODIMP_(ULONG) CHtmlControlSite::XDocHostUIHandler::Release()
-{
-	METHOD_PROLOGUE_EX_(CHtmlControlSite, DocHostUIHandler)
-	return pThis->ExternalRelease();
-}
-
-STDMETHODIMP CHtmlControlSite::XDocHostUIHandler::QueryInterface(
-		  REFIID iid, LPVOID far* ppvObj)     
-{
-	METHOD_PROLOGUE_EX_(CHtmlControlSite, DocHostUIHandler)
-	return pThis->ExternalQueryInterface(&iid, ppvObj);
-}
-
-BOOL CHtmlView::CreateControlSite(COleControlContainer* pContainer, 
-   COleControlSite** ppSite, UINT /* nID */, REFCLSID /* clsid */)
-{
-	ASSERT(ppSite != NULL);
-	*ppSite = new CHtmlControlSite(pContainer);
-	return TRUE;
-}
-
-BOOL CHtmlView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
-						DWORD dwStyle, const RECT& rect, CWnd* pParentWnd,
-						UINT nID, CCreateContext* pContext)
-{
-	// create the view window itself
-	m_pCreateContext = pContext;
-	if (!CView::Create(lpszClassName, lpszWindowName,
-				dwStyle, rect, pParentWnd,  nID, pContext))
-	{
+	ASSERT(pDockBar);
+	if (!pDockBar)
 		return FALSE;
-	}
 
-	// assure that control containment is on
-	AfxEnableControlContainer();
-
-	RECT rectClient;
-	GetClientRect(&rectClient);
-
-	// create the control window
-	// AFX_IDW_PANE_FIRST is a safe but arbitrary ID
-	if (!m_wndBrowser.CreateControl(CLSID_WebBrowser, lpszWindowName,
-				WS_VISIBLE | WS_CHILD, rectClient, this, AFX_IDW_PANE_FIRST))
-	{
-		DestroyWindow();
+	if (!pBar->Create(m_pFrame, FALSE))
 		return FALSE;
-	}
 
-	// cache the dispinterface
-	LPUNKNOWN lpUnk = m_wndBrowser.GetControlUnknown();
-	HRESULT hr = lpUnk->QueryInterface(IID_IWebBrowser2, (void**) &m_pBrowserApp);
-	if (!SUCCEEDED(hr))
-	{
-		m_pBrowserApp = NULL;
-		m_wndBrowser.DestroyWindow();
-		DestroyWindow();
-		return FALSE;
-	}
+	pDockBar->DockCommandBar(pBar, lpRect);
+	pBar->m_barPosition = pDockBar->GetPosition();
 
 	return TRUE;
 }
 
-BOOL CHtmlView::PreTranslateMessage(MSG* pMsg) 
+BOOL CXTPCommandBars::DockCommandBar(CXTPToolBar* pBar, XTPBarPosition xtpPosition)
 {
-	ASSERT(pMsg != NULL);
-	ASSERT_VALID(this);
-	ASSERT(m_hWnd != NULL);
+	CXTPDockBar* pDockBar = GetDockBar(xtpPosition);
+	ASSERT(pDockBar);
 
-	// allow tooltip messages to be filtered (skip CFormView)
-	if (CView::PreTranslateMessage(pMsg))
+	return DockCommandBar(pBar, NULL, pDockBar);
+}
+
+BOOL CXTPCommandBars::FloatCommandBar(CXTPToolBar* pBar)
+{
+	if (!pBar->Create(m_pFrame, TRUE))
+	{
+		return FALSE;
+	}
+	if (pBar->m_pDockBar != NULL)
+	{
+		pBar->m_pDockBar->RemoveCommandBar(pBar);
+		pBar->m_pDockBar = NULL;
+
+	}
+	pBar->m_barPosition = xtpBarFloating;
+
+	return TRUE;
+}
+
+void CXTPCommandBars::DelayRedrawCommandBars()
+{
+	for (int i = 0; i < GetCount(); i++)
+	{
+		CXTPToolBar* pBar = GetAt(i);
+		if (pBar->IsVisible() && pBar->GetSafeHwnd())
+		{
+			pBar->DelayRedraw();
+		}
+	}
+}
+
+void CXTPCommandBars::InvalidateCommandBars()
+{
+	for (int i = 0; i < GetCount(); i++)
+	{
+		CXTPToolBar* pBar = GetAt(i);
+		if (pBar->IsVisible() && pBar->GetSafeHwnd())
+		{
+			pBar->Redraw();
+		}
+	}
+}
+
+void CXTPCommandBars::RedrawCommandBars()
+{
+	m_bRecalcLayout = TRUE;
+
+	for (int i = 0; i < GetCount(); i++)
+	{
+		CXTPToolBar* pBar = GetAt(i);
+
+		for (int j = 0; j < pBar->GetControlCount(); j++)
+		{
+			pBar->GetControl(j)->OnThemeChanged();
+		}
+
+		if (pBar->IsVisible())
+		{
+			pBar->OnRecalcLayout();
+		}
+	}
+
+	CMDIFrameWnd* pMDIFrame = DYNAMIC_DOWNCAST(CMDIFrameWnd, GetSite());
+	if (pMDIFrame)
+	{
+		CXTPTabClientWnd* pClient = DYNAMIC_DOWNCAST(CXTPTabClientWnd, CWnd::FromHandle(pMDIFrame->m_hWndMDIClient));
+		if (pClient)
+			pClient->Refresh();
+	}
+
+	CWnd* pWnd = GetSite()->GetDlgItem(AFX_IDW_STATUS_BAR);
+	if (pWnd)
+	{
+		pWnd->Invalidate(FALSE);
+	}
+
+	m_bRecalcLayout = FALSE;
+	RecalcFrameLayout();
+
+	GetSite()->SendMessage(WM_NCPAINT);
+}
+
+BOOL CXTPCommandBar::IsKeyboardCuesVisible() const
+{
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (!pCommandBars)
 		return TRUE;
 
-	// don't translate dialog messages when in Shift+F1 help mode
-	CFrameWnd* pFrameWnd = GetTopLevelFrame();
-	if (pFrameWnd != NULL && pFrameWnd->m_bHelpMode)
-		return FALSE;
+	return pCommandBars->m_bKeyboardCuesVisible;
+}
 
-	// call all frame windows' PreTranslateMessage first
-	pFrameWnd = GetParentFrame();   // start with first parent frame
-	while (pFrameWnd != NULL)
+
+CXTPCommandBarKeyboardTip::CXTPCommandBarKeyboardTip(CXTPCommandBars* pCommandBars, CCmdTarget* pOwner, LPCTSTR lpszCaption, CPoint pt, DWORD dwAlign, BOOL bEnabled)
+{
+	m_pOwner = pOwner;
+	m_strCaption = lpszCaption;
+	m_pCommandBars = pCommandBars;
+	m_pt = pt;
+	m_strTip.Empty();
+	m_bEnabled = bEnabled;
+	m_dwAlign = dwAlign;
+	m_bVisible = TRUE;
+	m_bExplicit = FALSE;
+}
+
+BEGIN_MESSAGE_MAP(CXTPCommandBarKeyboardTip, CWnd)
+	ON_WM_PAINT()
+	ON_WM_NCHITTEST_EX()
+END_MESSAGE_MAP()
+
+LRESULT CXTPCommandBarKeyboardTip::OnNcHitTest(CPoint /*point*/)
+{
+	return (LRESULT)HTTRANSPARENT;
+}
+
+void CXTPCommandBarKeyboardTip::OnPaint()
+{
+	CPaintDC dc(this);
+	m_pCommandBars->GetPaintManager()->DrawKeyboardTip(&dc, this, FALSE);
+}
+
+BOOL CXTPCommandBar::IsKeyboardTipsVisible() const
+{
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (pCommandBars && pCommandBars->m_keyboardTips.pBar == this && pCommandBars->m_keyboardTips.nLevel > 0)
+		return pCommandBars->m_keyboardTips.nLevel;
+
+	return FALSE;
+}
+
+void CXTPCommandBar::CreateKeyboardTips()
+{
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (!pCommandBars)
+		return;
+
+	for (int i = 0; i < GetControlCount(); i++)
 	{
-		// allow owner & frames to translate
-		if (pFrameWnd->PreTranslateMessage(pMsg))
-			return TRUE;
+		CXTPControl* pControl = GetControl(i);
+		if (!pControl->IsVisible() || pControl->GetCaption().IsEmpty() || (pControl->GetFlags() & xtpFlagSkipFocus))
+			continue;
 
-		// try parent frames until there are no parent frames
-		pFrameWnd = pFrameWnd->GetParentFrame();
-	}
+		if (pControl->GetType() == xtpControlGallery)
+			continue;
 
-	// check if the browser control wants to handle the message
-	BOOL bRet = FALSE;
-	if(m_pBrowserApp != NULL)
-	{
-		CComQIPtr<IOleInPlaceActiveObject> spInPlace = m_pBrowserApp;
-		if (spInPlace)
-			bRet = (spInPlace->TranslateAccelerator(pMsg) == S_OK) ? TRUE : FALSE;
-	}
+		CPoint pt(pControl->GetRect().left + 12, pControl->GetRect().bottom - 11);
 
-	return bRet;
-}
+		CXTPCommandBarKeyboardTip* pWnd = new CXTPCommandBarKeyboardTip(pCommandBars, pControl, pControl->GetCaption(), pt, DT_TOP, pControl->GetEnabled());
 
-/////////////////////////////////////////////////////////////////////////////
-// CHtmlView properties
-
-CString CHtmlView::GetType() const
-{
-	ASSERT(m_pBrowserApp != NULL);
-
-	CComBSTR bstr;
-	HRESULT hr = m_pBrowserApp->get_Type(&bstr);
-	if(FAILED(hr))
-	{
-		ASSERT(FALSE);
-		return CString();
-	}
-		
-	CString retVal(bstr);
-	return retVal;
-}
-
-long CHtmlView::GetLeft() const
-{
-	ASSERT(m_pBrowserApp != NULL);
-
-	long result;
-	HRESULT hr = m_pBrowserApp->get_Left(&result);
-	if(FAILED(hr))
-		AfxThrowUserException();
-	
-	return result;
-}
-
-
-long CHtmlView::GetTop() const
-{
-	ASSERT(m_pBrowserApp != NULL);
-	long result;
-	HRESULT hr = m_pBrowserApp->get_Top(&result);
-	if(FAILED(hr))
-		AfxThrowUserException();
-	
-	return result;
-}
-
-int CHtmlView::GetToolBar() const
-{
-	ASSERT(m_pBrowserApp != NULL);
-	int result;
-	HRESULT hr = m_pBrowserApp->get_ToolBar(&result);
-	if(FAILED(hr))
-		AfxThrowUserException();
-	
-	return result;
-}
-
-long CHtmlView::GetHeight() const
-{
-	ASSERT(m_pBrowserApp != NULL);
-	long result;
-	HRESULT hr = m_pBrowserApp->get_Height(&result);
-	if(FAILED(hr))
-		AfxThrowUserException();
-	
-	return result;
-}
-
-long CHtmlView::GetWidth() const
-{
-	ASSERT(m_pBrowserApp != NULL);
-	long result;
-	HRESULT hr = m_pBrowserApp->get_Width(&result);
-	if(FAILED(hr))
-		AfxThrowUserException();
-	
-	return result;
-}
-
-BOOL CHtmlView::GetVisible() const
-{
-	ASSERT(m_pBrowserApp != NULL);
-
-	VARIANT_BOOL result;
-	HRESULT hr = m_pBrowserApp->get_Visible(&result);
-	if(FAILED(hr))
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-		
-	return result;
-}
-
-CString CHtmlView::GetLocationName() const
-{
-	ASSERT(m_pBrowserApp != NULL);
-
-	CComBSTR bstr;
-	HRESULT hr = m_pBrowserApp->get_LocationName(&bstr);
-	if(FAILED(hr))
-	{
-		ASSERT(FALSE);
-		return CString();
-	}
-
-	CString retVal(bstr);
-	return retVal;
-}
-
-CString CHtmlView::GetLocationURL() const
-{
-	ASSERT(m_pBrowserApp != NULL);
-
-	CComBSTR bstr;
-	HRESULT hr = m_pBrowserApp->get_LocationURL(&bstr);
-	if(FAILED(hr))
-	{
-		ASSERT(FALSE);
-		return CString();
-	}
-	
-	CString retVal(bstr);
-	return retVal;
-}
-
-BOOL CHtmlView::GetBusy() const
-{
-	ASSERT(m_pBrowserApp != NULL);
-
-	VARIANT_BOOL result;
-	HRESULT hr = m_pBrowserApp->get_Busy(&result);
-	if(FAILED(hr))
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-
-	return result;
-}
-
-READYSTATE CHtmlView::GetReadyState() const
-{
-	ASSERT(m_pBrowserApp != NULL);
-
-	READYSTATE result;
-	HRESULT hr = m_pBrowserApp->get_ReadyState(&result);
-	if(FAILED(hr))
-		AfxThrowUserException();
-		
-	return result;
-}
-
-BOOL CHtmlView::GetOffline() const
-{
-	ASSERT(m_pBrowserApp != NULL);
-
-	VARIANT_BOOL result;
-	HRESULT hr = m_pBrowserApp->get_Offline(&result);
-	if(FAILED(hr))
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-
-	return result;
-}
-
-BOOL CHtmlView::GetSilent() const
-{
-	ASSERT(m_pBrowserApp != NULL);
-
-	VARIANT_BOOL result;
-	HRESULT hr = m_pBrowserApp->get_Silent(&result);
-	if(FAILED(hr))
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-	
-	return result;
-}
-
-LPDISPATCH CHtmlView::GetApplication() const
-{
-	ASSERT(m_pBrowserApp != NULL);
-
-	LPDISPATCH result;
-	HRESULT hr = m_pBrowserApp->get_Application(&result);
-	if(FAILED(hr))
-	{
-		ASSERT(FALSE);
-		return NULL;
-	}
-	
-	return result;
-}
-
-
-LPDISPATCH CHtmlView::GetParentBrowser() const
-{
-	ASSERT(m_pBrowserApp != NULL);
-
-	LPDISPATCH result;
-	HRESULT hr = m_pBrowserApp->get_Parent(&result);
-	if(FAILED(hr))
-	{
-		ASSERT(FALSE);
-		return NULL;
-	}
-	
-	return result;
-}
-
-LPDISPATCH CHtmlView::GetContainer() const
-{
-	ASSERT(m_pBrowserApp != NULL);
-
-	LPDISPATCH result;
-	HRESULT hr = m_pBrowserApp->get_Container(&result);
-	if(FAILED(hr))
-	{
-		ASSERT(FALSE);
-		return NULL;
-	}
-	
-	return result;
-}
-
-LPDISPATCH CHtmlView::GetHtmlDocument() const
-{
-	ASSERT(m_pBrowserApp != NULL);
-
-	LPDISPATCH result;
-	HRESULT hr = m_pBrowserApp->get_Document(&result);
-	if(FAILED(hr))
-	{
-		ASSERT(FALSE);
-		return NULL;
-	}
-	
-	return result;
-}
-
-BOOL CHtmlView::GetTopLevelContainer() const
-{
-	ASSERT(m_pBrowserApp != NULL);
-
-	VARIANT_BOOL result;
-	m_pBrowserApp->get_TopLevelContainer(&result);
-	return result;
-}
-
-BOOL CHtmlView::GetMenuBar() const
-{
-	ASSERT(m_pBrowserApp != NULL);
-
-	VARIANT_BOOL result;
-	HRESULT hr = m_pBrowserApp->get_MenuBar(&result);
-	if(FAILED(hr))
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-	
-	return result;
-}
-
-BOOL CHtmlView::GetFullScreen() const
-{
-	ASSERT(m_pBrowserApp != NULL);
-
-	VARIANT_BOOL result;
-	HRESULT hr = m_pBrowserApp->get_FullScreen(&result);
-	if(FAILED(hr))
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-	
-	return result;
-}
-
-BOOL CHtmlView::GetStatusBar() const
-{
-	ASSERT(m_pBrowserApp != NULL);
-
-	VARIANT_BOOL result;
-	HRESULT hr = m_pBrowserApp->get_StatusBar(&result);
-	if(FAILED(hr))
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-	
-	return result;
-}
-
-OLECMDF CHtmlView::QueryStatusWB(OLECMDID cmdID) const
-{
-	ASSERT(m_pBrowserApp != NULL);
-
-	OLECMDF result;
-	HRESULT hr = m_pBrowserApp->QueryStatusWB(cmdID, &result);
-	if(FAILED(hr))
-		AfxThrowUserException();
-		
-	return result;
-}
-
-void CHtmlView::ExecWB(OLECMDID cmdID, OLECMDEXECOPT cmdexecopt,
-	VARIANT* pvaIn, VARIANT* pvaOut)
-{
-	ASSERT(m_pBrowserApp != NULL);
-
-	m_pBrowserApp->ExecWB(cmdID, cmdexecopt, pvaIn, pvaOut);
-}
-
-HRESULT CHtmlView::ExecFormsCommand(DWORD dwCommandID,
-	VARIANT* pVarIn, VARIANT* pVarOut)
-{
-	ENSURE(m_pBrowserApp != NULL);
-	HRESULT hr = E_FAIL;
-	CComPtr<IDispatch> spDispDocument;
-	m_pBrowserApp->get_Document(&spDispDocument);
-	CComQIPtr<IHTMLDocument2> spDoc = spDispDocument;
-	if (spDoc != NULL)
-	{
-		CComQIPtr<IOleCommandTarget> spCmdTarget = spDoc;
-		if (spCmdTarget != NULL)
-			hr = spCmdTarget->Exec(&CMDSETID_Forms3, dwCommandID,
-				OLECMDEXECOPT_DONTPROMPTUSER, pVarIn, pVarOut);
-	}
-
-	return hr;
-}
-
-HRESULT CHtmlView::QueryFormsCommand(DWORD dwCommandID,
-	BOOL* pbSupported, BOOL* pbEnabled, BOOL* pbChecked)
-{
-	ENSURE(m_pBrowserApp!=NULL);
-	HRESULT hr = E_FAIL;
-
-	CComPtr<IDispatch> spDispDocument;
-	m_pBrowserApp->get_Document(&spDispDocument);
-	CComQIPtr<IHTMLDocument2> spDoc = spDispDocument;	
-	if (spDoc != NULL)
-	{
-		CComQIPtr<IOleCommandTarget> spCmdTarget = spDoc;
-		if (spCmdTarget != NULL)
+		if (!pControl->GetKeyboardTip().IsEmpty())
 		{
-			OLECMD cmdInfo;
-			cmdInfo.cmdID = dwCommandID;
-			cmdInfo.cmdf = 0;
+			pWnd->m_strTip = pControl->GetKeyboardTip();
+		}
 
-			hr = spCmdTarget->QueryStatus(&CMDSETID_Forms3, 1, &cmdInfo, NULL);
+		pCommandBars->m_keyboardTips.arr.Add(pWnd);
+	}
 
-			if (SUCCEEDED(hr))
+	if (GetParentCommandBar() == 0)
+	{
+		for (int j = 0; j < pCommandBars->GetCount(); j++)
+		{
+			CXTPToolBar* pToolBar = pCommandBars->GetAt(j);
+			if (pToolBar == this || !IsToolBarVisible(pToolBar))
+				continue;
+			CXTPWindowRect rc(pToolBar);
+
+			CPoint pt(rc.left, rc.top);
+			CXTPCommandBarKeyboardTip* pWnd = new CXTPCommandBarKeyboardTip(pCommandBars, pToolBar, pToolBar->GetTitle(), pt, DT_TOP | DT_LEFT, TRUE);
+
+			pCommandBars->m_keyboardTips.arr.Add(pWnd);
+		}
+	}
+}
+
+#ifndef LWA_ALPHA
+#define LWA_ALPHA               0x00000002
+#endif
+#ifndef WS_EX_LAYERED
+#define WS_EX_LAYERED           0x00080000
+#endif
+typedef BOOL (WINAPI *PFNSETLAYEREDWINDOWATTRIBUTES) (HWND hwnd, COLORREF crKey, BYTE bAlpha, DWORD dwFlags);
+
+void CXTPCommandBars::ShowKeyboardTips(CXTPCommandBar* pCommandBar, int nLevel)
+{
+	HideKeyboardTips();
+
+	if (!m_pOptions->bShowKeyboardTips)
+		return;
+
+	if (!pCommandBar->GetSafeHwnd())
+		return;
+
+	GetToolTipContext()->CancelToolTips();
+
+	pCommandBar->UpdateWindow();
+
+	m_keyboardTips.pBar = pCommandBar;
+	m_keyboardTips.nLevel = nLevel;
+	m_keyboardTips.nKey = 0;
+
+	pCommandBar->CreateKeyboardTips();
+
+	if (m_keyboardTips.arr.GetSize() == 0)
+	{
+		m_keyboardTips.pBar = NULL;
+		return;
+	}
+
+	CXTPPaintManager* pPaintManager = GetPaintManager();
+	CClientDC dc(pCommandBar);
+	CXTPFontDC font(&dc, &pPaintManager->m_fontToolTip);
+
+	int i;
+	for (i = (int)m_keyboardTips.arr.GetSize() - 1; i >= 0; i--)
+	{
+		CXTPCommandBarKeyboardTip* pWnd = m_keyboardTips.arr[i];
+
+		pWnd->m_bExplicit = !pWnd->m_strTip.IsEmpty();
+
+		if (pWnd->m_bExplicit)
+			continue;
+
+		if (pWnd->m_strCaption.IsEmpty())
+		{
+			pWnd->DestroyWindow();
+			delete pWnd;
+			m_keyboardTips.arr.RemoveAt(i);
+			continue;
+		}
+		pWnd->m_strCaption.MakeUpper();
+
+		int nAmdIndex = pWnd->m_strCaption.Find(_T('&'));
+
+		if (nAmdIndex != -1 && pWnd->m_strCaption[nAmdIndex + 1] == _T('&'))
+			nAmdIndex = FIND_S(pWnd->m_strCaption, _T('&'), nAmdIndex + 2);
+
+		if (pWnd->m_strPrefix.IsEmpty())
+			pWnd->m_strTip = pWnd->m_strCaption.GetAt(nAmdIndex + 1); // nAmdIndex can be -1.
+		else pWnd->m_strTip = pWnd->m_strPrefix;
+	}
+
+	int nCount = (int)m_keyboardTips.arr.GetSize();
+
+	for (i = 0; i < nCount; i++)
+	{
+		CXTPCommandBarKeyboardTip* pWndBase = m_keyboardTips.arr[i];
+
+		CString strTip = pWndBase->m_strTip;
+		CArray<CXTPCommandBarKeyboardTip*, CXTPCommandBarKeyboardTip*> arr;
+		arr.Add(pWndBase);
+		int j;
+		CString strUsed = _T("& ");
+
+		for ( j = i + 1; j < nCount; j++)
+		{
+			CXTPCommandBarKeyboardTip* pWnd = m_keyboardTips.arr[j];
+			if (pWnd->m_strTip[0] == strTip[0])
 			{
-				if (pbSupported != NULL)
-					*pbSupported = (cmdInfo.cmdf & OLECMDF_SUPPORTED) ? TRUE : FALSE;
-				if (pbEnabled != NULL)
-					*pbEnabled = (cmdInfo.cmdf & OLECMDF_ENABLED) ? TRUE : FALSE;
-				if (pbChecked != NULL)
-					*pbChecked = (cmdInfo.cmdf & OLECMDF_LATCHED) ? TRUE : FALSE;
+				arr.Add(pWnd);
+
+				if (pWnd->m_strTip.GetLength() == 2)
+				{
+					strUsed += pWnd->m_strTip[1];
+				}
+			}
+		}
+
+		if (arr.GetSize() < 2)
+			continue;
+
+		int k = 1;
+
+		for (j = 0; j < (int)arr.GetSize(); j++)
+		{
+			CXTPCommandBarKeyboardTip* pWnd = arr[j];
+			if (pWnd->m_strTip.GetLength() > 1)
+				continue;
+
+			TCHAR chAccel = 0;
+			CString& strCaption = pWnd->m_strCaption;
+			int n;
+
+			for (n = 0; n < strCaption.GetLength() - 1; n++)
+			{
+				if ((strCaption[n] == ' ') && (strUsed.Find(strCaption[n + 1]) == -1))
+				{
+					chAccel = strCaption[n + 1];
+					strUsed += chAccel;
+					break;
+				}
+			}
+
+			if (chAccel == 0)
+			{
+				int nStart = strCaption[0] == _T('&') ? 1 : 0;
+				if (strCaption[nStart] == pWnd->m_strTip[0])
+					nStart++;
+
+				for (n = nStart; n < strCaption.GetLength(); n++)
+				{
+					if (strUsed.Find(strCaption[n]) == -1)
+					{
+						chAccel = pWnd->m_strCaption[n];
+						strUsed += chAccel;
+						break;
+					}
+				}
+			}
+
+			if (chAccel == 0)
+			{
+				CString str;
+				str.Format(_T("%i"), k);
+				chAccel = str[0];
+				k++;
+			}
+
+			pWnd->m_strTip += chAccel;
+		}
+	}
+
+	BOOL bLayoutRTL = IsLayoutRTL();
+
+	for (i = 0; i < nCount; i++)
+	{
+		CXTPCommandBarKeyboardTip* pWnd = m_keyboardTips.arr[i];
+		if (!pWnd->m_bVisible)
+			continue;
+
+		CSize sz = dc.GetTextExtent(pWnd->m_strTip);
+		sz = CSize(max(sz.cx + 6, 16), max(sz.cy + 2, 15));
+
+		CPoint pt = pWnd->m_pt;
+		if (DYNAMIC_DOWNCAST(CWnd, pWnd->m_pOwner) == 0)
+			pCommandBar->ClientToScreen(&pt);
+
+		CRect rc(CPoint(pt.x - (pWnd->m_dwAlign & DT_CENTER ?  sz.cx / 2 : bLayoutRTL || (pWnd->m_dwAlign & DT_RIGHT) ? sz.cx : 0),
+			pt.y - (pWnd->m_dwAlign & DT_VCENTER ?  sz.cy / 2 : pWnd->m_dwAlign & DT_BOTTOM ? sz.cy : 0)), sz);
+
+		BOOL bLayered = pPaintManager->m_pfnSetLayeredWindowAttributes && !pWnd->m_bEnabled;
+
+		pWnd->CreateEx((bLayered ? WS_EX_LAYERED : 0) | WS_EX_TOOLWINDOW, AfxRegisterWndClass(CS_SAVEBITS), 0, WS_POPUP, rc, pCommandBar, 0);
+
+		pWnd->SetWindowPos(&CWnd::wndTop, rc.left, rc.top, rc.Width(), rc.Height(),  SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+
+		pPaintManager->DrawKeyboardTip(0, pWnd, TRUE);
+
+		if (bLayered)
+		{
+			((PFNSETLAYEREDWINDOWATTRIBUTES)pPaintManager->m_pfnSetLayeredWindowAttributes)(pWnd->m_hWnd, 0x00, 150, LWA_ALPHA);
+		}
+	}
+
+	for (i = 0; i < nCount; i++)
+	{
+		CXTPCommandBarKeyboardTip* pWnd = m_keyboardTips.arr[i];
+		if (pWnd->m_bVisible)
+			pWnd->SetWindowPos(0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+	}
+}
+
+void CXTPCommandBars::HideKeyboardTips()
+{
+	if (m_keyboardTips.arr.GetSize() == 0)
+		return;
+
+	for (int i = 0; i < (int)m_keyboardTips.arr.GetSize(); i++)
+	{
+		m_keyboardTips.arr[i]->DestroyWindow();
+		delete m_keyboardTips.arr[i];
+	}
+
+	m_keyboardTips.arr.RemoveAll();
+	m_keyboardTips.pBar = 0;
+	m_keyboardTips.nLevel = 0;
+	m_keyboardTips.nKey = 0;
+}
+
+void CXTPCommandBars::ShowKeyboardCues(BOOL bShow)
+{
+	if (m_bCustomizeMode)
+		bShow = TRUE;
+
+	if (m_bUseKeyboardCues && m_bKeyboardCuesVisible != bShow)
+	{
+		m_bKeyboardCuesVisible = bShow;
+		InvalidateCommandBars();
+	}
+}
+
+void CXTPCommandBars::OnTrackingModeChanged(CXTPCommandBar* pCommandBar, int bMode)
+{
+	pCommandBar;
+
+	CXTPMouseManager* pMouseManager = GetMouseManager();
+
+	if (bMode == FALSE && m_bUseKeyboardCues && !pMouseManager->IsTrackedLock(0))
+	{
+		ShowKeyboardCues(FALSE);
+	}
+
+	if (m_keyboardTips.nLevel > 0 && m_pOptions->bShowKeyboardTips)
+	{
+		HideKeyboardTips();
+
+		if (pMouseManager->IsTrackedLock(0))
+		{
+			CXTPCommandBar* pCommandBarTop = pMouseManager->GetTrackArray().GetAt(pMouseManager->GetTrackArray().GetSize() - 1);
+			if (pCommandBarTop->m_bKeyboardSelect)
+			{
+					pCommandBarTop->PostMessage(WM_TIMER, XTP_TID_SHOWKEYBOARDTIPS);
 			}
 		}
 	}
 
-	return hr;
+
 }
 
-BOOL CHtmlView::GetRegisterAsBrowser() const
+CXTPMouseManager* CXTPCommandBars::GetMouseManager() const
 {
-	ASSERT(m_pBrowserApp != NULL);
+	if (this == NULL)
+		return XTPMouseManager();
 
-	VARIANT_BOOL result;
-	HRESULT hr = m_pBrowserApp->get_RegisterAsBrowser(&result);
-	if(FAILED(hr))
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-	
-	return result;
+	if (m_pMouseManager != NULL)
+		return m_pMouseManager;
+
+	return m_pMouseManager = XTPMouseManager();
 }
 
-BOOL CHtmlView::GetRegisterAsDropTarget() const
+CXTPKeyboardManager* CXTPCommandBars::GetKeyboardManager() const
 {
-	ASSERT(m_pBrowserApp != NULL);
+	if (this == NULL)
+		return XTPKeyboardManager();
 
-	VARIANT_BOOL result;
-	HRESULT hr = m_pBrowserApp->get_RegisterAsDropTarget(&result);
-	if(FAILED(hr))
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-	
-	return result;
+	if (m_pKeyboardManager != NULL)
+		return m_pKeyboardManager;
+
+	return m_pKeyboardManager = XTPKeyboardManager();
 }
 
-BOOL CHtmlView::GetTheaterMode() const
+
+CXTPControl* CXTPCommandBars::_GetNextControl(CXTPControls*& pControls, int nIndex) const
 {
-	ASSERT(m_pBrowserApp != NULL);
+	int nNextIndex = pControls->GetNext(nIndex, +1);
 
-	VARIANT_BOOL result;
-	HRESULT hr = m_pBrowserApp->get_TheaterMode(&result);
-	if(FAILED(hr))
+	if (m_pOptions->keyboardCuesUse & xtpKeyboardCuesUseAll
+		&& nNextIndex <= nIndex)
 	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-	
-	return result;
-}
+		CXTPToolBar* pToolBar = (CXTPToolBar*)pControls->GetParent();
+		CXTPToolBar* pStartBar = pToolBar;
 
-BOOL CHtmlView::GetAddressBar() const
-{
-	ASSERT(m_pBrowserApp != NULL);
-
-	VARIANT_BOOL result;
-	HRESULT hr = m_pBrowserApp->get_AddressBar(&result);
-	if(FAILED(hr))
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-	
-	return result;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CHtmlView operations
-
-BOOL CHtmlView::GetSource(CString& refString)
-{
-	ENSURE(m_pBrowserApp != NULL);	
-
-	BOOL bRetVal = FALSE;
-	
-	CComPtr<IDispatch> spDisp; 
-	m_pBrowserApp->get_Document(&spDisp);	
-	if (spDisp != NULL)
-	{
-		HGLOBAL hMemory;
-		hMemory = GlobalAlloc(GMEM_MOVEABLE, 0);
-		if (hMemory != NULL)
+		for (;;)
 		{
-			CComQIPtr<IPersistStreamInit> spPersistStream = spDisp;
-			if (spPersistStream != NULL)
+			pToolBar = GetAt(GetNextVisible(FindIndex(pToolBar), +1));
+			ASSERT(pToolBar);
+
+			pControls = pToolBar->GetControls();
+			nNextIndex = pControls->GetNext(-1, +1);
+
+			if (nNextIndex != -1)
+				break;
+
+			if (pToolBar == pStartBar)
+				return NULL;
+		}
+	}
+
+	return pControls->GetAt(nNextIndex);
+}
+
+CXTPControl* CXTPCommandBars::FindAccel(CXTPCommandBar* pCommandBar, UINT chAccel, BOOL& bSelectOnly) const
+{
+	ASSERT(pCommandBar->IsVisible());
+
+	CXTPControls* pControls = pCommandBar->GetControls();
+
+	CXTPControl* pControl = _GetNextControl(pControls, pCommandBar->m_nSelected);
+	if (pControl == NULL)
+		return NULL;
+
+	bSelectOnly = FALSE;
+
+	CXTPControl* pStart = pControl, *pAmpCondidate = NULL, *pCondidate = NULL;
+
+	do
+	{
+		ASSERT(pControl);
+
+		CString strCaption = pControl->IsCaptionVisible() ? pControl->GetCaption() : _T("");
+		if (!strCaption.IsEmpty() && pControl->GetEnabled() && pControl->GetRibbonGroup() == NULL)
+		{
+			int nAmpIndex = strCaption.Find(_T('&'));
+			BOOL bFound = nAmpIndex > -1 && nAmpIndex < strCaption.GetLength() - 1;
+
+			if (CXTPShortcutManager::CompareAccelKey(strCaption[bFound ? nAmpIndex + 1 : 0], chAccel) &&
+				(bFound || ((m_pOptions->keyboardCuesUse & xtpKeyboardCuesUseAmpersandOnly) == 0)))
 			{
-				CComPtr<IStream> spStream;
-				if (SUCCEEDED(CreateStreamOnHGlobal(hMemory, TRUE, &spStream)))
+				if (bFound)
 				{
-					spPersistStream->Save(spStream, FALSE);
-
-					LPCSTR pstr = static_cast<LPCSTR>(GlobalLock(hMemory));
-					if (pstr != NULL)
-					{
-						// Stream is always ANSI, but CString
-						// assignment operator will convert implicitly.
-
-						bRetVal = TRUE;
-						TRY
-						{						
-							refString = pstr;
-						}
-						CATCH_ALL(e)
-						{
-							bRetVal = FALSE;
-							DELETE_EXCEPTION(e);
-						}
-						END_CATCH_ALL
-
-						if(bRetVal == FALSE)
-							GlobalFree(hMemory);
-						else
-							GlobalUnlock(hMemory);
-					}
+					if (pAmpCondidate == NULL)
+						pAmpCondidate = pControl;
 					else
 					{
-						GlobalFree(hMemory);
+						bSelectOnly = TRUE;
+						return pAmpCondidate;
 					}
 				}
-				else
+				else if (pControl->GetParent()->GetType() == xtpBarTypeMenuBar || pControl->GetParent()->IsTrackingMode())
 				{
-					GlobalFree(hMemory);
+					if (pCondidate == NULL)
+						pCondidate = pControl;
+					else
+					{
+						bSelectOnly = TRUE;
+					}
 				}
 			}
-			else
+		}
+
+		pControl = _GetNextControl(pControls, pControl->GetIndex());
+
+		ASSERT(pControl != 0);
+		if (pControl == NULL)
+			break;
+	}
+	while (pControl != pStart);
+
+	return pAmpCondidate ? pAmpCondidate : pCondidate;
+}
+
+void CXTPCommandBars::ClosePopups() const
+{
+	CXTPMouseManager* pMouseManage = this == NULL ? XTPMouseManager() : GetMouseManager();
+	pMouseManage->SendTrackLost();
+}
+
+BOOL CXTPCommandBars::OnFrameAccel(UINT chAccel)
+{
+	if (m_pOptions->keyboardCuesUse == xtpKeyboardCuesUseNone)
+		return FALSE;
+
+	if ((chAccel >= VK_NUMPAD0 && chAccel <= VK_NUMPAD9) && !m_pOptions->bUseAltNumPadKeys)
+		return FALSE;
+
+	if (MapVirtualKey(chAccel, 2) == 0)
+		return FALSE;
+
+	CXTPToolBar* pMenuBar = GetMenuBar();
+	CXTPToolBar* pCommandBar = IsToolBarVisible(pMenuBar) ? pMenuBar : NULL;
+
+	for (int i = 0; i < GetCount(); i++)
+	{
+		CXTPToolBar* pToolBar = GetAt(i);
+
+		if (pToolBar->IsTrackingMode())
+		{
+			pCommandBar = pToolBar;
+			break;
+		}
+
+		if (m_pOptions->keyboardCuesUse & xtpKeyboardCuesUseAll && pCommandBar == NULL && IsToolBarVisible(pToolBar))
+			pCommandBar = pToolBar;
+	}
+	if (!pCommandBar)
+		return FALSE;
+
+	if (IsToolBarVisible(pCommandBar))
+	{
+		if (pCommandBar->PreviewAccel(chAccel))
+		{
+			return TRUE;
+		}
+
+		BOOL bSelectOnly;
+		CXTPControl* pControl = FindAccel(pCommandBar, chAccel, bSelectOnly);
+		if (pControl)
+		{
+			int nIndex = pControl->GetIndex();
+			pCommandBar = (CXTPToolBar*)pControl->GetParent();
+
+			if (!pCommandBar->IsTrackingMode())
+				ClosePopups();
+
+			ShowKeyboardCues(TRUE);
+
+			m_keyboardTips.nLevel = 1;
+
+			pCommandBar->SetTrackingMode(TRUE, FALSE, TRUE);
+			pCommandBar->SetSelected(nIndex, TRUE);
+
+			if (!bSelectOnly)
 			{
-				GlobalFree(hMemory);
+				pControl->OnUnderlineActivate();
+			}
+
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+BOOL CXTPCommandBars::PreTranslateFrameMessage(MSG* pMsg)
+{
+	if ((pMsg->message == WM_SYSKEYDOWN) && (HIWORD(pMsg->lParam) & KF_ALTDOWN)
+		&& !GetMouseManager()->IsMouseLocked() && !GetMouseManager()->IsTrackedLock(0)
+		&& GetMouseManager()->IsTopParentActive(m_pFrame->GetSafeHwnd()))
+	{
+		if (pMsg->wParam == VK_MENU)
+		{
+			ShowKeyboardCues(TRUE);
+			return FALSE;
+		}
+
+		if ((!m_bIgnoreShiftMenuKey || !(::GetKeyState(VK_SHIFT) & 0x8000)))
+		{
+			UINT chAccel = (UINT)pMsg->wParam;
+
+			if (chAccel)
+			{
+				if (OnFrameAccel(chAccel))
+					return TRUE;
 			}
 		}
 	}
-	
-	return bRetVal;
+
+	if ((pMsg->message == WM_SYSKEYUP || pMsg->message == WM_KEYUP) && m_bUseKeyboardCues && m_bKeyboardCuesVisible &&
+		!GetMouseManager()->IsTrackedLock(0))
+	{
+		ShowKeyboardCues(FALSE);
+	}
+
+
+	if ((pMsg->message == WM_CONTEXTMENU || pMsg->message == WM_SYSKEYUP)
+		&& GetMouseManager()->IsTrackedLock(0))
+	{
+		XTPKeyboardManager()->ProcessKeyboardHooks(WM_CONTEXTMENU, pMsg->wParam, pMsg->lParam);
+		return TRUE;
+	}
+
+	if (pMsg->message == WM_MOUSEWHEEL)
+	{
+		if (XTPKeyboardManager()->IsKeyboardHooked())
+		{
+			return XTPKeyboardManager()->ProcessKeyboardHooks(WM_MOUSEWHEEL, pMsg->wParam, pMsg->lParam);
+		}
+#ifdef _XTP_INCLUDE_RIBBON
+		else
+		{
+			CXTPCommandBar* pMenuBar = GetMenuBar();
+			CPoint pt;
+			GetCursorPos(&pt);
+
+			if (pMenuBar && pMenuBar->GetType() == xtpBarTypeRibbon && CXTPWindowRect(pMenuBar).PtInRect(pt))
+			{
+				((CXTPRibbonBar*)pMenuBar)->SelectNextTab((short)HIWORD(pMsg->wParam) <= 0);
+				return TRUE;
+			}
+		}
+#endif
+	}
+
+	if (pMsg->message >= WM_KEYFIRST && pMsg->message <= WM_KEYLAST)
+	{
+		if (GetShortcutManager()->TranslateAccelerator(GetSite()->GetSafeHwnd(), pMsg))
+			return TRUE;
+	}
+
+
+	return FALSE;
 }
 
-BOOL CHtmlView::LoadFromResource(LPCTSTR lpszResource)
+void CXTPCommandBars::UpdateCommandBars() const
 {
-	HINSTANCE hInstance = AfxGetResourceHandle();
-	ASSERT(hInstance != NULL);
-
-	CString strResourceURL;
-	BOOL bRetVal = TRUE;
-	LPTSTR lpszModule = new TCHAR[_MAX_PATH];
-
-	if (GetModuleFileName(hInstance, lpszModule, _MAX_PATH))
+	for (int i = 0; i < GetCount(); i++)
 	{
-		strResourceURL.Format(_T("res://%s/%s"), lpszModule, lpszResource);
-		Navigate(strResourceURL, 0, 0, 0);
+		CXTPCommandBar* pBar = GetAt(i);
+		pBar->OnIdleUpdateCmdUI(TRUE, TRUE);
+	}
+}
+
+BOOL CXTPCommandBars::OnFrameWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+{
+	if (message == WM_IDLEUPDATECMDUI)
+	{
+		for (int i = 0; i < GetCount(); i++)
+		{
+			CXTPCommandBar* pBar = GetAt(i);
+
+			if (pBar->GetPosition() == xtpBarFloating)
+			{
+				pBar->OnIdleUpdateCmdUI(TRUE, TRUE);
+			}
+		}
+	}
+	if (message == WM_SYSCOLORCHANGE)
+	{
+		XTPColorManager()->RefreshColors();
+		GetPaintManager()->RefreshMetrics();
+		GetImageManager()->RefreshAll();
+
+		GetSite()->RedrawWindow(FALSE);
+		RedrawCommandBars();
+	}
+	if (message == WM_SETTINGCHANGE)
+	{
+		GetPaintManager()->RefreshMetrics();
+
+		GetSite()->RedrawWindow(FALSE);
+		RedrawCommandBars();
+	}
+	if (message == WM_CLOSE)
+	{
+		if (m_pDropSource->m_pSheet != NULL)
+		{
+			return TRUE;
+		}
+	}
+	if (message == WM_COMMAND)
+	{
+		CWnd* pWnd = CWnd::GetFocus();
+		if (pWnd && pWnd->IsKindOf(RUNTIME_CLASS(CXTPEdit)) && ((CXTPEdit*)pWnd)->OnCommand(wParam, lParam))
+		{
+			if (pResult != NULL)
+				*pResult = 1;
+			return TRUE;
+		}
+
+		if (LOWORD(wParam) == ID_HELP && GetHelpTrackingId() > 0)
+		{
+			AFX_CMDHANDLERINFO info;
+			info.pTarget = NULL;
+
+			if (GetSite()->OnCmdMsg(ID_HELP, CN_COMMAND, NULL, &info))
+			{
+				GetSite()->SendMessage(WM_COMMANDHELP, 0, HID_BASE_COMMAND +  GetHelpTrackingId());
+				return TRUE;
+			}
+		}
+	}
+
+	switch (message)
+	{
+	case WM_ACTIVATEAPP:
+		if (!wParam)
+			ClosePopups();
+		return FALSE;
+
+	case WM_SYSCOMMAND:
+		if ((wParam == 0 || LOWORD(wParam) != 0) && wParam != SC_KEYMENU && !IsCustomizeMode())
+			ClosePopups();
+		return FALSE;
+	}
+
+	return FALSE;
+}
+
+void CXTPCommandBars::SetLayoutRTL(CWnd* pWnd, BOOL bRTLLayout)
+{
+	DWORD dwRTLStyle = WS_EX_LAYOUTRTL;
+
+	if (pWnd->IsKindOf(RUNTIME_CLASS(CXTPEdit)))
+	{
+		pWnd->ModifyStyleEx(0, dwRTLStyle);
+		return;
+	}
+
+	pWnd->ModifyStyleEx(bRTLLayout ? 0 : dwRTLStyle, !bRTLLayout ? 0 : dwRTLStyle);
+
+	// walk through HWNDs to avoid creating temporary CWnd objects
+	// unless we need to call this function recursively
+	for (CWnd* pChild = pWnd->GetWindow(GW_CHILD); pChild != NULL;
+		pChild = pChild->GetWindow(GW_HWNDNEXT))
+	{
+
+		// send to child windows after parent
+		SetLayoutRTL(pChild, bRTLLayout);
+	}
+}
+
+
+void CXTPCommandBars::SetLayoutRTL(BOOL bRightToLeft)
+{
+	if (!XTPSystemVersion()->IsLayoutRTLSupported())
+		return;
+
+	if (m_bRightToLeft == bRightToLeft)
+		return;
+
+	m_bRightToLeft = bRightToLeft;
+
+	int i;
+
+	for (i = 0; i < 4; i++)
+	{
+		if (m_pDocks[i])
+		{
+			SetLayoutRTL(m_pDocks[i], m_bRightToLeft);
+		}
+	}
+
+	for (i = 0; i < GetCount(); i++)
+	{
+		CXTPToolBar* pToolBar = GetAt(i);
+		if (pToolBar->GetPosition() == xtpBarFloating)
+		{
+			SetLayoutRTL(pToolBar, m_bRightToLeft);
+		}
+	}
+
+	CWnd* pStatusBar = GetSite()->GetDlgItem(AFX_IDW_STATUS_BAR);
+	if (pStatusBar)
+	{
+		SetLayoutRTL(pStatusBar, m_bRightToLeft);
+	}
+
+	GetImageManager()->DrawReverted(2);
+	RedrawCommandBars();
+}
+
+BOOL CXTPCommandBars::IsLayoutRTL() const
+{
+	if (GetSite()->GetExStyle() & WS_EX_LAYOUTRTL)
+		return TRUE;
+
+	return m_bRightToLeft;
+}
+
+CXTPControl* CXTPCommandBars::FindControl(XTPControlType type, UINT nId, BOOL bVisible, BOOL bRecursive) const
+{
+
+	for (int i = GetCount() - 1; i >= 0; i--)
+	{
+		CXTPToolBar* pBar = GetAt(i);
+
+		if (!bVisible || pBar->IsVisible())
+		{
+			CXTPControl* pControl = pBar->GetControls()->FindControl(type, nId, bVisible, bRecursive);
+			if (pControl != NULL) return pControl;
+		}
+	}
+	return NULL;
+}
+
+void CXTPPopupBar::PumpMessage()
+{
+
+	while (IsTrackingMode())
+	{
+		MSG msg;
+		if (::GetMessage(&msg, NULL, NULL, NULL))
+		{
+			if (!IsTrackingMode())
+			{
+				::PostMessage(msg.hwnd, msg.message, msg.wParam, msg.lParam);
+				break;
+			}
+
+			if (msg.message != WM_KICKIDLE && !AfxGetThread()->PreTranslateMessage(&msg))
+			{
+				// process this message
+				::TranslateMessage(&msg);
+				::DispatchMessage(&msg);
+			}
+		}
+		else
+			break;
+	}
+}
+
+BOOL CXTPCommandBars::TrackPopupMenu(UINT nBarID, UINT nFlags, int x, int y, LPCRECT rcExclude)
+{
+	CXTPPopupBar* pPopup = (CXTPPopupBar*)m_pContextMenus->FindCommandBar(nBarID);
+	if (!pPopup)
+		return FALSE;
+
+	return TrackPopupMenu(pPopup, nFlags, x, y, GetSite(), rcExclude);
+
+}
+
+BOOL CXTPCommandBars::TrackPopupMenu(CXTPPopupBar* pPopup, UINT nFlags, int x, int y, CWnd* pWnd, LPCRECT rcExclude, CWnd* pWndOwner)
+{
+	ASSERT(pPopup);
+	if (!pPopup)
+	{
+		return FALSE;
+	}
+
+	const MSG& msg = AfxGetThreadState()->m_lastSentMsg;
+	if (msg.message == WM_CONTEXTMENU && msg.lParam == MAKELPARAM(-1, -1) && pPopup->GetCommandBars())
+		pPopup->GetCommandBars()->ShowKeyboardCues(TRUE);
+
+	if (!pWnd)
+		pWnd = pPopup->GetSite();
+
+	pPopup->m_pSite = pWnd ;
+	pPopup->m_pOwner = pWndOwner;
+
+	if (pWnd && pWnd->GetExStyle() & (WS_EX_LAYOUTRTL | WS_EX_RIGHT))
+		nFlags |= TPM_RIGHTALIGN;
+
+	UINT nReturn = TRUE;
+	pPopup->m_pReturnCmd = NULL;
+
+	if (nFlags & TPM_RETURNCMD)
+	{
+		pPopup->m_pReturnCmd = &nReturn;
+		nReturn = 0;
+	}
+	pPopup->m_bExecOnRButton = nFlags & TPM_RIGHTBUTTON;
+	pPopup->m_bIgnoreUpdateHandler = nFlags & TPM_NONOTIFY;
+	pPopup->m_popupFlags = (nFlags & TPM_RIGHTALIGN) ? xtpPopupLeft | xtpPopupDown : xtpPopupDown;
+
+	BOOL bRecurse = nFlags & TPM_RECURSE;
+	pPopup->m_bRecursePopup = bRecurse;
+
+	CXTPMouseManager* pMouseManager = XTPMouseManager();
+
+
+	if (!bRecurse)
+	{
+		pMouseManager->SendTrackLost();
+		ReleaseCapture();
 	}
 	else
-		bRetVal = FALSE;
-
-	delete [] lpszModule;
-	return bRetVal;
-}
-
-BOOL CHtmlView::LoadFromResource(UINT nRes)
-{
-	HINSTANCE hInstance = AfxGetResourceHandle();
-	ASSERT(hInstance != NULL);
-
-	CString strResourceURL;
-	BOOL bRetVal = TRUE;
-	LPTSTR lpszModule = new TCHAR[_MAX_PATH];
-
-	if (GetModuleFileName(hInstance, lpszModule, _MAX_PATH))
 	{
-		strResourceURL.Format(_T("res://%s/%d"), lpszModule, nRes);
-		Navigate(strResourceURL, 0, 0, 0);
+		pMouseManager->SendTrackLostRecurse();
+		pMouseManager->LockTrackRecurse(TRUE);
 	}
-	else
-		bRetVal = FALSE;
+	pMouseManager->IgnoreLButtonUp();
 
-	delete [] lpszModule;
-	return bRetVal;
-}
-
-void CHtmlView::Navigate(LPCTSTR lpszURL, DWORD dwFlags /* = 0 */,
-	LPCTSTR lpszTargetFrameName /* = NULL */ ,
-	LPCTSTR lpszHeaders /* = NULL */, LPVOID lpvPostData /* = NULL */,
-	DWORD dwPostDataLen /* = 0 */)
-{
-	CString strURL(lpszURL);
-	CComBSTR bstrURL;
-	bstrURL.Attach(strURL.AllocSysString());
-
-	COleSafeArray vPostData;
-	if (lpvPostData != NULL)
+	if (!pPopup->Popup(x, y, rcExclude))
 	{
-		if (dwPostDataLen == 0)
-			dwPostDataLen = lstrlen((LPCTSTR) lpvPostData);
-
-		vPostData.CreateOneDim(VT_UI1, dwPostDataLen, lpvPostData);
+		return FALSE;
 	}
 
-	m_pBrowserApp->Navigate(bstrURL,
-		COleVariant((long) dwFlags, VT_I4),
-		COleVariant(lpszTargetFrameName, VT_BSTR),
-		vPostData,
-		COleVariant(lpszHeaders, VT_BSTR));
-}
+	pPopup->PumpMessage();
 
-void CHtmlView::Navigate2(LPITEMIDLIST pIDL, DWORD dwFlags /* = 0 */,
-	LPCTSTR lpszTargetFrameName /* = NULL */)
-{
-	ASSERT(m_pBrowserApp != NULL);
-
-	COleVariant vPIDL(pIDL);
-	COleVariant empty;
-
-	m_pBrowserApp->Navigate2(vPIDL,
-		COleVariant((long) dwFlags, VT_I4),
-		COleVariant(lpszTargetFrameName, VT_BSTR),
-		empty, empty);
-}
-
-void CHtmlView::Navigate2(LPCTSTR lpszURL, DWORD dwFlags /* = 0 */,
-	LPCTSTR lpszTargetFrameName /* = NULL */,
-	LPCTSTR lpszHeaders /* = NULL */,
-	LPVOID lpvPostData /* = NULL */, DWORD dwPostDataLen /* = 0 */)
-{
-	ASSERT(m_pBrowserApp != NULL);
-
-	COleSafeArray vPostData;
-	if (lpvPostData != NULL)
+	if (bRecurse)
 	{
-		if (dwPostDataLen == 0)
-			dwPostDataLen = lstrlen((LPCTSTR) lpvPostData);
-
-		vPostData.CreateOneDim(VT_UI1, dwPostDataLen, lpvPostData);
+		pMouseManager->LockTrackRecurse(FALSE);
 	}
 
-	COleVariant vURL(lpszURL, VT_BSTR);
-	COleVariant vHeaders(lpszHeaders, VT_BSTR);
-	COleVariant vTargetFrameName(lpszTargetFrameName, VT_BSTR);
-	COleVariant vFlags((long) dwFlags, VT_I4);
-
-	m_pBrowserApp->Navigate2(vURL,
-		vFlags, vTargetFrameName, vPostData, vHeaders);
+	return nReturn;
 }
 
-void CHtmlView::Navigate2(LPCTSTR lpszURL, DWORD dwFlags,
-	CByteArray& baPostData, LPCTSTR lpszTargetFrameName /* = NULL */,
-	LPCTSTR lpszHeaders /* = NULL */)
+BOOL CXTPCommandBars::TrackPopupMenuEx(CMenu* pMenu, UINT nFlags, int x, int y, CWnd* pWndOwner, LPTPMPARAMS lptpm)
 {
-	ASSERT(m_pBrowserApp != NULL);
+	CXTPPopupBar* pPopup = CXTPPopupBar::CreatePopupBar(this);
 
-	COleVariant vPostData = baPostData;
-	COleVariant vURL(lpszURL, VT_BSTR);
-	COleVariant vHeaders(lpszHeaders, VT_BSTR);
-	COleVariant vTargetFrameName(lpszTargetFrameName, VT_BSTR);
-	COleVariant vFlags((long) dwFlags, VT_I4);
+	pPopup->m_pSite = GetSite();
+	pPopup->m_pCommandBars = this;
 
-	ASSERT(m_pBrowserApp != NULL);
+	CRect rcExclude;
+	rcExclude.SetRectEmpty();
+	if (lptpm) rcExclude = lptpm->rcExclude;
 
-	m_pBrowserApp->Navigate2(vURL, vFlags, vTargetFrameName,
-		vPostData, vHeaders);
-}
-
-void CHtmlView::PutProperty(LPCTSTR lpszProperty, const VARIANT& vtValue)
-{
-	ASSERT(m_pBrowserApp != NULL);
-
-	CString strProp(lpszProperty);
-	BSTR bstrProp = strProp.AllocSysString();
-	m_pBrowserApp->PutProperty(bstrProp, vtValue);
-	::SysFreeString(bstrProp);
-}
-
-BOOL CHtmlView::GetProperty(LPCTSTR lpszProperty, CString& strValue)
-{
-	ASSERT(m_pBrowserApp != NULL);
-
-	CString strProperty(lpszProperty);
-	BSTR bstrProperty = strProperty.AllocSysString();
-
-	BOOL bResult = FALSE;
-	VARIANT vReturn;
-	vReturn.vt = VT_BSTR;
-	vReturn.bstrVal = NULL;
-	HRESULT hr = m_pBrowserApp->GetProperty(bstrProperty, &vReturn);
-
-	if (SUCCEEDED(hr))
+	if (!pPopup->LoadMenu(pMenu))
 	{
-		strValue = CString(vReturn.bstrVal);
-		bResult = TRUE;
+		pPopup->InternalRelease();
+		return FALSE;
 	}
 
-	::SysFreeString(bstrProperty);
+	BOOL bResult = TrackPopupMenu(pPopup, nFlags, x, y, GetSite(), rcExclude, pWndOwner);
+
+	pPopup->InternalRelease();
+
 	return bResult;
 }
 
-COleVariant CHtmlView::GetProperty(LPCTSTR lpszProperty)
+BOOL CXTPCommandBars::TrackPopupMenu(CMenu* pMenu, UINT nFlags, int x, int y, CWnd* pWnd, LPCRECT rcExclude, CWnd* pWndOwner, CXTPCommandBars* pCommandBars)
 {
-	COleVariant result;
+	CXTPPopupBar* pPopup = CXTPPopupBar::CreatePopupBar(pCommandBars);
 
-	static BYTE parms[] =
-		VTS_BSTR;
-	m_wndBrowser.InvokeHelper(0x12f, DISPATCH_METHOD,
-		VT_VARIANT, (void*)&result, parms, lpszProperty);
+	pPopup->m_pSite = pWnd;
+	pPopup->m_pOwner = pWndOwner;
+	pPopup->m_pCommandBars = pCommandBars;
 
-	return result;
-}
 
-CString CHtmlView::GetFullName() const
-{
-	ASSERT(m_pBrowserApp != NULL);
-
-	CComBSTR bstr;
-	HRESULT hr = m_pBrowserApp->get_FullName(&bstr);
-	if(FAILED(hr))
+	if (!pPopup->LoadMenu(pMenu))
 	{
-		ASSERT(FALSE);
-		return CString();
+		pPopup->InternalRelease();
+		return FALSE;
 	}
-	
-	CString retVal(bstr);
-	return retVal;
-}
 
-/////////////////////////////////////////////////////////////////////////////
-// CHtmlView event reflectors
-
-void CHtmlView::NavigateComplete2(LPDISPATCH /* pDisp */, VARIANT* URL)
-{
-	ASSERT(V_VT(URL) == VT_BSTR);
-
-	CString str(V_BSTR(URL));
-	OnNavigateComplete2(str);
-}
-
-void CHtmlView::BeforeNavigate2(LPDISPATCH /* pDisp */, VARIANT* URL,
-		VARIANT* Flags, VARIANT* TargetFrameName,
-		VARIANT* PostData, VARIANT* Headers, VARIANT_BOOL* Cancel) 
-{
-	ASSERT(V_VT(URL) == VT_BSTR);
-	ASSERT(V_VT(TargetFrameName) == VT_BSTR);
-	ASSERT(V_VT(PostData) == (VT_VARIANT | VT_BYREF));
-	ASSERT(V_VT(Headers) == VT_BSTR);
-	ASSERT(Cancel != NULL);
-
-	VARIANT* vtPostedData = V_VARIANTREF(PostData);
-	CByteArray array;
-	if (V_VT(vtPostedData) & VT_ARRAY)
+	if (pCommandBars)
 	{
-		// must be a vector of bytes
-		ASSERT(vtPostedData->parray->cDims == 1 && vtPostedData->parray->cbElements == 1);
-
-		vtPostedData->vt |= VT_UI1;
-		COleSafeArray safe(vtPostedData);
-
-		DWORD dwSize = safe.GetOneDimSize();
-		LPVOID pVoid;
-		safe.AccessData(&pVoid);
-
-		array.SetSize(dwSize);
-		LPBYTE lpByte = array.GetData();
-
-		Checked::memcpy_s(lpByte, dwSize, pVoid, dwSize);
-		safe.UnaccessData();
+		const MSG& msg = AfxGetThreadState()->m_lastSentMsg;
+		if (msg.message == WM_CONTEXTMENU && msg.lParam == MAKELPARAM(-1, -1))
+			pCommandBars->ShowKeyboardCues(TRUE);
 	}
-	// make real parameters out of the notification
 
-	CString strTargetFrameName(V_BSTR(TargetFrameName));
-	CString strURL(V_BSTR(URL));
-	CString strHeaders(V_BSTR(Headers));
-	DWORD nFlags = V_I4(Flags);
+	BOOL bResult = TrackPopupMenu(pPopup, nFlags, x, y, pWnd, rcExclude, pWndOwner);
+
+	pPopup->InternalRelease();
+
+	return bResult;
+}
 
 
-	BOOL bCancel = FALSE;
-	// notify the user's class
-	OnBeforeNavigate2(strURL, nFlags, strTargetFrameName,
-		array, strHeaders, &bCancel);
 
-	if (bCancel)
-		*Cancel = AFX_OLE_TRUE;
+
+CXTPPopupBar* CXTPCommandBars::GetToolbarsPopup()
+{
+	CXTPPopupBar* pPopup = CXTPPopupBar::CreatePopupBar(this);
+
+	CXTPControlToolbars::CreateToolbarMenu(pPopup, 0, ID_VIEW_TOOLBAR, TRUE);
+
+	return pPopup;
+}
+
+void CXTPCommandBars::ContextMenu(CXTPToolBar* pToolBar, CPoint point)
+{
+	if (IsCustomizeMode())
+		return;
+
+	CXTPPopupBar* pPopup = GetToolbarsPopup();
+
+	GetSite()->SendMessage(WM_XTP_TOOLBARCONTEXTMENU, (WPARAM)pToolBar, (LPARAM)pPopup);
+
+	if (pPopup && pPopup->GetControlCount() > 0)
+	{
+		pPopup->m_popupFlags = IsLayoutRTL() ? xtpPopupLeft : xtpPopupRight;
+		ClosePopups();
+
+		pPopup->Popup(point.x, point.y, NULL);
+
+		while (pPopup->IsTrackingMode())
+		{
+			AfxGetThread()->PumpMessage();
+		}
+	}
+
+	CMDTARGET_RELEASE(pPopup);
+}
+
+CXTPToolBar* CXTPCommandBars::GetAt(int nIndex) const
+{
+	if (nIndex >= 0 && nIndex < GetCount())
+		return m_arrBars.GetAt(nIndex);
+
+	return 0;
+}
+
+void CXTPCommandBars::ToggleVisible(int nIndex)
+{
+	ASSERT(nIndex >= 0 && nIndex < GetCount());
+
+	CXTPToolBar* pBar = GetAt(nIndex);
+	if (pBar)
+	{
+		pBar->SetVisible(!pBar->IsVisible());
+	}
+
+	m_pOptions->bDirtyState = TRUE;
+}
+
+CXTPToolBar* CXTPCommandBars::GetToolBar(UINT nID) const
+{
+	if (nID == 0)
+		return NULL;
+
+	for (int i = 0; i < GetCount(); i++)
+	{
+		CXTPToolBar* pBar = GetAt(i);
+
+		ASSERT(pBar != NULL);
+		if (pBar && (pBar->m_nBarID == nID))
+			return pBar;
+	}
+	return NULL;
+}
+
+void CXTPToolBar::_GetHiddenControls(CXTPCommandBar* pExpandBar)
+{
+	for (int j = 0; j < GetControlCount(); j++)
+	{
+		CXTPControl* pControl = GetControl(j);
+
+		if (pControl->GetHideFlags() == xtpHideWrap)
+		{
+			CXTPControl* pControlClone = pExpandBar->GetControls()->AddClone(pControl);
+			pControlClone->SetHideFlags(0);
+			pControlClone->SetBeginGroup(FALSE);
+		}
+	}
+}
+
+void CXTPCommandBars::GetHiddenControls(CXTPToolBar* pToolBar, CXTPCommandBar* pExpandBar)
+{
+	if (pToolBar->m_pDockBar == 0) return;
+
+	CXTPDockBar* pDock = pToolBar->m_pDockBar;
+	int nPos = pDock->FindBar(pToolBar);
+	if (nPos == -1) return;
+
+	CXTPDockBar::CToolBarArray arrBars;
+	pDock->GetVisibleToolbars(nPos, arrBars);
+	for (int i = 0; i < arrBars.GetSize(); i++)
+	{
+		CXTPToolBar* pToolBarRow = arrBars[i];
+		pToolBarRow->_GetHiddenControls(pExpandBar);
+	}
+}
+
+void CXTPCommandBars::_GetAddOrRemovePopup(CXTPToolBar* pToolBar, CXTPCommandBar* pExpandBar)
+{
+	CXTPControlPopup* pButton = (CXTPControlPopup*)pExpandBar->GetControls()->Add(xtpControlPopup, 0);
+	pButton->SetFlags(xtpFlagManualUpdate);
+	pButton->SetCaption(CXTPControlWindowList::ConstructCaption(pToolBar->GetTitle(), 0));
+
+	BOOL bEnabled = m_bCustomizeAvail && pToolBar->m_bBuiltIn && pToolBar->m_bCustomizable;
+
+	pButton->SetEnabled(bEnabled);
+	if (bEnabled)
+	{
+		pToolBar->BuildCustomizePopup(pButton->GetCommandBar());
+		ASSERT_KINDOF(CXTPPopupBar, pButton->GetCommandBar());
+		((CXTPPopupBar*)pButton->GetCommandBar())->SetDoubleGripper();
+	}
+}
+
+void CXTPCommandBars::GetAddOrRemovePopup(CXTPToolBar* pToolBar, CXTPCommandBar* pExpandBar)
+{
+	if (pToolBar->m_pDockBar == 0)
+	{
+		_GetAddOrRemovePopup(pToolBar, pExpandBar);
+	}
 	else
-		*Cancel = AFX_OLE_FALSE;
-}
-
-void CHtmlView::DocumentComplete(LPDISPATCH pDisp, VARIANT* URL)
-{
-	UNUSED_ALWAYS(pDisp);
-	ASSERT(V_VT(URL) == VT_BSTR);
-
-	CString str(V_BSTR(URL));
-	OnDocumentComplete(str);
-}
-
-void CHtmlView::NavigateError(LPDISPATCH pDisp, VARIANT* pvURL,
-	VARIANT* pvFrame, VARIANT* pvStatusCode, VARIANT_BOOL* pvbCancel)
-{
-	UNUSED_ALWAYS(pDisp);
-	ASSERT(pvURL != NULL);
-	ASSERT(pvFrame != NULL);
-	ASSERT(pvStatusCode != NULL);
-	ASSERT(pvbCancel != NULL);
-	ASSERT(V_VT(pvURL) == VT_BSTR);
-	ASSERT(V_VT(pvFrame) == VT_BSTR);
-
-	CString strURL(V_BSTR(pvURL));
-	CString strFrame(V_BSTR(pvFrame));
-	DWORD dwError = V_I4(pvStatusCode);
-
-	BOOL bCancel = FALSE;
-	// notify the user's class
-	OnNavigateError(strURL, strFrame, dwError, &bCancel);
-
-	if (pvbCancel)
-		*pvbCancel = bCancel ? AFX_OLE_TRUE : AFX_OLE_FALSE;
-}
-
-void CHtmlView::OnEditCopy() 
-{
-	ExecFormsCommand(IDM_COPY, NULL, NULL);
-	return;
-}
-
-void CHtmlView::OnUpdateEditCopy(CCmdUI* pCmdUI) 
-{
-	BOOL bEnabled = FALSE;
-
-	// Since input variables aren't touched for failure case of
-	// QueryCommand(), we can ignore return value.
-	QueryFormsCommand(IDM_COPY, NULL, &bEnabled, NULL);
-	pCmdUI->Enable(bEnabled);
-}
-
-void CHtmlView::OnEditCut() 
-{
-	ExecFormsCommand(IDM_CUT, NULL, NULL);
-	return;
-}
-
-void CHtmlView::OnUpdateEditCut(CCmdUI* pCmdUI) 
-{
-	BOOL bEnabled = FALSE;
-
-	// Since input variables aren't touched for failure case of
-	// QueryCommand(), we can ignore return value.
-	QueryFormsCommand(IDM_CUT, NULL, &bEnabled, NULL);
-	pCmdUI->Enable(bEnabled);
-}
-
-void CHtmlView::OnEditPaste() 
-{
-	ExecFormsCommand(IDM_PASTE, NULL, NULL);
-	return;
-}
-
-void CHtmlView::OnUpdateEditPaste(CCmdUI* pCmdUI) 
-{
-	BOOL bEnabled = FALSE;
-
-	// Since input variables aren't touched for failure case of
-	// QueryCommand(), we can ignore return value.
-	QueryFormsCommand(IDM_PASTE, NULL, &bEnabled, NULL);
-	pCmdUI->Enable(bEnabled);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CHtmlView Events
-
-void CHtmlView::OnProgressChange(long lProgress, long lProgressMax)
-{
-	// user will override to handle this notification
-	UNUSED_ALWAYS(lProgress);
-	UNUSED_ALWAYS(lProgressMax);
-}
-
-void CHtmlView::OnCommandStateChange(long lCommand, BOOL bEnable)
-{
-	// user will override to handle this notification
-	UNUSED_ALWAYS(lCommand);
-	UNUSED_ALWAYS(bEnable);
-}
-
-void CHtmlView::OnDownloadBegin()
-{
-	// user will override to handle this notification
-}
-
-void CHtmlView::OnDownloadComplete()
-{
-	// user will override to handle this notification
-}
-
-void CHtmlView::OnTitleChange(LPCTSTR lpszText)
-{
-	// user will override to handle this notification
-	UNUSED_ALWAYS(lpszText);
-}
-
-void CHtmlView::OnPropertyChange(LPCTSTR lpszProperty)
-{
-	// user will override to handle this notification
-	UNUSED_ALWAYS(lpszProperty);
-}
-
-void CHtmlView::OnNewWindow2(LPDISPATCH* ppDisp, BOOL* bCancel)
-{
-	// default to continuing
-	*bCancel = FALSE;
-
-	// user will override to handle this notification
-	UNUSED_ALWAYS(ppDisp);
-}
-
-void CHtmlView::OnDocumentComplete(LPCTSTR lpszURL)
-{
-	// user will override to handle this notification
-	UNUSED_ALWAYS(lpszURL);
-}
-
-void CHtmlView::OnQuit()
-{
-	// user will override to handle this notification
-}
-
-void CHtmlView::OnVisible(BOOL bVisible)
-{
-	// user will override to handle this notification
-	UNUSED_ALWAYS(bVisible);
-}
-
-void CHtmlView::OnToolBar(BOOL bToolBar)
-{
-	// user will override to handle this notification
-	UNUSED_ALWAYS(bToolBar);
-}
-
-void CHtmlView::OnMenuBar(BOOL bMenuBar)
-{
-	// user will override to handle this notification
-	UNUSED_ALWAYS(bMenuBar);
-}
-
-void CHtmlView::OnStatusBar(BOOL bStatusBar)
-{
-	// user will override to handle this notification
-	UNUSED_ALWAYS(bStatusBar);
-}
-
-void CHtmlView::OnFullScreen(BOOL bFullScreen)
-{
-	// user will override to handle this notification
-	UNUSED_ALWAYS(bFullScreen);
-}
-
-void CHtmlView::OnTheaterMode(BOOL bTheaterMode)
-{
-	// user will override to handle this notification
-	UNUSED_ALWAYS(bTheaterMode);
-}
-
-void CHtmlView::OnNavigateComplete2(LPCTSTR lpszURL)
-{
-	// user will override to handle this notification
-	UNUSED_ALWAYS(lpszURL);
-}
-
-void CHtmlView::OnBeforeNavigate2(LPCTSTR lpszURL, DWORD nFlags,
-	LPCTSTR lpszTargetFrameName, CByteArray& baPostData,
-	LPCTSTR lpszHeaders, BOOL* bCancel)
-{
-	// default to continuing
-	*bCancel = FALSE;
-
-	// user will override to handle this notification
-	UNUSED_ALWAYS(lpszURL);
-	UNUSED_ALWAYS(nFlags);
-	UNUSED_ALWAYS(lpszTargetFrameName);
-	UNUSED_ALWAYS(baPostData);
-	UNUSED_ALWAYS(lpszHeaders);
-}
-
-void CHtmlView::OnStatusTextChange(LPCTSTR pszText)
-{
-	// try to set the status bar text via the frame
-
-	CFrameWnd* pFrame = GetParentFrame();
-	if (pFrame != NULL)
-		pFrame->SetMessageText(pszText);
-}
-
-void CHtmlView::OnNavigateError(LPCTSTR lpszURL, LPCTSTR lpszFrame, DWORD dwError, BOOL *pbCancel)
-{
-	// default to continuing
-	*pbCancel = FALSE;
-
-	// user will override to handle this notification
-	UNUSED_ALWAYS(lpszURL);
-	UNUSED_ALWAYS(lpszFrame);
-
-	TRACE(traceHtml, 0, "OnNavigateError called with status scode = 0x%X\n", dwError);
-}
-
-extern "C" void _AfxHtmlEditCtrlFakeEntry()
-{
-	ASSERT( FALSE );
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CHtmlEditCtrl
-CHtmlEditCtrl::CHtmlEditCtrl()
-{
-}
-
-CHtmlEditCtrl::~CHtmlEditCtrl()
-{
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CHtmlEditCtrl message handlers
-BEGIN_EVENTSINK_MAP(CHtmlEditCtrl, CWnd)
-	ON_EVENT_REFLECT(CHtmlEditCtrl, 252 /* NavigateComplete2 */, _OnNavigateComplete2, VTS_DISPATCH VTS_PVARIANT)
-END_EVENTSINK_MAP()
-
-void CHtmlEditCtrl::_OnNavigateComplete2(LPDISPATCH pDisp, VARIANT FAR* URL)
-{
-	SetDesignMode(TRUE);
-}
-
-
-BOOL CHtmlEditCtrl::GetDHtmlDocument(IHTMLDocument2 **ppDocument) const
-{
-	if(ppDocument == NULL)
 	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-	
-	*ppDocument = NULL;
-	
-	CHtmlEditCtrl *pThis = const_cast<CHtmlEditCtrl*>(this);
-	CComQIPtr<IWebBrowser2> pBrowserApp = pThis->GetControlUnknown();
-	ASSERT(pBrowserApp != NULL);
-	if (pBrowserApp)
-	{
-		CComPtr<IDispatch> spDispDocument;
-		HRESULT hr = pBrowserApp->get_Document(&spDispDocument);
-		if (SUCCEEDED(hr) && spDispDocument)
+		CXTPDockBar* pDock = pToolBar->m_pDockBar;
+		int nPos = pDock->FindBar(pToolBar);
+		if (nPos == -1)
 		{
-			return S_OK == spDispDocument->QueryInterface(ppDocument) ? TRUE : FALSE;
+			_GetAddOrRemovePopup(pToolBar, pExpandBar);
 		}
-	}
-	return FALSE;
-}
-
-BOOL CHtmlEditCtrl::Create(LPCTSTR lpszWindowName, DWORD /*dwStyle*/, const RECT& rect, CWnd* pParentWnd,
-						   int nID, CCreateContext *pContext) 
-{
-	BOOL bRet = FALSE;
-	// create the control window
-
-	AfxEnableControlContainer();
-	if (CreateControl(CLSID_WebBrowser, lpszWindowName,
-				WS_VISIBLE | WS_CHILD, rect, pParentWnd, nID))
-	{
-		// in order to put the webbrowser in design mode, you must
-		// first load a document into it. "about:blank" seems to
-		// be the safest thing to load for a good starting point.
-		CComQIPtr<IWebBrowser2> pBrowserApp = GetControlUnknown();
-		ASSERT(pBrowserApp);
-		if (pBrowserApp)
+		else
 		{
-			CComVariant vEmpty;
-			LPCTSTR szDoc = GetStartDocument();
-			if (szDoc)
+			CXTPDockBar::CToolBarArray arrBars;
+			pDock->GetVisibleToolbars(nPos, arrBars);
+			for (int i = 0; i < arrBars.GetSize(); i++)
 			{
-				CComBSTR bstrStart(szDoc);
-				if (S_OK == pBrowserApp->Navigate(bstrStart, 
-													&vEmpty,
-													&vEmpty,
-													&vEmpty,
-													&vEmpty))
-				{
-					bRet = TRUE;
-				}
+				_GetAddOrRemovePopup(arrBars[i], pExpandBar);
 			}
-			else
-				bRet = TRUE;
-
 		}
 	}
 
-	if (!bRet)
-		DestroyWindow();
-	return bRet;
-}
-
-LPCTSTR CHtmlEditCtrl::GetStartDocument()
-{
-	LPCTSTR szDefaultDoc = _T("about:blank");
-	return szDefaultDoc;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CHtmlEditView
-BEGIN_MESSAGE_MAP(CHtmlEditView, CFormView)
-	ON_COMMAND(ID_FILE_PRINT, &CHtmlEditView::OnFilePrint)
-	ON_COMMAND(ID_FILE_PRINT_DIRECT, &CHtmlEditView::OnFilePrint)
-	ON_WM_PAINT()
-	ON_WM_SIZE()
-END_MESSAGE_MAP()
-
-////////////////////////////////////////////////////////////////////////////
-// CHtmlEditView
-
-void CHtmlEditView::OnPaint()
-{
-	Default();
-}
-
-CHtmlEditView::CHtmlEditView()
-{
-}
-
-CHtmlEditView::~CHtmlEditView()
-{
-}
-
-LPCTSTR CHtmlEditView::GetStartDocument()
-{
-	LPCTSTR szDefaultUrl = _T("about:blank");
-	return szDefaultUrl;
-}
-
-BOOL CHtmlEditView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
-	DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID,
-	CCreateContext* pContext) 
-{
-	// create the view window itself
-	if (!CHtmlView::Create(lpszClassName, lpszWindowName,
-				dwStyle, rect, pParentWnd,	nID, pContext))
+	if (m_bCustomizeAvail)
 	{
-		return FALSE;
+		CXTPControl* pControlCustomize = pExpandBar->GetControls()->Add(xtpControlButton, XTP_ID_CUSTOMIZE);
+		pControlCustomize->SetBeginGroup(TRUE);
 	}
-	LPCTSTR szDoc = GetStartDocument();
-	if (szDoc)
-		Navigate(szDoc);
-	return TRUE;
 }
 
-BOOL CHtmlEditView::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
+
+void CXTPCommandBars::SetQuickCustomizeMode(BOOL bMode)
 {
-	// if it's not something we're intersted in, let it go to the base
-	if (nCode < (int)CN_UPDATE_COMMAND_UI)
-		return CHtmlView::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+	m_pOptions->bDirtyState = TRUE;
+	m_bCustomizeMode = m_bQuickCustomizeMode = bMode;
+	SetDragControl(NULL);
 
-	// check for command availability
-	BOOL bHasExecFunc = FALSE;
-	UINT uiElemType = AFX_UI_ELEMTYPE_NORMAL;
-	UINT dhtmlCmdID = GetDHtmlCommandMapping(nID, bHasExecFunc, uiElemType);
-	if (dhtmlCmdID == AFX_INVALID_DHTML_CMD_ID)
+	ShowKeyboardCues(m_bCustomizeMode);
+}
+
+void CXTPCommandBars::SetCustomizeMode(BOOL bMode)
+{
+	m_pOptions->bDirtyState = TRUE;
+	m_bCustomizeMode = bMode;
+	SetDragControl(NULL);
+
+	for (int i = 0; i < GetCount(); i++)
 	{
-		// No mapping for this command. Use normal routing
-		return CHtmlView::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+		CXTPToolBar* pBar = GetAt(i);
+
+		pBar->DelayRedraw();
+		pBar->OnIdleUpdateCmdUI(TRUE, TRUE);
 	}
+	RecalcFrameLayout();
 
-	long nStatus = QueryStatus(dhtmlCmdID);
+	ShowKeyboardCues(m_bCustomizeMode);
+}
 
-	if (nCode == CN_UPDATE_COMMAND_UI)
+void CXTPCommandBars::SetDragControl(CXTPControl* pControl)
+{
+	if (m_pDragSelected != pControl)
 	{
-		// just checking status
-		CCmdUI *pUI = static_cast<CCmdUI*>(pExtra);
-		if (pUI)
+
+		CXTPControl* pDragSelected = m_pDragSelected;
+		m_pDragSelected = pControl;
+
+		if (pDragSelected != NULL)
 		{
-			if(!(nStatus & OLECMDF_LATCHED || nStatus & OLECMDF_ENABLED))
-			{
-				pUI->Enable(FALSE);
-				if (uiElemType & AFX_UI_ELEMTYPE_CHECBOX)
-				{
-					if (nStatus & OLECMDF_LATCHED)
-						pUI->SetCheck(TRUE);
-					else
-						pUI->SetCheck(FALSE);
-				}
-				else if (uiElemType & AFX_UI_ELEMTYPE_RADIO)
-				{
-					if (nStatus & OLECMDF_LATCHED)
-						pUI->SetRadio(TRUE);
-					else
-						pUI->SetRadio(FALSE);
-				}
-
-			}
-			else
-			{
-				pUI->Enable(TRUE); // enable
-				// check to see if we need to do any other state
-				// stuff
-				if (uiElemType & AFX_UI_ELEMTYPE_CHECBOX)
-				{
-					if (nStatus & OLECMDF_LATCHED)
-						pUI->SetCheck(TRUE);
-					else
-						pUI->SetCheck(FALSE);
-				}
-				else if (uiElemType & AFX_UI_ELEMTYPE_RADIO)
-				{
-					if (nStatus & OLECMDF_LATCHED)
-						pUI->SetRadio(TRUE);
-					else
-						pUI->SetRadio(FALSE);
-				}
-			}
-			return TRUE;
+			pDragSelected->RedrawParent();
+			pDragSelected->InternalRelease();
 		}
-		return FALSE;
+
+		if (m_pDragSelected)
+		{
+			m_pDragSelected->RedrawParent(FALSE);
+			m_pDragSelected->InternalAddRef();
+		}
 	}
 
-	// querystatus for this DHTML command to make sure it is enabled
-	if(!(nStatus & OLECMDF_LATCHED || nStatus & OLECMDF_ENABLED))
+	CWnd* pWnd = m_pDropSource->m_pSheet ? (CWnd*)m_pDropSource->m_pSheet : m_pFrame;
+	if (pWnd && pWnd->GetSafeHwnd())
 	{
+		pWnd->SendMessage(WM_XTP_DRAGCONTROLCHANGED);
+	}
+}
 
-		// trying to execute a disabled command
-		TRACE(traceHtml, 0, "Not executing disabled dhtml editing command %d", dhtmlCmdID);
+void CXTPCommandBars::RemoveAll()
+{
+	m_bRecalcLayout = TRUE;
+
+	for (int i = 0; i < GetCount(); i++)
+	{
+		CXTPToolBar* pToolBar = GetAt(i);
+
+		if (pToolBar->GetSafeHwnd())
+		{
+			pToolBar->ShowWindow(SW_HIDE);
+			pToolBar->m_bVisible = FALSE;
+		}
+
+		if (pToolBar->m_pDockBar != NULL)
+		{
+			pToolBar->m_pDockBar->RemoveCommandBar(pToolBar);
+			pToolBar->m_pDockBar = NULL;
+		}
+
+		OnToolBarRemoved(pToolBar);
+		pToolBar->OnRemoved();
+
+		pToolBar->InternalRelease();
+	}
+	m_arrBars.RemoveAll();
+
+	m_bRecalcLayout = FALSE;
+	RecalcFrameLayout(TRUE);
+
+}
+
+void CXTPCommandBars::Remove(CXTPToolBar* pToolBar)
+{
+	ASSERT(pToolBar);
+	if (!pToolBar)
+		return;
+
+	int i = FindIndex(pToolBar);
+	if (i == -1)
+		return;
+
+	if (pToolBar->GetSafeHwnd())
+	{
+		pToolBar->ShowWindow(SW_HIDE);
+	}
+	pToolBar->m_bVisible = FALSE;
+
+	if (pToolBar->m_pDockBar != NULL)
+	{
+		pToolBar->m_pDockBar->RemoveCommandBar(pToolBar);
+		pToolBar->m_pDockBar = NULL;
+		RecalcFrameLayout();
+	}
+
+	OnToolBarRemoved(pToolBar);
+	pToolBar->OnRemoved();
+
+	m_arrBars.RemoveAt(i);
+	pToolBar->InternalRelease();
+}
+
+void CXTPCommandBars::SetSite(CWnd* pFrame)
+{
+	m_pFrame = pFrame;
+
+	if (pFrame->GetSafeHwnd())
+	{
+		AFX_CMDHANDLERINFO info;
+		info.pTarget = NULL;
+
+		m_bCustomizeAvail = pFrame->CWnd::OnCmdMsg(XTP_ID_CUSTOMIZE, CN_COMMAND, this, &info);
+	}
+
+	m_bRightToLeft = m_pFrame->GetExStyle() & WS_EX_LAYOUTRTL;
+}
+
+
+
+void CXTPCommandBars::HideCommands(const UINT* pCommands, int nCount)
+{
+	ASSERT(pCommands);
+	if (!pCommands)
+		return;
+
+	for (int i = 0; i < nCount; i++)
+		HideCommand(pCommands[i]);
+}
+
+void CXTPCommandBars::HideCommand(UINT nCommand)
+{
+	m_pOptions->m_mapHiddenCommands.SetAt(nCommand, TRUE);
+}
+
+
+BOOL CXTPCommandBars::IsControlHidden(CXTPControl* pControl)
+{
+	BOOL bCommandHidden = IsCommandHidden(pControl->GetID());
+
+	if (m_pOptions->bAutoHideUnusedPopups && !bCommandHidden && IsPopupControlType(pControl->GetType()))
+	{
+		CXTPCommandBar* pCommandBar = pControl->GetCommandBar();
+		if (!pCommandBar)
+			return FALSE;
+
+		int nCount = pCommandBar->GetControlCount();
+
+		if (nCount == 0)
+			return FALSE;
+
+		for (int i = 0; i < nCount; i++)
+		{
+			if (!IsControlHidden(pCommandBar->GetControl(i)))
+				return FALSE;
+		}
+
 		return TRUE;
-	}
 
-	if (bHasExecFunc)
-	{
-		return ExecHandler(nID);		
 	}
-
-	return S_OK == ExecCommand(dhtmlCmdID, OLECMDEXECOPT_DODEFAULT, NULL, NULL) ? TRUE : FALSE;
+	return bCommandHidden;
 }
 
-BOOL CHtmlEditView::GetDHtmlDocument(IHTMLDocument2 **ppDocument) const
+BOOL CXTPCommandBars::IsCommandHidden(UINT nCommand)
 {
-	CComPtr<IDispatch> spDispDocument;
-	if (!ppDocument)
+	BOOL bCommand;
+
+	if (!m_pOptions->m_mapHiddenCommands.Lookup(nCommand, bCommand))
 		return FALSE;
-	*ppDocument = NULL;
 
-	HRESULT hr = m_pBrowserApp->get_Document(&spDispDocument);
-	if (SUCCEEDED(hr) && spDispDocument)
-	{
-		return S_OK == spDispDocument->QueryInterface(ppDocument) ? TRUE : FALSE;
-	}
+	if (m_pOptions->m_mapUsedCommands.Lookup(nCommand, bCommand))
+		return FALSE;
 
-	return FALSE;
-}
-
-void CHtmlEditView::OnNavigateComplete2(LPCTSTR strURL)
-{
-	SetDesignMode(TRUE);
-}
-
-BOOL CHtmlEditView::OnPreparePrinting(CPrintInfo* pInfo)
-{
 	return TRUE;
 }
 
-UINT CHtmlEditView::GetDHtmlCommandMapping(UINT nIDWindowsCommand, BOOL& bHasExecFunc, UINT& uiElemType)
+void CXTPCommandBars::SetCommandUsed(UINT nCommand)
 {
-	uiElemType = AFX_UI_ELEMTYPE_NORMAL;
-	bHasExecFunc = FALSE;
-	return AFX_INVALID_DHTML_CMD_ID;
-}
-
-BOOL CHtmlEditView::ExecHandler(UINT nCmdID)
-{
-	return FALSE;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CHtmlEditView diagnostics
-
-#ifdef _DEBUG
-void CHtmlEditView::AssertValid() const
-{
-	CFormView::AssertValid();
-}
-
-void CHtmlEditView::Dump(CDumpContext& dc) const
-{
-	CFormView::Dump(dc);
-}
-#endif //_DEBUG
-
-CHtmlEditDoc::CHtmlEditDoc()
-{
-}
-
-CHtmlEditDoc::~CHtmlEditDoc()
-{
-}
-
-CHtmlEditView* CHtmlEditDoc::GetView() const
-{
-	CHtmlEditView* pHtmlView = NULL;
-
-	POSITION pos = GetFirstViewPosition();
-	while (pos != NULL)
+	if (IsCommandHidden(nCommand))
 	{
-		CView* pView = GetNextView(pos);
-		pHtmlView = DYNAMIC_DOWNCAST(CHtmlEditView, pView);
-		if (pHtmlView != NULL)
-			break;
-	}
-
-	return pHtmlView;
-}
-
-void CHtmlEditDoc::DeleteContents()
-{
-	CHtmlEditView* pView = GetView();
-	if (pView)
-	{
-		pView->NewDocument();
-		pView->Navigate(pView->GetStartDocument());
+		m_pOptions->m_mapUsedCommands.SetAt(nCommand, TRUE);
+		m_pOptions->bDirtyState = TRUE;
 	}
 }
-
-BOOL CHtmlEditDoc::IsModified()
+void CXTPCommandBars::ResetUsageData()
 {
-	CHtmlEditView* pView = GetView();
-
-	if (pView)
-	{
-		return (pView->GetIsDirty() != S_FALSE);
-	}
-
-	return FALSE;
+	m_pOptions->m_mapUsedCommands.RemoveAll();
+	m_pOptions->bDirtyState = TRUE;
 }
 
-BOOL CHtmlEditDoc::OpenURL(LPCTSTR lpszURL)
+
+const TCHAR _xtpCommandBarOptionsSection[] = _T("%s-Options");
+
+void PX_UintMap(CXTPPropExchange* pPX, LPCTSTR pszPropName, CMap<UINT, UINT, BOOL, BOOL>& mapValue)
 {
-	BOOL bRet = FALSE;
-	CHtmlEditView* pView = GetView();
-	if (pView != NULL && lpszURL != NULL && *lpszURL != '\0')
+	if (pPX->IsAllowBlobValues())
 	{
-		pView->Navigate(lpszURL);
-		bRet = TRUE;
+		PX_Serialize(pPX, pszPropName, &mapValue);
+		return;
 	}
 
-	return bRet;
-}
+	CXTPPropExchangeSection secMap(pPX->GetSection(pszPropName));
 
-BOOL CHtmlEditDoc::OnOpenDocument(LPCTSTR lpszFileName)
-{
-	BOOL bRet = FALSE;
-	CHtmlEditView* pView = GetView();
-	if (pView != NULL)
+	UINT nID;
+	if (pPX->IsStoring())
 	{
-		pView->Navigate(lpszFileName);
-		SetTitle(lpszFileName);
-		bRet = TRUE;
-	}
-
-	return bRet;
-}
-
-BOOL CHtmlEditDoc::OnSaveDocument(LPCTSTR lpszFileName)
-{
-	BOOL bRet = FALSE;
-	CHtmlEditView *pView = GetView();
-	if (pView != NULL)
-	{
-		CFile file;
-		if (file.Open(lpszFileName, CFile::modeCreate|CFile::modeWrite))
+		secMap->WriteCount((DWORD)mapValue.GetCount());
+		BOOL bValue;
+		int i = 0;
+		POSITION pos = mapValue.GetStartPosition();
+		while (pos)
 		{
-			CArchive ar(&file, CArchive::store);
-			CArchiveStream as(&ar);
-			CComPtr<IHTMLDocument2> spHTMLDocument;
-			CComQIPtr<IPersistStreamInit> spPSI;
-			pView->GetDHtmlDocument(&spHTMLDocument);
-			if (spHTMLDocument)
-			{
-				spPSI = spHTMLDocument;
-				if (spPSI)
-				{
-					if (S_OK == spPSI->Save((IStream*)&as, TRUE))
-					{
-						SetModifiedFlag(FALSE);
-						bRet = TRUE;
-					}
-				}
-			}
+			CString strSection;
+			strSection.Format(_T("Item%i"), i++);
+
+			mapValue.GetNextAssoc(pos, nID, bValue);
+
+			PX_Long(&secMap, strSection, (long&)nID, 0);
 		}
 	}
-	return bRet;
+	else
+	{
+		mapValue.RemoveAll();
+
+		int nCount = secMap->ReadCount();
+		for (int i = 0; i < nCount; i++)
+		{
+			CString strSection;
+			strSection.Format(_T("Item%i"), i);
+			PX_Long(&secMap, strSection, (long&)nID, 0);
+
+			mapValue.SetAt(nID, TRUE);
+		}
+	}
 }
 
-BOOL CHtmlEditDoc::OnNewDocument()
+void CXTPCommandBarsOptions::DoPropExchange(CXTPPropExchange* pPX, BOOL bUserOptionsOnly)
 {
-#ifdef _DEBUG
-	if(IsModified())
-		TRACE(traceAppMsg, 0, "Warning: OnNewDocument replaces an unsaved document.\n");
-#endif
+	pPX->UseDefaultOnLoad(FALSE);
+	pPX->UseDefaultOnSave(FALSE);
 
-	DeleteContents(); // we want CHtmlEditDoc's DeleteContents to be called here
-	m_strPathName.Empty();      // no path name yet
-	SetModifiedFlag(FALSE);     // make clean
+	XTP_COMMANDBARS_ICONSINFO* pInfo = m_pCommandBars->GetPaintManager()->GetIconsInfo();
+	DWORD dwSchema = _XTP_SCHEMA_CURRENT;
+
+	PX_DWord(pPX, _T("Schema"), dwSchema, _XTP_SCHEMA_CURRENT);
+	PX_Bool(pPX, _T("AlwaysShowFullMenus"), bAlwaysShowFullMenus, TRUE);
+	PX_Bool(pPX, _T("ShowFullAfterDelay"), bShowFullAfterDelay, TRUE);
+	PX_Bool(pPX, _T("ToolBarScreenTips"), bToolBarScreenTips, TRUE);
+	PX_Bool(pPX, _T("ToolBarAccelTips"), bToolBarAccelTips, FALSE);
+	PX_Bool(pPX, _T("LargeIcons"), bLargeIcons, FALSE);
+
+	if ((dwSchema > _XTP_SCHEMA_875) && !(pPX->IsStoring() && pPX->IsAllowDefaultValues() && m_mapUsedCommands.IsEmpty()))
+		PX_UintMap(pPX, _T("UsedCommands"), m_mapUsedCommands);
+
+	if ((dwSchema > _XTP_SCHEMA_875) || bUserOptionsOnly)
+		PX_Enum(pPX, _T("Animation"), animationType, xtpAnimateWindowsDefault);
+
+
+	if (!bUserOptionsOnly)
+	{
+		PX_Bool(pPX, _T("SyncFloatingBars"), bSyncFloatingBars, TRUE);
+		PX_Bool(pPX, _T("ShowExpandButtonAlways"), bShowExpandButtonAlways, TRUE);
+		PX_Size(pPX, _T("IconsSize"), szIcons, CSize(0, 0));
+		PX_Size(pPX, _T("LargeIconsSize"), szLargeIcons, CSize(0, 0));
+
+		if (!(pPX->IsStoring() && pPX->IsAllowDefaultValues() && m_mapHiddenCommands.IsEmpty()))
+			PX_UintMap(pPX, _T("HiddenCommands"), m_mapHiddenCommands);
+
+		PX_Bool(pPX, _T("IconsWithShadow"), pInfo->bIconsWithShadow, FALSE);
+		PX_Bool(pPX, _T("UseDisabledIcons"), pInfo->bUseDisabledIcons, TRUE);
+		PX_Bool(pPX, _T("UseFadedIcons"), pInfo->bUseFadedIcons, TRUE);
+
+		if (dwSchema > _XTP_SCHEMA_875)
+		{
+			PX_Bool(pPX, _T("SyncFloatingBars"), bSyncFloatingBars, TRUE);
+			PX_Bool(pPX, _T("ShowExpandButtonAlways"), bShowExpandButtonAlways, TRUE);
+			PX_Bool(pPX, _T("DblClickFloat"), bDblClickFloat, FALSE);
+			PX_Bool(pPX, _T("ShowTextBelowIcons"), bShowTextBelowIcons, FALSE);
+			PX_Bool(pPX, _T("AltDragCustomization"), bAltDragCustomization, TRUE);
+			PX_Bool(pPX, _T("AutoHideUnusedPopups"), bAutoHideUnusedPopups, TRUE);
+			PX_Size(pPX, _T("PopupIconsSize"), szPopupIcons, CSize(0, 0));
+		}
+
+		if (dwSchema > _XTP_SCHEMA_95)
+		{
+			PX_DWord(pPX, _T("KeyboardCuesUse"), keyboardCuesUse, xtpKeyboardCuesUseAll);
+			PX_Enum(pPX, _T("KeyboardCuesShow"), keyboardCuesShow, xtpKeyboardCuesShowAlways);
+
+			if (pPX->IsLoading()) ShowKeyboardCues(keyboardCuesShow);
+		}
+	}
+
+}
+void CXTPCommandBarsOptions::Serialize(CArchive& ar)
+{
+	CXTPPropExchangeArchive px(ar);
+	DoPropExchange(&px);
+}
+
+
+void CXTPCommandBars::SaveOptions(LPCTSTR lpszProfileName)
+{
+	TCHAR szSection[256];
+	wsprintf(szSection, _xtpCommandBarOptionsSection, lpszProfileName);
+
+	CXTPPropExchangeSection px(FALSE, szSection);
+	px->EmptySection();
+	m_pOptions->DoPropExchange(&px, TRUE);
+}
+
+
+void CXTPCommandBars::LoadOptions(LPCTSTR lpszProfileName)
+{
+	TCHAR szSection[256];
+	wsprintf(szSection, _xtpCommandBarOptionsSection, lpszProfileName);
+
+	CXTPPropExchangeSection px(TRUE, szSection);
+	m_pOptions->DoPropExchange(&px, TRUE);
+
+}
+
+void CXTPCommandBars::SetTheme(XTPPaintTheme paintTheme)
+{
+	SetPaintManager(CXTPPaintManager::CreateTheme(paintTheme));
+}
+
+
+void CXTPCommandBars::SetPaintManager(CXTPPaintManager* pPaintManager)
+{
+	if (m_pPaintManager)
+		m_pPaintManager->InternalRelease();
+
+	m_pPaintManager = pPaintManager;
+
+	if (m_pPaintManager)
+	{
+		m_pPaintManager->RefreshMetrics();
+	}
+
+	for (int i = 0; i < GetCount(); i++)
+	{
+		GetAt(i)->OnPaintManagerChanged();
+	}
+
+	GetImageManager()->RefreshAll();
+	RedrawCommandBars();
+}
+
+void CXTPCommandBars::SetImageManager(CXTPImageManager* pImageManager)
+{
+	ASSERT(m_pImageManager == NULL);
+	m_pImageManager = pImageManager;
+
+	GetImageManager()->RefreshAll();
+}
+
+CXTPPaintManager* CXTPCommandBars::GetPaintManager() const
+{
+	if (m_pPaintManager)
+		return m_pPaintManager;
+	return XTPPaintManager();
+
+}
+CXTPImageManager* CXTPCommandBars::GetImageManager() const
+{
+	if (m_pImageManager)
+		return m_pImageManager;
+	return XTPImageManager();
+}
+
+void CXTPCommandBars::LoadDesignerBars(CArchive& ar)
+{
+	CXTPPropExchangeArchive px(ar);
+	LoadDesignerBars(&px);
+}
+
+void CXTPCommandBars::LoadDesignerBars(CXTPPropExchange* pPX)
+{
+	try
+	{
+		//////////////////////////////////////////////////////////////////////////
+		// Load Docking Position and Controls
+		XTP_COMMANDBARS_PROPEXCHANGE_PARAM param;
+		param.bSerializeControls = TRUE;
+		param.bSerializeDesignerControls = TRUE;
+		param.bSerializeImages = TRUE;
+		param.bSerializeOptions = TRUE;
+		param.bSerializeActions = TRUE;
+
+		DoPropExchange(pPX, &param);
+
+	}
+	catch (CMemoryException* pEx)
+	{
+		pEx->Delete ();
+	}
+	catch (CArchiveException* pEx)
+	{
+		pEx->Delete ();
+	}
+}
+
+
+CDocTemplate* CXTPCommandBars::FindDocTemplate(CMDIChildWnd* pChild)
+{
+	USES_PROTECTED_ACCESS(CXTPCommandBars, CMDIChildWnd, HMENU, m_hMenuShared)
+
+	CMultiDocTemplate* pTemplate = DYNAMIC_DOWNCAST(CMultiDocTemplate, pChild->GetActiveDocument()->GetDocTemplate());
+	if (!pTemplate)
+		return NULL;
+
+	HMENU hMenuShared = PROTECTED_ACCESS(CMDIChildWnd, pChild, m_hMenuShared);
+
+	if ((hMenuShared == 0) || (pTemplate->m_hMenuShared == hMenuShared))
+		return pTemplate;
+
+	POSITION pos = AfxGetApp()->GetFirstDocTemplatePosition();
+
+	while (pos)
+	{
+		pTemplate = DYNAMIC_DOWNCAST(CMultiDocTemplate, AfxGetApp()->GetNextDocTemplate(pos));
+
+		if (pTemplate && pTemplate->m_hMenuShared == hMenuShared)
+			return pTemplate;
+	}
+
+
+	return NULL;
+}
+
+
+UINT CXTPCommandBars::GetActiveDocTemplate()
+{
+	#pragma warning(disable:4510)
+	#pragma warning(disable:4610)
+
+	USES_PROTECTED_ACCESS(CXTPCommandBars, CDocTemplate, UINT, m_nIDResource)
+	USES_PROTECTED_ACCESS(CXTPCommandBars, CFrameWnd, UINT, m_nIDHelp)
+
+	CMDIFrameWnd* pFrame = DYNAMIC_DOWNCAST(CMDIFrameWnd, GetSite());
+
+	if (!pFrame)
+		return 0;
+
+	UINT nIDResource = (WORD)m_nDefaultMenuID;
+
+	CMDIChildWnd* pChild = pFrame->MDIGetActive();
+	if (pChild)
+	{
+		if (pChild->GetActiveDocument())
+		{
+			CDocTemplate* pDocTemplate = FindDocTemplate(pChild);
+			if (!pDocTemplate)
+				return 0;
+			nIDResource = PROTECTED_ACCESS(CDocTemplate, pDocTemplate, m_nIDResource);
+		}
+		else
+		{
+			nIDResource = PROTECTED_ACCESS(CFrameWnd, pChild, m_nIDHelp);
+		}
+	}
+
+	return nIDResource;
+}
+
+
+void CXTPCommandBars::OnSetPreviewMode (BOOL bPreview)
+{
+	GetShortcutManager()->DisableShortcuts(bPreview);
+
+	int nCount = GetCount();
+	for (int i = 0; i < nCount; i++)
+	{
+		CXTPToolBar* pBar = GetAt(i);
+		pBar->OnSetPreviewMode(bPreview);
+	}
+}
+
+CXTPToolTipContext* CXTPCommandBars::GetToolTipContext() const
+{
+	return m_pToolTipContext;
+}
+
+
+int CXTPCommandBars::FindIndex(CXTPToolBar* pToolBar) const
+{
+	int nCount = GetCount();
+	for (int i = 0; i < nCount; i++)
+	{
+		CXTPToolBar* pBar = GetAt(i);
+		if (pBar == pToolBar)
+			return i;
+	}
+	return -1;
+}
+
+int CXTPCommandBars::GetNextVisible(long nIndex, int nDirection) const
+{
+	ASSERT(nDirection == +1 || nDirection == -1);
+	if (GetCount() == 0) return -1;
+
+	long nNext = nIndex + nDirection;
+
+	if (nDirection == -1 && nIndex == -1)
+	{
+		nNext = GetCount() - 1;
+	}
+
+	BOOL bCircle = FALSE;
+
+	while (nNext != nIndex)
+	{
+		if (nNext >= GetCount())
+		{
+			if ((nIndex == -1 && nDirection == +1) || bCircle) return -1;
+			nNext = 0;
+			bCircle = TRUE;
+		}
+		if (nNext < 0)
+		{
+			if ((nIndex == -1 && nDirection == -1) || bCircle) return -1;
+			nNext = GetCount() - 1;
+			bCircle = TRUE;
+		}
+
+		if (GetAt(nNext)->IsWindowVisible())
+			return nNext;
+
+		nNext += nDirection;
+	}
+	return nNext;
+}
+
+BOOL CXTPCommandBars::SetToolBarFocus(CXTPToolBar* pCommandBar, BOOL bNext /*= FALSE*/)
+{
+	if (!pCommandBar)
+		return FALSE;
+
+	if (bNext)
+	{
+		if (GetCount() < 2)
+			return FALSE;
+
+		int nIndex = FindIndex(pCommandBar);
+		int nNextIndex = GetNextVisible(nIndex, bNext);
+		if (nIndex == nNextIndex || nNextIndex == -1)
+			return FALSE;
+
+		pCommandBar = GetAt(nNextIndex);
+	}
+	ClosePopups();
+
+	ShowKeyboardCues(TRUE);
+	m_keyboardTips.nLevel = 1;
+
+	pCommandBar->SetTrackingMode(TRUE, FALSE, TRUE);
+	pCommandBar->SetSelected(pCommandBar->GetControls()->GetNext(-1, +1, TRUE, pCommandBar->GetType() == xtpBarTypeMenuBar), TRUE_KEYBOARD_NEXT);
 
 	return TRUE;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// CHtmlEditDoc diagnostics
-
-#ifdef _DEBUG
-void CHtmlEditDoc::AssertValid() const
-{
-	CDocument::AssertValid();
-}
-
-void CHtmlEditDoc::Dump(CDumpContext& dc) const
-{
-	CDocument::Dump(dc);
-}
-#endif _DEBUG
-
-/////////////////////////////////////////////////////////////////////////////
-// Inline function declarations expanded out-of-line
-
-#ifndef _AFX_ENABLE_INLINES
-
-// expand inlines for Html functions
-#define _AFXHTML_INLINE
-#include "afxhtml.inl"
-
-#endif //!_AFX_ENABLE_INLINES
-
-/////////////////////////////////////////////////////////////////////////////
-// Pre-startup code
 
 
-IMPLEMENT_DYNCREATE(CHtmlView, CFormView)
-IMPLEMENT_DYNCREATE(CHtmlEditView, CHtmlView)
-IMPLEMENT_DYNAMIC(CHtmlEditDoc, CDocument)

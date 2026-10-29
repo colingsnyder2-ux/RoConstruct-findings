@@ -1,108 +1,34 @@
-// from server: 40% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// roc 2010-06 00601520  unit: RBX::ArrowTool  size: 33 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 00601520
+//
+// 00601520  80790400             cmp byte ptr [ecx + 4], 0
+// 00601524  7515                 jne 0x60153b
+// 00601526  80790500             cmp byte ptr [ecx + 5], 0
+// 0060152a  750f                 jne 0x60153b
+// 0060152c  80790600             cmp byte ptr [ecx + 6], 0
+// 00601530  7509                 jne 0x60153b
+// 00601532  80790700             cmp byte ptr [ecx + 7], 0
+// 00601536  7503                 jne 0x60153b
+// 00601538  33c0                 xor eax, eax
+// 0060153a  c3                   ret 
+// 0060153b  b801000000           mov eax, 1
+// 00601540  c3                   ret 
+// copied from an identical function in another client (function ?f@ArrowTool@ns_ROCX000011@@QAEHXZ)
 
-// Candidate translation unit (score above; library headers required).
-#include "util/Name.h"
-#include "util/Debug.h"
-#include <boost/thread/once.hpp>
-
-// intentionally outside of the RBX namespace
-boost::once_flag flag = BOOST_ONCE_INIT;
-
-boost::mutex& moo2()
+namespace ns_ROCX000011 {
+// from server: 100% by atomic.potato
+struct ArrowTool
 {
-	static boost::mutex mutex2;
-	return mutex2;
+    int f();
+};
+
+int ArrowTool::f()
+{
+    if (reinterpret_cast<unsigned char *>(this)[4] ||
+        reinterpret_cast<unsigned char *>(this)[5] ||
+        reinterpret_cast<unsigned char *>(this)[6] ||
+        reinterpret_cast<unsigned char *>(this)[7])
+        return 1;
+    return 0;
 }
-
-void initMoo()
-{
-	moo2();
-}
-
-namespace RBX
-{
-	// seems to be inlined
-	boost::mutex& Name::mutex()
-	{
-		boost::call_once(initMoo, flag);
-		return moo2();
-	}
-
-	std::map<int, Name*>& Name::dictionary()
-	{
-		static std::map<int, Name*> d;
-		return d;
-	}
-
-	Name::NamMap& Name::namMap()
-	{
-		static NamMap n;
-		return n;
-	}
-
-	const Name& Name::getNullName()
-	{
-		boost::mutex::scoped_lock scoped_lock(mutex());
-		static const Name& nullName = declare("", 0);
-		return nullName;
-	}
-
-	const Name& Name::declare(const char* sName, int dictionaryIndex)
-	{
-		if (!sName)
-		{
-			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
-			return getNullName();
-		}
-
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			if (dictionaryIndex != -1)
-			{
-				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
-				dictionary()[dictionaryIndex] = iter->second;
-			}
-			return *iter->second;
-		}
-		else
-		{
-			Name* name = new Name(sName, dictionaryIndex);
-			namMap()[sName] = name;
-			dictionary()[dictionaryIndex] = name;
-			return *name;
-		}
-	}
-
-	const Name& Name::lookup(const std::string& sName)
-	{
-		RBXASSERT(sName.size() < 50);
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			return *iter->second;
-		}
-		else
-		{
-			return getNullName();
-		}
-	}
-
-	const Name& Name::lookup(const char* sName)
-	{
-		if (!sName)
-		{
-			return getNullName();
-		}
-
-		return lookup(std::string(sName));
-	}
 }

@@ -1,46 +1,10 @@
-// from server: 52% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/CommandBars/XTPFrameWnd.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espeon_globalpair_31391fc200652c51.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPFrameWnd.cpp : implementation for the CXTPFrameWnd and CXTPMDIFrameWnd classes.
-//
-// This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-
-#include "XTPFrameWnd.h"
-
-
-IMPLEMENT_DYNCREATE(CXTPFrameWnd, CFrameWnd)
-
-CXTPFrameWnd::CXTPFrameWnd()
-{
-
-}
-
-
-IMPLEMENT_DYNCREATE(CXTPMDIFrameWnd, CMDIFrameWnd)
-
-CXTPMDIFrameWnd::CXTPMDIFrameWnd()
-{
-
-}
+#include <boost/shared_ptr.hpp>
+typedef boost::shared_ptr<void> Pair;
+extern Pair global_pair;
+Pair __cdecl func_004306c0() { return global_pair; }

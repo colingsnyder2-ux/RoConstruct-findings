@@ -1,8 +1,8 @@
-// from server: 68% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /Od /Ob1 /GS- /MT
-// roc-lib: wildmagic-2-core Containment/WmlConvexHull3.cpp
+// roc-flags: /Od /Ob0 /GS- /MD
+// roc-lib: wildmagic-2-core Geometry/WmlConvexClipper.cpp
 
 // Candidate translation unit (score above; library headers required).
 // Magic Software, Inc.
@@ -15,469 +15,596 @@
 // and may not be copied or disclosed except in accordance with the terms of
 // that agreement.
 
-#include "WmlConvexHull3.h"
+#include "WmlConvexClipper.h"
+#include "WmlConvexPolyhedron3.h"
 using namespace Wml;
 
 #include <algorithm>
+#include <fstream>
+#include <map>
 using namespace std;
 
 //----------------------------------------------------------------------------
 template <class Real>
-ConvexHull3<Real>::ConvexHull3 (int iVQuantity, const Vector3<Real>* akVertex)
-    :
-    m_kHullS(NULL,CreateTriangle)
+ConvexClipper<Real>::ConvexClipper (const ConvexPolyhedron3<Real>& rkPoly,
+    Real fEpsilon)
 {
-    // uniformly scale and translate to [-1,1]^3 for numerical preconditioning
-    Real fMin = akVertex[0].X(), fMax = fMin;
-    int i;
-    for (i = 0; i < iVQuantity; i++)
+    m_fEpsilon = fEpsilon;
+
+    const vector<Vector3<Real> >& rakPoint = rkPoly.GetPoints();
+    int iVQuantity = rkPoly.GetVQuantity();
+    m_akVertex.resize(iVQuantity);
+    for (int iV = 0; iV < iVQuantity; iV++)
+        m_akVertex[iV].m_kPoint = rakPoint[iV];
+
+    int iEQuantity = rkPoly.GetEQuantity();
+    m_akEdge.resize(iEQuantity);
+    for (int iE = 0; iE < iEQuantity; iE++)
     {
-        if ( akVertex[i].X() < fMin )
-            fMin = akVertex[i].X();
-        else if ( akVertex[i].X() > fMax )
-            fMax = akVertex[i].X();
-
-        if ( akVertex[i].Y() < fMin )
-            fMin = akVertex[i].Y();
-        else if ( akVertex[i].Y() > fMax )
-            fMax = akVertex[i].Y();
-
-        if ( akVertex[i].Z() < fMin )
-            fMin = akVertex[i].Z();
-        else if ( akVertex[i].Z() > fMax )
-            fMax = akVertex[i].Z();
-    }
-    Real fHalfRange = ((Real)0.5)*(fMax - fMin);
-    Real fInvHalfRange = ((Real)1.0)/fHalfRange;
-
-    m_iVQuantity = iVQuantity;
-    m_akVertex = new Vector3<Real>[m_iVQuantity];
-    for (i = 0; i < m_iVQuantity; i++)
-    {
-        m_akVertex[i].X() = -(Real)1.0+fInvHalfRange*(akVertex[i].X()-fMin);
-        m_akVertex[i].Y() = -(Real)1.0+fInvHalfRange*(akVertex[i].Y()-fMin);
-        m_akVertex[i].Z() = -(Real)1.0+fInvHalfRange*(akVertex[i].Z()-fMin);
-    }
-
-    // Compute convex hull incrementally.  The first and second vertices in
-    // the hull are managed separately until at least one triangle is formed.
-    // At that point, a triangle mesh is used to store the hull.
-    m_iHullType = HULL_POINT;
-    m_kHullP.push_back(0);
-    for (i = 1; i < m_iVQuantity; i++)
-    {
-        switch ( m_iHullType )
+        const MTEdge& rkE = rkPoly.GetEdge(iE);
+        for (int i = 0; i < 2; i++)
         {
-        case HULL_POINT:
-            MergePoint(i);
-            break;
-        case HULL_LINEAR:
-            MergeLinear(i);
-            break;
-        case HULL_PLANAR:
-            MergePlanar(i);
-            break;
-        case HULL_SPATIAL:
-            MergeSpatial(i);
-            break;
+            m_akEdge[iE].m_aiVertex[i] = rkPoly.GetVLabel(rkE.GetVertex(i));
+            m_akEdge[iE].m_aiFace[i] = rkE.GetTriangle(i);
         }
     }
 
-    // map convex hull indices back to original ordering
-    if ( m_iHullType == HULL_SPATIAL )
+    int iTQuantity = rkPoly.GetTQuantity();
+    m_akFace.resize(iTQuantity);
+    for (int iT = 0; iT < iTQuantity; iT++)
     {
-        const ETManifoldMesh::TMap& rkTMap = m_kHullS.GetTriangles();
-        m_kHull.resize(3*rkTMap.size());
-        i = 0;
-        ETManifoldMesh::TMap::const_iterator pkTIter;
-        for (pkTIter = rkTMap.begin(); pkTIter != rkTMap.end(); pkTIter++)
+        m_akFace[iT].m_kPlane = rkPoly.GetPlane(iT);
+
+        const MTTriangle& rkT = rkPoly.GetTriangle(iT);
+        for (int i = 0; i < 3; i++)
+            m_akFace[iT].m_akEdge.insert(rkT.GetEdge(i));
+    }
+}
+//----------------------------------------------------------------------------
+template <class Real>
+int ConvexClipper<Real>::Clip (const Plane3<Real>& rkPlane)
+{
+    // compute signed distances from vertices to plane
+    int iPositive = 0, iNegative = 0;
+    for (int iV = 0; iV < (int)m_akVertex.size(); iV++)
+    {
+        Vertex& rkV = m_akVertex[iV];
+        if ( rkV.m_bVisible )
         {
-            const Triangle* pkTri = (const Triangle*)pkTIter->second;
-            for (int j = 0; j < 3; j++)
-                m_kHull[i++] = pkTri->V[j];
-        }
-    }
-    else
-    {
-        int iHQuantity = (int)m_kHullP.size();
-        m_kHull.resize(iHQuantity);
-
-        for (i = 0; i < iHQuantity; i++)
-            m_kHull[i] = m_kHullP[i];
-    }
-
-    m_kHullP.clear();
-    delete[] m_akVertex;
-    m_akVertex = NULL;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-ConvexHull3<Real>::~ConvexHull3 ()
-{
-    assert( m_akVertex == NULL );
-}
-//----------------------------------------------------------------------------
-template <class Real>
-int ConvexHull3<Real>::GetType () const
-{
-    return m_iHullType;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-const vector<int>& ConvexHull3<Real>::GetConnectivity () const
-{
-    return m_kHull;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull3<Real>::MergePoint (int iP)
-{
-    // hull is {Q0}
-    Vector3<Real> kDiff = m_akVertex[m_kHullP[0]] - m_akVertex[iP];
-    if ( kDiff.Length() > Math<Real>::EPSILON )
-    {
-        m_iHullType = HULL_LINEAR;
-        m_kHullP.push_back(iP);
-    }
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull3<Real>::MergeLinear (int iP)
-{
-    // hull is {Q0,Q1}
-    const Vector3<Real>& rkQ0 = m_akVertex[m_kHullP[0]];
-    const Vector3<Real>& rkQ1 = m_akVertex[m_kHullP[1]];
-    const Vector3<Real>& rkP = m_akVertex[iP];
-
-    // assert:  Q0 and Q1 are not collocated
-    Vector3<Real> kEdge1 = rkQ1 - rkQ0;
-    Vector3<Real> kEdge2 = rkP - rkQ0;
-    m_kNormal = kEdge1.Cross(kEdge2);
-    Real fLength = m_kNormal.Normalize();
-
-    if ( fLength > Math<Real>::EPSILON )
-    {
-        // <Q0,Q1,P> is a triangle, updated hull is {Q0,Q1,P}
-        m_iHullType = HULL_PLANAR;
-        m_kHullP.push_back(iP);
-        m_kOrigin = rkQ0;
-        return;
-    }
-
-    // P is on line of <Q0,Q1>
-    Real fE1dE2 = kEdge1.Dot(kEdge2);
-    if ( fE1dE2 < 0.0f )
-    {
-        // order is <P,Q0,Q1>, updated hull is {P,Q1}
-        m_kHullP[0] = iP;
-        return;
-    }
-
-    Real fE1dE1 = kEdge1.SquaredLength();
-    if ( fE1dE2 > fE1dE1 )
-    {
-        // order is <Q0,Q1,P>, updated hull is {Q0,P}
-        m_kHullP[1] = iP;
-        return;
-    }
-
-    // order is <Q0,P,Q1>, hull does not change
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull3<Real>::MergePlanar (int iP)
-{
-    // hull is convex polygon in plane m_kNormal.Dot(X - m_kOrigin) = 0
-    const Vector3<Real>& rkP = m_akVertex[iP];
-    Real fOrder = m_kNormal.Dot(rkP - m_kOrigin);
-    int i;
-    if ( Math<Real>::FAbs(fOrder) <= Math<Real>::EPSILON )
-    {
-        // order essentially zero
-        Vector3<Real>* pkQ0;
-        Vector3<Real>* pkQ1;
-        Vector3<Real> kEdge1, kEdge2;
-
-        // find an edge visible to P
-        int iSize = (int)m_kHullP.size(), iSizeM1 = iSize-1;
-        int iL, iU;
-        for (iL = iSizeM1, iU = 0; iU < iSize; iL = iU++)
-        {
-            pkQ0 = &m_akVertex[m_kHullP[iL]];
-            pkQ1 = &m_akVertex[m_kHullP[iU]];
-            kEdge1 = *pkQ1 - *pkQ0;
-            kEdge2 = rkP - *pkQ0;
-            fOrder = m_kNormal.Dot(kEdge1.UnitCross(kEdge2));
-            if ( fOrder < (Real)0.0 )
-                break;
-        }
-        if ( iU == iSize )
-        {
-            // P is inside the current hull
-            return;
-        }
-
-        // Edge <L,U> is visible to P.  Perform a breadth-first search to
-        // locate all remaining visible edges.
-
-        // find the upper index for visible edges
-        for (i = iU+1; i < iSize; iU = i++)
-        {
-            pkQ0 = &m_akVertex[m_kHullP[iU]];
-            pkQ1 = &m_akVertex[m_kHullP[i]];
-            kEdge1 = *pkQ1 - *pkQ0;
-            kEdge2 = rkP - *pkQ0;
-            fOrder = m_kNormal.Dot(kEdge1.UnitCross(kEdge2));
-            if ( fOrder >= (Real)0.0 )
-                break;
-        }
-
-        // If edge <size-1,0> was not visible, we had to search for the first
-        // visible edge in which case the lower index L is already correct.
-        // Thus, we only need to handle the case when L = size-1 and search
-        // for smaller indices to find the lower index.
-        if ( iL == iSizeM1 )
-        {
-            for (i = iL-1; i >= 0; iL = i--)
+            rkV.m_fDistance = rkPlane.DistanceTo(rkV.m_kPoint);
+            if ( rkV.m_fDistance >= m_fEpsilon )
             {
-                pkQ0 = &m_akVertex[m_kHullP[i]];
-                pkQ1 = &m_akVertex[m_kHullP[iL]];
-                kEdge1 = *pkQ1 - *pkQ0;
-                kEdge2 = rkP - *pkQ0;
-                fOrder = m_kNormal.Dot(kEdge1.UnitCross(kEdge2));
-                if ( fOrder >= (Real)0.0 )
-                    break;
+                iPositive++;
+            }
+            else if ( rkV.m_fDistance <= -m_fEpsilon )
+            {
+                iNegative++;
+                rkV.m_bVisible = false;
+            }
+            else
+            {
+                // The point is on the plane (within floating point
+                // tolerance).
+                rkV.m_fDistance = (Real)0.0;
+            }
+        }
+    }
+
+    if ( iPositive == 0 )
+    {
+        // mesh is in negative half-space, fully clipped
+        return Plane3<Real>::NEGATIVE_SIDE;
+    }
+
+    if ( iNegative == 0 )
+    {
+        // mesh is in positive half-space, fully visible
+        return Plane3<Real>::POSITIVE_SIDE;
+    }
+
+    // clip the visible edges
+    for (int iE = 0; iE < (int)m_akEdge.size(); iE++)
+    {
+        Edge& rkE = m_akEdge[iE];
+        if ( rkE.m_bVisible )
+        {
+            int iV0 = rkE.m_aiVertex[0], iV1 = rkE.m_aiVertex[1];
+            int iF0 = rkE.m_aiFace[0], iF1 = rkE.m_aiFace[1];
+            Face& rkF0 = m_akFace[iF0];
+            Face& rkF1 = m_akFace[iF1];
+            Real fD0 = m_akVertex[iV0].m_fDistance;
+            Real fD1 = m_akVertex[iV1].m_fDistance;
+
+            if ( fD0 <= (Real)0.0 && fD1 <= (Real)0.0 )
+            {
+                // The edge is culled.  If the edge is exactly on the clip
+                // plane, it is possible that a visible triangle shares it.
+                // The edge will be re-added during the face loop.
+                rkF0.m_akEdge.erase(iE);
+                if ( rkF0.m_akEdge.empty() )
+                    rkF0.m_bVisible = false;
+
+                rkF1.m_akEdge.erase(iE);
+                if ( rkF1.m_akEdge.empty() )
+                    rkF1.m_bVisible = false;
+
+                rkE.m_bVisible = false;
+                continue;
+            }
+
+            if ( fD0 >= (Real)0.0 && fD1 >= (Real)0.0 )
+            {
+                // face retains the edge
+                continue;
+            }
+
+            // The edge is split by the plane.  Compute the point of
+            // intersection.  If the old edge is <V0,V1> and I is the
+            // intersection point, the new edge is <V0,I> when d0 > 0 or
+            // <I,V1> when d1 > 0.
+            int iNV = (int)m_akVertex.size();
+            m_akVertex.push_back(Vertex());
+            Vertex& rkNV = m_akVertex[iNV];
+
+            Vector3<Real>& rkP0 = m_akVertex[iV0].m_kPoint;
+            Vector3<Real>& rkP1 = m_akVertex[iV1].m_kPoint;
+            rkNV.m_kPoint = rkP0+(fD0/(fD0-fD1))*(rkP1-rkP0);
+
+            if ( fD0 > (Real)0.0 )
+                rkE.m_aiVertex[1] = iNV;
+            else
+                rkE.m_aiVertex[0] = iNV;
+        }
+    }
+
+    // The mesh straddles the plane.  A new convex polygonal face will be
+    // generated.  Add it now and insert edges when they are visited.
+    int iNF = (int)m_akFace.size();
+    m_akFace.push_back(Face());
+    Face& rkNF = m_akFace[iNF];
+    rkNF.m_kPlane = rkPlane;
+
+    // process the faces
+    for (int iF = 0; iF < iNF; iF++)
+    {
+        Face& rkF = m_akFace[iF];
+        if ( rkF.m_bVisible )
+        {
+            // Determine if the face is on the negative side, the positive
+            // side, or split by the clipping plane.  The m_iOccurs members
+            // are set to zero to help find the end points of the polyline
+            // that results from clipping a face.
+            assert( rkF.m_akEdge.size() >= 2 );
+            set<int>::iterator pkIter = rkF.m_akEdge.begin();
+            while ( pkIter != rkF.m_akEdge.end() )
+            {
+                int iE = *pkIter++;
+                Edge& rkE = m_akEdge[iE];
+                assert( rkE.m_bVisible );
+                m_akVertex[rkE.m_aiVertex[0]].m_iOccurs = 0;
+                m_akVertex[rkE.m_aiVertex[1]].m_iOccurs = 0;
+            }
+
+            int iVStart, iVFinal;
+            if ( GetOpenPolyline(rkF,iVStart,iVFinal) )
+            {
+                // polyline is open, close it up
+                int iNE = (int)m_akEdge.size();
+                m_akEdge.push_back(Edge());
+                Edge& rkNE = m_akEdge[iNE];
+
+                rkNE.m_aiVertex[0] = iVStart;
+                rkNE.m_aiVertex[1] = iVFinal;
+                rkNE.m_aiFace[0] = iF;
+                rkNE.m_aiFace[1] = iNF;
+
+                // add new edge to polygons
+                rkF.m_akEdge.insert(iNE);
+                rkNF.m_akEdge.insert(iNE);
+            }
+        }
+    }
+
+    // Process face rkNF to make sure it is a simple polygon (theoretically
+    // convex, but numerically may be slightly not convex).  Floating point
+    // round-off errors can cause the new face from the last loop to be
+    // needle-like with a collapse of two edges into a single edge.  This
+    // block guarantees the invariant "face always a simple polygon".
+    PostProcess(iNF,rkNF);
+    int iESize = (int)rkNF.m_akEdge.size();
+    if ( iESize < 3 )
+    {
+        // face is completely degenerate, remove it from mesh
+        m_akFace.pop_back();
+    }
+
+    return Plane3<Real>::NO_SIDE;
+}
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexClipper<Real>::PostProcess (int iNF, Face& rkNF)
+{
+    int i = 0, iEQuantity = (int)rkNF.m_akEdge.size();
+    vector<EdgePlus> kEdges(iEQuantity);
+    set<int>::iterator pkIter = rkNF.m_akEdge.begin();
+    while ( pkIter != rkNF.m_akEdge.end() )
+    {
+        int iE = *pkIter++;
+        kEdges[i++] = EdgePlus(iE,m_akEdge[iE]);
+    }
+    assert( i == iEQuantity );
+
+    sort(kEdges.begin(),kEdges.end());
+
+    // process duplicate edges
+    for (int i0 = 0, i1 = 1; i1 < iEQuantity; i0 = i1++)
+    {
+        if ( kEdges[i0] == kEdges[i1] )
+        {
+            // found two equivalent edges (same vertex end points)
+#ifdef _DEBUG
+            int i2 = i1+1;
+            if ( i2 < iEQuantity )
+            {
+                // Make sure an edge occurs at most twice.  If not, then
+                // algorithm needs to be modified to handle it.
+                assert( kEdges[i1] != kEdges[i2] );
+            }
+#endif
+            // Edge E0 has vertices V0, V1 and faces F0, NF.  Edge E1 has
+            // vertices V0, V1 and faces F1, NF.
+            int iE0 = kEdges[i0].m_iE;
+            int iE1 = kEdges[i1].m_iE;
+            Edge& rkE0 = m_akEdge[iE0];
+            Edge& rkE1 = m_akEdge[iE1];
+
+            // remove E0 and E1 from NF
+            rkNF.m_akEdge.erase(iE0);
+            rkNF.m_akEdge.erase(iE1);
+
+            // remove NF from E0
+            if ( rkE0.m_aiFace[0] == iNF )
+            {
+                rkE0.m_aiFace[0] = rkE0.m_aiFace[1];
+            }
+            else
+            {
+                assert( rkE0.m_aiFace[1] == iNF );
+            }
+            rkE0.m_aiFace[1] = -1;
+
+            // remove NF from E1
+            if ( rkE1.m_aiFace[0] == iNF )
+            {
+                rkE1.m_aiFace[0] = rkE1.m_aiFace[1];
+            }
+            else
+            {
+                assert( rkE1.m_aiFace[1] == iNF );
+            }
+            rkE1.m_aiFace[1] = -1;
+
+            // E2 is being booted from the system.  Update the face F1 that
+            // shares it.  Update E1 to share F1.
+            int iF1 = rkE1.m_aiFace[0];
+            Face& rkF1 = m_akFace[iF1];
+            rkF1.m_akEdge.erase(iE1);
+            rkF1.m_akEdge.insert(iE0);
+            rkE0.m_aiFace[1] = iF1;
+            rkE1.m_bVisible = false;
+        }
+    }
+}
+//----------------------------------------------------------------------------
+template <class Real>
+bool ConvexClipper<Real>::GetOpenPolyline (Face& rkF, int& riVStart,
+    int& riVFinal)
+{
+    // count the number of occurrences of each vertex in the polyline
+    bool bOkay = true;
+    set<int>::iterator pkIter = rkF.m_akEdge.begin();
+    while ( pkIter != rkF.m_akEdge.end() )
+    {
+        int iE = *pkIter++;
+        Edge& rkE = m_akEdge[iE];
+
+        int iV0 = rkE.m_aiVertex[0];
+        m_akVertex[iV0].m_iOccurs++;
+        if ( m_akVertex[iV0].m_iOccurs > 2 )
+            bOkay = false;
+
+        int iV1 = rkE.m_aiVertex[1];
+        m_akVertex[iV1].m_iOccurs++;
+        if ( m_akVertex[iV1].m_iOccurs > 2 )
+            bOkay = false;
+    }
+
+    if ( !bOkay )
+    {
+#ifdef _DEBUG
+        // If you reach this block, there is a good chance that floating
+        // point round-off error had caused this face to be needle-like and
+        // what was theoretically a narrow V-shaped portion (a vertex shared
+        // by two edges forming a small angle) has collapsed into a single
+        // line segment.
+        //
+        // NOTE.  Once I added PostProcess, I have not gotten to this block.
+        ofstream kOStr("error.txt");
+        pkIter = rkF.m_akEdge.begin();
+        while ( pkIter != rkF.m_akEdge.end() )
+        {
+            int iE = *pkIter++;
+            Edge& rkE = m_akEdge[iE];
+            kOStr << "e<" << iE << "> = <" << rkE.m_aiVertex[0] << ","
+                  << rkE.m_aiVertex[1] << "|" << rkE.m_aiFace[0] << ","
+                  << rkE.m_aiFace[1] << "> ";
+            if ( rkE.m_bVisible )
+                kOStr << "T" << endl;
+            else
+                kOStr << "F" << endl;
+        }
+        kOStr.close();
+
+        assert( false );
+#else
+        return false;
+#endif
+    }
+
+    // determine if the polyline is open
+    pkIter = rkF.m_akEdge.begin();
+    riVStart = -1;
+    riVFinal = -1;
+    while ( pkIter != rkF.m_akEdge.end() )
+    {
+        int iE = *pkIter++;
+        Edge& rkE = m_akEdge[iE];
+
+        int iV0 = rkE.m_aiVertex[0];
+        if ( m_akVertex[iV0].m_iOccurs == 1 )
+        {
+            if ( riVStart == -1 )
+            {
+                riVStart = iV0;
+            }
+            else if ( riVFinal == -1 )
+            {
+                riVFinal = iV0;
+            }
+            else
+            {
+                // If you reach this assert, there is a good chance that the
+                // polyhedron is not convex.  To check this, use the function
+                // ValidateHalfSpaceProperty() on your polyhedron right after
+                // you construct it.
+                assert( false );
             }
         }
 
-        // assert( iU != iL );  the theory
-        if ( iU == iL )
+        int iV1 = rkE.m_aiVertex[1];
+        if ( m_akVertex[iV1].m_iOccurs == 1 )
         {
-            // Numerical round-off error causes you to get here.  P is
-            // inside the hull, so just return.
-            return;
+            if ( riVStart == -1 )
+            {
+                riVStart = iV1;
+            }
+            else if ( riVFinal == -1 )
+            {
+                riVFinal = iV1;
+            }
+            else
+            {
+                // If you reach this assert, there is a good chance that the
+                // polyhedron is not convex.  To check this, use the function
+                // ValidateHalfSpaceProperty() on your polyhedron right after
+                // you construct it.
+                assert( false );
+            }
         }
+    }
 
-        // construct the counterclockwise-ordered merged-hull vertices
-        vector<int> kTmpHull;
-        kTmpHull.push_back(iP);
-        while ( true )
+    assert( (riVStart == -1 && riVFinal == -1)
+        ||  (riVStart != -1 && riVFinal != -1) );
+
+    return riVStart != -1;
+}
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexClipper<Real>::OrderVertices (Face& rkF, vector<int>& aiVOrdered)
+{
+    // copy edge indices into contiguous memory
+    int i = 0, iQuantity = (int)rkF.m_akEdge.size();
+    vector<int> aiEOrdered(iQuantity);
+    set<int>::iterator pkIter = rkF.m_akEdge.begin();
+    while ( pkIter != rkF.m_akEdge.end() )
+        aiEOrdered[i++] = *pkIter++;
+
+    // bubble sort (yes, it is...)
+    for (int i0 = 0, i1 = 1, iChoice = 1; i1 < iQuantity-1; i0 = i1, i1++)
+    {
+        Edge& rkECurr = m_akEdge[aiEOrdered[i0]];
+        int j, iCurr = rkECurr.m_aiVertex[iChoice];
+        for (j = i1; j < iQuantity; j++)
         {
-            kTmpHull.push_back(m_kHullP[iU]);
-            if ( iU == iL )
+            Edge& rkETemp = m_akEdge[aiEOrdered[j]];
+            int iSave;
+            if ( rkETemp.m_aiVertex[0] == iCurr )
+            {
+                iSave = aiEOrdered[i1];
+                aiEOrdered[i1] = aiEOrdered[j];
+                aiEOrdered[j] = iSave;
+                iChoice = 1;
                 break;
-
-            if ( ++iU == iSize )
-                iU = 0;
+            }
+            if ( rkETemp.m_aiVertex[1] == iCurr )
+            {
+                iSave = aiEOrdered[i1];
+                aiEOrdered[i1] = aiEOrdered[j];
+                aiEOrdered[j] = iSave;
+                iChoice = 0;
+                break;
+            }
         }
-        assert( kTmpHull.size() > 2 );
-
-        m_kHullP = kTmpHull;
-        return;
+        assert( j < iQuantity );
     }
 
-    // Hull is about to become spatial.  The current planar hull is a convex
-    // polygon that must be tri-fanned to initialize the triangle mesh that
-    // represents the final hull.  The triangle order is required to be
-    // counterclockwise when viewed from outside the hull.  If the current
-    // planar hull has N vertices, the triangle fan has N-2 triangles and
-    // P forms N triangles with the planar hull edges, a total of 2*N-2
-    // triangles in the initial spatial hull.
-    m_iHullType = HULL_SPATIAL;
-
-    int iSize = (int)m_kHullP.size();
-    int iQ0 = m_kHullP[0];
-    int iQ1 = m_kHullP[1];
-    int iQ2;
-
-    if ( fOrder > Math<Real>::EPSILON )
+    aiVOrdered[0] = m_akEdge[aiEOrdered[0]].m_aiVertex[0];
+    aiVOrdered[1] = m_akEdge[aiEOrdered[0]].m_aiVertex[1];
+    for (i = 1; i < iQuantity; i++)
     {
-        // insert <P,Q[0],Q[1]>
-        InsertTriangle(iP,iQ0,iQ1);
-
-        for (i = 2; i < iSize; iQ1 = iQ2, i++)
-        {
-            // insert <Q[0],Q[i+1],Q[i]> and <P,Q[i],Q[i+1]>
-            iQ2 = m_kHullP[i];
-            InsertTriangle(iQ0,iQ2,iQ1);
-            InsertTriangle(iP,iQ1,iQ2);
-        }
-
-        // insert <P,Q[n-1],Q[0]>
-        InsertTriangle(iP,iQ1,iQ0);
-    }
-    else  // fOrder < -ms_fEpsilon
-    {
-        // insert <P,Q[1],Q[0]>
-        InsertTriangle(iP,iQ1,iQ0);
-
-        for (i = 2; i < iSize; iQ1 = iQ2, i++)
-        {
-            // insert <Q[0],Q[i],Q[i+1]> and <P,Q[i+1],Q[i]>
-            iQ2 = m_kHullP[i];
-            InsertTriangle(iQ0,iQ1,iQ2);
-            InsertTriangle(iP,iQ2,iQ1);
-        }
-
-        // insert <P,Q[0],Q[n-1]>
-        InsertTriangle(iP,iQ0,iQ1);
+        Edge& rkE = m_akEdge[aiEOrdered[i]];
+        if ( rkE.m_aiVertex[0] == aiVOrdered[i] )
+            aiVOrdered[i+1] = rkE.m_aiVertex[1];
+        else
+            aiVOrdered[i+1] = rkE.m_aiVertex[0];
     }
 }
 //----------------------------------------------------------------------------
 template <class Real>
-void ConvexHull3<Real>::MergeSpatial (int iP)
+void ConvexClipper<Real>::GetTriangles (vector<int>& raiConnect,
+    vector<Plane3<Real> >& rakPlane)
 {
-    // Find the triangle that is "most visible" to P.  Just finding the first
-    // visible triangle is not sufficient when floating point round-off errors
-    // are present.  The most visible triangle is used to start a
-    // breadth-first for the connected mesh of triangles that are visible
-    // to P.
-    Vector3<Real> kDiff;
-    Real fOrder, fMaxOrder = (Real)0.0;
-    const Triangle* pkTri;
-    const Triangle* pkMaxTri = NULL;
-    const ETManifoldMesh::TMap& rkTMap = m_kHullS.GetTriangles();
-    ETManifoldMesh::TMap::const_iterator pkTIter;
-    for (pkTIter = rkTMap.begin(); pkTIter != rkTMap.end(); pkTIter++)
+    for (int iF = 0; iF < (int)m_akFace.size(); iF++)
     {
-        pkTri = (const Triangle*)pkTIter->second;
-        kDiff = m_akVertex[iP] - m_akVertex[pkTri->V[0]];
-        kDiff.Normalize();
-        fOrder = pkTri->Normal.Dot(kDiff);
-        if ( fOrder > fMaxOrder )
+        Face& rkF = m_akFace[iF];
+        if ( rkF.m_bVisible )
         {
-            // triangle is visible to P
-            fMaxOrder = fOrder;
-            pkMaxTri = pkTri;
-        }
-    }
+            int iQuantity = (int)rkF.m_akEdge.size();
+            assert( iQuantity >= 3 );
+            vector<int> aiOrdered(iQuantity+1);
+            OrderVertices(rkF,aiOrdered);
 
-    if ( !pkMaxTri || fMaxOrder < Math<Real>::EPSILON )
-    {
-        // P is inside the current hull
-        return;
-    }
-
-    // Triangle pkMinTri is visible to P.  Perform a breadth-first search to
-    // locate all remaining visible triangles.
-    set<const Triangle*> kInterior, kBoundary;
-    kInterior.insert(pkMaxTri);
-    const Triangle* pkAdj;
-    int i;
-    for (i = 0; i < 3; i++)
-    {
-        pkAdj = (const Triangle*)pkMaxTri->T[i];
-        assert( pkAdj );
-        kBoundary.insert(pkAdj);
-    }
-
-    typename set<const Triangle*>::iterator pkIter;
-    while ( kBoundary.size() > 0 )
-    {
-        set<const Triangle*> kExterior;
-
-        // process boundary triangles
-        for (pkIter = kBoundary.begin(); pkIter != kBoundary.end(); pkIter++)
-        {
-            // current boundary triangle to process
-            pkTri = (const Triangle*)*pkIter;
-            kDiff = m_akVertex[iP] - m_akVertex[pkTri->V[0]];
-            kDiff.Normalize();
-            fOrder = pkTri->Normal.Dot(kDiff);
-            if ( fOrder > (Real)0.0 )
+            int iV0 = aiOrdered[0], iV2 = aiOrdered[iQuantity-1];
+            int iV1 = aiOrdered[(iQuantity-1) >> 1];
+            Vector3<Real> kD1 = m_akVertex[iV1].m_kPoint -
+                m_akVertex[iV0].m_kPoint;
+            Vector3<Real> kD2 = m_akVertex[iV2].m_kPoint -
+                m_akVertex[iV0].m_kPoint;
+            Real fTSP = rkF.m_kPlane.GetNormal().Dot(kD1.Cross(kD2));
+            if ( fTSP > (Real)0.0 )
             {
-                // triangle is visible to P
-                kInterior.insert(pkTri);
-
-                // locate adjacent, exterior triangles for later processing
-                for (i = 0; i < 3; i++)
+                // clockwise, need to swap
+                for (int i = 1; i+1 < iQuantity; i++)
                 {
-                    pkAdj = (const Triangle*)pkTri->T[i];
-                    assert( pkAdj );
-                    if ( kInterior.find(pkAdj) == kInterior.end()
-                    &&   kBoundary.find(pkAdj) == kBoundary.end() )
-                    {
-                        kExterior.insert(pkAdj);
-                    }
+                    raiConnect.push_back(iV0);
+                    raiConnect.push_back(aiOrdered[i+1]);
+                    raiConnect.push_back(aiOrdered[i]);
+                    rakPlane.push_back(rkF.m_kPlane);
+                }
+            }
+            else
+            {
+                // counterclockwise
+                for (int i = 1; i+1 < iQuantity; i++)
+                {
+                    raiConnect.push_back(iV0);
+                    raiConnect.push_back(aiOrdered[i]);
+                    raiConnect.push_back(aiOrdered[i+1]);
+                    rakPlane.push_back(rkF.m_kPlane);
                 }
             }
         }
-
-        // exterior triangles are next in line to be processed
-        kBoundary = kExterior;
     }
-
-    // locate the terminator edges
-    map<int,int> kTerminator;
-    int iV0, iV1;
-    for (pkIter = kInterior.begin(); pkIter != kInterior.end(); pkIter++)
+}
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexClipper<Real>::Convert (ConvexPolyhedron3<Real>& rkPoly)
+{
+    // get visible vertices
+    int iVQuantity = (int)m_akVertex.size();
+    vector<Vector3<Real> > akPoint;
+    int* aiVMap = new int[iVQuantity];
+    memset(aiVMap,0xFF,iVQuantity*sizeof(int));
+    for (int iV = 0; iV < iVQuantity; iV++)
     {
-        // get a visible triangle
-        pkTri = (const Triangle*)*pkIter;
-
-        // If an adjacent triangle is not visible, then the shared edge is a
-        // terminator edge.
-        for (i = 0; i < 3; i++)
+        const Vertex& rkV = m_akVertex[iV];
+        if ( rkV.m_bVisible )
         {
-            pkAdj = (const Triangle*)pkTri->T[i];
-            assert( pkAdj );
-            if ( kInterior.find(pkAdj) == kInterior.end() )
-            {
-                // adjacent triangle is not visible
-                iV0 = pkTri->V[i];
-                iV1 = pkTri->V[(i+1)%3];
-                kTerminator[iV0] = iV1;
-            }
+            aiVMap[iV] = (int)akPoint.size();
+            akPoint.push_back(rkV.m_kPoint);
         }
     }
 
-    // remove the visible triangles
-    for (pkIter = kInterior.begin(); pkIter != kInterior.end(); pkIter++)
+    vector<int> aiConnect;
+    vector<Plane3<Real> > akPlane;
+    GetTriangles(aiConnect,akPlane);
+
+    // re-order
+    int iNewVQuantity = (int)akPoint.size();
+    for (int iC = 0; iC < (int)aiConnect.size(); iC++)
     {
-        pkTri = (const Triangle*)*pkIter;
-        bool bRemoved = m_kHullS.RemoveTriangle(pkTri->V[0],pkTri->V[1],
-            pkTri->V[2]);
-        assert( bRemoved );
+        int iOldC = aiConnect[iC];
+        assert( 0 <= iOldC && iOldC < iVQuantity );
+        int iNewC = aiVMap[iOldC];
+        assert( 0 <= iNewC && iNewC < iNewVQuantity );
+        aiConnect[iC] = iNewC;
     }
 
-    // add new triangles formed by P and terminator edges
-    int iSize = (int)kTerminator.size();
-    assert( iSize >= 3 );
-    map<int,int>::iterator pkE = kTerminator.begin();
-    int iVStart = pkE->first;
-    iV0 = iVStart;
-    for (i = 0; i < iSize; i++)
-    {
-        iV1 = pkE->second;
+    delete[] aiVMap;
 
-        // insert <P,V0,V1>
-        InsertTriangle(iP,iV0,iV1);
-
-        pkE = kTerminator.find(iV1);
-        assert( pkE != kTerminator.end() );
-        iV0 = iV1;
-    }
-    assert( iV0 == iVStart );
+    rkPoly.Create(akPoint,aiConnect,akPlane);
 }
 //----------------------------------------------------------------------------
 template <class Real>
-void ConvexHull3<Real>::InsertTriangle (int iV0, int iV1, int iV2)
+bool ConvexClipper<Real>::Print (const char* acFilename) const
 {
-    Triangle* pkTri = (Triangle*) m_kHullS.InsertTriangle(iV0,iV1,iV2);
-    assert( pkTri );
+    ofstream kOStr(acFilename);
+    if ( !kOStr )
+        return false;
 
-    const Vector3<Real>& rkV0 = m_akVertex[iV0];
-    const Vector3<Real>& rkV1 = m_akVertex[iV1];
-    const Vector3<Real>& rkV2 = m_akVertex[iV2];
-    Vector3<Real> kE1 = rkV1 - rkV0, kE2 = rkV2 - rkV0;
-    pkTri->Normal = kE1.UnitCross(kE2);
-}
-//----------------------------------------------------------------------------
-template <class Real>
-ETManifoldMesh::Triangle* ConvexHull3<Real>::CreateTriangle (int iV0, int iV1,
-    int iV2)
-{
-    return new Triangle(iV0,iV1,iV2);
+    int iVQuantity = (int)m_akVertex.size();
+    int iEQuantity = (int)m_akEdge.size();
+    int iFQuantity = (int)m_akFace.size();
+    int iVDigits = (int)(ceil(log10((double)iVQuantity)));
+    int iEDigits = (int)(ceil(log10((double)iEQuantity)));
+    int iFDigits = (int)(ceil(log10((double)iFQuantity)));
+    char acMsg[1024];
+
+    kOStr << iVQuantity << " vertices" << endl;
+    for (int iV = 0; iV < iVQuantity; iV++)
+    {
+        const Vertex& rkV = m_akVertex[iV];
+        sprintf(acMsg,"v<%*d> %c: (%f,%f,%f)",
+            iVDigits,iV,(rkV.m_bVisible ? 'T' : 'F'),
+            rkV.m_kPoint.X(),
+            rkV.m_kPoint.Y(),
+            rkV.m_kPoint.Z());
+        kOStr << acMsg << endl;
+    }
+    kOStr << endl;
+
+    kOStr << iEQuantity << " edges" << endl;
+    for (int iE = 0; iE < iEQuantity; iE++)
+    {
+        const Edge& rkE = m_akEdge[iE];
+        sprintf(acMsg,"e<%*d> %c: v[%*d,%*d], t[%*d,%*d]",
+            iEDigits,iE,(rkE.m_bVisible ? 'T' : 'F'),
+            iVDigits,rkE.m_aiVertex[0],
+            iVDigits,rkE.m_aiVertex[1],
+            iFDigits,rkE.m_aiFace[0],
+            iFDigits,rkE.m_aiFace[1]);
+        kOStr << acMsg << endl;
+    }
+    kOStr << endl;
+
+    kOStr << iFQuantity << " faces" << endl;
+    for (int iF = 0; iF < iFQuantity; iF++)
+    {
+        const Face& rkF = m_akFace[iF];
+        sprintf(acMsg,"t<%*d> %d: e = ",
+            iFDigits,iF,(rkF.m_bVisible ? 'T' : 'F'));
+        kOStr << acMsg;
+
+        set<int>::const_iterator pkIter = rkF.m_akEdge.begin();
+        while ( pkIter != rkF.m_akEdge.end() )
+        {
+            kOStr << *pkIter << ' ';
+            pkIter++;
+        }
+        kOStr << endl;
+    }
+
+    return true;
 }
 //----------------------------------------------------------------------------
 
@@ -486,7 +613,7 @@ ETManifoldMesh::Triangle* ConvexHull3<Real>::CreateTriangle (int iV0, int iV1,
 //----------------------------------------------------------------------------
 namespace Wml
 {
-template class WML_ITEM ConvexHull3<float>;
-template class WML_ITEM ConvexHull3<double>;
+template class WML_ITEM ConvexClipper<float>;
+template class WML_ITEM ConvexClipper<double>;
 }
 //----------------------------------------------------------------------------

@@ -1,7 +1,7 @@
-// from server: 79% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /Od /Ob1 /GS- /MT
+// roc-cl: 21022
+// roc-flags: /Od /Ob0 /GS- /MD
 // roc-lib: wildmagic-2-core Geometry/WmlConvexClipper.cpp
 
 // Candidate translation unit (score above; library headers required).

@@ -1,8 +1,7 @@
-// from server: 97% by colin
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2-vc8 Source/CommandBars/XTPPopupBar.cpp
+// roc-lib: xtp-11.2.2-vc8-shared-mfc Source/CommandBars/XTPPopupBar.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPPopupBar.cpp : implementation of the CXTPPopupBar class.

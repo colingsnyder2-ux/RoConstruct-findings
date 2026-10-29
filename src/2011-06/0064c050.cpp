@@ -1,326 +1,182 @@
-// from server: 85% by colin
+// roc 2011-06 0064c050  unit: RBX::GameBasicSettings  size: 505 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 0064c050
+//
+// 0064c050  64a100000000         mov eax, dword ptr fs:[0]
+// 0064c056  6aff                 push -1
+// 0064c058  68221b9d00           push 0x9d1b22
+// 0064c05d  50                   push eax
+// 0064c05e  64892500000000       mov dword ptr fs:[0], esp
+// 0064c065  83ec44               sub esp, 0x44
+// 0064c068  57                   push edi
+// 0064c069  8bf9                 mov edi, ecx
+// 0064c06b  817f08cbcccc0c       cmp dword ptr [edi + 8], 0xccccccb
+// 0064c072  7259                 jb 0x64c0cd
+// 0064c074  683cb6a500           push 0xa5b63c
+// 0064c079  8d4c2408             lea ecx, [esp + 8]
+// 0064c07d  ff15c404a400         call dword ptr [0xa404c4]
+// 0064c083  8d4c2420             lea ecx, [esp + 0x20]
+// 0064c087  c744245000000000     mov dword ptr [esp + 0x50], 0
+// 0064c08f  ff15600aa400         call dword ptr [0xa40a60]
+// 0064c095  8d442404             lea eax, [esp + 4]
+// 0064c099  50                   push eax
+// 0064c09a  8d4c2430             lea ecx, [esp + 0x30]
+// 0064c09e  c644245401           mov byte ptr [esp + 0x54], 1
+// 0064c0a3  c7442424c0b5a500     mov dword ptr [esp + 0x24], 0xa5b5c0
+// 0064c0ab  ff15c804a400         call dword ptr [0xa404c8]
+// 0064c0b1  687073b800           push 0xb87370
+// 0064c0b6  8d4c2424             lea ecx, [esp + 0x24]
+// 0064c0ba  51                   push ecx
+// 0064c0bb  c644245800           mov byte ptr [esp + 0x58], 0
+// 0064c0c0  c7442428ccb5a500     mov dword ptr [esp + 0x28], 0xa5b5cc
+// 0064c0c8  e8dfef1b00           call 0x80b0ac
+// 0064c0cd  8b542464             mov edx, dword ptr [esp + 0x64]
+// 0064c0d1  8b4704               mov eax, dword ptr [edi + 4]
+// 0064c0d4  53                   push ebx
+// 0064c0d5  55                   push ebp
+// 0064c0d6  56                   push esi
+// 0064c0d7  8b74246c             mov esi, dword ptr [esp + 0x6c]
+// 0064c0db  6a00                 push 0
+// 0064c0dd  52                   push edx
+// 0064c0de  50                   push eax
+// 0064c0df  56                   push esi
+// 0064c0e0  50                   push eax
+// 0064c0e1  e8caf9ffff           call 0x64bab0
+// 0064c0e6  8be8                 mov ebp, eax
+// 0064c0e8  8b4704               mov eax, dword ptr [edi + 4]
+// 0064c0eb  bb01000000           mov ebx, 1
+// 0064c0f0  015f08               add dword ptr [edi + 8], ebx
+// 0064c0f3  3bf0                 cmp esi, eax
+// 0064c0f5  7510                 jne 0x64c107
+// 0064c0f7  896804               mov dword ptr [eax + 4], ebp
+// 0064c0fa  8b4704               mov eax, dword ptr [edi + 4]
+// 0064c0fd  8928                 mov dword ptr [eax], ebp
+// 0064c0ff  8b4f04               mov ecx, dword ptr [edi + 4]
+// 0064c102  896908               mov dword ptr [ecx + 8], ebp
+// 0064c105  eb22                 jmp 0x64c129
+// 0064c107  807c246800           cmp byte ptr [esp + 0x68], 0
+// 0064c10c  740d                 je 0x64c11b
+// 0064c10e  892e                 mov dword ptr [esi], ebp
+// 0064c110  8b4704               mov eax, dword ptr [edi + 4]
+// 0064c113  3b30                 cmp esi, dword ptr [eax]
+// 0064c115  7512                 jne 0x64c129
+// 0064c117  8928                 mov dword ptr [eax], ebp
+// 0064c119  eb0e                 jmp 0x64c129
+// 0064c11b  896e08               mov dword ptr [esi + 8], ebp
+// 0064c11e  8b4704               mov eax, dword ptr [edi + 4]
+// 0064c121  3b7008               cmp esi, dword ptr [eax + 8]
+// 0064c124  7503                 jne 0x64c129
+// 0064c126  896808               mov dword ptr [eax + 8], ebp
+// 0064c129  8b5504               mov edx, dword ptr [ebp + 4]
+// 0064c12c  807a2000             cmp byte ptr [edx + 0x20], 0
+// 0064c130  8d4504               lea eax, [ebp + 4]
+// 0064c133  8bf5                 mov esi, ebp
+// 0064c135  0f85ea000000         jne 0x64c225
+// 0064c13b  eb03                 jmp 0x64c140
+// 0064c13d  8d4900               lea ecx, [ecx]
+// 0064c140  8b08                 mov ecx, dword ptr [eax]
+// 0064c142  8b5104               mov edx, dword ptr [ecx + 4]
+// 0064c145  3b0a                 cmp ecx, dword ptr [edx]
+// 0064c147  7551                 jne 0x64c19a
+// 0064c149  8b5208               mov edx, dword ptr [edx + 8]
+// 0064c14c  807a2000             cmp byte ptr [edx + 0x20], 0
+// 0064c150  7519                 jne 0x64c16b
+// 0064c152  885920               mov byte ptr [ecx + 0x20], bl
+// 0064c155  885a20               mov byte ptr [edx + 0x20], bl
+// 0064c158  8b10                 mov edx, dword ptr [eax]
+// 0064c15a  8b4a04               mov ecx, dword ptr [edx + 4]
+// 0064c15d  c6412000             mov byte ptr [ecx + 0x20], 0
+// 0064c161  8b10                 mov edx, dword ptr [eax]
+// 0064c163  8b7204               mov esi, dword ptr [edx + 4]
+// 0064c166  e9aa000000           jmp 0x64c215
+// 0064c16b  3b7108               cmp esi, dword ptr [ecx + 8]
+// 0064c16e  750a                 jne 0x64c17a
+// 0064c170  8bf1                 mov esi, ecx
+// 0064c172  56                   push esi
+// 0064c173  8bcf                 mov ecx, edi
+// 0064c175  e81686dfff           call 0x444790
+// 0064c17a  8b4604               mov eax, dword ptr [esi + 4]
+// 0064c17d  885820               mov byte ptr [eax + 0x20], bl
+// 0064c180  8b4e04               mov ecx, dword ptr [esi + 4]
+// 0064c183  8b5104               mov edx, dword ptr [ecx + 4]
+// 0064c186  c6422000             mov byte ptr [edx + 0x20], 0
+// 0064c18a  8b4604               mov eax, dword ptr [esi + 4]
+// 0064c18d  8b4804               mov ecx, dword ptr [eax + 4]
+// 0064c190  51                   push ecx
+// 0064c191  8bcf                 mov ecx, edi
+// 0064c193  e808f8ffff           call 0x64b9a0
+// 0064c198  eb7b                 jmp 0x64c215
+// 0064c19a  8b12                 mov edx, dword ptr [edx]
+// 0064c19c  807a2000             cmp byte ptr [edx + 0x20], 0
+// 0064c1a0  7516                 jne 0x64c1b8
+// 0064c1a2  885920               mov byte ptr [ecx + 0x20], bl
+// 0064c1a5  885a20               mov byte ptr [edx + 0x20], bl
+// 0064c1a8  8b10                 mov edx, dword ptr [eax]
+// 0064c1aa  8b4a04               mov ecx, dword ptr [edx + 4]
+// 0064c1ad  c6412000             mov byte ptr [ecx + 0x20], 0
+// 0064c1b1  8b10                 mov edx, dword ptr [eax]
+// 0064c1b3  8b7204               mov esi, dword ptr [edx + 4]
+// 0064c1b6  eb5d                 jmp 0x64c215
+// 0064c1b8  3b31                 cmp esi, dword ptr [ecx]
+// 0064c1ba  750a                 jne 0x64c1c6
+// 0064c1bc  8bf1                 mov esi, ecx
+// 0064c1be  56                   push esi
+// 0064c1bf  8bcf                 mov ecx, edi
+// 0064c1c1  e8daf7ffff           call 0x64b9a0
+// 0064c1c6  8b4604               mov eax, dword ptr [esi + 4]
+// 0064c1c9  885820               mov byte ptr [eax + 0x20], bl
+// 0064c1cc  8b4e04               mov ecx, dword ptr [esi + 4]
+// 0064c1cf  8b5104               mov edx, dword ptr [ecx + 4]
+// 0064c1d2  c6422000             mov byte ptr [edx + 0x20], 0
+// 0064c1d6  8b4604               mov eax, dword ptr [esi + 4]
+// 0064c1d9  8b4004               mov eax, dword ptr [eax + 4]
+// 0064c1dc  8b4808               mov ecx, dword ptr [eax + 8]
+// 0064c1df  8b11                 mov edx, dword ptr [ecx]
+// 0064c1e1  895008               mov dword ptr [eax + 8], edx
+// 0064c1e4  8b11                 mov edx, dword ptr [ecx]
+// 0064c1e6  807a2100             cmp byte ptr [edx + 0x21], 0
+// 0064c1ea  7503                 jne 0x64c1ef
+// 0064c1ec  894204               mov dword ptr [edx + 4], eax
+// 0064c1ef  8b5004               mov edx, dword ptr [eax + 4]
+// 0064c1f2  895104               mov dword ptr [ecx + 4], edx
+// 0064c1f5  8b5704               mov edx, dword ptr [edi + 4]
+// 0064c1f8  3b4204               cmp eax, dword ptr [edx + 4]
+// 0064c1fb  7505                 jne 0x64c202
+// 0064c1fd  894a04               mov dword ptr [edx + 4], ecx
+// 0064c200  eb0e                 jmp 0x64c210
+// 0064c202  8b5004               mov edx, dword ptr [eax + 4]
+// 0064c205  3b02                 cmp eax, dword ptr [edx]
+// 0064c207  7504                 jne 0x64c20d
+// 0064c209  890a                 mov dword ptr [edx], ecx
+// 0064c20b  eb03                 jmp 0x64c210
+// 0064c20d  894a08               mov dword ptr [edx + 8], ecx
+// 0064c210  8901                 mov dword ptr [ecx], eax
+// 0064c212  894804               mov dword ptr [eax + 4], ecx
+// 0064c215  8b4e04               mov ecx, dword ptr [esi + 4]
+// 0064c218  80792000             cmp byte ptr [ecx + 0x20], 0
+// 0064c21c  8d4604               lea eax, [esi + 4]
+// 0064c21f  0f841bffffff         je 0x64c140
+// 0064c225  8b5704               mov edx, dword ptr [edi + 4]
+// 0064c228  8b4204               mov eax, dword ptr [edx + 4]
+// 0064c22b  8b4c2454             mov ecx, dword ptr [esp + 0x54]
+// 0064c22f  885820               mov byte ptr [eax + 0x20], bl
+// 0064c232  8b442464             mov eax, dword ptr [esp + 0x64]
+// 0064c236  5e                   pop esi
+// 0064c237  8928                 mov dword ptr [eax], ebp
+// 0064c239  5d                   pop ebp
+// 0064c23a  5b                   pop ebx
+// 0064c23b  5f                   pop edi
+// 0064c23c  64890d00000000       mov dword ptr fs:[0], ecx
+// 0064c243  83c450               add esp, 0x50
+// 0064c246  c21000               ret 0x10
+// copied from an identical function in another client (function ?_Insert@?$_Tree@V?$_Tmap_traits@HUValue16@@U?$less@H@std@@V?$allocator@U?$pair@$$CBHUValue16@@@std@@@3@$0A@@std@@@std@@IAE?AViterator@12@_NPAU_Node@?$_Tree_nod@V?$_Tmap_traits@HUValue16@@U?$less@H@std@@V?$allocator@U?$pair@$$CBHUValue16@@@std@@@3@$0A@@std@@@2@ABU?$pair@$$CBHUValue16@@@2@@Z)
+
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/BrickColor.cpp
+#define _SECURE_SCL 0
+#include <map>
 
-// Candidate translation unit (score above; library headers required).
-#include "v8datamodel/BrickColor.h"
-
-namespace RBX
-{
-	void BrickColor::BrickMap::insert(Number number, unsigned char r, unsigned char g, unsigned char b, std::string name)
-	{
-		G3D::Color4uint8 c;
-		c.r = r;
-		c.g = g;
-		c.b = b;
-
-		allColors.push_back(BrickColor(number));
-
-		map1.insert(std::pair<Number, G3D::Color4uint8>(number, c));
-
-		G3D::Color4 color4 = G3D::Color4(c);
-		map2.insert(std::pair<Number, G3D::Color4>(number, color4));
-
-		map3.insert(std::pair<Number, std::string>(number, name));
-	}
-
-	void BrickColor::BrickMap::insertPaletteItem(Number number)
-	{
-		colorPalette.push_back(BrickColor(number));
-	}
-
-	void BrickColor::BrickMap::generatePaletteMap(Number number)
-	{
-		float closestDistance = 10000.0f;
-		int match = 0;
-		G3D::Color4 color = map2[number];
-
-		std::vector<BrickColor>::iterator iter = colorPalette.begin();
-		std::vector<BrickColor>::iterator end = colorPalette.end();
-
-		for (; iter != end; iter++)
-		{
-			if (iter->number == number)
-			{
-				match = std::distance(colorPalette.begin(), iter);
-				break;
-			}
-
-			G3D::Color3 paletteColor = map2[iter->number];
-
-			float distance = fabs(color.r - paletteColor.r);
-			distance += fabs(color.g - paletteColor.g);
-			distance += fabs(color.b - paletteColor.b);
-
-			if (distance < closestDistance)
-			{
-				match = std::distance(colorPalette.begin(), iter);
-				if (distance == 0.0f)
-					break;
-				closestDistance = distance;
-			}
-		}
-
-		paletteMap[number] = match;
-	}
-
-	void BrickColor::BrickMap::generatePaletteMap()
-	{
-		std::vector<BrickColor>::iterator iter = allColors.begin();
-		std::vector<BrickColor>::iterator end = allColors.end();
-
-		for (; iter != end; iter++)
-		{
-			generatePaletteMap(iter->number);
-		}
-	}
-
-	BrickColor::BrickMap::BrickMap()
-	{
-		insert(lego_1, 242, 243, 242, "White");
-		insert(lego_2, 161, 165, 162, "Grey");
-		insert(lego_3, 249, 233, 153, "Light yellow");
-		insert(lego_5, 215, 197, 153, "Brick yellow");
-		insert(lego_6, 194, 218, 184, "Light green (Mint)");
-		insert(lego_9, 232, 186, 199, "Light reddish violet");
-		insert(lego_11, 128, 187, 219, "Pastel Blue");
-		insert(lego_12, 203, 132, 66, "Light orange brown");
-		insert(lego_18, 204, 142, 104, "Nougat");
-		insert(lego_21, 196, 40, 27, "Bright red");
-		insert(lego_22, 196, 112, 160, "Med. reddish violet");
-		insert(lego_23, 13, 105, 171, "Bright blue");
-		insert(lego_24, 245, 205, 47, "Bright yellow");
-		insert(lego_25, 98, 71, 50, "Earth orange");
-		insert(lego_26, 27, 42, 52, "Black");
-		insert(lego_27, 109, 110, 108, "Dark grey");
-		insert(lego_28, 40, 127, 70, "Dark green");
-		insert(lego_29, 161, 196, 139, "Medium green");
-		insert(lego_36, 243, 207, 155, "Lig. Yellowich orange");
-		insert(lego_37, 75, 151, 74, "Bright green");
-		insert(lego_38, 160, 95, 52, "Dark orange");
-		insert(lego_39, 193, 202, 222, "Light bluish violet");
-		insert(lego_40, 236, 236, 236, "Transparent");
-		insert(lego_41, 205, 84, 75, "Tr. Red");
-		insert(lego_42, 193, 223, 240, "Tr. Lg blue");
-		insert(lego_43, 123, 182, 232, "Tr. Blue");
-		insert(lego_44, 247, 241, 141, "Tr. Yellow");
-		insert(lego_45, 180, 210, 227, "Light blue");
-		insert(lego_47, 217, 133, 108, "Tr. Flu. Reddish orange");
-		insert(lego_48, 132, 182, 141, "Tr. Green");
-		insert(lego_49, 248, 241, 132, "Tr. Flu. Green");
-		insert(lego_50, 236, 232, 222, "Phosph. White");
-		insert(lego_100, 238, 196, 182, "Light red");
-		insert(lego_101, 218, 134, 121, "Medium red");
-		insert(lego_102, 110, 153, 201, "Medium blue");
-		insert(lego_103, 199, 193, 183, "Light grey");
-		insert(lego_104, 107, 50, 123, "Bright violet");
-		insert(lego_105, 226, 155, 63, "Br. yellowish orange");
-		insert(lego_106, 218, 133, 64, "Bright orange");
-		insert(lego_107, 0, 143, 155, "Bright bluish green");
-		insert(lego_108, 104, 92, 67, "Earth yellow");
-		insert(lego_110, 67, 84, 147, "Bright bluish violet");
-		insert(lego_111, 191, 183, 177, "Tr. Brown");
-		insert(lego_112, 104, 116, 172, "Medium bluish violet");
-		insert(lego_113, 228, 173, 200, "Tr. Medi. reddish violet");
-		insert(lego_115, 199, 210, 60, "Med. yellowish green");
-		insert(lego_116, 85, 165, 175, "Med. bluish green");
-		insert(lego_118, 183, 215, 213, "Light bluish green");
-		insert(lego_119, 164, 189, 70, "Br. yellowish green");
-		insert(lego_120, 217, 228, 167, "Lig. yellowish green");
-		insert(lego_121, 231, 172, 88, "Med. yellowish orange");
-		insert(lego_123, 211, 111, 76, "Br. reddish orange");
-		insert(lego_124, 146, 57, 120, "Bright reddish violet");
-		insert(lego_125, 234, 184, 145, "Light orange");
-		insert(lego_126, 165, 165, 203, "Tr. Bright bluish violet");
-		insert(lego_127, 220, 188, 129, "Gold");
-		insert(lego_128, 174, 122, 89, "Dark nougat");
-		insert(lego_131, 156, 163, 168, "Silver");
-		insert(lego_133, 213, 115, 61, "Neon orange");
-		insert(lego_134, 216, 221, 86, "Neon green");
-		insert(lego_135, 116, 134, 156, "Sand blue");
-		insert(lego_136, 135, 124, 144, "Sand violet");
-		insert(lego_137, 224, 152, 100, "Medium orange");
-		insert(lego_138, 149, 138, 115, "Sand yellow");
-		insert(lego_140, 32, 58, 86, "Earth blue");
-		insert(lego_141, 39, 70, 44, "Earth green");
-		insert(lego_143, 207, 226, 247, "Tr. Flu. Blue");
-		insert(lego_145, 121, 136, 161, "Sand blue metallic");
-		insert(lego_146, 149, 142, 163, "Sand violet metallic");
-		insert(lego_147, 147, 135, 103, "Sand yellow metallic");
-		insert(lego_148, 87, 88, 87, "Dark grey metallic");
-		insert(lego_149, 22, 29, 50, "Black metallic");
-		insert(lego_150, 171, 173, 172, "Light grey metallic");
-		insert(lego_151, 120, 144, 129, "Sand green");
-		insert(lego_153, 149, 121, 118, "Sand red");
-		insert(lego_154, 123, 46, 47, "Dark red");
-		insert(lego_157, 255, 246, 123, "Tr. Flu. Yellow");
-		insert(lego_158, 225, 164, 194, "Tr. Flu. Red");
-		insert(lego_168, 117, 108, 98, "Gun metallic");
-		insert(lego_176, 151, 105, 91, "Red flip/flop");
-		insert(lego_178, 180, 132, 85, "Yellow flip/flop");
-		insert(lego_179, 137, 135, 136, "Silver flip/flop");
-		insert(lego_180, 215, 169, 75, "Curry");
-		insert(lego_190, 249, 214, 46, "Fire Yellow");
-		insert(lego_191, 232, 171, 45, "Flame yellowish orange");
-		insert(lego_192, 105, 64, 39, "Reddish brown");
-		insert(lego_193, 207, 96, 36, "Flame reddish orange");
-		insert(lego_194, 163, 162, 164, "Medium stone grey");
-		insert(lego_195, 70, 103, 164, "Royal blue");
-		insert(lego_196, 35, 71, 139, "Dark Royal blue");
-		insert(lego_198, 142, 66, 133, "Bright reddish lilac");
-		insert(lego_199, 99, 95, 97, "Dark stone grey");
-		insert(lego_200, 130, 138, 93, "Lemon metalic");
-		insert(lego_208, 229, 228, 222, "Light stone grey");
-		insert(lego_209, 176, 142, 68, "Dark Curry");
-		insert(lego_210, 112, 149, 120, "Faded green");
-		insert(lego_211, 121, 181, 181, "Turquoise");
-		insert(lego_212, 159, 195, 233, "Light Royal blue");
-		insert(lego_213, 108, 129, 183, "Medium Royal blue");
-		insert(lego_216, 143, 76, 42, "Rust");
-		insert(lego_217, 124, 92, 69, "Brown");
-		insert(lego_218, 150, 112, 159, "Reddish lilac");
-		insert(lego_219, 107, 98, 155, "Lilac");
-		insert(lego_220, 167, 169, 206, "Light lilac");
-		insert(lego_221, 205, 98, 152, "Bright purple");
-		insert(lego_222, 228, 173, 200, "Light purple");
-		insert(lego_223, 220, 144, 149, "Light pink");
-		insert(lego_224, 240, 213, 160, "Light brick yellow");
-		insert(lego_225, 235, 184, 127, "Warm yellowish orange");
-		insert(lego_226, 253, 234, 140, "Cool yellow");
-		insert(lego_232, 125, 187, 221, "Dove blue");
-		insert(lego_268, 52, 43, 117, "Medium lilac");
-
-		insertPaletteItem(lego_1);
-		insertPaletteItem(lego_208);
-		insertPaletteItem(lego_194);
-		insertPaletteItem(lego_199);
-		insertPaletteItem(lego_26);
-		insertPaletteItem(lego_21);
-		insertPaletteItem(lego_24);
-		insertPaletteItem(lego_226);
-		insertPaletteItem(lego_23);
-		insertPaletteItem(lego_107);
-		insertPaletteItem(lego_102);
-		insertPaletteItem(lego_11);
-		insertPaletteItem(lego_45);
-		insertPaletteItem(lego_135);
-		insertPaletteItem(lego_106);
-		insertPaletteItem(lego_105);
-		insertPaletteItem(lego_141);
-		insertPaletteItem(lego_28);
-		insertPaletteItem(lego_37);
-		insertPaletteItem(lego_119);
-		insertPaletteItem(lego_29);
-		insertPaletteItem(lego_151);
-		insertPaletteItem(lego_38);
-		insertPaletteItem(lego_192);
-		insertPaletteItem(lego_104);
-		insertPaletteItem(lego_9);
-		insertPaletteItem(lego_101);
-		insertPaletteItem(lego_5);
-		insertPaletteItem(lego_153);
-		insertPaletteItem(lego_217);
-		insertPaletteItem(lego_18);
-		insertPaletteItem(lego_125);
-
-		generatePaletteMap();
-	}
-
-	BrickColor::BrickMap& BrickColor::BrickMap::singleton()
-	{
-		static BrickMap s;
-		return s;
-	}
-
-	const std::vector<BrickColor>& BrickColor::colorPalette()
-	{
-		return BrickMap::singleton().colorPalette;
-	}
-
-	unsigned BrickColor::getClosestPaletteIndex() const
-	{
-		return BrickMap::singleton().paletteMap[number];
-	}
-
-	BrickColor BrickColor::parse(const char* name)
-	{
-		std::map<enum Number, std::string>::const_iterator iter = BrickMap::singleton().map3.begin();
-		std::map<enum Number, std::string>::const_iterator end = BrickMap::singleton().map3.end();
-
-		for (; iter != end; iter++)
-		{
-			if (iter->second == name)
-				return BrickColor(iter->first);
-		}
-
-		return BrickColor(lego_194);
-	}
-
-	BrickColor BrickColor::random()
-	{
-		int index = G3D::iRandom(0, (int)BrickMap::singleton().colorPalette.size() - 1);
-		return BrickMap::singleton().colorPalette[index];
-	}
-
-	BrickColor BrickColor::closest(G3D::Color3 color)
-	{
-		G3D::Color4 c4;
-		c4.r = color.r;
-		c4.g = color.g;
-		c4.b = color.b;
-
-		return closest(c4);
-	}
-
-	BrickColor BrickColor::closest(G3D::Color4 color)
-	{
-		float closestDistance = 10000.0f;
-		Number number = lego_194;
-
-		std::map<enum Number, G3D::Color4>::iterator iter = BrickMap::singleton().map2.begin();
-		std::map<enum Number, G3D::Color4>::iterator end = BrickMap::singleton().map2.end();
-
-		for (; iter != end; iter++)
-		{
-			float distance = fabs(iter->second.r - color.r);
-			distance += fabs(iter->second.g - color.g);
-			distance += fabs(iter->second.b - color.b);
-
-			if (distance < closestDistance)
-			{
-				number = iter->first;
-				if (distance == 0.0f)
-					break;
-				closestDistance = distance;
-			}
-		}
-
-		return BrickColor(number);
-	}
-
-	BrickColor::BrickColor(int number)
-	{
-		std::map<enum Number, G3D::Color4uint8>::iterator it = BrickMap::singleton().map1.find((Number)number);
-		if (it != BrickMap::singleton().map1.end())
-			this->number = it->first;
-		else
-			this->number = lego_194;
-	}
-
-	const std::string& BrickColor::name() const
-	{
-		return BrickMap::singleton().map3.find(number)->second;
-	}
-
-	G3D::Color4 BrickColor::color4() const
-	{
-		return BrickMap::singleton().map2.find(number)->second;
-	}
-
-	G3D::Color3 BrickColor::color3() const
-	{
-		return G3D::Color3(color4());
-	}
-}
+// value_type is 0x14 bytes: node color at +0x20, isnil at +0x21, max_size 0xcccccccc.
+struct Value16 { int words[4]; };
+template class std::_Tree<std::_Tmap_traits<int, Value16, std::less<int>,
+    std::allocator<std::pair<const int, Value16> >, false> >;

@@ -1,11 +1,11 @@
-// from server: 80% by tester
-extern "C" int __cdecl sub_54f490(int, int, int, int, int, int, int);
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-boost-1_34_1 roc_string_sink_401c42386b16c308.cpp
 
-struct S {
-    int __cdecl f(int, int, int, int, int, int, int);
-};
-
-int S::f(int a1, int a2, int a3, int a4, int a5, int a6, int a7)
-{
-    return sub_54f490(a1, a2, a3, a4, a5, a6, a7);
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <boost/iostreams/device/back_inserter.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::stream_buffer<boost::iostreams::back_insert_device<std::string> >;

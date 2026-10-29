@@ -1,1705 +1,1883 @@
-// from server: 59% by colin
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /MD
-// roc-lib: scintilla-mfc-1.20 ScintillaDocView.cpp
+// roc-cl: 30729
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source/Ribbon/XTPRibbonTheme.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
-Module : ScintillaDocView.CPP
-Purpose: Defines the implementation for MFC CView and CDocument derived wrapper classes for the Scintilla 
-         edit control (www.scintilla.org).
-Created: PJN / 19-03-2004
-History: PJN / 12-08-2004 1. Made all the remaining non virtual functions related to Find and Replace virtual.
-                          2. TextNotFound function is now passed the parameters used for the search. Thanks 
-                          to Dmitry Naumov for this update.
-                          3. Removed the OnTextNotFound function as all the work for it is achieved using the
-                          TextNotFound function.
-                          4. Creation of the find / replace dialog now takes place in a new virtual function
-                          "CreateFindReplaceDialog". Again thanks to Dmitry Naumov for this update. 
-         PJN / 04-03-2005 1. Fix in CScintillaView::PrintPage which now sorts out the issue of print preview
-                          not working in the MFC doc / view wrappers for scintilla. Thanks to Frank Kiesel
-                          for reporting this fix.
-         PJN / 10-07-2005 1. Addition of a virtual function namely OnAutoCSelection which handles the
-                          SCN_AUTOCSELECTION notification message which was introduced in Scintilla v1.63.
-                          Thanks to Dan Petitt for suggesting this update.
-                          2. A new boolean variable called "m_bUseROFileAttributeDuringLoading" has been added 
-                          to CScintillaView. If this value is set then the code will check the read only file
-                          attribute of the file being loaded and if it is set, then the document is marked as 
-                          read only by Scintilla. By doing this any attempts to modify the document will cause 
-                          the OnModifyAttemptRO virtual function to be called. This allows you to prompt to 
-                          make the file read write or to check out the file from a version control system. 
-                          Thanks to Dan Petitt for suggesting this update.
-                          3. Demo app now demonstrates how to use the SCN_MODIFYATTEMPTRO notification.
-                          4. Fixed a number of warnings when the code is compiled using Visual Studio .NET 2003.
-                          5. SetSavePoint and SetReadOnly calls are now made in CScintillaDoc::OnSaveDocument
-                          instead of CScintillaView::Serialize. This ensures that the control is only reset
-                          upon a successful save.
-         PJN / 03-01-2006 1. Fixed a bug where the separator line in the header was not being drawn due to 
-                          issues in the code which calculates the coordinates. 
-                          2. Added two member variables which decide whether printer headers and footers should
-                          be printed (CScintillaView::m_bPrintHeader and CScintillaView::m_bPrintFooter). You
-                          could of course achieve the same result by deriving a class from CScintillaView and 
-                          implementing empty PrintHeader and PrinterFooter methods!!!. Thanks to Jason Elliott
-                          for suggesting this update.
-                          3. Optimized the construction of member variables in CScintillaView::CScintillaView
-                          and in CScintillaFindReplaceDlg::CScintillaFindReplaceDlg
-                          4. CScintillaView::OnReplaceAll sets the selection to 0,0 before doing text replacement. 
-                          This ensures that all text in a document is replaced. Also this function now does not 
-                          bother calling TextNotFound at the end of the function if replacements took place. 
-                          Thanks to Jason Elliott for this nice update. 
-                          5. A parameter which indicates whether text is being replaced or found is now sent to
-                          CScintillaView::TextNotFound.
-         PJN / 06-01-2006 1. Removed some unnecessary code from CScintillaView::OnEndPrinting. Thanks to 
-                          Greg Smith for spotting this issue.
-         PJN / 08-01-2006 1. Find / Replace dialog and associated state is now maintained outside of CScintillaView.
-                          This means that if you have multiple CScintillaView's in your app, that they share the
-                          one find / replace dialog which is the standard type of UI you would normally expect for 
-                          this. Thanks to Greg Smith for reporting this issue.
-                          2. Find / replace dialog is now closed when the last CScintillaView is destroyed. Thanks
-                          to Greg Smith for reporting this issue.
-         PJN / 16-01-2006 1. Removed an unused "rSetup" variable in CScintillaView::PrintPage
-                          2. Optimized code in CScintillaView::PrintPage and CScintillaView::OnFilePageSetup which
-                          determines if metric or imperial measurements are being used. Now a boolean member variable
-                          of CScintillaView called m_bUsingMetric which by default picks up the control panel
-                          preference is provided. This allows client code to change this value to customize how
-                          measurements are specified. Thanks to Greg Smith for reporting this issue.
-                          3. Fixed a small typo in CScintillaView::PrintHeader and PrintFooter. Also explicitly uses
-                          the TA_TOP flag in combination with TA_LEFT when setting alignment settings for header
-                          and footer text. Again thanks to Greg Smith for reporting this.
-                          4. Scintilla find / replace state is now stored in a standard global variable instead of
-                          using the CProcessLocal template which it was using previously. This is no longer required
-                          since it was used to provide Win32s support for MFC on older versions of MFC. Since Win32s
-                          is no longer supported by MFC, there is no need to use this mechanism any more.
-         PJN / 02-02-2006 1. Minor update to CScintillaView to allow deletion of text when there is nothing selected. 
-                          Thanks to Alexander Kirillov for reporting this bug. 
-         PJN / 14-03-2006 1. Updated the internal function CScintillaView::SameAsSelected to support regular 
-                          expressions. Thanks to Greg Smith for this update.
-         PJN / 22-05-2006 1. Fixed a flicker issue when the view is resized. Thanks to Michael Gunlock for reporting 
-                          this issue.
-         PJN / 29-06-2005 1. Code now uses new C++ style casts rather than old style C casts where necessary. 
-                          2. Code now supports persisting margin settings. Thanks to Krasimir Stoychev for this update
-                          3. Updated the code to clean compile in VC 2005
-         PJN / 17-09-2006 1. Updated OnReplaceSel and OnReplaceAll implementations to use TargetFromSelection and 
-                          ReplaceTargetRE/ReplaceTarget. Thanks to Matt Spear for reporting this issue.
-         PJN / 11-06-2007 1. Addition of a SCINTILLADOCVIEW_EXT_CLASS preprocessor macro to allow the classes to be 
-                          more easily used in an extension DLL.
-         PJN / 19-03-2008 1. Fixed a copy and paste bug in CScintillaView::PrintPage where the incorrect margin value
-                          was being used in the calculation of "rfPrint.rc.left". Thanks to Steve Arnold for reporting
-                          this bug.
-
-Copyright (c) 2004 - 2008 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
-
-All rights reserved.
-
-Copyright / Usage Details:
-
-You are allowed to include the source code in any product (commercial, shareware, freeware or otherwise) 
-when your product is released in binary form. You are allowed to modify the source code in any way you want 
-except you cannot modify the copyright details at the top of each module. If you want to distribute source 
-code with your application, then you are only allowed to distribute versions released by the author. This is 
-to maintain a single distribution point for the source code. 
-
-*/
-
-
-/////////////////////////////////  Includes  //////////////////////////////////
+// XTPRibbonTheme.cpp: implementation of the CXTPRibbonTheme class.
+//
+// This file is a part of the XTREME RIBBON MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "ScintillaDocView.h"
-#ifndef __AFXDISP_H__
-#pragma message("To avoid this message, please put afxdisp.h in your pre compiled header (normally stdafx.h)")
-#include <afxdisp.h>
-#endif
-#include "resource.h"
 
+#include "Common/XTPImageManager.h"
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPOffice2007Image.h"
+#include "Common/XTPResourceManager.h"
 
+#include "TabManager/XTPTabManager.h"
+#include "TabManager/XTPTabPaintManager.h"
 
+#include "CommandBars/XTPOffice2007Theme.h"
+#include "CommandBars/XTPOffice2007FrameHook.h"
 
-//////////////////////////////// Statics / Macros /////////////////////////////
+#include "CommandBars/XTPControlPopup.h"
+#include "CommandBars/XTPControlComboBox.h"
+#include "CommandBars/XTPControlEdit.h"
+#include "CommandBars/XTPCommandBar.h"
+#include "CommandBars/XTPPopupBar.h"
+#include "CommandBars/XTPStatusBar.h"
+#include "CommandBars/XTPCommandBars.h"
+
+#include "XTPRibbonGroup.h"
+#include "XTPRibbonBar.h"
+#include "XTPRibbonTheme.h"
+#include "XTPRibbonTab.h"
+
 
 #ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
 
-////////////////////////////////// Implementation /////////////////////////////
+CXTPRibbonTheme::CXTPRibbonTheme()
+{
+	m_bHotTrackingGroups = TRUE;
+	m_bFrameStatusBar = TRUE;
+	m_bClearTypeTextQuality = TRUE;
 
-class _SCINTILLA_EDIT_STATE
+	m_nSplitButtonDropDownWidth = 12;
+	m_nSplitButtonPopupWidth = 26;
+	m_nStatusBarMinHeight = 22;
+
+	m_pTabPaintManager = CreateTabPaintManager();
+	m_pTabPaintManager->RefreshMetrics();
+
+	m_strOfficeFont = _T("Segoe UI");
+	m_bUseOfficeFont = TRUE;
+
+	m_bOffsetPopupLabelText = FALSE;
+
+	m_nFontHeight = 0;
+
+	m_rcStatusButtonMargins.SetRect(0, 0, 2, 1);
+
+}
+
+CXTPRibbonTheme::~CXTPRibbonTheme()
+{
+	CMDTARGET_RELEASE(m_pTabPaintManager);
+}
+
+AFX_INLINE LPCTSTR FormatName(LPCTSTR lpszName)
+{
+	return lpszName;
+}
+
+AFX_INLINE CString FormatName(LPCTSTR lpszFormat, LPCTSTR lpszParameter)
+{
+	CString strResult;
+	strResult.Format(lpszFormat, lpszParameter);
+	return strResult;
+}
+
+AFX_INLINE BOOL IsCompositeRect(CXTPCommandBar* pRibbonBar, const CRect& rc)
+{
+	if (!pRibbonBar || !pRibbonBar->IsRibbonBar() || !((CXTPRibbonBar*)pRibbonBar)->IsDwmEnabled())
+		return FALSE;
+
+	return CRect().IntersectRect(((CXTPRibbonBar*)pRibbonBar)->GetCaptionRect(), rc);
+}
+
+#ifdef _XTP_INCLUDE_RIBBON
+BOOL CXTPControl::HasDwmCompositedRect() const
+{
+	return IsCompositeRect(GetParent(), GetRect());
+}
+#endif
+
+AFX_INLINE DWORD GetDrawImageFlags(CXTPControl* pControl, const CRect& rc)
+{
+	return IsCompositeRect(pControl->GetParent(), rc) ? XTP_DI_COMPOSITE : 0;
+}
+
+AFX_INLINE DWORD GetDrawImageFlags(CXTPControl* pControl)
+{
+	return IsCompositeRect(pControl->GetParent(), pControl->GetRect()) ? XTP_DI_COMPOSITE : 0;
+}
+
+
+CString GetColorName(XTPRibbonTabContextColor color)
+{
+	switch (color)
+	{
+		case xtpRibbonTabContextColorBlue: return _T("BLUE");
+		case xtpRibbonTabContextColorYellow: return _T("YELLOW");
+		case xtpRibbonTabContextColorGreen: return _T("GREEN");
+		case xtpRibbonTabContextColorRed: return _T("RED");
+		case xtpRibbonTabContextColorPurple: return _T("PURPLE");
+		case xtpRibbonTabContextColorCyan: return _T("CYAN");
+		case xtpRibbonTabContextColorOrange: return _T("ORANGE");
+	}
+
+	return _T("");
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPRibbonTheme
+
+class CXTPRibbonTheme::CRibbonAppearanceSet : public CXTPTabPaintManager::CAppearanceSetPropertyPageFlat
 {
 public:
-//Constructors / Destructors
-	_SCINTILLA_EDIT_STATE();
+	CRibbonAppearanceSet(CXTPRibbonTheme* pRibbonTheme)
+		: m_pRibbonTheme(pRibbonTheme)
+	{
+		m_rcHeaderMargin.SetRect(0, 1, 0, 0);
+	}
+protected:
+	void DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem);
 
-//Member variables
-	CScintillaFindReplaceDlg* pFindReplaceDlg;    //find or replace dialog
-	BOOL                      bFindOnly;          //Is pFindReplace the find or replace?
-	CString                   strFind;            //last find string
-	CString                   strReplace;         //last replace string
-	BOOL                      bCase;              //TRUE==case sensitive, FALSE==not
-	int                       bNext;              //TRUE==search down, FALSE== search up
-	BOOL                      bWord;              //TRUE==match whole word, FALSE==not
-  BOOL                      bRegularExpression; //TRUE==regular expression search, FALSE==not
+	int GetButtonHeight(const CXTPTabManager* /*pTabManager*/)
+	{
+		return m_pRibbonTheme->m_nTabsHeight + 1;
+	}
+
+	CXTPRibbonTheme* m_pRibbonTheme;
+
 };
 
-_SCINTILLA_EDIT_STATE::_SCINTILLA_EDIT_STATE() : bRegularExpression(FALSE),
-                                                 pFindReplaceDlg(NULL),
-               	                                 bWord(FALSE),
-                                                 bFindOnly(TRUE),
-	                                               bCase(FALSE),
-	                                               bNext(TRUE)
+class CXTPRibbonTheme::CRibbonColorSet : public CXTPTabPaintManager::CColorSetOffice2003
 {
-}
-
-_SCINTILLA_EDIT_STATE _scintillaEditState;
-
-CScintillaFindReplaceDlg* CScintillaFindReplaceDlg::GetFindReplaceDlg()
-{
-	return _scintillaEditState.pFindReplaceDlg;
-}
-
-BEGIN_MESSAGE_MAP(CScintillaFindReplaceDlg, CFindReplaceDialog)
-  ON_BN_CLICKED(IDC_REGULAR_EXPRESSION, OnRegularExpression)
-END_MESSAGE_MAP()
-
-
-CScintillaFindReplaceDlg::CScintillaFindReplaceDlg(): m_bRegularExpression(FALSE)
-{
-}
-
-BOOL CScintillaFindReplaceDlg::Create(BOOL bFindDialogOnly,	LPCTSTR lpszFindWhat, LPCTSTR lpszReplaceWith, DWORD dwFlags, CWnd* pParentWnd)
-{
-  //Tell Windows to use our dialog instead of the standard one
-  m_fr.hInstance = AfxGetResourceHandle();
-  m_fr.Flags |= FR_ENABLETEMPLATE;
-  if (bFindDialogOnly)
-    m_fr.lpTemplateName = MAKEINTRESOURCE(IDD_SCINTILLA_FINDDLGORD);
-  else
-    m_fr.lpTemplateName = MAKEINTRESOURCE(IDD_SCINTILLA_REPLACEDLGORD);
-
-  //Let the base class do its thing
-  return CFindReplaceDialog::Create(bFindDialogOnly,	lpszFindWhat, lpszReplaceWith, dwFlags, pParentWnd);
-}
-
-BOOL CScintillaFindReplaceDlg::OnInitDialog() 
-{
-  //let the base class do its thing
-	BOOL bReturn = CFindReplaceDialog::OnInitDialog();
-
-  //Should we check the regular expression check box
-  CButton* pCtrl = static_cast<CButton*>(GetDlgItem(IDC_REGULAR_EXPRESSION));
-  AFXASSUME(pCtrl);
-  pCtrl->SetCheck(m_bRegularExpression);
-	
-	return bReturn;
-}
-
-void CScintillaFindReplaceDlg::OnRegularExpression() 
-{
-  //Save the state of the Regular expression checkbox into a member variable
-  CButton* pCtrl = static_cast<CButton*>(GetDlgItem(IDC_REGULAR_EXPRESSION));
-  AFXASSUME(pCtrl);
-	m_bRegularExpression = (pCtrl->GetCheck() == 1);
-}
-
-
-IMPLEMENT_DYNCREATE(CScintillaView, CView)
-
-const UINT _ScintillaMsgFindReplace = ::RegisterWindowMessage(FINDMSGSTRING);
-
-BEGIN_MESSAGE_MAP(CScintillaView, CView)
-	ON_WM_PAINT()
-	ON_UPDATE_COMMAND_UI(ID_EDIT_CUT, OnUpdateNeedSel)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_PASTE, OnUpdateNeedPaste)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_FIND, OnUpdateNeedText)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_REPEAT, OnUpdateNeedFind)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_UNDO, OnUpdateEditUndo)
-  ON_UPDATE_COMMAND_UI(ID_EDIT_REDO, OnUpdateEditRedo)
-	ON_COMMAND(ID_EDIT_CUT, OnEditCut)
-	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
-	ON_COMMAND(ID_EDIT_PASTE, OnEditPaste)
-	ON_COMMAND(ID_EDIT_CLEAR, OnEditClear)
-	ON_COMMAND(ID_EDIT_UNDO, OnEditUndo)
-  ON_COMMAND(ID_EDIT_REDO, OnEditRedo)
-	ON_COMMAND(ID_EDIT_SELECT_ALL, OnEditSelectAll)
-	ON_COMMAND(ID_EDIT_FIND, OnEditFind)
-	ON_COMMAND(ID_EDIT_REPLACE, OnEditReplace)
-	ON_COMMAND(ID_EDIT_REPEAT, OnEditRepeat)
-	ON_WM_SETFOCUS()
-	ON_WM_SIZE()
-	ON_WM_ERASEBKGND()
-	ON_WM_CREATE()
-	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateNeedSel)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_CLEAR, OnUpdateNeedTextAndFollowingText)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_SELECT_ALL, OnUpdateNeedText)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_REPLACE, OnUpdateNeedText)
-	ON_COMMAND(ID_FILE_PAGE_SETUP, OnFilePageSetup)
-	ON_WM_DESTROY()
-	ON_COMMAND(ID_FILE_PRINT, CView::OnFilePrint)
-	ON_COMMAND(ID_FILE_PRINT_DIRECT, CView::OnFilePrint)
- 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, CView::OnFilePrintPreview)
-	ON_REGISTERED_MESSAGE(_ScintillaMsgFindReplace, OnFindReplaceCmd)
-END_MESSAGE_MAP()
-
-CScintillaView::CScintillaView() : m_rMargin(0, 0, 0, 0), 
-                                   m_bFirstSearch(TRUE),
-                                   m_bUseROFileAttributeDuringLoading(TRUE),
-                                   m_bPrintHeader(TRUE), 
-                                   m_bPrintFooter(TRUE),
-                                   m_bPersistMarginSettings(TRUE),
-                                   m_bUsingMetric(UserWantsMetric())
-{
-}
-
-CScintillaCtrl& CScintillaView::GetCtrl()
-{ 
-  CScintillaCtrl& ctrl = m_Edit;
-
-  return ctrl; 
-}
-
-void CScintillaView::LoadMarginSettings(const CString& sSection)
-{
-  //Get the margin values 
-  CWinApp* pApp = AfxGetApp();
-  AFXASSUME(pApp);
-	m_rMargin.left = pApp->GetProfileInt(sSection, _T("LeftMargin"), m_rMargin.left);
-	m_rMargin.right = pApp->GetProfileInt(sSection, _T("RightMargin"), m_rMargin.right);
-	m_rMargin.top = pApp->GetProfileInt(sSection, _T("TopMargin"), m_rMargin.top);
-	m_rMargin.bottom = pApp->GetProfileInt(sSection, _T("BottomMargin"), m_rMargin.bottom);
-}
-
-void CScintillaView::SaveMarginSettings(const CString& sSection)
-{
-  //Write out the margin values 
-  CWinApp* pApp = AfxGetApp();
-  AFXASSUME(pApp);
-	pApp->WriteProfileInt(sSection, _T("LeftMargin"), m_rMargin.left);
-	pApp->WriteProfileInt(sSection, _T("RightMargin"), m_rMargin.right);
-	pApp->WriteProfileInt(sSection, _T("TopMargin"), m_rMargin.top);
-	pApp->WriteProfileInt(sSection, _T("BottomMargin"), m_rMargin.bottom);
-}
-
-void CScintillaView::OnDestroy()
-{
-  //Close Find/Replace dialog if this is the last CScintillaView
-	if (_scintillaEditState.pFindReplaceDlg)
+protected:
+	void RefreshMetrics()
 	{
-		CWinApp* pApp = AfxGetApp();
+		CColorSetOffice2003::RefreshMetrics();
+	}
+};
 
-    //Count up the number of CScintillaView's we have (excluding this one)
-    int nScintillaViews = 0;
+void CXTPRibbonTheme::DrawRibbonTab(CDC* pDC, CXTPRibbonTab* pItem)
+{
+	XTPTabPosition tabPosition = pItem->GetTabManager()->GetPosition();
 
-		//no doc manager - no templates
-		if (pApp->m_pDocManager)
+	CRect rcEntry(pItem->GetRect());
+	CXTPTabPaintManager::CAppearanceSet::InflateRectEx(rcEntry, CRect(0, 1, -1,  -1), tabPosition);
+
+	XTPRibbonTabContextColor tabColor = pItem->GetContextColor();
+
+	if (tabColor != xtpRibbonTabContextColorNone)
+	{
+		if (pItem->IsSelected() || pItem->IsHighlighted())
 		{
-			//walk all templates
-			CDocTemplate* pTemplate;
-			POSITION pos = pApp->m_pDocManager->GetFirstDocTemplatePosition();
-			while (pos && (nScintillaViews == 0))
+			CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("CONTEXTTAB%s"), GetColorName(tabColor)));
+
+			int nState = 0;
+			if (pItem->IsSelected())
 			{
-				pTemplate = pApp->m_pDocManager->GetNextDocTemplate(pos);
-				AFXASSUME(pTemplate);
+				nState = pItem->IsFocused() || pItem->IsHighlighted() ? 4 : 3;
+			}
+			else if (pItem->IsHighlighted())
+			{
+				nState = 1;
+			}
 
-				//walk all documents in the template
-				POSITION pos2 = pTemplate->GetFirstDocPosition();
-				while (pos2 && (nScintillaViews == 0))
-				{
-					CDocument* pDoc = pTemplate->GetNextDoc(pos2);
-					ASSERT(pDoc);
-
-					//walk all views in the document
-					POSITION pos3 = pDoc->GetFirstViewPosition();
-					while (pos3 && (nScintillaViews == 0))
-					{
-						CView* pView = pDoc->GetNextView(pos3);
-						ASSERT(pView);
-						
-						//if we find another CScintillaView, skip code that closes find dialog
-						if (pView->IsKindOf(RUNTIME_CLASS(CScintillaView)) && (pView != this) && ::IsWindow(pView->GetSafeHwnd()))
-							++nScintillaViews;
-					}
-				}
+			if (nState == 4)
+			{
+				pImage = LoadImage(FormatName(_T("RIBBONTAB")));
+				if (pImage) pImage->DrawImage(pDC, rcEntry, pImage->GetSource(5, 6), CRect(5, 5, 5, 5), 0xFF00FF);
+			}
+			else
+			{
+				if (pImage) pImage->DrawImage(pDC, rcEntry, pImage->GetSource(nState, 5), CRect(5, 5, 5, 5));
 			}
 		}
-
-    //Close down the find/replace dialog if we are the last CScintillaView
-		if (nScintillaViews == 0)
-    {
-      if (::IsWindow(_scintillaEditState.pFindReplaceDlg->m_hWnd))
-			  _scintillaEditState.pFindReplaceDlg->SendMessage(WM_CLOSE);
-		  _scintillaEditState.pFindReplaceDlg = NULL;
-    }
-	}
-
-  //Let the base class do its thing
-  CView::OnDestroy();
-}
-
-void CScintillaView::DeleteContents()
-{
-	ASSERT_VALID(this);
-	ASSERT(m_hWnd != NULL);
-
-  CScintillaCtrl& rCtrl = GetCtrl();
-	rCtrl.ClearAll();
-  rCtrl.EmptyUndoBuffer();
-}
-
-void CScintillaView::OnDraw(CDC*)
-{
-	ASSERT(FALSE);
-}
-
-void CScintillaView::OnPaint()
-{
-	//this is done to avoid CView::OnPaint
-	Default();
-}
-
-BOOL CScintillaView::OnPreparePrinting(CPrintInfo* pInfo)
-{
-  //Determine if we should allow selection printing
-  CScintillaCtrl& rCtrl = GetCtrl();
-
-  long nStartChar = rCtrl.GetSelectionStart();
-  long nEndChar = rCtrl.GetSelectionEnd();
-  if (nStartChar != nEndChar)
-  {
-    // Enable the Selection button
-    pInfo->m_pPD->m_pd.Flags &= ~PD_NOSELECTION;
-
-    // Check the Selection button
-    pInfo->m_pPD->m_pd.Flags |= PD_SELECTION;
-  }
-
-  //Let the base class do its thing
-  return DoPreparePrinting(pInfo);
-}
-
-void CScintillaView::OnBeginPrinting(CDC* /*pDC*/, CPrintInfo* pInfo)
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-
-  CScintillaCtrl& rCtrl = GetCtrl();
-
-	//initialize page start vector
-	ASSERT(m_aPageStart.GetSize() == 0);
-  if (pInfo->m_pPD->PrintSelection())
-    m_aPageStart.Add(rCtrl.GetSelectionStart());
-  else
-	  m_aPageStart.Add(0);
-	ASSERT(m_aPageStart.GetSize() > 0);
-
-	ASSERT_VALID(this);
-}
-
-BOOL CScintillaView::PaginateTo(CDC* pDC, CPrintInfo* pInfo)
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-	ASSERT_VALID(pDC);
-
-  CRect rectSave = pInfo->m_rectDraw;
-	UINT nPageSave = pInfo->m_nCurPage;
-	ASSERT(nPageSave > 1);
-	ASSERT(nPageSave >= static_cast<UINT>(m_aPageStart.GetSize()));
-	VERIFY(pDC->SaveDC() != 0);
-	pDC->IntersectClipRect(0, 0, 0, 0);
-	pInfo->m_nCurPage = m_aPageStart.GetSize();
-	while (pInfo->m_nCurPage < nPageSave)
-	{
-		ASSERT(pInfo->m_nCurPage == static_cast<UINT>(m_aPageStart.GetSize()));
-		OnPrepareDC(pDC, pInfo);
-		ASSERT(pInfo->m_bContinuePrinting);
-		pInfo->m_rectDraw.SetRect(0, 0,	pDC->GetDeviceCaps(HORZRES), pDC->GetDeviceCaps(VERTRES));
-		OnPrint(pDC, pInfo);
-		if (pInfo->m_nCurPage == static_cast<UINT>(m_aPageStart.GetSize()))
-			break;
-		++pInfo->m_nCurPage;
-	}
-	BOOL bResult = pInfo->m_nCurPage == nPageSave;
-	pDC->RestoreDC(-1);
-	pInfo->m_nCurPage = nPageSave;
-  pInfo->m_rectDraw = rectSave;
-	ASSERT_VALID(this);
-	return bResult;
-}
-
-void CScintillaView::OnPrepareDC(CDC* pDC, CPrintInfo* pInfo)
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-	ASSERT_VALID(pDC);
-	AFXASSUME(pInfo != NULL);
-
-  if (pInfo->m_nCurPage <= pInfo->GetMaxPage())
-  {
-	  if ((pInfo->m_nCurPage > static_cast<UINT>(m_aPageStart.GetSize())) &&	!PaginateTo(pDC, pInfo))
-	  {
-		  //can't paginate to that page, thus cannot print it.
-		  pInfo->m_bContinuePrinting = FALSE;
-	  }
-	  ASSERT_VALID(this);
-  }
-  else
-  {
-		//Reached the max page to print
-		pInfo->m_bContinuePrinting = FALSE;
-  }
-}
-
-void CScintillaView::PrintHeader(CDC* pDC, CPrintInfo* /*pInfo*/, RangeToFormat& frPrint)
-{
-  //By Default we print "Document Name - Printed on Date" as well as a line separator below the text
-  //Derived classes are of course free to implement their own version of PrintHeader
-  CString sHeader;
-  AfxFormatString2(sHeader, IDS_SCINTILLA_DEFAULT_PRINT_HEADER, GetDocument()->GetTitle(), COleDateTime::GetCurrentTime().Format());
-
-  //Setup the DC
-  pDC->SetTextColor(RGB(0, 0, 0));
-  UINT nAlign = pDC->SetTextAlign(TA_LEFT | TA_TOP);
-
-  //Draw the header
-  CSize sizeText = pDC->GetTextExtent(sHeader);
-  int nHeaderDepth = 2*sizeText.cy;
-	CRect rLine(frPrint.rcPage.left, frPrint.rcPage.top, frPrint.rcPage.right, frPrint.rcPage.top + nHeaderDepth);
-  pDC->ExtTextOut(frPrint.rcPage.left, frPrint.rcPage.top + nHeaderDepth/3, 0, &rLine, sHeader, NULL);
-
-  //Draw a line underneath the text
-  pDC->MoveTo(frPrint.rcPage.left, frPrint.rcPage.top + nHeaderDepth - 5);
-  pDC->LineTo(frPrint.rcPage.right, frPrint.rcPage.top + nHeaderDepth - 5);
-
-  //Restore the DC
-  pDC->SetTextAlign(nAlign);
-
-  //Adjust the place where scintilla will draw the text
-  if (frPrint.rc.top < (frPrint.rcPage.top + nHeaderDepth))
-    frPrint.rc.top = frPrint.rcPage.top + nHeaderDepth;
-}
-
-void CScintillaView::PrintFooter(CDC* pDC, CPrintInfo* pInfo, RangeToFormat& frPrint)
-{
-  //By Default we print "Page X" as well as a line separator above the text
-  //Derived classes are of course free to implement their own version of PrintFooter
-  CString sPage;
-  sPage.Format(_T("%d"), pInfo->m_nCurPage);
-  CString sFooter;
-  AfxFormatString1(sFooter, IDS_SCINTILLA_DEFAULT_PRINT_FOOTER, sPage);
-
-  //Setup the DC
-  pDC->SetTextColor(RGB(0, 0, 0));
-  UINT nAlign = pDC->SetTextAlign(TA_LEFT | TA_TOP);
-  
-  //Draw the header
-  CSize sizeText = pDC->GetTextExtent(sFooter);
-  int nFooterDepth = 2*sizeText.cy;
-  CRect rLine(frPrint.rcPage.left, frPrint.rcPage.bottom - nFooterDepth, frPrint.rcPage.right, frPrint.rcPage.bottom);
-  pDC->ExtTextOut(frPrint.rcPage.left, frPrint.rcPage.bottom - nFooterDepth*2/3, 0, &rLine, sFooter, NULL);
-
-  //Draw a line above the text
-  pDC->MoveTo(frPrint.rcPage.left, frPrint.rcPage.bottom - nFooterDepth + 5);
-  pDC->LineTo(frPrint.rcPage.right, frPrint.rcPage.bottom - nFooterDepth + 5);
-
-  //Restore the DC
-  pDC->SetTextAlign(nAlign);
-
-  //Adjust the place where scintilla will draw the text
-  if (frPrint.rc.bottom > (frPrint.rcPage.bottom - nFooterDepth))
-    frPrint.rc.bottom = frPrint.rcPage.bottom - nFooterDepth;
-}
-
-BOOL CScintillaView::UserWantsMetric()
-{
-  TCHAR localeInfo[3];
-  localeInfo[0] = _T('\0');
-  GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_IMEASURE, localeInfo, 3);
-  return (localeInfo[0] == _T('0')) ;
-}
-
-long CScintillaView::PrintPage(CDC* pDC, CPrintInfo* pInfo, long nIndexStart, long nIndexStop)
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-	ASSERT_VALID(pDC);
-
-	RangeToFormat rfPrint;
-	rfPrint.hdc = pDC->m_hDC;
-	rfPrint.hdcTarget = pDC->m_hAttribDC;
-
-	//Take into account the specified margins
-  CRect rMargins;
-	if ((m_rMargin.left) != 0 || (m_rMargin.right) != 0 || (m_rMargin.top) != 0 || (m_rMargin.bottom != 0)) 
-  {
-    //Get printer resolution
-    CPoint pDpi;
-    pDpi.x = pDC->GetDeviceCaps(LOGPIXELSX);  //DPI in X direction
-    pDpi.y = pDC->GetDeviceCaps(LOGPIXELSY);  //DPI in Y direction
-
-		//Convert the hundredths of millimeters or thousandths of inches margin values
-		//from the Page Setup dialog to device units.
-		int iScale = m_bUsingMetric ? 2540 : 1000;    //scale factor for margin scaling;
-		rMargins.left   = MulDiv(m_rMargin.left, pDpi.x, iScale);
-		rMargins.top    = MulDiv(m_rMargin.top, pDpi.y, iScale);
-		rMargins.right	= MulDiv(m_rMargin.right, pDpi.x, iScale);
-		rMargins.bottom	= MulDiv(m_rMargin.bottom, pDpi.y, iScale);
-	} 
-  else 
-		rMargins = m_rMargin;
-
-  //We take the page size from the pInfo member variable (decrement the right and
-  //bottom values by 1 to suit Scintilla)
-	rfPrint.rcPage.left = pInfo->m_rectDraw.left;
-	rfPrint.rcPage.top = pInfo->m_rectDraw.top;
-	rfPrint.rcPage.right = pInfo->m_rectDraw.right - 1;
-	rfPrint.rcPage.bottom = pInfo->m_rectDraw.bottom - 1;
-
-  //Fill in the area to print
-  rfPrint.rc.left = rfPrint.rcPage.left + rMargins.left;
-  rfPrint.rc.top = rfPrint.rcPage.top + rMargins.top;
-  rfPrint.rc.right = rfPrint.rcPage.right - rMargins.right;
-  rfPrint.rc.bottom = rfPrint.rcPage.bottom - rMargins.bottom;
-
-  //Fill in the text to print
-	rfPrint.chrg.cpMin = nIndexStart;
-	rfPrint.chrg.cpMax = nIndexStop;
-
-  //Print the header (if requested to)
-  if (m_bPrintHeader)
-    PrintHeader(pDC, pInfo, rfPrint);
-
-  //Print the footer (if requested to)
-  if (m_bPrintFooter)
-    PrintFooter(pDC, pInfo, rfPrint);
-
-  //Finally ask the control to print the text
-  return GetCtrl().FormatRange(TRUE, &rfPrint);
-}
-
-void CScintillaView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-	ASSERT_VALID(pDC);
-	AFXASSUME(pInfo != NULL);
-	ASSERT(pInfo->m_bContinuePrinting);
-
-	UINT nPage = pInfo->m_nCurPage;
-	ASSERT(nPage <= (UINT) m_aPageStart.GetSize());
-	int nIndex = m_aPageStart[nPage-1];
-
-  //Determine where we should end the printing
-  int nEndPrint = 0;
-  if (pInfo->m_pPD->PrintSelection())
-    nEndPrint = GetCtrl().GetSelectionEnd();
-  else
-    nEndPrint = GetCtrl().GetTextLength();
-
-	//print as much as possible in the current page.
-	nIndex = PrintPage(pDC, pInfo, nIndex, nEndPrint);
-	if (nIndex >= nEndPrint)
-	{
-		TRACE0("End of Document\n");
-		pInfo->SetMaxPage(nPage);
-	}
-
-	//update pagination information for page just printed
-	if (nPage == (UINT) m_aPageStart.GetSize())
-	{
-		if (nIndex < nEndPrint)
-			m_aPageStart.Add(nIndex);
 	}
 	else
 	{
-		ASSERT(nPage+1 <= static_cast<UINT>(m_aPageStart.GetSize()));
-		ASSERT(nIndex == m_aPageStart[nPage+1-1]);
-	}
-}
-
-void CScintillaView::OnEndPrinting(CDC*, CPrintInfo*)
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-	
-	m_aPageStart.RemoveAll();
-}
-
-void CScintillaView::OnUpdateNeedPaste(CCmdUI* pCmdUI)
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-	
-	pCmdUI->Enable(GetCtrl().CanPaste());
-}
-
-void CScintillaView::OnUpdateNeedText(CCmdUI* pCmdUI)
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-	
-	pCmdUI->Enable(GetCtrl().GetTextLength() != 0);
-}
-
-void CScintillaView::OnUpdateNeedTextAndFollowingText(CCmdUI* pCmdUI)
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-
-  CScintillaCtrl& rCtrl = GetCtrl();
-  int nLength = rCtrl.GetTextLength();
-  long nStartChar = rCtrl.GetSelectionStart();
-
-	pCmdUI->Enable(nLength && (nStartChar != nLength));
-}
-
-void CScintillaView::OnUpdateNeedFind(CCmdUI* pCmdUI)
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-	
-	pCmdUI->Enable(GetCtrl().GetLength() != 0 && !_scintillaEditState.strFind.IsEmpty());
-}
-
-void CScintillaView::OnUpdateEditUndo(CCmdUI* pCmdUI)
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-	
-	pCmdUI->Enable(GetCtrl().CanUndo());
-}
-
-void CScintillaView::OnUpdateEditRedo(CCmdUI* pCmdUI)
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-	
-	pCmdUI->Enable(GetCtrl().CanRedo());
-}
-
-void CScintillaView::OnUpdateNeedSel(CCmdUI* pCmdUI)
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-	
-  CScintillaCtrl& rCtrl = GetCtrl();
-  long nStartChar = rCtrl.GetSelectionStart();
-  long nEndChar = rCtrl.GetSelectionEnd();
-	pCmdUI->Enable(nStartChar != nEndChar);
-}
-
-void CScintillaView::OnEditCut()
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-	
-	GetCtrl().Cut();
-}
-
-void CScintillaView::OnEditCopy()
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-	
-	GetCtrl().Copy();
-}
-
-void CScintillaView::OnEditPaste()
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-	
-	GetCtrl().Paste();
-}
-
-void CScintillaView::OnEditClear()
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-	
-	GetCtrl().Clear();
-}
-
-void CScintillaView::OnEditUndo()
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-	
-	GetCtrl().Undo();
-}
-
-void CScintillaView::OnEditRedo()
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-	
-	GetCtrl().Redo();
-}
-
-void CScintillaView::OnEditSelectAll()
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-	
-	GetCtrl().SelectAll();
-}
-
-void CScintillaView::OnEditFind()
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-	
-	OnEditFindReplace(TRUE);
-}
-
-void CScintillaView::OnEditReplace()
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-	
-	OnEditFindReplace(FALSE);
-}
-
-void CScintillaView::OnEditRepeat()
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-	
-	if (!FindText(_scintillaEditState.strFind, _scintillaEditState.bNext, _scintillaEditState.bCase, _scintillaEditState.bWord, _scintillaEditState.bRegularExpression))
-		TextNotFound(_scintillaEditState.strFind, _scintillaEditState.bNext, _scintillaEditState.bCase, _scintillaEditState.bWord, _scintillaEditState.bRegularExpression, FALSE);
-}
-
-void CScintillaView::AdjustFindDialogPosition()
-{
-  //Validate our parameters
-	AFXASSUME(_scintillaEditState.pFindReplaceDlg);
-	
-  CScintillaCtrl& rCtrl = GetCtrl();
-  int nStart = rCtrl.GetSelectionStart();
-	CPoint point;
-  point.x = rCtrl.PointXFromPosition(nStart);
-  point.y = rCtrl.PointYFromPosition(nStart);
-	ClientToScreen(&point);
-	CRect rectDlg;
-	_scintillaEditState.pFindReplaceDlg->GetWindowRect(&rectDlg);
-	if (rectDlg.PtInRect(point))
-	{
-		if (point.y > rectDlg.Height())
-			rectDlg.OffsetRect(0, point.y - rectDlg.bottom - 20);
-		else
+		if (pItem->IsSelected() || pItem->IsHighlighted())
 		{
-			int nVertExt = GetSystemMetrics(SM_CYSCREEN);
-			if (point.y + rectDlg.Height() < nVertExt)
-				rectDlg.OffsetRect(0, 40 + point.y - rectDlg.top);
+			CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("RIBBONTAB")));
+
+			int nState = 0;
+			if (pItem->IsSelected() && pItem->IsFocused())
+			{
+				nState = 5;
+			}
+			else if (pItem->IsSelected() && pItem->IsHighlighted())
+			{
+				nState = 4;
+			}
+			else if (pItem->IsSelected())
+			{
+				nState = 3;
+			}
+			else if (pItem->IsPressed())
+			{
+				nState = 2;
+			}
+			else if (pItem->IsHighlighted())
+			{
+				nState = 1;
+			}
+
+			if (pImage) pImage->DrawImage(pDC, rcEntry, pImage->GetSource(nState, 6), CRect(5, 5, 5, 5), 0xFF00FF);
 		}
-		_scintillaEditState.pFindReplaceDlg->MoveWindow(&rectDlg);
+	}
+
+	if (pItem->GetButtonLength() < pItem->GetContentLength())
+	{
+		CRect rcSeparator(rcEntry.right, rcEntry.top, rcEntry.right + 1, rcEntry.bottom);
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("RIBBONTABSEPARATOR")));
+		if (pImage) pImage->DrawImage(pDC, rcSeparator, pImage->GetSource(), CRect(0, 0, 0, 0));
+	}
+
+	if (tabColor != xtpRibbonTabContextColorNone && pItem->GetContextHeader() &&
+		(pItem->GetContextHeader()->m_pFirstTab == pItem))
+	{
+		CRect rcSeparator(rcEntry.left, rcEntry.top, rcEntry.left + 1, rcEntry.bottom - 1);
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("CONTEXTTABSEPARATOR")));
+		if (pImage) pImage->DrawImage(pDC, rcSeparator, pImage->GetSource(), CRect(0, 0, 0, 0));
+	}
+	if (tabColor != xtpRibbonTabContextColorNone && pItem->GetContextHeader() &&
+		(pItem->GetContextHeader()->m_pLastTab == pItem))
+	{
+		CRect rcSeparator(rcEntry.right, rcEntry.top, rcEntry.right + 1, rcEntry.bottom - 1);
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("CONTEXTTABSEPARATOR")));
+		if (pImage) pImage->DrawImage(pDC, rcSeparator, pImage->GetSource(), CRect(0, 0, 0, 0));
 	}
 }
 
-CScintillaFindReplaceDlg* CScintillaView::CreateFindReplaceDialog()
+void CXTPRibbonTheme::CRibbonAppearanceSet::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
 {
-  return new CScintillaFindReplaceDlg;
+	m_pRibbonTheme->DrawRibbonTab(pDC, (CXTPRibbonTab*)pItem);
+
+	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect() , TRUE);
 }
 
-void CScintillaView::OnEditFindReplace(BOOL bFindOnly)
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
 
-	m_bFirstSearch = TRUE;
-	if (_scintillaEditState.pFindReplaceDlg != NULL)
+void CXTPRibbonTheme::UpdateFonts()
+{
+	CNonClientMetrics ncm;
+	CLogFont lf;
+
+	int nBaseHeight = ncm.lfMenuFont.lfHeight < 0 ? -ncm.lfMenuFont.lfHeight : ncm.lfMenuFont.lfHeight;
+	if (m_nFontHeight > 11)
+		nBaseHeight = m_nFontHeight;
+
+	if (nBaseHeight <= 12) nBaseHeight = 11;
+
+	int nLogPixel = 96; //CWindowDC(NULL).GetDeviceCaps(LOGPIXELSY);
+
+	lf.lfWeight = FW_NORMAL;
+	lf.lfItalic = FALSE;
+	lf.lfCharSet = ncm.lfMenuFont.lfCharSet;
+	lf.lfQuality = ncm.lfMenuFont.lfQuality;
+
+	if (m_bClearTypeTextQuality && XTPSystemVersion()->IsClearTypeTextQualitySupported())
 	{
-		if (_scintillaEditState.bFindOnly == bFindOnly)
+		lf.lfQuality = 5;
+		ncm.lfSmCaptionFont.lfQuality = 5;
+		ncm.lfStatusFont.lfQuality = 5;
+	}
+	if (m_bUseOfficeFont && FontExists(m_strOfficeFont))
+	{
+		STRCPY_S(lf.lfFaceName, LF_FACESIZE, m_strOfficeFont);
+		STRCPY_S(ncm.lfStatusFont.lfFaceName, LF_FACESIZE, m_strOfficeFont);
+	}
+	else
+	{
+		STRCPY_S(lf.lfFaceName, LF_FACESIZE, ncm.lfMenuFont.lfFaceName);
+	}
+
+	lf.lfHeight = nBaseHeight * 120 / nLogPixel;
+
+	if (m_bUseStandardFont)
+	{
+		LOGFONT lfFont = lf;
+		SetCommandBarsFontIndirect(&lfFont, TRUE);
+	}
+
+	m_nTextHeight = max(22, nBaseHeight * 144 / nLogPixel + 6);
+
+	m_nEditHeight = max(22, nBaseHeight * 195 / nLogPixel);
+
+	m_nTabsHeight = m_nEditHeight > 22 ? m_nEditHeight + 2 : 23;
+
+	m_nGroupCaptionHeight = max(17, nBaseHeight * 144 / nLogPixel);
+
+	m_nSplitButtonDropDownWidth = max(12, m_nTextHeight / 2);
+
+	m_fontGroupCaption.SetStandardFont(&lf);
+
+	LOGFONT lfIcon = lf;
+	STRCPY_S(lfIcon.lfFaceName, LF_FACESIZE, ncm.lfMenuFont.lfFaceName);
+	VERIFY(m_fontIcon.SetStandardFont(&lfIcon));
+
+	lfIcon.lfWeight = FW_BOLD;
+	VERIFY(m_fontIconBold.SetStandardFont(&lfIcon));
+
+	m_pTabPaintManager->RefreshMetrics();
+	m_pTabPaintManager->SetFontIndirect(&lf, TRUE);
+
+	m_fontSmCaption.SetStandardFont(&ncm.lfSmCaptionFont);
+
+	m_fontToolTip.SetStandardFont(&ncm.lfStatusFont);
+}
+
+void CXTPRibbonTheme::RefreshMetrics()
+{
+	CXTPOffice2007Theme::RefreshMetrics();
+
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Colors
+
+	CXTPOffice2007Images* pImages = GetImages();
+
+	m_clrRibbonFace = GetImages()->GetImageColor(_T("Ribbon"), _T("RibbonFace"));
+
+	m_pTabPaintManager->GetColorSet()->m_clrHighlightText.SetStandardValue(pImages->GetImageColor(_T("Ribbon"), _T("TabNormalText")));
+	m_pTabPaintManager->GetColorSet()->m_clrNormalText.SetStandardValue(pImages->GetImageColor(_T("Ribbon"), _T("TabNormalText")));
+	m_pTabPaintManager->GetColorSet()->m_clrSelectedText.SetStandardValue(pImages->GetImageColor(_T("Ribbon"), _T("TabSelectedText")));
+
+	m_clrRibbonGroupCaptionText = pImages->GetImageColor(_T("Ribbon"), _T("GroupCaptionText"));
+
+	m_arrColor[XPCOLOR_TOOLBAR_TEXT].SetStandardValue(pImages->GetImageColor(_T("Ribbon"), _T("GroupClientText")));
+	m_clrRibbonText = pImages->GetImageColor(_T("Ribbon"), _T("RibbonText"));
+
+	m_clrControlEditNormal = pImages->GetImageColor(_T("Ribbon"), _T("ControlEditNormal"));
+
+	m_clrMinimizedFrameEdgeHighLight = pImages->GetImageColor(_T("Ribbon"), _T("MinimizedFrameEdgeHighLight"));
+	m_clrMinimizedFrameEdgeShadow = pImages->GetImageColor(_T("Ribbon"), _T("MinimizedFrameEdgeShadow"));
+
+	m_arrColor[XPCOLOR_MENUBAR_TEXT].SetStandardValue(pImages->GetImageColor(_T("Ribbon"), _T("MenuPopupText")));
+
+	m_clrMenuGripper.SetStandardValue(pImages->GetImageColor(_T("Ribbon"), _T("MenuPopupGripper")));
+	m_clrMenuExpandedGripper.SetStandardValue(pImages->GetImageColor(_T("Ribbon"), _T("MenuPopupExpandedGripperLight")),
+		pImages->GetImageColor(_T("Ribbon"), _T("MenuPopupExpandedGripperDark")));
+
+	m_clrShadowFactor = 0;
+
+	m_arrColor[XPCOLOR_MENUBAR_GRAYTEXT].SetStandardValue(RGB(167, 167, 167));
+	m_arrColor[XPCOLOR_HIGHLIGHT_TEXT].SetStandardValue(pImages->GetImageColor(_T("Ribbon"), _T("ControlHighlightText")));
+
+	m_arrColor[XPCOLOR_MENUBAR_BORDER].SetStandardValue(RGB(134, 134, 134));
+	m_arrColor[XPCOLOR_MENUBAR_FACE].SetStandardValue(RGB(250, 250, 250));
+
+	m_clrMenuExpand.SetStandardValue(RGB(233, 238, 238), RGB(233, 238, 238));
+
+	CreateGradientCircle();
+}
+
+
+CXTPTabPaintManager* CXTPRibbonTheme::CreateTabPaintManager()
+{
+	CXTPTabPaintManager* pTabPaintManager = new CXTPTabPaintManager();
+	pTabPaintManager->SetAppearanceSet(new CRibbonAppearanceSet(this));
+	pTabPaintManager->SetLayout(xtpTabLayoutSizeToFit);
+
+	pTabPaintManager->SetColorSet(new CRibbonColorSet);
+	pTabPaintManager->m_bFillBackground = FALSE;
+	pTabPaintManager->m_bHotTracking = TRUE;
+	pTabPaintManager->m_clientFrame = xtpTabFrameSingleLine;
+	pTabPaintManager->m_bDrawTextNoPrefix = FALSE;
+	pTabPaintManager->m_rcButtonMargin.SetRect(0, 2, 0, 2);
+	pTabPaintManager->m_rcButtonTextPadding.SetRect(4, 0, 4, 0);
+	pTabPaintManager->m_nButtonExtraLength = 21;
+	pTabPaintManager->m_bDrawTextEndEllipsis = FALSE;
+	pTabPaintManager->m_bDrawFocusRect = FALSE;
+	pTabPaintManager->EnableToolTips(xtpTabToolTipShrinkedOnly);
+	pTabPaintManager->m_bClearTypeTextQuality = m_bClearTypeTextQuality;
+	pTabPaintManager->m_bClipHeader = FALSE;
+
+	return pTabPaintManager;
+}
+
+void CXTPRibbonTheme::FillGroupPopupToolBar(CDC* pDC, CXTPRibbonGroup* pGroup, CXTPCommandBar* pCommandBar)
+{
+	pDC->SetBkMode(TRANSPARENT);
+
+	CXTPClientRect rcRibbon(pCommandBar);
+
+	pDC->FillSolidRect(rcRibbon, RGB(191, 219, 255));
+
+	rcRibbon.InflateRect(3, 3);
+	XTPRibbonTabContextColor tabColor = pGroup->GetParentTab()->GetContextColor();
+
+	if (tabColor != xtpRibbonTabContextColorNone)
+	{
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("CONTEXTTAB%sCLIENT"), GetColorName(tabColor)));
+		if (pImage) pImage->DrawImage(pDC, rcRibbon, pImage->GetSource(0, 1), CRect(8, 8, 8, 8));
+	}
+	else
+	{
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("RIBBONGROUPS")));
+		if (pImage) pImage->DrawImage(pDC, rcRibbon, pImage->GetSource(0, 1), CRect(8, 8, 8, 8));
+	}
+}
+
+void CXTPRibbonTheme::DrawGroup(CDC* pDC, CXTPRibbonGroup* pGroup)
+{
+	CRect rcGroup(pGroup->GetRect());
+
+	CRect rcGroupClient(rcGroup.left, rcGroup.top, rcGroup.right, rcGroup.bottom - m_nGroupCaptionHeight);
+	CRect rcGroupCaption(rcGroup.left, rcGroupClient.bottom, rcGroup.right, rcGroup.bottom);
+
+
+	if (!pGroup->IsReduced())
+	{
+		CXTPOffice2007Image* pImage, *pImageCaption;
+
+		if (pGroup->GetParentTab()->GetContextColor() == xtpRibbonTabContextColorNone)
 		{
-			_scintillaEditState.pFindReplaceDlg->SetActiveWindow();
-			_scintillaEditState.pFindReplaceDlg->ShowWindow(SW_SHOW);
-			return;
+			pImage = LoadImage(FormatName(_T("RIBBONGROUPCLIENT")));
+			pImageCaption = LoadImage(FormatName(_T("RIBBONGROUPCAPTION")));
 		}
 		else
 		{
-			ASSERT(_scintillaEditState.bFindOnly != bFindOnly);
-			_scintillaEditState.pFindReplaceDlg->SendMessage(WM_CLOSE);
-			ASSERT(_scintillaEditState.pFindReplaceDlg == NULL);
-			ASSERT_VALID(this);
+			pImage = LoadImage(FormatName(_T("CONTEXTTABGROUPCLIENT")));
+			pImageCaption = LoadImage(FormatName(_T("CONTEXTTABGROUPCAPTION")));
 		}
-	}
-  CScintillaCtrl& rCtrl = GetCtrl();
-	CString strFind(rCtrl.GetSelText());
-	//if selection is empty or spans multiple lines use old find text
-	if (strFind.IsEmpty() || (strFind.FindOneOf(_T("\n\r")) != -1))
-		strFind = _scintillaEditState.strFind;
 
-	CString strReplace(_scintillaEditState.strReplace);
-	_scintillaEditState.pFindReplaceDlg = CreateFindReplaceDialog();
-	AFXASSUME(_scintillaEditState.pFindReplaceDlg != NULL);
-	DWORD dwFlags = NULL;
-	if (_scintillaEditState.bNext)
-		dwFlags |= FR_DOWN;
-	if (_scintillaEditState.bCase)
-		dwFlags |= FR_MATCHCASE;
-	if (_scintillaEditState.bWord)
-		dwFlags |= FR_WHOLEWORD;
-  if (_scintillaEditState.bRegularExpression)
-    _scintillaEditState.pFindReplaceDlg->SetRegularExpression(TRUE);
+		int nState = pGroup->IsHighlighted() ? 1 : 0;
 
-	if (!_scintillaEditState.pFindReplaceDlg->Create(bFindOnly, strFind, strReplace, dwFlags, this))
-	{
-		_scintillaEditState.pFindReplaceDlg = NULL;
-		ASSERT_VALID(this);
-		return;
+		if (pImage) pImage->DrawImage(pDC, rcGroupClient, pImage->GetSource(nState, 2), CRect(5, 5, 5, 5));
+		if (pImageCaption) pImageCaption->DrawImage(pDC, rcGroupCaption,  pImageCaption->GetSource(nState, 2), CRect(5, 5, 5, 5));
+
+
+		CString strCaption = pGroup->GetCaption();
+		XTPDrawHelpers()->StripMnemonics(strCaption);
+
+		CXTPFontDC font(pDC, &m_fontGroupCaption);
+
+		CRect rcGroupCaptionText(rcGroupCaption);
+		rcGroupCaptionText.OffsetRect(0, -1);
+		if (pGroup->IsOptionButtonVisible())
+			rcGroupCaptionText.right -= m_nGroupCaptionHeight + 1;
+		rcGroupCaptionText.DeflateRect(2, 2);
+
+		pDC->SetTextColor(m_clrRibbonGroupCaptionText);
+		pDC->DrawText(strCaption, rcGroupCaptionText, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX | DT_END_ELLIPSIS | DT_CENTER);
 	}
-	ASSERT(_scintillaEditState.pFindReplaceDlg != NULL);
-	_scintillaEditState.bFindOnly = bFindOnly;
-	_scintillaEditState.pFindReplaceDlg->SetActiveWindow();
-	_scintillaEditState.pFindReplaceDlg->ShowWindow(SW_SHOW);
-	ASSERT_VALID(this);
 }
 
-void CScintillaView::OnFindNext(LPCTSTR lpszFind, BOOL bNext, BOOL bCase, BOOL bWord, BOOL bRegularExpression)
+void CXTPRibbonTheme::FillTabPopupToolBar(CDC* pDC, CXTPPopupToolBar* pPopupToolBar)
 {
-  //Validate our parameters
-	ASSERT_VALID(this);
-	
-	_scintillaEditState.strFind = lpszFind;
-	_scintillaEditState.bCase = bCase;
-	_scintillaEditState.bWord = bWord;
-	_scintillaEditState.bNext = bNext;
-  _scintillaEditState.bRegularExpression = bRegularExpression;
+	CXTPClientRect rcRibbonClient(pPopupToolBar);
+	pDC->FillSolidRect(rcRibbonClient, m_clrRibbonFace);
+}
 
-	if (!FindText(_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression))
-		TextNotFound(_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression, FALSE);
+void CXTPRibbonTheme::FillRibbonBar(CDC* pDC, CXTPRibbonBar* pRibbonBar)
+{
+
+	CXTPClientRect rcRibbonClient(pRibbonBar);
+	if (pRibbonBar->IsFrameThemeEnabled())
+		rcRibbonClient.top += m_nRibbonCaptionHeight;
+
+	CRect rcRibbonTabs(rcRibbonClient.left, rcRibbonClient.top, rcRibbonClient.right, rcRibbonClient.top + m_nTabsHeight);
+	CRect rcRibbonGroups(rcRibbonClient.left, rcRibbonTabs.bottom, rcRibbonClient.right, rcRibbonClient.bottom);
+
+	pDC->FillSolidRect(rcRibbonTabs, m_clrRibbonFace);
+	pDC->FillSolidRect(rcRibbonGroups, m_clrRibbonFace);
+
+	if (pRibbonBar->IsQuickAccessBelowRibbon())
+	{
+		CRect rcQuickAccess = pRibbonBar->GetQuickAccessRect();
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("RIBBONQUICKACCESSFRAME")));
+		if (pImage) pImage->DrawImage(pDC, rcQuickAccess, pImage->GetSource(0, 1), CRect(3, 3, 3, 3));
+	}
+
+	if (!pRibbonBar->IsGroupsVisible() && !pRibbonBar->IsQuickAccessBelowRibbon())
+	{
+		HorizontalLine(pDC, rcRibbonClient.left, rcRibbonClient.bottom - 2, rcRibbonClient.right, m_clrMinimizedFrameEdgeShadow);
+		HorizontalLine(pDC, rcRibbonClient.left, rcRibbonClient.bottom - 1, rcRibbonClient.right, m_clrMinimizedFrameEdgeHighLight);
+	}
+}
+
+void CXTPRibbonTheme::FillGroupRect(CDC* pDC, CXTPRibbonTab* pActiveTab, CRect rcGroups)
+{
+	XTPRibbonTabContextColor tabColor = pActiveTab ? pActiveTab->GetContextColor() : xtpRibbonTabContextColorNone;
+
+	if (tabColor != xtpRibbonTabContextColorNone)
+	{
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("CONTEXTTAB%sCLIENT"), GetColorName(tabColor)));
+		if (pImage) pImage->DrawImage(pDC, rcGroups, pImage->GetSource(0, 1), CRect(8, 8, 8, 8));
+	}
 	else
-		AdjustFindDialogPosition();
-	ASSERT_VALID(this);
+	{
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("RIBBONGROUPS")));
+		if (pImage) pImage->DrawImage(pDC, rcGroups, pImage->GetSource(0, 1), CRect(8, 8, 8, 8));
+	}
 }
 
-void CScintillaView::OnReplaceSel(LPCTSTR lpszFind, BOOL bNext, BOOL bCase,	BOOL bWord, BOOL bRegularExpression, LPCTSTR lpszReplace)
+CSize CXTPRibbonTheme::DrawControlGroupOption(CDC* pDC, CXTPControl* pControlGroupOption, BOOL bDraw)
 {
-  //Validate our parameters
-	ASSERT_VALID(this);
-	
-	_scintillaEditState.strFind = lpszFind;
-	_scintillaEditState.strReplace = lpszReplace;
-	_scintillaEditState.bCase = bCase;
-	_scintillaEditState.bWord = bWord;
-	_scintillaEditState.bNext = bNext;
-  _scintillaEditState.bRegularExpression = bRegularExpression;
-
-  CScintillaCtrl& rCtrl = GetCtrl();
-
-	if (!SameAsSelected(_scintillaEditState.strFind, bCase, bWord, bRegularExpression))
+	if (bDraw)
 	{
-		if (!FindText(_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression))
-			TextNotFound(_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression, TRUE);
-		else
-			AdjustFindDialogPosition();
-		return;
+		CRect rc = pControlGroupOption->GetRect();
+
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("RIBBONOPTIONBUTTON")));
+
+		int nState = 0;
+		if (pControlGroupOption->GetSelected()) nState = 1;
+		if (pControlGroupOption->GetPressed()) nState = 2;
+
+		if (pImage) pImage->DrawImage(pDC, rc, pImage->GetSource(nState, 4), CRect(3, 2, 2, 2), 0xFF00FF);
 	}
 
-  if (bRegularExpression)
-  {
-    rCtrl.TargetFromSelection();
-    rCtrl.ReplaceTargetRE(_scintillaEditState.strReplace.GetLength(), _scintillaEditState.strReplace);    
-  }
-  else
-  	GetCtrl().ReplaceSel(_scintillaEditState.strReplace);
-	if (!FindText(_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression))
-		TextNotFound(_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression, TRUE);
-	else
-		AdjustFindDialogPosition();
-	ASSERT_VALID(this);
+	return CSize(15, 14);
 }
 
-void CScintillaView::OnReplaceAll(LPCTSTR lpszFind, LPCTSTR lpszReplace, BOOL bCase, BOOL bWord, BOOL bRegularExpression)
+CSize CXTPRibbonTheme::DrawControlGroupPopup(CDC* pDC, CXTPControlPopup* pControlGroupPopup, BOOL bDraw)
 {
-  //Validate our parameters
-	ASSERT_VALID(this);
-	
-	_scintillaEditState.strFind = lpszFind;
-	_scintillaEditState.strReplace = lpszReplace;
-	_scintillaEditState.bCase = bCase;
-	_scintillaEditState.bWord = bWord;
-	_scintillaEditState.bNext = TRUE;
-  _scintillaEditState.bRegularExpression = bRegularExpression;
+	CXTPRibbonGroup* pRibbonGroup = pControlGroupPopup->GetRibbonGroup();
+	CXTPOffice2007Image* pImage = NULL;
 
-	CWaitCursor wait;
+	int nOffset = 0;
+	if (pControlGroupPopup->GetSelected()) nOffset = 1;
+	if (pControlGroupPopup->GetPopuped()) nOffset = 2;
 
-  //Set the selection to the begining of the document to ensure all text is replaced in the document
-  long start_pos, end_pos;
-  GetReplaceAllTarget(start_pos,end_pos);
-
-  CScintillaCtrl& c = GetCtrl();
-  bool has_selection = c.GetSelectionStart() != c.GetSelectionEnd();
-
-  int flags = 0;
-
-  if (bCase)
-	  flags |= SCFIND_MATCHCASE;
-
-  if (bRegularExpression)
-	  flags |= SCFIND_REGEXP;
-
-  if (bWord)
-	  flags |= SCFIND_WHOLEWORD;
-
-  c.SetSearchFlags(flags);
-  c.BeginUndoAction();
-
-  c.SetTargetStart(start_pos);
-  c.SetTargetEnd(end_pos);
-
-  long find_pos;
-  bool bFoundSomething = false;
-
-  while ((find_pos = c.SearchInTarget(_scintillaEditState.strFind.GetLength(),_scintillaEditState.strFind)) != -1)
-  {
-	  c.ReplaceTarget(_scintillaEditState.strReplace.GetLength(),_scintillaEditState.strReplace);
-	  c.SetTargetStart(c.GetTargetEnd() + 1);
-	  c.SetTargetEnd(end_pos); // Still end position
-
-	  if (!bFoundSomething)
-		  bFoundSomething = true;
-  }
-
-  c.EndUndoAction();
-
-  if (has_selection) // Was the text previously selected?
-	  c.SetSel(start_pos,c.GetTargetEnd());
-
-  //Inform the user if we could not find anything
-  if (!bFoundSomething)
-    TextNotFound(_scintillaEditState.strFind, _scintillaEditState.bNext, bCase, bWord, bRegularExpression, TRUE);
-
-	ASSERT_VALID(this);
-}
-
-LRESULT CScintillaView::OnFindReplaceCmd(WPARAM /*wParam*/, LPARAM lParam)
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-
-	CScintillaFindReplaceDlg* pDialog = static_cast<CScintillaFindReplaceDlg*>(CFindReplaceDialog::GetNotifier(lParam));
-	AFXASSUME(pDialog != NULL);
-	ASSERT(pDialog == _scintillaEditState.pFindReplaceDlg);
-
-	if (pDialog->IsTerminating())
-		_scintillaEditState.pFindReplaceDlg = NULL;
-	else if (pDialog->FindNext())
-		OnFindNext(pDialog->GetFindString(), pDialog->SearchDown(), pDialog->MatchCase(), pDialog->MatchWholeWord(), pDialog->GetRegularExpression());
-	else if (pDialog->ReplaceCurrent())
+	if (!pRibbonGroup)
 	{
-		ASSERT(!_scintillaEditState.bFindOnly);
-		OnReplaceSel(pDialog->GetFindString(), pDialog->SearchDown(), pDialog->MatchCase(), pDialog->MatchWholeWord(), pDialog->GetRegularExpression(), pDialog->GetReplaceString());
-	}
-	else if (pDialog->ReplaceAll())
-	{
-		ASSERT(!_scintillaEditState.bFindOnly);
-		OnReplaceAll(pDialog->GetFindString(), pDialog->GetReplaceString(), pDialog->MatchCase(), pDialog->MatchWholeWord(), pDialog->GetRegularExpression());
-	}
-	ASSERT_VALID(this);
-
-	return 0;
-}
-
-BOOL CScintillaView::SameAsSelected(LPCTSTR lpszCompare, BOOL bCase, BOOL bWord, BOOL bRegularExpression)
-{
-  CScintillaCtrl& rCtrl = GetCtrl();
-
-  //check length first
-	int nStartChar = rCtrl.GetSelectionStart();                           //get the selection size    
-  int nEndChar = rCtrl.GetSelectionEnd();
-  size_t nLen = lstrlen(lpszCompare);                                   //get the #chars to search for
-  if (!bRegularExpression && (nLen != (size_t)(nEndChar - nStartChar))) //if not a regular expression...
-    return FALSE;                                                       //...sizes must match,
-
-  //Now use the advanced search functionality of scintilla to determine the result
-  int iFlags = bCase ? SCFIND_MATCHCASE : 0;
-  iFlags |= bWord ? SCFIND_WHOLEWORD : 0;
-  iFlags |= bRegularExpression ? SCFIND_REGEXP : 0;
-  rCtrl.SetSearchFlags(iFlags);
-  rCtrl.TargetFromSelection();                     //set target
-  if (rCtrl.SearchInTarget(static_cast<int>(nLen), lpszCompare) < 0) //see what we got
-    return FALSE;                                  //no match
-
-  //If we got a match, the target is set to the found text
-  return (rCtrl.GetTargetStart() == nStartChar) && (rCtrl.GetTargetEnd() == nEndChar);
-}
-
-BOOL CScintillaView::FindText(LPCTSTR lpszFind, BOOL bNext, BOOL bCase, BOOL bWord, BOOL bRegularExpression)
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-	
-	CWaitCursor wait;
-	return FindTextSimple(lpszFind, bNext, bCase, bWord, bRegularExpression);
-}
-
-BOOL CScintillaView::FindTextSimple(LPCTSTR lpszFind, BOOL bNext, BOOL bCase, BOOL bWord, BOOL bRegularExpression)
-{
-  //Validate our parameters
-	ASSERT(lpszFind != NULL);
-
-  CScintillaCtrl& rCtrl = GetCtrl();
-
-	TextToFind ft;
-  ft.chrg.cpMin = rCtrl.GetSelectionStart();
-  ft.chrg.cpMax = rCtrl.GetSelectionEnd();
-	if (m_bFirstSearch)
-		m_bFirstSearch = FALSE;
-
-#ifdef _UNICODE
-	CScintillaCtrl::W2UTF8(lpszFind, -1, ft.lpstrText);
-#else
-	ft.lpstrText = T2A(const_cast<LPTSTR>(lpszFind));
-#endif
-	if (ft.chrg.cpMin != ft.chrg.cpMax) // i.e. there is a selection
-	{
-#ifndef _UNICODE
-		// If byte at beginning of selection is a DBCS lead byte,
-		// increment by one extra byte.
-		TEXTRANGE textRange;
-		TCHAR ch[2];
-		textRange.chrg.cpMin = ft.chrg.cpMin;
-		textRange.chrg.cpMax = ft.chrg.cpMin + 1;
-		textRange.lpstrText = ch;
-		rCtrl.SendMessage(EM_GETTEXTRANGE, 0, (LPARAM)&textRange);
-		if (_istlead(ch[0]))
+		if (bDraw)
 		{
-			ASSERT(ft.chrg.cpMax - ft.chrg.cpMin >= 2);
+			pImage = LoadImage(FormatName(_T("RIBBONGROUPQUICKACCESS")));
+			ASSERT(pImage);
 
-      if (bNext)
-  			ft.chrg.cpMin++;
-      else
-        ft.chrg.cpMax = ft.chrg.cpMin - 1;
+			if (pImage) pImage->DrawImage(pDC, pControlGroupPopup->GetRect(),
+				pImage->GetSource(nOffset, 3), CRect(2, 2, 2, 2), 0xFF00FF, GetDrawImageFlags(pControlGroupPopup));
 		}
-#endif
-
-    if (bNext)  
-		  ft.chrg.cpMin++;
-    else
-      ft.chrg.cpMax = ft.chrg.cpMin - 1;
+		return DrawControlToolBarParent(pDC, pControlGroupPopup, bDraw);
 	}
 
-  int nLength = rCtrl.GetLength();
-  if (bNext)
-    ft.chrg.cpMax = nLength;
+	if (bDraw)
+	{
+		CRect rc = pControlGroupPopup->GetRect();
+
+		XTPRibbonTabContextColor tabColor = pRibbonGroup ? pRibbonGroup->GetParentTab()->GetContextColor() : xtpRibbonTabContextColorNone;
+
+		if (tabColor != xtpRibbonTabContextColorNone)
+		{
+			pImage = LoadImage(FormatName(_T("CONTEXTTAB%sGROUPBUTTON"), GetColorName(tabColor)));
+		}
+		else
+		{
+			pImage = LoadImage(FormatName(_T("RIBBONGROUPBUTTON")));
+		}
+
+		if (pImage) pImage->DrawImage(pDC, rc, pImage->GetSource(nOffset, 3), CRect(5, 5, 5, 5));
+	}
+
+	CSize szButton(max(42, m_nTextHeight * 2 - 3), m_nEditHeight * 3);
+
+	CXTPFontDC font(pDC, GetCommandBarFont(pControlGroupPopup->GetParent(), FALSE));
+
+	int nSplitDropDownHeight = GetSplitDropDownHeight();
+
+	if (bDraw)
+	{
+		CXTPImageManagerIcon* pImageIcon = pControlGroupPopup->GetImage(0);
+		BOOL bDrawImage = (pImageIcon != NULL);
+
+		CRect rcButton = pControlGroupPopup->GetRect();
+		if (bDrawImage)
+		{
+			CSize sz(pImageIcon->GetWidth(), pImageIcon->GetHeight());
+
+			CPoint pt = CPoint(rcButton.CenterPoint().x - sz.cx / 2, rcButton.top + 4);
+
+			if (sz.cx < 20)
+			{
+				CXTPOffice2007Image* pImageButton = LoadImage(FormatName(_T("RIBBONGROUPBUTTONICON")));
+				CRect rc(CPoint(rcButton.CenterPoint().x - pImageButton->GetWidth() / 2, rcButton.top + 2),
+					CSize(pImageButton->GetWidth(), pImageButton->GetHeight()));
+
+				if (pImageButton) pImageButton->DrawImage(pDC, rc, pImageButton->GetSource(0, 1), CRect(0, 0, 0, 0));
+
+				pt.y = rcButton.top + 9;
+			}
+
+			DrawImage(pDC, pt, sz, pImageIcon,
+				pControlGroupPopup->GetSelected(), pControlGroupPopup->GetPressed(),
+				pControlGroupPopup->GetEnabled(), FALSE, pControlGroupPopup->GetPopuped());
+		}
+
+		CRect rcText = rcButton;
+		rcText.bottom -= m_nGroupCaptionHeight + 2;
+		rcText.top = rcText.bottom - nSplitDropDownHeight;
+
+		pDC->SetTextColor(GetControlTextColor(pControlGroupPopup));
+		DrawControlText2(pDC, pControlGroupPopup, rcText, TRUE, FALSE, TRUE);
+	}
 	else
- 	  ft.chrg.cpMin = 0;
+	{
+		CSize szText = DrawControlText2(pDC, pControlGroupPopup, CXTPEmptyRect(), FALSE, FALSE, TRUE);
 
-	DWORD dwFlags = bCase ? SCFIND_MATCHCASE : 0;
-	dwFlags |= bWord ? SCFIND_WHOLEWORD : 0;
-  dwFlags |= bRegularExpression ? SCFIND_REGEXP : 0;
-
-  if (!bNext)
-  {
-    //Swap the start and end positions which Scintilla uses to flag backward searches
-    int ncpMinTemp = ft.chrg.cpMin;
-    ft.chrg.cpMin = ft.chrg.cpMax;
-    ft.chrg.cpMax = ncpMinTemp;
-  }
-
-	//if we find the text return TRUE
-	BOOL bFound = (FindAndSelect(dwFlags, ft) != -1);
-
-#ifdef _UNICODE
-  //Tidy up the heap memory before we return
-  delete [] ft.lpstrText;
-#endif
-
-  return bFound;
+		szButton.cx = max(szButton.cx, szText.cx + 5);
+	}
+	return szButton;
 }
 
-long CScintillaView::FindAndSelect(DWORD dwFlags, TextToFind& ft)
-{
-  CScintillaCtrl& rCtrl = GetCtrl();
-	long index = rCtrl.FindText(dwFlags, &ft);
-	if (index != -1) // i.e. we found something
-    rCtrl.SetSel(ft.chrgText.cpMin, ft.chrgText.cpMax);
-	return index;
-}
+//////////////////////////////////////////////////////////////////////////
+// CommandBars Theme
 
-void CScintillaView::TextNotFound(LPCTSTR /*lpszFind*/, BOOL /*bNext*/, BOOL /*bCase*/, BOOL /*bWord*/, BOOL /*bRegularExpression*/, BOOL /*bReplaced*/)
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-	
-	m_bFirstSearch = TRUE;
-  MessageBeep(MB_ICONHAND);
-}
 
-void CScintillaView::OnSetFocus(CWnd* /*pOldWnd*/) 
-{
-  //Give the focus to the child control
-	m_Edit.SetFocus();
-}
 
-void CScintillaView::OnSize(UINT nType, int cx, int cy) 
+BOOL CXTPRibbonTheme::IsImagesAvailable()
 {
-  //Let the base class do its thing
-	CView::OnSize(nType, cx, cy);
-
-  //Resize the edit control to be the size of the client area
-  CRect r;
-  GetClientRect(&r);
-  m_Edit.MoveWindow(&r);	
-}
-
-BOOL CScintillaView::OnEraseBkgnd(CDC* /*pDC*/) 
-{
-  //We do nothing here, because the scintilla control takes up the entire 
-  //client area of our view;
 	return TRUE;
 }
 
-void CScintillaView::OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView)
+void CXTPRibbonTheme::DrawControlEntry(CDC* pDC, CXTPControl* pButton)
 {
-	//need to set owner of Find/Replace dialog
-	if (_scintillaEditState.pFindReplaceDlg && pActivateView == this)
-		_scintillaEditState.pFindReplaceDlg->m_fr.hwndOwner = m_hWnd;
+	if (pButton->GetRibbonGroup() && pButton->GetRibbonGroup()->IsControlsGrouping())
+	{
+		BOOL bLeft = pButton->GetBeginGroup() || pButton->GetWrap();
 
-  //let the base class do its thing
-	CView::OnActivateView(bActivate, pActivateView, pDeactiveView);
+		int nIndexNext = pButton->GetControls()->GetNext(pButton->GetIndex());
+
+		BOOL bRight = nIndexNext <= pButton->GetIndex() ||
+			pButton->GetControls()->GetAt(nIndexNext)->GetBeginGroup() ||
+			pButton->GetControls()->GetAt(nIndexNext)->GetWrap();
+
+		CString strImage = FormatName(bLeft && bRight ? _T("TOOLBARBUTTONSSPECIALSINGLE") :
+			bLeft ? _T("TOOLBARBUTTONSSPECIALLEFT") :
+			bRight ? _T("TOOLBARBUTTONSSPECIALRIGHT") :
+			_T("TOOLBARBUTTONSSPECIALCENTER"));
+
+		CXTPOffice2007Image* pImage = LoadImage(strImage);
+		ASSERT(pImage);
+		if (!pImage)
+			return;
+
+		BOOL bPopuped = pButton->GetPopuped();
+		BOOL bEnabled = pButton->GetEnabled();
+		BOOL bChecked = pButton->GetChecked();
+		BOOL bSelected = pButton->GetSelected();
+		BOOL bPressed = pButton->GetPressed();
+		CRect rc = pButton->GetRect();
+
+		CRect rcSrc = CRect(0, 0, 22, 22);
+
+		int nState = 0;
+
+		if (!bEnabled)
+		{
+			if (IsKeyboardSelected(bSelected)) nState = 0 + 1;
+		}
+		else if (bPopuped) nState = 2 + 1;
+		else if (bChecked && !bSelected && !bPressed) nState = 2 + 1;
+		else if (bChecked && bSelected && !bPressed) nState = 3 + 1;
+		else if (IsKeyboardSelected(bPressed) || (bSelected && bPressed)) nState = 1 + 1;
+		else if (bSelected || bPressed) nState = 0 + 1;
+
+		rcSrc.OffsetRect(0, rcSrc.Height() * nState);
+		pImage->DrawImage(pDC, rc, rcSrc, CRect(2, 2, 2, 2), 0xFF00FF);
+		return;
+	}
+
+	CXTPOffice2007Theme::DrawControlEntry(pDC, pButton);
 }
 
-int CScintillaView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
+COLORREF CXTPRibbonTheme::GetControlTextColor(CXTPControl* pButton)
 {
-  //let the base class do its thing
-	if (CView::OnCreate(lpCreateStruct) == -1)
-		return -1;
-	
-  //Create the scintilla edit control  
-  CRect r;
-  if (!m_Edit.Create(WS_CHILD|WS_VISIBLE|WS_TABSTOP, r, this, 0))
-    return -1;
-	
+	if (pButton->GetParent()->GetType() == xtpBarTypeRibbon && pButton->GetRibbonGroup() == NULL)
+	{
+		CXTPRibbonBar* pRibbonBar = (CXTPRibbonBar*)pButton->GetParent();
+
+		BOOL bCheckBoxStyle = (pButton->GetType() == xtpControlCheckBox || pButton->GetType() == xtpControlRadioButton);
+		if (pButton->IsKindOf(RUNTIME_CLASS(CXTPRibbonGroupControlPopup)))
+			bCheckBoxStyle = TRUE;
+
+		BOOL bNormalText = bCheckBoxStyle ? pButton->GetEnabled() :
+			!pButton->GetSelected() && pButton->GetEnabled() &&
+			!pButton->GetPressed() && !pButton->GetChecked() && !pButton->GetPopuped();
+
+
+		if (bNormalText && pRibbonBar->IsQuickAccessControl(pButton))
+		{
+			if (pButton->HasDwmCompositedRect())
+			{
+				return pRibbonBar->GetSite()->GetStyle() & WS_MAXIMIZE ? RGB(255, 255, 255) : RGB(0, 0, 0);
+			}
+
+			return m_clrRibbonText;
+		}
+
+		if (bNormalText)
+		{
+			return m_clrRibbonText;
+		}
+	}
+
+	return CXTPOffice2007Theme::GetControlTextColor(pButton);
+}
+
+COLORREF CXTPRibbonTheme::GetRectangleTextColor(BOOL bSelected, BOOL bPressed, BOOL bEnabled, BOOL bChecked, BOOL bPopuped, XTPBarType barType, XTPBarPosition /*barPosition*/)
+{
+	if (barType == xtpBarTypeMenuBar && !bSelected && bEnabled && !bPressed && !bChecked && !bPopuped)
+	{
+		return m_clrMenuBarText;
+	}
+
+	if (barType == xtpBarTypePopup)
+	{
+		return GetXtremeColor(!bEnabled ? XPCOLOR_MENUBAR_GRAYTEXT : XPCOLOR_MENUBAR_TEXT);
+	}
+
+	return GetXtremeColor(!bEnabled ? XPCOLOR_TOOLBAR_GRAYTEXT : XPCOLOR_TOOLBAR_TEXT);
+}
+
+void CXTPRibbonTheme::DrawRectangle(CDC* pDC, CRect rc, BOOL bSelected, BOOL bPressed, BOOL bEnabled /*= TRUE*/, BOOL bChecked /*= FALSE*/, BOOL bPopuped /*= FALSE*/, XTPBarType barType, XTPBarPosition barPosition)
+{
+	if (!IsImagesAvailable())
+	{
+		CXTPOffice2003Theme::DrawRectangle(pDC, rc, bSelected, bPressed, bEnabled, bChecked, bPopuped, barType, barPosition);
+		return;
+	}
+
+	if (barType != xtpBarTypePopup)
+	{
+		BOOL bSmallSize = rc.Height() < 33;
+
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(bSmallSize ? _T("TOOLBARBUTTONS22") : _T("TOOLBARBUTTONS50")));
+		ASSERT(pImage);
+		if (!pImage)
+			return;
+
+		int nState = -1;
+
+		if (!bEnabled)
+		{
+			if (IsKeyboardSelected(bSelected)) nState = 0;
+		}
+		else if (bPopuped) nState = 2;
+		else if (bChecked && !bSelected && !bPressed) nState = 2;
+		else if (bChecked && bSelected && !bPressed) nState = 3;
+		else if (IsKeyboardSelected(bPressed) || (bSelected && bPressed)) nState = 1;
+		else if (bSelected || bPressed) nState = 0;
+
+		if (nState != -1)
+		{
+			pImage->DrawImage(pDC, rc, pImage->GetSource(nState, 4), CRect(8, 8, 8, 8), COLORREF_NULL);
+		}
+	}
+	else if (barPosition == xtpBarPopup && bChecked && barType == xtpBarTypePopup)
+	{
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("MENUCHECKEDITEM")));
+		ASSERT(pImage);
+		if (!pImage)
+			return;
+
+		CRect rcSrc(0, 0, pImage->GetWidth(), pImage->GetHeight() / 2);
+		if (!bEnabled)
+			rcSrc.OffsetRect(0, rcSrc.Height());
+
+		pImage->DrawImage(pDC, rc, rcSrc, CRect(4, 4, 4, 4));
+	}
+	else if (barPosition == xtpBarPopup && bSelected && barType == xtpBarTypePopup)
+	{
+		if (!bEnabled && !IsKeyboardSelected(bSelected))
+			return;
+
+		BOOL bSmallSize = rc.Height() < 33;
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(
+			!bEnabled ? bSmallSize ? _T("MENUSELECTEDDISABLEDITEM22") : _T("MENUSELECTEDDISABLEDITEM54") :
+				bSmallSize ? _T("MENUSELECTEDITEM22") : _T("MENUSELECTEDITEM54")));
+		ASSERT(pImage);
+		if (!pImage)
+			return;
+
+		CRect rcSrc(0, 0, pImage->GetWidth(), pImage->GetHeight());
+		pImage->DrawImage(pDC, rc, rcSrc, CRect(4, 4, 4, 4));
+
+	}
+	else
+	{
+		CXTPOffice2003Theme::DrawRectangle(pDC, rc, bSelected, bPressed, bEnabled, bChecked, bPopuped, barType, barPosition);
+	}
+}
+
+
+void CXTPRibbonTheme::DrawSplitButtonFrame(CDC* pDC, CXTPControl* pButton, CRect rcButton)
+{
+	if (!IsImagesAvailable())
+	{
+		CXTPOffice2003Theme::DrawSplitButtonFrame(pDC, pButton, rcButton);
+		return;
+	}
+
+	BOOL bPressed = pButton->GetPressed(), bSelected = pButton->GetSelected(), bEnabled = pButton->GetEnabled(), bChecked = pButton->GetChecked(),
+		bPopuped = pButton->GetPopuped();
+
+	BOOL bSmallSize = pButton->GetStyle() != xtpButtonIconAndCaptionBelow;
+
+	CXTPOffice2007Image* pImageSplit, *pImageSplitDropDown;
+
+	int nSpecialOffset = 0;
+
+	if (pButton->GetRibbonGroup() && pButton->GetRibbonGroup()->IsControlsGrouping())
+	{
+		bSmallSize = TRUE;
+		BOOL bLeft = pButton->GetBeginGroup() || pButton->GetWrap();
+
+		int nIndexNext = pButton->GetControls()->GetNext(pButton->GetIndex());
+
+		BOOL bRight = nIndexNext <= pButton->GetIndex() ||
+			pButton->GetControls()->GetAt(nIndexNext)->GetBeginGroup() ||
+			pButton->GetControls()->GetAt(nIndexNext)->GetWrap();
+
+		CString strImage = bLeft ? FormatName(_T("TOOLBARBUTTONSSPECIALSPLITLEFT")) :
+			FormatName(_T("TOOLBARBUTTONSSPECIALSPLITCENTER"));
+
+		pImageSplit = LoadImage(strImage);
+
+		strImage = bRight ? FormatName(_T("TOOLBARBUTTONSSPECIALSPLITDROPDOWNRIGHT")) :
+			FormatName(_T("TOOLBARBUTTONSSPECIALSPLITDROPDOWNCENTER"));
+		pImageSplitDropDown  = LoadImage(strImage);
+
+		nSpecialOffset = 1;
+	}
+	else
+	{
+		pImageSplit = LoadImage(bSmallSize ? FormatName(_T("TOOLBARBUTTONSSPLIT22")) : FormatName(_T("TOOLBARBUTTONSSPLIT50")));
+
+		pImageSplitDropDown = LoadImage(bSmallSize ? FormatName(_T("TOOLBARBUTTONSSPLITDROPDOWN22")) : FormatName(_T("TOOLBARBUTTONSSPLITDROPDOWN50")));
+	}
+
+	if (!pImageSplit || !pImageSplitDropDown)
+		return;
+
+	int nSplitDropDownHeight = GetSplitDropDownHeight();
+
+	COLORREF clrText = !bEnabled ? RGB(141, 141, 141) : RGB(21, 66, 139);
+
+	pDC->SetTextColor(clrText);
+	pDC->SetBkMode (TRANSPARENT);
+
+	CRect rcSplit = bSmallSize ? CRect(rcButton.left, rcButton.top, rcButton.right - m_nSplitButtonDropDownWidth, rcButton.bottom) :
+		CRect(rcButton.left, rcButton.top, rcButton.right, rcButton.bottom - nSplitDropDownHeight);
+
+	CRect rcSplitSrc  = pImageSplit->GetSource(0, 6 + nSpecialOffset);
+
+	CRect rcSplitDropDown = bSmallSize ? CRect(rcButton.right - m_nSplitButtonDropDownWidth, rcButton.top, rcButton.right, rcButton.bottom) :
+		CRect(rcButton.left, rcButton.bottom - nSplitDropDownHeight, rcButton.right, rcButton.bottom);
+
+	CRect rcSplitDropDownSrc = pImageSplitDropDown->GetSource(0, 5 + nSpecialOffset);
+
+	int nStateSplit = -1;
+
+	BOOL bMouseInSplit = bSelected == TRUE_SPLITCOMMAND;
+	BOOL bMouseInSplitDropDown = bSelected == TRUE_SPLITDROPDOWN;
+
+	if (bEnabled == TRUE_SPLITDROPDOWN && (bSelected || bPressed || bPopuped))
+	{
+		nStateSplit = 4;
+	}
+	else if (!bEnabled)
+	{
+		if (IsKeyboardSelected(bSelected)) nStateSplit = 5;
+	}
+	else if (bChecked)
+	{
+		if (bPopuped) nStateSplit = 5;
+		else if (!bSelected && !bPressed) nStateSplit = 2;
+		else if (bSelected && !bPressed) nStateSplit = 3;
+		else if (IsKeyboardSelected(bPressed) || (bSelected && bPressed)) nStateSplit = 1;
+		else if (bPressed) nStateSplit = 2;
+		else if (bSelected || bPressed) nStateSplit = !bMouseInSplit ? 5 : 0;
+	}
+	else
+	{
+		if (bPopuped) nStateSplit = 5;
+		else if (IsKeyboardSelected(bPressed) || (bSelected && bPressed)) nStateSplit = 1;
+		else if (bSelected || bPressed) nStateSplit = !bMouseInSplit ? 5 : 0;
+	}
+	nStateSplit += nSpecialOffset;
+
+	if (nStateSplit != -1)
+	{
+		rcSplitSrc.OffsetRect(0, rcSplitSrc.Height() * nStateSplit);
+		pImageSplit->DrawImage(pDC, rcSplit, rcSplitSrc,
+			CRect(2, 2, 2, 2), 0xFF00FF, GetDrawImageFlags(pButton, rcSplit));
+	}
+
+	int nStateSplitDropDown = -1;
+
+	if (bEnabled == TRUE_SPLITCOMMAND && (bSelected || bPressed || bPopuped))
+	{
+		nStateSplitDropDown = 3;
+	}
+	else if (!bEnabled)
+	{
+		if (IsKeyboardSelected(bSelected)) nStateSplitDropDown = 4;
+	}
+	else if (bChecked)
+	{
+		if (bPopuped) nStateSplitDropDown = 2;
+		else if (!bSelected && !bPressed) nStateSplitDropDown = 2;
+		else if (IsKeyboardSelected(bPressed) || (bSelected && bPressed)) nStateSplitDropDown = 0;
+		else if (bSelected || bPressed) nStateSplitDropDown = !bMouseInSplitDropDown ? 4 : 0;
+		else nStateSplitDropDown = 4;
+	}
+	else
+	{
+		if (bPopuped) nStateSplitDropDown = 2;
+		else if (IsKeyboardSelected(bPressed) || (bSelected && bPressed)) nStateSplitDropDown = 0;
+		else if (bSelected || bPressed) nStateSplitDropDown = !bMouseInSplitDropDown ? 4 : 0;
+	}
+
+	nStateSplitDropDown += nSpecialOffset;
+
+	if (nStateSplitDropDown != -1)
+	{
+		rcSplitDropDownSrc.OffsetRect(0, rcSplitDropDownSrc.Height() * nStateSplitDropDown);
+		pImageSplitDropDown->DrawImage(pDC, rcSplitDropDown, rcSplitDropDownSrc, CRect(2, 2, 2, 2), 0xFF00FF,
+			GetDrawImageFlags(pButton, rcSplitDropDown));
+	}
+
+	if (bSmallSize)
+	{
+		if (bEnabled == TRUE_SPLITCOMMAND) bEnabled = FALSE;
+
+		CPoint pt = CPoint(rcButton.right - m_nSplitButtonDropDownWidth / 2 - 1, rcButton.CenterPoint().y);
+		DrawDropDownGlyph(pDC, pButton, pt, bSelected, bPopuped, bEnabled, FALSE);
+	}
+}
+
+
+void CXTPRibbonTheme::DrawPopupBarGripper(CDC* pDC, int x, int y, int cx, int cy, BOOL bExpanded)
+{
+	XTPDrawHelpers()->GradientFill(pDC, CRect(CPoint(x + 1, y), CSize(cx - 1, cy)),
+		bExpanded ? m_clrMenuExpandedGripper : m_clrMenuGripper, TRUE);
+
+	pDC->FillSolidRect(x + cx - 1, y, 1, cy, RGB(197, 197, 197));
+	pDC->FillSolidRect(x + cx, y, 1, cy, RGB(245, 245, 245));
+}
+
+void CXTPRibbonTheme::FillPopupLabelEntry(CDC* pDC, CRect rc)
+{
+	pDC->FillSolidRect(rc, GetXtremeColor(XPCOLOR_LABEL));
+	pDC->FillSolidRect(rc.left, rc.bottom - 1, rc.Width(), 1, RGB(197, 197, 197));
+}
+
+void CXTPRibbonTheme::FillMorePopupToolBarEntry(CDC* pDC, CXTPCommandBar* pBar)
+{
+	CRect rc;
+	pBar->GetClientRect(&rc);
+
+	CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("MOREPOPUPBARFRAME")));
+	if (!pImage)
+		pImage = LoadImage(FormatName(_T("POPUPBARFRAME")));
+
+	ASSERT(pImage);
+	if (!pImage)
+		return;
+
+	pImage->DrawImage(pDC, rc, pImage->GetSource(), CRect(4, 4, 4, 4));
+}
+
+CSize CXTPRibbonTheme::DrawSpecialControl(CDC* pDC, XTPSpecialControl controlType, CXTPControl* pButton, CXTPCommandBar* pBar, BOOL bDraw, LPVOID lpParam)
+{
+	if (controlType == xtpButtonExpandToolbar)
+	{
+		BOOL bVert = IsVerticalPosition(pBar->GetPosition());
+
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(
+			bVert ? _T("TOOLBAREXPANDBUTTONVERTICAL") : _T("TOOLBAREXPANDBUTTONHORIZONTAL")));
+
+		if (!pImage)
+			return CXTPOffice2007Theme::DrawSpecialControl(pDC, controlType, pButton, pBar, bDraw, lpParam);
+
+		if (!bDraw)
+		{
+			CSize szBar = *(CSize*)lpParam;
+			if (!bVert)
+				pButton->SetRect(CRect(szBar.cx - 12, 0, szBar.cx, szBar.cy));
+			else
+				pButton->SetRect(CRect(0, szBar.cy - 12, szBar.cx, szBar.cy));
+		}
+		else
+		{
+			CRect rc = pButton->GetRect();
+
+			pImage->DrawImage(pDC, rc, pImage->GetSource(
+				pButton->GetPopuped() ? 2 : pButton->GetSelected() ? 1 : 0 , 3), CRect(3, 3, 3, 3));
+
+			COLORREF clrText = GetXtremeColor(pButton->GetPopuped() ? XPCOLOR_TOOLBAR_TEXT: pButton->GetSelected() ? XPCOLOR_HIGHLIGHT_TEXT : XPCOLOR_TOOLBAR_TEXT);
+			BOOL bHiddenExists = *(BOOL*)lpParam;
+
+			if (!bVert) rc.OffsetRect(-1, 0); else rc.OffsetRect(0, -1);
+			DrawExpandSymbols(pDC, IsVerticalPosition(pBar->GetPosition()), CRect(CPoint(rc.left + 1, rc.top + 1), rc.Size()) , bHiddenExists, GetXtremeColor(COLOR_BTNHIGHLIGHT));
+			DrawExpandSymbols(pDC, IsVerticalPosition(pBar->GetPosition()), rc, bHiddenExists, clrText);
+		}
+		return 0;
+	}
+
+	return CXTPOffice2007Theme::DrawSpecialControl(pDC, controlType, pButton, pBar, bDraw, lpParam);
+}
+
+void CXTPRibbonTheme::FillCommandBarEntry(CDC* pDC, CXTPCommandBar* pBar)
+{
+	CRect rc;
+	pBar->GetClientRect(&rc);
+
+	if (pBar->GetPosition() == xtpBarPopup)
+	{
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("POPUPBARFRAME")));
+		ASSERT(pImage);
+		if (!pImage)
+			return;
+
+		pImage->DrawImage(pDC, rc, pImage->GetSource(), CRect(4, 4, 4, 4));
+	}
+	else if (IsFlatToolBar(pBar))
+	{
+		CXTPOffice2003Theme::FillCommandBarEntry(pDC, pBar);
+	}
+	else if (pBar->GetPosition() == xtpBarTop || pBar->GetPosition() == xtpBarBottom)
+	{
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("TOOLBARFACEHORIZONTAL")));
+
+		if (!pImage)
+		{
+			CXTPOffice2003Theme::FillCommandBarEntry(pDC, pBar);
+			return;
+		}
+
+		pImage->DrawImage(pDC, rc, pImage->GetSource(), CRect(5, 5, 5, 5));
+	}
+	else if (pBar->GetPosition() == xtpBarLeft || pBar->GetPosition() == xtpBarRight)
+	{
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("TOOLBARFACEVERTICAL")));
+
+		if (!pImage)
+		{
+			CXTPOffice2003Theme::FillCommandBarEntry(pDC, pBar);
+			return;
+		}
+
+		pImage->DrawImage(pDC, rc, pImage->GetSource(), CRect(5, 5, 5, 5));
+	}
+	else
+	{
+		CXTPOffice2003Theme::FillCommandBarEntry(pDC, pBar);
+	}
+}
+
+CSize CXTPRibbonTheme::DrawCommandBarSeparator(CDC* pDC, CXTPCommandBar* pBar, CXTPControl* pControl, BOOL bDraw)
+{
+	if (pBar->GetType() == xtpBarTypePopup)
+	{
+		if (!bDraw)
+			return CSize(2, 2);
+
+		CRect rc;
+		pBar->GetClientRect(&rc);
+		CRect rcControl = pControl->GetRect();
+
+		if (!pControl->GetWrap())
+		{
+			int nLeft = rcControl.left - 1 + GetPopupBarGripperWidth(pBar) + m_nPopupBarTextPadding;
+			HorizontalLine(pDC, nLeft, rcControl.top - 2, rcControl.right, RGB(197, 197, 197));
+			HorizontalLine(pDC, nLeft, rcControl.top - 1, rcControl.right, RGB(245, 245, 245));
+		}
+		else
+		{
+			VerticalLine(pDC, rcControl.left - 2, pControl->GetRowRect().top - 1, pControl->GetRowRect().bottom + 1, RGB(197, 197, 197));
+		}
+
+		return CSize(2, 2);
+	}
+	else
+	{
+		return CXTPOffice2003Theme::DrawCommandBarSeparator(pDC, pBar, pControl, bDraw);
+	}
+}
+
+void CXTPRibbonTheme::DrawRibbonFrameContextHeaders(CDC* pDC, CXTPRibbonBar* pRibbonBar, CXTPRibbonTabContextHeaders* pContextHeaders)
+{
+	int nCount = pContextHeaders->GetCount();
+	if (nCount == 0)
+		return;
+
+	CXTPFontDC font(pDC, m_pTabPaintManager->GetFont());
+	pDC->SetBkMode(TRANSPARENT);
+	pDC->SetTextColor(m_pTabPaintManager->GetColorSet()->m_clrNormalText);
+
+	for (int i = 0; i < nCount; i++)
+	{
+		CXTPRibbonTabContextHeader* pHeader = pContextHeaders->GetHeader(i);
+
+		CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("ContextTab%sHeader"), GetColorName(pHeader->m_color)));
+		if (!pImage)
+			return;
+
+		CRect rc(pHeader->m_rcRect);
+		pImage->DrawImage(pDC, rc, pImage->GetSource(), CRect(1, 1, 1, 1));
+
+		rc.left += 6;
+		int nFrameBorder = pRibbonBar->IsFrameThemeEnabled() ?
+			pRibbonBar->GetFrameHook()->GetFrameBorder() : 0;
+
+		rc.top += nFrameBorder - 2;
+
+		if (pRibbonBar->IsDwmEnabled())
+		{
+			DrawDwmCaptionText(pDC, rc, pHeader->m_strCpation, pRibbonBar->GetSite(), pRibbonBar->GetFrameHook()->IsFrameActive());
+		}
+		else
+		{
+			pDC->DrawText(pHeader->m_strCpation, rc, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX | DT_END_ELLIPSIS | DT_LEFT);
+		}
+	}
+
+}
+
+#define XTP_DTT_GLOWSIZE        (1UL << 11)     // iGlowSize has been specified
+#define XTP_DTT_COMPOSITED      (1UL << 13)     // Draws text with antialiased alpha (needs a DIB section)
+
+void CXTPRibbonTheme::DrawDwmCaptionText(CDC* pDC, CRect rcCaptionText, CString strWindowText, CWnd* pSite, BOOL bActive)
+{
+	if (pSite->GetStyle() & WS_MAXIMIZE)
+	{
+		pDC->SetTextColor(0xFFFFFF);
+		pDC->DrawText(strWindowText, rcCaptionText,
+			DT_VCENTER | DT_LEFT| DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX);
+		return;
+	}
+
+	CXTPWinThemeWrapper wrapper(FALSE);
+	wrapper.OpenTheme(0, L"WINDOW");
+
+	if (!wrapper.IsAppThemed())
+	{
+		pDC->SetTextColor(0);
+		pDC->DrawText(strWindowText, rcCaptionText, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX | DT_END_ELLIPSIS | DT_LEFT);
+		return;
+	}
+
+	CRect rcBuffer(rcCaptionText);
+	rcBuffer.InflateRect(5, 0);
+
+	HDC hDC = 0;
+	HPAINTBUFFER pb = wrapper.BeginBufferedPaint(pDC->GetSafeHdc(), rcBuffer, XTP_BPBF_TOPDOWNDIB, 0, &hDC);
+
+	if (hDC != NULL)
+	{
+		::BitBlt(hDC, rcBuffer.left, rcBuffer.top, rcBuffer.Width(), rcBuffer.Height(), pDC->GetSafeHdc(), rcBuffer.left, rcBuffer.top, SRCCOPY);
+		::SetTextColor(hDC, 0);
+		XTP_UX_DTTOPTS op;
+		op.dwSize = sizeof(op);
+		op.dwFlags = XTP_DTT_COMPOSITED | XTP_DTT_GLOWSIZE;
+		op. iGlowSize = 8;
+		CXTPFontDC font(CDC::FromHandle(hDC), &m_fontFrameCaption);
+
+		wrapper.DrawThemeTextEx(hDC, pSite->GetStyle() & WS_MAXIMIZE ? WP_MAXCAPTION : WP_CAPTION, bActive ? FS_ACTIVE : FS_INACTIVE, XTP_CT2CW(strWindowText), -1,
+			DT_VCENTER | DT_LEFT| DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX,  rcCaptionText, &op);
+	}
+
+	wrapper.EndBufferedPaint(pb, TRUE);
+}
+
+void CXTPRibbonTheme::DrawRibbonFrameCaptionBar(CDC* pDC, CXTPRibbonBar* pRibbonBar)
+{
+	CRect rcCaption = pRibbonBar->GetCaptionRect();
+	rcCaption.top--;
+
+	CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("FRAMETOPCENTER")));
+	pImage->DrawImage(pDC, rcCaption, pImage->GetSource(0, 2), CRect(0, 5, 0, 3));
+
+	if (!pRibbonBar->IsQuickAccessBelowRibbon() && pRibbonBar->IsQuickAccessVisible() &&
+		((CXTPControls*)pRibbonBar->GetQuickAccessControls())->GetVisibleCount() > 0)
+	{
+		CRect rcQuickAccess = pRibbonBar->GetQuickAccessRect();
+		int nFrameBorder = 0;
+		CRect rcQuickAccessArea(rcQuickAccess.left - 15, nFrameBorder, rcQuickAccess.right, pRibbonBar->GetQuickAccessHeight() + nFrameBorder);
+
+		BOOL bDwm = FALSE;
+		pImage = LoadImage(FormatName(bDwm ? _T("RIBBONQUICKACCESSAREADWM") : _T("RIBBONQUICKACCESSAREA")));
+		if (pImage)
+		{
+			pImage->PreserveOrientation();
+			pImage->DrawImage(pDC, rcQuickAccessArea, pImage->GetSource(), CRect(16, 3, 16, 3));
+		}
+	}
+
+	CXTPRibbonTabContextHeaders* pContextHeaders = pRibbonBar->GetContextHeaders();
+	if (pContextHeaders->GetCount() != 0)
+	{
+		DrawRibbonFrameContextHeaders(pDC, pRibbonBar, pContextHeaders);
+	}
+}
+
+void CXTPRibbonTheme::DrawRibbonFrameCaption(CDC* pDC, CXTPRibbonBar* pRibbonBar, BOOL bActive)
+{
+	CFrameWnd* pSite = (CFrameWnd*)pRibbonBar->GetSite();
+	CRect rcCaption = pRibbonBar->GetCaptionRect();
+	CXTPOffice2007Image* pImage;
+
+	if (!pRibbonBar->IsDwmEnabled())
+	{
+
+		pImage = LoadImage(FormatName(_T("FRAMETOPLEFT")));
+
+		ASSERT(pImage);
+		if (!pImage)
+			return;
+
+		CRect rcSrc(pImage->GetSource(bActive ? 0 : 1, 2));
+
+		CRect rcTopLeft(rcCaption.left, rcCaption.top, rcCaption.left + rcSrc.Width(), rcCaption.bottom);
+		pImage->DrawImage(pDC, rcTopLeft, rcSrc, CRect(0, 5, 0, 3), 0xFF00FF);
+
+		//////////////////////////////////////////////////////////////////////////
+
+		pImage = LoadImage(FormatName(_T("FRAMETOPRIGHT")));
+
+		rcSrc = pImage->GetSource(bActive ? 0 : 1, 2);
+		CRect rcTopRight(rcCaption.right - rcSrc.Width(), rcCaption.top, rcCaption.right, rcCaption.bottom);
+		pImage->DrawImage(pDC, rcTopRight, rcSrc, CRect(0, 5, 0, 3));
+
+
+		//////////////////////////////////////////////////////////////////////////
+
+		pImage = LoadImage(FormatName(_T("FRAMETOPCENTER")));
+
+		CRect rcTopCenter(rcTopLeft.right, rcCaption.top, rcTopRight.left, rcCaption.bottom);
+		pImage->DrawImage(pDC, rcTopCenter, pImage->GetSource(bActive ? 0 : 1, 2), CRect(0, 5, 0, 3));
+	}
+	else
+	{
+		pDC->FillSolidRect(rcCaption, 0);
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+
+	if (!pRibbonBar->IsQuickAccessBelowRibbon() && pRibbonBar->IsQuickAccessVisible() &&
+		((CXTPControls*)pRibbonBar->GetQuickAccessControls())->GetVisibleCount() > 0)
+	{
+		CRect rcQuickAccess = pRibbonBar->GetQuickAccessRect();
+		int nFrameBorder = pRibbonBar->GetFrameHook()->GetFrameBorder();
+		CRect rcQuickAccessArea(rcQuickAccess.left - 15, nFrameBorder, rcQuickAccess.right, pRibbonBar->GetQuickAccessHeight() + nFrameBorder);
+
+		BOOL bDwm = IsCompositeRect(pRibbonBar, rcQuickAccess);
+		pImage = LoadImage(FormatName(bDwm ? _T("RIBBONQUICKACCESSAREADWM") : _T("RIBBONQUICKACCESSAREA")));
+		if (pImage)
+		{
+			pImage->PreserveOrientation();
+			pImage->DrawImage(pDC, rcQuickAccessArea, pImage->GetSource(), CRect(16, 3, 16, 3));
+		}
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+
+
+	if (pRibbonBar->GetSystemButton() == NULL)
+	{
+		HICON hIcon = GetFrameSmallIcon(pSite);
+		if (hIcon)
+		{
+			CSize szIcon(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON));
+
+			int nTop = (rcCaption.Height()  - szIcon.cy)/2;
+			int nLeft = rcCaption.left + 10;
+
+			DrawIconEx(pDC->GetSafeHdc(), nLeft, nTop, hIcon,
+				szIcon.cx, szIcon.cy, 0, NULL, DI_NORMAL);
+		}
+	}
+
+
+	CRect rcCaptionText = pRibbonBar->GetCaptionTextRect();
+
+	CXTPRibbonTabContextHeaders* pContextHeaders = pRibbonBar->GetContextHeaders();
+	if (pContextHeaders->GetCount() != 0)
+	{
+		DrawRibbonFrameContextHeaders(pDC, pRibbonBar, pContextHeaders);
+	}
+
+	CXTPFontDC font(pDC, &m_fontFrameCaption);
+
+	CString strWindowText;
+	pSite->GetWindowText(strWindowText);
+	rcCaptionText.left += max(0, (rcCaptionText.Width() - pDC->GetTextExtent(strWindowText).cx) / 2);
+
+	if (pSite->GetStyle() & WS_MAXIMIZE)
+	{
+		rcCaptionText.top += pRibbonBar->GetFrameHook()->GetFrameBorder() / 2;
+	}
+
+	if (!pRibbonBar->IsDwmEnabled())
+	{
+		DrawCaptionText(pDC, rcCaptionText, pSite, bActive);
+	}
+	else
+	{
+		DrawDwmCaptionText(pDC, rcCaptionText, strWindowText, pSite, bActive);
+	}
+}
+
+void CXTPRibbonTheme::DrawRibbonQuickAccessButton(CDC* pDC, CXTPControlPopup* pControl)
+{
+	CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("RIBBONQUICKACCESSBUTTON")));
+
+	ASSERT(pImage);
+	if (!pImage)
+		return;
+
+	pImage->DrawImage(pDC, pControl->GetRect(), pImage->GetSource(pControl->GetPopuped() ? 2 : pControl->GetSelected() ? 1 : 0, 4),
+		CRect(2, 2, 2, 2), 0xFF00FF, GetDrawImageFlags(pControl));
+}
+
+void CXTPRibbonTheme::DrawRibbonQuickAccessMoreButton(CDC* pDC, CXTPControlPopup* pControl)
+{
+	CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("RIBBONQUICKACCESSMORE")));
+
+	ASSERT(pImage);
+	if (!pImage)
+		return;
+
+	pImage->DrawImage(pDC, pControl->GetRect(), pImage->GetSource(pControl->GetPopuped() ? 2 : pControl->GetSelected() ? 1 : 0, 4),
+		CRect(2, 2, 2, 2), 0xFF00FF, GetDrawImageFlags(pControl));
+
+}
+
+void CXTPRibbonTheme::DrawRibbonFrameSystemButton(CDC* pDC, CXTPControlPopup* pControl, CRect rc)
+{
+	CXTPRibbonBar* pRibbonBar = (CXTPRibbonBar*)pControl->GetParent();
+
+	if (!pRibbonBar->IsCaptionVisible() || !pRibbonBar->IsTabsVisible())
+	{
+		CXTPRibbonTheme::DrawControlToolBarParent(pDC, pControl, TRUE);
+		return;
+	}
+
+	XTPImageState nState = xtpImageNormal;
+	if (pControl->GetPopuped())
+		nState = xtpImagePressed;
+	else if (pControl->GetSelected())
+		nState = xtpImageHot;
+
+	CXTPImageManagerIcon* pIcon = pControl->GetImage(32);
+
+	if (pIcon && pIcon->GetWidth() > 32)
+	{
+		CPoint ptIcon((rc.left + rc.right - pIcon->GetWidth()) / 2, (rc.top + rc.bottom - pIcon->GetHeight()) / 2);
+
+		pIcon->m_bDrawComposited = pControl->HasDwmCompositedRect();
+		pIcon->Draw(pDC, ptIcon, pIcon->GetIcon(nState));
+		pIcon->m_bDrawComposited = FALSE;
+		return;
+	}
+
+	CXTPOffice2007Image* pImage = NULL;
+
+	if (rc.Width() > 54 && rc.Height() > 54)
+		pImage = LoadImage(FormatName(_T("FRAMESYSTEMBUTTON52")));
+
+	if (pImage == NULL)
+		pImage = LoadImage(FormatName(_T("FRAMESYSTEMBUTTON")));
+
+	ASSERT(pImage);
+	if (!pImage)
+		return;
+
+	int nOffset = 0;
+	if (rc.top < 0)
+	{
+		nOffset = rc.top;
+		rc.OffsetRect(0, -nOffset);
+	}
+
+	CRect rcSrc(pImage->GetSource(nState == xtpImageNormal ? 0 : nState == xtpImageHot ? 1 : 2, 3));
+	CSize szDest(rcSrc.Size());
+	CPoint ptDest((rc.left + rc.right - szDest.cx) / 2, nOffset + (rc.top + rc.bottom - szDest.cy) / 2);
+
+	pImage->DrawImage(pDC, CRect(ptDest, szDest), rcSrc, CRect(0, 0, 0, 0));
+
+	if (pIcon)
+	{
+		CPoint ptIcon((rc.left + rc.right - pIcon->GetWidth()) / 2, nOffset + (rc.top + rc.bottom + 1 - pIcon->GetHeight()) / 2);
+		pIcon->m_bDrawComposited = pControl->HasDwmCompositedRect();
+		pIcon->Draw(pDC, ptIcon, pIcon->GetIcon(nState));
+		pIcon->m_bDrawComposited = FALSE;
+	}
+	else
+	{
+		CWnd* pSite = pControl->GetParent()->GetSite();
+		HICON hIcon = GetFrameLargeIcon(pSite);
+		if (hIcon)
+		{
+			CPoint ptIcon((rc.left + rc.right - 33) / 2, nOffset + (rc.top + rc.bottom - 31) / 2);
+
+				DrawIconEx(pDC->GetSafeHdc(), ptIcon.x, ptIcon.y, hIcon, 32, 32, NULL, NULL, DI_NORMAL);
+		}
+	}
+}
+
+void CXTPRibbonTheme::DrawRibbonScrollButton(CDC* pDC, CXTPControl* pControl, BOOL bScrollLeft)
+{
+	CXTPOffice2007Image* pImage = LoadImage(FormatName(bScrollLeft ? _T("RIBBONGROUPSSCROLLLEFT") : _T("RIBBONGROUPSSCROLLRIGHT")));
+
+	ASSERT(pImage);
+	if (!pImage)
+		return;
+
+	CRect rc(pControl->GetRect());
+
+	int nState = pControl->GetPressed() ? 2 : pControl->GetSelected() ? 1 : 0;
+
+	CXTPOffice2007Image* pImageGlyph = LoadImage(FormatName(bScrollLeft ? _T("RIBBONGROUPSSCROLLLEFTGLYPH") : _T("RIBBONGROUPSSCROLLRIGHTGLYPH")));
+
+	pImage->PreserveOrientation();
+	pImage->DrawImage(pDC, rc, pImage->GetSource(nState, 3), CRect(4, 6, 3, 6), 0xFF00FF);
+
+	CSize szGlyph = pImageGlyph->GetSource(0, 3).Size();
+	CRect rcGlyph(CPoint((rc.right + rc.left - szGlyph.cx) / 2, (rc.top + rc.bottom - szGlyph.cy) / 2), szGlyph);
+
+	pImageGlyph->DrawImage(pDC, rcGlyph, pImageGlyph->GetSource(nState, 3), CRect(0, 0, 0, 0), 0xFF00FF);
+
+}
+
+
+void CXTPRibbonTheme::FillStatusBar(CDC* pDC, CXTPStatusBar* pBar)
+{
+	CXTPClientRect rc(pBar);
+
+	int nWidth = rc.Width();
+	if (pBar->GetPaneCount() > 0)
+	{
+		CRect rcItem(rc);
+		pBar->GetItemRect(min(pBar->GetPaneCount() - 1, pBar->GetRibbonDividerIndex()), rcItem);
+		nWidth = rcItem.right;
+	}
+
+	CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("STATUSBARLIGHT")));
+
+	ASSERT(pImage);
+	if (!pImage)
+		return;
+
+	CRect rcSrc(0, 0, pImage->GetWidth(), pImage->GetHeight());
+	CRect rcLight(rc.left, rc.top, rc.left + nWidth - 3, rc.bottom);
+	pImage->DrawImage(pDC, rcLight, rcSrc, CRect(0, 0, 0, 0));
+
+
+	pImage = LoadImage(FormatName(_T("STATUSBARDEVIDER")));
+	rcSrc.SetRect(0, 0, pImage->GetWidth(), pImage->GetHeight());
+	CRect rcDevider(rcLight.right, rc.top, rcLight.right + rcSrc.Width(), rc.bottom);
+	pImage->DrawImage(pDC, rcDevider, rcSrc, CRect(0, 0, 0, 0));
+
+
+	pImage = LoadImage(FormatName(_T("STATUSBARDARK")));
+	CRect rcDark(rcDevider.right, rc.top, rc.right, rc.bottom);
+	rcSrc.SetRect(0, 0, pImage->GetWidth(), pImage->GetHeight());
+	pImage->DrawImage(pDC, rcDark, rcSrc, CRect(0, 0, 0, 0));
+}
+
+void CXTPRibbonTheme::DrawStatusBarPaneBorder(CDC* pDC, CRect rc, CXTPStatusBarPane* pPane, BOOL /*bGripperPane*/)
+{
+	if (pPane->GetIndex() >= pPane->GetStatusBar()->GetRibbonDividerIndex())
+		return;
+
+	CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("STATUSBARSEPARATOR")));
+
+	ASSERT(pImage);
+	if (!pImage)
+		return;
+
+	CRect rcSrc(pImage->GetSource());
+	rc.left = rc.right - 2;
+	rc.top -= 2;
+
+	pImage->DrawImage(pDC, rc, rcSrc, CRect(0, 2, 0, 2));
+}
+
+void CXTPRibbonTheme::DrawStatusBarGripper(CDC* pDC, CRect rcClient)
+{
+	CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("STATUSBARGRIPPER")));
+
+	ASSERT(pImage);
+	if (!pImage)
+		return;
+
+	CRect rcSrc(0, 0, pImage->GetWidth(), pImage->GetHeight());
+	CRect rcGripper(rcClient.right - rcSrc.Width() , rcClient.bottom - rcSrc.Height() - 4, rcClient.right, rcClient.bottom - 4);
+	pImage->DrawImage(pDC, rcGripper, rcSrc, CRect(0, 0, 0, 0), RGB(0xFF, 0, 0xFF));
+}
+
+CSize CXTPRibbonTheme::DrawControlCheckBoxMark(CDC* pDC, CRect rc, BOOL bDraw, BOOL bSelected, BOOL bPressed, BOOL bChecked, BOOL bEnabled)
+{
+	if (!bDraw)
+		return CSize(13, 13);
+
+	CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("TOOLBARBUTTONCHECKBOX")));
+
+	ASSERT(pImage);
+	if (!pImage)
+		return CSize(13, 13);
+
+	int nState = 0;
+	if (!bEnabled)
+		nState = 3;
+	else if (bSelected && bPressed)
+		nState = 2;
+	else if (bSelected)
+		nState = 1;
+
+	if (bChecked == 1)
+		nState += 4;
+
+	if (bChecked == 2)
+		nState += 8;
+
+	pImage->DrawImage(pDC, rc, pImage->GetSource(nState, 12), CRect(0, 0, 0, 0));
+
+
+	return CSize(13, 13);
+}
+
+CSize CXTPRibbonTheme::DrawControlRadioButtonMark(CDC* pDC, CRect rc, BOOL bDraw, BOOL bSelected, BOOL bPressed, BOOL bChecked, BOOL bEnabled)
+{
+	if (!bDraw)
+		return CSize(13, 13);
+
+	CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("TOOLBARBUTTONRADIOBUTTON")));
+
+	ASSERT(pImage);
+	if (!pImage)
+		return CSize(13, 13);
+
+	int nState = 0;
+	if (!bEnabled)
+		nState = 3;
+	else if (bSelected && bPressed)
+		nState = 2;
+	else if (bSelected)
+		nState = 1;
+
+	if (bChecked)
+		nState += 4;
+
+	pImage->DrawImage(pDC, rc, pImage->GetSource(nState, 8), CRect(0, 0, 0, 0));
+
+
+	return CSize(13, 13);
+}
+
+void CXTPRibbonTheme::DrawDropDownGlyph(CDC* pDC, CXTPControl* pControl, CPoint pt, BOOL bSelected, BOOL bPopuped, BOOL bEnabled, BOOL bVert)
+{
+	if (bVert)
+	{
+		CXTPOffice2003Theme::DrawDropDownGlyph(pDC, pControl, pt, bSelected, bPopuped, bEnabled, bVert);
+		return;
+	}
+
+	CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("TOOLBARBUTTONDROPDOWNGLYPH")));
+
+	ASSERT(pImage);
+	if (!pImage)
+		return;
+
+	CRect rc(pt.x - 2, pt.y - 2, pt.x + 3, pt.y + 2);
+	pImage->DrawImage(pDC, rc, pImage->GetSource(!bEnabled ? 3 : bSelected ? 1 : 0, 4),
+		CRect(0, 0, 0, 0), 0xFF00FF, GetDrawImageFlags(pControl, rc)) ;
+}
+
+CSize CXTPRibbonTheme::DrawControlComboBox(CDC* pDC, CXTPControlComboBox* pControlCombo, BOOL bDraw)
+{
+	if (!bDraw)
+	{
+		return CXTPPaintManager::DrawControlComboBox(pDC, pControlCombo, bDraw);
+	}
+
+	BOOL bPopupBar = pControlCombo->GetParent()->GetType() == xtpBarTypePopup;
+
+	CXTPFontDC font(pDC, GetIconFont());
+
+	CRect rc = pControlCombo->GetRect();
+	BOOL bDropped = pControlCombo->GetDroppedState() != 0;
+	BOOL bSelected = pControlCombo->GetSelected();
+	BOOL bEnabled = pControlCombo->GetEnabled();
+
+	CXTPPaintManager::DrawControlComboBox(pDC, pControlCombo, bDraw);
+
+	rc.left += pControlCombo->GetLabelWidth();
+
+	int nThumb = pControlCombo->GetThumbWidth();
+	CRect rcBtn (rc.right - nThumb, rc.top, rc.right, rc.bottom);
+	CRect rcText(rc.left + 3, rc.top + 1, rc.right - rcBtn.Width(), rc.bottom - 1);
+
+	CXTPOffice2007Image* pImage = LoadImage(FormatName(_T("TOOLBARBUTTONSCOMBODROPDOWN")));
+
+	ASSERT(pImage);
+	if (!pImage)
+		return 0;
+
+	if (!bEnabled)
+	{
+		pDC->FillSolidRect(rc, GetXtremeColor(COLOR_3DFACE));
+		pDC->Draw3dRect(rc, GetXtremeColor(XPCOLOR_EDITCTRLBORDER), GetXtremeColor(XPCOLOR_EDITCTRLBORDER));
+
+		pImage->DrawImage(pDC, rcBtn, pImage->GetSource(4, 5), CRect(2, 2, 2, 2));
+	}
+	else if (bDropped)
+	{
+		pDC->FillSolidRect(rc, GetXtremeColor(COLOR_WINDOW));
+		pDC->Draw3dRect(rc, GetXtremeColor(XPCOLOR_EDITCTRLBORDER), GetXtremeColor(XPCOLOR_EDITCTRLBORDER));
+
+		pImage->DrawImage(pDC, rcBtn, pImage->GetSource(3, 5), CRect(2, 2, 2, 2));
+	}
+	else if (bSelected)
+	{
+		pDC->FillSolidRect(rc, GetXtremeColor(COLOR_WINDOW));
+		pDC->Draw3dRect(rc, GetXtremeColor(XPCOLOR_EDITCTRLBORDER), GetXtremeColor(XPCOLOR_EDITCTRLBORDER));
+
+		pImage->DrawImage(pDC, rcBtn, pImage->GetSource(2, 5), CRect(2, 2, 2, 2));
+
+	}
+	else
+	{
+		if (!bPopupBar) pDC->FillSolidRect(rc, m_clrControlEditNormal);
+		pDC->Draw3dRect(rc, GetXtremeColor(XPCOLOR_EDITCTRLBORDER), GetXtremeColor(XPCOLOR_EDITCTRLBORDER));
+
+		pImage->DrawImage(pDC, rcBtn, pImage->GetSource(0, 5), CRect(2, 2, 2, 2));
+	}
+
+	pControlCombo->DrawEditText(pDC, rcText);
+
+	CPoint pt = rcBtn.CenterPoint();
+	DrawDropDownGlyph(pDC, pControlCombo, pt, bSelected, bDropped, bEnabled, FALSE);
+
+	if (pControlCombo->HasDwmCompositedRect())
+	{
+		FillCompositeAlpha(pDC, pControlCombo->GetRect());
+	}
+
 	return 0;
 }
 
-#ifdef _DEBUG
-void CScintillaView::AssertValid() const
+COLORREF CXTPRibbonTheme::GetControlEditBackColor(CXTPControl* pControl)
 {
-  //Let the base class do its thing
-	CView::AssertValid();
-
-  //Validate our parameters
-	ASSERT_VALID(&m_aPageStart);
-
-	if (_scintillaEditState.pFindReplaceDlg != NULL)
-		ASSERT_VALID(_scintillaEditState.pFindReplaceDlg);
+	return !pControl->GetEnabled() ? GetXtremeColor(COLOR_3DFACE) :
+		pControl->GetSelected() ? GetXtremeColor(COLOR_WINDOW) :
+		pControl->GetParent()->GetType() == xtpBarTypePopup ?
+			GetXtremeColor(XPCOLOR_MENUBAR_FACE) : m_clrControlEditNormal;
 }
 
-void CScintillaView::Dump(CDumpContext& dc) const
+CSize CXTPRibbonTheme::DrawControlEdit(CDC* pDC, CXTPControlEdit* pControlEdit, BOOL bDraw)
 {
-  //Let the base class do its thing
-	CView::Dump(dc);
-
-	dc << _T("\nm_aPageStart ") << &m_aPageStart;
-  dc << _T("\nbUseROFileAttributeDuringLoading = ") << m_bUseROFileAttributeDuringLoading;
-
-	dc << _T("\n Static Member Data:");
-	if (_scintillaEditState.pFindReplaceDlg != NULL)
+	if (!bDraw)
 	{
-		dc << _T("\npFindReplaceDlg = ") <<	static_cast<void*>(_scintillaEditState.pFindReplaceDlg);
-		dc << _T("\nbFindOnly = ") << _scintillaEditState.bFindOnly;
+		return CXTPPaintManager::DrawControlEdit(pDC, pControlEdit, bDraw);
 	}
-	dc << _T("\nstrFind = ") << _scintillaEditState.strFind;
-	dc << _T("\nstrReplace = ") << _scintillaEditState.strReplace;
-	dc << _T("\nbCase = ") << _scintillaEditState.bCase;
-	dc << _T("\nbWord = ") << _scintillaEditState.bWord;
-	dc << _T("\nbNext = ") << _scintillaEditState.bNext;
-  dc << _T("\nbRegularExpression = ") << _scintillaEditState.bRegularExpression;
-}
-#endif //_DEBUG
 
-void CScintillaView::Serialize(CArchive& ar)
-{
-  //Validate our parameters
-	ASSERT_VALID(this);
-	
-  CScintillaCtrl& rCtrl = GetCtrl();
+	BOOL bPopupBar = pControlEdit->GetParent()->GetType() == xtpBarTypePopup;
+	BOOL bSelected = pControlEdit->GetSelected(), bEnabled = pControlEdit->GetEnabled();
 
-  if (ar.IsLoading())
-  {
-    //Tell the control not to maintain any undo info while we stream the data 
-    rCtrl.Cancel();
-    rCtrl.SetUndoCollection(FALSE);
+	if (bPopupBar) pDC->SetTextColor(GetXtremeColor(!pControlEdit->GetEnabled() ? XPCOLOR_MENUBAR_GRAYTEXT: bSelected ? XPCOLOR_HIGHLIGHT_TEXT : XPCOLOR_MENUBAR_TEXT));
+	else pDC->SetTextColor(GetXtremeColor(!pControlEdit->GetEnabled() ? XPCOLOR_TOOLBAR_GRAYTEXT : XPCOLOR_TOOLBAR_TEXT));
 
-    //Read the data in from the file in blocks
-    CFile* pFile = ar.GetFile();
-    char Buffer[4096];
-    int nBytesRead = 0;
-    do
-    {
-      nBytesRead = pFile->Read(Buffer, 4096);
-      if (nBytesRead)
-        rCtrl.AddText(nBytesRead, Buffer);
-    }
-    while (nBytesRead);
+	CXTPPaintManager::DrawControlEdit(pDC, pControlEdit, bDraw);
 
-    //Set the read only state if required
-    if (m_bUseROFileAttributeDuringLoading && ((GetFileAttributes(pFile->GetFilePath()) & FILE_ATTRIBUTE_READONLY) == FILE_ATTRIBUTE_READONLY))
-      rCtrl.SetReadOnly(TRUE);
-    else
-      rCtrl.SetReadOnly(FALSE);
+	CRect rc = pControlEdit->GetRect();
+	rc.left += pControlEdit->GetLabelWidth();
 
-    //Reinitialize the control settings
-    rCtrl.SetUndoCollection(TRUE);
-    rCtrl.EmptyUndoBuffer();
-    rCtrl.SetSavePoint();
-    rCtrl.GotoPos(0);
-  }
-  else
-  {
-    //Get the length of the document
-    int nDocLength = rCtrl.GetLength();
-
-    //Write the data in blocks to disk
-    CFile* pFile = ar.GetFile();
-    for (int i=0; i<nDocLength; i += 4095) //4095 because data will be returned NULL terminated
-    {
-      int nGrabSize = nDocLength - i;
-      if (nGrabSize > 4095)
-        nGrabSize = 4095;
-
-      //Get the data from the control
-	    TextRange tr;
-	    tr.chrg.cpMin = i;
-	    tr.chrg.cpMax = i + nGrabSize;
-      char Buffer[4096];
-	    tr.lpstrText = Buffer;
-	    rCtrl.GetTextRange(&tr);
-
-      //Write it to disk
-      pFile->Write(Buffer, nGrabSize);
-    }
-  }
-}
-
-void CScintillaView::OnFilePageSetup() 
-{
-  //Display a standard page setup dialog
-	CPageSetupDialog dlg;
-
-  //Allow the margin settings to be tweaked
-  dlg.m_psd.Flags |= PSD_MARGINS;
-
-  //Are we using the metric or imperial system	
-  if (m_bUsingMetric)
-    dlg.m_psd.Flags |= PSD_INHUNDREDTHSOFMILLIMETERS;
-  else
-    dlg.m_psd.Flags |= PSD_INTHOUSANDTHSOFINCHES;
-
-  if (m_bPersistMarginSettings)
-    LoadMarginSettings();
-
-  //Set the current margin settings to the current value from m_rectMargin 
-  dlg.m_psd.rtMargin = m_rMargin;
-
-	//get the current device from the app
-	PRINTDLG pd;
-	pd.hDevNames = NULL;
-	pd.hDevMode = NULL;
-  CWinApp* pApp = AfxGetApp();
-	pApp->GetPrinterDeviceDefaults(&pd);
-	dlg.m_psd.hDevNames = pd.hDevNames;
-	dlg.m_psd.hDevMode = pd.hDevMode;
-
-	if (dlg.DoModal() == IDOK)
+	if (!bEnabled)
 	{
-    //Save the new margin value in to the member variable
-    m_rMargin = dlg.m_psd.rtMargin;
-
-    if (m_bPersistMarginSettings)
-      SaveMarginSettings();
-
-    //Update the printer settings
-		pApp->SelectPrinter(dlg.m_psd.hDevNames, dlg.m_psd.hDevMode);
+		rc.DeflateRect(1, 0, 0, 0);
+		Rectangle (pDC, rc, IsKeyboardSelected(bSelected) ? XPCOLOR_HIGHLIGHT_BORDER : XPCOLOR_EDITCTRLBORDER, COLOR_3DFACE);
 	}
-}
-
-void CScintillaView::OnStyleNeeded(SCNotification* /*pSCNotification*/)
-{
-  //By default do nothing, derived classes may want to do something
-}
-
-void CScintillaView::OnCharAdded(SCNotification* /*pSCNotification*/)
-{
-  //By default do nothing, derived classes may want to do something
-}
-
-void CScintillaView::OnSavePointReached(SCNotification* /*pSCNotification*/)
-{
-  //By default do nothing, derived classes may want to do something
-}
-
-void CScintillaView::OnSavePointLeft(SCNotification* /*pSCNotification*/)
-{
-  //By default do nothing, derived classes may want to do something
-}
-
-void CScintillaView::OnModifyAttemptRO(SCNotification* /*pSCNotification*/)
-{
-  //By default do nothing, derived classes may want to do something
-}
-
-void CScintillaView::OnDoubleClick(SCNotification* /*pSCNotification*/)
-{
-  //By default do nothing, derived classes may want to do something
-}
-
-void CScintillaView::OnUpdateUI(SCNotification* /*pSCNotification*/)
-{
-  //By default do nothing, derived classes may want to do something
-}
-
-void CScintillaView::OnModified(SCNotification* /*pSCNotification*/)
-{
-  //By default do nothing, derived classes may want to do something
-}
-
-void CScintillaView::OnMacroRecord(SCNotification* /*pSCNotification*/)
-{
-  //By default do nothing, derived classes may want to do something
-}
-
-void CScintillaView::OnMarginClick(SCNotification* pSCNotification)
-{
-  //By default get the line where the click occured and toggle its fold state
-  CScintillaCtrl& rCtrl = GetCtrl();
-  int nLine = rCtrl.LineFromPosition(pSCNotification->position);
-  rCtrl.ToggleFold(nLine);
-}
-
-void CScintillaView::OnNeedShown(SCNotification* /*pSCNotification*/)
-{
-  //By default do nothing, derived classes may want to do something
-}
-
-void CScintillaView::OnPainted(SCNotification* /*pSCNotification*/)
-{
-  //By default do nothing, derived classes may want to do something
-}
-
-void CScintillaView::OnUserListSelection(SCNotification* /*pSCNotification*/)
-{
-  //By default do nothing, derived classes may want to do something
-}
-
-void CScintillaView::OnDwellStart(SCNotification* /*pSCNotification*/)
-{
-  //By default do nothing, derived classes may want to do something
-}
-
-void CScintillaView::OnDwellEnd(SCNotification* /*pSCNotification*/)
-{
-  //By default do nothing, derived classes may want to do something
-}
-
-void CScintillaView::OnZoom(SCNotification* /*pSCNotification*/)
-{
-  //By default do nothing, derived classes may want to do something
-}
-
-void CScintillaView::OnHotSpotClick(SCNotification* /*pSCNotification*/)
-{
-  //By default do nothing, derived classes may want to do something
-}
-
-void CScintillaView::OnHotSpotDoubleClick(SCNotification* /*pSCNotification*/)
-{
-  //By default do nothing, derived classes may want to do something
-}
-
-void CScintillaView::OnCallTipClick(SCNotification* /*pSCNotification*/)
-{
-  //By default do nothing, derived classes may want to do something
-}
-
-void CScintillaView::OnAutoCSelection(SCNotification* /*pSCNotification*/)
-{
-  //By default do nothing, derived classes may want to do something
-}
-
-void CScintillaView::OnChange()
-{
-  //By default do nothing, derived classes may want to do something
-}
-
-void CScintillaView::OnSetFocus()
-{
-  //By default do nothing, derived classes may want to do something
-}
-
-void CScintillaView::OnKillFocus()
-{
-  //By default do nothing, derived classes may want to do something
-}
-
-BOOL CScintillaView::OnCommand(WPARAM wParam, LPARAM lParam)
-{
-  HWND hWndControl = reinterpret_cast<HWND>(lParam);
-  
-  if (hWndControl == GetCtrl().GetSafeHwnd())
-  {
-    WORD wNotification = HIWORD(wParam);
-    switch (wNotification)
-    {
-      case SCEN_CHANGE:
-      {
-        OnChange();
-        break;
-      }
-      case SCEN_SETFOCUS:
-      {
-        OnSetFocus();
-        break;
-      }
-      case SCEN_KILLFOCUS:
-      {
-        OnKillFocus();
-        break;
-      }
-      default:
-      {
-        break;
-      }
-    }
-
-    return TRUE;
-  }
-
-  //let the base class do its thing
-  return CView::OnCommand(wParam, lParam);
-}
-
-BOOL CScintillaView::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
-{
-  NMHDR* pNMHdr = reinterpret_cast<NMHDR*>(lParam);
-  AFXASSUME(pNMHdr);
-
-  //Is it a notification from the embedded control
-  CScintillaCtrl& rCtrl = GetCtrl();
-  if (pNMHdr->hwndFrom == rCtrl.GetSafeHwnd())
-  {
-    SCNotification* pSCNotification = reinterpret_cast<SCNotification*>(lParam);
-    switch (pNMHdr->code)
-    {
-      case SCN_STYLENEEDED:
-      {
-        OnStyleNeeded(pSCNotification);
-        break;
-      }
-      case SCN_CHARADDED:
-      {
-        OnCharAdded(pSCNotification);
-        break;
-      }
-      case SCN_SAVEPOINTREACHED:
-      {
-        OnSavePointReached(pSCNotification);
-        break;
-      }
-      case SCN_SAVEPOINTLEFT:
-      {
-        OnSavePointLeft(pSCNotification);
-        break;
-      }
-      case SCN_MODIFYATTEMPTRO:
-      {
-        OnModifyAttemptRO(pSCNotification);
-        break;
-      }
-      case SCN_DOUBLECLICK:
-      {
-        OnDoubleClick(pSCNotification);
-        break;
-      }
-      case SCN_UPDATEUI:
-      {
-        OnUpdateUI(pSCNotification);
-        break;
-      }
-      case SCN_MODIFIED:
-      {
-        OnModified(pSCNotification);
-        break;
-      }
-      case SCN_MACRORECORD:
-      {
-        OnMacroRecord(pSCNotification);
-        break;
-      }
-      case SCN_MARGINCLICK:
-      {
-        OnMarginClick(pSCNotification);
-        break;
-      }
-      case SCN_NEEDSHOWN:
-      {
-        OnNeedShown(pSCNotification);
-        break;
-      }
-      case SCN_PAINTED:
-      {
-        OnPainted(pSCNotification);
-        break;
-      }
-      case SCN_USERLISTSELECTION:
-      {
-        OnUserListSelection(pSCNotification);
-        break;
-      }
-      case SCN_DWELLSTART:
-      {
-        OnDwellStart(pSCNotification);
-        break;
-      }
-      case SCN_DWELLEND:
-      {
-        OnDwellEnd(pSCNotification);
-        break;
-      }
-      case SCN_ZOOM:
-      {
-        OnZoom(pSCNotification);
-        break;
-      }
-      case SCN_HOTSPOTCLICK:
-      {
-        OnHotSpotClick(pSCNotification);
-        break;
-      }
-      case SCN_HOTSPOTDOUBLECLICK:
-      {
-        OnHotSpotDoubleClick(pSCNotification);
-        break;
-      }
-      case SCN_CALLTIPCLICK:
-      {
-        OnCallTipClick(pSCNotification);
-        break;
-      }
-      case SCN_AUTOCSELECTION:
-      {
-        OnAutoCSelection(pSCNotification);
-        break;
-      }
-      default:
-      {
-        break;
-      }
-    }
-    return TRUE; // we processed the message
-  }
-  else
-  {
-    //let the base class do its thing
-    return CView::OnNotify(wParam, lParam, pResult);
-  }
-}
-
-void CScintillaView::GetReplaceAllTarget( long& s, long& e )
-{
-	s = 0; e = GetCtrl().GetLength();
-}
-
-IMPLEMENT_DYNAMIC(CScintillaDoc, CDocument)
-
-CScintillaDoc::CScintillaDoc()
-{
-	ASSERT_VALID(this);
-}
-
-CScintillaView* CScintillaDoc::GetView() const
-{
-	//find the first view - if there are no views
-	//we must return NULL
-	POSITION pos = GetFirstViewPosition();
-	if (pos == NULL)
-		return NULL;
-
-	//find the first view that is a CScintillaView
-	CView* pView;
-	while (pos != NULL)
+	else
 	{
-		pView = GetNextView(pos);
-		if (pView->IsKindOf(RUNTIME_CLASS(CScintillaView)))
-			return static_cast<CScintillaView*>(pView);
+		if (bSelected)
+		{
+			Rectangle(pDC, rc, XPCOLOR_EDITCTRLBORDER, COLOR_WINDOW);
+		}
+		else
+		{
+			if (!bPopupBar) pDC->FillSolidRect(rc, m_clrControlEditNormal);
+			pDC->Draw3dRect(rc, GetXtremeColor(XPCOLOR_EDITCTRLBORDER), GetXtremeColor(XPCOLOR_EDITCTRLBORDER));
+		}
 	}
 
-	//can't find one--return NULL
-	return NULL;
-}
+	if (pControlEdit->IsSpinButtonsVisible())
+	{
+		CXTPOffice2007Image* pImage = LoadImage(_T("TOOLBARBUTTONSPIN"));
+		if (!pImage)
+			return 0;
 
-void CScintillaDoc::SetModifiedFlag(BOOL bModified)
-{
-  CScintillaView* pView = GetView();
-  AFXASSUME(pView);
+		BOOL bPressed = pControlEdit->GetPressed();
 
-  if (bModified == FALSE)
-    pView->GetCtrl().SetSavePoint();
+		int nState = !bEnabled ? 4 : bSelected && bPressed == 3 ? 3 : bSelected == 3 ? 2 : bSelected ? 1 : 0;
+		CRect rcTop(rc.right - 18, rc.top + 1, rc.right - 1, rc.CenterPoint().y);
+		pImage->DrawImage(pDC, rcTop, pImage->GetSource(nState, 10), CRect(0, 0, 0, 0), 0xFF00FF);
 
-  m_bModified = bModified;
-}
-
-BOOL CScintillaDoc::IsModified()
-{
-  CScintillaView* pView = GetView();
-  AFXASSUME(pView);
-
-	return m_bModified || pView->GetCtrl().GetModify();
-}
-
-void CScintillaDoc::DeleteContents()
-{
-  //let the base class do its thing
-	CDocument::DeleteContents();
-
-  //Ask our accompanying view to delete its contents
-	CWaitCursor wait;
-	CScintillaView* pView = GetView();
-  if (pView)
-    pView->DeleteContents();
-}
-
-void CScintillaDoc::Serialize(CArchive& ar)
-{
-	CScintillaView* pView = GetView();
-	AFXASSUME(pView);
-	
-	pView->Serialize(ar);
-}
-
-BOOL CScintillaDoc::OnSaveDocument(LPCTSTR lpszPathName)
-{
-  //Let the base class do its thing
-	BOOL bSuccess = CDocument::OnSaveDocument(lpszPathName);
-  if (bSuccess)
-  {
-		CScintillaView* pView = GetView();
-		AFXASSUME(pView);
-		
-		CScintillaCtrl& rCtrl = pView->GetCtrl();
-
-		//Tell the control that the document has now been saved
-		rCtrl.SetSavePoint();
-		rCtrl.SetReadOnly(FALSE);
+		nState = !bEnabled ? 9 : bSelected && bPressed == 4 ? 8 : bSelected == 4 ? 7 : bSelected ? 6 : 5;
+		CRect rcBottom(rcTop.left, rcTop.bottom, rcTop.right, rc.bottom - 1);
+		pImage->DrawImage(pDC, rcBottom, pImage->GetSource(nState, 10), CRect(0, 0, 0, 0), 0xFF00FF);
 	}
 
-	return bSuccess;
-} 
+	if (pControlEdit->HasDwmCompositedRect())
+	{
+		FillCompositeAlpha(pDC, pControlEdit->GetRect());
+	}
 
-#ifdef _DEBUG
-void CScintillaDoc::AssertValid() const
-{
-  //Let the base class do its thing
-	CDocument::AssertValid();
+	return 0;
 }
 
-void CScintillaDoc::Dump(CDumpContext& dc) const
+void CXTPRibbonTheme::DrawKeyboardTip(CDC* pDC, CXTPCommandBarKeyboardTip* pWnd, BOOL bSetRegion)
 {
-  //let the base class do its thing
-	CDocument::Dump(dc);
+	if (bSetRegion)
+	{
+		SetRoundRectRegion(pWnd);
+	}
+	else
+	{
+		CXTPClientRect rc(pWnd);
+		CXTPFontDC font(pDC, &m_fontToolTip);
+
+		COLORREF clrLight = GetImages()->GetImageColor(_T("Window"), _T("TooltipLight"));
+		COLORREF clrDark = GetImages()->GetImageColor(_T("Window"), _T("TooltipDark"));
+		COLORREF clrBorder = GetImages()->GetImageColor(_T("Window"), _T("TooltipBorder"));
+		XTPDrawHelpers()->GradientFill(pDC, rc, clrLight, clrDark, FALSE);
+		pDC->Draw3dRect(rc, clrBorder, clrBorder);
+
+		pDC->SetBkMode(TRANSPARENT);
+		pDC->SetTextColor(GetXtremeColor(pWnd->m_bEnabled ? COLOR_BTNTEXT : COLOR_GRAYTEXT));
+		pDC->DrawText(pWnd->m_strTip, rc, DT_VCENTER | DT_CENTER | DT_SINGLELINE);
+	}
 }
-#endif //_DEBUG
+
+void CXTPRibbonTheme::SetRoundRectRegion(CWnd* pWnd)
+{
+	CXTPWindowRect rc(pWnd);
+	rc.OffsetRect(-rc.TopLeft());
+
+	int cx = rc.Width(), cy = rc.Height();
+
+	RECT rgn[] =
+	{
+		{1, 0, cx - 1, 1}, {0, 1, cx, cy - 1}, {1, cy - 1, cx - 1, cy}
+	};
+
+	int nSizeData = sizeof(RGNDATAHEADER) + sizeof(rgn);
+
+	RGNDATA* pRgnData = (RGNDATA*)malloc(nSizeData);
+	if (!pRgnData)
+		return;
+	MEMCPY_S(&pRgnData->Buffer, (void*)&rgn, sizeof(rgn));
+
+	pRgnData->rdh.dwSize = sizeof(RGNDATAHEADER);
+	pRgnData->rdh.iType = RDH_RECTANGLES;
+	pRgnData->rdh.nCount = sizeof(rgn) / sizeof(RECT);
+	pRgnData->rdh.nRgnSize = 0;
+	pRgnData->rdh.rcBound = CRect(0, 0, cx, cy);
+
+	CRgn rgnResult;
+	VERIFY(rgnResult.CreateFromData(NULL, nSizeData, pRgnData));
+
+	free(pRgnData);
+
+	pWnd->SetWindowRgn((HRGN)rgnResult.Detach(), FALSE);
+}
+
+void CXTPRibbonTheme::SetCommandBarRegion(CXTPCommandBar* pCommandBar)
+{
+	if (pCommandBar->GetPosition() != xtpBarPopup)
+		return;
+
+	SetRoundRectRegion(pCommandBar);
+}
+
+void CXTPRibbonTheme::AdjustExcludeRect(CRect& /*rc*/, CXTPControl* /*pControl*/, BOOL /*bVertical*/)
+{
+}
+
+void CXTPRibbonTheme::DrawSplitButtonPopup(CDC* pDC, CXTPControl* pButton)
+{
+	CRect rcButton = pButton->GetRect();
+	BOOL bSelected = pButton->GetSelected(), bPopuped = pButton->GetPopuped(), bEnabled = pButton->GetEnabled();
+
+	CXTPOffice2007Image* pImage = LoadImage(_T("MENUSPLITDROPDOWN"));
+
+	int nState = !bSelected || !bEnabled ? 0 : bPopuped ? 2 : 1;
+
+	pImage->DrawImage(pDC, CRect(rcButton.right - m_nSplitButtonPopupWidth, rcButton.top, rcButton.right, rcButton.bottom),
+		pImage->GetSource(nState, 3), CRect(2, 2, 2, 2), 0xFF00FF);
+}
+
+void CXTPRibbonTheme::DrawControlPopupGlyph(CDC* pDC, CXTPControl* pButton)
+{
+	CRect rcButton = pButton->GetRect();
+
+	CXTPOffice2007Image* pImage = LoadImage(_T("MENUPOPUPGLYPH"));
+	CRect rcSrc(pImage->GetSource(pButton->GetEnabled() ? 0 : 1, 2));
+	CPoint pt = CPoint(rcButton.right - 14, (rcButton.top + rcButton.bottom - rcSrc.Height()) / 2);
+
+	pImage->DrawImage(pDC, CRect(pt, rcSrc.Size()), rcSrc, CRect(0, 0, 0, 0), 0xFF00FF);
+}
+
+void CXTPRibbonTheme::DrawPopupResizeGripper(CDC* pDC, CRect rcGripper, int nFlags)
+{
+	CXTPOffice2007Image* pImage = LoadImage(_T("POPUPBARRESIZEGRIPPERFACE"));
+	ASSERT(pImage);
+	if (!pImage)
+	{
+		CXTPOffice2003Theme::DrawPopupResizeGripper(pDC, rcGripper, nFlags);
+		return;
+	}
+
+	pImage->DrawImage(pDC, rcGripper, pImage->GetSource(), CRect(1, 1, 1, 1), 0xFF00FF);
+
+	if (nFlags == 2)
+	{
+		pImage = LoadImage(_T("POPUPBARRESIZEGRIPPERHEIGHT"));
+		CRect rc = pImage->GetSource();
+		CRect rcDest(CPoint(rcGripper.CenterPoint().x - rc.Width() / 2,
+			rcGripper.bottom - rc.Height()), rc.Size());
+
+		pImage->DrawImage(pDC, rcDest, rc, CRect(0, 0, 0, 0), 0xFF00FF);
+	}
+	else
+	{
+		pImage = LoadImage(_T("POPUPBARRESIZEGRIPPERWIDTH"));
+		CRect rc = pImage->GetSource();
+		CRect rcDest(CRect(CPoint(rcGripper.right - rc.Width(),
+			rcGripper.bottom - rc.Height()), rc.Size()));
+
+		pImage->DrawImage(pDC, rcDest, rc, CRect(0, 0, 0, 0), 0xFF00FF);
+	}
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+
 

@@ -1,13 +1,12 @@
-// from server: 96% by TrollStein
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/Ribbon/XTPRibbonGroup.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\PropertyGrid\XTPPropertyGridItem.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPRibbonGroup.cpp: implementation of the CXTPRibbonGroup class.
+// XTPPropertyGridItem.cpp : implementation of the CXTPPropertyGridItem class.
 //
-// This file is a part of the XTREME RIBBON MFC class library.
+// This file is a part of the XTREME PROPERTYGRID MFC class library.
 // (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
@@ -25,707 +24,1463 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
-
-#include "Common/XTPPropExchange.h"
+#include "StdAfx.h"
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPDrawHelpers.h"
 #include "Common/XTPImageManager.h"
 
-#include "CommandBars/XTPControl.h"
-#include "CommandBars/XTPControls.h"
-#include "CommandBars/XTPControlPopup.h"
-#include "CommandBars/XTPControlButton.h"
-#include "CommandBars/XTPPopupBar.h"
-#include "CommandBars/XTPToolBar.h"
-#include "CommandBars/XTPCommandBars.h"
+#include "XTPPropertyGridInplaceEdit.h"
+#include "XTPPropertyGridInplaceButton.h"
+#include "XTPPropertyGridInplaceList.h"
+#include "XTPPropertyGridItem.h"
+#include "XTPPropertyGrid.h"
+#include "XTPPropertyGridDefines.h"
 
-#include "XTPRibbonGroup.h"
-#include "XTPRibbonGroups.h"
-#include "XTPRibbonBar.h"
-#include "XTPRibbonTheme.h"
-#include "XTPRibbonQuickAccessControls.h"
 
 #ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
-IMPLEMENT_SERIAL(CXTPRibbonGroup, CCmdTarget, VERSIONABLE_SCHEMA | _XTP_SCHEMA_CURRENT)
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridItem
 
+IMPLEMENT_DYNAMIC(CXTPPropertyGridItem, CCmdTarget)
 
-//////////////////////////////////////////////////////////////////////////
-// CXTPRibbonGroupOption
-
-void CXTPRibbonGroupOption::Draw(CDC* pDC)
+CXTPPropertyGridItem::CXTPPropertyGridItem(LPCTSTR lpszCaption, LPCTSTR strValue, CString* pBindString)
 {
-	m_pRibbonGroup->GetRibbonBar()->GetRibbonPaintManager()->DrawControlGroupOption(pDC, this, TRUE);
+
+	Init();
+	SetPrompt(lpszCaption);
+	m_strDefaultValue = m_strValue = strValue;
+
+	BindToString(pBindString);
 }
 
-//////////////////////////////////////////////////////////////////////////
-// CXTPRibbonGroupControlPopup
 
-
-CXTPRibbonGroupControlPopup::CXTPRibbonGroupControlPopup(CXTPRibbonGroup* pGroup)
+CXTPPropertyGridItem::CXTPPropertyGridItem(UINT nID, LPCTSTR strValue, CString* pBindString)
 {
-	m_pRibbonGroup = pGroup;
-	m_pPopupGroup = pGroup;
-	SetFlags(xtpFlagManualUpdate);
-	m_controlType = xtpControlButtonPopup;
-	m_pCommandBar = CXTPPopupBar::CreatePopupBar(0);
+	Init();
+	m_nID = nID;
+
+	CString strPrompt;
+	if (strPrompt.LoadString(nID))
+	{
+		SetPrompt(strPrompt);
+	}
+
+	m_strDefaultValue = m_strValue = strValue;
+	BindToString(pBindString);
 }
 
-CSize CXTPRibbonGroupControlPopup::GetSize (CDC* pDC)
+CXTPPropertyGridItem::~CXTPPropertyGridItem()
 {
-	return ((CXTPRibbonTheme*)GetParent()->GetPaintManager())->DrawControlGroupPopup(pDC, this, FALSE);
+	Clear();
 }
 
-void CXTPRibbonGroupControlPopup::Draw(CDC* pDC)
+void CXTPPropertyGridItem::Clear()
 {
-	((CXTPRibbonTheme*)GetParent()->GetPaintManager())->DrawControlGroupPopup(pDC, this, TRUE);
+	if (m_pGrid && m_pGrid->m_pSelected == this)
+	{
+		m_pGrid->m_pSelected = NULL;
+	}
+
+	if (m_pGrid && m_pGrid->m_pHotButton && m_pInplaceButtons)
+	{
+		for (int i = 0; i < m_pInplaceButtons->GetCount(); i++)
+		{
+			if (m_pInplaceButtons->GetAt(i) == m_pGrid->m_pHotButton)
+			{
+				m_pGrid->m_pHotButton = NULL;
+				break;
+			}
+		}
+	}
+
+	if (m_pGrid && GetInplaceList().m_pItem == this)
+	{
+		GetInplaceList().DestroyItem();
+	}
+	if (m_pGrid && GetInplaceEdit().m_pItem == this)
+	{
+		GetInplaceEdit().DestroyItem();
+	}
+
+	if (m_pChilds)
+	{
+		m_pChilds->Clear();
+		CMDTARGET_RELEASE(m_pChilds);
+	}
+
+	if (m_pConstraints)
+	{
+		m_pConstraints->m_pItem = NULL;
+		CMDTARGET_RELEASE(m_pConstraints);
+	}
+
+	CMDTARGET_RELEASE(m_pValueMetrics);
+	CMDTARGET_RELEASE(m_pCaptionMetrics);
+	CMDTARGET_RELEASE(m_pInplaceButtons);
+
+	SAFE_DELETE(m_pInplaceControls);
+
+	m_pGrid = NULL;
 }
 
-BOOL CXTPRibbonGroupControlPopup::IsTransparent() const
+void CXTPPropertyGridItem::SetPrompt(LPCTSTR lpszPrompt)
 {
-	return TRUE;
+	if (lpszPrompt == 0)
+		return;
+
+	LPCTSTR lpszDescription = _tcschr(lpszPrompt, _T('\n'));
+
+	if (lpszDescription == NULL)
+	{
+		m_strCaption = lpszPrompt;
+	}
+	else
+	{
+		int nLen = (int)(lpszDescription - lpszPrompt);
+		LPTSTR lpszCaption = m_strCaption.GetBufferSetLength(nLen);
+
+		MEMCPY_S(lpszCaption, lpszPrompt, nLen * sizeof(TCHAR));
+		m_strDescription = lpszDescription + 1;
+	}
 }
 
-CXTPRibbonBar* CXTPRibbonGroupControlPopup::GetRibbonBar() const
+
+void CXTPPropertyGridItem::Init()
 {
-	ASSERT(m_pParent);
-	if (!m_pParent)
+	m_bHidden = FALSE;
+	m_bExpanded = FALSE;
+	m_nIndex = -1;
+	m_bVisible = FALSE;
+	m_pParent = 0;
+	m_pGrid = 0;
+	m_nIndent = 0;
+	m_strValue = "";
+	m_bReadOnly = FALSE;
+	m_bCategory = FALSE;
+	m_nID = 0;
+	m_nFlags = xtpGridItemHasEdit;
+	m_pConstraints = new CXTPPropertyGridItemConstraints(this);
+	m_pInplaceButtons = new CXTPPropertyGridInplaceButtons(this);
+	m_pInplaceControls = new CXTPPropertyGridInplaceControls();
+	m_pConstraints->SetCurrent(-1);
+	m_pBindString = 0;
+	m_bConstraintEdit = FALSE;
+
+	m_bAutoComplete = FALSE;
+
+	m_nLinesCount = 1;
+	m_nHeight = -1;
+
+	m_nDropDownItemCount = 10;
+
+	m_bExpandable = TRUE;
+
+	m_bUseMask = FALSE;
+	m_bPassword = FALSE;
+	m_chPrompt = _T('*');
+
+	m_dwData = 0;
+	m_dwEditStyle = ES_AUTOHSCROLL;
+
+	EnableAutomation();
+
+	m_pValueMetrics = 0;
+	m_pCaptionMetrics = 0;
+
+
+	m_pChilds = new CXTPPropertyGridItems();
+}
+
+void CXTPPropertyGridItem::OnAddChildItem()
+{
+	if (!m_bCategory) SetFlags(m_nFlags);
+}
+
+void CXTPPropertyGridItem::SetFlags(UINT nFlags)
+{
+	ASSERT(!m_bCategory);
+	m_nFlags = nFlags;
+
+	m_pInplaceButtons->Remove(XTP_ID_PROPERTYGRID_EXPANDBUTTON);
+	m_pInplaceButtons->Remove(XTP_ID_PROPERTYGRID_COMBOBUTTON);
+
+	if (m_nFlags & xtpGridItemHasExpandButton)
+		m_pInplaceButtons->AddExpandButton();
+
+	if (m_nFlags & xtpGridItemHasComboButton)
+		m_pInplaceButtons->AddComboButton();
+}
+
+UINT CXTPPropertyGridItem::GetFlags() const
+{
+	return m_nFlags;
+}
+
+CXTPPropertyGridItemMetrics* CXTPPropertyGridItem::GetValueMetrics() const
+{
+	if (m_pValueMetrics == 0)
+		m_pValueMetrics = new CXTPPropertyGridItemMetrics(m_pGrid->GetPaintManager());
+	return m_pValueMetrics;
+}
+
+CXTPPropertyGridItemMetrics* CXTPPropertyGridItem::GetCaptionMetrics() const
+{
+	if (m_pCaptionMetrics == 0)
+		m_pCaptionMetrics = new CXTPPropertyGridItemMetrics(m_pGrid->GetPaintManager());
+	return m_pCaptionMetrics;
+}
+
+CXTPPropertyGridItemMetrics* CXTPPropertyGridItem::GetMetrics(BOOL bValueMetrics, BOOL bCreate /*= TRUE*/) const
+{
+	if (bCreate)
+		return bValueMetrics ? GetValueMetrics() : GetCaptionMetrics();
+
+	return bValueMetrics ? m_pValueMetrics : m_pCaptionMetrics;
+}
+
+CXTPPropertyGridItem* CXTPPropertyGridItem::AddChildItem(CXTPPropertyGridItem* pItem)
+{
+	return InsertChildItem(m_pChilds->GetCount(), pItem);
+}
+
+void CXTPPropertyGridItem::SetIndent(int nIndent)
+{
+	m_nIndent = nIndent;
+
+	for (int i = 0; i < m_pChilds->GetCount(); i++)
+	{
+		m_pChilds->GetAt(i)->SetIndent(nIndent + 1);
+	}
+}
+
+CXTPPropertyGridItem* CXTPPropertyGridItem::InsertChildItem(int nIndex, CXTPPropertyGridItem* pItem)
+{
+	ASSERT(pItem);
+	if (!pItem)
 		return NULL;
 
-	if (DYNAMIC_DOWNCAST(CXTPRibbonBar, m_pParent))
-		return (CXTPRibbonBar*)m_pParent;
+	ASSERT(!pItem->IsCategory() || IsCategory());
+	ASSERT(m_pGrid != NULL);
+	if (!m_pGrid)
+		return pItem;
 
-	if (DYNAMIC_DOWNCAST(CXTPRibbonGroupPopupToolBar, m_pParent))
-		return ((CXTPRibbonGroupPopupToolBar*)m_pParent)->m_pRibbonBar;
+	if (nIndex < 0 || nIndex > m_pChilds->GetCount())
+		nIndex = m_pChilds->GetCount();
 
-	if (DYNAMIC_DOWNCAST(CXTPRibbonTabPopupToolBar, m_pParent))
-		return ((CXTPRibbonTabPopupToolBar*)m_pParent)->m_pRibbonBar;
+	m_pChilds->InsertAt(nIndex, pItem);
+	pItem->m_pGrid = m_pGrid;
 
-	if (DYNAMIC_DOWNCAST(CXTPRibbonBarMorePopupToolBar, m_pParent))
-		return ((CXTPRibbonBarMorePopupToolBar*)m_pParent)->m_pRibbonBar;
+	ASSERT(pItem->m_pParent == NULL);
+	pItem->m_pParent = this;
+	pItem->SetIndent(m_nIndent + 1);
 
-	ASSERT(FALSE);
-	return NULL;
+	pItem->OnAddChildItem();
+
+	if (m_bVisible)
+	{
+		if (m_bExpanded) m_pGrid->SetPropertySort(m_pGrid->m_properetySort, TRUE);
+		else if (m_pGrid->GetSafeHwnd() && m_pChilds->GetCount() == 1) m_pGrid->Invalidate(FALSE);
+	}
+
+	return pItem;
 }
 
-void CXTPRibbonGroupControlPopup::Copy(CXTPControl* pControl, BOOL bRecursive)
+void CXTPPropertyGridItem::Move(CXTPPropertyGridItem* pParent, int nIndex /* = -1 */)
 {
-	CXTPControlButton::Copy(pControl, bRecursive);
+	if (!pParent)
+		return;
 
-	if (m_pParent && pControl->GetParent() && GetRibbonBar() != ((CXTPRibbonGroupControlPopup*)pControl)->GetRibbonBar())
+	InternalAddRef();
+	Remove();
+	pParent->InsertChildItem(nIndex, this);
+}
+
+void CXTPPropertyGridItem::Collapse()
+{
+	if (!m_bExpanded) return;
+
+	if (m_pGrid->m_nLockUpdate == 0)
 	{
-		m_pPopupGroup = GetRibbonBar()->FindGroup(GetID());
+		if (m_pGrid->GetSafeHwnd() && m_bVisible)
+		{
+			m_pGrid->_DoCollapse(this);
+			m_pGrid->OnSelectionChanged();
+		}
+	}
+
+	m_bExpanded = FALSE;
+
+	m_pGrid->SendNotifyMessage(XTP_PGN_ITEMEXPANDCHANGED, (LPARAM)this);
+}
+
+void CXTPPropertyGridItem::Expand()
+{
+	if (m_bExpanded) return;
+
+	if (m_pGrid->m_nLockUpdate == 0)
+	{
+		if (m_pGrid->GetSafeHwnd() && m_bVisible)
+		{
+			m_pGrid->_DoExpand(this, m_nIndex);
+			m_pGrid->_RefreshIndexes();
+			m_pGrid->OnSelectionChanged();
+		}
+	}
+
+	m_bExpanded = TRUE;
+
+	m_pGrid->SendNotifyMessage(XTP_PGN_ITEMEXPANDCHANGED, (LPARAM)this);
+
+}
+
+BOOL CXTPPropertyGridItem::HasParent(CXTPPropertyGridItem* pParent)
+{
+	if (m_pParent == NULL) return FALSE;
+	if (m_pParent == pParent) return TRUE;
+	return m_pParent->HasParent(pParent);
+}
+
+void CXTPPropertyGridItem::Select()
+{
+	ASSERT(m_pGrid);
+	if (!m_pGrid)
+		return;
+
+	if (m_bVisible)
+	{
+		m_pGrid->SetCurSel(m_nIndex);
+		m_pGrid->OnSelectionChanged();
+	}
+}
+
+void CXTPPropertyGridItem::OnDeselect()
+{
+	if (m_pGrid) m_pGrid->FocusInplaceButton(NULL);
+	OnValidateEdit();
+
+	for (int i = m_pInplaceControls->GetCount() - 1; i >= 0; i--)
+	{
+		CXTPPropertyGridInplaceControl* pControl = m_pInplaceControls->GetAt(i);
+		pControl->OnDestroyWindow();
+	}
+}
+
+void CXTPPropertyGridItem::OnValidateEdit()
+{
+	CXTPPropertyGridInplaceEdit& wndEdit = GetInplaceEdit();
+	wndEdit.HideWindow();
+
+	if (wndEdit.GetSafeHwnd() && wndEdit.m_pItem == this)
+	{
+		CString strValue;
+		wndEdit.GetWindowText(strValue);
+		wndEdit.m_pItem = NULL;
+
+		if (wndEdit.m_bCancel)
+		{
+			OnCancelEdit();
+		}
+		else if (wndEdit.m_bEditMode && OnAfterEdit(strValue))
+		{
+			if (m_strValue != strValue && !wndEdit.m_bCancel)
+			{
+				OnValueChanged(strValue);
+			}
+		}
+	}
+}
+
+void CXTPPropertyGridItem::SetEditText(const CString& str)
+{
+	if (!m_pGrid) return;
+
+	CXTPPropertyGridInplaceEdit& wndEdit = GetInplaceEdit();
+	if (wndEdit.GetSafeHwnd() && wndEdit.m_pItem == this)
+	{
+		wndEdit.SetWindowText(str);
+	}
+}
+
+void CXTPPropertyGridItem::SetValue(CString strValue)
+{
+	m_strValue = strValue;
+
+	if (m_pBindString)
+	{
+		*m_pBindString = strValue;
+	}
+
+	SetEditText(m_strValue);
+
+	for (int i = m_pInplaceControls->GetCount() - 1; i >= 0; i--)
+	{
+		CXTPPropertyGridInplaceControl* pControl = m_pInplaceControls->GetAt(i);
+		pControl->OnValueChanged();
+	}
+
+	SAFE_INVALIDATE(m_pGrid);
+}
+
+void CXTPPropertyGridItem::OnValueChanged(CString strValue)
+{
+	if (!m_pGrid)
+		return;
+
+	SetValue(strValue);
+	SAFE_INVALIDATE(m_pGrid);
+	m_pGrid->SendNotifyMessage(XTP_PGN_ITEMVALUE_CHANGED, (LPARAM)this);
+}
+
+BOOL CXTPPropertyGridItem::OnRequestEdit()
+{
+	XTP_PROPERTYGRID_NOTIFYEDIT notify;
+	notify.bCancel = FALSE;
+	notify.pItem = this;
+
+	if (m_pGrid)
+	{
+		m_pGrid->SendNotifyMessage(XTP_PGN_REQUESTEDIT, (LPARAM)&notify);
+	}
+	return !notify.bCancel;
+}
+
+BOOL CXTPPropertyGridItem::OnAfterEdit(CString& strValue)
+{
+	if (!m_pGrid)
+		return FALSE;
+
+	XTP_PROPERTYGRID_NOTIFYEDIT notify;
+	notify.bCancel = FALSE;
+	notify.strValue = strValue;
+	notify.pItem = this;
+
+	if (m_pGrid)
+	{
+		m_pGrid->SendNotifyMessage(XTP_PGN_AFTEREDIT, (LPARAM)&notify);
+		strValue = notify.strValue;
+	}
+	return !notify.bCancel;
+}
+
+void CXTPPropertyGridItem::OnCancelEdit()
+{
+	XTP_PROPERTYGRID_NOTIFYEDIT notify;
+	notify.bCancel = FALSE;
+	notify.pItem = this;
+
+	if (m_pGrid)
+	{
+		m_pGrid->SendNotifyMessage(XTP_PGN_CANCELEDIT, (LPARAM)&notify);
+	}
+}
+
+
+void CXTPPropertyGridItem::OnSelect()
+{
+	ASSERT(m_bVisible);
+
+	CString strValue(m_strValue);
+
+	if (m_pInplaceControls->GetCount() > 0)
+	{
+		CRect rcValue(GetInplaceWindowsRect());
+
+		for (int i = m_pInplaceControls->GetCount() - 1; i >= 0; i--)
+		{
+			CXTPPropertyGridInplaceControl* pControl = m_pInplaceControls->GetAt(i);
+			pControl->OnCreateWindow(rcValue);
+		}
+	}
+
+	if (m_nFlags & xtpGridItemHasEdit)
+	{
+		CXTPPropertyGridInplaceEdit& wndEdit = GetInplaceEdit();
+
+		wndEdit.SetValue(strValue);
+		wndEdit.Create(this, GetValueRect());
+		wndEdit.SetReadOnly(GetReadOnly() || m_bConstraintEdit);
 	}
 	else
 	{
-		m_pPopupGroup = ((CXTPRibbonGroupControlPopup*)pControl)->m_pPopupGroup;
+		GetInplaceEdit().HideWindow();
 	}
 }
 
-void CXTPRibbonGroupControlPopup::GenerateCommandBarList(DWORD& /*nID*/, CXTPCommandBarList* /*pCommandBarList*/, XTP_COMMANDBARS_PROPEXCHANGE_PARAM* /*pParam*/)
+DWORD CXTPPropertyGridItem::GetEditStyle() const
 {
+	return WS_CHILD | (m_bPassword ? ES_PASSWORD: 0) | (IsMultiLine() ? ES_MULTILINE : 0) | m_dwEditStyle;
 }
 
-void CXTPRibbonGroupControlPopup::OnLButtonUp(CPoint /*point*/)
+void CXTPPropertyGridItem::OnInplaceButtonDown(CXTPPropertyGridInplaceButton* pButton)
 {
+	if (GetReadOnly())
+		return;
 
-}
+	if (m_pGrid->SendNotifyMessage(XTP_PGN_INPLACEBUTTONDOWN, (LPARAM)pButton) == TRUE)
+		return;
 
-BOOL CXTPRibbonGroupControlPopup::IsVisible(DWORD dwSkipFlags /*= 0*/) const
-{
-	return CXTPControlPopup::IsVisible(dwSkipFlags) &&
-		(!m_pPopupGroup || m_pPopupGroup->m_bVisible);
-}
-
-IMPLEMENT_XTP_CONTROL(CXTPRibbonGroupControlPopup, CXTPControlPopup)
-
-BOOL CXTPRibbonGroupControlPopup::OnSetPopup(BOOL bPopup)
-{
-	m_bPopup = bPopup;
-	if (bPopup)
+	if ((pButton->GetID() == XTP_ID_PROPERTYGRID_COMBOBUTTON) && !m_pConstraints->IsEmpty() && OnRequestEdit())
 	{
-		CMDTARGET_RELEASE(m_pCommandBar);
+		GetInplaceList().Create(this, GetItemRect());
+		m_pGrid->Invalidate(FALSE);
+	}
+}
 
-		CXTPCommandBars* pCommandBars = m_pParent->GetCommandBars();
-		ASSERT(pCommandBars);
+CRect CXTPPropertyGridItem::GetInplaceWindowsRect()
+{
+	ASSERT(m_bVisible);
+	CRect rc = GetItemRect();
+	CRect rcValue(m_pGrid->GetDividerPos() + 1, rc.top + 1, rc.right, rc.bottom - 1);
 
-		if (!m_pPopupGroup)
+	if (IsInplaceButtonsVisible())
+	{
+		for (int i = 0; i < m_pInplaceButtons->GetCount(); i++)
+			rcValue.right -= m_pInplaceButtons->GetAt(i)->GetWidth();
+	}
+
+	m_pGrid->GetPaintManager()->AdjustItemValueRect(this, rcValue);
+
+	return rcValue;
+}
+
+CRect CXTPPropertyGridItem::GetValueRect()
+{
+	CRect rcValue = GetInplaceWindowsRect();
+
+	for (int i = m_pInplaceControls->GetCount() - 1; i >= 0; i--)
+	{
+		CXTPPropertyGridInplaceControl* pControl = m_pInplaceControls->GetAt(i);
+		pControl->OnAdjustValueRect(rcValue);
+	}
+
+	return rcValue;
+}
+
+CRect CXTPPropertyGridItem::GetItemRect() const
+{
+	CRect rc;
+	m_pGrid->GetItemRect(m_nIndex, rc);
+	return rc;
+}
+
+BOOL CXTPPropertyGridItem::OnChar(UINT nChar)
+{
+	ASSERT(nChar != VK_TAB);
+
+	if ((m_nFlags & xtpGridItemHasEdit) && (nChar != VK_ESCAPE))
+	{
+		OnSelect();
+
+		CXTPPropertyGridInplaceEdit& wndEdit = GetInplaceEdit();
+		if (wndEdit.GetSafeHwnd() && wndEdit.IsWindowVisible() && wndEdit.GetItem() == this)
 		{
-			m_pCommandBar = new CXTPPopupToolBar();
-			m_pCommandBar->SetCommandBars(pCommandBars);
-			m_pCommandBar->Popup(this, IsKeyboardSelected(GetSelected()));
+			wndEdit.SetFocus();
+			wndEdit.SetSel(0, -1);
+			if ((nChar != VK_TAB) && (wndEdit.GetItem() == this)) wndEdit.SendMessage(WM_CHAR, nChar);
 		}
+
+		return TRUE;
+	}
+	else if (nChar == VK_TAB)
+	{
+		if (m_pInplaceButtons->GetCount() > 0)
+		{
+			m_pGrid->GetPropertyGrid()->OnNavigate(xtpGridUIInplaceEdit, TRUE, this);
+		}
+	}
+	return FALSE;
+}
+
+BOOL CXTPPropertyGridItem::IsValueChanged() const
+{
+	return m_strDefaultValue != m_strValue;
+}
+
+void CXTPPropertyGridItem::ResetValue()
+{
+	OnValueChanged(m_strDefaultValue);
+}
+
+void CXTPPropertyGridItem::SetDefaultValue(LPCTSTR lpszDefaultValue)
+{
+	m_strDefaultValue = lpszDefaultValue;
+}
+
+void CXTPPropertyGridItem::OnLButtonUp(UINT /*nFlags*/, CPoint /*point*/)
+{
+
+}
+
+BOOL CXTPPropertyGridItem::PtInValueRect(CPoint point)
+{
+	CRect rc(GetValueRect());
+	return rc.PtInRect(point);
+}
+
+void CXTPPropertyGridItem::OnLButtonDblClk(UINT /*nFlags*/, CPoint point)
+{
+	CXTPPropertyGridInplaceButton* pInplaceButton = m_pInplaceButtons->HitTest(point);
+	if (pInplaceButton && IsInplaceButtonsVisible())
+	{
+		OnSelect();
+		return;
+	}
+
+	if (HasChilds() && IsExpandable())
+	{
+		if (m_bExpanded)
+			Collapse();
 		else
-		{
-
-			m_pCommandBar = new CXTPRibbonGroupPopupToolBar(m_pPopupGroup);
-			m_pCommandBar->SetCommandBars(pCommandBars);
-
-			m_pCommandBar->EnableCustomization(FALSE);
-			m_pCommandBar->Popup(this, IsKeyboardSelected(GetSelected()));
-		}
+			Expand();
 	}
 	else
 	{
-		ASSERT(m_pCommandBar);
-		if (m_pCommandBar) m_pCommandBar->SetTrackingMode(FALSE);
+		OnSelect();
 
+		if (m_nFlags & xtpGridItemHasEdit)
+		{
+			CXTPPropertyGridInplaceEdit& wndEdit = GetInplaceEdit();
+			if (wndEdit.GetSafeHwnd() && wndEdit.IsWindowVisible() && wndEdit.GetItem() == this)
+			{
+				wndEdit.SetFocus();
+
+				if (wndEdit.GetItem() == this && !GetReadOnly() && wndEdit.SelectConstraint(+1, TRUE))
+				{
+					OnValidateEdit();
+
+				}
+				else
+				{
+					wndEdit.SetSel(0, -1);
+				}
+			}
+		}
+		else if (!GetReadOnly())
+		{
+			SelectNextConstraint();
+		}
 	}
-	RedrawParent();
+}
+
+BOOL CXTPPropertyGridItem::SelectNextConstraint()
+{
+	CXTPPropertyGridItemConstraints* pList = GetConstraints();
+	if (pList->IsEmpty())
+		return FALSE;
+
+	if (!OnRequestEdit())
+		return FALSE;
+
+	int nIndex = pList->FindConstraint(m_strValue);
+
+	nIndex += +1;
+	if (nIndex >= pList->GetCount()) nIndex = 0;
+	if (nIndex < 0) nIndex = (ULONG)pList->GetCount() - 1;
+
+	CString strValue = pList->GetAt(nIndex);
+
+	if (!OnAfterEdit(strValue))
+		return FALSE;
+
+	pList->SetCurrent(nIndex);
+	OnValueChanged(strValue);
 	return TRUE;
 }
 
-
-CXTPRibbonGroup::CXTPRibbonGroup()
+BOOL CXTPPropertyGridItem::OnLButtonDown(UINT nFlags, CPoint point)
 {
-	m_nIndex = -1;
-	m_pGroups = NULL;
-	m_pParent = NULL;
-	m_pRibbonBar = NULL;
-	m_rcGroup.SetRectEmpty();
-	m_nId = -1;
-	m_nIconId = -1;
-	m_bReduced = FALSE;
-	m_bVisible = TRUE;
-	m_bControlsCentering = FALSE;
+	BOOL bOldSelected = IsSelected();
+	Select();
 
-
-	m_pControlGroupOption = new CXTPRibbonGroupOption();
-	m_pControlGroupOption->m_pRibbonGroup = this;
-
-	m_pControlGroupPopup = new CXTPRibbonGroupControlPopup(this);
-
-	m_pControlGroupPopup->m_buttonRibbonStyle = xtpButtonIconAndCaptionBelow;
-
-	m_bShowOptionButton = FALSE;
-
-	m_pLayoutInfo = NULL;
-
-	m_nRowCount = 2;
-	m_bControlsGrouping = FALSE;
-}
-
-CXTPRibbonGroup::~CXTPRibbonGroup()
-{
-	RemoveAll();
-
-	CMDTARGET_RELEASE(m_pControlGroupOption);
-	CMDTARGET_RELEASE(m_pControlGroupPopup);
-}
-
-void CXTPRibbonGroup::SetID(int nId)
-{
-	m_nId = nId;
-	m_pControlGroupOption->SetID(m_nId);
-	m_pControlGroupPopup->SetID(m_nId);
-}
-
-void CXTPRibbonGroup::Copy(CXTPRibbonGroup* pGroup)
-{
-	m_nId = pGroup->m_nId;
-	m_nIconId = pGroup->m_nIconId;
-	m_bShowOptionButton = pGroup->m_bShowOptionButton;
-	m_strCaption = pGroup->m_strCaption;
-	m_pGroups = pGroup->m_pGroups;
-	m_bControlsGrouping = pGroup->m_bControlsGrouping;
-	m_bControlsCentering = pGroup->m_bControlsCentering;
-	m_bVisible = pGroup->m_bVisible;
-
-	int nControlPos = m_pControlGroupOption->GetIndex();
-
-	for (int i = 0; i < pGroup->GetCount(); i++)
+	CXTPPropertyGridInplaceButton* pInplaceButton = m_pInplaceButtons->HitTest(point);
+	if (pInplaceButton && IsInplaceButtonsVisible())
 	{
-		CXTPControl* pControl = pGroup->GetAt(i);
-
-		CXTPControl* pClone = m_pParent->GetControls()->AddClone(pControl, nControlPos + i);
-		pClone->m_pRibbonGroup = this;
-		pClone->SetHideFlag(xtpHideRibbonTab, FALSE);
-		m_arrControls.Add(pClone);
-		pClone->InternalAddRef();
+		if (!bOldSelected && !m_pGrid->GetPropertyGrid()->GetShowInplaceButtonsAlways())
+			return TRUE;
+		pInplaceButton->OnLButtonDown(nFlags, point);
+		return TRUE;
 	}
 
-	m_pControlGroupOption->Copy(pGroup->m_pControlGroupOption, FALSE);
-	m_pControlGroupOption->SetHideFlag(xtpHideRibbonTab, FALSE);
+	int nOffset = (m_nIndent - (IsCategory() ? 0 : 1)) * XTP_PGI_EXPAND_BORDER;
 
-	m_pControlGroupPopup->Copy(pGroup->m_pControlGroupPopup, FALSE);
-	m_pControlGroupPopup->SetHideFlag(xtpHideRibbonTab, FALSE);
+	if ((point.x >= nOffset && point.x <= XTP_PGI_EXPAND_BORDER + nOffset) && IsExpandable())
+	{
+		if (m_bExpanded)
+			Collapse();
+		else
+			Expand();
+	}
+
+	if ((m_nFlags & xtpGridItemHasEdit) && PtInValueRect(point))
+	{
+		mouse_event(GetSystemMetrics(SM_SWAPBUTTON) ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+	}
+
+	if (m_nFlags == xtpGridItemHasComboButton && PtInValueRect(point) && !GetReadOnly()
+		&& (m_pInplaceButtons->GetCount() == 1))
+	{
+		OnInplaceButtonDown(m_pInplaceButtons->GetAt(0));
+	}
+
+	return TRUE;
 }
 
-void CXTPRibbonGroup::Remove(CXTPControl* pControl)
+void CXTPPropertyGridItem::BindToString(CString* pBindString)
 {
-	for (int nIndex = 0; nIndex < m_arrControls.GetSize(); nIndex++)
+	m_pBindString = pBindString;
+	if (m_pBindString)
 	{
-		if (m_arrControls.GetAt(nIndex) == pControl)
+		*m_pBindString = m_strValue;
+	}
+}
+
+void CXTPPropertyGridItem::OnBeforeInsert()
+{
+	if (m_pBindString && *m_pBindString != m_strValue)
+	{
+		m_strValue = *m_pBindString;
+	}
+}
+
+void CXTPPropertyGridItem::EnsureVisible()
+{
+	if (!m_bVisible)
+	{
+		CXTPPropertyGridItem* pItem = GetParentItem();
+
+		while (pItem)
 		{
-			RemoveAt(nIndex);
+			pItem->Expand();
+			pItem = pItem->GetParentItem();
+		}
+	}
+
+	if (!m_bVisible || (m_nIndex == -1))
+		return;
+
+	if (m_nIndex < m_pGrid->GetTopIndex())
+	{
+		m_pGrid->SetTopIndex(m_nIndex);
+		return;
+	}
+
+	int top = 0;
+	int nTopIndex = m_pGrid->GetTopIndex();
+	int bottom = CXTPClientRect(m_pGrid).bottom;
+
+	for (int i = nTopIndex; i < m_pGrid->GetCount(); i++)
+	{
+		int nRowHeight = m_pGrid->GetItemHeight(i);
+
+		if (top + nRowHeight > bottom)
+			break;
+
+		if (i == m_nIndex)
 			return;
+
+		top += nRowHeight;
+	}
+
+	int nHeight = bottom;
+	for (top = m_nIndex; top >= 0; top--)
+	{
+		int nRowHeight = m_pGrid->GetItemHeight(top);
+
+		if (nHeight - nRowHeight < 0)
+		{
+			if (top != m_nIndex)
+				top++;
+			break;
+		}
+
+		nHeight -= nRowHeight;
+	}
+	m_pGrid->SetTopIndex(top);
+}
+
+CXTPPropertyGridInplaceEdit& CXTPPropertyGridItem::GetInplaceEdit()
+{
+	if (m_pGrid) return *m_pGrid->m_pGrid->m_pInplaceEdit;
+
+	static CXTPPropertyGridInplaceEdit  wndEdit;
+	return wndEdit;
+}
+
+CXTPPropertyGridInplaceList& CXTPPropertyGridItem::GetInplaceList()
+{
+	if (m_pGrid) return *m_pGrid->m_pGrid->m_pInplaceListBox;
+
+	static CXTPPropertyGridInplaceList  wndListBox;
+	return wndListBox;
+}
+
+BOOL CXTPPropertyGridItem::IsInplaceButtonsVisible() const
+{
+	if (!m_pGrid)
+		return FALSE;
+
+	if (!IsSelected() && !m_pGrid->GetPropertyGrid()->GetShowInplaceButtonsAlways())
+		return FALSE;
+
+	return !GetReadOnly() && m_pInplaceButtons->GetCount() > 0;
+}
+
+CXTPPropertyGridInplaceButtons* CXTPPropertyGridItem::GetInplaceButtons() const
+{
+	return m_pInplaceButtons;
+}
+
+CXTPPropertyGridInplaceControls* CXTPPropertyGridItem::GetInplaceControls() const
+{
+	return m_pInplaceControls;
+}
+
+// Deletes the item.
+void CXTPPropertyGridItem::Remove()
+{
+	if (!m_pGrid)
+		return;
+
+	CXTPPropertyGridItems* pItems = GetParentItem() == 0 ? m_pGrid->m_pCategories : GetParentItem()->m_pChilds;
+	ASSERT(pItems);
+	int nIndex = pItems ? pItems->Find(this) : -1;
+
+	if (nIndex == -1)
+		return;
+
+	pItems->m_arrItems.RemoveAt(nIndex);
+
+	m_pParent = NULL;
+
+	if (m_pGrid) m_pGrid->Refresh();
+	InternalRelease();
+}
+
+BOOL CXTPPropertyGridItem::IsHidden() const
+{
+	return m_bHidden;
+}
+void CXTPPropertyGridItem::SetHidden(BOOL bHidden)
+{
+	if (bHidden == m_bHidden)
+		return;
+
+	m_bHidden = bHidden;
+
+	m_pGrid->Refresh();
+}
+
+BOOL CXTPPropertyGridItem::HasVisibleChilds() const
+{
+	for (int i = 0; i < m_pChilds->GetCount(); i++)
+	{
+		if (!m_pChilds->GetAt(i)->IsHidden())
+			return TRUE;
+	}
+	return FALSE;
+}
+
+BOOL CXTPPropertyGridItem::IsSelected() const
+{
+	return m_pGrid && m_pGrid->GetSelectedItem() == this;
+}
+
+void CXTPPropertyGridItem::Refresh(BOOL bInvalidate /*= TRUE*/)
+{
+	if (m_pGrid && m_pGrid->GetSafeHwnd())
+	{
+		if (IsSelected())
+		{
+			OnDeselect();
+			OnSelect();
+
+		}
+		if (bInvalidate)
+		{
+			m_pGrid->Invalidate(FALSE);
 		}
 	}
 }
 
-void CXTPRibbonGroup::RemoveAt(int nIndex)
+void CXTPPropertyGridItem::SetReadOnly(BOOL bReadOnly)
+{
+	if (m_bReadOnly != bReadOnly)
+	{
+		m_bReadOnly = bReadOnly;
+		Refresh(TRUE);
+	}
+}
+
+void CXTPPropertyGridItem::SetMask(LPCTSTR strMask, LPCTSTR strLiteral, TCHAR chPrompt /*= _T('_')*/)
+{
+	m_bUseMask = TRUE;
+	m_strMask = strMask;
+	m_strLiteral = strLiteral;
+	m_chPrompt = chPrompt;
+	Refresh(FALSE);
+}
+
+CString CXTPPropertyGridItem::GetViewValue()
+{
+	CString str = GetValue();
+	if (m_bPassword)
+	{
+		return CString(m_chPrompt, str.GetLength());
+	}
+	return str;
+}
+
+CString CXTPPropertyGridItem::GetMaskedText() const
+{
+	if (m_bUseMask)
+	{
+		int nLength = m_strValue.GetLength();
+
+		CString strBuffer;
+		for (int i = 0; i < nLength; ++i)
+		{
+			if (m_strLiteral[i] == m_chPrompt)
+			{
+				strBuffer += m_strValue.GetAt(i);
+			}
+		}
+
+		return strBuffer;
+	}
+	else
+	{
+		return m_strValue;
+	}
+}
+
+void CXTPPropertyGridItem::MeasureItem(LPMEASUREITEMSTRUCT lpMeasureItemStruct)
+{
+	if (m_nHeight != -1)
+	{
+		lpMeasureItemStruct->itemHeight = m_nHeight;
+	}
+	else if (m_nLinesCount > 1)
+	{
+		lpMeasureItemStruct->itemHeight = (lpMeasureItemStruct->itemHeight - 4) * m_nLinesCount + 4;
+
+	}
+}
+
+
+void CXTPPropertyGridItem::SetMaskedText(LPCTSTR lpszMaskedText)
+{
+	CString strMaskedText = lpszMaskedText;
+
+	if (m_bUseMask)
+	{
+		int nLen = strMaskedText.GetLength();
+		int x = 0;
+
+		m_strValue = m_strLiteral;
+
+		for (int i = 0; (i < m_strValue.GetLength()) && (x < nLen); i++)
+		{
+			if (strMaskedText[x] == m_strValue[i])
+			{
+				x++;
+			}
+			else if (m_strValue[i] == m_chPrompt)
+			{
+				m_strValue.SetAt(i, strMaskedText[x]);
+				x++;
+			}
+		}
+	}
+	else
+	{
+		m_strValue = strMaskedText;
+	}
+
+	SetValue(m_strValue);
+}
+
+void CXTPPropertyGridItem::SetDescription(LPCTSTR lpszDescription)
+{
+	m_strDescription = lpszDescription;
+	if (IsSelected()) GetGrid()->GetParent()->Invalidate(FALSE);
+}
+
+int CXTPPropertyGridItem::GetIndex() const
+{
+	return m_nIndex;
+}
+
+
+void CXTPPropertyGridItem::OnDrawItemConstraint(CDC* pDC, CXTPPropertyGridItemConstraint* pConstraint, CRect rc, BOOL bSelected)
+{
+	GetGrid()->GetPaintManager()->DrawInplaceListItem(pDC, pConstraint, rc, bSelected);
+}
+
+CSize CXTPPropertyGridItem::OnMergeItemConstraint(CDC* pDC, CXTPPropertyGridItemConstraint* pConstraint)
+{
+	int nThumbLength = GetSystemMetrics(SM_CXHTHUMB);
+
+	CSize sz = pDC->GetTextExtent(pConstraint->m_strConstraint);
+
+	return CSize(sz.cx + nThumbLength * 2, sz.cy + 3);
+}
+
+void CXTPPropertyGridItem::SetFocusToInplaceControl()
+{
+	CXTPPropertyGridInplaceEdit& wndEdit = GetInplaceEdit();
+
+	if (wndEdit.GetSafeHwnd() && wndEdit.GetItem() == this)
+	{
+		wndEdit.SetFocus();
+		wndEdit.SetSel(0, -1);
+	}
+}
+
+void CXTPPropertyGridItem::AddComboButton()
+{
+	GetInplaceButtons()->AddComboButton();
+}
+
+void CXTPPropertyGridItem::AddExpandButton()
+{
+	GetInplaceButtons()->AddExpandButton();
+}
+
+CXTPPropertyGridInplaceSlider* CXTPPropertyGridItem::AddSliderControl()
+{
+	CXTPPropertyGridInplaceSlider* pSlider = new CXTPPropertyGridInplaceSlider(this);
+	m_pInplaceControls->Add(pSlider);
+
+	return pSlider;
+}
+
+CXTPPropertyGridInplaceSpinButton* CXTPPropertyGridItem::AddSpinButton()
+{
+	CXTPPropertyGridInplaceSpinButton* pSpinButton = new CXTPPropertyGridInplaceSpinButton(this);
+	m_pInplaceControls->Add(pSpinButton);
+
+	return pSpinButton;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// Accessible
+
+CCmdTarget* CXTPPropertyGridItem::GetAccessible()
+{
+	return this;
+}
+
+HRESULT CXTPPropertyGridItem::GetAccessibleParent(IDispatch* FAR* ppdispParent)
+{
+	SAFE_MANAGE_STATE(m_pModuleState);
+
+	*ppdispParent = NULL;
+
+	return m_pGrid->InternalQueryInterface(&IID_IAccessible, (void**)ppdispParent);
+}
+
+HRESULT CXTPPropertyGridItem::GetAccessibleName(VARIANT varChild, BSTR* pszName)
+{
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	CString strCaption = GetCaption();
+
+	*pszName = strCaption.AllocSysString();
+	return S_OK;
+}
+
+HRESULT CXTPPropertyGridItem::GetAccessibleDescription(VARIANT varChild, BSTR* pszDescription)
+{
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	*pszDescription = GetDescription().AllocSysString();
+	return S_OK;
+}
+
+HRESULT CXTPPropertyGridItem::GetAccessibleRole(VARIANT varChild, VARIANT* pvarRole)
+{
+	if (!pvarRole)
+		return E_INVALIDARG;
+
+	pvarRole->vt = VT_EMPTY;
+
+	if (GetChildIndex(&varChild) == CHILDID_SELF)
+	{
+		pvarRole->vt = VT_I4;
+		pvarRole->lVal = ROLE_SYSTEM_ROW;
+		return S_OK;
+	}
+
+	return E_INVALIDARG;
+}
+
+HRESULT CXTPPropertyGridItem::GetAccessibleState(VARIANT varChild, VARIANT* pvarState)
+{
+	if (!pvarState)
+		return E_INVALIDARG;
+
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	pvarState->vt = VT_I4;
+	pvarState->lVal = STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_SELECTABLE |
+		(IsSelected() ? STATE_SYSTEM_FOCUSED : 0);
+
+	if (!IsVisible())
+		pvarState->lVal |= STATE_SYSTEM_INVISIBLE;
+
+	if (GetReadOnly())
+		pvarState->lVal |= STATE_SYSTEM_READONLY;
+
+	return S_OK;
+}
+
+
+HRESULT CXTPPropertyGridItem::AccessibleLocation(long* pxLeft, long* pyTop, long* pcxWidth, long* pcyHeight, VARIANT varChild)
+{
+	*pxLeft = *pyTop = *pcxWidth = *pcyHeight = 0;
+
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	if (!m_pGrid->GetSafeHwnd())
+		return S_OK;
+
+	CRect rcItem;
+	m_pGrid->GetItemRect(GetIndex(), &rcItem);
+	m_pGrid->ClientToScreen(&rcItem);
+
+	*pxLeft = rcItem.left;
+	*pyTop = rcItem.top;
+	*pcxWidth = rcItem.Width();
+	*pcyHeight = rcItem.Height();
+
+	return S_OK;
+}
+
+HRESULT CXTPPropertyGridItem::AccessibleHitTest(long xLeft, long yTop, VARIANT* pvarID)
+{
+	if (pvarID == NULL)
+		return E_INVALIDARG;
+
+	pvarID->vt = VT_EMPTY;
+
+	if (!m_pGrid->GetSafeHwnd())
+		return S_FALSE;
+
+	if (!CXTPWindowRect(m_pGrid).PtInRect(CPoint(xLeft, yTop)))
+		return S_FALSE;
+
+	pvarID->vt = VT_I4;
+	pvarID->lVal = 0;
+
+	CRect rcItem;
+	m_pGrid->GetItemRect(GetIndex(), &rcItem);
+	m_pGrid->ClientToScreen(&rcItem);
+
+	if (!rcItem.PtInRect(CPoint(xLeft, yTop)))
+		return S_FALSE;
+
+	return S_OK;
+}
+
+HRESULT CXTPPropertyGridItem::AccessibleSelect(long /*flagsSelect*/, VARIANT varChild)
+{
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	Select();
+
+	return S_OK;
+}
+
+HRESULT CXTPPropertyGridItem::GetAccessibleValue(VARIANT varChild, BSTR* pszValue)
+{
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	*pszValue = GetValue().AllocSysString();
+	return S_OK;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridItems
+
+CXTPPropertyGridItems::CXTPPropertyGridItems()
+{
+
+}
+
+void CXTPPropertyGridItems::Clear()
+{
+	CXTPPropertyGridView* pGrid = GetCount() > 0 ? m_arrItems[0]->m_pGrid : 0;
+
+	if (pGrid)
+	{
+		if (pGrid->m_nLockUpdate == 0)
+			pGrid->ResetContent();
+		pGrid->m_nLockUpdate++;
+	}
+
+	for (int i = 0; i < GetCount(); i++)
+	{
+		m_arrItems[i]->Clear();
+		m_arrItems[i]->InternalRelease();
+	}
+	m_arrItems.RemoveAll();
+
+	if (pGrid)
+	{
+		pGrid->m_nLockUpdate--;
+		if (pGrid->m_nLockUpdate == 0)
+			pGrid->Refresh();
+
+	}
+
+}
+
+CXTPPropertyGridItem* CXTPPropertyGridItems::GetAt(int nIndex) const
 {
 	if (nIndex >= 0 && nIndex < GetCount())
 	{
-		CXTPControl* pControl = m_arrControls.GetAt(nIndex);
-		pControl->m_pRibbonGroup = NULL;
-		m_arrControls.RemoveAt(nIndex);
-
-		GetRibbonBar()->GetControls()->Remove(pControl);
-		pControl->InternalRelease();
+		return m_arrItems.GetAt(nIndex);
 	}
+	return 0;
 }
 
-void CXTPRibbonGroup::RemoveAll()
+void CXTPPropertyGridItems::RemoveAt (int nIndex)
 {
-	for (int nIndex = (int)m_arrControls.GetSize() - 1; nIndex >= 0; nIndex--)
+	CXTPPropertyGridItem* pItem = GetAt(nIndex);
+
+	if (pItem)
 	{
-		CXTPControl* pControl = m_arrControls.GetAt(nIndex);
-		pControl->m_pRibbonGroup = NULL;
-		m_arrControls.RemoveAt(nIndex);
+		m_arrItems.RemoveAt(nIndex);
 
-		m_pParent->GetControls()->Remove(pControl);
-		pControl->InternalRelease();
-	}
-}
-
-CXTPRibbonTab* CXTPRibbonGroup::GetParentTab() const
-{
-	return m_pGroups->GetParentTab();
-}
-
-BOOL CXTPRibbonGroup::IsHighlighted() const
-{
-	CXTPRibbonScrollableBar* pScrollableBar = GetScrollableBar(m_pParent);
-
-	return pScrollableBar && pScrollableBar->GetHighlightedGroup() == this;
-}
-
-int CXTPRibbonGroup::GetMinimumWidth(CDC* pDC)
-{
-	CXTPFontDC fnt(pDC, &GetRibbonBar()->GetRibbonPaintManager()->m_fontGroupCaption);
-	CSize sz = pDC->GetTextExtent(m_strCaption);
-
-	if (m_bShowOptionButton)
-		sz.cx += GetRibbonBar()->GetRibbonPaintManager()->GetGroupCaptionHeight();
-
-	return sz.cx;
-}
-
-BOOL CXTPRibbonGroup::IsOptionButtonVisible() const
-{
-	return !m_bReduced && m_bShowOptionButton;
-}
-
-void CXTPRibbonGroup::SetRect(CRect rc)
-{
-	m_rcGroup = rc;
-
-	if (m_bReduced)
-	{
-		CRect rcEntry(rc.left, rc.top, rc.right, rc.bottom);
-		m_pControlGroupPopup->SetHideFlag(xtpHideWrap, FALSE);
-		m_pControlGroupPopup->SetRect(rcEntry);
-		m_pControlGroupPopup->SetWrap(TRUE);
-	}
-	else
-	{
-		m_pControlGroupPopup->SetHideFlag(xtpHideWrap, TRUE);
-	}
-
-	if (!m_bShowOptionButton)
-	{
-		m_pControlGroupOption->SetHideFlag(xtpHideGeneric, TRUE);
-	}
-	else if (m_bReduced)
-	{
-		m_pControlGroupOption->SetHideFlag(xtpHideWrap, TRUE);
-
-	}
-	else
-	{
-		int nHeight = GetRibbonBar()->GetRibbonPaintManager()->GetGroupCaptionHeight();
-		m_pControlGroupOption->SetWrap(TRUE);
-		m_pControlGroupOption->SetHideFlag(xtpHideGeneric, FALSE);
-		m_pControlGroupOption->SetHideFlag(xtpHideWrap, FALSE);
-		m_pControlGroupOption->SetRect(CRect(rc.right - nHeight - 1, rc.bottom - nHeight, rc.right - 3, rc.bottom - 3));
-	}
-}
-
-void CXTPRibbonGroup::RepositionControls(CDC* pDC)
-{
-	CXTPRibbonTheme* pPaintManager = GetRibbonBar()->GetRibbonPaintManager();
-
-	int x = m_rcGroup.left + 4;
-	int y = m_rcGroup.top + pPaintManager->GetGroupCaptionHeight();
-
-	for (int i = 0; i < GetCount(); i++)
-	{
-		CXTPControl* pControl = GetAt(i);
-		if (!pControl->IsVisible())
-			continue;
-
-		CSize sz = pControl->GetSize(pDC);
-		pControl->SetRect(CRect(x, y, x + sz.cx, y + sz.cy));
-
-		x += sz.cx;
-	}
-}
-
-
-void CXTPRibbonGroup::Draw(CDC* pDC, CRect rcClipBox)
-{
-	GetRibbonBar()->GetRibbonPaintManager()->DrawGroup(pDC, this);
-
-	BOOL bFirst = TRUE;
-
-	for (int i = 0; i < GetCount(); i++)
-	{
-		CXTPControl* pControl = GetAt(i);
-		if (!pControl->IsVisible())
-			continue;
-
-		if (!m_bControlsGrouping && pControl->GetBeginGroup() && !bFirst)
+		if (pItem->GetGrid())
 		{
-			GetRibbonBar()->GetPaintManager()->
-				DrawCommandBarSeparator(pDC, GetRibbonBar(), pControl);
+			pItem->GetGrid()->Refresh();
 		}
 
-		if (CRect().IntersectRect(rcClipBox, pControl->GetRect()))
-		{
-			pControl->Draw(pDC);
-		}
-
-		bFirst = FALSE;
-	}
-
-	if (m_pControlGroupPopup->IsVisible())
-	{
-		m_pControlGroupPopup->Draw(pDC);
-	}
-
-	if (m_pControlGroupOption->IsVisible())
-	{
-		m_pControlGroupOption->Draw(pDC);
+		pItem->InternalRelease();
 	}
 }
 
-int CXTPRibbonGroup::IndexOf(CXTPControl* pControl) const
+int CXTPPropertyGridItems::Find(CXTPPropertyGridItem* pItem) const
 {
-	if (pControl->GetRibbonGroup() != this)
-		return -1;
-
-	return pControl->GetIndex() + GetCount() - m_pControlGroupOption->GetIndex();
+	for (int i = 0; i < GetCount(); i++)
+	{
+		if (m_arrItems[i] == pItem)
+			return i;
+	}
+	return -1;
 }
 
 
-CXTPControl* CXTPRibbonGroup::AddClone(CXTPControl* pClone, int nBefore, BOOL bRecursive)
+void CXTPPropertyGridItems::AddTail(CXTPPropertyGridItems* pItems)
 {
-	if (nBefore < 0 || nBefore >= GetCount())
-		nBefore = (int)GetCount();
+	ASSERT(this != pItems);
 
-	CXTPControl* pControl = (CXTPControl*)pClone->GetRuntimeClass()->CreateObject();
-	ASSERT(pControl);
-	if (!pControl)
+	for (int i = 0; i < pItems->GetCount(); i++)
+	{
+		AddTail(pItems->GetAt(i));
+	}
+}
+
+int CXTPPropertyGridItems::CompareFunc(const CXTPPropertyGridItem** ppItem1, const CXTPPropertyGridItem** ppItem2)
+{
+	return (*ppItem1)->GetCaption().Compare((*ppItem2)->GetCaption());
+}
+
+void CXTPPropertyGridItems::Sort()
+{
+	typedef int (_cdecl *GENERICCOMPAREFUNC)(const void *, const void*);
+
+	qsort(m_arrItems.GetData(), m_arrItems.GetSize(), sizeof(CXTPPropertyGridItem*), (GENERICCOMPAREFUNC)CompareFunc);
+}
+
+CXTPPropertyGridItem* CXTPPropertyGridItems::FindItem(LPCTSTR strCaption) const
+{
+	for (int i = 0; i < GetCount(); i++)
+	{
+		CXTPPropertyGridItem* pItem = GetAt(i);
+		if (pItem->GetCaption().Compare(strCaption) == 0)
+			return pItem;
+
+		CXTPPropertyGridItem* pChild = pItem->m_pChilds->FindItem(strCaption);
+		if (pChild) return pChild;
+	}
+	return NULL;
+}
+
+CXTPPropertyGridItem* CXTPPropertyGridItems::FindItem(UINT nID) const
+{
+	for (int i = 0; i < GetCount(); i++)
+	{
+		CXTPPropertyGridItem* pItem = GetAt(i);
+		if (pItem->GetID() == nID)
+			return pItem;
+
+		CXTPPropertyGridItem* pChild = pItem->m_pChilds->FindItem(nID);
+		if (pChild) return pChild;
+	}
+	return NULL;
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridItemConstraint
+CXTPPropertyGridItemConstraint::CXTPPropertyGridItemConstraint()
+{
+	m_nIndex = 0;
+	m_dwData = 0;
+	m_nImage = -1;
+	m_pItem = 0;
+}
+
+CXTPImageManagerIcon* CXTPPropertyGridItemConstraint::GetImage() const
+{
+	ASSERT(m_pItem);
+
+	if (!m_pItem)
 		return NULL;
 
-	int nControlPos = m_pControlGroupOption->GetIndex() - GetCount() + nBefore;
-
-	GetRibbonBar()->GetControls()->InsertAt(pControl, nControlPos);
-
-	m_arrControls.InsertAt(nBefore, pControl);
-	pControl->InternalAddRef();
-
-	pControl->Copy(pClone, bRecursive);
-
-
-	pControl->m_pRibbonGroup = this;
-	pControl->SetHideFlag(xtpHideRibbonTab, !IsVisible());
-
-	return pControl;
-}
-
-CXTPControl* CXTPRibbonGroup::Add(XTPControlType controlType, int nId, LPCTSTR lpszParameter, int nBefore, BOOL bTemporary)
-{
-	if (nBefore < 0 || nBefore >= GetCount())
-		nBefore = (int)GetCount();
-
-	int nControlPos = m_pControlGroupOption->GetIndex() - GetCount() + nBefore;
-
-	CXTPControl* pControl = GetRibbonBar()->GetControls()->Add(controlType, nId, lpszParameter, nControlPos, bTemporary);
-	ASSERT(pControl);
-	if (!pControl)
+	if (m_nImage == -1)
 		return NULL;
 
-	m_arrControls.InsertAt(nBefore, pControl);
-	pControl->InternalAddRef();
-
-	pControl->m_pRibbonGroup = this;
-	pControl->SetHideFlag(xtpHideRibbonTab, !IsVisible());
-
-	return pControl;
+	return m_pItem->GetGrid()->GetImageManager()->GetImage(m_nImage, 0);
 }
 
-void CXTPRibbonGroup::SetVisible(BOOL bVisible)
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridItemConstraints
+
+// Summary: Constructs a CXTPPropertyGridItemConstraints object
+CXTPPropertyGridItemConstraints::CXTPPropertyGridItemConstraints(CXTPPropertyGridItem* pItem)
 {
-	if (m_bVisible != bVisible)
-	{
-		m_bVisible = bVisible;
+	m_pItem = pItem;
+	m_nCurrent = -1;
 
-		GetRibbonBar()->RebuildControls(GetRibbonBar()->GetSelectedTab());
-		GetRibbonBar()->OnRecalcLayout();
-	}
 }
 
-BOOL CXTPRibbonGroup::IsVisible() const
-{
-	if (m_pRibbonBar != m_pParent)
-		return m_bVisible;
-
-	return GetRibbonBar()->GetSelectedTab() == GetParentTab() && m_bVisible;
-}
-
-void CXTPRibbonGroup::OnGroupAdded()
-{
-	CXTPControl* pGroupOption = GetControlGroupOption();
-
-	m_pParent->GetControls()->Add(pGroupOption);
-	pGroupOption->InternalAddRef();
-
-	pGroupOption->SetHideFlag(xtpHideRibbonTab, !IsVisible());
-
-
-	pGroupOption->SetID(GetID());
-
-	CXTPControl* pGroupPopup = (CXTPControl*)GetControlGroupPopup();
-	m_pParent->GetControls()->Add(pGroupPopup);
-	pGroupPopup->SetCaption(GetCaption());
-	pGroupPopup->SetDescription(NULL);
-
-	pGroupPopup->InternalAddRef();
-
-	pGroupPopup->SetHideFlag(xtpHideRibbonTab, !IsVisible());
-
-	CXTPCommandBars* pCommandBars = m_pRibbonBar->GetCommandBars();
-	ASSERT(pCommandBars);
-
-	if (pCommandBars && pCommandBars->IsActionsEnabled())
-	{
-		CXTPControlAction* pAction = pCommandBars->CreateAction(GetID());
-		if (pAction->GetCaption().IsEmpty()) pAction->SetCaption(GetCaption());
-
-		pGroupPopup->SetAction(pAction);
-		pGroupOption->SetAction(pAction);
-	}
-}
-
-void CXTPRibbonGroup::OnGroupRemoved()
+CXTPPropertyGridItemConstraints::~CXTPPropertyGridItemConstraints()
 {
 	RemoveAll();
+}
 
-	if (m_pParent == m_pRibbonBar)
+CXTPPropertyGridItemConstraint* CXTPPropertyGridItemConstraints::AddConstraint(LPCTSTR str, DWORD_PTR dwData, int nImage)
+{
+	CXTPPropertyGridItemConstraint* pConstaint = new CXTPPropertyGridItemConstraint();
+
+	pConstaint->m_strConstraint = str;
+	pConstaint->m_dwData = dwData;
+	pConstaint->m_nIndex = (int)m_arrConstraints.Add(pConstaint);
+	pConstaint->m_pItem = m_pItem;
+	pConstaint->m_nImage = nImage;
+
+	SAFE_CALLPTR(m_pItem, OnConstraintsChanged());
+
+	return pConstaint;
+}
+
+CString CXTPPropertyGridItemConstraints::GetAt(int nIndex) const
+{
+	return nIndex >= 0 && nIndex < GetCount() ? m_arrConstraints.GetAt(nIndex)->m_strConstraint : _T("");
+}
+
+void CXTPPropertyGridItemConstraints::RemoveAll()
+{
+	for (int i = 0; i < GetCount(); i++)
+		m_arrConstraints[i]->InternalRelease();
+	m_arrConstraints.RemoveAll();
+
+	SAFE_CALLPTR(m_pItem, OnConstraintsChanged());
+}
+
+void CXTPPropertyGridItemConstraints::RemoveAt(int nIndex)
+{
+	m_arrConstraints[nIndex]->InternalRelease();
+	m_arrConstraints.RemoveAt(nIndex);
+
+	for (int i = nIndex; i < GetCount(); i++)
+		m_arrConstraints[i]->m_nIndex = i;
+
+	SAFE_CALLPTR(m_pItem, OnConstraintsChanged());
+}
+
+int CXTPPropertyGridItemConstraints::FindConstraint(LPCTSTR str) const
+{
+	for (int i = 0; i < GetCount(); i++)
 	{
-		GetControlGroupPopup()->m_pRibbonGroup = NULL;
-		m_pParent->GetControls()->Remove(GetControlGroupPopup());
-
-		if (m_pRibbonBar->m_pHighlightedGroup == this)
-		{
-			m_pRibbonBar->m_pHighlightedGroup = NULL;
-		}
+		if (GetAt(i).CompareNoCase(str) == 0)
+			return i;
 	}
-
-	GetControlGroupOption()->m_pRibbonGroup = NULL;
-	m_pParent->GetControls()->Remove(GetControlGroupOption());
+	return -1;
 }
 
-
-BOOL CXTPRibbonGroup::SetButtons(UINT* pButtons, int nCount)
+int CXTPPropertyGridItemConstraints::FindConstraint(DWORD_PTR dwData) const
 {
-	BOOL bSeparator = FALSE;
-
-	CXTPRibbonBar* pRibbonBar = GetRibbonBar();
-	CWnd* pSite = pRibbonBar->GetSite();
-
-	for (int i = 0; i < nCount; i++)
+	for (int i = 0; i < GetCount(); i++)
 	{
-		if (pButtons[i] == 0)
-			bSeparator = TRUE;
-		else
-		{
-			XTPControlType controlType = xtpControlButton;
-			XTPButtonStyle buttonStyle = xtpButtonAutomatic;
-			CXTPControl* pControl = NULL;
-			UINT nID = pButtons[i];
-
-			XTP_COMMANDBARS_CREATECONTROL cs;
-
-			if (pSite)
-			{
-				cs.nID = nID;
-				cs.pControl = NULL;
-				cs.bToolBar = TRUE;
-				cs.pMenu = NULL;
-				cs.nIndex = i;
-				cs.strCaption = pRibbonBar->GetTitle();
-				cs.controlType = controlType;
-				cs.pCommandBar = pRibbonBar;
-				cs.buttonStyle = buttonStyle;
-
-				if (pSite->SendMessage(WM_XTP_BEFORECREATECONTROL, 0, (LPARAM)&cs) != 0)
-				{
-					pControl = cs.pControl;
-					controlType = cs.controlType;
-					buttonStyle = cs.buttonStyle;
-					nID = cs.nID;
-				}
-			}
-
-			int nControlPos = m_pControlGroupOption->GetIndex();
-
-			if (pControl == NULL)
-			{
-				pControl = pRibbonBar->GetControls()->Add(controlType, nID, NULL, nControlPos);
-				if (pControl)
-				{
-					pControl->SetStyle(buttonStyle);
-					if (controlType == xtpControlPopup) pControl->SetIconId(nID);
-				}
-			}
-			else pRibbonBar->GetControls()->Add(pControl, nID, NULL, nControlPos);
-
-			if (!pControl)
-				continue;
-
-			if (bSeparator)
-			{
-				pControl->SetBeginGroup(TRUE);
-				bSeparator = FALSE;
-			}
-
-			m_arrControls.InsertAt(GetCount(), pControl);
-			pControl->InternalAddRef();
-
-			pControl->m_pRibbonGroup = this;
-			pControl->SetHideFlag(xtpHideRibbonTab, !IsVisible());
-
-			if (pSite)
-			{
-				cs.pControl = pControl;
-				pSite->SendMessage(WM_XTP_AFTERCREATECONTROL, 0, (LPARAM)&cs);
-			}
-		}
+		if (dwData == GetConstraintAt(i)->m_dwData)
+			return i;
 	}
-	return TRUE;
+	return -1;
 }
 
-CXTPControl* CXTPRibbonGroup::Add(CXTPControl* pControl, int nId, LPCTSTR lpszParameter, int nBefore, BOOL bTemporary)
+CXTPPropertyGridItemConstraint* CXTPPropertyGridItemConstraints::GetConstraintAt(int nIndex) const
 {
-	ASSERT(pControl);
-	if (!pControl)
-		return NULL;
-
-	if (nBefore < 0 || nBefore >= GetCount())
-		nBefore = (int)GetCount();
-
-	int nControlPos = m_pControlGroupOption->GetIndex() - GetCount() + nBefore;
-
-	GetRibbonBar()->GetControls()->Add(pControl, nId, lpszParameter, nControlPos, bTemporary);
-
-	m_arrControls.InsertAt(nBefore, pControl);
-	pControl->InternalAddRef();
-
-	pControl->m_pRibbonGroup = this;
-	pControl->SetHideFlag(xtpHideRibbonTab, !IsVisible());
-
-	return pControl;
+	return m_arrConstraints[nIndex];
 }
 
-CXTPControl* CXTPRibbonGroup::InsertAt(CXTPControl* pControl, int nBefore)
+int CXTPPropertyGridItemConstraints::CompareFunc(const CXTPPropertyGridItemConstraint** ppConstraint1, const CXTPPropertyGridItemConstraint** ppConstraint2)
 {
-	ASSERT(pControl);
-	if (!pControl)
-		return NULL;
+	return (*ppConstraint1)->m_strConstraint.Compare((*ppConstraint2)->m_strConstraint);
 
-	if (nBefore < 0 || nBefore >= GetCount())
-		nBefore = (int)GetCount();
-
-	int nControlPos = m_pControlGroupOption->GetIndex() - GetCount() + nBefore;
-
-	GetRibbonBar()->GetControls()->InsertAt(pControl, nControlPos);
-
-	m_arrControls.InsertAt(nBefore, pControl);
-	pControl->InternalAddRef();
-
-	pControl->m_pRibbonGroup = this;
-	pControl->SetHideFlag(xtpHideRibbonTab, !IsVisible());
-
-	return pControl;
 }
 
-BOOL CXTPRibbonGroup::LoadToolBar(UINT nIDResource, BOOL bLoadIcons)
+void CXTPPropertyGridItemConstraints::Sort()
 {
-	LPCTSTR lpszResourceName = MAKEINTRESOURCE(nIDResource);
+	typedef int (_cdecl *GENERICCOMPAREFUNC)(const void *, const void*);
 
-	struct CToolBarData
-	{
-		WORD wVersion;
-		WORD wWidth;
-		WORD wHeight;
-		WORD wItemCount;
-		WORD* items()
-		{ return (WORD*)(this + 1); }
-	};
-
-	ASSERT_VALID(this);
-	ASSERT(lpszResourceName != NULL);
-	if (!lpszResourceName)
-		return FALSE;
-
-	// determine location of the bitmap in resource fork
-	HINSTANCE hInst = AfxFindResourceHandle(lpszResourceName, RT_TOOLBAR);
-	if (!hInst)
-		return FALSE;
-
-	HRSRC hRsrc = ::FindResource(hInst, lpszResourceName, RT_TOOLBAR);
-	if (hRsrc == NULL)
-		return FALSE;
-
-	HGLOBAL hGlobal = LoadResource(hInst, hRsrc);
-	if (hGlobal == NULL)
-		return FALSE;
-
-	CToolBarData* pData = (CToolBarData*)LockResource(hGlobal);
-	if (pData == NULL)
-		return FALSE;
-
-	ASSERT(pData->wVersion == 1);
-
-	int i;
-	UINT* pItems = new UINT[pData->wItemCount];
-
-	for (i = 0; i < pData->wItemCount; i++)
-		pItems[i] = pData->items()[i];
-
-	BOOL bResult = SetButtons(pItems, pData->wItemCount);
-
-	if (bLoadIcons)
-	{
-		CXTPImageManager* pImageManager = GetRibbonBar()->GetImageManager();
-
-		if (!pImageManager->SetIcons(nIDResource, pItems,
-			pData->wItemCount, CSize(pData->wWidth, pData->wHeight)))
-			bResult = FALSE;
-	}
-
-	delete[] pItems;
-
-	UnlockResource(hGlobal);
-	FreeResource(hGlobal);
-
-
-	return bResult;
+	qsort(m_arrConstraints.GetData(), (size_t)m_arrConstraints.GetSize(), sizeof(CXTPPropertyGridItemConstraint*), (GENERICCOMPAREFUNC)CompareFunc);
 }
 
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridItemCategory
+
+CXTPPropertyGridItemCategory::CXTPPropertyGridItemCategory(LPCTSTR strCaption)
+	:CXTPPropertyGridItem(strCaption)
+{
+	m_bCategory = TRUE;
+	m_nFlags = 0;
+}
+
+CXTPPropertyGridItemCategory::CXTPPropertyGridItemCategory(UINT nID)
+	:CXTPPropertyGridItem(nID)
+{
+	m_bCategory = TRUE;
+	m_nFlags = 0;
+}
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////
+//  Acteve X Methods
+//
+
+
+BEGIN_INTERFACE_MAP(CXTPPropertyGridItem, CCmdTarget)
+	INTERFACE_PART(CXTPPropertyGridItem, IID_IAccessible, ExternalAccessible)
+END_INTERFACE_MAP()

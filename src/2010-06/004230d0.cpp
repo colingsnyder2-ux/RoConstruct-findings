@@ -1,67 +1,60 @@
-// from server: 67% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/usinstances.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll v8datamodel/Visit.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
- *
- * Copyright (c) 1998-2002
- * John Maddock
- *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
- * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
- *
- */
+#include "v8datamodel/Visit.h"
+#include "util/Http.h"
+#include "util/standardout.h"
+#include <G3D/format.h>
+#include <boost/thread.hpp>
 
- /*
-  *   LOCATION:    see http://www.boost.org for most recent version.
-  *   FILE:        winstances.cpp
-  *   VERSION:     see <boost/version.hpp>
-  *   DESCRIPTION: regex unsigned short template instances (MSVC only).
-  */
+static RBX::Reflection::BoundFuncDesc<RBX::Visit, void(std::string), 1> UploadUrlFunction(&RBX::Visit::setUploadUrl, "SetUploadUrl", "url", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Visit, std::string(void), 0> getUploadUrl(&RBX::Visit::getUploadUrl, "GetUploadUrl", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Visit, void(std::string, int), 2> desc_setPing(&RBX::Visit::setPing, "SetPing", "pingUrl", "interval", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
 
-#define BOOST_REGEX_SOURCE
+namespace RBX
+{
+	Visit::Visit()
+		: uploadUrl("NoVisit")
+	{
+	}
 
-#include <boost/regex/config.hpp>
+	Visit::~Visit() {}
 
-#if !defined(BOOST_NO_WREGEX) && defined(BOOST_REGEX_HAS_OTHER_WCHAR_T) && !defined(BOOST_REGEX_NO_EXTERNAL_TEMPLATES)
-#define BOOST_REGEX_US_INSTANTIATE
+	void Visit::setPing(std::string url, int interval)
+	{
+		if (url != "")
+		{
+			pingThread.reset(new worker_thread(boost::bind(&Visit::ping, url, interval), "rbx_visit"));
+		}
+		else
+		{
+			pingThread.reset();
+		}
+	}
 
-#ifdef _DLL_CPPLIB
-#include <boost/detail/workaround.hpp>
-//
-// This is a horrible workaround, without declaring these symbols extern we get
-// duplicate symbol errors when linking if the application is built without
-// /Zc:wchar_t
-//
-namespace std{
-template _CRTIMP2 bool __cdecl operator==(
-   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&,
-   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&);
-template _CRTIMP2 bool __cdecl operator==(
-   const unsigned short *,
-   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&);
-template _CRTIMP2 bool __cdecl operator==(
-   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&,
-   const unsigned short *);
-template _CRTIMP2 bool __cdecl operator<(
-   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&,
-   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&);
-template _CRTIMP2 bool __cdecl operator>(
-   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&,
-   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&);
-#if BOOST_WORKAROUND(BOOST_MSVC, > 1300) && BOOST_WORKAROUND(BOOST_MSVC, BOOST_TESTED_AT(1400))
-template<> _CRTIMP2 std::size_t __cdecl char_traits<unsigned short>::length(unsigned short const*);
-#endif
+	worker_thread::work_result Visit::ping(std::string url, int interval)
+	{
+		try
+		{
+			std::string message;
+			Http(url).get(message);
+		}
+		catch (std::exception& exp)
+		{
+			std::string failMessage = G3D::format("ping %s failed: %s", url.c_str(), exp.what());
+			StandardOut::singleton()->print(MESSAGE_WARNING, failMessage.c_str());
+		}
+
+		boost::xtime xt;
+		boost::xtime_get(&xt, boost::TIME_UTC);
+
+		xt.sec += interval;
+
+		boost::thread::sleep(xt);
+
+		return worker_thread::more;
+	}
 }
-#endif
-
-
-#include <boost/regex.hpp>
-
-#endif
-
-

@@ -1,4 +1,3 @@
-// from server: 69% by atomic.potato
 // roc 2011-06 0044faf0  unit: HVCXTPPropertyGridItemEnum::?$XItem  size: 46 bytes
 // Make this compile to the exact bytes below, then: roc check 2011-06 0044faf0
 //
@@ -23,22 +22,15 @@
 // 0044fb1b  5e                   pop esi
 // 0044fb1c  59                   pop ecx
 // 0044fb1d  c3                   ret 
+// copied from an identical function in another client (function ?_Tidy@?$_Tree@V?$_Tmap_traits@HUValue16@@U?$less@H@std@@V?$allocator@U?$pair@$$CBHUValue16@@@std@@@3@$0A@@std@@@std@@IAEXXZ)
 
-struct Item {
-    char pad0[4];
-    int* field4;
-    int field8;
-    void sub_44ecd0(int*, int*, int*);
-};
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#define _SECURE_SCL 0
+#include <map>
 
-extern "C" void __stdcall sub_80a058(void*);
-
-void func_0044faf0(Item* self)
-{
-    int local;
-    int* p = self->field4;
-    self->sub_44ecd0(&local, (int*)*p, p);
-    sub_80a058(self->field4);
-    self->field4 = 0;
-    self->field8 = 0;
-}
+// value_type is 0x14 bytes: node color at +0x20, isnil at +0x21, max_size 0xcccccccc.
+struct Value16 { int words[13]; };
+template class std::_Tree<std::_Tmap_traits<int, Value16, std::less<int>,
+    std::allocator<std::pair<const int, Value16> >, false> >;

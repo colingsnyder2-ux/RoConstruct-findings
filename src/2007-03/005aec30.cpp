@@ -1,453 +1,592 @@
-// from server: 73% by colin
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/humanoid/Humanoid.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_espeon_aug2007_primitive_trivial_200f0098d579e3b8.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "humanoid/Humanoid.h"
-
-#include "network/Players.h"
-#include "rbxgraphics/Adorn.h"
-#include "reflection/property.h"
-#include "util/Color.h"
-#include "v8datamodel/ModelInstance.h"
-#include "v8datamodel/Teams.h"
-#include "v8datamodel/Workspace.h"
-#include "v8kernel/Body.h"
-#include "v8tree/Service.h"
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#define _MT 1
+#define _DLL 1
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#include "v8world/Primitive.h"
+#include "v8world/Geometry.h"
+#include "v8world/Assembly.h"
+#include "v8world/Ball.h"
+#include "v8world/Block.h"
 #include "v8world/World.h"
+#include <cmath>
 
-namespace RBX {
-
-char sHumanoid[] = "Humanoid";
-
-using namespace Reflection;
-
-static PropDescriptor<Humanoid, float> propMaxHealth(
-	"MaxHealth",
-	"Game",
-	&RBX::Humanoid::getMaxHealth,
-	&RBX::Humanoid::setMaxHealth
-);
-
-static PropDescriptor<Humanoid, float> propWalkRotationalVelocity(
-	"WalkRotationalVelocity",
-	"Control",
-	&RBX::Humanoid::getWalkRotationalVelocity,
-	&RBX::Humanoid::setWalkRotationalVelocity,
-	Reflection::PropertyDescriptor::STREAMING
-);
-
-static PropDescriptor<Humanoid, bool> propJump(
-	"Jump",
-	"Control",
-	&RBX::Humanoid::getJump,
-	&RBX::Humanoid::setJump,
-	Reflection::PropertyDescriptor::STREAMING
-);
-
-static PropDescriptor<Humanoid, bool> propSit(
-	"Sit",
-	"Control",
-	&RBX::Humanoid::getSit,
-	&RBX::Humanoid::setSit,
-	Reflection::PropertyDescriptor::STREAMING
-);
-
-SignalDesc<Humanoid, void()> Humanoid::event_Died("Died");
-SignalDesc<Humanoid, void(float)> Humanoid::event_Running("Running", "speed");
-SignalDesc<Humanoid, void(float)> Humanoid::event_Climbing("Climbing", "speed");
-SignalDesc<Humanoid, void(bool)> Humanoid::event_Jumping("Jumping", "active");
-SignalDesc<Humanoid, void(bool)> Humanoid::event_FreeFalling("FreeFalling", "active");
-SignalDesc<Humanoid, void(bool)> Humanoid::event_GettingUp("GettingUp", "active");
-SignalDesc<Humanoid, void(bool)> Humanoid::event_FallingDown("FallingDown", "active");
-SignalDesc<Humanoid, void(bool)> Humanoid::event_Seated("Seated", "active");
-
-// FUNCTION: WEBSERVICE 0x100a0990
-ContactManager* Humanoid::getContactManager()
+namespace RBX 
 {
-	World* world = Workspace::getWorldIfInWorkspace(this);
+	bool Primitive::ignoreBool = false;
+	bool Primitive::disableSleep = false;
 
-	if (world != NULL) {
-		return world->getContactManager();
+	#pragma warning (push)
+	#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
+	Primitive::Primitive(Geometry::GeometryType geometryType) :
+		world(NULL),
+		clump(NULL),
+		spatialNodes(NULL),
+		worldIndex(-1),
+		clumpDepth(0),
+		fuzzyExtentsStateId(-2),
+		geometry(newGeometry(geometryType)),
+		body(new Body),
+		elasticity(0.75f),
+		friction(0.0f),
+		myOwner(NULL),
+		anchorObject(NULL),
+		dragging(false),
+		anchored(false),
+		canCollide(true),
+		canSleep(true),
+		JointK(this, &Primitive::computeJointK),
+		controller(NullController::getStaticNullController())
+	{
+		for (int i = 0; i < 6; i++) 
+		{
+			surfaceType[i] = NO_SURFACE;
+			surfaceData[i] = NULL;
+		}
+	}
+	#pragma warning (pop)
+
+	Primitive::~Primitive()
+	{
+		Geometry::GeometryType type = geometry->getGeometryType();
+
+		if (type != Geometry::GEOMETRY_NONE) {
+			delete geometry;
+			delete body;
+		}
+
+		for (int i = 0; i < 6; i++)
+			delete surfaceData[i];
+
+		RBXASSERT(!world);
+		RBXASSERT(!clump);
 	}
 
-	return NULL;
-}
+	G3D::Vector3 Primitive::clipToSafeSize(const G3D::Vector3& newSize)
+	{
+		G3D::Vector3 r = newSize.min(G3D::Vector3(512.0f, 512.0f, 512.0f));
 
-// FUNCTION: WEBSERVICE 0x100a0bd0
-bool Humanoid::hasWalkToPoint(G3D::Vector3& worldPosition) const
-{
-	if (walkToPart != NULL && Workspace::findWorkspace(this) != NULL &&
-		Workspace::contextInWorkspace(walkToPart.get())) {
-		worldPosition = walkToPart->getCoordinateFrame().pointToWorldSpace(walkToPoint);
+		if (r.x * r.y * r.z > 1e+6f) 
+		{
+			r.y = floorf(1e+6f / (r.x * r.z));
+		}
 
-		return true;
+		return r;
 	}
 
-	return false;
-}
-
-// FUNCTION: WEBSERVICE 0x100a0d40
-void Humanoid::computeForce(float dt, bool throttling)
-{
-	if (currentState.get() != NULL) {
-		currentState->onComputeForce(dt);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x100a1100
-Humanoid::~Humanoid()
-{
-}
-
-// FUNCTION: WEBSERVICE 0x100a1480
-float Humanoid::getIntendedRotationAboutYAxis()
-{
-	if (currentState.get() != NULL) {
-		return currentState->getIntendedRotationAboutYAxis();
+	float Primitive::computeJointK() const 
+	{
+		Geometry::GeometryType type = geometry->getGeometryType();
+		return Constants::getJointK(geometry->getGridSize(), type == Geometry::GEOMETRY_BALL);
 	}
 
-	return 0;
-}
-
-// STUB: WEBSERVICE 0x100a1b00
-void Humanoid::render3dAdorn(Adorn* adorn)
-{
-	STUB(0x100a1b00);
-}
-
-// FUNCTION: WEBSERVICE 0x100a2010
-PartInstance* Humanoid::getHead() const
-{
-	if (head == NULL && getParent() != NULL) {
-		head = shared_from_dynamic_cast<PartInstance>(getParent()->findFirstChildByName("Head"));
-	}
-
-	return head.get();
-}
-
-// FUNCTION: WEBSERVICE 0x100a2110
-PartInstance* Humanoid::getTorso() const
-{
-	if (torso == NULL && getParent() != NULL) {
-		torso = shared_from_dynamic_cast<PartInstance>(getParent()->findFirstChildByName("Torso"));
-	}
-
-	return torso.get();
-}
-
-// FUNCTION: WEBSERVICE 0x100a2210
-PartInstance* Humanoid::getLeftLeg() const
-{
-	if (leftLeg == NULL && getParent() != NULL) {
-		leftLeg = shared_from_dynamic_cast<PartInstance>(getParent()->findFirstChildByName("Left Leg"));
-	}
-
-	return leftLeg.get();
-}
-
-// FUNCTION: WEBSERVICE 0x100a2310
-PartInstance* Humanoid::getRightLeg() const
-{
-	if (rightLeg == NULL && getParent() != NULL) {
-		rightLeg = shared_from_dynamic_cast<PartInstance>(getParent()->findFirstChildByName("Right Leg"));
-	}
-
-	return rightLeg.get();
-}
-
-// FUNCTION: WEBSERVICE 0x100a2410
-PartInstance* Humanoid::getLeftArm() const
-{
-	if (leftArm == NULL && getParent() != NULL) {
-		leftArm = shared_from_dynamic_cast<PartInstance>(getParent()->findFirstChildByName("Left Arm"));
-	}
-
-	return leftArm.get();
-}
-
-// FUNCTION: WEBSERVICE 0x100a2510
-PartInstance* Humanoid::getRightArm() const
-{
-	if (rightArm == NULL && getParent() != NULL) {
-		rightArm = shared_from_dynamic_cast<PartInstance>(getParent()->findFirstChildByName("Right Arm"));
-	}
-
-	return rightArm.get();
-}
-
-// FUNCTION: WEBSERVICE 0x100a26a0
-Primitive* Humanoid::getTorsoPrimitive() const
-{
-	PartInstance* part = getTorso();
-
-	return part != NULL ? part->getPrimitive() : NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x100a26c0
-Primitive* Humanoid::getLeftLegPrimitive()
-{
-	PartInstance* part = getLeftLeg();
-
-	return part != NULL ? part->getPrimitive() : NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x100a26e0
-Primitive* Humanoid::getRightLegPrimitive()
-{
-	PartInstance* part = getRightLeg();
-
-	return part != NULL ? part->getPrimitive() : NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x100a2700
-Body* Humanoid::getTorsoBody()
-{
-	PartInstance* part = getTorso();
-
-	return part != NULL ? part->getPrimitive()->getBody() : NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x100a2720
-Body* Humanoid::getRootBody()
-{
-	Body* body = getTorsoBody();
-
-	return body != NULL ? body->getRoot() : NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x100a27c0
-const CoordinateFrame Humanoid::getLocation() const
-{
-	return getHead() != NULL ? getHead()->getCoordinateFrame() : CoordinateFrame();
-}
-
-// FUNCTION: WEBSERVICE 0x100a2f70
-G3D::Vector3 Humanoid::getIntendedMovementVector(bool setWalkMode)
-{
-	G3D::Vector3 result = G3D::Vector3::zero();
-
-	if (walkMode == DIRECTION_MOVE) {
-		result = walkDirection;
-	}
-	else if (walkMode == CLICK_TO_MOVE) {
-		PartInstance* torso = getTorso();
-		G3D::Vector3 worldPosition;
-
-		if (torso != NULL && hasWalkToPoint(worldPosition)) {
-			const G3D::Vector3& translation = torso->getCoordinateFrame().translation;
-
-			G3D::Vector3 delta = worldPosition - translation;
-
-			worldPosition.x = delta.x;
-			worldPosition.y = delta.y + 3.0f;
-			worldPosition.z = delta.z;
-
-			float distance = (worldPosition.z * worldPosition.z + worldPosition.x * worldPosition.x) +
-							 worldPosition.y * worldPosition.y;
-
-			worldPosition.y = 0;
-
-			if (sqrtf(distance) < 2.0f) {
-				if (setWalkMode) {
-					walkMode = DIRECTION_MOVE;
-				}
-
-				result = G3D::Vector3::zero();
-			}
-			else {
-				result = worldPosition.unit();
-			}
+void Primitive::setClump(Clump* set)
+	{
+		if (set != clump)
+		{
+			clump = set;
 		}
 	}
 
-	return result;
-}
+	const G3D::CoordinateFrame& Primitive::getCoordinateFrame() const
+	{
+		return body->getPV().position;
+	}
+	
+	G3D::CoordinateFrame Primitive::getGridCorner() const
+	{
+		const G3D::CoordinateFrame& pos = body->getPV().position;
+		G3D::Vector3 hVec = -(geometry->getGridSize() * 0.5f);
 
-// FUNCTION: WEBSERVICE 0x100a30d0
-G3D::Vector3 Humanoid::getIntendedMovementVector()
-{
-	return getIntendedMovementVector(false);
-}
+		return G3D::CoordinateFrame(pos.rotation, pos.pointToWorldSpace(hVec));
+	}
 
-// STUB: WEBSERVICE 0x100a30f0
-G3D::Vector3 Humanoid::updateWalkDirection()
-{
-	STUB(0x100a30f0);
-	return G3D::Vector3::zero();
-}
+	void Primitive::setGridCorner(const G3D::CoordinateFrame& gridCorner)
+	{
+		G3D::Vector3 hVec = geometry->getGridSize() * 0.5;
+		setCoordinateFrame(G3D::CoordinateFrame(gridCorner.rotation, gridCorner.pointToWorldSpace(hVec)));
+	}
 
-// STUB: WEBSERVICE 0x100a31b0
-void Humanoid::tellCameraNear(float distance)
-{
-	STUB(0x100a31b0);
-}
+	void Primitive::setVelocity(const Velocity& vel)
+	{
+		body->setVelocity(vel);
+	}
 
-// FUNCTION: WEBSERVICE 0x100a4290
-Humanoid::Humanoid()
-	: health(100), maxHealth(100), walkRotationalVelocity(0), walkTimer(0), walkMode(DIRECTION_MOVE), jump(false),
-	  imDead(false), hadHeadJoint(false), sit(false), world(NULL)
-{
-	setName("Humanoid");
-}
+	float Primitive::getPlanarSize() const
+	{
+		return Math::planarSize(geometry->getGridSize());
+	}
 
-// STUB: WEBSERVICE 0x100a4690
-void Humanoid::renderMultiplayer(Adorn* adorn, const G3D::GCamera& camera)
-{
-	if (getHead() != NULL) {
-		const CoordinateFrame& headCoord = head->getCoordinateFrame();
+	bool Primitive::hitTest(const G3D::Ray& worldRay, G3D::Vector3& worldHitPoint, bool& inside) 
+	{
+		G3D::Ray localRay = body->getPV().position.toObjectSpace(worldRay);
+		G3D::Vector3 localHitPoint;
 
-		Vector3 headPosition(headCoord.translation.x, headCoord.translation.y + 1.5f, headCoord.translation.z);
+		if (geometry->hitTest(localRay, localHitPoint, inside))
+		{
+			worldHitPoint = body->getPV().position.pointToWorldSpace(localHitPoint);
+			return true;
+		}
+		else return false;
+	}
 
-		Vector3 projected = camera.project(headPosition, adorn->getViewport());
+	Face Primitive::getFaceInObject(NormalId objectFace)
+	{
+		return Face::fromExtentsSide(getExtentsLocal(), objectFace);
+	}
 
-		float distance = (camera.getCoordinateFrame().translation - headPosition).magnitude();
+	Face Primitive::getFaceInWorld(NormalId objectFace)
+	{
+		return getFaceInObject(objectFace).toWorldSpace(body->getPV().position);
+	}
 
-		if (distance < 100.0f) {
-			int fontSize = 8;
+	G3D::CoordinateFrame Primitive::getFaceCoordInObject(NormalId objectFace)
+	{
+		return G3D::CoordinateFrame(normalIdToMatrix3(objectFace), normalIdToVector3(objectFace) * geometry->getGridSize());
+	}
 
-			if (20.0f <= distance) {
-				if (distance < 50.0f) {
-					fontSize = 10;
+	void Primitive::setSurfaceType(NormalId id, SurfaceType newSurfaceType)
+	{
+		if (surfaceType[id] != newSurfaceType)
+			surfaceType[id] = newSurfaceType;
+	}
+
+	void Primitive::setSurfaceData(NormalId id, const SurfaceData& newSurfaceData)
+	{
+		if (!surfaceData[id] && newSurfaceData.isEmpty())
+			return;
+
+		if (surfaceData[id] && *surfaceData[id] == newSurfaceData)
+			return;
+
+		if (newSurfaceData.isEmpty())
+		{
+			RBXASSERT(surfaceData[id]);
+			delete surfaceData[id];
+			surfaceData[id] = NULL;
+			return;
+		}
+		else if (!surfaceData[id])
+		{
+			surfaceData[id] = new SurfaceData;
+		}
+
+		*surfaceData[id] = newSurfaceData;
+	}
+
+	Edge* Primitive::getFirstEdge() const
+	{
+		return joints.first ? joints.first : contacts.first;
+	}
+
+	Joint* Primitive::getFirstJoint() const
+	{
+		return rbx_static_cast<Joint*>(joints.first);
+	}
+
+	Contact* Primitive::getFirstContact()
+	{
+		return rbx_static_cast<Contact*>(contacts.first);
+	}
+
+	RigidJoint* Primitive::getFirstRigid()
+	{
+		return getFirstRigidAt(getFirstEdge());
+	}
+
+	RigidJoint* Primitive::getNextRigid(RigidJoint* prev)
+	{
+		return getFirstRigidAt(getNextEdge(prev));
+	}
+
+	Geometry* Primitive::newGeometry(Geometry::GeometryType geometryType)
+	{
+		switch (geometryType)
+		{
+			case Geometry::GEOMETRY_BLOCK: return new Block;
+			case Geometry::GEOMETRY_BALL: return new Ball;
+			default: return Geometry::nullGeometry();
+		}
+	}
+
+	void newTouch(Primitive* touch, Primitive* touchOther)
+	{
+		Clump* clumpTouch = touch->getClump();
+		Clump* clumpOTouch = touchOther->getClump();
+
+		RBXASSERT(clumpTouch);
+		RBXASSERT(clumpOTouch);
+
+		if (touch->getOwner()->reportTouches() && 
+			((!clumpTouch->getAnchored() && clumpTouch->getSleepStatus() == Sim::AWAKE) ||
+			(!clumpOTouch->getAnchored() && clumpOTouch->getSleepStatus() == Sim::AWAKE)))
+		{
+			touch->getWorld()->onPrimitiveTouched(touch, touchOther);
+		}
+	};
+
+	void Primitive::onNewTouch(Primitive* p0, Primitive* p1)
+	{
+		newTouch(p0, p1);
+		newTouch(p1, p0);
+	}
+
+	Assembly* Primitive::getAssembly() const 
+	{
+		return clump ? clump->getAssembly() : NULL;
+	}
+
+	void Primitive::setPrimitiveType(Geometry::GeometryType geometryType)
+	{
+		RBXASSERT(geometry->getGeometryType() != Geometry::GEOMETRY_NONE);
+		RBXASSERT(geometryType != Geometry::GEOMETRY_NONE);
+
+		if (geometry->getGeometryType() != geometryType)
+		{
+			G3D::Vector3 oldSize = geometry->getGridSize();
+			if (geometry)
+				delete geometry;
+
+			geometry = newGeometry(geometryType);
+
+			if (world)
+				world->onPrimitiveGeometryTypeChanged(this);
+
+			setGridSize(oldSize);
+			JointK.setDirty();
+		}
+	}
+
+	void Primitive::setCoordinateFrame(const G3D::CoordinateFrame& value)
+	{
+		if (value != body->getPV().position)
+		{
+			Assembly* assembly = getAssembly();
+			if (!assembly)
+			{
+				body->setCoordinateFrame(value);
+				myOwner->notifyMoved();
+				if (world)
+					world->onPrimitiveExtentsChanged(this);
+			}
+			else
+			{
+				RBXASSERT(world);
+				if (assembly->getMainPrimitive() == this)
+				{
+					body->setCoordinateFrame(value);
+					assembly->notifyMoved();
+					world->onAssemblyExtentsChanged(assembly);
+					if (!anchored)
+						world->ticklePrimitive(this);
 				}
 			}
-			else {
-				fontSize = 12;
+		}
+	}
+
+	void Primitive::setDragging(bool _dragging)
+	{
+		if (dragging != _dragging)
+		{
+			bool oldDrag = !dragging && canCollide;
+			dragging = _dragging;
+
+			setAnchor(anchored);
+			if (world)
+			{
+				bool newDrag = !dragging && canCollide;
+				if (newDrag != oldDrag)
+					world->onPrimitiveCanCollideChanged(this);
+			}
+		}
+	}
+
+	void Primitive::setAnchor(bool _anchored)
+	{
+		anchored = _anchored;
+
+		bool exists = getAnchor();
+
+		if (_anchored || dragging)
+			_anchored = true;
+
+		if (_anchored == exists)
+			return;
+
+		if (_anchored)
+		{
+			RBXASSERT(!anchorObject);
+			anchorObject = new Anchor(this);
+			if (world)
+				world->onPrimitiveAddedAnchor(this);
+		}
+		else
+		{
+			RBXASSERT(anchorObject);
+			if (world)
+				world->onPrimitiveRemovingAnchor(this);
+			
+			if (anchorObject)
+				delete anchorObject;
+
+			anchorObject = NULL;
+		}
+	}
+
+	void Primitive::setCanCollide(bool value)
+	{
+		bool oldDrag = !dragging && canCollide;
+
+		if (canCollide != value)
+		{
+			canCollide = value;
+			if (world)
+			{
+				bool newDrag = !dragging && value;
+				if (oldDrag != newDrag)
+					world->onPrimitiveCanCollideChanged(this);
+			}
+		}
+	}
+
+	void Primitive::setCanSleep(bool _canSleep)
+	{
+		if (_canSleep != canSleep)
+		{
+			canSleep = _canSleep;
+			if (world)
+				world->onPrimitiveCanSleepChanged(this);
+		}
+	}
+
+	void Primitive::setFriction(float _friction)
+	{
+		if (_friction != friction)
+		{
+			friction = _friction;
+			if (world)
+				world->onPrimitiveContactParametersChanged(this);
+		}
+	}
+
+	void Primitive::setElasticity(float _elasticity)
+	{
+		if (_elasticity != elasticity)
+		{
+			elasticity = _elasticity;
+			if (world)
+				world->onPrimitiveContactParametersChanged(this);
+		}
+	}
+
+	void Primitive::setGridSize(const G3D::Vector3& gridSize) // 100% match when Body::setMoment is set as __declspec(noinline)
+	{
+		G3D::Vector3 protectedSize = clipToSafeSize(gridSize);
+
+		if (protectedSize != geometry->getGridSize())
+		{
+			fuzzyExtentsStateId = -2;
+			geometry->setGridSize(protectedSize);
+
+			float newSize = geometry->getGridVolume();
+			body->setMass(newSize);
+			body->setMoment(geometry->getMoment(newSize));
+			JointK.setDirty();
+
+			if (world)
+				world->onPrimitiveExtentsChanged(this);
+
+			JointK.setDirty();
+		}
+	}
+
+	bool Primitive::aaBoxCollide(const Primitive& p0, const Primitive& p1)
+	{
+		G3D::Vector3 delta = p0.getCoordinateFrame().translation - p1.getCoordinateFrame().translation;
+		float r0 = p0.getRadius();
+		float r1 = p1.getRadius();
+		
+		if (r0 + r1 < Math::longestVector3Component(delta))
+			return false;
+
+		const Extents& f1 = p1.getFastFuzzyExtents();
+		const Extents& f0 = p0.getFastFuzzyExtents();
+		return f0.overlapsOrTouches(f1);
+	}
+
+	Extents Primitive::computeFuzzyExtents() const
+	{
+		Extents ext = Extents::fromCenterCorner(body->getPV().position.translation, geometry->getCenterToCorner(body->getPV().position.rotation));
+		ext.expand(0.01f);
+
+		return ext;
+	}
+
+	void Primitive::setController(Controller* _controller)
+	{
+		if (!_controller)
+			_controller = NullController::getStaticNullController();
+
+		if (controller != _controller)
+			controller = _controller;
+	}
+
+	const Extents& Primitive::getFastFuzzyExtents() const
+	{
+		if (fuzzyExtentsStateId != body->getStateIndex())
+		{
+			fuzzyExtents = computeFuzzyExtents();
+			fuzzyExtentsStateId = body->getStateIndex();
+		}
+
+		return fuzzyExtents;
+	}
+
+	Joint* Primitive::getNextJoint(Joint* prev) const
+	{
+		return rbx_static_cast<Joint*>(prev->getNext(this));
+	}
+
+	Contact* Primitive::getNextContact(Contact* prev)
+	{
+		return rbx_static_cast<Contact*>(prev->getNext(this));
+	}
+
+	Edge* Primitive::getNextEdge(Edge* e) const
+	{
+		Edge* next = e->getNext(this);
+
+		if (next)
+			return next;
+		else
+			return Joint::isJoint(e) ? contacts.first : NULL;
+	}
+
+	Joint* Primitive::getJoint(Primitive* p0, Primitive* p1)
+	{
+		Primitive* least = p0->getNumJoints2() < p1->getNumJoints2() ? p0 : p1;
+
+		for (Joint* current = least->getFirstJoint(); current != NULL; current = least->getNextJoint(current))
+		{
+			if (p0 == current->getPrimitive(0) && p1 == current->getPrimitive(1) || p0 == current->getPrimitive(1) && p1 == current->getPrimitive(0))
+			   return current;
+		}
+		return NULL;
+	}
+
+	Contact* Primitive::getContact(Primitive* p0, Primitive* p1)
+	{
+		Primitive* least = p0->getNumContacts() < p1->getNumContacts() ? p0 : p1;
+
+		for (Contact* current = least->getFirstContact(); current != NULL; current = least->getNextContact(current))
+		{
+			if (p0 == current->getPrimitive(0) && p1 == current->getPrimitive(1) || p0 == current->getPrimitive(1) && p1 == current->getPrimitive(0))
+			   return current;
+		}
+		return NULL;
+	}
+
+	RigidJoint* Primitive::getFirstRigidAt(Edge* start)
+	{
+		for (Edge* current = start; current != NULL; current = getNextEdge(current))
+		{
+			if (RigidJoint::isRigidJoint(current))
+				return rbx_static_cast<RigidJoint*>(current);
+		}
+		return NULL;
+	}
+
+	int Primitive::countNumJoints() const
+	{
+		int counter = 0;
+		for (Joint* current = getFirstJoint(); current != NULL; current = getNextJoint(current))
+		{
+			Joint::JointType type = current->getJointType();
+			if (type != Joint::FREE_JOINT && type != Joint::ANCHOR_JOINT)
+				counter++;
+		}
+		return counter;
+	}
+
+	void Primitive::insertEdge(Edge* e)
+	{
+		Primitive* p0 = e->getPrimitive(0);
+		Primitive* p1 = e->getPrimitive(1);
+
+		if (Joint::isJoint(e))
+		{
+			EdgeList::insertEdge(p0, e, e->getPrimitive(0)->joints);
+
+			if (p1)
+				EdgeList::insertEdge(p1, e, e->getPrimitive(1)->joints);
+			else
+				RBXASSERT(rbx_static_cast<Joint*>(e)->getJointType() == Joint::ANCHOR_JOINT || rbx_static_cast<Joint*>(e)->getJointType() == Joint::FREE_JOINT);
+		}
+		else
+		{
+			EdgeList::insertEdge(p0, e, e->getPrimitive(0)->contacts);
+			EdgeList::insertEdge(p1, e, e->getPrimitive(1)->contacts);
+		}
+	}
+
+	void Primitive::removeEdge(Edge* e)
+	{
+		Primitive* p0 = e->getPrimitive(0);
+		Primitive* p1 = e->getPrimitive(1);
+
+		if (Joint::isJoint(e))
+		{
+			EdgeList::removeEdge(p0, e, e->getPrimitive(0)->joints);
+
+			if (p1)
+				EdgeList::removeEdge(p1, e, e->getPrimitive(1)->joints);
+			else
+				RBXASSERT(rbx_static_cast<Joint*>(e)->getJointType() == Joint::ANCHOR_JOINT || rbx_static_cast<Joint*>(e)->getJointType() == Joint::FREE_JOINT);
+		}
+		else
+		{
+			EdgeList::removeEdge(p0, e, e->getPrimitive(0)->contacts);
+			EdgeList::removeEdge(p1, e, e->getPrimitive(1)->contacts);
+		}
+	}
+
+	void EdgeList::insertEdge(Primitive* p, Edge* e, EdgeList& list)
+	{
+		e->setNext(p, list.first);
+		list.first = e;
+		list.num++;
+	}
+
+	void EdgeList::removeEdge(Primitive* p, Edge* e, EdgeList& list)
+	{
+		Edge* currentEdge = list.first;
+
+		if (list.first == e)
+		{
+			list.first = e->getNext(p);
+		}
+		else
+		{
+			while (currentEdge->getNext(p) != e)
+			{
+				currentEdge = currentEdge->getNext(p);
 			}
 
-			Teams* teams = ServiceProvider::find<Teams>(this);
-
-			G3D::Color3 nameColor = teams == NULL ? G3D::Color3::white() : teams->getTeamColorForHumanoid(this);
-
-			adorn->drawFont2D(
-				getName(),
-				projected.xy(),
-				fontSize,
-				G3D::Color4(nameColor, 1.0f),
-				G3D::Color4(G3D::Color3::black(), 1.0f),
-				Adorn::XALIGN_CENTER,
-				Adorn::YALIGN_CENTER,
-				Adorn::PROPORTIONAL_SPACING
-			);
-
-			float width = (float) (fontSize * 4);
-
-			headPosition.x -= 0.5f * width;
-
-			Vector2 barLow(headPosition.x, headPosition.y);
-			Vector2 barHigh(headPosition.x + width, headPosition.y + (float) (fontSize / 2));
-
-			Vector2 healthHigh(headPosition.x + (health / maxHealth) * width, headPosition.y);
-
-			adorn->rect2d(G3D::Rect2D::xyxy(barLow, healthHigh), G3D::Color4(Color::lightGreen(), 1.0f));
-			adorn->rect2d(G3D::Rect2D::xyxy(healthHigh, barHigh), G3D::Color4(G3D::Color3::red(), 1.0f));
+			currentEdge->setNext(p, e->getNext(p));
 		}
+
+		list.num--;
 	}
 }
-
-// FUNCTION: WEBSERVICE 0x100a4960
-void Humanoid::render2d(Adorn* adorn)
-{
-	Humanoid* self = this;
-	ModelInstance* character = Network::Players::findLocalCharacter(self);
-	Humanoid* localHumanoid = character != NULL ? character->findFirstChildOfType<Humanoid>() : NULL;
-
-	if (this == localHumanoid) {
-		return;
-	}
-
-	Workspace* workspace = Workspace::findWorkspace(self);
-
-	if (workspace != NULL) {
-		renderMultiplayer(adorn, workspace->getGCamera());
-	}
-}
-
-// STUB: WEBSERVICE 0x100a4bf0
-void Humanoid::getIgnorePrims(std::vector<const Primitive*>& ignore)
-{
-	STUB(0x100a4bf0);
-}
-
-// FUNCTION: WEBSERVICE 0x100a4e80
-void Humanoid::setMaxHealth(float value)
-{
-	if (maxHealth != value) {
-		maxHealth = value;
-		raisePropertyChanged(propMaxHealth);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x100a5000
-void Humanoid::setWalkRotationalVelocity(const float& value)
-{
-	if (walkRotationalVelocity != value) {
-		walkRotationalVelocity = value;
-		raisePropertyChanged(propWalkRotationalVelocity);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x100a51b0
-void Humanoid::setJump(bool value)
-{
-	if (jump != value) {
-		jump = value;
-		raisePropertyChanged(propJump);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x100a51f0
-void Humanoid::setSit(bool value)
-{
-	if (sit != value) {
-		sit = value;
-		raisePropertyChanged(propSit);
-	}
-}
-
-// STUB: WEBSERVICE 0x100a56c0
-void Humanoid::onEvent(const RunService* source, Stepped event)
-{
-	State* state = currentState.get();
-
-	if (state != NULL && getParent() != NULL) {
-		State* next = state->onStep(event.step, *static_cast<PVInstance*>(getParent())->getTopPVController());
-
-		if (next != state) {
-			currentState.reset(next);
-		}
-	}
-}
-
-// STUB: WEBSERVICE 0x100a5770
-void Humanoid::cameraSetWalkOrientation(float rad, bool noAdjust)
-{
-	STUB(0x100a5770);
-}
-
-bool Humanoid::isControllable() const
-{
-	STUB(0x100e6150);
-	return false;
-}
-
-bool Humanoid::shouldRender2d() const
-{
-	STUB(0x100e6151);
-	return false;
-}
-
-bool Humanoid::shouldRender3dAdorn() const
-{
-	STUB(0x100e6152);
-	return false;
-}
-
-} // namespace RBX
-
-template class RBX::FactoryProduct<RBX::Humanoid, RBX::Instance, RBX::sHumanoid>;
-template class RBX::Reflection::
-	Described<RBX::Humanoid, RBX::sHumanoid, RBX::FactoryProduct<RBX::Humanoid, RBX::Instance, RBX::sHumanoid> >;
-template class RBX::DescribedCreatable<RBX::Humanoid, RBX::Instance, RBX::sHumanoid>;

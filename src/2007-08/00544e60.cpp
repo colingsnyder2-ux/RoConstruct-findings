@@ -1,50 +1,601 @@
-// from server: 40% by colin
-// roc 2007-08 00544e60  unit: RBX::VDebugSettings  size: 101 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00544e60
-//
-// 00544e60  6aff                 push -1
-// 00544e62  6879be7500           push 0x75be79
-// 00544e67  64a100000000         mov eax, dword ptr fs:[0]
-// 00544e6d  50                   push eax
-// 00544e6e  64892500000000       mov dword ptr fs:[0], esp
-// 00544e75  83ec1c               sub esp, 0x1c
-// 00544e78  53                   push ebx
-// 00544e79  6a0b                 push 0xb
-// 00544e7b  6a00                 push 0
-// 00544e7d  8d44240c             lea eax, [esp + 0xc]
-// 00544e81  50                   push eax
-// 00544e82  ff1538e67700         call dword ptr [0x77e638]
-// 00544e88  68006f7a00           push 0x7a6f00
-// 00544e8d  50                   push eax
-// 00544e8e  c744243000000000     mov dword ptr [esp + 0x30], 0
-// 00544e96  ff15f8e57700         call dword ptr [0x77e5f8]
-// 00544e9c  83c408               add esp, 8
-// 00544e9f  8d4c2404             lea ecx, [esp + 4]
-// 00544ea3  8ad8                 mov bl, al
-// 00544ea5  c7442428ffffffff     mov dword ptr [esp + 0x28], 0xffffffff
-// 00544ead  ff15ace67700         call dword ptr [0x77e6ac]
-// 00544eb3  8b4c2420             mov ecx, dword ptr [esp + 0x20]
-// 00544eb7  8ac3                 mov al, bl
-// 00544eb9  5b                   pop ebx
-// 00544eba  64890d00000000       mov dword ptr fs:[0], ecx
-// 00544ec1  83c428               add esp, 0x28
-// 00544ec4  c3                   ret
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll v8xml/XmlSerializer.cpp
 
-struct S {
-    bool f();
+// Candidate translation unit (score above; library headers required).
+#include "v8xml/XmlSerializer.h"
+#include "util/Debug.h"
+#include "util/base64.hpp"
+#include "reflection/type.h"
+#include <G3D/format.h>
+#include <sstream>
+
+class Whitespaces
+{
+public:
+	char data[256];
+  
+public:
+	Whitespaces()
+	{
+		data[9] = true;
+		data[10] = true;
+		data[12] = true;
+		data[13] = true;
+		data[32] = true;
+	}
 };
 
-extern "C" {
-    void* __stdcall sub_77E638(void*, int, int);
-    int __stdcall sub_77E5F8(const char*, void*);
-    void __stdcall sub_77E6AC(void*);
+static Whitespaces whitespaces;
+
+XmlParser::XmlParser(std::streambuf* buffer)
+	: buffer(buffer)
+{
+	
 }
 
-bool S::f()
+void TextXmlParser::skipWhitespace()
 {
-    char buf[12];
-    sub_77E638(buf, 0, 11);
-    bool r = sub_77E5F8("rbxasset://", buf) != 0;
-    sub_77E6AC(buf);
-    return r;
+	while (whitespaces.data[(char)buffer->sgetc()])
+		buffer->sbumpc();
+}
+
+std::string TextXmlParser::readTag()
+{
+	skipWhitespace();
+
+	if ((char)buffer->sbumpc() != '<')
+		throw std::runtime_error("tag expected");
+
+	std::string tag;
+	tag += '<';
+
+	char lastChar;
+	do
+	{
+		lastChar = buffer->sbumpc();
+		tag += lastChar;
+	}
+	while (lastChar != '>');
+
+	return tag;
+}
+
+std::string TextXmlParser::readFirstTag()
+{
+	skipWhitespace();
+
+	std::string s;
+	char c = buffer->sbumpc();
+	if (c != '<')
+	{
+		s += c;
+		c = buffer->sbumpc();
+		s += c;
+		c = buffer->sbumpc();
+		s += c;
+		c = buffer->sbumpc();
+		s += c;
+		if (c != '<')
+		{
+			for (int i = 0; i != 50; i++)
+			{
+				if (buffer->sgetc() == -1)
+					continue;
+				s += buffer->sbumpc();
+			}
+
+			std::string message = "tag expected after Byte-Order-Mark:";
+			message += s;
+			throw std::runtime_error(message);
+		}
+	}
+
+	std::string tag;
+	tag += c;
+
+	char lastChar;
+	do
+	{
+		lastChar = buffer->sbumpc();
+		tag += lastChar;
+	}
+	while (lastChar != '>');
+
+	return tag;
+}
+
+std::string decodeString(std::string source)
+{
+	std::string result;
+
+	size_t i = 0;
+	while (i < source.size())
+	{
+		char c = source[i++];
+		if (c == '&')
+		{
+			std::string entity;
+			while (i < source.size())
+			{
+				c = source[i++];
+				if (c == ';')
+					break;
+				entity += c;
+			}
+
+			if (entity == "lt")
+				result += '<';
+			else if (entity == "gt")
+				result += '>';
+			else if (entity == "amp")
+				result += '&';
+			else if (entity == "quot")
+				result += '"';
+			else if (entity == "apos")
+				result += '\'';
+			else if (entity[0] == '#')
+				result += atoi(entity.substr(1).c_str());
+			else
+				RBXASSERT(0);
+		}
+		else
+		{
+			result += c;
+		}
+	}
+
+	return result;
+}
+
+std::string TextXmlParser::readText(bool decode)
+{
+	skipWhitespace();
+
+	std::string text;
+	while ((char)buffer->sgetc() != '<')
+		text += buffer->sgetc();
+
+	if (decode)
+		text = decodeString(text);
+
+	return text;
+}
+
+std::string TextXmlParser::removeTag(const std::string& contents, int& index)
+{
+	size_t i = 0;
+	while (whitespaces.data[contents[i]] && i < contents.size())
+		i++;
+
+	size_t j = i;
+	while (!whitespaces.data[contents[j]] && j < contents.size())
+		j++;
+
+	std::string contentsNoTag = contents.substr(i, j - i);
+	index = (int)j + 1;
+
+	return contentsNoTag;
+}
+
+std::string TextXmlParser::findNextToken(const std::string& contents, int& index)
+{
+	size_t i;
+	for (i = index; i < contents.size(); i++)
+	{
+		if (!whitespaces.data[contents[i]])
+			break;
+	}
+
+	bool inQuotes = false;
+	size_t j = i;
+
+	for (; j < contents.size(); j++)
+	{
+		if (contents[j] == '"')
+		{
+			inQuotes = !inQuotes;
+		}
+		else if (!inQuotes && whitespaces.data[contents[j]])
+		{
+			break;
+		}
+	}
+
+	if (j != i)
+	{
+		std::string answer = contents.substr(i, j - i);
+		index = (int)j + 1;
+		return answer;
+	}
+
+	index = (int)contents.size();
+	return "";
+}
+
+XmlElement* TextXmlParser::parseAttributes(const std::string& currentTag)
+{
+	std::string tagGuts = currentTag.substr(1, currentTag.size() - 2);
+
+	int index = 0;
+	std::string tagName = removeTag(tagGuts, index);
+
+	XmlElement* element = new XmlElement(RBX::Name::lookup(tagName));
+
+	std::string attribute = findNextToken(tagGuts, index);
+	while (attribute.size() > 0)
+	{
+		size_t equalsSignIndex = attribute.find("=", 0, 1);
+		std::string attributeName = attribute.substr(0, equalsSignIndex);
+
+		size_t startQuoteMarkIndex = attribute.find('\"');
+		size_t endQuoteMarkIndex = attribute.rfind('\"');
+		std::string text = decodeString(attribute.substr(startQuoteMarkIndex + 1, endQuoteMarkIndex - startQuoteMarkIndex - 1));
+
+		element->addAttribute(RBX::Name::lookup(attributeName), text);
+
+		attribute = findNextToken(tagGuts, index);
+	}
+
+	return element;
+}
+
+bool isCloseTag(const std::string& test)
+{
+	if (test.size() >= 2)
+		return test.substr(0, 2) == "</";
+
+	return false;
+}
+
+bool endsWithClose(const std::string& test)
+{
+	if (test.size() >= 2)
+		return test.substr(test.size() - 2, 2) == "/>";
+
+	return false;
+}
+
+std::auto_ptr<XmlElement> TextXmlParser::parse()
+{
+	if (buffer->sgetc() == -1)
+		throw std::runtime_error("TextXmlParser::parse empty file");
+
+	bool firstTag = true;
+	while (true)
+	{
+		std::string currentTag;
+		if (firstTag)
+		{
+			firstTag = false;
+			currentTag = readFirstTag();
+			if (currentTag.substr(0, 2) == "<?")
+				continue;
+		}
+		else
+		{
+			currentTag = readTag();
+		}
+
+		XmlElement* currentElement = elements.empty() ? NULL : elements.top();
+		if (isCloseTag(currentTag))
+		{
+			if (!currentElement)
+				throw std::runtime_error(G3D::format("TextXmlParser::parse - Got close tag %s without open tag.", currentTag.c_str()));
+
+			elements.pop();
+			if (elements.empty())
+				return std::auto_ptr<XmlElement>(currentElement);
+		}
+		else
+		{
+			XmlElement* newElement = parseAttributes(currentTag);
+			elements.push(newElement);
+
+			if (newElement->getTag() == RBX::Reflection::Type::singleton<RBX::ContentId>().tag)
+			{
+				bool isXsiNil;
+				const XmlAttribute* xsiNilAttribute = newElement->findAttribute(name_xsinil);
+				if (xsiNilAttribute && xsiNilAttribute->getValue(isXsiNil) && !isXsiNil)
+				{
+					if (readText(false) == "")
+					{
+						const RBX::Name* mimeType;
+						const XmlAttribute* mimeTypeAttribute = newElement->findAttribute(tag_mimeType);
+						if (mimeTypeAttribute)
+							mimeTypeAttribute->getValue(mimeType);
+						else
+							mimeType = &RBX::Name::getNullName();
+
+						std::string contentChild = readTag();
+						std::string tagName = contentChild.substr(1, contentChild.size() - 2);
+
+						if (tagName.substr(0, 6) == "binary")
+						{
+							std::stringbuf encoded(readText(false), std::ios_base::in);
+							std::stringstream decoded;
+
+							int ioStatus = 0;
+							base64<char> decoder;
+							decoder.get(
+								std::istreambuf_iterator<char>(&encoded),
+								std::istreambuf_iterator<char>(),
+								std::ostreambuf_iterator<char>(decoded),
+								ioStatus);
+
+							decoded.flush();
+
+							RBX::ContentId contentId = RBX::ContentProvider::singleton().registerContent(decoded, *mimeType);
+							newElement->setValue(contentId);
+						}
+						else if (tag_hash == tagName)
+						{
+							std::string name = readText(false);
+							newElement->setValue(RBX::ContentId(name.c_str(), *mimeType));
+						}
+						else if (tagName.substr(0, 3) == "url")
+						{
+							std::string url = readText(true);
+							newElement->setValue(RBX::ContentId(url.c_str(), *mimeType));
+						}
+						else if (tag_null == tagName)
+						{
+							newElement->setValue(RBX::ContentId());
+						}
+						else
+						{
+							throw std::runtime_error(G3D::format("TextXmlParser::parse - Unknown tag '%s'.", tagName.substr(0, 32).c_str()));
+						}
+
+						std::string closingTag = readTag();
+						if (!isCloseTag(closingTag))
+							throw std::runtime_error(G3D::format("TextXmlParser::parse - '%s' should be a closing tag", tagName.substr(0, 32).c_str()));
+					}
+				}
+			}
+			else
+			{
+				newElement->setValue(readText(true));
+			}
+
+			currentElement->pushBackChild(newElement);
+
+			if (endsWithClose(currentTag))
+				elements.pop();
+		}
+	}
+}
+
+XmlWriter::XmlWriter(std::ostream& stream)
+	: stream(stream)
+{
+}
+
+int XmlWriter::getHandleIndex(RBX::InstanceHandle h)
+{
+	std::map<RBX::InstanceHandle, int>::iterator iter = handles.find(h);
+	if (iter == handles.end())
+	{
+		int index = (int)handles.size();
+		handles[h] = index;
+		return index;
+	}
+	else
+	{
+		return iter->second;
+	}
+}
+
+void TextXmlWriter::writeOpenTag(const XmlElement* element, int depth, const XmlAttribute* extraAttribute)
+{
+	for (int i = 0; i < depth; i++)
+		stream << '\t';
+
+	stream << '<' << element->getTag().name;
+
+	for (const XmlAttribute* attribute = element->getFirstAttribute(); attribute != NULL; attribute = attribute->nextSibling())
+	{
+		stream << ' ' << attribute->getTag().name << "=\"";
+		encodedWrite(stream, attribute->toString(this));
+		stream << '\"';
+	}
+
+	if (extraAttribute)
+	{
+		stream << ' ' << extraAttribute->getTag().name << "=\"";
+		encodedWrite(stream, extraAttribute->toString(this));
+		stream << '\"';
+	}
+
+	stream << '>';
+}
+
+void TextXmlWriter::writeCloseTag(const XmlElement* element, int depth)
+{
+	for (int i = 0; i < depth; i++)
+		stream << '\t';
+
+	stream << "</" << element->getTag().name << '>';
+}
+
+void TextXmlWriter::serializeNode(const XmlElement* xmlNode, int depth)
+{
+	if (xmlNode->isValueType<RBX::ContentId>())
+	{
+		writeOpenTag(xmlNode, depth, NULL);
+
+		RBX::ContentId contentId;
+		xmlNode->getValue(contentId);
+		if (contentId.isNull())
+		{
+			stream << "<null></null>";
+		}
+		else
+		{
+			stream << "<hash>";
+			stream << xmlNode->toString(this);
+			stream << "</hash>";
+		}
+	}
+	else
+	{
+		writeOpenTag(xmlNode, depth, NULL);
+		encodedWrite(stream, xmlNode->toString(this));
+	}
+}
+
+void TextXmlWriter::serialize(const XmlElement* xmlNode)
+{
+	serialize(xmlNode, 0);
+}
+
+void TextXmlWriter::serialize(const XmlElement* xmlNode, int depth)
+{
+	if (xmlNode)
+	{
+		serializeNode(xmlNode, depth);
+		if (xmlNode->firstChild())
+		{
+			for (const XmlElement* child = xmlNode->firstChild(); child != NULL; child = child->nextSibling())
+			{
+				stream << '\n';
+				serialize(child, depth + 1);
+			}
+			stream << '\n';
+			writeCloseTag(xmlNode, depth);
+		}
+		else
+		{
+			writeCloseTag(xmlNode, 0);
+		}
+	}
+}
+
+void TextXmlWriter::encodedWrite(std::ostream& stream, const std::string& text)
+{
+	encodedWrite(stream, text.c_str());
+}
+
+void TextXmlWriter::encodedWrite(std::ostream& stream, const char* text)
+{
+	size_t len = strlen(text);
+	for (size_t i = 0; i != len; ++i)
+	{
+		unsigned char c = *text++;
+		if (c == '<')
+		{
+			stream << "&lt;";
+		}
+		else if (c == '>')
+		{
+			stream << "&gt;";
+		}
+		else if (c == '&')
+		{
+			stream << "&amp;";
+		}
+		else if (c == '"')
+		{
+			stream << "&quot;";
+		}
+		else if (c == '\'')
+		{
+			stream << "&apos";
+		}
+		else if (c >= ' ' && c <= '~') // every other printable character
+		{
+			stream << c;
+		}
+		else
+		{
+			char buffer[8];
+			sprintf(buffer, "&#%d;", c);
+			stream << buffer;
+		}
+	}
+}
+
+void TextXmlWriterWithEmbeddedContent::serializeNode(const XmlElement* xmlNode, int depth)
+{
+	if (xmlNode->isValueType<RBX::ContentId>())
+	{
+		RBX::ContentId contentId;
+		xmlNode->getValue(contentId);
+
+		if (contentId.mimeType() == RBX::Name::getNullName())
+		{
+			writeOpenTag(xmlNode, depth, NULL);
+		}
+		else
+		{
+			XmlAttribute mimeTypeAttribute(tag_mimeType, contentId.mimeType().c_str());
+			writeOpenTag(xmlNode, depth, &mimeTypeAttribute);
+		}
+
+		if (!xmlNode->findAttribute(name_xsinil))
+		{
+			if (contentId.isNull())
+			{
+				stream << "<null></null>";
+			}
+			else
+			{
+				if (contentId.isAsset() || contentId.isHttp())
+				{
+					stream << "<url>";
+					TextXmlWriter::encodedWrite(stream, contentId.toString());
+					stream << "</url>";
+				}
+				else if (embeddedContent.find(contentId) == embeddedContent.end())
+				{
+					embeddedContent.insert(contentId);
+
+					std::auto_ptr<std::istream> contentStream;
+
+					try
+					{
+						contentStream = RBX::ContentProvider::singleton().getContent(contentId);
+
+						if (contentId.mimeType() == RBX::Name::getNullName())
+						{
+							stream << "<binary>";
+						}
+						else
+						{
+							stream << "<binary xmime:contentType=\"" << contentId.mimeType().c_str() << "\">";
+						}
+
+						std::istreambuf_iterator<char> _From(contentStream->rdbuf());
+						std::istreambuf_iterator<char> _To;
+						std::ostreambuf_iterator<char> _Out(stream.rdbuf());
+						int _State;
+
+						base64<char> encoder;
+						encoder.put(_From, _To, _Out, _State, base64<>::crlf());
+
+						stream << "</binary>";
+					}
+					catch (std::exception&)
+					{
+						goto hash;
+					}
+				}
+				else
+				{
+hash:
+					embeddedContent.insert(contentId);
+
+					stream << "<hash>";
+					stream << xmlNode->toString(this);
+					stream << "</hash>";
+				}
+			}
+		}
+	}
+	else
+	{
+		TextXmlWriter::serializeNode(xmlNode, depth);
+	}
 }

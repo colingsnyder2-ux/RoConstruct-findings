@@ -1,41 +1,15 @@
-// from server: 0% by atomic.potato
-struct S {
-    char pad[0x50];
-    int flags;
-    int f(int a, int b, int c);
-};
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_01f403e5b5979552.cpp
 
-extern "C" int __cdecl sub_6a6880(void*);
-extern "C" int __cdecl sub_6a5170(void*, int, int, int);
-extern "C" int __cdecl sub_6a7160(void*, void*);
-
-int S::f(int a, int b, int c)
-{
-    int result;
-    if (!(this->flags & 1)) {
-        sub_6a6880(&a);
-        this->flags |= 1;
-    }
-    if (this->flags & 2) {
-        return -1;
-    }
-    result = 0;
-    a = 0;
-    int r = sub_6a5170(this, a, b, c);
-    if (r == -1) {
-        sub_6a7160(this, &b);
-        this->flags |= 2;
-        return result;
-    }
-    if (r < c) {
-        a = r;
-        int r2 = sub_6a5170(this, a + b, c - r, c);
-        if (r2 == -1) {
-            sub_6a7160(this, &b);
-            this->flags |= 2;
-            return a;
-        }
-        a += r2;
-    }
-    return a;
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_gzip_decompressor<std::allocator<char> >,std::char_traits<char>,std::allocator<char>,boost::iostreams::input>;

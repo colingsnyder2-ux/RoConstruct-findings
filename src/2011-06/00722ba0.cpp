@@ -1,123 +1,45 @@
-// from server: 36% by colin
+// roc 2011-06 00722ba0  unit: RBX::P8PVInstance::?$SetImpl  size: 78 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 00722ba0
+//
+// 00722ba0  8b542404             mov edx, dword ptr [esp + 4]
+// 00722ba4  8b4208               mov eax, dword ptr [edx + 8]
+// 00722ba7  56                   push esi
+// 00722ba8  8b30                 mov esi, dword ptr [eax]
+// 00722baa  897208               mov dword ptr [edx + 8], esi
+// 00722bad  8b30                 mov esi, dword ptr [eax]
+// 00722baf  807e1d00             cmp byte ptr [esi + 0x1d], 0
+// 00722bb3  7503                 jne 0x722bb8
+// 00722bb5  895604               mov dword ptr [esi + 4], edx
+// 00722bb8  8b7204               mov esi, dword ptr [edx + 4]
+// 00722bbb  897004               mov dword ptr [eax + 4], esi
+// 00722bbe  8b4904               mov ecx, dword ptr [ecx + 4]
+// 00722bc1  5e                   pop esi
+// 00722bc2  3b5104               cmp edx, dword ptr [ecx + 4]
+// 00722bc5  750b                 jne 0x722bd2
+// 00722bc7  894104               mov dword ptr [ecx + 4], eax
+// 00722bca  8910                 mov dword ptr [eax], edx
+// 00722bcc  894204               mov dword ptr [edx + 4], eax
+// 00722bcf  c20400               ret 4
+// 00722bd2  8b4a04               mov ecx, dword ptr [edx + 4]
+// 00722bd5  3b11                 cmp edx, dword ptr [ecx]
+// 00722bd7  750a                 jne 0x722be3
+// 00722bd9  8901                 mov dword ptr [ecx], eax
+// 00722bdb  8910                 mov dword ptr [eax], edx
+// 00722bdd  894204               mov dword ptr [edx + 4], eax
+// 00722be0  c20400               ret 4
+// 00722be3  894108               mov dword ptr [ecx + 8], eax
+// 00722be6  8910                 mov dword ptr [eax], edx
+// 00722be8  894204               mov dword ptr [edx + 4], eax
+// 00722beb  c20400               ret 4
+// copied from an identical function in another client (function ?_Lrotate@?$_Tree@V?$_Tmap_traits@HUValue@@U?$less@H@std@@V?$allocator@U?$pair@$$CBHUValue@@@std@@@3@$0A@@std@@@std@@IAEXPAU_Node@?$_Tree_nod@V?$_Tmap_traits@HUValue@@U?$less@H@std@@V?$allocator@U?$pair@$$CBHUValue@@@std@@@3@$0A@@std@@@2@@Z)
+
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/FlagStand.cpp
+#define _SECURE_SCL 0
+#include <map>
 
-// Candidate translation unit (score above; library headers required).
-#include "v8datamodel/FlagStand.h"
-#include "v8datamodel/Flag.h"
-
-namespace RBX
-{
-	static Reflection::PropDescriptor<FlagStand, BrickColor> prop_Color("TeamColor", "Data", &FlagStand::getTeamColor, &FlagStand::setTeamColor, Reflection::PropertyDescriptor::STANDARD);
-	static Reflection::SignalDesc<FlagStand, void(boost::shared_ptr<Instance>)> event_FlagCaptured("FlagCaptured", "Player");
-
-	FlagStand::FlagStand()
-	{
-		setName("FlagStand");
-	}
-
-	BrickColor FlagStand::getTeamColor() const
-	{
-		return teamColor;
-	}
-
-	void FlagStand::setTeamColor(BrickColor color)
-	{
-		teamColor = color;
-		raisePropertyChanged(PartInstance::prop_Color);
-	}
-
-	void FlagStand::AffixFlag(Flag* flag)
-	{
-		if (!GetFlag())
-		{
-			flag->setParent(getParent());
-
-			PartInstance* handle = flag->getHandle();
-
-			handle->setCoordinateFrame(G3D::CoordinateFrame());
-
-			G3D::Vector3 location = getLocation().translation;
-			location.y += 0.5f;
-
-			handle->moveToPoint(location);
-			handle->join();
-		}
-	}
-
-	Flag* FlagStand::GetFlag()
-	{
-		Primitive* primitive = getPrimitive();
-
-		for (RigidJoint* current = primitive->getFirstRigid(); current != NULL; current = primitive->getNextRigid(current))
-		{
-			for (int i = 0; i < 2; i++)
-			{
-				Flag* flag = dynamic_cast<Flag*>(PartInstance::fromPrimitive(current->getPrimitive(i))->getParent());
-				if (flag)
-					return flag;
-			}
-		}
-
-		return NULL;
-	}
-
-	void FlagStand::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
-	{
-		Instance::onServiceProvider(oldProvider, newProvider);
-
-		if (!oldProvider)
-		{
-			FlagStandService* flagStandService = ServiceProvider::create<FlagStandService>(newProvider);
-			RBXASSERT(flagStandService);
-
-			flagStandService->RegisterFlagStand(this);
-
-			standTouched = PartInstance::event_Touched.connect(this, boost::bind(&FlagStand::onEvent_standTouched, this, _1));
-		}
-
-		if (!newProvider)
-		{
-			FlagStandService* flagStandService = ServiceProvider::create<FlagStandService>(oldProvider);
-			RBXASSERT(flagStandService);
-
-			flagStandService->UnregisterFlagStand(this);
-
-			standTouched.disconnect();
-		}
-	}
-
-	FlagStandService::FlagStandService()
-	{
-		setName("FlagStandService");
-		propArchivable.setValue(this, false);
-	}
-
-	FlagStandService::~FlagStandService() {}
-
-	FlagStand* FlagStandService::FindStandWithFlag(Flag* f)
-	{
-		if (flagStands.empty())
-			return NULL;
-
-		for (std::list<FlagStand*>::const_iterator iter = flagStands.begin(); iter != flagStands.end(); iter++)
-		{
-			if ((*iter)->GetFlag() == f)
-				return *iter;
-		}
-
-		return NULL;
-	}
-
-	void FlagStandService::RegisterFlagStand(FlagStand* s)
-	{
-		flagStands.push_back(s);
-	}
-
-	void FlagStandService::UnregisterFlagStand(FlagStand* s)
-	{
-		flagStands.remove(s);
-	}
-}
+// pair<const int, Value> is isnil(0x1d) - 0xd bytes.
+struct Value { int words[3]; };
+template class std::_Tree<std::_Tmap_traits<int, Value, std::less<int>,
+    std::allocator<std::pair<const int, Value> >, false> >;

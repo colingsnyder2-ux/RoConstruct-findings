@@ -1,101 +1,92 @@
-// from server: 53% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/ScriptContext.cpp
+// roc 2009-06 006338d0  unit: std::strstream  size: 98 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 006338d0
+//
+// 006338d0  8b44240c             mov eax, dword ptr [esp + 0xc]
+// 006338d4  33c9                 xor ecx, ecx
+// 006338d6  3bc1                 cmp eax, ecx
+// 006338d8  7441                 je 0x63391b
+// 006338da  83f801               cmp eax, 1
+// 006338dd  743c                 je 0x63391b
+// 006338df  83f802               cmp eax, 2
+// 006338e2  744d                 je 0x633931
+// 006338e4  83f803               cmp eax, 3
+// 006338e7  7521                 jne 0x63390a
+// 006338e9  56                   push esi
+// 006338ea  8b74240c             mov esi, dword ptr [esp + 0xc]
+// 006338ee  8b0e                 mov ecx, dword ptr [esi]
+// 006338f0  6898caa000           push 0xa0ca98
+// 006338f5  ff15a4e98900         call dword ptr [0x89e9a4]
+// 006338fb  0fb6c0               movzx eax, al
+// 006338fe  f7d8                 neg eax
+// 00633900  1bc0                 sbb eax, eax
+// 00633902  23442408             and eax, dword ptr [esp + 8]
+// 00633906  8906                 mov dword ptr [esi], eax
+// 00633908  5e                   pop esi
+// 00633909  c3                   ret 
+// 0063390a  8b442408             mov eax, dword ptr [esp + 8]
+// 0063390e  c70098caa000         mov dword ptr [eax], 0xa0ca98
+// 00633914  884804               mov byte ptr [eax + 4], cl
+// 00633917  884805               mov byte ptr [eax + 5], cl
+// 0063391a  c3                   ret 
+// 0063391b  8b442408             mov eax, dword ptr [esp + 8]
+// 0063391f  3bc1                 cmp eax, ecx
+// 00633921  740e                 je 0x633931
+// 00633923  8b4c2404             mov ecx, dword ptr [esp + 4]
+// 00633927  8b11                 mov edx, dword ptr [ecx]
+// 00633929  8910                 mov dword ptr [eax], edx
+// 0063392b  8b4904               mov ecx, dword ptr [ecx + 4]
+// 0063392e  894804               mov dword ptr [eax + 4], ecx
+// 00633931  c3                   ret 
+// copied from an identical function in another client (function ?manage@@YAXABTfunction_buffer@@AAT1@W4functor_manager_operation_type@@@Z)
 
-// Candidate translation unit (score above; library headers required).
-#include "script/ScriptContext.h"
+#include <typeinfo>
+#include <new>
 
-#include "reflection/signal.h"
-#include "script/LuaAtomicClasses.h"
-#include "util/Name.h"
-#include "v8datamodel/DebugSettings.h"
-#include "v8datamodel/Stats.h"
+// boost::detail::function::functor_manager<F>::manage for a small, trivially copyable functor
+// stored in place; 0xb3346c is typeid(F)
+extern const type_info type_descriptor_b3346c;
 
-namespace RBX {
-
-char sScriptContext[] = "ScriptContext";
-
-namespace Lua {
-
-template <>
-const char* Bridge<boost::shared_ptr<Reflection::DescribedBase>, 0>::className = "Object";
-
-} // namespace Lua
-
-// FUNCTION: WEBSERVICE 0x1005eb00
-ScriptContext& ScriptContext::getContext(lua_State* L)
+struct Functor
 {
-	lua_pushlightuserdata(L, (void*) 0x43);
-	lua_gettable(L, LUA_GLOBALSINDEX);
+    int f0, f1;
+};
 
-	ScriptContext* context = static_cast<ScriptContext*>(lua_touserdata(L, -1));
-
-	lua_settop(L, -2);
-
-	return *context;
-}
-
-// STUB: WEBSERVICE 0x1005eb60
-void ScriptContext::onEvent(const RunService* source, RunTransition event)
+union function_buffer
 {
-	STUB(0x1005eb60);
-}
+    void *obj_ptr;
+    struct
+    {
+        const type_info *type;
+        bool const_qualified;
+        bool volatile_qualified;
+    } type;
+    char data[8];
+};
 
-// FUNCTION: WEBSERVICE 0x1005f880
-void Lua::CoordinateFrameBridge::pushCoordinateFrame(lua_State* L, G3D::CoordinateFrame value)
+enum functor_manager_operation_type
 {
-	pushNewObject(L, value);
-}
+    clone_functor_tag,
+    move_functor_tag,
+    destroy_functor_tag,
+    check_functor_type_tag,
+    get_functor_type_tag
+};
 
-// FUNCTION: WEBSERVICE 0x1005f8c0
-void Lua::Vector3Bridge::pushVector3(lua_State* L, G3D::Vector3 value)
+void manage(const function_buffer &in_buffer, function_buffer &out_buffer, functor_manager_operation_type op)
 {
-	pushNewObject(L, value);
+    if (op == clone_functor_tag || op == move_functor_tag) {
+        const Functor *in_functor = reinterpret_cast<const Functor *>(&in_buffer.data);
+        new ((void *)&out_buffer.data) Functor(*in_functor);
+    } else if (op == destroy_functor_tag) {
+    } else if (op == check_functor_type_tag) {
+        const type_info &check_type = *out_buffer.type.type;
+        if (check_type == type_descriptor_b3346c)
+            out_buffer.obj_ptr = (void *)&in_buffer.data;
+        else
+            out_buffer.obj_ptr = 0;
+    } else {
+        out_buffer.type.type = &type_descriptor_b3346c;
+        out_buffer.type.const_qualified = false;
+        out_buffer.type.volatile_qualified = false;
+    }
 }
-
-// FUNCTION: WEBSERVICE 0x1005f910
-void Lua::Color3Bridge::pushColor3(lua_State* L, G3D::Color3 value)
-{
-	pushNewObject(L, value);
-}
-
-// STUB: WEBSERVICE 0x100673d0
-ScriptContext::Result ScriptContext::resume(lua_State* L, int nargs)
-{
-	STUB(0x100673d0);
-	return Success;
-}
-
-// STUB: WEBSERVICE 0x10068880
-void ScriptContext::onEvent(const RunService* source, Heartbeat event)
-{
-	STUB(0x10068880);
-}
-
-} // namespace RBX
-
-template void RBX::Lua::SharedPtrBridge<RBX::Reflection::DescribedBase>::push(
-	lua_State* L,
-	boost::shared_ptr<RBX::Reflection::DescribedBase> instance
-);
-
-template void RBX::Lua::SharedPtrBridge<RBX::Reflection::SignalInstance>::push(
-	lua_State* L,
-	boost::shared_ptr<RBX::Reflection::SignalInstance> instance
-);
-
-template const RBX::Name& RBX::Name::doDeclare<RBX::Stats::sStatsItem>();
-template const RBX::Name& RBX::Name::doDeclare<RBX::Stats::sStats>();
-template const RBX::Name& RBX::Name::doDeclare<RBX::sDebugSettings>();
-template void RBX::Name::callDoDeclare<RBX::Stats::sStatsItem>();
-template void RBX::Name::callDoDeclare<RBX::Stats::sStats>();
-template void RBX::Name::callDoDeclare<RBX::sDebugSettings>();
-
-template class RBX::FactoryProduct<RBX::ScriptContext, RBX::Instance, RBX::sScriptContext>;
-template class RBX::Reflection::Described<
-	RBX::ScriptContext,
-	RBX::sScriptContext,
-	RBX::FactoryProduct<RBX::ScriptContext, RBX::Instance, RBX::sScriptContext> >;
-template class RBX::DescribedCreatable<RBX::ScriptContext, RBX::Instance, RBX::sScriptContext>;

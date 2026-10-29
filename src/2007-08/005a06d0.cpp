@@ -1,57 +1,21 @@
-// from server: 44% by colin
-struct SpawnerService {
-    int field0;
-    int field4;
-    int field8;
-    int fieldC;
-    int field10;
-    int field14;
-    void construct(int* src);
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_espeon_aug2007_fullstack_kernel_d21874223bd5a2e9.cpp
 
-extern "C" void __stdcall sub_5A04B0(int* a, int* b);
-extern "C" void* __cdecl sub_62FEF6(unsigned int size);
-extern "C" void __stdcall sub_4181B0(void* p);
-extern "C" void __stdcall sub_728830();
-
-void SpawnerService::construct(int* src)
-{
-    int v0 = src[0];
-    int v1 = src[1];
-    int v2 = src[2];
-    int v3 = src[3];
-    int v4 = src[4];
-    int v5 = src[5];
-
-    this->field0 = 0;
-    this->field4 = 0;
-
-    int local[6];
-    local[0] = v0;
-    local[1] = v1;
-    local[2] = v2;
-    local[3] = v3;
-    local[4] = v4;
-    local[5] = v5;
-
-    this->field8 = 0;
-    this->fieldC = 0;
-    this->field10 = 0;
-
-    sub_5A04B0(local, (int*)&this->field8);
-
-    void* p = sub_62FEF6(0x20);
-    if (p != 0) {
-        *(int*)((char*)p + 4) = 0;
-        *(int*)((char*)p + 8) = 0;
-        *(int*)((char*)p + 0xC) = 0;
-        *(int*)((char*)p + 0x14) = 0;
-        *(int*)((char*)p + 0x18) = 0;
-        *(char*)((char*)p + 0x1C) = 0;
-    } else {
-        p = 0;
-    }
-
-    sub_4181B0(p);
-    sub_728830();
-}
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#define _MT 1
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "v8datamodel/Tool.cpp"

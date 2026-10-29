@@ -1,38 +1,13 @@
-// from server: 82% by atomic.potato
-struct I_func_008e9500 {
-    char pad[52];
-    int m_x;
-};
-
-struct S_func_008e9500 {
-    char pad[48];
-    I_func_008e9500* m_p;
-    int f();
-};
-
-int S_func_008e9500::f()
-{
-    return m_p->m_x;
-}
-
-extern "C" int __fastcall func_00894ce0(void* p);
-
-struct S {
-    char pad0[0x58];
-    int m_58;
-    int m_5c;
-    char pad1[0x78 - 0x60];
-    int m_78;
-    int f();
-};
-
-int S::f()
-{
-    if (m_5c != m_58)
-        return m_78;
-    int a = func_00894ce0(this);
-    int b = ((S_func_008e9500*)this)->f();
-    if (a == b && m_78 != 0)
-        return 1;
-    return 0;
-}
+// roc 2009-12 008e9560  unit: CXTPRibbonGroupControlPopup  size: 51 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 008e9560
+//
+// 008e9560  56                   push esi
+// 008e9561  8bf1                 mov esi, ecx
+// 008e9563  8b4e5c               mov ecx, dword ptr [esi + 0x5c]
+// 008e9566  3b4e58               cmp ecx, dword ptr [esi + 0x58]
+// 008e9569  7405                 je 0x8e9570
+// 008e956b  8b4678               mov eax, dword ptr [esi + 0x78]
+// 008e956e  5e                   pop esi
+// 008e956f  c3                   ret 
+// 008e9570  e86bb7faff           call 0x894ce0
+// 0

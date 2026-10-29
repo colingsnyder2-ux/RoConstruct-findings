@@ -1,14 +1,14 @@
-// from server: 73% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Common/XTPHookManager.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/TabManager/XTPTabManager.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPHookManager.cpp : implementation of the CXTPHookManager class.
+// XTPTabManager.cpp: implementation of the CXTPTabManager class.
 //
 // This file is a part of the XTREME TOOLKIT PRO MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,905 +26,1452 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "Resource.h"
 
-#include "XTPHookManager.h"
-#include "XTPColorManager.h"
-#include "XTPDrawHelpers.h"
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPToolTipContext.h"
+#include "Common/XTPResourceManager.h"
+#include "Common/XTPImageManager.h"
+
+#include "XTPTabManager.h"
+#include "XTPTabPaintManager.h"
 
 #ifdef _DEBUG
-#define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
+#define new DEBUG_NEW
 #endif
 
-#define FALSE_EXIT 2
+IMPLEMENT_DYNAMIC(CXTPTabManagerItem, CCmdTarget)
 
+//////////////////////////////////////////////////////////////////////
+// CXTPTabManagerItem
 
-CXTPHookManagerHookAble::CXTPHookManagerHookAble()
+CXTPTabManagerItem::CXTPTabManagerItem()
 {
-	m_bAutoDestroy = FALSE;
+	EnableAutomation();
+
+
+	m_bVisible = TRUE;
+	m_bEnabled = TRUE;
+
+
+	m_hIcon = 0;
+	m_hWnd = 0;
+	m_clrItem = 0;
+	m_nIndex = -1;
+	m_nImage = -1;
+	m_dwData = 0;
+	m_rcItem.SetRectEmpty();
+	m_nItemRow = 0;
+	m_nButtonLength = m_nContentLength = 0;
+	m_bClosable = TRUE;
+	m_pTabManager = NULL;
+	m_bFound = FALSE;
 }
 
-CXTPHookManagerHookAble::~CXTPHookManagerHookAble()
+void CXTPTabManagerItem::OnRemoved()
 {
+	for (int j = 0; j < m_arrNavigateButtons.GetSize(); j++)
+		delete m_arrNavigateButtons[j];
 
+	m_arrNavigateButtons.RemoveAll();
+}
+
+
+CXTPTabManagerItem::~CXTPTabManagerItem()
+{
+	for (int j = 0; j < m_arrNavigateButtons.GetSize(); j++)
+		delete m_arrNavigateButtons[j];
 }
 
 
 
-class CXTPHookManager::CHookSink : public CArray<CXTPHookManagerHookAble*, CXTPHookManagerHookAble*>
+void CXTPTabManagerItem::Reposition()
 {
-	friend class CXTPHookManager;
+	if (m_pTabManager) m_pTabManager->Reposition();
+}
 
-public:
-	CHookSink(HWND hWnd);
-
-	~CHookSink();
-
-public:
-	void UnsubclassWnd();
-
-	int Find(CXTPHookManagerHookAble* pItem)
-	{
-		for (int i = 0; i < GetSize(); i++)
-		{
-			if (pItem == GetAt(i))
-				return  i;
-		}
-		return -1;
-	}
-
-	void RemoveHook(CXTPHookManagerHookAble* pHook)
-	{
-		int nIndex = Find(pHook);
-		if (nIndex != -1)
-		{
-			RemoveAt(nIndex);
-
-			if (pHook->m_bAutoDestroy)
-				delete pHook;
-
-			if (GetSize() == 0)
-			{
-				UnsubclassWnd();
-
-				XTPHookManager()->m_mapHooks.RemoveKey(m_hWnd);
-
-				delete this;
-			}
-		}
-	}
-
-public:
-	BOOL OnHookMessage(HWND hWnd, UINT nMessage, WPARAM& wParam, LPARAM& lParam, LRESULT& lResult);
-
-protected:
-	WNDPROC m_pOldWndProc;
-	HWND m_hWnd;
-	BOOL m_bUnicode;
-	BOOL m_bLastMessage;
-#ifdef _AFXDLL
-	AFX_MODULE_STATE* m_pModuleState;
-#endif
-};
-
-#if (_MSC_VER <= 1200) && !defined(_WIN64)
-#define GetWindowLongPtrW GetWindowLongW
-#define GetWindowLongPtrA GetWindowLongA
-#define SetWindowLongPtrW SetWindowLongW
-#define SetWindowLongPtrA SetWindowLongA
-#endif
-
-CXTPHookManager::CHookSink::CHookSink(HWND hWnd)
+void CXTPTabManagerItem::SetCaption(LPCTSTR lpszCaption)
 {
-#ifdef _AFXDLL
-	m_pModuleState = 0;
-#endif
-	m_bUnicode = IsWindowUnicode(hWnd);
+	if (m_strCaption != lpszCaption)
+	{
+		m_strCaption = lpszCaption;
+		Reposition();
+	}
+}
+void CXTPTabManagerItem::SetColor(COLORREF clr)
+{
+	m_clrItem = clr;
+	m_pTabManager->RedrawControl(GetRect(), FALSE);
+}
 
+CString CXTPTabManagerItem::GetCaption() const
+{
+	return m_pTabManager->GetItemCaption(this);
+}
+
+CString CXTPTabManagerItem::GetTooltip() const
+{
+	return m_pTabManager->GetItemTooltip(this);
+}
+
+COLORREF CXTPTabManagerItem::GetColor()
+{
+	return m_pTabManager->GetItemColor(this);
+}
+void CXTPTabManagerItem::SetHandle(HWND hWnd)
+{
 	m_hWnd = hWnd;
-
-	m_bLastMessage = FALSE;
-
-	if (m_bUnicode)
-	{
-		m_pOldWndProc = (WNDPROC)GetWindowLongPtrW(hWnd, GWLP_WNDPROC);
-		SetWindowLongPtrW(hWnd, GWLP_WNDPROC, (LONG_PTR)CXTPHookManager::HookWndProc);
-	}
-	else
-	{
-		m_pOldWndProc = (WNDPROC)GetWindowLongPtrA(hWnd, GWLP_WNDPROC);
-		SetWindowLongPtrA(hWnd, GWLP_WNDPROC, (LONG_PTR)CXTPHookManager::HookWndProc);
-	}
-}
-UINT CXTPHookManager::m_nMsgSinkRemoved = RegisterWindowMessage(_T("WM_HOOKMANAGER_SINKREMOVED"));
-
-void CXTPHookManager::CHookSink::UnsubclassWnd()
-{
-	if (!m_bLastMessage)
-	{
-		if (::SendMessage(m_hWnd, CXTPHookManager::m_nMsgSinkRemoved, (WPARAM)(LONG_PTR)CXTPHookManager::HookWndProc, (LPARAM)(LONG_PTR)m_pOldWndProc))
-			return;
-	}
-
-	if (m_bUnicode)
-		SetWindowLongPtrW(m_hWnd, GWLP_WNDPROC, (LONG_PTR)m_pOldWndProc);
-	else
-		SetWindowLongPtrA(m_hWnd, GWLP_WNDPROC, (LONG_PTR)m_pOldWndProc);
 }
 
-CXTPHookManager::CHookSink::~CHookSink()
+void CXTPTabManagerItem::Remove()
 {
-	for (int i = (int)GetSize() - 1; i >= 0; i--)
+	m_pTabManager->DeleteItem(m_nIndex);
+}
+void CXTPTabManagerItem::Select()
+{
+	m_pTabManager->OnItemClick(this);
+}
+HWND CXTPTabManagerItem::GetHandle() const
+{
+	return m_hWnd;
+}
+BOOL CXTPTabManagerItem::IsVisible() const
+{
+	return m_bVisible;
+}
+
+void CXTPTabManagerItem::SetVisible(BOOL bVisible)
+{
+	if (m_bVisible != bVisible)
 	{
-		CXTPHookManagerHookAble* pHookAble = GetAt(i);
-		if (pHookAble->m_bAutoDestroy)
+		m_bVisible = bVisible;
+		Reposition();
+	}
+}
+
+BOOL CXTPTabManagerItem::IsEnabled() const
+{
+	return m_bEnabled;
+}
+
+void CXTPTabManagerItem::SetEnabled(BOOL bEnabled)
+{
+	if (m_bEnabled != bEnabled)
+	{
+		m_bEnabled = bEnabled;
+		Reposition();
+	}
+}
+
+void CXTPTabManagerItem::Move(int nIndex)
+{
+	if (GetIndex() != nIndex)
+	{
+		m_pTabManager->MoveItem(this, nIndex);
+	}
+}
+
+BOOL CXTPTabManagerItem::DrawRotatedImage(CDC* pDC, CRect rcItem, CXTPImageManagerIcon* pImage)
+{
+	CXTPImageManagerIconHandle& imageHandle = !IsEnabled() ? pImage->GetDisabledIcon(): IsHighlighted() ? pImage->GetHotIcon() :
+		IsSelected() ? pImage->GetCheckedIcon() : pImage->GetIcon();
+
+	const int cx = rcItem.Width();
+	const int cy = rcItem.Height();
+	ASSERT(cx == cy);
+	if (cx != cy)
+		return FALSE;
+
+	UINT* pSrcBits = NULL, *pDestBits = NULL;
+	HBITMAP hbmSrc = CXTPImageManager::Create32BPPDIBSection(NULL, cx, cy, (LPBYTE*)&pSrcBits);
+	if (!pSrcBits)
+		return FALSE;
+
+	HBITMAP hbmDest = CXTPImageManager::Create32BPPDIBSection(NULL, cx, cy, (LPBYTE*)&pDestBits);
+	if (!pDestBits)
+		return FALSE;
+
+	CDC dc;
+	dc.CreateCompatibleDC(NULL);
+	HGDIOBJ hbmpOld = ::SelectObject(dc, hbmSrc);
+
+	CRect rcDraw(0, 0, cx, cy);
+
+	dc.BitBlt(0, 0, cx, cy, pDC, rcItem.left, rcItem.top, SRCCOPY);
+	::SelectObject(dc, hbmpOld);
+
+	UINT* pSrcInv = pDestBits;
+	UINT* pDestInv = pSrcBits;
+
+	UINT* pDest = &pDestBits[cx];
+	int i;
+
+	for (i = 0; i < cy; i++)
+	{
+		pDest -= 1;
+		pDestBits = pDest;
+		for (int j = 0; j < cx; j++)
 		{
-			delete pHookAble;
-		}
-	}
-}
-
-BOOL CXTPHookManager::CHookSink::OnHookMessage(HWND hWnd, UINT nMessage, WPARAM& wParam, LPARAM& lParam, LRESULT& lResult)
-{
-	if (nMessage == CXTPHookManager::m_nMsgSinkRemoved && (LONG_PTR)wParam == (LONG_PTR)m_pOldWndProc)
-	{
-		m_pOldWndProc = (WNDPROC)lParam;
-		lResult = TRUE;
-		return TRUE;
-	}
-
-	int nCount = (int)GetSize();
-
-	for (int i = nCount - 1; i >= 0; i--)
-	{
-		int nResult = GetAt(i)->OnHookMessage(hWnd, nMessage, wParam, lParam, lResult);
-
-		if (nResult == TRUE)
-			return TRUE;
-		if (nResult == FALSE_EXIT)
-			return FALSE;
-	}
-	return FALSE;
-}
-
-
-CXTPHookManager::CXTPHookManager()
-{
-}
-
-CXTPHookManager* AFX_CDECL XTPHookManager()
-{
-	static CXTPHookManager s_managerInstance;
-	return &s_managerInstance;
-}
-
-CXTPHookManager::~CXTPHookManager()
-{
-	RemoveAll();
-}
-
-
-LRESULT CXTPHookManager::Default(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	CHookSink* pSink = Lookup(hWnd);
-	ASSERT(pSink);
-	if (!pSink)
-		return 0;
-
-	WNDPROC wndProc = pSink->m_pOldWndProc;
-
-	LRESULT lResult = ::CallWindowProc(wndProc, hWnd, message, wParam, lParam);
-
-	return lResult;
-}
-
-LRESULT CXTPHookManager::Default(WPARAM wParam, LPARAM lParam)
-{
-	MSG& curMsg = AfxGetThreadState()->m_lastSentMsg;
-
-	return Default(curMsg.hwnd, curMsg.message, wParam, lParam);
-}
-
-LRESULT CXTPHookManager::Default()
-{
-	MSG& curMsg = AfxGetThreadState()->m_lastSentMsg;
-	return Default(curMsg.hwnd, curMsg.message, curMsg.wParam, curMsg.lParam);;
-}
-
-LRESULT CALLBACK CXTPHookManager::HookWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	MSG& curMsg = AfxGetThreadState()->m_lastSentMsg;
-	MSG  oldMsg = curMsg;
-	curMsg.hwnd = hWnd;
-	curMsg.message = message;
-	curMsg.wParam = wParam;
-	curMsg.lParam = lParam;
-
-	// Get hook object for this window. Get from hook map
-	CHookSink* pSink = XTPHookManager()->Lookup(hWnd);
-	ASSERT(pSink);
-	if (!pSink)
-		return 0;
-
-	LRESULT lResult = 0;
-	WNDPROC wndProc = pSink->m_pOldWndProc;
-
-	{
-		SAFE_MANAGE_STATE(pSink->m_pModuleState);
-
-
-		// Window is being destroyed: unhook all hooks (for this window)
-		// and pass message to orginal window proc
-		if (message == WM_NCDESTROY)
-		{
-			XTPHookManager()->RemoveAll(hWnd, TRUE);
-		}
-		// pass to message hook
-		else
-		{
-			if (pSink->OnHookMessage(hWnd, message, wParam, lParam, lResult))
-			{
-				curMsg = oldMsg;
-				return lResult;
-			}
+			*pDestBits = *pSrcBits;
+			pSrcBits += 1;
+			pDestBits += cy;
 		}
 	}
 
-	lResult = ::CallWindowProc(wndProc, hWnd, message, wParam, lParam);
 
-	curMsg = oldMsg;
-	return lResult;
+	hbmpOld = ::SelectObject(dc, hbmDest);
+	pImage->Draw(&dc, rcDraw.TopLeft(), imageHandle, rcDraw.Size());
+	::SelectObject(dc, hbmpOld);
+
+	pDest = &pDestInv[cx * (cy - 1)];
+
+	for (i = 0; i < cy; i++)
+	{
+		pDestInv = pDest;
+		for (int j = 0; j < cx; j++)
+		{
+			*pDestInv = *pSrcInv;
+			pSrcInv += 1;
+			pDestInv -= cy;
+		}
+		pDest += 1;
+	}
+
+	pDC->DrawState(rcItem.TopLeft(), rcItem.Size(), hbmSrc, DST_BITMAP);
+
+	DeleteObject(hbmSrc);
+	DeleteObject(hbmDest);
+
+	return TRUE;
 }
 
-void CXTPHookManager::SetHook(HWND hWnd, CXTPHookManagerHookAble* pHook)
+void CXTPTabManagerItem::DrawImage(CDC* pDC, CRect rcIcon, CXTPImageManagerIcon* pImage)
 {
-	CHookSink* pSink = Lookup(hWnd);
-
-	if (pSink)
+	if (rcIcon.Width() == rcIcon.Height() && GetTabManager()->GetPaintManager()->m_bRotateImageOnVerticalDraw
+		&& (GetTabManager()->GetPosition() == xtpTabPositionLeft || GetTabManager()->GetPosition() == xtpTabPositionRight)
+		&& DrawRotatedImage(pDC, rcIcon, pImage))
 	{
-		if (pSink->Find(pHook) == -1)
-		{
-			pSink->Add(pHook);
-		}
 
 	}
 	else
 	{
-		pSink = new CHookSink(hWnd);
-		pSink->Add(pHook);
+		CXTPImageManagerIconHandle& imageHandle = !IsEnabled() ? pImage->GetDisabledIcon(): IsHighlighted() ? pImage->GetHotIcon() :
+			IsSelected() ? pImage->GetCheckedIcon() : pImage->GetIcon();
 
-		m_mapHooks[hWnd] = pSink;
-	}
-
-#ifdef _AFXDLL
-	pSink->m_pModuleState = AfxGetModuleState();
-#endif
-
-
-}
-void CXTPHookManager::RemoveAll()
-{
-	HWND hWnd;
-	POSITION pos = m_mapHooks.GetStartPosition();
-	CHookSink* pSink;
-
-	while (pos)
-	{
-		m_mapHooks.GetNextAssoc(pos, hWnd, (void*&)pSink);
-
-		pSink->UnsubclassWnd();
-		delete pSink;
-	}
-	m_mapHooks.RemoveAll();
-}
-
-void CXTPHookManager::RemoveAll(HWND hWnd)
-{
-	RemoveAll(hWnd, FALSE);
-}
-
-void CXTPHookManager::RemoveAll(HWND hWnd, BOOL bLastMessage)
-{
-	CHookSink* pSink = Lookup(hWnd);
-	if (pSink)
-	{
-		pSink->m_bLastMessage = bLastMessage;
-
-		pSink->UnsubclassWnd();
-
-		m_mapHooks.RemoveKey(hWnd);
-
-		delete pSink;
+		pImage->Draw(pDC, rcIcon.TopLeft(), imageHandle, rcIcon.Size());
 	}
 }
 
-void CXTPHookManager::RemoveAll(CXTPHookManagerHookAble* pHook)
+void CXTPTabManagerItem::SetRect(CRect rcItem)
 {
-	ASSERT(pHook);
-	HWND hWnd;
-	CHookSink* pSink = NULL;
+	m_rcItem = rcItem;
 
-	POSITION pos = m_mapHooks.GetStartPosition();
-	while (pos)
+	for (int i = (int)m_arrNavigateButtons.GetSize() - 1; i >= 0; i--)
 	{
-		m_mapHooks.GetNextAssoc(pos, hWnd, (void*&)pSink);
-		pSink->RemoveHook(pHook);
-	}
-}
-
-CXTPHookManager::CHookSink* CXTPHookManager::Lookup(HWND hWnd)
-{
-	CHookSink* pSink;
-
-	if (m_mapHooks.Lookup(hWnd, (void*&)pSink))
-		return pSink;
-	return NULL;
-}
-
-void CXTPHookManager::RemoveHook(HWND hWnd, CXTPHookManagerHookAble* pHook)
-{
-	ASSERT(hWnd);
-	CHookSink* pSink = Lookup(hWnd);
-
-	if (pSink)
-	{
-		pSink->RemoveHook(pHook);
+		CXTPTabManagerNavigateButton* pButton = m_arrNavigateButtons.GetAt(i);
+		pButton->SetRect(CRect(0, 0, 0, 0));
 	}
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CXTPShadowManager
+// CXTPTabManagerNavigateButton
 
-class CXTPShadowManager::CShadowWnd : public CWnd, public CXTPHookManagerHookAble
+CXTPTabManagerNavigateButton::CXTPTabManagerNavigateButton(CXTPTabManager* pManager, UINT nID, XTPTabNavigateButtonFlags dwFlags)
+{
+	m_pManager = pManager;
+	m_nID = nID;
+	m_dwFlags = dwFlags;
+
+	m_rcButton.SetRectEmpty();
+
+	m_bEnabled = TRUE;
+	m_bPressed = FALSE;
+	m_pItem = NULL;
+}
+
+CXTPTabManagerNavigateButton::~CXTPTabManagerNavigateButton()
+{
+	if (m_pManager->m_pHighlightedNavigateButton == this)
+		m_pManager->m_pHighlightedNavigateButton = NULL;
+}
+
+CSize CXTPTabManagerNavigateButton::GetSize() const
+{
+	return m_pManager->GetPaintManager()->m_szNavigateButton;
+}
+
+void CXTPTabManagerNavigateButton::AdjustWidth(int& nWidth)
+{
+	if ((m_dwFlags == xtpTabNavigateButtonAlways) ||
+		(m_dwFlags == xtpTabNavigateButtonAutomatic && m_pManager->IsNavigateButtonAutomaticVisible(this)))
+	{
+		if ((m_pManager->GetPosition() == xtpTabPositionTop) || (m_pManager->GetPosition() == xtpTabPositionBottom))
+		{
+			nWidth -= GetSize().cx;
+		}
+		else
+		{
+			nWidth -= GetSize().cy;
+		}
+	}
+}
+
+void CXTPTabManagerNavigateButton::SetRect(CRect rcButton)
+{
+	m_rcButton = rcButton;
+}
+
+void CXTPTabManagerNavigateButton::Reposition(CRect& rcNavigateButtons)
+{
+
+	if ((m_dwFlags == xtpTabNavigateButtonAlways) ||
+		(m_dwFlags == xtpTabNavigateButtonAutomatic && m_pManager->IsNavigateButtonAutomaticVisible(this)))
+	{
+		CSize szButton = GetSize();
+
+		if (m_pManager->IsHorizontalPosition())
+		{
+			m_rcButton.SetRect(rcNavigateButtons.right - szButton.cx, rcNavigateButtons.CenterPoint().y + szButton.cy / 2 - szButton.cy, rcNavigateButtons.right, rcNavigateButtons.CenterPoint().y + szButton.cy / 2);
+			rcNavigateButtons.right -= szButton.cx;
+		}
+		else
+		{
+			m_rcButton.SetRect(rcNavigateButtons.CenterPoint().x - szButton.cx / 2, rcNavigateButtons.bottom - szButton.cy, rcNavigateButtons.CenterPoint().x - szButton.cx / 2 + szButton.cx, rcNavigateButtons.bottom);
+			rcNavigateButtons.bottom -= szButton.cy;
+		}
+	}
+	else
+		m_rcButton.SetRectEmpty();
+
+}
+
+void CXTPTabManagerNavigateButton::Draw(CDC* pDC)
+{
+	if (!m_rcButton.IsRectEmpty())
+	{
+		CRect rc(m_rcButton);
+		m_pManager->GetPaintManager()->DrawNavigateButton(pDC, this, rc);
+	}
+}
+
+void CXTPTabManagerNavigateButton::PerformClick(HWND hWnd, CPoint pt)
+{
+	if ((::GetCapture() != NULL) || !m_bEnabled)
+		return;
+
+	::SetCapture(hWnd);
+
+	BOOL  bClick = FALSE;
+
+	DWORD dwStart = GetTickCount();
+	for (;;)
+	{
+		if (m_bEnabled && GetTickCount() - dwStart > 20)
+		{
+			dwStart = GetTickCount();
+			OnExecute(TRUE);
+		}
+
+		BOOL bPressed = m_rcButton.PtInRect(pt);
+
+		if (bPressed != m_bPressed)
+		{
+			m_bPressed = bPressed;
+			m_pManager->RedrawControl(m_rcButton, TRUE);
+		}
+		MSG msg;
+
+		if (!::PeekMessage(&msg, NULL, NULL, NULL, PM_NOREMOVE))
+			continue;
+
+		VERIFY(::GetMessage(&msg, NULL, 0, 0));
+
+		if (::GetCapture() != hWnd)
+		{
+			DispatchMessage (&msg);
+			goto ExitLoop;
+		}
+		switch (msg.message)
+		{
+			case WM_MOUSEMOVE:
+				pt = CPoint((short signed)LOWORD(msg.lParam), (short signed)HIWORD(msg.lParam));
+				break;
+
+			case WM_LBUTTONUP:
+				bClick = m_bPressed;
+				goto ExitLoop;
+
+			case WM_KEYDOWN:
+				if (msg.wParam != VK_ESCAPE)
+					break;
+
+			case WM_CANCELMODE:
+			case WM_RBUTTONDOWN:
+				goto ExitLoop;
+
+			default:
+				DispatchMessage (&msg);
+				break;
+		}
+	}
+
+ExitLoop:
+	ReleaseCapture();
+	m_bPressed = FALSE;
+	m_pManager->PerformMouseMove(hWnd, pt);
+	m_pManager->RedrawControl(NULL, FALSE);
+
+	if (bClick)
+	{
+		OnExecute(FALSE);
+	}
+}
+
+void CXTPTabManagerNavigateButton::OnExecute(BOOL bTick)
+{
+	if (!bTick)
+	{
+		m_pManager->OnNavigateButtonClick(this);
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPTabManager::CRowIndexer
+
+
+CXTPTabManager::CRowIndexer::CRowIndexer(CXTPTabManager* pManager)
+{
+	m_nRowCount = 0;
+	m_pRowItems = 0;
+	m_pManager = pManager;
+
+	CreateIndexer(1);
+}
+
+CXTPTabManager::CRowIndexer::~CRowIndexer()
+{
+	SAFE_DELETE_AR(m_pRowItems);
+}
+
+CXTPTabManager::ROW_ITEMS* CXTPTabManager::CRowIndexer::CreateIndexer(int nRowCount)
+{
+	if (m_nRowCount != nRowCount)
+	{
+		SAFE_DELETE_AR(m_pRowItems);
+		m_pRowItems = new ROW_ITEMS[nRowCount];
+		m_nRowCount = nRowCount;
+	}
+
+	if (nRowCount > 0)
+	{
+		m_pRowItems[0].nFirstItem = 0;
+		m_pRowItems[0].nLastItem = m_pManager->GetItemCount() - 1;
+	}
+	return m_pRowItems;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPTabManager::CNavigateButtonArrow
+
+class CXTPTabManager::CNavigateButtonArrow : public CXTPTabManagerNavigateButton
+{
+protected:
+	CNavigateButtonArrow(CXTPTabManager* pManager, XTPTabNavigateButton nID, XTPTabNavigateButtonFlags dwFlags)
+		: CXTPTabManagerNavigateButton(pManager, nID, dwFlags)
+	{
+	}
+	virtual void Reposition(CRect& rcNavigateButtons);
+	virtual void AdjustWidth(int& nWidth);
+
+};
+
+class CXTPTabManager::CNavigateButtonArrowLeft : public CNavigateButtonArrow
 {
 public:
+	CNavigateButtonArrowLeft(CXTPTabManager* pManager, XTPTabNavigateButtonFlags dwFlags)
+		: CNavigateButtonArrow(pManager, xtpTabNavigateButtonLeft, dwFlags)
+	{
+		XTPResourceManager()->LoadString(&m_strToolTip, XTP_IDS_TABNAVIGATEBUTTON_LEFT);
+	}
+protected:
+	virtual void DrawEntry(CDC* pDC, CRect rc);
+	virtual void Reposition(CRect& rcNavigateButtons);
+	virtual void OnExecute(BOOL bTick);
+};
 
-	//-------------------------------------------------------------------------
-	// Summary:
-	//     Constructs a CShadowWnd object.
-	//-------------------------------------------------------------------------
-	CShadowWnd(CXTPShadowManager* pShadowManager);
-	~CShadowWnd();
-
+class CXTPTabManager::CNavigateButtonArrowRight : public CNavigateButtonArrow
+{
 public:
-	BOOL Create(BOOL bHoriz, CRect rcWindow);
-	void LongShadow(CShadowList* pList);
-	BOOL ExcludeRect(CRect rcExclude);
+	CNavigateButtonArrowRight(CXTPTabManager* pManager, XTPTabNavigateButtonFlags dwFlags)
+		: CNavigateButtonArrow(pManager, xtpTabNavigateButtonRight, dwFlags)
+	{
+		XTPResourceManager()->LoadString(&m_strToolTip, XTP_IDS_TABNAVIGATEBUTTON_RIGHT);
+	}
+protected:
+	virtual void DrawEntry(CDC* pDC, CRect rc);
+	virtual void Reposition(CRect& rcNavigateButtons);
+	virtual void OnExecute(BOOL bTick);
+};
 
-private:
-	DECLARE_MESSAGE_MAP()
+class CXTPTabManager::CNavigateButtonClose : public CXTPTabManagerNavigateButton
+{
+public:
+	CNavigateButtonClose(CXTPTabManager* pManager, XTPTabNavigateButtonFlags dwFlags)
+		: CXTPTabManagerNavigateButton(pManager, xtpTabNavigateButtonClose, dwFlags)
+	{
+		XTPResourceManager()->LoadString(&m_strToolTip, XTP_IDS_TABNAVIGATEBUTTON_CLOSE);
+	}
+protected:
+	virtual void DrawEntry(CDC* pDC, CRect rc);
+};
 
-	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
-	afx_msg void OnPaint();
-	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg LRESULT OnNcHitTest(CPoint point);
-
-private:
-	virtual int OnHookMessage(HWND hWnd, UINT nMessage, WPARAM& wParam, LPARAM& lParam, LRESULT& lResult);
-	UINT Factor(int& nRed, int& nGreen, int& nBlue, double dFactor);
-
-private:
-
-	BOOL m_bHoriz;
-	BOOL m_bExcluded;
-	CWnd* m_pShadowsOwner;
-	int m_nLevel;
-	BOOL m_bControlPopup;
-	CXTPShadowManager* m_pShadowsManager;
-
-	friend class CXTPShadowManager;
+class CXTPTabManager::CNavigateButtonTabClose : public CXTPTabManager::CNavigateButtonClose
+{
+public:
+	CNavigateButtonTabClose(CXTPTabManagerItem* pItem, XTPTabNavigateButtonFlags dwFlags)
+		: CXTPTabManager::CNavigateButtonClose(pItem->GetTabManager(), dwFlags)
+	{
+		m_pItem = pItem;
+	}
 };
 
 
-//===========================================================================
-// Summary:
-//     Shadow list
-//===========================================================================
-class CXTPShadowManager::CShadowList : public CList<CShadowWnd*, CShadowWnd*>
+void CXTPTabManager::CNavigateButtonClose::DrawEntry(CDC* pDC, CRect rc)
 {
-public:
+	CPoint pt = rc.CenterPoint();
 
-	void AddShadow(CShadowWnd* pShadow)
-	{
-		pShadow->LongShadow(this);
-		AddTail(pShadow);
-	}
+	pDC->MoveTo(pt.x - 4, pt.y - 3);
+	pDC->LineTo(pt.x + 3, pt.y + 4);
+	pDC->MoveTo(pt.x - 3, pt.y - 3);
+	pDC->LineTo(pt.x + 4, pt.y + 4);
 
-	void RemoveShadow(CShadowWnd* pShadow)
-	{
-		POSITION pos = Find(pShadow);
-		ASSERT(pos);
-		RemoveAt(pos);
-	}
-};
-
-CXTPShadowManager::CXTPShadowManager()
-{
-	m_pfnUpdateLayeredWindow = NULL;
-
-	HMODULE hLib = GetModuleHandle(_T("USER32"));
-	if (hLib)
-	{
-		m_pfnUpdateLayeredWindow = (LPFNUPDATELAYEREDWINDOW) GetProcAddress(hLib, "UpdateLayeredWindow");
-	}
-
-	m_bAlphaShadow = IsAlphaShadow();
-	m_nShadowOptions = 0;
-	m_clrShadowFactor = 0;
-	m_bUseSystemSaveBitsStyle = TRUE;
-
-	m_pShadows = new CShadowList();
+	pDC->MoveTo(pt.x - 4, pt.y + 3);
+	pDC->LineTo(pt.x + 3, pt.y - 4);
+	pDC->MoveTo(pt.x - 3, pt.y + 3);
+	pDC->LineTo(pt.x + 4, pt.y - 4);
 }
 
-CXTPShadowManager::~CXTPShadowManager()
+void CXTPTabManager::CNavigateButtonArrowRight::DrawEntry(CDC* pDC, CRect rc)
 {
-	ASSERT(m_pShadows->IsEmpty());
-	SAFE_DELETE(m_pShadows);
+	CPoint pt = rc.CenterPoint();
+
+	if (m_pManager->IsHorizontalPosition())
+		CXTPDrawHelpers::Triangle(pDC, CPoint(pt.x - 2, pt.y - 5), CPoint(pt.x + 2, pt.y - 1), CPoint(pt.x - 2, pt.y + 3));
+	else
+		CXTPDrawHelpers::Triangle(pDC, CPoint(pt.x - 5, pt.y - 2), CPoint(pt.x - 1, pt.y + 2), CPoint(pt.x + 3, pt.y - 2));
 }
 
-BOOL CXTPShadowManager::IsAlphaShadow()
+void CXTPTabManager::CNavigateButtonArrow::AdjustWidth(int& nWidth)
 {
-#ifdef NOALPHASHADOW
-	return FALSE;
-#endif
-
-	if (XTPColorManager()->IsLowResolution())
-		return FALSE;
-
-	return (m_pfnUpdateLayeredWindow != NULL);
-}
-
-
-#ifndef SPI_GETDROPSHADOW
-#define SPI_GETDROPSHADOW     0x1024
-#endif
-
-
-void CXTPShadowManager::SetShadow(CWnd* pShadowOwner, const CRect& rcExclude, int nLevel)
-{
-	if (!(GetShadowOptions() & xtpShadowOfficeAlpha))
+	if (m_dwFlags == xtpTabNavigateButtonAlways)
 	{
-		if (!m_bAlphaShadow)
+		if ((m_pManager->GetPosition() == xtpTabPositionTop) || (m_pManager->GetPosition() == xtpTabPositionBottom))
+		{
+			nWidth -= GetSize().cx;
+		}
+		else
+		{
+			nWidth -= GetSize().cy;
+		}
+	}
+}
+void CXTPTabManager::CNavigateButtonArrow::Reposition(CRect& rcNavigateButtons)
+{
+	if (m_pManager->GetLayout() == xtpTabLayoutMultiRow)
+	{
+		m_rcButton.SetRectEmpty();
+		return;
+	}
+
+	if (m_dwFlags == xtpTabNavigateButtonAutomatic)
+	{
+		if (m_pManager->GetLayout() == xtpTabLayoutSizeToFit)
+		{
+			m_rcButton.SetRectEmpty();
 			return;
+		}
 
-		BOOL bDropShadow = FALSE;
-		SystemParametersInfo(SPI_GETDROPSHADOW, 0, &bDropShadow, 0);
+		CRect rc = m_pManager->GetAppearanceSet()->GetHeaderMargin();
 
-		if (!bDropShadow)
+		if (!(m_pManager->GetItemsLength() + m_pManager->GetHeaderOffset() - rc.left - 1 > m_pManager->GetRectLength(rcNavigateButtons) - (rc.left + rc.right)
+			|| m_pManager->GetHeaderOffset() < 0))
+		{
+			m_rcButton.SetRectEmpty();
 			return;
+		}
 	}
 
-	CXTPWindowRect rc(pShadowOwner);
-	CreateShadow(TRUE, rc, rcExclude, pShadowOwner, FALSE, nLevel);
-	CreateShadow(FALSE, rc, rcExclude, pShadowOwner, FALSE, nLevel);
+	CXTPTabManagerNavigateButton::Reposition(rcNavigateButtons);
 
-	HRGN hRgn = CreateRectRgn(0, 0, 0, 0);
-	if (pShadowOwner->GetWindowRgn(hRgn) == COMPLEXREGION)
+}
+void CXTPTabManager::CNavigateButtonArrowRight::Reposition(CRect& rcNavigateButtons)
+{
+	CRect rcHeaderMargin = m_pManager->GetPaintManager()->GetAppearanceSet()->GetHeaderMargin();
+
+	m_bEnabled = m_pManager->GetItemsLength() + m_pManager->GetHeaderOffset() >
+		m_pManager->GetRectLength(rcNavigateButtons) - (rcHeaderMargin.left + rcHeaderMargin.right) - 28;
+
+	CNavigateButtonArrow::Reposition(rcNavigateButtons);
+}
+
+void CXTPTabManager::CNavigateButtonArrowRight::OnExecute(BOOL bTick)
+{
+	if (bTick)
 	{
-		CreateShadow(2, rc, rcExclude, pShadowOwner, FALSE, nLevel);
+		m_pManager->OnScrollHeader(TRUE);
 	}
-	DeleteObject(hRgn);
+}
+
+void CXTPTabManager::OnScrollHeader(BOOL bRight)
+{
+	if (bRight)
+	{
+		SetHeaderOffset(GetHeaderOffset() - m_nScrollDelta);
+	}
+	else
+	{
+		SetHeaderOffset(GetHeaderOffset() + m_nScrollDelta);
+	}
+}
+
+void CXTPTabManager::CNavigateButtonArrowLeft::DrawEntry(CDC* pDC, CRect rc)
+{
+	CPoint pt = rc.CenterPoint();
+
+	if (m_pManager->IsHorizontalPosition())
+		CXTPDrawHelpers::Triangle(pDC, CPoint(pt.x + 2, pt.y - 5), CPoint(pt.x - 2, pt.y - 1), CPoint(pt.x + 2, pt.y + 3));
+	else
+		CXTPDrawHelpers::Triangle(pDC, CPoint(pt.x - 5, pt.y + 2), CPoint(pt.x - 1, pt.y - 2), CPoint(pt.x + 3, pt.y + 2));
+}
+void CXTPTabManager::CNavigateButtonArrowLeft::Reposition(CRect& rcNavigateButtons)
+{
+	m_bEnabled = m_pManager->GetHeaderOffset() < 0;
+
+	CNavigateButtonArrow::Reposition(rcNavigateButtons);
+}
+
+void CXTPTabManager::CNavigateButtonArrowLeft::OnExecute(BOOL bTick)
+{
+	if (bTick)
+	{
+		m_pManager->OnScrollHeader(FALSE);
+	}
+}
+
+
+
+//////////////////////////////////////////////////////////////////////
+// CXTPTabManager
+
+CXTPTabManager::CXTPTabManager()
+{
+
+	m_pSelected = 0;
+	m_pHighlighted = 0;
+	m_pPressed = 0;
+
+	m_nHeaderOffset = 0;
+
+	m_bAllowReorder = TRUE;
+
+	m_bActive = TRUE;
+	m_nScrollDelta = 20;
+
+	m_rcHeaderRect.SetRectEmpty();
+	m_rcControl.SetRectEmpty();
+	m_rcClient.SetRectEmpty();
+
+	m_bCloseItemButton = xtpTabNavigateButtonNone;
+
+	m_pHighlightedNavigateButton = NULL;
+
+	m_pRowIndexer = new CRowIndexer(this);
+
+	m_arrNavigateButtons.Add(new CNavigateButtonArrowLeft(this, xtpTabNavigateButtonAutomatic));
+	m_arrNavigateButtons.Add(new CNavigateButtonArrowRight(this, xtpTabNavigateButtonAutomatic));
+	m_arrNavigateButtons.Add(new CNavigateButtonClose(this, xtpTabNavigateButtonNone));
+}
+
+CXTPTabManager::~CXTPTabManager()
+{
+	for (int i = 0; i < m_arrItems.GetSize(); i++)
+	{
+		CXTPTabManagerItem* pItem = m_arrItems[i];
+		pItem->OnRemoved();
+		pItem->InternalRelease();
+	}
+
+	for (int j = 0; j < m_arrNavigateButtons.GetSize(); j++)
+		delete m_arrNavigateButtons[j];
+
+	delete m_pRowIndexer;
+}
+
+void CXTPTabManager::SetActive(BOOL bActive)
+{
+	if (m_bActive != bActive)
+	{
+		m_bActive = bActive;
+		Reposition();
+	}
+}
+
+BOOL CXTPTabManager::IsNavigateButtonAutomaticVisible(CXTPTabManagerNavigateButton* pButton)
+{
+	if (pButton->GetID() == xtpTabNavigateButtonClose)
+	{
+		return m_pSelected ? m_pSelected->IsClosable() : FALSE;
+	}
+
+	return TRUE;
+}
+
+void CXTPTabManager::EnableTabThemeTexture(HWND hWnd, BOOL bEnable)
+{
+	m_themeTabControl.OpenTheme(hWnd, L"TAB");
+	m_themeTabControl.EnableThemeDialogTexture(hWnd, bEnable ? ETDT_ENABLETAB : ETDT_DISABLE | ETDT_USETABTEXTURE);
 
 }
 
-void CXTPShadowManager::SetShadow(CRect rcWindow, CWnd* pShadowOwner)
+CXTPTabManagerNavigateButton* CXTPTabManager::FindNavigateButton(UINT nID) const
 {
-	if ((GetShadowOptions() & (xtpShadowOfficeAlpha | xtpShadowShowPopupControl)) ==
-		(xtpShadowOfficeAlpha | xtpShadowShowPopupControl))
+	for (int i = 0; i < m_arrNavigateButtons.GetSize(); i++)
 	{
-		CreateShadow(TRUE, rcWindow, CXTPEmptyRect(), pShadowOwner, TRUE, 0);
-		CreateShadow(FALSE, rcWindow, CXTPEmptyRect(), pShadowOwner, TRUE, 0);
-	}
-}
-
-POSITION CXTPShadowManager::GetHeadPosition(CWnd* pShadowOwner) const
-{
-	POSITION pos = m_pShadows->GetHeadPosition();
-	while (pos)
-	{
-		CShadowWnd* pShadow = m_pShadows->GetAt(pos);
-		if (pShadow->m_pShadowsOwner == pShadowOwner)
-			return pos;
-		m_pShadows->GetNext(pos);
+		if (m_arrNavigateButtons[i]->m_nID == nID)
+			return m_arrNavigateButtons[i];
 	}
 
 	return NULL;
 }
 
-CWnd* CXTPShadowManager::GetNext(POSITION& pos) const
+void CXTPTabManager::SetHeaderOffset(int nOffset)
 {
-	CShadowWnd* pShadowResult = m_pShadows->GetNext(pos);
+	if (nOffset > 0) nOffset = 0;
 
-	while (pos)
+	if (nOffset != m_nHeaderOffset)
 	{
-		CShadowWnd* pShadow = m_pShadows->GetAt(pos);
-		if (pShadow->m_pShadowsOwner == pShadowResult->m_pShadowsOwner)
+		m_nHeaderOffset = nOffset;
+		Reposition();
+	}
+}
+
+int CXTPTabManager::GetItemsLength() const
+{
+	int nLength = 0;
+
+	if (GetLayout() == xtpTabLayoutRotated)
+	{
+		nLength = GetPaintManager()->GetAppearanceSet()->GetButtonHeight(this)
+			* GetItemCount();
+	}
+	else
+	{
+		for (int i = 0; i < GetItemCount(); i++)
+			nLength += GetItem(i)->GetButtonLength();
+	}
+
+	return nLength;
+}
+
+
+void CXTPTabManager::DeleteAllItems()
+{
+	for (int i = 0; i < m_arrItems.GetSize(); i++)
+	{
+		CXTPTabManagerItem* pItem = m_arrItems[i];
+		pItem->OnRemoved();
+		pItem->InternalRelease();
+	}
+
+	m_arrItems.RemoveAll();
+
+	m_pHighlighted = m_pSelected = m_pPressed = NULL;
+
+	OnItemsChanged();
+}
+
+BOOL CXTPTabManager::DeleteItem(int nItem)
+{
+	if (nItem < 0 || nItem >= GetItemCount())
+		return FALSE;
+
+	CXTPTabManagerItem* pItem = m_arrItems[nItem];
+
+	BOOL bSelected = (m_pSelected == pItem);
+
+	if (m_pHighlighted == pItem)
+		m_pHighlighted = NULL;
+
+	m_arrItems.RemoveAt(nItem);
+
+	pItem->OnRemoved();
+	pItem->InternalRelease();
+
+	if (bSelected)
+	{
+		SetCurSel(nItem);
+	}
+
+
+	OnItemsChanged();
+
+	return TRUE;
+}
+
+CXTPTabManagerItem* CXTPTabManager::AddItem(int nItem, CXTPTabManagerItem* pItem /*= NULL*/)
+{
+	if (!pItem)
+		pItem = new CXTPTabManagerItem();
+
+	pItem->m_pTabManager = this;
+
+	if (nItem < 0 || nItem > GetItemCount())
+		nItem = GetItemCount();
+
+	m_arrItems.InsertAt(nItem, pItem);
+	pItem->m_clrItem = xtpTabColorBlue + (GetPaintManager()->m_nItemColor++ % 8);
+
+	if (m_bCloseItemButton != xtpTabNavigateButtonNone)
+	{
+		pItem->m_arrNavigateButtons.Add(new CNavigateButtonTabClose(pItem, m_bCloseItemButton));
+	}
+
+	OnItemsChanged();
+
+	return pItem;
+}
+
+void CXTPTabManager::OnItemsChanged()
+{
+	for (int i = 0; i < GetItemCount(); i++)
+	{
+		GetItem(i)->m_nIndex = i;
+	}
+	Reposition();
+}
+
+CString CXTPTabManager::GetItemCaption(const CXTPTabManagerItem* pItem) const
+{
+	return pItem->m_strCaption;
+}
+
+HICON CXTPTabManager::GetItemIcon(const CXTPTabManagerItem* pItem) const
+{
+	return pItem->m_hIcon;
+}
+
+void CXTPTabManager::ShowIcons(BOOL bShowIcons)
+{
+	GetPaintManager()->m_bShowIcons = bShowIcons;
+	Reposition();
+}
+
+COLORREF CXTPTabManager::GetItemColor(const CXTPTabManagerItem* pItem) const
+{
+	COLORREF nColor = pItem->m_clrItem;
+
+	if (nColor >= xtpTabColorBlue && nColor <= xtpTabColorMagenta)
+		return CXTPTabPaintManager::GetOneNoteColor((XTPTabOneNoteColor)nColor);
+
+	return nColor;
+}
+
+void CXTPTabManager::SetCurSel(int nIndex)
+{
+	if (GetItemCount() != 0)
+	{
+		nIndex = nIndex < 0 ? 0: nIndex >= GetItemCount() ? GetItemCount() - 1 : nIndex;
+
+		SetSelectedItem(GetItem(nIndex));
+	}
+	else
+	{
+		SetSelectedItem(NULL);
+	}
+}
+
+int CXTPTabManager::GetCurSel() const
+{
+	if (m_pSelected)
+	{
+		return m_pSelected->GetIndex();
+	}
+	return -1;
+}
+
+void CXTPTabManager::SetSelectedItem(CXTPTabManagerItem* pItem)
+{
+	if (m_pSelected != pItem)
+	{
+		m_pSelected = pItem;
+		Reposition();
+		EnsureVisible(pItem);
+	}
+}
+
+void CXTPTabManager::EnsureVisible(CXTPTabManagerItem* pItem)
+{
+	if (!pItem)
+		return;
+
+	GetPaintManager()->EnsureVisible(this, pItem);
+}
+
+void CXTPTabManager::SetPosition(XTPTabPosition tabPosition)
+{
+	GetPaintManager()->m_tabPosition = tabPosition;
+	Reposition();
+}
+
+void CXTPTabManager::SetLayoutStyle(XTPTabLayoutStyle tabLayout)
+{
+	GetPaintManager()->m_tabLayout = tabLayout;
+	Reposition();
+}
+
+
+CXTPTabManagerItem* CXTPTabManager::HitTest(CPoint point) const
+{
+	if (!m_rcControl.PtInRect(point))
+		return NULL;
+
+	if (!m_rcHeaderRect.IsRectEmpty() && !m_rcHeaderRect.PtInRect(point))
+		return NULL;
+
+	for (int i = 0; i < GetItemCount(); i++)
+	{
+		CXTPTabManagerItem* pItem = GetItem(i);
+
+		if (pItem->GetRect().PtInRect(point) && pItem->IsEnabled() && pItem->IsVisible())
+		{
+			return pItem;
+		}
+	}
+	return NULL;
+}
+
+XTPTabPosition CXTPTabManager::GetPosition() const
+{
+	return GetPaintManager()->m_tabPosition;
+}
+
+XTPTabLayoutStyle CXTPTabManager::GetLayout() const
+{
+	return GetPaintManager()->m_tabLayout;
+}
+
+void CXTPTabManager::MoveItem(CXTPTabManagerItem* pItem, int nIndex)
+{
+	ASSERT(pItem && pItem->GetTabManager() == this);
+
+	if (!pItem || pItem->GetTabManager() != this)
+		return;
+
+	int nOldIndex = pItem->GetIndex();
+	if (nOldIndex == nIndex)
+		return;
+
+	ASSERT(nOldIndex >= 0);
+	ASSERT(nIndex >= 0 && nIndex < GetItemCount());
+
+	if (nIndex < 0 || nIndex >= GetItemCount())
+		nIndex = GetItemCount() - 1;
+
+	m_arrItems.RemoveAt(nOldIndex);
+	m_arrItems.InsertAt(nIndex, pItem);
+
+	OnItemsChanged();
+}
+
+void CXTPTabManager::TrackClick(HWND hWnd, CPoint pt, CXTPTabManagerItem* pItem)
+{
+	if (GetPaintManager()->m_bHotTracking)
+		m_pHighlighted = pItem;
+
+	m_pPressed = pItem;
+	BOOL bHighlighted = TRUE;
+
+	Reposition();
+	BOOL bAccept = FALSE;
+
+	::SetCapture(hWnd);
+
+	while (::GetCapture() == hWnd)
+	{
+		MSG msg;
+		VERIFY(::GetMessage(&msg, NULL, 0, 0));
+
+		if (::GetCapture() != hWnd)
+		{
+			DispatchMessage (&msg);
 			break;
-		m_pShadows->GetNext(pos);
-	}
-
-	return pShadowResult;
-}
-
-void CXTPShadowManager::RemoveShadow(CWnd* pShadowOwner)
-{
-	POSITION pos = m_pShadows->GetHeadPosition();
-	while (pos)
-	{
-		CShadowWnd* pShadow = m_pShadows->GetNext(pos);
-
-		if (pShadowOwner == pShadow->m_pShadowsOwner)
-		{
-			XTPHookManager()->RemoveHook(pShadow->m_pShadowsOwner->GetSafeHwnd(), pShadow);
-			DestroyShadow(pShadow);
 		}
-	}
-}
-
-void CXTPShadowManager::OffsetShadow(CWnd* pShadowOwner, CSize szOffset)
-{
-	BOOL bLayoutRTL = pShadowOwner->GetExStyle() & WS_EX_LAYOUTRTL;
-
-	POSITION pos = m_pShadows->GetHeadPosition();
-	while (pos)
-	{
-		CShadowWnd* pShadow = m_pShadows->GetNext(pos);
-
-		if (pShadowOwner == pShadow->m_pShadowsOwner && pShadow->GetSafeHwnd() && !pShadow->m_bControlPopup)
+		switch (msg.message)
 		{
-			if (pShadow->m_bExcluded)
-			{
-				pShadow->SetWindowRgn(NULL, FALSE);
-				pShadow->m_bExcluded = FALSE;
-			}
-
-			CXTPWindowRect rc(pShadow);
-
-			if (bLayoutRTL)
-			{
-				if (pShadow->m_bHoriz == 1)
+			case WM_MOUSEMOVE:
 				{
-					pShadow->SetWindowPos(0, rc.left - szOffset.cx , rc.top + szOffset.cy,
-						rc.Width() + szOffset.cx, rc.Height(), SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-				}
-				else if (pShadow->m_bHoriz == 2)
-				{
-					pShadow->SetWindowPos(0, rc.left, rc.top + szOffset.cy,
-						rc.Width(), rc.Height(), SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-				}
-				else
-				{
-					pShadow->SetWindowPos(0, rc.left, rc.top,
-						rc.Width(), rc.Height() + szOffset.cy, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-				}
-			}
-			else
-			{
-				if (pShadow->m_bHoriz == 1)
-				{
-					pShadow->SetWindowPos(0, rc.left, rc.top + szOffset.cy,
-						rc.Width() + szOffset.cx, rc.Height(), SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-				}
-				else if (pShadow->m_bHoriz == 2)
-				{
-					pShadow->SetWindowPos(0, rc.left + szOffset.cx , rc.top + szOffset.cy,
-						rc.Width(), rc.Height(), SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-				}
-				else
-				{
-					pShadow->SetWindowPos(0, rc.left + szOffset.cx, rc.top,
-						rc.Width(), rc.Height() + szOffset.cy, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-				}
-			}
-		}
-	}
-}
+					pt = CPoint((short signed)LOWORD(msg.lParam), (short signed)HIWORD(msg.lParam));
 
-CXTPShadowManager::CShadowWnd* CXTPShadowManager::CreateShadow(BOOL bHoriz, CRect rc, CRect rcExclude, CWnd* pShadowOwner, BOOL bControlPopup, int nLevel)
-{
-	CShadowWnd* pShadow = new CShadowWnd(this);
+					bHighlighted = pItem->GetRect().PtInRect(pt);
 
-	pShadow->m_pShadowsOwner = pShadowOwner;
-	pShadow->m_bControlPopup = bControlPopup;
-	pShadow->m_nLevel = nLevel;
-	pShadow->Create(bHoriz, rc);
+					if (GetPaintManager()->m_bHotTracking)
+					{
+						CXTPTabManagerItem* pHighlighted = bHighlighted ? pItem : NULL;
+						if (pHighlighted != m_pHighlighted)
+						{
+							m_pHighlighted = pHighlighted;
+							RedrawControl(pItem->GetRect(), TRUE);
+						}
+					}
 
-	m_pShadows->AddShadow(pShadow);
+				}
 
-	if (m_nShadowOptions & xtpShadowShowPopupControl)
-	{
-		pShadow->ExcludeRect(rcExclude);
-	}
+				break;
 
-	POSITION pos = m_pShadows->GetHeadPosition();
-	while (pos)
-	{
-		CShadowWnd* pShadowPrev = m_pShadows->GetNext(pos);
-		if (pShadowPrev->m_pShadowsOwner && (bHoriz != 2 || pShadowPrev->m_pShadowsOwner != pShadowOwner) && pShadowPrev->m_nLevel == nLevel)
-		{
-			pShadow->ExcludeRect(CXTPWindowRect(pShadowPrev->m_pShadowsOwner));
+			case WM_KEYDOWN:
+				if (msg.wParam != VK_ESCAPE)
+					break;
+			case WM_CANCELMODE:
+			case WM_RBUTTONDOWN:
+				goto ExitLoop;
+
+			case WM_LBUTTONUP:
+				bAccept = TRUE;
+				goto ExitLoop;
+
+			default:
+				DispatchMessage (&msg);
+				break;
 		}
 	}
 
+ExitLoop:
+	ReleaseCapture();
 
-	pShadow->SetWindowPos(pShadowOwner->GetExStyle() & WS_EX_TOPMOST ? &CWnd::wndTopMost : &CWnd::wndTop,
-		0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+	m_pPressed = FALSE;
 
-	XTPHookManager()->SetHook(pShadowOwner->m_hWnd, pShadow);
+	PerformMouseMove(hWnd, pt);
 
-	return pShadow;
-}
+	RedrawControl(NULL, FALSE);
 
-
-void CXTPShadowManager::DestroyShadow(CShadowWnd* pWnd)
-{
-	if (pWnd->GetSafeHwnd()) pWnd->ShowWindow(SW_HIDE);
-	pWnd->m_pShadowsOwner = 0;
-	m_pShadows->RemoveShadow(pWnd);
-	pWnd->DestroyWindow();
-	delete pWnd;
-}
-
-CXTPShadowManager::CShadowWnd::CShadowWnd(CXTPShadowManager* pShadowManager)
-{
-	m_pShadowsOwner = 0;
-	m_bHoriz = FALSE;
-	m_bExcluded = FALSE;
-	m_nLevel = 0;
-
-	m_pShadowsManager = pShadowManager;
-	CMDTARGET_ADDREF(m_pShadowsManager);
-}
-
-CXTPShadowManager::CShadowWnd::~CShadowWnd()
-{
-	CMDTARGET_RELEASE(m_pShadowsManager);
-}
-
-
-int CXTPShadowManager::CShadowWnd::OnHookMessage(HWND hWnd, UINT nMessage, WPARAM& wParam, LPARAM& /*lParam*/, LRESULT& /*lResult*/)
-{
-	if (nMessage == WM_SHOWWINDOW && wParam == FALSE)
+	if (bAccept && bHighlighted)
 	{
-		ShowWindow(SW_HIDE);
+		OnItemClick(pItem);
 	}
-	if (nMessage == WM_SHOWWINDOW && wParam == TRUE)
-	{
-		ShowWindow(SW_SHOWNA);
-	}
-	if (nMessage == WM_DESTROY)
-	{
-		XTPHookManager()->RemoveHook(hWnd, this);
-		m_pShadowsManager->DestroyShadow(this);
-	}
-	return 0;
 }
 
-BOOL CXTPShadowManager::CShadowWnd::Create(BOOL bHoriz, CRect rcWindow)
+void CXTPTabManager::ReOrder(HWND hWnd, CPoint pt, CXTPTabManagerItem* pItem)
 {
-	CWnd* pSite = m_pShadowsOwner->GetParent();
-	ASSERT(pSite);
+	CXTPTabManagerItem* pSelected = m_pSelected;
+	m_pSelected = pItem;
 
-	if (m_hWnd == 0)
+	if (GetPaintManager()->m_bHotTracking)
+		m_pHighlighted = pItem;
+
+	Reposition();
+
+	CArray<CRect, CRect&> arrRects;
+
+	for (int j = 0; j < GetItemCount(); j++)
 	{
-		int nFlags = WS_EX_TOOLWINDOW;
-		if (m_pShadowsManager->m_bAlphaShadow) nFlags |= 0x80000;
+		CRect rc = GetItem(j)->GetRect();
+		arrRects.Add(rc);
+	}
 
-		UINT nClassStyle = m_pShadowsManager->m_bUseSystemSaveBitsStyle ? CS_SAVEBITS | CS_OWNDC : 0;
+	::SetCapture(hWnd);
 
-		CString strClass = ::AfxRegisterWndClass(nClassStyle, AfxGetApp()->LoadStandardCursor(IDC_ARROW));
-		if (!CreateEx(nFlags, strClass, 0, WS_POPUP, CXTPEmptyRect(), pSite, 0))
+	while (::GetCapture() == hWnd)
+	{
+		MSG msg;
+		VERIFY(::GetMessage(&msg, NULL, 0, 0));
+
+		if (::GetCapture() != hWnd)
+		{
+			DispatchMessage (&msg);
+			break;
+		}
+		switch (msg.message)
+		{
+			case WM_MOUSEMOVE:
+				{
+					pt = CPoint((short signed)LOWORD(msg.lParam), (short signed)HIWORD(msg.lParam));
+
+					for (int i = 0; i < arrRects.GetSize(); i++)
+					{
+						if (i != pItem->GetIndex() && arrRects[i].PtInRect(pt))
+						{
+
+							CXTPTabManagerItem* p = pItem;
+							m_arrItems[pItem->GetIndex()] = m_arrItems[i];
+							m_arrItems[i] = p;
+
+							OnItemsChanged();
+							break;
+						}
+					}
+				}
+
+				break;
+
+			case WM_KEYDOWN:
+				if (msg.wParam != VK_ESCAPE)
+					break;
+			case WM_CANCELMODE:
+			case WM_LBUTTONUP:
+			case WM_RBUTTONDOWN:
+				goto ExitLoop;
+
+			default:
+				DispatchMessage (&msg);
+				break;
+		}
+	}
+
+ExitLoop:
+	ReleaseCapture();
+	PerformMouseMove(hWnd, pt);
+
+	m_pSelected = pSelected;
+	OnItemClick(pItem);
+}
+
+void CXTPTabManager::OnItemClick(CXTPTabManagerItem* pItem)
+{
+	SetSelectedItem(pItem);
+}
+
+void CXTPTabManager::SetFocusedItem(CXTPTabManagerItem* pItem)
+{
+	if (!OnBeforeItemClick(pItem))
+		return;
+
+	if (pItem)
+	{
+		OnItemClick(pItem);
+	}
+}
+
+CXTPTabManagerItem* CXTPTabManager::FindNextFocusable(int nIndex, int nDirection) const
+{
+	CXTPTabManagerItem* pItem = NULL;
+
+	do
+	{
+		nIndex += nDirection;
+
+		pItem = GetItem(nIndex);
+		if (!pItem)
+			return NULL;
+
+	}
+	while (!(pItem->IsVisible() && pItem->IsEnabled()));
+
+	return pItem;
+}
+
+BOOL CXTPTabManager::PerformKeyDown(HWND hWnd, UINT nChar)
+{
+	const int nCount = GetItemCount();
+	if (nCount < 1)
+		return FALSE;
+
+	if (nChar == VK_LEFT && (DWORD)GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_LAYOUTRTL)
+		nChar = VK_RIGHT;
+	else if (nChar == VK_RIGHT && (DWORD)GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_LAYOUTRTL)
+		nChar = VK_LEFT;
+
+	switch (nChar)
+	{
+	case VK_HOME:
+		SetFocusedItem(FindNextFocusable(-1, +1));
+		return TRUE;
+
+	case VK_END:
+		SetFocusedItem(FindNextFocusable(nCount, -1));
+		return TRUE;
+
+	case VK_LEFT:
+		if (IsHorizontalPosition() && m_pSelected && m_pSelected->GetIndex() > 0)
+			SetFocusedItem(FindNextFocusable(m_pSelected->GetIndex(), -1));
+		return TRUE;
+
+	case VK_UP:
+		if (!IsHorizontalPosition() && m_pSelected && m_pSelected->GetIndex() > 0)
+			SetFocusedItem(FindNextFocusable(m_pSelected->GetIndex(), -1));
+		return TRUE;
+
+	case VK_RIGHT:
+		if (IsHorizontalPosition() && m_pSelected && m_pSelected->GetIndex() < nCount - 1)
+			SetFocusedItem(FindNextFocusable(m_pSelected->GetIndex(), + 1));
+		return TRUE;
+
+	case VK_DOWN:
+		if (!IsHorizontalPosition() && m_pSelected && m_pSelected->GetIndex() < nCount - 1)
+			SetFocusedItem(FindNextFocusable(m_pSelected->GetIndex(), + 1));
+		return TRUE;
+	}
+	return FALSE;
+}
+
+BOOL CXTPTabManager::OnBeforeItemClick(CXTPTabManagerItem* /*pItem*/)
+{
+	return TRUE;
+}
+
+
+CXTPTabManagerNavigateButton* CXTPTabManager::HitTestNavigateButton(CPoint point, BOOL bHeaderOnly, int* pnIndex) const
+{
+	int i;
+	for (i = 0; i < (int)m_arrNavigateButtons.GetSize(); i++)
+	{
+		CXTPTabManagerNavigateButton* pButton = m_arrNavigateButtons[i];
+		if (pButton->m_rcButton.PtInRect(point))
+		{
+			if (!pButton->IsEnabled())
+				return NULL;
+
+			if (pnIndex)
+			{
+				*pnIndex = i;
+			}
+			return pButton;
+		}
+	}
+
+	if (bHeaderOnly)
+		return NULL;
+
+	CXTPTabManagerItem* pItem = HitTest(point);
+	if (!pItem)
+		return NULL;
+
+	for (i = 0; i < (int)pItem->GetNavigateButtons()->GetSize(); i++)
+	{
+		CXTPTabManagerNavigateButton* pButton = pItem->GetNavigateButtons()->GetAt(i);
+		if (pButton->m_rcButton.PtInRect(point))
+		{
+			if (!pButton->IsEnabled())
+				return NULL;
+
+			if (pnIndex)
+			{
+				*pnIndex = i;
+			}
+			return pButton;
+		}
+	}
+
+	return NULL;
+}
+
+BOOL CXTPTabManager::PerformClick(HWND hWnd, CPoint pt, BOOL bNoItemClick)
+{
+	CXTPTabManagerNavigateButton* pNavigateButton = HitTestNavigateButton(pt, FALSE);
+	if (pNavigateButton)
+	{
+		pNavigateButton->PerformClick(hWnd, pt);
+		return TRUE;
+	}
+
+	if (bNoItemClick)
+		return FALSE;
+
+	CXTPTabManagerItem* pItem = HitTest(pt);
+
+	if (pItem)
+	{
+		if (!OnBeforeItemClick(pItem))
 			return FALSE;
-	}
-	SetWindowRgn(NULL, FALSE);
 
-	int nWidth = m_pShadowsManager->m_bAlphaShadow ? 4 : 2;
-
-	m_bHoriz = bHoriz;
-
-	CRect rcShadow;
-
-	if (bHoriz == 2)
-		rcShadow.SetRect(rcWindow.right - 1, rcWindow.bottom - 1, rcWindow.right, rcWindow.bottom);
-	else if (bHoriz == 1)
-		rcShadow.SetRect(rcWindow.left + nWidth, rcWindow.bottom, rcWindow.right + nWidth, rcWindow.bottom + nWidth);
-	else
-		rcShadow.SetRect(rcWindow.right, rcWindow.top + nWidth, rcWindow.right + nWidth, rcWindow.bottom);
-
-	MoveWindow(rcShadow, FALSE);
-	return TRUE;
-}
-
-BEGIN_MESSAGE_MAP(CXTPShadowManager::CShadowWnd, CWnd)
-	{ WM_ERASEBKGND, 0, 0, 0, AfxSig_bD, (AFX_PMSG)(AFX_PMSGW) (static_cast< BOOL (AFX_MSG_CALL CWnd::*)(CDC*) > (CXTPShadowManager::CShadowWnd::OnEraseBkgnd)) },
-	{ WM_PAINT, 0, 0, 0, AfxSig_vv, (AFX_PMSG)(AFX_PMSGW) (static_cast< void (AFX_MSG_CALL CWnd::*)(void) > (CXTPShadowManager::CShadowWnd::OnPaint)) },
-	{ WM_SIZE, 0, 0, 0, AfxSig_vwii, (AFX_PMSG)(AFX_PMSGW) (static_cast< void (AFX_MSG_CALL CWnd::*)(UINT, int, int) > (CXTPShadowManager::CShadowWnd::OnSize)) },
-	{ WM_NCHITTEST, 0, 0, 0, AfxSig_wp, (AFX_PMSG)(AFX_PMSGW) (static_cast< LRESULT (AFX_MSG_CALL CWnd::*)(CPoint) > (CXTPShadowManager::CShadowWnd::OnNcHitTest)) },
-END_MESSAGE_MAP()
-
-LRESULT CXTPShadowManager::CShadowWnd::OnNcHitTest(CPoint /*point*/)
-{
-	return (LRESULT)HTTRANSPARENT;
-}
-
-void CXTPShadowManager::CShadowWnd::OnPaint()
-{
-	CPaintDC dc(this);
-	CXTPClientRect rcClient(this);
-
-	dc.FillSolidRect(rcClient, m_pShadowsManager->m_bAlphaShadow ? 0 : GetXtremeColor(COLOR_3DSHADOW));
-}
-
-
-BOOL CXTPShadowManager::CShadowWnd::OnEraseBkgnd(CDC* /*pDC*/)
-{
-	return TRUE;
-}
-
-BOOL CXTPShadowManager::CShadowWnd::ExcludeRect(CRect rcExclude)
-{
-	CXTPWindowRect rcWindow(this);
-	CRect rcIntersect;
-	if (rcIntersect.IntersectRect(rcWindow, rcExclude))
-	{
-		CXTPClientRect rcClient(this);
-		HRGN hrgnClip = ::CreateRectRgnIndirect(&rcClient);
-
-		rcIntersect.OffsetRect(-rcWindow.TopLeft());
-		HRGN hrgnIntersect = ::CreateRectRgnIndirect(&rcIntersect);
-		CombineRgn(hrgnClip, hrgnClip, hrgnIntersect, RGN_DIFF);
-		DeleteObject(hrgnIntersect);
-
-		if (!SetWindowRgn(hrgnClip, FALSE))
-			DeleteObject(hrgnClip);
-		m_bExcluded = TRUE;
-	}
-	return TRUE;
-}
-
-void CXTPShadowManager::CShadowWnd::LongShadow(CShadowList* pList)
-{
-	CXTPWindowRect rcWindow(this);
-
-	POSITION pos = pList->GetHeadPosition();
-	while (pos)
-	{
-		CShadowWnd* pWnd = pList->GetNext(pos);
-		if (m_bHoriz == !pWnd->m_bHoriz)
+		if (IsAllowReorder())
 		{
-			CXTPWindowRect rc(pWnd);
-			if (m_bHoriz == FALSE)
-			{
-				if (rcWindow.top == rc.bottom -1 && rcWindow.right < rc.right && rcWindow.right > rc.left)
-				{
-					rcWindow.top -= 2 * rc.Height();
-					MoveWindow(rcWindow, FALSE);
-				}
-			}
-			else
-			{
+			ReOrder(hWnd, pt, pItem);
+		}
+		else if (GetPaintManager()->m_bSelectOnButtonDown)
+		{
+			OnItemClick(pItem);
+		}
+		else
+		{
+			TrackClick(hWnd, pt, pItem);
+		}
+		return TRUE;
+	}
 
-				if (rcWindow.left == rc.right - 1 && rcWindow.top > rc.top && rcWindow.bottom < rc.bottom)
+	return FALSE;
+}
+
+
+void CXTPTabManager::PerformMouseMove(HWND hWnd, CPoint pt)
+{
+	 CXTPTabPaintManager::CAppearanceSet* pAppearance = GetPaintManager()->GetAppearanceSet();
+
+	 if (!CXTPDrawHelpers::IsTopParentActive(hWnd) || IsMouseLocked())
+	{
+		if (m_pHighlighted)
+		{
+			CRect rcRedraw(pAppearance->GetButtonDrawRect(m_pHighlighted));
+			m_pHighlighted = NULL;
+
+			RedrawControl(rcRedraw, TRUE);
+		}
+		return;
+	}
+
+	if (GetPaintManager()->m_bHotTracking)
+	{
+		CXTPTabManagerItem* pItem = HitTest(pt);
+
+		if (pItem != m_pHighlighted)
+		{
+			if (m_pHighlighted)
+			{
+				CRect rcRedraw(pAppearance->GetButtonDrawRect(m_pHighlighted));
+				m_pHighlighted = NULL;
+
+				RedrawControl(rcRedraw, TRUE);
+			}
+
+			m_pHighlighted = pItem;
+
+			if (m_pHighlighted)
+			{
+				RedrawControl(pAppearance->GetButtonDrawRect(m_pHighlighted), FALSE);
+			}
+
+			if (pItem)
+			{
+				TRACKMOUSEEVENT tme =
 				{
-					rcWindow.left -= 2 * rc.Width() + 1;
-					MoveWindow(rcWindow, FALSE);
-				}
+					sizeof(TRACKMOUSEEVENT), TME_LEAVE, hWnd
+				};
+				_TrackMouseEvent(&tme);
 			}
 		}
 	}
+
+	CXTPTabManagerNavigateButton* pNavigateButton = HitTestNavigateButton(pt, FALSE);
+
+	if (pNavigateButton != m_pHighlightedNavigateButton)
+	{
+		if (m_pHighlightedNavigateButton)
+		{
+			RedrawControl(m_pHighlightedNavigateButton->GetRect(), TRUE);
+		}
+
+		m_pHighlightedNavigateButton = pNavigateButton;
+
+		if (m_pHighlightedNavigateButton)
+		{
+			RedrawControl(m_pHighlightedNavigateButton->GetRect(), FALSE);
+		}
+
+		if (pNavigateButton)
+		{
+			TRACKMOUSEEVENT tme =
+			{
+				sizeof(TRACKMOUSEEVENT), TME_LEAVE, hWnd
+			};
+			_TrackMouseEvent(&tme);
+		}
+	}
 }
 
-UINT CXTPShadowManager::CShadowWnd::Factor(int& nRed, int& nGreen, int& nBlue, double dFactor)
+CString CXTPTabManager::GetItemTooltip(const CXTPTabManagerItem* pItem) const
 {
-	return (int(nRed * dFactor) << 16) + (int(nGreen * dFactor) << 8) + (int(nBlue * dFactor));
+	return pItem->m_strToolTip;
 }
 
-
-void CXTPShadowManager::CShadowWnd::OnSize(UINT nType, int cx, int cy)
+INT_PTR CXTPTabManager::PerformToolHitTest(HWND hWnd, CPoint point, TOOLINFO* pTI) const
 {
-	CWnd::OnSize(nType, cx, cy);
+	if (IsMouseLocked())
+		return -1;
 
-	if (!cx || !cy || !m_pShadowsManager->m_bAlphaShadow ||
-		!m_pShadowsManager->m_pfnUpdateLayeredWindow || !m_pShadowsOwner)
-		return;
-
-	BLENDFUNCTION bf;
-	bf.BlendOp = AC_SRC_OVER;
-	bf.BlendFlags = 0;
-	bf.SourceConstantAlpha = 255;
-	bf.AlphaFormat = 0x01;
-
-	POINT pt = {0, 0};
-	int x, y;
-	HBITMAP hbitmap;
-	BITMAPINFO bmi;
-
-	CClientDC cDC(this);
-	CDC dc;
-	dc.CreateCompatibleDC(&cDC);
-
-
-	// zero the memory for the bitmap info
-	ZeroMemory(&bmi, sizeof(BITMAPINFO));
-
-	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	bmi.bmiHeader.biWidth = cx;
-	bmi.bmiHeader.biHeight = cy;
-	bmi.bmiHeader.biPlanes = 1;
-	bmi.bmiHeader.biBitCount = 32;         // four 8-bit components
-	bmi.bmiHeader.biCompression = BI_RGB;
-	bmi.bmiHeader.biSizeImage = cx * cy * 4;
-
-	UINT* pvBits = NULL;
-
-	// create our DIB section and select the bitmap into the dc
-	hbitmap = CreateDIBSection(cDC, &bmi, DIB_RGB_COLORS, (void**)&pvBits, NULL, 0x0);
-
-	if (pvBits == NULL || hbitmap == NULL)
-		return;
-
-	COLORREF clrFactor = m_pShadowsManager->m_clrShadowFactor;
-
-
-	int nRed = GetRValue(clrFactor), nGreen = GetGValue(clrFactor), nBlue = GetBValue(clrFactor);
-
-	int nFactor = m_pShadowsManager->m_nShadowOptions & xtpShadowOfficeAlpha ? 1 : 2;
-
-	if (m_bHoriz == 2)
+	int nIndex = -1;
+	CXTPTabManagerNavigateButton* pNavigateButton = HitTestNavigateButton(point, FALSE, &nIndex);
+	if (pNavigateButton)
 	{
-		pvBits[0] = (UINT) 4 * 0x0F000000 * nFactor
-			+ Factor(nRed, nGreen, nBlue, 1);
-	}
-	else if (m_bHoriz == 0)
-	{
-		ASSERT(cx == 4);
+		ASSERT(nIndex != -1);
+		CString strTip = pNavigateButton->GetTooltip();
+		if (strTip.IsEmpty())
+			return -1;
 
-		for (x = 0; x < 4; x++) for (y = 0; y < 4; y++)
-		{
-			pvBits[3 - x + (cy - 1 - y) * cx] = (UINT) 3 * (x + 1) * (y + 1) * 0x1000000 * nFactor
-				+ Factor(nRed, nGreen, nBlue, double((x + 1) * (y + 1))/20);
-		}
+		CXTPToolTipContext::FillInToolInfo(pTI, hWnd, pNavigateButton->GetRect(), nIndex, strTip);
 
-		for (x = 3; x >= 0; x--)
-		{
-			UINT nColor = 0x0F000000 * nFactor * (4 - x) + Factor(nRed, nGreen, nBlue, double(4 - x)/4);
-
-			for (y = 0; y < cy - 4; y++) pvBits[x + y * cx] = nColor;
-		}
-	}
-	else
-	{
-		ASSERT(cy == 4);
-
-		for (x = 0; x < 4; x++) for (y = 0; y < 4; y++)
-		{
-			pvBits[x + y * cx] = (UINT) 3 * (x + 1) * (y + 1) * 0x1000000 * nFactor
-				+ Factor(nRed, nGreen, nBlue, double((x + 1) * (y + 1))/20);
-		}
-
-		for (y = 0; y < 4; y++)
-		{
-			UINT nColor = 0x0F000000 * nFactor * (y + 1) + Factor(nRed, nGreen, nBlue, double(y + 1)/4);
-
-			for (x = 4; x < cx - 4; x++) pvBits[x + y * cx] = nColor;
-		}
-
-		for (x = 0; x < 4; x++) for (y = 0; y < 4; y++)
-		{
-			pvBits[cx - 1 - x + y * cx] = (UINT)3 * (x + 1) * (y + 1) * 0x1000000 * nFactor
-				+ Factor(nRed, nGreen, nBlue, double((x + 1) * (y + 1))/20);
-		}
+		return nIndex;
 	}
 
+	CXTPTabManagerItem* pItem = HitTest(point);
 
-	HBITMAP hOld = (HBITMAP)SelectObject(dc, hbitmap);
+	if (pItem)
+	{
+		if (GetPaintManager()->m_toolBehaviour == xtpTabToolTipNever)
+			return -1;
 
-	SIZE sz = {cx, cy};
+		if (GetPaintManager()->m_toolBehaviour == xtpTabToolTipShrinkedOnly && !pItem->IsItemShrinked())
+			return -1;
 
-	m_pShadowsManager->m_pfnUpdateLayeredWindow((HWND)GetSafeHwnd(), (HDC)0, 0, &sz, dc.GetSafeHdc(), &pt, 0, &bf, 0x02);
+		CString strTip = GetItemTooltip(pItem);
+		if (strTip.IsEmpty())
+			return -1;
 
-	SelectObject(dc, hOld);
-	DeleteObject(hbitmap);
-	dc.DeleteDC();
+		CXTPToolTipContext::FillInToolInfo(pTI, hWnd, pItem->GetRect(), pItem->GetIndex(), strTip, pItem->GetCaption(), strTip);
+
+		return pItem->GetIndex();
+	}
+	return -1;
 }
+
+void CXTPTabManager::GetItemMetrics(CSize* lpszNormal, CSize* lpszMin /*= NULL*/, CSize* lpszMax /*= NULL*/) const
+{
+	CXTPTabPaintManager* pPaintManager = GetPaintManager();
+	if (lpszNormal) *lpszNormal = CSize(pPaintManager->m_nFixedTabWidth, 0);
+	if (lpszMin) *lpszMin = CSize(pPaintManager->m_nMinTabWidth, 0);
+	if (lpszMax) *lpszMax = CSize(pPaintManager->m_nMaxTabWidth, 0);
+}
+
+void CXTPTabManager::SetItemMetrics(CSize szNormal, CSize szMin /*= CSize(0, 0)*/, CSize szMax /*= CSize(0, 0)*/)
+{
+	CXTPTabPaintManager* pPaintManager = GetPaintManager();
+	pPaintManager->m_nFixedTabWidth = szNormal.cx;
+	pPaintManager->m_nMinTabWidth = szMin.cx;
+	pPaintManager->m_nMaxTabWidth = szMax.cx;
+
+	Reposition();
+}
+
+BOOL CXTPTabManager::IsDrawStaticFrame() const
+{
+	return GetPaintManager()->m_bStaticFrame;
+}
+
+
+CXTPTabPaintManager::CColorSet* CXTPTabManager::SetColor(XTPTabColorStyle tabColor)
+{
+	CXTPTabPaintManager::CColorSet* pColorSet = GetPaintManager()->SetColor(tabColor);
+	Reposition();
+	return pColorSet;
+}
+
+CXTPTabPaintManager::CColorSet* CXTPTabManager::SetColorSet(CXTPTabPaintManager::CColorSet* pColorSet)
+{
+	GetPaintManager()->SetColorSet(pColorSet);
+	Reposition();
+	return pColorSet;
+}
+CXTPTabPaintManager::CAppearanceSet* CXTPTabManager::SetAppearance(XTPTabAppearanceStyle tabAppearance)
+{
+	CXTPTabPaintManager::CAppearanceSet* pAppearanceSet = GetPaintManager()->SetAppearance(tabAppearance);
+	Reposition();
+	return pAppearanceSet;
+}
+CXTPTabPaintManager::CAppearanceSet* CXTPTabManager::SetAppearanceSet(CXTPTabPaintManager::CAppearanceSet* pAppearanceSet)
+{
+	GetPaintManager()->SetAppearanceSet(pAppearanceSet);
+	Reposition();
+	return pAppearanceSet;
+}
+

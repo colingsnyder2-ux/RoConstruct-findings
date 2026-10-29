@@ -1,50 +1,21 @@
-// from server: 84% by pitbull
-// roc 2007-08 0057bed0  unit: RBX::ArrowTool  size: 59 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 0057bed0
-//
-// 0057bed0  53                   push ebx
-// 0057bed1  8b5c2424             mov ebx, dword ptr [esp + 0x24]
-// 0057bed5  55                   push ebp
-// 0057bed6  8b6c2420             mov ebp, dword ptr [esp + 0x20]
-// 0057beda  56                   push esi
-// 0057bedb  8b742418             mov esi, dword ptr [esp + 0x18]
-// 0057bedf  57                   push edi
-// 0057bee0  8b7c2424             mov edi, dword ptr [esp + 0x24]
-// 0057bee4  3bf7                 cmp esi, edi
-// 0057bee6  740e                 je 0x57bef6
-// 0057bee8  53                   push ebx
-// 0057bee9  56                   push esi
-// 0057beea  ffd5                 call ebp
-// 0057beec  83c608               add esi, 8
-// 0057beef  83c408               add esp, 8
-// 0057bef2  3bf7                 cmp esi, edi
-// 0057bef4  75f2                 jne 0x57bee8
-// 0057bef6  8b442414             mov eax, dword ptr [esp + 0x14]
-// 0057befa  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 0057befe  5f                   pop edi
-// 0057beff  8928                 mov dword ptr [eax], ebp
-// 0057bf01  5e                   pop esi
-// 0057bf02  894804               mov dword ptr [eax + 4], ecx
-// 0057bf05  5d                   pop ebp
-// 0057bf06  895808               mov dword ptr [eax + 8], ebx
-// 0057bf09  5b                   pop ebx
-// 0057bf0a  c3                   ret 
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_espeon_aug2007_fullstack_kernel_af755f0919f16cb6.cpp
 
-struct S_func_0057bed0 {
-    void __cdecl f(int a, int b, int c, int d, int e, int f);
-};
-
-void S_func_0057bed0::f(int a, int b, int c, int d, int e, int f)
-{
-    int* p = (int*)a;
-    int* end = (int*)b;
-    void (__cdecl *fn)(int, int) = (void (__cdecl *)(int, int))c;
-    while (p != end) {
-        fn((int)p, d);
-        p += 2;
-    }
-    int* out = (int*)e;
-    out[0] = (int)fn;
-    out[1] = f;
-    out[2] = d;
-}
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#define _MT 1
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "v8datamodel/Workspace.cpp"

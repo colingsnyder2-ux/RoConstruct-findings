@@ -1,8 +1,7 @@
-// from server: 67% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O1 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/Controls/XTThemeManager.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib Source\Controls\XTThemeManager.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTThemeManager.cpp: implementation of the CXTThemeManager class.

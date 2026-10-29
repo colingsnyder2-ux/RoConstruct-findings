@@ -1,668 +1,668 @@
-// from server: 56% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Math.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: openrbx-client App/util/Math.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "util/Math.h"
-#include "util/Debug.h"
-#include <boost/functional/hash/hash.hpp>
+
+#include "decomp.h"
+
+#include <G3D/Line.h>
+#include <G3D/g3dmath.h>
+#include <algorithm>
 #include <limits>
-#include <cmath>
 
-#define LODWORD(x) (*(DWORD*)(&x))
+namespace RBX {
 
-namespace RBX
+static float rotationStep()
 {
-	const G3D::Matrix3& Math::matrixRotateY()
-	{
-		static G3D::Matrix3 rotateY(0, 0, 1, 0, 1, 0, -1, 0, 0);
-		return rotateY;
+	static const float step = static_cast<float>(G3D::twoPi() / 256.0);
+	return step;
+}
+
+// FUNCTION: WEBSERVICE 0x100de860
+bool Math::isDenormal(float f)
+{
+	const int bits = *reinterpret_cast<const int*>(&f);
+	return (bits & 0x7f800000) == 0 && (bits & 0x7fffff) != 0;
+}
+
+// FUNCTION: WEBSERVICE 0x100de880
+bool Math::isNanInfDenorm(float f)
+{
+	return f == std::numeric_limits<float>::infinity() || f == -std::numeric_limits<float>::infinity() ||
+		   f == std::numeric_limits<float>::quiet_NaN() || f == std::numeric_limits<float>::signaling_NaN() ||
+		   isDenormal(f);
+}
+
+// FUNCTION: WEBSERVICE 0x100de8e0
+bool Math::isNanInfDenormVector3(const Vector3& v)
+{
+	return isNanInfDenorm(v.x) || isNanInfDenorm(v.y) || isNanInfDenorm(v.z);
+}
+
+// FUNCTION: WEBSERVICE 0x100de930
+bool Math::fixDenorm(Vector3& v)
+{
+	bool fixed = false;
+
+	if (isDenormal(v.x)) {
+		v.x = 0.0f;
+		fixed = true;
+	}
+	if (isDenormal(v.y)) {
+		v.y = 0.0f;
+		fixed = true;
+	}
+	if (isDenormal(v.z)) {
+		v.z = 0.0f;
+		fixed = true;
 	}
 
-	const G3D::Matrix3& Math::matrixTiltZ()
-	{
-		static G3D::Matrix3 tiltZ(0, 1, 0, -1, 0, 0, 0, 0, 1);
-		return tiltZ;
-	}
+	return fixed;
+}
 
-	bool Math::isDenormal(float f)
-	{
-		return (LODWORD(f) & 0x7F800000) == 0 && (LODWORD(f) & 0x7FFFFF) != 0;
-	}
+// STUB: WEBSERVICE 0x100de9a0
+bool Math::legalCameraCoord(const CoordinateFrame& c)
+{
+	for (int i = 0; i < 3; ++i) {
+		for (int j = 0; j < 3; ++j) {
+			const float value = c.rotation[i][j];
 
-	bool Math::isNanInfDenorm(float f)
-	{
-		return f == std::numeric_limits<float>::infinity()
-			|| f == -std::numeric_limits<float>::infinity()
-			|| f == std::numeric_limits<float>::quiet_NaN()
-			|| f == std::numeric_limits<float>::signaling_NaN()
-			|| Math::isDenormal(f);
-	}
-
-	bool Math::isNanInfDenormVector3(const G3D::Vector3& v)
-	{
-		return Math::isNanInfDenorm(v.x)
-			|| Math::isNanInfDenorm(v.y)
-			|| Math::isNanInfDenorm(v.z);
-	}
-
-	bool Math::fixDenorm(G3D::Vector3& v)
-	{
-		bool fixed = false;
-
-		float x = v.x;
-		if (Math::isDenormal(x))
-		{
-			v.x = 0;
-			fixed = true;
-		}
-
-		float y = v.y; 
-		if (Math::isDenormal(y))
-		{
-			v.y = 0;
-			fixed = true;
-		}
-
-		float z = v.z;
-		if (Math::isDenormal(z))
-		{
-			v.z = 0;
-			fixed = true;
-		}
-
-		return fixed;
-	}
-
-	float Math::radWrap(float rad)
-	{
-		if (rad >= -pi() && rad < pi())
-			return rad;
-
-		float rot = 1/twoPi();
-		float f = floor((rad + pi()) * rot);
-		return rad - Math::iRound(f) * twoPi();
-	}
-
-	G3D::Vector3 Math::sortVector3(const G3D::Vector3& v)
-	{
-		G3D::Vector3 result = v;
-
-		if ( result.z < result.y)
-		{
-			std::swap(result.z, result.y);
-		}
-
-		if ( result.y < result.x  )
-		{
-			std::swap(result.y, result.x);
-		}
-
-		if ( result.z < result.y  )
-		{
-			std::swap(result.z, result.y);
-		}
-
-		return result;
-	}
-
-	G3D::Matrix3 Math::momentToObjectSpace(const G3D::Matrix3& iWorld, const G3D::Matrix3& bodyRotation)
-	{
-		return bodyRotation.transpose() * iWorld * bodyRotation;
-	}
-
-	G3D::Matrix3 Math::momentToWorldSpace(const G3D::Matrix3& iBody, const G3D::Matrix3& bodyRotation)
-	{
-		return (bodyRotation * iBody) * bodyRotation.transpose();
-	}
-
-	G3D::Vector3 Math::toDiagonal(const G3D::Matrix3& m)
-	{
-		return G3D::Vector3(m[0][0],m[1][1],m[2][2]);
-	}
-
-	G3D::Matrix3 Math::fromDiagonal(const G3D::Vector3& v)
-	{
-		return G3D::Matrix3(v.x, 0, 0, 0, v.y, 0, 0, 0, v.z);
-	}
-
-	bool Math::lessThan(const G3D::Vector3& min, const G3D::Vector3& max)
-	{
-		return min.x < max.x && min.y < max.y && min.z < max.z;
-	}
-
-	bool Math::isAxisAligned(const G3D::Matrix3& matrix)
-	{
-		for (int i = 0; i < 3; ++i)
-		{
-			for (int j = 0; j < 3; ++j)
-			{
-				float f = matrix[i][j];
-				if (f != 0 && f != 1 && f != -1)
-					return false;
+			if (value <= -1.2f) {
+				return false;
+			}
+			if (value >= 1.2f) {
+				return false;
 			}
 		}
 
-		return true;
-	}
+		const float value = c.translation[i];
 
-	G3D::Matrix3 Math::rotateAboutZ(const G3D::Matrix3& matrix, float radians)
-	{
-		G3D::Matrix3 m(G3D::Matrix3::identity());
-		float sinR = sin(radians);
-		float cosR = cos(radians);
-
-		m.setColumn(0, G3D::Vector3(cosR, sinR, 0));
-		m.setColumn(1, G3D::Vector3(-sinR, cosR, 0));
-
-		return matrix * m;
-	}
-
-	void Math::rotateMatrixAboutY90(G3D::Matrix3& matrix, int times)
-	{
-		static G3D::Matrix3 y90(0, 0, 1, 0, 1, 0, -1, 0, 0);
-
-		for (int i = 0; i < times; ++i)
-		{
-			matrix = y90 * matrix;
+		if (value <= -1000000.0f) {
+			return false;
+		}
+		if (value >= 1000000.0f) {
+			return false;
 		}
 	}
 
-	float Math::getHeading(const G3D::Vector3& look)
-	{
-		return atan2(-look.x, -look.z);
-	}
+	return true;
+}
 
-	float Math::getElevation(const G3D::Vector3& look)
-	{
-		return asin(look.y);
-	}
+// FUNCTION: WEBSERVICE 0x100dea30
+float Math::rotationFromByte(unsigned char byteAngle)
+{
+	const float value = byteAngle;
 
-	void Math::getHeadingElevation(const G3D::CoordinateFrame& c, float& heading, float& elevation)
-	{
-		G3D::Vector3 lookVector = c.getLookVector();
+	return value * rotationStep() - 3.14159274f;
+}
 
-		heading = Math::getHeading(lookVector);
-		elevation = Math::getElevation(lookVector);
-	}
+// STUB: WEBSERVICE 0x100dea70
+Matrix3 Math::getIWorldAtPoint(const Vector3& cofmPos, const Vector3& worldPos, const Matrix3& iWorldAtCofm, float mass)
+{
+	const float x = worldPos.x - cofmPos.x;
+	const float y = worldPos.y - cofmPos.y;
+	const float z = worldPos.z - cofmPos.z;
 
-	void Math::setHeadingElevation(G3D::CoordinateFrame& c, float heading, float elevation)
-	{
-		float Y = sin(elevation);
-		float unk = sqrtf(1 - Y * Y);
-		float X = -(sin(heading) * unk);
-		float Z = -(unk * cos(heading));
-		c.lookAt(c.translation + G3D::Vector3(X, Y, Z).direction());
-	}
+	return iWorldAtCofm + mass * Matrix3(
+									 z * z + y * y,
+									 -(y * x),
+									 -(z * x),
+									 -(y * x),
+									 z * z + x * x,
+									 -(z * y),
+									 -(z * x),
+									 -(z * y),
+									 y * y + x * x
+								 );
+}
 
-	G3D::CoordinateFrame Math::getFocusSpace(const G3D::CoordinateFrame& focus)
-	{
-		G3D::Vector3 look = focus.lookVector();
-		float heading = Math::getHeading(look);
+// FUNCTION: WEBSERVICE 0x100deb30
+Matrix3 Math::momentToObjectSpace(const Matrix3& iWorld, const Matrix3& bodyRotation)
+{
+	return bodyRotation.transpose() * iWorld * bodyRotation;
+}
 
-		G3D::CoordinateFrame cf(focus.rotation);
-		cf.translation = focus.translation;
-		Math::setHeadingElevation(cf, heading, 0);
-		return cf;
-	}
+// FUNCTION: WEBSERVICE 0x100deb70
+Matrix3 Math::momentToWorldSpace(const Matrix3& iBody, const Matrix3& bodyRotation)
+{
+	return bodyRotation * iBody * bodyRotation.transpose();
+}
 
-	const G3D::Matrix3& Math::getAxisRotationMatrix(int face)
-	{
-		static G3D::Matrix3 y = G3D::Matrix3::fromEulerAnglesXYZ(0, 0, G3D::halfPi());
-		static G3D::Matrix3 z = G3D::Matrix3::fromEulerAnglesXYZ(0, G3D::halfPi(), 0);
-		static G3D::Matrix3 y_neg = G3D::Matrix3(y);
-		static G3D::Matrix3 z_neg = G3D::Matrix3(z);
+// FUNCTION: WEBSERVICE 0x100debb0
+Vector3 Math::toDiagonal(const Matrix3& m)
+{
+	return Vector3(m[0][0], m[1][1], m[2][2]);
+}
 
-		switch (face)
-		{
-		case 1:
-			return y;
-		case 2:
-			return z;
-		case 4:
-			return y_neg;
-		case 5:
-			return z_neg;
-		default:
-			return G3D::Matrix3::identity();
+// FUNCTION: WEBSERVICE 0x100debd0
+Matrix3 Math::fromDiagonal(const Vector3& v)
+{
+	return Matrix3(v.x, 0.0f, 0.0f, 0.0f, v.y, 0.0f, 0.0f, 0.0f, v.z);
+}
+
+// FUNCTION: WEBSERVICE 0x100dec20
+bool Math::isAxisAligned(const Matrix3& matrix)
+{
+	for (int i = 0; i < 3; ++i) {
+		for (int j = 0; j < 3; ++j) {
+			const float value = matrix[i][j];
+			if (value != 0.0f && value != 1.0f && value != -1.0f) {
+				return false;
+			}
 		}
 	}
 
-	G3D::Vector3 Math::vector3Abs(const G3D::Vector3& v)
-	{
-		return G3D::Vector3(fabs(v.x), fabs(v.y), fabs(v.z));
-	}
+	return true;
+}
 
-	bool Math::isOrthonormal(const G3D::Matrix3& m)
-	{
-		return m.isOrthonormal();
-	}
+// FUNCTION: WEBSERVICE 0x100dec90
+int Math::getOrientId(const Matrix3& matrix)
+{
+	const NormalId x = Vector3ToNormalId(matrix.getColumn(0));
+	const NormalId y = Vector3ToNormalId(matrix.getColumn(1));
 
-	bool Math::orthonormalizeIfNecessary(G3D::Matrix3& m)
-	{
-		if (!Math::isOrthonormal(m))
-		{
-			m.orthonormalize();
-			return true;
+	return x * 6 + y;
+}
+
+// FUNCTION: WEBSERVICE 0x100dece0
+void Math::idToMatrix3(int orientId, Matrix3& matrix)
+{
+	const NormalId xId = intToNormalId(orientId / 6);
+	const NormalId yId = intToNormalId(orientId % 6);
+
+	const Vector3 vX = normalIdToVector3(xId);
+	const Vector3 vY = normalIdToVector3(yId);
+	const Vector3 vZ = vX.cross(vY);
+
+	matrix.setColumn(0, vX);
+	matrix.setColumn(1, vY);
+	matrix.setColumn(2, vZ);
+}
+
+// FUNCTION: WEBSERVICE 0x100dedc0
+Matrix3 Math::rotateAboutZ(const Matrix3& matrix, float radians)
+{
+	Matrix3 rotMatrix = Matrix3::identity();
+
+	const float sinR = sinf(radians);
+	const float cosR = cosf(radians);
+
+	rotMatrix.setColumn(0, Vector3(cosR, sinR, 0.0f));
+	rotMatrix.setColumn(1, Vector3(-sinR, cosR, 0.0f));
+
+	return matrix * rotMatrix;
+}
+
+// FUNCTION: WEBSERVICE 0x100dee50
+Matrix3 Math::snapToAxes(const Matrix3& align)
+{
+	float dots[3][3];
+
+	float tBest = 0.0f;
+	int aBest = -1;
+	int best = -1;
+
+	for (int a = 0; a < 3; ++a) {
+		Vector3 aAxis = align.getColumn(a);
+
+		for (int i = 0; i < 3; ++i) {
+			float t = Matrix3::identity().getColumn(i).dot(aAxis);
+
+			dots[a][i] = t;
+
+			if (fabs(t) > fabs(tBest)) {
+				best = i;
+				tBest = t;
+				aBest = a;
+			}
 		}
+	}
 
+	Vector3 bestV = Matrix3::identity().getColumn(best);
+
+	if (tBest < 0.0f) {
+		bestV.x = bestV.x * -1.0f;
+		bestV.y = bestV.y * -1.0f;
+		bestV.z = bestV.z * -1.0f;
+	}
+
+	float tSecond = 0.0f;
+	int aSecond = -1;
+	int second = -1;
+
+	for (int a = 0; a < 3; ++a) {
+		if (a != aBest) {
+			for (int i = 0; i < 3; ++i) {
+				if (i != best && fabs(dots[a][i]) > fabs(tSecond)) {
+					tSecond = dots[a][i];
+					second = i;
+					aSecond = a;
+				}
+			}
+		}
+	}
+
+	Vector3 secondV = Matrix3::identity().getColumn(second);
+
+	if (tSecond < 0.0f) {
+		secondV.x = secondV.x * -1.0f;
+		secondV.y = secondV.y * -1.0f;
+		secondV.z = secondV.z * -1.0f;
+	}
+
+	int aThird = (3 - aSecond) - aBest;
+	int third = (3 - second) - best;
+
+	Vector3 thirdV = Matrix3::identity().getColumn(third);
+
+	if (dots[aThird][third] < 0.0f) {
+		thirdV.x = thirdV.x * -1.0f;
+		thirdV.y = thirdV.y * -1.0f;
+		thirdV.z = thirdV.z * -1.0f;
+	}
+
+	Matrix3 answer;
+
+	answer.setColumn(aBest, bestV);
+	answer.setColumn(aSecond, secondV);
+	answer.setColumn(aThird, thirdV);
+
+	return answer;
+}
+
+// FUNCTION: WEBSERVICE 0x100df0a0
+Vector3 Math::iRoundVector3(const Vector3& point)
+{
+	return Vector3(
+		static_cast<float>(G3D::iRound(point.x)),
+		static_cast<float>(G3D::iRound(point.y)),
+		static_cast<float>(G3D::iRound(point.z))
+	);
+}
+
+// FUNCTION: WEBSERVICE 0x100df100
+float Math::angleToE0(const Vector2& v)
+{
+	Vector2 u = v;
+	u.unitize();
+
+	const float answer = acosf(u.x);
+
+	if (u.y < 0.0f) {
+		return 6.28318548f - answer;
+	}
+
+	return answer;
+}
+
+// FUNCTION: WEBSERVICE 0x100df150
+float Math::angle(const Vector3& v0, const Vector3& v1)
+{
+	const float dot = v0.dot(v1);
+
+	if (dot >= 1.0f) {
+		return 0.0f;
+	}
+	if (dot <= -1.0f) {
+		return 3.14159274f;
+	}
+
+	return acosf(dot);
+}
+
+// FUNCTION: WEBSERVICE 0x100df1a0
+bool Math::fuzzyEq(const Vector3& v0, const Vector3& v1, float epsilon)
+{
+	for (int i = 0; i < 3; ++i) {
+		const float a = v0[i];
+		const float b = v1[i];
+
+		if (a != b && !(fabsf(a - b) <= (fabsf(a) + 1.0f) * epsilon)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+// FUNCTION: WEBSERVICE 0x100df200
+bool Math::fuzzyEq(const Matrix3& m0, const Matrix3& m1, float epsilon)
+{
+	for (int i = 0; i < 3; ++i) {
+		for (int j = 0; j < 3; ++j) {
+			const float a = m0[i][j];
+			const float b = m1[i][j];
+
+			if (a != b && !(fabsf(a - b) <= (fabsf(a) + 1.0f) * epsilon)) {
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+// FUNCTION: WEBSERVICE 0x100df270
+bool Math::fuzzyEq(const CoordinateFrame& c0, const CoordinateFrame& c1, float epsT, float epsR)
+{
+	if (!fuzzyEq(c0.translation, c1.translation, epsT)) {
 		return false;
 	}
 
-	size_t Math::hash(const G3D::Vector3& v)
-	{
-		const int magic = 1640531527;
-		size_t h;
+	return fuzzyEq(c0.rotation, c1.rotation, epsR) ? true : false;
+}
 
-		h = (boost::hash_value(v.x) - magic);
-		h = (boost::hash_value(v.y) - magic + (h >> 2) + (h << 6)) ^ h;
-		h = (boost::hash_value(v.z) - magic + (h >> 2) + (h << 6)) ^ h;
-		return h;
-	}
+// STUB: WEBSERVICE 0x100df2c0
+Matrix3 Math::alignAxesClosest(const Matrix3& align, const Matrix3& target)
+{
+	float dots[3][3];
 
-	float Math::angle(const G3D::Vector3& v0, const G3D::Vector3& v1)
-	{
-		float f = v0.z * v1.z + v0.y * v1.y + v0.x * v1.x;
-		if (f >= 1)
-			return 0;
-		if (f <= -1)
-			return pi();
-		return acos(f);
-	}
+	float tBest = 0.0f;
+	int aBest = -1;
+	int best = -1;
 
-	float Math::angleToE0(const G3D::Vector2& v)
-	{
-		G3D::Vector2 copy(v);
-		copy.unitize();
+	for (int a = 0; a < 3; ++a) {
+		Vector3 aAxis = align.getColumn(a);
 
-		float f = acos(copy.x);
-		if (copy.y < 0)
-			return twoPi() - f;
-		return f;
-	}
+		for (int i = 0; i < 3; ++i) {
+			Vector3 tAxis = target.getColumn(i);
 
-	G3D::Vector3 Math::iRoundVector3(const G3D::Vector3& point)
-	{
-		return G3D::Vector3(Math::iRound(point.x), Math::iRound(point.y), Math::iRound(point.z));
-	}
+			float t = tAxis.dot(aAxis);
 
-	const float& segSizeRadians()
-	{
-		// - 0.00001f is necessary to get the same value as the compiled binary
-		static float ssr = (Math::pi() - 0.00001f) / 128;
-		return ssr;
-	}
+			dots[a][i] = t;
 
-	G3D::uint8 rotationToByteBase(float angle)
-	{
-		RBXASSERT(angle <= Math::pi());
-		RBXASSERT(angle >= -Math::pi());
-
-		float result = (angle + Math::pi()) / segSizeRadians();
-		int resInt = G3D::iRound(result);
-		
-		RBXASSERT(resInt >= -1);
-		RBXASSERT(resInt <= 256);
-
-		resInt = std::max(0, resInt);
-		resInt = std::min(255, resInt);
-
-		G3D::uint8 byte = (G3D::uint8)resInt;
-
-		RBXASSERT(byte <= 255);
-
-		return byte;
-	}
-
-	G3D::uint8 Math::rotationToByte(float angle)
-	{
-		return rotationToByteBase(angle);
-	}
-
-	float Math::rotationFromByte(unsigned char byteAngle)
-	{
-		float byteAngleFloat = byteAngle;
-		return byteAngleFloat * segSizeRadians() - pi();
-	}
-
-	G3D::Vector3 Math::toGrid(const G3D::Vector3& v, float grid)
-	{
-		return Math::toGrid(v, G3D::Vector3(grid, grid, grid));
-	}
-
-	G3D::Vector3 Math::toGrid(const G3D::Vector3& v, const G3D::Vector3& grid)
-	{
-		G3D::Vector3 units = v / grid;
-		return grid * Math::iRoundVector3(units);
-	}
-
-	G3D::Matrix3 Math::getIWorldAtPoint(const G3D::Vector3& cofmPos, const G3D::Vector3& worldPos, const G3D::Matrix3& iWorldAtCofm, float mass)
-	{
-		G3D::Vector3 delta = worldPos - cofmPos;
-		float deltaXSquared = delta.x * delta.x;
-		float deltaYSquared = delta.y * delta.y;
-		float deltaZSquared = delta.z * delta.z;
-		float deltaYX = delta.y * delta.x;
-		float deltaZX = delta.z * delta.x;
-		float deltaZY = delta.z * delta.y;
-
-		return iWorldAtCofm + mass * G3D::Matrix3(
-				deltaZSquared + deltaYSquared,
-				-deltaYX,
-				-deltaZX,
-				-deltaYX,
-				deltaZSquared + deltaXSquared,
-				-deltaZY,
-				-deltaZX,
-				-deltaZY,
-				deltaYSquared + deltaXSquared
-				);
-	}
-
-	bool Math::intersectRayPlane(const G3D::Ray& ray, const G3D::Plane& plane, G3D::Vector3& hit)
-	{
-		float dotProd = ray.direction.dot(plane.normal());
-		if (plane.halfSpaceContains(ray.origin))
-		{
-			if (!(dotProd < 0.0f))
-			{
-				hit = G3D::Vector3::inf();
-				return false;
+			if (fabs(t) > fabs(tBest)) {
+				best = i;
+				aBest = a;
+				tBest = t;
 			}
 		}
-		else if (!(dotProd > 0.0f))
-		{
-			hit = G3D::Vector3::inf();
-			return false;
-		}
-		G3D::Line myLine = G3D::Line::fromPointAndDirection(ray.origin, ray.direction);
-		hit = myLine.intersection(plane);
-		return true;
 	}
 
-	int Math::getOrientId(const G3D::Matrix3& matrix)
-	{
-		NormalId ColumnNormId = Vector3ToNormalId(matrix.getColumn(0));
-		return Vector3ToNormalId(matrix.getColumn(1)) + 6 * ColumnNormId;
-	}
+	Vector3 bestV = align.getColumn(aBest) * Math::sign(tBest);
 
-	float Math::maxAxisLength(const G3D::Vector3& v)
-	{
-		G3D::Vector3 vAbs = G3D::Vector3(fabs(v.x), fabs(v.y), fabs(v.z));
-		return std::max(vAbs.x, std::max(vAbs.y, vAbs.z));
-	}
+	float tSecond = 0.0f;
+	int aSecond = -1;
+	int second = -1;
 
-	NormalId Math::getClosestObjectNormalId(const G3D::Vector3& worldV, const G3D::Matrix3& objectR)
-	{
-		G3D::Vector3 worldObjMul = worldV * objectR;
-		float absX = fabs(worldObjMul.x);
-		float absY = fabs(worldObjMul.y);
-		float absZ = fabs(worldObjMul.z);
-		if (absX > absY)
-		{
-			if (absX > absZ)
-			{
-				return worldObjMul.x > 0 ? NORM_X : NORM_X_NEG;
-			}
-			else
-			{
-				return worldObjMul.z > 0 ? NORM_Z : NORM_Z_NEG;
-			}
-		}
-		else if (absY > absZ)
-		{
-			return worldObjMul.y > 0 ? NORM_Y : NORM_Y_NEG;
-		}
-		return worldObjMul.z > 0 ? NORM_Z : NORM_Z_NEG;
-	}
-
-	bool Math::fuzzyAxisAligned(const G3D::Matrix3& m0, const G3D::Matrix3& m1, float radTolerance)
-	{
-		G3D::Vector3 vectors[3] = {G3D::Vector3(), G3D::Vector3(), G3D::Vector3()};
-
-		for (int i = 0; i < 3; i++)
-		{
-			vectors[i] = m1.getColumn(i);
-		}
-
-		for (int i = 0; i < 3; i++)
-		{
-			G3D::Vector3 m0Column = m0.getColumn(i);
-			G3D::Vector3* vector = vectors; 
-			int count = 0;
-			while (count < 3)
-			{
-				if (m0Column.cross(*vector).magnitude() < radTolerance)
-					break;
-				count++;
-				vector++;
-				if (count >= 3)
-					return false;
-			}
-		}
-		return true;
-	}
-
-	void Math::idToMatrix3(int orientId, G3D::Matrix3& matrix)
-	{
-		NormalId norm1 = intToNormalId(orientId / 6);
-		NormalId norm2 = intToNormalId(orientId % 6);
-		G3D::Vector3 norm1Vec3 = normalIdToVector3(norm1);
-		G3D::Vector3 norm2Vec3 = normalIdToVector3(norm2);
-		G3D::Vector3 cross = norm1Vec3.cross(norm2Vec3);
-		matrix.setColumn(0, norm1Vec3);
-		matrix.setColumn(1, norm2Vec3);
-		matrix.setColumn(2, cross);
-	}
-
-	bool Math::legalCameraCoord(const G3D::CoordinateFrame& c)
-	{
-		int i = 0;
-		const float* transMatArr = (const float*)c.translation;
-		const float* rotMatArr = (const float*)c.rotation;
-		for (; i < 3; i++, transMatArr++, rotMatArr += 4)
-		{
-			float rotValue = *rotMatArr;
-			for (int j = 0; j < 3; j++)
-			{
-				if (!(rotValue > -1.2f && rotValue < 1.2f))
-					return false;
-			}
-			float transValue = *transMatArr;
-			if (!(transValue > -1000000.0f && transValue < 1000000.0f))
-				return false;
-		}
-		return true;
-	}
-
-	G3D::Matrix3 Math::snapToAxes(const G3D::Matrix3& align)
-	{
-		G3D::Matrix3 unkMat;
-		float aBest = 0.0f;
-		int second = -1;
-		int bestV = -1;
-		
-		for (int i = 0; i < 3; i++)
-		{
-			G3D::Vector3 loopColumn = align.getColumn(i);
-			for (int j = 0; j < 3; j++)
-			{
-				float dotProd = G3D::Matrix3::identity().getColumn(j).dot(loopColumn);
-				unkMat[i][j] = dotProd;
-				if (fabs(dotProd) > fabs(aBest))
-				{
-					bestV = i;
-					second = j;
-					aBest = dotProd;
+	for (int a = 0; a < 3; ++a) {
+		if (a != aBest) {
+			for (int i = 0; i < 3; ++i) {
+				if (i != best && fabs(dots[a][i]) > fabs(tSecond)) {
+					tSecond = dots[a][i];
+					second = i;
+					aSecond = a;
 				}
 			}
 		}
-		
-		G3D::Vector3 myColumn = G3D::Matrix3::identity().getColumn(second);
-		if (aBest < 0.0f)
-		{
-			myColumn *= -1.0f;
-		}
-
-		int v10 = -1;
-		int v11 = -1;
-		float v9 = 0.0f;
-		
-		for (int i = 0; i < 3; i++)
-		{
-			if (i != bestV)
-			{
-				for (int j = 0; j < 3; j++)
-				{
-					if (j != second)
-					{
-						if (fabs(unkMat[i][j]) > fabs(v9))
-						{
-							v9 = unkMat[i][j];
-							v10 = i;
-							v11 = j;
-						}
-					}
-				}
-			}
-		}
-
-		G3D::Vector3 myColumn2 = G3D::Matrix3::identity().getColumn(v11);
-		if (v9 < 0.0f)
-		{
-			myColumn2 *= -1.0f;
-		}
-
-		int v15 = 3 - v10 - bestV;
-		int calcColmTemp = 3 - v11 - second;
-		G3D::Vector3 myColumn3 = G3D::Matrix3::identity().getColumn(calcColmTemp);
-		if (unkMat[v15][v11] < 0.0f)
-		{
-			myColumn3 *= -1.0f;
-		}
-
-		G3D::Matrix3 result;
-		result.setColumn(bestV, myColumn);
-		result.setColumn(v10, myColumn2);
-		result.setColumn(v15, myColumn3);
-		return result;
 	}
 
-	bool Math::fuzzyEq(float f0, float f1, float epsilon)
-	{
-		float num1 = fabs(f0) + 1;
-		float num2 = fabs(f0 - f1);
+	Vector3 secondV = align.getColumn(aSecond) * Math::sign(tSecond);
 
-		return (f0 == f1 || num2 <= num1 * epsilon);
-	}
+	int aThird = (3 - aSecond) - aBest;
+	int third = (3 - second) - best;
 
-	bool Math::fuzzyEq(const G3D::Vector3& v0, const G3D::Vector3& v1, float epsilon)
-	{
-		for (int i = 0; i < 3; i++)
-		{
-			if (!Math::fuzzyEq(v0[i], v1[i], epsilon))
-				return false;
+	Vector3 thirdV = align.getColumn(aThird) * Math::sign(dots[aThird][third]);
+
+	Matrix3 answer;
+
+	answer.setColumn(best, bestV);
+	answer.setColumn(second, secondV);
+	answer.setColumn(third, thirdV);
+
+	return answer;
+}
+
+// FUNCTION: WEBSERVICE 0x100df530
+NormalId Math::getClosestObjectNormalId(const Vector3& worldV, const Matrix3& objectR)
+{
+	const Vector3 objectNormal = worldV * objectR;
+
+	const float x = fabsf(objectNormal.x);
+	const float y = fabsf(objectNormal.y);
+	const float z = fabsf(objectNormal.z);
+
+	if (x > y) {
+		if (x > z) {
+			return objectNormal.x > 0.0f ? NORM_X : NORM_X_NEG;
 		}
 
-		return true;
+		return objectNormal.z > 0.0f ? NORM_Z : NORM_Z_NEG;
 	}
 
-	bool Math::fuzzyEq(const G3D::Matrix3& m0, const G3D::Matrix3& m1, float epsilon)
-	{
-		for (int i = 0; i < 3; i++)
-		{
-			for (int j = 0; j < 3; j++)
-			{
-				if (!Math::fuzzyEq(m0[i][j], m1[i][j], epsilon))
-					return false;
-			}
-		}
-
-		return true;
+	if (y > z) {
+		return objectNormal.y > 0.0f ? NORM_Y : NORM_Y_NEG;
 	}
 
-	bool Math::fuzzyEq(const G3D::CoordinateFrame& c0, const G3D::CoordinateFrame& c1, float epsT, float epsR)
-	{
-		bool tRes = Math::fuzzyEq(c0.translation, c1.translation, epsT);
-		if (!tRes)
-			return false;
+	return objectNormal.z > 0.0f ? NORM_Z : NORM_Z_NEG;
+}
 
-		bool rRes = Math::fuzzyEq(c0.rotation, c1.rotation, epsR);
-		return rRes ? true : false;
-	}
+// FUNCTION: WEBSERVICE 0x100df600
+Vector3 Math::vector3Abs(const Vector3& v)
+{
+	return Vector3(fabsf(v.x), fabsf(v.y), fabsf(v.z));
+}
 
-	G3D::CoordinateFrame Math::snapToGrid(const G3D::CoordinateFrame& snap, const G3D::Vector3& grid)
-	{
-		return G3D::CoordinateFrame(Math::snapToAxes(snap.rotation), Math::toGrid(snap.translation, grid));
-	}
+// FUNCTION: WEBSERVICE 0x100df620
+float Math::getHeading(const Vector3& look)
+{
+	return atan2f(-look.x, -look.z);
+}
 
-	G3D::CoordinateFrame Math::snapToGrid(const G3D::CoordinateFrame& snap, float grid)
-	{
-		return G3D::CoordinateFrame(Math::snapToAxes(snap.rotation), Math::toGrid(snap.translation, grid));
-	}
+// STUB: WEBSERVICE 0x100df630
+void Math::getHeadingElevation(const CoordinateFrame& c, float& heading, float& elevation)
+{
+	const Vector3 look = c.rotation.getColumn(2) * CoordinateFrame::zLookDirection;
 
-	G3D::Matrix3 Math::alignAxesClosest(const G3D::Matrix3& align, const G3D::Matrix3& target)
-	{
-		float dots[3][3];
-		int maxI = -1, maxJ = -1;
-		float maxDot = 0.0f;
+	heading = atan2f(-look.x, -look.z);
+	elevation = asinf(look.y);
+}
 
-		for (int i = 0; i < 3; i++)
-		{
-			G3D::Vector3 aAxis = align.getColumn(i);
-			for (int j = 0; j < 3; j++)
-			{
-				G3D::Vector3 tAxis = target.getColumn(j);
-				float atDot = aAxis.dot(tAxis);
-				dots[i][j] = atDot;
+// FUNCTION: WEBSERVICE 0x100df690
+void Math::setHeadingElevation(CoordinateFrame& c, float heading, float elevation)
+{
+	const float y = sinf(elevation);
+	const float flat = sqrtf(1.0f - y * y);
+	const Vector3 look(-sinf(heading) * flat, y, -cosf(heading) * flat);
 
-				if (fabs(atDot) > fabs(maxDot))
-				{
-					maxI = i;
-					maxJ = j;
-					maxDot = atDot;
-				}
-			}
-		}
+	c.lookAt(c.translation + look.direction());
+}
 
-		float mult = (maxDot >= 0.0f) ? 1.0f : -1.0f;
-		G3D::Vector3 bestV = align.getColumn(maxI) * mult;
+// FUNCTION: WEBSERVICE 0x100df710
+void Math::rotateMatrixAboutY90(Matrix3& matrix, int times)
+{
+	static const Matrix3 y90(0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f);
 
-		float maxDot1 = 0.0f;
-		int maxI1 = -1, maxJ1 = -1;
-
-		for (int i = 0; i < 3; i++)
-		{
-			if (i != maxI)
-				for (int j = 0; j < 3; j++)
-				{
-					if (j != maxJ && fabs(dots[i][j]) > fabs(maxDot1))
-					{
-						maxDot1 = dots[i][j];
-						maxI1 = i;
-						maxJ1 = j;
-					}
-				}
-		}
-		
-		float mult1 = (maxDot1 >= 0.0f) ? 1.0f : -1.0f;
-		G3D::Vector3 secondV = align.getColumn(maxI1) * mult1;
-
-		int maxI2 = (3 - maxI1) - maxI;
-		int maxJ2 = (3 - maxJ1) - maxJ;
-
-		float maxDot2 = dots[maxI2][maxJ2];
-		float mult2 = (maxDot2 >= 0.0f) ? 1.0f : -1.0f;
-
-		G3D::Vector3 thirdV = align.getColumn(maxI2) * mult2;
-
-		G3D::Matrix3 result;
-		result.setColumn(maxJ, bestV);
-		result.setColumn(maxJ1, secondV);
-		result.setColumn(maxJ2, thirdV);
-
-		return result;
+	for (int i = 0; i < times; ++i) {
+		matrix = y90 * matrix;
 	}
 }
+
+// FUNCTION: WEBSERVICE 0x100df7d0
+const Matrix3& Math::matrixRotateY()
+{
+	static const Matrix3 m(0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f);
+
+	return m;
+}
+
+// FUNCTION: WEBSERVICE 0x100df860
+const Matrix3& Math::matrixTiltZ()
+{
+	static const Matrix3 m(0.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+
+	return m;
+}
+
+// STUB: WEBSERVICE 0x100df8e0
+const Matrix3& Math::getAxisRotationMatrix(int face)
+{
+	static const Matrix3 y = Matrix3::fromEulerAnglesXYZ(0.0f, 0.0f, 1.57079637f);
+	static const Matrix3 z = Matrix3::fromEulerAnglesXYZ(0.0f, 1.57079637f, 0.0f);
+	static const Matrix3 y_neg = y;
+	static const Matrix3 z_neg = z;
+
+	switch (face) {
+	case NORM_X:
+	case NORM_X_NEG:
+		break;
+	case NORM_Y:
+		return y;
+	case NORM_Z:
+		return z;
+	case NORM_Y_NEG:
+		return y_neg;
+	case NORM_Z_NEG:
+		return z_neg;
+	}
+
+	return Matrix3::identity();
+}
+
+// STUB: WEBSERVICE 0x100dfa70
+CoordinateFrame Math::getFocusSpace(const CoordinateFrame& focus)
+{
+	const Vector3 look = focus.rotation.getColumn(2) * CoordinateFrame::zLookDirection;
+	const float heading = atan2f(-look.x, -look.z);
+
+	CoordinateFrame answer = focus;
+	setHeadingElevation(answer, heading, 0.0f);
+
+	return answer;
+}
+
+// FUNCTION: WEBSERVICE 0x100dfaf0
+unsigned char rotationToByteBase(float angle)
+{
+	const float fAngle = (angle + 3.14159274f) / rotationStep();
+	int iAngle = G3D::iRound(fAngle);
+
+	iAngle = std::max(0, iAngle);
+
+	return static_cast<unsigned char>(std::min(255, iAngle));
+}
+
+// FUNCTION: WEBSERVICE 0x100dfb70
+unsigned char Math::rotationToByte(float angle)
+{
+	return rotationToByteBase(angle);
+}
+
+// FUNCTION: WEBSERVICE 0x100dfb90
+Vector3 Math::toGrid(const Vector3& v, const Vector3& grid)
+{
+	const Vector3 units = v / grid;
+
+	return grid * iRoundVector3(units);
+}
+
+// FUNCTION: WEBSERVICE 0x100dfc10
+Vector3 Math::toGrid(const Vector3& v, float grid)
+{
+	const Vector3 steps(grid, grid, grid);
+
+	return toGrid(v, steps);
+}
+
+// FUNCTION: WEBSERVICE 0x100dfc50
+CoordinateFrame Math::snapToGrid(const CoordinateFrame& snap, float grid)
+{
+	const Vector3 steps(grid, grid, grid);
+	const Vector3 translation = toGrid(snap.translation, steps);
+
+	return CoordinateFrame(snapToAxes(snap.rotation), translation);
+}
+
+// FUNCTION: WEBSERVICE 0x100dfcc0
+CoordinateFrame Math::snapToGrid(const CoordinateFrame& snap, const Vector3& grid)
+{
+	return CoordinateFrame(snapToAxes(snap.rotation), toGrid(snap.translation, grid));
+}
+
+// STUB: WEBSERVICE 0x100dfd20
+bool Math::fuzzyAxisAligned(const Matrix3& m0, const Matrix3& m1, float radTolerance)
+{
+	Vector3 a1[3];
+
+	for (int i = 0; i < 3; ++i) {
+		a1[i] = m1.getColumn(i);
+	}
+
+	for (int i = 0; i < 3; ++i) {
+		const Vector3 a0 = m0.getColumn(i);
+
+		int j;
+
+		for (j = 0; j < 3; ++j) {
+			if (a0.cross(a1[j]).magnitude() < radTolerance) {
+				break;
+			}
+		}
+
+		if (j == 3) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+// FUNCTION: WEBSERVICE 0x100dfe20
+bool Math::orthonormalizeIfNecessary(Matrix3& m)
+{
+	if (!m.isOrthonormal()) {
+		m.orthonormalize();
+		return true;
+	}
+
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x100dfe40
+Vector3 Math::sortVector3(const Vector3& v)
+{
+	Vector3 sorted = v;
+
+	if (sorted.z < sorted.y) {
+		std::swap(sorted.z, sorted.y);
+	}
+	if (sorted.y < sorted.x) {
+		std::swap(sorted.y, sorted.x);
+	}
+	if (sorted.z < sorted.y) {
+		std::swap(sorted.z, sorted.y);
+	}
+
+	return sorted;
+}
+
+// FUNCTION: WEBSERVICE 0x100dfea0
+float Math::maxAxisLength(const Vector3& v)
+{
+	const float answer[3] = {fabsf(v.x), fabsf(v.y), fabsf(v.z)};
+
+	return std::max(answer[0], std::max(answer[1], answer[2]));
+}
+
+// FUNCTION: WEBSERVICE 0x100dfef0
+bool Math::intersectRayPlane(const Ray& ray, const Plane& plane, Vector3& hit)
+{
+	const float dotProd = ray.direction.dot(plane.normal());
+
+	if (plane.halfSpaceContains(ray.origin) ? dotProd < 0.0f : dotProd > 0.0f) {
+		const G3D::Line line = G3D::Line::fromPointAndDirection(ray.origin, ray.direction);
+
+		hit = line.intersection(plane);
+
+		return true;
+	}
+
+	hit = Vector3::inf();
+
+	return false;
+}
+
+} // namespace RBX

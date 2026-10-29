@@ -1,4 +1,3 @@
-// from server: 44% by colin
 // roc 2007-08 00628390  unit: RBX::AssemblyStage  size: 97 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00628390
 //
@@ -40,33 +39,29 @@
 // 006283eb  d901                 fld dword ptr [ecx]
 // 006283ed  83c410               add esp, 0x10
 // 006283f0  c3                   ret 
+// copied from an identical function in another client (function ?f@S@@QBEMXZ)
 
-struct AssemblyStage {
-    float field0;
-    float field4;
-    float field8;
-    float fieldC;
-    float getMaxAbsComponent() const;
+// from server: 100% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+extern "C" double __cdecl fabs(double);
+#pragma intrinsic(fabs)
+
+template<class T>
+const T& maximum(const T& a, const T& b)
+{
+    return a < b ? b : a;
+}
+
+struct S
+{
+    float x, y, z, w;
+    float f() const;
 };
 
-float AssemblyStage::getMaxAbsComponent() const {
-    float a0 = field0 < 0.0f ? -field0 : field0;
-    float a4 = field4 < 0.0f ? -field4 : field4;
-    float a8 = field8 < 0.0f ? -field8 : field8;
-    float aC = fieldC < 0.0f ? -fieldC : fieldC;
-
-    const float* p = &a0;
-    const float* q = &a4;
-    if (aC > a8) {
-        q = &aC;
-    }
-    if (a8 > a4) {
-        p = &a8;
-    } else {
-        p = &a4;
-    }
-    if (*p > *q) {
-        return *p;
-    }
-    return *q;
+float S::f() const
+{
+    return maximum(
+        maximum((float)fabs(x), (float)fabs(y)),
+        maximum((float)fabs(z), (float)fabs(w)));
 }

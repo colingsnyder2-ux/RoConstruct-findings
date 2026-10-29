@@ -1,10 +1,14 @@
-// from server: 96% by colin
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
-// roc-lib: rbx2016-jpeg jmemansi.c
+// roc-lib: g3d-6.09-ijg-dll jmemansi.c
 
 // Candidate translation unit (score above; library headers required).
+#ifdef _MSC_VER
+#   pragma warning( disable : 4100 )
+#   pragma warning( disable : 4127 )
+#   pragma warning( disable : 4244 )
+#endif
 /*
  * jmemansi.c
  *
@@ -148,8 +152,8 @@ GLOBAL(void)
 jpeg_open_backing_store (j_common_ptr cinfo, backing_store_ptr info,
 			 long total_bytes_needed)
 {
-  if ((info->temp_file = tmpfile()) == NULL)    // Roblox Change 64bit
-      ERREXITS(cinfo, JERR_TFILE_CREATE, "");
+  if ((info->temp_file = _robustTmpfile()) == NULL)
+    ERREXITS(cinfo, JERR_TFILE_CREATE, "");
   info->read_backing_store = read_backing_store;
   info->write_backing_store = write_backing_store;
   info->close_backing_store = close_backing_store;

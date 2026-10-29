@@ -1,650 +1,566 @@
-// from server: 73% by colin
+// roc-cl: 30729
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/cregex.cpp
+// roc-flags: /O2 /Ob1 /GS- /MT
+// roc-lib: wildmagic-2-core Containment/WmlConvexHull2.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
- *
- * Copyright (c) 1998-2002
- * John Maddock
- *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
- * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
- *
- */
-
- /*
-  *   LOCATION:    see http://www.boost.org for most recent version.
-  *   FILE:        cregex.cpp
-  *   VERSION:     see <boost/version.hpp>
-  *   DESCRIPTION: Implements high level class boost::RexEx
-  */
-
-
-#define BOOST_REGEX_SOURCE
-
-#include <boost/cregex.hpp>
-#include <boost/regex.hpp>
-#if !defined(BOOST_NO_STD_STRING)
-#include <map>
-#include <list>
-#include <boost/regex/v4/fileiter.hpp>
-typedef boost::match_flag_type match_flag_type;
-#include <cstdio>
-
-namespace boost{
-
-#ifdef __BORLANDC__
-#if __BORLANDC__ < 0x530
+// Magic Software, Inc.
+// http://www.magic-software.com
+// http://www.wild-magic.com
+// Copyright (c) 2003.  All Rights Reserved
 //
-// we need to instantiate the vector classes we use
-// since declaring a reference to type doesn't seem to
-// do the job...
-std::vector<std::size_t> inst1;
-std::vector<std::string> inst2;
-#endif
-#endif
+// The Wild Magic Library (WML) source code is supplied under the terms of
+// the license agreement http://www.magic-software.com/License/WildMagic.pdf
+// and may not be copied or disclosed except in accordance with the terms of
+// that agreement.
 
-namespace{
+#include "WmlConvexHull2.h"
+using namespace Wml;
 
-template <class iterator>
-std::string to_string(iterator i, iterator j)
+#include <algorithm>
+#include <set>
+using namespace std;
+
+//----------------------------------------------------------------------------
+template <class Real>
+ConvexHull2<Real>::ConvexHull2 (int iVQuantity, const Vector2<Real>* akVertex,
+    bool bIncremental)
 {
-   std::string s;
-   while(i != j)
-   {
-      s.append(1, *i);
-      ++i;
-   }
-   return s;
-}
+    m_iVQuantity = iVQuantity;
+    m_akVertex = akVertex;
 
-inline std::string to_string(const char* i, const char* j)
+    if ( bIncremental )
+        ByIncremental();
+    else
+        ByDivideAndConquer();
+
+    if ( m_iHQuantity >= 3 )
+        RemoveCollinear();
+}
+//----------------------------------------------------------------------------
+template <class Real>
+ConvexHull2<Real>::~ConvexHull2 ()
 {
-   return std::string(i, j);
+    delete[] m_aiHIndex;
 }
-
-}
-namespace re_detail{
-
-class RegExData
+//----------------------------------------------------------------------------
+template <class Real>
+int ConvexHull2<Real>::GetQuantity () const
 {
-public:
-   enum type
-   {
-      type_pc,
-      type_pf,
-      type_copy
-   };
-   regex e;
-   cmatch m;
-#ifndef BOOST_REGEX_NO_FILEITER
-   match_results<mapfile::iterator> fm;
-#endif
-   type t;
-   const char* pbase;
-#ifndef BOOST_REGEX_NO_FILEITER
-   mapfile::iterator fbase;
-#endif
-   std::map<int, std::string, std::less<int> > strings;
-   std::map<int, std::ptrdiff_t, std::less<int> > positions;
-   void update();
-   void clean();
-   RegExData() : e(), m(),
-#ifndef BOOST_REGEX_NO_FILEITER
-   fm(),
-#endif
-   t(type_copy), pbase(0),
-#ifndef BOOST_REGEX_NO_FILEITER
-   fbase(),
-#endif
-   strings(), positions() {}
-};
-
-void RegExData::update()
+    return m_iHQuantity;
+}
+//----------------------------------------------------------------------------
+template <class Real>
+const int* ConvexHull2<Real>::GetIndices () const
 {
-   strings.erase(strings.begin(), strings.end());
-   positions.erase(positions.begin(), positions.end());
-   if(t == type_pc)
-   {
-      for(unsigned int i = 0; i < m.size(); ++i)
-      {
-         if(m[i].matched) strings[i] = std::string(m[i].first, m[i].second);
-         positions[i] = m[i].matched ? m[i].first - pbase : -1;
-      }
-   }
-#ifndef BOOST_REGEX_NO_FILEITER
-   else
-   {
-      for(unsigned int i = 0; i < fm.size(); ++i)
-      {
-         if(fm[i].matched) strings[i] = to_string(fm[i].first, fm[i].second);
-         positions[i] = fm[i].matched ? fm[i].first - fbase : -1;
-      }
-   }
-#endif
-   t = type_copy;
+    return m_aiHIndex;
 }
-
-void RegExData::clean()
+//----------------------------------------------------------------------------
+template <class Real>
+bool ConvexHull2<Real>::ContainsPoint (const Vector2<Real>& rkP) const
 {
-#ifndef BOOST_REGEX_NO_FILEITER
-   fbase = mapfile::iterator();
-   fm = match_results<mapfile::iterator>();
-#endif
+    for (int i1 = 0, i0 = m_iHQuantity-1; i1 < m_iHQuantity; i0 = i1++)
+    {
+        const Vector2<Real>& rkV0 = m_akVertex[m_aiHIndex[i0]];
+        const Vector2<Real>& rkV1 = m_akVertex[m_aiHIndex[i1]];
+        Vector2<Real> kDir = rkV1 - rkV0;
+        Vector2<Real> kNormal = kDir.Perp();  // outer normal
+        if ( kNormal.Dot(rkP-rkV0) > (Real)0.0 )
+            return false;
+    }
+
+    return true;
 }
-
-} // namespace
-
-RegEx::RegEx()
+//----------------------------------------------------------------------------
+template <class Real>
+int ConvexHull2<Real>::CollinearTest (const Vector2<Real>& rkP,
+    const Vector2<Real>& rkQ0, const Vector2<Real>& rkQ1) const
 {
-   pdata = new re_detail::RegExData();
-}
+    Vector2<Real> kD = rkQ1 - rkQ0;
+    Vector2<Real> kA = rkP - rkQ0;
+    Real fDdD = kD.Dot(kD);
+    Real fAdA = kA.Dot(kA);
+    Real fDet = kD.Kross(kA);
+    Real fRelative = fDet*fDet - COLLINEAR_EPSILON*fDdD*fAdA;
 
-RegEx::RegEx(const RegEx& o)
+    if ( fRelative > (Real)0.0 )
+    {
+        if ( fDet > (Real)0.0 )
+        {
+            // points form counterclockwise triangle <P,Q0,Q1>
+            return ORDER_POSITIVE;
+        }
+        else if ( fDet < (Real)0.0 )
+        {
+            // points form clockwise triangle <P,Q1,Q0>
+            return ORDER_NEGATIVE;
+        }
+    }
+
+    // P is on line of <Q0,Q1>
+    Real fDdA = kD.Dot(kA);
+    if ( fDdA < (Real)0.0 )
+    {
+        // order is <P,Q0,Q1>
+        return ORDER_COLLINEAR_LEFT;
+    }
+
+    if ( fDdA > fDdD )
+    {
+        // order is <Q0,Q1,P>
+        return ORDER_COLLINEAR_RIGHT;
+    }
+
+    // order is <Q0,P,Q1>
+    return ORDER_COLLINEAR_CONTAIN;
+}
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexHull2<Real>::RemoveCollinear ()
 {
-   pdata = new re_detail::RegExData(*(o.pdata));
-}
+    if ( m_iHQuantity <= 2 )
+        return;
 
-RegEx::~RegEx()
+    vector<int> kHull;
+    kHull.reserve(m_iHQuantity);
+    for (int i0 = m_iHQuantity-1, i1 = 0, i2 = 1; i1 < m_iHQuantity; /**/)
+    {
+        int iCT = CollinearTest(m_akVertex[m_aiHIndex[i0]],
+            m_akVertex[m_aiHIndex[i1]],m_akVertex[m_aiHIndex[i2]]);
+
+        if ( iCT == ORDER_POSITIVE || iCT == ORDER_NEGATIVE )
+        {
+            // points are not collinear
+            kHull.push_back(m_aiHIndex[i1]);
+        }
+
+        i0 = i1++;
+        if ( ++i2 == m_iHQuantity )
+            i2 = 0;
+    }
+
+    // construct index array for ordered vertices of convex hull
+    m_iHQuantity = (int)kHull.size();
+    delete[] m_aiHIndex;
+    m_aiHIndex = new int[m_iHQuantity];
+    memcpy(m_aiHIndex,&kHull.front(),m_iHQuantity*sizeof(int));
+}
+//----------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------
+// divide-and-conquer hull
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexHull2<Real>::ByDivideAndConquer ()
 {
-   delete pdata;
-}
+    // Sort by x-component and store in contiguous array.  The sort is
+    // O(N log N).
+    SVArray kSVArray(m_iVQuantity);
+    int i;
+    for (i = 0; i < m_iVQuantity; i++)
+    {
+        kSVArray[i].m_kV = m_akVertex[i];
+        kSVArray[i].m_iIndex = i;
+    }
+    sort(kSVArray.begin(),kSVArray.end());
 
-RegEx::RegEx(const char* c, bool icase)
+    // remove duplicate points
+    typename SVArray::iterator pkEnd =
+        unique(kSVArray.begin(),kSVArray.end());
+    kSVArray.erase(pkEnd,kSVArray.end());
+
+    // compute convex hull using divide-and-conquer
+    SVArray kHull;
+    kHull.reserve(kSVArray.size());
+    m_iHullType = HULL_POINT;
+    GetHull(0,(int)kSVArray.size()-1,kSVArray,kHull);
+
+    // construct index array for ordered vertices of convex hull
+    m_iHQuantity = (int)kHull.size();
+    m_aiHIndex = new int[m_iHQuantity];
+    for (i = 0; i < m_iHQuantity; i++)
+        m_aiHIndex[i] = kHull[i].m_iIndex;
+}
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexHull2<Real>::GetHull (int i0, int i1, const SVArray& rkSVArray,
+    SVArray& rkHull)
 {
-   pdata = new re_detail::RegExData();
-   SetExpression(c, icase);
-}
+    int iQuantity = i1 - i0 + 1;
+    if ( iQuantity > 1 )
+    {
+        // middle index of input range
+        int iMid = (i0+i1)/2;
 
-RegEx::RegEx(const std::string& s, bool icase)
+        // find hull of subsets (iMid-i0+1 >= i1-iMid)
+        SVArray kLHull, kRHull;
+        kLHull.reserve(iMid-i0+1);
+        kRHull.reserve(i1-iMid);
+
+        GetHull(i0,iMid,rkSVArray,kLHull);
+        GetHull(iMid+1,i1,rkSVArray,kRHull);
+
+        // merge the convex hulls into a single convex hull
+        Merge(kLHull,kRHull,rkHull);
+    }
+    else
+    {
+        // convex hull is a single point
+        rkHull.push_back(rkSVArray[i0]);
+    }
+}
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexHull2<Real>::Merge (SVArray& rkLHull, SVArray& rkRHull,
+    SVArray& rkHull)
 {
-   pdata = new re_detail::RegExData();
-   SetExpression(s.c_str(), icase);
-}
+    // merge small sets, handle cases when sets are collinear
+    int iLSize = (int)rkLHull.size(), iRSize = (int)rkRHull.size();
+    if ( iLSize == 1 )
+    {
+        if ( iRSize == 1 )
+        {
+            rkHull.push_back(rkLHull[0]);
+            rkHull.push_back(rkRHull[0]);
+            if ( m_iHullType != HULL_PLANAR )
+                m_iHullType = HULL_LINEAR;
+            return;
+        }
+        else if ( iRSize == 2 )
+        {
+            MergeLinear(rkLHull[0],rkRHull);
+            rkHull = rkRHull;
+            return;
+        }
+    }
+    else if ( iLSize == 2 )
+    {
+        if ( iRSize == 1 )
+        {
+            MergeLinear(rkRHull[0],rkLHull);
+            rkHull = rkLHull;
+            return;
+        }
+        else if ( iRSize == 2 )
+        {
+            MergeLinear(rkRHull[1],rkLHull);
 
-RegEx& RegEx::operator=(const RegEx& o)
+            if ( rkLHull.size() == 2 )
+            {
+                MergeLinear(rkRHull[0],rkLHull);
+                rkHull = rkLHull;
+                return;
+            }
+
+            // fall-through, LHull is a triangle, RHull is a point
+            iLSize = 3;
+            iRSize = 1;
+            rkRHull.pop_back();
+        }
+    }
+
+    // find rightmost point of left hull
+    Real fMax = rkLHull[0].m_kV.X();
+    int i, iLMax = 0;
+    for (i = 1; i < iLSize; i++)
+    {
+        if ( rkLHull[i].m_kV.X() > fMax )
+        {
+            fMax = rkLHull[i].m_kV.X();
+            iLMax = i;
+        }
+    }
+
+    // find leftmost point of right hull
+    Real fMin = rkRHull[0].m_kV.X();
+    int iRMin = 0;
+    for (i = 1; i < iRSize; i++)
+    {
+        if ( rkRHull[i].m_kV.X() < fMin )
+        {
+            fMin = rkRHull[i].m_kV.X();
+            iRMin = i;
+        }
+    }
+
+    // get lower tangent to hulls (LL = lower left, LR = lower right)
+    int iLLIndex = iLMax, iLRIndex = iRMin;
+    GetTangent(rkLHull,rkRHull,iLLIndex,iLRIndex);
+
+    // get upper tangent to hulls (UL = upper left, UR = upper right)
+    int iULIndex = iLMax, iURIndex = iRMin;
+    GetTangent(rkRHull,rkLHull,iURIndex,iULIndex);
+
+    // Construct the counterclockwise-ordered merged-hull vertices.
+    // TO DO.  If the hull is stored using linked lists, this block can be
+    // improved by an O(1) detach, attach, and delete of the appropriate
+    // sublists.
+    i = iLRIndex;
+    while ( true )
+    {
+        rkHull.push_back(rkRHull[i]);
+        if ( i == iURIndex )
+            break;
+
+        if ( ++i == iRSize )
+            i = 0;
+    }
+
+    i = iULIndex;
+    while ( true )
+    {
+        rkHull.push_back(rkLHull[i]);
+        if ( i == iLLIndex )
+            break;
+
+        if ( ++i == iLSize )
+            i = 0;
+    }
+}
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexHull2<Real>::MergeLinear (const SortedVertex& rkP, SVArray& rkHull)
 {
-   *pdata = *(o.pdata);
-   return *this;
-}
+    // hull = <Q0,Q1>
 
-RegEx& RegEx::operator=(const char* p)
+    switch ( CollinearTest(rkP.m_kV,rkHull[0].m_kV,rkHull[1].m_kV) )
+    {
+    case ORDER_POSITIVE:
+        // merged hull is triangle <Q0,Q1,P>
+        m_iHullType = HULL_PLANAR;
+        rkHull.push_back(rkP);
+        break;
+    case ORDER_NEGATIVE:
+    {
+        // merged hull is triangle <Q1,Q0,P>
+        m_iHullType = HULL_PLANAR;
+        SortedVertex kSave = rkHull[0];
+        rkHull[0] = rkHull[1];
+        rkHull[1] = kSave;
+        rkHull.push_back(rkP);
+        break;
+    }
+    case ORDER_COLLINEAR_LEFT:
+        // collinear order is <P,Q0,Q1>, merged hull is <P,Q1>
+        rkHull[0] = rkP;
+        break;
+    case ORDER_COLLINEAR_RIGHT:
+        // collinear order is <Q0,Q1,P>, merged hull is <Q0,P>
+        rkHull[1] = rkP;
+        break;
+    //case ORDER_COLLINEAR_CONTAIN:
+        // collinear order is <Q0,P,Q1>, merged hull is <Q0,Q1> (no change)
+    }
+}
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexHull2<Real>::GetTangent (const SVArray& rkLHull,
+    const SVArray& rkRHull, int& riL, int& riR)
 {
-   SetExpression(p, false);
-   return *this;
-}
+    // In theory the loop terminates in a finite number of steps, but the
+    // upper bound for the loop variable is used to trap problems caused by
+    // floating point round-off errors that might lead to an infinite loop.
 
-unsigned int RegEx::SetExpression(const char* p, bool icase)
+    int iLSize = (int)rkLHull.size(), iRSize = (int)rkRHull.size();
+    int iLSizeM1 = iLSize-1, iRSizeM1 = iRSize-1;
+    int i;
+    for (i = 0; i < iLSize+iRSize; i++)
+    {
+        // end points of potential tangent
+        const Vector2<Real>& rkL1 = rkLHull[riL].m_kV;
+        const Vector2<Real>& rkR0 = rkRHull[riR].m_kV;
+
+        // walk along left hull to find tangency
+        int iLm1 = ( riL > 0 ? riL-1 : iLSizeM1 );
+        const Vector2<Real>& rkL0 = rkLHull[iLm1].m_kV;
+        int iCT = CollinearTest(rkR0,rkL0,rkL1);
+        if ( iCT == ORDER_NEGATIVE || iCT == ORDER_COLLINEAR_LEFT )
+        {
+            riL = iLm1;
+            continue;
+        }
+
+        // walk along right hull to find tangency
+        int iRp1 = ( riR < iRSizeM1 ? riR+1 : 0 );
+        const Vector2<Real>& rkR1 = rkRHull[iRp1].m_kV;
+        iCT = CollinearTest(rkL1,rkR0,rkR1);
+        if ( iCT == ORDER_NEGATIVE || iCT == ORDER_COLLINEAR_RIGHT )
+        {
+            riR = iRp1;
+            continue;
+        }
+
+        // tangent segment has been found
+        break;
+    }
+
+    // detect "infinite loop" caused by floating point round-off errors
+    assert( i < iLSize+iRSize );
+}
+//----------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------
+// incremental hull
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexHull2<Real>::ByIncremental ()
 {
-   boost::uint_fast32_t f = icase ? regex::normal | regex::icase : regex::normal;
-   return pdata->e.set_expression(p, f);
-}
+    // Sort by x-component and store in contiguous array.  The sort is
+    // O(N log N).
+    SVArray kSVArray(m_iVQuantity);
+    int i;
+    for (i = 0; i < m_iVQuantity; i++)
+    {
+        kSVArray[i].m_kV = m_akVertex[i];
+        kSVArray[i].m_iIndex = i;
+    }
+    sort(kSVArray.begin(),kSVArray.end());
 
-unsigned int RegEx::error_code()const
+    // remove duplicate points
+    typename SVArray::iterator pkEnd =
+        unique(kSVArray.begin(),kSVArray.end());
+    kSVArray.erase(pkEnd,kSVArray.end());
+
+    // Compute convex hull incrementally.  The first and second vertices in
+    // the hull are managed separately until at least one triangle is formed.
+    // At that time an array is used to store the hull in counterclockwise
+    // order.
+    m_iHullType = HULL_POINT;
+    m_kHull.push_back(kSVArray[0]);
+    for (i = 1; i < (int)kSVArray.size(); i++)
+    {
+        switch ( m_iHullType )
+        {
+        case HULL_POINT:
+            m_iHullType = HULL_LINEAR;
+            m_kHull.push_back(kSVArray[i]);
+            break;
+        case HULL_LINEAR:
+            MergeLinear(kSVArray[i]);
+            break;
+        case HULL_PLANAR:
+            MergePlanar(kSVArray[i]);
+            break;
+        }
+    }
+
+    // construct index array for ordered vertices of convex hull
+    m_iHQuantity = (int)m_kHull.size();
+    m_aiHIndex = new int[m_iHQuantity];
+    for (i = 0; i < m_iHQuantity; i++)
+        m_aiHIndex[i] = m_kHull[i].m_iIndex;
+}
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexHull2<Real>::MergeLinear (const SortedVertex& rkP)
 {
-   return pdata->e.error_code();
+    switch ( CollinearTest(rkP.m_kV,m_kHull[0].m_kV,m_kHull[1].m_kV) )
+    {
+    case ORDER_POSITIVE:
+    {
+        // merged hull is <P,Q0,Q1>
+        m_iHullType = HULL_PLANAR;
+        SortedVertex kCopy = m_kHull[1];
+        m_kHull.push_back(kCopy);
+        m_kHull[1] = m_kHull[0];
+        m_kHull[0] = rkP;
+        break;
+    }
+    case ORDER_NEGATIVE:
+    {
+        // merged hull is <P,Q1,Q0>
+        m_iHullType = HULL_PLANAR;
+        SortedVertex kCopy = m_kHull[0];
+        m_kHull.push_back(kCopy);
+        m_kHull[0] = rkP;
+        break;
+    }
+    case ORDER_COLLINEAR_LEFT:
+        // linear order is <P,Q0,Q1>, merged hull is <P,Q1>
+        m_kHull[0] = rkP;
+        break;
+    case ORDER_COLLINEAR_RIGHT:
+        // linear order is <Q0,Q1,P>, merged hull is <Q0,P>
+        m_kHull[1] = rkP;
+        break;
+    // case ORDER_COLLINEAR_CONTAIN:  linear order is <Q0,P,Q1>, no change
+    }
 }
-
-
-std::string RegEx::Expression()const
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexHull2<Real>::MergePlanar (const SortedVertex& rkP)
 {
-   return pdata->e.expression();
-}
+    int iSize = (int)m_kHull.size();
+    int i, iU, iL, iCT;
 
-//
-// now matching operators:
-//
-bool RegEx::Match(const char* p, match_flag_type flags)
+    // search counterclockwise for last visible vertex
+    for (iU = 0, i = 1; iU < iSize; iU = i++)
+    {
+        if ( i == iSize )
+            i = 0;
+
+        iCT = CollinearTest(rkP.m_kV,m_kHull[iU].m_kV,m_kHull[i].m_kV);
+        if ( iCT == ORDER_NEGATIVE )
+            continue;
+        if ( iCT == ORDER_POSITIVE || iCT == ORDER_COLLINEAR_LEFT )
+            break;
+
+        // iCT == ORDER_COLLINEAR_CONTAIN || iCT == ORDER_COLLINEAR_RIGHT
+        return;
+    }
+    assert( iU < iSize );
+
+    // search clockwise for last visible vertex
+    for (iL = 0, i = iSize-1; i >= 0; iL = i--)
+    {
+        iCT = CollinearTest(rkP.m_kV,m_kHull[i].m_kV,m_kHull[iL].m_kV);
+        if ( iCT == ORDER_NEGATIVE )
+            continue;
+        if ( iCT == ORDER_POSITIVE || iCT == ORDER_COLLINEAR_RIGHT )
+            break;
+
+        // iCT == ORDER_COLLINEAR_CONTAIN || iCT == ORDER_COLLINEAR_LEFT
+        return;
+    }
+    assert( i >= 0 );
+
+    if ( iU == iL )
+    {
+        // This probably occurs when CollinearTest should report collinearity,
+        // but does not.  If it does occur, and you care about this code
+        // block not occurring, try increasing the size of the collinear
+        // epsilon.  When this block does occur, the conclusion is that the
+        // input point is collinear with an edge of the hull, so just return.
+        return;
+    }
+
+    // construct the counterclockwise-ordered merged-hull vertices
+    SVArray kTmpHull;
+    kTmpHull.push_back(rkP);
+    while ( true )
+    {
+        kTmpHull.push_back(m_kHull[iU]);
+        if ( iU == iL )
+            break;
+
+        if ( ++iU == iSize )
+            iU = 0;
+    }
+    assert( kTmpHull.size() > 2 );
+
+    m_kHull = kTmpHull;
+}
+//----------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------
+// explicit instantiation
+//----------------------------------------------------------------------------
+namespace Wml
 {
-   pdata->t = re_detail::RegExData::type_pc;
-   pdata->pbase = p;
-   const char* end = p;
-   while(*end)++end;
+template class WML_ITEM ConvexHull2<float>;
+float ConvexHull2f::COLLINEAR_EPSILON = 1e-06f;
 
-   if(regex_match(p, end, pdata->m, pdata->e, flags))
-   {
-      pdata->update();
-      return true;
-   }
-   return false;
+template class WML_ITEM ConvexHull2<double>;
+double ConvexHull2d::COLLINEAR_EPSILON = 1e-06;
 }
-
-bool RegEx::Search(const char* p, match_flag_type flags)
-{
-   pdata->t = re_detail::RegExData::type_pc;
-   pdata->pbase = p;
-   const char* end = p;
-   while(*end)++end;
-
-   if(regex_search(p, end, pdata->m, pdata->e, flags))
-   {
-      pdata->update();
-      return true;
-   }
-   return false;
-}
-namespace re_detail{
-struct pred1
-{
-   GrepCallback cb;
-   RegEx* pe;
-   pred1(GrepCallback c, RegEx* i) : cb(c), pe(i) {}
-   bool operator()(const cmatch& m)
-   {
-      pe->pdata->m = m;
-      return cb(*pe);
-   }
-};
-}
-unsigned int RegEx::Grep(GrepCallback cb, const char* p, match_flag_type flags)
-{
-   pdata->t = re_detail::RegExData::type_pc;
-   pdata->pbase = p;
-   const char* end = p;
-   while(*end)++end;
-
-   unsigned int result = regex_grep(re_detail::pred1(cb, this), p, end, pdata->e, flags);
-   if(result)
-      pdata->update();
-   return result;
-}
-namespace re_detail{
-struct pred2
-{
-   std::vector<std::string>& v;
-   RegEx* pe;
-   pred2(std::vector<std::string>& o, RegEx* e) : v(o), pe(e) {}
-   bool operator()(const cmatch& m)
-   {
-      pe->pdata->m = m;
-      v.push_back(std::string(m[0].first, m[0].second));
-      return true;
-   }
-private:
-   pred2& operator=(const pred2&);
-};
-}
-
-unsigned int RegEx::Grep(std::vector<std::string>& v, const char* p, match_flag_type flags)
-{
-   pdata->t = re_detail::RegExData::type_pc;
-   pdata->pbase = p;
-   const char* end = p;
-   while(*end)++end;
-
-   unsigned int result = regex_grep(re_detail::pred2(v, this), p, end, pdata->e, flags);
-   if(result)
-      pdata->update();
-   return result;
-}
-namespace re_detail{
-struct pred3
-{
-   std::vector<std::size_t>& v;
-   const char* base;
-   RegEx* pe;
-   pred3(std::vector<std::size_t>& o, const char* pb, RegEx* p) : v(o), base(pb), pe(p) {}
-   bool operator()(const cmatch& m)
-   {
-      pe->pdata->m = m;
-      v.push_back(static_cast<std::size_t>(m[0].first - base));
-      return true;
-   }
-private:
-   pred3& operator=(const pred3&);
-};
-}
-unsigned int RegEx::Grep(std::vector<std::size_t>& v, const char* p, match_flag_type flags)
-{
-   pdata->t = re_detail::RegExData::type_pc;
-   pdata->pbase = p;
-   const char* end = p;
-   while(*end)++end;
-
-   unsigned int result = regex_grep(re_detail::pred3(v, p, this), p, end, pdata->e, flags);
-   if(result)
-      pdata->update();
-   return result;
-}
-#ifndef BOOST_REGEX_NO_FILEITER
-namespace re_detail{
-struct pred4
-{
-   GrepFileCallback cb;
-   RegEx* pe;
-   const char* file;
-   bool ok;
-   pred4(GrepFileCallback c, RegEx* i, const char* f) : cb(c), pe(i), file(f), ok(true) {}
-   bool operator()(const match_results<mapfile::iterator>& m)
-   {
-      pe->pdata->t = RegExData::type_pf;
-      pe->pdata->fm = m;
-      pe->pdata->update();
-      ok = cb(file, *pe);
-      return ok;
-   }
-};
-}
-namespace{
-void BuildFileList(std::list<std::string>* pl, const char* files, bool recurse)
-{
-   file_iterator start(files);
-   file_iterator end;
-   if(recurse)
-   {
-      // go through sub directories:
-      char buf[MAX_PATH];
-      re_detail::overflow_error_if_not_zero(re_detail::strcpy_s(buf, MAX_PATH, start.root()));
-      if(*buf == 0)
-      {
-         re_detail::overflow_error_if_not_zero(re_detail::strcpy_s(buf, MAX_PATH, "."));
-         re_detail::overflow_error_if_not_zero(re_detail::strcat_s(buf, MAX_PATH, directory_iterator::separator()));
-         re_detail::overflow_error_if_not_zero(re_detail::strcat_s(buf, MAX_PATH, "*"));
-      }
-      else
-      {
-         re_detail::overflow_error_if_not_zero(re_detail::strcat_s(buf, MAX_PATH, directory_iterator::separator()));
-         re_detail::overflow_error_if_not_zero(re_detail::strcat_s(buf, MAX_PATH, "*"));
-      }
-      directory_iterator dstart(buf);
-      directory_iterator dend;
-
-      // now get the file mask bit of "files":
-      const char* ptr = files;
-      while(*ptr) ++ptr;
-      while((ptr != files) && (*ptr != *directory_iterator::separator()) && (*ptr != '/'))--ptr;
-      if(ptr != files) ++ptr;
-
-      while(dstart != dend)
-      {
-#if BOOST_WORKAROUND(BOOST_MSVC, >= 1400)
-         (::sprintf_s)(buf, sizeof(buf), "%s%s%s", dstart.path(), directory_iterator::separator(), ptr);
-#else
-         (std::sprintf)(buf, "%s%s%s", dstart.path(), directory_iterator::separator(), ptr);
-#endif
-         BuildFileList(pl, buf, recurse);
-         ++dstart;
-      }
-   }
-   while(start != end)
-   {
-      pl->push_back(*start);
-      ++start;
-   }
-}
-}
-
-unsigned int RegEx::GrepFiles(GrepFileCallback cb, const char* files, bool recurse, match_flag_type flags)
-{
-   unsigned int result = 0;
-   std::list<std::string> file_list;
-   BuildFileList(&file_list, files, recurse);
-   std::list<std::string>::iterator start, end;
-   start = file_list.begin();
-   end = file_list.end();
-
-   while(start != end)
-   {
-      mapfile map((*start).c_str());
-      pdata->t = re_detail::RegExData::type_pf;
-      pdata->fbase = map.begin();
-      re_detail::pred4 pred(cb, this, (*start).c_str());
-      int r = regex_grep(pred, map.begin(), map.end(), pdata->e, flags);
-      result += r;
-      ++start;
-      pdata->clean();
-      if(pred.ok == false)
-         return result;
-   }
-
-   return result;
-}
-
-
-unsigned int RegEx::FindFiles(FindFilesCallback cb, const char* files, bool recurse, match_flag_type flags)
-{
-   unsigned int result = 0;
-   std::list<std::string> file_list;
-   BuildFileList(&file_list, files, recurse);
-   std::list<std::string>::iterator start, end;
-   start = file_list.begin();
-   end = file_list.end();
-
-   while(start != end)
-   {
-      mapfile map((*start).c_str());
-      pdata->t = re_detail::RegExData::type_pf;
-      pdata->fbase = map.begin();
-
-      if(regex_search(map.begin(), map.end(), pdata->fm, pdata->e, flags))
-      {
-         ++result;
-         if(false == cb((*start).c_str()))
-            return result;
-      }
-      //pdata->update();
-      ++start;
-      //pdata->clean();
-   }
-
-   return result;
-}
-#endif
-
-#ifdef BOOST_REGEX_V3
-#define regex_replace regex_merge
-#endif
-
-std::string RegEx::Merge(const std::string& in, const std::string& fmt,
-                    bool copy, match_flag_type flags)
-{
-   std::string result;
-   re_detail::string_out_iterator<std::string> i(result);
-   if(!copy) flags |= format_no_copy;
-   regex_replace(i, in.begin(), in.end(), pdata->e, fmt.c_str(), flags);
-   return result;
-}
-
-std::string RegEx::Merge(const char* in, const char* fmt,
-                    bool copy, match_flag_type flags)
-{
-   std::string result;
-   if(!copy) flags |= format_no_copy;
-   re_detail::string_out_iterator<std::string> i(result);
-   regex_replace(i, in, in + std::strlen(in), pdata->e, fmt, flags);
-   return result;
-}
-
-std::size_t RegEx::Split(std::vector<std::string>& v, 
-                      std::string& s,
-                      match_flag_type flags,
-                      unsigned max_count)
-{
-   return regex_split(std::back_inserter(v), s, pdata->e, flags, max_count);
-}
-
-
-
-//
-// now operators for returning what matched in more detail:
-//
-std::size_t RegEx::Position(int i)const
-{
-   switch(pdata->t)
-   {
-   case re_detail::RegExData::type_pc:
-      return pdata->m[i].matched ? pdata->m[i].first - pdata->pbase : RegEx::npos;
-#ifndef BOOST_REGEX_NO_FILEITER
-   case re_detail::RegExData::type_pf:
-      return pdata->fm[i].matched ? pdata->fm[i].first - pdata->fbase : RegEx::npos;
-#endif
-   case re_detail::RegExData::type_copy:
-      {
-      std::map<int, std::ptrdiff_t, std::less<int> >::iterator pos = pdata->positions.find(i);
-      if(pos == pdata->positions.end())
-         return RegEx::npos;
-      return (*pos).second;
-      }
-   }
-   return RegEx::npos;
-}
-
-std::size_t RegEx::Marks()const
-{
-   return pdata->e.mark_count();
-}
-
-
-std::size_t RegEx::Length(int i)const
-{
-   switch(pdata->t)
-   {
-   case re_detail::RegExData::type_pc:
-      return pdata->m[i].matched ? pdata->m[i].second - pdata->m[i].first : RegEx::npos;
-#ifndef BOOST_REGEX_NO_FILEITER
-   case re_detail::RegExData::type_pf:
-      return pdata->fm[i].matched ? pdata->fm[i].second - pdata->fm[i].first : RegEx::npos;
-#endif
-   case re_detail::RegExData::type_copy:
-      {
-      std::map<int, std::string, std::less<int> >::iterator pos = pdata->strings.find(i);
-      if(pos == pdata->strings.end())
-         return RegEx::npos;
-      return (*pos).second.size();
-      }
-   }
-   return RegEx::npos;
-}
-
-bool RegEx::Matched(int i)const
-{
-   switch(pdata->t)
-   {
-   case re_detail::RegExData::type_pc:
-      return pdata->m[i].matched;
-#ifndef BOOST_REGEX_NO_FILEITER
-   case re_detail::RegExData::type_pf:
-      return pdata->fm[i].matched;
-#endif      
-   case re_detail::RegExData::type_copy:
-      {
-      std::map<int, std::string, std::less<int> >::iterator pos = pdata->strings.find(i);
-      if(pos == pdata->strings.end())
-         return false;
-      return true;
-      }
-   }
-   return false;
-}
-
-
-std::string RegEx::What(int i)const
-{
-   std::string result;
-   switch(pdata->t)
-   {
-   case re_detail::RegExData::type_pc:
-      if(pdata->m[i].matched) 
-         result.assign(pdata->m[i].first, pdata->m[i].second);
-      break;
-   case re_detail::RegExData::type_pf:
-      if(pdata->m[i].matched) 
-         result.assign(to_string(pdata->m[i].first, pdata->m[i].second));
-      break;
-   case re_detail::RegExData::type_copy:
-      {
-      std::map<int, std::string, std::less<int> >::iterator pos = pdata->strings.find(i);
-      if(pos != pdata->strings.end())
-         result = (*pos).second;
-      break;
-      }
-   }
-   return result;
-}
-
-#ifdef BOOST_HAS_LONG_LONG
-const std::size_t RegEx::npos = static_cast<std::size_t>(~0ULL);
-#else
-const std::size_t RegEx::npos = static_cast<std::size_t>(~0UL);
-#endif
-
-} // namespace boost
-
-#if defined(__BORLANDC__) && (__BORLANDC__ >= 0x550) && (__BORLANDC__ <= 0x551) && !defined(_RWSTD_COMPILE_INSTANTIATE)
-//
-// this is an ugly hack to work around an ugly problem:
-// by default this file will produce unresolved externals during
-// linking unless _RWSTD_COMPILE_INSTANTIATE is defined (Borland bug).
-// However if _RWSTD_COMPILE_INSTANTIATE is defined then we get separate
-// copies of basic_string's static data in the RTL and this DLL, this messes
-// with basic_string's memory management and results in run-time crashes,
-// Oh sweet joy of Catch 22....
-//
-namespace std{
-template<> template<>
-basic_string<char>& BOOST_REGEX_DECL
-basic_string<char>::replace<const char*>(char* f1, char* f2, const char* i1, const char* i2)
-{
-   unsigned insert_pos = f1 - begin();
-   unsigned remove_len = f2 - f1;
-   unsigned insert_len = i2 - i1;
-   unsigned org_size = size();
-   if(insert_len > remove_len)
-   {
-      append(insert_len-remove_len, ' ');
-      std::copy_backward(begin() + insert_pos + remove_len, begin() + org_size, end());
-      std::copy(i1, i2, begin() + insert_pos);
-   }
-   else
-   {
-      std::copy(begin() + insert_pos + remove_len, begin() + org_size, begin() + insert_pos + insert_len);
-      std::copy(i1, i2, begin() + insert_pos);
-      erase(size() + insert_len - remove_len);
-   }
-   return *this;
-}
-template<> template<>
-basic_string<wchar_t>& BOOST_REGEX_DECL
-basic_string<wchar_t>::replace<const wchar_t*>(wchar_t* f1, wchar_t* f2, const wchar_t* i1, const wchar_t* i2)
-{
-   unsigned insert_pos = f1 - begin();
-   unsigned remove_len = f2 - f1;
-   unsigned insert_len = i2 - i1;
-   unsigned org_size = size();
-   if(insert_len > remove_len)
-   {
-      append(insert_len-remove_len, ' ');
-      std::copy_backward(begin() + insert_pos + remove_len, begin() + org_size, end());
-      std::copy(i1, i2, begin() + insert_pos);
-   }
-   else
-   {
-      std::copy(begin() + insert_pos + remove_len, begin() + org_size, begin() + insert_pos + insert_len);
-      std::copy(i1, i2, begin() + insert_pos);
-      erase(size() + insert_len - remove_len);
-   }
-   return *this;
-}
-} // namespace std
-#endif
-
-#endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//----------------------------------------------------------------------------

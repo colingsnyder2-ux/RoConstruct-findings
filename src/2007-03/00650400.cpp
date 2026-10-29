@@ -1,13 +1,12 @@
-// from server: 41% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O1 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/PropertyGrid/XTPPropertyGrid.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\ReportControl\XTPReportRows.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPPropertyGrid.cpp : implementation of the CXTPPropertyGrid class.
+// XTPReportRows.cpp : implementation of the CXTPReportRows class.
 //
-// This file is a part of the XTREME PROPERTYGRID MFC class library.
+// This file is a part of the XTREME REPORTCONTROL MFC class library.
 // (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
@@ -26,21 +25,20 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "Resource.h"
-#include "Common/Resource.h"
 
-#include "Common/XTPResourceManager.h"
-#include "Common/XTPVC80Helpers.h"
-#include "Common/XTPDrawHelpers.h"
-#include "Common/XTPImageManager.h"
-#include "Common/XTPToolTipContext.h"
+#include "Common/XTPVc50Helpers.h"
 
-#include "XTPPropertyGridInplaceEdit.h"
-#include "XTPPropertyGridInplaceButton.h"
-#include "XTPPropertyGridInplaceList.h"
-#include "XTPPropertyGridItem.h"
-#include "XTPPropertyGrid.h"
-#include "XTPPropertyGridDefines.h"
+#include "XTPReportRow.h"
+#include "XTPReportGroupRow.h"
+#include "XTPReportRecord.h"
+#include "XTPReportRecords.h"
+#include "XTPReportRecordItem.h"
+#include "XTPReportRecordItemText.h"
+#include "XTPReportControl.h"
+#include "XTPReportColumns.h"
+#include "XTPReportColumn.h"
+#include "XTPReportInplaceControls.h"
+#include "XTPReportRows.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -48,1408 +46,886 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-const int SPLITTER_HEIGHT = 3;
-const int TOOLBAR_HEIGHT = 25;
+//////////////////////////////////////////////////////////////////////////
+// CXTPReportRows
+
+CXTPReportRows::CXTPReportRows()
+{
+	m_pVirtualRow = 0;
+	m_nVirtualRowsCount = 0;
+}
+
+CXTPReportRows::~CXTPReportRows()
+{
+	Clear();
+}
+
 
 //////////////////////////////////////////////////////////////////////////
-// CXTPPropertyGridUpdateContext
+// CXTPReportRows member functions
 
-CXTPPropertyGridUpdateContext::CXTPPropertyGridUpdateContext()
+void CXTPReportRows::Clear(BOOL bResetRow)
 {
-	m_nSelected = 0;
-	m_nTopIndex = 0;
-	m_propertySort = xtpGridSortAlphabetical;
-
-
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPPropertyGridVerb
-
-CXTPPropertyGridVerb::CXTPPropertyGridVerb()
-{
-	m_nID = 0;
-	m_nIndex = -1;
-	m_pVerbs = 0;
-
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPPropertyGridVerbs
-
-CXTPPropertyGridVerbs::CXTPPropertyGridVerbs()
-{
-	m_pGrid = 0;
-
-
-}
-
-CXTPPropertyGridVerbs::~CXTPPropertyGridVerbs()
-{
-	for (int i = 0; i < m_arrVerbs.GetSize(); i++)
-		m_arrVerbs[i]->InternalRelease();
-}
-
-void CXTPPropertyGridVerbs::RemoveAll()
-{
-	if (IsEmpty())
-		return;
-
-	for (int i = 0; i < m_arrVerbs.GetSize(); i++)
-		m_arrVerbs[i]->InternalRelease();
-
-	m_arrVerbs.RemoveAll();
-
-	m_pGrid->OnVerbsChanged();
-}
-
-int CXTPPropertyGridVerbs::GetCount() const
-{
-	return (int)m_arrVerbs.GetSize();
-}
-
-void CXTPPropertyGridVerbs::Add(LPCTSTR strCaption, UINT nID)
-{
-	CXTPPropertyGridVerb* pVerb = new CXTPPropertyGridVerb();
-
-	pVerb->m_nID = nID;
-	pVerb->m_strCaption = strCaption;
-	pVerb->m_pVerbs = this;
-	pVerb->m_rcPart.SetRectEmpty();
-	pVerb->m_ptClick = CPoint(0);
-
-	pVerb->m_nIndex = (UINT)m_arrVerbs.Add(pVerb);
-
-	m_pGrid->OnVerbsChanged();
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPPropertyGridToolBar
-
-CXTPPropertyGridToolBar::CXTPPropertyGridToolBar()
-{
-	m_cxLeftBorder = m_cxRightBorder = m_cyBottomBorder = m_cyTopBorder = 0;
-}
-
-CXTPPropertyGridToolBar::~CXTPPropertyGridToolBar()
-{
-}
-
-BEGIN_MESSAGE_MAP(CXTPPropertyGridToolBar, CToolBar)
-	//{{AFX_MSG_MAP(CToolBar)
-	ON_WM_PAINT()
-	ON_WM_ERASEBKGND()
-	ON_WM_NCCALCSIZE()
-	ON_NOTIFY_REFLECT(NM_CUSTOMDRAW, OnCustomDraw)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-void CXTPPropertyGridToolBar::OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
-{
-	NMLVCUSTOMDRAW* lpLVCD = reinterpret_cast<NMLVCUSTOMDRAW*>(pNMHDR);
-	*pResult = CDRF_DODEFAULT;
-
-	switch (lpLVCD->nmcd.dwDrawStage)
+	// array cleanup
+	for (int nRow = (int)m_arrRows.GetSize() - 1; nRow >= 0; nRow--)
 	{
-	case CDDS_PREPAINT:
-		CWnd* pGrid = GetParent();
-		HBRUSH hBrush = (HBRUSH)pGrid->GetParent()->SendMessage(WM_CTLCOLORSTATIC,
-			(WPARAM)lpLVCD->nmcd.hdc, (LPARAM)pGrid->m_hWnd);
-
-		::FillRect(lpLVCD->nmcd.hdc, &lpLVCD->nmcd.rc, hBrush ? hBrush : GetSysColorBrush(COLOR_3DFACE));
-		break;
-	}
-}
-
-
-BOOL CXTPPropertyGridToolBar::OnEraseBkgnd(CDC*)
-{
-	return TRUE;
-}
-
-void CXTPPropertyGridToolBar::OnNcCalcSize(BOOL /*bCalcValidRects*/, NCCALCSIZE_PARAMS* /*lpncsp*/)
-{
-}
-
-void CXTPPropertyGridToolBar::OnPaint()
-{
-	CPaintDC dc(this);
-
-	CXTPClientRect rc(this);
-	CXTPBufferDC memDC(dc, rc);
-	memDC.FillSolidRect(rc, GetXtremeColor(COLOR_3DFACE));
-
-	CToolBar::DefWindowProc(WM_PAINT, (WPARAM)memDC.m_hDC, 0);
-}
-
-void CXTPPropertyGridToolBar::OnUpdateCmdUI(CFrameWnd* /*pTarget*/, BOOL /*bDisableIfNoHndler*/)
-{
-}
-
-BOOL CXTPPropertyGridToolBar::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
-{
-	CXTPPropertyGrid* pGrid = (CXTPPropertyGrid*)GetParent();
-	if (pGrid->GetToolTipContext())
-	{
-		pGrid->GetToolTipContext()->FilterToolTipMessage(this, message, wParam, lParam);
+		CXTPReportRow* pRow = m_arrRows.GetAt(nRow);
+		if (bResetRow)
+		{
+			pRow->m_bVisible = FALSE;
+			pRow->m_nIndex = -1;
+		}
+		pRow->InternalRelease();
 	}
 
-	return CWnd::OnWndMsg(message, wParam, lParam, pResult);
-}
+	m_arrRows.RemoveAll();
 
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPPropertyGrid
-
-CXTPPropertyGrid::CXTPPropertyGrid()
-: m_bHelpVisible(TRUE)
-, m_bToolBarVisible(FALSE)
-, m_nHelpHeight(58)
-, m_bPreSubclassWindow(TRUE)
-{
-	RegisterWindowClass();
-
-	m_pView = 0;
-
-	m_hCursorSplit = XTPResourceManager()->LoadCursor(XTP_IDC_VSPLITBAR);
-
-	m_hCursorHand = AfxGetApp()->LoadStandardCursor(MAKEINTRESOURCE(32649));
-
-	if (m_hCursorHand == 0)
-		m_hCursorHand = XTPResourceManager()->LoadCursor(XTP_IDC_HAND);
-
-
-	m_pPaintManager = new CXTPPropertyGridPaintManager(this);
-	m_pPaintManager->RefreshMetrics();
-
-	m_themeCurrent = xtpGridThemeDefault;
-
-	m_pVerbs = new CXTPPropertyGridVerbs;
-	m_pVerbs->m_pGrid = this;
-
-	m_nVerbsHeight = 25;
-	m_nFocusedVerb = -1;
-	m_bVerbActivate = FALSE;
-	m_bVerbsVisible = FALSE;
-	m_bEnableTooltips = TRUE;
-
-	m_bTabItems = FALSE;
-	m_bVariableItemsHeight = FALSE;
-
-	m_borderStyle = xtpGridBorderStaticEdge;
-
-	m_bShowInplaceButtonsAlways = FALSE;
-
-	LOGFONT lfIcon;
-	VERIFY(::SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(lfIcon), &lfIcon, 0));
-	lfIcon.lfWeight = FW_NORMAL;
-	lfIcon.lfItalic = FALSE;
-	VERIFY(m_pPaintManager->GetItemMetrics()->m_fontNormal.CreateFontIndirect(&lfIcon));
-
-	lfIcon.lfWeight = FW_BOLD;
-	VERIFY(m_pPaintManager->GetItemMetrics()->m_fontBold.CreateFontIndirect(&lfIcon));
-
-	m_bHighlightChanged = FALSE;
-
-	m_pImageManager = new CXTPImageManager;
-
-	m_pInplaceEdit = new CXTPPropertyGridInplaceEdit;
-	m_pInplaceListBox = new CXTPPropertyGridInplaceList;
-
-	m_bVariableHelpHeight = TRUE;
-
-	m_pToolTipContext = new CXTPToolTipContext;
-
-	m_bHideSelection = FALSE;
-
-
-
-}
-
-BOOL CXTPPropertyGrid::RegisterWindowClass(HINSTANCE hInstance /*= NULL*/)
-{
-	return XTPDrawHelpers()->RegisterWndClass(hInstance, XTPPROPERTYGRID_CLASSNAME, 0);
-}
-
-CXTPPropertyGrid::~CXTPPropertyGrid()
-{
-	if (m_pView)
+	if (m_pVirtualRow)
 	{
-		delete m_pView;
+		m_pVirtualRow->InternalRelease();
+		m_pVirtualRow = 0;
 	}
 
-	CMDTARGET_RELEASE(m_pVerbs);
-	CMDTARGET_RELEASE(m_pImageManager);
-
-	SAFE_DELETE(m_pInplaceEdit);
-	SAFE_DELETE(m_pInplaceListBox);
-
-	delete m_pPaintManager;
-
-	CMDTARGET_RELEASE(m_pToolTipContext);
 }
 
-void CXTPPropertyGrid::SetInplaceEdit(CXTPPropertyGridInplaceEdit*  pInplaceEdit)
+CXTPReportRow* CXTPReportRows::GetNext(CXTPReportRow* pRow, BOOL bSkipGroupFocus)
 {
-	ASSERT(pInplaceEdit);
-
-	SAFE_DELETE(m_pInplaceEdit);
-	m_pInplaceEdit = pInplaceEdit;
-}
-
-void CXTPPropertyGrid::SetInplaceList(CXTPPropertyGridInplaceList*  pInplaceList)
-{
-	ASSERT(pInplaceList);
-
-	SAFE_DELETE(m_pInplaceListBox);
-	m_pInplaceListBox = pInplaceList;
-}
-
-
-CXTPPropertyGridView* CXTPPropertyGrid::CreateView() const
-{
-	return new CXTPPropertyGridView();
-}
-
-CXTPPropertyGridView& CXTPPropertyGrid::GetGridView() const
-{
-	if (m_pView == 0)
+	if (pRow)
 	{
-		m_pView = CreateView();
-		m_pView->m_pGrid = (CXTPPropertyGrid*)this;
+		int index = pRow->GetIndex();
+
+		while (index < GetCount() - 1)
+		{
+			index++;
+			pRow = GetAt(index);
+
+			if (!bSkipGroupFocus || !pRow->IsGroupRow() || !pRow->IsExpanded())
+				return pRow;
+		}
+	}
+	else if (GetCount() > 0)
+	{
+		return GetAt(0);
+	}
+	return pRow;
+}
+
+CXTPReportRow* CXTPReportRows::GetPrev(CXTPReportRow* pRow, BOOL bSkipGroupFocus)
+{
+	if (pRow)
+	{
+		int index = pRow->GetIndex();
+
+		while (index > 0)
+		{
+			index--;
+			pRow = GetAt(index);
+
+			if (!bSkipGroupFocus || !pRow->IsGroupRow() || !pRow->IsExpanded())
+				return pRow;
+
+		}
+	}
+	else if (GetCount() > 0)
+	{
+		return GetAt(0);
+	}
+	return pRow;
+}
+
+void CXTPReportRows::InsertAt(int nIndex, CXTPReportRow* pRow)
+{
+	m_arrRows.InsertAt(nIndex, pRow);
+}
+
+int CXTPReportRows::Add(CXTPReportRow* pRow)
+{
+	int nIndex = (int)m_arrRows.Add(pRow);
+
+	pRow->m_nChildIndex = nIndex;
+	pRow->m_pParentRows = this;
+
+	return nIndex;
+}
+
+void CXTPReportRows::RemoveAt(int nIndex)
+{
+	m_arrRows.GetAt(nIndex)->InternalRelease();
+	m_arrRows.RemoveAt(nIndex);
+}
+
+int CXTPReportRows::RemoveRow(CXTPReportRow* pRow)
+{
+	for (int i = 0; i < (int)m_arrRows.GetSize(); i++)
+	{
+		if (m_arrRows.GetAt(i) == pRow)
+		{
+			RemoveAt(i);
+			return i;
+		}
+	}
+	return -1;
+}
+
+void CXTPReportRows::SetVirtualMode(CXTPReportRow* pRow, int nCount)
+{
+	ASSERT(m_pVirtualRow == NULL);
+
+	m_pVirtualRow = pRow;
+	m_nVirtualRowsCount = nCount;
+}
+
+
+int _cdecl CXTPReportRows::CompareRows(const CXTPReportRow** ppRow1, const CXTPReportRow** ppRow2)
+{
+	CXTPReportColumns* pColumns = (**ppRow1).GetControl()->GetColumns();
+
+	CXTPReportRecord* pRecord1 = (**ppRow1).GetRecord();
+	CXTPReportRecord* pRecord2 = (**ppRow2).GetRecord();
+
+	ASSERT(pColumns);
+	ASSERT(pRecord1 && pRecord2 || !pRecord1 && !pRecord2);
+
+	if (pRecord1 == pRecord2 && pRecord1)
+		return 0;
+
+	if (!pRecord1 && !pRecord2)
+	{
+		// compare groupRows by its first not group child rows
+		if ((*ppRow1)->HasChildren() && (*ppRow2)->HasChildren())
+		{
+			CXTPReportRow* pRow1a = (CXTPReportRow*)(*ppRow1);
+			CXTPReportRow* pRow2a = (CXTPReportRow*)(*ppRow2);
+
+			if (pRow1a->GetChilds() && pRow1a->GetChilds()->GetCount() &&
+				pRow2a->GetChilds() && pRow2a->GetChilds()->GetCount())
+			{
+				pRow1a = pRow1a->GetChilds()->GetAt(0);
+				pRow2a = pRow2a->GetChilds()->GetAt(0);
+
+				return CompareRows((const CXTPReportRow**)&pRow1a, (const CXTPReportRow**)&pRow2a);
+			}
+		}
 	}
 
-	return *m_pView;
-}
-
-IMPLEMENT_DYNAMIC(CXTPPropertyGrid, CWnd)
-
-BEGIN_MESSAGE_MAP(CXTPPropertyGrid, CWnd)
-	//{{AFX_MSG_MAP(CXTPPropertyGrid)
-	ON_WM_ERASEBKGND()
-	ON_WM_PAINT()
-	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
-	ON_WM_SETFOCUS()
-	ON_WM_KILLFOCUS()
-	ON_WM_SIZE()
-	ON_WM_SETCURSOR()
-	ON_WM_LBUTTONDOWN()
-	ON_WM_LBUTTONUP()
-	ON_COMMAND(XTP_IDC_PROPERTYGRID_ALPHABETIC, OnSortAlphabetic)
-	ON_COMMAND(XTP_IDC_PROPERTYGRID_CATEGORIZED, OnSortCategorized)
-	ON_WM_SYSCOLORCHANGE()
-	ON_WM_KEYDOWN()
-	ON_WM_GETDLGCODE()
-	//}}AFX_MSG_MAP
-	ON_NOTIFY_EX_RANGE(TTN_NEEDTEXTW, 0, 0xFFFF, OnToolTipText)
-	ON_NOTIFY_EX_RANGE(TTN_NEEDTEXTA, 0, 0xFFFF, OnToolTipText)
-END_MESSAGE_MAP()
-
-UINT CXTPPropertyGrid::OnGetDlgCode()
-{
-	return DLGC_WANTALLKEYS;
-}
-
-BOOL CXTPPropertyGrid::CreateGridView(DWORD dwListStyle)
-{
-	CXTPEmptyRect rect;
-
-	if (dwListStyle == NULL)
-	{
-		dwListStyle = m_bVariableItemsHeight ? LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT :
-			LBS_OWNERDRAWFIXED | LBS_NOINTEGRALHEIGHT;
-	}
-
-	// Must be owner draw.
-	ASSERT((dwListStyle & (LBS_OWNERDRAWVARIABLE|LBS_OWNERDRAWFIXED)) != 0);
-
-	m_bVariableItemsHeight = (dwListStyle & LBS_OWNERDRAWVARIABLE) != 0;
-
-	if (!GetGridView().CreateEx(0, _T("LISTBOX"), NULL,
-		WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_CHILD | WS_VISIBLE |
-		LBS_NOTIFY | WS_VSCROLL | WS_TABSTOP | dwListStyle, rect, this, 0))
-	{
-		TRACE0("Error creating property grid view.\n");
-		return FALSE;
-	}
-
-	GetGridView().ResetContent();
-	SetStandardColors();
-
-	return TRUE;
-}
-
-BOOL CXTPPropertyGrid::Create(const RECT& rect, CWnd* pParentWnd, UINT nID, DWORD dwListStyle /*= LBS_OWNERDRAWFIXED|LBS_NOINTEGRALHEIGHT*/)
-{
-	if (!CreateEx(0, XTPPROPERTYGRID_CLASSNAME, _T(""),
-		WS_TABSTOP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_CHILD | WS_GROUP, rect, pParentWnd, nID))
-	{
-		TRACE0("Error creating property grid.\n");
-		return FALSE;
-	}
-
-	if (!CreateGridView(dwListStyle))
-		return FALSE;
-
-	Reposition(rect.right - rect.left, rect.bottom - rect.top);
-
-	SetWindowPos(NULL, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top,
-		SWP_SHOWWINDOW|SWP_NOZORDER);
-
-	return TRUE;
-}
-
-BOOL CXTPPropertyGrid::PreCreateWindow(CREATESTRUCT& cs)
-{
-	if (!CWnd::PreCreateWindow(cs))
-		return FALSE;
-
-	//
-	// PreCreateWindow is called when a control is dynamically
-	// created. We want to set m_bPreSubclassWindow to FALSE
-	// here so the control is initialized from CWnd::Create and
-	// not CWnd::PreSubclassWindow.
-	//
-
-	m_bPreSubclassWindow = FALSE;
-
-	return TRUE;
-}
-
-void CXTPPropertyGrid::PreSubclassWindow()
-{
-	CWnd::PreSubclassWindow();
-
-	if (m_bPreSubclassWindow)
-	{
-		// Initialize the control.
-		VERIFY(CreateGridView(NULL));
-
-		Reposition();
-	}
-}
-
-void CXTPPropertyGrid::SetVariableItemsHeight(BOOL bVariable /*= TRUE*/)
-{
-	if (m_bVariableItemsHeight == bVariable)
-		return;
-
-	m_bVariableItemsHeight = bVariable;
-
-	CXTPPropertyGridView& wndView = GetGridView();
-	if (!wndView.GetSafeHwnd())
-		return;
-
-	wndView.ResetContent();
-	wndView.DestroyWindow();
-
-	DWORD dwListStyle = bVariable ? LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT : LBS_OWNERDRAWFIXED | LBS_NOINTEGRALHEIGHT;
-
-	VERIFY(GetGridView().CreateEx(0, _T("LISTBOX"), NULL, WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_CHILD | WS_VISIBLE | LBS_NOTIFY | WS_VSCROLL | WS_TABSTOP | dwListStyle, CXTPEmptyRect(), this, 0));
-
-	wndView.Refresh();
-
-	Reposition();
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPPropertyGrid message handlers
-
-BOOL CXTPPropertyGrid::OnEraseBkgnd(CDC*)
-{
-	return TRUE;
-}
-
-void CXTPPropertyGrid::OnPaint()
-{
-	CPaintDC dcPaint(this);
-	CXTPBufferDC dc(dcPaint);
-
-	m_pPaintManager->FillPropertyGrid(&dc);
-}
-
-LRESULT CXTPPropertyGrid::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
-{
-	CDC* pDC = CDC::FromHandle((HDC)wParam);
-	if (pDC)
-	{
-		m_pPaintManager->FillPropertyGrid(pDC);
-	}
-
-	return TRUE;
-}
-
-CWnd* CXTPPropertyGrid::GetNextGridTabItem(BOOL bForward)
-{
-	CWnd* pThis = this;
-	CWnd* pParent = pThis->GetParent();
-
-	if (!pThis || !pParent)
+	if (!pRecord1 || !pRecord2)
 	{
 		ASSERT(FALSE);
-		return 0 ;
+		return 0;
 	}
 
-	if ((pParent->GetExStyle() & WS_EX_CONTROLPARENT) && (pParent->GetStyle() & WS_CHILD))
+	for (int nGroupOrder = 0; nGroupOrder < pColumns->GetGroupsOrder()->GetCount(); nGroupOrder++)
 	{
-		pParent = pParent->GetParent();
+		CXTPReportColumn* pColumn = pColumns->GetGroupsOrder()->GetAt(nGroupOrder);
+		if (!pColumn->m_bAutoSortWhenGrouped)
+			continue;
+
+		BOOL bIncreasing = pColumn->m_bSortIncreasing;
+
+		CXTPReportRecordItem* pItem1 = pRecord1->GetItem(pColumn);
+		CXTPReportRecordItem* pItem2 = pRecord2->GetItem(pColumn);
+
+		if (!pItem1 || !pItem2)
+			continue;
+
+		int nCompareResult = pItem1->CompareGroupCaption(pColumn, pItem2);
+
+		if (nCompareResult != 0)
+			return nCompareResult * (bIncreasing ? 1 : -1);
 	}
 
-	CWnd* pNextItem = pParent->GetNextDlgTabItem(pThis, bForward);
 
-	if (pNextItem == pThis)
-		return NULL;
+	for (int nSortOrder = 0; nSortOrder < pColumns->GetSortOrder()->GetCount(); nSortOrder++)
+	{
+		CXTPReportColumn* pColumn = pColumns->GetSortOrder()->GetAt(nSortOrder);
+		BOOL bIncreasing = pColumn->IsSortedIncreasing();
 
-	return pNextItem;
+		CXTPReportRecordItem* pItem1 = pRecord1->GetItem(pColumn);
+		CXTPReportRecordItem* pItem2 = pRecord2->GetItem(pColumn);
+
+		if (!pItem1 || !pItem2)
+			continue;
+
+		int nCompareResult = pItem1->Compare(pColumn, pItem2);
+
+		if (nCompareResult != 0)
+			return nCompareResult * (bIncreasing ? 1 : -1);
+	}
+
+	return pRecord1->GetIndex() > pRecord2->GetIndex() ? 1 : -1;
 }
 
-void CXTPPropertyGrid::OnNavigate(XTPPropertyGridUI nUIElement, BOOL bForward, CXTPPropertyGridItem* pItem)
+int _cdecl CXTPReportRows::CompareRows2(const CXTPReportRow** ppRow1, const CXTPReportRow** ppRow2)
 {
-	int nNextElement = bForward ? +1 : -1;
-	int nUI = nUIElement + nNextElement;
+	CXTPReportColumns* pColumns = (**ppRow1).GetControl()->GetColumns();
 
-	CXTPPropertyGridView& wndView = GetGridView();
+	CXTPReportRecord* pRecord1 = (**ppRow1).GetRecord();
+	CXTPReportRecord* pRecord2 = (**ppRow2).GetRecord();
 
-	if (pItem == NULL)
-		pItem = wndView.GetSelectedItem();
+	ASSERT(pColumns);
+	ASSERT(pRecord1 && pRecord2 || !pRecord1 && !pRecord2);
 
-	while (nUI != nUIElement)
+	if (pRecord1 == pRecord2 && pRecord1)
+		return 0;
+
+	if (!pRecord1 && !pRecord2)
 	{
-		if (nUI == xtpGridUIViewPrev)
+		// compare groupRows by its first not group child rows
+		if ((*ppRow1)->HasChildren() && (*ppRow2)->HasChildren())
 		{
-			nUI += nNextElement;
+			CXTPReportRow* pRow1a = (CXTPReportRow*)(*ppRow1);
+			CXTPReportRow* pRow2a = (CXTPReportRow*)(*ppRow2);
 
-			if (m_bTabItems)
+			if (pRow1a->GetChilds() && pRow1a->GetChilds()->GetCount() &&
+				pRow2a->GetChilds() && pRow2a->GetChilds()->GetCount())
 			{
-				int nIndex = !bForward && pItem ? pItem->m_nIndex - 1 : 0;
-				if (nIndex >= 0)
-				{
-					wndView.SetFocus();
-					wndView.SetCurSel(nIndex);
-					wndView.OnSelectionChanged();
+				pRow1a = pRow1a->GetChilds()->GetAt(0);
+				pRow2a = pRow2a->GetChilds()->GetAt(0);
 
-					if (bForward)
-						return;
-
-					nUI = xtpGridUIInplaceButton;
-					pItem = wndView.GetSelectedItem();
-				}
+				return CompareRows((const CXTPReportRow**)&pRow1a, (const CXTPReportRow**)&pRow2a);
 			}
 		}
-		if (nUI == xtpGridUIView)
-		{
-			wndView.SetFocus();
-			wndView.FocusInplaceButton(NULL);
-			return;
-		}
-		if (nUI == xtpGridUIInplaceEdit)
-		{
-			if (pItem && pItem->GetFlags() & xtpGridItemHasEdit)
-			{
-				pItem->OnSelect();
-				pItem->SetFocusToInplaceControl();
-				return;
-			}
-			nUI += nNextElement;
-		}
-		if (nUI == xtpGridUIInplaceControl)
-		{
-			if (pItem && pItem->GetInplaceControls()->GetCount() > 0)
-			{
-				CWnd* pWnd = pItem->GetInplaceControls()->GetAt(0);
-				if (pWnd && pWnd->GetSafeHwnd() && pWnd->GetStyle() & WS_TABSTOP)
-				{
-					pWnd->SetFocus();
-					return;
-				}
-			}
-			nUI += nNextElement;
-		}
-		if (nUI == xtpGridUIInplaceButton)
-		{
-			if (pItem && pItem->IsInplaceButtonsVisible())
-			{
-				CXTPPropertyGridInplaceButtons* pButtons = pItem->GetInplaceButtons();
+	}
 
-				if (wndView.m_pFocusedButton && wndView.m_pFocusedButton->GetItem() == pItem)
-				{
-					int nIndex = wndView.m_pFocusedButton->GetIndex();
-					if (bForward && nIndex < pButtons->GetCount() -1)
-					{
-						wndView.FocusInplaceButton(pButtons->GetAt(nIndex + 1));
-						return;
-					}
-					else if (!bForward && nIndex > 0)
-					{
-						wndView.FocusInplaceButton(pButtons->GetAt(nIndex - 1));
-						return;
-					}
-				}
+	if (!pRecord1 || !pRecord2)
+	{
+		ASSERT(FALSE);
+		return 0;
+	}
+
+	for (int nGroupOrder = 0; nGroupOrder < pColumns->GetGroupsOrder()->GetCount(); nGroupOrder++)
+	{
+		CXTPReportColumn* pColumn = pColumns->GetGroupsOrder()->GetAt(nGroupOrder);
+		if (!pColumn->m_bAutoSortWhenGrouped)
+			continue;
+
+		BOOL bIncreasing = pColumn->m_bSortIncreasing;
+
+		CXTPReportRecordItem* pItem1 = pRecord1->GetItem(pColumn);
+		CXTPReportRecordItem* pItem2 = pRecord2->GetItem(pColumn);
+
+		if (!pItem1 || !pItem2)
+			continue;
+
+		int nCompareResult = pItem1->CompareGroupCaption(pColumn, pItem2);
+
+		if (nCompareResult != 0)
+		{
+			if(nGroupOrder > 0)
+				nCompareResult = bIncreasing ? -1 : 1;
+			return nCompareResult * (bIncreasing ? 1 : -1);
+		}
+	}
+
+
+	for (int nSortOrder = 0; nSortOrder < pColumns->GetSortOrder()->GetCount(); nSortOrder++)
+	{
+		CXTPReportColumn* pColumn = pColumns->GetSortOrder()->GetAt(nSortOrder);
+		BOOL bIncreasing = pColumn->IsSortedIncreasing();
+
+		CXTPReportRecordItem* pItem1 = pRecord1->GetItem(pColumn);
+		CXTPReportRecordItem* pItem2 = pRecord2->GetItem(pColumn);
+
+		if (!pItem1 || !pItem2)
+			continue;
+
+		int nCompareResult = pItem1->Compare(pColumn, pItem2);
+
+		if (nCompareResult != 0)
+			return nCompareResult * (bIncreasing ? 1 : -1);
+	}
+
+	return 0;
+}
+
+void CXTPReportRows::SortEx(T_CompareFunc pCompareFunc)
+{
+	typedef int (_cdecl *GENERICCOMPAREFUNC)(const void *, const void*);
+
+	qsort(m_arrRows.GetData(), (size_t)m_arrRows.GetSize(), sizeof(CXTPReportRow*), (GENERICCOMPAREFUNC)pCompareFunc);
+}
+
+void CXTPReportRows::Sort()
+{
+	SortEx(CompareRows);
+}
+
+int CXTPReportRows::GetCount() const
+{
+	if (m_pVirtualRow)
+		return m_nVirtualRowsCount;
+
+	return (int)m_arrRows.GetSize();
+}
+
+CXTPReportRow* CXTPReportRows::GetAt(int nIndex) const
+{
+	if (m_pVirtualRow)
+	{
+		m_pVirtualRow->m_nIndex = nIndex;
+		return m_pVirtualRow;
+	}
+
+	return (nIndex >= 0) && (nIndex < GetCount()) ? m_arrRows.GetAt(nIndex) : NULL;
+}
+
+CXTPReportRow* CXTPReportRows::Find(CXTPReportRecord* pRecord)
+{
+	for (int i = 0; i < (int)m_arrRows.GetSize(); i++)
+	{
+		if (m_arrRows.GetAt(i)->GetRecord() == pRecord)
+			return m_arrRows.GetAt(i);
+	}
+	return 0;
+}
+
+CXTPReportRow* CXTPReportRows::FindInTree(CXTPReportRecord* pRecord)
+{
+	for (int i = 0; i < (int)m_arrRows.GetSize(); i++)
+	{
+		if (m_arrRows.GetAt(i)->GetRecord() == pRecord)
+			return m_arrRows.GetAt(i);
+
+		if (m_arrRows.GetAt(i)->HasChildren())
+		{
+			CXTPReportRow* pRow = m_arrRows.GetAt(i)->GetChilds()->FindInTree(pRecord);
+			if (pRow)
+				return pRow;
+		}
+	}
+	return 0;
+}
+
+CXTPReportRow* CXTPReportRows::FindInsertionPos(CXTPReportRow* pRow, BOOL& bInsertAfter)
+{
+	CXTPReportRow* pInsertionRowPos = NULL;
+	bInsertAfter = FALSE;
+
+	for(int i = 0; i < (int)m_arrRows.GetSize(); i++)
+	{
+		CXTPReportRow* pCurRow = m_arrRows.GetAt(i);
+		if(pCurRow->IsGroupRow())
+		{
+			// compare group caption
+			CXTPReportRecord* pRecord = pRow->GetRecord();
+			CXTPReportColumns* pColumns = pRow->GetControl()->GetColumns();
+			if(!(pRecord && pColumns))
+				continue;
+			CXTPReportColumn* pColumn = pColumns->GetGroupsOrder()->GetAt(pCurRow->GetGroupLevel());
+			CXTPReportRecordItem* pItem = pRecord->GetItem(pColumn);
+			COleVariant varGroup(pItem ? (LPCTSTR)pItem->GetGroupCaption(pColumn) : _T(""));
+			COleVariant varGroupRowCaption((LPCTSTR)((CXTPReportGroupRow*)pCurRow)->GetCaption());
+			ULONG dwFlags = pRecord->GetRecords()->IsCaseSensitive() ? 0 : NORM_IGNORECASE;
+			LCID lcidnSortLocale = CXTPReportRecordItemVariant::m_nSortLocale;
+			if (lcidnSortLocale == LOCALE_USER_DEFAULT)
+			{
+				lcidnSortLocale = CXTPReportControlLocale::GetActiveLCID();
+			}
+			int nCompareResult = VARCMP_S(varGroup, varGroupRowCaption, lcidnSortLocale, dwFlags) - VARCMP_EQ;
+			if(pColumn->m_bSortIncreasing && nCompareResult > 0 || !pColumn->m_bSortIncreasing && nCompareResult < 0)
+				continue;
+			// find in children
+			if(!pCurRow->GetChilds())
+				continue;
+			if(nCompareResult == 0)
+				pInsertionRowPos = pCurRow->GetChilds()->FindInsertionPos(pRow, bInsertAfter);
+			if(!pInsertionRowPos)
+			{
+				if(nCompareResult != 0)
+					pInsertionRowPos = pCurRow;
 				else
 				{
-					wndView.FocusInplaceButton(pButtons->GetAt(bForward ? 0 : pButtons->GetCount() - 1));
-					return;
+					pInsertionRowPos = pCurRow->GetChilds()->GetAt(pCurRow->GetChilds()->GetCount() - 1);
+					bInsertAfter = TRUE;
 				}
 			}
-			nUI += nNextElement;
+			break;
 		}
-		if (nUI == xtpGridUIViewNext)
+		if(CompareRows2((const CXTPReportRow**)&pRow, (const CXTPReportRow**)&pCurRow) <= 0)
 		{
-			if (m_bTabItems)
-			{
-				int nIndex = bForward ? (pItem ? pItem->m_nIndex + 1 : 0) : wndView.GetCount() - 1;
-				if (nIndex < wndView.GetCount())
-				{
-					wndView.SetFocus();
-					wndView.SetCurSel(nIndex);
-					wndView.OnSelectionChanged();
-					if (bForward)
-						return;
-					pItem = wndView.GetSelectedItem();
-				}
-			}
-
-			nUI += nNextElement;
+			pInsertionRowPos = pCurRow;
+			break;
 		}
-		if (nUI == xtpGridUIVerb)
+	}
+
+	return pInsertionRowPos;
+}
+
+void CXTPReportRows::RefreshChildIndices(BOOL bRunInChildren)
+{
+	for(int nIndex = 0; nIndex < GetCount(); nIndex++)
+	{
+		CXTPReportRow* pRow = GetAt(nIndex);
+		pRow->m_nChildIndex = nIndex;
+		ASSERT(pRow->m_pParentRows == this);
+		if(bRunInChildren && pRow->HasChildren() && pRow->GetChilds())
+			pRow->GetChilds()->RefreshChildIndices(bRunInChildren);
+	}
+}
+
+void CXTPReportRows::SetSize(INT_PTR nNewSize, INT_PTR nGrowBy)
+{
+	int nSize = GetCount();
+	if (nNewSize < nSize)
+	{
+		for (int i = (int)nNewSize; i < nSize; i++)
 		{
-			if (IsVerbsVisible())
-			{
-				m_nFocusedVerb = bForward ? 0 : m_pVerbs->GetCount() - 1;
-				m_bVerbActivate = TRUE;
-				SetFocus();
-				m_bVerbActivate = FALSE;
-				Invalidate(FALSE);
-				return;
-			}
-			nUI += nNextElement;
+			CXTPReportRow* pRow = GetAt(i);
+			if (pRow)
+				pRow->InternalRelease();
 		}
-		if (nUI == xtpGridUIParentNext || nUI == xtpGridUIParentPrev)
+	}
+
+	m_arrRows.SetSize(nNewSize, nGrowBy);
+}
+
+void CXTPReportRows::ReserveSize(INT_PTR nNewSize, INT_PTR nGrowBy)
+{
+	m_arrRows.ReserveSize(nNewSize, nGrowBy);
+}
+
+
+void CXTPReportRows::SetAt(INT_PTR nIndex, CXTPReportRow* pRow)
+{
+	ASSERT(pRow);
+	ASSERT(nIndex >= 0 && nIndex < GetCount());
+
+	if (!pRow || nIndex < 0 || nIndex >= GetCount())
+		return;
+
+	CXTPReportRow* pRow_prev = GetAt((int)nIndex);
+	if (pRow_prev)
+		pRow_prev->InternalRelease();
+
+	pRow->m_nChildIndex = (int)nIndex;
+	pRow->m_pParentRows = this;
+
+	m_arrRows.SetAt(nIndex, pRow);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPReportSelectedRows
+
+CXTPReportSelectedRows::CXTPReportSelectedRows(CXTPReportControl* pControl)
+	: m_pControl(pControl)
+{
+
+
+	m_nRowBlockBegin = -1;
+	m_nPosSelected = 0;
+	m_bChanged = FALSE;
+	m_nRowType = xtpRowTypeBody;
+}
+
+void CXTPReportSelectedRows::Clear()
+{
+	if (m_arrSelectedBlocks.GetSize() > 0)
+	{
+		m_bChanged = TRUE;
+
+		_NotifySelChanging(xtpReportSelectionClear);
+	}
+
+	m_arrSelectedBlocks.RemoveAll();
+	m_nRowBlockBegin = -1;
+	m_nRowType = xtpRowTypeBody;
+	m_pControl->RedrawControl();
+}
+
+void CXTPReportSelectedRows::_InsertBlock(int nIndexInsert, int nIndexBegin, int nIndexEnd)
+{
+	SELECTED_BLOCK block;
+	block.nIndexBegin = nIndexBegin;
+	block.nIndexEnd = nIndexEnd;
+	m_arrSelectedBlocks.InsertAt(nIndexInsert, block);
+}
+
+
+void CXTPReportSelectedRows::_OnCollapsed(int nIndex, int nCount)
+{
+	ASSERT(nCount > 0);
+
+	for (int i = (int)m_arrSelectedBlocks.GetSize() - 1; i >= 0 ; i--)
+	{
+		int& nIndexBegin = m_arrSelectedBlocks[i].nIndexBegin;
+		int& nIndexEnd = m_arrSelectedBlocks[i].nIndexEnd;
+
+		if (nIndexBegin <= nIndex && nIndexEnd > nIndex + 1)
 		{
+			nIndexEnd = max(nIndexBegin + 1, nIndexEnd - nCount);
 
-			CWnd* pWndNext = GetNextGridTabItem(!bForward);
-
-			if (pWndNext != NULL)
-			{
-				pWndNext->SetFocus();
-				return;
-			}
-
-			nUI = (nUI == xtpGridUIParentNext) ? xtpGridUIViewPrev : xtpGridUIVerb;
 		}
-		if (nUI < xtpGridUIParentPrev || nUI > xtpGridUIParentNext)
+		else if (nIndexBegin > nIndex + nCount)
 		{
-			ASSERT(FALSE);
-			return;
+			nIndexBegin -= nCount;
+			nIndexEnd -= nCount;
+		}
+		else if (nIndexEnd < nIndex)
+			break;
+		else if (nIndexBegin > nIndex)
+		{
+			nIndexBegin = nIndex;
+			nIndexEnd = max(nIndexBegin + 1, nIndexEnd - nCount);
 		}
 	}
 }
 
-void CXTPPropertyGrid::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+void CXTPReportSelectedRows::_OnExpanded(int nIndex, int nCount)
 {
-	if (m_nFocusedVerb != -1 && IsVerbsVisible())
+	ASSERT(nCount > 0);
+
+	for (int i = (int)m_arrSelectedBlocks.GetSize() - 1; i >= 0 ; i--)
 	{
-		if (m_nFocusedVerb >= m_pVerbs->GetCount())
-			m_nFocusedVerb = m_pVerbs->GetCount() -1;
+		int& nIndexBegin = m_arrSelectedBlocks[i].nIndexBegin;
+		int& nIndexEnd = m_arrSelectedBlocks[i].nIndexEnd;
 
-		BOOL bForward = GetKeyState(VK_SHIFT) >= 0;
-		CXTPDrawHelpers::KeyToLayout(this, nChar);
-
-		if ((nChar == VK_TAB) && bForward && (m_nFocusedVerb == m_pVerbs->GetCount() -1))
+		if (nIndexBegin <= nIndex && nIndexEnd > nIndex + 1)
 		{
-			OnNavigate(xtpGridUIVerb, TRUE, NULL);
+			_InsertBlock(i + 1, nIndex + 1 + nCount, nIndexEnd + nCount);
+			m_arrSelectedBlocks[i].nIndexEnd = nIndex + 1;
+
+		}
+		else if (nIndexBegin > nIndex)
+		{
+			nIndexBegin += nCount;
+			nIndexEnd += nCount;
+		}
+		else if (nIndexEnd < nIndex)
+			break;
+
+	}
+}
+
+void CXTPReportSelectedRows::AddBlock(int ib, int ie)
+{
+	int i = 0;
+	int nCount = (int)m_arrSelectedBlocks.GetSize();
+
+	if (nCount > 0)
+	{
+		int& nIndexEnd = m_arrSelectedBlocks[nCount - 1].nIndexEnd;
+
+		if (nIndexEnd == ib)
+		{
+			nIndexEnd = ie + 1;
+			m_pControl->RedrawControl();
 			return;
+		}
 
-		}
-		else if ((nChar == VK_TAB) && !bForward && (m_nFocusedVerb == 0))
+		if (nIndexEnd < ib)
 		{
-			OnNavigate(xtpGridUIVerb, FALSE, NULL);
-			return;
-		}
-		else if (nChar == VK_RIGHT || nChar == VK_DOWN || ((nChar == VK_TAB) && bForward))
-		{
-			m_nFocusedVerb++;
-			if (m_nFocusedVerb >= m_pVerbs->GetCount())
-				m_nFocusedVerb = 0;
-			Invalidate(FALSE);
-		}
-		else if (nChar == VK_LEFT || nChar == VK_UP || nChar == VK_TAB)
-		{
-			m_nFocusedVerb--;
-			if (m_nFocusedVerb < 0)
-				m_nFocusedVerb = m_pVerbs->GetCount() -1;
-			Invalidate(FALSE);
-		}
-		else if (nChar == VK_RETURN)
-		{
-			CRect rcPart = m_pVerbs->GetAt(m_nFocusedVerb)->GetPart();
-			OnVerbClick(m_nFocusedVerb, CPoint(rcPart.left, rcPart.bottom));
+			i = nCount;
 		}
 	}
 
-	CWnd::OnKeyDown(nChar, nRepCnt, nFlags);
-}
-
-void CXTPPropertyGrid::OnKillFocus(CWnd* pNewWnd)
-{
-	if (m_nFocusedVerb != -1)
+	for (; i < nCount; i++)
 	{
-		m_nFocusedVerb = -1;
-		Invalidate(FALSE);
-	}
-	CWnd::OnKillFocus(pNewWnd);
-}
+		int& nIndexBegin = m_arrSelectedBlocks[i].nIndexBegin;
+		int& nIndexEnd = m_arrSelectedBlocks[i].nIndexEnd;
 
-void CXTPPropertyGrid::OnSetFocus(CWnd* pOldWnd)
-{
-	if (!m_bVerbActivate)
-	{
-		if (pOldWnd && pOldWnd == GetNextGridTabItem(FALSE) && GetKeyState(VK_SHIFT) < 0)
+		if ((nIndexBegin <= ib) && (nIndexEnd > ie))
 		{
-			OnNavigate(xtpGridUIParentNext, FALSE, NULL);
+			return;
 		}
-		else if (pOldWnd && pOldWnd == GetNextGridTabItem(TRUE) && GetKeyState(VK_SHIFT) >= 0)
+
+		if (nIndexEnd == ib)
 		{
-			OnNavigate(xtpGridUIParentPrev, TRUE, NULL);
+			nIndexEnd = ie + 1;
+			if (i + 1 < nCount && m_arrSelectedBlocks[i + 1].nIndexBegin == nIndexEnd)
+			{
+				nIndexEnd = m_arrSelectedBlocks[i + 1].nIndexEnd;
+				m_arrSelectedBlocks.RemoveAt(i + 1);
+			}
+
+			m_pControl->RedrawControl();
+			return;
+		}
+		if (nIndexBegin == ie + 1)
+		{
+			nIndexBegin = ib;
+			m_pControl->RedrawControl();
+			return;
+		}
+
+		if (nIndexBegin > ie)
+			break;
+	}
+
+	_InsertBlock(i, ib, ie + 1);
+	m_pControl->RedrawControl();
+}
+
+void CXTPReportSelectedRows::Add(CXTPReportRow* pRow)
+{
+	if (!pRow)
+		return;
+
+	_NotifySelChanging(xtpReportSelectionAdd, pRow);
+
+	int nIndex = pRow->GetIndex();
+
+	if (nIndex != -1)
+	{
+		AddBlock(nIndex, nIndex);
+	}
+}
+
+void CXTPReportSelectedRows::Remove(CXTPReportRow* pRow)
+{
+	if (!pRow)
+		return;
+
+	_NotifySelChanging(xtpReportSelectionRemove, pRow);
+
+	int nIndex = pRow->GetIndex();
+
+	for (int i = 0; i < (int)m_arrSelectedBlocks.GetSize(); i++)
+	{
+		int nIndexBegin = m_arrSelectedBlocks[i].nIndexBegin;
+		int nIndexEnd = m_arrSelectedBlocks[i].nIndexEnd;
+
+		if ((nIndexBegin <= nIndex) && (nIndexEnd > nIndex))
+		{
+			if (nIndexBegin != nIndex)
+			{
+				_InsertBlock(i, nIndexBegin, nIndex);
+				i++;
+			}
+
+			if (nIndexEnd - 1 != nIndex)
+			{
+				_InsertBlock(i + 1, nIndex + 1, nIndexEnd);
+			}
+
+			m_arrSelectedBlocks.RemoveAt(i);
+			m_pControl->RedrawControl();
+			return;
+		}
+	}
+
+}
+
+void CXTPReportSelectedRows::Select(CXTPReportRow* pRow)
+{
+	if (!pRow)
+		return;
+
+	// If new selected row belongs to the other type - clear previous selection.
+	if (m_nRowType != pRow->GetType())
+		Clear();
+
+	if (m_arrSelectedBlocks.GetSize() == 1 && m_arrSelectedBlocks[0].nIndexBegin ==
+		m_arrSelectedBlocks[0].nIndexEnd - 1 && m_arrSelectedBlocks[0].nIndexBegin == pRow->GetIndex())
+	{
+
+	}
+	else
+	{
+		Clear();
+		Add(pRow);
+		m_bChanged = TRUE;
+		m_nRowType = pRow->GetType();
+	}
+}
+
+void CXTPReportSelectedRows::SelectBlock(int nBlockBegin, int nEnd)
+{
+	CXTPReportRows* pRows;
+	switch(m_nRowType)
+	{
+		case xtpRowTypeHeader : pRows = m_pControl->GetHeaderRows(); break;
+		case xtpRowTypeFooter : pRows = m_pControl->GetFooterRows(); break;
+		default : pRows = m_pControl->GetRows(); break;
+	}
+	ASSERT(nBlockBegin >= 0 && nBlockBegin < pRows->GetCount() && nEnd < pRows->GetCount() );
+
+	nBlockBegin = m_nRowBlockBegin != -1 ? m_nRowBlockBegin : nBlockBegin;
+
+	int nBegin = nBlockBegin;
+
+	if (nBegin == -1 || nEnd == -1)
+		return;
+
+	if (nBegin > nEnd)
+	{
+		nBegin = nEnd;
+		nEnd = nBlockBegin;
+	}
+
+	if (m_arrSelectedBlocks.GetSize() == 1 && m_arrSelectedBlocks[0].nIndexBegin == nBegin &&
+		m_arrSelectedBlocks[0].nIndexEnd == nEnd + 1)
+	{
+		return;
+	}
+
+	XTPReportRowType nRowType = m_nRowType;
+	Clear();
+	m_nRowType = nRowType;
+	if (m_nRowBlockBegin == -1) m_nRowBlockBegin = nBlockBegin;
+
+
+	BOOL bSkipGroupFocus = m_pControl->IsSkipGroupsFocusEnabled();
+	BOOL bHasGroups = m_pControl->GetColumns()->GetGroupsOrder()->GetCount() != 0;
+
+	if (!bHasGroups || !bSkipGroupFocus)
+	{
+		_InsertBlock(0, nBegin, nEnd + 1);
+	}
+	else
+	{
+		for (int i = nBegin; i <= nEnd; i++)
+		{
+			CXTPReportRow* pRow = pRows->GetAt(i);
+			if (!pRow)
+				continue;
+
+			if (!bSkipGroupFocus || !pRow->IsGroupRow() || !pRow->IsExpanded() || (i == nBegin) || (i == nEnd))
+			{
+				Add(pRow);
+			}
+		}
+	}
+}
+
+BOOL CXTPReportSelectedRows::Contains(const CXTPReportRow* pRow)
+{
+	if (!pRow)
+		return FALSE;
+
+	if (m_nRowType != pRow->GetType())
+		return FALSE;
+
+	int nIndex = pRow->GetIndex();
+
+	int nCount = (int)m_arrSelectedBlocks.GetSize();
+	if (nCount == 0)
+		return FALSE;
+
+	if (m_arrSelectedBlocks[0].nIndexBegin > nIndex)
+		return FALSE;
+
+	if (m_arrSelectedBlocks[nCount - 1].nIndexEnd <= nIndex)
+		return FALSE;
+
+	for (int i = 0; i < nCount; i++)
+	{
+		if ((m_arrSelectedBlocks[i].nIndexBegin <= nIndex) &&
+			(m_arrSelectedBlocks[i].nIndexEnd > nIndex))
+		{
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+void CXTPReportSelectedRows::Invert(CXTPReportRow* pRow)
+{
+	if(pRow->GetType() != m_nRowType)
+		return;
+
+	if (Contains(pRow))
+		Remove (pRow);
+	else Add(pRow);
+
+	m_nRowBlockBegin = -1;
+	m_bChanged = TRUE;
+}
+
+
+int CXTPReportSelectedRows::GetCount()
+{
+	int nCount = 0;
+	for (int i = 0; i < (int)m_arrSelectedBlocks.GetSize(); i++)
+	{
+		nCount += m_arrSelectedBlocks[i].nIndexEnd - m_arrSelectedBlocks[i].nIndexBegin;
+	}
+	return nCount;
+}
+
+
+POSITION CXTPReportSelectedRows::GetFirstSelectedRowPosition()
+{
+	if (m_arrSelectedBlocks.GetSize() == 0)
+		return 0;
+
+	m_nPosSelected = 0;
+
+	POSITION pos = 0;
+	pos = (POSITION)(DWORD_PTR)(m_arrSelectedBlocks[0].nIndexBegin + 1);
+	return pos;
+}
+
+CXTPReportRow* CXTPReportSelectedRows::GetNextSelectedRow(POSITION& pos)
+{
+	ASSERT(m_nPosSelected < m_arrSelectedBlocks.GetSize());
+
+	int nIndex = (int)(DWORD_PTR)pos - 1;
+	CXTPReportRow* pRow;
+	switch(m_nRowType)
+	{
+		case xtpRowTypeHeader : pRow = m_pControl->GetHeaderRows()->GetAt(nIndex); break;
+		case xtpRowTypeFooter : pRow = m_pControl->GetFooterRows()->GetAt(nIndex); break;
+		default : pRow = m_pControl->GetRows()->GetAt(nIndex); break;
+	}
+
+	if (nIndex < m_arrSelectedBlocks[m_nPosSelected].nIndexEnd - 1)
+	{
+		(int)(DWORD_PTR)pos++;
+	}
+	else
+	{
+		if (m_nPosSelected >= m_arrSelectedBlocks.GetSize() - 1)
+		{
+			pos = NULL;
 		}
 		else
 		{
-			GetGridView().SetFocus();
+			m_nPosSelected++;
+			pos = (POSITION)(DWORD_PTR)(m_arrSelectedBlocks[m_nPosSelected].nIndexBegin + 1);
 		}
 	}
-	else
-	{
-		CWnd::OnSetFocus(pOldWnd);
-	}
+
+	return pRow;
 }
 
-void CXTPPropertyGrid::OnSize(UINT nType, int cx, int cy)
-{
-	CWnd::OnSize(nType, cx, cy);
 
-	if (!GetGridView().GetSafeHwnd())
+
+CXTPReportRow* CXTPReportSelectedRows::GetAt (int nIndex)
+{
+	for (int i = 0; i < (int)m_arrSelectedBlocks.GetSize(); i++)
+	{
+		int nCount = m_arrSelectedBlocks[i].nIndexEnd - m_arrSelectedBlocks[i].nIndexBegin;
+		if (nCount <= nIndex)
+		{
+			nIndex -= nCount;
+			continue;
+		}
+
+		CXTPReportRow* pRow;
+		switch(m_nRowType)
+		{
+			case xtpRowTypeHeader : pRow = m_pControl->GetHeaderRows()->GetAt(m_arrSelectedBlocks[i].nIndexBegin + nIndex); break;
+			case xtpRowTypeFooter : pRow = m_pControl->GetFooterRows()->GetAt(m_arrSelectedBlocks[i].nIndexBegin + nIndex); break;
+			default : pRow = m_pControl->GetRows()->GetAt(m_arrSelectedBlocks[i].nIndexBegin + nIndex); break;
+		}
+		return pRow;
+	}
+
+	return 0;
+}
+
+void CXTPReportSelectedRows::_NotifySelChanging(XTPReportSelectionChangeType nType, CXTPReportRow* pRow)
+{
+	ASSERT(m_pControl);
+	if (!m_pControl)
 		return;
 
-	Reposition(cx, cy);
+	XTP_NM_SELECTION_CHANGING nm;
+	::ZeroMemory(&nm, sizeof(nm));
+
+	nm.pRow = pRow;
+	nm.nType = nType;
+
+	m_pControl->SendNotifyMessage(XTP_NM_REPORT_SELCHANGING,(NMHDR*)&nm);
 }
-
-int CXTPPropertyGrid::HitTest(CPoint pt)
-{
-	CXTPClientRect rc(this);
-
-	if (m_bHelpVisible)
-	{
-		CRect rcSplitter(CPoint(rc.left, rc.bottom - SPLITTER_HEIGHT - m_nHelpHeight), CSize(rc.Width(), SPLITTER_HEIGHT));
-
-		if (m_bVariableHelpHeight && rcSplitter.PtInRect(pt))
-			return xtpGridHitHelpSplitter;
-
-		rc.bottom -= SPLITTER_HEIGHT + m_nHelpHeight;
-	}
-	if (IsVerbsVisible())
-	{
-		CRect rcSplitter(CPoint(rc.left, rc.bottom - SPLITTER_HEIGHT - m_nVerbsHeight), CSize(rc.Width(), SPLITTER_HEIGHT));
-
-		if (rcSplitter.PtInRect(pt))
-			return xtpGridHitVerbsSplitter;
-
-		CRect rcVerbs(rc);
-		rcVerbs.top = rc.bottom - m_nVerbsHeight;
-
-		if (rcVerbs.PtInRect(pt))
-		{
-			CWindowDC dc(this);
-			int nIndex = m_pPaintManager->HitTestVerbs(&dc, rcVerbs, pt);
-			if (nIndex != -1)
-			{
-				return xtpGridHitFirstVerb + nIndex;
-			}
-		}
-	}
-
-	return xtpGridHitError;
-}
-
-BOOL CXTPPropertyGrid::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
-{
-	if (nHitTest == HTCLIENT)
-	{
-		CPoint point;
-
-		GetCursorPos(&point);
-		ScreenToClient(&point);
-
-		int nHit = HitTest(point);
-
-		if (nHit == xtpGridHitHelpSplitter || nHit == xtpGridHitVerbsSplitter)
-		{
-			SetCursor(m_hCursorSplit);
-			return TRUE;
-		}
-		if ((nHit != -1) && (nHit >= xtpGridHitFirstVerb))
-		{
-			SetCursor(m_hCursorHand);
-			return TRUE;
-		}
-	}
-
-	return CWnd::OnSetCursor(pWnd, nHitTest, message);
-}
-
-void CXTPPropertyGrid::OnInvertTracker(CRect rect)
-{
-	ASSERT_VALID(this);
-	ASSERT(!rect.IsRectEmpty());
-	ASSERT((GetStyle() & WS_CLIPCHILDREN) == 0);
-
-	// pat-blt without clip children on
-	CDC* pDC = GetDC();
-
-	CBrush brush(GetXtremeColor(COLOR_3DFACE));
-	CBrush* pBrush = (CBrush*)pDC->SelectObject(&brush);
-	pDC->PatBlt(rect.left, rect.top, rect.Width(), rect.Height(), PATINVERT);
-	pDC->SelectObject(pBrush);
-
-	ReleaseDC(pDC);
-}
-
-void CXTPPropertyGrid::OnSelectionChanged(CXTPPropertyGridItem* pItem)
-{
-	if (!m_hWnd)
-		return;
-
-	CXTPClientRect rc(this);
-	CRect rcHelp(rc);
-	rcHelp.top = rc.bottom - m_nHelpHeight;
-
-	if (pItem) SendNotifyMessage(XTP_PGN_SELECTION_CHANGED, (LPARAM)pItem);
-
-	InvalidateRect(rcHelp, FALSE);
-}
-
-void CXTPPropertyGrid::OnVerbsChanged()
-{
-	if (m_bVerbsVisible != IsVerbsVisible() && GetGridView().m_nLockUpdate == 0)
-	{
-		Reposition();
-	}
-	else if (GetSafeHwnd() && GetGridView().m_nLockUpdate == 0)
-	{
-		Invalidate(FALSE);
-	}
-}
-
-void CXTPPropertyGrid::OnVerbClick(int nIndex, CPoint pt)
-{
-	ClientToScreen(&pt);
-	ASSERT(nIndex < m_pVerbs->GetCount());
-
-	CXTPPropertyGridVerb* pVerb = m_pVerbs->GetAt(nIndex);
-	pVerb->m_ptClick = pt;
-
-	SendNotifyMessage(XTP_PGN_VERB_CLICK, (LPARAM)pVerb);
-}
-
-void CXTPPropertyGrid::OnLButtonUp(UINT nFlags, CPoint point)
-{
-	if ((m_nFocusedVerb != -1) && (m_nFocusedVerb == HitTest(point) - xtpGridHitFirstVerb))
-	{
-		OnVerbClick(m_nFocusedVerb, point);
-	}
-	else
-	{
-		CWnd::OnLButtonUp(nFlags, point);
-	}
-
-}
-
-void CXTPPropertyGrid::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	int nHitTest = HitTest(point);
-
-	if ((nHitTest != -1) && (nHitTest >= xtpGridHitFirstVerb))
-	{
-		m_nFocusedVerb = nHitTest - xtpGridHitFirstVerb;
-		m_bVerbActivate = TRUE;
-		SetFocus();
-		m_bVerbActivate = FALSE;
-		Invalidate(FALSE);
-		return;
-
-	}
-	SetFocus();
-
-	if ((nHitTest == xtpGridHitHelpSplitter) || (nHitTest == xtpGridHitVerbsSplitter))
-	{
-		SetCapture();
-		CXTPClientRect rc(this);
-		BOOL bHelpHitTest = nHitTest == xtpGridHitHelpSplitter;
-
-		CRect rcAvail = bHelpHitTest ? CRect(0, 20 + TOOLBAR_HEIGHT, rc.right, rc.bottom) :
-			CRect(0, 20 + TOOLBAR_HEIGHT, rc.right, rc.bottom - (IsHelpVisible() ? m_nHelpHeight + SPLITTER_HEIGHT : 0));
-
-		ModifyStyle(WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0, FALSE);
-
-		m_rectTracker.SetRect(0, point.y, rc.Width(), point.y + 3);
-
-		OnInvertTracker(m_rectTracker);
-
-		BOOL bAccept = FALSE;
-		while (GetCapture() == this)
-		{
-			MSG msg;
-			if (!GetMessage(&msg, NULL, 0, 0))
-				break;
-
-			if (msg.message == WM_MOUSEMOVE)
-			{
-				point = CPoint(msg.lParam);
-				point.y = __min(point.y, rcAvail.bottom - 20);
-				point.y = __max((int)point.y, int(rcAvail.top));
-
-				if (m_rectTracker.top != point.y)
-				{
-					OnInvertTracker(m_rectTracker);
-					m_rectTracker.OffsetRect(0, point.y - m_rectTracker.top);
-					OnInvertTracker(m_rectTracker);
-				}
-			}
-			else if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE) break;
-			else if (msg.message == WM_LBUTTONUP)
-			{
-				bAccept = TRUE;
-				break;
-			}
-			else  ::DispatchMessage(&msg);
-		}
-
-		ReleaseCapture();
-
-		if (bAccept)
-		{
-			if (bHelpHitTest) m_nHelpHeight = rcAvail.bottom - m_rectTracker.top -2; else
-				m_nVerbsHeight = rcAvail.bottom - m_rectTracker.top -2;
-			Reposition(rc.Width(), rc.Height());
-		}
-		Invalidate(FALSE);
-		ModifyStyle(0, WS_CLIPCHILDREN | WS_CLIPSIBLINGS, FALSE);
-		return;
-	}
-
-	CWnd::OnLButtonDown(nFlags, point);
-}
-
-void CXTPPropertyGrid::Reposition()
-{
-	if (GetSafeHwnd() == 0)
-		return;
-
-	CXTPClientRect rc(this);
-	Reposition(rc.Width(), rc.Height());
-}
-
-void CXTPPropertyGrid::Reposition(int cx, int cy)
-{
-	if (GetGridView().m_nLockUpdate > 0)
-		return;
-
-	if (GetSafeHwnd() == 0)
-		return;
-
-	CRect rcView(0, 0, cx, cy);
-
-	int nMinViewHeight = 20 + (m_bToolBarVisible ? TOOLBAR_HEIGHT : 0);
-
-	if (m_bHelpVisible)
-	{
-		if (cy > nMinViewHeight && cy - m_nHelpHeight - SPLITTER_HEIGHT < nMinViewHeight && m_bVariableHelpHeight)
-		{
-			m_nHelpHeight = max(0, cy - SPLITTER_HEIGHT - nMinViewHeight);
-		}
-
-		rcView.bottom -= m_nHelpHeight + SPLITTER_HEIGHT;
-	}
-
-	if (IsVerbsVisible())
-	{
-		rcView.bottom -= m_nVerbsHeight + SPLITTER_HEIGHT;
-	}
-
-	m_bVerbsVisible = IsVerbsVisible();
-
-	if (m_bToolBarVisible)
-	{
-		ASSERT(m_wndToolbar.GetSafeHwnd());
-		CRect rcToolBar(0, 0, cx, TOOLBAR_HEIGHT);
-		m_wndToolbar.MoveWindow(rcToolBar);
-
-		rcView.top += TOOLBAR_HEIGHT;
-	}
-
-	GetGridView().MoveWindow(rcView);
-	GetGridView().Invalidate(FALSE);
-	Invalidate(FALSE);
-}
-
-void CXTPPropertyGrid::CreateToolbar()
-{
-#if _MSC_VER < 1200
-	m_wndToolbar.Create(this, TBSTYLE_TRANSPARENT | TBSTYLE_FLAT | WS_CHILD | WS_VISIBLE | WS_BORDER, 0);
-#else
-	m_wndToolbar.CreateEx(this, TBSTYLE_TRANSPARENT | TBSTYLE_FLAT, WS_BORDER | WS_CHILD | WS_VISIBLE | CBRS_ALIGN_TOP);
-#endif
-
-	VERIFY(XTPResourceManager()->LoadToolBar(&m_wndToolbar, XTP_IDR_PROPERTYGRID_TOOLBAR));
-}
-
-void CXTPPropertyGrid::ShowToolBar(BOOL bShow)
-{
-	if (bShow && !m_wndToolbar.GetSafeHwnd())
-	{
-		CreateToolbar();
-	}
-	else
-	{
-		if (m_wndToolbar.GetSafeHwnd())
-			m_wndToolbar.ShowWindow(bShow ? SW_SHOW : SW_HIDE);
-	}
-
-	m_bToolBarVisible = bShow;
-
-	Reposition();
-	RefreshToolBarButtons();
-}
-
-void CXTPPropertyGrid::RefreshToolBarButtons()
-{
-	if (m_bToolBarVisible)
-	{
-		m_wndToolbar.GetToolBarCtrl().SetState(XTP_IDC_PROPERTYGRID_CATEGORIZED, TBSTATE_ENABLED | (GetGridView().m_properetySort == xtpGridSortCategorized ? TBSTATE_CHECKED : 0));
-		m_wndToolbar.GetToolBarCtrl().SetState(XTP_IDC_PROPERTYGRID_ALPHABETIC, TBSTATE_ENABLED | (GetGridView().m_properetySort == xtpGridSortAlphabetical ? TBSTATE_CHECKED : 0));
-	}
-}
-
-void CXTPPropertyGrid::ShowHelp(BOOL bShow)
-{
-	m_bHelpVisible = bShow;
-
-	Reposition();
-}
-
-void CXTPPropertyGrid::OnSortAlphabetic()
-{
-	SetPropertySort(xtpGridSortAlphabetical);
-}
-
-void CXTPPropertyGrid::OnSortCategorized()
-{
-	SetPropertySort(xtpGridSortCategorized);
-}
-
-void CXTPPropertyGrid::OnSortChanged()
-{
-	RefreshToolBarButtons();
-	OnSelectionChanged(NULL);
-	SendNotifyMessage(XTP_PGN_SORTORDER_CHANGED, (LPARAM)GetDlgCtrlID());
-}
-
-LRESULT CXTPPropertyGrid::SendNotifyMessage(WPARAM wParam /*= 0*/, LPARAM lParam /*= 0*/)
-{
-	return GetOwner()->SendMessage(XTPWM_PROPERTYGRID_NOTIFY, wParam, lParam);
-}
-
-void CXTPPropertyGrid::SetStandardColors()
-{
-	m_pPaintManager->GetItemMetrics()->SetDefaultValues();
-
-	m_pPaintManager->RefreshMetrics();
-	RedrawControl();
-}
-
-void CXTPPropertyGrid::RedrawControl()
-{
-	if (GetSafeHwnd())
-	{
-		RedrawWindow(NULL, NULL, RDW_ALLCHILDREN | RDW_UPDATENOW | RDW_INVALIDATE | RDW_ERASE);
-	}
-}
-
-void CXTPPropertyGrid::SetCustomColors(
-	COLORREF clrHelpBack, COLORREF clrHelpFore, COLORREF clrViewLine,
-	COLORREF clrViewBack, COLORREF clrViewFore, COLORREF clrCategoryFore)
-{
-	CXTPPropertyGridItemMetrics* pMetrics = m_pPaintManager->GetItemMetrics();
-
-	pMetrics->m_clrHelpBack.SetCustomValue(clrHelpBack);
-	pMetrics->m_clrHelpFore.SetCustomValue(clrHelpFore);
-	pMetrics->m_clrLine.SetCustomValue(clrViewLine);
-	pMetrics->m_clrBack.SetCustomValue(clrViewBack);
-	pMetrics->m_clrFore.SetCustomValue(clrViewFore);
-	pMetrics->m_clrCategoryFore.SetCustomValue(clrCategoryFore);
-
-	RedrawControl();
-}
-
-void CXTPPropertyGrid::ResetContent()
-{
-	m_pVerbs->RemoveAll();
-	GetGridView().ResetContent();
-
-	GetGridView().m_nLockUpdate++;
-	GetGridView().m_pCategories->Clear();
-	GetGridView().m_nLockUpdate--;
-}
-
-CXTPPropertyGridItems* CXTPPropertyGrid::GetCategories() const
-{
-	return GetGridView().m_pCategories;
-}
-
-CXTPPropertyGridItem* CXTPPropertyGrid::AddCategory(int nID)
-{
-	CString strCaption;
-	VERIFY(strCaption.LoadString(nID));
-	CXTPPropertyGridItem* pItem = GetGridView().AddCategory(strCaption);
-	pItem->SetID(nID);
-	return pItem;
-}
-
-CXTPPropertyGridItem* CXTPPropertyGrid::InsertCategory(int nIndex, int nID)
-{
-	CString strCaption;
-	VERIFY(strCaption.LoadString(nID));
-	CXTPPropertyGridItem* pItem = GetGridView().InsertCategory(nIndex, strCaption);
-	pItem->SetID(nID);
-	return pItem;
-}
-
-
-void CXTPPropertyGrid::SetFont(CFont* pFont)
-{
-	LOGFONT lf;
-	if (pFont->GetLogFont(&lf))
-	{
-		CXTPPropertyGridItemMetrics* pMetrics = m_pPaintManager->GetItemMetrics();
-
-		pMetrics->m_fontNormal.DeleteObject();
-		pMetrics->m_fontBold.DeleteObject();
-
-		lf.lfWeight = FW_NORMAL;
-		VERIFY(pMetrics->m_fontNormal.CreateFontIndirect(&lf));
-
-		lf.lfWeight = FW_BOLD;
-		VERIFY(pMetrics->m_fontBold.CreateFontIndirect(&lf));
-
-		if (m_pInplaceEdit->GetSafeHwnd())
-		{
-			m_pInplaceEdit->SetFont(&pMetrics->m_fontNormal);
-		}
-
-		Refresh();
-	}
-}
-
-void CXTPPropertyGrid::Refresh()
-{
-	GetGridView().SetPropertySort(GetPropertySort(), TRUE);
-}
-
-
-void CXTPPropertyGrid::SaveExpandingState(CXTPPropertyGridItems* pItems, CXTPPropertyGridUpdateContext& context)
-{
-	int nTopIndex = GetGridView().GetTopIndex();
-
-	for (int nItem = 0; nItem < pItems->GetCount(); nItem++)
-	{
-		CXTPPropertyGridItem* pItem = pItems->GetAt(nItem);
-
-		if (pItem->GetID() != 0)
-		{
-			if (pItem->HasChilds())
-			{
-				BOOL bExpanded = pItem->IsExpanded();
-				context.m_mapState.SetAt(pItem->GetID(), bExpanded);
-			}
-
-			if (pItem->IsSelected()) context.m_nSelected = pItem->GetID();
-			if (pItem->GetIndex() == nTopIndex) context.m_nTopIndex= pItem->GetID();
-		}
-		SaveExpandingState(pItem->GetChilds(), context);
-	}
-}
-
-void CXTPPropertyGrid::RestoreExpandingState(CXTPPropertyGridItems* pItems, CXTPPropertyGridUpdateContext& context)
-{
-	for (int nItem = 0; nItem < pItems->GetCount(); nItem++)
-	{
-		CXTPPropertyGridItem* pItem = pItems->GetAt(nItem);
-
-		BOOL bExpanded;
-		if (pItem->GetID() != 0 && context.m_mapState.Lookup(pItem->GetID(), bExpanded))
-		{
-			if (bExpanded)
-				pItem->Expand();
-			else
-				pItem->Collapse();
-		}
-		RestoreExpandingState(pItem->GetChilds(), context);
-	}
-}
-
-void CXTPPropertyGrid::BeginUpdate(CXTPPropertyGridUpdateContext& context)
-{
-	GetGridView().m_nLockUpdate = 1;
-	GetGridView().SetRedraw(FALSE);
-
-	context.m_nSelected = 0;
-	context.m_nTopIndex = 0;
-
-	SaveExpandingState(GetCategories(), context);
-	context.m_propertySort = GetPropertySort();
-
-	ResetContent();
-}
-
-void CXTPPropertyGrid::EndUpdate(CXTPPropertyGridUpdateContext& context)
-{
-	RestoreExpandingState(GetCategories(), context);
-	GetGridView().m_nLockUpdate = 0;
-
-	GetGridView().SetPropertySort(context.m_propertySort, TRUE, FALSE);
-	if (context.m_nSelected > 0 || context.m_nTopIndex > 0)
-	{
-		for (int i = 0; i < GetGridView().GetCount(); i++)
-		{
-			CXTPPropertyGridItem* pItem = GetGridView().GetItem(i);
-
-			if (context.m_nTopIndex > 0 && pItem && pItem->GetID() == context.m_nTopIndex)
-			{
-				SetTopIndex(pItem->GetIndex());
-				context.m_nTopIndex = 0;
-				if (context.m_nSelected == 0)
-					break;
-			}
-
-			if (context.m_nSelected > 0 && pItem && pItem->GetID() == context.m_nSelected)
-			{
-				pItem->Select();
-				break;
-			}
-		}
-	}
-
-	GetGridView().SetRedraw(TRUE);
-
-	Reposition();
-}
-
-void CXTPPropertyGrid::SetVerbsHeight(int nHeight)
-{
-	ASSERT(nHeight > 0);
-	m_nVerbsHeight = nHeight;
-
-	Reposition();
-}
-
-void CXTPPropertyGrid::SetHelpHeight(int nHeight)
-{
-
-	ASSERT(nHeight > 0);
-	m_nHelpHeight = nHeight;
-
-	Reposition();
-}
-
-void CXTPPropertyGrid::SetViewDivider(double dDivider)
-{
-	ASSERT(dDivider > 0 && dDivider < 1);
-	GetGridView().m_dDivider = dDivider;
-
-	Reposition();
-}
-
-double CXTPPropertyGrid::GetViewDivider() const
-{
-	return GetGridView().m_dDivider;
-}
-
-void CXTPPropertyGrid::SetViewDividerPos(int nDivider, BOOL bLockDivider /*= FALSE*/)
-{
-	if (bLockDivider)
-	{
-		GetGridView().LockDivider();
-	}
-
-	GetGridView().SetDividerPos(nDivider);
-
-	Reposition();
-}
-
-CXTPPropertyGridItem* CXTPPropertyGrid::GetSelectedItem() const
-{
-	return GetGridView().GetSelectedItem();
-}
-
-int CXTPPropertyGrid::GetTopIndex() const
-{
-	return GetGridView().GetTopIndex();
-}
-
-void CXTPPropertyGrid::SetTopIndex(int nIndex)
-{
-	GetGridView().SetTopIndex(nIndex);
-}
-
-void CXTPPropertyGrid::SetTheme(XTPPropertyGridPaintTheme paintTheme)
-{
-	if (paintTheme == xtpGridThemeDefault) SetCustomTheme(new CXTPPropertyGridPaintManager(this));
-	else if (paintTheme == xtpGridThemeCool) SetCustomTheme(new CXTPPropertyGridCoolTheme(this));
-	else if (paintTheme == xtpGridThemeDelphi) SetCustomTheme(new CXTPPropertyGridDelphiTheme(this));
-	else if (paintTheme == xtpGridThemeNativeWinXP) SetCustomTheme(new CXTPPropertyGridNativeXPTheme(this));
-	else if (paintTheme == xtpGridThemeOffice2003) SetCustomTheme(new CXTPPropertyGridOffice2003Theme(this));
-	else if (paintTheme == xtpGridThemeSimple) SetCustomTheme(new CXTPPropertyGridSimpleTheme(this));
-	else if (paintTheme == xtpGridThemeWhidbey) SetCustomTheme(new CXTPPropertyGridWhidbeyTheme(this));
-	else if (paintTheme == xtpGridThemeOfficeXP) SetCustomTheme(new CXTPPropertyGridOfficeXPTheme(this));
-	else if (paintTheme == xtpGridThemeOffice2007) SetCustomTheme(new CXTPPropertyGridOffice2007Theme(this));
-	else
-	{
-		ASSERT(FALSE);
-	}
-
-	m_themeCurrent = paintTheme;
-}
-
-void CXTPPropertyGrid::SetCustomTheme(CXTPPropertyGridPaintManager* pPaintManager)
-{
-	CXTPPropertyGridItemMetrics* pMetrics = m_pPaintManager->m_pMetrics;
-	m_pPaintManager->m_pMetrics = 0;
-
-	ASSERT(m_pPaintManager);
-	delete m_pPaintManager;
-
-	m_pPaintManager = pPaintManager;
-
-	CMDTARGET_RELEASE(m_pPaintManager->m_pMetrics);
-	m_pPaintManager->m_pMetrics = pMetrics;
-	m_pPaintManager->RefreshMetrics();
-
-	RedrawControl();
-}
-
-CXTPImageManager* CXTPPropertyGrid::GetImageManager() const
-{
-	return m_pImageManager ? m_pImageManager : XTPImageManager();
-}
-
-void CXTPPropertyGrid::SetImageManager(CXTPImageManager* pImageManager)
-{
-	if (m_pImageManager)
-		m_pImageManager->InternalRelease();
-
-	m_pImageManager = pImageManager;
-}
-
-void CXTPPropertyGrid::OnSysColorChange()
-{
-	CWnd::OnSysColorChange();
-
-	m_pPaintManager->RefreshMetrics();
-	RedrawControl();
-}
-
-BOOL CXTPPropertyGrid::OnToolTipText(UINT, NMHDR* pNMHDR, LRESULT* pResult)
-{
-	ASSERT(pNMHDR->code == TTN_NEEDTEXTA || pNMHDR->code == TTN_NEEDTEXTW);
-
-	// need to handle both ANSI and UNICODE versions of the message
-	TOOLTIPTEXTA* pTTTA = (TOOLTIPTEXTA*)pNMHDR;
-	TOOLTIPTEXTW* pTTTW = (TOOLTIPTEXTW*)pNMHDR;
-
-	CString strTipText;
-
-	// don't handle the message if no string resource found
-	if (!XTPResourceManager()->LoadString(&strTipText, (UINT)pNMHDR->idFrom))
-		return FALSE;
-
-#ifndef _UNICODE
-	if (pNMHDR->code == TTN_NEEDTEXTA)
-		lstrcpyn(pTTTA->szText, strTipText, _countof(pTTTA->szText));
-	else
-		_mbstowcsz(pTTTW->szText, strTipText, _countof(pTTTW->szText));
-#else
-	if (pNMHDR->code == TTN_NEEDTEXTA)
-		_wcstombsz(pTTTA->szText, strTipText, _countof(pTTTA->szText));
-	else
-		lstrcpyn(pTTTW->szText, strTipText, _countof(pTTTW->szText));
-#endif
-	*pResult = 0;
-
-	// bring the tooltip window above other popup windows
-	::SetWindowPos(pNMHDR->hwndFrom, HWND_TOP, 0, 0, 0, 0,
-		SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER);
-
-	return TRUE;    // message was handled
-}
-
-
-BOOL CXTPPropertyGrid::IsLayoutRTL() const
-{
-	return GetExStyle() & WS_EX_LAYOUTRTL ? TRUE : FALSE;
-}
-
-void CXTPPropertyGrid::SetLayoutRTL(CWnd* pWnd, BOOL bRTLLayout)
-{
-	pWnd->ModifyStyleEx(bRTLLayout ? 0 : WS_EX_LAYOUTRTL, !bRTLLayout ? 0 : WS_EX_LAYOUTRTL);
-
-	// walk through HWNDs to avoid creating temporary CWnd objects
-	// unless we need to call this function recursively
-	for (CWnd* pChild = pWnd->GetWindow(GW_CHILD); pChild != NULL;
-		pChild = pChild->GetWindow(GW_HWNDNEXT))
-	{
-
-		// send to child windows after parent
-		SetLayoutRTL(pChild, bRTLLayout);
-	}
-}
-
-
-void CXTPPropertyGrid::SetLayoutRTL(BOOL bRightToLeft)
-{
-	if (!XTPSystemVersion()->IsLayoutRTLSupported())
-		return;
-
-	SetLayoutRTL(this, bRightToLeft);
-
-	if (m_pInplaceEdit && m_pInplaceEdit->GetSafeHwnd())
-	{
-		m_pInplaceEdit->HideWindow();
-		m_pInplaceEdit->m_bDelayCreate = TRUE;
-	}
-
-	if (GetSelectedItem()) GetSelectedItem()->OnSelect();
-
-	Reposition();
-	RedrawWindow(NULL, NULL, RDW_ALLCHILDREN | RDW_UPDATENOW | RDW_INVALIDATE | RDW_ERASE);
-}
-
-
-void CXTPPropertyGrid::SetBorderStyle(XTPPropertyGridBorderStyle borderStyle)
-{
-	m_borderStyle = borderStyle;
-
-	Reposition();
-
-	if (GetGridView().GetSafeHwnd())
-	{
-		GetGridView().SetWindowPos(0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
-	}
-}
-
-XTPPropertyGridBorderStyle CXTPPropertyGrid::GetBorderStyle() const
-{
-	return m_borderStyle;
-}
-
 

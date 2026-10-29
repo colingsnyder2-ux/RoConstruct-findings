@@ -1,187 +1,537 @@
-// from server: 0% by colin
-struct CXTPReportRow_Batch {
-    char pad0[0x20];
-    void* m_pControl;
-    char pad1[0x54 - 0x24];
-    void* m_pRecords;
-    char pad2[0x90 - 0x58];
-    int m_bSomething;
-    char pad3[0xac - 0x94];
-    void* m_pRow;
-    int FindRow(void* pRow);
-    int Process();
-};
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\ReportControl\XTPReportSubListControl.cpp
 
-extern "C" {
-    int __stdcall SendMessageA(void* hWnd, unsigned int Msg, unsigned int wParam, long lParam);
-    int __stdcall InvalidateRect(void* hWnd, const void* lpRect, int bErase);
-    int __stdcall GetTextExtentPoint32A(void* hdc, const char* lpString, int cbString, void* lpSize);
+// Candidate translation unit (score above; library headers required).
+// XTPReportSubListControl.cpp : implementation of the CXTPReportSubListControl class.
+//
+// This file is a part of the XTREME REPORTCONTROL MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Common/XTPDrawHelpers.h"
+
+#include "XTPReportControl.h"
+#include "XTPReportColumn.h"
+#include "XTPReportColumns.h"
+#include "XTPReportDefines.h"
+#include "XTPReportDragDrop.h"
+#include "XTPReportSubListControl.h"
+#include "XTPReportHeader.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+IMPLEMENT_DYNAMIC(CXTPReportSubListControl, CListBox)
+/////////////////////////////////////////////////////////////////////////////
+// CXTPReportSubListControl
+
+CXTPReportSubListControl::CXTPReportSubListControl()
+{
+	m_pReportCtrl = NULL;
+	m_pDragWnd = NULL;
+	m_bSortAscending = FALSE;
+	m_nDropIndex = 0;
 }
 
-extern "C" int __stdcall sub_77ecd8(void*, int, int, int);
-extern "C" int __stdcall sub_77ecdc(void*, int, int);
-extern "C" int __stdcall sub_77d0b8(void*, int, int, void*);
-extern "C" int __stdcall sub_77dd98(void*);
-extern "C" int __stdcall sub_77dcb8(void*, void*);
-extern "C" int __stdcall sub_77ddbc(void*);
-
-extern "C" int __cdecl sub_630946(void*, void*);
-extern "C" int __cdecl sub_680550(void*, void*, void*);
-extern "C" int __cdecl sub_6805d0(void*);
-extern "C" int __cdecl sub_630940(void*);
-extern "C" int __cdecl sub_6302ec(void*, int);
-extern "C" int __cdecl sub_6d2fb0(void*, int, void*);
-extern "C" int __cdecl sub_6d34f0(void*, int);
-extern "C" int __cdecl sub_6f8c80(void*, void*);
-extern "C" int __cdecl sub_653870(void*);
-extern "C" int __cdecl sub_65e5b0(void*);
-extern "C" int __cdecl sub_42f520(void*);
-
-int CXTPReportRow_Batch::FindRow(void* pRow)
+CXTPReportSubListControl::~CXTPReportSubListControl()
 {
-    int count = sub_77ecd8(m_pControl, 0x18b, 0, 0);
-    int i = count - 1;
-    if (i < 0)
-        return -1;
-    while (1) {
-        int v = sub_77ecd8(m_pControl, 0x199, i, 0);
-        if (v == (int)pRow)
-            return i;
-        i--;
-        if (i < 0)
-            return -1;
-    }
 }
 
-int CXTPReportRow_Batch::Process()
+
+BEGIN_MESSAGE_MAP(CXTPReportSubListControl, CListBox)
+	//{{AFX_MSG_MAP(CXTPReportSubListControl)
+	ON_WM_ERASEBKGND()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_PAINT()
+	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPReportSubListControl attributes
+
+BOOL CXTPReportSubListControl::SetReportCtrl(CXTPReportControl* pReportCtrl)
 {
-    if (m_pRecords == 0)
-        return 0;
-    if (m_pControl == 0)
-        return 0;
+	if (pReportCtrl == NULL)
+		return FALSE;
 
-    char buf[0x40];
-    sub_630946(this, buf);
+	ASSERT_KINDOF(CXTPReportControl, pReportCtrl);
 
-    void* p = *(void**)((char*)m_pRecords + 0xb0);
-    p = (char*)p + 0x30;
+	if (m_pReportCtrl != pReportCtrl)
+	{
+		ResetContent();
+		m_pReportCtrl = pReportCtrl;
+	}
 
-    char buf2[0x40];
-    sub_680550(buf2, buf, p);
+	UpdateList();
 
-    int sz[2];
-    sub_77d0b8(*(void**)&buf2[0], 1, 0x787034, sz);
+	return TRUE;
+}
 
-    int w = sz[0] + 5;
+CXTPReportControl* CXTPReportSubListControl::GetReportCtrl()
+{
+	return m_pReportCtrl;
+}
 
-    int cur = sub_77ecd8(m_pControl, 0x1a1, 0, 0);
-    if (cur != w) {
-        sub_77ecd8(m_pControl, 0x1a0, 0, (unsigned short)w);
-    }
+/////////////////////////////////////////////////////////////////////////////
+// CXTPReportSubListControl operations
 
-    void* pRow = *(void**)((char*)m_pRecords + 0xac);
-    int nRows = *(int*)((char*)pRow + 0x30);
-    int changed = 0;
+void CXTPReportSubListControl::SortAscending(BOOL bSort)
+{
+	m_bSortAscending = bSort;
+	if (GetSafeHwnd()) ResetContent();
+	UpdateList();
+}
 
-    int i = sub_77ecd8(m_pControl, 0x18b, 0, 0) - 1;
-    while (i >= 0) {
-        int v = sub_77ecd8(m_pControl, 0x199, i, 0);
-        int r = sub_6d34f0(pRow, v);
-        if (r != 0) {
-            if (sub_65e5b0((void*)r) == 0) {
-                if (sub_42f520((void*)r) != 0) {
-                    i--;
-                    continue;
-                }
-            }
-        }
-        sub_77ecd8(m_pControl, 0x182, i, 0);
-        changed = 1;
-        i--;
-    }
+BOOL CXTPReportSubListControl::UpdateList()
+{
+	if (m_pReportCtrl == NULL)
+		return FALSE;
 
-    int idx = 0;
-    while (idx < nRows) {
-        if (idx < 0 || idx >= *(int*)((char*)pRow + 0x30)) {
-            idx++;
-            continue;
-        }
-        void** arr = *(void***)((char*)pRow + 0x2c);
-        void* item = arr[idx];
-        if (item == 0) {
-            idx++;
-            continue;
-        }
-        if (sub_65e5b0(item) != 0) {
-            idx++;
-            continue;
-        }
-        if (sub_42f520(item) == 0) {
-            idx++;
-            continue;
-        }
-        int r = sub_653870(item);
-        if (FindRow((void*)r) >= 0) {
-            idx++;
-            continue;
-        }
+	if (GetSafeHwnd() == NULL)
+		return FALSE;
 
-        if (m_bSomething != 0) {
-            int n = sub_77ecd8(m_pControl, 0x18b, 0, 0);
-            int j = 0;
-            while (j < n) {
-                int tmp;
-                sub_6d2fb0(this, 0, &tmp);
-                char b[0x40];
-                sub_6f8c80(item, b);
-                int len = sub_77dd98(b);
-                int cmp = sub_77dcb8(&tmp, (void*)len);
-                int flag = cmp > 0;
-                sub_77ddbc(b);
-                sub_77ddbc(&tmp);
-                if (!flag) {
-                    j++;
-                    n = sub_77ecd8(m_pControl, 0x18b, 0, 0);
-                    continue;
-                }
-                break;
-            }
-            char b2[0x40];
-            sub_6f8c80(item, b2);
-            int len2 = sub_77dd98(b2);
-            int pos = sub_77ecd8(m_pControl, 0x181, j, len2);
-            sub_77ddbc(b2);
-            if (pos >= 0) {
-                int r2 = sub_653870(item);
-                sub_77ecd8(m_pControl, 0x19a, pos, r2);
-                changed = 1;
-            }
-        } else {
-            char b3[0x40];
-            sub_6f8c80(item, b3);
-            int len3 = sub_77dd98(b3);
-            int pos = sub_77ecd8(m_pControl, 0x180, 0, len3);
-            sub_77ddbc(b3);
-            if (pos >= 0) {
-                int r3 = sub_653870(item);
-                sub_77ecd8(m_pControl, 0x19a, pos, r3);
-                changed = 1;
-            }
-        }
-        idx++;
-    }
+	CClientDC dc(this);
+	CXTPFontDC fnt(&dc, &m_pReportCtrl->GetPaintManager()->m_fontCaption);
+	int nHeight = dc.GetTextExtent(_T(" "), 1).cy + 5;
 
-    int n = sub_77ecd8(m_pControl, 0x18b, 0, 0);
-    sub_6302ec(this, n > 0);
+	if (GetItemHeight(0) != nHeight) SetItemHeight(0, nHeight);
 
-    if (changed) {
-        sub_77ecdc(m_pControl, 0, 1);
-    }
 
-    char c1[0x10];
-    sub_6805d0(c1);
-    char c2[0x10];
-    sub_630940(c2);
+	CXTPReportColumns* pColumns = m_pReportCtrl->GetColumns();
+	int nColumnCount = pColumns->GetCount();
 
-    return 1;
+	BOOL bChanged = FALSE;
+	// delete all visible items from the list
+	for (int i = GetCount() - 1; i >= 0; i--)
+	{
+		int nItemIndex = (int)GetItemData(i);
+		CXTPReportColumn* pColumn = pColumns->Find(nItemIndex);
+		if (!pColumn || pColumn->IsVisible() || !pColumn->IsShowInFieldChooser())
+		{
+			DeleteString(i);
+			bChanged = TRUE;
+		}
+	}
+
+	// add the rest of invisible items
+	for (int nColumn = 0; nColumn < nColumnCount; nColumn++)
+	{
+		CXTPReportColumn* pColumn = pColumns->GetAt(nColumn);
+		if (pColumn && !pColumn->IsVisible() && pColumn->IsShowInFieldChooser())
+		{
+			int nListItem = FindItemData(pColumn->GetItemIndex());
+			if (nListItem < 0)
+			{
+				int nItem = -1;
+				if (m_bSortAscending)
+				{
+					for (nItem = 0; nItem < GetCount(); nItem++)
+					{
+						CString str = GetItemCaption(nItem);
+
+						if (str > pColumn->GetCaption())
+							break;
+					}
+					nItem = InsertString(nItem, pColumn->GetCaption());
+				}
+				else
+				{
+					nItem = AddString(pColumn->GetCaption());
+				}
+
+				if (nItem >= 0)
+				{
+					SetItemData(nItem, pColumn->GetItemIndex());
+					bChanged = TRUE;
+				}
+			}
+		}
+	}
+	EnableWindow(GetCount() > 0);
+
+	if (bChanged)
+		Invalidate();
+
+	return TRUE;
+}
+
+CXTPReportColumn* CXTPReportSubListControl::GetItemColumn(int nIndex)
+{
+	if (!m_pReportCtrl || GetSafeHwnd() == 0)
+		return NULL;
+
+	int nItemData = (int)GetItemData(nIndex);
+	if (nItemData == -1)
+		return NULL;
+
+	CXTPReportColumn* pColumn = m_pReportCtrl->GetColumns()->Find(nItemData);
+
+	return pColumn;
+}
+
+CString CXTPReportSubListControl::GetItemCaption(int nIndex)
+{
+	if (!m_pReportCtrl || GetSafeHwnd() == 0)
+		return _T("");
+
+	if (GetStyle() & LBS_HASSTRINGS)
+	{
+		CString str;
+		GetText(nIndex, str);
+		return str;
+	}
+
+	int nItemData = (int)GetItemData(nIndex);
+	if (nItemData == -1)
+		return _T("");
+
+	CXTPReportColumn* pColumn = m_pReportCtrl->GetColumns()->Find(nItemData);
+
+	if (pColumn == NULL)
+		return _T("");
+
+	return pColumn->GetCaption();
+
+}
+
+
+int CXTPReportSubListControl::FindItemData(int nItemData)
+{
+	for (int i = GetCount() - 1; i >= 0; i--)
+	{
+		int nItemIndex = (int)GetItemData(i);
+		if (nItemData == nItemIndex)
+			return i;
+	}
+	return -1;
+}
+
+BOOL CXTPReportSubListControl::Include(int /*iSubItem*/)
+{
+	return TRUE;
+}
+
+BOOL CXTPReportSubListControl::Disable(int /*iSubItem*/)
+{
+	return FALSE;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPReportSubListControl message handlers
+
+void CXTPReportSubListControl::PreSubclassWindow()
+{
+	CListBox::PreSubclassWindow();
+}
+
+void CXTPReportSubListControl::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	CDC* pDC = CDC::FromHandle(lpDrawItemStruct->hDC);
+
+	CRect rcItem(lpDrawItemStruct->rcItem);
+
+	CXTPReportPaintManager* pPaintManager = m_pReportCtrl ? m_pReportCtrl->GetPaintManager() : NULL;
+	COLORREF clrBack = pPaintManager ? pPaintManager->m_clrControlBack : ::GetXtremeColor(COLOR_WINDOW);
+
+
+	if (GetCount() > 0 && m_pReportCtrl && pPaintManager)
+	{
+		BOOL bDisable = Disable((int)lpDrawItemStruct->itemData);
+
+		CXTPFontDC fnt(pDC, &pPaintManager->m_fontCaption);
+
+		if (GetExStyle() & WS_EX_STATICEDGE)
+		{
+			pDC->Draw3dRect(rcItem, pPaintManager->m_clrHighlightText, pPaintManager->m_clrControlDark);
+			rcItem.DeflateRect(1, 1);
+			pDC->FillSolidRect(rcItem, pPaintManager->m_clrControlBack);
+			rcItem.DeflateRect(1, 1);
+		}
+		else
+		{
+			pDC->FillSolidRect(rcItem, pPaintManager->m_clrHeaderControl);
+			pDC->Draw3dRect(rcItem, pPaintManager->m_clrBtnFace, GetXtremeColor(COLOR_3DDKSHADOW));
+			rcItem.DeflateRect(1, 1);
+			pDC->Draw3dRect(rcItem, pPaintManager->m_clrControlBack, pPaintManager->m_clrControlDark);
+			rcItem.DeflateRect(1, 1);
+
+		}
+
+		pDC->SetBkMode(TRANSPARENT);
+
+		if (lpDrawItemStruct->itemState&ODS_SELECTED)
+		{
+			pDC->FillSolidRect(rcItem, GetXtremeColor(COLOR_3DFACE));
+			pDC->InvertRect(rcItem);
+			pDC->SetTextColor(bDisable ? ::GetXtremeColor(COLOR_BTNFACE) : ::GetXtremeColor(COLOR_3DHIGHLIGHT));
+		}
+		else
+		{
+			if (bDisable)
+			{
+				pDC->SetTextColor(::GetXtremeColor(COLOR_3DHIGHLIGHT));
+
+				CRect rect = rcItem;
+				rect.OffsetRect(1, 1);
+
+				pDC->DrawText(GetItemCaption((int)lpDrawItemStruct->itemID), rect,
+					DT_SINGLELINE | DT_NOPREFIX | DT_NOCLIP | DT_VCENTER | DT_END_ELLIPSIS | DT_LEFT);
+
+				pDC->SetTextColor(::GetXtremeColor(COLOR_3DSHADOW));
+			}
+			else
+				pDC->SetTextColor(pPaintManager->m_clrCaptionText);
+		}
+
+		pDC->DrawText(GetItemCaption((int)lpDrawItemStruct->itemID), rcItem,
+			DT_SINGLELINE | DT_NOPREFIX | DT_NOCLIP | DT_VCENTER | DT_END_ELLIPSIS | DT_LEFT);
+
+	}
+	else
+		pDC->FillSolidRect(rcItem, clrBack);
+}
+
+BOOL CXTPReportSubListControl::BeginDrag(int nItem)
+{
+	if (GetCount() <= 0)
+		return FALSE;
+
+	int nSubItem = (int)GetItemData(nItem);
+
+	if (Disable(nSubItem))
+	{
+		return FALSE;
+	}
+
+	GetClientRect(m_rcDragWnd);
+	m_rcDragWnd.bottom = m_rcDragWnd.top + GetItemHeight(0);
+
+	CXTPReportHeader* pHeader = m_pReportCtrl->GetReportHeader();
+	CXTPReportColumn* pColumn = m_pReportCtrl->GetColumns()->Find(nSubItem);
+	pHeader->StartDragging(pColumn);
+	pHeader->m_bDragGroupBox = FALSE;
+
+	//pHeader->m_nDragIndex = m_nSubItem;
+	m_pDragWnd = new CXTPReportHeaderDragWnd;
+	if (m_pDragWnd)
+		m_pDragWnd->Create(m_rcDragWnd, pHeader, m_pReportCtrl->GetPaintManager(), pColumn);
+	m_pReportCtrl->SetMouseMode(xtpReportMouseDraggingColumn);
+
+	GetWindowRect(m_rcDropTarget1);
+	m_rcDropTarget2 = m_pReportCtrl->m_rcHeaderArea;
+
+	if (pColumn->IsGroupable())
+		m_rcDropTarget2.UnionRect(&m_rcDropTarget2, &m_pReportCtrl->m_rcGroupByArea);
+
+	m_pReportCtrl->ClientToScreen(m_rcDropTarget2);
+
+	m_nDropIndex = -1;
+
+	return TRUE;
+}
+
+UINT CXTPReportSubListControl::Dragging(CPoint pt)
+{
+	CPoint point = pt;
+	point.Offset(-(m_rcDragWnd.Width() >> 1), -(m_rcDragWnd.Height() >> 1));
+
+	if (m_pDragWnd != NULL)
+	{
+		m_pDragWnd->SetWindowPos(&wndTop,
+			point.x, point.y, 0, 0,
+			SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE);
+	}
+
+	if (m_pReportCtrl)
+	{
+		CPoint pointCtrl(pt);
+		m_pReportCtrl->ScreenToClient(&pointCtrl);
+		m_pReportCtrl->OnMouseMove(0, pointCtrl);
+	}
+
+
+	if (m_rcDropTarget1.PtInRect(pt))
+		return DL_MOVECURSOR;
+
+	if (m_rcDropTarget2.PtInRect(pt))
+		return DL_MOVECURSOR;
+
+	return DL_STOPCURSOR;
+}
+
+void CXTPReportSubListControl::CancelDrag()
+{
+	if (m_pDragWnd != NULL)
+	{
+		m_pDragWnd->DestroyWindow();
+		m_pDragWnd = NULL;
+	}
+
+	CXTPReportHeader* pHeader = m_pReportCtrl->GetReportHeader();
+	pHeader->SetHotDivider(-1);
+
+	m_pReportCtrl->SetMouseMode(xtpReportMouseNothing);
+}
+
+void CXTPReportSubListControl::Dropped(CPoint pt)
+{
+	if (m_pDragWnd != NULL)
+	{
+		m_pDragWnd->DestroyWindow();
+		m_pDragWnd = NULL;
+	}
+
+	if (m_pReportCtrl)
+	{
+		m_pReportCtrl->ScreenToClient(&pt);
+		m_pReportCtrl->OnLButtonUp(0, pt);
+	}
+}
+
+void CXTPReportSubListControl::OnPaint()
+{
+	CPaintDC dcPaint(this);
+	CRect rc;
+	GetClientRect(rc);
+
+	CXTPBufferDC dc(dcPaint, rc);
+
+	CXTPReportPaintManager* pPaintManager = m_pReportCtrl ? m_pReportCtrl->GetPaintManager() : NULL;
+	COLORREF clrBack = pPaintManager ? pPaintManager->m_clrControlBack : GetXtremeColor(COLOR_WINDOW);
+
+	dc.FillSolidRect(rc, IsWindowEnabled() ? clrBack : GetXtremeColor(COLOR_BTNFACE));
+
+	if (GetCount() > 0 || !pPaintManager)
+		CWnd::DefWindowProc(WM_PAINT, (WPARAM)dc.m_hDC, 0);
+	else
+	{
+		dc.SetTextColor(GetXtremeColor(COLOR_3DSHADOW));
+		dc.SetBkMode(TRANSPARENT);
+		CXTPFontDC fnt(&dc, &pPaintManager->m_fontCaption);
+
+		dc.DrawText(pPaintManager->m_strNoFieldsAvailable, rc, DT_SINGLELINE | DT_CENTER | DT_VCENTER | DT_NOPREFIX);
+	}
+}
+
+LRESULT CXTPReportSubListControl::OnPrintClient(WPARAM wParam, LPARAM lParam)
+{
+	CListBox::DefWindowProc(WM_ERASEBKGND, wParam, 0);
+	return CListBox::DefWindowProc(WM_PRINTCLIENT, wParam, lParam);
+}
+
+BOOL CXTPReportSubListControl::OnEraseBkgnd(CDC* /*pDC*/)
+{
+	return TRUE;
+}
+
+
+void CXTPReportSubListControl::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	SetFocus();
+
+	BOOL bOutside = TRUE;
+	int nItem = ItemFromPoint(point, bOutside);
+	if (nItem == LB_ERR)
+	{
+		CWnd::OnLButtonDown(nFlags, point);
+		return;
+	}
+
+	SetCurSel(nItem);
+	ParentNotify_SelChangd();
+
+	BOOL bAccept = FALSE;
+	BOOL bStartDrag = FALSE;
+
+	HCURSOR hCursorNo = AfxGetApp()->LoadStandardCursor(IDC_NO), hCursorArrow = AfxGetApp()->LoadStandardCursor(IDC_ARROW);
+	SetCapture();
+
+	while (CWnd::GetCapture() == this)
+	{
+		MSG msg;
+		if (!GetMessage(&msg, NULL, 0, 0))
+			break;
+
+		if (msg.message == WM_MOUSEMOVE)
+		{
+			CPoint pt(msg.lParam);
+
+			if (point != pt)
+			{
+				if (!bStartDrag && abs(point.x - pt.x) + abs(point.y - pt.y) < 3)
+					continue;
+
+				point = pt;
+
+				if (!bStartDrag)
+				{
+					BeginDrag(nItem);
+					bStartDrag = TRUE;
+				}
+
+				if (bStartDrag)
+				{
+					ClientToScreen(&pt);
+					UINT nCursor = Dragging(pt);
+					::SetCursor(nCursor == DL_STOPCURSOR ? hCursorNo : hCursorArrow);
+				}
+			}
+		}
+		else if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE) break;
+		else if (msg.message == WM_LBUTTONUP)
+		{
+			bAccept = TRUE;
+			break;
+		}
+		else  ::DispatchMessage(&msg);
+	}
+
+	if (GetCapture() == this)
+	{
+		ReleaseCapture();
+	}
+
+	if (bStartDrag)
+	{
+		if (bAccept)
+		{
+			ClientToScreen(&point);
+			Dropped(point);
+
+			ParentNotify_SelChangd();
+		}
+		else
+		{
+			CancelDrag();
+		}
+	}
+}
+
+void CXTPReportSubListControl::ParentNotify_SelChangd()
+{
+	if (GetParent() && (GetStyle() & LBS_NOTIFY))
+		GetParent()->SendMessage(WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(), LBN_SELCHANGE), (LPARAM)m_hWnd);
+
 }

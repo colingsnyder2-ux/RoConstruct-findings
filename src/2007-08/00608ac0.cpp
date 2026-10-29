@@ -1,684 +1,178 @@
-// from server: 36% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8world/ClumpStage2.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll v8kernel/Constants.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8world/ClumpStage2.h"
+#include "v8kernel/Constants.h"
+#include "util/Debug.h"
+#include "util/Math.h"
+#include <G3D/Vector3int16.h>
+using namespace RBX;
 
-#include "decomp.h"
-#include "util/Guid.h"
-#include "v8world/Assembly2.h"
-#include "v8world/AssemblyStage2.h"
-#include "v8world/MotorJoint.h"
-#include "v8world/Primitive.h"
-#include "v8world/RigidJoint.h"
-#include "v8world/SleepStage2.h"
+const float Constants::MAX_LEGO_JOINT_FORCES_MEASURED[7] = {0.0f, 1.098f, 2.1340001f, 2.427f, 3.191f, 4.5710001f, 4.6810002f};
 
-#include <algorithm>
-#include <cmath>
-#include <cstddef>
+const int Constants::uiStepsPerSec() {return 30;}
+const int Constants::worldStepsPerUiStep() {return 8;} // guess based on uiStepsPerSec and worldStepsPerSec
+const int Constants::kernelStepsPerWorldStep() {return 19;}
+const int Constants::worldStepsPerSec() {return 240;}
+const int Constants::kernelStepsPerSec() {return 4560;}
+const int Constants::kernelStepsPerUiStep() {return 152;}
+const float Constants::uiDt() {return (float)1/uiStepsPerSec();}
+const float Constants::worldDt() {return (float)1/worldStepsPerSec();}
+const float Constants::kernelDt() {return (float)1/kernelStepsPerSec();}
 
-namespace RBX {
-
-// FUNCTION: WEBSERVICE 0x1011b330
-float getPrimitiveSize(const Primitive* p)
+const float Constants::getElasticMultiplier(float elasticity)
 {
-	const Vector3& size = p->getGeometry()->getGridSize();
+	if ( elasticity < 0.05f )
+		return 0.28f;
+	else if ( elasticity < 0.26f )
+		return 0.42f;
+	else if ( elasticity < 0.51f )
+		return 0.57f;
+	else if ( elasticity < 0.76f )
+		return 0.8f;
 
-	float area;
-	float other;
+	return 1.0f;
+}
 
-	if (size.x < size.y) {
-		if (size.x < size.z) {
-			area = size.z * size.y;
-			goto haveArea;
-		}
+const float RBX::Constants::getKmsMaxJointForce(float grid1, float grid2)
+{
+	RBXASSERT(std::abs(grid1 * 10.0f - G3D::iRound(grid1 * 10.0f)) < 0.01f);
+	RBXASSERT(std::abs(grid2 * 10.0f - G3D::iRound(grid2 * 10.0f)) < 0.01f);
 
-		other = size.y;
+	int grid1int = std::max(1, G3D::iRound(grid1));
+	int grid2int = std::max(1, G3D::iRound(grid2));
+
+	int overlap = std::max(grid1int, grid2int);
+	int width = std::min(grid1int, grid2int);
+
+	float maxJointForce;
+
+	if (overlap < 7){
+		maxJointForce = MAX_LEGO_JOINT_FORCES_MEASURED[overlap];// line 120
 	}
 	else {
-		other = size.y < size.z ? size.z : size.y;
+		maxJointForce = MAX_LEGO_JOINT_FORCES_MEASURED[6] * (overlap * 0.14285715f * 4.6810002f);// line 125
 	}
 
-	area = other * size.x;
-
-haveArea:;
-
-	float gridArea = floor(area);
-
-	return (float) (G3D::iRound(gridArea) * (unsigned __int64) p->getSizeMultiplier());
+	maxJointForce *= 0.5f;
+	maxJointForce *= width;
+	return maxJointForce * 7500.0f;
 }
 
-// FUNCTION: WEBSERVICE 0x1011b3d0
-int biggerJointGuid(const Joint* j0, const Joint* j1)
+__forceinline G3D::Vector3 getClippedSortedSize(const G3D::Vector3& v)
 {
-	const Guid* guid0 = &j0->getPrimitive(0)->getGuid();
-	const Guid* other0 = &j1->getPrimitive(0)->getGuid();
-	const Guid* guid1 = j0->getPrimitive(1) != NULL ? &j0->getPrimitive(1)->getGuid() : NULL;
-	const Guid* other1 = j1->getPrimitive(1) != NULL ? &j1->getPrimitive(1)->getGuid() : NULL;
-
-	return Guid::compare(guid0, guid1, other0, other1);
+	return v.max(G3D::Vector3(1.0f, 1.0f, 1.0f));
 }
 
-// FUNCTION: WEBSERVICE 0x1011b440
-Joint* getJoint(Primitive* p, Joint::JointType jointType)
+const float Constants::getJointKMultiplier(const G3D::Vector3& clippedSortedSize, bool ball)
 {
-	Joint* joint = p->getFirstJoint();
+	RBXASSERT(clippedSortedSize.y >= clippedSortedSize.x);
+	RBXASSERT(clippedSortedSize.z >= clippedSortedSize.y);
+	RBXASSERT(getClippedSortedSize(clippedSortedSize) == clippedSortedSize);
 
-	while (joint != NULL) {
-		if (joint->getJointType() == jointType) {
-			return joint;
+	G3D::Vector3int16 size(clippedSortedSize);
+
+	if (ball)
+	{
+		RBXASSERT(size.x >= 1);
+
+		switch (size.x)
+		{
+		case 1:
+			return 0.23f;
+		case 2:
+			return 1.49f;
+		case 3:
+			return 4.43f;
+		case 4:
+			return 11.5f;
+		default:
+			return (size.x * size.x * size.x) * 0.175f;
 		}
-
-		joint = p->getNextJoint(joint);
 	}
 
-	return NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x1011b5e0
-int biggerJointSize(const Joint* j0, const Joint* j1)
-{
-	float size0 = getPrimitiveSize(j0->getPrimitive(0));
-
-	if (j0->getPrimitive(1) != NULL) {
-		size0 = G3D::max(size0, getPrimitiveSize(j0->getPrimitive(1)));
-	}
-
-	float size1 = getPrimitiveSize(j1->getPrimitive(0));
-
-	if (j1->getPrimitive(1) != NULL) {
-		size1 = G3D::max(size1, getPrimitiveSize(j1->getPrimitive(1)));
-	}
-
-	if (size1 < size0) {
-		return 1;
-	}
-
-	if (size0 < size1) {
-		return -1;
-	}
-
-	return 0;
-}
-
-// FUNCTION: WEBSERVICE 0x1011b690
-bool JointSort::lighterJoint(const Joint* j0, const Joint* j1)
-{
-	if (j0 == j1) {
-		return false;
-	}
-
-	Joint::JointType type0 = j0->getJointType();
-	Joint::JointType type1 = j1->getJointType();
-
-	if (type0 != type1) {
-		return type0 < type1;
-	}
-
-	int bigger = biggerJointSize(j0, j1);
-
-	if (bigger == 1) {
-		return true;
-	}
-
-	if (bigger == -1) {
-		return false;
-	}
-
-	bigger = biggerJointGuid(j0, j1);
-
-	if (bigger == 1) {
-		return true;
-	}
-
-	if (bigger == -1) {
-		return false;
-	}
-
-	return j0 < j1;
-}
-
-// FUNCTION: WEBSERVICE 0x1011b740
-void ClumpStage::onPrimitiveAdded(Primitive* p)
-{
-	p->putInPipeline(this);
-	p->putInPipeline(getDownstream());
-
-	p->setClumpDepth(1);
-
-	Joint* joint;
-
-	if (p->getAnchor()) {
-		joint = new AnchorJoint(p);
-	}
-	else {
-		joint = new FreeJoint(p);
-	}
-
-	joint->putInPipeline(this);
-
-	getDownstreamWS()->onEdgeAdded(joint);
-}
-
-// FUNCTION: WEBSERVICE 0x1011b840
-void ClumpStage::onPrimitiveRemoving(Primitive* p)
-{
-	Joint* joint = p->getFirstJoint();
-
-	getDownstreamWS()->onEdgeRemoving(joint);
-
-	IStage* downstream = getDownstream();
-
-	p->setClumpDepth(-1);
-	p->removeFromStage(downstream);
-
-	joint->removeFromPipeline(this);
-	delete joint;
-
-	p->removeFromStage(this);
-}
-
-// FUNCTION: WEBSERVICE 0x1011b8a0
-void ClumpStage::onPrimitiveAddedAnchor(Primitive* p)
-{
-	Joint* freeJoint = getJoint(p, Joint::FREE_JOINT);
-
-	Joint* anchorJoint = new AnchorJoint(p);
-
-	anchorJoint->putInPipeline(this);
-
-	getDownstreamWS()->onEdgeAdded(anchorJoint);
-
-	onEdgeRemoving(freeJoint);
-}
-
-// FUNCTION: WEBSERVICE 0x1011b950
-void ClumpStage::onPrimitiveRemovedAnchor(Primitive* p)
-{
-	Joint* anchorJoint = getJoint(p, Joint::ANCHOR_JOINT);
-
-	Joint* freeJoint = new FreeJoint(p);
-
-	freeJoint->putInPipeline(this);
-
-	getDownstreamWS()->onEdgeAdded(freeJoint);
-
-	onEdgeRemoving(anchorJoint);
-}
-
-int TreeStage::getClumpDepth(Primitive* p)
-{
-	return p != NULL ? p->getClumpDepth() : 0;
-}
-
-void TreeStage::dirtyAssembly(Assembly* a)
-{
-	assemblies.insert(a);
-	dirty = true;
-}
-
-void TreeStage::insertEdge(Edge* e)
-{
-	if (!e->getInEdgeList()) {
-		edges.insert(e);
-		dirty = true;
-		e->setInEdgeList(true);
-	}
-}
-
-void TreeStage::eraseEdge(Edge* e)
-{
-	if (e->getInEdgeList()) {
-		edges.erase(e);
-		e->setInEdgeList(false);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1011ba00
-Primitive* TreeStage::heavyParent(int testSide, Primitive* p, Joint*& answer, int& heavySide)
-{
-	Joint* joint = p->getFirstJoint();
-
-	while (joint != NULL) {
-		if (joint->getActive()) {
-			Primitive* other = p == joint->getPrimitive(0) ? joint->getPrimitive(1) : joint->getPrimitive(0);
-
-			int depth = other != NULL ? other->getClumpDepth() : 0;
-
-			if (depth == p->getClumpDepth() - 1) {
-				if (answer == NULL || JointSort::lighterJoint(answer, joint)) {
-					answer = joint;
-					heavySide = testSide;
-				}
-
-				return other;
+	switch (size.x)
+	{
+	case 1:
+		switch (size.y)
+		{
+		case 1:
+			switch (size.z)
+			{
+			case 1:
+				return 0.91f;
+			case 2:
+				return 1.61f;
+			case 3:
+				return 2.0f;
+			case 4:
+				return 2.13f;
+			default:
+				return size.z * 0.4f;
 			}
+		case 2:
+			switch (size.z)
+			{
+			case 2:
+				return 3.5f;
+			case 3:
+				return 4.16f;
+			case 4:
+				return 4.79f;
+			default:
+				return size.z < 15.0f ? size.z * 0.9f : size.z * 0.75f;
+			}
+		case 3:
+			return size.z < 7.0f ? size.z * 1.66f : size.z * 1.18f;
+		case 4:
+			return size.z < 7.0f ? size.z * 2.26f : size.z * 1.53f;
+		default:
+			return (size.y * 0.3f + 0.66f) * size.z;
 		}
-
-		joint = p->getNextJoint(joint);
-	}
-
-	return NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x1011ba80
-void TreeStage::cleanAssembly(Assembly* a)
-{
-	if (!a->inPipeline()) {
-		a->putInPipeline(this);
-	}
-
-	bool inKernel = a->downstreamOfStage(this);
-	bool wanted = !a->getAnchored();
-
-	if (inKernel != wanted) {
-		if (wanted) {
-			static_cast<AssemblyStage*>(getDownstream())->onAssemblyAdded(a);
+	case 2:
+		switch (size.y)
+		{
+		case 2:
+			switch (size.z)
+			{
+			case 2:
+				return 7.34f;
+			case 3:
+				return 9.90f;
+			case 4:
+				return 11.22f;
+			default:
+				return size.z < 15.0f ? size.z * 1.9f : size.z * 1.5f;
+			}
+		case 3:
+			switch (size.z)
+			{
+			case 3:
+				return 15.0f;
+			case 4:
+				return 19.0f;
+			default:
+				return size.z < 15.0f ? size.z * 2.0f : size.z * 1.5f;
+			}
+		default:
+			return (size.y * 0.66f) * size.z;
 		}
-		else {
-			static_cast<AssemblyStage*>(getDownstream())->onAssemblyRemoving(a);
-		}
-	}
-	else if (inKernel) {
-		static_cast<AssemblyStage*>(getDownstream())->wakeAssembly(a);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1011bb00
-void TreeStage::cleanEdge(Edge* e)
-{
-	Assembly* assembly0 = e->getPrimitive(0)->getAssembly();
-	Assembly* a1 = e->getPrimitive(1)->getAssembly();
-
-	bool inKernel = e->downstreamOfStage(this);
-	bool wanted = assembly0 != a1 && !(assembly0->getAnchored() && a1->getAnchored());
-
-	if (inKernel != wanted) {
-		if (inKernel) {
-			static_cast<IWorldStage*>(getDownstream())->onEdgeRemoving(e);
-		}
-		else {
-			static_cast<IWorldStage*>(getDownstream())->onEdgeAdded(e);
-		}
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1011bb90
-int TreeStage::getMetric(MetricType metricType)
-{
-	switch (metricType) {
-	case MAX_TREE_DEPTH:
-		return maxTreeDepth;
 	default:
-		return static_cast<IWorldStage*>(getDownstream())->getMetric(metricType);
+		return (size.x * size.y * size.z) * 0.25f;
 	}
 }
 
-// FUNCTION: WEBSERVICE 0x1011bbb0
-void ClumpStage::stepUi(int uiStepId)
+const float Constants::getJointK(const G3D::Vector3& gridSize, bool ball)
 {
-	static_cast<AssemblyStage*>(static_cast<TreeStage*>(getDownstream())->getDownstream())->stepUi(uiStepId);
+	G3D::Vector3 sortedSize = Math::sortVector3(gridSize);
+	G3D::Vector3 clippedSize = getClippedSortedSize(sortedSize);
+
+	float JointKMultiplier = getJointKMultiplier(clippedSize, ball);
+
+	if (sortedSize.x < 1.0)
+		JointKMultiplier *= sortedSize.x;
+	
+	return JointKMultiplier * 960000.0f;
 }
-
-// FUNCTION: WEBSERVICE 0x1011bbc0
-void TreeStage::findHeaviestUpstream(Primitive* p0, Primitive* p1, Joint*& answer, int& heavySide)
-{
-	int depth0 = getClumpDepth(p0);
-	int depth1 = getClumpDepth(p1);
-
-	if (depth0 != depth1) {
-		if (depth0 > depth1) {
-			findHeaviestUpstream(heavyParent(0, p0, answer, heavySide), p1, answer, heavySide);
-		}
-		else {
-			findHeaviestUpstream(p0, heavyParent(1, p1, answer, heavySide), answer, heavySide);
-		}
-
-		return;
-	}
-
-	if (p0 == p1) {
-		return;
-	}
-
-	Primitive* next0 = p0 != NULL ? heavyParent(0, p0, answer, heavySide) : NULL;
-	Primitive* next1 = p1 != NULL ? heavyParent(1, p1, answer, heavySide) : NULL;
-
-	findHeaviestUpstream(next0, next1, answer, heavySide);
-}
-
-// FUNCTION: WEBSERVICE 0x1011bcc0
-void TreeStage::process()
-{
-	if (dirty) {
-		std::set<Assembly*>::iterator aIt;
-
-		for (aIt = assemblies.begin(); aIt != assemblies.end(); ++aIt) {
-			cleanAssembly(*aIt);
-		}
-
-		assemblies.clear();
-
-		while (edges.size() != 0) {
-			std::set<Edge*>::iterator eIt = edges.begin();
-
-			cleanEdge(*eIt);
-
-			(*eIt)->setInEdgeList(false);
-			edges.erase(eIt);
-		}
-
-		dirty = false;
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1011bde0
-void TreeStage::buildDownstreamTree(Primitive* p, std::set<Primitive*>& tree)
-{
-	Joint* j = p->getFirstJoint();
-
-	while (j != NULL) {
-		if (j->getActive() && Joint::isJoint(j) && j->getJointType() >= Joint::ANCHOR_JOINT) {
-			Primitive* other = j->otherPrimitive(p);
-
-			if (other != NULL && other->getClumpDepth() == p->getClumpDepth() + 1) {
-				tree.insert(other);
-				buildDownstreamTree(other, tree);
-			}
-		}
-
-		j = p->getNextJoint(j);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1011be80
-void ClumpStage::process()
-{
-	static_cast<TreeStage*>(getDownstream())->process();
-}
-
-// FUNCTION: WEBSERVICE 0x100d15c0 FOLDED
-void ClumpStage::onPrimitiveCanCollideChanged(Primitive* p)
-{
-}
-
-// FUNCTION: WEBSERVICE 0x100d15c0 FOLDED
-void ClumpStage::onMotorAngleChanged(MotorJoint* motorJoint)
-{
-}
-
-// FUNCTION: WEBSERVICE 0x1011be90
-void ClumpStage::onPrimitiveCanSleepChanged(Primitive* p)
-{
-	static_cast<TreeStage*>(getDownstream())->process();
-
-	Assembly* a = p->getAssembly();
-
-	bool wasCanSleep = a->getCanSleep();
-
-	a->onPrimitiveCanSleepChanged(p);
-
-	if (wasCanSleep != a->getCanSleep()) {
-		IStage* stage = this;
-
-		while (stage->getStageType() != SLEEP_STAGE) {
-			stage = stage->getDownstream();
-		}
-
-		static_cast<SleepStage*>(stage)->onWakeUpRequest(a, false);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1011bf30
-TreeStage::~TreeStage()
-{
-}
-
-// FUNCTION: WEBSERVICE 0x1011bff0
-void TreeStage::stepWorld(int worldStepId, int uiStepId, bool throttling)
-{
-	process();
-
-	getDownstream()->stepWorld(worldStepId, uiStepId, throttling);
-}
-
-// FUNCTION: WEBSERVICE 0x1011c010
-void TreeStage::dirtyAssemblies(Joint* j)
-{
-	for (int i = 0; i < 2; i++) {
-		Primitive* p = j->getPrimitive(i);
-
-		if (p != NULL) {
-			Assembly* a = p->getAssembly();
-
-			if (a != NULL) {
-				dirtyAssembly(a);
-			}
-		}
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1011c060
-void TreeStage::undirtyAssembly(Assembly* a)
-{
-	assemblies.erase(a);
-
-	if (a->inPipeline()) {
-		if (a->downstreamOfStage(this)) {
-			static_cast<AssemblyStage*>(getDownstream())->onAssemblyRemoving(a);
-		}
-
-		a->removeFromPipeline(this);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1011c0b0
-void TreeStage::destroyAssembly(Assembly* a)
-{
-	undirtyAssembly(a);
-
-	delete a;
-}
-
-// FUNCTION: WEBSERVICE 0x1011c110
-TreeStage::TreeStage(IStage* upstream, World* world)
-	: IWorldStage(upstream, new AssemblyStage(this, world), world), maxTreeDepth(0), dirty(false)
-{
-}
-
-// FUNCTION: WEBSERVICE 0x10108040 FOLDED
-IStage::StageType ClumpStage::getStageType()
-{
-	return CLUMP_STAGE;
-}
-
-// FUNCTION: WEBSERVICE 0x1011c200
-void TreeStage::rebuildClump(Joint* joint, Primitive* parent)
-{
-	maxTreeDepth = std::max(maxTreeDepth, getClumpDepth(parent) + 1);
-
-	Primitive* child = joint->otherPrimitive(parent);
-
-	Clump* clump = child->getClump();
-	bool isRoot = clump != NULL && clump->getRootPrimitive() == child;
-
-	if (RigidJoint::isRigidJoint(joint)) {
-		if (isRoot) {
-			destroyAssembly(clump);
-		}
-
-		Assembly::addRigidChild(parent, static_cast<RigidJoint*>(joint), child);
-		return;
-	}
-
-	if (MotorJoint::isMotorJoint(joint)) {
-		Assembly* assembly = isRoot ? clump : new Clump(child);
-
-		undirtyAssembly(assembly);
-
-		Assembly::addMotorChild(parent, static_cast<MotorJoint*>(joint), child);
-		return;
-	}
-
-	Joint::JointType jointType = joint->getJointType();
-
-	if (jointType == Joint::FREE_JOINT || jointType == Joint::ANCHOR_JOINT) {
-		Clump* assembly = isRoot ? clump : new Clump(child);
-
-		Assembly::addGroundChild(child);
-
-		assemblies.insert(assembly);
-		dirty = true;
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1011c3d0
-ClumpStage::ClumpStage(IStage* upstream, World* world) : IWorldStage(upstream, new TreeStage(this, world), world)
-{
-}
-
-// FUNCTION: WEBSERVICE 0x1011c440
-Joint* TreeStage::findLightestDownstream(Primitive* p, Primitive*& newParent)
-{
-	std::set<Primitive*> downstreamTree;
-
-	downstreamTree.insert(p);
-
-	buildDownstreamTree(p, downstreamTree);
-
-	Joint* answer = NULL;
-
-	std::set<Primitive*>::iterator it;
-
-	for (it = downstreamTree.begin(); it != downstreamTree.end(); ++it) {
-		Primitive* p = *it;
-
-		Joint* j = p->getFirstJoint();
-
-		while (j != NULL) {
-			if (!j->getActive() && Joint::isJoint(j) && j->getJointType() >= Joint::ANCHOR_JOINT) {
-				Primitive* other = j->otherPrimitive(p);
-
-				if (other == NULL || downstreamTree.find(other) == downstreamTree.end()) {
-					if (answer == NULL || JointSort::lighterJoint(j, answer)) {
-						answer = j;
-						newParent = other;
-					}
-				}
-			}
-
-			j = p->getNextJoint(j);
-		}
-	}
-
-	return answer;
-}
-
-// FUNCTION: WEBSERVICE 0x1011c630
-void TreeStage::traverse(Joint* joint, Primitive* parent)
-{
-	rebuildClump(joint, parent);
-
-	Primitive* child = joint->otherPrimitive(parent);
-
-	Edge* e = child->getFirstEdge();
-
-	while (e != NULL) {
-		if (Joint::isJoint(e) && static_cast<Joint*>(e)->getJointType() >= Joint::ANCHOR_JOINT) {
-			if (static_cast<Joint*>(e)->getActive()) {
-				Primitive* other = e->otherPrimitive(child);
-
-				if (other != NULL && other != parent) {
-					traverse(static_cast<Joint*>(e), child);
-				}
-			}
-		}
-		else {
-			insertEdge(e);
-		}
-
-		e = child->getNextEdge(e);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1011c6e0
-void TreeStage::swap(Joint* deactivate, Joint* activate, Primitive* newParent)
-{
-	if (deactivate != NULL) {
-		dirtyAssemblies(deactivate);
-		deactivate->setActive(false);
-
-		if (activate == NULL) {
-			destroyAssembly(deactivate->getPrimitive(0)->getClump());
-			return;
-		}
-	}
-	else if (activate == NULL) {
-		return;
-	}
-
-	dirtyAssemblies(activate);
-	activate->setActive(true);
-	traverse(activate, newParent);
-}
-
-// FUNCTION: WEBSERVICE 0x1011c740
-void TreeStage::insertJoint(Joint* j)
-{
-	int heavySide = 0;
-	Joint* deActivate = NULL;
-
-	findHeaviestUpstream(j->getPrimitive(0), j->getPrimitive(1), deActivate, heavySide);
-
-	if (deActivate == NULL || JointSort::lighterJoint(j, deActivate)) {
-		swap(deActivate, j, j->getPrimitive((heavySide + 1) % 2));
-		dirty = true;
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1011c7c0
-void TreeStage::onEdgeAdded(Edge* e)
-{
-	Primitive::insertEdge(e);
-	e->putInPipeline(this);
-
-	if (Joint::isJoint(e) && static_cast<Joint*>(e)->getJointType() >= Joint::ANCHOR_JOINT) {
-		insertJoint(static_cast<Joint*>(e));
-		return;
-	}
-
-	insertEdge(e);
-}
-
-// FUNCTION: WEBSERVICE 0x1011c840
-void TreeStage::onEdgeRemoving(Edge* e)
-{
-	if (Joint::isJoint(e) && static_cast<Joint*>(e)->getJointType() >= Joint::ANCHOR_JOINT) {
-		Joint* joint = static_cast<Joint*>(e);
-
-		if (joint->getActive()) {
-			Primitive* downstream = Primitive::downstreamPrimitive(joint);
-
-			Primitive* newParent = NULL;
-			Joint* lightest = findLightestDownstream(downstream, newParent);
-
-			swap(joint, lightest, newParent);
-			dirty = true;
-		}
-	}
-	else {
-		if (e->downstreamOfStage(this)) {
-			static_cast<IWorldStage*>(getDownstream())->onEdgeRemoving(e);
-		}
-
-		eraseEdge(e);
-	}
-
-	e->removeFromStage(this);
-	Primitive::removeEdge(e);
-}
-
-} // namespace RBX

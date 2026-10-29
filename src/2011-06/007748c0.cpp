@@ -1,401 +1,170 @@
-// from server: 67% by colin
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/DataModel.cpp
+// roc-lib: boost-1.34.1-dll roc_bind_factory_triples_3ef9d3fdf85fc7a5.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Lighting.h"
-#include "v8datamodel/DataModel.h"
-#include "v8datamodel/TimeState.h"
-#include "v8datamodel/Workspace.h"
-#include "v8datamodel/Hopper.h"
-#include "v8datamodel/Teams.h"
-#include "v8datamodel/JointsService.h"
-#include "v8datamodel/LocalBackpack.h"
-#include "script/ScriptContext.h"
-#include "gui/GUI.h"
-#include "util/Log.h"
-#include "util/IMetric.h"
-#include "util/standardout.h"
-#include "util/Http.h"
-#include "util/Sound.h"
+// Declaration excerpt from RBLXDecomp/RBXGSdecomp at
+// 3c9c0c32ac5e7ba320767bfcd2bd3c54f86ef461, ThreadRef.h.
+// Out-of-line copy/destructor are the already-exact 005944e0/00594470.
+#define NDEBUG
+#include <boost/shared_ptr.hpp>
+#include <boost/mem_fn.hpp>
 
-namespace RBX
-{
-	static Reflection::BoundFuncDesc<DataModel, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(ContentId), 1> getContentFunctionOld(&DataModel::get, "get", "url", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<DataModel, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(ContentId), 1> getContentFunction(&DataModel::get, "GetObjects", "url", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(ContentId), 1> loadFunction(&DataModel::loadContent, "Load", "url", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(ContentId), 1> saveFunction(&DataModel::save, "Save", "url", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, std::string(std::string, bool), 2> httpGetFunction(&DataModel::httpGet, "HttpGet", "url", "synchronous", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<DataModel, std::string(std::string, std::string, bool), 3> httpPostFunction(&DataModel::httpPost, "HttpPost", "url", "data", "synchronous", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(void), 0> sanitizeFunction(&DataModel::clearContents, "ClearContent", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(void), 0> closeFunction(&DataModel::close, "Close", Reflection::FunctionDescriptor::NeedTrustedCaller);
+struct lua_State;
+namespace boost { class mutex; }
+namespace RBX { namespace Lua {
+class ThreadRef {
+public:
+    class Node;
+private:
+    const boost::shared_ptr<boost::mutex> sync;
+    Node* node;
+    ThreadRef* previous;
+    ThreadRef* next;
+    lua_State* L;
+    int threadId;
+protected:
+    virtual void removeRef();
+public:
+    ThreadRef(const ThreadRef&);
+    ~ThreadRef();
+};
+class FunctionRef : public ThreadRef {
+public:
+    int functionId;
+    FunctionRef(const FunctionRef&);
+    ~FunctionRef();
+    FunctionRef& operator=(const FunctionRef&);
+    bool operator==(const FunctionRef&) const;
+    bool operator!=(const FunctionRef&) const;
+protected:
+    virtual void removeRef();
+};
+}}
 
-	static Reflection::BoundFuncDesc<DataModel, void(std::string), 1> func_SetUIMessage(&DataModel::setUiMessage, "SetMessage", "message", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(void), 0> func_ClearUIMessage(&DataModel::clearUiMessage, "ClearMessage", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(void), 0> func_SetUIMessageBrickCount(&DataModel::setUiMessageBrickCount, "SetMessageBrickCount", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	
-	static Reflection::SignalDesc<DataModel, void(void)> event_Closing("Close");
+// Target stores an eight-byte member-function pointer (entry + this adjustment).
+class __multiple_inheritance DHTMLWindow;
+typedef RBX::Lua::FunctionRef FunctionRef;
+typedef boost::_mfi::mf1<void, DHTMLWindow, FunctionRef> Callback;
+template void Callback::operator()<boost::shared_ptr<DHTMLWindow> >(
+    boost::shared_ptr<DHTMLWindow> const&, FunctionRef) const;
 
-#pragma warning (push)
-#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
+typedef boost::_bi::value<boost::shared_ptr<DHTMLWindow> > WindowValue;
+typedef boost::_bi::value<FunctionRef> FunctionValue;
+typedef boost::_bi::list2<WindowValue, FunctionValue> Arguments;
+typedef boost::_bi::bind_t<void, Callback, Arguments> Bound;
+// Full observed RTTI bind_t type: genuine list/storage constructors and manager.
+template class boost::_bi::value<FunctionRef>;
+template class boost::_bi::storage2<WindowValue, FunctionValue>;
+template class boost::_bi::list2<WindowValue, FunctionValue>;
+template class boost::_bi::bind_t<void, Callback, Arguments>;
+void invoke_bound(Bound& bound) { bound(); }
+void assign_bound(boost::function<void()>& function, Bound const& bound) { function = bound; }
 
-	DataModel::DataModel()
-		: VerbContainer(NULL),
-		  workspace(Creatable::create<Workspace>(this)),
-		  guiRoot(Creatable::create<GuiRoot>()),
-		  guiHooks(Creatable::create<GuiRoot>()),
-		  timeState(new TimeState),
-		  mutex(new boost::recursive_mutex),
-		  guiTarget(NULL),
-		  forceArrowCursor(true),
-		  dirty(false),
-		  drawId(0)
-	{
-		setName("Level");
-	}
+#include <string>
+namespace RBX { class Instance; namespace Reflection { class PropertyDescriptor; } }
+typedef boost::_mfi::mf0<void, DHTMLWindow> CloseCallback;
+typedef boost::_bi::list1<WindowValue> CloseArguments;
+typedef boost::_bi::bind_t<void, CloseCallback, CloseArguments> CloseBound;
+template class boost::_mfi::mf0<void, DHTMLWindow>;
+template class boost::_bi::list1<WindowValue>;
+template class boost::_bi::bind_t<void, CloseCallback, CloseArguments>;
+void assign_close(boost::function<void()>& f, CloseBound const& b) { f = b; }
 
-#pragma warning (pop)
+typedef boost::_mfi::mf1<void, DHTMLWindow, std::string> StringCallback;
+typedef boost::_bi::value<std::string> StringValue;
+typedef boost::_bi::list2<WindowValue, StringValue> StringArguments;
+typedef boost::_bi::bind_t<void, StringCallback, StringArguments> StringBound;
+template void StringCallback::operator()<boost::shared_ptr<DHTMLWindow> >(boost::shared_ptr<DHTMLWindow> const&, std::string) const;
+template class boost::_bi::storage2<WindowValue, StringValue>;
+template class boost::_bi::list2<WindowValue, StringValue>;
+template class boost::_bi::bind_t<void, StringCallback, StringArguments>;
+void assign_string(boost::function<void()>& f, StringBound const& b) { f = b; }
 
-	DataModel::~DataModel()
-	{
-		Notifier<RunService, RunTransition>::disconnect(runService, this);
-		StandardOut::singleton()->print(MESSAGE_INFO, "~DataModel");
-	}
+typedef boost::_mfi::mf2<void, DHTMLWindow, int, int> ResizeCallback;
+typedef boost::_bi::value<int> IntValue;
+typedef boost::_bi::list3<WindowValue, IntValue, IntValue> ResizeArguments;
+typedef boost::_bi::bind_t<void, ResizeCallback, ResizeArguments> ResizeBound;
+template class boost::_mfi::mf2<void, DHTMLWindow, int, int>;
+template class boost::_bi::list3<WindowValue, IntValue, IntValue>;
+template class boost::_bi::bind_t<void, ResizeCallback, ResizeArguments>;
+void assign_resize(boost::function<void()>& f, ResizeBound const& b) { f = b; }
 
-	bool DataModel::askAddChild(const Instance* instance) const
-	{
-		return dynamic_cast<const Service*>(instance) != NULL;
-	}
+typedef boost::shared_ptr<RBX::Instance> InstancePtr;
+typedef RBX::Reflection::PropertyDescriptor const& PropertyRef;
+typedef boost::_mfi::mf3<void, DHTMLWindow, InstancePtr, PropertyRef, std::string> PropertyCallback;
+typedef boost::_bi::list4<WindowValue, boost::_bi::value<InstancePtr>, boost::reference_wrapper<RBX::Reflection::PropertyDescriptor const>, StringValue> PropertyArguments;
+typedef boost::_bi::bind_t<void, PropertyCallback, PropertyArguments> PropertyBound;
+template class boost::_mfi::mf3<void, DHTMLWindow, InstancePtr, PropertyRef, std::string>;
+template class boost::_bi::list4<WindowValue, boost::_bi::value<InstancePtr>, boost::reference_wrapper<RBX::Reflection::PropertyDescriptor const>, StringValue>;
+template class boost::_bi::bind_t<void, PropertyCallback, PropertyArguments>;
+void assign_property(boost::function<void()>& f, PropertyBound const& b) { f = b; }
 
-	boost::shared_ptr<DataModel> DataModel::createDataModel()
-	{
-		ContentProvider::singleton().clearContentCache();
-		
-		boost::shared_ptr<DataModel> dataModel = Creatable::create<DataModel>();
+#include <boost/weak_ptr.hpp>
+typedef boost::shared_ptr<DHTMLWindow> FactoryOwner;
+typedef boost::weak_ptr<RBX::Instance> FactoryWeak;
+typedef boost::reference_wrapper<RBX::Reflection::PropertyDescriptor const> FactoryProperty;
 
-		{
-			Lock lock(dataModel);
-			dataModel->initializeContents();
-		}
 
-		return dataModel;
-	}
-	
-	void DataModel::onChildAdded(Instance* child)
-	{
-		ServiceProvider::onChildAdded(child);
+typedef void (DHTMLWindow::*TripleFactory636Method)(PropertyRef, PropertyRef, std::string);
+typedef boost::_bi::list_av_4<FactoryOwner, FactoryProperty, FactoryProperty, std::string >::type TripleFactory636Args;
+typedef boost::_bi::bind_t<void, boost::_mfi::mf3<void, DHTMLWindow, PropertyRef, PropertyRef, std::string >, TripleFactory636Args> TripleFactory636Bound;
+template TripleFactory636Bound boost::bind<void, DHTMLWindow, PropertyRef, PropertyRef, std::string, FactoryOwner, FactoryProperty, FactoryProperty, std::string >(TripleFactory636Method, FactoryOwner, FactoryProperty, FactoryProperty, std::string);
 
-		if (child->getClassName() == "NetworkClient")
-		{
-			Verb* lockPlayMode = getVerb("LockPlayMode");
-			if (lockPlayMode)
-				lockPlayMode->doIt(NULL);
+typedef void (DHTMLWindow::*TripleFactory637Method)(PropertyRef, PropertyRef, std::string);
+typedef boost::_bi::list_av_4<DHTMLWindow*, FactoryProperty, FactoryProperty, std::string >::type TripleFactory637Args;
+typedef boost::_bi::bind_t<void, boost::_mfi::mf3<void, DHTMLWindow, PropertyRef, PropertyRef, std::string >, TripleFactory637Args> TripleFactory637Bound;
+template TripleFactory637Bound boost::bind<void, DHTMLWindow, PropertyRef, PropertyRef, std::string, DHTMLWindow*, FactoryProperty, FactoryProperty, std::string >(TripleFactory637Method, DHTMLWindow*, FactoryProperty, FactoryProperty, std::string);
 
-			workspace->setNullMouseCommand();
-		}
-	}
+typedef void (*TripleFactory638Method)(PropertyRef, PropertyRef, std::string);
+typedef boost::_bi::list_av_3<FactoryProperty, FactoryProperty, std::string >::type TripleFactory638Args;
+typedef boost::_bi::bind_t<void, TripleFactory638Method, TripleFactory638Args> TripleFactory638Bound;
+template TripleFactory638Bound boost::bind<void, PropertyRef, PropertyRef, std::string, FactoryProperty, FactoryProperty, std::string >(TripleFactory638Method, FactoryProperty, FactoryProperty, std::string);
 
-	void DataModel::onEvent(const RunService* source, RunTransition event)
-	{
-		switch (event.newState)
-		{
-		case RS_NORMAL:
-			if (event.oldState == RS_RUNNING)
-				workspace->reset();
+typedef void (DHTMLWindow::*TripleFactory639Method)(PropertyRef, PropertyRef, InstancePtr);
+typedef boost::_bi::list_av_4<FactoryOwner, FactoryProperty, FactoryProperty, InstancePtr >::type TripleFactory639Args;
+typedef boost::_bi::bind_t<void, boost::_mfi::mf3<void, DHTMLWindow, PropertyRef, PropertyRef, InstancePtr >, TripleFactory639Args> TripleFactory639Bound;
+template TripleFactory639Bound boost::bind<void, DHTMLWindow, PropertyRef, PropertyRef, InstancePtr, FactoryOwner, FactoryProperty, FactoryProperty, InstancePtr >(TripleFactory639Method, FactoryOwner, FactoryProperty, FactoryProperty, InstancePtr);
 
-			timeState->clear();
-			break;
-		case RS_RUNNING:
-			workspace->start();
-			break;
-		case RS_PAUSED:
-			workspace->stop();
-			break;
-		}
-	}
+typedef void (DHTMLWindow::*TripleFactory640Method)(PropertyRef, PropertyRef, InstancePtr);
+typedef boost::_bi::list_av_4<DHTMLWindow*, FactoryProperty, FactoryProperty, InstancePtr >::type TripleFactory640Args;
+typedef boost::_bi::bind_t<void, boost::_mfi::mf3<void, DHTMLWindow, PropertyRef, PropertyRef, InstancePtr >, TripleFactory640Args> TripleFactory640Bound;
+template TripleFactory640Bound boost::bind<void, DHTMLWindow, PropertyRef, PropertyRef, InstancePtr, DHTMLWindow*, FactoryProperty, FactoryProperty, InstancePtr >(TripleFactory640Method, DHTMLWindow*, FactoryProperty, FactoryProperty, InstancePtr);
 
-	std::string DataModel::doHttpGet(std::string url)
-	{
-		std::string result;
-		Http(url.c_str()).get(result);
+typedef void (*TripleFactory641Method)(PropertyRef, PropertyRef, InstancePtr);
+typedef boost::_bi::list_av_3<FactoryProperty, FactoryProperty, InstancePtr >::type TripleFactory641Args;
+typedef boost::_bi::bind_t<void, TripleFactory641Method, TripleFactory641Args> TripleFactory641Bound;
+template TripleFactory641Bound boost::bind<void, PropertyRef, PropertyRef, InstancePtr, FactoryProperty, FactoryProperty, InstancePtr >(TripleFactory641Method, FactoryProperty, FactoryProperty, InstancePtr);
 
-		return result;
-	}
+typedef void (DHTMLWindow::*TripleFactory642Method)(PropertyRef, PropertyRef, FunctionRef);
+typedef boost::_bi::list_av_4<FactoryOwner, FactoryProperty, FactoryProperty, FunctionRef >::type TripleFactory642Args;
+typedef boost::_bi::bind_t<void, boost::_mfi::mf3<void, DHTMLWindow, PropertyRef, PropertyRef, FunctionRef >, TripleFactory642Args> TripleFactory642Bound;
+template TripleFactory642Bound boost::bind<void, DHTMLWindow, PropertyRef, PropertyRef, FunctionRef, FactoryOwner, FactoryProperty, FactoryProperty, FunctionRef >(TripleFactory642Method, FactoryOwner, FactoryProperty, FactoryProperty, FunctionRef);
 
-	std::string DataModel::doHttpPost(std::string url, std::string data)
-	{
-		std::string result;
-		Http(url).post(std::istringstream(data), true, result);
+typedef void (DHTMLWindow::*TripleFactory643Method)(PropertyRef, PropertyRef, FunctionRef);
+typedef boost::_bi::list_av_4<DHTMLWindow*, FactoryProperty, FactoryProperty, FunctionRef >::type TripleFactory643Args;
+typedef boost::_bi::bind_t<void, boost::_mfi::mf3<void, DHTMLWindow, PropertyRef, PropertyRef, FunctionRef >, TripleFactory643Args> TripleFactory643Bound;
+template TripleFactory643Bound boost::bind<void, DHTMLWindow, PropertyRef, PropertyRef, FunctionRef, DHTMLWindow*, FactoryProperty, FactoryProperty, FunctionRef >(TripleFactory643Method, DHTMLWindow*, FactoryProperty, FactoryProperty, FunctionRef);
 
-		return result;
-	}
+typedef void (*TripleFactory644Method)(PropertyRef, PropertyRef, FunctionRef);
+typedef boost::_bi::list_av_3<FactoryProperty, FactoryProperty, FunctionRef >::type TripleFactory644Args;
+typedef boost::_bi::bind_t<void, TripleFactory644Method, TripleFactory644Args> TripleFactory644Bound;
+template TripleFactory644Bound boost::bind<void, PropertyRef, PropertyRef, FunctionRef, FactoryProperty, FactoryProperty, FunctionRef >(TripleFactory644Method, FactoryProperty, FactoryProperty, FunctionRef);
 
-	void DataModel::close()
-	{
-		Verb* exitVerb = getVerb("Exit");
-		if (!exitVerb)
-			throw std::runtime_error("Couldn\'t find Exit Verb");
+typedef void (DHTMLWindow::*TripleFactory645Method)(PropertyRef, PropertyRef, PropertyRef);
+typedef boost::_bi::list_av_4<FactoryOwner, FactoryProperty, FactoryProperty, FactoryProperty >::type TripleFactory645Args;
+typedef boost::_bi::bind_t<void, boost::_mfi::mf3<void, DHTMLWindow, PropertyRef, PropertyRef, PropertyRef >, TripleFactory645Args> TripleFactory645Bound;
+template TripleFactory645Bound boost::bind<void, DHTMLWindow, PropertyRef, PropertyRef, PropertyRef, FactoryOwner, FactoryProperty, FactoryProperty, FactoryProperty >(TripleFactory645Method, FactoryOwner, FactoryProperty, FactoryProperty, FactoryProperty);
 
-		exitVerb->doIt(NULL);
-	}
+typedef void (DHTMLWindow::*TripleFactory646Method)(PropertyRef, PropertyRef, PropertyRef);
+typedef boost::_bi::list_av_4<DHTMLWindow*, FactoryProperty, FactoryProperty, FactoryProperty >::type TripleFactory646Args;
+typedef boost::_bi::bind_t<void, boost::_mfi::mf3<void, DHTMLWindow, PropertyRef, PropertyRef, PropertyRef >, TripleFactory646Args> TripleFactory646Bound;
+template TripleFactory646Bound boost::bind<void, DHTMLWindow, PropertyRef, PropertyRef, PropertyRef, DHTMLWindow*, FactoryProperty, FactoryProperty, FactoryProperty >(TripleFactory646Method, DHTMLWindow*, FactoryProperty, FactoryProperty, FactoryProperty);
 
-	std::string DataModel::httpGet(std::string url, bool synchronous)
-	{
-		if (synchronous)
-		{
-			return doHttpGet(url);
-		}
-		else
-		{
-			if (url.size() > 0)
-			{
-				boost::function0<void> f = boost::bind(&DataModel::doHttpGet, url);
-				boost::function0<void> g = boost::bind(&StandardOut::print_exception, f, MESSAGE_ERROR, false);
-
-				boost::thread(background_function(g, "rbx_httpGet"));
-			}
-
-			return "";
-		}
-	}
-
-	std::string DataModel::httpPost(std::string url, std::string data, bool synchronous)
-	{
-		if (synchronous)
-		{
-			return doHttpPost(url, data);
-		}
-		else
-		{
-			boost::function0<void> f = boost::bind(&DataModel::doHttpPost, url, data);
-			boost::function0<void> g = boost::bind(&StandardOut::print_exception, f, MESSAGE_ERROR, false);
-
-			boost::thread(background_function(g, "rbx_httpPost"));
-
-			return "";
-		}
-	}
-
-	void DataModel::clearContents()
-	{
-		workspace->setMouseCommand(NULL);
-		workspace->removeAllChildren();
-		workspace->setCamera(NULL);
-		
-		starterPackService->removeAllChildren();
-
-		Teams* teams = ServiceProvider::find<Teams>(this);
-		if (teams)
-			teams->removeAllChildren();
-
-		Lighting* lighting = ServiceProvider::find<Lighting>(this);
-		if (lighting)
-			lighting->removeAllChildren();
-
-		ScriptContext* script = ServiceProvider::find<ScriptContext>(this);
-		if (script)
-		{
-			script->closeState();
-			ScriptContext::propScriptsDisabled.setValue(script, false);
-		}
-	}
-
-	void DataModel::loadContent(ContentId contentId)
-	{
-		std::auto_ptr<std::istream> stream = ContentProvider::singleton().getContent(contentId);
-		StandardOut::singleton()->print(MESSAGE_INFO, "DataModel Loading %s", contentId.c_str());
-
-		SerializerV2 serializer;
-		serializer.load(*stream, this);
-
-		workspace->joinAllHack();
-	}
-
-	void DataModel::save(ContentId contentId)
-	{
-		std::stringstream stream;
-
-		{
-			boost::scoped_ptr<XmlElement> root(SerializerV2::newRootElement());
-			writeChildren(root.get());
-
-			TextXmlWriterWithEmbeddedContent machine(stream);
-			machine.serialize(root.get());
-
-			stream.flush();
-		}
-		
-		std::string response;
-		Http(contentId.toString()).post(stream, true, response);
-	}
-
-	boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> DataModel::get(ContentId contentId)
-	{
-		std::auto_ptr<std::istream> stream = ContentProvider::singleton().getContent(contentId);
-
-		TextXmlParser machine(stream->rdbuf());
-		std::auto_ptr<XmlElement> root = machine.parse();
-
-		boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> result(new std::vector<boost::shared_ptr<Instance>>);
-
-		SerializerV2 serializer;
-		serializer.loadInstances(root.get(), *result);
-
-		return result;
-	}
-
-	static std::string report(const G3D::Stopwatch& timer)
-	{
-		if (timer.smoothElapsedTime() > 0.0f)
-		{
-			std::string t = Log::formatTime(timer.smoothElapsedTime());
-			char buffer[256];
-			sprintf(buffer, "%s (%.3gfps)", t.c_str(), 1.0f / timer.smoothElapsedTime());
-
-			return std::string(buffer);
-		}
-		else
-		{
-			return Log::formatTime(timer.smoothElapsedTime());
-		}
-	}
-
-	std::string DataModel::evaluate(const std::string& valueName) const
-	{
-		World* world = workspace->getWorld();
-
-		if (valueName == "timer")
-		{
-			float time = timeState->totalVirtualTime;
-			return StringConverter<float>::convertToString(time);
-		}
-		else if (valueName == "FPS")
-		{
-			return G3D::format("%.3g", timeState->fpsStopwatch.smoothFPS());
-		}
-		else if (valueName == "simDC")
-		{
-			return report(timeState->simulationStopwatch);
-		}
-		else if (valueName == "drawId")
-		{
-			return StringConverter<int>::convertToString(drawId);
-		}
-		else if (valueName == "graphicsMode")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "culling")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "cullingPercent")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "antiAliasing")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "bevels")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "videoMemory")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "GfxTime")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "numPrimitives")
-		{
-			return StringConverter<int>::convertToString(world->getPrimitives().size());
-		}
-		else if (valueName == "numJoints")
-		{
-			return StringConverter<int>::convertToString(world->getNumJoints());
-		}
-		else if (valueName == "numContacts")
-		{
-			return StringConverter<int>::convertToString(world->getNumContacts());
-		}
-		else if (valueName == "numContactsInCollisionStage")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_CONTACTSTAGE_CONTACTS));
-		}
-		else if (valueName == "numSteppingContacts")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_STEPPING_CONTACTS));
-		}
-		else if (valueName == "numTouchingContacts")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_TOUCHING_CONTACTS));
-		}
-		else if (valueName == "maxTreeDepth")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::MAX_TREE_DEPTH));
-		}
-		else if (valueName == "contactPairHitRatio")
-		{
-			return StringConverter<float>::convertToString(BlockBlockContact::contactPairHitRatio());
-		}
-		else if (valueName == "numLinkCalls")
-		{
-			return StringConverter<int>::convertToString(world->getNumLinkCalls());
-		}
-		else if (valueName == "numHashNodes")
-		{
-			return StringConverter<int>::convertToString(world->getNumHashNodes());
-		}
-		else if (valueName == "maxBucketSize")
-		{
-			return StringConverter<int>::convertToString(world->getMaxBucketSize());
-		}
-		else if (valueName == "numBodies")
-		{
-			return StringConverter<int>::convertToString(world->getNumBodies());
-		}
-		else if (valueName == "numConstraints")
-		{
-			return StringConverter<int>::convertToString(world->getNumConstraints());
-		}
-		else if (valueName == "numPoints")
-		{
-			return StringConverter<int>::convertToString(world->getNumPoints());
-		}
-		else if (valueName == "energyBody")
-		{
-			return StringConverter<float>::convertToString(world->getKernel().bodyKineticEnergy());
-		}
-		else if (valueName == "energyConnector")
-		{
-			return StringConverter<float>::convertToString(world->getKernel().connectorSpringEnergy());
-		}
-		else if (valueName == "energyTotal")
-		{
-			return StringConverter<float>::convertToString(world->getKernel().totalKineticEnergy());
-		}
-		else
-		{
-			return "?";
-		}
-	}
-
-	void DataModel::Lock::doLock(const DataModel* dataModel)
-	{
-		if (dataModel)
-		{
-			mutex = dataModel->mutex;
-			lock = new boost::recursive_mutex::scoped_lock(*mutex);
-		}
-	}
-
-	DataModel::Lock::~Lock()
-	{
-		delete lock;
-	}
-}
+typedef void (*TripleFactory647Method)(PropertyRef, PropertyRef, PropertyRef);
+typedef boost::_bi::list_av_3<FactoryProperty, FactoryProperty, FactoryProperty >::type TripleFactory647Args;
+typedef boost::_bi::bind_t<void, TripleFactory647Method, TripleFactory647Args> TripleFactory647Bound;
+template TripleFactory647Bound boost::bind<void, PropertyRef, PropertyRef, PropertyRef, FactoryProperty, FactoryProperty, FactoryProperty >(TripleFactory647Method, FactoryProperty, FactoryProperty, FactoryProperty);

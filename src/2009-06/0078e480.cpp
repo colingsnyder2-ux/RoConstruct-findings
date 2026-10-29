@@ -1,14 +1,13 @@
-// from server: 32% by colin
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Controls/Deprecated/XTOutBarCtrl.cpp
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source/PropertyGrid/XTPPropertyGridView.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTOutBarCtrl.cpp : implementation of the CXTOutBarCtrl class.
+// XTPPropertyGridView.cpp : implementation of the CXTPPropertyGridView class.
 //
-// This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME PROPERTYGRID MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,24 +25,20 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "Common/XTPResourceManager.h"
-#include "Common/XTPColorManager.h"
+#include "Common/Resource.h"
+
 #include "Common/XTPDrawHelpers.h"
-#include "Common/XTPMaskEditT.h"
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPResourceManager.h"
+#include "Common/XTPToolTipContext.h"
 
-#include "../Resource.h"
-
-#include "../Util/XTPControlTheme.h"
-#include "../Defines.h"
-#include "../Util/XTPGlobal.h"
-#include "../Util/XTPFunctions.h"
-#include "../Edit/XTPEdit.h"
-
-#include "XTVC50Helpers.h"
-
-#include "XTThemeManager.h"
-#include "XTOutBarCtrl.h"
-#include "XTOutBarCtrlTheme.h"
+#include "XTPPropertyGridInplaceEdit.h"
+#include "XTPPropertyGridInplaceButton.h"
+#include "XTPPropertyGridInplaceList.h"
+#include "XTPPropertyGridItem.h"
+#include "XTPPropertyGrid.h"
+#include "XTPPropertyGridDefines.h"
+#include "XTPPropertyGridPaintManager.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -51,3618 +46,1381 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+
+const UINT PGV_HIT_SPLITTER = 0x100;
+
 /////////////////////////////////////////////////////////////////////////////
-// CXTOutBarEditItem
+// CXTPPropertyGridToolTip
 
-CXTOutBarEditItem::CXTOutBarEditItem()
+CXTPPropertyGridToolTip::CXTPPropertyGridToolTip()
 {
-	m_iIndex = -1;
-	m_pParentWnd = NULL;
-	m_bSmallIcons = false;
-	m_bEscapeKey = false;
-	m_bIsFolder = false;
+	m_pGrid = NULL;
 }
 
-CXTOutBarEditItem::~CXTOutBarEditItem()
-{
-
-}
-
-IMPLEMENT_DYNAMIC(CXTOutBarEditItem, CXTPEdit)
-
-BEGIN_MESSAGE_MAP(CXTOutBarEditItem, CXTPEdit)
-	//{{AFX_MSG_MAP(CXTOutBarEditItem)
-	ON_WM_KILLFOCUS()
-	ON_WM_CHAR()
-	ON_WM_SETCURSOR()
+BEGIN_MESSAGE_MAP(CXTPPropertyGridToolTip, CWnd)
+	//{{AFX_MSG_MAP(CXTPPropertyGridView)
+	ON_WM_ERASEBKGND()
+	ON_WM_PAINT()
+	ON_WM_NCHITTEST_EX()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
-void CXTOutBarEditItem::OnKillFocus(CWnd* /*pNewWnd*/)
+LRESULT CXTPPropertyGridToolTip::OnNcHitTest(CPoint /*point*/)
 {
-	PostMessage(WM_CLOSE);
+	return (LRESULT)HTTRANSPARENT;
+}
+void CXTPPropertyGridToolTip::Create(CXTPPropertyGridView* pParentWnd)
+{
+	CWnd::CreateEx(0, AfxRegisterWndClass(0, AfxGetApp()->LoadStandardCursor(IDC_ARROW)), _T(""), WS_POPUP, CXTPEmptyRect(), pParentWnd, 0);
+	m_pGrid = pParentWnd;
 
-	if (!m_bEscapeKey)
+}
+
+void CXTPPropertyGridToolTip::Activate(BOOL bActive, CXTPPropertyGridItem* pItem, BOOL bValuePart)
+{
+	if (bActive)
 	{
-		GetWindowText(m_strText);
+		ASSERT(pItem);
+		m_fnt.DeleteObject();
+		LOGFONT lf;
+		m_pGrid->GetPaintManager()->GetItemFont(pItem, bValuePart)->GetLogFont(&lf);
 
-		if (!m_strText.IsEmpty())
-		{
-			m_pParentWnd->EndLabelEdit(this, m_bIsFolder);
-		}
+		m_fnt.CreateFontIndirect(&lf);
+
+		CString strText;
+		GetWindowText(strText);
+		CWindowDC dc(this);
+		CXTPFontDC font(&dc, &m_fnt);
+		CXTPWindowRect rc (this);
+		rc.right = rc.left + dc.GetTextExtent(strText).cx + 8;
+
+		CRect rcWork = XTPMultiMonitor()->GetWorkArea();
+
+		if (rc.right > rcWork.right)
+			rc.OffsetRect(rcWork.right - rc.right, 0);
+
+		if (rc.left < rcWork.left)
+			rc.OffsetRect(rcWork.left - rc.left, 0);
+
+		MoveWindow(rc);
+		ShowWindow(SW_SHOWNOACTIVATE);
+	}
+	else
+	{
+		DestroyWindow();
 	}
 }
 
-BOOL CXTOutBarEditItem::PreTranslateMessage(MSG* pMsg)
+BOOL CXTPPropertyGridToolTip::OnEraseBkgnd(CDC*)
 {
-	switch (pMsg->wParam)
-	{
-	case VK_ESCAPE:
-		{
-			m_bEscapeKey = TRUE; // fall thru
-		}
-	case VK_RETURN:
-		{
-			PostMessage(WM_CLOSE);
-			return TRUE;
-		}
-	}
-
-	return CXTPEdit::PreTranslateMessage(pMsg);
-}
-
-void CXTOutBarEditItem::PostNcDestroy()
-{
-	delete this;
-}
-
-BOOL CXTOutBarEditItem::Create(LPCTSTR lpszText, DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, UINT nIndex, bool bIsFolder, bool bSmallIcons)
-{
-	ASSERT_VALID(pParentWnd); // must be valid.
-
-	m_pParentWnd = (CXTOutBarCtrl*)pParentWnd;
-	ASSERT_KINDOF(CXTOutBarCtrl, m_pParentWnd); // must be an outlook bar control.
-
-	// get the inside size of the outlook bar.
-	CRect rcInside;
-	m_pParentWnd->GetInsideRect(rcInside);
-	rcInside.DeflateRect(5, 5);
-
-	// adjust the size if necessary.
-	m_rcOriginal = rect;
-	m_bSmallIcons = bSmallIcons;
-	m_bIsFolder = bIsFolder;
-	m_iIndex = nIndex;
-	m_strText = lpszText;
-
-	if (m_rcOriginal.Width() > rcInside.Width())
-	{
-		if (m_bSmallIcons != TRUE)
-		{
-			m_rcOriginal.left = rcInside.left;
-		}
-
-		m_rcOriginal.right = rcInside.right;
-	}
-
-	if (!CXTPEdit::Create(dwStyle, m_rcOriginal, pParentWnd, nID))
-		return FALSE;
-
-	if (!CXTPEdit::Initialize(m_pParentWnd))
-		return FALSE;
-
-	SetFont(m_pParentWnd->GetFontX());
-	SetWindowText(m_strText);
-
 	return TRUE;
 }
 
-void CXTOutBarEditItem::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+void CXTPPropertyGridToolTip::OnPaint()
 {
-	// if this is a folder, do default processing.
-	if (m_bIsFolder)
-	{
-		CXTPEdit::OnChar(nChar, nRepCnt, nFlags);
-		return;
-	}
+	CPaintDC dc(this);
+	CXTPClientRect rc(this);
 
-	// if the escape or return key has been pressed, abort edit.
-	else if (nChar == VK_ESCAPE || nChar == VK_RETURN)
-	{
-		if (nChar == VK_ESCAPE)
-		{
-			m_bEscapeKey = TRUE;
-		}
+	COLORREF clrText = GetXtremeColor(COLOR_INFOTEXT);
+	dc.FillSolidRect(rc, GetXtremeColor(COLOR_INFOBK));
+	dc.Draw3dRect(rc, clrText, clrText);
 
-		m_pParentWnd->SetFocus();
-		return;
-	}
-
-	CXTPEdit::OnChar(nChar, nRepCnt, nFlags);
-
-	// get the inside size of the outlook bar.
-	CRect rcInside;
-	m_pParentWnd->GetInsideRect(rcInside);
-	rcInside.DeflateRect(5, 5);
-
-	// get the edit box text
 	CString strText;
 	GetWindowText(strText);
+	dc.SetTextColor(clrText);
+	dc.SetBkMode(TRANSPARENT);
 
-	// get the font used by the outlook bar.
-	CFont* pFont = m_pParentWnd->GetFontX();
-	ASSERT(pFont && pFont->GetSafeHandle());
+	CXTPFontDC font(&dc, &m_fnt);
+	CRect rcText(rc);
+	rcText.left += 4;
 
-	// select the font used by the outlook bar.
-	CWindowDC dc(NULL);
+	dc.DrawText(strText, rcText, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
 
-	// get the size of the text string.
-	CFont* f = dc.SelectObject(pFont);
-	CSize sz = dc.GetTextExtent(strText);
-	dc.SelectObject(f);
-
-	// construct the edit box size.
-	CRect rcItem = m_rcOriginal;
-
-	// calculate the width of the edit box.
-	if (m_bSmallIcons == TRUE)
-	{
-		rcItem.right = rcItem.left + sz.cx + 9;
-
-		if (rcItem.right < m_rcOriginal.right)
-		{
-			rcItem.right = m_rcOriginal.right;
-		}
-		else if (rcItem.right > rcInside.right)
-		{
-			rcItem.right = rcInside.right;
-		}
-	}
-	else
-	{
-		int x = (rcInside.Width()-sz.cx)/2;
-
-		rcItem.left = rcInside.left + x;
-		rcItem.right = rcItem.left + sz.cx;
-		rcItem.InflateRect(6, 0);
-
-		if (rcItem.Width() < m_rcOriginal.Width())
-		{
-			rcItem = m_rcOriginal;
-		}
-
-		else if (rcItem.Width() > rcInside.Width())
-		{
-			rcItem.left = rcInside.left;
-			rcItem.right = rcInside.right;
-		}
-	}
-
-	// resize the edit box.
-	MoveWindow(&rcItem);
-}
-
-BOOL CXTOutBarEditItem::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
-{
-	HCURSOR hCursor = AfxGetApp()->LoadStandardCursor(IDC_IBEAM);
-	if (hCursor != NULL)
-	{
-		::SetCursor(hCursor);
-		return TRUE;
-	}
-
-	return CXTPEdit::OnSetCursor(pWnd, nHitTest, message);
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// CXTOutBarCtrl
+// CXTPPropertyGridView
 
-IMPLEMENT_THEME_HOST(CXTOutBarCtrl)
-IMPLEMENT_THEME_REFRESH(CXTOutBarCtrl, CWnd)
-
-CXTOutBarCtrl::CXTOutBarCtrl()
-: CXTThemeManagerStyleHost(GetThemeFactoryClass())
-, m_penBlack(PS_SOLID, 1, RGB(0, 0, 0))
+CXTPPropertyGridView::CXTPPropertyGridView()
 {
-	m_rcUpArrow.SetRectEmpty();
-	m_rcDownArrow.SetRectEmpty();
+	m_properetySort = xtpGridSortCategorized;
 
-	m_dwFlags = OBS_XT_DEFAULT;
-	m_pLargeImageList = NULL;
-	m_pSmallImageList = NULL;
-	m_sizeOffset.cx = 4;
-	m_sizeOffset.cy = 3;
-	m_sizeMargin.cx = 5;
-	m_sizeMargin.cy = 5;
-	m_nFolderHeight = 22;
-	m_nSelFolder = 0;
-	m_nLastFolderSelected = -1;
-	m_nFolderHilighted = -1;
-	m_nLastItemSelected = -1;
-	m_nItemHilighted = -1;
-	m_nLastDragItemDraw = -1;
-	m_nLastDragItemDrawType = -1;
-	m_nFirstItem = 0;
-	m_nIconSpacingSmall = 10;
-	m_nIconSpacingLarge = 8;
-	m_nAnimationTickCount = 10;
-	m_nSelAnimCount = 0;
-	m_nSelAnimTiming = 0;
-	m_nHitInternal1 = 0;
-	m_nHitInternal2 = 0;
-	m_bUpArrow = FALSE;
-	m_bDownArrow = FALSE;
-	m_bUpPressed = FALSE;
-	m_bDownPressed = FALSE;
-	m_bLooping = FALSE;
-	m_bPressedHighlight = FALSE;
-	m_bIconPressed = FALSE;
+	m_dDivider = .5;
+	m_bAutoDivider = TRUE;
 
-	SetFontX(CFont::FromHandle((HFONT)GetStockObject(DEFAULT_GUI_FONT)));
+	m_bTracking = FALSE;
+
+	m_bVariableSplitterPos = TRUE;
+
+	m_pSelected = NULL;
+	m_pCategories = new CXTPPropertyGridItems();
+
+	m_hCursor = XTPResourceManager()->LoadCursor(XTP_IDC_HSPLITBAR);
+	m_nLockUpdate = 0;
+	m_pGrid = NULL;
+	m_nItemHeight = 0;
+
+	m_pFocusedButton = NULL;
+	m_pHotButton = NULL;
+
+	EnableAutomation();
 }
 
-CXTOutBarCtrl::~CXTOutBarCtrl()
+CXTPPropertyGridView::~CXTPPropertyGridView()
 {
-	int iFolder;
-	for (iFolder = 0; iFolder < m_arFolder.GetSize(); iFolder++)
-	{
-		m_nSelFolder = iFolder;
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(iFolder);
-		SAFE_DELETE(pBarFolder);
-	}
+	m_wndTip.DestroyWindow();
+	DestroyWindow();
 
-	m_arFolder.RemoveAll();
-	m_penBlack.DeleteObject();
-	m_font.DeleteObject();
+	m_pCategories->Clear();
+	m_pCategories->InternalRelease();
 
 }
 
-IMPLEMENT_DYNCREATE(CXTOutBarCtrl, CWnd)
+IMPLEMENT_DYNAMIC(CXTPPropertyGridView, CListBox)
 
-BEGIN_MESSAGE_MAP(CXTOutBarCtrl, CWnd)
-	//{{AFX_MSG_MAP(CXTOutBarCtrl)
-	ON_WM_TIMER()
-	ON_WM_PAINT()
-	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
+BEGIN_MESSAGE_MAP(CXTPPropertyGridView, CListBox)
+	//{{AFX_MSG_MAP(CXTPPropertyGridView)
 	ON_WM_ERASEBKGND()
-	ON_WM_MOUSEMOVE()
-	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
+	ON_WM_PAINT()
+	ON_WM_NCPAINT()
+	ON_WM_NCCALCSIZE()
 	ON_WM_LBUTTONDOWN()
+	ON_WM_RBUTTONDOWN()
+	ON_WM_LBUTTONDBLCLK()
+	ON_CONTROL_REFLECT(LBN_SELCHANGE, OnSelectionChanged)
 	ON_WM_SETCURSOR()
+	ON_WM_LBUTTONUP()
+	ON_WM_CAPTURECHANGED()
+	ON_WM_MOUSEMOVE()
 	ON_WM_SIZE()
-	ON_COMMAND(XTP_IDC_LARGEICON, OnLargeIcon)
-	ON_UPDATE_COMMAND_UI(XTP_IDC_LARGEICON, OnUpdateLargeIcon)
-	ON_COMMAND(XTP_IDC_SMALLICON, OnSmallIcon)
-	ON_UPDATE_COMMAND_UI(XTP_IDC_SMALLICON, OnUpdateSmallIcon)
-	ON_COMMAND(XTP_IDC_REMOVEITEM, OnRemoveItem)
-	ON_UPDATE_COMMAND_UI(XTP_IDC_REMOVEITEM, OnUpdateRemoveItem)
-	ON_COMMAND(XTP_IDC_RENAMEITEM, OnRenameItem)
-	ON_UPDATE_COMMAND_UI(XTP_IDC_RENAMEITEM, OnUpdateRenameItem)
-	ON_WM_RBUTTONUP()
-	ON_WM_DESTROY()
+	ON_WM_KEYDOWN()
+	ON_WM_SYSKEYDOWN()
+
+	ON_WM_KEYUP()
+	ON_WM_SYSKEYUP()
+
+	ON_WM_CHAR()
+	ON_WM_GETDLGCODE()
+
+	ON_WM_VSCROLL()
+	ON_WM_MOUSEWHEEL()
+
+	ON_WM_SETFOCUS()
+	ON_WM_KILLFOCUS()
+
+	ON_MESSAGE(WM_GETOBJECT, OnGetObject)
+
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
-
-void CXTOutBarCtrl::DrawItemIcon(CDC* pDC, CPoint pt, CXTOutBarItem* pBarItem, CImageList* pImageList)
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridView message handlers
+void CXTPPropertyGridView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
-	GetTheme()->DrawItemIcon(pDC, pt, pBarItem, pImageList);
-}
-
-void CXTOutBarCtrl::DrawItemText(CDC* pDC, CRect rc, CXTOutBarItem* pBarItem, UINT nFormat)
-{
-	GetTheme()->DrawItemText(pDC, rc, pBarItem, nFormat);
-}
-
-LRESULT CXTOutBarCtrl::NotifyOwner(UINT nCode, XT_OUTBAR_INFO* pobi)
-{
-	CWnd* pOwner = (CWnd*)GetOwner();
-	ASSERT_VALID(pOwner);
-
-	pobi->hWnd = m_hWnd;
-
-	return pOwner->SendMessage(XTWM_OUTBAR_NOTIFY,
-			(WPARAM)nCode, (LPARAM)pobi);
-}
-
-void CXTOutBarCtrl::EndLabelEdit(CXTOutBarEditItem* pEdit, bool bIsFolder)
-{
-	ASSERT_VALID(pEdit); // must be valid.
-
-	XT_OUTBAR_INFO obi;
-	obi.bFolder = bIsFolder;
-	obi.nIndex = pEdit->GetIndex();
-	obi.lpszText = pEdit->GetText();
-	obi.nDragFrom = -1;
-	obi.nDragTo = -1;
-
-	LRESULT lResult = 0;
-
-	// give the owner a chance to process the message first.
-	if (bIsFolder)
+	if (GetScrollBarCtrl(SB_VERT) == pScrollBar)
 	{
-		lResult = NotifyOwner(OBN_XT_ONGROUPENDEDIT, &obi);
+		OnScrollControl();
 	}
 	else
 	{
-		lResult = NotifyOwner(OBN_XT_ONLABELENDEDIT, &obi);
+		CListBox::OnVScroll(nSBCode, nPos, pScrollBar);
 	}
+}
 
-	// If the return value is "0" then the owner has processed
-	// the message, so just return.
-	if (lResult == 0)
+struct CXTPPropertyGridView::WNDRECT
+{
+	HWND hWnd;
+	RECT rc;
+};
+
+LRESULT CXTPPropertyGridView::OnScrollControl()
+{
+	if (GetCount() == 0)
+		return 0;
+
+	CArray<WNDRECT, WNDRECT&> arrRects;
+
+	SetRedraw(FALSE);
+
+	RECT rcTopOrig = {0, 0, 0, 0};
+	GetItemRect(0, &rcTopOrig);
+
+	HWND hWnd = ::GetWindow(m_hWnd, GW_CHILD);
+	while (hWnd)
 	{
-		return;
-	}
-
-	ASSERT(m_nSelFolder >= 0 && m_nSelFolder < GetFolderCount());
-	CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(m_nSelFolder);
-	if (pBarFolder == NULL)
-	{
-		return;
-	}
-
-	CRect rc;
-	bool  bUpdate = false;
-
-	if (bIsFolder)
-	{
-		bUpdate = (pBarFolder->GetName() != obi.lpszText);
-
-		if (bUpdate)
+		if (GetWindowLong(hWnd, GWL_STYLE) & WS_VISIBLE)
 		{
-			GetFolderRect(obi.nIndex, rc);
-			SetFolderText(obi.nIndex, obi.lpszText);
+			RECT rc;
+			::GetWindowRect(hWnd, &rc);
+
+			WNDRECT wndRect;
+			wndRect.hWnd = hWnd;
+			wndRect.rc = rc;
+			arrRects.Add(wndRect);
+		}
+
+		hWnd = ::GetWindow(hWnd, GW_HWNDNEXT);
+	}
+
+	LRESULT lResult = Default();
+
+	SetRedraw(TRUE);
+
+	RECT rcTopDest = {0, 0, 0, 0};
+	GetItemRect(0, &rcTopDest);
+	int nOffset = rcTopDest.top - rcTopOrig.top;
+
+	for (int i = 0; i < (int)arrRects.GetSize(); i++)
+	{
+		WNDRECT& wndRect = arrRects[i];
+		RECT rc = wndRect.rc;
+		ScreenToClient(&rc);
+
+		::OffsetRect(&rc, 0, nOffset);
+		::SetWindowPos(wndRect.hWnd, NULL, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top,
+			SWP_NOACTIVATE | SWP_NOZORDER);
+	}
+
+	RedrawWindow(0, 0, RDW_INVALIDATE | RDW_UPDATENOW | RDW_FRAME | RDW_ALLCHILDREN);
+
+	return lResult;
+}
+
+BOOL CXTPPropertyGridView::OnMouseWheel(UINT /*nFlags*/, short /*zDelta*/, CPoint /*pt*/)
+{
+	return (BOOL)OnScrollControl();
+}
+
+
+void CXTPPropertyGridView::MeasureItem(LPMEASUREITEMSTRUCT lpMeasureItemStruct)
+{
+	lpMeasureItemStruct->itemHeight = m_nItemHeight;
+
+	GetPaintManager()->MeasureItem(lpMeasureItemStruct);
+}
+
+
+void CXTPPropertyGridView::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	ASSERT(lpDrawItemStruct->CtlType == ODT_LISTBOX);
+
+	CXTPPropertyGridItem* pItem = (CXTPPropertyGridItem*)lpDrawItemStruct->itemData;
+	CXTPPropertyGridPaintManager* pPaintManager = GetPaintManager();
+
+	if (pItem == NULL)
+		return;
+
+	if ((int)lpDrawItemStruct->itemID == GetCount() - 1)
+	{
+		CDC* pDC = CDC::FromHandle(lpDrawItemStruct->hDC);
+		CXTPClientRect rc(this);
+		rc.top = lpDrawItemStruct->rcItem.bottom;
+		pDC->FillSolidRect(rc, pPaintManager->GetItemMetrics()->m_clrBack);
+	}
+
+	if (!((m_pGrid->GetStyle() & XTP_PGS_OWNERDRAW) &&
+		(SendNotifyMessage(XTP_PGN_DRAWITEM, (LPARAM)lpDrawItemStruct) == TRUE)))
+	{
+		pPaintManager->DrawItem(lpDrawItemStruct);
+	}
+}
+
+BOOL CXTPPropertyGridView::OnEraseBkgnd(CDC*)
+{
+	return TRUE;
+}
+
+void CXTPPropertyGridView::OnPaint()
+{
+	CPaintDC dc(this);
+	CXTPClientRect rc(this);
+	CXTPBufferDC buffer(dc, rc);
+
+	ASSERT(m_pGrid);
+	GetPaintManager()->FillPropertyGridView(&buffer);
+
+	CWnd::DefWindowProc(WM_PAINT, (WPARAM)buffer.m_hDC, 0);
+}
+
+void CXTPPropertyGridView::OnNcPaint()
+{
+	Default();
+
+	CWindowDC dc(this);
+
+	CXTPWindowRect rc(this);
+	rc.OffsetRect(-rc.TopLeft());
+
+	ASSERT(m_pGrid);
+	GetPaintManager()->DrawPropertyGridBorder(&dc, rc, FALSE);
+}
+
+void CXTPPropertyGridView::OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS* lpncsp)
+{
+	GetPaintManager()->DrawPropertyGridBorder(NULL, lpncsp->rgrc[0], TRUE);
+
+	CWnd::OnNcCalcSize(bCalcValidRects, lpncsp);
+}
+
+CXTPPropertyGridItem* CXTPPropertyGridView::InsertCategory(int nIndex, LPCTSTR strCaption, CXTPPropertyGridItem* pCategory)
+{
+	ASSERT(nIndex >= 0 && nIndex <= m_pCategories->GetCount());
+
+	if (nIndex < 0 || nIndex > m_pCategories->GetCount())
+		nIndex = m_pCategories->GetCount();
+
+	if (pCategory == NULL)
+		pCategory = new CXTPPropertyGridItem(strCaption);
+
+	SetPropertySort(xtpGridSortCategorized);
+
+	pCategory->m_pGrid = this;
+	pCategory->m_bCategory = TRUE;
+	pCategory->m_nFlags = 0;
+
+
+	m_pCategories->InsertAt(nIndex, pCategory);
+
+	if (m_hWnd)
+	{
+		int nInsertAt = (nIndex >= m_pCategories->GetCount() - 1) ? GetCount() : m_pCategories->GetAt(nIndex + 1)->m_nIndex;
+		InsertItem(pCategory, nInsertAt);
+	}
+	_RefreshIndexes();
+
+
+	return pCategory;
+
+}
+
+CXTPPropertyGridItem* CXTPPropertyGridView::AddCategory(LPCTSTR strCaption, CXTPPropertyGridItem* pCategory)
+{
+	return InsertCategory(m_pCategories->GetCount(), strCaption, pCategory);
+}
+
+void CXTPPropertyGridView::Refresh()
+{
+	_RefreshIndexes();
+	SetPropertySort(m_properetySort, TRUE);
+
+	SAFE_INVALIDATE(m_pGrid);
+}
+
+void CXTPPropertyGridView::ResetContent()
+{
+	if (m_pSelected)
+	{
+		m_pSelected->OnDeselect();
+		m_pSelected = NULL;
+		m_pGrid->OnSelectionChanged(NULL);
+	}
+
+	if (m_hWnd)
+	{
+		for (int i = 0; i < GetCount(); i++)
+		{
+			CXTPPropertyGridItem* pItem = (CXTPPropertyGridItem*)GetItemDataPtr(i);
+			ASSERT(pItem);
+			if (!pItem)
+				continue;
+			pItem->SetVisible(FALSE);
+		}
+
+		CListBox::ResetContent();
+
+		CFont* pFont = &GetPaintManager()->GetItemMetrics()->m_fontNormal;
+
+		SetFont(pFont, FALSE);
+
+		CWindowDC dc(this);
+		CXTPFontDC font(&dc, pFont);
+		m_nItemHeight = dc.GetTextExtent(_T(" "), 1).cy + 4;
+
+		SetItemHeight(0, m_nItemHeight);
+	}
+}
+
+void CXTPPropertyGridView::SetPropertySort(XTPPropertyGridSortOrder sort, BOOL bRrefresh, BOOL bSetRedraw)
+{
+	if (m_nLockUpdate > 0)
+	{
+		m_properetySort = sort;
+		return;
+	}
+
+	if (sort == m_properetySort && !bRrefresh)
+		return;
+
+	if (!m_hWnd)
+		return;
+
+	if (bSetRedraw) SetRedraw(FALSE);
+
+	CXTPPropertyGridItem* pTopItem = bRrefresh ? GetItem(GetTopIndex()) : NULL;
+	CXTPPropertyGridItem* pSelected = GetSelectedItem();
+
+	ResetContent();
+
+	if (sort == xtpGridSortCategorized)
+	{
+		for (int i = 0; i < m_pCategories->GetCount(); i++)
+		{
+			CXTPPropertyGridItem* pCategory = m_pCategories->GetAt(i);
+			InsertItem(pCategory, GetCount());
+		}
+	}
+	else if (sort == xtpGridSortAlphabetical || sort == xtpGridSortNoSort)
+	{
+		CXTPPropertyGridItems lstItems;
+		int i;
+		for (i = 0; i < m_pCategories->GetCount(); i++)
+		{
+			CXTPPropertyGridItem* pCategory = m_pCategories->GetAt(i);
+			if (!pCategory->IsHidden())
+				lstItems.AddTail(pCategory->m_pChilds);
+		}
+
+		if (sort != xtpGridSortNoSort)
+			lstItems.Sort();
+
+		for (i = 0; i < lstItems.GetCount(); i++)
+		{
+			CXTPPropertyGridItem* pItem = lstItems.GetAt(i);
+			InsertItem(pItem, GetCount());
 		}
 	}
 	else
 	{
-		ASSERT(obi.nIndex >= 0 && obi.nIndex < pBarFolder->GetItemCount());
-		CXTOutBarItem* pBarItem = pBarFolder->GetItemAt(obi.nIndex);
-		if (pBarItem == NULL)
+		ASSERT(FALSE);
+	}
+
+	_RefreshIndexes();
+
+	if (pTopItem && pTopItem->IsVisible())
+	{
+		SetTopIndex(pTopItem->m_nIndex);
+	}
+
+	if (pSelected)
+	{
+		pSelected->Select();
+	}
+	OnSelectionChanged();
+
+	if (bSetRedraw) SetRedraw(TRUE);
+
+	if (sort != m_properetySort)
+	{
+		m_properetySort = sort;
+		m_pGrid->OnSortChanged();
+	}
+}
+
+void CXTPPropertyGridView::SetDividerPos(int nDivider)
+{
+	double dWidth = (double)CXTPWindowRect(this).Width();
+
+	if (!m_bAutoDivider)
+	{
+		m_dDivider = nDivider;
+		m_dDivider = __max(m_dDivider, 1.0);
+
+		if (dWidth != 0)
 		{
+			m_dDivider = __min(m_dDivider, dWidth);
+		}
+	}
+	else
+	{
+		m_dDivider = dWidth == 0 ? .5 : (double)nDivider / dWidth;
+
+		m_dDivider = __max(m_dDivider, .1);
+		m_dDivider = __min(m_dDivider, .85);
+	}
+}
+
+int CXTPPropertyGridView::GetDividerPos() const
+{
+	return int(m_dDivider * (m_bAutoDivider ? CXTPWindowRect(this).Width() : 1));
+}
+
+void CXTPPropertyGridView::LockDivider()
+{
+	m_dDivider = GetDividerPos();
+	m_bAutoDivider = FALSE;
+}
+
+int  CXTPPropertyGridView::InsertItem(CXTPPropertyGridItem* pItem, int nIndex)
+{
+	if (m_nLockUpdate > 0) return 0;
+	if (!m_hWnd) return 0;
+
+	if (pItem->IsHidden())
+		return 0;
+
+	pItem->OnBeforeInsert();
+	nIndex = (int)::SendMessage(m_hWnd, LB_INSERTSTRING, nIndex, (LPARAM)pItem);
+
+	ASSERT(nIndex != -1);
+	SetItemDataPtr(nIndex, pItem);
+
+	if (GetStyle() & LBS_OWNERDRAWVARIABLE)
+	{
+		MEASUREITEMSTRUCT measureItemStruct =
+		{
+			ODT_LISTBOX, 0, nIndex, 0, m_nItemHeight, (ULONG_PTR)pItem
+		};
+		MeasureItem(&measureItemStruct);
+		SetItemHeight(nIndex, measureItemStruct.itemHeight);
+	}
+
+	pItem->SetVisible(TRUE);
+
+	int nItemsInserted = 1;
+
+	if (pItem->m_bExpanded)
+	{
+		nItemsInserted += _DoExpand(pItem, nIndex);
+	}
+
+	return nItemsInserted;
+}
+
+int CXTPPropertyGridView::_DoExpand(CXTPPropertyGridItem* pItem, int nIndex)
+{
+	int nStart = nIndex;
+
+	for (int i = 0; i < pItem->GetChilds()->GetCount(); i++)
+	{
+		CXTPPropertyGridItem* pChild = pItem->GetChilds()->GetAt(i);
+
+		nIndex += InsertItem(pChild, nIndex + 1);
+
+	}
+	return nIndex - nStart;
+}
+
+void CXTPPropertyGridView::_RefreshIndexes()
+{
+	if (m_hWnd)
+	{
+		for (int i = 0; i < GetCount(); i++)
+		{
+			CXTPPropertyGridItem* pItem = (CXTPPropertyGridItem*)GetItemDataPtr(i);
+			ASSERT(pItem);
+			if (!pItem)
+				continue;
+
+			if (pItem->m_nIndex != i)
+			{
+				pItem->m_nIndex = i;
+				pItem->OnIndexChanged();
+			}
+		}
+	}
+}
+
+void CXTPPropertyGridView::_DoCollapse(CXTPPropertyGridItem* pItem)
+{
+	ASSERT(pItem);
+	if (!pItem)
+		return;
+	ASSERT(pItem->m_bExpanded);
+	int nIndex = pItem->m_nIndex + 1;
+
+	while (nIndex < GetCount())
+	{
+		CXTPPropertyGridItem* pChild = (CXTPPropertyGridItem*)GetItemDataPtr(nIndex);
+		ASSERT(pChild);
+		if (!pChild || !pChild->HasParent(pItem))
+			break;
+
+		pChild->SetVisible(FALSE);
+		DeleteString(nIndex);
+	}
+	_RefreshIndexes();
+}
+
+CXTPPropertyGridItem* CXTPPropertyGridView::GetItem(int nIndex) const
+{
+	if (nIndex < 0 || nIndex >= GetCount())
+		return 0;
+
+	CXTPPropertyGridItem* pItem = (CXTPPropertyGridItem*)GetItemDataPtr(nIndex);
+
+	if ((ULONG_PTR)pItem == (ULONG_PTR)(-1))
+		return NULL;
+
+	ASSERT(pItem);
+
+	return pItem;
+}
+
+void CXTPPropertyGridView::SwitchExpandState(int nItem)
+{
+	CXTPPropertyGridItem* pItem = GetItem(nItem);
+	if (!pItem || !pItem->IsExpandable())
+		return;
+
+	if (pItem->m_bExpanded)
+		pItem->Collapse();
+	else
+		pItem->Expand();
+}
+
+void CXTPPropertyGridView::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	if (HitTest(point) == PGV_HIT_SPLITTER)
+	{
+		SetFocus();
+		SetCapture();
+		if (m_pSelected) m_pSelected->OnValidateEdit();
+
+		m_bTracking = TRUE;
+		return;
+	}
+
+
+	CXTPPropertyGridItem* pItem = ItemFromPoint(point);
+	if (pItem)
+	{
+		SetFocus();
+
+		if (GetFocus() != this)
+			return;
+
+		if ((ItemFromPoint(point) == pItem) && pItem->OnLButtonDown(nFlags, point))
+			return;
+	}
+
+	CListBox::OnLButtonDown(nFlags, point);
+}
+
+CXTPPropertyGridItem* CXTPPropertyGridView::ItemFromPoint(CPoint point) const
+{
+	BOOL bOutside = FALSE;
+	int nIndex = CListBox::ItemFromPoint(point, bOutside);
+	if (nIndex != -1 && !bOutside)
+	{
+		return GetItem(nIndex);
+	}
+	return NULL;
+}
+
+void CXTPPropertyGridView::FocusInplaceButton(CXTPPropertyGridInplaceButton* pButton)
+{
+	if (pButton != m_pFocusedButton)
+	{
+		if (pButton) SetFocus();
+		m_pFocusedButton = pButton;
+		Invalidate(FALSE);
+	}
+}
+
+void CXTPPropertyGridView::OnMouseMove(UINT nFlags, CPoint point)
+{
+	if (m_bTracking)
+	{
+		SetDividerPos(point.x);
+
+		if (m_pSelected) m_pSelected->OnSelect();
+		Invalidate(FALSE);
+		return;
+	}
+
+	CXTPPropertyGridItem* pItem = ItemFromPoint(point);
+	CXTPPropertyGridInplaceButton* pButton = NULL;
+
+	if (pItem)
+		pButton = pItem->GetInplaceButtons()->HitTest(point);
+
+	if (pButton != m_pHotButton)
+	{
+		m_pHotButton = pButton;
+		Invalidate(FALSE);
+		TRACKMOUSEEVENT tme =
+		{
+			sizeof(TRACKMOUSEEVENT), TME_LEAVE, m_hWnd, 0
+		};
+		_TrackMouseEvent (&tme);
+	}
+
+	ShowToolTip(point);
+
+	CListBox::OnMouseMove(nFlags, point);
+}
+
+void CXTPPropertyGridView::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	if (m_bTracking)
+	{
+		ReleaseCapture();
+		m_bTracking = FALSE;
+	}
+
+	CXTPPropertyGridItem* pItem = ItemFromPoint(point);
+
+	if (pItem)
+	{
+		pItem->OnLButtonUp(nFlags, point);
+	}
+
+	CListBox::OnLButtonUp(nFlags, point);
+}
+
+void CXTPPropertyGridView::OnCaptureChanged(CWnd* pWnd)
+{
+	m_bTracking = FALSE;
+
+	CListBox::OnCaptureChanged(pWnd);
+}
+
+void CXTPPropertyGridView::OnLButtonDblClk(UINT nFlags, CPoint point)
+{
+	CListBox::OnLButtonDblClk(nFlags, point);
+
+	CXTPPropertyGridItem* pItem = ItemFromPoint(point);
+
+	if (pItem)
+	{
+		pItem->OnLButtonDblClk(nFlags, point);
+
+
+		if (pItem == ItemFromPoint(point))
+		{
+			SendNotifyMessage(XTP_PGN_DBLCLICK, (LPARAM)pItem);
+		}
+	}
+}
+
+void CXTPPropertyGridView::OnRButtonDown(UINT nFlags, CPoint point)
+{
+	CListBox::OnRButtonDown(nFlags, point);
+
+	CXTPPropertyGridItem* pItem = ItemFromPoint(point);
+
+	if (pItem)
+	{
+		pItem->OnRButtonDown(nFlags, point);
+
+
+		if (pItem == ItemFromPoint(point))
+		{
+			SendNotifyMessage(XTP_PGN_RCLICK, (LPARAM)pItem);
+		}
+	}
+}
+
+LRESULT CXTPPropertyGridView::SendNotifyMessage(WPARAM wParam, LPARAM lParam)
+{
+	ASSERT(m_pGrid);
+	if (!m_pGrid)
+		return 0;
+
+	return m_pGrid->SendNotifyMessage(wParam, lParam);
+}
+
+CXTPPropertyGridItem* CXTPPropertyGridView::GetSelectedItem()
+{
+	return m_hWnd ? GetItem(GetCurSel()) : 0;
+}
+
+void CXTPPropertyGridView::OnChar(UINT nChar, UINT nRepCntr, UINT nFlags)
+{
+	if (m_bTracking) return;
+
+	if (m_pFocusedButton && nChar != VK_TAB)
+		return;
+
+	if (::GetFocus() != m_hWnd)
+		return;
+
+	CXTPPropertyGridItem* pItem = GetSelectedItem();
+
+	if (nChar == '+' && pItem && pItem->HasChilds() && pItem->IsExpandable() && !pItem->m_bExpanded)
+	{
+		pItem->Expand();
+		return;
+	}
+	if (nChar == '-' && pItem && pItem->HasChilds() && pItem->IsExpandable() && pItem->m_bExpanded)
+	{
+		pItem->Collapse();
+		return;
+	}
+	if (nChar == VK_TAB)
+	{
+		if (m_pFocusedButton)
+		{
+			BOOL bForward = GetKeyState(VK_SHIFT) >= 0;
+			m_pGrid->OnNavigate(bForward ? xtpGridUIInplaceEdit : xtpGridUIViewNext, bForward, pItem);
+		}
+		else
+		{
+			m_pGrid->OnNavigate(xtpGridUIView, GetKeyState(VK_SHIFT) >= 0, pItem);
+		}
+		return;
+	}
+	if (pItem && (nChar != VK_RETURN || !pItem->HasChilds()))
+	{
+		if (pItem->OnChar(nChar))
+			return;
+	}
+
+	CWnd::OnChar(nChar, nRepCntr, nFlags);
+}
+
+UINT CXTPPropertyGridView::OnGetDlgCode()
+{
+	return DLGC_WANTARROWS | DLGC_WANTTAB | DLGC_WANTCHARS;
+}
+
+INT_PTR CXTPPropertyGridView::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
+{
+
+	ASSERT_VALID(this);
+	ASSERT(::IsWindow(m_hWnd));
+
+	// check child windows first by calling CControlBar
+	INT_PTR nHit = CWnd::OnToolHitTest(point, pTI);
+	if (nHit != -1)
+		return nHit;
+
+	if (m_pHotButton)
+	{
+		CString strTip = m_pHotButton->GetTooltip();
+		if (strTip.GetLength() == 0)
+			return -1;
+
+		CXTPToolTipContext::FillInToolInfo(pTI, m_hWnd, m_pHotButton->GetRect(),
+			m_pHotButton->GetID(), strTip);
+
+		return m_pHotButton->GetID();
+	}
+
+	CXTPPropertyGridItem* pItem = ItemFromPoint(point);
+	if (pItem)
+	{
+		nHit = pItem->GetID();
+
+		CString strTip = pItem->GetTooltip();
+		if (strTip.GetLength() == 0)
+			return -1;
+
+		CXTPToolTipContext::FillInToolInfo(pTI, m_hWnd, pItem->GetItemRect(),
+			nHit, strTip, strTip, pItem->GetDescription(), GetImageManager());
+
+		return nHit;
+	}
+	return -1;
+}
+
+
+void CXTPPropertyGridView::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	CListBox::OnKeyUp(nChar, nRepCnt, nFlags);
+}
+
+void CXTPPropertyGridView::OnSysKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	CListBox::OnSysKeyUp(nChar, nRepCnt, nFlags);
+}
+
+void CXTPPropertyGridView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+
+	CXTPPropertyGridItem* pItem = GetSelectedItem();
+
+	if (m_pFocusedButton && m_pFocusedButton->GetItem() == pItem)
+	{
+		m_pFocusedButton->OnKeyDown(nChar);
+		return;
+	}
+
+	if ((GetKeyState(VK_CONTROL) < 0) && (nChar == VK_RIGHT || nChar == VK_LEFT))
+	{
+		CXTPDrawHelpers::KeyToLayout(this, nChar);
+
+		SetDividerPos(GetDividerPos() + (nChar == VK_RIGHT ? 3 : -3));
+
+		if (m_pSelected) m_pSelected->OnSelect();
+		Invalidate(FALSE);
+
+		return;
+	}
+
+	if (nChar == VK_RIGHT)
+	{
+		if (pItem && pItem->HasChilds() && !pItem->m_bExpanded && pItem->IsExpandable())
+		{
+			pItem->Expand();
 			return;
 		}
-
-		bUpdate = (pBarItem->GetName() != obi.lpszText);
-
-		if (bUpdate)
+	}
+	else if (nChar == VK_LEFT)
+	{
+		if (pItem && pItem->HasChilds() && pItem->m_bExpanded && pItem->IsExpandable())
 		{
-			GetInsideRect(rc);
-			SetItemText(obi.nIndex, obi.lpszText);
+			pItem->Collapse();
+			return;
 		}
 	}
-
-	if (bUpdate)
+	if (nChar == VK_RETURN)
 	{
-		OnLabelChanged(&obi); // handle in derived class.
-		InvalidateRect(rc);
+		SwitchExpandState(GetCurSel());
+		return ;
 	}
-}
-
-void CXTOutBarCtrl::OnLabelChanged(const XT_OUTBAR_INFO* /*pObi*/)
-{
-}
-
-void CXTOutBarCtrl::SetFolderText(const int iIndex, LPCTSTR lpszFolderName)
-{
-	if (m_arFolder.GetSize() != 0)
+	if (nChar == VK_F4 && m_pSelected)
 	{
-		ASSERT((iIndex >= 0) && (iIndex < GetFolderCount()));
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(iIndex);
-		pBarFolder->SetName(lpszFolderName);
-	}
-}
-
-void CXTOutBarCtrl::SetItemText(const int iIndex, LPCTSTR lpszItemName)
-{
-	if (m_arFolder.GetSize() != 0)
-	{
-		ASSERT(m_nSelFolder >= 0 && m_nSelFolder < GetFolderCount());
-
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(m_nSelFolder);
-
-		CXTOutBarItem* pBarItem = pBarFolder->GetItemAt(iIndex);
-		pBarItem->SetName(lpszItemName);
-	}
-}
-
-BOOL CXTOutBarCtrl::Create(DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, const DWORD dwFlags)
-{
-	if (!CreateEx(NULL, dwStyle, rect, pParentWnd, nID, dwFlags))
-	{
-		return FALSE;
+		CXTPPropertyGridInplaceButton* pButton = m_pSelected->GetInplaceButtons()->Find(XTP_ID_PROPERTYGRID_COMBOBUTTON);
+		if (pButton)
+			m_pSelected->OnInplaceButtonDown(pButton);
 	}
 
-	return TRUE;
-}
-
-BOOL CXTOutBarCtrl::CreateEx(DWORD dwExStyle, DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, const DWORD dwFlags)
-{
-	ASSERT(dwStyle & WS_CHILD);
-	ASSERT_VALID(pParentWnd);
-
-	if (!CWnd::CreateEx(dwExStyle, NULL, NULL, dwStyle, rect, pParentWnd, nID))
+	if (m_pSelected && m_pSelected->OnKeyDown(nChar))
 	{
-		return FALSE;
+		return;
 	}
 
-	m_dwFlags = dwFlags;
 
-	return TRUE;
+	CListBox::OnKeyDown(nChar, nRepCnt, nFlags);
 }
 
-BOOL CXTOutBarCtrl::IsSmallIconView(const int iFolder/*= -1*/) const
+void CXTPPropertyGridView::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-	if (GetFolderCount() <= 0 || iFolder == -1)
-		return ((m_dwFlags & OBS_XT_SMALLICON) == OBS_XT_SMALLICON);
 
-	CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(iFolder);
-	return pBarFolder->m_bSmallIcons;
-}
-
-void CXTOutBarCtrl::SetSmallIconView(const BOOL bSet, const int iFolder/*= -1*/)
-{
-	m_nFirstItem = 0;
-
-	if (iFolder != -1)
+	if ((nChar == VK_DOWN || nChar == VK_UP) && m_pSelected)
 	{
-		if (iFolder >= 0 && iFolder < GetFolderCount())
+		CXTPPropertyGridInplaceButton* pButton = m_pSelected->GetInplaceButtons()->Find(XTP_ID_PROPERTYGRID_COMBOBUTTON);
+		if (pButton)
+			m_pSelected->OnInplaceButtonDown(pButton);
+	}
+
+	CListBox::OnSysKeyDown(nChar, nRepCnt, nFlags);
+}
+
+BOOL CXTPPropertyGridView::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+{
+	static BOOL bRelay = FALSE;
+	if (m_wndTip.GetSafeHwnd() && m_wndTip.IsWindowVisible() && !bRelay)
+	{
+		bRelay = TRUE;
+		RelayToolTipEvent(message);
+		bRelay = FALSE;
+	}
+
+	if (message == WM_MOUSELEAVE && m_pHotButton)
+	{
+		m_pHotButton = NULL;
+		Invalidate(FALSE);
+	}
+
+	if (m_pGrid->GetToolTipContext())
+	{
+		m_pGrid->GetToolTipContext()->FilterToolTipMessage(this, message, wParam, lParam);
+	}
+
+	return CWnd::OnWndMsg(message, wParam, lParam, pResult);
+}
+
+
+void CXTPPropertyGridView::OnSelectionChanged()
+{
+	CXTPPropertyGridItem* pItem = GetSelectedItem();
+
+	if (m_pSelected) m_pSelected->OnDeselect();
+	if (pItem) pItem->OnSelect();
+
+	m_pSelected = pItem;
+
+	if (m_pSelected) m_pGrid->OnSelectionChanged(m_pSelected);
+}
+
+int CXTPPropertyGridView::HitTest(CPoint point) const
+{
+	if (!m_bVariableSplitterPos)
+		return -1;
+
+	int nDivider = GetDividerPos();
+
+	if ((point.x > nDivider - 4 && point.x <= nDivider + 2) && (GetCount() > 0))
+		return PGV_HIT_SPLITTER;
+
+	return -1;
+}
+
+BOOL CXTPPropertyGridView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
+{
+	if (nHitTest == HTCLIENT)
+	{
+		CPoint point;
+
+		GetCursorPos(&point);
+		ScreenToClient(&point);
+
+		if (HitTest(point) == PGV_HIT_SPLITTER)
 		{
-			CXTOutBarFolder* pbf = (CXTOutBarFolder*)m_arFolder.GetAt(iFolder);
-			pbf->m_bSmallIcons = bSet;
-		}
-	}
-	else
-	{
-		// do all current folders, and set flag so new folders
-		// have the chosen style
-		int nFolders = GetFolderCount();
-		int i;
-		for (i = 0; i < nFolders; i++)
-		{
-			CXTOutBarFolder* pbf = (CXTOutBarFolder*)m_arFolder.GetAt(i);
-			pbf->m_bSmallIcons = bSet;
-		}
-
-		if (bSet && !IsSmallIconView())
-			m_dwFlags |= OBS_XT_SMALLICON;
-
-		else if (!bSet && IsSmallIconView())
-			m_dwFlags &= ~OBS_XT_SMALLICON;
-	}
-
-	CRect rc;
-	GetInsideRect(rc);
-	InvalidateRect(rc, false);
-}
-
-DWORD CXTOutBarCtrl::GetFlag() const
-{
-	return m_dwFlags;
-}
-
-void CXTOutBarCtrl::ModifyFlag(const DWORD& dwRemove, const DWORD& dwAdd, const bool bRedraw)
-{
-	if (dwRemove)
-	{
-		m_dwFlags &= ~dwRemove;
-	}
-	if (dwAdd)
-	{
-		m_dwFlags |= dwAdd;
-	}
-	if (GetSafeHwnd())
-	{
-		if (bRedraw == true)
-		{
-			Invalidate();
-			UpdateWindow();
-		}
-	}
-}
-
-void CXTOutBarCtrl::OnTimer(UINT_PTR nIDEvent)
-{
-	if (nIDEvent == 3 && m_nLastItemSelected >= 0)
-	{
-		m_nSelAnimCount++;
-		if (m_nSelAnimCount > 10) m_nSelAnimCount = -1;
-		if (m_nSelAnimCount == 0)
-			DrawAnimItem(-1, 1, m_nLastItemSelected);
-		if (m_nSelAnimCount == 1)
-			DrawAnimItem(0, 0, m_nLastItemSelected);
-		if (m_nSelAnimCount == 2)
-			DrawAnimItem(1, 1, m_nLastItemSelected);
-		if (m_nSelAnimCount == 3)
-			DrawAnimItem(0, 0, m_nLastItemSelected);
-	}
-	CWnd::OnTimer(nIDEvent);
-}
-
-void CXTOutBarCtrl::DrawAnimItem(const int iOffsetX, const int iOffsetY, const int iIndex)
-{
-	CImageList* pImageList = GetFolderImageList(m_nSelFolder, IsSmallIconView(m_nSelFolder));
-
-	CRect rc, irc;
-	GetInsideRect(irc);
-	GetItemRect(m_nSelFolder, m_nLastItemSelected, rc);
-
-	if (m_arFolder.GetSize() != 0)
-	{
-		if (m_nLastItemSelected >= m_nFirstItem && irc.bottom > rc.bottom && irc.top < rc.top)
-		{
-			ASSERT(m_nSelFolder >= 0 && m_nSelFolder < GetFolderCount());
-			CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(m_nSelFolder);
-
-			ASSERT(iIndex >= 0 && iIndex < pBarFolder->GetItemCount());
-			CXTOutBarItem* pBarItem = (CXTOutBarItem*)pBarFolder->GetItemAt(iIndex);
-
-			ASSERT(pBarItem && pImageList);
-
-			CClientDC dc(this);
-
-			if (IsSmallIconView(m_nSelFolder))
-			{
-				if (pImageList)
-				{
-					IMAGEINFO ii;
-					pImageList->GetImageInfo(pBarItem->GetIndex(), &ii);
-					CSize szImage = CRect(ii.rcImage).Size();
-					CPoint pt;
-					pt.x = rc.left + 2;
-					pt.y = rc.top + (rc.Height() - szImage.cy) / 2;
-
-					CRect rcBck(pt.x-1, pt.y-1, pt.x + szImage.cx + 2, pt.y + szImage.cy + 2);
-					dc.FillSolidRect(rcBck, GetXtremeColor(COLOR_3DSHADOW));
-
-					pt.x += iOffsetX;
-					pt.y += iOffsetY;
-
-					DrawItemIcon(&dc, pt, pBarItem, pImageList);
-				}
-			}
-			else
-			{
-				if (pImageList)
-				{
-					IMAGEINFO ii;
-					pImageList->GetImageInfo(pBarItem->GetIndex(), &ii);
-					CSize szImage = CRect(ii.rcImage).Size();
-					CPoint pt;
-					pt.x = rc.left + (rc.Width() - szImage.cx) / 2;
-					pt.y = rc.top;
-
-					CRect rcBck(pt.x-1, pt.y-1, pt.x + szImage.cx + 2, pt.y + szImage.cy + 2);
-					dc.FillSolidRect(rcBck, GetXtremeColor(COLOR_3DSHADOW));
-
-					pt.x += iOffsetX;
-					pt.y += iOffsetY;
-
-					DrawItemIcon(&dc, pt, pBarItem, pImageList);
-				}
-			}
-		}
-	}
-}
-
-void CXTOutBarCtrl::OnPaint()
-{
-	// background is already filled in gray
-	CPaintDC dc(this);
-
-	// Paint to a memory device context to help
-	// eliminate screen flicker.
-	CXTPBufferDC memDC(dc);
-
-	OnDraw(&memDC);
-}
-
-LRESULT CXTOutBarCtrl::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
-{
-	CDC* pDC = CDC::FromHandle((HDC)wParam);
-	if (pDC)
-	{
-		OnDraw(pDC);
-	}
-
-	return TRUE;
-}
-
-void CXTOutBarCtrl::OnDraw(CDC* pDC)
-{
-	// Get the client rect.
-	CXTPClientRect rectClient(this);
-
-
-	CRect rc;
-	GetInsideRect(rc);
-	if (!GetFolderChild())
-	{
-		//pDC->FillSolidRect(rc, m_clrBack);
-		GetTheme()->FillInsideRect(pDC, rc);
-	}
-
-	int max = (int)m_arFolder.GetSize();
-	CRect frc;
-	int t;
-	for (t = 0; t < max; t++)
-	{
-		GetFolderRect(t, frc);
-		DrawFolder(pDC, t, frc, xtMouseNormal);
-	}
-	if (!GetFolderChild())
-	{
-		int f, l;
-		GetVisibleRange(m_nSelFolder, f, l);
-		m_rcUpArrow.SetRect(0, 0, GetSystemMetrics(SM_CXVSCROLL), GetSystemMetrics(SM_CXVSCROLL));
-		m_rcDownArrow = m_rcUpArrow;
-		m_rcUpArrow.OffsetRect(rc.right - 5 - GetSystemMetrics(SM_CXVSCROLL), rc.top +5);
-		m_rcDownArrow.OffsetRect(rc.right - 5 - GetSystemMetrics(SM_CXVSCROLL), rc.bottom - 5 - GetSystemMetrics(SM_CXVSCROLL));
-
-		if (f > 0 && m_rcUpArrow.IntersectRect(rc, m_rcUpArrow))
-		{
-			if (m_bUpPressed)
-			{
-				DrawScrollButton(pDC, m_rcUpArrow, DFC_SCROLL, DFCS_SCROLLUP | DFCS_PUSHED);
-			}
-			else
-			{
-				DrawScrollButton(pDC, m_rcUpArrow, DFC_SCROLL, DFCS_SCROLLUP);
-			}
-			m_bUpArrow = TRUE;
-			pDC->ExcludeClipRect(m_rcUpArrow);
-		}
-		else m_bUpArrow = FALSE;
-
-		if (l < GetItemCount() - 1 && m_rcDownArrow.IntersectRect(rc, m_rcDownArrow))
-		{
-			if (m_bDownPressed)
-			{
-				DrawScrollButton(pDC, m_rcDownArrow, DFC_SCROLL, DFCS_SCROLLDOWN | DFCS_PUSHED);
-			}
-			else
-			{
-				DrawScrollButton(pDC, m_rcDownArrow, DFC_SCROLL, DFCS_SCROLLDOWN);
-			}
-			m_bDownArrow = TRUE;
-			pDC->ExcludeClipRect(m_rcDownArrow);
-		}
-		else m_bDownArrow = FALSE;
-
-		PaintItems(pDC, m_nSelFolder, rc);
-	}
-
-	//dc.BitBlt(rectClient.left, rectClient.top, rectClient.Width(), rectClient.Height(), pDC, 0, 0, SRCCOPY);
-
-	//pDC->RestoreDC(nSavedDC);
-
-	if (m_nFolderHilighted >= 0)
-	{
-		int i = m_nFolderHilighted;
-		m_nFolderHilighted = -1;
-		HighlightFolder(pDC, i);
-	}
-	if (m_nItemHilighted >= 0)
-	{
-		int i = m_nItemHilighted;
-		m_nItemHilighted = -1;
-		HighlightItem(pDC, i, m_bPressedHighlight);
-	}
-}
-
-BOOL CXTOutBarCtrl::OnEraseBkgnd(CDC* /*pDC*/)
-{
-	return TRUE;
-}
-
-BOOL CXTOutBarCtrl::GetFolderRect(const int iIndex, CRect& rect) const
-{
-	if (m_arFolder.GetSize() != 0)
-	{
-		int max = (int)m_arFolder.GetSize();
-		ASSERT(iIndex >= 0 && iIndex < max);
-
-		if (iIndex >= 0 && iIndex < max)
-		{
-			CRect rc;
-			GetClientRect(rc);
-			if (iIndex > m_nSelFolder)
-				rect.SetRect(rc.left, rc.bottom - ((max - iIndex))* m_nFolderHeight, rc.right,
-				rc.bottom - (max - iIndex - 1)* m_nFolderHeight);
-			else
-				rect.SetRect(rc.left, rc.top + iIndex* m_nFolderHeight, rc.right,
-				rc.top + (1 + iIndex)* m_nFolderHeight);
+			SetCursor(m_hCursor);
 			return TRUE;
 		}
 	}
-	return FALSE;
+
+	return CListBox::OnSetCursor(pWnd, nHitTest, message);
 }
 
-void CXTOutBarCtrl::GetItemRect(const int iFolder, const int iIndex, CRect& rect, CRect* pInsideRect /*= NULL*/)
+void CXTPPropertyGridView::OnSize(UINT nType, int cx, int cy)
 {
-	CRect rc;
-	if (pInsideRect)
-		rc = *pInsideRect;
+	CListBox::OnSize(nType, cx, cy);
+
+	OnSelectionChanged();
+
+	Invalidate(FALSE);
+}
+
+
+// ToolTips routings
+
+void CXTPPropertyGridView::_ShowToolTip(CRect rcBound, CRect rcText, CXTPPropertyGridItem* pItem, BOOL bValuePart)
+{
+	if (!m_wndTip.GetSafeHwnd())
+		return;
+
+	m_wndTip.SetWindowText(m_strTipText);
+	m_wndTip.MoveWindow(rcText);
+	m_wndTip.Activate(TRUE, pItem, bValuePart);
+
+	m_rcToolTip = rcBound;
+
+	TRACKMOUSEEVENT tme =
+	{
+		sizeof(TRACKMOUSEEVENT), TME_LEAVE, m_hWnd, 0
+	};
+	_TrackMouseEvent (&tme);
+}
+
+CSize CXTPPropertyGridView::_GetTextExtent(const CString& str, CXTPPropertyGridItem* pItem, BOOL bValuePart)
+{
+	CWindowDC dc(this);
+	CXTPFontDC font(&dc, GetPaintManager()->GetItemFont(pItem, bValuePart));
+	return dc.GetTextExtent(str);
+}
+
+void CXTPPropertyGridView::ShowToolTip(CPoint pt)
+{
+	if (CXTPMouseMonitor::IsMouseHooked())
+		return;
+
+	if (!m_pGrid->m_bEnableTooltips)
+		return;
+
+	if (!m_wndTip.GetSafeHwnd())
+	{
+		m_wndTip.Create(this);
+	}
+
+	if (m_pHotButton)
+		return;
+
+	CXTPPropertyGridItem* pItem = ItemFromPoint(pt);
+
+	if (!pItem || pItem->IsCategory() || !pItem->GetTooltip().IsEmpty())
+		return;
+
+	int nDividerPos = GetDividerPos();
+
+	CRect rc = pItem->GetItemRect();
+	CRect rcCaption(rc.left, rc.top, rc.left + nDividerPos, rc.bottom);
+
+	if (rcCaption.PtInRect(pt))
+	{
+		if (m_strTipText == pItem->GetCaption())
+			return;
+
+		m_strTipText = pItem->GetCaption();
+
+		ClientToScreen(&rcCaption);
+
+		CRect rcCaptionText(rcCaption);
+		rcCaptionText.left += pItem->m_nIndent * XTP_PGI_EXPAND_BORDER + 3 - 3 -1;
+		rcCaptionText.top--;
+		GetPaintManager()->AdjustItemCaptionRect(pItem, rcCaptionText);
+
+		int nTextExtent = _GetTextExtent(m_strTipText, pItem, FALSE).cx;
+
+		if (nTextExtent + 3 > rcCaptionText.Width())
+		{
+			if (GetExStyle() & WS_EX_LAYOUTRTL)
+			{
+				rcCaptionText.left = rcCaption.right - nTextExtent - 7 - (pItem->m_nIndent * XTP_PGI_EXPAND_BORDER);
+
+			}
+
+			_ShowToolTip(rcCaption, rcCaptionText, pItem, FALSE);
+		}
+	}
 	else
-		GetInsideRect(rc);
-
-	int top = rc.top;
-	CSize sz(0, 0);
-	int y = 0;
-	int t;
-	for (t = 0; t < iIndex; t++)
 	{
-		sz = GetItemSize(iFolder, t, rectItemBoth);
-		top += sz.cy;
+		if (m_strTipText == pItem->GetViewValue())
+			return;
 
-		if (IsSmallIconView(iFolder))
+		if (pItem->IsMultiLine())
+			return;
+
+		m_strTipText = pItem->GetViewValue();
+
+		if (GetFocus() && GetFocus()->IsKindOf(RUNTIME_CLASS(CXTPPropertyGridInplaceEdit)))
 		{
-			top += m_nIconSpacingSmall;
+			if (((CXTPPropertyGridInplaceEdit*)(GetFocus()))->GetItem() == pItem)
+				return;
 		}
-		else
+
+		CRect rcValue(rc.left + nDividerPos, rc.top, rc.right, rc.bottom);
+		ClientToScreen(&rcValue);
+
+		CRect rcValueText = pItem->GetValueRect();
+		rcValueText.InflateRect(1, 2, 0, 1);
+		ClientToScreen(&rcValueText);
+
+		int nTextExtent = _GetTextExtent(m_strTipText, pItem, TRUE).cx;
+
+		if (nTextExtent + 3 > rcValueText.Width())
 		{
-			top += m_nIconSpacingLarge;
-		}
-		if (t == m_nFirstItem - 1) y = top - rc.top;
-	}
-	sz = GetItemSize(iFolder, iIndex, rectItemBoth);
-	rect.SetRect(rc.left, top, rc.left + sz.cx, top + sz.cy);
-
-	rect.top -= y;
-	rect.bottom -= y;
-
-	rect.left += m_sizeMargin.cx;
-	rect.top += m_sizeMargin.cy;
-	rect.bottom += m_sizeMargin.cy;
-
-	if (!IsSmallIconView(iFolder))
-	{
-		rect.left = rc.left;
-		rect.right = rc.right;
-	}
-}
-
-void CXTOutBarCtrl::DrawFolder(CDC* pDC, const int iIndex, CRect rect, const XTMouseState eHilight)
-{
-	if (iIndex < m_arFolder.GetSize() && (iIndex >= 0))
-	{
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(iIndex);
-
-		GetTheme()->DrawFolder(pDC, rect, pBarFolder, eHilight);
-	}
-}
-
-int CXTOutBarCtrl::AddFolder(LPCTSTR lpszFolderName, const DWORD dwData)
-{
-	CXTOutBarFolder* pBarFolder = new CXTOutBarFolder(lpszFolderName, dwData, this);
-	ASSERT(pBarFolder);
-
-	pBarFolder->m_bSmallIcons = (m_dwFlags & OBS_XT_SMALLICON);
-
-	return (int)m_arFolder.Add((void*)pBarFolder);
-}
-
-void CXTOutBarCtrl::GetInsideRect(CRect& rect) const
-{
-	GetClientRect(rect);
-	if (m_arFolder.GetSize() > 0)
-	{
-		int max = (int)m_arFolder.GetSize();
-		rect.top += m_nFolderHeight* (m_nSelFolder + 1);
-		rect.bottom -= (max - m_nSelFolder - 1) * m_nFolderHeight;
-		return;
-	}
-}
-
-void CXTOutBarCtrl::OnMouseLeave()
-{
-	OnMouseMove(0, CPoint(-1, -1));
-}
-
-void CXTOutBarCtrl::OnMouseMove(UINT nFlags, CPoint point)
-{
-	int iIndex;
-	int ht = HitTestEx(point, iIndex);
-
-	int nFolderHilighted = -1, nItemHilighted = -1;
-
-	if (ht == hitFolder) nFolderHilighted = iIndex;
-	if (ht == hitItem) nItemHilighted = iIndex;
-
-	if ((m_nFolderHilighted != nFolderHilighted) || (m_nItemHilighted != nItemHilighted))
-	{
-		m_nFolderHilighted = nFolderHilighted;
-		m_nItemHilighted = nItemHilighted;
-		Invalidate(FALSE);
-
-		if (nFolderHilighted != -1 || nItemHilighted != -1)
-		{
-			TRACKMOUSEEVENT tme =
+			if (GetExStyle() & WS_EX_LAYOUTRTL)
 			{
-				sizeof(TRACKMOUSEEVENT), TME_LEAVE, m_hWnd
-			};
-			_TrackMouseEvent(&tme);
-		}
-	}
+				rcValueText.left = rcValueText.right - 8 - nTextExtent;
 
-	CWnd::OnMouseMove(nFlags, point);
-}
-
-CXTOutBarCtrl::HitTestCode CXTOutBarCtrl::HitTestEx(const CPoint& point, int& iIndex)
-{
-	if (m_arFolder.GetSize() != 0)
-	{
-		if (m_bUpArrow && m_rcUpArrow.PtInRect(point)) return hitUpScroll;
-		if (m_bDownArrow && m_rcDownArrow.PtInRect(point)) return hitDnScroll;
-
-		int max = (int)m_arFolder.GetSize(), t;
-
-		CRect rc;
-		for (t = 0; t < max; t++)
-		{
-			GetFolderRect(t, rc);
-			if (rc.PtInRect(point))
-			{
-				iIndex = t;
-				return hitFolder;
 			}
-		}
-		GetInsideRect(rc);
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(m_nSelFolder);
-		max = pBarFolder->GetItemCount();
-		for (t = m_nFirstItem; t < max; t++)
-		{
-			CRect rcItem;
-			if (!IsSmallIconView(m_nSelFolder))
-			{
-				GetIconRect(m_nSelFolder, t, rcItem);
-				if (rcItem.PtInRect(point))
-				{
-					iIndex = t;
-					return hitItem;
-				}
-				else if (rcItem.top > rc.bottom) break;
-				GetLabelRect(m_nSelFolder, t, rcItem);
-				rcItem.top -= m_sizeOffset.cy;
-
-				if (rcItem.PtInRect(point))
-				{
-					iIndex = t;
-					return hitItem;
-				}
-				else if (rcItem.top > rc.bottom) break;
-			}
-			else
-			{
-				GetItemRect(m_nSelFolder, t, rcItem);
-				if (rcItem.PtInRect(point))
-				{
-					iIndex = t;
-					return hitItem;
-				}
-				else if (rcItem.top > rc.bottom) break;
-			}
+			_ShowToolTip(rcValue, rcValueText, pItem, TRUE);
 		}
 	}
-	return hitNone;
 }
 
-void CXTOutBarCtrl::HighlightFolder(CDC* pDC, const int iIndex)
+
+void CXTPPropertyGridView::RelayToolTipEvent(UINT message)
 {
-	CWnd* pFocus = GetFocus();
-	if (pFocus != NULL && pFocus != this && IsChild(pFocus))
-	{
-		return;
-	}
-
-	if (m_nFolderHilighted == iIndex)
-		return;
-
-	CDC dcClient;
-	if (!pDC)
-	{
-		dcClient.Attach(::GetDC(m_hWnd));
-		pDC = &dcClient;
-	}
-
-	if (m_nFolderHilighted >= 0)
+	if (m_wndTip.GetSafeHwnd() && m_wndTip.IsWindowVisible())
 	{
 		CRect rc;
-		if (GetFolderRect(m_nFolderHilighted, rc))
-		{
-			DrawFolder(pDC, m_nFolderHilighted, rc, xtMouseNormal);
-		}
-	}
+		m_wndTip.GetWindowRect(rc);
 
-	if (iIndex >= 0)
-	{
-		CRect rc;
-		if (GetFolderRect(iIndex, rc))
-		{
-			DrawFolder(pDC, iIndex, rc, xtMouseHover);
-		}
-	}
-	if (dcClient.GetSafeHdc())
-	{
-		::ReleaseDC(m_hWnd, dcClient.Detach());
-	}
-
-	m_nFolderHilighted = iIndex;
-}
-
-void CXTOutBarCtrl::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	if (GetFocus() != this) SetFocus();
-
-	int iIndex, ht = HitTestEx(point, iIndex);
-	m_nLastDragItemDrawType = -1;
-
-	CRect inRc;
-	GetInsideRect(inRc);
-
-	if (ht == hitFolder)
-	{
-		BOOL bHigh = TRUE;
-		CRect rc;
-		GetFolderRect(iIndex, rc);
-
-		if (::GetCapture() == NULL)
-		{
-			SetCapture();
-			ASSERT(this == GetCapture());
-			CClientDC dc(this);
-			DrawFolder(&dc, iIndex, rc, xtMouseSelect);
-			AfxLockTempMaps();
-			for (;;)
-			{
-				MSG msg;
-				VERIFY(::GetMessage(&msg, NULL, 0, 0));
-
-				if (CWnd::GetCapture() != this) break;
-
-				switch (msg.message)
-				{
-				case WM_MOUSEMOVE:
-					{
-						CPoint pt(msg.lParam);
-						int idx, ht1 = HitTestEx(pt, idx);
-						if (ht1 == hitFolder && idx == iIndex)
-						{
-							if (!bHigh)
-							{
-								DrawFolder(&dc, iIndex, rc, xtMouseSelect);
-								bHigh = TRUE;
-							}
-						}
-						else
-						{
-							if (bHigh)
-							{
-								DrawFolder(&dc, iIndex, rc, xtMouseNormal);
-								bHigh = FALSE;
-							}
-						}
-					}
-					break;
-
-				case WM_LBUTTONUP:
-					{
-						ReleaseCapture();
-
-						if (bHigh)
-						{
-							DrawFolder(&dc, iIndex, rc, xtMouseNormal);
-							bHigh = FALSE;
-						}
-						CPoint pt(msg.lParam);
-						int idx, ht1 = HitTestEx(pt, idx);
-						if (ht1 == hitFolder && idx != m_nSelFolder)
-							SetSelFolder(idx);
-					}
-
-					goto ExitLoop2;
-
-				case WM_KEYDOWN:
-					if (msg.wParam != VK_ESCAPE)
-						break;
-
-				default:
-					DispatchMessage(&msg);
-					break;
-				}
-			}
-
-		ExitLoop2:
-			ReleaseCapture();
-			AfxUnlockTempMaps(FALSE);
-		}
-		if (bHigh) InvalidateRect(rc, FALSE);
-	}
-	else m_nLastFolderSelected = -1;
-
-	if (ht == hitItem)
-	{
-		m_nLastDragItemDraw = -1;
-		BOOL bHigh = TRUE, bDragging = FALSE;
-		CRect rc;
-		GetItemRect(m_nSelFolder, iIndex, rc);
-
-		HCURSOR hCur = GetCursor();
-
-		if (::GetCapture() == NULL)
-		{
-			SetCapture();
-			ASSERT(this == GetCapture());
-			CClientDC dc(this);
-			HighlightItem(NULL, iIndex, TRUE);
-			AfxLockTempMaps();
-			for (;;)
-			{
-				MSG msg;
-				VERIFY(::GetMessage(&msg, NULL, 0, 0));
-
-				if (CWnd::GetCapture() != this) break;
-
-				switch (msg.message)
-				{
-				case WM_MOUSEMOVE:
-					{
-						CPoint pt(msg.lParam);
-						int idx, ht1 = HitTestEx(pt, idx);
-						if (bDragging)
-						{
-							if (ht1 == hitItem)
-							{
-								DrawDragArrow(&dc, iIndex, idx);
-								::SetCursor(XTPAuxData().hcurDragMove);
-								hCur = XTPAuxData().hcurDragMove;
-							}
-							else
-							{
-								CRect rcItem;
-								GetItemRect(m_nSelFolder, GetItemCount() - 1, rcItem);
-								if (pt.y > rcItem.bottom && pt.y < inRc.bottom)
-								{
-									DrawDragArrow(&dc, iIndex, GetItemCount());
-									::SetCursor(XTPAuxData().hcurDragMove);
-									hCur = XTPAuxData().hcurDragMove;
-								}
-								else
-								{
-									DrawDragArrow(&dc, iIndex, -1);
-									::SetCursor(XTPAuxData().hcurDragNone);
-									hCur = XTPAuxData().hcurDragNone;
-								}
-							}
-						}
-						else
-						{
-							if (ht1 == hitItem && idx == iIndex)
-							{
-								if (!bHigh)
-								{
-									HighlightItem(NULL, iIndex, TRUE);
-									bHigh = TRUE;
-									m_bPressedHighlight = TRUE;
-								}
-							}
-							else
-							{
-								if (ht1 == hitItem)
-								{
-									if (bHigh)
-									{
-										HighlightItem(NULL, iIndex, FALSE);
-										bHigh = FALSE;
-										m_bPressedHighlight = FALSE;
-									}
-								}
-								else
-								{
-									if (m_dwFlags & OBS_XT_DRAGITEMS)
-									{
-										HighlightItem(NULL, iIndex, TRUE);
-										bHigh = TRUE;
-										bDragging = TRUE;
-
-										XT_OUTBAR_INFO obi;
-										obi.nIndex = iIndex;
-										obi.nDragFrom = -1;
-										obi.nDragTo = -1;
-										obi.lpszText = GetItemText(iIndex);
-										obi.bFolder = false;
-
-										NotifyOwner(OBN_XT_BEGINDRAG, &obi);
-
-										::SetCursor(XTPAuxData().hcurDragMove);
-										hCur = XTPAuxData().hcurDragMove;
-
-										m_bPressedHighlight = TRUE;
-									}
-								}
-							}
-						}
-					}
-					break;
-
-				case WM_SETCURSOR:
-					::SetCursor(hCur);
-					break;
-
-				case WM_LBUTTONUP:
-					{
-						ReleaseCapture();
-
-						if (bHigh)
-						{
-							HighlightItem(NULL, -1);
-							bHigh = FALSE;
-						}
-						CPoint pt(msg.lParam);
-						int idx, ht1 = HitTestEx(pt, idx);
-						if (!bDragging)
-						{
-							if (ht1 == hitItem && idx == iIndex)
-							{
-								CXTOutBarItem* pBarItem = GetBarFolderItem(m_nSelFolder, idx);
-								if (!pBarItem->IsEnabled())
-								{
-									return;
-								}
-
-								XT_OUTBAR_INFO obi;
-								obi.nIndex = idx;
-								obi.nDragFrom = -1;
-								obi.nDragTo = -1;
-								obi.lpszText = GetItemText(idx);
-								obi.bFolder = false;
-
-								int nSelFolder = m_nSelFolder;
-
-								LRESULT lResult = NotifyOwner(OBN_XT_ITEMCLICK, &obi);
-
-								if (lResult == TRUE && nSelFolder == GetSelFolder())
-								{
-									CXTOutBarFolder* pBarFolder = GetBarFolder(GetSelFolder());
-									pBarFolder->SetSelItem(idx);
-
-									if (m_nSelAnimTiming > 0 && iIndex != m_nLastItemSelected && m_nLastItemSelected >= 0)
-									{
-										DrawAnimItem(0, 0, m_nLastItemSelected);
-									}
-
-									BOOL bInvalidate = FALSE;
-
-									if ((m_dwFlags & OBS_XT_SELHIGHLIGHT) && (m_nLastItemSelected >= 0))
-									{
-										bInvalidate = TRUE;
-									}
-
-									m_nLastItemSelected = iIndex;
-
-									if ((m_dwFlags & OBS_XT_SELHIGHLIGHT) && (m_nLastItemSelected >= 0))
-									{
-										bInvalidate = TRUE;
-									}
-
-									if (bInvalidate)
-									{
-										Invalidate(FALSE);
-									}
-								}
-							}
-						}
-						else
-						{
-							if (ht1 == hitItem)
-							{
-								if (idx != iIndex)
-								{
-									int iItemSelected = m_nLastItemSelected;
-
-									CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(m_nSelFolder);
-									POSITION pos1 = pBarFolder->m_barItems.FindIndex(iIndex);
-
-									CXTOutBarItem* pItemFrom = (CXTOutBarItem*)pBarFolder->m_barItems.GetAt(pos1);
-									POSITION pos2 = pBarFolder->m_barItems.FindIndex(idx);
-
-									XT_OUTBAR_INFO obi;
-									obi.nIndex = iIndex;
-									obi.nDragFrom = iIndex;
-									obi.nDragTo = idx;
-									obi.lpszText = GetItemText(iIndex);
-									obi.bFolder = false;
-
-									LRESULT lResult = NotifyOwner(OBN_XT_DRAGITEM, &obi);
-
-									if (lResult == TRUE)
-									{
-										if (m_arFolder.GetSize() != 0)
-										{
-											pBarFolder->m_barItems.RemoveAt(pos1);
-											pBarFolder->m_barItems.InsertBefore(pos2, pItemFrom);
-										}
-
-										int i = -1;
-										if (iItemSelected == iIndex)
-										{
-											i = idx;
-
-											if (idx > iIndex)
-											{
-												i--;
-											}
-										}
-
-										else if (((iIndex <= m_nLastItemSelected) && (idx <= m_nLastItemSelected)) ||
-												((iIndex > m_nLastItemSelected) && (idx > m_nLastItemSelected)))
-										{
-											// do nothing...
-										}
-
-										else if (m_nLastItemSelected != -1)
-										{
-											i = m_nLastItemSelected;
-
-											if (idx > m_nLastItemSelected)
-											{
-												i--;
-											}
-											else
-											{
-												i++;
-											}
-										}
-
-										if (i >= 0)
-										{
-											pBarFolder->SetSelItem(i);
-											m_nLastItemSelected = i;
-										}
-									}
-								}
-							}
-							else
-							{
-								CRect rcItem;
-								GetItemRect(m_nSelFolder, GetItemCount() - 1, rcItem);
-								if (pt.y > rcItem.bottom && pt.y < inRc.bottom)
-								{
-									CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(m_nSelFolder);
-									POSITION pos1 = pBarFolder->m_barItems.FindIndex(iIndex);
-
-									CXTOutBarItem* pItemFrom = (CXTOutBarItem*)pBarFolder->m_barItems.GetAt(pos1);
-									POSITION pos2 = pBarFolder->m_barItems.FindIndex(pBarFolder->m_barItems.GetCount());
-
-									XT_OUTBAR_INFO obi;
-									obi.nIndex = (int)pBarFolder->m_barItems.GetCount();
-									obi.nDragFrom = iIndex;
-									obi.nDragTo = obi.nIndex;
-									obi.lpszText = GetItemText(iIndex);
-									obi.bFolder = false;
-
-									LRESULT lResult = NotifyOwner(OBN_XT_DRAGITEM, &obi);
-
-									if (lResult == TRUE)
-									{
-										pBarFolder->m_barItems.RemoveAt(pos1);
-										pBarFolder->m_barItems.InsertAfter(pos2, pItemFrom);
-									}
-								}
-							}
-						}
-					}
-
-					goto ExitLoop4;
-
-				default:
-					DispatchMessage(&msg);
-					break;
-				}
-			}
-
-		ExitLoop4:
-			ReleaseCapture();
-			AfxUnlockTempMaps(FALSE);
-			if (bDragging)
-			{
-				Invalidate();
-			}
-		}
-		m_bPressedHighlight = FALSE;
-		if (bHigh) InvalidateRect(rc, FALSE);
-	}
-	else m_nItemHilighted = -1;
-
-	if (ht == hitDnScroll)
-	{
-		m_bLooping = TRUE;
-		BOOL bHigh = TRUE;
-
-		if (::GetCapture() == NULL)
-		{
-			SetCapture();
-			ASSERT(this == GetCapture());
-			CClientDC dc(this);
-
-			DrawScrollButton(&dc, m_rcDownArrow, DFC_SCROLL, DFCS_SCROLLDOWN | DFCS_PUSHED);
-
-			SetTimer(2, 300, NULL);
-			AfxLockTempMaps();
-			for (;;)
-			{
-				MSG msg;
-				VERIFY(::GetMessage(&msg, NULL, 0, 0));
-
-				if (CWnd::GetCapture() != this) break;
-
-				switch (msg.message)
-				{
-				case WM_MOUSEMOVE:
-					{
-						CPoint pt(msg.lParam);
-						if (m_rcDownArrow.PtInRect(pt))
-						{
-							if (bHigh == FALSE)
-							{
-								DrawScrollButton(&dc, m_rcDownArrow, DFC_SCROLL, DFCS_SCROLLDOWN | DFCS_PUSHED);
-								bHigh = TRUE;
-								m_bDownArrow = TRUE;
-								m_bDownPressed = TRUE;
-							}
-						}
-						else
-						{
-							if (bHigh == TRUE)
-							{
-								DrawScrollButton(&dc, m_rcDownArrow, DFC_SCROLL, DFCS_SCROLLDOWN);
-								bHigh = FALSE;
-								m_bDownArrow = FALSE;
-								m_bDownPressed = FALSE;
-							}
-						}
-					}
-					break;
-
-				case WM_LBUTTONUP:
-					{
-						ReleaseCapture();
-
-						if (bHigh)
-						{
-							DrawScrollButton(&dc, m_rcDownArrow, DFC_SCROLL, DFCS_SCROLLDOWN);
-							bHigh = FALSE;
-						}
-						m_bDownArrow = FALSE;
-						CPoint pt(msg.lParam);
-						if (m_rcDownArrow.PtInRect(pt))
-						{
-							CRect itrc;
-							GetItemRect(m_nSelFolder, GetItemCount() - 1, itrc);
-							CRect crc;
-							GetInsideRect(crc);
-							if (itrc.bottom > crc.bottom)
-							{
-								m_nFirstItem++;
-								InvalidateRect(crc, TRUE);
-							}
-						}
-					}
-					goto ExitLoop3;
-
-
-				case WM_TIMER:
-					{
-						if (msg.wParam == 2)
-						{
-							if (bHigh)
-							{
-								CPoint pt(msg.pt);
-								ScreenToClient(&pt);
-								if (m_rcDownArrow.PtInRect(pt))
-								{
-									m_bDownPressed = TRUE;
-									CRect itrc;
-									GetItemRect(m_nSelFolder, GetItemCount() - 1, itrc);
-									CRect crc;
-									GetInsideRect(crc);
-									if (itrc.bottom > crc.bottom)
-									{
-										m_nFirstItem++;
-										InvalidateRect(crc, TRUE);
-									}
-									else goto ExitLoop3;
-								}
-								else m_bDownPressed = FALSE;
-							}
-						}
-						break;
-					}
-
-				case WM_KEYDOWN:
-					if (msg.wParam != VK_ESCAPE)
-						break;
-
-				default:
-					DispatchMessage(&msg);
-					break;
-				}
-			}
-
-		ExitLoop3:
-			KillTimer(2);
-			ReleaseCapture();
-			AfxUnlockTempMaps(FALSE);
-			m_bLooping = FALSE;
-			m_bDownPressed = FALSE;
-			m_bDownArrow = FALSE;
-			CRect crc;
-			GetInsideRect(crc);
-			InvalidateRect(crc, TRUE);
-		}
-	}
-
-	if (ht == hitUpScroll)
-	{
-		m_bLooping = TRUE;
-		BOOL bHigh = TRUE;
-
-		if (::GetCapture() == NULL)
-		{
-			SetCapture();
-			ASSERT(this == GetCapture());
-			CClientDC dc(this);
-			DrawScrollButton(&dc, m_rcUpArrow, DFC_SCROLL, DFCS_SCROLLUP | DFCS_PUSHED);
-			SetTimer(2, 300, NULL);
-			AfxLockTempMaps();
-			for (;;)
-			{
-				MSG msg;
-				VERIFY(::GetMessage(&msg, NULL, 0, 0));
-
-				if (CWnd::GetCapture() != this) break;
-
-				switch (msg.message)
-				{
-				case WM_MOUSEMOVE:
-					{
-						CPoint pt(msg.lParam);
-						if (m_rcUpArrow.PtInRect(pt))
-						{
-							if (bHigh == FALSE)
-							{
-								DrawScrollButton(&dc, m_rcUpArrow, DFC_SCROLL, DFCS_SCROLLUP | DFCS_PUSHED);
-								bHigh = TRUE;
-								m_bUpArrow = TRUE;
-								m_bUpPressed = TRUE;
-							}
-						}
-						else
-						{
-							if (bHigh == TRUE)
-							{
-								DrawScrollButton(&dc, m_rcUpArrow, DFC_SCROLL, DFCS_SCROLLUP);
-								bHigh = FALSE;
-								m_bUpArrow = FALSE;
-								m_bUpPressed = FALSE;
-							}
-						}
-					}
-					break;
-
-				case WM_LBUTTONUP:
-					{
-						ReleaseCapture();
-
-						if (bHigh)
-						{
-							DrawScrollButton(&dc, m_rcUpArrow, DFC_SCROLL, DFCS_SCROLLUP);
-							bHigh = FALSE;
-						}
-						m_bUpArrow = FALSE;
-						CPoint pt(msg.lParam);
-						if (m_rcUpArrow.PtInRect(pt))
-						{
-							if (m_nFirstItem > 0)
-							{
-								m_nFirstItem--;
-								CRect crc;
-								GetInsideRect(crc);
-								InvalidateRect(crc, TRUE);
-							}
-						}
-					}
-
-					goto ExitLoop;
-
-				case WM_TIMER:
-					{
-						if (msg.wParam == 2)
-						{
-							if (bHigh)
-							{
-								CPoint pt(msg.pt);
-								ScreenToClient(&pt);
-								if (m_rcUpArrow.PtInRect(pt))
-								{
-									m_bUpPressed = TRUE;
-									if (m_nFirstItem > 0)
-									{
-										m_nFirstItem--;
-										CRect crc;
-										GetInsideRect(crc);
-										InvalidateRect(crc, TRUE);
-									}
-									else goto ExitLoop;
-								}
-								else m_bUpPressed = FALSE;
-							}
-						}
-						break;
-					}
-				case WM_KEYDOWN:
-					if (msg.wParam != VK_ESCAPE) break;
-
-				default:
-					DispatchMessage(&msg);
-					break;
-				}
-			}
-
-		ExitLoop:
-			KillTimer(2);
-			ReleaseCapture();
-			AfxUnlockTempMaps(FALSE);
-			m_bLooping = FALSE;
-			m_bUpPressed = FALSE;
-			m_bUpArrow = FALSE;
-			CRect crc;
-			GetInsideRect(crc);
-			InvalidateRect(crc, TRUE);
-		}
-	}
-
-	CWnd::OnLButtonDown(nFlags, point);
-}
-
-int CXTOutBarCtrl::InsertItem(const int iFolder, const int iIndex, LPCTSTR lpszItemName, const int iImage, const DWORD dwData)
-{
-	if (m_arFolder.GetSize() != 0)
-	{
-		ASSERT(iFolder >= 0 && iFolder < GetFolderCount());
-
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(iFolder);
-
-		return pBarFolder->InsertItem(iIndex, lpszItemName, iImage, dwData);
-	}
-	return -1;
-}
-
-int CXTOutBarCtrl::GetItemCount() const
-{
-	if (m_arFolder.GetSize() != 0)
-	{
-		ASSERT(m_nSelFolder >= 0 && m_nSelFolder < GetFolderCount());
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(m_nSelFolder);
-		return  pBarFolder->GetItemCount();
-	}
-	return 0;
-}
-
-void CXTOutBarCtrl::SetSelFolder(const int iIndex)
-{
-	if (m_arFolder.GetSize() != 0)
-	{
-		ASSERT(iIndex >= 0 && iIndex < GetFolderCount());
-
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(iIndex);
-
-		XT_OUTBAR_INFO obi;
-		obi.nIndex = iIndex;
-		obi.nDragFrom = -1;
-		obi.nDragTo = -1;
-		obi.lpszText = (LPCTSTR)pBarFolder->GetName();
-		obi.bFolder = true;
-
-		LRESULT lResult = NotifyOwner(OBN_XT_FOLDERCHANGE, &obi);
-
-		if (lResult == TRUE)
-		{
-			CWnd* pWnd = GetFolderChild();
-			if (pWnd)
-			{
-				pWnd->ShowWindow(SW_HIDE);
-			}
-
-			m_nLastItemSelected = -1;
-
-			if (iIndex != m_nSelFolder && m_nSelFolder >= 0)
-			{
-				if ((m_dwFlags & OBS_XT_ANIMATION) && (m_nAnimationTickCount >= 0))
-				{
-					AnimateFolderScroll(m_nSelFolder, iIndex);
-				}
-			}
-
-			m_nSelFolder = iIndex;
-			m_nFirstItem = 0;
-
-			pWnd = GetFolderChild();
-			if (pWnd)
-			{
-				CRect rc;
-				GetInsideRect(rc);
-				pWnd->MoveWindow(rc);
-				pWnd->ShowWindow(SW_SHOW);
-			}
-
-			InvalidateRect(NULL);
-		}
-	}
-}
-
-int CXTOutBarCtrl::GetFolderCount() const
-{
-	return (int)m_arFolder.GetSize();
-}
-
-int CXTOutBarCtrl::GetSelFolder() const
-{
-	return m_nSelFolder;
-}
-
-void CXTOutBarCtrl::RemoveFolder(const int iIndex)
-{
-	if (m_arFolder.GetSize() != 0)
-	{
-		ASSERT(iIndex >= 0 && iIndex < GetFolderCount());
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(iIndex);
-
-		XT_OUTBAR_INFO obi;
-		obi.nIndex = iIndex;
-		obi.nDragFrom = -1;
-		obi.nDragTo = -1;
-		obi.lpszText = (LPCTSTR)pBarFolder->GetName();
-		obi.bFolder = true;
-
-		LRESULT lResult = NotifyOwner(OBN_XT_DELETEFOLDER, &obi);
-
-		if (lResult == TRUE)
-		{
-			if (m_nSelFolder >= iIndex)
-			{
-				m_nSelFolder = iIndex - 1;
-			}
-			if (m_nSelFolder < 0 && GetFolderCount() > 0)
-			{
-				m_nSelFolder = 0;
-			}
-
-			m_arFolder.RemoveAt(iIndex);
-			SAFE_DELETE(pBarFolder);
-
-			InvalidateRect(NULL);
-		}
-	}
-}
-
-CImageList* CXTOutBarCtrl::SetImageList(CImageList* pImageList, DWORD dwImageList)
-{
-	CImageList* pOldImageList = NULL;
-
-	if (dwImageList & OBS_XT_SMALLICON)
-	{
-		pOldImageList = m_pSmallImageList;
-		m_pSmallImageList = pImageList;
-	}
-	else if (dwImageList & OBS_XT_LARGEICON)
-	{
-		pOldImageList = m_pLargeImageList;
-		m_pLargeImageList = pImageList;
-	}
-
-	return pOldImageList;
-}
-
-CImageList* CXTOutBarCtrl::GetImageList(DWORD dwImageList)
-{
-	if (dwImageList & OBS_XT_SMALLICON)
-	{
-		return m_pSmallImageList;
-	}
-	else if (dwImageList & OBS_XT_LARGEICON)
-	{
-		return m_pLargeImageList;
-	}
-
-	return NULL;
-}
-
-CImageList* CXTOutBarCtrl::SetFolderImageList(const int iFolder, CImageList* pImageList, DWORD dwImageList)
-{
-	if (m_arFolder.GetSize() != 0)
-	{
-		ASSERT(iFolder >= 0 && iFolder < GetFolderCount());
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(iFolder);
-		CImageList* pOldImageList = NULL;
-
-		if (dwImageList & OBS_XT_SMALLICON)
-		{
-			pOldImageList = pBarFolder->GetSmallImageList();
-			pBarFolder->SetSmallImageList(pImageList);
-		}
-
-		else if (dwImageList & OBS_XT_LARGEICON)
-		{
-			pOldImageList = pBarFolder->GetLargeImageList();
-			pBarFolder->SetLargeImageList(pImageList);
-		}
-
-		return pOldImageList;
-	}
-	return NULL;
-}
-
-void CXTOutBarCtrl::PaintItems(CDC* pDC, const int iFolder, CRect rc)
-{
-	if (m_arFolder.GetSize() != 0)
-	{
-		ASSERT(iFolder >= 0 && iFolder < GetFolderCount());
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(iFolder);
-
-		int nItemCount = pBarFolder->GetItemCount();
-
-		CRgn rgn;
-		rgn.CreateRectRgnIndirect(&rc);
-		pDC->SelectClipRgn(&rgn);
-
-		for (int i = m_nFirstItem; i < nItemCount; i++)
-		{
-			CRect rcItem;
-			GetItemRect(iFolder, i, rcItem, &rc);
-			if (rcItem.top > rc.bottom)
-				break;
-
-			DrawItem(pDC, iFolder, rcItem, i);
-		}
-
-		pDC->SelectClipRgn(NULL);
-
-		//rgn.DeleteObject();
-	}
-}
-
-CSize CXTOutBarCtrl::GetItemSize(const int iFolder, const int iIndex, const RectItem iType)
-{
-	if (m_arFolder.GetSize() != 0)
-	{
-		if (iFolder < 0 || iFolder >= GetFolderCount())
-			return CSize(0, 0);
-
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(iFolder);
-
-		if (iIndex < 0 || iIndex >= pBarFolder->GetItemCount())
-			return CSize(0, 0);
-
-		CXTOutBarItem* pBarItem = pBarFolder->GetItemAt(iIndex);
-
-		CSize szImage(0, 0);
-		CSize szLabel(0, 0);
-		CSize szAll(0, 0);
-
-		if (pBarItem->GetIndex() >= 0)
-		{
-			if (iType != rectItemLabel)
-			{
-				CImageList* il = GetFolderImageList(iFolder, IsSmallIconView(iFolder));
-				ASSERT(il);
-				if (il)
-				{
-					IMAGEINFO ii;
-					il->GetImageInfo(pBarItem->GetIndex(), &ii);
-					szImage = CRect(ii.rcImage).Size();
-				}
-			}
-		}
-		if (pBarItem->GetName().GetLength())
-		{
-			if (iType != rectItemIcon)
-			{
-				CClientDC dc(this);
-				CFont* oft = (CFont*)dc.SelectObject(GetFontX());
-				if (IsSmallIconView(iFolder))
-				{
-					szLabel = dc.GetTextExtent(pBarItem->GetName(), pBarItem->GetName().GetLength());
-				}
-				else
-				{
-					CRect rc;
-					GetInsideRect(rc);
-					rc.bottom = rc.top;
-					dc.DrawText(pBarItem->GetName(), pBarItem->GetName().GetLength(), rc,
-						DT_CALCRECT | DT_CENTER | DT_VCENTER | DT_WORDBREAK | DT_END_ELLIPSIS);
-					szLabel = rc.Size();
-				}
-				dc.SelectObject(oft);
-			}
-		}
-		if (IsSmallIconView(iFolder))
-		{
-			if (iType == rectItemIcon) szAll = szImage;
-			else if (iType == rectItemLabel) szAll = szLabel;
-			else if (iType == rectItemBoth) szAll = CSize(szImage.cx + szLabel.cx + m_sizeOffset.cx, szImage.cy > szLabel.cy ? szImage.cy : szLabel.cy);
-		}
-		else
-		{
-			if (iType == rectItemIcon) szAll = szImage;
-			else if (iType == rectItemLabel) szAll = szLabel;
-			else if (iType == rectItemBoth)
-			{
-				szAll = CSize(szImage.cx > szLabel.cx ? szImage.cx : szLabel.cx, szLabel.cy + szImage.cy + m_sizeOffset.cy + m_nIconSpacingLarge);
-			}
-		}
-		return szAll;
-	}
-
-	return CSize(0, 0);
-}
-
-CImageList* CXTOutBarCtrl::GetFolderImageList(const int iIndex, const BOOL bSmall) const
-{
-	if (m_arFolder.GetSize() != 0)
-	{
-		ASSERT(iIndex >= 0 && iIndex < GetFolderCount());
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(iIndex);
-		if (bSmall)
-		{
-			if (pBarFolder->GetSmallImageList())
-				return pBarFolder->GetSmallImageList();
-			else
-				return m_pSmallImageList;
-		}
-		if (pBarFolder->GetLargeImageList())
-			return pBarFolder->GetLargeImageList();
-		else
-			return m_pLargeImageList;
-	}
-	return NULL;
-}
-
-void CXTOutBarCtrl::DrawScrollButton(CDC* pDC, CRect rect, UINT uType, UINT uState)
-{
-	pDC->DrawFrameControl(&rect, uType, uState);
-}
-
-void CXTOutBarCtrl::DrawItem(CDC* pDC, const int iFolder, CRect rc, const int iIndex, const BOOL bOnlyImage)
-{
-	if (m_arFolder.GetSize() != 0)
-	{
-		CImageList* pImageList = GetFolderImageList(iFolder, IsSmallIconView(iFolder));
-
-		ASSERT(iFolder >= 0 && iFolder < GetFolderCount());
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(iFolder);
-
-		ASSERT(iIndex >= 0 && iIndex < pBarFolder->GetItemCount());
-		CXTOutBarItem* pBarItem = pBarFolder->GetItemAt(iIndex);
-
-		ASSERT(pBarItem && pImageList);
-		if (!pBarItem)
-			return;
-
-		CFont* oft = (CFont*)pDC->SelectObject(GetFontX());
-		pDC->SetBkMode(TRANSPARENT);
-
-		CRect rcFolder;
-		GetFolderRect(iFolder, rcFolder);
-		rc.left = rcFolder.left +4;
-		rc.right = rcFolder.right-4;
-
-		// Exclude the up and down arrows from painting.
-		if (m_bUpArrow)
-			pDC->ExcludeClipRect(&m_rcUpArrow);
-		if (m_bDownArrow)
-			pDC->ExcludeClipRect(&m_rcDownArrow);
-
-		// set the items text color.
-		pDC->SetTextColor(GetTheme()->m_clrText);
-
-		if ((m_dwFlags & OBS_XT_SELHIGHLIGHT) && (m_nLastItemSelected == iIndex) && (m_nLastItemSelected >= 0))
-		{
-			CRect rcIcon;
-			GetIconRect(m_nSelFolder, m_nLastItemSelected, rcIcon);
-			rcIcon.InflateRect(1, 1);
-
-			GetTheme()->DrawIconFrame(pDC, rcIcon, TRUE, FALSE);
-		}
-
-
-		if (pImageList && pBarItem)
-		{
-			IMAGEINFO ii;
-			pImageList->GetImageInfo(pBarItem->GetIndex(), &ii);
-			CSize szImage = CRect(ii.rcImage).Size();
-			CPoint pt;
-
-			if (IsSmallIconView(iFolder))
-			{
-				pt.x = rc.left + 2;
-				pt.y = rc.top + (rc.Height() - szImage.cy) / 2;
-
-				DrawItemIcon(pDC, pt, pBarItem, pImageList);
-
-				if (!bOnlyImage)
-				{
-					rc.left += (szImage.cx + m_sizeOffset.cx);
-
-					DrawItemText(pDC, rc, pBarItem, DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
-				}
-			}
-			else
-			{
-				pt.x = rc.left + (rc.Width() - szImage.cx) / 2;
-				pt.y = rc.top;
-
-				DrawItemIcon(pDC, pt, pBarItem, pImageList);
-
-				if (!bOnlyImage)
-				{
-					rc.top += szImage.cy + m_sizeOffset.cy;
-					rc.bottom += 4;
-					DrawItemText(pDC, rc, pBarItem, DT_CENTER | DT_VCENTER | DT_WORDBREAK | DT_END_ELLIPSIS);
-				}
-			}
-		}
-
-		pDC->SelectObject(oft);
-	}
-}
-
-BOOL CXTOutBarCtrl::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
-{
-	CPoint pt(GetMessagePos());
-	ScreenToClient(&pt);
-	int iIndex, ht = HitTestEx(pt, iIndex);
-	if (ht == hitFolder)
-	{
-		::SetCursor(XTPAuxData().hcurHand);
-		return TRUE;
-	}
-
-	return CWnd::OnSetCursor(pWnd, nHitTest, message);
-}
-
-void CXTOutBarCtrl::GetVisibleRange(const int iFolder, int& iFirst, int& iLast)
-{
-	iFirst = m_nFirstItem;
-
-	CRect rcInside;
-	GetInsideRect(rcInside);
-
-	if (m_arFolder.GetSize() != 0)
-	{
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(iFolder);
-		if (pBarFolder == NULL)
-			return;
-
-		int iCount = pBarFolder->GetItemCount();
-		if (iCount <= 0)
-		{
-			iFirst = iLast = -1;
-			return;
-		}
-
-		int iItem;
-		for (iItem = m_nFirstItem; iItem < iCount; iItem++)
-		{
-			CRect rcItem;
-			GetItemRect(iFolder, iItem, rcItem);
-
-			if (rcItem.bottom > rcInside.bottom)
-			{
-				iLast = iItem - 1;
-				break;
-			}
-			else
-			{
-				iLast = iItem;
-			}
-		}
-	}
-}
-
-void CXTOutBarCtrl::OnSize(UINT nType, int cx, int cy)
-{
-	m_bUpArrow = m_bDownArrow = FALSE;
-
-	CWnd::OnSize(nType, cx, cy);
-
-	int t, max = GetFolderCount();
-	CRect rc;
-	GetInsideRect(rc);
-
-	for (t = 0; t < max; t++)
-	{
-		CWnd* pWnd = GetFolderChild(t);
-		if (pWnd) pWnd->SetWindowPos(0, rc.left, rc.top, rc.Width(), rc.Height(), SWP_NOZORDER);
-	}
-}
-
-void CXTOutBarCtrl::DrawIcon(CDC* pDC, int iIcon, int iFolder, bool bHilight)
-{
-	// Clear the icon background
-	CRect rcIcon;
-	GetIconRect(iFolder, iIcon, rcIcon);
-
-	if (!IsSmallIconView(iFolder))
-	{
-		rcIcon.InflateRect(1, 1);
-	}
-	else
-	{
-		rcIcon.left--;
-		rcIcon.top--;
-	}
-
-	GetTheme()->FillInsideRect(pDC, rcIcon);
-
-	// Should we highlight the icon ?
-	if (bHilight)
-	{
-		GetTheme()->DrawIconFrame(pDC, rcIcon, FALSE, m_bIconPressed);
-	}
-
-	// Draw the icon using the image list.
-	ASSERT(iFolder >= 0 && iFolder < GetFolderCount());
-	CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(iFolder);
-
-	ASSERT(iIcon >= 0 && iIcon < pBarFolder->GetItemCount());
-	CXTOutBarItem* pBarItem = pBarFolder->GetItemAt(iIcon);
-
-	CImageList* pImageList = GetFolderImageList(iFolder, IsSmallIconView(iFolder));
-	ASSERT(pBarItem && pImageList);
-
-	CRect rc;
-	GetItemRect(iFolder, iIcon, rc);
-
-	CRect rcFolder;
-	GetFolderRect(iFolder, rcFolder);
-	rc.left = rcFolder.left +4;
-	rc.right = rcFolder.right-4;
-
-	if (IsSmallIconView(iFolder))
-	{
-		if (pImageList && pBarItem)
-		{
-			IMAGEINFO ii;
-			pImageList->GetImageInfo(pBarItem->GetIndex(), &ii);
-			CSize szImage = CRect(ii.rcImage).Size();
-			CPoint pt;
-			pt.x = rc.left + 2;
-			pt.y = rc.top + (rc.Height() - szImage.cy) / 2;
-
-			DrawItemIcon(pDC, pt, pBarItem, pImageList);
-		}
-	}
-	else
-	{
-		if (pImageList && pBarItem)
-		{
-			IMAGEINFO ii;
-			pImageList->GetImageInfo(pBarItem->GetIndex(), &ii);
-			CSize szImage = CRect(ii.rcImage).Size();
-			CPoint pt;
-			pt.x = rc.left + (rc.Width() - szImage.cx) / 2;
-			pt.y = rc.top;// + (rc.Height() - szImage.cy) / 2;
-
-			DrawItemIcon(pDC, pt, pBarItem, pImageList);
-		}
-	}
-}
-
-void CXTOutBarCtrl::HighlightItem(CDC* pDC, const int iIndex, const BOOL bPressed)
-{
-	static BOOL bOldPressed = FALSE;
-
-	CWnd* pFocus = GetFocus();
-	if (pFocus != NULL && pFocus != this && IsChild(pFocus))
-	{
-		return;
-	}
-
-	if (m_nItemHilighted == iIndex && bOldPressed == bPressed)
-	{
-		return;
-	}
-
-	if (iIndex != -1)
-	{
-		CXTOutBarItem* pBarItem = GetBarFolderItem(m_nSelFolder, iIndex);
-		if (!pBarItem->IsEnabled())
-		{
-			return;
-		}
-	}
-
-	m_bIconPressed = FALSE;
-	bOldPressed = bPressed;
-
-	XT_OUTBAR_INFO obi;
-	obi.nIndex = iIndex;
-	obi.nDragFrom = -1;
-	obi.nDragTo = -1;
-	obi.lpszText = GetItemText(iIndex);
-	obi.bFolder = false;
-
-	LRESULT lResult = NotifyOwner(OBN_XT_ITEMHOVER, &obi);
-
-	if (!lResult)
-		return;
-
-	CDC dcClient;
-	if (!pDC)
-	{
-		dcClient.Attach(::GetDC(m_hWnd));
-		pDC = &dcClient;
-	}
-
-	CRect irc;
-	GetInsideRect(irc);
-
-	CRgn rgn;
-	rgn.CreateRectRgnIndirect(&irc);
-	pDC->SelectClipRgn(&rgn);
-
-	// Exclude the up and down arrows from painting.
-	if (m_bUpArrow)
-		pDC->ExcludeClipRect(&m_rcUpArrow);
-	if (m_bDownArrow)
-		pDC->ExcludeClipRect(&m_rcDownArrow);
-
-	if (m_nItemHilighted >= 0 && IsValidItem(m_nItemHilighted))
-	{
-		DrawIcon(pDC, m_nItemHilighted, m_nSelFolder, false);
-	}
-	if ((m_nSelAnimTiming > 0 && iIndex == m_nLastItemSelected) ||
-		((m_dwFlags & OBS_XT_SELHIGHLIGHT) && (m_nLastItemSelected == iIndex)))
-	{
-		m_nItemHilighted = -1;
-	}
-	else
-	{
-		m_nItemHilighted = iIndex;
-		m_bIconPressed = bPressed;
-
-		if (m_nItemHilighted >= 0 && IsValidItem(m_nItemHilighted))
-		{
-			DrawIcon(pDC, m_nItemHilighted, m_nSelFolder, true);
-		}
-	}
-
-	pDC->SelectClipRgn(NULL);
-	rgn.DeleteObject();
-
-	if (dcClient.GetSafeHdc())
-	{
-		::ReleaseDC(m_hWnd, dcClient.Detach());
-	}
-}
-
-void CXTOutBarCtrl::GetIconRect(const int iFolder, const int iIndex, CRect& rect, CRect* pInsideRect /*= NULL*/)
-{
-	CRect rc;
-	if (pInsideRect)
-		rc = *pInsideRect;
-	else
-		GetInsideRect(rc);
-
-	int top = rc.top;
-	CSize sz(0, 0);
-	int y = 0;
-	int spacing = IsSmallIconView(iFolder) ? m_nIconSpacingSmall : m_nIconSpacingLarge;
-
-	int t;
-	for (t = 0; t < iIndex; t++)
-	{
-		sz = GetItemSize(iFolder, t, rectItemBoth);
-		top += sz.cy;
-		top += spacing;
-		if (t == m_nFirstItem - 1) y = top - rc.top;
-	}
-	top += spacing;
-
-	sz = GetItemSize(iFolder, iIndex, rectItemIcon);
-	if (IsSmallIconView(iFolder))
-	{
-		rect.SetRect(rc.left, top, rc.left + sz.cx, top + sz.cy);
-		rect.left += m_sizeMargin.cx + 2;
-		rect.right += m_sizeMargin.cx + 2;
-		rect.top -= m_sizeMargin.cy;
-		rect.bottom -= m_sizeMargin.cy;
-
-		rect.top -= y;
-		rect.bottom -= y;
-	}
-	else
-	{
-		rect.SetRect(rc.left + (rc.Width() - sz.cx)/2, top, rc.left + (rc.Width() - sz.cx)/2 + sz.cx, top + sz.cy);
-		rect.top -= y + 3;
-		rect.bottom -= y + 2;
-	}
-}
-
-void CXTOutBarCtrl::GetLabelRect(const int iFolder, const int iIndex, CRect& rect)
-{
-	CRect rc;
-	GetInsideRect(rc);
-	int top = rc.top;
-	CSize sz(0, 0);
-	int y = 0;
-	int spacing = IsSmallIconView(iFolder) ? m_nIconSpacingSmall : m_nIconSpacingLarge;
-
-	int t;
-	for (t = 0; t < iIndex; t++)
-	{
-		sz = GetItemSize(iFolder, t, rectItemBoth);
-		top += sz.cy;
-		top += spacing;
-		if (t == m_nFirstItem - 1) y = top - rc.top;
-	}
-	top += spacing;
-
-	sz = GetItemSize(iFolder, iIndex, rectItemBoth);
-
-	CSize szLabel = GetItemSize(iFolder, iIndex, rectItemLabel);
-
-	if (IsSmallIconView(iFolder))
-	{
-		rect.SetRect(rc.left, top, rc.left + sz.cx, top + sz.cy);
-		rect.left += m_sizeMargin.cx + 2;
-		rect.right += m_sizeMargin.cx + 2;
-		rect.top += m_sizeMargin.cy - 5;
-		rect.bottom += m_sizeMargin.cy - 5;
-	}
-	else
-	{
-		rect.SetRect(rc.left + (rc.Width() - sz.cx)/2, top, rc.left + (rc.Width() - sz.cx)/2 + sz.cx, top + sz.cy);
-		rect.top -= y + 3;
-		rect.bottom -= y + 2;
-
-		rect.bottom -= m_nIconSpacingLarge;
-		rect.top = rect.bottom - szLabel.cy;
-	}
-}
-
-void CXTOutBarCtrl::StartGroupEdit(const int iIndex)
-{
-	CRect rc;
-	GetFolderRect(iIndex, rc);
-	rc.InflateRect(-2, -2);
-
-	if (m_arFolder.GetSize() != 0)
-	{
-		ASSERT(iIndex >= 0 && iIndex < GetFolderCount());
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(iIndex);
-
-		CXTOutBarEditItem* pEdit = new CXTOutBarEditItem;
-		if (pEdit->Create(pBarFolder->GetName(), WS_CHILD | WS_VISIBLE | ES_CENTER | ES_AUTOHSCROLL,
-			rc, this, 0xFF, iIndex, true, false))
-		{
-			pEdit->Initialize(this);
-			pEdit->ModifyStyleEx(0, WS_EX_CLIENTEDGE, SWP_FRAMECHANGED);
-			pEdit->SetFocus();
-			pEdit->SetSel(0, -1);
-		}
-	}
-}
-
-void CXTOutBarCtrl::StartItemEdit(const int iIndex)
-{
-	if (m_arFolder.GetSize() != 0)
-	{
-		ASSERT(m_nSelFolder >= 0 && m_nSelFolder < GetFolderCount());
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(m_nSelFolder);
-
-		ASSERT(iIndex >= 0 && iIndex < pBarFolder->GetItemCount());
-		CXTOutBarItem* pBarItem = pBarFolder->GetItemAt(iIndex);
-		if (pBarItem == NULL)
-		{
-			return;
-		}
-
-		CRect rcLabel;
-		GetLabelRect(m_nSelFolder, iIndex, rcLabel);
-
-		DWORD dwStyle = WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL;
-
-		bool bNoDown = false;
-		if (IsSmallIconView(m_nSelFolder))
-		{
-			bNoDown = true;
-
-			CRect rcIcon;
-			GetIconRect(m_nSelFolder, iIndex, rcIcon);
-			rcLabel.OffsetRect(rcIcon.Width()+1, -6);
-			rcLabel.InflateRect(0, 1);
-		}
-		else
-		{
-			CRect rcInside;
-			GetInsideRect(rcInside);
-
-			CWindowDC dc(NULL);
-			CFont* f = dc.SelectObject(GetFontX());
-			CSize sz = dc.GetTextExtent(pBarItem->GetName());
-			dc.SelectObject(f);
-
-			int x = (rcInside.Width()-sz.cx)/2;
-
-			rcLabel.left = rcInside.left + x;
-			rcLabel.right = rcLabel.left + sz.cx;
-			rcLabel.InflateRect(6, 2);
-			rcLabel.OffsetRect(0, -1);
-
-			dwStyle |= ES_CENTER;
-		}
-
-		CXTOutBarEditItem* pEdit = new CXTOutBarEditItem;
-		if (pEdit->Create(pBarItem->GetName(), dwStyle, rcLabel, this,
-			0xFF, iIndex, false, bNoDown))
-		{
-			pEdit->Initialize(this);
-			pEdit->SetFocus();
-			pEdit->SetSel(0, -1);
-
-			Invalidate();
-		}
-	}
-}
-
-void CXTOutBarCtrl::OnLargeIcon()
-{
-	SetSmallIconView(FALSE, m_nSelFolder);
-	Invalidate();
-}
-
-void CXTOutBarCtrl::OnUpdateLargeIcon(CCmdUI* pCmdUI)
-{
-	pCmdUI->Enable(IsSmallIconView(m_nSelFolder));
-}
-
-void CXTOutBarCtrl::OnSmallIcon()
-{
-	SetSmallIconView(TRUE, m_nSelFolder);
-	Invalidate();
-}
-
-void CXTOutBarCtrl::OnUpdateSmallIcon(CCmdUI* pCmdUI)
-{
-	pCmdUI->Enable(!IsSmallIconView(m_nSelFolder));
-}
-
-void CXTOutBarCtrl::OnRemoveItem()
-{
-	if (m_nHitInternal1 == hitFolder)
-	{
-		RemoveFolder(m_nHitInternal2);
-	}
-	else if (m_nHitInternal1 == hitItem)
-	{
-		RemoveItem(m_nHitInternal2);
-	}
-}
-
-void CXTOutBarCtrl::OnUpdateRemoveItem(CCmdUI* /*pCmdUI*/)
-{
-
-}
-
-void CXTOutBarCtrl::OnRenameItem()
-{
-	if (m_nHitInternal1 == hitFolder)
-	{
-		StartGroupEdit(m_nHitInternal2);
-	}
-	else if (m_nHitInternal1 == hitItem)
-	{
-		StartItemEdit(m_nHitInternal2);
-	}
-}
-
-void CXTOutBarCtrl::OnUpdateRenameItem(CCmdUI* /*pCmdUI*/)
-{
-
-}
-
-void CXTOutBarCtrl::RemoveAllItems(int iFolder, bool bNofify/*= false*/)
-{
-	ASSERT(iFolder >= 0 && iFolder < GetFolderCount());
-	CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(iFolder);
-	if (pBarFolder != NULL)
-	{
-		int iFolderCount = pBarFolder->GetItemCount();
-
-		int iIndex;
-		for (iIndex = iFolderCount-1; iIndex >= 0; --iIndex)
-		{
-			CXTOutBarItem* pBarItem = pBarFolder->RemoveItemAt(iIndex);
-			if (pBarItem == NULL)
-			{
-				continue;
-			}
-
-			if (bNofify)
-			{
-				XT_OUTBAR_INFO obi;
-				obi.nIndex = iIndex;
-				obi.nDragFrom = -1;
-				obi.nDragTo = -1;
-				obi.lpszText = pBarItem->GetName();
-				obi.bFolder = false;
-
-				NotifyOwner(OBN_XT_DELETEITEM, &obi);
-			}
-
-			SAFE_DELETE(pBarItem);
-		}
-
-		Invalidate();
-		UpdateWindow();
-	}
-}
-
-void CXTOutBarCtrl::RemoveItem(const int iIndex)
-{
-	if (m_arFolder.GetSize() != 0)
-	{
-		ASSERT(m_nSelFolder >= 0 && m_nSelFolder < GetFolderCount());
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(m_nSelFolder);
-		ASSERT(iIndex >= 0 && iIndex < pBarFolder->GetItemCount());
-
-		if (IsValidItem(iIndex))
-		{
-			XT_OUTBAR_INFO obi;
-			obi.nIndex = iIndex;
-			obi.nDragFrom = -1;
-			obi.nDragTo = -1;
-			obi.lpszText = GetItemText(iIndex);
-			obi.bFolder = false;
-
-			LRESULT lResult = NotifyOwner(OBN_XT_DELETEITEM, &obi);
-
-			if (lResult == TRUE)
-			{
-				CXTOutBarItem* pBarItem = pBarFolder->RemoveItemAt(iIndex);
-				SAFE_DELETE(pBarItem);
-
-				if (m_nLastItemSelected == iIndex)
-					m_nLastItemSelected = -1;
-
-				InvalidateRect(NULL);
-			}
-		}
-	}
-}
-
-BOOL CXTOutBarCtrl::IsValidItem(const int iIndex) const
-{
-	if (m_arFolder.GetSize() != 0)
-	{
-		ASSERT(m_nSelFolder >= 0 && m_nSelFolder < GetFolderCount());
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(m_nSelFolder);
-		return (iIndex >= 0 && iIndex < pBarFolder->GetItemCount());
-	}
-	return FALSE;
-}
-
-DWORD CXTOutBarCtrl::GetItemData(const int iIndex) const
-{
-	if (m_arFolder.GetSize() != 0)
-	{
-		ASSERT(m_nSelFolder >= 0 && m_nSelFolder < GetFolderCount());
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(m_nSelFolder);
-		if (IsValidItem(iIndex))
-		{
-			CXTOutBarItem* i = pBarFolder->GetItemAt(iIndex);
-			return i->GetData();
-		}
-	}
-	return 0;
-}
-
-int CXTOutBarCtrl::GetItemImage(const int iIndex) const
-{
-	if (m_arFolder.GetSize() != 0)
-	{
-		ASSERT(m_nSelFolder >= 0 && m_nSelFolder < GetFolderCount());
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(m_nSelFolder);
-		if (IsValidItem(iIndex))
-		{
-			CXTOutBarItem* i = pBarFolder->GetItemAt(iIndex);
-			return i->GetIndex();
-		}
-	}
-	return 0;
-}
-
-void CXTOutBarCtrl::SetItemData(const int iIndex, const DWORD dwData)
-{
-	if (m_arFolder.GetSize() != 0)
-	{
-		ASSERT(m_nSelFolder >= 0 && m_nSelFolder < GetFolderCount());
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(m_nSelFolder);
-		if (IsValidItem(iIndex))
-		{
-			CXTOutBarItem* i = pBarFolder->GetItemAt(iIndex);
-			i->SetData(dwData);
-		}
-	}
-}
-
-void CXTOutBarCtrl::SetItemImage(const int iIndex, const int iImage)
-{
-	if (m_arFolder.GetSize() != 0)
-	{
-		ASSERT(m_nSelFolder >= 0 && m_nSelFolder < GetFolderCount());
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(m_nSelFolder);
-		if (IsValidItem(iIndex))
-		{
-			CXTOutBarItem* i = pBarFolder->GetItemAt(iIndex);
-			i->SetIndex(iImage);
-		}
-	}
-}
-
-void CXTOutBarCtrl::DrawDragArrow(CDC* pDC, const int /*iFrom*/, const int iTo)
-{
-	if (iTo == m_nLastDragItemDraw)
-		return;
-
-	CRect rc1;
-	if (m_nLastDragItemDraw >= 0)
-	{
-		GetDragItemRect(m_nLastDragItemDraw, rc1);
-		if (m_nLastDragItemDrawType == 0)
-		{
-			rc1.bottom = rc1.top + 5;
-		}
-		else if (m_nLastDragItemDrawType == 1)
-		{
-			rc1.top -= 4;
-			rc1.bottom = rc1.top + 9;
-		}
-		else if (m_nLastDragItemDrawType == 2)
-		{
-			rc1.top -= 4;
-			rc1.bottom = rc1.top + 5;
-		}
-		InvalidateRect(rc1, TRUE);
-		UpdateWindow();
-	}
-	m_nLastDragItemDraw = iTo;
-
-	if (m_nLastDragItemDraw >= 0)
-	{
-		m_nLastDragItemDrawType = GetDragItemRect(m_nLastDragItemDraw, rc1);
-
-		CPen* op = pDC->SelectObject(&m_penBlack);
-
-		pDC->MoveTo(rc1.left, rc1.top);
-		pDC->LineTo(rc1.right, rc1.top);
-
-		if (m_nLastDragItemDrawType != 2)
-		{
-			pDC->MoveTo(rc1.left, rc1.top + 1);
-			pDC->LineTo(rc1.left + 7, rc1.top + 1);
-			pDC->MoveTo(rc1.left, rc1.top + 2);
-			pDC->LineTo(rc1.left + 5, rc1.top + 2);
-			pDC->MoveTo(rc1.left, rc1.top + 3);
-			pDC->LineTo(rc1.left + 3, rc1.top + 3);
-			pDC->MoveTo(rc1.left, rc1.top + 4);
-			pDC->LineTo(rc1.left + 1, rc1.top + 4);
-
-			pDC->MoveTo(rc1.right-1, rc1.top + 1);
-			pDC->LineTo(rc1.right - 7, rc1.top + 1);
-			pDC->MoveTo(rc1.right-1, rc1.top + 2);
-			pDC->LineTo(rc1.right - 5, rc1.top + 2);
-			pDC->MoveTo(rc1.right-1, rc1.top + 3);
-			pDC->LineTo(rc1.right - 3, rc1.top + 3);
-		}
-		if (m_nLastDragItemDrawType != 0)
-		{
-			pDC->MoveTo(rc1.left, rc1.top-1);
-			pDC->LineTo(rc1.left + 7, rc1.top-1);
-			pDC->MoveTo(rc1.left, rc1.top-2);
-			pDC->LineTo(rc1.left + 5, rc1.top-2);
-			pDC->MoveTo(rc1.left, rc1.top-3);
-			pDC->LineTo(rc1.left + 3, rc1.top-3);
-			pDC->MoveTo(rc1.left, rc1.top-4);
-			pDC->LineTo(rc1.left + 1, rc1.top-4);
-
-			pDC->MoveTo(rc1.right-1, rc1.top-1);
-			pDC->LineTo(rc1.right - 7, rc1.top-1);
-			pDC->MoveTo(rc1.right-1, rc1.top-2);
-			pDC->LineTo(rc1.right - 5, rc1.top-2);
-			pDC->MoveTo(rc1.right-1, rc1.top-3);
-			pDC->LineTo(rc1.right - 3, rc1.top-3);
-			pDC->MoveTo(rc1.right-1, rc1.top-4);
-			pDC->LineTo(rc1.right - 1, rc1.top-4);
-		}
-
-		pDC->SelectObject(op);
-	}
-}
-
-int CXTOutBarCtrl::GetDragItemRect(const int iIndex, CRect& rect)
-{
-	CRect rc, crc;
-	GetInsideRect(crc);
-	crc.InflateRect(-2, 0);
-
-	GetItemRect(m_nSelFolder, iIndex < GetItemCount() ? iIndex : iIndex - 1, rc);
-	int line = 0;
-	if (iIndex < GetItemCount())
-	{
-		line = rc.top - 4;
-	}
-	else
-	{
-		line = rc.bottom + 6;
-	}
-	int tpe;
-	if (iIndex == 0)
-	{
-		rect.SetRect(crc.left, line + 2, crc.right, line + 7);
-		tpe = 0;
-	}
-	else if (iIndex < GetItemCount())
-	{
-		rect.SetRect(crc.left, line - 9, crc.right, line);
-		tpe = 1;
-		if (IsSmallIconView(m_nSelFolder))
-		{
-			rect.top += 8;
-			rect.bottom += 8;
-		}
-	}
-	else
-	{
-		rect.SetRect(crc.left, line, crc.right, line + 5);
-		tpe = 2;
-	}
-	return tpe;
-}
-
-void CXTOutBarCtrl::DrawPreviewBitmap(CWnd* pWnd, CDC* pDC, int nOffset)
-{
-	if (!pWnd || !::IsWindow(pWnd->m_hWnd))
-		return;
-
-	CPoint ovpt = pDC->SetViewportOrg(0, nOffset);
-	BOOL bPrev = pWnd->ShowWindow(SW_SHOW);
-
-	CXTPWindowRect rectWindow(pWnd);
-	CClientDC dc(pWnd);
-	CBitmap bitmapNonClient;
-
-	VERIFY(bitmapNonClient.CreateCompatibleBitmap(&dc, rectWindow.Width(), rectWindow.Height()));
-
-	CXTPCompatibleDC dcMemSourceNonClient(&dc, &bitmapNonClient);
-
-	dcMemSourceNonClient.FillSolidRect(0, 0, rectWindow.Width(), rectWindow.Height(), GetXtremeColor(COLOR_WINDOW));
-	pWnd->Print(&dcMemSourceNonClient, PRF_NONCLIENT);
-
-	pDC->BitBlt(0, 0, rectWindow.Width(), rectWindow.Height(), &dcMemSourceNonClient, 0, 0, SRCCOPY);
-
-	CPoint pLT(0, 0);
-	pWnd->ClientToScreen(&pLT);
-
-	CPoint pt = pDC->GetViewportOrg();
-	pDC->SetViewportOrg(pt.x + pLT.x - rectWindow.left, pt.y + pLT.y - rectWindow.top);
-	pWnd->Print(pDC, PRF_CHILDREN | PRF_CLIENT | PRF_ERASEBKGND);
-
-	if (!bPrev) pWnd->ShowWindow(SW_HIDE);
-	pDC->SetViewportOrg(ovpt);
-
-}
-
-void CXTOutBarCtrl::AnimateFolderScroll(const int iFrom, const int iTo)
-{
-	if (m_arFolder.GetSize() == 0)
-		return;
-
-	ASSERT(iFrom >= 0 && iFrom < GetFolderCount());
-	ASSERT(iTo >= 0 && iTo < GetFolderCount());
-
-	CRect rc, frc;
-	GetInsideRect(rc);
-	GetFolderRect(iTo, frc);
-	int nFolderHeight = frc.Height();
-
-	CClientDC dc(this);
-	CDC memDC;
-	memDC.CreateCompatibleDC(&dc);
-
-	int nTopItem = iTo > iFrom ? iFrom : iTo;
-	int nBottomItem = iTo > iFrom ? iTo : iFrom;
-
-	CBitmap bmpFrom, bmpTo;
-	bmpFrom.CreateCompatibleBitmap(&dc, rc.Width(), rc.Height() + nFolderHeight * (nBottomItem - nTopItem));
-	bmpTo.CreateCompatibleBitmap(&dc, rc.Width(), rc.Height() + nFolderHeight * (nBottomItem - nTopItem));
-
-
-	CBitmap* pOldBitmap = (CBitmap*)memDC.SelectObject(&bmpFrom);
-
-	CRect rcFrom(0, 0, rc.Width(), rc.Height());
-	GetTheme()->FillInsideRect(&memDC, rcFrom);
-
-	CWnd* pWnd1 = GetFolderChild(nTopItem);
-	CWnd* pWnd2 = GetFolderChild(nBottomItem);
-
-	if (pWnd1)
-	{
-		DrawPreviewBitmap(pWnd1, &memDC, 0);
-	}
-	else PaintItems(&memDC, nTopItem, rcFrom);
-
-	memDC.SelectObject(&bmpTo);
-
-	CRect rcTo(rcFrom);
-	for (int i = nTopItem + 1; i <= nBottomItem; i++)
-	{
-		CRect rcFolder(frc.left, rcTo.top, frc.right, rcTo.top + nFolderHeight);
-		DrawFolder(&memDC, i, rcFolder, xtMouseNormal);
-		rcTo.OffsetRect(0, nFolderHeight);
-	}
-
-	GetTheme()->FillInsideRect(&memDC, rcTo);
-
-
-	if (pWnd2)
-	{
-		DrawPreviewBitmap(pWnd2, &memDC, rcTo.top);
-	}
-	else PaintItems(&memDC, nBottomItem, rcTo);
-
-	if (iTo > iFrom)
-	{
-		GetFolderRect(iFrom, rcFrom);
-		GetFolderRect(iTo, rcTo);
-
-		for (int y = rcTo.top - nFolderHeight; y > rcFrom.bottom; y -= nFolderHeight)
-		{
-			memDC.SelectObject(&bmpFrom);
-			dc.BitBlt(rc.left, rcFrom.bottom, rc.Width(), y - rcFrom.bottom, &memDC, 0, 0, SRCCOPY);
-
-			memDC.SelectObject(&bmpTo);
-			dc.BitBlt(rc.left, y, rc.Width(), rc.bottom - y + (iTo - iFrom) * nFolderHeight, &memDC, 0, 0, SRCCOPY);
-			Sleep(m_nAnimationTickCount);
-		}
-	}
-	else
-	{
-		nTopItem = iTo;
-		nBottomItem = iFrom;
-
-		GetFolderRect(nTopItem, rcFrom);
-		GetFolderRect(nBottomItem, rcTo);
-		rcTo.OffsetRect(0, rc.Height());
-
-		for (int y = rcFrom.bottom; y < rcTo.top - nFolderHeight ; y += nFolderHeight)
-		{
-			memDC.SelectObject(&bmpFrom);
-			dc.BitBlt(rc.left, rcFrom.bottom, rc.Width(), y - rcFrom.bottom, &memDC, 0, 0, SRCCOPY);
-
-			memDC.SelectObject(&bmpTo);
-			dc.BitBlt(rc.left, y, rc.Width(), rc.bottom - y , &memDC, 0, 0, SRCCOPY);
-			Sleep(m_nAnimationTickCount);
-		}
-	}
-
-	memDC.SelectObject(pOldBitmap);
-}
-
-CString CXTOutBarCtrl::GetItemText(const int iIndex)
-{
-	CString item = _T("");
-
-	if (m_arFolder.GetSize() != 0)
-	{
-		ASSERT(m_nSelFolder >= 0 && m_nSelFolder < GetFolderCount());
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(m_nSelFolder);
-		if (IsValidItem(iIndex))
-		{
-			CXTOutBarItem* pBarItem = pBarFolder->GetItemAt(iIndex);
-			if (pBarItem->GetName().GetLength())
-				item = pBarItem->GetName();
-		}
-	}
-	return item;
-}
-
-int CXTOutBarCtrl::AddFolderBar(LPCTSTR lpszFolderName, CWnd* pWndChild, const DWORD dwData)
-{
-	CXTOutBarFolder* pBarFolder = new CXTOutBarFolder(lpszFolderName, dwData, this);
-	ASSERT(pBarFolder);
-
-	pBarFolder->SetChild(pWndChild);
-	return  (int)m_arFolder.Add((void*)pBarFolder);
-}
-
-CWnd* CXTOutBarCtrl::GetFolderChild(int iFolder)
-{
-	if (GetFolderCount())
-	{
-		if (iFolder < 0 && m_nSelFolder < 0)
-			return NULL;
-
-		if (iFolder < 0)
-			iFolder = m_nSelFolder;
-
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(iFolder);
-		return pBarFolder->GetChild();
-	}
-	return NULL;
-}
-
-DWORD CXTOutBarCtrl::GetFolderData(int iFolder)
-{
-	if (iFolder < 0) iFolder = m_nSelFolder;
-	CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(iFolder);
-	return pBarFolder->GetData();
-}
-
-void CXTOutBarCtrl::SetAnimSelHighlight(const int iTime)
-{
-	if (iTime <= 0) KillTimer(3);
-	else SetTimer(3, iTime, NULL);
-	m_nSelAnimTiming = iTime;
-}
-
-void CXTOutBarCtrl::OnRButtonUp(UINT nFlags, CPoint point)
-{
-	XT_OUTBAR_INFO obi = { 0 };
-
-	int ht = HitTestEx(point, obi.nIndex);
-	if (ht != hitItem)
-	{
-		obi.bFolder = true;
-
-		if (ht != hitFolder)
-		{
-			obi.nIndex = -1;
-		}
-	}
-
-	// allow users to add their own right click handlers.
-	LRESULT lResult = NotifyOwner(OBN_XT_ITEMRCLICK, &obi);
-
-	if (lResult == TRUE)
-	{
-
-		m_nHitInternal1 = HitTestEx(point, m_nHitInternal2);
-
-		CPoint pt = point;
-		ClientToScreen(&pt);
-
-		CMenu menu;
-		CXTPResourceManager::AssertValid(XTPResourceManager()->LoadMenu(&menu, XTP_IDM_POPUP));
-
-		CMenu* pPopup = menu.GetSubMenu(0);
-		ASSERT(pPopup != NULL);
-		if (!pPopup)
-			return;
-		CWnd* pWndPopupOwner = this;
-
-		CString string;
-		if (m_nHitInternal1 == hitItem)
-		{
-			if ((m_dwFlags & OBS_XT_REMOVEITEMS) || (m_dwFlags & OBS_XT_EDITITEMS))
-			{
-				pPopup->AppendMenu(MF_SEPARATOR);
-				if (m_dwFlags & OBS_XT_REMOVEITEMS)
-				{
-					CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&string, XTP_IDC_REMOVEITEM));
-					pPopup->AppendMenu(MF_STRING, XTP_IDC_REMOVEITEM, string);
-				}
-				if (m_dwFlags & OBS_XT_EDITITEMS)
-				{
-					CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&string, XTP_IDC_RENAMEITEM));
-					pPopup->AppendMenu(MF_STRING, XTP_IDC_RENAMEITEM, string);
-				}
-			}
-		}
-		else if (m_nHitInternal1 == hitFolder)
-		{
-			if ((m_dwFlags & OBS_XT_REMOVEGROUPS) || (m_dwFlags & OBS_XT_EDITGROUPS))
-			{
-				pPopup->AppendMenu(MF_SEPARATOR);
-
-				if (m_dwFlags & OBS_XT_REMOVEGROUPS)
-				{
-					CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&string, XTP_IDC_REMOVEGROUP));
-					pPopup->AppendMenu(MF_STRING, XTP_IDC_REMOVEITEM, string);
-				}
-				if (m_dwFlags & OBS_XT_EDITGROUPS)
-				{
-					CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&string, XTP_IDC_RENAMEGROUP));
-					pPopup->AppendMenu(MF_STRING, XTP_IDC_RENAMEITEM, string);
-				}
-			}
-		}
-
-		pPopup->CheckMenuItem(IsSmallIconView(m_nSelFolder) ?
-			XTP_IDC_SMALLICON : XTP_IDC_LARGEICON, MF_CHECKED | MF_BYCOMMAND);
-
-		XTPContextMenu(pPopup, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, pWndPopupOwner, XTP_IDR_TBAR_OUT);
-	}
-
-	CWnd::OnRButtonUp(nFlags, point);
-}
-
-void CXTOutBarCtrl::OnDestroy()
-{
-	// send notification for each folder / item that is deleted.
-	int iFolder;
-	for (iFolder = 0; iFolder < m_arFolder.GetSize(); iFolder++)
-	{
-		m_nSelFolder = iFolder;
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(iFolder);
-
-		XT_OUTBAR_INFO obif;
-		obif.nIndex = iFolder;
-		obif.nDragFrom = -1;
-		obif.nDragTo = -1;
-		obif.lpszText = pBarFolder->GetName();
-		obif.bFolder = true;
-
-		if (pBarFolder != NULL)
-		{
-			int iCount = (int)pBarFolder->m_barItems.GetCount();
-
-			int iItem;
-			for (iItem = 0; iItem < iCount; iItem++)
-			{
-				CXTOutBarItem* pBarItem = pBarFolder->GetItemAt(iItem);
-
-				XT_OUTBAR_INFO obi;
-				obi.nIndex = iItem;
-				obi.nDragFrom = -1;
-				obi.nDragTo = -1;
-				obi.lpszText = pBarItem->GetName();
-				obi.bFolder = false;
-
-				NotifyOwner(OBN_XT_DELETEITEM, &obi);
-			}
-
-			NotifyOwner(OBN_XT_DELETEFOLDER, &obif);
-		}
-	}
-
-	CWnd::OnDestroy();
-}
-
-void CXTOutBarCtrl::EnableItem(int iFolder, int iItem, bool bEnable)
-{
-	ASSERT(iFolder < m_arFolder.GetSize());
-
-	CXTOutBarItem* pBarItem = GetBarFolderItem(iFolder, iItem);
-	if (pBarItem)
-	{
-		pBarItem->EnableItem(bEnable);
-	}
-}
-
-void CXTOutBarCtrl::SetSelItem(int iFolder, int iItem, BOOL bEnsureVisible/*= TRUE*/)
-{
-	if (iFolder >= 0 && iFolder < GetFolderCount())
-	{
-		// select the specified folder.
-		SetSelFolder(iFolder);
-
-		// get a pointer to the folder object.
-		CXTOutBarFolder* pBarFolder = GetBarFolder(iFolder);
-
-		int iItemCount = pBarFolder->GetItemCount();
-		if (pBarFolder && iItem >= 0 && iItem < iItemCount)
-		{
-			// select the specified item.
-			pBarFolder->SetSelItem(iItem);
-			m_nLastItemSelected = iItem;
-
-			if (bEnsureVisible)
-			{
-				int iFirst, iLast;
-				GetVisibleRange(iFolder, iFirst, iLast);
-				if (iLast != -1 && (iItem < iFirst || iItem > iLast))
-				{
-					m_nFirstItem = iItem-(iLast-iFirst);
-				}
-			}
-		}
-	}
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTOutBarItem
-/////////////////////////////////////////////////////////////////////////////
-
-CXTOutBarItem::CXTOutBarItem(LPCTSTR lpszName, const int nImageIndex, DWORD dwData)
-: m_strName(lpszName)
-, m_nIndex(nImageIndex)
-, m_dwData(dwData)
-, m_bSelected(false)
-, m_bEnabled(true)
-{
-
-}
-
-CXTOutBarItem::~CXTOutBarItem()
-{
-
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTOutBarFolder
-/////////////////////////////////////////////////////////////////////////////
-
-CXTOutBarFolder::CXTOutBarFolder(LPCTSTR lpszName, DWORD dwData, CXTOutBarCtrl* pControl)
-: m_strName(lpszName)
-, m_dwData(dwData)
-, m_pLargeList(NULL)
-, m_pSmallList(NULL)
-, m_pChild(NULL)
-, m_pControl(pControl)
-{
-	m_bSmallIcons = TRUE;
-}
-
-CXTOutBarFolder::~CXTOutBarFolder()
-{
-	while (!m_barItems.IsEmpty())
-	{
-		CXTOutBarItem* pBarItem = m_barItems.RemoveTail();
-		SAFE_DELETE(pBarItem);
-	}
-}
-
-int CXTOutBarFolder::InsertItem(int iIndex, LPCTSTR lpszName, const int nImage, const DWORD dwData)
-{
-	// if the iIndex is out of range, insert the item at the end
-	// of the list.
-	if ((iIndex < 0) || (iIndex > GetItemCount()))
-	{
-		iIndex = GetItemCount();
-	}
-
-	// allocate a new bar item.
-	CXTOutBarItem* pBarItem = new CXTOutBarItem(lpszName, nImage, dwData);
-	ASSERT(pBarItem);
-
-	// insert the new item into the item array.
-	InsertItemAt(iIndex, pBarItem);
-
-	return iIndex;
-}
-
-CXTOutBarItem* CXTOutBarFolder::GetItemAt(int iIndex)
-{
-	POSITION pos = m_barItems.FindIndex(iIndex);
-	return m_barItems.GetAt(pos);
-}
-
-void CXTOutBarFolder::InsertItemAt(int iIndex, CXTOutBarItem* pBarItem)
-{
-	POSITION pos = m_barItems.FindIndex(iIndex);
-	m_barItems.InsertAfter(pos, pBarItem);
-}
-
-CXTOutBarItem* CXTOutBarFolder::RemoveItemAt(int iIndex)
-{
-	POSITION pos = m_barItems.FindIndex(iIndex);
-	if (pos != NULL)
-	{
-		CXTOutBarItem* pBarItem = m_barItems.GetAt(pos);
-		if (pBarItem != NULL)
-		{
-			m_barItems.RemoveAt(pos);
-			return pBarItem;
-		}
-	}
-	return NULL;
-}
-
-void CXTOutBarFolder::SetSelItem(int iItem)
-{
-	POSITION pos;
-	for (pos = m_barItems.GetHeadPosition(); pos; m_barItems.GetNext(pos))
-	{
-		CXTOutBarItem* pBarItem = m_barItems.GetAt(pos);
-		ASSERT(pBarItem != NULL);
-
-		if (pBarItem)
-		{
-			pBarItem->SelectItem(false);
-		}
-	}
-
-	CXTOutBarItem* pBarItem = GetItemAt(iItem);
-	if (pBarItem != NULL)
-	{
-		pBarItem->SelectItem(true);
-	}
-}
-
-
-CXTOutBarItem* CXTOutBarFolder::GetSelItem()
-{
-	POSITION pos;
-	for (pos = m_barItems.GetHeadPosition(); pos; m_barItems.GetNext(pos))
-	{
-		CXTOutBarItem* pBarItem = m_barItems.GetAt(pos);
-		if (pBarItem == NULL)
-		{
-			return NULL;
-		}
-
-		if (pBarItem && pBarItem->IsSelected())
-		{
-			return pBarItem;
-		}
-	}
-	return NULL;
-}
-
-int CXTOutBarFolder::GetSelIndex()
-{
-	int i;
-	for (i = 0; i < m_barItems.GetCount(); ++i)
-	{
-		CXTOutBarItem* pBarItem = GetItemAt(i);
-		if (pBarItem == NULL)
-		{
-			return -1;
-		}
-
-		if (pBarItem && pBarItem->IsSelected())
-		{
-			return i;
-		}
-	}
-	return -1;
-}
-
-void CXTOutBarCtrl::SetBackColor(COLORREF clrBack)
-{
-	GetTheme()->m_clrBack.SetCustomValue(clrBack);
-}
-void CXTOutBarCtrl::SetTextColor(COLORREF clrText)
-{
-	GetTheme()->m_clrText.SetCustomValue(clrText);
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTToolBox
-/////////////////////////////////////////////////////////////////////////////
-
-CXTToolBox::CXTToolBox()
-{
-	m_bAnimating = false;
-	m_iFirst = 0;
-	m_iLast = 0;
-}
-
-CXTToolBox::~CXTToolBox()
-{
-}
-
-IMPLEMENT_DYNCREATE(CXTToolBox, CXTOutBarCtrl)
-
-BEGIN_MESSAGE_MAP(CXTToolBox, CXTOutBarCtrl)
-	//{{AFX_MSG_MAP(CXTToolBox)
-	ON_WM_RBUTTONUP()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTToolBox message handlers
-
-void CXTToolBox::GetItemRect(const int iFolder, const int iIndex, CRect& rect, CRect* pInsideRect /*= NULL*/)
-{
-	GetIconRect(iFolder, iIndex, rect, pInsideRect);
-}
-
-void CXTToolBox::GetIconRect(const int iFolder, const int iIndex, CRect& rcIcon, CRect* pInsideRect /*= NULL*/)
-{
-	CXTOutBarCtrl::GetIconRect(iFolder, iIndex, rcIcon, pInsideRect);
-
-	CRect rcInside;
-	if (pInsideRect)
-		rcInside = *pInsideRect;
-	else
-		GetInsideRect(rcInside);
-
-	rcIcon.left = rcInside.left;
-	rcIcon.right = rcInside.right;
-	rcIcon.InflateRect(-2, 4);
-
-	if ((m_bUpArrow && iIndex == m_iFirst) ||
-		(m_bDownArrow && iIndex == m_iLast) ||
-		(m_bDownArrow && iIndex == m_iLast-1))
-	{
-		rcIcon.right -= XTPAuxData().cxHThumb + 6;
-	}
-}
-
-void CXTToolBox::DrawIcon(CDC* pDC, int iIcon, int iFolder, bool bHilight)
-{
-	CRect rcIcon;
-	GetIconRect(iFolder, iIcon, rcIcon);
-
-	pDC->Draw3dRect(rcIcon, GetTheme()->m_clrBack, GetTheme()->m_clrBack);
-
-	// Should we highlight the icon ?
-	if (bHilight)
-	{
-		if (m_bIconPressed)
-		{
-			pDC->Draw3dRect(rcIcon,
-				GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DHILIGHT));
-		}
-		else
-		{
-			pDC->Draw3dRect(rcIcon,
-				GetXtremeColor(COLOR_3DHILIGHT), GetXtremeColor(COLOR_3DSHADOW));
-		}
-	}
-
-	// Draw the icon using the image list.
-	ASSERT(iFolder >= 0 && iFolder < GetFolderCount());
-	CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(iFolder);
-
-	ASSERT(iIcon >= 0 && iIcon < pBarFolder->GetItemCount());
-	CXTOutBarItem* pBarItem = pBarFolder->GetItemAt(iIcon);
-
-	CImageList* pImageList = GetFolderImageList(iFolder, IsSmallIconView(iFolder));
-	ASSERT(pBarItem && pImageList);
-
-	CRect rc;
-	GetItemRect(iFolder, iIcon, rc);
-
-	CRect rcFolder;
-	GetFolderRect(iFolder, rcFolder);
-	rc.left = rcFolder.left +4;
-	rc.right = rcFolder.right-4;
-
-	if (pImageList && pBarItem)
-	{
-		IMAGEINFO ii;
-		pImageList->GetImageInfo(pBarItem->GetIndex(), &ii);
-		CSize szImage = CRect(ii.rcImage).Size();
 		CPoint pt;
-		pt.x = rc.left + 2;
-		pt.y = rc.top + (rc.Height() - szImage.cy) / 2;
+		GetCursorPos(&pt);
 
-		DrawItemIcon(pDC, pt, pBarItem, pImageList);
-	}
-}
-
-void CXTToolBox::DrawItem(CDC* pDC, const int iFolder, CRect rc, const int iIndex, const BOOL bOnlyImage)
-{
-	if (m_arFolder.GetSize() != 0)
-	{
-		CImageList* pImageList = GetFolderImageList(iFolder, IsSmallIconView(iFolder));
-
-		ASSERT(iFolder >= 0 && iFolder < GetFolderCount());
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(iFolder);
-
-		ASSERT(iIndex >= 0 && iIndex < pBarFolder->GetItemCount());
-		CXTOutBarItem* pBarItem = pBarFolder->GetItemAt(iIndex);
-
-		ASSERT(pBarItem && pImageList);
-		if (!pBarItem)
-			return;
-
-		CFont* oft = (CFont*)pDC->SelectObject(GetFontX());
-		COLORREF ocr = pDC->SetTextColor(GetXtremeColor(COLOR_WINDOW));
-		int obk = pDC->SetBkMode(TRANSPARENT);
-
-		CRect rcFolder;
-		GetFolderRect(iFolder, rcFolder);
-		rc.left = rcFolder.left +4;
-		rc.right = rcFolder.right-4;
-
-		// Exclude the up and down arrows from painting.
-		if (m_bUpArrow)
-			pDC->ExcludeClipRect(&m_rcUpArrow);
-		if (m_bDownArrow)
-			pDC->ExcludeClipRect(&m_rcDownArrow);
-
-		// set the items text color.
-		pDC->SetTextColor(GetTheme()->m_clrText);
-
-		if (pBarItem && pBarItem->IsSelected() && !m_bAnimating && m_nLastItemSelected >= 0)
+		if (!m_rcToolTip.PtInRect(pt) || m_pHotButton)
 		{
-			CRect rcIcon;
-			GetIconRect(m_nSelFolder, m_nLastItemSelected, rcIcon);
-			pDC->FillSolidRect(rcIcon, GetXtremeColor(COLOR_3DLIGHT));
-			pDC->Draw3dRect(rcIcon, GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DHILIGHT));
+			m_strTipText = "";
+			m_wndTip.Activate(FALSE, 0, 0);
 		}
 
-		if (pImageList)
+		switch (message)
 		{
-			IMAGEINFO ii;
-			pImageList->GetImageInfo(pBarItem->GetIndex(), &ii);
-			CSize szImage = CRect(ii.rcImage).Size();
-			CPoint pt;
-			pt.x = rc.left + 2;
-			pt.y = rc.top + (rc.Height() - szImage.cy) / 2;
+			case WM_MOUSEWHEEL:
+				m_strTipText = "";
+				m_wndTip.Activate(FALSE, 0, 0);
+				break;
 
-			DrawItemIcon(pDC, pt, pBarItem, pImageList);
-
-			if (!bOnlyImage)
-			{
-				rc.left += (szImage.cx + m_sizeOffset.cx);
-				DrawItemText(pDC, rc, pBarItem, DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
-			}
+			case WM_KEYDOWN:
+			case WM_SYSKEYDOWN:
+			case WM_LBUTTONDOWN:
+			case WM_RBUTTONDOWN:
+			case WM_MBUTTONDOWN:
+			case WM_LBUTTONUP:
+			case WM_RBUTTONUP:
+			case WM_MBUTTONUP:
+			case WM_MOUSELEAVE:
+				m_wndTip.Activate(FALSE, 0, 0);
+				break;
 		}
-
-		pDC->SetTextColor(ocr);
-		pDC->SelectObject(oft);
-		pDC->SetBkMode(obk);
 	}
+
 }
 
-void CXTToolBox::DrawScrollButton(CDC* pDC, CRect rect, UINT uType, UINT uState)
+
+void CXTPPropertyGridView::OnSetFocus(CWnd* pOldWnd)
 {
-	rect.InflateRect(1, 2, 1, 2);
+	m_pFocusedButton = NULL;
 
-	CRect rcInside;
-	GetInsideRect(rcInside);
-	rcInside.DeflateRect(2, 2);
+	CListBox::OnSetFocus(pOldWnd);
 
-	rect.right = rcInside.right;
-	rect.left = rect.right - rect.Width();
+}
+void CXTPPropertyGridView::OnKillFocus (CWnd* pNewWnd)
+{
+	m_pFocusedButton = NULL;
 
-	rect.DeflateRect(1, 1, 1, 1);
-	CXTOutBarCtrl::DrawScrollButton(pDC, rect, uType, uState);
+	CListBox::OnKillFocus(pNewWnd);
 
-	rect.DeflateRect(1, 1, 1, 1);
-	pDC->Draw3dRect(&rect, GetXtremeColor(COLOR_3DFACE), GetXtremeColor(COLOR_3DFACE));
-
-	rect.InflateRect(1, 1, 1, 1);
-	if ((uState & DFCS_PUSHED) == DFCS_PUSHED)
-	{
-		pDC->Draw3dRect(&rect, GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DHILIGHT));
-	}
-	else
-	{
-		pDC->Draw3dRect(&rect, GetXtremeColor(COLOR_3DHILIGHT), GetXtremeColor(COLOR_3DSHADOW));
-	}
 }
 
-void CXTToolBox::OnDraw(CDC* pDC)
+
+CXTPPropertyGridPaintManager* CXTPPropertyGridView::GetPaintManager() const
 {
-	m_iLast = m_nFirstItem;
+	return m_pGrid->GetPaintManager();
+}
 
-	GetTheme()->m_clrBack.SetStandardValue(GetXtremeColor(COLOR_3DFACE));
-	GetTheme()->m_clrText.SetStandardValue(GetXtremeColor(COLOR_BTNTEXT));
+CXTPImageManager* CXTPPropertyGridView::GetImageManager() const
+{
+	return m_pGrid->GetImageManager();
+}
 
-	// Get the client rect.
-	CXTPClientRect rectClient(this);
+//////////////////////////////////////////////////////////////////////////
+// Accessible
+
+LRESULT CXTPPropertyGridView::OnGetObject(WPARAM wParam, LPARAM lParam)
+{
+	if (lParam != OBJID_CLIENT)
+		return (LRESULT)Default();
+
+	LPUNKNOWN lpUnknown = GetInterface(&IID_IAccessible);
+	if (!lpUnknown)
+		return E_FAIL;
+
+	return LresultFromObject(IID_IAccessible, wParam, lpUnknown);
+}
+
+BEGIN_INTERFACE_MAP(CXTPPropertyGridView, CCmdTarget)
+	INTERFACE_PART(CXTPPropertyGridView, IID_IAccessible, ExternalAccessible)
+END_INTERFACE_MAP()
+
+CCmdTarget* CXTPPropertyGridView::GetAccessible()
+{
+	return this;
+}
+
+HRESULT CXTPPropertyGridView::GetAccessibleParent(IDispatch* FAR* ppdispParent)
+{
+	*ppdispParent = NULL;
+
+	if (GetSafeHwnd())
+	{
+		return AccessibleObjectFromWindow(GetSafeHwnd(), OBJID_WINDOW, IID_IDispatch, (void**)ppdispParent);
+	}
+	return E_FAIL;
+}
+
+HRESULT CXTPPropertyGridView::GetAccessibleChildCount(long FAR* pChildCount)
+{
+	if (pChildCount == 0)
+	{
+		return E_INVALIDARG;
+	}
+
+	*pChildCount = CListBox::GetCount();
+	return S_OK;
+}
+
+HRESULT CXTPPropertyGridView::GetAccessibleChild(VARIANT varChild, IDispatch* FAR* ppdispChild)
+{
+	*ppdispChild = NULL;
+	int nChild = GetChildIndex(&varChild);
+
+	if (nChild <= 0)
+	{
+		return E_INVALIDARG;
+	}
+
+	CXTPPropertyGridItem* pItem = GetItem(nChild - 1);
+	if (!pItem)
+	{
+		return E_INVALIDARG;
+	}
+
+	*ppdispChild = pItem->GetIDispatch(TRUE);
+	return S_OK;
+}
+
+HRESULT CXTPPropertyGridView::GetAccessibleName(VARIANT varChild, BSTR* pszName)
+{
+	int nChild = GetChildIndex(&varChild);
+
+	if (nChild == CHILDID_SELF || nChild == -1)
+	{
+		*pszName = SysAllocString(L"Properties Window");
+		return S_OK;
+	}
+
+	return E_INVALIDARG;
+}
+
+HRESULT CXTPPropertyGridView::GetAccessibleRole(VARIANT varChild, VARIANT* pvarRole)
+{
+	pvarRole->vt = VT_EMPTY;
+	int nChild = GetChildIndex(&varChild);
+
+	if (nChild == CHILDID_SELF)
+	{
+		pvarRole->vt = VT_I4;
+		pvarRole->lVal = ROLE_SYSTEM_TABLE;
+		return S_OK;
+	}
+
+	return E_INVALIDARG;
+}
+
+HRESULT CXTPPropertyGridView::GetAccessibleState(VARIANT varChild, VARIANT* pvarState)
+{
+	pvarState->vt = VT_I4;
+	pvarState->lVal = 0;
+	int nChild = GetChildIndex(&varChild);
+
+	if (nChild == CHILDID_SELF)
+	{
+		pvarState->lVal = STATE_SYSTEM_FOCUSABLE;
+	}
+
+	return S_OK;
+}
+
+
+HRESULT CXTPPropertyGridView::AccessibleLocation(long* pxLeft, long* pyTop, long* pcxWidth, long* pcyHeight, VARIANT varChild)
+{
+	*pxLeft = *pyTop = *pcxWidth = *pcyHeight = 0;
+
+	if (!GetSafeHwnd())
+		return S_OK;
 
 	CRect rc;
-	GetInsideRect(rc);
-	if (!GetFolderChild())
+	GetWindowRect(&rc);
+
+	int nChild = GetChildIndex(&varChild);
+
+	if (nChild != CHILDID_SELF)
 	{
-		pDC->FillSolidRect(rc, GetTheme()->m_clrBack);
+		return E_INVALIDARG;
 	}
 
-	int max = (int)m_arFolder.GetSize();
-	CRect frc;
-	int t;
-	for (t = 0; t < max; t++)
-	{
-		GetFolderRect(t, frc);
-		DrawFolder(pDC, t, frc, xtMouseNormal);
-	}
+	*pxLeft = rc.left;
+	*pyTop = rc.top;
+	*pcxWidth = rc.Width();
+	*pcyHeight = rc.Height();
 
-	if (!GetFolderChild())
-	{
-		GetVisibleRange(m_nSelFolder, m_iFirst, m_iLast);
-		m_rcUpArrow.SetRect(0, 0, GetSystemMetrics(SM_CXVSCROLL), GetSystemMetrics(SM_CXVSCROLL));
-		m_rcDownArrow = m_rcUpArrow;
-		m_rcUpArrow.OffsetRect(rc.right - 5 - GetSystemMetrics(SM_CXVSCROLL), rc.top +5);
-		m_rcDownArrow.OffsetRect(rc.right - 5 - GetSystemMetrics(SM_CXVSCROLL), rc.bottom - 5 - GetSystemMetrics(SM_CXVSCROLL));
-
-		if (m_iFirst > 0 && m_rcUpArrow.IntersectRect(rc, m_rcUpArrow))
-		{
-			if (m_bUpPressed)
-			{
-				DrawScrollButton(pDC, m_rcUpArrow, DFC_SCROLL, DFCS_SCROLLUP | DFCS_PUSHED);
-			}
-			else
-			{
-				DrawScrollButton(pDC, m_rcUpArrow, DFC_SCROLL, DFCS_SCROLLUP);
-			}
-			m_bUpArrow = TRUE;
-			pDC->ExcludeClipRect(m_rcUpArrow);
-		}
-		else
-		{
-			m_bUpArrow = FALSE;
-		}
-
-		if (m_bUpArrow && m_rcUpArrow.bottom >= m_rcDownArrow.top)
-		{
-			m_rcDownArrow.OffsetRect(0, m_rcUpArrow.bottom - m_rcDownArrow.top + 1);
-		}
-
-		if (GetItemCount() > 0 && m_iLast < GetItemCount() - 1 && m_rcDownArrow.IntersectRect(rc, m_rcDownArrow))
-		{
-			if (m_bDownPressed)
-			{
-				DrawScrollButton(pDC, m_rcDownArrow, DFC_SCROLL, DFCS_SCROLLDOWN | DFCS_PUSHED);
-			}
-			else
-			{
-				DrawScrollButton(pDC, m_rcDownArrow, DFC_SCROLL, DFCS_SCROLLDOWN);
-			}
-			m_bDownArrow = TRUE;
-			pDC->ExcludeClipRect(m_rcDownArrow);
-		}
-		else m_bDownArrow = FALSE;
-
-		PaintItems(pDC, m_nSelFolder, rc);
-	}
-
-	//dc.BitBlt(rectClient.left, rectClient.top, rectClient.Width(), rectClient.Height(), pDC, 0, 0, SRCCOPY);
-
-	//pDC->RestoreDC(nSavedDC);
-
-	if (m_nFolderHilighted >= 0)
-	{
-		int i = m_nFolderHilighted;
-		m_nFolderHilighted = -1;
-		HighlightFolder(pDC, i);
-	}
-	if (m_nItemHilighted >= 0)
-	{
-		int i = m_nItemHilighted;
-		m_nItemHilighted = -1;
-		HighlightItem(pDC, i, m_bPressedHighlight);
-	}
+	return S_OK;
 }
 
-void CXTToolBox::DrawFolder(CDC* pDC, const int iIndex, CRect rect, const XTMouseState eHilight)
+HRESULT CXTPPropertyGridView::AccessibleHitTest(long xLeft, long yTop, VARIANT* pvarID)
 {
-	if (m_arFolder.GetSize() != 0)
+	if (pvarID == NULL)
+		return E_INVALIDARG;
+
+	pvarID->vt = VT_EMPTY;
+
+	if (!GetSafeHwnd())
+		return S_FALSE;
+
+	if (!CXTPWindowRect(this).PtInRect(CPoint(xLeft, yTop)))
+		return S_FALSE;
+
+	pvarID->vt = VT_I4;
+	pvarID->lVal = CHILDID_SELF;
+
+	CPoint pt(xLeft, yTop);
+	ScreenToClient(&pt);
+
+	CXTPPropertyGridItem* pItem = ItemFromPoint(pt);
+
+	if (pItem)
 	{
-		pDC->FillSolidRect(rect, GetTheme()->m_clrBack);
-
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(iIndex);
-
-		int nSavedDC = pDC->SaveDC();
-
-		CPen pen(PS_SOLID, 1, GetXtremeColor(COLOR_3DSHADOW));
-
-		CRect rcInside;
-		GetInsideRect(rcInside);
-
-		CRect rcFolder(rect);
-		rcFolder.left = rcInside.left + 2;
-		rcFolder.right = rcInside.right - 2;
-		rcFolder.DeflateRect(0, 1);
-
-		switch (eHilight)
-		{
-		case xtMouseNormal:
-		case xtMouseHover:
-			{
-				pDC->FillSolidRect(rcFolder, GetXtremeColor(COLOR_3DFACE));
-				pDC->Draw3dRect(rcFolder, GetXtremeColor(COLOR_3DHILIGHT), GetXtremeColor(COLOR_3DSHADOW));
-				pDC->SetBkMode(TRANSPARENT);
-				pDC->SelectObject(GetFontX());
-
-				rcFolder.DeflateRect(4, 0);
-				pDC->DrawText(pBarFolder->GetName(), rcFolder,
-					DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
-			}
-			break;
-
-		case xtMouseSelect:
-			{
-				pDC->FillSolidRect(rcFolder, GetXtremeColor(COLOR_3DFACE));
-				pDC->Draw3dRect(rcFolder, GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DHILIGHT));
-				pDC->SetBkMode(TRANSPARENT);
-				pDC->SelectObject(GetFontX());
-
-				rcFolder.DeflateRect(4, 0);
-				pDC->DrawText(pBarFolder->GetName(), rcFolder,
-					DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
-			}
-			break;
-		}
-
-		pDC->RestoreDC(nSavedDC);
-		pen.DeleteObject();
-	}
-}
-
-void CXTToolBox::SetSelFolder(const int iIndex)
-{
-	if (m_arFolder.GetSize() != 0)
-	{
-		ASSERT(iIndex >= 0 && iIndex < GetFolderCount());
-
-		CXTOutBarFolder* pBarFolder = (CXTOutBarFolder*)m_arFolder.GetAt(iIndex);
-
-		XT_OUTBAR_INFO obi;
-		obi.nIndex = iIndex;
-		obi.nDragFrom = -1;
-		obi.nDragTo = -1;
-		obi.lpszText = (LPCTSTR)pBarFolder->GetName();
-		obi.bFolder = true;
-
-		LRESULT lResult = NotifyOwner(OBN_XT_FOLDERCHANGE, &obi);
-
-		if (lResult == TRUE)
-		{
-			CWnd* pWnd = GetFolderChild();
-			if (pWnd)
-			{
-				pWnd->ShowWindow(SW_HIDE);
-			}
-
-			if (iIndex != m_nSelFolder && m_nSelFolder >= 0)
-			{
-				if ((m_dwFlags & OBS_XT_ANIMATION) && (m_nAnimationTickCount >= 0))
-				{
-					m_bAnimating = true;
-					AnimateFolderScroll(m_nSelFolder, iIndex);
-					m_bAnimating = false;
-				}
-			}
-
-			m_nSelFolder = iIndex;
-			m_nFirstItem = 0;
-			m_nLastItemSelected = pBarFolder->GetSelIndex();
-
-			if (m_nLastItemSelected != -1)
-			{
-				pBarFolder->SetSelItem(m_nLastItemSelected);
-			}
-
-			pWnd = GetFolderChild();
-			if (pWnd)
-			{
-				CRect rc;
-				GetInsideRect(rc);
-				pWnd->MoveWindow(rc);
-				pWnd->ShowWindow(SW_SHOW);
-			}
-
-			InvalidateRect(NULL);
-		}
-	}
-}
-
-BOOL CXTToolBox::CreateEx(DWORD dwExStyle, DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, const DWORD dwFlags)
-{
-	if (!CXTOutBarCtrl::CreateEx(dwExStyle, dwStyle, rect, pParentWnd, nID,
-		dwFlags | OBS_XT_SELHIGHLIGHT | OBS_XT_ANIMATION))
-	{
-		return FALSE;
+		pvarID->vt = VT_DISPATCH;
+		pvarID->pdispVal = pItem->GetIDispatch(TRUE);
 	}
 
-	SetSmallIconView(TRUE);
-
-	return TRUE;
-}
-
-void CXTToolBox::OnRButtonUp(UINT nFlags, CPoint point)
-{
-	// bypass base class.
-	CWnd::OnRButtonUp(nFlags, point);
+	return S_OK;
 }

@@ -1,17 +1,15 @@
-// from server: 73% by atomic.potato
-extern "C" void __cdecl sub_859AB0(void *);
-extern "C" void __cdecl sub_983144(void *, const void *);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_205f2b05043a4e2a.cpp
 
-struct S
-{
-    void f();
-};
-
-int g_00D21DE0;
-
-void S::f()
-{
-    char buffer[40];
-    sub_859AB0(buffer);
-    sub_983144(buffer, &g_00D21DE0);
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_null_device<char,boost::iostreams::output>,std::char_traits<char>,std::allocator<char>,boost::iostreams::output>;

@@ -1,187 +1,88 @@
-// from server: 46% by colin
-// roc-lang: cpp
+// roc 2009-06 00632b60  unit: std::strstream  size: 178 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 00632b60
+//
+// 00632b60  6aff                 push -1
+// 00632b62  68d9b88500           push 0x85b8d9
+// 00632b67  64a100000000         mov eax, dword ptr fs:[0]
+// 00632b6d  50                   push eax
+// 00632b6e  64892500000000       mov dword ptr fs:[0], esp
+// 00632b75  83ec1c               sub esp, 0x1c
+// 00632b78  56                   push esi
+// 00632b79  8b742430             mov esi, dword ptr [esp + 0x30]
+// 00632b7d  56                   push esi
+// 00632b7e  e86dffffff           call 0x632af0
+// 00632b83  56                   push esi
+// 00632b84  8d44240c             lea eax, [esp + 0xc]
+// 00632b88  68b4b28d00           push 0x8db2b4
+// 00632b8d  50                   push eax
+// 00632b8e  ff1510e58900         call dword ptr [0x89e510]
+// 00632b94  83c410               add esp, 0x10
+// 00632b97  50                   push eax
+// 00632b98  8bce                 mov ecx, esi
+// 00632b9a  c744242c00000000     mov dword ptr [esp + 0x2c], 0
+// 00632ba2  ff1564e48900         call dword ptr [0x89e464]
+// 00632ba8  8d4c2404             lea ecx, [esp + 4]
+// 00632bac  c7442428ffffffff     mov dword ptr [esp + 0x28], 0xffffffff
+// 00632bb4  ff15c4e48900         call dword ptr [0x89e4c4]
+// 00632bba  6a01                 push 1
+// 00632bbc  6a28                 push 0x28
+// 00632bbe  8bce                 mov ecx, esi
+// 00632bc0  ff1554e48900         call dword ptr [0x89e454]
+// 00632bc6  6a01                 push 1
+// 00632bc8  6a1b                 push 0x1b
+// 00632bca  8bce                 mov ecx, esi
+// 00632bcc  ff1554e48900         call dword ptr [0x89e454]
+// 00632bd2  6a01                 push 1
+// 00632bd4  6a16                 push 0x16
+// 00632bd6  8bce                 mov ecx, esi
+// 00632bd8  ff1554e48900         call dword ptr [0x89e454]
+// 00632bde  6a01                 push 1
+// 00632be0  6a11                 push 0x11
+// 00632be2  8bce                 mov ecx, esi
+// 00632be4  ff1554e48900         call dword ptr [0x89e454]
+// 00632bea  6a01                 push 1
+// 00632bec  6a0c                 push 0xc
+// 00632bee  8bce                 mov ecx, esi
+// 00632bf0  ff1554e48900         call dword ptr [0x89e454]
+// 00632bf6  6a01                 push 1
+// 00632bf8  6a03                 push 3
+// 00632bfa  8bce                 mov ecx, esi
+// 00632bfc  ff1554e48900         call dword ptr [0x89e454]
+// 00632c02  8b4c2420             mov ecx, dword ptr [esp + 0x20]
+// 00632c06  5e                   pop esi
+// 00632c07  64890d00000000       mov dword ptr fs:[0], ecx
+// 00632c0e  83c428               add esp, 0x28
+// 00632c11  c3                   ret 
+// copied from an identical function in another client (function ?sub_5a8140@@YAXPAUString@@@Z)
+
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/util/Guid.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+struct String {
+    char storage[28];
+    ~String();
+};
 
-// Candidate translation unit (score above; library headers required).
-#include "util/Guid.h"
+extern void __cdecl sub_5a80d0(String*);
+extern const char prefix[];
 
-#include "decomp.h"
-#include "util/Name.h"
+extern String (__cdecl *addPrefix)(const char*, const String&);
+extern String& (__thiscall *assignString)(String*, const String&);
+extern String& (__thiscall *eraseString)(String*, unsigned int, unsigned int);
+extern void (__thiscall *destroyString)(String*);
 
-#define NOMINMAX
-
-#include <algorithm>
-#include <boost/thread/once.hpp>
-#include <objbase.h>
-#include <stdio.h>
-#include <windows.h>
-
-namespace RBX {
-
-static const Name* localScope;
-static long nextIndex;
-
-// FUNCTION: WEBSERVICE 0x1003d410
-void Guid::generateGUID(std::string& result)
+inline String::~String()
 {
-	GUID guid;
-
-	result = "RBX";
-
-	CoCreateGuid(&guid);
-
-	WCHAR wszGUID[64] = L"";
-	char ansiClsid[64];
-
-	StringFromGUID2(guid, wszGUID, 64);
-	WideCharToMultiByte(CP_ACP, 0, wszGUID, 64, ansiClsid, 64, NULL, NULL);
-
-	result += ansiClsid;
-
-	result.erase(0x28, 1);
-	result.erase(0x1b, 1);
-	result.erase(0x16, 1);
-	result.erase(0x11, 1);
-	result.erase(0x0c, 1);
-	result.erase(0x03, 1);
+    destroyString(this);
 }
 
-// FUNCTION: WEBSERVICE 0x1003d4e0
-void Guid::assign(Data data)
+void __cdecl sub_5a8140(String* value)
 {
-	this->data = data;
+    sub_5a80d0(value);
+    assignString(value, addPrefix(prefix, *value));
+    eraseString(value, 40, 1);
+    eraseString(value, 27, 1);
+    eraseString(value, 22, 1);
+    eraseString(value, 17, 1);
+    eraseString(value, 12, 1);
+    eraseString(value, 3, 1);
 }
-
-// FUNCTION: WEBSERVICE 0x1003d4f0
-bool Guid::Data::operator<(const Data& other) const
-{
-	const Name* otherScope = other.scope;
-	const Name* thisScope = scope;
-	int order = 0;
-
-	if (thisScope != otherScope) {
-		order = thisScope->name.compare(otherScope->name);
-
-		if (order != -1 && order != 0) {
-			return false;
-		}
-	}
-
-	if (order == 0) {
-		return index < other.index;
-	}
-
-	return true;
-}
-
-// FUNCTION: WEBSERVICE 0x1003d540
-int Guid::compare(const Guid* a, const Guid* b)
-{
-	const Name* scopeA = a != NULL ? a->data.scope : NULL;
-	const Name* scopeB = b != NULL ? b->data.scope : NULL;
-	int order;
-
-	if (scopeA == NULL) {
-		order = scopeB != NULL ? -1 : 0;
-	}
-	else if (scopeB == NULL) {
-		order = 1;
-	}
-	else if (scopeA == scopeB) {
-		order = 0;
-	}
-	else {
-		order = scopeA->name.compare(scopeB->name);
-	}
-
-	if (order != -1) {
-		if (order != 0 && order != 1) {
-			return 0;
-		}
-
-		if (order == 0) {
-			int indexA = a != NULL ? a->data.index : 0;
-			int indexB = b != NULL ? b->data.index : 0;
-
-			if (indexA > indexB) {
-				return 1;
-			}
-
-			return indexA >= indexB ? 0 : -1;
-		}
-
-		return 1;
-	}
-
-	return -1;
-}
-
-// FUNCTION: WEBSERVICE 0x1003d5d0
-int Guid::compare(const Guid* a0, const Guid* a1, const Guid* b0, const Guid* b1)
-{
-	int a = compare(a0, a1);
-	int b = compare(b0, b1);
-	const Guid* worseA = a == 1 ? a0 : a1;
-	int order = compare(worseA, b == 1 ? b0 : b1);
-
-	if (order != -1) {
-		if (order != 0) {
-			return order == 1;
-		}
-
-		const Guid* betterA = a == 1 ? a1 : a0;
-
-		return compare(betterA, b == 1 ? b1 : b0);
-	}
-
-	return -1;
-}
-
-// FUNCTION: WEBSERVICE 0x1003d660
-static void initLocalScope()
-{
-	std::string guid;
-
-	Guid::generateGUID(guid);
-	localScope = &Name::declare(guid.c_str(), -1);
-}
-
-// FUNCTION: WEBSERVICE 0x1003d6e0
-const Name& Guid::getLocalScope()
-{
-	static boost::once_flag flag = BOOST_ONCE_INIT;
-
-	boost::call_once(initLocalScope, flag);
-
-	return *localScope;
-}
-
-// FUNCTION: WEBSERVICE 0x1003d700
-Guid::Guid()
-{
-	data.scope = &getLocalScope();
-	data.index = InterlockedIncrement(&nextIndex);
-}
-
-// FUNCTION: WEBSERVICE 0x1003d730
-std::string Guid::Data::readableString(int scopeLength) const
-{
-	char buffer[64];
-
-	if (scopeLength > 0) {
-		std::string s = scope->name;
-
-		s = s.substr(std::min<size_t>(3, s.size()), std::min(scopeLength, 32));
-
-		sprintf(buffer, "%s_%d", s.c_str(), index);
-	}
-	else {
-		sprintf(buffer, "%d", index);
-	}
-
-	return std::string(buffer);
-}
-
-} // namespace RBX

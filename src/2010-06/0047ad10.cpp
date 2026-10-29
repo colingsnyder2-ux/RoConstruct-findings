@@ -12,8 +12,9 @@
 // 0047ad28  894808               mov dword ptr [eax + 8], ecx
 // 0047ad2b  89480c               mov dword ptr [eax + 0xc], ecx
 // 0047ad2e  c3                   ret 
-// copied from an identical function in another client (function ?init@DxUserInput@ns_ROCX000003@@QAEPAU12@XZ)
+// copied from an identical function in another client (function ?init@DxUserInput@ns_ROCX000003@ns_ROCX000000@@QAEPAU123@XZ)
 
+namespace ns_ROCX000000 {
 namespace ns_ROCX000003 {
 struct DxUserInput {
     unsigned short w0;
@@ -34,5 +35,6 @@ DxUserInput* DxUserInput::init()
     d8 = 0;
     dC = 0;
     return this;
+}
 }
 }

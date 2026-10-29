@@ -1,8 +1,8 @@
-// from server: 28% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2-vc8 Source/Common/XTPOffice2007Image.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\Common\XTPOffice2007Image.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPOffice2007Image.cpp: implementation of the CXTPOffice2007Image class.

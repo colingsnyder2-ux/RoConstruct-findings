@@ -1,4 +1,3 @@
-// from server: 59% by atomic.potato
 // roc 2010-06 004d16a0  unit: RBX::NetworkSettings::W4PhysicsReceiveMethod::?$EnumDesc  size: 88 bytes
 // Make this compile to the exact bytes below, then: roc check 2010-06 004d16a0
 //
@@ -32,40 +31,28 @@
 // 004d16f3  5f                   pop edi
 // 004d16f4  5e                   pop esi
 // 004d16f5  c20400               ret 4
+// copied from an identical function in another client (function ?f@S@@QAEPAUItem@@ABUKey@@@Z)
 
-extern "C" void __stdcall invalid_parameter_noinfo();
+#include <vector>
 
-struct Inner_004d16a0 {
-    int value;
+struct Key;
+struct Item;
+
+int *lookupIndex(const Key &key);
+
+struct S
+{
+    char pad[0xa4];
+    std::vector<Item *> items;
+    Item *f(const Key &key);
 };
 
-struct Outer_004d16a0 {
-    char pad_0000[0xb0];
-    Inner_004d16a0* begin;
-    Inner_004d16a0* end;
-};
-
-extern "C" Inner_004d16a0* __stdcall get_004d1100(int);
-
-struct S_004d16a0 {
-    char pad_0000[0xb0];
-    Inner_004d16a0* begin;
-    Inner_004d16a0* end;
-    Inner_004d16a0* at(int index);
-};
-
-Inner_004d16a0* S_004d16a0::at(int index) {
-    Inner_004d16a0* result = get_004d1100(index);
-    int i = result->value;
-    if (i < 0) {
+Item *S::f(const Key &key)
+{
+    int index = *lookupIndex(key);
+    if (index < 0)
         return 0;
-    }
-    unsigned int count = (unsigned int)((end - begin) >> 2);
-    if ((unsigned int)i >= count) {
+    if ((size_t)index >= items.size())
         return 0;
-    }
-    if ((unsigned int)i >= (unsigned int)((end - begin) >> 2)) {
-        invalid_parameter_noinfo();
-    }
-    return &begin[i];
+    return items[index];
 }

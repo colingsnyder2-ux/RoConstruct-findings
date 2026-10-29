@@ -1,4 +1,3 @@
-// from server: 82% by why2
 // roc 2009-06 00407240  unit: VCApp::?$CComContainedObject  size: 17 bytes
 // Make this compile to the exact bytes below, then: roc check 2009-06 00407240
 //
@@ -8,24 +7,29 @@
 // 00407249  89442404             mov dword ptr [esp + 4], eax
 // 0040724d  8b01                 mov eax, dword ptr [ecx]
 // 0040724f  ffe0                 jmp eax
+// copied from an identical function in another client (function ?QueryInterface@CAppContained@@UAGJABUGUID@@PAPAX@Z)
 
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+struct GUID { unsigned long Data1; unsigned short Data2, Data3; unsigned char Data4[8]; };
 
-struct Inner {
-    virtual int f();
+struct IUnknown {
+    virtual long __stdcall QueryInterface(const GUID& iid, void** ppvObject) = 0;
+    virtual unsigned long __stdcall AddRef() = 0;
+    virtual unsigned long __stdcall Release() = 0;
 };
 
-struct Outer {
-    char pad[0x18];
-    Inner* inner;
+class CAppContained : public IUnknown {
+public:
+    char pad[0x14];
+    IUnknown* m_pOuterUnknown;
+
+    long __stdcall QueryInterface(const GUID& iid, void** ppvObject);
+    unsigned long __stdcall AddRef();
+    unsigned long __stdcall Release();
 };
 
-int __stdcall helper(Outer* p)
+long __stdcall CAppContained::QueryInterface(const GUID& iid, void** ppvObject)
 {
-    Inner* i = p->inner;
-    void** vtbl = *(void***)i;
-    int (__stdcall *fn)(Inner*) = (int (__stdcall *)(Inner*))vtbl[0];
-    return fn(i);
+    return m_pOuterUnknown->QueryInterface(iid, ppvObject);
 }

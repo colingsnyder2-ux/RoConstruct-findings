@@ -1,332 +1,286 @@
-// from server: 22% by colin
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 G3Dcpp/debugAssert.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_color_kernel_native_family_d08788802cbb1f87.cpp
 
 // Candidate translation unit (score above; library headers required).
-/**
- @file debugAssert.cpp
+#undef _RELEASEASSERT
+#include "v8tree/Property.cpp"
+bool (*roc_color_parser)(const std::string&, G3D::Color3&) = &RBX::StringConverter<G3D::Color3>::convertToValue;
+bool (*roc_vector_parser)(const std::string&, G3D::Vector3&) = &RBX::StringConverter<G3D::Vector3>::convertToValue;
 
- Windows implementation of assertion routines.
+#undef _RELEASEASSERT
+#include <v8world/Contact.h>
+#include <util/Math.h>
+namespace RBX {
+	Block* BlockBlockContact::block(int i)
+	{
+		return rbx_static_cast<Block*>(this->getPrimitive(i)->getGeometry());
+	}
 
- @maintainer Morgan McGuire, graphics3d.com
- 
- @created 2001-08-26
- @edited  2006-02-02
- */
+	int BlockBlockContact::intersectRectQuad(G3D::Vector2& planeRect, G3D::Vector2 (&otherQuad)[4])
+	{
+		bool quadCrossRect[4][4];
 
-#include "G3D/debugAssert.h"
-#include "G3D/platform.h"
-#ifdef G3D_WIN32
-    #include <tchar.h>
-#endif
-#include "G3D/format.h"
-#include "G3D/prompt.h"
-#include <string>
-#include "G3D/debugPrintf.h"
-#include "G3D/Log.h"
+		bool quadIn[4] = {true, true, true, true};
 
-#ifdef G3D_WIN32
-    // disable: "C++ exception handler used"
-#   pragma warning (push)
-#   pragma warning (disable : 4530)
-#endif
+		int foundCounter = 0;
 
-using namespace std;
+		for (int i = 3; i >= 0; i--)
+		{
+			if (otherQuad[i].y <= planeRect.y)
+			{
+				quadCrossRect[0][i] = true;
+			}
+			else
+			{
+				quadCrossRect[0][i] = false;
+				quadIn[i] = false;
+			}
 
-namespace G3D { namespace _internal {
+			if (otherQuad[i].x >= -planeRect.x)
+			{
+				quadCrossRect[1][i] = true;
+			}
+			else
+			{
+				quadCrossRect[1][i] = false;
+				quadIn[i] = false;
+			}
 
-AssertionHook _debugHook = _handleDebugAssert_;
-AssertionHook _failureHook = _handleErrorCheck_;
+			if (otherQuad[i].y >= -planeRect.y)
+			{
+				quadCrossRect[2][i] = true;
+			}
+			else
+			{
+				quadCrossRect[2][i] = false;
+				quadIn[i] = false;
+			}
 
-#ifdef G3D_LINUX
-    Display*      x11Display = NULL;
-    Window        x11Window  = 0;
-#endif
-
-
-#ifdef G3D_WIN32
-static void postToClipboard(const char *text) {
-    if (OpenClipboard(NULL)) {
-        HGLOBAL hMem = GlobalAlloc(GHND | GMEM_DDESHARE, strlen(text) + 1);
-        if (hMem) {
-            char *pMem = (char*)GlobalLock(hMem);
-            strcpy(pMem, text);
-            GlobalUnlock(hMem);
-
-            EmptyClipboard();
-            SetClipboardData(CF_TEXT, hMem);
-        }
-
-        CloseClipboard();
-        GlobalFree(hMem);
-    }
-}
-#endif
-
-/**
- outTitle should be set before the call
- */
-static void createErrorMessage(
-    const char*         expression,
-    const std::string&  message,
-    const char*         filename,
-    int                 lineNumber,
-    std::string&        outTitle,
-    std::string&        outMessage) {
-
-    std::string le = "";
-    char* newline = "\n";
-
-    #ifdef G3D_WIN32
-        newline = "\r\n";
-
-        // The last error value.  (Which is preserved across the call).
-        DWORD lastErr = GetLastError();
-    
-        // The decoded message from FormatMessage
-        LPTSTR formatMsg = NULL;
-
-        if (NULL == formatMsg) {
-            FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                          FORMAT_MESSAGE_IGNORE_INSERTS |
-                          FORMAT_MESSAGE_FROM_SYSTEM,
-                            NULL,
-                            lastErr,
-                            0,
-                            (LPTSTR)&formatMsg,
-                            0,
-                            NULL);
-        }
-
-        // Make sure the message got translated into something.
-        LPTSTR realLastErr;
-        if (NULL != formatMsg) {
-            realLastErr = formatMsg;
-        } else {
-            realLastErr = _T("Last error code does not exist.");
-        }
-
-		if (lastErr != 0) {
-	        le = G3D::format("Last Error (0x%08X): %s\r\n\r\n", lastErr, (LPCSTR)realLastErr);
+			if (otherQuad[i].x <= planeRect.x)
+			{
+				quadCrossRect[3][i] = true;
+			}
+			else
+			{
+				quadCrossRect[3][i] = false;
+				quadIn[i] = false;
+			}
 		}
 
-        // Get rid of the allocated memory from FormatMessage.
-        if (NULL != formatMsg) {
-            LocalFree((LPVOID)formatMsg);
-        }
+		for (int i = 3; i >= 0; i--)
+		{
+			if (quadIn[i])
+			{
+				loadGeoPairPointPlane((*(int*)((char*)this+0x70)), (*(int*)((char*)this+0x6c)), i, (*(NormalId*)((char*)this+0x78)), (*(NormalId*)((char*)this+0x74)));
+				foundCounter++;
+			}
+		}
 
-        char modulePath[MAX_PATH];
-        GetModuleFileName(NULL, modulePath, MAX_PATH);
+		if (foundCounter == 4)
+			return foundCounter;
+		else
+		{
+			bool rectCrossQuad[4][4];
+			G3D::Vector2 rect[4];
+			rect[0] = G3D::Vector2(planeRect.x, planeRect.y);
+			rect[1] = G3D::Vector2(-planeRect.x, planeRect.y);
+			rect[2] = G3D::Vector2(-planeRect.x, -planeRect.y);
+			rect[3] = G3D::Vector2(planeRect.x, -planeRect.y);
 
-        const char* moduleName = strrchr(modulePath, '\\');
-        outTitle = outTitle + string(" - ") + string(moduleName ? (moduleName + 1) : modulePath);
+			bool rectIn[4] = {true, true, true, true};
 
-    #endif
+			for (int i = 3; i >= 0; i--)
+			{
+				G3D::Vector2& current = otherQuad[i];
+				G3D::Vector2& currentO = otherQuad[(i + 3) % 4];
+				for (int j = 0; j < 4; j++)
+				{
+					G3D::Vector2 math1 = rect[j] - current;
+					G3D::Vector2 math2 = currentO - current;
 
-    // Build the message.
-    outMessage =
-        G3D::format("%s%s%sExpression: %s%s%s:%d%s%s%s", 
-                 message.c_str(), newline, newline, expression, newline, 
-                 filename, lineNumber, newline, newline, le.c_str());
+					if ((math2.x * math1.y) - (math2.y * math1.x) >= 0.0f)
+					{
+						rectCrossQuad[i][j] = true;
+					}
+					else
+					{
+						rectCrossQuad[i][j] = false;
+						rectIn[j] = false;
+					}
+				}
+			}
+
+			int wasZero = foundCounter == 0;
+
+			for (int i = 0; i < 4; i++)
+			{
+				if (rectIn[i])
+				{
+					loadGeoPairPointPlane((*(int*)((char*)this+0x6c)), (*(int*)((char*)this+0x70)), i, (*(NormalId*)((char*)this+0x74)), (*(NormalId*)((char*)this+0x78)));
+					foundCounter++;
+				}
+			}
+
+			if (wasZero && foundCounter == 4)
+				return foundCounter;
+			else
+			{
+				for (int i = 0; i < 4; i++)
+				{
+					for (int j = 3; j >= 0; j--)
+					{
+						if (quadCrossRect[i][j] != quadCrossRect[i][(j + 3) % 4] && rectCrossQuad[j][i] != rectCrossQuad[j][(i + 1) % 4])
+						{
+
+							loadGeoPairEdgeEdgePlane((*(int*)((char*)this+0x70)), (*(int*)((char*)this+0x6c)), block((*(int*)((char*)this+0x70)))->faceVertexToEdge((*(NormalId*)((char*)this+0x78)), (j+3)%4), block((*(int*)((char*)this+0x6c)))->faceVertexToEdge((*(NormalId*)((char*)this+0x74)), i));
+							foundCounter++;
+						}
+					}
+				}
+				RBXASSERT(foundCounter != 1 && foundCounter <= 8);
+				return foundCounter;
+			}
+		}
+	}
+
+
 }
 
+#include <script/ScriptContext.h>
+#include <util/standardout.h>
+#include <lua/lua.hpp>
+#include <lauxlib.h>
+#include <cstring>
+namespace RBX { namespace Lua { const char* safe_lua_tostring(lua_State*, int); } }
+using namespace RBX;
+void ScriptContext::executeInNewThread(Security::Identities identity, const char* script, const char* name, PushArgumentsClosure pushArguments, ReadResultsClosure readResults)
+{
+    openState();
 
-bool _handleDebugAssert_(
-    const char*         expression,
-    const std::string&  message,
-    const char*         filename,
-    int                 lineNumber,
-    bool&               ignoreAlways,
-    bool                useGuiPrompt) {
+    lua_State* L;
+    lua_State* newThread;
 
-    std::string dialogTitle = "Assertion Failure";
-    std::string dialogText = "";
+    if (identity == Security::CmdLine)
+    {
+        if ((*(Lua::ThreadRef*)((char*)this+0x13c)).empty())
+        {
+            {
+                Lua::ThreadRef threadRef(lua_newthread((*(lua_State**)((char*)this+0x138))));
+                (*(Lua::ThreadRef*)((char*)this+0x13c)) = threadRef;
+            }
 
-    createErrorMessage(expression, message, filename, lineNumber, dialogTitle, dialogText);
+            if ((*(Lua::ThreadRef*)((char*)this+0x13c)).empty())
+                throw std::runtime_error("Unable to create trusted sandbox thread");
 
-    #ifdef G3D_WIN32
-        DWORD lastErr = GetLastError();
-        postToClipboard(dialogText.c_str());
-    #endif
+            sandboxThread((*(Lua::ThreadRef*)((char*)this+0x13c)).thread());
+            setThreadIdentity((*(Lua::ThreadRef*)((char*)this+0x13c)).thread(), Security::CmdLine);
+            lua_pop((*(lua_State**)((char*)this+0x138)), 1);
+        }
 
-    const int cBreak = 0;
-    const int cIgnore = 1;
-    const int cIgnoreAlways = 2;
-    const int cAbort = 3;
-
-    static char* choices[] = {"Debug", "Ignore", "Ignore Always", "Exit"};
-
-    // Log the error
-    Log::common()->print(std::string("\n**************************\n\n") + dialogTitle + "\n" + dialogText);
-
-    int result = G3D::prompt(dialogTitle.c_str(), dialogText.c_str(), (const char**)choices, 4, useGuiPrompt);
-
-    #ifdef G3D_WIN32
-        // Put the incoming last error back.
-        SetLastError(lastErr);
-    #endif
-
-    switch (result) {
-    // -1 shouldn't actually occur because it means 
-    // that we're in release mode.
-    case -1:
-    case cBreak:
-        return true;
-        break;
-
-    case cIgnore:
-        return false;
-        break;
-   
-    case cIgnoreAlways:
-        ignoreAlways = true;
-        return false;
-        break;
-
-    case cAbort:
-        exit(-1);
-        break;
-
-    default:
-        // Shouldn't get here
-        return false;
-        break;
+        L = (*(Lua::ThreadRef*)((char*)this+0x13c)).thread();
+        newThread = lua_newthread(L);
+    }
+    else
+    {
+        L = (*(lua_State**)((char*)this+0x138));
+        newThread = lua_newthread(L);
+        sandboxThread(newThread);
+        setThreadIdentity(newThread, identity);
     }
 
+    if (!newThread)
+    {
+        StandardOut::singleton()->print(MESSAGE_ERROR, "ScriptContext::execute: Unable to create a new thread");
+        throw std::runtime_error("Unable to create a new thread");
+    }
+
+    Lua::ScopedPopper popper(L, 1);
+
+    std::string sName("=");
+
+    if (name)
+        sName += name;
+    else
+        sName += "Script";
+
+    if (luaL_loadbuffer(newThread, script, strlen(script), sName.c_str()))
+    {
+        std::string err = Lua::safe_lua_tostring(newThread, -1);
+        lua_pop(newThread, 1);
+
+        StandardOut::singleton()->print(MESSAGE_ERROR, err.c_str());
+        throw std::runtime_error(err);
+    }
+
+    resume(newThread, pushArguments, readResults);
 }
 
 
-bool _handleErrorCheck_(
-    const char*         expression,
-    const std::string&  message,
-    const char*         filename,
-    int                 lineNumber,
-    bool&               ignoreAlways,
-    bool                useGuiPrompt) {
+#undef _RELEASEASSERT
+#include <v8world/RotateJoint.h>
+#include <v8world/Primitive.h>
+#include <v8world/World.h>
+#include <v8kernel/Body.h>
+#include <util/Math.h>
+namespace RBX {
+class RotatePrimitiveApi {
+public:
+    Body* getBody() { return *(Body**)((char*)this+0xa0); }
+};
+class RotateBodyApi {
+private:
+    void updatePV() const;
+public:
+    const G3D::CoordinateFrame& getCoordinateFrame() const {
+        updatePV();
+        return *(const G3D::CoordinateFrame*)((const char*)this+0x94);
+    }
+};
+	void RotateJoint::putInKernel(Kernel* _kernel)
+	{
+		MultiJoint::putInKernel(_kernel);
 
-    (void)ignoreAlways;
+		Body* b0 = ((RotatePrimitiveApi*)getAxlePrim())->getBody();
+		Body* b1 = ((RotatePrimitiveApi*)getHolePrim())->getBody();
 
-    std::string dialogTitle = "Critical Error";
-    std::string dialogText = "";
+		G3D::CoordinateFrame cAxleWorld = ((RotateBodyApi*)b0)->getCoordinateFrame() * jointCoord0;
+		G3D::CoordinateFrame cHoleWorld = ((RotateBodyApi*)b1)->getCoordinateFrame() * jointCoord1;
 
-    createErrorMessage(expression, message, filename, lineNumber, dialogTitle, dialogText);
+		G3D::Vector3 vAxleWorld = cAxleWorld.rotation.getColumn(2);
+		G3D::Vector3 vHoleWorld = cHoleWorld.rotation.getColumn(2);
 
-    // Log the error
-    Log::common()->print(std::string("\n**************************\n\n") + dialogTitle + "\n" + dialogText);
+		for (int i = 0; i < 2; i++)
+		{
+			float multiplier = i == 0 ? -1.0f : 1.0f;
 
-    static char* choices[] = {"Ok"};
+			G3D::Vector3 pAxleWorldPos = vAxleWorld * multiplier + cAxleWorld.translation;
+			G3D::Vector3 pHoleWorldPos = vHoleWorld * multiplier + cHoleWorld.translation;
 
-    std::string m = 
-        std::string("An internal error has occured in your program and it will now close.  Details about the error have been reported in \"") +
-            Log::getCommonLogFilename() + "\".";
+			Point* pAxleWorld = getKernel()->newPoint(b0, pAxleWorldPos);
+			Point* pHoleWorld = getKernel()->newPoint(b1, pHoleWorldPos);
 
-    int result = G3D::prompt("Error", m.c_str(), (const char**)choices, 1, useGuiPrompt);
-    (void)result;
+			PointToPointBreakConnector* connector = new PointToPointBreakConnector(pAxleWorld, pHoleWorld, getJointK(), Math::inf());
+			addToMultiJoint(pAxleWorld, pHoleWorld, connector);
+		}
 
-    return true;
+		if (getJointType() == ROTATE_P_JOINT || getJointType() == ROTATE_V_JOINT)
+		{
+			G3D::Vector3 center0 = cAxleWorld.translation;
+			G3D::Vector3 perp = cAxleWorld.rotation.getColumn(0);
+			G3D::Vector3 marker0 = perp * 10.0f + center0;
+
+			Point* pMarker0 = getKernel()->newPoint(b0, marker0);
+			Point* pMarker1 = getKernel()->newPoint(b1, marker0);
+
+			RBXASSERT(!rotateConnector);
+			RotateConnector* connector = new RotateConnector(getPoint(0), getPoint(2), pMarker0, pMarker1, getJointK(), getTorqueArmLength());
+			rotateConnector = connector;
+			addToMultiJoint(pMarker0, pMarker1, connector);
+		}
+	}
+
+
 }
-
-
-#ifdef G3D_WIN32
-static HCURSOR oldCursor;
-static RECT    oldCursorRect;
-static POINT   oldCursorPos;
-static int     oldShowCursorCount;
-#endif
-
-void _releaseInputGrab_() {
-    #ifdef G3D_WIN32
-
-        GetCursorPos(&oldCursorPos);
-
-        // Stop hiding the cursor if the application hid it.
-        oldShowCursorCount = ShowCursor(true) - 1;
-
-        if (oldShowCursorCount < -1) {
-            for (int c = oldShowCursorCount; c < -1; ++c) {
-                ShowCursor(true);
-            }
-        }
-
-        // Set the default cursor in case the application
-        // set the cursor to NULL.
-        oldCursor = GetCursor();
-        SetCursor(LoadCursor(NULL, IDC_ARROW));
-
-        // Allow the cursor full access to the screen
-        GetClipCursor(&oldCursorRect);
-        ClipCursor(NULL);
-        
-    #elif defined(G3D_LINUX)
-        if (x11Display != NULL) {
-            XUngrabPointer(x11Display, CurrentTime);
-            XUngrabKeyboard(x11Display, CurrentTime);
-            if (x11Window != 0) {
-                //XUndefineCursor(x11Display, x11Window);
-                // TODO: Note that we leak this cursor; it should be
-                // freed in the restore code.
-                Cursor c = XCreateFontCursor(x11Display, 68);
-                XDefineCursor(x11Display, x11Window, c);
-            }
-            XSync(x11Display, false);           
-            XAllowEvents(x11Display, AsyncPointer, CurrentTime);
-            XFlush(x11Display);
-        }
-    #elif defined(G3D_OSX)
-        // TODO: OS X
-    #endif
-}
-
-
-void _restoreInputGrab_() {
-    #ifdef G3D_WIN32
-
-        // Restore the old clipping region
-        ClipCursor(&oldCursorRect);
-
-        SetCursorPos(oldCursorPos.x, oldCursorPos.y);
-
-        // Restore the old cursor
-        SetCursor(oldCursor);
-
-        // Restore old visibility count
-        if (oldShowCursorCount < 0) {
-            for (int c = 0; c > oldShowCursorCount; --c) {
-                ShowCursor(false);
-            }
-        }
-        
-    #elif defined(G3D_LINUX)
-        // TODO: Linux
-    #elif defined(G3D_OSX)
-        // TODO: OS X
-    #endif
-}
-
-
-}; // internal namespace
- 
-void setAssertionHook(AssertionHook hook) {
-	G3D::_internal::_debugHook = hook;
-}
-
-AssertionHook assertionHook() {
-	return 	G3D::_internal::_debugHook;
-}
-
-void setFailureHook(AssertionHook hook) {
-	G3D::_internal::_failureHook = hook;
-}
-
-AssertionHook failureHook() {
-	return G3D::_internal::_failureHook;
-}
-
-
-} // namespace
-
-#ifdef G3D_WIN32
-#   pragma warning (pop)
-#endif

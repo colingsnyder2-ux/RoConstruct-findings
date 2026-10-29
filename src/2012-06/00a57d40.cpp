@@ -1,14 +1,13 @@
-// from server: 41% by intel
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Controls/Deprecated/XTFlatComboBox.cpp
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source/Controls/XTMaskEdit.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTFlatComboBox.cpp : implementation of the CXTFlatComboBox class.
+// XTMaskEdit.cpp : implementation of the CXTMaskEdit class.
 //
 // This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,18 +25,10 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "Common/XTPVC80Helpers.h"  // Visual Studio 2005 helper functions
 
-#include "Common/XTPDrawHelpers.h"
-#include "Common/XTPMaskEditT.h"
-#include "Common/XTPColorManager.h"
-
-#include "../Util/XTPControlTheme.h"
-#include "../Edit/XTPEdit.h"
-
-#include "XTThemeManager.h"
-#include "XTVC50Helpers.h"
-#include "XTFlatComboBox.h"
-#include "XTFlatControlsTheme.h"
+#include "XTGlobal.h"
+#include "XTMaskEdit.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -45,480 +36,246 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define EVENT_TIMER   1000
-
 /////////////////////////////////////////////////////////////////////////////
-// CXTFlatComboBox
+// CXTMaskEdit
+/////////////////////////////////////////////////////////////////////////////
 
-CXTFlatComboBox::CXTFlatComboBox()
-: CXTThemeManagerStyleHost(GetThemeFactoryClass())
-, m_bDisableAC(FALSE)
-, m_bFlatLook(TRUE)
-, m_bPainted(FALSE)
-, m_bHasFocus(FALSE)
-, m_bAutoComp(FALSE)
-, m_nStyle(0)
-, m_nStyleEx(0)
-, m_crBack(COLORREF_NULL)
-, m_crText(COLORREF_NULL)
+CXTMaskEdit::CXTMaskEdit()
 {
 }
 
-CXTFlatComboBox::~CXTFlatComboBox()
-{
-}
 
-IMPLEMENT_THEME_HOST(CXTFlatComboBox)
-IMPLEMENT_THEME_REFRESH(CXTFlatComboBox, CComboBox)
+IMPLEMENT_DYNAMIC(CXTMaskEdit, CEdit)
 
-IMPLEMENT_DYNAMIC(CXTFlatComboBox, CComboBox)
-
-BEGIN_MESSAGE_MAP(CXTFlatComboBox, CComboBox)
-	//{{AFX_MSG_MAP(CXTFlatComboBox)
-	ON_WM_TIMER()
-	ON_WM_PAINT()
-	ON_CONTROL_REFLECT_EX(CBN_SETFOCUS, OnSetFocus)
-	ON_CONTROL_REFLECT_EX(CBN_KILLFOCUS, OnKillFocus)
-	ON_WM_SETCURSOR()
-	ON_CONTROL_REFLECT_EX(CBN_EDITUPDATE, OnEditUpdate)
-	ON_CONTROL_REFLECT_EX(CBN_CLOSEUP, OnEndSel)
-	ON_WM_ERASEBKGND()
-	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
-	//}}AFX_MSG_MAP
+BEGIN_MESSAGE_MAP(CXTMaskEdit, CEdit)
+	ON_MASKEDIT_REFLECT()
 END_MESSAGE_MAP()
 
+BOOL CXTMaskEdit::SetEditMask(LPCTSTR lpszMask, LPCTSTR lpszLiteral, LPCTSTR lpszDefault /*= NULL*/)
+{
+	return CXTMaskEditT<CEdit>::SetEditMask(lpszMask, lpszLiteral, lpszDefault);
+}
+
+bool CXTMaskEdit::Initialize(CWnd* /*pParentWnd*/)
+{
+	SetFont(&XTAuxData().font);
+	return true;
+}
+
 /////////////////////////////////////////////////////////////////////////////
-// CXTFlatComboBox message handlers
+// CXTDateEdit class
+/////////////////////////////////////////////////////////////////////////////
 
-BOOL CXTFlatComboBox::PointInRect()
+CXTDateEdit::CXTDateEdit()
 {
-	ASSERT(::IsWindow(m_hWnd));
-
-	CRect rc;
-	GetWindowRect(rc);
-
-	CPoint pt;
-	GetCursorPos(&pt);
-
-	return rc.PtInRect(pt);
+	m_bUseMask = true;
+	m_strMask = _T("00/00/0000");
+	m_strLiteral = _T("__/__/____");
+	m_strDefault = _T("00/00/0000");
 }
 
-BOOL CXTFlatComboBox::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
+COleDateTime CXTDateEdit::ReadOleDateTime(LPCTSTR lpszData)
 {
-	if (IsFlat() && (message == WM_MOUSEMOVE) && PointInRect())
+	COleDateTime dt;
+	dt.ParseDateTime(lpszData);
+	return dt;
+}
+
+IMPLEMENT_DYNAMIC(CXTDateEdit, CXTMaskEdit)
+
+void CXTDateEdit::FormatOleDateTime(CString &strData, COleDateTime dt)
+{
+	strData = dt.Format(_T("%d/%m/%Y"));
+}
+
+void CXTDateEdit::SetDateTime(COleDateTime& dt)
+{
+	CString strText;
+	FormatOleDateTime(strText, dt);
+	m_strWindowText = m_strDefault = strText;
+	SetWindowText(strText);
+}
+
+void CXTDateEdit::SetDateTime(LPCTSTR strDate)
+{
+	m_strWindowText = m_strDefault = strDate;
+	SetWindowText(strDate);
+}
+
+COleDateTime CXTDateEdit::GetDateTime()
+{
+	CString strText;
+	GetWindowText(strText);
+	return ReadOleDateTime(strText);
+}
+
+CString CXTDateEdit::GetWindowDateTime()
+{
+	CString strText;
+	GetWindowText(strText);
+	return strText;
+}
+
+BOOL CXTDateEdit::ProcessMask(TCHAR& nChar, int nEndPos)
+{
+	// check the key against the mask
+	if (m_strMask[nEndPos] == _T('0') && _istdigit((TCHAR)nChar))
 	{
-		SetTimer(EVENT_TIMER, 10, NULL);
-		OnTimer(EVENT_TIMER);
+		if (nEndPos == 0)
+		{
+			if (nChar > '3')
+				return FALSE;
+		}
+		if (nEndPos == 1)
+		{
+			if (m_strWindowText.GetAt(0) == _T('3'))
+			{
+				if (nChar > _T('1'))
+					return FALSE;
+			}
+		}
+		if (nEndPos == 3)
+		{
+			if (nChar > _T('1'))
+				return FALSE;
+		}
+		if (nEndPos == 4)
+		{
+			if (m_strWindowText.GetAt(3) == _T('1'))
+			{
+				if (nChar > _T('2'))
+					return FALSE;
+			}
+		}
+		return TRUE;
 	}
 
-	return CComboBox::OnSetCursor(pWnd, nHitTest, message);
+	return FALSE;
 }
 
-void CXTFlatComboBox::DisableFlatLook(BOOL bDisable)
+/////////////////////////////////////////////////////////////////////////////
+// CXTTimeEdit class
+/////////////////////////////////////////////////////////////////////////////
+
+CXTTimeEdit::CXTTimeEdit()
 {
-	if (IsFlat() == bDisable)
-	{
-		m_bFlatLook = !bDisable;
-
-		if (::IsWindow(m_hWnd))
-		{
-			if (IsFlat())
-			{
-				// save style.
-				m_nStyle = GetStyle() & (WS_BORDER);
-				m_nStyleEx = GetExStyle() & (WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
-
-				ModifyStyle(WS_BORDER, 0);
-				ModifyStyleEx(WS_EX_CLIENTEDGE | WS_EX_STATICEDGE, 0);
-			}
-			else
-			{
-				ModifyStyle(0, m_nStyle);
-				ModifyStyleEx(0, m_nStyleEx);
-			}
-
-			SetWindowPos(NULL, 0, 0, 0, 0,
-				SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED | SWP_NOZORDER);
-		}
-	}
+	m_bMilitary = false;
+	m_bUseMask = true;
+	m_strMask = _T("00:00");
+	m_strLiteral = _T("__:__");
+	m_strDefault = _T("00:00");
+	m_iHours = 0;
+	m_iMins = 0;
 }
 
-void CXTFlatComboBox::OnTimer(UINT_PTR nIDEvent)
+IMPLEMENT_DYNAMIC(CXTTimeEdit, CXTDateEdit)
+
+void CXTTimeEdit::FormatOleDateTime(CString &strData, COleDateTime dt)
 {
-	if (EVENT_TIMER == nIDEvent)
+	if (dt.m_dt == 0)
 	{
-		if (!PointInRect())
-		{
-			KillTimer(EVENT_TIMER);
-
-			if (m_bPainted == TRUE)
-			{
-				RedrawWindow();
-			}
-
-			m_bPainted = FALSE;
-		}
-
-		// on mouse over, show raised.
-		else if (!m_bPainted)
-		{
-			RedrawWindow();
-			m_bPainted = TRUE;
-		}
+		strData = _T("00:00");
 	}
 	else
 	{
-		CComboBox::OnTimer(nIDEvent);
+		strData = dt.Format(_T("%H:%M"));
 	}
 }
 
-BOOL CXTFlatComboBox::OnEraseBkgnd(CDC* /*pDC*/)
+BOOL CXTTimeEdit::ProcessMask(TCHAR& nChar, int nEndPos)
 {
-	return TRUE;
-}
-
-void CXTFlatComboBox::OnPaint()
-{
-	// do default rendering first.
-	CComboBox::OnPaint();
-
-	// get the client device context.
-	CClientDC dc(this);
-	DoPaint(&dc);
-}
-
-void CXTFlatComboBox::CalcClientRect(CRect& rc)
-{
-	// deflate by 3D border, 3D edge and drop arrow (thumb).
-	rc.DeflateRect(GetTheme()->GetBorderSize());
-	rc.DeflateRect(GetTheme()->GetEdgeSize());
-	rc.right -= GetTheme()->GetThumbSize().cx;
-}
-
-// a helper for rendering the control appearance
-void CXTFlatComboBox::DoPaint(CDC* pDC)
-{
-	// draw theme.
-	if (IsFlat())
+	// check the key against the mask
+	if (m_strMask[nEndPos] == _T('0') && _istdigit(nChar))
 	{
-		// Get the client rect.
-		CXTPClientRect r(this);
-
-		// exclude client portions from redraw.
-		CRect rClip(r);
-		CalcClientRect(rClip);
-		pDC->ExcludeClipRect(&rClip);
-
-		// Paint to a memory device context to help
-		// eliminate screen flicker.
-		CXTPBufferDC memDC(*pDC, r);
-		memDC.FillSolidRect(r, GetXtremeColor(COLOR_3DFACE));
-
-		if (m_bHasFocus || PointInRect())
+		switch (nEndPos)
 		{
-			DrawCombo(&memDC, GetDroppedState() ? xtMouseSelect : xtMouseHover);
-		}
-		else
-		{
-			DrawCombo(&memDC, xtMouseNormal);
-		}
-	}
-}
-
-void CXTFlatComboBox::DrawCombo(CDC* pDC, XTMouseState  eState)
-{
-	GetTheme()->DrawFlatComboBox(pDC, this, eState);
-}
-
-BOOL CXTFlatComboBox::OnSetFocus()
-{
-	if (IsFlat())
-	{
-		m_bHasFocus = TRUE;
-		RedrawWindow();
-	}
-
-	return FALSE;
-}
-
-BOOL CXTFlatComboBox::OnKillFocus()
-{
-	if (IsFlat())
-	{
-		m_bHasFocus = FALSE;
-		RedrawWindow();
-	}
-
-	return FALSE;
-}
-
-BOOL CXTFlatComboBox::PreTranslateMessage(MSG* pMsg)
-{
-	// Make sure that the keystrokes continue to the edit control.
-	if (pMsg->message == WM_KEYDOWN || pMsg->message == WM_KEYUP)
-	{
-		// if tab, return or escape key, just use default.
-		switch (pMsg->wParam)
-		{
-		case VK_DELETE:
-		case VK_BACK:
+		case 0:
+			if (m_bMilitary)
 			{
-				if (m_bAutoComp)
+				if (nChar > _T('2'))
+					return FALSE;
+			}
+			else
+			{
+				if (nChar > _T('1'))
+					return FALSE;
+			}
+			return TRUE;
+
+		case 1:
+			if (m_bMilitary)
+			{
+				if (m_strWindowText.GetAt(0) == _T('2'))
 				{
-					m_bDisableAC = (pMsg->message == WM_KEYDOWN);
+					if (nChar > _T('3'))
+						return FALSE;
 				}
-				break;
 			}
-		case VK_TAB:
-		case VK_RETURN:
-		case VK_ESCAPE:
+			else
 			{
-				return CComboBox::PreTranslateMessage(pMsg);
+				if (m_strWindowText.GetAt(0) == _T('1'))
+				{
+					if (nChar > _T('2'))
+						return FALSE;
+				}
 			}
-		}
+			return TRUE;
 
-		// If the combo box has an edit control, don't allow
-		// the framework to process accelerators, let the edit
-		// control handle it instead.  GetEditSel() will return
-		// CB_ERR if there is no edit control present...
+		case 3:
+			if (nChar > _T('5'))
+				return FALSE;
+			return TRUE;
 
-		if (GetEditSel() != (DWORD)CB_ERR)
-		{
-			::TranslateMessage(pMsg);
-			::DispatchMessage(pMsg);
-
+		case 4:
 			return TRUE;
 		}
 	}
 
-	return CComboBox::PreTranslateMessage(pMsg);
-}
-
-BOOL CXTFlatComboBox::OnEditUpdate()
-{
-	// if we are not to auto update the text, get outta here
-	if (m_bAutoComp)
-	{
-		if (m_bDisableAC)
-		{
-			Default();
-		}
-		else
-		{
-			// Get the text in the edit box
-			CString strItemTyped;
-			GetWindowText(strItemTyped);
-			int nLength = strItemTyped.GetLength();
-
-			if (nLength >= 1)
-			{
-				// Currently selected range
-				DWORD dwCurSel = GetEditSel();
-				int nStart = LOWORD(dwCurSel);
-				int nEnd = HIWORD(dwCurSel);
-
-				// Search for, and select in, and string in the combo box that is prefixed
-				// by the text in the edit box
-				if (SelectString(-1, strItemTyped) == CB_ERR)
-				{
-					SetWindowText(strItemTyped);     // No text selected, so restore what was there before
-					if (dwCurSel != (DWORD)CB_ERR)
-					{
-						SetEditSel(nStart, nEnd);   //restore cursor postion
-					}
-				}
-
-				// Set the text selection as the additional text that we have added
-				if (nEnd < nLength && dwCurSel != (DWORD)CB_ERR)
-				{
-					SetEditSel(nStart, nEnd);
-				}
-				else
-				{
-					SetEditSel(nLength, -1);
-				}
-			}
-		}
-	}
-
 	return FALSE;
 }
 
-BOOL CXTFlatComboBox::OnEndSel()
+void CXTTimeEdit::SetHours(int nHours)
 {
-	if (IsFlat())
-	{
-		Invalidate();
-	}
+	m_iHours = nHours;
 
-	return FALSE;
+	CString strText;
+	strText.Format(_T("%02d:%02d"), m_iHours, m_iMins);
+	SetWindowText(strText);
 }
 
-LRESULT CXTFlatComboBox::OnPrintClient(WPARAM wp, LPARAM)
+void CXTTimeEdit::SetMins(int nMins)
 {
-	LRESULT lResult = Default();
+	m_iMins = nMins;
 
-	CDC* pDC = CDC::FromHandle((HDC)wp);
-	DoPaint(pDC);
-
-	return lResult;
+	CString strText;
+	strText.Format(_T("%02d:%02d"), m_iHours, m_iMins);
+	SetWindowText(strText);
 }
 
+void CXTTimeEdit::SetTime(int nHours, int nMins)
+{
+	m_iHours = nHours;
+	m_iMins = nMins;
+
+	CString strText;
+	strText.Format(_T("%02d:%02d"), m_iHours, m_iMins);
+	SetWindowText(strText);
+}
 
 /////////////////////////////////////////////////////////////////////////////
-// CXTFlatEdit
+// DDX_ routines
 /////////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_THEME_HOST(CXTFlatEdit)
-IMPLEMENT_THEME_REFRESH(CXTFlatEdit, CXTEdit)
-
-CXTFlatEdit::CXTFlatEdit()
-: CXTThemeManagerStyleHost(GetThemeFactoryClass())
-, m_bFlatLook(TRUE)
-, m_bHasFocus(FALSE)
-, m_bPainted(FALSE)
+_XTP_EXT_CLASS void AFXAPI DDX_XTOleDateTime(CDataExchange* pDX, int nIDC, CXTDateEdit& rControl, COleDateTime& rDateTime)
 {
-	m_nStyle = m_nStyleEx = 0;
-}
+	DDX_Control(pDX, nIDC, rControl);
 
-CXTFlatEdit::~CXTFlatEdit()
-{
-}
-
-IMPLEMENT_DYNAMIC(CXTFlatEdit, CXTEdit)
-
-BEGIN_MESSAGE_MAP(CXTFlatEdit, CXTEdit)
-	//{{AFX_MSG_MAP(CXTFlatEdit)
-	ON_WM_NCPAINT()
-	ON_WM_TIMER()
-	ON_WM_SETCURSOR()
-	ON_WM_SETFOCUS()
-	ON_WM_KILLFOCUS()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTFlatEdit message handlers
-
-BOOL CXTFlatEdit::PointInRect()
-{
-	ASSERT(::IsWindow(m_hWnd));
-
-	CRect rc;
-	GetWindowRect(rc);
-
-	CPoint pt;
-	GetCursorPos(&pt);
-
-	return rc.PtInRect(pt);
-}
-
-BOOL CXTFlatEdit::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
-{
-	if (IsFlat() && (message == WM_MOUSEMOVE) && PointInRect())
+	if (pDX->m_bSaveAndValidate)
 	{
-		SetTimer(EVENT_TIMER, 10, NULL);
-		OnTimer(EVENT_TIMER);
-	}
-
-	return CXTEdit::OnSetCursor(pWnd, nHitTest, message);
-}
-
-void CXTFlatEdit::DisableFlatLook(BOOL bDisable)
-{
-	if (m_bFlatLook == bDisable)
-	{
-		m_bFlatLook = !bDisable;
-		SendMessage(WM_NCPAINT);
-	}
-}
-
-void CXTFlatEdit::OnTimer(UINT_PTR nIDEvent)
-{
-	if (EVENT_TIMER == nIDEvent)
-	{
-		if (!PointInRect())
-		{
-			KillTimer(EVENT_TIMER);
-
-			if (m_bPainted == TRUE)
-			{
-				SendMessage(WM_NCPAINT);
-			}
-
-			m_bPainted = FALSE;
-		}
-
-		// on mouse over, show raised.
-		else if (!m_bPainted)
-		{
-			SendMessage(WM_NCPAINT);
-			m_bPainted = TRUE;
-		}
+		rDateTime = rControl.GetDateTime();
 	}
 	else
 	{
-		CXTEdit::OnTimer(nIDEvent);
-	}
-}
-
-void CXTFlatEdit::OnNcPaint()
-{
-	if (IsFlat())
-	{
-		CWindowDC dc(this);
-
-		CXTPClientRect rClient(this);
-		CXTPWindowRect rWindow(this);
-		ScreenToClient(rWindow);
-		rClient.OffsetRect(-rWindow.left, -rWindow.top);
-		dc.ExcludeClipRect(rClient);
-		rWindow.OffsetRect(-rWindow.left, -rWindow.top);
-
-		CXTPBufferDC memDC(dc, rWindow);
-		dc.FillSolidRect(rWindow, IsWindowEnabled() ? GetXtremeColor(COLOR_WINDOW) : GetXtremeColor(COLOR_3DFACE));
-
-		DrawBorders(&memDC, rWindow);
-	}
-	else
-	{
-		Default();
-	}
-}
-
-// a helper for rendering the control appearance
-void CXTFlatEdit::DrawBorders(CDC* pDC, const CRect& rWindow)
-{
-	if (m_bHasFocus || PointInRect())
-	{
-		GetTheme()->DrawBorders(pDC, this, rWindow, xtMouseHover);
-	}
-	else
-	{
-		GetTheme()->DrawBorders(pDC, this, rWindow, xtMouseNormal);
-	}
-}
-
-void CXTFlatEdit::OnSetFocus(CWnd* pOldWnd)
-{
-	CXTEdit::OnSetFocus(pOldWnd);
-
-	if (IsFlat())
-	{
-		m_bHasFocus = TRUE;
-		Invalidate();
-		SendMessage(WM_NCPAINT);
-	}
-}
-
-void CXTFlatEdit::OnKillFocus(CWnd* pNewWnd)
-{
-	CXTEdit::OnKillFocus(pNewWnd);
-
-	if (IsFlat())
-	{
-		m_bHasFocus = FALSE;
-		Invalidate();
-		SendMessage(WM_NCPAINT);
+		rControl.SetDateTime(rDateTime);
 	}
 }

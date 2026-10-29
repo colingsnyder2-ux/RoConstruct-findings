@@ -1,21 +1,15 @@
-// from server: 69% by atomic.potato
-struct S
-{
-    int pad0;
-    int *p10;
-    int pad1;
-    int *p20;
-    int *p30;
-    int pad2[31];
-    int value90;
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_a8b429b397bb580b.cpp
 
-    void f();
-};
-
-void S::f()
-{
-    int value = value90;
-    *p10 = value;
-    *p20 = value;
-    *p30 = value - value;
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_gzip_compressor<std::allocator<char> >,std::char_traits<char>,std::allocator<char>,boost::iostreams::output>;

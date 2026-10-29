@@ -1,14 +1,13 @@
-// from server: 49% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/ReportControl/XTPReportControl.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc-string-calls Source\ReportControl\XTPReportControl.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPReportControl.cpp : implementation of the CXTPReportControl class.
 //
 // This file is a part of the XTREME REPORTCONTROL MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -25,54 +24,36 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#include "StdAfx.h"
-
+#include "stdafx.h"
+#include "Resource.h"
 
 #include "Common/XTPDrawHelpers.h"
 #include "Common/XTPSystemHelpers.h"
 #include "Common/XTPImageManager.h"
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPVC50Helpers.h"
 #include "Common/XTPPropExchange.h"
 #include "Common/XTPToolTipContext.h"
 #include "Common/XTPResourceManager.h"
-#include "Common/XTPMarkupRender.h"
-#include "Common/XTPCustomHeap.h"
-#include "Common/XTPSmartPtrInternalT.h"
-#include "Common/XTPColorManager.h"
-
-#include "XTPReportDefines.h"
-#include "XTPReportBehavior.h"
-#include "XTPReportRows.h"
-#include "XTPReportSelectedRows.h"
-#include "XTPReportTip.h"
 
 #include "XTPReportRecordItem.h"
+#include "XTPReportRecordItemText.h"
 #include "XTPReportRecord.h"
 #include "XTPReportRecords.h"
 #include "XTPReportHeader.h"
 #include "XTPReportColumn.h"
 #include "XTPReportColumns.h"
 #include "XTPReportRow.h"
+#include "XTPReportRows.h"
 #include "XTPReportControl.h"
 #include "XTPReportPaintManager.h"
 #include "XTPReportNavigator.h"
+#include "XTPReportFilterEditControl.h"
 #include "XTPReportSubListControl.h"
 #include "XTPReportGroupRow.h"
 #include "XTPReportInplaceControls.h"
-#include "XTPReportRecordItemControls.h"
-#include "XTPReportHyperlink.h"
-#include "XTPReportRecordItemRange.h"
-#include "XTPReportSection.h"
-#include "XTPReportSections.h"
-#include "XTPReportBorder.h"
-#include "XTPReportThickness.h"
-#include "XTPReportHitTestInfo.h"
-#include "XTPReportADO.h"
-#include "XTPReportDataManager.h"
-#include "ItemTypes/XTPReportRecordItemPreview.h"
-#include "ItemTypes/XTPReportRecordItemVariant.h"
-#include "ItemTypes/XTPReportRecordItemIcon.h"
-#include "ItemTypes/XTPReportRecordItemText.h"
 
+#include <locale.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -81,20 +62,15 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 #define XTP_REPORT_HSCROLL_STEP 7
-#define XTP_REPORT_VSCROLL_STEP 7
 
 #define XTP_REPORT_AUTO_SCROLL_TIMER_ID 7
 #define XTP_REPORT_AUTO_SCROLL_TIMER_RESOLUTION_MS  200
 
-#define XTP_REPORT_DELAY_CLICK_TIMER_ID 10
-#define XTP_REPORT_DELAYEDIT_CLICK_TIMER_ID 20
 #define XTP_REPORT_CB_RECORDS_DATA_VER 1
 
-#ifndef _UNICODE
-	#define XTP_CF_TEXT_T CF_TEXT
-#else
-	#define XTP_CF_TEXT_T CF_UNICODETEXT
-#endif
+#define ASSERT_DBG_REMOVE_RECORD_EX
+//#define XTP_DBG_REMOVE_RECORD_EX_ASSERT ASSERT
+
 
 //////////////////////////////////////////////////////////////////////////
 XTP_IMPLEMENT_HEAP_ALLOCATOR(CXTPReportDataAllocator, FALSE)
@@ -103,29 +79,12 @@ XTP_IMPLEMENT_HEAP_ALLOCATOR(CXTPReportRowAllocator, FALSE)
 // to allocate in app default heap
 XTP_IMPLEMENT_HEAP_ALLOCATOR(CXTPReportAllocatorDefault, FALSE)
 
-class CXTPReportRow_Batch      : public CXTPBatchAllocObjT<CXTPReportRow,      CXTPReportRow_BatchData>      {};
+
+class CXTPReportRow_Batch : public CXTPBatchAllocObjT<CXTPReportRow, CXTPReportRow_BatchData> {};
 class CXTPReportGroupRow_Batch : public CXTPBatchAllocObjT<CXTPReportGroupRow, CXTPReportGroupRow_BatchData> {};
 
-XTP_IMPLEMENT_BATCH_ALLOC_OBJ_DATA(CXTPReportRow_BatchData,      CXTPReportRow_Batch,      FALSE)
+XTP_IMPLEMENT_BATCH_ALLOC_OBJ_DATA(CXTPReportRow_BatchData, CXTPReportRow_Batch, FALSE)
 XTP_IMPLEMENT_BATCH_ALLOC_OBJ_DATA(CXTPReportGroupRow_BatchData, CXTPReportGroupRow_Batch, FALSE)
-
-//===========================================================================
-HGLOBAL XTPAllocStrInGlobalMem(const CString& strText)
-{
-	int nLen = (strText.GetLength() + 1) * sizeof(TCHAR);
-
-	UINT nAllocFlags = GMEM_MOVEABLE | GMEM_DDESHARE | GMEM_ZEROINIT;
-	HGLOBAL hText = ::GlobalAlloc(nAllocFlags, nLen);
-
-	if (hText != NULL)
-	{
-		LPTSTR lptstrCopy = (TCHAR*)GlobalLock(hText);
-		STRCPY_S(lptstrCopy, strText.GetLength() + 1, (LPCTSTR)strText);
-		GlobalUnlock(hText);
-	}
-
-	return hText;
-}
 
 //===========================================================================
 BOOL CXTPReportControl::UseReportCustomHeap()
@@ -164,33 +123,264 @@ void CXTPReportControl::FreeRowBatchExtraData()
 	CXTPReportGroupRow_Batch::FreeExtraData();
 }
 
-
+//////////////////////////////////////////////////////////////////////////
+BOOL CXTPReportControlLocale::s_bUseResourceFileLocale = FALSE;
 
 CArray<CXTPReportControlLocale::XTP_TIMESPEC, CXTPReportControlLocale::XTP_TIMESPEC&>
 	CXTPReportControlLocale::s_arMappedSpecs;
 
+//===========================================================================
+BOOL CXTPReportControlLocale::IsUseResourceFileLocale()
+{
+	return s_bUseResourceFileLocale;
+}
+
+void CXTPReportControlLocale::SetUseResourceFileLocale(BOOL bUseResourceFileLocale)
+{
+	s_bUseResourceFileLocale = bUseResourceFileLocale;
+}
+
+LCID CXTPReportControlLocale::GetActiveLCID()
+{
+	LCID lcidCurr = LOCALE_USER_DEFAULT;
+
+	if (s_bUseResourceFileLocale)
+		lcidCurr = MAKELCID(XTPResourceManager()->GetResourcesLangID(), SORT_DEFAULT);
+
+	return lcidCurr;
+}
+
+BOOL AFX_CDECL CXTPReportControlLocale::VariantChangeTypeEx(VARIANT& rVarValue, VARTYPE vartype, BOOL bThrowError)
+{
+	if (vartype != rVarValue.vt)
+	{
+		LCID lcID = GetActiveLCID();
+
+		HRESULT hr = ::VariantChangeTypeEx(&rVarValue, &rVarValue, lcID, 0, vartype);
+
+		if (bThrowError && FAILED(hr))
+		{
+			if (hr == E_OUTOFMEMORY)
+				AfxThrowMemoryException();
+			else
+				AfxThrowOleException(hr);
+		}
+
+
+		return SUCCEEDED(hr);
+	}
+	return TRUE;
+}
+
+CString AFX_CDECL CXTPReportControlLocale::FormatDateTime(const COleDateTime& dt, LPCTSTR lpcszFormatString)
+{
+	return _FormatDateTime(dt, lpcszFormatString, GetActiveLCID());
+}
+
+CString CXTPReportControlLocale::_FormatDateTime(const COleDateTime& dt, LPCTSTR lpcszFormatString, LCID lcLocaleID)
+{
+	if (dt.GetStatus() != COleDateTime::valid)
+	{
+		ASSERT(dt.GetStatus() == COleDateTime::null);
+		return _T("");
+	}
+
+	CString strDT = lpcszFormatString;
+
+	SYSTEMTIME sysTime;
+	if (!GETASSYSTEMTIME_DT(dt, sysTime))
+	{
+		ASSERT(FALSE);
+		return _T("");
+	}
+
+	//  %% Percent sign
+	REPLACE_S(strDT, _T("%%"), _T("\0x1"));
+
+	_ProcessMappedSpecs(strDT, &sysTime, lcLocaleID);
+	_ProcessDateTimeSpecs(strDT, &sysTime, lcLocaleID);
+
+	// All locale dependent specifiers already processed
+	_ProcessOtherSpecs(strDT, dt);
+
+	REPLACE_S(strDT, _T("\0x1"), _T("%"));
+
+	return strDT;
+}
+
+void CXTPReportControlLocale::_ProcessMappedSpecs(CString& rstrFormat, const SYSTEMTIME* pST, LCID lcLocaleID)
+{
+	_InitMappedSpecs();
+
+	const int cnBufferSize = 96;
+	TCHAR szBuffer[cnBufferSize];
+
+	int nCount = (int)s_arMappedSpecs.GetSize();
+	for (int i = 0; i < nCount; i++)
+	{
+		const XTP_TIMESPEC& specI = s_arMappedSpecs.ElementAt(i);
+		if (FIND_S(rstrFormat, specI.pcszSpec, 0) < 0)
+			continue;
+
+		::ZeroMemory(szBuffer, sizeof(szBuffer));
+
+		int nResult;
+		if (specI.bTime)
+		{
+			nResult = ::GetTimeFormat(lcLocaleID, 0, pST, specI.pcszFormat, szBuffer, cnBufferSize);
+		}
+		else
+		{
+			nResult = ::GetDateFormat(lcLocaleID, 0, pST, specI.pcszFormat, szBuffer, cnBufferSize);
+		}
+		ASSERT(nResult);
+		if (nResult)
+		{
+			REPLACE_S(rstrFormat, specI.pcszSpec, szBuffer);
+		}
+	}
+}
+
+void CXTPReportControlLocale::_ProcessDateTimeSpecs(CString& rstrFormat, const SYSTEMTIME* pST, LCID lcLocaleID)
+{
+//  %c  Date and time representation appropriate for locale
+//  %#c Long date and time representation
+
+//  %x Date representation for current locale
+//  %#x Long date representation for current locale
+
+//  %X Time representation for current locale
+
+	REPLACE_S(rstrFormat, _T("%c"), _T("%x %X"));
+	REPLACE_S(rstrFormat, _T("%#c"), _T("%#x %X"));
+
+	__ProcessDate_x(rstrFormat, pST, lcLocaleID);
+	__ProcessTime_X(rstrFormat, pST, lcLocaleID);
+}
+
+void CXTPReportControlLocale::__ProcessDate_x(CString& rstrFormat, const SYSTEMTIME* pST, LCID lcLocaleID)
+{
+	const int cnBufferSize = 96;
+	TCHAR szBuffer[cnBufferSize];
+
+	//  %x Date representation for current locale
+	//  %#x Long date representation for current locale
+
+	TCHAR* arSpec2[2] = {_T("%x"), _T("%#x")};
+
+	for (int i = 0; i < 2; i++)
+	{
+		if (FIND_S(rstrFormat, arSpec2[i], 0) >= 0)
+		{
+			::ZeroMemory(szBuffer, sizeof(szBuffer));
+
+			DWORD dwFlags = (i == 0) ? DATE_SHORTDATE : DATE_LONGDATE;
+
+			int nRes = ::GetDateFormat(lcLocaleID, dwFlags, pST, NULL, szBuffer, cnBufferSize);
+
+			ASSERT(nRes);
+			REPLACE_S(rstrFormat, arSpec2[i], szBuffer);
+		}
+	}
+}
+
+void CXTPReportControlLocale::__ProcessTime_X(CString& rstrFormat, const SYSTEMTIME* pST, LCID lcLocaleID)
+{
+	if (FIND_S(rstrFormat, _T("%X"), 0) >= 0)
+	{
+		const int cnBufferSize = 96;
+		TCHAR szBuffer[cnBufferSize];
+
+		::ZeroMemory(szBuffer, sizeof(szBuffer));
+		int nRes = ::GetTimeFormat(lcLocaleID, 0, pST, NULL, szBuffer, cnBufferSize);
+
+		ASSERT(nRes);
+		REPLACE_S(rstrFormat, _T("%X"), szBuffer);
+	}
+}
+
+void CXTPReportControlLocale::_ProcessOtherSpecs(CString& rstrFormat, const COleDateTime& dt)
+{
+	//  %j Day of year as decimal number (001 - 366)
+	//  %w Weekday as decimal number (0 - 6; Sunday is 0)
+	//  %U Week of year as decimal number, with Sunday as first day of week (00 - 53)
+	//  %W Week of year as decimal number, with Monday as first day of week (00 - 53)
+	//  %z, %Z  Either the time-zone name or time zone abbreviation, depending on registry settings; no characters if time zone is unknown
+
+	static LPCTSTR arszSpecs[] = {  _T("%j"), _T("%#j"),
+									_T("%w"), _T("%#w"),
+									_T("%U"), _T("%#U"),
+									_T("%W"), _T("%#W"),
+									_T("%z"), _T("%Z") };
+
+	int nCount = _countof(arszSpecs);
+	for (int i = 0; i < nCount; i++)
+	{
+		if (FIND_S(rstrFormat, arszSpecs[i], 0) < 0)
+			continue;
+
+		CString str = dt.Format(arszSpecs[i]);
+
+		REPLACE_S(rstrFormat, arszSpecs[i], str);
+	}
+}
+
+void CXTPReportControlLocale::_InitMappedSpecs()
+{
+	if (s_arMappedSpecs.GetSize())
+		return;
+
+	// date
+	_AddsMappedSpec(_T("%a"), _T("ddd"),    FALSE);
+	_AddsMappedSpec(_T("%A"), _T("dddd"),   FALSE);
+
+	_AddsMappedSpec(_T("%b"), _T("MMM"),    FALSE);
+	_AddsMappedSpec(_T("%B"), _T("MMMM"),   FALSE);
+
+	_AddsMappedSpec(_T("%d"),  _T("dd"),    FALSE);
+	_AddsMappedSpec(_T("%#d"), _T("d"),     FALSE);
+
+	_AddsMappedSpec(_T("%m"),  _T("MM"),    FALSE);
+	_AddsMappedSpec(_T("%#m"), _T("M"),     FALSE);
+
+	_AddsMappedSpec(_T("%y"),  _T("yy"),    FALSE);
+	_AddsMappedSpec(_T("%#y"), _T("y"),     FALSE);
+	_AddsMappedSpec(_T("%Y"), _T("yyyy"),   FALSE);
+
+	// time
+	_AddsMappedSpec(_T("%H"),  _T("HH"),    TRUE);
+	_AddsMappedSpec(_T("%#H"), _T("H"),     TRUE);
+
+	_AddsMappedSpec(_T("%I"),  _T("hh"),    TRUE);
+	_AddsMappedSpec(_T("%#I"), _T("h"),     TRUE);
+
+	_AddsMappedSpec(_T("%M"),  _T("mm"),    TRUE);
+	_AddsMappedSpec(_T("%#M"), _T("m"),     TRUE);
+
+	_AddsMappedSpec(_T("%S"),  _T("ss"),    TRUE);
+	_AddsMappedSpec(_T("%#S"), _T("s"),     TRUE);
+
+	_AddsMappedSpec(_T("%p"), _T("tt"),     TRUE);
+}
+
+void CXTPReportControlLocale::_AddsMappedSpec(LPCTSTR pcszSpec, LPCTSTR pcszFormat, BOOL bTime)
+{
+	XTP_TIMESPEC tmpSpec = {pcszSpec, pcszFormat, bTime};
+	s_arMappedSpecs.Add(tmpSpec);
+}
 
 //////////////////////////////////////////////////////////////////////////
 // CReportDropTarget
 class CXTPReportControl::CReportDropTarget : public COleDropTarget
 {
 public:
-	virtual DROPEFFECT OnDragEnter(CWnd* pWnd, COleDataObject* pDataObject, DWORD dwKeyState, CPoint point)
-	{
-		CXTPReportControl* pReport = DYNAMIC_DOWNCAST(CXTPReportControl, pWnd);
-		if (!pReport)
-			return DROPEFFECT_NONE;
-
-		return pReport->OnDragOver(pDataObject, dwKeyState, point, 0);
-	}
-
 	virtual DROPEFFECT OnDragOver(CWnd* pWnd, COleDataObject* pDataObject, DWORD dwKeyState, CPoint point)
 	{
 		CXTPReportControl* pReport = DYNAMIC_DOWNCAST(CXTPReportControl, pWnd);
 		if (!pReport)
 			return DROPEFFECT_NONE;
 
-		return pReport->OnDragOver(pDataObject, dwKeyState, point, 2);
+		return pReport->OnDragOver(pDataObject, dwKeyState, point);
 	}
 
 	virtual void OnDragLeave(CWnd* pWnd)
@@ -198,17 +388,19 @@ public:
 		CXTPReportControl* pReport = DYNAMIC_DOWNCAST(CXTPReportControl, pWnd);
 
 		if (pReport)
-			pReport->OnDragOver(NULL, 0, CPoint(-1, -1), 1);
+		{
+			pReport->OnDragOver(NULL, 0, CPoint(-1, -1));
+		}
 	}
-
 	virtual BOOL OnDrop(CWnd* pWnd, COleDataObject* pDataObject,
 		DROPEFFECT dropEffect, CPoint point)
 	{
 		CXTPReportControl* pReport = DYNAMIC_DOWNCAST(CXTPReportControl, pWnd);
 
 		if (pReport)
+		{
 			return pReport->OnDrop(pDataObject, dropEffect, point);
-
+		}
 		return FALSE;
 	}
 };
@@ -227,7 +419,7 @@ void XTPStrSplit(LPCTSTR pcszString, LPCTSTR pcszSeparator, CStringArray& rarStr
 	BOOL bBreak = FALSE;
 	do
 	{
-		int nIndex = strString.Find(pcszSeparator, nIndex_start);
+		int nIndex = FIND_S(strString, pcszSeparator, nIndex_start);
 		if (nIndex >= 0)
 		{
 			strItem = strString.Mid(nIndex_start, nIndex - nIndex_start);
@@ -254,8 +446,9 @@ CString XTPStrMake(const CStringArray& arStrings, LPCTSTR pcszSeparator)
 	for (int i = 0; i < nCount; i++)
 	{
 		if (i > 0)
+		{
 			strString += pcszSeparator;
-
+		}
 		strString += arStrings[i];
 	}
 
@@ -267,210 +460,93 @@ IMPLEMENT_DYNCREATE(CXTPReportControl, CWnd)
 
 BEGIN_MESSAGE_MAP(CXTPReportControl, CWnd)
 //{{AFX_MSG_MAP(CXTPReportControl)
-	// Window
-	ON_WM_CREATE()
 	ON_WM_PAINT()
+	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
 	ON_WM_ERASEBKGND()
 	ON_WM_SIZE()
-	ON_WM_ENABLE()
-	ON_WM_TIMER()
-	ON_WM_NCHITTEST_EX()
-	ON_WM_SETFOCUS()
-	ON_WM_KILLFOCUS()
-
-	// Mouse
-	ON_WM_MOUSEMOVE()
-	ON_WM_MOUSEWHEEL()
 	ON_WM_LBUTTONDOWN()
 	ON_WM_LBUTTONUP()
-	ON_WM_LBUTTONDBLCLK()
 	ON_WM_RBUTTONDOWN()
 	ON_WM_RBUTTONUP()
 	ON_WM_CONTEXTMENU()
+	ON_WM_MOUSEMOVE()
 	ON_WM_SETCURSOR()
-
-	// Key events
-	ON_WM_CHAR()
 	ON_WM_KEYDOWN()
-	ON_WM_KEYUP()
-	ON_WM_SYSKEYDOWN()
-	ON_WM_SYSKEYUP()
-
-	// Scrolling
 	ON_WM_VSCROLL()
 	ON_WM_HSCROLL()
-
+	ON_WM_MOUSEWHEEL()
+	ON_WM_SYSKEYDOWN()
 	ON_WM_CAPTURECHANGED()
 	ON_WM_SYSCOLORCHANGE()
+	ON_WM_SETFOCUS()
+	ON_WM_KILLFOCUS()
+	ON_WM_KEYUP()
+	ON_WM_SYSKEYUP()
+	ON_WM_LBUTTONDBLCLK()
 	ON_WM_GETDLGCODE()
-	ON_WM_STYLECHANGED()
-	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
-	ON_MESSAGE(WM_GETOBJECT, OnGetObject)
+	ON_WM_CHAR()
 	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
-	ON_MESSAGE_VOID(XTP_WM_MARKUPREDRAW, RedrawControl)
+	ON_WM_STYLECHANGED()
+	ON_WM_ENABLE()
+	ON_WM_TIMER()
 //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 CXTPReportControl::CXTPReportControl()
-	: m_bCreated   (FALSE)
-	, m_bLockExpand(FALSE)
-
-	, m_bEditOnClick      (TRUE)
-	, m_bEditOnDelayClick (FALSE)
-	, m_bEditOnDoubleClick(TRUE)
-
-	, m_bPinFooterRows       (FALSE)
-	, m_bPinFooterRowsPrinted(TRUE)
-
-	, m_bDoubleBuffering     (TRUE)
-
-	, m_nFixedColumnsCount(0)
-
-	, m_pSectionHeader(NULL)
-	, m_pSectionBody  (NULL)
-	, m_pSectionFooter(NULL)
-
-	, m_dwLastMouseMessage(WM_NULL)
-
-	, m_scrollModeH(xtpReportScrollModeSmooth)
-	, m_scrollModeV(xtpReportScrollModeBlock)
-	, m_nScrollOffsetH(0)
-	, m_nScrollOffsetV(0)
-	, m_nScrollStepH(XTP_REPORT_HSCROLL_STEP)
-	, m_nScrollStepV(XTP_REPORT_VSCROLL_STEP)
-
-	, m_pMarkupContext(NULL)
 {
 	RegisterWindowClass();
-
-	m_pBehavior = new CXTPReportBehavior(xtpReportBehaviorCodejockDefault);
-	m_pTip = new CXTPReportTip();
 
 	m_nLockUpdateCount = 0;
 	m_nRowsPerWheel = GetMouseScrollLines();
 
-
-	m_pSections = new CXTPReportSections(this);
-	m_pSectionHeader = m_pSections->GetAt(xtpReportSectionHeader);
-	m_pSectionBody   = m_pSections->GetAt(xtpReportSectionBody);
-	m_pSectionFooter = m_pSections->GetAt(xtpReportSectionFooter);
-
-	m_pSectionFooter->GetBorder()->GetBorderThickness()->SetTop(1);
-
-	m_pSectionHeader->SetHeightMode(xtpReportSectionHeightModeAuto);
-	m_pSectionBody  ->SetHeightMode(xtpReportSectionHeightModeExpand);
-	m_pSectionFooter->SetHeightMode(xtpReportSectionHeightModeAuto);
-
-	m_pSectionHeader->SetDividerPosition(xtpReportSectionDividerPositionBottom);
-	m_pSectionFooter->SetDividerPosition(xtpReportSectionDividerPositionTop);
-	m_pSectionHeader->SetDividerStyle(xtpReportFixedRowsDividerThin);
-	m_pSectionFooter->SetDividerStyle(xtpReportFixedRowsDividerThin);
-
-	// Allow group
-	m_pSectionHeader->AllowGroup(FALSE);
-	m_pSectionBody  ->AllowGroup(TRUE);
-	m_pSectionFooter->AllowGroup(FALSE);
-
-	// Allow sort
-	m_pSectionHeader->AllowSort(FALSE);
-	m_pSectionBody  ->AllowSort(TRUE);
-	m_pSectionFooter->AllowSort(FALSE);
-
-	m_pSectionBody->SetVisible(TRUE);
-
-	m_pRows      = m_pSectionBody->GetRows();
+	m_pRows = new CXTPHeapObjectT<CXTPReportRows, CXTPReportAllocatorDefault>;
+	m_pPlainTree = new CXTPHeapObjectT<CXTPReportRows, CXTPReportAllocatorDefault>;
+	m_pRecords = new CXTPHeapObjectT<CXTPReportRecords, CXTPReportAllocatorDefault>;
 
 	m_pColumns = new CXTPReportColumns(this);
 	m_pReportHeader = new CXTPReportHeader(this, m_pColumns);
-//ICON_VIEW_MODE RELATED <<
-	m_bIconView = FALSE;
-	m_iIconWidth = 0;
-	m_iIconHeight = 0;
-	m_iIconWidthSpacing = 0;
-	m_iIconHeightSpacing = 0;
-	m_iIconViewColumn = -1;
-	m_iIconViewRowsPerLine = 0;
-	m_bUseIconColumnForNum = FALSE;
 
-	m_iColumnForNumPrev = -1;
-	m_iColumnForNum = -1;
-	m_bPrevFocusSubItems = FALSE;
-	m_bPrevHeaderAutoSize = FALSE;
-	m_iIconPropNum = 0;
-	m_iIconNum = 0;
-	m_pPrevVisible = NULL;
-	m_pPrevGroupsOrder = NULL;
-	m_nPrevTreeIndent = 0;
-
-	m_bIconColumnIndexNotValid = FALSE;
-
-	m_bPrevHeaderRows = FALSE;
-	m_bPrevFooterRows = FALSE;
-	m_bPrevHeaderShow = FALSE;
-	m_bPrevFooterShow = FALSE;
-
-	m_bRClickDrag = FALSE;
-
-//ICON_VIEW_MODE RELATED >>
 	m_pPaintManager = new CXTPReportPaintManager();
-	m_pPaintManager->SetReportControl(this);
+	m_pNavigator = new CXTPReportNavigator(this);
+	m_nTopRow = 0;
 
-	m_pNavigatorReport = new CXTPReportNavigator(this);
-	m_pNavigatorIcon   = new CXTPReportIconNavigator(this);
-	m_pNavigator = m_pNavigatorReport;
+	m_nFocusedRow = -1;
+	m_nFocusedHeaderRow = -1;
+	m_nFocusedFooterRow = -1;
 
-	//m_nSelectionLastBlockStartRow = -1;
-	m_bKeepSelectionAfterSort = TRUE;
-	m_bUnrestrictedDragDrop = FALSE;
-
-	m_bFreeHeightMode = FALSE;
-	m_nDefaultRowFreeHeight = 20;
-
-	m_uiDelayEditTimer = NULL;
-	m_uiDelayEditMaxTime = GetDoubleClickTime() + 50;
-
-	m_iLastRqstEditRow = -1;
-	m_iLastRqstEditCol = -1;
-	m_uRqstEditTimer = 0;
 	m_mouseMode = xtpReportMouseNothing;
-	m_bWasShiftKey = FALSE;
-	m_bSortedDragDrop = FALSE;
-	m_bNoNeedSortedDragDrop = TRUE;
-	m_bInternalMove = FALSE;
-	m_bTrapTabKey = FALSE;
 
 	m_pSelectedRows = new CXTPReportSelectedRows(this);
 
-	m_bStrictBestFit = FALSE;
 	m_bChanged = TRUE;
 	m_bRefreshIndexes = FALSE;
 
 	m_bGroupByEnabled = FALSE;
 	m_bHeaderVisible = TRUE;
 	m_bFooterVisible = FALSE;
+	m_bHeaderRecordsVisible = FALSE;
+	m_bFooterRecordsVisible = FALSE;
 
-	m_bBlockSelection = TRUE;
-	m_bMultiSelectionMode = FALSE;
+	m_bMultipleSelection = TRUE;
 
 	m_bShowTooltips = TRUE;
 
 	m_bSkipGroupsFocus = TRUE;
-	m_bSelectionExcludeGroupRows = TRUE;
 
 	m_pImageManager = new CXTPImageManager();
 
 	m_pFocusedColumn = NULL;
 	m_pActiveItem = NULL;
 
-	m_bEnsureFocusedRowVisible = TRUE;
 	m_bFocusSubItems = FALSE;
-	m_bPreviewAllowEdit = FALSE;
-	m_bInitialSelectionEnable = TRUE;
+	m_bEditOnClick = TRUE;
+	m_bAllowEdit = FALSE;
+	m_bHeaderAllowEdit = FALSE;
+	m_bFooterAllowEdit = FALSE;
+	m_bSelectionEnable = TRUE;
 	m_bRowFocusVisible = TRUE;
 
 	m_bAutoCheckItems = TRUE;
-
-	m_bShowIconWhenEditing = TRUE;
 
 	m_pInplaceEdit = new CXTPReportInplaceEdit();
 	m_pInplaceButtons = new CXTPReportInplaceButtons();
@@ -478,40 +554,35 @@ CXTPReportControl::CXTPReportControl()
 
 	m_rcGroupByArea.SetRectEmpty();
 	m_rcHeaderArea.SetRectEmpty();
+	m_rcReportArea.SetRectEmpty();
 	m_rcFooterArea.SetRectEmpty();
 
-	m_bMovePivot = FALSE;
-	m_bForcePagination = FALSE;
-
-	m_nDisableReorderColumnsCount = 0;
-	m_pHotRow = NULL;
-	m_pHotExpandButtonRow = NULL;
-	m_pHotHyperlink = NULL;
+	m_nFreezeColumnsCount = 0;
+	m_nLeftOffset = 0;
+	m_pHotRow = 0;
 	m_nOLEDropMode = 0;
-	m_nOLEDropAbove = FALSE;
+	m_bFullColumnScrolling = FALSE;
+	m_nHScrollStep = XTP_REPORT_HSCROLL_STEP;
 
 	m_bVScrollBarVisible = FALSE;
 	m_bHScrollBarVisible = FALSE;
 
 	m_bPrepareDrag = FALSE;
-	m_ptDrag = CPoint(0, 0);
+	m_pointDrag = CPoint(0, 0);
 
 	m_pToolTipContext = new CXTPToolTipContext;
 	m_pCachedToolTipInfo = new XTP_NM_REPORTTOOLTIPINFO;
 
+	m_nPopulatedRecordsCount = 0;
+
 	m_cfReport = NULL;
 	m_pDropTarget = new CReportDropTarget;
 	m_bDragMode = FALSE;
-	m_bInternalDrag = FALSE;
 	m_dwDragDropFlags = 0;
-	m_dwDropMarkerFlags = xtpReportDropBetween;   // Default to how it has always been.
-	m_pSelectedRowsBeforeDrag = NULL;
 	m_nDropPos = -1;
-	m_pDropRecords = NULL;
+	m_pSelectOnUpRow = NULL;
 
-	m_bFastDeselectMode = FALSE;
-	m_bAdjustLayoutRunning = FALSE;
-
+	m_bOnSizeRunning = FALSE;
 	m_uAutoScrollTimerID = 0;
 
 	m_bSortRecordChilds = FALSE;
@@ -521,46 +592,45 @@ CXTPReportControl::CXTPReportControl()
 	m_ptrVirtualEditingRow = NULL;
 
 	m_bFilterHiddenColumns = FALSE;
-	m_nRecordsTreeFilterMode = xtpReportFilterTreeSimple;
+
+	m_pHeaderRecords = new CXTPHeapObjectT<CXTPReportRecords, CXTPReportAllocatorDefault>;
+	m_pFooterRecords = new CXTPHeapObjectT<CXTPReportRecords, CXTPReportAllocatorDefault>;
+	m_pHeaderRows = new CXTPHeapObjectT<CXTPReportRows, CXTPReportAllocatorDefault>;
+	m_pFooterRows = new CXTPHeapObjectT<CXTPReportRows, CXTPReportAllocatorDefault>;
 
 	m_hbmpWatermark = NULL;
 	m_WatermarkTransparency = 100;
 	m_WatermarkAlignment = xtpReportWatermarkStretch;
 
-	m_nEnsureVisibleRowIdx = m_nEnsureVisibleColumnIdx = -1;
+	m_bHeaderRowsAllowAccess = TRUE;
+	m_bFooterRowsAllowAccess = TRUE;
 
-	m_pDataManager = NULL;
+	m_bHeaderRowsSelectionEnable = TRUE;
+	m_bFooterRowsSelectionEnable = TRUE;
+}
 
-	m_nAutoVScrollTimerResolution = XTP_REPORT_AUTO_SCROLL_TIMER_RESOLUTION_MS;
-
-	m_bMarkupEnabled = FALSE;
-
-	m_bDesktopTrackerMode = FALSE;
-
-	m_bStrictFiltering = FALSE;
-
-	m_pTip->m_pReportControl = this;
-
-	EnableAutomation();
+BOOL CXTPReportControl::RegisterWindowClass(HINSTANCE hInstance /*= NULL*/)
+{
+	return XTPDrawHelpers()->RegisterWndClass(hInstance, XTPREPORTCTRL_CLASSNAME, CS_DBLCLKS);
 }
 
 CXTPReportControl::~CXTPReportControl()
 {
-	if (::IsWindow(m_pTip->GetSafeHwnd()))
-		m_pTip->DestroyWindow();
+	if (::IsWindow(m_wndTip.GetSafeHwnd()))
+		m_wndTip.DestroyWindow();
 
-	EditItem(NULL);
+	EditItem(0);
 
+	//m_arrScreenRows.Clear();
 	ResetContent(FALSE);
-	EnableMarkup(FALSE);
 
-	m_UaSelected.RemoveAll();
-
+	CMDTARGET_RELEASE(m_pRows);
+	CMDTARGET_RELEASE(m_pPlainTree);
 	CMDTARGET_RELEASE(m_pSelectedRows);
+	CMDTARGET_RELEASE(m_pRecords);
 	CMDTARGET_RELEASE(m_pColumns);
 	CMDTARGET_RELEASE(m_pPaintManager);
-	CMDTARGET_RELEASE(m_pNavigatorReport);
-	CMDTARGET_RELEASE(m_pNavigatorIcon);
+	CMDTARGET_RELEASE(m_pNavigator);
 
 	CMDTARGET_RELEASE(m_pImageManager);
 	CMDTARGET_RELEASE(m_pReportHeader);
@@ -573,38 +643,35 @@ CXTPReportControl::~CXTPReportControl()
 	SAFE_DELETE(m_pInplaceList);
 
 	CMDTARGET_RELEASE(m_pDropTarget);
-	CMDTARGET_RELEASE(m_pSelectedRowsBeforeDrag);
 	CMDTARGET_RELEASE(m_ptrVirtualEditingRow);
 
-	CMDTARGET_RELEASE(m_pDropRecords);
+	CMDTARGET_RELEASE(m_pHeaderRecords);
+	CMDTARGET_RELEASE(m_pFooterRecords);
+	CMDTARGET_RELEASE(m_pHeaderRows);
+	CMDTARGET_RELEASE(m_pFooterRows);
 
-	if (m_hbmpWatermark)
+	if(m_hbmpWatermark)
 		::DeleteObject(m_hbmpWatermark);
-//ICON_VIEW_MODE RELATED <<
-	CMDTARGET_RELEASE(m_pPrevVisible);
-	CMDTARGET_RELEASE(m_pPrevGroupsOrder);
-//ICON_VIEW_MODE RELATED >>
-	CMDTARGET_RELEASE(m_pDataManager);
 
-	SAFE_DELETE(m_pBehavior);
-	SAFE_DELETE(m_pTip);
-
-	SAFE_DELETE(m_pSections);
-}
-
-BOOL CXTPReportControl::RegisterWindowClass(HINSTANCE hInstance)
-{
-	return XTPDrawHelpers()->RegisterWndClass(hInstance, XTPREPORTCTRL_CLASSNAME, CS_DBLCLKS);
 }
 
 void CXTPReportControl::ResetContent(BOOL bUpdateControl)
 {
 	EditItem(NULL);
 
-	m_pSectionBody->ResetContent();
+	m_arrScreenRows.Clear();
 
-	if (m_pSelectedRows)
-		m_pSelectedRows->Clear();
+	if (m_pRows) m_pRows->Clear();
+	if (m_pPlainTree) m_pPlainTree->Clear();
+	if (m_pSelectedRows) m_pSelectedRows->Clear();
+
+//  m_pHeaderRows->Clear();
+//  m_pFooterRows->Clear();
+
+//  m_pHeaderRecords->RemoveAll();
+//  m_pFooterRecords->RemoveAll();
+
+	if (m_pRecords) m_pRecords->RemoveAll();
 
 	if (bUpdateControl)
 	{
@@ -615,9 +682,9 @@ void CXTPReportControl::ResetContent(BOOL bUpdateControl)
 }
 
 
-void CXTPReportControl::SetReportHeader(CXTPReportHeader *pReportHeader)
+void CXTPReportControl::SetReportHeader(CXTPReportHeader* pReportHeader)
 {
-	if (NULL != pReportHeader)
+	if (pReportHeader)
 	{
 		m_pReportHeader->InternalRelease();
 		m_pReportHeader = pReportHeader;
@@ -625,18 +692,19 @@ void CXTPReportControl::SetReportHeader(CXTPReportHeader *pReportHeader)
 	}
 }
 
-void CXTPReportControl::SetImageManager(CXTPImageManager *pImageManager)
+void CXTPReportControl::SetImageManager(CXTPImageManager* pImageManager)
 {
-	if (NULL != pImageManager)
+	if (pImageManager)
 	{
 		m_pImageManager->InternalRelease();
 		m_pImageManager = pImageManager;
 	}
+
 }
 
-void CXTPReportControl::SetImageList(CImageList *pImageList)
+void CXTPReportControl::SetImageList(CImageList* pImageList)
 {
-	for (int i=0; i<pImageList->GetImageCount(); i++)
+	for (int i = 0; i < pImageList->GetImageCount(); i++)
 	{
 		HICON hIcon = pImageList->ExtractIcon(i);
 		m_pImageManager->SetIcon(hIcon, i);
@@ -645,19 +713,25 @@ void CXTPReportControl::SetImageList(CImageList *pImageList)
 	}
 }
 
-void CXTPReportControl::SetPaintManager(CXTPReportPaintManager *pPaintManager)
+void CXTPReportControl::SetPaintManager(CXTPReportPaintManager* pPaintManager)
 {
-	if (NULL != pPaintManager)
+	if (pPaintManager)
 	{
-		m_pPaintManager->SetReportControl(NULL);
 		m_pPaintManager->InternalRelease();
-
 		m_pPaintManager = pPaintManager;
-		m_pPaintManager->SetReportControl(this);
 
 		AdjustLayout();
 		AdjustScrollBars();
 	}
+}
+
+
+BOOL CXTPReportControl::Create(DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, CCreateContext* pContext)
+{
+	if (!CWnd::Create(XTPREPORTCTRL_CLASSNAME, NULL, dwStyle, rect, pParentWnd, nID, pContext))
+		return FALSE;
+
+	return TRUE;
 }
 
 int CXTPReportControl::GetIndent(int nLevel) const
@@ -670,10 +744,12 @@ void CXTPReportControl::SetTreeIndent(int nIndent)
 	m_pPaintManager->m_nTreeIndent = nIndent;
 }
 
+
 void CXTPReportControl::BeginUpdate()
 {
 	m_nLockUpdateCount++;
 	m_bRefreshIndexes = FALSE;
+
 }
 
 void CXTPReportControl::EndUpdate()
@@ -697,7 +773,9 @@ void CXTPReportControl::RedrawControl()
 {
 	SetChanged();
 	if (m_nLockUpdateCount == 0 && GetSafeHwnd())
+	{
 		Invalidate(FALSE);
+	}
 }
 
 void CXTPReportControl::UpdateSubList()
@@ -712,22 +790,29 @@ void CXTPReportControl::UpdateSubList()
 
 void CXTPReportControl::_DoCollapse(CXTPReportRow* pRow)
 {
-	ASSERT(NULL != pRow);
-
+	int nIndex = pRow->GetIndex() + 1;
 	int nCount = 0;
 
-	if (NULL != pRow && NULL != pRow->m_pSection)
+	while (nIndex < m_pRows->GetCount())
 	{
-		pRow->m_pSection->_DoCollapse(pRow);
+		CXTPReportRow* pRowChild = m_pRows->GetAt(nIndex);
+		if (!pRowChild->HasParent(pRow))
+			break;
+
+		pRowChild->m_bVisible = FALSE;
+		pRowChild->m_nIndex = -1;
+		m_pRows->RemoveAt(nIndex);
+		nCount++;
 	}
 
 	if (nCount > 0)
 	{
-		m_pSelectedRows->_OnCollapsed(pRow->GetIndex(), nCount);
-	}
+		m_pSelectedRows->_OnCollapsed(nIndex - 1, nCount);
 
-	AdjustLayout();
-	RedrawControl();
+		if (m_nFocusedRow >= nIndex)
+			m_nFocusedRow = max(nIndex - 1, m_nFocusedRow - nCount);
+
+	}
 }
 
 void CXTPReportControl::_DoExpand(CXTPReportRow* pRow)
@@ -739,35 +824,28 @@ void CXTPReportControl::_DoExpand(CXTPReportRow* pRow)
 	{
 		m_pSelectedRows->_OnExpanded(nIndex, nCount);
 
-		CXTPReportRows *pRows = pRow->GetSection()->GetRows();
+		if (m_nFocusedRow > nIndex)
+			m_nFocusedRow += nCount;
 
-		if (pRows->m_nFocusedRow > nIndex)
-		{
-			pRows->m_nFocusedRow += nCount;
-		}
 	}
 }
 
-int CXTPReportControl::_DoExpand(int nIndex, CXTPReportRow *pRow)
+int CXTPReportControl::_DoExpand(int nIndex, CXTPReportRow* pRow)
 {
-	ASSERT(NULL != pRow);
+	if (!pRow->HasChildren())
+		return 0;
 
-	int nExpand = 0;
-
-	if (NULL != pRow && NULL != pRow->m_pSection)
+	int nStartIndex = nIndex;
+	for (int i = 0; i < pRow->GetChilds()->GetCount(); i++)
 	{
-		nExpand = pRow->m_pSection->_DoExpand(nIndex, pRow);
+		CXTPReportRow* pRowChild = pRow->GetChilds()->GetAt(i);
+
+		pRowChild->m_nRowLevel = pRow->m_nRowLevel + 1;
+		pRowChild->m_nGroupLevel = pRow->m_nGroupLevel + (pRow->IsGroupRow() ? 1 : 0);
+
+		nIndex += InsertRow(nIndex + 1, pRowChild);
 	}
-
-	AdjustLayout();
-	RedrawControl();
-
-	return nExpand;
-}
-
-void CXTPReportControl::RefreshIndexes(BOOL bAdjustLayout, BOOL bReverseOrder)
-{
-	m_pSections->RefreshIndexes(bAdjustLayout, bReverseOrder);
+	return nIndex - nStartIndex;
 }
 
 void CXTPReportControl::_RefreshIndexes(BOOL bAdjustLayout, BOOL bReverseOrder)
@@ -776,12 +854,162 @@ void CXTPReportControl::_RefreshIndexes(BOOL bAdjustLayout, BOOL bReverseOrder)
 	{
 		m_bRefreshIndexes = TRUE;
 		return;
+
 	}
 
-	RefreshIndexes(bAdjustLayout, bReverseOrder);
+	int nRowCount = m_pRows->GetCount();
+	int nStartIdx = 0, nEndIdx = nRowCount, nStep = 1;
+	if(bReverseOrder)
+	{
+		nStartIdx = nRowCount - 1;
+		nEndIdx = nStep = -1;
+	}
+	for (int nIndex = nStartIdx; nIndex != nEndIdx; nIndex += nStep)
+	{
+		CXTPReportRow* pRow = m_pRows->GetAt(nIndex);
+
+		BOOL bSelected = m_pSelectedRows->Contains(pRow);
+		if(bSelected)
+			m_pSelectedRows->Remove(pRow);
+
+		pRow->m_nIndex = nIndex;
+		ASSERT(pRow->m_bVisible);
+
+		if(bSelected)
+			m_pSelectedRows->Add(pRow);
+	}
+
+	if (bAdjustLayout)
+		AdjustScrollBars();
 }
 
-CLIPFORMAT CXTPReportControl::EnableDragDrop(LPCTSTR lpszClipboardFormat, DWORD dwFlags, DWORD dwDropMarkerFlags)
+int CXTPReportControl::InsertRow(int nIndex, CXTPReportRow* pRow)
+{
+	m_pRows->InsertAt(nIndex, pRow);
+	pRow->InternalAddRef();
+	pRow->m_bVisible = TRUE;
+
+
+	int nRowsInserted = 1;
+
+	if (pRow->IsExpanded() && pRow->HasChildren())
+	{
+		nRowsInserted += _DoExpand(nIndex, pRow);
+	}
+	return nRowsInserted;
+}
+
+void CXTPReportControl::BuildTree(CXTPReportRows* pTree, CXTPReportRow* pParentRow, CXTPReportRecords* pRecords)
+{
+	ASSERT(pTree->GetCount() == 0);
+
+	pTree->ReserveSize(pRecords->GetCount());
+
+	for (int i = 0; i < pRecords->GetCount(); i++)
+	{
+		CXTPReportRecord* pRecord = pRecords->GetAt(i);
+
+		// add record if all conditions are met
+		if (pRecord->IsLocked() ||
+			(pRecord->IsVisible() && !ApplyFilter(pRecord, GetFilterText(), IsPreviewMode())))
+		{
+			CXTPReportRow* pRow = CreateRow();
+			pRow->InitRow(this, pRecord);
+
+			pRow->m_pParentRow = pParentRow;
+			pTree->Add(pRow);
+
+			if (pRecord->HasChildren())
+			{
+				BuildTree(pRow->GetChilds(), pRow, pRecord->GetChilds());
+				if (pRow->GetChilds() && IsSortRecordChilds())
+				{
+					SortRows(pRow->GetChilds());
+				}
+			}
+		}
+	}
+}
+
+void CXTPReportControl::SortTree(CXTPReportRows* pTree)
+{
+	ASSERT(pTree);
+	if (!pTree)
+		return;
+
+	SortRows(pTree);
+
+	for (int i = 0; i < pTree->GetCount(); i++)
+	{
+		CXTPReportRow* pRow = pTree->GetAt(i);
+		ASSERT(pRow);
+		if (!pRow)
+			continue;
+
+
+		BOOL bRecordHasChildren = pRow->GetRecord() && pRow->GetRecord()->HasChildren();
+
+		if (pRow->HasChildren() && pRow->GetChilds() &&
+			(bRecordHasChildren && m_bSortRecordChilds || !bRecordHasChildren))
+		{
+			SortTree(pRow->GetChilds());
+		}
+	}
+
+	pTree->RefreshChildIndices(FALSE);
+}
+
+void CXTPReportControl::ReSortRows()
+{
+	if (IsVirtualMode())
+	{
+		Populate();
+		return;
+	}
+
+	SortTree(m_pPlainTree);
+
+	CXTPReportRecord* pFocusedRecord = GetFocusedRow() ? GetFocusedRow()->GetRecord() : NULL;
+
+	m_pRows->Clear();
+	m_arrScreenRows.Clear(FALSE);
+
+	for (int nGroupRow = 0; nGroupRow < m_pPlainTree->GetCount(); nGroupRow++)
+	{
+		CXTPReportRow* pRow = m_pPlainTree->GetAt(nGroupRow);
+		InsertRow(m_pRows->GetCount(), pRow);
+		pRow->m_nChildIndex = nGroupRow;
+		ASSERT(pRow->m_pParentRows == m_pPlainTree);
+	}
+
+	//-----------------------------------------------------------------------
+	m_nFocusedRow = -1;
+	// Update indexes on virtual rows
+	int nRowCount = m_pRows->GetCount();
+	for (int nRowIndex = 0; nRowIndex < nRowCount; nRowIndex++)
+	{
+		CXTPReportRow* pRow = m_pRows->GetAt(nRowIndex);
+		if (pRow)
+		{
+			pRow->SetIndex(nRowIndex);
+			pRow->m_bVisible = TRUE;
+
+			if (pFocusedRecord && pRow->GetRecord() == pFocusedRecord)
+			{
+				m_nFocusedRow = pRow->GetIndex();
+				if(IsSelectionEnabled())
+					m_pSelectedRows->Select(pRow);
+			}
+		}
+	}
+
+	AdjustIndentation();
+	AdjustLayout();
+
+	RedrawControl();
+}
+
+CLIPFORMAT CXTPReportControl::EnableDragDrop(LPCTSTR lpszClipboardFormat, DWORD dwFlags)
 {
 	if (m_dwDragDropFlags != 0)
 	{
@@ -790,7 +1018,6 @@ CLIPFORMAT CXTPReportControl::EnableDragDrop(LPCTSTR lpszClipboardFormat, DWORD 
 	}
 
 	m_dwDragDropFlags = dwFlags;
-	m_dwDropMarkerFlags = dwDropMarkerFlags;
 	m_cfReport = NULL;
 
 	if (m_dwDragDropFlags != 0)
@@ -798,8 +1025,6 @@ CLIPFORMAT CXTPReportControl::EnableDragDrop(LPCTSTR lpszClipboardFormat, DWORD 
 		if (m_pDropTarget)
 		{
 			m_cfReport = (CLIPFORMAT)::RegisterClipboardFormat(lpszClipboardFormat);
-
-			m_pDropTarget->Revoke(); // to ensure kill previous registration.
 
 			m_pDropTarget->Register(this);
 		}
@@ -820,54 +1045,14 @@ BOOL CXTPReportControl::ApplyFilter(CXTPReportRecord* pRecord, CString strFilter
 	if (strFilterText.IsEmpty())
 		return FALSE;
 
-	BOOL bFilterSimple = GetRecordsTreeFilterMode() == xtpReportFilterTreeSimple;
-
-	if (!bFilterSimple && pRecord->HasChildren() && pRecord->GetChilds())
-	{
-		CXTPReportRecords* pChildren = pRecord->GetChilds();
-		int nCount = pChildren->GetCount();
-		for (int i = 0; i < nCount; i++)
-		{
-			CXTPReportRecord* pR = pChildren->GetAt(i);
-			if (!ApplyFilter(pR, strFilterText, bIncludePreview))
-				return FALSE;
-		}
-
-	}
-
-	if (GetRecordsTreeFilterMode() == xtpReportFilterTreeByEndChildrenOnly
-		&& pRecord->HasChildren())
-		return TRUE;
-
-	return _ApplyFilter(pRecord, strFilterText, bIncludePreview);
-
-}
-
-BOOL CXTPReportControl::_ApplyFilter(CXTPReportRecord* pRecord, CString strFilterText, BOOL bIncludePreview)
-{
-	// not filtered if filter text is empty
-	if (!pRecord)
-		return FALSE;
-
-	if (pRecord->IsFiltered())
-		return TRUE;
-
-	if (strFilterText.IsEmpty())
-		return FALSE;
-
 	BOOL bFilterHidden = IsFilterHiddenColumns();
 
 	// process each token in the filter string
 	TCHAR szSeps[] = _T(" \t");
-	TCHAR szSepsStrict[] = _T("\t");
-
 	TCHAR *szToken, *lpszContext = 0;
 	//int nCurPos = 0;
 
-	if (m_bStrictFiltering)
-		szToken = STRTOK_S(strFilterText.GetBuffer(strFilterText.GetLength()), szSepsStrict, &lpszContext);
-	else
-		szToken = STRTOK_S(strFilterText.GetBuffer(strFilterText.GetLength()), szSeps, &lpszContext);
+	szToken = STRTOK_S(strFilterText.GetBuffer(strFilterText.GetLength()), szSeps, &lpszContext);
 	while (szToken != NULL)
 	{
 		CString strToken(szToken);
@@ -878,7 +1063,7 @@ BOOL CXTPReportControl::_ApplyFilter(CXTPReportRecord* pRecord, CString strFilte
 		for (int nCol = 0; nCol < nColumnsCount; nCol++)
 		{
 			CXTPReportColumn* pCol = m_pColumns->GetAt(nCol);
-			if (pCol && (pCol->IsVisible() || bFilterHidden) && pCol->IsFilterable())
+			if (pCol && (pCol->IsVisible() || bFilterHidden) && pCol->IsFiltrable())
 			{
 				CXTPReportRecordItem* pItem = pRecord->GetItem(pCol);
 				if (pItem)
@@ -912,10 +1097,7 @@ BOOL CXTPReportControl::_ApplyFilter(CXTPReportRecord* pRecord, CString strFilte
 		}
 
 		// get next token
-		if (m_bStrictFiltering)
-			szToken = STRTOK_S(NULL, szSepsStrict, &lpszContext);
-		else
-			szToken = STRTOK_S(NULL, szSeps, &lpszContext);
+		szToken = STRTOK_S(NULL, szSeps, &lpszContext);
 	}
 
 	return FALSE;
@@ -927,11 +1109,160 @@ void CXTPReportControl::Populate()
 
 	BeginUpdate();
 
-	m_pSelectedRows->Clear();
+	m_nPopulatedRecordsCount = 0;
 
-	m_pSectionHeader->Populate(FALSE);
-	m_pSectionBody  ->Populate(FALSE);
-	m_pSectionFooter->Populate(FALSE);
+	// save focused items
+	CXTPReportRecord* pFocusedRecord = GetFocusedRow() ? GetFocusedRow()->GetRecord() : NULL;
+	m_pSelectedRows->Clear();
+	m_nFocusedRow = -1;
+	m_nFocusedHeaderRow = -1;
+	m_nFocusedFooterRow = -1;
+
+	m_pRows->Clear();
+	m_pPlainTree->Clear();
+	m_arrScreenRows.Clear(FALSE);
+	m_pHeaderRows->Clear();
+	m_pFooterRows->Clear();
+
+	if (IsVirtualMode())
+	{
+		CXTPReportRow* pRow = CreateRow();
+		pRow->InitRow(this, GetRecords()->m_pVirtualRecord);
+		pRow->m_bVisible = TRUE;
+
+		m_pRows->SetVirtualMode(pRow, GetRecords()->GetCount());
+		m_nPopulatedRecordsCount = GetRecords()->GetCount();
+	}
+	else
+	{
+		BuildTree(m_pPlainTree, NULL, m_pRecords);
+		m_nPopulatedRecordsCount = m_pPlainTree->GetCount();
+
+		SortRows(m_pPlainTree);
+
+		int nGroupRowsCount = 0;
+
+		if (m_pColumns->GetGroupsOrder()->GetCount() > 0)
+		{
+			CXTPReportRows* pGroupTree = new CXTPHeapObjectT<CXTPReportRows, CXTPReportAllocatorDefault>;
+
+			int nReserve = m_pRecords->GetCount() / (m_pColumns->GetGroupsOrder()->GetCount() + 1);
+			nReserve = max(nReserve, 300);
+			pGroupTree->ReserveSize(nReserve);
+
+			CXTPReportGroupRow* pLastGroup = NULL;
+
+			for (int nPlainRow = 0; nPlainRow < m_pPlainTree->GetCount(); nPlainRow++)
+			{
+				CXTPReportRow* pRow = m_pPlainTree->GetAt(nPlainRow);
+				CXTPReportGroupRow* pGroupToAdd = NULL;
+
+				for (int nColumn = 0; nColumn < m_pColumns->GetGroupsOrder()->GetCount(); nColumn++)
+				{
+					CXTPReportColumn* pColumn = m_pColumns->GetGroupsOrder()->GetAt(nColumn);
+					CXTPReportRecordItem* pItem = pRow->GetRecord()->GetItem(pColumn);
+					CString strGroup = pItem ? pItem->GetGroupCaption(pColumn) : _T("");
+
+					if (pLastGroup && GetRecords()->Compare(pLastGroup->GetCaption(), strGroup) == 0)
+					{
+						pGroupToAdd = pLastGroup;
+
+						if (pGroupToAdd->HasChildren())
+							pLastGroup = (CXTPReportGroupRow*)pGroupToAdd->GetChilds()->GetAt(pGroupToAdd->GetChilds()->GetCount() - 1);
+
+					}
+					else
+					{
+						CXTPReportGroupRow* pGroup = CreateGroupRow();
+						nGroupRowsCount++;
+
+						pGroup->InitRow(this, NULL);
+						pGroup->SetCaption(strGroup);
+
+						if (pGroupToAdd)
+						{
+							pGroupToAdd->AddChild(pGroup);
+						}
+						else
+						{
+							pGroupTree->Add(pGroup);
+						}
+
+						pGroupToAdd = pGroup;
+						pLastGroup = NULL;
+					}
+
+				}
+				if (pGroupToAdd) pGroupToAdd->AddChild(pRow);
+				pRow->InternalAddRef();
+				pLastGroup = (CXTPReportGroupRow*)pGroupTree->GetAt(pGroupTree->GetCount() - 1);
+			}
+
+			m_pPlainTree->InternalRelease();
+			m_pPlainTree = pGroupTree;
+		}
+
+		m_pRows->ReserveSize(m_pRecords->GetCount() + nGroupRowsCount + 10);
+
+		for (int nGroupRow = 0; nGroupRow < m_pPlainTree->GetCount(); nGroupRow++)
+		{
+			CXTPReportRow* pRow = m_pPlainTree->GetAt(nGroupRow);
+			InsertRow(m_pRows->GetCount(), pRow);
+			pRow->m_nChildIndex = nGroupRow;
+			ASSERT(pRow->m_pParentRows == m_pPlainTree);
+		}
+
+
+		m_nFocusedRow = -1;
+		m_nFocusedHeaderRow = -1;
+		m_nFocusedFooterRow = -1;
+
+		// Update indexes on virtual rows
+		int nRowCount = m_pRows->GetCount();
+		for (int nRowIndex = 0; nRowIndex < nRowCount; nRowIndex++)
+		{
+			CXTPReportRow* pRow = m_pRows->GetAt(nRowIndex);
+			if (pRow)
+			{
+				pRow->SetIndex(nRowIndex);
+				pRow->m_bVisible = TRUE;
+
+				if (pFocusedRecord && pRow->GetRecord() == pFocusedRecord)
+				{
+					m_nFocusedRow = pRow->GetIndex();
+					if(IsSelectionEnabled())
+						m_pSelectedRows->Select(pRow);
+				}
+			}
+		}
+
+		int i;
+		// header record rows
+		for (i = 0; i < m_pHeaderRecords->GetCount(); i++)
+		{
+			CXTPReportRecord* pRecord = m_pHeaderRecords->GetAt(i);
+			CXTPReportRow* pRow = CreateHeaderFooterRow();
+
+			pRow->InitRow(this, pRecord);
+			pRow->SetIndex(i);
+			pRow->m_nRowType = xtpRowTypeHeader;
+			pRow->m_pParentRow = NULL;
+			m_pHeaderRows->Add(pRow);
+		}
+
+		// footer record rows
+		for (i = 0; i < m_pFooterRecords->GetCount(); i++)
+		{
+			CXTPReportRecord* pRecord = m_pFooterRecords->GetAt(i);
+			CXTPReportRow* pRow = CreateHeaderFooterRow();
+
+			pRow->InitRow(this, pRecord);
+			pRow->SetIndex(i);
+			pRow->m_nRowType = xtpRowTypeFooter;
+			pRow->m_pParentRow = NULL;
+			m_pFooterRows->Add(pRow);
+		}
+	}
 
 	AdjustIndentation();
 	AdjustLayout();
@@ -939,31 +1270,15 @@ void CXTPReportControl::Populate()
 
 	UpdateSubList();
 
-	if (GetRows()->m_nFocusedRow == -1)
+	if (m_nFocusedRow == -1)
 	{
 		SetTopRow(0);
 
 		if (GetRows()->GetCount() > 0)
 		{
-			GetRows()->m_nFocusedRow = 0;
-			if (IsSelectionEnabled() && IsInitialSelectionEnabled())
-			{
-				CXTPReportRow* pFirst = m_pRows->GetAt(0);
-				if (pFirst)
-				{
-					if (!IsSkipGroupsFocusEnabled() || !pFirst->IsGroupRow())
-						m_pSelectedRows->Select(pFirst);
-					else
-					{
-						while (pFirst->IsGroupRow())
-						{
-							if (pFirst->HasChildren())
-								pFirst = pFirst->GetChilds()->GetAt(0);
-						}
-						m_pSelectedRows->Select(pFirst);
-					}
-				}
-			}
+			m_nFocusedRow = 0;
+			if(IsSelectionEnabled())
+				m_pSelectedRows->Select(m_pRows->GetAt(0));
 		}
 
 	}
@@ -975,21 +1290,35 @@ void CXTPReportControl::Populate()
 	if (m_pFocusedColumn == NULL && m_bFocusSubItems)
 	{
 		m_pFocusedColumn = m_pColumns->GetFirstVisibleColumn();
-//------------ Forum proposal 2009 June 19 ---------------------------- <<
-		if (GetRows())
-		{
-			CXTPReportRow* pRow = GetRows()->GetAt(GetTopRowIndex());
-			if (pRow)
-				m_pFocusedColumn = GetNextFocusableColumn(pRow, 0, 1);
-		}
-//------------ Forum proposal 2009 June 19 ---------------------------- >>
 	}
+
 	EndUpdate();
+}
+
+void CXTPReportControl::SortRows(CXTPReportRows* pRows)
+{
+	if (pRows->GetCount() == 0)
+		return;
+
+	if (m_pRowsCompareFunc && m_pRowsCompareFunc != CXTPReportRows::CompareRows)
+	{
+		pRows->SortEx(m_pRowsCompareFunc);
+		return;
+	}
+
+	if (m_pColumns->GetSortOrder()->GetCount() == 0 &&
+		m_pColumns->GetGroupsOrder()->GetCount() == 0)
+		return;
+
+	pRows->Sort();
 }
 
 void CXTPReportControl::AdjustIndentation()
 {
-	GetReportHeader()->m_nIndentLevel = m_pColumns->GetGroupsOrder()->GetCount();
+	XTP_TRACE(_T("AdjustIndentation()\n"));
+
+	GetReportHeader()->m_nIndentLevel =
+		m_pColumns->GetGroupsOrder()->GetCount();
 }
 
 CXTPReportColumn* CXTPReportControl::AddColumn(CXTPReportColumn* pColumn)
@@ -998,6 +1327,367 @@ CXTPReportColumn* CXTPReportControl::AddColumn(CXTPReportColumn* pColumn)
 	m_pColumns->Add(pColumn);
 
 	return pColumn;
+}
+
+CXTPReportRecord* CXTPReportControl::AddRecord(CXTPReportRecord* pRecord)
+{
+	ASSERT(pRecord);
+	if (!pRecord)
+		return NULL;
+
+	m_pRecords->Add(pRecord);
+
+	return pRecord;
+}
+
+void CXTPReportControl::AddRecordEx(CXTPReportRecord* pRecord, CXTPReportRecord* pParentRecord, int nChildIndex)
+{
+	ASSERT(pRecord);
+	if (!pRecord)
+		return;
+
+	// add record
+	BOOL bAddRecord = TRUE;
+	CXTPReportRecords* pParentRecords = pParentRecord ? pParentRecord->HasChildren() ? pParentRecord->GetChilds() : NULL : m_pRecords;
+	if(pParentRecords)
+	{
+		for(int nChild = 0; nChild < pParentRecords->GetCount(); nChild++)
+		{
+			if(pRecord == pParentRecords->GetAt(nChild))
+			{
+				bAddRecord = FALSE;
+				break;
+			}
+		}
+	}
+	if(bAddRecord)
+	{
+		if(pParentRecord)
+			pParentRecord->GetChilds()->Add(pRecord);
+		else
+			m_pRecords->Add(pRecord);
+	}
+
+	// find parent record rows
+	CXTPReportRows* pParentRows = m_pPlainTree;
+	CXTPReportRow* pParentRow = NULL;
+	if(pParentRecord)
+	{
+		pParentRow = m_pPlainTree->FindInTree(pParentRecord);
+		if(pParentRow)
+			pParentRows = pParentRow->GetChilds();
+	}
+	BOOL bRoot = pParentRows == m_pPlainTree;
+
+	// create new row
+	CXTPReportRow* pNewRow = CreateRow();
+	pNewRow->InitRow(this, pRecord);
+	pNewRow->m_pParentRow = NULL;
+
+	// add row to pParentRows
+	BOOL bInsertAfter = FALSE;
+	CXTPReportRow* pPlainTreeRow = NULL;
+	CXTPReportRow* pInsertRowPos = NULL;
+	int nNextSiblingIndex = m_pRows->GetCount();
+	if(bRoot)
+	{
+		pInsertRowPos = pParentRows->FindInsertionPos(pNewRow, bInsertAfter);
+		CXTPReportRow* pRow = pInsertRowPos;
+		while(pRow)
+		{
+			if(pRow->GetNextSiblingRow())
+			{
+				nNextSiblingIndex = pRow->GetNextSiblingRow()->GetIndex();
+				break;
+			}
+			else
+				pRow = pRow->GetParentRow();
+		}
+		if(m_pColumns->GetGroupsOrder()->GetCount() > 0)
+		{
+			CXTPReportGroupRow* pGroupToAdd = pInsertRowPos ? (CXTPReportGroupRow*)pInsertRowPos->GetParentRow() : NULL;
+			if(!pInsertRowPos || (pInsertRowPos && pInsertRowPos->IsGroupRow()))
+			{
+				for(int nColumn = pInsertRowPos ? pInsertRowPos->GetGroupLevel() : 0; nColumn < m_pColumns->GetGroupsOrder()->GetCount(); nColumn++)
+				{
+					CXTPReportColumn* pColumn = m_pColumns->GetGroupsOrder()->GetAt(nColumn);
+					CXTPReportRecordItem* pItem = pRecord->GetItem(pColumn);
+					CString strGroup = pItem ? pItem->GetGroupCaption(pColumn) : _T("");
+
+					CXTPReportGroupRow* pGroup = CreateGroupRow();
+					pGroup->InitRow(this, NULL);
+					pGroup->SetCaption(strGroup);
+					pGroup->m_nGroupLevel = pGroupToAdd ? pGroupToAdd->m_nRowLevel + 1 : 0;
+					pGroup->m_nRowLevel = nColumn;
+					if(pGroupToAdd)
+					{
+						if(!pPlainTreeRow)
+						{
+							pPlainTreeRow = pGroup;
+							pGroupToAdd->GetChilds()->InsertAt(bInsertAfter ? pInsertRowPos ? pInsertRowPos->m_nChildIndex + 1 : 0 : pInsertRowPos ? pInsertRowPos->m_nChildIndex : 0, pGroup);
+						}
+						else
+							pGroupToAdd->AddChild(pGroup);
+						pGroup->m_pParentRows = pGroupToAdd->GetChilds();
+						pGroup->m_pParentRow = pGroupToAdd;
+						pGroup->m_bVisible = pGroupToAdd->IsExpanded();
+					}
+					else
+					{
+						pPlainTreeRow = pGroup;
+						pParentRows->InsertAt(pInsertRowPos ? pInsertRowPos->m_nChildIndex : pParentRows->GetCount(), pGroup);
+						pGroup->m_pParentRows = pParentRows;
+						pGroup->m_pParentRow = NULL;
+						pGroup->m_bVisible = TRUE;
+					}
+					pGroupToAdd = pGroup;
+				}
+				// insert row
+				if(pGroupToAdd)
+				{
+					pGroupToAdd->AddChild(pNewRow);
+					pNewRow->m_pParentRows = pGroupToAdd->GetChilds();
+	//              pNewRow->m_pParentRow = pGroupToAdd;
+					pNewRow->m_bVisible = pGroupToAdd->IsExpanded();
+				}
+			}
+			else
+			{
+				// insert row
+				if(pGroupToAdd)
+				{
+					pGroupToAdd->GetChilds()->InsertAt(bInsertAfter ? pInsertRowPos ? pInsertRowPos->m_nChildIndex + 1 : 0 : pInsertRowPos ? pInsertRowPos->m_nChildIndex : 0, pNewRow);
+					pNewRow->m_pParentRows = pGroupToAdd->GetChilds();
+					pNewRow->m_pParentRow = pGroupToAdd;
+					pNewRow->m_bVisible = pGroupToAdd->IsExpanded();
+				}
+			}
+		}
+		else
+		{
+			pParentRows->InsertAt(pInsertRowPos ? pInsertRowPos->m_nChildIndex : pParentRows->GetCount(), pNewRow);
+			pNewRow->m_pParentRows = pParentRows;
+			pNewRow->m_pParentRow = NULL;
+			pNewRow->m_bVisible = TRUE;
+		}
+	}
+	else
+	{
+		if(nChildIndex >= 0 && nChildIndex < pParentRows->GetCount())
+			pParentRows->InsertAt(nChildIndex, pNewRow);
+		else
+			pParentRows->Add(pNewRow);
+		pNewRow->m_pParentRows = pParentRows;
+		pNewRow->m_pParentRow = pParentRow;
+		pNewRow->m_bVisible = TRUE;
+		pNewRow->m_nRowLevel = pParentRow->m_nRowLevel + 1;
+		pNewRow->m_nGroupLevel = pParentRow->m_nGroupLevel;
+		pNewRow->m_nChildIndex = nChildIndex >= 0 ? nChildIndex : pParentRows->GetCount() - 1;
+
+		CXTPReportRow* pRow = pNewRow;
+		while(pRow)
+		{
+			if(pRow->GetNextSiblingRow())
+			{
+				nNextSiblingIndex = pRow->GetNextSiblingRow()->GetIndex();
+				break;
+			}
+			else
+				pRow = pRow->GetParentRow();
+		}
+	}
+	// refresh child indices
+	if(pInsertRowPos && pInsertRowPos->GetParentRows())
+		pInsertRowPos->GetParentRows()->RefreshChildIndices();
+	else
+		pParentRows->RefreshChildIndices();
+
+	// add row to m_pRows
+	if(bRoot)
+	{
+		if(pInsertRowPos)
+		{
+			CXTPReportRow* pRow = pInsertRowPos->GetParentRow();
+			BOOL bIsExpanded = TRUE;
+			while(pRow && bIsExpanded)
+			{
+				bIsExpanded = bIsExpanded && pRow->IsExpanded();
+				pRow = pRow->GetParentRow();
+			}
+
+			if(bIsExpanded)
+			{
+				if(bInsertAfter)
+					InsertRow(nNextSiblingIndex, pPlainTreeRow ? pPlainTreeRow : pNewRow);
+				else
+					InsertRow(pInsertRowPos->GetIndex(), pPlainTreeRow ? pPlainTreeRow : pNewRow);
+			}
+		}
+		else
+		{
+			InsertRow(m_pRows->GetCount(), pPlainTreeRow ? pPlainTreeRow : pNewRow);
+		}
+	}
+	else
+	{
+		CXTPReportRow* pRow = pNewRow->GetParentRow();
+		BOOL bIsExpanded = TRUE;
+		while(pRow && bIsExpanded)
+		{
+			bIsExpanded = bIsExpanded && pRow->IsExpanded();
+			pRow = pRow->GetParentRow();
+		}
+
+		if(bIsExpanded)
+			InsertRow(nNextSiblingIndex, pNewRow);
+	}
+
+	_RefreshIndexes(FALSE, TRUE);
+
+	// add children
+	if(pRecord && pRecord->HasChildren())
+	{
+		for(int nChild = 0; nChild < pRecord->GetChilds()->GetCount(); nChild++)
+		{
+			AddRecordEx(pRecord->GetChilds()->GetAt(nChild), pRecord);
+		}
+	}
+}
+
+BOOL CXTPReportControl::RemoveRowEx(CXTPReportRow* pRow, BOOL bAdjustLayout)
+{
+	ASSERT(pRow);
+	if (!pRow)
+		return FALSE;
+
+	//------------------------------------------------
+	if (!pRow->IsGroupRow())
+	{
+		ASSERT(pRow->GetRecord());
+		return RemoveRecordEx(pRow->GetRecord(), bAdjustLayout);
+	}
+
+	//------------------------------------------------
+	CWaitCursor _WC;
+
+	int nCount = pRow->GetChilds()->GetCount();
+	ASSERT(nCount);
+
+	for (int i = nCount - 1; i >= 0 ; i--)
+	{
+		CXTPReportRow* pRowI = pRow->GetChilds()->GetAt(i);
+		RemoveRowEx(pRowI, bAdjustLayout);
+	}
+
+	return TRUE;
+}
+
+BOOL CXTPReportControl::RemoveRecordEx(CXTPReportRecord* pRecord, BOOL bAdjustLayout, BOOL bRemoveFromParent)
+{
+	ASSERT(pRecord && m_pRecords);
+
+	if (!pRecord || !m_pRecords)
+		return FALSE;
+
+	if (pRecord->HasChildren())
+	{
+		for (int i = pRecord->GetChilds()->GetCount() - 1; i >= 0 ; i--)
+		{
+			RemoveRecordEx(pRecord->GetChilds()->GetAt(i), bAdjustLayout, FALSE);
+		}
+
+//      return RemoveRecordEx(pRecord, bAdjustLayout);
+	}
+
+	BOOL bResult = FALSE;
+
+	//--------------------------------------------------------
+	CXTPReportRow* pRow0 = m_pPlainTree->FindInTree(pRecord);
+
+	ASSERT_DBG_REMOVE_RECORD_EX(pRow0);
+
+	if (pRow0)
+	{
+		CXTPReportRow* pRow = pRow0;
+		pRow0 = NULL;
+
+		do
+		{
+			CXTPReportRow* pRow_parent = pRow->GetParentRow();
+
+			ASSERT(pRow->GetParentRows());
+
+			// 1. Remove from selected rows
+			if(m_pSelectedRows->Contains(pRow))
+				m_pSelectedRows->Remove(pRow);
+
+			// 2. remove from Rows Tree
+			if (pRow->GetParentRows())
+				VERIFY(pRow->GetParentRows()->RemoveRow(pRow) >= 0);
+
+			// 3. remove from Display Rows array
+			m_pRows->RemoveRow(pRow);
+
+			pRow = pRow_parent;
+
+		} while (pRow && pRow->IsGroupRow() && pRow->GetChilds()->GetCount() == 0);
+
+		// refresh child indices
+		if(pRow && pRow->HasChildren())
+			pRow->GetChilds()->RefreshChildIndices();
+		else
+			m_pPlainTree->RefreshChildIndices();
+
+		bResult = TRUE;
+	}
+
+	//-------------------------------------------------------
+	//pRecord->Delete(); // the code below is more safe when record already removed!
+
+	ASSERT(pRecord->GetRecords());
+
+	if (bRemoveFromParent && pRecord->GetRecords())
+	{
+		BOOL bRecordRem = pRecord->GetRecords()->RemoveRecord(pRecord) >= 0;
+		pRecord = NULL;
+		ASSERT_DBG_REMOVE_RECORD_EX(bRecordRem);
+
+		bResult |= bRecordRem;
+	}
+
+	if (m_nFocusedRow >= 0 && m_nFocusedRow >= m_pRows->GetCount())
+		m_nFocusedRow = m_pRows->GetCount() - 1;
+
+	//-------------------------------------------------------
+	if (bResult)
+		_RefreshIndexes(bAdjustLayout);
+
+	return bResult;
+}
+
+void CXTPReportControl::UpdateRecord(CXTPReportRecord* pRecord, BOOL bUpdateChildren)
+{
+	// get parent record
+	CXTPReportRecord* pParentRecord = NULL;
+	if(pRecord->GetRecords())
+		pParentRecord = pRecord->GetRecords()->GetOwnerRecord();
+	// update record
+	if(!pParentRecord || bUpdateChildren)
+	{
+		// internal addref
+		pRecord->TreeAddRef();
+		// get record row child index
+		CXTPReportRow* pRow = m_pPlainTree->FindInTree(pRecord);
+		int nChildIndex = pRow->m_nChildIndex;
+		// remove record
+		RemoveRecordEx(pRecord, FALSE);
+		// add record
+		AddRecordEx(pRecord, pParentRecord, nChildIndex);
+		// internal release
+		pRecord->TreeRelease();
+	}
+	else
+		RedrawControl();
 }
 
 void CXTPReportControl::DrawNoItems(CDC* pDC, const CRect& rcClient)
@@ -1011,232 +1701,39 @@ void CXTPReportControl::DrawNoItems(CDC* pDC, const CRect& rcClient)
 		rcText.DeflateRect(5, 5, 5, 5);
 		CXTPFontDC font(pDC, &GetPaintManager()->m_fontText);
 		UINT uFlags = DT_CENTER | DT_TOP | DT_NOPREFIX | DT_WORDBREAK |
-			DT_WORD_ELLIPSIS | DT_END_ELLIPSIS | DT_EDITCONTROL;
+					  DT_WORD_ELLIPSIS | DT_END_ELLIPSIS | DT_EDITCONTROL;
 
-		XTPMarkupDrawText(GetMarkupContext(), pDC->GetSafeHdc(), strNoItems, rcText, uFlags);
+		pDC->DrawText(strNoItems, rcText, uFlags);
 	}
+
 }
 
-
-int CXTPReportControl::DrawRows(CDC *pDC, CRect &rcClient, int y, CXTPReportRows *pRows, int nTopRow, int nColumnFrom, int nColumnTo, int *pnHeight)
+void CXTPReportControl::DrawRows(CDC* pDC, CRect& rcClient)
 {
-	const BOOL bIsPrinting = pDC->IsPrinting();
+	m_arrScreenRows.Clear(FALSE);
 
-	CXTPReportRecordMergeItems mergeItems;
+	pDC->SetBkMode(TRANSPARENT);
 
-	CXTPReportScreenRows *pScreenRows = pRows->GetScreenRows();
-	pScreenRows->Clear();
-	pScreenRows->SetSize(0, 100);
+	int y = rcClient.top;
 
-	CXTPReportHeader *pHeader = GetReportHeader();
-	CRgn rgnClip;
-	int nRow = nTopRow; // Row index
+	int nRowCount = m_pRows->GetCount();
 
-	if (NULL != pHeader->GetNextVisibleColumn(-1, xtpReportColumnDirectionRight))
-	{
-		int nRowCount  = pRows->GetCount(); // Number of rows in the rows collection
-		int nRowWidth  = 0;
-		int nRowHeight = 0;
-
-		if (bIsPrinting)
-		{
-			nRowWidth = rcClient.Width();
-		}
-		else
-		{
-			nRowWidth = pHeader->GetWidth();
-		}
-
-
-		//////////////////////////////////////////////////////////////////////////
-		// Draw non-merged items
-		//////////////////////////////////////////////////////////////////////////
-#if 1
-
-		int nFreezeRight = 0;
-
-		if (GetFreezeColumnsCount() > 0)
-		{
-			CXTPReportColumn *pColumn = GetColumns()->GetAt(GetFreezeColumnsCount()-1);
-
-			if (NULL != pColumn)
-			{
-				nFreezeRight = pColumn->GetRect().right;
-			}
-		}
-
-		for (nRow=nTopRow; nRow<nRowCount; nRow++)
-		{
-			CXTPReportRow *pRow = pRows->GetAt(nRow);
-			ASSERT(pRow);
-
-			if (NULL != pRow)
-			{
-				nRowHeight = pRow->GetHeight(pDC, nRowWidth);
-
-				// Test if row is outside of client rectangle
-				if (bIsPrinting)
-				{
-					// Clipped rows are printed on the next page
-					if (y + nRowHeight > rcClient.bottom)
-					{
-						break;
-					}
-				}
-				else
-				{
-					// Clipped rows are drawn
-					if (y > rcClient.bottom)
-					{
-						break;
-					}
-				}
-
-				// Rectangles in Windows don't include the right and bottom edge.
-				CRect rcRow(rcClient.left, y, rcClient.left + nRowWidth, y + nRowHeight);
-
-				int nLeftOffset = 0;
-
-				if (!pDC->IsPrinting())
-				{
-					nLeftOffset = m_nScrollOffsetH;
-				}
-
-				// Draw row
-				pRow->Draw(pDC, rcRow, rcClient, nLeftOffset, mergeItems, nColumnFrom, nColumnTo);
-
-				y += nRowHeight;
-
-				CXTPReportRow *pScreenRow = NULL;
-				if (IsVirtualMode())
-				{
-					pScreenRow = CreateRow();
-					pScreenRow->InitRow(pRow);
-				}
-				else
-				{
-					pScreenRow = pRow;
-					pScreenRow->InternalAddRef();
-				}
-
-				pScreenRows->InsertAt(pScreenRows->GetSize(), pScreenRow);
-			}
-		} // for (nRow)
-#endif
-
-		//////////////////////////////////////////////////////////////////////////
-		// Draw merged items
-		//////////////////////////////////////////////////////////////////////////
-#if 1
-		VERIFY(rgnClip.CreateRectRgn(nFreezeRight, rcClient.top, rcClient.right, rcClient.bottom));
-
-		if (!pDC->IsPrinting())
-		{
-			pDC->SelectClipRgn(&rgnClip, RGN_COPY);
-		}
-
-		POSITION pos = mergeItems.GetStartPosition();
-
-		while (pos)
-		{
-			CXTPReportRecordItem *pItem;
-			CXTPReportRecordMergeItem mergeItem;
-
-			mergeItems.GetNextAssoc(pos, pItem, mergeItem);
-
-			CXTPReportRecordItemRange range;
-			CRect rcItem;
-
-			while (mergeItem.FindRange(range, rcItem))
-			{
-				//rcItem.left   = GetColumns()->GetAt(range.m_nColumnFrom)->GetRect().left;
-				//rcItem.right  = GetColumns()->GetAt(range.m_nColumnTo  )->GetRect().right;
-				//rcItem.top    = pRows->GetAt(range.m_nRecordFrom)->GetRect().top;
-				//rcItem.bottom = pRows->GetAt(range.m_nRecordTo  )->GetRect().bottom;
-
-				CRect rcGrid(rcItem);
-				rcItem.DeflateRect(0,0,1,1);
-
-				XTP_REPORTRECORDITEM_DRAWARGS drawArgs;
-				drawArgs.pDC        = pDC;
-				drawArgs.pControl   = this;
-				drawArgs.pColumn    = GetColumns()->GetAt(range.m_nColumnFrom);
-				drawArgs.pRow       = pRows->GetAt(range.m_nRecordFrom);
-				drawArgs.rcItem     = rcItem;
-				drawArgs.nTextAlign = drawArgs.pColumn->GetAlignment();
-				drawArgs.pItem      = pItem;
-
-				pItem->Draw(&drawArgs);
-
-				drawArgs.pRow->DrawItemGrid(pDC, drawArgs.pColumn, rcGrid);
-			}
-		}
-
-		if (!pDC->IsPrinting())
-		{
-			pDC->SelectClipRgn(NULL, RGN_COPY);
-		}
-
-		VERIFY(rgnClip.DeleteObject());
-#endif
-	}
-
-	//////////////////////////////////////////////////////////////////////////
-	// Fill the rest of space with empty grid
-	//////////////////////////////////////////////////////////////////////////
-
-	if (GetPaintManager()->IsDrawGridForEmptySpace() && y < rcClient.bottom)
-	{
-		VERIFY(rgnClip.CreateRectRgn(rcClient.left, rcClient.top, rcClient.right, rcClient.bottom));
-
-		if (!pDC->IsPrinting())
-		{
-			pDC->SelectClipRgn(&rgnClip, RGN_COPY);
-		}
-
-		CRect rcEmpty(rcClient);
-		rcEmpty.top = y;
-		DrawDefaultGrid(pDC, rcEmpty, GetPaintManager()->m_nRowHeight, m_nScrollOffsetH); //always use standard row height
-
-		if (!pDC->IsPrinting())
-		{
-			pDC->SelectClipRgn(NULL, RGN_COPY);
-		}
-
-		VERIFY(rgnClip.DeleteObject());
-	}
-	if (0 == pRows->GetCount())
+	if (0 == nRowCount)
 	{
 		DrawNoItems(pDC, rcClient);
 	}
 
-	if (NULL != pnHeight)
-	{
-		*pnHeight = y - rcClient.top;
-	}
+	if (GetReportHeader()->GetNextVisibleColumn(-1, 1) == NULL)
+		return;
 
-	return nRow;
-}
-
-
-void CXTPReportControl::DrawIconView(CDC *pDC, CRect &rcClient)
-{
-	CXTPReportRecordMergeItems mergeItems;
-
+	int nRowHeight = 0;
 	int nHeaderWidth = GetReportHeader()->GetWidth();
-	int nRowCount = m_pRows->GetCount();
-	int y = rcClient.top;
 
-	m_iIconViewRowsPerLine = GetNumRowsOnLine(nHeaderWidth);
-	int x = rcClient.left;
-	int iLastMainRow = m_pRows->GetTopRowIndex();
 
-	while(iLastMainRow % m_iIconViewRowsPerLine)
-	{
-		iLastMainRow++;
-	}
+	//m_arrScreenRows.ReserveSize(200);
+	m_arrScreenRows.SetSize(0, 200);
 
-	for (int i = iLastMainRow; i < nRowCount; i++)
+	for (int i = m_nTopRow; i < nRowCount; i++)
 	{
 		CXTPReportRow* pRow = m_pRows->GetAt(i);
 		ASSERT(pRow);
@@ -1246,60 +1743,81 @@ void CXTPReportControl::DrawIconView(CDC *pDC, CRect &rcClient)
 		if (y > rcClient.bottom)
 			break;
 
-		if (pRow->GetIndex() % m_iIconViewRowsPerLine)
-		{
-			x += m_iIconWidthSpacing;
+		nRowHeight = pRow->GetHeight(pDC, nHeaderWidth);
 
-			CRect rcRow(x, y, x + m_iIconWidthSpacing,
-						y + m_iIconHeightSpacing);
+		CRect rcRow(rcClient.left, y, rcClient.left + nHeaderWidth,
+					y + pRow->GetHeight(pDC, nHeaderWidth));
 
-			pRow->Draw(pDC, rcRow, GetReportRectangle(), 0, mergeItems, 0, GetColumns()->GetCount());
-		}
-		else
-		{
-			x = rcClient.left;
+		pRow->Draw(pDC, rcRow, m_nLeftOffset);
 
-			if (iLastMainRow != pRow->GetIndex())
-			{
-				y += m_iIconHeightSpacing;
-				iLastMainRow = pRow->GetIndex();
-			}
+		y += rcRow.Height();
 
-			CRect rcRow(x, y, x + m_iIconWidthSpacing,
-						y + m_iIconHeightSpacing);
-
-			pRow->Draw(pDC, rcRow, GetReportRectangle(), 0, mergeItems, 0, GetColumns()->GetCount());
-		}
 
 		CXTPReportRow* pScreenRow = NULL;
 		if (IsVirtualMode())
 		{
 			pScreenRow = CreateRow();
 			pScreenRow->InitRow(pRow);
-			pScreenRow->SetExpanded(pRow->IsExpanded());
-			pScreenRow->m_rcCollapse = pRow->m_rcCollapse;
 		}
 		else
 		{
 			pScreenRow = pRow;
 			pScreenRow->InternalAddRef();
+
 		}
-		CXTPReportScreenRows *pScreenRows = GetRows()->GetScreenRows();
-		pScreenRows->InsertAt(pScreenRows->GetSize(), pScreenRow);
+		m_arrScreenRows.InsertAt(m_arrScreenRows.GetCount(), pScreenRow);
 	}
+
+	// fill the rest of space with the "fake" rows
+	if (GetPaintManager()->IsDrawGridForEmptySpace() && y < rcClient.bottom)
+	{
+		CRect rcEmpty(rcClient);
+		rcEmpty.top = y;
+		DrawDefaultGrid(pDC, rcEmpty, nRowHeight, m_nLeftOffset);
+	}
+}
+
+void CXTPReportControl::DrawFixedRows(CDC* pDC, CRect& rcClient, CXTPReportRows* pRows)
+{
+	pDC->SetBkMode(TRANSPARENT);
+
+	int y = rcClient.top;
+
+	int nRowCount = pRows->GetCount();
+
+	if ( nRowCount > 0 )
+	{
+		if (GetReportHeader()->GetNextVisibleColumn(-1, 1) == NULL)
+			return;
+
+		int nHeaderWidth = GetReportHeader()->GetWidth();
+
+		for (int i = 0; i < nRowCount; i++)
+		{
+			CXTPReportRow* pRow = pRows->GetAt(i);
+
+			if (y > rcClient.bottom)
+				break;
+
+			CRect rcRow(rcClient.left, y, rcClient.left + nHeaderWidth,
+						y + pRow->GetHeight(pDC, nHeaderWidth));
+
+			pRow->DrawFixed(pDC, rcRow, m_nLeftOffset, rcClient);
+
+			y += rcRow.Height();
+		}
+	}
+}
+
+void CXTPReportControl::DrawFixedRecordsDivider(CDC* pDC, CRect& rcClient, BOOL bHeaderRows)
+{
+	GetPaintManager()->DrawFixedRowsDivider(pDC, rcClient, this, bHeaderRows, m_bVScrollBarVisible);
 }
 
 void CXTPReportControl::OnSelectionChanged()
 {
-	SetLastRqstEdit(-1, -1);
-
-	//m_iLastRqstEditCol = -1;
-	//m_iLastRqstEditRow = -1;
-
 	SendNotifyMessage(XTP_NM_REPORT_SELCHANGED);
-
-	if (m_pSelectedRows)
-		m_pSelectedRows->SetChanged(FALSE);
+	m_pSelectedRows->SetChanged(FALSE);
 }
 
 BOOL CXTPReportControl::OnFocusChanging(CXTPReportRow* pNewRow, CXTPReportColumn* pNewCol)
@@ -1317,24 +1835,25 @@ BOOL CXTPReportControl::OnFocusChanging(CXTPReportRow* pNewRow, CXTPReportColumn
 	return !nm.bCancel;
 }
 
-void CXTPReportControl::GetItemMetrics(
-	XTP_REPORTRECORDITEM_DRAWARGS *pDrawArgs,
-	XTP_REPORTRECORDITEM_METRICS  *pMetrics)
+void CXTPReportControl::GetItemMetrics(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs,
+	XTP_REPORTRECORDITEM_METRICS* pMetrics)
 {
 	XTP_NM_REPORTITEMMETRICS nmData;
-	nmData.pDrawArgs    = pDrawArgs;
+	nmData.pDrawArgs = pDrawArgs;
 	nmData.pItemMetrics = pMetrics;
 
-	SendNotifyMessage(XTP_NM_REPORT_GETITEMMETRICS, (NMHDR*) &nmData);
+	SendNotifyMessage(XTP_NM_REPORT_GETITEMMETRICS, (NMHDR*)&nmData);
 }
+
+
 
 BOOL CXTPReportControl::SetFocusedColumn(CXTPReportColumn* pColumn)
 {
 	if (m_pFocusedColumn != pColumn)
 	{
-		if (m_bFocusSubItems && pColumn)
+		if (m_bFocusSubItems)
 		{
-			if (!OnFocusChanging(NULL, pColumn))
+			if(!OnFocusChanging(NULL, pColumn))
 				return FALSE;
 		}
 
@@ -1344,16 +1863,16 @@ BOOL CXTPReportControl::SetFocusedColumn(CXTPReportColumn* pColumn)
 		{
 			CRect rc(m_pFocusedColumn->GetRect());
 
-			if (rc.right >= m_pSectionBody->GetRect().Width())
+			if (rc.right >= m_rcReportArea.Width())
 			{
-				SetScrollOffsetH(m_nScrollOffsetH + min(rc.left, rc.right - m_pSectionBody->m_rcSection.Width()));
+				SetLeftOffset(m_nLeftOffset + min(rc.left, rc.right - m_rcReportArea.Width()));
 			}
 			else
 			{
 				int nFreezeColumnWidth = 0;
-				int nFreezeColumnsCount = GetFreezeColumnsCount();
-				if (nFreezeColumnsCount > 0)
+				if (m_nFreezeColumnsCount > 0)
 				{
+					int nFreezeColumnsCount = m_nFreezeColumnsCount;
 					for (int i = 0; (i < m_pColumns->GetCount()) && (nFreezeColumnsCount > 0); i++)
 					{
 						CXTPReportColumn* pColumnCheck = m_pColumns->GetAt(i);
@@ -1372,175 +1891,104 @@ BOOL CXTPReportControl::SetFocusedColumn(CXTPReportColumn* pColumn)
 					}
 				}
 
-				if (rc.left - nFreezeColumnWidth <= 0 && m_nScrollOffsetH != 0)
+				if (rc.left - nFreezeColumnWidth <= 0 && m_nLeftOffset != 0)
 				{
-					SetScrollOffsetH(m_nScrollOffsetH + rc.left - nFreezeColumnWidth);
+					SetLeftOffset(m_nLeftOffset + rc.left - nFreezeColumnWidth);
 				}
 			}
 		}
 
 		if (m_bFocusSubItems)
+		{
 			OnSelectionChanged();
+		}
 	}
 
 	return TRUE;
 }
 
-
-BOOL CXTPReportControl::SetFocusedRow(CXTPReportRow* pRow, BOOL bShiftKey, BOOL bControlKey)
+BOOL CXTPReportControl::SetFocusedRow(CXTPReportRow* pRow, BOOL bIgnoreSelection)
 {
-	return SetFocusedRow(TRUE, pRow, bShiftKey, bControlKey);
-}
-
-
-BOOL CXTPReportControl::SetFocusedRow(CXTPReportRow* pRow, BOOL bControlKey)
-{
-	return SetFocusedRow(TRUE, pRow, FALSE, bControlKey);
-}
-
-
-int CXTPReportControl::_GetFocusedRowType() const
-{
-	int nFocusedRowType = -1;
-
-	if (GetRows()->GetFocusedRowIndex() != -1)
+	if(pRow)
 	{
-		nFocusedRowType  = xtpRowTypeBody;
-	}
-	if (GetHeaderRows()->GetFocusedRowIndex() != -1)
-	{
-		nFocusedRowType  = xtpRowTypeHeader;
-	}
-	if (GetFooterRows()->GetFocusedRowIndex() != -1)
-	{
-		nFocusedRowType  = xtpRowTypeFooter;
-	}
-
-	return nFocusedRowType;
-}
-
-int CXTPReportControl::_GetFocusedRowIndex() const
-{
-	int nFocusedRowIndex = -1;
-
-	if (GetRows()->GetFocusedRowIndex() != -1)
-	{
-		nFocusedRowIndex = GetRows()->GetFocusedRowIndex();
-	}
-	if (GetHeaderRows()->GetFocusedRowIndex() != -1)
-	{
-		nFocusedRowIndex = GetHeaderRows()->GetFocusedRowIndex();
-	}
-	if (GetFooterRows()->GetFocusedRowIndex() != -1)
-	{
-		nFocusedRowIndex = GetFooterRows()->GetFocusedRowIndex();
-	}
-
-	return nFocusedRowIndex;
-}
-
-BOOL CXTPReportControl::_SetFocusedRow(CXTPReportRow *pRow)
-{
-	//////////////////////////////////////////////////////////////////////////
-	// Current focused row
-	//////////////////////////////////////////////////////////////////////////
-	int nFocusedRowType  = _GetFocusedRowType();
-	int nFocusedRowIndex = _GetFocusedRowIndex();
-
-	//////////////////////////////////////////////////////////////////////////
-	// New focused row
-	//////////////////////////////////////////////////////////////////////////
-	int nRowType  = -1;
-	int nRowIndex = -1;
-
-	if (NULL != pRow)
-	{
-		nRowType  = pRow->GetType();
-		nRowIndex = pRow->GetIndex();
-	}
-
-	//////////////////////////////////////////////////////////////////////////
-	// Notify OnFocusChanging
-	//////////////////////////////////////////////////////////////////////////
-	BOOL bApply = TRUE;
-
-	if (nFocusedRowType  != nRowType ||
-		 nFocusedRowIndex != nRowIndex)
-	{
-		if (NULL != pRow)
+		int nFocusedRow = m_nFocusedRow != -1 ? m_nFocusedRow : m_nFocusedHeaderRow != -1 ? m_nFocusedHeaderRow : m_nFocusedFooterRow;
+		if(nFocusedRow != pRow->GetIndex())
 		{
-			pRow->InternalAddRef();
-
-			bApply = OnFocusChanging(pRow, NULL);
-
-			if (1 == pRow->m_dwRef)
-			{
-				// Removed
-				bApply = FALSE;
-			}
-
-			pRow->InternalRelease();
+			if(!OnFocusChanging(pRow, NULL))
+				return FALSE;
 		}
 	}
 
-	//////////////////////////////////////////////////////////////////////////
-	// Set new focused row
-	//////////////////////////////////////////////////////////////////////////
+	EditItem(NULL);
+	BeginUpdate();
 
-	GetRows()->SetFocusedRowIndex(-1);
-	GetFooterRows()->SetFocusedRowIndex(-1);
-	GetHeaderRows()->SetFocusedRowIndex(-1);
-
-	if (NULL != pRow && bApply)
-	{
-		switch (pRow->GetType())
-		{
-			case xtpRowTypeBody:
-				GetRows()->SetFocusedRowIndex(pRow->GetIndex());
-				break;
-			case xtpRowTypeHeader:
-				GetHeaderRows()->SetFocusedRowIndex(pRow->GetIndex());
-				break;
-			case xtpRowTypeFooter:
-				GetFooterRows()->SetFocusedRowIndex(pRow->GetIndex());
-				break;
-		}
-	}
-
-	return bApply;
-}
-
-
-BOOL CXTPReportControl::_SetSelectedRow(CXTPReportRow *pRow, int nFocusedRowIndex, BOOL bShiftKey, BOOL bControlKey)
-{
-	BOOL bEnableSelection = FALSE;
-
-	if (pRow)
-	{
-		switch(pRow->GetType())
-		{
-		case xtpRowTypeBody:
-			bEnableSelection = IsSelectionEnabled();
-			break;
-		case xtpRowTypeHeader:
-			bEnableSelection = IsHeaderRowsSelectionEnabled();
-			break;
-		case xtpRowTypeFooter:
-			bEnableSelection = IsFooterRowsSelectionEnabled();
-			break;
-		}
-	}
+	BOOL bEnableSelection = (!bIgnoreSelection || !m_bMultipleSelection) && IsSelectionEnabled();
+	if(pRow && pRow->GetType() == xtpRowTypeHeader)
+		bEnableSelection &= IsHeaderRowsSelectionEnabled();
+	if(pRow && pRow->GetType() == xtpRowTypeFooter)
+		bEnableSelection &= IsFooterRowsSelectionEnabled();
 
 	if (bEnableSelection)
 	{
-		if (m_bBlockSelection)
+		m_pSelectedRows->Select(pRow);
+	}
+
+	if (pRow)
+	{
+		m_nFocusedRow = m_nFocusedHeaderRow = m_nFocusedFooterRow = -1;
+
+		switch(pRow->GetType())
 		{
-			if (bShiftKey && nFocusedRowIndex != -1)
+			case xtpRowTypeBody:    m_nFocusedRow = pRow->GetIndex(); break;
+			case xtpRowTypeHeader:  m_nFocusedHeaderRow = pRow->GetIndex();  break;
+			case xtpRowTypeFooter:  m_nFocusedFooterRow = pRow->GetIndex(); break;
+		}
+
+		GetNavigator()->SetMovePosition(pRow->GetType());
+
+		EnsureVisible(pRow);
+	}
+
+	EndUpdate();
+
+	if (m_pSelectedRows->IsChanged())
+		OnSelectionChanged();
+
+	return TRUE;
+}
+
+BOOL CXTPReportControl::SetFocusedRow(CXTPReportRow* pRow, BOOL bSelectBlock, BOOL bIgnoreSelection)
+{
+	if (!pRow)
+		return FALSE;
+
+	int nFocusedRow = m_nFocusedRow != -1 ? m_nFocusedRow : m_nFocusedHeaderRow != -1 ? m_nFocusedHeaderRow : m_nFocusedFooterRow;
+	if(nFocusedRow != pRow->GetIndex())
+	{
+		if(!OnFocusChanging(pRow, NULL))
+			return FALSE;
+	}
+
+	EditItem(NULL);
+	BeginUpdate();
+
+	BOOL bEnableSelection = IsSelectionEnabled();
+	if(pRow && pRow->GetType() == xtpRowTypeHeader)
+		bEnableSelection &= IsHeaderRowsSelectionEnabled();
+	if(pRow && pRow->GetType() == xtpRowTypeFooter)
+		bEnableSelection &= IsFooterRowsSelectionEnabled();
+
+	if(bEnableSelection)
+	{
+		if (m_bMultipleSelection)
+		{
+			int nFocusedRow = m_nFocusedRow != -1 ? m_nFocusedRow : m_nFocusedHeaderRow != -1 ? m_nFocusedHeaderRow : m_nFocusedFooterRow;
+			if (bSelectBlock && nFocusedRow != -1)
 			{
-				int nSelRow = pRow->GetIndex();
-				m_pSelectedRows->SelectBlock(nFocusedRowIndex, nSelRow, bControlKey);
+				m_pSelectedRows->SelectBlock(nFocusedRow, pRow->GetIndex());
+
 			}
-			else if (!bControlKey)
+			else if (!bIgnoreSelection)
 			{
 				m_pSelectedRows->Select(pRow);
 			}
@@ -1551,131 +1999,111 @@ BOOL CXTPReportControl::_SetSelectedRow(CXTPReportRow *pRow, int nFocusedRowInde
 		}
 	}
 
-	return TRUE;
-}
+	m_nFocusedRow = m_nFocusedHeaderRow = m_nFocusedFooterRow = -1;
 
-
-BOOL CXTPReportControl::SetFocusedRow(BOOL bEnsureVisible, CXTPReportRow *pRow, BOOL bShiftKey, BOOL bControlKey)
-{
-	int nFocusedRowIndex = _GetFocusedRowIndex();                           // Current focused row
-
-	EditItem(NULL);
-	BeginUpdate();
-
-	_SetFocusedRow(pRow);                                               // Null pointer clears focus
-	_SetSelectedRow(pRow, nFocusedRowIndex, bShiftKey, bControlKey);    // Null pointer clears selection
-
-	if (bEnsureVisible && (NULL != pRow))
+	switch(pRow->GetType())
 	{
-		EnsureVisible(pRow); // Null pointer not allowed
+		case xtpRowTypeBody:    m_nFocusedRow       = pRow->GetIndex(); break;
+		case xtpRowTypeHeader:  m_nFocusedHeaderRow = pRow->GetIndex(); break;
+		case xtpRowTypeFooter:  m_nFocusedFooterRow = pRow->GetIndex(); break;
 	}
+
+	GetNavigator()->SetMovePosition(pRow->GetType());
+
+	EnsureVisible(pRow);
 	EndUpdate();
 
 	if (m_pSelectedRows->IsChanged())
-	{
 		OnSelectionChanged();
-	}
 
 	return TRUE;
 }
 
 
-void CXTPReportControl::SetScrollOffsetH(int nOffset)
+void CXTPReportControl::SetLeftOffset(int nOffset)
 {
 	if (nOffset < 0)
-	{
 		nOffset = 0;
-	}
 
-	if (nOffset != m_nScrollOffsetH)
-	{
-		m_nScrollOffsetH = nOffset;
-		AdjustScrollBarH(TRUE, SIF_PAGE | SIF_POS); // Only update page and position
+	if (nOffset == m_nLeftOffset)
+		return;
 
-		// Send notification
-		XTP_NM_REPORT_SCROLL msg;
-		msg.nSection  = xtpReportSectionBody;
-		msg.nPosition = nOffset;
-		SendNotifyMessage(XTP_NM_REPORT_HSCROLL, &msg);
-	}
-}
+	m_nLeftOffset = nOffset;
 
-void CXTPReportControl::SetScrollOffsetV(int nOffset)
-{
-	if (nOffset < 0)
-	{
-		nOffset = 0;
-	}
+	if (!m_bFullColumnScrolling)
+		SetScrollPos(SB_HORZ, nOffset);
 
-	if (nOffset != m_nScrollOffsetV)
-	{
-		m_nScrollOffsetV = nOffset;
-		AdjustScrollBarV(TRUE, SIF_PAGE | SIF_POS); // Only update page and position
-
-		// Send notification
-		XTP_NM_REPORT_SCROLL msg;
-		msg.nSection  = xtpReportSectionBody;
-		msg.nPosition = nOffset;
-		SendNotifyMessage(XTP_NM_REPORT_VSCROLL, &msg);
-	}
+	AdjustScrollBars();
 }
 
 void CXTPReportControl::SetTopRow(int nIndex)
 {
+	if (nIndex == m_nTopRow)
+		return;
+
+	ASSERT(nIndex >= 0);
+
 	if (nIndex < 0)
-	{
 		nIndex = 0;
-	}
 
-	if (nIndex != GetTopRowIndex())
-	{
-		if (IsIconView())
-		{
-			// Must get first row on the same line.
-			while(nIndex % GetRowsPerLine())
-			{
-				nIndex--;
-			}
-		}
-
-		m_pRows->SetTopRowIndex(nIndex);
-		AdjustScrollBarV(TRUE, SIF_PAGE | SIF_POS); // Only update page and position
-
-		// Send notification
-		XTP_NM_REPORT_SCROLL msg;
-		msg.nSection  = xtpReportSectionBody;
-		msg.nPosition = nIndex;
-		SendNotifyMessage(XTP_NM_REPORT_VSCROLL, &msg);
-	}
+	m_nTopRow = nIndex;
+	SetScrollPos(SB_VERT, nIndex);
+	AdjustScrollBars();
 }
 
-void CXTPReportControl::EnsureVisible(CXTPReportRow *pRow)
+void CXTPReportControl::EnsureVisible(CXTPReportRow* pCheckRow)
 {
-	if (NULL != pRow)
-	{
-		if (NULL == GetSafeHwnd())
-		{
-			m_nEnsureVisibleRowIdx = pRow->GetIndex();
-		}
-		else
-		{
-			CXTPReportSection *pSection = pRow->GetSection();
-			ASSERT(NULL != pSection);
+	int nCheckIndex = pCheckRow ? pCheckRow->GetIndex() : -1;
 
-			if (NULL != pSection)
-			{
-				if (pSection->GetRect().IsRectNull())
-				{
-					m_nEnsureVisibleRowIdx = pRow->GetIndex();
-				}
-				else
-				{
-					CClientDC dc(this);
-					pSection->EnsureVisible(&dc, pRow);
-				}
-			}
-		}
+	if (nCheckIndex == -1 || !pCheckRow->m_bVisible || nCheckIndex >= m_pRows->GetCount())
+		return;
+
+	if (nCheckIndex < m_nTopRow)
+	{
+		SetTopRow(nCheckIndex);
+		return;
 	}
+
+	CClientDC dc (this);
+
+	int top = m_rcReportArea.top;
+	int nHeaderWidth = GetReportHeader()->GetWidth();
+
+	for (int i = m_nTopRow; i < m_pRows->GetCount(); i++)
+	{
+		CXTPReportRow* pRow = m_pRows->GetAt(i);
+		ASSERT(pRow);
+		if (!pRow)
+			continue;
+
+		int nRowHeight = pRow->GetHeight(&dc, nHeaderWidth);
+
+		if (top + nRowHeight > m_rcReportArea.bottom)
+			break;
+
+		if (i == nCheckIndex)
+			return;
+
+		top += nRowHeight;
+	}
+
+	int nHeight = m_rcReportArea.Height();
+	for (top = nCheckIndex; top >= 0; top--)
+	{
+		CXTPReportRow* pRow = m_pRows->GetAt(top);
+		int nRowHeight = pRow->GetHeight(&dc, nHeaderWidth);
+
+		if (nHeight - nRowHeight < 0)
+		{
+			if (top != nCheckIndex)
+				top++;
+			break;
+		}
+
+		nHeight -= nRowHeight;
+	}
+	SetTopRow(top);
+	RedrawControl();
 }
 
 void CXTPReportControl::EnsureVisible(CXTPReportColumn* pCheckColumn)
@@ -1685,24 +2113,18 @@ void CXTPReportControl::EnsureVisible(CXTPReportColumn* pCheckColumn)
 	if (nCheckIndex == -1 || !pCheckColumn->m_bVisible || nCheckIndex >= m_pColumns->GetCount())
 		return;
 
-	if (m_pSectionBody->m_rcSection.Height() <= 0)
-	{
-		m_nEnsureVisibleRowIdx = nCheckIndex;
-		return;
-	}
-
 	CRect rc(pCheckColumn->GetRect());
 
-	if (rc.right >= m_pSectionBody->m_rcSection.Width())
+	if (rc.right >= m_rcReportArea.Width())
 	{
-		SetScrollOffsetH(m_nScrollOffsetH + min(rc.left, rc.right - m_pSectionBody->m_rcSection.Width()));
+		SetLeftOffset(m_nLeftOffset + min(rc.left, rc.right - m_rcReportArea.Width()));
 	}
 	else
 	{
 		int nFreezeColumnWidth = 0;
-		int nFreezeColumnsCount = GetFreezeColumnsCount();
-		if (nFreezeColumnsCount > 0)
+		if (m_nFreezeColumnsCount > 0)
 		{
+			int nFreezeColumnsCount = m_nFreezeColumnsCount;
 			for (int i = 0; (i < m_pColumns->GetCount()) && (nFreezeColumnsCount > 0); i++)
 			{
 				CXTPReportColumn* pColumn = m_pColumns->GetAt(i);
@@ -1721,106 +2143,69 @@ void CXTPReportControl::EnsureVisible(CXTPReportColumn* pCheckColumn)
 			}
 		}
 
-		if (rc.left - nFreezeColumnWidth <= 0 && m_nScrollOffsetH != 0)
+		if (rc.left - nFreezeColumnWidth <= 0 && m_nLeftOffset != 0)
 		{
-			SetScrollOffsetH(m_nScrollOffsetH + rc.left - nFreezeColumnWidth);
+			SetLeftOffset(m_nLeftOffset + rc.left - nFreezeColumnWidth);
 		}
 	}
-}
-
-BOOL CXTPReportControl::HitTest(CPoint pt, CXTPReportHitTestInfo *pInfo) const
-{
-	if (NULL == pInfo)
-	{
-		return FALSE;
-	}
-
-	pInfo->m_pColumn        = NULL;	
-	pInfo->m_pRow           = NULL;
-	pInfo->m_pItem          = NULL;
-	pInfo->m_pBlock         = NULL;
-	pInfo->m_htCode         = xtpReportHitTestUnknown;
-	pInfo->m_iTrackPosition = 0;
-
-	if (m_rcHeaderArea.PtInRect(pt))
-	{
-		pInfo->m_htCode  = xtpReportHitTestHeader;
-		pInfo->m_pColumn = GetReportHeader()->HitTest(pt);
-	}
-	else if (m_rcGroupByArea.PtInRect(pt))
-	{
-		pInfo->m_htCode = xtpReportHitTestGroupBox;
-		int nColumn = GetReportHeader()->FindGroupByColumn(pt, TRUE);
-		pInfo->m_pColumn = GetColumns()->GetGroupsOrder()->GetAt(nColumn);
-	}
-	else if (m_pSections->GetRect().PtInRect(pt))
-	{
-		const CXTPReportSection *pSection = m_pSections->HitTest(pt);
-
-		if (NULL != pSection)
-		{
-			switch(pSection->GetRowType())
-			{
-			case xtpRowTypeBody:
-				pInfo->m_htCode = xtpReportHitTestBodyRows;
-				break;
-
-			case xtpRowTypeHeader:
-				pInfo->m_htCode = xtpReportHitTestHeaderRows;
-				break;
-
-			case xtpRowTypeFooter:
-				pInfo->m_htCode = xtpReportHitTestFooterRows;
-				break;
-			}
-		}
-
-		pInfo->m_pRow = HitTest(pt);	
-
-		if (NULL != pInfo->m_pRow)
-		{
-			pInfo->m_pItem = pInfo->m_pRow->HitTest(pt, NULL, &pInfo->m_pColumn);
-		}
-	}	
-	
-	return TRUE;
 }
 
 CXTPReportRow* CXTPReportControl::HitTest(CPoint pt) const
 {
-	CXTPReportRow *pRow = NULL;
-
-	CXTPReportSection *pSection = m_pSections->HitTest(pt);
-
-	if (NULL != pSection)
+	if (m_rcReportArea.PtInRect(pt))
 	{
-		pRow = pSection->GetRows()->GetScreenRows()->HitTest(pt);
+		for (int i = 0; i < m_arrScreenRows.GetCount(); i++)
+		{
+			CXTPReportRow* pRow = m_arrScreenRows.GetAt(i);
+
+			CRect rc = pRow->GetRect();
+
+			if (rc.PtInRect(pt))
+				return pRow;
+		}
 	}
 
-	return pRow;
+	// header records
+	if (m_rcHeaderRecordsArea.PtInRect(pt))
+	{
+		for (int i = 0; i < m_pHeaderRows->GetCount(); i++)
+		{
+			CXTPReportRow* pRow = m_pHeaderRows->GetAt(i);
+
+			CRect rc = pRow->GetRect();
+
+			if (rc.PtInRect(pt))
+				return pRow;
+		}
+	}
+
+	// footer records
+	if (m_rcFooterRecordsArea.PtInRect(pt))
+	{
+		for (int i = 0; i < m_pFooterRows->GetCount(); i++)
+		{
+			CXTPReportRow* pRow = m_pFooterRows->GetAt(i);
+
+			CRect rc = pRow->GetRect();
+
+			if (rc.PtInRect(pt))
+				return pRow;
+		}
+	}
+
+	return NULL;
 }
 
 int CXTPReportControl::GetReportAreaRows(int nStartRow, BOOL bMoveDown)
 {
 	int nDirection = bMoveDown ? +1 : -1;
 
-	int top = m_pSectionBody->m_rcSection.top;
+	int top = m_rcReportArea.top;
 
 	CClientDC dc(this);
 	int nHeaderWidth = GetReportHeader()->GetWidth();
 
-	int i = nStartRow;
-
-	if (IsIconView())
-	{
-	// Find the first row, to account for the height of the row we are in.
-		while(i % GetRowsPerLine() != 0)
-		{
-			i--;
-		}
-	}
-
-	for (; (i < m_pRows->GetCount() && i >= 0); i += nDirection)
+	for (int i = nStartRow; (i < m_pRows->GetCount() && i >= 0); i += nDirection)
 	{
 		CXTPReportRow* pRow = m_pRows->GetAt(i);
 		ASSERT(pRow);
@@ -1829,96 +2214,110 @@ int CXTPReportControl::GetReportAreaRows(int nStartRow, BOOL bMoveDown)
 
 		int rowHeight = pRow->GetHeight(&dc, nHeaderWidth);
 
-		if (top + rowHeight > m_pSectionBody->m_rcSection.bottom)
+		if (top + rowHeight > m_rcReportArea.bottom)
 			return bMoveDown ? i - nStartRow - 1 : nStartRow - i - 1;
 
 		top += rowHeight;
 	}
 
-	//return bMoveDown ? m_pRows->GetCount() - nStartRow : nStartRow;
-	return bMoveDown ? m_pRows->GetCount() - nStartRow - 1: nStartRow; //-this is better way!
+	return bMoveDown ? m_pRows->GetCount() - nStartRow : nStartRow;
 }
 
 void CXTPReportControl::AdjustLayout()
 {
-/*
-	------------------------------
-	| Group by                   |
-	------------------------------
-	| Header                     |
-	------------------------------
-	| Sections                   |
-	------------------------------
-	| Footer                     |
-	------------------------------
-*/
-
-	if (NULL == GetSafeHwnd())
+	if (GetSafeHwnd() == 0)
 		return;
 
-	CXTPClientRect rcClient(this);
-	CClientDC dc(this);
-
-	if (rcClient.IsRectEmpty())
-	{
-		// Avoid unnecessary layout calculations during creation
-		return;
-	}
-
-	ASSERT(!m_bAdjustLayoutRunning);
-	if (m_bAdjustLayoutRunning) //guard to prevent the recursion similar to OnSize function
-	{
-		return;
-	}
-
-	m_bAdjustLayoutRunning = TRUE;
-
+	CXTPClientRect rc(this);
 
 	int nHeaderWidth = m_rcHeaderArea.Width();
 
-	CXTPReportHeader *pHeader = GetReportHeader();
+	CXTPReportHeader* pHeader = GetReportHeader();
+	int nGroupByHeight = (m_bGroupByEnabled && pHeader) ? pHeader->GetGroupByHeight() : 0;
+	m_rcGroupByArea.SetRect(0, 0, rc.Width(), nGroupByHeight);
 
-	int nHeightGroupBy  = 0;
-	int nHeightHeader   = 0;
-	int nHeightSections = 0;
-	int nHeightFooter   = 0;
-
-	if (NULL != pHeader && m_bGroupByEnabled)
-	{
-		nHeightGroupBy = pHeader->GetGroupByHeight();
-	}
+	int nHeaderHeight = 0;
+	int nFooterHeight = 0;
+	int nHeaderRecordsHeight = 0;
+	int nFooterRecordsHeight = 0;
 
 	if (m_bHeaderVisible)
 	{
-		nHeightHeader = GetPaintManager()->GetHeaderHeight(this, &dc);
+		CWindowDC dc (this);
+		nHeaderHeight = GetPaintManager()->GetHeaderHeight(this, &dc);
 	}
 
 	if (m_bFooterVisible)
 	{
-		nHeightFooter = GetPaintManager()->GetFooterHeight(this, &dc);
+		CWindowDC dc (this);
+		nFooterHeight = GetPaintManager()->GetFooterHeight(this, &dc);
 	}
 
-	// Group by rect
-	m_rcGroupByArea.SetRect(0, 0, rcClient.Width(), nHeightGroupBy);
+	// header records divider
+	int nHeaderDividerHeight = GetHeaderRowsDividerHeight();
+	int nFooterDividerHeight = GetFooterRowsDividerHeight();
 
-	// Header
-	m_rcHeaderArea.SetRect(0, m_rcGroupByArea.bottom, rcClient.Width(), m_rcGroupByArea.bottom + nHeightHeader);
+	// header records height
+	if (m_bHeaderRecordsVisible)
+	{
+		nHeaderRecordsHeight = GetRowsHeight(m_pHeaderRows, rc.Width());
+	}
+	else
+		nHeaderDividerHeight = 0;
 
-	// Sections
-	nHeightSections = rcClient.Height() - nHeightGroupBy - nHeightHeader - nHeightFooter;
-	CRect rcSections(0, m_rcHeaderArea.bottom, rcClient.Width(), m_rcHeaderArea.bottom+nHeightSections);
+	// footer records height
+	if (m_bFooterRecordsVisible)
+	{
+		nFooterRecordsHeight = GetRowsHeight(m_pFooterRows, rc.Width());
+	}
 
-	m_pSections->AdjustLayout(&dc, rcSections);
+	m_rcHeaderArea.SetRect(0, m_rcGroupByArea.bottom, rc.Width(), m_rcGroupByArea.bottom + nHeaderHeight);
+	m_rcHeaderRecordsArea.SetRect(0, m_rcHeaderArea.bottom, rc.Width(), m_rcHeaderArea.bottom + nHeaderRecordsHeight);
 
-	// Footer
-	m_rcFooterArea.SetRect(0, rcClient.Height() - nHeightFooter, rcClient.Width(), rcClient.Height());
+
+	m_rcHeaderRecordsDividerArea.SetRect(0, m_rcHeaderRecordsArea.bottom, rc.Width(), m_rcHeaderRecordsArea.bottom + nHeaderDividerHeight);
+
+	int nFreeHeight = rc.Height() - nGroupByHeight- nHeaderHeight - nFooterHeight - nHeaderRecordsHeight - nFooterRecordsHeight - nHeaderDividerHeight - nFooterDividerHeight;
+	BOOL bPinned = FALSE;
+
+	if (m_bFooterRecordsVisible && m_bPinFooterRecords)
+	{
+		int nBodyRowsHeight = GetRowsHeight(m_pRows, rc.Width(), nFreeHeight);
+
+		if (nBodyRowsHeight < nFreeHeight)
+		{
+			// footer records immediately after body records
+			m_rcFooterRecordsArea.SetRect(0, m_rcHeaderRecordsArea.bottom + nHeaderDividerHeight + nFooterDividerHeight + nBodyRowsHeight, rc.Width(),
+				m_rcHeaderRecordsArea.bottom + nHeaderDividerHeight + nFooterDividerHeight + nBodyRowsHeight + nFooterRecordsHeight);
+
+			m_rcFooterRecordsDividerArea.SetRect(0,m_rcFooterRecordsArea.top - nFooterDividerHeight,rc.Width(), m_rcFooterRecordsArea.top);
+			bPinned = TRUE;
+		}
+	}
+
+	if (!bPinned)
+	{
+		if (rc.Height() - nFooterHeight - nFooterRecordsHeight > m_rcHeaderRecordsArea.bottom + nHeaderDividerHeight)
+		{
+			// there can be empty space between body rows and footer records rows
+			m_rcFooterRecordsArea.SetRect(0, rc.Height() - nFooterHeight - nFooterRecordsHeight, rc.Width(), rc.Height() - nFooterHeight);
+		}
+		else
+		{
+			// no place for body records (between header and footer records)
+			m_rcFooterRecordsArea.SetRect(0, m_rcHeaderRecordsArea.bottom + nHeaderDividerHeight, rc.Width(), m_rcHeaderRecordsArea.bottom + nFooterRecordsHeight + nHeaderDividerHeight);
+		}
+
+		m_rcFooterRecordsDividerArea.SetRect(0,m_rcFooterRecordsArea.top - nFooterDividerHeight -1,rc.Width(), m_rcFooterRecordsArea.top);
+	}
+
+	m_rcFooterArea.SetRect(0, rc.Height() - nFooterHeight, rc.Width(), rc.Height());
+	m_rcReportArea.SetRect(0, m_rcHeaderRecordsArea.bottom + nHeaderDividerHeight, rc.Width(), m_rcFooterRecordsArea.top - nFooterDividerHeight);
 
 	if (nHeaderWidth != m_rcHeaderArea.Width() && pHeader)
 	{
 		pHeader->AdjustColumnsWidth(m_rcHeaderArea.Width());
 	}
-
-	m_bAdjustLayoutRunning = FALSE;
 }
 
 CScrollBar* CXTPReportControl::GetScrollBarCtrl(int nBar) const
@@ -1926,529 +2325,185 @@ CScrollBar* CXTPReportControl::GetScrollBarCtrl(int nBar) const
 	if (DYNAMIC_DOWNCAST(CView, GetParent()))
 		return GetParent()->GetScrollBarCtrl(nBar);
 
-	return NULL;
-}
-
-void CXTPReportControl::RedrawScrollBar(int nBar)
-{
-	CScrollBar *pScrollBar = GetScrollBarCtrl(nBar);
-
-	if (NULL != pScrollBar)
-	{
-		SAFE_INVALIDATE(pScrollBar);
-	}
-	else
-	{
-		if (NULL != m_hWnd)
-		{
-			SendMessage(WM_NCPAINT);
-		}
-	}
-}
-
-void CXTPReportControl::AdjustScrollBarH(BOOL bUpdate, UINT nMask)
-{
-	if (bUpdate)
-	{
-		EditItem(NULL);
-		BeginUpdate();
-	}
-
-	SCROLLINFO  si;
-	si.cbSize = sizeof(SCROLLINFO);
-
-	// Get current values
-	GetScrollInfo(SB_HORZ, &si, SIF_ALL);
-
-	if (xtpReportScrollModeBlock == m_scrollModeH)
-	{
-		CXTPReportColumn *pPrev = NULL, *pCurr = NULL, *pNext = NULL;
-		int nScrollPos, nScrollMax;
-		GetReportHeader()->GetFullColScrollInfo(pPrev, pCurr, pNext, nScrollPos, nScrollMax);
-
-		if (SIF_RANGE & nMask) si.nMin  = 0;
-		if (SIF_RANGE & nMask) si.nMax  = nScrollMax - 1;
-		if (SIF_PAGE  & nMask) si.nPage = 1;
-		if (SIF_POS   & nMask) si.nPos  = nScrollPos;
-	}
-
-	if (xtpReportScrollModeSmooth == m_scrollModeH)
-	{
-		// Update requested values
-		if (SIF_RANGE & nMask) si.nMin   = 0;
-		if (SIF_RANGE & nMask) si.nMax   = GetReportHeader()->GetWidth() - 1;
-		if (SIF_PAGE  & nMask) si.nPage  = m_pSectionBody->GetRect().Width();
-		if (SIF_POS   & nMask) si.nPos   = m_nScrollOffsetH;
-
-		si.nPage = min(si.nPage, UINT(si.nMax)+1);
-
-		// Adjust scroll offset when increasing the section size
-		if ((si.nPos > 0) && (si.nPos + int(si.nPage) - 1 > si.nMax))
-		{
-			m_nScrollOffsetH = si.nMax - si.nPage + 1;
-			si.nPos = m_nScrollOffsetH;
-		}
-	}
-
-	// Set new values
-	si.fMask  = nMask;
-	SetScrollInfo(SB_HORZ, &si); // Note: Causes an OnSize message
-
-	// si.nMax is -1 for no rows
-	BOOL bEnabled = (-1 != si.nMax) && (UINT(si.nMax) >= UINT(si.nPage));
-
-	CWnd::EnableScrollBarCtrl(SB_HORZ, bEnabled);
-	::EnableScrollBar(m_hWnd, SB_HORZ, (bEnabled && IsWindowEnabled()) ? ESB_ENABLE_BOTH : ESB_DISABLE_BOTH);
-
-	if (m_bHScrollBarVisible != bEnabled)
-	{
-		m_bHScrollBarVisible = bEnabled;
-	}
-
-	if (bUpdate)
-	{
-		EndUpdate();
-	}
-}
-
-int CXTPReportControl::GetPageRowCount(CDC *pDC) const
-{
-	int nCount = m_pRows->GetCount() - 1;
-	int nLinesCount = nCount;
-
-	int nHeight = m_pSectionBody->GetRect().Height();
-	int nWidth  = m_pSectionBody->GetRect().Width();
-
-	for (; nLinesCount >= 0; nLinesCount--)
-	{
-		nHeight -= m_pRows->GetAt(nLinesCount)->GetHeight(pDC, nWidth);
-
-		if (nHeight < 0)
-		{
-			if (nLinesCount != nCount)
-				nLinesCount += IsIconView() ? GetRowsPerLine() : 1; // Want the next row, in icon view, that is an addition of an entire row.
-
-			break;
-		}
-	}
-
-	nLinesCount = max(nLinesCount, 0);
-
-	return nLinesCount;
-}
-
-void CXTPReportControl::AdjustScrollBarV(BOOL bUpdate, UINT nMask)
-{
-	CClientDC dc(this);
-
-	if (bUpdate)
-	{
-		EditItem(NULL);
-		BeginUpdate();
-	}
-
-	SCROLLINFO  si;
-	si.cbSize = sizeof(SCROLLINFO);
-
-	// Get current values
-	GetScrollInfo(SB_VERT, &si, SIF_ALL);
-
-	if (xtpReportScrollModeBlock == m_scrollModeV)
-	{
-		int nMax  = m_pSectionBody->GetRows()->GetCount() - 1;
-		int nPage = GetPageRowCount(&dc);
-
-		if (GetTopRowIndex() > nPage)
-		{
-			if (IsIconView())
-			{
-				while(nPage % GetRowsPerLine())
-				{
-				// Get beginning of line
-					nPage--;
-				}
-			}
-			m_pRows->SetTopRowIndex(nPage);
-		}
-
-		// Update requested values
-		if (SIF_RANGE & nMask) si.nMin   = 0;
-		if (SIF_RANGE & nMask) si.nMax   = nMax;
-		if (SIF_PAGE  & nMask) si.nPage  = nMax - nPage + 1;
-		if (SIF_POS   & nMask) si.nPos   = GetTopRowIndex();
-	}
-
-	if (xtpReportScrollModeSmooth == m_scrollModeV)
-	{
-		// Update requested values
-		if (SIF_RANGE & nMask) si.nMin   = 0;
-		if (SIF_RANGE & nMask) si.nMax   = m_pSectionBody->GetRowsHeight(&dc) - 1;
-		if (SIF_PAGE  & nMask) si.nPage  = m_pSectionBody->GetRect().Height();
-		if (SIF_POS   & nMask) si.nPos   = m_nScrollOffsetV;
-
-		si.nPage = min(si.nPage, UINT(si.nMax)+1);
-
-		// Adjust scroll offset when increasing the section size
-		if ((si.nPos > 0) && (si.nPos + int(si.nPage) - 1 > si.nMax))
-		{
-			m_nScrollOffsetV = si.nMax - si.nPage + 1;
-			si.nPos = m_nScrollOffsetV;
-		}
-	}
-
-	// Set new values
-	si.fMask  = nMask;
-	SetScrollInfo(SB_VERT, &si); // Note: Causes an OnSize message
-
-	// si.nMax is -1 for no rows
-	BOOL bEnabled = (-1 != si.nMax) && (UINT(si.nMax) >= UINT(si.nPage));
-
-	CWnd::EnableScrollBarCtrl(SB_VERT, bEnabled);
-	::EnableScrollBar(m_hWnd, SB_VERT, (bEnabled && IsWindowEnabled()) ? ESB_ENABLE_BOTH : ESB_DISABLE_BOTH);
-
-	if (m_bVScrollBarVisible != bEnabled)
-	{
-		m_bVScrollBarVisible = bEnabled;
-	}
-
-	if (bUpdate)
-	{
-		EndUpdate();
-	}
+	return 0;
 }
 
 void CXTPReportControl::AdjustScrollBars()
 {
-	if (GetSafeHwnd() == NULL)
+	if (GetSafeHwnd() == 0)
 		return;
 
 	EditItem(NULL);
 
-	int nHeight = m_pSectionBody->GetRect().Height();
+	int nHeight = m_rcReportArea.Height();
 
 	if (nHeight <= 0)
 		return;
 
 	BeginUpdate();
 
-	AdjustScrollBarH(FALSE, SIF_ALL);
-	AdjustScrollBarV(FALSE, SIF_ALL);
+	int nCount = m_pRows->GetCount() - 1;
+	int nLinesCount = nCount;
+	int nHeaderWidth = GetReportHeader()->GetWidth();
+
+	{
+		CClientDC dc(this);
+
+		for (; nLinesCount >= 0; nLinesCount--)
+		{
+
+			nHeight -= m_pRows->GetAt(nLinesCount)->GetHeight(&dc, nHeaderWidth);
+
+			if (nHeight < 0)
+			{
+				if (nLinesCount != nCount)
+					nLinesCount++;
+
+				break;
+			}
+		}
+	}
+
+	nLinesCount = max(nLinesCount, 0);
+
+	if (m_nTopRow > nLinesCount)
+	{
+		m_nTopRow = nLinesCount;
+		SetScrollPos(SB_VERT, m_nTopRow);
+	}
+
+	BOOL bEnabled = nLinesCount > 0;
+
+	if (bEnabled)
+	{
+		SCROLLINFO  si ;
+		si.cbSize = sizeof(SCROLLINFO);
+		si.nPage = nCount - nLinesCount + 1;
+		si.nMax = nCount;
+		si.nMin = 0 ;
+		si.fMask = SIF_PAGE | SIF_RANGE ;
+		SetScrollInfo(SB_VERT, &si) ;
+	}
+
+	EnableScrollBarCtrl(SB_VERT, bEnabled);
+
+	::EnableScrollBar(m_hWnd, SB_VERT, (bEnabled && IsWindowEnabled()) ? ESB_ENABLE_BOTH : ESB_DISABLE_BOTH);
+
+	m_bVScrollBarVisible = bEnabled;
+
+
+	if (!GetReportHeader()->m_bAutoColumnSizing)
+	{
+		if (m_bFullColumnScrolling)
+		{
+			CXTPReportColumn *pPrev = NULL, *pCurr = NULL, *pNext = NULL;
+			int nScrollPos, nScrollMax;
+			GetReportHeader()->GetFulColScrollInfo(pPrev, pCurr, pNext, nScrollPos, nScrollMax);
+
+			bEnabled = nScrollMax > 1;
+
+			if (bEnabled)
+			{
+				SCROLLINFO  si ;
+				si.cbSize = sizeof(SCROLLINFO);
+				si.nPage = 1;
+				si.nMax = nScrollMax - 1;
+				si.nMin = 0;
+				si.nPos = nScrollPos;
+				si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;
+				SetScrollInfo(SB_HORZ, &si) ;
+			}
+			else
+			{
+				m_nLeftOffset = 0;
+				SetScrollPos(SB_HORZ, m_nLeftOffset);
+			}
+		}
+		else
+		{
+			nHeaderWidth = max(GetReportHeader()->GetWidth() - m_rcReportArea.Width(), 0);
+
+			if (m_nLeftOffset > nHeaderWidth)
+			{
+				m_nLeftOffset = nHeaderWidth;
+				SetScrollPos(SB_HORZ, m_nLeftOffset);
+			}
+
+			bEnabled = nHeaderWidth > 0;
+
+			if (bEnabled)
+			{
+				SCROLLINFO  si ;
+				si.cbSize = sizeof(SCROLLINFO);
+				si.nPage = m_rcReportArea.Width();
+				si.nMax = si.nPage + nHeaderWidth;
+				si.nMin = 0 ;
+				si.fMask = SIF_PAGE | SIF_RANGE ;
+				SetScrollInfo(SB_HORZ, &si) ;
+			}
+		}
+
+		EnableScrollBarCtrl(SB_HORZ, bEnabled);
+		m_bHScrollBarVisible = bEnabled;
+		::EnableScrollBar(m_hWnd, SB_HORZ, (bEnabled && IsWindowEnabled()) ? ESB_ENABLE_BOTH : ESB_DISABLE_BOTH);
+	}
+
+
+	AdjustLayout();
 
 	EndUpdate();
+
 }
 
-
-void CXTPReportControl::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar *pScrollBar)
+void CXTPReportControl::SetFullColumnScrolling(BOOL bSet)
 {
-	if (pScrollBar != NULL)
+	m_bFullColumnScrolling = bSet;
+
+	if (m_hWnd)
 	{
-		CWnd::OnVScroll(nSBCode, nPos, pScrollBar);
-		return;
-	}
+		CXTPReportControl::OnHScroll(SB_TOP, 0, NULL);
 
-	if (!m_bIconView)
-	{
-		SCROLLINFO si;
-		si.cbSize = sizeof(SCROLLINFO);
-		GetScrollInfo(SB_VERT, &si, SIF_ALL);
+		RedrawControl();
+		UpdateWindow();
 
-		const int nLimit = si.nMax - si.nPage + 1; // GetScrollLimit
-
-		if (xtpReportScrollModeSmooth == m_scrollModeV)
-		{
-			int nScrollOffsetV = -1;
-
-			switch (nSBCode)
-			{
-				case SB_LINEUP:             // 0
-					nScrollOffsetV = max(m_nScrollOffsetV - m_nScrollStepV, 0);
-					break;
-				case SB_LINEDOWN:           // 1
-					nScrollOffsetV = min(m_nScrollOffsetV + m_nScrollStepV, nLimit);
-					break;
-				case SB_PAGEUP:             // 2
-					nScrollOffsetV = max(m_nScrollOffsetV - int(si.nPage), 0);
-					break;
-				case SB_PAGEDOWN:           // 3
-					nScrollOffsetV = min(m_nScrollOffsetV + int(si.nPage), nLimit);
-					break;
-				case SB_THUMBPOSITION:      // 4
-				case SB_THUMBTRACK:         // 5
-					nScrollOffsetV = si.nTrackPos;
-					break;
-				case SB_TOP:                // 6
-					nScrollOffsetV = 0;
-					break;
-				case SB_BOTTOM:             // 7
-					nScrollOffsetV = nLimit;
-					break;
-				case SB_ENDSCROLL:          // 8
-					break;
-			}
-
-			if (-1 != nScrollOffsetV)
-			{
-				SetScrollOffsetV(nScrollOffsetV);
-			}
-		} // smooth
-
-		if (xtpReportScrollModeBlock == m_scrollModeV)
-		{
-			int nPos   = -1;
-
-			switch (nSBCode)
-			{
-				case SB_LINEUP:             // 0
-					nPos = max(si.nPos - 1, 0);
-					break;
-				case SB_LINEDOWN:           // 1
-					nPos = min(si.nPos + 1, nLimit);
-					break;
-				case SB_PAGEUP:             // 2
-					nPos = max(si.nPos - max(1, GetReportAreaRows(si.nPos, FALSE)), 0);
-					break;
-				case SB_PAGEDOWN:           // 3
-					nPos = min(si.nPos + max(1, GetReportAreaRows(si.nPos, TRUE)), nLimit);
-					break;
-				case SB_THUMBPOSITION:      // 4
-				case SB_THUMBTRACK:         // 5
-					nPos = si.nTrackPos;
-					break;
-				case SB_TOP:                // 6
-					nPos = 0;
-					break;
-				case SB_BOTTOM:             // 7
-					nPos = nLimit;
-					break;
-				case SB_ENDSCROLL:          // 8
-					break;
-			}
-
-			if (-1 != nPos)
-			{
-				SetTopRow(nPos);
-			}
-		}
-	}
-	else
-	{
-		int nCurPos = GetTopRowIndex();
-
-		CXTPReportColumn* pColumn = GetColumns()->Find(m_iIconViewColumn);
-		if (!pColumn)
-		{
-			CXTPReportControl::OnVScroll(nSBCode, nPos, pScrollBar);
-			return;
-		}
-
-		// decide what to do for each diffrent scroll event
-		switch (nSBCode)
-		{
-			case SB_TOP:
-				nCurPos = 0; break;
-			case SB_BOTTOM:
-				nCurPos = GetScrollLimit(SB_VERT); break;
-			case SB_LINEUP:
-				nCurPos = max(nCurPos - m_iIconViewRowsPerLine, 0); break;
-			case SB_LINEDOWN:
-				nCurPos = min(nCurPos + m_iIconViewRowsPerLine, GetScrollLimit(SB_VERT)); break;
-			case SB_PAGEUP:
-				nCurPos = max(nCurPos - GetReportAreaRows(nCurPos, FALSE), 0); break;
-			case SB_PAGEDOWN:
-				nCurPos = min(nCurPos + GetReportAreaRows(nCurPos, TRUE), GetScrollLimit(SB_VERT)); break;
-			case SB_THUMBTRACK:
-			case SB_THUMBPOSITION:
-			{
-				SCROLLINFO si;
-				ZeroMemory(&si, sizeof(SCROLLINFO));
-				si.cbSize = sizeof(SCROLLINFO);
-				si.fMask = SIF_TRACKPOS;
-
-				if (!GetScrollInfo(SB_VERT, &si))
-					return;
-				nCurPos = si.nTrackPos;
-			}
-			break;
-		}
-
-		SetTopRow(nCurPos);
+		AdjustScrollBars();
 	}
 }
-
-void CXTPReportControl::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
-{
-	if (pScrollBar != NULL)
-	{
-		CWnd::OnHScroll(nSBCode, nPos, pScrollBar);
-		return;
-	}
-	int nCurPos = m_nScrollOffsetH;
-
-	// FCS - full column scrolling
-	int nLeftOffset_new = m_nScrollOffsetH;
-
-
-	SCROLLINFO si;
-	si.cbSize = sizeof(SCROLLINFO);
-	GetScrollInfo(SB_HORZ, &si, SIF_ALL);
-
-	const int nLimit = si.nMax - si.nPage + 1; // GetScrollLimit
-
-	if (xtpReportScrollModeSmooth == m_scrollModeH)
-	{
-		switch (nSBCode)
-		{
-		case SB_LINEUP:             // 0
-			nCurPos = max(nCurPos - m_nScrollStepH, 0);
-			break;
-		case SB_LINEDOWN:           // 1
-			nCurPos = min(nCurPos + m_nScrollStepH, nLimit);
-			break;
-		case SB_PAGEUP:             // 2
-			nCurPos = max(nCurPos - m_pSectionBody->GetRect().Width(), 0);
-			break;
-		case SB_PAGEDOWN:           // 3
-			nCurPos = min(nCurPos + m_pSectionBody->m_rcSection.Width(), nLimit);
-			break;
-		case SB_THUMBPOSITION:      // 4
-		case SB_THUMBTRACK:         // 5
-			nCurPos = si.nTrackPos;
-			break;
-		case SB_TOP:                // 6
-			nCurPos = 0;
-			break;
-		case SB_BOTTOM:             // 7
-			nCurPos = nLimit;
-			break;
-		case SB_ENDSCROLL:          // 8
-			break;
-		}
-
-		SetScrollOffsetH(nCurPos);
-	}
-
-	if (xtpReportScrollModeBlock == m_scrollModeH)
-	{
-		CXTPReportColumn *pPrev = NULL, *pCurr = NULL, *pNext = NULL;
-		int nScrollPos = 0, nScrollMax = 0;
-		int nFreezeOffset = GetReportHeader()->GetFullColScrollInfo(pPrev, pCurr, pNext, nScrollPos, nScrollMax);
-
-		switch (nSBCode)
-		{
-		case SB_LINEUP:             // 0
-		case SB_PAGEUP:             // 2
-			if (NULL != pPrev)
-			{
-				nLeftOffset_new = labs(GetReportHeader()->m_rcHeader.left - pPrev->GetRect().left) - nFreezeOffset;
-				nScrollPos = max(nScrollPos - 1, 0);
-			}
-			break;
-		case SB_LINEDOWN:           // 1
-		case SB_PAGEDOWN:           // 3
-			if (NULL != pNext)
-			{
-				nLeftOffset_new = labs(GetReportHeader()->m_rcHeader.left - pNext->GetRect().left) - nFreezeOffset;
-				nScrollPos = nScrollPos + 1;
-			}
-			break;
-		case SB_THUMBPOSITION:      // 4
-		case SB_THUMBTRACK:         // 5
-		{
-			int nVisColCount = GetColumns()->GetVisibleColumnsCount();
-
-			int nCurrCol = nVisColCount - nScrollMax + si.nTrackPos;
-			CXTPReportColumn *pCurrScroll = GetColumns()->GetVisibleAt(nCurrCol);
-
-			if (!pCurrScroll)
-				return;
-
-			nLeftOffset_new = labs(GetReportHeader()->m_rcHeader.left - pCurrScroll->GetRect().left) - nFreezeOffset;
-			nScrollPos = si.nTrackPos;
-		}
-		break;
-
-		case SB_TOP:                // 6
-			nLeftOffset_new = 0;
-			nScrollPos = 0;
-			break;
-		case SB_BOTTOM:             // 7
-		{
-			int nVisColCount = GetColumns()->GetVisibleColumnsCount();
-			CXTPReportColumn *pLast = GetColumns()->GetVisibleAt(max(nVisColCount-1, 0));
-			ASSERT(pLast);
-			if (!pLast)
-				return;
-
-			nLeftOffset_new = labs(GetReportHeader()->m_rcHeader.left - pLast->GetRect().left) - nFreezeOffset;
-			nScrollPos = max(nScrollMax - 1, 0);
-		}
-		break;
-
-		case SB_ENDSCROLL:          // 8
-			break;
-		}
-
-		SetScrollOffsetH(nLeftOffset_new);
-		SetScrollPos(SB_HORZ, nScrollPos);
-	}
-}
-
-
-
-HBITMAP CXTPReportControl::GetWatermarkBitmap() const
-{
-	return m_hbmpWatermark;
-}
-
 
 BOOL CXTPReportControl::SetWatermarkBitmap(HBITMAP hBitmap, BYTE Transparency)
 {
 	m_WatermarkTransparency = Transparency;
 
-	// remove old watermark bitmap if one is
-	if (m_hbmpWatermark)
+	// if bitmap handle is NULL, remove watermark bitmap
+	if(!hBitmap)
 	{
 		::DeleteObject(m_hbmpWatermark);
 		m_hbmpWatermark = NULL;
 	}
-
-	if (hBitmap)
+	else
 	{
+		// remove old watermark bitmap if one is
+		if(m_hbmpWatermark)
+		{
+			::DeleteObject(m_hbmpWatermark);
+			m_hbmpWatermark = NULL;
+		}
 		// add new watermark bitmap
-
-		BITMAP bmSrc;
-		if (!CBitmap::FromHandle(hBitmap)->GetBitmap(&bmSrc))
+		m_hbmpWatermark = CXTPImageManagerIcon::CopyAlphaBitmap(hBitmap);
+		if(!m_hbmpWatermark)
 			return FALSE;
-
-		BOOL bAlphaBitmap = bmSrc.bmBitsPixel == 32;
-
-		// create an alpha bitmap if the bitmap supplied isn't an alpha one
-		if (!bAlphaBitmap)
-		{
-			m_hbmpWatermark = ::CreateBitmap(bmSrc.bmWidth, bmSrc.bmHeight, bmSrc.bmPlanes, 32, NULL);
-
-			ASSERT(m_hbmpWatermark);
-			if (!m_hbmpWatermark)
-				return FALSE;
-
-			CXTPCompatibleDC memWatermarkDC(NULL, m_hbmpWatermark);
-			CXTPCompatibleDC memScrDC(NULL, hBitmap);
-
-			memWatermarkDC.BitBlt(0, 0, bmSrc.bmWidth, bmSrc.bmHeight, &memScrDC, 0, 0, SRCCOPY);
-		}
-		else
-		{
-			m_hbmpWatermark = CXTPImageManagerIcon::CopyAlphaBitmap(hBitmap);
-		}
-
-		if (!m_hbmpWatermark)
-			return FALSE;
-
-		if (!CBitmap::FromHandle(m_hbmpWatermark)->GetBitmap(&m_bmWatermark))
+		if(!CBitmap::FromHandle(m_hbmpWatermark)->GetBitmap(&m_bmWatermark))
 		{
 			::DeleteObject(m_hbmpWatermark);
 			m_hbmpWatermark = NULL;
 			return FALSE;
+		}
+		BOOL bAlphaBitmap = m_bmWatermark.bmBitsPixel == 32;
+		// create an alpha bitmap if the bitmap supplied isn't an alpha one
+		if(!bAlphaBitmap)
+		{
+			CXTPCompatibleDC memWatermarkDC(NULL, m_hbmpWatermark);
+			CXTPImageManagerIcon::DrawAlphaBitmap(&memWatermarkDC, m_hbmpWatermark, CPoint(0, 0), CSize(m_bmWatermark.bmWidth, m_bmWatermark.bmHeight));
 		}
 	}
 
@@ -2460,7 +2515,7 @@ BOOL CXTPReportControl::SetWatermarkBitmap(LPCTSTR szPath, BYTE Transparency)
 	m_WatermarkTransparency = Transparency;
 
 	// if path is empty, remove watermark bitmap
-	if (_tcslen(szPath) == 0)
+	if(_tcslen(szPath) == 0)
 	{
 		::DeleteObject(m_hbmpWatermark);
 		m_hbmpWatermark = NULL;
@@ -2468,7 +2523,7 @@ BOOL CXTPReportControl::SetWatermarkBitmap(LPCTSTR szPath, BYTE Transparency)
 	else
 	{
 		// remove old watermark bitmap if one is
-		if (m_hbmpWatermark)
+		if(m_hbmpWatermark)
 		{
 			::DeleteObject(m_hbmpWatermark);
 			m_hbmpWatermark = NULL;
@@ -2476,16 +2531,16 @@ BOOL CXTPReportControl::SetWatermarkBitmap(LPCTSTR szPath, BYTE Transparency)
 		// add new watermark bitmap
 		BOOL bAlphaBitmap = FALSE;
 		m_hbmpWatermark = CXTPImageManagerIcon::LoadBitmapFromFile(szPath, &bAlphaBitmap);
-		if (!m_hbmpWatermark)
+		if(!m_hbmpWatermark)
 			return FALSE;
-		if (!CBitmap::FromHandle(m_hbmpWatermark)->GetBitmap(&m_bmWatermark))
+		if(!CBitmap::FromHandle(m_hbmpWatermark)->GetBitmap(&m_bmWatermark))
 		{
 			::DeleteObject(m_hbmpWatermark);
 			m_hbmpWatermark = NULL;
 			return FALSE;
 		}
 		// create an alpha bitmap if the bitmap supplied isn't an alpha one
-		if (!bAlphaBitmap)
+		if(!bAlphaBitmap)
 		{
 			CXTPCompatibleDC memWatermarkDC(NULL, m_hbmpWatermark);
 			CXTPImageManagerIcon::DrawAlphaBitmap(&memWatermarkDC, m_hbmpWatermark, CPoint(0, 0), CSize(m_bmWatermark.bmWidth, m_bmWatermark.bmHeight));
@@ -2498,56 +2553,10 @@ BOOL CXTPReportControl::SetWatermarkBitmap(LPCTSTR szPath, BYTE Transparency)
 //////////////////////////////////////////////////////////////////////////
 // CXTPReportControl message handlers
 
-
-void CXTPReportControl::Paint(CDC *pDC)
-{
-	CXTPClientRect rcClient(this);
-
-	OnDraw(pDC);
-
-	// update flag
-	SetChanged(FALSE);
-
-	if (!IsWindowEnabled() && GetPaintManager()->m_bGrayIfDisable)
-	{
-		XTPImageManager()->DisableBitmap(*pDC, rcClient, RGB(250, 250, 250), RGB(128, 128, 128));
-	}
-
-}
-
-
-void CXTPReportControl::EnableDoubleBuffering(BOOL bEnable)
-{
-	m_bDoubleBuffering = bEnable;
-
-	// Delete buffer
-	if (!m_bDoubleBuffering && NULL != m_bmpCache.GetSafeHandle())
-	{
-		m_bmpCache.DeleteObject();
-	}
-}
-
 void CXTPReportControl::OnPaint()
 {
 	CPaintDC dc(this);      // device context for painting
-	CXTPClientRect rcClient(this);
-
-	// ensure visible row and column if first started
-	if (m_nEnsureVisibleRowIdx >= 0)
-	{
-		CXTPReportRow *pRow = GetRows()->GetAt(m_nEnsureVisibleRowIdx);
-		if (NULL != pRow)
-		{
-			EnsureVisible(pRow);
-		}
-		m_nEnsureVisibleRowIdx = -1;
-	}
-
-	if (m_nEnsureVisibleColumnIdx >= 0)
-	{
-		EnsureVisible(GetColumns()->GetAt(m_nEnsureVisibleColumnIdx));
-		m_nEnsureVisibleColumnIdx = -1;
-	}
+	CXTPClientRect rc(this);
 
 	// start counting drawing time
 #ifdef XTP_DEBUG
@@ -2555,38 +2564,148 @@ void CXTPReportControl::OnPaint()
 	QueryPerformanceCounter(&iStartCount);
 #endif
 
-
-	if (m_bDoubleBuffering)
+	if (m_nLockUpdateCount == 0 && (IsChanged() || m_bmpCache.GetSafeHandle() == 0))
 	{
-		// Update cached bitmap
-		if (m_nLockUpdateCount == 0 && (IsChanged() || NULL == m_bmpCache.GetSafeHandle()))
+		CDC memDC;
+		memDC.CreateCompatibleDC(&dc);
+
+		m_bmpCache.DeleteObject();
+		m_bmpCache.CreateCompatibleBitmap(&dc, rc.Width(), rc.Height());
+
+
+		CBitmap* pOldBitmap = memDC.SelectObject(&m_bmpCache);
+
+		OnDraw(&memDC);
+
+		// update flag
+		SetChanged(FALSE);
+
+		if (!IsWindowEnabled())
 		{
-			m_bmpCache.DeleteObject();
+			XTPImageManager()->DisableBitmap(memDC, rc, RGB(250, 250, 250), RGB(128, 128, 128));
+		}
 
-			CDC memDC;
-
-			if (memDC.CreateCompatibleDC(&dc))
+		if(m_hbmpWatermark)
+		{
+			CRect rcDst(GetReportRectangle());
+			if(IsHeaderRowsVisible())
+				rcDst.top = m_rcHeaderArea.top;
+			if(IsFooterRowsVisible())
+				rcDst.bottom = m_rcFooterArea.bottom;
+			CRect rcAll(rcDst);
+			CRect rcSrc(0, 0, m_bmWatermark.bmWidth, m_bmWatermark.bmHeight);
+			// no stretch
+			if(!(GetWatermarkAlignment() & xtpReportWatermarkStretch))
 			{
-				if (m_bmpCache.CreateCompatibleBitmap(&dc, rcClient.Width(), rcClient.Height()))
+				if(rcSrc.Width() > rcDst.Width())
+					rcSrc.right = rcSrc.left + rcDst.Width();
+				else
+					rcDst.right = rcDst.left + rcSrc.Width();
+				if(rcSrc.Height() > rcDst.Height())
+					rcSrc.bottom = rcSrc.top + rcDst.Height();
+				else
+					rcDst.bottom = rcDst.top + rcSrc.Height();
+			}
+			// enlarge only
+			if((GetWatermarkAlignment() & xtpReportWatermarkStretch) && (GetWatermarkAlignment() & xtpReportWatermarkEnlargeOnly))
+			{
+				if(rcSrc.Width() > rcDst.Width())
+					rcSrc.right = rcSrc.left + rcDst.Width();
+				if(rcSrc.Height() > rcDst.Height())
+					rcSrc.bottom = rcSrc.top + rcDst.Height();
+			}
+			// shrink only
+			if((GetWatermarkAlignment() & xtpReportWatermarkStretch) && (GetWatermarkAlignment() & xtpReportWatermarkShrinkOnly))
+			{
+				if(rcSrc.Width() < rcDst.Width())
+					rcDst.right = rcDst.left + rcSrc.Width();
+				if(rcSrc.Height() < rcDst.Height())
+					rcDst.bottom = rcDst.top + rcSrc.Height();
+			}
+			// preserve aspect ratio
+			if((GetWatermarkAlignment() & xtpReportWatermarkStretch) && (GetWatermarkAlignment() & xtpReportWatermarkPreserveRatio))
+			{
+				if(rcDst.Width() > (rcDst.Height() * rcSrc.Width() / rcSrc.Height()))
+					rcDst.right = rcDst.left + rcDst.Height() * rcSrc.Width() / rcSrc.Height();
+				if(rcDst.Height() > (rcDst.Width() * rcSrc.Height() / rcSrc.Width()))
+					rcDst.bottom = rcDst.top + rcDst.Width() * rcSrc.Height() / rcSrc.Width();
+			}
+			// alignment
+//          if(!(GetWatermarkAlignment() & xtpReportWatermarkStretch))
+			{
+				// horizontal
+				switch(GetWatermarkAlignment() & xtpReportWatermarkHmask)
 				{
-					CBitmap *pOldBitmap = memDC.SelectObject(&m_bmpCache);
-					Paint(&memDC);
-					memDC.SelectObject(pOldBitmap);
+					// center
+					case xtpReportWatermarkCenter :
+						rcDst.OffsetRect((rcAll.Width() - rcDst.Width()) / 2, 0);
+						break;
+					// right
+					case xtpReportWatermarkRight :
+						rcDst.OffsetRect(rcAll.Width() - rcDst.Width(), 0);
+						break;
+					// left
+					default :
+						break;
+				}
+				// vertical
+				switch(GetWatermarkAlignment() & xtpReportWatermarkVmask)
+				{
+					// center
+					case xtpReportWatermarkVCenter :
+						rcDst.OffsetRect(0, (rcAll.Height() - rcDst.Height()) / 2);
+						break;
+					// bottom
+					case xtpReportWatermarkBottom:
+						rcDst.OffsetRect(0, rcAll.Height() - rcDst.Height());
+						break;
+					// top
+					default :
+						break;
 				}
 			}
-		}
-	}
 
-	// Draw cached bitmap if available
-	if (NULL != m_bmpCache.GetSafeHandle())
-	{
-		CXTPCompatibleDC memDC(&dc, &m_bmpCache);
-		dc.BitBlt(0, 0, rcClient.right, rcClient.bottom, &memDC, 0, 0, SRCCOPY);
+			CXTPCompatibleDC memWatermarkDC(&dc, m_hbmpWatermark);
+
+			COLORREF clrBk = GetPaintManager()->m_clrControlBack;
+			CRect rcReport00(0, 0, rc.Width(), rc.Height());
+
+			CBitmap bmpTmp;
+			bmpTmp.CreateCompatibleBitmap(&dc, rc.Width(), rc.Height());
+
+			CXTPCompatibleDC memDCtmp(&dc, &bmpTmp);
+
+			memDCtmp.FillSolidRect(&rcReport00, clrBk);
+
+			if(GetWatermarkAlignment() & xtpReportWatermarkStretch)
+			{
+				CBitmap bmpWatermarkTmp;
+				bmpWatermarkTmp.CreateCompatibleBitmap(&dc, rc.Width(), rc.Height());
+				CXTPCompatibleDC memWatermarkDCtmp(&dc, &bmpWatermarkTmp);
+				memWatermarkDCtmp.FillSolidRect(&rc, RGB(255, 255, 255));
+				memWatermarkDCtmp.SetStretchBltMode(HALFTONE);
+				memWatermarkDCtmp.StretchBlt(rcDst.left, rcDst.top, rcDst.Width(), rcDst.Height(), &memWatermarkDC, 0, 0, rcSrc.Width(), rcSrc.Height(), SRCCOPY);
+
+				XTPImageManager()->AlphaBlend2(memDCtmp, rc, memWatermarkDCtmp, rc, m_WatermarkTransparency);
+			}
+			else
+			{
+				XTPImageManager()->AlphaBlend2(memDCtmp, rcDst, memWatermarkDC, rcSrc, m_WatermarkTransparency);
+			}
+
+			XTPImageManager()->TransparentBlt(memDCtmp, rcReport00, memDC, rcReport00, clrBk);
+
+			memDC.BitBlt(0, 0, rc.right, rc.bottom, &memDCtmp, 0, 0, SRCCOPY);
+		}
+
+		dc.BitBlt(0, 0, rc.right, rc.bottom, &memDC, 0, 0, SRCCOPY);
+
+		memDC.SelectObject(pOldBitmap);
 	}
-	// Draw directly to device context
 	else
 	{
-		Paint(&dc);
+		CXTPCompatibleDC memDC(&dc, &m_bmpCache);
+		dc.BitBlt(0, 0, rc.right, rc.bottom, &memDC, 0, 0, SRCCOPY);
 	}
 
 	// count drawing time
@@ -2597,134 +2716,6 @@ void CXTPReportControl::OnPaint()
 #endif
 
 }
-
-
-void CXTPReportControl::DrawWatermark(CDC *pDC, CRect rcWatermark, CRect rcClient)
-{
-	if (m_hbmpWatermark)
-	{
-		CRect rcDst(rcWatermark);
-		CRect rcSrc(0, 0, m_bmWatermark.bmWidth, m_bmWatermark.bmHeight);
-
-		// no stretch
-		if (!(GetWatermarkAlignment() & xtpReportWatermarkStretch))
-		{
-			if (rcSrc.Width() > rcDst.Width())
-			{
-				rcSrc.right = rcSrc.left + rcDst.Width();
-			}
-			else
-			{
-				rcDst.right = rcDst.left + rcSrc.Width();
-			}
-
-			if (rcSrc.Height() > rcDst.Height())
-			{
-				rcSrc.bottom = rcSrc.top + rcDst.Height();
-			}
-			else
-			{
-				rcDst.bottom = rcDst.top + rcSrc.Height();
-			}
-		}
-
-		// enlarge only
-		if ((GetWatermarkAlignment() & xtpReportWatermarkStretch) &&
-			 (GetWatermarkAlignment() & xtpReportWatermarkEnlargeOnly))
-		{
-			if (rcSrc.Width() > rcDst.Width())
-			{
-				rcSrc.right = rcSrc.left + rcDst.Width();
-			}
-			if (rcSrc.Height() > rcDst.Height())
-			{
-				rcSrc.bottom = rcSrc.top + rcDst.Height();
-			}
-		}
-
-		// shrink only
-		if ((GetWatermarkAlignment() & xtpReportWatermarkStretch) &&
-			 (GetWatermarkAlignment() & xtpReportWatermarkShrinkOnly))
-		{
-			if (rcSrc.Width() < rcDst.Width())
-			{
-				rcDst.right = rcDst.left + rcSrc.Width();
-			}
-			if (rcSrc.Height() < rcDst.Height())
-			{
-				rcDst.bottom = rcDst.top + rcSrc.Height();
-			}
-		}
-
-		// preserve aspect ratio
-		if ((GetWatermarkAlignment() & xtpReportWatermarkStretch) &&
-			 (GetWatermarkAlignment() & xtpReportWatermarkPreserveRatio))
-		{
-			if (rcDst.Width() > (rcDst.Height() * rcSrc.Width() / rcSrc.Height()))
-			{
-				rcDst.right = rcDst.left + rcDst.Height() * rcSrc.Width() / rcSrc.Height();
-			}
-			if (rcDst.Height() > (rcDst.Width() * rcSrc.Height() / rcSrc.Width()))
-			{
-				rcDst.bottom = rcDst.top + rcDst.Width() * rcSrc.Height() / rcSrc.Width();
-			}
-		}
-
-		// horizontal
-		switch (GetWatermarkAlignment() & xtpReportWatermarkHmask)
-		{
-			// center
-			case xtpReportWatermarkCenter :
-				rcDst.OffsetRect((rcWatermark.Width() - rcDst.Width()) / 2, 0);
-				break;
-			// right
-			case xtpReportWatermarkRight :
-				rcDst.OffsetRect(rcWatermark.Width() - rcDst.Width(), 0);
-				break;
-			// left
-			default :
-				break;
-		}
-
-		// vertical
-		switch (GetWatermarkAlignment() & xtpReportWatermarkVmask)
-		{
-			// center
-			case xtpReportWatermarkVCenter :
-				rcDst.OffsetRect(0, (rcWatermark.Height() - rcDst.Height()) / 2);
-				break;
-			// bottom
-			case xtpReportWatermarkBottom:
-				rcDst.OffsetRect(0, rcWatermark.Height() - rcDst.Height());
-				break;
-			// top
-			default :
-				break;
-		}
-
-		CXTPCompatibleDC memWatermarkDC(pDC, m_hbmpWatermark);
-
-		if (GetWatermarkAlignment() & xtpReportWatermarkStretch)
-		{
-			CBitmap bmpWatermark;
-			bmpWatermark.CreateCompatibleBitmap(pDC, rcClient.Width(), rcClient.Height());
-
-			CXTPCompatibleDC dcWatermark(pDC, &bmpWatermark);
-
-			dcWatermark.FillSolidRect(&rcClient, RGB(255, 255, 255));
-			dcWatermark.SetStretchBltMode(HALFTONE);
-			dcWatermark.StretchBlt(rcDst.left, rcDst.top, rcDst.Width(), rcDst.Height(), &memWatermarkDC, 0, 0, rcSrc.Width(), rcSrc.Height(), SRCCOPY);
-
-			XTPImageManager()->AlphaBlend2(*pDC, rcClient, dcWatermark, rcClient, m_WatermarkTransparency);
-		}
-		else
-		{
-			XTPImageManager()->AlphaBlend2(*pDC, rcDst, memWatermarkDC, rcSrc, m_WatermarkTransparency);
-		}
-
-	}
-}
-
 
 LRESULT CXTPReportControl::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
 {
@@ -2744,138 +2735,78 @@ LRESULT CXTPReportControl::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
 	return TRUE;
 }
 
-BOOL CXTPReportControl::OnEraseBkgnd(CDC *pDC)
+BOOL CXTPReportControl::OnEraseBkgnd(CDC* /*pDC*/)
 {
-	UNREFERENCED_PARAMETER(pDC);
-
 	return TRUE;    // Don't erase the background.
 }
 
-void CXTPReportControl::OnDraw(CDC *pDC)
+void CXTPReportControl::OnDraw(CDC* pDC)
 {
-	CXTPClientRect rcClient(this);
-
-	pDC->SetBkMode(TRANSPARENT);
-
 	if (GetExStyle() & WS_EX_RTLREADING)
 	{
 		pDC->SetTextAlign(TA_RTLREADING);
 	}
 
-	// Fill background
-	pDC->FillSolidRect(rcClient, GetPaintManager()->GetControlBackColor(this));
+	// draw new image
+	pDC->FillSolidRect(CXTPClientRect(this), GetPaintManager()->GetControlBackColor(this));
 
-	// Draw watermark
-	DrawWatermark(pDC, m_pSections->GetRect(), rcClient);
+	CXTPReportHeader* pHeader = GetReportHeader();
 
-	// Draw header
-	CXTPReportHeader *pHeader = GetReportHeader();
+	CRect rcHeader = m_rcHeaderArea;
+	rcHeader.right = rcHeader.left + pHeader->GetWidth();
 
-	if (NULL != pHeader)
+	// draw header
+	if (pHeader)
+		pHeader->Draw(pDC, rcHeader, m_nLeftOffset);
+
+	// draw group by box
+	if (pHeader)
+		pHeader->DrawGroupByControl(pDC, m_rcGroupByArea);
+
+	DrawRows(pDC, m_rcReportArea);
+
+	if (m_bHeaderRecordsVisible && m_pHeaderRows->GetCount() > 0)
 	{
-		CRect rcHeader = m_rcHeaderArea;
-		rcHeader.right = rcHeader.left + pHeader->GetWidth();
-		pHeader->Draw(pDC, rcHeader, m_nScrollOffsetH); // draw header
-		pHeader->DrawGroupByControl(pDC, m_rcGroupByArea); // draw group by box
+		DrawFixedRows(pDC, m_rcHeaderRecordsArea, m_pHeaderRows);
+		DrawFixedRecordsDivider(pDC, m_rcHeaderRecordsDividerArea, TRUE);
 	}
 
-	if (m_bIconView)
+	if (m_bFooterRecordsVisible && m_pFooterRows->GetCount() > 0)
 	{
-		DrawIconView(pDC, m_pSectionBody->m_rcSection);
-	}
-	else
-	{
-		m_pSections->Draw(pDC);
+		DrawFixedRows(pDC, m_rcFooterRecordsArea, m_pFooterRows);
+		DrawFixedRecordsDivider(pDC, m_rcFooterRecordsDividerArea, FALSE);
 	}
 
 	CRect rcFooter = m_rcFooterArea;
 	if (rcFooter.Height() > 0)
-		pHeader->DrawFooter(pDC, rcFooter, m_nScrollOffsetH);
+		pHeader->DrawFooter(pDC, rcFooter, m_nLeftOffset);
 
-	BOOL bForce(FALSE);
-	BOOL bDrawBetween = FALSE;
-	int yForce(-1);
-	if (m_bDragMode && GetPaintManager() && !IsIconView())
+	if (m_nDropPos != -1)
 	{
-		bForce = GetPaintManager()->m_bForceShowDropMarker;
-		CPoint ptMouse;
-		if (::GetCursorPos(&ptMouse))
-		{
-			ScreenToClient(&ptMouse);
-
-			EnsureStartAutoVertScroll();
-
-			if (m_dwDropMarkerFlags & xtpReportDropBetween)
-			{
-				CXTPReportRow* pHitRow = HitTest(ptMouse);
-				if (pHitRow && pHitRow->GetRecord())
-				{
-					if(bForce
-						||  !(m_dwDropMarkerFlags & xtpReportDropSelect)
-						||  (m_pSelectedRows->GetCount() == 0
-						&& (ptMouse.y <= (pHitRow->GetRect().top + 4)
-						|| ptMouse.y >= (pHitRow->GetRect().bottom - 4))))
-					{
-						bDrawBetween = TRUE;
-						BOOL bAbove = TRUE;
-						if (pHitRow->GetRect().CenterPoint().y < ptMouse.y)
-							bAbove = FALSE;
-						if (bAbove)
-							yForce = pHitRow->GetRect().top - 1;
-						else
-							yForce = pHitRow->GetRect().bottom - 1;
-					}
-				}
-			}
-		}
+		DrawDropMarker(pDC);
 	}
 
-	if (bDrawBetween)
-	{
-		if (m_nDropPos != -1  && GetPaintManager()->m_bUseDropMarker)
-		{
-			DrawDropMarker(pDC);
-		}
-		else if (bForce && yForce > 0 && GetPaintManager()->m_bUseDropMarker)
-		{
-			DrawExtDropMarker(pDC, yForce);
-		}
-	}
 
 	// update flag
 	SetChanged(FALSE);
 }
 
-void CXTPReportControl::DrawDropMarker(CDC *pDC)
+void CXTPReportControl::DrawDropMarker(CDC* pDC)
 {
-	if (m_nDropPos == 0 && GetRows()->GetCount() == 0)
-	{
-		m_nDropPos = m_pSectionBody->m_rcSection.top;
-	}
-	else if (m_nDropPos < m_pSectionBody->m_rcSection.top - 1 ||
-			  m_nDropPos > m_pSectionBody->m_rcSection.bottom)
-	{
-		return;
-	}
-
-	CRect rc(m_pSectionBody->m_rcSection.left, m_nDropPos, m_pSectionBody->m_rcSection.right, m_nDropPos + 1);
+	CRect rc(m_rcReportArea.left, m_nDropPos, m_rcReportArea.right, m_nDropPos + 1);
 
 	pDC->FillSolidRect(rc, GetPaintManager()->m_clrHotDivider);
-	CXTPPenDC pen(*pDC, GetPaintManager()->m_clrHotDivider);
-	CXTPBrushDC brush(*pDC, GetPaintManager()->m_clrHotDivider);
+
+	CXTPPenDC pen (*pDC, GetPaintManager()->m_clrHotDivider);
+	CXTPBrushDC brush (*pDC, GetPaintManager()->m_clrHotDivider);
 
 	int x = rc.left;
 	int y = m_nDropPos;
 
 	POINT ptsLeftArrow[] =
 	{
-		{x,     y - 2},
-		{x + 2, y - 2},
-		{x + 2, y - 5},
-		{x + 7, y    },
-		{x + 2, y + 5},
-		{x + 2, y + 2},
-		{x,     y + 2}
+		{x, y - 2}, {x + 2, y - 2}, {x + 2, y - 5}, {x + 7, y},
+		{x + 2, y + 5}, {x + 2, y + 2}, {x, y + 2}
 	};
 	pDC->Polygon(ptsLeftArrow, 7);
 
@@ -2883,497 +2814,183 @@ void CXTPReportControl::DrawDropMarker(CDC *pDC)
 
 	POINT ptsRightArrow[] =
 	{
-		{x,     y - 2},
-		{x - 2, y - 2},
-		{x - 2, y - 5},
-		{x - 7, y    },
-		{x - 2, y + 5},
-		{x - 2, y + 2},
-		{x,     y + 2}
+		{x, y - 2}, {x - 2, y - 2}, {x - 2, y - 5}, {x - 7, y},
+		{x - 2, y + 5}, {x - 2, y + 2}, {x, y + 2}
 	};
 	pDC->Polygon(ptsRightArrow, 7);
-}
 
-void CXTPReportControl::DrawExtDropMarker(CDC* pDC, int y)
-{
-	CRect rc(m_pSectionBody->m_rcSection.left, y, m_pSectionBody->m_rcSection.right, y + 1);
 
-	pDC->FillSolidRect(rc, GetPaintManager()->m_clrHotDivider);
-	CXTPPenDC pen(*pDC, GetPaintManager()->m_clrHotDivider);
-	CXTPBrushDC brush(*pDC, GetPaintManager()->m_clrHotDivider);
-
-	int x = rc.left;
-
-	POINT ptsLeftArrow[] =
-	{
-		{x, y - 2},
-		{x + 2, y - 2},
-		{x + 2, y - 5},
-		{x + 7, y},
-		{x + 2, y + 5},
-		{x + 2, y + 2},
-		{x, y + 2}
-	};
-	pDC->Polygon(ptsLeftArrow, 7);
-
-	x = rc.right - 1;
-
-	POINT ptsRightArrow[] =
-	{
-		{x, y - 2},
-		{x - 2, y - 2},
-		{x - 2, y - 5},
-		{x - 7, y},
-		{x - 2, y + 5},
-		{x - 2, y + 2},
-		{x, y + 2}
-	};
-	pDC->Polygon(ptsRightArrow, 7);
-}
-
-BOOL CXTPReportControl::Create(DWORD dwStyle, const RECT &rect, CWnd *pParentWnd, UINT nID, CCreateContext *pContext)
-{
-	return CXTPReportControl::Create(XTPREPORTCTRL_CLASSNAME, NULL, dwStyle, rect, pParentWnd, nID, pContext);
-}
-
-BOOL CXTPReportControl::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle, const RECT &rect, CWnd *pParentWnd, UINT nID, CCreateContext *pContext)
-{
-	m_bCreated = TRUE;
-	return CWnd::Create(lpszClassName, lpszWindowName, dwStyle, rect, pParentWnd, nID, pContext);
-}
-
-void CXTPReportControl::PreSubclassWindow()
-{
-	CWnd::PreSubclassWindow();
-
-	// DDX_Control subclasses the window and OnCreate and OnSize will not be called
-	if (!m_bCreated)
-	{
-		AdjustLayout();
-		AdjustScrollBars();
-	}
-}
-
-int CXTPReportControl::OnCreate(LPCREATESTRUCT lpCreateStruct)
-{
-	if (0 != CWnd::OnCreate(lpCreateStruct))
-	{
-		// CWnd creation failed
-		return -1;
-	}
-
-	return 0;
 }
 
 void CXTPReportControl::OnSize(UINT nType, int cx, int cy)
 {
+	if (m_bOnSizeRunning)
+		return;
+
+	m_bOnSizeRunning = TRUE;
+
 	CWnd::OnSize(nType, cx, cy);
 
-	BeginUpdate();
-
-	EditItem(NULL);
 	AdjustLayout();
 	AdjustScrollBars();
 
-	EndUpdate();
+	m_bOnSizeRunning = FALSE;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// Left button
-/////////////////////////////////////////////////////////////////////////////
-
-
-void CXTPReportControl::OnButton(UINT nFlags, CPoint point,
-	CXTPReportBehaviorRowMouseButton* pBehavior)
+void CXTPReportControl::OnRButtonDown(UINT nFlags, CPoint point)
 {
-	UNREFERENCED_PARAMETER(nFlags);
+	CWnd::OnRButtonDown(nFlags, point);
 
-	XTPReportInputState inputState;
+}
 
-	// Get input states
-	inputState.ptMouse     = point;
-	inputState.bKeyControl = (::GetKeyState(VK_CONTROL) < 0) || m_bMultiSelectionMode;
-	inputState.bKeyShift   = (::GetKeyState(VK_SHIFT)   < 0);
-	inputState.nRow        = -1;
-	inputState.bSelected   = FALSE;
+void CXTPReportControl::OnRButtonUp(UINT nFlags, CPoint point)
+{
+	HWND hWnd = m_hWnd;
+	CWnd::OnRButtonUp(nFlags, point);
 
-	// Click arguments
-	XTP_REPORTRECORDITEM_CLICKARGS clickArgs;
-	clickArgs.pControl = this;
-	clickArgs.ptClient = point;
-	clickArgs.pColumn  = NULL;
-	clickArgs.pRow     = NULL;
-	clickArgs.pItem    = NULL;
+	if (!IsWindow(hWnd)) // Can be destroyed in WM_CONTEXTMENU
+		return;
 
-	// Find clicked row
-	clickArgs.pRow = HitTest(point);
-
-	if (NULL != clickArgs.pRow)
-	{
-		inputState.nRow      = clickArgs.pRow->GetIndex();
-		inputState.bSelected = clickArgs.pRow->IsSelected();
-
-		// Find clicked item and column
-		clickArgs.pItem = clickArgs.pRow->HitTest(point, &clickArgs.rcItem, &clickArgs.pColumn);
-	}
-
-	// Store state
-	if (xtpReportMouseEventButtonDown == pBehavior->m_event)
-	{
-		m_mouseDownState = inputState;
-	}
-
-	CXTPReportBehaviorRowModifier *pModifier = NULL;
-
-	     if (m_mouseDownState.bKeyShift)	pModifier = pBehavior->Shift;   // Shift
-	else if (m_mouseDownState.bKeyControl)	pModifier = pBehavior->Control; // Control
-	else												pModifier = pBehavior->None;    // No modifier
-
-	// Current focused row index
-	const int nFocusedRowIndex = _GetFocusedRowIndex();
-
-	if (xtpReportMouseEventButtonDown == pBehavior->m_event)
-	{
-		SetFocus();
-
-		// If an item is currently edited, this need to be ended first.
-		// EditItem(NULL) sends a XTP_NM_REPORT_VALUECHANGED message
-		// and the user may modify the rows.
-		EditItem(NULL);
-	}
-
-	// Notify header
-	CXTPReportHeader *pHeader = GetReportHeader();
-	if (NULL != pHeader)
-	{
-		if (xtpReportMouseButtonLeft == pBehavior->m_button)
-		{
-			if (xtpReportMouseEventButtonDown == pBehavior->m_event)
-			{
-				pHeader->OnLButtonDown(point);
-			}
-			if (xtpReportMouseEventButtonUp == pBehavior->m_event)
-			{
-				pHeader->OnLButtonUp(nFlags, point);
-			}
-		}
-	}
-
-
-	if (NULL != clickArgs.pRow)
-	{
-		BOOL bHandled = FALSE;
-
-		// Notify row
-		if (xtpReportMouseButtonLeft == pBehavior->m_button)
-		{
-			if (xtpReportMouseEventButtonDown == pBehavior->m_event)
-			{
-				bHandled = clickArgs.pRow->OnLButtonDown(&clickArgs);
-			}
-			if (xtpReportMouseEventButtonUp == pBehavior->m_event)
-			{
-				bHandled = clickArgs.pRow->OnLButtonUp(&clickArgs);
-			}
-		}
-
-		// Notify inplace control
-		if (NULL != clickArgs.pItem)
-		{
-		}
-
-		if (!bHandled && clickArgs.pRow->GetSection()->IsAllowAccess())
-		{
-			BeginUpdate();
-
-			// Begin drag
-			if (pBehavior->bDragBegin)
-			{
-				m_ptDrag = point;
-				m_bPrepareDrag = TRUE;
-			}
-
-			// End drag
-			if (pBehavior->bDragEnd)
-			{
-				// Stop dragging
-				m_bPrepareDrag = FALSE;
-
-				// Stop auto scrolling
-				EnsureStopAutoVertScroll();
-			}
-
-			BOOL bKeepSelection       = FALSE;
-			BOOL bKeepFocus           = FALSE;
-			BOOL bDeferredDeselection = FALSE;
-
-			const BOOL bSelected = clickArgs.pRow->IsSelected();
-
-			if (bSelected)
-			{
-				if (pModifier->bKeepSelection)
-				{
-					bKeepSelection = TRUE;
-				}
-
-				if (pModifier->bKeepFocus)
-				{
-					bKeepFocus = TRUE;
-				}
-			}
-
-			// Focus column
-			if (pBehavior->bFocusColumn && m_bFocusSubItems)
-			{
-				if (clickArgs.pItem && clickArgs.pItem->IsFocusable())
-				{
-					SetFocusedColumn(clickArgs.pColumn);
-				}
-				else
-				{
-					SetFocusedColumn(NULL);
-				}
-			}
-
-			// Focus row
-			if ((pModifier->bFocusRow || pModifier->bFocusRowTemporarily) && !bKeepFocus)
-			{
-				_SetFocusedRow(clickArgs.pRow);
-			}
-
-			// Deferred deselection
-			if (m_mouseDownState.bKeyControl &&
-				 m_mouseDownState.bSelected   &&
-				 m_mouseDownState.nRow == clickArgs.pRow->GetIndex() && xtpReportMouseEventButtonUp == pBehavior->m_event)
-			{
-				bDeferredDeselection = TRUE;
-			}
-
-			// Select row(s)
-			if ((pModifier->bSelectRow && !bKeepSelection) || bDeferredDeselection)
-			{
-				if (pModifier->bMultipleSelection)
-				{
-					_SetSelectedRow(clickArgs.pRow, nFocusedRowIndex, inputState.bKeyShift, inputState.bKeyControl);
-
-					if (IsSelectionEnabled() && IsMultipleSelection() && !inputState.bKeyShift && inputState.bKeyControl)
-					{
-						m_pSelectedRows->Invert(clickArgs.pRow);
-					}
-				}
-				else
-				{
-					_SetSelectedRow(clickArgs.pRow, nFocusedRowIndex, FALSE, FALSE);
-				}
-			}
-
-			// Ensure visible
-			if (pBehavior->bEnsureVisible)
-			{
-				EnsureVisible(clickArgs.pRow);
-			}
-
-			// Row click
-			if (pBehavior->bClick)
-			{
-				clickArgs.pRow->OnClick(point);
-
-				if (pBehavior->bCheckSelectedRows && clickArgs.pItem)
-				{
-					SetSelectionState(clickArgs.pItem->GetIndex(), clickArgs.pItem->GetCheckedState());
-				}
-			}
-
-			EndUpdate();
-		} // !bHandled
-	}
-	else if (m_bFastDeselectMode)
-	{
-		if (!inputState.bKeyControl && !inputState.bKeyShift)
-		{
-			m_pSelectedRows->Clear();
-		}
-	}
-
-	// Context menu
-	if (pBehavior->bContextMenu)
-	{
-		if (NULL != m_pSections->HitTest(point))
-		{
-			CXTPReportColumn     *pColumn = NULL;
-			CXTPReportRecordItem *pItem   = NULL;
-
-			if (NULL != clickArgs.pRow)
-			{
-				//clickArgs.pRow->HitTest(point, NULL, &pColumn);
-				clickArgs.pRow->OnContextMenu(point);
-			}
-			else
-			{
-				ClientToScreen(&point);
-				SendMessageToParent(clickArgs.pRow, pItem, pColumn, NM_RCLICK, &point);
-			}
-		}
-	}
-
-	// Restore focus
-	if (pModifier->bFocusRowTemporarily)
-	{
-		CXTPReportRow *pRow = NULL;
-
-		pRow = GetRows()->GetAt(nFocusedRowIndex);
-		BeginUpdate();
-		_SetFocusedRow(pRow);
-		EndUpdate();
-	}
-
-	if (m_pSelectedRows->IsChanged())
-	{
-		//TRACE(_T("OnSelectionChanged\n"));
-		OnSelectionChanged();
-	}
 }
 
 
 void CXTPReportControl::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	CWnd::OnLButtonDown(nFlags, point);
+	SetFocus();
+	EditItem(NULL);
 
-	m_dwLastMouseMessage = WM_LBUTTONDOWN;
-	OnButton(nFlags, point, m_pBehavior->Row->MouseDown->Left);
+	// columns processing
+	CXTPReportHeader* pHeader = GetReportHeader();
+	if (pHeader)
+	{
+		pHeader->OnLButtonDown(point);
+	}
+
+	// rows selection
+	CXTPReportRow* pRow = HitTest(point);
+	if (pRow)
+	{
+		XTP_REPORTRECORDITEM_CLICKARGS clickArgs;
+		clickArgs.pControl = this;
+		clickArgs.pRow = pRow;
+		clickArgs.ptClient = point;
+		clickArgs.pColumn = NULL;
+
+		// find clicked item
+		clickArgs.pItem = pRow->HitTest(point, &clickArgs.rcItem, &clickArgs.pColumn);
+
+		if (pRow->OnLButtonDown(&clickArgs))
+			return;
+
+		// some rows may be unaccessible for end user
+		if (pRow->GetType() == xtpRowTypeHeader && !m_bHeaderRowsAllowAccess)
+			return;
+
+		if (pRow->GetType() == xtpRowTypeFooter && !m_bFooterRowsAllowAccess)
+			return;
+
+		bool bIgnoreSelection = GetKeyState(VK_CONTROL) < 0;
+		bool bSelectBlock = GetKeyState(VK_SHIFT) < 0;
+		BOOL bFocusChanged = TRUE;
+
+
+		CXTPReportColumn* pFocusedColumn = clickArgs.pColumn;
+
+
+		CUpdateContext updateContext(this);
+
+		if (m_bFocusSubItems && pFocusedColumn && pRow->GetRecord() && pRow->GetRecord()->GetItem(pFocusedColumn)->IsFocusable())
+		{
+			SetFocusedColumn(pFocusedColumn);
+		}
+
+		if (pRow->IsSelected() && !bIgnoreSelection && !bSelectBlock)
+		{
+			m_pSelectOnUpRow = pRow;
+		}
+		else
+		{
+			bFocusChanged = SetFocusedRow(pRow, bSelectBlock, bIgnoreSelection);
+		}
+
+		BOOL bSelectionChanged = m_pSelectedRows->IsChanged();
+		if (bFocusChanged && bIgnoreSelection && IsSelectionEnabled())
+		{
+			m_pSelectedRows->Invert(pRow);
+			if(!bSelectionChanged && m_pSelectedRows->IsChanged())
+				OnSelectionChanged();
+		}
+
+		m_pointDrag = point;
+		m_bPrepareDrag = TRUE;
+
+	}
 
 }
 
 void CXTPReportControl::OnLButtonUp(UINT nFlags, CPoint point)
 {
-	//TRACE(_T("CXTPReportControl::OnLButtonUp\n"));
 	CWnd::OnLButtonUp(nFlags, point);
 
-	/*
-		The Windows window manager sends an unwanted WM_LBUTTONDOWN message if
-		the window is maximized with a double-click on the caption bar.
+	m_bPrepareDrag = FALSE;
 
-		Window messages for double-click:
-		- WM_LBUTTONDOWN
-		- WM_LBUTTONUP
-		- WM_LBUTTONDBLCLK
-		- WM_LBUTTONUP
-	*/
-	if (WM_LBUTTONDOWN   == m_dwLastMouseMessage ||
-		 WM_LBUTTONDBLCLK == m_dwLastMouseMessage ||
-		 xtpReportMouseNothing != GetMouseMode())
+	EnsureStopAutoVertScroll();
+
+	// columns processing
+	CXTPReportHeader* pHeader = GetReportHeader();
+	if (pHeader)
 	{
-		m_dwLastMouseMessage = WM_LBUTTONUP;
-		OnButton(nFlags, point, m_pBehavior->Row->MouseUp->Left);
-
+		pHeader->OnLButtonUp(nFlags, point);
 	}
+
+	CXTPReportRow* pRow = HitTest(point);
+
+	if (pRow && pRow == m_pSelectOnUpRow)
+	{
+		SetFocusedRow(pRow, FALSE, FALSE);
+	}
+
+	m_pSelectOnUpRow = NULL;
+
+	if (!m_bMultipleSelection || (GetKeyState(VK_SHIFT) >= 0 && GetKeyState(VK_CONTROL) >= 0))
+	{
+		// rows processing
+		if (pRow && pRow->IsFocused())
+		{
+			pRow->OnClick(point);
+		}
+	}
+
+
 }
 
 void CXTPReportControl::OnLButtonDblClk(UINT nFlags, CPoint ptDblClick)
 {
 	CWnd::OnLButtonDblClk(nFlags, ptDblClick);
-	m_dwLastMouseMessage = WM_LBUTTONDBLCLK;
-
-	EditItem(NULL);
-
-	// Information for delay editing
-	EnsureStopDelayEditTimer();
-	SetLastRqstEdit(-1, -1);
 
 	// columns processing
-	CXTPReportHeader *pHeader = GetReportHeader();
-	if (NULL != pHeader)
+	CXTPReportHeader* pHeader = GetReportHeader();
+	if (pHeader)
 	{
 		pHeader->OnLButtonDblClk(ptDblClick);
 	}
 
 	// rows processing
-	CXTPReportRow *pRow = HitTest(ptDblClick);
-	if (NULL != pRow)
+	CXTPReportRow* pRow = HitTest(ptDblClick);
+	if (pRow)
 	{
 		pRow->OnDblClick(ptDblClick);
 	}
-	else // just notify parent
+	else
 	{
+		// just notify parent
 		SendMessageToParent(NULL, NULL, NULL, NM_DBLCLK, &ptDblClick);
 	}
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-// Right button
-/////////////////////////////////////////////////////////////////////////////
-
-void CXTPReportControl::OnRButtonDown(UINT nFlags, CPoint point)
-{
-	CWnd::OnRButtonDown(nFlags, point);
-
-	OnButton(nFlags, point, m_pBehavior->Row->MouseDown->Right);
 
 }
-
-void CXTPReportControl::OnRButtonUp(UINT nFlags, CPoint point)
+void CXTPReportControl::OnContextMenu(CWnd* /*pWnd*/, CPoint pos)
 {
-	CWnd::OnRButtonUp(nFlags, point);
-
-	if (!IsWindow(m_hWnd)) // Can be destroyed in WM_CONTEXTMENU
-		return;
-
-	OnButton(nFlags, point, m_pBehavior->Row->MouseUp->Right);
-
-}
-
-LRESULT CXTPReportControl::OnNcHitTest(CPoint point)
-{
-	LRESULT ht = CWnd::OnNcHitTest(point);
-
-	if (ht != HTCLIENT)
-		return ht;
-
-	DWORD dwStyle = GetStyle();
-
-	if ((dwStyle & (WS_VSCROLL | WS_HSCROLL)) == 0)
-		return ht;
-
-	CXTPWindowRect rcWindow(this);
-
-	if (dwStyle & WS_VSCROLL)
-	{
-		if (IsLayoutRTL() || !!(GetWindowLong(m_hWnd, GWL_EXSTYLE) & WS_EX_LEFTSCROLLBAR))
-		{
-			CRect rc(rcWindow.left, rcWindow.top, GetSystemMetrics(SM_CXVSCROLL), rcWindow.bottom - (dwStyle & WS_HSCROLL ? GetSystemMetrics(SM_CYHSCROLL) : 0));
-
-			if (rc.PtInRect(point))
-				return HTVSCROLL;
-		}
-		else
-		{
-			CRect rc(rcWindow.right- GetSystemMetrics(SM_CXVSCROLL), rcWindow.top,
-				rcWindow.right, rcWindow.bottom - (dwStyle & WS_HSCROLL ? GetSystemMetrics(SM_CYHSCROLL) : 0));
-
-			if (rc.PtInRect(point))
-				return HTVSCROLL;
-		}
-	}
-
-	if (dwStyle & WS_HSCROLL)
-	{
-		CRect rc(rcWindow.left, rcWindow.bottom - GetSystemMetrics(SM_CYHSCROLL),
-			rcWindow.right - (dwStyle & WS_VSCROLL ? GetSystemMetrics(SM_CXVSCROLL) : 0), rcWindow.bottom);
-
-		if (rc.PtInRect(point))
-			return HTHSCROLL;
-	}
-
-	return ht;
-}
-
-
-
-void CXTPReportControl::OnContextMenu(CWnd *pWnd, CPoint pos)
-{
-	UNREFERENCED_PARAMETER(pWnd);
-
 	if (GetMouseMode() != xtpReportMouseNothing)
 		return;
 
@@ -3384,29 +3001,43 @@ void CXTPReportControl::OnContextMenu(CWnd *pWnd, CPoint pos)
 	if (m_rcHeaderArea.PtInRect(ptClient) ||
 		m_rcGroupByArea.PtInRect(ptClient))
 	{
-		CXTPReportHeader *pHeader = GetReportHeader();
+		CXTPReportHeader* pHeader = GetReportHeader();
 		if (pHeader)
 			pHeader->OnContextMenu(ptClient);
 		return;
 	}
 
-	// Context menu key
+	// call context menu handler for report area if clicked inside
+	if (m_rcReportArea.PtInRect(ptClient)           ||
+		m_rcHeaderRecordsArea.PtInRect(ptClient)    ||
+		m_rcFooterRecordsArea.PtInRect(ptClient))
+	{
+		// rows processing
+		CXTPReportRow* pRow = HitTest(ptClient);
+		if (pRow)
+		{
+			SetFocusedRow(pRow, pRow->IsSelected());
+			pRow->OnContextMenu(ptClient);
+		}
+		else
+		{
+			SendMessageToParent(NULL, NULL, NULL, NM_RCLICK, &pos);
+		}
+
+		return;
+	}
+
 	if (pos == CPoint(-1, -1))
 	{
-		CXTPReportRow *pFocusedRow = GetFocusedRow();
+		CXTPReportRow* pFocusedRow = GetFocusedRow();
 		if (pFocusedRow)
 		{
-			// Menu position below row
-			ptClient = CPoint(
-				pFocusedRow->GetRect().left,
-				pFocusedRow->GetRect().bottom
-				);
-
+			ptClient = CPoint(pFocusedRow->GetRect().left, pFocusedRow->GetRect().bottom);
 			pFocusedRow->OnContextMenu(ptClient);
 		}
 		else
 		{
-			pos = m_pSectionBody->m_rcSection.TopLeft();
+			pos = m_rcReportArea.TopLeft();
 			ClientToScreen(&pos);
 			SendMessageToParent(NULL, NULL, NULL, NM_RCLICK, &pos);
 		}
@@ -3451,230 +3082,110 @@ BOOL CXTPReportControl::OnPreviewKeyDown(UINT& rnChar, UINT nRepCnt, UINT nFlags
 
 void CXTPReportControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
+//  TRACE(_T("ReportControl, OnKeyDown('%d') \n"), nChar);
+
+// Moved to PreTranslateMessage
+//  if (!OnPreviewKeyDown(nChar, nRepCnt, nFlags))
+//  {
+//      return;
+//  }
+
 	CWnd::OnKeyDown(nChar, nRepCnt, nFlags);
 
-	BOOL bControlKeyOnly = (GetKeyState(VK_CONTROL) < 0);
-	BOOL bControlKey     = (GetKeyState(VK_CONTROL) < 0) || m_bMultiSelectionMode;
-	BOOL bShiftKey       = (GetKeyState(VK_SHIFT)   < 0);
+	BOOL  bSelectBlock = GetKeyState(VK_SHIFT) < 0;
+	BOOL  bSignoreSelection = GetKeyState(VK_CONTROL) < 0;
 
 	CXTPReportRow* pFocusedRow = GetFocusedRow();
 
 	CXTPDrawHelpers::KeyToLayout(this, nChar);
-	int nRows     = GetRows()->GetCount();
-	int nHeadRows = GetHeaderRows()->GetCount();
-	int nFootRows = GetFooterRows()->GetCount();
 
-	// Increase reference Count for pFocusedRow to be sure it won't be destroyed inside function.
-	CXTPSmartPtrInternalT<CCmdTarget> ptrRowLock(pFocusedRow, TRUE);
-
-	if (nRows > 0
-		|| nHeadRows > 0
-		|| nFootRows > 0)
+	if (m_pRows->GetCount() != 0)
 	switch (nChar)
 	{
-		case VK_F5:
-			Recalc(bShiftKey);
-			break;
-
 		case VK_ADD:
-		{
-			if (bControlKeyOnly)
-			{
-				if (!IsLockExpand())
-				{
-					ExpandAll();
-				}
-			}
-			else if ( pFocusedRow &&
-					   pFocusedRow->HasChildren() &&
-						!pFocusedRow->IsExpanded() &&
-						!pFocusedRow->IsLockExpand())
+			if (bSignoreSelection)
+				ExpandAll();
+			else if (pFocusedRow && pFocusedRow->HasChildren() && !pFocusedRow->IsExpanded())
 			{
 				pFocusedRow->SetExpanded(TRUE);
 			}
-		}
-		break;
+			break;
 
 		case VK_SUBTRACT:
-		{
-			if (bControlKeyOnly)
-			{
-				if (!IsLockExpand())
-				{
-					CollapseAll();
-				}
-			}
-			else if ( pFocusedRow &&
-					   pFocusedRow->HasChildren() &&
-						 pFocusedRow->IsExpanded() &&
-						!pFocusedRow->IsLockExpand())
+			if (bSignoreSelection)
+				CollapseAll();
+			else if (pFocusedRow && pFocusedRow->HasChildren() && pFocusedRow->IsExpanded())
 			{
 				pFocusedRow->SetExpanded(FALSE);
-			}
-		}
-		break;
-
-		case VK_LEFT:
-
-			if (m_bIconView)
-			{
-				GetNavigator()->MoveLeft(bShiftKey, bControlKey);
-			}
-			else
-			{
-				/**
-					[0] if FocusSubItems we need check first if we can move one column left. if not - "fall down" for cases [1][2][3]
-					[1] If a row without children has the focus, focus shall be put on the parent row
-					[2] If a row with expanded children has the focus, children shall be collapsed
-					[3] If a row with collapsed children has the focus, focus shall be put on the parent row
-				*/
-
-				if (pFocusedRow)
-				{
-					if (m_bFocusSubItems && m_pFocusedColumn)
-					{
-						CXTPReportColumn* pColumn = GetNextFocusableColumn(pFocusedRow, m_pFocusedColumn->GetIndex(), -1);
-						if (pColumn)
-						{
-							SetFocusedColumn(pColumn);
-							SetFocusedRow(GetFocusedRow());
-							break;
-						}
-					}
-
-					/* [1], Row without children */
-					if (!pFocusedRow->HasChildren())
-					{
-						CXTPReportRow *pParent = pFocusedRow->GetParentRow();
-						if (NULL != pParent)
-						{
-							SetFocusedRow(pParent);
-						}
-						else
-						{
-							GetNavigator()->MoveUp(bShiftKey, bControlKey);
-						}
-					}
-
-					/* [2][3] Row with children */
-					else // if (pFocusedRow->HasChildren())
-					{
-						/* [2] Row with expanded children */
-						if (pFocusedRow->IsExpanded())
-						{
-							if (!pFocusedRow->IsLockExpand())
-							{
-								pFocusedRow->SetExpanded(FALSE);
-							}
-							else
-							{
-								GetNavigator()->MoveUp(bShiftKey, bControlKey);
-							}
-						}
-						/* [3] Row with collapsed children */
-						else
-						{
-							CXTPReportRow* pParent = pFocusedRow->GetParentRow();
-
-							// if we don't have parent just go up, like Outlook.
-							if (NULL != pParent)
-							{
-								SetFocusedRow(pParent);
-							}
-							else
-							{
-								GetNavigator()->MoveUp(bShiftKey, bControlKey);
-							}
-						}
-					}
-				}
 			}
 			break;
 
 		case VK_RIGHT:
-			if (m_bIconView)
+			if (pFocusedRow && pFocusedRow->HasChildren() && !pFocusedRow->IsExpanded())
 			{
-				GetNavigator()->MoveRight(bShiftKey, bControlKey);
+				pFocusedRow->SetExpanded(TRUE);
 				break;
 			}
-			else
+			if (pFocusedRow && m_bFocusSubItems && m_pFocusedColumn)
 			{
-				/**
-					[0] if FocusSubItems we need check first if we can move one column right. if not - "fall down" for cases [1][2][3]
-					[1] If a row with expanded children has the focus, focus shall be put on first children
-					[2] If a row with collapsed children has the focus, children shall be expanded
-					[3] If a row with no children has the focus, we go down like Outlook
-				*/
-
-				if (pFocusedRow)
+				CXTPReportColumn* pColumn = GetNextFocusableColumn(pFocusedRow, m_pFocusedColumn->GetIndex(), +1);
+				if (pColumn)
 				{
-					if (m_bFocusSubItems && m_pFocusedColumn)
-					{
-						CXTPReportColumn* pColumn = GetNextFocusableColumn(pFocusedRow, m_pFocusedColumn->GetIndex(), +1);
-						if (pColumn)
-						{
-							SetFocusedColumn(pColumn);
-							SetFocusedRow(GetFocusedRow());
-							break;
-						}
-					}
-
-					if (pFocusedRow->HasChildren())
-					{
-						/* [1] Row with expanded children */
-						if (pFocusedRow->IsExpanded())
-						{
-							CXTPReportRows *pChildRows = pFocusedRow->GetChilds();
-							CXTPReportRow  *pChildRow  = pChildRows->GetAt(0);
-							SetFocusedRow(pChildRow);
-						}
-						/* [2] Row with collapsed children */
-						else
-						{
-							if (!pFocusedRow->IsLockExpand())
-							{
-								pFocusedRow->SetExpanded(TRUE, bControlKeyOnly);
-							}
-							else
-							{
-								GetNavigator()->MoveDown(bShiftKey, bControlKey);
-							}
-						}
-					}
-					else
-					{
-						GetNavigator()->MoveDown(bShiftKey, bControlKey);
-					}
+					SetFocusedColumn(pColumn);
+					SetFocusedRow(GetFocusedRow());
 				}
+				break;
 			}
-			break;
 
 		case VK_DOWN:
-			GetNavigator()->MoveDown(bShiftKey, bControlKey);
+			GetNavigator()->MoveDown(bSelectBlock, bSignoreSelection);
 			break;
 
+		case  VK_LEFT:
+			if (pFocusedRow && pFocusedRow->HasChildren() && pFocusedRow->IsExpanded())
+			{
+				pFocusedRow->SetExpanded(FALSE);
+				break;
+			}
+			if (pFocusedRow && m_bFocusSubItems && m_pFocusedColumn)
+			{
+				CXTPReportColumn* pColumn = GetNextFocusableColumn(pFocusedRow, m_pFocusedColumn->GetIndex(), -1);
+				if (pColumn)
+				{
+					SetFocusedColumn(pColumn);
+					SetFocusedRow(GetFocusedRow());
+				}
+				break;
+			}
+			if (pFocusedRow && !pFocusedRow->HasChildren() && pFocusedRow->GetParentRow() && !bSelectBlock)
+			{
+				SetFocusedRow(pFocusedRow->GetParentRow());
+				pFocusedRow->SetExpanded(FALSE);
+				break;
+			}
+
 		case VK_UP:
-			GetNavigator()->MoveUp(bShiftKey, bControlKey);
+			GetNavigator()->MoveUp(bSelectBlock, bSignoreSelection);
 			break;
 
 		case VK_HOME:
-			GetNavigator()->MoveFirstRow(bShiftKey, FALSE);
+			GetNavigator()->MoveFirstRow(bSelectBlock, FALSE);
 			break;
 
 		case VK_END:
-			GetNavigator()->MoveLastRow(bShiftKey, FALSE);
+			GetNavigator()->MoveLastRow(bSelectBlock, FALSE);
 			break;
 
 		case VK_NEXT:
-			GetNavigator()->MovePageDown(bShiftKey, FALSE);
+			GetNavigator()->MovePageDown(bSelectBlock, FALSE);
 			break;
 
 		case VK_PRIOR:
-			GetNavigator()->MovePageUp(bShiftKey, FALSE);
+			GetNavigator()->MovePageUp(bSelectBlock, FALSE);
 			break;
 
 		case VK_RETURN:
-			if (pFocusedRow && pFocusedRow->HasChildren() && !pFocusedRow->IsLockExpand())
+			if (pFocusedRow && pFocusedRow->HasChildren())
 			{
 				pFocusedRow->SetExpanded(!pFocusedRow->IsExpanded());
 			}
@@ -3682,39 +3193,23 @@ void CXTPReportControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 		case VK_ESCAPE:
 			if (m_mouseMode != xtpReportMouseNothing)
+			{
 				GetReportHeader()->CancelMouseMode();
+			}
 			break;
 
 		case VK_F2:
 			GetNavigator()->BeginEdit();
 			break;
-
 		case VK_SPACE:
-			if (IsSelectionEnabled() && bControlKey && pFocusedRow)
+			if(IsSelectionEnabled() && bSignoreSelection && pFocusedRow)
 			{
-				if (pFocusedRow->IsSelected())
+//              m_pSelectedRows->Invert(pFocusedRow);
+				if(pFocusedRow->IsSelected())
 					m_pSelectedRows->Remove(pFocusedRow);
 				else
 					m_pSelectedRows->Add(pFocusedRow);
-
 				OnSelectionChanged();
-				//OnSelectionChanged set Selection flag m_bChanged = FALSE;
-			}
-			break;
-
-		case 'A':
-			if (IsSelectionEnabled() && !bShiftKey && bControlKeyOnly && IsMultipleSelection())
-			{
-				if (IsVirtualMode())
-				{
-					GetNavigator()->MoveToRow(0);
-					GetNavigator()->MoveToRow(GetRecords()->GetCount() - 1, TRUE);
-				}
-				else
-				{
-					_SelectRows(GetRecords());
-				}
-				RedrawControl();
 			}
 			break;
 	}
@@ -3726,148 +3221,6 @@ void CXTPReportControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 }
 
-//ICON_VIEW_MODE RELATED <<
-void CXTPReportControl::SetNavigator(CXTPReportNavigator* pNavigator)
-{
-	if (pNavigator)
-	{
-		CMDTARGET_RELEASE(m_pNavigator);
-		m_pNavigator = pNavigator;
-	}
-}
-
-void CXTPReportControl::SetIconViewToDefaults()
-{
-	m_bIconView = FALSE;
-	m_iIconWidth = 0;
-	m_iIconHeight = 0;
-	m_iIconWidthSpacing = 0;
-	m_iIconHeightSpacing = 0;
-	m_iIconViewColumn = -1;
-	m_iIconViewRowsPerLine = 0;
-	m_bUseIconColumnForNum = FALSE;
-	m_iColumnForNum = -1;
-	m_bPrevFocusSubItems = FALSE;
-	m_bPrevHeaderAutoSize = FALSE;
-	m_iIconPropNum = 0;
-	m_iIconNum = 0;
-	m_pPrevVisible = NULL;
-	m_pPrevGroupsOrder = NULL;
-	m_nPrevTreeIndent = 0;
-
-	m_bIconColumnIndexNotValid = FALSE;
-
-	m_bPrevHeaderRows = FALSE;
-	m_bPrevFooterRows = FALSE;
-	m_bPrevHeaderShow = FALSE;
-	m_bPrevFooterShow = FALSE;
-
-	m_bRClickDrag = FALSE;
-}
-
-void CXTPReportControl::SetIconColumn(CXTPReportColumn* pColumn)
-{
-	ASSERT(pColumn);
-	m_iIconViewColumn = pColumn ? pColumn->GetItemIndex() : -1;
-}
-
-void CXTPReportControl::CreateIconColumn(BOOL bUseColumnForNum, int nWidth)
-{
-	if (GetColumns())
-	{
-		if (!m_bUseIconColumnForNum)
-			m_bUseIconColumnForNum = bUseColumnForNum;
-
-		if (m_iIconViewColumn == -1)
-		{
-			int iCnt = GetColumns()->GetCount();
-			if (GetRecords())
-			{
-				int iCnt0 = iCnt;
-				if (GetRecords()->GetAt(0))
-						iCnt = max(iCnt, GetRecords()->GetAt(0)->GetItemCount());
-				if (iCnt > iCnt0)
-					for (int iIc = 0; iIc < iCnt - iCnt0; iIc++)
-						AddColumn(new CXTPReportColumn(iIc,_T(""), 0, FALSE,XTP_REPORT_NOICON,FALSE,FALSE));
-			}
-
-			CXTPReportColumn* pIconCol = AddColumn(new CXTPReportColumn(iCnt, _T(""), 0));
-			pIconCol->SetVisible(FALSE);
-
-			if (m_bUseIconColumnForNum)
-			{
-				pIconCol->SetCaption(_T("#"));
-				pIconCol->SetVisible(TRUE);
-				pIconCol->SetHeaderAlignment(DT_CENTER);
-				pIconCol->SetWidth(nWidth);
-
-				if (GetColumns()->GetGroupsOrder()->GetCount() > 0 && nWidth < 30)
-					nWidth = 30;
-
-				GetPaintManager()->m_RecordNumberWidth = nWidth;
-
-				pIconCol->AllowRemove(FALSE);
-				pIconCol->EnableResize(FALSE);
-				//pIconCol->SetAutoSize(FALSE);
-				pIconCol->SetAllowDrag(FALSE);
-				pIconCol->SetEditable(FALSE);
-				pIconCol->SetGroupable(FALSE);
-				pIconCol->SetSortable(FALSE);
-			}
-			m_iIconViewColumn = pIconCol->GetIndex();
-			m_iColumnForNum = m_iIconViewColumn;
-		}
-	}
-}
-
-void CXTPReportControl::AssignIconViewPropNumAndIconNum(int nCol, int nIcon,
-														BOOL bUseColumnForNum, int nWidth)
-{
-	BOOL bAlreadyUsed = m_bUseIconColumnForNum;
-
-	m_bIconColumnIndexNotValid = TRUE;
-
-	CreateIconColumn(bUseColumnForNum, nWidth);
-
-	m_bIconColumnIndexNotValid = FALSE;
-
-	if (!bAlreadyUsed && bUseColumnForNum)
-	{
-		m_bUseIconColumnForNum = bUseColumnForNum;
-
-		if (m_iIconViewColumn > -1)
-		{
-			CXTPReportColumn* pIconCol = GetColumns()->GetAt(m_iIconViewColumn);
-			if (m_bUseIconColumnForNum)
-			{
-				pIconCol->SetCaption(_T("#"));
-				pIconCol->SetVisible(TRUE);
-				pIconCol->SetHeaderAlignment(DT_CENTER);
-				pIconCol->SetWidth(nWidth);
-
-				if (GetColumns()->GetGroupsOrder()->GetCount() > 0 && nWidth < 30)
-					nWidth = 30;
-
-				GetPaintManager()->m_RecordNumberWidth = nWidth;
-
-				pIconCol->AllowRemove(FALSE);
-				pIconCol->EnableResize(FALSE);
-				pIconCol->SetEditable(FALSE);
-				pIconCol->SetGroupable(FALSE);
-				pIconCol->SetSortable(FALSE);
-			}
-		}
-	}
-	if (nCol > -1)
-		m_iIconPropNum = nCol;
-	if (nIcon > -1)
-		m_iIconNum = nIcon;
-
-	if (!bAlreadyUsed && m_iColumnForNum > -1 && bUseColumnForNum)
-		GetColumns()->ChangeColumnOrder(0, m_iColumnForNum);
-}
-//ICON_VIEW_MODE RELATED >>
-
 void CXTPReportControl::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
 	CWnd::OnSysKeyDown(nChar, nRepCnt, nFlags);
@@ -3875,7 +3228,6 @@ void CXTPReportControl::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 void CXTPReportControl::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-	m_bWasShiftKey = (GetKeyState(VK_SHIFT) < 0);
 	CWnd::OnKeyUp(nChar, nRepCnt, nFlags);
 }
 
@@ -3886,35 +3238,36 @@ void CXTPReportControl::OnSysKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 void CXTPReportControl::OnChar(UINT nChar, UINT nRepCntr, UINT nFlags)
 {
+//  TRACE(_T("ReportControl, OnChar('%d') \n"), nChar);
+
+// Moved to PreTranslateMessage
+//  if (!OnPreviewKeyDown(nChar, nRepCntr, nFlags))
+//  {
+//      return;
+//  }
+
 	NMCHAR nmgv;
 	ZeroMemory(&nmgv, sizeof(NMCHAR));
 	nmgv.ch = nChar;
 	SendNotifyMessage(NM_CHAR, (NMHDR*)&nmgv);
 
+
 	CXTPReportRow* pFocusedRow = GetFocusedRow();
 
-	if (pFocusedRow && (nChar == VK_TAB))
+	if (m_bFocusSubItems && pFocusedRow && (nChar == VK_TAB))
 	{
-		if (m_bFocusSubItems)
-		{
-			CXTPSmartPtrInternalT<CCmdTarget> ptrRowLock(pFocusedRow, TRUE);
-			EditItem(NULL);
+		EditItem(NULL);
 
-			BOOL bBack = (GetKeyState(VK_SHIFT) < 0);
-			GetNavigator()->MoveLeftRight(bBack);
+		BOOL bBack = GetKeyState(VK_SHIFT) < 0;
 
-			if (IsAllowEdit() && m_bEditOnClick && !m_bTrapTabKey)
-			{
-				GetNavigator()->BeginEdit();
-			}
-		}
+		GetNavigator()->MoveLeftRight(bBack);
+
 		return;
 	}
 
-	if (m_pFocusedColumn && pFocusedRow && pFocusedRow->GetRecord()
-		&& (nChar != VK_RETURN) && (nChar != VK_ESCAPE))
+	if (m_pFocusedColumn && pFocusedRow && pFocusedRow->GetRecord() && (nChar != VK_RETURN) && (nChar != VK_ESCAPE))
 	{
-		XTP_REPORTRECORDITEM_ARGS itemArgs(this, pFocusedRow, m_pFocusedColumn);
+		XTP_REPORTRECORDITEM_ARGS itemArgs(this, pFocusedRow, m_pFocusedColumn) ;
 
 		if (itemArgs.pItem && itemArgs.pItem->OnChar(&itemArgs, nChar))
 			return;
@@ -3926,8 +3279,9 @@ void CXTPReportControl::OnChar(UINT nChar, UINT nRepCntr, UINT nFlags)
 void CXTPReportControl::OnCaptureChanged(CWnd* pWnd)
 {
 	if (m_mouseMode != xtpReportMouseNothing)
+	{
 		GetReportHeader()->CancelMouseMode();
-
+	}
 	CWnd::OnCaptureChanged(pWnd);
 }
 
@@ -3938,31 +3292,179 @@ void CXTPReportControl::OnEnable(BOOL bEnable)
 	AdjustScrollBars();
 }
 
+void CXTPReportControl::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+{
+	if (pScrollBar != NULL)
+	{
+		CWnd::OnVScroll(nSBCode, nPos, pScrollBar);
+		return;
+	}
+	int nCurPos = m_nTopRow;
+
+	// decide what to do for each diffrent scroll event
+	switch (nSBCode)
+	{
+		case SB_TOP: nCurPos = 0; break;
+		case SB_BOTTOM: nCurPos = GetScrollLimit(SB_VERT); break;
+		case SB_LINEUP: nCurPos = max(nCurPos - 1, 0); break;
+		case SB_LINEDOWN: nCurPos = min(nCurPos + 1, GetScrollLimit(SB_VERT)); break;
+
+		case SB_PAGEUP: nCurPos = max(nCurPos - GetReportAreaRows(nCurPos, false), 0); break;
+		case SB_PAGEDOWN: nCurPos = min(nCurPos + GetReportAreaRows(nCurPos, true), GetScrollLimit(SB_VERT)); break;
+
+		case SB_THUMBTRACK:
+		case SB_THUMBPOSITION:
+			{
+				SCROLLINFO si;
+				ZeroMemory(&si, sizeof(SCROLLINFO));
+				si.cbSize = sizeof(SCROLLINFO);
+				si.fMask = SIF_TRACKPOS;
+
+				if (!GetScrollInfo(SB_VERT, &si))
+					return;
+				nCurPos = si.nTrackPos;
+			}
+			break;
+	}
+
+	SetTopRow(nCurPos);
+}
+
+void CXTPReportControl::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+{
+	if (pScrollBar != NULL)
+	{
+		CWnd::OnHScroll(nSBCode, nPos, pScrollBar);
+		return;
+	}
+	int nCurPos = m_nLeftOffset;
+
+	// FCS - full column scrolling
+	int nLeftOffset_new = m_nLeftOffset;
+
+	CXTPReportColumn *pPrev = NULL, *pCurr = NULL, *pNext = NULL;
+	int nScrollPos = 0, nScrollMax = 0;
+	int nFreezOffset = 0;
+	if (m_bFullColumnScrolling)
+		nFreezOffset = GetReportHeader()->GetFulColScrollInfo(pPrev, pCurr, pNext, nScrollPos, nScrollMax);
+
+	// decide what to do for each different scroll event
+	switch (nSBCode)
+	{
+		case SB_TOP:
+			nCurPos = 0;
+			nLeftOffset_new = 0;
+			nScrollPos = 0;
+			break;
+
+		case SB_BOTTOM:
+			nCurPos = GetScrollLimit(SB_HORZ);
+			if (m_bFullColumnScrolling)
+			{
+				int nVisColCount = GetColumns()->GetVisibleColumnsCount();
+				CXTPReportColumn *pLast = GetColumns()->GetVisibleAt(max(nVisColCount-1, 0));
+				ASSERT(pLast);
+				if (!pLast)
+					return;
+
+				nLeftOffset_new = labs(GetReportHeader()->m_rcHeader.left - pLast->GetRect().left) - nFreezOffset;
+				nScrollPos = max(nScrollMax - 1, 0);
+			}
+			break;
+
+		case SB_LINEUP:
+			nCurPos = max(nCurPos - m_nHScrollStep, 0);
+			if (m_bFullColumnScrolling && pPrev)
+			{
+				nLeftOffset_new = labs(GetReportHeader()->m_rcHeader.left - pPrev->GetRect().left) - nFreezOffset;
+				nScrollPos = max(nScrollPos - 1, 0);
+			}
+			break;
+
+		case SB_LINEDOWN:
+			nCurPos = min(nCurPos + m_nHScrollStep, GetScrollLimit(SB_HORZ));
+			if (m_bFullColumnScrolling && pNext)
+			{
+				nLeftOffset_new = labs(GetReportHeader()->m_rcHeader.left - pNext->GetRect().left) - nFreezOffset;
+				nScrollPos = nScrollPos + 1;
+			}
+			break;
+
+		case SB_PAGEUP:
+			nCurPos = max(nCurPos - m_rcReportArea.Width(), 0);
+			if (m_bFullColumnScrolling && pPrev)
+			{
+				nLeftOffset_new = labs(GetReportHeader()->m_rcHeader.left - pPrev->GetRect().left) - nFreezOffset;
+				nScrollPos = max(nScrollPos - 1, 0);
+			}
+			break;
+
+		case SB_PAGEDOWN:
+			nCurPos = min(nCurPos + m_rcReportArea.Width(), GetScrollLimit(SB_HORZ));
+			if (m_bFullColumnScrolling && pNext)
+			{
+				nLeftOffset_new = labs(GetReportHeader()->m_rcHeader.left - pNext->GetRect().left) - nFreezOffset;
+				nScrollPos = nScrollPos + 1;
+			}
+			break;
+
+		case SB_THUMBTRACK:
+		case SB_THUMBPOSITION:
+			nCurPos = nPos;
+			if (m_bFullColumnScrolling)
+			{
+				int nVisColCount = GetColumns()->GetVisibleColumnsCount();
+
+				int nCurrCol = nVisColCount - nScrollMax + nPos;
+				CXTPReportColumn *pCurrScroll = GetColumns()->GetVisibleAt(nCurrCol);
+
+				ASSERT(pCurrScroll);
+				if (!pCurrScroll)
+					return;
+
+				nLeftOffset_new = labs(GetReportHeader()->m_rcHeader.left - pCurrScroll->GetRect().left) - nFreezOffset;
+				nScrollPos = nPos;
+			}
+			break;
+	}
+
+	if (m_bFullColumnScrolling)
+	{
+		SetLeftOffset(nLeftOffset_new);
+		SetScrollPos(SB_HORZ, nScrollPos);
+	}
+	else
+	{
+		SetLeftOffset(nCurPos);
+	}
+}
+
 UINT CXTPReportControl::GetMouseScrollLines()
 {
-	UINT nScrollLines = 3; // default value
+	int nScrollLines = 3; // default value
 
 	if (XTPSystemVersion()->IsWin95())
 	{
+
 		HKEY hKey;
-		if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, _T("Control Panel\\Desktop"), 0, KEY_QUERY_VALUE, &hKey))
+		if (ERROR_SUCCESS == RegOpenKeyEx(
+				HKEY_CURRENT_USER, _T("Control Panel\\Desktop"), 0, KEY_QUERY_VALUE, &hKey))
 		{
 			TCHAR szData[128];
 			DWORD dwKeyDataType;
 			DWORD dwDataBufSize = sizeof(szData);
 
-			if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, _T("WheelScrollLines"), NULL, &dwKeyDataType, (LPBYTE) &szData, &dwDataBufSize))
+			if (ERROR_SUCCESS == RegQueryValueEx(
+					hKey, _T("WheelScrollLines"), NULL, &dwKeyDataType, (LPBYTE) &szData, &dwDataBufSize))
 			{
 				nScrollLines = _tcstoul(szData, NULL, 10);
 			}
-			::RegCloseKey(hKey);
+			RegCloseKey(hKey);
 		}
 	}
 	// win98 or greater
 	else
-	{
-		::SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &nScrollLines, 0);
-	}
+		SystemParametersInfo (SPI_GETWHEELSCROLLLINES, 0, &nScrollLines, 0);
 
 	return nScrollLines;
 }
@@ -3998,7 +3500,6 @@ BOOL CXTPReportControl::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 	}
 
 	EndUpdate();
-
 	UpdateWindow();
 
 	return CWnd::OnMouseWheel(nFlags, zDelta, pt);
@@ -4013,52 +3514,22 @@ void CXTPReportControl::OnMouseMove(UINT nFlags, CPoint point)
 {
 	CWnd::OnMouseMove(nFlags, point);
 
-	CXTPReportHeader *pHeader = GetReportHeader();
-	CXTPReportColumn     *pColumn = NULL;
-	CXTPReportRow        *pRow    = NULL;
-	CXTPReportRecordItem *pItem   = NULL;
-
-	if (NULL != pHeader)
+	CXTPReportHeader* pHeader = GetReportHeader();
+	if (pHeader)
 	{
 		pHeader->OnMouseMove(nFlags, point);
 	}
 
-	CXTPReportRow* pHotExpandButtonRow = NULL;
-
-	CXTPReportHyperlink *pHotHyperlink = NULL;
-
 	if (GetMouseMode() == xtpReportMouseNothing)
 	{
-		pRow = HitTest(point);
-
-		if (NULL != pRow)
+		CXTPReportRow* pRow = HitTest(point);
+		if (pRow)
 		{
 			pRow->OnMouseMove(nFlags, point);
 
-			// Hyperlink hit test
-			pItem = pRow->HitTest(point);
-
-			if (NULL != pItem)
-			{
-				pColumn = pItem->GetColumn();
-
-				int nHyperlink = pItem->HitTestHyperlink(point);
-
-				if (nHyperlink >= 0)
-				{
-					pHotHyperlink = pItem->GetHyperlinks()->GetAt(nHyperlink);
-				}
-			}
-
 			if (m_bShowTooltips && nFlags == 0)
-				pRow->ShowToolTip(point, m_pTip);
-		}
-
-		if (pRow && pRow->IsGroupRow() && m_pPaintManager->m_columnStyle == xtpReportColumnResource)
-		{
-			if (pRow->m_rcCollapse.PtInRect(point))
 			{
-				pHotExpandButtonRow = pRow;
+				pRow->ShowToolTip(point, &m_wndTip);
 			}
 		}
 
@@ -4074,46 +3545,28 @@ void CXTPReportControl::OnMouseMove(UINT nFlags, CPoint point)
 		}
 
 		// If mouse moved some since down...
-		if (m_bPrepareDrag && (labs (point.x - m_ptDrag.x) > 3 ||
-			labs (point.y - m_ptDrag.y) > 3))
+		if (m_bPrepareDrag && (labs (point.x - m_pointDrag.x) > 3 ||
+			labs (point.y - m_pointDrag.y) > 3))
 		{
 			// Prevent duplicate
 			m_bPrepareDrag = FALSE;
 
+			m_pSelectOnUpRow = NULL;
+
 			// Begin a drag operation
-			OnBeginDrag(m_ptDrag, nFlags);
+			OnBeginDrag(m_pointDrag);
 		}
 	}
 
-	if (m_pHotHyperlink != pHotHyperlink)
-	{
-		m_pHotHyperlink = pHotHyperlink;
-		RedrawControl();
-	}
-
-	if (m_pHotExpandButtonRow != pHotExpandButtonRow)
-	{
-		m_pHotExpandButtonRow = pHotExpandButtonRow;
-		RedrawControl();
-	}
 
 
-	SendMessageToParent(pRow, pItem, pColumn, XTP_NM_REPORT_MOUSEMOVE, &point);
 }
 
 void CXTPReportControl::OnBeginDrag(CPoint point)
 {
-	OnBeginDrag(point, 0);
-}
-
-void CXTPReportControl::OnBeginDrag(CPoint point, UINT nFlags)
-{
 	if (SendMessageToParent(NULL, NULL, NULL, LVN_BEGINDRAG, &point))
 		return;
-//R-DD <<
-	if ((nFlags & MK_RBUTTON) && SendMessageToParent(NULL, NULL, NULL, LVN_BEGINRDRAG, &point))
-		return;
-//R-DD >>
+
 	if (m_cfReport ==  NULL)
 		return;
 
@@ -4122,10 +3575,6 @@ void CXTPReportControl::OnBeginDrag(CPoint point, UINT nFlags)
 		return;
 
 	if ((m_dwDragDropFlags & xtpReportAllowDrag) == 0)
-		return;
-
-	if (pSelectedRows->m_nRowType == xtpRowTypeHeader ||
-		pSelectedRows->m_nRowType == xtpRowTypeFooter)
 		return;
 
 	int nCount = pSelectedRows->GetCount();
@@ -4138,6 +3587,8 @@ void CXTPReportControl::OnBeginDrag(CPoint point, UINT nFlags)
 			pRow->SelectChilds();
 		}
 	}
+
+	COleDataSource ds;
 
 	int nRowsCount = pSelectedRows->GetCount();
 	if (nRowsCount < 1)
@@ -4178,7 +3629,7 @@ void CXTPReportControl::OnBeginDrag(CPoint point, UINT nFlags)
 	{
 		if (pE->GetErrorMessage(szErrText, cErrTextSize))
 		{
-			TRACE(_T("EXCEPTION: CXTPReportControl::OnBeginDrag() - %s\n"), szErrText);
+			TRACE(_T("EXCEPTION: CXTPReportControl::Copy() - %s\n"), szErrText);
 		}
 		pE->Delete();
 	}
@@ -4186,13 +3637,13 @@ void CXTPReportControl::OnBeginDrag(CPoint point, UINT nFlags)
 	{
 		if (pE->GetErrorMessage(szErrText, cErrTextSize))
 		{
-			TRACE(_T("EXCEPTION: CXTPReportControl::OnBeginDrag() - %s\n"), szErrText);
+			TRACE(_T("EXCEPTION: CXTPReportControl::Copy() - %s\n"), szErrText);
 		}
 		pE->Delete();
 	}
 	catch(...)
 	{
-		TRACE(_T("EXCEPTION: CXTPReportControl::OnBeginDrag() - Unhandled Exception!\n"));
+		TRACE(_T("EXCEPTION: CXTPReportControl::Copy() - Unhandled Exception!\n"));
 	}
 
 	if (!bSucceed)
@@ -4204,57 +3655,25 @@ void CXTPReportControl::OnBeginDrag(CPoint point, UINT nFlags)
 	HGLOBAL hGlobal = fileRecords.Detach();
 
 	m_bDragMode = TRUE;
-	m_bInternalDrag = TRUE;
 
 	DROPEFFECT dropEffectMask =
 		((m_dwDragDropFlags & xtpReportAllowDragCopy) ? DROPEFFECT_COPY : 0) +
 		((m_dwDragDropFlags & xtpReportAllowDragMove) ? DROPEFFECT_MOVE : 0);
 
-	COleDataSource* pds = new COleDataSource();
 	XTP_NM_REPORTDRAGDROP nmData;
 	ZeroMemory(&nmData, sizeof(nmData));
 	nmData.pRecords = pDragRecords;
-	nmData.pDataSource = pds;       // Data Source - issue 22675
 
-	if (SendNotifyMessage(XTP_NM_REPORT_BEGINDRAG, (NMHDR*) &nmData) == -1)
-	{
-		CMDTARGET_RELEASE(pDragRecords);
-		CMDTARGET_RELEASE(m_pSelectedRowsBeforeDrag)
-		m_bDragMode = FALSE;
-		m_bInternalDrag = FALSE;
-
-		pds->InternalRelease();
+	if (SendNotifyMessage(XTP_NM_REPORT_BEGINDRAG, (NMHDR*)&nmData) == -1)
 		return;
-	}
 
-	pds->CacheGlobalData(m_cfReport, hGlobal);
+	ds.CacheGlobalData (m_cfReport, hGlobal);
+	DROPEFFECT dropEffect = ds.DoDragDrop(dropEffectMask);
 
-	if (!(m_dwDragDropFlags & xtpReportDontDropAsText))
-	{
-		// Get As Text
-		CString strDropText = _GetSelectedRowsVisibleColsText();
-		HGLOBAL hDropText = XTPAllocStrInGlobalMem(strDropText);
-		if (hDropText)
-			pds->CacheGlobalData(XTP_CF_TEXT_T, hDropText);
-	}
-
-	DROPEFFECT dropEffect = pds->DoDragDrop(dropEffectMask);
 	m_bDragMode = FALSE;
-	m_bInternalDrag = FALSE;
-
-	if ((m_dwDropMarkerFlags & xtpReportDropSelect)
-		&& m_pSelectedRowsBeforeDrag)
-	{
-		// Must remember the selected items before drag.
-		m_pSelectedRows->Clear();
-		for (int i = 0; i < m_pSelectedRowsBeforeDrag->m_arrSelectedBlocks.GetSize(); i++)
-			m_pSelectedRows->m_arrSelectedBlocks.Add(m_pSelectedRowsBeforeDrag->m_arrSelectedBlocks[i]);
-
-		CMDTARGET_RELEASE(m_pSelectedRowsBeforeDrag);
-	}
 
 	nmData.dropEffect = dropEffect;
-	SendNotifyMessage(XTP_NM_REPORT_DRAGDROP_COMPLETED, (NMHDR*) &nmData);
+	SendNotifyMessage(XTP_NM_REPORT_DRAGDROP_COMPLETED, (NMHDR*)&nmData);
 
 	if ((dropEffect == DROPEFFECT_MOVE) && (dropEffectMask & DROPEFFECT_MOVE))
 	{
@@ -4264,35 +3683,14 @@ void CXTPReportControl::OnBeginDrag(CPoint point, UINT nFlags)
 	CMDTARGET_RELEASE(pDragRecords);
 
 	EnsureStopAutoVertScroll();
-
-	pds->InternalRelease();
 }
 
-DROPEFFECT CXTPReportControl::OnDragOver(COleDataObject* pDataObject, DWORD dwKeyState, CPoint point, int nState)
+DROPEFFECT CXTPReportControl::OnDragOver(COleDataObject* pDataObject, DWORD dwKeyState, CPoint point)
 {
 	DROPEFFECT dropEffect = DROPEFFECT_MOVE;
-	BOOL bAbove = TRUE;
-	CXTPReportRecord* pTargetRecord = NULL;
-	int nTargetRow = -1;
-
-	if (nState == 0)
-	{
-		// Must get the selected rows before the selection changes.
-		if(m_dwDropMarkerFlags & xtpReportDropSelect)
-		{
-			// Must remember the selected items before drag.
-			m_pSelectedRowsBeforeDrag = new CXTPReportSelectedRows(this);
-			for (int i=0; i<m_pSelectedRows->m_arrSelectedBlocks.GetSize(); i++)
-			{
-				m_pSelectedRowsBeforeDrag->m_arrSelectedBlocks.Add(m_pSelectedRows->m_arrSelectedBlocks[i]);
-			}
-		}
-	}
 
 	if ((dwKeyState & MK_CONTROL) == MK_CONTROL)
-	{
 		dropEffect = DROPEFFECT_COPY;
-	}
 
 	if (!m_nOLEDropMode)
 	{
@@ -4302,20 +3700,7 @@ DROPEFFECT CXTPReportControl::OnDragOver(COleDataObject* pDataObject, DWORD dwKe
 		if ((m_dwDragDropFlags & xtpReportAllowDrop) == 0)
 			dropEffect = DROPEFFECT_NONE;
 
-		XTP_NM_REPORTDRAGDROP nmData;
-		nmData.dropEffect = dropEffect;
-		nmData.pDataObject = pDataObject;
-		nmData.pt = point;
-//R-DD <<
-		nmData.dwKeyState = dwKeyState;
-//R-DD >>
-
-		int iValid = (int) SendNotifyMessage(XTP_NM_REPORT_HASVALIDDROPTYPE, (NMHDR*) &nmData);
-
-		m_nOLEDropAbove = nmData.bAbove;
-
-		if ((dropEffect != DROPEFFECT_NONE)
-			&& (!pDataObject || (!pDataObject->IsDataAvailable(m_cfReport) && iValid != 1)))
+		if ((dropEffect != DROPEFFECT_NONE) && (!pDataObject || !pDataObject->IsDataAvailable(m_cfReport)))
 			dropEffect = DROPEFFECT_NONE;
 	}
 
@@ -4324,493 +3709,23 @@ DROPEFFECT CXTPReportControl::OnDragOver(COleDataObject* pDataObject, DWORD dwKe
 
 	if (dropEffect != DROPEFFECT_NONE)
 	{
-		EnsureStartAutoVertScroll();
-//      DoAutoVertScrollIfNeed(m_ptDrag, point);
+		DoAutoVertScrollIfNeed(m_pointDrag, point);
 
-		m_bNoNeedSortedDragDrop = (GetColumns()->GetSortOrder()->GetCount() == 0
-			&& GetColumns()->GetGroupsOrder()->GetCount() == 0);
-
-		if (m_bNoNeedSortedDragDrop || m_bSortedDragDrop)
+		if (GetColumns()->GetSortOrder()->GetCount() == 0 && GetColumns()->GetGroupsOrder()->GetCount() == 0)
 		{
-			CXTPReportRow *pRow = HitTest(point);
-
+			CXTPReportRow* pRow = HitTest(point);
 			if (pRow && pRow->GetRecord())
-			{
-				if (pRow->GetRect().CenterPoint().y < point.y)
-					bAbove = FALSE;
-				if (bAbove)
-					m_nDropPos = pRow->GetRect().top == 0 ? 0 : pRow->GetRect().top - 1;
-					//m_nDropPos = pRow->GetRect().top - 1;
-				else
-					m_nDropPos = pRow->GetRect().bottom - 1;
-				pTargetRecord = pRow->GetRecord();
-				nTargetRow = pRow->GetIndex();
-
-				if (((m_dwDropMarkerFlags & xtpReportDropSelect)
-						&& (m_dwDropMarkerFlags & xtpReportDropBetween)
-						&& point.y > (pRow->GetRect().top + 3)
-						&& point.y < (pRow->GetRect().bottom - 3))
-					|| ((m_dwDropMarkerFlags & xtpReportDropSelect)
-						&& point.y > pRow->GetRect().top
-						&& point.y < pRow->GetRect().bottom))
-				{
-					XTP_NM_REPORTDRAGDROP nmData;
-					nmData.dropEffect = dropEffect;
-					nmData.pDataObject = pDataObject;
-					nmData.pTargetRecord = pTargetRecord;
-					nmData.nTargetRow = nTargetRow;
-					nmData.pt = point;
-//R-DD <<
-					nmData.dwKeyState = dwKeyState;
-//R-DD >>
-
-					int iValid = (int) SendNotifyMessage(XTP_NM_REPORT_VALIDDROPTARGET, (NMHDR*) &nmData);
-					if (iValid == 1)
-						m_pSelectedRows->Select(pRow);
-					else
-						m_pSelectedRows->Clear();
-
-					m_nOLEDropAbove = nmData.bAbove;
-				}
-				else if(m_dwDropMarkerFlags & xtpReportDropSelect)
-				{
-					m_pSelectedRows->Clear();
-				}
-			}
-			else
-			{
-				if ((m_nDropPos > m_pSectionBody->m_rcSection.top - 1 || m_nDropPos < m_pSectionBody->m_rcSection.bottom - 1))
-					m_nDropPos = point.y;
-
-				if (GetRows()->GetCount() == 0)
-					m_nDropPos = 0;
-
-				if (m_dwDropMarkerFlags & xtpReportDropSelect)
-					m_pSelectedRows->Clear();
-			}
-
-			if (m_nDropPos == 0 && GetRows()->GetCount() == 0)
-				m_nDropPos = m_pSectionBody->m_rcSection.top;
-			else if ((m_nDropPos < m_pSectionBody->m_rcSection.top - 1 || m_nDropPos > m_pSectionBody->m_rcSection.bottom - 1))
-				dropEffect = DROPEFFECT_NONE;
+				m_nDropPos = (pRow->GetRect().CenterPoint().y < point.y ? pRow->GetRect().bottom - 1: pRow->GetRect().top - 1);
 		}
 	}
 
-
-	if (nState == 0)
-	{
-		// entering, get report records
-		CMDTARGET_RELEASE(m_pDropRecords);
-
-		CFile* pFile = m_cfReport ? pDataObject->GetFileData(m_cfReport) : NULL;
-		if (pFile)
-		{
-			m_pDropRecords = new CXTPReportRecords();
-
-			const int cErrTextSize = 1024;
-			TCHAR szErrText[cErrTextSize + 1];
-
-			try
-			{
-				CArchive ar(pFile, CArchive::load);
-				CXTPPropExchangeArchive px(ar);
-
-				if (!_ReadRecordsFromData(&px, *m_pDropRecords))
-				{
-					m_pDropRecords->RemoveAll();
-				}
-				ar.Close(); // detach from file
-			}
-			catch(CArchiveException* pE)
-			{
-				if (pE->GetErrorMessage(szErrText, cErrTextSize))
-				{
-					TRACE(_T("EXCEPTION: CXTPReportControl::OnDragOver() - %s\n"), szErrText);
-				}
-				pE->Delete();
-			}
-			catch(CFileException* pE)
-			{
-				if (pE->GetErrorMessage(szErrText, cErrTextSize))
-				{
-					TRACE(_T("EXCEPTION: CXTPReportControl::OnDragOver() - %s\n"), szErrText);
-				}
-				pE->Delete();
-			}
-			catch(...)
-			{
-				TRACE(_T("EXCEPTION: CXTPReportControl::OnDragOver() - Unhandled Exception!\n"));
-			}
-
-			delete pFile;
-		}
-
-		m_bDragMode = TRUE;
-	}
-	else if (nState == 1)
-	{
-		// leaving, release drop records
-		CMDTARGET_RELEASE(m_pDropRecords);
-
-		if ((m_dwDropMarkerFlags & xtpReportDropSelect)
-			&& m_pSelectedRowsBeforeDrag)
-		{
-			// Must remember the selected items before drag.
-			m_pSelectedRows->Clear();
-			for (int i = 0; i < m_pSelectedRowsBeforeDrag->m_arrSelectedBlocks.GetSize(); i++)
-				m_pSelectedRows->m_arrSelectedBlocks.Add(m_pSelectedRowsBeforeDrag->m_arrSelectedBlocks[i]);
-
-			CMDTARGET_RELEASE(m_pSelectedRowsBeforeDrag);
-		}
-
-		m_bDragMode = FALSE;
-	}
-
-	COleDataSource* pds = new COleDataSource();
-
-	XTP_NM_REPORTDRAGDROP nmData;
-	nmData.pRecords = m_pDropRecords;
-	nmData.pTargetRecord = pTargetRecord;
-	nmData.nTargetRow = nTargetRow;
-	nmData.bAbove = bAbove;
-	nmData.dropEffect = dropEffect;
-	nmData.pt = point;
-	nmData.nState = nState;
-
-	nmData.pDataSource = pds;       // Data Source - issue 22675
-	nmData.pDataObject = pDataObject;
-//R-DD <<
-	nmData.dwKeyState = dwKeyState;
-//R-DD >>
-
-	m_nOLEDropAbove = nmData.bAbove;
-
-	SendNotifyMessage(XTP_NM_REPORT_DRAGOVER, (NMHDR*) &nmData);
-
-	m_nOLEDropAbove = nmData.bAbove;
-
-	if (nState != 1
-		&& nmData.dropEffect == DROPEFFECT_NONE
-		&& (m_dwDropMarkerFlags & xtpReportDropSelect))
-		m_pSelectedRows->Clear();
 
 	if (m_nDropPos != nDropPos)
+	{
 		RedrawControl();
-
-	pds->InternalRelease();
-
-	return nmData.dropEffect;
-}
-
-BOOL CXTPReportControl::OnDrop(COleDataObject* pDataObject, DROPEFFECT dropEffect, CPoint point)
-{
-	CMDTARGET_RELEASE(m_pDropRecords);
-
-	EnsureStopAutoVertScroll();
-
-	m_bDragMode = FALSE;
-
-	if (m_nDropPos == -1)
-		return FALSE;
-
-	CUpdateContext updateContext(this);
-	int nDropPos = m_nDropPos;
-	m_nDropPos = -1;
-
-	if (dropEffect != DROPEFFECT_COPY
-		&& dropEffect != DROPEFFECT_MOVE)
-		return FALSE;
-
-
-	//if (IsVirtualMode()) return FALSE;
-	int nTargetRow = -1;
-	if ((m_dwDropMarkerFlags & xtpReportDropSelect)
-		&& m_pSelectedRows->GetCount() == 1)
-		nTargetRow = m_pSelectedRows->GetAt(0)->GetIndex();
-
-	XTP_NM_REPORTDRAGDROP nmData;
-	nmData.dropEffect = dropEffect;
-	nmData.pDataObject = pDataObject;
-	nmData.pt = point;
-
-	int iValid = (int) SendNotifyMessage(XTP_NM_REPORT_HASVALIDDROPTYPE, (NMHDR*) &nmData);
-	m_nOLEDropAbove = nmData.bAbove;
-	if (iValid != -1 && nmData.dropEffect == DROPEFFECT_NONE)
-	{
-		// Drop handled or not allowed.
-		if ((m_dwDropMarkerFlags & xtpReportDropSelect)
-			&& m_pSelectedRowsBeforeDrag)
-		{
-			// Must remember the selected items before drag.
-			m_pSelectedRows->Clear();
-			for (int i = 0; i < m_pSelectedRowsBeforeDrag->m_arrSelectedBlocks.GetSize(); i++)
-				m_pSelectedRows->m_arrSelectedBlocks.Add(m_pSelectedRowsBeforeDrag->m_arrSelectedBlocks[i]);
-
-			CMDTARGET_RELEASE(m_pSelectedRowsBeforeDrag);
-		}
-		return FALSE;
 	}
 
-	if ((m_dwDropMarkerFlags & xtpReportDropSelect)
-		&& m_pSelectedRowsBeforeDrag)
-	{
-		// Must remember the selected items before drag.
-		m_pSelectedRows->Clear();
-		for (int i = 0; i < m_pSelectedRowsBeforeDrag->m_arrSelectedBlocks.GetSize(); i++)
-			m_pSelectedRows->m_arrSelectedBlocks.Add(m_pSelectedRowsBeforeDrag->m_arrSelectedBlocks[i]);
-
-		CMDTARGET_RELEASE(m_pSelectedRowsBeforeDrag);
-	}
-
-	if (!pDataObject || (!pDataObject->IsDataAvailable(m_cfReport) && iValid != 1))
-		return FALSE;
-
-	if ((m_dwDragDropFlags & xtpReportAllowDrop) == 0)
-		return FALSE;
-
-	int nInsert = GetRecords()->GetCount();
-
-	BOOL bAbove = TRUE;
-	CXTPReportRecord* pTargetRecord = NULL;
-	CXTPReportRecord* pOriginalTargetRecord = NULL;
-	CXTPReportRow* pRow = HitTest(point);
-	if (pRow)
-	{
-		if (pRow->GetRect().CenterPoint().y < point.y)
-			bAbove = FALSE;
-		pTargetRecord = pRow->GetRecord();
-		if (pTargetRecord)
-		{
-			if (m_bUnrestrictedDragDrop)
-				pOriginalTargetRecord = pTargetRecord;
-
-			while (pTargetRecord->GetParentRecord() != NULL)
-				pTargetRecord = pTargetRecord->GetParentRecord();
-
-			nInsert = pTargetRecord->GetIndex();
-			if (!m_bNoNeedSortedDragDrop
-				&& m_bSortedDragDrop && nInsert != -1
-				&& m_pSectionBody->m_UaSorted.GetSize() > nInsert)
-					nInsert = m_pSectionBody->m_UaSorted.GetAt(nInsert);
-
-			if (!bAbove)
-				nInsert++;
-		}
-	}
-
-	m_bInternalMove = FALSE;
-
-	if (m_bInternalDrag && dropEffect == DROPEFFECT_MOVE)
-	{
-		m_bInternalMove = TRUE;
-
-		if (nDropPos == -1)
-			return FALSE;
-
-		BOOL bRedraw = FALSE;
-		if (!m_bNoNeedSortedDragDrop && m_bSortedDragDrop && GetColumns()->GetGroupsOrder()->GetCount() == 0)
-		{
-			ReleaseSorted();
-			bRedraw = TRUE;
-		}
-
-		CXTPReportRecords* pDropRecords = new CXTPReportRecords(TRUE);
-		if (!iValid && (!_GetSelectedRows(pDropRecords)
-			|| pDropRecords->GetCount() == GetRows()->GetCount()))
-		{
-			CMDTARGET_RELEASE(pDropRecords);
-			return FALSE;
-		}
-
-		if (bRedraw)
-		{
-			Populate();
-			RedrawControl();
-		}
-
-		nmData.pRecords = pDropRecords;
-		nmData.pTargetRecord = pTargetRecord;
-		nmData.nTargetRow = nTargetRow;
-		if (m_bUnrestrictedDragDrop)
-			nmData.pTargetRecord = pOriginalTargetRecord;
-
-		nmData.bAbove = bAbove;
-		nmData.dropEffect = dropEffect;
-		nmData.pDataObject = pDataObject;
-		//nmData.bReturnValue = TRUE; //James proposal (wrong!)
-		nmData.bReturnValue = FALSE;
-
-		m_nOLEDropAbove = nmData.bAbove;
-
-		CMDTARGET_ADDREF(pTargetRecord);
-
-
-		if (SendNotifyMessage(XTP_NM_REPORT_DROP, (NMHDR*) &nmData) == -1)
-		{
-			CMDTARGET_RELEASE(pDropRecords);
-			CMDTARGET_RELEASE(pTargetRecord);
-			return nmData.bReturnValue;
-		}
-
-		if (!IsVirtualMode())
-		{
-			if (!pTargetRecord == NULL)
-				nInsert = pTargetRecord->GetIndex();
-			else
-				nInsert = GetRows()->GetCount();
-
-			if (!bAbove)
-			  nInsert++;
-
-			GetRecords()->Move(nInsert, pDropRecords);
-			Populate();
-			_SelectRows(pDropRecords);
-
-			RedrawControl();
-		}
-
-		m_nOLEDropAbove = nmData.bAbove;
-
-		SendNotifyMessage(XTP_NM_REPORT_RECORDS_DROPPED, (NMHDR*) &nmData);
-
-		CMDTARGET_RELEASE(pDropRecords);
-
-		CMDTARGET_RELEASE(pTargetRecord);
-
-		return nmData.bReturnValue;
-	}
-
-	CXTPReportRecords* pDropRecords = NULL;
-
-	if (pDataObject->IsDataAvailable(m_cfReport))
-	{
-		CFile* pFile = pDataObject->GetFileData(m_cfReport);
-		if (pFile)
-		{
-			pDropRecords = new CXTPReportRecords();
-
-			const int cErrTextSize = 1024;
-			TCHAR szErrText[cErrTextSize + 1];
-
-			try
-			{
-				CArchive ar(pFile, CArchive::load);
-				CXTPPropExchangeArchive px(ar);
-
-				if (!_ReadRecordsFromData(&px, *pDropRecords))
-				{
-					pDropRecords->RemoveAll();
-				}
-				ar.Close(); // detach from file
-			}
-			catch(CArchiveException* pE)
-			{
-				if (pE->GetErrorMessage(szErrText, cErrTextSize))
-				{
-					TRACE(_T("EXCEPTION: CXTPReportControl::OnDrop() - %s\n"), szErrText);
-				}
-				pE->Delete();
-			}
-			catch(CFileException* pE)
-			{
-				if (pE->GetErrorMessage(szErrText, cErrTextSize))
-				{
-					TRACE(_T("EXCEPTION: CXTPReportControl::OnDrop() - %s\n"), szErrText);
-				}
-				pE->Delete();
-			}
-			catch(...)
-			{
-				TRACE(_T("EXCEPTION: CXTPReportControl::OnDrop() - Unhandled Exception!\n"));
-			}
-
-			delete pFile;
-		}
-	}
-
-	nmData.pRecords = pDropRecords;
-	nmData.pTargetRecord = pTargetRecord;
-	if (m_bUnrestrictedDragDrop)
-		nmData.pTargetRecord = pOriginalTargetRecord;
-	nmData.nTargetRow = nTargetRow;
-	nmData.bAbove = bAbove;
-	nmData.dropEffect = dropEffect;
-	nmData.pDataObject = pDataObject;
-	nmData.bReturnValue = TRUE;
-
-	m_nOLEDropAbove = nmData.bAbove;
-
-	if (SendNotifyMessage(XTP_NM_REPORT_DROP, (NMHDR*) &nmData) == -1)
-	{
-		CMDTARGET_RELEASE(pDropRecords);
-		return nmData.bReturnValue;
-	}
-
-	m_nOLEDropAbove = nmData.bAbove;
-
-	if (!IsVirtualMode() && pDropRecords)
-	{
-		// Add and Populate records
-		int nRecordsCount = pDropRecords->GetCount();
-		if (nRecordsCount > 0)
-		{
-			// Add
-			for (int i = 0; i < nRecordsCount; i++)
-			{
-				CXTPReportRecord* pRecord = pDropRecords->GetAt(i);
-				if (pRecord)
-				{
-					CMDTARGET_ADDREF(pRecord);
-					GetRecords()->InsertAt(nInsert, pRecord);
-					nInsert++;
-				}
-			}
-
-			Populate();
-			_SelectRows(pDropRecords);
-
-			RedrawControl();
-
-			SendNotifyMessage(XTP_NM_REPORT_RECORDS_DROPPED, (NMHDR*) &nmData);
-		}
-	}
-	else
-	{
-		SendNotifyMessage(XTP_NM_REPORT_RECORDS_DROPPED, (NMHDR*) &nmData);
-	}
-
-	CMDTARGET_RELEASE(pDropRecords);
-
-	//return TRUE;
-	return nmData.bReturnValue;
-}
-
-void CXTPReportControl::ReleaseSorted()
-{
-	int nSortCnt = GetColumns()->GetSortOrder()->GetCount();
-	if (nSortCnt > 0)
-	{
-		GetColumns()->GetSortOrder()->Clear();
-
-		CXTPReportRecord* pDropRec;
-		int N = (int) m_pSectionBody->m_UaSorted.GetSize();
-		for (int J = 0; J < N; J++)
-		{
-			pDropRec = GetRows()->GetAt(J)->GetRecord();
-			if (pDropRec)
-			{
-				CXTPReportRecords* pDropRecs = new CXTPReportRecords(TRUE);
-				pDropRecs->Add(pDropRec);
-				GetRecords()->Move(J, pDropRecs);
-				delete pDropRecs;
-			}
-		}
-	}
-	if (GetColumns()->GetGroupsOrder()->GetCount() > 0)
-		GetColumns()->GetGroupsOrder()->Clear();
-
-	m_bNoNeedSortedDragDrop = TRUE;
-	m_bSortedDragDrop = TRUE;
+	return dropEffect;
 }
 
 void CXTPReportControl::OnTimer(UINT_PTR uTimerID)
@@ -4821,31 +3736,9 @@ void CXTPReportControl::OnTimer(UINT_PTR uTimerID)
 		if (::GetCursorPos(&ptMouse))
 		{
 			ScreenToClient(&ptMouse);
-			DoAutoVertScrollIfNeed(m_ptDrag, ptMouse);
+			DoAutoVertScrollIfNeed(m_pointDrag, ptMouse);
 		}
-	}
-
-	if (m_uRqstEditTimer == uTimerID)
-	{
-		m_iLastRqstEditRow = -1;
-		m_iLastRqstEditCol = -1;
-	}
-
-	// Information for delay editing.
-	if (m_uiDelayEditTimer == uTimerID)
-	{
-		EnsureStopDelayEditTimer();
-
-		ASSERT(!IsEditMode());
-		if (  m_iLastRqstEditRow != -1
-			&& m_iLastRqstEditCol != -1
-			&& m_iLastRqstEditRow < GetRows()->GetCount()
-			&& IsEditOnDelayClick())
-		{
-			XTP_REPORTRECORDITEM_ARGS args(this, GetRows()->GetAt(m_iLastRqstEditRow), GetColumns()->Find(m_iLastRqstEditCol));
-			EditItem(&args);
-			StartLastRqstTimer();
-		}
+		//TRACE(_T("AutoScrollTimer \n"));
 	}
 
 	CWnd::OnTimer(uTimerID);
@@ -4857,107 +3750,247 @@ void CXTPReportControl::EnsureStopAutoVertScroll()
 	{
 		KillTimer(m_uAutoScrollTimerID);
 		m_uAutoScrollTimerID = 0;
+
+		//TRACE(_T("AutoScroll STOP \n"));
 	}
 }
 
 void CXTPReportControl::EnsureStartAutoVertScroll()
 {
-	if (0 == m_uAutoScrollTimerID)
+	if (!m_uAutoScrollTimerID)
 	{
-		m_uAutoScrollTimerID = SetTimer(XTP_REPORT_AUTO_SCROLL_TIMER_ID, m_nAutoVScrollTimerResolution, NULL);
+		m_uAutoScrollTimerID = SetTimer(XTP_REPORT_AUTO_SCROLL_TIMER_ID, XTP_REPORT_AUTO_SCROLL_TIMER_RESOLUTION_MS, NULL);
 	}
-}
-
-void CXTPReportControl::SetAutoVScrollTimerResolution(UINT nNewTimerResolution)
-{
-	if (nNewTimerResolution == m_nAutoVScrollTimerResolution)
-		return;
-
-	BOOL bStartTimer = (m_uAutoScrollTimerID != 0);
-
-	EnsureStopAutoVertScroll();
-	m_nAutoVScrollTimerResolution = nNewTimerResolution;
-
-	if (bStartTimer)
-		EnsureStartAutoVertScroll();
 }
 
 void CXTPReportControl::DoAutoVertScrollIfNeed(CPoint ptClick, CPoint pt)
 {
-	enum XTPReportControlDirection
-	{
-		xtpReportControlDirectionNone =  0,
-		xtpReportControlDirectionUp   = -1,
-		xtpReportControlDirectionDown =  1
-	};
-
-	CXTPReportScreenRows *pScreenRows = GetRows()->GetScreenRows();
-
-	if (0 == pScreenRows->GetSize())
+	if (!m_arrScreenRows.GetCount())
 	{
 		EnsureStopAutoVertScroll();
 		return;
 	}
 
-	CXTPReportRow *pRowUp   = pScreenRows->GetAt(0);
-	CXTPReportRow *pRowDown = pScreenRows->GetAt(pScreenRows->GetSize() - 1);
+	CXTPReportRow* pRow0 = m_arrScreenRows.GetAt(0);
+	CXTPReportRow* pRow1 = m_arrScreenRows.GetAt(m_arrScreenRows.GetCount() - 1);
 
-	if (NULL == pRowUp || NULL == pRowDown)
+	if (!pRow0 || !pRow1)
 	{
 		EnsureStopAutoVertScroll();
 		return;
 	}
 
-	XTPReportControlDirection nDirection = xtpReportControlDirectionNone;
+	int nDirection = 0;
 
-	CRect rcUp   = m_pSectionBody->m_rcSection;
-	CRect rcDown = m_pSectionBody->m_rcSection;
-	rcUp.bottom  = m_pSectionBody->m_rcSection.top    + 20; //while dragging item
-	rcDown.top   = m_pSectionBody->m_rcSection.bottom - 20;
+	CRect rc0 = m_rcReportArea;   //pRow0->GetRect();
+	CRect rc1 = m_rcReportArea;   //pRow1->GetRect();
+	rc0.bottom = m_rcReportArea.top + 20;
+	rc1.top = m_rcReportArea.bottom - 20;
 
-	if (rcUp.PtInRect(pt))
-	{
-		nDirection = xtpReportControlDirectionUp;
-	}
-	if (rcDown.PtInRect(pt))
-	{
-		nDirection = xtpReportControlDirectionDown;
-	}
+	if (rc0.PtInRect(pt))
+		nDirection = -1;
+	else if (rc1.PtInRect(pt))
+		nDirection = 1;
 
-	if (xtpReportControlDirectionNone == nDirection || m_bDragMode &&
-	  ((xtpReportControlDirectionDown == nDirection && pt.y - ptClick.y < 3) ||
-		(xtpReportControlDirectionUp   == nDirection && ptClick.y - pt.y < 3)))
+	if (!nDirection ||
+		m_bDragMode &&
+			(nDirection == 1 && pt.y - ptClick.y < 3 ||
+			 nDirection == -1 && ptClick.y - pt.y < 3)
+	   )
 	{
 		EnsureStopAutoVertScroll();
 		return;
 	}
 
+	//-----------------------------------------------------
+	int nTopRow = GetTopRowIndex();
+	int nRowsCount = m_pRows->GetCount();
 
-	SCROLLINFO si;
-	si.cbSize = sizeof(SCROLLINFO);
-	GetScrollInfo(SB_VERT, &si, SIF_ALL);
-
-	const int nScrollFactor = 2; // Factor to speed up smooth scrolling
-
-	if (xtpReportControlDirectionUp == nDirection && si.nPos > 0)
+	if (nDirection == -1 && nTopRow > 0 ||
+		nDirection == 1 &&
+			(pRow1->GetIndex() < nRowsCount ||
+			 pRow1->GetRect().bottom > m_rcReportArea.bottom)
+		)
 	{
-		m_nScrollStepV *= nScrollFactor;
-		OnVScroll(SB_LINEUP, 0, NULL);
-		m_nScrollStepV /= nScrollFactor;
+		//TRACE(_T("AutoScroll direction=%d, nextRow=%d\n"), nDirection, nTopRow+nDirection);
+		SetTopRow(nTopRow + nDirection);
+
 		EnsureStartAutoVertScroll();
+		return;
 	}
-	else if (xtpReportControlDirectionDown == nDirection && si.nPos + int(si.nPage) - 1 < si.nMax)
-	{
-		m_nScrollStepV *= nScrollFactor;
-		OnVScroll(SB_LINEDOWN, 0, NULL);
-		m_nScrollStepV /= nScrollFactor;
-		EnsureStartAutoVertScroll();
-	}
-	else
-	{
-		EnsureStopAutoVertScroll();
-	}
+
+	EnsureStopAutoVertScroll();
 }
+
+BOOL CXTPReportControl::OnDrop(COleDataObject* pDataObject, DROPEFFECT dropEffect, CPoint point)
+{
+	EnsureStopAutoVertScroll();
+
+	CUpdateContext updateContext(this);
+	int nDropPos = m_nDropPos;
+	m_nDropPos = -1;
+
+	if (dropEffect != DROPEFFECT_COPY && dropEffect != DROPEFFECT_MOVE)
+		return FALSE;
+
+
+	if (IsVirtualMode())
+		return FALSE;
+
+	if (!pDataObject || !pDataObject->IsDataAvailable(m_cfReport))
+		return FALSE;
+
+	if ((m_dwDragDropFlags & xtpReportAllowDrop) == 0)
+		return FALSE;
+
+
+
+	int nInsert = GetRecords()->GetCount();
+
+	BOOL bAbove = TRUE;
+	CXTPReportRecord* pTargetRecord = NULL;
+
+	CXTPReportRow* pRow = HitTest(point);
+	if (pRow)
+	{
+		bAbove = pRow->GetRect().CenterPoint().y < point.y ? FALSE : TRUE;
+
+		pTargetRecord = pRow->GetRecord();
+		if(pTargetRecord)
+			nInsert = pTargetRecord->GetIndex() + (bAbove ? 0 : 1);
+	}
+
+	if (m_bDragMode && dropEffect == DROPEFFECT_MOVE)
+	{
+		if (nDropPos == -1)
+			return FALSE;
+
+		CXTPReportRecords* pDropRecords = new CXTPReportRecords(TRUE);
+
+		if (!_GetSelectedRows(pDropRecords))
+		{
+			CMDTARGET_RELEASE(pDropRecords);
+			return FALSE;
+		}
+
+		XTP_NM_REPORTDRAGDROP nmData;
+		nmData.pRecords = pDropRecords;
+		nmData.pTargetRecord = pTargetRecord;
+		nmData.bAbove = bAbove;
+		nmData.dropEffect = dropEffect;
+
+		CMDTARGET_ADDREF(pTargetRecord);
+
+		if (SendNotifyMessage(XTP_NM_REPORT_DROP, (NMHDR*)&nmData) == -1)
+		{
+			CMDTARGET_RELEASE(pDropRecords);
+			return FALSE;
+		}
+
+		GetRecords()->Move(nInsert, pDropRecords);
+
+		Populate();
+
+		_SelectRows(pDropRecords);
+
+		RedrawControl();
+
+		SendNotifyMessage(XTP_NM_REPORT_RECORDS_DROPPED, (NMHDR*)&nmData);
+
+
+		CMDTARGET_RELEASE(pDropRecords);
+		CMDTARGET_RELEASE(pTargetRecord);
+
+		return FALSE;
+	}
+
+	CFile* pFile = pDataObject->GetFileData(m_cfReport);
+	if (!pFile)
+		return FALSE;
+
+	CXTPReportRecords* pDropRecords = new CXTPReportRecords();
+
+	const int cErrTextSize = 1024;
+	TCHAR szErrText[cErrTextSize + 1];
+
+	try
+	{
+		CArchive ar(pFile, CArchive::load);
+		CXTPPropExchangeArchive px(ar);
+
+		if (!_ReadRecodsFromData(&px, *pDropRecords))
+		{
+			pDropRecords->RemoveAll();
+		}
+		ar.Close(); // detach from file
+	}
+	catch(CArchiveException* pE)
+	{
+		if (pE->GetErrorMessage(szErrText, cErrTextSize))
+		{
+			TRACE(_T("EXCEPTION: CXTPReportControl::Paste() - %s\n"), szErrText);
+		}
+		pE->Delete();
+	}
+	catch(CFileException* pE)
+	{
+		if (pE->GetErrorMessage(szErrText, cErrTextSize))
+		{
+			TRACE(_T("EXCEPTION: CXTPReportControl::Paste() - %s\n"), szErrText);
+		}
+		pE->Delete();
+	}
+	catch(...)
+	{
+		TRACE(_T("EXCEPTION: CXTPReportControl::Paste() - Unhandled Exception!\n"));
+	}
+
+	delete pFile;
+
+	XTP_NM_REPORTDRAGDROP nmData;
+	nmData.pRecords = pDropRecords;
+	nmData.pTargetRecord = pTargetRecord;
+	nmData.bAbove = bAbove;
+	nmData.dropEffect = dropEffect;
+
+	if (SendNotifyMessage(XTP_NM_REPORT_DROP, (NMHDR*)&nmData) == -1)
+	{
+		CMDTARGET_RELEASE(pDropRecords);
+		return FALSE;
+	}
+
+	// Add and Populate records
+	int nRecordsCount = pDropRecords->GetCount();
+	if (nRecordsCount > 0)
+	{
+		// Add
+		for (int i = 0; i < nRecordsCount; i++)
+		{
+			CXTPReportRecord* pRecord = pDropRecords->GetAt(i);
+			if (pRecord)
+			{
+				CMDTARGET_ADDREF(pRecord);
+
+				m_pRecords->InsertAt(nInsert, pRecord);
+				nInsert++;
+			}
+		}
+
+		Populate();
+
+		_SelectRows(pDropRecords);
+
+		RedrawControl();
+
+		SendNotifyMessage(XTP_NM_REPORT_RECORDS_DROPPED, (NMHDR*)&nmData);
+	}
+
+	CMDTARGET_RELEASE(pDropRecords);
+
+	return TRUE;
+
+}
+
 
 BOOL CXTPReportControl::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 {
@@ -4965,17 +3998,18 @@ BOOL CXTPReportControl::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 	{
 		switch (m_mouseMode)
 		{
-			case xtpReportMouseOverColumnDivide:
-				SetCursor(GetReportHeader()->m_hResizeCursor);
+		case xtpReportMouseOverColumnDivide:
+			SetCursor(GetReportHeader()->m_hResizeCursor);
 			return TRUE;
 		}
+
 	}
 
 	return CWnd::OnSetCursor(pWnd, nHitTest, message);
 }
 
 
-LRESULT CXTPReportControl::SendNotifyMessage(UINT nMessage, NMHDR *pNMHDR) const
+LRESULT CXTPReportControl::SendNotifyMessage(UINT nMessage, NMHDR* pNMHDR) const
 {
 	if (!IsWindow(m_hWnd))
 		return 0;
@@ -4985,8 +4019,8 @@ LRESULT CXTPReportControl::SendNotifyMessage(UINT nMessage, NMHDR *pNMHDR) const
 		pNMHDR = &nmhdr;
 
 	pNMHDR->hwndFrom = GetSafeHwnd();
-	pNMHDR->idFrom   = GetDlgCtrlID();
-	pNMHDR->code     = nMessage;
+	pNMHDR->idFrom = GetDlgCtrlID();
+	pNMHDR->code = nMessage;
 
 	CWnd *pOwner = GetOwner();
 	if (pOwner && IsWindow(pOwner->m_hWnd))
@@ -5009,75 +4043,15 @@ LRESULT CXTPReportControl::SendMessageToParent(CXTPReportRow* pRow, CXTPReportRe
 	nmgv.pt.x = 0;
 	nmgv.pt.y = 0;
 	if (pPoint)
+	{
 		nmgv.pt = *pPoint;
+	}
 
 	return SendNotifyMessage(nMessage, (NMHDR*)&nmgv);
 }
 
-void CXTPReportControl::DoPropExchange(CXTPPropExchange *pPX)
+void CXTPReportControl::DoPropExchange(CXTPPropExchange* pPX)
 {
-/*
-	 9.8.1 (_XTP_SCHEMA_98)
-	10.1.0 (_XTP_SCHEMA_1000)
-	10.2.0 (_XTP_SCHEMA_1000)
-	10.3.0 (_XTP_SCHEMA_1030)
-	10.3.1 (_XTP_SCHEMA_1030)
-	10.4.0 (_XTP_SCHEMA_1040)
-	10.4.1 (_XTP_SCHEMA_1041)
-	10.4.2 (_XTP_SCHEMA_1041)
-	- [Columns]
-	- ShowGroupBox
-	- FreezeColumnsCount
-	- [Header]
-
-  11.1.0 (_XTP_SCHEMA_1100)
-  11.1.2 (_XTP_SCHEMA_1100)
-  12.0.1 (_XTP_SCHEMA_1200)
-  12.1.0 (_XTP_SCHEMA_1210)
-  13.0.0 (_XTP_SCHEMA_1210)
-	- [Columns]
-	- ShowGroupBox
-	- FreezeColumnsCount
-	- FullColumnScrolling       >= _XTP_SCHEMA_1100
-	- HScrollStep               >= _XTP_SCHEMA_1100
-	- [Header]
-
-  13.1.0 (_XTP_SCHEMA_1210)
-	- [Columns]
-	- ShowGroupBox
-	- FreezeColumnsCount
-	- FullColumnScrolling       >= _XTP_SCHEMA_1100
-	- HScrollStep               >= _XTP_SCHEMA_1100
-	- [Header]
-	- ShowIconView
-
-  13.2.0 (_XTP_SCHEMA_1310)
-	- [Columns]
-	- ShowGroupBox
-	- FullColumnScrolling       >= _XTP_SCHEMA_1100
-	- HScrollStep               >= _XTP_SCHEMA_1100
-	- FreezeColumnsCount        !! Order changed !!
-	- FreezeColumnsAbs          >= _XTP_SCHEMA_1310
-	- MovePivot                 >= _XTP_SCHEMA_1310
-	- ForcePagination           >= _XTP_SCHEMA_1310
-	- StrictBestFit             >= _XTP_SCHEMA_1310
-	- SelectionExcludeGroupRows >= _XTP_SCHEMA_1310
-	- DesktopTrackerMode        >= _XTP_SCHEMA_1310
-	- [Header]
-	- ShowIconView
-*/
-
-
-
-//ICON_VIEW_MODE RELATED <<
-	BeginUpdate();
-
-	BOOL bCurIconView = IsIconView();
-	BOOL bSetBackToIconView = bCurIconView;
-	if (bSetBackToIconView)
-		SetIconView(FALSE);
-
-//ICON_VIEW_MODE RELATED >>
 	TRY
 	{
 		pPX->ExchangeSchemaSafe();
@@ -5086,36 +4060,12 @@ void CXTPReportControl::DoPropExchange(CXTPPropExchange *pPX)
 		m_pColumns->DoPropExchange(&secColumns);
 
 		PX_Bool(pPX, _T("ShowGroupBox"), m_bGroupByEnabled, FALSE);
+		PX_Int(pPX, _T("FreezeColumnsCount"), m_nFreezeColumnsCount, 0);
 
-		if (pPX->GetSchema() >= _XTP_SCHEMA_1100)
+		if (pPX->GetSchema() >= _XTP_SCHEMA_110)
 		{
-			BOOL bFullColumnScrolling = IsFullColumnScrolling();
-			PX_Bool(pPX, _T("FullColumnScrolling"), bFullColumnScrolling, FALSE);
-			PX_Int (pPX, _T("HScrollStep"),         m_nScrollStepH,       XTP_REPORT_HSCROLL_STEP);
-
-			if (pPX->IsLoading())
-			{
-				SetFullColumnScrolling(bFullColumnScrolling);
-			}
-		}
-
-		if (pPX->GetSchema() >= _XTP_SCHEMA_1310)
-		{
-			// The order of "FreezeColumnsCount" has been changed with 13.2.0
-		   int  nFreezeColumnsCount = GetFreezeColumnsCount();
-			BOOL bFreezeColumnsAbs   = FALSE;
-			PX_Int (pPX, _T("FreezeColumnsCount"),        nFreezeColumnsCount,          0);
-			PX_Bool(pPX, _T("FreezeColumnsAbs"),          bFreezeColumnsAbs,            FALSE); // Removed
-			PX_Bool(pPX, _T("MovePivot"),                 m_bMovePivot,                 FALSE);
-			PX_Bool(pPX, _T("ForcePagination"),           m_bForcePagination,           FALSE);
-			PX_Bool(pPX, _T("StrictBestFit"),             m_bStrictBestFit,             FALSE);
-			PX_Bool(pPX, _T("SelectionExcludeGroupRows"), m_bSelectionExcludeGroupRows, TRUE);
-			PX_Bool(pPX, _T("DesktopTrackerMode"),        m_bDesktopTrackerMode,        FALSE);		
-
-			if (pPX->IsLoading())
-			{
-				SetFreezeColumnsCount(nFreezeColumnsCount);
-			}
+			PX_Bool(pPX, _T("FullColumnScrolling"), m_bFullColumnScrolling, FALSE);
+			PX_Int(pPX, _T("HScrollStep"), m_nHScrollStep, XTP_REPORT_HSCROLL_STEP);
 		}
 
 		CXTPPropExchangeSection secHeader(pPX->GetSection(_T("Header")));
@@ -5123,251 +4073,15 @@ void CXTPReportControl::DoPropExchange(CXTPPropExchange *pPX)
 
 		if (pPX->IsLoading())
 		{
-			GetReportHeader()->OnColumnsChanged(xtpReportColumnOrderChanged | xtpReportColumnPropExchange, NULL);
+			GetReportHeader()->OnColumnsChanged();
 			Populate();
 		}
 	}
 	CATCH(CArchiveException, e)
 	{
-		ASSERT(FALSE);
 	}
 	END_CATCH
-//ICON_VIEW_MODE RELATED <<
-	TRY
-	{
-		pPX->ExchangeSchemaSafe();
-
-		PX_Bool(pPX, _T("ShowIconView"), bCurIconView);
-
-		if (pPX->IsLoading() && bCurIconView)
-			SetIconView(bCurIconView);
-	}
-	CATCH(CArchiveException, e)
-	{
-	}
-	END_CATCH
-
-	if (pPX->IsStoring() && bSetBackToIconView)
-		SetIconView(TRUE);
-
-	EndUpdate();
-//ICON_VIEW_MODE RELATED >>
 }
-
-//ICON_VIEW_MODE RELATED <<
-void CXTPReportControl::SetIconView(BOOL bIconView /* = TRUE */)
-{
-	if (m_iIconViewColumn == -1) //No Icon Column Set
-	{
-		m_bIconView = FALSE;
-		return;
-	}
-
-	if (m_bIconView == bIconView)
-		return;
-
-	CXTPReportColumn* pColumn = NULL;
-
-	m_UaSelected.RemoveAll();
-	CXTPReportSelectedRows* pSel = GetSelectedRows();
-	for (int i = 0; i < pSel->GetCount(); i++)
-	{
-		if (pSel->GetAt(i))
-			m_UaSelected.Add(pSel->GetAt(i)->GetIndex());
-	}
-
-	if (bIconView)
-	{
-		m_pNavigator = m_pNavigatorIcon;
-
-		if (!m_pPrevGroupsOrder)
-			m_pPrevGroupsOrder = new CXTPReportColumnOrder(GetColumns());
-
-		if (!m_pPrevVisible)
-			m_pPrevVisible = new CXTPReportColumnOrder(GetColumns());
-
-		if (m_pPrevGroupsOrder)
-		{
-			m_pPrevGroupsOrder->Clear();
-
-			CXTPReportColumnOrder* pCurrentColumnOrder = GetColumns()->GetGroupsOrder();
-			if (pCurrentColumnOrder->GetCount())
-			{
-				for (int i = 0; i < GetColumns()->GetCount(); i++)
-				{
-					pColumn = pCurrentColumnOrder->GetAt(i);
-					if (pColumn)
-					{
-						m_pPrevGroupsOrder->Add(pColumn);
-						pColumn->SetVisible(FALSE);
-					}
-				}
-				pCurrentColumnOrder->Clear();
-				Populate();
-			}
-		}
-		if (m_pPrevVisible)
-		{
-			m_pPrevVisible->Clear();
-
-			for (int i = 0; i < GetColumns()->GetCount(); i++)
-			{
-				pColumn = GetColumns()->GetAt(i);
-				if (pColumn && pColumn->IsVisible())
-				{
-					m_pPrevVisible->Add(pColumn);
-					pColumn->SetVisible(FALSE);
-				}
-			}
-		}
-
-		m_iIconWidth = GetSystemMetrics(SM_CXICON);
-		m_iIconHeight = GetSystemMetrics(SM_CYICON);
-		m_iIconWidthSpacing = GetSystemMetrics(SM_CXICONSPACING) + 5;
-		m_iIconHeightSpacing = GetSystemMetrics(SM_CYICONSPACING);
-
-		m_iIconHeightSpacing = max(m_iIconHeightSpacing, (((CXTPReportPaintManager* ) GetPaintManager())->m_nRowHeight << 1) + m_iIconHeight);
-
-		pColumn = GetColumns()->Find(m_iIconViewColumn);
-		if (pColumn)
-		{
-			pColumn->SetVisible(TRUE);
-
-			if (pColumn->IsResizable())
-				GetPaintManager()->m_RecordNumberWidth = pColumn->GetWidth();
-			pColumn->SetWidth(m_iIconWidth);
-			pColumn->SetEditable(TRUE);
-		}
-
-		m_bPrevHeaderShow = IsHeaderVisible();
-		m_bPrevFooterShow = IsFooterVisible();
-
-		ShowHeader(FALSE);
-		ShowFooter(FALSE);
-
-		m_bPrevFocusSubItems = IsFocusSubItems();
-		m_bPrevHeaderAutoSize = GetReportHeader()->IsAutoColumnSizing();
-		// This is not needed since we only have one column and it screws up the selection.
-		FocusSubItems(FALSE);
-		GetReportHeader()->SetAutoColumnSizing(TRUE);
-
-		m_bPrevHeaderRows = IsHeaderRowsVisible();
-		m_bPrevFooterRows = IsFooterRowsVisible();
-
-		ShowHeaderRows(FALSE);
-		ShowFooterRows(FALSE);
-
-		// Need this so the scrollbar is correct at the beginning.
-		m_iIconViewRowsPerLine = GetNumRowsOnLine(GetReportHeader()->GetWidth());
-		m_nPrevTreeIndent = GetPaintManager()->m_nTreeIndent;
-		GetPaintManager()->m_nTreeIndent = 0;
-		m_bPrevPreviewMode = IsPreviewMode();
-		GetPaintManager()->EnablePreviewMode(FALSE);
-	}
-	else
-	{
-		m_pNavigator = m_pNavigatorReport;
-
-		GetPaintManager()->m_nTreeIndent = m_nPrevTreeIndent;
-		GetReportHeader()->SetAutoColumnSizing(m_bPrevHeaderAutoSize);
-
-		pColumn = GetColumns()->Find(m_iIconViewColumn);
-		if (pColumn)
-		{
-			if (m_bUseIconColumnForNum)
-			{
-				if (m_iColumnForNum > -1)
-				{
-					if (m_pPrevGroupsOrder
-						&& m_pPrevGroupsOrder->GetCount() > 0
-						&& GetPaintManager()->m_RecordNumberWidth < 30)
-						GetPaintManager()->m_RecordNumberWidth = 30;
-
-					pColumn->SetWidth(GetPaintManager()->m_RecordNumberWidth);
-					pColumn->SetMinWidth(GetPaintManager()->m_RecordNumberWidth);
-					pColumn->SetVisible(TRUE);
-				}
-				else
-					pColumn->SetVisible(FALSE);
-
-				pColumn->SetHeaderAlignment(DT_CENTER);
-				pColumn->SetEditable(FALSE);
-			}
-			else
-			{
-				pColumn->SetVisible(FALSE);
-				pColumn->SetWidth(0);
-			}
-		}
-		if (m_pPrevVisible)
-		{
-			for (int i = 0; i < m_pPrevVisible->GetCount(); i++)
-			{
-				pColumn = m_pPrevVisible->GetAt(i);
-				if (pColumn)
-				{
-					pColumn->SetVisible(TRUE);
-					if (pColumn->GetWidth() == 0)
-						pColumn->SetWidth(pColumn->GetMinWidth());
-				}
-			}
-		}
-
-		if (m_pPrevGroupsOrder)
-		{
-			for (int i = 0; i < m_pPrevGroupsOrder->GetCount(); i++)
-			{
-				pColumn = m_pPrevGroupsOrder->GetAt(i);
-				if (pColumn)
-				{
-					GetColumns()->GetGroupsOrder()->Add(pColumn);
-					pColumn->SetVisible(TRUE);
-				}
-			}
-			Populate();
-		}
-
-		ShowHeader(m_bPrevHeaderShow);
-		ShowFooter(m_bPrevFooterShow);
-
-		if (m_bPrevFocusSubItems)
-			FocusSubItems(m_bPrevFocusSubItems);
-
-		ShowHeaderRows(m_bPrevHeaderRows);
-		ShowFooterRows(m_bPrevFooterRows);
-
-		GetPaintManager()->EnablePreviewMode(m_bPrevPreviewMode);
-	}
-
-	BOOL bOldFirst(TRUE);
-	for (int ii = 0; ii < m_UaSelected.GetSize(); ii++)
-	{
-		int j = (int) m_UaSelected.GetAt(ii);
-		if (j == 0)
-			bOldFirst = FALSE;
-		if (j > -1)
-		{
-			if (GetRows()->GetAt(j))
-				GetRows()->GetAt(j)->SetSelected(TRUE);
-		}
-	}
-	if (bOldFirst)
-	{
-		if (GetRows()->GetAt(0))
-			GetRows()->GetAt(0)->SetSelected(FALSE);
-	}
-
-	m_bIconView = bIconView;
-
-	AdjustScrollBars();
-}
-
-int CXTPReportControl::GetNumRowsOnLine(int iTotalWidth) const
-{
-	return max(iTotalWidth / m_iIconWidthSpacing, 1);
-}
-
-//ICON_VIEW_MODE RELATED >>
 
 void CXTPReportControl::SerializeState(CArchive& ar)
 {
@@ -5377,65 +4091,19 @@ void CXTPReportControl::SerializeState(CArchive& ar)
 
 void CXTPReportControl::CollapseAll()
 {
-	CXTPReportRows *pRows = GetRows();
-
 	BeginUpdate();
-	m_UaSelected.RemoveAll();
-	
-	CXTPReportSelectedRows *pSelelectedRows = GetSelectedRows();
-
-	for (int i=0; i<pSelelectedRows->GetCount(); i++)
-	{
-		const CXTPReportRow *pRow = pSelelectedRows->GetAt(i);
-
-		if (NULL != pRow)
-		{
-			m_UaSelected.Add(pRow->GetIndex());
-		}
-	}
-
-	for (int j=pRows->GetCount()-1; j>=0; j--)
-	{
-		pRows->GetAt(j)->SetExpanded(FALSE);
-	}
+	for (int i = m_pRows->GetCount() - 1; i >= 0; i--)
+		m_pRows->GetAt(i)->SetExpanded(FALSE);
 
 	EndUpdate();
 	EnsureVisible(GetFocusedRow());
-
-	pSelelectedRows->Clear(TRUE);
 }
 
-void CXTPReportControl::ExpandAll(BOOL bRecursive)
+void CXTPReportControl::ExpandAll()
 {
-	CXTPReportRows *pRows = m_pSectionBody->GetRows();
-
-	if (pRows->GetCount() == 0)
-		return;
-
 	BeginUpdate();
-
-	for (int i = pRows->GetCount() - 1; i >= 0; i--)
-	{
-		CXTPReportRow* pRow = pRows->GetAt(i);
-		if (pRow)
-			pRow->SetExpanded(TRUE, bRecursive);
-	}
-
-	BOOL bOldFirst(TRUE);
-	for (int j = 0; j < m_UaSelected.GetSize(); j++)
-	{
-		int jj = (int) m_UaSelected.GetAt(j);
-		if (jj == 0)
-			bOldFirst = FALSE;
-		CXTPReportRow* pRow = pRows->GetAt(jj);
-		if (pRow)
-			pRow->SetSelected(TRUE);
-	}
-
-	int nTopRowIndex = GetTopRowIndex();
-
-	if (bOldFirst && nTopRowIndex >= 0 && nTopRowIndex < pRows->GetCount())
-		pRows->GetAt(nTopRowIndex)->SetSelected(FALSE);
+	for (int i = m_pRows->GetCount() - 1; i >= 0; i--)
+		m_pRows->GetAt(i)->SetExpanded(TRUE);
 
 	EndUpdate();
 	EnsureVisible(GetFocusedRow());
@@ -5449,15 +4117,15 @@ void CXTPReportControl::SetMouseMode(XTPReportMouseMode nMode)
 
 void CXTPReportControl::RelayToolTipEvent(UINT message)
 {
-	if (m_pTip->GetSafeHwnd() && m_pTip->IsWindowVisible())
+	if (m_wndTip.GetSafeHwnd() && m_wndTip.IsWindowVisible())
 	{
 		CPoint pt;
 		GetCursorPos(&pt);
 
-		if (!m_pTip->GetHoverRect().PtInRect(pt))
+		if (!m_wndTip.GetHoverRect().PtInRect(pt))
 		{
-			m_pTip->SetTooltipText(NULL);
-			m_pTip->Activate(FALSE, FALSE);
+			m_wndTip.SetTooltipText(NULL);
+			m_wndTip.Activate(FALSE);
 		}
 
 		switch (message)
@@ -5472,7 +4140,7 @@ void CXTPReportControl::RelayToolTipEvent(UINT message)
 			case WM_RBUTTONUP:
 			case WM_MBUTTONUP:
 			case WM_MOUSELEAVE:
-				m_pTip->Activate(FALSE, FALSE);
+				m_wndTip.Activate(FALSE);
 		}
 	}
 
@@ -5481,7 +4149,7 @@ void CXTPReportControl::RelayToolTipEvent(UINT message)
 BOOL CXTPReportControl::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
 {
 	static BOOL bRelay = FALSE;
-	if (m_pTip->GetSafeHwnd() && m_pTip->IsWindowVisible() && !bRelay)
+	if (m_wndTip.GetSafeHwnd() && m_wndTip.IsWindowVisible() && !bRelay)
 	{
 		bRelay = TRUE;
 		RelayToolTipEvent(message);
@@ -5493,42 +4161,6 @@ BOOL CXTPReportControl::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRE
 		m_pToolTipContext->FilterToolTipMessage(this, message, wParam, lParam);
 	}
 
-	if (GetMarkupContext())
-	{
-		CPoint ptMouse(0);
-		GetCursorPos(&ptMouse);
-		ScreenToClient(&ptMouse);
-
-		BOOL bRelay = FALSE;
-
-		CXTPReportRow* pRow = HitTest(ptMouse);
-		if (pRow)
-		{
-			CXTPReportRecordItem* pItem = pRow->HitTest(ptMouse);
-			if (pItem && pItem->GetMarkupUIElement())
-			{
-				bRelay = TRUE;
-				if (XTPMarkupRelayMessage(pItem->GetMarkupUIElement(), message, wParam, lParam, pResult))
-					return TRUE;
-			}
-//13.2.2 <<
-//enable markup mouse move for groups
-			else if (pRow->IsGroupRow())
-			{
-				bRelay = TRUE;
-				if (XTPMarkupRelayMessage(((CXTPReportGroupRow*) pRow)->m_pMarkupUIElement, message, wParam, lParam, pResult))
-					return TRUE;
-			}
-//13.2.2 >>
-		}
-
-		if (!bRelay)
-		{
-			if (XTPMarkupRelayMessage(GetMarkupContext(), message, wParam, lParam, pResult))
-				return TRUE;
-		}
-
-	}
 	return CWnd::OnWndMsg(message, wParam, lParam, pResult);
 }
 
@@ -5542,7 +4174,7 @@ void CXTPReportControl::OnSysColorChange()
 
 UINT CXTPReportControl::OnGetDlgCode()
 {
-	return (m_bFocusSubItems ? DLGC_WANTTAB : 0) | DLGC_WANTARROWS | DLGC_WANTCHARS;
+	return (m_bFocusSubItems ? DLGC_WANTTAB :0) | DLGC_WANTARROWS | DLGC_WANTCHARS;
 }
 
 void CXTPReportControl::OnSetFocus(CWnd* pOldWnd)
@@ -5574,6 +4206,7 @@ CXTPReportRow* CXTPReportControl::CreateRow()
 CXTPReportGroupRow* CXTPReportControl::CreateGroupRow()
 {
 	return new CXTPReportGroupRow_Batch();
+
 }
 
 CXTPReportRow* CXTPReportControl::CreateHeaderFooterRow()
@@ -5581,25 +4214,9 @@ CXTPReportRow* CXTPReportControl::CreateHeaderFooterRow()
 	return new CXTPHeapObjectT<CXTPReportRow, CXTPReportAllocatorDefault>;
 }
 
-void CXTPReportControl::ShowIconWhenEditing(BOOL bShow)
+void CXTPReportControl::EditItem(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
 {
-	m_bShowIconWhenEditing = bShow;
-}
-
-BOOL CXTPReportControl::IsShowIconWhenEditing()
-{
-	return m_bShowIconWhenEditing;
-}
-
-void CXTPReportControl::EditItem(XTP_REPORTRECORDITEM_ARGS *pItemArgs)
-{
-	CXTPReportRecordItem *pItem = pItemArgs ? pItemArgs->pItem : NULL;
-
-	if (NULL == m_pActiveItem && NULL == pItem)
-	{
-		// Nothing do to
-		return;
-	}
+	CXTPReportRecordItem* pItem = pItemArgs ? pItemArgs->pItem : NULL;
 
 	if (m_pActiveItem != NULL)
 	{
@@ -5607,7 +4224,9 @@ void CXTPReportControl::EditItem(XTP_REPORTRECORDITEM_ARGS *pItemArgs)
 		m_pActiveItem = NULL;
 
 		if (!m_bFocusSubItems)
+		{
 			SetFocusedColumn(NULL);
+		}
 	}
 	CMDTARGET_RELEASE(m_ptrVirtualEditingRow);
 
@@ -5616,28 +4235,25 @@ void CXTPReportControl::EditItem(XTP_REPORTRECORDITEM_ARGS *pItemArgs)
 		if (!HasFocus())
 			SetFocus();
 
-		if (!IsVirtualMode())
-		{
-			AdjustScrollBars();
-			RedrawControl();
-			UpdateWindow();
-		}
+		AdjustScrollBars();
+		RedrawControl();
+		UpdateWindow();
 
 		if (IsVirtualMode())
 		{
 			int nRowIndex = pItemArgs->pRow->GetIndex();
 
-			//EnsureVisible(pItemArgs->pRow);
+			EnsureVisible(pItemArgs->pRow);
 
 			RedrawControl();
 			UpdateWindow();
 			pItemArgs->pRow = NULL; // RedrawControl delete and re-create new screen rows
 
 			BOOL bMapped = FALSE;
-			CXTPReportScreenRows *pScreenRows = GetRows()->GetScreenRows();
-			for (int i = 0; i <pScreenRows->GetSize(); i++)
+			int nScrCount = m_arrScreenRows.GetCount();
+			for (int i = 0; i < nScrCount; i++)
 			{
-				CXTPReportRow* pRow = pScreenRows->GetAt(i);
+				CXTPReportRow* pRow = m_arrScreenRows.GetAt(i);
 				if (pRow->GetIndex() == nRowIndex)
 				{
 					pItemArgs->pRow = pRow;
@@ -5661,62 +4277,11 @@ void CXTPReportControl::EditItem(XTP_REPORTRECORDITEM_ARGS *pItemArgs)
 		}
 
 		pItemArgs->rcItem = pItemArgs->pRow->GetItemRect(pItem);
-		pItemArgs->rcItem.left += (pItemArgs->rcItem.left == 0 ? GetHeaderIndent() : 0);
 
-		if (m_bShowIconWhenEditing && pItemArgs->pColumn)
-		{
-			XTP_REPORTRECORDITEM_METRICS* pMetrics = new XTP_REPORTRECORDITEM_METRICS();
-			XTP_REPORTRECORDITEM_DRAWARGS drawArgs;
-			drawArgs.pControl   = this;
-			drawArgs.pColumn    = pItemArgs->pColumn;
-			drawArgs.rcItem     = pItemArgs->pColumn->GetRect();
-			drawArgs.nTextAlign = pItem->GetAlignment() == -1 ? 0 : pItem->GetAlignment();
-
-			drawArgs.pRow = pItemArgs->pRow;
-			drawArgs.pItem = pItemArgs->pItem;
-
-			pItemArgs->pRow->GetItemMetrics(&drawArgs, pMetrics);
-
-			int nIcon = pMetrics->nItemIcon;
-			nIcon = (nIcon != XTP_REPORT_NOICON) ? nIcon : pItem->GetIconIndex();
-			if (nIcon != XTP_REPORT_NOICON)
-			{
-				if ((drawArgs.nTextAlign & xtpColumnIconRight) != 0)
-					pItemArgs->rcItem.right -= GetPaintManager()->DrawBitmap(NULL, this, pItemArgs->rcItem, nIcon);
-				else
-					pItemArgs->rcItem.left += GetPaintManager()->DrawBitmap(NULL, this, pItemArgs->rcItem, nIcon);
-			}
-
-			CMDTARGET_RELEASE(pMetrics);
-		}
-
-		if (pItem->GetHasCheckbox() && pItem->GetCanEditCheckboxItem())
-			pItemArgs->rcItem.left += 15;
-
-		if (SetFocusedColumn(pItemArgs->pColumn))
+		if(SetFocusedColumn(pItemArgs->pColumn))
 		{
 			m_pActiveItem = pItem;
 			pItem->OnBeginEdit(pItemArgs);
-
-			if (!IsEditMode()) // Need to actually cancel the edit - old version (10) did not have this call
-				EditItem(NULL);
-		}
-
-			// Fix selection
-		if (GetInplaceEdit()->GetSafeHwnd()
-			&& GetInplaceEdit()->GetItem() == pItem)
-		{
-			CXTPReportRecordItemEditOptions* pEditOptions = pItem->GetEditOptions(pItemArgs->pColumn);
-			if (pEditOptions && pEditOptions->m_bSelectTextOnEdit)
-			{
-				GetInplaceEdit()->SetSel(0, -1);
-			}
-			else
-			{
-				CString str;
-				GetInplaceEdit()->GetWindowText(str);
-				GetInplaceEdit()->SetSel(str.GetLength(), str.GetLength());
-			}
 		}
 	}
 
@@ -5729,92 +4294,68 @@ BOOL CXTPReportControl::HasFocus() const
 	if (!pFocusWnd)
 		return FALSE;
 
-	return (pFocusWnd->GetSafeHwnd() == m_hWnd)
-		|| (pFocusWnd->GetParent()->GetSafeHwnd() == m_hWnd)
-		|| (pFocusWnd->GetOwner()->GetSafeHwnd() == m_hWnd);
+	return (pFocusWnd->GetSafeHwnd() == m_hWnd) || (pFocusWnd->GetParent()->GetSafeHwnd() == m_hWnd) || (pFocusWnd->GetOwner()->GetSafeHwnd() == m_hWnd);
 }
+
 
 void CXTPReportControl::ReleaseItem(int nIndex)
 {
-	CXTPReportRecords *pRecords = GetRecords();
+	int i;
 
-	int i(0);
-	if (IsVirtualMode() && pRecords->GetCount())
+	for (i = 0; i < m_pRecords->GetCount(); i++)
 	{
-		CXTPReportRecord* pRecord = pRecords->GetAt(0);
+		CXTPReportRecord* pRecord = m_pRecords->GetAt(i);
 
 		pRecord->m_arrItems[nIndex]->InternalRelease();
 		pRecord->m_arrItems.RemoveAt(nIndex);
 	}
-	else
-	{
-		for (i = 0; i < pRecords->GetCount(); i++)
-		{
-			CXTPReportRecord* pRecord = pRecords->GetAt(i);
-
-			pRecord->m_arrItems[nIndex]->InternalRelease();
-			pRecord->m_arrItems.RemoveAt(nIndex);
-		}
-	}
 
 	CXTPReportColumns* pColumns = GetColumns();
+
 	CXTPReportColumn* pColumnToRemove = NULL;
+
 	int nColumnsCount = pColumns->GetCount();
 	for (i = 0; i < nColumnsCount; i++)
 	{
 		CXTPReportColumn* pColumn = pColumns->GetAt(i);
 
 		if (pColumn->m_nItemIndex > nIndex)
+		{
 			pColumn->m_nItemIndex--;
+		}
 		else if (pColumn->m_nItemIndex == nIndex)
+		{
 			pColumnToRemove = pColumn;
+		}
 	}
 
 	if (pColumnToRemove)
 		pColumns->Remove(pColumnToRemove);
 }
 
-void CXTPReportControl::SetVirtualMode(CXTPReportRecord* pVirtualRecord, int nCount, int nFields)
+void CXTPReportControl::SetVirtualMode(CXTPReportRecord* pVirtualRecord, int nCount)
 {
-	CXTPReportRecords *pRecords = GetRecords();
-
-	if (pRecords)
-	{
-		if (pVirtualRecord)
-		{
-			int nItems = pVirtualRecord->GetItemCount();
-			if (nItems == 0 && nFields > 0)
-				for (int i = 0; i < nFields; i++)
-					pVirtualRecord->AddItem(new CXTPReportRecordItem());
-		}
-		else
-		{
-			pVirtualRecord = new CXTPReportRecord();
-			if (nFields > 0)
-				for (int i = 0; i < nFields; i++)
-					pVirtualRecord->AddItem(new CXTPReportRecordItem());
-		}
-		if (m_iIconViewColumn > -1)
-		{
-			int nItems = pVirtualRecord->GetItemCount();
-			CXTPReportRecordItem* pLastItem = pVirtualRecord->GetItem(nItems - 1);
-			if (!pLastItem->IsKindOf(RUNTIME_CLASS(CXTPReportRecordItemIcon)))
-				pVirtualRecord->AddItem(new CXTPReportRecordItemIcon());
-		}
-
-		pRecords->SetVirtualMode(pVirtualRecord, nCount);
-	}
+	m_pRecords->SetVirtualMode(pVirtualRecord, nCount);
 }
 
 BOOL CXTPReportControl::IsVirtualMode() const
 {
-	CXTPReportRecords *pRecords = GetRecords();
-	return pRecords ? pRecords->IsVirtualMode() : FALSE;
+	return m_pRecords->IsVirtualMode();
 }
 
 CXTPReportRow* CXTPReportControl::GetFocusedRow() const
 {
-	return m_pSections->GetFocusedRow();
+	if (m_nFocusedRow != -1)
+		return m_pRows->GetAt(m_nFocusedRow);
+
+	if (m_nFocusedHeaderRow != -1)
+		return m_pHeaderRows->GetAt(m_nFocusedHeaderRow);
+
+	if (m_nFocusedFooterRow != -1)
+		return m_pFooterRows->GetAt(m_nFocusedFooterRow);
+
+	return NULL;
+//  return m_nFocusedRow != -1 ? m_pRows->GetAt(m_nFocusedRow) : NULL;
 }
 
 void CXTPReportControl::OnStyleChanged(int nStyleType, LPSTYLESTRUCT lpStyleStruct)
@@ -5845,7 +4386,9 @@ INT_PTR CXTPReportControl::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
 
 	CXTPReportRow* pRow = HitTest(point);
 	if (pRow)
+	{
 		nHit = pRow->OnToolHitTest(point, pTI);
+	}
 
 	return nHit;
 }
@@ -5858,37 +4401,12 @@ void CXTPReportControl::SetLayoutRTL(BOOL bRightToLeft)
 	if (!m_hWnd)
 		return;
 
-	if (bRightToLeft)
-	{
-		ModifyStyleEx(0, WS_EX_LAYOUTRTL);
-	}
-	else
-	{
-		ModifyStyleEx(WS_EX_LAYOUTRTL, 0);
-	}
-
+	ModifyStyleEx(bRightToLeft ? 0 : WS_EX_LAYOUTRTL, !bRightToLeft ? 0 : WS_EX_LAYOUTRTL);
 	GetImageManager()->DrawReverted(bRightToLeft);
 
 	GetInplaceEdit()->DestroyWindow();
+
 	AdjustLayout();
-
-	if (GetParent())
-	{
-		CRect rc;
-		GetParent()->GetClientRect(&rc);
-		GetParent()->SetWindowPos(NULL, 0, 0, rc.Width() + 1, rc.Height(), SWP_NOMOVE | SWP_NOZORDER);
-	}
-}
-
-BOOL CXTPReportControl::IsLayoutRTL()
-{
-	if (!XTPSystemVersion()->IsLayoutRTLSupported())
-		return FALSE;
-
-	if (!m_hWnd)
-		return FALSE;
-
-	return !!(GetWindowLong(m_hWnd, GWL_EXSTYLE) & WS_EX_LAYOUTRTL);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -5900,14 +4418,14 @@ BOOL CXTPReportControl::CanCopy()
 	CXTPReportSelectedRows* pSelRows = GetSelectedRows();
 
 	if ((pSelRows != NULL) && (pSelRows->GetCount() > 0))
+	{
 		return TRUE;
-
+	}
 	return FALSE;
 }
 
 BOOL CXTPReportControl::CanCut()
 {
-//Old VirtualMode
 	if (IsVirtualMode())
 		return FALSE;
 
@@ -5916,6 +4434,9 @@ BOOL CXTPReportControl::CanCut()
 
 BOOL CXTPReportControl::CanPaste()
 {
+	if (IsVirtualMode())
+		return FALSE;
+
 	CLIPFORMAT uCF_Records = (CLIPFORMAT)::RegisterClipboardFormat(XTPREPORTCTRL_CF_RECORDS);
 
 	BOOL bCan = FALSE;
@@ -5933,15 +4454,16 @@ void CXTPReportControl::Cut()
 {
 	CWaitCursor _WC;
 
+	// Copy selected data into the clipboard
 	Copy();
 
 	if (IsVirtualMode())
 		return;
 
-// Delete selected rows
+	// Delete selected rows
 	CXTPInternalCollectionT<CXTPReportRow> arSelectedRows;
 	_GetSelectedRows(NULL, &arSelectedRows);
-	int nSelRowsCount = (int) arSelectedRows.GetSize();
+	int nSelRowsCount = (int)arSelectedRows.GetSize();
 	int nFirstSelRow = INT_MAX;
 	for (int i = nSelRowsCount - 1; i >= 0 ; i--)
 	{
@@ -5961,7 +4483,7 @@ void CXTPReportControl::Cut()
 
 		if (nFirstSelRow != INT_MAX)
 		{
-			GetRows()->m_nFocusedRow = min(nFirstSelRow, GetRows()->GetCount() - 1);
+			m_nFocusedRow = min(nFirstSelRow, GetRows()->GetCount() - 1);
 
 			if (GetFocusedRow())
 			{
@@ -5973,6 +4495,7 @@ void CXTPReportControl::Cut()
 
 	AdjustScrollBars();
 	RedrawControl();
+
 }
 
 // We support text format with \t dividers for record items and
@@ -5982,9 +4505,7 @@ void CXTPReportControl::Copy()
 {
 	CWaitCursor _WC;
 
-	int nRowsCount = 1;
-	if (GetSelectedRows())
-		nRowsCount = GetSelectedRows()->GetCount();
+	int nRowsCount = GetSelectedRows() ? GetSelectedRows()->GetCount() : 1;
 
 	// minimize memory reallocs to improve performance
 	UINT nAveRecordsSize = 1500; // bytes
@@ -6030,6 +4551,7 @@ void CXTPReportControl::Copy()
 		TRACE(_T("EXCEPTION: CXTPReportControl::Copy() - Unhandled Exception!\n"));
 	}
 
+	//*****
 	CString strClipText = _GetSelectedRowsVisibleColsText();
 
 	CLIPFORMAT uCF_Records = (CLIPFORMAT)::RegisterClipboardFormat(XTPREPORTCTRL_CF_RECORDS);
@@ -6040,10 +4562,20 @@ void CXTPReportControl::Copy()
 		::EmptyClipboard();
 
 		// 1 - Text
-		HGLOBAL hText = XTPAllocStrInGlobalMem(strClipText);
+		int nLen = (strClipText.GetLength() + 1) * sizeof(TCHAR);
+		HGLOBAL hText = ::GlobalAlloc(nAllocFlags, nLen);
+
 		if (hText != NULL)
 		{
-			::SetClipboardData(XTP_CF_TEXT_T, hText);
+			LPTSTR lptstrCopy = (TCHAR*)GlobalLock(hText);
+			STRCPY_S(lptstrCopy, strClipText.GetLength() + 1, (LPCTSTR)strClipText);
+			GlobalUnlock(hText);
+
+#ifndef _UNICODE
+			::SetClipboardData(CF_TEXT, hText);
+#else
+			::SetClipboardData(CF_UNICODETEXT, hText);
+#endif
 		}
 
 		// 2 - Blob data
@@ -6054,12 +4586,16 @@ void CXTPReportControl::Copy()
 			::SetClipboardData(uCF_Records, hData);
 		}
 
+		//-----------------
 		::CloseClipboard();
 	}
 }
 
 void CXTPReportControl::Paste()
 {
+	if (IsVirtualMode())
+		return;
+
 	CWaitCursor _WC;
 
 	CLIPFORMAT uCF_Records = (CLIPFORMAT)::RegisterClipboardFormat(XTPREPORTCTRL_CF_RECORDS);
@@ -6090,7 +4626,7 @@ void CXTPReportControl::Paste()
 			{
 				CXTPPropExchangeArchive px(ar);
 
-				if (!_ReadRecordsFromData(&px, arRecords))
+				if (!_ReadRecodsFromData(&px, arRecords))
 				{
 					arRecords.RemoveAll();
 				}
@@ -6135,7 +4671,7 @@ void CXTPReportControl::Paste()
 		{
 			TCHAR* lpszClipboard = (TCHAR*)GlobalLock(hglbPaste);
 
-			if (!_ReadRecordsFromText(lpszClipboard, arRecords))
+			if (!_ReadRecodsFromText(lpszClipboard, arRecords))
 			{
 				arRecords.RemoveAll();
 			}
@@ -6144,9 +4680,8 @@ void CXTPReportControl::Paste()
 	}
 
 	::CloseClipboard();
+	//////////////////////////////////////////////////////////////////////////
 
-	if (IsVirtualMode())
-		return;
 	CUpdateContext updateContext(this);
 
 	// Add and Populate records
@@ -6210,9 +4745,12 @@ CString CXTPReportControl::_GetSelectedRowsVisibleColsText()
 				arStrings.Add(pItem->GetCaption(pColumn));
 			}
 
+			//===============================================================
 			BOOL bCanceled = OnBeforeCopyToText(pRecord, arStrings);
 			if (bCanceled)
+			{
 				continue;
+			}
 
 			strSelText += XTPStrMake(arStrings, _T("\t"));
 			strSelText += _T("\r\n");
@@ -6222,7 +4760,7 @@ CString CXTPReportControl::_GetSelectedRowsVisibleColsText()
 	return strSelText;
 }
 
-BOOL CXTPReportControl::_ReadRecordsFromText(LPCTSTR pcszText,
+BOOL CXTPReportControl::_ReadRecodsFromText(LPCTSTR pcszText,
 											CXTPReportRecords& rarRecords)
 {
 	//////////////////////////////////////////////////////////////////////////
@@ -6231,18 +4769,22 @@ BOOL CXTPReportControl::_ReadRecordsFromText(LPCTSTR pcszText,
 	CStringArray arRecordsStrings;
 	XTPStrSplit(pcszText, _T("\r\n"), arRecordsStrings);
 
-	int nCount = (int) arRecordsStrings.GetSize();
+	int nCount = (int)arRecordsStrings.GetSize();
 	for (int i = 0; i < nCount; i++)
 	{
 		CString strRecord = arRecordsStrings[i];
 		if (strRecord.IsEmpty())
+		{
 			continue;
+		}
 
 		CXTPReportRecord* pNewRec = _CreateRecodFromText(strRecord);
-		// Case: pNewRec = NULL - paste was handled by the user
+		// pNewRec = NULL - paste was handled by the user
 
 		if (pNewRec)
+		{
 			rarRecords.Add(pNewRec);
+		}
 	}
 
 	return TRUE;
@@ -6261,10 +4803,13 @@ CXTPReportRecord* CXTPReportControl::_CreateRecodFromText(LPCTSTR pcszRecord)
 	// Read each field from the initial string and set visible field one by one
 	XTPStrSplit(pcszRecord, _T("\t"), arStrings);
 
+	//=======================================================================
 	CXTPReportRecord* pRecord = NULL;
 	BOOL bHandled = OnBeforePasteFromText(arStrings, &pRecord);
 	if (bHandled)
+	{
 		return pRecord;
+	}
 
 #if _MFC_VER >= 0x0600 // Not supported by Visual Studio 5.0
 
@@ -6276,7 +4821,7 @@ CXTPReportRecord* CXTPReportControl::_CreateRecodFromText(LPCTSTR pcszRecord)
 			return NULL;
 		}
 
-		int nDataCount = (int) arStrings.GetSize();
+		int nDataCount = (int)arStrings.GetSize();
 
 		// Fill record with all items
 		int nCount = GetColumns()->GetCount();
@@ -6324,6 +4869,7 @@ BOOL CXTPReportControl::_WriteRecordsData(CXTPPropExchange* pPX, CXTPReportRecor
 	if (!pRecords)
 		return FALSE;
 
+
 	long nSchema = XTP_REPORT_CB_RECORDS_DATA_VER;
 
 	PX_Long(pPX, _T("Version"), (long&)nSchema);
@@ -6347,65 +4893,40 @@ BOOL CXTPReportControl::_WriteRecordsData(CXTPPropExchange* pPX, CXTPReportRecor
 	return TRUE;
 }
 
-void CXTPReportControl::_SelectChilds(CXTPReportRecords *pRecords)
+void CXTPReportControl::_SelectRows(CXTPReportRecords* pRecords)
 {
-	ASSERT(NULL != pRecords);
-
-	CXTPReportRows         *pRows    = GetRows();
-	CXTPReportSelectedRows *pSelRows = GetSelectedRows();
-
-	for (int nRecord=0; nRecord<pRecords->GetCount(); nRecord++)
-	{
-		CXTPReportRecord *pRecord = pRecords->GetAt(nRecord);
-		ASSERT(NULL != pRecord);
-
-		if (NULL != pRecord)
-		{
-			CXTPReportRow *pRow = pRows->Find(pRecord);
-
-			if (NULL != pRow)
-			{
-				pSelRows->Add(pRow);
-
-				// Recursion
-				if (pRecord->HasChildren())
-				{
-					CXTPReportRecords *pChilds = pRecord->GetChilds();
-					if (NULL != pChilds)
-					{
-						_SelectChilds(pChilds);
-					}
-				}
-			}
-		}
-
-	}
-}
-
-void CXTPReportControl::_SelectRows(CXTPReportRecords *pRecords)
-{
-	CXTPReportSelectedRows *pSelRows = GetSelectedRows();
+	CXTPReportRows* pRows = GetRows();
+	CXTPReportSelectedRows* pSelRows = GetSelectedRows();
+	if (!pRows || !pSelRows)
+		return;
 
 	pSelRows->Clear();
+	int nRecordsCount = pRecords->GetCount();
 
-	_SelectChilds(pRecords);
-
-	if (pSelRows->IsChanged())
+	for (int nNewRecNr = 0; nNewRecNr < nRecordsCount; nNewRecNr++)
 	{
-		OnSelectionChanged();
+		CXTPReportRecord* pRec = pRecords->GetAt(nNewRecNr);
+		CXTPReportRow* pRow = pRows->Find(pRec);
+		if (pRow)
+		{
+			pSelRows->Add(pRow);
+
+			if (nNewRecNr == nRecordsCount - 1)
+				SetFocusedRow(pRow, TRUE);
+		}
 	}
 }
 
 BOOL CXTPReportControl::_GetSelectedRows(CXTPReportRecords* pRecords,
-		CXTPInternalCollectionT<CXTPReportRow> *pRows)
+										 CXTPInternalCollectionT<CXTPReportRow> *pRows)
 {
 	ASSERT(!pRecords || pRecords->m_bArray == TRUE);
 
 	CXTPReportSelectedRows* pSelectedRows = GetSelectedRows();
-	if (!pSelectedRows
-		|| !pSelectedRows->GetCount()
-		|| (!pRecords && !pRows))
+	if (!pSelectedRows || !pSelectedRows->GetCount() || (!pRecords && !pRows))
+	{
 		return FALSE;
+	}
 
 	POSITION pos = pSelectedRows->GetFirstSelectedRowPosition();
 	while (pos)
@@ -6413,13 +4934,18 @@ BOOL CXTPReportControl::_GetSelectedRows(CXTPReportRecords* pRecords,
 		CXTPReportRow* pRow = pSelectedRows->GetNextSelectedRow(pos);
 		CXTPReportRecord* pRecord = pRow ? pRow->GetRecord() : NULL;
 		if (NULL == pRow)
+		{
 			break;
-
+		}
 		if (pRecord && pRecords)
+		{
 			pRecords->Add(pRecord);
+		}
 
 		if (pRow && pRows)
+		{
 			pRows->AddPtr(pRow, TRUE);
+		}
 	}
 
 	return TRUE;
@@ -6445,7 +4971,7 @@ BOOL CXTPReportControl::_WriteSelectedRowsData(CXTPPropExchange* pPX)
 	return TRUE;
 }
 
-BOOL CXTPReportControl::_ReadRecordsFromData(CXTPPropExchange* pPX,
+BOOL CXTPReportControl::_ReadRecodsFromData(CXTPPropExchange* pPX,
 											CXTPReportRecords& rarRecords)
 {
 	rarRecords.RemoveAll();
@@ -6480,16 +5006,20 @@ BOOL CXTPReportControl::_ReadRecordsFromData(CXTPPropExchange* pPX,
 		PX_Object(&secRecord, pRecord, RUNTIME_CLASS(CXTPReportRecord));
 
 		if (!pRecord)
+		{
 			AfxThrowArchiveException(CArchiveException::badClass);
-
+		}
 		CXTPReportRecord* pRecord2 = pRecord;
 		BOOL bCanceled = OnBeforePaste(&pRecord2);
 
 		if (bCanceled || pRecord2 != pRecord)
+		{
 			CMDTARGET_RELEASE(pRecord);
-
+		}
 		if (bCanceled)
+		{
 			continue;
+		}
 
 		rarRecords.Add(pRecord2);
 	}
@@ -6545,52 +5075,23 @@ int CXTPReportControl::OnGetColumnDataBestFitWidth(CXTPReportColumn* pColumn)
 		ASSERT(FALSE);
 		return 0;
 	}
-	int nDataWidth = 0;
-	int nDataWidth0 = 0;
-	int nDataWidth1 = 0;
 
-	CXTPClientRect rcClient(this);
-	CBitmap bmp;
-	{
-		CClientDC dcClient(this);
-		bmp.CreateCompatibleBitmap(&dcClient, rcClient.Width(), rcClient.Height());
-	}
-
-	CXTPCompatibleDC dc(NULL, &bmp);
-
-	CXTPFontDC autoFont(&dc, pPaintManager->GetTextFont()); // to reset selected font on exit
-
-	if (pColumn->GetBestFitMode() == xtpColumnBestFitModeVisibleData
-		|| (pColumn->GetBestFitMode() == xtpColumnBestFitModeAllData && IsVirtualMode())
-		/* && pColumn->m_nMaxItemWidth == 0*/)
-	{
-		// calculate width for visible rows only
-		int nVisibleRows = GetReportAreaRows(GetTopRowIndex(), TRUE);
-
-		nDataWidth = OnGetItemsCaptionMaxWidth(&dc, GetRows(), pColumn,
-			GetTopRowIndex(), nVisibleRows);
-	}
-	else if (pColumn->GetBestFitMode() == xtpColumnBestFitModeAllData && !IsVirtualMode())
-		nDataWidth = OnGetItemsCaptionMaxWidth(&dc, GetRows(), pColumn);
-	else
+	if(pColumn->GetBestFitMode() != xtpColumnBestFitModeAllData)
 		return 0;
 
-	if (m_pSectionHeader->IsVisible() && GetHeaderRows()->GetCount() > 0)
-		nDataWidth0 = OnGetItemsCaptionMaxWidth(&dc, GetHeaderRows(), pColumn);
+	CClientDC dc(this);
+	CXTPFontDC autoFont(&dc, pPaintManager->GetTextFont()); // to reset selected font on exit
 
-	if (m_pSectionFooter->IsVisible() && GetFooterRows()->GetCount() > 0)
-		nDataWidth1 = OnGetItemsCaptionMaxWidth(&dc, GetFooterRows(), pColumn);
-
-	nDataWidth = max(nDataWidth, max(nDataWidth0, nDataWidth1));
+	int nDataWidth = OnGetItemsCaptionMaxWidth(&dc, GetRows(), pColumn);
 
 	return nDataWidth;
 }
 
 int CXTPReportControl::OnGetItemsCaptionMaxWidth(CDC* pDC, CXTPReportRows* pRows,
-													CXTPReportColumn* pColumn, int nStartRow, int nRowsCount)
+													CXTPReportColumn* pColumn)
 {
 	CXTPReportPaintManager* pPaintManager = GetPaintManager();
-	if (!pDC || !pRows || !pColumn || !pPaintManager)
+	if(!pDC || !pRows || !pColumn || !pPaintManager)
 	{
 		ASSERT(FALSE);
 		return 0;
@@ -6602,37 +5103,26 @@ int CXTPReportControl::OnGetItemsCaptionMaxWidth(CDC* pDC, CXTPReportRows* pRows
 	drawArgs.pColumn = pColumn;
 	drawArgs.rcItem = pColumn->GetRect();
 
-
 	XTP_REPORTRECORDITEM_METRICS* pMetrics = new XTP_REPORTRECORDITEM_METRICS();
 
-	int nGroupIndent = 0;
-	if (GetColumns()->GetVisibleAt(0) == pColumn)
-		nGroupIndent = GetHeaderIndent();
-
-	CSize sizeBitmap(0, 0);
 	int nMaxWidth = 0;
 	int nItemIndex = pColumn->GetItemIndex();
 
-	int nEndRow = pRows->GetCount();
-	if (nRowsCount > 0)
-		nEndRow = min(pRows->GetCount(), nStartRow + nRowsCount);
-
-	for (int i = max(0, nStartRow); i < nEndRow; i++)
+	int nCount = pRows->GetCount();
+	for (int i = 0; i < nCount; i++)
 	{
 		CXTPReportRow* pRow = pRows->GetAt(i);
-		if (!pRow)
-			continue;
-
+		ASSERT(pRow);
 		if (pRow && pRow->IsGroupRow())
 			continue;
 
 		CXTPReportRecord* pRec = pRow ? pRow->GetRecord() : NULL;
 		CXTPReportRecordItem* pItem = pRec ? pRec->GetItem(nItemIndex) : NULL;
+		ASSERT(pItem);
 
 		if (!pItem)
 			continue;
 
-		// 1. Calculate Text
 		drawArgs.pRow = pRow;
 		drawArgs.pItem = pItem;
 
@@ -6642,84 +5132,7 @@ int CXTPReportControl::OnGetItemsCaptionMaxWidth(CDC* pDC, CXTPReportRows* pRows
 
 		pDC->SelectObject(pMetrics->pFont);
 
-		int nWidth = 0;
-
-		if (pItem->GetMarkupUIElement())
-		{
-			nWidth = XTPMarkupMeasureElement(pItem->GetMarkupUIElement(), INT_MAX, 0).cx + 4;
-		}
-		else
-		{
-			CString sFirst(pMetrics->strText);
-			CString sLast;
-			int jPos = sFirst.Find(_T('\n'), 0);
-			int wd(0);
-			while (jPos > -1)
-			{
-				sLast = sFirst.Mid(jPos + 1);
-				sFirst = sFirst.Left(jPos - 1);
-				wd = max(wd, pDC->GetTextExtent(sFirst).cx + 7);
-				sFirst = sLast;
-				jPos = sFirst.Find(_T('\n'), 0);
-			}
-			if (!sFirst.IsEmpty())
-				nWidth = max(wd, pDC->GetTextExtent(sFirst).cx + 7);
-
-//          nWidth = pDC->GetTextExtent(pMetrics->strText).cx + 7;
-		}
-
-		// 2. Calculate Tree Indent
-		if (pColumn->IsTreeColumn())
-		{
-			int nTreeDepth = pRow->GetTreeDepth() - pRow->GetGroupLevel();
-			if (nTreeDepth > 0)
-				nTreeDepth++;
-			nWidth += GetIndent(nTreeDepth);
-
-			if (sizeBitmap.cx == 0 && sizeBitmap.cy == 0)
-			{
-				CRect rcBmp(0, 0, 100, 100);
-				sizeBitmap = pPaintManager->DrawCollapsedBitmap(NULL, pRow, rcBmp);
-			}
-
-			nWidth += sizeBitmap.cx + 2;
-		}
-
-		// 2.1 Calculate Group Indent
-		nWidth += nGroupIndent;
-
-		// 3. Calculate item Icon
-		int nIcon = pMetrics->nItemIcon;
-		nIcon = (nIcon != XTP_REPORT_NOICON) ? nIcon : pItem->GetIconIndex();
-		if (nIcon != XTP_REPORT_NOICON)
-		{
-			CXTPImageManagerIcon* pIcon = GetImageManager()->GetImage(nIcon, 0);
-			if (pIcon)
-				nWidth += pIcon->GetWidth() + 4;
-		}
-
-		if (pItem->GetHasCheckbox())
-		{
-			nWidth += 16;
-		}
-
-		// 4. Calculate item Controls
-		if (pItem->m_pItemControls)
-		{
-			int nControlsCount = pItem->m_pItemControls->GetSize();
-			for (int k = 0; k < nControlsCount; k++)
-			{
-				CXTPReportRecordItemControl* pCtrl = pItem->m_pItemControls->GetAt(k);
-				int nControlWidth = 0;
-				if (pCtrl)
-					nControlWidth = pCtrl->GetSize().cx;
-				if (nControlWidth < 0)
-					nControlWidth = 20;
-
-				nWidth += nControlWidth;
-			}
-		}
-
+		int nWidth = pDC->GetTextExtent(pMetrics->strText).cx + 7;
 		nMaxWidth = max(nMaxWidth, nWidth);
 	}
 
@@ -6745,7 +5158,7 @@ int CXTPReportControl::GetRowsHeight(CXTPReportRows* pRows, int nTotalWidth, int
 
 	CWindowDC dc (this);
 
-	for (int i = 0; i < pRows->GetCount(); ++i)
+	for(int i = 0; i < pRows->GetCount(); ++i)
 	{
 		nRowsHeight += GetPaintManager()->GetRowHeight(&dc, pRows->GetAt(i), nTotalWidth);
 
@@ -6756,12 +5169,23 @@ int CXTPReportControl::GetRowsHeight(CXTPReportRows* pRows, int nTotalWidth, int
 	return nRowsHeight;
 }
 
+int CXTPReportControl::GetHeaderRowsDividerHeight()
+{
+	return GetPaintManager()->GetHeaderRowsDividerHeight();
+}
+
+int CXTPReportControl::GetFooterRowsDividerHeight()
+{
+	return GetPaintManager()->GetFooterRowsDividerHeight();
+}
+
 void CXTPReportControl::DrawDefaultGrid(CDC* pDC, CRect rcClient, int nRowHeight, int nLeftOffset)
 {
 	if (nRowHeight <= 0)
 		return;
 
-	int nFreezeCols = GetFreezeColumnsCount();
+//  int y = rcClient.top;
+	int nFreezeCols = m_nFreezeColumnsCount;
 	CRect rcClipBox = GetReportRectangle();
 
 	CRect rcRow;
@@ -6779,7 +5203,7 @@ void CXTPReportControl::DrawDefaultGrid(CDC* pDC, CRect rcClient, int nRowHeight
 	nFreezeCols = min(nFreezeCols, nVisColCount);
 
 	// fill the empty space
-	while (rcRow.top < rcClient.bottom)
+	while(rcRow.top < rcClient.bottom)
 	{
 		CRect rcItem(rcRow.left, rcRow.top, rcRow.right, rcRow.bottom);
 
@@ -6800,8 +5224,9 @@ void CXTPReportControl::DrawDefaultGrid(CDC* pDC, CRect rcClient, int nRowHeight
 			{
 				rcItem.left = pColumn->GetRect().left;
 				if (nColIdx == 0)
+				{
 					rcItem.left = max(xMinCol_0, rcItem.left);
-
+				}
 				rcItem.right = pColumn->GetRect().right;
 
 				if (!CRect().IntersectRect(rcClipBox, rcItem))
@@ -6817,16 +5242,19 @@ void CXTPReportControl::DrawDefaultGrid(CDC* pDC, CRect rcClient, int nRowHeight
 				CRect rcGridItem(rcItem);
 				rcGridItem.left--;
 
-				pPaintManager->DrawGrid(pDC, xtpReportOrientationHorizontal, rcGridItem);
-				pPaintManager->DrawGrid(pDC, xtpReportOrientationVertical,   rcGridItem);
+				pPaintManager->DrawGrid(pDC, FALSE, rcGridItem);
+				pPaintManager->DrawGrid(pDC, TRUE, rcGridItem);
 
 				if (nColIdx == nFreezeCols - 1)
 					pPaintManager->DrawFreezeColsDivider(pDC, rcGridItem, this);
 			}
 		}
 
-		if (nIndentWidth > 0) // draw indent column
+		if (nIndentWidth > 0)
+		{
+			// draw indent column
 			pPaintManager->FillIndent(pDC, rcIndent);
+		}
 
 		rcRow.top += nRowHeight;
 		rcRow.bottom += nRowHeight;
@@ -6840,6 +5268,7 @@ BOOL CXTPReportControl::PreTranslateMessage(MSG* pMsg)
 	{
 		if (!OnPreviewKeyDown((UINT&)pMsg->wParam, LOWORD(pMsg->lParam), HIWORD(pMsg->lParam)) )
 		{
+			TRACE(_T("ReportControl, PreTranslateMessagem-OnPreviewKeyDown('%d') = CANCEL  \n"), pMsg->wParam);
 			return TRUE;
 		}
 	}
@@ -6874,778 +5303,4 @@ const XTP_NM_REPORTTOOLTIPINFO& CXTPReportControl::OnGetToolTipInfo(CXTPReportRo
 	SendNotifyMessage(XTP_NM_REPORT_GETTOOLTIPINFO, (NMHDR*)m_pCachedToolTipInfo);
 
 	return *m_pCachedToolTipInfo;
-}
-
-CXTPReportDataManager* CXTPReportControl::GetDataManager()
-{
-	if (!m_pDataManager)
-		m_pDataManager = new CXTPReportDataManager(this);
-
-	return m_pDataManager;
-}
-
-CRect CXTPReportControl::GetElementRect(int nElement) const
-{
-	switch (nElement)
-	{
-		case xtpReportElementRectGroupByArea:
-			return m_rcGroupByArea;
-		case xtpReportElementRectHeaderArea:
-			return m_rcHeaderArea;
-		case xtpReportElementRectFooterArea:
-			return m_rcFooterArea;
-		case xtpReportElementRectHeaderRecordsArea:
-			return m_pSectionHeader->m_rcSection;
-		case xtpReportElementRectFooterRecordsArea:
-			return m_pSectionFooter->m_rcSection;
-		case xtpReportElementRectHeaderRecordsDividerArea:
-			return m_pSectionHeader->GetDividerRect();
-		case xtpReportElementRectFooterRecordsDividerArea:
-			return m_pSectionFooter->GetDividerRect();
-		default:
-			return m_pSectionBody->m_rcSection;
-	}
-}
-
-CXTPMarkupContext* CXTPReportControl::GetMarkupContext() const
-{
-	return m_pMarkupContext;
-}
-
-void CXTPReportControl::EnableMarkup(BOOL bEnable)
-{
-	if (m_bMarkupEnabled == bEnable)
-		return;
-
-	m_bMarkupEnabled = bEnable;
-
-	XTPMarkupReleaseContext(m_pMarkupContext);
-	m_pMarkupContext = NULL;
-
-	if (bEnable)
-	{
-		m_pMarkupContext = XTPMarkupCreateContext(m_hWnd);
-	}
-
-	m_pSections->SetMarkupContext(m_pMarkupContext);
-}
-
-LRESULT CXTPReportControl::OnGetObject(WPARAM wParam, LPARAM lParam)
-{
-	if (((LONG)lParam) != OBJID_CLIENT)
-		return (LRESULT)Default();
-
-	LPUNKNOWN lpUnknown = GetInterface(&IID_IAccessible);
-	if (!lpUnknown)
-		return E_FAIL;
-
-	return LresultFromObject(IID_IAccessible, wParam, lpUnknown);
-}
-
-BEGIN_INTERFACE_MAP(CXTPReportControl, CCmdTarget)
-	INTERFACE_PART(CXTPReportControl, IID_IAccessible, ExternalAccessible)
-END_INTERFACE_MAP()
-
-CCmdTarget* CXTPReportControl::GetAccessible()
-{
-	return this;
-}
-
-HRESULT CXTPReportControl::GetAccessibleParent(IDispatch* FAR* ppdispParent)
-{
-	*ppdispParent = NULL;
-
-	if (GetSafeHwnd())
-	{
-		return AccessibleObjectFromWindow(GetSafeHwnd(), OBJID_WINDOW, IID_IDispatch, (void**)ppdispParent);
-	}
-	return E_FAIL;
-}
-
-HRESULT CXTPReportControl::GetAccessibleChildCount(long FAR* pChildCount)
-{
-	if (pChildCount == 0)
-	{
-		return E_INVALIDARG;
-	}
-
-	*pChildCount = 1 + GetRows()->GetCount();
-	return S_OK;
-}
-
-HRESULT CXTPReportControl::GetAccessibleChild(VARIANT varChild, IDispatch* FAR* ppdispChild)
-{
-	*ppdispChild = NULL;
-	int nChild = GetChildIndex(&varChild);
-
-	if (nChild <= 0)
-	{
-		return E_INVALIDARG;
-	}
-
-	if (nChild == 1)
-	{
-		*ppdispChild = GetReportHeader()->GetIDispatch(TRUE);
-		return S_OK;
-	}
-
-	CXTPReportRow* pRow = GetRows()->GetAt(nChild - 2);
-	if (!pRow)
-	{
-		return E_INVALIDARG;
-	}
-
-	*ppdispChild = pRow->GetIDispatch(TRUE);
-	return S_OK;
-}
-
-HRESULT CXTPReportControl::GetAccessibleName(VARIANT varChild, BSTR* pszName)
-{
-	int nChild = GetChildIndex(&varChild);
-
-	if (nChild == CHILDID_SELF || nChild == -1)
-	{
-		CString strCaption;
-		GetWindowText(strCaption);
-		if (strCaption.IsEmpty()) strCaption = _T("Report");
-		*pszName = strCaption.AllocSysString();
-		return S_OK;
-	}
-
-	return E_INVALIDARG;
-}
-
-HRESULT CXTPReportControl::GetAccessibleRole(VARIANT varChild, VARIANT* pvarRole)
-{
-	pvarRole->vt = VT_EMPTY;
-	int nChild = GetChildIndex(&varChild);
-
-	if (nChild == CHILDID_SELF)
-	{
-		pvarRole->vt = VT_I4;
-		pvarRole->lVal = ROLE_SYSTEM_TABLE;
-		return S_OK;
-	}
-
-	return E_INVALIDARG;
-}
-
-HRESULT CXTPReportControl::GetAccessibleState(VARIANT varChild, VARIANT* pvarState)
-{
-	pvarState->vt = VT_I4;
-	pvarState->lVal = 0;
-	int nChild = GetChildIndex(&varChild);
-
-	if (nChild == CHILDID_SELF)
-	{
-		pvarState->lVal = STATE_SYSTEM_FOCUSABLE;
-	}
-
-	return S_OK;
-}
-
-
-HRESULT CXTPReportControl::AccessibleLocation(long* pxLeft, long* pyTop, long* pcxWidth, long* pcyHeight, VARIANT varChild)
-{
-	*pxLeft = *pyTop = *pcxWidth = *pcyHeight = 0;
-
-	if (!GetSafeHwnd())
-		return S_OK;
-
-	CRect rc;
-	GetWindowRect(&rc);
-
-	int nChild = GetChildIndex(&varChild);
-
-	if (nChild == 1)
-	{
-		rc = m_rcHeaderArea;
-		ClientToScreen(&rc);
-	}
-
-	if (nChild > 1)
-	{
-		CXTPReportRow* pRow = GetRows()->GetAt(nChild - 2);
-		if (pRow)
-		{
-			rc = pRow->GetRect();
-			ClientToScreen(&rc);
-		}
-
-	}
-
-	*pxLeft = rc.left;
-	*pyTop = rc.top;
-	*pcxWidth = rc.Width();
-	*pcyHeight = rc.Height();
-
-	return S_OK;
-}
-
-HRESULT CXTPReportControl::AccessibleHitTest(long xLeft, long yTop, VARIANT* pvarID)
-{
-	if (pvarID == NULL)
-		return E_INVALIDARG;
-
-	pvarID->vt = VT_EMPTY;
-
-	if (!GetSafeHwnd())
-		return S_FALSE;
-
-	if (!CXTPWindowRect(this).PtInRect(CPoint(xLeft, yTop)))
-		return S_FALSE;
-
-	pvarID->vt = VT_I4;
-	pvarID->lVal = 0;
-
-	CPoint pt(xLeft, yTop);
-	ScreenToClient(&pt);
-
-	if (m_rcHeaderArea.PtInRect(pt))
-	{
-		pvarID->vt = VT_DISPATCH;
-		pvarID->pdispVal = GetReportHeader()->GetIDispatch(TRUE);
-		return S_OK;
-	}
-
-	CXTPReportRow* pRow = HitTest(pt);
-	if (pRow)
-	{
-		pvarID->vt = VT_DISPATCH;
-		pvarID->pdispVal = pRow->GetIDispatch(TRUE);
-		return S_OK;
-	}
-
-	return S_FALSE;
-}
-
-void CXTPReportControl::EnsureStopLastRqstTimer()
-{
-	if (m_uRqstEditTimer)
-	{
-		KillTimer(m_uRqstEditTimer);
-
-		m_uRqstEditTimer = 0;
-		m_iLastRqstEditRow = -1;
-		m_iLastRqstEditCol = -1;
-	}
-}
-
-// Information for delay editing.
-void CXTPReportControl::EnsureStopDelayEditTimer()
-{
-	if (m_uiDelayEditTimer)
-	{
-		KillTimer(m_uiDelayEditTimer);
-
-		m_uiDelayEditTimer = NULL;
-	}
-}
-
-void CXTPReportControl::StartLastRqstTimer()
-{
-	EnsureStopLastRqstTimer();
-
-	m_uRqstEditTimer = SetTimer(XTP_REPORT_DELAY_CLICK_TIMER_ID, 3000, NULL);   // After 3 seconds, ignore this click.
-}
-
-// Information for delay editing.
-void CXTPReportControl::StartDelayEditTimer()
-{
-	EnsureStopDelayEditTimer();
-
-	m_uiDelayEditTimer = SetTimer(XTP_REPORT_DELAYEDIT_CLICK_TIMER_ID, m_uiDelayEditMaxTime, NULL);  // Begin edit after a full double click is possible.
-}
-
-void CXTPReportControl::SetSelectionState(int index, int state)
-{
-	CXTPReportSelectedRows* pSelectedRows = GetSelectedRows();
-	if (!pSelectedRows)
-		return;
-	CXTPReportRecordItem* pItem = NULL;
-	CXTPReportRecord* pRec = NULL;
-	for (int i = 0; i < pSelectedRows->GetCount(); i++)
-	{
-		if (pSelectedRows->GetAt(i))
-		{
-			pRec = pSelectedRows->GetAt(i)->GetRecord();
-			if (pRec)
-			{
-				if (index < pRec->GetItemCount())
-				{
-					pItem = pRec->GetItem(index);
-					if (pItem)
-					{
-						pItem->SetChecked(state == 1);
-						pItem->SetCheckedState(state);
-					}
-				}
-			}
-		}
-	}
-	RedrawControl();
-}
-
-void CXTPReportControl::Recalc(BOOL bAll)
-{
-	EditItem(NULL);
-
-	if (!bAll && GetFocusedRow())
-	{
-		CXTPReportRecord* pRec = GetFocusedRow()->GetRecord();
-		if (pRec)
-		{
-			int N = pRec->GetItemCount();
-			CXTPReportRecordItem* pItem = NULL;
-			for (int i = 0; i < N; i++)
-			{
-				pItem = pRec->GetItem(i);
-				if (pItem)
-				{
-					if (!pItem->GetFormula().IsEmpty())
-						pItem->SetCaption(_T("x")); //it will call recalc for item
-				}
-			}
-			RedrawControl();
-		}
-	}
-	else if (GetRecords())
-	{
-		int n = GetRecords()->GetCount();
-		for (int j = 0; j < n; j++)
-		{
-			CXTPReportRecord* pRec = GetRecords()->GetAt(j);
-			if (pRec)
-			{
-				int N = pRec->GetItemCount();
-				CXTPReportRecordItem* pItem = NULL;
-				for (int i = 0; i < N; i++)
-				{
-					pItem = pRec->GetItem(i);
-					if (pItem)
-					{
-						if (!pItem->GetFormula().IsEmpty())
-							pItem->SetCaption(_T("x"));
-					}
-				}
-				RedrawControl();
-			}
-		}
-		int N = GetRows()->GetCount();
-		for (int I = 0; I < N; I++)
-		{
-			CXTPReportRow* pTRow = GetRows()->GetAt(I);
-			if (pTRow && pTRow->IsGroupRow())
-			{
-				CXTPReportGroupRow* pTgRow = (CXTPReportGroupRow*) pTRow;
-				if (!pTgRow->GetFormula().IsEmpty())
-					pTgRow->SetCaption(_T("x"));
-			}
-		}
-		RedrawControl();
-	}
-}
-
-BOOL CXTPReportControl::IsShowRowNumber()
-{
-	if (m_iColumnForNum > -1)
-	{
-		if (m_bUseIconColumnForNum)
-		{
-			CXTPReportColumn* pIconCol = GetColumns()->Find(m_iColumnForNum);
-			if (pIconCol)
-				return pIconCol->IsVisible();
-		}
-	}
-	return FALSE;
-}
-
-void CXTPReportControl::ShowRowNumber(BOOL bSet)
-{
-	if (bSet)
-	{
-		if (m_iColumnForNumPrev > -1)
-			m_iColumnForNum = m_iColumnForNumPrev;
-		if (m_iColumnForNum > -1)
-		{
-			if (m_bUseIconColumnForNum)
-			{
-				CXTPReportColumn* pIconCol = GetColumns()->Find(m_iColumnForNum);
-				if (pIconCol)
-					pIconCol->SetVisible(TRUE);
-			}
-		}
-	}
-	else
-	{
-		m_iColumnForNumPrev = m_iColumnForNum;
-		if (m_iColumnForNum > -1)
-		{
-			if (m_bUseIconColumnForNum && !m_bIconView)
-			{
-				CXTPReportColumn* pIconCol = GetColumns()->Find(m_iColumnForNum);
-				if (pIconCol)
-					pIconCol->SetVisible(FALSE);
-			}
-		}
-		m_iColumnForNum = -1;
-	}
-	RedrawControl();
-}
-
-int CXTPReportControl::GetFreezeColumnsCount() const
-{
-	int nCount = 0;
-
-	BOOL bStop = FALSE;
-
-	const CXTPReportColumns *pColumns = GetColumns();
-
-	for (int nColumn=0; nColumn<pColumns->GetCount(); nColumn++)
-	{
-		const CXTPReportColumn *pColumn = pColumns->GetAt(nColumn);
-		ASSERT(NULL != pColumn);
-
-		if (pColumn->IsVisible())
-		{
-			if (pColumn->IsFrozen() && !bStop)
-			{
-				++nCount;
-			}
-			else
-			{
-				bStop = TRUE;
-			}
-		}
-	}
-
-	return nCount;
-}
-
-int CXTPReportControl::GetFreezeColumnsIndex() const
-{
-	int nCount = GetFreezeColumnsCount();
-	int nIndex = -1;
-
-	for (int nColumn=0; nColumn<GetColumns()->GetCount(); nColumn++)
-	{
-		const CXTPReportColumn *pColumn = GetColumns()->GetAt(nColumn);
-		ASSERT(NULL != pColumn);
-
-		if (pColumn->IsVisible() && (nCount > 0))
-		{
-			nCount--;
-			nIndex = nColumn;
-		}
-	}
-
-	return nIndex;
-}
-
-void CXTPReportControl::SetFreezeColumnsCount(int nCount, BOOL bAdjust)
-{
-	UNREFERENCED_PARAMETER(bAdjust);
-
-	for (int nColumn=0; nColumn<GetColumns()->GetCount(); nColumn++)
-	{
-		CXTPReportColumn *pColumn = GetColumns()->GetAt(nColumn);
-
-		if (NULL != pColumn)
-		{
-			pColumn->SetFrozen(nColumn < nCount);
-		}
-	}
-
-	RedrawControl();
-#if 0
-	if (nCount >= 0 && nCount < m_pColumns->GetCount())
-	{
-		BOOL bCallView = FALSE;
-		if (GetPaintManager() != NULL && GetPaintManager()->m_bMoveScrollbarOnFixedColumnsIndent)
-			bCallView = TRUE;
-
-		m_nFreezeColumnsCount = nCount;
-		if (IsFullColumnScrolling())
-			SetFullColumnScrolling(IsFullColumnScrolling());
-		else if (bCallView && m_hWnd != NULL)
-		{
-			CXTPReportControl::OnHScroll(SB_TOP, 0, NULL);
-
-			RedrawControl();
-			UpdateWindow();
-
-			AdjustScrollBars();
-		}
-
-		if (bCallView)
-		{
-			CWnd* pParent = GetParent();
-			if (pParent)
-			{
-				CRect rc;
-				pParent->GetWindowRect(&rc);
-				int w = rc.Width();
-				int h = rc.Height();
-				if (bAdjust)
-					h -= 4;
-				if (DYNAMIC_DOWNCAST(CView, pParent))
-					((CView*) pParent)->SendMessage(WM_SIZE, 0, MAKELPARAM(w, h));
-					//pParent->SetWindowPos(NULL, 0, 0, rc.Width(), rc.Height(), SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
-			}
-		}
-	}
-	else
-		m_nFreezeColumnsCount = 0;
-#endif
-}
-
-void CXTPReportControl::SetDisableReorderColumnsCount(int nCount)
-{
-	if (nCount >= 0 && nCount < m_pColumns->GetCount())
-		m_nDisableReorderColumnsCount = nCount;
-	else
-		m_nDisableReorderColumnsCount = 0;
-}
-
-CXTPReportRecordItem* CXTPReportControl::GetFocusedRecordItem() const
-{
-	CXTPReportColumn* pCol = GetFocusedColumn();
-	CXTPReportRow* pRow = GetFocusedRow();
-
-	if (pCol && pRow && pRow->GetRecord())
-		return pRow->GetRecord()->GetItem(pCol);
-
-	return NULL;
-}
-
-BOOL CXTPReportControl::SetCellText(int row, int col, CString sText)
-{
-	CXTPReportRow* pRow = GetRows()->GetAt(row);
-	if (pRow && pRow->GetRecord())
-	{
-		CXTPReportRecordItem* pItem = pRow->GetRecord()->GetItem(col);
-		if (pItem)
-		{
-			if (pItem->IsKindOf(RUNTIME_CLASS(CXTPReportRecordItemText)))
-				((CXTPReportRecordItemText*) pItem)->SetValue(sText);
-			pItem->SetCaption(sText);
-			return TRUE;
-		}
-	}
-	return FALSE;
-}
-
-BOOL CXTPReportControl::SetCellFormula(int row, int col, CString sFormula)
-{
-	CXTPReportRow* pRow = GetRows()->GetAt(row);
-	if (pRow && pRow->GetRecord())
-	{
-		CXTPReportRecordItem* pItem = pRow->GetRecord()->GetItem(col);
-		if (pItem)
-		{
-			pItem->SetFormula(sFormula); //e.g. "SUM(R0*C2:R1*C5)"
-			pItem->SetFormatString(_T("%d"));
-			pItem->SetCaption(_T("x"));
-			pItem->SetEditable(FALSE);
-			return TRUE;
-		}
-	}
-	return FALSE;
-}
-
-void CXTPReportControl::UnselectGroupRows()
-{
-	if (IsSkipGroupsFocusEnabled() && !IsVirtualMode())
-	{
-		for (int II = 0; II < GetRows()->GetCount(); II++)
-		{
-			CXTPReportRow* pRow = GetRows()->GetAt(II);
-			if (pRow)
-			{
-				if (pRow->IsGroupRow())
-					pRow->SetSelected(FALSE);
-			}
-		}
-	}
-}
-
-BOOL CXTPReportControl::IsFullColumnScrolling() const
-{
-	if (GetReportHeader() && GetReportHeader()->IsAutoColumnSizing())
-	{
-		return FALSE;
-	}
-	else
-	{
-		return (xtpReportScrollModeBlock == m_scrollModeH);
-	}
-}
-
-
-
-
-//----------------------------------------------------------------------
-IMPLEMENT_DYNAMIC(CXTPPromptDlg, CDialog)
-
-CXTPPromptDlg::CXTPPromptDlg(CWnd* pParent) : CDialog()
-{
-	UNREFERENCED_PARAMETER(pParent);
-}
-
-CXTPPromptDlg::~CXTPPromptDlg()
-{
-}
-
-INT_PTR CXTPPromptDlg::DoModal()
-{
-	BYTE DlgTempl[]=
-	{
-		0X01, 0X00, 0XFF, 0XFF, 0X00, 0X00, 0X00, 0X00, 0X80, 0X00, 0X00, 0X00, 0X48, 0X00, 0XC8, 0X80,
-		0X02, 0X00, 0X00, 0X00, 0X00, 0X00, 0X06, 0X01, 0X19, 0X00, 0X00, 0X00, 0X00, 0X00, 0X41, 0X00,
-		0X73, 0X00, 0X73, 0X00, 0X69, 0X00, 0X67, 0X00, 0X6E, 0X00, 0X20, 0X00, 0X4D, 0X00, 0X61, 0X00,
-		0X72, 0X00, 0X6B, 0X00, 0X65, 0X00, 0X72, 0X00, 0X20, 0X00, 0X4E, 0X00, 0X61, 0X00, 0X6D, 0X00,
-		0X65, 0X00, 0X00, 0X00, 0X08, 0X00, 0X90, 0X01, 0X00, 0X01, 0X4D, 0X00, 0X53, 0X00, 0X20, 0X00,
-		0X53, 0X00, 0X68, 0X00, 0X65, 0X00, 0X6C, 0X00, 0X6C, 0X00, 0X20, 0X00, 0X44, 0X00, 0X6C, 0X00,
-		0X67, 0X00, 0X00, 0X00, 0X00, 0X00, 0X00, 0X00, 0X00, 0X00, 0X00, 0X00, 0X80, 0X10, 0X81, 0X50,
-		0X02, 0X00, 0X02, 0X00, 0XCA, 0X00, 0X15, 0X00, 0XF1, 0X03, 0X00, 0X00, 0XFF, 0XFF, 0X81, 0X00,
-		0X00, 0X00, 0X00, 0X00, 0X00, 0X00, 0X00, 0X00, 0X00, 0X00, 0X00, 0X00, 0X01, 0X00, 0X01, 0X50,
-		0XD0, 0X00, 0X04, 0X00, 0X32, 0X00, 0X0E, 0X00, 0X01, 0X00, 0X00, 0X00, 0XFF, 0XFF, 0X80, 0X00,
-		0X4F, 0X00, 0X4B, 0X00, 0X00, 0X00, 0X00, 0X00
-	};
-	InitModalIndirect((LPCDLGTEMPLATE)&DlgTempl, NULL);
-	return CDialog::DoModal();
-}
-
-void CXTPPromptDlg::OnOK()
-{
-	if (GetDlgItem(1009))
-		GetDlgItem(1009)->GetWindowText(m_sName);
-	CDialog::OnOK();
-}
-
-BOOL CXTPPromptDlg::OnInitDialog()
-{
-	CDialog::OnInitDialog();
-	if (GetDlgItem(1009))
-		GetDlgItem(1009)->SetWindowText(m_sName);
-	return TRUE;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-/////////////////////////////////////////////////////////////////////////////
-
-XTPReportScrollMode CXTPReportControl::GetScrollMode(XTPReportOrientation orientation) const
-{
-	XTPReportScrollMode scrollMode;
-
-	switch(orientation)
-	{
-	case xtpReportOrientationHorizontal:
-		scrollMode = m_scrollModeH;
-		break;
-	case xtpReportOrientationVertical:
-		scrollMode = m_scrollModeV;
-		break;
-	default:
-		scrollMode = xtpReportScrollModeNone;
-		break;
-	}
-
-	return scrollMode;
-}
-
-void CXTPReportControl::SetScrollMode(
-	XTPReportOrientation orientation,
-	XTPReportScrollMode  scrollMode)
-{
-	switch(orientation)
-	{
-	case xtpReportOrientationHorizontal:
-		m_scrollModeH = scrollMode;
-		break;
-	case xtpReportOrientationVertical:
-		m_scrollModeV = scrollMode;
-		break;
-
-	case xtpReportOrientationAll:
-		m_scrollModeH = scrollMode;
-		m_scrollModeV = scrollMode;
-		break;
-	}
-
-	AdjustScrollBars();
-}
-
-void CXTPReportControl::SetGridStyle(BOOL bVertical, XTPReportGridStyle gridStyle)
-{
-	m_pPaintManager->SetGridStyle(bVertical, gridStyle);
-	AdjustScrollBars();
-}
-
-XTPReportGridStyle CXTPReportControl::GetGridStyle(BOOL bVertical) const
-{
-	return m_pPaintManager->GetGridStyle(bVertical);
-}
-
-COLORREF CXTPReportControl::SetGridColor(COLORREF clrGridLine)
-{
-	return m_pPaintManager->SetGridColor(clrGridLine);
-}
-
-void CXTPReportControl::EnablePreviewMode(BOOL bIsPreviewMode)
-{
-	m_pPaintManager->EnablePreviewMode(bIsPreviewMode);
-}
-
-BOOL CXTPReportControl::IsPreviewMode() const
-{
-	return m_pPaintManager->IsPreviewMode();
-}
-
-void CXTPReportControl::ShadeGroupHeadings(BOOL bEnable)
-{
-	if (m_pPaintManager)
-		m_pPaintManager->m_bShadeGroupHeadings = bEnable;
-	AdjustScrollBars();
-}
-
-BOOL CXTPReportControl::IsShadeGroupHeadingsEnabled() const
-{
-	return m_pPaintManager ? m_pPaintManager->m_bShadeGroupHeadings : FALSE;
-}
-
-void CXTPReportControl::SetGroupRowsBold(BOOL bBold)
-{
-	if (m_pPaintManager)
-		m_pPaintManager->m_bGroupRowTextBold = bBold;
-}
-
-BOOL CXTPReportControl::IsGroupRowsBold() const
-{
-	return m_pPaintManager ? m_pPaintManager->m_bGroupRowTextBold : FALSE;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-/////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-void CXTPReportControl::InitialSelectionEnable(BOOL bEnable)
-{
-	m_bInitialSelectionEnable = bEnable;
-
-	if (!m_bInitialSelectionEnable)
-		m_pSelectedRows->Clear();
-}
-
-
-CXTPReportSections *CXTPReportControl::GetSections() const
-{
-	return m_pSections;
 }

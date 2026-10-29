@@ -1,63 +1,21 @@
-// from server: 52% by colin
-struct Name {
-    void* p;
-    Name();
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_espeon_aug2007_fullstack_kernel_d21874223bd5a2e9.cpp
 
-struct Creator {
-    void* vfptr;
-    void* f4;
-    void* f8;
-    void* fC;
-    void* f10;
-    void* f14;
-    void* f18;
-    char f1C;
-    Creator();
-};
-
-struct FactoryProduct {
-    void* f0;
-    void* f4;
-    char pad8[0x18];
-    FactoryProduct(const void* arg);
-};
-
-extern "C" void __cdecl sub_5E6780(void* dst, const void* src);
-extern "C" void* __cdecl sub_62FEF6(unsigned int size);
-extern "C" void __stdcall sub_4181B0(void* p);
-extern "C" void __stdcall sub_728830(void* p);
-
-FactoryProduct::FactoryProduct(const void* arg)
-{
-    f0 = 0;
-    f4 = 0;
-    const unsigned char* a = (const unsigned char*)arg;
-    unsigned int v0 = *(unsigned int*)(a + 0);
-    unsigned int v4 = *(unsigned int*)(a + 4);
-    unsigned int v8 = *(unsigned int*)(a + 8);
-    unsigned int vC = *(unsigned int*)(a + 0xC);
-    unsigned int v10 = *(unsigned int*)(a + 0x10);
-    unsigned int v14 = *(unsigned int*)(a + 0x14);
-    unsigned char tmp[0x18];
-    *(unsigned int*)(tmp + 0) = v0;
-    *(unsigned int*)(tmp + 4) = v4;
-    *(unsigned int*)(tmp + 8) = v8;
-    *(unsigned int*)(tmp + 0xC) = vC;
-    *(unsigned int*)(tmp + 0x10) = v10;
-    *(unsigned int*)(tmp + 0x14) = v14;
-    sub_5E6780((char*)this + 8, tmp);
-    Creator* c = (Creator*)sub_62FEF6(0x20);
-    if (c != 0) {
-        c->f4 = 0;
-        c->f8 = 0;
-        c->fC = 0;
-        c->f14 = 0;
-        c->f18 = 0;
-        c->f1C = 0;
-    } else {
-        c = 0;
-    }
-    sub_4181B0(c);
-    sub_728830(this);
-}
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#define _MT 1
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "v8datamodel/Tool.cpp"

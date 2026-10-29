@@ -1,76 +1,21 @@
-// from server: 17% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_espeon_aug2007_fullstack_kernel_d21874223bd5a2e9.cpp
 
-struct RefCounted {
-    void* vptr;
-    volatile long refs;
-    volatile long weakRefs;
-    void AddRef() {
-        _InterlockedExchangeAdd(&refs, 1);
-    }
-    void Release() {
-        if (_InterlockedExchangeAdd(&refs, -1) != 1) {
-            (*(void(__thiscall**)(RefCounted*))(*(void***)this)[1])(this);
-            if (_InterlockedExchangeAdd(&weakRefs, -1) == 1) {
-                (*(void(__thiscall**)(RefCounted*))(*(void***)this)[2])(this);
-            }
-        }
-    }
-};
-
-struct Arg1 {
-    void* p;
-};
-
-struct Inner {
-    char pad[8];
-};
-
-struct Outer {
-    Inner* inner;
-};
-
-struct S {
-    void* field0;
-    void method(RefCounted* a, void* b, void* c);
-};
-
-extern "C" void __cdecl sub_7273f0(void*, void*);
-extern "C" void __cdecl sub_7272d0(void*);
-extern "C" void __cdecl sub_729380(void*, void*);
-extern "C" void __cdecl sub_729350(void*, void*);
-extern "C" void __cdecl sub_5f1980(void*);
-extern "C" void __cdecl sub_494840(void*, void*);
-
-void S::method(RefCounted* a, void* b, void* c)
-{
-    char buf[0x20];
-    RefCounted* local = 0;
-    sub_7273f0(buf, this);
-    if (a) {
-        a->AddRef();
-    }
-    local = a;
-    if (a) {
-        a->Release();
-    }
-    void* v = *(void**)this;
-    void* edi = *(void**)((char*)v + 0x30);
-    char buf2[0x40];
-    sub_729380((char*)v + 8, buf2);
-    sub_729380((char*)v + 8, buf2);
-    sub_5f1980(buf2);
-    char buf3[0x40];
-    sub_729380((char*)v + 8, buf3);
-    sub_729350((char*)v + 8, buf3);
-    sub_5f1980(buf3);
-    sub_494840((char*)edi + 4, b);
-    if (local) {
-        local->Release();
-    }
-    sub_7272d0(buf);
-    if (a) {
-        a->Release();
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#define _MT 1
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "v8datamodel/Tool.cpp"

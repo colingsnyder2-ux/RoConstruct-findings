@@ -1,226 +1,198 @@
-// from server: 0% by colin
+// roc-cl: 21022
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net Server.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.34.1-dll libs/program_options/src/config_file.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include <RakPeer.h>
-#include "Server.h"
-#include "IdManager.h"
-#include "NetworkSettings.h"
-#include "PacketIds.h"
-#include "API.h"
-#include "util/Http.h"
-#include "util/standardout.h"
-#include <boost/thread.hpp>
+// Copyright Vladimir Prus 2002-2004.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt
+// or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Server, void(int, int), 2> server_startFunction(&RBX::Network::Server::start, "Start", "port", "threadSleepTime", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Server, void(int), 1>  f_disconnect(&RBX::Network::Server::stop, "Stop", "blockDuration", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Server, int(void), 0> f_GetClientCount(&RBX::Network::Server::getClientCount, "GetClientCount", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
 
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Server, void(std::string, std::string, int), 3> server_setServerManagerPingFunction(&RBX::Network::Server::setServerManagerPing, "SetServerManagerPing", "pingUrl", "publicIP", "thumbnailId", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+#define BOOST_PROGRAM_OPTIONS_SOURCE
+#include <boost/program_options/config.hpp>
 
-static bool isReplicator(boost::shared_ptr<RBX::Instance> instance)
+#include <boost/program_options/detail/config_file.hpp>
+#include <boost/program_options/errors.hpp>
+#include <boost/program_options/detail/convert.hpp>
+#include <boost/throw_exception.hpp>
+
+#include <iostream>
+#include <fstream>
+#include <cassert>
+
+namespace boost { namespace program_options { namespace detail {
+
+    using namespace std;
+
+    common_config_file_iterator::common_config_file_iterator(
+        const std::set<std::string>& allowed_options)
+    : allowed_options(allowed_options)
+    {
+        for(std::set<std::string>::const_iterator i = allowed_options.begin();
+            i != allowed_options.end(); 
+            ++i)
+        {
+            add_option(i->c_str());
+        }
+    }
+
+    void
+    common_config_file_iterator::add_option(const char* name)
+    {
+        string s(name);
+        assert(!s.empty());
+        if (*s.rbegin() == '*') {
+            s.resize(s.size()-1);
+            bool bad_prefixes(false);
+            // If 's' is a prefix of one of allowed suffix, then
+            // lower_bound will return that element.
+            // If some element is prefix of 's', then lower_bound will
+            // return the next element.
+            set<string>::iterator i = allowed_prefixes.lower_bound(s);
+            if (i != allowed_prefixes.end()) {
+                if (i->find(s) == 0)
+                    bad_prefixes = true;                    
+            }
+            if (i != allowed_prefixes.begin()) {
+                --i;
+                if (s.find(*i) == 0)
+                    bad_prefixes = true;
+            }
+            if (bad_prefixes)
+                boost::throw_exception(error("bad prefixes"));
+            allowed_prefixes.insert(s);
+        }
+    }
+
+    namespace {
+        string trim_ws(const string& s)
+        {
+            string::size_type n, n2;
+            n = s.find_first_not_of(" \t\r\n");
+            if (n == string::npos)
+                return string();
+            else {
+                n2 = s.find_last_not_of(" \t\r\n");
+                return s.substr(n, n2-n+1);
+            }
+        }
+    }
+
+
+    void common_config_file_iterator::get()
+    {
+        string s;
+        string::size_type n;
+        bool found = false;
+
+        while(this->getline(s)) {
+
+            // strip '#' comments and whitespace
+            if ((n = s.find('#')) != string::npos)
+                s = s.substr(0, n);
+            s = trim_ws(s);
+
+            if (!s.empty()) {
+                // Handle section name
+                if (*s.begin() == '[' && *s.rbegin() == ']') {
+                    m_prefix = s.substr(1, s.size()-2);
+                    if (*m_prefix.rbegin() != '.')
+                        m_prefix += '.';
+                }
+                else if ((n = s.find('=')) != string::npos) {
+
+                    string name = m_prefix + trim_ws(s.substr(0, n));
+                    string value = trim_ws(s.substr(n+1));
+
+                    if (!allowed_option(name))
+                        boost::throw_exception(unknown_option(name));
+                                        
+                    if (value.empty())
+                        boost::throw_exception(invalid_syntax(s, "no value given"));
+                    
+                    found = true;
+                    this->value().string_key = name;
+                    this->value().value.clear();
+                    this->value().value.push_back(value);
+                    break;
+
+                } else {
+                    boost::throw_exception(invalid_syntax(s, "unrecognized line"));
+                }
+            }
+        }
+        if (!found)
+            found_eof();
+    }
+
+
+    bool 
+    common_config_file_iterator::allowed_option(const std::string& s) const
+    {
+        set<string>::const_iterator i = allowed_options.find(s);
+        if (i != allowed_options.end())
+            return true;        
+        // If s is "pa" where "p" is allowed prefix then
+        // lower_bound should find the element after "p". 
+        // This depends on 'allowed_prefixes' invariant.
+        i = allowed_prefixes.lower_bound(s);
+        if (i != allowed_prefixes.begin() && s.find(*--i) == 0)
+            return true;
+        return false;
+    }
+
+#if BOOST_WORKAROUND(__COMO_VERSION__, BOOST_TESTED_AT(4303)) || \
+        (defined(__sgi) && BOOST_WORKAROUND(_COMPILER_VERSION, BOOST_TESTED_AT(741)))
+    template<>
+    bool
+    basic_config_file_iterator<wchar_t>::getline(std::string& s)
+    {
+        std::wstring ws;
+        // On Comeau, using two-argument version causes
+        // call to some internal function with std::wstring, and '\n'
+        // (not L'\n') and compile can't resolve that call.
+
+        if (std::getline(*is, ws, L'\n')) {
+            s = to_utf8(ws);
+            return true;
+        } else {
+            return false;
+        }            
+    }
+#endif    
+
+}}}
+
+#if 0
+using boost::program_options::config_file;
+
+#include <sstream>
+#include <cassert>
+
+int main()
 {
-	return dynamic_cast<const RBX::Network::Replicator*>(instance.get()) != NULL;
+    try {
+        stringstream s(
+            "a = 1\n"
+            "b = 2\n");
+
+        config_file cf(s);
+        cf.add_option("a");
+        cf.add_option("b");
+
+        assert(++cf);
+        assert(cf.name() == "a");
+        assert(cf.value() == "1");
+        assert(++cf);
+        assert(cf.name() == "b");
+        assert(cf.value() == "2");
+        assert(!++cf);
+    }
+    catch(exception& e)
+    {
+        cout << e.what() << "\n";
+    }
 }
-
-namespace RBX
-{
-	namespace Network
-	{
-		Server::Server()
-			: outgoingPort(0)
-		{
-			setName("NetworkServer");
-			rakPeer->SetMaximumIncomingConnections(32);
-			rakPeer->SetIncomingPassword(API::version.c_str(), (int)API::version.size());
-			updateLogger();
-		}
-
-		Server::~Server() {}
-
-		void Server::stop(int blockDuration)
-		{
-			if (rakPeer->IsActive())
-				rakPeer->Shutdown(blockDuration);
-
-			removeAllChildren();
-		}
-
-		void Server::start(int port, int threadSleepTime)
-		{
-			SocketDescriptor d(port, "");
-
-			if (!rakPeer->Startup(32, threadSleepTime, &d, 1))
-				throw std::runtime_error("Failed to start network server");
-
-			outgoingPort = port;
-			StandardOut::singleton()->print(MESSAGE_INFO, "Starting network server on port %d", port);
-
-			unsigned numAddresses = rakPeer->GetNumberOfAddresses();
-
-			StandardOut::singleton()->print(MESSAGE_INFO, "IP addresses:");
-
-			for (unsigned i = 0; i < numAddresses; i++)
-			{
-				StandardOut::singleton()->print(MESSAGE_INFO, "%s", rakPeer->GetLocalIP(i));
-			}
-
-			updateNetworkSimulator();
-		}
-
-		int Server::getClientCount()
-		{
-			if (getChildren())
-			{
-				return std::count_if(getChildren()->begin(), getChildren()->end(), &isReplicator);
-			}
-			else
-			{
-				return 0;
-			}
-		}
-
-		void Server::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
-		{
-			if (oldProvider)
-			{
-				players->setConnection(NULL);
-
-				if (rakPeer->IsActive())
-					rakPeer->Shutdown(1000);
-
-				removeAllChildren();
-
-				players.reset();
-			}
-
-			Peer::onServiceProvider(oldProvider, newProvider);
-
-			if (newProvider)
-			{
-				players = shared_from(newProvider->create<Players>());
-
-				players->setConnection(peerInterface());
-			}
-		}
-
-		void Server::setServerManagerPing(std::string pingUrl, std::string publicIP, int thumbnailId)
-		{
-			pingThread.reset(new worker_thread(boost::bind(&Server::ping, boost::weak_ptr<Server>(shared_from(this)), publicIP, thumbnailId, pingUrl), "rbx_serverping"));
-		}
-
-		bool Server::serverIsPresent(const Instance* context, bool testInDatamodel)
-		{
-			const ServiceProvider* sp = ServiceProvider::findServiceProvider(context);
-			RBXASSERT(!testInDatamodel || sp);
-
-			return ServiceProvider::find<Server>(sp) != NULL;
-		}
-
-		PluginReceiveResult Server::OnReceive(RakPeerInterface* peer, Packet* packet)
-		{
-			PluginReceiveResult result = PluginInterface::OnReceive(peer, packet);
-			if (result != RR_CONTINUE_PROCESSING)
-				return result;
-
-			if (packet->data[0] == ID_NEW_INCOMING_CONNECTION)
-			{
-				try
-				{
-					StandardOut::singleton()->print(MESSAGE_INFO, "New connection from %s\n", packet->systemAddress.ToString());
-
-					boost::shared_ptr<ClientProxy> proxy = Creatable::create<ClientProxy>(packet->systemAddress, this);
-					proxy->setParent(this);
-					proxy->sendTop();
-
-					event_IncommingConnection.fire(this, packet->systemAddress.ToString(), proxy);
-				}
-				catch (std::exception& e)
-				{
-					StandardOut::singleton()->print(MESSAGE_ERROR, "Server::OnReceive packet %d: %s", packet->data[0], e.what());
-				}
-			}
-
-			return RR_CONTINUE_PROCESSING;
-		}
-
-		worker_thread::work_result Server::ping(boost::weak_ptr<Server> server, std::string publicIP, int thumbnailId, std::string pingUrl)
-		{
-			try
-			{
-				std::stringstream nameStream;
-
-				{
-					TextXmlWriter writer(nameStream);
-
-					XmlElement root(Name::declare("root", -1));
-
-					boost::shared_ptr<Server> s = server.lock();
-					if (!s)
-						return worker_thread::done;
-
-					root.addChild(new XmlElement(Name::declare("server", -1), publicIP));
-					root.addChild(new XmlElement(Name::declare("port", -1), s->outgoingPort));
-					root.addChild(new XmlElement(Name::declare("numPlayers", -1), s->players->numPlayers()));
-					root.addChild(new XmlElement(Name::declare("maxPlayers", -1), s->players->getMaxPlayers()));
-					root.addChild(new XmlElement(Name::declare("thumbnailId", -1), thumbnailId));
-
-					writer.serialize(&root);
-
-					nameStream.flush();
-				}
-
-				std::string response;
-				Http(pingUrl).post(nameStream, false, response);
-			}
-			catch (std::exception& exp)
-			{
-				StandardOut::singleton()->print(MESSAGE_ERROR, exp);
-			}
-
-			boost::xtime xt;
-			boost::xtime_get(&xt, boost::TIME_UTC);
-
-			xt.sec += 10;
-
-			boost::thread::sleep(xt);
-
-			return worker_thread::more;
-		}
-
-		Server::ClientProxy::ClientProxy(SystemAddress systemAddress, Server* server)
-			: Replicator(systemAddress, server->peerInterface()),
-			  server(server)
-		{
-		}
-		
-		Server::ClientProxy::~ClientProxy() {}
-
-		void Server::ClientProxy::onSentMarker(long id)
-		{
-			sendPhysicsEnabled = true;
-		}
-
-		void Server::ClientProxy::sendTop()
-		{
-			RakNet::BitStream bitStream;
-
-			bitStream << (unsigned char)ID_SET_GLOBALS;
-
-			std::vector<Instance*>::iterator end = replicationContainers.end();
-
-			for (std::vector<Instance*>::iterator iter = replicationContainers.begin(); iter != end; iter++)
-			{
-				RBXASSERT(*iter != NULL);
-
-				serializeId(bitStream, *iter);
-				ServiceProvider::create<IdManager>(this)->addInstance(*iter);
-			}
-
-			peer->Send(&bitStream, MEDIUM_PRIORITY, RELIABLE_ORDERED, 0, remotePlayerId, false);
-		}
-	}
-}
+#endif

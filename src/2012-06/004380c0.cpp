@@ -1,15 +1,10 @@
-// from server: 4% by atomic.potato
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espeon_globalpair_31391fc200652c51.cpp
 
-extern "C" void* g_00e163bc;
-extern "C" void* g_00e163c0;
-
-struct S
-{
-    void value();
-};
-
-void S::value()
-{
-}
+// Candidate translation unit (score above; library headers required).
+#include <boost/shared_ptr.hpp>
+typedef boost::shared_ptr<void> Pair;
+extern Pair global_pair;
+Pair __cdecl func_004306c0() { return global_pair; }

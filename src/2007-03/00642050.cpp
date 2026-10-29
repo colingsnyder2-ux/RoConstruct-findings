@@ -1,753 +1,1486 @@
-// from server: 87% by colin
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-8.0 atlmfc/src/mfc/barstat.cpp
+// roc-cl: 30729
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/PropertyGrid/XTPPropertyGridItem.cpp
 
 // Candidate translation unit (score above; library headers required).
-// This is a part of the Microsoft Foundation Classes C++ library.
-// Copyright (C) Microsoft Corporation
-// All rights reserved.
+// XTPPropertyGridItem.cpp : implementation of the CXTPPropertyGridItem class.
 //
-// This source code is only intended as a supplement to the
-// Microsoft Foundation Classes Reference and related
-// electronic documentation provided with the library.
-// See these sources for detailed information regarding the
-// Microsoft Foundation Classes product.
+// This file is a part of the XTREME PROPERTYGRID MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
+#include "StdAfx.h"
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPImageManager.h"
+
+#include "XTPPropertyGridInplaceEdit.h"
+#include "XTPPropertyGridInplaceButton.h"
+#include "XTPPropertyGridInplaceList.h"
+#include "XTPPropertyGridItem.h"
+#include "XTPPropertyGrid.h"
+#include "XTPPropertyGridDefines.h"
 
 
-
+#ifdef _DEBUG
 #define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
-// CStatusBar creation, etc
+// CXTPPropertyGridItem
 
-#define SBPF_UPDATE 0x0001  // pending update of text
+IMPLEMENT_DYNAMIC(CXTPPropertyGridItem, CCmdTarget)
 
-struct AFX_STATUSPANE
+CXTPPropertyGridItem::CXTPPropertyGridItem(LPCTSTR lpszCaption, LPCTSTR strValue, CString* pBindString)
 {
-	UINT    nID;        // IDC of indicator: 0 => normal text area
-	int     cxText;     // width of string area in pixels
-						//   on both sides there is a 3 pixel gap and
-						//   a one pixel border, making a pane 6 pixels wider
-	UINT    nStyle;     // style flags (SBPS_*)
-	UINT    nFlags;     // state flags (SBPF_*)
-	CString strText;    // text in the pane
-};
 
-inline AFX_STATUSPANE* CStatusBar::_GetPanePtr(int nIndex) const
-{
-	ASSERT((nIndex >= 0 && nIndex < m_nCount) || m_nCount == 0);
-	return ((AFX_STATUSPANE*)m_pData) + nIndex;
+	Init();
+	SetPrompt(lpszCaption);
+	m_strDefaultValue = m_strValue = strValue;
+
+	BindToString(pBindString);
 }
 
 
-#define CX_PANE_BORDER 6    // 3 pixels on each side of each pane
-
-CStatusBar::CStatusBar()
+CXTPPropertyGridItem::CXTPPropertyGridItem(UINT nID, LPCTSTR strValue, CString* pBindString)
 {
-	// setup default border/margin depending on type of system
-	m_cyTopBorder = 2;
-	m_cxLeftBorder = 0;
-	m_cxRightBorder = 0;
-	m_cyBottomBorder = 0;
+	Init();
+	m_nID = nID;
 
-	// minimum height set with SB_SETMINHEIGHT is cached
-	m_nMinHeight = 0;
-}
-
-CStatusBar::~CStatusBar()
-{
-	AllocElements(0, 0);    // destroys existing elements
-}
-
-BOOL CStatusBar::Create(CWnd* pParentWnd, DWORD dwStyle, UINT nID)
-{
-	return CreateEx(pParentWnd, 0, dwStyle, nID);
-}
-
-BOOL CStatusBar::CreateEx(CWnd* pParentWnd, DWORD dwCtrlStyle, DWORD dwStyle, UINT nID)
-{
-	ASSERT_VALID(pParentWnd);   // must have a parent
-
-	// save the style (some of these style bits are MFC specific)
-	m_dwStyle = (dwStyle & CBRS_ALL);
-
-	// translate MFC style bits to windows style bits
-	dwStyle &= ~CBRS_ALL;
-	dwStyle |= CCS_NOPARENTALIGN|CCS_NOMOVEY|CCS_NODIVIDER|CCS_NORESIZE;
-	if (pParentWnd->GetStyle() & WS_THICKFRAME)
-		dwStyle |= SBARS_SIZEGRIP;
-	dwStyle |= dwCtrlStyle;
-
-	// initialize common controls
-	VERIFY(AfxDeferRegisterClass(AFX_WNDCOMMCTL_BAR_REG));
-
-	// create the HWND
-	CRect rect; rect.SetRectEmpty();
-	return CWnd::Create(STATUSCLASSNAME, NULL, dwStyle, rect, pParentWnd, nID);
-}
-
-BOOL CStatusBar::PreCreateWindow(CREATESTRUCT& cs)
-{
-	// in Win4, status bars do not have a border at all, since it is
-	//  provided by the client area.
-	if ((m_dwStyle & (CBRS_ALIGN_ANY|CBRS_BORDER_ANY)) == CBRS_BOTTOM)
-		m_dwStyle &= ~(CBRS_BORDER_ANY|CBRS_BORDER_3D);
-
-	return CControlBar::PreCreateWindow(cs);
-}
-
-BOOL CStatusBar::SetIndicators(const UINT* lpIDArray, int nIDCount)
-{
-	ASSERT_VALID(this);
-	ASSERT(nIDCount >= 1);  // must be at least one of them
-	ASSERT(lpIDArray == NULL ||
-		AfxIsValidAddress(lpIDArray, sizeof(UINT) * nIDCount, FALSE));
-	ASSERT(::IsWindow(m_hWnd));
-
-	// first allocate array for panes and copy initial data
-	if (!AllocElements(nIDCount, sizeof(AFX_STATUSPANE)))
-		return FALSE;
-	ASSERT(nIDCount == m_nCount);
-
-	// copy initial data from indicator array
-	BOOL bResult = TRUE;
-	if (lpIDArray != NULL)
+	CString strPrompt;
+	if (strPrompt.LoadString(nID))
 	{
-		HFONT hFont = (HFONT)SendMessage(WM_GETFONT);
-		CClientDC dcScreen(NULL);
-		HGDIOBJ hOldFont = NULL;
-		if (hFont != NULL)
-			hOldFont = dcScreen.SelectObject(hFont);
+		SetPrompt(strPrompt);
+	}
 
-		AFX_STATUSPANE* pSBP = _GetPanePtr(0);
-		for (int i = 0; i < nIDCount; i++)
+	m_strDefaultValue = m_strValue = strValue;
+	BindToString(pBindString);
+}
+
+CXTPPropertyGridItem::~CXTPPropertyGridItem()
+{
+	Clear();
+}
+
+void CXTPPropertyGridItem::Clear()
+{
+	if (m_pGrid && m_pGrid->m_pSelected == this)
+	{
+		m_pGrid->m_pSelected = NULL;
+	}
+
+	if (m_pGrid && m_pGrid->m_pHotButton && m_pInplaceButtons)
+	{
+		for (int i = 0; i < m_pInplaceButtons->GetCount(); i++)
 		{
-			pSBP->nID = *lpIDArray++;
-			pSBP->nFlags |= SBPF_UPDATE;
-			if (pSBP->nID != 0)
+			if (m_pInplaceButtons->GetAt(i) == m_pGrid->m_pHotButton)
 			{
-				if (!pSBP->strText.LoadString(pSBP->nID))
-				{
-					TRACE(traceAppMsg, 0, "Warning: failed to load indicator string 0x%04X.\n",
-						pSBP->nID);
-					bResult = FALSE;
-					break;
-				}
-				pSBP->cxText = dcScreen.GetTextExtent(pSBP->strText).cx;
-				ASSERT(pSBP->cxText >= 0);
-				if (!SetPaneText(i, pSBP->strText, FALSE))
-				{
-					bResult = FALSE;
-					break;
-				}
+				m_pGrid->m_pHotButton = NULL;
+				break;
 			}
-			else
-			{
-				// no indicator (must access via index)
-				// default to 1/4 the screen width (first pane is stretchy)
-				pSBP->cxText = ::GetSystemMetrics(SM_CXSCREEN)/4;
-				if (i == 0)
-					pSBP->nStyle |= (SBPS_STRETCH | SBPS_NOBORDERS);
-			}
-			++pSBP;
 		}
-		if (hOldFont != NULL)
-			dcScreen.SelectObject(hOldFont);
 	}
-	UpdateAllPanes(TRUE, TRUE);
 
-	return bResult;
+	if (m_pGrid && GetInplaceList().m_pItem == this)
+	{
+		GetInplaceList().DestroyItem();
+	}
+	if (m_pGrid && GetInplaceEdit().m_pItem == this)
+	{
+		GetInplaceEdit().DestroyItem();
+	}
+
+	if (m_pChilds)
+	{
+		m_pChilds->Clear();
+		CMDTARGET_RELEASE(m_pChilds);
+	}
+
+	if (m_pConstraints)
+	{
+		m_pConstraints->m_pItem = NULL;
+		CMDTARGET_RELEASE(m_pConstraints);
+	}
+
+	CMDTARGET_RELEASE(m_pValueMetrics);
+	CMDTARGET_RELEASE(m_pCaptionMetrics);
+	CMDTARGET_RELEASE(m_pInplaceButtons);
+
+	SAFE_DELETE(m_pInplaceControls);
+
+	m_pGrid = NULL;
 }
 
-BOOL CStatusBar::AllocElements(int nElements, int cbElement)
+void CXTPPropertyGridItem::SetPrompt(LPCTSTR lpszPrompt)
 {
-	int i;
+	if (lpszPrompt == 0)
+		return;
 
-	// destruct old elements
-	AFX_STATUSPANE* pSBP = _GetPanePtr(0);
-	for (i = 0; i < m_nCount; i++)
+	LPCTSTR lpszDescription = _tcschr(lpszPrompt, _T('\n'));
+
+	if (lpszDescription == NULL)
 	{
-		pSBP->strText.~CString();
-		++pSBP;
+		m_strCaption = lpszPrompt;
+	}
+	else
+	{
+		int nLen = (int)(lpszDescription - lpszPrompt);
+		LPTSTR lpszCaption = m_strCaption.GetBufferSetLength(nLen);
+
+		MEMCPY_S(lpszCaption, lpszPrompt, nLen * sizeof(TCHAR));
+		m_strDescription = lpszDescription + 1;
+	}
+}
+
+
+void CXTPPropertyGridItem::Init()
+{
+	m_bHidden = FALSE;
+	m_bExpanded = FALSE;
+	m_nIndex = -1;
+	m_bVisible = FALSE;
+	m_pParent = 0;
+	m_pGrid = 0;
+	m_nIndent = 0;
+	m_strValue = "";
+	m_bReadOnly = FALSE;
+	m_bCategory = FALSE;
+	m_nID = 0;
+	m_nFlags = xtpGridItemHasEdit;
+	m_pConstraints = new CXTPPropertyGridItemConstraints(this);
+	m_pInplaceButtons = new CXTPPropertyGridInplaceButtons(this);
+	m_pInplaceControls = new CXTPPropertyGridInplaceControls();
+	m_pConstraints->SetCurrent(-1);
+	m_pBindString = 0;
+	m_bConstraintEdit = FALSE;
+
+	m_bAutoComplete = FALSE;
+
+	m_nLinesCount = 1;
+	m_nHeight = -1;
+
+	m_nDropDownItemCount = 10;
+
+	m_bExpandable = TRUE;
+
+	m_bUseMask = FALSE;
+	m_bPassword = FALSE;
+	m_chPrompt = _T('*');
+
+	m_dwData = 0;
+	m_dwEditStyle = ES_AUTOHSCROLL;
+
+	EnableAutomation();
+
+	m_pValueMetrics = 0;
+	m_pCaptionMetrics = 0;
+
+
+	m_pChilds = new CXTPPropertyGridItems();
+}
+
+void CXTPPropertyGridItem::OnAddChildItem()
+{
+	if (!m_bCategory) SetFlags(m_nFlags);
+}
+
+void CXTPPropertyGridItem::SetFlags(UINT nFlags)
+{
+	ASSERT(!m_bCategory);
+	m_nFlags = nFlags;
+
+	m_pInplaceButtons->Remove(XTP_ID_PROPERTYGRID_EXPANDBUTTON);
+	m_pInplaceButtons->Remove(XTP_ID_PROPERTYGRID_COMBOBUTTON);
+
+	if (m_nFlags & xtpGridItemHasExpandButton)
+		m_pInplaceButtons->AddExpandButton();
+
+	if (m_nFlags & xtpGridItemHasComboButton)
+		m_pInplaceButtons->AddComboButton();
+}
+
+UINT CXTPPropertyGridItem::GetFlags() const
+{
+	return m_nFlags;
+}
+
+CXTPPropertyGridItemMetrics* CXTPPropertyGridItem::GetValueMetrics() const
+{
+	if (m_pValueMetrics == 0)
+		m_pValueMetrics = new CXTPPropertyGridItemMetrics(m_pGrid->GetPaintManager());
+	return m_pValueMetrics;
+}
+
+CXTPPropertyGridItemMetrics* CXTPPropertyGridItem::GetCaptionMetrics() const
+{
+	if (m_pCaptionMetrics == 0)
+		m_pCaptionMetrics = new CXTPPropertyGridItemMetrics(m_pGrid->GetPaintManager());
+	return m_pCaptionMetrics;
+}
+
+CXTPPropertyGridItemMetrics* CXTPPropertyGridItem::GetMetrics(BOOL bValueMetrics, BOOL bCreate /*= TRUE*/) const
+{
+	if (bCreate)
+		return bValueMetrics ? GetValueMetrics() : GetCaptionMetrics();
+
+	return bValueMetrics ? m_pValueMetrics : m_pCaptionMetrics;
+}
+
+CXTPPropertyGridItem* CXTPPropertyGridItem::AddChildItem(CXTPPropertyGridItem* pItem)
+{
+	return InsertChildItem(m_pChilds->GetCount(), pItem);
+}
+
+void CXTPPropertyGridItem::SetIndent(int nIndent)
+{
+	m_nIndent = nIndent;
+
+	for (int i = 0; i < m_pChilds->GetCount(); i++)
+	{
+		m_pChilds->GetAt(i)->SetIndent(nIndent + 1);
+	}
+}
+
+CXTPPropertyGridItem* CXTPPropertyGridItem::InsertChildItem(int nIndex, CXTPPropertyGridItem* pItem)
+{
+	ASSERT(pItem);
+	if (!pItem)
+		return NULL;
+
+	ASSERT(!pItem->IsCategory() || IsCategory());
+	ASSERT(m_pGrid != NULL);
+	if (!m_pGrid)
+		return pItem;
+
+	if (nIndex < 0 || nIndex > m_pChilds->GetCount())
+		nIndex = m_pChilds->GetCount();
+
+	m_pChilds->InsertAt(nIndex, pItem);
+	pItem->m_pGrid = m_pGrid;
+
+	ASSERT(pItem->m_pParent == NULL);
+	pItem->m_pParent = this;
+	pItem->SetIndent(m_nIndent + 1);
+
+	pItem->OnAddChildItem();
+
+	if (m_bVisible)
+	{
+		if (m_bExpanded) m_pGrid->SetPropertySort(m_pGrid->m_properetySort, TRUE);
+		else if (m_pGrid->GetSafeHwnd() && m_pChilds->GetCount() == 1) m_pGrid->Invalidate(FALSE);
 	}
 
-	// allocate new elements
-	if (!CControlBar::AllocElements(nElements, cbElement))
+	return pItem;
+}
+
+void CXTPPropertyGridItem::Move(CXTPPropertyGridItem* pParent, int nIndex /* = -1 */)
+{
+	if (!pParent)
+		return;
+
+	InternalAddRef();
+	Remove();
+	pParent->InsertChildItem(nIndex, this);
+}
+
+void CXTPPropertyGridItem::Collapse()
+{
+	if (!m_bExpanded) return;
+
+	if (m_pGrid->m_nLockUpdate == 0)
+	{
+		if (m_pGrid->GetSafeHwnd() && m_bVisible)
+		{
+			m_pGrid->_DoCollapse(this);
+			m_pGrid->OnSelectionChanged();
+		}
+	}
+
+	m_bExpanded = FALSE;
+
+	m_pGrid->SendNotifyMessage(XTP_PGN_ITEMEXPANDCHANGED, (LPARAM)this);
+}
+
+void CXTPPropertyGridItem::Expand()
+{
+	if (m_bExpanded) return;
+
+	if (m_pGrid->m_nLockUpdate == 0)
+	{
+		if (m_pGrid->GetSafeHwnd() && m_bVisible)
+		{
+			m_pGrid->_DoExpand(this, m_nIndex);
+			m_pGrid->_RefreshIndexes();
+			m_pGrid->OnSelectionChanged();
+		}
+	}
+
+	m_bExpanded = TRUE;
+
+	m_pGrid->SendNotifyMessage(XTP_PGN_ITEMEXPANDCHANGED, (LPARAM)this);
+
+}
+
+BOOL CXTPPropertyGridItem::HasParent(CXTPPropertyGridItem* pParent)
+{
+	if (m_pParent == NULL) return FALSE;
+	if (m_pParent == pParent) return TRUE;
+	return m_pParent->HasParent(pParent);
+}
+
+void CXTPPropertyGridItem::Select()
+{
+	ASSERT(m_pGrid);
+	if (!m_pGrid)
+		return;
+
+	if (m_bVisible)
+	{
+		m_pGrid->SetCurSel(m_nIndex);
+		m_pGrid->OnSelectionChanged();
+	}
+}
+
+void CXTPPropertyGridItem::OnDeselect()
+{
+	if (m_pGrid) m_pGrid->FocusInplaceButton(NULL);
+	OnValidateEdit();
+
+	for (int i = m_pInplaceControls->GetCount() - 1; i >= 0; i--)
+	{
+		CXTPPropertyGridInplaceControl* pControl = m_pInplaceControls->GetAt(i);
+		pControl->OnDestroyWindow();
+	}
+}
+
+void CXTPPropertyGridItem::OnValidateEdit()
+{
+	CXTPPropertyGridInplaceEdit& wndEdit = GetInplaceEdit();
+	wndEdit.HideWindow();
+
+	if (wndEdit.GetSafeHwnd() && wndEdit.m_pItem == this)
+	{
+		CString strValue;
+		wndEdit.GetWindowText(strValue);
+		wndEdit.m_pItem = NULL;
+
+		if (wndEdit.m_bCancel)
+		{
+			OnCancelEdit();
+		}
+		else if (wndEdit.m_bEditMode && OnAfterEdit(strValue))
+		{
+			if (m_strValue != strValue && !wndEdit.m_bCancel)
+			{
+				OnValueChanged(strValue);
+			}
+		}
+	}
+}
+
+void CXTPPropertyGridItem::SetEditText(const CString& str)
+{
+	if (!m_pGrid) return;
+
+	CXTPPropertyGridInplaceEdit& wndEdit = GetInplaceEdit();
+	if (wndEdit.GetSafeHwnd() && wndEdit.m_pItem == this)
+	{
+		wndEdit.SetWindowText(str);
+	}
+}
+
+void CXTPPropertyGridItem::SetValue(CString strValue)
+{
+	m_strValue = strValue;
+
+	if (m_pBindString)
+	{
+		*m_pBindString = strValue;
+	}
+
+	SetEditText(m_strValue);
+
+	for (int i = m_pInplaceControls->GetCount() - 1; i >= 0; i--)
+	{
+		CXTPPropertyGridInplaceControl* pControl = m_pInplaceControls->GetAt(i);
+		pControl->OnValueChanged();
+	}
+
+	SAFE_INVALIDATE(m_pGrid);
+}
+
+void CXTPPropertyGridItem::OnValueChanged(CString strValue)
+{
+	if (!m_pGrid)
+		return;
+
+	SetValue(strValue);
+	SAFE_INVALIDATE(m_pGrid);
+	m_pGrid->SendNotifyMessage(XTP_PGN_ITEMVALUE_CHANGED, (LPARAM)this);
+}
+
+BOOL CXTPPropertyGridItem::OnRequestEdit()
+{
+	XTP_PROPERTYGRID_NOTIFYEDIT notify;
+	notify.bCancel = FALSE;
+	notify.pItem = this;
+
+	if (m_pGrid)
+	{
+		m_pGrid->SendNotifyMessage(XTP_PGN_REQUESTEDIT, (LPARAM)&notify);
+	}
+	return !notify.bCancel;
+}
+
+BOOL CXTPPropertyGridItem::OnAfterEdit(CString& strValue)
+{
+	if (!m_pGrid)
 		return FALSE;
 
-	// construct new elements
-	pSBP = _GetPanePtr(0);
-	for (i = 0; i < m_nCount; i++)
+	XTP_PROPERTYGRID_NOTIFYEDIT notify;
+	notify.bCancel = FALSE;
+	notify.strValue = strValue;
+	notify.pItem = this;
+
+	if (m_pGrid)
 	{
-#pragma push_macro("new")
-#undef new
-		new( &pSBP->strText ) CString;
-#pragma pop_macro("new")
-		++pSBP;
+		m_pGrid->SendNotifyMessage(XTP_PGN_AFTEREDIT, (LPARAM)&notify);
+		strValue = notify.strValue;
 	}
+	return !notify.bCancel;
+}
+
+void CXTPPropertyGridItem::OnCancelEdit()
+{
+	XTP_PROPERTYGRID_NOTIFYEDIT notify;
+	notify.bCancel = FALSE;
+	notify.pItem = this;
+
+	if (m_pGrid)
+	{
+		m_pGrid->SendNotifyMessage(XTP_PGN_CANCELEDIT, (LPARAM)&notify);
+	}
+}
+
+
+void CXTPPropertyGridItem::OnSelect()
+{
+	ASSERT(m_bVisible);
+
+	CString strValue(m_strValue);
+
+	if (m_pInplaceControls->GetCount() > 0)
+	{
+		CRect rcValue(GetInplaceWindowsRect());
+
+		for (int i = m_pInplaceControls->GetCount() - 1; i >= 0; i--)
+		{
+			CXTPPropertyGridInplaceControl* pControl = m_pInplaceControls->GetAt(i);
+			pControl->OnCreateWindow(rcValue);
+		}
+	}
+
+	if (m_nFlags & xtpGridItemHasEdit)
+	{
+		CXTPPropertyGridInplaceEdit& wndEdit = GetInplaceEdit();
+
+		wndEdit.SetValue(strValue);
+		wndEdit.Create(this, GetValueRect());
+		wndEdit.SetReadOnly(GetReadOnly() || m_bConstraintEdit);
+	}
+	else
+	{
+		GetInplaceEdit().HideWindow();
+	}
+}
+
+DWORD CXTPPropertyGridItem::GetEditStyle() const
+{
+	return WS_CHILD | (m_bPassword ? ES_PASSWORD: 0) | (IsMultiLine() ? ES_MULTILINE : 0) | m_dwEditStyle;
+}
+
+void CXTPPropertyGridItem::OnInplaceButtonDown(CXTPPropertyGridInplaceButton* pButton)
+{
+	if (GetReadOnly())
+		return;
+
+	if (m_pGrid->SendNotifyMessage(XTP_PGN_INPLACEBUTTONDOWN, (LPARAM)pButton) == TRUE)
+		return;
+
+	if ((pButton->GetID() == XTP_ID_PROPERTYGRID_COMBOBUTTON) && !m_pConstraints->IsEmpty() && OnRequestEdit())
+	{
+		GetInplaceList().Create(this, GetItemRect());
+		m_pGrid->Invalidate(FALSE);
+	}
+}
+
+CRect CXTPPropertyGridItem::GetInplaceWindowsRect()
+{
+	ASSERT(m_bVisible);
+	CRect rc = GetItemRect();
+	CRect rcValue(m_pGrid->GetDividerPos() + 1, rc.top + 1, rc.right, rc.bottom - 1);
+
+	if (IsInplaceButtonsVisible())
+	{
+		for (int i = 0; i < m_pInplaceButtons->GetCount(); i++)
+			rcValue.right -= m_pInplaceButtons->GetAt(i)->GetWidth();
+	}
+
+	m_pGrid->GetPaintManager()->AdjustItemValueRect(this, rcValue);
+
+	return rcValue;
+}
+
+CRect CXTPPropertyGridItem::GetValueRect()
+{
+	CRect rcValue = GetInplaceWindowsRect();
+
+	for (int i = m_pInplaceControls->GetCount() - 1; i >= 0; i--)
+	{
+		CXTPPropertyGridInplaceControl* pControl = m_pInplaceControls->GetAt(i);
+		pControl->OnAdjustValueRect(rcValue);
+	}
+
+	return rcValue;
+}
+
+CRect CXTPPropertyGridItem::GetItemRect() const
+{
+	CRect rc;
+	m_pGrid->GetItemRect(m_nIndex, rc);
+	return rc;
+}
+
+BOOL CXTPPropertyGridItem::OnChar(UINT nChar)
+{
+	ASSERT(nChar != VK_TAB);
+
+	if ((m_nFlags & xtpGridItemHasEdit) && (nChar != VK_ESCAPE))
+	{
+		OnSelect();
+
+		CXTPPropertyGridInplaceEdit& wndEdit = GetInplaceEdit();
+		if (wndEdit.GetSafeHwnd() && wndEdit.IsWindowVisible() && wndEdit.GetItem() == this)
+		{
+			wndEdit.SetFocus();
+			wndEdit.SetSel(0, -1);
+			if ((nChar != VK_TAB) && (wndEdit.GetItem() == this)) wndEdit.SendMessage(WM_CHAR, nChar);
+		}
+
+		return TRUE;
+	}
+	else if (nChar == VK_TAB)
+	{
+		if (m_pInplaceButtons->GetCount() > 0)
+		{
+			m_pGrid->GetPropertyGrid()->OnNavigate(xtpGridUIInplaceEdit, TRUE, this);
+		}
+	}
+	return FALSE;
+}
+
+BOOL CXTPPropertyGridItem::IsValueChanged() const
+{
+	return m_strDefaultValue != m_strValue;
+}
+
+void CXTPPropertyGridItem::ResetValue()
+{
+	OnValueChanged(m_strDefaultValue);
+}
+
+void CXTPPropertyGridItem::SetDefaultValue(LPCTSTR lpszDefaultValue)
+{
+	m_strDefaultValue = lpszDefaultValue;
+}
+
+void CXTPPropertyGridItem::OnLButtonUp(UINT /*nFlags*/, CPoint /*point*/)
+{
+
+}
+
+BOOL CXTPPropertyGridItem::PtInValueRect(CPoint point)
+{
+	CRect rc(GetValueRect());
+	return rc.PtInRect(point);
+}
+
+void CXTPPropertyGridItem::OnLButtonDblClk(UINT /*nFlags*/, CPoint point)
+{
+	CXTPPropertyGridInplaceButton* pInplaceButton = m_pInplaceButtons->HitTest(point);
+	if (pInplaceButton && IsInplaceButtonsVisible())
+	{
+		OnSelect();
+		return;
+	}
+
+	if (HasChilds() && IsExpandable())
+	{
+		if (m_bExpanded)
+			Collapse();
+		else
+			Expand();
+	}
+	else
+	{
+		OnSelect();
+
+		if (m_nFlags & xtpGridItemHasEdit)
+		{
+			CXTPPropertyGridInplaceEdit& wndEdit = GetInplaceEdit();
+			if (wndEdit.GetSafeHwnd() && wndEdit.IsWindowVisible() && wndEdit.GetItem() == this)
+			{
+				wndEdit.SetFocus();
+
+				if (wndEdit.GetItem() == this && !GetReadOnly() && wndEdit.SelectConstraint(+1, TRUE))
+				{
+					OnValidateEdit();
+
+				}
+				else
+				{
+					wndEdit.SetSel(0, -1);
+				}
+			}
+		}
+		else if (!GetReadOnly())
+		{
+			SelectNextConstraint();
+		}
+	}
+}
+
+BOOL CXTPPropertyGridItem::SelectNextConstraint()
+{
+	CXTPPropertyGridItemConstraints* pList = GetConstraints();
+	if (pList->IsEmpty())
+		return FALSE;
+
+	if (!OnRequestEdit())
+		return FALSE;
+
+	int nIndex = pList->FindConstraint(m_strValue);
+
+	nIndex += +1;
+	if (nIndex >= pList->GetCount()) nIndex = 0;
+	if (nIndex < 0) nIndex = (ULONG)pList->GetCount() - 1;
+
+	CString strValue = pList->GetAt(nIndex);
+
+	if (!OnAfterEdit(strValue))
+		return FALSE;
+
+	pList->SetCurrent(nIndex);
+	OnValueChanged(strValue);
 	return TRUE;
 }
 
-void CStatusBar::CalcInsideRect(CRect& rect, BOOL bHorz) const
+BOOL CXTPPropertyGridItem::OnLButtonDown(UINT nFlags, CPoint point)
 {
-	ASSERT_VALID(this);
-	ASSERT(::IsWindow(m_hWnd));
-	ASSERT(bHorz);  // vertical status bar not supported
+	BOOL bOldSelected = IsSelected();
+	Select();
 
-	// subtract standard CControlBar borders
-	CControlBar::CalcInsideRect(rect, bHorz);
-
-	// subtract size grip if present
-	if ((GetStyle() & SBARS_SIZEGRIP) && !::IsZoomed(::GetParent(m_hWnd)))
+	CXTPPropertyGridInplaceButton* pInplaceButton = m_pInplaceButtons->HitTest(point);
+	if (pInplaceButton && IsInplaceButtonsVisible())
 	{
-		// get border metrics from common control
-		int rgBorders[3];
-		CStatusBar* pBar = (CStatusBar*)this;
-		pBar->DefWindowProc(SB_GETBORDERS, 0, (LPARAM)rgBorders);
+		if (!bOldSelected && !m_pGrid->GetPropertyGrid()->GetShowInplaceButtonsAlways())
+			return TRUE;
+		pInplaceButton->OnLButtonDown(nFlags, point);
+		return TRUE;
+	}
 
-		// size grip uses a border + size of scrollbar + cx border
-		rect.right -= rgBorders[0] + ::GetSystemMetrics(SM_CXVSCROLL) +
-			::GetSystemMetrics(SM_CXBORDER) * 2;
+	int nOffset = (m_nIndent - (IsCategory() ? 0 : 1)) * XTP_PGI_EXPAND_BORDER;
+
+	if ((point.x >= nOffset && point.x <= XTP_PGI_EXPAND_BORDER + nOffset) && IsExpandable())
+	{
+		if (m_bExpanded)
+			Collapse();
+		else
+			Expand();
+	}
+
+	if ((m_nFlags & xtpGridItemHasEdit) && PtInValueRect(point))
+	{
+		mouse_event(GetSystemMetrics(SM_SWAPBUTTON) ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+	}
+
+	if (m_nFlags == xtpGridItemHasComboButton && PtInValueRect(point) && !GetReadOnly()
+		&& (m_pInplaceButtons->GetCount() == 1))
+	{
+		OnInplaceButtonDown(m_pInplaceButtons->GetAt(0));
+	}
+
+	return TRUE;
+}
+
+void CXTPPropertyGridItem::BindToString(CString* pBindString)
+{
+	m_pBindString = pBindString;
+	if (m_pBindString)
+	{
+		*m_pBindString = m_strValue;
 	}
 }
 
-void CStatusBar::UpdateAllPanes(BOOL bUpdateRects, BOOL bUpdateText)
+void CXTPPropertyGridItem::OnBeforeInsert()
 {
-	ASSERT_VALID(this);
-	ASSERT(::IsWindow(m_hWnd));
-
-	int i;
-
-	// update the status pane locations
-	if (bUpdateRects)
+	if (m_pBindString && *m_pBindString != m_strValue)
 	{
+		m_strValue = *m_pBindString;
+	}
+}
 
-		// get border information and client work area
-		CRect rect; GetWindowRect(rect);
-		rect.OffsetRect(-rect.left, -rect.top);
-		CalcInsideRect(rect, TRUE);
-		int rgBorders[3];
-		VERIFY((BOOL)DefWindowProc(SB_GETBORDERS, 0, (LPARAM)rgBorders));
+void CXTPPropertyGridItem::EnsureVisible()
+{
+	if (!m_bVisible)
+	{
+		CXTPPropertyGridItem* pItem = GetParentItem();
 
-		// determine extra space for stretchy pane
-		int cxExtra = rect.Width() + rgBorders[2];
-		int nStretchyCount = 0;
-		AFX_STATUSPANE* pSBP = _GetPanePtr(0);
-		for (i = 0; i < m_nCount; i++)
+		while (pItem)
 		{
-			if (pSBP->nStyle & SBPS_STRETCH)
-				++nStretchyCount;
-			cxExtra -= (pSBP->cxText+CX_PANE_BORDER + rgBorders[2]);
-			++pSBP;
+			pItem->Expand();
+			pItem = pItem->GetParentItem();
+		}
+	}
+
+	if (!m_bVisible || (m_nIndex == -1))
+		return;
+
+	if (m_nIndex < m_pGrid->GetTopIndex())
+	{
+		m_pGrid->SetTopIndex(m_nIndex);
+		return;
+	}
+
+	int top = 0;
+	int nTopIndex = m_pGrid->GetTopIndex();
+	int bottom = CXTPClientRect(m_pGrid).bottom;
+
+	for (int i = nTopIndex; i < m_pGrid->GetCount(); i++)
+	{
+		int nRowHeight = m_pGrid->GetItemHeight(i);
+
+		if (top + nRowHeight > bottom)
+			break;
+
+		if (i == m_nIndex)
+			return;
+
+		top += nRowHeight;
+	}
+
+	int nHeight = bottom;
+	for (top = m_nIndex; top >= 0; top--)
+	{
+		int nRowHeight = m_pGrid->GetItemHeight(top);
+
+		if (nHeight - nRowHeight < 0)
+		{
+			if (top != m_nIndex)
+				top++;
+			break;
 		}
 
-		// determine right edge of each pane
-		CArray<int> rgRights;
-		rgRights.SetSize(m_nCount);
-		int right = rgBorders[0];
-		pSBP = _GetPanePtr(0);
-		for (i = 0; i < m_nCount; i++)
+		nHeight -= nRowHeight;
+	}
+	m_pGrid->SetTopIndex(top);
+}
+
+CXTPPropertyGridInplaceEdit& CXTPPropertyGridItem::GetInplaceEdit()
+{
+	if (m_pGrid) return *m_pGrid->m_pGrid->m_pInplaceEdit;
+
+	static CXTPPropertyGridInplaceEdit  wndEdit;
+	return wndEdit;
+}
+
+CXTPPropertyGridInplaceList& CXTPPropertyGridItem::GetInplaceList()
+{
+	if (m_pGrid) return *m_pGrid->m_pGrid->m_pInplaceListBox;
+
+	static CXTPPropertyGridInplaceList  wndListBox;
+	return wndListBox;
+}
+
+BOOL CXTPPropertyGridItem::IsInplaceButtonsVisible() const
+{
+	if (!m_pGrid)
+		return FALSE;
+
+	if (!IsSelected() && !m_pGrid->GetPropertyGrid()->GetShowInplaceButtonsAlways())
+		return FALSE;
+
+	return !GetReadOnly() && m_pInplaceButtons->GetCount() > 0;
+}
+
+CXTPPropertyGridInplaceButtons* CXTPPropertyGridItem::GetInplaceButtons() const
+{
+	return m_pInplaceButtons;
+}
+
+CXTPPropertyGridInplaceControls* CXTPPropertyGridItem::GetInplaceControls() const
+{
+	return m_pInplaceControls;
+}
+
+// Deletes the item.
+void CXTPPropertyGridItem::Remove()
+{
+	if (!m_pGrid)
+		return;
+
+	CXTPPropertyGridItems* pItems = GetParentItem() == 0 ? m_pGrid->m_pCategories : GetParentItem()->m_pChilds;
+	ASSERT(pItems);
+	int nIndex = pItems ? pItems->Find(this) : -1;
+
+	if (nIndex == -1)
+		return;
+
+	pItems->m_arrItems.RemoveAt(nIndex);
+
+	m_pParent = NULL;
+
+	if (m_pGrid) m_pGrid->Refresh();
+	InternalRelease();
+}
+
+BOOL CXTPPropertyGridItem::IsHidden() const
+{
+	return m_bHidden;
+}
+void CXTPPropertyGridItem::SetHidden(BOOL bHidden)
+{
+	if (bHidden == m_bHidden)
+		return;
+
+	m_bHidden = bHidden;
+
+	m_pGrid->Refresh();
+}
+
+BOOL CXTPPropertyGridItem::HasVisibleChilds() const
+{
+	for (int i = 0; i < m_pChilds->GetCount(); i++)
+	{
+		if (!m_pChilds->GetAt(i)->IsHidden())
+			return TRUE;
+	}
+	return FALSE;
+}
+
+BOOL CXTPPropertyGridItem::IsSelected() const
+{
+	return m_pGrid && m_pGrid->GetSelectedItem() == this;
+}
+
+void CXTPPropertyGridItem::Refresh(BOOL bInvalidate /*= TRUE*/)
+{
+	if (m_pGrid && m_pGrid->GetSafeHwnd())
+	{
+		if (IsSelected())
 		{
-			// determine size of the pane
-			ASSERT(pSBP->cxText >= 0);
-			right += pSBP->cxText+CX_PANE_BORDER;
-			if ((pSBP->nStyle & SBPS_STRETCH) && cxExtra > 0)
+			OnDeselect();
+			OnSelect();
+
+		}
+		if (bInvalidate)
+		{
+			m_pGrid->Invalidate(FALSE);
+		}
+	}
+}
+
+void CXTPPropertyGridItem::SetReadOnly(BOOL bReadOnly)
+{
+	if (m_bReadOnly != bReadOnly)
+	{
+		m_bReadOnly = bReadOnly;
+		Refresh(TRUE);
+	}
+}
+
+void CXTPPropertyGridItem::SetMask(LPCTSTR strMask, LPCTSTR strLiteral, TCHAR chPrompt /*= _T('_')*/)
+{
+	m_bUseMask = TRUE;
+	m_strMask = strMask;
+	m_strLiteral = strLiteral;
+	m_chPrompt = chPrompt;
+	Refresh(FALSE);
+}
+
+CString CXTPPropertyGridItem::GetViewValue()
+{
+	CString str = GetValue();
+	if (m_bPassword)
+	{
+		return CString(m_chPrompt, str.GetLength());
+	}
+	return str;
+}
+
+CString CXTPPropertyGridItem::GetMaskedText() const
+{
+	if (m_bUseMask)
+	{
+		int nLength = m_strValue.GetLength();
+
+		CString strBuffer;
+		for (int i = 0; i < nLength; ++i)
+		{
+			if (m_strLiteral[i] == m_chPrompt)
 			{
-				ASSERT(nStretchyCount != 0);
-				int cxAddExtra = cxExtra / nStretchyCount;
-				right += cxAddExtra;
-				--nStretchyCount;
-				cxExtra -= cxAddExtra;
+				strBuffer += m_strValue.GetAt(i);
 			}
-			rgRights[i] = right;
-
-			// next pane
-			++pSBP;
-			right += rgBorders[2];
 		}
 
-		// set new right edges for all panes
-		DefWindowProc(SB_SETPARTS, m_nCount, 
-			reinterpret_cast<LPARAM>(rgRights.GetData()));
+		return strBuffer;
 	}
-
-	// update text in the status panes if specified
-	if (bUpdateText)
+	else
 	{
-		AFX_STATUSPANE* pSBP = _GetPanePtr(0);
-		for (i = 0; i < m_nCount; i++)
+		return m_strValue;
+	}
+}
+
+void CXTPPropertyGridItem::MeasureItem(LPMEASUREITEMSTRUCT lpMeasureItemStruct)
+{
+	if (m_nHeight != -1)
+	{
+		lpMeasureItemStruct->itemHeight = m_nHeight;
+	}
+	else if (m_nLinesCount > 1)
+	{
+		lpMeasureItemStruct->itemHeight = (lpMeasureItemStruct->itemHeight - 4) * m_nLinesCount + 4;
+
+	}
+}
+
+
+void CXTPPropertyGridItem::SetMaskedText(LPCTSTR lpszMaskedText)
+{
+	CString strMaskedText = lpszMaskedText;
+
+	if (m_bUseMask)
+	{
+		int nLen = strMaskedText.GetLength();
+		int x = 0;
+
+		m_strValue = m_strLiteral;
+
+		for (int i = 0; (i < m_strValue.GetLength()) && (x < nLen); i++)
 		{
-			if (pSBP->nFlags & SBPF_UPDATE)
-				SetPaneText(i, pSBP->strText);
-			++pSBP;
+			if (strMaskedText[x] == m_strValue[i])
+			{
+				x++;
+			}
+			else if (m_strValue[i] == m_chPrompt)
+			{
+				m_strValue.SetAt(i, strMaskedText[x]);
+				x++;
+			}
 		}
 	}
+	else
+	{
+		m_strValue = strMaskedText;
+	}
+
+	SetValue(m_strValue);
+}
+
+void CXTPPropertyGridItem::SetDescription(LPCTSTR lpszDescription)
+{
+	m_strDescription = lpszDescription;
+	if (IsSelected()) GetGrid()->GetParent()->Invalidate(FALSE);
+}
+
+int CXTPPropertyGridItem::GetIndex() const
+{
+	return m_nIndex;
+}
+
+
+void CXTPPropertyGridItem::OnDrawItemConstraint(CDC* pDC, CXTPPropertyGridItemConstraint* pConstraint, CRect rc, BOOL bSelected)
+{
+	GetGrid()->GetPaintManager()->DrawInplaceListItem(pDC, pConstraint, rc, bSelected);
+}
+
+CSize CXTPPropertyGridItem::OnMergeItemConstraint(CDC* pDC, CXTPPropertyGridItemConstraint* pConstraint)
+{
+	int nThumbLength = GetSystemMetrics(SM_CXHTHUMB);
+
+	CSize sz = pDC->GetTextExtent(pConstraint->m_strConstraint);
+
+	return CSize(sz.cx + nThumbLength * 2, sz.cy + 3);
+}
+
+void CXTPPropertyGridItem::SetFocusToInplaceControl()
+{
+	CXTPPropertyGridInplaceEdit& wndEdit = GetInplaceEdit();
+
+	if (wndEdit.GetSafeHwnd() && wndEdit.GetItem() == this)
+	{
+		wndEdit.SetFocus();
+		wndEdit.SetSel(0, -1);
+	}
+}
+
+void CXTPPropertyGridItem::AddComboButton()
+{
+	GetInplaceButtons()->AddComboButton();
+}
+
+void CXTPPropertyGridItem::AddExpandButton()
+{
+	GetInplaceButtons()->AddExpandButton();
+}
+
+CXTPPropertyGridInplaceSlider* CXTPPropertyGridItem::AddSliderControl()
+{
+	CXTPPropertyGridInplaceSlider* pSlider = new CXTPPropertyGridInplaceSlider(this);
+	m_pInplaceControls->Add(pSlider);
+
+	return pSlider;
+}
+
+CXTPPropertyGridInplaceSpinButton* CXTPPropertyGridItem::AddSpinButton()
+{
+	CXTPPropertyGridInplaceSpinButton* pSpinButton = new CXTPPropertyGridInplaceSpinButton(this);
+	m_pInplaceControls->Add(pSpinButton);
+
+	return pSpinButton;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// Accessible
+
+CCmdTarget* CXTPPropertyGridItem::GetAccessible()
+{
+	return this;
+}
+
+HRESULT CXTPPropertyGridItem::GetAccessibleParent(IDispatch* FAR* ppdispParent)
+{
+	SAFE_MANAGE_STATE(m_pModuleState);
+
+	*ppdispParent = NULL;
+
+	return m_pGrid->InternalQueryInterface(&IID_IAccessible, (void**)ppdispParent);
+}
+
+HRESULT CXTPPropertyGridItem::GetAccessibleName(VARIANT varChild, BSTR* pszName)
+{
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	CString strCaption = GetCaption();
+
+	*pszName = strCaption.AllocSysString();
+	return S_OK;
+}
+
+HRESULT CXTPPropertyGridItem::GetAccessibleDescription(VARIANT varChild, BSTR* pszDescription)
+{
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	*pszDescription = GetDescription().AllocSysString();
+	return S_OK;
+}
+
+HRESULT CXTPPropertyGridItem::GetAccessibleRole(VARIANT varChild, VARIANT* pvarRole)
+{
+	if (!pvarRole)
+		return E_INVALIDARG;
+
+	pvarRole->vt = VT_EMPTY;
+
+	if (GetChildIndex(&varChild) == CHILDID_SELF)
+	{
+		pvarRole->vt = VT_I4;
+		pvarRole->lVal = ROLE_SYSTEM_ROW;
+		return S_OK;
+	}
+
+	return E_INVALIDARG;
+}
+
+HRESULT CXTPPropertyGridItem::GetAccessibleState(VARIANT varChild, VARIANT* pvarState)
+{
+	if (!pvarState)
+		return E_INVALIDARG;
+
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	pvarState->vt = VT_I4;
+	pvarState->lVal = STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_SELECTABLE |
+		(IsSelected() ? STATE_SYSTEM_FOCUSED : 0);
+
+	if (!IsVisible())
+		pvarState->lVal |= STATE_SYSTEM_INVISIBLE;
+
+	if (GetReadOnly())
+		pvarState->lVal |= STATE_SYSTEM_READONLY;
+
+	return S_OK;
+}
+
+
+HRESULT CXTPPropertyGridItem::AccessibleLocation(long* pxLeft, long* pyTop, long* pcxWidth, long* pcyHeight, VARIANT varChild)
+{
+	*pxLeft = *pyTop = *pcxWidth = *pcyHeight = 0;
+
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	if (!m_pGrid->GetSafeHwnd())
+		return S_OK;
+
+	CRect rcItem;
+	m_pGrid->GetItemRect(GetIndex(), &rcItem);
+	m_pGrid->ClientToScreen(&rcItem);
+
+	*pxLeft = rcItem.left;
+	*pyTop = rcItem.top;
+	*pcxWidth = rcItem.Width();
+	*pcyHeight = rcItem.Height();
+
+	return S_OK;
+}
+
+HRESULT CXTPPropertyGridItem::AccessibleHitTest(long xLeft, long yTop, VARIANT* pvarID)
+{
+	if (pvarID == NULL)
+		return E_INVALIDARG;
+
+	pvarID->vt = VT_EMPTY;
+
+	if (!m_pGrid->GetSafeHwnd())
+		return S_FALSE;
+
+	if (!CXTPWindowRect(m_pGrid).PtInRect(CPoint(xLeft, yTop)))
+		return S_FALSE;
+
+	pvarID->vt = VT_I4;
+	pvarID->lVal = 0;
+
+	CRect rcItem;
+	m_pGrid->GetItemRect(GetIndex(), &rcItem);
+	m_pGrid->ClientToScreen(&rcItem);
+
+	if (!rcItem.PtInRect(CPoint(xLeft, yTop)))
+		return S_FALSE;
+
+	return S_OK;
+}
+
+HRESULT CXTPPropertyGridItem::AccessibleSelect(long /*flagsSelect*/, VARIANT varChild)
+{
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	Select();
+
+	return S_OK;
+}
+
+HRESULT CXTPPropertyGridItem::GetAccessibleValue(VARIANT varChild, BSTR* pszValue)
+{
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	*pszValue = GetValue().AllocSysString();
+	return S_OK;
 }
 
 
 /////////////////////////////////////////////////////////////////////////////
-// CStatusBar attribute access
+// CXTPPropertyGridItems
 
-int CStatusBar::CommandToIndex(UINT nIDFind) const
+CXTPPropertyGridItems::CXTPPropertyGridItems()
 {
-	ASSERT_VALID(this);
 
-	if (m_nCount <= 0)
-		return -1;
+}
 
-	AFX_STATUSPANE* pSBP = _GetPanePtr(0);
-	for (int i = 0; i < m_nCount; i++, pSBP++)
-		if (pSBP->nID == nIDFind)
+void CXTPPropertyGridItems::Clear()
+{
+	CXTPPropertyGridView* pGrid = GetCount() > 0 ? m_arrItems[0]->m_pGrid : 0;
+
+	if (pGrid)
+	{
+		if (pGrid->m_nLockUpdate == 0)
+			pGrid->ResetContent();
+		pGrid->m_nLockUpdate++;
+	}
+
+	for (int i = 0; i < GetCount(); i++)
+	{
+		m_arrItems[i]->Clear();
+		m_arrItems[i]->InternalRelease();
+	}
+	m_arrItems.RemoveAll();
+
+	if (pGrid)
+	{
+		pGrid->m_nLockUpdate--;
+		if (pGrid->m_nLockUpdate == 0)
+			pGrid->Refresh();
+
+	}
+
+}
+
+CXTPPropertyGridItem* CXTPPropertyGridItems::GetAt(int nIndex) const
+{
+	if (nIndex >= 0 && nIndex < GetCount())
+	{
+		return m_arrItems.GetAt(nIndex);
+	}
+	return 0;
+}
+
+void CXTPPropertyGridItems::RemoveAt (int nIndex)
+{
+	CXTPPropertyGridItem* pItem = GetAt(nIndex);
+
+	if (pItem)
+	{
+		m_arrItems.RemoveAt(nIndex);
+
+		if (pItem->GetGrid())
+		{
+			pItem->GetGrid()->Refresh();
+		}
+
+		pItem->InternalRelease();
+	}
+}
+
+int CXTPPropertyGridItems::Find(CXTPPropertyGridItem* pItem) const
+{
+	for (int i = 0; i < GetCount(); i++)
+	{
+		if (m_arrItems[i] == pItem)
 			return i;
-
+	}
 	return -1;
 }
 
-UINT CStatusBar::GetItemID(int nIndex) const
-{
-	ASSERT_VALID(this);
-	return _GetPanePtr(nIndex)->nID;
-}
 
-void CStatusBar::GetItemRect(int nIndex, LPRECT lpRect) const
+void CXTPPropertyGridItems::AddTail(CXTPPropertyGridItems* pItems)
 {
-	ASSERT_VALID(this);
-	ASSERT(::IsWindow(m_hWnd));
+	ASSERT(this != pItems);
 
-	CStatusBar* pBar = (CStatusBar*)this;
-	if (!pBar->DefWindowProc(SB_GETRECT, nIndex, (LPARAM)lpRect))
-		::SetRectEmpty(lpRect);
-}
-
-UINT CStatusBar::GetPaneStyle(int nIndex) const
-{
-	return _GetPanePtr(nIndex)->nStyle;
-}
-
-void CStatusBar::SetPaneStyle(int nIndex, UINT nStyle)
-{
-	AFX_STATUSPANE* pSBP = _GetPanePtr(nIndex);
-	if (pSBP->nStyle != nStyle)
+	for (int i = 0; i < pItems->GetCount(); i++)
 	{
-		// if the pane is changing SBPS_STRETCH, then...
-		if ((pSBP->nStyle ^ nStyle) & SBPS_STRETCH)
-		{
-			// ... we need to re-layout the panes
-			pSBP->nStyle = nStyle;
-			UpdateAllPanes(TRUE, FALSE);
-		}
-
-		// use SetPaneText, since it updates the style and text
-		pSBP->nStyle = nStyle;
-		pSBP->nFlags |= SBPF_UPDATE;
-		SetPaneText(nIndex, pSBP->strText);
+		AddTail(pItems->GetAt(i));
 	}
 }
 
-void CStatusBar::GetPaneInfo(int nIndex, UINT& nID, UINT& nStyle,
-	int& cxWidth) const
+int CXTPPropertyGridItems::CompareFunc(const CXTPPropertyGridItem** ppItem1, const CXTPPropertyGridItem** ppItem2)
 {
-	ASSERT_VALID(this);
-
-	AFX_STATUSPANE* pSBP = _GetPanePtr(nIndex);
-	nID = pSBP->nID;
-	nStyle = pSBP->nStyle;
-	cxWidth = pSBP->cxText;
+	return (*ppItem1)->GetCaption().Compare((*ppItem2)->GetCaption());
 }
 
-void CStatusBar::SetPaneInfo(int nIndex, UINT nID, UINT nStyle, int cxWidth)
+void CXTPPropertyGridItems::Sort()
 {
-	ASSERT_VALID(this);
+	typedef int (_cdecl *GENERICCOMPAREFUNC)(const void *, const void*);
 
-	BOOL bChanged = FALSE;
-	AFX_STATUSPANE* pSBP = _GetPanePtr(nIndex);
-	pSBP->nID = nID;
-	if (pSBP->nStyle != nStyle)
-	{
-		if ((pSBP->nStyle ^ nStyle) & SBPS_STRETCH)
-			bChanged = TRUE;
-		else
-		{
-			pSBP->nStyle = nStyle;
-			pSBP->nFlags |= SBPF_UPDATE;
-			SetPaneText(nIndex, pSBP->strText);
-		}
-		pSBP->nStyle = nStyle;
-	}
-	if (cxWidth != pSBP->cxText)
-	{
-		// change width of one pane -> invalidate the entire status bar
-		pSBP->cxText = cxWidth;
-		bChanged = TRUE;
-	}
-	if (bChanged)
-		UpdateAllPanes(TRUE, FALSE);
+	qsort(m_arrItems.GetData(), m_arrItems.GetSize(), sizeof(CXTPPropertyGridItem*), (GENERICCOMPAREFUNC)CompareFunc);
 }
 
-void CStatusBar::GetPaneText(int nIndex, CString& s) const
+CXTPPropertyGridItem* CXTPPropertyGridItems::FindItem(LPCTSTR strCaption) const
 {
-	ASSERT_VALID(this);
+	for (int i = 0; i < GetCount(); i++)
+	{
+		CXTPPropertyGridItem* pItem = GetAt(i);
+		if (pItem->GetCaption().Compare(strCaption) == 0)
+			return pItem;
 
-	AFX_STATUSPANE* pSBP = _GetPanePtr(nIndex);
-	s = pSBP->strText;
+		CXTPPropertyGridItem* pChild = pItem->m_pChilds->FindItem(strCaption);
+		if (pChild) return pChild;
+	}
+	return NULL;
 }
 
-CString CStatusBar::GetPaneText(int nIndex) const
+CXTPPropertyGridItem* CXTPPropertyGridItems::FindItem(UINT nID) const
 {
-	ASSERT_VALID(this);
+	for (int i = 0; i < GetCount(); i++)
+	{
+		CXTPPropertyGridItem* pItem = GetAt(i);
+		if (pItem->GetID() == nID)
+			return pItem;
 
-	AFX_STATUSPANE* pSBP = _GetPanePtr(nIndex);
-	return pSBP->strText;
+		CXTPPropertyGridItem* pChild = pItem->m_pChilds->FindItem(nID);
+		if (pChild) return pChild;
+	}
+	return NULL;
 }
 
-BOOL CStatusBar::SetPaneText(int nIndex, LPCTSTR lpszNewText, BOOL bUpdate)
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridItemConstraint
+CXTPPropertyGridItemConstraint::CXTPPropertyGridItemConstraint()
 {
-	ASSERT_VALID(this);
-	ASSERT(::IsWindow(m_hWnd));
+	m_nIndex = 0;
+	m_dwData = 0;
+	m_nImage = -1;
+	m_pItem = 0;
+}
 
-	AFX_STATUSPANE* pSBP = _GetPanePtr(nIndex);
+CXTPImageManagerIcon* CXTPPropertyGridItemConstraint::GetImage() const
+{
+	ASSERT(m_pItem);
 
-	if (!(pSBP->nFlags & SBPF_UPDATE) &&
-		((lpszNewText == NULL && pSBP->strText.IsEmpty()) ||
-		 (lpszNewText != NULL && pSBP->strText.Compare(lpszNewText) == 0)))
-	{
-		// nothing to change
-		return TRUE;
-	}
+	if (!m_pItem)
+		return NULL;
 
-	TRY
-	{
-		if (lpszNewText != NULL)
-			pSBP->strText = lpszNewText;
-		else
-			pSBP->strText.Empty();
-	}
-	CATCH_ALL(e)
-	{
-		// Note: DELETE_EXCEPTION(e) not required
-		return FALSE;
-	}
-	END_CATCH_ALL
+	if (m_nImage == -1)
+		return NULL;
 
-	if (!bUpdate)
-	{
-		// can't update now, wait until later
-		pSBP->nFlags |= SBPF_UPDATE;
-		return TRUE;
-	}
-
-	pSBP->nFlags &= ~SBPF_UPDATE;
-	DefWindowProc(SB_SETTEXT, ((WORD)pSBP->nStyle)|nIndex,
-		(pSBP->nStyle & SBPS_DISABLED) ? NULL :
-		(LPARAM)(LPCTSTR)pSBP->strText);
-
-	return TRUE;
+	return m_pItem->GetGrid()->GetImageManager()->GetImage(m_nImage, 0);
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// CStatusBar implementation
+// CXTPPropertyGridItemConstraints
 
-CSize CStatusBar::CalcFixedLayout(BOOL, BOOL bHorz)
+// Summary: Constructs a CXTPPropertyGridItemConstraints object
+CXTPPropertyGridItemConstraints::CXTPPropertyGridItemConstraints(CXTPPropertyGridItem* pItem)
 {
-	ASSERT_VALID(this);
-	ASSERT(::IsWindow(m_hWnd));
+	m_pItem = pItem;
+	m_nCurrent = -1;
 
-	// determinme size of font being used by the status bar
-	TEXTMETRIC tm;
+}
+
+CXTPPropertyGridItemConstraints::~CXTPPropertyGridItemConstraints()
+{
+	RemoveAll();
+}
+
+CXTPPropertyGridItemConstraint* CXTPPropertyGridItemConstraints::AddConstraint(LPCTSTR str, DWORD_PTR dwData, int nImage)
+{
+	CXTPPropertyGridItemConstraint* pConstaint = new CXTPPropertyGridItemConstraint();
+
+	pConstaint->m_strConstraint = str;
+	pConstaint->m_dwData = dwData;
+	pConstaint->m_nIndex = (int)m_arrConstraints.Add(pConstaint);
+	pConstaint->m_pItem = m_pItem;
+	pConstaint->m_nImage = nImage;
+
+	SAFE_CALLPTR(m_pItem, OnConstraintsChanged());
+
+	return pConstaint;
+}
+
+CString CXTPPropertyGridItemConstraints::GetAt(int nIndex) const
+{
+	return nIndex >= 0 && nIndex < GetCount() ? m_arrConstraints.GetAt(nIndex)->m_strConstraint : _T("");
+}
+
+void CXTPPropertyGridItemConstraints::RemoveAll()
+{
+	for (int i = 0; i < GetCount(); i++)
+		m_arrConstraints[i]->InternalRelease();
+	m_arrConstraints.RemoveAll();
+
+	SAFE_CALLPTR(m_pItem, OnConstraintsChanged());
+}
+
+void CXTPPropertyGridItemConstraints::RemoveAt(int nIndex)
+{
+	m_arrConstraints[nIndex]->InternalRelease();
+	m_arrConstraints.RemoveAt(nIndex);
+
+	for (int i = nIndex; i < GetCount(); i++)
+		m_arrConstraints[i]->m_nIndex = i;
+
+	SAFE_CALLPTR(m_pItem, OnConstraintsChanged());
+}
+
+int CXTPPropertyGridItemConstraints::FindConstraint(LPCTSTR str) const
+{
+	for (int i = 0; i < GetCount(); i++)
 	{
-		CClientDC dc(NULL);
-		HFONT hFont = (HFONT)SendMessage(WM_GETFONT);
-		HGDIOBJ hOldFont = NULL;
-		if (hFont != NULL)
-			hOldFont = dc.SelectObject(hFont);
-		VERIFY(dc.GetTextMetrics(&tm));
-		if (hOldFont != NULL)
-			dc.SelectObject(hOldFont);
+		if (GetAt(i).CompareNoCase(str) == 0)
+			return i;
 	}
-
-	// get border information
-	CRect rect; rect.SetRectEmpty();
-	CalcInsideRect(rect, bHorz);
-	int rgBorders[3];
-	DefWindowProc(SB_GETBORDERS, 0, (LPARAM)rgBorders);
-
-	// determine size, including borders
-	CSize size;
-	size.cx = 32767;
-	size.cy = tm.tmHeight - tm.tmInternalLeading - 1
-		+ rgBorders[1] * 2 + ::GetSystemMetrics(SM_CYBORDER) * 2
-		- rect.Height();
-	if (size.cy < m_nMinHeight)
-		size.cy = m_nMinHeight;
-
-	return size;
+	return -1;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// CStatusBar message handlers
-
-BEGIN_MESSAGE_MAP(CStatusBar, CControlBar)
-	//{{AFX_MSG_MAP(CStatusBar)
-	ON_WM_NCHITTEST()
-	ON_WM_NCPAINT()
-	ON_WM_PAINT()
-	ON_WM_NCCALCSIZE()
-	ON_WM_SIZE()
-	ON_WM_WINDOWPOSCHANGING()
-	ON_MESSAGE(WM_SETTEXT, &CStatusBar::OnSetText)
-	ON_MESSAGE(WM_GETTEXT, &CStatusBar::OnGetText)
-	ON_MESSAGE(WM_GETTEXTLENGTH, &CStatusBar::OnGetTextLength)
-	ON_MESSAGE(SB_SETMINHEIGHT, &CStatusBar::OnSetMinHeight)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-LRESULT CStatusBar::OnNcHitTest(CPoint)
+int CXTPPropertyGridItemConstraints::FindConstraint(DWORD_PTR dwData) const
 {
-	LRESULT nResult = Default();
-	if (nResult == HTBOTTOMRIGHT)
-		return HTBOTTOMRIGHT;
-	else
-		return HTCLIENT;
-}
-
-void CStatusBar::OnNcCalcSize(BOOL /*bCalcValidRects*/, NCCALCSIZE_PARAMS* lpncsp)
-{
-	// calculate border space (will add to top/bottom, subtract from right/bottom)
-	CRect rect; rect.SetRectEmpty();
-	CControlBar::CalcInsideRect(rect, TRUE);
-	ASSERT(rect.top >= 2);
-
-	// adjust non-client area for border space
-	lpncsp->rgrc[0].left += rect.left;
-	lpncsp->rgrc[0].top += rect.top - 2;
-	lpncsp->rgrc[0].right += rect.right;
-	lpncsp->rgrc[0].bottom += rect.bottom;
-}
-
-void CStatusBar::OnBarStyleChange(DWORD dwOldStyle, DWORD dwNewStyle)
-{
-	if (m_hWnd != NULL &&
-		((dwOldStyle & CBRS_BORDER_ANY) != (dwNewStyle & CBRS_BORDER_ANY)))
+	for (int i = 0; i < GetCount(); i++)
 	{
-		// recalc non-client area when border styles change
-		SetWindowPos(NULL, 0, 0, 0, 0,
-			SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_DRAWFRAME);
+		if (dwData == GetConstraintAt(i)->m_dwData)
+			return i;
 	}
+	return -1;
 }
 
-void CStatusBar::OnNcPaint()
+CXTPPropertyGridItemConstraint* CXTPPropertyGridItemConstraints::GetConstraintAt(int nIndex) const
 {
-	EraseNonClient();
+	return m_arrConstraints[nIndex];
 }
 
-// Derived class is responsible for implementing all of these handlers
-//  for owner/self draw controls.
-void CStatusBar::DrawItem(LPDRAWITEMSTRUCT)
+int CXTPPropertyGridItemConstraints::CompareFunc(const CXTPPropertyGridItemConstraint** ppConstraint1, const CXTPPropertyGridItemConstraint** ppConstraint2)
 {
-	ASSERT(FALSE);
+	return (*ppConstraint1)->m_strConstraint.Compare((*ppConstraint2)->m_strConstraint);
+
 }
 
-BOOL CStatusBar::OnChildNotify(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+void CXTPPropertyGridItemConstraints::Sort()
 {
-	if (message != WM_DRAWITEM)
-		return CWnd::OnChildNotify(message, wParam, lParam, pResult);
+	typedef int (_cdecl *GENERICCOMPAREFUNC)(const void *, const void*);
 
-	ASSERT(pResult == NULL);
-	UNUSED(pResult); // unused in release builds
-	DrawItem((LPDRAWITEMSTRUCT)lParam);
-	return TRUE;
+	qsort(m_arrConstraints.GetData(), (size_t)m_arrConstraints.GetSize(), sizeof(CXTPPropertyGridItemConstraint*), (GENERICCOMPAREFUNC)CompareFunc);
 }
 
-void CStatusBar::OnPaint()
-{
-	UpdateAllPanes(FALSE, TRUE);
 
-	Default();
+//////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridItemCategory
+
+CXTPPropertyGridItemCategory::CXTPPropertyGridItemCategory(LPCTSTR strCaption)
+	:CXTPPropertyGridItem(strCaption)
+{
+	m_bCategory = TRUE;
+	m_nFlags = 0;
 }
 
-void CStatusBar::OnSize(UINT nType, int cx, int cy)
+CXTPPropertyGridItemCategory::CXTPPropertyGridItemCategory(UINT nID)
+	:CXTPPropertyGridItem(nID)
 {
-	ASSERT_VALID(this);
-	ASSERT(::IsWindow(m_hWnd));
-
-	CControlBar::OnSize(nType, cx, cy);
-
-	// need to adjust pane right edges (because of stretchy pane)
-	UpdateAllPanes(TRUE, FALSE);
+	m_bCategory = TRUE;
+	m_nFlags = 0;
 }
 
-void CStatusBar::OnWindowPosChanging(LPWINDOWPOS lpWndPos)
-{
-	// not necessary to invalidate the borders
-	DWORD dwStyle = m_dwStyle;
-	m_dwStyle &= ~(CBRS_BORDER_ANY);
-	CControlBar::OnWindowPosChanging(lpWndPos);
-	m_dwStyle = dwStyle;
-}
-
-LRESULT CStatusBar::OnSetText(WPARAM, LPARAM lParam)
-{
-	ASSERT_VALID(this);
-	ASSERT(::IsWindow(m_hWnd));
-
-	int nIndex = CommandToIndex(0);
-	if (nIndex < 0)
-		return -1;
-	return SetPaneText(nIndex, (LPCTSTR)lParam) ? 0 : -1;
-}
-
-LRESULT CStatusBar::OnGetText(WPARAM wParam, LPARAM lParam)
-{
-	ASSERT_VALID(this);
-	ASSERT(::IsWindow(m_hWnd));
-
-	int nMaxLen = (int)wParam;
-	if (nMaxLen == 0)
-		return 0;       // nothing copied
-	LPTSTR lpszDest = (LPTSTR)lParam;
-
-	INT_PTR nLen = 0;
-	int nIndex = CommandToIndex(0); // use pane with ID zero
-	if (nIndex >= 0)
-	{
-		AFX_STATUSPANE* pSBP = _GetPanePtr(nIndex);
-		nLen = pSBP->strText.GetLength();
-		if (nLen > nMaxLen)
-			nLen = nMaxLen - 1; // number of characters to copy (less term.)
-
-		Checked::memcpy_s(lpszDest, nMaxLen*sizeof(TCHAR), 
-			(LPCTSTR)pSBP->strText, nLen*sizeof(TCHAR));
-	}
-	lpszDest[nLen] = '\0';
-	return nLen+1;      // number of bytes copied
-}
-
-LRESULT CStatusBar::OnGetTextLength(WPARAM, LPARAM)
-{
-	ASSERT_VALID(this);
-	ASSERT(::IsWindow(m_hWnd));
-
-	INT_PTR nLen = 0;
-	int nIndex = CommandToIndex(0); // use pane with ID zero
-	if (nIndex >= 0)
-	{
-		AFX_STATUSPANE* pSBP = _GetPanePtr(nIndex);
-		nLen = pSBP->strText.GetLength();
-	}
-	return nLen;
-}
-
-LRESULT CStatusBar::OnSetMinHeight(WPARAM wParam, LPARAM)
-{
-	LRESULT lResult = Default();
-	m_nMinHeight = (int)wParam;
-	return lResult;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CStatusBar idle update through CStatusCmdUI class
-
-class CStatusCmdUI : public CCmdUI      // class private to this file!
-{
-public: // re-implementations only
-	virtual void Enable(BOOL bOn);
-	virtual void SetCheck(int nCheck);
-	virtual void SetText(LPCTSTR lpszText);
-};
-
-void CStatusCmdUI::Enable(BOOL bOn)
-{
-	m_bEnableChanged = TRUE;
-	CStatusBar* pStatusBar = (CStatusBar*)m_pOther;
-	ASSERT(pStatusBar != NULL);
-	ASSERT_KINDOF(CStatusBar, pStatusBar);
-	ASSERT(m_nIndex < m_nIndexMax);
-
-	UINT nNewStyle = pStatusBar->GetPaneStyle(m_nIndex) & ~SBPS_DISABLED;
-	if (!bOn)
-		nNewStyle |= SBPS_DISABLED;
-	pStatusBar->SetPaneStyle(m_nIndex, nNewStyle);
-}
-
-void CStatusCmdUI::SetCheck(int nCheck) // "checking" will pop out the text
-{
-	CStatusBar* pStatusBar = (CStatusBar*)m_pOther;
-	ASSERT(pStatusBar != NULL);
-	ASSERT_KINDOF(CStatusBar, pStatusBar);
-	ASSERT(m_nIndex < m_nIndexMax);
-
-	UINT nNewStyle = pStatusBar->GetPaneStyle(m_nIndex) & ~SBPS_POPOUT;
-	if (nCheck != 0)
-		nNewStyle |= SBPS_POPOUT;
-	pStatusBar->SetPaneStyle(m_nIndex, nNewStyle);
-}
-
-void CStatusCmdUI::SetText(LPCTSTR lpszText)
-{
-	CStatusBar* pStatusBar = (CStatusBar*)m_pOther;
-	ASSERT(pStatusBar != NULL);
-	ASSERT_KINDOF(CStatusBar, pStatusBar);
-	ASSERT(m_nIndex < m_nIndexMax);
-
-	pStatusBar->SetPaneText(m_nIndex, lpszText);
-}
-
-void CStatusBar::OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHndler)
-{
-	CStatusCmdUI state;
-	state.m_pOther = this;
-	state.m_nIndexMax = (UINT)m_nCount;
-	for (state.m_nIndex = 0; state.m_nIndex < state.m_nIndexMax;
-		state.m_nIndex++)
-	{
-		state.m_nID = _GetPanePtr(state.m_nIndex)->nID;
-
-		// allow the statusbar itself to have update handlers
-		if (CWnd::OnCmdMsg(state.m_nID, CN_UPDATE_COMMAND_UI, &state, NULL))
-			continue;
-
-		// allow target (owner) to handle the remaining updates
-		state.DoUpdate(pTarget, FALSE);
-	}
-
-	// update the dialog controls added to the status bar
-	UpdateDialogControls(pTarget, bDisableIfNoHndler);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CStatusBar diagnostics
-
-#ifdef _DEBUG
-void CStatusBar::AssertValid() const
-{
-	CControlBar::AssertValid();
-}
-
-void CStatusBar::Dump(CDumpContext& dc) const
-{
-	CControlBar::Dump(dc);
-
-	if (dc.GetDepth() > 0)
-	{
-		for (int i = 0; i < m_nCount; i++)
-		{
-			dc << "\nstatus pane[" << i << "] = {";
-			dc << "\n\tnID = " << _GetPanePtr(i)->nID;
-			dc << "\n\tnStyle = " << _GetPanePtr(i)->nStyle;
-			dc << "\n\tcxText = " << _GetPanePtr(i)->cxText;
-			dc << "\n\tstrText = " << _GetPanePtr(i)->strText;
-			dc << "\n\t}";
-		}
-	}
-	dc << "\n";
-}
-#endif //_DEBUG
 
 
-IMPLEMENT_DYNAMIC(CStatusBar, CControlBar)
 
-/////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////
+//  Acteve X Methods
+//
+
+
+BEGIN_INTERFACE_MAP(CXTPPropertyGridItem, CCmdTarget)
+	INTERFACE_PART(CXTPPropertyGridItem, IID_IAccessible, ExternalAccessible)
+END_INTERFACE_MAP()

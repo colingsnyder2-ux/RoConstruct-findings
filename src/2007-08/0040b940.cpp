@@ -1,4 +1,3 @@
-// from server: 68% by colin
 // roc 2007-08 0040b940  unit: VCBrowserViewExternal::?$CComContainedObject  size: 17 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0040b940
 //
@@ -8,23 +7,29 @@
 // 0040b949  89442404             mov dword ptr [esp + 4], eax
 // 0040b94d  8b01                 mov eax, dword ptr [ecx]
 // 0040b94f  ffe0                 jmp eax
+// copied from an identical function in another client (function ?QueryInterface@CAppContained@@UAGJABUGUID@@PAPAX@Z)
 
-struct Inner {
-    virtual int f();
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+struct GUID { unsigned long Data1; unsigned short Data2, Data3; unsigned char Data4[8]; };
+
+struct IUnknown {
+    virtual long __stdcall QueryInterface(const GUID& iid, void** ppvObject) = 0;
+    virtual unsigned long __stdcall AddRef() = 0;
+    virtual unsigned long __stdcall Release() = 0;
 };
 
-struct Mid {
-    char pad[0x18];
-    Inner* p;
+class CAppContained : public IUnknown {
+public:
+    char pad[0x14];
+    IUnknown* m_pOuterUnknown;
+
+    long __stdcall QueryInterface(const GUID& iid, void** ppvObject);
+    unsigned long __stdcall AddRef();
+    unsigned long __stdcall Release();
 };
 
-struct Outer {
-    int g(Mid* m);
-};
-
-int Outer::g(Mid* m)
+long __stdcall CAppContained::QueryInterface(const GUID& iid, void** ppvObject)
 {
-    Inner* p = m->p;
-    int (Inner::*pmf)() = &Inner::f;
-    return (p->*pmf)();
+    return m_pOuterUnknown->QueryInterface(iid, ppvObject);
 }

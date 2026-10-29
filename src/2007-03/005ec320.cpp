@@ -1,218 +1,592 @@
-// from server: 58% by colin
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs gui/GUI.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_espeon_aug2007_primitive_trivial_200f0098d579e3b8.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "gui/Gui.h"
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#define _MT 1
+#define _DLL 1
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#include "v8world/Primitive.h"
+#include "v8world/Geometry.h"
+#include "v8world/Assembly.h"
+#include "v8world/Ball.h"
+#include "v8world/Block.h"
+#include "v8world/World.h"
+#include <cmath>
 
-namespace RBX
+namespace RBX 
 {
-	const G3D::Color4& GuiItem::disabledFill()
-	{
-		static G3D::Color4 c(0.7f, 0.7f, 0.7f, 0.5f);
-		return c;
-	}
+	bool Primitive::ignoreBool = false;
+	bool Primitive::disableSleep = false;
 
-	const G3D::Color4& GuiItem::translucentBackdrop()
+	#pragma warning (push)
+	#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
+	Primitive::Primitive(Geometry::GeometryType geometryType) :
+		world(NULL),
+		clump(NULL),
+		spatialNodes(NULL),
+		worldIndex(-1),
+		clumpDepth(0),
+		fuzzyExtentsStateId(-2),
+		geometry(newGeometry(geometryType)),
+		body(new Body),
+		elasticity(0.75f),
+		friction(0.0f),
+		myOwner(NULL),
+		anchorObject(NULL),
+		dragging(false),
+		anchored(false),
+		canCollide(true),
+		canSleep(true),
+		JointK(this, &Primitive::computeJointK),
+		controller(NullController::getStaticNullController())
 	{
-		static G3D::Color4 c(0.6f, 0.6f, 0.6f, 0.6f);
-		return c;
-	}
-
-	G3D::Vector2 GuiRoot::canvasSize;
-	G3D::Matrix4 GuiRoot::oldProjectionMatrix;
-	G3D::CoordinateFrame GuiRoot::oldCameraWorld;
-
-	GuiItem::GuiItem() 
-	{
-		setName("Unnamed GuiItem");
-	}
-
-	const GuiItem* GuiItem::getGuiItem(int index) const
-	{
-		return dynamic_cast<const GuiItem*>(getChild(index));
-	}
-
-	GuiItem* GuiItem::getGuiItem(int index)
-	{
-		return dynamic_cast<GuiItem*>(getChild(index));
-	}
-
-	GuiResponse GuiItem::processNonFocus(const GuiEvent& event)
-	{
-		for (size_t i = 0; i < numChildren(); i++)
+		for (int i = 0; i < 6; i++) 
 		{
-			GuiItem* current = getGuiItem((int)i);
+			surfaceType[i] = NO_SURFACE;
+			surfaceData[i] = NULL;
+		}
+	}
+	#pragma warning (pop)
 
-			if (current && current != focus.get())
-			{
-				GuiResponse itemResponse = current->process(event);
-				if (itemResponse.wasUsed())
-				{
-					this->loseFocus();
+	Primitive::~Primitive()
+	{
+		Geometry::GeometryType type = geometry->getGeometryType();
 
-					focus = shared_from(current);
-					focus->loseFocus();
-
-					return itemResponse;
-				}
-			}
+		if (type != Geometry::GEOMETRY_NONE) {
+			delete geometry;
+			delete body;
 		}
 
-		return GuiResponse::notUsed();
+		for (int i = 0; i < 6; i++)
+			delete surfaceData[i];
+
+		RBXASSERT(!world);
+		RBXASSERT(!clump);
 	}
 
-	void GuiItem::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
+	G3D::Vector3 Primitive::clipToSafeSize(const G3D::Vector3& newSize)
 	{
-		if (instance == focus)
-			loseFocus();
+		G3D::Vector3 r = newSize.min(G3D::Vector3(512.0f, 512.0f, 512.0f));
 
-		Instance::onDescendentRemoving(instance);
+		if (r.x * r.y * r.z > 1e+6f) 
+		{
+			r.y = floorf(1e+6f / (r.x * r.z));
+		}
+
+		return r;
 	}
 
-	Rect GuiItem::getMyRect() const
+	float Primitive::computeJointK() const 
 	{
-		G3D::Vector2 pos = getPosition();
-		return Rect(pos, pos + getSize());
+		Geometry::GeometryType type = geometry->getGeometryType();
+		return Constants::getJointK(geometry->getGridSize(), type == Geometry::GEOMETRY_BALL);
 	}
 
-	const GuiItem* GuiItem::getGuiParent() const
+void Primitive::setClump(Clump* set)
 	{
-		return dynamic_cast<const GuiItem*>(getParent());
+		if (set != clump)
+		{
+			clump = set;
+		}
+	}
+
+	const G3D::CoordinateFrame& Primitive::getCoordinateFrame() const
+	{
+		return body->getPV().position;
 	}
 	
-	GuiResponse GuiItem::process(const GuiEvent& event)
+	G3D::CoordinateFrame Primitive::getGridCorner() const
 	{
-		if (event.isMouseEvent() && event.eventType == UIEvent::MOUSE_IDLE)
-			return GuiResponse::notUsed();
+		const G3D::CoordinateFrame& pos = body->getPV().position;
+		G3D::Vector3 hVec = -(geometry->getGridSize() * 0.5f);
 
-		if (focus)
+		return G3D::CoordinateFrame(pos.rotation, pos.pointToWorldSpace(hVec));
+	}
+
+	void Primitive::setGridCorner(const G3D::CoordinateFrame& gridCorner)
+	{
+		G3D::Vector3 hVec = geometry->getGridSize() * 0.5;
+		setCoordinateFrame(G3D::CoordinateFrame(gridCorner.rotation, gridCorner.pointToWorldSpace(hVec)));
+	}
+
+	void Primitive::setVelocity(const Velocity& vel)
+	{
+		body->setVelocity(vel);
+	}
+
+	float Primitive::getPlanarSize() const
+	{
+		return Math::planarSize(geometry->getGridSize());
+	}
+
+	bool Primitive::hitTest(const G3D::Ray& worldRay, G3D::Vector3& worldHitPoint, bool& inside) 
+	{
+		G3D::Ray localRay = body->getPV().position.toObjectSpace(worldRay);
+		G3D::Vector3 localHitPoint;
+
+		if (geometry->hitTest(localRay, localHitPoint, inside))
 		{
-			if (focus->canLoseFocus())
-			{
-				GuiResponse response = processNonFocus(event);
-				if (response.wasUsed())
-					return response;
-			}
+			worldHitPoint = body->getPV().position.pointToWorldSpace(localHitPoint);
+			return true;
+		}
+		else return false;
+	}
 
-			GuiResponse focusResponse = focus->process(event);
-			if (focusResponse.wasUsed())
-				return focusResponse;
+	Face Primitive::getFaceInObject(NormalId objectFace)
+	{
+		return Face::fromExtentsSide(getExtentsLocal(), objectFace);
+	}
 
-			loseFocus();
+	Face Primitive::getFaceInWorld(NormalId objectFace)
+	{
+		return getFaceInObject(objectFace).toWorldSpace(body->getPV().position);
+	}
+
+	G3D::CoordinateFrame Primitive::getFaceCoordInObject(NormalId objectFace)
+	{
+		return G3D::CoordinateFrame(normalIdToMatrix3(objectFace), normalIdToVector3(objectFace) * geometry->getGridSize());
+	}
+
+	void Primitive::setSurfaceType(NormalId id, SurfaceType newSurfaceType)
+	{
+		if (surfaceType[id] != newSurfaceType)
+			surfaceType[id] = newSurfaceType;
+	}
+
+	void Primitive::setSurfaceData(NormalId id, const SurfaceData& newSurfaceData)
+	{
+		if (!surfaceData[id] && newSurfaceData.isEmpty())
+			return;
+
+		if (surfaceData[id] && *surfaceData[id] == newSurfaceData)
+			return;
+
+		if (newSurfaceData.isEmpty())
+		{
+			RBXASSERT(surfaceData[id]);
+			delete surfaceData[id];
+			surfaceData[id] = NULL;
+			return;
+		}
+		else if (!surfaceData[id])
+		{
+			surfaceData[id] = new SurfaceData;
 		}
 
-		RBXASSERT(!focus);
-		return processNonFocus(event);
+		*surfaceData[id] = newSurfaceData;
 	}
 
-	void TopMenuBar::init()
+	Edge* Primitive::getFirstEdge() const
 	{
-		layoutStyle = Layout::HORIZONTAL;
-		backdropColor = G3D::Color4::clear();
-		visible = true;
+		return joints.first ? joints.first : contacts.first;
 	}
 
-	G3D::Vector2 TopMenuBar::getSize() const
+	Joint* Primitive::getFirstJoint() const
 	{
-		G3D::Vector2 size(0.0f, 0.0f);
+		return rbx_static_cast<Joint*>(joints.first);
+	}
 
-		for (size_t i = 0; i < numChildren(); i++)
+	Contact* Primitive::getFirstContact()
+	{
+		return rbx_static_cast<Contact*>(contacts.first);
+	}
+
+	RigidJoint* Primitive::getFirstRigid()
+	{
+		return getFirstRigidAt(getFirstEdge());
+	}
+
+	RigidJoint* Primitive::getNextRigid(RigidJoint* prev)
+	{
+		return getFirstRigidAt(getNextEdge(prev));
+	}
+
+	Geometry* Primitive::newGeometry(Geometry::GeometryType geometryType)
+	{
+		switch (geometryType)
 		{
-			const GuiItem* current = getGuiItem((int)i);
+			case Geometry::GEOMETRY_BLOCK: return new Block;
+			case Geometry::GEOMETRY_BALL: return new Ball;
+			default: return Geometry::nullGeometry();
+		}
+	}
 
-			if (current)
+	void newTouch(Primitive* touch, Primitive* touchOther)
+	{
+		Clump* clumpTouch = touch->getClump();
+		Clump* clumpOTouch = touchOther->getClump();
+
+		RBXASSERT(clumpTouch);
+		RBXASSERT(clumpOTouch);
+
+		if (touch->getOwner()->reportTouches() && 
+			((!clumpTouch->getAnchored() && clumpTouch->getSleepStatus() == Sim::AWAKE) ||
+			(!clumpOTouch->getAnchored() && clumpOTouch->getSleepStatus() == Sim::AWAKE)))
+		{
+			touch->getWorld()->onPrimitiveTouched(touch, touchOther);
+		}
+	};
+
+	void Primitive::onNewTouch(Primitive* p0, Primitive* p1)
+	{
+		newTouch(p0, p1);
+		newTouch(p1, p0);
+	}
+
+	Assembly* Primitive::getAssembly() const 
+	{
+		return clump ? clump->getAssembly() : NULL;
+	}
+
+	void Primitive::setPrimitiveType(Geometry::GeometryType geometryType)
+	{
+		RBXASSERT(geometry->getGeometryType() != Geometry::GEOMETRY_NONE);
+		RBXASSERT(geometryType != Geometry::GEOMETRY_NONE);
+
+		if (geometry->getGeometryType() != geometryType)
+		{
+			G3D::Vector3 oldSize = geometry->getGridSize();
+			if (geometry)
+				delete geometry;
+
+			geometry = newGeometry(geometryType);
+
+			if (world)
+				world->onPrimitiveGeometryTypeChanged(this);
+
+			setGridSize(oldSize);
+			JointK.setDirty();
+		}
+	}
+
+	void Primitive::setCoordinateFrame(const G3D::CoordinateFrame& value)
+	{
+		if (value != body->getPV().position)
+		{
+			Assembly* assembly = getAssembly();
+			if (!assembly)
 			{
-				G3D::Vector2 childSize = current->getSize();
-				switch (layoutStyle)
+				body->setCoordinateFrame(value);
+				myOwner->notifyMoved();
+				if (world)
+					world->onPrimitiveExtentsChanged(this);
+			}
+			else
+			{
+				RBXASSERT(world);
+				if (assembly->getMainPrimitive() == this)
 				{
-				case Layout::VERTICAL:
-					size.x = G3D::max(size.x, childSize.x);
-					size.y += childSize.y;
-					break;
-				case Layout::HORIZONTAL:
-					size.x += childSize.x;
-					size.y = G3D::max(size.y, childSize.y);
-					break;
+					body->setCoordinateFrame(value);
+					assembly->notifyMoved();
+					world->onAssemblyExtentsChanged(assembly);
+					if (!anchored)
+						world->ticklePrimitive(this);
 				}
 			}
 		}
-
-		return size;
 	}
 
-	void TopMenuBar::render2d(Adorn* adorn)
+	void Primitive::setDragging(bool _dragging)
 	{
-		if (isVisible())
+		if (dragging != _dragging)
 		{
-			if (backdropColor != G3D::Color4::clear())
-			{
-				adorn->rect2d(getMyRect2D(), backdropColor);
-			}
+			bool oldDrag = !dragging && canCollide;
+			dragging = _dragging;
 
-			for (size_t i = 0; i < numChildren(); i++)
+			setAnchor(anchored);
+			if (world)
 			{
-				GuiItem* current = getGuiItem((int)i);
-				if (current)
-					current->render2d(adorn);
+				bool newDrag = !dragging && canCollide;
+				if (newDrag != oldDrag)
+					world->onPrimitiveCanCollideChanged(this);
 			}
 		}
 	}
 
-	GuiResponse TopMenuBar::process(const GuiEvent& event)
+	void Primitive::setAnchor(bool _anchored)
 	{
-		if (isVisible())
-		{
-			GuiResponse response = GuiItem::process(event);
-			if (response.wasUsed())
-			{
-				return response;
-			}
+		anchored = _anchored;
 
-			if (backdropColor.a > 0.0f && event.isMouseEvent() && getMyRect().pointInRect(event.mousePosition))
+		bool exists = getAnchor();
+
+		if (_anchored || dragging)
+			_anchored = true;
+
+		if (_anchored == exists)
+			return;
+
+		if (_anchored)
+		{
+			RBXASSERT(!anchorObject);
+			anchorObject = new Anchor(this);
+			if (world)
+				world->onPrimitiveAddedAnchor(this);
+		}
+		else
+		{
+			RBXASSERT(anchorObject);
+			if (world)
+				world->onPrimitiveRemovingAnchor(this);
+			
+			if (anchorObject)
+				delete anchorObject;
+
+			anchorObject = NULL;
+		}
+	}
+
+	void Primitive::setCanCollide(bool value)
+	{
+		bool oldDrag = !dragging && canCollide;
+
+		if (canCollide != value)
+		{
+			canCollide = value;
+			if (world)
 			{
-				return GuiResponse::used();
+				bool newDrag = !dragging && value;
+				if (oldDrag != newDrag)
+					world->onPrimitiveCanCollideChanged(this);
 			}
 		}
-
-		return GuiResponse::notUsed();
 	}
 
-	void RelativePanel::init(const Layout& layout)
+	void Primitive::setCanSleep(bool _canSleep)
 	{
-		setName("RelativePanel");
-		layoutStyle = layout.layoutStyle;
-		backdropColor = layout.backdropColor;
-		xLocation = layout.xLocation;
-		yLocation = layout.yLocation;
-		offset = layout.offset;
-	}
-
-	GuiRoot::GuiRoot() 
-	{
-		setName("GuiRoot");
-	}
-
-	int GuiRoot::normalizedFontSize(int fontSize)
-	{
-		static G3D::Vector2 percentSize(100.0f, 75.0f);
-		return G3D::iRound(floorf(fontSize * toPixelSize(percentSize).x * 0.001f));
-	}
-
-	void GuiRoot::render2d(Adorn* adorn)
-	{
-		short height = static_cast<short>(adorn->getHeight());
-		short width = static_cast<short>(adorn->getWidth());
-
-		canvasSize = G3D::Vector2(width, height);
-
-		for (size_t i = 0; i < numChildren(); i++)
+		if (_canSleep != canSleep)
 		{
-			GuiItem* current = getGuiItem((int)i);
-			if (current)
-				current->render2d(adorn);
+			canSleep = _canSleep;
+			if (world)
+				world->onPrimitiveCanSleepChanged(this);
 		}
+	}
+
+	void Primitive::setFriction(float _friction)
+	{
+		if (_friction != friction)
+		{
+			friction = _friction;
+			if (world)
+				world->onPrimitiveContactParametersChanged(this);
+		}
+	}
+
+	void Primitive::setElasticity(float _elasticity)
+	{
+		if (_elasticity != elasticity)
+		{
+			elasticity = _elasticity;
+			if (world)
+				world->onPrimitiveContactParametersChanged(this);
+		}
+	}
+
+	void Primitive::setGridSize(const G3D::Vector3& gridSize) // 100% match when Body::setMoment is set as __declspec(noinline)
+	{
+		G3D::Vector3 protectedSize = clipToSafeSize(gridSize);
+
+		if (protectedSize != geometry->getGridSize())
+		{
+			fuzzyExtentsStateId = -2;
+			geometry->setGridSize(protectedSize);
+
+			float newSize = geometry->getGridVolume();
+			body->setMass(newSize);
+			body->setMoment(geometry->getMoment(newSize));
+			JointK.setDirty();
+
+			if (world)
+				world->onPrimitiveExtentsChanged(this);
+
+			JointK.setDirty();
+		}
+	}
+
+	bool Primitive::aaBoxCollide(const Primitive& p0, const Primitive& p1)
+	{
+		G3D::Vector3 delta = p0.getCoordinateFrame().translation - p1.getCoordinateFrame().translation;
+		float r0 = p0.getRadius();
+		float r1 = p1.getRadius();
+		
+		if (r0 + r1 < Math::longestVector3Component(delta))
+			return false;
+
+		const Extents& f1 = p1.getFastFuzzyExtents();
+		const Extents& f0 = p0.getFastFuzzyExtents();
+		return f0.overlapsOrTouches(f1);
+	}
+
+	Extents Primitive::computeFuzzyExtents() const
+	{
+		Extents ext = Extents::fromCenterCorner(body->getPV().position.translation, geometry->getCenterToCorner(body->getPV().position.rotation));
+		ext.expand(0.01f);
+
+		return ext;
+	}
+
+	void Primitive::setController(Controller* _controller)
+	{
+		if (!_controller)
+			_controller = NullController::getStaticNullController();
+
+		if (controller != _controller)
+			controller = _controller;
+	}
+
+	const Extents& Primitive::getFastFuzzyExtents() const
+	{
+		if (fuzzyExtentsStateId != body->getStateIndex())
+		{
+			fuzzyExtents = computeFuzzyExtents();
+			fuzzyExtentsStateId = body->getStateIndex();
+		}
+
+		return fuzzyExtents;
+	}
+
+	Joint* Primitive::getNextJoint(Joint* prev) const
+	{
+		return rbx_static_cast<Joint*>(prev->getNext(this));
+	}
+
+	Contact* Primitive::getNextContact(Contact* prev)
+	{
+		return rbx_static_cast<Contact*>(prev->getNext(this));
+	}
+
+	Edge* Primitive::getNextEdge(Edge* e) const
+	{
+		Edge* next = e->getNext(this);
+
+		if (next)
+			return next;
+		else
+			return Joint::isJoint(e) ? contacts.first : NULL;
+	}
+
+	Joint* Primitive::getJoint(Primitive* p0, Primitive* p1)
+	{
+		Primitive* least = p0->getNumJoints2() < p1->getNumJoints2() ? p0 : p1;
+
+		for (Joint* current = least->getFirstJoint(); current != NULL; current = least->getNextJoint(current))
+		{
+			if (p0 == current->getPrimitive(0) && p1 == current->getPrimitive(1) || p0 == current->getPrimitive(1) && p1 == current->getPrimitive(0))
+			   return current;
+		}
+		return NULL;
+	}
+
+	Contact* Primitive::getContact(Primitive* p0, Primitive* p1)
+	{
+		Primitive* least = p0->getNumContacts() < p1->getNumContacts() ? p0 : p1;
+
+		for (Contact* current = least->getFirstContact(); current != NULL; current = least->getNextContact(current))
+		{
+			if (p0 == current->getPrimitive(0) && p1 == current->getPrimitive(1) || p0 == current->getPrimitive(1) && p1 == current->getPrimitive(0))
+			   return current;
+		}
+		return NULL;
+	}
+
+	RigidJoint* Primitive::getFirstRigidAt(Edge* start)
+	{
+		for (Edge* current = start; current != NULL; current = getNextEdge(current))
+		{
+			if (RigidJoint::isRigidJoint(current))
+				return rbx_static_cast<RigidJoint*>(current);
+		}
+		return NULL;
+	}
+
+	int Primitive::countNumJoints() const
+	{
+		int counter = 0;
+		for (Joint* current = getFirstJoint(); current != NULL; current = getNextJoint(current))
+		{
+			Joint::JointType type = current->getJointType();
+			if (type != Joint::FREE_JOINT && type != Joint::ANCHOR_JOINT)
+				counter++;
+		}
+		return counter;
+	}
+
+	void Primitive::insertEdge(Edge* e)
+	{
+		Primitive* p0 = e->getPrimitive(0);
+		Primitive* p1 = e->getPrimitive(1);
+
+		if (Joint::isJoint(e))
+		{
+			EdgeList::insertEdge(p0, e, e->getPrimitive(0)->joints);
+
+			if (p1)
+				EdgeList::insertEdge(p1, e, e->getPrimitive(1)->joints);
+			else
+				RBXASSERT(rbx_static_cast<Joint*>(e)->getJointType() == Joint::ANCHOR_JOINT || rbx_static_cast<Joint*>(e)->getJointType() == Joint::FREE_JOINT);
+		}
+		else
+		{
+			EdgeList::insertEdge(p0, e, e->getPrimitive(0)->contacts);
+			EdgeList::insertEdge(p1, e, e->getPrimitive(1)->contacts);
+		}
+	}
+
+	void Primitive::removeEdge(Edge* e)
+	{
+		Primitive* p0 = e->getPrimitive(0);
+		Primitive* p1 = e->getPrimitive(1);
+
+		if (Joint::isJoint(e))
+		{
+			EdgeList::removeEdge(p0, e, e->getPrimitive(0)->joints);
+
+			if (p1)
+				EdgeList::removeEdge(p1, e, e->getPrimitive(1)->joints);
+			else
+				RBXASSERT(rbx_static_cast<Joint*>(e)->getJointType() == Joint::ANCHOR_JOINT || rbx_static_cast<Joint*>(e)->getJointType() == Joint::FREE_JOINT);
+		}
+		else
+		{
+			EdgeList::removeEdge(p0, e, e->getPrimitive(0)->contacts);
+			EdgeList::removeEdge(p1, e, e->getPrimitive(1)->contacts);
+		}
+	}
+
+	void EdgeList::insertEdge(Primitive* p, Edge* e, EdgeList& list)
+	{
+		e->setNext(p, list.first);
+		list.first = e;
+		list.num++;
+	}
+
+	void EdgeList::removeEdge(Primitive* p, Edge* e, EdgeList& list)
+	{
+		Edge* currentEdge = list.first;
+
+		if (list.first == e)
+		{
+			list.first = e->getNext(p);
+		}
+		else
+		{
+			while (currentEdge->getNext(p) != e)
+			{
+				currentEdge = currentEdge->getNext(p);
+			}
+
+			currentEdge->setNext(p, e->getNext(p));
+		}
+
+		list.num--;
 	}
 }

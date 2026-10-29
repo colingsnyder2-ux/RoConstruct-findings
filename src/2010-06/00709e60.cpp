@@ -1,127 +1,55 @@
-// from server: 58% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8world/Joint.cpp
+// roc 2010-06 00709e60  unit: RBX::Joint  size: 57 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 00709e60
+//
+// 00709e60  56                   push esi
+// 00709e61  8b742408             mov esi, dword ptr [esp + 8]
+// 00709e65  85f6                 test esi, esi
+// 00709e67  742c                 je 0x709e95
+// 00709e69  8b0e                 mov ecx, dword ptr [esi]
+// 00709e6b  85c9                 test ecx, ecx
+// 00709e6d  7409                 je 0x709e78
+// 00709e6f  8b01                 mov eax, dword ptr [ecx]
+// 00709e71  8b5004               mov edx, dword ptr [eax + 4]
+// 00709e74  ffd2                 call edx
+// 00709e76  eb05                 jmp 0x709e7d
+// 00709e78  b80c93b700           mov eax, 0xb7930c
+// 00709e7d  681419ba00           push 0xba1914
+// 00709e82  8bc8                 mov ecx, eax
+// 00709e84  ff15d8a89e00         call dword ptr [0x9ea8d8]
+// 00709e8a  84c0                 test al, al
+// 00709e8c  7407                 je 0x709e95
+// 00709e8e  8b06                 mov eax, dword ptr [esi]
+// 00709e90  83c004               add eax, 4
+// 00709e93  5e                   pop esi
+// 00709e94  c3                   ret 
+// 00709e95  33c0                 xor eax, eax
+// 00709e97  5e                   pop esi
+// 00709e98  c3                   ret 
+// copied from an identical function in another client (function ?fn_ROCX000000_00642c10@@YAPAXPAUAny@@@Z)
 
-// Candidate translation unit (score above; library headers required).
-#include "v8world/Joint.h"
+#include <typeinfo>
 
-#include "decomp.h"
-#include "util/Face.h"
-#include "util/Math.h"
-#include "v8world/Primitive.h"
-#include "v8world/World.h"
+// boost::any_cast<T>(any *) shape: 0xb0030c = typeid(void), 0xb1316c = typeid(T)
+extern const type_info type_descriptor_b0030c;
+extern const type_info type_descriptor_b1316c;
 
-#include <cstddef>
-
-namespace RBX {
-
-// FUNCTION: WEBSERVICE 0x100d7b80
-CoordinateFrame Joint::align(Primitive* pMove, Primitive* pStay)
+struct Placeholder
 {
-	return CoordinateFrame();
-}
+    virtual ~Placeholder();
+    virtual const type_info &type() const;
+};
 
-// FUNCTION: WEBSERVICE 0x101019b0 FOLDED
-bool Joint::joinsFace(Primitive* primitive, NormalId normalId) const
+struct Any
 {
-	return false;
-}
+    Placeholder *content;
+    const type_info &type() const { return content ? content->type() : type_descriptor_b0030c; }
+};
 
-// FUNCTION: WEBSERVICE 0x1011e870
-Joint::~Joint()
+struct Holder : Placeholder { int held; };
+
+void *func_00642c10(Any *operand)
 {
+    if (operand && operand->type() == type_descriptor_b1316c)
+        return &static_cast<Holder *>(operand->content)->held;
+    return 0;
 }
-
-// FUNCTION: WEBSERVICE 0x1011e880
-void Joint::setJointOwner(IJointOwner* value)
-{
-	jointOwner = value;
-}
-
-// FUNCTION: WEBSERVICE 0x1011e890
-bool Joint::canBuildJoint(Primitive* p0, Primitive* p1, NormalId nId0, NormalId nId1, float angleMax, float planarMax)
-{
-	if (!Math::fuzzyAxisAligned(p0->getCoordinateFrame().rotation, p1->getCoordinateFrame().rotation, angleMax)) {
-		return false;
-	}
-
-	Face f0 = p0->getFaceInWorld(nId0);
-	Face f1 = p1->getFaceInWorld(nId1);
-
-	if (!Face::hasOverlap(f0, f1, 0.35f)) {
-		return false;
-	}
-
-	return Face::overlapWithinPlanes(f0, f1, planarMax) ? true : false;
-}
-
-// FUNCTION: WEBSERVICE 0x1011e940
-bool Joint::canBuildJointTight(Primitive* p0, Primitive* p1, NormalId nId0, NormalId nId1)
-{
-	return canBuildJoint(p0, p1, nId0, nId1, 0.01f, 0.01f);
-}
-
-// FUNCTION: WEBSERVICE 0x1011e970
-bool Joint::canBuildJointLoose(Primitive* p0, Primitive* p1, NormalId nId0, NormalId nId1)
-{
-	return canBuildJoint(p0, p1, nId0, nId1, 0.05f, 0.05f);
-}
-
-// FUNCTION: WEBSERVICE 0x1011e9a0
-Joint::Joint(
-	Primitive* prim0,
-	Primitive* prim1,
-	const CoordinateFrame& _jointCoord0,
-	const CoordinateFrame& _jointCoord1
-)
-	: Edge(prim0, prim1), jointOwner(NULL), active(false)
-{
-	jointCoord0 = Math::snapToGrid(_jointCoord0, 0.1f);
-	jointCoord1 = Math::snapToGrid(_jointCoord1, 0.1f);
-}
-
-// FUNCTION: WEBSERVICE 0x1011ea80
-Joint::Joint() : Edge(NULL, NULL), jointOwner(NULL), active(false)
-{
-}
-
-// FUNCTION: WEBSERVICE 0x1011eac0
-void Joint::setPrimitive(int i, Primitive* p)
-{
-	if (p != getPrimitive(i)) {
-
-		World* world = getWorld();
-
-		if (world != NULL && getPrimitive(i) != NULL) {
-			world->onJointPrimitiveNulling(this, getPrimitive(i));
-		}
-
-		Edge::setPrimitive(i, p);
-
-		if (world != NULL && p != NULL) {
-			world->onJointPrimitiveSet(this, p);
-		}
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1011eb30
-void Joint::setJointCoord(int i, const CoordinateFrame& c)
-{
-	if (c != getJointCoord(i)) {
-		if (i == 0) {
-			jointCoord0 = c;
-		}
-		else {
-			jointCoord1 = c;
-		}
-
-		if (World* world = getWorld()) {
-			world->removeJoint(this);
-			world->insertJoint(this);
-		}
-	}
-}
-
-} // namespace RBX

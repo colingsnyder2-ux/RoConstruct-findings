@@ -1,147 +1,30 @@
-// from server: 28% by colin
-// roc-lang: cpp
+// roc 2009-06 00419250  unit: CRBXHTMLControlSite  size: 33 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 00419250
+//
+// 00419250  8bc1                 mov eax, ecx
+// 00419252  8b4c2404             mov ecx, dword ptr [esp + 4]
+// 00419256  85c9                 test ecx, ecx
+// 00419258  740f                 je 0x419269
+// 0041925a  50                   push eax
+// 0041925b  e8a0ffffff           call 0x419200
+// 00419260  84c0                 test al, al
+// 00419262  7505                 jne 0x419269
+// 00419264  33c0                 xor eax, eax
+// 00419266  c20400               ret 4
+// 00419269  b801000000           mov eax, 1
+// 0041926e  c20400               ret 4
+// copied from an identical function in another client (function ?g@S@@QAEHPAU1@@Z)
+
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 G3Dcpp/Color4.cpp
+struct S {
+    bool f(S*);
+    int g(S*);
+};
 
-// Candidate translation unit (score above; library headers required).
-/**
- @file Color4.cpp
-
- Color class.
-
- @author Morgan McGuire, matrix@graphics3d.com
- @cite Portions by Laura Wollstadt, graphics3d.com
- @cite Portions based on Dave Eberly's Magic Software Library at http://www.magic-software.com
-
-
- @created 2002-06-25
- @edited  2006-01-10
- */
-
-#include <stdlib.h>
-#include "G3D/Color4.h"
-#include "G3D/Color4uint8.h"
-#include "G3D/Vector4.h"
-#include "G3D/format.h"
-#include "G3D/BinaryInput.h"
-#include "G3D/BinaryOutput.h"
-
-namespace G3D {
-
-const Color4& Color4::zero() {
-    static Color4 c(0.0f, 0.0f, 0.0f, 0.0f);
-    return c;
+int S::g(S* other)
+{
+    if (other && !other->f(this))
+        return 0;
+    return 1;
 }
-
-const Color4& Color4::inf() {
-    static Color4 c((float)G3D::inf(), (float)G3D::inf(), (float)G3D::inf(), (float)G3D::inf());
-    return c;
-}
-
-const Color4& Color4::clear() {
-    return Color4::zero();
-}
-
-Color4::Color4(const Vector4& v) {
-    r = v.x;
-    g = v.y;
-    b = v.z;
-    a = v.w;
-}
-
-// Deprecated.
-const Color4 Color4::ZERO   (0.0f, 0.0f, 0.0f, 0.0f);
-const Color4 Color4::CLEAR  (0.0f, 0.0f, 0.0f, 0.0f);
-
-Color4::Color4(const Color4uint8& c) : r(c.r), g(c.g), b(c.b), a(c.a) {
-    *this /= 255.0f;
-}
-
-unsigned int Color4::hashCode() const {
-    unsigned int rhash = (*(int*)(void*)(&r));
-    unsigned int ghash = (*(int*)(void*)(&g));
-    unsigned int bhash = (*(int*)(void*)(&b));
-    unsigned int ahash = (*(int*)(void*)(&a));
-
-    return rhash + (ghash * 37) + (bhash * 101) + (ahash * 241);
-}
-
-Color4 Color4::fromARGB(uint32 x) {
-    return Color4(
-        (float)((x >> 16) & 0xFF), 
-        (float)((x >> 8) & 0xFF),
-        (float)(x & 0xFF), 
-        (float)((x >> 24) & 0xFF)) / 255.0;
-}
-
-
-Color4::Color4(BinaryInput& bi) {
-    deserialize(bi);
-}
-
-
-void Color4::deserialize(BinaryInput& bi) {
-    r = bi.readFloat32();
-    g = bi.readFloat32();
-    b = bi.readFloat32();
-    a = bi.readFloat32();
-}
-
-
-void Color4::serialize(BinaryOutput& bo) const {
-    bo.writeFloat32(r);
-    bo.writeFloat32(g);
-    bo.writeFloat32(b);
-    bo.writeFloat32(a);
-}
-
-
-//----------------------------------------------------------------------------
-
-Color4 Color4::operator/ (float fScalar) const {
-    Color4 kQuot;
-
-    if (fScalar != 0.0f) {
-		float fInvScalar = 1.0f / fScalar;
-        kQuot.r = fInvScalar * r;
-        kQuot.g = fInvScalar * g;
-        kQuot.b = fInvScalar * b;
-        kQuot.a = fInvScalar * a;
-        return kQuot;
-
-    } else {
-
-        return Color4::inf();
-    }
-}
-
-//----------------------------------------------------------------------------
-
-Color4& Color4::operator/= (float fScalar) {
-    if (fScalar != 0.0f) {
-		float fInvScalar = 1.0f / fScalar;
-        r *= fInvScalar;
-        g *= fInvScalar;
-        b *= fInvScalar;
-        a *= fInvScalar;
-    } else {
-        r = (float)G3D::inf();
-        g = (float)G3D::inf();
-        b = (float)G3D::inf();
-        a = (float)G3D::inf();
-    }
-
-    return *this;
-}
-
-//----------------------------------------------------------------------------
-
-std::string Color4::toString() const {
-    return G3D::format("(%g, %g, %g, %g)", r, g, b, a);
-}
-
-//----------------------------------------------------------------------------
-
-}; // namespace
-

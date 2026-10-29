@@ -1,4 +1,3 @@
-// from server: 81% by colin
 // roc 2007-08 0054f5d0  unit: std::D::V?$allocator::V?$basic_gzip_compressor::?$stream_buffer  size: 48 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0054f5d0
 //
@@ -15,27 +14,40 @@
 // 0054f5f3  8d4c2404             lea ecx, [esp + 4]
 // 0054f5f7  ff15fce47700         call dword ptr [0x77e4fc]
 // 0054f5fd  c20400               ret 4
+// copied from an identical function in another client (function ?f@S@@QAEXABULocale@@@Z)
 
-struct stream_buffer_base {
-    char pad[0x8c];
-    void* ptr_8c;
-    char pad2[0x9c - 0x8c - 4];
-    unsigned char flags_9c;
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+struct Locale
+{
+    unsigned int value;
 };
 
-extern "C" {
-    void* __stdcall pubimbue_impl(void* self, void* result, const void* loc);
-    void __stdcall locale_dtor(void* loc);
-}
+struct Stream;
 
-struct S : stream_buffer_base {
-    void setLocale(const void* loc);
+extern void (__thiscall *pubimbue)(Stream*, Locale*, const Locale&);
+extern void (__thiscall *destroy_locale)(Locale*);
+
+struct S
+{
+    char padding[0x8c];
+    Stream* stream;
+    char reserved[12];
+    unsigned char flags;
+
+    void f(const Locale& locale);
 };
 
-void S::setLocale(const void* loc) {
-    if ((flags_9c & 1) != 0 && ptr_8c != 0) {
-        char buf[4];
-        pubimbue_impl(ptr_8c, buf, loc);
-        locale_dtor(buf);
+void S::f(const Locale& locale)
+{
+    if (flags & 1)
+    {
+        Stream* p = stream;
+        if (p)
+        {
+            Locale result;
+            pubimbue(p, &result, locale);
+            destroy_locale(&result);
+        }
     }
 }

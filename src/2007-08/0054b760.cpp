@@ -1,67 +1,14 @@
-// from server: 77% by colin
-struct allocator {
-    char* allocate(unsigned int, const void*);
-    void deallocate(char*, unsigned int);
-};
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-boost-1_34_1-dll roc_boost_resume_389d0bd197ae56e1.cpp
 
-struct UString_sink {
-    char pad0[0x3c];
-    char field_3c;
-    char pad3d[0x3];
-    int field_40;
-    char field_44;
-    char pad45[0x7];
-    char* field_4c;
-    unsigned int field_50;
-    unsigned int field_54;
-    unsigned int field_58;
-    void stream_buffer(int, int, int);
-};
-
-void UString_sink::stream_buffer(int a, int b, int c)
-{
-    int n = a;
-    if (n == -1)
-        n = 0x1000;
-
-    int m = b;
-    if (m == -1)
-        m = 4;
-
-    int local = 2;
-    int* p;
-    if (m > 2)
-        p = &m;
-    else
-        p = &local;
-
-    field_54 = *p;
-
-    if (n == 0)
-        n = 1;
-
-    unsigned int total = field_54 + n;
-    if (field_50 != total)
-    {
-        allocator* alloc = (allocator*)this;
-        char* newbuf = alloc->allocate(total, 0);
-        unsigned int oldsize = field_50;
-        field_50 = total;
-        char* oldbuf = field_4c;
-        field_4c = newbuf;
-        if (oldbuf)
-            alloc->deallocate(oldbuf, oldsize);
-    }
-
-    void** vtbl = *(void***)this;
-    void (*fn)(void*) = (void (*)(void*))vtbl[0x54 / 4];
-    fn(this);
-
-    if (field_44)
-        field_44 = 0;
-
-    field_40 = local;
-    field_44 = 1;
-    field_58 |= 1;
-    field_3c = 0;
-}
+// Candidate translation unit (score above; library headers required).
+#define NDEBUG 1
+#include <istream>
+#include <ostream>
+#include <boost/ref.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::stream_buffer<boost::reference_wrapper<std::istream> >;
+template class boost::iostreams::stream_buffer<boost::reference_wrapper<std::ostream> >;

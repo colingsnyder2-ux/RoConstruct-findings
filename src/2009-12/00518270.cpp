@@ -1,24 +1,20 @@
-// from server: 45% by atomic.potato
-// roc 2009-12 00518270  unit: RBX::VInstance::?$NonFactoryProduct  size: 60 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 00518270
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_f705deee62b6bd19.cpp
 
-typedef unsigned int DWORD;
-
-struct S {
-    DWORD field0;
-    DWORD field4;
-    DWORD field8;
-};
-
-void __fastcall func(S* self, void* dummy, S* first, S* last, void (*fn)(DWORD*, DWORD), DWORD arg);
-
-void __fastcall func(S* self, void* dummy, S* first, S* last, void (*fn)(DWORD*, DWORD), DWORD arg)
-{
-    S* cur = first;
-    while (cur != last) {
-        fn(&cur->field8, arg);
-        cur = (S*)cur->field0;
-    }
-    self->field0 = (DWORD)first;
-    self->field4 = (DWORD)last;
+// Candidate translation unit (score above; library headers required).
+#define _DLL
+#include <list>
+#include <algorithm>
+#include <boost/bind.hpp>
+#include <boost/shared_ptr.hpp>
+namespace RBX {
+class Instance;
+class Context;
+void visit(const boost::shared_ptr<Instance>& item, Context* context);
 }
+typedef boost::_bi::bind_t<void, void (*)(const boost::shared_ptr<RBX::Instance>&, RBX::Context*),
+	boost::_bi::list2<boost::arg<1>, boost::_bi::value<RBX::Context*> > > VisitFn;
+template VisitFn std::for_each<std::list<boost::shared_ptr<RBX::Instance> >::iterator, VisitFn>(
+	std::list<boost::shared_ptr<RBX::Instance> >::iterator, std::list<boost::shared_ptr<RBX::Instance> >::iterator, VisitFn);

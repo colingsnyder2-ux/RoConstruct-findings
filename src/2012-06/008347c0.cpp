@@ -1,13 +1,19 @@
-// from server: 63% by atomic.potato
-extern "C" void __cdecl sub_008344e0(int, int, int);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: atl-9.0-dll-rtm roc_espclaude_7e1dea9a7966a33a.cpp
 
-struct S
+// Candidate translation unit (score above; library headers required).
+#ifndef _CPPUNWIND
+#define _CPPUNWIND 1
+#endif
+#ifndef _AFXDLL
+#define _AFXDLL
+#endif
+#include <new>
+#include <afx.h>
+#pragma inline_depth(0)
+CString rocConcat(const CString& a, const CString& b)
 {
-    int __cdecl f(int, int);
-};
-
-int S::f(int a, int b)
-{
-    sub_008344e0(b, a, 0);
-    return a;
+	return a + b;
 }

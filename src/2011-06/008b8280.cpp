@@ -1,15 +1,14 @@
-// from server: 95% by TrollStein
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Calendar/XTPCalendarEventLabel.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\Calendar\XTPCalendarEventLabel.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPCalendarEventLabel.cpp: implementation of the CXTPCalendarEventLabel and
 // CXTPCalendarEventLabels classes.
 //
 // This file is a part of the XTREME CALENDAR MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -27,18 +26,15 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "Resource.h"
+#include "resource.h"
 
-#include "Common/Resource.h"
-#include "Common/XTPColorManager.h"
 #include "Common/XTPPropExchange.h"
+#include "Common/XTPVC50Helpers.h"
 #include "Common/XTPVC80Helpers.h"
 #include "Common/XTPDrawHelpers.h"
-#include "Common/XTPResourceManager.h"
-#include "Common/XTPSmartPtrInternalT.h"
 
-#include "XTPCalendarPtrCollectionT.h"
 #include "XTPCalendarEventLabel.h"
+#include "XTPCalendarUtils.h"
 #include "XTPCalendarDefines.h"
 
 #ifdef _DEBUG
@@ -120,37 +116,48 @@ void CXTPCalendarEventLabels::InitDefaultValues()
 
 	//XTP_CALENDAR_NONE_LABEL_ID = 0
 	CXTPCalendarEventLabel* pLabel;
-	pLabel = new CXTPCalendarEventLabel(0, RGB(255, 255, 255), XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_EVENT_LABEL_NONE));
+	pLabel = new CXTPCalendarEventLabel(0, RGB(255, 255, 255), _T("None"));
+	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_NONE);
 	InsertAt(0, pLabel);
 
-	pLabel = new CXTPCalendarEventLabel(1, RGB(255, 148, 132), XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_EVENT_LABEL_IMPORTANT));
+	pLabel = new CXTPCalendarEventLabel(1, RGB(255, 148, 132), _T("Important"));
+	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_IMPORTANT);
 	InsertAt(1, pLabel);
 
-	pLabel = new CXTPCalendarEventLabel(2, RGB(132, 156, 231), XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_EVENT_LABEL_BUSINESS));
+	pLabel = new CXTPCalendarEventLabel(2, RGB(132, 156, 231), _T("Business"));
+	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_BUSINESS);
 	InsertAt(2, pLabel);
 
-	pLabel = new CXTPCalendarEventLabel(3, RGB(165, 222, 99), XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_EVENT_LABEL_PERSONAL));
+	pLabel = new CXTPCalendarEventLabel(3, RGB(165, 222, 99), _T("Personal"));
+	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_PERSONAL);
 	InsertAt(3, pLabel);
 
-	pLabel = new CXTPCalendarEventLabel(4, RGB(231, 231, 214), XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_EVENT_LABEL_VACATION));
+	pLabel = new CXTPCalendarEventLabel(4, RGB(231, 231, 214), _T("Vacation"));
+	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_VACATION);
 	InsertAt(4, pLabel);
 
-	pLabel = new CXTPCalendarEventLabel(5, RGB(255, 181, 115), XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_EVENT_LABEL_MUSTATTEND));
+	pLabel = new CXTPCalendarEventLabel(5, RGB(255, 181, 115), _T("Must Attend"));
+	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_MUSTATTEND);
 	InsertAt(5, pLabel);
 
-	pLabel = new CXTPCalendarEventLabel(6, RGB(132, 239, 247), XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_EVENT_LABEL_TRAVELREQUIRED));
+	pLabel = new CXTPCalendarEventLabel(6, RGB(132, 239, 247), _T("Travel Required"));
+	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_TRAVELREQUIRED);
 	InsertAt(6, pLabel);
 
-	pLabel = new CXTPCalendarEventLabel(7, RGB(214, 206, 132), XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_EVENT_LABEL_NEEDSPREPARATION));
+	pLabel = new CXTPCalendarEventLabel(7, RGB(214, 206, 132), _T("Needs Preparation"));
+	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_NEEDSPREPARATION);
 	InsertAt(7, pLabel);
 
-	pLabel = new CXTPCalendarEventLabel(8, RGB(198, 165, 247), XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_EVENT_LABEL_BIRTHDAY));
+	pLabel = new CXTPCalendarEventLabel(8, RGB(198, 165, 247), _T("Birthday"));
+	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_BIRTHDAY);
 	InsertAt(8, pLabel);
 
-	pLabel = new CXTPCalendarEventLabel(9, RGB(165, 206, 198), XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_EVENT_LABEL_ANNIVERSARY));
+	pLabel = new CXTPCalendarEventLabel(9, RGB(165, 206, 198), _T("Anniversary"));
+	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_ANNIVERSARY);
 	InsertAt(9, pLabel);
 
-	pLabel = new CXTPCalendarEventLabel(10, RGB(255, 231, 115), XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_EVENT_LABEL_PHONECALL));
+	pLabel = new CXTPCalendarEventLabel(10, RGB(255, 231, 115), _T("Phone Call"));
+	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_PHONECALL);
 	InsertAt(10, pLabel);
 }
 
@@ -182,35 +189,56 @@ CXTPPaintManagerColorGradient& CXTPCalendarEventCategory::GetBackgroundColor()
 	return m_grclrBackground;
 }
 
-COLORREF CXTPCalendarEventCategory::GetBkColorAllDayEvents() const
+COLORREF CXTPCalendarEventCategory::GetBkColorAllDayEvents()
 {
 	return m_clrBkBase;
 }
 
-COLORREF CXTPCalendarEventCategory::GetBkColorWorkCell() const
+COLORREF CXTPCalendarEventCategory::GetBkColorWorkCell()
 {
 	return XTPDrawHelpers()->LightenColor(185, m_clrBkBase); // 185 - 245, 201, 203
 }
 
-COLORREF CXTPCalendarEventCategory::GetBkColorNonWorkCell() const
+COLORREF CXTPCalendarEventCategory::GetBkColorNonWorkCell()
 {
 	return XTPDrawHelpers()->LightenColor(115, m_clrBkBase); // 115 - 237, 146, 150
 }
 
-COLORREF CXTPCalendarEventCategory::GetColorCellBorder() const
+COLORREF CXTPCalendarEventCategory::GetColorCellBorder()
 {
 	return XTPDrawHelpers()->LightenColor(45, m_clrBkBase); // 45 - 227, 91, 98
 }
 
+//===========================================================================
+//CXTPCalendarEventCategories::CXTPCalendarEventCategories(BOOL bDefaultColorsSet)
+//{
+//  if (bDefaultColorsSet)
+//  {
+////        m_pDefaultColorsSet = NULL;
+////        InitDefaultColorsSet();
+//  }
+//  else
+//  {
+////        m_pDefaultColorsSet = new CXTPCalendarEventCategories(TRUE);
+//      InitDefaultValues();
+//  }
+//
+//#ifdef _XTP_ACTIVEX
+//  EnableAutomation();
+//  EnableTypeLib();
+//#endif
+//}
 
 CXTPCalendarEventCategories::CXTPCalendarEventCategories()
 {
+//  m_pDefaultColorsSet = new CXTPCalendarEventCategories(TRUE);
 	InitDefaultValues();
 
 }
 
 CXTPCalendarEventCategories::~CXTPCalendarEventCategories()
 {
+	//CMDTARGET_RELEASE(m_pDefaultColorsSet);
 }
 
 CXTPCalendarEventCategory* CXTPCalendarEventCategories::Find(UINT nID) const
@@ -254,17 +282,6 @@ int CXTPCalendarEventCategories::FindIndex(UINT nID) const
 	return -1;
 }
 
-CString CXTPCalendarEventCategories::LoadCategoryName(UINT nIDResource) const
-{
-	CString strFormat = XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_CATEGORY);
-	CString strColor = XTPResourceManager()->LoadString(nIDResource);
-
-	CString strCategory;
-	strCategory.Format(strFormat, (LPCTSTR)strColor);
-
-	return strCategory;
-}
-
 void CXTPCalendarEventCategories::InitDefaultValues()
 {
 	RemoveAll();
@@ -272,31 +289,41 @@ void CXTPCalendarEventCategories::InitDefaultValues()
 	CXTPCalendarEventCategory* pEvCat;
 
 	//---------------------------------------
-	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryYellow, LoadCategoryName(XTP_IDS_CLR_YELLOW),
+	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryYellow, _T("Yellow category"),
 		RGB(154, 149, 25), RGB(255, 251, 155));//RGB(255, 252, 179), RGB(255,249, 91));
 	Add(pEvCat);
 	//---------------------------------------
-	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryGreen, LoadCategoryName(XTP_IDS_CLR_GREEN),
+	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryGreen, _T("Green category"),
 		RGB(55, 126, 45), RGB(96, 194, 82)); //RGB(196, 232, 190), RGB(136, 210, 127));
 	Add(pEvCat);
 	//---------------------------------------
-	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryRed, LoadCategoryName(XTP_IDS_CLR_RED),
+	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryRed, _T("Red category"),
 		RGB(167, 29, 35), RGB(220, 56, 65)); //RGB(242, 178, 179), RGB(229,100, 107));
 	Add(pEvCat);
 	//---------------------------------------
-	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryPink, LoadCategoryName(XTP_IDS_CLR_PINK),
+	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryPink, _T("Pink category"),
 		RGB(77, 49, 141), RGB(184, 164, 224)); //RGB(202, 187, 232), RGB(150, 125, 210));
 	Add(pEvCat);
 	//---------------------------------------
-	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryOrange, LoadCategoryName(XTP_IDS_CLR_ORANGE),
+	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryOrange, _T("Orange category"),
 		RGB(173, 77, 13), RGB(247, 187, 137)); //RGB(249, 204, 167), RGB(244, 152, 90));
 	Add(pEvCat);
 	//---------------------------------------
-	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryBlue, LoadCategoryName(XTP_IDS_CLR_BLUE),
+	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryBlue, _T("Blue category"),
 		RGB(40, 81, 142), RGB(159, 183, 232)); // RGB(183, 201, 238), RGB(119, 158, 218));
 	Add(pEvCat);
+
+
+	//---------------------------------------
+	//pEvCat = new CXTPCalendarEventCategory(1, _T(" category"),
+	//  RGB(, , ), RGB(, , ), RGB(, , ));
+	//Add(pEvCat);
 }
 
+//void CXTPCalendarEventCategories::InitDefaultColorsSet()
+//{
+	// TODO:
+//}
 
 //===========================================================================
 int CXTPCalendarUIntArray::Find(UINT uID) const
@@ -349,7 +376,7 @@ void CXTPCalendarUIntArray::LoadFromString(LPCTSTR pcszData)
 
 		int nDelCount = strNumber.GetLength() + 1;
 		nDelCount = min(nDelCount, strData.GetLength());
-		strData.Delete(0, nDelCount);
+		DELETE_S(strData, 0, nDelCount);
 	}
 }
 

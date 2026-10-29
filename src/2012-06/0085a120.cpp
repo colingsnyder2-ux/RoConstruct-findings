@@ -1,23 +1,15 @@
-// from server: 39% by atomic.potato
-struct S_func_0085a120 {
-    char pad0[0x40];
-    char m_flag41;
-    char pad1[6];
-    char* m_ptr48;
-    int m_len4c;
-    void f();
-};
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_205f2b05043a4e2a.cpp
 
-extern "C" void __stdcall sub_b225f8(char*, char*, int);
-extern "C" void __stdcall sub_b224b4();
-
-void S_func_0085a120::f()
-{
-    if (m_ptr48) {
-        sub_b225f8((char*)&m_ptr48, m_ptr48, m_len4c);
-    }
-    if (m_flag41) {
-        m_flag41 = 0;
-    }
-    sub_b224b4();
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_null_device<char,boost::iostreams::output>,std::char_traits<char>,std::allocator<char>,boost::iostreams::output>;

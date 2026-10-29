@@ -1,4 +1,3 @@
-// from server: 88% by atomic.potato
 // roc 2011-06 00903c5a  unit: CXTIconHandle  size: 28 bytes
 // Make this compile to the exact bytes below, then: roc check 2011-06 00903c5a
 //
@@ -14,29 +13,9 @@
 // 00903c72  8bc6                 mov eax, esi
 // 00903c74  5e                   pop esi
 // 00903c75  c3                   ret 
+// copied from an identical function in another client (function ??0_ATL_WIN_MODULE70@ATL@@QAE@XZ)
 
-struct SubObject
-{
-    int storage[6];
-    void construct();
-};
-
-struct CXTIconHandle
-{
-    int offset0;
-    SubObject subobject;
-    int offset1C;
-    int field20;
-    int field24;
-    int field28;
-    CXTIconHandle *f();
-};
-
-CXTIconHandle *CXTIconHandle::f()
-{
-    subobject.construct();
-    field20 = 0;
-    field24 = 0;
-    field28 = 0;
-    return this;
-}
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /MD
+// roc-archive: msvc-atlmfc-rtm atls.lib/f:/dd/vctools/vc7libs/ship/atlmfc/src/atl/atls/staticrelease/obj1r/i386/atlwinmodule.obj

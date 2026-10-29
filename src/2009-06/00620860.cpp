@@ -1,351 +1,279 @@
-// from server: 44% by colin
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/RootInstance.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll util/Extents.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/RootInstance.h"
-#include "v8datamodel/PartInstance.h"
-#include "v8datamodel/SpawnLocation.h"
-#include "v8datamodel/Camera.h"
-#include "v8datamodel/Teams.h"
-#include "v8datamodel/Hopper.h"
-#include "v8datamodel/Backpack.h"
-#include "v8datamodel/Tool.h"
-#include "v8datamodel/Lighting.h"
-#include "v8datamodel/Sky.h"
-#include "Network/Players.h"
-#include "tool/Dragger.h"
-#include "tool/MegaDragger.h"
-#include "tool/DragUtilities.h"
-#include <boost/bind.hpp>
+#include "util/Extents.h"
+#include "util/Math.h"
+#include "util/Debug.h"
+#include "util/NormalId.h"
 
 namespace RBX
 {
-	const char* sRootInstance = "RootInstance";
-
-#pragma warning (push)
-#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
-	RootInstance::RootInstance()
-		: Base(),
-		  ControllersUsed(this, &RootInstance::computeControllersUsed),
-		  insertPoint(G3D::Vector3::zero()),
-		  viewPort(G3D::Vector2(800.0f, 600.0f)),
-		  world(new World())
+	float Extents::areaXZ() const
 	{
-	}
-#pragma warning (pop)
-
-	RootInstance::~RootInstance()
-	{
+		G3D::Vector3 delta = this->high - this->low;
+		return delta.x * delta.z;
 	}
 
-	void RootInstance::onDescendentAdded(Instance* instance)
+	NormalId Extents::closestFace(const G3D::Vector3& point)
 	{
-		ModelInstance::onDescendentAdded(instance);
-		ControllersUsed.setDirty();
-	}
+		NormalId faceId = NORM_X;
 
-	void RootInstance::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
-	{
-		ControllersUsed.setDirty();
-		ModelInstance::onDescendentRemoving(instance);
-	}
+		// bruh
+		float hy = fabs(point.y - this->high.y);
+		float hz = fabs(point.z - this->high.z);
+		float lx = fabs(point.x - this->low.x);
+		float ly = fabs(point.y - this->low.y);
+		float lz = fabs(point.z - this->low.z);
 
-	void RootInstance::setInsertPoint(const G3D::Vector3& topCenter)
-	{
-		insertPoint = Dragger::toGrid(topCenter);
-	}
-
-	G3D::Vector3 RootInstance::computeIdeInsertPoint() const
-	{
-		insertPoint.y = G3D::max(0.0f, insertPoint.y);
-		float tempY = insertPoint.y;
-
-		G3D::Vector3 newInsertPoint = getExtentsWorld().clip(insertPoint);
-
-		insertPoint = newInsertPoint;
-		insertPoint.y = tempY;
-
-		insertPoint = Dragger::toGrid(insertPoint);
-		return insertPoint;
-	}
-
-	G3D::Vector3 RootInstance::computeCharacterInsertPoint(const Extents& extents) const
-	{
-		ModelInstance* character = Network::Players::findLocalCharacter(this);
-		if (character)
+		float hx = fabs(point.x - this->high.x); 
+		if (hx > hy)
 		{
-			G3D::Vector3 cameraLook = getCamera()->getCameraCoordinateFrame().lookVector();
-			cameraLook.unitize();
-
-			G3D::Vector3 halfSize = extents.size() * 0.5f;
-
-			std::vector<boost::weak_ptr<PartInstance>> partArray;
-			PartInstance::findParts(character, partArray);
-
-			Extents modelExtents = DragUtilities::computeExtents(partArray);
-
-			G3D::Vector3 insertPoint = modelExtents.center() + (cameraLook * 7.0f) + (halfSize * cameraLook) * G3D::Vector3(1,0,1);
-			insertPoint = Dragger::toGrid(insertPoint);
-
-			return insertPoint;
+			faceId = NORM_Y;
 		}
 		else
 		{
+			hy = hx;
+		}
+
+		if (hz < hy)
+		{
+			hy = hz;
+			faceId = NORM_Z;
+		}
+
+		if (lx < hy)
+		{
+			hy = lx;
+			faceId = NORM_X_NEG;
+		}
+
+		if (ly < hy)
+		{
+			hy = ly;
+			faceId = NORM_Y_NEG;
+		}
+
+		if (lz < hy)
+		{
+			faceId = NORM_Z_NEG;
+		}
+
+		return faceId;
+	}
+
+	G3D::Vector3 Extents::getCorner(int i) const
+	{
+		RBXASSERT(i >= 0);
+		RBXASSERT(i <= 7);
+
+		return G3D::Vector3(
+			this->low[0 + 3 * (i / 4)],
+			this->low[1 + 3 * (i / 2 % 2)],
+			this->low[2 + 3 * (i % 2)]
+		);
+	}
+
+	void Extents::getFaceCorners(NormalId faceId, G3D::Vector3& v0, G3D::Vector3& v1, G3D::Vector3& v2, G3D::Vector3& v3) const
+	{
+		switch (faceId)
+		{
+		case NORM_X:
+			v0 = G3D::Vector3(this->high.x, this->low.y, this->low.z);
+			v1 = G3D::Vector3(this->high.x, this->high.y, this->low.z);
+			v2 = G3D::Vector3(this->high.x, this->high.y, this->high.z);
+			v3 = G3D::Vector3(this->high.x, this->low.y, this->high.z);
+			break;
+		case NORM_Y:
+			v0 = G3D::Vector3(this->low.x, this->high.y, this->low.z);
+			v1 = G3D::Vector3(this->low.x, this->high.y, this->high.z);
+			v2 = G3D::Vector3(this->high.x, this->high.y, this->high.z);
+			v3 = G3D::Vector3(this->high.x, this->high.y, this->low.z);
+			break;
+		case NORM_Z:
+			v0 = G3D::Vector3(this->low.x, this->low.y, this->high.z);
+			v1 = G3D::Vector3(this->high.x, this->low.y, this->high.z);
+			v2 = G3D::Vector3(this->high.x, this->high.y, this->high.z);
+			v3 = G3D::Vector3(this->low.x, this->high.y, this->high.z);
+			break;
+		case NORM_X_NEG:
+			v0 = G3D::Vector3(this->low.x, this->low.y, this->low.z);
+			v1 = G3D::Vector3(this->low.x, this->low.y, this->high.z);
+			v2 = G3D::Vector3(this->low.x, this->high.y, this->high.z);
+			v3 = G3D::Vector3(this->low.x, this->high.y, this->low.z);
+			break;
+		case NORM_Y_NEG:
+			v0 = G3D::Vector3(this->low.x, this->low.y, this->low.z);
+			v1 = G3D::Vector3(this->high.x, this->low.y, this->low.z);
+			v2 = G3D::Vector3(this->high.x, this->low.y, this->high.z);
+			v3 = G3D::Vector3(this->low.x, this->low.y, this->high.z);
+			break;
+		case NORM_Z_NEG:
+			v0 = G3D::Vector3(this->low.x, this->low.y, this->low.z);
+			v1 = G3D::Vector3(this->low.x, this->high.y, this->low.z);
+			v2 = G3D::Vector3(this->high.x, this->high.y, this->low.z);
+			v3 = G3D::Vector3(this->high.x, this->low.y, this->low.z);
+			break;
+		default:
 			RBXASSERT(0);
-			return computeIdeInsertPoint();
 		}
 	}
 
-	void RootInstance::moveSafe(MegaDragger& megaDragger, G3D::Vector3 move, MoveType moveType)
+	G3D::Vector3 Extents::faceCenter(NormalId faceId) const
 	{
-		megaDragger.startDragging();
-		megaDragger.alignAndCleanParts();
+		G3D::Vector3 v = this->center();
 
-		if (moveType == MOVE_DROP)
-			megaDragger.safeMoveYDrop(move);
+		int i = faceId % 3;
+		if (faceId < NORM_X_NEG)
+		{
+			v[i] = this->high[i];
+		}
 		else
-			megaDragger.safeMoveNoDrop(move);
-
-		megaDragger.finishDragging();
-	}
-
-	void RootInstance::moveSafe(std::vector<boost::weak_ptr<PartInstance>>& partArray, G3D::Vector3 move, MoveType moveType)
-	{
-		MegaDragger megaDragger(NULL, partArray, this);
-		moveSafe(megaDragger, move, moveType);
-	}
-
-	void RootInstance::moveToPoint(PVInstance* pv, G3D::Vector3 point)
-	{
-		if (this->contains(pv))
 		{
-			RBXASSERT(pv->getPrimaryPart());
-
-			std::vector<PVInstance*> pvInstances;
-			pvInstances.push_back(pv);
-
-			G3D::Vector3 move = Dragger::toGrid(point - pv->getLocation().translation);
-
-			MegaDragger megaDragger(pv->getPrimaryPart(), pvInstances, this);
-			moveSafe(megaDragger, move, MOVE_NO_DROP);
+			v[i] = this->low[i];
 		}
+
+		return v;
 	}
 
-	void RootInstance::moveToCharacterInsertPoint(std::vector<boost::weak_ptr<PartInstance>>& partArray)
+	bool Extents::containedByFrustum(const G3D::GCamera::Frustum& frustum) const
 	{
-		if (!partArray.empty())
+		if (frustum.faceArray.size() > 0)
 		{
-			Extents extents = DragUtilities::computeExtents(partArray);
-
-			G3D::Vector3 characterInsertPoint = computeCharacterInsertPoint(extents);
-			G3D::Vector3 moveToInsert = Dragger::toGrid(characterInsertPoint - extents.bottomCenter());
-
-			moveSafe(partArray, moveToInsert, MOVE_DROP);
-		}
-	}
-
-	void RootInstance::moveToIdeInsertPoint(std::vector<boost::weak_ptr<PartInstance>>& partArray)
-	{
-		if (!partArray.empty())
-		{
-			Extents extents = DragUtilities::computeExtents(partArray);
-
-			G3D::Vector3 insertPoint = computeIdeInsertPoint();
-			G3D::Vector3 moveToInsert = Dragger::toGrid(insertPoint - extents.bottomCenter());
-
-			moveSafe(partArray, moveToInsert, MOVE_DROP);
-		}
-	}
-
-	void RootInstance::insertRaw(const std::vector<boost::shared_ptr<Instance>>& instances, Instance* requestedParent, std::vector<boost::weak_ptr<PartInstance>>& partArray)
-	{
-		RBXASSERT(requestedParent && this->contains(requestedParent));
-
-		std::for_each(instances.begin(), instances.end(), boost::bind(&Instance::setParent, _1, requestedParent));
-
-		for (size_t i = 0; i < instances.size(); ++i)
-			PartInstance::findParts(instances[i].get(), partArray);
-
-		DragUtilities::join(partArray);
-	}
-
-	void RootInstance::insertToTree(const std::vector<boost::shared_ptr<Instance>>& instances, Instance* requestedParent)
-	{
-		std::vector<boost::weak_ptr<PartInstance>> partArray;
-		insertRaw(instances, requestedParent, partArray);
-
-		if (!partArray.empty())
-			moveSafe(partArray, G3D::Vector3::zero(), MOVE_NO_DROP);
-	}
-
-	void RootInstance::insertCharacterView(const std::vector<boost::shared_ptr<Instance>>& instances, std::vector<boost::weak_ptr<PartInstance>>& partArray)
-	{
-		RBXASSERT(instances.size() > 0);
-
-		if (instances.size() == 1)
-		{
-			Instance* instance = instances[0].get();
-			if (dynamic_cast<HopperBin*>(instance))
+			for (int i = 0; i < frustum.faceArray.size(); i++)
 			{
-				Network::Player* localPlayer = Network::Players::findLocalPlayer(this);
-				if (localPlayer)
+				const G3D::Plane* plane = &frustum.faceArray[i].plane;
+				for (int j = 0; j < 8; j++)
 				{
-					instance->setParent(localPlayer->getPlayerBackpack());
-					return;
+					G3D::Vector3 corner = getCorner(j);
+					if (!plane->halfSpaceContains(corner))
+					{
+						return false;
+					}
 				}
 			}
 		}
 
-		insertRaw(instances, this, partArray);
-		moveToCharacterInsertPoint(partArray);
+		return true;
 	}
 
-	void RootInstance::insertIdeView(const std::vector<boost::shared_ptr<Instance>>& instances, std::vector<boost::weak_ptr<PartInstance>>& partArray, PromptMode promptMode)
+	bool Extents::contains(const G3D::Vector3& point) const
 	{
-		RBXASSERT(instances.size() > 0);
-
-		if (instances.size() == 1)
-		{
-			Instance* instance = instances[0].get();
-			if (dynamic_cast<HopperBin*>(instance))
-			{
-				instance->setParent(ServiceProvider::create<StarterPackService>(this));
-				return;
-			}
-			else if (dynamic_cast<Tool*>(instance))
-			{
-				if (promptMode == ALLOW_PROMPTS && MessageBoxA(NULL, "Put this tool into the starter pack (otherwise drop into the 3d view)?", "Inserting Tool", MB_YESNO) == IDYES)
-				{
-					instance->setParent(ServiceProvider::create<StarterPackService>(this));
-					return;
-				}
-			}
-		}
-
-		insertRaw(instances, this, partArray);
-		if (!partArray.empty())
-		{
-			moveToIdeInsertPoint(partArray);
-			Extents extents = DragUtilities::computeExtents(partArray);
-			getCamera()->lookAt(extents.center());
-		}
+		return
+			point.x >= this->low.x &&
+			point.y >= this->low.y &&
+			point.z >= this->low.z &&
+			point.x <= this->high.x &&
+			point.y <= this->high.y &&
+			point.z <= this->high.z;
 	}
 
-	void RootInstance::insert3dView(const std::vector<boost::shared_ptr<Instance>>& instances, PromptMode promptMode)
+	bool Extents::fuzzyContains(const G3D::Vector3& point, float slop) const
 	{
-		RBXASSERT(instances.size() > 0);
-
-		std::vector<boost::weak_ptr<PartInstance>> partArray;
-		if (Network::Players::findLocalCharacter(this))
-			insertCharacterView(instances, partArray);
-		else
-			insertIdeView(instances, partArray, promptMode);
-
-		if (!partArray.empty())
-		{
-			Extents extents = DragUtilities::computeExtents(partArray);
-			getCamera()->zoomExtents(extents, viewPort, Camera::ZOOM_OUT_ONLY);
-		}
+		return
+			point.x >= this->low.x - slop &&
+			point.y >= this->low.y - slop &&
+			point.z >= this->low.z - slop &&
+			point.x <= this->high.x + slop &&
+			point.y <= this->high.y + slop &&
+			point.z <= this->high.z + slop;
 	}
 
-	void RootInstance::insertHopperBin(HopperBin* h)	
+	bool Extents::overlapsOrTouches(const Extents& other) const
 	{
-		Network::Player* localPlayer = Network::Players::findLocalPlayer(this);
-		if (localPlayer)
-			h->setParent(localPlayer->getPlayerBackpack());
-		else
-			h->setParent(ServiceProvider::create<StarterPackService>(this));
+		return
+			!(this->low.x > other.high.x) &&
+			!(this->low.y > other.high.y) &&
+			!(this->low.z > other.high.z) &&
+			!(this->high.y < other.low.y) &&
+			!(this->high.x < other.low.x) &&
+			!(this->high.z < other.low.z);
 	}
 
-	void RootInstance::insertSpawnLocation(SpawnLocation* s)
+	bool Extents::separatedByMoreThan(const Extents& other, float distance) const
 	{
-		if (!s->neutral)
-		{
-			Teams* teams = ServiceProvider::create<Teams>(this);
-			if (!teams->teamExists(s->getTeamColor()))
-			{
-				boost::shared_ptr<Team> team = Creatable<Instance>::create<Team>();
-				team->setParent(teams);
-				team->setTeamColor(s->getTeamColor());
-				team->setName(s->getTeamColor().name() + " Team");
-			}
-		}
+		RBXASSERT(distance > 0.0);
+
+		G3D::Vector3 dv(distance, distance, distance);
+
+		Extents thisExpanded(*this);
+		thisExpanded.low -= dv;
+		thisExpanded.high += dv;
+
+		return !thisExpanded.overlapsOrTouches(other);
 	}
 
-	void RootInstance::insertInstances(const std::vector<boost::shared_ptr<Instance>>& instances, Instance* requestedParent, InsertMode insertMode, PromptMode promptMode)
+	G3D::Plane Extents::getPlane(NormalId normalId) const
 	{
-		RBXASSERT(instances.size() > 0);
-		RBXASSERT(!requestedParent || this->contains(requestedParent));
-		RBXASSERT(!((insertMode == INSERT_TO_3D_VIEW) && (requestedParent != this)));
+		G3D::Vector3 point = faceCenter(normalId);
+		G3D::Vector3 normal = normalIdToVector3(normalId);
 
-		std::vector<boost::shared_ptr<Instance>> remaining;
-		for (size_t i = 0; i < instances.size(); ++i)
-		{
-			Instance* instance = instances[i].get();
-			if (Sky* sky = dynamic_cast<Sky*>(instance))
-			{
-				Lighting* lighting = ServiceProvider::create<Lighting>(this);
-				lighting->replaceSky(sky);
-			}
-			else if (Team* team = dynamic_cast<Team*>(instance))
-			{
-				instance->setParent(ServiceProvider::create<Teams>(this));
-			}
-			else if (HopperBin* hopperBin = dynamic_cast<HopperBin*>(instance))
-			{
-				insertHopperBin(hopperBin);
-			}
-			else if (SpawnLocation* spawnLocation = dynamic_cast<SpawnLocation*>(instance))	
-			{
-				insertSpawnLocation(spawnLocation);
-				remaining.push_back(instances[i]);
-			}
-			else
-			{
-				remaining.push_back(instances[i]);
-			}
-		}
-
-		if (!remaining.empty())
-		{
-			if (requestedParent && !this->contains(requestedParent))
-				std::for_each(remaining.begin(), remaining.end(), boost::bind(&Instance::setParent, _1, requestedParent));
-
-			switch (insertMode)
-			{
-			case INSERT_TO_3D_VIEW:
-				insert3dView(remaining, promptMode);
-				return;
-			case INSERT_TO_TREE:
-				insertToTree(remaining, requestedParent);
-				return;
-			case INSERT_RAW:
-				{
-					std::vector<boost::weak_ptr<PartInstance>> partArray;
-					insertRaw(remaining, requestedParent, partArray);
-				}
-				return;
-			}
-		}
+		return G3D::Plane(normal, point);
 	}
 
-	ControllerTypeArray RootInstance::computeControllersUsed() const
+	void Extents::unionWith(const Extents& other)
 	{
-		ControllerTypeArray array;
+		this->low = this->low.min(other.low);
+		this->high = this->high.max(other.high);
+	}
 
-		for (size_t i = 0; i < numChildren(); ++i)
+	Extents Extents::toWorldSpace(const G3D::CoordinateFrame& localCoord)
+	{
+		G3D::Vector3 minC(Math::inf(), Math::inf(), Math::inf());
+		G3D::Vector3 maxC(-Math::inf(), -Math::inf(), -Math::inf());
+
+		for (int i = 0; i < 8; i++)
 		{
-			const PVInstance* pvChild = queryTypedChild<PVInstance>(i);
-			if (pvChild)
-			{
-				if (pvChild->isControllable())
-					array.setController(pvChild->getControllerType(), true);
-			}
+			G3D::Vector3 corner = getCorner(i);
+			G3D::Vector3 world = localCoord.pointToWorldSpace(corner);
+
+			minC = minC.min(world);
+			maxC = maxC.max(world);
 		}
 
-		return array;
+		return vv(minC, maxC);
+	}
+
+	Extents Extents::express(const G3D::CoordinateFrame& myFrame, const G3D::CoordinateFrame& expressInFrame)
+	{
+		G3D::Vector3 minC(Math::inf(), Math::inf(), Math::inf());
+		G3D::Vector3 maxC(-Math::inf(), -Math::inf(), -Math::inf());
+
+		for (int i = 0; i < 8; i++)
+		{
+			G3D::Vector3 corner = getCorner(i);
+			G3D::Vector3 v1 = myFrame.pointToWorldSpace(corner) - expressInFrame.translation;
+			G3D::Vector3 inOther = v1 * expressInFrame.rotation;
+
+			minC = minC.min(inOther);
+			maxC = maxC.max(inOther);
+		}
+
+		return vv(minC, maxC);
+	}
+
+	Extents Extents::vv(const G3D::Vector3& v0, const G3D::Vector3& v1)
+	{
+		Extents result;
+
+		result.low = v0.min(v1);
+		result.high = v0.max(v1);
+
+		return result;
+	}
+
+	const Extents& Extents::zero()
+	{
+		static Extents e(G3D::Vector3::zero(), G3D::Vector3::zero());
+		return e;
+	}
+
+	const Extents& Extents::negativeInfiniteExtents()
+	{
+		// Extents default constructor sets high and low to inf
+		static Extents e;
+		return e;
 	}
 }

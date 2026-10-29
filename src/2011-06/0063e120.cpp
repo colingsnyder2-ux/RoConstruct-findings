@@ -1,4 +1,3 @@
-// from server: 64% by atomic.potato
 // roc 2011-06 0063e120  unit: RBX::Workspace  size: 110 bytes
 // Make this compile to the exact bytes below, then: roc check 2011-06 0063e120
 //
@@ -42,39 +41,56 @@
 // 0063e187  8b490c               mov ecx, dword ptr [ecx + 0xc]
 // 0063e18a  89480c               mov dword ptr [eax + 0xc], ecx
 // 0063e18d  c3                   ret 
+// copied from an identical function in another client (function ?manage@@YAXABTfunction_buffer@@AAT1@W4functor_manager_operation_type@@@Z)
 
-struct type_info {
-    bool __thiscall operator==(const type_info&) const;
-};
+#include <typeinfo>
+#include <new>
 
-extern "C" type_info* __stdcall get_type_info(const char*);
+// boost::detail::function::functor_manager<F>::manage for a small, trivially copyable functor
+// stored in place; 0xb33668 is typeid(F)
+extern const type_info type_descriptor_b33668;
 
-struct S {
-};
-
-int __cdecl f(int a, void* b, int c)
+struct Functor
 {
-    if (c == 0 || c == 1) {
-        if (b != 0) {
-            *(int*)((char*)b + 0) = *(int*)((char*)&a + 0);
-            *(int*)((char*)b + 4) = *(int*)((char*)&a + 4);
-            *(int*)((char*)b + 8) = *(int*)((char*)&a + 8);
-            *(int*)((char*)b + 12) = *(int*)((char*)&a + 12);
-        }
-        return 0;
+    int f0, f1, f2, f3;
+};
+
+union function_buffer
+{
+    void *obj_ptr;
+    struct
+    {
+        const type_info *type;
+        bool const_qualified;
+        bool volatile_qualified;
+    } type;
+    char data[16];
+};
+
+enum functor_manager_operation_type
+{
+    clone_functor_tag,
+    move_functor_tag,
+    destroy_functor_tag,
+    check_functor_type_tag,
+    get_functor_type_tag
+};
+
+void manage(const function_buffer &in_buffer, function_buffer &out_buffer, functor_manager_operation_type op)
+{
+    if (op == clone_functor_tag || op == move_functor_tag) {
+        const Functor *in_functor = reinterpret_cast<const Functor *>(&in_buffer.data);
+        new ((void *)&out_buffer.data) Functor(*in_functor);
+    } else if (op == destroy_functor_tag) {
+    } else if (op == check_functor_type_tag) {
+        const type_info &check_type = *out_buffer.type.type;
+        if (check_type == type_descriptor_b33668)
+            out_buffer.obj_ptr = (void *)&in_buffer.data;
+        else
+            out_buffer.obj_ptr = 0;
+    } else {
+        out_buffer.type.type = &type_descriptor_b33668;
+        out_buffer.type.const_qualified = false;
+        out_buffer.type.volatile_qualified = false;
     }
-    if (c == 2) {
-        return 0;
-    }
-    if (c == 3) {
-        int* p = (int*)b;
-        type_info* t = get_type_info(".?AV?$bind_t@HV?$cmf0@HVKernel@RBX@@@_mfi@boost@@V?$list1@V?$value@PBVKernel@RBX@@@_bi@boost@@@_bi@3@@_bi@boost@@");
-        int r = (*t == *(type_info*)0xc51738) ? 0 : 0;
-        *p = r & a;
-        return 0;
-    }
-    *(int*)b = 0xc51738;
-    *(char*)((char*)b + 4) = 0;
-    *(char*)((char*)b + 5) = 0;
-    return 0;
 }

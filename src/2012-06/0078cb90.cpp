@@ -1,25 +1,60 @@
-// from server: 35% by atomic.potato
-extern "C" void* __stdcall sub_b22644();
-extern "C" void* __stdcall sub_b2263c();
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll v8datamodel/Visit.cpp
 
-struct CSelectionTreeCtrl {
-    void init_00430b90();
-};
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Visit.h"
+#include "util/Http.h"
+#include "util/standardout.h"
+#include <G3D/format.h>
+#include <boost/thread.hpp>
 
-struct FactoryProduct {
-    char pad[0x1c];
-    int m_field1c;
-    FactoryProduct(const FactoryProduct& other);
-    void* init_0078cb90();
-};
+static RBX::Reflection::BoundFuncDesc<RBX::Visit, void(std::string), 1> UploadUrlFunction(&RBX::Visit::setUploadUrl, "SetUploadUrl", "url", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Visit, std::string(void), 0> getUploadUrl(&RBX::Visit::getUploadUrl, "GetUploadUrl", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Visit, void(std::string, int), 2> desc_setPing(&RBX::Visit::setPing, "SetPing", "pingUrl", "interval", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
 
-void* FactoryProduct::init_0078cb90()
+namespace RBX
 {
-    char buf[0x1c];
-    sub_b22644();
-    ((CSelectionTreeCtrl*)this)->init_00430b90();
-    m_field1c = *(int*)buf;
-    sub_b2263c();
+	Visit::Visit()
+		: uploadUrl("NoVisit")
+	{
+	}
 
-    return this;
+	Visit::~Visit() {}
+
+	void Visit::setPing(std::string url, int interval)
+	{
+		if (url != "")
+		{
+			pingThread.reset(new worker_thread(boost::bind(&Visit::ping, url, interval), "rbx_visit"));
+		}
+		else
+		{
+			pingThread.reset();
+		}
+	}
+
+	worker_thread::work_result Visit::ping(std::string url, int interval)
+	{
+		try
+		{
+			std::string message;
+			Http(url).get(message);
+		}
+		catch (std::exception& exp)
+		{
+			std::string failMessage = G3D::format("ping %s failed: %s", url.c_str(), exp.what());
+			StandardOut::singleton()->print(MESSAGE_WARNING, failMessage.c_str());
+		}
+
+		boost::xtime xt;
+		boost::xtime_get(&xt, boost::TIME_UTC);
+
+		xt.sec += interval;
+
+		boost::thread::sleep(xt);
+
+		return worker_thread::more;
+	}
 }

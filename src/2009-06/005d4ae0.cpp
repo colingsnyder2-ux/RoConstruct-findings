@@ -1,71 +1,58 @@
-// from server: 30% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8datamodel/Selection.cpp
+// roc 2009-06 005d4ae0  unit: RBX::Selection  size: 66 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 005d4ae0
+//
+// 005d4ae0  51                   push ecx
+// 005d4ae1  56                   push esi
+// 005d4ae2  c744240400000000     mov dword ptr [esp + 4], 0
+// 005d4aea  e8f117e9ff           call 0x4662e0
+// 005d4aef  8b4c2410             mov ecx, dword ptr [esp + 0x10]
+// 005d4af3  8b74240c             mov esi, dword ptr [esp + 0xc]
+// 005d4af7  83ec10               sub esp, 0x10
+// 005d4afa  8bd4                 mov edx, esp
+// 005d4afc  890a                 mov dword ptr [edx], ecx
+// 005d4afe  8b4c2424             mov ecx, dword ptr [esp + 0x24]
+// 005d4b02  894a04               mov dword ptr [edx + 4], ecx
+// 005d4b05  8b4c2428             mov ecx, dword ptr [esp + 0x28]
+// 005d4b09  894a08               mov dword ptr [edx + 8], ecx
+// 005d4b0c  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
+// 005d4b10  894a0c               mov dword ptr [edx + 0xc], ecx
+// 005d4b13  56                   push esi
+// 005d4b14  8bc8                 mov ecx, eax
+// 005d4b16  e8d5f2ffff           call 0x5d3df0
+// 005d4b1b  8bc6                 mov eax, esi
+// 005d4b1d  5e                   pop esi
+// 005d4b1e  59                   pop ecx
+// 005d4b1f  c21400               ret 0x14
+// copied from an identical function in another client (function ?f@S@ns_ROCX000000@@QAE?AURet@2@UArg@2@@Z)
 
-// Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Selection.h"
-
-#include "util/object.h"
-#include "util/standardout.h"
-
-#include <algorithm>
-
-namespace RBX {
-
-const char sSelection[] = "Selection";
-
-// FUNCTION: WEBSERVICE 0x1005d440
-void Selection::raiseRemoved(boost::shared_ptr<Instance> item)
+namespace ns_ROCX000000 {
+struct Ret
 {
-	SelectionChanged event(boost::shared_ptr<Instance>(), item);
+    Ret(const Ret &);
+    ~Ret();
+    void *p;
+};
 
-	for (std::vector<ISelectionBase*>::iterator iter = filteredSelections.begin(); iter != filteredSelections.end();
-		 ++iter) {
-		(*iter)->VTable0x00(event);
-	}
-
-	Notifier<Selection, SelectionChanged>::raise(event);
-}
-
-// FUNCTION: WEBSERVICE 0x1005d5e0
-Selection::~Selection()
+struct Arg
 {
-}
+    int f0, f1, f2, f3;
+};
 
-// STUB: WEBSERVICE 0x1005e1f0
-void Selection::removeFromSelection(const Instance* instance)
+struct Impl
 {
-	boost::shared_ptr<std::vector<boost::shared_ptr<Instance> > > items = selection.write();
+    Ret g(Arg arg);
+};
 
-	std::vector<boost::shared_ptr<Instance> >::iterator iter =
-		std::find(items->begin(), items->end(), shared_from(instance));
+struct Getter { static Impl *get(); };
 
-	if (iter != items->end()) {
-		boost::shared_ptr<Instance> removedItem = *iter;
-
-		items->erase(iter);
-
-		instance->Notifier<Instance, AncestorChanged>::removeListener(this);
-
-		raiseRemoved(removedItem);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1005e870
-void Selection::onEvent(const Instance* source, AncestorChanged event)
+struct S
 {
-	const Instance* sourceRoot = source->getParent() != NULL ? source->getParent()->getRootAncestor() : source;
+    Ret f(Arg arg);
+};
 
-	if (sourceRoot != getRootAncestor()) {
-		removeFromSelection(source);
-	}
+Ret S::f(Arg arg)
+{
+    Impl *impl = Getter::get();
+    return impl->g(arg);
 }
-
-} // namespace RBX
-
-template class RBX::FactoryProduct<RBX::Selection, RBX::Instance, RBX::sSelection>;
-template class RBX::Reflection::
-	Described<RBX::Selection, RBX::sSelection, RBX::FactoryProduct<RBX::Selection, RBX::Instance, RBX::sSelection> >;
-template class RBX::DescribedCreatable<RBX::Selection, RBX::Instance, RBX::sSelection>;
+}

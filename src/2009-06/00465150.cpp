@@ -14,23 +14,25 @@
 // 00465169  e882cbffff           call 0x461cf0
 // 0046516e  5e                   pop esi
 // 0046516f  c20400               ret 4
-// copied from an identical function in another client (function ?sub_460570@CScriptEditor@ns_ROCX000002@@QAEXH@Z)
+// copied from an identical function in another client (function ?fn_ROCX000000@CScriptEditor@@QAEXH@Z)
 
-namespace ns_ROCX000002 {
-struct CScriptEditor {
-    int sub_45CEF0(int);
-    void sub_45CEC0(int);
-
-    void sub_460570(int);
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+struct Control
+{
+    int canUndo(int direct);
+    void undo(int direct);
 };
 
-extern "C" void* __cdecl sub_45D230();
-
-void CScriptEditor::sub_460570(int)
+struct CScriptEditor
 {
-    CScriptEditor* p = (CScriptEditor*)sub_45D230();
-    if (p->sub_45CEF0(1)) {
-        p->sub_45CEC0(1);
-    }
-}
+    int* getControl();
+    void func_004644e0(int unused);
+};
+
+void CScriptEditor::func_004644e0(int unused)
+{
+    Control* control = reinterpret_cast<Control*>(getControl());
+    if (control->canUndo(1))
+        control->undo(1);
 }

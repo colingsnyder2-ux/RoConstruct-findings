@@ -1,39 +1,45 @@
-// from server: 51% by colin
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/instances.cpp
+// roc-lib: rbxgs-dll roc_espeon_captionemptyfallback4ba4fd27241a52ef.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
- *
- * Copyright (c) 1998-2002
- * John Maddock
- *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
- * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
- *
- */
 
- /*
-  *   LOCATION:    see http://www.boost.org for most recent version.
-  *   FILE:        instances.cpp
-  *   VERSION:     see <boost/version.hpp>
-  *   DESCRIPTION: regex narrow character template instances.
-  */
+struct Str;
+extern bool (__thiscall* str_empty)(const Str*);
+extern Str* (__thiscall* str_text)(Str*, const char*);
+extern Str* (__thiscall* str_copy)(Str*, const Str*) throw();
+extern void (__thiscall* str_destroy)(Str*) throw();
 
-#define BOOST_REGEX_SOURCE
+struct Str {
+    char* data;
+    __declspec(dllimport) Str(const char*);
+    __declspec(dllimport) Str(const Str&);
+    __declspec(dllimport) ~Str() throw();
+    bool empty() const;
+};
 
-#include <boost/regex/config.hpp>
+inline bool Str::empty() const
+{
+    return str_empty(this);
+}
 
-#if !defined(BOOST_REGEX_NO_EXTERNAL_TEMPLATES)
-#define BOOST_REGEX_NARROW_INSTANTIATE
+struct ParentStr : Str { __declspec(dllimport) ~ParentStr() throw(); };
+struct X {
+    ParentStr copy();
+};
 
-#ifdef __BORLANDC__
-#pragma hrdstop
-#endif
+struct S {
+    char padding[0xec];
+    Str caption;
+    char padding2[0x6c];
+    X* parent;
+    Str getCaption();
+};
 
-#include <boost/regex.hpp>
-
-#endif
+Str S::getCaption()
+{
+    return !caption.empty()
+        ? caption
+        : (parent ? static_cast<const Str&>(parent->copy()) : static_cast<const Str&>(Str("")));
+}

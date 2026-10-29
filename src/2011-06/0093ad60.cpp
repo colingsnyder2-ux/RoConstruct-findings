@@ -1,787 +1,182 @@
-// from server: 34% by TrollStein
+// roc 2011-06 0093ad60  unit: Ogre::RbxTextureCompositorSceneManager  size: 505 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 0093ad60
+//
+// 0093ad60  64a100000000         mov eax, dword ptr fs:[0]
+// 0093ad66  6aff                 push -1
+// 0093ad68  68221b9d00           push 0x9d1b22
+// 0093ad6d  50                   push eax
+// 0093ad6e  64892500000000       mov dword ptr fs:[0], esp
+// 0093ad75  83ec44               sub esp, 0x44
+// 0093ad78  57                   push edi
+// 0093ad79  8bf9                 mov edi, ecx
+// 0093ad7b  817f080a59c802       cmp dword ptr [edi + 8], 0x2c8590a
+// 0093ad82  7259                 jb 0x93addd
+// 0093ad84  683cb6a500           push 0xa5b63c
+// 0093ad89  8d4c2408             lea ecx, [esp + 8]
+// 0093ad8d  ff15c404a400         call dword ptr [0xa404c4]
+// 0093ad93  8d4c2420             lea ecx, [esp + 0x20]
+// 0093ad97  c744245000000000     mov dword ptr [esp + 0x50], 0
+// 0093ad9f  ff15600aa400         call dword ptr [0xa40a60]
+// 0093ada5  8d442404             lea eax, [esp + 4]
+// 0093ada9  50                   push eax
+// 0093adaa  8d4c2430             lea ecx, [esp + 0x30]
+// 0093adae  c644245401           mov byte ptr [esp + 0x54], 1
+// 0093adb3  c7442424c0b5a500     mov dword ptr [esp + 0x24], 0xa5b5c0
+// 0093adbb  ff15c804a400         call dword ptr [0xa404c8]
+// 0093adc1  687073b800           push 0xb87370
+// 0093adc6  8d4c2424             lea ecx, [esp + 0x24]
+// 0093adca  51                   push ecx
+// 0093adcb  c644245800           mov byte ptr [esp + 0x58], 0
+// 0093add0  c7442428ccb5a500     mov dword ptr [esp + 0x28], 0xa5b5cc
+// 0093add8  e8cf02edff           call 0x80b0ac
+// 0093addd  8b542464             mov edx, dword ptr [esp + 0x64]
+// 0093ade1  8b4704               mov eax, dword ptr [edi + 4]
+// 0093ade4  53                   push ebx
+// 0093ade5  55                   push ebp
+// 0093ade6  56                   push esi
+// 0093ade7  8b74246c             mov esi, dword ptr [esp + 0x6c]
+// 0093adeb  6a00                 push 0
+// 0093aded  52                   push edx
+// 0093adee  50                   push eax
+// 0093adef  56                   push esi
+// 0093adf0  50                   push eax
+// 0093adf1  e83afcffff           call 0x93aa30
+// 0093adf6  8be8                 mov ebp, eax
+// 0093adf8  8b4704               mov eax, dword ptr [edi + 4]
+// 0093adfb  bb01000000           mov ebx, 1
+// 0093ae00  015f08               add dword ptr [edi + 8], ebx
+// 0093ae03  3bf0                 cmp esi, eax
+// 0093ae05  7510                 jne 0x93ae17
+// 0093ae07  896804               mov dword ptr [eax + 4], ebp
+// 0093ae0a  8b4704               mov eax, dword ptr [edi + 4]
+// 0093ae0d  8928                 mov dword ptr [eax], ebp
+// 0093ae0f  8b4f04               mov ecx, dword ptr [edi + 4]
+// 0093ae12  896908               mov dword ptr [ecx + 8], ebp
+// 0093ae15  eb22                 jmp 0x93ae39
+// 0093ae17  807c246800           cmp byte ptr [esp + 0x68], 0
+// 0093ae1c  740d                 je 0x93ae2b
+// 0093ae1e  892e                 mov dword ptr [esi], ebp
+// 0093ae20  8b4704               mov eax, dword ptr [edi + 4]
+// 0093ae23  3b30                 cmp esi, dword ptr [eax]
+// 0093ae25  7512                 jne 0x93ae39
+// 0093ae27  8928                 mov dword ptr [eax], ebp
+// 0093ae29  eb0e                 jmp 0x93ae39
+// 0093ae2b  896e08               mov dword ptr [esi + 8], ebp
+// 0093ae2e  8b4704               mov eax, dword ptr [edi + 4]
+// 0093ae31  3b7008               cmp esi, dword ptr [eax + 8]
+// 0093ae34  7503                 jne 0x93ae39
+// 0093ae36  896808               mov dword ptr [eax + 8], ebp
+// 0093ae39  8b5504               mov edx, dword ptr [ebp + 4]
+// 0093ae3c  807a6800             cmp byte ptr [edx + 0x68], 0
+// 0093ae40  8d4504               lea eax, [ebp + 4]
+// 0093ae43  8bf5                 mov esi, ebp
+// 0093ae45  0f85ea000000         jne 0x93af35
+// 0093ae4b  eb03                 jmp 0x93ae50
+// 0093ae4d  8d4900               lea ecx, [ecx]
+// 0093ae50  8b08                 mov ecx, dword ptr [eax]
+// 0093ae52  8b5104               mov edx, dword ptr [ecx + 4]
+// 0093ae55  3b0a                 cmp ecx, dword ptr [edx]
+// 0093ae57  7551                 jne 0x93aeaa
+// 0093ae59  8b5208               mov edx, dword ptr [edx + 8]
+// 0093ae5c  807a6800             cmp byte ptr [edx + 0x68], 0
+// 0093ae60  7519                 jne 0x93ae7b
+// 0093ae62  885968               mov byte ptr [ecx + 0x68], bl
+// 0093ae65  885a68               mov byte ptr [edx + 0x68], bl
+// 0093ae68  8b10                 mov edx, dword ptr [eax]
+// 0093ae6a  8b4a04               mov ecx, dword ptr [edx + 4]
+// 0093ae6d  c6416800             mov byte ptr [ecx + 0x68], 0
+// 0093ae71  8b10                 mov edx, dword ptr [eax]
+// 0093ae73  8b7204               mov esi, dword ptr [edx + 4]
+// 0093ae76  e9aa000000           jmp 0x93af25
+// 0093ae7b  3b7108               cmp esi, dword ptr [ecx + 8]
+// 0093ae7e  750a                 jne 0x93ae8a
+// 0093ae80  8bf1                 mov esi, ecx
+// 0093ae82  56                   push esi
+// 0093ae83  8bcf                 mov ecx, edi
+// 0093ae85  e8b6ceffff           call 0x937d40
+// 0093ae8a  8b4604               mov eax, dword ptr [esi + 4]
+// 0093ae8d  885868               mov byte ptr [eax + 0x68], bl
+// 0093ae90  8b4e04               mov ecx, dword ptr [esi + 4]
+// 0093ae93  8b5104               mov edx, dword ptr [ecx + 4]
+// 0093ae96  c6426800             mov byte ptr [edx + 0x68], 0
+// 0093ae9a  8b4604               mov eax, dword ptr [esi + 4]
+// 0093ae9d  8b4804               mov ecx, dword ptr [eax + 4]
+// 0093aea0  51                   push ecx
+// 0093aea1  8bcf                 mov ecx, edi
+// 0093aea3  e8a8cbffff           call 0x937a50
+// 0093aea8  eb7b                 jmp 0x93af25
+// 0093aeaa  8b12                 mov edx, dword ptr [edx]
+// 0093aeac  807a6800             cmp byte ptr [edx + 0x68], 0
+// 0093aeb0  7516                 jne 0x93aec8
+// 0093aeb2  885968               mov byte ptr [ecx + 0x68], bl
+// 0093aeb5  885a68               mov byte ptr [edx + 0x68], bl
+// 0093aeb8  8b10                 mov edx, dword ptr [eax]
+// 0093aeba  8b4a04               mov ecx, dword ptr [edx + 4]
+// 0093aebd  c6416800             mov byte ptr [ecx + 0x68], 0
+// 0093aec1  8b10                 mov edx, dword ptr [eax]
+// 0093aec3  8b7204               mov esi, dword ptr [edx + 4]
+// 0093aec6  eb5d                 jmp 0x93af25
+// 0093aec8  3b31                 cmp esi, dword ptr [ecx]
+// 0093aeca  750a                 jne 0x93aed6
+// 0093aecc  8bf1                 mov esi, ecx
+// 0093aece  56                   push esi
+// 0093aecf  8bcf                 mov ecx, edi
+// 0093aed1  e87acbffff           call 0x937a50
+// 0093aed6  8b4604               mov eax, dword ptr [esi + 4]
+// 0093aed9  885868               mov byte ptr [eax + 0x68], bl
+// 0093aedc  8b4e04               mov ecx, dword ptr [esi + 4]
+// 0093aedf  8b5104               mov edx, dword ptr [ecx + 4]
+// 0093aee2  c6426800             mov byte ptr [edx + 0x68], 0
+// 0093aee6  8b4604               mov eax, dword ptr [esi + 4]
+// 0093aee9  8b4004               mov eax, dword ptr [eax + 4]
+// 0093aeec  8b4808               mov ecx, dword ptr [eax + 8]
+// 0093aeef  8b11                 mov edx, dword ptr [ecx]
+// 0093aef1  895008               mov dword ptr [eax + 8], edx
+// 0093aef4  8b11                 mov edx, dword ptr [ecx]
+// 0093aef6  807a6900             cmp byte ptr [edx + 0x69], 0
+// 0093aefa  7503                 jne 0x93aeff
+// 0093aefc  894204               mov dword ptr [edx + 4], eax
+// 0093aeff  8b5004               mov edx, dword ptr [eax + 4]
+// 0093af02  895104               mov dword ptr [ecx + 4], edx
+// 0093af05  8b5704               mov edx, dword ptr [edi + 4]
+// 0093af08  3b4204               cmp eax, dword ptr [edx + 4]
+// 0093af0b  7505                 jne 0x93af12
+// 0093af0d  894a04               mov dword ptr [edx + 4], ecx
+// 0093af10  eb0e                 jmp 0x93af20
+// 0093af12  8b5004               mov edx, dword ptr [eax + 4]
+// 0093af15  3b02                 cmp eax, dword ptr [edx]
+// 0093af17  7504                 jne 0x93af1d
+// 0093af19  890a                 mov dword ptr [edx], ecx
+// 0093af1b  eb03                 jmp 0x93af20
+// 0093af1d  894a08               mov dword ptr [edx + 8], ecx
+// 0093af20  8901                 mov dword ptr [ecx], eax
+// 0093af22  894804               mov dword ptr [eax + 4], ecx
+// 0093af25  8b4e04               mov ecx, dword ptr [esi + 4]
+// 0093af28  80796800             cmp byte ptr [ecx + 0x68], 0
+// 0093af2c  8d4604               lea eax, [esi + 4]
+// 0093af2f  0f841bffffff         je 0x93ae50
+// 0093af35  8b5704               mov edx, dword ptr [edi + 4]
+// 0093af38  8b4204               mov eax, dword ptr [edx + 4]
+// 0093af3b  8b4c2454             mov ecx, dword ptr [esp + 0x54]
+// 0093af3f  885868               mov byte ptr [eax + 0x68], bl
+// 0093af42  8b442464             mov eax, dword ptr [esp + 0x64]
+// 0093af46  5e                   pop esi
+// 0093af47  8928                 mov dword ptr [eax], ebp
+// 0093af49  5d                   pop ebp
+// 0093af4a  5b                   pop ebx
+// 0093af4b  5f                   pop edi
+// 0093af4c  64890d00000000       mov dword ptr fs:[0], ecx
+// 0093af53  83c450               add esp, 0x50
+// 0093af56  c21000               ret 0x10
+// copied from an identical function in another client (function ?_Insert@?$_Tree@V?$_Tmap_traits@HUValue16@@U?$less@H@std@@V?$allocator@U?$pair@$$CBHUValue16@@@std@@@3@$0A@@std@@@std@@IAE?AViterator@12@_NPAU_Node@?$_Tree_nod@V?$_Tmap_traits@HUValue16@@U?$less@H@std@@V?$allocator@U?$pair@$$CBHUValue16@@@std@@@3@$0A@@std@@@2@ABU?$pair@$$CBHUValue16@@@2@@Z)
+
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: ogre-1.7.0 OgreTangentSpaceCalc.cpp
-
-// Candidate translation unit (score above; library headers required).
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-(Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org/
-
-Copyright (c) 2000-2009 Torus Knot Software Ltd
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
------------------------------------------------------------------------------
-*/
-#include "OgreStableHeaders.h"
-#include "OgreTangentSpaceCalc.h"
-#include "OgreHardwareBufferManager.h"
-#include "OgreLogManager.h"
-#include "OgreException.h"
-
-namespace Ogre
-{
-	//---------------------------------------------------------------------
-	TangentSpaceCalc::TangentSpaceCalc()
-		: mVData(0)
-		, mSplitMirrored(false)
-		, mSplitRotated(false)
-		, mStoreParityInW(false)
-	{
-	}
-	//---------------------------------------------------------------------
-	TangentSpaceCalc::~TangentSpaceCalc()
-	{
-
-	}
-	//---------------------------------------------------------------------
-	void TangentSpaceCalc::clear()
-	{
-		mIDataList.clear();
-		mOpTypes.clear();
-		mVData = 0;
-	}
-	//---------------------------------------------------------------------
-	void TangentSpaceCalc::setVertexData(VertexData* v_in)
-	{
-		mVData = v_in;
-	}
-	//---------------------------------------------------------------------
-	void TangentSpaceCalc::addIndexData(IndexData* i_in, RenderOperation::OperationType op)
-	{
-		if (op != RenderOperation::OT_TRIANGLE_FAN && 
-			op != RenderOperation::OT_TRIANGLE_LIST && 
-			op != RenderOperation::OT_TRIANGLE_STRIP)
-		{
-			OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS,
-				"Only indexed triangle (list, strip, fan) render operations are supported.",
-				"TangentSpaceCalc::addIndexData");
-
-		}
-		mIDataList.push_back(i_in);
-		mOpTypes.push_back(op);
-	}
-	//---------------------------------------------------------------------
-	TangentSpaceCalc::Result TangentSpaceCalc::build(
-		VertexElementSemantic targetSemantic,
-		unsigned short sourceTexCoordSet, unsigned short index)
-	{
-		Result res;
-
-		// Pull out all the vertex components we'll need
-		populateVertexArray(sourceTexCoordSet);
-
-		// Now process the faces and calculate / add their contributions
-		processFaces(res);
-
-		// Now normalise & orthogonalise
-		normaliseVertices();
-
-		// Create new final geometry
-		// First extend existing buffers to cope with new vertices
-		extendBuffers(res.vertexSplits);
-
-		// Alter indexes
-		remapIndexes(res);
-
-		// Create / identify target & write tangents
-		insertTangents(res, targetSemantic, sourceTexCoordSet, index);
-
-		return res;
-
-
-	}
-	//---------------------------------------------------------------------
-	void TangentSpaceCalc::extendBuffers(VertexSplits& vertexSplits)
-	{
-		if (!vertexSplits.empty())
-		{
-			// ok, need to increase the vertex buffer size, and alter some indexes
-
-			// vertex buffers first
-			VertexBufferBinding* newBindings = HardwareBufferManager::getSingleton().createVertexBufferBinding();
-			const VertexBufferBinding::VertexBufferBindingMap& bindmap = 
-				mVData->vertexBufferBinding->getBindings();
-			for (VertexBufferBinding::VertexBufferBindingMap::const_iterator i = 
-				bindmap.begin(); i != bindmap.end(); ++i)
-			{
-				HardwareVertexBufferSharedPtr srcbuf = i->second;
-				// Derive vertex count from buffer not vertex data, in case using
-				// the vertexStart option in vertex data
-				size_t newVertexCount = srcbuf->getNumVertices() + vertexSplits.size();
-				// Create new buffer & bind
-				HardwareVertexBufferSharedPtr newBuf = 
-					HardwareBufferManager::getSingleton().createVertexBuffer(
-					srcbuf->getVertexSize(), newVertexCount, srcbuf->getUsage(), 
-					srcbuf->hasShadowBuffer());
-				newBindings->setBinding(i->first, newBuf);
-
-				// Copy existing contents (again, entire buffer, not just elements referenced)
-				newBuf->copyData(*(srcbuf.get()), 0, 0, srcbuf->getNumVertices() * srcbuf->getVertexSize(), true);
-
-				// Split vertices, read / write from new buffer
-				char* pBase = static_cast<char*>(newBuf->lock(HardwareBuffer::HBL_NORMAL));
-				for (VertexSplits::iterator spliti = vertexSplits.begin(); 
-					spliti != vertexSplits.end(); ++spliti)
-				{
-					const char* pSrcBase = pBase + spliti->first * newBuf->getVertexSize();
-					char* pDstBase = pBase + spliti->second * newBuf->getVertexSize();
-					memcpy(pDstBase, pSrcBase, newBuf->getVertexSize());
-				}
-				newBuf->unlock();
-
-			}
-
-			// Update vertex data
-			// Increase vertex count according to num splits
-			mVData->vertexCount += vertexSplits.size();
-			// Flip bindings over to new buffers (old buffers released)
-			HardwareBufferManager::getSingleton().destroyVertexBufferBinding(mVData->vertexBufferBinding);
-			mVData->vertexBufferBinding = newBindings;
-
-			// If vertex size requires 32bit index buffer
-			if (mVData->vertexCount > 65536)
-			{
-				for (size_t i = 0; i < mIDataList.size(); ++i)
-				{
-					// check index size
-					IndexData* idata = mIDataList[i];
-					HardwareIndexBufferSharedPtr srcbuf = idata->indexBuffer;
-					if (srcbuf->getType() == HardwareIndexBuffer::IT_16BIT)
-					{
-						size_t indexCount = srcbuf->getNumIndexes();
-
-						// convert index buffer to 32bit.
-						HardwareIndexBufferSharedPtr newBuf =
-							HardwareBufferManager::getSingleton().createIndexBuffer(
-							HardwareIndexBuffer::IT_32BIT, indexCount,
-							srcbuf->getUsage(), srcbuf->hasShadowBuffer());
-
-						uint16* pSrcBase = static_cast<uint16*>(srcbuf->lock(HardwareBuffer::HBL_NORMAL));
-						uint32* pBase = static_cast<uint32*>(newBuf->lock(HardwareBuffer::HBL_NORMAL));
-
-						size_t j = 0;
-						while (j < indexCount)
-						{
-							*pBase++ = *pSrcBase++;
-							++j;
-						}
-
-						srcbuf->unlock();
-						newBuf->unlock();
-
-						// assign new index buffer.
-						idata->indexBuffer = newBuf;
-					}
-				}
-			}
-		}
-
-	}
-	//---------------------------------------------------------------------
-	void TangentSpaceCalc::remapIndexes(Result& res)
-	{
-		for (size_t i = 0; i < mIDataList.size(); ++i)
-		{
-
-			IndexData* idata = mIDataList[i];
-			// Now do index data
-			// no new buffer required, same size but some triangles remapped
-			uint16* p16 = 0;
-			uint32* p32 = 0;
-			if (idata->indexBuffer->getType() == HardwareIndexBuffer::IT_32BIT)
-			{
-				p32 = static_cast<uint32*>(idata->indexBuffer->lock(HardwareBuffer::HBL_NORMAL));
-				remapIndexes(p32, i, res);
-			}
-			else
-			{
-				p16 = static_cast<uint16*>(idata->indexBuffer->lock(HardwareBuffer::HBL_NORMAL));
-				remapIndexes(p16, i, res);
-			}
-			idata->indexBuffer->unlock();
-		}
-
-	}
-	//---------------------------------------------------------------------
-	void TangentSpaceCalc::normaliseVertices()
-	{
-		// Just run through our complete (possibly augmented) list of vertices
-		// Normalise the tangents & binormals
-		for (VertexInfoArray::iterator i = mVertexArray.begin(); i != mVertexArray.end(); ++i)
-		{
-			VertexInfo& v = *i;
-
-			v.tangent.normalise();
-			v.binormal.normalise();
-
-			// Orthogonalise with the vertex normal since it's currently
-			// orthogonal with the face normals, but will be close to ortho
-			// Apply Gram-Schmidt orthogonalise
-			Vector3 temp = v.tangent;
-			v.tangent = temp - (v.norm * v.norm.dotProduct(temp));
-
-			temp = v.binormal;
-			v.binormal = temp - (v.norm * v.norm.dotProduct(temp));
-
-			// renormalize 
-			v.tangent.normalise();
-			v.binormal.normalise();
-
-		}
-	}
-	//---------------------------------------------------------------------
-	void TangentSpaceCalc::processFaces(Result& result)
-	{
-		// Quick pre-check for triangle strips / fans
-		for (OpTypeList::iterator ot = mOpTypes.begin(); ot != mOpTypes.end(); ++ot)
-		{
-			if (*ot != RenderOperation::OT_TRIANGLE_LIST)
-			{
-				// Can't split strips / fans
-				setSplitMirrored(false);
-				setSplitRotated(false);
-			}
-		}
-
-		for (size_t i = 0; i < mIDataList.size(); ++i)
-		{
-			IndexData* i_in = mIDataList[i];
-			RenderOperation::OperationType opType = mOpTypes[i];
-
-			// Read data from buffers
-			uint16 *p16 = 0;
-			uint32 *p32 = 0;
-
-			HardwareIndexBufferSharedPtr ibuf = i_in->indexBuffer;
-			if (ibuf->getType() == HardwareIndexBuffer::IT_32BIT)
-			{
-				p32 = static_cast<uint32*>(
-					ibuf->lock(HardwareBuffer::HBL_READ_ONLY));
-				// offset by index start
-				p32 += i_in->indexStart;
-			}
-			else
-			{
-				p16 = static_cast<uint16*>(
-					ibuf->lock(HardwareBuffer::HBL_READ_ONLY));
-				// offset by index start
-				p16 += i_in->indexStart;
-			}
-			// current triangle
-			size_t vertInd[3] = { 0, 0, 0 };
-			// loop through all faces to calculate the tangents and normals
-			size_t faceCount = opType == RenderOperation::OT_TRIANGLE_LIST ? 
-				i_in->indexCount / 3 : i_in->indexCount - 2;
-			for (size_t f = 0; f < faceCount; ++f)
-			{
-				bool invertOrdering = false;
-				// Read 1 or 3 indexes depending on type
-				if (f == 0 || opType == RenderOperation::OT_TRIANGLE_LIST)
-				{
-					vertInd[0] = p32? *p32++ : *p16++;
-					vertInd[1] = p32? *p32++ : *p16++;
-					vertInd[2] = p32? *p32++ : *p16++;
-				}
-				else if (opType == RenderOperation::OT_TRIANGLE_FAN)
-				{
-					// Element 0 always remains the same
-					// Element 2 becomes element 1
-					vertInd[1] = vertInd[2];
-					// read new into element 2
-					vertInd[2] = p32? *p32++ : *p16++;
-				}
-				else if (opType == RenderOperation::OT_TRIANGLE_STRIP)
-				{
-					// Shunt everything down one, but also invert the ordering on 
-					// odd numbered triangles (== even numbered i's)
-					// we interpret front as anticlockwise all the time but strips alternate
-					if (f & 0x1)
-					{
-						// odd tris (index starts at 3, 5, 7)
-						invertOrdering = true;
-					}
-					vertInd[0] = vertInd[1];
-					vertInd[1] = vertInd[2];			
-					vertInd[2] = p32? *p32++ : *p16++;
-				}
-
-				// deal with strip inversion of winding
-				size_t localVertInd[3];
-				localVertInd[0] = vertInd[0];
-				if (invertOrdering)
-				{
-					localVertInd[1] = vertInd[2];
-					localVertInd[2] = vertInd[1];
-				}
-				else
-				{
-					localVertInd[1] = vertInd[1];
-					localVertInd[2] = vertInd[2];
-				}
-
-
-				// For each triangle
-				//   Calculate tangent & binormal per triangle
-				//   Note these are not normalised, are weighted by UV area
-				Vector3 faceTsU, faceTsV, faceNorm;
-				calculateFaceTangentSpace(localVertInd, faceTsU, faceTsV, faceNorm);
-
-				// Skip invalid UV space triangles
-				if (faceTsU.isZeroLength() || faceTsV.isZeroLength())
-					continue;
-
-				addFaceTangentSpaceToVertices(i, f, localVertInd, faceTsU, faceTsV, faceNorm, result);
-
-			}
-
-
-			ibuf->unlock();
-		}
-
-	}
-	//---------------------------------------------------------------------
-	void TangentSpaceCalc::addFaceTangentSpaceToVertices(
-		size_t indexSet, size_t faceIndex, size_t *localVertInd, 
-		const Vector3& faceTsU, const Vector3& faceTsV, const Vector3& faceNorm, 
-		Result& result)
-	{
-		// Calculate parity for this triangle
-		int faceParity = calculateParity(faceTsU, faceTsV, faceNorm);
-		// Now add these to each vertex referenced by the face
-		for (int v = 0; v < 3; ++v)
-		{
-			// index 0 is vertex we're calculating, 1 and 2 are the others
-
-			// We want to re-weight these by the angle the face makes with the vertex
-			// in order to obtain tesselation-independent results
-			Real angleWeight = calculateAngleWeight(localVertInd[v], 
-				localVertInd[(v+1)%3], localVertInd[(v+2)%3]);
-
-
-			VertexInfo* vertex = &(mVertexArray[localVertInd[v]]);
-
-			// check parity (0 means not set)
-			// Locate parity-version of vertex index, or create if doesn't exist
-			// If parity-version of vertex index was different, record alteration
-			// in triangle remap
-			// in vertex split list
-			bool splitVertex = false;
-			size_t reusedOppositeParity = 0;
-			bool splitBecauseOfParity = false;
-			bool newVertex = false;
-			if (!vertex->parity)
-			{
-				// init
-				vertex->parity = faceParity;
-				newVertex = true;
-			}
-			if (mSplitMirrored)
-			{
-				if (!newVertex && faceParity != calculateParity(vertex->tangent, vertex->binormal, vertex->norm))//vertex->parity != faceParity)
-				{
-					// Check for existing alternative parity
-					if (vertex->oppositeParityIndex)
-					{
-						// Ok, have already split this vertex because of parity
-						// Use the same one again
-						reusedOppositeParity = vertex->oppositeParityIndex;
-						vertex = &(mVertexArray[reusedOppositeParity]);
-					}
-					else
-					{
-						splitVertex = true;
-						splitBecauseOfParity = true;
-
-						LogManager::getSingleton().stream(LML_TRIVIAL)
-							<< "TSC parity split - Vpar: " << vertex->parity 
-							<< " Fpar: " << faceParity
-							<< " faceTsU: " << faceTsU
-							<< " faceTsV: " << faceTsV
-							<< " faceNorm: " << faceNorm
-							<< " vertTsU:" << vertex->tangent
-							<< " vertTsV:" << vertex->binormal
-							<< " vertNorm:" << vertex->norm;
-
-					}
-				}
-			}
-
-			if (mSplitRotated)
-			{
-
-				// deal with excessive tangent space rotations as well as mirroring
-				// same kind of split behaviour appropriate
-				if (!newVertex && !splitVertex)
-				{
-					// If more than 90 degrees, split
-					Vector3 uvCurrent = vertex->tangent + vertex->binormal;
-
-					// project down to the plane (plane normal = face normal)
-					Vector3 vRotHalf = uvCurrent - faceNorm;
-					vRotHalf *= faceNorm.dotProduct(uvCurrent);
-
-					if ((faceTsU + faceTsV).dotProduct(vRotHalf) < 0.0f)
-					{
-						splitVertex = true;
-					}
-				}
-			}
-
-			if (splitVertex)
-			{
-				size_t newVertexIndex = mVertexArray.size();
-				VertexSplit splitInfo(localVertInd[v], newVertexIndex);
-				result.vertexSplits.push_back(splitInfo);
-				// re-point opposite parity
-				if (splitBecauseOfParity)
-				{
-					vertex->oppositeParityIndex = newVertexIndex;
-				}
-				// copy old values but reset tangent space
-				VertexInfo newVertex = *vertex;
-				newVertex.tangent = Vector3::ZERO;
-				newVertex.binormal = Vector3::ZERO;
-				newVertex.parity = faceParity;
-				mVertexArray.push_back(newVertex);
-				result.indexesRemapped.push_back(IndexRemap(indexSet, faceIndex, splitInfo));
-
-				vertex = &(mVertexArray[newVertexIndex]);
-
-			}
-			else if (reusedOppositeParity)
-			{
-				// didn't split again, but we do need to record the re-used remapping
-				VertexSplit splitInfo(localVertInd[v], reusedOppositeParity);
-				result.indexesRemapped.push_back(IndexRemap(indexSet, faceIndex, splitInfo));
-
-			}
-
-			// Add weighted tangent & binormal
-			vertex->tangent += (faceTsU * angleWeight);
-			vertex->binormal += (faceTsV * angleWeight);
-
-
-		}
-
-	}
-	//---------------------------------------------------------------------
-	int TangentSpaceCalc::calculateParity(const Vector3& u, const Vector3& v, const Vector3& n)
-	{
-		// Note that this parity is the reverse of what you'd expect - this is
-		// because the 'V' texture coordinate is actually left handed
-		if (u.crossProduct(v).dotProduct(n) >= 0.0f)
-			return -1;
-		else
-			return 1;
-
-	}
-	//---------------------------------------------------------------------
-	void TangentSpaceCalc::calculateFaceTangentSpace(const size_t* vertInd, 
-		Vector3& tsU, Vector3& tsV, Vector3& tsN)
-	{
-		const VertexInfo& v0 = mVertexArray[vertInd[0]];
-		const VertexInfo& v1 = mVertexArray[vertInd[1]];
-		const VertexInfo& v2 = mVertexArray[vertInd[2]];
-		Vector2 deltaUV1 = v1.uv - v0.uv;
-		Vector2 deltaUV2 = v2.uv - v0.uv;
-		Vector3 deltaPos1 = v1.pos - v0.pos;
-		Vector3 deltaPos2 = v2.pos - v0.pos;
-
-		// face normal
-		tsN = deltaPos1.crossProduct(deltaPos2);
-		tsN.normalise();
-
-
-		Real uvarea = deltaUV1.crossProduct(deltaUV2) * 0.5f;
-		if (Math::RealEqual(uvarea, 0.0f))
-		{
-			// no tangent, null uv area
-			tsU = tsV = Vector3::ZERO;
-		}
-		else
-		{
-
-			// Normalise by uvarea
-			Real a = deltaUV2.y / uvarea;
-			Real b = -deltaUV1.y / uvarea;
-			Real c = -deltaUV2.x / uvarea;
-			Real d = deltaUV1.x / uvarea;
-
-			tsU = (deltaPos1 * a) + (deltaPos2 * b);
-			tsU.normalise();
-
-			tsV = (deltaPos1 * c) + (deltaPos2 * d);
-			tsV.normalise();
-
-			Real abs_uvarea = Math::Abs(uvarea);
-			tsU *= abs_uvarea;
-			tsV *= abs_uvarea;
-
-			// tangent (tsU) and binormal (tsV) are now weighted by uv area
-
-
-		}
-
-	}
-	//---------------------------------------------------------------------
-	Real TangentSpaceCalc::calculateAngleWeight(size_t vidx0, size_t vidx1, size_t vidx2)
-	{
-		const VertexInfo& v0 = mVertexArray[vidx0];
-		const VertexInfo& v1 = mVertexArray[vidx1];
-		const VertexInfo& v2 = mVertexArray[vidx2];
-
-		Vector3 diff0 = v1.pos - v0.pos;
-		Vector3 diff1 = v2.pos - v1.pos;
-
-		// Weight is just the angle - larger == better
-		return diff0.angleBetween(diff1).valueRadians();
-
-	}
-	//---------------------------------------------------------------------
-	void TangentSpaceCalc::populateVertexArray(unsigned short sourceTexCoordSet)
-	{
-		// Just pull data out into more friendly structures
-		VertexDeclaration *dcl = mVData->vertexDeclaration;
-		VertexBufferBinding *bind = mVData->vertexBufferBinding;
-
-		// Get the incoming UV element
-		const VertexElement* uvElem = dcl->findElementBySemantic(
-			VES_TEXTURE_COORDINATES, sourceTexCoordSet);
-
-		if (!uvElem || uvElem->getType() != VET_FLOAT2)
-		{
-			OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS,
-				"No 2D texture coordinates with selected index, cannot calculate tangents.",
-				"TangentSpaceCalc::build");
-		}
-
-		HardwareVertexBufferSharedPtr uvBuf, posBuf, normBuf;
-		unsigned char *pUvBase, *pPosBase, *pNormBase;
-		size_t uvInc, posInc, normInc;
-
-		uvBuf = bind->getBuffer(uvElem->getSource());
-		pUvBase = static_cast<unsigned char*>(
-			uvBuf->lock(HardwareBuffer::HBL_READ_ONLY));
-		uvInc = uvBuf->getVertexSize();
-		// offset for vertex start
-		pUvBase += mVData->vertexStart * uvInc;
-
-		// find position
-		const VertexElement *posElem = dcl->findElementBySemantic(VES_POSITION);
-		if (posElem->getSource() == uvElem->getSource())
-		{
-			pPosBase = pUvBase;
-			posInc = uvInc;
-		}
-		else
-		{
-			// A different buffer
-			posBuf = bind->getBuffer(posElem->getSource());
-			pPosBase = static_cast<unsigned char*>(
-				posBuf->lock(HardwareBuffer::HBL_READ_ONLY));
-			posInc = posBuf->getVertexSize();
-			// offset for vertex start
-			pPosBase += mVData->vertexStart * posInc;
-		}
-		// find a normal buffer
-		const VertexElement *normElem = dcl->findElementBySemantic(VES_NORMAL);
-		if (!normElem)
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, 
-			"No vertex normals found", 
-			"TangentSpaceCalc::build");
-
-		if (normElem->getSource() == uvElem->getSource())
-		{
-			pNormBase = pUvBase;
-			normInc = uvInc;
-		}
-		else if (normElem->getSource() == posElem->getSource())
-		{
-			// normals are in the same buffer as position
-			// this condition arises when an animated(skeleton) mesh is not built with 
-			// an edge list buffer ie no shadows being used.
-			pNormBase = pPosBase;
-			normInc = posInc;
-		}
-		else
-		{
-			// A different buffer
-			normBuf = bind->getBuffer(normElem->getSource());
-			pNormBase = static_cast<unsigned char*>(
-				normBuf->lock(HardwareBuffer::HBL_READ_ONLY));
-			normInc = normBuf->getVertexSize();
-			// offset for vertex start
-			pNormBase += mVData->vertexStart * normInc;
-		}
-
-		// Preinitialise vertex info
-		mVertexArray.clear();
-		mVertexArray.resize(mVData->vertexCount);
-
-		float* pFloat;
-		VertexInfo* vInfo = &(mVertexArray[0]);
-		for (size_t v = 0; v < mVData->vertexCount; ++v, ++vInfo)
-		{
-			posElem->baseVertexPointerToElement(pPosBase, &pFloat);
-			vInfo->pos.x = *pFloat++;
-			vInfo->pos.y = *pFloat++;
-			vInfo->pos.z = *pFloat++;
-			pPosBase += posInc;
-
-			normElem->baseVertexPointerToElement(pNormBase, &pFloat);
-			vInfo->norm.x = *pFloat++;
-			vInfo->norm.y = *pFloat++;
-			vInfo->norm.z = *pFloat++;
-			pNormBase += normInc;
-
-			uvElem->baseVertexPointerToElement(pUvBase, &pFloat);
-			vInfo->uv.x = *pFloat++;
-			vInfo->uv.y = *pFloat++;
-			pUvBase += uvInc;
-
-
-		}
-
-		// unlock buffers
-		uvBuf->unlock();
-		if (!posBuf.isNull())
-		{
-			posBuf->unlock();
-		}
-		if (!normBuf.isNull())
-		{
-			normBuf->unlock();
-		}
-
-	}
-	//---------------------------------------------------------------------
-	void TangentSpaceCalc::insertTangents(Result& res,
-		VertexElementSemantic targetSemantic, unsigned short sourceTexCoordSet, 
-		unsigned short index)
-	{
-		// Make a new tangents semantic or find an existing one
-		VertexDeclaration *vDecl = mVData->vertexDeclaration ;
-		VertexBufferBinding *vBind = mVData->vertexBufferBinding ;
-
-		const VertexElement *tangentsElem = vDecl->findElementBySemantic(targetSemantic, index);
-		bool needsToBeCreated = false;
-		VertexElementType tangentsType = mStoreParityInW ? VET_FLOAT4 : VET_FLOAT3;
-
-		if (!tangentsElem)
-		{ // no tex coords with index 1
-			needsToBeCreated = true ;
-		}
-		else if (tangentsElem->getType() != tangentsType)
-		{
-			//  buffer exists, but not 3D
-			OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS,
-				"Target semantic set already exists but is not of the right size, therefore "
-				"cannot contain tangents. You should delete this existing entry first. ",
-				"TangentSpaceCalc::insertTangents");
-		}
-
-		HardwareVertexBufferSharedPtr targetBuffer, origBuffer;
-		unsigned char* pSrc = NULL;
-
-		if (needsToBeCreated)
-		{
-			// To be most efficient with our vertex streams,
-			// tack the new tangents onto the same buffer as the
-			// source texture coord set
-			const VertexElement* prevTexCoordElem =
-				mVData->vertexDeclaration->findElementBySemantic(
-				VES_TEXTURE_COORDINATES, sourceTexCoordSet);
-			if (!prevTexCoordElem)
-			{
-				OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND,
-					"Cannot locate the first texture coordinate element to "
-					"which to append the new tangents.", 
-					"Mesh::orgagniseTangentsBuffer");
-			}
-			// Find the buffer associated with  this element
-			origBuffer = mVData->vertexBufferBinding->getBuffer(
-				prevTexCoordElem->getSource());
-			// Now create a new buffer, which includes the previous contents
-			// plus extra space for the 3D coords
-			targetBuffer = HardwareBufferManager::getSingleton().createVertexBuffer(
-				origBuffer->getVertexSize() + VertexElement::getTypeSize(tangentsType),
-				origBuffer->getNumVertices(),
-				origBuffer->getUsage(),
-				origBuffer->hasShadowBuffer() );
-			// Add the new element
-			tangentsElem = &(vDecl->addElement(
-				prevTexCoordElem->getSource(),
-				origBuffer->getVertexSize(),
-				tangentsType,
-				targetSemantic,
-				index));
-			// Set up the source pointer
-			pSrc = static_cast<unsigned char*>(
-				origBuffer->lock(HardwareBuffer::HBL_READ_ONLY));
-			// Rebind the new buffer
-			vBind->setBinding(prevTexCoordElem->getSource(), targetBuffer);
-		}
-		else
-		{
-			// space already there
-			origBuffer = mVData->vertexBufferBinding->getBuffer(
-				tangentsElem->getSource());
-			targetBuffer = origBuffer;
-		}
-
-
-		unsigned char* pDest = static_cast<unsigned char*>(
-			targetBuffer->lock(HardwareBuffer::HBL_DISCARD));
-		size_t origVertSize = origBuffer->getVertexSize();
-		size_t newVertSize = targetBuffer->getVertexSize();
-		for (size_t v = 0; v < origBuffer->getNumVertices(); ++v)
-		{
-			if (needsToBeCreated)
-			{
-				// Copy original vertex data as well 
-				memcpy(pDest, pSrc, origVertSize);
-				pSrc += origVertSize;
-			}
-			// Write in the tangent
-			float* pTangent;
-			tangentsElem->baseVertexPointerToElement(pDest, &pTangent);
-			VertexInfo& vertInfo = mVertexArray[v];
-			*pTangent++ = vertInfo.tangent.x;
-			*pTangent++ = vertInfo.tangent.y;
-			*pTangent++ = vertInfo.tangent.z;
-			if (mStoreParityInW)
-				*pTangent++ = (float)vertInfo.parity;
-
-			// Next target vertex
-			pDest += newVertSize;
-
-		}
-		targetBuffer->unlock();
-
-		if (needsToBeCreated)
-		{
-			origBuffer->unlock();
-		}
-	}
-
-}
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#define _SECURE_SCL 0
+#include <map>
+
+// value_type is 0x14 bytes: node color at +0x20, isnil at +0x21, max_size 0xcccccccc.
+struct Value16 { int words[22]; };
+template class std::_Tree<std::_Tmap_traits<int, Value16, std::less<int>,
+    std::allocator<std::pair<const int, Value16> >, false> >;

@@ -1,4 +1,3 @@
-// from server: 78% by colin
 // roc 2007-08 0054bea0  unit: boost::iostreams::DUoutput::V?$basic_null_device::?$stream_buffer  size: 42 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0054bea0
 //
@@ -15,22 +14,29 @@
 // 0054bebd  8d4c2404             lea ecx, [esp + 4]
 // 0054bec1  ff15fce47700         call dword ptr [0x77e4fc]
 // 0054bec7  c20400               ret 4
+// copied from an identical function in another client (function ?f@S@@QAEXPBX@Z)
 
-struct DUoutput_stream_buffer {
-    char pad[0x44];
-    void* field_44;
-    char pad2[0x54 - 0x48];
-    unsigned char field_54;
-    void imbue(const void* loc);
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+typedef void (__thiscall *ImbueFunction)(void *, void *, const void *);
+typedef void (__thiscall *DestroyFunction)(void *);
+
+extern ImbueFunction imbue;
+extern DestroyFunction destroy;
+
+struct S {
+    unsigned char padding0[0x44];
+    void *stream;
+    unsigned char padding1[0x0C];
+    unsigned char flags;
+
+    void f(const void *locale);
 };
 
-extern "C" void __stdcall pubimbue_wrapper(void* buf, void* out, const void* loc);
-extern "C" void __stdcall locale_dtor(void* loc);
-
-void DUoutput_stream_buffer::imbue(const void* loc) {
-    if ((field_54 & 1) && field_44) {
-        char tmp[4];
-        pubimbue_wrapper(field_44, tmp, loc);
-        locale_dtor(tmp);
+void S::f(const void *locale)
+{
+    if ((flags & 1) && stream) {
+        imbue(stream, &locale, locale);
+        destroy(&locale);
     }
 }

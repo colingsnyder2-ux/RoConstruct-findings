@@ -1,29 +1,14 @@
-// from server: 53% by tester
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-boost-1_34_1-dll roc_boost_resume_389d0bd197ae56e1.cpp
 
-
-
-
-extern "C" {
-    typedef unsigned int DWORD;
-    typedef void* HMODULE;
-}
-
-struct std_string {
-    void* data[4];
-    std_string(const char*);
-    ~std_string();
-};
-
-struct chain_client {
-    void* vtable;
-    void construct(std_string*);
-};
-
-extern "C" void* __stdcall get_module_handle(const char*);
-extern "C" void* __stdcall get_proc_address(void*, const char*);
-
-void chain_client::construct(std_string* s) {
-    std_string local("no read access");
-    this->vtable = (void*)0x7a783c;
-    local.~std_string();
-}
+// Candidate translation unit (score above; library headers required).
+#define NDEBUG 1
+#include <istream>
+#include <ostream>
+#include <boost/ref.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::stream_buffer<boost::reference_wrapper<std::istream> >;
+template class boost::iostreams::stream_buffer<boost::reference_wrapper<std::ostream> >;

@@ -1,1498 +1,1498 @@
-// from server: 69% by colin
+// from server: 98% by colin
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-8.0 atlmfc/src/mfc/daodfx.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-vc8-shared-mfc Source/CommandBars/XTPToolBar.cpp
 
 // Candidate translation unit (score above; library headers required).
-// This is a part of the Microsoft Foundation Classes C++ library.
-// Copyright (C) Microsoft Corporation
-// All rights reserved.
+// XTPToolBar.cpp : implementation of the CXTPToolBar class.
 //
-// This source code is only intended as a supplement to the
-// Microsoft Foundation Classes Reference and related
-// electronic documentation provided with the library.
-// See these sources for detailed information regarding the
-// Microsoft Foundation Classes product.
-
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "math.h"
+#include "Resource.h"
 
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPVC50Helpers.h"
+#include "Common/XTPResourceManager.h"
+#include "Common/XTPImageManager.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPToolTipContext.h"
 
+#include "XTPToolBar.h"
+#include "XTPCommandBars.h"
+#include "XTPDockBar.h"
+#include "XTPControls.h"
+#include "XTPControl.h"
+#include "XTPPaintManager.h"
+#include "XTPMouseManager.h"
+#include "XTPControlPopup.h"
+#include "XTPPopupBar.h"
+#include "XTPControlButton.h"
+#include "XTPDockContext.h"
+#include "XTPShortcutManager.h"
 
+#ifdef _DEBUG
 #define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
 
-#pragma warning(disable: 4311 4312)  // Disable /Wp64 warnings, since DAO isn't supported on Win64
+#define _XTP_CBRS_ALL            0x0040FFFFL
 
-//////////////////////////////////////////////////////////////////////////
-// Helpers
+IMPLEMENT_XTP_COMMANDBAR(CXTPToolBar, CXTPCommandBar)
 
-// Helpers for floating point operations
-AFX_STATIC_DATA const float _afxFloatPseudoNull = AFX_RFX_SINGLE_PSEUDO_NULL;
-AFX_STATIC_DATA const double _afxDoublePseudoNull = AFX_RFX_DOUBLE_PSEUDO_NULL;
-
-// Long binary allocation helper
-void AFX_CDECL AllocLongBinary(CLongBinary& lb, DWORD dwDataLength);
-
-// Memory allocation callbacks used by ICDAOGetRows
-STDAPI DaoStringAllocCallback(DWORD dwLen, DWORD pData, void** ppv);
-STDAPI DaoBinaryAllocCallback(DWORD dwLen, DWORD pData, void** ppv);
-STDAPI DaoLongBinaryAllocCallback(DWORD dwLen, DWORD pData, void** ppv);
-
-//////////////////////////////////////////////////////////////////////////
-// CDaoFieldExchange
-
-CDaoFieldExchange::CDaoFieldExchange(UINT nOperation,
-	CDaoRecordset* prs, void* pvField)
+class CXTPToolBar::CControlButtonHide: public CXTPControlButton
 {
-	ASSERT(nOperation < MaxDFXOperation);
-
-	m_nFieldType = none;
-	m_nOperation = nOperation;
-	m_prs = prs;
-	m_pvField = pvField;
-	m_nField = 0;
-	m_nParam = 0;
-}
-
-BOOL CDaoFieldExchange::IsValidOperation()
-{
-	if (m_nOperation >= MaxDFXOperation)
+public:
+	CControlButtonHide()
 	{
-		// Invalid operation
-		ASSERT(FALSE);
+		m_dwFlags = xtpFlagManualUpdate | xtpFlagSkipFocus | xtpFlagNoMovable;
+	}
+	void Draw(CDC* pDC);
+	void SetBeginGroup(BOOL /*bBeginGroup*/)
+	{
+	}
+	void OnExecute()
+	{
+		ASSERT(m_pParent);
+		if (m_pParent) ((CXTPToolBar*)m_pParent)->SetVisible(FALSE);
+	}
+	virtual BOOL IsCustomizeMovable() const
+	{
 		return FALSE;
 	}
+};
 
-	// Operations valid for both field types
-#ifdef _DEBUG
-	if (m_nOperation == DumpField || m_nOperation == SetFieldNull)
-		return TRUE;
-#endif
-
-	// Operations only valid for outputColumn OR param types
-	if ((m_nOperation == AddToParameterList) ||
-		(m_nOperation == BindParam))
-		return (m_nFieldType == param);
-	else
-		return (m_nFieldType == outputColumn);
+void CXTPToolBar::CControlButtonHide::Draw(CDC* pDC)
+{
+	GetPaintManager()->DrawSpecialControl(pDC, xtpButtonHideFloating, this, m_pParent, TRUE, NULL);
 }
 
-void CDaoFieldExchange::AppendParamType(CString& strParamList,
-	DWORD dwParamType)
+class CXTPToolBar::CControlButtonCustomize: public CXTPControlButton
 {
-	switch (dwParamType)
+public:
+	CControlButtonCustomize()
 	{
-	default:
-		ASSERT(FALSE);
-		break;
-
-	case AFX_RFX_TEXT:
-		strParamList += " Text";
-		break;
-
-	case AFX_RFX_BINARY:
-		strParamList += " LongBinary";
-		break;
-
-	case AFX_RFX_LONGBINARY:
-		strParamList += " LongBinary";
-		break;
-
-	case AFX_RFX_BOOL:
-		strParamList += " Bit";
-		break;
-
-	case AFX_RFX_BYTE:
-		strParamList += " Byte";
-		break;
-
-	case AFX_RFX_SHORT:
-		strParamList += " Short";
-		break;
-
-	case AFX_RFX_LONG:
-		strParamList += " Long";
-		break;
-
-	case AFX_RFX_CURRENCY:
-		strParamList += " Currency";
-		break;
-
-	case AFX_RFX_SINGLE:
-		strParamList += " IEEESingle";
-		break;
-
-	case AFX_RFX_DOUBLE:
-		strParamList += " IEEEDouble";
-		break;
-
-	case AFX_RFX_DATE:
-		strParamList += " DateTime";
-		break;
+		m_pControl = NULL;
+		m_pToolBar = NULL;
 	}
-}
-
-CDaoFieldCache* CDaoFieldExchange::GetCacheValue(CDaoRecordset* prs, void* pv)
-{
-	// Lookup storage locations
-	void* pvCache=NULL;
-	if (prs == NULL || !prs->m_pMapFieldCache->Lookup(pv, pvCache))
-		AfxThrowDaoException(AFX_DAO_ERROR_DFX_BIND);
-	ASSERT(pvCache!=NULL);
-	return (CDaoFieldCache*)pvCache;
-}
-
-void CDaoFieldExchange::SetNullValue(void* pv, DWORD dwDataType)
-{
-	switch (dwDataType)
+	virtual void OnExecute()
 	{
-	default:
-		ASSERT(FALSE);
-		break;
+		ASSERT(m_pParent);
+		if (!m_pParent)
+			return;
+		CXTPCommandBars* pCommandBars = m_pParent->GetCommandBars();
+		ASSERT(pCommandBars);
+		if (!pCommandBars)
+			return;
+		pCommandBars->GetCommandBarsOptions()->bDirtyState = TRUE;
 
-	case AFX_RFX_TEXT:
-		((CString*)pv)->Empty();
-		break;
-
-	case AFX_RFX_BINARY:
-		((CByteArray*)pv)->SetSize(0);
-		break;
-
-	case AFX_RFX_LONGBINARY:
-		((CLongBinary*)pv)->m_dwDataLength = 0;
-		break;
-
-	case AFX_RFX_BOOL:
-		*(BOOL*)pv = AFX_RFX_BOOL_PSEUDO_NULL;
-		break;
-
-	case AFX_RFX_BYTE:
-		*(BYTE*)pv = AFX_RFX_BYTE_PSEUDO_NULL;
-		break;
-
-	case AFX_RFX_SHORT:
-		*(short*)pv = AFX_RFX_SHORT_PSEUDO_NULL;
-		break;
-
-	case AFX_RFX_LONG:
-		*(long*)pv = AFX_RFX_LONG_PSEUDO_NULL;
-		break;
-
-	case AFX_RFX_CURRENCY:
-		((COleCurrency*)pv)->SetStatus(COleCurrency::null);
-		break;
-
-	case AFX_RFX_SINGLE:
-		*(float*)pv = _afxFloatPseudoNull;
-		break;
-
-	case AFX_RFX_DOUBLE:
-		*(double*)pv = _afxDoublePseudoNull;
-		break;
-
-	case AFX_RFX_DATE:
-		((COleDateTime*)pv)->SetStatus(COleDateTime::null);
-		break;
-	}
-}
-
-BOOL CDaoFieldExchange::IsNullValue(void* pv, DWORD dwDataType)
-{
-	BOOL bNull = FALSE;
-
-	switch (dwDataType)
-	{
-	default:
-		ASSERT(FALSE);
-		break;
-
-	case AFX_RFX_TEXT:
-		if (((CString*)pv)->IsEmpty())
-			bNull = TRUE;
-		break;
-
-	case AFX_RFX_BINARY:
-		if (((CByteArray*)pv)->GetSize() == 0)
-			bNull = TRUE;
-		break;
-
-	case AFX_RFX_LONGBINARY:
-		if (((CLongBinary*)pv)->m_dwDataLength == 0)
-			bNull = TRUE;
-		break;
-
-	case AFX_RFX_BOOL:
-		if (*(BOOL*)pv == AFX_RFX_BOOL_PSEUDO_NULL)
-			bNull = TRUE;
-		break;
-
-	case AFX_RFX_BYTE:
-		if (*(BYTE*)pv == AFX_RFX_BYTE_PSEUDO_NULL)
-			bNull = TRUE;
-		break;
-
-	case AFX_RFX_SHORT:
-		if (*(short*)pv == AFX_RFX_SHORT_PSEUDO_NULL)
-			bNull = TRUE;
-		break;
-
-	case AFX_RFX_LONG:
-		if (*(long*)pv == AFX_RFX_LONG_PSEUDO_NULL)
-			bNull = TRUE;
-		break;
-
-	case AFX_RFX_CURRENCY:
-		if (((COleCurrency*)pv)->GetStatus() == COleCurrency::null)
-			bNull = TRUE;
-		break;
-
-	case AFX_RFX_SINGLE:
-		if (*(float*)pv == _afxFloatPseudoNull)
-			bNull = TRUE;
-		break;
-
-	case AFX_RFX_DOUBLE:
-		if (*(double*)pv == _afxDoublePseudoNull)
-			bNull = TRUE;
-		break;
-
-	case AFX_RFX_DATE:
-		if (((COleDateTime*)pv)->GetStatus() == COleDateTime::null)
-			bNull = TRUE;
-		break;
-	}
-
-	return bNull;
-}
-
-void CDaoFieldExchange::AllocCacheValue(CDaoFieldCache*& pCache,
-	DWORD dwDataType)
-{
-	// Initialize a new field cache
-	pCache = new CDaoFieldCache;
-	pCache->m_nStatus = 0;
-
-	switch (dwDataType)
-	{
-	default:
-		ASSERT(FALSE);
-		break;
-
-	case AFX_RFX_TEXT:
-		pCache->m_pvData = new CString();
-		pCache->m_nDataType = AFX_RFX_TEXT;
-		break;
-
-	case AFX_RFX_BINARY:
-		pCache->m_pvData = new CByteArray();
-		pCache->m_nDataType = AFX_RFX_BINARY;
-		break;
-
-	case AFX_RFX_LONGBINARY:
-		pCache->m_pvData = new CLongBinary();
-		pCache->m_nDataType = AFX_RFX_LONGBINARY;
-		break;
-
-	case AFX_RFX_BOOL:
-		pCache->m_nDataType = AFX_RFX_BOOL;
-		break;
-
-	case AFX_RFX_BYTE:
-		pCache->m_nDataType = AFX_RFX_BYTE;
-		break;
-
-	case AFX_RFX_SHORT:
-		pCache->m_nDataType = AFX_RFX_SHORT;
-		break;
-
-	case AFX_RFX_LONG:
-		pCache->m_nDataType = AFX_RFX_LONG;
-		break;
-
-	case AFX_RFX_CURRENCY:
-		pCache->m_pvData = new COleCurrency();
-		pCache->m_nDataType = AFX_RFX_CURRENCY;
-		break;
-
-	case AFX_RFX_SINGLE:
-		pCache->m_nDataType = AFX_RFX_SINGLE;
-		break;
-
-	case AFX_RFX_DOUBLE:
-		pCache->m_pvData = new double;
-		pCache->m_nDataType = AFX_RFX_DOUBLE;
-		break;
-
-	case AFX_RFX_DATE:
-		pCache->m_pvData = new COleDateTime();
-		pCache->m_nDataType = AFX_RFX_DATE;
-		break;
-	}
-}
-
-void CDaoFieldExchange::DeleteCacheValue(CDaoFieldCache* pCache,
-	DWORD dwDataType)
-{
-	switch (dwDataType)
-	{
-	default:
-		ASSERT(FALSE);
-		break;
-
-	case AFX_RFX_TEXT:
-		delete (CString*)pCache->m_pvData;
-		break;
-
-	case AFX_RFX_BINARY:
-		delete (CByteArray*)pCache->m_pvData;
-		break;
-
-	case AFX_RFX_LONGBINARY:
-		delete (CLongBinary*)pCache->m_pvData;
-		break;
-
-	case AFX_RFX_BOOL:
-	case AFX_RFX_BYTE:
-	case AFX_RFX_SHORT:
-	case AFX_RFX_LONG:
-	case AFX_RFX_SINGLE:
-		break;
-
-	case AFX_RFX_CURRENCY:
-		delete (COleCurrency*)pCache->m_pvData;
-		break;
-
-	case AFX_RFX_DOUBLE:
-		delete (double*)pCache->m_pvData;
-		break;
-
-	case AFX_RFX_DATE:
-		delete (COleDateTime*)pCache->m_pvData;
-		break;
-	}
-
-	delete pCache;
-	pCache = NULL;
-}
-
-void CDaoFieldExchange::CopyValue(void* pvSrc, void* pvDest,
-	DWORD dwDataType)
-{
-	switch (dwDataType)
-	{
-	default:
-		ASSERT(FALSE);
-		break;
-
-	case AFX_RFX_TEXT:
-		*(CString*)pvDest = *(CString*)pvSrc;
-		break;
-
-	case AFX_RFX_BINARY:
-		((CByteArray*)pvDest)->Copy(*(CByteArray*)pvSrc);
-		break;
-
-	case AFX_RFX_LONGBINARY:
+		if (m_pControl)
 		{
-			CLongBinary* pLongBinarySrc = (CLongBinary*)pvSrc;
-			CLongBinary* pLongBinaryDest = (CLongBinary*)pvDest;
+			if (m_pControl->GetHideFlags() & xtpHideCustomize)
+				m_pControl->SetHideFlag(xtpHideCustomize, FALSE);
+			else m_pControl->SetHideFlag(xtpHideCustomize, TRUE);
 
-			// Reallocate memory in destination if necessary
-			AllocLongBinary(*pLongBinaryDest, pLongBinarySrc->m_dwDataLength);
-			pLongBinaryDest->m_dwDataLength =
-				pLongBinarySrc->m_dwDataLength;
-
-			BYTE* pbSrc = (BYTE*)::GlobalLock(pLongBinarySrc->m_hData);
-			BYTE* pbDest = (BYTE*)::GlobalLock(pLongBinaryDest->m_hData);
-			Checked::memcpy_s(pbDest, (size_t)pLongBinaryDest->m_dwDataLength, 
-				pbSrc, (size_t)pLongBinarySrc->m_dwDataLength);
-			::GlobalUnlock(pLongBinarySrc->m_hData);
-			::GlobalUnlock(pLongBinaryDest->m_hData);
+			SetChecked((m_pControl->GetHideFlags() & xtpHideCustomize) == 0);
+			m_pControl->GetParent()->OnRecalcLayout();
+			m_pParent->InvalidateParents();
 		}
-		break;
-
-	case AFX_RFX_BOOL:
-		*(BOOL*)pvDest = *(BOOL*)pvSrc;
-		break;
-
-	case AFX_RFX_BYTE:
-		*(BYTE*)pvDest = *(BYTE*)pvSrc;
-		break;
-
-	case AFX_RFX_SHORT:
-		*(short*)pvDest = *(short*)pvSrc;
-		break;
-
-	case AFX_RFX_LONG:
-		*(long*)pvDest = *(long*)pvSrc;
-		break;
-
-	case AFX_RFX_CURRENCY:
-		*(COleCurrency*)pvDest = *(COleCurrency*)pvSrc;
-		break;
-
-	case AFX_RFX_SINGLE:
-		*(float*)pvDest = *(float*)pvSrc;
-		break;
-
-	case AFX_RFX_DOUBLE:
-		*(double*)pvDest = *(double*)pvSrc;
-		break;
-
-	case AFX_RFX_DATE:
-		*(COleDateTime*)pvDest = *(COleDateTime*)pvSrc;
-		break;
+		if (m_pToolBar)
+		{
+			pCommandBars->ClosePopups();
+			m_pToolBar->Reset(TRUE);
+		}
 	}
+
+	CXTPControl* m_pControl;
+	CXTPToolBar* m_pToolBar;
+};
+
+
+class CXTPToolBar::CControlButtonExpand: public CXTPControlPopup
+{
+public:
+	CControlButtonExpand()
+	{
+		m_controlType = xtpControlButtonPopup;
+		m_bHiddenExists = FALSE;
+		m_dwFlags = xtpFlagLeftPopup | xtpFlagManualUpdate | xtpFlagNoMovable;
+		m_pCommandBar = CXTPPopupBar::CreatePopupBar(0);
+	}
+	void Draw(CDC* pDC);
+	BOOL OnSetPopup(BOOL bPopup);
+	void SetRect(CRect rcControl)
+	{
+		m_rcControl = rcControl;
+		m_bHiddenExists = IsHiddenExists();
+	};
+	void SetBeginGroup(BOOL /*bBeginGroup*/)
+	{
+	}
+	BOOL IsHiddenExists();
+	virtual BOOL IsCaptionVisible() const
+	{
+		return FALSE;
+	}
+	virtual BOOL IsCustomizeMovable() const
+	{
+		return FALSE;
+	}
+private:
+	BOOL m_bHiddenExists;
+};
+
+BOOL CXTPToolBar::CControlButtonExpand::IsHiddenExists()
+{
+	for (int i = 0; i < m_pParent->GetControlCount(); i++)
+	{
+		if (m_pParent->GetControl(i)->GetHideFlags() == xtpHideWrap)
+			return TRUE;
+	}
+	return FALSE;
 }
 
-BOOL CDaoFieldExchange::CompareValue(void* pvSrc, void* pvDest,
-	DWORD dwDataType)
+void CXTPToolBar::CControlButtonExpand::Draw(CDC* pDC)
 {
-	BOOL bDirty = FALSE;
+	GetPaintManager()->DrawSpecialControl(pDC, m_pParent->GetPosition() == xtpBarFloating ?
+		xtpButtonExpandFloating: xtpButtonExpandToolbar, this, m_pParent, TRUE, &m_bHiddenExists);
+}
 
-	switch (dwDataType)
+BOOL CXTPToolBar::CControlButtonExpand::OnSetPopup(BOOL bPopup)
+{
+	m_bPopup = bPopup;
+	if (bPopup)
 	{
-	default:
-		ASSERT(FALSE);
-		break;
+		if (m_pCommandBar)
+			m_pCommandBar->InternalRelease();
 
-	case AFX_RFX_TEXT:
-		if (*(CString*)pvDest != *(CString*)pvSrc)
-			bDirty = TRUE;
-		break;
-
-	case AFX_RFX_BINARY:
+		m_pCommandBar = NULL;
+		CWnd* pSite = m_pParent->GetSite();
+		if (pSite)
 		{
-			CByteArray* pByteArraySrc = (CByteArray*)pvSrc;
-			CByteArray* pByteArrayDest = (CByteArray*)pvDest;
+			XTP_COMMANDBARS_CREATEBAR cs;
+			ZeroMemory(&cs, sizeof(cs));
+			cs.bExpandBar = TRUE;
 
-			INT_PTR nSize = pByteArraySrc->GetSize();
-			// If sizes don't compare, must be dirty
-			if (nSize != pByteArrayDest->GetSize())
-				bDirty = TRUE;
-			else
+			if (pSite->SendMessage(WM_XTP_CREATECOMMANDBAR, 0, (LPARAM)&cs) != 0)
 			{
-				// If sizes compare, compare the data
-				if (memcmp(pByteArrayDest->GetData(), pByteArraySrc->GetData(), (size_t)nSize) != 0)
-					bDirty = TRUE;
+				m_pCommandBar = DYNAMIC_DOWNCAST(CXTPPopupBar, cs.pCommandBar);
 			}
 		}
-		break;
+		if (m_pCommandBar == NULL) m_pCommandBar = CXTPPopupToolBar::CreatePopupToolBar(m_pParent->GetCommandBars());
+		m_pCommandBar->EnableCustomization(FALSE);
 
-	case AFX_RFX_LONGBINARY:
+		CXTPCommandBars* pCommandBars = m_pParent->GetCommandBars();
+		if (pCommandBars)
 		{
-			CLongBinary* pLongBinarySrc = (CLongBinary*)pvSrc;
-			CLongBinary* pLongBinaryDest = (CLongBinary*)pvDest;
+			pCommandBars->GetHiddenControls((CXTPToolBar*)m_pParent, m_pCommandBar);
 
-			BYTE* pbSrc = (BYTE*)::GlobalLock(pLongBinarySrc->m_hData);
-			BYTE* pbDest = (BYTE*)::GlobalLock(pLongBinaryDest->m_hData);
-
-			// If sizes don't compare, must be dirty
-			if (pLongBinarySrc->m_dwDataLength !=
-				pLongBinaryDest->m_dwDataLength)
+			if (pCommandBars->GetCommandBarsOptions()->bShowExpandButtonAlways || pCommandBars->IsCustomizeAvail())
 			{
-				bDirty = TRUE;
-			}
-			else
-			{
-				// If sizes compare, compare the data
-				if (memcmp(pbDest, pbSrc, (size_t)pLongBinarySrc->m_dwDataLength) != 0)
-					bDirty = TRUE;
-			}
+				CXTPControlPopup* pControl = (CXTPControlPopup*)m_pCommandBar->GetControls()->Add(xtpControlPopup, XTP_ID_CUSTOMIZE_ADDORREMOVE);
+				pControl->SetFlags(xtpFlagManualUpdate);
 
-			::GlobalUnlock(pLongBinarySrc->m_hData);
-			::GlobalUnlock(pLongBinaryDest->m_hData);
+				pControl->SetBeginGroup(m_pCommandBar->GetControlCount() > 1);
+				pCommandBars->GetAddOrRemovePopup((CXTPToolBar*)m_pParent, pControl->GetCommandBar());
+			}
 		}
-		break;
+		else
+		{
+			((CXTPToolBar*)m_pParent)->_GetHiddenControls(m_pCommandBar);
+		}
 
-	case AFX_RFX_BOOL:
-		if (*(BOOL*)pvDest != *(BOOL*)pvSrc)
-			bDirty = TRUE;
-		break;
+		m_pCommandBar->Popup(this, IsKeyboardSelected(GetSelected()));
 
-	case AFX_RFX_BYTE:
-		if (*(BYTE*)pvDest != *(BYTE*)pvSrc)
-			bDirty = TRUE;
-		break;
-
-	case AFX_RFX_SHORT:
-		if (*(short*)pvDest != *(short*)pvSrc)
-			bDirty = TRUE;
-		break;
-
-	case AFX_RFX_LONG:
-		if (*(long*)pvDest != *(long*)pvSrc)
-			bDirty = TRUE;
-		break;
-
-	case AFX_RFX_CURRENCY:
-		if (*(COleCurrency*)pvDest != *(COleCurrency*)pvSrc)
-			bDirty = TRUE;
-		break;
-
-	case AFX_RFX_SINGLE:
-		if (*(float*)pvDest != *(float*)pvSrc)
-			bDirty = TRUE;
-		break;
-
-	case AFX_RFX_DOUBLE:
-		if (*(double*)pvDest != *(double*)pvSrc)
-			bDirty = TRUE;
-		break;
-
-	case AFX_RFX_DATE:
-		if (*(COleDateTime*)pvDest != *(COleDateTime*)pvSrc)
-			bDirty = TRUE;
-		break;
 	}
-
-	return bDirty;
-}
-
-void CDaoFieldExchange::FillVariant(void* pvValue, DWORD dwDataType,
-	COleVariant** ppVar)
-{
-	COleVariant* pVar;
-
-	if (dwDataType == AFX_RFX_TEXT)
-		pVar = new COleVariant(*(CString*)pvValue, VT_BSTRT);
-	else if (dwDataType == AFX_RFX_BOOL)
-		pVar = new COleVariant(*(long*)pvValue, VT_BOOL);
 	else
 	{
-		pVar = new COleVariant;
+		ASSERT(m_pCommandBar);
+		if (m_pCommandBar) m_pCommandBar->SetTrackingMode(FALSE);
 
-		switch (dwDataType)
+	}
+	RedrawParent();
+	return TRUE;
+}
+
+
+CXTPToolBar::CXTPToolBar()
+{
+	m_pDockBar = 0;
+	m_pDockContext = 0;
+	m_bBuiltIn = TRUE;
+	m_bTearOff = FALSE;
+
+	m_bCloseable = TRUE;
+	m_bTemporary = FALSE;
+	m_bShowExpandButton = TRUE;
+
+	m_bPreviewMode = m_bPreviewVisible = FALSE;
+
+	m_bContextMenuPresent = TRUE;
+	m_bInRecalcLayout = FALSE;
+
+	m_pDockContext = new CXTPDockContext(this);
+	m_dwFlags = xtpFlagAlignAny | xtpFlagFloating | xtpFlagHideWrap;
+
+
+	CXTPDrawHelpers::RegisterWndClass(0, _T("XTPToolBar"), CS_DBLCLKS);
+}
+
+BOOL CXTPToolBar::CreateToolBar(DWORD dwStyle, CWnd* pParentWnd, UINT nID)
+{
+	m_dwStyle = dwStyle & _XTP_CBRS_ALL;
+	dwStyle = dwStyle & ~_XTP_CBRS_ALL;
+
+	dwStyle = dwStyle | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+
+	if (!CWnd::CreateEx(0, _T("XTPToolBar"), NULL, dwStyle, CRect(0, 0, 0, 0), pParentWnd, nID))
+		return FALSE;
+
+	m_barPosition = xtpBarTop;
+
+	SAFE_DELETE(m_pDockContext);
+	m_dwFlags &= ~ (xtpFlagAlignAny | xtpFlagFloating | xtpFlagHideWrap);
+
+	if ((m_dwStyle & CBRS_TOOLTIPS) && m_pCommandBars == 0)
+		EnableToolTips();
+
+	return TRUE;
+
+}
+
+void CXTPToolBar::EnableDocking(DWORD dwFlags)
+{
+	ASSERT(m_pCommandBars);
+	m_dwFlags = dwFlags;
+}
+
+CXTPToolBar::~CXTPToolBar()
+{
+	SAFE_DELETE(m_pDockContext)
+}
+
+
+
+BOOL CXTPCommandBar::SetButtons(UINT* pButtons, int nCount)
+{
+	m_pControls->RemoveAll();
+
+	BOOL bSeparator = FALSE;
+
+	CWnd* pSite = GetSite();
+
+	for (int i = 0; i < nCount; i++)
+	{
+		if (pButtons[i] == 0)
+			bSeparator = TRUE;
+		else
 		{
-		default:
-			ASSERT(FALSE);
-			break;
+			XTPControlType controlType = xtpControlButton;
+			XTPButtonStyle buttonStyle = xtpButtonAutomatic;
+			CXTPControl* pControl = NULL;
+			UINT nID = pButtons[i];
 
-		case AFX_RFX_BINARY:
-			*pVar = *(CByteArray*)pvValue;
-			break;
+			XTP_COMMANDBARS_CREATECONTROL cs;
 
-		case AFX_RFX_LONGBINARY:
-			*pVar = *(CLongBinary*)pvValue;
-			break;
+			if (pSite)
+			{
+				cs.nID = nID;
+				cs.pControl = NULL;
+				cs.bToolBar = TRUE;
+				cs.pMenu = NULL;
+				cs.nIndex = i;
+				cs.strCaption = GetTitle();
+				cs.controlType = controlType;
+				cs.pCommandBar = this;
+				cs.buttonStyle = buttonStyle;
 
-		case AFX_RFX_BYTE:
-			*pVar = *(BYTE*)pvValue;
-			break;
+				if (pSite->SendMessage(WM_XTP_BEFORECREATECONTROL, 0, (LPARAM)&cs) != 0)
+				{
+					pControl = cs.pControl;
+					controlType = cs.controlType;
+					buttonStyle = cs.buttonStyle;
+					nID = cs.nID;
+				}
+			}
 
-		case AFX_RFX_SHORT:
-			*pVar = *(short*)pvValue;
-			break;
+			if (pControl == NULL)
+			{
+				pControl = m_pControls->Add(controlType, nID);
+				if (pControl)
+				{
+					pControl->SetStyle(buttonStyle);
+					if (controlType == xtpControlPopup) pControl->SetIconId(nID);
+				}
+			}
+			else m_pControls->Add(pControl, nID);
 
-		case AFX_RFX_LONG:
-			*pVar = *(long*)pvValue;
-			break;
+			if (bSeparator)
+			{
+				pControl->SetBeginGroup(TRUE);
+				bSeparator = FALSE;
+			}
 
-		case AFX_RFX_CURRENCY:
-			*pVar = *(COleCurrency*)pvValue;
-			break;
+			if (pSite)
+			{
+				cs.pControl = pControl;
+				pSite->SendMessage(WM_XTP_AFTERCREATECONTROL, 0, (LPARAM)&cs);
+			}
+		}
+	}
+	return TRUE;
+}
 
-		case AFX_RFX_SINGLE:
-			*pVar = *(float*)pvValue;
-			break;
+BOOL CXTPToolBar::LoadToolBar(UINT nIDResource, BOOL bLoadIcons)
+{
+	m_nBarID = nIDResource;
 
-		case AFX_RFX_DOUBLE:
-			*pVar = *(double*)pvValue;
-			break;
+	if (!CXTPCommandBar::LoadToolBar(nIDResource, bLoadIcons))
+		return FALSE;
 
-		case AFX_RFX_DATE:
-			*pVar = *(COleDateTime*)pvValue;
+	m_pControls->CreateOriginalControls();
+
+	return TRUE;
+}
+
+BOOL CXTPCommandBar::LoadToolBar(UINT nIDResource, BOOL bLoadIcons)
+{
+	LPCTSTR lpszResourceName = MAKEINTRESOURCE(nIDResource);
+
+	struct CToolBarData
+	{
+		WORD wVersion;
+		WORD wWidth;
+		WORD wHeight;
+		WORD wItemCount;
+		WORD* items()
+		{ return (WORD*)(this + 1); }
+	};
+
+	m_pControls->RemoveAll();
+	ASSERT(GetControlCount() == 0);
+
+	ASSERT_VALID(this);
+	ASSERT(lpszResourceName != NULL);
+	if (!lpszResourceName)
+		return FALSE;
+
+	// determine location of the bitmap in resource fork
+	HINSTANCE hInst = AfxFindResourceHandle(lpszResourceName, RT_TOOLBAR);
+	if (!hInst)
+		return FALSE;
+	HRSRC hRsrc = ::FindResource(hInst, lpszResourceName, RT_TOOLBAR);
+	if (hRsrc == NULL)
+		return FALSE;
+
+	HGLOBAL hGlobal = LoadResource(hInst, hRsrc);
+	if (hGlobal == NULL)
+		return FALSE;
+
+	CToolBarData* pData = (CToolBarData*)LockResource(hGlobal);
+	if (pData == NULL)
+		return FALSE;
+
+	ASSERT(pData->wVersion == 1);
+
+	int i;
+	UINT* pItems = new UINT[pData->wItemCount];
+
+	for (i = 0; i < pData->wItemCount; i++)
+		pItems[i] = pData->items()[i];
+
+	BOOL bResult = SetButtons(pItems, pData->wItemCount);
+
+	if (bLoadIcons)
+	{
+		CXTPImageManager* pImageManager = GetImageManager();
+
+		if (!pImageManager->SetIcons(nIDResource, pItems,
+			pData->wItemCount, CSize(pData->wWidth, pData->wHeight)))
+			bResult = FALSE;
+
+		if (pData->wWidth != 16)
+		{
+			SetIconSize(CSize(pData->wWidth, pData->wHeight));
 		}
 	}
 
-	*ppVar = pVar;
+	delete[] pItems;
+
+	UnlockResource(hGlobal);
+	FreeResource(hGlobal);
+
+
+	return bResult;
 }
 
-// Default implementation for RFX functions
-void CDaoFieldExchange::Default(LPCTSTR lpszName, void* pv,
-	DWORD dwColumnType, DWORD dwBindOptions)
+
+BOOL CXTPToolBar::SetPosition(XTPBarPosition barPosition)
 {
-	switch (m_nOperation)
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (!pCommandBars)
+		return FALSE;
+
+	if (IsDockingPosition(barPosition))
 	{
-	case AddToParameterList:
-		if (m_nParam != 1)
-			m_prs->m_strSQL += ",";
-		m_prs->m_strSQL += lpszName;
-		AppendParamType(m_prs->m_strSQL, dwColumnType);
-		return;
+		if (!pCommandBars->DockCommandBar(this, barPosition))
+			return FALSE;
 
-	case AddToSelectList:
-		if (m_nField != 1)
-			m_prs->m_strSQL += ",";
-		m_prs->m_strSQL += lpszName;
-		return;
+	}
+	else if (barPosition == xtpBarFloating)
+	{
+		if (!pCommandBars->FloatCommandBar(this))
+			return FALSE;
 
-	case BindField:
+	}
+	else
+		return FALSE;
+
+	ASSERT(m_barPosition == barPosition);
+
+	return TRUE;
+}
+
+
+BEGIN_MESSAGE_MAP(CXTPToolBar, CXTPCommandBar)
+	ON_WM_SETCURSOR()
+	ON_WM_RBUTTONDOWN()
+
+	ON_WM_NCCREATE()
+	ON_WM_NCACTIVATE()
+	ON_MESSAGE(WM_FLOATSTATUS, OnFloatStatus)
+	ON_WM_MOUSEACTIVATE()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_NCHITTEST_EX()
+	ON_WM_NCLBUTTONDOWN()
+	ON_WM_SETFOCUS()
+	ON_WM_CLOSE()
+	ON_MESSAGE(WM_SIZEPARENT, OnSizeParent)
+	ON_WM_LBUTTONDBLCLK()
+END_MESSAGE_MAP()
+
+
+
+BOOL CXTPToolBar::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
+{
+	if (GetShowGripper() && (IsDockingPosition(GetPosition())) &&
+		m_pDockContext && ((m_dwFlags & (xtpFlagAlignAny | xtpFlagFloating)) != 0))
+	{
+		CXTPClientRect rcGripper(this);
+		CRect rcBorder = GetPaintManager()->GetCommandBarBorders(this);
+		CSize szGripper = GetPaintManager()->DrawCommandBarGripper(NULL, this, FALSE);
+
+		if (IsDialogBar())
 		{
-			// Query parser needs "[" & "]", GetRows can't tolerate them.
-			LPTSTR lpszNoBracketName = new TCHAR[lstrlen(lpszName) + 1];
-			m_prs->StripBrackets(lpszName, lpszNoBracketName);
-
-			// Finish setting up column binding info struct
-			LPDAOCOLUMNBINDING pcb =
-				&m_prs->m_prgDaoColBindInfo[m_nField-1];
-			pcb->cbInfoOffset =
-				(DWORD)&m_prs->m_pulColumnLengths[m_nField-1];
-#ifndef _UNICODE
-			pcb->columnID.dwKind = DAOCOLKIND_STR;
-			pcb->columnID.lpstr = lpszNoBracketName;
-#else
-			pcb->columnID.dwKind = DAOCOLKIND_WSTR;
-			pcb->columnID.lpwstr = lpszNoBracketName;
-#endif
-
-			// Setup the field index map (and store value as void ptr)
-			m_prs->m_pMapFieldIndex->SetAt(pv, (void*)m_nField);
+			rcGripper.right = rcGripper.left + rcBorder.left + szGripper.cx;
+			rcGripper.left += 3;
+			rcGripper.bottom = rcGripper.top + rcBorder.top + szGripper.cy;
 		}
+		else if (IsVerticalPosition(GetPosition()))
+		{
+			rcGripper.bottom = rcGripper.top + rcBorder.top + szGripper.cy;
+		}
+		else
+		{
+			rcGripper.right = rcGripper.left + rcBorder.left + szGripper.cx;
+		}
+
+		POINT pt;
+		GetCursorPos(&pt);
+		ScreenToClient(&pt);
+
+		if (rcGripper.PtInRect(pt))
+		{
+			SetCursor(AfxGetApp()->LoadStandardCursor(IDC_SIZEALL));
+			return TRUE;
+		}
+	}
+
+	return CXTPCommandBar::OnSetCursor(pWnd, nHitTest, message);
+}
+
+INT_PTR CXTPCommandBar::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
+{
+
+	ASSERT_VALID(this);
+	ASSERT(::IsWindow(m_hWnd));
+
+	if (IsTrackingMode() == TRUE_POPUP && GetPosition() != xtpBarPopup)
+		return -1;
+
+	if (m_nPopuped != -1)
+		return -1;
+
+	BOOL bToolBarAccelTips = FALSE;
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	CXTPMouseManager* pMouseManager = pCommandBars->GetMouseManager();
+
+	if (pMouseManager->IsMouseLocked() || pMouseManager->IsTrackedLock(this))
+		return -1;
+
+	if (pCommandBars)
+	{
+		if (!pCommandBars->GetCommandBarsOptions()->bToolBarScreenTips)
+			return -1;
+
+		bToolBarAccelTips = pCommandBars->GetCommandBarsOptions()->bToolBarAccelTips;
+	}
+
+	CXTPControl* pControl = m_pControls->HitTest(point);
+	if (!pControl)
+		return -1;
+
+	if (m_barType == xtpBarTypePopup && (!pCommandBars || (!pCommandBars->GetCommandBarsOptions()->bShowPopupBarToolTips &&
+		((pControl->GetFlags() & xtpFlagShowPopupBarTip) == 0))))
+	{
+		return -1;
+	}
+
+
+	INT_PTR nHit = pControl->OnToolHitTest(point, pTI);
+	if (nHit != -1)
+	{
+		if (pTI->hwnd != m_hWnd)
+			return -1;
+
+		if (pTI != NULL && pTI->cbSize == sizeof(XTP_TOOLTIP_TOOLINFO_EX))
+		{
+			if (((XTP_TOOLTIP_TOOLINFO_EX*)pTI)->pToolInfo != NULL) ((XTP_TOOLTIP_TOOLINFO_EX*)pTI)->pToolInfo->pObject = pControl;
+		}
+
+		return nHit;
+	}
+
+	nHit = pControl->GetIconId();
+	CRect rect = pControl->GetRect();
+
+	CString strTip = pControl->GetTooltip();
+	if (strTip.GetLength() == 0)
+		return -1;
+
+
+	CString strShortcut = pControl->m_strShortcutText;
+	if (pCommandBars && bToolBarAccelTips && (!strShortcut.IsEmpty() || pCommandBars->GetShortcutManager()->FindDefaultAccelerator((UINT)pControl->GetID(), strShortcut)))
+	{
+		if (strShortcut.GetLength() > 0)
+		{
+			strTip += _T(" (") + strShortcut +_T(")");
+		}
+	}
+
+	CXTPToolTipContext::FillInToolInfo(pTI, m_hWnd, rect, nHit,
+		strTip, strTip, pControl->GetDescription(), GetImageManager());
+
+	if (pTI != NULL && pTI->cbSize == sizeof(XTP_TOOLTIP_TOOLINFO_EX))
+	{
+		if (((XTP_TOOLTIP_TOOLINFO_EX*)pTI)->pToolInfo != NULL) ((XTP_TOOLTIP_TOOLINFO_EX*)pTI)->pToolInfo->pObject = pControl;
+	}
+
+	// found matching rect, return the ID of the button
+	return nHit != 0 ? nHit : -1;
+}
+
+
+
+void CXTPToolBar::OnRButtonDown(UINT nFlags, CPoint point)
+{
+	CXTPControl* pControl = m_pControls->HitTest(point);
+	if (pControl && pControl->OnRButtonDown(point))
 		return;
 
-	case BindParam:
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (!pCommandBars) return;
+
+	if (IsCustomizeMode())
+	{
+		CXTPCommandBar::OnRButtonDown(nFlags, point);
+		return;
+	}
+
+	SetTrackingMode(FALSE);
+	SetSelected(-1);
+	Redraw();
+
+	ClientToScreen(&point);
+
+	pCommandBars->ContextMenu(this, point);
+}
+
+
+BOOL CXTPToolBar::Create(CWnd* pParentWnd, BOOL bFloat)
+{
+	if (!IsWindow(m_hWnd))
+	{
+		DWORD dwStyle = (bFloat ? WS_POPUP : WS_CHILD) | MFS_SYNCACTIVE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+
+		CPoint pt = m_pDockContext ? m_pDockContext->m_ptMRUFloatPos : CPoint(100, 100);
+
+		CXTPCommandBars* pCommandBars = GetCommandBars();
+		int nLayoutRTL = pCommandBars && pCommandBars->IsLayoutRTL() ? WS_EX_LAYOUTRTL : 0;
+
+		if (!CWnd::CreateEx(nLayoutRTL, _T("XTPToolBar"), m_strTitle, dwStyle, CRect(pt, CSize(0, 0)), pParentWnd, 0))
+			return FALSE;
+
+		ShowWindow(SW_SHOWNA);
+	}
+
+	if (!bFloat)
+	{
+		ModifyStyle(WS_POPUP, WS_CHILD);
+	}
+	else
+	{
+		SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, (LONG_PTR)0);
+		ModifyStyle(WS_CHILD, WS_POPUP | MFS_SYNCACTIVE);
+		SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, (LONG_PTR)pParentWnd->m_hWnd);
+	}
+
+	return TRUE;
+}
+
+CRect CXTPToolBar::GetBorders()
+{
+	if (GetPosition() == xtpBarFloating)
+	{
+		return CRect(3, 3, 3, 3);
+	}
+
+	CRect rcBorder = GetPaintManager()->GetCommandBarBorders(this);
+
+	if (GetShowGripper())
+		rcBorder.TopLeft() += GetPaintManager()->DrawCommandBarGripper(NULL, this, FALSE);
+
+	return rcBorder;
+}
+
+CSize CXTPToolBar::CalcDockingLayout(int nLength, DWORD dwMode, int nWidth)
+{
+	CClientDC dc(this);
+	CXTPFontDC font(&dc, GetPaintManager()->GetCommandBarFont(this));
+	CXTPControlPopup* pPopupExp = NULL;
+
+	CRect rcBorder(GetBorders());
+
+	CXTPControl* pHide = m_pControls->FindControl(XTP_ID_TOOLBAR_HIDE);
+	if (pHide)
+	{
+		pHide->SetHideFlags(xtpHideGeneric);
+	}
+
+	BOOL bShowExpandButtonAlways = FALSE;
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (pCommandBars) bShowExpandButtonAlways = pCommandBars->GetCommandBarsOptions()->bShowExpandButtonAlways;
+
+	BOOL bCommit = TRUE;
+	CSize sz = 0;
+
+	if (m_bShowExpandButton)
+	{
+
+		pPopupExp = (CXTPControlPopup*)m_pControls->FindControl(XTP_ID_TOOLBAR_EXPAND);
+		if (!pPopupExp)
 		{
-			COleVariant* pvar = NULL;
-			TRY
+			pPopupExp = (CXTPControlPopup*)m_pControls->Add(new CControlButtonExpand(), XTP_ID_TOOLBAR_EXPAND, _T(""), -1, TRUE);
+		}
+		pPopupExp->SetHideFlags(xtpHideGeneric);
+
+		if (bShowExpandButtonAlways)
+		{
+			if (dwMode & LM_HORZDOCK)
+				rcBorder.right += 11;
+			else
+				rcBorder.bottom += 11;
+		}
+		else
+		{
+			if (dwMode & LM_COMMIT)
 			{
-				// NULL params not supported, use IS NULL in SQL
-				// (i.e. - m_strFilter = _T("Foo IS NULL");
-				FillVariant(pv, dwColumnType, &pvar);
-				m_prs->m_pQueryDef->SetParamValue(lpszName, *pvar);
-			}
-			CATCH_ALL(e)
-			{
-				delete pvar;
-				THROW_LAST();
-			}
-			END_CATCH_ALL
-			delete pvar;
-		}
-		return;
-
-	case Fixup:
-		if (m_prs->GetFieldLength(m_nField-1) == DAO_NULL)
-		{
-			// Set the value to PSEUDO NULL and mark the status NULL
-			SetNullValue(pv, dwColumnType);
-			m_prs->SetNullFieldStatus(m_nField-1);
-		}
-		return;
-
-	case AllocCache:
-		if (dwBindOptions & AFX_DAO_ENABLE_FIELD_CACHE)
-		{
-			CDaoFieldCache* pCache;
-
-			// Allocate new storage and add to map
-			AllocCacheValue(pCache, dwColumnType);
-			m_prs->m_pMapFieldCache->SetAt(pv, pCache);
-		}
-		return;
-
-	case StoreField:
-		if (dwBindOptions & AFX_DAO_ENABLE_FIELD_CACHE)
-		{
-			CDaoFieldCache* pCache = GetCacheValue(m_prs, pv);
-
-			// Copy the data to the cache
-			if (dwBindOptions & AFX_DAO_CACHE_BY_VALUE)
-				CopyValue(pv, (void*)&pCache->m_pvData, dwColumnType);
-			else
-				CopyValue(pv, pCache->m_pvData, dwColumnType);
-
-			// Cache the NULL status
-			if (m_prs->IsFieldStatusNull(m_nField-1))
-				pCache->m_nStatus |= AFX_DAO_FIELD_FLAG_NULL;
-			else
-				pCache->m_nStatus &= ~AFX_DAO_FIELD_FLAG_NULL;
-		}
-		return;
-
-	case LoadField:
-		if (dwBindOptions & AFX_DAO_ENABLE_FIELD_CACHE)
-		{
-			CDaoFieldCache* pCache = GetCacheValue(m_prs, pv);
-
-			// Copy the data from the cache
-			if (dwBindOptions & AFX_DAO_CACHE_BY_VALUE)
-				CopyValue((void*)&pCache->m_pvData, pv, dwColumnType);
-			else
-				CopyValue(pCache->m_pvData, pv, dwColumnType);
-
-			// Set the NULL status from the cache
-			if (pCache->m_nStatus & AFX_DAO_FIELD_FLAG_NULL)
-				m_prs->SetNullFieldStatus(m_nField-1);
-			else
-				m_prs->ClearNullFieldStatus(m_nField-1);
-		}
-		return;
-
-	case SetFieldNull:
-		// Setting field NOT NULL doesn't require field exchange
-		if ((m_pvField == NULL && m_nFieldType == outputColumn)
-			|| m_pvField == pv)
-		{
-			SetNullValue(pv, dwColumnType);
-
-			// Also set the status array if not a parameter
-			if (m_nFieldType == outputColumn)
-				m_prs->SetNullFieldStatus(m_nField-1);
-
-#ifdef _DEBUG
-			m_nFieldFound = m_nField;
-#endif
-		}
-		return;
-
-	case MarkForAddNew:
-		if (dwBindOptions & AFX_DAO_ENABLE_FIELD_CACHE)
-		{
-			// Don't need to do anything if field marked dirty
-			if (!m_prs->IsFieldStatusDirty(m_nField-1))
-			{
-				// Mark dirty & not NULL if not set to pseudo NULL value
-				if (!IsNullValue(pv, dwColumnType))
+				sz = m_pControls->CalcDynamicSize(&dc, nLength, dwMode, rcBorder, nWidth);
+				if (((CControlButtonExpand*)pPopupExp)->IsHiddenExists())
 				{
-					m_prs->SetDirtyFieldStatus(m_nField-1);
-					m_prs->ClearNullFieldStatus(m_nField-1);
+					if (dwMode & LM_HORZDOCK)
+						rcBorder.right += 11; else rcBorder.bottom += 11;
+
 				}
-			}
-		}
-		return;
-
-	case MarkForEdit:
-		if (dwBindOptions & AFX_DAO_ENABLE_FIELD_CACHE)
-		{
-			// If value not pseudo NULL value, clear NULL status
-			if (!IsNullValue(pv, dwColumnType))
-				m_prs->ClearNullFieldStatus(m_nField-1);
-
-			// If field already marked dirty, don't need to check cache
-			if (!m_prs->IsFieldStatusDirty(m_nField-1))
-			{
-				CDaoFieldCache* pCache = GetCacheValue(m_prs, pv);
-
-				BOOL bNullField = m_prs->IsFieldStatusNull(m_nField-1);
-				BOOL bNullCache = pCache->m_nStatus & AFX_DAO_FIELD_FLAG_NULL;
-
-				void* pvData;
-				if (dwBindOptions & AFX_DAO_CACHE_BY_VALUE)
-					pvData = &pCache->m_pvData;
-				else
-					pvData = pCache->m_pvData;
-
-				// Mark dirty if NULL status differs or value differs
-				if ( (bNullCache && !bNullField) ||
-					(!bNullCache && bNullField) ||
-					CompareValue(pv, pvData, dwColumnType))
-				{
-					m_prs->SetDirtyFieldStatus(m_nField-1);
-				}
-			}
-		}
-		return;
-
-	case SetDirtyField:
-		if (m_prs->IsFieldStatusDirty(m_nField-1))
-		{
-			COleVariant* pvar = NULL;
-			TRY
-			{
-				// If field is NULL don't set the value
-				if (!m_prs->IsFieldStatusNull(m_nField-1))
-					FillVariant(pv, dwColumnType, &pvar);
 				else
 				{
-					pvar = new COleVariant;
-					pvar->vt = VT_NULL;
+					bCommit = FALSE;
+					pPopupExp = NULL;
 				}
-
-				// SetFieldValue (put_Collect) doesn't like brackets
-				// Assumes no brackets if first char not a bracket
-				LPTSTR lpszModifiedName = NULL;
-				if (*lpszName == '[')
-				{
-					lpszModifiedName = new TCHAR[lstrlen(lpszName) + 1];
-
-					// Copy the name with no brackets, and reset lpszName
-					m_prs->StripBrackets(lpszName, lpszModifiedName);
-					lpszName = lpszModifiedName;
-				}
-
-				m_prs->SetFieldValue(lpszName, *pvar);
-				delete [] lpszModifiedName;
 			}
-			CATCH_ALL(e)
+			else
 			{
-				delete pvar;
-				THROW_LAST();
+				sz = m_pControls->CalcDynamicSize(&dc, nLength, dwMode, rcBorder, nWidth);
+				CSize szMin = m_pControls->CalcDynamicSize(&dc, 1, dwMode, rcBorder, nWidth);
+
+				if (m_pControls->GetVisibleCount() > 1)
+				{
+					if (dwMode & LM_HORZDOCK)
+						sz.cx = max(sz.cx, szMin.cx + 11); else
+						sz.cy = max(sz.cy, szMin.cy + 11);
+				}
+
+
+				pPopupExp = NULL;
+				bCommit = FALSE;
 			}
-			END_CATCH_ALL
-			delete pvar;
-		}
-		return;
 
-	default:
-		ASSERT(FALSE);
-		return;
+		}
 	}
+
+	if (bCommit)
+		sz = m_pControls->CalcDynamicSize(&dc, nLength, dwMode, rcBorder, nWidth);
+
+	if (pPopupExp)
+	{
+		pPopupExp->SetHideFlags(xtpNoHide);
+		GetPaintManager()->DrawSpecialControl(0, xtpButtonExpandToolbar, pPopupExp, this, FALSE, &sz);
+	}
+
+	if ((m_nIdleFlags & xtpIdleLayout) && (dwMode & LM_COMMIT))
+	{
+		m_nIdleFlags &= ~xtpIdleLayout;
+		Redraw();
+	}
+
+	return sz;
 }
 
-void AFXAPI DFX_Text(CDaoFieldExchange* pFX, LPCTSTR lpszName,
-	CString& value, int nPreAllocSize, DWORD dwBindOptions)
+CSize CXTPToolBar::CalcDynamicLayout(int nLength, DWORD nMode)
 {
-	(pFX->m_nFieldType == CDaoFieldExchange::outputColumn) ?
-		++pFX->m_nField: ++pFX->m_nParam;
+	ASSERT(!(nMode & LM_HORZDOCK || nMode & LM_VERTDOCK));
 
-	// Do nothing if op not supported for outputColumn or param type
-	if (!pFX->IsValidOperation())
-		return;
+	CClientDC dc(this);
+	CXTPFontDC font(&dc, GetPaintManager()->GetCommandBarFont(this));
 
-	DWORD dwDAOType;
+	int nTitleSize = GetPaintManager()->DrawCommandBarGripper(&dc, this, FALSE).cy;
 
-#ifdef _UNICODE
-	dwDAOType = DAO_WCHAR;
-#else
-	dwDAOType = DAO_CHAR;
-#endif
+	CRect rcBorder(GetBorders());
+	rcBorder.top += nTitleSize + 1;
 
-	switch (pFX->m_nOperation)
+	CXTPControlPopup* pPopupExp = NULL;
+
+	CXTPControl* pHide = NULL;
+
+	if (IsCloseable())
 	{
-	case CDaoFieldExchange::BindField:
+		pHide = m_pControls->FindControl(XTP_ID_TOOLBAR_HIDE);
+		if (!pHide)
 		{
-			// Pre-allocate buffer to prevent needless re-allocations
-			value.GetBuffer(nPreAllocSize);
-			value.ReleaseBuffer();
-
-			LPDAOCOLUMNBINDING pcb =
-				&pFX->m_prs->m_prgDaoColBindInfo[pFX->m_nField-1];
-			pcb->dwDataType = dwDAOType;
-			pcb->dwBinding = DAOBINDING_DIRECT | DAOBINDING_CALLBACK;
-			pcb->dwUser = (DWORD)&value;
-			pcb->cbDataOffset = (DWORD)DaoStringAllocCallback;
-			pcb->cbMaxLen = INT_MAX;
-		}
-		// Fall through to finish setting up column binding struct
-
-	default:
-		pFX->Default(lpszName, (void*)&value, AFX_RFX_TEXT,
-			dwBindOptions);
-		return;
-
-	case CDaoFieldExchange::Fixup:
-		if (pFX->m_prs->m_pulColumnLengths[pFX->m_nField-1] == 0 ||
-			pFX->m_prs->m_pulColumnLengths[pFX->m_nField-1] == DAO_NULL)
-		{
-			// If null or empty string set length zero
-			value.GetBufferSetLength(0);
-		}
-		else
-		{
-			// Make sure length correct
-			value.GetBufferSetLength(
-				((pFX->m_prs->m_pulColumnLengths[pFX->m_nField-1])/sizeof(TCHAR))-1);
+			pHide = (CXTPControlPopup*)m_pControls->Add(new CControlButtonHide(), XTP_ID_TOOLBAR_HIDE, _T(""), -1, TRUE);
 		}
 
-		pFX->Default(lpszName, (void*)&value,
-			AFX_RFX_TEXT, dwBindOptions);
-		return;
-
-#ifdef _DEBUG
-	case CDaoFieldExchange::DumpField:
-		*pFX->m_pdcDump << "\n" << lpszName << " = " << value;
-		return;
-#endif //_DEBUG
+		pHide->SetHideFlags(xtpHideGeneric);
 	}
-}
 
-void AFXAPI DFX_Binary(CDaoFieldExchange* pFX, LPCTSTR lpszName,
-	CByteArray& value, int nPreAllocSize, DWORD dwBindOptions)
-{
-	(pFX->m_nFieldType == CDaoFieldExchange::outputColumn) ?
-		++pFX->m_nField: ++pFX->m_nParam;
-
-	// Do nothing if op not supported for outputColumn or param type
-	if (!pFX->IsValidOperation())
-		return;
-
-	switch (pFX->m_nOperation)
+	if (m_bShowExpandButton && m_pCommandBars)
 	{
-	case CDaoFieldExchange::BindField:
+		pPopupExp = (CXTPControlPopup*)m_pControls->FindControl(XTP_ID_TOOLBAR_EXPAND);
+		if (!pPopupExp)
 		{
-			// Pre-allocate buffer to prevent needless re-allocations
-			value.SetSize(nPreAllocSize);
-
-			LPDAOCOLUMNBINDING pcb =
-				&pFX->m_prs->m_prgDaoColBindInfo[pFX->m_nField-1];
-			pcb->dwDataType = DAO_BYTES;
-			pcb->dwBinding = DAOBINDING_DIRECT | DAOBINDING_CALLBACK;
-			pcb->dwUser = (DWORD)&value;
-			pcb->cbDataOffset = (ULONG)DaoBinaryAllocCallback;
-			pcb->cbMaxLen = INT_MAX;
+			pPopupExp = (CXTPControlPopup*)m_pControls->Add(new CControlButtonExpand(), XTP_ID_TOOLBAR_EXPAND, _T(""), -1, TRUE);
 		}
-		// Fall through to finish setting up column binding struct
-
-	default:
-		pFX->Default(lpszName, (void*)&value, AFX_RFX_BINARY,
-			dwBindOptions);
-		return;
-
-#ifdef _DEBUG
-	case CDaoFieldExchange::DumpField:
-		*pFX->m_pdcDump << "\n" << lpszName << " = " << value;
-		return;
-#endif //_DEBUG
+		pPopupExp->SetHideFlags(xtpHideGeneric);
 	}
-}
 
-void AFXAPI DFX_LongBinary(CDaoFieldExchange* pFX, LPCTSTR lpszName,
-	CLongBinary& value, DWORD dwPreAllocSize, DWORD dwBindOptions)
-{
-	(pFX->m_nFieldType == CDaoFieldExchange::outputColumn) ?
-		++pFX->m_nField: ++pFX->m_nParam;
-
-	// Do nothing if op not supported for outputColumn or param type
-	if (!pFX->IsValidOperation())
-		return;
-
-	switch (pFX->m_nOperation)
+	CSize sz;
+	if (m_barType == xtpBarTypePopup)
 	{
-	case CDaoFieldExchange::BindField:
-		{
-			// Pre-allocate buffer to prevent needless re-allocations
-			AllocLongBinary(value, dwPreAllocSize);
-
-			LPDAOCOLUMNBINDING pcb =
-				&pFX->m_prs->m_prgDaoColBindInfo[pFX->m_nField-1];
-			pcb->dwDataType = DAO_BYTES;
-			pcb->dwBinding = DAOBINDING_DIRECT | DAOBINDING_CALLBACK;
-			pcb->dwUser = (DWORD)&value;
-			pcb->cbDataOffset = (DWORD)DaoLongBinaryAllocCallback;
-			pcb->cbMaxLen = ULONG_MAX;
-		}
-		// Fall through to finish setting up column binding struct
-
-	default:
-		pFX->Default(lpszName, (void*)&value,
-			AFX_RFX_LONGBINARY, dwBindOptions);
-		return;
-
-	case CDaoFieldExchange::Fixup:
-		// Unlock data locked in DaoLongBinaryAllocCallback
-		if (value.m_dwDataLength != 0)
-			::GlobalUnlock(value.m_hData);
-
-		pFX->Default(lpszName, (void*)&value,
-			AFX_RFX_LONGBINARY, dwBindOptions);
-		return;
-
-#ifdef _DEBUG
-	case CDaoFieldExchange::DumpField:
-		*pFX->m_pdcDump << "\n" << lpszName << " = " << value;
-		return;
-#endif //_DEBUG
-	}
-}
-
-void AFXAPI DFX_Bool(CDaoFieldExchange* pFX, LPCTSTR lpszName,
-	BOOL& value, DWORD dwBindOptions)
-{
-	(pFX->m_nFieldType == CDaoFieldExchange::outputColumn) ?
-		++pFX->m_nField: ++pFX->m_nParam;
-
-	// Do nothing if op not supported for outputColumn or param type
-	if (!pFX->IsValidOperation())
-		return;
-
-	// Mark as CACHE_BY_VALUE (size <= sizeof(void*))
-	dwBindOptions |= AFX_DAO_CACHE_BY_VALUE;
-
-	switch (pFX->m_nOperation)
-	{
-	case CDaoFieldExchange::BindField:
-		{
-			LPDAOCOLUMNBINDING pcb =
-				&pFX->m_prs->m_prgDaoColBindInfo[pFX->m_nField-1];
-			pcb->dwDataType = DAO_BOOL;
-			pcb->dwBinding = DAOBINDING_DIRECT;
-			pcb->cbDataOffset = (DWORD)&value;
-			pcb->dwUser = 0;
-			pcb->cbMaxLen = sizeof(value);
-
-			pFX->m_prs->m_cbFixedLengthFields += pcb->cbMaxLen;
-		}
-		// Fall through to finish setting up column binding struct
-
-	default:
-		pFX->Default(lpszName, (void*)&value, AFX_RFX_BOOL,
-			dwBindOptions);
-		return;
-
-	case CDaoFieldExchange::Fixup:
-		// Convert BOOL value from AFX_DAO_TRUE/FALSE to TRUE/FALSE
-		value = (value != AFX_DAO_FALSE);
-
-		pFX->Default(lpszName, (void*)&value,
-			AFX_RFX_BOOL, dwBindOptions);
-		return;
-
-#ifdef _DEBUG
-	case CDaoFieldExchange::DumpField:
-		*pFX->m_pdcDump << "\n" << lpszName << " = " << value;
-		return;
-#endif //_DEBUG
-	}
-}
-
-void AFXAPI DFX_Byte(CDaoFieldExchange* pFX, LPCTSTR lpszName,
-	BYTE& value, DWORD dwBindOptions)
-{
-	(pFX->m_nFieldType == CDaoFieldExchange::outputColumn) ?
-		++pFX->m_nField: ++pFX->m_nParam;
-
-	// Do nothing if op not supported for outputColumn or param type
-	if (!pFX->IsValidOperation())
-		return;
-
-	// Mark as CACHE_BY_VALUE (size <= sizeof(void*))
-	dwBindOptions |= AFX_DAO_CACHE_BY_VALUE;
-
-	switch (pFX->m_nOperation)
-	{
-	case CDaoFieldExchange::BindField:
-		{
-			LPDAOCOLUMNBINDING pcb =
-				&pFX->m_prs->m_prgDaoColBindInfo[pFX->m_nField-1];
-			pcb->dwDataType = DAO_BYTE;
-			pcb->dwBinding = DAOBINDING_DIRECT;
-			pcb->cbDataOffset = (DWORD)&value;
-			pcb->dwUser = 0;
-			pcb->cbMaxLen = sizeof(value);
-
-			pFX->m_prs->m_cbFixedLengthFields += pcb->cbMaxLen;
-		}
-		// Fall through to finish setting up column binding struct
-
-	default:
-		pFX->Default(lpszName, (void*)&value, AFX_RFX_BYTE,
-			dwBindOptions);
-		return;
-
-#ifdef _DEBUG
-	case CDaoFieldExchange::DumpField:
-		*pFX->m_pdcDump << "\n" << lpszName << " = " << value;
-		return;
-#endif //_DEBUG
-	}
-}
-
-void AFXAPI DFX_Short(CDaoFieldExchange* pFX, LPCTSTR lpszName,
-	short& value, DWORD dwBindOptions)
-{
-	(pFX->m_nFieldType == CDaoFieldExchange::outputColumn) ?
-		++pFX->m_nField: ++pFX->m_nParam;
-
-	// Do nothing if op not supported for outputColumn or param type
-	if (!pFX->IsValidOperation())
-		return;
-
-	// Mark as CACHE_BY_VALUE (size <= sizeof(void*))
-	dwBindOptions |= AFX_DAO_CACHE_BY_VALUE;
-
-	switch (pFX->m_nOperation)
-	{
-	case CDaoFieldExchange::BindField:
-		{
-			LPDAOCOLUMNBINDING pcb =
-				&pFX->m_prs->m_prgDaoColBindInfo[pFX->m_nField-1];
-			pcb->dwDataType = DAO_I2;
-			pcb->dwBinding = DAOBINDING_DIRECT;
-			pcb->cbDataOffset = (DWORD)&value;
-			pcb->dwUser = 0;
-			pcb->cbMaxLen = sizeof(value);
-
-			pFX->m_prs->m_cbFixedLengthFields += pcb->cbMaxLen;
-		}
-		// Fall through to finish setting up column binding struct
-
-	default:
-		pFX->Default(lpszName, (void*)&value, AFX_RFX_SHORT,
-			dwBindOptions);
-		return;
-
-#ifdef _DEBUG
-	case CDaoFieldExchange::DumpField:
-		*pFX->m_pdcDump << "\n" << lpszName << " = " << value;
-		return;
-#endif //_DEBUG
-	}
-}
-
-void AFXAPI DFX_Long(CDaoFieldExchange* pFX, LPCTSTR lpszName,
-	long& value, DWORD dwBindOptions)
-{
-	(pFX->m_nFieldType == CDaoFieldExchange::outputColumn) ?
-		++pFX->m_nField: ++pFX->m_nParam;
-
-	// Do nothing if op not supported for outputColumn or param type
-	if (!pFX->IsValidOperation())
-		return;
-
-	// Mark as CACHE_BY_VALUE (size <= sizeof(void*))
-	dwBindOptions |= AFX_DAO_CACHE_BY_VALUE;
-
-	switch (pFX->m_nOperation)
-	{
-	case CDaoFieldExchange::BindField:
-		{
-			LPDAOCOLUMNBINDING pcb =
-				&pFX->m_prs->m_prgDaoColBindInfo[pFX->m_nField-1];
-			pcb->dwDataType = DAO_I4;
-			pcb->dwBinding = DAOBINDING_DIRECT;
-			pcb->cbDataOffset = (DWORD)&value;
-			pcb->dwUser = 0;
-			pcb->cbMaxLen = sizeof(value);
-
-			pFX->m_prs->m_cbFixedLengthFields += pcb->cbMaxLen;
-		}
-		// Fall through to finish setting up column binding struct
-
-	default:
-		pFX->Default(lpszName, (void*)&value, AFX_RFX_LONG,
-			dwBindOptions);
-		return;
-
-#ifdef _DEBUG
-	case CDaoFieldExchange::DumpField:
-		*pFX->m_pdcDump << "\n" << lpszName << " = " << value;
-		return;
-#endif //_DEBUG
-	}
-}
-
-void AFXAPI DFX_Currency(CDaoFieldExchange* pFX, LPCTSTR lpszName,
-	COleCurrency& value, DWORD dwBindOptions)
-{
-	(pFX->m_nFieldType == CDaoFieldExchange::outputColumn) ?
-		++pFX->m_nField: ++pFX->m_nParam;
-
-	// Do nothing if op not supported for outputColumn or param type
-	if (!pFX->IsValidOperation())
-		return;
-
-	switch (pFX->m_nOperation)
-	{
-	case CDaoFieldExchange::BindField:
-		{
-			LPDAOCOLUMNBINDING pcb =
-				&pFX->m_prs->m_prgDaoColBindInfo[pFX->m_nField-1];
-			pcb->dwDataType = DAO_CURRENCY;
-			pcb->dwBinding = DAOBINDING_DIRECT;
-			pcb->cbDataOffset = (DWORD)&value.m_cur;
-			pcb->dwUser = 0;
-			pcb->cbMaxLen = sizeof(CURRENCY);
-
-			pFX->m_prs->m_cbFixedLengthFields += pcb->cbMaxLen;
-
-			// Finish setting up column binding struct
-			pFX->Default(lpszName, (void*)&value, AFX_RFX_CURRENCY,
-				dwBindOptions);
-			return;
-		}
-
-	case CDaoFieldExchange::Fixup:
-		// Must reset the valid currency flag
-		if (pFX->m_prs->GetFieldLength(pFX->m_nField-1) == DAO_NULL)
-			value.SetStatus(COleCurrency::null);
-		else
-			value.SetStatus(COleCurrency::valid);
-
-		// Fall through to reset the NULL status
-
-	default:
-		pFX->Default(lpszName, (void*)&value, AFX_RFX_CURRENCY,
-			dwBindOptions);
-		return;
-
-#ifdef _DEBUG
-	case CDaoFieldExchange::DumpField:
-		*pFX->m_pdcDump << "\n" << lpszName << ":" << value;
-		return;
-#endif //_DEBUG
-	}
-}
-
-void AFXAPI DFX_Single(CDaoFieldExchange* pFX, LPCTSTR lpszName,
-	float& value, DWORD dwBindOptions)
-{
-	(pFX->m_nFieldType == CDaoFieldExchange::outputColumn) ?
-		++pFX->m_nField: ++pFX->m_nParam;
-
-	// Do nothing if op not supported for outputColumn or param type
-	if (!pFX->IsValidOperation())
-		return;
-
-	// Mark as CACHE_BY_VALUE (size <= sizeof(void*))
-	dwBindOptions |= AFX_DAO_CACHE_BY_VALUE;
-
-	switch (pFX->m_nOperation)
-	{
-	case CDaoFieldExchange::BindField:
-		{
-			LPDAOCOLUMNBINDING pcb =
-				&pFX->m_prs->m_prgDaoColBindInfo[pFX->m_nField-1];
-			pcb->dwDataType = DAO_R4;
-			pcb->dwBinding = DAOBINDING_DIRECT;
-			pcb->cbDataOffset = (DWORD)&value;
-			pcb->dwUser = 0;
-			pcb->cbMaxLen = sizeof(value);
-
-			pFX->m_prs->m_cbFixedLengthFields += pcb->cbMaxLen;
-		}
-		// Fall through to finish setting up column binding struct
-
-	default:
-		pFX->Default(lpszName, (void*)&value, AFX_RFX_SINGLE,
-			dwBindOptions);
-		return;
-
-#ifdef _DEBUG
-	case CDaoFieldExchange::DumpField:
-		*pFX->m_pdcDump << "\n" << lpszName << " = " << value;
-		return;
-#endif //_DEBUG
-	}
-}
-
-void AFXAPI DFX_Double(CDaoFieldExchange* pFX, LPCTSTR lpszName,
-	double& value, DWORD dwBindOptions)
-{
-	(pFX->m_nFieldType == CDaoFieldExchange::outputColumn) ?
-		++pFX->m_nField: ++pFX->m_nParam;
-
-	// Do nothing if op not supported for outputColumn or param type
-	if (!pFX->IsValidOperation())
-		return;
-
-	switch (pFX->m_nOperation)
-	{
-	case CDaoFieldExchange::BindField:
-		{
-			LPDAOCOLUMNBINDING pcb =
-				&pFX->m_prs->m_prgDaoColBindInfo[pFX->m_nField-1];
-			pcb->dwDataType = DAO_R8;
-			pcb->dwBinding = DAOBINDING_DIRECT;
-			pcb->cbDataOffset = (DWORD)&value;
-			pcb->dwUser = 0;
-			pcb->cbMaxLen = sizeof(value);
-
-			pFX->m_prs->m_cbFixedLengthFields += pcb->cbMaxLen;
-		}
-		// Fall through to finish setting up column binding struct
-
-	default:
-		pFX->Default(lpszName, (void*)&value, AFX_RFX_DOUBLE,
-			dwBindOptions);
-		return;
-
-#ifdef _DEBUG
-	case CDaoFieldExchange::DumpField:
-		*pFX->m_pdcDump << "\n" << lpszName << " = " << value;
-		return;
-#endif //_DEBUG
-	}
-}
-
-void AFXAPI DFX_DateTime(CDaoFieldExchange* pFX, LPCTSTR lpszName,
-	COleDateTime& value, DWORD dwBindOptions)
-{
-	(pFX->m_nFieldType == CDaoFieldExchange::outputColumn) ?
-		++pFX->m_nField: ++pFX->m_nParam;
-
-	// Do nothing if op not supported for outputColumn or param type
-	if (!pFX->IsValidOperation())
-		return;
-
-	switch (pFX->m_nOperation)
-	{
-	case CDaoFieldExchange::BindField:
-		{
-			LPDAOCOLUMNBINDING pcb =
-				&pFX->m_prs->m_prgDaoColBindInfo[pFX->m_nField-1];
-			pcb->dwDataType = DAO_DATE;
-			pcb->dwBinding = DAOBINDING_DIRECT;
-			pcb->cbDataOffset = (DWORD)&value.m_dt;
-			pcb->dwUser = 0;
-			pcb->cbMaxLen = sizeof(DATE);
-
-			pFX->m_prs->m_cbFixedLengthFields += pcb->cbMaxLen;
-
-			// Finish setting up column binding struct
-			pFX->Default(lpszName,(void*)&value, AFX_RFX_DATE,
-				dwBindOptions);
-			return;
-		}
-
-	case CDaoFieldExchange::Fixup:
-		// Must reset the valid currency flag
-		if (pFX->m_prs->GetFieldLength(pFX->m_nField-1) == DAO_NULL)
-			value.SetStatus(COleDateTime::null);
-		else
-			value.SetStatus(COleDateTime::valid);
-
-		// Fall through to reset the NULL status
-
-	default:
-		pFX->Default(lpszName, (void*)&value, AFX_RFX_DATE,
-			dwBindOptions);
-		return;
-
-#ifdef _DEBUG
-	case CDaoFieldExchange::DumpField:
-		*pFX->m_pdcDump << "\n" << lpszName << ":" << value;
-		return;
-#endif //_DEBUG
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////////
-// DAO memory allocation callback helpers
-
-STDAPI DaoStringAllocCallback(DWORD dwLen, DWORD pData, void** ppv)
-{
-	LPTSTR lpsz;
-	CString* pstr = (CString*)pData;
-
-#ifndef _UNICODE
-	// If using ANSI DAO interfaces, DAO reports field length
-	// rather than data length. In this case there will not be space
-	// for NULL terminator if data length equals field length. Make room.
-	dwLen++;
-	if (dwLen == 2)
-	{
-		//Workaround DAO bug: FIX: DAO 3.6 Causes Debug Errors in MFC DAO Non-Unicode Builds
-		//Problem with a text field that is defined to be only one character in length
-		dwLen*=2;
-	}
-#endif
-
-	TRY
-	{
-		// Only re-allocate if necessary
-		lpsz = pstr->GetBufferSetLength(dwLen/sizeof(TCHAR));
-		*ppv = (void*)(dwLen > 0 ? lpsz : NULL);
-	}
-	CATCH_ALL(e)
-	{
-		e->Delete();
-		return E_OUTOFMEMORY;
-	}
-	END_CATCH_ALL
-
-	return S_OK;
-}
-
-
-STDAPI DaoBinaryAllocCallback(DWORD dwLen, DWORD pData, void** ppv)
-{
-	CByteArray* pByteArray = (CByteArray*)pData;
-
-	TRY
-	{
-		// Only re-allocate if necessary
-		pByteArray->SetSize(dwLen);
-		*ppv = (void*)(dwLen > 0 ? &((*pByteArray)[0]) : NULL);
-	}
-	CATCH_ALL(e)
-	{
-		// Only exceptions thrown should be CMemoryException
-		e->Delete();
-		return E_OUTOFMEMORY;
-	}
-	END_CATCH_ALL
-
-	return S_OK;
-}
-
-
-STDAPI DaoLongBinaryAllocCallback(DWORD dwLen, DWORD pData, void** ppv)
-{
-	CLongBinary* pLongBinary = (CLongBinary*)pData;
-
-	TRY
-	{
-		AllocLongBinary(*pLongBinary, dwLen);
-	}
-	CATCH_ALL(e)
-	{
-		// Only exception is memory exception, just pass back error.
-		DELETE_EXCEPTION(e);
-		return E_OUTOFMEMORY;
-	}
-	END_CATCH_ALL
-
-	if (pLongBinary->m_dwDataLength != 0)
-	{
-		const BYTE* pByte;
-		pByte = (const BYTE*)::GlobalLock(pLongBinary->m_hData);
-
-		// If mem can't be locked, free up and return error
-		if (pByte == NULL)
-		{
-			::GlobalFree(pLongBinary->m_hData);
-			pLongBinary->m_hData = NULL;
-			return E_OUTOFMEMORY;
-		}
-
-		*ppv = (void*)pByte;
+		UpdateShortcuts();
+		sz = m_pControls->CalcPopupSize(&dc, 0, rcBorder);
 	}
 	else
-		*ppv = NULL;
+		sz = m_pControls->CalcDynamicSize(&dc, nLength, nMode, rcBorder);
 
-	return S_OK;
+	int nLeft = sz.cx - 3;
+	if (pHide)
+	{
+		pHide->SetHideFlags(xtpNoHide);
+		pHide->SetRect(CRect(nLeft - nTitleSize, 3, nLeft, 3 + nTitleSize));
+		nLeft -= nTitleSize;
+
+		if (pPopupExp) pPopupExp->SetWrap(TRUE);
+	}
+
+	BOOL bShowExpandButtonAlways = TRUE;
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (pCommandBars) bShowExpandButtonAlways = pCommandBars->GetCommandBarsOptions()->bShowExpandButtonAlways;
+
+	if (pPopupExp && nLeft - nTitleSize > 0 && bShowExpandButtonAlways)
+	{
+		pPopupExp->SetWrap(TRUE);
+		pPopupExp->SetHideFlags(xtpNoHide);
+		pPopupExp->SetRect(CRect(nLeft - nTitleSize, 3, nLeft, 3 + nTitleSize));
+	}
+
+	if ((m_nIdleFlags & xtpIdleLayout) && (nMode & LM_COMMIT))
+	{
+		m_nIdleFlags &= ~xtpIdleLayout;
+		Redraw();
+	}
+
+	return sz;
 }
 
-void AFX_CDECL AllocLongBinary(CLongBinary& lb, DWORD dwDataLength)
+void CXTPToolBar::OnRecalcLayout()
 {
-	if (lb.m_hData == NULL)
-	{
-		if (dwDataLength > 0)
-		{
-			// Alloc memory, return error if not possible
-			lb.m_hData = ::GlobalAlloc(GMEM_MOVEABLE, dwDataLength);
-			if (lb.m_hData == NULL)
-				AfxThrowMemoryException();
-		}
-	}
-	else if (::GlobalSize(lb.m_hData) < dwDataLength)
-	{
-		// Save the old address in case ReAlloc fails
-		HGLOBAL hOldData = lb.m_hData;
+	if (!GetSafeHwnd())
+		return;
 
-		// Alloc more mem, free up mem and throw exception if not possible
-		lb.m_hData = ::GlobalReAlloc(hOldData, dwDataLength, GMEM_MOVEABLE);
-		if (lb.m_hData == NULL)
+	if (!IsVisible())
+		return;
+
+	if (m_bInRecalcLayout)
+		return;
+
+	m_bInRecalcLayout = TRUE;
+
+	if (m_barPosition != xtpBarFloating)
+	{
+		CXTPCommandBars* pCommandBars = GetCommandBars();
+		if (pCommandBars)
 		{
-			lb.m_hData = hOldData;
-			AfxThrowMemoryException();
+			pCommandBars->RecalcFrameLayout();
+		}
+		else
+		{
+			CWnd* pSite = GetSite();
+			CXTPClientRect rc(pSite);
+			if (pSite) pSite->SendMessage(WM_SIZE, 0, MAKELPARAM(rc.Width(), rc.Height()));
 		}
 	}
-	lb.m_dwDataLength = dwDataLength;
+	else if (IsVisible())
+	{
+		CSize sz = CalcDynamicLayout(-1, LM_MRUWIDTH | LM_HORZ | LM_COMMIT);
+		CRect rc;
+		GetWindowRect(&rc);
+		MoveWindow(rc.left, rc.top, sz.cx, sz.cy, TRUE);
+	}
+
+	Redraw();
+
+	m_bInRecalcLayout = FALSE;
 }
 
-//////////////////////////////////////////////////////////////////////////////
-// Inline function declarations expanded out-of-line
+BOOL CXTPToolBar::OnNcCreate(LPCREATESTRUCT lpCreateStruct)
+{
+	if (!CXTPCommandBar::OnNcCreate(lpCreateStruct))
+		return FALSE;
 
-#ifndef _AFX_ENABLE_INLINES
+	if (GetStyle() & MFS_SYNCACTIVE)
+	{
+		// syncronize activation state with top level parent
+		CWnd* pParentWnd = GetTopLevelParent();
+		ASSERT(pParentWnd != NULL);
+		if (!pParentWnd)
+			return FALSE;
 
-#define _AFXDAODFX_INLINE
-#include "afxdao.inl"
+		CWnd* pActiveWnd = GetForegroundWindow();
+		BOOL bActive = (pParentWnd == pActiveWnd) ||
+			(pParentWnd->GetLastActivePopup() == pActiveWnd &&
+			pActiveWnd->SendMessage(WM_FLOATSTATUS, FS_SYNCACTIVE) != 0);
 
-#endif
+		// the WM_FLOATSTATUS does the actual work
+		SendMessage(WM_FLOATSTATUS, bActive ? FS_ACTIVATE : FS_DEACTIVATE);
+	}
 
 
-/////////////////////////////////////////////////////////////////////////////
+	return TRUE;
+}
+
+
+LRESULT CXTPToolBar::OnFloatStatus(WPARAM wParam, LPARAM)
+{
+	// FS_SYNCACTIVE is used to detect MFS_SYNCACTIVE windows
+	LRESULT lResult = ((GetStyle() & MFS_SYNCACTIVE) && (wParam & FS_SYNCACTIVE));
+
+	if (m_barPosition != xtpBarFloating || !m_bVisible)
+		return lResult;
+
+	BOOL bSyncActivate = TRUE;
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (pCommandBars) bSyncActivate = pCommandBars->GetCommandBarsOptions()->bSyncFloatingBars;
+
+	if (bSyncActivate)
+	{
+		if ((wParam & FS_DEACTIVATE) && !IsTopParentActive())
+		{
+			SetWindowPos(NULL, 0, 0, 0, 0, SWP_HIDEWINDOW | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+		}
+		if ((wParam & FS_ACTIVATE) && !IsWindowVisible() && IsTopParentActive())
+		{
+			// check if parent invisible or minimized window
+			DWORD dwStyle = ::GetWindowLong(::GetForegroundWindow(), GWL_STYLE);
+			if ((dwStyle & WS_VISIBLE) && !(dwStyle & WS_MINIMIZE))
+				SetWindowPos(NULL, 0, 0, 0, 0, SWP_SHOWWINDOW | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+
+		}
+	}
+
+	if (wParam & (FS_SHOW | FS_HIDE))
+	{
+		SetWindowPos(NULL, 0, 0, 0, 0,
+			((wParam & FS_SHOW) ? SWP_SHOWWINDOW : SWP_HIDEWINDOW) | SWP_NOZORDER |
+			SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+	}
+	if (wParam & (FS_ENABLE | FS_DISABLE))
+		EnableWindow((wParam & FS_ENABLE) != 0);
+
+	return lResult;
+}
+
+BOOL CXTPToolBar::IsFloatingFrameFocused() const
+{
+	if (!IsTopParentActive())
+		return FALSE;
+
+	CWnd* pWnd = CWnd::GetFocus();
+
+	while (pWnd && IsWindow(pWnd->GetSafeHwnd()))
+	{
+		pWnd = pWnd->GetParentFrame();
+
+		if (DYNAMIC_DOWNCAST(CMiniFrameWnd, pWnd))
+			return TRUE;
+	}
+	return FALSE;
+}
+
+int CXTPToolBar::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message)
+{
+	if (m_barPosition == xtpBarFloating || IsFloatingFrameFocused() || IsCustomizeMode())
+		return MA_NOACTIVATE;
+
+	return CWnd::OnMouseActivate(pDesktopWnd, nHitTest, message);
+}
+
+BOOL CXTPToolBar::OnNcActivate(BOOL bActive)
+{
+	return bActive ? FALSE : CWnd::OnNcActivate(bActive);
+}
+
+void CXTPToolBar::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	if (m_barPosition == xtpBarFloating)
+		SetWindowPos(&CWnd::wndTop, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+
+
+	if (m_pControls->HitTest(point) == NULL)
+	{
+		m_pCommandBars->ClosePopups();
+
+		if (m_pDockContext && ((m_dwFlags & (xtpFlagAlignAny | xtpFlagFloating)) != 0))
+		{
+			ClientToScreen(&point);
+			m_pDockContext->StartDrag(point);
+		}
+	}
+	else
+	{
+		CXTPCommandBar::OnLButtonDown(nFlags, point);
+	}
+}
+
+void CXTPToolBar::OnLButtonDblClk(UINT nFlags, CPoint point)
+{
+	if (m_pControls->HitTest(point) == NULL)
+	{
+		if (m_pDockContext)
+		{
+			m_pDockContext->ToggleDocking();
+			return;
+		}
+	}
+
+	CXTPCommandBar::OnLButtonDblClk(nFlags, point);
+}
+
+LRESULT CXTPToolBar::OnNcHitTest(CPoint point)
+{
+	if (m_barPosition != xtpBarFloating)
+		return CXTPCommandBar::OnNcHitTest(point);
+
+	if (m_barType == xtpBarTypePopup)
+		return CXTPCommandBar::OnNcHitTest(point);
+
+	CRect rectWindow;
+	GetWindowRect(&rectWindow);
+	rectWindow.InflateRect(-3, -3);
+
+	if (point.y < rectWindow.top) return HTTOP;
+	if (point.y >= rectWindow.bottom) return HTBOTTOM;
+	if (point.x < rectWindow.left) return HTLEFT;
+	if (point.x >= rectWindow.right) return HTRIGHT;
+
+	return CXTPCommandBar::OnNcHitTest(point);
+}
+
+void CXTPToolBar::OnNcLButtonDown(UINT nHitTest, CPoint point)
+{
+	if (!m_pDockContext)
+		return;
+
+	if (nHitTest >= HTSIZEFIRST && nHitTest <= HTSIZELAST)
+	{
+		ActivateTopParent();
+		SetWindowPos(&CWnd::wndTop, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+
+		m_pCommandBars->ClosePopups();
+		m_pDockContext->StartResize(nHitTest, point);
+		return;
+	}
+
+	CXTPCommandBar::OnNcLButtonDown(nHitTest, point);
+}
+
+
+
+void CXTPToolBar::OnClose()
+{
+}
+
+BOOL CXTPToolBar::IsWindowVisible() const
+{
+	return GetSafeHwnd() && IsVisible() && CWnd::IsWindowVisible() && !CXTPWindowRect(this).IsRectEmpty();
+}
+
+void CXTPToolBar::SetVisible(BOOL bVisible)
+{
+	if (m_bVisible == bVisible)
+		return;
+
+	m_bVisible = bVisible;
+
+	if (!bVisible)
+	{
+		SetTrackingMode(FALSE);
+	}
+
+	ShowWindow(bVisible ? SW_SHOWNA : SW_HIDE);
+
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+
+	if (bVisible)
+	{
+		OnRecalcLayout();
+	}
+	else if (IsDockingPosition(m_barPosition))
+	{
+		if (pCommandBars)
+		{
+			pCommandBars->RecalcFrameLayout();
+		}
+		else
+		{
+			CWnd* pSite = GetSite();
+			CXTPClientRect rc(pSite);
+			if (pSite) pSite->SendMessage(WM_SIZE, 0, MAKELPARAM(rc.Width(), rc.Height()));
+		}
+	}
+
+
+	if (pCommandBars)
+	{
+		BOOL bRemove = m_bTearOff && !bVisible;
+
+		pCommandBars->GetSite()->SendMessage(WM_XTP_TOOLBARVISIBLECHANGED, (WPARAM)this, (LPARAM)m_bVisible);
+
+		if (bRemove)
+			pCommandBars->Remove(this);
+
+		pCommandBars->GetCommandBarsOptions()->bDirtyState = TRUE;
+	}
+}
+
+
+
+
+LRESULT CXTPToolBar::OnSizeParent(WPARAM, LPARAM lParam)
+{
+	AFX_SIZEPARENTPARAMS* lpLayout = (AFX_SIZEPARENTPARAMS*)lParam;
+
+	if (GetStyle() & WS_VISIBLE)
+	{
+		// align the control bar
+		CRect rect;
+		rect.CopyRect(&lpLayout->rect);
+
+		CSize sizeAvail = rect.Size();  // maximum size available
+
+		// get maximum requested size
+		DWORD dwMode = LM_HORZDOCK | LM_HORZ | LM_COMMIT;
+		if (GetFlags() & xtpFlagStretched) dwMode |= LM_STRETCH;
+		if (GetFlags() & xtpFlagHideWrap) dwMode |= LM_HIDEWRAP;
+
+
+
+		if (lpLayout->hDWP == NULL) dwMode &= ~LM_COMMIT;
+
+		CSize size = CalcDockingLayout(sizeAvail.cx, dwMode);
+
+		size.cx = min(size.cx, sizeAvail.cx);
+		size.cy = min(size.cy, sizeAvail.cy);
+
+		lpLayout->sizeTotal.cy += size.cy;
+		lpLayout->sizeTotal.cx = max(lpLayout->sizeTotal.cx, size.cx);
+		lpLayout->rect.top += size.cy;
+
+		rect.right = rect.left + size.cx;
+		rect.bottom = rect.top + size.cy;
+
+		// only resize the window if doing layout and not just rect query
+		if (lpLayout->hDWP != NULL)
+			AfxRepositionWindow(lpLayout, m_hWnd, &rect);
+
+		Redraw();
+	}
+	return 0;
+}
+
+CSize CXTPCommandBar::GetAutoIconSize(BOOL bLarge) const
+{
+	return GetPaintManager()->GetAutoIconSize(bLarge);
+}
+
+
+CSize CXTPCommandBar::GetIconSize() const
+{
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+
+	if (!pCommandBars)
+		return m_szIcons != CSize(0) ? m_szIcons : CSize(16, 16);
+
+	if (GetType() == xtpBarTypePopup)
+	{
+		return m_szIcons != CSize(0) ? m_szIcons : pCommandBars->m_pOptions->szPopupIcons != CSize(0) ? pCommandBars->m_pOptions->szPopupIcons : GetAutoIconSize(FALSE);
+	}
+
+	CSize sz = m_szIcons != CSize(0) ? m_szIcons: (pCommandBars->m_pOptions->szIcons != CSize(0) ? pCommandBars->m_pOptions->szIcons : GetAutoIconSize(FALSE));
+
+	if (pCommandBars->m_pOptions->bLargeIcons && m_szButtons == CSize(0))
+	{
+		sz = pCommandBars->m_pOptions->szLargeIcons != CSize(0) ? pCommandBars->m_pOptions->szLargeIcons : GetAutoIconSize(TRUE);
+	}
+
+	return sz;
+}
+
+CSize CXTPCommandBar::GetLargeIconSize(BOOL bAutoSize) const
+{
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+
+	if (!pCommandBars)
+		return m_szIcons != CSize(0) ? CSize(2 * m_szIcons.cx, 2 * m_szIcons.cy) : CSize(32, 32);
+
+	CSize sz = m_szIcons != CSize(0) ? m_szIcons: (pCommandBars->m_pOptions->szIcons != CSize(0) ?
+		pCommandBars->m_pOptions->szIcons : CSize(16, 16));
+
+	if (m_szButtons == CSize(0))
+	{
+		sz = pCommandBars->m_pOptions->szLargeIcons != CSize(0) ?
+			pCommandBars->m_pOptions->szLargeIcons : (bAutoSize ? GetAutoIconSize(TRUE) : CSize(sz.cx * 2, sz.cy * 2));
+	}
+
+	return sz;
+}
+
+
+CSize CXTPCommandBar::GetButtonSize() const
+{
+	if (m_szButtons != CSize(0)) return m_szButtons;
+
+	CSize szIcon = GetIconSize();
+	return CSize(szIcon.cx + 6, szIcon.cy + 6);
+}
+
+void CXTPCommandBar::ShowTextBelowIcons(BOOL bTextBelow)
+ {
+	m_bTextBelow = bTextBelow;
+	DelayLayout();
+}
+
+BOOL CXTPCommandBar::IsTextBelowIcons() const
+{
+	if (m_bTextBelow != XTP_BOOL_DEFAULT)
+		return m_bTextBelow;
+
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (pCommandBars)
+	{
+		return pCommandBars->m_pOptions->bShowTextBelowIcons;
+	}
+	return FALSE;
+}
+
+
+int CXTPToolBar::_FindNearest(CXTPControls* pControls, CXTPControl* pFind, int nPos, BOOL /*bVisible*/) const
+{
+	if (pFind == NULL)
+		return -1;
+
+	int nResult = -1;
+
+	for (int i = nPos; i < pControls->GetCount(); i++)
+	{
+		CXTPControl* pControl = pControls->GetAt(i);
+
+		if (pControl->GetID() == pFind->GetID() && pControl->GetType() == pFind->GetType())
+		{
+			return i;
+		}
+	}
+	return nResult;
+}
+
+
+void CXTPToolBar::Reset(BOOL bShowWarningMessage)
+{
+	if (m_bBuiltIn && m_nBarID != 0 && IsCustomizable())
+	{
+		if (bShowWarningMessage)
+		{
+			CString strMessage, strTitle = GetTitle(), strReset;
+
+			VERIFY(XTPResourceManager()->LoadString(&strReset, XTP_IDS_CONFIRM_RESET));
+			strMessage.Format(strReset, (LPCTSTR)strTitle);
+
+			CXTPPushRoutingFrame push(GetFrameSite());
+
+			if (AfxMessageBox(strMessage, MB_ICONWARNING | MB_OKCANCEL) != IDOK)
+				return;
+		}
+
+		if (m_pControls->m_pOriginalControls != NULL)
+		{
+			m_pControls->RemoveAll();
+
+			CXTPControls* pControls = m_pControls->m_pOriginalControls;
+			for (int i = 0; i < pControls->GetCount(); i++)
+			{
+				CXTPControl* pControl = pControls->GetAt(i);
+				if (!pControl->m_bTemporary)
+					m_pControls->AddClone(pControl, -1, TRUE);
+			}
+
+		}
+		else
+		{
+			LoadToolBar(m_nBarID, FALSE);
+		}
+
+		CWnd* pWnd = GetSite();
+		if (pWnd && ::IsWindow(pWnd->m_hWnd)) pWnd->SendMessage(WM_XTP_CUSTOMIZATION_RESETTOOLBAR, 0, (LPARAM)this);
+
+		OnInitialUpdate();
+		OnRecalcLayout();
+	}
+}
+
+void CXTPToolBar::BuildCustomizePopup(CXTPCommandBar* pExpandBar)
+{
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (!pCommandBars)
+		return;
+
+	CXTPControls* pOriginalControls = m_pControls->m_pOriginalControls ? m_pControls->m_pOriginalControls->Duplicate(FALSE) : new CXTPControls();
+	ASSERT(pOriginalControls);
+
+	int nOriginal = 0;
+	int nToolBar = 0;
+
+	while (nToolBar < GetControlCount())
+	{
+		if ((GetControl(nToolBar)->GetHideFlags() & xtpHideCustomize) != 0)
+		{
+			int nSelected = m_nSelected;
+			int nPopuped = m_nPopuped;
+			GetControls()->Remove(nToolBar);
+			if (nPopuped != -1) m_nPopuped = nPopuped + (nToolBar < nPopuped ? - 1 : 0);
+			if (nSelected != -1) m_nSelected = nSelected + (nToolBar < nSelected ? - 1 : 0);
+		}
+		else
+			nToolBar++;
+
+	}
+
+	nToolBar = 0;
+
+	while (nOriginal < pOriginalControls->GetCount() || nToolBar < GetControlCount())
+	{
+		CXTPControl* pOriginal = nOriginal < pOriginalControls->GetCount() ? pOriginalControls->GetAt(nOriginal) : NULL;
+		CXTPControl* pControl = nToolBar < GetControlCount() ? m_pControls->GetAt(nToolBar) : NULL;
+
+
+		int nNearest = _FindNearest(m_pControls, pOriginal, nToolBar, TRUE);
+		int nNearestOriginal = _FindNearest(pOriginalControls, pControl, nOriginal);
+
+		if (nNearest == -1 && pOriginal)
+		{
+			int nSelected = m_nSelected;
+			int nPopuped = m_nPopuped;
+			pControl = m_pControls->AddClone(pOriginal, nToolBar);
+			if (nPopuped != -1) m_nPopuped = nPopuped + (nToolBar <= nPopuped ? 1 : 0);
+			if (nSelected != -1) m_nSelected = nSelected + (nToolBar <= nSelected ? 1 : 0);
+			nNearestOriginal = nToolBar;
+
+			pControl->SetHideFlag(xtpHideCustomize, TRUE);
+			nOriginal++;
+			nToolBar++;
+		}
+		else
+		{
+			if (nNearest == nToolBar) nOriginal++;
+			else if (nNearestOriginal != -1) pOriginalControls->Remove(nNearestOriginal);
+			nToolBar++;
+		}
+		ASSERT(pControl);
+
+		if (!pControl)
+		{
+			continue;
+		}
+		if (pControl->GetID() == XTP_ID_TOOLBAR_HIDE || pControl->GetID() == XTP_ID_TOOLBAR_EXPAND)
+		{
+			continue;
+		}
+		if (pControl->GetAction() && !pControl->GetAction()->IsVisible())
+			continue;
+
+		if ((pControl->GetHideFlags() & (xtpHideGeneric | xtpHideDocTemplate | xtpHideRibbonTab)) != 0)
+		{
+			continue;
+		}
+		if (!pControl->IsCustomizeMovable())
+		{
+			continue;
+		}
+
+
+		CControlButtonCustomize* pButton = (CControlButtonCustomize*)pExpandBar->GetControls()->Add(new CControlButtonCustomize(), 0);
+		pButton->SetCaption(pControl->GetCaption());
+
+		XTPControlType controlType = pControl->GetType();
+		if ((controlType == xtpControlPopup) || (controlType == xtpControlButtonPopup) || (controlType == xtpControlSplitButtonPopup) || (controlType == xtpControlButton))
+			pButton->SetIconId(pControl->GetIconId());
+
+		CString strShortcut = pControl->m_strShortcutText;
+		if (strShortcut.IsEmpty())
+			pCommandBars->GetShortcutManager()->FindDefaultAccelerator(pControl->GetID(), strShortcut);
+		pButton->SetShortcutText(strShortcut);
+		pButton->SetEnabled(nNearestOriginal != -1);
+		pButton->SetChecked((pControl->GetHideFlags() & xtpHideCustomize) == 0);
+		pButton->m_pControl = pControl;
+	}
+
+	pOriginalControls->InternalRelease();
+
+	if (m_pControls->m_pOriginalControls && !m_bTearOff && m_bBuiltIn)
+	{
+		CControlButtonCustomize* pButton = (CControlButtonCustomize*)pExpandBar->GetControls()->Add(new CControlButtonCustomize(), XTP_ID_CUSTOMIZE_RESET);
+		pButton->SetFlags(xtpFlagManualUpdate);
+
+		pButton->SetBeginGroup(TRUE);
+		pButton->m_pToolBar = this;
+	}
+}
+
+
+void CXTPToolBar::OnSetPreviewMode(BOOL bPreview)
+{
+	if (m_bPreviewMode == bPreview)
+		return;
+
+	m_bPreviewMode = bPreview;
+
+	if (bPreview)
+	{
+		m_bPreviewVisible = m_bVisible;
+		if (m_bVisible)
+		{
+			m_bVisible = FALSE;
+			ShowWindow(SW_HIDE);
+		}
+	}
+	else if (m_bPreviewVisible)
+	{
+		m_bVisible = TRUE;
+		ShowWindow(SW_SHOWNA);
+
+		if (GetType() == xtpBarTypeMenuBar)
+		{
+			CFrameWnd* pFrameWnd = GetFrameSite();
+			if (pFrameWnd && pFrameWnd->GetSafeHwnd()) pFrameWnd->OnUpdateFrameMenu(0);
+		}
+
+	}
+}
+
+void CXTPToolBar::Copy(CXTPCommandBar* pCommandBar, BOOL bRecursive)
+{
+	CXTPCommandBar::Copy(pCommandBar, bRecursive);
+
+	m_bBuiltIn = ((CXTPToolBar*)pCommandBar)->m_bBuiltIn;
+	m_bTearOff = ((CXTPToolBar*)pCommandBar)->m_bTearOff;
+	m_bCloseable = ((CXTPToolBar*)pCommandBar)->m_bCloseable;
+
+}
+
+BOOL CXTPToolBar::OnHookKeyDown(UINT nChar, LPARAM lParam)
+{
+	if (m_pDockContext == NULL && nChar == VK_TAB && GetParent())
+	{
+		CWnd* pWndNext = GetParent()->GetNextDlgTabItem(this,
+			(GetKeyState(VK_SHIFT) < 0));
+
+		if (pWndNext != NULL && pWndNext != this)
+		{
+			pWndNext->SetFocus();
+			SetTrackingMode(FALSE);
+
+			return TRUE;
+		}
+	}
+	return CXTPCommandBar::OnHookKeyDown(nChar, lParam);
+}
+
+void CXTPToolBar::OnSetFocus(CWnd* pOldWnd)
+{
+	if (!m_hwndFocus && pOldWnd) m_hwndFocus = pOldWnd->GetSafeHwnd();
+	CXTPCommandBar::OnSetFocus(pOldWnd);
+
+	if (m_pDockContext == NULL)
+	{
+		SetTrackingMode(TRUE, TRUE);
+	}
+
+}
+
+BOOL CXTPToolBar::ShouldSerializeBar()
+{
+	if (!IsCustomizable())
+		return FALSE;
+
+	if (GetControls()->GetOriginalControls() && !GetControls()->IsChanged())
+		return FALSE;
+
+	return TRUE;
+
+}
+

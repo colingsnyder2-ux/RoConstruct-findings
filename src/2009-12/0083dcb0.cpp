@@ -1,28 +1,38 @@
-// from server: 64% by atomic.potato
-struct S
-{
-    struct T
-    {
-        int pad58[22];
-        int value100;
-        int pad14c[19];
-        int value14c;
-    };
+// roc 2009-12 0083dcb0  unit: CXTPCustomizeSheet  size: 42 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 0083dcb0
+//
+// 0083dcb0  8b81b8000000         mov eax, dword ptr [ecx + 0xb8]
+// 0083dcb6  8b4058               mov eax, dword ptr [eax + 0x58]
+// 0083dcb9  85c0                 test eax, eax
+// 0083dcbb  741c                 je 0x83dcd9
+// 0083dcbd  c7804c01000003000000 mov dword ptr [eax + 0x14c], 3
+// 0083dcc7  8b8000010000         mov eax, dword ptr [eax + 0x100]
+// 0083dccd  8b10                 mov edx, dword ptr [eax]
+// 0083dccf  8bc8                 mov ecx, eax
+// 0083dcd1  8b8284010000         mov eax, dword ptr [edx + 0x184]
+// 0083dcd7  ffe0                 jmp eax
+// 0083dcd9  c3                   ret 
+// copied from an identical function in another client (function ?SetActivePage@CXTPCustomizeSheet@ns_ROCX00000c@@QAEXXZ)
 
-    int padb8[46];
-    T* valueb8;
-
-    int f();
+namespace ns_ROCX00000c {
+// from server: 100% by tester
+struct CXTPCustomizeSheet {
+    char pad[0xb8];
+    void* m_p;
+    void SetActivePage();
 };
 
-int S::f()
+void CXTPCustomizeSheet::SetActivePage()
 {
-    T* p = (T*)valueb8->pad58[22], *q;
+    void* p = *(void**)((char*)m_p + 0x58);
     if (p)
     {
-        p->value14c = 3;
-        q = (T*)p->value100;
-        return q->value14c;
+        *(int*)((char*)p + 0x14c) = 3;
+        void* q = *(void**)((char*)p + 0x100);
+        void** vt = *(void***)q;
+        typedef void (__thiscall *Fn)(void*);
+        Fn fn = (Fn)vt[0x184 / 4];
+        fn(q);
     }
-    return 0;
+}
 }

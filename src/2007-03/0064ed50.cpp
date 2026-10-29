@@ -1,752 +1,481 @@
-// from server: 44% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/Contact.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-vc8-shared-mfc Source/ReportControl/XTPReportRecordItemText.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8world/Contact.h"
-#include "util/PV.h"
-#include "util/Math.h"
-#include "util/StlExtra.h"
+// XTPReportRecordItemText.cpp : implementation of the CXTPReportRecordItemText class.
+//
+// This file is a part of the XTREME REPORTCONTROL MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
 
-namespace RBX
+#include "stdafx.h"
+#include <math.h>
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPPropExchange.h"
+#include "Common/XTPVc50Helpers.h"
+
+#include "XTPReportRecordItem.h"
+#include "XTPReportControl.h"
+#include "XTPReportPaintManager.h"
+#include "XTPReportRecordItemText.h"
+#include "XTPReportInplaceControls.h"
+#include "XTPReportRow.h"
+#include "XTPReportRecord.h"
+#include "XTPReportRecords.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPReportRecordItemText
+
+IMPLEMENT_SERIAL(CXTPReportRecordItemText, CXTPReportRecordItem, VERSIONABLE_SCHEMA | _XTP_SCHEMA_CURRENT)
+
+CXTPReportRecordItemText::CXTPReportRecordItemText(LPCTSTR szText)
+	: CXTPReportRecordItem(), m_strText(szText)
 {
-	int Contact::contactPairMatches = 0;
-	int Contact::contactPairMisses = 0;
+}
 
-	__declspec(noinline) Contact::Contact(Primitive* prim0, Primitive* prim1)
-		: Edge(prim0, prim1),
-		jointK(0),
-		elasticJointK(0),
-		lastContactStep(-1),
-		steppingIndex(-1),
-		kFriction(0)
+
+CString CXTPReportRecordItemText::GetCaption(CXTPReportColumn* /*pColumn*/)
+{
+	if (!m_strCaption.IsEmpty())
+		return m_strCaption;
+
+	if (m_strFormatString == _T("%s"))
+		return m_strText;
+
+	CString strCaption;
+	strCaption.Format(m_strFormatString, (LPCTSTR)m_strText);
+	return strCaption;
+}
+
+void CXTPReportRecordItemText::OnEditChanged(XTP_REPORTRECORDITEM_ARGS* /*pItemArgs*/, LPCTSTR szText)
+{
+	SetValue(szText);
+}
+
+void CXTPReportRecordItemText::DoPropExchange(CXTPPropExchange* pPX)
+{
+	CXTPReportRecordItem::DoPropExchange(pPX);
+
+	PX_String(pPX, _T("Text"), m_strText, _T(""));
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPReportRecordItemNumber
+
+IMPLEMENT_SERIAL(CXTPReportRecordItemNumber, CXTPReportRecordItem, VERSIONABLE_SCHEMA | _XTP_SCHEMA_CURRENT)
+
+CXTPReportRecordItemNumber::CXTPReportRecordItemNumber(double dValue)
+	: CXTPReportRecordItem(), m_dValue(dValue)
+{
+	static const CString cstrNumberFormatDefault(_T("%0.f")); // to avoid new string data allocation for each record
+	m_strFormatString = cstrNumberFormatDefault;
+}
+
+CXTPReportRecordItemNumber::CXTPReportRecordItemNumber(double dValue, LPCTSTR strFormat)
+	: CXTPReportRecordItem(), m_dValue(dValue)
+{
+	m_strFormatString = strFormat;
+}
+
+CString CXTPReportRecordItemNumber::GetCaption(CXTPReportColumn* /*pColumn*/)
+{
+	if (!m_strCaption.IsEmpty())
+		return m_strCaption;
+
+	CString strCaption;
+	strCaption.Format(m_strFormatString, m_dValue);
+	return strCaption;
+}
+
+int CXTPReportRecordItemNumber::Compare(CXTPReportColumn*, CXTPReportRecordItem* pItem)
+{
+	CXTPReportRecordItemNumber* pItemNumber = DYNAMIC_DOWNCAST(CXTPReportRecordItemNumber, pItem);
+	if (!pItemNumber)
+		return 0;
+
+	if (m_dValue == pItemNumber->m_dValue)
+		return 0;
+	else if (m_dValue > pItemNumber->m_dValue)
+		return 1;
+	else
+		return -1;
+}
+
+void CXTPReportRecordItemNumber::OnEditChanged(XTP_REPORTRECORDITEM_ARGS* /*pItemArgs*/, LPCTSTR szText)
+{
+#ifdef _UNICODE
+	char astring[20];
+	WideCharToMultiByte (CP_ACP, 0, szText, -1, astring, 20, NULL, NULL);
+	SetValue((double)atof(astring));
+#else
+	SetValue((double)atof(szText));
+#endif
+}
+
+void CXTPReportRecordItemNumber::DoPropExchange(CXTPPropExchange* pPX)
+{
+	CXTPReportRecordItem::DoPropExchange(pPX);
+
+	PX_Double(pPX, _T("Value"), m_dValue);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPReportRecordItemDateTime
+
+IMPLEMENT_SERIAL(CXTPReportRecordItemDateTime, CXTPReportRecordItem, VERSIONABLE_SCHEMA | _XTP_SCHEMA_CURRENT)
+
+CXTPReportRecordItemDateTime::CXTPReportRecordItemDateTime(COleDateTime odtValue)
+	: CXTPReportRecordItem(), m_odtValue(odtValue)
+{
+	static const CString cstrDateFormatDefault(_T("%a %b/%d/%Y %I:%M %p")); // to avoid new string data allocation for each record
+	m_strFormatString = cstrDateFormatDefault;
+}
+
+CString CXTPReportRecordItemDateTime::GetCaption(CXTPReportColumn* /*pColumn*/)
+{
+	if (!m_strCaption.IsEmpty())
+		return m_strCaption;
+
+	//return m_odtValue.Format(m_strFormatString);
+	return CXTPReportControlLocale::FormatDateTime(m_odtValue, m_strFormatString);
+}
+
+int CXTPReportRecordItemDateTime::Compare(CXTPReportColumn*, CXTPReportRecordItem* pItem)
+{
+	CXTPReportRecordItemDateTime* pItemDateTime = DYNAMIC_DOWNCAST(CXTPReportRecordItemDateTime, pItem);
+	if (!pItemDateTime)
+		return 0;
+
+	if (m_odtValue == pItemDateTime->m_odtValue)
+		return 0;
+
+	if (m_odtValue.GetStatus() != COleDateTime::valid || pItemDateTime->m_odtValue.GetStatus() != COleDateTime::valid)
+		return int(m_odtValue.m_dt - pItemDateTime->m_odtValue.m_dt);
+
+	if (m_odtValue > pItemDateTime->m_odtValue)
+		return 1;
+
+	return -1;
+}
+
+void CXTPReportRecordItemDateTime::OnEditChanged(XTP_REPORTRECORDITEM_ARGS* /*pItemArgs*/, LPCTSTR szText)
+{
+	m_odtValue.ParseDateTime(szText);
+}
+
+void CXTPReportRecordItemDateTime::DoPropExchange(CXTPPropExchange* pPX)
+{
+	CXTPReportRecordItem::DoPropExchange(pPX);
+
+	PX_DateTime(pPX, _T("Value"), m_odtValue);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPReportRecordItemPreview
+IMPLEMENT_SERIAL(CXTPReportRecordItemPreview, CXTPReportRecordItem, VERSIONABLE_SCHEMA | _XTP_SCHEMA_CURRENT)
+
+CXTPReportRecordItemPreview::CXTPReportRecordItemPreview(LPCTSTR szPreviewText)
+	: CXTPReportRecordItem(), m_strPreviewText(szPreviewText)
+{
+}
+
+CString CXTPReportRecordItemPreview::GetCaption(CXTPReportColumn* /*pColumn*/)
+{
+	return GetPreviewText();
+}
+
+void CXTPReportRecordItemPreview::GetItemMetrics(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, XTP_REPORTRECORDITEM_METRICS* pItemMetrics)
+{
+	pItemMetrics->clrForeground = pDrawArgs->pControl->GetPaintManager()->m_clrPreviewText;
+	pItemMetrics->pFont = &pDrawArgs->pControl->GetPaintManager()->m_fontPreview;
+}
+
+void CXTPReportRecordItemPreview::OnEditChanged(XTP_REPORTRECORDITEM_ARGS* /*pItemArgs*/, LPCTSTR szText)
+{
+	m_strPreviewText = szText;
+}
+
+void CXTPReportRecordItemPreview::DoPropExchange(CXTPPropExchange* pPX)
+{
+	CXTPReportRecordItem::DoPropExchange(pPX);
+
+	PX_String(pPX, _T("PreviewText"), m_strPreviewText);
+}
+
+int CXTPReportRecordItemPreview::GetPreviewHeight(CDC* pDC, CXTPReportRow* pRow, int nWidth)
+{
+	XTP_REPORTRECORDITEM_METRICS* pMetrics = new XTP_REPORTRECORDITEM_METRICS;
+	pMetrics->strText = GetPreviewText();
+	pRow->FillMetrics(NULL, this, pMetrics);
+
+	CString strPreviewText = pMetrics->strText;
+
+	if (strPreviewText.IsEmpty())
 	{
+		pMetrics->InternalRelease();
+		return 0;
 	}
 
-	void Contact::putInKernel(Kernel* _kernel)
+	CXTPReportControl* pControl = pRow->GetControl();
+
+	int nIndentWidth = pControl->GetHeaderIndent();
+
+
+	CRect& rcIndent = pControl->GetPaintManager()->m_rcPreviewIndent;
+
+	CRect rcPreviewItem(nIndentWidth + rcIndent.left, 0, nWidth - rcIndent.right, 0);
+
+	CXTPFontDC font(pDC, pMetrics->pFont);
+
+	int nMaxPreviewLines = pControl->GetPaintManager()->GetPreviewLinesCount(pDC, rcPreviewItem, strPreviewText);
+	int nFontHeight = pDC->GetTextExtent(_T(" "), 1).cy;
+
+	pMetrics->InternalRelease();
+
+	return nFontHeight * nMaxPreviewLines + rcIndent.top + rcIndent.bottom;
+}
+
+void CXTPReportRecordItemPreview::GetCaptionRect(XTP_REPORTRECORDITEM_ARGS* pDrawArgs, CRect& rcItem)
+{
+	ASSERT(pDrawArgs->pControl);
+	if (!pDrawArgs->pControl)
+		return;
+
+	CRect& rcIndent = pDrawArgs->pControl->GetPaintManager()->m_rcPreviewIndent;
+	rcItem.DeflateRect(rcIndent.left - 2, -1, rcIndent.right, -rcIndent.bottom);
+}
+
+
+void CXTPReportRecordItemPreview::OnDrawCaption(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, XTP_REPORTRECORDITEM_METRICS* pMetrics)
+{
+	ASSERT(pDrawArgs->pControl);
+	if (!pDrawArgs->pControl)
+		return;
+
+	if(!pDrawArgs->pControl->GetPaintManager()->OnDrawAction(pDrawArgs))
+		return;
+
+	CString strText = pMetrics->strText;
+
+	// draw item text
+	if (!strText.IsEmpty())
 	{
-		IPipelined::putInKernel(_kernel);
-		onPrimitiveContactParametersChanged();
-	}
+		CRect rcItem(pDrawArgs->rcItem);
 
-	void Contact::removeFromKernel()
-	{
-		RBXASSERT(IPipelined::getKernel());
+		CRect& rcIndent = pDrawArgs->pControl->GetPaintManager()->m_rcPreviewIndent;
 
-		deleteAllConnectors();
-		IPipelined::removeFromKernel();
-	}
+		rcItem.DeflateRect(rcIndent.left, rcIndent.top, rcIndent.right, rcIndent.bottom);
 
-	ContactConnector* Contact::createConnector()
-	{
-		ContactConnector* contact = new ContactConnector(this->jointK, this->elasticJointK, this->kFriction);
-		this->getKernel()->insertConnector(contact);
-
-		return contact;
-	}
-
-	__declspec(noinline) void Contact::deleteConnector(ContactConnector*& c)
-	{
-		if (c)
-		{
-			this->getKernel()->removeConnector(c);
-			delete c;
-			c = NULL;
-		}
-	}
-
-	//needed because of header inlining bullshit
-	void Contact::deleteConnectorInline(ContactConnector*& c)
-	{
-		if (c)
-		{
-			this->getKernel()->removeConnector(c);
-			delete c;
-			c = NULL;
-		}
-	}
-
-	bool Contact::computeIsAdjacent(float spaceAllowed)
-	{
-		if (this->computeIsColliding(spaceAllowed))
-			return false;
-		else
-			return this->computeIsColliding(-spaceAllowed);
-	}
-
-	bool Contact::step(int uiStepId)
-	{
-		RBXASSERT(uiStepId >= 0);
-		
-		bool result = this->stepContact();
-		
-		if (result)
-		{
-			if (this->lastContactStep == -1 ) 
-				Primitive::onNewTouch(Edge::getPrimitive(0), Edge::getPrimitive(1));
-
-			this->lastContactStep = uiStepId;
-		}
-		else if (this->lastContactStep < uiStepId)
-		{
-			this->lastContactStep = -1;
-		}
-
-		return result;
-	}
-
-	void Contact::onPrimitiveContactParametersChanged()
-	{
-		Primitive* prim0 = Edge::getPrimitive(0);
-		Primitive* prim1 = Edge::getPrimitive(1);
-		
-		this->kFriction = std::min(prim0->getFriction(), prim1->getFriction());
-		float elasticity = std::min(prim0->getElasticity(), prim1->getElasticity());
-
-		this->jointK = std::min(prim0->getJointK(), prim1->getJointK());
-		this->elasticJointK = Constants::getElasticMultiplier(elasticity) * this->jointK;
-	}
-
-	BallBallContact::BallBallContact(Primitive* p0, Primitive* p1)
-		:Contact(p0, p1),
-		ballBallConnector(NULL) {}
-
-	BallBallContact::~BallBallContact()
-	{
-		RBXASSERT(!this->ballBallConnector);
-	}
-
-	Ball* BallBallContact::ball(int i)
-	{
-		return rbx_static_cast<Ball*>(this->getPrimitive(i)->getGeometry());
-	}
-
-	void BallBallContact::deleteAllConnectors()
-	{
-		this->deleteConnector(this->ballBallConnector);
-	}
-
-	bool BallBallContact::computeIsColliding(float overlapIgnored)
-	{
-		float b0Radius = this->ball(0)->getRadius();
-		float b1Radius = this->ball(1)->getRadius();
-
-		G3D::Vector3 delta = this->getPrimitive(1)->getBody()->getPV().position.translation - this->getPrimitive(0)->getBody()->getPV().position.translation;
-		float b0b1RadiusSum = b0Radius + b1Radius;
-
-		if (b0b1RadiusSum > Math::longestVector3Component(delta))
-			return delta.magnitude() < (b0b1RadiusSum - overlapIgnored);
-		else
-			return false;
-	}
-
-	bool BallBallContact::stepContact()
-	{
-		if (BallBallContact::computeIsColliding(0.0f))
-		{
-			if (this->inStage(IStage::KERNEL_STAGE))
-			{
-				if (!this->ballBallConnector)
-					this->ballBallConnector = this->createConnector();
-
-				this->ballBallConnector->setBallBall(
-					this->getPrimitive(0)->getBody(), 
-					this->getPrimitive(1)->getBody(), 
-					this->ball(0)->getRadius(), 
-					this->ball(1)->getRadius()
-					);
-			}
-			return true;
-		}
-		else
-		{
-			this->deleteAllConnectors();
-		}
-
-		return false;
-	}
-
-	BallBlockContact::BallBlockContact(Primitive* p0, Primitive* p1)
-		:Contact(p0, p1),
-		ballBlockConnector(NULL) {}
-
-	BallBlockContact::~BallBlockContact()
-	{
-		RBXASSERT(!this->ballBlockConnector);
-	}
-
-	Primitive* BallBlockContact::ballPrim()
-	{	
-		return this->getPrimitive(0);
-	}
-
-	Primitive* BallBlockContact::blockPrim()
-	{
-		return this->getPrimitive(1);
-	}
-
-	Ball* BallBlockContact::ball()
-	{
-		return rbx_static_cast<Ball*>(this->ballPrim()->getGeometry());
-	}
-
-	Block* BallBlockContact::block()
-	{
-		return rbx_static_cast<Block*>(this->blockPrim()->getGeometry());
-	}
-
-	bool BallBlockContact::computeIsColliding(int& onBoarder, G3D::Vector3int16& clip, G3D::Vector3& projectionInBlock, float overlapIgnored)
-	{
-		if (Primitive::aaBoxCollide(*this->ballPrim(), *this->blockPrim()))
-		{
-			Body* b0 = this->ballPrim()->getBody();
-			Body* b1 = this->blockPrim()->getBody();
-			const PV& prim0Coord = b0->getPV();
-			const PV& prim1Coord = b1->getPV();
-
-			G3D::Vector3 blockToBall = prim0Coord.position.translation - prim1Coord.position.translation;
-			projectionInBlock = prim1Coord.position.rotation.transpose() * blockToBall;
-			
-			this->block()->projectToFace(projectionInBlock, clip, onBoarder);
-			G3D::Vector3 unkVec = prim1Coord.position.pointToWorldSpace(projectionInBlock);
-			G3D::Vector3 unkVec2 = unkVec - prim0Coord.position.translation;
-
-			return unkVec2.magnitude() < (this->ball()->getRadius() - overlapIgnored);
-		}
-		return false;
-	}
-
-	bool BallBlockContact::computeIsColliding(float overlapIgnored)
-	{
-		G3D::Vector3int16 clip;
-		G3D::Vector3 projectionInBlock;
-		return this->computeIsColliding(*(int*)&overlapIgnored, clip, projectionInBlock, overlapIgnored);
-	}
-
-	bool BallBlockContact::stepContact()
-	{
-		G3D::Vector3int16 clip;
-		G3D::Vector3 projectionInBlock;
-		int onBoarder;
-
-		if (BallBlockContact::computeIsColliding(onBoarder, clip, projectionInBlock, 0.0f))
-		{
-			if (this->inStage(IStage::KERNEL_STAGE))
-			{
-				if (!this->ballBlockConnector)
-					this->ballBlockConnector = this->createConnector();
-
-				const G3D::Vector3* offset;
-				NormalId normId;
-				GeoPairType ballInsideType;
-
-				if (onBoarder)
-					ballInsideType = this->block()->getBallBlockInfo(onBoarder, clip, offset, normId);
-				else
-					ballInsideType = this->block()->getBallInsideInfo(projectionInBlock, offset, normId);
-
-				this->ballBlockConnector->setBallBlock(
-					this->ballPrim()->getBody(),
-					this->blockPrim()->getBody(),
-					this->ball()->getRadius(),
-					offset,
-					normId,
-					ballInsideType
-					);
-			}
-			return true;
-		}
-		else
-		{
-			this->deleteAllConnectors();
-		}
-
-		return false;
-	}
-
-	void BallBlockContact::deleteAllConnectors()
-	{
-		this->deleteConnector(this->ballBlockConnector);
-	}
-
-	BlockBlockContact::BlockBlockContact(Primitive* p0, Primitive* p1)
-		:Contact(p0, p1),
-		separatingAxisId(0),
-		separatingBodyId(0)
-	{
-		this->feature[0] = -1;
-		this->feature[1] = -1;
-	}
-	
-	BlockBlockContact::~BlockBlockContact() {}
-
-	Block* BlockBlockContact::block(int i)
-	{
-		return rbx_static_cast<Block*>(this->getPrimitive(i)->getGeometry());
-	}
-
-	float BlockBlockContact::contactPairHitRatio()
-	{
-		int sum = Contact::contactPairMatches + Contact::contactPairMisses;
-
-		if (sum == 0)
-			return -1.0f;
-		else
-			return (float)Contact::contactPairMatches / sum;
-	}
-
-	void BlockBlockContact::deleteAllConnectors()
-	{
-		for (size_t i = 0; i < this->connectors.size(); i++)
-		{
-			this->deleteConnectorInline(this->connectors[i]);
-		}
-
-		this->connectors.resize(0);
-		this->matched.resize(0);
-	}
-
-	void BlockBlockContact::deleteUnmatchedConnectors()
-	{
-		RBXASSERT(this->matched.size() == this->connectors.size());
-
-		for (int i = (int)this->connectors.size()-1; i >= 0; i--)
-		{
-			bool match = this->matched[i];
-			if (match == false)
-			{
-				ContactConnector* connector = this->connectors[i];
-				fastRemoveIndex<ContactConnector*>(this->connectors, i);
-				fastRemoveIndex<bool>(this->matched, i);
-				this->deleteConnectorInline(connector);
-			}
-		}
-	}
-
-	ContactConnector* BlockBlockContact::matchContactConnector(Body* b0, Body* b1, GeoPairType _pairType, int param0, int param1)
-	{
-		RBXASSERT(this->matched.size() == this->connectors.size());
-
-		for (size_t i = 0; i < this->matched.size(); i++)
-		{
-			if (this->matched[i] == false)
-			{
-				if (this->connectors[i]->match(b0, b1, _pairType, param0, param1))
-				{
-					this->matched[i] = true;
-					Contact::contactPairMatches++;
-					return this->connectors[i];
-				}
-			}
-		}
-
-		Contact::contactPairMisses++;
-		ContactConnector* connector = this->createConnector();
-		this->connectors.push_back(connector);
-		this->matched.push_back(true);
-		return connector;
-	}
-
-	void BlockBlockContact::loadGeoPairEdgeEdge(int b0, int b1, int edge0, int edge1)
-	{
-		NormalId edgeNormal0 = this->block(b0)->getEdgeNormal(edge0);
-		NormalId edgeNormal1 = this->block(b1)->getEdgeNormal(edge1);
-		
-		ContactConnector* matched = this->matchContactConnector(
-											this->getPrimitive(b0)->getBody(), 
-											this->getPrimitive(b1)->getBody(), 
-											EDGE_EDGE_PAIR, 
-											edgeNormal0, 
-											edgeNormal1
-											);
-
-		matched->setEdgeEdge(
-			this->getPrimitive(b0)->getBody(), 
-			this->getPrimitive(b1)->getBody(), 
-			this->block(b0)->getEdgeVertex(edge0), 
-			this->block(b1)->getEdgeVertex(edge1), 
-			edgeNormal0, 
-			edgeNormal1
-			);
-	}
-
-	void BlockBlockContact::loadGeoPairPointPlane(int pointBody, int planeBody, int pointID, NormalId pointFaceID, NormalId planeFaceID)
-	{
-		ContactConnector* matched = this->matchContactConnector(
-											this->getPrimitive(pointBody)->getBody(), 
-											this->getPrimitive(planeBody)->getBody(), 
-											POINT_PLANE_PAIR, 
-											pointID, 
-											planeFaceID
-											);
-
-		matched->setPointPlane(
-			this->getPrimitive(pointBody)->getBody(),
-			this->getPrimitive(planeBody)->getBody(),
-			this->block(pointBody)->getFaceVertex(pointFaceID, pointID),
-			this->block(planeBody)->getFaceVertex(planeFaceID, 0),
-			pointID,
-			planeFaceID
-			);
-	}
-
-	void BlockBlockContact::loadGeoPairEdgeEdgePlane(int edgeBody, int planeBody, int edge0, int edge1)
-	{
-		NormalId edgeNormal0 = this->block(edgeBody)->getEdgeNormal(edge0);
-		NormalId edgeNormal1 = this->block(planeBody)->getEdgeNormal(edge1);
-
-		ContactConnector* matched = this->matchContactConnector(
-											this->getPrimitive(edgeBody)->getBody(), 
-											this->getPrimitive(planeBody)->getBody(), 
-											EDGE_EDGE_PLANE_PAIR, 
-											edgeNormal0, 
-											edgeNormal1
-											);
-
-		const G3D::Vector3& gridSize = this->getPrimitive(edgeBody)->getGeometry()->getGridSize();
-
-		matched->setEdgeEdgePlane(
-			this->getPrimitive(edgeBody)->getBody(),
-			this->getPrimitive(planeBody)->getBody(),
-			this->block(edgeBody)->getEdgeVertex(edge0),
-			this->block(planeBody)->getEdgeVertex(edge1),
-			edgeNormal0,
-			edgeNormal1,
-			this->planeID,
-			gridSize[edgeNormal0 % 3]
-			);
-	}
-
-	//92.55% match
-	//PLEASE NOTE THAT MOST VARIABLE NAMES ARE MOST LIKELY NOT ACCURATE OF THEIR FUNCTIONALITY
-	bool BlockBlockContact::getBestPlaneEdge(bool& planeContact, float overlapIgnored)
-	{
-		float bestPlaneLength = Math::inf();
-		float bestEdgeLength = Math::inf();
-		float lastPlaneLength = Math::inf();
-		int lastFeature[2] = {this->feature[0], this->feature[1]};
-		bool checkLastFeature = (lastFeature[0] >= 0 && lastFeature[0] < 6) || (lastFeature[1] >= 0 && lastFeature[1] < 6);
-
-		bool belowOverlap = false;
-
-		for (int i = this->separatingBodyId; i < this->separatingBodyId + 2; i++)
-		{
-			int baseId = i % 2;
-			int testId = (i + 1) % 2;
-
-			const G3D::CoordinateFrame& primPV0 = this->getPrimitive(baseId)->getBody()->getPV().position;
-			const G3D::CoordinateFrame& primPV1 = this->getPrimitive(testId)->getBody()->getPV().position;
-			const G3D::Vector3* eBase = (const G3D::Vector3*)this->block(baseId)->getVertices();
-			const G3D::Vector3* eTest = (const G3D::Vector3*)this->block(testId)->getVertices();
-
-			G3D::Vector3 delta = primPV1.translation - primPV0.translation;
-
-			G3D::Vector3 rotTransMul = delta * primPV0.rotation;
-
-			for (int j = this->separatingAxisId; j < this->separatingAxisId + 3; j++)
-			{
-				int axisId = j % 3;
-
-				float what = Math::taxiCabMagnitude(primPV0.rotation.getColumn(axisId) * primPV1.rotation * *eTest) + (*eBase)[axisId] - fabs(rotTransMul[axisId]);
-
-				if (what > overlapIgnored)
-				{
-					if (checkLastFeature && lastFeature[baseId] % 3 == axisId )
-						lastPlaneLength = what;
-
-					if (what < bestPlaneLength)
-					{
-						bestPlaneLength = what;
-						this->feature[baseId] = rotTransMul[axisId] > 0.0f ? axisId : axisId + 3;
-						this->feature[testId] = -1;
-						this->separatingBodyId = baseId;
-						this->separatingAxisId = axisId;
-						planeContact = true;
-					}
-				}
-				else
-				{
-					this->separatingBodyId = baseId;
-					this->separatingAxisId = axisId;
-					belowOverlap = true;
-				}
-
-				if (belowOverlap)
-					return false;
-			}
-		}
-
-		if (checkLastFeature) 
-		{
-			if (this->feature[0] != lastFeature[0] || this->feature[1] != lastFeature[1]) 
-			{
-				if (!(bestPlaneLength * 1.01f < lastPlaneLength))
-				{
-					bestPlaneLength = lastPlaneLength;
-					this->feature[0] = lastFeature[0];
-					this->feature[1] = lastFeature[1];
-				}
-			}
-		}
-		const G3D::CoordinateFrame& primPV0 = this->getPrimitive(0)->getBody()->getPV().position;
-		const G3D::CoordinateFrame& primPV1 = this->getPrimitive(1)->getBody()->getPV().position;
-		const G3D::Vector3* e0 = (const G3D::Vector3*)this->block(0)->getVertices();
-		const G3D::Vector3* e1 = (const G3D::Vector3*)this->block(1)->getVertices();
-
-		G3D::Vector3 p0p1 = primPV1.translation - primPV0.translation;
-
-		for (int i = 0; i < 3; i++)
-		{
-			for (int j = 0; j < 3; j++)
-			{
-				G3D::Vector3 crossAxis = primPV0.rotation.getColumn(i).cross(primPV1.rotation.getColumn(j));
-				if (crossAxis.unitize() <= 0.001f)
-					return planeContact;
-
-				float p0p1inCrossAxis = crossAxis.dot(p0p1);
-
-				G3D::Vector3 crossAxisMulPV0rot = crossAxis * primPV0.rotation;
-				G3D::Vector3 crossAxisMulPV1rot = crossAxis * primPV1.rotation;
-
-				float what = Math::taxiCabMagnitude(crossAxisMulPV0rot * *e0) + Math::taxiCabMagnitude(crossAxisMulPV1rot * *e1) - fabs(p0p1inCrossAxis);
-				if (what > overlapIgnored)
-				{
-					if (what < bestEdgeLength)
-					{
-						bestEdgeLength = what;
-
-						if ( what * 10.0 < bestPlaneLength )
-						{
-							if ( p0p1inCrossAxis > 0.0 )
-							{
-								this->feature[0] = this->block(0)->getClosestEdge(primPV0.rotation, (NormalId)i, crossAxis) + 6;
-								this->feature[1] = this->block(1)->getClosestEdge(primPV1.rotation, (NormalId)j, -crossAxis) + 6;
-							}
-							else
-							{
-								this->feature[0] = this->block(0)->getClosestEdge(primPV0.rotation, (NormalId)i, -crossAxis) + 6;
-								this->feature[1] = this->block(1)->getClosestEdge(primPV1.rotation, (NormalId)j, crossAxis) + 6;
-							}
-							planeContact = false;
-						}
-					}
-				}
-				else
-				{
-					 return false;
-				}
-			}
-		}
-		return true;
-	}
-
-	int BlockBlockContact::intersectRectQuad(G3D::Vector2& planeRect, G3D::Vector2 (&otherQuad)[4])
-	{
-		bool quadCrossRect[4][4];
-
-		bool quadIn[4] = {true, true, true, true};
-
-		int foundCounter = 0;
-
-		for (int i = 3; i >= 0; i--)
-		{
-			if (otherQuad[i].y <= planeRect.y)
-			{
-				quadCrossRect[0][i] = true;
-			}
-			else
-			{
-				quadCrossRect[0][i] = false;
-				quadIn[i] = false;
-			}
-
-			if (otherQuad[i].x >= -planeRect.x)
-			{
-				quadCrossRect[1][i] = true;
-			}
-			else
-			{
-				quadCrossRect[1][i] = false;
-				quadIn[i] = false;
-			}
-
-			if (otherQuad[i].y >= -planeRect.y)
-			{
-				quadCrossRect[2][i] = true;
-			}
-			else
-			{
-				quadCrossRect[2][i] = false;
-				quadIn[i] = false;
-			}
-
-			if (otherQuad[i].x <= planeRect.x)
-			{
-				quadCrossRect[3][i] = true;
-			}
-			else
-			{
-				quadCrossRect[3][i] = false;
-				quadIn[i] = false;
-			}
-		}
-
-		for (int i = 3; i >= 0; i--)
-		{
-			if (quadIn[i])
-			{
-				loadGeoPairPointPlane(bOther, bPlane, i, otherPlaneID, planeID);
-				foundCounter++;
-			}
-		}
-
-		if (foundCounter == 4)
-			return foundCounter;
-		else
-		{
-			bool rectCrossQuad[4][4];
-			G3D::Vector2 rect[4];
-			rect[0] = G3D::Vector2(planeRect.x, planeRect.y);
-			rect[1] = G3D::Vector2(-planeRect.x, planeRect.y);
-			rect[2] = G3D::Vector2(-planeRect.x, -planeRect.y);
-			rect[3] = G3D::Vector2(planeRect.x, -planeRect.y);
-
-			bool rectIn[4] = {true, true, true, true};
-
-			for (int i = 3; i >= 0; i--)
-			{
-				G3D::Vector2& current = otherQuad[i];
-				G3D::Vector2& currentO = otherQuad[(i + 3) % 4];
-				for (int j = 0; j < 4; j++)
-				{
-					G3D::Vector2 math1 = rect[j] - current;
-					G3D::Vector2 math2 = currentO - current;
-
-					if ((math2.x * math1.y) - (math2.y * math1.x) >= 0.0f)
-					{
-						rectCrossQuad[i][j] = true;
-					}
-					else
-					{
-						rectCrossQuad[i][j] = false;
-						rectIn[j] = false;
-					}
-				}
-			}
-
-			int wasZero = foundCounter == 0;
-
-			for (int i = 0; i < 4; i++)
-			{
-				if (rectIn[i])
-				{
-					loadGeoPairPointPlane(bPlane, bOther, i, planeID, otherPlaneID);
-					foundCounter++;
-				}
-			}
-
-			if (wasZero && foundCounter == 4)
-				return foundCounter;
-			else
-			{
-				for (int i = 0; i < 4; i++)
-				{
-					for (int j = 3; j >= 0; j--)
-					{
-						if (quadCrossRect[i][j] != quadCrossRect[i][(j + 3) % 4] && rectCrossQuad[j][i] != rectCrossQuad[j][(i + 1) % 4])
-						{
-
-							loadGeoPairEdgeEdgePlane(bOther, bPlane, block(bOther)->faceVertexToEdge(otherPlaneID, (j+3)%4), block(bPlane)->faceVertexToEdge(planeID, i));
-							foundCounter++;
-						}
-					}
-				}
-				RBXASSERT(foundCounter != 1 && foundCounter <= 8);
-				return foundCounter;
-			}
-		}
-	}
-
-	bool BlockBlockContact::computeIsColliding(bool& planeContact, float overlapIgnored)
-	{
-		if (Primitive::aaBoxCollide(*getPrimitive(0), *getPrimitive(1)))
-			return getBestPlaneEdge(planeContact, overlapIgnored);
-		else
-			return false;
-	}
-
-	bool BlockBlockContact::computeIsColliding(float overlapIgnored)
-	{
-		bool scratch;
-		return computeIsColliding(scratch, overlapIgnored);
-	}
-
-	bool BlockBlockContact::stepContact()
-	{
-		bool planeContact;
-		if (computeIsColliding(planeContact, 0.0f))
-		{
-			if (inStage(IStage::KERNEL_STAGE))
-			{
-				matched.resize(0);
-				matched.resize(connectors.size());
-				if (planeContact)
-				{
-					computePlaneContact();
-					deleteUnmatchedConnectors();
-					return true;
-				}
-				loadGeoPairEdgeEdge(0, 1, feature[0] - 6, feature[1] - 6);
-				deleteUnmatchedConnectors();
-			}
-			return true;
-		}
-		else
-		{
-			deleteAllConnectors();
-			feature[0] = -1;
-			feature[1] = -1;
-			return false;
-		}
-	}
-
-	int BlockBlockContact::computePlaneContact()
-	{
-		if (feature[0] >= 0)
-		{
-			planeID = (NormalId)feature[0];
-			bPlane = 0;
-			bOther = 1;
-		}
-		else
-		{
-			planeID = (NormalId)feature[1];
-			bPlane = 1;
-			bOther = 0;
-		}
-
-		const G3D::CoordinateFrame& otherFrame = getPrimitive(bOther)->getBody()->getPV().position;
-		const G3D::CoordinateFrame& planeFrame = getPrimitive(bPlane)->getBody()->getPV().position;
-
-		G3D::CoordinateFrame otherToPlane = planeFrame.inverse() * otherFrame;
-
-		Block* otherBlock = block(bOther);
-		Block* planeBlock = block(bPlane);
-
-		G3D::Vector3 otherVertexPlaneCoords = Math::getWorldNormal(planeID, planeFrame);
-		otherPlaneID = Math::getClosestObjectNormalId(-otherVertexPlaneCoords, otherFrame.rotation);
-
-		G3D::Vector2 planeRect = planeBlock->getProjectedVertex(*(planeBlock->getFaceVertex(planeID, 0)),planeID);
-
-		G3D::Vector2 otherQuad[4] = {};
-
-		for (int i = 0; i < 4; i++)
-		{
-			G3D::Vector3 world = otherToPlane.pointToWorldSpace(*(otherBlock->getFaceVertex(otherPlaneID, i)));
-			otherQuad[i] = otherBlock->getProjectedVertex(world, planeID);
-		}
-		return intersectRectQuad(planeRect, otherQuad);
+		pDrawArgs->pDC->DrawText(strText, rcItem, DT_WORDBREAK | DT_LEFT | DT_NOPREFIX);
 	}
 }
+
+
+
+
+int CXTPReportRecordItemVariant::m_nSortLocale = LOCALE_USER_DEFAULT;
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPReportRecordItemVariant
+
+IMPLEMENT_SERIAL(CXTPReportRecordItemVariant, CXTPReportRecordItem, VERSIONABLE_SCHEMA | _XTP_SCHEMA_CURRENT)
+
+CXTPReportRecordItemVariant::CXTPReportRecordItemVariant(const VARIANT& lpValue)
+{
+
+	m_oleValue = lpValue;
+	m_oleValue.ChangeType((VARTYPE)(m_oleValue.vt & ~VT_BYREF));
+}
+
+void CXTPReportRecordItemVariant::SetValue(COleVariant& var)
+{
+	m_oleValue = var;
+}
+
+CString CXTPReportRecordItemVariant::GetCaption(CXTPReportColumn* pColumn)
+{
+	if (!m_strCaption.IsEmpty())
+		return m_strCaption;
+
+	COleVariant var(m_oleValue);
+
+	CXTPReportRecordItemEditOptions* pEditOptions = GetEditOptions(pColumn);
+	BOOL bConstraintEdit = pEditOptions->m_bConstraintEdit;
+
+	TRY
+	{
+		if (var.vt == VT_DATE && !bConstraintEdit && m_strFormatString != _T("%s"))
+		{
+			COleDateTime dt(var);
+			//return dt.Format(m_strFormatString);
+			return CXTPReportControlLocale::FormatDateTime(dt, m_strFormatString);
+		}
+		if (var.vt == VT_NULL)
+		{
+			var.vt = VT_I4;
+			var.lVal = 0;
+		}
+		else
+		{
+			//var.ChangeType((VARTYPE) (bConstraintEdit ? VT_I4 : VT_BSTR));
+			CXTPReportControlLocale::VariantChangeTypeEx(var, (VARTYPE) (bConstraintEdit ? VT_I4 : VT_BSTR));
+		}
+	}
+	CATCH_ALL(e)
+	{
+	}
+	END_CATCH_ALL
+
+	if (bConstraintEdit)
+	{
+		CXTPReportRecordItemConstraint* pConstraint = pEditOptions->FindConstraint(var.lVal);
+		return pConstraint ? pConstraint->m_strConstraint : _T("");
+	}
+
+	if (var.vt != VT_BSTR)
+		return _T("");
+
+	CString strVariant(var.bstrVal);
+	if (m_strFormatString == _T("%s"))
+		return strVariant;
+
+	CString strCaption;
+	strCaption.Format(m_strFormatString, (LPCTSTR)strVariant);
+	return strCaption;
+}
+
+int CXTPReportRecordItemVariant::Compare(CXTPReportColumn*, CXTPReportRecordItem* pItem)
+{
+	if (GetSortPriority() != -1 || pItem->GetSortPriority() != -1)
+		return GetSortPriority() - pItem->GetSortPriority();
+
+	CXTPReportRecordItemVariant* pItemVariant = DYNAMIC_DOWNCAST(CXTPReportRecordItemVariant, pItem);
+	if (!pItemVariant)
+		return 0;
+
+	ULONG dwFlags = m_pRecord->GetRecords()->IsCaseSensitive() ? 0 : NORM_IGNORECASE;
+
+	LCID lcidnSortLocale = m_nSortLocale;
+	if (lcidnSortLocale == LOCALE_USER_DEFAULT)
+	{
+		lcidnSortLocale = CXTPReportControlLocale::GetActiveLCID();
+	}
+	return VARCMP_S(m_oleValue, pItemVariant->m_oleValue, lcidnSortLocale, dwFlags) - VARCMP_EQ;
+}
+
+BOOL CXTPReportRecordItemVariant::OnValueChanging(XTP_REPORTRECORDITEM_ARGS* pItemArgs, LPVARIANT lpNewValue)
+{
+	UNREFERENCED_PARAMETER(pItemArgs);
+	UNREFERENCED_PARAMETER(lpNewValue);
+	return TRUE;
+
+}
+
+BOOL CXTPReportRecordItemVariant::OnEditChanging(XTP_REPORTRECORDITEM_ARGS* pItemArgs, CString& rstrNewText)
+{
+	UNREFERENCED_PARAMETER(pItemArgs);
+	UNREFERENCED_PARAMETER(rstrNewText);
+	return TRUE;
+
+}
+
+void CXTPReportRecordItemVariant::OnEditChanged(XTP_REPORTRECORDITEM_ARGS* pItemArgs,
+												LPCTSTR szText)
+{
+	COleVariant var(szText);
+
+	if (OnValueChanging(pItemArgs, &var))
+	{
+		TRY
+		{
+			CXTPReportControlLocale::VariantChangeTypeEx(var, m_oleValue.vt);
+		}
+		CATCH_ALL(e)
+		{
+			return;
+		}
+		END_CATCH_ALL
+
+		m_oleValue = var;
+	}
+}
+
+
+void CXTPReportRecordItemVariant::DoPropExchange(CXTPPropExchange* pPX)
+{
+	CXTPReportRecordItem::DoPropExchange(pPX);
+
+	COleVariant varDefault(_T(""));
+	PX_Variant(pPX, _T("Value"), m_oleValue, varDefault);
+}
+
+void CXTPReportRecordItemVariant::OnConstraintChanged(XTP_REPORTRECORDITEM_ARGS* pItemArgs, CXTPReportRecordItemConstraint* pConstraint)
+{
+	if (GetEditOptions(pItemArgs->pColumn)->m_bConstraintEdit)
+	{
+		COleVariant var((long)pConstraint->m_dwData);
+		//var.ChangeType(m_oleValue.vt);
+		BOOL bChanged = CXTPReportControlLocale::VariantChangeTypeEx(var, m_oleValue.vt, FALSE);
+
+		if (bChanged && OnValueChanging(pItemArgs, &var))
+		{
+			m_oleValue = var;
+		}
+	}
+	else
+	{
+		OnEditChanged(pItemArgs, pConstraint->m_strConstraint);
+	}
+}
+
+DWORD CXTPReportRecordItemVariant::GetSelectedConstraintData(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
+{
+	if (GetEditOptions(pItemArgs->pColumn)->m_bConstraintEdit)
+	{
+		COleVariant var(m_oleValue);
+		TRY
+		{
+			//var.ChangeType(VT_I4);
+			CXTPReportControlLocale::VariantChangeTypeEx(var, VT_I4);
+		}
+		CATCH_ALL(e)
+		{
+			return (DWORD)-1;
+		}
+		END_CATCH_ALL
+
+		return var.lVal;
+
+	}
+	else
+	{
+		return (DWORD)-1;
+	}
+}
+
+

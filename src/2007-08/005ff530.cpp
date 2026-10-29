@@ -1,45 +1,9 @@
-// from server: 32% by colin
-struct Vector3 {
-    float x;
-    float y;
-    float z;
-};
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: g3d-6.09 G3Dcpp/roc_export_432ee86321934a78.cpp
 
-struct Contact {
-    char pad[0x10];
-    float radius0;
-    float radius1;
-    float radius2;
-    float posX;
-    float posY;
-    float posZ;
-};
-
-struct BallBallContact {
-    void generateDataForMovingAssemblyStage(Vector3* out);
-};
-
-void BallBallContact::generateDataForMovingAssemblyStage(Vector3* out) {
-    float r0 = ((Contact*)this)->radius0;
-    float r1 = ((Contact*)this)->radius1;
-    float r2 = ((Contact*)this)->radius2;
-
-    float len = r0 * r0 + r1 * r1 + r2 * r2;
-    float inv = 1.0f / len;
-
-    float nx = r0 * inv;
-    float ny = r1 * inv;
-    float nz = r2 * inv;
-
-    out->x = 0.0f;
-    out->y = 0.0f;
-    out->z = 0.0f;
-
-    out->x = ((Contact*)this)->posX;
-    out->y = ((Contact*)this)->posY;
-    out->z = ((Contact*)this)->posZ;
-
-    out->x = nx;
-    out->y = ny;
-    out->z = nz;
-}
+// Candidate translation unit (score above; library headers required).
+#include "C:/Users/colin/RoConstruct/tools/libs/g3d-6.09/source/include/G3D/roc_export_b663470d46803385.h"
+#include "C:/Users/colin/RoConstruct/tools/libs/g3d-6.09/source/G3Dcpp/Ray.cpp"

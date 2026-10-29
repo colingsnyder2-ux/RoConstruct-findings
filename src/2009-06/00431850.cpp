@@ -1,567 +1,92 @@
-// from server: 48% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/PropertyGrid/XTPPropertyGridItemBool.cpp
-
-// Candidate translation unit (score above; library headers required).
-// CXTPPropertyGridItemBool.cpp : implementation of the XTPPropertyGridItemBool class.
+// roc 2009-06 00431850  unit: CPropertyGridItemBrickColor  size: 98 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 00431850
 //
-// This file is a part of the XTREME PROPERTYGRID MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
+// 00431850  8b44240c             mov eax, dword ptr [esp + 0xc]
+// 00431854  33c9                 xor ecx, ecx
+// 00431856  3bc1                 cmp eax, ecx
+// 00431858  7441                 je 0x43189b
+// 0043185a  83f801               cmp eax, 1
+// 0043185d  743c                 je 0x43189b
+// 0043185f  83f802               cmp eax, 2
+// 00431862  744d                 je 0x4318b1
+// 00431864  83f803               cmp eax, 3
+// 00431867  7521                 jne 0x43188a
+// 00431869  56                   push esi
+// 0043186a  8b74240c             mov esi, dword ptr [esp + 0xc]
+// 0043186e  8b0e                 mov ecx, dword ptr [esi]
+// 00431870  6890149e00           push 0x9e1490
+// 00431875  ff15a4e98900         call dword ptr [0x89e9a4]
+// 0043187b  0fb6c0               movzx eax, al
+// 0043187e  f7d8                 neg eax
+// 00431880  1bc0                 sbb eax, eax
+// 00431882  23442408             and eax, dword ptr [esp + 8]
+// 00431886  8906                 mov dword ptr [esi], eax
+// 00431888  5e                   pop esi
+// 00431889  c3                   ret 
+// 0043188a  8b442408             mov eax, dword ptr [esp + 8]
+// 0043188e  c70090149e00         mov dword ptr [eax], 0x9e1490
+// 00431894  884804               mov byte ptr [eax + 4], cl
+// 00431897  884805               mov byte ptr [eax + 5], cl
+// 0043189a  c3                   ret 
+// 0043189b  8b442408             mov eax, dword ptr [esp + 8]
+// 0043189f  3bc1                 cmp eax, ecx
+// 004318a1  740e                 je 0x4318b1
+// 004318a3  8b4c2404             mov ecx, dword ptr [esp + 4]
+// 004318a7  8b11                 mov edx, dword ptr [ecx]
+// 004318a9  8910                 mov dword ptr [eax], edx
+// 004318ab  8b4904               mov ecx, dword ptr [ecx + 4]
+// 004318ae  894804               mov dword ptr [eax + 4], ecx
+// 004318b1  c3                   ret 
+// copied from an identical function in another client (function ?manage@@YAXABTfunction_buffer@@AAT1@W4functor_manager_operation_type@@@Z)
 
-#include "stdafx.h"
-#include "Resource.h"
+#include <typeinfo>
+#include <new>
 
-#include "Common/XTPVC80Helpers.h"
-#include "Common/XTPVC50Helpers.h"
-#include "Common/XTPResourceManager.h"
+// boost::detail::function::functor_manager<F>::manage for a small, trivially copyable functor
+// stored in place; 0xb3346c is typeid(F)
+extern const type_info type_descriptor_b3346c;
 
-#include "XTPPropertyGridInplaceEdit.h"
-#include "XTPPropertyGridInplaceButton.h"
-#include "XTPPropertyGridInplaceList.h"
-#include "XTPPropertyGridItem.h"
-#include "XTPPropertyGridItemBool.h"
-#include "XTPPropertyGridPaintManager.h"
-#include "XTPPropertyGrid.h"
-#include "XTPPropertyGridView.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPPropertyGridItemBool
-
-IMPLEMENT_DYNAMIC(CXTPPropertyGridItemBool, CXTPPropertyGridItem)
-
-CXTPPropertyGridItemBool::CXTPPropertyGridItemBool(LPCTSTR strCaption, BOOL bValue, BOOL* pBindBool)
-: CXTPPropertyGridItem(strCaption)
-, m_strTrueText(_T("True"))
-, m_strFalseText(_T("False"))
+struct Functor
 {
-	m_pBindBool = pBindBool;
-	_Init(bValue);
-}
-
-CXTPPropertyGridItemBool::CXTPPropertyGridItemBool(UINT nID, BOOL bValue, BOOL* pBindBool)
-: CXTPPropertyGridItem(nID)
-, m_strTrueText(_T("True"))
-, m_strFalseText(_T("False"))
-{
-	m_pBindBool = pBindBool;
-	_Init(bValue);
-}
-
-CXTPPropertyGridItemBool::~CXTPPropertyGridItemBool()
-{
-}
-
-/////////////////////////////////////////////////////////////////////////////
-//
-
-void CXTPPropertyGridItemBool::_Init(BOOL bValue)
-{
-	m_nFlags = xtpGridItemHasComboButton | xtpGridItemHasEdit;
-
-	CString strTrueFalse;
-	if (XTPResourceManager()->LoadString(&strTrueFalse, XTP_IDS_PROPERTYGRID_TRUEFALSE)
-		&& (strTrueFalse.Find(_T('\n')) != -1))
-	{
-		AfxExtractSubString(m_strTrueText, strTrueFalse, 0);
-		AfxExtractSubString(m_strFalseText, strTrueFalse, 1);
-	}
-	SetBool(bValue);
-
-	m_pConstraints->AddConstraint(m_strTrueText);
-	m_pConstraints->AddConstraint(m_strFalseText);
-
-	SetConstraintEdit(TRUE);
-	m_strDefaultValue = m_strValue;
-
-	m_bCheckBoxStyle = FALSE;
-}
-
-void CXTPPropertyGridItemBool::SetValue(CString strValue)
-{
-	SetBool(strValue.CompareNoCase(m_strTrueText) == 0);
-}
-
-void CXTPPropertyGridItemBool::SetBool(BOOL bValue)
-{
-	m_bValue = bValue;
-
-	if (m_pBindBool)
-	{
-		*m_pBindBool = bValue;
-	}
-
-	CXTPPropertyGridItem::SetValue(bValue ? m_strTrueText : m_strFalseText);
-}
-
-void CXTPPropertyGridItemBool::BindToBool(BOOL* pBindBool)
-{
-	m_pBindBool = pBindBool;
-	if (m_pBindBool)
-	{
-		*m_pBindBool = m_bValue;
-	}
-}
-
-void CXTPPropertyGridItemBool::OnBeforeInsert()
-{
-	if (m_pBindBool && *m_pBindBool != m_bValue)
-	{
-		SetBool(*m_pBindBool);
-	}
-}
-
-
-BOOL CXTPPropertyGridItemBool::SetValueText(CString& strValueText, LPCTSTR strNewText)
-{
-	// see if the value exists.
-	int iIndex = m_pConstraints->FindConstraint(strValueText);
-	if (iIndex != -1)
-	{
-		// if this is the current value change it as well.
-		if (GetValue() == strValueText)
-		{
-			CXTPPropertyGridItem::SetValue(strNewText);
-		}
-
-		// update the value.
-		strValueText = strNewText;
-		m_pConstraints->GetConstraintAt(iIndex)->m_strConstraint = strValueText;
-		return TRUE;
-	}
-	return FALSE;
-}
-
-BOOL CXTPPropertyGridItemBool::SetTrueFalseText(LPCTSTR strTrueText, LPCTSTR strFalseText)
-{
-	// update the "True" value text
-	if (!SetValueText(m_strTrueText, strTrueText))
-		return FALSE;
-
-	// update the "False" value text
-	if (!SetValueText(m_strFalseText, strFalseText))
-		return FALSE;
-
-	return TRUE;
-}
-
-void CXTPPropertyGridItemBool::SetCheckBoxStyle(BOOL bCheckBoxStyle /*= TRUE*/)
-{
-	m_bCheckBoxStyle = bCheckBoxStyle;
-	SetFlags(m_bCheckBoxStyle ? 0 : xtpGridItemHasComboButton | xtpGridItemHasEdit);
-}
-
-BOOL CXTPPropertyGridItemBool::IsCheckBoxStyle() const
-{
-	return m_bCheckBoxStyle;
-}
-
-CString CXTPPropertyGridItemBool::GetViewValue()
-{
-	return m_bCheckBoxStyle ? _T("") : CXTPPropertyGridItem::GetViewValue();
-}
-
-BOOL CXTPPropertyGridItemBool::OnKeyDown (UINT nChar)
-{
-	if (m_bCheckBoxStyle && !GetReadOnly() && (nChar == VK_SPACE))
-	{
-		CRect rc = GetValueRect();
-		OnLButtonDblClk(0, rc.CenterPoint());
-
-		return TRUE;
-	}
-	return FALSE;
-}
-
-void CXTPPropertyGridItemBool::OnLButtonDblClk(UINT nFlags, CPoint point)
-{
-	if (m_bCheckBoxStyle && PtInValueRect(point) && !GetReadOnly())
-	{
-		OnSelect();
-		SelectNextConstraint();
-	}
-	else
-	{
-		CXTPPropertyGridItem::OnLButtonDblClk(nFlags, point);
-	}
-}
-
-BOOL CXTPPropertyGridItemBool::PtInCheckBoxRect(CPoint point)
-{
-	CRect rc = GetValueRect();
-	rc.right = rc.left + 15;
-
-	return rc.PtInRect(point);
-}
-
-BOOL CXTPPropertyGridItemBool::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	if (!CXTPPropertyGridItem::OnLButtonDown(nFlags, point))
-		return FALSE;
-
-	if (m_bCheckBoxStyle)
-	{
-		if (PtInCheckBoxRect(point) && !GetReadOnly())
-		{
-			OnLButtonDblClk(nFlags, point);
-		}
-	}
-
-	return TRUE;
-}
-
-BOOL CXTPPropertyGridItemBool::OnDrawItemValue(CDC& dc, CRect rcValue)
-{
-	if (!m_bCheckBoxStyle)
-		return FALSE;
-
-	CRect rcSample(rcValue.left - 1, rcValue.CenterPoint().y - 6, rcValue.left - 1 + 13, rcValue.CenterPoint().y + 7);
-
-	CXTPPropertyGridPaintManager* pPaintManager = m_pGrid->GetPaintManager();
-
-	if (pPaintManager->m_buttonsStyle == xtpGridButtonsThemed && pPaintManager->m_themeButton.IsAppThemed())
-	{
-		pPaintManager->m_themeButton.DrawThemeBackground(dc, BP_CHECKBOX,
-			GetReadOnly() ? (GetBool() ? CBS_CHECKEDDISABLED : CBS_UNCHECKEDDISABLED) :
-			(GetBool() ? CBS_CHECKEDNORMAL : CBS_UNCHECKEDNORMAL),
-			rcSample, 0);
-	}
-	else
-	{
-		dc.DrawFrameControl(rcSample, DFC_BUTTON, DFCS_BUTTONCHECK |
-			(GetReadOnly() ? DFCS_INACTIVE : 0) | (GetBool() ? DFCS_CHECKED : 0));
-	}
-
-	return TRUE;
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPPropertyGridItemEnum
-
-IMPLEMENT_DYNAMIC(CXTPPropertyGridItemEnum, CXTPPropertyGridItem)
-
-CXTPPropertyGridItemEnum::CXTPPropertyGridItemEnum(LPCTSTR strCaption, int nValue, int* pBindEnum)
-: CXTPPropertyGridItem(strCaption)
-{
-	m_pBindEnum = pBindEnum;
-	_Init(nValue);
-
-}
-
-CXTPPropertyGridItemEnum::CXTPPropertyGridItemEnum(UINT nID, int nValue, int* pBindEnum)
-: CXTPPropertyGridItem(nID)
-{
-	m_pBindEnum = pBindEnum;
-	_Init(nValue);
-}
-
-CXTPPropertyGridItemEnum::~CXTPPropertyGridItemEnum()
-{
-}
-
-void CXTPPropertyGridItemEnum::_Init(int nValue)
-{
-	SetEnum(nValue);
-	m_nFlags = xtpGridItemHasComboButton | xtpGridItemHasEdit;
-
-	SetConstraintEdit(TRUE);
-	m_strDefaultValue = m_strValue;
-}
-
-void CXTPPropertyGridItemEnum::SetValue(CString strValue)
-{
-	int nIndex = m_pConstraints->FindConstraint(strValue);
-	ASSERT(nIndex >= 0);
-	if (nIndex >= 0)
-	{
-		SetEnum(m_pConstraints->GetConstraintAt(nIndex));
-	}
-}
-
-void CXTPPropertyGridItemEnum::SetEnum(int nValue)
-{
-	m_nValue = nValue;
-
-	if (m_pBindEnum)
-	{
-		*m_pBindEnum = nValue;
-	}
-
-	int nIndex = m_pConstraints->FindConstraint(nValue);
-	CXTPPropertyGridItem::SetValue(m_pConstraints->GetAt(nIndex));
-}
-
-void CXTPPropertyGridItemEnum::SetEnum(CXTPPropertyGridItemConstraint* pContraint)
-{
-	m_nValue = (int)pContraint->m_dwData;
-
-	if (m_pBindEnum)
-	{
-		*m_pBindEnum = m_nValue;
-	}
-
-	CXTPPropertyGridItem::SetValue(pContraint->m_strConstraint);
-}
-
-void CXTPPropertyGridItemEnum::BindToEnum(int* pBindEnum)
-{
-	m_pBindEnum = pBindEnum;
-	if (m_pBindEnum)
-	{
-		*m_pBindEnum = m_nValue;
-	}
-}
-
-void CXTPPropertyGridItemEnum::OnBeforeInsert()
-{
-	if (m_pBindEnum && *m_pBindEnum != m_nValue)
-	{
-		SetEnum(*m_pBindEnum);
-	}
-}
-
-void CXTPPropertyGridItemEnum::OnConstraintsChanged()
-{
-	if (m_strValue.IsEmpty())
-	{
-		int nIndex = m_pConstraints->FindConstraint(m_nValue);
-		if (nIndex != -1)
-			m_strDefaultValue = m_strValue = m_pConstraints->GetAt(nIndex);
-	}
-
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPPropertyGridItemFlags
-
-class CXTPPropertyGridItemFlags::CXTPPropertyGridItemFlag : public CXTPPropertyGridItemBool
-{
-public:
-
-	CXTPPropertyGridItemFlag(CString strCaption, DWORD dwFlag)
-		:  CXTPPropertyGridItemBool(strCaption), m_dwFlag(dwFlag)
-	{
-	}
-
-	void OnValueChanged(CString strValue);
-
-	virtual BOOL GetReadOnly() const
-	{
-		return m_pParent->GetReadOnly();
-	}
-
-	DWORD m_dwFlag;
+    int f0, f1;
 };
 
-void CXTPPropertyGridItemFlags::CXTPPropertyGridItemFlag::OnValueChanged(CString strValue)
+union function_buffer
 {
-	SetValue(strValue);
+    void *obj_ptr;
+    struct
+    {
+        const type_info *type;
+        bool const_qualified;
+        bool volatile_qualified;
+    } type;
+    char data[8];
+};
 
-	CXTPPropertyGridItemFlags* pParent = DYNAMIC_DOWNCAST(CXTPPropertyGridItemFlags, m_pParent);
-	ASSERT(pParent);
-	if (!pParent)
-		return;
-
-	if (GetBool())
-		pParent->m_nValue |= m_dwFlag;
-	else
-		pParent->m_nValue &= ~m_dwFlag;
-
-	pParent->OnValueChanged(pParent->GetFlagsString());
-
-}
-
-IMPLEMENT_DYNAMIC(CXTPPropertyGridItemFlags, CXTPPropertyGridItem)
-
-CXTPPropertyGridItemFlags::CXTPPropertyGridItemFlags(LPCTSTR strCaption, int nValue, int* pBindFlags)
-: CXTPPropertyGridItem(strCaption)
+enum functor_manager_operation_type
 {
-	m_pBindFlags = pBindFlags;
-	_Init(nValue);
+    clone_functor_tag,
+    move_functor_tag,
+    destroy_functor_tag,
+    check_functor_type_tag,
+    get_functor_type_tag
+};
 
-}
-
-CXTPPropertyGridItemFlags::CXTPPropertyGridItemFlags(UINT nID, int nValue, int* pBindFlags)
-: CXTPPropertyGridItem(nID)
+void manage(const function_buffer &in_buffer, function_buffer &out_buffer, functor_manager_operation_type op)
 {
-	m_pBindFlags = pBindFlags;
-	_Init(nValue);
+    if (op == clone_functor_tag || op == move_functor_tag) {
+        const Functor *in_functor = reinterpret_cast<const Functor *>(&in_buffer.data);
+        new ((void *)&out_buffer.data) Functor(*in_functor);
+    } else if (op == destroy_functor_tag) {
+    } else if (op == check_functor_type_tag) {
+        const type_info &check_type = *out_buffer.type.type;
+        if (check_type == type_descriptor_b3346c)
+            out_buffer.obj_ptr = (void *)&in_buffer.data;
+        else
+            out_buffer.obj_ptr = 0;
+    } else {
+        out_buffer.type.type = &type_descriptor_b3346c;
+        out_buffer.type.const_qualified = false;
+        out_buffer.type.volatile_qualified = false;
+    }
 }
-
-CXTPPropertyGridItemFlags::~CXTPPropertyGridItemFlags()
-{
-}
-
-void CXTPPropertyGridItemFlags::_Init(int nValue)
-{
-	SetFlags(nValue);
-	m_nFlags = xtpGridItemHasEdit;
-	m_strDefaultValue = m_strValue;
-}
-
-BOOL CXTPPropertyGridItemFlags::HasFlag(const CString& strValue, CString strFlag) const
-{
-	strFlag.MakeLower();
-	int nIndex = -1;
-
-	do
-	{
-		nIndex = FIND_S(strValue, strFlag, nIndex + 1);
-		if (nIndex == -1)
-			return FALSE;
-
-		TCHAR chLast = nIndex + strFlag.GetLength() == strValue.GetLength() ? _T(']') : strValue[strFlag.GetLength() + nIndex];
-		TCHAR chFirst = nIndex == 0 ? _T('[') : strValue[nIndex - 1];
-
-		if ((chLast == ',' || chLast == ';' || chLast == ']')
-			&& (chFirst == ',' || chFirst == ';' || chFirst == '['))
-		{
-			return TRUE;
-		}
-	}
-	while (nIndex != -1);
-
-	return FALSE;
-}
-
-void CXTPPropertyGridItemFlags::SetValue(CString strValue)
-{
-	int nValue = 0;
-	strValue.MakeLower();
-
-	CXTPPropertyGridItemConstraints* pConstraints = GetConstraints();
-	for (int i = 0; i < pConstraints->GetCount(); i++)
-	{
-		if (HasFlag(strValue, pConstraints->GetAt(i)))
-			nValue |= pConstraints->GetConstraintAt(i)->m_dwData;
-	}
-
-	SetFlags(nValue);
-}
-
-void CXTPPropertyGridItemFlags::SetFlags(int nValue)
-{
-	m_nValue = nValue;
-
-	if (m_pBindFlags)
-	{
-		*m_pBindFlags = nValue;
-	}
-
-	UpdateChilds();
-
-	CXTPPropertyGridItem::SetValue(GetFlagsString());
-}
-
-void CXTPPropertyGridItemFlags::BindToFlags(int* pBindFlags)
-{
-	m_pBindFlags = pBindFlags;
-	if (m_pBindFlags)
-	{
-		*m_pBindFlags = m_nValue;
-	}
-}
-
-CString CXTPPropertyGridItemFlags::GetFlagsString()
-{
-	CString str;
-
-	CXTPPropertyGridItemConstraints* pConstraints = GetConstraints();
-	int nValue = 0;
-
-	for (int i = 0; i < pConstraints->GetCount(); i++)
-	{
-		CXTPPropertyGridItemConstraint* pConstraint = pConstraints->GetConstraintAt(i);
-
-		if ((nValue & pConstraint->m_dwData) == pConstraint->m_dwData)
-			continue;
-
-		if ((m_nValue & pConstraint->m_dwData) == pConstraint->m_dwData)
-		{
-			str += (str.IsEmpty() ? _T("") : _T(";")) + pConstraint->m_strConstraint;
-			nValue |= pConstraint->m_dwData;
-		}
-	}
-
-	return  _T("[") + str + _T("]");
-}
-
-void CXTPPropertyGridItemFlags::UpdateChilds()
-{
-	CXTPPropertyGridItems* pItems = GetChilds();
-	for (int i = 0; i < pItems->GetCount(); i++)
-	{
-		CXTPPropertyGridItemFlag* pItem = (CXTPPropertyGridItemFlag*)pItems->GetAt(i);
-		pItem->SetBool((m_nValue & pItem->m_dwFlag) == pItem->m_dwFlag);
-		pItem->SetReadOnly(GetReadOnly());
-	}
-}
-
-
-void CXTPPropertyGridItemFlags::OnBeforeInsert()
-{
-	if (m_pBindFlags && *m_pBindFlags != m_nValue)
-	{
-		SetFlags(*m_pBindFlags);
-	}
-}
-
-void CXTPPropertyGridItemFlags::OnConstraintsChanged()
-{
-	GetChilds()->Clear();
-
-	CXTPPropertyGridItemConstraints* pConstraints = GetConstraints();
-
-	int i;
-
-	for (i = 0; i < pConstraints->GetCount(); i++)
-	{
-		AddChildItem(new CXTPPropertyGridItemFlag(pConstraints->GetAt(i), (int)pConstraints->GetConstraintAt(i)->m_dwData));
-	}
-	UpdateChilds();
-	m_strDefaultValue = m_strValue = GetFlagsString();
-
-	CXTPPropertyGridItems* pItems = GetChilds();
-	for (i = 0; i < pItems->GetCount(); i++)
-	{
-		CXTPPropertyGridItemFlag* pItem = (CXTPPropertyGridItemFlag*)pItems->GetAt(i);
-		pItem->SetDefaultValue(pItem->GetValue());
-	}
-
-}
-
-void CXTPPropertyGridItemFlags::SetReadOnly(BOOL bReadOnly)
-{
-	CXTPPropertyGridItem::SetReadOnly(bReadOnly);
-
-	UpdateChilds();
-}
-
-

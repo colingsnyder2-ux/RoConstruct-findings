@@ -1,162 +1,36 @@
-// from server: 44% by colin
+// roc 2011-06 00614050  unit: ArchiveBinder  size: 46 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 00614050
+//
+// 00614050  51                   push ecx
+// 00614051  56                   push esi
+// 00614052  8bf1                 mov esi, ecx
+// 00614054  8b4604               mov eax, dword ptr [esi + 4]
+// 00614057  8b08                 mov ecx, dword ptr [eax]
+// 00614059  50                   push eax
+// 0061405a  51                   push ecx
+// 0061405b  8d44240c             lea eax, [esp + 0xc]
+// 0061405f  50                   push eax
+// 00614060  8bce                 mov ecx, esi
+// 00614062  e849d80d00           call 0x6f18b0
+// 00614067  8b4e04               mov ecx, dword ptr [esi + 4]
+// 0061406a  51                   push ecx
+// 0061406b  e8e85f1f00           call 0x80a058
+// 00614070  83c404               add esp, 4
+// 00614073  33c0                 xor eax, eax
+// 00614075  894604               mov dword ptr [esi + 4], eax
+// 00614078  894608               mov dword ptr [esi + 8], eax
+// 0061407b  5e                   pop esi
+// 0061407c  59                   pop ecx
+// 0061407d  c3                   ret 
+// copied from an identical function in another client (function ?_Tidy@?$_Tree@V?$_Tmap_traits@HUValue16@@U?$less@H@std@@V?$allocator@U?$pair@$$CBHUValue16@@@std@@@3@$0A@@std@@@std@@IAEXXZ)
+
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/signals/src/connection.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#define _SECURE_SCL 0
+#include <map>
 
-// Candidate translation unit (score above; library headers required).
-// Boost.Signals library
-
-// Copyright Douglas Gregor 2001-2004. Use, modification and
-// distribution is subject to the Boost Software License, Version
-// 1.0. (See accompanying file LICENSE_1_0.txt or copy at
-// http://www.boost.org/LICENSE_1_0.txt)
-
-// For more information, see http://www.boost.org
-
-#define BOOST_SIGNALS_SOURCE
-
-#include <boost/signals/connection.hpp>
-#include <cassert>
-
-namespace boost {
-  namespace BOOST_SIGNALS_NAMESPACE {
-
-    connection::connection(const connection& other) :
-      con(other.con), controlling_connection(other.controlling_connection)
-    {
-    }
-
-    connection::~connection()
-    {
-      if (controlling_connection) {
-        disconnect();
-      }
-    }
-
-    void
-    connection::reset(BOOST_SIGNALS_NAMESPACE::detail::basic_connection* new_con)
-    {
-      con.reset(new_con);
-    }
-
-    bool connection::operator==(const connection& other) const
-    {
-      return con.get() == other.con.get();
-    }
-
-    bool connection::operator<(const connection& other) const
-    {
-      return con.get() < other.con.get();
-    }
-
-    connection& connection::operator=(const connection& other)
-    {
-      connection(other).swap(*this);
-      return *this;
-    }
-
-    void connection::swap(connection& other)
-    {
-      this->con.swap(other.con);
-      std::swap(this->controlling_connection, other.controlling_connection);
-    }
-
-    void swap(connection& c1, connection& c2)
-    {
-      c1.swap(c2);
-    }
-
-    scoped_connection::scoped_connection(const connection& other) :
-      connection(other),
-      released(false)
-    {
-    }
-
-    scoped_connection::scoped_connection(const scoped_connection& other) :
-      connection(other),
-      released(other.released)
-    {
-    }
-
-    scoped_connection::~scoped_connection()
-    {
-      if (!released) {
-        this->disconnect();
-      }
-    }
-
-    connection scoped_connection::release()
-    {
-      released = true;
-      return *this;
-    }
-
-    void scoped_connection::swap(scoped_connection& other)
-    {
-      this->connection::swap(other);
-      bool other_released = other.released;
-      other.released = this->released;
-      this->released = other_released;
-    }
-
-    void swap(scoped_connection& c1, scoped_connection& c2)
-    {
-      c1.swap(c2);
-    }
-
-    scoped_connection&
-    scoped_connection::operator=(const connection& other)
-    {
-      scoped_connection(other).swap(*this);
-      return *this;
-    }
-
-    scoped_connection&
-    scoped_connection::operator=(const scoped_connection& other)
-    {
-      scoped_connection(other).swap(*this);
-      return *this;
-    }
-
-    void
-    connection::add_bound_object(const BOOST_SIGNALS_NAMESPACE::detail::bound_object& b)
-    {
-      assert(con.get() != 0);
-      con->bound_objects.push_back(b);
-    }
-
-
-    void connection::disconnect() const
-    {
-      if (this->connected()) {
-        // Make sure we have a reference to the basic_connection object,
-        // because 'this' may disappear
-        shared_ptr<detail::basic_connection> local_con = con;
-
-        void (*signal_disconnect)(void*, void*) = local_con->signal_disconnect;
-
-        // Note that this connection no longer exists
-        // Order is important here: we could get into an infinite loop if this
-        // isn't cleared before we try the disconnect.
-        local_con->signal_disconnect = 0;
-
-        // Disconnect signal
-        signal_disconnect(local_con->signal, local_con->signal_data);
-
-        // Disconnect all bound objects
-        typedef std::list<BOOST_SIGNALS_NAMESPACE::detail::bound_object>::iterator iterator;
-        for (iterator i = local_con->bound_objects.begin();
-             i != local_con->bound_objects.end(); ++i) {
-          assert(i->disconnect != 0);
-          i->disconnect(i->obj, i->data);
-        }
-      }
-    }
-  } // end namespace boost
-} // end namespace boost
-
-#ifndef BOOST_MSVC
-// Explicit instantiations to keep everything in the library
-template class std::list<boost::BOOST_SIGNALS_NAMESPACE::detail::bound_object>;
-#endif
+// value_type is 0x14 bytes: node color at +0x20, isnil at +0x21, max_size 0xcccccccc.
+struct Value16 { int words[13]; };
+template class std::_Tree<std::_Tmap_traits<int, Value16, std::less<int>,
+    std::allocator<std::pair<const int, Value16> >, false> >;

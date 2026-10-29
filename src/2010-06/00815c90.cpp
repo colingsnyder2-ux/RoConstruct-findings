@@ -1,8 +1,7 @@
-// from server: 99% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/Common/XTPToolTipContext.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\Common\XTPToolTipContext.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPToolTipContext.cpp: implementation of the CXTPToolTipContext class.

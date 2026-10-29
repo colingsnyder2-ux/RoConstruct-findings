@@ -1,459 +1,158 @@
-// from server: 42% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net Streaming.cpp
+// roc-lib: boost-1.34.1-dll roc_bind_factory_matrix_88fcf2790ed4c606.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include <BitStream.h>
-#include <StringCompressor.h>
-#include "Streaming.h"
-#include "IdManager.h"
-#include "v8tree/Service.h"
-#include <G3D/vectorMath.h>
-#include <algorithm>
-
-namespace RBX
-{
-	namespace Network
-	{
-		RakNet::BitStream& operator<<(RakNet::BitStream& stream, bool value)
-		{
-			stream.Write(value);
-			return stream;
-		}
-
-		RakNet::BitStream& operator<<(RakNet::BitStream& stream, int value)
-		{
-			stream.Write(value);
-			return stream;
-		}
-
-		RakNet::BitStream& operator<<(RakNet::BitStream& stream, long value)
-		{
-			stream.Write(value);
-			return stream;
-		}
-
-		RakNet::BitStream& operator<<(RakNet::BitStream& stream, unsigned int value)
-		{
-			stream.Write(value);
-			return stream;
-		}
-
-		RakNet::BitStream& operator<<(RakNet::BitStream& stream, unsigned char value)
-		{
-			stream.Write(value);
-			return stream;
-		}
-
-		RakNet::BitStream& operator<<(RakNet::BitStream& stream, float value)
-		{
-			stream.Write(value);
-			return stream;
-		}
-
-		RakNet::BitStream& operator<<(RakNet::BitStream& stream, const std::string& value)
-		{
-			stream.Write((unsigned)value.size());
-			stringCompressor->EncodeString(value.c_str(), (int)value.size() + 1, &stream);
-			return stream;
-		}
-
-		RakNet::BitStream& operator<<(RakNet::BitStream& stream, const G3D::Vector3& value)
-		{
-			stream << value.x;
-			stream << value.y;
-			stream << value.z;
-			return stream;
-		}
-
-		RakNet::BitStream& operator<<(RakNet::BitStream& stream, const G3D::Color3& value)
-		{
-			stream << value.r;
-			stream << value.g;
-			stream << value.b;
-			return stream;
-		}
-
-		RakNet::BitStream& operator>>(RakNet::BitStream& stream, bool& value)
-		{
-			stream.Read(value);
-			return stream;
-		}
-
-		RakNet::BitStream& operator>>(RakNet::BitStream& stream, int& value)
-		{
-			stream.Read(value);
-			return stream;
-		}
-
-		RakNet::BitStream& operator<<(RakNet::BitStream& stream, long& value)
-		{
-			stream.Write(value);
-			return stream;
-		}
-
-		RakNet::BitStream& operator>>(RakNet::BitStream& stream, unsigned int& value)
-		{
-			stream.Read(value);
-			return stream;
-		}
-
-
-		RakNet::BitStream& operator>>(RakNet::BitStream& stream, unsigned char& value)
-		{
-			stream.Read(value);
-			return stream;
-		}
-
-		RakNet::BitStream& operator>>(RakNet::BitStream& stream, float& value)
-		{
-			stream.Read(value);
-			return stream;
-		}
-
-		RakNet::BitStream& operator>>(RakNet::BitStream& stream, std::string& value)
-		{
-			unsigned int strSize;
-			stream >> strSize;
-
-			char* strBuf = new char[strSize + 1];
-			stringCompressor->DecodeString(strBuf, strSize + 1, &stream);
-			value = strBuf;
-
-			delete[] strBuf;
-			return stream;
-		}
-
-		RakNet::BitStream& operator>>(RakNet::BitStream& stream, G3D::Vector3& value)
-		{
-			stream >> value.x;
-			stream >> value.y;
-			stream >> value.z;
-			return stream;
-		}
-
-		RakNet::BitStream& operator>>(RakNet::BitStream& stream, G3D::Color3& value)
-		{
-			stream >> value.r;
-			stream >> value.g;
-			stream >> value.b;
-			return stream;
-		}
-
-		template<typename T>
-		RakNet::BitStream& operator>>(RakNet::BitStream& stream, T& value) // TODO: check match
-		{
-			return operator>>(stream, value);
-		}
-
-		bool brickEq(float a, float b)
-		{
-			return a == b || fabs(a - b) <= 0.0005f;
-		}
-
-		static bool isBrickLocation(const G3D::Vector3& v, short& x, unsigned short& y, short& z)
-		{
-			if (v.x >= 512.0f)
-				return false;
-
-			if (v.x <= -512.0f)
-				return false;
-
-			if (v.z >= 512.0f)
-				return false;
-
-			if (v.z <= -512.0f)
-				return false;
-			
-			if (v.y >= 204.8)
-				return false;
-
-			if (v.y < 0.0f)
-				return false;
-
-			float dx = v.x * 2.0f;
-			x = (short)dx;
-
-			if ((float)x != dx)
-				return false;
-
-			float dz = v.z * 2.0f;
-			z = (short)dz;
-
-			if ((float)z != dz)
-				return false;
-
-			float dy = v.y * 10.0f;
-			y = (unsigned short)dy;
-
-			if (!brickEq((float)y, dy))
-				return false;
-
-			return true;
-		}
-
-		void writeBrickVector(RakNet::BitStream& stream, const G3D::Vector3& value)
-		{
-			short x;
-			unsigned short y;
-			short z;
-
-			if (isBrickLocation(value, x, y, z))
-			{
-				stream.Write(true);
-				stream.WriteBits((unsigned char*)&x, 11);
-				stream.WriteBits((unsigned char*)&y, 11);
-				stream.WriteBits((unsigned char*)&z, 11);
-			}
-			else
-			{
-				stream.Write(false);
-				stream.Write(value.x);
-				stream.Write(value.y);
-				stream.Write(value.z);
-			}
-		}
-
-		void readBrickVector(RakNet::BitStream& stream, G3D::Vector3& value)
-		{
-			bool isBrickLocation;
-			stream.Read(isBrickLocation);
-
-			if (isBrickLocation)
-			{
-				short x = 0;
-				unsigned short y = 0;
-				short z = 0;
-
-				stream.ReadBits((unsigned char*)&x, 11);
-				stream.ReadBits((unsigned char*)&y, 11);
-				stream.ReadBits((unsigned char*)&z, 11);
-
-				if (x & 0x400) // sign extend x and z
-					x |= 0xfc00;
-
-				if (z & 0x400)
-					z |= 0xfc00;
-
-				value.x = (float)(x * 0.5);
-				value.y = (float)(y / 10.0);
-				value.z = (float)(z * 0.5);
-			}
-			else
-			{
-				stream.Read(value.x);
-				stream.Read(value.y);
-				stream.Read(value.z);
-			}
-		}
-
-		void rationalize(G3D::CoordinateFrame& value)
-		{
-			if (!value.translation.isFinite())
-			{
-				value.translation = G3D::Vector3(0.0f, -1e+6f, 0.0f);
-			}
-			else
-			{
-				value.translation = G3D::clamp(G3D::Vector3(-1e+6f, -1e+6f, -1e+6f), value.translation, G3D::Vector3(1e+6f, 1e+6f, 1e+6f));
-			}
-		}
-
-		void deserializeEnum(Reflection::Property& property, RakNet::BitStream& bitStream)
-		{
-			const Reflection::EnumPropertyDescriptor& prop = static_cast<const Reflection::EnumPropertyDescriptor&>(property.getDescriptor());
-
-			int value = 0;
-			bitStream.ReadBits((unsigned char*)&value, (int)prop.enumDescriptor.getEnumCountMSB() + 1);
-
-			RBXASSERT(value >= 0);
-			RBXASSERT(value < (int)prop.enumDescriptor.getEnumCount());
-
-			prop.setIndexValue(property.getInstance(), value);
-		}
-
-		void serializeEnum(const Reflection::ConstProperty& property, RakNet::BitStream& bitStream)
-		{
-			const Reflection::EnumPropertyDescriptor& prop = static_cast<const Reflection::EnumPropertyDescriptor&>(property.getDescriptor());
-
-			int value = prop.getIndexValue(property.getInstance());
-
-			RBXASSERT(value >= 0);
-			RBXASSERT(value < (int)prop.enumDescriptor.getEnumCount());
-
-			bitStream.WriteBits((unsigned char*)&value, (int)prop.enumDescriptor.getEnumCountMSB() + 1);
-		}
-
-		void StringReceiver::receive(RakNet::BitStream& stream, std::string& value)
-		{
-			unsigned char id;
-			stream >> id;
-
-			if (id == 0)
-			{
-				value.clear();
-			}
-			else if (id >> 7)
-			{
-				stream >> value;
-				dictionary[id & 127] = value;
-			}
-			else
-			{
-				value = dictionary[id];
-			}
-		}
-
-		void StringReceiver::receive(RakNet::BitStream& stream, const Name*& value)
-		{
-			std::string s;
-			receive(stream, s);
-
-			value = &Name::declare(s.c_str(), -1);
-		}
-
-		void StringReceiver::deserializeString(Reflection::Property& property, RakNet::BitStream& bitStream)
-		{
-			std::string value;
-			receive(bitStream, value);
-			
-			Instance* instance = static_cast<Instance*>(property.getInstance());
-			const Reflection::PropertyDescriptor& desc = property.getDescriptor();
-
-			desc.setStringValue(instance, value);
-		}
-
-		void StringSender::serializeString(const Reflection::ConstProperty& property, RakNet::BitStream& bitStream)
-		{
-			const Instance* instance = static_cast<const Instance*>(property.getInstance());
-			const Reflection::PropertyDescriptor& desc = property.getDescriptor();
-
-			std::string value = desc.getStringValue(instance);
-			send(bitStream, value);
-		}
-
-		void StringSender::send(RakNet::BitStream& stream, const std::string& value)
-		{
-			if (value == "")
-			{
-				stream << (unsigned char)0;
-			}
-			else
-			{
-				std::pair<std::map<std::string, unsigned char>::iterator, bool> pair = dictionary.insert(std::pair<const std::string, unsigned char>(value, 0));
-
-				if (!pair.second)
-				{
-					stream << pair.first->second;
-				}
-				else
-				{
-					lastIndex = lastIndex % 127 + 1;
-					dictionary.erase(strings[lastIndex]);
-					pair.first->second = lastIndex;
-					strings[lastIndex] = value;
-
-					stream << (unsigned char)(lastIndex | 0x80);
-					stream << value;
-				}
-			}
-		}
-
-		bool StringSender::trySend(RakNet::BitStream& stream, const std::string& value)
-		{
-			if (value == "")
-			{
-				stream << (unsigned char)0;
-				return true;
-			}
-
-			std::map<std::string, unsigned char>::const_iterator iter = dictionary.find(value);
-
-			if (iter == dictionary.end())
-			{
-				return false;
-			}
-			else
-			{
-				stream << iter->second;
-				return true;
-			}
-		}
-
-		void IdSerializer::serializeId(RakNet::BitStream& stream, const Instance* instance)
-		{
-			if (instance)
-			{
-				Guid::Data id;
-				instance->getGuid().extract(id);
-
-				scopeNames.send(stream, id.scope->name);
-
-				RBXASSERT((id.index & 0xff000000) == 0);
-				stream.WriteBits((unsigned char*)&id.index, 24);
-			}
-			else
-			{
-				scopeNames.send(stream, Name::getNullName().name);
-			}
-		}
-
-		bool IdSerializer::trySerializeId(RakNet::BitStream& stream, const Instance* instance)
-		{
-			if (instance)
-			{
-				Guid::Data id;
-				instance->getGuid().extract(id);
-
-				if (!scopeNames.trySend(stream, id.scope->name))
-					return false;
-
-				RBXASSERT((id.index & 0xff000000) == 0);
-				stream.WriteBits((unsigned char*)&id.index, 24);
-				return true;
-			}
-			else
-			{
-				scopeNames.send(stream, Name::getNullName().name);
-				return true;
-			}
-		}
-
-		void IdSerializer::resolvePendingBindings(Instance* instance, Guid::Data id)
-		{
-			std::map<Guid::Data, std::vector<WaitItem>>::iterator iter = waitItems.find(id);
-			if (iter != waitItems.end())
-			{
-				std::for_each(iter->second.begin(), iter->second.end(), boost::bind(&IdSerializer::setRefValue, _1, instance));
-				waitItems.erase(iter);
-			}
-		}
-
-		void IdSerializer::serializeRef(const Reflection::ConstProperty& property, RakNet::BitStream& bitStream)
-		{
-			const Reflection::RefPropertyDescriptor& prop = static_cast<const Reflection::RefPropertyDescriptor&>(property.getDescriptor());
-			serializeId(bitStream, (Instance*)prop.getRefValue(property.getInstance()));
-		}
-
-		void IdSerializer::setRefValue(WaitItem& wi, Instance* instance)
-		{
-			wi.desc->setRefValue(wi.instance.get(), instance);
-		}
-
-		void IdSerializer::deserializeId(RakNet::BitStream& stream, Guid::Data& id)
-		{
-			scopeNames.receive(stream, id.scope);
-			if (*id.scope != Name::getNullName())
-			{
-				id.index = 0;
-				stream.ReadBits((unsigned char*)&id.index, 24);
-			}
-			else
-			{
-				id.index = 0;
-			}
-		}
-	}
-}
+// Declaration excerpt from RBLXDecomp/RBXGSdecomp at
+// 3c9c0c32ac5e7ba320767bfcd2bd3c54f86ef461, ThreadRef.h.
+// Out-of-line copy/destructor are the already-exact 005944e0/00594470.
+#define NDEBUG
+#include <boost/shared_ptr.hpp>
+#include <boost/mem_fn.hpp>
+
+struct lua_State;
+namespace boost { class mutex; }
+namespace RBX { namespace Lua {
+class ThreadRef {
+public:
+    class Node;
+private:
+    const boost::shared_ptr<boost::mutex> sync;
+    Node* node;
+    ThreadRef* previous;
+    ThreadRef* next;
+    lua_State* L;
+    int threadId;
+protected:
+    virtual void removeRef();
+public:
+    ThreadRef(const ThreadRef&);
+    ~ThreadRef();
+};
+class FunctionRef : public ThreadRef {
+public:
+    int functionId;
+    FunctionRef(const FunctionRef&);
+    ~FunctionRef();
+    FunctionRef& operator=(const FunctionRef&);
+    bool operator==(const FunctionRef&) const;
+    bool operator!=(const FunctionRef&) const;
+protected:
+    virtual void removeRef();
+};
+}}
+
+// Target stores an eight-byte member-function pointer (entry + this adjustment).
+class __multiple_inheritance DHTMLWindow;
+typedef RBX::Lua::FunctionRef FunctionRef;
+typedef boost::_mfi::mf1<void, DHTMLWindow, FunctionRef> Callback;
+template void Callback::operator()<boost::shared_ptr<DHTMLWindow> >(
+    boost::shared_ptr<DHTMLWindow> const&, FunctionRef) const;
+
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
+typedef boost::_bi::value<boost::shared_ptr<DHTMLWindow> > WindowValue;
+typedef boost::_bi::value<FunctionRef> FunctionValue;
+typedef boost::_bi::list2<WindowValue, FunctionValue> Arguments;
+typedef boost::_bi::bind_t<void, Callback, Arguments> Bound;
+// Full observed RTTI bind_t type: genuine list/storage constructors and manager.
+template class boost::_bi::value<FunctionRef>;
+template class boost::_bi::storage2<WindowValue, FunctionValue>;
+template class boost::_bi::list2<WindowValue, FunctionValue>;
+template class boost::_bi::bind_t<void, Callback, Arguments>;
+void invoke_bound(Bound& bound) { bound(); }
+void assign_bound(boost::function<void()>& function, Bound const& bound) { function = bound; }
+
+#include <string>
+namespace RBX { class Instance; namespace Reflection { class PropertyDescriptor; } }
+typedef boost::_mfi::mf0<void, DHTMLWindow> CloseCallback;
+typedef boost::_bi::list1<WindowValue> CloseArguments;
+typedef boost::_bi::bind_t<void, CloseCallback, CloseArguments> CloseBound;
+template class boost::_mfi::mf0<void, DHTMLWindow>;
+template class boost::_bi::list1<WindowValue>;
+template class boost::_bi::bind_t<void, CloseCallback, CloseArguments>;
+void assign_close(boost::function<void()>& f, CloseBound const& b) { f = b; }
+
+typedef boost::_mfi::mf1<void, DHTMLWindow, std::string> StringCallback;
+typedef boost::_bi::value<std::string> StringValue;
+typedef boost::_bi::list2<WindowValue, StringValue> StringArguments;
+typedef boost::_bi::bind_t<void, StringCallback, StringArguments> StringBound;
+template void StringCallback::operator()<boost::shared_ptr<DHTMLWindow> >(boost::shared_ptr<DHTMLWindow> const&, std::string) const;
+template class boost::_bi::storage2<WindowValue, StringValue>;
+template class boost::_bi::list2<WindowValue, StringValue>;
+template class boost::_bi::bind_t<void, StringCallback, StringArguments>;
+void assign_string(boost::function<void()>& f, StringBound const& b) { f = b; }
+
+typedef boost::_mfi::mf2<void, DHTMLWindow, int, int> ResizeCallback;
+typedef boost::_bi::value<int> IntValue;
+typedef boost::_bi::list3<WindowValue, IntValue, IntValue> ResizeArguments;
+typedef boost::_bi::bind_t<void, ResizeCallback, ResizeArguments> ResizeBound;
+template class boost::_mfi::mf2<void, DHTMLWindow, int, int>;
+template class boost::_bi::list3<WindowValue, IntValue, IntValue>;
+template class boost::_bi::bind_t<void, ResizeCallback, ResizeArguments>;
+void assign_resize(boost::function<void()>& f, ResizeBound const& b) { f = b; }
+
+typedef boost::shared_ptr<RBX::Instance> InstancePtr;
+typedef RBX::Reflection::PropertyDescriptor const& PropertyRef;
+typedef boost::_mfi::mf3<void, DHTMLWindow, InstancePtr, PropertyRef, std::string> PropertyCallback;
+typedef boost::_bi::list4<WindowValue, boost::_bi::value<InstancePtr>, boost::reference_wrapper<RBX::Reflection::PropertyDescriptor const>, StringValue> PropertyArguments;
+typedef boost::_bi::bind_t<void, PropertyCallback, PropertyArguments> PropertyBound;
+template class boost::_mfi::mf3<void, DHTMLWindow, InstancePtr, PropertyRef, std::string>;
+template class boost::_bi::list4<WindowValue, boost::_bi::value<InstancePtr>, boost::reference_wrapper<RBX::Reflection::PropertyDescriptor const>, StringValue>;
+template class boost::_bi::bind_t<void, PropertyCallback, PropertyArguments>;
+void assign_property(boost::function<void()>& f, PropertyBound const& b) { f = b; }
+
+#include <boost/weak_ptr.hpp>
+typedef boost::shared_ptr<DHTMLWindow> FactoryOwner;
+typedef boost::weak_ptr<RBX::Instance> FactoryWeak;
+typedef boost::reference_wrapper<RBX::Reflection::PropertyDescriptor const> FactoryProperty;
+
+typedef void (DHTMLWindow::*Factory12Method)(double);
+typedef boost::_bi::list_av_2<FactoryOwner, double >::type Factory12Args;
+typedef boost::_bi::bind_t<void, boost::_mfi::mf1<void, DHTMLWindow, double >, Factory12Args> Factory12Bound;
+template Factory12Bound boost::bind<void, DHTMLWindow, double, FactoryOwner, double >(Factory12Method, FactoryOwner, double);
+typedef void (DHTMLWindow::*Factory13Method)(double);
+typedef boost::_bi::list_av_2<DHTMLWindow*, double >::type Factory13Args;
+typedef boost::_bi::bind_t<void, boost::_mfi::mf1<void, DHTMLWindow, double >, Factory13Args> Factory13Bound;
+template Factory13Bound boost::bind<void, DHTMLWindow, double, DHTMLWindow*, double >(Factory13Method, DHTMLWindow*, double);
+typedef void (*Factory14Method)(double);
+typedef boost::_bi::list_av_1<double >::type Factory14Args;
+typedef boost::_bi::bind_t<void, Factory14Method, Factory14Args> Factory14Bound;
+template Factory14Bound boost::bind<void, double, double >(Factory14Method, double);
+typedef void (DHTMLWindow::*Factory15Method)(void*);
+typedef boost::_bi::list_av_2<FactoryOwner, void* >::type Factory15Args;
+typedef boost::_bi::bind_t<void, boost::_mfi::mf1<void, DHTMLWindow, void* >, Factory15Args> Factory15Bound;
+template Factory15Bound boost::bind<void, DHTMLWindow, void*, FactoryOwner, void* >(Factory15Method, FactoryOwner, void*);
+typedef void (DHTMLWindow::*Factory16Method)(void*);
+typedef boost::_bi::list_av_2<DHTMLWindow*, void* >::type Factory16Args;
+typedef boost::_bi::bind_t<void, boost::_mfi::mf1<void, DHTMLWindow, void* >, Factory16Args> Factory16Bound;
+template Factory16Bound boost::bind<void, DHTMLWindow, void*, DHTMLWindow*, void* >(Factory16Method, DHTMLWindow*, void*);
+typedef void (*Factory17Method)(void*);
+typedef boost::_bi::list_av_1<void* >::type Factory17Args;
+typedef boost::_bi::bind_t<void, Factory17Method, Factory17Args> Factory17Bound;
+template Factory17Bound boost::bind<void, void*, void* >(Factory17Method, void*);
+typedef void (DHTMLWindow::*Factory18Method)(std::string);
+typedef boost::_bi::list_av_2<FactoryOwner, std::string >::type Factory18Args;
+typedef boost::_bi::bind_t<void, boost::_mfi::mf1<void, DHTMLWindow, std::string >, Factory18Args> Factory18Bound;
+template Factory18Bound boost::bind<void, DHTMLWindow, std::string, FactoryOwner, std::string >(Factory18Method, FactoryOwner, std::string);
+typedef void (DHTMLWindow::*Factory19Method)(std::string);
+typedef boost::_bi::list_av_2<DHTMLWindow*, std::string >::type Factory19Args;
+typedef boost::_bi::bind_t<void, boost::_mfi::mf1<void, DHTMLWindow, std::string >, Factory19Args> Factory19Bound;
+template Factory19Bound boost::bind<void, DHTMLWindow, std::string, DHTMLWindow*, std::string >(Factory19Method, DHTMLWindow*, std::string);
+typedef void (*Factory20Method)(std::string);
+typedef boost::_bi::list_av_1<std::string >::type Factory20Args;
+typedef boost::_bi::bind_t<void, Factory20Method, Factory20Args> Factory20Bound;
+template Factory20Bound boost::bind<void, std::string, std::string >(Factory20Method, std::string);
+typedef void (DHTMLWindow::*Factory21Method)(InstancePtr);
+typedef boost::_bi::list_av_2<FactoryOwner, InstancePtr >::type Factory21Args;
+typedef boost::_bi::bind_t<void, boost::_mfi::mf1<void, DHTMLWindow, InstancePtr >, Factory21Args> Factory21Bound;
+template Factory21Bound boost::bind<void, DHTMLWindow, InstancePtr, FactoryOwner, InstancePtr >(Factory21Method, FactoryOwner, InstancePtr);
+typedef void (DHTMLWindow::*Factory22Method)(InstancePtr);
+typedef boost::_bi::list_av_2<DHTMLWindow*, InstancePtr >::type Factory22Args;
+typedef boost::_bi::bind_t<void, boost::_mfi::mf1<void, DHTMLWindow, InstancePtr >, Factory22Args> Factory22Bound;
+template Factory22Bound boost::bind<void, DHTMLWindow, InstancePtr, DHTMLWindow*, InstancePtr >(Factory22Method, DHTMLWindow*, InstancePtr);
+typedef void (*Factory23Method)(InstancePtr);
+typedef boost::_bi::list_av_1<InstancePtr >::type Factory23Args;
+typedef boost::_bi::bind_t<void, Factory23Method, Factory23Args> Factory23Bound;
+template Factory23Bound boost::bind<void, InstancePtr, InstancePtr >(Factory23Method, InstancePtr);

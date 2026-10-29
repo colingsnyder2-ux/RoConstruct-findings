@@ -1,522 +1,186 @@
-// from server: 45% by colin
-// roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Workspace.cpp
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_face_project_family_daa8904a9d319c98.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Workspace.h"
-#include "v8datamodel/PartInstance.h"
-#include "v8datamodel/MouseCommand.h"
-#include "v8datamodel/Flag.h"
-#include "v8datamodel/Camera.h"
-#include "v8datamodel/Hopper.h"
-#include "v8datamodel/Selection.h"
-#include "script/ScriptContext.h"
-#include "humanoid/Humanoid.h"
-#include "v8world/World.h"
-#include "tool/NullTool.h"
-#include "tool/ToolsArrow.h"
-#include "Network/Players.h"
+#undef _RELEASEASSERT
+#include "util/Face.h"
+#include "util/Math.h"
 
 namespace RBX
 {
-	static Reflection::RefPropDescriptor<Workspace, Camera> currentCameraProxyProp("CurrentCamera", "Data", &Workspace::getCamera, &Workspace::setCamera, Reflection::PropertyDescriptor::STANDARD);
-
-	static Reflection::BoundFuncDesc<Workspace, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(ContentId), 1> workspace_insertContent(&Workspace::insertContent, "InsertContent", "url", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<Workspace, void(boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>), 1> workspace_makeJoints(&Workspace::makeJoints, "MakeJoints", "objects", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<Workspace, void(boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>), 1> workspace_breakJoints(&Workspace::breakJoints, "BreakJoints", "objects", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<Workspace, void(bool), 1> workspace_SetThrottleEnabled(&Workspace::setThrottleEnabled, "SetPhysicsThrottleEnabled", "value", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<Workspace, void(void), 0> workspace_zoomToExtents(&Workspace::zoomToExtents, "ZoomToExtents", Reflection::FunctionDescriptor::NeedTrustedCaller);
-
-	Workspace::Workspace(IDataState* dataState)
-		: VerbContainer(NULL),
-		  dataState(dataState),
-		  profileWorkspaceStep(new Profiling::CodeProfiler("DataModel Step")),
-		  profileRunServiceStepped(new Profiling::CodeProfiler("RunService Stepped")),
-		  profileRunServiceHeartbeat(new Profiling::CodeProfiler("RunService Heartbeat")),
-		  profileRun(new Profiling::ThreadProfiler("Run Thread")),
-		  arrowCameraControls(false),
-		  inMouselookMode(false),
-		  isSimulating(false),
-		  scriptContext(NULL),
-		  imageServerViewHack(0)
+	const G3D::Vector3& Face::operator[](int i) const
 	{
-		RBXASSERT(dataState);
-		setName("Workspace");
-
-		world->getProfileWorldStep().parent = profileWorkspaceStep.get();
-		profileRunServiceStepped->parent = profileWorkspaceStep.get();
-		profileRunServiceHeartbeat->parent = profileWorkspaceStep.get();
+		return ((G3D::Vector3*)this)[i];
 	}
 
-	Workspace::~Workspace() {}
-
-	bool Workspace::askAddChild(const Instance* instance) const
+	G3D::Vector3& Face::operator[](int i)
 	{
-		return dynamic_cast<const IRenderable*>(instance) != NULL;
+		return ((G3D::Vector3*)this)[i];
 	}
 
-	const G3D::GCamera& Workspace::getGCamera() const
+	void Face::snapToGrid(float grid)
 	{
-		RBXASSERT(getCamera());
-		return getCamera()->getGCamera();
-	}
-
-	void Workspace::zoomToExtents()
-	{
-		getCamera()->zoomExtents(viewPort);
-	}
-
-	void Workspace::insertItems(XmlElement* root, std::vector<boost::shared_ptr<Instance>>& instances, InsertMode insertMode, PromptMode promptMode)
-	{
-		RBXASSERT(instances.size() == 0);
-
-		SerializerV2 serializer;
-		serializer.loadInstances(root, instances);
-
-		if (instances.size() != 0)
-			insertInstances(instances, this, insertMode, promptMode);
-	}
-
-	void Workspace::stop()
-	{
-		RBXASSERT(isSimulating);
-		isSimulating = false;
-
-		getCamera()->autoMode();
-		RBXASSERT(!getCurrentMouseCommand()->captured());
-	}
-
-	MouseCommand* newNullTool(Workspace* workspace)
-	{
-		return new NewNullTool(workspace);
-	}
-
-	void Workspace::setNullMouseCommand()
-	{
-		stickyCommand.reset();
-		currentCommand.reset(newNullTool(this));
-	}
-
-	void Workspace::render2d(Adorn* adorn)
-	{
-		getCurrentMouseCommand()->render2d(adorn);
-		render2dItems(adorn);
-	}
-
-	void Workspace::setThrottleEnabled(bool value)
-	{
-		world->setCanThrottle(value);
-	}
-
-	void Workspace::joinAllHack()
-	{
-		world->joinAll();
-	}
-
-	void Workspace::reset()
-	{
-		stop();
-		world->reset();
-	}
-
-	Camera* Workspace::getCamera() const
-	{
-		if (!currentCamera || !currentCamera->isDescendentOf(this))
+		for (int i = 0; i < 4; ++i)
 		{
-			boost::shared_ptr<Camera> newCamera = Creatable::create<Camera>();
-			newCamera->setParent(const_cast<Workspace*>(this));
-			currentCamera = newCamera;
-		}
-
-		RBXASSERT(currentCamera->isDescendentOf(this));
-		return currentCamera.get();
-	}
-
-	void Workspace::onChildChanged(Instance* instance, const PropertyChanged& event)
-	{
-		Instance::onChildChanged(instance, event);
-		raiseDrawChanged();
-	}
-
-	void Workspace::onDescendentAdded(Instance* instance)
-	{
-		RootInstance::onDescendentAdded(instance);
-		raiseDrawChanged();
-
-		IRenderable* renderable = dynamic_cast<IRenderable*>(instance);
-		if (renderable)
-			onAdded(renderable);
-
-		PVInstance* pvInstance = dynamic_cast<PVInstance*>(instance);
-		if (pvInstance && pvInstance->getLegacyOffset())
-		{
-			RBXASSERT(instance->getParent() == this);
-
-			pvInstance->legacyTraverseState(G3D::CoordinateFrame());
-			pvInstance->clearLegacyOffset();
-			if (legacyOffset)
-				legacyOffset.reset();
+			G3D::Vector3& v = (*this)[i];
+			v = Math::toGrid(v, grid);
 		}
 	}
 
-	void Workspace::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
+	bool Face::overlapWithinPlanes(const Face& f0, const Face& f1, float tolerance)
 	{
-		IRenderable* renderable = dynamic_cast<IRenderable*>(instance.get());
-		if (renderable)
-			onRemoving(renderable);
-
-		RootInstance::onDescendentRemoving(instance);
-		raiseDrawChanged();
-	}
-
-	template<bool isJoin>
-	static void wrapper(Instance* instance)
-	{
-		PartInstance* part = dynamic_cast<PartInstance*>(instance);
-		if (part)
+		for (int i = 0; i < 2; ++i)
 		{
-			if (isJoin)
-				part->join();
-			else
-				part->destroyJoints();
-		}
-		else
-		{
-			instance->for_eachChild(&wrapper<isJoin>);
-		}
-	}
+			const Face& face = i == 0 ? f0 : f1;
+			const Face& otherFace = i == 0 ? f1 : f0;
 
-	template<bool isJoin>
-	static void wrapper2(boost::shared_ptr<Instance> instance)
-	{
-		wrapper<isJoin>(instance.get());
-	}
+			G3D::Plane p0(face.c0, face.c1, face.c3);
+			
+			G3D::Vector3 normal;
+			double distance;
+			p0.getEquation(normal, distance);
 
-	void Workspace::makeJoints(boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> instances)
-	{
-		std::for_each(instances->begin(), instances->end(), &wrapper2<true>);
-	}
+			Face overlapOn1 = otherFace.projectOverlapOnMe(face);
 
-	void Workspace::breakJoints(boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> instances)
-	{
-		std::for_each(instances->begin(), instances->end(), &wrapper2<false>);
-	}
-
-	void clearEmptiedModels(boost::shared_ptr<Instance> test, Instance* parent)
-	{
-		if (test.get() != parent)
-		{
-			ModelInstance* model = dynamic_cast<ModelInstance*>(test.get());
-			if (model && !Humanoid::modelIsCharacter(model) && !model->findFirstChildOfType<PartInstance>() && !model->findFirstChildOfType<ModelInstance>())
+			for (int j = 0; j < 4; ++j)
 			{
-				boost::shared_ptr<Instance> oldParent = shared_from(model->getParent());
-				model->setParent(NULL);
-				clearEmptiedModels(oldParent, parent);
-			}
-
-			Flag* flag = dynamic_cast<Flag*>(test.get());
-			if (flag && !flag->findFirstChildOfType<PartInstance>())
-			{
-				boost::shared_ptr<Instance> oldParent = shared_from(flag->getParent());
-				flag->setParent(NULL);
-				clearEmptiedModels(oldParent, parent);
-			}
-		}
-	}
-
-	void Workspace::handleFallenParts(const G3D::Array<boost::shared_ptr<PartInstance>>& fallenParts)
-	{
-		for (int i = 0; i < fallenParts.size(); i++)
-		{
-			boost::shared_ptr<PartInstance> part = fallenParts[i];
-
-			boost::shared_ptr<Instance> oldParent = shared_from(part->getParent());
-			part->setParent(NULL);
-			clearEmptiedModels(oldParent, this);
-		}
-	}
-
-	void Workspace::setMouseCommand(MouseCommand* newMouseCommand)
-	{
-		if (!newMouseCommand)
-		{
-			if (!stickyCommand.get() || (newMouseCommand = stickyCommand->isSticky(), !newMouseCommand))
-			{
-				if (!Network::Players::findLocalPlayer(this))
-					newMouseCommand = new ArrowTool(this);
-				else
-					newMouseCommand = newNullTool(this);
+				if (overlapOn1[j].dot(normal) > tolerance)
+					return false;
 			}
 		}
 
-		RBXASSERT(newMouseCommand);
+		return true;
+	}
 
-		if (newMouseCommand != currentCommand.get())
+	bool Face::fuzzyContainsInExtrusion(const G3D::Vector3& point, float tolerance) const
+	{
+		RBXASSERT(tolerance >= 0.0);
+
+		for (int i = 0; i < 4; ++i)
 		{
-			RBXASSERT(!currentCommand.get() || !currentCommand->captured());
+			const G3D::Vector3& v1 = (*this)[i];
+			const G3D::Vector3& v2 = (*this)[(i + 1) % 4];
 
-			currentCommand.reset(newMouseCommand);
+			if ((v2 - v1).dot(point - v1) < -tolerance)
+				return false;
+		}
 
-			MouseCommand* sticky = newMouseCommand->isSticky();
-			if (sticky)
-				stickyCommand.reset(sticky);
+		return true;
+	}
 
-			Notifier<Workspace, ToolChanged>::raise(ToolChanged());
+	void Face::minMax(const G3D::Vector3& point, const G3D::Vector3& normal, float& min, float& max) const
+	{
+		min = 1.0e10;
+		max = -1.0e10;
+
+		for (int i = 0; i < 4; ++i)
+		{
+			const G3D::Vector3& v = (*this)[i];
+			float temp = (v - point).dot(normal);
+			min = G3D::min(min, temp);
+			max = G3D::max(max, temp);
 		}
 	}
 
-	float Workspace::step(float timeInterval)
+	bool Face::hasOverlap(const Face& f0, const Face& f1, float byAtLeast)
 	{
-		RBXASSERT(isSimulating);
+		for (int i = 0; i < 2; ++i)
+		{
+			G3D::Vector3 axis = f0.getAxis(i);
 
-		timeInterval = world->step(timeInterval);
+			float f0min, f0max;
+			f0.minMax(f0.c0, axis, f0min, f0max);
+
+			float f1min, f1max;
+			f1.minMax(f0.c0, axis, f1min, f1max);
+
+			if ((f0min - byAtLeast) < f1min || (f0max + byAtLeast) > f1max)
+				return false;
+		}
 		
-		G3D::Array<boost::shared_ptr<PartInstance>> touchParts;
-		G3D::Array<boost::shared_ptr<PartInstance>> touchOtherParts;
-		G3D::Array<Primitive*> fallen;
-		G3D::Array<boost::shared_ptr<PartInstance>> fallenParts;
+		return true;
+	}
 
-		PartInstance::primitivesToParts(world->getTouch(), touchParts);
-		PartInstance::primitivesToParts(world->getTouchOther(), touchOtherParts);
-		world->computeFallen(fallen);
-		PartInstance::primitivesToParts(fallen, fallenParts);
-		
-		handleFallenParts(fallenParts);
+	bool Face::cornersAligned(const Face& f0, const Face& f1, float tolerance)
+	{
+		RBXASSERT(tolerance > 0.0);
 
-		for (int i = 0; i < touchParts.size(); i++)
+		float toleranceSquared = tolerance*tolerance;
+
+		for (int i = 0; i < 4; ++i)
 		{
-			touchParts[i]->onTouchThisStep(touchOtherParts[i]);
-		}
+			bool aligned = false;
 
-		raiseDrawChanged();
-		return timeInterval;
-	}
-
-	void Workspace::setDefaultMouseCommand()
-	{
-		stickyCommand.reset();
-		setMouseCommand(NULL);
-	}
-
-	void Workspace::runScript(Script* script, ScriptContext* context)
-	{
-		RBXASSERT(context == scriptContext);
-
-		if (Network::Players::backendProcessing(this, true) && !isSimulating)
-			pendingScripts.insert(script);
-		else
-			context->addScript(script);
-	}
-
-	void Workspace::releaseScript(Script* script)
-	{
-		pendingScripts.erase(script);
-	}
-
-	Workspace* Workspace::findWorkspace(const Instance* context)
-	{
-		return ServiceProvider::find<Workspace>(context);
-	}
-
-	Workspace* Workspace::getWorkspaceIfInWorkspace(const Instance* context)
-	{
-		Workspace* workspace = ServiceProvider::find<Workspace>(context);
-
-		if (workspace && (context == workspace || context->isDescendentOf(workspace)))
-			return workspace;
-		else
-			return NULL;
-	}
-
-	World* Workspace::getWorldIfInWorkspace(const Instance* context)
-	{
-		Workspace* workspace = ServiceProvider::find<Workspace>(context);
-
-		if (workspace && (context == workspace || context->isDescendentOf(workspace)))
-			return workspace->getWorld();
-		else
-			return NULL;
-	}
-
-	bool Workspace::contextInWorkspace(const Instance* context)
-	{
-		return getWorkspaceIfInWorkspace(context) != NULL;
-	}
-
-	void Workspace::setCamera(Camera* value)
-	{
-		if (value != currentCamera.get())
-		{
-			if (currentCamera)
-				currentCamera->setParent(NULL);
-
-			currentCamera = shared_from(value);
-			raisePropertyChanged(currentCameraProxyProp);
-		}
-	}
-
-	Workspace* Workspace::getMyWorkspaceFast(const Instance* context)
-	{
-		RBXASSERT(getWorldIfInWorkspace(context));
-
-		Instance* parent = context->getParent();
-		RBXASSERT(parent);
-
-		Instance* parent2 = parent->getParent();
-		RBXASSERT(parent2);
-
-		while (parent2->getParent())
-		{
-			parent = parent2;
-			parent2 = parent2->getParent();
-		}
-
-		return rbx_static_cast<Workspace*>(parent);
-	}
-
-	World* Workspace::getMyWorldFast(const Instance* context)
-	{
-		return getMyWorkspaceFast(context)->getWorld();
-	}
-
-	//94% match
-	//std::set<>::clear is being inlined more aggressively
-	void Workspace::start()
-	{
-		RBXASSERT(!isSimulating);
-		isSimulating = true;
-
-		getCamera()->alwaysMode();
-
-		RBXASSERT(!getCurrentMouseCommand()->captured());
-
-		if (scriptContext)
-		{
-			std::vector<boost::shared_ptr<Script>> startScripts;
-
-			std::set<Script*>::const_iterator iter = pendingScripts.begin();
-			std::set<Script*>::const_iterator end = pendingScripts.end();
-
-			for (; iter != end; iter++)
+			for (int j = 0; j < 4; ++j)
 			{
-				startScripts.push_back(shared_from(*iter));
+				const G3D::Vector3& v1 = f0[i];
+				const G3D::Vector3& v2 = f1[j];
+
+				if ((v1 - v2).squaredMagnitude() < toleranceSquared)
+				{
+					aligned = true;
+					break;
+				}
 			}
 
-			pendingScripts.clear();
-			std::for_each(startScripts.begin(), startScripts.end(), boost::bind(&ScriptContext::addScript, scriptContext, boost::bind(&boost::shared_ptr<Script>::get, _1)));
+			if (!aligned)
+				return false;
 		}
+
+		return true;
 	}
 
-	void Workspace::setImageServerView(const G3D::Rect2D& viewPortRect)
+	Face Face::projectOverlapOnMe(const Face& other) const
 	{
-		HopperBin* superHack = NULL;
+		const Face& f0 = (*this);
+		const Face& f1 = other;
 
-		for (size_t i = 0; i < numChildren(); i++)
-		{
-			HopperBin* hopperBin = queryTypedChild<HopperBin>((int)i);
-			ILocation* location = queryTypedChild<ILocation>((int)i);
-			IRenderable* renderable = queryTypedChild<IRenderable>((int)i);
+		//RBXASSERT(Face::hasOverlap(f0, f1, 1e-6f));
+		G3D::Vector3 normal[2];
+		float minL[2];
+		float maxL[2];
 
-			if (location && renderable)
-			{
-				G3D::CoordinateFrame modelCoord = location->getLocation();
-				getCamera()->setImageServerViewNoLerp(modelCoord, viewPortRect); 
-			}
-
-			if (hopperBin)
-				superHack = hopperBin;
+		normal[0] = f0.getU();
+		normal[1] = f0.getV();
+		for (int i = 0; i < 2; ++i) {
+			float f0min, f0max, f1min, f1max;
+			f0.minMax(f0.c0, normal[i], f0min, f0max);
+			f1.minMax(f0.c0, normal[i], f1min, f1max);
+			minL[i] = std::max(f0min, f1min);
+			maxL[i] = std::min(f0max, f1max);
 		}
-
-		if (superHack)
-		{
-			StarterPackService* starterPack = ServiceProvider::create<StarterPackService>(this);
-			superHack->setParent(starterPack);
-		}
-
-		imageServerViewHack = (imageServerViewHack <= 0);
+		return Face(	f0.c0 + (normal[0] * minL[0] + normal[1] * minL[1]),
+						f0.c0 + (normal[0] * minL[0] + normal[1] * maxL[1]),
+						f0.c0 + (normal[0] * maxL[0] + normal[1] * maxL[1]),
+						f0.c0 + (normal[0] * maxL[0] + normal[1] * minL[1])		);
 	}
 
-	static void append(const boost::shared_ptr<Instance>& item, std::vector<boost::shared_ptr<Instance>>* values)
+	Face Face::fromExtentsSide(const Extents& e, NormalId faceId)
 	{
-		values->push_back(item);
+		Face face;
+		e.getFaceCorners(faceId, face.c0, face.c1, face.c2, face.c3);
+		return face;
 	}
 
-	boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> Workspace::insertContent(ContentId contentId)
+	Face Face::toWorldSpace(const G3D::CoordinateFrame& objectCoord) const
 	{
-		std::vector<boost::shared_ptr<Instance>> items;
-		insertContent(contentId, items, INSERT_TO_TREE, SUPPRESS_PROMPTS);
-
-		boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> values(new std::vector<boost::shared_ptr<Instance>>);
-		std::for_each(items.begin(), items.end(), boost::bind(&append, _1, values.get()));
-
-		return values;
+		Face face;
+		for (int i = 0; i < 4; ++i)
+		{
+			face[i] = objectCoord.pointToWorldSpace((*this)[i]);
+		}
+		return face;
 	}
 
-	void Workspace::insertContent(ContentId contentId, std::vector<boost::shared_ptr<Instance>>& items, InsertMode insertMode, PromptMode promptMode)
+	Face Face::toObjectSpace(const G3D::CoordinateFrame& objectCoord) const
 	{
-		std::auto_ptr<std::istream> stream = ContentProvider::singleton().getContent(contentId);
-
-		TextXmlParser machine(stream->rdbuf());
-		std::auto_ptr<XmlElement> root = machine.parse();
-
-		insertItems(root.get(), items, insertMode, promptMode);
-	}
-
-	void Workspace::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
-	{
-		Notifier<RunService, Heartbeat>::disconnect(ServiceProvider::find<RunService>(oldProvider), this);
-
-		if (statsItem)
+		Face face;
+		for (int i = 0; i < 4; ++i)
 		{
-			statsItem->setParent(NULL);
-			statsItem.reset();
+			face[i] = objectCoord.pointToObjectSpace((*this)[i]);
 		}
-
-		Instance::onServiceProvider(oldProvider, newProvider);
-
-		scriptContext = ServiceProvider::create<ScriptContext>(newProvider);
-
-		if (Stats::Item* item = ServiceProvider::create<Stats::Item>(newProvider))
-		{
-			statsItem = Creatable::create<WorkspaceStatsItem>(this, world.get());
-			statsItem->setParent(item);
-		}
-
-		Notifier<RunService, Heartbeat>::connect(ServiceProvider::find<RunService>(newProvider), this);
-	}
-
-	static void DrawAdorn(boost::shared_ptr<Instance> wsi, Adorn* adorn, SelectState selectState, Workspace* workspace)
-	{
-		if (IRenderable* ir = dynamic_cast<IRenderable*>(wsi.get()))
-		{
-			if (workspace->contains(wsi.get()))
-			{
-				ir->render3dSelect(adorn, selectState);
-			}
-		}
-	}
-
-	void Workspace::render3dAdorn(Adorn* adorn)
-	{
-		viewPort = adorn->getViewport();
-		ServiceClient<Selection> sel(this);
-
-		if (sel)
-			std::for_each(sel->getSelection()->begin(), sel->getSelection()->end(), boost::bind(&DrawAdorn, _1, adorn, SELECT_NORMAL, this));
-
-		render3dAdornItems(adorn);
-		if (showWorldCoord)
-		{
-			adorn->setObjectToWorldMatrix(G3D::CoordinateFrame());
-			adorn->axes(G3D::Color3::red(), G3D::Color3::green(), G3D::Color3::blue(), 50.0f);
-		}
-
-		if (showHashGrid)
-		{
-			adorn->setObjectToWorldMatrix(G3D::CoordinateFrame());
-			adorn->box(G3D::AABox(G3D::Vector3(28, 4, 12), G3D::Vector3(32, 8, 16)), G3D::Color4(1.0, 0.2, 0.2, 0.5), G3D::Color4::clear());
-		}
+		return face;
 	}
 }

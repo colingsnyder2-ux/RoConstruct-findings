@@ -1,48 +1,6 @@
-// from server: 68% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/Script.cpp
-
-// Candidate translation unit (score above; library headers required).
-#include "script/Script.h"
-
-#include "network/Player.h"
-#include "util/ContentProvider.h"
-#include "util/Name.h"
-#include "v8datamodel/Team.h"
-
-namespace RBX {
-
-char sScript[] = "Script";
-
-char sLocalScript[] = "LocalScript";
-
-// FUNCTION: WEBSERVICE 0x10068d50
-boost::shared_ptr<const std::string> Script::requestCode()
-{
-	if (scriptId.isNull()) {
-		return embeddedSource;
-	}
-
-	return ContentProvider::singleton().requestContentString(scriptId);
-}
-
-} // namespace RBX
-
-template const RBX::Name& RBX::Name::doDeclare<RBX::sTeam>();
-template const RBX::Name& RBX::Name::doDeclare<RBX::Network::sPlayer>();
-template void RBX::Name::callDoDeclare<RBX::sTeam>();
-template void RBX::Name::callDoDeclare<RBX::Network::sPlayer>();
-
-template class RBX::FactoryProduct<RBX::Script, RBX::Instance, RBX::sScript>;
-template class RBX::Reflection::
-	Described<RBX::Script, RBX::sScript, RBX::FactoryProduct<RBX::Script, RBX::Instance, RBX::sScript> >;
-template class RBX::DescribedCreatable<RBX::Script, RBX::Instance, RBX::sScript>;
-
-template class RBX::FactoryProduct<RBX::LocalScript, RBX::Script, RBX::sLocalScript>;
-template class RBX::Reflection::Described<
-	RBX::LocalScript,
-	RBX::sLocalScript,
-	RBX::FactoryProduct<RBX::LocalScript, RBX::Script, RBX::sLocalScript> >;
-template class RBX::DescribedCreatable<RBX::LocalScript, RBX::Script, RBX::sLocalScript>;
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct B_005b1830 { void ctor(); };
+extern int g_0,g_1,g_2,g_3,g_4,g_5,g_6,g_7,g_8,g_9;
+struct X_005b1830 : B_005b1830 { void* f_0; void* f_1; char pad_2[0x4]; void* f_2; char pad_3[0x8]; void* f_3; void* f_4; char pad_5[0x14]; void* f_5; char pad_6[0x14]; void* f_6; char pad_7[0x14]; void* f_7; char pad_8[0x14]; void* f_8; char pad_9[0x14]; void* f_9; X_005b1830(); };
+X_005b1830::X_005b1830() { ctor(); f_0=&g_0; f_1=&g_1; f_2=&g_2; f_3=&g_3; f_4=&g_4; f_5=&g_5; f_6=&g_6; f_7=&g_7; f_8=&g_8; f_9=&g_9; }

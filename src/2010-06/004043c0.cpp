@@ -1,509 +1,756 @@
-// from server: 27% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: atl-9.0 atl.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-atl90-dll roc_sitelock_old_76c94238d0033c02.cpp
 
 // Candidate translation unit (score above; library headers required).
-// This is a part of the Active Template Library.
-// Copyright (C) Microsoft Corporation
-// All rights reserved.
+#include <atlbase.h>
+#include <atlcom.h>
+///////////////////////////////////////////////////////////////////////////////
+// SiteLock 1.14
+// ATL sample code for restricting activation of ActiveX controls.
+// Copyright Microsoft Corporation. All rights reserved.
+// Last updated: July 19 2007
+
+// Includes
+#include <atlctl.h>
+#include <comdef.h>
+#include <shlguid.h>
+#include <wininet.h>
+
+// Pragmas
+#pragma once
+
+// Version information
+#define SITELOCK_VERSION 0x00010014 // 1.14
+
+#ifdef SITELOCK_SUPPORT_DOWNLOAD
+#pragma message("sitelock.h : This version of SiteLock does not support downloading.")
+#endif
+
+// Overview:
+// To enable scripting, developers must declare their ActiveX controls as "safe for scripting".
+// This is done by implementing interface IObjectSafety, which comes with very important safety 
+// assumptions. Once marked as "safe for scripting", ActiveX controls may be activated by untrusted 
+// web sites. Therefore "safe for scripting" controls must guarantee all their methods are safe 
+// regardless of the activation context. Practically however, it may not be possible for an ActiveX 
+// control to guarantee safety in all activation contexts. The site lock framework allows developers 
+// to specify which zones and domains can instantiate ActiveX controls. For example, this may allow 
+// a developer to implement methods that can only be called if the activation context is the 
+// intranet zone.
+
+// Usage:
+// 1/ Include current header file sitelock.h (after including ATL header files).
+// 
+// 2/ Derive from "public IObjectSafetySiteLockImpl <CYourClass, INTERFACESAFE_FOR...>,".
+//    This replaces the default IObjectSafetyImpl interface implementation.  
 //
-// This source code is only intended as a supplement to the
-// Active Template Library Reference and related
-// electronic documentation provided with the library.
-// See these sources for detailed information regarding the	
-// Active Template Library product.
+// 3/ Add the following to your control's COM map:
+//    COM_INTERFACE_ENTRY(IObjectSafety)
+//    COM_INTERFACE_ENTRY(IObjectSafetySiteLock)
+//
+// 4/ Add one of the following to specify allowed activation contexts:
+//    a) A public (or friend) member variable, for example:
+//    const CYourClass::SiteList CYourClass::rgslTrustedSites[6] =
+//       {{ SiteList::Deny,  L"http",  L"users.microsoft.com" },
+//        { SiteList::Allow, L"http",  L"microsoft com"       },
+//        { SiteList::Allow, L"http",  SITELOCK_INTRANET_ZONE },
+//        { SiteList::Deny,  L"https", L"users.microsoft.com" },
+//        { SiteList::Allow, L"https", L"microsoft.com"       },
+//        { SiteList::Allow, L"https", SITELOCK_INTRANET_ZONE }};
+// 
+//	  b) A set of site lock macros, for example:
+//    #define SITELOCK_USE_MAP (prior to including sitelock.h)
+//    BEGIN_SITELOCK_MAP()
+//        SITELOCK_DENYHTTP		( L"users.microsoft.com" )
+//        SITELOCK_ALLOWHTTP	( L"microsoft com"       )
+//        SITELOCK_ALLOWHTTP	( SITELOCK_INTRANET_ZONE )
+//        SITELOCK_DENYHTTPS	( L"users.microsoft.com" )
+//        SITELOCK_ALLOWHTTPS	( L"microsoft.com"       )
+//        SITELOCK_ALLOWHTTPS	( SITELOCK_INTRANET_ZONE )
+//    END_SITELOCK_MAP()
+// 
+//	  The examples above block "*.users.microsoft.com" sites (http and https).
+//	  The examples above allow "*.microsoft.com" sites (http and https).
+//	  The examples above allow intranet sites (http and https).
+//
+// 5/ Choose an expiry lifespan:
+//    You can specify the lifespan of your control one of two ways.
+//    By declaring an enumeration (slightly more efficient):
+//       enum { dwControlLifespan = (lifespan in days) };
+//    By declaring a member variable:
+//       static const DWORD dwControlLifespan = (lifespan in days);
+//    When in doubt, choose a shorter duration rather than a longer one. Expiration can be
+//    disabled by adding #define SITELOCK_NO_EXPIRY before including sitelock.h.
+//    
+// 6/ Implement IObjectWithSite or IOleObject:
+//    IObjectWithSite is a lightweight interface able to indicate the activation URL to site lock.
+//    IOleObject is a heavier interface providing additional OLE capabilities.
+//    If you need IOleObject, add #define SITELOCK_USE_IOLEOBJECT before including sitelock.h.
+//    Otherwise, simply implement IObjectWithSite:
+//			- Derive from "IObjectWithSiteImpl<CYourClass>".
+//			- Add COM_INTERFACE_ENTRY(IObjectWithSite) to your control's COM map.
+//    You should never implement both IObjectWithSite and IOleObject.
+// 
+// 7/ Link with urlmon.lib.
 
-// atl.cpp : Implementation of DLL Exports.
+// Detailed usage:
+//	 --- Entries ---:
+//	 Site lock entries are defined by the following elements:
+//	 iAllowType is:
+//		SiteList::Allow:		allowed location
+//      SiteList::Deny:			blocked location
+//   szScheme is:
+//		L"http":				non-SSL location
+//		L"https":				SSL-enabled location
+//		Other:					in rare cases, the scheme may be outlook:, ms-help:, etc.
+//   szDomain is:
+//		Doman:					a string defining a domain
+//		Zone:					a constant specifying a zone
+//
+//	  --- Ordering ---:
+//    Entries are matched in the order they appear in.
+//    The first entry that matches will be accepted.
+//	  Deny entries should therefore be placed before allow entries.
+//
+//	  --- Protocols ---:
+//    To support multiple protocols (http and https), define separate entries.
+//
+//	  --- Domain names ---:
+//    This sample code performs a case-sensitive comparison after domain normalization.
+//	  Whether domain normalization converts strings to lower case depends on the scheme provider.
+//
+//    If a domain does not contain any special indicator, only domains with the right suffix will 
+//    match. For example:
+//		An entry of "microsoft.com" will match "microsoft.com".
+//      An entry of "microsoft.com" will match "office.microsoft.com"
+//      An entry of "microsoft.com" will not match "mymicrosoft.com"
+//		An entry of "microsoft.com" will not match "www.microsoft.com.hacker.com"
+//
+//    If a domain begins with "*.", only child domains will match.
+//	  For example:
+//		An entry of "*.microsoft.com" will match "foo.microsoft.com".
+//		An entry of "*.microsoft.com" will not match "microsoft.com".
+//
+//    If a domain begins with "=", only the specified domain will match.
+//	  For example:
+//		An entry of "=microsoft.com" will match "microsoft.com".
+//		An entry of "=microsoft.com" will not match "foo.microsoft.com".
+//
+//    If a domain is set to "*", all domains will match.
+//    This is useful to only restrict to specific schemes (ex: http vs. https).
+//
+//    If a domain name is NULL, then the scheme provider should return an error when asking for the 
+//    domain. This is appropriate for protocols (outlook: or ms-help:) that do not use server names.
+//
+//    If a domain name is SITELOCK_INTRANET_ZONE, then any server in the Intranet zone will match. 
+//    Due to a zone limitation, sites in the user's Trusted Sites list will also match. However, 
+//    since Trusted Sites typically permit downloading and running of unsigned, unsafe controls, 
+//    security is limited for those sites anyway.
+//
+//    If a domain name is SITELOCK_MYCOMPUTER_ZONE, then any page residing on the user's local 
+//    machine will match.
+//
+//    If a domain name is SITELOCK_TRUSTED_ZONE, then any page residing in the user's Trusted 
+//    Sites list will match.
 
-#include "stdafx.h"
-#include "resource.h"
-#include "RegObj.h"
-#include "AtlAssem.h"
-#include <io.h>
 
-#define _ATL_DLL_FILENAME_UPPERCASE "ATL" _ATL_FILENAME_VER ".DLL"
-#define _ATL_DLL_FILENAME_UPPERCASE_T _T("ATL") _T(_ATL_FILENAME_VER) _T(".DLL")
-
-CComModule _Module;
-
-BEGIN_OBJECT_MAP(ObjectMap)
-	OBJECT_ENTRY(CLSID_Registrar, CDLLRegObject)
-	OBJECT_ENTRY_NON_CREATEABLE(CAxHostWindow)
-END_OBJECT_MAP()
-
-static BOOL __cdecl _atl_check_manifest(HMODULE hDllHandle);  /* local function */
-
-/////////////////////////////////////////////////////////////////////////////
-// DLL Entry Point
-
-extern "C"
-BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
-{
-	if (dwReason == DLL_PROCESS_ATTACH)
-	{
-		bAtlAxWinInitialized = false;
-#ifndef _UNICODE
-		OutputDebugString(_T("Slight Performance loss due to running ANSI version of ") _ATL_DLL_FILENAME_UPPERCASE_T _T(" on Windows NT, Windows 2000, Windows XP or Windows Server 2003 \nPlease install the Unicode version.\n"));
-#endif
-#ifdef _DEBUG
-		_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF);
-		int n = 0;
-		_CrtSetBreakAlloc(n);
-#endif
-		_Module.Init(ObjectMap, hInstance, &LIBID_ATLLib);
-#ifdef _ATL_DEBUG_INTERFACES
-		int ni = 0;
-		_Module.m_nIndexBreakAt = ni;
-#endif // _ATL_DEBUG_INTERFACES
-
-#if defined(_ATL_CHECK_MANIFEST)
-#define _ATL_ABSENT_MANIFEST_ERROR_MSG	"R6034\n" \
-										"An application has made an attempt to load " _ATL_DLL_FILENAME_UPPERCASE " incorrectly.\n" \
-										"Please contact the application's support team for more information.\n"
-#define _ATL_ABSENT_MANIFEST_ERROR_DBGMSG	"R6034\n" \
-											"An application has made an attempt to load " _ATL_DLL_FILENAME_UPPERCASE " without using a manifest.\n" \
-											"This is an unsupported way to load Visual C++ DLLs. You need to modify your application to build with a manifest.\n" \
-											"For more information, see the \"Visual C++ Libraries as Shared Side-by-Side Assemblies\" topic in the product documentation.\n"
-
-		if (!_atl_check_manifest(hInstance))
-		{
-			__try
-			{
-				MessageBoxA(NULL, _ATL_ABSENT_MANIFEST_ERROR_MSG, "Microsoft Visual C++ Runtime Library", MB_ICONSTOP|MB_OK);
-			}
-			__except( EXCEPTION_EXECUTE_HANDLER )
-			{
-				OutputDebugStringA(_ATL_ABSENT_MANIFEST_ERROR_DBGMSG);
-				DebugBreak();
-			}
-			return FALSE;
-		}
-#endif
-
-		DisableThreadLibraryCalls(hInstance);
-	}
-	else if (dwReason == DLL_PROCESS_DETACH)
-	{
-#ifdef _DEBUG
-		::OutputDebugString(_ATL_DLL_FILENAME_UPPERCASE_T _T(" exiting.\n"));
-#endif
-		_Module.Term();
-		if (bAtlAxWinInitialized)
-			AtlAxWinTerm();
-#ifdef _DEBUG
-		if (_CrtDumpMemoryLeaks())
-			::MessageBeep(MB_ICONEXCLAMATION);
-#endif
-	}
-	return TRUE;    // ok
-}
-
-namespace ATL
-{
-STDAPI AtlCreateRegistrar(IRegistrar** ppReg)
-{
-	if (ppReg == NULL)
-		return E_POINTER;
-	*ppReg = NULL;
-
-	return( CDLLRegObject::_CreatorClass::CreateInstance(NULL, IID_IRegistrar, (void**)ppReg) );
-}
-
-STDAPI AtlUpdateRegistryFromResourceD(HINSTANCE hInst, LPCOLESTR lpszRes,
-	BOOL bRegister, struct _ATL_REGMAP_ENTRY* pMapEntries, IRegistrar* pReg)
-{
-	ATLASSERT(hInst != NULL);
-	if (hInst == NULL)
-		return E_INVALIDARG;
-
-	HRESULT hRes = S_OK;
-	CComPtr<IRegistrar> p;
-
-	if (pReg != NULL)
-		p = pReg;
-	else
-	{
-		hRes = AtlCreateRegistrar(&p);
-	}
-	if (NULL != pMapEntries)
-	{
-		while (NULL != pMapEntries->szKey)
-		{
-			ATLASSERT(NULL != pMapEntries->szData);
-			p->AddReplacement(pMapEntries->szKey, pMapEntries->szData);
-			pMapEntries++;
-		}
-	}
-	if (SUCCEEDED(hRes))
-	{
-		TCHAR szModule[_MAX_PATH];
-		int nRet = GetModuleFileName(hInst, szModule, _MAX_PATH);
-		if(nRet == _MAX_PATH)
-			return AtlHresultFromWin32(ERROR_BUFFER_OVERFLOW);
-		
-		if(nRet == 0)
-			return AtlHresultFromLastError();
-
-		USES_CONVERSION_EX;
-		LPOLESTR pszModule = T2OLE_EX(szModule, _ATL_SAFE_ALLOCA_DEF_THRESHOLD);
-#ifndef _UNICODE
-		if(pszModule == NULL) 
-			return E_OUTOFMEMORY;
-#endif
-		
-		// Buffer Size is Multiplied by 2 because we are calling ReplaceSingleQuote
-		OLECHAR pszModuleUnquoted[_MAX_PATH * 2];
-		CAtlModule::EscapeSingleQuote(pszModuleUnquoted, _countof(pszModuleUnquoted), pszModule);
-		if (hInst == GetModuleHandle(NULL)) // register as EXE
-		{
-			// If Registering as an EXE, then we quote the resultant path.
-			// We don't do it for a DLL, because LoadLibrary fails if the path is
-			// quoted
-			OLECHAR pszModuleQuote[(_MAX_PATH + _ATL_QUOTES_SPACE)*2];
-			pszModuleQuote[0] = OLESTR('\"');			
-			if(!ocscpy_s(pszModuleQuote + 1, ((_MAX_PATH + _ATL_QUOTES_SPACE)*2)-1, pszModuleUnquoted))
-			{
-				return E_FAIL;
-			}
-			size_t nLen = ocslen(pszModuleQuote);
-			pszModuleQuote[nLen] = OLESTR('\"');
-			pszModuleQuote[nLen + 1] = 0;
-			
-			hRes = p->AddReplacement(OLESTR("Module"), pszModuleQuote);			
-		}
-		else
-		{
-			hRes = p->AddReplacement(OLESTR("Module"), pszModuleUnquoted);
-		}
-		
-		if(FAILED(hRes))
-			return hRes;
-	
-		hRes = p->AddReplacement(OLESTR("Module_Raw"), pszModuleUnquoted);
-		if(FAILED(hRes))
-			return hRes;
-	
-		LPCOLESTR szType = OLESTR("REGISTRY");
-		if (IS_INTRESOURCE(lpszRes))
-		{
-			if (bRegister)
-				hRes = p->ResourceRegister(pszModule, ((UINT)LOWORD((DWORD_PTR)lpszRes)), szType);
-			else
-				hRes = p->ResourceUnregister(pszModule, ((UINT)LOWORD((DWORD_PTR)lpszRes)), szType);
-		}
-		else
-		{
-			if (bRegister)
-				hRes = p->ResourceRegisterSz(pszModule, lpszRes, szType);
-			else
-				hRes = p->ResourceUnregisterSz(pszModule, lpszRes, szType);
-		}
-
-	}
-	return hRes;
-}
-
-// Cannot pull these in from the static lib. The functions they reference are decorated
-// with C++ calling convention. The functions are exported from the DLL with the 
-// C calling convention
-#ifdef _DEBUG
-CAtlComModule _AtlComModule;
+// Language checks
+#ifndef __cplusplus
+#error ATL Requires C++
 #endif
 
-}
+// Windows constants
+#if (WINVER < 0x0600)
+#define IDN_USE_STD3_ASCII_RULES  0x02  // Enforce STD3 ASCII restrictions
+#endif
 
-/////////////////////////////////////////////////////////////////////////////
-/* used in _ATL_CHECK_MANIFEST */
-#define _PATH_LEN 8000
-#define _WINSXS_FOLDER _T("WinSxS\\")
+// Function prototypes
+typedef int (WINAPI * PFN_IdnToAscii)(DWORD, LPCWSTR, int, LPWSTR, int); 
 
-#ifdef _UNICODE
-#define _FINDACTCTXSECTIONSTRING "FindActCtxSectionStringW"
-#define _GETSYSTEMWINDOWSDIRECTORY "GetSystemWindowsDirectoryW"
-#define _TCSRCHR wcsrchr
-#define _TCSNCAT_S wcsncat_s
+// Macros
+#ifndef cElements
+template<typename T> static char cElementsVerify(void const *, T) throw() { return 0; }
+template<typename T> static void cElementsVerify(T *const, T *const *) throw() {};
+#define cElements(arr) (sizeof(cElementsVerify(arr,&(arr))) * (sizeof(arr)/sizeof(*(arr))))
+#endif
+
+// Restrictions
+#define SITELOCK_INTRANET_ZONE		((const OLECHAR *)-1)
+#define SITELOCK_MYCOMPUTER_ZONE	((const OLECHAR *)-2)
+#define SITELOCK_TRUSTED_ZONE		((const OLECHAR *)-3)
+
+#ifndef SITELOCK_NO_EXPIRY
+// Helper functions for expiry
+#if defined(_WIN64) && defined(_M_IA64)
+#pragma section(".base", long, read, write)
+extern "C" __declspec(allocate(".base")) extern IMAGE_DOS_HEADER __ImageBase;
 #else
-#define _FINDACTCTXSECTIONSTRING "FindActCtxSectionStringA"
-#define _GETSYSTEMWINDOWSDIRECTORY "GetSystemWindowsDirectoryA"
-#define _TCSRCHR strrchr
-#define _TCSNCAT_S strncat_s
+extern "C" IMAGE_DOS_HEADER __ImageBase;
+#endif
+#define ImageNtHeaders(pBase) ((PIMAGE_NT_HEADERS)((PCHAR)(pBase) + ((PIMAGE_DOS_HEADER)(pBase))->e_lfanew))
+
+#define LODWORD(_qw)    ((DWORD)(_qw))
+#define HIDWORD(_qw)    ((DWORD)(((_qw) >> 32) & 0xffffffff))
+inline void _UNIXTimeToFILETIME(time_t t, LPFILETIME ft)
+{
+	// The time_t is a 32-bit value for the number of seconds since January 1, 1970.
+	// A FILETIME is a 64-bit for the number of 100-nanosecond periods since January 1, 1601.  
+	// Convert by multiplying the time_t value by 1e+7 to get to the same base granularity,
+	// then add the numeric equivalent of January 1, 1970 as FILETIME. 
+
+	ULONGLONG qw = ((ULONGLONG)t * 10000000ui64) + 116444736000000000ui64;
+	ft->dwHighDateTime = HIDWORD(qw);
+	ft->dwLowDateTime = LODWORD(qw);
+}
+inline time_t _FILETIMEToUNIXTime(LPFILETIME ft)
+{
+	ULONGLONG qw = (((ULONGLONG)ft->dwHighDateTime)<<32) + ft->dwLowDateTime;
+	return (time_t)((qw - 116444736000000000ui64) / 10000000ui64);
+}
+#endif // SITELOCK_NO_EXPIRY
+
+// Interface declaring "safe for scripting" methods with additional site lock capabilities
+class __declspec(uuid("7FEB54AE-E3F9-40FC-AB5A-28A545C0F193")) ATL_NO_VTABLE IObjectSafetySiteLock : public IObjectSafety
+{
+public:
+	// Site lock entry definition
+	struct SiteList {
+		enum	SiteListCategory { 
+			Allow,								// permit
+			Deny,								// disallow
+			Download							// OBSOLETE, do not use
+		}						iAllowType;
+		const	OLECHAR *		szScheme;		// scheme (http or https)
+		const	OLECHAR *		szDomain;		// domain
+	};
+
+	// Capability definition
+	enum		Capability {
+		CanDownload    = 0x00000001,	// OBSOLETE. Here for backwards compatibility only.
+		UsesIOleObject = 0x00000002,	// Use IOleObject instead of IObjectWithSite.
+		HasExpiry	   = 0x00000004,	// Control will expire when lifespan elapsed.
+	};				
+
+	// Returns capabilities (this can be used by testing tools to query for custom capabilities or version information)
+	STDMETHOD	(GetCapabilities)	(DWORD * pdwCapability)							= 0;
+
+	// Returns site lock entries controlling activation
+	STDMETHOD	(GetApprovedSites)	(const SiteList ** pSiteList, DWORD * cSites)	= 0;
+
+	// Returns lifespan as number of days and date (version 1.05 or higher)
+	STDMETHOD	(GetExpiryDate)		(DWORD * pdwLifespan, FILETIME * pExpiryDate)		= 0;
+};
+
+
+#ifdef SITELOCK_USE_MAP
+// Site lock actual map entry macro
+#define SITELOCK_ALLOWHTTPS(domain)		{IObjectSafetySiteLock::SiteList::Allow,	L"https",	domain},
+#define SITELOCK_DENYHTTPS(domain)		{IObjectSafetySiteLock::SiteList::Deny,		L"https",	domain},
+#define SITELOCK_ALLOWHTTP(domain)		{IObjectSafetySiteLock::SiteList::Allow,	L"http",	domain},
+#define SITELOCK_DENYHTTP(domain)		{IObjectSafetySiteLock::SiteList::Deny,		L"http",	domain},
+
+// Site lock begin map entry macro
+#define BEGIN_SITELOCK_MAP() \
+	static const IObjectSafetySiteLock::SiteList * GetSiteLockMapAndCount(DWORD * dwCount )	\
+{																							\
+	static IObjectSafetySiteLock::SiteList rgslTrustedSites[] = {							\
+
+// Site lock end map entry macro
+#define END_SITELOCK_MAP()																	\
+{(IObjectSafetySiteLock::SiteList::SiteListCategory)0,0,0}};								\
+	*dwCount = cElements(rgslTrustedSites) - 1;												\
+	return rgslTrustedSites;																\
+}																							\
+	static const IObjectSafetySiteLock::SiteList * GetSiteLockMap()							\
+{																							\
+	DWORD dwCount = 0;																		\
+	return GetSiteLockMapAndCount(&dwCount);												\
+}																							\
+	static DWORD GetSiteLockMapCount()														\
+{																							\
+	DWORD dwCount = 0;																		\
+	GetSiteLockMapAndCount(&dwCount);														\
+	return dwCount;																			\
+}																							\
+
+#endif // SITELOCK_USE_MAP
+
+///////////////////////////////////////////////////////////////////////////////
+// CSiteLock - Site lock templated class
+template <typename T>
+class ATL_NO_VTABLE CSiteLock
+{
+public:
+#ifdef SITELOCK_NO_EXPIRY
+	bool ControlExpired(DWORD = 0)		{ return false; }
+#else
+	bool ControlExpired(DWORD dwExpiresDays = T::dwControlLifespan)
+	{
+		SYSTEMTIME st = {0};
+		FILETIME ft = {0};
+		
+		GetSystemTime(&st);
+		if (!SystemTimeToFileTime(&st, &ft))
+			return true;
+
+		time_t ttTime = _FILETIMEToUNIXTime(&ft);
+		time_t ttExpire = ImageNtHeaders(&__ImageBase)->FileHeader.TimeDateStamp;
+		ttExpire += dwExpiresDays*86400;
+		
+		return (ttTime > ttExpire);
+	}
 #endif
 
-#define _MANIFEST_FILENAME _T(__LIBRARIES_ASSEMBLY_NAME_PREFIX)_T(".ATL.manifest")
-#define _ATL_DLL_FILENAME _T("atl") _T(_ATL_FILENAME_VER) _T(".dll")
+#ifdef SITELOCK_USE_MAP		
+	// Checks if the activation URL is in an allowed domain / zone
+	bool InApprovedDomain(const IObjectSafetySiteLock::SiteList * rgslTrustedSites = T::GetSiteLockMap(), int cTrustedSites = T::GetSiteLockMapCount())
+#else
+	// Checks if the activation URL is in an allowed domain / zone
+	bool InApprovedDomain(const IObjectSafetySiteLock::SiteList * rgslTrustedSites = T::rgslTrustedSites, int cTrustedSites = cElements(T::rgslTrustedSites))
+#endif
+	{
+		// Retrieve the activation URL
+		CComBSTR	bstrUrl;
+		DWORD		dwZone		= URLZONE_UNTRUSTED;
+		if (!GetOurUrl(bstrUrl, dwZone))
+			return false;
 
-typedef BOOL (WINAPI * PFN_FINDAC)(DWORD dwFlags, const GUID *lpExtensionGuid,ULONG ulSectionId,LPCTSTR lpStringToFind,PACTCTX_SECTION_KEYED_DATA ReturnedData);
-typedef UINT (WINAPI * PFN_GETSYSTEMWINDOWSDIRECTORY)(LPTSTR lpBuffer,  UINT uSize);
+		// Check if the activation URL is in an allowed domain / zone
+		return FApprovedDomain(bstrUrl, dwZone, rgslTrustedSites, cTrustedSites);
+	}
 
+	// Retrieves the activation URL
+	HRESULT GetOurUrl(CComBSTR &bstrURL, DWORD &dwZone)
+	{
+		// Declarations
+		HRESULT								hr				= S_OK;
+		CComPtr<IServiceProvider>			spSrvProv;
 
-static BOOL __cdecl _atl_check_manifest(HMODULE hDllHandle)
+		// Get the current pointer as an instance of the template class
+		T * pT = static_cast<T*>(this);
+
+		// Retrieve the activation site
+#ifdef SITELOCK_USE_IOLEOBJECT
+		hr = pT->GetClientSite((IOleClientSite **)&spClientSite);
+		if (FAILED(hr) || spClientSite == NULL)
+			return hr;
+		hr = spClientSite->QueryInterface(IID_IServiceProvider, (void **)&spSrvProv);
+#else
+		hr = pT->GetSite(IID_IServiceProvider, (void**)&spSrvProv);
+#endif
+		if (FAILED(hr))
+			return hr;
+
+		CComPtr<IWebBrowser2> spWebBrowser;
+
+		// Query the site for a web browser object
+		hr = spSrvProv->QueryService(SID_SWebBrowserApp, IID_IWebBrowser2, (void **)&spWebBrowser);
+		if (FAILED(hr))
+			return hr;
+
+		// Query the web browser object for the activation URL
+		if (FAILED(spWebBrowser->get_LocationURL(&bstrURL)))
+			return hr;
+
+		CComPtr<IInternetSecurityManager> spInetSecMgr;
+
+		// Query the site for its associated security manager
+		hr = spSrvProv->QueryService(SID_SInternetSecurityManager, IID_IInternetSecurityManager, (void **)&spInetSecMgr);
+		if (FAILED(hr))
+			return hr;
+
+		// Query the security manager for the zone the activation URL belongs to
+		hr = spInetSecMgr->MapUrlToZone(bstrURL, &dwZone, 0);
+		if (FAILED(hr))
+			return hr;
+		return S_OK;
+	}
+
+private:
+	// Checks if an activation URL is in an allowed domain / zone
+	bool FApprovedDomain(const OLECHAR * wzUrl, DWORD dwZone, const IObjectSafetySiteLock::SiteList * rgslTrustedSites, int cTrustedSites)
+	{
+		// Declarations
+		HRESULT		hr												= S_OK;
+		OLECHAR		wzDomain[INTERNET_MAX_HOST_NAME_LENGTH + 1]		= {0};
+		OLECHAR		wzScheme[INTERNET_MAX_SCHEME_LENGTH + 1]		= {0};
+
+		// Retrieve the normalized domain and scheme
+		hr = GetDomainAndScheme(wzUrl, wzScheme, cElements(wzScheme), wzDomain, cElements(wzDomain));
+		if (FAILED(hr))
+			return false;
+
+		// Try to match the activation URL with each entry in order
+		DWORD cbScheme = (::lstrlenW(wzScheme) + 1) * sizeof(OLECHAR);
+		for (int i=0; i < cTrustedSites; i++)
+		{
+			// Try to match by scheme
+			DWORD cbSiteScheme = (::lstrlenW(rgslTrustedSites[i].szScheme) + 1) * sizeof(OLECHAR);
+			if (cbScheme != cbSiteScheme)
+				continue;
+			if (0 != ::memcmp(wzScheme, rgslTrustedSites[i].szScheme, cbScheme))
+				continue;
+
+			// Try to match by zone
+			if (rgslTrustedSites[i].szDomain == SITELOCK_INTRANET_ZONE)
+			{
+				if ((dwZone == URLZONE_INTRANET) || (dwZone == URLZONE_TRUSTED))
+					return rgslTrustedSites[i].iAllowType == IObjectSafetySiteLock::SiteList::Allow;
+			}
+			else if (rgslTrustedSites[i].szDomain == SITELOCK_MYCOMPUTER_ZONE)
+			{
+				if (dwZone == URLZONE_LOCAL_MACHINE)
+					return rgslTrustedSites[i].iAllowType == IObjectSafetySiteLock::SiteList::Allow;
+			}
+			else if (rgslTrustedSites[i].szDomain == SITELOCK_TRUSTED_ZONE)
+			{
+				if (dwZone == URLZONE_TRUSTED)
+					return rgslTrustedSites[i].iAllowType == IObjectSafetySiteLock::SiteList::Allow;
+			}
+
+			// Try to match by domain name
+			else if (MatchDomains(rgslTrustedSites[i].szDomain, wzDomain))
+			{
+				return rgslTrustedSites[i].iAllowType == IObjectSafetySiteLock::SiteList::Allow;
+			}
+		}
+		return false;
+	};
+
+	// Normalizes an international domain name
+	HRESULT NormalizeDomain(OLECHAR * wzDomain, int cchDomain)
+	{
+		// Data validation
+		if (!wzDomain)
+			return E_POINTER;
+
+		// If the domain is only 7-bit ASCII, normalization is not required
+		bool fFoundUnicode = false;
+		for (const OLECHAR * wz = wzDomain; *wz != 0; wz++)
+		{
+			if (0x80 <= *wz)
+			{
+				fFoundUnicode = true;
+				break;
+			}
+		}
+		if (!fFoundUnicode)
+			return S_OK;
+
+		// Construct a fully qualified path to the Windows system directory
+		static const WCHAR wzNormaliz[] = L"normaliz.dll";
+		static const int cchNormaliz = cElements(wzNormaliz);
+		WCHAR wzDllPath[MAX_PATH + 1] = {0};
+		if (!::GetSystemDirectoryW(wzDllPath, cElements(wzDllPath) - cchNormaliz - 1))
+			return E_FAIL;
+		int cchDllPath = ::lstrlenW(wzDllPath);
+		if (!cchDllPath)
+			return E_FAIL;
+		if (wzDllPath[cchDllPath-1] != L'\\')
+			wzDllPath[cchDllPath++] = L'\\';
+		::CopyMemory(wzDllPath + cchDllPath, wzNormaliz, cchNormaliz * sizeof(WCHAR));
+
+		// Load the DLL used for domain normalization
+		HMODULE hNormaliz = ::LoadLibraryExW(wzDllPath, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
+		if (!hNormaliz)
+			return E_FAIL;
+
+		HRESULT hr = E_FAIL;
+
+		// Locate the entry point used for domain normalization
+		PFN_IdnToAscii pfnIdnToAscii = (PFN_IdnToAscii)::GetProcAddress(hNormaliz, "IdnToAscii");
+		if (!pfnIdnToAscii)
+			goto cleanup;
+
+		// Normalize the domain name
+		WCHAR wzEncoded[INTERNET_MAX_HOST_NAME_LENGTH + 1];
+		int cchEncode = pfnIdnToAscii(IDN_USE_STD3_ASCII_RULES, wzDomain, ::lstrlenW(wzDomain), wzEncoded, cElements(wzEncoded));
+		if (0 == cchEncode)
+		{
+			hr = HRESULT_FROM_WIN32(::GetLastError());
+			goto cleanup;
+		}
+		
+		// Copy results to the input buffer
+		if (cchEncode >= cchDomain)
+		{
+			hr = E_OUTOFMEMORY;
+			goto cleanup;
+		}
+
+		::CopyMemory(wzDomain, wzEncoded, cchEncode * sizeof(WCHAR));
+		hr = S_OK;
+
+cleanup:
+		if (hNormaliz)
+			::CloseHandle(hNormaliz);
+
+		return hr;
+	}
+
+	// Extracts a normalized domain and scheme from an activation URL
+	HRESULT GetDomainAndScheme(const OLECHAR * wzUrl, OLECHAR * wzScheme, DWORD cchScheme, OLECHAR * wzDomain, DWORD cchDomain)
+	{
+		// Data validation
+		if (!wzDomain || !wzScheme)
+			return E_POINTER;
+
+		// Extract the scheme
+		HRESULT hr = ::UrlGetPartW(wzUrl, wzScheme, &cchScheme, URL_PART_SCHEME, 0);
+		if (FAILED(hr))
+			return E_FAIL;
+
+		// Extract the host name
+		DWORD cchDomain2 = cchDomain;
+		hr = ::UrlGetPartW(wzUrl, wzDomain, &cchDomain2, URL_PART_HOSTNAME, 0);
+		if (FAILED(hr))
+			*wzDomain = 0;
+
+		// Exclude any URL specifying a user name or password
+		if ((0 == ::_wcsicmp(wzScheme, L"http")) || (0 == ::_wcsicmp(wzScheme, L"https")))
+		{
+			DWORD cch = 1;
+			WCHAR wzTemp[1] = {0};
+			::UrlGetPartW(wzUrl, wzTemp, &cch, URL_PART_USERNAME, 0);
+			if (1 < cch)
+				return E_FAIL;
+			::UrlGetPartW(wzUrl, wzTemp, &cch, URL_PART_PASSWORD, 0);
+			if (1 < cch)
+				return E_FAIL;
+		}
+
+		// Normalize the domain name
+		return NormalizeDomain(wzDomain, cchDomain);
+	}
+
+	// Attempts to match an activation URL with a domain name
+	bool MatchDomains(const OLECHAR * wzTrustedDomain, const OLECHAR * wzOurDomain)
+	{
+		// Data validation
+		if (!wzTrustedDomain)
+			return (0 == *wzOurDomain); // match only if empty
+
+		// Declarations
+		int		cchTrusted			= ::lstrlenW(wzTrustedDomain);
+		int		cchOur				= ::lstrlenW(wzOurDomain);
+		bool	fForcePrefix		= false;
+		bool	fDenyPrefix			= false;
+
+		// Check if all activation URLs should be matched
+		if (0 == ::wcscmp(wzTrustedDomain, L"*"))
+			return true;
+
+		// Check if the entry is like *. and setup the comparison range
+		if ((2 < cchTrusted) && (L'*' == wzTrustedDomain[0]) && (L'.' == wzTrustedDomain[1]))
+		{
+			fForcePrefix = true;
+			wzTrustedDomain += 2;
+			cchTrusted -= 2;
+		}
+
+		// Check if the entry is like = and setup the comparison range
+		else if ((1 < cchTrusted) && (L'=' == wzTrustedDomain[0]))
+		{
+			fDenyPrefix = true;
+			wzTrustedDomain++;
+			cchTrusted--;
+		};
+
+		// Check if there is a count mismatch
+		if (cchTrusted > cchOur)
+			return false;
+
+		// Compare URLs on the desired character range
+		if (0 != ::memcmp(wzOurDomain + cchOur - cchTrusted, wzTrustedDomain, cchTrusted * sizeof(OLECHAR)))
+			return false;
+
+		// Compare URLs without allowing child domains
+		if (!fForcePrefix && (cchTrusted == cchOur))
+			return true;
+
+		// Compare URLs requiring child domains
+		if (!fDenyPrefix && (wzOurDomain[cchOur - cchTrusted - 1] == L'.'))
+			return true;
+
+		return false;
+	}
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// IObjectSafetySiteLockImpl - "Safe for scripting" template
+template <typename T, DWORD dwSupportedSafety>
+class ATL_NO_VTABLE IObjectSafetySiteLockImpl : public IObjectSafetySiteLock, public CSiteLock<T>
 {
-	/* We check that the dll is loaded through a manifest.
-	 *
-	 * We check several conditions and exceptions:
-	 *
-	 * (1)  if (pre-fusion OS)
-	 *         return TRUE; [no need to check]
-	 *
-	 * (2)  if (dll is loaded from system32)
-	 *          return FALSE;
-	 *
-	 * (3)  if (!(loaded through a manifest))
-	 *          return FALSE;
-	 *
-	 * (4)  if (loaded from %SystemRoot%\WinSxS)
-	 *          return TRUE; [loaded from the WinSxS cache]
-	 *
-	 * (5)  if (manifest is in the same folder as the dll)
-	 *          return TRUE;
-	 *
-	 * (6)  return FALSE; [loaded with another manifest]
-	 *
-	 * In general, when we encounter an error condition or something
-	 * which blocks us from checking if the dll is loaded through a
-	 * manifest, we do not return an error, but we let the dll to be
-	 * loaded. Notice that this is not a security feature: it's an helper
-	 * which will try (as much as possible) to discourage the practice
-	 * of not using a manifest to load the ATL dll.
-	 */
+public:
+	// Constructor
+	IObjectSafetySiteLockImpl(): m_dwCurrentSafety(0) {}
 
-	TCHAR moduleFilePath[_PATH_LEN];
-	TCHAR systemRoot[MAX_PATH];
-	size_t moduleFilePathLen = 0;
-	size_t systemRootLen = 0;
-
-	PFN_FINDAC pfnFindActCtxSectionString =NULL;
-	/* check condition (1) */
+	// Returns safety options
+	STDMETHOD(GetInterfaceSafetyOptions)(REFIID riid, DWORD * pdwSupportedOptions, DWORD * pdwEnabledOptions)
 	{
-		HINSTANCE hKernel32 = GetModuleHandle(_T("kernel32.dll"));
-		if (hKernel32 == NULL) 
+		// Data validation
+		if (!pdwSupportedOptions || !pdwEnabledOptions)
+			return E_POINTER;
+
+		// Declarations
+		HRESULT			hr		= S_OK;
+		IUnknown *		pUnk	= NULL;
+
+		// Get the current pointer as an instance of the template class
+		T * pT = static_cast<T*>(this);
+
+		// Check if the requested COM interface is supported
+		hr = pT->GetUnknown()->QueryInterface(riid, (void**)&pUnk);
+		if (FAILED(hr))
 		{
-			/* unexpected condition, probably some strange loader lock situation */
-			return TRUE;
+			*pdwSupportedOptions = 0;
+			*pdwEnabledOptions   = 0;
+			return hr;
 		}
 
-		pfnFindActCtxSectionString = (PFN_FINDAC) GetProcAddress(hKernel32, _FINDACTCTXSECTIONSTRING);
+		// Release the interface
+		pUnk->Release();
 
-		if (pfnFindActCtxSectionString == NULL) 
+		// Check expiry and if the activation URL is allowed
+		if (!ControlExpired() && InApprovedDomain())
 		{
-			/* pre-fusion OS, so no more checking.*/
-			return TRUE;
-		}
-	}
-
-	///* retrieve moduleFilePath and systemRoot */
-	{
-		TCHAR tempPath[_PATH_LEN];
-		TCHAR *myTestModuleName = NULL;
-		DWORD ret = GetModuleFileName(hDllHandle, tempPath, _countof(tempPath));
-		if (ret == 0 || ret >= _countof(tempPath))
-		{
-		 	/* error or filename longer than _PATH_LEN: we just let
-		 	 * the user load the dll, without checking the manifest */
-			return TRUE;
-		}
-		ret = GetLongPathName(tempPath, moduleFilePath, _countof(moduleFilePath));
-		if (ret == 0 || ret >= _countof(moduleFilePath))
-		{
-		 	/* error or filename longer than _PATH_LEN: we just let
-		 	  * the user load the dll, without checking the manifest */
-			return TRUE;
-		}
-
-		myTestModuleName = const_cast<TCHAR*>(_TCSRCHR(moduleFilePath, L'\\'));
-
-		if (myTestModuleName == NULL)
-		{
-			/* error: we could not find a backslash in moduleFilePath */
-			return TRUE;
-		}
-		myTestModuleName++;
-		*myTestModuleName = 0;
-		/* moduleFilePath now contains only the path of the module ending with a backslash */
-		moduleFilePathLen = _tcsnlen(moduleFilePath, _countof(moduleFilePath));
-
-		ret = GetSystemDirectory(systemRoot, _countof(systemRoot));
-		if (ret == 0 || ret >= _countof(systemRoot))
-		{
-			/* error or path longer than MAX_PATH: we just let
-			 * the user load the dll, without checking the manifest */
-			return TRUE;
-		}
-		/* add a trailing backslash if not there already */
-		systemRootLen = ret;
-		if (systemRoot[systemRootLen - 1] != _T('\\'))
-		{
-			if (_TCSNCAT_S(systemRoot, _countof(systemRoot), _T("\\"), _TRUNCATE) != 0)
-			{
-				/* error or not enough space */
-				return TRUE;
-			}
-		}
-		systemRootLen = _tcsnlen(systemRoot, _countof(systemRoot));
-	}
-
-	/* check condition (2) */
-	if (moduleFilePathLen == systemRootLen)
-	{
-		size_t nRet = CompareString( LOCALE_INVARIANT, NORM_IGNORECASE, 
-									 moduleFilePath, (DWORD)moduleFilePathLen, 
-									 systemRoot, (DWORD)systemRootLen);
-		if( 0 == nRet )
-		{
-			/* error comparing the strings */
-			return TRUE;
-		}
-		if( CSTR_EQUAL == nRet )
-		{
-			return FALSE; /* dll loaded from system32 */
-		}
-	}
-
-	/* check condition (3) */
-	{
-		ACTCTX_SECTION_KEYED_DATA askd = { sizeof(askd) };
-		if (!(*pfnFindActCtxSectionString)(0, NULL, ACTIVATION_CONTEXT_SECTION_DLL_REDIRECTION, _ATL_DLL_FILENAME, &askd))
-		{
-			/* no activation context used to load ATL DLL, means no manifest present in the process */
-			return FALSE;
-		}
-	}
-
-	/* check condition (4) */
-	{
-		HINSTANCE hKernel32 = GetModuleHandle(_T("kernel32.dll"));
-		PFN_GETSYSTEMWINDOWSDIRECTORY pfnGetSystemWindowsDirectory = NULL;
-		if (hKernel32 == NULL) 
-		{
-			/* unexpected condition, probably some strange loader lock situation */
-			return TRUE;
-		}
-
-		pfnGetSystemWindowsDirectory = (PFN_GETSYSTEMWINDOWSDIRECTORY) GetProcAddress(hKernel32, _GETSYSTEMWINDOWSDIRECTORY);
-
-		if (pfnGetSystemWindowsDirectory == NULL) 
-		{
-			/* pre-win2k OS, so no more checking. We shouldn't get to here because we checked OS version earlier */
-			return TRUE;
-		}
-
-		/* retrieves the windows folder */
-		systemRootLen = pfnGetSystemWindowsDirectory(systemRoot, _countof(systemRoot));
-		if (systemRootLen == 0 || systemRootLen >= _countof(systemRoot))
-		{
-			/* error or path longer than MAX_PATH: we just let
-			 * the user load the dll, without checking the manifest */
-			return TRUE;
-		}
-		/* add a trailing backslash if not there already */
-		if (systemRoot[systemRootLen - 1] != L'\\')
-		{
-			if (_TCSNCAT_S(systemRoot, _countof(systemRoot), _T("\\") _WINSXS_FOLDER, _TRUNCATE) != 0)
-			{
-				/* error or not enough space */
-				return TRUE;
-			}
+			*pdwSupportedOptions = dwSupportedSafety;
+			*pdwEnabledOptions   = m_dwCurrentSafety;
 		}
 		else
 		{
-			if (_TCSNCAT_S(systemRoot, _countof(systemRoot), _WINSXS_FOLDER, _TRUNCATE) != 0)
-			{
-				/* error or not enough space */
-				return TRUE;
-			}
+			*pdwSupportedOptions = dwSupportedSafety;
+			*pdwEnabledOptions   = 0;
 		}
-		systemRootLen = _tcsnlen(systemRoot, _countof(systemRoot));
-
-		size_t nRet = CompareString( LOCALE_INVARIANT, NORM_IGNORECASE, 
-									 moduleFilePath, (DWORD)systemRootLen, 
-									 systemRoot, (DWORD)systemRootLen);
-		if( 0 == nRet )
-		{
-			/* error comparing the strings */
-			return TRUE;
-		}
-		if( CSTR_EQUAL == nRet )
-		{
-			/* moduleFileName begins with %SYSTEMROOT%\WinSxS\ */
-			return TRUE; /* dll has been loaded from the WinSxS cache */
-		}
+		return S_OK;
 	}
 
-	/* check condition (5) */
+	// Sets safety options
+	STDMETHOD(SetInterfaceSafetyOptions)(REFIID riid, DWORD dwOptionSetMask, DWORD dwEnabledOptions)
+	{		
+		// Declarations
+		HRESULT			hr		= S_OK;
+		IUnknown *		pUnk	= NULL;
+
+		// Get the current pointer as an instance of the template class
+		T * pT = static_cast<T*>(this);
+
+		// Check if we support the interface and return E_NOINTERFACE if we don't
+		// Check if the requested COM interface is supported
+		hr = pT->GetUnknown()->QueryInterface(riid, (void**)&pUnk);
+		if (FAILED(hr))
+			return hr;
+
+		// Release the interface
+		pUnk->Release();
+
+		// Reject unsupported requests
+		if (dwOptionSetMask & ~dwSupportedSafety)
+			return E_FAIL;
+
+		// Calculate safety options
+		DWORD dwNewSafety = (m_dwCurrentSafety  & ~dwOptionSetMask) | (dwOptionSetMask & dwEnabledOptions);
+		if (m_dwCurrentSafety != dwNewSafety)
+		{
+			// Check expiry and if the activation URL is allowed
+			if (ControlExpired() || !InApprovedDomain())
+				return E_FAIL;
+
+			// Set safety options
+			m_dwCurrentSafety = dwNewSafety;
+		}
+		return S_OK;
+	}
+
+	// Returns capabilities (this can be used by testing tools to query for custom capabilities or version information)
+	STDMETHOD(GetCapabilities)(DWORD * pdwCapability)
 	{
-		WIN32_FIND_DATA findData = { 0 };
-		HANDLE hFind = INVALID_HANDLE_VALUE;
+		// Data validation
+		if (!pdwCapability)
+			return E_POINTER;
 
-		if (_TCSNCAT_S(moduleFilePath, _countof(moduleFilePath), _MANIFEST_FILENAME, _TRUNCATE) != 0)
+		// Return the version if 0 is passed in
+		if (0 == *pdwCapability)
 		{
-			/* error or truncation */
-			return TRUE;
+			*pdwCapability = SITELOCK_VERSION;
+			return S_OK;
 		}
 
-		hFind = FindFirstFile(moduleFilePath, &findData);
-		if (hFind != INVALID_HANDLE_VALUE) 
+		// Return the options if 1 is passed in
+		if (1 == *pdwCapability)
 		{
-			FindClose(hFind);
-			return TRUE; /* manifest is in the same folder as the dll */
-		} 
-		/* we could not find the manifest in the same folder as the dll */
-		moduleFilePath[moduleFilePathLen] = 0;
-		/* restore moduleFilePath so that it contains only the path of the module with final backslash */
+			*pdwCapability =
+#ifdef SITELOCK_USE_IOLEOBJECT
+				Capability::UsesIOleObject |
+#endif
+#ifndef SITELOCK_NO_EXPIRY
+				Capability::HasExpiry |
+#endif
+				0;
+			return S_OK;
+		}			
+
+		// Return not implemented otherwise
+		*pdwCapability = 0;
+		return E_NOTIMPL;
 	}
 
-	/* case (6): loaded with another manifest */
-	return FALSE;
-}
+	// Returns site lock entries controlling activation
+	STDMETHOD(GetApprovedSites)(const SiteList ** pSiteList, DWORD * pcEntries)
+	{
+		// Data validation
+		if (!pSiteList || !pcEntries)
+			return E_POINTER;
 
-/////////////////////////////////////////////////////////////////////////////
-// Used to determine whether the DLL can be unloaded by OLE
+		// Return specified site lock entries
+#ifdef SITELOCK_USE_MAP
+		// Use the site lock map
+		*pSiteList = T::GetSiteLockMapAndCount(*pcEntries);
+#else
+		// Use the static member
+		*pSiteList = T::rgslTrustedSites;
+		*pcEntries = cElements(T::rgslTrustedSites);
+#endif
+		return S_OK;
+	}
 
-/*
-STDAPI DllCanUnloadNow(void)
+	STDMETHOD(GetExpiryDate)(DWORD * pdwLifespan, FILETIME * pExpiryDate)
+	{
+		if (!pdwLifespan || !pExpiryDate)
+			return E_POINTER;
+	
+#ifdef SITELOCK_NO_EXPIRY
+		*pdwLifespan = 0;
+		::ZeroMemory((void*)pExpiryDate, sizeof(FILETIME));
+		return E_NOTIMPL;
+#else
+		*pdwLifespan = T::dwControlLifespan;
+
+		// Calculate expiry date from life span
+		time_t ttExpire = ImageNtHeaders(&__ImageBase)->FileHeader.TimeDateStamp;
+		ttExpire += T::dwControlLifespan*86400;	// seconds per day
+		_UNIXTimeToFILETIME(ttExpire, pExpiryDate);
+
+		return S_OK;
+#endif
+	}
+
+private:
+	// Current safety
+	DWORD m_dwCurrentSafety;
+};
+
+class CLauncher :
+ public CComObjectRootEx<CComSingleThreadModel>,
+ public IObjectSafetySiteLockImpl<CLauncher, INTERFACESAFE_FOR_UNTRUSTED_CALLER>,
+ public ISupportErrorInfo,
+ public IObjectWithSiteImpl<CLauncher>
 {
-	return (_Module.GetLockCount()==0) ? S_OK : S_FALSE;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// Returns a class factory to create an object of the requested type
-
-STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
-{
-	return _Module.GetClassObject(rclsid, riid, ppv);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// DllRegisterServer - Adds entries to the system registry
-
-STDAPI DllRegisterServer(void)
-{
-	// registers object, typelib and all interfaces in typelib
-	return _Module.RegisterServer(TRUE);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// DllUnregisterServer - Removes entries from the system registry
-
-STDAPI DllUnregisterServer(void)
-{
-	//No need to unregister typelib since ATL is a system component.
-	return S_OK;
-}
-*/
-
-#include <delayimp.h>
-
-extern "C"
-{
-FARPROC
-WINAPI
-Downlevel_DelayLoadFailureHook(
-	UINT unReason,
-	PDelayLoadInfo pDelayInfo
-	);
-
-PfnDliHook __pfnDliFailureHook2 = Downlevel_DelayLoadFailureHook;
-
-}
+public:
+ IUnknown* GetUnknown() { return static_cast<IObjectSafety*>(this); }
+ enum { dwControlLifespan = 1 };
+ static const SiteList rgslTrustedSites[1];
+};
+const CLauncher::SiteList CLauncher::rgslTrustedSites[1] = {};
+__declspec(noinline) bool force(CSiteLock<CLauncher>* p, CComBSTR& u, DWORD& z) { return p->GetOurUrl(u,z); }

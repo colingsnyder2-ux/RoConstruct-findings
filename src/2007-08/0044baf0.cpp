@@ -1,4 +1,3 @@
-// from server: 79% by colin
 // roc 2007-08 0044baf0  unit: CRobloxControlColorSelector  size: 66 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0044baf0
 //
@@ -31,25 +30,32 @@
 // 0044bb2f  5e                   pop esi
 // 0044bb30  5b                   pop ebx
 // 0044bb31  c3                   ret 
+// copied from an identical function in another client (function ?copyBackward@@YAPAUItem@@PAU1@00@Z)
 
-struct CRobloxControlColorSelector {
-    void* field0;
-    void* field4;
-    void* field8;
-    void assign(CRobloxControlColorSelector* first, CRobloxControlColorSelector* last, CRobloxControlColorSelector* dest);
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+struct Tail {
+    unsigned int value;
 };
 
-extern "C" void __stdcall sub_77D434(void*);
+struct Item {
+    unsigned int first;
+    unsigned int second;
+    Tail tail;
+};
 
-void CRobloxControlColorSelector::assign(CRobloxControlColorSelector* first, CRobloxControlColorSelector* last, CRobloxControlColorSelector* dest)
+extern Tail& (__thiscall *assignTail)(Tail*, const Tail*);
+
+Item* __cdecl copyBackward(Item* first, Item* last, Item* result)
 {
     if (first != last) {
         do {
-            last = (CRobloxControlColorSelector*)((char*)last - 12);
-            dest = (CRobloxControlColorSelector*)((char*)dest - 12);
-            *(void**)dest = *(void**)last;
-            *(void**)((char*)dest + 4) = *(void**)((char*)last + 4);
-            sub_77D434((char*)dest + 8);
+            --last;
+            --result;
+            result->first = last->first;
+            result->second = last->second;
+            assignTail(&result->tail, &last->tail);
         } while (last != first);
     }
+    return result;
 }

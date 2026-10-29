@@ -1,10 +1,11 @@
-// from server: 69% by atomic.potato
-extern "C" void __cdecl sub_722470(void *);
-extern "C" void __cdecl sub_7F4878(void *, const void *);
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-boost-1_34_1 roc_string_sink_401c42386b16c308.cpp
 
-void f()
-{
-    char buffer[40];
-    sub_722470(buffer);
-    sub_7F4878(buffer, (const void *)0x00AC7CE8);
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <boost/iostreams/device/back_inserter.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::stream_buffer<boost::iostreams::back_insert_device<std::string> >;

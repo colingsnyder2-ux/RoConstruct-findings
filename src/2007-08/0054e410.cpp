@@ -1,4 +1,3 @@
-// from server: 76% by colin
 // roc 2007-08 0054e410  unit: std::D::V?$allocator::V?$basic_gzip_decompressor::?$stream_buffer  size: 48 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0054e410
 //
@@ -15,22 +14,28 @@
 // 0054e433  8d4c2404             lea ecx, [esp + 4]
 // 0054e437  ff15fce47700         call dword ptr [0x77e4fc]
 // 0054e43d  c20400               ret 4
+// copied from an identical function in another client (function ?f@S@@QAEXPBX@Z)
+
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+struct Stream;
+
+extern void (__thiscall *imbue)(Stream*, void*, const void*);
+extern void (__thiscall *destroyLocale)(void*);
 
 struct S {
-    char pad[0xa0];
-    void* field_a0;
-    char pad2[0xc];
-    unsigned char field_b0;
-    void imbue(void* loc);
+    char padding[160];
+    Stream* stream;
+    char reserved[12];
+    unsigned char flags;
+
+    void f(const void* locale);
 };
 
-extern "C" void __stdcall locale_dtor(void* loc);
-extern "C" void* __stdcall locale_ctor(void* loc, void* other);
-
-void S::imbue(void* loc) {
-    if ((field_b0 & 1) != 0 && field_a0 != 0) {
-        char buf[4];
-        locale_ctor(buf, loc);
-        locale_dtor(buf);
+void S::f(const void* locale)
+{
+    if ((flags & 1) && stream) {
+        imbue(stream, &locale, locale);
+        destroyLocale(&locale);
     }
 }

@@ -1,681 +1,182 @@
-// from server: 82% by colin
+// roc 2011-06 004e49d0  unit: std::D::DU?$char_traits::V?$basic_string::$$CBV?$map::V?$shared_ptr::?$holder  size: 505 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 004e49d0
+//
+// 004e49d0  64a100000000         mov eax, dword ptr fs:[0]
+// 004e49d6  6aff                 push -1
+// 004e49d8  68221b9d00           push 0x9d1b22
+// 004e49dd  50                   push eax
+// 004e49de  64892500000000       mov dword ptr fs:[0], esp
+// 004e49e5  83ec44               sub esp, 0x44
+// 004e49e8  57                   push edi
+// 004e49e9  8bf9                 mov edi, ecx
+// 004e49eb  817f08c6711c07       cmp dword ptr [edi + 8], 0x71c71c6
+// 004e49f2  7259                 jb 0x4e4a4d
+// 004e49f4  683cb6a500           push 0xa5b63c
+// 004e49f9  8d4c2408             lea ecx, [esp + 8]
+// 004e49fd  ff15c404a400         call dword ptr [0xa404c4]
+// 004e4a03  8d4c2420             lea ecx, [esp + 0x20]
+// 004e4a07  c744245000000000     mov dword ptr [esp + 0x50], 0
+// 004e4a0f  ff15600aa400         call dword ptr [0xa40a60]
+// 004e4a15  8d442404             lea eax, [esp + 4]
+// 004e4a19  50                   push eax
+// 004e4a1a  8d4c2430             lea ecx, [esp + 0x30]
+// 004e4a1e  c644245401           mov byte ptr [esp + 0x54], 1
+// 004e4a23  c7442424c0b5a500     mov dword ptr [esp + 0x24], 0xa5b5c0
+// 004e4a2b  ff15c804a400         call dword ptr [0xa404c8]
+// 004e4a31  687073b800           push 0xb87370
+// 004e4a36  8d4c2424             lea ecx, [esp + 0x24]
+// 004e4a3a  51                   push ecx
+// 004e4a3b  c644245800           mov byte ptr [esp + 0x58], 0
+// 004e4a40  c7442428ccb5a500     mov dword ptr [esp + 0x28], 0xa5b5cc
+// 004e4a48  e85f663200           call 0x80b0ac
+// 004e4a4d  8b542464             mov edx, dword ptr [esp + 0x64]
+// 004e4a51  8b4704               mov eax, dword ptr [edi + 4]
+// 004e4a54  53                   push ebx
+// 004e4a55  55                   push ebp
+// 004e4a56  56                   push esi
+// 004e4a57  8b74246c             mov esi, dword ptr [esp + 0x6c]
+// 004e4a5b  6a00                 push 0
+// 004e4a5d  52                   push edx
+// 004e4a5e  50                   push eax
+// 004e4a5f  56                   push esi
+// 004e4a60  50                   push eax
+// 004e4a61  e8cafeffff           call 0x4e4930
+// 004e4a66  8be8                 mov ebp, eax
+// 004e4a68  8b4704               mov eax, dword ptr [edi + 4]
+// 004e4a6b  bb01000000           mov ebx, 1
+// 004e4a70  015f08               add dword ptr [edi + 8], ebx
+// 004e4a73  3bf0                 cmp esi, eax
+// 004e4a75  7510                 jne 0x4e4a87
+// 004e4a77  896804               mov dword ptr [eax + 4], ebp
+// 004e4a7a  8b4704               mov eax, dword ptr [edi + 4]
+// 004e4a7d  8928                 mov dword ptr [eax], ebp
+// 004e4a7f  8b4f04               mov ecx, dword ptr [edi + 4]
+// 004e4a82  896908               mov dword ptr [ecx + 8], ebp
+// 004e4a85  eb22                 jmp 0x4e4aa9
+// 004e4a87  807c246800           cmp byte ptr [esp + 0x68], 0
+// 004e4a8c  740d                 je 0x4e4a9b
+// 004e4a8e  892e                 mov dword ptr [esi], ebp
+// 004e4a90  8b4704               mov eax, dword ptr [edi + 4]
+// 004e4a93  3b30                 cmp esi, dword ptr [eax]
+// 004e4a95  7512                 jne 0x4e4aa9
+// 004e4a97  8928                 mov dword ptr [eax], ebp
+// 004e4a99  eb0e                 jmp 0x4e4aa9
+// 004e4a9b  896e08               mov dword ptr [esi + 8], ebp
+// 004e4a9e  8b4704               mov eax, dword ptr [edi + 4]
+// 004e4aa1  3b7008               cmp esi, dword ptr [eax + 8]
+// 004e4aa4  7503                 jne 0x4e4aa9
+// 004e4aa6  896808               mov dword ptr [eax + 8], ebp
+// 004e4aa9  8b5504               mov edx, dword ptr [ebp + 4]
+// 004e4aac  807a3000             cmp byte ptr [edx + 0x30], 0
+// 004e4ab0  8d4504               lea eax, [ebp + 4]
+// 004e4ab3  8bf5                 mov esi, ebp
+// 004e4ab5  0f85ea000000         jne 0x4e4ba5
+// 004e4abb  eb03                 jmp 0x4e4ac0
+// 004e4abd  8d4900               lea ecx, [ecx]
+// 004e4ac0  8b08                 mov ecx, dword ptr [eax]
+// 004e4ac2  8b5104               mov edx, dword ptr [ecx + 4]
+// 004e4ac5  3b0a                 cmp ecx, dword ptr [edx]
+// 004e4ac7  7551                 jne 0x4e4b1a
+// 004e4ac9  8b5208               mov edx, dword ptr [edx + 8]
+// 004e4acc  807a3000             cmp byte ptr [edx + 0x30], 0
+// 004e4ad0  7519                 jne 0x4e4aeb
+// 004e4ad2  885930               mov byte ptr [ecx + 0x30], bl
+// 004e4ad5  885a30               mov byte ptr [edx + 0x30], bl
+// 004e4ad8  8b10                 mov edx, dword ptr [eax]
+// 004e4ada  8b4a04               mov ecx, dword ptr [edx + 4]
+// 004e4add  c6413000             mov byte ptr [ecx + 0x30], 0
+// 004e4ae1  8b10                 mov edx, dword ptr [eax]
+// 004e4ae3  8b7204               mov esi, dword ptr [edx + 4]
+// 004e4ae6  e9aa000000           jmp 0x4e4b95
+// 004e4aeb  3b7108               cmp esi, dword ptr [ecx + 8]
+// 004e4aee  750a                 jne 0x4e4afa
+// 004e4af0  8bf1                 mov esi, ecx
+// 004e4af2  56                   push esi
+// 004e4af3  8bcf                 mov ecx, edi
+// 004e4af5  e866ee1200           call 0x613960
+// 004e4afa  8b4604               mov eax, dword ptr [esi + 4]
+// 004e4afd  885830               mov byte ptr [eax + 0x30], bl
+// 004e4b00  8b4e04               mov ecx, dword ptr [esi + 4]
+// 004e4b03  8b5104               mov edx, dword ptr [ecx + 4]
+// 004e4b06  c6423000             mov byte ptr [edx + 0x30], 0
+// 004e4b0a  8b4604               mov eax, dword ptr [esi + 4]
+// 004e4b0d  8b4804               mov ecx, dword ptr [eax + 4]
+// 004e4b10  51                   push ecx
+// 004e4b11  8bcf                 mov ecx, edi
+// 004e4b13  e8489c2400           call 0x72e760
+// 004e4b18  eb7b                 jmp 0x4e4b95
+// 004e4b1a  8b12                 mov edx, dword ptr [edx]
+// 004e4b1c  807a3000             cmp byte ptr [edx + 0x30], 0
+// 004e4b20  7516                 jne 0x4e4b38
+// 004e4b22  885930               mov byte ptr [ecx + 0x30], bl
+// 004e4b25  885a30               mov byte ptr [edx + 0x30], bl
+// 004e4b28  8b10                 mov edx, dword ptr [eax]
+// 004e4b2a  8b4a04               mov ecx, dword ptr [edx + 4]
+// 004e4b2d  c6413000             mov byte ptr [ecx + 0x30], 0
+// 004e4b31  8b10                 mov edx, dword ptr [eax]
+// 004e4b33  8b7204               mov esi, dword ptr [edx + 4]
+// 004e4b36  eb5d                 jmp 0x4e4b95
+// 004e4b38  3b31                 cmp esi, dword ptr [ecx]
+// 004e4b3a  750a                 jne 0x4e4b46
+// 004e4b3c  8bf1                 mov esi, ecx
+// 004e4b3e  56                   push esi
+// 004e4b3f  8bcf                 mov ecx, edi
+// 004e4b41  e81a9c2400           call 0x72e760
+// 004e4b46  8b4604               mov eax, dword ptr [esi + 4]
+// 004e4b49  885830               mov byte ptr [eax + 0x30], bl
+// 004e4b4c  8b4e04               mov ecx, dword ptr [esi + 4]
+// 004e4b4f  8b5104               mov edx, dword ptr [ecx + 4]
+// 004e4b52  c6423000             mov byte ptr [edx + 0x30], 0
+// 004e4b56  8b4604               mov eax, dword ptr [esi + 4]
+// 004e4b59  8b4004               mov eax, dword ptr [eax + 4]
+// 004e4b5c  8b4808               mov ecx, dword ptr [eax + 8]
+// 004e4b5f  8b11                 mov edx, dword ptr [ecx]
+// 004e4b61  895008               mov dword ptr [eax + 8], edx
+// 004e4b64  8b11                 mov edx, dword ptr [ecx]
+// 004e4b66  807a3100             cmp byte ptr [edx + 0x31], 0
+// 004e4b6a  7503                 jne 0x4e4b6f
+// 004e4b6c  894204               mov dword ptr [edx + 4], eax
+// 004e4b6f  8b5004               mov edx, dword ptr [eax + 4]
+// 004e4b72  895104               mov dword ptr [ecx + 4], edx
+// 004e4b75  8b5704               mov edx, dword ptr [edi + 4]
+// 004e4b78  3b4204               cmp eax, dword ptr [edx + 4]
+// 004e4b7b  7505                 jne 0x4e4b82
+// 004e4b7d  894a04               mov dword ptr [edx + 4], ecx
+// 004e4b80  eb0e                 jmp 0x4e4b90
+// 004e4b82  8b5004               mov edx, dword ptr [eax + 4]
+// 004e4b85  3b02                 cmp eax, dword ptr [edx]
+// 004e4b87  7504                 jne 0x4e4b8d
+// 004e4b89  890a                 mov dword ptr [edx], ecx
+// 004e4b8b  eb03                 jmp 0x4e4b90
+// 004e4b8d  894a08               mov dword ptr [edx + 8], ecx
+// 004e4b90  8901                 mov dword ptr [ecx], eax
+// 004e4b92  894804               mov dword ptr [eax + 4], ecx
+// 004e4b95  8b4e04               mov ecx, dword ptr [esi + 4]
+// 004e4b98  80793000             cmp byte ptr [ecx + 0x30], 0
+// 004e4b9c  8d4604               lea eax, [esi + 4]
+// 004e4b9f  0f841bffffff         je 0x4e4ac0
+// 004e4ba5  8b5704               mov edx, dword ptr [edi + 4]
+// 004e4ba8  8b4204               mov eax, dword ptr [edx + 4]
+// 004e4bab  8b4c2454             mov ecx, dword ptr [esp + 0x54]
+// 004e4baf  885830               mov byte ptr [eax + 0x30], bl
+// 004e4bb2  8b442464             mov eax, dword ptr [esp + 0x64]
+// 004e4bb6  5e                   pop esi
+// 004e4bb7  8928                 mov dword ptr [eax], ebp
+// 004e4bb9  5d                   pop ebp
+// 004e4bba  5b                   pop ebx
+// 004e4bbb  5f                   pop edi
+// 004e4bbc  64890d00000000       mov dword ptr fs:[0], ecx
+// 004e4bc3  83c450               add esp, 0x50
+// 004e4bc6  c21000               ret 0x10
+// copied from an identical function in another client (function ?_Insert@?$_Tree@V?$_Tmap_traits@HUValue@@U?$less@H@std@@V?$allocator@U?$pair@$$CBHUValue@@@std@@@3@$0A@@std@@@std@@IAE?AViterator@12@_NPAU_Node@?$_Tree_nod@V?$_Tmap_traits@HUValue@@U?$less@H@std@@V?$allocator@U?$pair@$$CBHUValue@@@std@@@3@$0A@@std@@@2@ABU?$pair@$$CBHUValue@@@2@@Z)
+
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.6.4 OgreAnimation.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#define _SECURE_SCL 0
+#include <map>
 
-// Candidate translation unit (score above; library headers required).
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-    (Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org/
-
-Copyright (c) 2000-2006 Torus Knot Software Ltd
-Also see acknowledgements in Readme.html
-
-This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the Free Software
-Foundation; either version 2 of the License, or (at your option) any later
-version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License along with
-this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-http://www.gnu.org/copyleft/lesser.txt.
-
-You may alternatively use this source under the terms of a specific version of
-the OGRE Unrestricted License provided you have obtained such a license from
-Torus Knot Software Ltd.
------------------------------------------------------------------------------
-*/
-#include "OgreStableHeaders.h"
-#include "OgreAnimation.h"
-#include "OgreKeyFrame.h"
-#include "OgreException.h"
-#include "OgreSkeleton.h"
-#include "OgreBone.h"
-#include "OgreEntity.h"
-#include "OgreSubEntity.h"
-#include "OgreMesh.h"
-#include "OgreSubMesh.h"
-#include "OgreStringConverter.h"
-
-namespace Ogre {
-
-    Animation::InterpolationMode Animation::msDefaultInterpolationMode = Animation::IM_LINEAR;
-    Animation::RotationInterpolationMode 
-        Animation::msDefaultRotationInterpolationMode = Animation::RIM_LINEAR;
-    //---------------------------------------------------------------------
-    Animation::Animation(const String& name, Real length)
-        : mName(name)
-        , mLength(length)
-        , mInterpolationMode(msDefaultInterpolationMode)
-        , mRotationInterpolationMode(msDefaultRotationInterpolationMode)
-        , mKeyFrameTimesDirty(false)
-    {
-    }
-    //---------------------------------------------------------------------
-    Animation::~Animation()
-    {
-        destroyAllTracks();
-    }
-    //---------------------------------------------------------------------
-    Real Animation::getLength(void) const
-    {
-        return mLength;
-    }
-	//---------------------------------------------------------------------
-	void Animation::setLength(Real len)
-	{
-		mLength = len;
-	}
-    //---------------------------------------------------------------------
-    NodeAnimationTrack* Animation::createNodeTrack(unsigned short handle)
-    {
-        if (hasNodeTrack(handle))
-        {
-            OGRE_EXCEPT(Exception::ERR_DUPLICATE_ITEM, 
-                "Node track with the specified handle " +
-                StringConverter::toString(handle) + " already exists",
-                "Animation::createNodeTrack");
-        }
-
-        NodeAnimationTrack* ret = OGRE_NEW NodeAnimationTrack(this, handle);
-
-        mNodeTrackList[handle] = ret;
-        return ret;
-    }
-    //---------------------------------------------------------------------
-    NodeAnimationTrack* Animation::createNodeTrack(unsigned short handle, Node* node)
-    {
-        NodeAnimationTrack* ret = createNodeTrack(handle);
-
-        ret->setAssociatedNode(node);
-
-        return ret;
-    }
-    //---------------------------------------------------------------------
-    unsigned short Animation::getNumNodeTracks(void) const
-    {
-        return (unsigned short)mNodeTrackList.size();
-    }
-	//---------------------------------------------------------------------
-	bool Animation::hasNodeTrack(unsigned short handle) const
-	{
-		return (mNodeTrackList.find(handle) != mNodeTrackList.end());
-	}
-    //---------------------------------------------------------------------
-    NodeAnimationTrack* Animation::getNodeTrack(unsigned short handle) const
-    {
-        NodeTrackList::const_iterator i = mNodeTrackList.find(handle);
-
-        if (i == mNodeTrackList.end())
-        {
-            OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, 
-                "Cannot find node track with the specified handle " +
-                StringConverter::toString(handle),
-                "Animation::getNodeTrack");
-        }
-
-        return i->second;
-
-    }
-    //---------------------------------------------------------------------
-    void Animation::destroyNodeTrack(unsigned short handle)
-    {
-        NodeTrackList::iterator i = mNodeTrackList.find(handle);
-
-		if (i != mNodeTrackList.end())
-		{
-			OGRE_DELETE i->second;
-			mNodeTrackList.erase(i);
-            _keyFrameListChanged();
-		}
-    }
-    //---------------------------------------------------------------------
-    void Animation::destroyAllNodeTracks(void)
-    {
-        NodeTrackList::iterator i;
-        for (i = mNodeTrackList.begin(); i != mNodeTrackList.end(); ++i)
-        {
-            OGRE_DELETE i->second;
-        }
-        mNodeTrackList.clear();
-        _keyFrameListChanged();
-    }
-	//---------------------------------------------------------------------
-	NumericAnimationTrack* Animation::createNumericTrack(unsigned short handle)
-	{
-        if (hasNumericTrack(handle))
-        {
-            OGRE_EXCEPT(Exception::ERR_DUPLICATE_ITEM, 
-                "Numeric track with the specified handle " +
-                StringConverter::toString(handle) + " already exists",
-                "Animation::createNumericTrack");
-        }
-
-		NumericAnimationTrack* ret = OGRE_NEW NumericAnimationTrack(this, handle);
-
-		mNumericTrackList[handle] = ret;
-		return ret;
-	}
-	//---------------------------------------------------------------------
-	NumericAnimationTrack* Animation::createNumericTrack(unsigned short handle, 
-		const AnimableValuePtr& anim)
-	{
-		NumericAnimationTrack* ret = createNumericTrack(handle);
-
-		ret->setAssociatedAnimable(anim);
-
-		return ret;
-	}
-	//---------------------------------------------------------------------
-	unsigned short Animation::getNumNumericTracks(void) const
-	{
-		return (unsigned short)mNumericTrackList.size();
-	}
-	//---------------------------------------------------------------------
-	bool Animation::hasNumericTrack(unsigned short handle) const
-	{
-		return (mNumericTrackList.find(handle) != mNumericTrackList.end());
-	}
-	//---------------------------------------------------------------------
-	NumericAnimationTrack* Animation::getNumericTrack(unsigned short handle) const
-	{
-		NumericTrackList::const_iterator i = mNumericTrackList.find(handle);
-
-		if (i == mNumericTrackList.end())
-		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, 
-				"Cannot find numeric track with the specified handle " +
-                StringConverter::toString(handle),
-				"Animation::getNumericTrack");
-		}
-
-		return i->second;
-
-	}
-	//---------------------------------------------------------------------
-	void Animation::destroyNumericTrack(unsigned short handle)
-	{
-		NumericTrackList::iterator i = mNumericTrackList.find(handle);
-
-		if (i != mNumericTrackList.end())
-		{
-			OGRE_DELETE i->second;
-			mNumericTrackList.erase(i);
-            _keyFrameListChanged();
-		}
-	}
-	//---------------------------------------------------------------------
-	void Animation::destroyAllNumericTracks(void)
-	{
-		NumericTrackList::iterator i;
-		for (i = mNumericTrackList.begin(); i != mNumericTrackList.end(); ++i)
-		{
-			OGRE_DELETE i->second;
-		}
-		mNumericTrackList.clear();
-        _keyFrameListChanged();
-	}
-	//---------------------------------------------------------------------
-	VertexAnimationTrack* Animation::createVertexTrack(unsigned short handle, 
-		VertexAnimationType animType)
-	{
-        if (hasVertexTrack(handle))
-        {
-            OGRE_EXCEPT(Exception::ERR_DUPLICATE_ITEM, 
-                "Vertex track with the specified handle " +
-                StringConverter::toString(handle) + " already exists",
-                "Animation::createVertexTrack");
-        }
-
-		VertexAnimationTrack* ret = OGRE_NEW VertexAnimationTrack(this, handle, animType);
-
-		mVertexTrackList[handle] = ret;
-		return ret;
-
-	}
-	//---------------------------------------------------------------------
-	VertexAnimationTrack* Animation::createVertexTrack(unsigned short handle, 
-		VertexData* data, VertexAnimationType animType)
-	{
-		VertexAnimationTrack* ret = createVertexTrack(handle, animType);
-
-		ret->setAssociatedVertexData(data);
-
-		return ret;
-	}
-	//---------------------------------------------------------------------
-	unsigned short Animation::getNumVertexTracks(void) const
-	{
-		return (unsigned short)mVertexTrackList.size();
-	}
-	//---------------------------------------------------------------------
-	bool Animation::hasVertexTrack(unsigned short handle) const
-	{
-		return (mVertexTrackList.find(handle) != mVertexTrackList.end());
-	}
-	//---------------------------------------------------------------------
-	VertexAnimationTrack* Animation::getVertexTrack(unsigned short handle) const
-	{
-		VertexTrackList::const_iterator i = mVertexTrackList.find(handle);
-
-		if (i == mVertexTrackList.end())
-		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, 
-				"Cannot find vertex track with the specified handle " +
-                StringConverter::toString(handle),
-				"Animation::getVertexTrack");
-		}
-
-		return i->second;
-
-	}
-	//---------------------------------------------------------------------
-	void Animation::destroyVertexTrack(unsigned short handle)
-	{
-		VertexTrackList::iterator i = mVertexTrackList.find(handle);
-
-		if (i != mVertexTrackList.end())
-		{
-			OGRE_DELETE  i->second;
-			mVertexTrackList.erase(i);
-            _keyFrameListChanged();
-		}
-	}
-	//---------------------------------------------------------------------
-	void Animation::destroyAllVertexTracks(void)
-	{
-		VertexTrackList::iterator i;
-		for (i = mVertexTrackList.begin(); i != mVertexTrackList.end(); ++i)
-		{
-			OGRE_DELETE  i->second;
-		}
-		mVertexTrackList.clear();
-        _keyFrameListChanged();
-	}
-	//---------------------------------------------------------------------
-	void Animation::destroyAllTracks(void)
-	{
-		destroyAllNodeTracks();
-		destroyAllNumericTracks();
-		destroyAllVertexTracks();
-	}
-    //---------------------------------------------------------------------
-    const String& Animation::getName(void) const
-    {
-        return mName;
-    }
-    //---------------------------------------------------------------------
-	void Animation::apply(Real timePos, Real weight, Real scale)
-    {
-        // Calculate time index for fast keyframe search
-        TimeIndex timeIndex = _getTimeIndex(timePos);
-
-        NodeTrackList::iterator i;
-        for (i = mNodeTrackList.begin(); i != mNodeTrackList.end(); ++i)
-        {
-            i->second->apply(timeIndex, weight, scale);
-        }
-		NumericTrackList::iterator j;
-		for (j = mNumericTrackList.begin(); j != mNumericTrackList.end(); ++j)
-		{
-			j->second->apply(timeIndex, weight, scale);
-		}
-		VertexTrackList::iterator k;
-		for (k = mVertexTrackList.begin(); k != mVertexTrackList.end(); ++k)
-		{
-			k->second->apply(timeIndex, weight, scale);
-		}
-
-    }
-    //---------------------------------------------------------------------
-    void Animation::apply(Skeleton* skel, Real timePos, Real weight, 
-		Real scale)
-    {
-        // Calculate time index for fast keyframe search
-        TimeIndex timeIndex = _getTimeIndex(timePos);
-
-        NodeTrackList::iterator i;
-        for (i = mNodeTrackList.begin(); i != mNodeTrackList.end(); ++i)
-        {
-            // get bone to apply to 
-            Bone* b = skel->getBone(i->first);
-            i->second->applyToNode(b, timeIndex, weight, scale);
-        }
-
-
-    }
-    //---------------------------------------------------------------------
-    void Animation::apply(Skeleton* skel, Real timePos, float weight,
-      const AnimationState::BoneBlendMask* blendMask, Real scale)
-    {
-      // Calculate time index for fast keyframe search
-      TimeIndex timeIndex = _getTimeIndex(timePos);
-
-      NodeTrackList::iterator i;
-      for (i = mNodeTrackList.begin(); i != mNodeTrackList.end(); ++i)
-      {
-        // get bone to apply to 
-        Bone* b = skel->getBone(i->first);
-		i->second->applyToNode(b, timeIndex, (*blendMask)[b->getHandle()] * weight, scale);
-      }
-    }
-	//---------------------------------------------------------------------
-	void Animation::apply(Entity* entity, Real timePos, Real weight, 
-		bool software, bool hardware)
-	{
-        // Calculate time index for fast keyframe search
-        TimeIndex timeIndex = _getTimeIndex(timePos);
-
-		VertexTrackList::iterator i;
-		for (i = mVertexTrackList.begin(); i != mVertexTrackList.end(); ++i)
-		{
-			unsigned short handle = i->first;
-			VertexAnimationTrack* track = i->second;
-
-			VertexData* swVertexData;
-			VertexData* hwVertexData;
-			VertexData* origVertexData;
-			bool firstAnim = false;
-			if (handle == 0)
-			{
-				// shared vertex data
-				firstAnim = !entity->_getBuffersMarkedForAnimation();
-				swVertexData = entity->_getSoftwareVertexAnimVertexData();
-				hwVertexData = entity->_getHardwareVertexAnimVertexData();
-				origVertexData = entity->getMesh()->sharedVertexData;
-				entity->_markBuffersUsedForAnimation();
-			}
-			else
-			{
-				// sub entity vertex data (-1)
-				SubEntity* s = entity->getSubEntity(handle - 1);
-				// Skip this track if subentity is not visible
-				if (!s->isVisible())
-					continue;
-				firstAnim = !s->_getBuffersMarkedForAnimation();
-				swVertexData = s->_getSoftwareVertexAnimVertexData();
-				hwVertexData = s->_getHardwareVertexAnimVertexData();
-				origVertexData = s->getSubMesh()->vertexData;
-				s->_markBuffersUsedForAnimation();
-			}
-			// Apply to both hardware and software, if requested
-			if (software)
-			{
-				if (firstAnim && track->getAnimationType() == VAT_POSE)
-				{
-					// First time through for a piece of pose animated vertex data
-					// We need to copy the original position values to the temp accumulator
-					const VertexElement* origelem = 
-						origVertexData->vertexDeclaration->findElementBySemantic(VES_POSITION);
-					const VertexElement* destelem = 
-						swVertexData->vertexDeclaration->findElementBySemantic(VES_POSITION);
-					HardwareVertexBufferSharedPtr origBuffer = 
-						origVertexData->vertexBufferBinding->getBuffer(origelem->getSource());
-					HardwareVertexBufferSharedPtr destBuffer = 
-						swVertexData->vertexBufferBinding->getBuffer(destelem->getSource());
-					destBuffer->copyData(*origBuffer.get(), 0, 0, destBuffer->getSizeInBytes(), true);
-				}
-				track->setTargetMode(VertexAnimationTrack::TM_SOFTWARE);
-				track->applyToVertexData(swVertexData, timeIndex, weight, 
-					&(entity->getMesh()->getPoseList()));
-			}
-			if (hardware)
-			{
-				track->setTargetMode(VertexAnimationTrack::TM_HARDWARE);
-				track->applyToVertexData(hwVertexData, timeIndex, weight, 
-					&(entity->getMesh()->getPoseList()));
-			}
-		}
-
-	}
-    //---------------------------------------------------------------------
-    void Animation::setInterpolationMode(InterpolationMode im)
-    {
-        mInterpolationMode = im;
-    }
-    //---------------------------------------------------------------------
-    Animation::InterpolationMode Animation::getInterpolationMode(void) const
-    {
-        return mInterpolationMode;
-    }
-    //---------------------------------------------------------------------
-    void Animation::setDefaultInterpolationMode(InterpolationMode im)
-    {
-        msDefaultInterpolationMode = im;
-    }
-    //---------------------------------------------------------------------
-    Animation::InterpolationMode Animation::getDefaultInterpolationMode(void)
-    {
-        return msDefaultInterpolationMode;
-    }
-    //---------------------------------------------------------------------
-    const Animation::NodeTrackList& Animation::_getNodeTrackList(void) const
-    {
-        return mNodeTrackList;
-
-    }
-	//---------------------------------------------------------------------
-	const Animation::NumericTrackList& Animation::_getNumericTrackList(void) const
-	{
-		return mNumericTrackList;
-	}
-    //---------------------------------------------------------------------
-    const Animation::VertexTrackList& Animation::_getVertexTrackList(void) const
-    {
-        return mVertexTrackList;
-    }
-    //---------------------------------------------------------------------
-    void Animation::setRotationInterpolationMode(RotationInterpolationMode im)
-    {
-        mRotationInterpolationMode = im;
-    }
-    //---------------------------------------------------------------------
-    Animation::RotationInterpolationMode Animation::getRotationInterpolationMode(void) const
-    {
-        return mRotationInterpolationMode;
-    }
-    //---------------------------------------------------------------------
-    void Animation::setDefaultRotationInterpolationMode(RotationInterpolationMode im)
-    {
-        msDefaultRotationInterpolationMode = im;
-    }
-    //---------------------------------------------------------------------
-    Animation::RotationInterpolationMode Animation::getDefaultRotationInterpolationMode(void)
-    {
-        return msDefaultRotationInterpolationMode;
-    }
-    //---------------------------------------------------------------------
-	void Animation::optimise(bool discardIdentityNodeTracks)
-	{
-		optimiseNodeTracks(discardIdentityNodeTracks);
-		optimiseVertexTracks();
-		
-	}
-	//-----------------------------------------------------------------------
-    void Animation::_collectIdentityNodeTracks(TrackHandleList& tracks) const
-    {
-		NodeTrackList::const_iterator i, iend;
-        iend = mNodeTrackList.end();
-		for (i = mNodeTrackList.begin(); i != iend; ++i)
-		{
-			const NodeAnimationTrack* track = i->second;
-			if (track->hasNonZeroKeyFrames())
-			{
-                tracks.erase(i->first);
-            }
-		}
-    }
-	//-----------------------------------------------------------------------
-    void Animation::_destroyNodeTracks(const TrackHandleList& tracks)
-    {
-        TrackHandleList::const_iterator t, tend;
-        tend = tracks.end();
-		for (t = tracks.begin(); t != tend; ++t)
-		{
-			destroyNodeTrack(*t);
-		}
-    }
-	//-----------------------------------------------------------------------
-	void Animation::optimiseNodeTracks(bool discardIdentityTracks)
-	{
-		// Iterate over the node tracks and identify those with no useful keyframes
-		std::list<unsigned short> tracksToDestroy;
-		NodeTrackList::iterator i;
-		for (i = mNodeTrackList.begin(); i != mNodeTrackList.end(); ++i)
-		{
-			NodeAnimationTrack* track = i->second;
-			if (discardIdentityTracks && !track->hasNonZeroKeyFrames())
-			{
-				// mark the entire track for destruction
-				tracksToDestroy.push_back(i->first);
-			}
-			else
-			{
-				track->optimise();
-			}
-
-		}
-
-		// Now destroy the tracks we marked for death
-		for(std::list<unsigned short>::iterator h = tracksToDestroy.begin();
-			h != tracksToDestroy.end(); ++h)
-		{
-			destroyNodeTrack(*h);
-		}
-	}
-	//-----------------------------------------------------------------------
-	void Animation::optimiseVertexTracks(void)
-	{
-		// Iterate over the node tracks and identify those with no useful keyframes
-		std::list<unsigned short> tracksToDestroy;
-		VertexTrackList::iterator i;
-		for (i = mVertexTrackList.begin(); i != mVertexTrackList.end(); ++i)
-		{
-			VertexAnimationTrack* track = i->second;
-			if (!track->hasNonZeroKeyFrames())
-			{
-				// mark the entire track for destruction
-				tracksToDestroy.push_back(i->first);
-			}
-			else
-			{
-				track->optimise();
-			}
-
-		}
-
-		// Now destroy the tracks we marked for death
-		for(std::list<unsigned short>::iterator h = tracksToDestroy.begin();
-			h != tracksToDestroy.end(); ++h)
-		{
-			destroyVertexTrack(*h);
-		}
-
-	}
-	//-----------------------------------------------------------------------
-	Animation* Animation::clone(const String& newName) const
-	{
-		Animation* newAnim = OGRE_NEW Animation(newName, mLength);
-        newAnim->mInterpolationMode = mInterpolationMode;
-        newAnim->mRotationInterpolationMode = mRotationInterpolationMode;
-		
-		// Clone all tracks
-		for (NodeTrackList::const_iterator i = mNodeTrackList.begin();
-			i != mNodeTrackList.end(); ++i)
-		{
-			i->second->_clone(newAnim);
-		}
-		for (NumericTrackList::const_iterator i = mNumericTrackList.begin();
-			i != mNumericTrackList.end(); ++i)
-		{
-			i->second->_clone(newAnim);
-		}
-		for (VertexTrackList::const_iterator i = mVertexTrackList.begin();
-			i != mVertexTrackList.end(); ++i)
-		{
-			i->second->_clone(newAnim);
-		}
-
-        newAnim->_keyFrameListChanged();
-		return newAnim;
-
-	}
-    //-----------------------------------------------------------------------
-    TimeIndex Animation::_getTimeIndex(Real timePos) const
-    {
-        // Uncomment following statement for work as previous
-        //return timePos;
-
-        // Build keyframe time list on demand
-        if (mKeyFrameTimesDirty)
-        {
-            buildKeyFrameTimeList();
-        }
-
-        // Wrap time
-        Real totalAnimationLength = mLength;
-
-        while (timePos > totalAnimationLength && totalAnimationLength > 0.0f)
-        {
-            timePos -= totalAnimationLength;
-        }
-
-        // Search for global index
-        KeyFrameTimeList::iterator it =
-            std::lower_bound(mKeyFrameTimes.begin(), mKeyFrameTimes.end(), timePos);
-
-        return TimeIndex(timePos, std::distance(mKeyFrameTimes.begin(), it));
-    }
-    //-----------------------------------------------------------------------
-    void Animation::buildKeyFrameTimeList(void) const
-    {
-        NodeTrackList::const_iterator i;
-		NumericTrackList::const_iterator j;
-		VertexTrackList::const_iterator k;
-
-        // Clear old keyframe times
-        mKeyFrameTimes.clear();
-
-        // Collect all keyframe times from each track
-        for (i = mNodeTrackList.begin(); i != mNodeTrackList.end(); ++i)
-        {
-            i->second->_collectKeyFrameTimes(mKeyFrameTimes);
-        }
-		for (j = mNumericTrackList.begin(); j != mNumericTrackList.end(); ++j)
-		{
-            j->second->_collectKeyFrameTimes(mKeyFrameTimes);
-		}
-		for (k = mVertexTrackList.begin(); k != mVertexTrackList.end(); ++k)
-		{
-            k->second->_collectKeyFrameTimes(mKeyFrameTimes);
-		}
-
-        // Build global index to local index map for each track
-        for (i = mNodeTrackList.begin(); i != mNodeTrackList.end(); ++i)
-        {
-            i->second->_buildKeyFrameIndexMap(mKeyFrameTimes);
-        }
-		for (j = mNumericTrackList.begin(); j != mNumericTrackList.end(); ++j)
-		{
-            j->second->_buildKeyFrameIndexMap(mKeyFrameTimes);
-		}
-		for (k = mVertexTrackList.begin(); k != mVertexTrackList.end(); ++k)
-		{
-            k->second->_buildKeyFrameIndexMap(mKeyFrameTimes);
-		}
-
-        // Reset dirty flag
-        mKeyFrameTimesDirty = false;
-    }
-
-}
-
-
+// pair<const int, Value> sized from isnil offset 0x31 (isnil = 0xd + sizeof(pair)).
+struct Value { int words[8]; };
+template class std::_Tree<std::_Tmap_traits<int, Value, std::less<int>,
+    std::allocator<std::pair<const int, Value> >, false> >;

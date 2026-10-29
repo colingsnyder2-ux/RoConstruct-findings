@@ -1,99 +1,159 @@
-// from server: 58% by colin
-// roc-lang: cpp
+// roc 2009-06 004c47b0  unit: RBX::Network::Players::Plugin  size: 139 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 004c47b0
+//
+// 004c47b0  6aff                 push -1
+// 004c47b2  68991c8700           push 0x871c99
+// 004c47b7  64a100000000         mov eax, dword ptr fs:[0]
+// 004c47bd  50                   push eax
+// 004c47be  64892500000000       mov dword ptr fs:[0], esp
+// 004c47c5  51                   push ecx
+// 004c47c6  56                   push esi
+// 004c47c7  57                   push edi
+// 004c47c8  8b7c241c             mov edi, dword ptr [esp + 0x1c]
+// 004c47cc  8bf1                 mov esi, ecx
+// 004c47ce  57                   push edi
+// 004c47cf  8974240c             mov dword ptr [esp + 0xc], esi
+// 004c47d3  ff15b8e48900         call dword ptr [0x89e4b8]
+// 004c47d9  8d471c               lea eax, [edi + 0x1c]
+// 004c47dc  50                   push eax
+// 004c47dd  8d4e1c               lea ecx, [esi + 0x1c]
+// 004c47e0  c744241800000000     mov dword ptr [esp + 0x18], 0
+// 004c47e8  ff15b8e48900         call dword ptr [0x89e4b8]
+// 004c47ee  8b4f38               mov ecx, dword ptr [edi + 0x38]
+// 004c47f1  894e38               mov dword ptr [esi + 0x38], ecx
+// 004c47f4  8b473c               mov eax, dword ptr [edi + 0x3c]
+// 004c47f7  89463c               mov dword ptr [esi + 0x3c], eax
+// 004c47fa  85c0                 test eax, eax
+// 004c47fc  740c                 je 0x4c480a
+// 004c47fe  83c004               add eax, 4
+// 004c4801  ba01000000           mov edx, 1
+// 004c4806  f00fc110             lock xadd dword ptr [eax], edx
+// 004c480a  8b4740               mov eax, dword ptr [edi + 0x40]
+// 004c480d  894640               mov dword ptr [esi + 0x40], eax
+// 004c4810  8b7f44               mov edi, dword ptr [edi + 0x44]
+// 004c4813  897e44               mov dword ptr [esi + 0x44], edi
+// 004c4816  85ff                 test edi, edi
+// 004c4818  740c                 je 0x4c4826
+// 004c481a  83c704               add edi, 4
+// 004c481d  b901000000           mov ecx, 1
+// 004c4822  f00fc10f             lock xadd dword ptr [edi], ecx
+// 004c4826  8b4c240c             mov ecx, dword ptr [esp + 0xc]
+// 004c482a  5f                   pop edi
+// 004c482b  8bc6                 mov eax, esi
+// 004c482d  5e                   pop esi
+// 004c482e  64890d00000000       mov dword ptr fs:[0], ecx
+// 004c4835  83c410               add esp, 0x10
+// 004c4838  c20400               ret 4
+// copied from an identical function in another client (function ??0S@@QAE@ABU0@@Z)
+
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// from server: 97% by king_originala
+// roc 2008-06 00496480  unit: RBX::Network::Players::Plugin  size: 139 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 00496480
+//
+// 00496480  6aff                 push -1
+// 00496482  68496b7c00           push 0x7c6b49
+// 00496487  64a100000000         mov eax, dword ptr fs:[0]
+// 0049648d  50                   push eax
+// 0049648e  64892500000000       mov dword ptr fs:[0], esp
+// 00496495  51                   push ecx
+// 00496496  56                   push esi
+// 00496497  57                   push edi
+// 00496498  8b7c241c             mov edi, dword ptr [esp + 0x1c]
+// 0049649c  8bf1                 mov esi, ecx
+// 0049649e  57                   push edi
+// 0049649f  8974240c             mov dword ptr [esp + 0xc], esi
+// 004964a3  ff155c248000         call dword ptr [0x80245c]
+// 004964a9  8d471c               lea eax, [edi + 0x1c]
+// 004964ac  50                   push eax
+// 004964ad  8d4e1c               lea ecx, [esi + 0x1c]
+// 004964b0  c744241800000000     mov dword ptr [esp + 0x18], 0
+// 004964b8  ff155c248000         call dword ptr [0x80245c]
+// 004964be  8b4f38               mov ecx, dword ptr [edi + 0x38]
+// 004964c1  894e38               mov dword ptr [esi + 0x38], ecx
+// 004964c4  8b473c               mov eax, dword ptr [edi + 0x3c]
+// 004964c7  89463c               mov dword ptr [esi + 0x3c], eax
+// 004964ca  85c0                 test eax, eax
+// 004964cc  740c                 je 0x4964da
+// 004964ce  83c004               add eax, 4
+// 004964d1  ba01000000           mov edx, 1
+// 004964d6  f00fc110             lock xadd dword ptr [eax], edx
+// 004964da  8b4740               mov eax, dword ptr [edi + 0x40]
+// 004964dd  894640               mov dword ptr [esi + 0x40], eax
+// 004964e0  8b7f44               mov edi, dword ptr [edi + 0x44]
+// 004964e3  897e44               mov dword ptr [esi + 0x44], edi
+// 004964e6  85ff                 test edi, edi
+// 004964e8  740c                 je 0x4964f6
+// 004964ea  83c704               add edi, 4
+// 004964ed  b901000000           mov ecx, 1
+// 004964f2  f00fc10f             lock xadd dword ptr [edi], ecx
+// 004964f6  8b4c240c             mov ecx, dword ptr [esp + 0xc]
+// 004964fa  5f                   pop edi
+// 004964fb  8bc6                 mov eax, esi
+// 004964fd  5e                   pop esi
+// 004964fe  64890d00000000       mov dword ptr fs:[0], ecx
+// 00496505  83c410               add esp, 0x10
+// 00496508  c20400               ret 4
 
-// Candidate translation unit (score above; library headers required).
-#include "util/RunStateOwner.h"
-#include "v8datamodel/DataModel.h"
+extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+#pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+extern "C" void __cdecl _ReadWriteBarrier();
+#pragma intrinsic(_ReadWriteBarrier)
 
-namespace RBX
+struct String;
+extern String* (__thiscall *stringCopy)(String*, const String&);
+
+struct String {
+    char data[28];
+    String(const String&);
+    ~String();
+};
+
+inline String::String(const String& source)
 {
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> runFunction(&RunService::run, "Run", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> pauseFunction(&RunService::pause, "Pause", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> resetFunction(&RunService::reset, "Reset", Reflection::FunctionDescriptor::NeedTrustedCaller);
+    stringCopy(this, source);
+}
 
-	static Reflection::SignalDesc<RunService, void(float)> event_Heartbeat("Heartbeat", "interval");
+inline void increment(volatile long* value)
+{
+    _ReadWriteBarrier();
+    _InterlockedExchangeAdd(value, 1);
+}
 
-	RunService::RunService()
-		: framePeriod(1.0f/30.0f),
-		  runState(RS_NORMAL),
-		  invalidRunViewCount(0),
-		  stopRequested(false),
-		  runDisabled(false)
-	{
-		setName("Run Service");
-	}
+struct RefCount {
+    long reserved;
+    volatile long count;
+    void addRef() { _InterlockedIncrement(&count); }
+};
 
-	RunService::~RunService()
-	{
-		RBXASSERT(views.empty());
-	}
+struct Count {
+    RefCount* pi;
+    Count(const Count& other) : pi(other.pi)
+    {
+        if (pi != 0)
+            pi->addRef();
+    }
+};
 
-	void RunService::endRunThread(bool join)
-	{
-		stopRequested = true;
-		stateChangedCondition.notify_all();
+struct Shared {
+    void* px;
+    Count pn;
+};
 
-		if (join)
-			runThread->join();
-	}
+struct S {
+    String first;
+    String second;
+    Shared firstShared;
+    Shared secondShared;
 
-	void RunService::onAncestorChanged(const AncestorChanged& event)
-	{
-		if (!getParent())
-		{
-			stopRequested = true;
-			stateChangedCondition.notify_all();
-		}
-	}
+    S(const S&);
+};
 
-	void RunService::setRunState(RunState newState)
-	{
-		RunTransition transition(runState, newState);
-		runState = newState;
-
-		Notifier<RunService, RunState>::raise(newState);
-		Notifier<RunService, RunTransition>::raise(transition);
-	}
-
-	void RunService::raiseStepped(float time, float step)
-	{
-		Notifier<RunService, Stepped>::raise(Stepped(time, step));
-		event_Stepped.fire(this, time, step);
-	}
-
-	void RunService::raiseHeartbeat(float time, float step)
-	{
-		Notifier<RunService, Heartbeat>::raise(Heartbeat(time, step));
-		event_Heartbeat.fire(this, step);
-	}
-
-	void RunService::invalidateRunViews()
-	{
-		boost::mutex::scoped_lock lock(viewMutex);
-
-		if (invalidRunViewCount == 0)
-		{
-			invalidRunViewCount = (int)views.size();
-			if (invalidRunViewCount > 0)
-			{
-				for (std::map<IRunView*, bool>::iterator iter = views.begin(); iter != views.end(); iter++)
-				{
-					iter->first->InvalidateRunView();
-					iter->second = false;
-				}
-				runViewsDoneCondition.notify_all();
-			}
-		}
-	}
-
-	void RunService::start()
-	{
-		RBXASSERT(!runThread);
-
-		boost::shared_ptr<DataModel> dataModel = shared_from(dynamic_cast<DataModel*>(getParent()));
-		runThread.reset(new boost::thread(background_function(boost::bind(&RunService::runProc, shared_from(this), dataModel), "rbx_runProc")));
-	}
+S::S(const S& source)
+    : first(source.first), second(source.second),
+      firstShared(source.firstShared), secondShared(source.secondShared)
+{
 }

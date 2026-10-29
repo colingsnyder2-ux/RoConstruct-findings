@@ -1,46 +1,16 @@
-// from server: 0% by colin
-struct S_func_00552980 {
-    char pad0[0x50];
-    unsigned int m_flags;
-    int f(int a1, int a2, int a3);
-};
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_01f403e5b5979552.cpp
 
-extern "C" int __stdcall sub_00551aa0(int *p);
-extern "C" int __stdcall sub_0054fcb0();
-extern "C" int __stdcall sub_005525c0(int *p);
-
-int S_func_00552980::f(int a1, int a2, int a3)
-{
-    int result;
-    int total;
-    int remaining;
-
-    if ((m_flags & 1) == 0) {
-        sub_00551aa0(&a1);
-        m_flags |= 1;
-    }
-    if ((m_flags & 2) != 0) {
-        return -1;
-    }
-    total = 0;
-    a1 = 0;
-    result = sub_0054fcb0();
-    if (result == -1) {
-        sub_005525c0(&a2);
-        m_flags |= 2;
-        return total;
-    }
-    total = result;
-    if (result >= a3) {
-        return total;
-    }
-    remaining = a3 - result;
-    result = sub_0054fcb0();
-    if (result == -1) {
-        sub_005525c0(&a2);
-        m_flags |= 2;
-        return total;
-    }
-    total += result;
-    return total;
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_gzip_decompressor<std::allocator<char> >,std::char_traits<char>,std::allocator<char>,boost::iostreams::input>;

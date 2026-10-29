@@ -1,9 +1,11 @@
-// from server: 21% by atomic.potato
-extern "C" void __cdecl sub_00726620(int, int, int, int, int);
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-boost-1_34_1 roc_string_sink_401c42386b16c308.cpp
 
-void func_00726950(int a1, int a2, int a3, int a4)
-{
-    int v1 = a3;
-    int v2 = a4;
-    sub_00726620(a1, a2, v2, v1, v1 < 0 ? -1 : 0);
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <boost/iostreams/device/back_inserter.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::stream_buffer<boost::iostreams::back_insert_device<std::string> >;

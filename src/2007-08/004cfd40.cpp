@@ -1,102 +1,180 @@
-// from server: 54% by colin
+// roc-cl: 21022
 // roc-lang: cpp
-// roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-view View.cpp
+// roc-lib: openrbx-client Rendering/RenderLib/TextureProxy.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "RbxView/View.h"
-#include "BrickMesh.h"
-#include "CylinderMesh.h"
-#include "SphereMesh.h"
-#include "PBBMesh.h"
-#include "Part.h"
-#include "RenderLib/AggregatingSceneManager.h"
-#include "v8datamodel/Lighting.h"
-#include "v8datamodel/DataModel.h"
-#include "v8datamodel/Workspace.h"
-#include "v8datamodel/Decal.h"
+#include "renderlib/TextureProxy.h"
 
-namespace RBX
+#include "decomp.h"
+#include "util/standardout.h"
+
+#include <G3D/GImage.h>
+#include <G3D/format.h>
+#include <algorithm>
+
+namespace RBX {
+namespace Render {
+
+// STUB: WEBSERVICE 0x10168ea0
+void TextureProxy::shadePixel(const G3D::Color3uint8& base, G3D::Color3uint8& lighting)
 {
-	namespace View
-	{
-		View::View(boost::shared_ptr<DataModel> dataModel)
-			: dataModel(dataModel),
-			  renderLibScene(new Render::RenderScene),
-			  textureManager(new G3D::TextureManager),
-			  lightingValid(false)
-		{
-			sceneManager.reset(new Render::AggregatingSceneManager(renderLibScene.get()));
-			materialFactory.reset(new MaterialFactory(textureManager.get()));
+	for (int i = 0; i < 3; i++) {
+		int light = lighting[i];
+		float color = base[i];
 
-			renderLibScene->setThrottle(0.0f, 0.0f, false, 0.0f);
-
-			Lighting* lighting = ServiceProvider::find<Lighting>(dataModel.get());
-			lightingChangedConnection = Lighting::event_LightingChanged.connect(lighting, boost::bind(&View::invalidateLighting, this, _1));
-
-			dataModel->getWorkspace()->visitDescendents(boost::bind(&View::onWorkspaceDescendentAdded, this, _1));
-			workspaceDescendentAddedConnection = Instance::event_descendentAdded.connect(dataModel->getWorkspace(), boost::bind(&View::onWorkspaceDescendentAdded, this, _1));
+		if (light > 130) {
+			float shade = (light - 128.0) / 128.0;
+			float a = std::min(shade, 1.0f);
+			color = (1.0 - a) * color + 255.0 * a;
+		}
+		else if (light < 126) {
+			float a = light / 128.0;
+			a = 0.5 + a * 0.5;
+			color = color * a;
 		}
 
-		View::~View()
-		{
-			sceneManager->clear();
-
-			Lighting* unused = ServiceProvider::create<Lighting>(dataModel.get());
-
-			MeshFactory<CylinderAlongXMesh, 1>::flushCache();
-			MeshFactory<SphereMesh, 1>::flushCache();
-			MeshFactory<PBBMesh, 4>::flushCache();
-			BrickMesh::flushCache();
-		}
-
-		void View::suppressSkybox()
-		{
-			Lighting* lighting = ServiceProvider::create<Lighting>(dataModel.get());
-
-			renderLibScene->presetLighting(NULL, lighting->getSkyParameters(), lighting->getAmbientTop(), lighting->getAmbientBottom());
-			sky = NULL;
-			renderLibScene->colorClearValue = lighting->getClearColor();
-		}
-
-		Instance* View::getWorkspace()
-		{
-			return dataModel->getWorkspace();
-		}
-
-		float View::getMeshDetail() const
-		{
-			return renderLibScene->getMeshDetail();
-		}
-
-		float View::getShadingQuality() const
-		{
-			return renderLibScene->getShadingQuality();
-		}
-
-		RenderStats& View::getRenderStats()
-		{
-			return renderLibScene->renderStats;
-		}
-
-		void View::invalidateLighting(bool updateSkybox)
-		{
-			lightingValid = false;
-			if (updateSkybox)
-				sky = NULL;
-		}
-
-		void View::render(void* rd)
-		{
-			updateLighting();
-			sceneManager->prerender(0.1f); // intentional type mismatch! causes value of constant to be different
-			renderLibScene->render((G3D::RenderDevice*)rd, dataModel->getWorkspace()->getGCamera());
-		}
-
-		void View::updateSettings(float shadingQuality, float meshDetail, bool shadows, float cameraDistance)
-		{
-			renderLibScene->setThrottle(shadingQuality, meshDetail, shadows, cameraDistance);
-		}
+		lighting[i] = std::min(std::max(0, G3D::iRound(255.0 * pow(color / 255.0, 1.0))), 255);
 	}
 }
+
+// FUNCTION: WEBSERVICE 0x10169100
+TextureProxyRef TextureProxy::shade(const G3D::Color3& baseColor, const TextureProxyRef& baseTex)
+{
+	TextureProxy* answer = new TextureProxy(baseTex);
+
+	answer->textureManager = textureManager;
+	answer->root = baseTex;
+	answer->shadeColor = baseColor;
+	answer->shadeTexture = this;
+
+	return answer;
+}
+
+// FUNCTION: WEBSERVICE 0x101691d0
+G3D::ReferenceCountedPointer<G3D::Texture> TextureProxy::getIfResolved() const
+{
+	return texture;
+}
+
+// STUB: WEBSERVICE 0x10169200
+G3D::ReferenceCountedPointer<G3D::Texture> TextureProxy::resolve(G3D::RenderDevice* rd)
+{
+	if (!loaded) {
+		if (!shadeTexture.isNull()) {
+			char encodedFileName[1024];
+
+			sprintf(
+				encodedFileName,
+				"%g%g%g%s",
+				shadeColor.r,
+				shadeColor.g,
+				shadeColor.b,
+				shadeTexture->filename.c_str()
+			);
+
+			texture = textureManager->findTexture(encodedFileName);
+
+			if (texture.isNull()) {
+				static std::string lastFilename = shadeTexture->filename;
+				static G3D::GImage cachedBumpImage(lastFilename, G3D::GImage::AUTODETECT);
+
+				if (lastFilename != shadeTexture->filename) {
+					lastFilename = shadeTexture->filename;
+					cachedBumpImage.load(lastFilename, G3D::GImage::AUTODETECT);
+				}
+
+				G3D::GImage bumpImage(cachedBumpImage);
+				G3D::Color3uint8 colorTable[256];
+
+				for (int i = 0; i < 256; i++) {
+					colorTable[i].r = colorTable[i].g = colorTable[i].b = i;
+					shadePixel(shadeColor, colorTable[i]);
+				}
+
+				int numPixels = bumpImage.width * bumpImage.height;
+
+				for (int i = 0; i < numPixels; i++) {
+					bumpImage.pixel3()[i] = colorTable[bumpImage.pixel3()[i].r];
+				}
+
+				texture = G3D::Texture::fromGImage(
+					G3D::format(
+						"Generated bump texture, color = (%3.1f, %3.1f, %3.1f)",
+						shadeColor.r,
+						shadeColor.g,
+						shadeColor.b
+					),
+					bumpImage,
+					G3D::TextureFormat::RGB8
+				);
+
+				textureManager->cacheTexture(texture, encodedFileName);
+			}
+		}
+		else if (root.isNull()) {
+			try {
+				if (filename == "") {
+					texture = G3D::Texture::createEmpty(8, 8);
+				}
+				else {
+					texture = textureManager->loadTexture(
+						filename,
+						G3D::TextureFormat::AUTO,
+						tiled ? G3D::Texture::TILE : G3D::Texture::TRANSPARENT_BORDER
+					);
+				}
+			}
+			catch (std::exception& e) {
+				StandardOut::singleton()
+					->print(MESSAGE_ERROR, "Failed to load texture '%s', %s", filename.c_str(), e.what());
+				texture = NULL;
+			}
+			catch (...) {
+				StandardOut::singleton()
+					->print(MESSAGE_ERROR, "Failed to load texture '%s', unknown exception", filename.c_str());
+				texture = NULL;
+			}
+		}
+		else {
+			G3D::TextureRef t = root->resolve(rd);
+
+			if (!t.isNull() && !t->opaque()) {
+				texture = t->alphaOnlyVersion();
+			}
+		}
+
+		root = NULL;
+		shadeTexture = NULL;
+		loaded = true;
+	}
+
+	return texture;
+}
+
+// FUNCTION: WEBSERVICE 0x10169920
+TextureProxyRef TextureProxy::alphaOnlyVersion()
+{
+	return new TextureProxy(this);
+}
+
+// FUNCTION: WEBSERVICE 0x101699c0
+G3D::Vector2 TextureProxy::getSize()
+{
+	G3D::TextureRef t = getIfResolved();
+	G3D::Vector2 size;
+
+	if (!t.isNull()) {
+		size.x = (float) t->texelWidth();
+		size.y = (float) t->texelHeight();
+	}
+	else {
+		size.y = 0;
+		size.x = 0;
+	}
+
+	return size;
+}
+
+} // namespace Render
+} // namespace RBX

@@ -1,7 +1,17 @@
-// from server: 28% by atomic.potato
-extern "C" void __cdecl func_008fb2b4(int);
+// roc 2009-12 008f6094  unit: std::D::DU?$char_traits::DV?$basic_streambuf::?$lexical_stream_limited_src  size: 19 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 008f6094
+//
+// 008f6094  8bff                 mov edi, edi
+// 008f6096  55                   push ebp
+// 008f6097  8bec                 mov ebp, esp
+// 008f6099  6a01                 push 1
+// 008f609b  e814520000           call 0x8fb2b4
+// 008f60a0  5d                   pop ebp
+// 008f60a1  ff257cb3b600         jmp dword ptr [0xb6b37c]
+// copied from an identical function in another client (function ?fn_ROCX000000_0081b62e@@YAHH@Z)
 
-extern "C" void __cdecl func_008f6094()
-{
-    func_008fb2b4(1);
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /Oy- /hotpatch
+extern "C" int __stdcall helper(int);
+extern "C" int __declspec(dllimport) tail(int);
+int func_0081b62e(int x) { helper(1); return tail(x); }

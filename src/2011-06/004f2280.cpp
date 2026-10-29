@@ -1,4 +1,3 @@
-// from server: 67% by atomic.potato
 // roc 2011-06 004f2280  unit: RBX::Network::IdSerializer  size: 67 bytes
 // Make this compile to the exact bytes below, then: roc check 2011-06 004f2280
 //
@@ -29,30 +28,41 @@
 // 004f22c0  5f                   pop edi
 // 004f22c1  5e                   pop esi
 // 004f22c2  c3                   ret 
+// copied from an identical function in another client (function ?f@ns_ROCX00000f@@YAPAUS@1@PBU21@0PAU21@@Z)
 
+namespace ns_ROCX00000f {
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" void __cdecl _ReadWriteBarrier(void);
+#pragma intrinsic(_ReadWriteBarrier)
 
-struct IdSerializer {
-    int field0;
-    int field4;
-    void* field8;
+struct Control {
+    long reserved;
+    volatile long references;
 };
 
-void assign(IdSerializer* first, IdSerializer* last, IdSerializer* dest)
+struct S {
+    unsigned long first;
+    unsigned long second;
+    Control* control;
+};
+
+S* __cdecl f(const S* first, const S* last, S* output)
 {
-    if (first != last) {
-        do {
-            if (dest) {
-                dest->field0 = first->field0;
-                dest->field4 = first->field4;
-                dest->field8 = first->field8;
-                if (dest->field8) {
-                    _InterlockedExchangeAdd((volatile long*)((char*)dest->field8 + 4), 1);
-                }
+    while (first != last) {
+        if (output) {
+            output->first = first->first;
+            output->second = first->second;
+            output->control = first->control;
+            if (output->control) {
+                volatile long* references = &output->control->references;
+                _ReadWriteBarrier();
+                _InterlockedExchangeAdd(references, 1);
             }
-            first = (IdSerializer*)((char*)first + 0xc);
-            dest = (IdSerializer*)((char*)dest + 0xc);
-        } while (first != last);
+        }
+        ++first;
+        ++output;
     }
+    return output;
+}
 }

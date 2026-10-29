@@ -1,441 +1,280 @@
-// from server: 79% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/afxsettingsstore.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: raknet-4.081 Rand.cpp
 
 // Candidate translation unit (score above; library headers required).
-// This is a part of the Microsoft Foundation Classes C++ library.
-// Copyright (C) Microsoft Corporation
-// All rights reserved.
+/**
+*
+* Grabbed by Kevin from http://www.math.keio.ac.jp/~matumoto/cokus.c
+* This is the ``Mersenne Twister'' random number generator MT19937, which
+* generates pseudorandom integers uniformly distributed in 0..(2^32 - 1)
+* starting from any odd seed in 0..(2^32 - 1).  This version is a recode
+* by Shawn Cokus (Cokus@math.washington.edu) on March 8, 1998 of a version by
+* Takuji Nishimura (who had suggestions from Topher Cooper and Marc Rieffel in
+* July-August 1997).
+*
+* Effectiveness of the recoding (on Goedel2.math.washington.edu, a DEC Alpha
+* running OSF/1) using GCC -O3 as a compiler: before recoding: 51.6 sec. to
+* generate 300 million random numbers; after recoding: 24.0 sec. for the same
+* (i.e., 46.5% of original time), so speed is now about 12.5 million random
+* number generations per second on this machine.
+*
+* According to the URL <http://www.math.keio.ac.jp/~matumoto/emt.html>
+* (and paraphrasing a bit in places), the Mersenne Twister is ``designed
+* with consideration of the flaws of various existing generators,'' has
+* a period of 2^19937 - 1, gives a sequence that is 623-dimensionally
+* equidistributed, and ``has passed many stringent tests, including the
+* die-hard test of G. Marsaglia and the load test of P. Hellekalek and
+* S. Wegenkittl.''  It is efficient in memory usage (typically using 2506
+* to 5012 bytes of static data, depending on data type sizes, and the code
+* is quite short as well).  It generates random numbers in batches of 624
+* at a time, so the caching and pipelining of modern systems is exploited.
+* It is also divide- and mod-free.
+*
+* Licensing is free http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/elicense.html
+*
+* The code as Shawn received it included the following notice:
+*
+*   Copyright (C) 1997 Makoto Matsumoto and Takuji Nishimura. When
+*   you use this, send an e-mail to <matumoto@math.keio.ac.jp> with
+*   an appropriate reference to your work.
+*
+* It would be nice to CC: <Cokus@math.washington.edu> when you write.
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "Rand.h"
+
 //
-// This source code is only intended as a supplement to the
-// Microsoft Foundation Classes Reference and related
-// electronic documentation provided with the library.
-// See these sources for detailed information regarding the
-// Microsoft Foundation Classes product.
+// uint32 must be an unsigned integer type capable of holding at least 32
+// bits; exactly 32 should be fastest, but 64 is better on an Alpha with
+// GCC at -O3 optimization so try your options and see what's best for you
+//
 
-#include "stdafx.h"
-#include "afxsettingsstore.h"
+//typedef unsigned int uint32;
 
-IMPLEMENT_DYNCREATE(CSettingsStore, CObject)
+#define N        (624)       // length of state vector
+#define M        (397)       // a period parameter
+#define K        (0x9908B0DFU)      // a magic constant
+#define hiBit(u)       ((u) & 0x80000000U)   // mask all but highest   bit of u
+#define loBit(u)       ((u) & 0x00000001U)   // mask all but lowest    bit of u
+#define loBits(u)      ((u) & 0x7FFFFFFFU)   // mask  the highest   bit of u
+#define mixBits(u, v)  (hiBit(u)|loBits(v))  // move hi bit of u to hi bit of v
 
-static CString __stdcall PreparePath(LPCTSTR lpszPath)
+static unsigned int _state[ N + 1 ];     // state vector + 1 extra to not violate ANSI C
+static unsigned int *_next;        // next random value is computed from here
+static int _left = -1; // can *next++ this many times before reloading
+
+using namespace RakNet;
+
+void seedMT( unsigned int seed, unsigned int *state, unsigned int *&next, int &left );
+unsigned int reloadMT( unsigned int *state, unsigned int *&next, int &left );
+unsigned int randomMT( unsigned int *state, unsigned int *&next, int &left );
+void fillBufferMT( void *buffer, unsigned int bytes, unsigned int *state, unsigned int *&next, int &left );
+float frandomMT( unsigned int *state, unsigned int *&next, int &left );
+
+// Uses global vars
+void seedMT( unsigned int seed )
 {
-	ENSURE(lpszPath != NULL);
-
-	CString strPath = lpszPath;
-
-	int iPathLen = strPath.GetLength();
-	if (iPathLen > 0 && strPath [iPathLen - 1] == _T('\\'))
-	{
-		strPath = strPath.Left(iPathLen - 1);
-	}
-
-	return strPath;
+	seedMT(seed, _state, _next, _left);
+}
+unsigned int reloadMT( void )
+{
+	return reloadMT(_state, _next, _left);
+}
+unsigned int randomMT( void )
+{
+	return randomMT(_state, _next, _left);
+}
+float frandomMT( void )
+{
+	return frandomMT(_state, _next, _left);
+}
+void fillBufferMT( void *buffer, unsigned int bytes )
+{
+	fillBufferMT(buffer, bytes, _state, _next, _left);
 }
 
-CSettingsStore::CSettingsStore() :
-	m_bReadOnly(FALSE), m_bAdmin(FALSE), m_dwUserData(0)
+void seedMT( unsigned int seed, unsigned int *state, unsigned int *&next, int &left )   // Defined in cokus_c.c
 {
+	(void) next;
+
+	//
+	// We initialize state[0..(N-1)] via the generator
+	//
+	//  x_new = (69069 * x_old) mod 2^32
+	//
+	// from Line 15 of Table 1, p. 106, Sec. 3.3.4 of Knuth's
+	// _The Art of Computer Programming_, Volume 2, 3rd ed.
+	//
+	// Notes (SJC): I do not know what the initial state requirements
+	// of the Mersenne Twister are, but it seems this seeding generator
+	// could be better.  It achieves the maximum period for its modulus
+	// (2^30) iff x_initial is odd (p. 20-21, Sec. 3.2.1.2, Knuth); if
+	// x_initial can be even, you have sequences like 0, 0, 0, ...;
+	// 2^31, 2^31, 2^31, ...; 2^30, 2^30, 2^30, ...; 2^29, 2^29 + 2^31,
+	// 2^29, 2^29 + 2^31, ..., etc. so I force seed to be odd below.
+	//
+	// Even if x_initial is odd, if x_initial is 1 mod 4 then
+	//
+	//  the   lowest bit of x is always 1,
+	//  the  next-to-lowest bit of x is always 0,
+	//  the 2nd-from-lowest bit of x alternates   ... 0 1 0 1 0 1 0 1 ... ,
+	//  the 3rd-from-lowest bit of x 4-cycles   ... 0 1 1 0 0 1 1 0 ... ,
+	//  the 4th-from-lowest bit of x has the 8-cycle ... 0 0 0 1 1 1 1 0 ... ,
+	//   ...
+	//
+	// and if x_initial is 3 mod 4 then
+	//
+	//  the   lowest bit of x is always 1,
+	//  the  next-to-lowest bit of x is always 1,
+	//  the 2nd-from-lowest bit of x alternates   ... 0 1 0 1 0 1 0 1 ... ,
+	//  the 3rd-from-lowest bit of x 4-cycles   ... 0 0 1 1 0 0 1 1 ... ,
+	//  the 4th-from-lowest bit of x has the 8-cycle ... 0 0 1 1 1 1 0 0 ... ,
+	//   ...
+	//
+	// The generator's potency (min. s>=0 with (69069-1)^s = 0 mod 2^32) is
+	// 16, which seems to be alright by p. 25, Sec. 3.2.1.3 of Knuth.  It
+	// also does well in the dimension 2..5 spectral tests, but it could be
+	// better in dimension 6 (Line 15, Table 1, p. 106, Sec. 3.3.4, Knuth).
+	//
+	// Note that the random number user does not see the values generated
+	// here directly since reloadMT() will always munge them first, so maybe
+	// none of all of this matters.  In fact, the seed values made here could
+	// even be extra-special desirable if the Mersenne Twister theory says
+	// so-- that's why the only change I made is to restrict to odd seeds.
+	//
+
+	register unsigned int x = ( seed | 1U ) & 0xFFFFFFFFU, *s = state;
+	register int j;
+
+	for ( left = 0, *s++ = x, j = N; --j;
+		*s++ = ( x *= 69069U ) & 0xFFFFFFFFU )
+
+		;
 }
 
-CSettingsStore::CSettingsStore(BOOL bAdmin, BOOL bReadOnly) :
-	m_bReadOnly(bReadOnly), m_bAdmin(bAdmin), m_dwUserData(0)
+
+unsigned int reloadMT( unsigned int *state, unsigned int *&next, int &left )
 {
-	m_reg.m_hKey = bAdmin ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+	register unsigned int * p0 = state, *p2 = state + 2, *pM = state + M, s0, s1;
+	register int j;
+
+	if ( left < -1 )
+		seedMT( 4357U );
+
+	left = N - 1, next = state + 1;
+
+	for ( s0 = state[ 0 ], s1 = state[ 1 ], j = N - M + 1; --j; s0 = s1, s1 = *p2++ )
+		* p0++ = *pM++ ^ ( mixBits( s0, s1 ) >> 1 ) ^ ( loBit( s1 ) ? K : 0U );
+
+	for ( pM = state, j = M; --j; s0 = s1, s1 = *p2++ )
+		* p0++ = *pM++ ^ ( mixBits( s0, s1 ) >> 1 ) ^ ( loBit( s1 ) ? K : 0U );
+
+	s1 = state[ 0 ], *p0 = *pM ^ ( mixBits( s0, s1 ) >> 1 ) ^ ( loBit( s1 ) ? K : 0U );
+
+	s1 ^= ( s1 >> 11 );
+
+	s1 ^= ( s1 << 7 ) & 0x9D2C5680U;
+
+	s1 ^= ( s1 << 15 ) & 0xEFC60000U;
+
+	return ( s1 ^ ( s1 >> 18 ) );
 }
 
-CSettingsStore::~CSettingsStore()
+
+unsigned int randomMT( unsigned int *state, unsigned int *&next, int &left )
 {
-	Close();
+	unsigned int y;
+
+	if ( --left < 0 )
+		return ( reloadMT(state, next, left) );
+
+	y = *next++;
+
+	y ^= ( y >> 11 );
+
+	y ^= ( y << 7 ) & 0x9D2C5680U;
+
+	y ^= ( y << 15 ) & 0xEFC60000U;
+
+	return ( y ^ ( y >> 18 ) );
+
+	// This change made so the value returned is in the same range as what rand() returns
+	// return(y ^ (y >> 18)) % 32767;
 }
 
-BOOL CSettingsStore::CreateKey(LPCTSTR lpszPath)
+void fillBufferMT( void *buffer, unsigned int bytes, unsigned int *state, unsigned int *&next, int &left )
 {
-	if (m_bReadOnly)
+	unsigned int offset=0;
+	unsigned int r;
+	while (bytes-offset>=sizeof(r))
 	{
-		ASSERT(FALSE);
-		return FALSE;
+		r = randomMT(state, next, left);
+		memcpy((char*)buffer+offset, &r, sizeof(r));
+		offset+=sizeof(r);
 	}
 
-	return m_reg.Create(m_reg.m_hKey, PreparePath(lpszPath)) == ERROR_SUCCESS;
+	r = randomMT(state, next, left);
+	memcpy((char*)buffer+offset, &r, bytes-offset);
 }
 
-BOOL CSettingsStore::Open(LPCTSTR lpszPath)
+float frandomMT( unsigned int *state, unsigned int *&next, int &left )
 {
-	return m_reg.Open(m_reg.m_hKey, PreparePath(lpszPath),
-		m_bReadOnly ?(KEY_QUERY_VALUE | KEY_ENUMERATE_SUB_KEYS | KEY_NOTIFY) : KEY_ALL_ACCESS) == ERROR_SUCCESS;
+	return ( float ) ( ( double ) randomMT(state, next, left) / 4294967296.0 );
+}
+RakNetRandom::RakNetRandom()
+{
+	left=-1;
+}
+RakNetRandom::~RakNetRandom()
+{
+}
+void RakNetRandom::SeedMT( unsigned int seed )
+{
+	printf("%i\n",seed);
+	seedMT(seed, state, next, left);
 }
 
-void CSettingsStore::Close()
+unsigned int RakNetRandom::ReloadMT( void )
 {
-	m_reg.Close();
+	return reloadMT(state, next, left);
 }
 
-BOOL CSettingsStore::Write(LPCTSTR lpszValueName, int nValue)
+unsigned int RakNetRandom::RandomMT( void )
 {
-	return Write(lpszValueName, (DWORD) nValue);
+	return randomMT(state, next, left);
 }
 
-BOOL CSettingsStore::Write(LPCTSTR lpszValueName, DWORD dwValue)
+float RakNetRandom::FrandomMT( void )
 {
-	if (m_bReadOnly)
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-
-	return m_reg.SetDWORDValue(lpszValueName, dwValue) == ERROR_SUCCESS;
+	return frandomMT(state, next, left);
 }
 
-BOOL CSettingsStore::Write(LPCTSTR lpszValueName, LPCTSTR lpszData)
+void RakNetRandom::FillBufferMT( void *buffer, unsigned int bytes )
 {
-	if (m_bReadOnly)
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-
-	return m_reg.SetStringValue(lpszValueName, lpszData) == ERROR_SUCCESS;
+	fillBufferMT(buffer, bytes, state, next, left);
 }
 
-BOOL CSettingsStore::Write(LPCTSTR lpszValueName, CObject& obj)
+/*
+int main(void)
 {
-	if (m_bReadOnly)
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
+int j;
 
-	BOOL bRes = FALSE;
+// you can seed with any uint32, but the best are odds in 0..(2^32 - 1)
 
-	try
-	{
-		CMemFile file;
+seedMT(4357U);
 
-		{
-			CArchive ar(&file, CArchive::store);
-			obj.Serialize(ar);
-			ar.Flush();
-		}
+// print the first 2,002 random numbers seven to a line as an example
 
-		DWORD dwDataSize = (DWORD) file.GetLength();
-		LPBYTE lpbData = file.Detach();
+for(j=0; j<2002; j++)
+RAKNET_DEBUG_PRINTF(" %10lu%s", (unsigned int) randomMT(), (j%7)==6 ? "\n" : "");
 
-		if (lpbData == NULL)
-		{
-			return FALSE;
-		}
-
-		bRes = Write(lpszValueName, lpbData, (UINT) dwDataSize);
-		free(lpbData);
-	}
-	catch(CMemoryException* pEx)
-	{
-		pEx->Delete();
-		TRACE(_T("Memory exception in CSettingsStore::Write()!\n"));
-	}
-
-	return bRes;
+return(EXIT_SUCCESS);
 }
 
-BOOL CSettingsStore::Write(LPCTSTR lpszValueName, CObject* pObj)
-{
-	ASSERT_VALID(pObj);
-	return Write(lpszValueName, *pObj);
-}
-
-BOOL CSettingsStore::Write(LPCTSTR lpszValueName, const CRect& rect)
-{
-	if (m_bReadOnly)
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-
-	BOOL bRes = FALSE;
-	try
-	{
-		CMemFile file;
-
-		{
-			CArchive ar(&file, CArchive::store);
-			ar << rect;
-			ar.Flush();
-		}
-
-		DWORD dwDataSize = (DWORD) file.GetLength();
-		LPBYTE lpbData = file.Detach();
-
-		if (lpbData == NULL)
-		{
-			return FALSE;
-		}
-
-		bRes = Write(lpszValueName, lpbData, (UINT) dwDataSize);
-		free(lpbData);
-	}
-	catch(CMemoryException* pEx)
-	{
-		pEx->Delete();
-		TRACE(_T("Memory exception in CSettingsStore::Write()!\n"));
-		return FALSE;
-	}
-
-	return bRes;
-}
-
-BOOL CSettingsStore::Write(LPCTSTR lpszValueName, LPBYTE pData, UINT nBytes)
-{
-	if (m_bReadOnly)
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-
-	return m_reg.SetBinaryValue(lpszValueName, pData, (ULONG) nBytes) == ERROR_SUCCESS;
-}
-
-BOOL CSettingsStore::Read(LPCTSTR lpszValueName, int& nValue)
-{
-	return Read(lpszValueName, (DWORD&)nValue);
-}
-
-BOOL CSettingsStore::Read(LPCTSTR lpszValueName, DWORD& dwValue)
-{
-	return m_reg.QueryDWORDValue(lpszValueName, dwValue) == ERROR_SUCCESS;
-}
-
-BOOL CSettingsStore::Read(LPCTSTR lpszValueName, CString& strValue)
-{
-	ENSURE(lpszValueName != NULL);
-
-	strValue.Empty();
-
-	DWORD dwCount = 0;
-	if (m_reg.QueryStringValue(lpszValueName, NULL, &dwCount) != ERROR_SUCCESS)
-	{
-		return FALSE;
-	}
-
-	if (dwCount == 0)
-	{
-		return TRUE;
-	}
-
-	LPTSTR szValue = new TCHAR [dwCount + 1];
-
-	BOOL bRes = m_reg.QueryStringValue(lpszValueName, szValue, &dwCount) == ERROR_SUCCESS;
-	if (bRes)
-	{
-		strValue = szValue;
-	}
-
-	delete [] szValue;
-	return bRes;
-}
-
-BOOL CSettingsStore::Read(LPCTSTR lpszValueName, CRect& rect)
-{
-	BOOL bSucess = FALSE;
-	BYTE* pData = NULL;
-	UINT uDataSize;
-
-	if (!Read(lpszValueName, &pData, &uDataSize))
-	{
-		ENSURE(pData == NULL);
-		return FALSE;
-	}
-
-	ENSURE(pData != NULL);
-
-	try
-	{
-		CMemFile file(pData, uDataSize);
-		CArchive ar(&file, CArchive::load);
-
-		ar >> rect;
-		bSucess = TRUE;
-	}
-	catch(CMemoryException* pEx)
-	{
-		pEx->Delete();
-		TRACE(_T("Memory exception in CSettingsStore::Read()!\n"));
-	}
-	catch(CArchiveException* pEx)
-	{
-		pEx->Delete();
-		TRACE(_T("CArchiveException exception in CSettingsStore::Read()!\n"));
-	}
-
-	delete [] pData;
-	return bSucess;
-}
-
-BOOL CSettingsStore::Read(LPCTSTR lpszValueName, BYTE** ppData, UINT* pcbData)
-{
-	ENSURE(lpszValueName != NULL);
-	ENSURE(ppData != NULL);
-	ENSURE(pcbData != NULL);
-
-	*ppData = NULL;
-	*pcbData = 0;
-
-	if (m_reg.QueryBinaryValue(lpszValueName, NULL, (ULONG*)pcbData) != ERROR_SUCCESS || *pcbData == 0)
-	{
-		return FALSE;
-	}
-
-	*ppData = new BYTE [*pcbData];
-
-	if (m_reg.QueryBinaryValue(lpszValueName, *ppData, (ULONG*)pcbData) != ERROR_SUCCESS)
-	{
-		delete [] *ppData;
-		*ppData = NULL;
-		return FALSE;
-	}
-
-	return TRUE;
-}
-
-BOOL CSettingsStore::Read(LPCTSTR lpszValueName, CObject& obj)
-{
-	BOOL bSucess = FALSE;
-	BYTE* pData = NULL;
-	UINT uDataSize;
-
-	if (!Read(lpszValueName, &pData, &uDataSize))
-	{
-		ENSURE(pData == NULL);
-		return FALSE;
-	}
-
-	ENSURE(pData != NULL);
-
-	try
-	{
-		CMemFile file(pData, uDataSize);
-		CArchive ar(&file, CArchive::load);
-
-		obj.Serialize(ar);
-		bSucess = TRUE;
-	}
-	catch(CMemoryException* pEx)
-	{
-		pEx->Delete();
-		TRACE(_T("Memory exception in CSettingsStore::Read()!\n"));
-	}
-	catch(CArchiveException* pEx)
-	{
-		pEx->Delete();
-		TRACE(_T("CArchiveException exception in CSettingsStore::Read()!\n"));
-	}
-
-	delete [] pData;
-	return bSucess;
-}
-
-BOOL CSettingsStore::Read(LPCTSTR lpszValueName, CObject*& pObj)
-{
-	BOOL bSucess = FALSE;
-	BYTE* pData = NULL;
-	UINT uDataSize;
-
-	if (!Read(lpszValueName, &pData, &uDataSize))
-	{
-		ENSURE(pData == NULL);
-		return FALSE;
-	}
-
-	ENSURE(pData != NULL);
-
-	try
-	{
-		CMemFile file(pData, uDataSize);
-		CArchive ar(&file, CArchive::load);
-		ar >> pObj;
-
-		bSucess = TRUE;
-	}
-	catch(CMemoryException* pEx)
-	{
-		pEx->Delete();
-		TRACE(_T("Memory exception in CSettingsStore::Read()!\n"));
-	}
-	catch(CArchiveException* pEx)
-	{
-		pEx->Delete();
-		TRACE(_T("CArchiveException exception in CSettingsStore::Read()!\n"));
-	}
-
-	delete [] pData;
-	return bSucess;
-}
-
-BOOL CSettingsStore::DeleteValue(LPCTSTR lpszValue)
-{
-	return m_reg.DeleteValue(lpszValue) == ERROR_SUCCESS;
-}
-
-BOOL CSettingsStore::DeleteKey(LPCTSTR lpszPath, BOOL bAdmin)
-{
-	if (m_bReadOnly)
-	{
-		return FALSE;
-	}
-
-	m_reg.Close();
-	m_reg.m_hKey = bAdmin ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-
-	return m_reg.RecurseDeleteKey(PreparePath(lpszPath)) == ERROR_SUCCESS;
-}
-
-//////////////////////////////////////////////////////////////////////////////
-// CSettingsStoreSP - Helper class that manages "safe" CSettingsStore pointer
-
-CRuntimeClass* CSettingsStoreSP::m_pRTIDefault = NULL;
-
-BOOL __stdcall CSettingsStoreSP::SetRuntimeClass(CRuntimeClass* pRTI)
-{
-	if (pRTI != NULL &&
-		!pRTI->IsDerivedFrom(RUNTIME_CLASS(CSettingsStore)))
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-
-	m_pRTIDefault = pRTI;
-	return TRUE;
-}
-
-CSettingsStore& CSettingsStoreSP::Create(BOOL bAdmin, BOOL bReadOnly)
-{
-	if (m_pRegistry != NULL)
-	{
-		ASSERT(FALSE);
-		ASSERT_VALID(m_pRegistry);
-		return *m_pRegistry;
-	}
-
-	if (m_pRTIDefault == NULL)
-	{
-		m_pRegistry = new CSettingsStore;
-	}
-	else
-	{
-		ASSERT(m_pRTIDefault->IsDerivedFrom(RUNTIME_CLASS(CSettingsStore)));
-		m_pRegistry = DYNAMIC_DOWNCAST(CSettingsStore, m_pRTIDefault->CreateObject());
-	}
-
-	ASSERT_VALID(m_pRegistry);
-
-	m_pRegistry->m_bReadOnly = bReadOnly;
-	m_pRegistry->m_bAdmin = bAdmin;
-	m_pRegistry->m_reg.m_hKey = bAdmin ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-	m_pRegistry->m_dwUserData = m_dwUserData;
-
-	return *m_pRegistry;
-}
-
+*/
 

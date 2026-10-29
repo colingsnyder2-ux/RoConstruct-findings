@@ -1,28 +1,57 @@
-// from server: 0% by colin
-// from server: 51% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8datamodel/Teams.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: atl-9.0-dll-rtm roc_espclaude_13551b6034a59a28.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Teams.h"
+#ifndef _CPPUNWIND
+#define _CPPUNWIND 1
+#endif
+#ifndef _AFXDLL
+#define _AFXDLL
+#endif
+#include <new>
+#include <afxwin.h>
+#include <atlbase.h>
+#include <atlcom.h>
+#include <atlctl.h>
 
-namespace RBX {
+extern "C" const IID IID_IApp;
+extern "C" const CLSID CLSID_App;
+extern "C" const GUID LIBID_RobloxLib;
 
-const char sTeams[] = "Teams";
-
-// STUB: WEBSERVICE 0x100dad30
-G3D::Color3 Teams::getTeamColorForHumanoid(Humanoid* humanoid)
+MIDL_INTERFACE("00000000-0000-0000-0000-000000000001")
+IApp : public IDispatch
 {
-	STUB(0x100dad30);
+public:
+};
 
-	return G3D::Color3();
-}
+template <class T, DWORD dwSupportedSafety>
+class IObjectSafetyRobloxImpl : public IObjectSafety
+{
+public:
+    IObjectSafetyRobloxImpl() : m_dwCurrentSafety(0) {}
+    STDMETHOD(GetInterfaceSafetyOptions)(REFIID riid, DWORD* pdwSupportedOptions, DWORD* pdwEnabledOptions);
+    STDMETHOD(SetInterfaceSafetyOptions)(REFIID riid, DWORD dwOptionSetMask, DWORD dwEnabledOptions);
+    DWORD m_dwCurrentSafety;
+};
 
-} // namespace RBX
+class ATL_NO_VTABLE CApp :
+    public CComObjectRootEx<CComSingleThreadModel>,
+    public CComCoClass<CApp, &CLSID_App>,
+    public ISupportErrorInfoImpl<&IID_IApp>,
+    public IObjectSafetyRobloxImpl<CApp, 1>,
+    public IObjectWithSiteImpl<CApp>,
+    public IDispatchImpl<IApp, &IID_IApp, &LIBID_RobloxLib, 1, 2>
+{
+public:
+    BEGIN_COM_MAP(CApp)
+        COM_INTERFACE_ENTRY(IApp)
+        COM_INTERFACE_ENTRY(IDispatch)
+        COM_INTERFACE_ENTRY(ISupportErrorInfo)
+        COM_INTERFACE_ENTRY(IObjectSafety)
+        COM_INTERFACE_ENTRY(IObjectWithSite)
+    END_COM_MAP()
+};
 
-template class RBX::FactoryProduct<RBX::Teams, RBX::Instance, RBX::sTeams>;
-template class RBX::Reflection::
-	Described<RBX::Teams, RBX::sTeams, RBX::FactoryProduct<RBX::Teams, RBX::Instance, RBX::sTeams> >;
-template class RBX::DescribedCreatable<RBX::Teams, RBX::Instance, RBX::sTeams>;
+template ATL::CComAggObject<CApp>::CComAggObject(void*);

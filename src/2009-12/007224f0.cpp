@@ -1,27 +1,16 @@
-// from server: 33% by atomic.potato
-extern "C" {
-    void __stdcall sub_98B6F4(void*);
-    void __stdcall sub_98B6E4(void*);
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_01f403e5b5979552.cpp
 
-struct Str {
-    char pad[0x20];
-};
-
-struct Base {
-    void init(void*);
-};
-
-struct Derived : Base {
-    void __cdecl construct(char*);
-};
-
-void Derived::construct(char* s)
-{
-    Str local;
-    local.pad[0] = 0;
-    sub_98B6F4(&local);
-    init(&local);
-    *(void**)this = (void*)0x9dfd1c;
-    sub_98B6E4(&local);
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_gzip_decompressor<std::allocator<char> >,std::char_traits<char>,std::allocator<char>,boost::iostreams::input>;

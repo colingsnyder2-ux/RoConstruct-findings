@@ -1,57 +1,21 @@
-// from server: 30% by colin
-// roc 2007-08 004cda80  unit: std::X::ZV?$allocator::$$A6AX_N::V?$function::?$holder  size: 96 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004cda80
-//
-// 004cda80  6aff                 push -1
-// 004cda82  681bb67500           push 0x75b61b
-// 004cda87  64a100000000         mov eax, dword ptr fs:[0]
-// 004cda8d  50                   push eax
-// 004cda8e  64892500000000       mov dword ptr fs:[0], esp
-// 004cda95  51                   push ecx
-// 004cda96  56                   push esi
-// 004cda97  6a10                 push 0x10
-// 004cda99  8bf1                 mov esi, ecx
-// 004cda9b  e856241600           call 0x62fef6
-// 004cdaa0  83c404               add esp, 4
-// 004cdaa3  89442404             mov dword ptr [esp + 4], eax
-// 004cdaa7  85c0                 test eax, eax
-// 004cdaa9  c744241000000000     mov dword ptr [esp + 0x10], 0
-// 004cdab1  741b                 je 0x4cdace
-// 004cdab3  83c604               add esi, 4
-// 004cdab6  56                   push esi
-// 004cdab7  8bc8                 mov ecx, eax
-// 004cdab9  e842ffffff           call 0x4cda00
-// 004cdabe  5e                   pop esi
-// 004cdabf  8b4c2404             mov ecx, dword ptr [esp + 4]
-// 004cdac3  64890d00000000       mov dword ptr fs:[0], ecx
-// 004cdaca  83c410               add esp, 0x10
-// 004cdacd  c3                   ret 
-// 004cdace  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 004cdad2  33c0                 xor eax, eax
-// 004cdad4  5e                   pop esi
-// 004cdad5  64890d00000000       mov dword ptr fs:[0], ecx
-// 004cdadc  83c410               add esp, 0x10
-// 004cdadf  c3                   ret 
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_espeon_aug2007_fullstack_kernel_d21874223bd5a2e9.cpp
 
-extern "C" void* __cdecl operator_new(unsigned int size);
-extern "C" void __cdecl operator_delete(void* p);
-
-struct Inner {
-    void construct(int* p);
-};
-
-struct Outer {
-    Inner inner;
-    void* method();
-};
-
-void* Outer::method()
-{
-    void* mem = operator_new(0x10);
-    if (mem != 0) {
-        Inner* p = (Inner*)mem;
-        p->construct((int*)((char*)this + 4));
-        return mem;
-    }
-    return 0;
-}
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#define _MT 1
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "v8datamodel/Tool.cpp"

@@ -1,62 +1,21 @@
-// from server: 17% by colin
-// roc 2007-08 004b0360  unit: RBX::Network::VReplicator::?$SignalDesc  size: 298 bytes
-// library rbxgs/v8datamodel\DataModel.cpp
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_espeon_aug2007_fullstack_kernel_a72f4afc178082d4.cpp
 
-struct S {
-    char pad[4];
-    void* field4;
-    void method(int);
-};
-
-extern "C" void __cdecl sub_7273F0(void*, void*);
-extern "C" void __cdecl sub_729380(void*, void*, void*, void*);
-extern "C" void __cdecl sub_729350(void*, void*, void*, void*);
-extern "C" void __cdecl sub_5F1980(void*);
-extern "C" void __cdecl sub_7272D0(void*);
-extern "C" void __cdecl sub_4AF950(void*, void*);
-
-void S::method(int arg)
-{
-    char local18;
-    int local34;
-    void* local24;
-    void* local58;
-    void* local5b;
-    void* local98;
-    void* local9b;
-    void* localbc;
-    void* local60;
-    void* locala0;
-
-    sub_7273F0(&local24, this);
-    local34 = 0;
-    local18 = 0;
-
-    void* p = local24;
-    void* q = *(void**)this;
-    void* r = *(void**)((char*)q + 0x30);
-
-    local60 = &local58;
-    void* ebx = &local58;
-    void* ebp = p;
-
-    sub_729380((char*)q + 8, &local58, &local5b, &local58);
-    sub_729380((char*)ebp + 8, &local58, &local5b, &local58);
-    sub_5F1980(ebx);
-
-    locala0 = &local98;
-    ebx = &local98;
-
-    sub_729380((char*)q + 8, &local98, &local9b, &local98);
-    sub_729350((char*)ebp + 8, &local98, &local9b, &local98);
-    sub_5F1980(ebx);
-
-    void* esi = localbc;
-    sub_4AF950((char*)r + 4, esi);
-
-    if (local18 != 0)
-        local18 = 0;
-
-    local34 = -1;
-    sub_7272D0(&local24);
-}
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#define _MT 1
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "v8datamodel/Gyro.cpp"

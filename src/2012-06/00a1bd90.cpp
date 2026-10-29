@@ -1,14 +1,13 @@
-// from server: 25% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/CommandBars/XTPDockBar.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc-string-calls Source\CommandBars\XTPDockBar.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPDockBar.cpp : implementation of the CXTPDockBar class.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -675,7 +674,7 @@ int CXTPDockBar::Insert(CXTPToolBar* pBarIns, CRect /*rect*/, CPoint ptMid)
 	int nTotalWidth = 0;
 	//int nPosInsBefore = 0;
 	BOOL bHorz = m_dwStyle & CBRS_ORIENT_HORZ;
-	BOOL bAllowTopMost = pBarIns->IsRibbonBar() || m_pCommandBars->GetMenuBar() == NULL ||
+	BOOL bAllowTopMost = m_pCommandBars->GetMenuBar() == NULL ||
 		!m_pCommandBars->GetMenuBar()->IsRibbonBar() || FindBar(m_pCommandBars->GetMenuBar()) == -1;
 
 	for (nPos = 0; nPos < m_arrBars.GetSize(); nPos++)

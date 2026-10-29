@@ -1,7 +1,6 @@
-// from server: 38% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
 // roc-lib: rbxgs-net Streaming.cpp
 
 // Candidate translation unit (score above; library headers required).
